@@ -1,4 +1,4 @@
-#ifndef __WORLD_MAP_H__
+ #ifndef __WORLD_MAP_H__
 #define __WORLD_MAP_H__
 
 #include <SFML/Graphics.hpp>
@@ -95,13 +95,13 @@ struct WorldMap
 	enum State
 	{
 		OFF,
-		PLANET_AND_SPACE,
-		PLANET_TRANSITION,
+		SPACE,
+		SPACE_TO_PLANET,
 		PLANET,
-		SECTION_TRANSITION,
-		SECTION, 
-		COLONY_TRANSITION,
+		PlANET_TO_COLONY,
 		COLONY,
+		COLONY_TO_PLANET,
+		PLANET_TO_SPACE,
 	};
 
 	sf::Shader zoomShader;
@@ -121,8 +121,6 @@ struct WorldMap
 	State state;
 	int frame;
 	sf::Sprite extraPassSpr;
-	sf::Sprite zoomedMapSpr;
-	Tileset *ts_zoomedMapw1;
 	float currScale;
 	sf::Vector2f currCenter;
 	float oldZoomCurvePos;
@@ -130,22 +128,18 @@ struct WorldMap
 	sf::View zoomView;
 	sf::View uiView;
 
-	Tileset *ts_planetAndSpace;
+	Tileset *ts_space;
 	Tileset *ts_planet;
 	Tileset *ts_colonySelect;
 	sf::Sprite colonySelectSprite;
-	//sf::Texture *planetAndSpaceTex;
-	//sf::Texture *planetTex;
+
 	int selectedColony;
 	
-	//sf::Texture *sectionTex[6];
-	//sf::Texture *colonyTex[6];
-	Tileset *ts_section[6];
-	//Tileset *ts_colony[6];
-
 	Tileset *ts_colony[7];
-	sf::Sprite back;
-	sf::Sprite front;
+	sf::Sprite colonySpr[7];
+	sf::Sprite planetSpr;
+	sf::Sprite spaceSpr;
+	
 
 	TreeNode **dirNode;
 	TreeNode *entries;

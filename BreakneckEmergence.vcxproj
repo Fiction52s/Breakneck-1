@@ -40,13 +40,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -83,10 +83,15 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>D:\Users\Shephard\Libraries\SFML-2.4.2\include;D:\Users\Shephard\Libraries\boost_1_59_0;D:\Users\Shephard\Libraries\sfeMovie\Include;</AdditionalIncludeDirectories>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>D:\Users\Shephard\Libraries\SFML-2.4.2\lib;D:\Users\Shephard\Libraries\boost_1_59_0\stage\win32\lib;D:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-audio-d.lib;sfml-system-d.lib;sfml-network-d.lib;openal32.lib;opengl32.lib;freetype.lib;jpeg.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -107,15 +112,18 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>D:\Users\Shephard\Libraries\SFML-2.4.2\include;D:\Users\Shephard\Libraries\boost_1_59_0;D:\Users\Shephard\Libraries\sfeMovie\Include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>D:\Users\Shephard\Libraries\SFML-2.4.2\lib;D:\Users\Shephard\Libraries\boost_1_59_0\stage\win32\lib;D:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-audio.lib;sfml-system.lib;sfml-network.lib;openal32.lib;opengl32.lib;freetype.lib;jpeg.lib;winmm.lib;gdi32.lib;flac.lib;vorbisenc.lib;vorbisfile.lib;vorbis.lib;ogg.lib;sfeMovie.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -143,13 +151,18 @@
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\EnemyQuadTree.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicEffect.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicTurret.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Blocker.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Crawler.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_CrawlerQueen.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_FootTrap.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Goal.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Patroller.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_RaceFightTarget.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Shard.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Shroom.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_TrapRoot.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\EnvEffects.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Eye.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Feedback.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\flow.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\FPoint.cpp" />
@@ -162,6 +175,7 @@
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\HUD.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ImageText.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Input.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\InputVisualizer.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ItemSelector.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Julia.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelSelector.cpp" />
@@ -191,8 +205,10 @@
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\QuadTree.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Rail.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\SaveFile.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ScreenRecorder.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Sequence.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShaderTester.cpp" />
+    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShardMenu.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShipPickup.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\SoundManager.cpp" />
     <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Spring.cpp" />
@@ -229,14 +245,19 @@
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicEffect.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicTurret.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Blocker.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Booster.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Crawler.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_CrawlerQueen.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_FootTrap.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Goal.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Patroller.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_RaceFightTarget.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Shard.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Shroom.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_TrapRoot.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\EnvEffects.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Eye.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Feedback.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\flow.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\FPoint.h" />
@@ -249,6 +270,7 @@
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\HUD.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ImageText.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Input.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\InputVisualizer.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ItemSelector.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Julia.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelSelector.h" />
@@ -277,8 +299,11 @@
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\QuadTree.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Rail.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\SaveFile.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ScreenRecorder.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Sequence.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShaderTester.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShardMenu.h" />
+    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShardTypes.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\SoundManager.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\SurfaceMover.h" />
     <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\TerrainRender.h" />

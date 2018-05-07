@@ -76,23 +76,35 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 {
 	//extraPassRect.setSize(Vector2f(1920, 1080));
 
-	ts_planetAndSpace = mainMenu->tilesetManager.GetTileset( "WorldMap/map_z1.jpg", 1920, 1080 );
+	//ts_planetAndSpace = mainMenu->tilesetManager.GetTileset( "WorldMap/map_z1.jpg", 1920, 1080 );
 	//planetAndSpaceTex = new Texture;
 	//planetAndSpaceTex->loadFromFile( "WorldMap/map_z1.jpg" );
 	
-	ts_planet = mainMenu->tilesetManager.GetTileset( "WorldMap/Map.png", 1920, 1080 );
+	//ts_planet = mainMenu->tilesetManager.GetTileset( "WorldMap/Map.png", 1920, 1080 );
 	//planetTex = new Texture;
 	//planetTex->loadFromFile( "WorldMap/map_z2.png" );
 
 	ts_colonySelect = mainMenu->tilesetManager.GetTileset( "WorldMap/map_select_512x512.png"
 		, 512, 512 );
 
-	ts_zoomedMapw1 = mainMenu->tilesetManager.GetTileset("WorldMap/W1.png", 1920, 1080);
+	//ts_zoomedMapw1 = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
 
-	zoomedMapSpr.setTexture(*ts_zoomedMapw1->texture);
-	zoomedMapSpr.setOrigin(zoomedMapSpr.getLocalBounds().width / 2, zoomedMapSpr.getLocalBounds().height / 2);
-	zoomedMapSpr.setPosition(1920 + 1400, 250);
-	zoomedMapSpr.setScale(.2, .2);
+	ts_space = mainMenu->tilesetManager.GetTileset("WorldMap/map_z1_stars.png", 1920, 1080);
+	spaceSpr.setTexture(*ts_space->texture);
+	
+	ts_planet = mainMenu->tilesetManager.GetTileset("WorldMap/map_z1_world.png", 1920, 1080); 
+	planetSpr.setTexture(*ts_planet->texture);
+	ts_colony[0] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
+	planetSpr.setOrigin(planetSpr.getLocalBounds().width / 2, planetSpr.getLocalBounds().height / 2);
+	planetSpr.setPosition(960, 540);
+	zoomView.setCenter(960, 540);
+	zoomView.setSize(1920, 1080);
+
+	
+	colonySpr[0].setTexture(*ts_colony[0]->texture);
+	colonySpr[0].setOrigin(colonySpr[0].getLocalBounds().width / 2, colonySpr[0].getLocalBounds().height / 2);
+	colonySpr[0].setPosition(1100, 400);
+	colonySpr[0].setScale(.1, .1);
 
 	
 
@@ -109,36 +121,25 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 	zoomShader.setUniform("radial_bright", .1f);
 	zoomShader.setUniform("radial_origin", Vector2f( .5, .5 ) );
 	zoomShader.setUniform("radial_size", Vector2f( 1.f / 1920, 1.f / 1080 ));
-	//zoomShader.setUniform("sampleStregth", 5.f);
-	//zoomShader.setUniform("texSize", Vector3f(1920, 1080, 0));
-	//zoomShader.setUniform("texSize", Vector3f(1920, 1080, 0));
 
 
 	int width = 1920;//1920 - w->getSize().x;
 	int height = 1080; //1080 - w->getSize().y;
 	uiView = View(sf::Vector2f(width / 2, height / 2), sf::Vector2f(width, height));
 
-	for( int i = 0; i < 6; ++i )
-	{
-		stringstream ss;
-		ss << "WorldMap/map_z3_" << (i+1) << ".png";
-		//sectionTex[i] = new Texture;//owner->GetTileset( ss.str(), 1920, 1080 );
-		//sectionTex[i]->loadFromFile( ss.str() );
-		ts_section[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );
+	//for( int i = 0; i < 6; ++i )
+	//{
+	//	stringstream ss;
+	//	ss << "WorldMap/map_z3_" << (i+1) << ".png";
+	//	ts_section[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );
 
-		ss.clear();
-		ss.str( "" );
-		ss << "WorldMap/map_w" << (i+1) << ".png";
-		//colonyTex[i] = new Texture;
-		//colonyTex[i]->loadFromFile( ss.str() );
-		ts_colony[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );
-	}
-
-	back.setPosition( 1920, 0 );
-	//back.setOrigin( 0, 0 );
-	front.setPosition( 0, 0 );
-	//front.setOrigin( 1920 / 2, 1080 / 2 );
-	//selectedColony = 1;
+	//	ss.clear();
+	//	ss.str( "" );
+	//	ss << "WorldMap/map_w" << (i+1) << ".png";
+	//	//colonyTex[i] = new Texture;
+	//	//colonyTex[i]->loadFromFile( ss.str() );
+	//	ts_colony[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );
+	//}
 
 	fontHeight = 24;
 	menuPos = Vector2f( 300, 300 );
@@ -154,7 +155,6 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 	Reset( NULL );
 
 	testSelector = new MapSelector(mainMenu, Vector2f(960, 540));
-	//UpdateColonySelect();
 }
 
 void WorldMap::UpdateColonySelect()
@@ -416,114 +416,37 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	int trans = 20;
 	switch( state )
 	{
-	case PLANET_AND_SPACE:
+	case SPACE:
 		{
 			if( frame == trans )
 			{
-				state = PLANET_TRANSITION;
+				state = SPACE_TO_PLANET;
 				frame = 0;
 			}
-			//cout << "currInput.A: " << currInput.A << ", prevInput.A: " << prevInput.A << endl;
 		}
-		//frame = 0;
-		/*if( frame == trans )
-		{
-			state = PLANET_TRANSITION;
-			frame = 0;
-		}*/
-		//frame = 0;
 		break;
-	case PLANET_TRANSITION:
+	case SPACE_TO_PLANET:
 		if( frame == trans )
 		{
 			state = PLANET;
 			frame = 0;
 		}
+		else
+		{
+
+		}
 		break;
 	case PLANET:
 	{
-		int limit = 120 / 2;
-		if (frame >= limit)
-		{
-			break;
-		}
-		
-
-		float a = frame / (float)(limit-1);
-
-		int mLimit = 50 / 2;
-		int mFrame = min(frame, mLimit);
-
-		float aMove = mFrame / (float)(mLimit - 1);
-
-		/*if (frame >= limit)
-		{
-			frame = limit;
-			a = 1.f;
-		}*/
-			
-		CubicBezier cb(.83, .27, .06, .63);//(0, 0, 1, 1);
-		CubicBezier cbMove(0, 0, 1, 1);
-
-		oldZoomCurvePos = zoomCurvePos;
-
-		zoomCurvePos = cb.GetValue(a);
-
-		
-		float f = zoomCurvePos;
-
-		float fz = cbMove.GetValue(aMove);
-
-		//float test = f * 5.f;
-
-
-		if( frame == 0 )
-			zoomShader.setUniform("sampleStrength", 0.f);
-
-		Vector2f endPos(1920 + 1400, 250);
-		float endScale = .2f;
-
-		Vector2f startPos(1920 + 960, 540);
-		float startScale = 1.f;
-
-
-		float oldA = currScale;
-		
-		
-
-		currScale = startScale * (1.f - f) + endScale * f;
-		
-		currCenter = startPos * (1.f - fz) + endPos * fz;
-
-		zoomView.setCenter(currCenter);
-		zoomView.setSize(Vector2f(1920, 1080) * currScale);
-
-		if (frame > 0)
-		{
-			float diff = zoomCurvePos - oldZoomCurvePos;//abs(currScale - oldScale);
-
-			//float diffFactor = diff / abs(endScale - startScale) / limit;
-			float multiple = limit;
-			diff *= multiple;
-			diff += 1.0;
-
-			zoomShader.setUniform("sampleStrength", diff);
-		}
-
-		//View testV( Vector2f( 1920 + 960))
-		/*if( frame == trans )
-		{
-			state = SECTION_TRANSITION;
-			frame = 0;
-		}*/
 		if (currInput.A && !prevInput.A)
 		{
-			//state = COLONY_TRANSITION;//SECTION_TRANSITION;
-			//frame = 0;
+			state = PlANET_TO_COLONY;
+			frame = 0;
 			break;
 		}
 		else if (currInput.B && !prevInput.B)
 		{
+			//transition back up later instead of just turning off
 			state = OFF;
 			frame = 0;
 			break;
@@ -532,7 +455,6 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		if ((currInput.LDown() || currInput.PDown()) && !moveDown)
 		{
 			selectedColony++;
-			//currentMenuSelect++;
 			if (selectedColony > 5)
 				selectedColony = 0;
 			moveDown = true;
@@ -555,162 +477,195 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			moveUp = false;
 		}
-		//++frame;
 	}
 		break;
-	case SECTION_TRANSITION:
-		if( frame == trans )
-		{
-			state = SECTION;
-			frame = 0;
-
-		}
-		break;
-	case SECTION:
-		if( frame == trans )
-		{
-			state = COLONY_TRANSITION;
-			frame = 0;
-		}
-		break;
-	case COLONY_TRANSITION:
-		if( frame == trans )
+	case PlANET_TO_COLONY:
+	{
+		int limit = 120 / 2;
+		if (frame == limit)
 		{
 			state = COLONY;
 			frame = 0;
-			
+
 		}
+		else
+		{
+			float a = frame / (float)(limit - 1);
+
+			int mLimit = 50 / 2;
+			int mFrame = min(frame, mLimit);
+
+			float aMove = mFrame / (float)(mLimit - 1);
+
+			CubicBezier cb(.83, .27, .06, .63);//(0, 0, 1, 1);
+			CubicBezier cbMove(0, 0, 1, 1);
+
+			oldZoomCurvePos = zoomCurvePos;
+
+			zoomCurvePos = cb.GetValue(a);
+
+
+			float f = zoomCurvePos;
+
+			float fz = cbMove.GetValue(aMove);
+
+			//float test = f * 5.f;
+
+
+			if (frame == 0)
+				zoomShader.setUniform("sampleStrength", 0.f);
+
+			Vector2f endPos = colonySpr[0].getPosition();
+			float endScale = colonySpr[0].getScale().x;//.2f;
+
+			Vector2f startPos(960, 540);
+			float startScale = 1.f;
+
+
+			float oldA = currScale;
+
+
+
+			currScale = startScale * (1.f - f) + endScale * f;
+
+			currCenter = startPos * (1.f - fz) + endPos * fz;
+
+			zoomView.setCenter(currCenter);
+			zoomView.setSize(Vector2f(1920, 1080) * currScale);
+
+			if (frame > 0)
+			{
+				float diff = zoomCurvePos - oldZoomCurvePos;//abs(currScale - oldScale);
+
+															//float diffFactor = diff / abs(endScale - startScale) / limit;
+				float multiple = limit;
+				diff *= multiple;
+				diff += 1.0;
+
+				zoomShader.setUniform("sampleStrength", diff);
+			}
+		}
+	}
 		break;
 	case COLONY:
-		if( currInput.A && !prevInput.A )
-		{
-			state = OFF;
-			frame = 0;
-			return false;
-		}
-
-		frame = 0;
+		//if( currInput.A && !prevInput.A )
+		//{
+		//	state = OFF;
+		//	frame = 0;
+		//	return false; //start a map!
+		//}
+		//frame = 0;
 		break;
 	}
 
 
 	switch( state )
 	{
-	case PLANET_AND_SPACE:
+	case SPACE:
 		{
 			if( frame == 0 )
 			{
 				//back.setTexture( *planetAndSpaceTex );
-				back.setTexture( *ts_planetAndSpace->texture );
-				back.setColor( Color( 255, 255, 255, 255 ) );
+			//	back.setTexture( *ts_planetAndSpace->texture );
+			//	back.setColor( Color( 255, 255, 255, 255 ) );
 			}
 			break;
 		}
-	case PLANET_TRANSITION:
+	case SPACE_TO_PLANET:
 		{
 			if( frame == 0 )
 			{
 				//front.setTexture( *planetTex );
-				front.setTexture( *ts_planet->texture );
-				front.setColor( Color( 255, 255, 255, 255 ) );
+				//front.setTexture( *ts_planet->texture );
+				//front.setColor( Color( 255, 255, 255, 255 ) );
 			}
 
 			float z = (float)frame / trans;
 			int c = floor( z * 255.0 + .5 );
 			int c0 = 255 - c;
 			//back.setColor( Color( 255, 255, 255, c0 ) );
-			front.setColor( Color( 255, 255, 255, c ) );
+			//front.setColor( Color( 255, 255, 255, c ) );
 			break;
 		}
 	case PLANET:
 		{
-		testSelector->Update(currInput, prevInput);
+		
 			//if( frame == 0 )
 			{
 				//back.setTexture( *planetTex );
-				back.setTexture( *ts_planet->texture );
-				back.setColor( Color( 255, 255, 255, 255 ) );
+				/*back.setTexture( *ts_planet->texture );
+				back.setColor( Color( 255, 255, 255, 255 ) );*/
 			}
 			break;
 		}
-	case SECTION_TRANSITION:
+	case PlANET_TO_COLONY:
 		{
 			if( frame == 0 )
-			{
-				//front.setTexture( *sectionTex[selectedColony] );
-				front.setTexture( *ts_section[selectedColony]->texture );
-				front.setColor( Color( 255, 255, 255, 255 ) );
-			}
-
-			float z = (float)frame / trans;
-			int c = floor( z * 255.0 + .5 );
-			int c0 = 255 - c;
-			//back.setColor( Color( 255, 255, 255, c0 ) );
-			front.setColor( Color( 255, 255, 255, c ) );
-			break;
-		}
-	case SECTION:
-		{
-			if( frame == 0 )
-			{
-				back.setTexture( *ts_section[selectedColony]->texture );
-				back.setColor( Color( 255, 255, 255, 255 ) );
-			}
-			break;
-		}
-	case COLONY_TRANSITION:
-		{
-			if( frame == 0 )
-			{
+			{/*
 				UpdateMapList();
 				front.setTexture( *ts_colony[selectedColony]->texture );
-				front.setColor( Color( 255, 255, 255, 255 ) );
+				front.setColor( Color( 255, 255, 255, 255 ) );*/
 			}
-
-			float z = (float)frame / trans;
-			int c = floor( z * 255.0 + .5 );
-			int c0 = 255 - c;
-			//back.setColor( Color( 255, 255, 255, c0 ) );
-			front.setColor( Color( 255, 255, 255, c ) );
 			break;
 		}
 	case COLONY:
 		{
-			if( frame == 0 )
-			{
-				back.setTexture( *ts_colony[selectedColony]->texture );
-				back.setColor( Color( 255, 255, 255, 255 ) );
-			}
+		//if (currInput.A && !prevInput.A)
+		//{
+		//	state = OFF;
+		//	frame = 0;
+		//	return false; //start a map!
+		//}
+		if (currInput.B && !prevInput.B)
+		{
+			state = COLONY_TO_PLANET;
+			frame = 0;
+		}
+		else
+		{
+			testSelector->Update(currInput, prevInput);
+		}
+			//if( frame == 0 )
+			//{
+			//	back.setTexture( *ts_colony[selectedColony]->texture );
+			//	back.setColor( Color( 255, 255, 255, 255 ) );
+			//}
 
-			//cout << "currInput.ldown: " << currInput.LDown() << ", prevldown: " << prevInput.LDown() << endl;
-			if( currInput.LDown() && !prevInput.LDown() )
-			{
-				++selectedLevel;
-				if( selectedLevel == numTotalEntries )
-					selectedLevel = 0;
-			}
-			else if( currInput.LUp() && !prevInput.LUp() )
-			{
-				--selectedLevel;
-				if( selectedLevel == -1 )
-				{
-					selectedLevel = numTotalEntries - 1;
-				}
-			}
+			////cout << "currInput.ldown: " << currInput.LDown() << ", prevldown: " << prevInput.LDown() << endl;
+			//if( currInput.LDown() && !prevInput.LDown() )
+			//{
+			//	++selectedLevel;
+			//	if( selectedLevel == numTotalEntries )
+			//		selectedLevel = 0;
+			//}
+			//else if( currInput.LUp() && !prevInput.LUp() )
+			//{
+			//	--selectedLevel;
+			//	if( selectedLevel == -1 )
+			//	{
+			//		selectedLevel = numTotalEntries - 1;
+			//	}
+			//}
 
-			selectedRect.setSize( Vector2f( 300, yspacing ) );
-			selectedRect.setFillColor( Color::Green );
-			selectedRect.setPosition( menuPos.x, 
-				menuPos.y + yspacing * selectedLevel );
+			//selectedRect.setSize( Vector2f( 300, yspacing ) );
+			//selectedRect.setFillColor( Color::Green );
+			//selectedRect.setPosition( menuPos.x, 
+			//	menuPos.y + yspacing * selectedLevel );
 
 			break;
 		}
-	}
-
-	if( state != COLONY )
+	case COLONY_TO_PLANET:
 	{
-		//cout << "a: " << (int)front.getColor().a << endl;
-		//cout << "frame: " << frame << ", state: " << (int)state << endl;
+		if (frame == trans)
+		{
+			state = PLANET;
+			frame = 0;
+			currScale = 1.f;
+			zoomView.setSize(Vector2f(1920, 1080) * currScale);
+			zoomView.setCenter(960, 540);
+		}
+		break;
+	}
 	}
 	++frame;
 
@@ -721,63 +676,43 @@ void WorldMap::Draw( RenderTarget *target )
 {
 	if( state == OFF )
 	{
-
 		return;
 	}
 
 	sf::RenderTexture *rt = MainMenu::extraScreenTexture;
 	rt->clear();
 	
-	//
-	if( state == PLANET_AND_SPACE || state == SECTION || state == COLONY )
-	{
-		//cout << "drawing" << endl;
-		rt->draw( back );
-	}
-	else
-	{
-		//cout << "drawing" << endl;
-		rt->draw( back );
-		rt->draw( front );
-	}
+	rt->setView(uiView);
+	rt->draw(spaceSpr);
 
-	if( state == COLONY )
+	rt->setView(zoomView);
+	rt->draw(planetSpr);
+
+	for (int i = 0; i < 1; ++i)
 	{
-		rt->draw( bgRect );
-		rt->draw( selectedRect );
-
-		for( int i = 0; i < numTotalEntries; ++i )
-		{
-			rt->draw( text[i] );
-		}
+		rt->draw(colonySpr[i]);
 	}
-
-	if( state == PLANET )
-	{
-		rt->setView(zoomView);
-		rt->draw(back);
-		rt->draw(zoomedMapSpr);
-		rt->draw( colonySelectSprite );
-		
-		rt->setView(uiView);
-		testSelector->Draw(rt);
-		rt->setView(zoomView);
-	}
-
 	rt->display();
 	const sf::Texture &tex = rt->getTexture();
 	extraPassSpr.setTexture(tex);
-
-	//extraPassSprite.setTexture(tex);
-
 	
 	zoomShader.setUniform("zoomTex", sf::Shader::CurrentTexture );
-	//extraPassSpr.setFillColor(Color::White);
 	extraPassSpr.setPosition(0, 0);
-	//extraPassSpr.setSize(Vector2f(1920, 1080));
-	//zoomView.setCenter(1920, 0);
-	//target->setView(zoomView);
-	target->draw(extraPassSpr, &zoomShader);
+
+	if (state == PlANET_TO_COLONY)
+	{
+		target->draw(extraPassSpr, &zoomShader);
+	}
+	else
+	{
+		target->draw(extraPassSpr);
+	}
+
+	if (state == COLONY)
+	{
+		testSelector->Draw(target);
+	}
+	
 }
 
 MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )

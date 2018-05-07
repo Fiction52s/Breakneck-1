@@ -824,7 +824,7 @@ void MainMenu::Init()
 	
 	ts_breakneckTitle = tilesetManager.GetTileset( "Title/kin_title_1920x416.png", 1920, 416 );
 	//ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
-	ts_backgroundTitle = tilesetManager.GetTileset("Title/menutitle02.png", 1920, 1080);
+	ts_backgroundTitle = tilesetManager.GetTileset("Title/titlescreen_1920x1080.png", 1920, 1080);
 
 	
 	backgroundTitleSprite.setTexture( *ts_backgroundTitle->texture );
@@ -1725,12 +1725,12 @@ void MainMenu::Run()
 
 					//worldMap->currInput = currInput;
 
-					if( menuCurrInput.B && !menuPrevInput.B )
-					{
-						menuMode = MAINMENU;
-						//quit = true;
-						break;
-					}
+					//if( menuCurrInput.B && !menuPrevInput.B )
+					//{
+					//	menuMode = MAINMENU;
+					//	//quit = true;
+					//	break;
+					//}
 
 
 
@@ -1788,52 +1788,52 @@ void MainMenu::Run()
 				
 
 					//cout << "worldmap" << endl;
-					if( worldMap->Update( menuPrevInput, menuCurrInput ) )
+					if( !worldMap->Update( menuPrevInput, menuCurrInput ) )
 					{
-						worldMapUpdate = true;
+						menuMode = MAINMENU;
 					}
-					else
-					{
+					//else
+					//{
 
-					
-						//stringstream ss; 
+					//
+					//	//stringstream ss; 
 
-						//size_t lastindex = file.find_last_of("."); 
-						//string rawname = fullname.substr(0, lastindex); 
-						//ss << "Maps/" << file;
-						//cout << "-----------------------------" << endl;
-						//cout << "file: " << file << endl;
-						GameSession *gs = new GameSession( NULL, this, worldMap->GetSelected() );
-						GameSession::sLoad(gs);
-						int result = gs->Run(  );
-						delete gs;
+					//	//size_t lastindex = file.find_last_of("."); 
+					//	//string rawname = fullname.substr(0, lastindex); 
+					//	//ss << "Maps/" << file;
+					//	//cout << "-----------------------------" << endl;
+					//	//cout << "file: " << file << endl;
+					//	GameSession *gs = new GameSession( NULL, this, worldMap->GetSelected() );
+					//	GameSession::sLoad(gs);
+					//	int result = gs->Run(  );
+					//	delete gs;
 
-						if( result == 0 || result == 1 )
-						{
-							v.setSize( 1920, 1080 );
-							v.setCenter( 1920/2, 1080/ 2);
-							window->setView( v );
-							worldMap->state = WorldMap::PLANET;
-							worldMap->frame = 0;
-							worldMap->UpdateMapList();
-							worldMap->testSelector->UpdateAllInfo();
-						}
-						else if( result == 2 )
-						{
-							v.setSize( 1920, 1080 );
-							v.setCenter( 1920/2, 1080/ 2);
-							window->setView( v );
-							menuMode = MainMenu::MAINMENU;
-						}
-						else if( result == 3 )
-						{
-							quit = true;
-							break;
-						}
+					//	if( result == 0 || result == 1 )
+					//	{
+					//		v.setSize( 1920, 1080 );
+					//		v.setCenter( 1920/2, 1080/ 2);
+					//		window->setView( v );
+					//		worldMap->state = WorldMap::PLANET;
+					//		worldMap->frame = 0;
+					//		worldMap->UpdateMapList();
+					//		worldMap->testSelector->UpdateAllInfo();
+					//	}
+					//	else if( result == 2 )
+					//	{
+					//		v.setSize( 1920, 1080 );
+					//		v.setCenter( 1920/2, 1080/ 2);
+					//		window->setView( v );
+					//		menuMode = MainMenu::MAINMENU;
+					//	}
+					//	else if( result == 3 )
+					//	{
+					//		quit = true;
+					//		break;
+					//	}
 
-					
-						continue;
-					}
+					//
+					//	continue;
+					//}
 				
 					break;
 				}
@@ -2243,34 +2243,12 @@ void MainMenu::Run()
 				{
 					preScreenTexture->draw( fadeRect );
 				}
-				
-				//testRing->Draw(preScreenTexture);
-
-
-				//for( int i = 0; i < 5; ++i )
-				//{
-				//	if( i == currentMenuSelect )
-				//	{
-				//		mainMenu[i].setColor( Color::White );
-				//	}
-				//	else
-				//	{
-				//		mainMenu[i].setColor( Color::Red );
-				//	}
-				//	//cout << "drawing i: " << i <<  endl;
-				//	preScreenTexture->draw( mainMenu[i] );
-				//}
 				break;
 			}
 		case WORLDMAP:
 			{
-				if( worldMapUpdate )
-				{
-					preScreenTexture->setView( v );
-					
-					worldMap->Draw( preScreenTexture );
-					//preScreenTexture->draw(splashSprite);
-				}
+				preScreenTexture->setView(v);
+				worldMap->Draw(preScreenTexture);
 			}
 			break;
 		case TRANS_SAVE_TO_WORLDMAP:
