@@ -21,15 +21,19 @@ struct Goal : Enemy
 	void HandleNoHealth();
 	void ProcessState();
 	void ConfirmKill();
+	int explosionLength;
 
 	CollisionBody *hurtBody;
-
+	int explosionAnimFactor;
+	int explosionYOffset;
+	int initialYOffset;
 	Action action;
 	sf::Sprite sprite;
 	sf::Sprite miniSprite;
 	Tileset *ts;
 	Tileset *ts_mini;
 	Tileset *ts_explosion;
+	Tileset *ts_explosion1;
 	float goalKillStartZoom;
 	sf::Vector2f goalKillStartPos;
 

@@ -25,12 +25,13 @@ struct Blocker : Enemy, QuadTreeEntrant
 	void UpdateSprite();
 	void ResetEnemy();
 	void ProcessHit();
+	void IHitPlayer(int index);
 
 	int actionLength[Count];
 	int animFactor[Count];
 
 	Action action;
-
+	HitboxInfo *hitboxInfo;
 
 	int animationFactor;
 
@@ -79,7 +80,7 @@ struct BlockerChain : Enemy
 	void ResetEnemy();
 
 	bool checkCol;
-	HitboxInfo *hitboxInfo;
+	
 
 	bool armored;
 	BlockerType bType;

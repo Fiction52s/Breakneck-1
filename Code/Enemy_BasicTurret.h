@@ -22,7 +22,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void BulletHitPlayer(BasicBullet *b);
 
 	CollisionBox prelimBox[3];
-	bool playerPrelimHit[4];
+	//bool playerPrelimHit[4];
 
 	void ResetEnemy();
 

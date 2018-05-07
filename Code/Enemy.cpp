@@ -1552,7 +1552,6 @@ void Enemy::UpdatePhysics( int substep )
 
 	if (CheckHitPlayer(0))
 	{
-		IHitPlayer(0);
 	}
 }
 
@@ -1580,6 +1579,7 @@ bool Enemy::CheckHitPlayer(int index)
 	{
 		if (player->IntersectMyHurtboxes(currHitboxes, currHitboxFrame))
 		{
+			IHitPlayer(index);
 			player->ApplyHit(currHitboxes->hitboxInfo);
 			return true;
 		}

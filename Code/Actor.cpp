@@ -2241,7 +2241,7 @@ void Actor::UpdatePrePhysics()
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
 		setHitstunFrames = hitstunFrames;
-		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
+		invincibleFrames = 20;//receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
 		
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( hitlagFrames );

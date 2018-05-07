@@ -14,11 +14,41 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 		:Enemy( owner, EnemyType::EN_GOAL, false, 0, false ), 
 	ground( g ), edgeQuantity( q ), dead( false )
 {	
-	double width = 288;
-	double height = 256;
-	ts = owner->GetTileset( "goal_w02_a_288x256.png", width, height );
-	ts_mini = owner->GetTileset( "minimap_icons_64x64.png", 64, 64 );
-	ts_explosion = owner->GetTileset( "goal_w02_b_288x320.png", 288, 320 );
+	double width;
+	double height;
+
+	int world = owner->mh->envType;
+	switch (world)
+	{
+	case 0:
+		width = 288;
+		height = 320;
+		ts = owner->GetTileset("Goal/goal_w01_a_288x320.png", width, height);
+		ts_mini = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
+		ts_explosion = owner->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
+		ts_explosion1 = owner->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
+		explosionLength = 18;
+		explosionAnimFactor = 3;
+		explosionYOffset = 80;
+		initialYOffset = 30;
+		break;
+	case 1:
+	default:
+		width = 288;
+		height = 256;
+		ts = owner->GetTileset("Goal/goal_w02_a_288x256.png", width, height);
+		ts_mini = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
+		
+		ts_explosion = owner->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
+		ts_explosion1 = NULL;
+		explosionLength = 15;
+		explosionAnimFactor = 2;
+		explosionYOffset = 0;
+		initialYOffset = 0;
+		break;
+	}
+
+
 	sprite.setTexture( *ts->texture );
 	
 	miniSprite.setTexture( *ts_mini->texture );
@@ -64,7 +94,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
 
@@ -119,6 +149,7 @@ void Goal::ResetEnemy()
 	//numHealth = 1;
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
 }
 
 void Goal::ProcessState()
@@ -170,7 +201,7 @@ void Goal::ProcessState()
 	}
 	else if (action == A_EXPLODING )
 	{
-		if (frame == 15 * 2)
+		if (frame == explosionLength * explosionAnimFactor)
 		{
 			action = A_DESTROYED;
 		}
@@ -221,20 +252,43 @@ void Goal::UpdateSprite()
 		}
 		sprite.setTexture( *ts->texture );
 		sprite.setTextureRect( ts->GetSubRect( trueFrame ) );
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
 	}
 	else if( action == A_EXPLODING )
 	{
-		trueFrame = frame / 2;
-		sprite.setTexture( *ts_explosion->texture );
-		sprite.setTextureRect( ts_explosion->GetSubRect( trueFrame ) );
+		trueFrame = frame / explosionAnimFactor;
+		int numTiles = ts_explosion->GetNumTiles();
+		if (trueFrame >= numTiles)
+		{
+			trueFrame -= numTiles;
+			sprite.setTexture(*ts_explosion1->texture);
+			sprite.setTextureRect(ts_explosion1->GetSubRect(trueFrame));
+		}
+		else
+		{
+			sprite.setTexture(*ts_explosion->texture);
+			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
+		}
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 	}
 	else if( action == A_DESTROYED )
 	{
-		trueFrame = 14;
-		sprite.setTexture( *ts_explosion->texture );
-		sprite.setTextureRect( ts_explosion->GetSubRect( trueFrame ) );
+		trueFrame = explosionLength-1;
+		int numTiles = ts_explosion->GetNumTiles();
+		if (trueFrame >= numTiles )
+		{
+			trueFrame -= numTiles;
+			sprite.setTexture(*ts_explosion1->texture);
+			sprite.setTextureRect(ts_explosion1->GetSubRect(trueFrame));
+		}
+		else
+		{
+			sprite.setTexture(*ts_explosion->texture);
+			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
+		}
+		
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 	}
 	
 	
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
 }

@@ -30,13 +30,7 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 
 	animationFactor = 2;
 
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
+	
 
 	ts = owner->GetTileset("blocker.png", 64, 64);
 
@@ -141,6 +135,52 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 
 		++ind;
 	}
+
+	V2d prevPos;
+	V2d nextPos;
+	V2d currPos;
+	V2d bisector;
+	V2d dir0;
+	V2d dir1;
+	if (numBlockers > 1)
+	{
+		for (int i = 0; i < numBlockers; ++i)
+		{
+			currPos = blockers[i]->position;
+			if (i > 0)
+			{
+				prevPos = blockers[i - 1]->position;
+			}
+			if (i < numBlockers - 1)
+			{
+				nextPos = blockers[i + 1]->position;
+			}
+
+			if (i > 0 && i < numBlockers - 1)
+			{
+				dir0 = normalize(currPos - prevPos);
+				dir0 = V2d(dir0.y, -dir0.x);
+				dir1 = normalize(nextPos - currPos);
+				dir1 = V2d(dir1.y, -dir1.x);
+				bisector = normalize( dir0 + dir1 );
+			}
+			else if (i == 0)
+			{
+				dir1 = normalize(nextPos - currPos);
+				dir1 = V2d(dir1.y, -dir1.x);
+				bisector = dir1;
+			}
+			else if (i == numBlockers - 1)
+			{
+				dir0 = normalize(currPos - prevPos);
+				dir0 = V2d(dir0.y, -dir0.x);
+				bisector = dir0;
+			}
+
+			blockers[i]->hitboxInfo->kbDir = bisector;
+		}
+	}
+	
 	
 	int minX = blockers[0]->spawnRect.left;
 	int maxX = blockers[0]->spawnRect.left + blockers[0]->spawnRect.width;
@@ -276,7 +316,15 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	hitBody = new CollisionBody(1);
 	hitBody->AddCollisionBox(0, hitBox);
 
-	hitBody->hitboxInfo = p_bc->hitboxInfo;
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 18;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 10;
+
+	hitBody->hitboxInfo = hitboxInfo;
 	
 	//SetHurtboxes(hurtBody, 0);
 
@@ -409,6 +457,15 @@ void Blocker::ResetEnemy()
 
 	UpdateSprite();
 	health = initHealth;
+}
+
+void Blocker::IHitPlayer(int index)
+{
+	V2d playerPos = owner->GetPlayer(index)->position;
+	if (dot(normalize(playerPos - position), hitboxInfo->kbDir) < 0)
+	{
+		hitboxInfo->kbDir = -hitboxInfo->kbDir;
+	}
 }
 
 bool Blocker::IsFastDying()
