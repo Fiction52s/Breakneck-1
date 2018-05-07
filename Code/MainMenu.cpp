@@ -777,14 +777,9 @@ MainMenu::MainMenu()
 		5, 300, 0) };
 
 	Tileset *ts_loadIcon = tilesetManager.GetTileset("Menu/loadicon_160x160.png", 160, 160);
-
-	for (int i = 0; i < 3; ++i)
-	{
-		loadingIconBackpack[i].setTexture(*ts_loadIcon->texture);
-		loadingIconBackpack[i].setTextureRect(ts_loadIcon->GetSubRect(i));
-		loadingIconBackpack[i].setOrigin(loadingIconBackpack[i].getLocalBounds().width / 2, loadingIconBackpack[i].getLocalBounds().height / 2);
-		loadingIconBackpack[i].setPosition(1920 - 200, 1080 - 200);
-	}
+	testLoadIcon.setTexture( *ts_loadIcon->texture );
+	testLoadIcon.setOrigin(testLoadIcon.getLocalBounds().width / 2, testLoadIcon.getLocalBounds().height / 2);
+	testLoadIcon.setPosition(1920 - 200, 1080 - 200);
 	//testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
 }
 
@@ -1910,8 +1905,7 @@ void MainMenu::Run()
 				}
 				else
 				{
-					loadingIconBackpack[1].rotate(-1);
-					loadingIconBackpack[2].rotate(2);
+					testLoadIcon.rotate(2);
 				}
 				//GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
 				//GameSession::sLoad(gs);
@@ -2275,8 +2269,7 @@ void MainMenu::Run()
 			}
 		case LOADINGMAP:
 		{
-			for( int i = 0; i < 3; ++i )
-				preScreenTexture->draw(loadingIconBackpack[i]);
+			preScreenTexture->draw(testLoadIcon);
 			break;
 		}
 		case TRANS_MAIN_TO_MAPSELECT:

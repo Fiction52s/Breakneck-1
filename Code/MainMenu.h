@@ -577,10 +577,7 @@ struct MainMenu
 	sf::View v;
 	sf::View uiView;
 
-	sf::Sprite loadingIconBackpack[2];
-	
-
-
+	sf::Sprite testLoadIcon;
 	//GameController controller;
 	//GameController controller2;
 	GameController *controllers[4];
