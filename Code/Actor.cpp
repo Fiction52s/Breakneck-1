@@ -16063,8 +16063,9 @@ void Actor::UpdatePostPhysics()
 		
 	speed = length( trueVel );
 
-	if (action != DEATH && action != EXIT && action != GOALKILL && action != GOALKILLWAIT && action != RIDESHIP && action != GRINDBALL
-		&& action != GRINDATTACK)
+	bool careAboutSpeedAction = action != DEATH && action != EXIT && action != GOALKILL && action != GOALKILLWAIT && action != RIDESHIP && action != GRINDBALL
+		&& action != GRINDATTACK;
+	if (careAboutSpeedAction)
 	{
 		if (speed > currentSpeedBar)
 		{
@@ -16126,7 +16127,7 @@ void Actor::UpdatePostPhysics()
 		motionGhostsEffects[i]->SetRootPos(Vector2f(spriteCenter.x, spriteCenter.y));
 	}
 
-	if( speedParticleCounter == speedParticleRate )
+	if( speedParticleCounter == speedParticleRate && careAboutSpeedAction)
 	{
 		if( speedLevel == 1 )
 		{
