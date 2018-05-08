@@ -64,6 +64,7 @@ struct ShardMenu
 	void Update( ControllerState &currInput );
 	void Draw(sf::RenderTarget *target);
 
+	Tileset *ts_shards;
 	ShardButtonState currButtonState;
 	bool LoadPNGSequences();
 	sf::Vertex *shardQuads;

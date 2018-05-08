@@ -31,14 +31,14 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	currButtonState = S_NEUTRAL;
 	imagePos = Vector2f(900, 100);
 
-	
+	ts_shards = mm->tilesetManager.GetTileset("Menu/shards_64x64.png", 64, 64);
 
 
 
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
-	int xSize = 16;
-	int ySize = 16;
+	int xSize = 11;
+	int ySize = 14;
 
 	shardNames = new string*[xSize];
 	for (int i = 0; i < xSize; ++i)
@@ -63,18 +63,20 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	shardSelectQuads = new sf::Vertex[xSize * ySize * 4];
 
 	int index = 0;
-	int rectSize = 20;
-	int spacing = 20;
+	int rectSize = 48;
+	int xSpacing = 20;
+	int ySpacing = 12;
 	Vector2f gridStart(100, 100);
 	for (int i = 0; i < xSelector->totalItems; ++i)
 	{
 		for (int j = 0; j < ySelector->totalItems; ++j)
 		{
 			index = (i * ySelector->totalItems + j) * 4;
-			SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(i * rectSize + spacing * i, j * rectSize + spacing * j) + gridStart);
+			SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(i * rectSize + xSpacing * i, j * rectSize + ySpacing * j) + gridStart);
+			SetRectSubRect(shardSelectQuads + index, ts_shards->GetSubRect(j * xSelector->totalItems + i));
 		}
 	}
-
+	
 	//SetCurrSequence();
 }
 
@@ -277,7 +279,7 @@ void ShardMenu::Draw(sf::RenderTarget *target)
 	if( testSeq != NULL )
 		testSeq->Draw(target);
 	target->draw(shardSelectQuads, xSelector->totalItems * ySelector->totalItems * 4,
-		sf::Quads);
+		sf::Quads, ts_shards->texture);
 	//target->draw(currentMovie);
 }
 

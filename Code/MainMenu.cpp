@@ -776,14 +776,14 @@ MainMenu::MainMenu()
 		sf::Color::Blue,
 		5, 300, 0) };
 
-	Tileset *ts_loadIcon = tilesetManager.GetTileset("Menu/loadicon_160x160.png", 160, 160);
+	Tileset *ts_loadIcon = tilesetManager.GetTileset("Menu/loadicon_320x320.png", 320, 320);
 
 	for (int i = 0; i < 3; ++i)
 	{
 		loadingIconBackpack[i].setTexture(*ts_loadIcon->texture);
 		loadingIconBackpack[i].setTextureRect(ts_loadIcon->GetSubRect(i));
 		loadingIconBackpack[i].setOrigin(loadingIconBackpack[i].getLocalBounds().width / 2, loadingIconBackpack[i].getLocalBounds().height / 2);
-		loadingIconBackpack[i].setPosition(1920 - 200, 1080 - 200);
+		loadingIconBackpack[i].setPosition(1920 - 260, 1080 - 260);
 	}
 
 	Tileset *ts_loadBG = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);
