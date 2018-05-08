@@ -679,7 +679,7 @@ MainMenu::MainMenu()
 	if (auraCheckTexture == NULL)
 	{
 		auraCheckTexture = new RenderTexture;
-		auraCheckTexture->create(128, 128);
+		auraCheckTexture->create(512, 512);
 		auraCheckTexture->clear();
 	}
 
@@ -785,6 +785,9 @@ MainMenu::MainMenu()
 		loadingIconBackpack[i].setOrigin(loadingIconBackpack[i].getLocalBounds().width / 2, loadingIconBackpack[i].getLocalBounds().height / 2);
 		loadingIconBackpack[i].setPosition(1920 - 200, 1080 - 200);
 	}
+
+	Tileset *ts_loadBG = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);
+	loadingBGSpr.setTexture(*ts_loadBG->texture);
 	//testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
 }
 
@@ -2275,8 +2278,11 @@ void MainMenu::Run()
 			}
 		case LOADINGMAP:
 		{
+			preScreenTexture->draw(loadingBGSpr);
+
 			for( int i = 0; i < 3; ++i )
 				preScreenTexture->draw(loadingIconBackpack[i]);
+
 			break;
 		}
 		case TRANS_MAIN_TO_MAPSELECT:

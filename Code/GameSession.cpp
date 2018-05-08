@@ -5930,7 +5930,7 @@ int GameSession::Run()
 
 	debugScreenRecorder = NULL;
 
-	debugScreenRecorder = new ScreenRecorder("SHARD_W1_TEACH_JUMP");
+	//debugScreenRecorder = new ScreenRecorder("SHARD_W1_TEACH_JUMP");
 	
 	//#define SYNCEDDRAWWITHPHYSICS
 

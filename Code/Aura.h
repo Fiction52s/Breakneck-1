@@ -62,6 +62,7 @@ struct Aura
 		ParticleSet *prev;
 		void Activate();
 		void Update();
+		void Clear();
 		int frame;
 		int maxFramesToLive;
 		Aura *aura;
@@ -96,7 +97,8 @@ struct Aura
 
 	void DeactivateParticles(ParticleSet *ps);
 	void AddToInactive(ParticleSet *ps);
-
+	int InactiveCount();
+	int ActiveCount();
 	Tileset *ts;
 
 	ParticleSet *inactiveSets;

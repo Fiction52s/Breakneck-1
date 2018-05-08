@@ -208,6 +208,10 @@ struct Actor : QuadTreeCollider,
 		INTRO,
 		EXIT,
 		GOALKILL,
+		GOALKILL1,
+		GOALKILL2,
+		GOALKILL3,
+		GOALKILL4,
 		GOALKILLWAIT,
 		SPAWNWAIT,
 		DEATH,
@@ -381,8 +385,6 @@ struct Actor : QuadTreeCollider,
 	Expr expr;
 	sf::Vector2<double> movingPlatExtra;
 	bool testr;
-
-	Tileset **ts_goalKillArray;
 	
 	bool toggleBounceInput;
 	bool toggleTimeSlowInput;

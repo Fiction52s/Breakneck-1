@@ -206,12 +206,11 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_fx_death_1e = owner->GetTileset("death_fx_1e_160x160.png", 160, 160);
 	ts_fx_death_1f = owner->GetTileset("death_fx_1f_160x160.png", 160, 160);
 
-	ts_goalKillArray = new Tileset*[5];
-	ts_goalKillArray[0] = owner->GetTileset("goal_w02_killa_384x256.png", 384, 256);
-	ts_goalKillArray[1] = owner->GetTileset("goal_w02_killb_384x256.png", 384, 256);
-	ts_goalKillArray[2] = owner->GetTileset("goal_w02_killc_384x256.png", 384, 256);
-	ts_goalKillArray[3] = owner->GetTileset("goal_w02_killd_384x256.png", 384, 256);
-	ts_goalKillArray[4] = owner->GetTileset("goal_w02_kille_384x256.png", 384, 256);
+	tileset[GOALKILL] = owner->GetTileset("goal_w01_killa_384x256.png", 384, 256);
+	tileset[GOALKILL1] = owner->GetTileset("goal_w01_killb_384x256.png", 384, 256);
+	tileset[GOALKILL2] = owner->GetTileset("goal_w01_killc_384x256.png", 384, 256);
+	tileset[GOALKILL3] = owner->GetTileset("goal_w01_killd_384x256.png", 384, 256);
+	tileset[GOALKILL4] = owner->GetTileset("goal_w01_kille_384x256.png", 384, 256);
 }
 
 Actor::Actor( GameSession *gs, int p_actorIndex )
@@ -1232,10 +1231,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		//ts_fx_airdash = owner->GetTileset( "fx_airdash.png", 32, 32 );
 		
-		testAura = new Aura(this, 2, 64 * 64, 0);
-		testAura1 = new Aura(this, 2, 64 * 64, 1);
-		testAura2 = new Aura(this, 2, 64 * 64, 2);
-		testAura3 = new Aura(this, 2, 64 * 64, 3);
+		int maxAura = 128 * 128;//64 * 64;//1000 * 1000;//300 * 300;//64 * 64;
+		testAura = new Aura(this, 1, maxAura, 0);
+		testAura1 = new Aura(this, 1, maxAura, 1);
+		testAura2 = new Aura(this, 1, maxAura, 2);
+		testAura3 = new Aura(this, 1, maxAura, 3);
 
 		//int runLen = actionLength[RUN];
 		//runPoints = new std::list<Vector2f>[runLen];
@@ -16063,37 +16063,38 @@ void Actor::UpdatePostPhysics()
 		
 	speed = length( trueVel );
 
-	if( action != DEATH && action != EXIT && action != GOALKILL
-		&& action != GOALKILLWAIT && action != RIDESHIP && action != GRINDBALL
-		&& action != GRINDATTACK )
+	if (action != DEATH && action != EXIT && action != GOALKILL && action != GOALKILLWAIT && action != RIDESHIP && action != GRINDBALL
+		&& action != GRINDATTACK)
 	{
-	if( speed > currentSpeedBar )
-	{
-		currentSpeedBar += speedChangeUp;
-		if( currentSpeedBar > speed )
-			currentSpeedBar = speed;//currentSpeedBar * (1.0 -fUp) + speed * fUp;
-	}
-	else if( speed < currentSpeedBar )
-	{
-		currentSpeedBar -= speedChangeDown;
-		if( currentSpeedBar < speed )
+		if (speed > currentSpeedBar)
 		{
-			currentSpeedBar = speed;
+			currentSpeedBar += speedChangeUp;
+			if (currentSpeedBar > speed)
+				currentSpeedBar = speed;//currentSpeedBar * (1.0 -fUp) + speed * fUp;
 		}
-		//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
-	}
+		else if (speed < currentSpeedBar)
+		{
+			currentSpeedBar -= speedChangeDown;
+			if (currentSpeedBar < speed)
+			{
+				currentSpeedBar = speed;
+			}
+			//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
+		}
 
-	if( currentSpeedBar >= level2SpeedThresh )
-	{
-		speedLevel = 2;
-	}
-	else if( currentSpeedBar >= level1SpeedThresh )
-	{
-		speedLevel = 1;
-	}
-	else
-	{
-		speedLevel = 0;
+		if (currentSpeedBar >= level2SpeedThresh)
+		{
+			speedLevel = 2;
+		}
+		else if (currentSpeedBar >= level1SpeedThresh)
+		{
+			speedLevel = 1;
+		}
+		else
+		{
+			speedLevel = 0;
+		}
+
 	}
 
 	V2d motionGhostDir;
@@ -16203,7 +16204,7 @@ void Actor::UpdatePostPhysics()
 
 		speedParticleCounter = 0;
 	}
-	}
+	
 	
 
 	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
@@ -21265,19 +21266,34 @@ void Actor::UpdateSprite()
 		}
 	case GOALKILL:
 		{
-			
-			//radius is 24. 100 pixel offset
 			int tsIndex = (frame / 2) / 16;
+			switch (tsIndex)
+			{
+			case 0:
+				SetSpriteTexture(GOALKILL);
+				break;
+			case 1:
+				SetSpriteTexture(GOALKILL1);
+				break;
+			case 2:
+				SetSpriteTexture(GOALKILL2);
+				break;
+			case 3:
+				SetSpriteTexture(GOALKILL3);
+				break;
+			case 4:
+				SetSpriteTexture(GOALKILL4);
+				break;
+			default:
+				assert(0);
+				break;
+			}
+			//radius is 24. 100 pixel offset
+
 			int realFrame = (frame / 2 ) % 16;
 			cout << "goalkill index: " << tsIndex << ", realFrame: " << realFrame << endl;
-			Tileset *tsT = ts_goalKillArray[tsIndex];
-
-			//SetSpriteTexture( action );
-
-			//SetSpriteTile( bounceFrame, facingRight );
-
-			sprite->setTexture( *(tsT->texture));
-			sprite->setTextureRect( tsT->GetSubRect( realFrame ) );
+			
+			SetSpriteTile(realFrame, facingRight);
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
 				sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );//- 24.f );
@@ -21286,9 +21302,8 @@ void Actor::UpdateSprite()
 		}
 	case GOALKILLWAIT:
 		{
-			Tileset *tsT = ts_goalKillArray[4];
-			sprite->setTexture( *(tsT->texture));
-			sprite->setTextureRect( tsT->GetSubRect( 7 ) );
+			SetSpriteTexture(GOALKILL4);
+			SetSpriteTile(7, facingRight);
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
 				sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );
@@ -21572,12 +21587,17 @@ void Actor::UpdateSprite()
 	//sf::FloatRect gb = sprite->getGlobalBounds();
 	//sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 
-
+	
 	np.centerPos = sprite->getPosition() + diff;//sprite->getPosition() + center;//Vector2f(gn.x, gn.y) * (sprite->getLocalBounds().height / 2);
 	//sprite->setOrigin(oldOrigin);
 	
 	if (auraPoints[0][spriteAction] != NULL)
 	{
+		if (action == GOALKILLWAIT)
+		{
+			cout << "activate " << owner->totalGameFrames << endl;
+			int x = 5;
+		}
 		testAura->ActivateParticles(auraPoints[0][spriteAction][currTileIndex], tr, Vector2f( spriteCenter ), &np, 0);
 		//testAura1->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr1, Vector2f( spriteCenter ) + extraParticle0, &np);
 		//testAura2->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin() + extraParticle2, &np);
@@ -22845,6 +22865,9 @@ void Actor::SetActionExpr( Action a )
 		break;
 	case GOALKILL:
 		SetExpr( Expr_NEUTRAL );
+		velocity = V2d(0, 0);
+		groundSpeed = 0;
+		grindSpeed = 0;
 		break;
 	case AIRDASH:
 		{
@@ -23185,6 +23208,10 @@ int Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 	outPointList = new list<Vector2f>[numTiles];
 
 	//Image im = ts->texture->copyToImage();
+	if (ts->sourceName == tileset[GOALKILL]->sourceName)
+	{
+		int bbb = 5;
+	}
 	for (int i = 0; i < numTiles; ++i)
 	{
 		Aura::CreateParticlePointList( owner->mainMenu->auraCheckTexture, ts, i + startTile, outPointList[i], layer);

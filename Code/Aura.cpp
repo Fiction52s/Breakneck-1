@@ -28,7 +28,8 @@ Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet, int type )
 	}
 	activeSets = NULL;
 
-	
+	cout << "on init: inactive: " << InactiveCount() << ", active: " << ActiveCount() << endl;
+
 	for (int i = 0; i < totalParticles * 4; ++i)
 	{
 		switch (testType)
@@ -75,7 +76,8 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 	while (tps != NULL)
 	{
 		tnext = tps->next;
-		if (tps->actuallyDone)
+		//if (tps->actuallyDone) //THIS PREVENTS MULTIFRAME AURA. FIX LATER. 
+		//RIGHT NOW IT CUASES FLICKERING AND WHO CARES
 		{
 			DeactivateParticles(tps);
 		}
@@ -85,11 +87,12 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 	ParticleSet *ps = NULL;
 	if (inactiveSets == NULL)
 	{
-		cout << "failed to activate particle set" << endl;
+		cout << "failed to activate particle set: " << InactiveCount() << ", active: " << ActiveCount() << endl;
 		return;
 	}
 	else
 	{
+		cout << "success: " << InactiveCount() << ", active: " << ActiveCount() << endl;
 		ps = inactiveSets;
 		if (inactiveSets->next != NULL)
 		{
@@ -187,6 +190,14 @@ void Aura::ParticleSet::Activate()
 	
 }
 
+void Aura::ParticleSet::Clear()
+{
+	for (int i = 0; i < numParticlesFromSprite; ++i)
+	{
+		particles[i]->Clear();
+	}
+}
+
 Aura::ParticleSet::ParticleSet(Aura *p_aura, int p_index)
 	:index( p_index ), next( NULL ), prev( NULL ), frame( 0 ), aura( p_aura )
 {
@@ -198,6 +209,30 @@ Aura::ParticleSet::ParticleSet(Aura *p_aura, int p_index)
 	{
 		particles[i] = new Particle( this, (aura->va + (index * maxParticles * 4) + (i*4)), maxFramesToLive, aura->ts->GetSubRect( 0 ) );
 	}
+}
+
+int Aura::InactiveCount()
+{
+	int count = 0;
+	ParticleSet *curr = inactiveSets;
+	while (curr != NULL)
+	{
+		++count;
+		curr = curr->next;
+	}
+	return count;
+}
+
+int Aura::ActiveCount()
+{
+	int count = 0;
+	ParticleSet *curr = activeSets;
+	while (curr != NULL)
+	{
+		++count;
+		curr = curr->next;
+	}
+	return count;
 }
 
 void Aura::ParticleSet::Update()
@@ -262,6 +297,7 @@ void Aura::DeactivateParticles(ParticleSet *ps)
 	{
 		activeSets = NULL;
 	}
+	ps->Clear();
 	AddToInactive(ps);
 }
 
