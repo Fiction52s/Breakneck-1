@@ -54,6 +54,14 @@ struct BitField
 
 struct Level
 {
+	
+	enum BitOption : int
+	{
+		COMPLETE,
+		UNLOCKEDTOPBONUS,
+		UNLOCKEDBOTTOMBONUS,
+	};
+
 	Level();
 	Sector *sec;
 	BitField optionField;
@@ -63,6 +71,12 @@ struct Level
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
 	void Reset();
+	void UnlockTopBonus();
+	void UnlockBottomBonus();
+	bool HasTopBonus();
+	bool TopBonusUnlocked();
+	bool HasBottomBonus();
+	bool BottomBonusUnlocked();
 	int index;
 	std::string GetFullName();
 };
@@ -75,8 +89,15 @@ struct Sector
 	Level *levels;
 	int index;
 	World *world;
+	int numUnlockConditions;
+	int *conditions;
+	int sectorType;
+	int *numTypesNeeded;
 	void Save(std::ofstream &of);
 	bool Load(std::ifstream &is);
+	bool IsComplete();
+	std::map<int,Level> topBonuses;
+	std::map<int, Level> bottomBonuses;
 };
 
 struct World

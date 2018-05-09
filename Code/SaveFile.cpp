@@ -190,10 +190,44 @@ Sector::Sector()
 {
 	numLevels = 0;
 	levels = NULL;
+	conditions = NULL;
+	numTypesNeeded = NULL;
+}
+
+bool Sector::IsComplete()
+{
+	for (int i = 0; i < numLevels; ++i)
+	{
+		if (!levels[i].GetComplete())
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 bool Sector::Load(std::ifstream &is)
 {
+	is >> sectorType;
+	is >> numUnlockConditions;
+	if (numUnlockConditions > 0)
+	{
+		conditions= new int[numUnlockConditions];
+		numTypesNeeded = new int[numUnlockConditions];
+
+		int conditionType = -1;
+		int numOfTypeNeeded = -1;
+		for (int i = 0; i < numUnlockConditions; ++i)
+		{
+			is >> conditionType;
+			is >> numOfTypeNeeded;
+
+			conditions[i] = conditionType;
+			numTypesNeeded[i] = numOfTypeNeeded;
+		}
+
+	}
+
 	is >> numLevels;
 	levels = new Level[numLevels];
 
@@ -203,11 +237,40 @@ bool Sector::Load(std::ifstream &is)
 		levels[i].sec = this;
 		levels[i].index = i;
 		res = levels[i].Load(is);
-		assert(res);
-	}
 
-	//levels[4].completed = true;
-	//levels[2].completed = true;
+		assert(res);
+
+		int numTopBonuses = 0;
+		int numBottomBonuses = 0;
+		is >> numTopBonuses;
+		for (int j = 0; j < numTopBonuses; ++j) //0 - 2
+		{
+			int bonusIndex;
+			is >> bonusIndex;
+
+			Level &lev = topBonuses[bonusIndex];
+			lev.sec = this;
+			lev.index = bonusIndex;
+			res = lev.Load(is);
+
+			assert(res);
+		}
+
+		is >> numBottomBonuses;
+		for (int j = 0; j < numBottomBonuses; ++j) //0 - 2
+		{
+			int bonusIndex;
+			is >> bonusIndex;
+
+			Level &lev = bottomBonuses[bonusIndex];
+			lev.sec = this;
+			lev.index = bonusIndex;
+			res = lev.Load(is);
+
+			assert(res);
+		}
+		
+	}
 	
 	return true;
 }
@@ -222,11 +285,40 @@ Sector::~Sector()
 
 void Sector::Save(std::ofstream &of)
 {
+	of << sectorType;
+	of << numUnlockConditions;
+	if (numUnlockConditions > 0)
+	{
+		for (int i = 0; i < numUnlockConditions; ++i)
+		{
+			of << conditions[i];
+			of << numTypesNeeded[i];
+		}
+
+	}
+
 	of << numLevels << endl;
 	for (int i = 0; i < numLevels; ++i)
 	{
 		levels[i].Save(of);
 	}
+
+	int numTopBonuses = topBonuses.size();
+	int numBottomBonuses = bottomBonuses.size();
+	of << numTopBonuses << endl;	
+	for (auto it = topBonuses.begin(); it != topBonuses.end(); ++it)
+	{
+		of << (*it).first << endl;
+		(*it).second.Save(of);
+	}
+
+	of << numBottomBonuses << endl;
+	for (auto it = bottomBonuses.begin(); it != bottomBonuses.end(); ++it)
+	{
+		of << (*it).first << endl;
+		(*it).second.Save(of);
+	}
+	
 }
 
 Level::Level( )
@@ -234,6 +326,34 @@ Level::Level( )
 {
 	SetComplete(false);
 	optionField.Reset();
+}
+
+bool Level::HasTopBonus()
+{
+	return (sec->topBonuses.count(index) > 0);
+}
+
+bool Level::TopBonusUnlocked()
+{
+	return optionField.GetBit(UNLOCKEDTOPBONUS);
+}
+bool Level::HasBottomBonus()
+{
+	return (sec->bottomBonuses.count(index) > 0);
+}
+bool Level::BottomBonusUnlocked()
+{
+	return optionField.GetBit(UNLOCKEDBOTTOMBONUS);
+}
+
+void Level::UnlockBottomBonus()
+{
+	optionField.SetBit(UNLOCKEDBOTTOMBONUS, true);
+}
+
+void Level::UnlockTopBonus()
+{
+	optionField.SetBit(UNLOCKEDTOPBONUS, true);
 }
 
 void Level::Reset()
@@ -246,9 +366,6 @@ bool Level::Load(std::ifstream &is)
 {
 	is >> name;
 	optionField.Load(is);
-	//SetComplete(true);
-	//optionField = 0;
-	//name = "testgates33";
 	return true;
 }
 
@@ -260,7 +377,7 @@ void Level::Save(std::ofstream &of)
 
 void Level::SetComplete(bool comp)
 {
-	optionField.SetBit(0, comp );
+	optionField.SetBit(COMPLETE, comp );
 }
 
 bool Level::GetComplete()

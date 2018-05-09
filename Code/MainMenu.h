@@ -579,8 +579,6 @@ struct MainMenu
 
 	sf::Sprite loadingIconBackpack[3];
 	sf::Sprite loadingBGSpr;
-
-
 	//GameController controller;
 	//GameController controller2;
 	GameController *controllers[4];

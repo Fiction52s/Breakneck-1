@@ -783,7 +783,7 @@ MainMenu::MainMenu()
 		loadingIconBackpack[i].setTexture(*ts_loadIcon->texture);
 		loadingIconBackpack[i].setTextureRect(ts_loadIcon->GetSubRect(i));
 		loadingIconBackpack[i].setOrigin(loadingIconBackpack[i].getLocalBounds().width / 2, loadingIconBackpack[i].getLocalBounds().height / 2);
-		loadingIconBackpack[i].setPosition(1920 - 260, 1080 - 260);
+		loadingIconBackpack[i].setPosition(1920 - 260, 1080 - 200);
 	}
 
 	Tileset *ts_loadBG = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);

@@ -101,7 +101,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[DEATH] = owner->GetTileset("Kin/death_128x96.png", 128, 96, skin);
 	tileset[JUMPSQUAT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
 	tileset[INTRO] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
-	tileset[EXIT] = owner->GetTileset("Kin/exit_0_128x160.png", 128, 160, skin);
+	tileset[EXIT] = owner->GetTileset("Kin/exit_64x128.png", 64, 128, skin);
+	tileset[EXITWAIT] = NULL;
 	tileset[GRAVREVERSE] = owner->GetTileset("Kin/grav_64x64.png", 64, 64, skin);
 	tileset[RIDESHIP] = owner->GetTileset("Kin/dive_80x80.png", 80, 80, skin);
 	tileset[SKYDIVE] = owner->GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
@@ -236,7 +237,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			motionGhostsEffects[i] = new MotionGhostEffect(80);
 		}
 		
-
+		//preload them
+		owner->GetTileset("Kin/exitenergy_0_512x512.png", 512, 512);
+		owner->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512);
+		owner->GetTileset("Kin/exitenergy_1_512x512.png", 512, 512);
+		
+			
 		currLockedFairFX = NULL;
 		currLockedDairFX = NULL;
 		currLockedUairFX = NULL;
@@ -954,7 +960,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[GETPOWER_AIRDASH_MEDITATE] = 120;
 		actionLength[RIDESHIP] = 1;
 		actionLength[SKYDIVE] = 9 * 2;
-		actionLength[EXIT] = 27 * 2;
+		actionLength[EXIT] = 29 * 2;
+		actionLength[EXITWAIT] = 6 * 3 * 2;
 		actionLength[GRAVREVERSE] = 20;
 		actionLength[JUMPSQUAT] = 3;
 		actionLength[INTRO] = 10 * 4;
@@ -1519,6 +1526,9 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case EXIT:
+			SetAction(EXITWAIT);
+			frame = 0;
+			//owner->ActivateEffect( EffectLayer::IN_FRONT, owner->GetTileset( ))
 			//owner->goalDestroyed = true;
 			
 			//frame = 0;
@@ -2192,7 +2202,7 @@ void Actor::UpdatePrePhysics()
 
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT 
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
-		|| action == GRABSHIP )
+		|| action == GRABSHIP || action == EXITWAIT )
 	{
 		if( action == INTRO && frame == 0 )
 		{
@@ -2201,6 +2211,21 @@ void Actor::UpdatePrePhysics()
 		else if( action == EXIT && frame == 30 )
 		{
 			owner->soundNodeList->ActivateSound( soundBuffers[S_EXIT] );
+		}
+		else if (action == EXITWAIT)
+		{
+			if (frame == 0)
+			{
+				owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/exitenergy_0_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+			}
+			else if (frame == 6 * 2)
+			{
+				owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/exitenergy_1_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+			}
+			else if (frame == 6 * 4)
+			{
+				owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+			}	
 		}
 		return;
 	}
@@ -2216,6 +2241,7 @@ void Actor::UpdatePrePhysics()
 		if( !owner->scoreDisplay->active )
 		{
 			SetAction(EXIT);
+			position = V2d(owner->goalNodePos.x, owner->goalNodePos.y -80.f);
 			frame = 0;
 		}
 		return;
@@ -11587,7 +11613,7 @@ void Actor::UpdatePhysics()
 {
 	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT || action == GOALKILLWAIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
-		|| action == GRABSHIP )
+		|| action == GRABSHIP || action == EXITWAIT)
 		return;
 
 	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
@@ -15894,7 +15920,7 @@ void Actor::UpdatePostPhysics()
 		}
 	}*/
 
-	if( hitGoal && action != GOALKILL && action != EXIT && action != GOALKILLWAIT )
+	if( hitGoal && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
 		SetActionExpr( GOALKILL );
 
@@ -16625,7 +16651,7 @@ void Actor::UpdatePostPhysics()
 		velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
 	}
 
-	if( action == EXIT && frame == actionLength[EXIT] )
+	if( action == EXITWAIT && frame == actionLength[EXITWAIT] )
 		owner->goalDestroyed = true;
 	/*switch( expr )
 	{
@@ -18332,7 +18358,10 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 void Actor::Draw( sf::RenderTarget *target )
 {
 	
-
+	if (action == EXITWAIT)
+	{
+		return;
+	}
 	//risingAuraPool->Draw(target);
 	
 	/*double c = cos( -currInput.leftStickRadians);
@@ -21260,8 +21289,8 @@ void Actor::UpdateSprite()
 			SetSpriteTile( frame / 2, facingRight );
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
-				sprite->getLocalBounds().height );
-			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );//position.x, position.y );
+				sprite->getLocalBounds().height / 2 );
+			sprite->setPosition( position.x, position.y );//position.x, position.y );
 			sprite->setRotation( 0 );
 			break;
 		}

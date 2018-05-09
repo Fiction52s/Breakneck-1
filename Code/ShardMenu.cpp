@@ -31,7 +31,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	currButtonState = S_NEUTRAL;
 	imagePos = Vector2f(900, 100);
 
-	ts_shards = mm->tilesetManager.GetTileset("Menu/shards_64x64.png", 64, 64);
+	ts_shards = mm->tilesetManager.GetTileset("Menu/shards_48x48.png", 48, 48);
 
 
 
