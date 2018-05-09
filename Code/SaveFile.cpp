@@ -194,6 +194,15 @@ Sector::Sector()
 	numTypesNeeded = NULL;
 }
 
+bool Sector::HasTopBonus(int index)
+{
+	return (topBonuses.count(index) > 0);
+}
+bool Sector::hasBottomBonus(int index)
+{
+	return (bottomBonuses.count(index) > 0);
+}
+
 bool Sector::IsComplete()
 {
 	for (int i = 0; i < numLevels; ++i)
@@ -285,14 +294,14 @@ Sector::~Sector()
 
 void Sector::Save(std::ofstream &of)
 {
-	of << sectorType;
-	of << numUnlockConditions;
+	of << sectorType << endl;
+	of << numUnlockConditions << endl;
 	if (numUnlockConditions > 0)
 	{
 		for (int i = 0; i < numUnlockConditions; ++i)
 		{
-			of << conditions[i];
-			of << numTypesNeeded[i];
+			of << conditions[i] << endl;
+			of << numTypesNeeded[i] << endl;
 		}
 
 	}
@@ -328,19 +337,11 @@ Level::Level( )
 	optionField.Reset();
 }
 
-bool Level::HasTopBonus()
-{
-	return (sec->topBonuses.count(index) > 0);
-}
-
 bool Level::TopBonusUnlocked()
 {
 	return optionField.GetBit(UNLOCKEDTOPBONUS);
 }
-bool Level::HasBottomBonus()
-{
-	return (sec->bottomBonuses.count(index) > 0);
-}
+
 bool Level::BottomBonusUnlocked()
 {
 	return optionField.GetBit(UNLOCKEDBOTTOMBONUS);

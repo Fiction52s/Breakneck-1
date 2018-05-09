@@ -7924,7 +7924,7 @@ facingRight = false;
 	rightWireBoost = false;
 	leftWireBoost = false;
 
-	if( framesInAir > 1 )
+	if( framesInAir > 1  )
 	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
 	{	
 		bool canDoubleWireBoostParticle = false;
@@ -8164,6 +8164,7 @@ facingRight = false;
 	}
 	else if( rightWire->state == Wire::PULLING )
 	{
+
 		//lastWire = 1;
 		V2d wPos = rightWire->storedPlayerPos;
 		if( position != rightWire->storedPlayerPos )
@@ -15159,8 +15160,8 @@ void Actor::PhysicsResponse()
 				//}
 				if( length( wallNormal ) > 0 
 					&& (currWall == NULL || currWall->edgeType != Edge::BORDER) 
-					&& oldVelocity.y >= 0/* && rightWire->state != Wire::PULLING
-					&& leftWire->state != Wire::PULLING*/ )
+					&& oldVelocity.y >= 0 && rightWire->state != Wire::PULLING
+					&& leftWire->state != Wire::PULLING )
 				{
 					if( wallNormal.x > 0)
 					{

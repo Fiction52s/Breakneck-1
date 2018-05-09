@@ -73,9 +73,7 @@ struct Level
 	void Reset();
 	void UnlockTopBonus();
 	void UnlockBottomBonus();
-	bool HasTopBonus();
 	bool TopBonusUnlocked();
-	bool HasBottomBonus();
 	bool BottomBonusUnlocked();
 	int index;
 	std::string GetFullName();
@@ -85,6 +83,8 @@ struct Sector
 {
 	Sector();
 	~Sector();
+	bool HasTopBonus(int index);
+	bool hasBottomBonus(int index);
 	int numLevels;
 	Level *levels;
 	int index;

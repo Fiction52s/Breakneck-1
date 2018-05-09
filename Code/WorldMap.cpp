@@ -991,11 +991,11 @@ void MapSector::Update(ControllerState &curr,
 
 bool MapSector::HasTopBonus(int node)
 {
-	return true;
+	return sec->HasTopBonus(node);
 }
 bool MapSector::HasBotBonus(int node)
 {
-	return true;
+	return sec->HasTopBonus(node);
 }
 
 void MapSector::UpdateNodes()

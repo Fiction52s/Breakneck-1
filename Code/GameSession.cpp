@@ -5755,18 +5755,29 @@ bool GameSession::Load()
 	pss << "Parallax/w" << (mh->envType + 1) << "_0" << (mh->envLevel + 1);
 	string pStr = pss.str();
 	string eStr = ".png";
+	string cloudStr = "_cloud_";
+	
+	Tileset *cloud1 = GetTileset(pStr + cloudStr + string("1") + eStr, 1920, 1080);
+	Tileset *cloud2 = GetTileset(pStr + cloudStr + string("2") + eStr, 1920, 1080);
+
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
 		GetTileset( pStr + string( "c" ) + eStr, 1920, 1080 ), 0, 3 ) );
-	scrollingBackgrounds.push_back(
-		new ScrollingBackground(
-		GetTileset("Parallax/w1_02_cloud_1.png", 1920, 1080), 0, 4, 10));
+	if (cloud1 != NULL)
+	{
+		scrollingBackgrounds.push_back(
+			new ScrollingBackground(cloud1, 0, 4, 10));
+	}
+	
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
 		GetTileset(pStr + string("b") + eStr, 1920, 1080 ), 0, 5 ) );
-	scrollingBackgrounds.push_back(
-		new ScrollingBackground(
-			GetTileset("Parallax/w1_02_cloud_2.png", 1920, 1080), 0, 8, 10));
+	if (cloud2 != NULL)
+	{
+		scrollingBackgrounds.push_back(
+			new ScrollingBackground(cloud2, 0, 8, 10));
+	}
+	
 	scrollingBackgrounds.push_back( 
 		new ScrollingBackground( 
 		GetTileset(pStr + string("a") + eStr, 1920, 1080 ), 0, 10 ) );

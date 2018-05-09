@@ -140,7 +140,8 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 
 	if (!boost::filesystem::exists(s))
 	{
-		cout << "NO FILE EXISTS: " << s << endl;
+		//take this out later. its not always an error to get this
+		cout << "NO FILE EXISTS: " << s << endl; 
 		return NULL;
 	}
 
