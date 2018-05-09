@@ -306,6 +306,22 @@ Sector::~Sector()
 	}
 }
 
+
+bool Sector::IsUnlocked()
+{
+	int numTypeComplete = -1;
+	for (int i = 0; i < numUnlockConditions; ++i)
+	{
+		numTypeComplete = world->GetNumSectorTypeComplete(conditions[i]);
+		if (numTypeComplete < numTypesNeeded[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void Sector::Save(std::ofstream &of)
 {
 	of << sectorType << endl;
@@ -419,6 +435,23 @@ bool World::Load(std::ifstream &is)
 		sectors[i].Load(is);
 	}
 	return true;
+}
+
+int World::GetNumSectorTypeComplete(int sType)
+{
+	int count = 0;
+	for (int i = 0; i < numSectors; ++i)
+	{
+		if (sectors[i].sectorType == sType)
+		{
+			if (sectors[i].IsComplete())
+			{
+				++count;
+			}
+		}
+	}
+
+	return count;
 }
 
 bool World::Save(std::ofstream &of)

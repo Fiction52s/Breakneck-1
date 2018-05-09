@@ -96,6 +96,7 @@ struct Sector
 	void Save(std::ofstream &of);
 	bool Load(std::ifstream &is);
 	bool IsComplete();
+	bool IsUnlocked();
 	std::map<int,Level> topBonuses;
 	std::map<int, Level> bottomBonuses;
 };
@@ -109,6 +110,7 @@ struct World
 	int index;
 	bool Load(std::ifstream &is);
 	bool Save(std::ofstream &of);
+	int GetNumSectorTypeComplete(int sType);
 };
 
 struct SaveFile

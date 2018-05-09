@@ -743,6 +743,8 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 		bottomBG.getLocalBounds().height / 2);
 
 	saSelector = NULL;
+
+	sectorSelected = false;
 	////bottomCenter.x = 0;
 	//sectors = new MapSector*[numSectors];
 	//for (int i = 0; i < numSectors; ++i)
@@ -797,6 +799,9 @@ void MapSelector::Update(ControllerState &curr,
 	bool left = curr.LLeft();
 	bool right = curr.LRight();
 
+	int changed = saSelector->UpdateIndex(curr.leftShoulder, curr.rightShoulder);
+	sectors[saSelector->currIndex]->Update(curr, prev);
+
 	if (!sectorSelected)
 	{
 		if (curr.A && !prev.A)
@@ -805,7 +810,7 @@ void MapSelector::Update(ControllerState &curr,
 		}
 		else
 		{
-			int changed = saSelector->UpdateIndex(left, right);
+			
 		}
 	}
 	else
@@ -816,7 +821,7 @@ void MapSelector::Update(ControllerState &curr,
 		}
 		else
 		{
-			sectors[saSelector->currIndex]->Update(curr, prev);
+			
 		}
 	}
 
@@ -890,7 +895,11 @@ MapSector::MapSector(MapSelector *p_ms )
 void MapSector::Draw(sf::RenderTarget *target)
 {
 	//target->draw( paths, numLevels )
-	target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
+	if (sec->IsUnlocked()) //just for testing
+	{
+		target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
+	}
+	
 }
 
 void MapSector::UpdateNodePosition()
@@ -1008,9 +1017,9 @@ void MapSector::UpdateNodes()
 		SetRectSubRect(n, ms->ts_node->GetSubRect(GetNodeSubIndex(i)));
 		SetRectSubRect(nTop, ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
 		SetRectSubRect(nBot, ms->ts_node->GetSubRect(GetNodeBonusIndexBot(i)));
-		//	SetRectSubRect( n, )
 	}
 }
+
 
 void MapSector::Load()
 {
