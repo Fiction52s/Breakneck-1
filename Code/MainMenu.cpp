@@ -1956,13 +1956,13 @@ void MainMenu::Run()
 					break;
 				}
 				case GameSession::GR_EXITLEVEL:
-					currFile->Save();
+					//currFile->Save();
 					break;
 				case GameSession::GR_EXITTITLE:
-					currFile->Save();
+					//currFile->Save();
 					break;
 				case GameSession::GR_EXITGAME:
-					currFile->Save();
+					//currFile->Save();
 					break;
 				}
 

@@ -135,6 +135,8 @@ void SaveFile::Load()
 
 		shardField.Load(is);
 		newShardField.Load(is);
+
+		is.close();
 	}
 	else
 	{
@@ -142,7 +144,7 @@ void SaveFile::Load()
 		assert( false );
 	}
 
-	is.close();
+	
 }
 
 void SaveFile::Save()
@@ -151,9 +153,12 @@ void SaveFile::Save()
 
 	of.open( fileName );
 
+	cout << "saving save file" << endl;
+
 	if( of.is_open() )
 	{
 		of << numWorlds << endl;
+		cout << "numworlds: " << numWorlds << endl;
 		//save worlds, then save shards
 		for (int i = 0; i < numWorlds; ++i)
 		{
@@ -162,6 +167,8 @@ void SaveFile::Save()
 
 		shardField.Save(of);
 		newShardField.Save(of);
+
+		of.close();
 	}
 	else
 	{
@@ -192,6 +199,9 @@ Sector::Sector()
 	levels = NULL;
 	conditions = NULL;
 	numTypesNeeded = NULL;
+	sectorType = 100;
+	numUnlockConditions = 99;
+	
 }
 
 bool Sector::HasTopBonus(int index)
@@ -219,6 +229,7 @@ bool Sector::Load(std::ifstream &is)
 {
 	is >> sectorType;
 	is >> numUnlockConditions;
+
 	if (numUnlockConditions > 0)
 	{
 		conditions= new int[numUnlockConditions];
@@ -239,7 +250,7 @@ bool Sector::Load(std::ifstream &is)
 
 	is >> numLevels;
 	levels = new Level[numLevels];
-
+	
 	bool res = true;
 	for (int i = 0; i < numLevels; ++i)
 	{
@@ -248,39 +259,42 @@ bool Sector::Load(std::ifstream &is)
 		res = levels[i].Load(is);
 
 		assert(res);
+	}
 
-		int numTopBonuses = 0;
-		int numBottomBonuses = 0;
-		is >> numTopBonuses;
-		for (int j = 0; j < numTopBonuses; ++j) //0 - 2
-		{
-			int bonusIndex;
-			is >> bonusIndex;
+	int numTopBonuses = 0;
+	int numBottomBonuses = 0;
 
-			Level &lev = topBonuses[bonusIndex];
-			lev.sec = this;
-			lev.index = bonusIndex;
-			res = lev.Load(is);
+	
+	is >> numTopBonuses;
+	for (int j = 0; j < numTopBonuses; ++j) //0 - 2
+	{
+		int bonusIndex;
+		is >> bonusIndex;
 
-			assert(res);
-		}
+		Level &lev = topBonuses[bonusIndex];
+		lev.sec = this;
+		lev.index = bonusIndex;
+		res = lev.Load(is);
 
-		is >> numBottomBonuses;
-		for (int j = 0; j < numBottomBonuses; ++j) //0 - 2
-		{
-			int bonusIndex;
-			is >> bonusIndex;
+		assert(res);
+	}
 
-			Level &lev = bottomBonuses[bonusIndex];
-			lev.sec = this;
-			lev.index = bonusIndex;
-			res = lev.Load(is);
+	is >> numBottomBonuses;
+	for (int j = 0; j < numBottomBonuses; ++j) //0 - 2
+	{
+		int bonusIndex;
+		is >> bonusIndex;
 
-			assert(res);
-		}
-		
+		Level &lev = bottomBonuses[bonusIndex];
+		lev.sec = this;
+		lev.index = bonusIndex;
+		res = lev.Load(is);
+
+		assert(res);
 	}
 	
+	assert(is.good());
+
 	return true;
 }
 
@@ -374,6 +388,8 @@ void Level::Save(std::ofstream &of)
 {
 	of << name << endl;
 	optionField.Save(of);
+
+	//cout << "save level: " << name << endl;
 }
 
 void Level::SetComplete(bool comp)
@@ -408,6 +424,7 @@ bool World::Load(std::ifstream &is)
 bool World::Save(std::ofstream &of)
 {
 	of << numSectors << endl;
+	cout << "numSectors: " << numSectors << endl;
 	for (int i = 0; i < numSectors; ++i)
 	{
 		sectors[i].Save( of );
