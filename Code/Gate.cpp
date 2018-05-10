@@ -20,7 +20,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
 	reformBehindYou( p_reformBehindYou )
 {
-	
+	reformBehindYou = true;
 	//breakFrame = 0;
 	flowFrame = 0;
 	//this could just be temporary

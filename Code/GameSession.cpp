@@ -3887,7 +3887,7 @@ bool GameSession::OpenFile( string fileName )
 				C = ABmax;
 				D = ABmin;
 
-				/*Grass * g = new Grass(this, ts_grass, totalGrassIndex,);
+				/*Grass * g = new Grass(this, ts_grass, tdCotalGrassIndex,);
 				g->A = A;
 				g->B = B;
 				g->C = C;
@@ -7722,7 +7722,7 @@ int GameSession::Run()
 		EnvPlant *drawPlant = activeEnvPlants;
 		while( drawPlant != NULL )
 		{
-			//preScreenTex->draw( *drawPlant->particle->particles );
+			preScreenTex->draw( *drawPlant->particle->particles );
 			drawPlant = drawPlant->next;
 		}
 
@@ -13509,7 +13509,7 @@ EnvPlant::EnvPlant(sf::Vector2<double>&a, V2d &b, V2d &c, V2d &d, int vi, Vertex
 	:A(a),B(b),C(c),D(d), vaIndex( vi ), va( v ), frame( 0 ), activated( false ), next( NULL ), ts( t ),
 	idleLength( 4 ), idleFactor( 3 )
 {
-	particle = new AirParticleEffect( ( b + c ) / 2.0 );
+	particle = new AirParticleEffect( ( a + d ) / 2.0 );
 	disperseLength = particle->maxDurationToLive + particle->emitDuration;
 	disperseFactor = 1;
 	SetupQuad();

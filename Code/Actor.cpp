@@ -100,7 +100,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset("Kin/bounce_wall_224x224.png", 224, 224, skin);
 	tileset[DEATH] = owner->GetTileset("Kin/death_128x96.png", 128, 96, skin);
 	tileset[JUMPSQUAT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[INTRO] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
+	tileset[INTRO] = owner->GetTileset("Kin/enter_64x64.png", 64, 64, skin);
 	tileset[EXIT] = owner->GetTileset("Kin/exit_64x128.png", 64, 128, skin);
 	tileset[EXITWAIT] = NULL;
 	tileset[GRAVREVERSE] = owner->GetTileset("Kin/grav_64x64.png", 64, 64, skin);
@@ -964,7 +964,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[EXITWAIT] = 6 * 3 * 2;
 		actionLength[GRAVREVERSE] = 20;
 		actionLength[JUMPSQUAT] = 3;
-		actionLength[INTRO] = 10 * 4;
+		actionLength[INTRO] = 18 * 2;
 		actionLength[AIRDASH] = 33;//27;
 		actionLength[STEEPSLIDEATTACK] = 16;
 		actionLength[AIRHITSTUN] = 1;
@@ -1798,6 +1798,7 @@ void Actor::Respawn()
 	{
 		SetAction(INTRO);
 		frame = 0;
+		//owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
 	}
 
 	velocity.x = 0;
@@ -2204,6 +2205,11 @@ void Actor::UpdatePrePhysics()
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT )
 	{
+		/*if (action == SPAWNWAIT && frame == actionLength[SPAWNWAIT] - 6)
+		{
+			owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), spriteCenter, false, 0, 6, 2, true);
+		}*/
+
 		if( action == INTRO && frame == 0 )
 		{
 			owner->soundNodeList->ActivateSound( soundBuffers[S_ENTER] );
@@ -9538,7 +9544,7 @@ V2d Actor::UpdateReversePhysics()
 					Gate * g = (Gate*)e0->info;
 					if( CanUnlockGate( g ) )
 					{
-						owner->UnlockGate( g );
+						UnlockGate( g );
 
 						if( e0 == g->edgeA )
 						{
@@ -9862,7 +9868,7 @@ V2d Actor::UpdateReversePhysics()
 					Gate * g = (Gate*)e1->info;
 					if( CanUnlockGate( g ) )
 					{
-						owner->UnlockGate( g );
+						UnlockGate( g );
 
 						if( e1 == g->edgeA )
 						{
@@ -10453,7 +10459,7 @@ V2d Actor::UpdateReversePhysics()
 									if( CanUnlockGate( g ) )
 									{
 										//g->SetLocked( false );
-										owner->UnlockGate( g );
+										UnlockGate( g );
 
 										if( e0 == g->edgeA )
 										{
@@ -10493,7 +10499,7 @@ V2d Actor::UpdateReversePhysics()
 
 								if( CanUnlockGate( g ) )
 								{
-									owner->UnlockGate( g );
+									UnlockGate( g );
 
 									if( e0 == g->edgeA )
 									{
@@ -10552,7 +10558,7 @@ V2d Actor::UpdateReversePhysics()
 									if( CanUnlockGate( g ) )
 									{
 										//g->SetLocked( false );
-										owner->UnlockGate( g );
+										UnlockGate( g );
 
 										if( e1 == g->edgeA )
 										{
@@ -10594,7 +10600,7 @@ V2d Actor::UpdateReversePhysics()
 								if( CanUnlockGate( g ) )
 								{
 									//g->SetLocked( false );
-									owner->UnlockGate( g );
+									UnlockGate( g );
 
 									if( e1 == g->edgeA )
 									{
@@ -11752,7 +11758,7 @@ void Actor::UpdatePhysics()
 							if( CanUnlockGate( gg ) )
 							{
 								//cout << "unlock gate" << endl;
-								owner->UnlockGate( gg );
+								UnlockGate( gg );
 
 								if( e1 == gg->edgeA )
 								{
@@ -11830,7 +11836,7 @@ void Actor::UpdatePhysics()
 							if( CanUnlockGate( gg ) )
 							{
 								//cout << "unlock gate" << endl;
-								owner->UnlockGate( gg );
+								UnlockGate( gg );
 
 								if( e0 == gg->edgeA )
 								{
@@ -12125,7 +12131,7 @@ void Actor::UpdatePhysics()
 					if( CanUnlockGate( g ) )
 					{
 						cout << "unlock gate" << endl;
-						owner->UnlockGate( g );
+						UnlockGate( g );
 
 						if( e0 == g->edgeA )
 						{
@@ -12283,7 +12289,7 @@ void Actor::UpdatePhysics()
 
 					if( CanUnlockGate( g ) )
 					{
-						owner->UnlockGate( g );
+						UnlockGate( g );
 
 						if( e1 == g->edgeA )
 						{
@@ -12768,7 +12774,7 @@ void Actor::UpdatePhysics()
 									//g->SetLocked( false );
 									if( CanUnlockGate( g ) )
 									{
-										owner->UnlockGate( g );
+										UnlockGate( g );
 
 										if( e1 == g->edgeA )
 										{
@@ -12809,7 +12815,7 @@ void Actor::UpdatePhysics()
 								if( CanUnlockGate( g ) )
 								{
 									//g->SetLocked( false );
-									owner->UnlockGate( g );
+									UnlockGate( g );
 
 									if( e1 == g->edgeA )
 									{
@@ -12864,7 +12870,7 @@ void Actor::UpdatePhysics()
 									if( CanUnlockGate( g ) )
 									{
 										//g->SetLocked( false );
-										owner->UnlockGate( g );
+										UnlockGate( g );
 
 										if( e0 == g->edgeA )
 										{
@@ -12903,7 +12909,7 @@ void Actor::UpdatePhysics()
 
 									if( CanUnlockGate( g ) )
 									{
-										owner->UnlockGate( g );
+										UnlockGate( g );
 
 										if( e0 == g->edgeA )
 										{
@@ -14951,7 +14957,7 @@ void Actor::PhysicsResponse()
 					gateTouched = g->edgeA;
 				}
 
-				owner->UnlockGate( g );
+				UnlockGate( g );
 
 				SetActionExpr( JUMP );
 				frame = 1;
@@ -17599,7 +17605,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						gateTouched = g->edgeA;
 					}
 
-					owner->UnlockGate( g );
+					UnlockGate( g );
 
 					return;
 
@@ -18107,7 +18113,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			ev->activated = true;
 			if( ground != NULL )
 			{
-				ev->particle->dir = normalize( normalize( ground->v1 - ground->v0 ) * groundSpeed );
+				ev->particle->dir = ground->Normal();//normalize( normalize( ground->v1 - ground->v0 ) * groundSpeed );
 			}
 			else
 			{
@@ -18359,7 +18365,7 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 void Actor::Draw( sf::RenderTarget *target )
 {
 	
-	if (action == EXITWAIT)
+	if (action == EXITWAIT || action == SPAWNWAIT || (action == INTRO && frame < 11 ))
 	{
 		return;
 	}
@@ -21273,13 +21279,20 @@ void Actor::UpdateSprite()
 		}
 	case INTRO:
 		{
-			SetSpriteTexture( action );
-			SetSpriteTile( frame / 4, facingRight );
-			
-			sprite->setOrigin( sprite->getLocalBounds().width / 2,
-				sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
+			if (frame == 0 && slowCounter == 1)
+			{
+				owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 22, 2, true);
+			}
+			else if (frame/2 >= 5)
+			{
+				SetSpriteTexture(action);
+				SetSpriteTile((frame - 5) / 2, facingRight);
+
+				sprite->setOrigin(sprite->getLocalBounds().width / 2,
+					sprite->getLocalBounds().height / 2);
+				sprite->setPosition(position.x, position.y);
+				sprite->setRotation(0);
+			}
 			break;
 		}
 	case EXIT:
@@ -21848,6 +21861,16 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 //
 //}
 
+void Actor::UnlockGate(Gate *g)
+{
+	owner->UnlockGate(g);
+	
+	if (rightWire != NULL)
+		rightWire->Retract();
+
+	if (leftWire != NULL)
+		leftWire->Retract();
+}
 
 void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {

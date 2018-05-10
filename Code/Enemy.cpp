@@ -1243,9 +1243,18 @@ bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 	
 void Enemy::DirectKill()
 {
+	owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, position, true, 0, 10, 2, true);
+
 	dead = true;
+
 	health = 0;
+	HandleNoHealth();
 	receivedHit = NULL;
+
+	if (cutObject != NULL)
+	{
+		cutObject->SetCutRootPos(Vector2f(position.x, position.y));
+	}
 }
 
 bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )

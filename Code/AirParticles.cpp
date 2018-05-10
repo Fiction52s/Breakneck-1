@@ -155,7 +155,7 @@ void AirParticleEffect::Update( V2d &playerPos )
 		{
 			playerDir = normalize( playerPos - positions[i] );
 			positions[i] += velocities[i];
-			velocities[i] = normalize ( velocities[i] + playerDir * .4 ) * length( velocities[i] );
+			//velocities[i] = normalize ( velocities[i] + playerDir * .4 ) * length( velocities[i] );
 
 			if( durationToLive[i] < maxDurationToLive / 2.0 )
 			{
@@ -268,7 +268,7 @@ void RotaryParticleEffect::ResetParticle( int index )
 	Vector2f rotated = t.transformPoint( Vector2f( d.x, d.y ) );
 	 d = V2d( rotated.x, rotated.y );
 	
-	velocities[i] = d * 4.0;
+	velocities[i] = d * .2;//4.0;
 	velocities[i] = V2d( 0, 0 ); //d * .5;
 
 	
@@ -551,7 +551,7 @@ void ParticleTrail::ResetParticle( int index )
 
 	//cout << "ang: " << angularVel << ", radius: " << radius << ", adirD: " << adirD.x << ", " << adirD.y << endl;
 	positions[i] = position ;//+ adirD;
-	velocities[i] = velDir;
+	//velocities[i] = velDir;
 
 	va[i*4+0].position = Vector2f( positions[i].x, positions[i].y ) 
 		+ Vector2f( particleSize.left, particleSize.top );

@@ -658,7 +658,9 @@ struct KeyParams : public ActorParams
 struct ShardParams : public ActorParams
 {
 	ShardParams( EditSession *edit,
-		sf::Vector2i &pos );
+		sf::Vector2i &pos);
+	ShardParams(EditSession *edit,
+		sf::Vector2i &pos, const std::string &sStr );
 	void WriteParamFile( std::ofstream &of );
 
 	void SetParams();

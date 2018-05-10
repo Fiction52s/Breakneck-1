@@ -204,6 +204,12 @@ void Crawler::UpdateHitboxes()
 
 void Crawler::ProcessState()
 {
+	if (mover->ground->edgeType == Edge::OPEN_GATE)
+	{
+		DirectKill();
+		return;
+	}
+
 	V2d en = mover->ground->Normal();
 
 	if (action != BURROW && action != UNDERGROUND)
@@ -340,7 +346,7 @@ void Crawler::ProcessState()
 
 void Crawler::UpdateEnemyPhysics()
 {
-	if (!dead)
+	if (health > 0 ) //!dead
 	{
 		mover->Move(slowMultiple, numPhysSteps );
 		position = mover->physBody.globalPosition;

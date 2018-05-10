@@ -1152,6 +1152,21 @@ ShardParams::ShardParams( EditSession *edit, sf::Vector2i &pos )
 	shardStr = "SHARD_W1_TEACH_JUMP";//"..no.shard..";
 }
 
+ShardParams::ShardParams(EditSession *edit, sf::Vector2i &pos, const std::string &sStr )
+	:ActorParams(PosType::AIR_ONLY)
+{
+	position = pos;
+	type = edit->types["shard"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	SetBoundingQuad();
+
+	shardStr = sStr;
+}
+
 void ShardParams::WriteParamFile( std::ofstream &of )
 {
 	of << shardStr << endl;

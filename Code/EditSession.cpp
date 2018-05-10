@@ -218,7 +218,7 @@ sf::Rect<double> StaticLight::GetAABB()
 GateInfo::GateInfo()
 	:ISelectable( ISelectable::GATE ), thickLine( sf::Quads, 4 )
 {
-	reformBehindYou = false;
+	reformBehindYou = true;
 	numKeysRequired = -1;
 	thickLine[0].color = Color( 255, 0, 0, 255 );
 	thickLine[1].color = Color( 255, 0, 0, 255 );
@@ -1264,6 +1264,8 @@ bool EditSession::OpenFile()
 					is >> pos.x;
 					is >> pos.y;
 
+					string shardStr;
+					is >> shardStr;
 					//int hasMonitor;
 					//is >> hasMonitor;
 

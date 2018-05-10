@@ -298,7 +298,7 @@ struct Actor : QuadTreeCollider,
 		T_GREEN,
 		T_PURPLE
 	};
-
+	
 	void CreateAttackLightning();
 	EffectPool *fairLightningPool[4];
 	EffectPool *uairLightningPool[4];
@@ -308,6 +308,7 @@ struct Actor : QuadTreeCollider,
 	//int hitCeilingCounter;
 	//int hitCeilingLockoutFrames;
 	
+	void UnlockGate(Gate *g);
 
 	Team team;
 
