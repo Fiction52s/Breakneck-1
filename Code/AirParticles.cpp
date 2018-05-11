@@ -81,7 +81,7 @@ void AirParticleEffect::ResetParticle( int index )
 	Vector2f rotated = t.transformPoint( Vector2f( d.x, d.y ) );
 	 d = V2d( rotated.x, rotated.y );
 	
-	velocities[i] = d * 4.0;
+	 velocities[i] = d * .2;//4.0;
 	positions[i] = position;
 
 	va[i*4+0].position = Vector2f( position.x, position.y ) 
@@ -268,7 +268,7 @@ void RotaryParticleEffect::ResetParticle( int index )
 	Vector2f rotated = t.transformPoint( Vector2f( d.x, d.y ) );
 	 d = V2d( rotated.x, rotated.y );
 	
-	velocities[i] = d * .2;//4.0;
+	velocities[i] = d * 4.0;
 	velocities[i] = V2d( 0, 0 ); //d * .5;
 
 	

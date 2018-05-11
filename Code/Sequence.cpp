@@ -103,8 +103,6 @@ bool ShipExitSeq::Update()
 		}
 		break;
 	}
-
-	//cout << "sequence frame : " << frame << endl;
 	if( frame >= 61 )
 	{
 		owner->GetPlayer( 0 )->position = V2d( shipMovement.position.x, shipMovement.position.y + 170 );
@@ -120,9 +118,14 @@ bool ShipExitSeq::Update()
 	{
 		shipMovement.Update();
 	}
-	
-	//cout << "shipmovement: " << shipMovement.currTime << endl;
-	
+
+
+
+	if (shipMovement.currMovement == NULL)
+	{
+		owner->goalDestroyed = true;
+		return false;
+	}
 	
 	shipSprite.setPosition( shipMovement.position.x,
 		shipMovement.position.y );

@@ -38,6 +38,12 @@ struct Sequence
 
 struct ShipExitSeq : Sequence
 {
+	enum State
+	{
+		SHIP_SWOOP,
+
+	};
+
 	ShipExitSeq( GameSession *owner );
 	bool Update();
 	void Draw( sf::RenderTarget *target );

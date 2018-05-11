@@ -47,6 +47,7 @@
 //#include "Enemy_Badger.h"
 #include "Enemy_BasicEffect.h"
 #include "Enemy_BasicTurret.h"
+#include "ShipPickup.h"
 //#include "Enemy_Bat.h"
 #include "Enemy_Blocker.h"
 #include "Enemy_Booster.h"
@@ -1311,7 +1312,11 @@ void GameSession::AddEnemy( Enemy *e )
 	}
 	
 	cout << "spawning enemy! of type: " << e->type << endl;
-	assert(e->spawned == false);
+	if (e->spawned)
+	{
+		assert(e->spawned == false);
+	}
+	
 	e->spawned = true;
 
 
@@ -3264,8 +3269,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int facingRight;
 				is >> facingRight;
 
-				/*ShipPickup *enemy = new ShipPickup( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-					facingRight );
+				ShipPickup *enemy = new ShipPickup(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+					facingRight);
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
@@ -3275,7 +3280,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				if( shipExitSeq == NULL )
 				{
 					shipExitSeq = new ShipExitSeq( this );
-				}*/
+				}
 			}
 			//w6
 			else if( typeName == "racefighttarget" )
@@ -13548,115 +13553,6 @@ void EnvPlant::Reset()
 
 	particle->Reset();
 }
-
-//GameSession::GameStartSeq::GameStartSeq( GameSession *own )
-//	:stormVA( sf::Quads, 6 * 3 * 4 ) 
-//{
-//	owner = own;
-//	shipTex.loadFromFile( "ship.png" );
-//	shipSprite.setTexture( shipTex );
-//	shipSprite.setOrigin( shipSprite.getLocalBounds().width / 2, shipSprite.getLocalBounds().height / 2 );
-//
-//	stormTex.loadFromFile( "stormclouds.png" );
-//	stormSprite.setTexture( stormTex );
-//	
-//	//shipSprite.setPosition( 250, 250 );
-//	startPos = Vector2f( owner->GetPlayer( 0 )->position.x, owner->GetPlayer( 0 )->position.y );
-//	frameCount = 1;//180;
-//	frame = 0;
-//
-//	int count = 6;
-//	for( int i = 0; i < count; ++i )
-//	{
-//		Vector2f topLeft( startPos.x - 480, startPos.y - 270 );
-//		topLeft.y -= 540;
-//
-//		topLeft.x += i * 960;
-//
-//		stormVA[i*4].position = topLeft;
-//		stormVA[i*4].texCoords = Vector2f( 0, 0 );
-//
-//		stormVA[i*4+1].position = topLeft + Vector2f( 0, 540 );
-//		stormVA[i*4+1].texCoords = Vector2f( 0, 540 );
-//
-//		stormVA[i*4+2].position = topLeft + Vector2f( 960, 540 );
-//		stormVA[i*4+2].texCoords = Vector2f( 960, 540 );
-//
-//		stormVA[i*4+3].position = topLeft + Vector2f( 960, 0 );
-//		stormVA[i*4+3].texCoords = Vector2f( 960, 0 );
-//
-//		
-//		
-//
-//
-//		topLeft.y += 440 + 540;
-//
-//		stormVA[i*4 + 4 * count].position = topLeft;
-//		stormVA[i*4 + 4 * count].texCoords = Vector2f( 0, 0 );
-//
-//		stormVA[i*4+1+4 * count].position = topLeft + Vector2f( 0, 540 );
-//		stormVA[i*4+1+4 * count].texCoords = Vector2f( 0, 540 );
-//
-//		stormVA[i*4+2+4 * count].position = topLeft + Vector2f( 960, 540 );
-//		stormVA[i*4+2+4 * count].texCoords = Vector2f( 960, 540 );
-//
-//		stormVA[i*4+3+4 * count].position = topLeft + Vector2f( 960, 0 );
-//		stormVA[i*4+3+4 * count].texCoords = Vector2f( 960, 0 );
-//
-//		topLeft.y += 540;
-//		stormVA[i*4 + 4 * count * 2].position = topLeft;
-//		stormVA[i*4 + 4 * count * 2].texCoords = Vector2f( 0, 0 );
-//
-//		stormVA[i*4+1 + 4 * count * 2].position = topLeft + Vector2f( 0, 540 );
-//		stormVA[i*4+1 + 4 * count * 2].texCoords = Vector2f( 0, 540 );
-//
-//		stormVA[i*4+2 + 4 * count * 2].position = topLeft + Vector2f( 960, 540 );
-//		stormVA[i*4+2 + 4 * count * 2].texCoords = Vector2f( 960, 540 );
-//
-//		stormVA[i*4+3 + 4 * count * 2].position = topLeft + Vector2f( 960, 0 );
-//		stormVA[i*4+3 + 4 * count * 2].texCoords = Vector2f( 960, 0 );
-//	}
-//}
-//
-//bool GameSession::GameStartSeq::Update()
-//{
-//	if( frame < frameCount )
-//	{
-//		
-//		V2d vel( 60, 0 );
-//		//if( frame > 60 )
-//			//vel.y = -20;
-//
-//		shipSprite.setPosition( startPos.x + frame * vel.x, startPos.y + frame * vel.y );
-//		++frame;
-//
-//		return true;
-//	}
-//	else 
-//		return false;
-//}
-//
-//void GameSession::GameStartSeq::Draw( sf::RenderTarget *target )
-//{
-//	target->setView( owner->bgView );
-//	target->draw( owner->background );
-//	target->setView( owner->view );
-//
-//	target->setView( owner->uiView );
-//	owner->powerBar.Draw( target );
-//
-//	target->setView( owner->view );
-//	/*sf::RectangleShape rs( Vector2f( 960 * 4, 540 ) );
-//	rs.setPosition( Vector2f( startPos.x - 480, startPos.y - 270 ) );
-//	rs.setFillColor( Color::Black );
-//	target->draw( rs );*/
-//
-//
-//	//target->draw( stormVA, &stormTex );
-//
-//	//target->draw( shipSprite );
-//
-//}
 
 void GameSession::SetParMountains( sf::RenderTarget *target )
 {

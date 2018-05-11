@@ -443,7 +443,6 @@ struct Actor : QuadTreeCollider,
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	bool CaptureMonitor( Monitor *m );
 	void UpdatePhysics();
-	void UpdateFullPhysics();
 	void PhysicsResponse();
 	void GroundAttack();
 	void ConfirmEnemyKill( Enemy *e );

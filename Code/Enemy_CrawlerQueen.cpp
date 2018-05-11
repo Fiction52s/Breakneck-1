@@ -235,6 +235,13 @@ void CrawlerQueen::ResetEnemy()
 	action = DECIDE;
 	frame = 0;
 
+	FloatingBomb *fb = (FloatingBomb*)bombPool->activeListStart;
+	while( fb != NULL )
+	{		
+		fb->Reset();
+		fb = (FloatingBomb*)fb->pmnext;
+	}
+
 	bombPool->DeactivateAll();
 }
 
@@ -800,6 +807,7 @@ void CrawlerQueen::DecideAction()
 		return;
 	}
 
+	decisions[travelIndex] = D_DIG;
 	switch (decisions[travelIndex])
 	{
 	case D_BOOST:
@@ -899,20 +907,23 @@ FloatingBomb::FloatingBomb(GameSession *owner, ObjectPool *p_myPool, int index )
 	:Enemy( owner, EnemyType::EN_FLOATINGBOMB, false, 1, false ),
 	PoolMember( index ), myPool( p_myPool )
 {
+	//preload
+	owner->GetTileset("Enemies/bombexplode_512x512.png", 512, 512);
+
 	mover = new SurfaceMover(owner, NULL, 0, 32);
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
 
-	ts = owner->GetTileset("Enemies/shroom_128x128.png", 128, 128);
+	ts = owner->GetTileset("Enemies/bomb_128x160.png", 128, 160);
 	sprite.setTexture(*ts->texture);
 
 	action = FLOATING;
 
-	actionLength[FLOATING] = 10;
-	actionLength[EXPLODING] = 30;
+	actionLength[FLOATING] = 9;
+	actionLength[EXPLODING] = 4;
 
-	animFactor[FLOATING] = 1;
-	animFactor[EXPLODING] = 1;
+	animFactor[FLOATING] = 3;
+	animFactor[EXPLODING] = 3;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -972,7 +983,10 @@ void FloatingBomb::ProcessState()
 		case EXPLODING:
 			numHealth = 0;
 			dead = true;
-			cout << "deactivating " << this << " . currently : " << myPool->numActiveMembers << endl;
+			owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, 
+				owner->GetTileset("Enemies/bombexplode_512x512.png", 512, 512), 
+				position, false, 0, 10, 3, true);
+			//cout << "deactivating " << this << " . currently : " << myPool->numActiveMembers << endl;
 			//myPool->DeactivatePoolMember(this);
 			break;
 		}
@@ -1024,10 +1038,10 @@ void FloatingBomb::UpdateSprite()
 	switch (action)
 	{
 	case FLOATING:
-		sprite.setTextureRect(ts->GetSubRect(25));
+		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[FLOATING]));
 		break;
 	case EXPLODING:
-		sprite.setTextureRect(ts->GetSubRect(0));
+		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[EXPLODING]));
 		break;
 	}
 

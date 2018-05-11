@@ -28,7 +28,7 @@ Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet, int type )
 	}
 	activeSets = NULL;
 
-	cout << "on init: inactive: " << InactiveCount() << ", active: " << ActiveCount() << endl;
+	//cout << "on init: inactive: " << InactiveCount() << ", active: " << ActiveCount() << endl;
 
 	for (int i = 0; i < totalParticles * 4; ++i)
 	{
@@ -92,7 +92,7 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 	}
 	else
 	{
-		cout << "success: " << InactiveCount() << ", active: " << ActiveCount() << endl;
+		//cout << "success: " << InactiveCount() << ", active: " << ActiveCount() << endl;
 		ps = inactiveSets;
 		if (inactiveSets->next != NULL)
 		{
