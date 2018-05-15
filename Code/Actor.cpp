@@ -215,9 +215,15 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 }
 
 Actor::Actor( GameSession *gs, int p_actorIndex )
-	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
+	:owner( gs ), dead( false ), actorIndex( p_actorIndex ),rpu(this)
 	{
 	//hitCeilingLockoutFrames = 20;
+
+	dustParticles = new EffectPool(EffectType::FX_REGULAR, 2000, 1);
+	//EffectInstance params;
+	dustParticles->SetTileset(owner->GetTileset( "dust_8x8.png", 8,8));
+	//dustParticles->ActivateEffect(&params);
+
 	cout << "Start player" << endl;
 	repeatingSound = NULL;
 		currBooster = NULL;
@@ -8772,7 +8778,7 @@ facingRight = false;
 
 	oldBooster = currBooster;
 
-	highAccuracyHitboxes = false;
+	highAccuracyHitboxes = true;
 
 	wallNormal.x = 0;
 	wallNormal.y = 0;
@@ -9012,10 +9018,6 @@ void Actor::SetAction( Action a )
 		
 	}
 
-	if (action == AIRHITSTUN || action == GROUNDHITSTUN)
-	{
-		int ff = 5;
-	}
 	//shouldnt this be slow counter?
 	/*if( slowMultiple > 1 )
 	{
@@ -11243,6 +11245,23 @@ void Actor::UpdatePhysics()
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT)
 		return;
+
+	/*if (ground != NULL && groundSpeed != 0)
+	{
+		EffectInstance params;
+		params.SetParams(Vector2f(ground->GetPoint(edgeQuantity)),
+			Transform(Transform::Identity), 1, 60, 0);
+
+		Vector2f v(0, -.1f);
+		Transform tr;
+
+		int r = (rand() % 20) - 10;
+		tr.rotate(r);
+
+		params.SetVelocityParams(tr.transformPoint(v), Vector2f(0, 0), 6);
+		dustParticles->ActivateEffect(&params);
+
+	}*/
 
 	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
 	/*if( blah == 0 )
@@ -14786,8 +14805,8 @@ void Actor::PhysicsResponse()
 				//}
 				if( length( wallNormal ) > 0 
 					&& (currWall == NULL || currWall->edgeType != Edge::BORDER) 
-					&& oldVelocity.y >= 0 && rightWire->state != Wire::PULLING
-					&& leftWire->state != Wire::PULLING )
+					&& oldVelocity.y >= 0 /*&& rightWire->state != Wire::PULLING
+					&& leftWire->state != Wire::PULLING*/ )
 				{
 					if( wallNormal.x > 0)
 					{
@@ -17984,7 +18003,7 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 
 void Actor::Draw( sf::RenderTarget *target )
 {
-	
+	dustParticles->Draw(target);
 	if (action == EXITWAIT || action == SPAWNWAIT || (action == INTRO && frame < 11 ))
 	{
 		return;
@@ -18687,6 +18706,34 @@ int Actor::GetJumpFrame()
 void Actor::UpdateSprite()
 {
 	scorpSet = false;
+
+	if (ground != NULL)
+	{
+		EffectInstance params;
+		params.SetParams(Vector2f(ground->GetPoint(edgeQuantity)),
+			Transform(Transform::Identity), 1, 20, 0);
+
+		Vector2f v(0, -.2);
+		Transform tr;
+
+		int r = (rand() % 20) - 10;
+		tr.rotate(r);
+		
+		
+		params.SetVelocityParams(tr.transformPoint( v ), Vector2f(0, 0), 1 );
+		dustParticles->ActivateEffect(&params);
+		float zz = .2;
+		v = Vector2f(normalize(ground->v1 - ground->v0)) * zz;//Vector2f(zz, 0);
+		
+		params.SetVelocityParams(tr.transformPoint(v), Vector2f(0, 0), 1);
+		dustParticles->ActivateEffect(&params);
+		v = -Vector2f(normalize(ground->v1 - ground->v0)) * zz;
+		params.SetVelocityParams(tr.transformPoint(v), Vector2f(0, 0), 1);
+		dustParticles->ActivateEffect(&params);
+		
+	}
+
+	dustParticles->Update(&rpu);
 
 
 	V2d gn( 0, 0 );

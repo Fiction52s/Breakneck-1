@@ -13,6 +13,7 @@
 #include "AirParticles.h"
 #include "Movement.h"
 #include "Gate.h"
+#include "VisualEffects.h"
 
 struct Gate;
 struct Critical;
@@ -165,6 +166,10 @@ struct Actor : QuadTreeCollider,
 	EffectPool *testPool;
 	EffectPool *risingAuraPool;
 	MotionGhostEffect *motionGhostsEffects[3];
+
+	EffectPool *dustParticles;
+	RisingParticleUpdater rpu;
+
 
 	enum Action
 	{

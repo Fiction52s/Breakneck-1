@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <iostream>
 #include "VectorMath.h"
+#include "Actor.h"
 
 using namespace sf;
 using namespace std;
@@ -41,6 +42,11 @@ EffectPool::EffectPool(EffectType et, int p_maxNumFX, float p_depth )
 	}
 }
 
+void EffectPool::SetTileset(Tileset *p_ts)
+{
+	ts = p_ts;
+}
+
 void EffectPool::Reset()
 {
 	ResetPool();
@@ -52,7 +58,7 @@ void EffectPool::DeactivateMember(PoolMember *pm)
 	ei->Clear();
 }
 
-void EffectPool::Update()
+void EffectPool::Update(EffectPoolUpdater *epu)
 {
 	switch (eType)
 	{
@@ -64,6 +70,7 @@ void EffectPool::Update()
 		{
 			tNext = (EffectInstance*)ei->pmnext;
 
+			epu->UpdateEffect(ei);
 			ei->Update();
 
 			ei = tNext;
@@ -125,9 +132,13 @@ void EffectPool::Draw(sf::RenderTarget *target)
 		target->setView(newView);
 	}
 
+	RenderStates rs;
+	rs.texture = ts->texture;
+
+	assert(ts != NULL);
 	if (effectShader == NULL)
 	{
-		target->draw(va, maxNumFX * 4, sf::Quads, ts->texture );
+		target->draw(va, maxNumFX * 4, sf::Quads, rs);
 	}
 	else
 	{
@@ -147,11 +158,24 @@ void EffectInstance::SetParams( sf::Vector2f &p_pos, sf::Transform &p_tr, int p_
 	pos = p_pos;
 	tr = p_tr;
 	startTile = p_startTile;
+	color = Color::White;
 }
+
+void EffectInstance::SetColor(sf::Color &c)
+{
+	color = c;
+	SetRectColor(parent->va + index * 4, color);
+}
+
+
 
 void EffectInstance::InitFromParams(EffectInstance *ei)
 {
 	Init(ei->pos, ei->tr, ei->frameCount, ei->animFactor, ei->startTile);
+	maxVel = ei->maxVel;
+	accel = ei->accel;
+	vel = ei->vel;
+	SetColor(ei->color);
 }
 
 void EffectInstance::Init( sf::Vector2f &p_pos, sf::Transform &p_tr, int p_frameCount, int p_animFactor, int p_startTile)
@@ -197,6 +221,10 @@ void EffectInstance::SetVelocityParams(sf::Vector2f &p_vel,
 
 bool EffectInstance::Update()
 {
+	if (frame < 0)
+	{
+		int f = 10;
+	}
 	if (frame == frameCount * animFactor )
 	{
 		Clear();
@@ -234,6 +262,11 @@ bool EffectInstance::Update()
 	}
 
 	vel += accel;
+
+	if (length(vel) > maxVel)
+	{
+		vel = normalize(vel) * maxVel;
+	}
 
 	++frame;
 
@@ -517,4 +550,28 @@ void VertexBufferMember::Reset()
 	angle = 0;
 	scale = Vector2f(1, 1);
 	tileIndex = 0;
+}
+
+RisingParticleUpdater::RisingParticleUpdater(Actor *p)
+	:parent( p )
+{
+
+}
+
+void RisingParticleUpdater::UpdateEffect(EffectInstance *ei)
+{
+	Vector2f pPos = Vector2f(parent->position);
+	float len = length(pPos - ei->pos);
+	Vector2f dir = normalize(pPos - ei->pos);
+	//dir += Vector2f(0, -1);
+	//dir /= 2.f;
+	if (len > 20)
+	{
+		//ei->accel = dir * .1f;
+	}
+
+	float f = ((float)ei->frame) / (ei->frameCount * ei->animFactor -1 );
+	f = 1.0 - f;
+	Color  testC = Color(255, 255, 255, 100 * f);
+	ei->SetColor(testC);
 }

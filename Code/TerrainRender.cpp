@@ -200,7 +200,12 @@ void TerrainRender::GenerateBorderMesh()
 					len -= len32;
 					numQuads.numQuads32++;
 				}
-				else if (len >= len16)
+				else
+				{
+					numQuads.numQuads32++;
+					break;
+				}
+				/*else if (len >= len16)
 				{
 					len -= len16;
 					numQuads.numQuads16++;
@@ -209,7 +214,7 @@ void TerrainRender::GenerateBorderMesh()
 				{
 					numQuads.numQuads16++;
 					break;
-				}
+				}*/
 			}
 
 			
@@ -1105,10 +1110,10 @@ int TerrainRender::GetBorderQuadIntersect(int tileWidth)
 		return 4;//4;
 		break;
 	case 32:
-		return 4;//10;
+		return 8;//10;
 		break;
 	case 128:
-		return 10;//20;
+		return 16;//20;
 		break;
 	default:
 		assert(0);

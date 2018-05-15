@@ -7724,12 +7724,14 @@ int GameSession::Run()
 			(*it)->Draw( preScreenTex );
 		}
 
-		EnvPlant *drawPlant = activeEnvPlants;
+
+		/*EnvPlant *drawPlant = activeEnvPlants;
 		while( drawPlant != NULL )
 		{
 			preScreenTex->draw( *drawPlant->particle->particles );
 			drawPlant = drawPlant->next;
-		}
+		}*/
+		//dont forget to actually remove this
 
 		
 		if( Keyboard::isKeyPressed( Keyboard::Num1 ) )

@@ -928,11 +928,29 @@ void TerrainPolygon::FinalizeInverse()
 	isGrassShowing = false;
 	//material = "mat";
 
-	
+	FixWindingInverse();
+
+	UpdateBounds();
+
+	int testExtra = 500;
+	vector<p2t::Point*> outerQuadPoints;
+
+	sf::Rect<double> finalRect;
+	finalRect.left = left - testExtra;
+	finalRect.top = top - testExtra;
+	finalRect.width = (right-left) +  testExtra * 2;
+	finalRect.height = (bottom-top) + testExtra * 2;
+
+	outerQuadPoints.push_back(new p2t::Point(finalRect.left, finalRect.top));
+	outerQuadPoints.push_back(new p2t::Point(finalRect.left + finalRect.width, finalRect.top));
+	outerQuadPoints.push_back(new p2t::Point(finalRect.left + finalRect.width, finalRect.top + finalRect.height));
+	outerQuadPoints.push_back(new p2t::Point(finalRect.left, finalRect.top + finalRect.height));
+
+	p2t::CDT * cdt = new p2t::CDT(outerQuadPoints);
 
 	lines = new sf::Vertex[numPoints*2+1];
 	
-	FixWindingInverse();
+	
 	//cout << "points size: " << points.size() << endl;
 
 	vector<p2t::Point*> polyline;
@@ -944,43 +962,42 @@ void TerrainPolygon::FinalizeInverse()
 		curr = temp;
 	}
 
-	va = NULL;
-	//p2t::CDT * cdt = new p2t::CDT( polyline );
-	//
-	//cdt->Triangulate();
-	//vector<p2t::Triangle*> tris;
-	//tris = cdt->GetTriangles();
-	//
-	//vaSize = tris.size() * 3;
-	//va = new VertexArray( sf::Triangles , vaSize );
-	//
-	//VertexArray & v = *va;
-	//Color testColor( 0x75, 0x70, 0x90 );
-	//Color selectCol( 0x77, 0xBB, 0xDD );
+	cdt->AddHole(polyline);
 
-	//if( selected )
-	//{
-	//	testColor = selectCol;
-	//}
-	//for( int i = 0; i < tris.size(); ++i )
-	//{	
-	//	p2t::Point *p = tris[i]->GetPoint( 0 );	
-	//	p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-	//	p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-	//	v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
-	//	v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-	//	v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
-	//}
+	cdt->Triangulate();
+	vector<p2t::Triangle*> tris;
+	tris = cdt->GetTriangles();
 
-	//SetMaterialType( terrainWorldType, terrainVariation );
+	vaSize = tris.size() * 3;
+	va = new VertexArray(sf::Triangles, vaSize);
 
-	////assert( tris.size() * 3 == points.size() );
-	//delete cdt;
-	//for( int i = 0; i < numPoints; ++i )
-	//{
-	//	delete polyline[i];
-	////	delete tris[i];
-	//}
+	VertexArray & v = *va;
+	Color testColor(0x75, 0x70, 0x90);
+	Color selectCol(0x77, 0xBB, 0xDD);
+
+	if (selected)
+	{
+		testColor = selectCol;
+	}
+	for (int i = 0; i < tris.size(); ++i)
+	{
+		p2t::Point *p = tris[i]->GetPoint(0);
+		p2t::Point *p1 = tris[i]->GetPoint(1);
+		p2t::Point *p2 = tris[i]->GetPoint(2);
+		v[i * 3] = Vertex(Vector2f(p->x, p->y), testColor);
+		v[i * 3 + 1] = Vertex(Vector2f(p1->x, p1->y), testColor);
+		v[i * 3 + 2] = Vertex(Vector2f(p2->x, p2->y), testColor);
+	}
+
+	SetMaterialType(terrainWorldType, terrainVariation);
+
+	//assert( tris.size() * 3 == points.size() );
+	delete cdt;
+	for (int i = 0; i < numPoints; ++i)
+	{
+		delete polyline[i];
+		//	delete tris[i];
+	}
 
 	if( numPoints > 0 )
 	{

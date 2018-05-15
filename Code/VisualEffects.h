@@ -4,7 +4,7 @@
 #include "ObjectPool.h"
 #include <SFML\Graphics.hpp>
 
-
+struct Actor;
 struct Tileset;
 struct EffectPool;
 
@@ -36,7 +36,9 @@ struct EffectInstance : PoolMember
 		sf::Vector2f &accel, float maxVelocity );
 	void Clear();
 	virtual bool Update();
+	void SetColor(sf::Color &c);
 	int frame;
+	sf::Color color;
 	int animFactor;
 	int startFrame;
 	int frameCount;
@@ -74,11 +76,23 @@ struct RelEffectInstance : EffectInstance
 	int detachFrames;
 };
 
+struct EffectPoolUpdater
+{
+	virtual void UpdateEffect(EffectInstance *ei) = 0;
+};
+
+struct RisingParticleUpdater : EffectPoolUpdater
+{
+	RisingParticleUpdater(Actor *p);
+	Actor *parent;
+	void UpdateEffect(EffectInstance *ei);
+};
+
 struct EffectPool : ObjectPool
 {
 	EffectPool( EffectType et, int maxNumFX, float depth = 1.f );
 	void Reset();
-	void Update();
+	void Update( EffectPoolUpdater *epu = NULL );
 	void DeactivateMember(PoolMember *pm);
 	void SetTileset(Tileset *ts);
 	virtual EffectInstance * ActivateEffect( EffectInstance *params );

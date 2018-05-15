@@ -120,7 +120,9 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	int numTotalEdges;
 
 	std::map<Edge*, int> edgeIndexMap;
-
+	bool leftInitialEdge;
+	bool partLoop;
+	bool completedLoop;
 
 	sf::Sprite sprite;
 	

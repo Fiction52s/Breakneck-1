@@ -1207,6 +1207,7 @@ void Enemy::Reset()
 	spawnedByClone = false;
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
+	dead = false;
 
 	for (int i = 0; i < numLaunchers; ++i)
 	{
