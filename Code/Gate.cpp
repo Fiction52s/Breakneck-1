@@ -31,6 +31,8 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	activeNext = NULL;
 	ts = NULL;
+	ts_black = owner->GetTileset("gates_black_32x32.png", 32, 32);
+	
 	
 	if( type != BLACK )
 	{
@@ -83,7 +85,8 @@ void Gate::CalcAABB()
 
 Gate::~Gate()
 {
-	delete gQuads;
+	if( gQuads != NULL )
+		delete gQuads;
 }
 
 void Gate::Reset()
@@ -111,11 +114,22 @@ void Gate::Draw( sf::RenderTarget *target )
 	{
 		if( gState != OPEN )
 		{
-			target->draw(centerLine, 4, sf::Quads, &centerShader);
-
-			if (gState != SOFT)
+			if (gState == REFORM || gState == LOCKFOREVER)
 			{
-				target->draw(testLine, 4, sf::Quads, &gateShader);
+				if (gState == REFORM)
+				{
+					target->draw(centerLine, 4, sf::Quads, &centerShader);
+				}
+				target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_black->texture );
+			}
+			else
+			{
+				target->draw(centerLine, 4, sf::Quads, &centerShader);
+
+				if (gState != SOFT)
+				{
+					target->draw(testLine, 4, sf::Quads, &gateShader);
+				}
 			}
 		}
 
@@ -209,6 +223,8 @@ void Gate::UpdateLine()
 	thickLine[2].color = c;
 	thickLine[3].color = c;*/
 
+	tileHeight = 64;
+
 	double width = 16; //5
 	V2d dv0( edgeA->v0.x, edgeA->v0.y );
 	V2d dv1( edgeA->v1.x, edgeA->v1.y );
@@ -283,6 +299,35 @@ void Gate::UpdateLine()
 	}
 	int numVertices = numTiles * 4;
 
+	blackGate = new Vertex[numVertices];
+	numBlackQuads = numTiles;
+	
+
+	double angle = atan2(-along.x, along.y);
+	//angle *= 180 / PI;
+	//cout << "along: " << along.x << ", " << along.y << endl;
+	//cout << "angle: " << angle << endl;
+
+
+	for (int i = 0; i < numTiles; ++i)
+	{
+
+		if (i == numTiles - 1 && remainder > 0)
+		{
+			V2d start = edgeA->GetPoint(64 * i);
+			V2d end = edgeA->v1;
+			double h = length(end - start);
+			SetRectRotation(blackGate + i * 4, angle, 64, h, Vector2f(edgeA->GetPoint(64 * i + (32 - (64 - h) / 2))));
+		}
+		else
+		{
+			SetRectRotation(blackGate + i * 4, angle, 64, 64, Vector2f(edgeA->GetPoint(64 * i + 32 )));
+		}
+		//SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(6));
+		
+	}
+
+	VertexArray & gq = *gQuads;
 	//if( type == Gate::GREY || type == Gate::BLACK || keyGate )
 	//{
 		if( gQuads == NULL )
@@ -362,9 +407,13 @@ void Gate::Update()
 			}
 			
 		case REFORM:
-			{
-				if( frame == 10 )
+			{	
+				if( frame == 7 * 3 )
 				{
+					/*for (int i = 0; i < numBlackQuads; ++i)
+					{
+						SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(6));
+					}*/
 					gState = LOCKFOREVER;
 				}
 				break;
@@ -386,6 +435,15 @@ void Gate::Update()
 	else
 	{
 		frame = 0;
+	}
+
+	if (gState == REFORM)
+	{
+		for (int i = 0; i < numBlackQuads; ++i)
+		{
+			//IntRect
+			SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(frame / 3));
+		}
 	}
 
 	double radius = 300;
@@ -471,6 +529,13 @@ void Gate::Update()
 	if (gState == DISSOLVE || gState == TOTALDISSOLVE )
 	{
 		centerShader.setUniform("breakQuant", (frame / dLen));
+	}
+	else if (gState == REFORM)
+	{
+		if (frame <= dLen)
+		{
+			centerShader.setUniform("breakQuant", ((float)frame / (7*3)));
+		}
 	}
 	if (gState == SOFTEN || gState == TOTALDISSOLVE)
 	{

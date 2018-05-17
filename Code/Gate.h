@@ -57,6 +57,9 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	sf::Vertex nodes[8];
 	Tileset *ts_node;
 	Tileset *ts;
+	Tileset *ts_black;
+	sf::Vertex *blackGate;
+	int numBlackQuads;
 	void UpdateLine();
 	void SetLocked( bool on );
 	void Update();

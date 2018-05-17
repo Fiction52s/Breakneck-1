@@ -15042,6 +15042,8 @@ void Actor::PhysicsResponse()
 				
 				g->gState = Gate::REFORM;
 				g->frame = 0;
+				float aa = alongAmount;
+				g->centerShader.setUniform("breakPosQuant", aa);
 				cout << "LOCKING BEHIND YOU" << endl;
 			}
 			else
