@@ -51,6 +51,64 @@ bool Brush::Has(SelectPtr sp)
 	return false;
 }
 
+sf::Vector2i &Brush::GetCenter()
+{
+	int left;
+	int right;
+	int top;
+	int bottom;
+
+	if (objects.size() > 0)
+	{
+		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>(objects.front());
+		left = poly->left;
+		right = poly->right;
+		top = poly->top;
+		bottom = poly->bottom;
+	}
+	else
+	{
+		center = Vector2i(0, 0);
+		assert(0);
+		return center;
+	}
+	
+	auto it = objects.begin();
+	++it;
+
+	for ( ; it != objects.end(); ++it)
+	{
+		if ((*it)->selectableType == ISelectable::TERRAIN)
+		{
+			PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
+			left = min(left, poly->left);
+			right = max(right, poly->right);
+			top = min(top, poly->top);
+			bottom = max(bottom, poly->bottom);
+		}
+	}
+
+	center.x = (left + right) / 2;
+	center.y = (top + bottom) / 2;
+
+	return center;
+}
+
+Brush *Brush::Copy()
+{
+	Brush *newBrush = new Brush;
+	for (SelectIter it = objects.begin(); it != objects.end(); ++it)
+	{
+		if ((*it)->selectableType == ISelectable::TERRAIN)
+		{
+			TerrainPolygon *tp = (TerrainPolygon*)((*it).get());
+			PolyPtr ptr(tp->Copy());
+			newBrush->AddObject(ptr);
+		}
+	}
+	return newBrush;
+}
+
 void Brush::SetSelected( bool select )
 {
 	for( SelectIter it = objects.begin(); it != objects.end(); ++it )

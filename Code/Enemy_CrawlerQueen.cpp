@@ -725,7 +725,14 @@ void CrawlerQueen::UpdateSprite()
 
 	ir = currTS->GetSubRect(currTile);
 
-	if (!clockwise)
+	bool extraFlipCW = clockwise && action == POPOUT && mover->ground->Normal().x < 0;
+	bool extraFlipCCW = !clockwise && action == POPOUT && mover->ground->Normal().x > 0;
+	bool flip = !clockwise;
+	if (extraFlipCW || extraFlipCCW)
+	{
+		flip = !flip;
+	}
+	if (flip)
 	{
 		sprite.setTextureRect(sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height));
 	}
@@ -733,6 +740,7 @@ void CrawlerQueen::UpdateSprite()
 	{
 		sprite.setTextureRect(ir);
 	}
+	
 
 	if (mover->ground != NULL)
 	{

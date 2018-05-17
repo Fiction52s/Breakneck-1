@@ -626,13 +626,13 @@ void Crawler::Accelerate(double amount)
 		amount = -abs(amount);
 	}
 
-	double max = 35.0;
+	double max = 30.0;
 	double am = mover->groundSpeed + amount;
 	if (am > max)
 		am = max;
 	if (am < -max)
 		am = -max;
-	cout << "speed: " << am << endl;
+	//cout << "speed: " << am << endl;
 	mover->SetSpeed( am );
 }
 

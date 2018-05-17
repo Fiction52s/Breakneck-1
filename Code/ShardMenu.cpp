@@ -26,6 +26,10 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	testSeq = NULL;
 	//currentMovie.scale(.5, .5);
 
+	currShardText.setCharacterSize(20);
+	currShardText.setFont(mm->arial);
+	currShardText.setPosition(960, 700);
+
 	numShardsTotal = 1;
 	shardQuads = new Vertex[numShardsTotal * 4];
 	currButtonState = S_NEUTRAL;
@@ -33,24 +37,28 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 	ts_shards = mm->tilesetManager.GetTileset("Menu/shards_48x48.png", 48, 48);
 
-
-
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
 	int xSize = 11;
 	int ySize = 14;
 
 	shardNames = new string*[xSize];
+	shardDesc = new string*[xSize];
+
 	for (int i = 0; i < xSize; ++i)
 	{
 		shardNames[i] = new string[ySize];
+		shardDesc[i] = new string[ySize];
 	}
 
 	for (int x = 0; x < xSize; ++x)
 	{
 		for (int y = 0; y < ySize; ++y)
 		{
-			shardNames[x][y] = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
+			std::string &currShardName = shardNames[x][y];
+			currShardName = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
+			if(currShardName != "" )
+				SetDescription(shardDesc[x][y], shardNames[x][y]);
 		}
 	}
 
@@ -78,6 +86,34 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	}
 	
 	//SetCurrSequence();
+}
+
+bool ShardMenu::SetDescription(std::string &destStr, const std::string &shardTypeStr)
+{
+	stringstream ss;
+	ss << "Shard/" << shardTypeStr << ".sdesc";
+	ifstream is;
+	is.open(ss.str());
+
+	destStr = "";
+	if( is.is_open())
+	{
+		is.seekg(0, std::ios::end);
+		destStr.reserve(is.tellg());
+		is.seekg(0, std::ios::beg);
+
+		destStr.assign((std::istreambuf_iterator<char>(is)),
+			std::istreambuf_iterator<char>());
+
+		//cout << "dest str: " << destStr << endl;
+	}
+	else
+	{
+		cout << "trying to get: " << shardTypeStr << " description" << endl;
+		return false;
+		assert(0);
+	}
+	return true;
 }
 
 void ShardMenu::SetCurrMusic()
@@ -119,9 +155,10 @@ ShardMenu::~ShardMenu()
 	for (int i = 0; i < xSelector->totalItems; ++i)
 	{
 		delete[] shardNames[i];
+		delete[] shardDesc[i];
 	}
 	delete[] shardNames;
-
+	delete[] shardDesc;
 	delete xSelector;
 	delete ySelector;
 
@@ -216,6 +253,13 @@ void ShardMenu::UpdateShardSelectQuads()
 
 	index = (xSelector->currIndex * ySelector->totalItems + ySelector->currIndex) * 4;
 	SetRectColor(shardSelectQuads + index, currColor);
+
+	
+}
+
+void ShardMenu::SetCurrentDescription()
+{
+	currShardText.setString(shardDesc[xSelector->currIndex][ySelector->currIndex]);
 }
 
 void ShardMenu::StopMusic()
@@ -237,6 +281,7 @@ void ShardMenu::Update( ControllerState &currInput )
 		currButtonState = S_NEUTRAL;
 		StopMusic();
 		SetCurrSequence();
+		SetCurrentDescription();
 	}
 	bool A = currInput.A;
 	switch (currButtonState)
@@ -280,6 +325,10 @@ void ShardMenu::Draw(sf::RenderTarget *target)
 		testSeq->Draw(target);
 	target->draw(shardSelectQuads, xSelector->totalItems * ySelector->totalItems * 4,
 		sf::Quads, ts_shards->texture);
+	if (currShardText.getString() != "")
+	{
+		target->draw(currShardText);
+	}
 	//target->draw(currentMovie);
 }
 

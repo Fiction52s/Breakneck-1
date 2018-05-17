@@ -210,7 +210,8 @@ struct TerrainPolygon : ISelectable
 	sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
 		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
 		double minAngle,bool cw);
-	void Copy(TerrainPolygon *poly);
+	void CopyPoints(TerrainPolygon *poly);
+	TerrainPolygon *Copy();
 	bool PointOnBorder(V2d &point);
 	void MovePoint( sf::Vector2i &delta,
 		TerrainPoint *tp );
@@ -1727,6 +1728,7 @@ struct EditSession : GUIHandler
 
 
 	Brush *selectedBrush;
+	Brush *copiedBrush;
 	PointMap selectedPoints;
 	//std::list<TerrainPolygon*> pointPolyList;
 	
@@ -1802,9 +1804,12 @@ struct EditSession : GUIHandler
 	void ExecuteTerrainCompletion();
 	void ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys);
+	void PasteTerrain( Brush *b );
 	void ExecuteTerrainSubtract(
 		std::list<PolyPtr> &intersectingPolys);
-
+	void ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys);
+	bool HoldingShift();
+	bool HoldingControl();
 
 	enum Emode
 	{
@@ -1817,6 +1822,7 @@ struct EditSession : GUIHandler
 		//PLACE_PLAYER,
 		//PLACE_GOAL,
 		SELECT_POLYGONS,
+		PASTE,
 		PAUSED,
 		CREATE_ENEMY,
 		DRAW_PATROL_PATH,

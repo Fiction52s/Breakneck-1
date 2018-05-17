@@ -15,6 +15,9 @@ struct Brush
 	void Destroy();
 	void Move( sf::Vector2i delta );
 	void Draw( sf::RenderTarget *target );
+	Brush *Copy();
+	sf::Vector2i &GetCenter();
+	sf::Vector2i center;
 	CompoundAction * UnAnchor(); //only works with grounded actors
 	void Deactivate();//multiple calls covered?
 	void Activate();//multiple calls covered?

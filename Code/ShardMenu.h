@@ -8,6 +8,7 @@
 #include "ShardTypes.h"
 #include <SFML\Audio.hpp>
 #include <map>
+#include <string>
 
 struct TilesetManager;
 struct TutorialMovie
@@ -59,13 +60,18 @@ struct ShardMenu
 		S_SELECTED,
 	};
 
+	
 	ShardMenu( MainMenu *mm );
 	~ShardMenu();
 	void Update( ControllerState &currInput );
 	void Draw(sf::RenderTarget *target);
 
+	sf::Text currShardText;
+	std::string **shardDesc;// [ShardType::SHARD_W1_TEACH_JUMP];
 	Tileset *ts_shards;
 	ShardButtonState currButtonState;
+	bool SetDescription(std::string &destStr, const std::string &shardTypeStr );
+	void SetCurrentDescription();
 	bool LoadPNGSequences();
 	sf::Vertex *shardQuads;
 	MainMenu *mainMenu;

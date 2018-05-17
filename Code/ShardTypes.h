@@ -4,6 +4,7 @@
 enum ShardType
 {
 	SHARD_W1_TEACH_JUMP,
+	SHARD_Count
 };
 
 #endif

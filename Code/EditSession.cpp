@@ -474,6 +474,7 @@ void GateInfo::Draw( sf::RenderTarget *target )
 EditSession::EditSession( MainMenu *p_mainMenu )
 	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu )
 {
+	copiedBrush = NULL;
 	mapHeader.ver1 = 1;
 	mapHeader.ver2 = 5;
 	mapHeader.description = "no description";
@@ -636,6 +637,10 @@ void EditSession::Draw()
 		
 	}
 	
+	if (mode == PASTE)
+	{
+		copiedBrush->Draw(preScreenTex);
+	}
 
 	if( cutChoose || cutChooseUp )
 	{
@@ -3875,7 +3880,7 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 
 			Sub(poly, orig, results);
 
-			outPoly->Copy(results.front().get());
+			outPoly->CopyPoints(results.front().get());
 			//results.front()->CopyPoints(outPoly->pointStart, outPoly->pointEnd);
 			//outPoly->CopyPoints(results.front()->pointStart, results.front()->pointEnd);
 			outPoly->inverse = true;
@@ -3889,7 +3894,7 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 			Sub(brush, orig, results);
 
 			//outPoly->CopyPoints(results.front()->pointStart, results.front()->pointEnd);
-			outPoly->Copy(results.front().get());
+			outPoly->CopyPoints(results.front().get());
 			//results.front()->CopyPoints(outPoly->pointStart, outPoly->pointEnd);
 			outPoly->inverse = true;
 			//results.front()->CopyPoints(outPoly->pointStart, outPoly->pointEnd);
@@ -6687,8 +6692,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											}
 											else
 											{
-												if( !( Keyboard::isKeyPressed( Keyboard::LShift ) || 
-												Keyboard::isKeyPressed( Keyboard::RShift ) ) )
+												if( !HoldingShift() )
 												{
 													selectedBrush->SetSelected( false );
 													selectedBrush->Clear();
@@ -7215,9 +7219,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 									bool selectionEmpty = true;
 
-									bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
+									//bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
 
-									if( !shift )
+									if( !HoldingShift() )
 									{
 										cout << "clearing everything" << endl;
 										selectedBrush->SetSelected( false );
@@ -7234,7 +7238,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											{
 												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*ait) );
 
-												if( shift )
+												if( HoldingShift() )
 												{
 													if( sp->selected )
 													{
@@ -7264,9 +7268,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										|| Keyboard::isKeyPressed( Keyboard::RAlt );
 									if( alt ) //always use point selection for now
 									{
-										bool shift = Keyboard::isKeyPressed( Keyboard::LShift )
-											|| Keyboard::isKeyPressed( Keyboard::RShift );
-										if( !shift )
+										if( HoldingShift() )
 										{
 											ClearSelectedPoints();
 										}
@@ -7345,7 +7347,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
 
-											if( shift )
+											if( HoldingShift() )
 											{
 												if( sp->selected )
 												{
@@ -7593,7 +7595,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 							if( ev.key.code == Keyboard::C && ev.key.control )
 							{
-								if( selectedPolygons.size() > 0 )
+								copiedBrush = selectedBrush->Copy();
+								/*if( selectedPolygons.size() > 0 )
 								{
 									ClearCopyBrushes();
 
@@ -7603,7 +7606,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										TerrainBrush *tb = new TerrainBrush( (*it) );
 										copyBrushes.push_back( tb );
 									}
-								}
+								}*/
 							}
 							else if( ev.key.code == sf::Keyboard::Z && ev.key.control )
 							{
@@ -7631,44 +7634,59 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							}
 							else if( ev.key.code == Keyboard::V && ev.key.control )
 							{
-								ClearPasteBrushes();
-
+								//ClearPasteBrushes();
+								if (copiedBrush != NULL)
+								{
+									Vector2i pos = Vector2i(worldPos.x, worldPos.y);
+									copiedBrush->Move( pos - copiedBrush->GetCenter());
+									editMouseGrabPos = pos;
+									mode = PASTE;
+									
+									/*Action *ac = new ApplyBrushAction(copiedBrush);
+									ac->Perform();
+									doneActionStack.push_back(ac);
+									ClearUndoneActions();
+									copiedBrush = NULL;*/
+								}
+								
+								//copiedBrush->a
 								if( copyBrushes.size() > 0 )
 								{
+
 									//pasteBrushes = copyBrushes;
 									
-									CopyToPasteBrushes();
-									
-									pastePos = Vector2i( worldPos.x, worldPos.y );
+									//CopyToPasteBrushes();
+									//
+									//pastePos = Vector2i( worldPos.x, worldPos.y );
 
-									//find the overall bounding box of all the copied polygons
-									list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
-									int trueLeft = (*tbIt)->left;
-									int trueRight = (*tbIt)->right;
-									int trueTop = (*tbIt)->top;								
-									int trueBot = (*tbIt)->bot;
+									////find the overall bounding box of all the copied polygons
+									//list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
+									//int trueLeft = (*tbIt)->left;
+									//int trueRight = (*tbIt)->right;
+									//int trueTop = (*tbIt)->top;								
+									//int trueBot = (*tbIt)->bot;
 
-									++tbIt;
-									for( ; tbIt != pasteBrushes.end(); ++tbIt )
-									{
-										if( (*tbIt)->left < trueLeft )
-											trueLeft = (*tbIt)->left;
-										if( (*tbIt)->right > trueRight )
-											trueRight = (*tbIt)->right;
-										if( (*tbIt)->top < trueTop )
-											trueTop = (*tbIt)->top;
-										if( (*tbIt)->bot > trueBot )
-											trueBot = (*tbIt)->bot;
-									}
+									//++tbIt;
+									//for( ; tbIt != pasteBrushes.end(); ++tbIt )
+									//{
+									//	if( (*tbIt)->left < trueLeft )
+									//		trueLeft = (*tbIt)->left;
+									//	if( (*tbIt)->right > trueRight )
+									//		trueRight = (*tbIt)->right;
+									//	if( (*tbIt)->top < trueTop )
+									//		trueTop = (*tbIt)->top;
+									//	if( (*tbIt)->bot > trueBot )
+									//		trueBot = (*tbIt)->bot;
+									//}
 
-									Vector2i trueCenter( (trueRight + trueLeft) / 2, (trueTop + trueBot)/2 );
+									//Vector2i trueCenter( (trueRight + trueLeft) / 2, (trueTop + trueBot)/2 );
 								
-									//move it to the cursors position originally
-									Vector2i startDiff = pastePos - trueCenter;
-									for( tbIt = pasteBrushes.begin(); tbIt != pasteBrushes.end(); ++tbIt )
-									{
-										(*tbIt)->Move( startDiff );
-									}
+									////move it to the cursors position originally
+									//Vector2i startDiff = pastePos - trueCenter;
+									//for( tbIt = pasteBrushes.begin(); tbIt != pasteBrushes.end(); ++tbIt )
+									//{
+									//	(*tbIt)->Move( startDiff );
+									//}
 								}
 
 							}
@@ -8390,6 +8408,33 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					}
 					break;
 				}
+			case PASTE:
+			{
+				switch (ev.type)
+				{
+					case Event::MouseButtonPressed:
+					{
+						if (ev.mouseButton.button == sf::Mouse::Button::Left)
+						{
+							PasteTerrain(copiedBrush);
+							if (!HoldingControl())
+							{
+								mode = EDIT;
+							}
+						}
+						break;
+					}
+					case Event::KeyPressed:
+					{
+						if (ev.key.code == Keyboard::X)
+						{
+							mode = EDIT;
+						}
+						break;
+					}
+				}
+				break;
+			}
 			case CREATE_ENEMY:
 				{
 					switch( ev.type )
@@ -11009,6 +11054,14 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 				break;
 			}
+		case PASTE:
+		{
+			Vector2i pos(worldPos.x, worldPos.y);
+			Vector2i delta = pos - editMouseGrabPos;
+			copiedBrush->Move(delta);
+			editMouseGrabPos = pos;
+			break;
+		}
 		case CREATE_ENEMY:
 			{
 				if( trackingEnemy != NULL && showPanel == NULL )
@@ -17164,15 +17217,7 @@ void EditSession::ExecuteTerrainCompletion()
 				//polygonInProgress->FixWinding();
 
 				//hold shift ATM to activate subtraction
-				if( !( Keyboard::isKeyPressed( Keyboard::LShift ) ||
-					Keyboard::isKeyPressed( Keyboard::RShift ) ) )
-				{
-					ExecuteTerrainAdd( intersectingPolys );
-				}
-				else
-				{
-					ExecuteTerrainSubtract( intersectingPolys );					
-				}
+				ChooseAddOrSub(intersectingPolys);
 
 			}
 		}
@@ -17252,6 +17297,66 @@ void EditSession::SetInversePoly()
 
 	//PolyPtr newPoly( new TerrainPolygon(&grassTex) );
 	//polygonInProgress = newPoly;
+}
+
+bool EditSession::HoldingShift()
+{
+	return ((Keyboard::isKeyPressed(Keyboard::LShift) ||
+		Keyboard::isKeyPressed(Keyboard::RShift)));
+}
+
+bool EditSession::HoldingControl()
+{
+	return ((Keyboard::isKeyPressed(Keyboard::LControl) ||
+		Keyboard::isKeyPressed(Keyboard::RControl)));
+}
+
+void EditSession::ChooseAddOrSub(list<PolyPtr> &intersectingPolys)
+{
+	if (!(Keyboard::isKeyPressed(Keyboard::LShift) ||
+		Keyboard::isKeyPressed(Keyboard::RShift)))
+	{
+		ExecuteTerrainAdd(intersectingPolys);
+	}
+	else
+	{
+		ExecuteTerrainSubtract(intersectingPolys);
+	}
+}
+
+void EditSession::PasteTerrain(Brush *b)
+{
+	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
+	{
+		TerrainPolygon *tp = (TerrainPolygon*)((*bit).get());
+		polygonInProgress.reset(tp->Copy());
+		list<PolyPtr> intersectingPolys;
+		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		{
+			if (polygonInProgress->LinesIntersect((*it).get()))
+			{
+				//not too close and I intersect, so I can add
+				intersectingPolys.push_back((*it));
+			}
+		}
+
+		if (intersectingPolys.empty())
+		{
+			Action *ac = new ApplyBrushAction(copiedBrush);
+			ac->Perform();
+			doneActionStack.push_back(ac);
+			ClearUndoneActions();
+
+			PolyPtr newPoly(new TerrainPolygon(&grassTex));
+			polygonInProgress = newPoly;
+		}
+		else
+		{
+			ChooseAddOrSub(intersectingPolys);
+		}
+	}
+
+	copiedBrush = copiedBrush->Copy();
 }
 
 void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)

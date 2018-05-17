@@ -434,8 +434,9 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 {
 	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
 
+	//cout << "num polygons before: " << edit->polygons.size();
 	edit->polygons.push_back(poly);
-	
+	//cout << "num polygons is now: " << edit->polygons.size();
 	
 	if (inverse)
 	{
@@ -2832,7 +2833,14 @@ bool TerrainPolygon::IsClockwise()
     return sum < 0;
 }
 
-void TerrainPolygon::Copy(TerrainPolygon *poly)
+TerrainPolygon *TerrainPolygon::Copy()
+{
+	TerrainPolygon *newPoly = new TerrainPolygon(*this, true);
+	newPoly->Finalize();
+	return newPoly;
+}
+
+void TerrainPolygon::CopyPoints(TerrainPolygon *poly)
 {
 	TerrainPoint *start = new TerrainPoint(poly->pointStart->pos, false );
 	pointStart = start;
@@ -3348,6 +3356,7 @@ bool TerrainPolygon::IsPlacementOkay()
 	//void Move( sf::Vector2i delta );
 void TerrainPolygon::BrushDraw( sf::RenderTarget *target, bool valid )
 {
+	target->draw(lines, numPoints * 2, sf::Lines);
 	//cout << "brush draw polygon" << endl;
 }
 

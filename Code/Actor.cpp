@@ -21000,7 +21000,7 @@ void Actor::UpdateSprite()
 			//radius is 24. 100 pixel offset
 
 			int realFrame = (frame / 2 ) % 16;
-			cout << "goalkill index: " << tsIndex << ", realFrame: " << realFrame << endl;
+			//cout << "goalkill index: " << tsIndex << ", realFrame: " << realFrame << endl;
 			
 			SetSpriteTile(realFrame, facingRight);
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
@@ -21304,7 +21304,7 @@ void Actor::UpdateSprite()
 	{
 		if (action == GOALKILLWAIT)
 		{
-			cout << "activate " << owner->totalGameFrames << endl;
+			//cout << "activate " << owner->totalGameFrames << endl;
 			int x = 5;
 		}
 		testAura->ActivateParticles(auraPoints[0][spriteAction][currTileIndex], tr, Vector2f( spriteCenter ), &np, 0);

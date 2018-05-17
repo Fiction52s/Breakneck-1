@@ -1311,7 +1311,7 @@ void GameSession::AddEnemy( Enemy *e )
 		//see if the shard is spawnable!
 	}
 	
-	cout << "spawning enemy! of type: " << e->type << endl;
+	//cout << "spawning enemy! of type: " << e->type << endl;
 	if (e->spawned)
 	{
 		assert(e->spawned == false);
