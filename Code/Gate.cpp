@@ -20,6 +20,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
 	reformBehindYou( p_reformBehindYou )
 {
+	blackGate = NULL;
 	reformBehindYou = true;
 	//breakFrame = 0;
 	flowFrame = 0;
@@ -32,6 +33,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	activeNext = NULL;
 	ts = NULL;
 	ts_black = owner->GetTileset("gates_black_32x32.png", 32, 32);
+	ts_lightning = owner->GetTileset("gates_lightning_1_64x64.png", 64, 64);
 	
 	
 	if( type != BLACK )
@@ -87,6 +89,9 @@ Gate::~Gate()
 {
 	if( gQuads != NULL )
 		delete gQuads;
+
+	if (blackGate != NULL)
+		delete blackGate;
 }
 
 void Gate::Reset()
@@ -124,11 +129,19 @@ void Gate::Draw( sf::RenderTarget *target )
 			}
 			else
 			{
+				if (gState == SOFT)
+				{
+					target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
+				}
 				target->draw(centerLine, 4, sf::Quads, &centerShader);
 
 				if (gState != SOFT)
 				{
 					target->draw(testLine, 4, sf::Quads, &gateShader);
+				}
+				else
+				{
+					//target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
 				}
 			}
 		}
@@ -382,7 +395,7 @@ void Gate::Update()
 			
 		case SOFT:
 			{
-			if( frame == 60)
+			if( frame == 11 * 3)
 				frame = 0;
 				break;
 			}
@@ -443,6 +456,14 @@ void Gate::Update()
 		{
 			//IntRect
 			SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(frame / 3));
+		}
+	}
+	else if (gState == SOFT)
+	{
+		for (int i = 0; i < numBlackQuads; ++i)
+		{
+			//IntRect
+			SetRectSubRect(blackGate + i * 4, ts_lightning->GetSubRect(frame / 3));
 		}
 	}
 

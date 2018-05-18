@@ -32,7 +32,7 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 
 	
 
-	ts = owner->GetTileset("blocker.png", 64, 64);
+	ts = owner->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
 
 	double rad = 32;
 	double minDistance = 60;
@@ -325,7 +325,7 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	hitboxInfo->knockback = 10;
 
 	hitBody->hitboxInfo = hitboxInfo;
-	
+
 	//SetHurtboxes(hurtBody, 0);
 
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
@@ -333,15 +333,24 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 
 	owner->staticItemTree->Insert(this);
 
+	actionLength[WAIT] = 15;
+	actionLength[MALFUNCTION] = 13;
+	actionLength[HITTING] = 2;
+	actionLength[EXPLODE] = 10;
+
+	animFactor[WAIT] = 3;
+	animFactor[HITTING] = 20;
+	animFactor[MALFUNCTION] = 4;
+	animFactor[EXPLODE] = 2;
+
 	ResetEnemy();
 
-	actionLength[WAIT] = 1;
-	actionLength[MALFUNCTION] = 60;
-	actionLength[FASTDEATH] = 10;
 	
-	animFactor[WAIT] = 1;
-	animFactor[MALFUNCTION] = 1;
-	animFactor[FASTDEATH] = 1;
+
+	Vector2f p(position.x, position.y);
+
+	Vector2f spriteSize(bc->ts->tileWidth, bc->ts->tileHeight);
+	SetRectCenter(bc->va + vaIndex * 4, spriteSize.x, spriteSize.y, p);
 }
 
 void Blocker::ProcessState()
@@ -353,8 +362,16 @@ void Blocker::ProcessState()
 		case WAIT:
 			frame = 0;
 			break;
+		case HITTING:
+			frame = 0;
+			action = WAIT;
+			break;
 		case MALFUNCTION:
-		case FASTDEATH:
+			action = EXPLODE;
+			frame = 0;
+			SetHitboxes(NULL, 0);
+			break;
+		case EXPLODE:
 			numHealth = 0;
 			dead = true;
 			ClearSprite();
@@ -370,7 +387,7 @@ void Blocker::ProcessState()
 	case MALFUNCTION:
 		//cout << "mal: " << frame << endl;
 		break;
-	case FASTDEATH:
+	case EXPLODE:
 		break;
 	}
 
@@ -384,7 +401,7 @@ void Blocker::ProcessState()
 		//SetHitboxes(hitBody, 0);
 		//SetHurtboxes(NULL, 0);
 		break;
-	case FASTDEATH:
+	case EXPLODE:
 		//SetHitboxes(NULL, 0);
 		//SetHurtboxes(NULL, 0);
 		//SetHitboxes(NULL, 0);
@@ -400,7 +417,7 @@ void Blocker::ProcessHit()
 		ConfirmHitNoKill();
 		if (IsFastDying())
 		{
-			action = FASTDEATH;
+			action = EXPLODE;
 			frame = 0;
 			SetHitboxes(NULL, 0);
 			SetHurtboxes(NULL, 0);
@@ -448,7 +465,10 @@ void Blocker::ResetEnemy()
 {
 	action = WAIT;
 	dead = false;
-	frame = 0;
+
+	//random start frame so they are all desynced
+	int r = rand() % (animFactor[WAIT] * actionLength[WAIT]);
+	frame = r;
 
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
@@ -465,6 +485,11 @@ void Blocker::IHitPlayer(int index)
 	if (dot(normalize(playerPos - position), hitboxInfo->kbDir) < 0)
 	{
 		hitboxInfo->kbDir = -hitboxInfo->kbDir;
+	}
+	if (action == WAIT)
+	{
+		action = HITTING;
+		frame = 0;
 	}
 }
 
@@ -511,31 +536,24 @@ void Blocker::UpdateSprite()
 	}
 	else
 	{
-		Vertex *va = bc->va;
-		IntRect subRect = bc->ts->GetSubRect(0);
-		if (owner->GetPlayer(0)->position.x < position.x)
+		int f = 0;
+		switch (action)
 		{
-			subRect.left += subRect.width;
-			subRect.width = -subRect.width;
+		case WAIT:
+			f = frame / animFactor[WAIT];
+			break;
+		case MALFUNCTION:
+			f = frame / animFactor[MALFUNCTION] + 17;
+			break;
+		case HITTING:
+			f = frame / animFactor[HITTING] + 15;
+			break;
+		case EXPLODE:
+			f = frame / animFactor[EXPLODE] + 31;
+			break;
 		}
-		va[vaIndex * 4 + 0].texCoords = Vector2f(subRect.left,
-			subRect.top);
-		va[vaIndex * 4 + 1].texCoords = Vector2f(subRect.left
-			+ subRect.width,
-			subRect.top);
-		va[vaIndex * 4 + 2].texCoords = Vector2f(subRect.left
-			+ subRect.width,
-			subRect.top + subRect.height);
-		va[vaIndex * 4 + 3].texCoords = Vector2f(subRect.left,
-			subRect.top + subRect.height);
-
-		Vector2f p(position.x, position.y);
-
-		Vector2f spriteSize(bc->ts->tileWidth, bc->ts->tileHeight);//parent->spriteSize;
-		va[vaIndex * 4 + 0].position = p + Vector2f(-spriteSize.x, -spriteSize.y);
-		va[vaIndex * 4 + 1].position = p + Vector2f(spriteSize.x, -spriteSize.y);
-		va[vaIndex * 4 + 2].position = p + Vector2f(spriteSize.x, spriteSize.y);
-		va[vaIndex * 4 + 3].position = p + Vector2f(-spriteSize.x, spriteSize.y);		
+		IntRect subRect = bc->ts->GetSubRect(f);
+		SetRectSubRect(bc->va + vaIndex * 4, subRect);
 	}
 }
 

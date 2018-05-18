@@ -11,7 +11,8 @@ struct Blocker : Enemy, QuadTreeEntrant
 	{
 		WAIT,
 		MALFUNCTION,
-		FASTDEATH,
+		HITTING,
+		EXPLODE,
 		Count
 	};
 

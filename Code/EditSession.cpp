@@ -17217,8 +17217,12 @@ void EditSession::ExecuteTerrainCompletion()
 				//polygonInProgress->FixWinding();
 
 				//hold shift ATM to activate subtraction
-				ChooseAddOrSub(intersectingPolys);
+				Action *action = ChooseAddOrSub(intersectingPolys);
 
+				action->Perform();
+				doneActionStack.push_back(action);
+
+				ClearUndoneActions();
 			}
 		}
 	}
@@ -17311,21 +17315,23 @@ bool EditSession::HoldingControl()
 		Keyboard::isKeyPressed(Keyboard::RControl)));
 }
 
-void EditSession::ChooseAddOrSub(list<PolyPtr> &intersectingPolys)
+Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys)
 {
 	if (!(Keyboard::isKeyPressed(Keyboard::LShift) ||
 		Keyboard::isKeyPressed(Keyboard::RShift)))
 	{
-		ExecuteTerrainAdd(intersectingPolys);
+		return ExecuteTerrainAdd( intersectingPolys);
 	}
 	else
 	{
-		ExecuteTerrainSubtract(intersectingPolys);
+		return ExecuteTerrainSubtract(intersectingPolys);
 	}
 }
 
 void EditSession::PasteTerrain(Brush *b)
 {
+	CompoundAction *compoundAction = new CompoundAction;
+	Brush applyBrush;
 	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
 	{
 		TerrainPolygon *tp = (TerrainPolygon*)((*bit).get());
@@ -17342,29 +17348,48 @@ void EditSession::PasteTerrain(Brush *b)
 
 		if (intersectingPolys.empty())
 		{
-			Action *ac = new ApplyBrushAction(copiedBrush);
-			ac->Perform();
-			doneActionStack.push_back(ac);
-			ClearUndoneActions();
-
-			PolyPtr newPoly(new TerrainPolygon(&grassTex));
-			polygonInProgress = newPoly;
+			applyBrush.AddObject((*bit));
+			//finalResultBrush.AddObject((*bit));
+			//Action *ac = new ApplyBrushAction(copiedBrush);
+			//ac->Perform();
+			//doneActionStack.push_back(ac);
+			//ClearUndoneActions();
+			//PolyPtr newPoly(new TerrainPolygon(&grassTex));
+			//polygonInProgress = newPoly;
+			//PolyPtr newPoly(new TerrainPolygon(&grassTex));
+			//polygonInProgress = newPoly;
 		}
 		else
 		{
-			ChooseAddOrSub(intersectingPolys);
+			Action * a = ChooseAddOrSub( intersectingPolys );
+			compoundAction->subActions.push_back(a);
 		}
 	}
+
+	if (applyBrush.objects.size() > 0)
+	{
+		Action *ac = new ApplyBrushAction(&applyBrush);
+		compoundAction->subActions.push_back(ac);
+
+		PolyPtr newPoly(new TerrainPolygon(&grassTex));
+		polygonInProgress = newPoly;
+	}
+
+	compoundAction->Perform();
+	doneActionStack.push_back(compoundAction);
+	ClearUndoneActions();
 
 	copiedBrush = copiedBrush->Copy();
 }
 
-void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
+Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {
+	Brush orig;
+	Brush resultBrush;
 	tempActors.clear();
 
 	TerrainPolygon *outPoly = NULL;
-	Brush orig;
+	//Brush orig;
 	list<boost::shared_ptr<GateInfo>> gateInfoList;
 	list<ActorPtr> actorList;
 
@@ -17423,8 +17448,8 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	{*/
 
 
-	progressBrush->Clear();
-	progressBrush->AddObject(sp);
+	resultBrush.Clear();
+	resultBrush.AddObject(sp);
 
 	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
@@ -17467,7 +17492,7 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		}
 
 		SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
-		progressBrush->AddObject(sp1);
+		resultBrush.AddObject(sp1);
 	}
 
 	for (auto it = actorList.begin(); it != actorList.end(); ++it)
@@ -17489,20 +17514,25 @@ void EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
 		{
 			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit2));
-			progressBrush->AddObject(sp1);
+			resultBrush.AddObject(sp1);
 		}
 
 	}
 	
-	//cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
-	Action * action = new ReplaceBrushAction( &orig, progressBrush );
-	action->Perform();
-	doneActionStack.push_back( action );
+	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
 
-	ClearUndoneActions();
-
-	PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+	PolyPtr newPoly(new TerrainPolygon(&grassTex));
 	polygonInProgress = newPoly;
+
+	/*action->Perform();
+	doneActionStack.push_back(action);
+
+	ClearUndoneActions();*/
+
+	return action;
+
+	//cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
+	
 }
 
 list<TerrainPoint*> InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
@@ -17600,11 +17630,13 @@ void RemoveTemporaryPoints( TerrainPolygon *poly, list<TerrainPoint*> &addedPoin
 	}
 }
 
-void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
+Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 {
+	Brush orig;
+	Brush resultBrush;
 	tempActors.clear();
 
-	Brush orig;
+	//Brush orig;
 	map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
 	list<boost::shared_ptr<GateInfo>> gateInfoList;
 
@@ -17654,7 +17686,6 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 	list<PolyPtr> results;
 	Sub( polygonInProgress, intersectingPolys, results );
 
-	Brush resultBrush;
 	for( list<PolyPtr>::iterator it = results.begin(); 
 		it != results.end(); ++it )
 	{
@@ -17749,13 +17780,17 @@ void EditSession::ExecuteTerrainSubtract(list<PolyPtr> &intersectingPolys)
 			resultBrush.AddObject(sp1);
 		}
 	}
-	Action * action = new ReplaceBrushAction( &orig, &resultBrush );
-	action->Perform();
-	doneActionStack.push_back( action );
-
-	ClearUndoneActions();
 
 	polygonInProgress->ClearPoints();
+
+	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
+
+	/*action->Perform();
+	doneActionStack.push_back(action);
+
+	ClearUndoneActions();*/
+
+	return action;
 }
 
 void EditSession::PointSelectPoint( V2d &worldPos,

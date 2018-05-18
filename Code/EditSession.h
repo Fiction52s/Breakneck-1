@@ -1802,12 +1802,12 @@ struct EditSession : GUIHandler
 		bool &emptysp );
 	void PointSelectPolygon();
 	void ExecuteTerrainCompletion();
-	void ExecuteTerrainAdd(
+	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys);
 	void PasteTerrain( Brush *b );
-	void ExecuteTerrainSubtract(
-		std::list<PolyPtr> &intersectingPolys);
-	void ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys);
+	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys);
+	Action *ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys);
+	
 	bool HoldingShift();
 	bool HoldingControl();
 
