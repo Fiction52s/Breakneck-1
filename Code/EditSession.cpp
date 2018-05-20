@@ -3091,7 +3091,7 @@ bool EditSession::PointOnLine( V2d &pos, V2d &p0, V2d &p1, double width)
 }
 
 //returns true if attach is successful
-bool EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
+ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
 {
 	TerrainPoint *next;
 	V2d currPos, nextPos;
@@ -3146,7 +3146,9 @@ bool EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
 			//might need to make sure it CAN be grounded
 			assert( actor->groundInfo != NULL ); 
 
-			ActorPtr newActor( actor->Copy() );
+
+			//ActorPtr newActor( actor->Copy() );
+			ActorParams *newActor = actor->Copy();
 			newActor->groundInfo = NULL;
 			//newActor->UnAnchor( newActor );
 			//newActor->groundInfo = NULL;
@@ -3155,16 +3157,19 @@ bool EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
 
 			//GroundInfo old = *actor->groundInfo;
 			assert(gi.edgeStart != NULL);
-			assert( newActor.get() != NULL );
+			assert(newActor != NULL);
+			//assert( newActor.get() != NULL );
 
 			//newActor->UnAnchor( newActor );
 			//newActor->groundInfo->edgeStart = gi.edgeStart;
 			//newActor->groundInfo->ground = gi.ground;
 			//newActor->groundInfo->groundQuantity= gi.groundQuantity;
 
-			poly->enemies[p].push_back( newActor );
+			//poly->enemies[p].push_back( newActor );
 
-			tempActors.push_back( newActor );
+			//tempActors.push_back( newActor );
+
+			return newActor;
 			//b.AddObject( newActor );
 			//actor->UnAnchor( actor );
 			//actor->groundInfo->ground->enemies[actor->groundInfo->edgeStart].remove( actor );
@@ -3172,18 +3177,19 @@ bool EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
 
 			//old.ground->enemies[old.edgeStart].remove( actor );
 			
-			return true;
+			//return true;
 			//break;
 		}
 	}
 
-	return false;
+	return NULL;
+	//return false;
 }
 
 void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon *poly )
 {
 	//cout << "attemping to attach actors" << endl;
-	bool res;
+	/*bool res;
 	for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
 	{
 		res = AttachActorToPolygon( (*it), poly );
@@ -3195,7 +3201,7 @@ void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon 
 		{
 			cout << "totally didn't save an actor! QQ" << endl;
 		}
-	}
+	}*/
 }
 
 void EditSession::Extend(boost::shared_ptr<TerrainPolygon> extension,
@@ -7641,6 +7647,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									copiedBrush->Move( pos - copiedBrush->GetCenter());
 									editMouseGrabPos = pos;
 									mode = PASTE;
+
+									selectedBrush->SetSelected(false);
+									selectedBrush->Clear();
 									
 									/*Action *ac = new ApplyBrushAction(copiedBrush);
 									ac->Perform();
@@ -17330,6 +17339,8 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys)
 
 void EditSession::PasteTerrain(Brush *b)
 {
+	
+
 	CompoundAction *compoundAction = new CompoundAction;
 	Brush applyBrush;
 	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
@@ -17412,7 +17423,6 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit2));
 				orig.AddObject(sp1);
 			}
-			
 		}
 
 		TerrainPoint *curr = (*it)->pointStart;
@@ -17441,6 +17451,9 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	}
 
 	
+
+	//assert(orig.objects.size() == 2);
+	//assert(actorList.size() == 1);
 
 	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>(polygonInProgress);
 
@@ -17495,12 +17508,18 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		resultBrush.AddObject(sp1);
 	}
 
+	
 	for (auto it = actorList.begin(); it != actorList.end(); ++it)
 	{
 		//ActorPtr newActor((*it)->Copy());
 		//newActor->UnAnchor(newActor);
 		//bool res = AttachActorToPolygon(newActor, polygonInProgress.get() );
-		AttachActorToPolygon((*it), polygonInProgress.get());
+		ActorParams * ac = AttachActorToPolygon((*it), polygonInProgress.get());
+		if (ac != NULL)
+		{
+			ActorPtr newActor( ac );
+			resultBrush.AddObject(newActor);
+		}
 		//newActor->AnchorToGround( )
 		//newActor->groundInfo
 		//newActor->groundInfo->edgeStart
@@ -17508,7 +17527,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	
 
-	for (auto eit = polygonInProgress->enemies.begin(); 
+	/*for (auto eit = polygonInProgress->enemies.begin(); 
 		eit != polygonInProgress->enemies.end(); ++eit)
 	{
 		for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
@@ -17517,9 +17536,19 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 			resultBrush.AddObject(sp1);
 		}
 
-	}
+	}*/
 	
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
+
+	if (resultBrush.objects.size() == 2 && orig.objects.size() == 2 )
+	{
+
+	}
+	else
+	{
+		cout << "orig: " << orig.objects.size() << " , actors: " << actorList.size() << endl;
+		assert(0);
+	}
 
 	PolyPtr newPoly(new TerrainPolygon(&grassTex));
 	polygonInProgress = newPoly;

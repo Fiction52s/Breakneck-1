@@ -443,6 +443,15 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 		edit->inversePolygon = poly;
 	}
 	
+	/*if (enemies.size() == 1)
+	{
+
+	}
+	else
+	{
+		assert(0);
+	}*/
+	
 	//add in enemies
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{

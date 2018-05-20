@@ -537,9 +537,6 @@ void ActorParams::Activate( EditSession *edit, SelectPtr select )
 }
 
 
-
-
-
 HealthFlyParams::HealthFlyParams( EditSession *edit,
 		sf::Vector2i pos, int p_color )
 		:ActorParams( ActorParams::AIR_ONLY )

@@ -1475,7 +1475,7 @@ struct EditSession : GUIHandler
 	EditSession( MainMenu *p_mainMenu );
 	~EditSession();
 	
-	bool AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly );
+	ActorParams * AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly );
 	void AttachActorsToPolygon( std::list<ActorPtr> &actors, TerrainPolygon *poly );
 	int Run(const boost::filesystem::path &p_filePath,
 		sf::Vector2f cameraPos, 
