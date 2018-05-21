@@ -47,7 +47,8 @@ struct PatrollerEye
 	State state;
 	void UpdateSprite();
 	bool IsEyeActivated();
-	void Draw(sf::RenderTarget *target);
+	void Draw(sf::RenderTarget *target,
+		sf::Shader *sh = NULL );
 	void ProcessState(sf::Vector2f &targetPos);
 	void SetPosition(sf::Vector2f &pos);
 	sf::Vector2f pos;

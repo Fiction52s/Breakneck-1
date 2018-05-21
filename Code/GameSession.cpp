@@ -1152,7 +1152,7 @@ void GameSession::UpdateEnemiesPostPhysics()
 		return;
 	}
 
-	int keyLength = 16 * 5;
+	int keyLength = 30;//16 * 5;
 	keyFrame = totalGameFrames % keyLength;
 	
 
@@ -1180,6 +1180,11 @@ void GameSession::UpdateEnemiesPostPhysics()
 
 		current = temp;
 	}
+
+	/*for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->CheckedZoneUpdate(FloatRect(screenRect));
+	}*/
 }
 
 void GameSession::RecordReplayEnemies()
@@ -1234,6 +1239,11 @@ void GameSession::UpdateEnemiesDraw()
 			current->Draw( preScreenTex );
 		}
 		current = current->next;
+	}
+
+	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->CheckedZoneDraw(preScreenTex, FloatRect(screenRect));
 	}
 }
 
@@ -3343,6 +3353,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 		raceFight->Init();
 	}
 
+	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->SetZoneSpritePosition();
+	}
+
 	return true;
 }
 
@@ -4922,9 +4937,9 @@ void GameSession::SetupZones()
 	{
 		cout << "setting original zone to active: " << originalZone << endl;
 		//originalZone->active = true;
-		ActivateZone(originalZone);
-		currentZone = originalZone;
-		keyMarker->SetStartKeysZone(currentZone);
+		ActivateZone(originalZone, true);
+		//currentZone = originalZone;
+		//keyMarker->SetStartKeysZone(currentZone);
 	}
 	
 	cout << "3: numgates: " << numGates << endl;
@@ -5186,7 +5201,7 @@ bool GameSession::Load()
 		return false;
 	}
 	
-	inputVis = new InputVisualizer;
+	//inputVis = new InputVisualizer;
 
 
 
@@ -6587,7 +6602,8 @@ int GameSession::Run()
 						p->UpdatePrePhysics();
 				}
 
-				inputVis->Update(GetPlayer(0)->currInput);
+				if (inputVis != NULL)
+					inputVis->Update(GetPlayer(0)->currInput);
 
 				UpdateEnemiesPrePhysics();
 
@@ -7406,6 +7422,12 @@ int GameSession::Run()
 			}
 		}
 
+		for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+		{
+			(*it)->Draw(preScreenTex);
+		}
+
+		//draw terrain
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
@@ -7560,10 +7582,7 @@ int GameSession::Run()
 			preScreenTex->setView( view );
 		}
 
-		for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-		{
-			(*it)->Draw( preScreenTex );
-		}
+		
 
 		testGateCount = 0;
 		queryMode = "gate";
@@ -7895,25 +7914,41 @@ int GameSession::Run()
 			currEnemy = currEnemy->next;
 		}*/
 
+
+		/*queryMode = "enemyminimap";
+		enemyTree->Query(this, minimapRect);
+
+		while (listVA != NULL)
+		{
+			TestVA *t = listVA->next;
+			listVA->next = NULL;
+			listVA = t;
+		}*/
+
 		//shouldn't this draw all enemies that are active not just the ones from the current
 		//zone?
-		if( currentZone != NULL )
+		for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 		{
-			for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
-			{
-				(*it)->DrawMinimap( minimapTex );
-			}
+			(*it)->CheckedMiniDraw(minimapTex, FloatRect(minimapRect));
 		}
-		else
-		{
-			//probably inefficient. only happens when there arent any gates. do a little
-			//collision check to make sure they're relevant before drawing
-			//also dont make circles every frame. just store it in the enemy
-			for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
-			{
-				(*it)->DrawMinimap( minimapTex );
-			}
-		}
+
+		//if( currentZone != NULL )
+		//{
+		//	for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
+		//	{
+		//		(*it)->DrawMinimap( minimapTex );
+		//	}
+		//}
+		//else
+		//{
+		//	//probably inefficient. only happens when there arent any gates. do a little
+		//	//collision check to make sure they're relevant before drawing
+		//	//also dont make circles every frame. just store it in the enemy
+		//	for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
+		//	{
+		//		(*it)->DrawMinimap( minimapTex );
+		//	}
+		//}
 
 		/*if( player->action != Actor::DEATH )
 		{
@@ -8222,6 +8257,7 @@ int GameSession::Run()
 			preScreenTex->draw( frameRate );
 		}
 		
+		if(inputVis != NULL)
 		inputVis->Draw(preScreenTex);
 
 
@@ -9314,17 +9350,24 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			AddEnemy( e );
 		}
 	}
-	else if( queryMode == "enemyminimap" )
+	else if( queryMode == "enemyzone" )
 	{
 		Enemy *e = (Enemy*)qte;
 
 		//if( e->spawnRect.intersects( tempSpawnRect ) )
 		//{
 			//cout << "spawning enemy! of type: " << e->type << endl;
-			if( !e->spawned )
-			{
-				e->DrawMinimap( minimapTex );
-			}
+		//if (e->zonedSprite.getGlobalBounds().intersects(FloatRect(tempSpawnRect)))
+		//{
+		//	//e->ZoneDraw( )
+		//}
+
+
+		//	if (rect.intersects(zonedSprite.getGlobalBounds()))
+			//if( !e->spawned )
+		//	{
+		//		e->DrawMinimap( minimapTex );
+		//	}
 			
 			//e->spawned = true;
 
@@ -10019,9 +10062,9 @@ void GameSession::RestartLevel()
 		(*it)->frame = 0;//players[0]->actionLength[Actor::Action::SPAWNWAIT];
 	}
 
-	currentZone = originalZone;
-	if( currentZone != NULL )
-		keyMarker->SetStartKeysZone(currentZone);
+//	currentZone = originalZone;
+//	if( currentZone != NULL )
+//		keyMarker->SetStartKeysZone(currentZone);
 
 	if( poiMap.count( "ship" ) > 0 )
 	{
@@ -10065,11 +10108,14 @@ void GameSession::RestartLevel()
 
 	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 	{
-		(*it)->active = false;
+		(*it)->Reset();
 	}
 
-	if( originalZone != NULL )
-		originalZone->active = true;
+	if (originalZone != NULL)
+	{
+		ActivateZone(originalZone, true);
+	}
+	//	originalZone->active = true;
 	//
 	//later don't relock gates in a level unless there is a "level reset"
 	for( int i = 0; i < numGates; ++i )
@@ -14193,7 +14239,7 @@ void GameSession::SetUndergroundParAndDraw()
 }
 
 //only activates zones if they're inactive. 
-void GameSession::ActivateZone( Zone *z )
+void GameSession::ActivateZone( Zone *z, bool instant )
 {
 	if( z == NULL )
 		return;
@@ -14201,6 +14247,16 @@ void GameSession::ActivateZone( Zone *z )
 	//cout << "ACTIVATE ZONE!!!" << endl;
 	if( !z->active )
 	{
+		if (instant)
+		{
+			z->action = Zone::OPEN;
+		}
+		else
+		{
+			z->action = Zone::OPENING;
+			z->frame = 0;
+		}
+
 		for( list<Enemy*>::iterator it = z->spawnEnemies.begin(); it != z->spawnEnemies.end(); ++it )
 		{
 			assert( (*it)->spawned == false );
@@ -14226,12 +14282,20 @@ void GameSession::ActivateZone( Zone *z )
 			activatedZoneList = z;
 		}
 	}
-
+	else
+	{
+		assert(0);
+	}
 	//z->SetShadowColor( Color( 0, 0, 255, 10 ) );
 	currentZone = z;
 	keyMarker->SetStartKeysZone(currentZone);
-	int soundIndex = SoundType::S_KEY_ENTER_0 + ( currentZone->requiredKeys );
-	soundNodeList->ActivateSound( gameSoundBuffers[soundIndex] );
+
+
+	if (!instant)
+	{
+		int soundIndex = SoundType::S_KEY_ENTER_0 + (currentZone->requiredKeys);
+		soundNodeList->ActivateSound(gameSoundBuffers[soundIndex]);
+	}
 }
 
 void GameSession::UnlockGate( Gate *g )

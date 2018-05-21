@@ -39,10 +39,10 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 
 	frame = 0;
 
-	animationFactor = 10;
+	//animationFactor = 10;
 
 	//ts = owner->GetTileset( "Booster.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/booster_128x128.png", 128, 128);
+	ts = owner->GetTileset("Enemies/booster_256x256.png", 256, 256);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -58,10 +58,21 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	hitBox.rw = 32;
 	hitBox.rh = 32;
 
+
+	hurtBody = new CollisionBody(1);
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hit;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = 32;
+	hurtBox.rh = 32;
 	//need hitbox info?
 
 	
 	hitBody->AddCollisionBox(0, hitBox);
+	hurtBody->AddCollisionBox(0, hurtBox );
 
 	dead = false;
 
@@ -71,7 +82,28 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 		64, 64);
 
 	SetHitboxes(hitBody, 0);
+	SetHitboxes(hurtBody, 0);
+
+	actionLength[NEUTRAL] = 6;
+	actionLength[BOOST] = 7;
+	actionLength[REFRESH] = 1;
+
+	animFactor[NEUTRAL] = 3;
+	animFactor[BOOST] = 3;
+	animFactor[REFRESH] = 60;
 }
+
+bool Booster::Boost()
+{
+	if (action == NEUTRAL)
+	{
+		action = BOOST;
+		frame = 0;
+		return true;
+	}
+	return false;
+}
+
 
 
 void Booster::ResetEnemy()
@@ -90,34 +122,28 @@ void Booster::ResetEnemy()
 
 void Booster::ProcessState()
 {
-	switch (action)
+	if (frame == actionLength[action] * animFactor[action])
 	{
-	case NEUTRAL:
-	{
-		if (frame == 10)
+		switch (action)
+		{
+		case NEUTRAL:
 		{
 			frame = 0;
+			break;
 		}
-		break;
-	}
-	case BOOST:
-	{
-		if (frame == 11)
+		case BOOST:
 		{
 			action = REFRESH;
 			frame = 0;
+			break;
 		}
-		break;
-	}
-	case REFRESH:
-	{
-		if (frame == 60)
+		case REFRESH:
 		{
 			action = NEUTRAL;
 			frame = 0;
+			break;
 		}
-		break;
-	}
+		}
 	}
 }
 
@@ -127,17 +153,18 @@ void Booster::UpdateSprite()
 	switch (action)
 	{
 	case NEUTRAL:
-		tile = 0;
+		tile = frame / animFactor[NEUTRAL];
 		break;
 	case BOOST:
-		tile = frame;
+		tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
 		break;
 	case REFRESH:
-		tile = 0;
+		tile = 13;
 		break;
 	}
 	IntRect ir = ts->GetSubRect(tile);
 	sprite.setTextureRect(ir);
+	sprite.setScale(2,2);
 }
 
 void Booster::EnemyDraw(sf::RenderTarget *target)

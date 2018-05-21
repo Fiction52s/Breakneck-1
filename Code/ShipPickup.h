@@ -10,7 +10,7 @@ struct ShipPickup : Enemy
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target );
-	void DrawMinimap( sf::RenderTarget *target );
+	void DrawMinimap( sf::RenderTarget *target);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 

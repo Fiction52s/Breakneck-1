@@ -35,9 +35,13 @@ void PatrollerEye::Reset()
 	state = S_WAITING;
 }
 
-void PatrollerEye::Draw(sf::RenderTarget *target)
+void PatrollerEye::Draw(sf::RenderTarget *target, sf::Shader *sh)
 {
-	target->draw(eye, 8, sf::Quads, ts_eye->texture);
+	sf::RenderStates rs;
+	rs.shader = sh;
+	rs.texture = ts_eye->texture;
+	//rs.te
+	target->draw(eye, 8, sf::Quads, rs);
 }
 
 bool PatrollerEye::IsEyeActivated()

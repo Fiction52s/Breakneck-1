@@ -485,6 +485,12 @@ public:
 	int currHurtboxFrame;
 	virtual void UpdateEnemyPhysics() {}
 	virtual void HandleHitAndSurvive() {}
+	void CheckedMiniDraw(sf::RenderTarget *target,
+		sf::FloatRect &rect);
+	void CheckedZoneDraw(sf::RenderTarget *target,
+		sf::FloatRect &rect);
+	void SetZoneSpritePosition();
+	void CheckedZoneUpdate(sf::FloatRect &rect);
 	//std::list<CollisionBox> *activeHurtboxes;
 	CollisionBox *physicsBox;
 	virtual void UpdatePhysics( int substep );
@@ -529,6 +535,10 @@ public:
 
 	virtual void EnemyDraw(sf::RenderTarget *target) {}
 	void Draw(sf::RenderTarget *target);
+	virtual void UpdateZoneSprite();
+	sf::Sprite zonedSprite;
+	Tileset *ts_zoned;
+	virtual void ZoneDraw(sf::RenderTarget *target);
 
 	void Reset();
 	
@@ -563,6 +573,9 @@ public:
 	Tileset *ts_key;
 	sf::Color keyColor;
 	int world;
+
+	Enemy *tempPrev;
+	Enemy *tempNext;
 
 	struct Stored
 	{

@@ -27,15 +27,27 @@ struct Zone
 		sf::Vector2i test );
 	void Update( float zoom, sf::Vector2f &botLeft,
 		sf::Vector2f &playertest );
-
+	int frame;
+	float GetOpeningAlpha();
 	enum ZoneType
 	{
 		NORMAL,
 		NEXUS,
 		EXTRA
 	};
+
+	enum Action
+	{
+		UNEXPLORED,
+		OPENING,
+		OPEN,
+		Count
+	};
+
+	Action action;
 	void SetZoneType( ZoneType zt );
 	ZoneType zType;
+	void Reset();
 
 	sf::VertexArray *definedArea;
 	std::list<Edge*> gates;

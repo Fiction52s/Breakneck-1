@@ -419,7 +419,6 @@ void Zone::Init()
 	
 	int vaSize = tris.size() * 3;
 	definedArea = new VertexArray( sf::Triangles , vaSize );
-	
 	VertexArray & v = *definedArea;
 	
 	//Color testColor( 0x75, 0x70, 0x90 );
@@ -442,12 +441,24 @@ void Zone::Init()
 		if (zShader != NULL)
 		{
 			delete zShader;
-			zShader = NULL;
-			ts_z = NULL;
 		}
+		
+		zShader = new sf::Shader;
+		if (!zShader->loadFromFile("Shader/normalzone.frag", sf::Shader::Fragment))
+		{
+			cout << "zone shader not loading correctly!" << endl;
+			assert(false);
+		}
+		//ts_z = owner->GetTileset("terrain_1_01_512x512.png", 512, 512);
+		//zShader->setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+		//zShader->setUniform("Resolution", Vector2f(1920, 1080));
+		//zShader->setUniform("u_texture", ts_z->texture);
+		
 
 		Color shadowColor(50, 50, 50, 200);
+		
 		SetShadowColor(shadowColor);
+		zShader->setUniform("shadowColor", ColorGL(shadowColor));
 		//SetShadowColor(Color::White);
 		break;
 	}
@@ -533,11 +544,44 @@ void Zone::AddHoles( p2t::CDT *cdt )
 	}
 }
 
+void Zone::Reset()
+{
+	active = false;
+	action = UNEXPLORED;
+	frame = 0;
+}
+
 void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 {
+	VertexArray &va = *definedArea;
+	if (zType == NORMAL)
+	{
+		switch (action)
+		{
+		case UNEXPLORED:
+			zShader->setUniform("alpha", 1.f);
+			break;
+		case OPENING:
+			if (frame == 60)
+			{ 
+				action = OPEN;
+				frame = 0;
+			}
+			else
+			{
+				zShader->setUniform("alpha", GetOpeningAlpha());
+			}
+			break;
+		case OPEN:
+			break;
+		}
+	}
+	
+
 	switch (zType)
 	{
 	case NORMAL:
+		
 		break;
 	case NEXUS:
 		zShader->setUniform("zoom", zoom);
@@ -545,14 +589,19 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 		zShader->setUniform("playertest", playertest);
 		break;
 	}
-	
+	++frame;
+}
+
+float Zone::GetOpeningAlpha()
+{
+	return 1.f - frame / 60.f;
 }
 
 void Zone::Draw( RenderTarget *target )
 {
 	//target->draw( *definedArea );
 	//return;
-	if( !active )
+	if( action != OPEN )//!active )
 	{
 		if( showShadow )
 		{
@@ -560,7 +609,7 @@ void Zone::Draw( RenderTarget *target )
 			switch (zType)
 			{
 			case NORMAL:
-				target->draw(*definedArea);
+				target->draw(*definedArea, zShader); //target->draw(*definedArea);
 				break;
 			case NEXUS:
 

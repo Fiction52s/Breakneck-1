@@ -1039,7 +1039,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool goalDestroyed;
 	sf::View cloudView;
 
-	void ActivateZone(Zone * z);
+	void ActivateZone(Zone * z, bool instant = false);
 	Zone *activatedZoneList;
 
 	void UnlockGate( Gate *g );

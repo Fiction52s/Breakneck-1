@@ -89,12 +89,12 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 
 	//ts_zoomedMapw1 = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
 
-	ts_space = mainMenu->tilesetManager.GetTileset("WorldMap/map_z1_stars.png", 1920, 1080);
+	ts_space = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_bg.png", 1920, 1080);
 	spaceSpr.setTexture(*ts_space->texture);
 	
-	ts_planet = mainMenu->tilesetManager.GetTileset("WorldMap/map_z1_world.png", 1920, 1080); 
+	ts_planet = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap.png", 1920, 1080); 
 	planetSpr.setTexture(*ts_planet->texture);
-	ts_colony[0] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
+	ts_colony[0] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w1.png", 1920, 1080);
 	planetSpr.setOrigin(planetSpr.getLocalBounds().width / 2, planetSpr.getLocalBounds().height / 2);
 	planetSpr.setPosition(960, 540);
 	zoomView.setCenter(960, 540);
@@ -102,9 +102,9 @@ WorldMap::WorldMap( MainMenu *mainMenu )
 
 	
 	colonySpr[0].setTexture(*ts_colony[0]->texture);
-	colonySpr[0].setOrigin(colonySpr[0].getLocalBounds().width / 2, colonySpr[0].getLocalBounds().height / 2);
-	colonySpr[0].setPosition(1100, 400);
-	colonySpr[0].setScale(.1, .1);
+	//colonySpr[0].setOrigin(colonySpr[0].getLocalBounds().width / 2, colonySpr[0].getLocalBounds().height / 2);
+	colonySpr[0].setPosition(1085, 331);
+	colonySpr[0].setScale(1.f / 8.f, 1.f / 8.f);
 
 	
 
@@ -515,7 +515,10 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			if (frame == 0)
 				zoomShader.setUniform("sampleStrength", 0.f);
 
-			Vector2f endPos = colonySpr[0].getPosition();
+
+			Vector2f colMiddle = Vector2f(colonySpr[0].getGlobalBounds().width / 2,
+				colonySpr[0].getGlobalBounds().height / 2);
+			Vector2f endPos = colonySpr[0].getPosition() + colMiddle;
 			float endScale = colonySpr[0].getScale().x;//.2f;
 
 			Vector2f startPos(960, 540);

@@ -219,9 +219,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	{
 	//hitCeilingLockoutFrames = 20;
 
-	dustParticles = new EffectPool(EffectType::FX_REGULAR, 2000, 1);
+	//dustParticles = new EffectPool(EffectType::FX_REGULAR, 2000, 1);
 	//EffectInstance params;
-	dustParticles->SetTileset(owner->GetTileset( "dust_8x8.png", 8,8));
+	//dustParticles->SetTileset(owner->GetTileset( "dust_8x8.png", 8,8));
 	//dustParticles->ActivateEffect(&params);
 
 	cout << "Start player" << endl;
@@ -1771,7 +1771,7 @@ void Actor::Respawn()
 	testGrassCount = 0;
 	gravityGrassCount = 0;
 	//currSpring = NULL;
-	currBooster = NULL;
+	//currBooster = NULL;
 	regrindOffCount = 3;
 	scorpAdditionalCap = 0.0;
 	prevRail = NULL;
@@ -7694,8 +7694,9 @@ facingRight = false;
 				dWireAirDashOld = dWireAirDash;
 			}
 
-			if (currBooster != NULL && oldBooster == NULL )
+			if (currBooster != NULL && oldBooster == NULL && currBooster->Boost() )
 			{
+				
 				velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
 				startAirDashVel.x = velocity.x;//normalize(velocity).x * ( length( velocity ) + currBooster->strength);
 				extraAirDashY = velocity.y; //- aSpeed;
@@ -7885,7 +7886,7 @@ facingRight = false;
 		rightWire->UpdateState( touchEdgeWithRightWire );
 	}
 	
-	if (currBooster != NULL && oldBooster == NULL && action != AIRDASH )
+	if (currBooster != NULL && oldBooster == NULL && action != AIRDASH && currBooster->Boost())
 	{	
 		if (ground == NULL && bounceEdge == NULL && (grindEdge == NULL || action == RAILGRIND))
 		{
@@ -18005,7 +18006,7 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 
 void Actor::Draw( sf::RenderTarget *target )
 {
-	dustParticles->Draw(target);
+	//dustParticles->Draw(target);
 	if (action == EXITWAIT || action == SPAWNWAIT || (action == INTRO && frame < 11 ))
 	{
 		return;
@@ -18723,19 +18724,19 @@ void Actor::UpdateSprite()
 		
 		
 		params.SetVelocityParams(tr.transformPoint( v ), Vector2f(0, 0), 1 );
-		dustParticles->ActivateEffect(&params);
+		//dustParticles->ActivateEffect(&params);
 		float zz = .2;
 		v = Vector2f(normalize(ground->v1 - ground->v0)) * zz;//Vector2f(zz, 0);
 		
 		params.SetVelocityParams(tr.transformPoint(v), Vector2f(0, 0), 1);
-		dustParticles->ActivateEffect(&params);
+		//dustParticles->ActivateEffect(&params);
 		v = -Vector2f(normalize(ground->v1 - ground->v0)) * zz;
 		params.SetVelocityParams(tr.transformPoint(v), Vector2f(0, 0), 1);
-		dustParticles->ActivateEffect(&params);
+		//dustParticles->ActivateEffect(&params);
 		
 	}
 
-	dustParticles->Update(&rpu);
+	//dustParticles->Update(&rpu);
 
 
 	V2d gn( 0, 0 );

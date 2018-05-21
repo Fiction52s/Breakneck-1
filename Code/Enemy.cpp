@@ -1023,6 +1023,10 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
 	affectCameraZoom( true )
 {
+	ts_zoned = owner->GetTileset("Enemies/zonedenemy_64x64.png", 64, 64);
+	zonedSprite.setTexture(*ts_zoned->texture);
+	
+
 	highResPhysics = false;
 	numLaunchers = 0;
 	launchers = NULL;
@@ -1117,6 +1121,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 		keyColor.b = (sf::Uint8)(floor( (float)(keyColor.b) * .1f + .5f ));
 		//keyColor = Color::Black;
 		
+		keyColor = Color::Black;
 
 		//cout << "doing the add monitor thing" << endl;
 		keyShader = new Shader();
@@ -1178,6 +1183,15 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 
 		//hurtShader->setUniform( "toColor", keyColor );
 	
+
+	
+	
+
+}
+
+void Enemy::SetZoneSpritePosition()
+{
+	zonedSprite.setPosition(position.x, position.y);
 }
 
 int Enemy::NumTotalBullets()
@@ -1244,7 +1258,7 @@ bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 	
 void Enemy::DirectKill()
 {
-	owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, position, true, 0, 10, 2, true);
+	owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, position, true, 0, 10, 4, true);
 
 	dead = true;
 
@@ -1407,6 +1421,44 @@ void Enemy::UpdatePostPhysics()
 	}
 }
 
+void Enemy::CheckedMiniDraw(sf::RenderTarget *target, sf::FloatRect &rect)
+{
+	/*if (rect.intersects(zonedSprite.getGlobalBounds()))
+	{
+		DrawMinimap(target);
+	}*/
+	if ( zone == NULL || ( zone != NULL && zone->active ) )
+	{
+		if (rect.intersects(zonedSprite.getGlobalBounds()))
+		{
+			DrawMinimap(target);
+		}
+	}
+}
+
+void Enemy::CheckedZoneDraw(sf::RenderTarget *target, sf::FloatRect &rect)
+{
+	if (zone != NULL && zone->action == Zone::UNEXPLORED || (zone->action == Zone::OPENING && zone->frame <= 20 ) )// && !zone->active )
+	{
+		if (rect.intersects(zonedSprite.getGlobalBounds()))
+		{
+			UpdateZoneSprite();
+			ZoneDraw(target);
+		}
+	}
+}
+
+void Enemy::CheckedZoneUpdate(sf::FloatRect &rect)
+{
+	if (zone != NULL && !zone->active)
+	{
+		if (rect.intersects(zonedSprite.getGlobalBounds()))
+		{
+			UpdateZoneSprite();
+		}
+	}
+}
+
 void Enemy::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0 )
@@ -1451,7 +1503,7 @@ void Enemy::ConfirmHitNoKill()
 
 void Enemy::ConfirmKill()
 {
-	owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, position, true, 0, 10, 2, true);
+	owner->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, position, true, 0, 10, 5, true);
 	owner->Pause(7);
 	owner->cam.SetRumble(1, 1, 7 );
 	
@@ -1494,6 +1546,28 @@ void Enemy::Draw(sf::RenderTarget *target)
 	{
 		EnemyDraw( target );
 	}
+}
+
+void Enemy::UpdateZoneSprite()
+{
+	if (zone != NULL && zone->action == Zone::OPENING && zone->frame <= 20 )
+	{
+		float f = 1.f - zone->frame / 20.f;
+		zonedSprite.setColor(Color(255, 255, 255, f * 255));
+	}
+	else
+	{
+		zonedSprite.setColor(Color::White);
+	}
+	zonedSprite.setTextureRect(ts_zoned->GetSubRect(0));
+	zonedSprite.setOrigin(zonedSprite.getLocalBounds().width / 2,
+		zonedSprite.getLocalBounds().height / 2);
+	
+}
+
+void Enemy::ZoneDraw(sf::RenderTarget *target)
+{
+	target->draw(zonedSprite);
 }
 
 void Enemy::DrawMinimap(sf::RenderTarget *target)
@@ -1813,6 +1887,16 @@ void CuttableObject::UpdateCutObject( int slowCounter )
 			* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
 
 		Vector2f temp;
+
+		float f;
+		if (separateFrame <= 30)
+		{
+			f = 1.f;
+		}
+		else
+		{
+			f = 1.f - ( separateFrame - (totalSeparateFrames / 2) ) / (float)(totalSeparateFrames / 2);
+		}
 		for (int i = 0; i < 2; ++i)
 		{
 			quads[i * 4 + 0].position = root[i] + sprT.transformPoint(Vector2f(-halfWidth, -halfHeight));
@@ -1820,6 +1904,8 @@ void CuttableObject::UpdateCutObject( int slowCounter )
 			quads[i * 4 + 2].position = root[i] + sprT.transformPoint(Vector2f(halfWidth, halfHeight));
 			quads[i * 4 + 3].position = root[i] + sprT.transformPoint( Vector2f(-halfWidth, halfHeight) );
 
+			SetRectColor(quads + i * 4, Color(255, 255, 255, 255 * f));
+			
 			/*if (flipHoriz)
 			{
 				temp = quads[i * 4 + 0].position;

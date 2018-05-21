@@ -22,14 +22,17 @@ struct Booster : Enemy
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();
+	bool Boost();
 
 	sf::Sprite sprite;
 	Tileset *ts;
 	CollisionBody *hitBody;
+	CollisionBody *hurtBody;
 
 	int strength;
 
-	int animationFactor;
+	int actionLength[Count];
+	int animFactor[Count];
 };
 
 #endif
