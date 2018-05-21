@@ -14958,18 +14958,20 @@ void Actor::PhysicsResponse()
 		V2d B( b.globalPosition.x + b.rw, b.globalPosition.y - b.rh );
 		V2d C( b.globalPosition.x + b.rw, b.globalPosition.y + b.rh );
 		V2d D( b.globalPosition.x - b.rw, b.globalPosition.y + b.rh );
-		V2d nEdge = normalize( edge->v1 - edge->v0 );
+		V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
 
-		double crossA = cross( A - edge->v0, nEdge );
-		double crossB = cross( B - edge->v0, nEdge );
-		double crossC = cross( C - edge->v0, nEdge );
-		double crossD = cross( D - edge->v0, nEdge );
+
+		double crossA = dot( A - edge->v0, nEdge );
+		double crossB = dot( B - edge->v0, nEdge );
+		double crossC = dot( C - edge->v0, nEdge );
+		double crossD = dot( D - edge->v0, nEdge );
 
 		//double crossCenter = cross(b.globalPosition - edge->v0, nEdge);
 		double alongAmount = dot(b.globalPosition - edge->v0, normalize(edge->v1 - edge->v0));
 		alongAmount /= length(edge->v1 - edge->v0);
 		alongAmount = 1.0 - alongAmount;
-		bool activate = crossA > 0 && crossB > 0 && crossC > 0 && crossD > 0;
+		double thresh = .01;
+		bool activate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
 		 
 
 		g->SetLocked( true );
@@ -15001,7 +15003,7 @@ void Actor::PhysicsResponse()
 			|| ( groundSpeed < 0 && ground->edge1 == gateTouched ) ) )
 		{
 			//glitch here because you are actually grounded ON the gate, so this doesnt work out.
-			activate = true;
+			//activate = true;
 		}
 		else
 		{
@@ -18613,13 +18615,14 @@ void Actor::DebugDraw( RenderTarget *target )
 		currHurtboxes->DebugDraw( currHurtboxFrame, target);
 	}
 
-	sf::CircleShape cs;
+	b.DebugDraw(target);
+	/*sf::CircleShape cs;
 	cs.setOutlineThickness( 10 );
 	cs.setOutlineColor( Color::Red );
 	cs.setFillColor( Color::Transparent );
 	cs.setRadius( 160 );
 	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
+	cs.setPosition( position.x, position.y );*/
 	//target->draw( cs );
 	
 

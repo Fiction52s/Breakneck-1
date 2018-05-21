@@ -26,7 +26,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	maxFramesUntilBurrow = 200;
 	framesUntilBurrow = maxFramesUntilBurrow;
 
-	dashAccel = .3;
+	dashAccel = .1;
 	currDistTravelled = 0;
 	mover = new SurfaceMover(owner, g, q, 32 );
 	mover->surfaceHandler = this;
@@ -299,7 +299,7 @@ void Crawler::ProcessState()
 		V2d gn = mover->ground->Normal();
 		double rollacc = .08;
 
-		if ((mover->groundSpeed > 0 && gn.x < 0) || (mover->groundSpeed < 0 && gn.x > 0))
+		if ((mover->groundSpeed > 0 && gn.x < 0 && gn.y < 0) || (mover->groundSpeed < 0 && gn.x > 0 && gn.y < 0))
 		{
 			Accelerate(rollacc);
 		break;
@@ -681,6 +681,6 @@ void Crawler::AttemptRunAwayBoost()
 
 	if (IsPlayerChasingMe())
 	{
-		Accelerate(.1);
+		Accelerate(.05);
 	}
 }

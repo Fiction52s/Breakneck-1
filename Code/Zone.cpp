@@ -461,6 +461,7 @@ void Zone::Init()
 		
 		SetShadowColor(shadowColor);
 		zShader->setUniform("shadowColor", ColorGL(shadowColor));
+		zShader->setUniform("alpha", 1.f);
 		//SetShadowColor(Color::White);
 		break;
 	}
@@ -490,7 +491,6 @@ void Zone::Init()
 		}
 		break;
 	}
-
 	}
 	//Color shadowColor(50, 50, 50, 200);
 	//SetShadowColor(shadowColor);
@@ -517,6 +517,8 @@ void Zone::Init()
 			break;
 		}
 	}
+
+	
 }
 
 void Zone::SetShadowColor( sf::Color c )
@@ -551,6 +553,8 @@ void Zone::Reset()
 	active = false;
 	action = UNEXPLORED;
 	frame = 0;
+	if( zShader != NULL )
+		zShader->setUniform("alpha", 1.f);
 }
 
 void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
@@ -561,7 +565,6 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 		switch (action)
 		{
 		case UNEXPLORED:
-			zShader->setUniform("alpha", 1.f);
 			break;
 		case OPENING:
 			if (frame == 60)
@@ -575,6 +578,20 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 			}
 			break;
 		case OPEN:
+			break;
+		case CLOSING:
+			if (frame == 60)
+			{
+				action = CLOSED;
+				frame = 0;
+				zShader->setUniform("alpha", 1.f);
+			}
+			else
+			{
+				zShader->setUniform("alpha", 1.f - GetOpeningAlpha());
+			}
+			break;
+		case CLOSED:
 			break;
 		}
 	}

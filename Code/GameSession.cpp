@@ -10111,6 +10111,7 @@ void GameSession::RestartLevel()
 		(*it)->Reset();
 	}
 
+	currentZone = NULL;
 	if (originalZone != NULL)
 	{
 		ActivateZone(originalZone, true);
@@ -14287,6 +14288,12 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 		assert(0);
 	}
 	//z->SetShadowColor( Color( 0, 0, 255, 10 ) );
+	if (currentZone != NULL)
+	{
+		currentZone->action = Zone::CLOSING;
+		currentZone->frame = 0;
+	}
+
 	currentZone = z;
 	keyMarker->SetStartKeysZone(currentZone);
 

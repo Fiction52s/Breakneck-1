@@ -41,7 +41,8 @@ struct Zone
 		UNEXPLORED,
 		OPENING,
 		OPEN,
-
+		CLOSING,
+		CLOSED,
 		Count
 	};
 
