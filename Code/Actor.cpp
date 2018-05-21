@@ -22382,7 +22382,8 @@ void Actor::SetActionGrind()
 	hurtBody.rh = grindHurtRadius;
 
 		
-				
+	ground = NULL;
+	bounceEdge = NULL;
 
 	if( reversed )
 	{
