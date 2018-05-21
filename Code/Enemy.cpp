@@ -1863,6 +1863,8 @@ void CuttableObject::Reset()
 
 void CuttableObject::UpdateCutObject( int slowCounter )
 {
+	Vector2f currSplitDir = splitDir;
+
 	if (active)
 	{
 		Transform sprT;
@@ -1877,13 +1879,15 @@ void CuttableObject::UpdateCutObject( int slowCounter )
 			sprT.scale(1, -1);
 		}
 
+		currSplitDir = sprT.transformPoint(currSplitDir);
+
 		int halfWidth = rectWidth / 2;
 		int halfHeight = rectHeight / 2;
 
 		Vector2f root[2];
-		root[0] = rootPos + splitDir
+		root[0] = rootPos + currSplitDir
 			* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
-		root[1] = rootPos - splitDir
+		root[1] = rootPos - currSplitDir
 			* (separateSpeed * (float)separateFrame + (separateSpeed / slowCounter));
 
 		Vector2f temp;
