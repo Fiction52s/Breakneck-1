@@ -181,13 +181,22 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_fx_hurtSpack = owner->GetTileset("hurt_spack_128x160.png", 128, 160);
 	ts_fx_dashStart = owner->GetTileset("fx_dashstart_160x160.png", 160, 160);
 	ts_fx_dashRepeat = owner->GetTileset("fx_dashrepeat_192x128.png", 192, 128);
-	ts_fx_land = owner->GetTileset("fx_land_128x128.png", 128, 128);
-	ts_fx_runStart = owner->GetTileset("fx_runstart_128x112.png", 128, 112);
+	ts_fx_land[0] = owner->GetTileset("FX/land_a_128x128.png", 128, 128);
+	ts_fx_land[1] = owner->GetTileset("FX/land_b_192x208.png", 192, 208);
+	ts_fx_land[2] = owner->GetTileset("FX/land_c_256x256.png", 256, 256);
+	ts_fx_runStart[0] = owner->GetTileset("FX/runstart_a_128x128.png", 128, 128);
+	ts_fx_runStart[1] = owner->GetTileset("FX/runstart_b_224x224.png", 224, 224);
+	ts_fx_runStart[2] = owner->GetTileset("FX/runstart_c_224x224.png", 224, 224);
+
 	ts_fx_sprint = owner->GetTileset("fx_sprint_176x176.png", 176, 176);
 	ts_fx_run = owner->GetTileset("fx_run_144x128.png", 144, 128);
 	ts_fx_bigRunRepeat = owner->GetTileset("fx_bigrunrepeat.png", 176, 112);
-	ts_fx_jump = owner->GetTileset("fx_jump_128x80.png", 128, 80);
-	ts_fx_wallJump = owner->GetTileset("fx_walljump_112x160.png", 112, 160);
+	ts_fx_jump[0] = owner->GetTileset("FX/jump_a_128x80.png", 128, 80);
+	ts_fx_jump[1] = owner->GetTileset("FX/jump_b_160x192.png", 160, 192);
+	ts_fx_jump[2] = owner->GetTileset("FX/jump_c_160x192.png", 160, 192);
+	ts_fx_wallJump[0] = owner->GetTileset("FX/walljump_a_160x160.png", 160, 160);
+	ts_fx_wallJump[1] = owner->GetTileset("FX/walljump_b_224x224.png", 224, 224);
+	ts_fx_wallJump[2] = owner->GetTileset("FX/walljump_c_224x224.png", 224, 224);
 	ts_fx_double = owner->GetTileset("fx_doublejump_196x160.png", 196, 160);
 	ts_fx_gravReverse = owner->GetTileset("fx_grav_reverse_128x128.png", 128, 128);
 	ts_fx_chargeBlue0 = owner->GetTileset("elec_01_128x128.png", 128, 128);
@@ -6421,7 +6430,20 @@ void Actor::UpdatePrePhysics()
 
 					fxPos += gNorm * 16.0;
 					
-					owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 6, 4, facingRight );
+					switch (speedLevel)
+					{
+					case 0:
+						owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_jump[0], fxPos, false, ang, 6, 4, facingRight);
+						break;
+					case 1:
+						owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_jump[1], fxPos, false, ang, 6, 4, facingRight);
+						break;
+					case 2:
+						owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_jump[2], fxPos, false, ang, 6, 4, facingRight);
+						break;
+					}
+
+					//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 6, 4, facingRight );
 
 					ground = NULL;
 					movingGround = NULL;
@@ -18895,8 +18917,21 @@ void Actor::UpdateSprite()
 					( currInput.LLeft() && !prevInput.LLeft() ) 
 				||  ( currInput.LRight() && !prevInput.LRight() ) )  )
 			{
-				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart,
-				pp + gn * 40.0 + along * xExtraStartRun, false, angle, 6, 3, fr );
+				switch (speedLevel)
+				{
+				case 0:
+					owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart[0],
+						pp + gn * 40.0 + along * xExtraStartRun, false, angle, 6, 3, fr);
+					break;
+				case 1:
+					owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart[1],
+						pp + gn * 40.0 + along * xExtraStartRun, false, angle, 6, 3, fr);
+					break;
+				case 2:
+					owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart[2],
+						pp + gn * 40.0 + along * xExtraStartRun, false, angle, 6, 3, fr);
+					break;
+				}
 			}
 		
 			double xExtraStart = -48.0;
@@ -19168,8 +19203,19 @@ void Actor::UpdateSprite()
 				}
 
 				//cout << "activating" << endl;
-
-				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_land, fxPos, false, angle, 8, 2, facingRight );
+				switch (speedLevel)
+				{
+				case 0:
+					owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_land[0], fxPos, false, angle, 8, 2, facingRight);
+					break;
+				case 1:
+					owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_land[1], fxPos, false, angle, 8, 2, facingRight);
+					break;
+				case 2:
+					owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_land[2], fxPos, false, angle, 9, 2, facingRight);
+					break;
+				}
+				
 			}
 			break;
 		}
@@ -19232,7 +19278,21 @@ void Actor::UpdateSprite()
 				{
 					fxPos += V2d( 0, 0 );
 				}
-				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_wallJump, fxPos, false, 0, 8, 3, facingRight );
+
+				switch (speedLevel)
+				{
+				case 0:
+					owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[0], fxPos, false, 0, 7, 3, facingRight);
+					break;
+				case 1:
+					owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[1], fxPos, false, 0, 7, 3, facingRight);
+					break;
+				case 2:
+					owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[2], fxPos, false, 0, 7, 3, facingRight);
+					break;
+				}
+
+				
 				
 				//cout << "ACTIVATING WALLJUMP" << endl;
 			}

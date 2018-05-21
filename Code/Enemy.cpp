@@ -1023,7 +1023,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
 	affectCameraZoom( true )
 {
-	ts_zoned = owner->GetTileset("Enemies/zonedenemy_64x64.png", 64, 64);
+	ts_zoned = owner->GetTileset("Enemies/enemy_zone_icon_128x128.png", 128, 128);
 	zonedSprite.setTexture(*ts_zoned->texture);
 	
 
@@ -1559,7 +1559,10 @@ void Enemy::UpdateZoneSprite()
 	{
 		zonedSprite.setColor(Color::White);
 	}
-	zonedSprite.setTextureRect(ts_zoned->GetSubRect(0));
+
+	int fr = (owner->totalGameFrames % (12 * 4 )) / 4;
+
+	zonedSprite.setTextureRect(ts_zoned->GetSubRect(fr));
 	zonedSprite.setOrigin(zonedSprite.getLocalBounds().width / 2,
 		zonedSprite.getLocalBounds().height / 2);
 	

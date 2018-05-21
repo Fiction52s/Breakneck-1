@@ -40,6 +40,8 @@ Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
 	zType = NORMAL;
 
 	ts_z = NULL;
+
+	Reset();
 }
 
 Zone::~Zone()

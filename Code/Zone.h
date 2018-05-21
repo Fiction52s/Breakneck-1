@@ -41,6 +41,7 @@ struct Zone
 		UNEXPLORED,
 		OPENING,
 		OPEN,
+
 		Count
 	};
 

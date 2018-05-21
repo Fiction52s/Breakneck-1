@@ -665,11 +665,11 @@ struct Actor : QuadTreeCollider,
 	Tileset * ts_fx_airdashHover;
 
 	Tileset *ts_fx_run;
-	Tileset *ts_fx_runStart;
+	Tileset *ts_fx_runStart[3];
 	Tileset *ts_fx_sprint;
 
 	Tileset * ts_fx_double;
-	Tileset * ts_fx_wallJump;
+	Tileset * ts_fx_wallJump[3];
 	
 	Tileset * ts_fx_gravReverse;
 	Tileset * ts_fx_bigRunRepeat;
@@ -680,8 +680,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_hurtSpack;
 	Tileset *ts_fx_dashStart;
 	Tileset *ts_fx_dashRepeat;
-	Tileset *ts_fx_land;
-	Tileset *ts_fx_jump;
+	Tileset *ts_fx_land[3];
+	Tileset *ts_fx_jump[3];
 
 	Tileset *ts_fx_death_1a;
 	Tileset *ts_fx_death_1b;
