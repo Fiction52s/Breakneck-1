@@ -1449,7 +1449,7 @@ void Enemy::CheckedMiniDraw(sf::RenderTarget *target, sf::FloatRect &rect)
 
 void Enemy::CheckedZoneDraw(sf::RenderTarget *target, sf::FloatRect &rect)
 {
-	if (zone != NULL && zone->action == Zone::UNEXPLORED || (zone->action == Zone::OPENING && zone->frame <= 20 ) )// && !zone->active )
+	if (zone != NULL &&  (zone->action == Zone::UNEXPLORED || (zone->action == Zone::OPENING && zone->frame <= 20 ) ) )// && !zone->active )
 	{
 		if (rect.intersects(zonedSprite.getGlobalBounds()))
 		{

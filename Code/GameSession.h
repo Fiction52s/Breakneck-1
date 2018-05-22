@@ -300,6 +300,7 @@ struct ScoreDisplay
 		int frame;
 		float xDiffPos;
 		ScoreDisplay *parent;
+		//sf::Text info;
 		
 	};
 
@@ -366,6 +367,7 @@ struct RaceFightTarget;
 struct BasicEffect;
 struct EnemyParamsManager;
 struct HitboxManager;
+struct Background;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -808,7 +810,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//GameController &controller;
 	//GameController *controller2;
 
-
 	MapHeader *mh;
 	
 
@@ -831,10 +832,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Sprite miniCircle;
 	Tileset *ts_minimapGateDirection;
 	sf::Sprite gateDirections[6];
-	sf::Sprite background;
-	sf::View bgView;
+	
 
-
+	Background *background;
 
 	const static int NUM_CLOUDS = 5;
 	sf::Sprite clouds[NUM_CLOUDS];

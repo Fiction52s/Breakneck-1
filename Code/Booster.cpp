@@ -42,7 +42,8 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	//animationFactor = 10;
 
 	//ts = owner->GetTileset( "Booster.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/booster_256x256.png", 256, 256);
+	ts = owner->GetTileset("Enemies/booster_256x256.png", 512, 512);
+	ts_refresh = owner->GetTileset("Enemies/booster_on_256x256.png", 512, 512);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -85,12 +86,12 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	SetHitboxes(hurtBody, 0);
 
 	actionLength[NEUTRAL] = 6;
-	actionLength[BOOST] = 7;
-	actionLength[REFRESH] = 1;
+	actionLength[BOOST] = 8;
+	actionLength[REFRESH] = 7;
 
 	animFactor[NEUTRAL] = 3;
 	animFactor[BOOST] = 3;
-	animFactor[REFRESH] = 60;
+	animFactor[REFRESH] = 7;
 }
 
 bool Booster::Boost()
@@ -117,6 +118,8 @@ void Booster::ResetEnemy()
 	SetHitboxes(hitBody, 0);
 	UpdateHitboxes();
 
+	sprite.setTexture(*ts->texture);
+
 	UpdateSprite();
 }
 
@@ -135,12 +138,14 @@ void Booster::ProcessState()
 		{
 			action = REFRESH;
 			frame = 0;
+			sprite.setTexture(*ts_refresh->texture);
 			break;
 		}
 		case REFRESH:
 		{
 			action = NEUTRAL;
 			frame = 0;
+			sprite.setTexture(*ts->texture);
 			break;
 		}
 		}
@@ -150,21 +155,24 @@ void Booster::ProcessState()
 void Booster::UpdateSprite()
 {
 	int tile = 0;
+	IntRect ir;
 	switch (action)
 	{
 	case NEUTRAL:
 		tile = frame / animFactor[NEUTRAL];
+		ir = ts->GetSubRect(tile);
 		break;
 	case BOOST:
 		tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
+		ir = ts->GetSubRect(tile);
 		break;
 	case REFRESH:
-		tile = 13;
+		tile = frame / animFactor[REFRESH];
+		ir = ts_refresh->GetSubRect(tile);
 		break;
 	}
-	IntRect ir = ts->GetSubRect(tile);
+
 	sprite.setTextureRect(ir);
-	sprite.setScale(2,2);
 }
 
 void Booster::EnemyDraw(sf::RenderTarget *target)

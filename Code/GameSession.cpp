@@ -72,6 +72,7 @@
 //#include "Enemy_PoisonFrog.h"
 //#include "Enemy_Pulser.h"
 #include "Enemy_RaceFightTarget.h"
+#include "Background.h"
 //#include "Enemy_SecurityWeb.h"
 #include "Enemy_Shard.h"
 #include "Enemy_Shroom.h"
@@ -5203,7 +5204,7 @@ bool GameSession::Load()
 	
 	//inputVis = new InputVisualizer;
 
-
+	
 
 	eHitParamsMan = new EnemyParamsManager;
 
@@ -5534,6 +5535,8 @@ bool GameSession::Load()
 	OpenFile( fileName );
 
 
+	background = new Background( this, mh->envLevel, mh->envType);
+
 	cout << "done opening file" << endl;
 	int maxBubbles = 5;
 
@@ -5669,27 +5672,6 @@ bool GameSession::Load()
 
 		powerRing = new PowerRing(Vector2f(100, 200), sizeof(blah) / sizeof(FillRingSection*), blah);
 	}
-
-	stringstream ss1;
-
-	int eType = mh->envLevel + 1; //adjust for alex naming -_-
-	ss1 << "Backgrounds/w" << mh->envType+1 << "_BG";
-
-	ss1 << eType;
-
-	ss1 << ".png";
-	 
-	cout << "back tex: " << ss1.str() << endl;
-	cout << "envtype: " << mh->envType << ", eType: " << eType << endl;
-	//cout << "loading bg: " << ss.str() << endl;
-	if( !backTex.loadFromFile( ss1.str() ) )
-	{
-		assert( 0 && "error loading background texture" );
-	}
-	background = Sprite( backTex );
-	background.setOrigin( background.getLocalBounds().width / 2, background.getLocalBounds().height / 2 );
-	background.setPosition( 0, 0 );
-	bgView = View( sf::Vector2f( 0, 0 ), sf::Vector2f( 1920, 1080 ) );
 
 	flowShader.setUniform( "goalPos", Vector2f( goalPos.x, goalPos.y ) );
 
@@ -6753,6 +6735,7 @@ int GameSession::Run()
 				}
 
 				UpdateFade();
+				background->Update();
 
 				//rain.Update();
 
@@ -7168,10 +7151,13 @@ int GameSession::Run()
 		flowShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2, 
 					view.getCenter().y + view.getSize().y / 2 ) );
 		
-		//window->setView( bgView );
-		preScreenTex->setView( bgView );
 
-		preScreenTex->draw( background );
+		background->Draw(preScreenTex);
+		//window->setView( bgView );
+		//preScreenTex->setView( bgView );
+
+		//preScreenTex->draw(backgroundSky, 4, sf::Quads);
+		//preScreenTex->draw( background );
 
 		//temporary parallax
 		View pView;
@@ -9320,6 +9306,8 @@ void GameSession::Init()
 
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
+
+	background = NULL;
 }
 
 void GameSession::HandleEntrant( QuadTreeEntrant *qte )
@@ -10013,6 +10001,8 @@ void GameSession::RestartLevel()
 {
 	if( raceFight != NULL )
 		raceFight->Reset();
+
+	background->Reset();
 
 	soundNodeList->Clear();
 

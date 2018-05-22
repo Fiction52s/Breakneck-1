@@ -4134,6 +4134,8 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	background.setTexture(*ts_background->texture);
 	background.setPosition(menuOffset);
+
+	
 	kinFace.setTexture(*ts_kinFace->texture);
 	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
 	selectSlot.setTexture(*ts_selectSlot->texture);
