@@ -1137,7 +1137,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	//	keyFrame = 0;
 	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
 		stringstream ss;
-		ss << "key_w0" << world << "_1_128x128.png";
+		ss << "FX/key_w0" << world << "_1_128x128.png";
 		ts_key = owner->GetTileset( ss.str(), 128, 128 );
 
 		keySprite = new Sprite;
@@ -1381,8 +1381,6 @@ bool Enemy::LaunchersAreDone()
 
 void Enemy::UpdatePostPhysics()
 {
-
-
 	//cout << "suppress: " << (int)suppressMonitor << endl;
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -1400,8 +1398,21 @@ void Enemy::UpdatePostPhysics()
 		return;
 	}
 
-	if( !dead )
+	if (!dead)
+	{
+		if (hasMonitor && !suppressMonitor)
+		{
+			//keySprite.setTexture( *ts_key->texture );
+			int fac = 5;
+			int kFrame = owner->totalGameFrames % (16 * fac);
+			keySprite->setTextureRect(ts_key->GetSubRect(kFrame / fac));
+			keySprite->setOrigin(keySprite->getLocalBounds().width / 2,
+				keySprite->getLocalBounds().height / 2);
+			keySprite->setPosition(position.x, position.y);
+			keySprite->setColor(Color(255, 255, 255, 255));
+		}
 		UpdateSprite();
+	}
 	else if( cutObject != NULL )
 		cutObject->UpdateCutObject( slowCounter );
 
@@ -1509,11 +1520,11 @@ void Enemy::ConfirmKill()
 	
 	if (hasMonitor)
 	{
-		owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position, AbsorbParticles::DARK);
+		owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position);
 	}
 	else
 	{
-		owner->absorbParticles->Activate(owner->GetPlayer(0), 6, position, AbsorbParticles::ENERGY);
+		owner->absorbParticles->Activate(owner->GetPlayer(0), 6, position);
 	}
 	
 

@@ -5207,8 +5207,8 @@ bool GameSession::Load()
 
 	eHitParamsMan = new EnemyParamsManager;
 
-	absorbParticles = new AbsorbParticles;
-	absorbDarkParticles = new AbsorbParticles;
+	absorbParticles = new AbsorbParticles( this, AbsorbParticles::ENERGY );
+	absorbDarkParticles = new AbsorbParticles( this, AbsorbParticles::DARK);
 
 	soundNodeList = new SoundNodeList(10);
 	soundNodeList->SetGlobalVolume(mainMenu->config->GetData().volume);

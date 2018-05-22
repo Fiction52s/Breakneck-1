@@ -2307,7 +2307,7 @@ void Actor::UpdatePrePhysics()
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
 		setHitstunFrames = hitstunFrames;
-		invincibleFrames = 20;//receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
+		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
 		
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( hitlagFrames );
@@ -23006,9 +23006,9 @@ int Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 	return numTiles;
 }
 
-AbsorbParticles::AbsorbParticles()
+AbsorbParticles::AbsorbParticles( GameSession *owner, AbsorbType p_abType )
 	:maxNumParticles(1000), va(NULL), particlePos(NULL), maxSpeed(100), playerTarget( NULL ),
-	activeList( NULL ), inactiveList( NULL )
+	activeList( NULL ), inactiveList( NULL ), abType( p_abType )
 {
 	va = new Vertex[maxNumParticles * 4];
 
@@ -23016,6 +23016,19 @@ AbsorbParticles::AbsorbParticles()
 	{
 		AllocateParticle( i );
 	}
+
+	switch (p_abType)
+	{
+	case DARK:
+		ts = owner->GetTileset("FX/keyshine_128x128.png", 128, 128);
+		animFactor = 3;
+		break;
+	default:
+		ts = owner->GetTileset("FX/absorb_64x64.png", 64, 64);
+		animFactor = 3;
+		break;
+	}
+
 	//particlePos = new Vector2f[maxNumParticles];
 }
 
@@ -23074,7 +23087,7 @@ AbsorbParticles::~AbsorbParticles()
 }
 
 void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos,
-	AbsorbType p_abType, float p_startAngle )
+	float p_startAngle )
 {
 	playerTarget = p_playerTarget;
 	float startSpeed = 4;
@@ -23091,7 +23104,7 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 	Vector2f targetPos;
 	V2d startVel;
 
-	switch( p_abType )
+	switch( abType )
 	{
 	case ENERGY:
 	{
@@ -23120,7 +23133,7 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 	}
 	}
 
-	switch (p_abType)
+	switch (abType)
 	{
 	case ENERGY:
 		break;
@@ -23136,7 +23149,7 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 		sp = GetInactiveParticle();
 		assert(sp != NULL);
 
-		sp->Activate(startPos, t.transformPoint(vel), p_abType);
+		sp->Activate(startPos, t.transformPoint(vel));
 
 		if (activeList == NULL)
 		{
@@ -23176,26 +23189,31 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 
 	sf::Vertex *va = parent->va;
 	
-	switch (abType)
+	switch (parent->abType)
 	{
 	case ENERGY:
 	{
-		sub.width = 12;
-		sub.height = 12;
-		va[tileIndex * 4].color = Color::Red;
+		sub.width = 64;//12;
+		sub.height = 64;// 12;
+		/*va[tileIndex * 4].color = Color::Red;
 		va[tileIndex * 4 + 1].color = Color::Blue;
 		va[tileIndex * 4 + 2].color = Color::Green;
-		va[tileIndex * 4 + 3].color = Color::Cyan;
+		va[tileIndex * 4 + 3].color = Color::Cyan;*/
+		SetRectSubRect(va + tileIndex * 4, parent->ts->GetSubRect(
+			(frame % (9 * parent->animFactor)) / parent->animFactor));
 		break;
 	}
 	case DARK:
 	{
-		sub.width = 32;
-		sub.height = 32;
-		va[tileIndex * 4 + 0].color = Color::Black;
+		sub.width = 128;
+		sub.height = 128;
+		//SetRectColor(va + tileIndex * 4, Color(Color::White));
+		SetRectSubRect(va + tileIndex * 4, parent->ts->GetSubRect(
+			(frame % (8 * parent->animFactor)) / parent->animFactor));
+		/*va[tileIndex * 4 + 0].color = Color::Black;
 		va[tileIndex * 4 + 1].color = Color::Black;
 		va[tileIndex * 4 + 2].color = Color::Black;
-		va[tileIndex * 4 + 3].color = Color::Black;
+		va[tileIndex * 4 + 3].color = Color::Black;*/
 		break;
 	}	
 	case SHARD:
@@ -23215,16 +23233,15 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 	SetRectCenter(va + tileIndex * 4, sub.width, sub.height, pos);
 }
 
-void AbsorbParticles::SingleEnergyParticle::Activate( Vector2f &p_pos, Vector2f &vel,
-	AbsorbParticles::AbsorbType p_abType )
+void AbsorbParticles::SingleEnergyParticle::Activate( Vector2f &p_pos, Vector2f &vel )
 {
-	abType = p_abType;
 	frame = 0;
 	velocity = vel;
 	pos = p_pos;
 	
 	next = NULL;
 	prev = NULL;
+	lockFrame = -1;
 }
 
 bool AbsorbParticles::SingleEnergyParticle::Update()
@@ -23232,12 +23249,20 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	assert(parent->playerTarget != NULL);
 
 	float accel = 1;
-	Vector2f targetPos = parent->GetTargetPos(abType);
+	Vector2f targetPos = parent->GetTargetPos(parent->abType);
 	
 
-	if (length(targetPos - pos) < 60 && frame > 30 )
+	float len = length(targetPos - pos);
+	if ( len < 60 && frame > 30 )
 	{
-		pos = (pos + targetPos) / 2.f;
+		if (lockFrame == -1)
+		{
+			lockFrame = frame;
+			lockDist = len;
+		}
+		int diffFrame = frame - lockFrame;
+		float distPortion = (float)diffFrame / 10;
+		pos = targetPos + normalize(pos - targetPos ) * lockDist * ( 1.f - distPortion );
 	}
 	else
 	{
@@ -23345,7 +23370,17 @@ void AbsorbParticles::Update()
 
 void AbsorbParticles::Draw(sf::RenderTarget *target)
 {
-	target->draw(va, maxNumParticles * 4, sf::Quads);
+	target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
+	/*switch (abType)
+	{
+	case ENERGY:
+		target->draw(va, maxNumParticles * 4, sf::Quads);
+		break;
+	case DARK:
+		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
+		break;
+	}*/
+	
 }
 
 void AbsorbParticles::Reset()

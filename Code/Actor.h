@@ -107,41 +107,45 @@ struct AbsorbParticles
 		DARK,
 		SHARD,
 	};
-
 	
 	struct SingleEnergyParticle
 	{
-		AbsorbType abType;
+		
 		SingleEnergyParticle(AbsorbParticles *parent,
 			int tileIndex );
 		void UpdateSprite();
 		bool Update();
-		void Activate(sf::Vector2f &pos, sf::Vector2f &vel, AbsorbType abType);
+		void Activate(sf::Vector2f &pos, sf::Vector2f &vel);
 		void Clear();
 		sf::Vector2f pos;
 		int frame;
 		int tileIndex;
 		sf::Vector2f velocity;
 		AbsorbParticles *parent;
+		int lockFrame;
+		float lockDist;
 
 		SingleEnergyParticle *next;
 		SingleEnergyParticle *prev;
-
+		
 		//Vector2f accel;
 	};
 
+	AbsorbType abType;
 	sf::Vector2f GetTargetPos(AbsorbType ab);
-	AbsorbParticles();
+	AbsorbParticles( GameSession *owner,
+		AbsorbType p_abType );
 	~AbsorbParticles();	
 	void Reset();
 	sf::Vertex *va;
 	int maxNumParticles;
 	void Activate( Actor *playerTarget, int storedHits, V2d &pos,
-		AbsorbType aType,
 		float startAngle = 0 );
 	void Update();
 	void Draw(sf::RenderTarget *rt);
 	float startAngle;
+	Tileset *ts;
+	int animFactor;
 	sf::Vector2f pos;
 	sf::Vector2f *particlePos;
 	int numActivatedParticles;

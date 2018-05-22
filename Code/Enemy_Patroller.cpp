@@ -293,7 +293,7 @@ void Patroller::ProcessState()
 					currentAngle += 2 * PI;
 			}
 		}
-		else 
+		else if (currentAngle < targetAngle)
 		{
 			float diff = targetAngle - currentAngle;
 			float revDiff = (2 * PI - targetAngle) + currentAngle;
