@@ -15,6 +15,7 @@
 #include "Enemy.h"
 #include "Enemy_Booster.h"
 #include "HitboxManager.h"
+#include "ImageText.h"
 
 using namespace sf;
 using namespace std;
@@ -23043,7 +23044,7 @@ sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
 		break;
 	}
 	case DARK:
-		return Vector2f(100, 100);
+		return owner->keyMarker->keyNumberNeededHUD->center;
 		break;
 	case SHARD:
 		return Vector2f(200, 100);
@@ -23253,7 +23254,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	
 
 	float len = length(targetPos - pos);
-	if ( len < 60 && frame > 30 )
+	if ( lockFrame != -1 || (len < 60 && frame > 30) )
 	{
 		if (lockFrame == -1)
 		{
