@@ -23006,9 +23006,9 @@ int Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 	return numTiles;
 }
 
-AbsorbParticles::AbsorbParticles( GameSession *owner, AbsorbType p_abType )
+AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
 	:maxNumParticles(1000), va(NULL), particlePos(NULL), maxSpeed(100), playerTarget( NULL ),
-	activeList( NULL ), inactiveList( NULL ), abType( p_abType )
+	activeList( NULL ), inactiveList( NULL ), abType( p_abType ), owner( p_owner )
 {
 	va = new Vertex[maxNumParticles * 4];
 
@@ -23294,6 +23294,18 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 
 	if ( length(targetPos - pos) < 1.f && frame > 30 )
 	{
+		switch (parent->abType)
+		{
+		case ENERGY:
+			break;
+		case DARK:
+		{
+			Tileset *tss = parent->owner->GetTileset("FX/keyexplode_128x128.png", 128, 128);
+			parent->owner->ActivateEffect(EffectLayer::UI_FRONT,
+				tss, V2d(targetPos), true, 0, 6, 3, true);
+			break;
+		}
+		}
 		return false;
 	}
 

@@ -2,6 +2,7 @@
 #include "GameSession.h"
 #include <sstream>
 #include <assert.h>
+#include <random>
 
 using namespace std;
 using namespace sf;
@@ -44,22 +45,12 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
 	shape.setPosition(0, 0);
 
-	transFrames = 60 * 5;
+	transFrames = 60 * 20;
 
 	bgView.setCenter(0, 0);
 	bgView.setSize(1920, 1080);
 
 	Reset();
-	//cout << "back tex: " << ss1.str() << endl;
-	//cout << "envtype: " << envType << ", eType: " << eType << endl;
-	//cout << "loading bg: " << ss.str() << endl;
-	/*if (!backTex.loadFromFile(ss1.str()))
-	{
-		assert(0 && "error loading background texture");
-	}
-	background.setTexture(backTex);
-	background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
-	background.setPosition(0, 0);*/
 }
 
 void Background::UpdateSky()
@@ -125,7 +116,9 @@ void Background::Update()
 
 void Background::Reset()
 {
-	frame = 0;
+	int r = rand() % 4;
+	int r2 = rand() % transFrames;
+	frame = r * transFrames + r2;
 }
 
 void Background::Draw(sf::RenderTarget *target)

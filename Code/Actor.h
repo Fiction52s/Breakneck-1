@@ -144,6 +144,7 @@ struct AbsorbParticles
 	void Update();
 	void Draw(sf::RenderTarget *rt);
 	float startAngle;
+	GameSession *owner;
 	Tileset *ts;
 	int animFactor;
 	sf::Vector2f pos;
