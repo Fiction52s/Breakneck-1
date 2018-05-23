@@ -14960,7 +14960,7 @@ void Actor::PhysicsResponse()
 		V2d C( b.globalPosition.x + b.rw, b.globalPosition.y + b.rh );
 		V2d D( b.globalPosition.x - b.rw, b.globalPosition.y + b.rh );
 		V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
-
+		double ang = atan2(nEdge.x, -nEdge.y);
 
 		double crossA = dot( A - edge->v0, nEdge );
 		double crossB = dot( B - edge->v0, nEdge );
@@ -14971,6 +14971,8 @@ void Actor::PhysicsResponse()
 		double alongAmount = dot(b.globalPosition - edge->v0, normalize(edge->v1 - edge->v0));
 		alongAmount /= length(edge->v1 - edge->v0);
 		alongAmount = 1.0 - alongAmount;
+		V2d alongPos = edge->v1 + normalize(edge->v0 - edge->v1) * alongAmount * edge->GetLength();
+
 		double thresh = .01;
 		bool activate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
 		 
@@ -15082,8 +15084,10 @@ void Actor::PhysicsResponse()
 				//g->gateShader.setUniform( "breakPosQuant")
 			}
 
-
-			
+			V2d gEnterPos = alongPos + nEdge;// *32.0;
+			Tileset *ts_gateEnter = owner->GetTileset("FX/gateenter_256x320.png",256, 320);
+			owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+				ts_gateEnter, gEnterPos, false, ang, 8, 3, true);
 			
 			//for( int i = 0; i < owner->numGates; ++i )
 			//{
