@@ -108,8 +108,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[RIDESHIP] = owner->GetTileset("Kin/dive_80x80.png", 80, 80, skin);
 	tileset[SKYDIVE] = owner->GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
 	tileset[SKYDIVETOFALL] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
-	tileset[WAITFORSHIP] = owner->GetTileset("Kin/ship_exit_128x96.png", 128, 96, skin);
-	tileset[GRABSHIP] = owner->GetTileset("Kin/ship_exit_128x96.png", 128, 96, skin);
+	tileset[WAITFORSHIP] = owner->GetTileset("Kin/shipjump_80x80.png", 80, 80, skin);
+	tileset[GRABSHIP] = owner->GetTileset("Kin/shipjump_80x80.png", 80, 80, skin);
 	tileset[ENTERNEXUS1] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
 
 	tileset[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
@@ -972,7 +972,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[STEEPCLIMBATTACK] = 4 * 4;
 		actionLength[SKYDIVETOFALL] = 10 * 4;
 		actionLength[WAITFORSHIP] = 60 * 1;
-		actionLength[GRABSHIP] = 4 * 4 + 20;
+		actionLength[GRABSHIP] = 10 * 3 + 20;
 		actionLength[GETPOWER_AIRDASH_MEDITATE] = 120;
 		actionLength[RIDESHIP] = 1;
 		actionLength[SKYDIVE] = 9 * 2;
@@ -21193,12 +21193,12 @@ void Actor::UpdateSprite()
 	case GRABSHIP:
 		{
 			//cout << "grabship: " << frame << endl;
-			if( frame / 4 < 4 )
+			if( frame / 3 < 10 )
 			{
 				SetSpriteTexture( action );
 
 				//bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-				SetSpriteTile( 1 + frame / 4, true );
+				SetSpriteTile( 1 + frame / 3, true );
 			
 				sprite->setOrigin( sprite->getLocalBounds().width / 2,
 					sprite->getLocalBounds().height / 2 );

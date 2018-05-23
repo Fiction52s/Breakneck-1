@@ -385,43 +385,43 @@ void MovementSequence::Update( int slowMultiple )
 
 	currTime += 5 / slowMultiple;
 	//currTime++;
-	if( currMovement != NULL && currTime >= currMovement->duration + currMovementStartTime + 1 )
+	if( currMovement != NULL )//&& currTime >= currMovement->duration + currMovementStartTime + 1 )
 	{
-		currMovement = currMovement->next;
-		//currLauncherList = currMovement->launcher;
-
-
-
-		//Launcher *currLaunch = currLauncherList;
-
-		//justChanged = true;
-		//while( currLaunch!= NULL )
-		//{
-		//	currLaunch = currLaunch->next;
-		//}
-
-		if( currMovement != NULL )
+		if ((currMovement->next != NULL && currTime >= currMovement->duration + currMovementStartTime )
+			|| (currMovement->next == NULL && currTime >= currMovement->duration + currMovementStartTime + 1 ))
 		{
-			currMovementStartTime = currTime;
+			currMovement = currMovement->next;
 
+			if (currMovement != NULL)
+			{
+				currMovementStartTime = currTime;
+			}
 		}
 	}
-	if( currRotation != NULL && currTime == currRotation->duration + currRotationStartTime + 1 )
+	if( currRotation != NULL )
 	{
-		currRotation = currRotation->next;
-
-		if( currRotation != NULL )
+		if ((currRotation->next != NULL && currTime >= currRotation->duration + currRotationStartTime)
+			|| (currRotation->next == NULL && currTime >= currRotation->duration + currRotationStartTime + 1))
 		{
-			currRotationStartTime = currTime;
+			currRotation = currRotation->next;
+
+			if (currRotation != NULL)
+			{
+				currRotationStartTime = currTime;
+			}
 		}
 	}
-	if( currProjectile != NULL && currTime == currProjectile->duration + currProjectileStartTime )
+	if( currProjectile != NULL )
 	{
-		currProjectile = currProjectile->next;
-
-		if( currProjectile != NULL )
+		if ((currProjectile->next != NULL && currTime >= currProjectile->duration + currProjectileStartTime)
+			|| (currProjectile->next == NULL && currTime >= currProjectile->duration + currProjectileStartTime + 1))
 		{
-			currProjectileStartTime = currTime;
+			currProjectile = currProjectile->next;
+
+			if (currProjectile != NULL)
+			{
+				currProjectileStartTime = currTime;
+			}
 		}
 	}
 

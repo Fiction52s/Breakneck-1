@@ -54,6 +54,8 @@ struct ShipExitSeq : Sequence
 	MovementSequence shipMovement;
 	MovementSequence center;
 	GameSession *owner;
+	int enterTime;
+	int exitTime;
 	sf::Vector2<double> abovePlayer;
 	sf::Vector2<double> origPlayer;
 	sf::Vector2<double> attachPoint;
