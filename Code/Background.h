@@ -15,6 +15,8 @@ struct Background
 	void UpdateShape();
 	sf::Sprite background;
 	sf::Sprite shape;
+	sf::Color GetSkyColor();
+	sf::Color GetShapeColor();
 	sf::Vertex backgroundSky[4];
 	sf::Image palette;
 	sf::View bgView;

@@ -96,11 +96,11 @@ bool ShipExitSeq::Update()
 	}
 
 	int startJump = (60 - 3 * 7 ) + 3 * 3;
-	if( frame > enterTime )
+	if( frame > enterTime + 1)
 	{
 		owner->GetPlayer( 0 )->position = V2d( shipMovement.position.x, shipMovement.position.y );
 	}
-	else if( frame >= startJump )//startJump )
+	else if( frame >= startJump && frame <= enterTime )//startJump )
 	{
 		double adjF = frame - startJump;
 		double eTime = enterTime - startJump;

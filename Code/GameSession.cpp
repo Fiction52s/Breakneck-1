@@ -42,6 +42,7 @@
 #include "TerrainRender.h"
 #include "Enemy.h"
 #include "InputVisualizer.h"
+#include "TopClouds.h"
 #include "ScreenRecorder.h"
 #include "ShardMenu.h"
 //#include "Enemy_Badger.h"
@@ -908,6 +909,12 @@ void GameSession::Cleanup()
 	{
 		delete soundManager;
 		soundManager = NULL;
+	}
+
+	if (topClouds != NULL)
+	{
+		delete topClouds;
+		topClouds = NULL;
 	}
 
 	if (keyMarker != NULL)
@@ -5466,6 +5473,8 @@ bool GameSession::Load()
 	gameSoundBuffers[S_KEY_ENTER_5] = soundManager->GetSound( "Audio/Sounds/key_enter_5.ogg" );
 	gameSoundBuffers[S_KEY_ENTER_6] = soundManager->GetSound( "Audio/Sounds/key_enter_6.ogg" );
 
+	
+
 	currMusic = NULL;
 	cutPlayerInput = false;
 	activeEnvPlants = NULL;
@@ -5534,6 +5543,7 @@ bool GameSession::Load()
 		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( fileName );
 
+	topClouds = new TopClouds(this);
 
 	background = new Background( this, mh->envLevel, mh->envType);
 
@@ -6736,7 +6746,7 @@ int GameSession::Run()
 
 				UpdateFade();
 				background->Update();
-
+				topClouds->Update();
 				//rain.Update();
 
 				testPar->Update( camPos );
@@ -7338,6 +7348,7 @@ int GameSession::Run()
 			polyShaders[i].setUniform( "zoom", cam.GetZoom() );
 			polyShaders[i].setUniform( "topLeft", botLeft ); //just need to change the name topleft eventually
 			polyShaders[i].setUniform( "playertest", playertest );
+			polyShaders[i].setUniform("skyColor", ColorGL(background->GetSkyColor()));
 		}
 
 		for (auto it = zones.begin(); it != zones.end(); ++it)
@@ -7385,8 +7396,12 @@ int GameSession::Run()
 
 		//screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		
+		topClouds->Draw(preScreenTex);
+
 		preScreenTex->draw(blackBorderQuads, 8, sf::Quads);
-	
+		
+		
+
 		DrawEffects( EffectLayer::BEHIND_TERRAIN );
 		
 		int timesDraw = 0;
@@ -9139,6 +9154,8 @@ void GameSession::Init()
 	{
 		players[i] = NULL;
 	}
+
+	topClouds = NULL;
 
 	soundManager = NULL;
 	

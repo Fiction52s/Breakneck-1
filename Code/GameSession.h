@@ -23,7 +23,7 @@
 #include "EffectLayer.h"
 
 struct ScreenRecorder;
-
+struct TopClouds;
 struct TerrainRender;
 struct RecordPlayer;
 struct ReplayPlayer;
@@ -407,6 +407,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 	
+	TopClouds *topClouds;
 	ScreenRecorder *debugScreenRecorder;
 	struct RaceFight
 	{

@@ -108,8 +108,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[RIDESHIP] = owner->GetTileset("Kin/dive_80x80.png", 80, 80, skin);
 	tileset[SKYDIVE] = owner->GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
 	tileset[SKYDIVETOFALL] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
-	tileset[WAITFORSHIP] = owner->GetTileset("Kin/shipjump_80x80.png", 80, 80, skin);
-	tileset[GRABSHIP] = owner->GetTileset("Kin/shipjump_80x80.png", 80, 80, skin);
+	tileset[WAITFORSHIP] = owner->GetTileset("Kin/shipjump_64x64.png", 64, 64, skin);
+	tileset[GRABSHIP] = owner->GetTileset("Kin/shipjump_64x64.png", 64,64, skin);
 	tileset[ENTERNEXUS1] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
 
 	tileset[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
@@ -262,6 +262,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		currLockedFairFX = NULL;
 		currLockedDairFX = NULL;
 		currLockedUairFX = NULL;
+		gateBlackFX = NULL;
 		testPool = new EffectPool( EffectType::FX_RELATIVE, 100, 1.f );
 		testPool->ts = owner->GetTileset("elec_01_96x96.png", 96, 96);
 
@@ -284,6 +285,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
 			uairLightningPool[i]->ts = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256);
 		}
+
+		gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
+		gateBlackFXPool->ts = owner->GetTileset("FX/keydrain_160x160.png", 160, 160);
 
 		risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
 		risingAuraPool->ts = owner->GetTileset("rising_8x8.png", 8, 8);
@@ -1777,6 +1781,8 @@ void Actor::Respawn()
 		dairLightningPool[i]->Reset();
 		uairLightningPool[i]->Reset();
 	}
+
+	gateBlackFXPool->Reset();
 
 	testGrassCount = 0;
 	gravityGrassCount = 0;
@@ -15016,6 +15022,28 @@ void Actor::PhysicsResponse()
 
 		if( activate )
 		{
+
+			RelEffectInstance params;
+			Transform tr = sf::Transform::Identity;
+			int s = 1;
+			if (!facingRight)
+			{
+				tr.scale(Vector2f(-s, s));
+			}
+			else
+			{
+				tr.scale(Vector2f(s, s));
+			}
+			params.SetParams(Vector2f(0, 0), tr, 8, 2, 0, &spriteCenter);
+			//fair should be 25 but meh
+
+			/*if (!facingRight)
+			{
+				tr.scale(-s, s);
+			}*/
+			   
+			gateBlackFX = (RelEffectInstance*)gateBlackFXPool->ActivateEffect(&params);
+
 			//lock all the gates from this zone now that I chose one
 			owner->SuppressEnemyKeys( g->type );			
 
@@ -15635,6 +15663,7 @@ void Actor::UpdatePostPhysics()
 		uairLightningPool[i]->Update();
 	}
 	
+	gateBlackFXPool->Update();
 	//if (updateAura)
 	{
 		testAura->Update();
@@ -18532,6 +18561,8 @@ void Actor::Draw( sf::RenderTarget *target )
 		uairLightningPool[i]->Draw(target);
 	}
 
+	gateBlackFXPool->Draw(target);
+
 	testPool->Draw(target);
 	
 
@@ -21193,7 +21224,7 @@ void Actor::UpdateSprite()
 	case GRABSHIP:
 		{
 			//cout << "grabship: " << frame << endl;
-			if( frame / 3 < 10 )
+			if( frame / 3 < 9 )
 			{
 				SetSpriteTexture( action );
 
@@ -23025,8 +23056,8 @@ AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
 	switch (p_abType)
 	{
 	case DARK:
-		ts = owner->GetTileset("FX/keyshine_128x128.png", 128, 128);
-		animFactor = 3;
+		ts = owner->GetTileset("FX/key_128x128.png", 128, 128);
+		animFactor = 2;
 		break;
 	default:
 		ts = owner->GetTileset("FX/absorb_64x64.png", 64, 64);
@@ -23214,7 +23245,7 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 		sub.height = 128;
 		//SetRectColor(va + tileIndex * 4, Color(Color::White));
 		SetRectSubRect(va + tileIndex * 4, parent->ts->GetSubRect(
-			(frame % (8 * parent->animFactor)) / parent->animFactor));
+			(frame % (16 * parent->animFactor)) / parent->animFactor));
 		/*va[tileIndex * 4 + 0].color = Color::Black;
 		va[tileIndex * 4 + 1].color = Color::Black;
 		va[tileIndex * 4 + 2].color = Color::Black;

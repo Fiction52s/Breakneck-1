@@ -17732,7 +17732,12 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 				for (list<PolyPtr>::iterator rit = results.begin();
 					rit != results.end(); ++rit)
 				{
-					AttachActorToPolygon((*bit), (*rit).get());
+					ActorParams *ac = AttachActorToPolygon((*bit), (*rit).get());
+					if (ac != NULL)
+					{
+						ActorPtr newActor(ac);
+						resultBrush.AddObject(newActor);
+					}
 					//AttachActorsToPolygon((*mit).second, (*rit).get());
 					
 					/*for (auto eit = polygonInProgress->enemies.begin();
@@ -17749,7 +17754,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 		}
 	}
 
-	for (list<PolyPtr>::iterator rit = results.begin();
+	/*for (list<PolyPtr>::iterator rit = results.begin();
 		rit != results.end(); ++rit)
 	{
 		for (auto eit = (*rit)->enemies.begin(); eit != (*rit)->enemies.end(); ++eit)
@@ -17760,7 +17765,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 				resultBrush.AddObject(sp1);
 			}
 		}
-	}
+	}*/
 
 	for (list<PolyPtr>::iterator rit = results.begin();
 		rit != results.end(); ++rit)

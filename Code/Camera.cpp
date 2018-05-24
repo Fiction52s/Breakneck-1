@@ -277,6 +277,16 @@ void Camera::UpdateRumble()
 	
 }
 
+sf::FloatRect Camera::GetRect()
+{
+	Vector2f center = GetPos();
+	float zoom = GetZoom();
+	float width = 960 * zoom;
+	float height = 540 * zoom;
+
+	return FloatRect(center.x - width / 2, center.y - height / 2, width, height);
+}
+
 void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 {
 	if (!manual)

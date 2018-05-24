@@ -25,8 +25,8 @@ ShipPickup::ShipPickup( GameSession *owner, Edge *g, double q, bool p_facingRigh
 	initHealth = 40;
 	health = initHealth;
 
-	double height = 48;
-	ts = owner->GetTileset( "Ship/shippickup_128x128.png", 128, height );
+	double height = 80;
+	ts = owner->GetTileset( "Ship/shipleave_128x128.png", 80, height );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint(edgeQuantity);
@@ -37,7 +37,7 @@ ShipPickup::ShipPickup( GameSession *owner, Edge *g, double q, bool p_facingRigh
 	V2d gn = g->Normal();
 	float angle = atan2( gn.x, -gn.y );
 
-	position = gPoint;// +gn * height / 2.0;
+	position = gPoint - gn * ( height / 2.0 + 10 );
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);// / 2 );
@@ -50,6 +50,16 @@ ShipPickup::ShipPickup( GameSession *owner, Edge *g, double q, bool p_facingRigh
 	slowMultiple = 1;
 
 	spawnRect = sf::Rect<double>( gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2 );
+
+	actionLength[IDLE] = 20;
+	actionLength[FOUND] = 1;
+
+	animFactor[IDLE] = 2;
+	animFactor[FOUND] = 30;
+
+	action = IDLE;
+
+	sprite.setPosition(position.x, position.y);
 }
 
 void ShipPickup::ResetEnemy()
@@ -60,23 +70,38 @@ void ShipPickup::ResetEnemy()
 	receivedHit = NULL;
 	slowCounter = 1;
 	slowMultiple = 1;
+	action = IDLE;
 }
 
 void ShipPickup::ProcessState()
 {
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		switch (action)
+		{
+		case IDLE:
+			frame = 0;
+			break;
+		case FOUND:
+			
+			break;
+		}
+	}
 }
 
 void ShipPickup::UpdateEnemyPhysics()
 {
 	Actor *player = owner->GetPlayer( 0 );
 
-	if( player->ground == ground )
+	if( player->ground == ground && action == IDLE)
 	{
 		if( ground->Normal().y == -1 )
 		{
 			if( abs( ( player->edgeQuantity + player->offsetX ) - edgeQuantity ) < 5 )
 			{
 				player->ShipPickupPoint( edgeQuantity, facingRight );
+				action = FOUND;
+				frame = 0;
 			}
 		}
 		else
@@ -84,6 +109,8 @@ void ShipPickup::UpdateEnemyPhysics()
 			if( abs( player->edgeQuantity - edgeQuantity ) < 5 )
 			{
 				player->ShipPickupPoint( edgeQuantity, facingRight );
+				action = FOUND;
+				frame = 0;
 			}
 		}
 	}
@@ -101,8 +128,18 @@ void ShipPickup::DrawMinimap( sf::RenderTarget *target )
 
 void ShipPickup::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );//frame / animationFactor ) );
-	sprite.setPosition( position.x, position.y );
+	int f;
+	switch (action)
+	{
+	case IDLE:
+		f = frame / animFactor[IDLE];
+		break;
+	case FOUND:
+		f = 0;
+		break;
+	}
+	sprite.setTextureRect( ts->GetSubRect( f ) );
+	//sprite.setPosition( position.x, position.y );
 }
 
 void ShipPickup::DebugDraw(sf::RenderTarget *target)

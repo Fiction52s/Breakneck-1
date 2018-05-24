@@ -24,7 +24,7 @@ struct Camera
 		int numFrames, CubicBezier &bez );
 	void UpdateEase();
 	
-
+	sf::FloatRect GetRect();
 	sf::Vector2f GetPos();
 	sf::Vector2f manualPos;
 	sf::Vector2f startManualPos;

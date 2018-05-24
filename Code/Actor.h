@@ -313,6 +313,7 @@ struct Actor : QuadTreeCollider,
 	EffectPool *fairLightningPool[4];
 	EffectPool *uairLightningPool[4];
 	EffectPool *dairLightningPool[4];
+	EffectPool *gateBlackFXPool;
 
 	SoundNode *repeatingSound;
 	//int hitCeilingCounter;
@@ -565,6 +566,7 @@ struct Actor : QuadTreeCollider,
 	RelEffectInstance *currLockedFairFX;
 	RelEffectInstance *currLockedDairFX;
 	RelEffectInstance *currLockedUairFX;
+	RelEffectInstance *gateBlackFX;
 
 	bool showSword;
 

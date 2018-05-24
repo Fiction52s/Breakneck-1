@@ -4,6 +4,18 @@
 #include "Enemy.h"
 struct ShipPickup : Enemy
 {
+	enum Action
+	{
+		IDLE,
+		FOUND,
+		DONE,
+		Count
+	};
+
+	Action action;
+	int actionLength[Count];
+	int animFactor[Count];
+
 	ShipPickup( GameSession *owner,
 		Edge *ground, double quantity,
 		bool facingRight );

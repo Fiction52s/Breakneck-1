@@ -55,12 +55,17 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 
 void Background::UpdateSky()
 {
+	SetRectColor(backgroundSky, GetSkyColor() );
+}
+
+sf::Color Background::GetSkyColor()
+{
 	int ind = frame / transFrames;
-	Color startColor = palette.getPixel( ind, 0 );
+	Color startColor = palette.getPixel(ind, 0);
 	Color endColor;
 	if (ind < 3)
 	{
-		endColor = palette.getPixel(ind+1, 0);
+		endColor = palette.getPixel(ind + 1, 0);
 	}
 	else
 	{
@@ -73,11 +78,10 @@ void Background::UpdateSky()
 	blendColor.r = startColor.r * recip + endColor.r * factor;
 	blendColor.g = startColor.g * recip + endColor.g * factor;
 	blendColor.b = startColor.b * recip + endColor.b * factor;
-
-	SetRectColor(backgroundSky, blendColor);
+	return blendColor;
 }
 
-void Background::UpdateShape()
+sf::Color Background::GetShapeColor()
 {
 	int ind = frame / transFrames;
 	Color startColor = palette.getPixel(ind, 1);
@@ -97,8 +101,12 @@ void Background::UpdateShape()
 	blendColor.r = startColor.r * recip + endColor.r * factor;
 	blendColor.g = startColor.g * recip + endColor.g * factor;
 	blendColor.b = startColor.b * recip + endColor.b * factor;
+	return blendColor;
+}
 
-	shape.setColor(blendColor);
+void Background::UpdateShape()
+{
+	shape.setColor(GetShapeColor());
 }
 
 void Background::Update()
