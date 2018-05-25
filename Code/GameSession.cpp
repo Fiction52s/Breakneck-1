@@ -255,7 +255,8 @@ void ScoreDisplay::Draw( RenderTarget *target )
 		target->draw( scoreSymbolsVA, ts_scoreSymbols->texture );
 		target->draw( scoreContinue );
 
-		if( bars[0]->state == ScoreBar::SHEET_DISPLAY )
+		if( bars[0]->state == ScoreBar::SHEET_DISPLAY || bars[0]->state == 
+			ScoreBar::SYMBOL_DISPLAY )
 		{
 			target->draw( time );
 		}
@@ -314,7 +315,7 @@ void ScoreDisplay::Activate()
 	bars[0]->frame = 0;
 	
 	time.setFont( font );
-	time.setCharacterSize( 14 );
+	time.setCharacterSize( 40 );
 	time.setFillColor( Color::Black );
 
 	stringstream ss;
@@ -323,8 +324,19 @@ void ScoreDisplay::Activate()
 	int remain = owner->totalGameFrames % 60;
 	int centiSecond = floor( (double)remain * (1.0/60.0 * 100.0 ) + .5 );
 	
-	ss << seconds << " : " << centiSecond << endl;
+	if (seconds < 10)
+	{
+		ss << "0";
+	}
+	ss << seconds << " : ";
+	
+	if (centiSecond < 10)
+	{
+		ss << "0";
+	} 
+	ss << centiSecond << endl;
 	time.setString( ss.str() );
+	//time.setString("HERE I AM BUDDY");
 	
 	//time.setString
 
@@ -452,6 +464,14 @@ void ScoreDisplay::ScoreBar::Update()
 			{
 				state = SYMBOL_DISPLAY;
 				frame = 0;
+
+				if (row == 0)
+				{
+					int rowHeight = 100;
+					Vector2f basePos = parent->basePos + Vector2f(0, rowHeight * row)
+						+ Vector2f(32, 20) + Vector2f(-parent->ts_scoreBar->tileWidth + 80, 0);
+					parent->time.setPosition(basePos);
+				}
 				break;
 			}
 
@@ -464,16 +484,6 @@ void ScoreDisplay::ScoreBar::Update()
 			{
 				state = SHEET_DISPLAY;
 				frame = 0;
-
-				if( row == 0 )
-				{
-					int rowHeight = 100;
-					Vector2f &basePos = parent->basePos + Vector2f( 0, rowHeight * row ) 
-						+Vector2f( 32, 32 );
-					parent->time.setPosition( basePos );
-				}
-				
-
 				break;
 			}
 			++frame;
@@ -4051,12 +4061,20 @@ bool GameSession::OpenFile( string fileName )
 
 
 
+		
+	
+		
+
+		//loading done. now setup
+
+		SetGlobalBorders();
+
 		double extraBorder = 100;
 		if (inversePoly != NULL)
 		{
 
 
-			
+
 
 			int trueTop = mh->topBounds;
 			int possibleTop = inversePoly->aabb.top - extraBorder;
@@ -4072,6 +4090,23 @@ bool GameSession::OpenFile( string fileName )
 			mh->boundsHeight = (inversePoly->aabb.top + inversePoly->aabb.height + extraBorder) - trueTop;
 		}
 
+		bool blackBorder[2];
+		int newRight = (inversePoly->aabb.left + inversePoly->aabb.width);
+		blackBorder[0]= inversePoly->aabb.left < mh->leftBounds;
+		blackBorder[1] = newRight > (mh->leftBounds + mh->boundsWidth);
+
+		int leftB = mh->leftBounds;
+		int rightB = mh->leftBounds + mh->boundsWidth;
+		if (!blackBorder[0])
+		{
+			mh->leftBounds = inversePoly->aabb.left - extraBorder;
+		}
+		if (!blackBorder[1])
+		{
+			int newRight = (inversePoly->aabb.left + inversePoly->aabb.width);
+			mh->boundsWidth = (newRight + extraBorder) - mh->leftBounds;
+		}
+
 		for (int i = 0; i < 8; ++i)
 		{
 			//blackBorderQuads[i].color = Color::Black;
@@ -4082,8 +4117,8 @@ bool GameSession::OpenFile( string fileName )
 		blackBorderQuads[0].position.x = mh->leftBounds;
 		blackBorderQuads[3].position.x = mh->leftBounds;
 
-		blackBorderQuads[1].position.x += quadWidth;
-		blackBorderQuads[2].position.x += quadWidth;
+		blackBorderQuads[1].position.x = mh->leftBounds + quadWidth;
+		blackBorderQuads[2].position.x = mh->leftBounds + quadWidth;
 
 		blackBorderQuads[5].position.x = mh->leftBounds + mh->boundsWidth;
 		blackBorderQuads[6].position.x = mh->leftBounds + mh->boundsWidth;
@@ -4096,17 +4131,28 @@ bool GameSession::OpenFile( string fileName )
 		blackBorderQuads[6].position.y += mh->boundsHeight;
 		blackBorderQuads[7].position.y += mh->boundsHeight;
 
-		for (int i = 0; i < 8; ++i)
+		if (blackBorder[0])
 		{
-			blackBorderQuads[i].color = Color::Black;
-			//blackBorderQuads[i].color.a = 200;
+			SetRectColor(blackBorderQuads, Color(Color::Black));
+			blackBorderQuads[1].color.a = 0;
+			blackBorderQuads[2].color.a = 0;
+		}
+		else
+		{
+			SetRectColor(blackBorderQuads, Color(Color::Transparent));
+		}
+		if (blackBorder[1])
+		{
+			SetRectColor(blackBorderQuads + 4, Color(Color::Black));
+			blackBorderQuads[4].color.a = 0;
+			blackBorderQuads[7].color.a = 0;
+		}
+		else
+		{
+			SetRectColor(blackBorderQuads + 4, Color(Color::Transparent));
 		}
 
-		blackBorderQuads[1].color.a = 0;
-		blackBorderQuads[2].color.a = 0;
-
-		blackBorderQuads[4].color.a = 0;
-		blackBorderQuads[7].color.a = 0;
+		
 
 		if (poiMap.count("stormceiling") > 0)
 		{
@@ -4118,12 +4164,8 @@ bool GameSession::OpenFile( string fileName )
 			mh->boundsHeight = oldBottom - stormCeilingHeight;
 			assert(mh->boundsHeight > 0);
 		}
-	
-		
 
-		//loading done. now setup
 
-		SetGlobalBorders();
 		CreateZones();
 		SetupZones();
 

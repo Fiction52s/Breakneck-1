@@ -17540,7 +17540,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
 
-	if (resultBrush.objects.size() == 2 && orig.objects.size() == 2 )
+	/*if (resultBrush.objects.size() == 2 && orig.objects.size() == 2 )
 	{
 
 	}
@@ -17548,7 +17548,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	{
 		cout << "orig: " << orig.objects.size() << " , actors: " << actorList.size() << endl;
 		assert(0);
-	}
+	}*/
 
 	PolyPtr newPoly(new TerrainPolygon(&grassTex));
 	polygonInProgress = newPoly;

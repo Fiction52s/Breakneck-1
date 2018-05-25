@@ -61,6 +61,8 @@ bool ShipExitSeq::Update()
 	//player->action = Actor::SPAWNWAIT;
 	//player->frame = 0;
 
+	int startGrabWire = enterTime - 3 * 6;
+
 	if( frame == 0 )
 	{
 			owner->cam.SetManual( true );
@@ -85,7 +87,7 @@ bool ShipExitSeq::Update()
 			origPlayer = owner->GetPlayer( 0 )->position;
 			attachPoint = abovePlayer;//V2d(player->position.x, player->position.y);//abovePlayer.y + 170 );
 	}
-	else  if (frame == 60 - 3 * 7 )
+	else  if (frame ==  startGrabWire )
 	{
 		owner->GetPlayer( 0 )->GrabShipWire();	
 	}
@@ -95,25 +97,24 @@ bool ShipExitSeq::Update()
 		shipMovement.Update();
 	}
 
-	int startJump = (60 - 3 * 7 ) + 3 * 3;
-	if( frame > enterTime + 1)
+	int jumpSquat = startGrabWire + 3 * 3;
+	int jumpLength = 6 * 3;
+	int startJump = 4 * 3;//60 - jumpSquat;
+	if( frame > enterTime)
 	{
-		owner->GetPlayer( 0 )->position = V2d( shipMovement.position.x, shipMovement.position.y );
+		owner->GetPlayer( 0 )->position = V2d( shipMovement.position.x, shipMovement.position.y + 32.0 );
 	}
-	else if( frame >= startJump && frame <= enterTime )//startJump )
+	else if( frame >= jumpSquat && frame <= enterTime )//startJump )
 	{
-		double adjF = frame - startJump;
-		double eTime = enterTime - startJump;
+		double adjF = frame - jumpSquat;
+		double eTime = enterTime - jumpSquat;
 		double a = adjF / eTime;//(double)(frame - (60 - (startJump + 1))) / (60 - (startJump - 1));
 		//double a = 
-		cout << "a: " << a << endl;
-		owner->GetPlayer( 0 )->position = origPlayer * (1.0 - a ) + attachPoint * a;
+		//cout << "a: " << a << endl;
+		V2d pAttachPoint = attachPoint;
+		pAttachPoint.y += 32;
+		owner->GetPlayer( 0 )->position = origPlayer * (1.0 - a ) + pAttachPoint * a;
 	}
-	
-
-	
-
-
 
 	if (shipMovement.currMovement == NULL)
 	{
