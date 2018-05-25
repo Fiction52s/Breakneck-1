@@ -4070,6 +4070,7 @@ bool GameSession::OpenFile( string fileName )
 		SetGlobalBorders();
 
 		double extraBorder = 100;
+		bool topBorderOn = false;
 		if (inversePoly != NULL)
 		{
 
@@ -4077,9 +4078,13 @@ bool GameSession::OpenFile( string fileName )
 
 
 			int trueTop = mh->topBounds;
-			int possibleTop = inversePoly->aabb.top - extraBorder;
+			int possibleTop = inversePoly->aabb.top; //- extraBorder;
 			if (possibleTop > trueTop)
 				trueTop = possibleTop;
+			else
+			{
+				topBorderOn = true;
+			}
 
 
 
@@ -4152,7 +4157,56 @@ bool GameSession::OpenFile( string fileName )
 			SetRectColor(blackBorderQuads + 4, Color(Color::Transparent));
 		}
 
+		int miniQuadWidth = 4000;
+		int inverseTerrainBorder = 4000;
+		int blackMiniTop = mh->topBounds - inverseTerrainBorder;
+		int blackMiniBot = mh->topBounds + mh->boundsHeight + inverseTerrainBorder;
+		int blackMiniLeft = mh->leftBounds - miniQuadWidth;
+		int rightBounds = mh->leftBounds + mh->boundsWidth;
+		int blackMiniRight = rightBounds + miniQuadWidth;
+		blackBorderQuadsMini[1].position.x = mh->leftBounds;
+		blackBorderQuadsMini[2].position.x = mh->leftBounds;
+		blackBorderQuadsMini[0].position.x = mh->leftBounds - miniQuadWidth;
+		blackBorderQuadsMini[3].position.x = mh->leftBounds - miniQuadWidth;
+
+		blackBorderQuadsMini[0].position.y = blackMiniTop;
+		blackBorderQuadsMini[1].position.y = blackMiniTop;
+
+		blackBorderQuadsMini[2].position.y = blackMiniBot;
+		blackBorderQuadsMini[3].position.y = blackMiniBot;
+
 		
+		blackBorderQuadsMini[5].position.x = rightBounds + miniQuadWidth;
+		blackBorderQuadsMini[6].position.x = rightBounds + miniQuadWidth;
+		blackBorderQuadsMini[4].position.x = rightBounds;
+		blackBorderQuadsMini[7].position.x = rightBounds;
+
+		blackBorderQuadsMini[4].position.y = blackMiniTop;
+		blackBorderQuadsMini[5].position.y = blackMiniTop;
+
+		blackBorderQuadsMini[6].position.y = blackMiniBot;
+		blackBorderQuadsMini[7].position.y = blackMiniBot;
+
+		if( blackBorder[0] )
+			SetRectColor(blackBorderQuadsMini, Color(Color::Black));
+		if (blackBorder[1])
+			SetRectColor(blackBorderQuadsMini + 4, Color(Color::Black));
+		
+
+		if (topBorderOn)
+		{
+			SetRectColor(topBorderQuadMini, Color(0x10, 0x40, 0xff));
+
+			topBorderQuadMini[0].position.x = blackMiniLeft;
+			topBorderQuadMini[1].position.x = blackMiniRight;
+			topBorderQuadMini[2].position.x = blackMiniRight;
+			topBorderQuadMini[3].position.x = blackMiniLeft;
+
+			topBorderQuadMini[0].position.y = blackMiniTop;
+			topBorderQuadMini[1].position.y = blackMiniTop;
+			topBorderQuadMini[2].position.y = mh->topBounds;
+			topBorderQuadMini[3].position.y = mh->topBounds;
+		}
 
 		if (poiMap.count("stormceiling") > 0)
 		{
@@ -4163,6 +4217,19 @@ bool GameSession::OpenFile( string fileName )
 			mh->topBounds = stormCeilingHeight;
 			mh->boundsHeight = oldBottom - stormCeilingHeight;
 			assert(mh->boundsHeight > 0);
+
+			SetRectColor(topBorderQuadMini, Color(0x10, 0x40, 0xff));
+
+			topBorderQuadMini[0].position.x = blackMiniLeft;
+			topBorderQuadMini[1].position.x = blackMiniRight;
+			topBorderQuadMini[2].position.x = blackMiniRight;
+			topBorderQuadMini[3].position.x = blackMiniLeft;
+
+			topBorderQuadMini[0].position.y = blackMiniTop;
+			topBorderQuadMini[1].position.y = blackMiniTop;
+			topBorderQuadMini[2].position.y = mh->topBounds;
+			topBorderQuadMini[3].position.y = mh->topBounds;
+
 		}
 
 
@@ -7873,6 +7940,9 @@ int GameSession::Run()
 			listVAIter = listVAIter->next;
 		}
 
+		minimapTex->draw(blackBorderQuadsMini, 8, sf::Quads);
+		minimapTex->draw(topBorderQuadMini, 4, sf::Quads);
+		//minimapTex->draw(topBorderQuad, 4, sf::Quads);
 		
 
 		queryMode = "item";

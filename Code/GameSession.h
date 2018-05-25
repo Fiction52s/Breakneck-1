@@ -470,6 +470,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	MomentumBar *momentumBar;
 
 	sf::Vertex blackBorderQuads[4 * 2];
+	sf::Vertex blackBorderQuadsMini[4 * 2];
+	sf::Vertex topBorderQuadMini[4];
 
 	HitboxManager *hitboxManager;
 	AbsorbParticles *absorbParticles;
