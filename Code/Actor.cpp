@@ -151,9 +151,9 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_grindLungeSword[1] = owner->GetTileset("Sword/grind_lunge_swordb_192x192.png", 192, 192, swordSkin);
 	ts_grindLungeSword[2] = owner->GetTileset("Sword/grind_lunge_swordc_224x208.png", 224, 208, swordSkin);
 
-	ts_standingNSword[0] = owner->GetTileset("Sword/stand_sworda_272x160.png", 272, 160, swordSkin);
-	ts_standingNSword[1] = owner->GetTileset("Sword/stand_swordb_384x160.png", 384, 160, swordSkin);
-	ts_standingNSword[2] = owner->GetTileset("Sword/stand_swordc_384x192.png", 384, 192, swordSkin);
+	ts_standingNSword[0] = owner->GetTileset("Sword/stand_sworda_208x208.png", 208, 208, swordSkin);
+	ts_standingNSword[1] = owner->GetTileset("Sword/stand_swordb_304x176.png", 304, 176, swordSkin);
+	ts_standingNSword[2] = owner->GetTileset("Sword/stand_swordc_304x192.png", 304, 192, swordSkin);
 
 	/*ts_dashAttackSword[0] = owner->GetTileset("dash_sworda_256x256.png", 256, 256, swordSkin);
 	ts_dashAttackSword[1] = owner->GetTileset("dash_swordb_256x256.png", 256, 256, swordSkin);
@@ -661,7 +661,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		/*offsets[1] = Vector2i(16, -40);
 		offsets[2] = Vector2i(32, -48);*/
 
-		standSwordOffset[0] = Vector2f(0, -64);
+		standSwordOffset[0] = Vector2f(64, 64);//Vector2f(0, -64);
+		standSwordOffset[1] = Vector2f(64, 32);//Vector2f(0, -64);
+		standSwordOffset[2] = Vector2f(64, 16);//Vector2f(0, -64);
 		
 
 		std::map<int, std::list<CollisionBox>> & fairAList = 
@@ -718,7 +720,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		std::map<int, std::list<CollisionBox>> & standCList =
 			owner->hitboxManager->GetHitboxList("standchitboxes");
 
-		/*
+		
 
 		std::map<int, std::list<CollisionBox>> & wallAList =
 			owner->hitboxManager->GetHitboxList("wallahitboxes");
@@ -745,7 +747,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			owner->hitboxManager->GetHitboxList("slidebhitboxes");
 
 		std::map<int, std::list<CollisionBox>> & slideCList =
-			owner->hitboxManager->GetHitboxList("slidechitboxes");*/
+			owner->hitboxManager->GetHitboxList("slidechitboxes");
 
 		
 
@@ -762,23 +764,23 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		dairHitboxes[2] = new CollisionBody(16, dairCList, currHitboxInfo);
 
 
-		standHitboxes[0] = new CollisionBody(4, standAList, currHitboxInfo);
-		standHitboxes[1] = new CollisionBody(4, standBList, currHitboxInfo);
-		standHitboxes[2] = new CollisionBody(4, standCList, currHitboxInfo);
+		standHitboxes[0] = new CollisionBody(8, standAList, currHitboxInfo);
+		standHitboxes[1] = new CollisionBody(8, standBList, currHitboxInfo);
+		standHitboxes[2] = new CollisionBody(8, standCList, currHitboxInfo);
 
 		////dashHitboxes[0] = NULL;
-		//wallHitboxes[0] = new CollisionBody(7, wallAList, currHitboxInfo);
-		//wallHitboxes[1] = new CollisionBody(7, wallBList, currHitboxInfo);
-		//wallHitboxes[2] = new CollisionBody(7, wallCList, currHitboxInfo);
+		wallHitboxes[0] = new CollisionBody(7, wallAList, currHitboxInfo);
+		wallHitboxes[1] = new CollisionBody(7, wallBList, currHitboxInfo);
+		wallHitboxes[2] = new CollisionBody(7, wallCList, currHitboxInfo);
 
 
-		//steepClimbHitboxes[0] = new CollisionBody(7, climbAList, currHitboxInfo);
-		//steepClimbHitboxes[1] = new CollisionBody(7, climbBList, currHitboxInfo);
-		//steepClimbHitboxes[2] = new CollisionBody(7, climbCList, currHitboxInfo);
+		steepClimbHitboxes[0] = new CollisionBody(7, climbAList, currHitboxInfo);
+		steepClimbHitboxes[1] = new CollisionBody(7, climbBList, currHitboxInfo);
+		steepClimbHitboxes[2] = new CollisionBody(7, climbCList, currHitboxInfo);
 
-		//steepSlideHitboxes[0] = new CollisionBody(8, slideAList, currHitboxInfo);
-		//steepSlideHitboxes[1] = new CollisionBody(8, slideBList, currHitboxInfo);
-		//steepSlideHitboxes[2] = new CollisionBody(8, slideCList, currHitboxInfo);
+		steepSlideHitboxes[0] = new CollisionBody(8, slideAList, currHitboxInfo);
+		steepSlideHitboxes[1] = new CollisionBody(8, slideBList, currHitboxInfo);
+		steepSlideHitboxes[2] = new CollisionBody(8, slideCList, currHitboxInfo);
 
 		diagUpHitboxes[0] = new CollisionBody(12, adUpAList, currHitboxInfo);
 		diagDownHitboxes[0] = new CollisionBody(12, adDownAList, currHitboxInfo);
@@ -797,9 +799,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			diagUpHitboxes[i]->OffsetAllFrames(diagUpSwordOffset[i]);
 		}
 		
-		for (int i = 0; i < 1; ++i)
+		for (int i = 0; i < 3; ++i)
 		{
-			standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
+			Vector2f testOffset = standSwordOffset[i];
+			testOffset.y -= ts_standingNSword[i]->tileHeight / 2.0;
+			//standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
+			standHitboxes[i]->OffsetAllFrames(testOffset);
 		}
 		//up
 		
@@ -1042,7 +1047,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SPRINGSTUN] = 8;
 		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
 		actionLength[DASHATTACK] = 8 * 2;
-		actionLength[STANDN] = 4 * 4;
+		actionLength[STANDN] = 8 * 2;
 		actionLength[UAIR] = 16;
 		actionLength[GRINDATTACK] = 1;
 		actionLength[STEEPSLIDE] = 1;
@@ -7288,7 +7293,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDN:
 		{
-			SetCurrHitboxes(standHitboxes[speedLevel], frame / 4);
+			SetCurrHitboxes(standHitboxes[speedLevel], frame / 2);
 
 			if( frame == 0 && slowCounter == 1 )
 			{
@@ -19486,27 +19491,27 @@ void Actor::UpdateSprite()
 			//Vector2i offset( 24, -16 );
 			//Vector2i offset( 24, 0 );
 			//Vector2i offset( 32, 0 );
-			Vector2i offset( 0, -16 );
-
+			//Vector2i offset( 0, -16 );
+			Vector2f offset = standSwordOffset[speedLevel];
 
 			SetSpriteTexture( action );
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-			SetSpriteTile( frame / 4, r );
+			SetSpriteTile( frame / 2, r );
 
 			if( showSword )
 			{
 				if( r )
 				{
-					standingNSword.setTextureRect( curr_ts->GetSubRect( frame / 4 - startFrame ) );
+					standingNSword.setTextureRect( curr_ts->GetSubRect( frame / 2 - startFrame ) );
 				}
 				else
 				{
-					sf::IntRect irSword = curr_ts->GetSubRect( frame / 4 - startFrame );
+					sf::IntRect irSword = curr_ts->GetSubRect( frame / 2 - startFrame );
 					standingNSword.setTextureRect( sf::IntRect( irSword.left + irSword.width, 
 						irSword.top, -irSword.width, irSword.height ) );
 
-					offset.x = -offset.x;	
+					offset.x = -offset.x;
 				}
 			}
 
@@ -19551,15 +19556,8 @@ void Actor::UpdateSprite()
 			V2d pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
 			V2d truDir( -trueNormal.y, trueNormal.x );//normalize( ground->v1 - ground->v0 );
 
-			if (r)
-			{
-				pos += truDir * (double)offset.x;
-			}
-			else
-			{
-				pos += truDir * (double)-offset.x;
-			}
-			pos += trueNormal * (double)offset.y;
+			pos += truDir * (double)offset.x;
+			pos += -trueNormal * (double)offset.y;
 			
 
 			standingNSword.setPosition( pos.x, pos.y );

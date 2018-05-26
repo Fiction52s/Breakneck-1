@@ -1332,7 +1332,7 @@ void GameSession::AddEnemy( Enemy *e )
 	if (e->type == EnemyType::EN_SHARD)
 	{
 		Shard *sh = (Shard*)e;
-		if (saveFile->ShardIsCaptured(sh->shardType))
+		if ( saveFile != NULL && saveFile->ShardIsCaptured(sh->shardType))
 		{
 			return;
 		}

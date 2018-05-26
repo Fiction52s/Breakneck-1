@@ -148,11 +148,16 @@ void Shard::DissipateOnCapture()
 {
 	action = DISSIPATE;
 	frame = 0;
-	assert(!owner->saveFile->shardField.GetBit(shardType));
 
-	//both give you the shard and mark it as a new shard
-	owner->saveFile->shardField.SetBit(shardType, true);
-	owner->saveFile->newShardField.SetBit(shardType, true);
+	if (owner->saveFile != NULL)
+	{
+		assert(!owner->saveFile->shardField.GetBit(shardType));
+
+		//both give you the shard and mark it as a new shard
+		owner->saveFile->shardField.SetBit(shardType, true);
+		owner->saveFile->newShardField.SetBit(shardType, true);
+	}
+
 
 	SetHitboxes(NULL, 0);
 	SetHurtboxes(NULL, 0);
