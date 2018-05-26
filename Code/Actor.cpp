@@ -23079,7 +23079,7 @@ sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
 		break;
 	}
 	case DARK:
-		return owner->keyMarker->keyNumberNeededHUD->center;
+		return Vector2f(1920 - 128, 128);//owner->keyMarker->keyNumberNeededHUD->center;
 		break;
 	case SHARD:
 		return Vector2f(200, 100);

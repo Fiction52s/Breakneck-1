@@ -1163,7 +1163,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	ss << "w" << world << "_kill_fx_512x512.png";
 
 	ts_killSpack = owner->GetTileset(ss.str(), 512, 512);
-
+	assert(ts_killSpack != NULL);
 	ss.clear();
 	ss.str("");
 

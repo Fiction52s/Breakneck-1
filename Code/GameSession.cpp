@@ -4138,6 +4138,7 @@ bool GameSession::OpenFile( string fileName )
 
 		if (blackBorder[0])
 		{
+			//SetRectColor(blackBorderQuads, Color(100, 100, 100));
 			SetRectColor(blackBorderQuads, Color(Color::Black));
 			blackBorderQuads[1].color.a = 0;
 			blackBorderQuads[2].color.a = 0;
@@ -4187,10 +4188,14 @@ bool GameSession::OpenFile( string fileName )
 		blackBorderQuadsMini[6].position.y = blackMiniBot;
 		blackBorderQuadsMini[7].position.y = blackMiniBot;
 
+		Color miniBorderColor = Color(100, 100, 100);
+		Color miniTopBorderColor = Color(0x10, 0x40, 0xff);
+		//SetRectColor(blackBorderQuads + 4, Color( 100, 100, 100 ));
+
 		if( blackBorder[0] )
-			SetRectColor(blackBorderQuadsMini, Color(Color::Black));
+			SetRectColor(blackBorderQuadsMini, miniTopBorderColor);
 		if (blackBorder[1])
-			SetRectColor(blackBorderQuadsMini + 4, Color(Color::Black));
+			SetRectColor(blackBorderQuadsMini + 4, miniTopBorderColor);
 		
 
 		if (topBorderOn)
@@ -4218,7 +4223,7 @@ bool GameSession::OpenFile( string fileName )
 			mh->boundsHeight = oldBottom - stormCeilingHeight;
 			assert(mh->boundsHeight > 0);
 
-			SetRectColor(topBorderQuadMini, Color(0x10, 0x40, 0xff));
+			SetRectColor(topBorderQuadMini, miniTopBorderColor);
 
 			topBorderQuadMini[0].position.x = blackMiniLeft;
 			topBorderQuadMini[1].position.x = blackMiniRight;
@@ -8271,7 +8276,11 @@ int GameSession::Run()
 		momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
 		momentumBar->Draw(preScreenTex);
 		
-
+		/*sf::Sprite testNumbers;
+		testNumbers.setTexture(*(GetTileset("keynum_95x100.png", 95, 100)->texture));
+		testNumbers.setOrigin(testNumbers.getLocalBounds().width, 0);
+		testNumbers.setPosition(1920, 0);
+		preScreenTex->draw(testNumbers);*/
 
 		//else 
 
