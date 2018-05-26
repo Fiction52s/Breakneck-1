@@ -667,11 +667,29 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		std::map<int, std::list<CollisionBox>> & fairAList = 
 			owner->hitboxManager->GetHitboxList("fairahitboxes");
 
+		std::map<int, std::list<CollisionBox>> & fairBList =
+			owner->hitboxManager->GetHitboxList("fairbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & fairCList =
+			owner->hitboxManager->GetHitboxList("fairchitboxes");
+
 		std::map<int, std::list<CollisionBox>> & dairAList =
 			owner->hitboxManager->GetHitboxList("dairahitboxes");
 
+		std::map<int, std::list<CollisionBox>> & dairBList =
+			owner->hitboxManager->GetHitboxList("dairbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & dairCList =
+			owner->hitboxManager->GetHitboxList("dairchitboxes");
+
 		std::map<int, std::list<CollisionBox>> & uairAList =
 			owner->hitboxManager->GetHitboxList("uairahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & uairBList =
+			owner->hitboxManager->GetHitboxList("uairbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & uairCList =
+			owner->hitboxManager->GetHitboxList("uairchitboxes");
 
 		std::map<int, std::list<CollisionBox>> & adUpAList =
 			owner->hitboxManager->GetHitboxList("airdashupahitboxes");
@@ -679,8 +697,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		std::map<int, std::list<CollisionBox>> & adUpBList =
 			owner->hitboxManager->GetHitboxList("airdashupbhitboxes");
 
-		std::map<int, std::list<CollisionBox>> & adUpPList =
-			owner->hitboxManager->GetHitboxList("airdashupphitboxes");
+		std::map<int, std::list<CollisionBox>> & adUpCList =
+			owner->hitboxManager->GetHitboxList("airdashupchitboxes");
 
 		std::map<int, std::list<CollisionBox>> & adDownAList =
 			owner->hitboxManager->GetHitboxList("airdashdownahitboxes");
@@ -688,28 +706,88 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		std::map<int, std::list<CollisionBox>> & adDownBList =
 			owner->hitboxManager->GetHitboxList("airdashdownbhitboxes");
 
-		std::map<int, std::list<CollisionBox>> & adDownPList =
-			owner->hitboxManager->GetHitboxList("airdashdownphitboxes");
+		std::map<int, std::list<CollisionBox>> & adDownCList =
+			owner->hitboxManager->GetHitboxList("airdashdownchitboxes");
 
-		::map<int, std::list<CollisionBox>> & standAList =
+		std::map<int, std::list<CollisionBox>> & standAList =
 			owner->hitboxManager->GetHitboxList("standahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & standBList =
+			owner->hitboxManager->GetHitboxList("standbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & standCList =
+			owner->hitboxManager->GetHitboxList("standchitboxes");
+
+		/*
+
+		std::map<int, std::list<CollisionBox>> & wallAList =
+			owner->hitboxManager->GetHitboxList("wallahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & wallBList =
+			owner->hitboxManager->GetHitboxList("wallbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & wallCList =
+			owner->hitboxManager->GetHitboxList("wallchitboxes");
+
+		std::map<int, std::list<CollisionBox>> & climbAList =
+			owner->hitboxManager->GetHitboxList("climbahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & climbBList =
+			owner->hitboxManager->GetHitboxList("climbbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & climbCList =
+			owner->hitboxManager->GetHitboxList("climbchitboxes");
+
+		std::map<int, std::list<CollisionBox>> & slideAList =
+			owner->hitboxManager->GetHitboxList("slideahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & slideBList =
+			owner->hitboxManager->GetHitboxList("slidebhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & slideCList =
+			owner->hitboxManager->GetHitboxList("slidechitboxes");*/
+
+		
 
 		fairHitboxes[0] = new CollisionBody(16, fairAList, currHitboxInfo );
 		uairHitboxes[0] = new CollisionBody(16, uairAList, currHitboxInfo);
 		dairHitboxes[0] = new CollisionBody(16, dairAList, currHitboxInfo);
+
+		fairHitboxes[1] = new CollisionBody(16, fairBList, currHitboxInfo);
+		uairHitboxes[1] = new CollisionBody(16, uairBList, currHitboxInfo);
+		dairHitboxes[1] = new CollisionBody(16, dairBList, currHitboxInfo);
+
+		fairHitboxes[2] = new CollisionBody(16, fairCList, currHitboxInfo);
+		uairHitboxes[2] = new CollisionBody(16, uairCList, currHitboxInfo);
+		dairHitboxes[2] = new CollisionBody(16, dairCList, currHitboxInfo);
+
+
 		standHitboxes[0] = new CollisionBody(4, standAList, currHitboxInfo);
-		dashHitboxes[0] = NULL;
-		wallHitboxes[0] = NULL;
-		steepClimbHitboxes[0] = NULL;
-		steepSlideHitboxes[0] = NULL;
+		standHitboxes[1] = new CollisionBody(4, standBList, currHitboxInfo);
+		standHitboxes[2] = new CollisionBody(4, standCList, currHitboxInfo);
+
+		////dashHitboxes[0] = NULL;
+		//wallHitboxes[0] = new CollisionBody(7, wallAList, currHitboxInfo);
+		//wallHitboxes[1] = new CollisionBody(7, wallBList, currHitboxInfo);
+		//wallHitboxes[2] = new CollisionBody(7, wallCList, currHitboxInfo);
+
+
+		//steepClimbHitboxes[0] = new CollisionBody(7, climbAList, currHitboxInfo);
+		//steepClimbHitboxes[1] = new CollisionBody(7, climbBList, currHitboxInfo);
+		//steepClimbHitboxes[2] = new CollisionBody(7, climbCList, currHitboxInfo);
+
+		//steepSlideHitboxes[0] = new CollisionBody(8, slideAList, currHitboxInfo);
+		//steepSlideHitboxes[1] = new CollisionBody(8, slideBList, currHitboxInfo);
+		//steepSlideHitboxes[2] = new CollisionBody(8, slideCList, currHitboxInfo);
+
 		diagUpHitboxes[0] = new CollisionBody(12, adUpAList, currHitboxInfo);
 		diagDownHitboxes[0] = new CollisionBody(12, adDownAList, currHitboxInfo);
 
 		diagUpHitboxes[1] = new CollisionBody(12, adUpBList, currHitboxInfo);
 		diagDownHitboxes[1] = new CollisionBody(12, adDownBList, currHitboxInfo);
 
-		diagUpHitboxes[2] = new CollisionBody(12, adUpPList, currHitboxInfo);
-		diagDownHitboxes[2] = new CollisionBody(12, adDownPList, currHitboxInfo);
+		diagUpHitboxes[2] = new CollisionBody(12, adUpCList, currHitboxInfo);
+		diagDownHitboxes[2] = new CollisionBody(12, adDownCList, currHitboxInfo);
 
 		
 
@@ -6750,7 +6828,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLATTACK:
 		{
-			SetCurrHitboxes(wallHitboxes[0], frame);
+			SetCurrHitboxes(wallHitboxes[speedLevel], frame);
 
 			if( frame == 0 )
 			{
@@ -6790,7 +6868,7 @@ void Actor::UpdatePrePhysics()
 			CheckHoldJump();
 
 			
-			SetCurrHitboxes(fairHitboxes[0], frame);
+			SetCurrHitboxes(fairHitboxes[speedLevel], frame);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -6811,7 +6889,7 @@ void Actor::UpdatePrePhysics()
 		{
 			CheckHoldJump();
 
-			SetCurrHitboxes(dairHitboxes[0], frame);
+			SetCurrHitboxes(dairHitboxes[speedLevel], frame);
 
 			if( frame == 0 && slowCounter == 1 )
 			{
@@ -6840,7 +6918,7 @@ void Actor::UpdatePrePhysics()
 		{
 			CheckHoldJump();
 
-			SetCurrHitboxes(uairHitboxes[0], frame);
+			SetCurrHitboxes(uairHitboxes[speedLevel], frame);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -6856,7 +6934,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case DIAGUPATTACK:
 		{
-			SetCurrHitboxes(diagUpHitboxes[0], frame / 2);
+			SetCurrHitboxes(diagUpHitboxes[speedLevel], frame / 2);
 
 			if( frame == 0 && slowCounter == 1)
 			{
@@ -7210,7 +7288,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STANDN:
 		{
-			SetCurrHitboxes(standHitboxes[0], frame / 4);
+			SetCurrHitboxes(standHitboxes[speedLevel], frame / 4);
 
 			if( frame == 0 && slowCounter == 1 )
 			{
@@ -7224,7 +7302,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPCLIMBATTACK:
 		{
-			SetCurrHitboxes(steepClimbHitboxes[0], frame);
+			SetCurrHitboxes(steepClimbHitboxes[speedLevel], frame);
 
 			if( frame == 0 )
 			{
@@ -7290,7 +7368,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDEATTACK:
 		{
-			SetCurrHitboxes(steepSlideHitboxes[0], frame);
+			SetCurrHitboxes(steepSlideHitboxes[speedLevel], frame);
 
 			if( frame == 0 )
 			{
