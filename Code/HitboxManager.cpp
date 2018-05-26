@@ -29,7 +29,8 @@ std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const string &
 				is >> numHitboxes;
 				for (int h = 0; h < numHitboxes; ++h)
 				{
-					myMap[frameIndex].push_back( LoadHitShape(is) );
+					CollisionBox tempCB = LoadHitShape(is);
+					myMap[frameIndex].push_back( tempCB );
 				}
 			}
 
