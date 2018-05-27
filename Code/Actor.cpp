@@ -10808,19 +10808,21 @@ V2d Actor::UpdateReversePhysics()
 					//cout << "hit: " << hit << endl;
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
-						if ( minContact.edge->edgeType == Edge::BORDER )
-						{
-							velocity = normalize(ground->v1 - ground->v0) * -groundSpeed;
-							velocity.y = 0;
-							movementVec = normalize(ground->v1 - ground->v0) * extra;
+						//honestly no idea why I had this in the first place?
+						//if ( false && minContact.edge->edgeType == Edge::BORDER )
+						//{
+						//	velocity = normalize(ground->v1 - ground->v0) * -groundSpeed;
+						//	velocity.y = 0;
+						//	movementVec = normalize(ground->v1 - ground->v0) * extra;
 
-							leftGround = true;
-							reversed = false;
-							ground = NULL;
-							movingGround = NULL;
-							return V2d( 0, 0 );
-						}
-						else
+						//	leftGround = true;
+						//	reversed = false;
+						//	ground = NULL;
+						//	movingGround = NULL;
+						//	break;
+						//	//return V2d( 0, 0 );
+						//}
+						//else
 						{
 
 							V2d eNorm = minContact.normal;//minContact.edge->Normal();
@@ -14764,8 +14766,8 @@ void Actor::PhysicsResponse()
 				{
 					if( reversed )//&& trueFramesInAir > 1 )
 					{
-						cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
-						cout << "trueframes in air: " << trueFramesInAir << endl;
+						//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+						//cout << "trueframes in air: " << trueFramesInAir << endl;
 						//cout << "THIS GRAV REVERSE" << endl;
 						//cout << "frames in air: " << framesInAir << endl;
 						//cout << "frame: " << frame << endl;
@@ -23119,9 +23121,22 @@ int Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 }
 
 AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
-	:maxNumParticles(1000), va(NULL), particlePos(NULL), maxSpeed(100), playerTarget( NULL ),
+	:va(NULL), particlePos(NULL), maxSpeed(100), playerTarget( NULL ),
 	activeList( NULL ), inactiveList( NULL ), abType( p_abType ), owner( p_owner )
 {
+	switch (p_abType)
+	{
+	case ENERGY:
+		maxNumParticles = 256;
+		break;
+	case DARK:
+		maxNumParticles = 64;
+		break;
+	case SHARD:
+		maxNumParticles = 64;
+		break;
+	}
+
 	va = new Vertex[maxNumParticles * 4];
 
 	for (int i = 0; i < maxNumParticles; ++i)

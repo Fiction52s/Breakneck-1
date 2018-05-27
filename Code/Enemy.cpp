@@ -1678,7 +1678,8 @@ bool Enemy::CheckHitPlayer(int index)
 		if (player->IntersectMyHurtboxes(currHitboxes, currHitboxFrame))
 		{
 			IHitPlayer(index);
-			player->ApplyHit(currHitboxes->hitboxInfo);
+			if( currHitboxes !=NULL )
+				player->ApplyHit(currHitboxes->hitboxInfo);
 			return true;
 		}
 	}

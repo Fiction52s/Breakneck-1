@@ -476,6 +476,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	HitboxManager *hitboxManager;
 	AbsorbParticles *absorbParticles;
 	AbsorbParticles *absorbDarkParticles;
+	AbsorbParticles *absorbShardParticles;
 	EnemyParamsManager *eHitParamsMan;
 
 	static bool sLoad( GameSession *gs );

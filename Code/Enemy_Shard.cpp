@@ -162,7 +162,7 @@ void Shard::DissipateOnCapture()
 	SetHitboxes(NULL, 0);
 	SetHurtboxes(NULL, 0);
 
-	owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position, AbsorbParticles::SHARD);
+	owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
 
 	owner->mainMenu->GetCurrentProgress()->Save(); //might need to multithread at some point. this can be annoying
 }

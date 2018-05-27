@@ -685,7 +685,8 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 
 
 	Tileset *scoreTS = owner->GetTileset("keynum_32x32.png", 32, 32);
-	keyNumberNeededHUD = new ImageText(2, scoreTS);
+	Tileset *neededKeysTS = owner->GetTileset("Menu/keynum_small_160x160.png", 160, 160);
+	keyNumberNeededHUD = new ImageText(2, neededKeysTS);
 	keyNumberTotalHUD = new ImageText(2, scoreTS);
 
 	Tileset *keyBGTS = owner->GetTileset("keyframe_81x81.png", 81, 81);
@@ -701,11 +702,11 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 void KeyMarker::SetPosition(Vector2f &pos)
 {
 	keyNumberHUDBG.setPosition(pos);
-	Vector2f neededCenter = Vector2f(62, 33) + pos;
+	Vector2f neededCenter = Vector2f(1920- 100, 100 );//Vector2f(62, 33) + pos;
 	keyNumberNeededHUD->SetCenter(neededCenter );
 	keyRingSpr.setPosition(neededCenter);
 
-	keyNumberTotalHUD->SetCenter(Vector2f(27, 70) + pos);
+	keyNumberTotalHUD->SetCenter(neededCenter + Vector2f(-60, -40));
 }
 
 void KeyMarker::CollectKey()
@@ -778,7 +779,7 @@ void KeyMarker::SetStartKeys( int neededKeys, int totalKeys )
 
 void KeyMarker::Draw( sf::RenderTarget *target )
 {
-	target->draw(keyNumberHUDBG);
+	//target->draw(keyNumberHUDBG);
 
 	keyNumberTotalHUD->Draw(target);
 
@@ -787,8 +788,8 @@ void KeyMarker::Draw( sf::RenderTarget *target )
 	int val = keyNumberNeededHUD->value;
 	if ( val >= 1 && val <= 3)
 	{
-		keyRingSpr.setTextureRect(ts_keyRing->GetSubRect(val -1));
-		target->draw(keyRingSpr);
+		//keyRingSpr.setTextureRect(ts_keyRing->GetSubRect(val -1));
+		//target->draw(keyRingSpr);
 	}
 	//target->draw( backSprite );
 	//if( state == NONZERO )
@@ -868,6 +869,12 @@ void GameSession::Cleanup()
 	{
 		delete absorbDarkParticles;
 		absorbDarkParticles = NULL;
+	}
+
+	if (absorbShardParticles != NULL)
+	{
+		delete absorbShardParticles;
+		absorbShardParticles = NULL;
 	}
 
 	if (testPar != NULL)
@@ -5331,6 +5338,7 @@ bool GameSession::Load()
 
 	absorbParticles = new AbsorbParticles( this, AbsorbParticles::ENERGY );
 	absorbDarkParticles = new AbsorbParticles( this, AbsorbParticles::DARK);
+	absorbShardParticles = new AbsorbParticles(this, AbsorbParticles::SHARD);
 
 	soundNodeList = new SoundNodeList(10);
 	soundNodeList->SetGlobalVolume(mainMenu->config->GetData().volume);
@@ -6778,6 +6786,7 @@ int GameSession::Run()
 
 				absorbParticles->Update();
 				absorbDarkParticles->Update();
+				absorbShardParticles->Update();
 
 				UpdateEffects();
 
@@ -8555,6 +8564,8 @@ int GameSession::Run()
 
 		absorbDarkParticles->Draw(preScreenTex);
 
+		absorbShardParticles->Draw(preScreenTex);
+
 		preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
 
 		preScreenTex->display();
@@ -9449,6 +9460,7 @@ void GameSession::Init()
 
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
+	absorbShardParticles = NULL;
 
 	background = NULL;
 }
@@ -10227,6 +10239,7 @@ void GameSession::RestartLevel()
 
 	absorbParticles->Reset();
 	absorbDarkParticles->Reset();
+	absorbShardParticles->Reset();
 	//player->Respawn();
 	
 	cam.pos.x = GetPlayer( 0 )->position.x;
