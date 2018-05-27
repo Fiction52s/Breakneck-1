@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Sequence.h"
+#include "KeyMarker.h"
 
 using namespace std;
 using namespace sf;

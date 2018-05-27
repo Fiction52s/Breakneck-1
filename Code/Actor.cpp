@@ -16,6 +16,7 @@
 #include "Enemy_Booster.h"
 #include "HitboxManager.h"
 #include "ImageText.h"
+#include "KeyMarker.h"
 
 using namespace sf;
 using namespace std;
@@ -23170,7 +23171,7 @@ sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
 		break;
 	}
 	case DARK:
-		return Vector2f(1920 - 128, 128);//owner->keyMarker->keyNumberNeededHUD->center;
+		return Vector2f(1920 - 100, 100);//owner->keyMarker->keyNumberNeededHUD->center;
 		break;
 	case SHARD:
 		return Vector2f(200, 100);
@@ -23430,6 +23431,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 			Tileset *tss = parent->owner->GetTileset("FX/keyexplode_128x128.png", 128, 128);
 			parent->owner->ActivateEffect(EffectLayer::UI_FRONT,
 				tss, V2d(targetPos), true, 0, 6, 3, true);
+			parent->owner->keyMarker->VibrateNumbers();
 			break;
 		}
 		}

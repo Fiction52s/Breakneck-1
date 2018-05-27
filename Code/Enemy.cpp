@@ -6,6 +6,7 @@
 #include "Zone.h"
 #include <sstream>
 #include "Boss.h"
+#include "KeyMarker.h"
 
 using namespace std;
 using namespace sf;

@@ -193,40 +193,10 @@ struct Boss_Tiger;
 struct Boss_Gator;
 struct Boss_Skeleton;
 struct GameSession;
+struct KeyMarker;
 
 
 
-struct KeyMarker
-{
-
-	int frame;
-//	State state;
-	int keysRequired;
-	int startKeys;
-	GameSession *owner;
-	KeyMarker( GameSession *owner );
-	void SetStartKeys( int neededKeys,
-		int totalKeys );
-	void SetStartKeysZone(Zone *z);
-	void Update();
-	void CollectKey();
-	void SetPosition(sf::Vector2f &pos);
-	//void SetEnergySprite();
-	void Draw( sf::RenderTarget *target );
-	//Tileset *ts_keys;
-	//Tileset *ts_keyEnergy;
-	//sf::Sprite backSprite;
-	//sf::Sprite energySprite;
-
-	sf::Sprite keyNumberHUDBG;
-	sf::Sprite keyNumberSpecialSpr;
-	ImageText *keyNumberNeededHUD;
-	ImageText *keyNumberTotalHUD;
-
-	Tileset *ts_keyRing;
-	sf::Sprite keyRingSpr;
-	//GameSession *owner;
-};
 
 struct MomentumBar
 {
