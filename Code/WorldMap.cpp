@@ -71,8 +71,8 @@ using namespace std;
 //
 //}
 
-WorldMap::WorldMap( MainMenu *mainMenu )
-	:font( mainMenu->arial )
+WorldMap::WorldMap( MainMenu *p_mainMenu )
+	:font( mainMenu->arial ), mainMenu( p_mainMenu )
 {
 	//extraPassRect.setSize(Vector2f(1920, 1080));
 
@@ -200,7 +200,7 @@ void WorldMap::UpdateColonySelect()
 void WorldMap::Reset( SaveFile *sf )
 {
 	fontHeight = 24;
-	state = OFF;
+	state = SPACE;
 	frame = 0;
 
 	if( sf != NULL )
@@ -406,23 +406,18 @@ void WorldMap::UpdateMapList()
 	Tex( 0, 0, entries );
 }
 
-bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
+void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 {
-	
-	if( state == OFF )
-		return false;
-
-
 	int trans = 20;
 	switch( state )
 	{
 	case SPACE:
 		{
-			if( frame == trans )
+			/*if( frame == trans )
 			{
 				state = SPACE_TO_PLANET;
 				frame = 0;
-			}
+			}*/
 		}
 		break;
 	case SPACE_TO_PLANET:
@@ -446,8 +441,9 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 		else if (currInput.B && !prevInput.B)
 		{
+			mainMenu->menuMode = MainMenu::MAINMENU;
+			state = SPACE;
 			//transition back up later instead of just turning off
-			state = OFF;
 			frame = 0;
 			break;
 		}
@@ -559,6 +555,77 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		//}
 		//frame = 0;
 		break;
+	case COLONY_TO_PLANET:
+	{
+		int limit = 20;//120 / 2;
+		if (frame == limit)
+		{
+			state = PLANET;
+			frame = 0;
+			currScale = 1.f;
+			zoomView.setSize(Vector2f(1920, 1080) * currScale);
+			zoomView.setCenter(960, 540);
+		}
+		else
+		{
+			float a = frame / (float)(limit - 1);
+
+			int mLimit = 16 / 2;
+			int mFrame = min(frame, mLimit);
+
+			float aMove = mFrame / (float)(mLimit - 1);
+
+			CubicBezier cb(0, 0, 1, 1);//(.12, .66, .85, .4);//.83, .27, .06, .63);//(0, 0, 1, 1);
+			CubicBezier cbMove(0, 0, 1, 1);
+
+			oldZoomCurvePos = zoomCurvePos;
+
+			zoomCurvePos = cb.GetValue(a);
+
+
+			float f = zoomCurvePos;
+
+			float fz = cbMove.GetValue(aMove);
+
+			//float test = f * 5.f;
+
+
+			if (frame == 0)
+				zoomShader.setUniform("sampleStrength", 0.f);
+
+
+			Vector2f colMiddle = Vector2f(colonySpr[0].getGlobalBounds().width / 2,
+				colonySpr[0].getGlobalBounds().height / 2);
+			Vector2f startPos = colonySpr[0].getPosition() + colMiddle;
+			float startScale = colonySpr[0].getScale().x;//.2f;
+
+			Vector2f endPos(960, 540);
+			float endScale = 1.f;
+
+
+			float oldA = currScale;
+
+
+
+			currScale = startScale * (1.f - f) + endScale * f;
+
+			currCenter = startPos * (1.f - fz) + endPos * fz;
+
+			zoomView.setCenter(currCenter);
+			zoomView.setSize(Vector2f(1920, 1080) * currScale);
+
+			if (frame > 0)
+			{
+				float diff = zoomCurvePos - oldZoomCurvePos;
+				float multiple = limit;
+				diff *= multiple;
+				diff += 1.0;
+
+				//zoomShader.setUniform("sampleStrength", diff);
+			}
+		}
+	}
+		break;
 	}
 
 
@@ -659,29 +726,22 @@ bool WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 	case COLONY_TO_PLANET:
 	{
-		if (frame == trans)
+		/*if (frame == trans)
 		{
 			state = PLANET;
 			frame = 0;
 			currScale = 1.f;
 			zoomView.setSize(Vector2f(1920, 1080) * currScale);
 			zoomView.setCenter(960, 540);
-		}
+		}*/
 		break;
 	}
 	}
 	++frame;
-
-	return true;
 }
 
 void WorldMap::Draw( RenderTarget *target )
 {
-	if( state == OFF )
-	{
-		return;
-	}
-
 	sf::RenderTexture *rt = MainMenu::extraScreenTexture;
 	rt->clear();
 	
@@ -702,7 +762,7 @@ void WorldMap::Draw( RenderTarget *target )
 	zoomShader.setUniform("zoomTex", sf::Shader::CurrentTexture );
 	extraPassSpr.setPosition(0, 0);
 
-	if (state == PlANET_TO_COLONY)
+	if ((state == PlANET_TO_COLONY /*|| state == COLONY_TO_PLANET*/ ) && frame > 20 )
 	{
 		target->draw(extraPassSpr, &zoomShader);
 	}

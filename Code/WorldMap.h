@@ -94,7 +94,6 @@ struct WorldMap
 {
 	enum State
 	{
-		OFF,
 		SPACE,
 		SPACE_TO_PLANET,
 		PLANET,
@@ -108,7 +107,7 @@ struct WorldMap
 	WorldMap( MainMenu *mainMenu );
 	void Reset( SaveFile *sf );
 	~WorldMap();
-	bool Update(
+	void Update(
 		ControllerState &prevInput,
 		ControllerState &currInput );
 	void Draw( sf::RenderTarget *target );
@@ -160,6 +159,7 @@ struct WorldMap
 	bool moveUp;
 
 	MapSelector *testSelector;
+	MainMenu *mainMenu;
 
 	//ControllerState currInput;
 	//ControllerState prevInput;

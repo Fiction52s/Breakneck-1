@@ -14,6 +14,7 @@
 #include "PlayerRecord.h"
 #include "PowerOrbs.h"
 #include "Enemy_Shard.h"
+#include "SaveMenuScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -822,21 +823,25 @@ void MainMenu::Init()
 	ts_splashScreen = tilesetManager.GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
 	splashSprite.setTexture( *ts_splashScreen->texture );
 
-	ts_kinTitle[0] = tilesetManager.GetTileset( "Title/kin_title_1_1216x1080.png", 1216, 1080 );
+	/*ts_kinTitle[0] = tilesetManager.GetTileset( "Title/kin_title_1_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[1] = tilesetManager.GetTileset( "Title/kin_title_2_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[2] = tilesetManager.GetTileset( "Title/kin_title_3_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[3] = tilesetManager.GetTileset( "Title/kin_title_4_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[4] = tilesetManager.GetTileset( "Title/kin_title_5_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[5] = tilesetManager.GetTileset( "Title/kin_title_6_1216x1080.png", 1216, 1080 );
-	ts_kinTitle[6] = tilesetManager.GetTileset( "Title/kin_title_7_1216x1080.png", 1216, 1080 );
+	ts_kinTitle[6] = tilesetManager.GetTileset( "Title/kin_title_7_1216x1080.png", 1216, 1080 );*/
 	
-	ts_breakneckTitle = tilesetManager.GetTileset( "Title/kin_title_1920x416.png", 1920, 416 );
+	ts_breakneckTitle = tilesetManager.GetTileset( "Title/breakneck_1034x835.png", 1034, 835 );
 	//ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
-	ts_backgroundTitle = tilesetManager.GetTileset("Title/titlescreen_1920x1080.png", 1920, 1080);
-
+	ts_titleBG = tilesetManager.GetTileset("Title/titlescreen_1920x1080.png", 1920, 1080);
+	ts_emergenceTitle = tilesetManager.GetTileset("Title/emergence_337x51.png", 337, 51);
 	
-	backgroundTitleSprite.setTexture( *ts_backgroundTitle->texture );
+	titleBGSprite.setTexture( *ts_titleBG->texture );
 	breakneckTitleSprite.setTexture( *ts_breakneckTitle->texture );
+	emergenceTitleSprite.setTexture(*ts_emergenceTitle->texture);
+
+	breakneckTitleSprite.setPosition(444, 0 + 20);
+	emergenceTitleSprite.setPosition(794, 233 + 20);
 
 	soundBuffers[S_DOWN] = soundManager.GetSound( "menu_down.ogg" );
 	soundBuffers[S_UP] = soundManager.GetSound( "menu_up.ogg" );
@@ -1671,7 +1676,7 @@ void MainMenu::Run()
 						}*/
 				
 
-					if( kinTitleSpriteFrame == kinTotalFrames )
+					/*if( kinTitleSpriteFrame == kinTotalFrames )
 					{
 						kinTitleSpriteFrame = 0;
 					}
@@ -1704,13 +1709,13 @@ void MainMenu::Run()
 					else
 					{
 						trueKinFrame = 6;
-					}
+					}*/
 
 					//cout << "kinsprite: " << trueKinFrame << endl;
-					kinTitleSprite.setTexture( *(ts_kinTitle[ trueKinFrame ]->texture) );
-					kinTitleSprite.setOrigin( 0, kinTitleSprite.getLocalBounds().height );
+					//kinTitleSprite.setTexture( *(ts_kinTitle[ trueKinFrame ]->texture) );
+					//kinTitleSprite.setOrigin( 0, kinTitleSprite.getLocalBounds().height );
 
-					kinTitleSpriteFrame++;	
+					//kinTitleSpriteFrame++;	
 					break;
 				}
 			case WORLDMAP:
@@ -1729,119 +1734,9 @@ void MainMenu::Run()
 						}
 					}
 
-					//worldMap->prevInput = worldMap->currInput;
-
-					//worldMap->currInput = currInput;
-
-					//if( menuCurrInput.B && !menuPrevInput.B )
-					//{
-					//	menuMode = MAINMENU;
-					//	//quit = true;
-					//	break;
-					//}
-
-
-
-					//if( controller.UpdateState() )
-					//{
-					//	worldMap->currInput = controller.GetState();
-					//	//cout << "tjhingff" << endl;
-					//	//cout << "thing" << endl;
-					//	//ControllerState &cs = worldMap->currInput;
-					//}
-					//else
-					//{
-					//	//cout << "tjhingff" << endl;
-					//	worldMap->currInput.A = Keyboard::isKeyPressed( Keyboard::A );
-					//	worldMap->currInput.B = Keyboard::isKeyPressed( Keyboard::S );
-
-					//	bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
-					//	bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
-					//	bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
-					//	bool right = Keyboard::isKeyPressed( Keyboard::Right );
-
-					//	worldMap->currInput.leftStickPad = 0;
-
-					//	if( up && down )
-					//	{
-					//		if( worldMap->prevInput.LUp() )
-					//			worldMap->currInput.leftStickPad += 1;
-					//		else if( worldMap->prevInput.LDown() )
-					//			worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
-					//	}
-					//	else
-					//	{
-					//		worldMap->currInput.leftStickPad += 1 && up;
-					//		worldMap->currInput.leftStickPad += ( 1 && down ) << 1;
-					//	}
-
-					//	if( left && right )
-					//	{
-					//		if( worldMap->prevInput.LLeft() )
-					//		{
-					//			worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
-					//		}
-					//		else if( worldMap->prevInput.LRight() )
-					//		{
-					//			worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
-					//		}
-					//	}
-					//	else
-					//	{
-					//		worldMap->currInput.leftStickPad += ( 1 && left ) << 2;
-					//		worldMap->currInput.leftStickPad += ( 1 && right ) << 3;
-					//	}
-					//	//worldMap->currInput.ld
-					//}
-				
-
-					//cout << "worldmap" << endl;
-					if( !worldMap->Update( menuPrevInput, menuCurrInput ) )
-					{
-						menuMode = MAINMENU;
-					}
-					//else
-					//{
-
-					//
-					//	//stringstream ss; 
-
-					//	//size_t lastindex = file.find_last_of("."); 
-					//	//string rawname = fullname.substr(0, lastindex); 
-					//	//ss << "Maps/" << file;
-					//	//cout << "-----------------------------" << endl;
-					//	//cout << "file: " << file << endl;
-					//	GameSession *gs = new GameSession( NULL, this, worldMap->GetSelected() );
-					//	GameSession::sLoad(gs);
-					//	int result = gs->Run(  );
-					//	delete gs;
-
-					//	if( result == 0 || result == 1 )
-					//	{
-					//		v.setSize( 1920, 1080 );
-					//		v.setCenter( 1920/2, 1080/ 2);
-					//		window->setView( v );
-					//		worldMap->state = WorldMap::PLANET;
-					//		worldMap->frame = 0;
-					//		worldMap->UpdateMapList();
-					//		worldMap->testSelector->UpdateAllInfo();
-					//	}
-					//	else if( result == 2 )
-					//	{
-					//		v.setSize( 1920, 1080 );
-					//		v.setCenter( 1920/2, 1080/ 2);
-					//		window->setView( v );
-					//		menuMode = MainMenu::MAINMENU;
-					//	}
-					//	else if( result == 3 )
-					//	{
-					//		quit = true;
-					//		break;
-					//	}
-
-					//
-					//	continue;
-					//}
+					worldMap->Update(menuPrevInput, menuCurrInput);
+					
+					
 				
 					break;
 				}
@@ -1979,7 +1874,7 @@ void MainMenu::Run()
 			}
 			case SAVEMENU:
 				{
-				
+				worldMap->Update(menuPrevInput, menuCurrInput);
 				saveMenu->Update();
 					//parBack->Update( offset0 );
 					//parFront->Update( offset1 );
@@ -1991,6 +1886,7 @@ void MainMenu::Run()
 			case TRANS_MAIN_TO_SAVE:
 			{
 				menuMode = SAVEMENU;
+				saveMenu->Reset();
 				/*if (slideCurrFrame > numSlideFrames)
 				{
 					
@@ -2232,15 +2128,10 @@ void MainMenu::Run()
 		case MAINMENU:
 			{
 				preScreenTexture->setView( v );
-				preScreenTexture->draw( backgroundTitleSprite );
-				//preScreenTexture->draw( kinTitleSprite );
-				//preScreenTexture->draw( breakneckTitleSprite );
-
-				//preScreenTexture->draw( betaText );
+				preScreenTexture->draw( titleBGSprite );
+				preScreenTexture->draw( breakneckTitleSprite );
+				preScreenTexture->draw( emergenceTitleSprite );
 				
-				//window->draw( titleSprite );
-				//preScreenTexture->draw( menu );	
-
 				for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 				{
 					preScreenTexture->draw(menuOptions[i]);
@@ -2264,7 +2155,7 @@ void MainMenu::Run()
 		case SAVEMENU:
 			{
 			///	preScreenTexture->draw( worldMap->
-				
+			worldMap->Draw(preScreenTexture);
 			saveMenu->Draw(preScreenTexture);
 
 				
@@ -4105,360 +3996,7 @@ void OptionsMenuScreen::Draw(RenderTarget *target)
 	optionsWindow->Draw(target);
 }
 
-SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
-	:mainMenu( p_mainMenu )
-{
-	menuOffset = Vector2f(0, 0);
 
-	TilesetManager &tsMan = mainMenu->tilesetManager;
-
-	kinFaceFrame = 0;
-	kinFaceTurnLength = 15;
-	selectedSaveIndex = 0;
-	cloudLoopLength = 8;
-	cloudLoopFactor = 5;
-
-	saveJumpFactor = 5;
-	saveJumpLength = 6;
-
-	files[0] = new SaveFile("blue");
-	files[1] = new SaveFile("green");
-	files[2] = new SaveFile("yellow");
-	files[3] = new SaveFile("orange");
-	files[4] = new SaveFile("red");
-	files[5] = new SaveFile("magenta");
-
-	ts_background = tsMan.GetTileset("Menu/save_bg_1920x1080.png", 1920, 1080);
-	ts_kinFace = tsMan.GetTileset("Menu/save_menu_kin_256x256.png", 256, 256);
-	ts_selectSlot = tsMan.GetTileset("Menu/save_select_710x270.png", 710, 270);
-
-	background.setTexture(*ts_background->texture);
-	background.setPosition(menuOffset);
-
-	
-	kinFace.setTexture(*ts_kinFace->texture);
-	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
-	selectSlot.setTexture(*ts_selectSlot->texture);
-	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(0));
-
-	ts_kinJump1 = tsMan.GetTileset("Menu/save_kin_jump1_500x1080.png", 500, 1080);
-	ts_kinJump2 = tsMan.GetTileset("Menu/save_kin_jump2_500x1080.png", 500, 1080);
-	ts_kinClouds = tsMan.GetTileset("Menu/save_kin_clouds_500x384.png", 500, 384);
-	ts_kinWindow = tsMan.GetTileset("Menu/save_kin_window_500x1080.png", 500, 1080);
-	//ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
-	ts_kinSky = tsMan.GetTileset("Menu/save_menu_sky_01_500x1080.png", 500, 1080);
-
-	kinClouds.setTexture(*ts_kinClouds->texture);
-	kinClouds.setTextureRect(ts_kinClouds->GetSubRect(0));
-	kinClouds.setOrigin(kinClouds.getLocalBounds().width, kinClouds.getLocalBounds().height);
-	kinClouds.setPosition(Vector2f( 1920, 1080) + menuOffset);
-
-	kinWindow.setTexture(*ts_kinWindow->texture);
-	kinWindow.setOrigin(kinWindow.getLocalBounds().width, 0);
-	kinWindow.setPosition(Vector2f( 1920, 0 ) + menuOffset);
-
-	kinSky.setTexture(*ts_kinSky->texture);
-	kinSky.setOrigin(kinSky.getLocalBounds().width, 0);
-	kinSky.setPosition(Vector2f( 1920, 0 ) + menuOffset );
-	//saveKinJump.setTexture( ts_saveKin
-
-	cloudFrame = 0;
-
-	ts_starBackground = tsMan.GetTileset("WorldMap/map_z1_stars.png", 1920, 1080);
-	starBackground.setTexture(*ts_starBackground->texture);
-	starBackground.setPosition(menuOffset);
-
-	ts_world = tsMan.GetTileset("WorldMap/map_z1_world.png", 1120, 1080);
-	world.setTexture(*ts_world->texture);
-	world.setOrigin(world.getLocalBounds().width / 2, world.getLocalBounds().height / 2);
-	world.setPosition(Vector2f( 960, 540 ) + menuOffset);
-
-	Tileset *ts_asteroid0 = tsMan.GetTileset("Menu/w0_asteroid_01_960x1080.png", 960, 1080);
-	Tileset *ts_asteroid1 = tsMan.GetTileset("Menu/w0_asteroid_02_1920x1080.png", 1920, 1080);
-	Tileset *ts_asteroid2 = tsMan.GetTileset("Menu/w0_asteroid_03_1920x1080.png", 1920, 1080);
-
-	asteroid0.setTexture(*ts_asteroid0->texture);
-	asteroid1.setTexture(*ts_asteroid1->texture);
-	asteroid2.setTexture(*ts_asteroid2->texture);
-
-	asteroid0.setPosition(Vector2f(0, 0) + menuOffset);
-	asteroid1.setPosition(Vector2f(0, 0) + menuOffset);
-	asteroid2.setPosition(Vector2f( 0, 0 ) + menuOffset);
-
-	a0start = Vector2f(-1920, 0) + menuOffset;
-	a0end = Vector2f(1920, 0) + menuOffset;
-
-	a1start = Vector2f(1920, 0) + menuOffset;
-	a1end = Vector2f(-1920, 0) + menuOffset;
-
-	a2start = Vector2f(-1920, 0) + menuOffset;
-	a2end = Vector2f(1920, 0) + menuOffset;
-
-	asteroidScrollFrames0 = 2000;
-	asteroidScrollFrames1 = 500;
-	asteroidScrollFrames2 = 120;
-
-	asteroidFrameBack = asteroidScrollFrames0 / 2;
-	asteroidFrameFront = asteroidScrollFrames1 / 2;
-
-	Reset();
-
-	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
-	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
-
-	Vector2f topLeftPos;
-	topLeftPos.x += ts_selectSlot->tileWidth * (selectedSaveIndex % 2);
-	topLeftPos.y += ts_selectSlot->tileHeight * (selectedSaveIndex / 2);
-	topLeftPos += menuOffset;
-
-	selectSlot.setPosition(topLeftPos);
-	kinFace.setPosition(topLeftPos);
-
-	
-}
-
-void SaveMenuScreen::Update()
-{
-	ControllerState &menuCurrInput = mainMenu->menuCurrInput;
-	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
-
-	bool moveDown = false;
-	bool moveUp = false;
-	bool moveLeft = false;
-	bool moveRight = false;
-
-	
-	int moveDelayFrames = 15;
-	int moveDelayFramesSmall = 6;
-
-	if (menuCurrInput.B && !menuPrevInput.B)
-	{
-		mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
-		return;
-	}
-	else if (menuCurrInput.A && !menuPrevInput.A)
-	{
-		mainMenu->menuMode = MainMenu::Mode::TRANS_SAVE_TO_WORLDMAP;
-		mainMenu->transAlpha = 255;
-		mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
-		mainMenu->worldMap->frame = 0;
-		mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
-		return;
-	}
-
-	bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
-	bool canMoveSame = (moveDelayCounter == 0);
-	if ((menuCurrInput.LDown() || menuCurrInput.PDown()) && (
-		(!moveDown && canMoveOther) || (moveDown && canMoveSame)))
-	{
-		selectedSaveIndex += 2;
-		//currentMenuSelect++;
-		if (selectedSaveIndex > 5)
-			selectedSaveIndex -= 6;
-		moveDown = true;
-		moveDelayCounter = moveDelayFrames;
-		mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
-	}
-	else if ((menuCurrInput.LUp() || menuCurrInput.PUp()) && (
-		(!moveUp && canMoveOther) || (moveUp && canMoveSame)))
-	{
-		selectedSaveIndex -= 2;
-		if (selectedSaveIndex < 0)
-			selectedSaveIndex += 6;
-		moveUp = true;
-		moveDelayCounter = moveDelayFrames;
-		mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
-	}
-
-	if ((menuCurrInput.LRight() || menuCurrInput.PRight()) && (
-		(!moveRight && canMoveOther) || (moveRight && canMoveSame)))
-	{
-		selectedSaveIndex++;
-		//currentMenuSelect++;
-		if (selectedSaveIndex % 2 == 0)
-			selectedSaveIndex -= 2;
-		moveRight = true;
-		moveDelayCounter = moveDelayFrames;
-	}
-	else if ((menuCurrInput.LLeft() || menuCurrInput.PLeft()) && (
-		(!moveLeft && canMoveOther) || (moveLeft && canMoveSame)))
-	{
-		selectedSaveIndex--;
-		if (selectedSaveIndex % 2 == 1)
-			selectedSaveIndex += 2;
-		else if (selectedSaveIndex < 0)
-		{
-			selectedSaveIndex += 2;
-		}
-		moveLeft = true;
-
-		moveDelayCounter = moveDelayFrames;
-	}
-
-	if (moveDelayCounter > 0)
-	{
-		moveDelayCounter--;
-	}
-
-
-	if (!(menuCurrInput.LDown() || menuCurrInput.PDown()))
-	{
-		moveDown = false;
-	}
-	if (!(menuCurrInput.LUp() || menuCurrInput.PUp()))
-	{
-		moveUp = false;
-	}
-
-	if (!(menuCurrInput.LRight() || menuCurrInput.PRight()))
-	{
-		moveRight = false;
-	}
-	if (!(menuCurrInput.LLeft() || menuCurrInput.PLeft()))
-	{
-		moveLeft = false;
-	}
-
-	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
-	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
-
-	Vector2f topLeftPos;
-	topLeftPos.x += ts_selectSlot->tileWidth * (selectedSaveIndex % 2);
-	topLeftPos.y += ts_selectSlot->tileHeight * (selectedSaveIndex / 2);
-	topLeftPos += menuOffset;
-
-	selectSlot.setPosition(topLeftPos);
-	kinFace.setPosition(topLeftPos);
-
-	UpdateClouds();
-	++asteroidFrameBack;
-	++asteroidFrameFront;
-
-	int r0 = asteroidFrameBack % asteroidScrollFrames0;
-	int r1 = asteroidFrameFront % asteroidScrollFrames1;
-	//int r2 = asteroidFrame % asteroidScrollFrames2;
-
-	Vector2f offset0(0, 0);
-	Vector2f offset1(0, 0);
-	CubicBezier bez(0, 0, 1, 1);
-	double v = bez.GetValue(r0 / (double)asteroidScrollFrames0);
-	double v1 = bez.GetValue(r1 / (double)asteroidScrollFrames1);
-	offset0.x = 1920 * 3 * v;
-	offset1.x = -1920 * v1;
-
-	//cout << "asteroidframe: " << asteroidFrame << ", offset0: " << offset0.x << ", offset1: " << offset1.x << endl;
-
-
-	asteroid0.setPosition(a0start * (float)(1.0 - v1) + a0end * (float)v1);
-	asteroid1.setPosition(a1start * (float)(1.0 - v) + a1end * (float)v);
-	asteroid2.setPosition(a2start * (float)(1.0 - v1) + a2end * (float)v1);
-
-	//if( kinFaceFrame < saveKinFaceTurnLength * 3 )
-	//{
-	//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( kinFaceFrame / 3 ) );
-	//}
-	//else
-	//{
-	//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( saveKinFaceTurnLength - 1 ) );
-	//}
-
-	//if( kinFaceFrame < saveJumpLength * saveJumpFactor )
-	//{
-	//	if( kinFaceFrame == 0 )
-	//	{
-	//		saveKinJump.setTexture( *ts_saveKinJump1->texture );
-	//	}
-	//	else if( kinFaceFrame == 3 * saveJumpFactor )
-	//	{
-	//		saveKinJump.setTexture( *ts_saveKinJump2->texture );
-	//	}
-
-	//	int f = kinFaceFrame / saveJumpFactor;
-	//	if( kinFaceFrame < 3 * saveJumpFactor )
-	//	{
-	//		saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( f ) );
-	//	}
-	//	else
-	//	{
-	//		saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f - 3 ) );
-	//	}
-
-	//	saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
-	//}
-}
-
-void SaveMenuScreen::Draw(sf::RenderTarget *target)
-{
-	//RenderTexture *saveTexture = mainMenu->saveTexture;
-
-	//target->setView(mainMenu->v);
-
-	target->setView(mainMenu->v);
-
-	target->draw(starBackground);
-	
-	target->draw(asteroid1);
-	target->draw(world);
-	target->draw(asteroid0);
-	target->draw(asteroid2);
-
-	
-	
-	target->draw(background);
-	target->draw(kinSky);
-	target->draw(kinClouds);
-	target->draw(kinWindow);
-	target->draw(kinJump);
-	target->draw(selectSlot);
-	target->draw(kinFace);
-
-	/*saveTexture->clear(Color::Transparent);
-	saveTexture->setView(mainMenu->v);
-	saveTexture->draw(background);
-	saveTexture->draw(kinSky);
-	saveTexture->draw(kinClouds);
-	saveTexture->draw(kinWindow);*/
-	//TODO
-	//if (menuMode == SAVEMENU ||
-	//	kinFaceFrame < saveJumpLength * saveJumpFactor)
-	/*saveTexture->draw(kinJump);
-
-	saveTexture->draw(selectSlot);
-	saveTexture->draw(kinFace);*/
-}
-
-void SaveMenuScreen::Reset()
-{
-	selectedSaveIndex = 0;
-	asteroidFrameBack = 0;
-	asteroidFrameFront = 0;
-	moveDelayCounter = 0;
-
-	kinJump.setTexture(*ts_kinJump1->texture);
-	kinJump.setTextureRect(ts_kinJump1->GetSubRect(0));
-	kinJump.setOrigin(kinJump.getLocalBounds().width, 0);
-	kinJump.setPosition(Vector2f( 1920, 0 ) + menuOffset);
-
-	for (int i = 0; i < 1; ++i)
-	{
-		files[i]->Load();
-	}
-}
-
-void SaveMenuScreen::UpdateClouds()
-{
-	if (cloudFrame == cloudLoopLength * cloudLoopFactor)
-	{
-		cloudFrame = 0;
-	}
-
-	int f = cloudFrame / cloudLoopFactor;
-
-	//cout << "cloud frame: " << f << endl;
-	kinClouds.setTextureRect(ts_kinClouds->GetSubRect(f));
-
-	cloudFrame++;
-}
 
 CreditsMenuScreen::CreditsMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )

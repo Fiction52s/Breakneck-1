@@ -67,6 +67,7 @@ struct Level
 	BitField optionField;
 	std::string name;
 	void SetComplete(bool comp);
+	float GetCapturedShardsPortion();
 	bool GetComplete();
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
@@ -77,6 +78,7 @@ struct Level
 	bool BottomBonusUnlocked();
 	int index;
 	std::string GetFullName();
+	float GetCompletionPercentage();
 };
 
 struct Sector
@@ -96,21 +98,26 @@ struct Sector
 	void Save(std::ofstream &of);
 	bool Load(std::ifstream &is);
 	bool IsComplete();
+	
 	bool IsUnlocked();
+	float GetCompletionPercentage();
 	std::map<int,Level> topBonuses;
 	std::map<int, Level> bottomBonuses;
 };
 
+struct SaveFile;
 struct World
 {
 	World();
 	~World();
 	int numSectors;
 	Sector *sectors;
+	SaveFile *sf;
 	int index;
 	bool Load(std::ifstream &is);
 	bool Save(std::ofstream &of);
 	int GetNumSectorTypeComplete(int sType);
+	float GetCompletionPercentage();	
 };
 
 struct SaveFile
@@ -119,6 +126,10 @@ struct SaveFile
 	~SaveFile();
 	void Save();
 	void Load();
+	float GetCompletionPercentage();
+	int GetShardNum();
+	int GetTotalShardNum();
+
 	BitField shardField;
 	BitField newShardField; //for unviewed shards
 	std::string fileName;

@@ -2,6 +2,8 @@
 #include <sstream>
 #include <assert.h>
 #include <iostream>
+#include "MainMenu.h"
+#include "Enemy_Shard.h"
 
 using namespace std;
 
@@ -93,12 +95,43 @@ void BitField::Save(std::ofstream &of)
 //}
 
 SaveFile::SaveFile( const std::string &name )
-	:shardField( 32 * 4 ), newShardField( 32 * 4 )
+	:shardField( 32 * 5 ), newShardField( 32 * 5 )
 {
 	stringstream ss;
 	ss << "Data/" << name << ".kin";
 
 	fileName = ss.str();
+}
+
+float SaveFile::GetCompletionPercentage()
+{
+	float totalComplete = 0;
+	float totalPossible = 0;
+
+	for (int i = 0; i < numWorlds; ++i)
+	{
+		totalComplete += worlds[i].GetCompletionPercentage();
+		totalPossible += 100.f;
+	}
+
+	return (totalComplete / totalPossible) * 100.f;
+}
+int SaveFile::GetShardNum()
+{
+	int capturedCount = 0;
+	for (int i = 0; i < ShardType::SHARD_Count; ++i)
+	{
+		if (ShardIsCaptured((ShardType)i))
+		{
+			capturedCount++;
+		}
+	}
+
+	return capturedCount;
+}
+int SaveFile::GetTotalShardNum()
+{
+	return ShardType::SHARD_Count;
 }
 
 SaveFile::~SaveFile()
@@ -129,6 +162,7 @@ void SaveFile::Load()
 		worlds = new World[numWorlds];
 		for (int i = 0; i < numWorlds; ++i)
 		{
+			worlds[i].sf = this;
 			worlds[i].index = i;
 			worlds[i].Load(is);
 		}
@@ -193,6 +227,20 @@ World::~World()
 	}
 }
 
+float World::GetCompletionPercentage()
+{
+	float totalComplete = 0;
+	float totalPossible = 0;
+
+	for (int i = 0; i < numSectors; ++i)
+	{
+		totalComplete += sectors[i].GetCompletionPercentage();
+		totalPossible += 100.f;
+	}
+
+	return (totalComplete / totalPossible) * 100.f;
+}
+
 Sector::Sector()
 {
 	numLevels = 0;
@@ -202,6 +250,19 @@ Sector::Sector()
 	sectorType = 100;
 	numUnlockConditions = 99;
 	
+}
+
+float Sector::GetCompletionPercentage()
+{
+	float completePercent = 0;
+	float possiblePercent = 0;
+	for (int i = 0; i < numLevels; ++i)
+	{
+		completePercent += levels[i].GetCompletionPercentage();
+		possiblePercent += 100;
+	}
+
+	return (completePercent / possiblePercent) * 100.f;
 }
 
 bool Sector::HasTopBonus(int index)
@@ -365,6 +426,55 @@ Level::Level( )
 {
 	SetComplete(false);
 	optionField.Reset();
+}
+
+float Level::GetCapturedShardsPortion()
+{
+	ifstream is;
+	string file = "Maps/" + name + ".brknk";
+	is.open(file);
+	if (is.is_open())
+	{
+		int capCount = 0;
+		float percent = 0;
+
+		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
+
+		if (mh->numShards == 0)
+		{
+			return 1.f;
+		}
+
+		for (auto it = mh->shardNameList.begin(); it != mh->shardNameList.end(); ++it)
+		{
+			ShardType st = Shard::GetShardType((*it));
+			if (sec->world->sf->ShardIsCaptured(st))
+			{
+				++capCount;
+			}
+		}
+
+		return (float)capCount / mh->numShards;
+	}
+	else
+	{
+		assert(0);
+		return 0;
+	}
+}
+
+float Level::GetCompletionPercentage()
+{
+	float portion = 0;
+	if (GetComplete())
+	{
+		portion += .5f;
+	}
+
+	portion += GetCapturedShardsPortion() * .5f;
+
+	return portion * 100.f;
+	//MapSelectionMenu::ReadMapHeader()
 }
 
 bool Level::TopBonusUnlocked()
