@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "Physics.h"
 #include "Movement.h"
+#include <iostream>
 
 using namespace sf;
 using namespace std;
@@ -96,27 +97,11 @@ void TerrainRender::GenerateBorderMesh()
 	QuadTree *qt = terrainTree;
 	assert( qt != NULL );
 
-	//int tw = ts->tileWidth;//128;//64;
-	//int th = 512;
-	//int numTotalQuads = 0;
 	Triple totalQuads;
-	//double intersect = 10;//tw / 6.0;//48;
-	//double extraLength = 0;//32.0;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
 
 	map<Edge*, Triple> numQuadMap[E_WALL +1];
 	list<Edge*> transEdges;
-
-
-	/*do
-	{
-		double len = length(te->v1 - te->v0);
-		while (len > 0)
-		{
-
-		}
-	}
-	while (te != startEdge);*/
 
 	int startInter128 = 4;
 	int startInter32 = 4;
@@ -145,24 +130,7 @@ void TerrainRender::GenerateBorderMesh()
 	{
 		V2d eNorm = te->Normal();
 
-		/*V2d currDir = normalize(te->v1 - te->v0);
-		V2d prevDir = normalize(te->edge0->v0 - te->v0);
-
-		V2d pCurrDir = -currDir;
-		V2d nDir = normalize(te->edge1->v1 - te->edge1->v0);
-		double cDiff = GetVectorAngleDiffCCW(Vector2f(currDir), Vector2f(prevDir));
-		double nDiff = GetVectorAngleDiffCCW(Vector2f(nDir), Vector2f(pCurrDir));
-
-		bool turnInward = cDiff < PI;
-		bool nextInward = nDiff < PI;
-		if ( turnInward )
-		{
-			transEdges.push_back(te);
-		}*/
-
 		EdgeType eType = GetEdgeNormalType(eNorm);
-		//int valid = ValidEdge( eNorm );
-		//if( valid != -1 )//eNorm.x == 0 )
 		
 		{
 			
@@ -177,7 +145,6 @@ void TerrainRender::GenerateBorderMesh()
 				continue;
 			}
 			
-
 			double fullParts = len / 128.0;
 			int numFullparts = fullParts;
 
@@ -205,46 +172,7 @@ void TerrainRender::GenerateBorderMesh()
 					numQuads.numQuads32++;
 					break;
 				}
-				/*else if (len >= len16)
-				{
-					len -= len16;
-					numQuads.numQuads16++;
-				}
-				else
-				{
-					numQuads.numQuads16++;
-					break;
-				}*/
 			}
-
-			
-			//if( len >  )
-
-			//if (len < 8 )
-			//{
-			//	numQuads = 0;
-			//}
-			//else if (len <= tw - extraLength * 2)
-			//{
-			//	numQuads = 1;
-			//}
-			//else
-			//{
-			//	numQuads = 2;
-			//	double firstRight = tw - extraLength - intersect;
-			//	double endLeft = (len + extraLength) - tw + intersect;
-
-			//	//optimize later to not be a loop
-			//	while (firstRight <= endLeft)
-			//	{
-			//		firstRight += tw - intersect;
-			//		++numQuads;
-			//	}
-			//}
-
-			// = ceil(len / (tw - intersect));
-			//double quadWidth = len / numQuads;
-			//numTotalQuads += numQuads.numQuads128 + numQuads.numQuads32 + numQuads.numQuads16;
 			totalQuads.numQuads128 += numQuads.numQuads128;
 			totalQuads.numQuads32 += numQuads.numQuads32;
 			totalQuads.numQuads16 += numQuads.numQuads16;
@@ -292,16 +220,6 @@ void TerrainRender::GenerateBorderMesh()
 		bva[i] = (borderVA + start * 4);
 		start += totals[i];
 	}
-
-	
-	//VertexArray *currVA = new VertexArray( sf::Quads, numTotalQuads * 4 );
-	
-	//sf::Vertex *start128VA = borderVA;
-	//sf::Vertex *start32VA = (borderVA + totalQuads.numQuads128 * 4);
-	//sf::Vertex *start16VA = (borderVA + totalQuads.numQuads128 * 4 + totalQuads.numQuads32 * 4 );
-
-	//VertexArray &va = *currVA;
-	
 	int tw;
 
 	int extra = 0;
@@ -311,15 +229,10 @@ void TerrainRender::GenerateBorderMesh()
 	do
 	{
 		V2d eNorm = te->Normal();
-		//int valid = ValidEdge( eNorm );
-		//if( valid != -1 )
 		{
-			double len = length(te->v1 - te->v0);// +extraLength * 2;
+			double len = length(te->v1 - te->v0);
 			//len -= GetSubForOutward(te);
 			//len -= GetSubForOutward(te->edge1);
-
-
-			//int numQuads = numQuadMap[te];//ceil( len / tw ); 
 			EdgeType et = GetEdgeNormalType(eNorm);
 			Triple numQuads = numQuadMap[et][te];
 			if (numQuads.GetTotal() == 0)
@@ -328,13 +241,10 @@ void TerrainRender::GenerateBorderMesh()
 				continue;
 			}
 
-			
-
-			//double quadWidth = ts->tileWidth;;//len / numQuads;
-
 			V2d along = normalize( te->v1 - te->v0 );
+			Vector2f fAlong = Vector2f(along);
 			V2d other( along.y, -along.x );
-
+			Vector2f fOther = Vector2f(other);
 			
 			double out = 16;//40;//16;
 			double in = 64 - out;//256 - out;//; - out;
@@ -350,7 +260,7 @@ void TerrainRender::GenerateBorderMesh()
 			
 
 			int currTotal = numQuads.GetTotal();
-			Vertex *currBVA = bva[et] + current[et] * 4;
+			Vertex *currBVA = bva[et] +current[et] * 4;
 			
 			int *numQ[3];
 
@@ -386,13 +296,6 @@ void TerrainRender::GenerateBorderMesh()
 
 			for( int i = 0; i < currTotal; ++i )
 			{
-				//worldNum * 5
-				//int valid = ValidEdge( eNorm );
-				//add (worldNum * 5) to realIndex to get the correct borders
-				//int realIndex = valid;// *4 + varietyCounter;//32 + varietyCounter;
-				//cout << "real Index: " << realIndex << ", valid: " << valid << ", variety: " << varietyCounter << endl;
-				//IntRect sub = ts->GetSubRect( realIndex );
-
 				int numQI = 0;
 				if (numQuads.numQuads128 > 0)
 				{
@@ -461,15 +364,15 @@ void TerrainRender::GenerateBorderMesh()
 						
 				double realHeightLeft = 64.0;//sub.height - out;//256;//in;//sub.height;
 				double realHeightRight = 64.0;//sub.height - out;//256;//in;//sub.height;
-				
+
 				double d0 = dot( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
 				double c0 = cross( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
 
 				double d1 = dot( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
 				double c1 = cross( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
 
-				
-				if (isAcute)
+				//SetRectColor(currBVA + i * 4, Color(Color::Black));
+				if (isAcute )
 				{
 					LineIntersection li = lineIntersection(currStartInner,
 						currStartOuter, te->v0, te->v0 + bisector);//te->edge0->v0 );
@@ -480,9 +383,11 @@ void TerrainRender::GenerateBorderMesh()
 
 						if (testLength < realHeightLeft)
 						{
+							//testLength = 64;
 							double diffLen = realHeightLeft - testLength;
 							realHeightLeft = testLength;
 							currStartInner += diffLen * normalize(startOuter - startInner);
+							//currEndInner += diffLen * normalize(startOuter - startInner);
 						}
 					}
 
@@ -500,147 +405,113 @@ void TerrainRender::GenerateBorderMesh()
 						}
 					}
 				}
-				if (nextAcute )
+				if (nextAcute)
 				//if( false )
 				{
-					LineIntersection li = lineIntersection(currStartInner,
-						currStartOuter, te->v1, te->v1 + nBisector);//te->edge1->v1);
-					assert(!li.parallel);
-					if (!li.parallel)
+					bool middleSplit = false;
+					LineIntersection liMiddle = lineIntersection(currStartInner,
+						currEndInner, te->v1, te->v1 + nBisector);//te->edge1->v1);
+					if (!liMiddle.parallel)
 					{
-						double testLength = length(li.position - currStartOuter);
-						if (testLength < realHeightLeft)
+						double md = dot(liMiddle.position - currStartInner, normalize(currEndInner - currStartInner));
+						double cLen = length(currEndInner - currStartInner);
+						if (md < cLen && md > 0 )
 						{
-							double diffLen = realHeightLeft - testLength;
-							realHeightLeft = testLength;
-							currStartInner += diffLen * normalize(startOuter - startInner);
+							//currEndInner = liMiddle.position;
+							//middleSplit = true;
+							//SetRectColor(currBVA + i * 4, Color(Color::Red));
 						}
 					}
 
-					li = lineIntersection(currEndInner,
-						currEndOuter, te->v1, te->v1 + nBisector);//te->edge1->v1 );
-					assert(!li.parallel);
-					if (!li.parallel)
+
+
+					if (!middleSplit)
 					{
-						double testLength = length(li.position - currEndOuter);
-						if (testLength < realHeightRight)
+
+						LineIntersection li = lineIntersection(currStartInner,
+							currStartOuter, te->v1, te->v1 + nBisector);//te->edge1->v1);
+						assert(!li.parallel);
+						if (!li.parallel)
 						{
-							double diffLen = realHeightRight - testLength;
-							realHeightRight = testLength;
-							currEndInner += diffLen * normalize(startOuter - startInner);
+							double testLength = length(li.position - currStartOuter);
+							if (testLength < realHeightLeft)
+							{
+								cout << "len: " << testLength << ", x: " << li.position.x << "." << currStartOuter.x << endl;
+								double diffLen = realHeightLeft - testLength;
+
+								realHeightLeft = testLength;
+								currStartInner = li.position;//currStartOuter + normalize(startInner - startOuter) * realHeightLeft;
+
+								//currStartInner += diffLen * normalize(startOuter - startInner);
+								//cout << "nBisector: " << nBisector.x << ", " << nBisector.y << endl;
+								cout << i << "left lipos: " << li.position.x << ", " << li.position.y << endl;
+							}
+						}
+
+						li = lineIntersection(currEndInner,
+							currEndOuter, te->v1, te->v1 + nBisector);//te->edge1->v1 );
+						assert(!li.parallel);
+						if (!li.parallel)
+						{
+							double testLength = length(li.position - currEndOuter);
+							if (testLength < realHeightRight)
+							{
+								//testLength = 64;
+								cout << "len: " << testLength << ", x: " << li.position.x << "." << currEndOuter.x << endl;
+								double diffLen = realHeightRight - testLength;
+								//realHeightMiddle = 32;
+								realHeightRight = testLength;
+								currEndInner += diffLen * normalize(startOuter - startInner);
+								//currStartInner += diffLen * normalize(startOuter - startInner);
+								cout << i << "right lipos: " << li.position.x << ", " << li.position.y << endl;
+								//cout << "nBisector: " << nBisector.x << ", " << nBisector.y << endl;
+							}
 						}
 					}
 				}
-				
-				//if( d0 <= 0
 
-				rcEdge = NULL;
-				ignoreEdge = te;
-				rcQuant = -1;
-				rcPortion = 2.0; //always greater than portion on first run
-				//rayIgnoreEdge = te;
-				rayStart = te->v0 + along * max( startAlong, 0.0 );
-				rayEnd = rayStart - eNorm * realHeightLeft;
-				//rayStart = te->v0 - along * extraLength + ( startAlong ) * along;
-				//rayEnd = currStartInner;//te->v0 + (double)i * quadWidth * along - other * in;
-				RayCast( this, qt->startNode, rayStart, rayEnd );
+				//currBVA[i * 4 + 2].color.a = 0;
+				//currBVA[i * 4 + 3].color.a = 0;
 
+				//realHeightLeft = min(realHeightLeft, realHeightRight);
+				//realHeightRight = realHeightLeft;
+				Vector2f a = Vector2f( currStartOuter.x, currStartOuter.y );
+				Vector2f b = Vector2f( currStartInner.x, currStartInner.y );
+				Vector2f c = Vector2f(currEndInner.x, currEndInner.y);
+				Vector2f d = Vector2f(currEndOuter.x, currEndOuter.y);
+				Vector2f m = (a + d) / 2.f;
 
-				//start ray
-				if( rcEdge != NULL )
-				{
-					//currStartInner = rcEdge->GetPoint( rcQuant );
-					//realHeightLeft = length(currStartInner - currStartOuter);
-					//realHeight0 = length( currStartInner - currStartOuter );
-				}
+				currBVA[i * 4 + 0].position = a;
+				currBVA[i * 4 + 1].position = d;//m + fAlong * middleDiff;
+				currBVA[i * 4 + 2].position = c;// +fAlong * middleDiff - fOther * realHeightMiddle;
+				currBVA[i * 4 + 3].position = b;
 
-				rcEdge = NULL;
-				rayStart = te->v0 + along * endAlong;//te->v0 - along * extraLength + ( endAlong ) * along;
-				rayEnd = rayStart - eNorm * realHeightRight;//currEndInner;
-				RayCast( this, qt->startNode, rayStart, rayEnd );
-
-				//end ray
-				if( rcEdge != NULL )
-				{
-					//currEndInner =  rcEdge->GetPoint( rcQuant );//te->v0 + endAlong * along - rcQuantity * other;
-					//realHeightRight = length( currEndInner - currEndOuter );
-				}
-
-				
-				//RayCast( this, terrainTree, position, V2d( position.x - 100, position.y ) );
-				
-				//if( i == 0 && d0 <= 0 )
-				//{
-				//	Edge *prev = te->edge0;
-				//	V2d pNorm = prev->Normal();
-				//	V2d prevEndInner = prev->v1 - pNorm * in;
-				//	V2d prevEndOuter = prev->v1 + pNorm * out;
-				//	//V2d prevEndOuter = prev->v1 - 
-
-				//	va[extra + i * 4 + 0].position = Vector2f( ( currStartOuter.x + prevEndOuter.x ) / 2.0, 
-				//		( currStartOuter.y + prevEndOuter.y ) / 2.0 );
-				//	
-				//	va[extra + i * 4 + 3].position = Vector2f( (currStartInner.x + prevEndInner.x) / 2.0, 
-				//		( currStartInner.y + prevEndInner.y ) / 2.0  );
-				//}
-				//else
-				{
-					Vector2f a = Vector2f( currStartOuter.x, currStartOuter.y );
-					Vector2f b = Vector2f( currStartInner.x, currStartInner.y );
-					/*a += Vector2f( .5, .5 );
-					b += Vector2f( .5, .5 );
-					a.x = floor( a.x );
-					a.y = floor( a.y );
-					b.x = floor( b.x );
-					b.y = floor( b.y );*/
-
-					currBVA[i * 4 + 0].position = a;
-					currBVA[i * 4 + 3].position = b;
-				}
-
-				/*if( i == numQuads - 1 && d1 <= 0 )
-				{
-					Edge *next = te->edge1;
-					V2d nNorm = next->Normal();
-					V2d nextStartInner = next->v0 - nNorm * in;
-					V2d nextStartOuter = next->v0 + nNorm * out;
-					va[extra + i * 4 + 2].position = Vector2f( ( currEndInner.x + nextStartInner.x ) / 2, 
-						( currEndInner.y + nextStartInner.y ) / 2 );
-
-					va[extra + i * 4 + 1].position = Vector2f( ( currEndOuter.x + nextStartOuter.x ) / 2.0, 
-						( currEndOuter.y + nextStartOuter.y ) / 2.0 );
-
-				}
-				else*/
-				{
-					Vector2f c = Vector2f( currEndInner.x, currEndInner.y);
-					Vector2f d = Vector2f( currEndOuter.x, currEndOuter.y);
-
-					/*c += Vector2f( .5, .5 );
-					d += Vector2f( .5, .5 );
-					c.x = floor( c.x );
-					c.y = floor( c.y );
-					d.x = floor( d.x );
-					d.y = floor( d.y );*/
-
-					currBVA[i * 4 + 2].position = c;
-					currBVA[i * 4 + 1].position = d;
-				}
-
-				/*va[extra + i * 4 + 2].position = Vector2f( currEndInner.x, currEndInner.y );
-				va[extra + i * 4 + 3].position = Vector2f( currStartInner.x, currStartInner.y );*/
-				
-				
+				/*currBVA[i * 8 + 4].position = currBVA[i * 8 + 1].position;
+				currBVA[i * 8 + 5].position = d;
+				currBVA[i * 8 + 6].position = c;
+				currBVA[i * 8 + 7].position = currBVA[i * 8 + 2].position;*/
+				float width = length(currEndInner - currStartInner);
 				currBVA[i * 4 + 0].texCoords = Vector2f( sub.left, sub.top );
-				currBVA[i * 4 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-				currBVA[i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + realHeightRight);
+				currBVA[i * 4 + 1].texCoords = Vector2f( sub.left + width, sub.top );
+				currBVA[i * 4 + 2].texCoords = Vector2f(sub.left + width, sub.top + realHeightRight);
 				currBVA[i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightLeft);
 
-				/*va[extra + i * 4 + 0].color = COLOR_BLUE;
-				va[extra + i * 4 + 1].color = COLOR_YELLOW;
-				va[extra + i * 4 + 2].color = COLOR_MAGENTA;
-				va[extra + i * 4 + 3].color = COLOR_TEAL;
-*/
+				/*currBVA[i * 8 + 4].texCoords = Vector2f(sub.left + sub.width / 2 + middleDiff, sub.top);
+				currBVA[i * 8 + 5].texCoords = Vector2f(sub.left + sub.width, sub.top);
+				currBVA[i * 8 + 6].texCoords = Vector2f(sub.left + sub.width, sub.top + realHeightRight);
+				currBVA[i * 8 + 7].texCoords = Vector2f(sub.left + sub.width / 2 + middleDiff, sub.top + realHeightLeft);*/
+
+				if (realHeightLeft < 64 || realHeightRight < 64)
+				{
+					//SetRectColor(currBVA + i * 4, Color(Color::Red));
+				//	SetRectColor(currBVA + i * 8 + 4, Color(Color::Yellow));
+				}
+				else
+				{
+					//SetRectColor(currBVA + i * 4, Color(Color::Black));
+				//	SetRectColor(currBVA + i * 8 + 4, Color(Color::Magenta));
+				}
+
 				++varietyCounter;
 				if( varietyCounter == 4 )//32 )
 				{
@@ -1262,7 +1133,7 @@ EdgeType GetEdgeTransType(Edge *e)
 double TerrainRender::GetExtraForInward(Edge *e)
 {
 	
-	double factor = 40.0;
+	double factor = 40;//40.0;
 	V2d currDir = normalize(e->v1 - e->v0);
 	EdgeType test = GetEdgeType(currDir);
 	V2d prevDir = normalize(e->edge0->v0 - e->v0);
@@ -1313,7 +1184,7 @@ bool TerrainRender::IsAcute( Edge *e ) //edge and its previous edge
 	EdgeType test = GetEdgeType(currDir);
 	V2d prevDir = normalize(e->edge0->v0 - e->v0);
 	double cDiff = GetVectorAngleDiffCCW(currDir, prevDir);
-	bool turnOutward = cDiff > PI * 1.5 + .1;
+	bool turnOutward = cDiff > PI * 1.5 + PI * .3;
 
 	V2d realPrevDir = normalize(e->edge0->v1 - e->edge0->v0);
 
