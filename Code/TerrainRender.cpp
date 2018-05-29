@@ -374,13 +374,14 @@ void TerrainRender::GenerateBorderMesh()
 				//SetRectColor(currBVA + i * 4, Color(Color::Black));
 				if (isAcute )
 				{
+					//SetRectColor(currBVA + i * 4, Color(Color::Red));
 					LineIntersection li = lineIntersection(currStartInner,
 						currStartOuter, te->v0, te->v0 + bisector);//te->edge0->v0 );
 					assert(!li.parallel);
 					if (!li.parallel)
 					{
-						double testLength = length(li.position - currStartOuter);
-
+						double testLength = dot(li.position - currStartOuter, normalize(currStartInner - currStartOuter));//(li.position - currStartOuter);
+						assert(testLength >= 0);
 						if (testLength < realHeightLeft)
 						{
 							//testLength = 64;
@@ -396,7 +397,9 @@ void TerrainRender::GenerateBorderMesh()
 					assert(!li.parallel);
 					if (!li.parallel)
 					{
-						double testLength = length(li.position - currEndOuter);
+						//double testLength = length(li.position - currEndOuter);
+						double testLength = dot(li.position - currStartOuter, normalize(currStartInner - currStartOuter));//(li.position - currStartOuter);
+						assert(testLength >= 0);
 						if (testLength < realHeightRight)
 						{
 							double diffLen = realHeightRight - testLength;
@@ -1133,7 +1136,7 @@ EdgeType GetEdgeTransType(Edge *e)
 double TerrainRender::GetExtraForInward(Edge *e)
 {
 	
-	double factor = 40;//40.0;
+	double factor = 0.0;//40;//40.0;
 	V2d currDir = normalize(e->v1 - e->v0);
 	EdgeType test = GetEdgeType(currDir);
 	V2d prevDir = normalize(e->edge0->v0 - e->v0);
@@ -1179,16 +1182,22 @@ void TerrainRender::HandleRayCollision(Edge *edge,
 
 bool TerrainRender::IsAcute( Edge *e ) //edge and its previous edge
 {
-	double factor = 160.0;
 	V2d currDir = normalize(e->v1 - e->v0);
-	EdgeType test = GetEdgeType(currDir);
 	V2d prevDir = normalize(e->edge0->v0 - e->v0);
+
+	return dot(prevDir, currDir) > .6 && cross( prevDir, currDir ) < 0;
+	
+	/*double factor = 160.0;
+	
+	EdgeType test = GetEdgeType(currDir);
+	
 	double cDiff = GetVectorAngleDiffCCW(currDir, prevDir);
-	bool turnOutward = cDiff > PI * 1.5 + PI * .3;
+	double extra = PI * .3;
+	bool turnOutward = cDiff > PI * 1.5 + extra;
 
 	V2d realPrevDir = normalize(e->edge0->v1 - e->edge0->v0);
 
-	return turnOutward;
+	return turnOutward;*/
 }
 
 double TerrainRender::GetSubForOutward(Edge *e)

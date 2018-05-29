@@ -15,6 +15,8 @@
 #include "PowerOrbs.h"
 #include "Enemy_Shard.h"
 #include "SaveMenuScreen.h"
+#include "PauseMenu.h"
+
 
 using namespace std;
 using namespace sf;
@@ -519,6 +521,8 @@ MainMenu::MainMenu()
 	//MusicManager mm(this);
 	musicManager = new MusicManager(this);
 	musicManager->LoadMusicNames();
+
+	pauseMenu = new PauseMenu(this);
 	
   	int wholeX = 1920;
 	int wholeY = 1080;
@@ -804,6 +808,8 @@ MainMenu::~MainMenu()
 	delete config;
 
 	delete window;
+
+	delete pauseMenu;
 	
 	delete preScreenTexture;
 	delete lastFrameTexture;

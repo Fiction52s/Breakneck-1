@@ -1024,6 +1024,11 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
 	affectCameraZoom( true )
 {
+	if (p_hasMonitor)
+	{
+		owner->numTotalKeys++;
+	}
+
 	ts_zoned = owner->GetTileset("Enemies/enemy_zone_icon_128x128.png", 128, 128);
 	zonedSprite.setTexture(*ts_zoned->texture);
 	

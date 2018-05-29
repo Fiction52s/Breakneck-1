@@ -17,6 +17,7 @@
 #include "HitboxManager.h"
 #include "ImageText.h"
 #include "KeyMarker.h"
+#include "ScoreDisplay.h"
 
 using namespace sf;
 using namespace std;

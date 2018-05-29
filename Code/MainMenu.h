@@ -22,6 +22,7 @@ struct Config;
 struct SaveFile;
 struct SaveMenuScreen;
 struct MainMenu;
+struct PauseMenu;
 struct CustomMapsHandler : GUIHandler
 {
 	//LevelSelector &ls;
@@ -543,6 +544,8 @@ struct MainMenu
 	static sf::RenderTexture *extraScreenTexture;
 	static sf::RenderTexture *auraCheckTexture;
 	
+	PauseMenu *pauseMenu;
+
 	sf::Texture worldMapTex;
 	sf::Sprite worldMapSpr;
 	Tileset *ts_worldMap;
