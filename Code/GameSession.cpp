@@ -3563,6 +3563,7 @@ bool GameSession::OpenFile( string fileName )
 			else
 			{
 				topBorderOn = true;
+				
 			}
 
 
@@ -3690,6 +3691,8 @@ bool GameSession::OpenFile( string fileName )
 			topBorderQuadMini[1].position.y = blackMiniTop;
 			topBorderQuadMini[2].position.y = mh->topBounds;
 			topBorderQuadMini[3].position.y = mh->topBounds;
+
+			topClouds = new TopClouds(this);
 		}
 
 		if (poiMap.count("stormceiling") > 0)
@@ -5137,7 +5140,7 @@ bool GameSession::Load()
 		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( fileName );
 
-	topClouds = new TopClouds(this);
+	topClouds = NULL;
 
 	background = new Background( this, mh->envLevel, mh->envType);
 
@@ -6340,7 +6343,8 @@ int GameSession::Run()
 
 				UpdateFade();
 				background->Update();
-				topClouds->Update();
+				if( topClouds != NULL )
+					topClouds->Update();
 				//rain.Update();
 
 				testPar->Update( camPos );
@@ -6990,7 +6994,8 @@ int GameSession::Run()
 
 		//screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
 		
-		topClouds->Draw(preScreenTex);
+		if( topClouds != NULL )
+			topClouds->Draw(preScreenTex);
 
 		preScreenTex->draw(blackBorderQuads, 8, sf::Quads);
 		
