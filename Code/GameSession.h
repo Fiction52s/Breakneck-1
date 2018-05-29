@@ -230,73 +230,7 @@ struct KeyNumberObj
 	int zoneType;
 };
 
-struct ScoreDisplay
-{
-	ScoreDisplay( GameSession *owner,
-		sf::Vector2f &position, 
-		sf::Font & testFont );
-	sf::Sprite score;
-	void Draw( sf::RenderTarget *target );
-	int numEnemiesTotal;
-	int numEnemiesKilled;
-	double numSeconds;
-	void Reset();
-	void Activate();
-	void Deactivate();
-	bool active;
-	bool waiting;
-	//void Set
 
-	struct ScoreBar
-	{
-		enum State
-		{
-			NONE,
-			POP_OUT,
-			SHEET_APPEAR,
-			SYMBOL_DISPLAY,
-			SHEET_DISPLAY,
-			RETRACT
-		};
-
-		ScoreBar( int row, ScoreDisplay *parent );
-		void SetBarPos( float xDiff );
-		void SetSheetFrame( int frame );
-		void SetSymbolTransparency( float f );
-		void ClearSheet();
-		void Update();
-		int row;
-		State state;
-		int frame;
-		float xDiffPos;
-		ScoreDisplay *parent;
-		//sf::Text info;
-		
-	};
-
-	void Update();
-
-	static const int NUM_BARS = 3;
-	ScoreBar *bars[NUM_BARS];
-	
-	GameSession *owner;
-	Tileset *ts_scoreBar;
-	Tileset *ts_scoreContinue;
-	Tileset *ts_scoreSheet;
-	Tileset *ts_scoreSymbols;
-
-	sf::VertexArray scoreBarVA;
-	sf::Sprite scoreContinue;
-	sf::VertexArray scoreSymbolsVA;
-	sf::VertexArray scoreSheetVA;
-
-	sf::Vector2f basePos;
-	sf::Shader colorSwapShader;
-	
-	sf::Text time;
-	sf::Font &font;
-	//sf::Sprite scoreBar;
-};
 
 struct PauseMap
 {
@@ -327,7 +261,7 @@ struct VictoryScreen;
 struct VictoryScreen2PlayerVS;
 struct UIWindow;
 struct Parallax;
-
+struct ScoreDisplay;
 #include <boost/thread/mutex.hpp>
 
 struct MusicInfo;
@@ -437,6 +371,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	};
 
 	
+	int numTotalKeys;
+	int numKeysCollected;
+
 	MomentumBar *momentumBar;
 
 	sf::Vertex blackBorderQuads[4 * 2];
