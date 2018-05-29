@@ -63,7 +63,7 @@ void KeyMarker::SetPosition(Vector2f &pos)
 
 void KeyMarker::CollectKey()
 {
-	owner->numKeysCollected++;
+
 	if( keysRequired == 0 )
 	{
 		return;

@@ -16,7 +16,6 @@
 #include "MainMenu.h"
 #include "MusicSelector.h"
 
-
 using namespace sf;
 using namespace std;
 
@@ -24,6 +23,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	:mainMenu( mm )
 {
 	currShardMusic = NULL;
+	testSeq = NULL;
 	//currentMovie.scale(.5, .5);
 
 	currShardText.setCharacterSize(20);
@@ -44,26 +44,17 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 	shardNames = new string*[xSize];
 	shardDesc = new string*[xSize];
-	seqLoadThread = new boost::thread**[xSize];
-	shardSeq = new PNGSeq**[xSize];
 
 	for (int i = 0; i < xSize; ++i)
 	{
 		shardNames[i] = new string[ySize];
 		shardDesc[i] = new string[ySize];
-		seqLoadThread[i] = new boost::thread*[ySize];
-		shardSeq[i] = new PNGSeq*[ySize];
 	}
-
-	
 
 	for (int x = 0; x < xSize; ++x)
 	{
 		for (int y = 0; y < ySize; ++y)
 		{
-			shardSeq[x][y] = NULL;
-			seqLoadThread[x][y] = NULL;
-
 			std::string &currShardName = shardNames[x][y];
 			currShardName = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
 			if(currShardName != "" )
@@ -73,17 +64,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 	shardNames[4][4] = "testanim";
 	shardNames[0][4] = "Crawler_Pose";
-	//sf::Clock testC;
-	//GetSequence(shardNames[0][0]);
-	/*for (int x = 0; x < xSize; ++x)
-	{
-		for (int y = 0; y < ySize; ++y)
-		{
-			
-		}
-	}*/
-	//int f = testC.getElapsedTime().asMilliseconds();
-	//cout << f << endl;
+
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
 
@@ -151,39 +132,11 @@ void ShardMenu::SetCurrMusic()
 	}
 }
 
-PNGSeq *&ShardMenu::GetCurrSeq()
-{
-	return shardSeq[xSelector->currIndex][ySelector->currIndex];
-}
-
-void ShardMenu::AsyncGetSequence(const std::string &str)
-{
-	PNGSeq *& ps = GetCurrSeq();
-	ps = GetSequence(str);
-	ps->spr.setPosition(imagePos);
-}
-
-void ShardMenu::sGetSequence( const std::string &str, ShardMenu *sMenu)
-{
-	sMenu->AsyncGetSequence(str);
-}
-
-boost::thread *&ShardMenu::GetCurrLoadThread()
-{
-	return seqLoadThread[xSelector->currIndex][ySelector->currIndex];
-}
-
 void ShardMenu::SetCurrSequence()
 {
 	std::string &name = shardNames[xSelector->currIndex][ySelector->currIndex];
-	//sGetSequence(name, this);
-	if (GetCurrSeq() == NULL && GetCurrLoadThread() == NULL )
-	{
-		GetCurrLoadThread() = new boost::thread(&(ShardMenu::sGetSequence), name, this);
-	}
-	
-	//testSeq = GetSequence(name);//GetSequence("testanim");
-	
+	testSeq = GetSequence(name);//GetSequence("testanim");
+	testSeq->spr.setPosition(imagePos);
 }
 
 MusicInfo *ShardMenu::GetShardMusic(const std::string &str)
@@ -203,19 +156,9 @@ ShardMenu::~ShardMenu()
 	{
 		delete[] shardNames[i];
 		delete[] shardDesc[i];
-		for (int j = 0; j < ySelector->totalItems; ++j)
-		{
-			if( shardSeq[i][j] != NULL )
-				delete shardSeq[i][j];
-		}
-		delete[] shardSeq[i];
-		delete[] seqLoadThread[i];
-			
 	}
 	delete[] shardNames;
 	delete[] shardDesc;
-	delete[] shardSeq;
-	delete[] seqLoadThread;
 	delete xSelector;
 	delete ySelector;
 
@@ -371,26 +314,15 @@ void ShardMenu::Update( ControllerState &currInput )
 		}
 		break;
 	}
-	boost::thread *& loadThread = GetCurrLoadThread();
-
-	if (loadThread == NULL && GetCurrSeq() != NULL && currButtonState == S_SELECTED)
-	{
-		GetCurrSeq()->Update();
-	}
-
-	if (loadThread  != NULL && loadThread->try_join_for(boost::chrono::milliseconds(0)))
-	{
-		delete loadThread;
-		loadThread = NULL;
-	}
-
+	if( testSeq != NULL && currButtonState == S_SELECTED )
+		testSeq->Update();
 	UpdateShardSelectQuads();
 }
 
 void ShardMenu::Draw(sf::RenderTarget *target)
 {
-	if(GetCurrSeq() != NULL )
-		GetCurrSeq()->Draw(target);
+	if( testSeq != NULL )
+		testSeq->Draw(target);
 	target->draw(shardSelectQuads, xSelector->totalItems * ySelector->totalItems * 4,
 		sf::Quads, ts_shards->texture);
 	if (currShardText.getString() != "")

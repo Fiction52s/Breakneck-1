@@ -3,7 +3,6 @@
 
 #include <SFML/Graphics.hpp>
 #include "Movement.h"
-#include "Input.h"
 //#include "Actor.h"
 
 struct MovementSequence;
@@ -24,7 +23,6 @@ struct Camera
 	void Ease(sf::Vector2f &pos, float zFactor,
 		int numFrames, CubicBezier &bez );
 	void UpdateEase();
-	GameSession *owner;
 	
 	sf::FloatRect GetRect();
 	sf::Vector2f GetPos();
@@ -80,24 +78,11 @@ struct Camera
 
 	bool bossCrawler;
 
-	void UpdateEnemyZoom( Actor *a );
+	void Update2( Actor *a );
+	void UpdateReal( Actor *a );
 	void Update( Actor *a );
-	void ManualUpdate();
-	void UpdateZoomLevel(ControllerState &con, ControllerState &prevcon);
 	void UpdateVS( Actor *a, 
 		Actor *a2 );
-	void UpdateZoomFactor( Actor *player );
-
-	sf::Vector2<double> playerPos;
-	sf::Vector2<double> GetPlayerVel( Actor *player);
-	void SetMovementOffset( sf::Vector2<double> &pVel );
-	void UpdateBarrier(Actor *player, float &xChangePos, 
-		float &xChangeNeg, float &yChangePos, 
-		float &yChangeNeg);
-	int GetActiveEnemyCount( Actor *player,
-		double &minX, double &maxX, 
-		double &minY, double &maxY);
-	void UpdateEaseOut();
 
 private:
 	

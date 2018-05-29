@@ -9,7 +9,6 @@
 #include <SFML\Audio.hpp>
 #include <map>
 #include <string>
-#include <boost/thread.hpp>
 
 struct TilesetManager;
 struct TutorialMovie
@@ -77,7 +76,7 @@ struct ShardMenu
 	sf::Vertex *shardQuads;
 	MainMenu *mainMenu;
 	int numShardsTotal;
-	
+	PNGSeq *testSeq;	
 	sf::Vector2f imagePos;
 	void SetCurrSequence();
 	void SetupShardImages();
@@ -91,13 +90,8 @@ struct ShardMenu
 	MusicInfo *currShardMusic;
 	void SetCurrMusic();
 	void StopMusic();
-	boost::thread ***seqLoadThread;
-	PNGSeq ***shardSeq;
-	void AsyncGetSequence(const std::string &str);
-	static void sGetSequence( const std::string &str, 
-		ShardMenu *sMenu );
-	PNGSeq *&GetCurrSeq();
-	boost::thread *&GetCurrLoadThread();
+	
+
 	
 
 

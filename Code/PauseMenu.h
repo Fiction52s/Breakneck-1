@@ -130,6 +130,7 @@ struct OptionsMenu
 	
 	//more of these for diff controller types
 	sf::VertexArray assocSymbols;
+
 	
 	int selectedIndex;
 	
@@ -173,14 +174,14 @@ struct PauseMenu
 		Count
 	};
 
-	PauseMenu( MainMenu *p_mainMenu );
+	PauseMenu( GameSession *owner );
 	~PauseMenu();
 	void Draw( sf::RenderTarget *target );
 	void SetTab( Tab t );
 	void TabLeft();
 	void TabRight();
 	void ApplyVideoSettings();
-	void ApplySoundSettings( );
+	void ApplySoundSettings();
 	
 	enum OptionType
 	{
@@ -201,18 +202,16 @@ struct PauseMenu
 		R_P_EXITGAME
 	};
 
-	UpdateResponse Update(
-		ControllerState &currInput,
+	UpdateResponse Update( ControllerState &currInput,
 		ControllerState &prevInput );
 	Tileset *ts_background[Count];
 	Tileset *ts_select;
-	GameSession *owner;
-
+	
 	ShardMenu *shardMenu;
 
 	sf::Sprite bgSprite;
 	sf::Sprite selectSprite;
-	MainMenu *mainMenu;
+	GameSession *owner;
 
 	
 	Tab currentTab;

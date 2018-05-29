@@ -45,13 +45,10 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 		V2d( 0, 0 ), CubicBezier( 0, 0, 1, 1 ), exitTime );
 
 	//ts_ship = owner->GetTileset( "Ship/ship_exit_1920x1080.png", 1920, 1080 );
-	ts_ship = owner->GetTileset("Ship/ship_exit_1920x1080.png", 1920, 1080);
+	ts_ship = owner->GetTileset("Ship/ship_1280x900.png", 1280, 900);
 	shipSprite.setTexture( *ts_ship->texture );
 	shipSprite.setTextureRect( ts_ship->GetSubRect( 0 ) );
-	shipSprite.setScale(.5, .5);
-	//shipSprite.setOrigin(560, 700);
-	//shipSprite.setOrigin(960, 700);
-	shipSprite.setOrigin(960 / 2, 700);
+	shipSprite.setOrigin(560, 700);
 }
 
 bool ShipExitSeq::Update()

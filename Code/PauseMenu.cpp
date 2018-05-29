@@ -136,7 +136,7 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 	schemeControllerVA( sf::Quads, 3 * 4 )
 {
 	LoadControlOptions();
-	mainMenu = pauseMenu->mainMenu;
+	mainMenu = pauseMenu->owner->mainMenu;
 	mode = LEFTBAR;
 	//temporary init here
 	autoUseController = true;
@@ -154,8 +154,8 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 	UpdateSchemeVA( true );
 	UpdateSchemeVA( false );
 
-	ts_xboxButtons = pauseMenu->mainMenu->tilesetManager.GetTileset( "Menu/xbox_button_icons_128x128.png", 128, 128 );
-	ts_actionIcons = pauseMenu->mainMenu->tilesetManager.GetTileset( "Menu/power_icon_128x128.png", 128, 128 );
+	ts_xboxButtons = pauseMenu->owner->GetTileset( "Menu/xbox_button_icons_128x128.png", 128, 128 );
+	ts_actionIcons = pauseMenu->owner->GetTileset( "Menu/power_icon_128x128.png", 128, 128 );
 
 	ts_currentButtons = ts_xboxButtons;
 
@@ -1158,20 +1158,19 @@ XBoxButton OptionsMenu::CheckXBoxInput( ControllerState &currInput )
 	}
 }
 
-PauseMenu::PauseMenu(MainMenu *p_mainMenu )
-	:mainMenu( p_mainMenu ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
+PauseMenu::PauseMenu( GameSession *p_owner )
+	:owner( p_owner ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
 	
 {
-	owner = NULL;
 	optionType = OptionType::O_INPUT;
 	cOptions = new OptionsMenu( this );
-	ts_background[0] = mainMenu->tilesetManager.GetTileset( "Menu/pause_1_map_1820x980.png", 1820, 980 );
-	ts_background[1] = mainMenu->tilesetManager.GetTileset( "Menu/pause_2_kin_1820x980.png", 1820, 980 );
-	ts_background[2] = mainMenu->tilesetManager.GetTileset( "Menu/pause_3_shards_1820x980.png", 1820, 980 );
-	ts_background[3] = mainMenu->tilesetManager.GetTileset( "Menu/pause_4_options_1820x980.png", 1820, 980 );
-	ts_background[4] = mainMenu->tilesetManager.GetTileset( "Menu/pause_5_pause_1820x980.png", 1820, 980 );
+	ts_background[0] = owner->GetTileset( "Menu/pause_1_map_1820x980.png", 1820, 980 );
+	ts_background[1] = owner->GetTileset( "Menu/pause_2_kin_1820x980.png", 1820, 980 );
+	ts_background[2] = owner->GetTileset( "Menu/pause_3_shards_1820x980.png", 1820, 980 );
+	ts_background[3] = owner->GetTileset( "Menu/pause_4_options_1820x980.png", 1820, 980 );
+	ts_background[4] = owner->GetTileset( "Menu/pause_5_pause_1820x980.png", 1820, 980 );
 
-	ts_select = mainMenu->tilesetManager.GetTileset( "Menu/menu_select_800x140.png", 800, 140 );
+	ts_select = owner->GetTileset( "Menu/menu_select_800x140.png", 800, 140 );
 	
 
 	
@@ -1184,7 +1183,35 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
-	shardMenu = new ShardMenu( mainMenu );
+	shardMenu = new ShardMenu( owner->mainMenu );
+
+	//cout << "MIDDLE this initialization" << endl;
+
+	if( owner->saveFile != NULL )
+	{
+		SaveFile *sf = owner->saveFile;
+
+		//if they dont have the power yet, rename them to specials 1-5 
+
+		//if 
+		//sf->
+		
+	}
+	
+	/*{ 
+		"move", "jump", "dash", "attack", bounceSpecial, grindSpecial,
+		timeslowSpecial, wireLeftSpecial, wireRightSpecial, 
+		toggleBounce, toggleGrind, toggleTimeSlow };*/
+
+	
+
+	/*string possibleKeyboardActions[15] = { 
+	"up", "left", "down", "right", "jump", "dash", "attack", bounceSpecial, grindSpecial,
+	timeslowSpecial, wireLeftSpecial, wireRightSpecial, 
+	toggleBounce, toggleGrind, toggleTimeSlow };*/
+
+
+	
 
 	//resolution
 	//fullscreen
@@ -1447,16 +1474,16 @@ void PauseMenu::ApplyVideoSettings()
 	{
 		assert( 0 );
 	}
-	mainMenu->ResizeWindow( width, height, style );
+	owner->mainMenu->ResizeWindow( width, height, style );
 
 
 	if( vsync == "on" )
 	{
-		mainMenu->window->setVerticalSyncEnabled( true );
+		owner->window->setVerticalSyncEnabled( true );
 	}
 	else if( vsync == "off" )
 	{
-		mainMenu->window->setVerticalSyncEnabled( false );
+		owner->window->setVerticalSyncEnabled( false );
 	}
 	else
 	{
@@ -1505,16 +1532,16 @@ void PauseMenu::ApplySoundSettings()
 
 
 	owner->soundNodeList->SetGlobalVolume( master );
-	mainMenu->soundNodeList->SetGlobalVolume( master );
+	owner->mainMenu->soundNodeList->SetGlobalVolume( master );
 
 	owner->soundNodeList->SetSoundsEnable( enSounds );
-	mainMenu->soundNodeList->SetSoundsEnable( enSounds );
+	owner->mainMenu->soundNodeList->SetSoundsEnable( enSounds );
 
 	//owner->soundNodeList->SetMusicEnable( enMusic );
 	//owner->mainMenu->soundNodeList->SetMusicEnable( enMusic );
 
 	owner->soundNodeList->SetRelativeSoundVolume( sound );
-	mainMenu->soundNodeList->SetRelativeSoundVolume( sound );
+	owner->mainMenu->soundNodeList->SetRelativeSoundVolume( sound );
 
 	//owner->soundNodeList->SetRelativeMusicVolume( music );
 	//owner->mainMenu->soundNodeList->SetRelativeMusicVolume( music );
