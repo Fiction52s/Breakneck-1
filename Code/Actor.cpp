@@ -4935,8 +4935,8 @@ void Actor::UpdatePrePhysics()
 				else
 				{
 					framesInAir = 0;
-					SetActionExpr(DOUBLE);
-					frame = 0;
+					SetActionExpr(JUMP);
+					frame = 1;
 					grindEdge = NULL;
 					ground = NULL;
 
@@ -10811,20 +10811,21 @@ V2d Actor::UpdateReversePhysics()
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
 						//honestly no idea why I had this in the first place?
-						//if ( false && minContact.edge->edgeType == Edge::BORDER )
-						//{
-						//	velocity = normalize(ground->v1 - ground->v0) * -groundSpeed;
-						//	velocity.y = 0;
-						//	movementVec = normalize(ground->v1 - ground->v0) * extra;
+						if ( minContact.edge->edgeType == Edge::BORDER && 
+							minContact.edge->Normal().y == 1.0 )
+						{
+							velocity = normalize(ground->v1 - ground->v0) * -groundSpeed;
+							velocity.y = 0;
+							movementVec = normalize(ground->v1 - ground->v0) * extra;
 
-						//	leftGround = true;
-						//	reversed = false;
-						//	ground = NULL;
-						//	movingGround = NULL;
-						//	break;
-						//	//return V2d( 0, 0 );
-						//}
-						//else
+							leftGround = true;
+							reversed = false;
+							ground = NULL;
+							movingGround = NULL;
+							break;
+							//return V2d( 0, 0 );
+						}
+						else
 						{
 
 							V2d eNorm = minContact.normal;//minContact.edge->Normal();

@@ -5140,8 +5140,6 @@ bool GameSession::Load()
 		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( fileName );
 
-	topClouds = NULL;
-
 	background = new Background( this, mh->envLevel, mh->envType);
 
 	cout << "done opening file" << endl;

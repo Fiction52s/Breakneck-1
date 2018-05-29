@@ -623,6 +623,11 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	}
 
 	pos += barrierOffset;
+
+	if (barrierZoom > 0)
+	{
+		zoomFactor = barrierZoom;
+	}
 }
 
 void Camera::Update( Actor *player )
@@ -707,7 +712,7 @@ void Camera::Update( Actor *player )
 
 
 	
-	//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+	
 
 
 
@@ -717,10 +722,7 @@ void Camera::Update( Actor *player )
 	
 	
 
-	/*if( barrierZoom > 0)
-	{
-		zoomFactor = barrierZoom;
-	}*/
+	
 
 
 	if( zoomFactor < 1 )
@@ -728,6 +730,9 @@ void Camera::Update( Actor *player )
 	else if( zoomFactor > maxZoom )
 		zoomFactor = maxZoom;
 
+	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+
+	
 
 	UpdateEaseOut();
 
