@@ -77,19 +77,24 @@ void TitleScreen::Update()
 	}
 
 	Color c = energySpr.getColor();
-	int energyBreathe = 180;
+	int energyBreathe = 360;
 	int ff = frame % (energyBreathe);
 	if (ff < energyBreathe / 2)
 	{
 		float factor = (float)ff / (energyBreathe / 2);
 		c.a = 150 * factor;
-		c.a = std::max(20.f, (float)c.a);
+		//c.a = std::max(20.f, (float)c.a);
 	}
 	else
 	{
 		float factor = 1.f - (float)(ff - energyBreathe / 2) / (energyBreathe / 2);
 		c.a = 150 * factor;
-		c.a = std::max(20.f, (float)c.a);
+		//c.a = std::max(20.f, (float)c.a);
+	}
+
+	if (ff % (energyBreathe * 2) == 0)
+	{
+		c = Color(rand() % 255, rand() % 255, rand() % 255, c.a );
 	}
 
 	energySpr.setColor(c);
