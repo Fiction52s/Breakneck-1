@@ -30,7 +30,6 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 
 	Tileset *ts_bg = owner->GetTileset(bgFile, 1920, 1080);
 	Tileset *ts_shape = owner->GetTileset(shapeFile, 1920, 1080);
-	Tileset *ts_palette = owner->GetTileset(paletteFile, 1, 1);
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);
@@ -46,6 +45,48 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	shape.setPosition(0, 0);
 
 	transFrames = 60 * 20;
+
+	bgView.setCenter(0, 0);
+	bgView.setSize(1920, 1080);
+
+	Reset();
+}
+
+Background::Background(MainMenu *mm)
+{
+	stringstream ss;
+
+	string folder = "Title/";
+
+	//int eType = envLevel + 1; //adjust for alex naming -_-
+	//ss << folder << "w" << envType + 1 << "_BG";
+
+	//ss << eType;
+
+	string bgStr = "Backgrounds/w1_BG1";// = ss.str();
+
+
+
+	string bgFile = folder + "title_base_1920x1080.png";
+	string paletteFile = bgStr + "_palette.png";
+	string shapeFile = folder + "titleshade_1920x1080.png";//bgStr + "_shape.png";
+
+	//Tileset *ts_bg = mm->tilesetManager.GetTileset(bgFile, 1920, 1080);
+	Tileset *ts_shape = mm->tilesetManager.GetTileset(shapeFile, 1920, 1080);
+	bool loadPalette = palette.loadFromFile(paletteFile);
+	assert(loadPalette);
+
+	//background.setTexture(*ts_bg->texture);
+	//background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
+	//background.setPosition(0, 0);
+
+	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
+
+	shape.setTexture(*ts_shape->texture);
+	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
+	shape.setPosition(0, 0);
+
+	transFrames = 60 * 3;
 
 	bgView.setCenter(0, 0);
 	bgView.setSize(1920, 1080);
@@ -111,15 +152,15 @@ void Background::UpdateShape()
 
 void Background::Update()
 {
-	if (frame == transFrames * 4)
-	{
-		frame = 0;
-	}
-
 	UpdateSky();
 	UpdateShape();
 
 	++frame;
+
+	if (frame == transFrames * 4)
+	{
+		frame = 0;
+	}
 }
 
 void Background::Reset()

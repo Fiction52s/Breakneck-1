@@ -4,10 +4,12 @@
 #include <SFML/Graphics.hpp>
 
 struct GameSession;
+struct MainMenu;
 
 struct Background
 {
 	Background( GameSession *owner, int envLevel, int envType);
+	Background(MainMenu *mm);
 	void Update();
 	void Reset();
 	void Draw(sf::RenderTarget *target);

@@ -435,6 +435,7 @@ struct SingleAxisSelector;
 struct MusicManager;
 struct FillRing;
 struct Level;
+struct TitleScreen;
 
 struct MainMenu
 {
@@ -551,9 +552,7 @@ struct MainMenu
 	Tileset *ts_worldMap;
 	
 	//Tileset *ts_kinTitle[7];
-	Tileset *ts_breakneckTitle;
-	Tileset *ts_emergenceTitle;
-	Tileset *ts_titleBG;
+	TitleScreen *titleScreen;
 
 	sf::Sprite splashSprite;
 	Tileset *ts_splashScreen;

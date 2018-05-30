@@ -16,6 +16,7 @@
 #include "Enemy_Shard.h"
 #include "SaveMenuScreen.h"
 #include "PauseMenu.h"
+#include "TitleScreen.h"
 
 
 using namespace std;
@@ -523,6 +524,8 @@ MainMenu::MainMenu()
 	musicManager->LoadMusicNames();
 
 	pauseMenu = new PauseMenu(this);
+
+	titleScreen = new TitleScreen(this);
 	
   	int wholeX = 1920;
 	int wholeY = 1080;
@@ -823,9 +826,7 @@ MainMenu::~MainMenu()
 }
 
 void MainMenu::Init()
-{
-	cout << "init started" << endl;
-	
+{	
 	ts_splashScreen = tilesetManager.GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
 	splashSprite.setTexture( *ts_splashScreen->texture );
 
@@ -837,17 +838,7 @@ void MainMenu::Init()
 	ts_kinTitle[5] = tilesetManager.GetTileset( "Title/kin_title_6_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[6] = tilesetManager.GetTileset( "Title/kin_title_7_1216x1080.png", 1216, 1080 );*/
 	
-	ts_breakneckTitle = tilesetManager.GetTileset( "Title/breakneck_1034x835.png", 1034, 835 );
-	//ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
-	ts_titleBG = tilesetManager.GetTileset("Title/titlescreen_1920x1080.png", 1920, 1080);
-	ts_emergenceTitle = tilesetManager.GetTileset("Title/emergence_337x51.png", 337, 51);
 	
-	titleBGSprite.setTexture( *ts_titleBG->texture );
-	breakneckTitleSprite.setTexture( *ts_breakneckTitle->texture );
-	emergenceTitleSprite.setTexture(*ts_emergenceTitle->texture);
-
-	breakneckTitleSprite.setPosition(444, 0 + 20);
-	emergenceTitleSprite.setPosition(794, 233 + 20);
 
 	soundBuffers[S_DOWN] = soundManager.GetSound( "menu_down.ogg" );
 	soundBuffers[S_UP] = soundManager.GetSound( "menu_up.ogg" );
@@ -1447,6 +1438,7 @@ void MainMenu::Run()
 				}
 			case MAINMENU:
 				{
+				titleScreen->Update();
 					if( splashFadeFrame <= splashFadeOutLength )
 					{
 						sf::Color fadeColor = fadeRect.getFillColor();
@@ -2134,9 +2126,7 @@ void MainMenu::Run()
 		case MAINMENU:
 			{
 				preScreenTexture->setView( v );
-				preScreenTexture->draw( titleBGSprite );
-				preScreenTexture->draw( breakneckTitleSprite );
-				preScreenTexture->draw( emergenceTitleSprite );
+				titleScreen->Draw(preScreenTexture);
 				
 				for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 				{

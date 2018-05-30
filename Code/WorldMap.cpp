@@ -775,7 +775,6 @@ void WorldMap::Draw( RenderTarget *target )
 	{
 		testSelector->Draw(target);
 	}
-	
 }
 
 MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
@@ -787,7 +786,7 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	//nodeSelectorWidth = 400;
 	ts_node = mm->tilesetManager.GetTileset("Worldmap/nodes_48x48.png", 48, 48);
 	Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
-	Tileset *ts_thumb = mm->tilesetManager.GetTileset("Worldmap/mapthumb_336x256.png", 336, 256);
+	Tileset *ts_thumb = mm->tilesetManager.GetTileset("Worldmap/mapthumb_w1_1_256x256.png", 256, 256);
 	Tileset *ts_shard = mm->tilesetManager.GetTileset("Worldmap/worldmap_shards_272x256.png", 272, 256);
 	bottomBG.setTexture(*ts_bottom->texture);
 	thumbnailBG.setTexture(*ts_thumb->texture);

@@ -222,6 +222,7 @@ void ScrollingBackground::Update( Vector2f &camPos )
 	//realPos = camPos;
 	realPos.x -= 960;
 	SetLeftPos( realPos );//camPos.x );//realPos.x );
+//	cout << "set real pos: " << realPos.x << endl;
 }
 
 void ScrollingBackground::SetLeftPos( Vector2f &pos )
