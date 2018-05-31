@@ -1530,6 +1530,11 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 {
 	if( (currInput.start && !prevInput.start) || (currInput.back && !prevInput.back ) )
 	{
+		if (currentTab == OPTIONS)
+		{
+			controlSettingsMenu->SetButtonAssoc();
+		}
+
 		owner->state = GameSession::State::RUN;
 		owner->soundNodeList->Pause( false );
 	}
@@ -1620,6 +1625,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		{	
 			
 			//return UpdateOptions( currInput, prevInput );
+		
 			controlSettingsMenu->Update( currInput, prevInput );
 		
 			

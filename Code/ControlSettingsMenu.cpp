@@ -20,16 +20,18 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 
 	actionQuads = new Vertex[numActions * 4];
 	buttonQuads = new Vertex[numActions * 4];
+	selectQuads = new Vertex[numActions * 4];
+	labelQuads = new Vertex[numActions * 4];
 	actionText = new Text[numActions];
 
-	std::string buttonTexts[10] = { "JUMP", "DASH", "ATTACK", "POWER3", "POWER4",
-		"POWER5", "POWER6LEFT", "POWER6RIGHT", "MAP", "PAUSE" };
+	std::string buttonTexts[10] = { "JUMP", "DASH", "ATTACK", "POWER 3", "POWER 4",
+		"POWER 5", "POWER 6 LEFT", "POWER 6 RIGHT", "MAP", "PAUSE" };
 
 	for (int i = 0; i < numActions; ++i)
 	{
 		actionText[i].setFont(mainMenu->arial);
 		actionText[i].setCharacterSize(20);
-		actionText[i].setFillColor(Color::White);
+		actionText[i].setFillColor(Color::Black);
 		actionText[i].setString(buttonTexts[i]);
 		actionText[i].setOrigin(actionText[i].getLocalBounds().width / 2, actionText[i].getLocalBounds().height);
 	}
@@ -49,15 +51,17 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
-	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 4, 0);
+	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 5, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
 
 	Vector2f originPos = Vector2f(100, 400);
-	Vector2f spacing(50, 50);
+	Vector2f spacing(50, 90);
 	Vector2f actionSize(ts_actionIcons->tileWidth, ts_actionIcons->tileHeight);
 	Vector2f buttonSize(ts_xboxButtons->tileWidth, ts_xboxButtons->tileHeight);
 
 	
+	int borderSize = 20;
+	int labelHeight = 30;
 
 	for (int i = 0; i < numActions; ++i)
 	{
@@ -65,6 +69,7 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 		Vector2f quadCenter = originPos + Vector2f(actionSize.x / 2.f, actionSize.y / 2.f)
 			+ Vector2f((actionSize.x + buttonSize.x + spacing.x) * index.x, (actionSize.y + spacing.y) * index.y);
 		SetRectCenter( actionQuads + i * 4, actionSize.x, actionSize.y, quadCenter);
+		SetRectCenter(selectQuads + i * 4, actionSize.x + buttonSize.x + borderSize, actionSize.y + borderSize, quadCenter + Vector2f( actionSize.x / 2, 0 ) );
 		
 	}
 
@@ -74,10 +79,58 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 		Vector2f quadCenter = originPos + Vector2f(buttonSize.x / 2.f, buttonSize.y / 2.f) + Vector2f( actionSize.x, 0 )
 			+ Vector2f((actionSize.x + buttonSize.x + spacing.x) * index.x, (actionSize.y + spacing.y) * index.y);
 		SetRectCenter(buttonQuads + i * 4, buttonSize.x, buttonSize.y, quadCenter);
-		actionText[i].setPosition(Vector2f(quadCenter.x - buttonSize.x / 2, quadCenter.y - buttonSize.y / 2 - 10));
+		actionText[i].setPosition(Vector2f(quadCenter.x - buttonSize.x / 2, quadCenter.y - buttonSize.y / 2 - 20));
+		SetRectCenter(labelQuads + i * 4, actionSize.x + buttonSize.x + borderSize, labelHeight,
+			Vector2f(quadCenter.x - buttonSize.x / 2, quadCenter.y - buttonSize.y / 2 - labelHeight / 2 - borderSize/2));
+		SetRectColor(labelQuads + i * 4, Color(Color::White));
 	}
 
 	UpdateXboxButtonIcons();
+
+	UpdateSelectedQuad();
+
+	editMode = false;
+
+	SetGreyActionTiles(!editMode);
+}
+
+void ControlSettingsMenu::UpdateSelectedQuad()
+{
+	int selIndex = xSelector->currIndex + ySelector->currIndex * 5;
+	for (int i = 0; i < 10; ++i)
+	{
+		if (i == selIndex)
+		{
+			SetRectColor(selectQuads + i * 4, Color(Color::Yellow) );
+		}
+		else
+		{
+			SetRectColor(selectQuads + i * 4, Color(Color::Black) );
+		}
+	}
+}
+
+void ControlSettingsMenu::SetGreyActionTiles(bool greyOn)
+{
+	if (greyOn)
+	{
+
+		Color grey = Color(100, 100, 100);
+		for (int i = 0; i < 10; ++i)
+		{
+			SetRectColor(actionQuads + i * 4, grey);
+			SetRectColor(buttonQuads + i * 4, grey);
+		}
+	}
+	else
+	{
+		Color white = Color::White;
+		for (int i = 0; i < 10; ++i)
+		{
+			SetRectColor(actionQuads + i * 4, white);
+			SetRectColor(buttonQuads + i * 4, white);
+		}
+	}
 }
 
 void ControlSettingsMenu::SetActionTile(int actionIndex, int actionType)
@@ -94,65 +147,106 @@ ControlSettingsMenu::~ControlSettingsMenu()
 	delete ySelector;
 }
 
+void ControlSettingsMenu::SetButtonAssoc()
+{
+	mainMenu->GetController(0).SetFilter(pSel->currProfile->filter);//mainMenu->cpm->profiles.front()->filter);
+}
+
 void ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 {
-
-	pSel->Update( currInput, prevInput);
-
-	return;
-	int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
-	int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
-
-	if (xchanged != 0 || ychanged != 0)
+	if( !editMode )
+		pSel->Update( currInput, prevInput);
+	
+	if (!editMode && pSel->state == ProfileSelector::S_SELECTED && currInput.X && !prevInput.X)
 	{
+		editMode = true;
+		SetGreyActionTiles(!editMode);
+	}
+	else if ( editMode && currButtonState != S_SELECTED && ((currInput.X && !prevInput.X) || (currInput.B && !prevInput.B)))
+	{
+		editMode = false;
+		SetGreyActionTiles(!editMode);
+		currButtonState = S_NEUTRAL;
+	}
+	
+
+	if (editMode && currButtonState != S_SELECTED)
+	{
+		int xchanged;
+		int ychanged;
+
+
+		xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
+		ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+
+
+		if (xchanged != 0 || ychanged != 0)
+		{
+			currButtonState = S_NEUTRAL;
+			UpdateSelectedQuad();
+		}
+
+		bool A = currInput.A;
+		switch (currButtonState)
+		{
+		case S_NEUTRAL:
+			if (A)
+			{
+				currButtonState = S_PRESSED;
+			}
+			break;
+		case S_PRESSED:
+			if (!A)
+			{
+				currButtonState = S_SELECTED;
+				for (int i = 0; i < ControllerSettings::Count; ++i)
+				{
+					pSel->tempFilter[i] = pSel->currProfile->filter[i];
+				}
+			}
+			break;
+		case S_SELECTED:
+			if (A)
+			{
+				currButtonState = S_UNPRESSED;
+			}
+			break;
+		case S_UNPRESSED:
+			if (!A)
+			{
+				currButtonState = S_NEUTRAL;
+			}
+			break;
+		}
+
 		
 	}
 
-	bool A = currInput.A;
-	switch (currButtonState)
+	if (currButtonState == S_SELECTED && editMode)
 	{
-	case S_NEUTRAL:
-		if (A)
+		XBoxButton b = CheckXBoxInput(currInput);
+		if (b != XBoxButton::XBOX_BLANK)
 		{
-			currButtonState = S_PRESSED;
-		}
-		break;
-	case S_PRESSED:
-		if (!A)
-		{
-			currButtonState = S_SELECTED;
-		}
-		break;
-	case S_SELECTED:
-		if (A)
-		{
+			pSel->tempFilter[xSelector->currIndex + ySelector->currIndex * 5] = b;
+			pSel->SaveCurrConfig();
 			currButtonState = S_UNPRESSED;
 		}
-		break;
-	case S_UNPRESSED:
-		if (!A)
-		{
-			currButtonState = S_NEUTRAL;
-		}
-		break;
 	}
-
-	if (currButtonState == S_SELECTED)
-	{
-		XBoxButton b;
-		do
-		{
-			b = CheckXBoxInput(currInput);
-		} while (b != XBoxButton::XBOX_BLANK);
-
+		//state = S_EDIT_CONFIG;
+		
 		//xboxInputAssoc[useControllerSchemeIndex][ControllerSettings::JUMP] = b;
 
 		//UpdateXboxButtonIcons(useControllerSchemeIndex);
-	}
+	UpdateXboxButtonIcons();
+
 }
 
 void ControlSettingsMenu::Draw(sf::RenderTarget *target )
 {
+	if( editMode )
+		target->draw(selectQuads, 10 * 4, sf::Quads);
+
+	target->draw(labelQuads, 10 * 4, sf::Quads);
 	target->draw(actionQuads, 10 * 4, sf::Quads, ts_actionIcons->texture);
 	target->draw(buttonQuads, 10 * 4, sf::Quads, ts_currentButtons->texture);
 	for (int i = 0; i < 10; ++i)
@@ -168,7 +262,7 @@ void ControlSettingsMenu::UpdateXboxButtonIcons()
 	ts_currentButtons = ts_xboxButtons;
 	for (int i = 0; i < ControllerSettings::ButtonType::Count; ++i)
 	{
-		int ind = 0;//(int)xboxInputAssoc[controlSetIndex][i] - 1;
+		int ind = pSel->currProfile->filter[i] - 1;// (int)xboxInputAssoc[controlSetIndex][i] - 1;
 		IntRect sub = ts_xboxButtons->GetSubRect(ind);
 		SetRectSubRect(buttonQuads + i * 4, sub);
 	}

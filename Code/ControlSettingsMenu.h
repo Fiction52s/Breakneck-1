@@ -16,6 +16,7 @@ struct ControlSettingsMenu
 		S_PRESSED,
 		S_UNPRESSED,
 		S_SELECTED,
+		S_EDITING,
 	};
 
 	ButtonState currButtonState;
@@ -28,6 +29,8 @@ struct ControlSettingsMenu
 	void UpdateControlIcons();
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
+	void SetGreyActionTiles( bool greyOn );
+	void SetButtonAssoc();
 
 	MainMenu *mainMenu;
 	void SetActionTile(int actionIndex, int actionType);
@@ -35,11 +38,15 @@ struct ControlSettingsMenu
 	void UpdateXboxButtonIcons();
 	sf::Vertex *actionQuads;
 	sf::Vertex *buttonQuads;
+	sf::Vertex *selectQuads;
+	sf::Vertex *labelQuads;
+	void UpdateSelectedQuad();
 	sf::Text *actionText;
 	Tileset *ts_xboxButtons;
 	Tileset *ts_actionIcons;
 	Tileset *ts_currentButtons;
 	ProfileSelector *pSel;
+	bool editMode;
 
 };
 

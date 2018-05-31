@@ -86,7 +86,10 @@ struct ProfileSelector
 	ProfileSelector( MainMenu *p_mainMenu,
 		sf::Vector2f &topMid );
 	void UpdateNames();
+	void UpdateButtonIcons();
 	ControlProfileManager *cpm;
+	bool SaveCurrConfig();
+	XBoxButton tempFilter[ControllerSettings::Count];
 	
 	void Draw(sf::RenderTarget *target);
 	void SetupBoxes();
@@ -96,6 +99,7 @@ struct ProfileSelector
 	VertSlider vSlider;
 	sf::Vector2f topMid;
 	int topIndex;
+	MainMenu *mainMenu;
 	ControlProfile *currProfile;
 	SingleAxisSelector *saSelector;
 	void MoveUp();
@@ -108,6 +112,7 @@ struct ProfileSelector
 };
 
 struct MultiSelectionSection;
+struct MainMenu;
 struct ControlProfileMenu : UIEventHandlerBase
 {
 	enum State
@@ -126,6 +131,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 	ControllerSettings::ButtonType editIndex;
 	XBoxButton tempFilter[ControllerSettings::Count];
 	
+
 	//TODO scrollbar to show how far in to the names you are
 	static const int NUM_BOXES = 7;
 	static const int BOX_WIDTH;

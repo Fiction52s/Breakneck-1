@@ -970,7 +970,7 @@ ControlProfileManager::~ControlProfileManager()
 
 ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,
 	sf::Vector2f &p_topMid)
-	:topMid( p_topMid ), cpm( p_mainMenu->cpm )
+	:topMid(p_topMid), cpm(p_mainMenu->cpm), mainMenu(p_mainMenu )
 {
 	state = S_SELECTED;
 	int waitFrames[3] = { 10, 5, 2 };
@@ -1000,6 +1000,11 @@ ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,
 	}
 
 	UpdateNames();
+}
+
+void ProfileSelector::UpdateButtonIcons()
+{
+
 }
 
 void ProfileSelector::UpdateNames()
@@ -1293,4 +1298,22 @@ void ProfileSelector::UpdateBoxColor()
 		}
 		SetRectColor(boxes + i * 4, c);
 	}
+}
+
+bool ProfileSelector::SaveCurrConfig()
+{
+	bool different = false;
+	for (int i = 0; i < ControllerSettings::Count; ++i)
+	{
+		if (currProfile->filter[i] != tempFilter[i])
+		{
+			currProfile->filter[i] = tempFilter[i];
+			different = true;
+		}
+	}
+
+	if (different) mainMenu->cpm->WriteProfiles();
+
+	state = S_SELECTED;
+	return true;
 }
