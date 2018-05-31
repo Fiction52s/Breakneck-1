@@ -426,6 +426,8 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 
 		if( changed != 0 )
 		{
+			
+
 			UpdateNames();
 			//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
 			//controls[oldIndex]->Unfocus();
@@ -1268,6 +1270,18 @@ void ProfileSelector::Update(ControllerState &currInput,
 
 		if (changed != 0)
 		{
+			int test = 0;
+			for (list<ControlProfile*>::iterator it = cpm->profiles.begin();
+				it != cpm->profiles.end(); ++it)
+			{
+				if (test == saSelector->currIndex)
+				{
+					currProfile = (*it);
+					break;
+				}
+				++test;
+			}
+
 			UpdateNames();
 			//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
 			//controls[oldIndex]->Unfocus();
@@ -1303,12 +1317,17 @@ void ProfileSelector::UpdateBoxColor()
 bool ProfileSelector::SaveCurrConfig()
 {
 	bool different = false;
+	
 	for (int i = 0; i < ControllerSettings::Count; ++i)
 	{
-		if (currProfile->filter[i] != tempFilter[i])
+		if (oldFilter[i] != tempFilter[i])
 		{
 			currProfile->filter[i] = tempFilter[i];
 			different = true;
+		}
+		else
+		{
+			currProfile->filter[i] = oldFilter[i];
 		}
 	}
 

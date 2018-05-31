@@ -90,6 +90,7 @@ struct ProfileSelector
 	ControlProfileManager *cpm;
 	bool SaveCurrConfig();
 	XBoxButton tempFilter[ControllerSettings::Count];
+	XBoxButton oldFilter[ControllerSettings::Count];
 	
 	void Draw(sf::RenderTarget *target);
 	void SetupBoxes();

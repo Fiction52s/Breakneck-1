@@ -8,6 +8,7 @@
 #include "ShardMenu.h"
 #include "MusicSelector.h"
 #include "ControlSettingsMenu.h"
+#include "ControlProfile.h"
 
 using namespace sf;
 using namespace std;
@@ -1530,13 +1531,21 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 {
 	if( (currInput.start && !prevInput.start) || (currInput.back && !prevInput.back ) )
 	{
-		if (currentTab == OPTIONS)
+		if (currentTab == OPTIONS && controlSettingsMenu->currButtonState == ControlSettingsMenu::S_SELECTED)
 		{
-			controlSettingsMenu->SetButtonAssoc();
-		}
 
-		owner->state = GameSession::State::RUN;
-		owner->soundNodeList->Pause( false );
+		}
+		else
+		{
+			if (currentTab == OPTIONS)
+			{
+
+				controlSettingsMenu->SetButtonAssoc();
+			}
+
+			owner->state = GameSession::State::RUN;
+			owner->soundNodeList->Pause(false);
+		}
 	}
 
 	if( currInput.leftShoulder && !prevInput.leftShoulder )

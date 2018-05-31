@@ -17,6 +17,7 @@ struct ControlSettingsMenu
 		S_UNPRESSED,
 		S_SELECTED,
 		S_EDITING,
+		S_WAITING,
 	};
 
 	ButtonState currButtonState;
