@@ -1,6 +1,9 @@
 #include "ControlSettingsMenu.h"
 #include "MainMenu.h"
 #include "Tileset.h"
+#include "VectorMath.h"
+#include <SFML/Graphics.hpp>
+#include "ControlProfile.h"
 
 using namespace std;
 using namespace sf;
@@ -8,15 +11,95 @@ using namespace sf;
 ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	:mainMenu( p_mm )
 {
+	pSel = new ProfileSelector(mainMenu, Vector2f( 200, 200 ));
+
 	ts_xboxButtons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
 	ts_actionIcons = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
+
+	int numActions = 10;
+
+	actionQuads = new Vertex[numActions * 4];
+	buttonQuads = new Vertex[numActions * 4];
+	actionText = new Text[numActions];
+
+	std::string buttonTexts[10] = { "JUMP", "DASH", "ATTACK", "POWER3", "POWER4",
+		"POWER5", "POWER6LEFT", "POWER6RIGHT", "MAP", "PAUSE" };
+
+	for (int i = 0; i < numActions; ++i)
+	{
+		actionText[i].setFont(mainMenu->arial);
+		actionText[i].setCharacterSize(20);
+		actionText[i].setFillColor(Color::White);
+		actionText[i].setString(buttonTexts[i]);
+		actionText[i].setOrigin(actionText[i].getLocalBounds().width / 2, actionText[i].getLocalBounds().height);
+	}
+
+	ts_currentButtons = NULL;
+
+	SetActionTile(0, 0);
+	SetActionTile(1, 1);
+	SetActionTile(2, 2);
+	SetActionTile(3, 5);
+	SetActionTile(4, 6);
+	SetActionTile(5, 7);
+	SetActionTile(6, 8);
+	SetActionTile(7, 8);
+	SetActionTile(8, 3);
+	SetActionTile(9, 3);
+
+	int waitFrames[3] = { 10, 5, 2 };
+	int waitModeThresh[2] = { 2, 2 };
+	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 4, 0);
+	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
+
+	Vector2f originPos = Vector2f(100, 400);
+	Vector2f spacing(50, 50);
+	Vector2f actionSize(ts_actionIcons->tileWidth, ts_actionIcons->tileHeight);
+	Vector2f buttonSize(ts_xboxButtons->tileWidth, ts_xboxButtons->tileHeight);
+
+	
+
+	for (int i = 0; i < numActions; ++i)
+	{
+		Vector2f index(i % (numActions/2), i / (numActions/2));
+		Vector2f quadCenter = originPos + Vector2f(actionSize.x / 2.f, actionSize.y / 2.f)
+			+ Vector2f((actionSize.x + buttonSize.x + spacing.x) * index.x, (actionSize.y + spacing.y) * index.y);
+		SetRectCenter( actionQuads + i * 4, actionSize.x, actionSize.y, quadCenter);
+		
+	}
+
+	for (int i = 0; i < numActions; ++i)
+	{
+		Vector2f index(i % (numActions/2), i / (numActions/2));
+		Vector2f quadCenter = originPos + Vector2f(buttonSize.x / 2.f, buttonSize.y / 2.f) + Vector2f( actionSize.x, 0 )
+			+ Vector2f((actionSize.x + buttonSize.x + spacing.x) * index.x, (actionSize.y + spacing.y) * index.y);
+		SetRectCenter(buttonQuads + i * 4, buttonSize.x, buttonSize.y, quadCenter);
+		actionText[i].setPosition(Vector2f(quadCenter.x - buttonSize.x / 2, quadCenter.y - buttonSize.y / 2 - 10));
+	}
+
+	UpdateXboxButtonIcons();
 }
 
-void ControlSettingsMenu::Update()
+void ControlSettingsMenu::SetActionTile(int actionIndex, int actionType)
 {
-	ControllerState & currInput = mainMenu->menuCurrInput;
-	ControllerState & prevInput = mainMenu->menuPrevInput;
+	SetRectSubRect(actionQuads + actionIndex * 4, ts_actionIcons->GetSubRect(actionType));
+}
 
+ControlSettingsMenu::~ControlSettingsMenu()
+{
+	delete[] actionQuads;
+	delete[] buttonQuads;
+
+	delete xSelector;
+	delete ySelector;
+}
+
+void ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &prevInput )
+{
+
+	pSel->Update( currInput, prevInput);
+
+	return;
 	int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
 	int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
 
@@ -65,6 +148,29 @@ void ControlSettingsMenu::Update()
 		//xboxInputAssoc[useControllerSchemeIndex][ControllerSettings::JUMP] = b;
 
 		//UpdateXboxButtonIcons(useControllerSchemeIndex);
+	}
+}
+
+void ControlSettingsMenu::Draw(sf::RenderTarget *target )
+{
+	target->draw(actionQuads, 10 * 4, sf::Quads, ts_actionIcons->texture);
+	target->draw(buttonQuads, 10 * 4, sf::Quads, ts_currentButtons->texture);
+	for (int i = 0; i < 10; ++i)
+	{
+		target->draw(actionText[i]);
+	}
+
+	pSel->Draw(target);
+}
+
+void ControlSettingsMenu::UpdateXboxButtonIcons()
+{
+	ts_currentButtons = ts_xboxButtons;
+	for (int i = 0; i < ControllerSettings::ButtonType::Count; ++i)
+	{
+		int ind = 0;//(int)xboxInputAssoc[controlSetIndex][i] - 1;
+		IntRect sub = ts_xboxButtons->GetSubRect(ind);
+		SetRectSubRect(buttonQuads + i * 4, sub);
 	}
 }
 

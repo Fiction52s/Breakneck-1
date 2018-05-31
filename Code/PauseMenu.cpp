@@ -7,6 +7,7 @@
 #include <fstream>
 #include "ShardMenu.h"
 #include "MusicSelector.h"
+#include "ControlSettingsMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -158,7 +159,7 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 	ts_actionIcons = pauseMenu->mainMenu->tilesetManager.GetTileset( "Menu/power_icon_128x128.png", 128, 128 );
 
 	ts_currentButtons = ts_xboxButtons;
-
+	 
 	string inputTypes[] = { "Xbox", "Keyboard", "PS4", "Gamecube" };
 	
 
@@ -1164,7 +1165,7 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 {
 	owner = NULL;
 	optionType = OptionType::O_INPUT;
-	cOptions = new OptionsMenu( this );
+	cOptions = NULL;//new OptionsMenu( this );
 	ts_background[0] = mainMenu->tilesetManager.GetTileset( "Menu/pause_1_map_1820x980.png", 1820, 980 );
 	ts_background[1] = mainMenu->tilesetManager.GetTileset( "Menu/pause_2_kin_1820x980.png", 1820, 980 );
 	ts_background[2] = mainMenu->tilesetManager.GetTileset( "Menu/pause_3_shards_1820x980.png", 1820, 980 );
@@ -1173,7 +1174,7 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 
 	ts_select = mainMenu->tilesetManager.GetTileset( "Menu/menu_select_800x140.png", 800, 140 );
 	
-
+	controlSettingsMenu = new ControlSettingsMenu(mainMenu);
 	
 	selectSprite.setTexture( *ts_select->texture );
 
@@ -1334,6 +1335,7 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	}
 	else if( currentTab == OPTIONS )
 	{
+		controlSettingsMenu->Draw(target);
 		/*string inputType = inputSelectors[0]->GetString();
 		int num = numCurrentSelectors;
 		if( inputType == "Keyboard" )
@@ -1346,25 +1348,25 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 		}*/
 		
 
-		switch( optionType )
-		{
-		case O_VIDEO:
-			{
-				//return UpdateVideoOptions( currInput, prevInput );
-				break;
-			}
-		case O_AUDIO:
-			{
-				//return UpdateAudioOptions( currInput, prevInput );
-				break;
-			}
-		case O_INPUT:
-			{
-				
-				cOptions->Draw( target );
-				break;
-			}
-		}
+		//switch( optionType )
+		//{
+		//case O_VIDEO:
+		//	{
+		//		//return UpdateVideoOptions( currInput, prevInput );
+		//		break;
+		//	}
+		//case O_AUDIO:
+		//	{
+		//		//return UpdateAudioOptions( currInput, prevInput );
+		//		break;
+		//	}
+		//case O_INPUT:
+		//	{
+		//		
+		//		cOptions->Draw( target );
+		//		break;
+		//	}
+		//}
 		//if( currentSelectors == inputSelectors )
 		//{
 		//	target->draw( assocSymbols, ts_actionIcons->texture );
@@ -1616,8 +1618,9 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	case OPTIONS:
 		{	
-			return UpdateOptions( currInput, prevInput );
-
+			
+			//return UpdateOptions( currInput, prevInput );
+			controlSettingsMenu->Update( currInput, prevInput );
 		
 			
 			break;

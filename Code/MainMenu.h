@@ -437,6 +437,7 @@ struct FillRing;
 struct Level;
 struct TitleScreen;
 
+
 struct MainMenu
 {
 	//int [ControllerTypes::Count]

@@ -67,6 +67,46 @@ private:
 //	MainMenu *mainMenu;
 //};
 
+struct ProfileSelector
+{
+	static const int NUM_BOXES = 7;
+
+	static const int BOX_WIDTH;
+	static const int BOX_HEIGHT;
+	static const int BOX_SPACING;
+
+
+	enum State
+	{
+		S_SELECTED,
+		S_SHOWING_OPTIONS
+	};
+
+	State state;
+	ProfileSelector( MainMenu *p_mainMenu,
+		sf::Vector2f &topMid );
+	void UpdateNames();
+	ControlProfileManager *cpm;
+	
+	void Draw(sf::RenderTarget *target);
+	void SetupBoxes();
+	sf::Vertex boxes[NUM_BOXES * 4];
+	sf::Text profileNames[NUM_BOXES];
+	//std::list<ControlProfile*> profiles;
+	VertSlider vSlider;
+	sf::Vector2f topMid;
+	int topIndex;
+	ControlProfile *currProfile;
+	SingleAxisSelector *saSelector;
+	void MoveUp();
+	void MoveDown();
+	void Update(ControllerState &currInput,
+		ControllerState &prevInput);
+	void UpdateBoxColor();
+	sf::Text selectedProfileText;
+	int oldCurrIndex;
+};
+
 struct MultiSelectionSection;
 struct ControlProfileMenu : UIEventHandlerBase
 {

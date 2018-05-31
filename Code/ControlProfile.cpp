@@ -4,6 +4,7 @@
 #include <iostream>
 #include "UIWindow.h"
 #include "MainMenu.h"
+#include "VectorMath.h"
 
 using namespace sf;
 using namespace std;
@@ -20,6 +21,10 @@ using namespace std;
 const int ControlProfileMenu::BOX_WIDTH = 300;
 const int ControlProfileMenu::BOX_HEIGHT = 40;
 const int ControlProfileMenu::BOX_SPACING = 10;
+
+const int ProfileSelector::BOX_WIDTH = 300;
+const int ProfileSelector::BOX_HEIGHT = 40;
+const int ProfileSelector::BOX_SPACING = 10;
 
 //waitFrames[0] = 10;
 //waitFrames[1] = 5;
@@ -52,11 +57,6 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 
 		selectedProfileText.getLocalBounds().height / 2);
 	selectedProfileText.setPosition(p_topMid.x, p_topMid.y + 90);
-
-	
-
-
-	
 
 	SetupBoxes();
 
@@ -298,7 +298,7 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 			}
 		}
 	}
-	else if( currInput.X && !prevInput.X )
+	else if( currInput.rightShoulder && !prevInput.rightShoulder)
 	{
 		switch( state )
 		{
@@ -968,3 +968,329 @@ ControlProfileManager::~ControlProfileManager()
 	}
 }
 
+ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,
+	sf::Vector2f &p_topMid)
+	:topMid( p_topMid ), cpm( p_mainMenu->cpm )
+{
+	state = S_SELECTED;
+	int waitFrames[3] = { 10, 5, 2 };
+	int waitModeThresh[2] = { 2, 2 };
+	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
+	topIndex = 0;
+	
+	currProfile = cpm->profiles.front(); //KIN 
+
+	selectedProfileText.setFont(p_mainMenu->arial);
+	selectedProfileText.setCharacterSize(40);
+	selectedProfileText.setFillColor(Color::White);
+
+	selectedProfileText.setString(currProfile->name);
+
+	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2,
+		0 );
+	selectedProfileText.setPosition(topMid.x, topMid.y);
+
+	SetupBoxes();
+
+	for (int i = 0; i < NUM_BOXES; ++i)
+	{
+		profileNames[i].setFont(p_mainMenu->arial);
+		profileNames[i].setCharacterSize(40);
+		profileNames[i].setFillColor(Color::White);
+	}
+
+	UpdateNames();
+}
+
+void ProfileSelector::UpdateNames()
+{
+	list<ControlProfile*>::iterator lit = cpm->profiles.begin();
+	if (topIndex > cpm->profiles.size())
+	{
+		topIndex = cpm->profiles.size() - 1;
+	}
+
+	for (int i = 0; i < topIndex; ++i)
+	{
+		++lit;
+	}
+
+	int trueI;
+	int i = 0;
+	int numProfiles = cpm->profiles.size();
+	for (; i < NUM_BOXES; ++i)
+	{
+		trueI = (topIndex + i) % NUM_BOXES;
+		if (i == numProfiles)
+		{
+			for (; i < NUM_BOXES; ++i)
+			{
+				profileNames[i].setString("");
+			}
+			break;
+		}
+
+		if (lit == cpm->profiles.end())
+			lit = cpm->profiles.begin();
+
+		profileNames[i].setString((*lit)->name);
+		profileNames[i].setOrigin(profileNames[i].getLocalBounds().width / 2, 0);
+		//profileNames[i].getLocalBounds().height / 2 );
+		//profileNames[i].setPosition( topMid.x, topMid.y + (BOX_HEIGHT+BOX_SPACING) * i );
+		profileNames[i].setPosition(topMid.x, topMid.y + (BOX_HEIGHT + BOX_SPACING) * i);
+
+		++lit;
+	}
+
+	saSelector->totalItems = numProfiles;
+
+	Vector2f offset(20, 0);
+	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y),
+		Vector2f(vSlider.barSize.x, max((vSlider.selectorSize.y / numProfiles), 5.f)), vSlider.selectorSize);
+
+	vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
+}
+
+void ProfileSelector::Draw(sf::RenderTarget *target)
+{
+	if (state == S_SHOWING_OPTIONS)
+	{
+		target->draw(boxes, NUM_BOXES * 4, sf::Quads);
+		for (int i = 0; i < NUM_BOXES; ++i)
+		{
+			target->draw(profileNames[i]);
+		}
+		vSlider.Draw(target);
+	}
+	else if (state == State::S_SELECTED)
+	{
+		target->draw(selectedProfileText);
+	}
+}
+
+void ProfileSelector::MoveUp()
+{
+	topIndex++;
+	if (topIndex == cpm->profiles.size())
+	{
+		topIndex = 0;
+	}
+}
+
+void ProfileSelector::MoveDown()
+{
+	topIndex--;
+	if (topIndex == -1)
+	{
+		topIndex = cpm->profiles.size() - 1;
+	}
+}
+
+void ProfileSelector::SetupBoxes()
+{
+	sf::Vector2f currTopMid;
+	int extraHeight = 0;
+
+	for (int i = 0; i < NUM_BOXES; ++i)
+	{
+		currTopMid = topMid + Vector2f(0, extraHeight);
+
+		boxes[i * 4 + 0].position = Vector2f(currTopMid.x - BOX_WIDTH / 2, currTopMid.y);
+		boxes[i * 4 + 1].position = Vector2f(currTopMid.x + BOX_WIDTH / 2, currTopMid.y);
+		boxes[i * 4 + 2].position = Vector2f(currTopMid.x + BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT);
+		boxes[i * 4 + 3].position = Vector2f(currTopMid.x - BOX_WIDTH / 2, currTopMid.y + BOX_HEIGHT);
+
+		boxes[i * 4 + 0].color = Color::Red;
+		boxes[i * 4 + 1].color = Color::Red;
+		boxes[i * 4 + 2].color = Color::Red;
+		boxes[i * 4 + 3].color = Color::Red;
+
+		extraHeight += BOX_HEIGHT + BOX_SPACING;
+	}
+
+	Vector2f offset(20, 0);
+	vSlider.Setup(Vector2f(topMid.x + BOX_WIDTH / 2 + offset.x, topMid.y + offset.y), Vector2f(30, 0),
+		Vector2f(30, NUM_BOXES * (BOX_HEIGHT + BOX_SPACING)));
+}
+
+
+void ProfileSelector::Update(ControllerState &currInput,
+	ControllerState &prevInput)
+{
+	if (currInput.A && !prevInput.A)
+	{
+		switch (state)
+		{
+		case S_SELECTED:
+			state = S_SHOWING_OPTIONS;
+			UpdateNames();
+			oldCurrIndex = saSelector->currIndex;
+
+			break;
+		case S_SHOWING_OPTIONS:
+		{
+			int test = 0;
+			state = S_SELECTED;
+
+			for (list<ControlProfile*>::iterator it = cpm->profiles.begin();
+				it != cpm->profiles.end(); ++it)
+			{
+				if (test == saSelector->currIndex)
+				{
+					currProfile = (*it);
+					break;
+				}
+				++test;
+			}
+
+			selectedProfileText.setString(currProfile->name);
+			selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2,
+				0 );
+			break;
+		}
+		}
+	}
+	//else if (currInput.rightShoulder && !prevInput.rightShoulder)
+	//{
+	//	switch (state)
+	//	{
+	//	case S_SELECTED:
+	//	{
+	//		if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
+	//		{
+	//			if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
+	//				|| section->parent->multiSelectorState == MapSelectionMenu::MS_GHOST)
+	//			{
+	//				state = S_GHOST_SELECTOR;
+	//			}
+	//		}
+	//		break;
+	//	}
+	//	case S_SHOWING_OPTIONS:
+	//		//state = S_SELECTED;
+	//		state = S_EDIT_CONFIG;
+	//		for (int i = 0; i < ControllerSettings::Count; ++i)
+	//		{
+	//			tempFilter[i] = currProfile->filter[i];
+	//		}
+	//		break;
+	//	case S_EDIT_CONFIG:
+	//	{
+	//		//save
+	//		bool res = SaveCurrConfig();
+	//		assert(res); //if failed, file write failed
+	//		break;
+	//	}
+	//	}
+	//}
+	//else if (currInput.Y && !prevInput.Y)
+	//{
+	//	switch (state)
+	//	{
+	//	case S_SELECTED:
+	//		if (section->parent->state == MapSelectionMenu::State::S_MULTI_SCREEN)
+	//		{
+	//			if (section->parent->multiSelectorState == MapSelectionMenu::MS_NEUTRAL
+	//				|| section->parent->multiSelectorState == MapSelectionMenu::MS_MUSIC)
+	//			{
+	//				state = S_MUSIC_SELECTOR;
+	//			}
+	//		}
+	//		else
+	//		{
+
+	//		}
+
+	//		break;
+	//	}
+	//}
+	//if (currInput.B && !prevInput.B)
+	//{
+	//	switch (state)
+	//	{
+	//	case S_SHOWING_OPTIONS:
+	//	{
+	//		saSelector->currIndex = oldCurrIndex;
+	//		state = S_SELECTED;
+	//		break;
+	//	}
+	//	case S_MUSIC_SELECTOR:
+	//		state = S_SELECTED;
+	//		break;
+	//	case S_GHOST_SELECTOR:
+	//		state = S_SELECTED;
+	//		break;
+	//	}
+
+
+
+	
+
+	//tomorrow: set up the edit profile grid to draw in a separate state from a selected
+	//profile. then make a popup window where you input a button to change your controls.
+	//editProfileGrid->Update( currInput, prevInput );
+
+	if (state == S_SHOWING_OPTIONS)
+	{
+
+		bool up = currInput.LUp();
+		bool down = currInput.LDown();
+
+		int changed = saSelector->UpdateIndex(up, down);
+		int cIndex = saSelector->currIndex;
+
+		bool inc = changed > 0;
+		bool dec = changed < 0;
+
+		if (inc)
+		{
+			if (cIndex - topIndex == NUM_BOXES)
+			{
+				topIndex = cIndex - (NUM_BOXES - 1);
+			}
+			else if (cIndex == 0)
+			{
+				topIndex = 0;
+			}
+		}
+		else if (dec)
+		{
+			if (cIndex == saSelector->totalItems - 1)
+				topIndex = saSelector->totalItems - NUM_BOXES;
+			else if (cIndex < topIndex)
+				topIndex = cIndex;
+		}
+
+		if (changed != 0)
+		{
+			UpdateNames();
+			//cout << "currIndex: " << cIndex << ", topIndex: " << topIndex << endl;
+			//controls[oldIndex]->Unfocus();
+			//controls[focusedIndex]->Focus();
+
+			vSlider.SetSlider((float)saSelector->currIndex / (saSelector->totalItems - 1));
+
+		}
+		UpdateBoxColor();
+		//UpdateBoxesDebug();
+
+	}
+}
+
+void ProfileSelector::UpdateBoxColor()
+{
+	Color c;
+	int trueI = (saSelector->currIndex - topIndex);// % NUM_BOXES;
+	for (int i = 0; i < NUM_BOXES; ++i)
+	{
+		if (i == trueI)
+		{
+			c = Color::Blue;
+		}
+		else
+		{
+			c = Color::Red;
+		}
+		SetRectColor(boxes + i * 4, c);
+	}
+}

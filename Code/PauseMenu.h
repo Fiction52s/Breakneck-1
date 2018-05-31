@@ -8,6 +8,7 @@
 
 struct GameSession;
 struct ShardMenu;
+struct ControlSettingsMenu;
 struct OptionSelector
 {
 	static sf::Font *font;	
@@ -213,6 +214,9 @@ struct PauseMenu
 	sf::Sprite bgSprite;
 	sf::Sprite selectSprite;
 	MainMenu *mainMenu;
+
+
+	ControlSettingsMenu *controlSettingsMenu;
 
 	
 	Tab currentTab;
