@@ -936,7 +936,7 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	assert(ts_thumb != NULL);
 
 	thumbnail.setTexture(*ts_thumb->texture);
-	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().width / 2);
+	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().height / 2);
 	
 
 	SetRectColor(levelBG, Color(100, 100, 100, 100));
@@ -954,6 +954,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 	//target->draw( paths, numLevels )
 	if (sec->IsUnlocked()) //just for testing
 	{
+		DrawStats(target);
 		target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
 	}
 	else
@@ -981,8 +982,11 @@ void MapSector::SetXCenter( float x )
 	int numUnlock = sec->numUnlockConditions;
 	for (int i = 0; i < numUnlock; ++i)
 	{
-		unlockCondText[i].setPosition(sectorStatsTopLeft.x + 30 + 50 * i, sectorStatsTopLeft.y + 30 + 50 * i);
+		unlockCondText[i].setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * i);
 	}
+
+	shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);
+	completionPercentText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 1);
 	
 	
 	UpdateNodePosition();
@@ -990,7 +994,8 @@ void MapSector::SetXCenter( float x )
 
 void MapSector::DrawStats(sf::RenderTarget *target)
 {
-	
+	target->draw(completionPercentText);
+	target->draw(shardsCollectedText);
 }
 
 void MapSector::DrawUnlockConditions(sf::RenderTarget *target)
@@ -1000,6 +1005,26 @@ void MapSector::DrawUnlockConditions(sf::RenderTarget *target)
 	{
 		target->draw(unlockCondText[i]);
 	}
+}
+
+void MapSector::UpdateStats()
+{
+	stringstream ss;
+
+	int numTotalShards = sec->GetNumTotalShards();
+	int numShardsCaptured = sec->GetNumShardsCaptured();
+
+	ss << numShardsCaptured << " / " << numTotalShards;
+
+	shardsCollectedText.setString(ss.str());
+
+	ss.str("");
+
+	int percent = floor(sec->GetCompletionPercentage());
+
+	ss << percent << "%";
+
+	completionPercentText.setString(ss.str());
 }
 
 void MapSector::UpdateNodePosition()
@@ -1251,6 +1276,15 @@ void MapSector::Init(Sector *m_sec)
 		unlockCondText[i].setCharacterSize(40);
 		unlockCondText[i].setFillColor(Color::White);
 	}
+	shardsCollectedText.setFont(ms->mainMenu->arial);
+	completionPercentText.setFont(ms->mainMenu->arial);
+
+	shardsCollectedText.setCharacterSize(40);
+	completionPercentText.setCharacterSize(40);
+	
+	shardsCollectedText.setFillColor(Color::White);
+	completionPercentText.setFillColor(Color::White);
+
 	nodes = new Vertex[numLevels * 4 * 3];
 	IntRect subNormal = ms->ts_node->GetSubRect(0);
 	IntRect subBonus = ms->ts_node->GetSubRect(16);
@@ -1285,5 +1319,6 @@ void MapSector::Init(Sector *m_sec)
 	SetXCenter(960);
 	UpdateNodes();
 	UpdateUnlockConditions();
+	UpdateStats();
 	//percentComplete = sec->GetCompletionPercentage();
 }

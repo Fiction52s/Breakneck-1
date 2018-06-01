@@ -51,6 +51,8 @@ struct MapSector
 	sf::Vertex statsBG[4];
 	sf::Vertex sectorStatsBG[4];
 	sf::Text *unlockCondText;
+	sf::Text shardsCollectedText;
+	sf::Text completionPercentText;
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	void SetXCenter( float x );
@@ -68,6 +70,7 @@ struct MapSector
 	void DrawStats(sf::RenderTarget *target);
 	void DrawUnlockConditions(sf::RenderTarget *target);
 	void UpdateUnlockConditions();
+	void UpdateStats();
 
 	
 	

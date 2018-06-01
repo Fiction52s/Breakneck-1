@@ -75,6 +75,8 @@ struct Level
 	bool shardsLoaded;
 
 	bool GetComplete();
+	int GetNumTotalShards();
+	int GetNumShardsCaptured();
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
 	void Reset();
@@ -98,6 +100,10 @@ struct Sector
 	int index;
 	World *world;
 	int numUnlockConditions;
+	void UpdateShardNameList();
+	int GetNumTotalShards();
+	int GetNumShardsCaptured();
+	std::list<std::string> shardNameList;
 	int *conditions;
 	int sectorType;
 	int *numTypesNeeded;

@@ -251,6 +251,49 @@ Sector::Sector()
 	numUnlockConditions = 99;
 }
 
+void Sector::UpdateShardNameList()
+{
+	std::map<std::string, int> shardNameMap;
+	for (int i = 0; i < numLevels; ++i)
+	{
+		for (auto it = levels[i].shardNameList.begin(); it != levels[i].shardNameList.end(); ++it)
+		{
+			if (shardNameMap.count((*it)) == 0)
+			{
+				shardNameMap[(*it)] = 0;
+			}
+			else
+			{
+				shardNameMap[(*it)]++;
+			}
+		}
+	}
+
+	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
+	{
+		shardNameList.push_back((*it).first);
+	}
+}
+
+int Sector::GetNumTotalShards()
+{
+	return shardNameList.size();
+}
+
+int Sector::GetNumShardsCaptured()
+{
+	int capCount = 0;
+	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+	{
+		ShardType st = Shard::GetShardType((*it));
+		if (world->sf->ShardIsCaptured(st))
+		{
+			++capCount;
+		}
+	}
+	return capCount;
+}
+
 float Sector::GetCompletionPercentage()
 {
 	float completePercent = 0;
@@ -354,6 +397,8 @@ bool Sector::Load(std::ifstream &is)
 	}
 	
 	assert(is.good());
+
+	UpdateShardNameList();
 
 	return true;
 }
@@ -460,15 +505,9 @@ void Level::UpdateShardNameList()
 	}
 }
 
-float Level::GetCapturedShardsPortion()
+int Level::GetNumShardsCaptured()
 {
 	int capCount = 0;
-
-	if (shardNameList.empty())
-	{
-		return 0.f;
-	}
-
 	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
 	{
 		ShardType st = Shard::GetShardType((*it));
@@ -477,8 +516,22 @@ float Level::GetCapturedShardsPortion()
 			++capCount;
 		}
 	}
+	return capCount;
+}
+
+float Level::GetCapturedShardsPortion()
+{
+	int capCount = GetNumShardsCaptured();
+
+	if (capCount == 0)
+		return 0;
 
 	return (float)capCount / shardNameList.size();
+}
+
+int Level::GetNumTotalShards()
+{
+	return shardNameList.size();
 }
 
 float Level::GetCompletionPercentage()
