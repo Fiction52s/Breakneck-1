@@ -853,9 +853,9 @@ void MapSelector::UpdateSprites()
 
 void MapSelector::Draw(sf::RenderTarget *target)
 {
-	target->draw(bottomBG);
+	//target->draw(bottomBG);
 	//target->draw(thumbnailBG);
-	target->draw(shardBG);
+	//target->draw(shardBG);
 	
 	if (state == S_SLIDINGLEFT || state == S_SLIDINGRIGHT)
 	{
@@ -908,8 +908,8 @@ void MapSelector::Update(ControllerState &curr,
 		else
 		{
 			float diff = 1920.f * (float)frame / slideDuration;
-			float oldCenter = sectorCenter.x - diff;
-			float newCenter = (1920.f + 960.f) - diff;
+			float oldCenter = sectorCenter.x + diff;
+			float newCenter = -960.f + diff;
 			sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
 			sectors[saSelector->currIndex]->SetXCenter(newCenter);
 		}
@@ -926,8 +926,8 @@ void MapSelector::Update(ControllerState &curr,
 		else
 		{
 			float diff = 1920.f * (float)frame / slideDuration;
-			float oldCenter = sectorCenter.x + diff;
-			float newCenter = -960.f + diff;
+			float oldCenter = sectorCenter.x - diff;
+			float newCenter = (1920.f + 960.f) - diff;
 			sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
 			sectors[saSelector->currIndex]->SetXCenter(newCenter);
 		}
