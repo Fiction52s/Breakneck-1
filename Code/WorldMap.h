@@ -31,7 +31,7 @@ struct SectorNode
 struct Sector;
 struct MapSector
 {
-	MapSector(MapSelector *ms);
+	MapSector(MapSelector *ms, int index);
 	Tileset *ts_thumb;
 	
 	void Init(Sector *sec);
@@ -44,10 +44,16 @@ struct MapSector
 	int selectedYIndex;
 	sf::Vertex *nodes;
 	sf::Vertex *paths;
+	int sectorIndex;
+	sf::Sprite thumbnail;
+	sf::Vertex levelBG[4];
+	sf::Vertex statsBG[4];
 	void Update(ControllerState &curr,
 		ControllerState &prev);
+	void SetXCenter( float x );
 	void Draw(sf::RenderTarget *target);
 	MapSelector *ms;
+	float xCenter;
 	void UpdateNodes();
 	bool HasTopBonus(int node);
 	bool HasBotBonus(int node);
@@ -61,6 +67,7 @@ struct MapSelector
 {
 	MapSelector( MainMenu *mm, sf::Vector2f &pos );
 	MapSector **sectors;
+	
 	int numSectors;
 	sf::Vector2f sectorCenter;
 	int currSectorIndex;
@@ -76,7 +83,7 @@ struct MapSelector
 	sf::Vertex *nodes;
 	sf::Vertex *paths;
 	//sf::Vertex thumbnail[4];
-	sf::Sprite thumbnail;
+	
 	//sf::RectangleShape bottomBGRect;
 	sf::Sprite bottomBG;
 	sf::Sprite thumbnailBG;
@@ -84,7 +91,6 @@ struct MapSelector
 	void Draw(sf::RenderTarget *target);
 	SingleAxisSelector *saSelector;
 	Tileset *ts_node;
-	bool sectorSelected;
 	int worldIndex;
 	//boost::thread *loadThread;
 };

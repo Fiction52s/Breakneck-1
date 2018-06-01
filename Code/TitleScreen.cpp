@@ -39,13 +39,22 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	energySpr.setColor(Color::Blue);
 
+	ts_kin = p_mainMenu->tilesetManager.GetTileset("Title/kintitle_128x256.png", 128, 256);
+	kinSpr.setTexture(*ts_kin->texture);
+	kinSpr.setTextureRect(ts_kin->GetSubRect(0));
+	kinSpr.setPosition(913, 710);
+
+	ts_kinHandEnergy = p_mainMenu->tilesetManager.GetTileset("Title/kintitle_energy_128x256.png", 128, 256);
+	kinHandEnergySpr.setTexture(*ts_kinHandEnergy->texture);
+	kinHandEnergySpr.setTextureRect(ts_kinHandEnergy->GetSubRect(0));
+	kinHandEnergySpr.setPosition(913, 710);
 
 	scrollingBackgrounds.push_back(
 		new ScrollingBackground(
-			p_mainMenu->tilesetManager.GetTileset("Title/titlecloud_1_1920x1080.png", 1920, 1080), 0, 1, -5 * 5));
+			p_mainMenu->tilesetManager.GetTileset("Title/titlecloud_1_1920x1080.png", 1920, 1080), 0, 1, 5 * 5));
 	scrollingBackgrounds.push_back(
 		new ScrollingBackground(
-			p_mainMenu->tilesetManager.GetTileset("Title/titlecloud_2_1920x1080.png", 1920, 1080), 0, 1, -10 * 5));
+			p_mainMenu->tilesetManager.GetTileset("Title/titlecloud_2_1920x1080.png", 1920, 1080), 0, 1, 10 * 5));
 
 	frame = 0;
 }
@@ -99,6 +108,12 @@ void TitleScreen::Update()
 
 	energySpr.setColor(c);
 
+	int kinMult = 6;
+	int kinFrame = (frame % (12 * kinMult)) / kinMult;
+	
+	kinSpr.setTextureRect(ts_kin->GetSubRect(kinFrame));
+	kinHandEnergySpr.setTextureRect(ts_kinHandEnergy->GetSubRect(kinFrame));
+
 	frame++;
 }
 
@@ -122,4 +137,8 @@ void TitleScreen::Draw(sf::RenderTarget *target)
 
 	target->draw(breakneckTitleSprite);
 	target->draw(emergenceTitleSprite);
+
+	
+	target->draw(kinHandEnergySpr);
+	target->draw(kinSpr);
 }

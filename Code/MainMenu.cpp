@@ -1240,6 +1240,17 @@ ControllerState &MainMenu::GetCurrInput( int index )
 	return currInput[index];
 }
 
+ControllerState &MainMenu::GetPrevInputUnfiltered(int index)
+{
+	return prevInputUnfiltered[index];
+}
+
+
+ControllerState &MainMenu::GetCurrInputUnfiltered(int index)
+{
+	return currInputUnfiltered[index];
+}
+
 
 
 
@@ -1357,8 +1368,8 @@ void MainMenu::Run()
 
 			for( int i = 0; i < 4; ++i )
 			{
-				ControllerState &prevInput = GetPrevInput( i );
-				ControllerState &currInput = GetCurrInput( i );
+				ControllerState &prevInput = GetPrevInputUnfiltered( i );
+				ControllerState &currInput = GetCurrInputUnfiltered( i );
 				GameController &c = GetController( i );
 
 				prevInput = currInput;

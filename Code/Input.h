@@ -201,12 +201,14 @@ public:
 	///Gets the state most recently queried from the
 	///controller. Used to update external ControllerStates
 	ControllerState & GetState();
+	ControllerState & GetUnfilteredState();
 	void SetFilter( XBoxButton *buttons );
 	int Pressed( XBoxButton b );
 
 	XBoxButton filter[ControllerSettings::Count];
 	//ControllerState & GetKeyboardState(); //also updates
 	ControllerState m_state;
+	ControllerState m_unfilteredState;
 	KeyboardSettings keySettings;
 	static float stickThresh;
 private:

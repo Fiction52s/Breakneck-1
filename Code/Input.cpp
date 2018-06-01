@@ -242,6 +242,7 @@ bool GameController::UpdateState()
 				m_state.rightStickPad += 1 << 1;
 		}
 		tempState = m_state;
+		m_unfilteredState = m_state;
 
 		tempState.A = Pressed( filter[ControllerSettings::JUMP] );
 		tempState.B = Pressed( filter[ControllerSettings::DASH] );
@@ -448,6 +449,12 @@ ControllerState & GameController::GetState()
 {
 	return m_state;
 }
+
+ControllerState & GameController::GetUnfilteredState()
+{
+	return m_unfilteredState;
+}
+
 
 bool GameController::IsConnected()
 {

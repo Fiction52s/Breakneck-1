@@ -14,6 +14,7 @@ struct ConfigData
 	int resolutionY;
 	int windowStyle;
 	int volume;
+	std::string defaultProfileName;
 };
 
 struct Config
@@ -37,6 +38,7 @@ struct Config
 
 	int resolutionX;
 	int resolutionY;
+	
 
 private:
 	bool doneSaving;

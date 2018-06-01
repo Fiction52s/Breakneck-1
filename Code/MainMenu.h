@@ -568,12 +568,18 @@ struct MainMenu
 	//ControllerState currInput;
 	//ControllerState prevInput;
 	ControllerState prevInput[4];
+	ControllerState prevInputUnfiltered[4];
 	ControllerState currInput[4];
+	ControllerState currInputUnfiltered[4];
 	ControllerState &GetPrevInput( int index );
 	ControllerState &GetCurrInput( int index );
+	ControllerState &GetPrevInputUnfiltered(int index);
+	ControllerState &GetCurrInputUnfiltered(int index);
 
 	ControllerState menuPrevInput;
 	ControllerState menuCurrInput;
+	ControllerState menuPrevInputUnfiltered;
+	ControllerState menuCurrInputUnfiltered;
 	
 	sf::Sprite titleBGSprite;
 	sf::Sprite breakneckTitleSprite;

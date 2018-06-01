@@ -701,6 +701,19 @@ void GameSession::RecordReplayEnemies()
 	}
 }
 
+void GameSession::UpdateInput()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		GetPrevInput(i) = GetCurrInput(i);
+		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+		GameController &con = GetController(i);
+		con.UpdateState();
+		GetCurrInput(i) = con.GetState();
+		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+	}
+}
+
 void GameSession::UpdateEffects()
 {
 	Enemy *curr;
@@ -4612,6 +4625,16 @@ ControllerState &GameSession::GetCurrInput( int index )
 	return mainMenu->GetCurrInput( index );
 }
 
+ControllerState &GameSession::GetPrevInputUnfiltered(int index)
+{
+	return mainMenu->GetPrevInput(index);
+}
+
+ControllerState &GameSession::GetCurrInputUnfiltered(int index)
+{
+	return mainMenu->GetCurrInput(index);
+}
+
 Actor *GameSession::GetPlayer( int index )
 {
 	return players[index];
@@ -5934,6 +5957,7 @@ int GameSession::Run()
 				for( int i = 0; i < 4; ++i )
 				{
 					GetPrevInput( i ) = GetCurrInput( i );
+					GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 				}
 			
 			
@@ -5945,10 +5969,11 @@ int GameSession::Run()
 				for( int i = 0; i < 4; ++i )
 				{
 					pTemp = GetPlayer(i);
-					if( pTemp != NULL )
-						pTemp->prevInput = GetCurrInput( i );
+					if (pTemp != NULL)
+					{
+						pTemp->prevInput = GetCurrInput(i);
+					}		
 				}
-				
 			}
 
 			for( int i = 0; i < 4; ++i )
@@ -5963,6 +5988,7 @@ int GameSession::Run()
 				{
 					con.UpdateState();
 					GetCurrInput( i ) = con.GetState();
+					GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
 				}
 			}
 
@@ -8088,16 +8114,11 @@ int GameSession::Run()
 
 			//savedinput when you enter pause
 
-			for( int i = 0; i < 4; ++i )
-			{
-				GetPrevInput( i ) = GetCurrInput( i );
-				GetController( i ).UpdateState();
-				GetCurrInput( i ) = GetController( i ).GetState();
-			}
+			UpdateInput();
 			
 			//cout << "up: " << (int)currInput.LUp() << "down: " << (int)currInput.LDown() <<
 			//	", left: " << (int)currInput.LLeft() << ", right: " << (int)currInput.LRight() << endl;
-			PauseMenu::UpdateResponse ur = pauseMenu->Update( GetCurrInput( 0 ), GetPrevInput( 0 ) );
+			PauseMenu::UpdateResponse ur = pauseMenu->Update( GetCurrInputUnfiltered( 0 ), GetPrevInputUnfiltered( 0 ) );
 			switch( ur )
 			{
 			case PauseMenu::R_NONE:
@@ -8365,6 +8386,7 @@ int GameSession::Run()
 				for( int i = 0; i < 4; ++i )
 				{
 					GetPrevInput( i ) = GetCurrInput( i );
+					GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 					GameController &con = GetController( i );
 					bool canControllerUpdate = con.UpdateState();
 					if( !canControllerUpdate )
@@ -8375,6 +8397,7 @@ int GameSession::Run()
 					{
 						con.UpdateState();
 						GetCurrInput( i ) = con.GetState();
+						GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
 					}
 				}
 
@@ -8595,15 +8618,7 @@ int GameSession::Run()
 			
 
 			
-
-			for( int i = 0; i < 4; ++i )
-			{
-				GetPrevInput( i ) = GetCurrInput( i );
-
-				GameController &con = GetController(i);
-				con.UpdateState();
-				GetCurrInput( i ) = con.GetState();
-			}
+				UpdateInput();
 
 			//if( GetCurrInput( 0 ).start )
 			//{

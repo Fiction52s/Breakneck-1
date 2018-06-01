@@ -715,7 +715,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	ControllerState &GetPrevInput( int index );
 	ControllerState &GetCurrInput( int index );
+	ControllerState &GetPrevInputUnfiltered(int index);
+	ControllerState &GetCurrInputUnfiltered(int index);
 	GameController &GetController( int index );
+	void UpdateInput();
 	void KeyboardUpdate( int index );
 	void ApplyToggleUpdates( int index );
 	//GameController &controller;

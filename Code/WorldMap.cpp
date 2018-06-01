@@ -786,6 +786,9 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	//nodeSelectorWidth = 400;
 	ts_node = mm->tilesetManager.GetTileset("Worldmap/nodes_48x48.png", 48, 48);
 	Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
+
+	
+
 	Tileset *ts_thumb = mm->tilesetManager.GetTileset("Worldmap/mapthumb_w1_1_256x256.png", 256, 256);
 	Tileset *ts_shard = mm->tilesetManager.GetTileset("Worldmap/worldmap_shards_272x256.png", 272, 256);
 	bottomBG.setTexture(*ts_bottom->texture);
@@ -800,13 +803,11 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	sectors = NULL;
 	//numSectors = 7;
 	//MapSector *ms;
-	sectorCenter = bottomBG.getPosition()
+	sectorCenter = Vector2f(960, 550);/*bottomBG.getPosition()
 	+ Vector2f(bottomBG.getLocalBounds().width / 2,
-		bottomBG.getLocalBounds().height / 2);
+		bottomBG.getLocalBounds().height / 2);*/
 
 	saSelector = NULL;
-
-	sectorSelected = false;
 	////bottomCenter.x = 0;
 	//sectors = new MapSector*[numSectors];
 	//for (int i = 0; i < numSectors; ++i)
@@ -846,7 +847,7 @@ void MapSelector::UpdateSprites()
 void MapSelector::Draw(sf::RenderTarget *target)
 {
 	target->draw(bottomBG);
-	target->draw(thumbnailBG);
+	//target->draw(thumbnailBG);
 	target->draw(shardBG);
 
 	sectors[saSelector->currIndex]->Draw(target);
@@ -863,31 +864,6 @@ void MapSelector::Update(ControllerState &curr,
 
 	int changed = saSelector->UpdateIndex(curr.leftShoulder, curr.rightShoulder);
 	sectors[saSelector->currIndex]->Update(curr, prev);
-
-	if (!sectorSelected)
-	{
-		if (curr.A && !prev.A)
-		{
-			sectorSelected = true;
-		}
-		else
-		{
-			
-		}
-	}
-	else
-	{
-		if (curr.B && !prev.B)
-		{
-			sectorSelected = false;
-		}
-		else
-		{
-			
-		}
-	}
-
-
 }
 
 void MapSelector::UpdateAllInfo()
@@ -913,16 +889,17 @@ void MapSelector::UpdateAllInfo()
 		
 		delete saSelector;
 		saSelector = NULL;
+		
 	}
 
 	if (sectors == NULL )
 	{
 		numSectors = w.numSectors;
 		sectors = new MapSector*[numSectors];
-
+		
 		for (int i = 0; i < numSectors; ++i)
 		{
-			mSector = new MapSector(this);
+			mSector = new MapSector(this, i);
 			//load sectors externally
 			sectors[i] = mSector;
 			mSector->Init(&(w.sectors[i]));
@@ -947,21 +924,48 @@ void MapSelector::UpdateAllInfo()
 
 }
 
-MapSector::MapSector(MapSelector *p_ms )
-	:numLevels(-1), ms(p_ms)
+MapSector::MapSector(MapSelector *p_ms, int index )
+	:numLevels(-1), ms(p_ms), sectorIndex( index )
 {
 	nodes = NULL;
 	saSelector = NULL;
+	stringstream ss;
+	ss.str("");
+	ss << "WorldMap/mapthumb_w" << ms->worldIndex + 1 << "_" << sectorIndex + 1 << "_256x256.png";
+	ts_thumb = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 256, 256);
+	assert(ts_thumb != NULL);
+
+	thumbnail.setTexture(*ts_thumb->texture);
+	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, 0);
+	
+
+	SetRectColor(levelBG, Color(100, 100, 100, 100));
+	SetRectColor(statsBG, Color(100, 100, 100, 100));
+
+	//SetXCenter(960);
 }
 
 void MapSector::Draw(sf::RenderTarget *target)
 {
+	target->draw(levelBG, 4, sf::Quads);
+	target->draw(statsBG, 4, sf::Quads);
 	//target->draw( paths, numLevels )
 	if (sec->IsUnlocked()) //just for testing
 	{
 		target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
 	}
+
+	target->draw(thumbnail);
 	
+}
+
+void MapSector::SetXCenter( float x )
+{
+	xCenter = x;
+	thumbnail.setPosition(Vector2f(x, ms->sectorCenter.y - 450));
+	SetRectCenter(levelBG, 700, 256, ms->sectorCenter);
+	SetRectCenter(statsBG, 300, 256, Vector2f(ms->sectorCenter.x, ms->sectorCenter.y + 300));
+	UpdateNodePosition();
 }
 
 void MapSector::UpdateNodePosition()
@@ -970,7 +974,7 @@ void MapSector::UpdateNodePosition()
 	int nodeSize = 48;
 	Vector2f left;
 
-	left = ms->sectorCenter;
+	left = Vector2f( xCenter, ms->sectorCenter.y );
 	if (numLevels % 2 == 0)
 	{
 		left.x -= pathLen / 2 + nodeSize + (pathLen + nodeSize) * (numLevels / 2 - 1);
@@ -1076,9 +1080,27 @@ void MapSector::UpdateNodes()
 		Vertex *n = (nodes + 1 * numLevels * 4 + i * 4);
 		Vertex *nTop = (nodes + 0 * numLevels * 4 + i * 4);
 		Vertex *nBot = (nodes + 2 * numLevels * 4 + i * 4);
+		if (HasTopBonus(i) && sec->levels[i].TopBonusUnlocked())
+		{
+			SetRectSubRect(nTop, ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
+			SetRectColor(nTop, Color(Color::White));
+		}
+		else
+		{
+			SetRectColor(nTop, Color(Color::Transparent));
+		}
+
+		if (HasBotBonus(i) && sec->levels[i].BottomBonusUnlocked())
+		{
+			SetRectSubRect(nBot, ms->ts_node->GetSubRect(GetNodeBonusIndexBot(i)));
+			SetRectColor(nBot, Color(Color::White));
+		}
+		else
+		{
+			SetRectColor(nBot, Color(Color::Transparent));
+		}
+
 		SetRectSubRect(n, ms->ts_node->GetSubRect(GetNodeSubIndex(i)));
-		SetRectSubRect(nTop, ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
-		SetRectSubRect(nBot, ms->ts_node->GetSubRect(GetNodeBonusIndexBot(i)));
 	}
 }
 
@@ -1092,11 +1114,26 @@ int MapSector::GetNodeSubIndex(int node)
 {
 	if (selectedYIndex == 1 && saSelector->currIndex == node)
 	{
-		return 1;
+		if (sec->levels[node].GetComplete())
+		{
+			return 1;
+		}
+		else
+		{
+			return 3;
+		}
+		
 	}
 	else
 	{
-		return 0;
+		if (sec->levels[node].GetComplete())
+		{
+			return 0;
+		}
+		else
+		{
+			return 2;
+		}
 	}
 
 	/*if (sec->levels[node].completed)
@@ -1187,7 +1224,6 @@ void MapSector::Init(Sector *m_sec)
 		nodes[numLevels * 4 * 2 + i * 4 + 2].color = Color::Yellow;
 		nodes[numLevels * 4 * 2 + i * 4 + 3].color = Color::Yellow;*/
 	}
-
-	UpdateNodePosition();
+	SetXCenter(960);
 	UpdateNodes();
 }

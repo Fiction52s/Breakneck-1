@@ -627,11 +627,8 @@ bool ControlProfileManager::LoadProfiles()
 	ControlProfile *def= new ControlProfile;
 	SetFilterDefault( def->filter );
 	def->hasXBoxFilter = true;
-	def->name = "KIN";
+	def->name = "KIN Default";
 	profiles.push_front( def );
-
-	
-
 }
 
 void ControlProfileManager::DebugPrint()

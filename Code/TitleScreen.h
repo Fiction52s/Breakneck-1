@@ -28,6 +28,10 @@ struct TitleScreen
 	sf::Sprite energySpr;
 	Tileset *ts_light[4];
 	sf::Sprite lightSpr[4];
+	sf::Sprite kinSpr;
+	Tileset *ts_kin;
+	sf::Sprite kinHandEnergySpr;
+	Tileset *ts_kinHandEnergy;
 	
 	Background *background;
 	

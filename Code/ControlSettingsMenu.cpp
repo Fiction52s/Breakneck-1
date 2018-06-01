@@ -171,7 +171,7 @@ void ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &p
 		UpdateXboxButtonIcons();
 	}
 	
-	if (!editMode && pSel->state == ProfileSelector::S_SELECTED && currInput.X && !prevInput.X)
+	if (!editMode && pSel->state == ProfileSelector::S_SELECTED && currInput.X && !prevInput.X && pSel->saSelector->currIndex > 2)
 	{
 		editMode = true;
 		SetGreyActionTiles(!editMode);

@@ -29,6 +29,7 @@ void ConfigData::SetToDefault()
 	resolutionY = 1080;
 	windowStyle = sf::Style::Fullscreen;
 	volume = 100;
+	defaultProfileName = "";
 }
 
 Config::Config()
@@ -117,6 +118,10 @@ void Config::Load()
 				is >> vol;
 				data.volume = vol;
 			}
+			else if (settingName == "defaultprofile")
+			{
+				is >> data.defaultProfileName;
+			}
 
 			int c = is.peek();
 			if( c == EOF )
@@ -158,8 +163,8 @@ void Config::Save()
 		of << "ResolutionX " << data.resolutionX << "\n";
 		of << "ResolutionY " << data.resolutionY << "\n";
 		of << "WindowMode " << data.GetWindowModeString() << "\n";
-		of << "Volume " << data.volume;// << "\n";
-
+		of << "Volume " << data.volume << "\n";
+		of << "DefaultProfile" << data.defaultProfileName;// << "\n";
 		of.close();
 	}
 	else
