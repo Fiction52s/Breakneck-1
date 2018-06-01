@@ -249,7 +249,6 @@ Sector::Sector()
 	numTypesNeeded = NULL;
 	sectorType = 100;
 	numUnlockConditions = 99;
-	
 }
 
 float Sector::GetCompletionPercentage()
@@ -368,13 +367,18 @@ Sector::~Sector()
 }
 
 
+bool Sector::IsConditionFulfilled(int index)
+{
+	int numTypeComplete = world->GetNumSectorTypeComplete(conditions[index]);
+	return (numTypeComplete >= numTypesNeeded[index]);
+}
+
 bool Sector::IsUnlocked()
 {
 	int numTypeComplete = -1;
 	for (int i = 0; i < numUnlockConditions; ++i)
 	{
-		numTypeComplete = world->GetNumSectorTypeComplete(conditions[i]);
-		if (numTypeComplete < numTypesNeeded[i])
+		if (!IsConditionFulfilled(i))
 		{
 			return false;
 		}
@@ -426,10 +430,14 @@ Level::Level( )
 {
 	SetComplete(false);
 	optionField.Reset();
+	shardsLoaded = false;
 }
 
-float Level::GetCapturedShardsPortion()
+void Level::UpdateShardNameList()
 {
+	if (shardsLoaded) return;
+
+	shardsLoaded = true;
 	ifstream is;
 	string file = "Maps/" + name + ".brknk";
 	is.open(file);
@@ -440,27 +448,37 @@ float Level::GetCapturedShardsPortion()
 
 		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
 
-		if (mh->numShards == 0)
-		{
-			return 1.f;
-		}
-
+		shardNameList.clear();
 		for (auto it = mh->shardNameList.begin(); it != mh->shardNameList.end(); ++it)
 		{
-			ShardType st = Shard::GetShardType((*it));
-			if (sec->world->sf->ShardIsCaptured(st))
-			{
-				++capCount;
-			}
+			shardNameList.push_back((*it));
 		}
-
-		return (float)capCount / mh->numShards;
 	}
 	else
 	{
 		assert(0);
-		return 0;
 	}
+}
+
+float Level::GetCapturedShardsPortion()
+{
+	int capCount = 0;
+
+	if (shardNameList.empty())
+	{
+		return 0.f;
+	}
+
+	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+	{
+		ShardType st = Shard::GetShardType((*it));
+		if (sec->world->sf->ShardIsCaptured(st))
+		{
+			++capCount;
+		}
+	}
+
+	return (float)capCount / shardNameList.size();
 }
 
 float Level::GetCompletionPercentage()
@@ -507,6 +525,9 @@ bool Level::Load(std::ifstream &is)
 {
 	is >> name;
 	optionField.Load(is);
+
+	UpdateShardNameList();
+
 	return true;
 }
 

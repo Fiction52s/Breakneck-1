@@ -936,12 +936,13 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	assert(ts_thumb != NULL);
 
 	thumbnail.setTexture(*ts_thumb->texture);
-	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, 0);
+	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().width / 2);
 	
 
 	SetRectColor(levelBG, Color(100, 100, 100, 100));
 	SetRectColor(statsBG, Color(100, 100, 100, 100));
-
+	SetRectColor(sectorStatsBG, Color(100, 100, 100, 100));
+	
 	//SetXCenter(960);
 }
 
@@ -949,10 +950,15 @@ void MapSector::Draw(sf::RenderTarget *target)
 {
 	target->draw(levelBG, 4, sf::Quads);
 	target->draw(statsBG, 4, sf::Quads);
+	target->draw(sectorStatsBG, 4, sf::Quads);
 	//target->draw( paths, numLevels )
 	if (sec->IsUnlocked()) //just for testing
 	{
 		target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
+	}
+	else
+	{
+		DrawUnlockConditions(target);
 	}
 
 	target->draw(thumbnail);
@@ -962,10 +968,38 @@ void MapSector::Draw(sf::RenderTarget *target)
 void MapSector::SetXCenter( float x )
 {
 	xCenter = x;
-	thumbnail.setPosition(Vector2f(x, ms->sectorCenter.y - 450));
+	thumbnail.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 325));
+
+	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 325);
+	Vector2f sectorStatsSize(256, 256);
+	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter );
 	SetRectCenter(levelBG, 700, 256, ms->sectorCenter);
-	SetRectCenter(statsBG, 300, 256, Vector2f(ms->sectorCenter.x, ms->sectorCenter.y + 300));
+	SetRectCenter(statsBG, 500, 256, Vector2f(x, ms->sectorCenter.y + 300));
+	
+	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x, sectorStatsCenter.y - sectorStatsSize.y);
+
+	int numUnlock = sec->numUnlockConditions;
+	for (int i = 0; i < numUnlock; ++i)
+	{
+		unlockCondText[i].setPosition(sectorStatsTopLeft.x + 30 + 50 * i, sectorStatsTopLeft.y + 30 + 50 * i);
+	}
+	
+	
 	UpdateNodePosition();
+}
+
+void MapSector::DrawStats(sf::RenderTarget *target)
+{
+	
+}
+
+void MapSector::DrawUnlockConditions(sf::RenderTarget *target)
+{
+	int numUnlock = sec->numUnlockConditions;
+	for (int i = 0; i < numUnlock; ++i)
+	{
+		target->draw(unlockCondText[i]);
+	}
 }
 
 void MapSector::UpdateNodePosition()
@@ -1146,6 +1180,22 @@ int MapSector::GetNodeSubIndex(int node)
 	}*/
 }
 
+void MapSector::UpdateUnlockConditions()
+{
+	int numUnlock = sec->numUnlockConditions;
+	stringstream ss;
+	for (int i = 0; i < numUnlock; ++i)
+	{
+		ss.str("");
+		int completeOfType = sec->world->GetNumSectorTypeComplete(sec->conditions[i]);
+		int numNeededOfType = sec->numTypesNeeded[i];
+		ss << completeOfType << " / " << numNeededOfType;
+		unlockCondText[i].setString(ss.str());
+	}
+}
+
+
+
 int MapSector::GetNodeBonusIndexTop(int node)
 {
 	if (selectedYIndex == 0 && saSelector->currIndex == node)
@@ -1193,6 +1243,14 @@ void MapSector::Init(Sector *m_sec)
 	if (nodes != NULL)
 		delete[] nodes;
 
+	int numUnlockConditions = sec->numUnlockConditions;
+	unlockCondText = new Text[numUnlockConditions];
+	for (int i = 0; i < numUnlockConditions; ++i)
+	{
+		unlockCondText[i].setFont(ms->mainMenu->arial);
+		unlockCondText[i].setCharacterSize(40);
+		unlockCondText[i].setFillColor(Color::White);
+	}
 	nodes = new Vertex[numLevels * 4 * 3];
 	IntRect subNormal = ms->ts_node->GetSubRect(0);
 	IntRect subBonus = ms->ts_node->GetSubRect(16);
@@ -1226,4 +1284,6 @@ void MapSector::Init(Sector *m_sec)
 	}
 	SetXCenter(960);
 	UpdateNodes();
+	UpdateUnlockConditions();
+	//percentComplete = sec->GetCompletionPercentage();
 }

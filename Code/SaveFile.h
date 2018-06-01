@@ -4,6 +4,8 @@
 #include <fstream>
 #include <SFML/Graphics.hpp>
 #include "ShardTypes.h"
+#include <list>
+#include <string>
 
 struct Sector;
 struct World;
@@ -67,7 +69,11 @@ struct Level
 	BitField optionField;
 	std::string name;
 	void SetComplete(bool comp);
+	void UpdateShardNameList();
 	float GetCapturedShardsPortion();
+	std::list<std::string> shardNameList;
+	bool shardsLoaded;
+
 	bool GetComplete();
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
@@ -97,8 +103,8 @@ struct Sector
 	int *numTypesNeeded;
 	void Save(std::ofstream &of);
 	bool Load(std::ifstream &is);
+	bool IsConditionFulfilled(int i);
 	bool IsComplete();
-	
 	bool IsUnlocked();
 	float GetCompletionPercentage();
 	std::map<int,Level> topBonuses;

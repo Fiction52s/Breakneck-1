@@ -33,6 +33,7 @@ struct MapSector
 {
 	MapSector(MapSelector *ms, int index);
 	Tileset *ts_thumb;
+	Tileset *ts_importantNodeIcons;
 	
 	void Init(Sector *sec);
 	Sector *sec;
@@ -48,18 +49,27 @@ struct MapSector
 	sf::Sprite thumbnail;
 	sf::Vertex levelBG[4];
 	sf::Vertex statsBG[4];
+	sf::Vertex sectorStatsBG[4];
+	sf::Text *unlockCondText;
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	void SetXCenter( float x );
 	void Draw(sf::RenderTarget *target);
+	
 	MapSelector *ms;
 	float xCenter;
+	float percentComplete;
 	void UpdateNodes();
 	bool HasTopBonus(int node);
 	bool HasBotBonus(int node);
 	int GetNodeSubIndex(int node);
 	int GetNodeBonusIndexTop(int node);
 	int GetNodeBonusIndexBot(int node);
+	void DrawStats(sf::RenderTarget *target);
+	void DrawUnlockConditions(sf::RenderTarget *target);
+	void UpdateUnlockConditions();
+
+	
 	
 };
 
