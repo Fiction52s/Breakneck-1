@@ -5,6 +5,7 @@
 #include <iostream>
 #include "MainMenu.h"
 #include "SaveFile.h"
+#include "Enemy_Shard.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -780,6 +781,7 @@ void WorldMap::Draw( RenderTarget *target )
 MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	:centerPos( pos )
 {
+	state = S_IDLE;
 	worldIndex = 0;
 	mainMenu = mm;
 	//numNodeColumns = 10;
@@ -787,7 +789,11 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	ts_node = mm->tilesetManager.GetTileset("Worldmap/nodes_48x48.png", 48, 48);
 	Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
 
-	
+	ts_shoulderIcons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
+	SetRectCenter(shoulderIcons, 128, 128, Vector2f(200, 200));
+	SetRectCenter(shoulderIcons + 4, 128, 128, Vector2f(1920 - 200, 200));
+	SetRectSubRect(shoulderIcons, ts_shoulderIcons->GetSubRect(6));
+	SetRectSubRect(shoulderIcons + 4, ts_shoulderIcons->GetSubRect(4));
 
 	Tileset *ts_thumb = mm->tilesetManager.GetTileset("Worldmap/mapthumb_w1_1_256x256.png", 256, 256);
 	Tileset *ts_shard = mm->tilesetManager.GetTileset("Worldmap/worldmap_shards_272x256.png", 272, 256);
@@ -808,6 +814,7 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 		bottomBG.getLocalBounds().height / 2);*/
 
 	saSelector = NULL;
+	slideDuration = 50;
 	////bottomCenter.x = 0;
 	//sectors = new MapSector*[numSectors];
 	//for (int i = 0; i < numSectors; ++i)
@@ -849,6 +856,15 @@ void MapSelector::Draw(sf::RenderTarget *target)
 	target->draw(bottomBG);
 	//target->draw(thumbnailBG);
 	target->draw(shardBG);
+	
+	if (state == S_SLIDINGLEFT || state == S_SLIDINGRIGHT)
+	{
+		sectors[saSelector->oldCurrIndex]->Draw(target);
+	}
+	else
+	{
+		target->draw(shoulderIcons, 8, sf::Quads, ts_shoulderIcons->texture);
+	}
 
 	sectors[saSelector->currIndex]->Draw(target);
 	//target->draw(thumbnail);
@@ -859,11 +875,65 @@ void MapSelector::Draw(sf::RenderTarget *target)
 void MapSelector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
-	bool left = curr.LLeft();
-	bool right = curr.LRight();
+	if (state == S_IDLE)
+	{
+		bool left = curr.LLeft();
+		bool right = curr.LRight();
 
-	int changed = saSelector->UpdateIndex(curr.leftShoulder, curr.rightShoulder);
-	sectors[saSelector->currIndex]->Update(curr, prev);
+		int changed = saSelector->UpdateIndex(curr.leftShoulder, curr.rightShoulder);
+
+		if (changed > 0)
+		{
+			state = S_SLIDINGRIGHT;
+			frame = 0;
+		}
+		else if (changed < 0)
+		{
+			state = S_SLIDINGLEFT;
+			frame = 0;
+		}
+		else
+		{
+			sectors[saSelector->currIndex]->Update(curr, prev);
+		}
+	}
+	else if (state == S_SLIDINGLEFT)
+	{
+		if (frame == slideDuration+1)
+		{
+			state = S_IDLE;
+			frame = 0;
+			//sectors[saSelector->currIndex]->SetXCenter(sectorCenter.x);
+		}
+		else
+		{
+			float diff = 1920.f * (float)frame / slideDuration;
+			float oldCenter = sectorCenter.x - diff;
+			float newCenter = (1920.f + 960.f) - diff;
+			sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
+			sectors[saSelector->currIndex]->SetXCenter(newCenter);
+		}
+		
+	}
+	else if (state == S_SLIDINGRIGHT)
+	{
+		if (frame == slideDuration+1)
+		{
+			state = S_IDLE;
+			frame = 0;
+			//sectors[saSelector->currIndex]->SetXCenter(sectorCenter.x);
+		}
+		else
+		{
+			float diff = 1920.f * (float)frame / slideDuration;
+			float oldCenter = sectorCenter.x + diff;
+			float newCenter = -960.f + diff;
+			sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
+			sectors[saSelector->currIndex]->SetXCenter(newCenter);
+		}
+		
+	}
+	++frame;
 }
 
 void MapSelector::UpdateAllInfo()
@@ -935,6 +1005,8 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	ts_thumb = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 256, 256);
 	assert(ts_thumb != NULL);
 
+	ts_shards = ms->mainMenu->tilesetManager.GetTileset("Menu/shards_48x48.png", 48, 48);
+
 	thumbnail.setTexture(*ts_thumb->texture);
 	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().height / 2);
 	
@@ -942,12 +1014,15 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	SetRectColor(levelBG, Color(100, 100, 100, 100));
 	SetRectColor(statsBG, Color(100, 100, 100, 100));
 	SetRectColor(sectorStatsBG, Color(100, 100, 100, 100));
+
+	//SetRectCenter( shoulderIcons, 
 	
 	//SetXCenter(960);
 }
 
 void MapSector::Draw(sf::RenderTarget *target)
 {
+	target->draw(sectorNameText);
 	target->draw(levelBG, 4, sf::Quads);
 	target->draw(statsBG, 4, sf::Quads);
 	target->draw(sectorStatsBG, 4, sf::Quads);
@@ -955,6 +1030,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 	if (sec->IsUnlocked()) //just for testing
 	{
 		DrawStats(target);
+		DrawLevelStats(target);
 		target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
 	}
 	else
@@ -966,18 +1042,28 @@ void MapSector::Draw(sf::RenderTarget *target)
 	
 }
 
+void MapSector::DrawLevelStats(sf::RenderTarget *target)
+{
+	target->draw(levelCollectedShards, 4 * 16, sf::Quads, ts_shards->texture);
+	target->draw(levelPercentCompleteText);
+}
+
 void MapSector::SetXCenter( float x )
 {
 	xCenter = x;
 	thumbnail.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 325));
-
+	sectorNameText.setPosition(x, 50);
 	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 325);
 	Vector2f sectorStatsSize(256, 256);
+
+	Vector2f levelStatsSize(500, 256);
+	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 300);
+	Vector2f levelStatsTopLeft = levelStatsCenter - Vector2f( levelStatsSize.x / 2, levelStatsSize.y / 2 );
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter );
 	SetRectCenter(levelBG, 700, 256, ms->sectorCenter);
-	SetRectCenter(statsBG, 500, 256, Vector2f(x, ms->sectorCenter.y + 300));
+	SetRectCenter(statsBG, levelStatsSize.x, levelStatsSize.y, levelStatsCenter );
 	
-	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x, sectorStatsCenter.y - sectorStatsSize.y);
+	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x/2, sectorStatsCenter.y - sectorStatsSize.y/2);
 
 	int numUnlock = sec->numUnlockConditions;
 	for (int i = 0; i < numUnlock; ++i)
@@ -987,7 +1073,25 @@ void MapSector::SetXCenter( float x )
 
 	shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);
 	completionPercentText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 1);
+
 	
+
+	Vector2f shardGridOffset;
+	Vector2f gridTopLeft = levelStatsTopLeft + shardGridOffset;
+	float gridSpacing = 20;
+
+	float gridTotalRight = gridTopLeft.x + (ts_shards->tileWidth * 4) + (gridSpacing * 3);
+	
+	for (int i = 0; i < 16; ++i)
+	{
+		SetRectCenter(levelCollectedShards + i * 4, 48, 48, Vector2f(gridTopLeft.x + (ts_shards->tileWidth + gridSpacing ) * (i % 4) + ts_shards->tileWidth / 2.f,
+			gridTopLeft.y + ( ts_shards->tileHeight + gridSpacing ) * (i / 4) + ts_shards->tileHeight / 2.f));
+	}
+
+	Vector2f levelStatsActualTopLeft(gridTotalRight, gridTopLeft.y);
+
+	levelPercentCompleteText.setPosition(levelStatsActualTopLeft + Vector2f(50, 50));
+
 	
 	UpdateNodePosition();
 }
@@ -1025,6 +1129,47 @@ void MapSector::UpdateStats()
 	ss << percent << "%";
 
 	completionPercentText.setString(ss.str());
+}
+
+void MapSector::UpdateLevelStats()
+{
+
+	for (int i = 0; i < 16; ++i)
+	{
+		levelCollectedShards[i*4+0].texCoords = Vector2f(0, 0);
+		levelCollectedShards[i * 4 + 1].texCoords = Vector2f(0, 0);
+		levelCollectedShards[i * 4 + 2].texCoords = Vector2f(0, 0);
+		levelCollectedShards[i * 4 + 3].texCoords = Vector2f(0, 0);
+		SetRectSubRect(levelCollectedShards + i * 4, ts_shards->GetSubRect(20)); 
+	}
+
+	int gridIndex = 0;
+	int uncaptured = 0;
+	auto &snList = sec->levels[saSelector->currIndex].shardNameList;
+	for (auto it = snList.begin(); it != snList.end(); ++it)
+	{
+		ShardType sType = Shard::GetShardType((*it));
+		if (sec->world->sf->ShardIsCaptured(sType))
+		{
+			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(sType));
+		}
+		else
+		{
+			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(40));
+		}
+		++gridIndex;
+	}
+
+	stringstream ss;
+	int percent = floor(sec->levels[saSelector->currIndex].GetCompletionPercentage());
+
+	ss << percent << "%";
+
+	levelPercentCompleteText.setString(ss.str());
+	/*for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+	{
+
+	}*/
 }
 
 void MapSector::UpdateNodePosition()
@@ -1067,6 +1212,11 @@ void MapSector::Update(ControllerState &curr,
 	bool right = curr.LRight();
 
 	int changed = saSelector->UpdateIndex(left, right);
+
+	if (changed != 0)
+	{
+		UpdateLevelStats();
+	}
 
 	int oldYIndex = selectedYIndex;
 
@@ -1258,6 +1408,11 @@ void MapSector::Init(Sector *m_sec)
 	sec = m_sec;
 	numLevels = sec->numLevels;
 
+	stringstream ss;
+	ss << "Sector " << sec->index+1;
+
+	sectorNameText.setString(ss.str());
+
 	int waitFrames[3] = { 30, 10, 5 };
 	int waitModeThresh[2] = { 2, 2 };
 
@@ -1284,6 +1439,17 @@ void MapSector::Init(Sector *m_sec)
 	
 	shardsCollectedText.setFillColor(Color::White);
 	completionPercentText.setFillColor(Color::White);
+	
+
+	levelPercentCompleteText.setFillColor(Color::White);
+	levelPercentCompleteText.setCharacterSize(40);
+	levelPercentCompleteText.setFont(ms->mainMenu->arial);
+
+	sectorNameText.setFillColor(Color::White);
+	sectorNameText.setCharacterSize(40);
+	sectorNameText.setFont(ms->mainMenu->arial);
+	sectorNameText.setOrigin(sectorNameText.getLocalBounds().width / 2, 0);
+	
 
 	nodes = new Vertex[numLevels * 4 * 3];
 	IntRect subNormal = ms->ts_node->GetSubRect(0);
@@ -1320,5 +1486,6 @@ void MapSector::Init(Sector *m_sec)
 	UpdateNodes();
 	UpdateUnlockConditions();
 	UpdateStats();
+	UpdateLevelStats();
 	//percentComplete = sec->GetCompletionPercentage();
 }

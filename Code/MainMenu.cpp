@@ -2708,7 +2708,7 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	for (int i = 0; i < numShards; ++i)
 	{
 		is >> temp;
-		//mh->shardNameList.push_back(temp);
+		mh->shardNameList.push_back(temp);
 	}
 
 

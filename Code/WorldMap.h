@@ -29,19 +29,28 @@ struct SectorNode
 };
 
 struct Sector;
+
+
+
 struct MapSector
 {
 	MapSector(MapSelector *ms, int index);
 	Tileset *ts_thumb;
 	Tileset *ts_importantNodeIcons;
 	
+	sf::Text sectorNameText;
+	int frame = 0;
+
 	void Init(Sector *sec);
 	Sector *sec;
 	void UpdateNodePosition();
 	//shard stuff
 	int numLevels;
 	void Load();
+
+	
 	SingleAxisSelector *saSelector;
+	sf::Vertex levelCollectedShards[4 * 16];
 	int selectedYIndex;
 	sf::Vertex *nodes;
 	sf::Vertex *paths;
@@ -53,11 +62,12 @@ struct MapSector
 	sf::Text *unlockCondText;
 	sf::Text shardsCollectedText;
 	sf::Text completionPercentText;
+	sf::Text levelPercentCompleteText;
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	void SetXCenter( float x );
 	void Draw(sf::RenderTarget *target);
-	
+	Tileset *ts_shards;
 	MapSelector *ms;
 	float xCenter;
 	float percentComplete;
@@ -67,6 +77,8 @@ struct MapSector
 	int GetNodeSubIndex(int node);
 	int GetNodeBonusIndexTop(int node);
 	int GetNodeBonusIndexBot(int node);
+	void UpdateLevelStats();
+	void DrawLevelStats(sf::RenderTarget *target);
 	void DrawStats(sf::RenderTarget *target);
 	void DrawUnlockConditions(sf::RenderTarget *target);
 	void UpdateUnlockConditions();
@@ -78,9 +90,22 @@ struct MapSector
 
 struct MapSelector
 {
+	enum State
+	{
+		S_SLIDINGLEFT,
+		S_SLIDINGRIGHT,
+		S_IDLE,
+	};
+
+	State state;
+	int slideDuration;
 	MapSelector( MainMenu *mm, sf::Vector2f &pos );
 	MapSector **sectors;
 	
+	
+	sf::Vertex shoulderIcons[8];
+	Tileset *ts_shoulderIcons;
+
 	int numSectors;
 	sf::Vector2f sectorCenter;
 	int currSectorIndex;
@@ -105,6 +130,8 @@ struct MapSelector
 	SingleAxisSelector *saSelector;
 	Tileset *ts_node;
 	int worldIndex;
+
+	int frame;
 	//boost::thread *loadThread;
 };
 

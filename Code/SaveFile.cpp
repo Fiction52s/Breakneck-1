@@ -572,6 +572,7 @@ void Level::Reset()
 {
 	SetComplete(false);
 	optionField = 0;
+	shardsLoaded = false;
 }
 
 bool Level::Load(std::ifstream &is)
