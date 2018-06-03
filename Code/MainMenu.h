@@ -436,6 +436,7 @@ struct MusicManager;
 struct FillRing;
 struct Level;
 struct TitleScreen;
+struct IntroMovie;
 
 
 struct MainMenu
@@ -479,6 +480,7 @@ struct MainMenu
 		TRANS_MAIN_TO_CREDITS,
 		CREDITS,
 		TRANS_CREDITS_TO_MAIN,
+		INTROMOVIE
 	};
 
 	enum SoundType
@@ -554,6 +556,7 @@ struct MainMenu
 	
 	//Tileset *ts_kinTitle[7];
 	TitleScreen *titleScreen;
+	IntroMovie *introMovie;
 
 	sf::Sprite splashSprite;
 	Tileset *ts_splashScreen;

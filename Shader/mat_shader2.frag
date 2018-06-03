@@ -4,6 +4,7 @@ uniform sampler2D u_texture;
 uniform sampler2D u_normals;   //normal map
 uniform sampler2D u_pattern;
 
+uniform vec4 skyColor;
 uniform vec2 topLeft;
 uniform float zoom;
 
@@ -94,56 +95,29 @@ LightSource lights[1];
 
 
 void main()
-{
-
-	//InitLights();
-	
+{	
 	float size = 512.0;
 	vec2 fc = gl_FragCoord.xy;
 	fc.y = 1.0 - fc.y;
 	fc = fc * vec2( 960, 540 ) / Resolution;
-	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
-	//vec2 pixelPos = vec2( fc.x / zoom, fc.y / zoom );
-	
+	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );	
 	
 	vec2 pos = mod( topLeft + pixelPos, size) / vec2( size );
-	//gl_FragColor = texture2D( u_texture, pos );
 	
 	vec4 finalfinal = vec4( 0.0, 0.0, 0.0, 0.0 );
 	
+	vec4 DiffuseColor;
 	
-	//if( numLightsOn == 0 )
-	{
-		//vec2 diff = topLeft - oldBotLeft;
-		//diff = normalize( diff );
-		//diff = diff / vec2( 3 );
-		vec2 pos2 = pos;
-		//pos2.x = pos2.x + diff.x;
-		//pos2.y = pos2.y + diff.y;
-		
-		pos2.x = pos2.x - .1;//playertest.x;
-		pos2.y = pos2.y + playertest.y;
-		pos2.x = float( pos2.x < 0 ) * 1.0 + pos2.x;
-		pos2.y = float( pos2.y < 0 ) * 1.0 + pos2.y;
-		
-		vec4 DiffuseColor;
-		
-		//int max = 5;
-		//for( int i = 0; i < max; i++ )
-		//{
-		//	float div = i / float(max);
-		//	DiffuseColor += texture2D(u_texture, pos * ( 1 - div ) + pos2 * div ) / vec4(max);
-		//}
-		 //= (texture2D(u_texture, pos) * vec4(.5) + texture2D(u_texture, pos2) * vec4(.5));
-		
-		DiffuseColor = texture2D(u_texture, pos );
-		
-		vec3 Ambient = AmbientColor.rgb * AmbientColor.a;
-		vec3 Intensity = Ambient;//.000001;
-		finalfinal = vec4( DiffuseColor.rgb * Intensity, DiffuseColor.a );
-	}
-	gl_FragColor =  gl_Color * finalfinal;//vec4(finalfinal, DiffuseColor.a);
+	DiffuseColor = texture2D(u_texture, pos );
 	
+	vec3 Ambient = AmbientColor.rgb * AmbientColor.a;
+	vec3 Intensity = Ambient;//.000001;
+	finalfinal = vec4( DiffuseColor.rgb * Intensity, DiffuseColor.a );
 	
+	finalfinal = gl_Color * finalfinal;
+	
+	finalfinal.rgb = vec3(.9) * finalfinal.rgb + vec3( .1 ) * skyColor.rgb;
+	
+	gl_FragColor = finalfinal;
 }
 

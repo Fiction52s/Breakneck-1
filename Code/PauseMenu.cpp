@@ -1187,7 +1187,7 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
 	shardMenu = new ShardMenu( mainMenu );
-
+	kinMenu = new KinMenu(mainMenu);
 	//resolution
 	//fullscreen
 	//vsync
@@ -1400,6 +1400,10 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	else if (currentTab == SHARDS)
 	{
 		shardMenu->Draw(target);
+	}
+	else if (currentTab == KIN)
+	{
+		kinMenu->Draw(target);
 	}
 }
 
@@ -1623,6 +1627,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	case KIN:
 		{
+			kinMenu->Update(currInput,prevInput);
 			break;
 		}
 	case SHARDS:
@@ -1971,3 +1976,124 @@ PauseMenu::UpdateResponse PauseMenu::UpdateInputOptions(
 }
 //using namespace std;
 //using namespace sf;
+
+
+KinMenu::KinMenu(MainMenu *p_mainMenu)
+	:mainMenu(p_mainMenu)
+{
+	Vector2f powersOffset(500, 632);
+	Vector2f powerPos(0, 0);
+	Vector2f powerSpacing(20, 20);
+	ts_powers = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
+	for (int i = 0; i < 9; ++i)
+	{
+		SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i));
+		//powerPos.x = powersOffset.x + (128 + powerSpacing.x) * (i%9) + 64;
+		powerPos.x = powersOffset.x + (128 + powerSpacing.x) * (i%8) + 64;
+		powerPos.y = powersOffset.y + (128 + powerSpacing.y) * (i / 8) + 64;
+		SetRectCenter(powerQuads + i * 4, 128, 128, powerPos);
+		
+	}
+
+	int waitFrames[3] = { 10, 5, 2 };
+	int waitModeThresh[2] = { 2, 2 };
+	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 9, 0);
+	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
+
+	ts_kin = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_400x836.png", 400, 836);
+	ts_aura1 = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1_400x836.png", 400, 836);
+	ts_aura2 = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2_400x836.png", 400, 836);
+	ts_kinBG = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_bg_400x836.png", 400, 836);
+
+	if (!scrollShader1.loadFromFile("Shader/menuauraslide.frag", sf::Shader::Fragment))
+	{
+		cout << "menu aura sliding SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0);
+	}
+	scrollShader1.setUniform("u_texture", sf::Shader::CurrentTexture);
+	scrollShader1.setUniform("blendColor", ColorGL( Color::Red ));
+
+	if (!scrollShader2.loadFromFile("Shader/menuauraslide.frag", sf::Shader::Fragment))
+	{
+		cout << "menu aura sliding SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0);
+	}
+	scrollShader2.setUniform("u_texture", sf::Shader::CurrentTexture);
+	scrollShader2.setUniform("blendColor", ColorGL(Color::Red));
+	Vector2f offset(72, 74);
+
+	kinSpr.setTexture(*ts_kin->texture);
+	aura1Spr.setTexture(*ts_aura1->texture);
+	aura2Spr.setTexture(*ts_aura2->texture);
+	kinBGSpr.setTexture(*ts_kinBG->texture);
+
+	//aura1Spr.setColor(Color::Red);
+	//aura2Spr.setColor(Color::Red);
+	kinBGSpr.setColor(Color::Red);
+
+	kinSpr.setPosition(offset);
+	aura1Spr.setPosition(offset);
+	aura2Spr.setPosition(offset);
+	kinBGSpr.setPosition(offset);
+
+	frame = 0;
+}
+
+void KinMenu::Update(ControllerState &curr, ControllerState &prev)
+{
+	int xchanged;
+	int ychanged;
+
+
+	xchanged = xSelector->UpdateIndex(curr.LLeft(), curr.LRight());
+	ychanged = ySelector->UpdateIndex(curr.LUp(), curr.LDown());
+
+
+	if (xchanged != 0 || ychanged != 0)
+	{
+		UpdateDescription();
+		UpdatePowerSprite();
+	}
+	powerDescriptions[0] = "jumping";
+	powerDescriptions[1] = "dashing";
+	powerDescriptions[2] = "attacking";
+	powerDescriptions[3] = "airdash";
+	powerDescriptions[4] = "ceiling cling";
+	powerDescriptions[5] = "scorpion bounce";
+	powerDescriptions[6] = "grind";
+	powerDescriptions[7] = "time slow bubble";
+	powerDescriptions[8] = "wires";
+
+	UpdateDescription();
+
+	int scrollFrames1 = 120;
+	int scrollFrames2 = 240;
+	float portion1 = ((float)(frame % scrollFrames1)) / scrollFrames1;
+	float portion2 = ((float)(frame % scrollFrames2)) / scrollFrames2;
+	scrollShader1.setUniform("quant", portion1);
+	scrollShader2.setUniform("quant", portion2);
+
+	++frame;
+}
+
+void KinMenu::UpdateDescription()
+{
+	int index = ySelector->currIndex + xSelector->currIndex * 9;
+	description.setString(powerDescriptions[index]);
+}
+
+void KinMenu::UpdatePowerSprite()
+{
+
+}
+
+void KinMenu::Draw(sf::RenderTarget *target)
+{
+	target->draw(kinBGSpr);
+	target->draw(aura1Spr, &scrollShader1);
+	target->draw(aura2Spr, &scrollShader2);
+	target->draw(kinSpr);
+
+	target->draw(powerQuads, 9 * 4, sf::Quads, ts_powers->texture);
+	target->draw(description);
+}

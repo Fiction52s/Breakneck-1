@@ -108,11 +108,46 @@ void TitleScreen::Update()
 
 	energySpr.setColor(c);
 
-	int kinMult = 6;
-	int kinFrame = (frame % (12 * kinMult)) / kinMult;
+	int kinMult = 5;
+	int hairAnimFrames = 12;
+	int waitFrames = 120;
+	int totalFrames = hairAnimFrames * 6 * kinMult + waitFrames * kinMult;
+	int kinFrame = (frame % totalFrames) / kinMult;
+	if (kinFrame < hairAnimFrames * 6)
+	{
+		int wind = 30;
+		if (kinFrame <= hairAnimFrames * 2)
+		{
+			wind = ((float)kinFrame / ( hairAnimFrames*2)) * wind;
+		}
+		else if (kinFrame < hairAnimFrames * 4)
+		{
+			
+		}
+		else
+		{
+			wind = wind - ((float)(kinFrame % ( hairAnimFrames*2))/ (hairAnimFrames*2)) * wind;
+		}
+		//cout << "wind: " << wind << endl;
+		auto it = scrollingBackgrounds.begin();
+		(*it)->scrollSpeedX = 5 * 5 + wind;
+		++it;
+		(*it)->scrollSpeedX = 10 * 5 + wind / 2;
+		int realKinFrame = kinFrame % hairAnimFrames;
+		kinSpr.setTextureRect(ts_kin->GetSubRect(realKinFrame));
+	}
+	else 
+	{
+		auto it = scrollingBackgrounds.begin();
+		(*it)->scrollSpeedX = 5 * 5;
+		++it;
+		(*it)->scrollSpeedX = 10 * 5;
+		kinSpr.setTextureRect(ts_kin->GetSubRect(0));
+	}
 	
-	kinSpr.setTextureRect(ts_kin->GetSubRect(kinFrame));
-	kinHandEnergySpr.setTextureRect(ts_kinHandEnergy->GetSubRect(kinFrame));
+	
+	
+	kinHandEnergySpr.setTextureRect(ts_kinHandEnergy->GetSubRect(kinFrame % 12));
 
 	frame++;
 }

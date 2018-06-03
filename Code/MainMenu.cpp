@@ -17,6 +17,7 @@
 #include "SaveMenuScreen.h"
 #include "PauseMenu.h"
 #include "TitleScreen.h"
+#include "IntroMovie.h"
 
 
 using namespace std;
@@ -531,6 +532,8 @@ MainMenu::MainMenu()
 	pauseMenu = new PauseMenu(this);
 
 	titleScreen = new TitleScreen(this);
+
+	introMovie = new IntroMovie;
 	
   	int wholeX = 1920;
 	int wholeY = 1080;
@@ -1925,8 +1928,10 @@ void MainMenu::Run()
 			}
 			case TRANS_SAVE_TO_WORLDMAP:
 				{
-					menuMode = WORLDMAP;
-					worldMap->testSelector->UpdateAllInfo();
+					menuMode = INTROMOVIE;
+					introMovie->Play();
+					//menuMode = WORLDMAP;
+					//worldMap->testSelector->UpdateAllInfo();
 					break;
 					//saveTexture->clear();
 					//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
@@ -2112,6 +2117,12 @@ void MainMenu::Run()
 				}*/
 				break;
 			}
+			case INTROMOVIE:
+			{
+				introMovie->Update();
+				break;
+			}
+				
 		}
 			
 
@@ -2269,6 +2280,9 @@ void MainMenu::Run()
 			multiLoadingScreen->Draw(preScreenTexture);
 			break;
 		}
+		case INTROMOVIE:
+			introMovie->Draw(preScreenTexture);
+			break;
 
 		}
 		//window->pushGLStates();

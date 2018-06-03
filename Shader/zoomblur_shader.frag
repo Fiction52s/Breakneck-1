@@ -6,29 +6,6 @@ uniform vec2 radial_origin;  // blur origin
 uniform vec2 radial_size;
 //varying vec2 uv;
 
-
-/*void main()
-{
-	vec2 TexCoord = vec2(gl_TexCoord[0].xy);
-	gl_FragColor = texture2D(zoomTex, TexCoord );//* texSize );
-}*/
-
-/*void main(void)
-{
-  vec2 TexCoord = vec2(gl_TexCoord[0].st) / texSize;//vec2(  gl_FragCoord.xy / texSize;//vec2(gl_TexCoord[0]);
-
-  vec4 SumColor = vec4(0.0, 0.0, 0.0, 0.0);
-  TexCoord += radial_size * 0.5 - radial_origin;
-
-  for (int i = 0; i < 12; i++) 
-  {
-    float scale = 1.0 - radial_blur * (float(i) / 11.0);
-    SumColor += texture2D(zoomTex, (TexCoord * scale + radial_origin) * texSize);
-  }
-
-  gl_FragColor = SumColor / 12.0;// * radial_bright;
-}*/
-
 //uniform sampler2D tex;
 //varying vec2 uv;
 const float sampleDist = 1.0;

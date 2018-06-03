@@ -1,4 +1,3 @@
-//uniform sampler2D u_texture;
 uniform vec4 shadowColor;
 uniform float alpha;
 

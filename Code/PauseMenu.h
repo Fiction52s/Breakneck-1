@@ -43,6 +43,7 @@ struct OptionSelector
 
 struct PauseMenu;
 struct MainMenu;
+struct SingleAxisSelector;
 struct OptionsMenu
 {
 
@@ -161,6 +162,37 @@ struct OptionsMenu
 	int moveDelayFramesSmall;
 };
 
+struct KinMenu
+{
+	SingleAxisSelector *xSelector;
+	SingleAxisSelector *ySelector;
+
+	MainMenu *mainMenu;
+	KinMenu(MainMenu *p_mainMenu);
+	sf::Vertex powerQuads[9 * 4];
+	Tileset *ts_powers;
+	Tileset *ts_kin;
+	Tileset *ts_aura1;
+	Tileset *ts_aura2;
+	Tileset *ts_kinBG;
+	int frame;
+	sf::Shader scrollShader1;
+	sf::Shader scrollShader2;
+	//sf::Shader scrollShader1;
+
+	sf::Sprite kinSpr;
+	sf::Sprite aura1Spr;
+	sf::Sprite aura2Spr;
+	sf::Sprite kinBGSpr;
+	void Update(ControllerState &curr,
+		ControllerState &prev);
+	void UpdateDescription();
+	void UpdatePowerSprite();
+	std::string powerDescriptions[9];
+	void Draw(sf::RenderTarget *target);
+	sf::Text description;
+};
+
 struct PauseMenu
 {
 	OptionsMenu *cOptions;
@@ -210,6 +242,7 @@ struct PauseMenu
 	GameSession *owner;
 
 	ShardMenu *shardMenu;
+	KinMenu *kinMenu;
 
 	sf::Sprite bgSprite;
 	sf::Sprite selectSprite;

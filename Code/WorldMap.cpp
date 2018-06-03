@@ -558,7 +558,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	case COLONY_TO_PLANET:
 	{
-		int limit = 20;//120 / 2;
+		int limit = 60;//120 / 2;
 		if (frame == limit)
 		{
 			state = PLANET;
@@ -571,7 +571,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			float a = frame / (float)(limit - 1);
 
-			int mLimit = 16 / 2;
+			int mLimit = 60;//16 / 2;
 			int mFrame = min(frame, mLimit);
 
 			float aMove = mFrame / (float)(mLimit - 1);
