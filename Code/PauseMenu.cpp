@@ -2004,6 +2004,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 	ts_aura1 = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1_400x836.png", 400, 836);
 	ts_aura2 = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2_400x836.png", 400, 836);
 	ts_kinBG = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_bg_400x836.png", 400, 836);
+	ts_veins = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_veins_400x836.png", 400, 836);
 
 	if (!scrollShader1.loadFromFile("Shader/menuauraslide.frag", sf::Shader::Fragment))
 	{
@@ -2011,7 +2012,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 		assert(0);
 	}
 	scrollShader1.setUniform("u_texture", sf::Shader::CurrentTexture);
-	scrollShader1.setUniform("blendColor", ColorGL( Color::Red ));
+	scrollShader1.setUniform("blendColor", ColorGL( Color::Cyan ));
 
 	if (!scrollShader2.loadFromFile("Shader/menuauraslide.frag", sf::Shader::Fragment))
 	{
@@ -2019,22 +2020,23 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 		assert(0);
 	}
 	scrollShader2.setUniform("u_texture", sf::Shader::CurrentTexture);
-	scrollShader2.setUniform("blendColor", ColorGL(Color::Red));
+	scrollShader2.setUniform("blendColor", ColorGL(Color::Cyan));
 	Vector2f offset(72, 74);
 
 	kinSpr.setTexture(*ts_kin->texture);
 	aura1Spr.setTexture(*ts_aura1->texture);
 	aura2Spr.setTexture(*ts_aura2->texture);
 	kinBGSpr.setTexture(*ts_kinBG->texture);
-
+	veinSpr.setTexture(*ts_veins->texture);
 	//aura1Spr.setColor(Color::Red);
 	//aura2Spr.setColor(Color::Red);
-	kinBGSpr.setColor(Color::Red);
+	kinBGSpr.setColor(Color::Cyan);
 
 	kinSpr.setPosition(offset);
 	aura1Spr.setPosition(offset);
 	aura2Spr.setPosition(offset);
 	kinBGSpr.setPosition(offset);
+	veinSpr.setPosition(offset);
 
 	frame = 0;
 }
@@ -2073,6 +2075,28 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 	scrollShader1.setUniform("quant", portion1);
 	scrollShader2.setUniform("quant", portion2);
 
+	int breatheFrames = 180;
+	int breatheWaitFrames = 120;
+	int bTotal = breatheFrames + breatheWaitFrames;
+	float halfBreathe = breatheFrames / 2;
+	int f = frame % (bTotal);
+	float alpha;
+	if (f <= halfBreathe)
+	{
+		alpha = f / halfBreathe;
+	}
+	else if( f <= breatheFrames )
+	{
+		f -= halfBreathe;
+		alpha = 1.f - f / halfBreathe;
+	}
+	else
+	{
+		alpha = 0;
+	}
+	cout << "alpha: " << alpha << endl;
+	veinSpr.setColor(Color(255, 255, 255, alpha * 100));
+
 	++frame;
 }
 
@@ -2093,6 +2117,7 @@ void KinMenu::Draw(sf::RenderTarget *target)
 	target->draw(aura1Spr, &scrollShader1);
 	target->draw(aura2Spr, &scrollShader2);
 	target->draw(kinSpr);
+	target->draw(veinSpr);
 
 	target->draw(powerQuads, 9 * 4, sf::Quads, ts_powers->texture);
 	target->draw(description);

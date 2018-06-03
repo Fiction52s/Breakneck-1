@@ -175,12 +175,14 @@ struct KinMenu
 	Tileset *ts_aura1;
 	Tileset *ts_aura2;
 	Tileset *ts_kinBG;
+	Tileset *ts_veins;
 	int frame;
 	sf::Shader scrollShader1;
 	sf::Shader scrollShader2;
 	//sf::Shader scrollShader1;
 
 	sf::Sprite kinSpr;
+	sf::Sprite veinSpr;
 	sf::Sprite aura1Spr;
 	sf::Sprite aura2Spr;
 	sf::Sprite kinBGSpr;

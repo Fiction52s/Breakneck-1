@@ -1928,10 +1928,10 @@ void MainMenu::Run()
 			}
 			case TRANS_SAVE_TO_WORLDMAP:
 				{
-					menuMode = INTROMOVIE;
-					introMovie->Play();
-					//menuMode = WORLDMAP;
-					//worldMap->testSelector->UpdateAllInfo();
+					//menuMode = INTROMOVIE;
+					//introMovie->Play();
+					menuMode = WORLDMAP;
+					worldMap->testSelector->UpdateAllInfo();
 					break;
 					//saveTexture->clear();
 					//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )

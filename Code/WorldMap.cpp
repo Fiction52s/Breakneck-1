@@ -95,19 +95,34 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	
 	ts_planet = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap.png", 1920, 1080); 
 	planetSpr.setTexture(*ts_planet->texture);
-	ts_colony[0] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w1.png", 1920, 1080);
 	planetSpr.setOrigin(planetSpr.getLocalBounds().width / 2, planetSpr.getLocalBounds().height / 2);
 	planetSpr.setPosition(960, 540);
+
+	ts_colony[0] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w1.png", 1920, 1080);
+	ts_colony[1] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w2.png", 1920, 1080);
+	ts_colony[2] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w3.png", 1920, 1080);
+	ts_colony[3] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w4.png", 1920, 1080);
+	ts_colony[4] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w5.png", 1920, 1080);
+	ts_colony[5] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w6.png", 1920, 1080);
+	ts_colony[6] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w7.png", 1920, 1080);
+	
 	zoomView.setCenter(960, 540);
 	zoomView.setSize(1920, 1080);
 
 	
-	colonySpr[0].setTexture(*ts_colony[0]->texture);
-	//colonySpr[0].setOrigin(colonySpr[0].getLocalBounds().width / 2, colonySpr[0].getLocalBounds().height / 2);
 	colonySpr[0].setPosition(1085, 331);
-	colonySpr[0].setScale(1.f / 8.f, 1.f / 8.f);
+	colonySpr[1].setPosition(1085, 331);
+	colonySpr[2].setPosition(1085, 331);
+	colonySpr[3].setPosition(1085, 331);
+	colonySpr[4].setPosition(1085, 331);
+	colonySpr[5].setPosition(1085, 331);
+	colonySpr[6].setPosition(1085, 331);
 
-	
+	for (int i = 0; i < 7; ++i)
+	{
+		colonySpr[i].setTexture(*ts_colony[i]->texture);
+		colonySpr[i].setScale(1.f / 8.f, 1.f / 8.f);
+	}
 
 	colonySelectSprite.setTexture( *ts_colonySelect->texture );
 	
@@ -752,7 +767,7 @@ void WorldMap::Draw( RenderTarget *target )
 	rt->setView(zoomView);
 	rt->draw(planetSpr);
 
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 7; ++i)
 	{
 		rt->draw(colonySpr[i]);
 	}
