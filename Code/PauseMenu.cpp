@@ -9,6 +9,7 @@
 #include "MusicSelector.h"
 #include "ControlSettingsMenu.h"
 #include "ControlProfile.h"
+#include "ColorShifter.h"
 
 using namespace sf;
 using namespace std;
@@ -2001,8 +2002,10 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
 
 	ts_kin = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_400x836.png", 400, 836);
-	ts_aura1 = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1_400x836.png", 400, 836);
-	ts_aura2 = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2_400x836.png", 400, 836);
+	ts_aura1A = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1a_400x836.png", 400, 836);
+	ts_aura1B = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1b_400x836.png", 400, 836);
+	ts_aura2A = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2a_400x836.png", 400, 836);
+	ts_aura2B = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2b_400x836.png", 400, 836);
 	ts_kinBG = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_bg_400x836.png", 400, 836);
 	ts_veins = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_veins_400x836.png", 400, 836);
 
@@ -2012,7 +2015,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 		assert(0);
 	}
 	scrollShader1.setUniform("u_texture", sf::Shader::CurrentTexture);
-	scrollShader1.setUniform("blendColor", ColorGL( Color::Cyan ));
+	scrollShader1.setUniform("blendColor", ColorGL( Color::White ));
 
 	if (!scrollShader2.loadFromFile("Shader/menuauraslide.frag", sf::Shader::Fragment))
 	{
@@ -2020,25 +2023,76 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 		assert(0);
 	}
 	scrollShader2.setUniform("u_texture", sf::Shader::CurrentTexture);
-	scrollShader2.setUniform("blendColor", ColorGL(Color::Cyan));
+	scrollShader2.setUniform("blendColor", ColorGL(Color::White));
 	Vector2f offset(72, 74);
 
 	kinSpr.setTexture(*ts_kin->texture);
-	aura1Spr.setTexture(*ts_aura1->texture);
-	aura2Spr.setTexture(*ts_aura2->texture);
-	kinBGSpr.setTexture(*ts_kinBG->texture);
+	aura1ASpr.setTexture(*ts_aura1A->texture);
+	aura1BSpr.setTexture(*ts_aura1B->texture);
+	aura2ASpr.setTexture(*ts_aura2A->texture);
+	aura2BSpr.setTexture(*ts_aura2B->texture);
 	veinSpr.setTexture(*ts_veins->texture);
-	//aura1Spr.setColor(Color::Red);
-	//aura2Spr.setColor(Color::Red);
-	kinBGSpr.setColor(Color::Cyan);
+
+	/*aura1ASpr.setColor(Color::Red);
+	aura1BSpr.setColor(Color::Green);
+	aura2ASpr.setColor(Color::Yellow);
+	aura2BSpr.setColor(Color::Magenta);*/
+	Image palette;
+	bool loadPalette = palette.loadFromFile("Menu/pause_kin_aura_color.png");
+	assert(loadPalette);
+
+	aura1AShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
+	aura1BShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
+	aura2AShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
+	aura2BShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
+	bgShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
+
+
+	bgShifter->SetColors(palette, 0);
+	aura1AShifter->SetColors(palette, 1);
+	aura1BShifter->SetColors(palette, 2);
+	aura2AShifter->SetColors(palette, 3);
+	aura2BShifter->SetColors(palette, 4);
+	/*aura1AShifter->SetColorIndex(0, Color::Red);
+	aura1AShifter->SetColorIndex(1, Color::Cyan);
+	aura1BShifter->SetColorIndex(0, Color::Yellow);
+	aura1BShifter->SetColorIndex(1, Color::White);
+	aura2AShifter->SetColorIndex(0, Color::Blue);
+	aura2AShifter->SetColorIndex(1, Color::Black );
+	aura2BShifter->SetColorIndex(0, Color::Green);
+	aura2BShifter->SetColorIndex(1, Color::Red);
+	bgShifter->SetColorIndex(0, Color::Magenta);
+	bgShifter->SetColorIndex(1, Color::Black);*/
+
+	aura1AShifter->Reset();
+	aura1BShifter->Reset();
+	aura2AShifter->Reset();
+	aura2BShifter->Reset();
+	bgShifter->Reset();
 
 	kinSpr.setPosition(offset);
-	aura1Spr.setPosition(offset);
-	aura2Spr.setPosition(offset);
-	kinBGSpr.setPosition(offset);
+	aura1ASpr.setPosition(offset);
+	aura1BSpr.setPosition(offset);
+	aura2ASpr.setPosition(offset);
+	aura2BSpr.setPosition(offset);
 	veinSpr.setPosition(offset);
 
+	
+	SetRectCenter(kinBG, aura1ASpr.getGlobalBounds().width, aura1ASpr.getGlobalBounds().height,
+		Vector2f(offset.x + 200, offset.y + 418));
+	//SetRectColor(kinBG, Color(Color::Cyan));
+
 	frame = 0;
+}
+
+KinMenu::~KinMenu()
+{
+	delete aura1AShifter;
+	delete aura1BShifter;
+	delete aura2AShifter;
+	delete aura2BShifter;
+
+	delete bgShifter;
 }
 
 void KinMenu::Update(ControllerState &curr, ControllerState &prev)
@@ -2094,8 +2148,17 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 	{
 		alpha = 0;
 	}
-	cout << "alpha: " << alpha << endl;
+	//cout << "alpha: " << alpha << endl;
 	veinSpr.setColor(Color(255, 255, 255, alpha * 100));
+
+	aura1AShifter->Update();
+	aura1BShifter->Update();
+	aura2AShifter->Update();
+	aura2BShifter->Update();
+	bgShifter->Update();
+	//Color c = aura1AShifter->GetCurrColor();
+	//cout << "c: " << c.a << ", " << c.g << ", " << c.b << endl;
+	
 
 	++frame;
 }
@@ -2113,9 +2176,16 @@ void KinMenu::UpdatePowerSprite()
 
 void KinMenu::Draw(sf::RenderTarget *target)
 {
-	target->draw(kinBGSpr);
-	target->draw(aura1Spr, &scrollShader1);
-	target->draw(aura2Spr, &scrollShader2);
+	SetRectColor(kinBG, bgShifter->GetCurrColor());
+	target->draw(kinBG, 4, sf::Quads );
+	scrollShader1.setUniform("blendColor", ColorGL(aura1AShifter->GetCurrColor()));
+	target->draw(aura1ASpr, &scrollShader1);
+	scrollShader1.setUniform("blendColor", ColorGL(aura1BShifter->GetCurrColor()));
+	target->draw(aura1BSpr, &scrollShader1);
+	scrollShader2.setUniform("blendColor", ColorGL(aura2AShifter->GetCurrColor()));
+	target->draw(aura2ASpr, &scrollShader2);
+	scrollShader2.setUniform("blendColor", ColorGL(aura2BShifter->GetCurrColor()));
+	target->draw(aura2BSpr, &scrollShader2);
 	target->draw(kinSpr);
 	target->draw(veinSpr);
 

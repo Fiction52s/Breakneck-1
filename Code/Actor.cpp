@@ -107,7 +107,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[EXIT] = owner->GetTileset("Kin/exit_64x128.png", 64, 128, skin);
 	tileset[EXITWAIT] = NULL;
 	tileset[GRAVREVERSE] = owner->GetTileset("Kin/grav_64x64.png", 64, 64, skin);
-	tileset[RIDESHIP] = owner->GetTileset("Kin/dive_80x80.png", 80, 80, skin);
+	tileset[RIDESHIP] = owner->GetTileset("Kin/dive_64x64.png", 64, 64, skin);
 	tileset[SKYDIVE] = owner->GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
 	tileset[SKYDIVETOFALL] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
 	tileset[WAITFORSHIP] = owner->GetTileset("Kin/shipjump_64x64.png", 64, 64, skin);

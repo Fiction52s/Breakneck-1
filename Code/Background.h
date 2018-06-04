@@ -6,6 +6,8 @@
 struct GameSession;
 struct MainMenu;
 
+
+
 struct Background
 {
 	Background( GameSession *owner, int envLevel, int envType);

@@ -51,7 +51,8 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	shipSprite.setScale(.5, .5);
 	//shipSprite.setOrigin(560, 700);
 	//shipSprite.setOrigin(960, 700);
-	shipSprite.setOrigin(960 / 2, 700);
+	//shipSprite.setOrigin(960 / 2, 700);
+	shipSprite.setOrigin(470, 425);
 }
 
 bool ShipExitSeq::Update()

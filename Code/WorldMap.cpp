@@ -110,13 +110,13 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	zoomView.setSize(1920, 1080);
 
 	
-	colonySpr[0].setPosition(1085, 331);
-	colonySpr[1].setPosition(1085, 331);
-	colonySpr[2].setPosition(1085, 331);
-	colonySpr[3].setPosition(1085, 331);
-	colonySpr[4].setPosition(1085, 331);
-	colonySpr[5].setPosition(1085, 331);
-	colonySpr[6].setPosition(1085, 331);
+	colonySpr[0].setPosition(1087, 331);
+	colonySpr[1].setPosition(1087, 614);
+	colonySpr[2].setPosition(842, 756);
+	colonySpr[3].setPosition(595, 614);
+	colonySpr[4].setPosition(595, 331);
+	colonySpr[5].setPosition(841, 189);
+	colonySpr[6].setPosition(841, 473);
 
 	for (int i = 0; i < 7; ++i)
 	{
