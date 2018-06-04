@@ -52,8 +52,10 @@ struct MapSector
 	SingleAxisSelector *saSelector;
 	sf::Vertex levelCollectedShards[4 * 16];
 	int selectedYIndex;
-	sf::Vertex *nodes;
-	sf::Vertex *paths;
+	sf::Sprite *topBonusNodes;
+	sf::Sprite *botBonusNodes;
+	sf::Sprite *nodes;
+	sf::Sprite *paths;
 	int sectorIndex;
 	sf::Sprite thumbnail;
 	sf::Vertex levelBG[4];
@@ -118,8 +120,10 @@ struct MapSelector
 	void UpdateSprites();
 	void Update(ControllerState &curr,
 		ControllerState &prev);
-	sf::Vertex *nodes;
-	sf::Vertex *paths;
+	//sf::Sprite *nodes;
+	//sf::Sprite *paths;
+	//sf::Vertex *nodes;
+	//sf::Vertex *paths;
 	//sf::Vertex thumbnail[4];
 	
 	//sf::RectangleShape bottomBGRect;

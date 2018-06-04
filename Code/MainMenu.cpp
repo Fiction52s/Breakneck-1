@@ -1903,6 +1903,8 @@ void MainMenu::Run()
 			{
 				menuMode = SAVEMENU;
 				saveMenu->Reset();
+				//worldMap->Reset( );
+				//worldMap->Update( currInput, prevInput );
 				/*if (slideCurrFrame > numSlideFrames)
 				{
 					
@@ -2219,6 +2221,7 @@ void MainMenu::Run()
 		case TRANS_MAIN_TO_SAVE:
 		{
 			preScreenTexture->setView(v);
+			worldMap->Draw(preScreenTexture);
 			saveMenu->Draw(preScreenTexture);
 			break;
 		}

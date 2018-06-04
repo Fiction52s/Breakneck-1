@@ -1046,7 +1046,13 @@ void MapSector::Draw(sf::RenderTarget *target)
 	{
 		DrawStats(target);
 		DrawLevelStats(target);
-		target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
+		for (int i = 0; i < numLevels; ++i)
+		{
+			target->draw(topBonusNodes[i]);
+			target->draw(nodes[i]);
+			target->draw(botBonusNodes[i]);
+		}
+		//target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
 	}
 	else
 	{
@@ -1212,7 +1218,19 @@ void MapSector::UpdateNodePosition()
 		for (int j = 0; j < 3; ++j)
 		{
 			nodePos.y = ms->sectorCenter.y + (j - 1) * (pathLen + nodeSize);
-			SetRectCenter((nodes + numLevels * j * 4 + i * 4), nodeSize, nodeSize, nodePos);
+			if (j == 0)
+			{
+				topBonusNodes[i].setPosition(nodePos);
+			}
+			else if (j == 1)
+			{
+				nodes[i].setPosition(nodePos);
+			}
+			else if (j == 2)
+			{
+				botBonusNodes[i].setPosition(nodePos);
+			}
+			//SetRectCenter((nodes + numLevels * j * 4 + i * 4), nodeSize, nodeSize, nodePos);
 		}
 		nodePos.x += pathLen + nodeSize;
 	}
@@ -1301,30 +1319,34 @@ void MapSector::UpdateNodes()
 {
 	for (int i = 0; i < numLevels; ++i)
 	{
-		Vertex *n = (nodes + 1 * numLevels * 4 + i * 4);
-		Vertex *nTop = (nodes + 0 * numLevels * 4 + i * 4);
-		Vertex *nBot = (nodes + 2 * numLevels * 4 + i * 4);
+		//Vertex *n = (nodes + 1 * numLevels * 4 + i * 4);
+		//Vertex *nTop = (nodes + 0 * numLevels * 4 + i * 4);
+		//Vertex *nBot = (nodes + 2 * numLevels * 4 + i * 4);
 		if (HasTopBonus(i) && sec->levels[i].TopBonusUnlocked())
 		{
-			SetRectSubRect(nTop, ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
-			SetRectColor(nTop, Color(Color::White));
+			//SetRectSubRect(nTop, ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
+			//SetRectColor(nTop, Color(Color::White));
+			topBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
+			topBonusNodes[i].setColor(Color::White);
 		}
 		else
 		{
-			SetRectColor(nTop, Color(Color::Transparent));
+			topBonusNodes[i].setColor(Color::Transparent);
 		}
 
 		if (HasBotBonus(i) && sec->levels[i].BottomBonusUnlocked())
 		{
-			SetRectSubRect(nBot, ms->ts_node->GetSubRect(GetNodeBonusIndexBot(i)));
-			SetRectColor(nBot, Color(Color::White));
+			botBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(GetNodeBonusIndexBot(i)));
+			
+			botBonusNodes[i].setColor(Color::White);
 		}
 		else
 		{
-			SetRectColor(nBot, Color(Color::Transparent));
+			botBonusNodes[i].setColor(Color::Transparent);
 		}
 
-		SetRectSubRect(n, ms->ts_node->GetSubRect(GetNodeSubIndex(i)));
+		nodes[i].setTextureRect(ms->ts_node->GetSubRect(GetNodeSubIndex(i)));
+		//SetRectSubRect(n, ms->ts_node->GetSubRect(GetNodeSubIndex(i)));
 	}
 }
 
@@ -1336,6 +1358,7 @@ void MapSector::Load()
 
 int MapSector::GetNodeSubIndex(int node)
 {
+	return 0;
 	if (selectedYIndex == 1 && saSelector->currIndex == node)
 	{
 		if (sec->levels[node].GetComplete())
@@ -1466,37 +1489,23 @@ void MapSector::Init(Sector *m_sec)
 	sectorNameText.setOrigin(sectorNameText.getLocalBounds().width / 2, 0);
 	
 
-	nodes = new Vertex[numLevels * 4 * 3];
-	IntRect subNormal = ms->ts_node->GetSubRect(0);
-	IntRect subBonus = ms->ts_node->GetSubRect(16);
+	nodes = new Sprite[numLevels];
+	topBonusNodes = new Sprite[numLevels];
+	botBonusNodes = new Sprite[numLevels];
 
 	for (int i = 0; i < numLevels; ++i)
 	{
-
-		/*nodes[i * 4 + 0].color = Color::Red;
-		nodes[i * 4 + 1].color = Color::Red;
-		nodes[i * 4 + 2].color = Color::Red;
-		nodes[i * 4 + 3].color = Color::Red;*/
+		nodes[i].setTexture(*ms->ts_node->texture);
+		nodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
+		nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
+		topBonusNodes[i].setTexture(*ms->ts_node->texture);
+		topBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
+		topBonusNodes[i].setOrigin(topBonusNodes[i].getLocalBounds().width / 2, topBonusNodes[i].getLocalBounds().height / 2);
+		botBonusNodes[i].setTexture(*ms->ts_node->texture);
+		botBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
+		botBonusNodes[i].setOrigin(botBonusNodes[i].getLocalBounds().width / 2, botBonusNodes[i].getLocalBounds().height / 2);
 	}
 
-	for (int i = 0; i < numLevels; ++i)
-	{
-		//SetRectSubRect((nodes + i * 4), subBonus);
-		//SetRectSubRect((nodes + numLevels * 4 + i * 4), subNormal);
-		//SetRectSubRect((nodes + numLevels * 8 + i * 4), subBonus);
-		/*nodes[numLevels * 4 + i * 4 + 0].color = Color::Blue;
-		nodes[numLevels * 4 + i * 4 + 1].color = Color::Blue;
-		nodes[numLevels * 4 + i * 4 + 2].color = Color::Blue;
-		nodes[numLevels * 4 + i * 4 + 3].color = Color::Blue;*/
-	}
-
-	for (int i = 0; i < numLevels; ++i)
-	{
-		/*nodes[numLevels * 4 * 2 + i * 4 + 0].color = Color::Yellow;
-		nodes[numLevels * 4 * 2 + i * 4 + 1].color = Color::Yellow;
-		nodes[numLevels * 4 * 2 + i * 4 + 2].color = Color::Yellow;
-		nodes[numLevels * 4 * 2 + i * 4 + 3].color = Color::Yellow;*/
-	}
 	SetXCenter(960);
 	UpdateNodes();
 	UpdateUnlockConditions();
