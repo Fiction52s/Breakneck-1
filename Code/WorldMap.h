@@ -183,7 +183,7 @@ struct WorldMap
 	sf::Sprite colonySelectSprite;
 
 	Tileset *ts_asteroids[4];
-	sf::Sprite asteroidSpr[4];
+	sf::Vertex asteroidQuads[4*4];
 	sf::Shader asteroidShader;
 	int asteroidFrame;
 

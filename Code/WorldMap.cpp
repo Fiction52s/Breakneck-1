@@ -113,8 +113,16 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	for (int i = 0; i < 4; ++i)
 	{
-		asteroidSpr[i].setTexture(*ts_asteroids[i]->texture);
+		IntRect ir = ts_asteroids[i]->GetSubRect(0);
+		ir.width *= 3;
+		SetRectSubRect(asteroidQuads + i * 4, ir);
+		SetRectCenter(asteroidQuads + i * 4, ir.width, ir.height, Vector2f(960, 540));
+		//SetRectColor(asteroidQuads + i * 4, Color(Color::Red));
 	}
+	/*for (int i = 0; i < 4; ++i)
+	{
+		asteroidSpr[i].setTexture(*ts_asteroids[i]->texture);
+	}*/
 
 	if (!asteroidShader.loadFromFile("Shader/menuasteroid.frag", sf::Shader::Fragment))
 	{
@@ -789,27 +797,40 @@ void WorldMap::Draw( RenderTarget *target )
 	rt->setView(uiView);
 	rt->draw(spaceSpr);
 
-	int scrollSeconds[] = { 120, 140, 180, 400 };
-	float astFactor[] = { .3, .5, 1.5f, 2.f };
+	int scrollSeconds[] = { 400, 180, 140, 120 };
+	float astFactor[] = { .1f, .3f, 1.5f, 2.f };
 
-	rt->draw(asteroidSpr[0]);
-	rt->draw(asteroidSpr[1]);
+	//rt->draw(asteroidSpr[0]);
+	//rt->draw(asteroidSpr[1]);
 
 	float z = zoomView.getSize().x / 1920.f;
 	View vvv = zoomView;
 
+	RenderStates rs;
+
+	rs.shader = &asteroidShader;
+		
+
 	for (int i = 0; i < 2; ++i)
 	{
+		rs.texture = ts_asteroids[i]->texture;
 		float aZ = 1.f - z;
 		aZ *= astFactor[i];
 		aZ = 1.f - aZ;
-
+		//float aZ = z * astFactor[i];
+		assert(aZ <= 1.f);
 		if (aZ > 0)
 		{
+			float xDiff = zoomView.getCenter().x - 960;
+			float yDiff = zoomView.getCenter().y - 540;
+			xDiff *= 1.f - aZ;
+			yDiff *= 1.f - aZ;
 			vvv.setSize(aZ * 1920.f, aZ * 1080.f);
+			vvv.setCenter(960 + xDiff, 540 + yDiff);
 			rt->setView(vvv);
-			asteroidShader.setUniform("quant", (asteroidFrame % (scrollSeconds[i] * 60)) / (float)(scrollSeconds[i] * 60));
-			rt->draw(asteroidSpr[i], &asteroidShader);
+			asteroidShader.setUniform("quant", -(asteroidFrame % (scrollSeconds[i] * 60)) / (float)(scrollSeconds[i] * 60));
+			rt->draw(asteroidQuads + i * 4, 4, sf::Quads, rs);
+			//rt->draw(asteroidSpr[i], &asteroidShader);
 		}
 	}
 
@@ -821,21 +842,32 @@ void WorldMap::Draw( RenderTarget *target )
 	{
 		rt->draw(colonySpr[i]);
 	}
-	
+
 	for (int i = 2; i < 4; ++i)
 	{
+		rs.texture = ts_asteroids[i]->texture;
+
 		float aZ = 1.f - z;
 		aZ *= astFactor[i];
 		aZ = 1.f - aZ;
-
+		assert(aZ <= 1.f);
 		if (aZ > 0)
 		{
+			float xDiff = zoomView.getCenter().x - 960;
+			float yDiff = zoomView.getCenter().y - 540;
+			xDiff *= 1.f - aZ;
+			yDiff *= 1.f - aZ;
+
+			vvv.setCenter(960 + xDiff, 540 + yDiff);
 			vvv.setSize(aZ * 1920.f, aZ * 1080.f);
+
 			rt->setView(vvv);
 			asteroidShader.setUniform("quant", (asteroidFrame % (scrollSeconds[i] * 60)) / (float)(scrollSeconds[i] * 60));
-			rt->draw(asteroidSpr[i] , &asteroidShader);
+			rt->draw(asteroidQuads + i * 4, 4, sf::Quads, rs);
+			//rt->draw(asteroidSpr[i] , &asteroidShader);
 		}
 	}
+
 	//rt->draw(asteroidSpr[2]);
 	//asteroidSpr[2].setScale(5.f, 5.f);
 	//asteroidSpr[3].setScale(5.f, 5.f);
