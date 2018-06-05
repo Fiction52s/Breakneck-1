@@ -106,11 +106,29 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	ts_colony[5] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w6.png", 1920, 1080);
 	ts_colony[6] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w7.png", 1920, 1080);
 	
+	ts_asteroids[0] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
+	ts_asteroids[1] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
+	ts_asteroids[2] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
+	ts_asteroids[3] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
+
+	for (int i = 0; i < 4; ++i)
+	{
+		asteroidSpr[i].setTexture(*ts_asteroids[i]->texture);
+	}
+
+	if (!asteroidShader.loadFromFile("Shader/menuasteroid.frag", sf::Shader::Fragment))
+	{
+		cout << "asteroid SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0);
+	}
+	asteroidShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+
 	zoomView.setCenter(960, 540);
 	zoomView.setSize(1920, 1080);
 
 	
 	colonySpr[0].setPosition(1087, 331);
+	//colonySpr[0].setPosition(841, 473);
 	colonySpr[1].setPosition(1087, 614);
 	colonySpr[2].setPosition(842, 756);
 	colonySpr[3].setPosition(595, 614);
@@ -218,6 +236,7 @@ void WorldMap::Reset( SaveFile *sf )
 	fontHeight = 24;
 	state = SPACE;
 	frame = 0;
+	asteroidFrame = 0;
 
 	if( sf != NULL )
 	{
@@ -429,6 +448,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	{
 	case SPACE:
 		{
+			
 			/*if( frame == trans )
 			{
 				state = SPACE_TO_PLANET;
@@ -644,6 +664,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	}
 
+	
 
 	switch( state )
 	{
@@ -753,7 +774,11 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	}
 	}
+
+
+
 	++frame;
+	++asteroidFrame;
 }
 
 void WorldMap::Draw( RenderTarget *target )
@@ -764,13 +789,73 @@ void WorldMap::Draw( RenderTarget *target )
 	rt->setView(uiView);
 	rt->draw(spaceSpr);
 
+	rt->draw(asteroidSpr[0]);
+	rt->draw(asteroidSpr[3]);
+
 	rt->setView(zoomView);
+
+	
+	
+
 	rt->draw(planetSpr);
+
+	
 
 	for (int i = 0; i < 7; ++i)
 	{
 		rt->draw(colonySpr[i]);
 	}
+
+
+	int scrollSeconds[] = { 60, 45, 60, 60 };
+	float astFactor[] = { 1.5, 1.5f, 2.f, 1.f };
+	float z = zoomView.getSize().x / 1920.f;
+	View vvv = zoomView;
+	for (int i = 1; i < 3; ++i)
+	{
+		float aZ = 1.f - z;
+		aZ *= astFactor[i];
+		aZ = 1.f - aZ;
+
+		if (aZ > 0)
+		{
+			vvv.setSize(aZ * 1920.f, aZ * 1080.f);
+			rt->setView(vvv);
+			asteroidShader.setUniform("quant", (asteroidFrame % (scrollSeconds[i] * 60)) / (float)(scrollSeconds[i] * 60));
+			rt->draw(asteroidSpr[i] , &asteroidShader);
+		}
+	}
+	//rt->draw(asteroidSpr[2]);
+	//asteroidSpr[2].setScale(5.f, 5.f);
+	//asteroidSpr[3].setScale(5.f, 5.f);
+	
+	//float astFac0 = 1.5f;
+	//float astFac1 = 2.f;
+	//int scrollFrames0 = 60 * 60;
+	//int scrollFrames1 = 60 * 45;
+	//int scrollFrames2 = 60 * 60;
+	//int scrollFrames3 = 60 * 60;
+	//float z0 = zoomView.getSize().x / 1920.f;
+	//z = 1.f - z;
+	//z *= astFac0;
+	//z = 1.f - z;
+
+	//if (z > 0)
+	//{
+	//	
+
+	//	
+
+	//	vvv.setSize(z * 1920.f, z * 1080.f);
+
+	//	rt->setView(vvv);
+
+	//	asteroidShader.setUniform("quant", (asteroidFrame % scrollFrames1) / (float)scrollFrames1);
+	//	rt->draw(asteroidSpr[2], &asteroidShader);
+	//}
+	//z = 1.f - z;
+	
+
 	rt->display();
 	const sf::Texture &tex = rt->getTexture();
 	extraPassSpr.setTexture(tex);

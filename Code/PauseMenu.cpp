@@ -1999,7 +1999,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 9, 0);
-	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
+	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 1, 0);
 
 	ts_kin = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_400x836.png", 400, 836);
 	ts_aura1A = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1a_400x836.png", 400, 836);
@@ -2076,7 +2076,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 	aura2ASpr.setPosition(offset);
 	aura2BSpr.setPosition(offset);
 	veinSpr.setPosition(offset);
-
+	veinSpr.setColor(Color::Transparent);
 	
 	SetRectCenter(kinBG, aura1ASpr.getGlobalBounds().width, aura1ASpr.getGlobalBounds().height,
 		Vector2f(offset.x + 200, offset.y + 418));
@@ -2165,7 +2165,7 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 
 void KinMenu::UpdateDescription()
 {
-	int index = ySelector->currIndex + xSelector->currIndex * 9;
+	int index = ySelector->currIndex + xSelector->currIndex * 8;
 	description.setString(powerDescriptions[index]);
 }
 

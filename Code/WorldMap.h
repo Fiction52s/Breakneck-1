@@ -182,8 +182,10 @@ struct WorldMap
 	Tileset *ts_colonySelect;
 	sf::Sprite colonySelectSprite;
 
-	Tileset *ts_asteroid0;
-	Tileset *ts_asteroid1;
+	Tileset *ts_asteroids[4];
+	sf::Sprite asteroidSpr[4];
+	sf::Shader asteroidShader;
+	int asteroidFrame;
 
 	int selectedColony;
 	
