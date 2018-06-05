@@ -6467,19 +6467,20 @@ void Actor::UpdatePrePhysics()
 					{
 						velocity.y *= .7;
 					}
-					
 
 					if( currInput.B )
 					{
-						if( currInput.LRight() )
+						if( currInput.LRight() && velocity.x < dSpeed )
 						{
-							if( velocity.x < dSpeed )
-								velocity.x = dSpeed;
+							velocity.x = dSpeed;
 						}
-						else if( currInput.LLeft() )
+						else if( currInput.LLeft() && velocity.x > -dSpeed)
+						{							
+							velocity.x = -dSpeed;
+						}
+						else
 						{
-							if( velocity.x > -dSpeed )
-								velocity.x = -dSpeed;
+							velocity.x = (velocity.x + groundSpeed) / 2.0;
 						}
 					}
 					if( velocity.y > 0 )
@@ -6509,8 +6510,6 @@ void Actor::UpdatePrePhysics()
 					{
 						velocity.y -= jumpStrength;
 					}
-
-					velocity.x = (velocity.x + groundSpeed) / 2.0;
 
 					V2d pp = ground->GetPoint( edgeQuantity );
 					double ang = GroundedAngle();

@@ -109,7 +109,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	ts_asteroids[0] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
 	ts_asteroids[1] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
 	ts_asteroids[2] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
-	ts_asteroids[3] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
+	ts_asteroids[3] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_4_1920x1080.png", 1920, 1080);
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -789,29 +789,40 @@ void WorldMap::Draw( RenderTarget *target )
 	rt->setView(uiView);
 	rt->draw(spaceSpr);
 
+	int scrollSeconds[] = { 120, 140, 180, 400 };
+	float astFactor[] = { .3, .5, 1.5f, 2.f };
+
 	rt->draw(asteroidSpr[0]);
-	rt->draw(asteroidSpr[3]);
+	rt->draw(asteroidSpr[1]);
+
+	float z = zoomView.getSize().x / 1920.f;
+	View vvv = zoomView;
+
+	for (int i = 0; i < 2; ++i)
+	{
+		float aZ = 1.f - z;
+		aZ *= astFactor[i];
+		aZ = 1.f - aZ;
+
+		if (aZ > 0)
+		{
+			vvv.setSize(aZ * 1920.f, aZ * 1080.f);
+			rt->setView(vvv);
+			asteroidShader.setUniform("quant", (asteroidFrame % (scrollSeconds[i] * 60)) / (float)(scrollSeconds[i] * 60));
+			rt->draw(asteroidSpr[i], &asteroidShader);
+		}
+	}
 
 	rt->setView(zoomView);
 
-	
-	
-
 	rt->draw(planetSpr);
-
-	
 
 	for (int i = 0; i < 7; ++i)
 	{
 		rt->draw(colonySpr[i]);
 	}
-
-
-	int scrollSeconds[] = { 60, 45, 60, 60 };
-	float astFactor[] = { 1.5, 1.5f, 2.f, 1.f };
-	float z = zoomView.getSize().x / 1920.f;
-	View vvv = zoomView;
-	for (int i = 1; i < 3; ++i)
+	
+	for (int i = 2; i < 4; ++i)
 	{
 		float aZ = 1.f - z;
 		aZ *= astFactor[i];

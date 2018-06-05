@@ -126,17 +126,17 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	world.setOrigin(world.getLocalBounds().width / 2, world.getLocalBounds().height / 2);
 	world.setPosition(Vector2f(960, 540) + menuOffset);
 
-	Tileset *ts_asteroid0 = tsMan.GetTileset("Menu/w0_asteroid_01_960x1080.png", 960, 1080);
-	Tileset *ts_asteroid1 = tsMan.GetTileset("Menu/w0_asteroid_02_1920x1080.png", 1920, 1080);
-	Tileset *ts_asteroid2 = tsMan.GetTileset("Menu/w0_asteroid_03_1920x1080.png", 1920, 1080);
+	//Tileset *ts_asteroid0 = tsMan.GetTileset("Menu/w0_asteroid_01_960x1080.png", 960, 1080);
+	//Tileset *ts_asteroid1 = tsMan.GetTileset("Menu/w0_asteroid_02_1920x1080.png", 1920, 1080);
+	//Tileset *ts_asteroid2 = tsMan.GetTileset("Menu/w0_asteroid_03_1920x1080.png", 1920, 1080);
 
-	asteroid0.setTexture(*ts_asteroid0->texture);
-	asteroid1.setTexture(*ts_asteroid1->texture);
-	asteroid2.setTexture(*ts_asteroid2->texture);
+	//asteroid0.setTexture(*ts_asteroid0->texture);
+	//asteroid1.setTexture(*ts_asteroid1->texture);
+	//asteroid2.setTexture(*ts_asteroid2->texture);
 
-	asteroid0.setPosition(Vector2f(0, 0) + menuOffset);
+	/*asteroid0.setPosition(Vector2f(0, 0) + menuOffset);
 	asteroid1.setPosition(Vector2f(0, 0) + menuOffset);
-	asteroid2.setPosition(Vector2f(0, 0) + menuOffset);
+	asteroid2.setPosition(Vector2f(0, 0) + menuOffset);*/
 
 	a0start = Vector2f(-1920, 0) + menuOffset;
 	a0end = Vector2f(1920, 0) + menuOffset;
