@@ -34,13 +34,27 @@ struct Sector;
 
 struct MapSector
 {
+	enum State
+	{
+		NORMAL,
+		LEVELJUSTCOMPLETE,
+		JUSTCOMPLETE,
+		EXPLODECOMPLETE,
+		COMPLETE
+	};
+
+	State state;
+	int stateFrame;
 	MapSector(MapSelector *ms, int index);
 	Tileset *ts_thumb;
 	Tileset *ts_importantNodeIcons;
 	
 	sf::Text sectorNameText;
-	int frame = 0;
+	int frame;
 
+	int nodeSize;
+	int pathLen;
+	sf::Vector2f left;
 	void Init(Sector *sec);
 	Sector *sec;
 	void UpdateNodePosition();
@@ -48,13 +62,18 @@ struct MapSector
 	int numLevels;
 	void Load();
 
-	
+	int topUnlockedIndex;
+	int botUnlockedIndex;
+	int unlockedIndex;
+	int unlockFrame;
 	SingleAxisSelector *saSelector;
 	sf::Vertex levelCollectedShards[4 * 16];
 	int selectedYIndex;
 	sf::Sprite *topBonusNodes;
 	sf::Sprite *botBonusNodes;
 	sf::Sprite *nodes;
+	sf::Sprite nodeEnergy;
+	sf::Sprite nodeHighlight;
 	sf::Sprite *paths;
 	int sectorIndex;
 	sf::Sprite thumbnail;
@@ -65,6 +84,11 @@ struct MapSector
 	sf::Text shardsCollectedText;
 	sf::Text completionPercentText;
 	sf::Text levelPercentCompleteText;
+	sf::Sprite endSpr;
+
+	Tileset *ts_energyCircle;
+	Tileset *ts_energyTri;
+	Tileset *ts_energyMask;
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	void SetXCenter( float x );
@@ -75,6 +99,9 @@ struct MapSector
 	float percentComplete;
 	void UpdateNodes();
 	bool HasTopBonus(int node);
+	sf::Vector2f GetNodePos(int n);
+	sf::Vector2f GetTopNodePos(int n);
+	sf::Vector2f GetBotNodePos(int n);
 	bool HasBotBonus(int node);
 	int GetNodeSubIndex(int node);
 	int GetNodeBonusIndexTop(int node);
@@ -107,7 +134,7 @@ struct MapSelector
 	
 	sf::Vertex shoulderIcons[8];
 	Tileset *ts_shoulderIcons;
-
+	Tileset *ts_path;
 	int numSectors;
 	sf::Vector2f sectorCenter;
 	int currSectorIndex;
@@ -133,6 +160,8 @@ struct MapSelector
 	void Draw(sf::RenderTarget *target);
 	SingleAxisSelector *saSelector;
 	Tileset *ts_node;
+	Tileset *ts_sectorKey;
+	Tileset **ts_sectorOpen;
 	int worldIndex;
 
 	int frame;

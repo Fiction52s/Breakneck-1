@@ -25,9 +25,11 @@ struct SaveMenuScreen
 		WAIT,
 		SELECT,
 		TRANSITION,
+		TRANSITIONMOVIE,
 		Count
 	};
 
+	bool defaultFiles[6];
 	Action action;
 	int actionLength[Count];
 	int frame;
@@ -45,6 +47,9 @@ struct SaveMenuScreen
 	sf::Sprite selectSlot;
 	sf::Sprite kinFace;
 	int selectedSaveIndex;
+	float transparency;
+	float fadeOut;
+	sf::Vertex blackQuad[4];
 
 	Tileset *ts_kinJump1;
 	Tileset *ts_kinJump2;

@@ -929,14 +929,20 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	mainMenu = mm;
 	//numNodeColumns = 10;
 	//nodeSelectorWidth = 400;
-	ts_node = mm->tilesetManager.GetTileset("Worldmap/nodes_48x48.png", 48, 48);
+	ts_node = mm->tilesetManager.GetTileset("Worldmap/node_w1_80x80.png", 80, 80);
 	Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
+
+	ts_sectorKey = mm->tilesetManager.GetTileset("Worldmap/sectorkey_80x80.png", 80, 80);
+	ts_sectorOpen = new Tileset*[1];
+	ts_sectorOpen[0] = mm->tilesetManager.GetTileset("Worldmap/sectoropen_256x256.png", 256, 256);
 
 	ts_shoulderIcons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
 	SetRectCenter(shoulderIcons, 128, 128, Vector2f(200, 200));
 	SetRectCenter(shoulderIcons + 4, 128, 128, Vector2f(1920 - 200, 200));
 	SetRectSubRect(shoulderIcons, ts_shoulderIcons->GetSubRect(6));
 	SetRectSubRect(shoulderIcons + 4, ts_shoulderIcons->GetSubRect(4));
+
+	ts_path = mm->tilesetManager.GetTileset("Worldmap/nodepath_96x96.png", 96, 96);
 
 	Tileset *ts_thumb = mm->tilesetManager.GetTileset("Worldmap/mapthumb_w1_1_256x256.png", 256, 256);
 	Tileset *ts_shard = mm->tilesetManager.GetTileset("Worldmap/worldmap_shards_272x256.png", 272, 256);
@@ -1140,7 +1146,12 @@ void MapSelector::UpdateAllInfo()
 MapSector::MapSector(MapSelector *p_ms, int index )
 	:numLevels(-1), ms(p_ms), sectorIndex( index )
 {
+	unlockedIndex = -1;
+	nodeSize = 80;
+	pathLen = 16;
+	frame = 0;
 	nodes = NULL;
+	paths = NULL;
 	saSelector = NULL;
 	stringstream ss;
 	ss.str("");
@@ -1158,8 +1169,16 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	SetRectColor(statsBG, Color(100, 100, 100, 100));
 	SetRectColor(sectorStatsBG, Color(100, 100, 100, 100));
 
+
+	ts_energyCircle = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80); 
+	ts_energyTri = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_tri_80x80.png", 80, 80);
+	ts_energyMask = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
 	//SetRectCenter( shoulderIcons, 
-	
+	nodeHighlight.setTexture(*ms->ts_node->texture);
+
+	endSpr.setTexture(*ms->ts_sectorKey->texture);
+	endSpr.setTextureRect(ms->ts_sectorKey->GetSubRect(0));
+	endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
 	//SetXCenter(960);
 }
 
@@ -1169,9 +1188,21 @@ void MapSector::Draw(sf::RenderTarget *target)
 	target->draw(levelBG, 4, sf::Quads);
 	target->draw(statsBG, 4, sf::Quads);
 	target->draw(sectorStatsBG, 4, sf::Quads);
+
+	for (int i = 0; i < numLevels; ++i)
+	{
+		if (sec->levels[i].GetComplete() )
+		{
+			target->draw(paths[i]);
+		}
+	}
 	//target->draw( paths, numLevels )
 	if (sec->IsUnlocked()) //just for testing
 	{
+		if (ms->state == MapSelector::S_IDLE)
+		{
+			target->draw(nodeEnergy);
+		}
 		DrawStats(target);
 		DrawLevelStats(target);
 		for (int i = 0; i < numLevels; ++i)
@@ -1180,6 +1211,14 @@ void MapSector::Draw(sf::RenderTarget *target)
 			target->draw(nodes[i]);
 			target->draw(botBonusNodes[i]);
 		}
+
+		target->draw(endSpr);
+
+		if (ms->state == MapSelector::S_IDLE)
+		{
+			target->draw(nodeHighlight);
+		}
+		//target->draw(nodeHighlight);
 		//target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
 	}
 	else
@@ -1200,6 +1239,20 @@ void MapSector::DrawLevelStats(sf::RenderTarget *target)
 void MapSector::SetXCenter( float x )
 {
 	xCenter = x;
+
+	left = Vector2f(xCenter, ms->sectorCenter.y);
+	int numLevelsPlus = numLevels + 1;
+	if (numLevelsPlus % 2 == 0)
+	{
+		left.x -= pathLen / 2 + nodeSize + (pathLen + nodeSize) * (numLevelsPlus / 2 - 1);
+	}
+	else
+	{
+		left.x -= nodeSize / 2 + (pathLen + nodeSize) * (numLevelsPlus / 2);
+	}
+
+
+	
 	thumbnail.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 325));
 	sectorNameText.setPosition(x, 50);
 	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 325);
@@ -1209,7 +1262,7 @@ void MapSector::SetXCenter( float x )
 	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 300);
 	Vector2f levelStatsTopLeft = levelStatsCenter - Vector2f( levelStatsSize.x / 2, levelStatsSize.y / 2 );
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter );
-	SetRectCenter(levelBG, 700, 256, ms->sectorCenter);
+	SetRectCenter(levelBG, 700, 256, Vector2f( x, ms->sectorCenter.y ));
 	SetRectCenter(statsBG, levelStatsSize.x, levelStatsSize.y, levelStatsCenter );
 	
 	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x/2, sectorStatsCenter.y - sectorStatsSize.y/2);
@@ -1285,11 +1338,11 @@ void MapSector::UpdateLevelStats()
 
 	for (int i = 0; i < 16; ++i)
 	{
-		levelCollectedShards[i*4+0].texCoords = Vector2f(0, 0);
+		levelCollectedShards[i * 4 + 0].texCoords = Vector2f(0, 0);
 		levelCollectedShards[i * 4 + 1].texCoords = Vector2f(0, 0);
 		levelCollectedShards[i * 4 + 2].texCoords = Vector2f(0, 0);
 		levelCollectedShards[i * 4 + 3].texCoords = Vector2f(0, 0);
-		SetRectSubRect(levelCollectedShards + i * 4, ts_shards->GetSubRect(20)); 
+		SetRectSubRect(levelCollectedShards + i * 4, ts_shards->GetSubRect(20));
 	}
 
 	int gridIndex = 0;
@@ -1321,117 +1374,262 @@ void MapSector::UpdateLevelStats()
 	}*/
 }
 
+sf::Vector2f MapSector::GetNodePos(int node)
+{
+	return left + Vector2f(nodeSize / 2, 0) + Vector2f((pathLen + nodeSize) * node, 0);
+}
+
+sf::Vector2f MapSector::GetTopNodePos(int n)
+{
+	Vector2f res = GetNodePos(n);
+	res.y -= pathLen + nodeSize;
+	return res;
+}
+
+sf::Vector2f MapSector::GetBotNodePos(int n)
+{
+	Vector2f res = GetNodePos(n);
+	res.y += pathLen + nodeSize;
+	return res;
+}
+
 void MapSector::UpdateNodePosition()
 {
-	int pathLen = 48;
-	int nodeSize = 48;
-	Vector2f left;
-
-	left = Vector2f( xCenter, ms->sectorCenter.y );
-	if (numLevels % 2 == 0)
+	for (int i = 0; i < numLevels; ++i)
 	{
-		left.x -= pathLen / 2 + nodeSize + (pathLen + nodeSize) * (numLevels / 2 - 1);
-		//center.x -= pathLen / 2 + nodeSize / 2;
+		topBonusNodes[i].setPosition(GetTopNodePos(i));
+		nodes[i].setPosition(GetNodePos(i));
+		botBonusNodes[i].setPosition(GetBotNodePos(i));
 	}
-	else
-	{
-		left.x -= nodeSize / 2 + (pathLen + nodeSize) * (numLevels / 2);
-	}
-
-	Vector2f nodePos = left;
-	nodePos.x += nodeSize / 2;
 
 	for (int i = 0; i < numLevels; ++i)
 	{
-		for (int j = 0; j < 3; ++j)
-		{
-			nodePos.y = ms->sectorCenter.y + (j - 1) * (pathLen + nodeSize);
-			if (j == 0)
-			{
-				topBonusNodes[i].setPosition(nodePos);
-			}
-			else if (j == 1)
-			{
-				nodes[i].setPosition(nodePos);
-			}
-			else if (j == 2)
-			{
-				botBonusNodes[i].setPosition(nodePos);
-			}
-			//SetRectCenter((nodes + numLevels * j * 4 + i * 4), nodeSize, nodeSize, nodePos);
-		}
-		nodePos.x += pathLen + nodeSize;
+		paths[i].setPosition(nodes[i].getPosition().x 
+			+ (nodeSize / 2 + pathLen / 2), nodes[i].getPosition().y);
 	}
+
+	endSpr.setPosition(GetNodePos(numLevels));
+	//endSpr.
 }
 
 void MapSector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
-	int old = saSelector->currIndex;
-
-	bool left = curr.LLeft();
-	bool right = curr.LRight();
-
-	int changed = saSelector->UpdateIndex(left, right);
-
-	if (changed != 0)
+	int unlockedLevelCount = numLevels;
+	for (int i = 0; i < numLevels-1; ++i)
 	{
-		UpdateLevelStats();
-	}
-
-	int oldYIndex = selectedYIndex;
-
-	if ( (selectedYIndex == 0 && !HasTopBonus(saSelector->currIndex)
-		|| ( selectedYIndex == 2 && !HasBotBonus(saSelector->currIndex )) ) )
-	{
-		selectedYIndex = 1;
-	}
-
-	if (curr.LUp() && !prev.LUp())
-	{
-		if (selectedYIndex == 2 || ( selectedYIndex == 1 && HasTopBonus(saSelector->currIndex) ))
+		if (!sec->levels[i].GetComplete())
 		{
-			--selectedYIndex;
-		}	
-	}
-	else if (curr.LDown() && !prev.LDown())
-	{
-		if (selectedYIndex == 0 || (selectedYIndex == 1 && HasBotBonus(saSelector->currIndex)))
-		{
-			++selectedYIndex;
+			unlockedLevelCount = max( 1, i+1);
 		}
 	}
-	if (changed != 0 || oldYIndex != selectedYIndex )
+
+	if (unlockedLevelCount != saSelector->totalItems)
 	{
+		saSelector->SetTotalSize(unlockedLevelCount);
 		UpdateNodes();
-		//Vertex *n = (nodes + selectedYIndex * numLevels * 4 + old * 4);
-		//	SetRectSubRect( n, )
 	}
-
-	if (curr.A && !prev.A)
+	
+	/*if (state == NORMAL && sec->IsComplete() )
 	{
-		if (selectedYIndex == 1)
+		state = JUSTCOMPLETE;
+		stateFrame = 0;
+	}*/
+
+	if (state == NORMAL)
+	{
+		for (int i = 0; i < numLevels; ++i)
 		{
-			//string levelPath = sec->levels[saSelector->currIndex].GetFullName();// name;
-			//View oldView = ms->mainMenu->window->getView();
-
-			//GameSession *gs = new GameSession(NULL, ms->mainMenu, levelPath);
-
-			//ms->mainMenu->menuMode = MainMenu::LOADINGMAP;
-
-			//ms->loadThread = new boost::thread(GameSession::sLoad, gs);
-
-			//GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
-			//GameSession::sLoad(gs);
-			//int result = gs->Run();
-
-			//delete gs;
-
-			//ms->mainMenu->window->setView(oldView);
-			ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));
+			if (sec->levels[i].justBeaten)
+			{
+				if (i < numLevels - 1)
+				{
+					state = LEVELJUSTCOMPLETE;
+				}
+				else
+				{
+					state = JUSTCOMPLETE;
+				}				
+				stateFrame = 0;
+				unlockedIndex = i;//saSelector->currIndex;
+				//unlockFrame = frame;
+				sec->levels[i].justBeaten = false;
+				break;
+			}
 		}
 	}
 
+	if (state != EXPLODECOMPLETE)
+	{
+		int old = saSelector->currIndex;
+
+		bool left = curr.LLeft();
+		bool right = curr.LRight();
+
+		int changed = saSelector->UpdateIndex(left, right);
+
+		if (changed != 0)
+		{
+			UpdateLevelStats();
+		}
+
+		int oldYIndex = selectedYIndex;
+
+		if ((selectedYIndex == 0 && !HasTopBonus(saSelector->currIndex)
+			|| (selectedYIndex == 2 && !HasBotBonus(saSelector->currIndex))))
+		{
+			selectedYIndex = 1;
+		}
+
+		if (curr.LUp() && !prev.LUp())
+		{
+			if (selectedYIndex == 2 || (selectedYIndex == 1 && HasTopBonus(saSelector->currIndex)))
+			{
+				--selectedYIndex;
+			}
+		}
+		else if (curr.LDown() && !prev.LDown())
+		{
+			if (selectedYIndex == 0 || (selectedYIndex == 1 && HasBotBonus(saSelector->currIndex)))
+			{
+				++selectedYIndex;
+			}
+		}
+		if (changed != 0 || oldYIndex != selectedYIndex)
+		{
+			UpdateNodes();
+			//UpdateNodes();
+			//Vertex *n = (nodes + selectedYIndex * numLevels * 4 + old * 4);
+			//	SetRectSubRect( n, )
+		}
+
+		if (curr.A && !prev.A)
+		{
+			if (selectedYIndex == 1)
+			{
+				//string levelPath = sec->levels[saSelector->currIndex].GetFullName();// name;
+				//View oldView = ms->mainMenu->window->getView();
+
+				//GameSession *gs = new GameSession(NULL, ms->mainMenu, levelPath);
+
+				//ms->mainMenu->menuMode = MainMenu::LOADINGMAP;
+
+				//ms->loadThread = new boost::thread(GameSession::sLoad, gs);
+
+				//GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
+				//GameSession::sLoad(gs);
+				//int result = gs->Run();
+
+				//delete gs;
+
+				//ms->mainMenu->window->setView(oldView);
+				if (sec->IsComplete())
+				{
+					state = COMPLETE;
+				}
+				else
+				{
+					state = NORMAL;
+				}
+				ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));
+			}
+		}
+	}
+
+	
+
+	
+	int n = GetNodeSubIndex(saSelector->currIndex);
+	
+	int enAnimFactor = 6;
+	if (n % 3 == 0)
+	{
+		nodeEnergy.setTexture(*ts_energyCircle->texture);
+		nodeEnergy.setTextureRect(ts_energyCircle->GetSubRect((frame / enAnimFactor) % 10));
+		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(9));
+	}
+	else if (n % 3 == 1)
+	{
+		nodeEnergy.setTexture(*ts_energyTri->texture);
+		nodeEnergy.setTextureRect(ts_energyTri->GetSubRect((frame / enAnimFactor) % 15));
+		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(10));
+	}
+	else if (n % 3 == 2)
+	{
+		nodeEnergy.setTexture(*ts_energyMask->texture);
+		nodeEnergy.setTextureRect(ts_energyCircle->GetSubRect((frame / enAnimFactor) % 20));
+		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(11));
+	}
+	nodeEnergy.setOrigin(nodeEnergy.getLocalBounds().width / 2, nodeEnergy.getLocalBounds().height / 2);
+	nodeHighlight.setOrigin(nodeHighlight.getLocalBounds().width / 2, nodeHighlight.getLocalBounds().height / 2);
+	if (selectedYIndex == 0)
+	{
+		nodeEnergy.setPosition(GetTopNodePos(saSelector->currIndex));
+	}
+	else if (selectedYIndex == 1)
+	{
+		nodeEnergy.setPosition(GetNodePos(saSelector->currIndex));
+	}
+	else
+	{
+		nodeEnergy.setPosition(GetBotNodePos(saSelector->currIndex));
+	}
+	nodeHighlight.setPosition(nodeEnergy.getPosition());
+
+	int breathe = 180;
+	float trans = (float)(frame%breathe) / (breathe/2);
+	if (trans > 1)
+	{
+		trans = 2.f - trans;
+	}
+	nodeHighlight.setColor(Color(255, 255, 255, 255 * trans));
+
+	if (state == LEVELJUSTCOMPLETE || state == JUSTCOMPLETE )//unlockedIndex != -1)
+	{
+		int ff = stateFrame / 7;
+		if (ff == 16)
+		{
+			if (state == LEVELJUSTCOMPLETE)
+				state = NORMAL;
+			else
+			{
+				state = EXPLODECOMPLETE;
+			}
+			stateFrame = 0;
+		}
+		else
+		{
+			paths[unlockedIndex].setTextureRect(ms->ts_path->GetSubRect(ff));
+		}
+		
+	}
+
+	if( state == EXPLODECOMPLETE )
+	{
+		int explodeFactor = 4;
+		if (stateFrame == 16 * explodeFactor)
+		{
+			state = COMPLETE;
+			stateFrame = 0;
+			endSpr.setTexture(*ms->ts_sectorKey->texture);
+			endSpr.setTextureRect(ms->ts_sectorKey->GetSubRect(0));
+			endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
+		}
+		else
+		{
+			if (stateFrame == 0)
+			{ 
+				endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
+			}
+			
+
+			endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(stateFrame / explodeFactor));
+			endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
+		}
+	}
+
+	++frame;
+	++stateFrame;
 }
 
 bool MapSector::HasTopBonus(int node)
@@ -1486,28 +1684,41 @@ void MapSector::Load()
 
 int MapSector::GetNodeSubIndex(int node)
 {
-	return 0;
-	if (selectedYIndex == 1 && saSelector->currIndex == node)
+	if (!sec->IsLevelUnlocked( node ) )
 	{
-		if (sec->levels[node].GetComplete())
-		{
-			return 1;
-		}
-		else
-		{
-			return 3;
-		}
-		
+		return 0;
 	}
 	else
 	{
-		if (sec->levels[node].GetComplete())
+		if (selectedYIndex == 1 && saSelector->currIndex == node)
 		{
-			return 0;
+			if (sec->levels[node].IsOneHundredPercent())
+			{
+				return 8;
+			}
+			else if (sec->levels[node].GetComplete())
+			{
+				return 7;
+			}
+			else
+			{
+				return 6;
+			}
 		}
 		else
 		{
-			return 2;
+			if (sec->levels[node].IsOneHundredPercent())
+			{
+				return 5;
+			}
+			else if (sec->levels[node].GetComplete())
+			{
+				return 4;
+			}
+			else
+			{
+				return 3;
+			}
 		}
 	}
 
@@ -1535,17 +1746,15 @@ void MapSector::UpdateUnlockConditions()
 	}
 }
 
-
-
 int MapSector::GetNodeBonusIndexTop(int node)
 {
 	if (selectedYIndex == 0 && saSelector->currIndex == node)
 	{
-		return 65;
+		return 0;
 	}
 	else
 	{
-		return 64;
+		return 0;
 	}
 	/*if (sec->levels[node].completed)
 	{
@@ -1561,16 +1770,17 @@ int MapSector::GetNodeBonusIndexBot(int node)
 {
 	if (selectedYIndex == 2 && saSelector->currIndex == node)
 	{
-		return 65;
+		return 0;
 	}
 	else
 	{
-		return 64;
+		return 0;
 	}
 }
 
 void MapSector::Init(Sector *m_sec)
 {
+	unlockedIndex = -1;
 	sec = m_sec;
 	numLevels = sec->numLevels;
 
@@ -1585,6 +1795,7 @@ void MapSector::Init(Sector *m_sec)
 	if (saSelector != NULL)
 		delete saSelector;
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numLevels, 0);
+
 	selectedYIndex = 1;
 	if (nodes != NULL)
 		delete[] nodes;
@@ -1618,6 +1829,7 @@ void MapSector::Init(Sector *m_sec)
 	
 
 	nodes = new Sprite[numLevels];
+	paths = new Sprite[numLevels];
 	topBonusNodes = new Sprite[numLevels];
 	botBonusNodes = new Sprite[numLevels];
 
@@ -1632,6 +1844,22 @@ void MapSector::Init(Sector *m_sec)
 		botBonusNodes[i].setTexture(*ms->ts_node->texture);
 		botBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
 		botBonusNodes[i].setOrigin(botBonusNodes[i].getLocalBounds().width / 2, botBonusNodes[i].getLocalBounds().height / 2);
+	}
+
+	for (int i = 0; i < numLevels; ++i)
+	{
+		paths[i].setTexture(*ms->ts_path->texture);
+		paths[i].setTextureRect(ms->ts_path->GetSubRect(15));
+		paths[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
+	}
+
+	if (sec->IsComplete())
+	{
+		state = COMPLETE;
+	}
+	else
+	{
+		state = NORMAL;
 	}
 
 	SetXCenter(960);

@@ -1858,6 +1858,11 @@ void MainMenu::Run()
 							Level &lev = sec.levels[j];
 							if (lev.GetFullName() == currLevel->fileName)
 							{
+								if (!lev.GetComplete())
+								{
+									lev.justBeaten = true;
+								}
+
 								lev.SetComplete(true);
 								
 								doneCheck = true;
@@ -2121,7 +2126,19 @@ void MainMenu::Run()
 			}
 			case INTROMOVIE:
 			{
-				introMovie->Update();
+				if (menuCurrInput.A && !menuPrevInput.A)
+				{
+					introMovie->Stop();
+					AdventureLoadLevel(&GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
+				}
+				else
+				{
+					if (!introMovie->Update())
+					{
+						AdventureLoadLevel(&GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
+					}
+				}
+				
 				break;
 			}
 				

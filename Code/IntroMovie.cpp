@@ -17,9 +17,17 @@ void IntroMovie::Play()
 	movie.play();
 }
 
-void IntroMovie::Update()
+bool IntroMovie::Update()
 {
 	movie.update();
+
+	if (movie.getStatus() == sfe::Status::End
+		|| movie.getStatus() == sfe::Status::Stopped )
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void IntroMovie::Stop()

@@ -32,6 +32,13 @@ SingleAxisSelector::~SingleAxisSelector()
 	delete[] waitModeThresh;
 }
 
+void SingleAxisSelector::SetTotalSize( int total )
+{
+	totalItems = total;
+	currIndex = currIndex % totalItems;
+	oldCurrIndex = oldCurrIndex % totalItems;
+}
+
 int SingleAxisSelector::UpdateIndex(bool dec, bool inc)
 {
 	oldCurrIndex = currIndex;

@@ -265,8 +265,21 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		currLockedDairFX = NULL;
 		currLockedUairFX = NULL;
 		gateBlackFX = NULL;
-		testPool = new EffectPool( EffectType::FX_RELATIVE, 100, 1.f );
-		testPool->ts = owner->GetTileset("elec_01_96x96.png", 96, 96);
+
+		for (int i = 0; i < 7; ++i)
+		{
+			smallLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 4, 1.f);
+		}
+
+		smallLightningPool[0]->ts = owner->GetTileset("FX/elec_01_96x96.png", 96, 96);
+		smallLightningPool[1]->ts = owner->GetTileset("FX/elec_02_96x96.png", 96, 96);
+		smallLightningPool[2]->ts = owner->GetTileset("FX/elec_03_96x96.png", 96, 96);
+		smallLightningPool[3]->ts = owner->GetTileset("FX/elec_04_96x96.png", 96, 96);
+		smallLightningPool[4]->ts = owner->GetTileset("FX/elec_05_96x96.png", 96, 96);
+		smallLightningPool[5]->ts = owner->GetTileset("FX/elec_06_96x96.png", 96, 96);
+		smallLightningPool[6]->ts = owner->GetTileset("FX/elec_07_96x96.png", 96, 96);
+		//testPool = new EffectPool( EffectType::FX_RELATIVE, 100, 1.f );
+		//testPool->ts = owner->GetTileset("elec_01_96x96.png", 96, 96);
 
 		motionGhostBuffer = new VertexBuffer(80, sf::Quads);
 		motionGhostBufferBlue = new VertexBuffer(80, sf::Quads);
@@ -291,8 +304,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
 		gateBlackFXPool->ts = owner->GetTileset("FX/keydrain_160x160.png", 160, 160);
 
-		risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
-		risingAuraPool->ts = owner->GetTileset("rising_8x8.png", 8, 8);
+		//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
+		//risingAuraPool->ts = owner->GetTileset("rising_8x8.png", 8, 8);
 
 		maxMotionGhosts = 80;
 		//motionGhosts = new Sprite[maxMotionGhosts];
@@ -15550,7 +15563,9 @@ void Actor::UpdatePostPhysics()
 
 		params.SetParams(randPos, tr, 7, 1, 0, &spriteCenter);
 
-		testPool->ActivateEffect(&params);
+		int r = rand() % 7;
+
+		smallLightningPool[r]->ActivateEffect(&params);
 	}
 
 	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % 30 == 0)
@@ -15561,8 +15576,8 @@ void Actor::UpdatePostPhysics()
 		Vector2f randPos(rand() % 20 - 10, rand() % 20 - 10);
 
 		params.SetParams(randPos, tr, 1, 60, 0, &spriteCenter, 40 );
-		EffectInstance *ei = risingAuraPool->ActivateEffect(&params);
-		ei->SetVelocityParams(Vector2f(0, 0), Vector2f(0, -.02), 5 );
+		//EffectInstance *ei = risingAuraPool->ActivateEffect(&params);
+		//ei->SetVelocityParams(Vector2f(0, 0), Vector2f(0, -.02), 5 );
 	}
 
 	if (currLockedFairFX != NULL && action != FAIR )
@@ -15583,8 +15598,10 @@ void Actor::UpdatePostPhysics()
 
 
 	
-
-	testPool->Update();
+	for (int i = 0; i < 7; ++i)
+	{
+		smallLightningPool[i]->Update();
+	}
 	
 	//testPool->ActivateEffect( )
 
@@ -15740,7 +15757,7 @@ void Actor::UpdatePostPhysics()
 	
 	UpdateSprite();
 	
-	risingAuraPool->Update();
+	//risingAuraPool->Update();
 	CreateAttackLightning();
 
 	for (int i = 0; i < 3; ++i)
@@ -18650,7 +18667,10 @@ void Actor::Draw( sf::RenderTarget *target )
 
 	gateBlackFXPool->Draw(target);
 
-	testPool->Draw(target);
+	for (int i = 0; i < 7; ++i)
+	{
+		smallLightningPool[i]->Draw(target);
+	}
 	
 
 	testBuffer->SetPosition(0, Vector2f(position));

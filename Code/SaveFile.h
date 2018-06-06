@@ -62,18 +62,30 @@ struct Level
 		COMPLETE,
 		UNLOCKEDTOPBONUS,
 		UNLOCKEDBOTTOMBONUS,
+	/*	JUSTUNLOCKEDTOP,
+		JUSTUNLOCKEDBOTTOM,
+		JUSTUNLOCKED,*/
 	};
 
 	Level();
 	Sector *sec;
 	BitField optionField;
 	std::string name;
+	bool justBeaten;
 	void SetComplete(bool comp);
+	//void SetJustUnlocked(bool unlocked);
+	//void SetJustUnlockedTop(bool unlocked);
+	//void SetJustUnlockedBottom(bool unlocked);
+
+	//bool GetJustUnlocked();
+	//bool GetJustUnlockedTop();
+	//bool GetJustUnlockedBottom();
 	void UpdateShardNameList();
 	float GetCapturedShardsPortion();
 	std::list<std::string> shardNameList;
 	bool shardsLoaded;
 
+	bool IsOneHundredPercent();
 	bool GetComplete();
 	int GetNumTotalShards();
 	int GetNumShardsCaptured();
@@ -99,6 +111,7 @@ struct Sector
 	Level *levels;
 	int index;
 	World *world;
+	bool IsLevelUnlocked(int index);
 	int numUnlockConditions;
 	void UpdateShardNameList();
 	int GetNumTotalShards();
@@ -137,10 +150,14 @@ struct SaveFile
 	SaveFile( const std::string &name );
 	~SaveFile();
 	void Save();
-	void Load();
+	bool Load();
+	bool LoadInfo(std::ifstream &is );
 	float GetCompletionPercentage();
 	int GetShardNum();
 	int GetTotalShardNum();
+	void CopyFromDefault();
+	/*void SetJustUnlocked(int world,
+		int sec, int lev);*/
 
 	BitField shardField;
 	BitField newShardField; //for unviewed shards

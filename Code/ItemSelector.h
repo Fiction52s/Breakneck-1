@@ -27,6 +27,7 @@ struct SingleAxisSelector
 	int totalItems;
 	int oldCurrIndex;
 	int startIndex;
+	void SetTotalSize( int total );
 };
 
 struct VertSlider

@@ -6,6 +6,7 @@
 #include "Enemy_Shard.h"
 
 using namespace std;
+using namespace boost::filesystem;
 
 BitField::BitField(int p_numOptions)
 {
@@ -150,13 +151,18 @@ bool SaveFile::ShardIsCaptured(ShardType sType)
 	return shardField.GetBit(sType);
 }
 
-void SaveFile::Load()
+void SaveFile::CopyFromDefault()
 {
-	ifstream is;
-	
-	is.open( fileName );
+	path from("Data/default.kin");
 
-	if( is.is_open() )
+	path to(fileName);
+
+	boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
+}
+
+bool SaveFile::LoadInfo(ifstream &is)
+{
+	if (is.is_open())
 	{
 		is >> numWorlds;
 		worlds = new World[numWorlds];
@@ -171,15 +177,35 @@ void SaveFile::Load()
 		newShardField.Load(is);
 
 		is.close();
+		return true;
 	}
 	else
 	{
-		cout << "error loading save file: " << fileName << endl;
-		assert( false );
+		return false;
 	}
-
-	
 }
+
+//return true on normal loading, and false if you need to make a default
+bool SaveFile::Load()
+{
+	ifstream is;
+	
+	is.open( fileName );
+
+	if( !LoadInfo(is) )
+	{
+		ifstream defIs;
+		defIs.open("Data/default.kin");
+		LoadInfo(defIs);
+		return false;
+	}
+}
+
+//void SaveFile::CreateSaveThread(SaveFile *sf)
+//{
+//	if( sf->thr )
+//	sf->thr = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of);
+//}
 
 void SaveFile::Save()
 {
@@ -211,7 +237,28 @@ void SaveFile::Save()
 	}
 }
 
-
+//void SaveFile::SetJustUnlocked(int world, int sec, int lev)
+//{
+//	if (lev == worlds[world].sectors[sec].numLevels - 1)
+//	{
+//		return;
+//	}
+//	else
+//	{
+//		worlds[world].sectors[sec].levels[lev + 1].justUnlocked = true;
+//	}
+//	/*Level &level = worlds[world].sectors[sec].levels[lev];
+//	World &w = worlds[world];
+//
+//	for (int i = 0; i < w.numSectors; ++i)
+//	{
+//		Sector &sector = w.sectors[sec];
+//		if (sector.IsUnlocked())
+//		{
+//
+//		}
+//	}*/
+//}
 
 World::World()
 {
@@ -249,6 +296,18 @@ Sector::Sector()
 	numTypesNeeded = NULL;
 	sectorType = 100;
 	numUnlockConditions = 99;
+}
+
+bool Sector::IsLevelUnlocked(int index)
+{
+	for (int i = 0; i < index; ++i )
+	{
+		if (!levels[i].GetComplete())
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 void Sector::UpdateShardNameList()
@@ -476,6 +535,7 @@ Level::Level( )
 	SetComplete(false);
 	optionField.Reset();
 	shardsLoaded = false;
+	justBeaten = false;
 }
 
 void Level::UpdateShardNameList()
@@ -573,6 +633,7 @@ void Level::Reset()
 	SetComplete(false);
 	optionField = 0;
 	shardsLoaded = false;
+	justBeaten = false;
 }
 
 bool Level::Load(std::ifstream &is)
@@ -598,9 +659,42 @@ void Level::SetComplete(bool comp)
 	optionField.SetBit(COMPLETE, comp );
 }
 
+//void Level::SetJustUnlocked(bool unlocked)
+//{
+//	optionField.SetBit(JUSTUNLOCKED, unlocked);
+//}
+//
+//void Level::SetJustUnlockedTop(bool unlocked)
+//{
+//	optionField.SetBit(JUSTUNLOCKEDTOP, unlocked);
+//}
+//
+//void Level::SetJustUnlockedBottom(bool unlocked)
+//{
+//	optionField.SetBit(JUSTUNLOCKEDBOTTOM, unlocked);
+//}
+
 bool Level::GetComplete()
 {
-	return optionField.GetBit(0);
+	return optionField.GetBit(COMPLETE);
+}
+
+//bool Level::GetJustUnlocked()
+//{
+//	return optionField.GetBit(JUSTUNLOCKED);
+//}
+//bool Level::GetJustUnlockedTop()
+//{
+//	return optionField.GetBit(JUSTUNLOCKEDTOP);
+//}
+//bool Level::GetJustUnlockedBottom()
+//{
+//	return optionField.GetBit(JUSTUNLOCKEDBOTTOM);
+//}
+
+bool Level::IsOneHundredPercent()
+{
+	return(GetCompletionPercentage() == 100.f);
 }
 
 std::string Level::GetFullName()

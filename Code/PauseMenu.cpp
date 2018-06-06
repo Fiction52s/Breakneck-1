@@ -2006,7 +2006,6 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 	ts_aura1B = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1b_400x836.png", 400, 836);
 	ts_aura2A = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2a_400x836.png", 400, 836);
 	ts_aura2B = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2b_400x836.png", 400, 836);
-	ts_kinBG = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_bg_400x836.png", 400, 836);
 	ts_veins = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_veins_400x836.png", 400, 836);
 
 	if (!scrollShader1.loadFromFile("Shader/menuauraslide.frag", sf::Shader::Fragment))

@@ -1,6 +1,8 @@
 #include "SaveMenuScreen.h"
 #include "MainMenu.h"
 #include "SaveFile.h"
+#include "VectorMath.h"
+#include "IntroMovie.h"
 
 using namespace sf;
 using namespace std;
@@ -68,7 +70,8 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	
 	actionLength[WAIT] = 1;
 	actionLength[SELECT] = 12 * 3 + 6 * 4 + 20;
-	actionLength[TRANSITION] = 1;
+	actionLength[TRANSITION] = 30;
+	actionLength[TRANSITIONMOVIE] = 30;
 
 	files[0] = new SaveFile("blue");
 	files[1] = new SaveFile("green");
@@ -77,8 +80,11 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	files[4] = new SaveFile("red");
 	files[5] = new SaveFile("magenta");
 
+
+
 	for (int i = 0; i < 6; ++i)
 	{
+		defaultFiles[i] = false;
 		fileDisplay[i] = new SaveFileDisplay(mainMenu->arial);
 		fileDisplay[i]->SetPosition(GetTopLeftSaveSlot(i));
 	}
@@ -113,6 +119,9 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	kinSky.setTexture(*ts_kinSky->texture);
 	kinSky.setOrigin(kinSky.getLocalBounds().width, 0);
 	kinSky.setPosition(Vector2f(1920, 0) + menuOffset);
+
+	SetRectCenter(blackQuad, 1920, 1080, Vector2f(1920 / 2, 1080 / 2));
+	SetRectColor(blackQuad, Color(Color::Black));
 	//saveKinJump.setTexture( ts_saveKin
 
 	cloudFrame = 0;
@@ -154,7 +163,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	asteroidFrameBack = asteroidScrollFrames0 / 2;
 	asteroidFrameFront = asteroidScrollFrames1 / 2;
 
-	Reset();
+	//Reset();
 
 	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
 	//kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
@@ -177,7 +186,18 @@ void SaveMenuScreen::Update()
 			frame = 0;
 			break;
 		case SELECT:
-			action = TRANSITION;
+			if (defaultFiles[selectedSaveIndex])
+			{
+				files[selectedSaveIndex]->CopyFromDefault();
+				action = TRANSITIONMOVIE;
+			}
+			else
+			{
+				action = TRANSITION;
+			}
+			
+			transparency = 0;
+			fadeOut = 0;
 			frame = 0;
 			break;
 		case TRANSITION:
@@ -187,6 +207,18 @@ void SaveMenuScreen::Update()
 			mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
 			mainMenu->worldMap->frame = 0;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
+			return;
+			break;
+		}
+		case TRANSITIONMOVIE:
+		{
+			mainMenu->menuMode = MainMenu::Mode::INTROMOVIE;
+			mainMenu->introMovie->Play();
+			//mainMenu->transAlpha = 255;
+			//mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
+			//mainMenu->worldMap->frame = 0;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
+			return;
 			break;
 		}
 		}
@@ -369,6 +401,10 @@ void SaveMenuScreen::Update()
 		break;
 	}
 	case TRANSITION:
+		transparency = (float)(frame%actionLength[TRANSITION]) / actionLength[TRANSITION];
+		break;
+	case TRANSITIONMOVIE:
+		fadeOut = (float)(frame%actionLength[TRANSITIONMOVIE]) / actionLength[TRANSITIONMOVIE];
 		break;
 	}
 
@@ -451,11 +487,12 @@ Vector2f SaveMenuScreen::GetTopLeftSaveSlot(int index)
 
 void SaveMenuScreen::Draw(sf::RenderTarget *target)
 {
-	//RenderTexture *saveTexture = mainMenu->saveTexture;
 
+	RenderTexture *saveTexture = mainMenu->saveTexture;
+	saveTexture->clear(Color::Transparent);
 	//target->setView(mainMenu->v);
 
-	target->setView(mainMenu->v);
+	saveTexture->setView(mainMenu->v);
 
 	//target->draw(starBackground);
 
@@ -464,27 +501,38 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	//target->draw(asteroid0);
 	//target->draw(asteroid2);
 
+	SetRectColor(blackQuad, Color( 0, 0, 0, fadeOut * 255));
 
-
-	target->draw(background);
-	target->draw(kinSky);
-	target->draw(kinClouds);
-	target->draw(kinWindow);
+	saveTexture->draw(background);
+	saveTexture->draw(kinSky);
+	saveTexture->draw(kinClouds);
+	saveTexture->draw(kinWindow);
 
 	int endDraw = 12 * 3 + 6 * 4;
 	if (action == WAIT || (action == SELECT && frame < endDraw ))
 	{
-		target->draw(kinJump);
+		saveTexture->draw(kinJump);
 	}
 	
-	target->draw(selectSlot);
-	target->draw(kinFace);
+	saveTexture->draw(selectSlot);
+	saveTexture->draw(kinFace);
 
 	for (int i = 0; i < 6; ++i)
 	{
-		fileDisplay[i]->Draw(target);
+		fileDisplay[i]->Draw(saveTexture);
 	}
 
+	saveTexture->draw(blackQuad, 4, sf::Quads);
+	
+	saveTexture->display();
+	const Texture &saveTex = saveTexture->getTexture();
+	sf::Sprite saveSpr(saveTex);
+
+	saveSpr.setColor(Color(255, 255, 255, 255 * (1.f - transparency)));
+	
+	target->draw(saveSpr);
+
+	
 	/*saveTexture->clear(Color::Transparent);
 	saveTexture->setView(mainMenu->v);
 	saveTexture->draw(background);
@@ -502,6 +550,8 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 
 void SaveMenuScreen::Reset()
 {
+	fadeOut = 0;
+	transparency = 0;
 	action = WAIT;
 	frame = 0;
 	selectedSaveIndex = 0;
@@ -516,7 +566,7 @@ void SaveMenuScreen::Reset()
 
 	for (int i = 0; i < 6; ++i)
 	{
-		files[i]->Load();
+		defaultFiles[i] = !(files[i]->Load());
 		fileDisplay[i]->SetValues(files[i]);
 	}
 }

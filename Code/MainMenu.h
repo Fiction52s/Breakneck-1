@@ -623,6 +623,7 @@ struct MainMenu
 	sf::Uint8 transAlpha;
 
 
+
 	
 
 	Config *config;

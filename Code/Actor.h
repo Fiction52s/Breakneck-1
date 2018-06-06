@@ -168,7 +168,8 @@ struct SoundNode;
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
-	EffectPool *testPool;
+	//EffectPool *testPool;
+	EffectPool *smallLightningPool[7];
 	EffectPool *risingAuraPool;
 	MotionGhostEffect *motionGhostsEffects[3];
 

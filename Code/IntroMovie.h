@@ -9,7 +9,7 @@ struct IntroMovie
 	sfe::Movie movie;
 	void Play();
 	void Stop();
-	void Update();
+	bool Update();
 	void Draw(sf::RenderTarget *target);
 };
 
