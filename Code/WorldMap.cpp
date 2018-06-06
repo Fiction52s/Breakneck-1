@@ -6,6 +6,7 @@
 #include "MainMenu.h"
 #include "SaveFile.h"
 #include "Enemy_Shard.h"
+#include "SaveMenuScreen.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -246,16 +247,17 @@ void WorldMap::Reset( SaveFile *sf )
 	frame = 0;
 	asteroidFrame = 0;
 
-	if( sf != NULL )
+	selectedColony = 0;
+	selectedLevel = 0;
+	/*if( sf != NULL )
 	{
-		selectedColony = 1;
-		selectedLevel = 0;
+		
 	}
 	else
 	{
-		selectedColony = 1;
+		selectedColony = 0;
 		selectedLevel = 0;
-	}
+	}*/
 	
 	ClearEntries();
 	moveDown = false;
@@ -485,7 +487,12 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 		else if (currInput.B && !prevInput.B)
 		{
-			mainMenu->menuMode = MainMenu::MAINMENU;
+			mainMenu->menuMode = MainMenu::SAVEMENU;
+			mainMenu->saveMenu->Reset();
+			mainMenu->saveMenu->action = SaveMenuScreen::FADEIN;
+			mainMenu->saveMenu->transparency = 1.f;
+			//mainMenu->saveMenu->kinFace.setTextureRect(mainMenu->saveMenu->ts_kinFace->GetSubRect(0));
+			//mainMenu->saveMenu->kinJump.setTextureRect(mainMenu->saveMenu->ts_kinJump1->GetSubRect(0));
 			state = SPACE;
 			//transition back up later instead of just turning off
 			frame = 0;
@@ -591,6 +598,16 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	}
 		break;
 	case COLONY:
+	{
+		Vector2f colMiddle = Vector2f(colonySpr[0].getGlobalBounds().width / 2,
+			colonySpr[0].getGlobalBounds().height / 2);
+		Vector2f endPos = colonySpr[selectedColony].getPosition() + colMiddle;
+
+		zoomView.setCenter(endPos);
+		zoomView.setSize(Vector2f(1920, 1080) * colonySpr[0].getScale().x);
+		break;
+	}
+		
 		//if( currInput.A && !prevInput.A )
 		//{
 		//	state = OFF;
@@ -598,7 +615,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		//	return false; //start a map!
 		//}
 		//frame = 0;
-		break;
+		
 	case COLONY_TO_PLANET:
 	{
 		int limit = 60;//120 / 2;

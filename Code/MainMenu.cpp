@@ -1758,82 +1758,17 @@ void MainMenu::Run()
 				}
 			case LOADINGMAP:
 			{
-
 				if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
 				{
-					//int cIndex = saSelector->currIndex;
-					//int pIndex = GetPairIndex(cIndex);
-
-					//mh->songLevelsModified = true;
-					//MapSelectionItem *mi = allItems[pIndex].second.item;
-					//if (mi->headerInfo->songLevelsModified)
-					//{
-					//	ReplaceHeader(mi->path, mi->headerInfo);
-					//}
-
-					//mainMenu->GetController(singleSection->playerIndex).SetFilter(singleSection->profileSelect->currProfile->filter);
-
-					//list< GhostEntry*> ghosts;
-					//ghostSelector->GetActiveList(ghosts);
-					//if (!ghosts.empty())
-					//{
-					//	gs->SetupGhosts(ghosts);
-					//	//load ghosts
-					//	//into list
-					//}
-
-					//int res = gs->Run();
-
-					//XBoxButton filter[ControllerSettings::Count];
-					//SetFilterDefault(filter);
-
-					//for (int i = 0; i < 4; ++i)
-					//{
-					//	mainMenu->GetController(i).SetFilter(filter);
-					//}
-
-					//ghostSelector->UpdateLoadedFolders();
-
-
-
-					//TInfo ti;
-					//ti.gsession = gs;
-					//ti.loadThread = loadThread;
-					//stopThreads.push_back(new boost::thread(&MapSelectionMenu::sStopLoadThread, this, ti));
-
 					delete loadThread;
 					loadThread = NULL;
 					menuMode = RUNNINGMAP;
-					//delete gs;
-					//gs = NULL;
-
-					//View vv;
-					//vv.setCenter(960, 540);
-					//vv.setSize(1920, 1080);
-					//mainMenu->window->setView(vv);
-
-					//mainMenu->v.setCenter(mainMenu->leftCenter);
-					//mainMenu->v.setSize(Vector2f(1920, 1080));
-					//mainMenu->preScreenTexture->setView(mainMenu->v);
-
-					////singleSection->isReady = false;
-					//state = S_MAP_SELECTOR;
-
-
-
 				}
 				else
 				{
 					loadingIconBackpack[1].rotate(-1);
 					loadingIconBackpack[2].rotate(2);
 				}
-				//GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
-				//GameSession::sLoad(gs);
-				//int result = gs->Run();
-
-				//delete gs;
-
-	//			ms->mainMenu->window->setView(oldView);
 				break;
 			}
 			case RUNNINGMAP:
@@ -1908,6 +1843,7 @@ void MainMenu::Run()
 			{
 				menuMode = SAVEMENU;
 				saveMenu->Reset();
+				saveMenu->Update();
 				//worldMap->Reset( );
 				//worldMap->Update( currInput, prevInput );
 				/*if (slideCurrFrame > numSlideFrames)
@@ -2126,17 +2062,21 @@ void MainMenu::Run()
 			}
 			case INTROMOVIE:
 			{
-				if (menuCurrInput.A && !menuPrevInput.A)
+				if (!introMovie->Update() || (menuCurrInput.A && !menuPrevInput.A))
 				{
 					introMovie->Stop();
-					AdventureLoadLevel(&GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
-				}
-				else
-				{
-					if (!introMovie->Update())
+
+					if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
 					{
-						AdventureLoadLevel(&GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
+						delete loadThread;
+						loadThread = NULL;
+						menuMode = RUNNINGMAP;
 					}
+					else
+					{
+						menuMode = LOADINGMAP;
+					}
+					//AdventureLoadLevel(&GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
 				}
 				
 				break;
@@ -2393,23 +2333,37 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 	//window->setView( blahV );
 }
 
-void MainMenu::AdventureLoadLevel( Level *lev )
+void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 {
 	string levelPath = lev->GetFullName();// name;
 	//View oldView = window->getView();
 
 	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
-	menuMode = MainMenu::LOADINGMAP;
+
+	if( loadingScreen )
+		menuMode = LOADINGMAP;
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
+}
+
+void MainMenu::PlayIntroMovie()
+{
+	worldMap->state = WorldMap::COLONY;
+	worldMap->selectedColony = 0;
+	worldMap->selectedLevel = 0;
+	worldMap->testSelector->UpdateAllInfo();
+
+	menuMode = MainMenu::Mode::INTROMOVIE;
+	introMovie->Play();
+
+	AdventureLoadLevel(&(GetCurrentProgress()->worlds[0].sectors[0].levels[0]), false);
+	//soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
 }
 
 CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
 		:menu( p_menu ), optionChosen( false ), showNamePopup( false )
 {
 }
-
-
 
 void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 {
@@ -2471,8 +2425,6 @@ void CustomMapsHandler::GridSelectorCallback( GridSelector *gs, const std::strin
 void CustomMapsHandler::CheckBoxCallback( CheckBox *cb, const std::string & e )
 {
 }
-
-
 
 MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	:mainMenu( p_mainMenu ), font( p_mainMenu->arial ), topIndex( 0 ),

@@ -9493,136 +9493,136 @@ void GameSession::ResetShipSequence()
 
 void GameSession::RespawnPlayer( int index )
 {
-	Actor *player = GetPlayer( index );
-	numKeysCollected = 0;
-	player->framesNotGrinding = 0;
-	player->runeStep = 0;
-	player->runeLength = 0;
-	player->showRune = false;
-	player->bufferedAttack = Actor::JUMP;
-	soundNodeList->Reset();
-	scoreDisplay->Reset();
-	player->hitGoal = false;
-	currentZone = originalZone;
-	if( currentZone != NULL )
-		keyMarker->SetStartKeysZone(currentZone);
-	if( player->currentCheckPoint == NULL )
-	{
-		player->position = originalPos;
-		
-		//actually keys should be set based on which ones you had at the last checkpoint
-		for( int i = 2; i < Gate::GateType::Count; ++i )
-		{
-			player->numKeys = 0;
-			//player->hasKey[i] = 0;
-		}
-	}
-	else
-	{
-		player->position = player->currentCheckPoint->pos;
+	//Actor *player = GetPlayer( index );
+	//numKeysCollected = 0;
+	//player->framesNotGrinding = 0;
+	//player->runeStep = 0;
+	//player->runeLength = 0;
+	//player->showRune = false;
+	//player->bufferedAttack = Actor::JUMP;
+	//soundNodeList->Reset();
+	//scoreDisplay->Reset();
+	//player->hitGoal = false;
+	//currentZone = originalZone;
+	//if( currentZone != NULL )
+	//	keyMarker->SetStartKeysZone(currentZone);
+	//if( player->currentCheckPoint == NULL )
+	//{
+	//	player->position = originalPos;
+	//	
+	//	//actually keys should be set based on which ones you had at the last checkpoint
+	//	for( int i = 2; i < Gate::GateType::Count; ++i )
+	//	{
+	//		player->numKeys = 0;
+	//		//player->hasKey[i] = 0;
+	//	}
+	//}
+	//else
+	//{
+	//	player->position = player->currentCheckPoint->pos;
 
-		//might take out checkpoints so idk how this would work
-		//for( int i = 2; i < Gate::GateType::Count; ++i )
-		//{
-			//player->hasKey[i] = player->currentCheckPoint->hadKey[i];
-		//}
-	}
+	//	//might take out checkpoints so idk how this would work
+	//	//for( int i = 2; i < Gate::GateType::Count; ++i )
+	//	//{
+	//		//player->hasKey[i] = player->currentCheckPoint->hadKey[i];
+	//	//}
+	//}
 
-	//player->seq = Actor::SEQ_NOTHING;
-	player->followerPos = player->position;
-	player->followerVel = V2d( 0, 0 );
-	player->enemiesKilledThisFrame = 0;
-	player->gateTouched = NULL;
+	////player->seq = Actor::SEQ_NOTHING;
+	//player->followerPos = player->position;
+	//player->followerVel = V2d( 0, 0 );
+	//player->enemiesKilledThisFrame = 0;
+	//player->gateTouched = NULL;
 
-	if( poiMap.count( "ship" ) > 0 )
-	{
-		ResetShipSequence();
-	}
-	else
-	{
-		player->action = player->INTRO;
-		player->frame = 0;
-	}
-	
+	//if( poiMap.count( "ship" ) > 0 )
+	//{
+	//	ResetShipSequence();
+	//}
+	//else
+	//{
+	//	player->action = player->INTRO;
+	//	player->frame = 0;
+	//}
+	//
 
 
-	player->velocity.x = 0;
-	player->velocity.y = 0;
-	player->reversed = false;
-	player->b.offset.y = 0;
-	player->b.rh = player->normalHeight;
-	player->facingRight = true;
-	player->offsetX = 0;
-	player->prevInput = ControllerState();
-	player->currInput = ControllerState();
-	player->ground = NULL;
-	player->grindEdge = NULL;
-	player->bounceEdge = NULL;
-	player->dead = false;
-	player->record = 0;
-	player->recordedGhosts = 0;
-	player->blah = false;
-	player->receivedHit = NULL;
-	player->speedParticleCounter = 1;
-	player->speedLevel = 0;
-	player->speedBarTarget = 0;//60;
-	player->currentSpeedBar = 0;//60;
+	//player->velocity.x = 0;
+	//player->velocity.y = 0;
+	//player->reversed = false;
+	//player->b.offset.y = 0;
+	//player->b.rh = player->normalHeight;
+	//player->facingRight = true;
+	//player->offsetX = 0;
+	//player->prevInput = ControllerState();
+	//player->currInput = ControllerState();
+	//player->ground = NULL;
+	//player->grindEdge = NULL;
+	//player->bounceEdge = NULL;
+	//player->dead = false;
+	//player->record = 0;
+	//player->recordedGhosts = 0;
+	//player->blah = false;
+	//player->receivedHit = NULL;
+	//player->speedParticleCounter = 1;
+	//player->speedLevel = 0;
+	//player->speedBarTarget = 0;//60;
+	//player->currentSpeedBar = 0;//60;
 
-	player->bounceFlameOn = false;
+	//player->bounceFlameOn = false;
 
-	if( player->hasPowerLeftWire )
-	{
-		player->leftWire->Reset();
-	}
-	if( player->hasPowerRightWire )
-	{
-		player->rightWire->Reset();
-	}
-	
-	player->lastWire = 0;
-	player->desperationMode = false;
+	//if( player->hasPowerLeftWire )
+	//{
+	//	player->leftWire->Reset();
+	//}
+	//if( player->hasPowerRightWire )
+	//{
+	//	player->rightWire->Reset();
+	//}
+	//
+	//player->lastWire = 0;
+	//player->desperationMode = false;
 
-	player->flashFrames = 0;
-	
-	
-	if( powerRing != NULL )
-		powerRing->ResetFull();
-	//currentZone = NULL;
-	cam.zoomFactor = 1;
-	cam.pos.x = player->position.x;
-	cam.pos.y = player->position.y;
-	cam.offset = Vector2f( 0, 0 );
-	cam.manual = false;
-	cam.easing = false;
-	cam.rumbling = false;
+	//player->flashFrames = 0;
+	//
+	//
+	//if( powerRing != NULL )
+	//	powerRing->ResetFull();
+	////currentZone = NULL;
+	//cam.zoomFactor = 1;
+	//cam.pos.x = player->position.x;
+	//cam.pos.y = player->position.y;
+	//cam.offset = Vector2f( 0, 0 );
+	//cam.manual = false;
+	//cam.easing = false;
+	//cam.rumbling = false;
 
-	player->hasDoubleJump = true;
-	player->hasAirDash = true;
-	player->hasGravReverse = true;
+	//player->hasDoubleJump = true;
+	//player->hasAirDash = true;
+	//player->hasGravReverse = true;
 
-	if( !cam.bossCrawler )
-	{
-		cam.zoomFactor = 1;
-		cam.zoomLevel = 0;
-		cam.offset = Vector2f( 0, 0 );
-	}
-	
+	//if( !cam.bossCrawler )
+	//{
+	//	cam.zoomFactor = 1;
+	//	cam.zoomLevel = 0;
+	//	cam.offset = Vector2f( 0, 0 );
+	//}
+	//
 
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		player->bubbleFramesToLive[i] = 0;
-		//if( player->bubbleFramesToLive[i] > 0 )
-		//{
-			
-		//}
-	}
+	//for( int i = 0; i < player->maxBubbles; ++i )
+	//{
+	//	player->bubbleFramesToLive[i] = 0;
+	//	//if( player->bubbleFramesToLive[i] > 0 )
+	//	//{
+	//		
+	//	//}
+	//}
 
-	for( int i = 0; i < player->maxMotionGhosts; ++i )
-	{
-		player->motionGhosts[i].setPosition( player->position.x, player->position.y );
-	}
+	//for( int i = 0; i < player->maxMotionGhosts; ++i )
+	//{
+	//	player->motionGhosts[i].setPosition( player->position.x, player->position.y );
+	//}
 
-	player->SetExpr( Actor::Expr::Expr_NEUTRAL );
+	//player->SetExpr( Actor::Expr::Expr_NEUTRAL );
 }
 
 void GameSession::ClearFX()
@@ -9666,6 +9666,7 @@ void GameSession::RestartLevel()
 
 	fadingIn = false;
 	fadingOut = false;
+	numKeysCollected = 0;
 
 	//crawlerFightSeq->Reset();
 	//crawlerAfterFightSeq->Reset();

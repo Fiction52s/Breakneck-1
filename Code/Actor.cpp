@@ -15553,8 +15553,6 @@ void Actor::UpdatePostPhysics()
 {
 	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % 10 == 0)
 	{
-
-
 		RelEffectInstance params;
 		//EffectInstance params;
 		Transform tr = sf::Transform::Identity;

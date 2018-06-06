@@ -26,6 +26,7 @@ struct SaveMenuScreen
 		SELECT,
 		TRANSITION,
 		TRANSITIONMOVIE,
+		FADEIN,
 		Count
 	};
 

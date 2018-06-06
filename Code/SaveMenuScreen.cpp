@@ -54,7 +54,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	menuOffset = Vector2f(0, 0);
 
 	TilesetManager &tsMan = mainMenu->tilesetManager;
-
+	selectedSaveIndex = 0;
 	frame = 0;
 	kinFaceTurnLength = 15;
 	selectedSaveIndex = 0;
@@ -72,6 +72,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	actionLength[SELECT] = 12 * 3 + 6 * 4 + 20;
 	actionLength[TRANSITION] = 30;
 	actionLength[TRANSITIONMOVIE] = 30;
+	actionLength[FADEIN] = 30;
 
 	files[0] = new SaveFile("blue");
 	files[1] = new SaveFile("green");
@@ -89,7 +90,11 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 		fileDisplay[i]->SetPosition(GetTopLeftSaveSlot(i));
 	}
 
-	
+	for (int i = 0; i < 6; ++i)
+	{
+		defaultFiles[i] = !(files[i]->Load());
+		fileDisplay[i]->SetValues(files[i]);
+	}
 
 	background.setTexture(*ts_background->texture);
 	background.setPosition(menuOffset);
@@ -212,13 +217,13 @@ void SaveMenuScreen::Update()
 		}
 		case TRANSITIONMOVIE:
 		{
-			mainMenu->menuMode = MainMenu::Mode::INTROMOVIE;
-			mainMenu->introMovie->Play();
-			//mainMenu->transAlpha = 255;
-			//mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
-			//mainMenu->worldMap->frame = 0;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
+			mainMenu->PlayIntroMovie();
 			return;
+			break;
+		}
+		case FADEIN:
+		{
+			action = WAIT;
 			break;
 		}
 		}
@@ -330,6 +335,8 @@ void SaveMenuScreen::Update()
 	switch (action)
 	{
 	case WAIT:
+		transparency = 0;
+		fadeOut = 0;
 		break;
 	case SELECT:
 	{
@@ -405,6 +412,9 @@ void SaveMenuScreen::Update()
 		break;
 	case TRANSITIONMOVIE:
 		fadeOut = (float)(frame%actionLength[TRANSITIONMOVIE]) / actionLength[TRANSITIONMOVIE];
+		break;
+	case FADEIN:
+		transparency = 1.f - ((float)(frame%actionLength[FADEIN]) / actionLength[FADEIN]);
 		break;
 	}
 
@@ -509,7 +519,7 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	saveTexture->draw(kinWindow);
 
 	int endDraw = 12 * 3 + 6 * 4;
-	if (action == WAIT || (action == SELECT && frame < endDraw ))
+	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN )
 	{
 		saveTexture->draw(kinJump);
 	}
@@ -546,15 +556,23 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 
 	saveTexture->draw(selectSlot);
 	saveTexture->draw(kinFace);*/
+
+	
 }
 
 void SaveMenuScreen::Reset()
 {
+	//doesnt reset the selected save index
 	fadeOut = 0;
 	transparency = 0;
 	action = WAIT;
 	frame = 0;
-	selectedSaveIndex = 0;
+
+	for (int i = 0; i < 6; ++i)
+	{
+		fileDisplay[i]->SetValues(files[i]);
+	}
+	
 	asteroidFrameBack = 0;
 	asteroidFrameFront = 0;
 	moveDelayCounter = 0;
@@ -563,12 +581,6 @@ void SaveMenuScreen::Reset()
 	kinJump.setTextureRect(ts_kinJump1->GetSubRect(0));
 	kinJump.setOrigin(kinJump.getLocalBounds().width, 0);
 	kinJump.setPosition(Vector2f(1920, 0) + menuOffset);
-
-	for (int i = 0; i < 6; ++i)
-	{
-		defaultFiles[i] = !(files[i]->Load());
-		fileDisplay[i]->SetValues(files[i]);
-	}
 }
 
 void SaveMenuScreen::UpdateClouds()

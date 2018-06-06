@@ -562,9 +562,10 @@ struct MainMenu
 	Tileset *ts_splashScreen;
 
 	void CustomMapOption();
-	
+	void PlayIntroMovie();
 	Mode menuMode;
-	void AdventureLoadLevel( Level *lev );
+	void AdventureLoadLevel( Level *lev,
+		bool loadingScreen = true );
 	boost::thread *loadThread;
 	GameSession *currLevel;
 
