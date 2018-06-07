@@ -1164,12 +1164,14 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	:numLevels(-1), ms(p_ms), sectorIndex( index )
 {
 	unlockedIndex = -1;
+	numUnlockConditions = -1;
 	nodeSize = 80;
 	pathLen = 16;
 	frame = 0;
 	nodes = NULL;
 	paths = NULL;
 	saSelector = NULL;
+	unlockCondText = NULL;
 	stringstream ss;
 	ss.str("");
 	ss << "WorldMap/mapthumb_w" << ms->worldIndex + 1 << "_" << sectorIndex + 1 << "_256x256.png";
@@ -1809,65 +1811,105 @@ void MapSector::Init(Sector *m_sec)
 	int waitFrames[3] = { 30, 10, 5 };
 	int waitModeThresh[2] = { 2, 2 };
 
-	if (saSelector != NULL)
+	bool blank = saSelector == NULL;
+	bool diffNumLevels = false;
+	if (saSelector != NULL && saSelector->totalItems != numLevels)
+	{
+		diffNumLevels = true;
+	}
+
+	if (diffNumLevels)
+	{
 		delete saSelector;
-	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numLevels, 0);
+		saSelector = NULL;
+	}
+	
+	if( saSelector == NULL )
+		saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numLevels, 0);
 
 	selectedYIndex = 1;
-	if (nodes != NULL)
+
+	if (diffNumLevels)
+	{
 		delete[] nodes;
+		nodes = NULL;
 
-	int numUnlockConditions = sec->numUnlockConditions;
-	unlockCondText = new Text[numUnlockConditions];
-	for (int i = 0; i < numUnlockConditions; ++i)
-	{
-		unlockCondText[i].setFont(ms->mainMenu->arial);
-		unlockCondText[i].setCharacterSize(40);
-		unlockCondText[i].setFillColor(Color::White);
+		delete[] paths;
+		paths = NULL;
+
+		delete[] topBonusNodes;
+		topBonusNodes = NULL;
+
+		delete[] botBonusNodes;
+		botBonusNodes = NULL;
 	}
-	shardsCollectedText.setFont(ms->mainMenu->arial);
-	completionPercentText.setFont(ms->mainMenu->arial);
-
-	shardsCollectedText.setCharacterSize(40);
-	completionPercentText.setCharacterSize(40);
-	
-	shardsCollectedText.setFillColor(Color::White);
-	completionPercentText.setFillColor(Color::White);
-	
-
-	levelPercentCompleteText.setFillColor(Color::White);
-	levelPercentCompleteText.setCharacterSize(40);
-	levelPercentCompleteText.setFont(ms->mainMenu->arial);
-
-	sectorNameText.setFillColor(Color::White);
-	sectorNameText.setCharacterSize(40);
-	sectorNameText.setFont(ms->mainMenu->arial);
-	sectorNameText.setOrigin(sectorNameText.getLocalBounds().width / 2, 0);
-	
-
-	nodes = new Sprite[numLevels];
-	paths = new Sprite[numLevels];
-	topBonusNodes = new Sprite[numLevels];
-	botBonusNodes = new Sprite[numLevels];
-
-	for (int i = 0; i < numLevels; ++i)
+	if (nodes == NULL)
 	{
-		nodes[i].setTexture(*ms->ts_node->texture);
-		nodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
-		nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
-		topBonusNodes[i].setTexture(*ms->ts_node->texture);
-		topBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
-		topBonusNodes[i].setOrigin(topBonusNodes[i].getLocalBounds().width / 2, topBonusNodes[i].getLocalBounds().height / 2);
-		botBonusNodes[i].setTexture(*ms->ts_node->texture);
-		botBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
-		botBonusNodes[i].setOrigin(botBonusNodes[i].getLocalBounds().width / 2, botBonusNodes[i].getLocalBounds().height / 2);
+		nodes = new Sprite[numLevels];
+		paths = new Sprite[numLevels];
+		topBonusNodes = new Sprite[numLevels];
+		botBonusNodes = new Sprite[numLevels];
+
+		for (int i = 0; i < numLevels; ++i)
+		{
+			nodes[i].setTexture(*ms->ts_node->texture);
+			nodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
+			nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
+			topBonusNodes[i].setTexture(*ms->ts_node->texture);
+			topBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
+			topBonusNodes[i].setOrigin(topBonusNodes[i].getLocalBounds().width / 2, topBonusNodes[i].getLocalBounds().height / 2);
+			botBonusNodes[i].setTexture(*ms->ts_node->texture);
+			botBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
+			botBonusNodes[i].setOrigin(botBonusNodes[i].getLocalBounds().width / 2, botBonusNodes[i].getLocalBounds().height / 2);
+		}
+
+		for (int i = 0; i < numLevels; ++i)
+		{
+			paths[i].setTexture(*ms->ts_path->texture);
+			paths[i].setTextureRect(ms->ts_path->GetSubRect(15));
+			paths[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
+		}
 	}
 
-	for (int i = 0; i < numLevels; ++i)
+	if (numUnlockConditions != -1 && sec->numUnlockConditions != numUnlockConditions)
 	{
-		paths[i].setTexture(*ms->ts_path->texture);
-		paths[i].setTextureRect(ms->ts_path->GetSubRect(15));
-		paths[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
+		delete[] unlockCondText;
+		unlockCondText = NULL;
+	}
+
+	if (unlockCondText == NULL)
+	{
+		numUnlockConditions = sec->numUnlockConditions;
+		unlockCondText = new Text[numUnlockConditions];
+
+		for (int i = 0; i < numUnlockConditions; ++i)
+		{
+			unlockCondText[i].setFont(ms->mainMenu->arial);
+			unlockCondText[i].setCharacterSize(40);
+			unlockCondText[i].setFillColor(Color::White);
+		}
+	}
+	
+	if (blank)
+	{
+		shardsCollectedText.setFont(ms->mainMenu->arial);
+		completionPercentText.setFont(ms->mainMenu->arial);
+
+		shardsCollectedText.setCharacterSize(40);
+		completionPercentText.setCharacterSize(40);
+
+		shardsCollectedText.setFillColor(Color::White);
+		completionPercentText.setFillColor(Color::White);
+
+
+		levelPercentCompleteText.setFillColor(Color::White);
+		levelPercentCompleteText.setCharacterSize(40);
+		levelPercentCompleteText.setFont(ms->mainMenu->arial);
+
+		sectorNameText.setFillColor(Color::White);
+		sectorNameText.setCharacterSize(40);
+		sectorNameText.setFont(ms->mainMenu->arial);
+		sectorNameText.setOrigin(sectorNameText.getLocalBounds().width / 2, 0);
 	}
 
 	if (sec->IsComplete())
@@ -1884,5 +1926,4 @@ void MapSector::Init(Sector *m_sec)
 	UpdateUnlockConditions();
 	UpdateStats();
 	UpdateLevelStats();
-	//percentComplete = sec->GetCompletionPercentage();
 }

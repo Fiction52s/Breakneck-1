@@ -532,6 +532,7 @@ MainMenu::MainMenu()
 	pauseMenu = new PauseMenu(this);
 
 	titleScreen = new TitleScreen(this);
+	
 
 	introMovie = new IntroMovie;
 	
@@ -702,7 +703,12 @@ MainMenu::MainMenu()
 	transWorldMapFrame = 0;
 	
 
+	titleScreen->Draw(preScreenTexture);
+
 	worldMap = new WorldMap( this );
+
+	
+
 	levelSelector = new LevelSelector( this );
 
 	
@@ -786,6 +792,11 @@ MainMenu::MainMenu()
 	creditsMenu = new CreditsMenuScreen(this);
 
 	saveMenu = new SaveMenuScreen(this);
+
+	worldMap->testSelector->UpdateAllInfo();
+
+	worldMap->Draw(preScreenTexture);
+	saveMenu->Draw(preScreenTexture);
 
 	FillRingSection *blah[] = { new FillRingSection(tilesetManager, Color::Red, sf::Color::Black,
 		sf::Color::Blue,
@@ -1751,9 +1762,7 @@ void MainMenu::Run()
 					}
 
 					worldMap->Update(menuPrevInput, menuCurrInput);
-					
-					
-				
+
 					break;
 				}
 			case LOADINGMAP:
@@ -2177,7 +2186,7 @@ void MainMenu::Run()
 		}
 		case TRANS_MAIN_TO_SAVE:
 		{
-			preScreenTexture->setView(v);
+			//preScreenTexture->setView(v);
 			worldMap->Draw(preScreenTexture);
 			saveMenu->Draw(preScreenTexture);
 			break;

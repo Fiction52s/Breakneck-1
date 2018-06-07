@@ -40,14 +40,14 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 
 	SetActionTile(0, 0);
 	SetActionTile(1, 1);
-	SetActionTile(2, 2);
-	SetActionTile(3, 5);
-	SetActionTile(4, 6);
-	SetActionTile(5, 7);
-	SetActionTile(6, 8);
-	SetActionTile(7, 8);
-	SetActionTile(8, 3);
-	SetActionTile(9, 3);
+	SetActionTile(2, 5);
+	SetActionTile(3, 10);
+	SetActionTile(4, 11);
+	SetActionTile(5, 12);
+	SetActionTile(6, 13);
+	SetActionTile(7, 13);
+	SetActionTile(8, 7);
+	SetActionTile(9, 7);
 
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
@@ -299,12 +299,17 @@ void ControlSettingsMenu::Draw(sf::RenderTarget *target )
 	pSel->Draw(target);
 }
 
+XBoxButton ControlSettingsMenu::GetFilteredButton( ControllerSettings::ButtonType b )
+{
+	return pSel->currProfile->filter[b];
+}
+
 void ControlSettingsMenu::UpdateXboxButtonIcons()
 {
 	ts_currentButtons = ts_xboxButtons;
 	for (int i = 0; i < ControllerSettings::ButtonType::Count; ++i)
 	{
-		int ind = pSel->currProfile->filter[i] - 1;// (int)xboxInputAssoc[controlSetIndex][i] - 1;
+		int ind = pSel->currProfile->filter[i] - 1;
 		IntRect sub = ts_xboxButtons->GetSubRect(ind);
 		SetRectSubRect(buttonQuads + i * 4, sub);
 	}

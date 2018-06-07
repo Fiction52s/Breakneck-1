@@ -593,7 +593,7 @@ struct MainMenu
 	static sf::Font arial;
 	sf::Clock gameClock;
 
-	LevelSelector *levelSelector;
+	LevelSelector *levelSelector; 
 	WorldMap *worldMap;
 
 

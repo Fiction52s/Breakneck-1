@@ -167,9 +167,12 @@ struct KinMenu
 {
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
+	ControlSettingsMenu *csm;
+	int GetCurrIndex();
 	~KinMenu();
 	MainMenu *mainMenu;
-	KinMenu(MainMenu *p_mainMenu);
+	KinMenu(MainMenu *p_mainMenu,
+		ControlSettingsMenu *csm);
 	sf::Vertex powerQuads[9 * 4];
 	ColorShifter *aura1AShifter;
 	ColorShifter *aura1BShifter;
@@ -191,6 +194,13 @@ struct KinMenu
 	sf::Color Get1BColor();
 	sf::Color Get2AColor();
 	sf::Color Get2BColor();
+	sf::Sprite tutorialSpr;
+	sf::Vertex descriptionBox[4];
+	void UpdateCommandButton();
+	Tileset *ts_xboxButtons;
+	Tileset *ts_currentButtons;
+	sf::Sprite commandSpr;
+	Tileset *ts_tutorial[8 + 6 * 2];
 	sf::Sprite kinSpr;
 	sf::Sprite veinSpr;
 	sf::Sprite aura1ASpr;
@@ -201,6 +211,7 @@ struct KinMenu
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	void UpdateDescription();
+	void UpdateTutorial();
 	void UpdatePowerSprite();
 	std::string powerDescriptions[9];
 	void Draw(sf::RenderTarget *target);

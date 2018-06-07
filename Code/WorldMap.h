@@ -81,6 +81,7 @@ struct MapSector
 	sf::Vertex statsBG[4];
 	sf::Vertex sectorStatsBG[4];
 	sf::Text *unlockCondText;
+	int numUnlockConditions;
 	sf::Text shardsCollectedText;
 	sf::Text completionPercentText;
 	sf::Text levelPercentCompleteText;

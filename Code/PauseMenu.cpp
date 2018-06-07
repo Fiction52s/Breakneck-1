@@ -1188,7 +1188,7 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
 	shardMenu = new ShardMenu( mainMenu );
-	kinMenu = new KinMenu(mainMenu);
+	kinMenu = new KinMenu(mainMenu, controlSettingsMenu);
 	//resolution
 	//fullscreen
 	//vsync
@@ -1979,13 +1979,42 @@ PauseMenu::UpdateResponse PauseMenu::UpdateInputOptions(
 //using namespace sf;
 
 
-KinMenu::KinMenu(MainMenu *p_mainMenu)
-	:mainMenu(p_mainMenu)
+KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
+	:mainMenu(p_mainMenu), csm( p_csm )
 {
-	Vector2f powersOffset(500, 632);
+	Vector2f powersOffset(512, 495);
 	Vector2f powerPos(0, 0);
 	Vector2f powerSpacing(20, 20);
 	ts_powers = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
+
+	description.setFont(mainMenu->arial);
+	description.setCharacterSize(24);
+	description.setFillColor(Color::White);
+
+	int tutWidth = 1220;
+	int tutHeight = 320;
+	ts_tutorial[0] = mainMenu->tilesetManager.GetTileset("Menu/tut_jump.png", tutWidth, tutHeight);
+	ts_tutorial[1] = mainMenu->tilesetManager.GetTileset("Menu/tut_attack.png", tutWidth, tutHeight);
+	ts_tutorial[2] = mainMenu->tilesetManager.GetTileset("Menu/tut_speed.png", tutWidth, tutHeight);
+	ts_tutorial[3] = mainMenu->tilesetManager.GetTileset("Menu/tut_walljump.png", tutWidth, tutHeight);
+	ts_tutorial[4] = mainMenu->tilesetManager.GetTileset("Menu/tut_health.png", tutWidth, tutHeight);
+	ts_tutorial[5] = mainMenu->tilesetManager.GetTileset("Menu/tut_sprint.png", tutWidth, tutHeight);
+	ts_tutorial[6] = mainMenu->tilesetManager.GetTileset("Menu/tut_survival.png", tutWidth, tutHeight);
+	ts_tutorial[7] = mainMenu->tilesetManager.GetTileset("Menu/tut_key.png", tutWidth, tutHeight);
+	tutorialSpr.setPosition(512, 74);
+	
+	
+	ts_xboxButtons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
+
+	SetRectColor(descriptionBox, Color(0, 0, 0, 255));
+	SetRectCenter(descriptionBox, 1220, 90, Vector2f(1122, 439));//topleft is 512,394
+
+	description.setPosition(512 + 10, 394 + 10);
+
+	commandSpr.setPosition(512, 394);
+	commandSpr.setTexture(*ts_xboxButtons->texture);
+	commandSpr.setScale(.5, .5);
+
 	for (int i = 0; i < 9; ++i)
 	{
 		SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i));
@@ -1998,7 +2027,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
-	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 9, 0);
+	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 1, 0);
 
 	ts_kin = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_400x836.png", 400, 836);
@@ -2082,6 +2111,23 @@ KinMenu::KinMenu(MainMenu *p_mainMenu)
 	//SetRectColor(kinBG, Color(Color::Cyan));
 
 	frame = 0;
+
+	powerDescriptions[0] = "     = JUMP   Press JUMP to launch yourself into the air, and JUMP while"
+		"\naerial to double jump. "
+		"Hold the JUMP button down for extra height!";
+	powerDescriptions[1] = "dashing";
+	powerDescriptions[2] = "attacking";
+	powerDescriptions[3] = "airdash";
+	powerDescriptions[4] = "ceiling cling";
+	powerDescriptions[5] = "scorpion bounce";
+	powerDescriptions[6] = "grind";
+	powerDescriptions[7] = "time slow bubble";
+	powerDescriptions[8] = "wires";
+
+	UpdateDescription();
+	UpdatePowerSprite();
+	UpdateTutorial();
+	UpdateCommandButton();
 }
 
 KinMenu::~KinMenu()
@@ -2092,6 +2138,30 @@ KinMenu::~KinMenu()
 	delete aura2BShifter;
 
 	delete bgShifter;
+}
+
+void KinMenu::UpdateTutorial()
+{
+	tutorialSpr.setTexture(*ts_tutorial[GetCurrIndex()]->texture);
+}
+
+void KinMenu::UpdateCommandButton()
+{
+	ts_currentButtons = ts_xboxButtons;
+
+	int index = GetCurrIndex();
+	IntRect sub;
+	if (index == 0)
+		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::JUMP)-1);
+	else if( index == 1)
+		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::ATTACK)-1);
+	else if (index == 5)
+	{
+		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::DASH)-1);
+	}
+
+	commandSpr.setTexture(*ts_currentButtons->texture);
+	commandSpr.setTextureRect(sub);
 }
 
 void KinMenu::Update(ControllerState &curr, ControllerState &prev)
@@ -2108,18 +2178,11 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 	{
 		UpdateDescription();
 		UpdatePowerSprite();
+		UpdateTutorial();
+		UpdateCommandButton();
 	}
-	powerDescriptions[0] = "jumping";
-	powerDescriptions[1] = "dashing";
-	powerDescriptions[2] = "attacking";
-	powerDescriptions[3] = "airdash";
-	powerDescriptions[4] = "ceiling cling";
-	powerDescriptions[5] = "scorpion bounce";
-	powerDescriptions[6] = "grind";
-	powerDescriptions[7] = "time slow bubble";
-	powerDescriptions[8] = "wires";
 
-	UpdateDescription();
+	
 
 	int scrollFrames1 = 120;
 	int scrollFrames2 = 240;
@@ -2162,10 +2225,20 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 	++frame;
 }
 
+int KinMenu::GetCurrIndex()
+{
+	return ySelector->currIndex / 8 + xSelector->currIndex % 8;
+}
+
 void KinMenu::UpdateDescription()
 {
-	int index = ySelector->currIndex + xSelector->currIndex * 8;
-	description.setString(powerDescriptions[index]);
+	description.setString(powerDescriptions[GetCurrIndex()]);
+	
+	/*sf::FloatRect textRect = description.getLocalBounds();
+	description.setOrigin(textRect.left + textRect.width / 2.0f,
+		textRect.top + textRect.height / 2.0f);
+	description.setPosition(Vector2f(1122, 439));*/
+	//text.setPosition(sf::Vector2f(SCRWIDTH / 2.0f, SCRHEIGHT / 2.0f));
 }
 
 void KinMenu::UpdatePowerSprite()
@@ -2189,5 +2262,16 @@ void KinMenu::Draw(sf::RenderTarget *target)
 	target->draw(veinSpr);
 
 	target->draw(powerQuads, 9 * 4, sf::Quads, ts_powers->texture);
+	
+
+	target->draw(tutorialSpr);
+	target->draw(descriptionBox, 4, sf::Quads );
+
+	int index = GetCurrIndex();
+	if (index == 0 || index == 1 || index == 5)
+	{
+		target->draw(commandSpr);
+	}
+
 	target->draw(description);
 }

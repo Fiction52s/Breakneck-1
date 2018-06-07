@@ -500,16 +500,8 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 
 	RenderTexture *saveTexture = mainMenu->saveTexture;
 	saveTexture->clear(Color::Transparent);
-	//target->setView(mainMenu->v);
-
+	
 	saveTexture->setView(mainMenu->v);
-
-	//target->draw(starBackground);
-
-	//target->draw(asteroid1);
-	//target->draw(world);
-	//target->draw(asteroid0);
-	//target->draw(asteroid2);
 
 	SetRectColor(blackQuad, Color( 0, 0, 0, fadeOut * 255));
 
@@ -541,22 +533,6 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	saveSpr.setColor(Color(255, 255, 255, 255 * (1.f - transparency)));
 	
 	target->draw(saveSpr);
-
-	
-	/*saveTexture->clear(Color::Transparent);
-	saveTexture->setView(mainMenu->v);
-	saveTexture->draw(background);
-	saveTexture->draw(kinSky);
-	saveTexture->draw(kinClouds);
-	saveTexture->draw(kinWindow);*/
-	//TODO
-	//if (menuMode == SAVEMENU ||
-	//	kinFaceFrame < saveJumpLength * saveJumpFactor)
-	/*saveTexture->draw(kinJump);
-
-	saveTexture->draw(selectSlot);
-	saveTexture->draw(kinFace);*/
-
 	
 }
 

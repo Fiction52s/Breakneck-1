@@ -22,6 +22,7 @@ struct ControlSettingsMenu
 
 	ButtonState currButtonState;
 	ControlSettingsMenu(MainMenu *p_mm);
+	XBoxButton GetFilteredButton( ControllerSettings::ButtonType b );
 	~ControlSettingsMenu();
 	void InitAssocSymbols();
 	XBoxButton CheckXBoxInput(ControllerState &currInput);
