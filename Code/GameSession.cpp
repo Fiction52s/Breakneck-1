@@ -8294,8 +8294,8 @@ int GameSession::Run()
 			realPos.y = floor( realPos.y + .5f );
 
 			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			kinMinimapIcon.setPosition( realPos );
-			mapTex->draw( kinMinimapIcon );
+			//kinMinimapIcon.setPosition( realPos );
+			//mapTex->draw( kinMinimapIcon );
 
 			mapTex->setView( vv );			
 
@@ -8552,8 +8552,8 @@ int GameSession::Run()
 			realPos.y = floor( realPos.y + .5f );
 
 			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			kinMinimapIcon.setPosition( realPos );
-			mapTex->draw( kinMinimapIcon );
+			//kinMinimapIcon.setPosition( realPos );
+			//mapTex->draw( kinMinimapIcon );
 
 			mapTex->setView( vv );			
 
