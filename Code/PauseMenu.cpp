@@ -1984,7 +1984,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 {
 	Vector2f powersOffset(512, 495);
 	Vector2f powerPos(0, 0);
-	Vector2f powerSpacing(20, 20);
+	Vector2f powerSpacing(24, 20);
 	ts_powers = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
 
 	description.setFont(mainMenu->arial);
@@ -2013,7 +2013,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 
 	commandSpr.setPosition(512, 394);
 	commandSpr.setTexture(*ts_xboxButtons->texture);
-	commandSpr.setScale(.5, .5);
+	commandSpr.setScale(.4, .4);
 
 	for (int i = 0; i < 9; ++i)
 	{
@@ -2112,12 +2112,13 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 
 	frame = 0;
 
-	powerDescriptions[0] = "     = JUMP   Press JUMP to launch yourself into the air, and JUMP while"
-		"\naerial to double jump. "
-		"Hold the JUMP button down for extra height!";
-	powerDescriptions[1] = "dashing";
-	powerDescriptions[2] = "attacking";
-	powerDescriptions[3] = "airdash";
+	powerDescriptions[0] = "      = JUMP     Press JUMP to launch yourself into the air, or press JUMP while aerial to double jump.\n"
+		"Hold the JUMP button down longer for extra height!";
+	powerDescriptions[1] = "      = ATTACK     Press ATTACK to release an energy burst in front of you capable of destroying enemies.\n"
+		"Hold UP or DOWN while in the air to do a directional attack.";
+	powerDescriptions[2] = "      = DASH     Press DASH to quickly start moving in the direction you are facing while grounded.\n"
+		" Tap DASH quickly while ascending a steep slope to climb your way up.";
+	powerDescriptions[3] =  "blah";
 	powerDescriptions[4] = "ceiling cling";
 	powerDescriptions[5] = "scorpion bounce";
 	powerDescriptions[6] = "grind";
@@ -2155,7 +2156,7 @@ void KinMenu::UpdateCommandButton()
 		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::JUMP)-1);
 	else if( index == 1)
 		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::ATTACK)-1);
-	else if (index == 5)
+	else if (index == 2)
 	{
 		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::DASH)-1);
 	}
@@ -2268,7 +2269,7 @@ void KinMenu::Draw(sf::RenderTarget *target)
 	target->draw(descriptionBox, 4, sf::Quads );
 
 	int index = GetCurrIndex();
-	if (index == 0 || index == 1 || index == 5)
+	if (index == 0 || index == 1 || index == 2)
 	{
 		target->draw(commandSpr);
 	}

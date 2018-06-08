@@ -193,6 +193,10 @@ void SaveMenuScreen::Update()
 		case SELECT:
 			if (defaultFiles[selectedSaveIndex])
 			{
+				if (selectedSaveIndex == 0)
+				{
+					assert(0);
+				}
 				files[selectedSaveIndex]->CopyFromDefault();
 				action = TRANSITIONMOVIE;
 			}
