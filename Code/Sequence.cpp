@@ -45,14 +45,13 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 		V2d( 0, 0 ), CubicBezier( 0, 0, 1, 1 ), exitTime );
 
 	//ts_ship = owner->GetTileset( "Ship/ship_exit_1920x1080.png", 1920, 1080 );
-	ts_ship = owner->GetTileset("Ship/ship_exit_1920x1080.png", 1920, 1080);
+	ts_ship = owner->GetTileset("Ship/ship_exit_864x540.png", 864, 540);
 	shipSprite.setTexture( *ts_ship->texture );
 	shipSprite.setTextureRect( ts_ship->GetSubRect( 0 ) );
-	shipSprite.setScale(.5, .5);
 	//shipSprite.setOrigin(560, 700);
 	//shipSprite.setOrigin(960, 700);
 	//shipSprite.setOrigin(960 / 2, 700);
-	shipSprite.setOrigin(470, 425);
+	shipSprite.setOrigin(421, 425);
 }
 
 bool ShipExitSeq::Update()
@@ -77,16 +76,16 @@ bool ShipExitSeq::Update()
 			center.Reset();
 			owner->cam.SetMovementSeq( &center, false );
 
-			abovePlayer = V2d( player->position.x, player->position.y - 200 );
+			abovePlayer = V2d( player->position.x, player->position.y - 300 );
 
-			shipMovement.movementList->start = abovePlayer + V2d( -1000, -500 );//player->position + V2d( -1000, sOffsetY );
+			shipMovement.movementList->start = abovePlayer + V2d( -1500, -900 );//player->position + V2d( -1000, sOffsetY );
 			shipMovement.movementList->end = abovePlayer;//player->position + V2d( 1000, sOffsetY );
 			shipMovement.Reset();
 
 			Movement *m = shipMovement.movementList->next;
 
 			m->start = abovePlayer;
-			m->end = abovePlayer + V2d(1000, -500);
+			m->end = abovePlayer + V2d(1500, -900);
 
 			origPlayer = owner->GetPlayer( 0 )->position;
 			attachPoint = abovePlayer;//V2d(player->position.x, player->position.y);//abovePlayer.y + 170 );
@@ -106,7 +105,7 @@ bool ShipExitSeq::Update()
 	int startJump = 4 * 3;//60 - jumpSquat;
 	if( frame > enterTime)
 	{
-		owner->GetPlayer( 0 )->position = V2d( shipMovement.position.x, shipMovement.position.y + 32.0 );
+		owner->GetPlayer( 0 )->position = V2d( shipMovement.position.x, shipMovement.position.y + 48.0 );
 	}
 	else if( frame >= jumpSquat && frame <= enterTime )//startJump )
 	{
@@ -116,7 +115,7 @@ bool ShipExitSeq::Update()
 		//double a = 
 		//cout << "a: " << a << endl;
 		V2d pAttachPoint = attachPoint;
-		pAttachPoint.y += 32;
+		pAttachPoint.y += 48.f;
 		owner->GetPlayer( 0 )->position = origPlayer * (1.0 - a ) + pAttachPoint * a;
 	}
 

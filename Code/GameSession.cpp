@@ -5057,12 +5057,12 @@ bool GameSession::Load()
 
 	ts_w1ShipClouds0 = GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
 	ts_w1ShipClouds1 = GetTileset("Ship/cloud_w1_b1_960x320.png", 960, 320);
-	ts_ship = GetTileset("Ship/ship_1728x800.png", 1728, 800);
+	ts_ship = GetTileset("Ship/ship_864x400.png", 864, 400);
 
 
 	shipSprite.setTexture(*ts_ship->texture);
 	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
-	shipSprite.setScale(.5, .5);
+	//shipSprite.setScale(.5, .5);
 	shipSprite.setOrigin(shipSprite.getLocalBounds().width / 2,
 		shipSprite.getLocalBounds().height / 2);
 

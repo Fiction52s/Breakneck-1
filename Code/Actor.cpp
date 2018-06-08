@@ -110,8 +110,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[RIDESHIP] = owner->GetTileset("Kin/dive_64x64.png", 64, 64, skin);
 	tileset[SKYDIVE] = owner->GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
 	tileset[SKYDIVETOFALL] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
-	tileset[WAITFORSHIP] = owner->GetTileset("Kin/shipjump_64x64.png", 64, 64, skin);
-	tileset[GRABSHIP] = owner->GetTileset("Kin/shipjump_64x64.png", 64,64, skin);
+	tileset[WAITFORSHIP] = owner->GetTileset("Kin/shipjump_160x96.png", 160, 96, skin);
+	tileset[GRABSHIP] = owner->GetTileset("Kin/shipjump_160x96.png", 160,96, skin);
 	tileset[ENTERNEXUS1] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
 
 	tileset[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
@@ -21322,7 +21322,7 @@ void Actor::UpdateSprite()
 	case GRABSHIP:
 		{
 			//cout << "grabship: " << frame << endl;
-			if( frame / 3 < 9 )
+			if( frame / 3 < 8 )
 			{
 				SetSpriteTexture( action );
 
