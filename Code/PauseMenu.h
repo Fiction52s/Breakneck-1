@@ -171,6 +171,7 @@ struct KinMenu
 	int GetCurrIndex();
 	~KinMenu();
 	MainMenu *mainMenu;
+	sf::Sprite selectorSpr;
 	KinMenu(MainMenu *p_mainMenu,
 		ControlSettingsMenu *csm);
 	sf::Vertex powerQuads[9 * 4];
@@ -213,6 +214,7 @@ struct KinMenu
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	void UpdateDescription();
+	void UpdateSelector();
 	void UpdateTutorial();
 	void UpdatePowerSprite();
 	std::string powerDescriptions[9];

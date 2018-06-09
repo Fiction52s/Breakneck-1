@@ -2033,6 +2033,10 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
 
+	Tileset *ts_selector  = mainMenu->tilesetManager.GetTileset("Menu/power_icon_border_160x160.png", 160, 160);
+	selectorSpr.setTexture(*ts_selector->texture);
+	selectorSpr.setOrigin(selectorSpr.getLocalBounds().width / 2, selectorSpr.getLocalBounds().height / 2);
+
 	ts_kin = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_400x836.png", 400, 836);
 	ts_aura1A = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1a_400x836.png", 400, 836);
 	ts_aura1B = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1b_400x836.png", 400, 836);
@@ -2145,6 +2149,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 		"\nclear enough of them from an area, the nearby VEINS will weaken, allowing you to break through them.";
 
 	UpdateDescription();
+	UpdateSelector();
 	UpdatePowerSprite();
 	UpdateTutorial();
 	UpdateCommandButton();
@@ -2158,6 +2163,12 @@ KinMenu::~KinMenu()
 	delete aura2BShifter;
 
 	delete bgShifter;
+}
+
+void KinMenu::UpdateSelector()
+{
+	selectorSpr.setPosition(powerQuads[GetCurrIndex() * 4].position + Vector2f(64, 64));
+	//SetRectCenter(powerQuads + i * 4, 128, 128, powerPos);
 }
 
 void KinMenu::UpdateTutorial()
@@ -2198,19 +2209,19 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 	{
 		if ( ySelector->currIndex == 1 && xSelector->currIndex > 0 )
 		{
-			if (xchanged != 0)
-			{
-				xSelector->currIndex = 0;
-			}
-
 			if (ychanged != 0)
 			{
 				ySelector->currIndex = 0;
 			}
-			
+			else if (xchanged != 0)
+			{
+				xSelector->currIndex = 0;
+			}
+
 		}
 
 		UpdateDescription();
+		UpdateSelector();
 		
 		UpdateTutorial();
 		UpdateCommandButton();
@@ -2325,4 +2336,6 @@ void KinMenu::Draw(sf::RenderTarget *target)
 	}
 
 	target->draw(description);
+
+	target->draw(selectorSpr);
 }
