@@ -719,10 +719,10 @@ bool EditSession::OpenFile()
 		//UpdateFullBounds();
 
 
-		int goalPosX;
-		int goalPosY; //discard these
-		is >> goalPosX;
-		is >> goalPosY;
+		//int goalPosX;
+		//int goalPosY; //discard these
+		//is >> goalPosX;
+		//is >> goalPosY;
 
 		string hasBorderPolyStr;
 		is >> hasBorderPolyStr;
@@ -2703,7 +2703,7 @@ void EditSession::WriteFile(string fileName)
 	mapHeader.boundsWidth = boundWidth;
 	mapHeader.boundsHeight = boundHeight;
 
-	
+
 	/*int totalPoints = 0;
 	for (auto it = polygons.begin(); it != polygons.end(); ++it)
 	{

@@ -1526,6 +1526,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 
+				hasGoal = true;
 				goalPos = enemy->position;
 
 				V2d gPos = enemy->ground->GetPoint( enemy->edgeQuantity );
@@ -2904,8 +2905,8 @@ bool GameSession::OpenFile( string fileName )
 		Actor *p0 = GetPlayer(0);
 		p0->position = originalPos;
 
-		is >> goalPos.x;
-		is >> goalPos.y;
+		/*is >> goalPos.x;
+		is >> goalPos.y;*/
 
 		string hasBorderPolyStr;
 		is >> hasBorderPolyStr;
@@ -5300,9 +5301,18 @@ bool GameSession::Load()
 		powerRing = new PowerRing(Vector2f(100, 200), sizeof(blah) / sizeof(FillRingSection*), blah);
 	}
 
-	flowShader.setUniform( "goalPos", Vector2f( goalPos.x, goalPos.y ) );
+	if (hasGoal)
+	{
+		flowShader.setUniform("goalPos", Vector2f(goalPos.x, goalPos.y));
+		goalEnergyFlowVA = SetupEnergyFlow();
+	}
+	else
+	{
+		goalEnergyFlowVA = NULL;
+	}
+	
 
-	goalEnergyFlowVA = SetupEnergyFlow();
+	
 
 	groundTrans = Transform::Identity;
 	groundTrans.translate( 0, 0 );
@@ -5480,7 +5490,7 @@ int GameSession::Run()
 	//rain = new Rain(this);
 
 	preScreenTex->setView(view);
-
+	hasGoal = false;
 	bool showFrameRate = true;
 
 	sf::Text frameRate("00", mainMenu->arial, 30);
@@ -6507,19 +6517,22 @@ int GameSession::Run()
 
 				//flowShader.setUniform( "radius0", flow
 				
-				
-				flowRadius = (maxFlowRadius - (maxFlowRadius / flowFrameCount) * flowFrame);
-
-				flowShader.setUniform( "radius", flowRadius / maxFlowRings );
-				//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
-				flowShader.setUniform( "zoom", cam.GetZoom() );
-				flowShader.setUniform( "playerPos", Vector2f( p0->position.x, p0->position.y ) );
-
-
-				++flowFrame;
-				if( flowFrame == flowFrameCount )
+				if (hasGoal)
 				{
-					flowFrame = 0;
+					flowRadius = (maxFlowRadius - (maxFlowRadius / flowFrameCount) * flowFrame);
+
+					flowShader.setUniform("radius", flowRadius / maxFlowRings);
+					//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
+					flowShader.setUniform("zoom", cam.GetZoom());
+					flowShader.setUniform("playerPos", Vector2f(p0->position.x, p0->position.y));
+
+
+
+					++flowFrame;
+					if (flowFrame == flowFrameCount)
+					{
+						flowFrame = 0;
+					}
 				}
 				
 				int speedLevel = p0->speedLevel;
@@ -6784,8 +6797,11 @@ int GameSession::Run()
 		//preScreenTex->setView( cut.GetView( cutFrame ) );
 		lastViewCenter = view.getCenter();
 
-		flowShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2, 
-					view.getCenter().y + view.getSize().y / 2 ) );
+		if (hasGoal)
+		{
+			flowShader.setUniform("topLeft", Vector2f(view.getCenter().x - view.getSize().x / 2,
+				view.getCenter().y + view.getSize().y / 2));
+		}
 		
 
 		background->Draw(preScreenTex);
@@ -7152,7 +7168,11 @@ int GameSession::Run()
 			timesDraw++; 
 		}
 		
-		preScreenTex->draw( *goalEnergyFlowVA, &flowShader );
+		if (hasGoal)
+		{
+			preScreenTex->draw(*goalEnergyFlowVA, &flowShader);
+		}
+		
 
 		
 		//motion blur

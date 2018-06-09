@@ -794,6 +794,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	void ClearFX();
 
+	bool hasGoal;
 	sf::Vector2<double> goalPos;
 	sf::Vector2<double> goalNodePos;
 	std::string rayMode;
