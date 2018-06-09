@@ -1995,12 +1995,13 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	int tutHeight = 320;
 	ts_tutorial[0] = mainMenu->tilesetManager.GetTileset("Menu/tut_jump.png", tutWidth, tutHeight);
 	ts_tutorial[1] = mainMenu->tilesetManager.GetTileset("Menu/tut_attack.png", tutWidth, tutHeight);
-	ts_tutorial[2] = mainMenu->tilesetManager.GetTileset("Menu/tut_speed.png", tutWidth, tutHeight);
-	ts_tutorial[3] = mainMenu->tilesetManager.GetTileset("Menu/tut_walljump.png", tutWidth, tutHeight);
-	ts_tutorial[4] = mainMenu->tilesetManager.GetTileset("Menu/tut_health.png", tutWidth, tutHeight);
-	ts_tutorial[5] = mainMenu->tilesetManager.GetTileset("Menu/tut_sprint.png", tutWidth, tutHeight);
-	ts_tutorial[6] = mainMenu->tilesetManager.GetTileset("Menu/tut_survival.png", tutWidth, tutHeight);
-	ts_tutorial[7] = mainMenu->tilesetManager.GetTileset("Menu/tut_key.png", tutWidth, tutHeight);
+	ts_tutorial[2] = mainMenu->tilesetManager.GetTileset("Menu/tut_sprint.png", tutWidth, tutHeight);
+	ts_tutorial[3] = mainMenu->tilesetManager.GetTileset("Menu/tut_dash.png", tutWidth, tutHeight);
+	ts_tutorial[4] = mainMenu->tilesetManager.GetTileset("Menu/tut_walljump.png", tutWidth, tutHeight);
+	ts_tutorial[5] = mainMenu->tilesetManager.GetTileset("Menu/tut_speed.png", tutWidth, tutHeight);
+	ts_tutorial[6] = mainMenu->tilesetManager.GetTileset("Menu/tut_health.png", tutWidth, tutHeight);
+	ts_tutorial[7] = mainMenu->tilesetManager.GetTileset("Menu/tut_survival.png", tutWidth, tutHeight);
+	ts_tutorial[8] = mainMenu->tilesetManager.GetTileset("Menu/tut_key.png", tutWidth, tutHeight);
 	tutorialSpr.setPosition(512, 74);
 	
 	
@@ -2018,17 +2019,19 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	for (int i = 0; i < 9; ++i)
 	{
 		SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i));
+		SetRectSubRect(powerQuadsBG + i * 4, ts_powers->GetSubRect(i));
 		//powerPos.x = powersOffset.x + (128 + powerSpacing.x) * (i%9) + 64;
 		powerPos.x = powersOffset.x + (128 + powerSpacing.x) * (i%8) + 64;
 		powerPos.y = powersOffset.y + (128 + powerSpacing.y) * (i / 8) + 64;
 		SetRectCenter(powerQuads + i * 4, 128, 128, powerPos);
+		SetRectCenter(powerQuadsBG + i * 4, 128, 128, powerPos);
 		
 	}
 
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
-	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 1, 0);
+	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
 
 	ts_kin = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_400x836.png", 400, 836);
 	ts_aura1A = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1a_400x836.png", 400, 836);
@@ -2069,13 +2072,22 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	bool loadPalette = palette.loadFromFile("Menu/pause_kin_aura_color.png");
 	assert(loadPalette);
 
+	Image powerPalette;
+	bool loadPowerPalette = powerPalette.loadFromFile("Menu/power_icons_palette.png");
+
 	aura1AShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
 	aura1BShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
 	aura2AShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
 	aura2BShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
 	bgShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
+	selectedShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 3);
+	//selectedShifter->SetColors(palette, 0);
+	//selectedShifter->SetColorIndex(0, Color::Cyan);
+	//selectedShifter->SetColorIndex(1, Color::Cyan);
+	//selectedShifter->SetColorIndex(0, Color::Black);
 
-
+	selectedShifter->SetColors(powerPalette, 0);
+	
 	bgShifter->SetColors(palette, 0);
 	aura1AShifter->SetColors(palette, 1);
 	aura1BShifter->SetColors(palette, 2);
@@ -2097,6 +2109,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	aura2AShifter->Reset();
 	aura2BShifter->Reset();
 	bgShifter->Reset();
+	selectedShifter->Reset();
 
 	kinSpr.setPosition(offset);
 	aura1ASpr.setPosition(offset);
@@ -2116,14 +2129,20 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 		"Hold the JUMP button down longer for extra height!";
 	powerDescriptions[1] = "      = ATTACK     Press ATTACK to release an energy burst in front of you capable of destroying enemies.\n"
 		"Hold UP or DOWN while in the air to do a directional attack.";
-	powerDescriptions[2] = "      = DASH     Press DASH to quickly start moving in the direction you are facing while grounded.\n"
-		" Tap DASH quickly while ascending a steep slope to climb your way up.";
-	powerDescriptions[3] =  "blah";
-	powerDescriptions[4] = "ceiling cling";
-	powerDescriptions[5] = "scorpion bounce";
-	powerDescriptions[6] = "grind";
-	powerDescriptions[7] = "time slow bubble";
-	powerDescriptions[8] = "wires";
+	powerDescriptions[2] = "When moving on a slope, hold diagonally UP/DOWN and FORWARD to accelerate.\n" 
+		"Hold UP or DOWN to slide with low friction. On steep slopes hold DOWN to slide down even faster.";
+	powerDescriptions[3] = "      = DASH     Press DASH to quickly start moving in the direction you are facing while grounded.\n"
+		"Tap DASH quickly while ascending a steep slope to climb your way up.";
+	powerDescriptions[4] = "Hold towards a wall to wall cling and descend slowly. Tap away from a wall to wall jump."
+		"\nHold DOWN and away from the wall to drift away from the wall without wall jumping";
+	powerDescriptions[5] = "Move fast and kill enemies to build up your speed meter. There are 3 different meter levels."
+		"\nWith each speed level, your attacks get bigger and your dash is more powerful.";
+	powerDescriptions[6] = "The TRANSCEND absorbs all energy within its territory, meaning even Kin's energy drains at a constant"
+		"\nrate. Kill enemies and steal their energy to bolster your health while you search for the NODE.";
+	powerDescriptions[7] = "When Kin runs out of energy, the core of the BREAKNECK suit becomes unstable and enters SURVIVAL"
+		"\nMODE. You have 5 seconds to kill an enemy or destroy the NODE before the BREAKNECK self destructs.";
+	powerDescriptions[8] = "Certain enemies have a special ABSORPTION HEART which supports the NODE and VEINS. When you"
+		"\nclear enough of them from an area, the nearby VEINS will weaken, allowing you to break through them.";
 
 	UpdateDescription();
 	UpdatePowerSprite();
@@ -2156,7 +2175,7 @@ void KinMenu::UpdateCommandButton()
 		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::JUMP)-1);
 	else if( index == 1)
 		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::ATTACK)-1);
-	else if (index == 2)
+	else if (index == 3)
 	{
 		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::DASH)-1);
 	}
@@ -2177,12 +2196,27 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 
 	if (xchanged != 0 || ychanged != 0)
 	{
+		if ( ySelector->currIndex == 1 && xSelector->currIndex > 0 )
+		{
+			if (xchanged != 0)
+			{
+				xSelector->currIndex = 0;
+			}
+
+			if (ychanged != 0)
+			{
+				ySelector->currIndex = 0;
+			}
+			
+		}
+
 		UpdateDescription();
-		UpdatePowerSprite();
+		
 		UpdateTutorial();
 		UpdateCommandButton();
 	}
 
+	UpdatePowerSprite();
 	
 
 	int scrollFrames1 = 120;
@@ -2219,6 +2253,7 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 	aura2AShifter->Update();
 	aura2BShifter->Update();
 	bgShifter->Update();
+	selectedShifter->Update();
 	//Color c = aura1AShifter->GetCurrColor();
 	//cout << "c: " << c.a << ", " << c.g << ", " << c.b << endl;
 	
@@ -2228,7 +2263,7 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 
 int KinMenu::GetCurrIndex()
 {
-	return ySelector->currIndex / 8 + xSelector->currIndex % 8;
+	return ySelector->currIndex * 8 + xSelector->currIndex % 8;
 }
 
 void KinMenu::UpdateDescription()
@@ -2244,7 +2279,21 @@ void KinMenu::UpdateDescription()
 
 void KinMenu::UpdatePowerSprite()
 {
-
+	int currIndex = GetCurrIndex();
+	for (int i = 0; i < 9; ++i)
+	{
+		SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 0));
+		if (currIndex == i)
+		{
+			//SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 16));
+			SetRectColor(powerQuadsBG + i * 4, selectedShifter->GetCurrColor());//Color(0, 0, 0, 255));
+		}
+		else
+		{
+			//SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 0));
+			SetRectColor(powerQuadsBG + i * 4, Color(0, 0, 0, 255));
+		}
+	}
 }
 
 void KinMenu::Draw(sf::RenderTarget *target)
@@ -2262,6 +2311,7 @@ void KinMenu::Draw(sf::RenderTarget *target)
 	target->draw(kinSpr);
 	target->draw(veinSpr);
 
+	target->draw(powerQuadsBG, 9 * 4, sf::Quads);
 	target->draw(powerQuads, 9 * 4, sf::Quads, ts_powers->texture);
 	
 
@@ -2269,7 +2319,7 @@ void KinMenu::Draw(sf::RenderTarget *target)
 	target->draw(descriptionBox, 4, sf::Quads );
 
 	int index = GetCurrIndex();
-	if (index == 0 || index == 1 || index == 2)
+	if (index == 0 || index == 1 || index == 3)
 	{
 		target->draw(commandSpr);
 	}
