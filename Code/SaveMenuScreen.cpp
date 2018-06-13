@@ -13,22 +13,31 @@ SaveFileDisplay::SaveFileDisplay(sf::Font &f)
 	totalTime.setFont(f);
 	totalPercentage.setFont(f);
 
-	completedShards.setCharacterSize(20);
-	totalTime.setCharacterSize(20);
-	totalPercentage.setCharacterSize(20);
+	completedShards.setCharacterSize(60);
+	totalTime.setCharacterSize(60);
+	totalPercentage.setCharacterSize(60);
 
-	Color fillColor = Color::Black;
+	Color fillColor = Color::White;
+	Color lineColor = Color::Black;
 
 	completedShards.setFillColor(fillColor);
+	completedShards.setOutlineColor(lineColor);
+	completedShards.setOutlineThickness(3);
 	totalTime.setFillColor(fillColor);
+	totalTime.setOutlineColor(lineColor);
+	totalTime.setOutlineThickness(3);
 	totalPercentage.setFillColor(fillColor);
+	totalPercentage.setOutlineColor(lineColor);
+	totalPercentage.setOutlineThickness(3);
 }
 
 void SaveFileDisplay::SetPosition(Vector2f &pos)
 {
-	totalPercentage.setPosition(pos);
-	totalTime.setPosition(pos + Vector2f(64, 0));
-	completedShards.setPosition(pos + Vector2f(128, 0));
+	Vector2f innerStart = pos + Vector2f(280, 30);
+
+	totalPercentage.setPosition(innerStart);
+	//totalTime.setPosition(innerStart + Vector2f(100, 0));
+	completedShards.setPosition(innerStart + Vector2f(0, 80));
 }
 
 void SaveFileDisplay::Draw(sf::RenderTarget *target)
@@ -41,10 +50,10 @@ void SaveFileDisplay::Draw(sf::RenderTarget *target)
 void SaveFileDisplay::SetValues(SaveFile *sf)
 {
 	stringstream ss;
-	ss << sf->GetShardNum() << " / " << sf->GetTotalShardNum();
+	ss << sf->GetShardNum() << " / " << sf->GetTotalShardNum() << " Shards";
 	completedShards.setString(ss.str());
 	ss.str("");
-	ss << sf->GetCompletionPercentage();
+	ss << sf->GetCompletionPercentage() << "%";
 	totalPercentage.setString(ss.str());
 }
 
@@ -93,6 +102,10 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	for (int i = 0; i < 6; ++i)
 	{
 		defaultFiles[i] = !(files[i]->Load());
+		/*if (i == 0 && defaultFiles[i] == true)
+		{
+			assert(0);
+		}*/
 		fileDisplay[i]->SetValues(files[i]);
 	}
 

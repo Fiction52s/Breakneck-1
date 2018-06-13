@@ -174,8 +174,8 @@ struct KinMenu
 	sf::Sprite selectorSpr;
 	KinMenu(MainMenu *p_mainMenu,
 		ControlSettingsMenu *csm);
-	sf::Vertex powerQuads[9 * 4];
-	sf::Vertex powerQuadsBG[9 * 4];
+	sf::Vertex powerQuads[10 * 4];
+	sf::Vertex powerQuadsBG[10 * 4];
 	ColorShifter *selectedShifter;
 	ColorShifter *aura1AShifter;
 	ColorShifter *aura1BShifter;
@@ -203,7 +203,7 @@ struct KinMenu
 	Tileset *ts_xboxButtons;
 	Tileset *ts_currentButtons;
 	sf::Sprite commandSpr;
-	Tileset *ts_tutorial[9 + 6 * 2];
+	Tileset *ts_tutorial[10];
 	sf::Sprite kinSpr;
 	sf::Sprite veinSpr;
 	sf::Sprite aura1ASpr;
@@ -217,7 +217,7 @@ struct KinMenu
 	void UpdateSelector();
 	void UpdateTutorial();
 	void UpdatePowerSprite();
-	std::string powerDescriptions[9];
+	std::string powerDescriptions[10];
 	void Draw(sf::RenderTarget *target);
 	sf::Text description;
 };

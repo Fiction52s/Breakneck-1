@@ -66,7 +66,7 @@ MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MapSelectionM
 	holdingB = false;
 	FillRingSection *blah[] = { new FillRingSection(mainMenu->tilesetManager, Color::Red, sf::Color::Black,
 		sf::Color::Blue,
-		4, 40, 0) };
+		3, 40, 0) };
 
 	backLoaderOffset = Vector2f(0, 50);
 	backLoader = new FillRing(topMid + backLoaderOffset, 1, blah);
@@ -503,17 +503,40 @@ GameController &MainMenu::GetController( int index )
 
 void MainMenu::UpdateMenuOptionText()
 {
-	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
+	int breatheFrames = 60;
+	int breatheWaitFrames = 0;
+	int bTotal = breatheFrames + breatheWaitFrames;
+	float halfBreathe = breatheFrames / 2;
+	int f = titleScreen->frame % (bTotal);
+	float alpha;
+	if (f <= halfBreathe)
 	{
-		if (saSelector->currIndex == i)
-		{
-			menuOptions[i].setFillColor(Color::Red);
-		}
-		else
-		{
-			menuOptions[i].setFillColor(Color::White);
-		}
+		alpha = f / halfBreathe;
 	}
+	else if (f <= breatheFrames)
+	{
+		f -= halfBreathe;
+		alpha = 1.f - f / halfBreathe;
+	}
+	else
+	{
+		alpha = 0;
+	}
+
+	SetRectColor(mainMenuOptionHighlight + saSelector->currIndex * 4, Color( 255, 255, 255, alpha * 255 ));
+
+	//for (int i = 0; i < MainMenuOptions::M_Count; ++i)
+	//{
+	//	if (saSelector->currIndex == i)
+	//	{
+	//		SetRectSubRect( mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + 7) );
+	//		//menuOptions[i].setFillColor(Color::Red);
+	//	}
+	//	else
+	//	{
+	//		SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i));
+	//	}
+	//}
 }
 
 MainMenu::MainMenu()
@@ -533,6 +556,21 @@ MainMenu::MainMenu()
 
 	titleScreen = new TitleScreen(this);
 	
+	ts_mainOption = tilesetManager.GetTileset("Menu/mainmenu_text_512x64.png", 512, 64);
+
+	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
+	{
+		//if (saSelector->currIndex == i)
+		//{
+		//	SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + 7));
+		//	//menuOptions[i].setFillColor(Color::Red);
+		//}
+		//else
+		{
+			SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i));
+			SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i+7));
+		}
+	}
 
 	introMovie = new IntroMovie;
 	
@@ -585,8 +623,8 @@ MainMenu::MainMenu()
 	int waitModeThresh[] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 7, 0);
 
-	Vector2f textBase(300, 300);
-	int textOptionSpacing = 10;
+	Vector2f textBase(100, 300);
+	int textOptionSpacing = 6;
 	int charHeight = 40;
 
 	
@@ -602,12 +640,23 @@ MainMenu::MainMenu()
 	string optionStrings[] = { "Adventure", "Free Play", "Local Multiplayer", "Level Editor",
 		"Options", "Credits", "Exit" };
 
+	
+
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
 		menuOptions[i].setString(optionStrings[i]);
 		menuOptions[i].setOrigin(menuOptions[i].getLocalBounds().width / 2, 0);
 		menuOptions[i].setPosition(textBase.x, textBase.y + (textOptionSpacing + charHeight) * i);
+
+		SetRectCenter(mainMenuOptionQuads + i * 4, 512, 64, textBase + Vector2f(256, 32 + i * (64 + textOptionSpacing) ) );
+		SetRectCenter(mainMenuOptionHighlight + i * 4, 512, 64, textBase + Vector2f(256, 32 + i * (64 + textOptionSpacing)));
+		
+		//SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(0));
 	}
+
+	menuOptionsBG.setFillColor(Color( 0, 0, 0, 70 ));
+	menuOptionsBG.setPosition(textBase);
+	menuOptionsBG.setSize(Vector2f(512, (64 + textOptionSpacing) * 7));
 
 	soundNodeList = new SoundNodeList( 10 );
 	soundNodeList->SetGlobalVolume( config->GetData().volume );
@@ -800,7 +849,7 @@ MainMenu::MainMenu()
 
 	FillRingSection *blah[] = { new FillRingSection(tilesetManager, Color::Red, sf::Color::Black,
 		sf::Color::Blue,
-		5, 300, 0) };
+		3, 300, 0) };
 
 	Tileset *ts_loadIcon = tilesetManager.GetTileset("Menu/loadicon_320x320.png", 320, 320);
 
@@ -2122,10 +2171,15 @@ void MainMenu::Run()
 				preScreenTexture->setView( v );
 				titleScreen->Draw(preScreenTexture);
 				
+				preScreenTexture->draw(menuOptionsBG);
 				for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 				{
-					preScreenTexture->draw(menuOptions[i]);
+					preScreenTexture->draw(mainMenuOptionQuads, 7 * 4, sf::Quads, ts_mainOption->texture);
+					//preScreenTexsetture->draw(menuOptions[i]);
 				}
+
+				preScreenTexture->draw( mainMenuOptionHighlight + saSelector->currIndex * 4, 4, sf::Quads,
+					ts_mainOption->texture);
 
 				preScreenTexture->setView( uiView );
 

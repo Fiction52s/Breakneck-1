@@ -317,7 +317,7 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), fileName( p_filePath.string() ),
-	filePath( p_filePath ), eHitParamsMan( NULL )
+	filePath( p_filePath ), eHitParamsMan( NULL ), drain(true )
 {	
 	mainMenu = p_mainMenu;
 
@@ -2871,6 +2871,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 bool GameSession::OpenFile( string fileName )
 {
+	hasGoal = false;
 	numTotalKeys = 0;
 	numKeysCollected = 0;
 
@@ -5292,13 +5293,15 @@ bool GameSession::Load()
 	if (mh->gameMode == MapHeader::MapType::T_STANDARD)
 	{
 		FillRingSection *blah[] = {
-			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,0, 300, 0),
+			//new FillRingSection(tm, Color::Black, sf::Color::Black, sf::Color::Black,0, 300, 0),
 			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, 300, 0),
 			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,2, 300, 0),
 			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,3, 300, 0)
 		};
 
-		powerRing = new PowerRing(Vector2f(100, 200), sizeof(blah) / sizeof(FillRingSection*), blah);
+		Vector2f powerRingPos(80, 220);
+		powerRing = new PowerRing(powerRingPos, sizeof(blah) / sizeof(FillRingSection*), blah);
+		despOrb = new DesperationOrb(tm, powerRingPos);
 	}
 
 	if (hasGoal)
@@ -5490,7 +5493,7 @@ int GameSession::Run()
 	//rain = new Rain(this);
 
 	preScreenTex->setView(view);
-	hasGoal = false;
+	
 	bool showFrameRate = true;
 
 	sf::Text frameRate("00", mainMenu->arial, 30);
@@ -6480,6 +6483,7 @@ int GameSession::Run()
 						player->hasDoubleJump = false;
 						player->hasAirDash = false;
 						player->hasGravReverse = false;
+						drain = true;
 						//player->
 						//player->rightWire->= false;
 					}
@@ -7887,6 +7891,7 @@ int GameSession::Run()
 		if (powerRing != NULL )
 		{
 			powerRing->Draw(preScreenTex);
+			despOrb->Draw(preScreenTex);
 		}
 		keyMarker->Draw( preScreenTex );
 		scoreDisplay->Draw( preScreenTex );

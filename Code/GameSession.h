@@ -111,6 +111,7 @@ struct PowerOrbs;
 struct PowerWheel;
 struct FillRing;
 struct PowerRing;
+struct DesperationOrb;
 
 struct Critical : QuadTreeEntrant
 {
@@ -1011,6 +1012,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//PowerOrbs *powerOrbs;
 	//PowerWheel *powerWheel;
 	PowerRing *powerRing;
+	DesperationOrb *despOrb;
 
 	int pauseFrames;
 

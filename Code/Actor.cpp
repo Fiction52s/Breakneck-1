@@ -1074,7 +1074,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[STEEPCLIMBATTACK] = 4 * 4;
 		actionLength[SKYDIVETOFALL] = 10 * 4;
 		actionLength[WAITFORSHIP] = 60 * 1;
-		actionLength[GRABSHIP] = 10 * 3 + 20;
+		actionLength[GRABSHIP] = 10 * 5 + 20;
 		actionLength[GETPOWER_AIRDASH_MEDITATE] = 120;
 		actionLength[RIDESHIP] = 1;
 		actionLength[SKYDIVE] = 9 * 2;
@@ -6847,7 +6847,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLATTACK:
 		{
-			SetCurrHitboxes(wallHitboxes[speedLevel], frame);
+			SetCurrHitboxes(wallHitboxes[speedLevel], frame / 2);
 
 			if( frame == 0 )
 			{
@@ -7321,7 +7321,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPCLIMBATTACK:
 		{
-			SetCurrHitboxes(steepClimbHitboxes[speedLevel], frame);
+			SetCurrHitboxes(steepClimbHitboxes[speedLevel], frame/2);
 
 			if( frame == 0 )
 			{
@@ -7387,7 +7387,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDEATTACK:
 		{
-			SetCurrHitboxes(steepSlideHitboxes[speedLevel], frame);
+			SetCurrHitboxes(steepSlideHitboxes[speedLevel], frame / 2);
 
 			if( frame == 0 )
 			{
@@ -13611,7 +13611,7 @@ void Actor::UpdatePhysics()
 				//cout << "groundinggg" << endl;
 			}
 			else if( (hasPowerGravReverse || gravityGrassCount > 0 ) 
-				&& tempCollision && currInput.B && currInput.LUp() 
+				&& tempCollision && ((currInput.B && currInput.LUp())|| (hasPowerGrindBall && currInput.Y ))
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
 				&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -13764,7 +13764,7 @@ void Actor::UpdatePhysics()
 				owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
 				//}
 			}
-			else if( tempCollision && hasPowerGrindBall && action == AIRDASH && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh  )
+			else if( tempCollision && hasPowerGrindBall /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && minContact.edge->edgeType != Edge::BORDER  )
 			{
 				prevRail = NULL;
 				Edge *e = minContact.edge;
@@ -21322,12 +21322,12 @@ void Actor::UpdateSprite()
 	case GRABSHIP:
 		{
 			//cout << "grabship: " << frame << endl;
-			if( frame / 3 < 8 )
+			if( frame / 5 < 8 )
 			{
 				SetSpriteTexture( action );
 
 				//bool r = (facingRight && !reversed ) || (!facingRight && reversed );
-				SetSpriteTile( 1 + frame / 3, true );
+				SetSpriteTile( 1 + frame / 5, true );
 			
 				sprite->setOrigin( sprite->getLocalBounds().width / 2,
 					sprite->getLocalBounds().height / 2 );

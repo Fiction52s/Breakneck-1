@@ -86,9 +86,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	//planetTex = new Texture;
 	//planetTex->loadFromFile( "WorldMap/map_z2.png" );
 
-	ts_colonySelect = mainMenu->tilesetManager.GetTileset( "WorldMap/map_select_512x512.png"
-		, 512, 512 );
-
+	ts_colonySelect[0] = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080); 
 	//ts_zoomedMapw1 = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
 
 	ts_space = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_bg.png", 1920, 1080);
@@ -98,14 +96,15 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	planetSpr.setTexture(*ts_planet->texture);
 	planetSpr.setOrigin(planetSpr.getLocalBounds().width / 2, planetSpr.getLocalBounds().height / 2);
 	planetSpr.setPosition(960, 540);
+	
 
-	ts_colony[0] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w1.png", 1920, 1080);
-	ts_colony[1] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w2.png", 1920, 1080);
-	ts_colony[2] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w3.png", 1920, 1080);
-	ts_colony[3] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w4.png", 1920, 1080);
-	ts_colony[4] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w5.png", 1920, 1080);
-	ts_colony[5] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w6.png", 1920, 1080);
-	ts_colony[6] = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_w7.png", 1920, 1080);
+	ts_colony[0] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
+	ts_colony[1] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w2.png", 1920, 1080);
+	ts_colony[2] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w3.png", 1920, 1080);
+	ts_colony[3] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w4.png", 1920, 1080);
+	ts_colony[4] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w5.png", 1920, 1080);
+	ts_colony[5] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w6.png", 1920, 1080);
+	ts_colony[6] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w7.png", 1920, 1080);
 	
 	ts_asteroids[0] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
 	ts_asteroids[1] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
@@ -150,8 +149,9 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 		colonySpr[i].setTexture(*ts_colony[i]->texture);
 		colonySpr[i].setScale(1.f / 8.f, 1.f / 8.f);
 	}
-
-	colonySelectSprite.setTexture( *ts_colonySelect->texture );
+	
+	colonySelectSpr.setTexture( *ts_colonySelect[0]->texture );
+	//colonySelectSpr.setScale(5.f, 5.f);
 	
 	//if (!zoomShader.loadFromFile( "zoomblur_shader.vert", "zoomblur_shader.frag" ) )
 	if (!zoomShader.loadFromFile("Shader/zoomblur_shader.frag", sf::Shader::Fragment))
@@ -202,42 +202,11 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 void WorldMap::UpdateColonySelect()
 {
-	colonySelectSprite.setTextureRect( ts_colonySelect->GetSubRect( selectedColony ) );
-	colonySelectSprite.setOrigin( colonySelectSprite.getLocalBounds().width / 2,
-		colonySelectSprite.getLocalBounds().height / 2 );
-	switch( selectedColony )
-	{
-	case 0:
-		{
-			colonySelectSprite.setPosition( 1260, 335 );
-			break;
-		}
-	case 1:
-		{
-			colonySelectSprite.setPosition( 1245, 720 );
-			break;
-		}
-	case 2:
-		{
-			colonySelectSprite.setPosition( 980, 890 );
-			break;
-		}
-	case 3:
-		{
-			colonySelectSprite.setPosition( 670, 690 );
-			break;
-		}
-	case 4:
-		{
-			colonySelectSprite.setPosition( 680, 350 );
-			break;
-		}
-	case 5:
-		{
-			colonySelectSprite.setPosition( 970, 170 );
-			break;
-		}
-	}
+	//colonySelectSpr.setTextureRect( ts_colonySelect[0]->GetSubRect( 0 ) );
+	/*colonySelectSpr.setOrigin( colonySelectSpr.getLocalBounds().width / 2,
+		colonySelectSpr.getLocalBounds().height / 2 );*/
+
+	//colonySelectSpr.setPosition(colonySpr[0].getPosition());
 }
 
 void WorldMap::Reset( SaveFile *sf )
@@ -505,7 +474,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			if (selectedColony > 5)
 				selectedColony = 0;
 			moveDown = true;
-			UpdateColonySelect();
+			
 		}
 		else if ((currInput.LUp() || currInput.PUp()) && !moveUp)
 		{
@@ -513,7 +482,6 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			if (selectedColony < 0)
 				selectedColony = 5;
 			moveUp = true;
-			UpdateColonySelect();
 		}
 
 		if (!(currInput.LDown() || currInput.PDown()))
@@ -524,6 +492,8 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			moveUp = false;
 		}
+
+		UpdateColonySelect();
 	}
 		break;
 	case PlANET_TO_COLONY:
@@ -814,7 +784,7 @@ void WorldMap::Draw( RenderTarget *target )
 	rt->setView(uiView);
 	rt->draw(spaceSpr);
 
-	int scrollSeconds[] = { 400, 180, 140, 120 };
+	int scrollSeconds[] = { 400, 300, 140, 120 };
 	float astFactor[] = { .1f, .3f, 1.5f, 2.f };
 
 	//rt->draw(asteroidSpr[0]);
@@ -860,6 +830,8 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(colonySpr[i]);
 	}
 
+	rt->draw(colonySelectSpr);
+
 	for (int i = 2; i < 4; ++i)
 	{
 		rs.texture = ts_asteroids[i]->texture;
@@ -884,6 +856,8 @@ void WorldMap::Draw( RenderTarget *target )
 			//rt->draw(asteroidSpr[i] , &asteroidShader);
 		}
 	}
+
+	
 
 	//rt->draw(asteroidSpr[2]);
 	//asteroidSpr[2].setScale(5.f, 5.f);
@@ -946,7 +920,7 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	mainMenu = mm;
 	//numNodeColumns = 10;
 	//nodeSelectorWidth = 400;
-	ts_node = mm->tilesetManager.GetTileset("Worldmap/node_w1_80x80.png", 80, 80);
+	ts_node = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
 
 	ts_sectorKey = mm->tilesetManager.GetTileset("Worldmap/sectorkey_80x80.png", 80, 80);
@@ -1165,7 +1139,7 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 {
 	unlockedIndex = -1;
 	numUnlockConditions = -1;
-	nodeSize = 80;
+	nodeSize = 128;
 	pathLen = 16;
 	frame = 0;
 	nodes = NULL;
@@ -1220,7 +1194,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 	{
 		if (ms->state == MapSelector::S_IDLE)
 		{
-			target->draw(nodeEnergy);
+			//target->draw(nodeEnergy);
 		}
 		DrawStats(target);
 		DrawLevelStats(target);
@@ -1281,7 +1255,7 @@ void MapSector::SetXCenter( float x )
 	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 300);
 	Vector2f levelStatsTopLeft = levelStatsCenter - Vector2f( levelStatsSize.x / 2, levelStatsSize.y / 2 );
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter );
-	SetRectCenter(levelBG, 700, 256, Vector2f( x, ms->sectorCenter.y ));
+	SetRectCenter(levelBG, 1200, 256, Vector2f( x, ms->sectorCenter.y ));
 	SetRectCenter(statsBG, levelStatsSize.x, levelStatsSize.y, levelStatsCenter );
 	
 	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x/2, sectorStatsCenter.y - sectorStatsSize.y/2);
@@ -1361,7 +1335,7 @@ void MapSector::UpdateLevelStats()
 		levelCollectedShards[i * 4 + 1].texCoords = Vector2f(0, 0);
 		levelCollectedShards[i * 4 + 2].texCoords = Vector2f(0, 0);
 		levelCollectedShards[i * 4 + 3].texCoords = Vector2f(0, 0);
-		SetRectSubRect(levelCollectedShards + i * 4, ts_shards->GetSubRect(20));
+		//SetRectSubRect(levelCollectedShards + i * 4, ts_shards->GetSubRect(20));
 	}
 
 	int gridIndex = 0;
@@ -1376,7 +1350,7 @@ void MapSector::UpdateLevelStats()
 		}
 		else
 		{
-			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(40));
+			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(154));
 		}
 		++gridIndex;
 	}
@@ -1595,7 +1569,7 @@ void MapSector::Update(ControllerState &curr,
 	}
 	nodeHighlight.setPosition(nodeEnergy.getPosition());
 
-	int breathe = 180;
+	int breathe = 60;
 	float trans = (float)(frame%breathe) / (breathe/2);
 	if (trans > 1)
 	{

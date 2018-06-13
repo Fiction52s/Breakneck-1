@@ -1984,7 +1984,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 {
 	Vector2f powersOffset(512, 495);
 	Vector2f powerPos(0, 0);
-	Vector2f powerSpacing(24, 20);
+	Vector2f powerSpacing(30, 20);
 	ts_powers = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
 
 	description.setFont(mainMenu->arial);
@@ -2002,6 +2002,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	ts_tutorial[6] = mainMenu->tilesetManager.GetTileset("Menu/tut_health.png", tutWidth, tutHeight);
 	ts_tutorial[7] = mainMenu->tilesetManager.GetTileset("Menu/tut_survival.png", tutWidth, tutHeight);
 	ts_tutorial[8] = mainMenu->tilesetManager.GetTileset("Menu/tut_key.png", tutWidth, tutHeight);
+	ts_tutorial[9] = mainMenu->tilesetManager.GetTileset("Menu/tut_airdash.png", tutWidth, tutHeight);
 	tutorialSpr.setPosition(512, 74);
 	
 	
@@ -2016,7 +2017,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	commandSpr.setTexture(*ts_xboxButtons->texture);
 	commandSpr.setScale(.4, .4);
 
-	for (int i = 0; i < 9; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
 		SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i));
 		SetRectSubRect(powerQuadsBG + i * 4, ts_powers->GetSubRect(i));
@@ -2147,7 +2148,8 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 		"\nMODE. You have 5 seconds to kill an enemy or destroy the NODE before the BREAKNECK self destructs.";
 	powerDescriptions[8] = "Certain enemies have a special ABSORPTION HEART which supports the NODE and VEINS. When you"
 		"\nclear enough of them from an area, the nearby VEINS will weaken, allowing you to break through them.";
-
+	powerDescriptions[9] = "      = DASH     Press DASH while in the air to HOVER for a short period. Hold a direction to"
+		"\nAIRDASH in 1 of 8 directions. You can change your AIRDASH direction at any time. Kin gets 1 AIRDASH per air time.";
 	UpdateDescription();
 	UpdateSelector();
 	UpdatePowerSprite();
@@ -2186,7 +2188,7 @@ void KinMenu::UpdateCommandButton()
 		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::JUMP)-1);
 	else if( index == 1)
 		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::ATTACK)-1);
-	else if (index == 3)
+	else if (index == 3 || index == 9)
 	{
 		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::DASH)-1);
 	}
@@ -2207,7 +2209,7 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 
 	if (xchanged != 0 || ychanged != 0)
 	{
-		if ( ySelector->currIndex == 1 && xSelector->currIndex > 0 )
+		if ( ySelector->currIndex == 1 && xSelector->currIndex >= 2 )
 		{
 			if (ychanged != 0)
 			{
@@ -2222,7 +2224,7 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 
 		UpdateDescription();
 		UpdateSelector();
-		
+		 
 		UpdateTutorial();
 		UpdateCommandButton();
 	}
@@ -2291,7 +2293,7 @@ void KinMenu::UpdateDescription()
 void KinMenu::UpdatePowerSprite()
 {
 	int currIndex = GetCurrIndex();
-	for (int i = 0; i < 9; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
 		SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 0));
 		if (currIndex == i)
@@ -2322,15 +2324,15 @@ void KinMenu::Draw(sf::RenderTarget *target)
 	target->draw(kinSpr);
 	target->draw(veinSpr);
 
-	target->draw(powerQuadsBG, 9 * 4, sf::Quads);
-	target->draw(powerQuads, 9 * 4, sf::Quads, ts_powers->texture);
+	target->draw(powerQuadsBG, 10 * 4, sf::Quads);
+	target->draw(powerQuads, 10 * 4, sf::Quads, ts_powers->texture);
 	
 
 	target->draw(tutorialSpr);
 	target->draw(descriptionBox, 4, sf::Quads );
 
 	int index = GetCurrIndex();
-	if (index == 0 || index == 1 || index == 3)
+	if (index == 0 || index == 1 || index == 3 || index == 9)
 	{
 		target->draw(commandSpr);
 	}

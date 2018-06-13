@@ -788,9 +788,9 @@ FillRingSection::FillRingSection(TilesetManager &tm,
 	
 	stringstream ss;
 	//ss << "powerring" << (int)rType << "_200x200.png";
-	ss << "powerring" << p_rType << "_200x200.png";
+	ss << "powerring" << p_rType << "_100x100.png";
 	//ss << "powerring_200x200.png";
-	ts_ring = tm.GetTileset(ss.str(), 200, 200);
+	ts_ring = tm.GetTileset(ss.str(), 100, 100);
 	/*switch( rType )
 	{
 	case NORMAL:
@@ -1077,4 +1077,18 @@ int FillRing::Drain(int drain)
 	}
 
 	return res;
+}
+
+DesperationOrb::DesperationOrb(TilesetManager &tm, Vector2f &pos )
+{
+	ts_orb = tm.GetTileset("powerring0_100x100.png", 100, 100);
+	orbSpr.setTexture(*ts_orb->texture);
+	orbSpr.setOrigin(orbSpr.getLocalBounds().width / 2, orbSpr.getLocalBounds().height / 2);
+	orbSpr.setPosition(pos);
+	center = pos;
+}
+
+void DesperationOrb::Draw(sf::RenderTarget *target)
+{
+	target->draw(orbSpr);
 }

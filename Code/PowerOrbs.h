@@ -161,6 +161,15 @@ struct FillRingSection
 	int numRemovedDivs;
 };
 
+struct DesperationOrb
+{
+	Tileset *ts_orb;
+	DesperationOrb(TilesetManager &tm, sf::Vector2f &pos );
+	void Draw(sf::RenderTarget *target);
+	sf::Vector2f center;
+	sf::Sprite orbSpr;
+};
+
 struct FillRing
 {
 	FillRing( sf::Vector2f &pos,int numRings,

@@ -209,8 +209,6 @@ struct WorldMap
 
 	Tileset *ts_space;
 	Tileset *ts_planet;
-	Tileset *ts_colonySelect;
-	sf::Sprite colonySelectSprite;
 
 	Tileset *ts_asteroids[4];
 	sf::Vertex asteroidQuads[4*4];
@@ -220,9 +218,11 @@ struct WorldMap
 	int selectedColony;
 	
 	Tileset *ts_colony[7];
+	Tileset *ts_colonySelect[7];
 	sf::Sprite colonySpr[7];
 	sf::Sprite planetSpr;
 	sf::Sprite spaceSpr;
+	sf::Sprite colonySelectSpr;
 	
 
 	TreeNode **dirNode;

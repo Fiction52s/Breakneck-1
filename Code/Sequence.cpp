@@ -64,7 +64,8 @@ bool ShipExitSeq::Update()
 	//player->action = Actor::SPAWNWAIT;
 	//player->frame = 0;
 
-	int startGrabWire = enterTime - 3 * 6;
+	int jumpLength = 6 * 5;
+	int startGrabWire = enterTime - jumpLength;
 
 	if( frame == 0 )
 	{
@@ -100,9 +101,8 @@ bool ShipExitSeq::Update()
 		shipMovement.Update();
 	}
 
-	int jumpSquat = startGrabWire + 3 * 3;
-	int jumpLength = 6 * 3;
-	int startJump = 4 * 3;//60 - jumpSquat;
+	int jumpSquat = startGrabWire + 3 * 5;
+	int startJump = 4 * 5;//60 - jumpSquat;
 	if( frame > enterTime)
 	{
 		owner->GetPlayer( 0 )->position = V2d( shipMovement.position.x, shipMovement.position.y + 48.0 );

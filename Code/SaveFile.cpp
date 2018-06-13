@@ -181,6 +181,10 @@ bool SaveFile::LoadInfo(ifstream &is)
 	}
 	else
 	{
+		/*if (fileName == "Data/blue.kin")
+		{
+			int xxx = 54;
+		}*/
 		return false;
 	}
 }
@@ -196,8 +200,13 @@ bool SaveFile::Load()
 	{
 		ifstream defIs;
 		defIs.open("Data/default.kin");
-		LoadInfo(defIs);
+		bool test = LoadInfo(defIs);
+		assert(test);
 		return false;
+	}
+	else
+	{
+		return true;
 	}
 }
 

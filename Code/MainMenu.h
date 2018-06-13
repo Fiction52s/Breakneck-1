@@ -624,7 +624,10 @@ struct MainMenu
 	sf::Uint8 transAlpha;
 
 
-
+	sf::Vertex mainMenuOptionQuads[7 * 4];
+	sf::Vertex mainMenuOptionHighlight[7*4];
+	Tileset *ts_mainOption;
+	sf::RectangleShape menuOptionsBG;
 	
 
 	Config *config;
