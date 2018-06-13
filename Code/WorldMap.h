@@ -38,6 +38,7 @@ struct MapSector
 	{
 		NORMAL,
 		LEVELJUSTCOMPLETE,
+		LEVELCOMPLETEDWAIT,
 		JUSTCOMPLETE,
 		EXPLODECOMPLETE,
 		COMPLETE
@@ -90,6 +91,8 @@ struct MapSector
 	Tileset *ts_energyCircle;
 	Tileset *ts_energyTri;
 	Tileset *ts_energyMask;
+	Tileset *ts_nodeExplode;
+	sf::Sprite nodeExplodeSpr;
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	void SetXCenter( float x );
@@ -131,7 +134,6 @@ struct MapSelector
 	int slideDuration;
 	MapSelector( MainMenu *mm, sf::Vector2f &pos );
 	MapSector **sectors;
-	
 	
 	sf::Vertex shoulderIcons[8];
 	Tileset *ts_shoulderIcons;

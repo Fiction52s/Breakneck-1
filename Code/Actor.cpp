@@ -2093,9 +2093,10 @@ void Actor::UpdatePrePhysics()
 	
 	//cout << "JFRAME BEHI: " << frame << endl;
 
-	if (owner->powerRing != NULL)
+	if (owner->powerRing != NULL && action != DEATH)
 	{
-		if (owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT)
+		if (owner->drain && !desperationMode 
+			&& !IsIntroAction( action ) && !IsGoalKillAction( action ) && !IsExitAction( action ))
 		{
 			drainCounter++;
 			if (drainCounter == drainCounterMax)
@@ -2217,6 +2218,13 @@ void Actor::UpdatePrePhysics()
 				slowCounter = 1;
 				frame = 0;
 				owner->deathWipe = true;
+
+				for (int i = 0; i < 3; ++i)
+				{
+					fairLightningPool[i]->Reset();
+					dairLightningPool[i]->Reset();
+					uairLightningPool[i]->Reset();
+				}
 			}
 			else
 			{
@@ -2319,7 +2327,7 @@ void Actor::UpdatePrePhysics()
 
 	ActionEnded();
 
-	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT 
+	if( IsIntroAction( action ) || (IsGoalKillAction(action) && action != GOALKILLWAIT) || action == EXIT 
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT )
 	{
@@ -15729,6 +15737,7 @@ void Actor::UpdatePostPhysics()
 	if( hitGoal && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
 		SetActionExpr( GOALKILL );
+		desperationMode = false;
 
 		if( owner->recPlayer != NULL )
 		{
@@ -16607,6 +16616,21 @@ void Actor::SetActivePowers(
 	hasPowerTimeSlow = p_canTimeSlow;
 	hasPowerRightWire = p_canWire;
 	hasPowerLeftWire = p_canWire;
+}
+
+bool Actor::IsGoalKillAction(Action a)
+{
+	return (a == GOALKILL || a == GOALKILL1 || a == GOALKILL2 || a == GOALKILL3 || a == GOALKILL4 || a == GOALKILLWAIT);
+}
+
+bool Actor::IsIntroAction(Action a)
+{
+	return a == INTRO || a == SPAWNWAIT;
+}
+
+bool Actor::IsExitAction(Action a)
+{
+	return a == EXIT || a == EXITWAIT;
 }
 
 void Actor::HandleEntrant( QuadTreeEntrant *qte )
@@ -21511,11 +21535,6 @@ void Actor::UpdateSprite()
 	
 	if (auraPoints[0][spriteAction] != NULL)
 	{
-		if (action == GOALKILLWAIT)
-		{
-			//cout << "activate " << owner->totalGameFrames << endl;
-			int x = 5;
-		}
 		testAura->ActivateParticles(auraPoints[0][spriteAction][currTileIndex], tr, Vector2f( spriteCenter ), &np, 0);
 		//testAura1->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr1, Vector2f( spriteCenter ) + extraParticle0, &np);
 		//testAura2->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin() + extraParticle2, &np);

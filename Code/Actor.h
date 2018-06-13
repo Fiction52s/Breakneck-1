@@ -176,7 +176,7 @@ struct Actor : QuadTreeCollider,
 	EffectPool *dustParticles;
 	RisingParticleUpdater rpu;
 
-
+	
 	enum Action
 	{
 		DAIR,
@@ -310,6 +310,10 @@ struct Actor : QuadTreeCollider,
 		T_PURPLE
 	};
 	
+	bool IsGoalKillAction(Action a);
+	bool IsIntroAction(Action a);
+	bool IsExitAction(Action a);
+
 	void CreateAttackLightning();
 	EffectPool *fairLightningPool[4];
 	EffectPool *uairLightningPool[4];
