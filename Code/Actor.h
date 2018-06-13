@@ -1077,6 +1077,7 @@ struct Actor : QuadTreeCollider,
 
 	int drainCounter;
 	int drainCounterMax;
+	int drainAmount;
 
 	Critical *currentCheckPoint;
 

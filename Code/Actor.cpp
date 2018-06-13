@@ -447,6 +447,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		runeStep = 0;
 
 		drainCounterMax = 10;
+		drainAmount = 1;
 		drainCounter = 0;
 		currentCheckPoint = NULL;
 		flashFrames = 0;
@@ -1401,13 +1402,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 
 		//only set these parameters again if u get a power or lose one.
-		sh.setUniform( "hasPowerAirDash", hasPowerAirDash );
-		sh.setUniform( "hasPowerGravReverse", hasPowerGravReverse );
-		sh.setUniform( "hasPowerBounce", hasPowerBounce );
-		sh.setUniform( "hasPowerGrindBall", hasPowerGrindBall );
-		sh.setUniform( "hasPowerTimeSlow", hasPowerTimeSlow );
-		sh.setUniform( "hasPowerLeftWire", hasPowerLeftWire );
-		sh.setUniform( "hasPowerRightWire", hasPowerRightWire );
+		//sh.setUniform( "hasPowerAirDash", hasPowerAirDash );
+		//sh.setUniform( "hasPowerGravReverse", hasPowerGravReverse );
+		//sh.setUniform( "hasPowerBounce", hasPowerBounce );
+		//sh.setUniform( "hasPowerGrindBall", hasPowerGrindBall );
+		//sh.setUniform( "hasPowerTimeSlow", hasPowerTimeSlow );
+		//sh.setUniform( "hasPowerLeftWire", hasPowerLeftWire );
+		//sh.setUniform( "hasPowerRightWire", hasPowerRightWire );
 
 		/*Color basicArmor( 0x14, 0x59, 0x22 );
 		Color basicArmorDark( 0x08, 0x40, 0x12 );
@@ -2096,9 +2097,10 @@ void Actor::UpdatePrePhysics()
 	{
 		if (owner->drain && !desperationMode && action != SPAWNWAIT && action != INTRO && action != GOALKILL && action != EXIT && action != GOALKILLWAIT)
 		{
+			drainCounter++;
 			if (drainCounter == drainCounterMax)
 			{
-				int res = owner->powerRing->Drain(1);//powerWheel->Use( 1 );	
+				int res = owner->powerRing->Drain(drainAmount);//powerWheel->Use( 1 );	
 
 				if (res > 0)
 				{
@@ -2106,10 +2108,6 @@ void Actor::UpdatePrePhysics()
 					despCounter = 0;
 				}
 				drainCounter = 0;
-			}
-			else
-			{
-				drainCounter++;
 			}
 		}
 	}
@@ -15645,7 +15643,7 @@ void Actor::UpdatePostPhysics()
 		//sh.setUniform( "On0", false );
 		//sh.setUniform( "On1", false );
 		//sh.setUniform( "On2", false );
-		sh.setUniform( "despFrame", (float)-1 );
+		//sh.setUniform( "despFrame", (float)-1 );
 
 		sprite->setTexture( *(tileset[DEATH]->texture));
 		if( facingRight )
@@ -18189,16 +18187,19 @@ void Actor::Draw( sf::RenderTarget *target )
 	}*/
 	//target->draw( *pTrail->particles );
 	
-	if (speedLevel > 1 )
+	if (action != DEATH)
 	{
-		testAura2->Draw(target);
+		if (speedLevel > 1)
+		{
+			testAura2->Draw(target);
+		}
+		if (speedLevel > 0)
+		{
+			testAura1->Draw(target);
+		}
+
+		testAura->Draw(target);
 	}
-	if( speedLevel > 0 )
-	{
-		testAura1->Draw(target);
-	}
-	
-	testAura->Draw(target);
 	
 	
 	//testAura3->Draw(target);
@@ -18402,74 +18403,74 @@ void Actor::Draw( sf::RenderTarget *target )
 		
 		
 
-		Vector2i vi = Mouse::getPosition();
-		//Vector2i vi = owner->window->mapCoordsToPixel( Vector2f( position.x, position.y ) );//sf::Vector2f( 0, -300 ) );
+		//Vector2i vi = Mouse::getPosition();
+		////Vector2i vi = owner->window->mapCoordsToPixel( Vector2f( position.x, position.y ) );//sf::Vector2f( 0, -300 ) );
 
-		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
-		//Vector3f blahblah( vi.x / (float)owner->window->getSize().x, 
-		//	(owner->window->getSize().y - vi.y) / (float)owner->window->getSize().x, .015 );
+		//Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
+		////Vector3f blahblah( vi.x / (float)owner->window->getSize().x, 
+		////	(owner->window->getSize().y - vi.y) / (float)owner->window->getSize().x, .015 );
 
-		
-		
-		if( action != DEATH && action != SPAWNWAIT && action != GOALKILL && action != GOALKILLWAIT )
-		//if( action == RUN )
-		{
-			//sh.setUniform( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
-			/*Sprite spr;
-			
-			spr.setTexture( *owner->GetTileset( "testrocks.png", 300, 225)->texture );
-			spr.setOrigin( spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2 );
-			if( !facingRight )
-			{
-				sf::IntRect r = spr.getTextureRect();
-				spr.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-			}
-			spr.setPosition( sprite->getPosition() );
-			
-			// global positions first. then zooming
+		//
+		//
+		//if( action != DEATH && action != SPAWNWAIT && action != GOALKILL && action != GOALKILLWAIT )
+		////if( action == RUN )
+		//{
+		//	//sh.setUniform( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//	//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+		//	/*Sprite spr;
+		//	
+		//	spr.setTexture( *owner->GetTileset( "testrocks.png", 300, 225)->texture );
+		//	spr.setOrigin( spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2 );
+		//	if( !facingRight )
+		//	{
+		//		sf::IntRect r = spr.getTextureRect();
+		//		spr.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+		//	}
+		//	spr.setPosition( sprite->getPosition() );
+		//	
+		//	// global positions first. then zooming
 
-			
-			sh.setUniform( "u_texture",( *owner->GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			sh.setUniform( "u_normals", *owner->GetTileset( "testrocksnormal.png", 300, 225 )->texture );
-			sh.setUniform( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
-			//sh.setUniform( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
-			//sh.setUniform( "LightColor", 1, .8, .6, 1 );
-			sh.setUniform( "AmbientColor", .6, .6, 1, .8 );
-			//sh.setUniform( "Falloff", Vector3f( .4, 3, 20 ) );
-			sh.setUniform( "right", (facingRight && !reversed) || (facingRight && reversed ) );
-			sh.setUniform( "zoom", owner->cam.GetZoom() );
-			//cout << "right: " << (float)facingRight << endl;
+		//	
+		//	sh.setUniform( "u_texture",( *owner->GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//	sh.setUniform( "u_normals", *owner->GetTileset( "testrocksnormal.png", 300, 225 )->texture );
+		//	sh.setUniform( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
+		//	//sh.setUniform( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
+		//	//sh.setUniform( "LightColor", 1, .8, .6, 1 );
+		//	sh.setUniform( "AmbientColor", .6, .6, 1, .8 );
+		//	//sh.setUniform( "Falloff", Vector3f( .4, 3, 20 ) );
+		//	sh.setUniform( "right", (facingRight && !reversed) || (facingRight && reversed ) );
+		//	sh.setUniform( "zoom", owner->cam.GetZoom() );
+		//	//cout << "right: " << (float)facingRight << endl;
 
-			CircleShape cs;
-			cs.setFillColor( Color::Magenta );
-			cs.setRadius( 40 );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( 0, -300 );*/
-			
+		//	CircleShape cs;
+		//	cs.setFillColor( Color::Magenta );
+		//	cs.setRadius( 40 );
+		//	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
+		//	cs.setPosition( 0, -300 );*/
+		//	
 
-			//target->draw( spr, &sh );
-
-
+		//	//target->draw( spr, &sh );
 
 
 
 
-			//sh.setUniform( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			//sh.setUniform( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );
 
 
-			//sh.setUniform( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
-			//cout << "action: " << action << endl;
-			//sh.setUniform( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-			//sh.setUniform( "u_normals", *normal[action]->texture );
-			
-		}
-		else
-		{
-			target->draw( *sprite );
-		}
+		//	//sh.setUniform( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//	//sh.setUniform( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );
+
+
+		//	//sh.setUniform( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//	//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+		//	//cout << "action: " << action << endl;
+		//	//sh.setUniform( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//	//sh.setUniform( "u_normals", *normal[action]->texture );
+		//	
+		//}
+		//else
+		//{
+		//	target->draw( *sprite );
+		//}
 		
 
 		
@@ -18489,7 +18490,15 @@ void Actor::Draw( sf::RenderTarget *target )
 	else
 	{
 		flashFrames = owner->pauseFrames;
-		target->draw(*sprite, &sh);
+		if (desperationMode && action != DEATH)
+		{
+			target->draw(*sprite, &despFaceShader);
+		}
+		else
+		{
+			target->draw(*sprite, &sh);
+		}
+		
 		if (showSword)
 		{
 			sf::Shader &swordSh = swordShaders[speedLevel];

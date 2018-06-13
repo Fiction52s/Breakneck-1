@@ -5290,13 +5290,25 @@ bool GameSession::Load()
 	assert( goalTile >= 0 );
 	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( goalTile ) );
 
+	float numSecondsToDrain = 10;
+	float totalHealth = 3600;
+	float drainPerSecond = totalHealth / numSecondsToDrain;
+	float drainPerFrame = drainPerSecond / 60.f;
+	float drainFrames = 1.f;
+	if (drainPerFrame < 1.f)
+	{
+		drainFrames = floor(1.f / drainPerFrame);
+	}
+	GetPlayer(0)->drainCounterMax = drainFrames;
+	GetPlayer(0)->drainAmount = drainPerFrame;
+
 	if (mh->gameMode == MapHeader::MapType::T_STANDARD)
 	{
 		FillRingSection *blah[] = {
 			//new FillRingSection(tm, Color::Black, sf::Color::Black, sf::Color::Black,0, 300, 0),
-			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, 300, 0),
-			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,2, 300, 0),
-			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,3, 300, 0)
+			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, totalHealth/3, 0),
+			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,2, totalHealth / 3, 0),
+			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,3, totalHealth / 3, 0)
 		};
 
 		Vector2f powerRingPos(80, 220);

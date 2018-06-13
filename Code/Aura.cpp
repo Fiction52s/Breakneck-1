@@ -169,7 +169,7 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 		//sf::Vector2<double> vel = normalize(player->ground->v1 - player->ground->v0) * player->groundSpeed / 2.0;
 		//v =  * 2.f;
 		//float lv = sqrt( ( )
-		v = Vector2f(0, 0);//normalize( p - center ) * .3f;//Vector2f(0, 0);//Vector2f(vel.x, vel.y);
+		v = Vector2f(0, 0);//normalize(p - center) * 1.f;//Vector2f(0, 0);//normalize( p - center ) * .3f;//Vector2f(0, 0);//Vector2f(vel.x, vel.y);
 		ps->particles[ind]->Set(p, v, Vector2f(0, 0));
 		++ind;
 		if (ind == maxParticlesPerSet)
