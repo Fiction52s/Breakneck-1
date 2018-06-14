@@ -1510,6 +1510,8 @@ struct EditSession : GUIHandler
 	void SetInversePoly();
 	sf::Sprite scaleSprite;
 
+	int drainSeconds;
+
 	static void s_CreatePreview( EditSession *session, 
 		sf::Vector2i imageSize );
 	void CreatePreview( sf::Vector2i imageSize );

@@ -159,7 +159,8 @@ struct MapHeader
 		description("no description"), gameMode(T_STANDARD),
 		envType(0), envLevel(0), leftBounds(0),
 		topBounds(0), boundsWidth(0), boundsHeight(0),
-		numVertices(-1), songLevelsModified(false), numShards( 0 )
+		numVertices(-1), songLevelsModified(false), numShards( 0 ),
+		drainSeconds( 60 )
 	{
 
 	}
@@ -171,6 +172,7 @@ struct MapHeader
 	std::string collectionName;
 	std::string description;
 	MapType gameMode;
+	int drainSeconds;
 	int envType;
 	int envLevel;
 	int leftBounds;

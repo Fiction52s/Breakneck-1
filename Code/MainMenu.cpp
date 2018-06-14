@@ -864,7 +864,7 @@ MainMenu::MainMenu()
 		loadingIconBackpack[i].setPosition(1920 - 260, 1080 - 200);
 	}
 
-	Tileset *ts_loadBG = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);
+	Tileset *ts_loadBG = tilesetManager.GetTileset("Menu/load_w1_2.png", 1920, 1080);
 	loadingBGSpr.setTexture(*ts_loadBG->texture);
 	//testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
 }
@@ -1863,15 +1863,18 @@ void MainMenu::Run()
 				{
 				case GameSession::GR_WIN:
 				{
+					
 					World & world = currFile->worlds[currLevel->mh->envType];
 					bool doneCheck = false;
-					for (int i = 0; i < world.numSectors && !doneCheck; ++i)
+					//for (int i = 0; i < world.numSectors && !doneCheck; ++i)
 					{
-						Sector &sec = world.sectors[i];
-						for (int j = 0; j < sec.numLevels && !doneCheck; ++j)
+						int secIndex = worldMap->testSelector->saSelector->currIndex;
+						Sector &sec = world.sectors[secIndex];
+						int levIndex = worldMap->testSelector->sectors[secIndex]->saSelector->currIndex;
+						//for (int j = 0; j < sec.numLevels && !doneCheck; ++j)
 						{
-							Level &lev = sec.levels[j];
-							if (lev.GetFullName() == currLevel->fileName)
+							Level &lev = sec.levels[levIndex];
+							//if (lev.GetFullName() == currLevel->fileName)
 							{
 								if (!lev.GetComplete())
 								{
@@ -1905,6 +1908,7 @@ void MainMenu::Run()
 				window->setView(oldView);
 
 				menuMode = MainMenu::WORLDMAP;
+				worldMap->Update(menuPrevInput, menuCurrInput);
 				break;
 				
 			}
@@ -2907,12 +2911,16 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 
 	is >> mh->numVertices;
 
+	int dSecs;
+	is >> dSecs;
+
 	mh->collectionName = collectionName;
 	mh->ver1 = part1Num;
 	mh->ver2 = part2Num;
 	mh->description = ss.str();
 
 	mh->gameMode = (MapHeader::MapType)gameMode;
+	mh->drainSeconds = dSecs;
 
 	return mh;
 }
@@ -3078,6 +3086,8 @@ bool MapSelectionMenu::WriteMapHeader(std::ofstream &of, MapHeader *mh)
 	of << mh->leftBounds << " " << mh->topBounds << " " << mh->boundsWidth << " " << mh->boundsHeight << endl;
 
 	of << mh->numVertices << endl;
+
+	of << mh->drainSeconds << endl;
 
 	return true;
 }

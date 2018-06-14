@@ -5290,7 +5290,7 @@ bool GameSession::Load()
 	assert( goalTile >= 0 );
 	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( goalTile ) );
 
-	float numSecondsToDrain = 10;
+	float numSecondsToDrain = mh->drainSeconds;
 	float totalHealth = 3600;
 	float drainPerSecond = totalHealth / numSecondsToDrain;
 	float drainPerFrame = drainPerSecond / 60.f;

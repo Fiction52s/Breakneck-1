@@ -13939,6 +13939,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			stringstream ss;
 			//string s = p->textBoxes["minedgesize"]->text.getString().toAnsiString();
 			string s = p->textBoxes["minedgesize"]->text.getString().toAnsiString();
+			string drainStr = p->textBoxes["draintime"]->text.getString().toAnsiString();
 			ss << s;
 			
 			ss >> minEdgeSize;
@@ -13962,6 +13963,18 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			else
 			{
 				minimumEdgeLength = minEdgeSize;
+			}
+
+			ss.str("");
+
+			ss << drainStr;
+
+			int dSecs;
+			ss >> dSecs;
+			
+			if (!ss.fail())
+			{
+				drainSeconds = dSecs;
 			}
 
 			showPanel = NULL;
@@ -16220,6 +16233,8 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
 		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
+		p->AddLabel("draintime_label", Vector2i(20, 200), 20, "drain seconds:");
+		p->AddTextBox("draintime", Vector2i(20, 250), 200, 20, "60");
 		return p;
 	}
 	else if( name == "terrain" )

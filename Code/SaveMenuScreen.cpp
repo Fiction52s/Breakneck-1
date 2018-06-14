@@ -120,7 +120,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	ts_kinJump1 = tsMan.GetTileset("Menu/save_kin_jump1_500x1080.png", 500, 1080);
 	ts_kinJump2 = tsMan.GetTileset("Menu/save_kin_jump2_500x1080.png", 500, 1080);
-	ts_kinClouds = tsMan.GetTileset("Menu/save_kin_clouds_500x384.png", 500, 384);
+	ts_kinClouds = tsMan.GetTileset("Menu/save_kin_clouds_500x416.png", 500, 416);
 	ts_kinWindow = tsMan.GetTileset("Menu/save_kin_window_500x1080.png", 500, 1080);
 	//ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
 	ts_kinSky = tsMan.GetTileset("Menu/save_menu_sky_01_500x1080.png", 500, 1080);
@@ -210,6 +210,7 @@ void SaveMenuScreen::Update()
 				{
 					assert(0);
 				}
+				defaultFiles[selectedSaveIndex] = false;
 				files[selectedSaveIndex]->CopyFromDefault();
 				action = TRANSITIONMOVIE;
 			}
@@ -573,6 +574,8 @@ void SaveMenuScreen::Reset()
 	kinJump.setTextureRect(ts_kinJump1->GetSubRect(0));
 	kinJump.setOrigin(kinJump.getLocalBounds().width, 0);
 	kinJump.setPosition(Vector2f(1920, 0) + menuOffset);
+
+	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
 }
 
 void SaveMenuScreen::UpdateClouds()
