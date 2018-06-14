@@ -7,7 +7,7 @@ using namespace sf;
 
 ScoreDisplay::ScoreDisplay(GameSession *p_owner, Vector2f &position,
 	sf::Font &testFont)
-	:scoreBarVA(sf::Quads, 4 * NUM_BARS), scoreSymbolsVA(sf::Quads, 4 * NUM_BARS), scoreSheetVA(sf::Quads, 4 * NUM_BARS), font(testFont)
+	:scoreBarVA(sf::Quads, 4 * (NUM_BARS+1)), scoreSymbolsVA(sf::Quads, 4 * NUM_BARS), scoreSheetVA(sf::Quads, 4 * NUM_BARS), font(testFont)
 {
 	basePos = position;
 	owner = p_owner;
@@ -16,15 +16,17 @@ ScoreDisplay::ScoreDisplay(GameSession *p_owner, Vector2f &position,
 	ts_scoreSheet = owner->GetTileset("score_sheet_384x80.png", 384, 80);
 	ts_scoreSymbols = owner->GetTileset("score_symbol_384x80.png", 384, 80);
 
-	scoreContinue.setTexture(*ts_scoreContinue->texture);
-	scoreContinue.setTextureRect(ts_scoreContinue->GetSubRect(0));
+	//scoreContinue.setTexture(*ts_scoreContinue->texture);
+	//scoreContinue.setTextureRect(ts_scoreContinue->GetSubRect(0));
 	scoreContinue.setOrigin(scoreContinue.getLocalBounds().width, 0);
 	scoreContinue.setPosition(1920, 400);
 
 	IntRect ir = ts_scoreBar->GetSubRect(0);
+	IntRect irCont = ts_scoreBar->GetSubRect(1);
 
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
+		//SetRectSubRect(scoreBarVA + i * 4, ir);
 		scoreBarVA[i * 4 + 0].texCoords = Vector2f(ir.left, ir.top);
 		scoreBarVA[i * 4 + 1].texCoords = Vector2f(ir.left + ir.width, ir.top);
 		scoreBarVA[i * 4 + 2].texCoords = Vector2f(ir.left + ir.width, ir.top + ir.height);
@@ -40,6 +42,11 @@ ScoreDisplay::ScoreDisplay(GameSession *p_owner, Vector2f &position,
 		bars[i]->SetSymbolTransparency(0);
 	}
 
+	scoreBarVA[NUM_BARS * 4 + 0].texCoords = Vector2f(irCont.left, irCont.top);
+	scoreBarVA[NUM_BARS * 4 + 1].texCoords = Vector2f(irCont.left + irCont.width, irCont.top);
+	scoreBarVA[NUM_BARS * 4 + 2].texCoords = Vector2f(irCont.left + irCont.width, irCont.top + irCont.height);
+	scoreBarVA[NUM_BARS * 4 + 3].texCoords = Vector2f(irCont.left, irCont.top + irCont.height);
+	bars[NUM_BARS] = new ScoreBar(NUM_BARS, this, true );
 
 	active = false;
 	waiting = false;
@@ -53,7 +60,7 @@ void ScoreDisplay::Draw(RenderTarget *target)
 		target->draw(scoreBarVA, ts_scoreBar->texture);
 		target->draw(scoreSheetVA, ts_scoreSheet->texture);
 		target->draw(scoreSymbolsVA, ts_scoreSymbols->texture);
-		target->draw(scoreContinue);
+		//target->draw(scoreContinue);
 
 		if (bars[0]->state == ScoreBar::SHEET_DISPLAY || bars[0]->state ==
 			ScoreBar::SYMBOL_DISPLAY)
@@ -75,7 +82,7 @@ void ScoreDisplay::Update()
 
 	bool allNone = true;
 	bool allDisplay = true;
-	for (int i = 0; i < NUM_BARS; ++i)
+	for (int i = 0; i < NUM_BARS+1; ++i)
 	{
 		bars[i]->Update();
 		if (bars[i]->state != ScoreBar::NONE)
@@ -103,12 +110,13 @@ void ScoreDisplay::Update()
 void ScoreDisplay::Reset()
 {
 	active = false;
-	for (int i = 0; i < NUM_BARS; ++i)
+	for (int i = 0; i < NUM_BARS+1; ++i)
 	{
 		bars[i]->state = ScoreBar::NONE;
 		bars[i]->frame = 0;
 		bars[i]->xDiffPos = 0;
-		bars[i]->SetSymbolTransparency(0);
+		if( !bars[i]->contBar )
+			bars[i]->SetSymbolTransparency(0);
 	}
 }
 
@@ -168,7 +176,7 @@ void ScoreDisplay::Activate()
 
 void ScoreDisplay::Deactivate()
 {
-	for (int i = 0; i < NUM_BARS; ++i)
+	for (int i = 0; i < NUM_BARS+1; ++i)
 	{
 		bars[i]->state = ScoreBar::RETRACT;
 		bars[i]->frame = 0;
@@ -181,15 +189,18 @@ void ScoreDisplay::Deactivate()
 	//Reset();
 }
 
-ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent)
-	:parent(p_parent), frame(0), state(NONE), row(p_row), xDiffPos(0)
+ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent, bool p_contBar )
+	:parent(p_parent), frame(0), state(NONE), row(p_row), xDiffPos(0), contBar( p_contBar )
 {
 
 }
 
 void ScoreBar::SetBarPos(float xDiff)
 {
-	IntRect ir = parent->ts_scoreBar->GetSubRect(0);
+	int f = 0;
+	if (contBar)
+		f = 1;
+	IntRect ir = parent->ts_scoreBar->GetSubRect(f);
 	int rowHeight = 100;
 	xDiffPos = xDiff;
 
@@ -203,15 +214,18 @@ void ScoreBar::SetBarPos(float xDiff)
 	scoreBarVA[row * 4 + 2].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight + ir.height);
 	scoreBarVA[row * 4 + 3].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight + ir.height);
 
-	scoreSheetVA[row * 4 + 0].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight);
-	scoreSheetVA[row * 4 + 1].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight);
-	scoreSheetVA[row * 4 + 2].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight + ir.height);
-	scoreSheetVA[row * 4 + 3].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight + ir.height);
+	if (row < ScoreDisplay::NUM_BARS)
+	{
+		scoreSheetVA[row * 4 + 0].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight);
+		scoreSheetVA[row * 4 + 1].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight);
+		scoreSheetVA[row * 4 + 2].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight + ir.height);
+		scoreSheetVA[row * 4 + 3].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight + ir.height);
 
-	scoreSymbolsVA[row * 4 + 0].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight);
-	scoreSymbolsVA[row * 4 + 1].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight);
-	scoreSymbolsVA[row * 4 + 2].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight + ir.height);
-	scoreSymbolsVA[row * 4 + 3].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight + ir.height);
+		scoreSymbolsVA[row * 4 + 0].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight);
+		scoreSymbolsVA[row * 4 + 1].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight);
+		scoreSymbolsVA[row * 4 + 2].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight + ir.height);
+		scoreSymbolsVA[row * 4 + 3].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight + ir.height);
+	}
 }
 
 void ScoreBar::ClearSheet()
@@ -257,13 +271,21 @@ void ScoreBar::Update()
 		int popoutFrames = 30;
 		if (frame == popoutFrames + 1)
 		{
-			state = SHEET_APPEAR;
+			if (contBar)
+			{
+				state = SHEET_DISPLAY;
+			}
+			else
+			{
+				state = SHEET_APPEAR;
+			}
+			
 			frame = 0;
 			break;
 		}
 		else if (frame == popoutFrames)
 		{
-			if (row < parent->NUM_BARS - 1)
+			if (row < parent->NUM_BARS)
 			{
 				parent->bars[row + 1]->state = ScoreBar::POP_OUT;
 				parent->bars[row + 1]->frame = 0;
@@ -348,19 +370,25 @@ void ScoreBar::Update()
 	}
 	case SHEET_APPEAR:
 	{
-		SetSheetFrame(frame);
+		if( !contBar )
+			SetSheetFrame(frame);
 		break;
 	}
 	case SYMBOL_DISPLAY:
 	{
-		int dispFrames = 30;
-		CubicBezier bez(0, 0, 1, 1);
-		float z = bez.GetValue((double)frame / dispFrames);
-		SetSymbolTransparency(z);
-
-		if (row == 0)
+		if (!contBar)
 		{
 
+
+			int dispFrames = 30;
+			CubicBezier bez(0, 0, 1, 1);
+			float z = bez.GetValue((double)frame / dispFrames);
+			SetSymbolTransparency(z);
+
+			if (row == 0)
+			{
+
+			}
 		}
 		break;
 	}

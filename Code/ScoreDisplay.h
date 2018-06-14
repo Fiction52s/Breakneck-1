@@ -20,7 +20,8 @@ struct ScoreBar
 		RETRACT
 	};
 
-	ScoreBar(int row, ScoreDisplay *parent);
+	ScoreBar(int row, ScoreDisplay *parent,
+		bool contBar = false );
 	void SetBarPos(float xDiff);
 	void SetSheetFrame(int frame);
 	void SetSymbolTransparency(float f);
@@ -29,6 +30,7 @@ struct ScoreBar
 	int row;
 	State state;
 	int frame;
+	bool contBar;
 	float xDiffPos;
 	ScoreDisplay *parent;
 	//sf::Text info;
@@ -58,7 +60,7 @@ struct ScoreDisplay
 
 
 	static const int NUM_BARS = 3;
-	ScoreBar *bars[NUM_BARS];
+	ScoreBar *bars[NUM_BARS+1];
 
 	GameSession *owner;
 	Tileset *ts_scoreBar;

@@ -382,6 +382,8 @@ struct MapSelectionMenu
 	int toMultiTransLength;
 	int fromMultiTransLength;
 
+	
+
 	ControllerState multiMusicPrev;
 	ControllerState multiMusicCurr;
 	ControllerState multiGhostPrev;
@@ -501,6 +503,7 @@ struct MainMenu
 	SingleAxisSelector *saSelector;
 	sf::Text menuOptions[MainMenuOptions::M_Count];
 	void UpdateMenuOptionText();
+	void DrawMenuOptionText(sf::RenderTarget *target);
 	
 	MusicManager *musicManager;
 	FillRing *testRing;
@@ -509,7 +512,8 @@ struct MainMenu
 	void Init();
 
 	void SetMode(Mode m);
-
+	int transFrame;
+	int transLength;
 	void ResizeWindow( int windowWidth, 
 		int windowHeight, int style );
 	//void Deactivate();

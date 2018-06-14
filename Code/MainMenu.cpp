@@ -544,6 +544,9 @@ MainMenu::MainMenu()
 {
 	arial.loadFromFile("Breakneck_Font_01.ttf");
 
+	transLength = 60;
+	transFrame = 0;
+
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
 
@@ -999,6 +1002,10 @@ void MainMenu::SetMode(Mode m)
 	}
 	case TRANS_MAIN_TO_SAVE:
 	{
+		transFrame = 0;
+		transLength = 60;
+		saveMenu->Reset();
+		saveMenu->Update();
 		slideCurrFrame = 0;
 		slideStart = trueCenter;
 		slideEnd = rightCenter;
@@ -1006,6 +1013,8 @@ void MainMenu::SetMode(Mode m)
 	}
 	case TRANS_SAVE_TO_MAIN:
 	{
+		transLength = 60;
+		transFrame = 0;
 		slideCurrFrame = 0;
 		slideStart = rightCenter;
 		slideEnd = trueCenter;
@@ -1057,6 +1066,19 @@ void MainMenu::SetMode(Mode m)
 	}
 
 	menuMode = m;
+}
+
+void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
+{
+	target->draw(menuOptionsBG);
+	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
+	{
+		target->draw(mainMenuOptionQuads, 7 * 4, sf::Quads, ts_mainOption->texture);
+		//preScreenTexsetture->draw(menuOptions[i]);
+	}
+
+	target->draw(mainMenuOptionHighlight + saSelector->currIndex * 4, 4, sf::Quads,
+		ts_mainOption->texture);
 }
 
 void MainMenu::CustomMapsOption()
@@ -1899,9 +1921,42 @@ void MainMenu::Run()
 				}
 			case TRANS_MAIN_TO_SAVE:
 			{
-				menuMode = SAVEMENU;
-				saveMenu->Reset();
-				saveMenu->Update();
+				if (transFrame == transLength)
+				{
+					menuMode = SAVEMENU;
+					break;
+				}
+				
+				float fadeFactor; 
+
+				if (transFrame >= transLength / 2)
+				{
+					fadeFactor = (float)( transFrame - (transLength / 2) ) / (transLength / 2);
+					fadeFactor = 1.f - fadeFactor;
+				}
+				else
+				{
+					fadeFactor = (float)transFrame / (transLength / 2);
+				}
+				sf::Color fadeColor = fadeRect.getFillColor();
+				fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
+					fadeColor.b, (fadeFactor * 255) ) );
+				
+				if (transFrame * 2 == transLength)
+				{
+					saveMenu->Reset();
+				}
+
+				if (transFrame < transLength / 2)
+				{
+					titleScreen->Update();
+				}
+				else
+				{
+					saveMenu->Update();
+					worldMap->Update(menuPrevInput, menuCurrInput);
+				}
+				++transFrame;
 				//worldMap->Reset( );
 				//worldMap->Update( currInput, prevInput );
 				/*if (slideCurrFrame > numSlideFrames)
@@ -1916,7 +1971,48 @@ void MainMenu::Run()
 			}
 			case TRANS_SAVE_TO_MAIN:
 			{
-				menuMode = MAINMENU;
+				UpdateMenuOptionText();
+
+
+				if (transFrame == transLength)
+				{
+					menuMode = MAINMENU;
+					break;
+				}
+
+				
+
+				float fadeFactor;
+
+				if (transFrame >= transLength / 2)
+				{
+					fadeFactor = (float)(transFrame - (transLength / 2)) / (transLength / 2);
+					fadeFactor = 1.f - fadeFactor;
+				}
+				else
+				{
+					fadeFactor = (float)transFrame / (transLength / 2);
+				}
+				sf::Color fadeColor = fadeRect.getFillColor();
+				fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
+					fadeColor.b, (fadeFactor * 255)));
+
+				if (transFrame * 2 == transLength)
+				{
+					saveMenu->Reset();
+				}
+
+				if (transFrame < transLength / 2)
+				{
+					saveMenu->Update();
+					worldMap->Update(menuPrevInput, menuCurrInput);
+				}
+				else
+				{
+					titleScreen->Update();
+				}
+				++transFrame;
+				
 				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = MAINMENU;
@@ -2168,20 +2264,12 @@ void MainMenu::Run()
 			}
 		case MAINMENU:
 			{
-				preScreenTexture->setView( v );
+				//preScreenTexture->setView( v );
 				titleScreen->Draw(preScreenTexture);
 				
-				preScreenTexture->draw(menuOptionsBG);
-				for (int i = 0; i < MainMenuOptions::M_Count; ++i)
-				{
-					preScreenTexture->draw(mainMenuOptionQuads, 7 * 4, sf::Quads, ts_mainOption->texture);
-					//preScreenTexsetture->draw(menuOptions[i]);
-				}
+				DrawMenuOptionText(preScreenTexture);
 
-				preScreenTexture->draw( mainMenuOptionHighlight + saSelector->currIndex * 4, 4, sf::Quads,
-					ts_mainOption->texture);
-
-				preScreenTexture->setView( uiView );
+				//preScreenTexture->setView( uiView );
 
 				if( splashFadeFrame <= splashFadeOutLength )
 				{
@@ -2240,15 +2328,41 @@ void MainMenu::Run()
 		}
 		case TRANS_MAIN_TO_SAVE:
 		{
+			int tFrame = transFrame - 1;
+			if (tFrame < transLength / 2)
+			{
+				titleScreen->Draw( preScreenTexture );
+			}
+			else
+			{
+				worldMap->Draw(preScreenTexture);
+				saveMenu->Draw(preScreenTexture);
+			}
 			//preScreenTexture->setView(v);
-			worldMap->Draw(preScreenTexture);
-			saveMenu->Draw(preScreenTexture);
+			
+
+			preScreenTexture->draw(fadeRect);
+
+			
 			break;
 		}
 		case TRANS_SAVE_TO_MAIN:
 		{
-			preScreenTexture->setView(v);
-			saveMenu->Draw(preScreenTexture);
+			int tFrame = transFrame - 1;
+			if (tFrame < transLength / 2)
+			{
+				worldMap->Draw(preScreenTexture);
+				saveMenu->Draw(preScreenTexture);
+			}
+			else
+			{
+				titleScreen->Draw(preScreenTexture);
+				DrawMenuOptionText(preScreenTexture);
+			}
+			//preScreenTexture->setView(v);
+
+
+			preScreenTexture->draw(fadeRect);
 			break;
 		}
 		case TRANS_OPTIONS_TO_MAIN:
@@ -2497,6 +2611,7 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 
 	toMultiTransLength = 60;
 	fromMultiTransLength = 60;
+	
 
 	allItems = NULL;
 	int waitFrames[3] = { 10, 5, 2 };

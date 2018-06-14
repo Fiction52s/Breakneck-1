@@ -260,94 +260,93 @@ void SaveMenuScreen::Update()
 	int moveDelayFrames = 15;
 	int moveDelayFramesSmall = 6;
 
-	if (menuCurrInput.B && !menuPrevInput.B)
+	if (mainMenu->menuMode == MainMenu::SAVEMENU && action == WAIT )
 	{
-		mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
-		return;
-	}
-	else if (menuCurrInput.A && !menuPrevInput.A)
-	{
-		if (action == WAIT)
+		if (menuCurrInput.B && !menuPrevInput.B )
+		{
+			mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
+			return;
+		}
+		else if (menuCurrInput.A && !menuPrevInput.A )
 		{
 			action = SELECT;
 			frame = 0;
+			return;
 		}
-		return;
-	}
 
-	bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
-	bool canMoveSame = (moveDelayCounter == 0);
-	if ((menuCurrInput.LDown() || menuCurrInput.PDown()) && (
-		(!moveDown && canMoveOther) || (moveDown && canMoveSame)))
-	{
-		selectedSaveIndex += 2;
-		//currentMenuSelect++;
-		if (selectedSaveIndex > 5)
-			selectedSaveIndex -= 6;
-		moveDown = true;
-		moveDelayCounter = moveDelayFrames;
-		mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
-	}
-	else if ((menuCurrInput.LUp() || menuCurrInput.PUp()) && (
-		(!moveUp && canMoveOther) || (moveUp && canMoveSame)))
-	{
-		selectedSaveIndex -= 2;
-		if (selectedSaveIndex < 0)
-			selectedSaveIndex += 6;
-		moveUp = true;
-		moveDelayCounter = moveDelayFrames;
-		mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
-	}
-
-	if ((menuCurrInput.LRight() || menuCurrInput.PRight()) && (
-		(!moveRight && canMoveOther) || (moveRight && canMoveSame)))
-	{
-		selectedSaveIndex++;
-		//currentMenuSelect++;
-		if (selectedSaveIndex % 2 == 0)
-			selectedSaveIndex -= 2;
-		moveRight = true;
-		moveDelayCounter = moveDelayFrames;
-	}
-	else if ((menuCurrInput.LLeft() || menuCurrInput.PLeft()) && (
-		(!moveLeft && canMoveOther) || (moveLeft && canMoveSame)))
-	{
-		selectedSaveIndex--;
-		if (selectedSaveIndex % 2 == 1)
-			selectedSaveIndex += 2;
-		else if (selectedSaveIndex < 0)
+		bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
+		bool canMoveSame = (moveDelayCounter == 0);
+		if ((menuCurrInput.LDown() || menuCurrInput.PDown()) && (
+			(!moveDown && canMoveOther) || (moveDown && canMoveSame)))
 		{
 			selectedSaveIndex += 2;
+			//currentMenuSelect++;
+			if (selectedSaveIndex > 5)
+				selectedSaveIndex -= 6;
+			moveDown = true;
+			moveDelayCounter = moveDelayFrames;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
 		}
-		moveLeft = true;
+		else if ((menuCurrInput.LUp() || menuCurrInput.PUp()) && (
+			(!moveUp && canMoveOther) || (moveUp && canMoveSame)))
+		{
+			selectedSaveIndex -= 2;
+			if (selectedSaveIndex < 0)
+				selectedSaveIndex += 6;
+			moveUp = true;
+			moveDelayCounter = moveDelayFrames;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
+		}
 
-		moveDelayCounter = moveDelayFrames;
-	}
+		if ((menuCurrInput.LRight() || menuCurrInput.PRight()) && (
+			(!moveRight && canMoveOther) || (moveRight && canMoveSame)))
+		{
+			selectedSaveIndex++;
+			//currentMenuSelect++;
+			if (selectedSaveIndex % 2 == 0)
+				selectedSaveIndex -= 2;
+			moveRight = true;
+			moveDelayCounter = moveDelayFrames;
+		}
+		else if ((menuCurrInput.LLeft() || menuCurrInput.PLeft()) && (
+			(!moveLeft && canMoveOther) || (moveLeft && canMoveSame)))
+		{
+			selectedSaveIndex--;
+			if (selectedSaveIndex % 2 == 1)
+				selectedSaveIndex += 2;
+			else if (selectedSaveIndex < 0)
+			{
+				selectedSaveIndex += 2;
+			}
+			moveLeft = true;
 
-	if (moveDelayCounter > 0)
-	{
-		moveDelayCounter--;
-	}
+			moveDelayCounter = moveDelayFrames;
+		}
+
+		if (moveDelayCounter > 0)
+		{
+			moveDelayCounter--;
+		}
 
 
-	if (!(menuCurrInput.LDown() || menuCurrInput.PDown()))
-	{
-		moveDown = false;
-	}
-	if (!(menuCurrInput.LUp() || menuCurrInput.PUp()))
-	{
-		moveUp = false;
-	}
+		if (!(menuCurrInput.LDown() || menuCurrInput.PDown()))
+		{
+			moveDown = false;
+		}
+		if (!(menuCurrInput.LUp() || menuCurrInput.PUp()))
+		{
+			moveUp = false;
+		}
 
-	if (!(menuCurrInput.LRight() || menuCurrInput.PRight()))
-	{
-		moveRight = false;
+		if (!(menuCurrInput.LRight() || menuCurrInput.PRight()))
+		{
+			moveRight = false;
+		}
+		if (!(menuCurrInput.LLeft() || menuCurrInput.PLeft()))
+		{
+			moveLeft = false;
+		}
 	}
-	if (!(menuCurrInput.LLeft() || menuCurrInput.PLeft()))
-	{
-		moveLeft = false;
-	}
-
 
 	switch (action)
 	{
