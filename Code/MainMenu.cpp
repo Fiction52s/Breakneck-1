@@ -523,7 +523,7 @@ void MainMenu::UpdateMenuOptionText()
 		alpha = 0;
 	}
 
-	SetRectColor(mainMenuOptionHighlight + saSelector->currIndex * 4, Color( 255, 255, 255, alpha * 255 ));
+	SetRectColor(mainMenuOptionHighlight + saSelector->currIndex * 4, Color( 255, 255, 255, 100 + alpha * 155 ));
 
 	//for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	//{
@@ -571,7 +571,7 @@ MainMenu::MainMenu()
 		//else
 		{
 			SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i));
-			SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i+7));
+			SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i+14));
 		}
 	}
 

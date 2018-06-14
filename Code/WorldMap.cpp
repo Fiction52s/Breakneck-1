@@ -1015,7 +1015,8 @@ void MapSelector::Draw(sf::RenderTarget *target)
 void MapSelector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
-	if (state == S_IDLE)
+	MapSector::State currSectorState = sectors[saSelector->currIndex]->state;
+	if (state == S_IDLE && (currSectorState == MapSector::NORMAL || currSectorState == MapSector::COMPLETE ))
 	{
 		bool left = curr.LLeft();
 		bool right = curr.LRight();
@@ -1036,6 +1037,10 @@ void MapSelector::Update(ControllerState &curr,
 		{
 			sectors[saSelector->currIndex]->Update(curr, prev);
 		}
+	}
+	else if (state == S_IDLE)
+	{
+		sectors[saSelector->currIndex]->Update(curr, prev);
 	}
 	else if (state == S_SLIDINGLEFT)
 	{
@@ -1476,7 +1481,7 @@ void MapSector::Update(ControllerState &curr,
 
 	UpdateNodes();
 
-	if (state != EXPLODECOMPLETE && state != LEVELCOMPLETEDWAIT )
+	if (state == NORMAL || state == COMPLETE)
 	{
 		int old = saSelector->currIndex;
 
