@@ -486,16 +486,16 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	cursorLocationText.setFillColor( Color::White );
 	cursorLocationText.setPosition( 0, 0 );
 	
-	scaleSprite.setPosition(0, 100);
-	scaleSpriteBGRect.setPosition(0, 100);
-	scaleSpriteBGRect.setFillColor(Color::Cyan);
+	scaleSprite.setPosition(0, 80);
+	scaleSpriteBGRect.setPosition(0, 80);
+	scaleSpriteBGRect.setFillColor(Color( 255, 255, 255, 200 ));
 	scaleSpriteBGRect.setSize(Vector2f( 80, 100 ));
 	
 
 	scaleText.setFont(mainMenu->arial);
-	scaleText.setCharacterSize(16);
+	scaleText.setCharacterSize(32);
 	scaleText.setFillColor(Color::White);
-	scaleText.setPosition(100, 100);
+	scaleText.setPosition(5, 30);
 
 	Tileset *ts_kinScale = p_mainMenu->tilesetManager.GetTileset("Kin/stand_64x64.png", 64, 64);
 	scaleSprite.setTexture(*ts_kinScale->texture);
@@ -12369,12 +12369,15 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			cursorPosSS << (int)worldPos.x << ", " << (int)worldPos.y;
 		}
 
-		
-		
-		scaleSprite.setScale( 1.f / zoomMultiple * 2, 1.f / zoomMultiple * 2);
+		Vector2f size = uiView.getSize();
+
+
+		//float scaleDiff = zoomMultiple - 1.f;//1.f / zoomMultiple;
+		float sca = view.getSize().x / 960.f / 2.f;
+		scaleSprite.setScale( 1.f / sca, 1.f / sca );
 		scaleTextSS << "scale: x" << scaleSprite.getScale().x;
-		scaleSpriteBGRect.setSize(Vector2f( scaleSprite.getLocalBounds().width, 
-			scaleSprite.getLocalBounds().height ) );
+		scaleSpriteBGRect.setSize(Vector2f( scaleSprite.getGlobalBounds().width, 
+			scaleSprite.getGlobalBounds().height ) );
 		preScreenTex->draw(scaleSpriteBGRect);
 		preScreenTex->draw(scaleSprite);
 		cursorLocationText.setString( cursorPosSS.str() );
