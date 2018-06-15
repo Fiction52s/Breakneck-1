@@ -703,6 +703,8 @@ bool EditSession::OpenFile()
 		boundWidth = mh->boundsWidth;
 		boundHeight  = mh->boundsHeight;
 
+		drainSeconds = mh->drainSeconds;
+
 		int numPoints = mh->numVertices;
 
 		delete mh;
@@ -2731,7 +2733,7 @@ void EditSession::WriteFile(string fileName)
 
 	mapHeader.numShards = numShards;
 
-
+	mapHeader.drainSeconds = drainSeconds;
 
 	ofstream of;
 	of.open( fileName );//+ ".brknk" );
@@ -2763,35 +2765,35 @@ void EditSession::WriteFile(string fileName)
 	of << player->position.x << " " << player->position.y << endl;
 
 	bool quitLoop = false;
-	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && !quitLoop; ++it )
-	{
-		ActorGroup *ag = (*it).second;
-		for( list<ActorPtr>::iterator ait = ag->actors.begin(); ait != ag->actors.end() && !quitLoop; ++ait )
-		{
-			if( (*ait)->type->name == "goal" )
-			{
-				TerrainPoint *start = (*ait)->groundInfo->edgeStart;
-				TerrainPoint *end = NULL;
-				if( start->next != NULL )
-					end = start->next;
-				else
-				{
-					end = (*ait)->groundInfo->ground->pointStart;
-				}
-				V2d s( start->pos.x, start->pos.y );
-				V2d e( end->pos.x, end->pos.y );
-				V2d along = normalize( e - s );
-				V2d pos = s + along * (*ait)->groundInfo->groundQuantity;
-				Vector2i pi( pos.x, pos.y );//floor( pos.x + .5 ), floor( pos.y + .5 );
-				of << pi.x << " " << pi.y << endl;
-				//of << (*ait)->position.x << " " << (*ait)->position.y << endl;
-				//only should be one goal, but this isnt enforced yet
-				quitLoop = true;
-			}
-		}
-		//(*it).second->WriteFile( of );
-		//(*it).second->( w );
-	}
+	//for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && !quitLoop; ++it )
+	//{
+	//	ActorGroup *ag = (*it).second;
+	//	for( list<ActorPtr>::iterator ait = ag->actors.begin(); ait != ag->actors.end() && !quitLoop; ++ait )
+	//	{
+	//		if( (*ait)->type->name == "goal" )
+	//		{
+	//			TerrainPoint *start = (*ait)->groundInfo->edgeStart;
+	//			TerrainPoint *end = NULL;
+	//			if( start->next != NULL )
+	//				end = start->next;
+	//			else
+	//			{
+	//				end = (*ait)->groundInfo->ground->pointStart;
+	//			}
+	//			V2d s( start->pos.x, start->pos.y );
+	//			V2d e( end->pos.x, end->pos.y );
+	//			V2d along = normalize( e - s );
+	//			V2d pos = s + along * (*ait)->groundInfo->groundQuantity;
+	//			Vector2i pi( pos.x, pos.y );//floor( pos.x + .5 ), floor( pos.y + .5 );
+	//			of << pi.x << " " << pi.y << endl;
+	//			//of << (*ait)->position.x << " " << (*ait)->position.y << endl;
+	//			//only should be one goal, but this isnt enforced yet
+	//			quitLoop = true;
+	//		}
+	//	}
+	//	//(*it).second->WriteFile( of );
+	//	//(*it).second->( w );
+	//}
 
 
 	int writeIndex = 0;
@@ -13964,8 +13966,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				minimumEdgeLength = minEdgeSize;
 			}
-
-			ss.str("");
+			//stringstream ss2;
+			ss.clear();
 
 			ss << drainStr;
 

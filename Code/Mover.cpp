@@ -708,7 +708,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 				}
 				else if( !roll )
 				{
-					cout << "what start roll" << endl;
+					//cout << "what start roll" << endl;
 					bool br = StartRoll();
 					if( br )
 						break;

@@ -418,6 +418,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		kinFace.setTexture( *ts_kinFace->texture );
 		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
 
+		kinFaceBG.setTexture(*ts_kinFace->texture);
+		kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
+
 		kinUnderOutline.setTexture( *ts_kinFace->texture );
 		kinUnderOutline.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
 		kinUnderOutline.setPosition( facePos );
@@ -436,6 +439,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//kinFace.setPosition( 2, 48 );
 		//kinFace.setPosition( 1920 / 2 - 512, 0 );
 		kinFace.setPosition( facePos );
+		kinFaceBG.setPosition(facePos);
 
 		SetExpr( Expr::Expr_NEUTRAL );
 
@@ -500,6 +504,15 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//motionGhostShader.setUniform("energyColor", ColorGL(mgc));
 		
 		motionGhostShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+
+
+		if (!playerDespShader.loadFromFile("Shader/playerdesperation.frag", sf::Shader::Fragment))
+			//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+		{
+			cout << "desp player SHADER NOT LOADING CORRECTLY" << endl;
+			assert(0 && "desp shader not loaded");
+		}
+		playerDespShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 		/*if( !timeSlowShader.loadFromFile( "Shader/timeslow_shader.frag", sf::Shader::Fragment ) )
@@ -2201,6 +2214,7 @@ void Actor::UpdatePrePhysics()
 		auraColor.b = floor( auraColor.b * ( 1.f - overallFac ) + Color::Black.b * fac + .5 );
 		//sh.setUniform( "despColor", ColorGL(currentDespColor) );
 		despFaceShader.setUniform( "toColor", ColorGL(currentDespColor) );
+		playerDespShader.setUniform("toColor", ColorGL(currentDespColor));
 		//sh.setUniform( "auraColor", ColorGL(auraColor) );
 		//currentDespColor
 
@@ -2212,6 +2226,7 @@ void Actor::UpdatePrePhysics()
 			desperationMode = false;
 			if (owner->powerRing->IsEmpty())
 			{
+
 				SetAction(DEATH);
 				rightWire->Reset();
 				leftWire->Reset();
@@ -15690,18 +15705,25 @@ void Actor::UpdatePostPhysics()
 		}
 		//if( slowCounter == slowMultiple )
 		//{
-	
+		int total = actionLength[DEATH];
+		int faceDeathAnimLength = 11;
 		int an = 6;
-		int extra = 24;
-		if( frame < 11 * an + extra && frame >= extra )
+		int extra = 22;
+		if( frame < faceDeathAnimLength * an + extra && frame >= extra )
 		{
 			int f = (frame - extra) / an;
-			expr = (Expr)(Expr_DEATH + f);
+			expr = (Expr)(f);
+		}
+		else
+		{
+			expr = (Expr)0;
 		}
 	
 
-
-		kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 4 ) );
+		//cout << "death: " << expr + 11 << endl;
+		kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 11 ) );
+		kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(5));
+		
 
 
 		++frame;
@@ -16449,8 +16471,12 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
-
-	kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 4 ) );
+	//if (action != DEATH)
+	//{
+		kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
+		kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(expr));
+	//}
+	
 
 
 	followerPos += followerVel;
@@ -18516,7 +18542,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		flashFrames = owner->pauseFrames;
 		if (desperationMode && action != DEATH)
 		{
-			target->draw(*sprite, &despFaceShader);
+			target->draw(*sprite, &playerDespShader);
 		}
 		else
 		{

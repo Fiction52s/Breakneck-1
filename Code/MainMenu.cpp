@@ -559,7 +559,7 @@ MainMenu::MainMenu()
 
 	titleScreen = new TitleScreen(this);
 	
-	ts_mainOption = tilesetManager.GetTileset("Menu/mainmenu_text_512x64.png", 512, 64);
+	ts_mainOption = tilesetManager.GetTileset("Menu/mainmenu_text_560x64.png", 560, 64);
 
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
@@ -651,15 +651,15 @@ MainMenu::MainMenu()
 		menuOptions[i].setOrigin(menuOptions[i].getLocalBounds().width / 2, 0);
 		menuOptions[i].setPosition(textBase.x, textBase.y + (textOptionSpacing + charHeight) * i);
 
-		SetRectCenter(mainMenuOptionQuads + i * 4, 512, 64, textBase + Vector2f(256, 32 + i * (64 + textOptionSpacing) ) );
-		SetRectCenter(mainMenuOptionHighlight + i * 4, 512, 64, textBase + Vector2f(256, 32 + i * (64 + textOptionSpacing)));
+		SetRectCenter(mainMenuOptionQuads + i * 4, 560, 64, textBase + Vector2f(560/2, 32 + i * (64 + textOptionSpacing) ) );
+		SetRectCenter(mainMenuOptionHighlight + i * 4, 560, 64, textBase + Vector2f(560 / 2, 32 + i * (64 + textOptionSpacing)));
 		
 		//SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(0));
 	}
 
 	menuOptionsBG.setFillColor(Color( 0, 0, 0, 70 ));
 	menuOptionsBG.setPosition(textBase);
-	menuOptionsBG.setSize(Vector2f(512, (64 + textOptionSpacing) * 7));
+	menuOptionsBG.setSize(Vector2f(560, (64 + textOptionSpacing) * 7));
 
 	soundNodeList = new SoundNodeList( 10 );
 	soundNodeList->SetGlobalVolume( config->GetData().volume );
@@ -2909,10 +2909,12 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	is >> mh->boundsWidth;
 	is >> mh->boundsHeight;
 
-	is >> mh->numVertices;
-
 	int dSecs;
 	is >> dSecs;
+
+	is >> mh->numVertices;
+
+	
 
 	mh->collectionName = collectionName;
 	mh->ver1 = part1Num;
@@ -4299,5 +4301,6 @@ void MapHeader::Save(std::ofstream &of)
 
 	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;
 
+	of << drainSeconds << endl;
 	//of << numVertices << endl;
 }

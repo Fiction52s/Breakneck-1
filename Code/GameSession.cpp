@@ -7806,16 +7806,13 @@ int GameSession::Run()
 
 			if (p0->desperationMode)
 			{
-				preScreenTex->draw(p0->kinFace, &(p0->despFaceShader));
+				preScreenTex->draw(p0->kinFaceBG, &(p0->despFaceShader));
 			}
 			else
 			{
-				preScreenTex->draw(p0->kinFace);
-				//preScreenTex->draw(keyNumberHUDBG);
-				//if( )
-				//keyNumberNeededHUD->Draw(preScreenTex);
-				
+				preScreenTex->draw(p0->kinFaceBG);
 			}
+			preScreenTex->draw(p0->kinFace);
 		}
 
 		momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
@@ -11093,7 +11090,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 					{
 						pointList.pop_back();
 						//cout << "failing here111 " << i << endl;
-						assert( 0 );
+						//assert( 0 ); //commented out this assert for testing
 					}
 					else
 					{
