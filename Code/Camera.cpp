@@ -588,25 +588,27 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 			}
 		}
 	}
+	
 
 	Vector2f barrierOffset;
-	float barrierZoom = -1;
+	Vector2f borderOffset;
+
 	if (xChangePos != 0 && xChangeNeg != 0)
 	{
-		float diff = rightb->pos - leftb->pos;//xChangePos - xChangeNeg;
-		barrierZoom = diff / 960.f + .5f;
-		//cout << "diff: " << diff << endl;
-		//cout << "bzoom: " << barrierZoom << endl;
-		pos.x = (rightb->pos + leftb->pos) / 2.f;
+		//float diff = rightb->pos - leftb->pos;//xChangePos - xChangeNeg;
+		//barrierZoom = diff / 960.f + .5f;
+		////cout << "diff: " << diff << endl;
+		////cout << "bzoom: " << barrierZoom << endl;
+		//pos.x = (rightb->pos + leftb->pos) / 2.f;
 		//barrierOffset.x = ( xChangePos + xChangeNeg ) / 2.f;
 	}
 	else if (xChangePos != 0)
 	{
-		barrierOffset.x = xChangePos;
+		borderOffset.x = xChangePos;
 	}
 	else if (xChangeNeg != 0)
 	{
-		barrierOffset.x = xChangeNeg;
+		borderOffset.x = xChangeNeg;
 	}
 
 	if (yChangePos != 0 && yChangeNeg != 0)
@@ -615,11 +617,52 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	}
 	else if (yChangePos != 0)
 	{
-		barrierOffset.y = yChangePos;
+		borderOffset.y = yChangePos;
 	}
 	else if (yChangeNeg != 0)
 	{
-		barrierOffset.y = yChangeNeg;
+		borderOffset.y = yChangeNeg;
+	}
+
+	pos += borderOffset;
+
+	float barrierZoom = -1;
+	if (leftb != NULL && rightb != NULL )
+	{
+		if (xChangePos != 0 && xChangeNeg != 0)
+		{
+			float diff = rightb->pos - leftb->pos;//xChangePos - xChangeNeg;
+			barrierZoom = diff / 960.f + .5f;
+			//cout << "diff: " << diff << endl;
+			//cout << "bzoom: " << barrierZoom << endl;
+			pos.x = (rightb->pos + leftb->pos) / 2.f;
+			//barrierOffset.x = ( xChangePos + xChangeNeg ) / 2.f;
+		}
+		else if (xChangePos != 0)
+		{
+			barrierOffset.x = xChangePos;
+		}
+		else if (xChangeNeg != 0)
+		{
+			barrierOffset.x = xChangeNeg;
+		}
+	}
+
+
+	if (topb != NULL & botb != NULL)
+	{
+		if (yChangePos != 0 && yChangeNeg != 0)
+		{
+			//barrierOffset.y = ( yChangePos + yChangeNeg ) / 2.f;
+		}
+		else if (yChangePos != 0)
+		{
+			barrierOffset.y = yChangePos;
+		}
+		else if (yChangeNeg != 0)
+		{
+			barrierOffset.y = yChangeNeg;
+		}
 	}
 
 	pos += barrierOffset;

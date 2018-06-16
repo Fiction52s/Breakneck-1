@@ -169,7 +169,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_steepSlideAttackSword[1] = owner->GetTileset("Sword/steep_att_swordb_352x192.png", 352, 192, swordSkin);
 	ts_steepSlideAttackSword[2] = owner->GetTileset("Sword/steep_att_swordc_560x256.png", 560, 256, swordSkin);
 
-	ts_steepClimbAttackSword[0] = owner->GetTileset("Sword/climb_att_sworda_352x128.png", 256, 80, swordSkin);
+	ts_steepClimbAttackSword[0] = owner->GetTileset("Sword/climb_att_sworda_352x128.png", 352, 128, swordSkin);
 	ts_steepClimbAttackSword[1] = owner->GetTileset("Sword/climb_att_swordb_416x320.png", 416, 320, swordSkin);
 	ts_steepClimbAttackSword[2] = owner->GetTileset("Sword/climb_att_swordc_496x208.png", 496, 208, swordSkin);
 
@@ -693,6 +693,14 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		standSwordOffset[0] = Vector2f(64, 64);//Vector2f(0, -64);
 		standSwordOffset[1] = Vector2f(64, 32);//Vector2f(0, -64);
 		standSwordOffset[2] = Vector2f(64, 16);//Vector2f(0, -64);
+
+		climbAttackOffset[0] = Vector2f(0, -32);
+		climbAttackOffset[1] = Vector2f(0, -128);
+		climbAttackOffset[2] = Vector2f(0, -72);
+
+		slideAttackOffset[0] = Vector2f(0, -56);
+		slideAttackOffset[1] = Vector2f(0, -64);
+		slideAttackOffset[2] = Vector2f(0, -96);
 		
 
 		std::map<int, std::list<CollisionBox>> & fairAList = 
@@ -803,9 +811,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		wallHitboxes[2] = new CollisionBody(7, wallCList, currHitboxInfo);
 
 
-		steepClimbHitboxes[0] = new CollisionBody(7, climbAList, currHitboxInfo);
-		steepClimbHitboxes[1] = new CollisionBody(7, climbBList, currHitboxInfo);
-		steepClimbHitboxes[2] = new CollisionBody(7, climbCList, currHitboxInfo);
+		steepClimbHitboxes[0] = new CollisionBody(8, climbAList, currHitboxInfo);
+		steepClimbHitboxes[1] = new CollisionBody(8, climbBList, currHitboxInfo);
+		steepClimbHitboxes[2] = new CollisionBody(8, climbCList, currHitboxInfo);
 
 		steepSlideHitboxes[0] = new CollisionBody(8, slideAList, currHitboxInfo);
 		steepSlideHitboxes[1] = new CollisionBody(8, slideBList, currHitboxInfo);
@@ -835,6 +843,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			//standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
 			standHitboxes[i]->OffsetAllFrames(testOffset);
 		}
+
+		for (int i = 0; i < 3; ++i)
+		{
+			steepClimbHitboxes[i]->OffsetAllFrames(slideAttackOffset[i]);
+			steepSlideHitboxes[i]->OffsetAllFrames(climbAttackOffset[i]);
+		}
+
 		//up
 		
 
@@ -7408,6 +7423,10 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDEATTACK:
 		{
+			if (frame / 2 > 7)
+			{
+			assert(0);
+			}
 			SetCurrHitboxes(steepSlideHitboxes[speedLevel], frame / 2);
 
 			if( frame == 0 )
@@ -19670,7 +19689,7 @@ void Actor::UpdateSprite()
 			int tFrame = frame / animFactor;
 			SetSpriteTile( tFrame, r );
 
-			Vector2i offset( 0, 0 );
+			Vector2f offset = climbAttackOffset[speedLevel];
 
 			V2d trueNormal;
 			double angle = GroundedAngleAttack( trueNormal );
@@ -19767,7 +19786,7 @@ void Actor::UpdateSprite()
 			SetSpriteTile( frame / 2, r );
 			
 
-			Vector2i offset( 0, 0 );
+			Vector2f offset = slideAttackOffset[speedLevel];
 
 			V2d trueNormal;
 			double angle = GroundedAngleAttack( trueNormal );

@@ -29,10 +29,10 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	initHealth = 60;
 	health = initHealth;
 
-	double width = 160;
-	double height = 240;
+	double width = 176;
+	double height = 176;
 
-	ts = owner->GetTileset("Enemies/turret_160x240.png", width, height);//"basicturret_128x80.png", width, height );
+	ts = owner->GetTileset("Enemies/turret_176x176.png", width, height);//"basicturret_128x80.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -42,14 +42,14 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	gn = g->Normal();
 
-	position = gPoint + gn * height / 2.0;
+	position = gPoint + gn * (height/2.f - 30);
 
 	angle = atan2( gn.x, -gn.y );
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2 );
 	//V2d gPoint = ground->GetPoint( edgeQuantity );
-	sprite.setPosition( gPoint.x, gPoint.y );
+	sprite.setPosition( position.x, position.y );
 	sprite.setRotation( angle / PI * 180 );
 	cutObject->rotateAngle = sprite.getRotation();
 
@@ -89,7 +89,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	SetHitboxes(hitBody, 0);
 
 	frame = 0;
-	animationFactor = 8;
+	animationFactor = 3;
 
 	dead = false;
 
@@ -97,17 +97,18 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	V2d along = normalize(ground->v1 - ground->v0);
 
+	V2d launchPos = gPoint + ground->Normal() * 20.0;
 	numLaunchers = 3;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16, 1, position, gn, 0, 300 );
+	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos + ground->Normal() * 60.0, gn, 0, 300 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->hitboxInfo->damage = 18;
 
-	launchers[1] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, position, along, 0, 300);
+	launchers[1] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos + along * 20.0 , along, 0, 300);
 	launchers[1]->SetBulletSpeed(bulletSpeed);
 	launchers[1]->hitboxInfo->damage = 18;
 
-	launchers[2] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, position, -along, 0, 300);
+	launchers[2] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos - along * 20.0, -along, 0, 300);
 	launchers[2]->SetBulletSpeed(bulletSpeed);
 	launchers[2]->hitboxInfo->damage = 18;
 	//launcher->Reset();
@@ -117,8 +118,8 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(5);
-	cutObject->SetSubRectBack(4);
+	cutObject->SetSubRectFront(12);
+	cutObject->SetSubRectBack(11);
 }
 
 void BasicTurret::ResetEnemy()
@@ -159,12 +160,12 @@ void BasicTurret::BulletHitPlayer( BasicBullet *b )
 
 void BasicTurret::ProcessState()
 {
-	if (frame == 4 * animationFactor)
+	if (frame == 11 * animationFactor)
 	{
 		frame = 0;
 	}
 
-	if (frame == 0 && slowCounter == 1)
+	if (frame == 3 * animationFactor && slowCounter == 1)
 	{
 		launchers[0]->Fire();
 		launchers[1]->Fire();

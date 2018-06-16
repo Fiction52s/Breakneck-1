@@ -788,6 +788,8 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2f diagUpSwordOffset[3];
 	sf::Vector2f diagDownSwordOffset[3];
 	sf::Vector2f standSwordOffset[3];
+	sf::Vector2f slideAttackOffset[3];
+	sf::Vector2f climbAttackOffset[3];
 
 	HitboxInfo *currHitboxInfo;
 	CollisionBody *fairHitboxes[3];

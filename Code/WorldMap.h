@@ -134,6 +134,7 @@ struct MapSelector
 	int slideDuration;
 	MapSelector( MainMenu *mm, sf::Vector2f &pos );
 	MapSector **sectors;
+	Tileset *ts_sectorLevelBG;
 	
 	sf::Vertex shoulderIcons[8];
 	Tileset *ts_shoulderIcons;

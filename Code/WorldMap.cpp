@@ -923,9 +923,11 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	ts_node = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
 
+	ts_sectorLevelBG = mm->tilesetManager.GetTileset("Worldmap/sector_levelbg_1200x400.png", 1200, 400);
+
 	ts_sectorKey = mm->tilesetManager.GetTileset("Worldmap/sectorkey_80x80.png", 80, 80);
 	ts_sectorOpen = new Tileset*[1];
-	ts_sectorOpen[0] = mm->tilesetManager.GetTileset("Worldmap/sectoropen_256x256.png", 256, 256);
+	ts_sectorOpen[0] = mm->tilesetManager.GetTileset("Worldmap/sectorunlock_256x256.png", 256, 256);
 
 	ts_shoulderIcons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
 	SetRectCenter(shoulderIcons, 128, 128, Vector2f(200, 200));
@@ -1163,7 +1165,8 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().height / 2);
 	
 
-	SetRectColor(levelBG, Color(100, 100, 100, 100));
+	//SetRectColor(levelBG, Color(100, 100, 100, 100));
+	SetRectSubRect(levelBG, ms->ts_sectorLevelBG->GetSubRect(0));
 	SetRectColor(statsBG, Color(100, 100, 100, 100));
 	SetRectColor(sectorStatsBG, Color(100, 100, 100, 100));
 
@@ -1178,8 +1181,8 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	//SetRectCenter( shoulderIcons, 
 	nodeHighlight.setTexture(*ms->ts_node->texture);
 
-	endSpr.setTexture(*ms->ts_sectorKey->texture);
-	endSpr.setTextureRect(ms->ts_sectorKey->GetSubRect(0));
+	endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
+	endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(0));
 	endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
 	//SetXCenter(960);
 }
@@ -1187,7 +1190,7 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 void MapSector::Draw(sf::RenderTarget *target)
 {
 	target->draw(sectorNameText);
-	target->draw(levelBG, 4, sf::Quads);
+	target->draw(levelBG, 4, sf::Quads, ms->ts_sectorLevelBG->texture);
 	target->draw(statsBG, 4, sf::Quads);
 	target->draw(sectorStatsBG, 4, sf::Quads);
 
@@ -1260,18 +1263,18 @@ void MapSector::SetXCenter( float x )
 
 
 	
-	thumbnail.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 325));
-	sectorNameText.setPosition(x, 50);
-	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 325);
+	thumbnail.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
+	sectorNameText.setPosition(x, 0);
+	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 370);
 	Vector2f sectorStatsSize(256, 256);
 
 	endSpr.setPosition(sectorStatsCenter);
 
 	Vector2f levelStatsSize(500, 256);
-	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 300);
+	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 370);
 	Vector2f levelStatsTopLeft = levelStatsCenter - Vector2f( levelStatsSize.x / 2, levelStatsSize.y / 2 );
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter );
-	SetRectCenter(levelBG, 1200, 256, Vector2f( x, ms->sectorCenter.y ));
+	SetRectCenter(levelBG, 1200, 400, Vector2f( x, ms->sectorCenter.y ));
 	SetRectCenter(statsBG, levelStatsSize.x, levelStatsSize.y, levelStatsCenter );
 	
 	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x/2, sectorStatsCenter.y - sectorStatsSize.y/2);
@@ -1431,6 +1434,7 @@ void MapSector::Update(ControllerState &curr,
 		if (!sec->levels[i].GetComplete())
 		{
 			unlockedLevelCount = max( 1, i+1);
+			break;
 		}
 	}
 
@@ -1643,18 +1647,11 @@ void MapSector::Update(ControllerState &curr,
 		{
 			state = COMPLETE;
 			stateFrame = 0;
-			endSpr.setTexture(*ms->ts_sectorKey->texture);
-			endSpr.setTextureRect(ms->ts_sectorKey->GetSubRect(0));
+			endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(15));
 			endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
 		}
 		else
 		{
-			if (stateFrame == 0)
-			{ 
-				endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
-			}
-			
-
 			endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(stateFrame / explodeFactor));
 			endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
 		}
