@@ -127,7 +127,9 @@ struct OptionsMenuScreen : UIEventHandlerBase
 {
 	OptionsMenuScreen(MainMenu *p_mainMenu);
 	UIWindow *optionsWindow;
-	void Update();
+	void Update( 
+	ControllerState &curr,
+		ControllerState &prev);
 	void Draw(sf::RenderTarget *target);
 	MainMenu *mainMenu;
 	void Load();
@@ -139,6 +141,7 @@ struct OptionsMenuScreen : UIEventHandlerBase
 	bool SelectorEvent(UIEvent eType,
 		SelectorEventParams *param);
 
+	void Center( sf::Vector2f & windowSize);
 	UIHorizSelector<sf::Vector2i> *horizResolution;
 	UIHorizSelector<int> *horizWindowModes;
 	UIHorizSelector<int> *volume;

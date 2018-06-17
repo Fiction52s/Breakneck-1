@@ -2156,6 +2156,7 @@ void MainMenu::Run()
 				config->WaitForLoad();
 
 				optionsMenu->Load();
+				optionsMenu->Center(Vector2f(1920, 1080));
 				/*if (slideCurrFrame > numSlideFrames)
 				{
 					menuMode = OPTIONS;
@@ -2171,7 +2172,7 @@ void MainMenu::Run()
 			}
 			case OPTIONS:
 			{
-				optionsMenu->Update();
+				optionsMenu->Update( menuCurrInput, menuPrevInput );
 				break;
 			}
 			case TRANS_OPTIONS_TO_MAIN:
@@ -4057,16 +4058,22 @@ MapCollection::MapCollection()
 	tags = 0;
 }
 
+void OptionsMenuScreen::Center( Vector2f &windowSize)
+{
+	optionsWindow->SetTopLeftVec(Vector2f(windowSize.x / 2 - optionsWindow->dimensions.x / 2, windowSize.y / 2 - optionsWindow->dimensions.y / 2));
+}
+
 OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu)
 {
-	int width = 500;
-	int height = 500;
+	int width = 1000;
+	int height = 700;
 	Vector2f menuOffset(0, 0);
 
 	optionsWindow = new UIWindow(NULL, mainMenu->tilesetManager.GetTileset("Menu/windows_64x24.png", 64, 24),//owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),/*"window_64x24.png", 64, 24*/
 			Vector2f(width, height));
-	optionsWindow->SetTopLeftVec(Vector2f(1920/2 - width / 2, 1080/2 - height / 2) + menuOffset);
+	Center(Vector2f(1920, 1080));
+	//optionsWindow->SetTopLeftVec(Vector2f(1920/2 - width / 2, 1080/2 - height / 2) + menuOffset);
 
 	string options[] = { "1920 x 1080", "1600 x 900" , "1280 x 720" };
 	string results[] = { "blah", "blah2" , "blah3" };
@@ -4079,10 +4086,10 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 		Vector2i(1280, 800), Vector2i(1280, 720) };
 
 	horizResolution = new UIHorizSelector<Vector2i>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 4,
-		resolutionOptions, "Resolution", 200, resolutions, true, 0, 400);
+		resolutionOptions, "Resolution", 300, resolutions, true, 0, 400);
 
 	horizWindowModes = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
-		windowModes, "Window Mode", 200, windowModeInts, true, 0, 200);
+		windowModes, "Window Mode", 300, windowModeInts, true, 0, 500);
 
 	int vol[101];
 	for (int i = 0; i < 101; ++i)
@@ -4163,19 +4170,22 @@ void OptionsMenuScreen::Load()
 {
 	const ConfigData &cd = mainMenu->config->GetData();
 
-	assert( horizResolution->SetCurrAsResult(Vector2i(cd.resolutionX, cd.resolutionY)) );
-	assert( horizWindowModes->SetCurrAsResult(cd.windowStyle) );
-	assert( volume->SetCurrAsResult(cd.volume) );
+	bool hRes = horizResolution->SetCurrAsResult(Vector2i(cd.resolutionX, cd.resolutionY));
+	bool hWinMode = horizWindowModes->SetCurrAsResult(cd.windowStyle);
+	bool vRes = volume->SetCurrAsResult(cd.volume);
+	assert(hRes);
+	assert(hWinMode);
+	assert(vRes);
 }
 
-void OptionsMenuScreen::Update()
+void OptionsMenuScreen::Update( ControllerState &currInput, ControllerState &prevInput )
 {
 	if (mainMenu->menuCurrInput.B && !mainMenu->menuPrevInput.B)
 	{
 		mainMenu->SetMode(MainMenu::Mode::TRANS_OPTIONS_TO_MAIN);
 	}
 
-	optionsWindow->Update(mainMenu->menuCurrInput, mainMenu->menuPrevInput);
+	optionsWindow->Update(currInput, prevInput);
 }
 
 void OptionsMenuScreen::Draw(RenderTarget *target)

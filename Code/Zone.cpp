@@ -457,7 +457,8 @@ void Zone::Init()
 		//zShader->setUniform("u_texture", ts_z->texture);
 		
 
-		Color shadowColor(50, 50, 50, 200);
+		//Color shadowColor(50, 50, 50, 200);
+		Color shadowColor(0, 0, 0, 200);
 		
 		SetShadowColor(shadowColor);
 		zShader->setUniform("shadowColor", ColorGL(shadowColor));

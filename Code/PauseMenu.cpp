@@ -127,1037 +127,109 @@ void OptionSelector::Draw( sf::RenderTarget *target )
 	target->draw( currentText );
 }
 
-OptionsMenu::OptionsMenu( MainMenu *mainMenu )
-{
-}
-
 OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
-	:assocSymbols( sf::Quads, ControllerSettings::ButtonType::Count * 4 ),
-	buttonVA( sf::Quads, ControllerSettings::ButtonType::Count * 4 ),
-	controlIconVA( sf::Quads, ControllerTypes::Count * 4 ),
-	schemeKeyboardVA( sf::Quads, 3 * 4 ), 
-	schemeControllerVA( sf::Quads, 3 * 4 )
 {
-	LoadControlOptions();
+	state = CHOOSESTATE;
 	mainMenu = pauseMenu->mainMenu;
-	mode = LEFTBAR;
 	//temporary init here
-	autoUseController = true;
-	controllerIconsIndex = 0;
-	leftBarCurr = L_AUTOCONTROLLER;
-	controllerIconsIndex = 0;
-	useIconsIndex = 0;
-	keyboardSchemeIndex = 0;
-	controllerSchemeIndex = 0;
-	useKeyboardSchemeIndex = 0;
-	useControllerSchemeIndex = 0;
 	basePos = Vector2f( 100, 100 );
 
-	UpdateControlIcons();
-	UpdateSchemeVA( true );
-	UpdateSchemeVA( false );
+	int waitFrames[3] = { 10, 5, 2 };
+	int waitModeThresh[2] = { 2, 2 };
+	optionModeSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 4, 0);
 
-	ts_xboxButtons = pauseMenu->mainMenu->tilesetManager.GetTileset( "Menu/xbox_button_icons_128x128.png", 128, 128 );
-	ts_actionIcons = pauseMenu->mainMenu->tilesetManager.GetTileset( "Menu/power_icon_128x128.png", 128, 128 );
+	ts_optionMode = pauseMenu->mainMenu->tilesetManager.GetTileset("Menu/optionsptions_768x128.png", 768, 128);
 
-	ts_currentButtons = ts_xboxButtons;
-	 
-	string inputTypes[] = { "Xbox", "Keyboard", "PS4", "Gamecube" };
-	
-
-	string settings[] = {"Setting 1", "Setting 2", "Setting 3" };
-
-	string thumbSticks[] = { "left analog", "right analog" };
-
-	//inputSelectors = new OptionSelector*[2];
-
-	//inputSelectors[0] = new OptionSelector( basePos + Vector2f( 0, 0 ), 4, inputTypes );
-	//inputSelectors[1] = new OptionSelector( basePos + Vector2f( 0, 180 ), 3, settings );
-
-
-	//inputSelectors[2] = new OptionSelector( Vector2f( 300, 180 ), 2, thumbSticks );
-
-	string bounceSpecial = "bounce";
-	string grindSpecial = "grind";
-	string timeslowSpecial = "time slow";
-	string wireLeftSpecial = "left wire";
-	string wireRightSpecial = "right wire";
-	string toggleBounce = "toggle bounce";
-	string toggleGrind = "toggle grind";
-	string toggleTimeSlow = "toggle time slow";
-
-
-	possibleControllerActions = new string[12];
-	possibleControllerActions[0] = "move";
-	possibleControllerActions[1] = "jump";
-	possibleControllerActions[2] = "dash";
-	possibleControllerActions[3] = "attack";
-	possibleControllerActions[4] = bounceSpecial;
-	possibleControllerActions[5] = grindSpecial;
-	possibleControllerActions[6] = timeslowSpecial;
-	possibleControllerActions[7] = wireLeftSpecial;
-	possibleControllerActions[8] = wireRightSpecial;
-	possibleControllerActions[9] = toggleBounce;
-	possibleControllerActions[10] = toggleGrind;
-	possibleControllerActions[11] = toggleTimeSlow;
-
-	possibleKeyboardActions = new string[15];
-	possibleKeyboardActions[0] = "up";
-	possibleKeyboardActions[1] = "left";
-	possibleKeyboardActions[2] = "down";
-	possibleKeyboardActions[3] = "right";
-	possibleKeyboardActions[4] = "jump";
-	possibleKeyboardActions[5] = "dash";
-	possibleKeyboardActions[6] = "attack";
-	possibleKeyboardActions[7] = bounceSpecial;
-	possibleKeyboardActions[8] = grindSpecial;
-	possibleKeyboardActions[9] = timeslowSpecial;
-	possibleKeyboardActions[10] = wireLeftSpecial;
-	possibleKeyboardActions[11] = wireRightSpecial;
-	possibleKeyboardActions[12] = toggleBounce;
-	possibleKeyboardActions[13] = toggleGrind;
-	possibleKeyboardActions[14] = toggleTimeSlow;
-	//SetAssocSymbols();
-
-	optionSelectorIndex = 0;
-	maxWaitFrames = 30;
-	currWaitFrames = maxWaitFrames;
-	minWaitFrames = 4;
-	momentum = 0;
-	maxMomentum = 4;
-
-	currentSelectors = NULL;
-
-	//testing
-	currentSelectors = inputSelectors;
-	int controlTypeSize = 64;
-	Vector2f controlTypeBasePos( 100, 100 );
-	for( int i = 0; i < ControllerTypes::Count; ++i )
-	{
-		controlIconVA[i*4+0].position = controlTypeBasePos + Vector2f( controlTypeSize * i, 0 );
-		controlIconVA[i*4+1].position = controlTypeBasePos + Vector2f( controlTypeSize * (i+1), 0 )
-			+ Vector2f( 0, 0 );
-		controlIconVA[i*4+2].position = controlTypeBasePos + Vector2f( controlTypeSize * (i+1), 0 )
-			+ Vector2f( 0, controlTypeSize );
-		controlIconVA[i*4+3].position = controlTypeBasePos + Vector2f( controlTypeSize * i, 0 )
-			+ Vector2f( 0, controlTypeSize );
-	}
-
-	Vector2f schemeBasePos = Vector2f( 100, 200 );
-	for( int i = 0; i < 3; ++i )
-	{
-		schemeKeyboardVA[i*4+0].position = schemeBasePos + Vector2f( controlTypeSize * i, 0 );
-		schemeKeyboardVA[i*4+1].position = schemeBasePos + Vector2f( controlTypeSize * (i+1), 0 )
-			+ Vector2f( 0, 0 );
-		schemeKeyboardVA[i*4+2].position = schemeBasePos + Vector2f( controlTypeSize * (i+1), 0 )
-			+ Vector2f( 0, controlTypeSize );
-		schemeKeyboardVA[i*4+3].position = schemeBasePos + Vector2f( controlTypeSize * i, 0 )
-			+ Vector2f( 0, controlTypeSize );
-	}
-
-	Vector2f schemeBasePos1 = Vector2f( 100, 300 );
-	for( int i = 0; i < 3; ++i )
-	{
-		schemeControllerVA[i*4+0].position = schemeBasePos1 + Vector2f( controlTypeSize * i, 0 );
-		schemeControllerVA[i*4+1].position = schemeBasePos1 + Vector2f( controlTypeSize * (i+1), 0 )
-			+ Vector2f( 0, 0 );
-		schemeControllerVA[i*4+2].position = schemeBasePos1 + Vector2f( controlTypeSize * (i+1), 0 )
-			+ Vector2f( 0, controlTypeSize );
-		schemeControllerVA[i*4+3].position = schemeBasePos1 + Vector2f( controlTypeSize * i, 0 )
-			+ Vector2f( 0, controlTypeSize );
-	}
-
-	InitAssocSymbols();
-
-	moveDown = false;
-	moveUp = false;
-	moveLeft = false;
-	moveRight = false;
-	
-	
-}
-
-void OptionsMenu::UpdateControlIcons()
-{
-	Color unselectedColor = Color::Blue;
-	Color selectedColor = Color::Magenta;
-	
-	//Color test = Color::Yellow;
-	//only supposed to use the color change for when you're currently
-
-	for( int i = 0; i < ControllerTypes::Count; ++i )
-	{
-		//if( i == useIconsIndex )
-		if( i == controllerIconsIndex )
-		{
-			controlIconVA[i*4+0].color = selectedColor;
-			controlIconVA[i*4+1].color = selectedColor;
-			controlIconVA[i*4+2].color = selectedColor;
-			controlIconVA[i*4+3].color = selectedColor;
-		}
-		else
-		{
-			controlIconVA[i*4+0].color = unselectedColor;
-			controlIconVA[i*4+1].color = unselectedColor;
-			controlIconVA[i*4+2].color = unselectedColor;
-			controlIconVA[i*4+3].color = unselectedColor;
-		}
-	}	
-
-	/*int i = ControllerTypes::Count - 1;
-	controlIconVA[i*4+0].color = test;
-	controlIconVA[i*4+1].color = test;
-	controlIconVA[i*4+2].color = test;
-	controlIconVA[i*4+3].color = test;*/
-}
-
-void OptionsMenu::InitAssocSymbols()
-{
-	int symbolX = 288;
-	int symbolY = 100;
-	int textX = 288;
-	int textY = 70;
-	int extraX;
-	int extraY;
-	int symbolSize = 128;//140;//128;
-	int spacing = 32;//16;
-	int buttonIconSpacing = 150;
-
-	string bounceSpecial = "bounce";
-	string grindSpecial = "grind";
-	string timeslowSpecial = "time slow";
-	string wireLeftSpecial = "left wire";
-	string wireRightSpecial = "right wire";
-	string toggleBounce = "toggle bounce";
-	string toggleGrind = "toggle grind";
-	string toggleTimeSlow = "toggle time slow";
-	//these will be turned off when you dont have the powers
-	string possibleActions[ControllerSettings::Count] = { "jump", "dash", "attack", bounceSpecial,
-		grindSpecial, timeslowSpecial, wireLeftSpecial, wireRightSpecial,
-		"map", "pause" };
-	int count = ControllerSettings::Count;
-	for( int i = 0; i < count; ++i )
-	{			
-		if( i < count / 2 )
-		{
-			extraX = 0;
-			extraY = 0;
-		}
-		else
-		{
-			extraX = 500;
-			extraY = -(symbolSize + spacing) * count / 2;
-		}
-			
-		assocSymbols[i*4+0].position = basePos + Vector2f( extraX + symbolX, (symbolSize + spacing) * i + extraY + symbolY );
-		assocSymbols[i*4+1].position = basePos + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + extraY + symbolY );
-		assocSymbols[i*4+2].position = basePos + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize + extraY + symbolY );
-		assocSymbols[i*4+3].position = basePos + Vector2f( extraX + symbolX, (symbolSize + spacing) * i + symbolSize + extraY + symbolY );
-
-		IntRect sub = ts_actionIcons->GetSubRect( min( i, 8 ) );
-
-		assocSymbols[i*4+0].texCoords = Vector2f( sub.left, sub.top );
-		assocSymbols[i*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-		assocSymbols[i*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
-		assocSymbols[i*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
-				
-		buttonVA[i*4+0].position = basePos + Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * i + extraY + symbolY );
-		buttonVA[i*4+1].position = basePos + Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + extraY + symbolY );
-		buttonVA[i*4+2].position = basePos + Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize + extraY + symbolY );
-		buttonVA[i*4+3].position = basePos + Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * i + symbolSize + extraY + symbolY );
-
-		actionText[i].setFont( mainMenu->arial );
-		actionText[i].setCharacterSize( 24 );
-		actionText[i].setPosition( basePos + Vector2f( extraX + textX, (symbolSize + spacing) * i + extraY + textY ) );//textX, 50 * i );
-		actionText[i].setFillColor( Color::White );
-		actionText[i].setString( possibleActions[i] );
-
-	}
-	/*for( int i = count; i < count + 3; ++i )
-	{
-		assocSymbols[i*4+0].position = Vector2f( 0, 0 );
-		assocSymbols[i*4+1].position = Vector2f( 0, 0 );
-		assocSymbols[i*4+2].position = Vector2f( 0, 0 );
-		assocSymbols[i*4+3].position = Vector2f( 0, 0 );
-	}*/
-
-	/*for( int i = 0; i < numAssocSymbols; ++i )
-	{
-			
-	}*/
-}
-
-void OptionsMenu::UpdateSchemeVA( bool kb )
-{
-	///kb is keyboard
-	VertexArray *temp = &schemeKeyboardVA;
-	int sel = useKeyboardSchemeIndex;
-	sel = keyboardSchemeIndex;
-
-	if( !kb )
-	{
-		temp = &schemeControllerVA;
-		sel = useControllerSchemeIndex;
-		sel = controllerSchemeIndex;
-	}
-
-	
-
-	VertexArray &va = *temp;
-	Color unselectedColor = Color::Blue;
-	Color selectedColor = Color::Magenta;
-	Color currentColor = Color::Yellow;
-	for( int i = 0; i < 3; ++i )
+	//Vector2f startOffset(1820 / 2, 100);
+	Vector2f startOffset(1820 / 2, 128/2 + 150);
+	int spacing = 30;
+	for (int i = 0; i < 4; ++i)
 	{
 		
-		if( i == sel )
+		SetRectCenter(optionModeQuads + i * 4, 768, 128, startOffset + Vector2f(0, (128 + spacing) * i));
+	}
+
+	csm = pauseMenu->controlSettingsMenu;
+}
+
+void OptionsMenu::UpdateOptionModeQuads()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (optionModeSelector->currIndex == i)
 		{
-			va[i*4+0].color = selectedColor;
-			va[i*4+1].color = selectedColor;
-			va[i*4+2].color = selectedColor;
-			va[i*4+3].color = selectedColor;
+			SetRectSubRect(optionModeQuads + i * 4, ts_optionMode->GetSubRect(i + 4));
 		}
 		else
 		{
-			va[i*4+0].color = unselectedColor;
-			va[i*4+1].color = unselectedColor;
-			va[i*4+2].color = unselectedColor;
-			va[i*4+3].color = unselectedColor;
+			SetRectSubRect(optionModeQuads + i * 4, ts_optionMode->GetSubRect(i));
 		}
 	}
 }
 
-bool OptionsMenu::Update( ControllerState &currInput,
+void OptionsMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
 {
-	
-	switch( mode )
+	switch (state)
 	{
-	case LEFTBAR:
+	case CHOOSESTATE:
+		optionModeSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+		UpdateOptionModeQuads();
+
+		if (currInput.A && !prevInput.A)
 		{
-			if( currInput.A )
+			state = (State)(optionModeSelector->currIndex + 1);
+			switch (state)
 			{
-				switch( leftBarCurr )
-				{
-				case L_AUTOCONTROLLER:
-					//check/uncheck
-					break;
-				case L_CONTROLLER_ICONS:
-					UpdateControlIcons();
-					//do a selection on the different icons!
-					break;
-				case L_KB_OPTIONS:
-					useKeyboardSchemeIndex = keyboardSchemeIndex;
-					break;
-				case L_CONTROLLER_OPTIONS:
-					useControllerSchemeIndex = controllerSchemeIndex;
-					//mainMenu->Getco.SetFilter( xboxInputAssoc[useControllerSchemeIndex] );
-					break;
-				}
-				//mode = SELECT_SCHEME;
+			case SOUND:
+				mainMenu->optionsMenu->Load();
+				break;
+			case VISUAL:
+				state = SOUND;
+				mainMenu->optionsMenu->Load();
+				break;
+			case GAMEPLAY:
+				state = CHOOSESTATE;
+				break;
 			}
-			else if( currInput.B )
+		}
+		break;
+	case CONTROL:
+		if (csm->currButtonState != ControlSettingsMenu::S_SELECTED)
+		{
+			if (currInput.B && !prevInput.B)
 			{
-				return false;
+				state = CHOOSESTATE;
+				break;
 			}
-			else if( currInput.X )
-			{
-				switch( leftBarCurr )
-				{
-				case L_AUTOCONTROLLER:
-					//check/uncheck
-					break;
-				case L_CONTROLLER_ICONS:
-					//UpdateControlIcons();
-					//do a selection on the different icons!
-					break;
-				case L_KB_OPTIONS:
-					mode = MODIFY_KEYBOARD_CONTROLS;
-					moveDown = false;
-					moveUp = false;
-					moveLeft = false;
-					moveRight = false;
-					moveDelayCounter = 0;
-					moveDelayFrames = 15;
-					moveDelayFramesSmall = 6;
-					modifyIndex = 0;
-					//useKeyboardSchemeIndex = keyboardSchemeIndex;
-					break;
-				case L_CONTROLLER_OPTIONS:
-					mode = MODIFY_XBOX_CONTROLS;
-					moveDown = false;
-					moveUp = false;
-					moveLeft = false;
-					moveRight = false;
-					moveDelayCounter = 0;
-					moveDelayFrames = 15;
-					moveDelayFramesSmall = 6;
-					modifyIndex = 0;
-					//useControllerSchemeIndex = controllerSchemeIndex;
-					break;
-				}
-			}
-			else if( currInput.LRight() && !prevInput.LRight() )
-			{
-				switch( leftBarCurr )
-				{
-				case L_AUTOCONTROLLER:
-					//nothing
-					break;
-				case L_CONTROLLER_ICONS:
-
-					controllerIconsIndex++;
-					if( controllerIconsIndex == ControllerTypes::Count )
-					{
-						controllerIconsIndex = 0;
-					}
-
-					UpdateControlIcons();
-					//do a selection on the different icons!
-					break;
-				case L_KB_OPTIONS:
-					keyboardSchemeIndex++;
-					if( keyboardSchemeIndex == 3 )
-					{
-						keyboardSchemeIndex = 0;
-					}
-
-					UpdateSchemeVA( true );
-					break;
-				case L_CONTROLLER_OPTIONS:
-					controllerSchemeIndex++;
-					if( controllerSchemeIndex == 3 )
-					{
-						controllerSchemeIndex = 0;
-					}
-
-					UpdateSchemeVA( false );
-					UpdateXboxButtonIcons( controllerSchemeIndex );
-					break;
-				}
-			}
-			else if( currInput.LLeft() && !prevInput.LLeft() )
-			{
-				switch( leftBarCurr )
-				{
-				case L_AUTOCONTROLLER:
-					//nothing
-					break;
-				case L_CONTROLLER_ICONS:
-
-					controllerIconsIndex--;
-					if( controllerIconsIndex < 0 )
-					{
-						controllerIconsIndex = ControllerTypes::Count - 1;
-					}
-
-					UpdateControlIcons();
-					//do a selection on the different icons!
-					break;
-				case L_KB_OPTIONS:
-					keyboardSchemeIndex--;
-					if( keyboardSchemeIndex < 0 )
-					{
-						keyboardSchemeIndex = 2;
-					}
-
-					UpdateSchemeVA( true );
-					break;
-				case L_CONTROLLER_OPTIONS:
-					controllerSchemeIndex--;
-					if( controllerSchemeIndex < 0 )
-					{
-						controllerSchemeIndex = 2;
-					}
-
-					UpdateSchemeVA( false );
-					UpdateXboxButtonIcons( controllerSchemeIndex );
-					break;
-				}	
-			}
-			else if( currInput.LDown() && !prevInput.LDown() )
-			{
-				leftBarCurr++;
-				if( leftBarCurr == L_Count )
-				{
-					leftBarCurr = L_AUTOCONTROLLER;
-				}
-
-				if( leftBarCurr == L_CONTROLLER_OPTIONS )
-				{
-					//controllerSchemeIndex = 0;
-					UpdateXboxButtonIcons( controllerSchemeIndex );	
-				}
-				else if( leftBarCurr == L_KB_OPTIONS )
-				{
-					//UpdateKeyoardButtonIcons( controllerSchemeIndex );	
-				}
-				
-			}
-			else if( currInput.LUp() && !prevInput.LUp() )
-			{
-				leftBarCurr--;
-				if( leftBarCurr < 0 )
-				{
-					leftBarCurr = L_CONTROLLER_OPTIONS;
-				}
-			}
+		}
+		csm->Update(currInput, prevInput);
+		break;
+	case SOUND:
+		if (currInput.B && !prevInput.B)
+		{
+			state = CHOOSESTATE;
 			break;
 		}
-	case MODIFY_KEYBOARD_CONTROLS:
-		{
-			if( currInput.A )
-			{
-				XBoxButton b;
-				do
-				{
-					b = CheckXBoxInput( currInput );
-				}
-				while( b != XBoxButton::XBOX_BLANK );
-
-				xboxInputAssoc[useControllerSchemeIndex][ControllerSettings::JUMP] = b;
-
-				UpdateXboxButtonIcons( useControllerSchemeIndex );
-			}
-			else if( currInput.B )
-			{
-			}
-			else if( currInput.LLeft() && !prevInput.LLeft() )
-			{
-			}
-			else if( currInput.LRight() && !prevInput.LRight() )
-			{
-			}
-			else if( currInput.LUp() && !prevInput.LUp() )
-			{
-			}
-			else if( currInput.LDown() && !prevInput.LDown() )
-			{
-			}
-			break;
-		}
-	//case MODIFY_XBOX_CONTROLS:
-	//	{
-	//		
-
-	//		if( !currInput.A && prevInput.A )
-	//		{
-	//			XBoxButton b;
-	//			
-	//			do
-	//			{
-	//				mainMenu->controller.UpdateState();
-	//				
-	//				ControllerState &c = mainMenu->controller.GetState();
-
-	//				b = CheckXBoxInput( c );
-	//			}
-	//			while( b == XBoxButton::XBOX_BLANK );
-
-	//			XBoxButton bb;
-	//			do
-	//			{
-	//				mainMenu->controller.UpdateState();
-	//				
-	//				ControllerState &c = mainMenu->controller.GetState();
-
-	//				bb = CheckXBoxInput( c );
-	//			}
-	//			while( bb != XBoxButton::XBOX_BLANK );
-	//			//cout << "b: " << b << endl;
-	//			SetButtonAssoc( useControllerSchemeIndex, b );
-	//			//xboxInputAssoc[useControllerSchemeIndex][modifyIndex] = b;
-
-	//			UpdateXboxButtonIcons( useControllerSchemeIndex );
-
-	//			SaveControlOptions();
-
-	//			mainMenu->controller.SetFilter( xboxInputAssoc[ useControllerSchemeIndex ] );
-	//		}
-	//		else if( currInput.B )
-	//		{
-	//			mode = LEFTBAR;
-	//			break;
-	//		}
-	//		else if( currInput.LLeft() && !prevInput.LLeft() )
-	//		{
-	//		}
-	//		else if( currInput.LRight() && !prevInput.LRight() )
-	//		{
-	//		}
-	//		else if( currInput.LUp() && !prevInput.LUp() )
-	//		{
-	//		}
-	//		else if( currInput.LDown() && !prevInput.LDown() )
-	//		{
-	//		}
-
-
-	//		bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
-	//		bool canMoveSame = (moveDelayCounter == 0);
-
-	//		if( (currInput.LDown() || currInput.PDown()) && ( 
-	//				(!moveDown && canMoveOther) || ( moveDown && canMoveSame ) ) )
-	//		{
-	//			
-	//			modifyIndex++;
-	//			//currentMenuSelect++;
-	//			if( modifyIndex > ControllerSettings::Count - 1 )
-	//				modifyIndex -= ControllerSettings::Count;
-
-	//			moveDown = true;
-	//			moveDelayCounter = moveDelayFrames;
-	//			//soundNodeList->ActivateSound( soundBuffers[S_DOWN] );
-	//			//cout << "down modifyIndex: " << modifyIndex << endl;
-	//		}
-	//		else if( ( currInput.LUp() || currInput.PUp() ) && ( 
-	//			(!moveUp && canMoveOther) || ( moveUp && canMoveSame ) ) )
-	//		{
-	//			//cout << "up modifyIndex: " << modifyIndex << endl;
-	//			modifyIndex--;
-
-	//			
-	//			
-	//			moveUp = true;
-	//			moveDelayCounter = moveDelayFrames;
-	//			//soundNodeList->ActivateSound( soundBuffers[S_UP] );
-	//		}
-
-	//		if( (currInput.LRight() || currInput.PRight()) && ( 
-	//			(!moveRight && canMoveOther) || ( moveRight && canMoveSame ) ) )
-	//		{
-	//			modifyIndex+= ControllerSettings::Count / 2;
-
-	//			if( modifyIndex > ControllerSettings::Count - 1 )
-	//				modifyIndex -= ControllerSettings::Count;
-	//			//currentMenuSelect++;
-	//			/*if( selectedSaveIndex % 2 == 0 )
-	//				selectedSaveIndex-= 2;*/
-	//			moveRight = true;
-	//			moveDelayCounter = moveDelayFrames;
-	//		}
-	//		else if( ( currInput.LLeft() || currInput.PLeft() ) && ( 
-	//			(!moveLeft && canMoveOther) || ( moveLeft && canMoveSame ) ) )
-	//		{
-	//			modifyIndex -= ControllerSettings::Count / 2;
-
-	//			if( modifyIndex < 0 )
-	//				modifyIndex += ControllerSettings::Count;
-
-	//			
-	//			moveLeft = true;
-
-	//			moveDelayCounter = moveDelayFrames;
-	//		}
-	//			
-	//		if( moveDelayCounter > 0 )
-	//		{
-	//			moveDelayCounter--;
-	//		}
-	//			
-
-	//		if( !(currInput.LDown() || currInput.PDown()) )
-	//		{
-	//			moveDown = false;
-	//		}
-	//		if( ! ( currInput.LUp() || currInput.PUp() ) )
-	//		{
-	//			moveUp = false;
-	//		}
-
-	//		if( !(currInput.LRight() || currInput.PRight()) )
-	//		{
-	//			moveRight = false;
-	//		}
-	//		if( !(currInput.LLeft() || currInput.PLeft() ) )
-	//		{
-	//			moveLeft = false;
-	//		}
-
-	//		
-	//		break;
-	//	}
+		//config->WaitForLoad();
+		mainMenu->optionsMenu->Update( currInput, prevInput );
+		break;
 	}
 }
 
 void OptionsMenu::Draw( sf::RenderTarget *target )
 {
-	/*for( int i = 0; i < 2; ++i )
+	switch (state)
 	{
-		inputSelectors[i]->Draw( target );
-	}*/
-	switch( mode )
-	{
-	case LEFTBAR:
-		target->draw( controlIconVA );
-		target->draw( schemeKeyboardVA );
-		target->draw( schemeControllerVA );
-
-		if( leftBarCurr == L_CONTROLLER_OPTIONS ||
-			leftBarCurr == L_KB_OPTIONS )
-		{
-			target->draw( assocSymbols, ts_actionIcons->texture );
-			
-			
-			for( int i = 0; i < ControllerSettings::Count; ++i )
-			{
-				target->draw( actionText[i] );
-			}
-
-			target->draw( buttonVA, ts_currentButtons->texture );
-		}
-
+	case CHOOSESTATE:
+		target->draw(optionModeQuads, 4 * 4, sf::Quads, ts_optionMode->texture);
 		break;
-	case MODIFY_XBOX_CONTROLS:
-		{
-			target->draw( controlIconVA );
-			target->draw( schemeKeyboardVA );
-			target->draw( schemeControllerVA );
-
-			target->draw( controlIconVA );
-			target->draw( schemeKeyboardVA );
-			target->draw( schemeControllerVA );
-
-			target->draw( assocSymbols, ts_actionIcons->texture );
-			
-			
-			for( int i = 0; i < ControllerSettings::Count; ++i )
-			{
-				target->draw( actionText[i] );
-			}
-
-			target->draw( buttonVA, ts_currentButtons->texture );
-		
-			break;
-		}
-	
-	
-	/*case SELECT_SCHEME:
-		break;*/
-	}
-}
-
-
-void OptionsMenu::LoadControlOptions()
-{
-	string filename = "controlsettings";
-	ifstream is( filename );
-	if( !is.is_open() )
-	{
-		cout << "error loading: " << filename << endl;
-		assert( 0 );
-	} 
-
-	//int inputType;
-
-	//controllerType = (ControllerTypes::Type)inputType;
-
-	for( int schemeIndex = 0; schemeIndex < 3; ++schemeIndex )
-	{
-		for( int i = 0; i < ControllerSettings::ButtonType::Count; ++i )
-		{
-			int temp;
-			is >> temp;
-			xboxInputAssoc[schemeIndex][i] = (XBoxButton)temp;
-		}
-	}
-
-	is.close();
-
-	
-}
-
-void OptionsMenu::SaveControlOptions()
-{
-	string filename = "controlsettings";
-	ofstream of( filename );
-	if( !of.is_open() )
-	{
-		cout << "error save to: " << filename << endl;
-	}
-
-	for( int schemeIndex = 0; schemeIndex < 3; ++schemeIndex )
-	{
-		for( int i = 0; i < ControllerSettings::ButtonType::Count; ++i )
-		{
-			of << (int)xboxInputAssoc[schemeIndex][i] << endl;
-		}
-	}
-	of.close();
-}
-
-void OptionsMenu::UpdateButtonIcons()
-{
-	switch( controllerType )
-	{
-	case ControllerTypes::XBOX:
-		UpdateXboxButtonIcons( selectedIndex );
+	case CONTROL:
+		csm->Draw(target);
 		break;
-	case ControllerTypes::GAMECUBE:
+	case SOUND:
+		mainMenu->optionsMenu->Draw(target);
 		break;
-	case ControllerTypes::PS4:
-		break;
-	}
-}
-
-void OptionsMenu::UpdateXboxButtonIcons( int controlSetIndex )
-{
-	ts_currentButtons = ts_xboxButtons;
-	for( int i = 0; i < ControllerSettings::ButtonType::Count; ++i )
-	{
-		int ind = (int)xboxInputAssoc[controlSetIndex][i] - 1;
-		IntRect sub = ts_xboxButtons->GetSubRect( ind );
-		buttonVA[i*4+0].texCoords = Vector2f( sub.left, sub.top );
-		buttonVA[i*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-		buttonVA[i*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
-		buttonVA[i*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
-	}
-}
-
-void OptionsMenu::SetButtonAssoc( int controlIndex, XBoxButton b )
-{
-	XBoxButton old = xboxInputAssoc[controlIndex][modifyIndex];
-	xboxInputAssoc[controlIndex][modifyIndex] = b;
-
-	for( int i = 0; i < ControllerSettings::Count; ++i )
-	{
-		if( i == modifyIndex )
-			continue;
-
-		if( xboxInputAssoc[controlIndex][i] == b )
-		{
-			xboxInputAssoc[controlIndex][i] = old;
-			break;
-		}
-	}
-}
-
-void OptionsMenu::SetAssocSymbols( bool kb )
-{
-	/*for( int i = 0; i < 15; ++i )
-	{
-		buttonVA[i*4+0].position = Vector2f( 0, 0 );
-		buttonVA[i*4+1].position = Vector2f( 0, 0 );
-		buttonVA[i*4+2].position = Vector2f( 0, 0 );
-		buttonVA[i*4+3].position = Vector2f( 0, 0 );
-	}*/
-
-	int symbolX = 288;
-	int symbolY = 100;
-	int textX = 288;
-	int textY = 70;
-	int extraX;
-	int extraY;
-	int symbolSize = 128;//140;//128;
-	int spacing = 32;//16;
-	int buttonIconSpacing = 150;
-	//string inputType = inputSelectors[0]->GetString();
-	if( !kb )
-	{
-		int numAssocSymbols = ControllerSettings::ButtonType::Count; //+1
-		
-
-		//move comes first
-		for( int i = 0; i < numAssocSymbols; ++i )
-		{
-			/*assocSymbols[i*4+0].color = Color::Red;
-			assocSymbols[i*4+1].color = Color::Green;
-			assocSymbols[i*4+2].color = Color::Blue;
-			assocSymbols[i*4+3].color = Color::Magenta;*/
-			
-			if( i < (numAssocSymbols) / 2 )
-			{
-				extraX = 0;
-				extraY = 0;
-			}
-			else
-			{
-				extraX = 500;
-				extraY = -(symbolSize + spacing) * ((numAssocSymbols) / 2);
-			}
-			
-			assocSymbols[i*4+0].position = Vector2f( extraX + symbolX, (symbolSize + spacing) * i + extraY + symbolY );
-			assocSymbols[i*4+1].position = Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + extraY + symbolY );
-			assocSymbols[i*4+2].position = Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize + extraY + symbolY );
-			assocSymbols[i*4+3].position = Vector2f( extraX + symbolX, (symbolSize + spacing) * i + symbolSize + extraY + symbolY );
-
-			IntRect sub = ts_actionIcons->GetSubRect( min( i, 9 ) );
-
-			assocSymbols[i*4+0].texCoords = Vector2f( sub.left, sub.top );
-			assocSymbols[i*4+1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-			assocSymbols[i*4+2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
-			assocSymbols[i*4+3].texCoords = Vector2f( sub.left, sub.top + sub.height );
-
-			/*if( i > 0 )
-			{
-
-				buttonVA[(i-1)*4+0].color = Color::Blue;
-				buttonVA[(i-1)*4+1].color = Color::Blue;
-				buttonVA[(i-1)*4+2].color = Color::Blue;
-				buttonVA[(i-1)*4+3].color = Color::Blue;
-				
-				buttonVA[(i-1)*4+0].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * (i-1) + extraY );
-				buttonVA[(i-1)*4+1].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * (i-1) + extraY );
-				buttonVA[(i-1)*4+2].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * (i-1) + symbolSize + extraY );
-				buttonVA[(i-1)*4+3].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * (i-1) + symbolSize + extraY );
-			}*/
-
-		
-
-			/*buttonVA[i*4+0].color = Color::Blue;
-			buttonVA[i*4+1].color = Color::Blue;
-			buttonVA[i*4+2].color = Color::Blue;
-			buttonVA[i*4+3].color = Color::Blue;*/
-				
-			buttonVA[i*4+0].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * i + extraY + symbolY );
-			buttonVA[i*4+1].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + extraY + symbolY );
-			buttonVA[i*4+2].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize + extraY + symbolY );
-			buttonVA[i*4+3].position = Vector2f( buttonIconSpacing, 0 ) + Vector2f( extraX + symbolX, (symbolSize + spacing) * i + symbolSize + extraY + symbolY );
-
-			actionText[i].setFont( mainMenu->arial );
-			actionText[i].setCharacterSize( 24 );
-			actionText[i].setPosition( Vector2f( extraX + textX, (symbolSize + spacing) * i + extraY + textY ) );//textX, 50 * i );
-			actionText[i].setFillColor( Color::White );
-			actionText[i].setString( possibleControllerActions[i] );
-
-		}
-		for( int i = numAssocSymbols; i < numAssocSymbols + 3; ++i )
-		{
-			assocSymbols[i*4+0].position = Vector2f( 0, 0 );
-			assocSymbols[i*4+1].position = Vector2f( 0, 0 );
-			assocSymbols[i*4+2].position = Vector2f( 0, 0 );
-			assocSymbols[i*4+3].position = Vector2f( 0, 0 );
-		}
-
-		for( int i = 0; i < numAssocSymbols; ++i )
-		{
-			
-		}
-	}
-	else
-	{
-		int numAssocSymbols = ControllerSettings::ButtonType::Count + 4;
-		
-		//move comes first
-		for( int i = 0; i < numAssocSymbols; ++i )
-		{
-			assocSymbols[i*4+0].color = Color::Red;
-			assocSymbols[i*4+1].color = Color::Green;
-			assocSymbols[i*4+2].color = Color::Blue;
-			assocSymbols[i*4+3].color = Color::Magenta;
-
-			assocSymbols[i*4+0].position = Vector2f( symbolX, (symbolSize + spacing) * i );
-			assocSymbols[i*4+1].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i );
-			assocSymbols[i*4+2].position = Vector2f( symbolX + symbolSize, (symbolSize + spacing) * i + symbolSize );
-			assocSymbols[i*4+3].position = Vector2f( symbolX, (symbolSize + spacing) * i + symbolSize );
-		}
-
-		for( int i = 0; i < numAssocSymbols; ++i )
-		{
-			actionText[i].setFont( mainMenu->arial );
-			actionText[i].setCharacterSize( 24 );
-			actionText[i].setPosition( 100, 50 * i );
-			actionText[i].setFillColor( Color::White );
-			actionText[i].setString( possibleKeyboardActions[i] );
-		}
-	}
-}
-
-XBoxButton OptionsMenu::CheckXBoxInput( ControllerState &currInput )
-{
-	bool leftMovement = true;
-	//bool leftMovement = (inputSelectors[2]->GetString() == "left analog");
-	if( currInput.A )
-	{
-		return XBOX_A;
-	}
-	else if( currInput.B )
-	{
-		return XBOX_B;
-	}
-	else if( currInput.X )
-	{
-		return XBOX_X;
-	}
-	else if( currInput.Y )
-	{
-		return XBOX_Y;
-	}
-	else if( currInput.leftShoulder )
-	{
-		return XBOX_L1;
-	}
-	else if( currInput.rightShoulder )
-	{
-		return XBOX_R1;
-	}
-	else if( currInput.LeftTriggerPressed() )
-	{
-		return XBOX_L2;
-	}
-	else if( currInput.RightTriggerPressed() )
-	{
-		return XBOX_R2;
-	}
-	else if( currInput.PLeft() )
-	{
-		return XBOX_PLEFT;
-	}
-	else if( currInput.PUp() )
-	{
-		return XBOX_PUP;
-	}
-	else if( currInput.PRight() )
-	{
-		return XBOX_PRIGHT;
-	}
-	else if( currInput.PDown() )
-	{
-		return XBOX_PDOWN;
-	}
-	else if( leftMovement && currInput.RLeft() )
-	{
-		return XBOX_RLEFT;
-	}
-	else if( leftMovement && currInput.RUp() )
-	{
-		return XBOX_RUP;
-	}
-	else if( leftMovement && currInput.RRight() )
-	{
-		return XBOX_RRIGHT;
-	}
-	else if( leftMovement && currInput.RDown() )
-	{
-		return XBOX_RDOWN;
-	}
-	else if( !leftMovement && currInput.LLeft() )
-	{
-		return XBOX_LLEFT;
-	}
-	else if( !leftMovement && currInput.LUp() )
-	{
-		return XBOX_LUP;
-	}
-	else if( !leftMovement && currInput.LRight() )
-	{
-		return XBOX_LRIGHT;
-	}
-	else if( !leftMovement && currInput.LDown() )
-	{
-		return XBOX_LDOWN;
-	}
-	else if( currInput.back )
-	{
-		return XBOX_BACK;
-	}
-	else if( currInput.start )
-	{
-		return XBOX_START;
-	}
-	else
-	{
-		return XBOX_BLANK;
 	}
 }
 
@@ -1168,21 +240,36 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	owner = NULL;
 	optionType = OptionType::O_INPUT;
 	cOptions = NULL;//new OptionsMenu( this );
-	ts_background[0] = mainMenu->tilesetManager.GetTileset( "Menu/pause_1_map_1820x980.png", 1820, 980 );
-	ts_background[1] = mainMenu->tilesetManager.GetTileset( "Menu/pause_2_kin_1820x980.png", 1820, 980 );
+	ts_background[0] = mainMenu->tilesetManager.GetTileset( "Menu/pause_1_pause_1820x980.png", 1820, 980 );
+	ts_background[1] = mainMenu->tilesetManager.GetTileset( "Menu/pause_2_map_1820x980.png", 1820, 980 );
 	ts_background[2] = mainMenu->tilesetManager.GetTileset( "Menu/pause_3_shards_1820x980.png", 1820, 980 );
 	ts_background[3] = mainMenu->tilesetManager.GetTileset( "Menu/pause_4_options_1820x980.png", 1820, 980 );
-	ts_background[4] = mainMenu->tilesetManager.GetTileset( "Menu/pause_5_pause_1820x980.png", 1820, 980 );
+	ts_background[4] = mainMenu->tilesetManager.GetTileset( "Menu/pause_5_kin_1820x980.png", 1820, 980 );
 
 	ts_select = mainMenu->tilesetManager.GetTileset( "Menu/menu_select_800x140.png", 800, 140 );
 	
+	ts_pauseOptions = mainMenu->tilesetManager.GetTileset("Menu/pauseoptions_768x128.png", 768, 128);
+
+	Vector2f startOffset(1820 / 2, 128/2 + 100);
+	int spacing = 20;
+	for (int i = 0; i < 5; ++i)
+	{
+		SetRectCenter(pauseOptionQuads + i * 4, 768, 128, startOffset + Vector2f(0, (spacing + 128) * i));
+	}
+
+	int waitFrames[3] = { 10, 5, 2 };
+	int waitModeThresh[2] = { 2, 2 };
+	pauseSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 5, 0);
+	
 	controlSettingsMenu = new ControlSettingsMenu(mainMenu);
 	
+	optionsMenu = new OptionsMenu(this);
+
 	selectSprite.setTexture( *ts_select->texture );
 
 	bgSprite.setPosition( 0, 0 );
 
-	pauseSelectIndex = 0;
+	//pauseSelectIndex = 0;
 
 	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
@@ -1261,6 +348,21 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	//cout << "end this initialization" << endl;
 }
 
+void PauseMenu::UpdatePauseOptions()
+{
+	for (int i = 0; i < 5; ++i)
+	{
+		if (i == pauseSelector->currIndex)
+		{
+			SetRectSubRect(pauseOptionQuads + i * 4, ts_pauseOptions->GetSubRect(i + 5));
+		}
+		else
+		{
+			SetRectSubRect(pauseOptionQuads + i * 4, ts_pauseOptions->GetSubRect(i));
+		}
+	}
+}
+
 PauseMenu::~PauseMenu()
 {
 	/*for( int i = 0; i < numVideoOptions; ++i )
@@ -1322,7 +424,7 @@ void PauseMenu::SetTab( Tab t )
 		//UpdateButtonIcons();
 		break;
 	case PAUSE:
-		pauseSelectIndex = 0;
+		pauseSelector->currIndex = 0;
 		break;
 	}
 }
@@ -1333,11 +435,12 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 
 	if( currentTab == PAUSE )
 	{
-		target->draw( selectSprite );
+		target->draw(pauseOptionQuads, 4 * 5, sf::Quads, ts_pauseOptions->texture);
+		//target->draw( selectSprite );
 	}
 	else if( currentTab == OPTIONS )
 	{
-		controlSettingsMenu->Draw(target);
+		optionsMenu->Draw(target);
 		/*string inputType = inputSelectors[0]->GetString();
 		int num = numCurrentSelectors;
 		if( inputType == "Keyboard" )
@@ -1534,18 +637,19 @@ void PauseMenu::ApplySoundSettings()
 PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
 {
-	if( (currInput.start && !prevInput.start) || (currInput.back && !prevInput.back ) )
+	if( (currInput.start && !prevInput.start))// || (currInput.back && !prevInput.back ) )
 	{
-		if (currentTab == OPTIONS && controlSettingsMenu->currButtonState == ControlSettingsMenu::S_SELECTED)
+		/*if (currentTab == OPTIONS && controlSettingsMenu->currButtonState == ControlSettingsMenu::S_SELECTED)
 		{
 
-		}
-		else
+		}*/
+		//else
 		{
 			if (currentTab == OPTIONS)
 			{
-
 				controlSettingsMenu->SetButtonAssoc();
+				optionsMenu->state = OptionsMenu::CHOOSESTATE;
+				optionsMenu->optionModeSelector->currIndex = 0;
 			}
 
 			owner->state = GameSession::State::RUN;
@@ -1555,15 +659,31 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 
 	if( currInput.leftShoulder && !prevInput.leftShoulder )
 	{
+		if (currentTab == OPTIONS)
+		{
+			controlSettingsMenu->SetButtonAssoc();
+			optionsMenu->state = OptionsMenu::CHOOSESTATE;
+			optionsMenu->optionModeSelector->currIndex = 0;
+		}
 		TabLeft();
 		return R_NONE;
 	}
 	else if( currInput.rightShoulder && !prevInput.rightShoulder )
 	{
+		if (currentTab == OPTIONS)
+		{
+			controlSettingsMenu->SetButtonAssoc();
+			optionsMenu->state = OptionsMenu::CHOOSESTATE;
+			optionsMenu->optionModeSelector->currIndex = 0;
+		}
 		TabRight();
+
+		if (currentTab == OPTIONS)
+		{
+			mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+		}
 		return R_NONE;
 	}
-
 
 	switch( currentTab )
 	{
@@ -1640,8 +760,8 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		{	
 			
 			//return UpdateOptions( currInput, prevInput );
-		
-			controlSettingsMenu->Update( currInput, prevInput );
+			
+			optionsMenu->Update( currInput, prevInput );
 		
 			
 			break;
@@ -1650,7 +770,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		{
 			if( currInput.A && !prevInput.A )
 			{
-				UpdateResponse ur = (UpdateResponse)(pauseSelectIndex+1);
+				UpdateResponse ur = (UpdateResponse)(pauseSelector->currIndex+1);
 				return ur;
 				//switch( pauseSelectIndex )
 				//{
@@ -1673,27 +793,12 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				//	break;
 				//}
 			}
-			else if( currInput.LDown() && !prevInput.LDown() )
-			{
-				pauseSelectIndex++;
-				if( pauseSelectIndex == 5 )
-				{
-					pauseSelectIndex = 0;
-				}
 
-				
-			}
-			else if( currInput.LUp() && !prevInput.LUp() )
-			{
-				pauseSelectIndex--;
-				if( pauseSelectIndex == -1 )
-				{
-					pauseSelectIndex = 4;
-				}
-			}
+			pauseSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
 
 			int h = 200;
-			selectSprite.setPosition( 100, 100 + h * pauseSelectIndex );
+			//selectSprite.setPosition( 100, 100 + h * pauseSelector->currIndex);
+			UpdatePauseOptions();
 			break;
 		}
 	}

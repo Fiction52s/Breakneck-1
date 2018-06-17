@@ -35,12 +35,12 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	currButtonState = S_NEUTRAL;
 	imagePos = Vector2f(900, 100);
 
-	ts_shards = mm->tilesetManager.GetTileset("Menu/shards_48x48.png", 48, 48);
+	ts_shards[0] = mm->tilesetManager.GetTileset("Menu/shards_w1_48x48.png", 48, 48);
 
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
 	int xSize = 11;
-	int ySize = 14;
+	int ySize = 2;//14;
 
 	shardNames = new string*[xSize];
 	shardDesc = new string*[xSize];
@@ -71,8 +71,8 @@ ShardMenu::ShardMenu(MainMenu *mm)
 		}
 	}
 
-	shardNames[4][4] = "testanim";
-	shardNames[0][4] = "Crawler_Pose";
+	//shardNames[4][4] = "testanim";
+	//shardNames[0][4] = "Crawler_Pose";
 	//sf::Clock testC;
 	//GetSequence(shardNames[0][0]);
 	/*for (int x = 0; x < xSize; ++x)
@@ -89,6 +89,8 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 	shardSelectQuads = new sf::Vertex[xSize * ySize * 4];
 
+	selectedShardHighlight.setTexture(*ts_shards[0]->texture);
+
 	int index = 0;
 	int rectSize = 48;
 	int xSpacing = 20;
@@ -99,8 +101,9 @@ ShardMenu::ShardMenu(MainMenu *mm)
 		for (int j = 0; j < ySelector->totalItems; ++j)
 		{
 			index = (i * ySelector->totalItems + j) * 4;
+			
 			SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(i * rectSize + xSpacing * i, j * rectSize + ySpacing * j) + gridStart);
-			SetRectSubRect(shardSelectQuads + index, ts_shards->GetSubRect(j * xSelector->totalItems + i));
+			SetRectSubRect(shardSelectQuads + index, ts_shards[0]->GetSubRect(j * xSelector->totalItems + i));
 		}
 	}
 	
@@ -287,7 +290,7 @@ void ShardMenu::UpdateShardSelectQuads()
 		{
 			index = (i * ySelector->totalItems + j) * 4;
 			
-			SetRectColor(shardSelectQuads + index, c);
+			//SetRectColor(shardSelectQuads + index, c);
 		}
 	}
 
@@ -308,8 +311,17 @@ void ShardMenu::UpdateShardSelectQuads()
 		break;
 	}
 
-	index = (xSelector->currIndex * ySelector->totalItems + ySelector->currIndex) * 4;
-	SetRectColor(shardSelectQuads + index, currColor);
+	index = (xSelector->currIndex + xSelector->totalItems * ySelector->currIndex);
+
+	selectedShardHighlight.setTextureRect(ts_shards[0]->GetSubRect(index + 22));
+	selectedShardHighlight.setOrigin(selectedShardHighlight.getLocalBounds().width / 2,
+		selectedShardHighlight.getLocalBounds().height / 2);
+
+
+	//SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(i * rectSize + xSpacing * i, j * rectSize + ySpacing * j) + gridStart);
+
+	selectedShardHighlight.setPosition((shardSelectQuads + index * 4)->position + Vector2f(24, 24));
+	//SetRectColor(shardSelectQuads + index, currColor);
 
 	
 }
@@ -391,8 +403,9 @@ void ShardMenu::Draw(sf::RenderTarget *target)
 {
 	if(GetCurrSeq() != NULL )
 		GetCurrSeq()->Draw(target);
-	target->draw(shardSelectQuads, xSelector->totalItems * ySelector->totalItems * 4,
-		sf::Quads, ts_shards->texture);
+	target->draw(shardSelectQuads, 22 * 4/*xSelector->totalItems * ySelector->totalItems * 4*/,
+		sf::Quads, ts_shards[0]->texture);
+	target->draw(selectedShardHighlight);
 	if (currShardText.getString() != "")
 	{
 		target->draw(currShardText);

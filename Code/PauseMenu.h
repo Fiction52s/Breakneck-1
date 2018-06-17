@@ -50,117 +50,27 @@ struct OptionsMenu
 
 	MainMenu *mainMenu;
 
-	//left bar
-	bool autoUseController;
-	int controllerIconsIndex;
-	int useIconsIndex;
-	int keyboardSchemeIndex;
-	int controllerSchemeIndex;
-	int useKeyboardSchemeIndex;
-	int useControllerSchemeIndex;
 
-
-	//modify
-	int modifyIndex;
-
-	//enum checkboxtypes
-	//CheckBox cb[checkboxtypes::count];
-
-	enum LeftBarOptions
+	enum State
 	{
-		L_AUTOCONTROLLER,
-		L_CONTROLLER_ICONS,
-		L_KB_OPTIONS,
-		L_CONTROLLER_OPTIONS,
-		L_Count
+		CHOOSESTATE,
+		CONTROL,
+		SOUND,
+		VISUAL,
+		GAMEPLAY,
 	};
+	State state;
 
-	int leftBarCurr;
-
-	enum Mode
-	{
-		LEFTBAR,
-		MODIFY_KEYBOARD_CONTROLS,
-		MODIFY_XBOX_CONTROLS,
-		Count
-	};
-
-	enum InputOptions
-	{
-		INPUT_TYPE,
-		SETTINGS
-	};
-
-
+	Tileset *ts_optionMode;
+	sf::Vertex optionModeQuads[4*4];
+	SingleAxisSelector *optionModeSelector;
 	sf::Vector2f basePos;
-	Mode mode;
-	OptionsMenu( MainMenu *mainMenu );
 	OptionsMenu( PauseMenu *pauseMenu );
-	void LoadControlOptions();
-	void SetAssocSymbols( bool kb );
-
-	void InitAssocSymbols();
-	
-
-	bool Update( ControllerState &currInput,
+	void Update( ControllerState &currInput,
 		ControllerState &prevInput );
-
-	void SaveControlOptions();
-	void UpdateXboxButtonIcons(
-		int controlSetIndex );
-	void UpdateButtonIcons();
-
 	void Draw( sf::RenderTarget *target );
-	XBoxButton CheckXBoxInput( ControllerState &currInput );
-	Tileset *ts_xboxButtons;
-	sf::VertexArray buttonVA;
-	sf::VertexArray controlIconVA;
-	sf::VertexArray schemeKeyboardVA;
-	sf::VertexArray schemeControllerVA;
-	void UpdateControlIcons();
-	void UpdateSchemeVA( bool kb );
-	ControllerTypes::Type controllerType;
-	Tileset *ts_currentButtons;
-	
-	Tileset *ts_actionIcons;
-
-	sf::Text actionText[15];
-	XBoxButton xboxInputAssoc[3][ControllerSettings::ButtonType::Count];
-	void SetButtonAssoc( int controlIndex, XBoxButton b );
-	int actionIndex;
-	bool selectingProfile;
-
-	
-	//more of these for diff controller types
-	sf::VertexArray assocSymbols;
-	
-	int selectedIndex;
-	
-	std::string *possibleControllerActions;
-	std::string *possibleKeyboardActions;
-
-	OptionSelector **inputSelectors;
-	OptionSelector **currentSelectors;
-	int currInputIndex;
-
-	int optionSelectorIndex;
-
-	int maxWaitFrames;
-	int currWaitFrames;
-	int minWaitFrames;
-	int framesWaiting;
-	int momentum;
-	int maxMomentum;
-	CubicBezier accelBez;
-
-	bool moveDown;
-	bool moveUp;
-	bool moveLeft;
-	bool moveRight;
-
-	int moveDelayCounter;
-	int moveDelayFrames; 
-	int moveDelayFramesSmall;
+	void UpdateOptionModeQuads();
+	ControlSettingsMenu *csm;
 };
 
 struct KinMenu
@@ -227,11 +137,11 @@ struct PauseMenu
 	OptionsMenu *cOptions;
 	enum Tab
 	{
+		PAUSE,
 		MAP,
-		KIN,
 		SHARDS,
 		OPTIONS,
-		PAUSE,
+		KIN,
 		Count
 	};
 
@@ -243,6 +153,10 @@ struct PauseMenu
 	void TabRight();
 	void ApplyVideoSettings();
 	void ApplySoundSettings( );
+
+	Tileset *ts_pauseOptions;
+	sf::Vertex pauseOptionQuads[5 * 4];
+	void UpdatePauseOptions();
 	
 	enum OptionType
 	{
@@ -279,7 +193,7 @@ struct PauseMenu
 
 
 	ControlSettingsMenu *controlSettingsMenu;
-
+	OptionsMenu *optionsMenu;
 	
 	Tab currentTab;
 
@@ -294,7 +208,8 @@ struct PauseMenu
 	sf::Vector2f mapCenter;
 	float mapZoomFactor;
 
-	int pauseSelectIndex;
+	SingleAxisSelector *pauseSelector;
+	//int pauseSelectIndex;
 
 	int optionSelectorIndex;
 

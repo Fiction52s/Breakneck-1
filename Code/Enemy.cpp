@@ -1122,12 +1122,15 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 			keyColor = COLOR_MAGENTA;
 			break;
 		}
-		keyColor.r = (sf::Uint8)(floor( (float)(keyColor.r) * .1f + .5f ));
+		/*keyColor.r = min( 255.f, 1.8f * keyColor.r );
+		keyColor.g *= min(255.f, 1.8f * keyColor.g);
+		keyColor.b *= min(255.f, 1.8f * keyColor.b);*/
+		/*keyColor.r = (sf::Uint8)(floor( (float)(keyColor.r) * .1f + .5f ));
 		keyColor.g = (sf::Uint8)(floor( (float)(keyColor.g) * .1f + .5f ));
-		keyColor.b = (sf::Uint8)(floor( (float)(keyColor.b) * .1f + .5f ));
-		//keyColor = Color::Black;
-		
+		keyColor.b = (sf::Uint8)(floor( (float)(keyColor.b) * .1f + .5f ));*/
 		keyColor = Color::Black;
+		
+		//keyColor = Color::White;
 
 		//cout << "doing the add monitor thing" << endl;
 		keyShader = new Shader();
@@ -1137,8 +1140,8 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 			assert( false );
 		}
 
-		keyShader->setUniform( "toColor", Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
-		keyShader->setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
+		keyShader->setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
+		keyShader->setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
 
 	//	keyFrame = 0;
 	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );

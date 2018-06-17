@@ -69,7 +69,8 @@ struct ShardMenu
 
 	sf::Text currShardText;
 	std::string **shardDesc;// [ShardType::SHARD_W1_TEACH_JUMP];
-	Tileset *ts_shards;
+	Tileset *ts_shards[7];
+	sf::Sprite selectedShardHighlight;
 	ShardButtonState currButtonState;
 	bool SetDescription(std::string &destStr, const std::string &shardTypeStr );
 	void SetCurrentDescription();

@@ -31,6 +31,8 @@ UIVerticalControlList::UIVerticalControlList( UIControl *p_parent,
 	flipCounterUp = 0;
 	flipCounterDown = 0;
 	framesWaiting = 0;
+
+	controls[0]->Focus();
 }
 
 UIVerticalControlList::~UIVerticalControlList()

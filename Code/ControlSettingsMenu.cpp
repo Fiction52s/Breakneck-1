@@ -39,13 +39,13 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	ts_currentButtons = NULL;
 
 	SetActionTile(0, 0);
-	SetActionTile(1, 1);
-	SetActionTile(2, 5);
-	SetActionTile(3, 10);
-	SetActionTile(4, 11);
-	SetActionTile(5, 12);
-	SetActionTile(6, 13);
-	SetActionTile(7, 13);
+	SetActionTile(1, 2);
+	SetActionTile(2, 1);
+	SetActionTile(3, 11);
+	SetActionTile(4, 12);
+	SetActionTile(5, 13);
+	SetActionTile(6, 14);
+	SetActionTile(7, 14);
 	SetActionTile(8, 7);
 	SetActionTile(9, 7);
 

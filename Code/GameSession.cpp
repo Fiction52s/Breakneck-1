@@ -669,6 +669,7 @@ void GameSession::UpdateEnemiesPostPhysics()
 			{
 				fac = 1.f - ( keyFrame - halftot ) / (halftot-1);
 			}
+			cout << "fac: " << fac << endl;
 			current->keyShader->setUniform( "prop", fac );
 		}
 
