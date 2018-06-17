@@ -1183,7 +1183,8 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 
 	endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
 	endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(0));
-	endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
+	//endSpr.setOrigin(//endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
+	//endSpr.setPosition(1038, 106);
 	//SetXCenter(960);
 }
 
@@ -1268,7 +1269,7 @@ void MapSector::SetXCenter( float x )
 	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 370);
 	Vector2f sectorStatsSize(256, 256);
 
-	endSpr.setPosition(sectorStatsCenter);
+	endSpr.setPosition(sectorStatsCenter + Vector2f( -72, -74 ));
 
 	Vector2f levelStatsSize(500, 256);
 	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 370);
@@ -1648,12 +1649,12 @@ void MapSector::Update(ControllerState &curr,
 			state = COMPLETE;
 			stateFrame = 0;
 			endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(15));
-			endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
+			//endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
 		}
 		else
 		{
 			endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(stateFrame / explodeFactor));
-			endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
+			//endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
 		}
 	}
 

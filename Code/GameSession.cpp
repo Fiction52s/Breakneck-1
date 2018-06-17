@@ -6681,7 +6681,7 @@ int GameSession::Run()
 						break;
 					}
 				}
-				else if( p0->action != Actor::GOALKILLWAIT && p0->action != Actor::GOALKILL && p0->action != Actor::EXIT )
+				else if( !p0->IsGoalKillAction( p0->action ) && !p0->IsExitAction(p0->action) )
 				{
 					ControllerState &currInput = GetCurrInput( 0 );
 					ControllerState &prevInput = GetPrevInput( 0 );
