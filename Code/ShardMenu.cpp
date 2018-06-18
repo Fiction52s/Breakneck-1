@@ -96,14 +96,14 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	int xSpacing = 20;
 	int ySpacing = 12;
 	Vector2f gridStart(100, 100);
-	for (int i = 0; i < xSelector->totalItems; ++i)
+	for (int i = 0; i < ySelector->totalItems; ++i)
 	{
-		for (int j = 0; j < ySelector->totalItems; ++j)
+		for (int j = 0; j < xSelector->totalItems; ++j)
 		{
-			index = (i * ySelector->totalItems + j) * 4;
+			index = (i * xSelector->totalItems + j) * 4;
 			
-			SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(i * rectSize + xSpacing * i, j * rectSize + ySpacing * j) + gridStart);
-			SetRectSubRect(shardSelectQuads + index, ts_shards[0]->GetSubRect(j * xSelector->totalItems + i));
+			SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
+			SetRectSubRect(shardSelectQuads + index, ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
 		}
 	}
 	
@@ -284,15 +284,15 @@ void ShardMenu::UpdateShardSelectQuads()
 {
 	int index = 0;
 	Color c = Color::Red;
-	for (int i = 0; i < xSelector->totalItems; ++i)
-	{
-		for (int j = 0; j < ySelector->totalItems; ++j)
-		{
-			index = (i * ySelector->totalItems + j) * 4;
-			
-			//SetRectColor(shardSelectQuads + index, c);
-		}
-	}
+	//for (int i = 0; i < xSelector->totalItems; ++i)
+	//{
+	//	for (int j = 0; j < ySelector->totalItems; ++j)
+	//	{
+	//		index = (i * ySelector->totalItems + j) * 4;
+	//		
+	//		//SetRectColor(shardSelectQuads + index, c);
+	//	}
+	//}
 
 	Color currColor;
 	switch (currButtonState)

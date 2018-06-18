@@ -2272,7 +2272,7 @@ void MainMenu::Run()
 				//preScreenTexture->setView( v );
 				titleScreen->Draw(preScreenTexture);
 				
-				DrawMenuOptionText(preScreenTexture);
+				
 
 				//preScreenTexture->setView( uiView );
 

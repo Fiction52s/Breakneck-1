@@ -648,7 +648,6 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			if (currentTab == OPTIONS)
 			{
 				controlSettingsMenu->SetButtonAssoc();
-				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				optionsMenu->optionModeSelector->currIndex = 0;
 			}
 
@@ -666,6 +665,12 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			optionsMenu->optionModeSelector->currIndex = 0;
 		}
 		TabLeft();
+
+		if (currentTab == OPTIONS)
+		{
+			optionsMenu->state = OptionsMenu::CHOOSESTATE;
+			mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+		}
 		return R_NONE;
 	}
 	else if( currInput.rightShoulder && !prevInput.rightShoulder )
@@ -680,6 +685,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 
 		if (currentTab == OPTIONS)
 		{
+			optionsMenu->state = OptionsMenu::CHOOSESTATE;
 			mainMenu->optionsMenu->Center(Vector2f(1820, 980));
 		}
 		return R_NONE;
@@ -1109,7 +1115,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	ts_tutorial[8] = mainMenu->tilesetManager.GetTileset("Menu/tut_key.png", tutWidth, tutHeight);
 	ts_tutorial[9] = mainMenu->tilesetManager.GetTileset("Menu/tut_airdash.png", tutWidth, tutHeight);
 	tutorialSpr.setPosition(512, 74);
-	
+
 	
 	ts_xboxButtons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
 

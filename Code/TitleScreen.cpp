@@ -8,6 +8,7 @@ using namespace std;
 using namespace sf;
 
 TitleScreen::TitleScreen(MainMenu *p_mainMenu)
+	:mainMenu( p_mainMenu )
 {
 	ts_breakneckTitle = p_mainMenu->tilesetManager.GetTileset("Title/breakneck_1034x835.png", 1034, 835);
 	//ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
@@ -165,6 +166,11 @@ void TitleScreen::Draw(sf::RenderTarget *target)
 		(*it)->Draw(target);
 	}
 
+	target->draw(kinHandEnergySpr);
+	target->draw(kinSpr);
+
+	mainMenu->DrawMenuOptionText(target);
+
 	/*for (int i = 0; i < 4; ++i)
 	{
 		target->draw(lightSpr[i]);
@@ -174,6 +180,5 @@ void TitleScreen::Draw(sf::RenderTarget *target)
 	target->draw(emergenceTitleSprite);
 
 	
-	target->draw(kinHandEnergySpr);
-	target->draw(kinSpr);
+	
 }

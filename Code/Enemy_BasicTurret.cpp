@@ -54,7 +54,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	cutObject->rotateAngle = sprite.getRotation();
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 3*60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;

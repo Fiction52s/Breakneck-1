@@ -87,6 +87,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	//planetTex->loadFromFile( "WorldMap/map_z2.png" );
 
 	ts_colonySelect[0] = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080); 
+	ts_colonySelectZoomed[0] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1_vein.png", 1920, 1080); 
 	//ts_zoomedMapw1 = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
 
 	ts_space = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_bg.png", 1920, 1080);
@@ -148,8 +149,15 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	{
 		colonySpr[i].setTexture(*ts_colony[i]->texture);
 		colonySpr[i].setScale(1.f / 8.f, 1.f / 8.f);
+
 	}
-	
+
+	colonySelectSprZoomed.setScale(1.f / 8.f, 1.f / 8.f );
+	colonySelectSprZoomed.setTexture(*ts_colonySelectZoomed[0]->texture);
+	colonySelectSprZoomed.setPosition(colonySpr[0].getPosition());
+
+	//ts_colonySelectZoomed[0]->texture->setSmooth(true);
+
 	colonySelectSpr.setTexture( *ts_colonySelect[0]->texture );
 	//colonySelectSpr.setScale(5.f, 5.f);
 	
@@ -830,7 +838,31 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(colonySpr[i]);
 	}
 
+
+
+	//int breatheTi
+
+	int energyBreathe = 240;
+	Color selectColor = Color::White;
+	int ff = frame % (energyBreathe);
+	if (ff < energyBreathe / 2)
+	{
+		float factor = (float)ff / (energyBreathe / 2);
+		selectColor.a = 150 * factor;
+		//c.a = std::max(20.f, (float)c.a);
+	}
+	else
+	{
+		float factor = 1.f - (float)(ff - energyBreathe / 2) / (energyBreathe / 2);
+		selectColor.a = 150 * factor;
+		//c.a = std::max(20.f, (float)c.a);
+	}
+
+	colonySelectSpr.setColor(selectColor);
+	colonySelectSprZoomed.setColor(selectColor);
+
 	rt->draw(colonySelectSpr);
+	rt->draw(colonySelectSprZoomed);
 
 	for (int i = 2; i < 4; ++i)
 	{
@@ -924,6 +956,8 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
 
 	ts_sectorLevelBG = mm->tilesetManager.GetTileset("Worldmap/sector_levelbg_1200x400.png", 1200, 400);
+	ts_levelStatsBG = mm->tilesetManager.GetTileset("Worldmap/level_stats_512x256.png", 512, 256);
+	ts_sectorStatsBG = mm->tilesetManager.GetTileset("Worldmap/sector_box_256x256.png", 256, 256);
 
 	ts_sectorKey = mm->tilesetManager.GetTileset("Worldmap/sectorkey_80x80.png", 80, 80);
 	ts_sectorOpen = new Tileset*[1];
@@ -935,17 +969,13 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	SetRectSubRect(shoulderIcons, ts_shoulderIcons->GetSubRect(6));
 	SetRectSubRect(shoulderIcons + 4, ts_shoulderIcons->GetSubRect(4));
 
-	ts_path = mm->tilesetManager.GetTileset("Worldmap/nodepath_96x96.png", 96, 96);
+	//ts_path = mm->tilesetManager.GetTileset("Worldmap/nodepath_96x96.png", 96, 96);
 
-	Tileset *ts_thumb = mm->tilesetManager.GetTileset("Worldmap/mapthumb_w1_1_256x256.png", 256, 256);
-	Tileset *ts_shard = mm->tilesetManager.GetTileset("Worldmap/worldmap_shards_272x256.png", 272, 256);
-	bottomBG.setTexture(*ts_bottom->texture);
-	thumbnailBG.setTexture(*ts_thumb->texture);
-	shardBG.setTexture(*ts_shard->texture);
+	//Tileset *ts_thumb = mm->tilesetManager.GetTileset("Worldmap/Thumbnails/mapthumb_w1_1_256x256.png", 256, 256);
+	//Tileset *ts_shard = mm->tilesetManager.GetTileset("Worldmap/Thumbnails/worldmap_shards_272x256.png", 272, 256);
+	//bottomBG.setTexture(*ts_bottom->texture);
 
 	bottomBG.setPosition(624, 545);
-	thumbnailBG.setPosition(640, 225);
-	shardBG.setPosition(1008, 225);
 
 	numSectors = 0;
 	sectors = NULL;
@@ -995,9 +1025,6 @@ void MapSelector::UpdateSprites()
 
 void MapSelector::Draw(sf::RenderTarget *target)
 {
-	//target->draw(bottomBG);
-	//target->draw(thumbnailBG);
-	//target->draw(shardBG);
 	
 	if (state == S_SLIDINGLEFT || state == S_SLIDINGRIGHT)
 	{
@@ -1141,25 +1168,34 @@ void MapSelector::UpdateAllInfo()
 
 }
 
+
 MapSector::MapSector(MapSelector *p_ms, int index )
 	:numLevels(-1), ms(p_ms), sectorIndex( index )
 {
+
+	ts_scrollingEnergy = ms->mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
+	//ts_scrollingEnergy->texture->setRepeated(true);
+	SetRectSubRect(frontScrollEnergy, ts_scrollingEnergy->GetSubRect(0));
+	SetRectSubRect(backScrollEnergy, ts_scrollingEnergy->GetSubRect(1));
+
 	unlockedIndex = -1;
 	numUnlockConditions = -1;
 	nodeSize = 128;
 	pathLen = 16;
 	frame = 0;
 	nodes = NULL;
-	paths = NULL;
 	saSelector = NULL;
 	unlockCondText = NULL;
 	stringstream ss;
 	ss.str("");
-	ss << "WorldMap/mapthumb_w" << ms->worldIndex + 1 << "_" << sectorIndex + 1 << "_256x256.png";
+	ss << "WorldMap/Thumbnails/mapthumb_w" << ms->worldIndex + 1 << "_" << sectorIndex + 1 << "_256x256.png";
 	ts_thumb = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 256, 256);
 	assert(ts_thumb != NULL);
 
-	ts_shards = ms->mainMenu->tilesetManager.GetTileset("Menu/shards_48x48.png", 48, 48);
+	ss.str("");
+	ss << "Menu/shards_w" << (ms->worldIndex +1) << "_48x48.png";
+
+	ts_shards = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
 
 	thumbnail.setTexture(*ts_thumb->texture);
 	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().height / 2);
@@ -1167,8 +1203,10 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 
 	//SetRectColor(levelBG, Color(100, 100, 100, 100));
 	SetRectSubRect(levelBG, ms->ts_sectorLevelBG->GetSubRect(0));
-	SetRectColor(statsBG, Color(100, 100, 100, 100));
-	SetRectColor(sectorStatsBG, Color(100, 100, 100, 100));
+	SetRectSubRect(statsBG, ms->ts_levelStatsBG->GetSubRect(0));
+	SetRectSubRect(sectorStatsBG, ms->ts_sectorStatsBG->GetSubRect(0));
+	//SetRectColor(statsBG, Color(100, 100, 100, 100));
+	//SetRectColor(sectorStatsBG, Color(100, 100, 100, 100));
 
 
 	ts_energyCircle = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80); 
@@ -1183,32 +1221,59 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 
 	endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
 	endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(0));
+
+	if (!horizScrollShader1.loadFromFile("Shader/horizslider.frag", sf::Shader::Fragment))
+	{
+		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	horizScrollShader1.setUniform("u_texture", sf::Shader::CurrentTexture );
+
+
+	if (!horizScrollShader2.loadFromFile("Shader/horizslider.frag", sf::Shader::Fragment ))//("Shader/horizslider.frag", sf::Shader::Fragment))
+	{
+		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	horizScrollShader2.setUniform("u_texture", sf::Shader::CurrentTexture);
+
+	
 	//endSpr.setOrigin(//endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
 	//endSpr.setPosition(1038, 106);
 	//SetXCenter(960);
+}
+
+MapSector::~MapSector()
+{
+	delete [] levelCollectedShards;
+	delete [] levelCollectedShardsBG;
 }
 
 void MapSector::Draw(sf::RenderTarget *target)
 {
 	target->draw(sectorNameText);
 	target->draw(levelBG, 4, sf::Quads, ms->ts_sectorLevelBG->texture);
-	target->draw(statsBG, 4, sf::Quads);
-	target->draw(sectorStatsBG, 4, sf::Quads);
 
-	for (int i = 0; i < numLevels; ++i)
+	sf::RenderStates rs;
+	rs.texture = ts_scrollingEnergy->texture;
+	rs.shader = &horizScrollShader1;
+
+	target->draw(backScrollEnergy, 4, sf::Quads, rs);
+
+	rs.shader = &horizScrollShader2;
+
+	target->draw(frontScrollEnergy, 4, sf::Quads, rs);
+	target->draw(statsBG, 4, sf::Quads, ms->ts_levelStatsBG->texture);
+	target->draw(sectorStatsBG, 4, sf::Quads, ms->ts_sectorStatsBG->texture);
+
+	/*for (int i = 0; i < numLevels; ++i)
 	{
 		if (sec->levels[i].GetComplete() )
 		{
 			target->draw(paths[i]);
 		}
-	}
+	}*/
 	//target->draw( paths, numLevels )
 	if (sec->IsUnlocked()) //just for testing
 	{
-		if (ms->state == MapSelector::S_IDLE)
-		{
-			//target->draw(nodeEnergy);
-		}
 		DrawStats(target);
 		DrawLevelStats(target);
 		for (int i = 0; i < numLevels; ++i)
@@ -1243,7 +1308,8 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 void MapSector::DrawLevelStats(sf::RenderTarget *target)
 {
-	target->draw(levelCollectedShards, 4 * 16, sf::Quads, ts_shards->texture);
+	target->draw(levelCollectedShardsBG, numTotalShards * 4, sf::Quads);
+	target->draw(levelCollectedShards, numTotalShards * 4, sf::Quads, ts_shards->texture);
 	target->draw(levelPercentCompleteText);
 }
 
@@ -1271,13 +1337,16 @@ void MapSector::SetXCenter( float x )
 
 	endSpr.setPosition(sectorStatsCenter + Vector2f( -72, -74 ));
 
-	Vector2f levelStatsSize(500, 256);
+	Vector2f levelStatsSize(512, 256);
 	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 370);
 	Vector2f levelStatsTopLeft = levelStatsCenter - Vector2f( levelStatsSize.x / 2, levelStatsSize.y / 2 );
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter );
 	SetRectCenter(levelBG, 1200, 400, Vector2f( x, ms->sectorCenter.y ));
 	SetRectCenter(statsBG, levelStatsSize.x, levelStatsSize.y, levelStatsCenter );
 	
+	SetRectCenter(backScrollEnergy, 1200, 400, Vector2f(x, ms->sectorCenter.y));
+	SetRectCenter(frontScrollEnergy, 1200, 400, Vector2f(x, ms->sectorCenter.y));
+
 	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x/2, sectorStatsCenter.y - sectorStatsSize.y/2);
 
 	int numUnlock = sec->numUnlockConditions;
@@ -1291,16 +1360,19 @@ void MapSector::SetXCenter( float x )
 
 	
 
-	Vector2f shardGridOffset;
+	Vector2f shardGridOffset = Vector2f(20, 20);
 	Vector2f gridTopLeft = levelStatsTopLeft + shardGridOffset;
-	float gridSpacing = 20;
+	float gridSpacing = 30;
 
 	float gridTotalRight = gridTopLeft.x + (ts_shards->tileWidth * 4) + (gridSpacing * 3);
 	
-	for (int i = 0; i < 16; ++i)
+	for (int i = 0; i < numTotalShards; ++i)
 	{
-		SetRectCenter(levelCollectedShards + i * 4, 48, 48, Vector2f(gridTopLeft.x + (ts_shards->tileWidth + gridSpacing ) * (i % 4) + ts_shards->tileWidth / 2.f,
-			gridTopLeft.y + ( ts_shards->tileHeight + gridSpacing ) * (i / 4) + ts_shards->tileHeight / 2.f));
+		//shardSpr[i].setPosition();
+		SetRectCenter(levelCollectedShards + i * 4, 48, 48, Vector2f(gridTopLeft.x + (ts_shards->tileWidth + gridSpacing) * (i % 4) + ts_shards->tileWidth / 2.f,
+			gridTopLeft.y + (ts_shards->tileHeight + gridSpacing) * (i / 4) + ts_shards->tileHeight / 2.f));
+		SetRectCenter(levelCollectedShardsBG + i * 4, 48, 48, Vector2f(gridTopLeft.x + (ts_shards->tileWidth + gridSpacing) * (i % 4) + ts_shards->tileWidth / 2.f,
+			gridTopLeft.y + (ts_shards->tileHeight + gridSpacing) * (i / 4) + ts_shards->tileHeight / 2.f));
 	}
 
 	Vector2f levelStatsActualTopLeft(gridTotalRight, gridTopLeft.y);
@@ -1349,29 +1421,39 @@ void MapSector::UpdateStats()
 void MapSector::UpdateLevelStats()
 {
 
-	for (int i = 0; i < 16; ++i)
-	{
-		levelCollectedShards[i * 4 + 0].texCoords = Vector2f(0, 0);
-		levelCollectedShards[i * 4 + 1].texCoords = Vector2f(0, 0);
-		levelCollectedShards[i * 4 + 2].texCoords = Vector2f(0, 0);
-		levelCollectedShards[i * 4 + 3].texCoords = Vector2f(0, 0);
-		//SetRectSubRect(levelCollectedShards + i * 4, ts_shards->GetSubRect(20));
-	}
+	//for (int i = 0; i < 16; ++i)
+	//{
+	//	levelCollectedShards[i * 4 + 0].texCoords = Vector2f(0, 0);
+	//	levelCollectedShards[i * 4 + 1].texCoords = Vector2f(0, 0);
+	//	levelCollectedShards[i * 4 + 2].texCoords = Vector2f(0, 0);
+	//	levelCollectedShards[i * 4 + 3].texCoords = Vector2f(0, 0);
+	//	//SetRectSubRect(levelCollectedShards + i * 4, ts_shards->GetSubRect(20));
+	//}
 
 	int gridIndex = 0;
 	int uncaptured = 0;
 	auto &snList = sec->levels[saSelector->currIndex].shardNameList;
+	//numTotalShards = snList.size();
+	for (int i = 0; i < numTotalShards; ++i)
+	{
+		SetRectColor(levelCollectedShardsBG + i * 4, Color(Color::Transparent));
+		SetRectSubRect(levelCollectedShards + i * 4, IntRect());
+	}
+
 	for (auto it = snList.begin(); it != snList.end(); ++it)
 	{
 		ShardType sType = Shard::GetShardType((*it));
+		int subRectIndex = sType - ms->worldIndex * 22;
 		if (sec->world->sf->ShardIsCaptured(sType))
 		{
-			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(sType));
+			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(subRectIndex));
 		}
 		else
 		{
-			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(154));
+			SetRectSubRect(levelCollectedShards + gridIndex * 4, IntRect());//ts_shards->GetSubRect(44));
 		}
+
+		SetRectColor(levelCollectedShardsBG + gridIndex * 4, Color(Color::Black));
 		++gridIndex;
 	}
 
@@ -1415,11 +1497,11 @@ void MapSector::UpdateNodePosition()
 		botBonusNodes[i].setPosition(GetBotNodePos(i));
 	}
 
-	for (int i = 0; i < numLevels; ++i)
+	/*for (int i = 0; i < numLevels; ++i)
 	{
 		paths[i].setPosition(nodes[i].getPosition().x 
 			+ (nodeSize / 2 + pathLen / 2), nodes[i].getPosition().y);
-	}
+	}*/
 
 	
 	//endSpr.setPosition(GetNodePos(numLevels));
@@ -1475,6 +1557,7 @@ void MapSector::Update(ControllerState &curr,
 				{
 					state = JUSTCOMPLETE;
 				}			*/	
+				
 				stateFrame = 0;
 				unlockedIndex = i;//saSelector->currIndex;
 				//unlockFrame = frame;
@@ -1564,18 +1647,16 @@ void MapSector::Update(ControllerState &curr,
 	}
 	if (selectedYIndex == 0)
 	{
-		nodeEnergy.setPosition(GetTopNodePos(saSelector->currIndex));
+		nodeHighlight.setPosition(GetTopNodePos(saSelector->currIndex));
 	}
 	else if (selectedYIndex == 1)
 	{
-		nodeEnergy.setPosition(GetNodePos(saSelector->currIndex));
+		nodeHighlight.setPosition(GetNodePos(saSelector->currIndex));
 	}
 	else
 	{
-		nodeEnergy.setPosition(GetBotNodePos(saSelector->currIndex));
+		nodeHighlight.setPosition(GetBotNodePos(saSelector->currIndex));
 	}
-
-	nodeHighlight.setPosition(nodeEnergy.getPosition());
 	
 	if (state == LEVELJUSTCOMPLETE )//unlockedIndex != -1)
 	{
@@ -1610,23 +1691,23 @@ void MapSector::Update(ControllerState &curr,
 	int enAnimFactor = 6;
 	if (n % 3 == 0)
 	{
-		nodeEnergy.setTexture(*ts_energyCircle->texture);
-		nodeEnergy.setTextureRect(ts_energyCircle->GetSubRect((frame / enAnimFactor) % 10));
+	//	nodeEnergy.setTexture(*ts_energyCircle->texture);
+	//	nodeEnergy.setTextureRect(ts_energyCircle->GetSubRect((frame / enAnimFactor) % 10));
 		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(9));
 	}
 	else if (n % 3 == 1)
 	{
-		nodeEnergy.setTexture(*ts_energyTri->texture);
-		nodeEnergy.setTextureRect(ts_energyTri->GetSubRect((frame / enAnimFactor) % 15));
+	//	nodeEnergy.setTexture(*ts_energyTri->texture);
+	//	nodeEnergy.setTextureRect(ts_energyTri->GetSubRect((frame / enAnimFactor) % 15));
 		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(10));
 	}
 	else if (n % 3 == 2)
 	{
-		nodeEnergy.setTexture(*ts_energyMask->texture);
-		nodeEnergy.setTextureRect(ts_energyCircle->GetSubRect((frame / enAnimFactor) % 20));
+	//	nodeEnergy.setTexture(*ts_energyMask->texture);
+	//	nodeEnergy.setTextureRect(ts_energyCircle->GetSubRect((frame / enAnimFactor) % 20));
 		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(11));
 	}
-	nodeEnergy.setOrigin(nodeEnergy.getLocalBounds().width / 2, nodeEnergy.getLocalBounds().height / 2);
+	//nodeEnergy.setOrigin(nodeEnergy.getLocalBounds().width / 2, nodeEnergy.getLocalBounds().height / 2);
 	nodeHighlight.setOrigin(nodeHighlight.getLocalBounds().width / 2, nodeHighlight.getLocalBounds().height / 2);
 	
 	
@@ -1657,6 +1738,25 @@ void MapSector::Update(ControllerState &curr,
 			//endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().width / 2);
 		}
 	}
+
+	int scrollFramesBack = 180;
+	int scrollFramesFront = 360;
+	float fBack = frame % scrollFramesBack;
+	float fFront = frame % scrollFramesFront;
+
+	int mult = frame / scrollFramesBack;
+	int multFront = frame / scrollFramesFront;
+
+	float facBack = fBack / (scrollFramesBack);
+	float facFront = fFront / (scrollFramesFront);
+
+	//facBack *= mult;
+	//facFront *= multFront;f
+
+	//cout << "fac: " << facBack << endl;// ", " << facFront << endl;
+	
+	horizScrollShader1.setUniform("quant", -facBack );
+	horizScrollShader2.setUniform("quant", -facFront );
 
 	++frame;
 	++stateFrame;
@@ -1851,8 +1951,8 @@ void MapSector::Init(Sector *m_sec)
 		delete[] nodes;
 		nodes = NULL;
 
-		delete[] paths;
-		paths = NULL;
+		/*delete[] paths;
+		paths = NULL;*/
 
 		delete[] topBonusNodes;
 		topBonusNodes = NULL;
@@ -1863,7 +1963,7 @@ void MapSector::Init(Sector *m_sec)
 	if (nodes == NULL)
 	{
 		nodes = new Sprite[numLevels];
-		paths = new Sprite[numLevels];
+		//paths = new Sprite[numLevels];
 		topBonusNodes = new Sprite[numLevels];
 		botBonusNodes = new Sprite[numLevels];
 
@@ -1880,12 +1980,12 @@ void MapSector::Init(Sector *m_sec)
 			botBonusNodes[i].setOrigin(botBonusNodes[i].getLocalBounds().width / 2, botBonusNodes[i].getLocalBounds().height / 2);
 		}
 
-		for (int i = 0; i < numLevels; ++i)
+		/*for (int i = 0; i < numLevels; ++i)
 		{
 			paths[i].setTexture(*ms->ts_path->texture);
 			paths[i].setTextureRect(ms->ts_path->GetSubRect(15));
 			paths[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
-		}
+		}*/
 	}
 
 	if (numUnlockConditions != -1 && sec->numUnlockConditions != numUnlockConditions)
@@ -1937,6 +2037,12 @@ void MapSector::Init(Sector *m_sec)
 	{
 		state = NORMAL;
 	}
+
+	auto &snList = sec->levels[saSelector->currIndex].shardNameList;
+	numTotalShards = snList.size();
+
+	levelCollectedShards = new Vertex[numTotalShards * 4];
+	levelCollectedShardsBG = new Vertex[numTotalShards * 4];
 
 	SetXCenter(960);
 	UpdateNodes();

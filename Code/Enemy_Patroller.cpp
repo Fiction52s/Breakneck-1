@@ -87,7 +87,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 3*60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;

@@ -2455,6 +2455,8 @@ void Actor::UpdatePrePhysics()
 
 		owner->soundNodeList->ActivateSound( soundBuffers[S_HURT] );
 
+		owner->powerRing->Drain(receivedHit->damage);
+
 		SetExpr( Expr::Expr_HURT );
 		//expr = Expr::Expr_HURT;
 		

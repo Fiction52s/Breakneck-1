@@ -1732,22 +1732,22 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		switch (et)
 		{
 		case EnemyType::EN_CRAWLER:
-			ep = new EnemyParams(1, 5, .8, 6, 4);
+			ep = new EnemyParams(1, 5, .8, (3 * 60)/4, 4);
 			break;
 		case EnemyType::EN_GOAL:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		case EnemyType::EN_PATROLLER:
-			ep = new EnemyParams(1, 5, .8, 6, 4);
+			ep = new EnemyParams(1, 5, .8, (3*60)/4, 4);
 			break;
 		case EnemyType::EN_FOOTTRAP:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
+			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
 			break;
 		case EnemyType::EN_BASICTURRET:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
+			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
 			break;
 		case EnemyType::EN_SHROOM:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
+			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
 			break;
 		case EnemyType::EN_SHROOMJELLY:
 			ep = new EnemyParams(1, 5, .8, 6, 3);

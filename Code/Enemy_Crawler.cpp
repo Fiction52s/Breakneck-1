@@ -66,7 +66,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	animFactor[UNDERGROUND] = 1;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 3 * 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 6;

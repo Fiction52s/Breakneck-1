@@ -32,7 +32,7 @@ struct TitleScreen
 	Tileset *ts_kin;
 	sf::Sprite kinHandEnergySpr;
 	Tileset *ts_kinHandEnergy;
-	
+	MainMenu *mainMenu;
 	Background *background;
 	
 };

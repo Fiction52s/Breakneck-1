@@ -44,9 +44,16 @@ struct MapSector
 		COMPLETE
 	};
 
+	sf::Shader horizScrollShader1;
+	sf::Shader horizScrollShader2;
+	Tileset *ts_scrollingEnergy;
+	sf::Vertex backScrollEnergy[4];
+	sf::Vertex frontScrollEnergy[4];
+
 	State state;
 	int stateFrame;
 	MapSector(MapSelector *ms, int index);
+	~MapSector();
 	Tileset *ts_thumb;
 	Tileset *ts_importantNodeIcons;
 	
@@ -68,14 +75,15 @@ struct MapSector
 	int unlockedIndex;
 	int unlockFrame;
 	SingleAxisSelector *saSelector;
-	sf::Vertex levelCollectedShards[4 * 16];
+	//sf::Vertex *shardQuads;
+	int numTotalShards;
+	sf::Vertex *levelCollectedShards;
+	sf::Vertex *levelCollectedShardsBG;
 	int selectedYIndex;
 	sf::Sprite *topBonusNodes;
 	sf::Sprite *botBonusNodes;
 	sf::Sprite *nodes;
-	sf::Sprite nodeEnergy;
 	sf::Sprite nodeHighlight;
-	sf::Sprite *paths;
 	int sectorIndex;
 	sf::Sprite thumbnail;
 	sf::Vertex levelBG[4];
@@ -130,15 +138,18 @@ struct MapSelector
 		S_IDLE,
 	};
 
+	
+
 	State state;
 	int slideDuration;
 	MapSelector( MainMenu *mm, sf::Vector2f &pos );
 	MapSector **sectors;
 	Tileset *ts_sectorLevelBG;
+	Tileset *ts_levelStatsBG;
+	Tileset *ts_sectorStatsBG;
 	
 	sf::Vertex shoulderIcons[8];
 	Tileset *ts_shoulderIcons;
-	Tileset *ts_path;
 	int numSectors;
 	sf::Vector2f sectorCenter;
 	int currSectorIndex;
@@ -152,9 +163,9 @@ struct MapSelector
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	//sf::Sprite *nodes;
-	//sf::Sprite *paths;
+	
 	//sf::Vertex *nodes;
-	//sf::Vertex *paths;
+
 	//sf::Vertex thumbnail[4];
 	
 	//sf::RectangleShape bottomBGRect;
@@ -222,10 +233,12 @@ struct WorldMap
 	
 	Tileset *ts_colony[7];
 	Tileset *ts_colonySelect[7];
+	Tileset *ts_colonySelectZoomed[7];
 	sf::Sprite colonySpr[7];
 	sf::Sprite planetSpr;
 	sf::Sprite spaceSpr;
 	sf::Sprite colonySelectSpr;
+	sf::Sprite colonySelectSprZoomed;
 	
 
 	TreeNode **dirNode;

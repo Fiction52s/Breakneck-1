@@ -57,7 +57,7 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	hurtBody->AddCollisionBox(0, hurtBox);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 3*60;
 	hitboxInfo->drainX = .5;
 	hitboxInfo->drainY = .5;
 	hitboxInfo->hitlagFrames = 0;
