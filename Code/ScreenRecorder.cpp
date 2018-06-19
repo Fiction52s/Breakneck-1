@@ -45,6 +45,18 @@ void ScreenRecorder::Update( const sf::Texture &drawnTexture)
 {
 	if (recording)
 	{
+		if (tileIndex == 0 && imageIndex == 0)
+		{
+			stringstream ss;
+			ss << RECFOLDER << "/" << animName << "_preview.png";
+			sf::Image im = drawnTexture.copyToImage();
+			sf::Image im2;
+			im2.create(512, 512);
+			im2.copy(im, 0, 0, IntRect(960 - 256, 540 - 256, 512, 512));
+			bool save = im2.saveToFile(ss.str());
+			assert(save);
+		}
+
 		if (tileIndex == 16)
 		{
 			//CreateSaveThread(this);

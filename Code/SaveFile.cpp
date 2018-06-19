@@ -608,10 +608,29 @@ float Level::GetCompletionPercentage()
 	float portion = 0;
 	if (GetComplete())
 	{
-		portion += .5f;
+		if (shardNameList.size() == 0)
+		{
+			portion = 1.0;
+		}
+		else
+		{
+			portion += .5f;
+			portion += GetCapturedShardsPortion() * .5f;
+		}
+	}
+	else
+	{
+		if (shardNameList.size() == 0)
+		{
+			portion = 0.0;
+		}
+		else
+		{
+			portion += GetCapturedShardsPortion() * .5f;
+		}
 	}
 
-	portion += GetCapturedShardsPortion() * .5f;
+	
 
 	return portion * 100.f;
 	//MapSelectionMenu::ReadMapHeader()

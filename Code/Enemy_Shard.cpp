@@ -25,6 +25,7 @@ std::map<ShardType, std::string> Shard::shardStrMap;
 void Shard::SetupShardMaps()
 {
 	shardTypeMap["SHARD_W1_TEACH_JUMP"] = SHARD_W1_TEACH_JUMP;
+	shardTypeMap["BACKWARDS_DASH_JUMP"] = SHARD_W1_BACKWARDS_DASH_JUMP;
 	for (auto it = shardTypeMap.begin(); it != shardTypeMap.end(); ++it)
 	{
 		shardStrMap[(*it).second] = (*it).first;

@@ -84,6 +84,7 @@ struct MapSector
 	sf::Sprite *botBonusNodes;
 	sf::Sprite *nodes;
 	sf::Sprite nodeHighlight;
+	void UpdateHighlight();
 	int sectorIndex;
 	sf::Sprite thumbnail;
 	sf::Vertex levelBG[4];

@@ -416,8 +416,9 @@ void PauseMenu::SetTab( Tab t )
 	case KIN:
 		break;
 	case SHARDS:
-		shardMenu->SetCurrSequence();
-		shardMenu->currButtonState = ShardMenu::S_NEUTRAL;
+		//shardMenu->SetCurrSequence();
+		shardMenu->state = ShardMenu::WAIT;
+		shardMenu->SetCurrShard();
 		break;
 	case OPTIONS:
 		//LoadControlOptions();
@@ -759,7 +760,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	case SHARDS:
 		{
-			shardMenu->Update( currInput );
+			shardMenu->Update( currInput, prevInput );
 			break;
 		}
 	case OPTIONS:

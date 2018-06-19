@@ -1249,6 +1249,7 @@ MapSector::~MapSector()
 
 void MapSector::Draw(sf::RenderTarget *target)
 {
+	
 	target->draw(sectorNameText);
 	target->draw(levelBG, 4, sf::Quads, ms->ts_sectorLevelBG->texture);
 
@@ -1263,6 +1264,8 @@ void MapSector::Draw(sf::RenderTarget *target)
 	target->draw(frontScrollEnergy, 4, sf::Quads, rs);
 	target->draw(statsBG, 4, sf::Quads, ms->ts_levelStatsBG->texture);
 	target->draw(sectorStatsBG, 4, sf::Quads, ms->ts_sectorStatsBG->texture);
+
+	
 
 	/*for (int i = 0; i < numLevels; ++i)
 	{
@@ -1301,7 +1304,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 	{
 		DrawUnlockConditions(target);
 	}
-
+	
 	target->draw(thumbnail);
 	
 }
@@ -1645,18 +1648,8 @@ void MapSector::Update(ControllerState &curr,
 			}
 		}
 	}
-	if (selectedYIndex == 0)
-	{
-		nodeHighlight.setPosition(GetTopNodePos(saSelector->currIndex));
-	}
-	else if (selectedYIndex == 1)
-	{
-		nodeHighlight.setPosition(GetNodePos(saSelector->currIndex));
-	}
-	else
-	{
-		nodeHighlight.setPosition(GetBotNodePos(saSelector->currIndex));
-	}
+	
+	UpdateHighlight();
 	
 	if (state == LEVELJUSTCOMPLETE )//unlockedIndex != -1)
 	{
@@ -1684,31 +1677,7 @@ void MapSector::Update(ControllerState &curr,
 
 	}
 	
-	int n = GetNodeSubIndex(saSelector->currIndex);
 	
-
-
-	int enAnimFactor = 6;
-	if (n % 3 == 0)
-	{
-	//	nodeEnergy.setTexture(*ts_energyCircle->texture);
-	//	nodeEnergy.setTextureRect(ts_energyCircle->GetSubRect((frame / enAnimFactor) % 10));
-		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(9));
-	}
-	else if (n % 3 == 1)
-	{
-	//	nodeEnergy.setTexture(*ts_energyTri->texture);
-	//	nodeEnergy.setTextureRect(ts_energyTri->GetSubRect((frame / enAnimFactor) % 15));
-		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(10));
-	}
-	else if (n % 3 == 2)
-	{
-	//	nodeEnergy.setTexture(*ts_energyMask->texture);
-	//	nodeEnergy.setTextureRect(ts_energyCircle->GetSubRect((frame / enAnimFactor) % 20));
-		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(11));
-	}
-	//nodeEnergy.setOrigin(nodeEnergy.getLocalBounds().width / 2, nodeEnergy.getLocalBounds().height / 2);
-	nodeHighlight.setOrigin(nodeHighlight.getLocalBounds().width / 2, nodeHighlight.getLocalBounds().height / 2);
 	
 	
 
@@ -1760,6 +1729,42 @@ void MapSector::Update(ControllerState &curr,
 
 	++frame;
 	++stateFrame;
+}
+
+void MapSector::UpdateHighlight()
+{
+	if (selectedYIndex == 0)
+	{
+		nodeHighlight.setPosition(GetTopNodePos(saSelector->currIndex));
+	}
+	else if (selectedYIndex == 1)
+	{
+		nodeHighlight.setPosition(GetNodePos(saSelector->currIndex));
+	}
+	else
+	{
+		nodeHighlight.setPosition(GetBotNodePos(saSelector->currIndex));
+	}
+
+	int n = GetNodeSubIndex(saSelector->currIndex);
+
+
+
+	
+	/*if (n % 3 == 0)
+	{
+		
+	}
+	else if (n % 3 == 1)
+	{
+		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(10));
+	}
+	else if (n % 3 == 2)
+	{
+		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(11));
+	}*/
+	nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(9 + (n % 3)));
+	nodeHighlight.setOrigin(nodeHighlight.getLocalBounds().width / 2, nodeHighlight.getLocalBounds().height / 2);
 }
 
 bool MapSector::HasTopBonus(int node)
@@ -2032,6 +2037,7 @@ void MapSector::Init(Sector *m_sec)
 	if (sec->IsComplete())
 	{
 		state = COMPLETE;
+		endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(15));
 	}
 	else
 	{
@@ -2049,4 +2055,5 @@ void MapSector::Init(Sector *m_sec)
 	UpdateUnlockConditions();
 	UpdateStats();
 	UpdateLevelStats();
+	UpdateHighlight();
 }

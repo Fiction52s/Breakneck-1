@@ -30,10 +30,25 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	currShardText.setFont(mm->arial);
 	currShardText.setPosition(960, 700);
 
+	SetRectCenter(shardBGQuad, 744, 848, Vector2f(65 + 744 / 2, 66 + 848 / 2));
+	SetRectCenter(shardTitleBGQuad, 401, 93, Vector2f(825 + 401/ 2, 594 + 93 / 2));
+	SetRectCenter(controlsQuadBGQuad, 512, 93, Vector2f(1243 + 512 / 2, 594 + 93 / 2));
+	SetRectCenter(descriptionBGQuad, 929, 211, Vector2f(825 + 929 / 2, 703 + 211 / 2));
+	SetRectCenter(containerBGQuad, 401, 512, Vector2f(825 + 401 / 2, 66 + 512 / 2));
+
+	SetRectColor(shardBGQuad, Color(0, 0, 0, 128));
+	SetRectColor(shardTitleBGQuad, Color(0, 0, 0, 128));
+	SetRectColor(controlsQuadBGQuad, Color(0, 0, 0, 128));
+	SetRectColor(descriptionBGQuad, Color(0, 0, 0, 128));
+	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
+
 	numShardsTotal = 1;
 	shardQuads = new Vertex[numShardsTotal * 4];
 	currButtonState = S_NEUTRAL;
-	imagePos = Vector2f(900, 100);
+	imagePos = Vector2f(1243, 66);
+	previewSpr.setPosition(imagePos);
+
+	state = PAUSED;
 
 	ts_shards[0] = mm->tilesetManager.GetTileset("Menu/shards_w1_48x48.png", 48, 48);
 
@@ -55,37 +70,35 @@ ShardMenu::ShardMenu(MainMenu *mm)
 		shardSeq[i] = new PNGSeq*[ySize];
 	}
 
-	
+	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
+	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
+
+	ts_preview = new Tileset*[xSize * ySize];
+
+	stringstream ss;
+
+	shardNames[0][0] = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
+	shardNames[1][0] = Shard::GetShardString(ShardType::SHARD_W1_BACKWARDS_DASH_JUMP);
 
 	for (int x = 0; x < xSize; ++x)
 	{
 		for (int y = 0; y < ySize; ++y)
 		{
+			ss.str("");
 			shardSeq[x][y] = NULL;
 			seqLoadThread[x][y] = NULL;
+			
 
 			std::string &currShardName = shardNames[x][y];
-			currShardName = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
+
+			ss << "Shard/" << currShardName << "_preview.png";
+			ts_preview[x + y * xSize] = mainMenu->tilesetManager.GetTileset(ss.str(), 512, 512);
+			
+			//currShardName = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
 			if(currShardName != "" )
 				SetDescription(shardDesc[x][y], shardNames[x][y]);
 		}
 	}
-
-	//shardNames[4][4] = "testanim";
-	//shardNames[0][4] = "Crawler_Pose";
-	//sf::Clock testC;
-	//GetSequence(shardNames[0][0]);
-	/*for (int x = 0; x < xSize; ++x)
-	{
-		for (int y = 0; y < ySize; ++y)
-		{
-			
-		}
-	}*/
-	//int f = testC.getElapsedTime().asMilliseconds();
-	//cout << f << endl;
-	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
-	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
 
 	shardSelectQuads = new sf::Vertex[xSize * ySize * 4];
 
@@ -215,6 +228,7 @@ ShardMenu::~ShardMenu()
 		delete[] seqLoadThread[i];
 			
 	}
+	delete[] ts_preview;
 	delete[] shardNames;
 	delete[] shardDesc;
 	delete[] shardSeq;
@@ -340,52 +354,84 @@ void ShardMenu::StopMusic()
 	}
 }
 
-void ShardMenu::Update( ControllerState &currInput )
+void ShardMenu::SetCurrShard()
+{
+	SetCurrentDescription();
+	PNGSeq *seq = GetCurrSeq();
+	if (seq != NULL)
+	{
+		seq->Reset();
+	}
+	else
+	{
+		int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
+		if (ts_preview[index] != NULL)
+		{
+			previewSpr.setTexture(
+				*ts_preview[index]->texture);
+		}
+	}
+}
+
+void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 {
 	int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
 	int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
 
 	if (xchanged != 0 || ychanged != 0 )
 	{
+		//state = PAUSED;
 		currButtonState = S_NEUTRAL;
 		StopMusic();
-		SetCurrSequence();
-		SetCurrentDescription();
+		state = WAIT;
+		//SetCurrSequence();
+		SetCurrShard();
 	}
-	bool A = currInput.A;
-	switch (currButtonState)
+
+	if (currInput.A && !prevInput.A)
 	{
-	case S_NEUTRAL:
-		if (A)
+		if (state == WAIT)
 		{
-			currButtonState = S_PRESSED;
-		}
-		break;
-	case S_PRESSED:
-		if (!A)
-		{
-			currButtonState = S_SELECTED;
+			state = LOADTOPLAY;
 			SetCurrSequence();
+		}
+		else if( state == PAUSED )
+		{
+			state = PLAYING;
 			SetCurrMusic();
 		}
-		break;
-	case S_SELECTED:
-		if (A)
+		else if (state == PLAYING)
 		{
-			currButtonState = S_UNPRESSED;
-		}
-		break;
-	case S_UNPRESSED:
-		if (!A)
-		{
-			currButtonState = S_NEUTRAL;
+			state = PAUSED;
 			StopMusic();
 		}
-		break;
+	}
+
+	PNGSeq* seq = GetCurrSeq();
+	if (seq != NULL)
+	{
+		if (currInput.X && !prevInput.X)
+		{
+			seq->Reset();
+		}
+		else if ( state == PAUSED && currInput.PLeft() && !prevInput.PLeft())
+		{
+			seq->DecrementFrame();
+		}
+		else if (state == PAUSED && currInput.PRight() && !prevInput.PRight())
+		{
+			seq->IncrementFrame();
+		}
 	}
 	boost::thread *& loadThread = GetCurrLoadThread();
 
-	if (loadThread == NULL && GetCurrSeq() != NULL && currButtonState == S_SELECTED)
+	if (loadThread == NULL && seq != NULL && state == LOADTOPLAY )//currButtonState == S_SELECTED)
+	{
+		state = PLAYING;
+		SetCurrMusic();
+	}
+
+	if (state == PLAYING && loadThread == NULL && seq != NULL)
 	{
 		GetCurrSeq()->Update();
 	}
@@ -401,8 +447,18 @@ void ShardMenu::Update( ControllerState &currInput )
 
 void ShardMenu::Draw(sf::RenderTarget *target)
 {
+	target->draw(shardBGQuad, 4, sf::Quads);
+	target->draw(containerBGQuad, 4, sf::Quads);
+	target->draw(descriptionBGQuad, 4, sf::Quads);
+	target->draw(controlsQuadBGQuad, 4, sf::Quads);
+	target->draw(shardTitleBGQuad, 4, sf::Quads);
+
 	if(GetCurrSeq() != NULL )
 		GetCurrSeq()->Draw(target);
+	else
+	{
+		target->draw(previewSpr);
+	}
 	target->draw(shardSelectQuads, 22 * 4/*xSelector->totalItems * ySelector->totalItems * 4*/,
 		sf::Quads, ts_shards[0]->texture);
 	target->draw(selectedShardHighlight);
@@ -439,21 +495,18 @@ PNGSeq::PNGSeq(const
 		tSets[index] = (*it);
 		++index;
 	}
+	//load preview image
+
 	Reset();
 }
 
-PNGSeq::~PNGSeq()
+void PNGSeq::IncrementFrame()
 {
-	delete[] tSets;
-}
+	if (singleImage)
+		return;
 
-void PNGSeq::Load()
-{
+	tileIndex++;
 
-}
-
-void PNGSeq::Update()
-{
 	if (tileIndex == 16)
 	{
 		++setIndex;
@@ -468,10 +521,63 @@ void PNGSeq::Update()
 
 	spr.setTextureRect(tSets[setIndex]->GetSubRect(tileIndex));
 
-	if (!singleImage)
+	
+}
+
+void PNGSeq::DecrementFrame()
+{
+	if (singleImage)
+		return;
+
+	tileIndex--;
+
+	if (tileIndex < 0)
 	{
-		tileIndex++;
+		--setIndex;
+		if (setIndex < 0)
+		{
+			setIndex = numSets - 1;
+		}
+
+		int rem = (numFrames-1) % 16;
+		tileIndex = rem;
+
+		spr.setTexture(*tSets[setIndex]->texture);
 	}
+
+	spr.setTextureRect(tSets[setIndex]->GetSubRect(tileIndex));
+}
+
+PNGSeq::~PNGSeq()
+{
+	delete[] tSets;
+}
+
+void PNGSeq::Load()
+{
+
+}
+
+void PNGSeq::Update()
+{
+	if (singleImage)
+		return;
+
+	if (tileIndex == 16)
+	{
+		++setIndex;
+		if (setIndex == numSets)
+		{
+			setIndex = 0;
+		}
+		tileIndex = 0;
+
+		spr.setTexture(*tSets[setIndex]->texture);
+	}
+
+	spr.setTextureRect(tSets[setIndex]->GetSubRect(tileIndex));
+
+	tileIndex++;
 }
 
 void PNGSeq::Reset()

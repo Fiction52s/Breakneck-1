@@ -27,7 +27,7 @@ struct PNGSeq
 		std::list<Tileset*> &tList, bool singleImage = false );// , Tileset *ts);
 	~PNGSeq();
 	Tileset **tSets;
-
+	Tileset *ts_preview;
 	bool singleImage;
 	int tileIndex;
 	int setIndex;
@@ -35,6 +35,8 @@ struct PNGSeq
 	int numSets;
 	void Reset();
 	int numFrames;
+	void IncrementFrame();
+	void DecrementFrame();
 	void Load();
 	void Draw(sf::RenderTarget *target);
 	void Update();
@@ -61,11 +63,22 @@ struct ShardMenu
 		S_SELECTED,
 	};
 
+	enum State
+	{
+		PLAYING,
+		PAUSED,
+		WAIT,
+		LOADTOPLAY,
+	};
+	State state;
 	
 	ShardMenu( MainMenu *mm );
 	~ShardMenu();
-	void Update( ControllerState &currInput );
+	void Update( ControllerState &currInput,
+		ControllerState &prevInput );
 	void Draw(sf::RenderTarget *target);
+
+	void SetCurrShard();
 
 	sf::Text currShardText;
 	std::string **shardDesc;// [ShardType::SHARD_W1_TEACH_JUMP];
@@ -87,6 +100,8 @@ struct ShardMenu
 	MusicInfo *GetShardMusic(const std::string &str);
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
+	Tileset **ts_preview;
+	sf::Sprite previewSpr;
 	std::map<std::string, PNGSeq*> seqMap;
 	std::string **shardNames;
 	MusicInfo *currShardMusic;
@@ -104,6 +119,13 @@ struct ShardMenu
 
 	sf::Vertex *shardSelectQuads;
 	void UpdateShardSelectQuads();
+
+	sf::Vertex shardBGQuad[4];
+	sf::Vertex containerBGQuad[4];
+	sf::Vertex descriptionBGQuad[4];
+	sf::Vertex controlsQuadBGQuad[4];
+	sf::Vertex shardTitleBGQuad[4];
+	sf::Vertex largeShardBG[4];
 };
 
 #endif
