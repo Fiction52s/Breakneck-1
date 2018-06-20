@@ -50,7 +50,7 @@ void SaveFileDisplay::Draw(sf::RenderTarget *target)
 void SaveFileDisplay::SetValues(SaveFile *sf)
 {
 	stringstream ss;
-	ss << sf->GetShardNum() << " / " << sf->GetTotalShardNum() << " Shards";
+	ss << sf->GetNumShardsCaptured() << " / " << sf->GetNumTotalShards() << " Shards";
 	completedShards.setString(ss.str());
 	ss.str("");
 	ss << sf->GetCompletionPercentage() << "%";

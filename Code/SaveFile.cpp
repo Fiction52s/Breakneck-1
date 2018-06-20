@@ -117,23 +117,6 @@ float SaveFile::GetCompletionPercentage()
 
 	return (totalComplete / totalPossible) * 100.f;
 }
-int SaveFile::GetShardNum()
-{
-	int capturedCount = 0;
-	for (int i = 0; i < ShardType::SHARD_Count; ++i)
-	{
-		if (ShardIsCaptured((ShardType)i))
-		{
-			capturedCount++;
-		}
-	}
-
-	return capturedCount;
-}
-int SaveFile::GetTotalShardNum()
-{
-	return ShardType::SHARD_Count;
-}
 
 SaveFile::~SaveFile()
 {
@@ -176,6 +159,8 @@ bool SaveFile::LoadInfo(ifstream &is)
 		shardField.Load(is);
 		newShardField.Load(is);
 
+		UpdateShardNameList();
+
 		is.close();
 		return true;
 	}
@@ -187,6 +172,49 @@ bool SaveFile::LoadInfo(ifstream &is)
 		}*/
 		return false;
 	}
+}
+
+void SaveFile::UpdateShardNameList()
+{
+	std::map<std::string, int> shardNameMap;
+	for (int i = 0; i < numWorlds; ++i)
+	{
+		for (auto it = worlds[i].shardNameList.begin(); it != worlds[i].shardNameList.end(); ++it)
+		{
+			if (shardNameMap.count((*it)) == 0)
+			{
+				shardNameMap[(*it)] = 0;
+			}
+			else
+			{
+				shardNameMap[(*it)]++;
+			}
+		}
+	}
+
+	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
+	{
+		shardNameList.push_back((*it).first);
+	}
+}
+
+int SaveFile::GetNumShardsCaptured()
+{
+	int capCount = 0;
+	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+	{
+		ShardType st = Shard::GetShardType((*it));
+		if (ShardIsCaptured(st))
+		{
+			++capCount;
+		}
+	}
+	return capCount;
+}
+
+int SaveFile::GetNumTotalShards()
+{
+	return shardNameList.size();
 }
 
 //return true on normal loading, and false if you need to make a default
@@ -741,7 +769,52 @@ bool World::Load(std::ifstream &is)
 		sectors[i].index = i;
 		sectors[i].Load(is);
 	}
+
+	UpdateShardNameList();
 	return true;
+}
+
+void World::UpdateShardNameList()
+{
+	std::map<std::string, int> shardNameMap;
+	for (int i = 0; i < numSectors; ++i)
+	{
+		for (auto it = sectors[i].shardNameList.begin(); it != sectors[i].shardNameList.end(); ++it)
+		{
+			if (shardNameMap.count((*it)) == 0)
+			{
+				shardNameMap[(*it)] = 0;
+			}
+			else
+			{
+				shardNameMap[(*it)]++;
+			}
+		}
+	}
+
+	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
+	{
+		shardNameList.push_back((*it).first);
+	}
+}
+
+int World::GetNumTotalShards()
+{
+	return shardNameList.size();
+}
+
+int World::GetNumShardsCaptured()
+{
+	int capCount = 0;
+	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+	{
+		ShardType st = Shard::GetShardType((*it));
+		if (sf->ShardIsCaptured(st))
+		{
+			++capCount;
+		}
+	}
+	return capCount;
 }
 
 int World::GetNumSectorTypeComplete(int sType)

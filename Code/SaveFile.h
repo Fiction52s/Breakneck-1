@@ -139,10 +139,14 @@ struct World
 	Sector *sectors;
 	SaveFile *sf;
 	int index;
+	void UpdateShardNameList();
+	int GetNumTotalShards();
 	bool Load(std::ifstream &is);
 	bool Save(std::ofstream &of);
 	int GetNumSectorTypeComplete(int sType);
-	float GetCompletionPercentage();	
+	float GetCompletionPercentage();
+	int GetNumShardsCaptured();
+	std::list<std::string> shardNameList;
 };
 
 struct SaveFile
@@ -153,9 +157,12 @@ struct SaveFile
 	bool Load();
 	bool LoadInfo(std::ifstream &is );
 	float GetCompletionPercentage();
-	int GetShardNum();
-	int GetTotalShardNum();
 	void CopyFromDefault();
+
+	void UpdateShardNameList();
+	int GetNumShardsCaptured();
+	int GetNumTotalShards();
+	std::list<std::string> shardNameList;
 	/*void SetJustUnlocked(int world,
 		int sec, int lev);*/
 
