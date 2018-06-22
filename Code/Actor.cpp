@@ -2018,6 +2018,9 @@ void Actor::Respawn()
 
 	SetExpr( Actor::Expr::Expr_NEUTRAL );
 
+	kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
+	kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
+
 	if( owner->powerRing != NULL )
 		owner->powerRing->ResetFull(); //only means anything for single player
 }
@@ -16677,7 +16680,7 @@ bool Actor::IsIntroAction(Action a)
 
 bool Actor::IsExitAction(Action a)
 {
-	return a == EXIT || a == EXITWAIT;
+	return a == EXIT || a == EXITWAIT || a == WAITFORSHIP || a == GRABSHIP;
 }
 
 void Actor::HandleEntrant( QuadTreeEntrant *qte )
@@ -18768,6 +18771,8 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 {
 	if( action != WAITFORSHIP && action != GRABSHIP )
 	{
+		desperationMode = false;
+		SetExpr(Expr_NEUTRAL);
 		owner->scoreDisplay->Activate();
 		SetAction(WAITFORSHIP);
 		frame = 0;

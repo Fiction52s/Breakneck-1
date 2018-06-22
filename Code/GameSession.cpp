@@ -5594,9 +5594,9 @@ int GameSession::Run()
 	goalDestroyed = false;
 
 
-	//debugScreenRecorder = NULL;
+	debugScreenRecorder = NULL;
 
-	debugScreenRecorder = new ScreenRecorder("BACKWARDS_DASH_JUMP");
+	//debugScreenRecorder = new ScreenRecorder("BACKWARDS_DASH_JUMP");
 	
 	//#define SYNCEDDRAWWITHPHYSICS
 

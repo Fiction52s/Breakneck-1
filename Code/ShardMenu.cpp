@@ -175,8 +175,14 @@ PNGSeq *&ShardMenu::GetCurrSeq()
 void ShardMenu::AsyncGetSequence(const std::string &str)
 {
 	PNGSeq *& ps = GetCurrSeq();
-	ps = GetSequence(str);
-	ps->spr.setPosition(imagePos);
+
+	if( ps == NULL )
+		ps = GetSequence(str);
+
+	if (ps != NULL)
+	{
+		ps->spr.setPosition(imagePos);
+	}
 }
 
 void ShardMenu::sGetSequence( const std::string &str, ShardMenu *sMenu)
@@ -241,7 +247,10 @@ ShardMenu::~ShardMenu()
 
 PNGSeq * ShardMenu::GetSequence(const std::string &str)
 {
-	
+	if (str == "")
+	{
+		return NULL;
+	}
 	if ( seqMap.count( str ) > 0 )
 	{
 		PNGSeq *cSeq = seqMap[str];
