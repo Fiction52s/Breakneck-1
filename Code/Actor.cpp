@@ -1398,7 +1398,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 
 
-		bool noPowers = false;
+		bool noPowers = true;
 		if( noPowers )
 		{
 			hasPowerAirDash = false;

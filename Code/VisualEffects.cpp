@@ -70,7 +70,11 @@ void EffectPool::Update(EffectPoolUpdater *epu)
 		{
 			tNext = (EffectInstance*)ei->pmnext;
 
-			epu->UpdateEffect(ei);
+			if (epu != NULL)
+			{
+				epu->UpdateEffect(ei);
+			}
+			
 			ei->Update();
 
 			ei = tNext;

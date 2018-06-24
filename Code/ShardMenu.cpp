@@ -15,6 +15,8 @@
 #include "Enemy_Shard.h"
 #include "MainMenu.h"
 #include "MusicSelector.h"
+#include "VisualEffects.h"
+#include "SaveFile.h"
 
 
 using namespace sf;
@@ -23,6 +25,7 @@ using namespace std;
 ShardMenu::ShardMenu(MainMenu *mm)
 	:mainMenu( mm )
 {
+	totalFrame = 0;
 	currShardMusic = NULL;
 	//currentMovie.scale(.5, .5);
 
@@ -35,12 +38,20 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	SetRectCenter(controlsQuadBGQuad, 512, 93, Vector2f(1243 + 512 / 2, 594 + 93 / 2));
 	SetRectCenter(descriptionBGQuad, 929, 211, Vector2f(825 + 929 / 2, 703 + 211 / 2));
 	SetRectCenter(containerBGQuad, 401, 512, Vector2f(825 + 401 / 2, 66 + 512 / 2));
+	SetRectCenter(largeShardContainer, 401, 512, Vector2f(825 + 401 / 2, 66 + 512 / 2));
+	SetRectCenter(largeShard, 384, 384, Vector2f(825 + 401 / 2, 66 + 512 / 2));
 
 	SetRectColor(shardBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(shardTitleBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(controlsQuadBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(descriptionBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
+
+	ts_shardContainer = mm->tilesetManager.GetTileset("Menu/shard_container_401x512.png", 401, 512);
+	ts_sparkle = mm->tilesetManager.GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
+	ts_bigShards = mm->tilesetManager.GetTileset("Menu/shards_w1_384x384.png", 384, 384);
+	ts_notCapturedPreview = mm->tilesetManager.GetTileset("Menu/notcaptured.png", 512, 512);
+	SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(0));
 
 	numShardsTotal = 1;
 	shardQuads = new Vertex[numShardsTotal * 4];
@@ -51,6 +62,9 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	state = PAUSED;
 
 	ts_shards[0] = mm->tilesetManager.GetTileset("Menu/shards_w1_48x48.png", 48, 48);
+
+	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
+	sparklePool->ts = ts_sparkle;
 
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
@@ -121,6 +135,48 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	}
 	
 	//SetCurrSequence();
+}
+
+bool ShardMenu::IsShardCaptured( int x, int y )
+{
+	SaveFile *saveFile = mainMenu->GetCurrentProgress();
+	return (shardNames[x][y] != "" && saveFile->ShardIsCaptured(Shard::GetShardType(shardNames[x][y])));
+}
+
+bool ShardMenu::IsCurrShardCaptured()
+{
+	return IsShardCaptured(xSelector->currIndex, ySelector->currIndex);
+}
+
+void ShardMenu::UpdateUnlockedShards()
+{
+	int index = 0;
+	SaveFile *saveFile = mainMenu->GetCurrentProgress();
+
+	if (saveFile == NULL)
+		return;
+
+	for (int i = 0; i < ySelector->totalItems; ++i)
+	{
+		for (int j = 0; j < xSelector->totalItems; ++j)
+		{
+			index = (i * xSelector->totalItems + j) * 4;
+
+			//SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
+			
+			if (IsShardCaptured( j, i ))
+			{
+				SetRectColor(shardSelectQuads + index, Color(Color::White));
+				//SetRectSubRect(shardSelectQuads + index, ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
+			}
+			else
+			{
+				SetRectColor(shardSelectQuads + index, Color(Color::Black));
+				//SetRectSubRect(shardSelectQuads + index, FloatRect());
+			}
+			//ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
+		}
+	}
 }
 
 bool ShardMenu::SetDescription(std::string &destStr, const std::string &shardTypeStr)
@@ -279,7 +335,7 @@ PNGSeq * ShardMenu::GetSequence(const std::string &str)
 		++counter;
 	}
 
-	assert(counter > 0);
+	//assert(counter > 0);
 	
 	if (counter == 0)
 	{
@@ -346,6 +402,15 @@ void ShardMenu::UpdateShardSelectQuads()
 	selectedShardHighlight.setPosition((shardSelectQuads + index * 4)->position + Vector2f(24, 24));
 	//SetRectColor(shardSelectQuads + index, currColor);
 
+	if (IsCurrShardCaptured())
+	{
+		SetRectSubRect(largeShard, ts_bigShards->GetSubRect(index));
+	}
+	else
+	{
+		SetRectSubRect(largeShard, FloatRect());
+	}
+	
 	
 }
 
@@ -365,20 +430,29 @@ void ShardMenu::StopMusic()
 
 void ShardMenu::SetCurrShard()
 {
-	SetCurrentDescription();
-	PNGSeq *seq = GetCurrSeq();
-	if (seq != NULL)
+	if (IsCurrShardCaptured())
 	{
-		seq->Reset();
+		SetCurrentDescription();
+		PNGSeq *seq = GetCurrSeq();
+		if (seq != NULL)
+		{
+			seq->Reset();
+		}
+		else
+		{
+			int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
+			Tileset *tp = ts_preview[index];
+			if (tp != NULL)
+			{
+				previewSpr.setTexture( *tp->texture);
+				previewSpr.setTextureRect(tp->GetSubRect(0));
+			}
+		}
 	}
 	else
 	{
-		int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
-		if (ts_preview[index] != NULL)
-		{
-			previewSpr.setTexture(
-				*ts_preview[index]->texture);
-		}
+		previewSpr.setTexture(*ts_notCapturedPreview->texture);
+		previewSpr.setTextureRect(ts_notCapturedPreview->GetSubRect(0));
 	}
 }
 
@@ -387,32 +461,44 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 	int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
 	int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
 
+	bool currShardCap = IsCurrShardCaptured();
+
 	if (xchanged != 0 || ychanged != 0 )
 	{
 		//state = PAUSED;
+		if (!currShardCap)
+		{
+			sparklePool->Reset();
+		}
 		currButtonState = S_NEUTRAL;
 		StopMusic();
 		state = WAIT;
+
+		
 		//SetCurrSequence();
 		SetCurrShard();
 	}
 
 	if (currInput.A && !prevInput.A)
 	{
-		if (state == WAIT)
+		if (currShardCap)
 		{
-			state = LOADTOPLAY;
-			SetCurrSequence();
-		}
-		else if( state == PAUSED )
-		{
-			state = PLAYING;
-			SetCurrMusic();
-		}
-		else if (state == PLAYING)
-		{
-			state = PAUSED;
-			StopMusic();
+			if (state == WAIT)
+			{
+				state = LOADTOPLAY;
+				SetCurrSequence();
+			}
+			else if (state == PAUSED)
+			{
+				state = PLAYING;
+				SetCurrMusic();
+			}
+			else if (state == PLAYING)
+			{
+				state = PAUSED;
+				StopMusic();
+			}
+
 		}
 	}
 
@@ -452,6 +538,53 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 	}
 
 	UpdateShardSelectQuads();
+
+	
+	if (currShardCap)
+	{
+		int lightningFactor = 8;
+		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
+	}
+	else
+	{
+		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(0));
+	}
+	
+
+	sparklePool->Update( );
+
+
+	Vector2f sparkleCenter(825 + 401 / 2, 66 + 512 / 2);
+	
+	if (totalFrame % 120 == 0 && currShardCap)
+	{
+		Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
+		EffectInstance ei;
+
+		int r = rand() % 3;
+		if (r == 0)
+		{
+			ei.SetParams(sparkleCenter + off,
+				Transform(Transform::Identity), 11 , 5, 0);
+		}
+		else if (r == 1)
+		{
+			ei.SetParams(sparkleCenter + off,
+				Transform(Transform::Identity), 10, 5, 11);
+		}
+		else if (r == 2)
+		{
+			ei.SetParams(sparkleCenter+ off,
+				Transform(Transform::Identity), 10, 5, 11);
+		}
+		
+		//ei.pos = sparkleCenter;
+		//ei.animFactor = 8;
+		
+		sparklePool->ActivateEffect(&ei);
+	}
+
+	++totalFrame;
 }
 
 void ShardMenu::Draw(sf::RenderTarget *target)
@@ -461,7 +594,12 @@ void ShardMenu::Draw(sf::RenderTarget *target)
 	target->draw(descriptionBGQuad, 4, sf::Quads);
 	target->draw(controlsQuadBGQuad, 4, sf::Quads);
 	target->draw(shardTitleBGQuad, 4, sf::Quads);
+	target->draw(largeShardContainer, 4, sf::Quads, ts_shardContainer->texture);
 
+	
+
+	target->draw(largeShard, 4, sf::Quads, ts_bigShards->texture);
+	sparklePool->Draw(target);
 	if(GetCurrSeq() != NULL )
 		GetCurrSeq()->Draw(target);
 	else
@@ -601,3 +739,9 @@ void PNGSeq::Draw(sf::RenderTarget *target)
 {
 	target->draw(spr);
 }
+
+//Sparkle::Sparkle(Tileset *p_ts, int type, Vector2f &p_pos)
+//	:ts( p_ts ), pos( p_pos )
+//{
+//
+//}

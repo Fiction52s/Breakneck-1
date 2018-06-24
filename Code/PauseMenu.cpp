@@ -672,6 +672,10 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			optionsMenu->state = OptionsMenu::CHOOSESTATE;
 			mainMenu->optionsMenu->Center(Vector2f(1820, 980));
 		}
+		else if (currentTab == SHARDS)
+		{
+			shardMenu->UpdateUnlockedShards();
+		}
 		return R_NONE;
 	}
 	else if( currInput.rightShoulder && !prevInput.rightShoulder )
@@ -688,6 +692,10 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		{
 			optionsMenu->state = OptionsMenu::CHOOSESTATE;
 			mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+		}
+		else if (currentTab == SHARDS)
+		{
+			shardMenu->UpdateUnlockedShards();
 		}
 		return R_NONE;
 	}

@@ -953,7 +953,7 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	//numNodeColumns = 10;
 	//nodeSelectorWidth = 400;
 	ts_node = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
-	Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
+	//Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
 
 	ts_sectorLevelBG = mm->tilesetManager.GetTileset("Worldmap/sector_levelbg_1200x400.png", 1200, 400);
 	ts_levelStatsBG = mm->tilesetManager.GetTileset("Worldmap/level_stats_512x256.png", 512, 256);

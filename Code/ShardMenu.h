@@ -46,6 +46,18 @@ struct PNGSeq
 struct SingleAxisSelector;
 struct MainMenu;
 struct MusicInfo;
+struct EffectPool;
+
+//struct Sparkle
+//{
+//	Sparkle(Tileset *ts,int type, sf::Vector2f &pos);
+//	void Draw(sf::RenderTarget *target);
+//	int frame;
+//	Tileset *ts;
+//	sf::Vector2f pos;
+//	sf::Vertex 
+//};
+
 struct ShardMenu
 {
 	//looping movie that plays
@@ -71,7 +83,7 @@ struct ShardMenu
 		LOADTOPLAY,
 	};
 	State state;
-	
+	EffectPool *sparklePool;
 	ShardMenu( MainMenu *mm );
 	~ShardMenu();
 	void Update( ControllerState &currInput,
@@ -79,6 +91,8 @@ struct ShardMenu
 	void Draw(sf::RenderTarget *target);
 
 	void SetCurrShard();
+
+	int totalFrame;
 
 	sf::Text currShardText;
 	std::string **shardDesc;// [ShardType::SHARD_W1_TEACH_JUMP];
@@ -115,7 +129,9 @@ struct ShardMenu
 	PNGSeq *&GetCurrSeq();
 	boost::thread *&GetCurrLoadThread();
 	
-
+	void UpdateUnlockedShards();
+	bool IsShardCaptured( int x, int y );
+	bool IsCurrShardCaptured();
 
 	sf::Vertex *shardSelectQuads;
 	void UpdateShardSelectQuads();
@@ -125,7 +141,15 @@ struct ShardMenu
 	sf::Vertex descriptionBGQuad[4];
 	sf::Vertex controlsQuadBGQuad[4];
 	sf::Vertex shardTitleBGQuad[4];
-	sf::Vertex largeShardBG[4];
+	sf::Vertex largeShardContainer[4];
+	sf::Vertex largeShard[4];
+
+	Tileset *ts_shardContainer;
+	Tileset *ts_sparkle;
+	Tileset *ts_bigShards;
+
+	Tileset *ts_notCapturedPreview;
+	
 };
 
 #endif

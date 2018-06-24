@@ -7841,7 +7841,8 @@ int GameSession::Run()
 		//preScreenTex->draw( minimapVA, &minimapShader );
 		//preScreenTex->draw( miniCircle );
 
-		if( currentZone != NULL )
+		//draw gate directions
+		/*if( currentZone != NULL )
 		{
 			int index = 0;
 			list<Edge*> gList = currentZone->gates;
@@ -7872,7 +7873,7 @@ int GameSession::Run()
 
 			}
 			
-		}
+		}*/
 		
 		/*for( int i = 0; i < 6; ++i )
 		{
