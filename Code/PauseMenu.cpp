@@ -674,7 +674,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 		else if (currentTab == SHARDS)
 		{
-			shardMenu->UpdateUnlockedShards();
+			shardMenu->SetShardTab();
 		}
 		return R_NONE;
 	}
@@ -695,7 +695,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 		else if (currentTab == SHARDS)
 		{
-			shardMenu->UpdateUnlockedShards();
+			shardMenu->SetShardTab();
 		}
 		return R_NONE;
 	}

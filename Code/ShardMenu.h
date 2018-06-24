@@ -95,12 +95,13 @@ struct ShardMenu
 	int totalFrame;
 
 	sf::Text currShardText;
+	sf::Text currShardNameText;
 	std::string **shardDesc;// [ShardType::SHARD_W1_TEACH_JUMP];
 	Tileset *ts_shards[7];
 	sf::Sprite selectedShardHighlight;
 	ShardButtonState currButtonState;
-	bool SetDescription(std::string &destStr, const std::string &shardTypeStr );
-	void SetCurrentDescription();
+	bool SetDescription(std::string &nameStr, std::string &destStr, const std::string &shardTypeStr );
+	void SetCurrentDescription( bool captured );
 	bool LoadPNGSequences();
 	sf::Vertex *shardQuads;
 	MainMenu *mainMenu;
@@ -118,6 +119,7 @@ struct ShardMenu
 	sf::Sprite previewSpr;
 	std::map<std::string, PNGSeq*> seqMap;
 	std::string **shardNames;
+	std::string **shardDescriptionNames;
 	MusicInfo *currShardMusic;
 	void SetCurrMusic();
 	void StopMusic();
@@ -143,12 +145,16 @@ struct ShardMenu
 	sf::Vertex shardTitleBGQuad[4];
 	sf::Vertex largeShardContainer[4];
 	sf::Vertex largeShard[4];
+	sf::Vertex shardButtons[4 * 4];
 
+	void SetShardTab();
+	Tileset *ts_shardButtons;
 	Tileset *ts_shardContainer;
 	Tileset *ts_sparkle;
 	Tileset *ts_bigShards;
 
 	Tileset *ts_notCapturedPreview;
+	Tileset *ts_noPreview;
 	
 };
 
