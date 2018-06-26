@@ -205,7 +205,10 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	Reset( NULL );
 
-	testSelector = new MapSelector(mainMenu, Vector2f(960, 540));
+	for (int i = 0; i < 7; ++i)
+	{
+		selectors[i] = new MapSelector(mainMenu, Vector2f(960, 540));
+	}
 }
 
 void WorldMap::UpdateColonySelect()
@@ -404,6 +407,11 @@ void WorldMap::UpdateMapList( TreeNode *parentNode, const std::string &relativeP
 	}
 }
 
+MapSelector *WorldMap::CurrSelector()
+{
+	return selectors[selectedColony];
+}
+
 void WorldMap::UpdateMapList()
 {
 	ClearEntries();
@@ -431,6 +439,14 @@ void WorldMap::UpdateMapList()
 void WorldMap::SetDefaultSelections()
 {
 	mainMenu->worldMap->selectedColony = 0;
+}
+
+void WorldMap::InitSelectors()
+{
+	for (int i = 0; i < 2; ++i)
+	{
+		selectors[i]->UpdateAllInfo(i);
+	}
 }
 
 void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
@@ -466,13 +482,13 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			state = PlANET_TO_COLONY;
 			frame = 0;
 
-			testSelector->UpdateAllInfo();
+			//testSelector->UpdateAllInfo();
+			MapSelector *currSelector = CurrSelector();
+			currSelector->saSelector->currIndex = 0;
 
-			testSelector->saSelector->currIndex = 0;
-
-			for (int i = 0; i < testSelector->numSectors; ++i)
+			for (int i = 0; i < currSelector->numSectors; ++i)
 			{
-				testSelector->sectors[i]->saSelector->currIndex = 0;
+				currSelector->sectors[i]->saSelector->currIndex = 0;
 			}
 			break;
 		}
@@ -747,7 +763,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 		else
 		{
-			testSelector->Update(currInput, prevInput);
+			CurrSelector()->Update(currInput, prevInput);
 		}
 			//if( frame == 0 )
 			//{
@@ -956,7 +972,7 @@ void WorldMap::Draw( RenderTarget *target )
 	{
 		rt->clear(Color::Transparent);
 		rt->setView(uiView);
-		testSelector->Draw(rt);
+		CurrSelector()->Draw(rt);
 		rt->display();
 		const sf::Texture &ttex = rt->getTexture();
 		selectorExtraPass.setTexture(ttex);
@@ -989,6 +1005,14 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	ts_node[4] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	ts_node[5] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	ts_node[6] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
+
+	ts_scrollingEnergy[0] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[1] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w2_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[2] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[3] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[4] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[5] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[6] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
 	//Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
 
 	ts_bossFight = new Tileset*[1];
@@ -1149,10 +1173,10 @@ void MapSelector::Update(ControllerState &curr,
 	++frame;
 }
 
-void MapSelector::UpdateAllInfo()
+void MapSelector::UpdateAllInfo(int index)
 {
 	SaveFile *sf = mainMenu->GetCurrentProgress();
-	World & w = sf->worlds[mainMenu->worldMap->selectedColony];
+	World & w = sf->worlds[index];
 
 	MapSector *mSector;
 	//Vector2f bottomCenter = bottomBG.getPosition() + Vector2f(bottomBG.getLocalBounds().width / 2, bottomBG.getLocalBounds().height / 2);
@@ -1213,11 +1237,10 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 {
 
 	
-
-	ts_scrollingEnergy = ms->mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
+	//initThread = NULL;
+	
 	//ts_scrollingEnergy->texture->setRepeated(true);
-	SetRectSubRect(frontScrollEnergy, ts_scrollingEnergy->GetSubRect(0));
-	SetRectSubRect(backScrollEnergy, ts_scrollingEnergy->GetSubRect(1));
+	
 
 	unlockedIndex = -1;
 	numUnlockConditions = -1;
@@ -2013,6 +2036,34 @@ int MapSector::GetNodeBonusIndexBot(int node)
 	}
 }
 
+//void MapSector::S_Init(Sector *m_sec, MapSector *ms)
+//{
+//	ms->Init(m_sec);
+//}
+//
+//void MapSector::ThreadedInit( Sector *m_sec )
+//{
+//	if (sec != m_sec)
+//	{
+//		if (initThread != NULL)
+//		{
+//			TerminateThread(initThread->native_handle(), 0); //windows only
+//			//pthread_cancel(u.native_handle()); //linux
+//		}
+//		initThread = new boost::thread(&(MapSector::ThreadedInit), m_sec, this);
+//	}
+//}
+//
+//bool MapSector::IsInitialized()
+//{
+//	assert(initThread);
+//	if (initThread->try_join_for(boost::chrono::milliseconds(0)))
+//	{
+//		return true;
+//	}
+//	return false;
+//}
+
 void MapSector::Init(Sector *m_sec)
 {
 	unlockedIndex = -1;
@@ -2020,6 +2071,11 @@ void MapSector::Init(Sector *m_sec)
 	numLevels = sec->numLevels;
 
 	ts_node = ms->ts_node[sec->world->index];
+
+	ts_scrollingEnergy = ms->ts_scrollingEnergy[sec->world->index];
+
+	SetRectSubRect(frontScrollEnergy, ts_scrollingEnergy->GetSubRect(0));
+	SetRectSubRect(backScrollEnergy, ts_scrollingEnergy->GetSubRect(1));
 
 	stringstream ss;
 	ss.str("");

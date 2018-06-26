@@ -53,7 +53,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	SetRectCenter(containerBGQuad, 401, 512, Vector2f(825 + 401 / 2, 66 + 512 / 2));
 
 	SetRectCenter(largeShardContainer, 401, 512, Vector2f(825 + 401 / 2, 66 + 512 / 2));
-	SetRectCenter(largeShard, 384, 384, Vector2f(825 + 401 / 2, 66 + 512 / 2));
+	SetRectCenter(largeShard, 192, 192, Vector2f(825 + 401 / 2, 66 + 512 / 2));
 
 	SetRectColor(shardBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(shardTitleBGQuad, Color(0, 0, 0, 128));
@@ -63,7 +63,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 	ts_shardContainer = mm->tilesetManager.GetTileset("Menu/shard_container_401x512.png", 401, 512);
 	ts_sparkle = mm->tilesetManager.GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
-	ts_bigShards = mm->tilesetManager.GetTileset("Menu/shards_w1_384x384.png", 384, 384);
+	ts_bigShards = mm->tilesetManager.GetTileset("Menu/shards_w1_192x192.png", 192, 192);
 	ts_notCapturedPreview = mm->tilesetManager.GetTileset("Menu/notcaptured.png", 512, 512);
 	ts_noPreview = mm->tilesetManager.GetTileset("Menu/nopreview.png", 512, 512);
 	ts_shardButtons = mm->tilesetManager.GetTileset("Menu/pause_shard_buttons_128x93.png", 128, 93);

@@ -231,6 +231,8 @@ void SaveMenuScreen::Update()
 			mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
 			mainMenu->worldMap->frame = 0;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
+
+			mainMenu->worldMap->InitSelectors();
 			return;
 			break;
 		}

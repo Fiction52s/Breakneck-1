@@ -30,7 +30,10 @@ struct SectorNode
 
 struct Sector;
 
+struct MapColony
+{
 
+};
 
 struct MapSector
 {
@@ -46,17 +49,22 @@ struct MapSector
 
 	sf::Shader horizScrollShader1;
 	sf::Shader horizScrollShader2;
-	Tileset *ts_scrollingEnergy;
+	
 	sf::Vertex backScrollEnergy[4];
 	sf::Vertex frontScrollEnergy[4];
 
+	Tileset *ts_scrollingEnergy;
 	State state;
 	int stateFrame;
 	MapSector(MapSelector *ms, int index);
 	~MapSector();
 	Tileset *ts_thumb;
 	Tileset *ts_importantNodeIcons;
-	
+	/*static void S_Init(Sector *m_sec,
+		MapSector *ms );
+	void ThreadedInit( Sector *m_sec );
+	boost::thread *initThread;
+	bool IsInitialized();*/
 	sf::Text sectorNameText;
 	int frame;
 	//int *bossNumbers;
@@ -125,9 +133,6 @@ struct MapSector
 	void DrawUnlockConditions(sf::RenderTarget *target);
 	void UpdateUnlockConditions();
 	void UpdateStats();
-
-	
-	
 };
 
 struct MapSelector
@@ -148,13 +153,14 @@ struct MapSelector
 	Tileset *ts_sectorLevelBG;
 	Tileset *ts_levelStatsBG;
 	Tileset *ts_sectorStatsBG;
+	Tileset *ts_scrollingEnergy[7];
 	
 	sf::Vertex shoulderIcons[8];
 	Tileset *ts_shoulderIcons;
 	int numSectors;
 	sf::Vector2f sectorCenter;
 	int currSectorIndex;
-	void UpdateAllInfo();
+	void UpdateAllInfo(int index);
 	MainMenu *mainMenu;
 	//int numNodeColumns;
 	//int nodeSelectorWidth;
@@ -261,8 +267,10 @@ struct WorldMap
 
 	bool moveDown;
 	bool moveUp;
-
-	MapSelector *testSelector;
+	MapSelector *CurrSelector();
+	void InitSelectors();
+	//MapSelector *testSelector;
+	MapSelector *selectors[7];
 	MainMenu *mainMenu;
 
 	//ControllerState currInput;

@@ -1868,9 +1868,9 @@ void MainMenu::Run()
 					bool doneCheck = false;
 					//for (int i = 0; i < world.numSectors && !doneCheck; ++i)
 					{
-						int secIndex = worldMap->testSelector->saSelector->currIndex;
+						int secIndex = worldMap->selectors[worldMap->selectedColony]->saSelector->currIndex;
 						Sector &sec = world.sectors[secIndex];
-						int levIndex = worldMap->testSelector->sectors[secIndex]->saSelector->currIndex;
+						int levIndex = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector->currIndex;
 						//for (int j = 0; j < sec.numLevels && !doneCheck; ++j)
 						{
 							Level &lev = sec.levels[levIndex];
@@ -2533,7 +2533,7 @@ void MainMenu::PlayIntroMovie()
 	worldMap->state = WorldMap::COLONY;
 	worldMap->selectedColony = 0;
 	worldMap->selectedLevel = 0;
-	worldMap->testSelector->UpdateAllInfo();
+	//worldMap->testSelector->UpdateAllInfo();
 
 	menuMode = MainMenu::Mode::INTROMOVIE;
 	introMovie->Play();
