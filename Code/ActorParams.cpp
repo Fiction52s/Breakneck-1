@@ -888,7 +888,8 @@ void PoiParams::Draw( sf::RenderTarget *target )
 	ActorParams::Draw( target );
 
 	nameText.setString( name );
-	nameText.setOrigin( nameText.getLocalBounds().width / 2, nameText.getLocalBounds().height / 2 );
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2, 
+		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2 );
 	nameText.setPosition( position.x, position.y - 40 );
 
 	target->draw( nameText );

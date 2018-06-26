@@ -59,7 +59,7 @@ struct MapSector
 	
 	sf::Text sectorNameText;
 	int frame;
-
+	//int *bossNumbers;
 	int nodeSize;
 	int pathLen;
 	sf::Vector2f left;
@@ -69,7 +69,7 @@ struct MapSector
 	//shard stuff
 	int numLevels;
 	void Load();
-
+	Tileset *ts_node;
 	int topUnlockedIndex;
 	int botUnlockedIndex;
 	int unlockedIndex;
@@ -175,10 +175,10 @@ struct MapSelector
 	sf::Sprite shardBG;
 	void Draw(sf::RenderTarget *target);
 	SingleAxisSelector *saSelector;
-	Tileset *ts_node;
+	Tileset *ts_node[7];
+	Tileset **ts_bossFight;
 	Tileset *ts_sectorKey;
 	Tileset **ts_sectorOpen;
-	int worldIndex;
 
 	int frame;
 	//boost::thread *loadThread;
@@ -214,7 +214,9 @@ struct WorldMap
 	int Tex( int index, int level, TreeNode *entry );
 	State state;
 	int frame;
+	void SetDefaultSelections();
 	sf::Sprite extraPassSpr;
+	sf::Sprite selectorExtraPass;
 	float currScale;
 	sf::Vector2f currCenter;
 	float oldZoomCurvePos;

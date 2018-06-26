@@ -144,7 +144,8 @@ struct OptionsMenuScreen : UIEventHandlerBase
 	void Center( sf::Vector2f & windowSize);
 	UIHorizSelector<sf::Vector2i> *horizResolution;
 	UIHorizSelector<int> *horizWindowModes;
-	UIHorizSelector<int> *volume;
+	UIHorizSelector<int> *musicVolume;
+	UIHorizSelector<int> *soundVolume;
 	UIButton *defaultButton;
 	UIButton *applyButton;
 };
@@ -163,7 +164,7 @@ struct MapHeader
 		envType(0), envLevel(0), leftBounds(0),
 		topBounds(0), boundsWidth(0), boundsHeight(0),
 		numVertices(-1), songLevelsModified(false), numShards( 0 ),
-		drainSeconds( 60 )
+		drainSeconds( 60 ), bossFightType( 0 )
 	{
 
 	}
@@ -184,6 +185,7 @@ struct MapHeader
 	int boundsHeight;
 	int numVertices;
 	int numShards;
+	int bossFightType;
 	std::list<std::string> shardNameList;
 
 	std::map < std::string,int > songLevels;

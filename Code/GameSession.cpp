@@ -4842,7 +4842,7 @@ bool GameSession::Load()
 	absorbShardParticles = new AbsorbParticles(this, AbsorbParticles::SHARD);
 
 	soundNodeList = new SoundNodeList(10);
-	soundNodeList->SetGlobalVolume(mainMenu->config->GetData().volume);
+	soundNodeList->SetGlobalVolume(mainMenu->config->GetData().soundVolume);
 	scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
 
 	lifeBarTex.loadFromFile("lifebar_768x768.png");
@@ -5762,7 +5762,7 @@ int GameSession::Run()
 	else if( levelMusic != NULL )
 	{
 		levelMusic->Load();
-		levelMusic->music->setVolume(mainMenu->config->GetData().volume);
+		levelMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
 		levelMusic->music->setLoop(true);
 		levelMusic->music->play();
 	}

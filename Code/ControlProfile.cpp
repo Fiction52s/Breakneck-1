@@ -54,8 +54,8 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 	
 	selectedProfileText.setString(currProfile->name);
 
-	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 
-		selectedProfileText.getLocalBounds().height / 2);
+	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
+		selectedProfileText.getLocalBounds().top + selectedProfileText.getLocalBounds().height / 2);
 	selectedProfileText.setPosition(p_topMid.x, p_topMid.y + 90);
 
 	SetupBoxes();
@@ -287,8 +287,8 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 					selectedProfileText.getLocalBounds().width / 2 
 					- selectedProfileText.getLocalBounds().left, 
 					selectedProfileText.getLocalBounds().height );*/
-				selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2,
-					selectedProfileText.getLocalBounds().height / 2);
+				selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
+					selectedProfileText.getLocalBounds().top + selectedProfileText.getLocalBounds().height / 2);
 				//selectedProfileText.setPosition(selectedProfileText.getPosition());
 				break;
 			}
@@ -985,7 +985,7 @@ ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,
 
 	selectedProfileText.setString(currProfile->name);
 
-	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2,
+	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
 		0 );
 	selectedProfileText.setPosition(topMid.x, topMid.y);
 
@@ -1148,7 +1148,7 @@ void ProfileSelector::Update(ControllerState &currInput,
 			}
 
 			selectedProfileText.setString(currProfile->name);
-			selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2,
+			selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().left + selectedProfileText.getLocalBounds().width / 2,
 				0 );
 			break;
 		}

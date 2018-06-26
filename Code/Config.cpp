@@ -28,7 +28,8 @@ void ConfigData::SetToDefault()
 	resolutionX = 1920;
 	resolutionY = 1080;
 	windowStyle = sf::Style::Fullscreen;
-	volume = 100;
+	musicVolume = 100;
+	soundVolume = 100;
 	defaultProfileName = "";
 }
 
@@ -112,11 +113,17 @@ void Config::Load()
 					data.windowStyle = sf::Style::None;
 				}
 			}
-			else if( settingName == "volume" )
+			else if( settingName == "soundvolume" )
 			{
 				int vol;
 				is >> vol;
-				data.volume = vol;
+				data.soundVolume = vol;
+			}
+			else if (settingName == "musicvolume")
+			{
+				int vol;
+				is >> vol;
+				data.musicVolume = vol;
 			}
 			else if (settingName == "defaultprofile")
 			{
@@ -163,7 +170,8 @@ void Config::Save()
 		of << "ResolutionX " << data.resolutionX << "\n";
 		of << "ResolutionY " << data.resolutionY << "\n";
 		of << "WindowMode " << data.GetWindowModeString() << "\n";
-		of << "Volume " << data.volume << "\n";
+		of << "MusicVolume " << data.musicVolume << "\n";
+		of << "SoundVolume " << data.soundVolume << "\n";
 		of << "DefaultProfile" << data.defaultProfileName;// << "\n";
 		of.close();
 	}

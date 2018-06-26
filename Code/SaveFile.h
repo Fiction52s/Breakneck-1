@@ -72,6 +72,7 @@ struct Level
 	BitField optionField;
 	std::string name;
 	bool justBeaten;
+	int bossFightType;
 	void SetComplete(bool comp);
 	//void SetJustUnlocked(bool unlocked);
 	//void SetJustUnlockedTop(bool unlocked);
@@ -80,7 +81,7 @@ struct Level
 	//bool GetJustUnlocked();
 	//bool GetJustUnlockedTop();
 	//bool GetJustUnlockedBottom();
-	void UpdateShardNameList();
+	void UpdateFromMapHeader();
 	float GetCapturedShardsPortion();
 	std::list<std::string> shardNameList;
 	bool shardsLoaded;

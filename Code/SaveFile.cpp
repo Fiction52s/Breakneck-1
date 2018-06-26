@@ -569,13 +569,14 @@ void Sector::Save(std::ofstream &of)
 Level::Level( )
 	:optionField(32)
 {
+	bossFightType = 0;
 	SetComplete(false);
 	optionField.Reset();
 	shardsLoaded = false;
 	justBeaten = false;
 }
 
-void Level::UpdateShardNameList()
+void Level::UpdateFromMapHeader()
 {
 	if (shardsLoaded) return;
 
@@ -595,6 +596,10 @@ void Level::UpdateShardNameList()
 		{
 			shardNameList.push_back((*it));
 		}
+
+		bossFightType = mh->bossFightType;
+
+		delete mh;
 	}
 	else
 	{
@@ -697,7 +702,7 @@ bool Level::Load(std::ifstream &is)
 	is >> name;
 	optionField.Load(is);
 
-	UpdateShardNameList();
+	UpdateFromMapHeader();
 
 	return true;
 }

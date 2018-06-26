@@ -428,6 +428,11 @@ void WorldMap::UpdateMapList()
 	Tex( 0, 0, entries );
 }
 
+void WorldMap::SetDefaultSelections()
+{
+	mainMenu->worldMap->selectedColony = 0;
+}
+
 void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 {
 	int trans = 20;
@@ -460,6 +465,15 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			state = PlANET_TO_COLONY;
 			frame = 0;
+
+			testSelector->UpdateAllInfo();
+
+			testSelector->saSelector->currIndex = 0;
+
+			for (int i = 0; i < testSelector->numSectors; ++i)
+			{
+				testSelector->sectors[i]->saSelector->currIndex = 0;
+			}
 			break;
 		}
 		else if (currInput.B && !prevInput.B)
@@ -541,10 +555,10 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				zoomShader.setUniform("sampleStrength", 0.f);
 
 
-			Vector2f colMiddle = Vector2f(colonySpr[0].getGlobalBounds().width / 2,
-				colonySpr[0].getGlobalBounds().height / 2);
-			Vector2f endPos = colonySpr[0].getPosition() + colMiddle;
-			float endScale = colonySpr[0].getScale().x;//.2f;
+			Vector2f colMiddle = Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
+				colonySpr[selectedColony].getGlobalBounds().height / 2);
+			Vector2f endPos = colonySpr[selectedColony].getPosition() + colMiddle;
+			float endScale = colonySpr[selectedColony].getScale().x;//.2f;
 
 			Vector2f startPos(960, 540);
 			float startScale = 1.f;
@@ -577,12 +591,12 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	case COLONY:
 	{
-		Vector2f colMiddle = Vector2f(colonySpr[0].getGlobalBounds().width / 2,
-			colonySpr[0].getGlobalBounds().height / 2);
+		Vector2f colMiddle = Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
+			colonySpr[selectedColony].getGlobalBounds().height / 2);
 		Vector2f endPos = colonySpr[selectedColony].getPosition() + colMiddle;
 
 		zoomView.setCenter(endPos);
-		zoomView.setSize(Vector2f(1920, 1080) * colonySpr[0].getScale().x);
+		zoomView.setSize(Vector2f(1920, 1080) * colonySpr[selectedColony].getScale().x);
 		break;
 	}
 		
@@ -633,10 +647,10 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				zoomShader.setUniform("sampleStrength", 0.f);
 
 
-			Vector2f colMiddle = Vector2f(colonySpr[0].getGlobalBounds().width / 2,
-				colonySpr[0].getGlobalBounds().height / 2);
-			Vector2f startPos = colonySpr[0].getPosition() + colMiddle;
-			float startScale = colonySpr[0].getScale().x;//.2f;
+			Vector2f colMiddle = Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
+				colonySpr[selectedColony].getGlobalBounds().height / 2);
+			Vector2f startPos = colonySpr[selectedColony].getPosition() + colMiddle;
+			float startScale = colonySpr[selectedColony].getScale().x;//.2f;
 
 			Vector2f endPos(960, 540);
 			float endScale = 1.f;
@@ -938,9 +952,26 @@ void WorldMap::Draw( RenderTarget *target )
 		target->draw(extraPassSpr);
 	}
 
-	if (state == COLONY)
+	if (state == COLONY )
 	{
-		testSelector->Draw(target);
+		rt->clear(Color::Transparent);
+		rt->setView(uiView);
+		testSelector->Draw(rt);
+		rt->display();
+		const sf::Texture &ttex = rt->getTexture();
+		selectorExtraPass.setTexture(ttex);
+
+		float dur = 30;
+		if (frame <= dur)
+		{
+			selectorExtraPass.setColor(Color(255, 255, 255, 255.f * (frame / dur)));
+		}
+		else
+		{
+			//selectorExtraPass.setColor(Color(255, 255, 255, 40));
+			selectorExtraPass.setColor(Color::White);
+		}
+		target->draw(selectorExtraPass);
 	}
 }
 
@@ -948,12 +979,20 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	:centerPos( pos )
 {
 	state = S_IDLE;
-	worldIndex = 0;
 	mainMenu = mm;
 	//numNodeColumns = 10;
 	//nodeSelectorWidth = 400;
-	ts_node = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
+	ts_node[0] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
+	ts_node[1] = mm->tilesetManager.GetTileset("Worldmap/node_w2_128x128.png", 128, 128);
+	ts_node[2] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
+	ts_node[3] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
+	ts_node[4] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
+	ts_node[5] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
+	ts_node[6] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	//Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
+
+	ts_bossFight = new Tileset*[1];
+	ts_bossFight[0] = mm->tilesetManager.GetTileset("Worldmap/boss_w1_128x128.png", 128, 128);
 
 	ts_sectorLevelBG = mm->tilesetManager.GetTileset("Worldmap/sector_levelbg_1200x400.png", 1200, 400);
 	ts_levelStatsBG = mm->tilesetManager.GetTileset("Worldmap/level_stats_512x256.png", 512, 256);
@@ -1052,12 +1091,12 @@ void MapSelector::Update(ControllerState &curr,
 
 		int changed = saSelector->UpdateIndex(curr.leftShoulder, curr.rightShoulder);
 
-		if (changed > 0)
+		if (changed > 0 && saSelector->totalItems > 1 )
 		{
 			state = S_SLIDINGRIGHT;
 			frame = 0;
 		}
-		else if (changed < 0)
+		else if (changed < 0 && saSelector->totalItems > 1 )
 		{
 			state = S_SLIDINGLEFT;
 			frame = 0;
@@ -1113,7 +1152,7 @@ void MapSelector::Update(ControllerState &curr,
 void MapSelector::UpdateAllInfo()
 {
 	SaveFile *sf = mainMenu->GetCurrentProgress();
-	World & w = sf->worlds[worldIndex];
+	World & w = sf->worlds[mainMenu->worldMap->selectedColony];
 
 	MapSector *mSector;
 	//Vector2f bottomCenter = bottomBG.getPosition() + Vector2f(bottomBG.getLocalBounds().width / 2, bottomBG.getLocalBounds().height / 2);
@@ -1173,6 +1212,8 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	:numLevels(-1), ms(p_ms), sectorIndex( index )
 {
 
+	
+
 	ts_scrollingEnergy = ms->mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
 	//ts_scrollingEnergy->texture->setRepeated(true);
 	SetRectSubRect(frontScrollEnergy, ts_scrollingEnergy->GetSubRect(0));
@@ -1186,19 +1227,8 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	nodes = NULL;
 	saSelector = NULL;
 	unlockCondText = NULL;
-	stringstream ss;
-	ss.str("");
-	ss << "WorldMap/Thumbnails/mapthumb_w" << ms->worldIndex + 1 << "_" << sectorIndex + 1 << "_256x256.png";
-	ts_thumb = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 256, 256);
-	assert(ts_thumb != NULL);
 
-	ss.str("");
-	ss << "Menu/shards_w" << (ms->worldIndex +1) << "_48x48.png";
-
-	ts_shards = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
-
-	thumbnail.setTexture(*ts_thumb->texture);
-	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().height / 2);
+	
 	
 
 	//SetRectColor(levelBG, Color(100, 100, 100, 100));
@@ -1217,7 +1247,7 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(0));
 	nodeExplodeSpr.setOrigin(nodeExplodeSpr.getLocalBounds().width / 2, nodeExplodeSpr.getLocalBounds().height / 2);
 	//SetRectCenter( shoulderIcons, 
-	nodeHighlight.setTexture(*ms->ts_node->texture);
+	
 
 	endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
 	endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(0));
@@ -1446,7 +1476,7 @@ void MapSector::UpdateLevelStats()
 	for (auto it = snList.begin(); it != snList.end(); ++it)
 	{
 		ShardType sType = Shard::GetShardType((*it));
-		int subRectIndex = sType - ms->worldIndex * 22;
+		int subRectIndex = sType % 22;
 		if (sec->world->sf->ShardIsCaptured(sType))
 		{
 			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(subRectIndex));
@@ -1749,7 +1779,19 @@ void MapSector::UpdateHighlight()
 	int n = GetNodeSubIndex(saSelector->currIndex);
 
 
-
+	int bossFightT = sec->levels[saSelector->currIndex].bossFightType;
+	
+	switch (bossFightT)
+	{
+	case 0:
+		nodeHighlight.setTexture(*ts_node->texture);
+		nodeHighlight.setTextureRect(ts_node->GetSubRect(9 + (n % 3)));
+		break;
+	case 1:
+		nodeHighlight.setTexture(*ms->ts_bossFight[0]->texture);
+		nodeHighlight.setTextureRect(ms->ts_bossFight[0]->GetSubRect(6));
+		break;
+	}
 	
 	/*if (n % 3 == 0)
 	{
@@ -1763,7 +1805,7 @@ void MapSector::UpdateHighlight()
 	{
 		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(11));
 	}*/
-	nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(9 + (n % 3)));
+	
 	nodeHighlight.setOrigin(nodeHighlight.getLocalBounds().width / 2, nodeHighlight.getLocalBounds().height / 2);
 }
 
@@ -1787,7 +1829,7 @@ void MapSector::UpdateNodes()
 		{
 			//SetRectSubRect(nTop, ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
 			//SetRectColor(nTop, Color(Color::White));
-			topBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
+			topBonusNodes[i].setTextureRect(ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
 			topBonusNodes[i].setColor(Color::White);
 		}
 		else
@@ -1797,7 +1839,7 @@ void MapSector::UpdateNodes()
 
 		if (HasBotBonus(i) && sec->levels[i].BottomBonusUnlocked())
 		{
-			botBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(GetNodeBonusIndexBot(i)));
+			botBonusNodes[i].setTextureRect(ts_node->GetSubRect(GetNodeBonusIndexBot(i)));
 			
 			botBonusNodes[i].setColor(Color::White);
 		}
@@ -1806,7 +1848,18 @@ void MapSector::UpdateNodes()
 			botBonusNodes[i].setColor(Color::Transparent);
 		}
 
-		nodes[i].setTextureRect(ms->ts_node->GetSubRect(GetNodeSubIndex(i)));
+		Tileset *currTS = NULL;
+		int bFType = sec->levels[i].bossFightType;
+		if (bFType == 0)
+		{
+			currTS = ts_node;
+		}
+		else
+		{
+			currTS = ms->ts_bossFight[bFType - 1];
+		}
+
+		nodes[i].setTextureRect(currTS->GetSubRect(GetNodeSubIndex(i)));
 		//SetRectSubRect(n, ms->ts_node->GetSubRect(GetNodeSubIndex(i)));
 	}
 }
@@ -1819,58 +1872,99 @@ void MapSector::Load()
 
 int MapSector::GetNodeSubIndex(int node)
 {
+	int bType = sec->levels[node].bossFightType;
 	int res;
-	if (!sec->IsLevelUnlocked( node ) )
+	if (bType == 0)
 	{
-		res = 0;
-	}
-	else
-	{
-		if (selectedYIndex == 1 && saSelector->currIndex == node)
+		if (!sec->IsLevelUnlocked(node))
 		{
-			if (sec->levels[node].IsOneHundredPercent())
-			{
-				res = 8;
-			}
-			else if (sec->levels[node].GetComplete())
-			{
-				res = 7;
-			}
-			else
-			{
-				res = 6;
-			}
-
-			if (state == LEVELCOMPLETEDWAIT || ( state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7 ) )
-			{
-				--res;
-			}
+			res = 0;
 		}
 		else
 		{
-			if (sec->levels[node].IsOneHundredPercent())
+			if (selectedYIndex == 1 && saSelector->currIndex == node)
 			{
-				res = 5;
-			}
-			else if (sec->levels[node].GetComplete())
-			{
-				res = 4;
+				if (sec->levels[node].IsOneHundredPercent())
+				{
+					res = 8;
+				}
+				else if (sec->levels[node].GetComplete())
+				{
+					res = 7;
+				}
+				else
+				{
+					res = 6;
+				}
+
+				if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
+				{
+					--res;
+				}
 			}
 			else
 			{
-				res = 3;
+				if (sec->levels[node].IsOneHundredPercent())
+				{
+					res = 5;
+				}
+				else if (sec->levels[node].GetComplete())
+				{
+					res = 4;
+				}
+				else
+				{
+					res = 3;
+				}
+			}
+		}
+	}
+	else
+	{
+		if (!sec->IsLevelUnlocked(node))
+		{
+			res = 0;
+		}
+		else
+		{
+			if (selectedYIndex == 1 && saSelector->currIndex == node)
+			{
+				if (sec->levels[node].IsOneHundredPercent())
+				{
+					res = 2;
+				}
+				else if (sec->levels[node].GetComplete())
+				{
+					res = 2;
+				}
+				else
+				{
+					res = 5;
+				}
+
+				if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
+				{
+					--res;
+				}
+			}
+			else
+			{
+				if (sec->levels[node].IsOneHundredPercent())
+				{
+					res = 1;
+				}
+				else if (sec->levels[node].GetComplete())
+				{
+					res = 1;
+				}
+				else
+				{
+					res = 4;
+				}
 			}
 		}
 	}
 	return res;
-	/*if (sec->levels[node].completed)
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}*/
 }
 
 void MapSector::UpdateUnlockConditions()
@@ -1925,7 +2019,24 @@ void MapSector::Init(Sector *m_sec)
 	sec = m_sec;
 	numLevels = sec->numLevels;
 
+	ts_node = ms->ts_node[sec->world->index];
+
 	stringstream ss;
+	ss.str("");
+	ss << "WorldMap/Thumbnails/mapthumb_w" << sec->world->index + 1 << "_" << sectorIndex + 1 << "_256x256.png";
+	ts_thumb = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 256, 256);
+	assert(ts_thumb != NULL);
+
+	ss.str("");
+	ss << "Menu/shards_w" << (sec->world->index + 1) << "_48x48.png";
+
+	ts_shards = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
+
+	thumbnail.setTexture(*ts_thumb->texture);
+	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().height / 2);
+
+	ss.clear();
+	ss.str("");
 	ss << "Sector " << sec->index+1;
 
 	sectorNameText.setString(ss.str());
@@ -1974,14 +2085,28 @@ void MapSector::Init(Sector *m_sec)
 
 		for (int i = 0; i < numLevels; ++i)
 		{
-			nodes[i].setTexture(*ms->ts_node->texture);
-			nodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
+			Tileset *currTS = NULL;
+			int bFType = sec->levels[i].bossFightType;
+			if (bFType == 0)
+			{
+				currTS = ts_node;
+			}
+			else
+			{
+				currTS = ms->ts_bossFight[bFType -1];
+			}
+
+			assert(currTS != NULL);
+			nodes[i].setTexture(*currTS->texture);
+
+			nodes[i].setTextureRect(currTS->GetSubRect(0));
 			nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
-			topBonusNodes[i].setTexture(*ms->ts_node->texture);
-			topBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
+
+			topBonusNodes[i].setTexture(*ts_node->texture);
+			topBonusNodes[i].setTextureRect(ts_node->GetSubRect(0));
 			topBonusNodes[i].setOrigin(topBonusNodes[i].getLocalBounds().width / 2, topBonusNodes[i].getLocalBounds().height / 2);
-			botBonusNodes[i].setTexture(*ms->ts_node->texture);
-			botBonusNodes[i].setTextureRect(ms->ts_node->GetSubRect(0));
+			botBonusNodes[i].setTexture(*ts_node->texture);
+			botBonusNodes[i].setTextureRect(ts_node->GetSubRect(0));
 			botBonusNodes[i].setOrigin(botBonusNodes[i].getLocalBounds().width / 2, botBonusNodes[i].getLocalBounds().height / 2);
 		}
 
@@ -2031,7 +2156,7 @@ void MapSector::Init(Sector *m_sec)
 		sectorNameText.setFillColor(Color::White);
 		sectorNameText.setCharacterSize(40);
 		sectorNameText.setFont(ms->mainMenu->arial);
-		sectorNameText.setOrigin(sectorNameText.getLocalBounds().width / 2, 0);
+		sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
 	}
 
 	if (sec->IsComplete())

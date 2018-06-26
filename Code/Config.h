@@ -13,7 +13,8 @@ struct ConfigData
 	int resolutionX;
 	int resolutionY;
 	int windowStyle;
-	int volume;
+	int musicVolume;
+	int soundVolume;
 	std::string defaultProfileName;
 };
 

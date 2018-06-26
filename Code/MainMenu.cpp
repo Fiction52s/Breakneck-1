@@ -662,7 +662,7 @@ MainMenu::MainMenu()
 	menuOptionsBG.setSize(Vector2f(560, (64 + textOptionSpacing) * 7));
 
 	soundNodeList = new SoundNodeList( 10 );
-	soundNodeList->SetGlobalVolume( config->GetData().volume );
+	soundNodeList->SetGlobalVolume( config->GetData().soundVolume );
 
 	//menuMode = SPLASH;
 	//menuMode = MAPSELECT;
@@ -845,7 +845,7 @@ MainMenu::MainMenu()
 
 	saveMenu = new SaveMenuScreen(this);
 
-	worldMap->testSelector->UpdateAllInfo();
+	//worldMap->testSelector->UpdateAllInfo();
 
 	worldMap->Draw(preScreenTexture);
 	saveMenu->Draw(preScreenTexture);
@@ -1864,7 +1864,7 @@ void MainMenu::Run()
 				case GameSession::GR_WIN:
 				{
 					
-					World & world = currFile->worlds[currLevel->mh->envType];
+					World & world = currFile->worlds[worldMap->selectedColony];//currLevel->mh->envType];
 					bool doneCheck = false;
 					//for (int i = 0; i < world.numSectors && !doneCheck; ++i)
 					{
@@ -2032,7 +2032,7 @@ void MainMenu::Run()
 					//menuMode = INTROMOVIE;
 					//introMovie->Play();
 					menuMode = WORLDMAP;
-					worldMap->testSelector->UpdateAllInfo();
+					//worldMap->testSelector->UpdateAllInfo();
 					break;
 					//saveTexture->clear();
 					//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
@@ -2886,9 +2886,10 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 
 	int oftenLevel;
 	string tempSongStr;
+	is.get();
 	for (int i = 0; i < numSongValues; ++i)
 	{
-		is >> tempSongStr;	
+		getline(is, tempSongStr); //this allows spaces in names
 		is >> oftenLevel;
 
 		mh->songLevels[tempSongStr] = oftenLevel;
@@ -2910,8 +2911,10 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	is >> mh->boundsWidth;
 	is >> mh->boundsHeight;
 
-	int dSecs;
+	int dSecs; //drain time in seconds
 	is >> dSecs;
+
+	is >> mh->bossFightType;
 
 	is >> mh->numVertices;
 
@@ -3078,7 +3081,8 @@ bool MapSelectionMenu::WriteMapHeader(std::ofstream &of, MapHeader *mh)
 	of << mh->songLevels.size() << "\n";
 	for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
 	{
-		of << (*it).first << " " << (*it).second << "\n";
+		of << (*it).first << "\n";
+		of << (*it).second << "\n";
 	}
 
 	of << mh->collectionName << "\n";
@@ -3088,9 +3092,12 @@ bool MapSelectionMenu::WriteMapHeader(std::ofstream &of, MapHeader *mh)
 
 	of << mh->leftBounds << " " << mh->topBounds << " " << mh->boundsWidth << " " << mh->boundsHeight << endl;
 
-	of << mh->numVertices << endl;
 
 	of << mh->drainSeconds << endl;
+
+	of << mh->bossFightType << endl;
+
+	of << mh->numVertices << endl;
 
 	return true;
 }
@@ -4099,8 +4106,10 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	for (int i = 0; i < 101; ++i)
 		volStrings[i] = to_string(i);
 
-	volume = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 101,
-		volStrings, "Volume", 200, vol, true, 0, 200);
+	musicVolume = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 101,
+		volStrings, "Music Volume", 400, vol, true, 0, 200);
+	soundVolume = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 101,
+		volStrings, "Sound Volume", 400, vol, true, 0, 200);
 
 	defaultButton = new UIButton(NULL, this, &mainMenu->tilesetManager, &mainMenu->arial, "set to defaults", 300);
 	applyButton = new UIButton(NULL, this, &mainMenu->tilesetManager, &mainMenu->arial, "apply settings", 300);
@@ -4108,9 +4117,8 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	//UICheckbox *check = new UICheckbox(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "testcheckbox", 300);
 	//test->SetTopLeft( Vector2f( 50, 0 ) );
 
-	
-
-	UIControl *testBlah[] = { horizResolution, horizWindowModes, volume, defaultButton, applyButton };
+	UIControl *testBlah[] = { horizResolution, horizWindowModes,
+		musicVolume, soundVolume, defaultButton, applyButton };
 
 	//check->SetTopLeft(100, 50);
 	UIVerticalControlList *cList = new UIVerticalControlList(optionsWindow, sizeof( testBlah ) / sizeof( UIControl* ), testBlah, 20);
@@ -4134,12 +4142,14 @@ bool OptionsMenuScreen::ButtonEvent(UIEvent eType,
 		{
 			Vector2i res = horizResolution->GetResult(horizResolution->currIndex);
 			int winMode = horizWindowModes->GetResult(horizWindowModes->currIndex);
-			int vol = volume->GetResult(volume->currIndex);
+			int mVol = musicVolume->GetResult(musicVolume->currIndex);
+			int sVol = soundVolume->GetResult(soundVolume->currIndex);
 			ConfigData d;
 			d.resolutionX = res.x;
 			d.resolutionY = res.y;
 			d.windowStyle = winMode;
-			d.volume = vol;
+			d.musicVolume = mVol;
+			d.soundVolume = sVol;
 
 			mainMenu->config->SetData(d);
 			Config::CreateSaveThread(mainMenu->config);
@@ -4172,10 +4182,12 @@ void OptionsMenuScreen::Load()
 
 	bool hRes = horizResolution->SetCurrAsResult(Vector2i(cd.resolutionX, cd.resolutionY));
 	bool hWinMode = horizWindowModes->SetCurrAsResult(cd.windowStyle);
-	bool vRes = volume->SetCurrAsResult(cd.volume);
+	bool mvRes = musicVolume->SetCurrAsResult(cd.musicVolume);
+	bool svRes = soundVolume->SetCurrAsResult(cd.soundVolume);
 	assert(hRes);
 	assert(hWinMode);
-	assert(vRes);
+	assert(mvRes);
+	assert(svRes);
 }
 
 void OptionsMenuScreen::Update( ControllerState &currInput, ControllerState &prevInput )
@@ -4312,5 +4324,7 @@ void MapHeader::Save(std::ofstream &of)
 	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;
 
 	of << drainSeconds << endl;
+
+	of << bossFightType << endl;
 	//of << numVertices << endl;
 }

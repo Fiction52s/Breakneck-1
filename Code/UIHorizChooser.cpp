@@ -7,7 +7,7 @@ using namespace sf;
 using namespace std;
 
 UIBar::UIBar( UIControl *p_parent, TilesetManager *tsMan, sf::Font *f, int p_width, int p_height, int p_textHeight )
-	:UIControl( p_parent, NULL, UI_BAR ), width( p_width ), textOffset( 10, 10 ), alignment( LEFT )
+	:UIControl( p_parent, NULL, UI_BAR ), width( p_width ), textOffset( 10, 30 ), alignment( LEFT )
 {
 	sideWidth = 20;
 	ts_bar = tsMan->GetTileset( "Menu/ui_bar_32x80.png", 32, 80 );
@@ -186,21 +186,21 @@ void UIBar::SetTextAlignment( Alignment align, sf::Vector2i &offset )
 	case LEFT:
 		{
 			Vector2f topLeft = GetTopLeftGlobal() + off;
-			currText.setOrigin( 0, 0 ); 
+			currText.setOrigin(currText.getLocalBounds().left, currText.getLocalBounds().top);
 			currText.setPosition( topLeft );
 			break;
 		}
 	case MIDDLE:
 		{
 			Vector2f topMiddle = GetTopLeftGlobal() + Vector2f( width / 2, 0 ) + off;
-			currText.setOrigin( currText.getLocalBounds().width / 2, 0 );
+			currText.setOrigin(currText.getLocalBounds().left + currText.getLocalBounds().width / 2, 0 );
 			currText.setPosition( topMiddle );
 			break;
 		}
 	case RIGHT:
 		{
 			Vector2f topRight = GetTopLeftGlobal() + Vector2f( width, 0 ) + off;
-			currText.setOrigin( currText.getLocalBounds().width, 0 );
+			currText.setOrigin(currText.getLocalBounds().left + currText.getLocalBounds().width, 0 );
 			currText.setPosition( topRight);
 			break;
 		}
