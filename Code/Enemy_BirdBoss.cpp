@@ -9,7 +9,7 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 {
 	position = V2d(pos);
 	origPos = position;
-	numChoices = 3;
+	numChoices = 4;//hold the next choice to be slid in
 	choices = new ChoiceParams[numChoices];
 	tilesets[MOVE] = owner->GetTileset("Bosses/Bird/glide_256x256.png", 256, 256);
 	
@@ -22,9 +22,9 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	actionLength[FOCUSLOOP] = 0;
 	actionLength[ENDFOCUS] = 0;
 	actionLength[FOCUSATTACK] = 0;
-	actionLength[STARTPUNCH] = 0;
-	actionLength[HOLDPUNCH] = 0;
-	actionLength[PUNCH] = 0;
+	actionLength[STARTPUNCH] = 20;
+	actionLength[HOLDPUNCH] = 1;
+	actionLength[PUNCH] = 30;
 	actionLength[RINGTHROW] = 0;
 	actionLength[GRAVITYCHOOSE] = 0;
 	actionLength[AIMSUPERKICK] = 0;
@@ -44,7 +44,7 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	animFactor[PUNCH] = 1;
 	animFactor[RINGTHROW] = 1;
 	animFactor[GRAVITYCHOOSE] = 1;
-	animFactor[AIMSUPERKICK] = 1;
+	animFactor[AIMSUPERKICK] = 30;
 	animFactor[SUPERKICK] = 1;
 
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
@@ -55,8 +55,10 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 
 void BirdBoss::ResetEnemy()
 {
-	PlanChoices();
-	choiceIndex = 0;
+	for (int i = 0; i < numChoices; ++i)
+	{
+		PlanChoice(i);
+	}
 	position = origPos;
 	//BeginChoice();
 	
@@ -74,7 +76,7 @@ BirdBoss::~BirdBoss()
 
 void BirdBoss::BeginChoice()
 {
-	switch (choices[choiceIndex].cType)
+	switch (choices[0].cType)
 	{
 	case C_FLYTOWARDS:
 		BeginMove();
@@ -99,17 +101,13 @@ void BirdBoss::BeginChoice()
 
 void BirdBoss::NextChoice()
 {
-	if (choiceIndex == numChoices - 1)
+	for (int i = 0; i < numChoices - 1; ++i)
 	{
-		PlanChoices();
-		choiceIndex = 0;
-		BeginChoice();
+		choices[i] = choices[i + 1];
 	}
-	else
-	{
-		choiceIndex++;
-		BeginChoice();
-	}
+	PlanChoice(numChoices - 1);
+
+	BeginChoice();
 }
 
 void BirdBoss::ActionEnded()
@@ -125,32 +123,46 @@ void BirdBoss::ActionEnded()
 			frame = 0;
 			break;
 		case STARTGLIDE:
+			action = GLIDE;
+			frame = 0;
 			break;
 		case GLIDE:
 			break;
 		case ENDGLIDE:
 			break;
 		case STARTFOCUS:
+			action = FOCUSLOOP;
+			frame = 0;
 			break;
 		case FOCUSLOOP:
 			break;
 		case ENDFOCUS:
+			NextChoice();
 			break;
 		case FOCUSATTACK:
+			NextChoice();
 			break;
 		case STARTPUNCH:
+			action = HOLDPUNCH;
+			frame = 0;
 			break;
 		case HOLDPUNCH:
+			//keep going
 			break;
 		case PUNCH:
-break;
+			NextChoice();
+			break;
 		case RINGTHROW:
+			NextChoice();
 			break;
 		case GRAVITYCHOOSE:
+			NextChoice();
 			break;
 		case AIMSUPERKICK:
+			NextChoice();
 			break;
 		case SUPERKICK:
+			//BeginChoice();
 			break;
 		}
 	}
@@ -160,8 +172,8 @@ void BirdBoss::BeginMove()
 {
 	startMovePos = position;
 	endMovePos = owner->GetPlayer(0)->position;
-	speed = 0;
-	accel = .1;
+	moveSpeed = 0;
+	moveAccel = .1;
 	action = MOVE; //startglide conditionally here too
 	frame = 0;
 	sprite.setTexture(*tilesets[MOVE]->texture);
@@ -172,6 +184,7 @@ void BirdBoss::BeginFocus()
 {
 	action = STARTFOCUS;
 	frame = 0;
+	focusRadius = 0;
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(0));
 }
@@ -196,6 +209,9 @@ void BirdBoss::BeginSuperKick()
 {
 	action = AIMSUPERKICK;
 	frame = 0;
+	superKickWaitChoices = 2;
+	currTrackingFrame = 0;
+	maxTrackingFrames = 60;
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(2));
 }
@@ -208,57 +224,57 @@ void BirdBoss::BeginGravityChoose()
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(3));
 }
 
-void BirdBoss::PlanChoices()
+void BirdBoss::PlanChoice( int ind )
 {
-	for (int i = 0; i < numChoices; ++i)
+	int r = rand() % C_Count;
+	ChoiceParams &cp = choices[ind];
+	cp.cType = (ChoiceType)r;
+	cp.cType = C_PUNCH; //for testing this one thing
+	switch (cp.cType)
 	{
-		int r = rand() % C_Count;
-		ChoiceParams &cp = choices[i];
-		cp.cType = (ChoiceType)r;
-		cp.cType = C_FLYTOWARDS; //for testing this one thing
-		switch (cp.cType)
-		{
-		case C_FLYTOWARDS:
-			cp.moveSpeed = 10.f;
-			break;
-		case C_FOCUS:
-			cp.focusRadius = 100.f;
-			break;
-		case C_PUNCH:
-			break;
-		case C_RINGTHROW:
-			cp.rType = NORMAL_LARGE;
-			break;
-		case C_GRAVITYCHOOSE:
-			break;
-		case C_SUPERKICK:
-			break;
-		}
+	case C_FLYTOWARDS:
+		cp.moveSpeed = 10.f;
+		break;
+	case C_FOCUS:
+		cp.focusRadius = 100.f;
+		break;
+	case C_PUNCH:
+		break;
+	case C_RINGTHROW:
+		cp.rType = NORMAL_LARGE;
+		break;
+	case C_GRAVITYCHOOSE:
+		break;
+	case C_SUPERKICK:
+		break;
 	}
 }
 
 void BirdBoss::ProcessState()
 {
+	ActionEnded();
+	V2d playerPos = owner->GetPlayer(0)->position;
+
 	switch (action)
 	{
 	case WAIT:
-		if (length(position - owner->GetPlayer(0)->position) < 1000.0)
+		if (length(position - playerPos) < 1000.0)
 		{
 			BeginChoice();
 		}
 		break;
 	case MOVE:
 	{
-		speed = speed + accel;
+		moveSpeed = moveSpeed + moveAccel;
 		V2d along = normalize(endMovePos - startMovePos);
 		double posAlong = dot(position - startMovePos, along);
-		double test = cross(position - startMovePos, along);
+		/*double test = cross(position - startMovePos, along);
 		if (abs(test) > .001)
 		{
 			int zzzz = 5;
-		}
+		}*/
 		double len = length(endMovePos - startMovePos);
-		if (posAlong + speed > len)
+		if (posAlong + moveSpeed > len)
 		{
 			//posAlong = len;
 			position = endMovePos;
@@ -266,7 +282,7 @@ void BirdBoss::ProcessState()
 		}
 		else
 		{
-			position += speed * along;
+			position += moveSpeed * along;
 		}
 		break;
 	}
@@ -287,7 +303,45 @@ void BirdBoss::ProcessState()
 	case STARTPUNCH:
 		break;
 	case HOLDPUNCH:
+	{
+		if (length(position - playerPos) < 20 || frame > 60)
+		{
+			action = PUNCH;
+			frame = 0;
+		}
+		else
+		{
+			if (playerPos.y < position.y - 20)
+			{
+				punchVel.y = -10;
+			}
+			else if (playerPos.y > position.y + 20)
+			{
+				punchVel.y = 10;
+			}
+			else
+			{
+				punchVel.y = 0;
+			}
+
+			if (playerPos.x > position.x + 20)
+			{
+				punchVel.x = 10;
+			}
+			else if (playerPos.x < position.x - 20)
+			{
+				punchVel.x = -10;
+			}
+			else
+			{
+				punchVel.x = 0;
+			}
+
+
+			position += punchVel;
+		}
 		break;
+	}
 	case PUNCH:
 		break;
 	case RINGTHROW:
@@ -295,6 +349,7 @@ void BirdBoss::ProcessState()
 	case GRAVITYCHOOSE:
 		break;
 	case AIMSUPERKICK:
+
 		break;
 	case SUPERKICK:
 		break;
@@ -349,7 +404,10 @@ void BirdBoss::UpdateEnemyPhysics()
 
 void BirdBoss::FrameIncrement()
 {
-
+	if (action == AIMSUPERKICK)
+	{
+		++currTrackingFrame;
+	}
 }
 
 void BirdBoss::EnemyDraw(sf::RenderTarget *target)

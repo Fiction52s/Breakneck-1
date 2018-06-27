@@ -73,13 +73,12 @@ struct BirdBoss : Enemy
 	void UpdateHitboxes();
 	void ResetEnemy();
 	void HandleNoHealth();
-	void PlanChoices();
+	void PlanChoice( int ind );
 	void BeginChoice();
 	void NextChoice();
 
 	ChoiceParams *choices;
 	int numChoices;
-	int choiceIndex;
 
 	int actionLength[S_Count];
 	int animFactor[S_Count];
@@ -98,11 +97,23 @@ struct BirdBoss : Enemy
 	V2d startMovePos;
 	V2d endMovePos;
 	V2d origPos;
-	double speed;
-	double accel;
+	double moveSpeed;
+	double moveAccel;
+
+	int maxTrackingFrames;
+	int currTrackingFrame;
+	V2d trackingPos;
+
+	V2d punchVel;
+	V2d maxPunchVel;
+
+
+	int superKickWaitChoices;
+
 	//HitboxInfo *punchHitboxInfo;
 	//HitboxInfo *ring0HitboxInfo;
 	//HitboxInfo *ring1HitboxInfo;
+	float focusRadius;
 
 	bool facingRight;
 };
