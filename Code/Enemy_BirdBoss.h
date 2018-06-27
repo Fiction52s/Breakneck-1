@@ -75,6 +75,7 @@ struct BirdBoss : Enemy
 	void HandleNoHealth();
 	void PlanChoices();
 	void BeginChoice();
+	void NextChoice();
 
 	ChoiceParams *choices;
 	int numChoices;
@@ -93,6 +94,12 @@ struct BirdBoss : Enemy
 	HitboxInfo *focusHitboxInfo;
 	HitboxInfo *punchHitboxInfo;
 	HitboxInfo *superkickHitboxInfo;
+
+	V2d startMovePos;
+	V2d endMovePos;
+	V2d origPos;
+	double speed;
+	double accel;
 	//HitboxInfo *punchHitboxInfo;
 	//HitboxInfo *ring0HitboxInfo;
 	//HitboxInfo *ring1HitboxInfo;

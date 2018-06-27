@@ -8,12 +8,13 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	:Enemy( owner, EnemyType::EN_BOSS_BIRD, false, 1,false )
 {
 	position = V2d(pos);
+	origPos = position;
 	numChoices = 3;
 	choices = new ChoiceParams[numChoices];
 	tilesets[MOVE] = owner->GetTileset("Bosses/Bird/glide_256x256.png", 256, 256);
-
-	actionLength[WAIT] = 0;
-	actionLength[MOVE] = 0;
+	
+	actionLength[WAIT] = 1;
+	actionLength[MOVE] = 1;
 	actionLength[STARTGLIDE] = 0;
 	actionLength[GLIDE] = 0;
 	actionLength[ENDGLIDE] = 0;
@@ -29,6 +30,23 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	actionLength[AIMSUPERKICK] = 0;
 	actionLength[SUPERKICK] = 0;
 
+	animFactor[WAIT] = 1;
+	animFactor[MOVE] = 1;
+	animFactor[STARTGLIDE] = 1;
+	animFactor[GLIDE] = 1;
+	animFactor[ENDGLIDE] = 1;
+	animFactor[STARTFOCUS] = 1;
+	animFactor[FOCUSLOOP] = 1;
+	animFactor[ENDFOCUS] = 1;
+	animFactor[FOCUSATTACK] = 1;
+	animFactor[STARTPUNCH] = 1;
+	animFactor[HOLDPUNCH] = 1;
+	animFactor[PUNCH] = 1;
+	animFactor[RINGTHROW] = 1;
+	animFactor[GRAVITYCHOOSE] = 1;
+	animFactor[AIMSUPERKICK] = 1;
+	animFactor[SUPERKICK] = 1;
+
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
 
@@ -39,7 +57,14 @@ void BirdBoss::ResetEnemy()
 {
 	PlanChoices();
 	choiceIndex = 0;
-	BeginChoice();
+	position = origPos;
+	//BeginChoice();
+	
+	action = WAIT;
+	frame = 0;
+
+	sprite.setTexture(*tilesets[MOVE]->texture);
+	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(0));
 }
 
 BirdBoss::~BirdBoss()
@@ -51,46 +76,53 @@ void BirdBoss::BeginChoice()
 {
 	switch (choices[choiceIndex].cType)
 	{
-	C_FLYTOWARDS:
+	case C_FLYTOWARDS:
 		BeginMove();
 		break;
-	C_FOCUS:
+	case C_FOCUS:
 		BeginFocus();
 		break;
-	C_PUNCH:
+	case C_PUNCH:
 		BeginPunch();
 		break;
-	C_RINGTHROW:
+	case C_RINGTHROW:
 		BeginThrow();
 		break;
-	C_GRAVITYCHOOSE:
+	case C_GRAVITYCHOOSE:
 		BeginGravityChoose();
 		break;
-	C_SUPERKICK:
+	case C_SUPERKICK:
 		BeginSuperKick();
 		break;
+	}
+}
+
+void BirdBoss::NextChoice()
+{
+	if (choiceIndex == numChoices - 1)
+	{
+		PlanChoices();
+		choiceIndex = 0;
+		BeginChoice();
+	}
+	else
+	{
+		choiceIndex++;
+		BeginChoice();
 	}
 }
 
 void BirdBoss::ActionEnded()
 {
 	if (frame == actionLength[action] * animFactor[action])
-	{
-		if (choiceIndex == numChoices - 1)
-		{
-			PlanChoices();
-			choiceIndex = 0;
-		}
-		else
-		{
-			choiceIndex++;
-			BeginChoice();
-		}
-		/*switch (action)
+	{		
+		switch (action)
 		{
 		case WAIT:
+			frame = 0;
 			break;
 		case MOVE:
+			frame = 0;
 			break;
 		case STARTGLIDE:
 			break;
@@ -111,7 +143,7 @@ void BirdBoss::ActionEnded()
 		case HOLDPUNCH:
 			break;
 		case PUNCH:
-			break;
+break;
 		case RINGTHROW:
 			break;
 		case GRAVITYCHOOSE:
@@ -120,14 +152,16 @@ void BirdBoss::ActionEnded()
 			break;
 		case SUPERKICK:
 			break;
-		}*/
+		}
 	}
-	
-	
 }
 
 void BirdBoss::BeginMove()
 {
+	startMovePos = position;
+	endMovePos = owner->GetPlayer(0)->position;
+	speed = 0;
+	accel = .1;
 	action = MOVE; //startglide conditionally here too
 	frame = 0;
 	sprite.setTexture(*tilesets[MOVE]->texture);
@@ -181,7 +215,8 @@ void BirdBoss::PlanChoices()
 		int r = rand() % C_Count;
 		ChoiceParams &cp = choices[i];
 		cp.cType = (ChoiceType)r;
-		switch (r)
+		cp.cType = C_FLYTOWARDS; //for testing this one thing
+		switch (cp.cType)
 		{
 		case C_FLYTOWARDS:
 			cp.moveSpeed = 10.f;
@@ -207,9 +242,34 @@ void BirdBoss::ProcessState()
 	switch (action)
 	{
 	case WAIT:
+		if (length(position - owner->GetPlayer(0)->position) < 1000.0)
+		{
+			BeginChoice();
+		}
 		break;
 	case MOVE:
+	{
+		speed = speed + accel;
+		V2d along = normalize(endMovePos - startMovePos);
+		double posAlong = dot(position - startMovePos, along);
+		double test = cross(position - startMovePos, along);
+		if (abs(test) > .001)
+		{
+			int zzzz = 5;
+		}
+		double len = length(endMovePos - startMovePos);
+		if (posAlong + speed > len)
+		{
+			//posAlong = len;
+			position = endMovePos;
+			NextChoice();
+		}
+		else
+		{
+			position += speed * along;
+		}
 		break;
+	}
 	case STARTGLIDE:
 		break;
 	case GLIDE:
