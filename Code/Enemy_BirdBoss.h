@@ -2,6 +2,42 @@
 #define __ENEMY_BIRDBOSS_H__
 
 #include "Enemy.h"
+#include "ObjectPool.h"
+
+struct GravRing : Enemy, SurfaceMoverHandler, PoolMember
+{
+	enum Action
+	{
+		FLOATING,
+		EXPLODING,
+		Count
+	};
+
+	Action action;
+	GravRing(GameSession *owner, ObjectPool *myPool, int index);
+	int actionLength[Count];
+	int animFactor[Count];
+	CollisionBody *hurtBody;
+	CollisionBody *hitBody;
+	SurfaceMover *mover;
+	Tileset *ts;
+	HitboxInfo *hitboxInfo;
+	sf::Sprite sprite;
+	ObjectPool *myPool;
+	void Init(V2d pos, V2d vel);
+	void ProcessState();
+	void HandleNoHealth();
+	void HitTerrainAerial(Edge *, double);
+	void FrameIncrement();
+	void EnemyDraw(sf::RenderTarget *target);
+	void IHitPlayer(int index = 0);
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	void ResetEnemy();
+	void UpdateEnemyPhysics();
+	void ProcessHit();
+};
 
 struct BirdBoss : Enemy
 {

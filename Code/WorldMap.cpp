@@ -86,6 +86,8 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	//planetTex = new Texture;
 	//planetTex->loadFromFile( "WorldMap/map_z2.png" );
 
+	worldSelector = new WorldSelector(p_mainMenu);
+
 	ts_colonySelect = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080);
 
 	ts_colonyActive[0] = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080);
@@ -231,7 +233,7 @@ void WorldMap::UpdateColonySelect()
 		colonySelectSpr.getLocalBounds().height / 2 );*/
 
 	//colonySelectSpr.setPosition(colonySpr[0].getPosition());
-
+	worldSelector->SetPosition(Vector2f(colonySpr[selectedColony].getPosition() + Vector2f(960 / 8.f, 540 / 8.f)));
 	//colonySelectSprZoomed.setTexture(*ts_colonySelectZoomed[selectedColony]->texture);
 	//colonySelectSprZoomed.setPosition(colonySpr[selectedColony].getPosition());
 }
@@ -558,11 +560,13 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			state = COLONY;
 			frame = 0;
-
+			//worldSelector->SetAlpha(1.f - a);
 		}
 		else
 		{
 			float a = frame / (float)(limit - 1);
+
+			worldSelector->SetAlpha(1.f - a * 2);
 
 			int mLimit = 50 / 2;
 			int mFrame = min(frame, mLimit);
@@ -651,11 +655,13 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			currScale = 1.f;
 			zoomView.setSize(Vector2f(1920, 1080) * currScale);
 			zoomView.setCenter(960, 540);
+			worldSelector->SetAlpha(1.f);
 		}
 		else
 		{
+			
 			float a = frame / (float)(limit - 1);
-
+			worldSelector->SetAlpha(a);
 			int mLimit = 60;//16 / 2;
 			int mFrame = min(frame, mLimit);
 
@@ -746,7 +752,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 	case PLANET:
 		{
-		
+			worldSelector->SetAlpha(1.f);//need every frame?
 			//if( frame == 0 )
 			{
 				//back.setTexture( *planetTex );
@@ -825,7 +831,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	}
 	}
 
-
+	worldSelector->Update();
 
 	++frame;
 	++asteroidFrame;
@@ -917,6 +923,11 @@ void WorldMap::Draw( RenderTarget *target )
 
 	//rt->draw(colonySelectSpr);
 	//rt->draw(colonySelectSprZoomed);
+	if (state != COLONY)
+	{
+		worldSelector->Draw(rt);
+	}
+	
 
 	for (int i = 2; i < 4; ++i)
 	{
@@ -2261,4 +2272,49 @@ void MapSector::Init(Sector *m_sec)
 	UpdateStats();
 	UpdateLevelStats();
 	UpdateHighlight();
+}
+
+WorldSelector::WorldSelector(MainMenu *mm)
+{
+	ts = mm->tilesetManager.GetTileset("WorldMap/world_select_192x192.png", 192, 192);
+	for (int i = 0; i < 4; ++i)
+	{
+		SetRectSubRect(quads + i * 4, ts->GetSubRect(i));
+		angles[i] = 0.f;
+	}
+	
+}
+
+void WorldSelector::Update()
+{
+	SetPosition(position);
+	float factor = 10;
+	angles[0] += .1 / factor;
+	angles[1] += .2 / factor;
+	angles[2] -= .1 / factor;
+	angles[3] -= .2 / factor;
+}
+
+void WorldSelector::SetPosition(sf::Vector2f &pos)
+{
+	position = pos;
+	for (int i = 0; i < 4; ++i)
+	{
+		SetRectRotation(quads + i * 4, angles[i], 192, 192, position);
+	}
+}
+
+void WorldSelector::SetAlpha(float alpha)
+{
+	if (alpha < 0)
+		alpha = 0;
+	for (int i = 0; i < 4*4; ++i)
+	{
+		quads[i].color.a = min( alpha * 255.f, 255.f );
+	}
+}
+
+void WorldSelector::Draw(sf::RenderTarget *target)
+{
+	target->draw(quads, 4 * 4, sf::Quads, ts->texture);
 }

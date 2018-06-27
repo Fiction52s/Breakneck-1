@@ -468,3 +468,208 @@ void BirdBoss::HandleNoHealth()
 {
 
 }
+
+GravRing::GravRing(GameSession *owner, ObjectPool *p_myPool, int index)
+	:Enemy(owner, EnemyType::EN_GRAVRING, false, 1, false),
+	PoolMember(index), myPool(p_myPool)
+{
+	//preload
+	owner->GetTileset("Enemies/bombexplode_512x512.png", 512, 512);
+
+	mover = new SurfaceMover(owner, NULL, 0, 32);
+	mover->surfaceHandler = this;
+	mover->SetSpeed(0);
+
+	ts = owner->GetTileset("Enemies/bomb_128x160.png", 128, 160);
+	sprite.setTexture(*ts->texture);
+
+	action = FLOATING;
+
+	actionLength[FLOATING] = 9;
+	actionLength[EXPLODING] = 4;
+
+	animFactor[FLOATING] = 3;
+	animFactor[EXPLODING] = 3;
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 18;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 6;
+	hitboxInfo->hitstunFrames = 30;
+	hitboxInfo->knockback = 0;
+
+	hurtBody = new CollisionBody(1);
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hurt;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = 32;
+	hurtBox.rh = 32;
+	hurtBody->AddCollisionBox(0, hurtBox);
+
+
+	hitBody = new CollisionBody(1);
+	CollisionBox hitBox;
+	hitBox.type = CollisionBox::Hit;
+	hitBox.isCircle = true;
+	hitBox.globalAngle = 0;
+	hitBox.offset.x = 0;
+	hitBox.offset.y = 0;
+	hitBox.rw = 32;
+	hitBox.rh = 32;
+	hitBody->AddCollisionBox(0, hitBox);
+	hitBody->hitboxInfo = hitboxInfo;
+
+
+	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
+}
+
+void GravRing::Init(V2d pos, V2d vel)
+{
+	position = pos;
+	mover->velocity = vel;
+	action = FLOATING;
+	frame = 0;
+	mover->physBody.globalPosition = position;
+}
+
+void GravRing::ProcessState()
+{
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		switch (action)
+		{
+		case FLOATING:
+			frame = 0;
+			break;
+		case EXPLODING:
+			numHealth = 0;
+			dead = true;
+			owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+				owner->GetTileset("Enemies/bombexplode_512x512.png", 512, 512),
+				position, false, 0, 10, 3, true);
+			//cout << "deactivating " << this << " . currently : " << myPool->numActiveMembers << endl;
+			//myPool->DeactivatePoolMember(this);
+			break;
+		}
+	}
+
+	switch (action)
+	{
+	case FLOATING:
+		break;
+	case EXPLODING:
+		break;
+	}
+
+	switch (action)
+	{
+	case FLOATING:
+		break;
+	case EXPLODING:
+		break;
+	}
+}
+
+void GravRing::HandleNoHealth()
+{
+
+}
+
+void GravRing::FrameIncrement()
+{
+
+}
+
+void GravRing::EnemyDraw(sf::RenderTarget *target)
+{
+	target->draw(sprite);
+}
+
+void GravRing::IHitPlayer(int index)
+{
+	if (action == FLOATING)
+	{
+		action = EXPLODING;
+		frame = 0;
+	}
+}
+
+void GravRing::UpdateSprite()
+{
+	switch (action)
+	{
+	case FLOATING:
+		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[FLOATING]));
+		break;
+	case EXPLODING:
+		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[EXPLODING]));
+		break;
+	}
+
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(Vector2f(position));
+}
+
+void GravRing::DebugDraw(sf::RenderTarget *target)
+{
+	Enemy::DebugDraw(target);
+	if (!dead)
+		mover->physBody.DebugDraw(target);
+}
+
+void GravRing::UpdateHitboxes()
+{
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	hurtBox.globalPosition = position;
+	hurtBox.globalAngle = 0;
+	hitBox.globalPosition = position;
+	hitBox.globalAngle = 0;
+}
+
+void GravRing::HitTerrainAerial(Edge * e, double q)
+{
+	if (action == FLOATING)
+	{
+		mover->velocity = V2d(0, 0);
+		action = EXPLODING;
+		frame = 0;
+	}
+}
+
+void GravRing::ResetEnemy()
+{
+	mover->ground = NULL;
+	mover->edgeQuantity = 0;
+	mover->roll = false;
+	mover->UpdateGroundPos();
+	mover->SetSpeed(0);
+	action = FLOATING;
+	frame = 0;
+	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
+}
+
+void GravRing::UpdateEnemyPhysics()
+{
+	if (!dead)
+	{
+		mover->Move(slowMultiple, numPhysSteps);
+		position = mover->physBody.globalPosition;
+	}
+}
+
+void GravRing::ProcessHit()
+{
+	if (!dead && ReceivedHit() && action == FLOATING)
+	{
+		action = EXPLODING;
+		frame = 0;
+	}
+
+}

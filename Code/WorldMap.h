@@ -190,6 +190,19 @@ struct MapSelector
 	//boost::thread *loadThread;
 };
 
+struct WorldSelector
+{
+	WorldSelector::WorldSelector(MainMenu *mm);
+	//void Reset()
+	sf::Vertex quads[4 * 4];
+	void Update();
+	sf::Vector2f position;
+	void SetPosition(sf::Vector2f &pos);
+	void SetAlpha(float alpha);
+	float angles[4];
+	Tileset *ts;
+	void Draw(sf::RenderTarget *target);
+};
 
 struct WorldMap
 {
@@ -204,6 +217,7 @@ struct WorldMap
 		PLANET_TO_SPACE,
 	};
 
+	WorldSelector *worldSelector;
 	sf::Shader zoomShader;
 	WorldMap( MainMenu *mainMenu );
 	void Reset( SaveFile *sf );
