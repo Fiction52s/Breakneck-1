@@ -72,6 +72,7 @@
 //#include "Enemy_Overgrowth.h"
 //#include "Enemy_Owl.h"
 #include "Enemy_Patroller.h"
+#include "Enemy_BirdBoss.h"
 //#include "Enemy_PoisonFrog.h"
 //#include "Enemy_Pulser.h"
 #include "Enemy_RaceFightTarget.h"
@@ -2231,6 +2232,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 
+				BirdBoss *enemy = new BirdBoss(this, Vector2i(xPos, yPos));
+
+				fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);
 				/*Boss_Bird *enemy = new Boss_Bird( this, Vector2i ( xPos, yPos ) );
 
 				fullEnemyList.push_back( enemy );

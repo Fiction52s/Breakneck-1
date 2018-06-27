@@ -1761,6 +1761,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_BLOCKER:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
+		case EnemyType::EN_BOSS_BIRD:
+			ep = new EnemyParams(2, 5, .8, 6, 40);
+			break;
 		default:
 			return NULL;
 		}

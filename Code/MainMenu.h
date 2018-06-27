@@ -5,7 +5,7 @@
 #include "Input.h"
 #include "SoundManager.h"
 #include "Tileset.h"
-#include "WorldMap.h"
+//#include "WorldMap.h"
 #include "GUI.h"
 #include "UIWindow.h"
 #include <boost/thread.hpp>
@@ -15,14 +15,16 @@
 #include <map>
 #include "ItemSelector.h"
 #include "Movement.h"
+#include <boost/filesystem.hpp>
 
-
+struct WorldMap;
 struct Config;
 
 struct SaveFile;
 struct SaveMenuScreen;
 struct MainMenu;
 struct PauseMenu;
+struct LevelSelector;
 struct CustomMapsHandler : GUIHandler
 {
 	//LevelSelector &ls;

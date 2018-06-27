@@ -311,7 +311,7 @@ LineIntersection SegmentIntersect( sf::Vector2<double> a,
 	return li;
 }
 
-void SetRectCenter(sf::Vertex *v, int width, int height,
+void SetRectCenter(sf::Vertex *v, float width, float height,
 	sf::Vector2f &origin)
 {
 	v[0].position = origin + Vector2f(-width / 2, -height / 2);

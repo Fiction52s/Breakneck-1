@@ -3,6 +3,7 @@
 #include "SaveFile.h"
 #include "VectorMath.h"
 #include "IntroMovie.h"
+#include "WorldMap.h"
 
 using namespace sf;
 using namespace std;

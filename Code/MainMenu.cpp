@@ -18,7 +18,8 @@
 #include "PauseMenu.h"
 #include "TitleScreen.h"
 #include "IntroMovie.h"
-
+#include "WorldMap.h"
+#include "LevelSelector.h"
 
 using namespace std;
 using namespace sf;

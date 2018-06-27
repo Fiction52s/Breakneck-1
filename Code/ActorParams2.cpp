@@ -941,14 +941,14 @@ BossBirdParams::BossBirdParams( EditSession *edit, Vector2i &pos )
 	width = Boss_Bird::GRID_SIZE_X * 160;
 	height = Boss_Bird::GRID_SIZE_Y * 80;
 
-	CreateFormation();
+	//CreateFormation();
 				
 	SetBoundingQuad();	
 }
 
 bool BossBirdParams::CanApply()
 {
-	CreateFormation();
+	//CreateFormation();
 	return true;
 }
 
@@ -967,11 +967,12 @@ void BossBirdParams::Draw( sf::RenderTarget *target )
 {
 	ActorParams::Draw( target );
 
-	target->draw( debugLines );
+	//target->draw( debugLines );
 }
 
 void BossBirdParams::CreateFormation()
 {
+	//depreciated
 	sf::Vector2f center( position.x, position.y );
 	sf::Vector2f origin( center.x - width / 2.f, center.y - height / 2.f );
 

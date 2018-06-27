@@ -86,9 +86,15 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	//planetTex = new Texture;
 	//planetTex->loadFromFile( "WorldMap/map_z2.png" );
 
-	ts_colonySelect[0] = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080); 
-	ts_colonySelectZoomed[0] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1_vein.png", 1920, 1080); 
+	ts_colonySelect = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080);
+
+	ts_colonyActive[0] = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActive[1] = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActiveZoomed[0] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1_vein.png", 1920, 1080);
+	ts_colonyActiveZoomed[1] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w2_vein.png", 1920, 1080);
 	//ts_zoomedMapw1 = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
+
+	
 
 	ts_space = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_bg.png", 1920, 1080);
 	spaceSpr.setTexture(*ts_space->texture);
@@ -145,6 +151,14 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	colonySpr[5].setPosition(841, 189);
 	colonySpr[6].setPosition(841, 473);
 
+	for (int i = 0; i < 2; ++i)
+	{
+		SetRectSubRect(worldActiveQuads + i * 4, ts_colonyActive[i]->GetSubRect(0));
+		SetRectCenter(worldActiveQuads + i * 4, 1920, 1080, Vector2f(960, 540));//Vector2f(colonySpr[i].getPosition() + Vector2f( 960, 540 )));
+		SetRectSubRect(worldActiveQuadsZoomed + i * 4, ts_colonyActiveZoomed[i]->GetSubRect(0));
+		SetRectCenter(worldActiveQuadsZoomed + i * 4, 1920 / 8.f, 1080 / 8.f, Vector2f(colonySpr[i].getPosition() + Vector2f(960/8.f, 540/8.f)));
+	}
+
 	for (int i = 0; i < 7; ++i)
 	{
 		colonySpr[i].setTexture(*ts_colony[i]->texture);
@@ -153,12 +167,11 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	}
 
 	colonySelectSprZoomed.setScale(1.f / 8.f, 1.f / 8.f );
-	colonySelectSprZoomed.setTexture(*ts_colonySelectZoomed[0]->texture);
-	colonySelectSprZoomed.setPosition(colonySpr[0].getPosition());
+	
 
 	//ts_colonySelectZoomed[0]->texture->setSmooth(true);
 
-	colonySelectSpr.setTexture( *ts_colonySelect[0]->texture );
+	//colonySelectSpr.setTexture( *ts_colonySelect[0]->texture );
 	//colonySelectSpr.setScale(5.f, 5.f);
 	
 	//if (!zoomShader.loadFromFile( "zoomblur_shader.vert", "zoomblur_shader.frag" ) )
@@ -218,6 +231,9 @@ void WorldMap::UpdateColonySelect()
 		colonySelectSpr.getLocalBounds().height / 2 );*/
 
 	//colonySelectSpr.setPosition(colonySpr[0].getPosition());
+
+	//colonySelectSprZoomed.setTexture(*ts_colonySelectZoomed[selectedColony]->texture);
+	//colonySelectSprZoomed.setPosition(colonySpr[selectedColony].getPosition());
 }
 
 void WorldMap::Reset( SaveFile *sf )
@@ -443,7 +459,8 @@ void WorldMap::SetDefaultSelections()
 
 void WorldMap::InitSelectors()
 {
-	for (int i = 0; i < 2; ++i)
+	SaveFile *sFile = mainMenu->GetCurrentProgress();
+	for (int i = 0; i < sFile->numWorlds; ++i)
 	{
 		selectors[i]->UpdateAllInfo(i);
 	}
@@ -874,7 +891,7 @@ void WorldMap::Draw( RenderTarget *target )
 
 	int energyBreathe = 240;
 	Color selectColor = Color::White;
-	int ff = frame % (energyBreathe);
+	int ff = asteroidFrame % (energyBreathe);
 	if (ff < energyBreathe / 2)
 	{
 		float factor = (float)ff / (energyBreathe / 2);
@@ -888,11 +905,18 @@ void WorldMap::Draw( RenderTarget *target )
 		//c.a = std::max(20.f, (float)c.a);
 	}
 
-	colonySelectSpr.setColor(selectColor);
-	colonySelectSprZoomed.setColor(selectColor);
+	for (int i = 0; i < 2; ++i)
+	{
+		SetRectColor(worldActiveQuads + i * 4, selectColor);
+		SetRectColor(worldActiveQuadsZoomed + i * 4, selectColor);
+		rt->draw(worldActiveQuads + i * 4, 4, sf::Quads, ts_colonyActive[i]->texture);
+		rt->draw(worldActiveQuadsZoomed + i * 4, 4, sf::Quads, ts_colonyActiveZoomed[i]->texture);
+	}
+	//colonySelectSpr.setColor(selectColor);
+	//colonySelectSprZoomed.setColor(selectColor);
 
-	rt->draw(colonySelectSpr);
-	rt->draw(colonySelectSprZoomed);
+	//rt->draw(colonySelectSpr);
+	//rt->draw(colonySelectSprZoomed);
 
 	for (int i = 2; i < 4; ++i)
 	{

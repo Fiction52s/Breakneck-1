@@ -240,9 +240,14 @@ struct WorldMap
 
 	int selectedColony;
 	
+	Tileset *ts_colonyActiveZoomed[7];
+	sf::Vertex worldActiveQuads[7 * 4];
+	sf::Vertex worldActiveQuadsZoomed[7 * 4];
+	Tileset *ts_colonyActive[7];
 	Tileset *ts_colony[7];
-	Tileset *ts_colonySelect[7];
-	Tileset *ts_colonySelectZoomed[7];
+	Tileset *ts_colonySelect;
+	//Tileset *ts_colonySelect[7];
+	//Tileset *ts_colonySelectZoomed[7];
 	sf::Sprite colonySpr[7];
 	sf::Sprite planetSpr;
 	sf::Sprite spaceSpr;

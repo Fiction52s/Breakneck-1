@@ -22,8 +22,6 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 
 	string bgStr = ss.str();
 
-	
-
 	string bgFile = bgStr + ".png";
 	string paletteFile = bgStr + "_palette.png";
 	string shapeFile = bgStr + "_shape.png";
