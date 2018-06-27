@@ -2271,16 +2271,18 @@ void MainMenu::Run()
 		case MAINMENU:
 			{
 				//preScreenTexture->setView( v );
+			//extraScreenTexture->clear();
 				titleScreen->Draw(preScreenTexture);
 				
 				
 
 				//preScreenTexture->setView( uiView );
-
+				
 				if( splashFadeFrame <= splashFadeOutLength )
 				{
-					preScreenTexture->draw( fadeRect );
+					preScreenTexture->draw(fadeRect);
 				}
+
 				break;
 			}
 		case WORLDMAP:
@@ -2363,7 +2365,7 @@ void MainMenu::Run()
 			else
 			{
 				titleScreen->Draw(preScreenTexture);
-				DrawMenuOptionText(preScreenTexture);
+				//DrawMenuOptionText(preScreenTexture);
 			}
 			//preScreenTexture->setView(v);
 
