@@ -31,7 +31,7 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	actionLength[FOCUSATTACK] = 20;
 	actionLength[STARTPUNCH] = 20;
 	actionLength[HOLDPUNCH] = 1;
-	actionLength[PUNCH] = 30;
+	actionLength[PUNCH] = 50;
 	actionLength[RINGTHROW] = 30;
 	actionLength[GRAVITYCHOOSE] = 30;
 	actionLength[AIMSUPERKICK] = 30;
@@ -226,6 +226,15 @@ void BirdBoss::BeginPunch()
 	frame = 0;
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(0));
+	velocity = V2d(0, 0);
+	if (owner->GetPlayer(0)->position.x >= position.x)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 }
 
 void BirdBoss::BeginThrow()
@@ -249,10 +258,11 @@ void BirdBoss::BeginSuperKick()
 	superKickWaitChoices = 2;
 	currTrackingFrame = 0;
 	maxTrackingFrames = 60;
-	velocity = V2d(0, 0);
+	//velocity = V2d(0, 0);
 	rcEdge = NULL;
 	V2d playerPos = owner->GetPlayer(0)->position;
 	V2d dir = normalize(playerPos - position);
+	velocity = dir * 25.0;
 	rayStart = playerPos;
 	rayEnd = playerPos + dir * 3000.0;
 	RayCast(this, owner->terrainTree->startNode, rayStart, rayEnd);
@@ -319,7 +329,7 @@ void BirdBoss::PlanChoice( int ind )
 	//{
 	//	cp.cType = C_RINGTHROW; //for testing this one thing
 	//}
-	cp.cType = C_SUPERKICK;
+	cp.cType = C_FOCUS;
 		
 	switch (cp.cType)
 	{
@@ -327,7 +337,7 @@ void BirdBoss::PlanChoice( int ind )
 		cp.moveSpeed = 10.f;
 		break;
 	case C_FOCUS:
-		cp.focusRadius = 100.f;
+		cp.focusRadius = 400.f;
 		break;
 	case C_PUNCH:
 		break;
@@ -345,7 +355,15 @@ void BirdBoss::ProcessState()
 {
 	ActionEnded();
 	V2d playerPos = owner->GetPlayer(0)->position;
-
+	V2d punchTarget;
+	if (facingRight)
+	{
+		punchTarget = playerPos + V2d(-300, 0 );
+	}
+	else
+	{
+		punchTarget = playerPos + V2d(300, 0);
+	}
 	switch (action)
 	{
 	case WAIT:
@@ -386,6 +404,18 @@ void BirdBoss::ProcessState()
 	case ENDGLIDE:
 		break;
 	case STARTFOCUS:
+		if (length(playerPos - position) < focusRadius)
+		{
+			action = FOCUSATTACK;
+			frame = 0;
+			position = playerPos;
+			break;
+		}
+		if (frame == 60)
+		{
+			action = ENDFOCUS;
+			frame = 0;
+		}
 		break;
 	case FOCUSLOOP:
 		if (length(playerPos - position) < focusRadius)
@@ -409,45 +439,56 @@ void BirdBoss::ProcessState()
 		break;
 	case HOLDPUNCH:
 	{
-		if (length(position - playerPos) < 20 || frame > 60)
+		if ( (((velocity.y >= 0 && position.y > punchTarget.y)|| (velocity.y < 0 && position.y < punchTarget.y) ) && abs( position.x - punchTarget.x ) < 200 ) || frame > 180)
 		{
 			action = PUNCH;
 			frame = 0;
+			if (facingRight)
+			{
+				velocity.x = 20;
+			}
+			else
+			{
+				velocity.x = -20;
+			}
+			velocity.y = 0;
 		}
 		else
 		{
-			if (playerPos.y < position.y - 20)
+			double seekAccel = .1;
+			if (punchTarget.y < position.y)
 			{
-				punchVel.y = -10;
+				velocity.y -= seekAccel;
 			}
-			else if (playerPos.y > position.y + 20)
+			else if (punchTarget.y > position.y)
 			{
-				punchVel.y = 10;
-			}
-			else
-			{
-				punchVel.y = 0;
-			}
-
-			if (playerPos.x > position.x + 20)
-			{
-				punchVel.x = 10;
-			}
-			else if (playerPos.x < position.x - 20)
-			{
-				punchVel.x = -10;
+				velocity.y += seekAccel;
 			}
 			else
 			{
-				punchVel.x = 0;
+				//velocity.y = 0;
 			}
 
-
-			position += punchVel;
+			if (punchTarget.x > position.x + 20)
+			{
+				velocity.x = 10;
+			}
+			else if (punchTarget.x < position.x - 20)
+			{
+				velocity.x = -10;
+			}
+			else
+			{
+				velocity.x = 0;
+			}
+			//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+			//velocity = punchVel;
+			//position += punchVel;
 		}
 		break;
 	}
 	case PUNCH:
+		velocity = V2d(velocity.x, velocity.y);
 		break;
 	case RINGTHROW:
 		break;
@@ -481,6 +522,7 @@ void BirdBoss::ProcessState()
 	case ENDGLIDE:
 		break;
 	case STARTFOCUS:
+		focusRadius += choices[0].focusRadius / actionLength[STARTFOCUS];
 		break;
 	case FOCUSLOOP:
 		break;
@@ -515,6 +557,11 @@ void BirdBoss::ProcessState()
 		break;
 	}
 		
+	}
+
+	if (length(velocity) > 60)
+	{
+		velocity = normalize(velocity) * 60.0;
 	}
 
 	position += velocity;
@@ -568,7 +615,17 @@ void BirdBoss::FrameIncrement()
 
 void BirdBoss::EnemyDraw(sf::RenderTarget *target)
 {
+	if (action == STARTFOCUS || action == FOCUSLOOP)
+	{
+		sf::CircleShape cs;
+		cs.setFillColor(Color(0, 0, 255, 60));
+		cs.setRadius(focusRadius);
+		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+		cs.setPosition(position.x, position.y);
+		target->draw(cs);
+	}
 	target->draw(sprite);
+	
 }
 
 void BirdBoss::UpdateSprite()
