@@ -7,6 +7,13 @@ using namespace sf;
 BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	:Enemy( owner, EnemyType::EN_BOSS_BIRD, false, 1,false )
 {
+	ringPool = new ObjectPool;
+	for (int i = 0; i < 100; ++i)
+	{
+		GravRing *r = new GravRing(owner, this, ringPool, i);
+		ringPool->AddToInactiveList(r);
+	}
+
 	position = V2d(pos);
 	origPos = position;
 	numChoices = 4;//hold the next choice to be slid in
@@ -18,17 +25,19 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	actionLength[STARTGLIDE] = 0;
 	actionLength[GLIDE] = 0;
 	actionLength[ENDGLIDE] = 0;
-	actionLength[STARTFOCUS] = 0;
-	actionLength[FOCUSLOOP] = 0;
-	actionLength[ENDFOCUS] = 0;
-	actionLength[FOCUSATTACK] = 0;
+	actionLength[STARTFOCUS] = 30;
+	actionLength[FOCUSLOOP] = 1;
+	actionLength[ENDFOCUS] = 30;
+	actionLength[FOCUSATTACK] = 20;
 	actionLength[STARTPUNCH] = 20;
 	actionLength[HOLDPUNCH] = 1;
 	actionLength[PUNCH] = 30;
-	actionLength[RINGTHROW] = 0;
-	actionLength[GRAVITYCHOOSE] = 0;
-	actionLength[AIMSUPERKICK] = 0;
-	actionLength[SUPERKICK] = 0;
+	actionLength[RINGTHROW] = 30;
+	actionLength[GRAVITYCHOOSE] = 30;
+	actionLength[AIMSUPERKICK] = 30;
+	actionLength[SUPERKICK] = 50;
+	actionLength[SUPERKICKRECOVER] = 50;
+	actionLength[SUPERKICKIMPACT] = 30;
 
 	animFactor[WAIT] = 1;
 	animFactor[MOVE] = 1;
@@ -44,8 +53,10 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	animFactor[PUNCH] = 1;
 	animFactor[RINGTHROW] = 1;
 	animFactor[GRAVITYCHOOSE] = 1;
-	animFactor[AIMSUPERKICK] = 30;
+	animFactor[AIMSUPERKICK] = 1;
 	animFactor[SUPERKICK] = 1;
+	animFactor[SUPERKICKRECOVER] = 1;
+	animFactor[SUPERKICKIMPACT] = 1;
 
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
@@ -67,6 +78,16 @@ void BirdBoss::ResetEnemy()
 
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(0));
+
+	GravRing *r = (GravRing*)ringPool->activeListStart;
+	while (r != NULL)
+	{
+		GravRing *grNext = (GravRing*)r->pmnext;
+		r->Reset();
+		r = grNext;
+	}
+
+	ringPool->DeactivateAll();
 }
 
 BirdBoss::~BirdBoss()
@@ -164,6 +185,16 @@ void BirdBoss::ActionEnded()
 		case SUPERKICK:
 			//BeginChoice();
 			break;
+		case SUPERKICKRECOVER:
+		{
+			break;
+		}
+		case SUPERKICKIMPACT:
+		{
+			action = SUPERKICKRECOVER;
+			frame = 0;
+			break;
+		}
 		}
 	}
 }
@@ -203,17 +234,58 @@ void BirdBoss::BeginThrow()
 	frame = 0;
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(1));
+
+	GravRing *r = (GravRing*)ringPool->ActivatePoolMember();
+	assert(r != NULL);
+	r->Init( position, V2d( 0, 0 ));
+	owner->AddEnemy(r);
+	//cout << "spawning bomb: " << fb << ": " << fb->position.x << ", " << fb->position.y << endl;
 }
 
 void BirdBoss::BeginSuperKick()
 {
-	action = AIMSUPERKICK;
+	action = SUPERKICK;//AIMSUPERKICK;
 	frame = 0;
 	superKickWaitChoices = 2;
 	currTrackingFrame = 0;
 	maxTrackingFrames = 60;
+	velocity = V2d(0, 0);
+	rcEdge = NULL;
+	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d dir = normalize(playerPos - position);
+	rayStart = playerPos;
+	rayEnd = playerPos + dir * 3000.0;
+	RayCast(this, owner->terrainTree->startNode, rayStart, rayEnd);
+
+	if (rcEdge != NULL)
+	{
+		superKickPoint = rcEdge->GetPoint(rcQuantity);
+	}
+	else
+	{
+		assert(0);
+	}
+
+	//superKickPoint = owner->GetPlayer(0)->position;//rcEdge->GetPoint(rcQuantity);
+
+	superKickStart = position;//later move this to when you activate super kick
+	
+
 	sprite.setTexture(*tilesets[MOVE]->texture);
-	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(2));
+	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(3));
+}
+
+void BirdBoss::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
+{
+	V2d dir = normalize(rayEnd - rayStart);
+	V2d pos = edge->GetPoint(edgeQuantity);
+	double along = dot(dir, edge->Normal());
+	if( along < 0 && ( rcEdge == NULL || length(edge->GetPoint(edgeQuantity) - rayStart) <
+		length(rcEdge->GetPoint(rcQuantity) - rayStart)))
+	{
+		rcEdge = edge;
+		rcQuantity = edgeQuantity;
+	}
 }
 
 void BirdBoss::BeginGravityChoose()
@@ -222,6 +294,15 @@ void BirdBoss::BeginGravityChoose()
 	frame = 0;
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(3));
+	PoolMember *pm = ringPool->activeListStart;
+	V2d fallDir(0, -1);
+	double fallGrav = .1;
+	while (pm != NULL)
+	{
+		GravRing *gr = (GravRing*)pm;
+		gr->SetFall( fallDir, fallGrav );
+		pm = pm->pmnext;
+	}
 }
 
 void BirdBoss::PlanChoice( int ind )
@@ -229,7 +310,17 @@ void BirdBoss::PlanChoice( int ind )
 	int r = rand() % C_Count;
 	ChoiceParams &cp = choices[ind];
 	cp.cType = (ChoiceType)r;
-	cp.cType = C_PUNCH; //for testing this one thing
+
+	//if (cp.cType == C_FOCUS || cp.cType == C_GRAVITYCHOOSE || cp.cType == C_SUPERKICK)
+	//{
+	//	cp.cType = C_FLYTOWARDS;
+	//}
+	//else
+	//{
+	//	cp.cType = C_RINGTHROW; //for testing this one thing
+	//}
+	cp.cType = C_SUPERKICK;
+		
 	switch (cp.cType)
 	{
 	case C_FLYTOWARDS:
@@ -278,11 +369,13 @@ void BirdBoss::ProcessState()
 		{
 			//posAlong = len;
 			position = endMovePos;
+			velocity = V2d(0, 0);
 			NextChoice();
 		}
 		else
 		{
-			position += moveSpeed * along;
+			velocity = moveSpeed * along;
+			//position += moveSpeed * along;
 		}
 		break;
 	}
@@ -295,6 +388,18 @@ void BirdBoss::ProcessState()
 	case STARTFOCUS:
 		break;
 	case FOCUSLOOP:
+		if (length(playerPos - position) < focusRadius)
+		{
+			action = FOCUSATTACK;
+			frame = 0;
+			position = playerPos;
+			break;
+		}
+		if (frame == 60)
+		{
+			action = ENDFOCUS;
+			frame = 0;
+		}
 		break;
 	case ENDFOCUS:
 		break;
@@ -353,6 +458,14 @@ void BirdBoss::ProcessState()
 		break;
 	case SUPERKICK:
 		break;
+	case SUPERKICKRECOVER:
+	{
+		break;
+	}
+	case SUPERKICKIMPACT:
+	{
+		break;
+	}
 	}
 
 	switch (action)
@@ -388,7 +501,50 @@ void BirdBoss::ProcessState()
 	case AIMSUPERKICK:
 		break;
 	case SUPERKICK:
+	{
+		velocity += normalize(superKickPoint - superKickStart) * .1;
 		break;
+	}
+	case SUPERKICKRECOVER:
+	{
+		velocity += normalize(superKickPoint - superKickStart) * .1;
+		break;
+	}
+	case SUPERKICKIMPACT:
+	{
+		break;
+	}
+		
+	}
+
+	position += velocity;
+
+	if (action == SUPERKICK)
+	{
+		double len = length(position - superKickStart);
+		if ( len >= length(superKickPoint - superKickStart))
+		{
+			position = superKickPoint;
+			superKickPoint = superKickPoint + rcEdge->Normal() * 300.0;
+			superKickStart = position;
+			velocity = V2d(0, 0);
+			action = SUPERKICKIMPACT;
+			frame = 0;
+			//NextChoice(); //not great
+		}
+	}
+	else if (action == SUPERKICKRECOVER)
+	{
+		double len = length(position - superKickStart);
+		if (len >= length(superKickPoint - superKickStart))
+		{
+			position = superKickPoint;
+			superKickPoint = superKickStart + normalize(superKickPoint - superKickStart) * 300.0;
+			superKickStart = position;
+			velocity = V2d(0, 0);
+			//action = SUPERKICKRECOVER;
+			NextChoice(); //not great
+		}
 	}
 }
 
@@ -469,27 +625,28 @@ void BirdBoss::HandleNoHealth()
 
 }
 
-GravRing::GravRing(GameSession *owner, ObjectPool *p_myPool, int index)
+GravRing::GravRing(GameSession *owner, BirdBoss *p_parent, ObjectPool *p_myPool, int index)
 	:Enemy(owner, EnemyType::EN_GRAVRING, false, 1, false),
 	PoolMember(index), myPool(p_myPool)
 {
+	parent = p_parent;
 	//preload
 	owner->GetTileset("Enemies/bombexplode_512x512.png", 512, 512);
-
-	mover = new SurfaceMover(owner, NULL, 0, 32);
-	mover->surfaceHandler = this;
-	mover->SetSpeed(0);
 
 	ts = owner->GetTileset("Enemies/bomb_128x160.png", 128, 160);
 	sprite.setTexture(*ts->texture);
 
-	action = FLOATING;
+	action = HOMING;
 
-	actionLength[FLOATING] = 9;
-	actionLength[EXPLODING] = 4;
+	actionLength[HOMING] = 1;
+	actionLength[ORBITING] = 1;
+	actionLength[EXPLODING] = 60;
+	actionLength[FALLING] = 1;
 
-	animFactor[FLOATING] = 3;
-	animFactor[EXPLODING] = 3;
+	animFactor[HOMING] = 1;
+	animFactor[ORBITING] = 1;
+	animFactor[EXPLODING] = 1;
+	animFactor[FALLING] = 1;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -530,21 +687,32 @@ GravRing::GravRing(GameSession *owner, ObjectPool *p_myPool, int index)
 
 void GravRing::Init(V2d pos, V2d vel)
 {
+	double len = length(position - parent->position);
+	orbitRadius = len;
+	maxOrbitSpeed = 10.0;
 	position = pos;
-	mover->velocity = vel;
-	action = FLOATING;
+	velocity = vel;
+	orbitAxis = normalize(position - parent->position);
+	//mover->velocity = vel;
+	action = HOMING;
 	frame = 0;
-	mover->physBody.globalPosition = position;
 }
 
 void GravRing::ProcessState()
 {
+	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerDir = normalize(playerPos - position);
+	V2d parentDir = normalize(parent->position - position);
+	V2d parentOther = V2d(parentDir.y, -parentDir.x);
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
 		{
-		case FLOATING:
-			frame = 0;
+		case HOMING:
+			//frame = 0;
+			break;
+		case ORBITING:
+			//frame = 0;
 			break;
 		case EXPLODING:
 			numHealth = 0;
@@ -555,24 +723,134 @@ void GravRing::ProcessState()
 			//cout << "deactivating " << this << " . currently : " << myPool->numActiveMembers << endl;
 			//myPool->DeactivatePoolMember(this);
 			break;
+		case FALLING:
+			//frame = 0;
+			break;
 		}
 	}
 
 	switch (action)
 	{
-	case FLOATING:
+	case HOMING:
+		if (frame == 60)
+		{
+			action = ORBITING;
+			frame = 0;
+			velocity = V2d(0, 0);
+			
+			orbitRadius = length(position - parent->position);
+			orbitAxis = normalize(position - parent->position);
+			double test = dot(velocity, parentOther);
+			orbitSpeed = test;
+			if (orbitSpeed > maxOrbitSpeed)
+			{
+				orbitSpeed = maxOrbitSpeed;
+			}
+			else if (orbitSpeed < -maxOrbitSpeed)
+			{
+				orbitSpeed = -maxOrbitSpeed;
+			}
+			orbitSpeed = 10;
+			//velocity = parentOther * orbitSpeed;
+		}
+		break;
+	case ORBITING:
 		break;
 	case EXPLODING:
+		break;
+	case FALLING:
+		if (frame == 180)
+		{
+			action = EXPLODING;
+			frame = 0;
+		}
 		break;
 	}
 
+	
+	double homingAccel = .1;
+	double orbitAccel = .1;
+	
+
+	float orbitFrames = 180;
+	double a = frame / orbitFrames * 2.0 * PI;
 	switch (action)
 	{
-	case FLOATING:
+	case HOMING:
+		velocity += homingAccel * playerDir;
 		break;
-	case EXPLODING:
+	case ORBITING:
+	{
+		//parentDir * dot(velocity, parentDir);
+		
+		//velocity += parentDir * 1.0;
+		V2d p(orbitRadius * cos(a), orbitRadius / 2 * sin(a));
+
+		V2d orbitOther(orbitAxis.y, -orbitAxis.x);
+		position = parent->position + p.x * orbitAxis + p.y * orbitOther;//V2d(p.x * orbitAxis.x, p.x * orbitAxis.y) + V2d(p.y * orbitOther.x, p.y * orbitOther.y);
+		//if (orbitSpeed >= 0)
+		//{
+		//	orbitSpeed += orbitAccel;
+		//}
+		//else
+		//{
+		//	orbitSpeed -= orbitAccel;
+		//}
+		//if (orbitSpeed > maxOrbitSpeed)
+		//{
+		//	orbitSpeed = maxOrbitSpeed;
+		//}
+		//else if (orbitSpeed < -maxOrbitSpeed)
+		//{
+		//	orbitSpeed = -maxOrbitSpeed;
+		//}
+
+		//velocity = orbitSpeed * parentOther;//+= //orbitAccel * 3.0 * parentDir;
+		
+		
 		break;
 	}
+	case EXPLODING:
+		velocity = V2d(0, 0);
+		break;
+	case FALLING:
+		velocity += fallDir * grav;
+		break;
+	}
+
+	
+	if (length(velocity) > 17)
+	{
+		velocity = normalize(velocity) * 17.0;
+	}
+
+	position += velocity;
+
+	if (action == ORBITING)
+	{
+		//velocity += parentDir * orbitSpeed * 10.0;
+
+		//V2d relative = position - parent->position;
+		//double x = dot(relative, orbitAxis);
+		//double y = cross(relative, orbitAxis);
+
+		//double w = orbitRadius;
+		//double h = orbitRadius / 2;
+		//double res = x * x / w + y * y / h;
+		////if (length(position - parent->position) > orbitRadius)
+		//if( res > 1.0 )
+		//{
+		//	position = parent->position - parentDir * orbitRadius;
+		//}
+	}
+}
+
+void GravRing::SetFall( V2d &dir, double p_grav)
+{
+	action = FALLING;
+	frame = 0;
+	grav = p_grav;
+	fallDir = dir;
 }
 
 void GravRing::HandleNoHealth()
@@ -592,7 +870,7 @@ void GravRing::EnemyDraw(sf::RenderTarget *target)
 
 void GravRing::IHitPlayer(int index)
 {
-	if (action == FLOATING)
+	if (action != EXPLODING)
 	{
 		action = EXPLODING;
 		frame = 0;
@@ -603,23 +881,22 @@ void GravRing::UpdateSprite()
 {
 	switch (action)
 	{
-	case FLOATING:
-		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[FLOATING]));
+	case HOMING:
+		sprite.setTextureRect(ts->GetSubRect(0));
+		break;
+	case ORBITING:
+		sprite.setTextureRect(ts->GetSubRect(1));
 		break;
 	case EXPLODING:
-		sprite.setTextureRect(ts->GetSubRect(frame / animFactor[EXPLODING]));
+		sprite.setTextureRect(ts->GetSubRect(5));
+		break;
+	case FALLING:
+		sprite.setTextureRect(ts->GetSubRect(2));
 		break;
 	}
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(Vector2f(position));
-}
-
-void GravRing::DebugDraw(sf::RenderTarget *target)
-{
-	Enemy::DebugDraw(target);
-	if (!dead)
-		mover->physBody.DebugDraw(target);
 }
 
 void GravRing::UpdateHitboxes()
@@ -632,24 +909,14 @@ void GravRing::UpdateHitboxes()
 	hitBox.globalAngle = 0;
 }
 
-void GravRing::HitTerrainAerial(Edge * e, double q)
-{
-	if (action == FLOATING)
-	{
-		mover->velocity = V2d(0, 0);
-		action = EXPLODING;
-		frame = 0;
-	}
-}
-
 void GravRing::ResetEnemy()
 {
-	mover->ground = NULL;
-	mover->edgeQuantity = 0;
-	mover->roll = false;
-	mover->UpdateGroundPos();
-	mover->SetSpeed(0);
-	action = FLOATING;
+	//mover->ground = NULL;
+	//mover->edgeQuantity = 0;
+	//mover->roll = false;
+	//mover->UpdateGroundPos();
+	//mover->SetSpeed(0);
+	action = HOMING;
 	frame = 0;
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
@@ -657,19 +924,18 @@ void GravRing::ResetEnemy()
 
 void GravRing::UpdateEnemyPhysics()
 {
-	if (!dead)
+	if (!dead )
 	{
-		mover->Move(slowMultiple, numPhysSteps);
-		position = mover->physBody.globalPosition;
-	}
+		V2d v = velocity / (slowMultiple * numPhysSteps);
+		position += v;
+	}	
 }
 
 void GravRing::ProcessHit()
 {
-	if (!dead && ReceivedHit() && action == FLOATING)
+	if (!dead && ReceivedHit() && action != EXPLODING)
 	{
 		action = EXPLODING;
 		frame = 0;
 	}
-
 }

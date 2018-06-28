@@ -4,42 +4,52 @@
 #include "Enemy.h"
 #include "ObjectPool.h"
 
-struct GravRing : Enemy, SurfaceMoverHandler, PoolMember
+struct BirdBoss;
+struct GravRing : Enemy, PoolMember
 {
 	enum Action
 	{
-		FLOATING,
+		HOMING,
+		ORBITING,
 		EXPLODING,
+		FALLING,
 		Count
 	};
 
 	Action action;
-	GravRing(GameSession *owner, ObjectPool *myPool, int index);
+	GravRing(GameSession *owner, BirdBoss *parent, ObjectPool *myPool, int index);
 	int actionLength[Count];
 	int animFactor[Count];
 	CollisionBody *hurtBody;
 	CollisionBody *hitBody;
-	SurfaceMover *mover;
 	Tileset *ts;
 	HitboxInfo *hitboxInfo;
 	sf::Sprite sprite;
+	V2d fallDir;
+	double grav;
 	ObjectPool *myPool;
 	void Init(V2d pos, V2d vel);
+	V2d velocity;
+	V2d orbitAxis;
+	BirdBoss *parent;
+	double orbitRadius;
+	double maxOrbitSpeed;
+	double orbitSpeed;
 	void ProcessState();
 	void HandleNoHealth();
-	void HitTerrainAerial(Edge *, double);
+	void SetFall( V2d &dir, double grav );
+	//void HitTerrainAerial(Edge *, double);
 	void FrameIncrement();
 	void EnemyDraw(sf::RenderTarget *target);
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void ProcessHit();
 };
 
-struct BirdBoss : Enemy
+struct BirdBoss : Enemy, RayCastHandler
 {
 	enum RingType
 	{
@@ -84,10 +94,21 @@ struct BirdBoss : Enemy
 		GRAVITYCHOOSE,
 		AIMSUPERKICK,
 		SUPERKICK,
+		SUPERKICKIMPACT,
+		SUPERKICKRECOVER,
 		S_Count
 	};
 
+	V2d rayStart;
+	V2d rayEnd;
+	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
+	Edge *rcEdge;
+	double rcQuantity;
 	BirdBoss( GameSession *owner, sf::Vector2i &pos );
+	ObjectPool *ringPool;
+	V2d superKickPoint;
+	V2d superKickStart;
+	V2d velocity;
 
 	void BeginMove();
 	void BeginFocus();
