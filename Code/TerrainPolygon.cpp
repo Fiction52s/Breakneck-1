@@ -1164,6 +1164,11 @@ void TerrainPolygon::Finalize()
 		curr = temp;
 	}
 
+	if (polyline.size() == 1)
+	{
+		assert(0);
+	}
+
 	p2t::CDT * cdt = new p2t::CDT( polyline );
 	
 	cdt->Triangulate();
