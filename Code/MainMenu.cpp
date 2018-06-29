@@ -562,6 +562,15 @@ MainMenu::MainMenu()
 	
 	ts_mainOption = tilesetManager.GetTileset("Menu/mainmenu_text_560x64.png", 560, 64);
 
+
+	activatedMainMenuOptions[0] = true;
+	activatedMainMenuOptions[1] = false;
+	activatedMainMenuOptions[2] = false;
+	activatedMainMenuOptions[3] = false;
+	activatedMainMenuOptions[4] = false;
+	activatedMainMenuOptions[5] = true;
+	activatedMainMenuOptions[6] = true;
+
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
 		//if (saSelector->currIndex == i)
@@ -571,10 +580,28 @@ MainMenu::MainMenu()
 		//}
 		//else
 		{
-			SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i));
-			SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i+14));
+			if (activatedMainMenuOptions[i])
+			{
+				SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i));
+			}
+			else
+			{
+				SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + 7));
+			}
+
+			if (activatedMainMenuOptions[i])
+			{
+				SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i + 14));
+			}
+			/*else
+			{
+				SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i + 21));
+			}*/
+			
 		}
 	}
+
+	
 
 	introMovie = new IntroMovie;
 	
@@ -1078,8 +1105,11 @@ void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
 		//preScreenTexsetture->draw(menuOptions[i]);
 	}
 
-	target->draw(mainMenuOptionHighlight + saSelector->currIndex * 4, 4, sf::Quads,
-		ts_mainOption->texture);
+	if (activatedMainMenuOptions[saSelector->currIndex])
+	{
+		target->draw(mainMenuOptionHighlight + saSelector->currIndex * 4, 4, sf::Quads,
+			ts_mainOption->texture);
+	}
 }
 
 void MainMenu::CustomMapsOption()
@@ -1144,63 +1174,7 @@ void MainMenu::CustomMapsOption()
 							//ls.newLevelName = "";
 							ls.newLevelName = "";
 							namePopup.SendKey( ev.key.code, ev.key.shift );
-							if( ls.newLevelName != "" )
-							{
-								
-								if( ls.text[ls.selectedIndex].getFillColor() == Color::Red )
-								{
-									path from( "Maps/empty.brknk" );
-
-									std::stringstream ssPath;
-									ssPath << ls.localPaths[ls.selectedIndex] << ls.newLevelName << ".brknk";
-									string toString = ssPath.str();
-									path to( toString );
-
-									try 
-									{
-										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
-
-										//GameEditLoop( ls.GetSelectedPath() );
-
-										ls.UpdateMapList();
-
-										window->setView( uiView );
-									}
-									catch (const boost::system::system_error &err) 
-									{
-										cout << "file already exists!" << endl;
-									}
-								}
-								else
-								{
-									path from( ls.GetSelectedPath() );
-									TreeNode * toNode = ls.dirNode[ls.selectedIndex];
-
-									std::stringstream ssPath;
-									ssPath << toNode->GetLocalPath() << ls.newLevelName << ".brknk";
-									string toString = ssPath.str();
-
-									path to( toString );
-									
-									try 
-									{
-										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
-
-										//cout << "copying to: " << to.string() << endl;
-										//GameEditLoop( toNode->GetLocalPath() );
-
-										ls.UpdateMapList();
-
-										window->setView( uiView );
-									}
-									catch (const boost::system::system_error &err) 
-									{
-										cout << "file already exists!" << endl;
-									}
-								}
-								
-								
-							}
+							CopyMap(&customMapHandler, &namePopup);
 						}
 						
 					}
@@ -1231,54 +1205,7 @@ void MainMenu::CustomMapsOption()
 						{
 							ls.newLevelName = "";
 							namePopup.Update( false, uiMouse.x, uiMouse.y );
-							if( ls.newLevelName != "" )
-							{
-								
-								if( ls.text[ls.selectedIndex].getFillColor() == Color::Blue )
-								{
-									path from( "Maps/empty.brknk" );
-									string toString = ls.localPaths[ls.selectedIndex] + ls.newLevelName + ".brknk";
-									path to( toString );
-
-									try 
-									{
-										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
-
-										GameEditLoop( ls.GetSelectedPath() );
-
-										ls.UpdateMapList();
-
-										window->setView( uiView );
-									}
-									catch (const boost::system::system_error &err) 
-									{
-										cout << "file already exists!" << endl;
-									}
-								}
-								else
-								{
-									path from( ls.localPaths[ls.selectedIndex] );
-									TreeNode * toNode = ls.dirNode[ls.selectedIndex];
-									path to( toNode->GetLocalPath() + ls.newLevelName + ".brknk" );
-
-									try 
-									{
-										boost::filesystem::copy_file( from, to, copy_option::fail_if_exists );
-
-										GameEditLoop( to.string() );
-
-										ls.UpdateMapList();
-
-										window->setView( uiView );
-									}
-									catch (const boost::system::system_error &err) 
-									{
-										cout << "file already exists!" << endl;
-									}
-								}
-								
-								
-							}
+							CopyMap(&customMapHandler, &namePopup);
 						}
 						else
 						{
@@ -1337,7 +1264,71 @@ ControllerState &MainMenu::GetCurrInputUnfiltered(int index)
 	return currInputUnfiltered[index];
 }
 
+void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
+{
+	Panel &namePopup = *namePop;
+	CustomMapsHandler &customMapHandler = *cmh;
+	LevelSelector &ls = *levelSelector;
+	//if (customMapHandler.showNamePopup)
+	{
+		if (ls.newLevelName != "")
+		{
 
+			if (ls.text[ls.selectedIndex].getFillColor() == Color::Red)
+			{
+				path from("Maps/empty.brknk");
+
+				std::stringstream ssPath;
+				ssPath << ls.localPaths[ls.selectedIndex] << ls.newLevelName << ".brknk";
+				string toString = ssPath.str();
+				path to(toString);
+
+				try
+				{
+					boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
+
+					//GameEditLoop( ls.GetSelectedPath() );
+
+					ls.UpdateMapList();
+
+					window->setView(uiView);
+				}
+				catch (const boost::system::system_error &err)
+				{
+					cout << "file already exists!" << endl;
+				}
+			}
+			else
+			{
+				path from(ls.GetSelectedPath());
+				TreeNode * toNode = ls.dirNode[ls.selectedIndex];
+
+				std::stringstream ssPath;
+				ssPath << toNode->GetLocalPath() << ls.newLevelName << ".brknk";
+				string toString = ssPath.str();
+
+				path to(toString);
+
+				try
+				{
+					boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
+
+					//cout << "copying to: " << to.string() << endl;
+					//GameEditLoop( toNode->GetLocalPath() );
+
+					ls.UpdateMapList();
+
+					window->setView(uiView);
+				}
+				catch (const boost::system::system_error &err)
+				{
+					cout << "file already exists!" << endl;
+				}
+			}
+		}
+	}
+
+}
 
 
 #include <sfeMovie/Movie.hpp>
@@ -1729,7 +1720,33 @@ void MainMenu::Run()
 					}
 					else
 					{
+						int oldIndex = saSelector->currIndex;
 						saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
+
+						while (!activatedMainMenuOptions[saSelector->currIndex])
+						{
+							if (saSelector->currIndex != oldIndex)
+							{
+								if (saSelector->currIndex > oldIndex ||( saSelector->currIndex == 0 && oldIndex == saSelector->totalItems - 1))
+								{
+									//down
+									++saSelector->currIndex;
+									if (saSelector->currIndex == saSelector->totalItems)
+									{
+										saSelector->currIndex = 0;
+									}
+								}
+								else
+								{
+									--saSelector->currIndex;
+									if (saSelector->currIndex < 0)
+									{
+										saSelector->currIndex = saSelector->totalItems - 1;
+									}
+								}
+							}
+							
+						}
 					}
 
 					UpdateMenuOptionText();

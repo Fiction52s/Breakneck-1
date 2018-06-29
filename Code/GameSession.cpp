@@ -5308,6 +5308,8 @@ bool GameSession::Load()
 		drainFrames = floor(1.f / drainPerFrame);
 	}
 	GetPlayer(0)->drainCounterMax = drainFrames;
+	if (drainPerFrame < 1.0)
+		drainPerFrame = 1.0;
 	GetPlayer(0)->drainAmount = drainPerFrame;
 
 	if (mh->gameMode == MapHeader::MapType::T_STANDARD)

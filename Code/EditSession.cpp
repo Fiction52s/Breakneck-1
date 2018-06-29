@@ -9259,6 +9259,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							{
 								//showPoints = true;
 								showPanel = mapOptionsPanel;
+								mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
 								mode = menuDownStored;
 							}
 							else if( menuSelection == "bottom" )

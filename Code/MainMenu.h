@@ -635,12 +635,16 @@ struct MainMenu
 
 	int transWorldMapFrame;
 	sf::Uint8 transAlpha;
-
+	void CopyMap(CustomMapsHandler *cmp,
+		Panel *namePop);
 
 	sf::Vertex mainMenuOptionQuads[7 * 4];
 	sf::Vertex mainMenuOptionHighlight[7*4];
+	bool activatedMainMenuOptions[7];
+	
 	Tileset *ts_mainOption;
 	sf::RectangleShape menuOptionsBG;
+	bool lastMovementDown;
 	
 
 	Config *config;

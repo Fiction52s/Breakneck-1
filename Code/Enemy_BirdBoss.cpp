@@ -207,6 +207,7 @@ void BirdBoss::BeginMove()
 	moveAccel = .1;
 	action = MOVE; //startglide conditionally here too
 	frame = 0;
+	velocity = V2d(0, 0);
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(0));
 }
@@ -216,6 +217,7 @@ void BirdBoss::BeginFocus()
 	action = STARTFOCUS;
 	frame = 0;
 	focusRadius = 0;
+	velocity = V2d(0, 0);
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(0));
 }
@@ -248,6 +250,7 @@ void BirdBoss::BeginThrow()
 	assert(r != NULL);
 	r->Init( position, V2d( 0, 0 ));
 	owner->AddEnemy(r);
+	velocity = V2d(0, 0);
 	//cout << "spawning bomb: " << fb << ": " << fb->position.x << ", " << fb->position.y << endl;
 }
 
@@ -273,7 +276,8 @@ void BirdBoss::BeginSuperKick()
 	}
 	else
 	{
-		assert(0);
+		superKickPoint = playerPos;
+		//assert(0);
 	}
 
 	//superKickPoint = owner->GetPlayer(0)->position;//rcEdge->GetPoint(rcQuantity);
@@ -329,7 +333,7 @@ void BirdBoss::PlanChoice( int ind )
 	//{
 	//	cp.cType = C_RINGTHROW; //for testing this one thing
 	//}
-	cp.cType = C_FOCUS;
+	//cp.cType = C_FOCUS;
 		
 	switch (cp.cType)
 	{
@@ -569,14 +573,23 @@ void BirdBoss::ProcessState()
 	if (action == SUPERKICK)
 	{
 		double len = length(position - superKickStart);
+		
 		if ( len >= length(superKickPoint - superKickStart))
 		{
 			position = superKickPoint;
-			superKickPoint = superKickPoint + rcEdge->Normal() * 300.0;
-			superKickStart = position;
-			velocity = V2d(0, 0);
-			action = SUPERKICKIMPACT;
-			frame = 0;
+			if (rcEdge == NULL)
+			{
+				velocity = V2d(0, 0);
+				NextChoice();
+			}
+			else
+			{
+				superKickPoint = superKickPoint + rcEdge->Normal() * 300.0;
+				superKickStart = position;
+				velocity = V2d(0, 0);
+				action = SUPERKICKIMPACT;
+				frame = 0;
+			}
 			//NextChoice(); //not great
 		}
 	}
@@ -789,7 +802,7 @@ void GravRing::ProcessState()
 	switch (action)
 	{
 	case HOMING:
-		if (frame == 60)
+		if (frame >= 60 && length( parent->position - position ) < 700)
 		{
 			action = ORBITING;
 			frame = 0;
