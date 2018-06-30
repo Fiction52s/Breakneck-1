@@ -5510,7 +5510,12 @@ int GameSession::Run()
 
 	//sf::Vertex fireV[4];
 	//fireV.
-	
+	/*while (true)
+	{
+		window->clear(Color::Green);
+		window->display();
+		continue;
+	}*/
 
 	//rain = new Rain(this);
 
@@ -5778,6 +5783,9 @@ int GameSession::Run()
 
 
 	std::stringstream ss;
+
+	
+
 	while( !quit )
 	{
 		double newTime = gameClock.getElapsedTime().asSeconds();
@@ -5835,6 +5843,7 @@ int GameSession::Run()
 		
 
 		window->clear(Color::Red);
+
 		preScreenTex->clear(Color::Red);
 		postProcessTex->clear(Color::Red);
 		postProcessTex1->clear(Color::Red);
@@ -5842,7 +5851,7 @@ int GameSession::Run()
 		
 		
 		coll.ClearDebug();
-
+		
 		while ( accumulator >= TIMESTEP )
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
@@ -6730,6 +6739,9 @@ int GameSession::Run()
 			}
 		}
 
+		//window->display();
+		//continue;
+
 		if( debugScreenRecorder != NULL )
 		if( Keyboard::isKeyPressed( Keyboard::R ) )
 		{
@@ -6831,6 +6843,7 @@ int GameSession::Run()
 		
 
 		background->Draw(preScreenTex);
+		
 		//window->setView( bgView );
 		//preScreenTex->setView( bgView );
 
@@ -7292,6 +7305,9 @@ int GameSession::Run()
 		//bigBulletVA->draw( preScreenTex );
 
 
+		//window->display();
+		//continue;
+
 		goalPulse->Draw( preScreenTex );
 
 		for( int i = 0; i < 4; ++i )
@@ -7461,6 +7477,8 @@ int GameSession::Run()
 		//double minimapZoom = 8;// * cam.GetZoom();// + cam.GetZoom();
 		double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
 
+		
+
 		View vv;
 		vv.setCenter( p0->position.x, p0->position.y );
 		vv.setSize( minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom );
@@ -7475,6 +7493,8 @@ int GameSession::Run()
 			(*it)->Draw( minimapTex );
 		}
 		
+		
+
 		queryMode = "border";
 		numBorders = 0;
 		sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,

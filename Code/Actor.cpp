@@ -18,6 +18,9 @@
 #include "ImageText.h"
 #include "KeyMarker.h"
 #include "ScoreDisplay.h"
+#include "WorldMap.h"
+#include "SaveFile.h"
+#include "PauseMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -49,7 +52,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_scorpDash = owner->GetTileset("scorp_dash_192x80.png", 192, 80);
 	ts_scorpSprint = owner->GetTileset("scorp_sprint_192x96.png", 192, 96);
 	ts_scorpClimb = owner->GetTileset("scorp_climb_256x128.png", 256, 128);
-	ts_bubble = owner->GetTileset("timemiddle.png", 160, 160);
+	ts_bubble = owner->GetTileset("time_bubble_128x128.png", 128, 128);
 
 	ts_airBounceFlame = owner->GetTileset("bouncejumpflame.png", 128, 128, skin);
 	ts_runBounceFlame = owner->GetTileset("bouncerunflame.png", 128, 96, skin);
@@ -1395,10 +1398,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//runPoints = new std::list<Vector2f>[runLen];
 		//standPoints = new std::list<Vector2f>[20];
 
+		bool noPowers = false;
+		if (owner->mainMenu->GetCurrentProgress() != NULL
+			&& owner->mainMenu->worldMap->selectedColony == 0)
+		{
+			noPowers = true;
+		}
 		
-
-
-		bool noPowers = true;
 		if( noPowers )
 		{
 			hasPowerAirDash = false;
@@ -1426,7 +1432,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		}
 
 		//do this a little later.
-		
+		owner->mainMenu->pauseMenu->kinMenu->UpdatePowers(this);
 
 
 		//only set these parameters again if u get a power or lose one.
@@ -18289,7 +18295,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	if (canGrabRail)
 	{
 		railTest.setPosition(position.x, position.y);
-		target->draw(railTest);
+		//target->draw(railTest);
 	}
 
 	V2d motionGhostDir;
@@ -18709,21 +18715,21 @@ void Actor::Draw( sf::RenderTarget *target )
 	{
 		if( bubbleFramesToLive[i] > 0 )
 		{
-			bubbleSprite.setTextureRect( ts_bubble->GetSubRect( bubbleFramesToLive[i] % 11 ) );
+			bubbleSprite.setTextureRect(ts_bubble->GetSubRect(0));//bubbleFramesToLive[i] % 11 ) );
 			//this isnt going to be final anyway
 			//cout << "drawing " << i << ": " << bubbleRadiusSize[i] << endl;
-			double fac = ((double)bubbleRadiusSize[i]) / 160.0;
+			double fac = ((double)bubbleRadiusSize[i]) / 128.0;
 			//cout << "fac: " << fac << endl;
 			bubbleSprite.setScale( fac * 2, fac * 2 );
 			//bubbleSprite.setScale( 2, 2 );
 			bubbleSprite.setOrigin( bubbleSprite.getLocalBounds().width / 2, bubbleSprite.getLocalBounds().height / 2 );
 			bubbleSprite.setPosition( bubblePos[i].x, bubblePos[i].y );
-			bubbleSprite.setColor( Color( 255, 255, 255, 200 ) );
+			bubbleSprite.setColor( Color( 255, 255, 255, 100 ) );
 			//CircleShape cs;
 		//	cs.setFillColor( sf::Color::Transparent );
 			//cs.setRadius( 
 
-			//target->draw( bubbleSprite );// &timeSlowShader );
+			target->draw( bubbleSprite );// &timeSlowShader );
 		}
 	}
 

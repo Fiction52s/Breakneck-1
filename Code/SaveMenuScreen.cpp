@@ -107,7 +107,8 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 		{
 			assert(0);
 		}*/
-		fileDisplay[i]->SetValues(files[i]);
+		if( !defaultFiles[i] )
+			fileDisplay[i]->SetValues(files[i]);
 	}
 
 	background.setTexture(*ts_background->texture);
@@ -207,12 +208,13 @@ void SaveMenuScreen::Update()
 		case SELECT:
 			if (defaultFiles[selectedSaveIndex])
 			{
-				if (selectedSaveIndex == 0)
+				/*if (selectedSaveIndex == 0)
 				{
 					assert(0);
-				}
+				}*/
 				defaultFiles[selectedSaveIndex] = false;
 				files[selectedSaveIndex]->CopyFromDefault();
+				mainMenu->worldMap->InitSelectors();
 				action = TRANSITIONMOVIE;
 			}
 			else
@@ -567,7 +569,8 @@ void SaveMenuScreen::Reset()
 
 	for (int i = 0; i < 6; ++i)
 	{
-		fileDisplay[i]->SetValues(files[i]);
+		if (!defaultFiles[i])
+			fileDisplay[i]->SetValues(files[i]);
 	}
 	
 	asteroidFrameBack = 0;

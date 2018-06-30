@@ -567,7 +567,7 @@ MainMenu::MainMenu()
 	activatedMainMenuOptions[1] = false;
 	activatedMainMenuOptions[2] = false;
 	activatedMainMenuOptions[3] = false;
-	activatedMainMenuOptions[4] = false;
+	activatedMainMenuOptions[4] = true;
 	activatedMainMenuOptions[5] = true;
 	activatedMainMenuOptions[6] = true;
 
@@ -1480,6 +1480,10 @@ void MainMenu::Run()
 		{
 			case DEBUG_RACEFIGHT_RESULTS:
 				{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				GameSession *gs = new GameSession( NULL, this, "Maps/W1/arena04.brknk" );
 				GameSession::sLoad(gs);
 				gs->Run();
@@ -1488,6 +1492,10 @@ void MainMenu::Run()
 				}
 			case SPLASH:
 				{
+				while (window->pollEvent(ev))
+				{
+
+				}
 					bool A = menuCurrInput.A && !menuPrevInput.A;
 					bool B = menuCurrInput.B && !menuPrevInput.B;
 					bool X = menuCurrInput.X && !menuPrevInput.X;
@@ -1509,6 +1517,10 @@ void MainMenu::Run()
 				}
 			case SPLASH_TRANS:
 				{
+				while (window->pollEvent(ev))
+				{
+
+				}
 					if( splashFadeFrame > splashFadeOutLength )
 					{
 						menuMode = MAINMENU;
@@ -1530,7 +1542,7 @@ void MainMenu::Run()
 				}
 			case MAINMENU:
 				{
-				titleScreen->Update();
+					titleScreen->Update();
 					if( splashFadeFrame <= splashFadeOutLength )
 					{
 						sf::Color fadeColor = fadeRect.getFillColor();
@@ -1856,21 +1868,37 @@ void MainMenu::Run()
 				}
 			case LOADINGMAP:
 			{
-				if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+				while (window->pollEvent(ev))
 				{
-					delete loadThread;
-					loadThread = NULL;
-					menuMode = RUNNINGMAP;
+
 				}
-				else
+
+				
+				if (loadThread != NULL)
 				{
-					loadingIconBackpack[1].rotate(-1);
-					loadingIconBackpack[2].rotate(2);
+					if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+					{
+						delete loadThread;
+						loadThread = NULL;
+						menuMode = RUNNINGMAP;
+						cout << "RUNNING MAP" << endl;
+					}
+					else
+					{
+						loadingIconBackpack[1].rotate(-1);
+						loadingIconBackpack[2].rotate(2);
+					}
+				//	//menuMode = MAINMENU;
+				//	//preScreenTexture->clear(Color::Yellow);
 				}
 				break;
 			}
 			case RUNNINGMAP:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				View oldView = window->getView();
 				
 				GameSession::GameResultType result = 
@@ -1943,6 +1971,10 @@ void MainMenu::Run()
 				}
 			case TRANS_MAIN_TO_SAVE:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				if (transFrame == transLength)
 				{
 					menuMode = SAVEMENU;
@@ -1993,6 +2025,10 @@ void MainMenu::Run()
 			}
 			case TRANS_SAVE_TO_MAIN:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				UpdateMenuOptionText();
 
 
@@ -2047,6 +2083,10 @@ void MainMenu::Run()
 			}
 			case TRANS_SAVE_TO_WORLDMAP:
 				{
+				while (window->pollEvent(ev))
+				{
+
+				}
 					//menuMode = INTROMOVIE;
 					//introMovie->Play();
 					menuMode = WORLDMAP;
@@ -2108,11 +2148,19 @@ void MainMenu::Run()
 				}
 			case MULTIPREVIEW:
 				{
+				while (window->pollEvent(ev))
+				{
+
+				}
 					multiLoadingScreen->Update();
 					break;
 				}
 			case TRANS_MAPSELECT_TO_MULTIPREVIEW:
 				{
+				while (window->pollEvent(ev))
+				{
+
+				}
 					menuMode = MULTIPREVIEW;
 					/*if (slideCurrFrame > numSlideFrames)
 					{
@@ -2126,6 +2174,10 @@ void MainMenu::Run()
 				}
 			case TRANS_MULTIPREVIEW_TO_MAPSELECT:
 				{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				menuMode = MAPSELECT;
 				/*if (slideCurrFrame > numSlideFrames)
 				{
@@ -2139,6 +2191,10 @@ void MainMenu::Run()
 				}
 			case TRANS_MAIN_TO_MAPSELECT:
 				{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				menuMode = MAPSELECT;
 				/*if (slideCurrFrame > numSlideFrames)
 				{
@@ -2152,11 +2208,16 @@ void MainMenu::Run()
 				}
 			case MAPSELECT:
 				{
+
 				mapSelectionMenu->Update(menuCurrInput, menuPrevInput);
 					break;
 				}
 			case TRANS_MAPSELECT_TO_MAIN:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				menuMode = MAINMENU;
 				/*if (slideCurrFrame > numSlideFrames)
 				{
@@ -2170,6 +2231,10 @@ void MainMenu::Run()
 			}
 			case TRANS_MAIN_TO_OPTIONS:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				menuMode = OPTIONS;
 				config->WaitForLoad();
 
@@ -2190,11 +2255,19 @@ void MainMenu::Run()
 			}
 			case OPTIONS:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				optionsMenu->Update( menuCurrInput, menuPrevInput );
 				break;
 			}
 			case TRANS_OPTIONS_TO_MAIN:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				menuMode = MAINMENU;
 				/*if (slideCurrFrame > numSlideFrames)
 				{
@@ -2208,6 +2281,10 @@ void MainMenu::Run()
 			}
 			case TRANS_MAIN_TO_CREDITS:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				menuMode = CREDITS;
 				/*if (slideCurrFrame > numSlideFrames)
 				{
@@ -2221,11 +2298,19 @@ void MainMenu::Run()
 			}
 			case CREDITS:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				creditsMenu->Update();
 				break;
 			}
 			case TRANS_CREDITS_TO_MAIN:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				menuMode = MAINMENU;
 				/*if (slideCurrFrame > numSlideFrames)
 				{
@@ -2239,6 +2324,10 @@ void MainMenu::Run()
 			}
 			case INTROMOVIE:
 			{
+				while (window->pollEvent(ev))
+				{
+
+				}
 				if (!introMovie->Update() || (menuCurrInput.A && !menuPrevInput.A))
 				{
 					introMovie->Stop();
@@ -2326,6 +2415,7 @@ void MainMenu::Run()
 			}
 		case LOADINGMAP:
 		{
+			//preScreenTexture->clear(Color::Green);
 			preScreenTexture->draw(loadingBGSpr);
 
 			for( int i = 0; i < 3; ++i )
@@ -2556,6 +2646,7 @@ void MainMenu::PlayIntroMovie()
 	//worldMap->testSelector->UpdateAllInfo();
 
 	menuMode = MainMenu::Mode::INTROMOVIE;
+	//menuMode = MainMenu::Mode::LOADINGMAP;
 	introMovie->Play();
 
 	AdventureLoadLevel(&(GetCurrentProgress()->worlds[0].sectors[0].levels[0]), false);

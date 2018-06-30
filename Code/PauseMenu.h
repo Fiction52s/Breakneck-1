@@ -73,6 +73,7 @@ struct OptionsMenu
 	ControlSettingsMenu *csm;
 };
 
+struct Actor;
 struct KinMenu
 {
 	SingleAxisSelector *xSelector;
@@ -82,6 +83,8 @@ struct KinMenu
 	~KinMenu();
 	MainMenu *mainMenu;
 	sf::Sprite selectorSpr;
+	void UpdatePowers( Actor *player );
+	int secondRowMax;
 	KinMenu(MainMenu *p_mainMenu,
 		ControlSettingsMenu *csm);
 	sf::Vertex powerQuads[10 * 4];

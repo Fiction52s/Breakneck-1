@@ -766,6 +766,7 @@ std::string Level::GetFullName()
 bool World::Load(std::ifstream &is)
 {
 	is >> numSectors;
+	assert(numSectors > 0);
 	sectors = new Sector[numSectors];
 
 	for (int i = 0; i < numSectors; ++i)

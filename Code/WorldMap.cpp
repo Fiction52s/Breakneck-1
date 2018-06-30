@@ -528,7 +528,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		if ((currInput.LDown() || currInput.PDown()) && !moveDown)
 		{
 			selectedColony++;
-			if (selectedColony > 5)
+			if (selectedColony >= mainMenu->GetCurrentProgress()->numWorlds)
 				selectedColony = 0;
 			moveDown = true;
 			
@@ -537,7 +537,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			selectedColony--;
 			if (selectedColony < 0)
-				selectedColony = 5;
+				selectedColony = mainMenu->GetCurrentProgress()->numWorlds - 1;
 			moveUp = true;
 		}
 
@@ -628,10 +628,11 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	case COLONY:
 	{
+		worldSelector->SetAlpha(0);
 		Vector2f colMiddle = Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
 			colonySpr[selectedColony].getGlobalBounds().height / 2);
 		Vector2f endPos = colonySpr[selectedColony].getPosition() + colMiddle;
-
+		
 		zoomView.setCenter(endPos);
 		zoomView.setSize(Vector2f(1920, 1080) * colonySpr[selectedColony].getScale().x);
 		break;

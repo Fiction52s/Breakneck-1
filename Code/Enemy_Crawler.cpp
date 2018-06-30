@@ -57,12 +57,12 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	double size = max( width, height );
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size/ 2, size, size );
 
-	animFactor[UNBURROW] = 2;
+	animFactor[UNBURROW] = 4;
 	animFactor[CRAWL] = 1;
 	animFactor[ATTACK] = 4;
 	animFactor[ROLL] = 4;
 	animFactor[DASH] = 1;
-	animFactor[BURROW] = 2;
+	animFactor[BURROW] = 4;
 	animFactor[UNDERGROUND] = 1;
 
 	hitboxInfo = new HitboxInfo;

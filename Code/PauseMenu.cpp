@@ -1298,6 +1298,18 @@ void KinMenu::UpdateTutorial()
 	tutorialSpr.setTexture(*ts_tutorial[GetCurrIndex()]->texture);
 }
 
+void KinMenu::UpdatePowers( Actor *player )
+{
+	if (player->hasPowerAirDash)
+	{
+		secondRowMax = 1;
+	}
+	else
+	{
+		secondRowMax = 0;
+	}
+}
+
 void KinMenu::UpdateCommandButton()
 {
 	ts_currentButtons = ts_xboxButtons;
@@ -1329,7 +1341,7 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 
 	if (xchanged != 0 || ychanged != 0)
 	{
-		if ( ySelector->currIndex == 1 && xSelector->currIndex >= 2 )
+		if ( ySelector->currIndex == 1 && xSelector->currIndex > secondRowMax )
 		{
 			if (ychanged != 0)
 			{
@@ -1412,19 +1424,28 @@ void KinMenu::UpdateDescription()
 
 void KinMenu::UpdatePowerSprite()
 {
+	int maxShowIndex = 8 + secondRowMax;
 	int currIndex = GetCurrIndex();
 	for (int i = 0; i < 10; ++i)
 	{
-		SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 0));
-		if (currIndex == i)
+		if (i > maxShowIndex)
 		{
-			//SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 16));
-			SetRectColor(powerQuadsBG + i * 4, selectedShifter->GetCurrColor());//Color(0, 0, 0, 255));
+			SetRectSubRect(powerQuads + i * 4, FloatRect( 0, 0, 0, 0 ));
+			SetRectColor(powerQuadsBG + i * 4, Color(Color::Transparent));
 		}
 		else
 		{
-			//SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 0));
-			SetRectColor(powerQuadsBG + i * 4, Color(0, 0, 0, 255));
+			SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 0));
+			if (currIndex == i)
+			{
+				//SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 16));
+				SetRectColor(powerQuadsBG + i * 4, selectedShifter->GetCurrColor());//Color(0, 0, 0, 255));
+			}
+			else
+			{
+				//SetRectSubRect(powerQuads + i * 4, ts_powers->GetSubRect(i + 0));
+				SetRectColor(powerQuadsBG + i * 4, Color(0, 0, 0, 255));
+			}
 		}
 	}
 }
