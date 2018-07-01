@@ -79,7 +79,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	ts_selectSlot = tsMan.GetTileset("Menu/save_select_710x270.png", 710, 270);
 	
 	actionLength[WAIT] = 1;
-	actionLength[SELECT] = 12 * 3 + 6 * 4 + 20;
+	actionLength[SELECT] = 12 * 3 + 24 * 2 + 20;
 	actionLength[TRANSITION] = 30;
 	actionLength[TRANSITIONMOVIE] = 30;
 	actionLength[FADEIN] = 30;
@@ -120,8 +120,13 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	selectSlot.setTexture(*ts_selectSlot->texture);
 	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(0));
 
-	ts_kinJump1 = tsMan.GetTileset("Menu/save_kin_jump1_500x1080.png", 500, 1080);
-	ts_kinJump2 = tsMan.GetTileset("Menu/save_kin_jump2_500x1080.png", 500, 1080);
+	ts_kinJump[0] = tsMan.GetTileset("Menu/save_kin_jump1_500x1080.png", 500, 1080);
+	ts_kinJump[1] = tsMan.GetTileset("Menu/save_kin_jump2_500x1080.png", 500, 1080);
+	ts_kinJump[2] = tsMan.GetTileset("Menu/save_kin_jump3_500x1080.png", 500, 1080);
+	ts_kinJump[3] = tsMan.GetTileset("Menu/save_kin_jump4_500x1080.png", 500, 1080);
+	ts_kinJump[4] = tsMan.GetTileset("Menu/save_kin_jump5_500x1080.png", 500, 1080);
+	ts_kinJump[5] = tsMan.GetTileset("Menu/save_kin_jump6_500x1080.png", 500, 1080);
+
 	ts_kinClouds = tsMan.GetTileset("Menu/save_kin_clouds_500x416.png", 500, 416);
 	ts_kinWindow = tsMan.GetTileset("Menu/save_kin_window_500x1080.png", 500, 1080);
 	//ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
@@ -366,27 +371,23 @@ void SaveMenuScreen::Update()
 		if (frame < 15 * 3)
 			kinFace.setTextureRect(ts_kinFace->GetSubRect(frame / 3));
 
-		if (frame > 12 * 3)
+		if (frame >= 12 * 3)
 		{
 			int jFrame = (frame - 12 * 3);
 
-			if (jFrame == 0)
+			if (jFrame >= 6 * 4 * 2)
 			{
-				kinJump.setTexture(*ts_kinJump1->texture);
-			}
-			else if (jFrame == 4 * 3)
-			{
-				kinJump.setTexture(*ts_kinJump2->texture);
+				break;
 			}
 
-			if (jFrame < 3 * 4)
+			int texIndex = jFrame / (4 * 2);
+			int rem = jFrame % (4 * 2);
+			if ( rem == 0 )
 			{
-				kinJump.setTextureRect(ts_kinJump1->GetSubRect(jFrame / 4));
+				kinJump.setTexture(*ts_kinJump[texIndex]->texture);
 			}
-			else if( jFrame < 6 * 4 )
-			{
-				kinJump.setTextureRect(ts_kinJump2->GetSubRect(jFrame / 4 - 3));
-			}
+
+			kinJump.setTextureRect(ts_kinJump[texIndex]->GetSubRect(rem / 2));
 		}
 		//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
 		//{
@@ -533,7 +534,7 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	saveTexture->draw(kinClouds);
 	saveTexture->draw(kinWindow);
 
-	int endDraw = 12 * 3 + 6 * 4;
+	int endDraw = 12 * 3 + 24 * 2;
 	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN )
 	{
 		saveTexture->draw(kinJump);
@@ -577,8 +578,8 @@ void SaveMenuScreen::Reset()
 	asteroidFrameFront = 0;
 	moveDelayCounter = 0;
 
-	kinJump.setTexture(*ts_kinJump1->texture);
-	kinJump.setTextureRect(ts_kinJump1->GetSubRect(0));
+	kinJump.setTexture(*ts_kinJump[0]->texture);
+	kinJump.setTextureRect(ts_kinJump[0]->GetSubRect(0));
 	kinJump.setOrigin(kinJump.getLocalBounds().width, 0);
 	kinJump.setPosition(Vector2f(1920, 0) + menuOffset);
 

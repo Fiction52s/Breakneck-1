@@ -52,8 +52,7 @@ struct SaveMenuScreen
 	float fadeOut;
 	sf::Vertex blackQuad[4];
 
-	Tileset *ts_kinJump1;
-	Tileset *ts_kinJump2;
+	Tileset *ts_kinJump[6];
 	Tileset *ts_kinClouds;
 	Tileset *ts_kinWindow;
 	Tileset *ts_kinSky;

@@ -503,12 +503,33 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 
 			//testSelector->UpdateAllInfo();
 			MapSelector *currSelector = CurrSelector();
-			currSelector->saSelector->currIndex = 0;
 
+			int startSector = 0;
 			for (int i = 0; i < currSelector->numSectors; ++i)
 			{
-				currSelector->sectors[i]->saSelector->currIndex = 0;
+				if (!currSelector->sectors[i]->state == MapSector::COMPLETE)
+				{
+					startSector = i;
+					break;
+				}
 			}
+
+			currSelector->saSelector->currIndex = startSector;
+
+			for (int se = 0; se < currSelector->numSectors; ++se)
+			{
+				int numLevels = currSelector->sectors[startSector]->numLevels;
+				int startLevel = 0;
+				for (int i = 0; i < numLevels; ++i)
+				{
+					if (!currSelector->sectors[startSector]->sec->levels[i].GetComplete())
+					{
+						startLevel = i;
+					}
+				}
+				currSelector->sectors[startSector]->saSelector->currIndex = startLevel;
+			}
+			
 			break;
 		}
 		else if (currInput.B && !prevInput.B)
@@ -1634,13 +1655,19 @@ void MapSector::Update(ControllerState &curr,
 		}
 	}
 
+	if (saSelector->currIndex < saSelector->totalItems - 1)
+		++saSelector->currIndex;
+
 	if (state == NORMAL)
 	{
+		int lastBeaten = -1;
 		for (int i = 0; i < numLevels; ++i)
 		{
 			if (sec->levels[i].justBeaten)
 			{
 				state = LEVELCOMPLETEDWAIT;
+
+				
 				/*if (i < numLevels - 1)
 				{
 					
@@ -1654,8 +1681,15 @@ void MapSector::Update(ControllerState &curr,
 				unlockedIndex = i;//saSelector->currIndex;
 				//unlockFrame = frame;
 				sec->levels[i].justBeaten = false;
-				break;
+				lastBeaten = i;
+				//break;
 			}
+		}
+		if (lastBeaten >= 0)
+		{
+			if (lastBeaten < saSelector->totalItems - 1)
+				++lastBeaten;
+			saSelector->currIndex = lastBeaten;
 		}
 	}
 

@@ -74,6 +74,7 @@ struct BasicBullet : QuadTreeCollider
 	//CollisionBox physBody;
 	sf::Vector2<double> velocity;
 	int slowCounter;
+	bool active;
 	int slowMultiple;
 	//int maxFramesToLive;
 	int framesToLive;

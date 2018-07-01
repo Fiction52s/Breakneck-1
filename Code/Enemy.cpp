@@ -373,15 +373,22 @@ BasicBullet * Launcher::ActivateBullet( )
 		if( inactiveBullets != NULL )
 			inactiveBullets->prev = NULL;
 		//cout << "c" << endl;
-
+		activeBullets->active = true;
 		return activeBullets;
 	}
 }
 
 void Launcher::DeactivateBullet( BasicBullet *b )
 {
+	if (!b->active)
+	{
+		assert(0);
+		return;
+	}
+
 	assert( activeBullets != NULL );
 	
+	b->active = false;
 	//size == 1
 	if( activeBullets->next == NULL )
 	{
@@ -485,6 +492,7 @@ BasicBullet::BasicBullet( int indexVA, BType bType, Launcher *launch )
 	:index( indexVA ), launcher( launch ), next( NULL ), prev( NULL ),
 	bulletType( bType )
 {
+	active = false;
 	frame = 0;
 	switch( bType )
 	{
@@ -646,7 +654,6 @@ void BasicBullet::UpdatePostPhysics()
 
 void BasicBullet::UpdatePhysics()
 {
-
 	V2d movement = velocity / numPhysSteps / (double)slowMultiple;
 
 	double movementLen = length( movement );
@@ -692,7 +699,7 @@ void BasicBullet::UpdatePhysics()
 	}
 	while( movementLen > 0 );
 
-	if (!col && launcher->def_e != NULL && framesToLive == launcher->def_framesToLive )
+	if (!col && launcher->def_e != NULL && framesToLive == launcher->def_framesToLive && active )
 	{
 		launcher->handler->BulletHitTerrain(this,
 			launcher->def_e, launcher->def_pos);

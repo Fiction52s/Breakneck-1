@@ -1905,36 +1905,33 @@ void MainMenu::Run()
 					(GameSession::GameResultType)currLevel->Run();
 				SaveFile *currFile = GetCurrentProgress();
 
-				switch (result)
+				World & world = currFile->worlds[worldMap->selectedColony];
+				int secIndex = worldMap->selectors[worldMap->selectedColony]->saSelector->currIndex;
+				Sector &sec = world.sectors[secIndex];
+				int levIndex = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector->currIndex;
+				if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
 				{
-				case GameSession::GR_WIN:
-				{
-					
-					World & world = currFile->worlds[worldMap->selectedColony];//currLevel->mh->envType];
+					//currLevel->mh->envType];
 					bool doneCheck = false;
 					//for (int i = 0; i < world.numSectors && !doneCheck; ++i)
+					//for (int j = 0; j < sec.numLevels && !doneCheck; ++j)
 					{
-						int secIndex = worldMap->selectors[worldMap->selectedColony]->saSelector->currIndex;
-						Sector &sec = world.sectors[secIndex];
-						int levIndex = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector->currIndex;
-						//for (int j = 0; j < sec.numLevels && !doneCheck; ++j)
+						Level &lev = sec.levels[levIndex];
+						//if (lev.GetFullName() == currLevel->fileName)
 						{
-							Level &lev = sec.levels[levIndex];
-							//if (lev.GetFullName() == currLevel->fileName)
+							if (!lev.GetComplete())
 							{
-								if (!lev.GetComplete())
-								{
-									lev.justBeaten = true;
-								}
-
-								lev.SetComplete(true);
-								
-								doneCheck = true;
+								lev.justBeaten = true;
 							}
+
+							lev.SetComplete(true);
+
+							doneCheck = true;
 						}
 					}
-					break;
 				}
+				switch (result)
+				{
 				case GameSession::GR_EXITLEVEL:
 					//currFile->Save();
 					break;
@@ -1953,8 +1950,37 @@ void MainMenu::Run()
 
 				window->setView(oldView);
 
-				menuMode = MainMenu::WORLDMAP;
-				worldMap->Update(menuPrevInput, menuCurrInput);
+				SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector;
+				if (result == GameSession::GR_WIN)
+				{
+					/*if (sa->currIndex < sa->totalItems - 1)
+					{
+						sa->currIndex++;
+					}*/
+					menuMode = MainMenu::WORLDMAP;
+					worldMap->Update(menuPrevInput, menuCurrInput);
+				}
+				else if (result == GameSession::GR_WINCONTINUE)
+				{
+					
+					if (sa->currIndex < sa->totalItems - 1)
+					{
+						sa->currIndex++;
+						AdventureLoadLevel(&(sec.levels[sa->currIndex]));
+					}
+					else
+					{
+						menuMode = MainMenu::WORLDMAP;
+						worldMap->Update(menuPrevInput, menuCurrInput);
+					}
+					
+				}
+				else
+				{
+					//fix this later for other options
+					menuMode = MainMenu::WORLDMAP;
+					worldMap->Update(menuPrevInput, menuCurrInput);
+				}
 				break;
 				
 			}
@@ -2632,8 +2658,11 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 
 	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
 
-	if( loadingScreen )
+	if (loadingScreen)
+	{
 		menuMode = LOADINGMAP;
+		preScreenTexture->setView(v);
+	}
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
 }

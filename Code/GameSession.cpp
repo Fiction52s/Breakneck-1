@@ -5989,7 +5989,9 @@ int GameSession::Run()
 			if( goalDestroyed )
 			{
 				quit = true;
-				returnVal = GR_WIN;
+				
+				//returnVal = GR_WIN;
+				returnVal = resType;
 				break;
 			}
 			
@@ -6290,8 +6292,8 @@ int GameSession::Run()
 				if( goalDestroyed )
 				{
 					quit = true;
-					returnVal = GR_WIN;
-
+					//returnVal = GR_WIN;
+					returnVal = resType;
 					
 					/*recGhost->StopRecording();
 					recGhost->WriteToFile( "testghost.bghst" );*/

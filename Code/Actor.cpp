@@ -2378,8 +2378,19 @@ void Actor::UpdatePrePhysics()
 		{ 
 			if (owner->scoreDisplay->waiting)
 			{
-				if (currInput.A && !prevInput.A && owner->scoreDisplay->waiting)
+				bool a = currInput.A && !prevInput.A;
+				bool x = currInput.X && !prevInput.X;
+				if ( ( a || x ) && owner->scoreDisplay->waiting)
 				{
+					if (a)
+					{
+						owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+					}
+					else if (x)
+					{
+						owner->resType = GameSession::GameResultType::GR_WIN;
+					}
+					
 					//owner->scoreDisplay->Reset();
 					owner->scoreDisplay->Deactivate();
 					owner->activeSequence = owner->shipExitSeq;
@@ -2414,9 +2425,21 @@ void Actor::UpdatePrePhysics()
 	}
 	else if( action == GOALKILLWAIT )
 	{
-		if( currInput.A && !prevInput.A && owner->scoreDisplay->waiting )
+		bool a = currInput.A && !prevInput.A;
+		bool x = currInput.X && !prevInput.X;
+		if( ( a || x ) && owner->scoreDisplay->waiting )
 		{
 			//owner->scoreDisplay->Reset();
+			
+			
+			if (a)
+			{
+				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+			}
+			else if (x)
+			{
+				owner->resType = GameSession::GameResultType::GR_WIN;
+			}
 			owner->scoreDisplay->Deactivate();
 			//owner->scoreDisplay->Activate();
 		}
@@ -16523,8 +16546,11 @@ void Actor::UpdatePostPhysics()
 		velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
 	}
 
-	if( action == EXITWAIT && frame == actionLength[EXITWAIT] )
-		owner->goalDestroyed = true;
+	if (action == EXITWAIT && frame == actionLength[EXITWAIT])
+	{
+		owner->goalDestroyed = true;	
+	}
+		
 	/*switch( expr )
 	{
 	case Expr::NEUTRAL:

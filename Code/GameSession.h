@@ -279,6 +279,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	enum GameResultType
 	{
 		GR_WIN,
+		GR_WINCONTINUE,
 		GR_EXITLEVEL,
 		GR_EXITTITLE,
 		GR_EXITGAME
@@ -953,6 +954,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::string fileName;
 	boost::filesystem::path filePath;
 	bool goalDestroyed;
+	GameResultType resType;
 	sf::View cloudView;
 
 	void ActivateZone(Zone * z, bool instant = false);
