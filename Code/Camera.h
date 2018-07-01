@@ -24,7 +24,9 @@ struct Camera
 	void Ease(sf::Vector2f &pos, float zFactor,
 		int numFrames, CubicBezier &bez );
 	void UpdateEase();
+	void SetTestOffset( sf::Vector2<double> &pVel);
 	GameSession *owner;
+	sf::Vector2f offsetVel;
 	
 	sf::FloatRect GetRect();
 	sf::Vector2f GetPos();
@@ -36,6 +38,9 @@ struct Camera
 	bool relativeMoveSeq;
 	sf::Vector2f sequenceStartPos;
 	float sequenceStartZoom;
+
+	sf::Vector2f moveFrames;
+
 
 	int easeOutCount;
 	int easeOutFrame;

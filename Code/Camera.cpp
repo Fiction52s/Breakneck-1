@@ -51,6 +51,7 @@ Camera::Camera()
 
 	rX = 0;
 	rY = 0;
+	offsetVel = Vector2f(0, 0);
 }
 
 void Camera::EaseOutOfManual( int frames )
@@ -111,6 +112,250 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 	}
 
 	return numEnemies;
+}
+
+void Camera::SetTestOffset( V2d &pVel )
+{
+	float offXAccelOut = .1;
+	float offXAccelIn = .1;
+	float offYAccelOut = .1;
+	float offYAccelIn = .1;
+
+	Vector2f targetOffset;
+	double maxXVelRegistered = 30.0;
+	Vector2f moveFactor;
+	float moveF = 1.0;
+
+
+	
+
+	if (pVel.x > 0)
+	{
+		moveFactor.x = min(1.0, pVel.x / maxXVelRegistered);
+		moveFactor.x = 1.f;
+		moveFrames.x += moveFactor.x;
+		//targetOffset.x = ;
+	}
+	else if( pVel.x < 0 )
+	{
+		
+		moveFactor.x = max(-1.0, pVel.x / maxXVelRegistered);
+		moveFactor.x = -1.f;
+		moveFrames.x += moveFactor.x;
+	//	targetOffset.x =  );
+	}
+	else
+	{
+		float zFactor = 1.f;
+		if (moveFrames.x > 0)
+		{
+			moveFrames.x -= zFactor;
+		}
+		else if (moveFrames.x < 0)
+		{
+			moveFrames.x += zFactor;
+		}
+	}
+	//cout << "moveframes.x: " << moveFrames.x << endl;
+
+	double maxYVelRegistered = 30.0;
+	if (pVel.y > 0)
+	{
+		
+		moveFactor.y = min(1.0, pVel.y / maxYVelRegistered);
+		moveFactor.y = 1.f;
+		moveFrames.y += moveFactor.y;
+		//targetOffset.y = min(1.0, pVel.y / maxYVelRegistered);
+	}
+	else if (pVel.y < 0)
+	{
+		
+		moveFactor.y = max(-1.0, pVel.y / maxYVelRegistered);
+		moveFactor.y = -1.f;
+		moveFrames.y += moveFactor.y;
+		//targetOffset.y = max(-1.0, pVel.y / maxYVelRegistered);
+	}
+	else
+	{
+		moveFrames.y = 0;
+		/*float zFactor = 1.f;
+		if (moveFrames.y > 0)
+		{
+			moveFrames.y -= zFactor;
+		}
+		else if (moveFrames.y < 0)
+		{
+			moveFrames.y += zFactor;
+		}*/
+	}
+
+	float maxFramesX = 60;
+	float maxFramesY = 60;
+
+	if (moveFrames.x > maxFramesX)
+	{
+		moveFrames.x = maxFramesX;
+	}
+	else if (moveFrames.x < -maxFramesX)
+	{
+		moveFrames.x = -maxFramesX;
+	}
+
+	if (moveFrames.y > maxFramesY)
+	{
+		moveFrames.y = maxFramesY;
+	}
+	else if (moveFrames.y < -maxFramesY)
+	{
+		moveFrames.y = -maxFramesY;
+	}
+
+	Vector2f maxOff;
+	if (moveFrames.x > 0)
+	{
+		maxOff.x = 100.f + 150.f * (moveFrames.x / maxFramesX);
+	}
+	else if (moveFrames.x < 0)
+	{
+		maxOff.x = -100.f + 150.f * (moveFrames.x / maxFramesX);
+	}
+	else
+	{
+		maxOff.x = 0;
+	}
+
+	if (moveFrames.y > 0)
+	{
+		maxOff.y = 125.f;// + 150.f * (moveFrames.y / maxFramesX);
+	}
+	else if (moveFrames.y < 0)
+	{
+		maxOff.y = -75.f;// +150.f * (moveFrames.y / maxFramesX);
+	}
+	else
+	{
+		maxOff.y = 0;
+	}
+	
+
+	Vector2f moveStuff;
+	
+	targetOffset = maxOff;// *5.f;
+
+
+	/*if (moveFrames.x > 0)
+	{
+		targetOffset.x = moveFrames.x / maxFramesX;
+	}
+	else if (moveFrames.x < 0)
+	{
+		targetOffset.x = moveFrames.x / maxFramesX;
+	}
+	else
+	{
+		targetOffset.x = 0;
+	}
+
+	if (moveFrames.y > 0)
+	{
+		targetOffset.y = moveFrames.y / maxFramesY;
+	}
+	else if (moveFrames.y < 0)
+	{
+		targetOffset.y = moveFrames.y / maxFramesY;
+	}
+	else
+	{
+		targetOffset.y = 0;
+	}*/
+	
+
+	//targetOffset = //moveFactor;
+	if (pVel.x > 0)
+	{
+		targetOffset.x = 1.0;
+	}
+	else if (pVel.x < 0)
+	{
+		targetOffset.x = -1.0;
+	}
+	else
+	{
+		targetOffset.x = 0;
+	}
+	if (pVel.y > 0)
+	{
+		targetOffset.y = 1.0;
+	}
+	else if (pVel.y < 0)
+	{
+		targetOffset.y = -1.0;
+	}
+	else
+	{
+		targetOffset.y = 0;
+	}
+	targetOffset.x *= 250.0;
+	
+	if (targetOffset.y > 0)
+	{
+		targetOffset.y *= 125.0;//maxOffset.y;
+	}
+	else
+	{
+		targetOffset.y *= 75.0;
+	}
+
+	
+	targetOffset *= GetZoom();//10.f;//zoomFactor * 2 + zoomLevel;//zoomFactor * 2;//GetZoom();
+	//cout << "targetOffset: " << targetOffset.x << ", " << targetOffset.y << endl;
+
+	//offset = targetOffset;
+	//offset = targetOffset;
+	Vector2f maxVel(1.0, 1.0);
+	if (targetOffset.x > offset.x)
+	{
+		offsetVel.x = maxVel.x;
+	}
+	else
+	{
+		offsetVel.x = -maxVel.x;
+	}
+
+	if (targetOffset.y > offset.y)
+	{
+		offsetVel.y = maxVel.y;
+	}
+	else
+	{
+		offsetVel.y = -maxVel.y;
+	}
+
+	Vector2f dir = normalize(targetOffset - offset);
+	float speed = 2.0;
+	if ((pVel.x > 0 && offset.x < 0) || pVel.x < 0 && offset.x > 0 )
+	{
+		speed *= 2;
+	}
+
+	dir.x *= speed;
+
+	offsetVel = dir;// *speed;
+	//offsetVel.x *= abs(dir.x);
+	//offsetVel.y *= abs(dir.y);
+	offset += offsetVel;//targetOffset;
+	Vector2f diff = targetOffset - offset;
+	if (abs(diff.x) <= maxVel.x ) 
+	{
+		offset.x = targetOffset.x;
+		offsetVel.x = 0;
+	}
+	if( abs( diff.y ) <= maxVel.y )
+	{
+		offset.y = targetOffset.y;
+		offsetVel.y = 0;
+	}
+	//cout << "offset: " << offset.x << " , " << offset.y << endl;
 }
 
 void Camera::UpdateEnemyZoom( Actor *player )
@@ -348,8 +593,8 @@ sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 			{
 				otherDir = -player->ground->Normal();
 
-				V2d offset = otherDir * player->normalHeight * (1 - player->framesNotGrinding / cap2);
-				playerPos += offset;
+				V2d toffset = otherDir * player->normalHeight * (1 - player->framesNotGrinding / cap2);
+				playerPos += toffset;
 				//cout << "height off: " << playerPos.y << endl;
 				//cout << "offset: " << offset.x << ", " << offset.y << ", framesNotGrinding: " << player->framesNotGrinding << endl;
 			}
@@ -427,8 +672,9 @@ void Camera::UpdateZoomFactor( Actor *player )
 
 void Camera::SetMovementOffset( V2d &pVel )
 {
+	double offXAccel;
 	double offX = pVel.x * .8;//1.0;
-	double offXMax = 10;
+	double offXMax = 10;//10;
 
 	if (offX > offXMax)
 	{
@@ -441,7 +687,7 @@ void Camera::SetMovementOffset( V2d &pVel )
 	offset.x += offX;
 
 	double offY = pVel.y * .8;//1.0;
-	double offYMax = 10;
+	double offYMax = 10;//10;
 
 	if (offY > offYMax)
 	{
@@ -678,9 +924,6 @@ void Camera::Update( Actor *player )
 	if( owner == NULL )
 		owner = player->owner;
 
-	//if (manual)/*|| player->action == Actor::SPAWNWAIT || player->action == Actor::INTRO
-	//		   || player->action == Actor::EXIT )*/
-	//{
 	if (manual)
 	{
 		ManualUpdate();
@@ -703,14 +946,11 @@ void Camera::Update( Actor *player )
 		pos.y = playerPos.y + offset.y;
 	}
 	
-	
 	ControllerState & con = player->currInput;
 	ControllerState & prevcon = player->prevInput;
 	UpdateZoomLevel(con, prevcon);
 
-
 	V2d pVel = GetPlayerVel(player);
-	
 
 	if( pVel.y > 0 )
 	{
@@ -727,7 +967,6 @@ void Camera::Update( Actor *player )
 
 	pos.x = playerPos.x;
 	pos.y = playerPos.y;
-
 	
 	if (owner->debugScreenRecorder != NULL)
 	{
@@ -737,36 +976,16 @@ void Camera::Update( Actor *player )
 	}
 	else
 	{
-		SetMovementOffset(pVel);
+		SetTestOffset(pVel);
+		//SetMovementOffset(pVel);
 	}
-	
 
 	pos.x += offset.x;
 	pos.y += offset.y;
 
-	
-
-	
-	
-
 	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
 
-	
-
-
-	
-	
-
-
-
-
 	UpdateEnemyZoom( player );
-
-	
-	
-
-	
-
 
 	if( zoomFactor < 1 )
 		zoomFactor = 1;
