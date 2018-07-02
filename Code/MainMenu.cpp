@@ -2630,10 +2630,17 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 	windowWidth = p_windowWidth;
 	windowHeight = p_windowHeight;
 
+	//window->close();
+	//delete window;
+	//window = new RenderWindow(sf::VideoMode(windowWidth, windowHeight), "Breakneck",
+	//	config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
+
 	//if( style == p_style )
 
 	//make sure to set to the center
 	window->setSize(Vector2u(windowWidth, windowHeight));
+	window->setPosition(Vector2i(0, 0));
+	//window->re
 	/*else
 	{
 		if (window->isOpen())

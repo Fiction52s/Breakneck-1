@@ -1,4 +1,4 @@
-#version 330
+//#version 330
 
 uniform sampler2D u_ringTex; 
 uniform float u_startAngle;

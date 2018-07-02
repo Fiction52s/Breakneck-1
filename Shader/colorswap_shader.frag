@@ -8,20 +8,14 @@ void main()
 {		
 	vec4 DiffuseColor = texture2D(u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y ) );
 	
-	if( DiffuseColor.a > 0.0 )
+	if( DiffuseColor.rgb == fromColor.rgb )
 	{
-		gl_FragColor = toColor;
+		gl_FragColor = vec4(toColor.rgb, DiffuseColor.a );
 	}
 	else
-	//if( DiffuseColor.rgb == fromColor.rgb )
-	//{
-	//	gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
-		//DiffuseColor.rgb = toColor.rgb;
-	//}
-	
-	gl_FragColor = DiffuseColor;
-	//gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );
-	
+	{
+		gl_FragColor = DiffuseColor;
+	}
 }
 
 

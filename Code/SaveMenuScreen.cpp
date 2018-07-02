@@ -512,7 +512,7 @@ void SaveMenuScreen::Update()
 Vector2f SaveMenuScreen::GetTopLeftSaveSlot(int index)
 {
 	Vector2f topLeftPos;
-	topLeftPos.x += ts_selectSlot->tileWidth * (index % 2);
+	topLeftPos.x += ts_selectSlot->tileWidth * (index %  2);
 	topLeftPos.y += ts_selectSlot->tileHeight * (index / 2);
 	//topLeftPos += menuOffset;
 

@@ -13,7 +13,7 @@ void main()
 	
 	float d = dot( testDir, dir );
 	
-	if( d > 0 )
+	if( d > 0.0 )
 	{
 		//gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 );
 		discard;

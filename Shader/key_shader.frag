@@ -10,14 +10,10 @@ void main()
 {		
 	vec4 DiffuseColor = texture2D(u_texture, vec2( gl_TexCoord[0].x, gl_TexCoord[0].y ) );
 	
-	//if( DiffuseColor.rgb == fromColor.rgb )
-	//{
 	if( DiffuseColor.rgb != auraColor.rgb )
 	{
-		DiffuseColor.rgb = DiffuseColor.rgb * ( 1.0 - prop ) + toColor.rgb * prop; //toColor.rgb;
+		DiffuseColor.rgb = DiffuseColor.rgb * vec3( 1.0 - prop ) + toColor.rgb * vec3(prop);
 	}
-		
-	//}
 	
 	gl_FragColor = DiffuseColor;
 	
