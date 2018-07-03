@@ -239,6 +239,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	//dustParticles->SetTileset(owner->GetTileset( "dust_8x8.png", 8,8));
 	//dustParticles->ActivateEffect(&params);
 
+	
+
 	cout << "Start player" << endl;
 	repeatingSound = NULL;
 		currBooster = NULL;
@@ -1071,6 +1073,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[DAIR] = 16;
 		//CreateAura(auraPoints[DAIR], tileset[DAIR]);
 		actionLength[DASH] = 45;
+		maxBBoostCount = actionLength[DASH];
 		//CreateAura(auraPoints[DASH], tileset[DASH] );
 		actionLength[DOUBLE] = 28 + 10;
 		//CreateAura(auraPoints[DOUBLE], tileset[DOUBLE]);
@@ -1595,6 +1598,14 @@ void Actor::ActionEnded()
 			break;
 		case DASH:
 			//dashStartSound.stop();
+			/*if (groundSpeed > 0 && abs(ground->Normal().y) == 1 )
+			{
+				groundSpeed += 5.0;
+			}
+			else if( groundSpeed < 0 && abs( ground->Normal().y ) == 1 )
+			{
+				groundSpeed -= 5.0;
+			}*/
 			SetActionExpr( STAND );
 			frame = 0;
 			break;
@@ -1894,6 +1905,7 @@ void Actor::CreateAttackLightning()
 
 void Actor::Respawn()
 {
+	currBBoostCounter = 0;
 	repeatingSound = NULL;
 	currBooster = NULL;
 	oldBooster = NULL;
@@ -8926,6 +8938,20 @@ facingRight = false;
 		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	}
 	
+	/*if (currBBoostCounter == maxBBoostCount && ground != NULL && groundSpeed != 0)
+	{
+		double bboost = 3.0;
+		if (groundSpeed > 0)
+		{
+			groundSpeed += bboost;
+		}
+		else
+		{
+			groundSpeed -= bboost;
+		}
+		currBBoostCounter = 0;
+	}*/
+
 	
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
@@ -9191,6 +9217,11 @@ void Actor::SetAction( Action a )
 	{
 		owner->soundNodeList->DeactivateSound(repeatingSound);
 		repeatingSound = NULL;
+	}
+
+	if (action == GRAVREVERSE || action == LAND || action == LAND2)
+	{
+		currBBoostCounter = 0;
 	}
 
 	switch (action)
@@ -11435,10 +11466,10 @@ void Actor::GroundExtraAccel()
 	}
 	else if( currInput.B )
 	{
-		if( groundSpeed > 0 )
+		/*if( groundSpeed > 0 )
 			groundSpeed += holdDashAccel / slowMultiple;
 		else if( groundSpeed < 0 )
-			groundSpeed -= holdDashAccel / slowMultiple;
+			groundSpeed -= holdDashAccel / slowMultiple;*/
 	}
 }
 
@@ -16370,6 +16401,15 @@ void Actor::UpdatePostPhysics()
 		}
 	}
 
+	//happens even when in time slow
+	/*if (ground != NULL && currInput.B)
+	{
+		if (currBBoostCounter < maxBBoostCount)
+		{
+			currBBoostCounter++;
+		}
+	}*/
+
 	if( slowCounter == slowMultiple )
 	{
 		if( wallJumpFrameCounter < wallJumpMovementLimit )
@@ -16402,6 +16442,8 @@ void Actor::UpdatePostPhysics()
 		++framesSinceDoubleWireBoost;
 
 		++frame;
+
+		
 
 		if (springStunFrames > 0)
 			--springStunFrames;

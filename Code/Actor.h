@@ -853,6 +853,9 @@ struct Actor : QuadTreeCollider,
 	double GetFullSprintAccel( bool downSlope,
 		sf::Vector2<double> &gNorm );
 
+	int maxBBoostCount;
+	int currBBoostCounter;
+
 	double doubleJumpStrength;
 	double backDoubleJumpStrength;
 

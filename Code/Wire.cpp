@@ -232,60 +232,57 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				}
 				else
 				{
-
-					/*angle = angle / ( 360.0  / 64.0 );
-					int mult = floor( angle );
-					double remain = angle - ( mult * PI / 32.0 );
-					if( remain >= PI / 64.0 )
+					if (currInput.leftStickMagnitude > 0)
 					{
-						mult++;
+						double angle = currInput.leftStickRadians;
+
+						double degs = angle / PI * 180.0;
+						double sec = 360.0 / 64.0;
+						int mult = floor((degs / sec) + .5);
+						angle = (PI / 32.0) * mult;
+
+						fireDir.x = cos(angle);
+						fireDir.y = -sin(angle);
 					}
-
-					angle = mult * PI / 32.0;*/
-
-
-					/*fireDir.x = cos( currInput.leftStickRadians );
-					fireDir.y = -sin( currInput.leftStickRadians );*/
-					double angle = currInput.leftStickRadians;
-
-					double degs = angle / PI * 180.0;
-					double sec = 360.0 / 64.0;
-					int mult = floor( (degs / sec) + .5 );
-					angle = (PI / 32.0) * mult;
-
-					fireDir.x = cos( angle );
-					fireDir.y = -sin( angle );
-				}
-
-				if( length( fireDir ) > .1 )
-				{
-					if( true )
-					//if( (right && ( player->lastWire == 0 || player->lastWire == 2 )) 
-					//	|| (!right && ( player->lastWire == 0 || player->lastWire == 1 ) ) )
+					else
 					{
-						if( right )
+						if (player->facingRight)
 						{
-							player->lastWire = 1;
+							fireDir = V2d(1, -1);
 						}
 						else
 						{
-							player->lastWire = 2;
+							fireDir = V2d(-1, -1);
 						}
 
-						fireDir = normalize( fireDir );
-
-						float angle = atan2( fireDir.y, fireDir.x );
-
-						state = FIRING;
-						//cout << "firing from idle" << endl;
-						framesFiring = 0;
-						frame = 0;
-
-						wireTip.setRotation( angle );
+						if (player->reversed)
+						{
+							fireDir.y = 1.0;
+						}
 					}
+					
 				}
 
-				//fireDir = normalize( V2d( -1, -1 ) );
+
+				if (right)
+				{
+					player->lastWire = 1;
+				}
+				else
+				{
+					player->lastWire = 2;
+				}
+
+				fireDir = normalize(fireDir);
+
+				float angle = atan2(fireDir.y, fireDir.x);
+
+				state = FIRING;
+				//cout << "firing from idle" << endl;
+				framesFiring = 0;
+				frame = 0;
+
+				wireTip.setRotation(angle);
 			}
 			break;
 		}

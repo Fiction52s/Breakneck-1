@@ -153,17 +153,21 @@ bool GameController::UpdateState()
 
 			magnitude -= LEFT_STICK_DEADZONE;
 			normalizedMagnitude = magnitude / (32767 - LEFT_STICK_DEADZONE);
+
+			
+			m_state.leftStickRadians = atan(normalizedLY / normalizedLX);
+			if (normalizedLX < 0.0f)
+				m_state.leftStickRadians += PI;
 		}
 		else 
 		{
 			magnitude = 0.0f;
 			normalizedMagnitude = 0.0;
+
+			m_state.leftStickRadians = 0.0;
 		}
 
 		m_state.leftStickMagnitude = normalizedMagnitude;
-		m_state.leftStickRadians = atan( normalizedLY / normalizedLX );
-		if( normalizedLX < 0.0f )
-			m_state.leftStickRadians += PI;
 
 		double RX = state.Gamepad.sThumbRX;
 		double RY = state.Gamepad.sThumbRY;
