@@ -15267,7 +15267,10 @@ void Actor::PhysicsResponse()
 							|| og->gState == Gate::SOFT
 							|| og->gState == Gate::SOFTEN ) )
 						{
-							og->gState = Gate::LOCKFOREVER;
+							og->gState = Gate::REFORM;
+							og->frame = 0;
+							float aa = .5;
+							og->centerShader.setUniform("breakPosQuant", aa);
 						}
 					}
 				}
@@ -15288,7 +15291,10 @@ void Actor::PhysicsResponse()
 							|| og->gState == Gate::SOFT
 							|| og->gState == Gate::SOFTEN ) )
 						{
-							og->gState = Gate::LOCKFOREVER;
+							og->gState = Gate::REFORM;
+							og->frame = 0;
+							float aa = .5;
+							og->centerShader.setUniform("breakPosQuant", aa);
 						}
 					}
 				}

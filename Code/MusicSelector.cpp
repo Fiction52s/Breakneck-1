@@ -484,7 +484,7 @@ bool MusicManager::LoadFolderPaths()
 	}
 	else
 	{
-		assert(0 && "failed to open music directories sheet");
+		//assert(0 && "failed to open music directories sheet");
 	}
 
 	folderPaths.push_back(current_path().string() + "/Audio/Music/");

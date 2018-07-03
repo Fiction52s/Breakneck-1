@@ -70,13 +70,15 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 	V2d playerPos = player->position;
 	V2d vPos = V2d(pos.x, pos.y);
 
-	minX = pos.x - 480;
-	maxX = pos.x + 480;
-	minY = pos.y - 270;
-	maxY = pos.y + 270;
+	minX = pos.x - 480 * GetZoom();
+	maxX = pos.x + 480 * GetZoom();
+	minY = pos.y - 270 * GetZoom();
+	maxY = pos.y + 270 * GetZoom();
 
 	int testRadius = 1200;//900
-	int extra = 200;
+	double extraCap = 400;
+	double extra = 200;
+	double extraDist = 200;
 
 	Enemy *curr = owner->activeEnemyList;
 	while (curr != NULL)
@@ -87,26 +89,53 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 		//have stuff here for relative movers so 
 		//bool sometimesExclude = curr->type == Enemy::GHOST
 
-		if (length(playerPos - curr->position) > testRadius || !curr->affectCameraZoom)
+		if ( !curr->affectCameraZoom)
 		{
 			curr = curr->next;
 			continue;
 		}
 
-		++numEnemies;
+		
 		double len = length(curr->position - vPos);
 
 		V2d dir = normalize(curr->position - vPos);
 
-		if (curr->position.x - extra < minX)
-			minX = curr->position.x - extra;
-		else if (curr->position.x + extra > maxX)
-			maxX = curr->position.x + extra;
+		double leftX = curr->position.x - extra;
+		double leftCap = minX - extraCap;
+		double rightX = curr->position.x + extra;
+		double rightCap = maxX + extraCap;
+		double topY = curr->position.y - extra;
+		double topCap = minY - extraCap;
+		double botY = curr->position.y + extra;
+		double botCap = maxY + extraCap;
 
-		if (curr->position.y - extra < minY)
-			minY = curr->position.y - extra;
-		else if (curr->position.y + extra > maxY)
-			maxY = curr->position.y + extra;
+		bool a = leftX < minX && leftX >= leftCap;
+		bool b = rightX > maxX && rightX <= rightCap;
+		bool c = topY < minY && topY >= topCap;
+		bool d = botY > maxY && botY <= botCap;
+
+		if ((a || b) && (c || d))
+		{
+			++numEnemies;
+			if (a)
+			{
+				minX = leftX;
+			}
+			else if (b)
+			{
+				maxX = rightX;
+			}
+
+			if (c)
+			{
+				minY = topY;
+			}
+			else if (d)
+			{
+				maxY = botY;
+			}
+
+		}
 
 		curr = curr->next;
 	}
@@ -360,6 +389,11 @@ void Camera::SetTestOffset( V2d &pVel )
 
 void Camera::UpdateEnemyZoom( Actor *player )
 {
+
+
+
+
+
 	double minX, maxX, minY, maxY;
 
 	numActive = GetActiveEnemyCount( player, minX, maxX, minY, maxY );

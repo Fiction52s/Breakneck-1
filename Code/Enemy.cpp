@@ -1135,7 +1135,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 		/*keyColor.r = (sf::Uint8)(floor( (float)(keyColor.r) * .1f + .5f ));
 		keyColor.g = (sf::Uint8)(floor( (float)(keyColor.g) * .1f + .5f ));
 		keyColor.b = (sf::Uint8)(floor( (float)(keyColor.b) * .1f + .5f ));*/
-		keyColor = Color::Black;
+		keyColor = Color::White;
 		
 		//keyColor = Color::White;
 

@@ -670,7 +670,7 @@ void GameSession::UpdateEnemiesPostPhysics()
 			{
 				fac = 1.f - ( keyFrame - halftot ) / (halftot-1);
 			}
-			cout << "fac: " << fac << endl;
+			//cout << "fac: " << fac << endl;
 			current->keyShader->setUniform( "prop", fac );
 		}
 
@@ -4479,6 +4479,24 @@ void GameSession::SetupZones()
 
 	}
 
+	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+	{
+		int numTotalKeys = 0;
+		for (auto it = (*zit)->allEnemies.begin(); it != (*zit)->allEnemies.end(); ++it)
+		{
+			if ((*it)->hasMonitor)
+			{
+				++numTotalKeys;
+			}
+		}
+		(*zit)->totalStartingKeys = numTotalKeys;
+	}
+
+	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+	{
+		(*zit)->requiredKeys = (*zit)->totalStartingKeys;
+	}
+
 	//set key number objects correctly
 	for( list<KeyNumberObj*>::iterator it = keyNumberObjects.begin(); it != keyNumberObjects.end(); ++it )
 	{
@@ -4519,7 +4537,7 @@ void GameSession::SetupZones()
 
 	keyNumberObjects.clear();
 
-	 
+	
 
 	cout << "2" << endl;
 	//which zone is the player in?
@@ -4547,18 +4565,7 @@ void GameSession::SetupZones()
 	}
 
 	
-	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
-	{
-		int numTotalKeys = 0;
-		for (auto it = (*zit)->allEnemies.begin(); it != (*zit)->allEnemies.end(); ++it)
-		{
-			if ((*it)->hasMonitor)
-			{
-				++numTotalKeys;
-			}
-		}
-		(*zit)->totalStartingKeys = numTotalKeys;
-	}
+	
 
 	if( originalZone != NULL )
 	{
@@ -6594,8 +6601,15 @@ int GameSession::Run()
 
 				queryMode = "enemy";
 
-				tempSpawnRect = screenRect;
-				enemyTree->Query( this, screenRect );
+				sf::Rect<double> spawnRect = screenRect;
+				double spawnExtra = 800;
+				spawnRect.left -= spawnExtra;
+				spawnRect.width += 2 * spawnExtra;
+				spawnRect.top -= spawnExtra;
+				spawnRect.height += 2 * spawnExtra;
+
+				tempSpawnRect = spawnRect;
+				enemyTree->Query( this, spawnRect);
 
 				//if( player->blah || player->record > 1 )
 				//{
@@ -14025,19 +14039,19 @@ void GameSession::UnlockGate( Gate *g )
 		unlockedGateList = g;
 	}
 
-	if( currentZone != NULL )
-	{
-		list<Edge*> &gList = currentZone->gates;
-		for( list<Edge*>::iterator it = gList.begin(); it != gList.end(); ++it )
-		{
-			Gate *gg = (Gate*)(*it)->info;
-			if( gg == g || gg->gState == Gate::OPEN || gg->gState == Gate::DISSOLVE )
-				continue;
+	//if( currentZone != NULL )
+	//{
+	//	list<Edge*> &gList = currentZone->gates;
+	//	for( list<Edge*>::iterator it = gList.begin(); it != gList.end(); ++it )
+	//	{
+	//		Gate *gg = (Gate*)(*it)->info;
+	//		if( gg == g || gg->gState == Gate::OPEN || gg->gState == Gate::DISSOLVE )
+	//			continue;
 
-			gg->gState = Gate::LOCKFOREVER;
-			//g->SetLocked();
-		}
-	}
+	//		gg->gState = Gate::LOCKFOREVER;
+	//		//g->SetLocked();
+	//	}
+	//}
 }
 
 void GameSession::LockGate( Gate *g )

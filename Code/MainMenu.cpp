@@ -892,8 +892,9 @@ MainMenu::MainMenu()
 		loadingIconBackpack[i].setPosition(1920 - 260, 1080 - 200);
 	}
 
-	Tileset *ts_loadBG = tilesetManager.GetTileset("Menu/load_w1_2.png", 1920, 1080);
-	loadingBGSpr.setTexture(*ts_loadBG->texture);
+	ts_loadBG[0] = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);
+	ts_loadBG[1] = tilesetManager.GetTileset("Menu/load_w2_1.png", 1920, 1080);
+	//loadingBGSpr.setTexture(*ts_loadBG->texture);
 	//testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
 }
 
@@ -2669,6 +2670,9 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	{
 		menuMode = LOADINGMAP;
 		preScreenTexture->setView(v);
+		int wIndex = lev->sec->world->index;
+		wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
+		loadingBGSpr.setTexture(*ts_loadBG[wIndex]->texture);
 	}
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
