@@ -22,7 +22,7 @@ ShaderTester::ShaderTester(ShaderType t, GameSession *owner )
 		{
 			Tileset *ts_perlin = owner->GetTileset("Shader/perlin01.png", 400, 400);
 			Tileset *ts_grad = owner->GetTileset("Shader/gradient01.png", 400, 400);
-			if (!sh.loadFromFile("Shader/fire.frag", sf::Shader::Fragment))
+			if (!sh.loadFromFile("Resources/Shader/fire.frag", sf::Shader::Fragment))
 			{
 				assert(0);
 			}

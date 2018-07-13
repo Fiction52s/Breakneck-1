@@ -47,14 +47,14 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	}
 	
-	if (!gateShader.loadFromFile("Shader/gate_shader.frag", sf::Shader::Fragment))
+	if (!gateShader.loadFromFile("Resources/Shader/gate_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "failed to load gate shader" << endl;
 		assert(0);
 	}
 	gateShader.setUniform("fadeQuant", 0.f);
 
-	if (!centerShader.loadFromFile("Shader/gatecenter_shader.frag", sf::Shader::Fragment))
+	if (!centerShader.loadFromFile("Resources/Shader/gatecenter_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "failed to load gate center shader" << endl;
 		assert(0);

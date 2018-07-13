@@ -133,7 +133,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 		asteroidSpr[i].setTexture(*ts_asteroids[i]->texture);
 	}*/
 
-	if (!asteroidShader.loadFromFile("Shader/menuasteroid.frag", sf::Shader::Fragment))
+	if (!asteroidShader.loadFromFile("Resources/Shader/menuasteroid.frag", sf::Shader::Fragment))
 	{
 		cout << "asteroid SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0);
@@ -177,7 +177,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	//colonySelectSpr.setScale(5.f, 5.f);
 	
 	//if (!zoomShader.loadFromFile( "zoomblur_shader.vert", "zoomblur_shader.frag" ) )
-	if (!zoomShader.loadFromFile("Shader/zoomblur_shader.frag", sf::Shader::Fragment))
+	if (!zoomShader.loadFromFile("Resources/Shader/zoomblur_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "zoom blur SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0);
@@ -438,7 +438,7 @@ void WorldMap::UpdateMapList()
 	//std::string file = "map_online.brknk";
  //  bool goodDownload = levelServer.DownloadFile( path, file );
 	stringstream ss;
-	ss << "Maps/W" << (selectedColony+1);
+	ss << "Resources/Maps/W" << (selectedColony+1);
 	cout << "stuff: " << ss.str() << endl;
 	UpdateMapList( entries, ss.str() );
 
@@ -525,6 +525,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 					if (!currSelector->sectors[startSector]->sec->levels[i].GetComplete())
 					{
 						startLevel = i;
+						break;
 					}
 				}
 				currSelector->sectors[startSector]->saSelector->currIndex = startLevel;
@@ -1065,11 +1066,11 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 
 	ts_scrollingEnergy[0] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
 	ts_scrollingEnergy[1] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w2_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[2] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[3] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[4] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[5] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[6] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[2] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[3] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[4] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[5] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
+	ts_scrollingEnergy[6] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
 	//Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
 
 	ts_bossFight = new Tileset*[1];
@@ -1332,14 +1333,14 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
 	endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(0));
 
-	if (!horizScrollShader1.loadFromFile("Shader/horizslider.frag", sf::Shader::Fragment))
+	if (!horizScrollShader1.loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment))
 	{
 		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
 	}
 	horizScrollShader1.setUniform("u_texture", sf::Shader::CurrentTexture );
 
 
-	if (!horizScrollShader2.loadFromFile("Shader/horizslider.frag", sf::Shader::Fragment ))//("Shader/horizslider.frag", sf::Shader::Fragment))
+	if (!horizScrollShader2.loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment ))//("Shader/horizslider.frag", sf::Shader::Fragment))
 	{
 		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
 	}
@@ -1655,8 +1656,8 @@ void MapSector::Update(ControllerState &curr,
 		}
 	}
 
-	if (saSelector->currIndex < saSelector->totalItems - 1)
-		++saSelector->currIndex;
+	//if (saSelector->currIndex < saSelector->totalItems - 1)
+	//	++saSelector->currIndex;
 
 	if (state == NORMAL)
 	{
@@ -1687,9 +1688,9 @@ void MapSector::Update(ControllerState &curr,
 		}
 		if (lastBeaten >= 0)
 		{
-			if (lastBeaten < saSelector->totalItems - 1)
+			/*if (lastBeaten < saSelector->totalItems - 1)
 				++lastBeaten;
-			saSelector->currIndex = lastBeaten;
+			saSelector->currIndex = lastBeaten;*/
 		}
 	}
 
@@ -1788,6 +1789,11 @@ void MapSector::Update(ControllerState &curr,
 			else
 			{
 				state = NORMAL;
+				if (unlockedIndex < numLevels - 1)
+				{
+					saSelector->currIndex = unlockedIndex + 1;
+				}
+				//unlockedIndex
 			}
 			stateFrame = 0;
 		}
@@ -1992,7 +1998,7 @@ int MapSector::GetNodeSubIndex(int node)
 
 				if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
 				{
-					--res;
+					res = 6;//--res;
 				}
 			}
 			else
@@ -2037,7 +2043,8 @@ int MapSector::GetNodeSubIndex(int node)
 
 				if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
 				{
-					--res;
+					res = 5;
+					//--res;
 				}
 			}
 			else

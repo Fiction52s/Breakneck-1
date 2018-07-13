@@ -135,6 +135,7 @@ bool GameController::UpdateState()
 
 	if( result == ERROR_SUCCESS )
 	{
+		//cout << "updating controller state " << m_index << endl;
 		double LX = state.Gamepad.sThumbLX;
 		double LY = state.Gamepad.sThumbLY;
 		//i dont think i need a magnitude, magnitude should be calculated for differences
@@ -168,6 +169,8 @@ bool GameController::UpdateState()
 		}
 
 		m_state.leftStickMagnitude = normalizedMagnitude;
+
+		//cout << "radians: " << m_state.leftStickRadians << endl;
 
 		double RX = state.Gamepad.sThumbRX;
 		double RY = state.Gamepad.sThumbRY;
@@ -263,6 +266,7 @@ bool GameController::UpdateState()
 	}
 	else
 	{
+		//cout << "updating controller state keyboard " << m_index << endl;
 		using namespace sf;
 		WORD b = state.Gamepad.wButtons;
 		m_state.start = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::PAUSE] );

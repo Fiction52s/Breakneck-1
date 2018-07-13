@@ -1277,7 +1277,7 @@ void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 
 			if (ls.text[ls.selectedIndex].getFillColor() == Color::Red)
 			{
-				path from("Maps/empty.brknk");
+				path from("Resources/Maps/empty.brknk");
 
 				std::stringstream ssPath;
 				ssPath << ls.localPaths[ls.selectedIndex] << ls.newLevelName << ".brknk";
@@ -1366,7 +1366,7 @@ void MainMenu::Run()
 
 #if defined( USE_MOVIE_TEST )
 	sfe::Movie m;
-	assert( m.openFromFile("Movie/testvid.ogv") );
+	assert( m.openFromFile("Resources/Movie/testvid.ogv") );
 	m.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 	
@@ -1394,7 +1394,7 @@ void MainMenu::Run()
 	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
-	assert( sh.loadFromFile("Shader/test.frag", sf::Shader::Fragment ) );
+	assert( sh.loadFromFile("Resources/Shader/test.frag", sf::Shader::Fragment ) );
 	
 	sf::Vertex ff[4] = {
 		sf::Vertex( Vector2f( 0, 0 ) ),
@@ -1485,7 +1485,7 @@ void MainMenu::Run()
 				{
 
 				}
-				GameSession *gs = new GameSession( NULL, this, "Maps/W1/arena04.brknk" );
+				GameSession *gs = new GameSession( NULL, this, "Resources/Maps/W1/arena04.brknk" );
 				GameSession::sLoad(gs);
 				gs->Run();
 				return;
@@ -2367,7 +2367,8 @@ void MainMenu::Run()
 					}
 					else
 					{
-						menuMode = LOADINGMAP;
+						//menuMode = LOADINGMAP;
+						SetModeLoadingMap(0);
 					}
 					//AdventureLoadLevel(&GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
 				}
@@ -2659,6 +2660,15 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 	//window->setView( blahV );
 }
 
+void MainMenu::SetModeLoadingMap( int wIndex )
+{
+	menuMode = LOADINGMAP;
+	preScreenTexture->setView(v);
+	//int wIndex = lev->sec->world->index;
+	wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
+	loadingBGSpr.setTexture(*ts_loadBG[wIndex]->texture);
+}
+
 void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 {
 	string levelPath = lev->GetFullName();// name;
@@ -2668,11 +2678,8 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 
 	if (loadingScreen)
 	{
-		menuMode = LOADINGMAP;
-		preScreenTexture->setView(v);
 		int wIndex = lev->sec->world->index;
-		wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
-		loadingBGSpr.setTexture(*ts_loadBG[wIndex]->texture);
+		SetModeLoadingMap( wIndex );
 	}
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
@@ -3084,7 +3091,7 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 
 void MapSelectionMenu::LoadItems()
 {
-	path p(current_path() / "/Maps/");
+	path p(current_path() / "/Resources/Maps/");
 	LoadPath(p);
 
 	map<string, MapCollection*> collectionMap;

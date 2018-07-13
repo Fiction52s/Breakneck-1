@@ -530,6 +530,7 @@ struct MainMenu
 	void GameEditLoop( const std::string &fileName );
 	void GameEditLoop2( const std::string &filename);
 	void CustomMapsOption();
+	void SetModeLoadingMap( int wIndex );
 	sf::RenderWindow *window;
 	sf::View v;
 	sf::View uiView;

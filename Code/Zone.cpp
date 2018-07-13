@@ -446,7 +446,7 @@ void Zone::Init()
 		}
 		
 		zShader = new sf::Shader;
-		if (!zShader->loadFromFile("Shader/normalzone.frag", sf::Shader::Fragment))
+		if (!zShader->loadFromFile("Resources/Shader/normalzone.frag", sf::Shader::Fragment))
 		{
 			cout << "zone shader not loading correctly!" << endl;
 			assert(false);
@@ -471,7 +471,7 @@ void Zone::Init()
 		if (zShader == NULL)
 		{
 			zShader = new sf::Shader;
-			if (!zShader->loadFromFile("Shader/mat_shader2.frag", sf::Shader::Fragment))
+			if (!zShader->loadFromFile("Resources/Shader/mat_shader2.frag", sf::Shader::Fragment))
 			{
 				cout << "zone shader not loading correctly!" << endl;
 				assert(false);

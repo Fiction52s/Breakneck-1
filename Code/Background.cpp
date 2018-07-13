@@ -23,7 +23,7 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	string bgStr = ss.str();
 
 	string bgFile = bgStr + ".png";
-	string paletteFile = bgStr + "_palette.png";
+	string paletteFile = string("Resources/") + bgStr + "_palette.png";
 	string shapeFile = bgStr + "_shape.png";
 
 	Tileset *ts_bg = owner->GetTileset(bgFile, 1920, 1080);
@@ -61,7 +61,7 @@ Background::Background(MainMenu *mm)
 
 	//ss << eType;
 
-	string bgStr = "Backgrounds/w1_BG1";// = ss.str();
+	string bgStr = "Resources/Backgrounds/w1_BG1";// = ss.str();
 
 
 

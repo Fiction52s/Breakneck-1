@@ -2670,7 +2670,7 @@ bool EditSession::OpenFile()
 		return false;
 	}
 
-	grassTex.loadFromFile( "placeholdergrass_22x22.png" );
+	grassTex.loadFromFile( "Resources/placeholdergrass_22x22.png" );
 
 	return true;
 	
@@ -5903,7 +5903,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 
 	sf::Texture playerZoomIconTex;
-	playerZoomIconTex.loadFromFile( "playerzoomicon.png" );
+	playerZoomIconTex.loadFromFile( "Resources/playerzoomicon.png" );
 	sf::Sprite playerZoomIcon( playerZoomIconTex );
 	
 	playerZoomIcon.setOrigin( playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2 );
@@ -6197,16 +6197,16 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 6, 4, 32, 32, false, true );
 	
 	sf::Texture greyTex;
-	greyTex.loadFromFile( "greygatecolor.png" );
+	greyTex.loadFromFile( "Resources/greygatecolor.png" );
 	sf::Sprite greySpr( greyTex );
 
 	sf::Texture blackTex;
-	blackTex.loadFromFile( "blackgatecolor.png" );
+	blackTex.loadFromFile( "Resources/blackgatecolor.png" );
 	sf::Sprite blackSpr( blackTex );
 
 
 	sf::Texture whiteTex; //temp
-	whiteTex.loadFromFile( "whitesquare.png" );
+	whiteTex.loadFromFile( "Resources/whitesquare.png" );
 	Sprite tempSq;
 	tempSq.setTexture( whiteTex );
 
@@ -6266,7 +6266,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		for( int i = 1; i <= 1; ++i )
 		{
 			stringstream ss;
-			ss << "terrain_" << worldI << "_0" << i << ".png";
+			ss << "Resources/" << "terrain_" << worldI << "_0" << i << ".png";
 			terrainTile[worldI-1].loadFromFile( ss.str() );
 		}
 
@@ -6301,7 +6301,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Sprite iconSprite( iconsTex );*/
 
 	sf::Texture alphaTex;
-	alphaTex.loadFromFile( "alphatext.png" );
+	alphaTex.loadFromFile( "Resources/alphatext.png" );
 	sf::Sprite alphaTextSprite( alphaTex );
 	alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 
@@ -6361,7 +6361,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	};
 
 	sf::Texture guiMenuCubeTexture;
-	guiMenuCubeTexture.loadFromFile( "guioptions.png" );
+	guiMenuCubeTexture.loadFromFile( "Resources/guioptions.png" );
 	sf::Sprite guiMenuSprite;
 	guiMenuSprite.setTexture( guiMenuCubeTexture );
 	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
@@ -17943,9 +17943,9 @@ void EditSession::PointSelectPoint( V2d &worldPos,
 ActorType::ActorType( const std::string & n, Panel *p )
 	:name( n ), panel( p )
 {
-	iconTexture.loadFromFile( name + "_icon.png" );
+	iconTexture.loadFromFile( string("Resources/") + name + "_icon.png" );
 	//icon.setTexture( iconTexture );
-	imageTexture.loadFromFile( name + "_editor.png" );
+	imageTexture.loadFromFile(string("Resources/") + name + "_editor.png" );
 	//image.setTexture( imageTexture );
 	Init();
 }

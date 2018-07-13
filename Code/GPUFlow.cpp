@@ -37,37 +37,37 @@ GPUFlow::GPUFlow( const sf::Vector2i &p, int w, int h )
 	boundBot.setPosition( position.x, position.y + height + 1 );*/
 
 
-	if (!shaders[SHADER_ADVECT].loadFromFile("Shader/advect.frag", sf::Shader::Fragment ) )
+	if (!shaders[SHADER_ADVECT].loadFromFile("Resources/Shader/advect.frag", sf::Shader::Fragment ) )
 	{
 		cout << "advect SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
-	if (!shaders[SHADER_BOUNDARY].loadFromFile("Shader/boundary.frag", sf::Shader::Fragment ) )
+	if (!shaders[SHADER_BOUNDARY].loadFromFile("Resources/Shader/boundary.frag", sf::Shader::Fragment ) )
 	{
 		cout << "boundary SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
-	if (!shaders[SHADER_DIVERGENCE].loadFromFile("Shader/divergence.frag", sf::Shader::Fragment ) )
+	if (!shaders[SHADER_DIVERGENCE].loadFromFile("Resources/Shader/divergence.frag", sf::Shader::Fragment ) )
 	{
 		cout << "divergence SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
-	if (!shaders[SHADER_GRADIENT].loadFromFile("Shader/gradient.frag", sf::Shader::Fragment ) )
+	if (!shaders[SHADER_GRADIENT].loadFromFile("Resources/Shader/gradient.frag", sf::Shader::Fragment ) )
 	{
 		cout << "gradient SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
-	if (!shaders[SHADER_JACOBI].loadFromFile("Shader/jacobi.frag", sf::Shader::Fragment ) )
+	if (!shaders[SHADER_JACOBI].loadFromFile("Resources/Shader/jacobi.frag", sf::Shader::Fragment ) )
 	{
 		cout << "jacobi SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );
 	}
 
-	if (!shaders[SHADER_IMPULSE].loadFromFile("Shader/impulse.frag", sf::Shader::Fragment ) )
+	if (!shaders[SHADER_IMPULSE].loadFromFile("Resources/Shader/impulse.frag", sf::Shader::Fragment ) )
 	{
 		cout << "impulse SHADER NOT LOADING CORRECTLY" << endl;
 		//assert( 0 && "polygon shader not loaded" );

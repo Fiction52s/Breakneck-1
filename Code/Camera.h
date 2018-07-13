@@ -83,15 +83,16 @@ struct Camera
 	double bottom;
 	double right;
 
-	bool bossCrawler;
+	//int bType;
 
-	void UpdateEnemyZoom( Actor *a );
+	double GetNewEnemyZoom( Actor *a );
 	void Update( Actor *a );
+	void UpdateBossFight(int bossFightType);
 	void ManualUpdate();
 	void UpdateZoomLevel(ControllerState &con, ControllerState &prevcon);
 	void UpdateVS( Actor *a, 
 		Actor *a2 );
-	void UpdateZoomFactor( Actor *player );
+	double GetNewZoomFactor( Actor *player );
 
 	sf::Vector2<double> playerPos;
 	sf::Vector2<double> GetPlayerVel( Actor *player);

@@ -14,7 +14,7 @@ Camera::Camera()
 	owner = NULL;
 	easing = false;
 	manual = false;
-	bossCrawler = false;
+	//bossCrawler = false;
 	rumbling = false;
 
 	offset.x = 0;
@@ -70,15 +70,27 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 	V2d playerPos = player->position;
 	V2d vPos = V2d(pos.x, pos.y);
 
-	minX = pos.x - 480 * GetZoom();
-	maxX = pos.x + 480 * GetZoom();
-	minY = pos.y - 270 * GetZoom();
-	maxY = pos.y + 270 * GetZoom();
+	
+
+	minX = pos.x; -480;// *zoomFactor;
+	maxX = pos.x + 480;// *zoomFactor;
+	minY = pos.y - 270;// *zoomFactor;
+	maxY = pos.y + 270;// *zoomFactor;
+
+	double origMinX = minX;
+	double origMaxX = maxX;
+	double origMinY = minY;
+	double origMaxY = maxY;
 
 	int testRadius = 1200;//900
-	double extraCap = 400;
+	double extraCap = 500;
 	double extra = 200;
 	double extraDist = 200;
+
+	double capMinX = origMinX - extraCap;
+	double capMaxX = origMaxX + extraCap;
+	double capMinY = origMinY - extraCap;
+	double capMaxY = origMaxY + extraCap;
 
 	Enemy *curr = owner->activeEnemyList;
 	while (curr != NULL)
@@ -96,7 +108,38 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 		}
 
 		
-		double len = length(curr->position - vPos);
+
+		double currX = curr->position.x;
+		double currY = curr->position.y;
+
+		if (currX < capMinX || currX > capMaxX || currY < capMinY || currY > capMaxY )
+		{
+			curr = curr->next;
+			continue;
+		}
+
+		++numEnemies;
+
+		if (currX < origMinX)
+		{
+			minX = min(minX, currX - extra);
+		}
+		else if (currX > origMaxX)
+		{
+			maxX = max(maxX, currX + extra);
+		}
+
+		if (currY < origMinY)
+		{
+			minY = min(minY, currY - extra);
+		}
+		else if (currY > origMaxY )
+		{
+			maxY = max(maxY, currY + extra);
+		}
+
+		
+		/*double len = length(curr->position - vPos);
 
 		V2d dir = normalize(curr->position - vPos);
 
@@ -114,7 +157,18 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 		bool c = topY < minY && topY >= topCap;
 		bool d = botY > maxY && botY <= botCap;
 
-		if ((a || b) && (c || d))
+		bool in = leftX >= minX && rightX <= maxX && topY >= minY && botY <= maxY;
+		bool inX = leftX >= minX && rightX <= maxX;
+		bool inY = topY >= minY && botY <= maxY;
+
+		bool aa = (a || b) && (inY || c || d);
+		bool cc = (c || d) && (inX || a || b);
+
+		if (in)
+		{
+			++numEnemies;
+		}
+		else if (aa || cc )
 		{
 			++numEnemies;
 			if (a)
@@ -135,7 +189,7 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 				maxY = botY;
 			}
 
-		}
+		}*/
 
 		curr = curr->next;
 	}
@@ -387,13 +441,8 @@ void Camera::SetTestOffset( V2d &pVel )
 	//cout << "offset: " << offset.x << " , " << offset.y << endl;
 }
 
-void Camera::UpdateEnemyZoom( Actor *player )
+double Camera::GetNewEnemyZoom( Actor *player )
 {
-
-
-
-
-
 	double minX, maxX, minY, maxY;
 
 	numActive = GetActiveEnemyCount( player, minX, maxX, minY, maxY );
@@ -410,10 +459,10 @@ void Camera::UpdateEnemyZoom( Actor *player )
 			framesActive = 0;
 	}
 
-	sf::Vector2f center( (minX + maxX) / 2, (minY + maxY) / 2 );
+	
 
-	double tw = max( abs( maxX - playerPos.x ), abs( minX - playerPos.x ) ) * 2;
-	double th = max( abs( maxY - playerPos.y ), abs( minY - playerPos.y ) ) * 2;
+	double tw = max( abs( maxX - pos.x ), abs( minX - pos.x ) ) * 2;
+	double th = max( abs( maxY - pos.y ), abs( minY - pos.y ) ) * 2;
 
 	double w= tw/ 960.0;
 	double h= th/ 540.0;
@@ -424,16 +473,27 @@ void Camera::UpdateEnemyZoom( Actor *player )
 	testZoom = ratio;
 
 	double blah = .01;
+	double zFactor = zoomFactor;
 
-	if (numActive > 0)
+	return testZoom;
+
+	/*if (numActive > 0)
 	{
-		if (testZoom > zoomFactor)
+		if (testZoom > zFactor)
 		{
-			zoomFactor += blah;
-			if (zoomFactor > testZoom)
-				zoomFactor = testZoom;
+			zFactor += blah;
+			if (zFactor > testZoom)
+				zFactor = testZoom;
 		}
 	}
+
+	if (zFactor < 1)
+		zFactor = 1;
+	else if (zFactor > maxZoom)
+		zFactor = maxZoom;
+
+	return zFactor;*/
+	//cout << "numActive: " << numActive << endl;
 }
 
 void Camera::SetRumble( int xFactor, int yFactor, int duration )
@@ -659,9 +719,10 @@ sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 	return pVel;
 }
 
-void Camera::UpdateZoomFactor( Actor *player )
+double Camera::GetNewZoomFactor( Actor *player )
 {
-	float temp;
+	double zFactor = zoomFactor;
+	double temp;
 	V2d f;
 	double kk = 18.0;
 	if (player->ground != NULL)
@@ -678,30 +739,35 @@ void Camera::UpdateZoomFactor( Actor *player )
 		f = player->velocity * 10.0;
 	}
 
-	double zDiff = temp - zoomFactor;
-	if (zDiff > 0)
-	{
-		zoomFactor += zDiff / 100.0/*35.0*/ / player->slowMultiple;
-	}
-	else if (zDiff < 0)
-	{
-		double oldZoom = zoomFactor;
-		bool more = oldZoom > testZoom;
-		if (numActive == 0 || more)
-		{
-			zoomFactor += zDiff / 350.0 / player->slowMultiple;
-			if (more)
-			{
-				if (zoomFactor < testZoom)
-					zoomFactor = testZoom;
-			}
-		}
-	}
 
-	if (zoomFactor < 1)
-		zoomFactor = 1;
-	else if (zoomFactor > maxZoom)
-		zoomFactor = maxZoom;
+	return max( 1.0, temp );
+
+	//double zDiff = temp - zFactor;
+	//if (zDiff > 0)
+	//{
+	//	zFactor += zDiff / 100.0/*35.0*/ / player->slowMultiple;
+	//}
+	//else if (zDiff < 0)
+	//{
+	//	double oldZoom = zFactor;
+	//	bool more = oldZoom > testZoom;
+	//	if (numActive == 0 )// || more)
+	//	{
+	//		zFactor += zDiff / 350.0 / player->slowMultiple;
+	//		if (more)
+	//		{
+	//			if (zFactor < testZoom)
+	//				zFactor = testZoom;
+	//		}
+	//	}
+	//}
+
+	//if (zFactor < 1)
+	//	zFactor = 1;
+	//else if (zFactor > maxZoom)
+	//	zFactor = maxZoom;
+
+	//return zFactor;
 }
 
 void Camera::SetMovementOffset( V2d &pVel )
@@ -953,6 +1019,18 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	}
 }
 
+void Camera::UpdateBossFight(int bossFightType)
+{
+	assert(bossFightType > 0);
+
+	if (bossFightType == 0)
+	{
+		pos.x = owner->mh->leftBounds + owner->mh->boundsWidth / 2.f;
+		pos.y = owner->mh->topBounds + owner->mh->boundsHeight / 2.f;
+		zoomFactor = 1.f;
+	}
+}
+
 void Camera::Update( Actor *player )
 {
 	if( owner == NULL )
@@ -997,7 +1075,7 @@ void Camera::Update( Actor *player )
 			framesFalling--;
 	}
 
-	UpdateZoomFactor(player);
+
 
 	pos.x = playerPos.x;
 	pos.y = playerPos.y;
@@ -1019,7 +1097,49 @@ void Camera::Update( Actor *player )
 
 	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
 
-	UpdateEnemyZoom( player );
+	double enemyZoom = GetNewEnemyZoom( player );
+	//if( numActive == 0 )
+	double zFactor = GetNewZoomFactor(player);
+
+	if (enemyZoom > zFactor)
+	{
+		double blah = .01;
+		if (numActive > 0)
+		{
+			if (testZoom > zoomFactor)
+			{
+				zoomFactor += blah;
+			if (zoomFactor > testZoom)
+				zoomFactor = testZoom;
+			}
+		}
+	}
+	else if( enemyZoom <= zFactor )
+	{
+		double zDiff = zFactor - zoomFactor;
+		if (zDiff > 0)
+		{
+			zoomFactor += zDiff / 100.0/*35.0*/ / player->slowMultiple;
+		}
+		else if (zDiff < 0)
+		{
+			double oldZoom = zoomFactor;
+			//bool more = oldZoom > testZoom;
+			//if (numActive == 0 )// || more)
+			{
+				//zoomFactor += zDiff / 350.0 / player->slowMultiple;
+				zoomFactor += zDiff / 200.0 / player->slowMultiple;
+				/*if (more)
+				{
+					if (zoomFactor < testZoom)
+						zoomFactor = testZoom;
+				}*/
+			}
+		}
+	}
+
+
+	
 
 	if( zoomFactor < 1 )
 		zoomFactor = 1;

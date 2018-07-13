@@ -480,14 +480,14 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		//numActiveEdges = 0;
 		assert( Shader::isAvailable() && "help me" );
-		if (!sh.loadFromFile("Shader/player_shader.frag", sf::Shader::Fragment))
+		if (!sh.loadFromFile("Resources/Shader/player_shader.frag", sf::Shader::Fragment))
 		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 		{
 			cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "player shader not loaded" );
 		}
 
-		if (!despFaceShader.loadFromFile("Shader/colorswap_shader.frag", sf::Shader::Fragment))
+		if (!despFaceShader.loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
 		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 		{
 			cout << "desp face SHADER NOT LOADING CORRECTLY" << endl;
@@ -498,7 +498,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		Color c( 0x66, 0xee, 0xff );
 		despFaceShader.setUniform( "fromColor", ColorGL( c ) );
 
-		if (!motionGhostShader.loadFromFile("Shader/motionghost_shader.frag", sf::Shader::Fragment))
+		if (!motionGhostShader.loadFromFile("Resources/Shader/motionghost_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "motion ghost SHADER NOT LOADING CORRECTLY" << endl;
 			assert(0 && "desp shader not loaded");
@@ -511,7 +511,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		motionGhostShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 
-		if (!playerDespShader.loadFromFile("Shader/playerdesperation.frag", sf::Shader::Fragment))
+		if (!playerDespShader.loadFromFile("Resources/Shader/playerdesperation.frag", sf::Shader::Fragment))
 			//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 		{
 			cout << "desp player SHADER NOT LOADING CORRECTLY" << endl;
@@ -1149,7 +1149,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 
 
-		if (!swordShaders[0].loadFromFile("Shader/colorswap_shader.frag", sf::Shader::Fragment))
+		if (!swordShaders[0].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
@@ -1157,7 +1157,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		swordShaders[0].setUniform( "fromColor", ColorGL(COLOR_TEAL) );
 		swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShaders[1] = swordShaders[0];
-		if (!swordShaders[1].loadFromFile("Shader/colorswap_shader.frag", sf::Shader::Fragment))
+		if (!swordShaders[1].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
@@ -1165,7 +1165,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
 		swordShaders[1].setUniform("u_texture", sf::Shader::CurrentTexture);
 		//swordShaders[2] = swordShaders[0];
-		if (!swordShaders[2].loadFromFile("Shader/colorswap_shader.frag", sf::Shader::Fragment))
+		if (!swordShaders[2].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
 		{
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );

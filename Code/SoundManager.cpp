@@ -442,7 +442,7 @@ sf::SoundBuffer * SoundManager::GetSound( const std::string &name )
 	//SoundInfo &info = sounds.back();
 	
 
-	string fullName = "Audio/Sounds/";
+	string fullName = "Resources/Audio/Sounds/";
 	fullName += name + ".ogg";
 
 	si->name = name;

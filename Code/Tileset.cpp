@@ -104,7 +104,9 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 
 	sf::Image im;
 	
-	if( !im.loadFromFile( s ) )
+	string s2 = string("Resources/") + s;
+
+	if( !im.loadFromFile( s2 ) )
 	{
 		cout << "failed to load IM: " << s << endl;
 		//assert( false );
@@ -136,9 +138,10 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 		}
 	}
 
+	string s2 = string("Resources/") + s;
 	//not found
 
-	if (!boost::filesystem::exists(s))
+	if (!boost::filesystem::exists(s2))
 	{
 		//take this out later. its not always an error to get this
 		cout << "NO FILE EXISTS: " << s << endl; 
@@ -146,7 +149,7 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	}
 
 	Texture *tex = new Texture();
-	if( !tex->loadFromFile( s ) )
+	if( !tex->loadFromFile( s2 ) )
 	{
 		delete tex;
 		//cout << "failed to load: " << s << endl;

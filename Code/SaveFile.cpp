@@ -99,7 +99,7 @@ SaveFile::SaveFile( const std::string &name )
 	:shardField( 32 * 5 ), newShardField( 32 * 5 )
 {
 	stringstream ss;
-	ss << "Data/" << name << ".kin";
+	ss << "Resources/Data/" << name << ".kin";
 
 	fileName = ss.str();
 }
@@ -227,7 +227,7 @@ bool SaveFile::Load()
 	if( !LoadInfo(is) )
 	{
 		ifstream defIs;
-		defIs.open("Data/default.kin");
+		defIs.open("Resources/Data/default.kin");
 		bool test = LoadInfo(defIs);
 		assert(test);
 		return false;
@@ -582,7 +582,7 @@ void Level::UpdateFromMapHeader()
 
 	shardsLoaded = true;
 	ifstream is;
-	string file = "Maps/" + name + ".brknk";
+	string file = "Resources/Maps/" + name + ".brknk";
 	is.open(file);
 	if (is.is_open())
 	{
@@ -760,7 +760,7 @@ bool Level::IsOneHundredPercent()
 
 std::string Level::GetFullName()
 {
-	return "maps/" + name + ".brknk";
+	return "Resources/Maps/" + name + ".brknk";
 }
 
 bool World::Load(std::ifstream &is)

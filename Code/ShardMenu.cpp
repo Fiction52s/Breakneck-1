@@ -206,7 +206,7 @@ void ShardMenu::UpdateUnlockedShards()
 bool ShardMenu::SetDescription( std::string &nameStr, std::string &destStr, const std::string &shardTypeStr)
 {
 	stringstream ss;
-	ss << "Shard/" << shardTypeStr << ".sdesc";
+	ss << "Resources/Shard/" << shardTypeStr << ".sdesc";
 	ifstream is;
 	is.open(ss.str());
 

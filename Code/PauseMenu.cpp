@@ -1165,7 +1165,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	ts_aura2B = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2b_400x836.png", 400, 836);
 	ts_veins = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_veins_400x836.png", 400, 836);
 
-	if (!scrollShader1.loadFromFile("Shader/menuauraslide.frag", sf::Shader::Fragment))
+	if (!scrollShader1.loadFromFile("Resources/Shader/menuauraslide.frag", sf::Shader::Fragment))
 	{
 		cout << "menu aura sliding SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0);
@@ -1173,7 +1173,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	scrollShader1.setUniform("u_texture", sf::Shader::CurrentTexture);
 	scrollShader1.setUniform("blendColor", ColorGL( Color::White ));
 
-	if (!scrollShader2.loadFromFile("Shader/menuauraslide.frag", sf::Shader::Fragment))
+	if (!scrollShader2.loadFromFile("Resources/Shader/menuauraslide.frag", sf::Shader::Fragment))
 	{
 		cout << "menu aura sliding SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0);
@@ -1194,11 +1194,11 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	aura2ASpr.setColor(Color::Yellow);
 	aura2BSpr.setColor(Color::Magenta);*/
 	Image palette;
-	bool loadPalette = palette.loadFromFile("Menu/pause_kin_aura_color.png");
+	bool loadPalette = palette.loadFromFile("Resources/Menu/pause_kin_aura_color.png");
 	assert(loadPalette);
 
 	Image powerPalette;
-	bool loadPowerPalette = powerPalette.loadFromFile("Menu/power_icons_palette.png");
+	bool loadPowerPalette = powerPalette.loadFromFile("Resources/Menu/power_icons_palette.png");
 
 	aura1AShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);
 	aura1BShifter = new ColorShifter(ColorShifter::ShifterType::SEQUENTIAL, 60, 2);

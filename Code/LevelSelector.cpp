@@ -96,7 +96,7 @@ void LevelSelector::UpdateMapList()
  //  bool goodDownload = levelServer.DownloadFile( path, file );
 
    
-	UpdateMapList( entries, "Maps" );
+	UpdateMapList( entries, "Resources/Maps" );
 
 	text = new Text[numTotalEntries];
 
@@ -193,7 +193,7 @@ int LevelSelector::Tex(int index, int level, TreeNode *entry)
 	t0.setString( entry->name );
 	t0.setFillColor( Color::Red );
 	t0.setPosition( level * xspacing, index * yspacing );
-	localPaths[index] = entry->GetLocalPath();//entry->filePath;
+	localPaths[index] = string( "Resources/" ) + entry->GetLocalPath();//entry->filePath;
 	dirNode[index] = NULL;
 	++index; //1 for me
 	for( list<TreeNode*>::iterator it = entry->dirs.begin(); it != entry->dirs.end(); ++it )
@@ -214,11 +214,13 @@ int LevelSelector::Tex(int index, int level, TreeNode *entry)
 		t.setString( name );
 		t.setFillColor( Color::Blue );
 		t.setPosition( (level + 1) * xspacing, index * yspacing );
-		localPaths[index] = (entry->GetLocalPath() / (*it).filename()).string();
+		localPaths[index] = string("Resources/") + (entry->GetLocalPath() / (*it).filename()).string();
 		dirNode[index] = entry;
 
 		++index; //1 for each file
 	}
+
+
 
 	return index;
 }
