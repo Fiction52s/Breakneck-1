@@ -1023,11 +1023,11 @@ void Camera::UpdateBossFight(int bossFightType)
 {
 	assert(bossFightType > 0);
 
-	if (bossFightType == 0)
+	if (bossFightType == 1)
 	{
 		pos.x = owner->mh->leftBounds + owner->mh->boundsWidth / 2.f;
 		pos.y = owner->mh->topBounds + owner->mh->boundsHeight / 2.f;
-		zoomFactor = 1.f;
+		zoomFactor = 1.75f;
 	}
 }
 

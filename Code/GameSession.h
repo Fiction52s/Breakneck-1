@@ -313,6 +313,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 	
+
 	TopClouds *topClouds;
 	ScreenRecorder *debugScreenRecorder;
 	struct RaceFight

@@ -2377,6 +2377,10 @@ void CollisionBody::AddCollisionBox(int frame, CollisionBox &cb)
 
 std::list<CollisionBox> *CollisionBody::GetCollisionBoxes(int frame)
 {
+	if (frame >= numFrames || frame < 0 )
+	{
+		return NULL;
+	}
 	return collisionBoxLists[frame];
 }
 

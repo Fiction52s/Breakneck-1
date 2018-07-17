@@ -321,6 +321,7 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	filePath( p_filePath ), eHitParamsMan( NULL ), drain(true )
 {	
 	mainMenu = p_mainMenu;
+	cam.owner = this;
 
 	Init();
 }
@@ -3594,9 +3595,11 @@ bool GameSession::OpenFile( string fileName )
 			//mh->topBounds = ;
 			//mh->leftBounds = inversePoly->aabb.left - extra;
 			//mh->boundsWidth = inversePoly->aabb.width + extra * 2;
-			mh->topBounds = trueTop;
+			mh->topBounds = trueTop - extraBorder/2 ;
 			mh->boundsHeight = (inversePoly->aabb.top + inversePoly->aabb.height + extraBorder) - trueTop;
 		}
+
+
 
 		bool blackBorder[2];
 		int newRight = (inversePoly->aabb.left + inversePoly->aabb.width);

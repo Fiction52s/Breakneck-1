@@ -1760,7 +1760,7 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		case EnemyType::EN_CRAWLERQUEEN:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
+			ep = new EnemyParams(1, 5, .8, 6, 40);
 			break;
 		case EnemyType::EN_FLOATINGBOMB:
 			ep = new EnemyParams(1, 5, .8, 6, 3);
