@@ -34,6 +34,12 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 
 	numDecisions = 3;
 
+	totalInvincFramesOnHit = 60;
+	//currInvincFramesOnHit = 0;
+	invincHitThresh = 3;
+	notHitCap = 10;
+	//invincHitCount = 0;
+
 	decMarkerPool = new EffectPool(EffectType::FX_REGULAR, MAX_DECISIONS, 1.f);
 	decideIndex = 0;
 	initHealth = 60;
@@ -111,8 +117,8 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
+	hurtBox.rw = 70;
+	hurtBox.rh = 70;
 	hurtBody->AddCollisionBox(0, hurtBox);
 
 
@@ -123,8 +129,8 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
+	hitBox.rw = 70;
+	hitBox.rh = 70;
 	hitBody->AddCollisionBox(0, hitBox);
 	hitBody->hitboxInfo = hitboxInfo;
 
@@ -138,8 +144,10 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 
 	
 
-	action = DECIDE;
-	frame = 0;
+	//action = DECIDE;
+	//frame = 0;
+	//DecidePoints();
+	//SetDecisions();
 
 	edgeRef = NULL;
 
@@ -157,6 +165,7 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	decidePoints = new EdgeInfo[MAX_DECISIONS];
 	decisions = new Decision[MAX_DECISIONS];
 
+	ResetEnemy();
 	//frame = actionLength[UNDERGROUND];
 }
 
@@ -198,6 +207,9 @@ void CrawlerQueen::InitEdgeInfo()
 
 void CrawlerQueen::ResetEnemy()
 {
+	invinc = false;
+	currInvincFramesOnHit = 0;
+	invincHitCount = 0;
 	redecide = false;
 	clockwise = origCW;
 	SetHurtboxes(hurtBody, 0);
@@ -217,23 +229,26 @@ void CrawlerQueen::ResetEnemy()
 	V2d gPoint = mover->ground->GetPoint(startQuant);
 	sprite.setPosition(gPoint.x, gPoint.y);
 
-	position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
+	//position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
 	V2d gn = mover->ground->Normal();
 	dead = false;
 
 	double angle = 0;
 	angle = atan2(gn.x, -gn.y);
 
-	sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
+	/*sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
 	V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	sprite.setRotation(angle / PI * 180);
-	sprite.setPosition(pp.x, pp.y);
+	sprite.setPosition(pp.x, pp.y);*/
+	
 
 	UpdateHitboxes();
 
 	action = DECIDE;
 	frame = 0;
+	DecidePoints();
+	SetDecisions();
 
 	FloatingBomb *fb = (FloatingBomb*)bombPool->activeListStart;
 	while( fb != NULL )
@@ -244,6 +259,8 @@ void CrawlerQueen::ResetEnemy()
 	}
 
 	bombPool->DeactivateAll();
+
+	UpdateSprite();
 }
 
 void CrawlerQueen::UpdateHitboxes()
@@ -283,6 +300,27 @@ void CrawlerQueen::UpdateHitboxes()
 	}
 	hitBox.globalPosition = mover->physBody.globalPosition;
 	hurtBox.globalPosition = mover->physBody.globalPosition;
+}
+
+HitboxInfo *CrawlerQueen::IsHit(Actor *player)
+{
+	if (player->IntersectMyHitboxes(currHurtboxes, currHurtboxFrame))
+	{
+		if (!invinc)
+		{
+			hitThisFrame = true;
+			++invincHitCount;
+			if (invincHitCount == invincHitThresh)
+			{
+				invinc = true;
+				invincHitCount = 0;
+				currInvincFramesOnHit = 0;
+			}
+			return player->currHitboxes->hitboxInfo;
+		}
+	}
+
+	return NULL;
 }
 
 void CrawlerQueen::ProcessState()
@@ -345,6 +383,8 @@ void CrawlerQueen::ProcessState()
 	if (redecide)
 	{
 		action = DECIDE;
+		DecidePoints();
+		SetDecisions();
 		frame = 0;
 		decideIndex = 0;
 		mover->SetSpeed(0);
@@ -389,15 +429,15 @@ void CrawlerQueen::ProcessState()
 	case DECIDE:
 		if (frame == 0)
 		{
-			DecidePoints();
-			SetDecisions();
+			//DecidePoints();
+			//SetDecisions();
 		}
 		if (frame % decideDelayFrames == 0 && frame > 0)
 		{
 			if (decideIndex == numDecisions - 1)
 			{
 				startTravelPoint.edge = mover->ground;
-				startTravelPoint.index = mover->edgeQuantity;
+				startTravelPoint.quantity = mover->edgeQuantity;
 				startTravelPoint.index = edgeIndexMap[mover->ground];
 				travelIndex = 0;
 				redecide = false;
@@ -455,6 +495,8 @@ void CrawlerQueen::ProcessState()
 	case UNBURROW:
 		break;
 	}
+
+	hitThisFrame = false;
 }
 
 void CrawlerQueen::UpdateEnemyPhysics()
@@ -474,146 +516,190 @@ void CrawlerQueen::UpdateEnemyPhysics()
 				int destIndex = edgeIndexMap[decidePoints[travelIndex].edge];
 				int groundIndex = edgeIndexMap[mover->ground];
 				EdgeInfo &dest = decidePoints[travelIndex];
+				int maxEdge = edgeIndexMap.size() - 1;
 
 				if (!leftInitialEdge && mover->ground != startTravelPoint.edge)
 				{
 					leftInitialEdge = true;
 				}
+
+				if (!completedLoop && leftInitialEdge && groundIndex == startIndex)
+				{
+					completedLoop = true;
+				}
+
 				if (clockwise)
 				{
-					if (!partLoop && groundIndex < startIndex)
+					if (!partLoop
+						&& (groundIndex < startIndex
+							|| (leftInitialEdge && (groundIndex == destIndex || groundIndex == startIndex))))
 					{
 						partLoop = true;
 					}
-					if (partLoop && !completedLoop && (groundIndex > startIndex
-						|| groundIndex == startIndex && mover->edgeQuantity > startTravelPoint.quantity))
+
+					if (!completedLoop && leftInitialEdge && groundIndex == startIndex)
 					{
 						completedLoop = true;
+					}
+
+
+					bool a = groundIndex > destIndex;
+					bool b = (destIndex == maxEdge && groundIndex == 0 && completedLoop);
+					bool c = (groundIndex == destIndex && mover->edgeQuantity >= dest.quantity);
+					if (partLoop && ( a || b || c ) )
+					{
+						//cout << a << " " << b << " " << c << ", start: " << startIndex << ", dest: " << destIndex << endl;
+						DecideNextAction();
+						break;
 					}
 				}
 				else
 				{
-					if (!partLoop && groundIndex > startIndex)
+					if (!partLoop
+						&& (groundIndex > startIndex
+							|| (leftInitialEdge && (groundIndex == destIndex || groundIndex == startIndex))))
 					{
 						partLoop = true;
 					}
-					if (partLoop && !completedLoop && (groundIndex < startIndex
-						|| groundIndex == startIndex && mover->edgeQuantity < startTravelPoint.quantity))
+
+					bool a = groundIndex < destIndex;
+					bool b = (destIndex == 0 && groundIndex == maxEdge && completedLoop );
+					bool c = (groundIndex == destIndex && mover->edgeQuantity <= dest.quantity);
+					if (partLoop && (a || b || c ) )
 					{
-						completedLoop = true;
+						//cout << a << " " << b << " " << c << ", start: " << startIndex << ", dest: " << destIndex << endl;
+						DecideNextAction();
+						break;
 					}
 				}
 				
-				
+				//if (completedLoop)
+				//{
+				//	DecideNextAction();
+				//	cout << "completed loop" << endl;
+				//	break;
+				//}
 
-				if (clockwise)
-				{	
-					if (startIndex < destIndex)
-					{
-						
-						if (groundIndex > destIndex || (
-							groundIndex == destIndex && mover->edgeQuantity >dest.quantity ) )
-						{
-						//	cout << "stop a " << endl;
-							DecideNextAction();
-						}
+				//if (clockwise)
+				//{	
+				//	if (startIndex < destIndex)
+				//	{
+				//		
+				//		if (groundIndex > destIndex || (
+				//			groundIndex == destIndex && mover->edgeQuantity >dest.quantity ) )
+				//		{
+				//		//	cout << "stop a " << endl;
+				//			DecideNextAction();
+				//		}
+				//		//else if (completedLoop)
+				//		//{
 
-					}
-					else if (startIndex > destIndex)
-					{
-						if ((groundIndex < startIndex && groundIndex > destIndex)
-							|| (groundIndex == destIndex && mover->edgeQuantity > dest.quantity))
-						{
-							//cout << "stop b " << endl;
-							DecideNextAction();
-						}
-					}
-					else
-					{
-						//startIndex == destIndex
-						if (startTravelPoint.quantity < dest.quantity)
-						{
-							if ( leftInitialEdge || (
-								!leftInitialEdge &&  mover->edgeQuantity > dest.quantity) )
-							{
-							//	cout << "stop c " << endl;
-								DecideNextAction();
-							}
-						}
-						else if (startTravelPoint.quantity > dest.quantity)
-						{
-							if ((leftInitialEdge && groundIndex == startIndex && mover->edgeQuantity > dest.quantity)
-								|| completedLoop )
-							{
-							//	cout << "stop d " << endl;
-								DecideNextAction();
-							}
-						}
-						else
-						{
-							if (completedLoop )
-							{
+				//		//	//	cout << "stop e " << endl;
+				//		//	DecideNextAction();
+				//		//}
 
-							//	cout << "stop e " << endl;
-								DecideNextAction();
-							}
-						}
-					}
-				}
-				else
-				{	
-					if (startIndex > destIndex)
-					{
+				//	}
+				//	else if (startIndex > destIndex)
+				//	{
+				//		if ((groundIndex < startIndex && groundIndex > destIndex)
+				//			|| (groundIndex == destIndex && mover->edgeQuantity > dest.quantity))
+				//		{
+				//			//cout << "stop b " << endl;
+				//			DecideNextAction();
+				//		}
+				//		//else if (completedLoop)
+				//		//{
 
-						if (groundIndex < destIndex || (
-							groundIndex == destIndex && mover->edgeQuantity < dest.quantity))
-						{
-							//cout << "stop ccw a" << endl;
-							DecideNextAction();
-						}
+				//		//	//	cout << "stop e " << endl;
+				//		//	DecideNextAction();
+				//		//}
+				//	}
+				//	else
+				//	{
+				//		//startIndex == destIndex
+				//		if (startTravelPoint.quantity < dest.quantity)
+				//		{
+				//			if ( leftInitialEdge || (
+				//				!leftInitialEdge &&  mover->edgeQuantity > dest.quantity) )
+				//			{
+				//			//	cout << "stop c " << endl;
+				//				DecideNextAction();
+				//			}
+				//		}
+				//		else if (startTravelPoint.quantity > dest.quantity)
+				//		{
+				//			if ((leftInitialEdge && groundIndex == startIndex && mover->edgeQuantity > dest.quantity)
+				//				|| completedLoop )
+				//			{
+				//			//	cout << "stop d " << endl;
+				//				DecideNextAction();
+				//			}
+				//		}
+				//		//else
+				//		//{
+				//		//	//if (completedLoop )
+				//		//	//{
 
-					}
-					else if (startIndex < destIndex)
-					{
-						if ((groundIndex > startIndex && groundIndex < destIndex)
-							|| (groundIndex == destIndex && mover->edgeQuantity < dest.quantity))
-						{
-							//cout << "stop ccw b" << endl;
-							DecideNextAction();
-						}
-					}
-					else
-					{
-						//startIndex == destIndex
-						if (startTravelPoint.quantity < dest.quantity)
-						{
-							if (leftInitialEdge || (
-								!leftInitialEdge &&  mover->edgeQuantity < dest.quantity))
-							{
-								//cout << "stop ccw c" << endl;
-								DecideNextAction();
-							}
-						}
-						else if (startTravelPoint.quantity > dest.quantity)
-						{
-							if ((leftInitialEdge && groundIndex == startIndex && mover->edgeQuantity < dest.quantity)
-								|| completedLoop)
-							{
-								//cout << "stop ccw d" << endl;
-								DecideNextAction();
-							}
-						}
-						else
-						{
-							if (completedLoop)
-							{
+				//		//	////	cout << "stop e " << endl;
+				//		//	//	DecideNextAction();
+				//		//	//}
+				//		//}
+				//	}
+				//}
+				//else
+				//{	
+				//	if (startIndex > destIndex)
+				//	{
 
-								//cout << "stop ccw e" << endl;
-								DecideNextAction();
-							}
-						}
-					}
-				}
+				//		if (groundIndex < destIndex || (
+				//			groundIndex == destIndex && mover->edgeQuantity < dest.quantity))
+				//		{
+				//			//cout << "stop ccw a" << endl;
+				//			DecideNextAction();
+				//		}
+
+				//	}
+				//	else if (startIndex < destIndex)
+				//	{
+				//		if ((groundIndex > startIndex && groundIndex < destIndex)
+				//			|| (groundIndex == destIndex && mover->edgeQuantity < dest.quantity))
+				//		{
+				//			//cout << "stop ccw b" << endl;
+				//			DecideNextAction();
+				//		}
+				//	}
+				//	else
+				//	{
+				//		//startIndex == destIndex
+				//		if (startTravelPoint.quantity < dest.quantity)
+				//		{
+				//			if (leftInitialEdge || (
+				//				!leftInitialEdge &&  mover->edgeQuantity < dest.quantity))
+				//			{
+				//				//cout << "stop ccw c" << endl;
+				//				DecideNextAction();
+				//			}
+				//		}
+				//		else if (startTravelPoint.quantity > dest.quantity)
+				//		{
+				//			if ((leftInitialEdge && groundIndex == startIndex && mover->edgeQuantity < dest.quantity)
+				//				|| completedLoop)
+				//			{
+				//				//cout << "stop ccw d" << endl;
+				//				DecideNextAction();
+				//			}
+				//		}
+				//		//else
+				//		//{
+				//		//	if (completedLoop)
+				//		//	{
+
+				//		//		//cout << "stop ccw e" << endl;
+				//		//		DecideNextAction();
+				//		//	}
+				//		//}
+				//	}
+				//}
 				/*V2d middlePoint = decidePoints[travelIndex].edge->GetPoint(decidePoints[travelIndex].quantity)
 					+ decidePoints[travelIndex].edge->Normal() * mover->physBody.rw;
 
@@ -633,6 +719,29 @@ void CrawlerQueen::UpdateEnemyPhysics()
 
 void CrawlerQueen::FrameIncrement()
 {
+	if (invinc)
+	{
+		currInvincFramesOnHit++;
+		if (currInvincFramesOnHit == totalInvincFramesOnHit)
+		{
+			invinc = false;
+		}
+	}
+	else
+	{
+		if (hitThisFrame)
+		{
+			notHitFrames = 0;
+		}
+		else
+		{
+			notHitFrames++;
+			if (notHitFrames == notHitCap)
+			{
+				invincHitCount = 0;
+			}
+		}
+	}
 }
 
 void CrawlerQueen::EnemyDraw(sf::RenderTarget *target)
@@ -784,7 +893,7 @@ void CrawlerQueen::UpdateSprite()
 	}
 	else
 	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);// -extraVert);
 		sprite.setRotation(angle / PI * 180);
 		sprite.setPosition(Vector2f(mover->physBody.globalPosition));
 	}
@@ -808,6 +917,27 @@ void CrawlerQueen::UpdateSprite()
 			Vector2f(decidePoints[i].edge->GetPoint(decidePoints[i].quantity)) 
 			+ Vector2f(decidePoints[i].edge->Normal() * mover->physBody.rw));
 	}
+
+	if (invinc)
+	{
+		if (currInvincFramesOnHit % 3 == 0)
+		{
+			if (sprite.getColor().a == 60)
+			{
+				sprite.setColor(Color(255, 255, 255, 255));
+			}
+			else
+			{
+				sprite.setColor(Color(255, 255, 255, 60));
+			}
+		}
+	}
+	else
+	{
+		sprite.setColor(Color(255, 255, 255, 255));
+	}
+	/*sprite.setColor(Color(255, 255, 255, 60));
+	sprite.setColor(Color(255, 255, 255, 255));*/
 }
 
 void CrawlerQueen::DebugDraw(RenderTarget *target)
@@ -884,7 +1014,6 @@ void CrawlerQueen::SetDecisions()
 	for (int i = 0; i < numDecisions; ++i)
 	{
 		int r = rand() % D_Count;
-		r = D_DIG;
 		decisions[i] = (Decision)r;//D_DIG;//(Decision)r;
 	}
 }

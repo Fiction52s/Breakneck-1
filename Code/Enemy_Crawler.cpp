@@ -143,7 +143,7 @@ void Crawler::ResetEnemy()
 	V2d gPoint = mover->ground->GetPoint( startQuant );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	
-	position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
+	//position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
 	V2d gn = mover->ground->Normal();
 	dead = false;
 

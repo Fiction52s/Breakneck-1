@@ -42,8 +42,8 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	//animationFactor = 10;
 
 	//ts = owner->GetTileset( "Booster.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/booster_256x256.png", 512, 512);
-	ts_refresh = owner->GetTileset("Enemies/booster_on_256x256.png", 512, 512);
+	ts = owner->GetTileset("Enemies/booster_512x512.png", 512, 512);
+	ts_refresh = owner->GetTileset("Enemies/booster_on_256x256.png", 256, 256);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -120,6 +120,9 @@ void Booster::ResetEnemy()
 
 	sprite.setTexture(*ts->texture);
 
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(position.x, position.y);
+
 	UpdateSprite();
 }
 
@@ -173,6 +176,9 @@ void Booster::UpdateSprite()
 	}
 
 	sprite.setTextureRect(ir);
+
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(position.x, position.y);
 }
 
 void Booster::EnemyDraw(sf::RenderTarget *target)

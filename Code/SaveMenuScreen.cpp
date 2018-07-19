@@ -277,12 +277,14 @@ void SaveMenuScreen::Update()
 		if (menuCurrInput.B && !menuPrevInput.B )
 		{
 			mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
 			return;
 		}
 		else if (menuCurrInput.A && !menuPrevInput.A )
 		{
 			action = SELECT;
 			frame = 0;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
 			return;
 		}
 
@@ -297,7 +299,8 @@ void SaveMenuScreen::Update()
 				selectedSaveIndex -= 6;
 			moveDown = true;
 			moveDelayCounter = moveDelayFrames;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
+			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 		}
 		else if ((menuCurrInput.LUp() || menuCurrInput.PUp()) && (
 			(!moveUp && canMoveOther) || (moveUp && canMoveSame)))
@@ -307,7 +310,8 @@ void SaveMenuScreen::Update()
 				selectedSaveIndex += 6;
 			moveUp = true;
 			moveDelayCounter = moveDelayFrames;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
+			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 		}
 
 		if ((menuCurrInput.LRight() || menuCurrInput.PRight()) && (
@@ -319,6 +323,7 @@ void SaveMenuScreen::Update()
 				selectedSaveIndex -= 2;
 			moveRight = true;
 			moveDelayCounter = moveDelayFrames;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 		}
 		else if ((menuCurrInput.LLeft() || menuCurrInput.PLeft()) && (
 			(!moveLeft && canMoveOther) || (moveLeft && canMoveSame)))
@@ -333,6 +338,7 @@ void SaveMenuScreen::Update()
 			moveLeft = true;
 
 			moveDelayCounter = moveDelayFrames;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 		}
 
 		if (moveDelayCounter > 0)

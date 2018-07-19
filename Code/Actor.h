@@ -462,7 +462,9 @@ struct Actor : QuadTreeCollider,
 	bool CaptureMonitor( Monitor *m );
 	void UpdatePhysics();
 	void PhysicsResponse();
-	void GroundAttack();
+	bool GroundAttack();
+	bool SteepSlideAttack();
+	bool SteepClimbAttack();
 	void ConfirmEnemyKill( Enemy *e );
 	bool IHitPlayer( int otherPlayerIndex );
 	std::pair<bool,bool> PlayerHitMe( int otherPlayerIndex );

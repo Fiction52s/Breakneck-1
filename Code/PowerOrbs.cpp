@@ -1020,7 +1020,11 @@ FillRing::~FillRing()
 
 void FillRing::Update()
 {
-	rings[currRing]->Update();
+	for (int i = 0; i < numRings; ++i)
+	{
+		rings[i]->Update();
+	}
+	
 }
 
 void FillRing::CreateRing()

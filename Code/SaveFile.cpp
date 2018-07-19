@@ -136,7 +136,7 @@ bool SaveFile::ShardIsCaptured(ShardType sType)
 
 void SaveFile::CopyFromDefault()
 {
-	path from("Data/default.kin");
+	path from("Resources/Data/default.kin");
 
 	path to(fileName);
 

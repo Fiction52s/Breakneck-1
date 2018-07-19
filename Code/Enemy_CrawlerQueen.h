@@ -113,7 +113,18 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void SetDecisions();
 	void DecideAction();
 	void DecideNextAction( );
-	
+	//void ProcessHit();
+	HitboxInfo *IsHit(Actor *player);
+	int totalInvincFramesOnHit;
+	int currInvincFramesOnHit;
+	int invincHitThresh;
+	int invincHitCount;
+	bool invinc;
+	int notHitFrames;
+	int notHitCap;
+	bool hitThisFrame;
+
+
 	bool redecide;
 
 	Edge **edgeRef;

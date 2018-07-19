@@ -498,6 +498,8 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 	{
 		if (currInput.A && !prevInput.A)
 		{
+
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_in"));
 			state = PlANET_TO_COLONY;
 			frame = 0;
 
@@ -535,6 +537,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 		else if (currInput.B && !prevInput.B)
 		{
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
 			mainMenu->menuMode = MainMenu::SAVEMENU;
 			mainMenu->saveMenu->Reset();
 			mainMenu->saveMenu->action = SaveMenuScreen::FADEIN;
@@ -553,6 +556,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			if (selectedColony >= mainMenu->GetCurrentProgress()->numWorlds)
 				selectedColony = 0;
 			moveDown = true;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
 			
 		}
 		else if ((currInput.LUp() || currInput.PUp()) && !moveUp)
@@ -561,6 +565,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			if (selectedColony < 0)
 				selectedColony = mainMenu->GetCurrentProgress()->numWorlds - 1;
 			moveUp = true;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
 		}
 
 		if (!(currInput.LDown() || currInput.PDown()))
@@ -804,6 +809,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		//}
 		if (currInput.B && !prevInput.B)
 		{
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_out"));
 			state = COLONY_TO_PLANET;
 			frame = 0;
 		}
@@ -1649,7 +1655,7 @@ void MapSector::Update(ControllerState &curr,
 
 	if (state == LEVELCOMPLETEDWAIT)
 	{
-		if (stateFrame == 120)
+		if (stateFrame == 30)
 		{
 			state = LEVELJUSTCOMPLETE;
 			stateFrame = 0;
@@ -1696,7 +1702,7 @@ void MapSector::Update(ControllerState &curr,
 
 	UpdateNodes();
 
-	if (state == NORMAL || state == COMPLETE)
+	if (state == NORMAL || state == COMPLETE || ( state == LEVELJUSTCOMPLETE && stateFrame >= 3 * 7 ))
 	{
 		int old = saSelector->currIndex;
 
@@ -1734,6 +1740,7 @@ void MapSector::Update(ControllerState &curr,
 		}
 		if (changed != 0 || oldYIndex != selectedYIndex)
 		{
+			ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_change"));
 			UpdateNodes();
 			//UpdateNodes();
 			//Vertex *n = (nodes + selectedYIndex * numLevels * 4 + old * 4);
@@ -1768,6 +1775,7 @@ void MapSector::Update(ControllerState &curr,
 				{
 					state = NORMAL;
 				}
+				ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
 				ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));
 			}
 		}
@@ -1788,19 +1796,26 @@ void MapSector::Update(ControllerState &curr,
 			}
 			else
 			{
-				state = NORMAL;
-				if (unlockedIndex < numLevels - 1)
-				{
-					saSelector->currIndex = unlockedIndex + 1;
-				}
+				state = NORMAL;	
 				//unlockedIndex
 			}
 			stateFrame = 0;
 		}
+		else if (ff == 3)
+		{
+			nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(ff));
+			if (unlockedIndex < numLevels - 1)
+			{
+				saSelector->currIndex = unlockedIndex + 1;
+			}
+		}
 		else
 		{
 			//paths[unlockedIndex].setTextureRect(ms->ts_path->GetSubRect(ff));
-			nodeExplodeSpr.setPosition(nodeHighlight.getPosition());
+			if( stateFrame == 0 )
+			{
+				nodeExplodeSpr.setPosition(nodeHighlight.getPosition());
+			}
 			nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(ff));
 		}
 

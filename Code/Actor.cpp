@@ -1789,6 +1789,44 @@ void Actor::CheckHoldJump()
 	}
 }
 
+bool Actor::SteepSlideAttack()
+{
+	if (pauseBufferedAttack == Action::STEEPSLIDEATTACK)
+	{
+		SetAction(pauseBufferedAttack);
+		frame = 0;
+		return true;
+	}
+
+	if (currInput.rightShoulder && !prevInput.rightShoulder)
+	{
+		SetAction(STEEPSLIDEATTACK);
+		frame = 0;
+		return true;
+	}
+
+	return false;
+}
+
+bool Actor::SteepClimbAttack()
+{
+	if (pauseBufferedAttack == Action::STEEPCLIMBATTACK)
+	{
+		SetAction(pauseBufferedAttack);
+		frame = 0;
+		return true;
+	}
+
+	if (currInput.rightShoulder && !prevInput.rightShoulder)
+	{
+		SetAction(STEEPCLIMBATTACK);
+		frame = 0;
+		return true;
+	}
+
+	return false;
+}
+
 bool Actor::AirAttack()
 {
 	if (pauseBufferedAttack != Action::Count)
@@ -2962,9 +3000,9 @@ void Actor::UpdatePrePhysics()
 				frame = 0;
 				break;
 			}
-			else if (currInput.rightShoulder && !prevInput.rightShoulder)
+			else if (GroundAttack())
 			{
-				GroundAttack();
+				break;
 			}
 			else if( currInput.B && !prevInput.B )
 			{
@@ -3092,12 +3130,8 @@ void Actor::UpdatePrePhysics()
 			}
 
 
-
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			if (GroundAttack())
 			{
-				GroundAttack();
-
-				////runTappingSound.stop();
 				break;
 			}
 
@@ -3651,9 +3685,9 @@ void Actor::UpdatePrePhysics()
 						SetActionExpr( RUN );
 						frame = 0;
 					}
-					else if( currInput.rightShoulder && !prevInput.rightShoulder )
+					else if(GroundAttack())
 					{
-						GroundAttack();
+						break;
 					}
 					else if( !currInput.LDown() )
 					{
@@ -4099,9 +4133,8 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			if (GroundAttack())
 			{
-				GroundAttack();
 				break;
 			}
 
@@ -4475,12 +4508,10 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			if (GroundAttack())
 			{
-				GroundAttack();
 				break;
 			}
-
 			
 			if( currInput.B && !prevInput.B )
 			{
@@ -4643,9 +4674,8 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if( (currInput.rightShoulder && !prevInput.rightShoulder) )// || pauseBufferedAttack )
+				if (GroundAttack())
 				{
-					GroundAttack();
 					break;
 				}
 
@@ -4690,12 +4720,8 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if( currInput.rightShoulder && !prevInput.rightShoulder )
-				{
-					SetAction(STEEPSLIDEATTACK);
-					frame = 0;
+				if (SteepSlideAttack())
 					break;
-				}
 
 				if( currInput.B && !prevInput.B )
 				//if( currInput.A && !prevInput.A )
@@ -4774,10 +4800,8 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if( currInput.rightShoulder && !prevInput.rightShoulder )
+				if (SteepClimbAttack())
 				{
-					SetAction(STEEPCLIMBATTACK);
-					frame = 0;
 					break;
 				}
 
@@ -5261,54 +5285,6 @@ void Actor::UpdatePrePhysics()
 		if (TryDoubleJump()) break;
 
 
-		//cout << CheckWall( true ) << endl;
-
-		//if (CheckWall(false))
-		//{
-		//	//cout << "special walljump right" << endl;
-		//	if (!currInput.LDown() && currInput.LRight() && !prevInput.LRight())
-		//	{
-		//		action = WALLJUMP;
-		//		frame = 0;
-		//		facingRight = true;
-
-		//		if (currInput.A)
-		//		{
-		//			longWallJump = true;
-		//		}
-		//		else
-		//		{
-		//			longWallJump = false;
-		//		}
-		//		break;
-		//	}
-		//}
-
-
-		//if (CheckWall(true))
-		//{
-		//	//cout << "special walljump left" << endl;
-		//	if (!currInput.LDown() && currInput.LLeft() && !prevInput.LLeft())
-		//	{
-
-		//		action = WALLJUMP;
-		//		frame = 0;
-		//		facingRight = false;
-
-		//		if (currInput.A)
-		//		{
-		//			longWallJump = true;
-		//		}
-		//		else
-		//		{
-		//			longWallJump = false;
-		//		}
-		//		break;
-		//	}
-		//}
-
-
-
 		AirAttack();
 
 		if (!currInput.B)
@@ -5749,10 +5725,8 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			if (SteepSlideAttack())
 			{
-				SetAction(STEEPSLIDEATTACK);
-				frame = 0;
 				break;
 			}
 
@@ -5867,10 +5841,8 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			if (SteepClimbAttack())
 			{
-				SetAction(STEEPCLIMBATTACK);
-				frame = 0;
 				break;
 			}
 
@@ -6475,11 +6447,8 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( currInput.rightShoulder && !prevInput.rightShoulder )
+			if (GroundAttack())
 			{
-				GroundAttack();
-
-				//runTappingSound.stop();
 				break;
 			}
 			break;
@@ -14614,19 +14583,27 @@ void Actor::HitEdge( V2d &newVel )
 	//}
 }
 
-void Actor::GroundAttack()
+bool Actor::GroundAttack()
 {
-	if (currInput.LLeft())
+	if ((currInput.rightShoulder && !prevInput.rightShoulder) || pauseBufferedAttack == Action::STANDN )
 	{
-		facingRight = false;
-	}
-	else if (currInput.LRight())
-	{
-		facingRight = true;
+		if (currInput.LLeft())
+		{
+			facingRight = false;
+		}
+		else if (currInput.LRight())
+		{
+			facingRight = true;
+		}
+
+		SetAction(STANDN);
+		frame = 0;
+
+		return true;
 	}
 
-	SetAction( STANDN );
-	frame = 0;
+	return false;
+	
 	//if( currInput.B )//action == DASH )
 	//{
 	//	
@@ -23066,7 +23043,16 @@ void Actor::UpdateInHitlag()
 				}
 				else
 				{
-					pauseBufferedAttack = STANDN;
+					if (action == STEEPCLIMBATTACK)
+						pauseBufferedAttack = STEEPCLIMBATTACK;
+					else if (action == STEEPSLIDEATTACK)
+					{
+						pauseBufferedAttack = STEEPSLIDEATTACK;
+					}
+					else
+					{
+						pauseBufferedAttack = STANDN;
+					}
 				}
 			}
 		}

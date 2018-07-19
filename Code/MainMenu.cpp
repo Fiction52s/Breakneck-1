@@ -1658,6 +1658,7 @@ void MainMenu::Run()
 					if( menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X || 
 						menuCurrInput.rightShoulder || menuCurrInput.leftShoulder )
 					{
+						soundNodeList->ActivateSound(soundManager.GetSound("main_menu_select"));
 						switch (saSelector->currIndex)
 						{
 						case M_ADVENTURE:
@@ -1734,7 +1735,12 @@ void MainMenu::Run()
 					else
 					{
 						int oldIndex = saSelector->currIndex;
-						saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
+						int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
+
+						if (res != 0)
+						{
+							soundNodeList->ActivateSound(soundManager.GetSound( "main_menu_change") );
+						}
 
 						while (!activatedMainMenuOptions[saSelector->currIndex])
 						{
@@ -1758,8 +1764,8 @@ void MainMenu::Run()
 									}
 								}
 							}
-							
 						}
+
 					}
 
 					UpdateMenuOptionText();
@@ -1952,6 +1958,7 @@ void MainMenu::Run()
 				window->setView(oldView);
 
 				SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector;
+				int numLevels = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
 				if (result == GameSession::GR_WIN)
 				{
 					/*if (sa->currIndex < sa->totalItems - 1)
@@ -1963,10 +1970,10 @@ void MainMenu::Run()
 				}
 				else if (result == GameSession::GR_WINCONTINUE)
 				{
-					
-					if (sa->currIndex < sa->totalItems - 1)
+					if (sa->currIndex < numLevels - 1)
 					{
 						sa->currIndex++;
+						//sa->totalItems++;
 						AdventureLoadLevel(&(sec.levels[sa->currIndex]));
 					}
 					else
@@ -1978,6 +1985,10 @@ void MainMenu::Run()
 				}
 				else
 				{
+					for (int i = 0; i < sec.numLevels; ++i)
+					{
+						sec.levels[i].justBeaten = false;
+					}
 					//fix this later for other options
 					menuMode = MainMenu::WORLDMAP;
 					worldMap->Update(menuPrevInput, menuCurrInput);
