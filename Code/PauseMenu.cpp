@@ -173,7 +173,17 @@ void OptionsMenu::Update( ControllerState &currInput,
 	switch (state)
 	{
 	case CHOOSESTATE:
-		optionModeSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+	{
+		int res = optionModeSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+		if (res != 0)
+		{
+			if (mainMenu->pauseMenu->owner != NULL)
+			{
+				GameSession *owner = mainMenu->pauseMenu->owner;
+				mainMenu->pauseMenu->owner->pauseSoundNodeList->ActivateSound(mainMenu->pauseMenu->owner->soundManager->GetSound("pause_change"));
+			}
+			//owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_change"));
+		}
 		UpdateOptionModeQuads();
 
 		if (currInput.A && !prevInput.A)
@@ -194,6 +204,7 @@ void OptionsMenu::Update( ControllerState &currInput,
 			}
 		}
 		break;
+	}
 	case CONTROL:
 		if (csm->currButtonState != ControlSettingsMenu::S_SELECTED)
 		{
@@ -383,6 +394,7 @@ void PauseMenu::TabLeft()
 	if( index < 0 )
 		index = 4;	
 	SetTab((Tab)index);
+	owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("tab_left"));
 }
 
 void PauseMenu::TabRight()
@@ -392,6 +404,7 @@ void PauseMenu::TabRight()
 	if( index > 4 )
 		index = 0;
 	SetTab((Tab)index );
+	owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("tab_right"));
 }
 
 void PauseMenu::SetTab( Tab t )
@@ -652,6 +665,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				optionsMenu->optionModeSelector->currIndex = 0;
 			}
 
+			owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_off"));
 			owner->state = GameSession::State::RUN;
 			owner->soundNodeList->Pause(false);
 		}
@@ -777,7 +791,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			//return UpdateOptions( currInput, prevInput );
 			
 			optionsMenu->Update( currInput, prevInput );
-		
+			
 			
 			break;
 		}
@@ -786,6 +800,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			if( currInput.A && !prevInput.A )
 			{
 				UpdateResponse ur = (UpdateResponse)(pauseSelector->currIndex+1);
+				//owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_select"));
 				return ur;
 				//switch( pauseSelectIndex )
 				//{
@@ -809,8 +824,12 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				//}
 			}
 
-			pauseSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+			int res = pauseSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
 
+			if (res != 0)
+			{
+				owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_change"));
+			}
 			int h = 200;
 			//selectSprite.setPosition( 100, 100 + h * pauseSelector->currIndex);
 			UpdatePauseOptions();
@@ -1341,6 +1360,12 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 
 	if (xchanged != 0 || ychanged != 0)
 	{
+		if (mainMenu->pauseMenu->owner != NULL)
+		{
+			GameSession *owner = mainMenu->pauseMenu->owner;
+			mainMenu->pauseMenu->owner->pauseSoundNodeList->ActivateSound(mainMenu->pauseMenu->owner->soundManager->GetSound("pause_change"));
+		}
+		
 		if ( ySelector->currIndex == 1 && xSelector->currIndex > secondRowMax )
 		{
 			if (ychanged != 0)

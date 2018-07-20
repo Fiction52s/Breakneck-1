@@ -508,6 +508,12 @@ void GameSession::Cleanup()
 		soundNodeList = NULL;
 	}
 
+	if (pauseSoundNodeList != NULL)
+	{
+		delete pauseSoundNodeList;
+		pauseSoundNodeList = NULL;
+	}
+
 	if (gates != NULL)
 	{
 		for (int i = 0; i < numGates; ++i)
@@ -4860,6 +4866,9 @@ bool GameSession::Load()
 
 	soundNodeList = new SoundNodeList(10);
 	soundNodeList->SetGlobalVolume(mainMenu->config->GetData().soundVolume);
+
+	pauseSoundNodeList = new SoundNodeList(10);
+	pauseSoundNodeList->SetGlobalVolume(mainMenu->config->GetData().soundVolume);
 	scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
 
 	lifeBarTex.loadFromFile("Resources/lifebar_768x768.png");
@@ -6350,6 +6359,8 @@ int GameSession::Run()
 
 				soundNodeList->Update();
 
+				pauseSoundNodeList->Update();
+
 				goalPulse->Update();
 
 				if (rain != NULL)
@@ -6733,6 +6744,7 @@ int GameSession::Run()
 					if( currInput.start && !prevInput.start )
 					{
 						state = PAUSE;
+						pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_on"));
 						pauseMenu->SetTab( PauseMenu::PAUSE );
 						soundNodeList->Pause( true );
 
@@ -6742,7 +6754,7 @@ int GameSession::Run()
 					{
 						state = PAUSE;
 						pauseMenu->SetTab( PauseMenu::MAP );
-					
+						pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_on"));
 						soundNodeList->Pause( true );
 					}
 				}
@@ -8220,6 +8232,7 @@ int GameSession::Run()
 			case PauseMenu::R_P_RESUME:
 				{
 					state = GameSession::RUN;
+					pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_off"));
 					soundNodeList->Pause( false );
 					pauseMenu->shardMenu->StopMusic();
 					break;
@@ -8500,6 +8513,7 @@ int GameSession::Run()
 				{
 					state = RUN;
 					soundNodeList->Pause( false );
+					pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_off"));
 				}
 
 				accumulator -= TIMESTEP;
@@ -8840,11 +8854,15 @@ int GameSession::Run()
 	}
 	
 	soundNodeList->Reset();
+	pauseSoundNodeList->Reset();
 	
 	for( int i = 0; i < 4; ++i )
 	{
 		SetFilterDefault( GetController(i).filter );
 	}
+
+	//pauseMenu = mainMenu->pauseMenu;
+	pauseMenu->owner = NULL;
 
 	return returnVal;
 }
@@ -8904,6 +8922,8 @@ void GameSession::Init()
 	scoreDisplay = NULL;
 	
 	soundNodeList = NULL;
+
+	pauseSoundNodeList = NULL;
 	
 	levelMusic = NULL;
 

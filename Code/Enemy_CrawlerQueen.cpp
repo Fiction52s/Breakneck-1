@@ -22,6 +22,14 @@ using namespace sf;
 CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	:Enemy(owner, EnemyType::EN_CRAWLERQUEEN, false, 1, false), clockwise(cw)
 {
+	ts_decideMarker = owner->GetTileset("Bosses/Crawler/crawler_queen_marker_64x64.png", 64, 64);
+
+	decideVA = new Vertex[MAX_DECISIONS * 4 * 3];
+	//ClearDecisionMarkers();
+
+	//memset(decideVA, 0, MAX_DECISIONS * 4);
+
+	progressionLevel = 0;
 	bombSpeed = 2;
 	currDigAttacks = 3;
 	highResPhysics = true;
@@ -142,24 +150,23 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	startQuant = q;
 	frame = 0;
 
-	
-
-	//action = DECIDE;
-	//frame = 0;
-	//DecidePoints();
-	//SetDecisions();
-
 	edgeRef = NULL;
 
 	InitEdgeInfo();
 
 	bombPool = new ObjectPool;
 	
-
 	for (int i = 0; i < 100; ++i)
 	{
 		FloatingBomb *fb = new FloatingBomb(owner, bombPool, i );
 		bombPool->AddToInactiveList(fb);
+	}
+
+	decisionPool = new ObjectPool;
+	for (int i = 0; i < MAX_DECISIONS; ++i)
+	{
+		DecisionMarker *d = new DecisionMarker(this, decisionPool, i * 3);
+		decisionPool->AddToInactiveList(d);
 	}
 
 	decidePoints = new EdgeInfo[MAX_DECISIONS];
@@ -167,6 +174,14 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 
 	ResetEnemy();
 	//frame = actionLength[UNDERGROUND];
+}
+
+void CrawlerQueen::ClearDecisionMarkers()
+{
+	for (int i = 0; i < MAX_DECISIONS * 4 * 3; ++i)
+	{
+		decideVA[i].position = Vector2f(0, 0);
+	}
 }
 
 CrawlerQueen::~CrawlerQueen()
@@ -207,6 +222,8 @@ void CrawlerQueen::InitEdgeInfo()
 
 void CrawlerQueen::ResetEnemy()
 {
+	ClearDecisionMarkers();
+	decisionPool->DeactivateAll();
 	invinc = false;
 	currInvincFramesOnHit = 0;
 	invincHitCount = 0;
@@ -247,8 +264,9 @@ void CrawlerQueen::ResetEnemy()
 
 	action = DECIDE;
 	frame = 0;
-	DecidePoints();
 	SetDecisions();
+	DecidePoints();
+	
 
 	FloatingBomb *fb = (FloatingBomb*)bombPool->activeListStart;
 	while( fb != NULL )
@@ -383,8 +401,8 @@ void CrawlerQueen::ProcessState()
 	if (redecide)
 	{
 		action = DECIDE;
-		DecidePoints();
 		SetDecisions();
+		DecidePoints();
 		frame = 0;
 		decideIndex = 0;
 		mover->SetSpeed(0);
@@ -399,31 +417,6 @@ void CrawlerQueen::ProcessState()
 	case BOOST:
 	{
 		assert(mover->ground != NULL);
-
-		//int gIndex = edgeIndexMap[mover->ground];
-		//double gQuant = mover->edgeQuantity;
-		//int dIndex = decidePoints[travelIndex].index;
-		//int sIndex = startTravelPoint.index;
-
-		//if (clockwise)
-		//{
-		//	//past where it needs to stop
-		//	if ((dIndex > sIndex && (gIndex < sIndex || gIndex > dIndex))
-		//		|| (dIndex < sIndex && (gIndex > dIndex && gIndex < sIndex))
-		//		|| (gIndex == dIndex && gQuant > startTravelPoint.quantity))
-		//	{
-		//		DecideNextAction(gIndex);
-		//	}
-		//}
-		//else
-		//{
-		//	if (( dIndex < sIndex && ( gIndex > sIndex || gIndex < dIndex ) ) 
-		//		|| (dIndex > sIndex && ( gIndex < dIndex && gIndex > sIndex ) )
-		//		|| (gIndex == dIndex && gQuant < startTravelPoint.quantity) )
-		//	{
-		//		DecideNextAction(gIndex);
-		//	}
-		//}
 		break;
 	}
 	case DECIDE:
@@ -572,144 +565,6 @@ void CrawlerQueen::UpdateEnemyPhysics()
 						break;
 					}
 				}
-				
-				//if (completedLoop)
-				//{
-				//	DecideNextAction();
-				//	cout << "completed loop" << endl;
-				//	break;
-				//}
-
-				//if (clockwise)
-				//{	
-				//	if (startIndex < destIndex)
-				//	{
-				//		
-				//		if (groundIndex > destIndex || (
-				//			groundIndex == destIndex && mover->edgeQuantity >dest.quantity ) )
-				//		{
-				//		//	cout << "stop a " << endl;
-				//			DecideNextAction();
-				//		}
-				//		//else if (completedLoop)
-				//		//{
-
-				//		//	//	cout << "stop e " << endl;
-				//		//	DecideNextAction();
-				//		//}
-
-				//	}
-				//	else if (startIndex > destIndex)
-				//	{
-				//		if ((groundIndex < startIndex && groundIndex > destIndex)
-				//			|| (groundIndex == destIndex && mover->edgeQuantity > dest.quantity))
-				//		{
-				//			//cout << "stop b " << endl;
-				//			DecideNextAction();
-				//		}
-				//		//else if (completedLoop)
-				//		//{
-
-				//		//	//	cout << "stop e " << endl;
-				//		//	DecideNextAction();
-				//		//}
-				//	}
-				//	else
-				//	{
-				//		//startIndex == destIndex
-				//		if (startTravelPoint.quantity < dest.quantity)
-				//		{
-				//			if ( leftInitialEdge || (
-				//				!leftInitialEdge &&  mover->edgeQuantity > dest.quantity) )
-				//			{
-				//			//	cout << "stop c " << endl;
-				//				DecideNextAction();
-				//			}
-				//		}
-				//		else if (startTravelPoint.quantity > dest.quantity)
-				//		{
-				//			if ((leftInitialEdge && groundIndex == startIndex && mover->edgeQuantity > dest.quantity)
-				//				|| completedLoop )
-				//			{
-				//			//	cout << "stop d " << endl;
-				//				DecideNextAction();
-				//			}
-				//		}
-				//		//else
-				//		//{
-				//		//	//if (completedLoop )
-				//		//	//{
-
-				//		//	////	cout << "stop e " << endl;
-				//		//	//	DecideNextAction();
-				//		//	//}
-				//		//}
-				//	}
-				//}
-				//else
-				//{	
-				//	if (startIndex > destIndex)
-				//	{
-
-				//		if (groundIndex < destIndex || (
-				//			groundIndex == destIndex && mover->edgeQuantity < dest.quantity))
-				//		{
-				//			//cout << "stop ccw a" << endl;
-				//			DecideNextAction();
-				//		}
-
-				//	}
-				//	else if (startIndex < destIndex)
-				//	{
-				//		if ((groundIndex > startIndex && groundIndex < destIndex)
-				//			|| (groundIndex == destIndex && mover->edgeQuantity < dest.quantity))
-				//		{
-				//			//cout << "stop ccw b" << endl;
-				//			DecideNextAction();
-				//		}
-				//	}
-				//	else
-				//	{
-				//		//startIndex == destIndex
-				//		if (startTravelPoint.quantity < dest.quantity)
-				//		{
-				//			if (leftInitialEdge || (
-				//				!leftInitialEdge &&  mover->edgeQuantity < dest.quantity))
-				//			{
-				//				//cout << "stop ccw c" << endl;
-				//				DecideNextAction();
-				//			}
-				//		}
-				//		else if (startTravelPoint.quantity > dest.quantity)
-				//		{
-				//			if ((leftInitialEdge && groundIndex == startIndex && mover->edgeQuantity < dest.quantity)
-				//				|| completedLoop)
-				//			{
-				//				//cout << "stop ccw d" << endl;
-				//				DecideNextAction();
-				//			}
-				//		}
-				//		//else
-				//		//{
-				//		//	if (completedLoop)
-				//		//	{
-
-				//		//		//cout << "stop ccw e" << endl;
-				//		//		DecideNextAction();
-				//		//	}
-				//		//}
-				//	}
-				//}
-				/*V2d middlePoint = decidePoints[travelIndex].edge->GetPoint(decidePoints[travelIndex].quantity)
-					+ decidePoints[travelIndex].edge->Normal() * mover->physBody.rw;
-
-				double len = length(position - middlePoint);
-				cout << "len: " << len << endl;
-				if ( len < 20)
-				{
-					cout << "DECIDING" << endl;
-					DecideNextAction();
-				}*/
 			}
 			break;
 		}
@@ -747,7 +602,11 @@ void CrawlerQueen::FrameIncrement()
 void CrawlerQueen::EnemyDraw(sf::RenderTarget *target)
 {
 	if (action == RUMBLE )
+	{
+		target->draw(decideVA, MAX_DECISIONS * 4*3, sf::Quads, ts_decideMarker->texture);
 		return;
+	}
+		
 
 	if (owner->pauseFrames < 2 || receivedHit == NULL)
 	{
@@ -757,6 +616,8 @@ void CrawlerQueen::EnemyDraw(sf::RenderTarget *target)
 	{
 		target->draw(sprite, hurtShader);
 	}
+
+	target->draw(decideVA, MAX_DECISIONS * 4 * 3, sf::Quads, ts_decideMarker->texture);
 }
 
 void CrawlerQueen::IHitPlayer(int index)
@@ -774,6 +635,10 @@ void CrawlerQueen::HitTerrainAerial(Edge *e, double q)
 	mover->ground = e;
 	mover->edgeQuantity = q;
 	mover->UpdateGroundPos();
+
+	startTravelPoint.edge = mover->ground;
+	startTravelPoint.index = mover->edgeQuantity;
+	startTravelPoint.index = edgeIndexMap[mover->ground];
 
 	Boost();
 }
@@ -938,6 +803,14 @@ void CrawlerQueen::UpdateSprite()
 	}
 	/*sprite.setColor(Color(255, 255, 255, 60));
 	sprite.setColor(Color(255, 255, 255, 255));*/
+
+	PoolMember *pm = decisionPool->activeListStart;
+	while (pm != NULL)
+	{
+		DecisionMarker *dm = (DecisionMarker*)pm;
+		dm->Update();
+		pm = pm->pmnext;
+	}
 }
 
 void CrawlerQueen::DebugDraw(RenderTarget *target)
@@ -1014,6 +887,7 @@ void CrawlerQueen::SetDecisions()
 	for (int i = 0; i < numDecisions; ++i)
 	{
 		int r = rand() % D_Count;
+		//r = D_JUMP;
 		decisions[i] = (Decision)r;//D_DIG;//(Decision)r;
 	}
 }
@@ -1022,16 +896,25 @@ void CrawlerQueen::SetDecisions()
 void CrawlerQueen::DecidePoints()
 {
 	//add more to this algorithm later to balance it
-
+	ClearDecisionMarkers();
+	decisionPool->DeactivateAll();
 	for (int i = 0; i < numDecisions; ++i)
 	{
-		int r = rand() % numTotalEdges;
+		int r = rand() % numTotalEdges; 
 
 		int quant = rand() % (int)edgeRef[r]->GetLength();
 
 		decidePoints[i].edge = edgeRef[r];
 		decidePoints[i].index = r;
 		decidePoints[i].quantity = quant;
+
+		Edge *e = decidePoints[i].edge;
+
+		V2d pos = e->GetPoint(decidePoints[i].quantity) + e->Normal() * 32.0;
+
+		PoolMember *pm = decisionPool->ActivatePoolMember();
+		DecisionMarker *dm = (DecisionMarker*)pm;
+		dm->Reset(Vector2f(pos), decisions[i]);
 	}
 }
 
@@ -1397,4 +1280,98 @@ void FloatingBomb::ProcessHit()
 		frame = 0;
 	}
 		
+}
+
+DecisionMarker::DecisionMarker(CrawlerQueen *p_parent,
+	ObjectPool *mPool,
+	int p_index)
+	:PoolMember(index), parent( p_parent ), myPool( mPool ), index( p_index )
+{
+}
+
+void DecisionMarker::Update()
+{
+	switch (action)
+	{
+	case START:
+		if (frame == 10)
+		{
+			action = LOOP;
+		}
+		break;
+	case LOOP:
+		//if (frame == 10)
+		//	frame = 0;
+		break;
+	case DISSIPATE:
+		if (frame == 10)
+		{
+			myPool->DeactivatePoolMember(this);
+			Clear();
+			return;
+		}
+		break;
+	}
+
+	int f = frame % 60;
+	float prop = f / 60.f;
+	float a = 0;
+	
+	if (action == LOOP)
+	{
+		a = 2.0 * PI * prop;
+		//if( index == 0 )
+		//cout << "a: " << a << endl;
+	}
+
+	SetRectRotation(parent->decideVA + index * 4, a, parent->ts_decideMarker->tileWidth,
+		parent->ts_decideMarker->tileHeight, pos);
+	SetRectRotation(parent->decideVA + (index+1) * 4, -a, parent->ts_decideMarker->tileWidth,
+		parent->ts_decideMarker->tileHeight, pos);
+	SetRectRotation(parent->decideVA + (index+2) * 4, 0, parent->ts_decideMarker->tileWidth,
+		parent->ts_decideMarker->tileHeight, pos);
+
+	int tRow;
+	switch (dec)
+	{
+	case CrawlerQueen::D_BOOST:
+		tRow = 1;
+		break;
+	case CrawlerQueen::D_JUMP:
+		tRow = 2;
+		break;
+	case CrawlerQueen::D_DIG:
+		tRow = 0;
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	SetRectSubRect(parent->decideVA + index * 4, parent->ts_decideMarker->GetSubRect(tRow * 3));
+	SetRectSubRect(parent->decideVA + (index+1) * 4, parent->ts_decideMarker->GetSubRect(tRow * 3 + 1));
+	SetRectSubRect(parent->decideVA + (index+2) * 4, parent->ts_decideMarker->GetSubRect(tRow * 3 + 2));
+	//SetRectColor( parent->decideVA + index * 4, Color(Color::Red));
+
+	++frame;
+}
+
+void DecisionMarker::Clear()
+{
+	for (int i = 0; i < 3; ++i)
+	{
+		parent->decideVA[(index+i) * 4 + 0].position = Vector2f(0, 0);
+		parent->decideVA[(index + i) * 4 + 1].position = Vector2f(0, 0);
+		parent->decideVA[(index + i) * 4 + 2].position = Vector2f(0, 0);
+		parent->decideVA[(index + i) * 4 + 3].position = Vector2f(0, 0);
+	}
+	
+}
+
+void DecisionMarker::Reset(sf::Vector2f &p_pos, CrawlerQueen::Decision p_dec )
+{
+	pos = p_pos;
+	action = START;
+	frame = 0;
+	dec = p_dec;
 }

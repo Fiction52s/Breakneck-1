@@ -458,6 +458,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	SaveFile *saveFile;
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
 	SoundNodeList * soundNodeList;
+	SoundNodeList * pauseSoundNodeList;
 	ScoreDisplay *scoreDisplay;
 	State state;
 

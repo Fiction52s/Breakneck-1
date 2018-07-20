@@ -5,6 +5,7 @@
 #include "ObjectPool.h"
 
 
+
 struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 {
 	enum Action
@@ -123,8 +124,11 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	int notHitFrames;
 	int notHitCap;
 	bool hitThisFrame;
-
-
+	ObjectPool *decisionPool;
+	sf::Vertex *decideVA;
+	void ClearDecisionMarkers();
+	Tileset *ts_decideMarker;
+	int progressionLevel;
 	bool redecide;
 
 	Edge **edgeRef;
@@ -169,6 +173,32 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	EffectPool *decMarkerPool;
 
 	
+};
+
+struct DecisionMarker : PoolMember
+{
+	enum Action
+	{
+		START,
+		LOOP,
+		DISSIPATE,
+		Count
+	};
+
+	Action action;
+	void Update();
+	void Reset(sf::Vector2f &pos,
+		CrawlerQueen::Decision dec );
+	DecisionMarker(CrawlerQueen *parent,
+		ObjectPool *mPool,
+		int index);
+	void Clear();
+	ObjectPool *myPool;
+	CrawlerQueen *parent;
+	sf::Vector2f pos;
+	int index;
+	int frame;
+	CrawlerQueen::Decision dec;
 };
 
 #endif
