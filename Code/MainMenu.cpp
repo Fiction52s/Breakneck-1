@@ -3085,6 +3085,8 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 
 	is >> mh->bossFightType;
 
+
+
 	is >> mh->numVertices;
 
 	

@@ -712,6 +712,61 @@ bool EditSession::OpenFile()
 
 		UpdateFullBounds();
 
+		int numDecorImages;
+		is >> numDecorImages;
+
+		for (int i = 0; i < numDecorImages; ++i)
+		{
+			string dName;
+			is >> dName;
+			int dLayer;
+			is >> dLayer;
+
+			Vector2f dPos;
+			is >> dPos.x;
+			is >> dPos.y;
+
+			float dRot;
+			is >> dRot;
+
+			Vector2f dScale;
+			is >> dScale.x;
+			is >> dScale.y;
+
+			int dTile;
+			is >> dTile;
+
+			Sprite dSpr;
+			dSpr.setScale(dScale);
+			dSpr.setRotation(dRot);
+			dSpr.setPosition(dPos);
+
+			//string fullDName = dName + string(".png");
+			Tileset *ts = decorTSMap[dName];
+			dSpr.setTexture(*ts->texture);
+			dSpr.setTextureRect(ts->GetSubRect(dTile));
+			dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
+			//dSpr.setTexture do this after dinner
+
+			if (dLayer > 0)
+			{
+				decorImagesBehindTerrain.push_back(DecorInfo(dSpr, dLayer, dName, dTile));
+			}
+			else if (dLayer < 0)
+			{
+				decorImagesFrontTerrain.push_back(DecorInfo(dSpr, dLayer, dName, dTile));
+			}
+			else if (dLayer == 0)
+			{
+				decorImagesBetween.push_back(DecorInfo(dSpr, dLayer, dName, dTile));
+			}
+		}
+		/*of << (*it).decorName << endl;
+		of << (*it).layer << endl;
+		of << (*it).spr.getPosition().x << " " << (*it).spr.getPosition().y << endl;
+		of << (*it).spr.getRotation() << endl;
+		of << (*it).spr.getScale().x << " " << (*it).spr.getScale().y << endl;*/
+
 		is >> player->position.x;
 		is >> player->position.y;
 
@@ -2740,6 +2795,10 @@ void EditSession::WriteFile(string fileName)
 
 	mapHeader.Save(of);
 
+	
+
+	//need to make an edit popup where you can set the numbers manually or edit with the mouse
+
 	int pointCount = 0;
 	int movingPlatCount = 0;
 	int bgPlatCount0 = 0;
@@ -2762,6 +2821,42 @@ void EditSession::WriteFile(string fileName)
 			movingPlatCount++;
 	}
 	of << pointCount << endl;
+
+	int totalDecor = 0;
+	totalDecor += decorImagesBehindTerrain.size() + decorImagesBetween.size() + decorImagesFrontTerrain.size();
+
+	of << totalDecor << endl;
+
+	for (auto it = decorImagesBehindTerrain.begin(); it != decorImagesBehindTerrain.end(); ++it)
+	{
+		of << (*it).decorName << endl;
+		of << (*it).layer << endl;
+		of << (*it).spr.getPosition().x << " " << (*it).spr.getPosition().y << endl;
+		of << (*it).spr.getRotation() << endl;
+		of << (*it).spr.getScale().x << " " << (*it).spr.getScale().y << endl;
+		of << (*it).tile << endl;
+	}
+
+	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
+	{
+		of << (*it).decorName << endl;
+		of << (*it).layer << endl;
+		of << (*it).spr.getPosition().x << " " << (*it).spr.getPosition().y << endl;
+		of << (*it).spr.getRotation() << endl;
+		of << (*it).spr.getScale().x << " " << (*it).spr.getScale().y << endl;
+		of << (*it).tile << endl;
+	}
+
+	for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
+	{
+		of << (*it).decorName << endl;
+		of << (*it).layer << endl;
+		of << (*it).spr.getPosition().x << " " << (*it).spr.getPosition().y << endl;
+		of << (*it).spr.getRotation() << endl;
+		of << (*it).spr.getScale().x << " " << (*it).spr.getScale().y << endl;
+		of << (*it).tile << endl;
+	}
+
 	of << player->position.x << " " << player->position.y << endl;
 
 	bool quitLoop = false;
@@ -6116,6 +6211,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	types["nexus"] = nexusType;
 
+	InitDecorPanel();
+
 
 	Panel *shipPickupPanel = CreateOptionsPanel( "shippickup" );
 	ActorType *shipPickupType = new ActorType( "shippickup", shipPickupPanel );
@@ -6305,28 +6402,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	sf::Sprite alphaTextSprite( alphaTex );
 	alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 
-	
-	//sf::Vector2u wSize = w->getSize();
-	
-	//sf::View uiView( Vector2f( wSize.x / 2, wSize.y / 2 ), Vector2f( wSize.x, wSize.y ) );
-
-	//goalSprite.setOrigin( goalSprite.getLocalBounds().width / 2, goalSprite.getLocalBounds().height / 2 );
-
-	//playerSprite.setTextureRect( IntRect(0, 0, 64, 64 ) );
-	//playerSprite.setOrigin( playerSprite.getLocalBounds().width / 2, playerSprite.getLocalBounds().height / 2 );
-
-	//w->setVerticalSyncEnabled( true );
-	//w->setFramerateLimit( 60 );
-
 	OpenFile();
-
-
-//	ActorParams *ap = new ActorParams;
-//	ap->CreatePatroller( patrollerType, Vector2i( playerPosition.x, playerPosition.y ), true, 10 );
-//	groups["--"]->actors.push_back( ap );
-	//ap->CreatePatroller( 
-
-
 
 	//Vector2f vs(  );
 	if( cameraSize.x == 0 && cameraSize.y == 0 )
@@ -6403,8 +6479,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	bool canCreatePoint = true;
 	gs->active = true;
 
-	
-
 
 	double circleDist = 100;
 	double circleRadius = 50;
@@ -6423,7 +6497,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	selectedPlayer = false;
 	selectedActorGrabbed = false;
 	selectedLightGrabbed = false;
-
 
 	while( !quit )
 	{
@@ -7601,6 +7674,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								break;
 							}
 
+							if (ev.key.code == Keyboard::I && ev.key.control )
+							{
+								mode = CREATE_IMAGES;
+								showPanel = decorPanel;
+							}
 							if( ev.key.code == Keyboard::C && ev.key.control )
 							{
 								copiedBrush = selectedBrush->Copy();
@@ -9776,8 +9854,121 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							break;
 						}
 					}
+					break;
 				}
+			case CREATE_IMAGES:
+			{
+				
+
+				switch (ev.type)
+				{
+				case Event::MouseButtonPressed:
+				{
+					if (ev.mouseButton.button == Mouse::Left)
+					{
+						if (showPanel != NULL)
+						{
+							showPanel->Update(true, uiMouse.x, uiMouse.y);
+						}
+						else
+						{
+							if (currDecorLayer > 0)
+							{
+								decorImagesBehindTerrain.push_back(DecorInfo( tempDecorSprite, currDecorLayer, currDecorName, currDecorTile ));
+								decorImagesBehindTerrain.sort(CompareDecorInfo);
+							}
+							else if (currDecorLayer < 0)
+							{
+								decorImagesFrontTerrain.push_back(DecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
+								decorImagesFrontTerrain.sort(CompareDecorInfo);
+							}
+							else
+							{
+								decorImagesBetween.push_back(DecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
+								decorImagesBetween.sort(CompareDecorInfo);
+							}
+							
+						}
+						/*else if( gs.active )
+						{
+						gs.Update( true, uiMouse.x, uiMouse.y );
+						}*/
+					}
+					break;
+				}
+				case Event::MouseButtonReleased:
+				{
+					if (ev.mouseButton.button == Mouse::Left)
+					{
+						if (showPanel != NULL)
+						{
+							showPanel->Update(false, uiMouse.x, uiMouse.y);
+						}
+					}
+					break;
+				}
+				case Event::MouseWheelMoved:
+				{
+					break;
+				}
+				case Event::KeyPressed:
+				{
+					if (showPanel != NULL)
+					{
+						showPanel->SendKey(ev.key.code, ev.key.shift);
+						break;
+					}
+
+					if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
+					{
+						showPanel = decorPanel;
+						/*if (trackingEnemy != NULL)
+						{
+							trackingEnemy = NULL;
+							showPanel = enemySelectPanel;
+						}*/
+					}
+					else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
+					{
+						if (doneActionStack.size() > 0)
+						{
+							Action *action = doneActionStack.back();
+							doneActionStack.pop_back();
+
+							action->Undo();
+
+							undoneActionStack.push_back(action);
+						}
+					}
+					else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
+					{
+						if (undoneActionStack.size() > 0)
+						{
+							Action *action = undoneActionStack.back();
+							undoneActionStack.pop_back();
+
+							action->Perform();
+
+							doneActionStack.push_back(action);
+						}
+					}
+					break;
+				}
+				}
+				/*switch (ev.type)
+				{
+				case Event::MouseButtonPressed:
+					break;
+				}*/
+
 				break;
+			}
+			case EDIT_IMAGES:
+			{
+				break;
+			}
+			
+				
 			}
 
 			
@@ -11464,6 +11655,22 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				break;
 			}
+		case CREATE_IMAGES:
+		{
+			if (showPanel == NULL)
+			{
+				Vector2f p = preScreenTex->mapPixelToCoords(pixelPos);
+
+				//p.x *= 
+				//p.y *= 1080.f / w->getSize().y;
+				//cout << "p: " << p.x << ", " << p.y << endl;
+				tempDecorSprite.setPosition(p);
+
+				tempDecorSprite.setOrigin(tempDecorSprite.getLocalBounds().width / 2, tempDecorSprite.getLocalBounds().height / 2);
+				tempDecorSprite.setRotation(0);
+			}
+			break;
+		}
 		}
 
 		//cout << "here before crash" << endl;
@@ -11506,7 +11713,18 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		preScreenTex->draw(border, 8, sf::Lines);
 
+		for (auto it = decorImagesBehindTerrain.begin(); it != decorImagesBehindTerrain.end(); ++it)
+		{
+			preScreenTex->draw((*it).spr);
+		}
+
 		Draw();
+
+
+		for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
+		{
+			preScreenTex->draw((*it).spr);
+		}
 
 		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 		{
@@ -12344,7 +12562,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			}
 		}
 
-		
+		for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
+		{
+			preScreenTex->draw((*it).spr);
+		}
+
 
 		if( zoomMultiple > 7 )
 		{
@@ -12352,8 +12574,17 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			playerZoomIcon.setScale( zoomMultiple * 1.8, zoomMultiple * 1.8 );
 			preScreenTex->draw( playerZoomIcon );
 		}
-		
+
+
+
+
 		preScreenTex->draw( fullBounds );
+
+		if (mode == CREATE_IMAGES)
+		{
+			if( showPanel == NULL )
+				preScreenTex->draw(tempDecorSprite);
+		}
 
 		preScreenTex->setView( uiView );
 
@@ -12521,6 +12752,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					
 					break;
 				}
+			case CREATE_IMAGES:
+				
+				break;
 		}
 
 		if( showPanel != NULL )
@@ -14210,16 +14444,12 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 				trackingEnemy->imageTexture.getSize().y ) );
 
 			enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
-		
+
 			enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
 
-			
 			showPanel = NULL;
-			
 
 			cout << "set your cursor as the image" << endl;
-
-			
 		}
 		else
 		{
@@ -14241,6 +14471,81 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 		{
 		//	cout << "not set" << endl;
 		}
+	}
+	else if (panel == decorPanel)
+	{
+		if (name != "not set")
+		{
+			//cout << "real result: " << name << endl;
+			currDecorName = name;
+			ts_currDecor = decorTSMap[currDecorName];
+			int ind = gs->selectedY * gs->xSize + gs->selectedX;
+			currDecorTile = decorTileIndexes[ind];
+
+
+			tempDecorSprite.setTexture(*ts_currDecor->texture);
+			tempDecorSprite.setTextureRect(ts_currDecor->GetSubRect(currDecorTile));
+
+			string layerStr = decorPanel->textBoxes["layer"]->text.getString().toAnsiString();
+			stringstream tempSS;
+
+			tempSS << layerStr;
+
+			int cdLayer;
+			tempSS >> cdLayer;
+
+			if (!tempSS.fail())
+			{
+				currDecorLayer = cdLayer;
+			}
+			else
+			{
+				decorPanel->textBoxes["layer"]->text.setString("0");
+			}
+
+			showPanel = NULL;
+			//ts_currDecor = tm.GetTileset( currDecorName + string(".png"),  )
+			//tempDecorSprite.setTexture(ts_currDecor)
+			/*tempGridResult = name;
+			tempGridX = gs->selectedX;
+			tempGridY = gs->selectedY;*/
+		}
+		else
+		{
+			//	cout << "not set" << endl;
+		}
+	}
+}
+
+void EditSession::LoadDecorImages()
+{
+	ifstream is;
+	is.open("decor");
+	if (is.is_open())
+	{
+		string name;
+		int width;
+		int height;
+		int tile;
+		while (!is.eof())
+		{
+			is >> name;
+			is >> width;
+			is >> height;
+
+			is >> tile;
+
+			string fullName = name + string(".png");
+			
+			Tileset *ts = tm.GetTileset(fullName, width, height);
+			assert(ts != NULL);
+			decorTSMap[name] = ts;
+			decorTileIndexMap[name].push_back(tile);
+		}
+	}
+	else
+	{
+		assert(0);
 	}
 }
 
@@ -14294,6 +14599,50 @@ void EditSession::ClearUndoneActions()
 		delete (*it);
 	}
 	undoneActionStack.clear();
+}
+
+
+
+void EditSession::InitDecorPanel()
+{
+	int w = 10;
+	int h = 10;
+	int sw = 64;
+	int sh = 64;
+	LoadDecorImages();
+	decorPanel = new Panel("decorpanel", 650, 800, this);
+	GridSelector *gs = decorPanel->AddGridSelector("decorselector", Vector2i(0, 0), w, h, sw, sh, false, true );
+	decorPanel->AddTextBox("layer", Vector2i( 0, 650), 100, 3, "0");
+	decorTileIndexes = new int[w*h];
+	
+
+	//decorPanel->textBoxes["layer"]->text
+
+	gs->active = true;
+
+	int ind = 0;
+	int x, y;
+	for (auto it = decorTSMap.begin(); it != decorTSMap.end(); ++it)
+	{
+		for (auto tit = decorTileIndexMap[(*it).first].begin(); 
+			tit != decorTileIndexMap[(*it).first].end(); ++tit)
+		{
+			x = ind % w;
+			y = ind / w;
+			Tileset *ts = (*it).second;
+			Sprite s(*ts->texture);
+			s.setTextureRect(ts->GetSubRect((*tit)));
+			decorTileIndexes[ind] = (*tit);
+			float texX = ts->texture->getSize().x;
+			float texY = ts->texture->getSize().y;
+			s.setScale(((float)sw) / ts->tileWidth, ((float)sh) / ts->tileHeight);
+			//s.setTextureRect(IntRect(0, 0, sw, sh));
+			//gs->Set(x, y, s, (*it).first);
+			gs->Set(x, y, s, (*it).first);
+
+			++ind;
+		}	
+	}
 }
 
 int EditSession::CountSelectedPoints()
@@ -18317,3 +18666,8 @@ void CopyList( TerrainPoint &startPoint,
 		TerrainPoint &endPoint,
 		TerrainPoint &resultStartPoint,
 		TerrainPoint &resultEndPoint );
+
+bool CompareDecorInfo(EditSession::DecorInfo &di0, EditSession::DecorInfo &di1)
+{
+	return di0.layer < di1.layer;
+}

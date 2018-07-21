@@ -312,7 +312,7 @@ struct TerrainPolygon : ISelectable
 		bool intersectAllowed,
 		int minDistance );
 
-	TilesetManager tm;
+	
 	sf::Color selectCol;
 	sf::Color fillCol;
 
@@ -1470,7 +1470,7 @@ struct EditSession : GUIHandler
 	};
 
 	Tool currTool;
-
+	TilesetManager tm;
 
 	EditSession( MainMenu *p_mainMenu );
 	~EditSession();
@@ -1813,6 +1813,36 @@ struct EditSession : GUIHandler
 	bool HoldingShift();
 	bool HoldingControl();
 
+	struct DecorInfo
+	{
+		DecorInfo(sf::Sprite &s, int lay, 
+			const std::string &dName, int p_tile )
+			:spr(s), layer(lay),
+			decorName( dName ), tile( p_tile ){}
+		sf::Sprite spr;
+		int layer;
+		std::string decorName;
+		int tile;
+	};
+
+	std::list<DecorInfo> decorImagesBehindTerrain;
+	std::list<DecorInfo> decorImagesBetween;
+	std::list<DecorInfo> decorImagesFrontTerrain;
+	Panel *decorPanel;
+	void InitDecorPanel();
+	std::string currDecorName;
+	Tileset *ts_currDecor;
+	sf::Sprite tempDecorSprite;
+	int currDecorLayer;
+	int currDecorTile;
+
+	bool decorTracking;
+	void LoadDecorImages();
+	std::map<std::string, Tileset*> decorTSMap;
+	int *decorTileIndexes;
+	std::map<std::string, std::list<int>> decorTileIndexMap;
+
+
 	enum Emode
 	{
 		CREATE_TERRAIN,
@@ -1830,11 +1860,15 @@ struct EditSession : GUIHandler
 		DRAW_PATROL_PATH,
 		CREATE_TERRAIN_PATH,
 		CREATE_LIGHTS,
-		CREATE_GATES
+		CREATE_GATES,
+		CREATE_IMAGES,
+		EDIT_IMAGES,
 	};
 
 	Emode mode;
 	
 };
+
+bool CompareDecorInfo(EditSession::DecorInfo &di0, EditSession::DecorInfo &di1);
 
 #endif

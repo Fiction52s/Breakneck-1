@@ -553,6 +553,11 @@ void GameSession::Cleanup()
 		delete activeItemTree;
 		activeItemTree = NULL;
 	}
+
+	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
+	{
+		delete (*it);
+	}
 }
 
 GameSession::~GameSession()
@@ -2914,6 +2919,95 @@ bool GameSession::OpenFile( string fileName )
 		
 		points = new Vector2<double>[mh->numVertices];
 		
+		int numDecorImages;
+		is >> numDecorImages;
+
+
+		map<string, list<DecorInfo>> decorListMap;
+		for (int i = 0; i < numDecorImages; ++i)
+		{
+			string dName;
+			is >> dName;
+			int dLayer;
+			is >> dLayer;
+
+			Vector2f dPos;
+			is >> dPos.x;
+			is >> dPos.y;
+
+			float dRot;
+			is >> dRot;
+
+			Vector2f dScale;
+			is >> dScale.x;
+			is >> dScale.y;
+
+			int dTile;
+			is >> dTile;
+
+			Sprite dSpr;
+			dSpr.setScale(dScale);
+			dSpr.setRotation(dRot);
+			dSpr.setPosition(dPos);
+
+			//string fullDName = dName + string(".png");
+			Tileset *ts = decorTSMap[dName];
+			dSpr.setTexture(*ts->texture);
+			dSpr.setTextureRect(ts->GetSubRect(dTile));
+			dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
+			//dSpr.setTexture do this after dinner
+
+			decorListMap[dName].push_back(DecorInfo( dSpr, dLayer, ts, dTile ));
+
+			/*if (dLayer > 0)
+			{
+				decorImagesBehindTerrain.push_back(DecorInfo(dSpr, dLayer, dName));
+			}
+			else if (dLayer < 0)
+			{
+				decorImagesFrontTerrain.push_back(DecorInfo(dSpr, dLayer, dName));
+			}
+			else if (dLayer == 0)
+			{
+				decorImagesBetween.push_back(DecorInfo(dSpr, dLayer, dName));
+			}*/
+		}
+
+		for (auto it = decorListMap.begin(); it != decorListMap.end(); ++it)
+		{
+			int numBetweenLayer = 0;
+			list<DecorInfo> betweenList;
+			for (auto it2 = (*it).second.begin(); it2 != (*it).second.end(); ++it2)
+			{
+				if ((*it2).layer == 0)
+				{
+					numBetweenLayer++;
+					betweenList.push_back((*it2));
+				}
+			}
+
+			if (numBetweenLayer > 0)
+			{
+				Vertex *betweenVerts = new Vertex[numBetweenLayer * 4];
+				int vi = 0;
+				for (auto itb = betweenList.begin(); itb != betweenList.end(); ++itb)
+				{
+					Sprite &s = (*itb).spr;
+					double rot = s.getRotation() / 180.f * PI;
+					float xSize = s.getTextureRect().width * s.getScale().x;
+					float ySize = s.getTextureRect().height * s.getScale().y;
+					Vector2f pos = s.getPosition();
+					FloatRect sub = FloatRect(s.getTextureRect());
+					SetRectRotation(betweenVerts + vi * 4, rot, xSize, ySize , pos);
+					SetRectSubRect(betweenVerts + vi * 4, sub);
+					vi++;
+				}
+
+				decorBetween.push_back(new DecorDraw(betweenVerts, 
+					numBetweenLayer * 4, betweenList.front().ts));
+			}
+		}
+		//decorBetween
 
 		is >> originalPos.x;
 		is >> originalPos.y;
@@ -4664,6 +4758,38 @@ ControllerState &GameSession::GetCurrInputUnfiltered(int index)
 Actor *GameSession::GetPlayer( int index )
 {
 	return players[index];
+}
+
+void GameSession::LoadDecorImages()
+{
+	ifstream is;
+	is.open("decor");
+	if (is.is_open())
+	{
+		string name;
+		int width;
+		int height;
+		int tile;
+		while (!is.eof())
+		{
+			is >> name;
+			is >> width;
+			is >> height;
+
+			is >> tile;
+
+			string fullName = name + string(".png");
+
+			Tileset *ts = tm.GetTileset(fullName, width, height);
+			assert(ts != NULL);
+			decorTSMap[name] = ts;
+			//decorTileIndexes[name].push_back(tile);
+		}
+	}
+	else
+	{
+		assert(0);
+	}
 }
 
 GameController &GameSession::GetController( int index )
@@ -7342,6 +7468,10 @@ int GameSession::Run()
 		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
 		//bigBulletVA->draw( preScreenTex );
 
+		for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
+		{
+			(*it)->Draw(preScreenTex);
+		}
 
 		//window->display();
 		//continue;
@@ -8864,12 +8994,16 @@ int GameSession::Run()
 	//pauseMenu = mainMenu->pauseMenu;
 	pauseMenu->owner = NULL;
 
+
+
 	return returnVal;
 }
 
 
 void GameSession::Init()
 {
+	LoadDecorImages();
+
 	stormCeilingOn = false;
 	stormCeilingHeight = 0;
 
@@ -14814,4 +14948,19 @@ void MomentumBar::Draw(sf::RenderTarget *target)
 	}
 
 	target->draw(levelNumSpr);
+}
+
+GameSession::DecorDraw::DecorDraw(sf::Vertex *q,
+	int numVerts,
+	Tileset *t)
+	:quads(q), numVertices(numVerts),
+	ts(t)
+{}
+GameSession::DecorDraw::~DecorDraw()
+{
+	delete[] quads;
+}
+void GameSession::DecorDraw::Draw(sf::RenderTarget *target)
+{
+	target->draw(quads,	numVertices, sf::Quads, ts->texture);
 }

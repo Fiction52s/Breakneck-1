@@ -313,7 +313,37 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 	
+	struct DecorDraw
+	{
+		DecorDraw(sf::Vertex *q,
+			int numVerts,
+			Tileset *t);
+		~DecorDraw();
+		void Draw(sf::RenderTarget *target);
+		sf::Vertex *quads;
+		Tileset *ts;
+		int numVertices;
+	};
 
+	std::map<std::string, Tileset*> decorTSMap;
+	//std::map<std::string, std::list<int>> decorTileIndexes;
+	std::list<DecorDraw*> decorBetween;
+
+	struct DecorInfo
+	{
+		DecorInfo(sf::Sprite &sp,
+			int lay, Tileset *t, int p_tile)
+			:spr(sp), layer(lay), ts( t ), tile( p_tile )
+		{
+
+		}
+		sf::Sprite spr;
+		int layer;
+		Tileset *ts;
+		int tile;
+	};
+
+	void LoadDecorImages();
 	TopClouds *topClouds;
 	ScreenRecorder *debugScreenRecorder;
 	struct RaceFight
