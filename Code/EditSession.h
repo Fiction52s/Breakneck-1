@@ -23,6 +23,7 @@ struct ISelectable
 		TERRAIN,
 		ACTOR,
 		GATE,
+		IMAGE,
 		Count
 	};
 	//copyable
@@ -1461,6 +1462,34 @@ typedef std::map<TerrainPolygon*,
 struct MainMenu;
 struct EditSession : GUIHandler
 {
+	struct DecorInfo : ISelectable
+	{
+		DecorInfo(sf::Sprite &s, int lay,
+			const std::string &dName, int p_tile)
+			:ISelectable(ISelectable::ISelectableType::IMAGE),
+			spr(s), layer(lay),
+			decorName(dName), tile(p_tile) {}
+
+		bool ContainsPoint(sf::Vector2f test);
+		bool Intersects(sf::IntRect rect);
+		void Move(boost::shared_ptr<ISelectable> me,
+			sf::Vector2i delta);
+		void BrushDraw(sf::RenderTarget *target,
+			bool valid);
+		void Deactivate(EditSession *edit,
+			boost::shared_ptr<ISelectable> select);
+		void Activate(EditSession *edit,
+			boost::shared_ptr<ISelectable> select);
+		void SetSelected(bool select);
+		void WriteFile(std::ofstream &of);
+		void Draw(sf::RenderTarget *target);
+		sf::Sprite spr;
+		int layer;
+		std::string decorName;
+		int tile;
+		std::list<boost::shared_ptr<DecorInfo>> *myList;
+	};
+
 	enum Tool
 	{
 		TOOL_ADD,
@@ -1499,6 +1528,8 @@ struct EditSession : GUIHandler
 		TerrainPolygon* ignore );
 	sf::Vector2<double> GraphPos( sf::Vector2<double> realPos );
 	void SetEnemyEditPanel();
+	void SetDecorEditPanel();
+	void SetDecorParams();
 	bool QuadPolygonIntersect( TerrainPolygon* poly, 
 		sf::Vector2i a, sf::Vector2i b, 
 		sf::Vector2i c, sf::Vector2i d );
@@ -1519,6 +1550,8 @@ struct EditSession : GUIHandler
 
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
 	void CreateActor( ActorPtr actor );
+	void CreateDecorImage(
+		boost::shared_ptr<EditSession::DecorInfo> dec);
 	std::list<GateInfoPtr> gates;
 	GateInfo *selectedGate;
 	MainMenu *mainMenu;
@@ -1647,6 +1680,7 @@ struct EditSession : GUIHandler
 	
 	std::list<boost::shared_ptr<TerrainPolygon>> polygons;
 	std::list<boost::shared_ptr<TerrainPolygon>> selectedPolygons;
+	
 	//std::list<boost::shared_ptr<TerrainPolygon>> polygons;
 	boost::shared_ptr<TerrainPolygon> polygonInProgress;
 	boost::shared_ptr<TerrainPolygon> inversePolygon;
@@ -1813,22 +1847,13 @@ struct EditSession : GUIHandler
 	bool HoldingShift();
 	bool HoldingControl();
 
-	struct DecorInfo
-	{
-		DecorInfo(sf::Sprite &s, int lay, 
-			const std::string &dName, int p_tile )
-			:spr(s), layer(lay),
-			decorName( dName ), tile( p_tile ){}
-		sf::Sprite spr;
-		int layer;
-		std::string decorName;
-		int tile;
-	};
+	
 
-	std::list<DecorInfo> decorImagesBehindTerrain;
-	std::list<DecorInfo> decorImagesBetween;
-	std::list<DecorInfo> decorImagesFrontTerrain;
+	std::list<boost::shared_ptr<DecorInfo>> decorImagesBehindTerrain;
+	std::list<boost::shared_ptr<DecorInfo>> decorImagesBetween;
+	std::list<boost::shared_ptr<DecorInfo>> decorImagesFrontTerrain;
 	Panel *decorPanel;
+	Panel *editDecorPanel;
 	void InitDecorPanel();
 	std::string currDecorName;
 	Tileset *ts_currDecor;
@@ -1868,6 +1893,8 @@ struct EditSession : GUIHandler
 	Emode mode;
 	
 };
+
+typedef boost::shared_ptr<EditSession::DecorInfo> DecorPtr;
 
 bool CompareDecorInfo(EditSession::DecorInfo &di0, EditSession::DecorInfo &di1);
 

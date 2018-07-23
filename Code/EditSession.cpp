@@ -748,18 +748,26 @@ bool EditSession::OpenFile()
 			dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
 			//dSpr.setTexture do this after dinner
 
+
+			DecorPtr dec(new DecorInfo(dSpr, dLayer, dName, dTile));
 			if (dLayer > 0)
 			{
-				decorImagesBehindTerrain.push_back(DecorInfo(dSpr, dLayer, dName, dTile));
+				dec->myList = &decorImagesBehindTerrain;
+				//decorImagesBehindTerrain.sort(CompareDecorInfo);
+				//decorImagesBehindTerrain.push_back(dec);
 			}
 			else if (dLayer < 0)
 			{
-				decorImagesFrontTerrain.push_back(DecorInfo(dSpr, dLayer, dName, dTile));
+				dec->myList = &decorImagesFrontTerrain;
+				//decorImagesFrontTerrain.push_back(dec);
 			}
 			else if (dLayer == 0)
 			{
-				decorImagesBetween.push_back(DecorInfo(dSpr, dLayer, dName, dTile));
+				dec->myList = &decorImagesBetween;
+				//decorImagesBetween.push_back(dec);
 			}
+
+			CreateDecorImage(dec);
 		}
 		/*of << (*it).decorName << endl;
 		of << (*it).layer << endl;
@@ -2829,32 +2837,17 @@ void EditSession::WriteFile(string fileName)
 
 	for (auto it = decorImagesBehindTerrain.begin(); it != decorImagesBehindTerrain.end(); ++it)
 	{
-		of << (*it).decorName << endl;
-		of << (*it).layer << endl;
-		of << (*it).spr.getPosition().x << " " << (*it).spr.getPosition().y << endl;
-		of << (*it).spr.getRotation() << endl;
-		of << (*it).spr.getScale().x << " " << (*it).spr.getScale().y << endl;
-		of << (*it).tile << endl;
+		(*it)->WriteFile(of);
 	}
 
 	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
 	{
-		of << (*it).decorName << endl;
-		of << (*it).layer << endl;
-		of << (*it).spr.getPosition().x << " " << (*it).spr.getPosition().y << endl;
-		of << (*it).spr.getRotation() << endl;
-		of << (*it).spr.getScale().x << " " << (*it).spr.getScale().y << endl;
-		of << (*it).tile << endl;
+		(*it)->WriteFile(of);
 	}
 
 	for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
 	{
-		of << (*it).decorName << endl;
-		of << (*it).layer << endl;
-		of << (*it).spr.getPosition().x << " " << (*it).spr.getPosition().y << endl;
-		of << (*it).spr.getRotation() << endl;
-		of << (*it).spr.getScale().x << " " << (*it).spr.getScale().y << endl;
-		of << (*it).tile << endl;
+		(*it)->WriteFile(of);
 	}
 
 	of << player->position.x << " " << player->position.y << endl;
@@ -6793,6 +6786,60 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									}
 
 									
+									if (emptysp)
+									{
+										for (auto it = decorImagesBehindTerrain.begin();
+											it != decorImagesBehindTerrain.end(); ++it)
+										{
+
+										}
+
+										for (auto it = decorImagesBetween.begin();
+											it != decorImagesBetween.end(); ++it)
+										{
+											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+											if ((*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y)))
+											{
+												emptysp = false;
+												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+												if (sp->selected)
+												{
+
+												}
+												else
+												{
+													if (!(Keyboard::isKeyPressed(Keyboard::LShift) ||
+														Keyboard::isKeyPressed(Keyboard::RShift)))
+													{
+														selectedBrush->SetSelected(false);
+														selectedBrush->Clear();
+													}
+
+													sp->SetSelected(true);
+
+													grabbedObject = sp;
+													selectedBrush->AddObject(sp);
+												}
+
+												emptysp = false;
+												break;
+											}
+											
+		/*									{
+												cout << "contains!" << endl;
+												selectedBrush->AddObject((*it));
+												
+											}*/
+										}
+
+										for (auto it = decorImagesFrontTerrain.begin();
+											it != decorImagesFrontTerrain.end(); ++it)
+										{
+
+										}
+									}
+
 									editMouseGrabPos = Vector2i( worldPos.x, worldPos.y );
 
 									//12345
@@ -7186,10 +7233,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								if( editStartMove )
 								{
 									bool done = false;
-									bool single = selectedBrush->objects.size() == 1 
+									bool singleActor = selectedBrush->objects.size() == 1 
 										&& selectedPoints.size() == 0
 										&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
-									if( single )
+									if(singleActor)
 									{
 										ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( selectedBrush->objects.front() );
 										if( actor->groundInfo != NULL )
@@ -7344,6 +7391,36 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										}
 									}
 
+									for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it )
+									{
+										if ((*it)->Intersects(r))
+										{
+											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+											if (HoldingShift())
+											{
+												if (sp->selected)
+												{
+													sp->SetSelected(false);
+													selectedBrush->RemoveObject(sp); //might be slow?
+												}
+												else
+												{
+													sp->SetSelected(true);
+													selectedBrush->AddObject(sp);
+												}
+											}
+											else
+											{
+												//cout << "selected blah" << endl;
+												sp->SetSelected(true);
+												selectedBrush->AddObject(sp);
+											}
+
+
+											selectionEmpty = false;
+										}
+									}
 
 									bool alt = Keyboard::isKeyPressed( Keyboard::LAlt )
 										|| Keyboard::isKeyPressed( Keyboard::RAlt );
@@ -9264,9 +9341,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							cout << "menu: " << menuSelection << endl;
 							if( menuSelection == "top" )
 							{
-								bool single = selectedBrush->objects.size() == 1 
+								bool singleActor = selectedBrush->objects.size() == 1 
 									&& selectedPoints.size() == 0
 									&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
+								bool singleImage = selectedBrush->objects.size() == 1
+									&& selectedPoints.size() == 0
+									&& selectedBrush->objects.front()->selectableType == ISelectable::IMAGE;
 								//bool singlePoly = selectedBrush->objects.size() == 1 
 								//	&& selectedPoints.size() == 0
 								//	&& selectedBrush->objects.front()->selectableType == ISelectable::TERRAIN;
@@ -9291,9 +9371,15 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									showPanel = lightPanel;
 									mode = menuDownStored;
 								}
-								else if( menuDownStored == EDIT && single )
+								else if( menuDownStored == EDIT && singleActor )
 								{
 									SetEnemyEditPanel();
+									mode = menuDownStored;
+								}
+								else if (menuDownStored == EDIT && singleImage)
+								{
+									showPanel = editDecorPanel;
+									SetDecorEditPanel();
 									mode = menuDownStored;
 								}
 								else if( menuDownStored == EDIT && selectedGate != NULL )
@@ -9872,9 +9958,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						}
 						else
 						{
-							if (currDecorLayer > 0)
+							DecorPtr dec(new DecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
+							/*if (currDecorLayer > 0)
 							{
-								decorImagesBehindTerrain.push_back(DecorInfo( tempDecorSprite, currDecorLayer, currDecorName, currDecorTile ));
+								
+								decorImagesBehindTerrain.push_back(dec);
 								decorImagesBehindTerrain.sort(CompareDecorInfo);
 							}
 							else if (currDecorLayer < 0)
@@ -9886,8 +9974,20 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							{
 								decorImagesBetween.push_back(DecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
 								decorImagesBetween.sort(CompareDecorInfo);
+							}*/
+							if (currDecorLayer > 0)
+							{
+								dec->myList = &decorImagesBehindTerrain;
 							}
-							
+							else if (currDecorLayer < 0)
+							{
+								dec->myList = &decorImagesFrontTerrain;
+							}
+							else if (currDecorLayer == 0)
+							{
+								dec->myList = &decorImagesBetween;
+							}
+							CreateDecorImage(dec);
 						}
 						/*else if( gs.active )
 						{
@@ -9960,6 +10060,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				case Event::MouseButtonPressed:
 					break;
 				}*/
+
+
+				
 
 				break;
 			}
@@ -11715,7 +11818,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		for (auto it = decorImagesBehindTerrain.begin(); it != decorImagesBehindTerrain.end(); ++it)
 		{
-			preScreenTex->draw((*it).spr);
+			preScreenTex->draw((*it)->spr);
 		}
 
 		Draw();
@@ -11723,7 +11826,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
 		{
-			preScreenTex->draw((*it).spr);
+			(*it)->Draw(preScreenTex);
 		}
 
 		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
@@ -12564,7 +12667,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
 		{
-			preScreenTex->draw((*it).spr);
+			preScreenTex->draw((*it)->spr);
 		}
 
 
@@ -12711,14 +12814,21 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 					sf::Text textmag;
 
-					bool single = selectedBrush->objects.size() == 1 
+					bool singleActor = selectedBrush->objects.size() == 1 
 						&& selectedPoints.size() == 0
 						&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
+					bool singleImage = selectedBrush->objects.size() == 1
+						&& selectedPoints.size() == 0
+						&& selectedBrush->objects.front()->selectableType == ISelectable::IMAGE;
 					bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
 
-					if( menuDownStored == EditSession::EDIT && single )// && selectedActor != NULL )
+					if( menuDownStored == EditSession::EDIT && singleActor )// && selectedActor != NULL )
 					{
 						textmag.setString( "EDIT\nENEMY" );
+					}
+					else if (menuDownStored == EditSession::EDIT && singleImage)// && selectedActor != NULL )
+					{
+						textmag.setString("EDIT\nIMAGE");
 					}
 					else if( menuDownStored == EditSession::EDIT && selectedGate != NULL )
 					{
@@ -12983,6 +13093,13 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
 	//cout << "start of callback!: " << groups["--"]->actors.size() << endl;
 	Panel *p = b->owner;
+	if (p == editDecorPanel)
+	{
+		if (b->name == "ok")
+		{
+			showPanel = NULL;
+		}
+	}
 	if( p->name == "healthfly_options" )
 	{
 		if( b->name == "ok" )
@@ -14422,6 +14539,10 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 			}
 		}
 	}
+	else if (p == editDecorPanel)
+	{
+		SetDecorParams();
+	}
 }
 
 void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_name )
@@ -14643,6 +14764,17 @@ void EditSession::InitDecorPanel()
 			++ind;
 		}	
 	}
+
+	editDecorPanel = new Panel("editdecorpanel", 500, 500, this);
+	editDecorPanel->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+
+	editDecorPanel->AddTextBox("xpos", Vector2i(20, 20), 200, 20, "x");
+	editDecorPanel->AddTextBox("ypos", Vector2i( 200, 20), 200, 20, "y");
+	editDecorPanel->AddTextBox("rotation", Vector2i(20, 100), 200, 20, "r");
+	editDecorPanel->AddTextBox("xscale", Vector2i(20, 180), 200, 20, "x");
+	editDecorPanel->AddTextBox("yscale", Vector2i(200, 180), 200, 20, "y");
+	//editDecorPanel->AddTextBox("rotation", Vector2i(200, 100), 200, 20, "r");
+	//editDecorPanel->AddTextBox("strength", Vector2i(20, 200), 200, 3, "");
 }
 
 int EditSession::CountSelectedPoints()
@@ -16855,6 +16987,93 @@ void EditSession::SetEnemyEditPanel()
 	
 }
 
+void EditSession::SetDecorEditPanel()
+{
+	ISelectable *sp = selectedBrush->objects.front().get();
+	assert(sp->selectableType == ISelectable::IMAGE);
+	DecorInfo *di = (DecorInfo*)sp;
+
+	editDecorPanel->textBoxes["xpos"]->text.setString(boost::lexical_cast<string>(di->spr.getPosition().x));
+	editDecorPanel->textBoxes["ypos"]->text.setString(boost::lexical_cast<string>(di->spr.getPosition().y));
+
+	editDecorPanel->textBoxes["rotation"]->text.setString(boost::lexical_cast<string>(di->spr.getRotation()));
+	editDecorPanel->textBoxes["xscale"]->text.setString(boost::lexical_cast<string>(di->spr.getScale().x));
+	editDecorPanel->textBoxes["yscale"]->text.setString(boost::lexical_cast<string>(di->spr.getScale().y));
+	
+}
+
+void EditSession::SetDecorParams()
+{
+	ISelectable *sp = selectedBrush->objects.front().get();
+	assert(sp->selectableType == ISelectable::IMAGE);
+	DecorInfo *di = (DecorInfo*)sp;
+	
+	string xposStr = editDecorPanel->textBoxes["xpos"]->text.getString().toAnsiString();
+	string yposStr = editDecorPanel->textBoxes["ypos"]->text.getString().toAnsiString();
+	string rotStr = editDecorPanel->textBoxes["rotation"]->text.getString().toAnsiString();
+	string xscaleStr = editDecorPanel->textBoxes["xscale"]->text.getString().toAnsiString();
+	string yscaleStr = editDecorPanel->textBoxes["yscale"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << xposStr;
+
+	float posx;
+	ss >> posx;
+
+	if (!ss.fail())
+	{
+		di->spr.setPosition(posx, di->spr.getPosition().y);
+	}
+
+	ss.clear();
+
+	ss << yposStr;
+
+	float posy;
+	ss >> posy;
+
+	if (!ss.fail())
+	{
+		di->spr.setPosition(di->spr.getPosition().x, posy );
+	}
+
+	ss.clear();
+
+	ss << rotStr;
+
+	float rot;
+	ss >> rot;
+
+	if (!ss.fail())
+	{
+		di->spr.setRotation(rot);
+	}
+
+	ss.clear();
+
+	ss << xscaleStr;
+
+	float xScale;
+	ss >> xScale;
+
+	if (!ss.fail())
+	{
+		di->spr.setScale( xScale, di->spr.getScale().y );
+	}
+
+	ss.clear();
+
+	ss << yscaleStr;
+
+	float yScale;
+	ss >> yScale;
+
+	if (!ss.fail())
+	{
+		di->spr.setScale(di->spr.getScale().x, yScale );
+	}
+}
+
 bool EditSession::CanCreateGate( GateInfo &testGate )
 {
 	Vector2i v0 = testGate.point0->pos;
@@ -16920,6 +17139,8 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 	return true;
 }
 
+
+
 void EditSession::ClearCopyBrushes()
 {
 	for (list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
@@ -16983,6 +17204,16 @@ void EditSession::CreateActor(ActorPtr actor)
 {
 	Brush b;
 	SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(actor);
+	b.AddObject(select);
+	Action * action = new ApplyBrushAction(&b);
+	action->Perform();
+	doneActionStack.push_back(action);
+}
+
+void EditSession::CreateDecorImage(DecorPtr dec)
+{
+	Brush b;
+	SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(dec);
 	b.AddObject(select);
 	Action * action = new ApplyBrushAction(&b);
 	action->Perform();
@@ -18660,14 +18891,93 @@ void ActorGroup::WriteFile( std::ofstream &of )
 	}
 }
 
-
-
-void CopyList( TerrainPoint &startPoint, 
-		TerrainPoint &endPoint,
-		TerrainPoint &resultStartPoint,
-		TerrainPoint &resultEndPoint );
-
 bool CompareDecorInfo(EditSession::DecorInfo &di0, EditSession::DecorInfo &di1)
 {
 	return di0.layer < di1.layer;
+}
+
+bool EditSession::DecorInfo::ContainsPoint(sf::Vector2f test)
+{
+	sf::Transform trans = spr.getTransform();
+	FloatRect fr = spr.getLocalBounds();
+	Vector2f points[4];
+	points[0] = trans * Vector2f(fr.left, fr.top);
+	points[1] = trans * Vector2f(fr.left + fr.width, fr.top);
+	points[2] = trans * Vector2f(fr.left + fr.width, fr.top + fr.height);
+	points[3] = trans * Vector2f(fr.left, fr.top + fr.height);
+
+	bool result = QuadContainsPoint(V2d( points[0] ), 
+		V2d(points[1]), 
+		V2d(points[2]), 
+		V2d(points[3]), V2d(test.x, test.y));
+
+	//cout << "result: " << result << endl;
+	return result;
+}
+
+bool EditSession::DecorInfo::Intersects(sf::IntRect rect)
+{
+	FloatRect fr(rect);
+	return fr.intersects(spr.getGlobalBounds());
+}
+
+void EditSession::DecorInfo::Move(boost::shared_ptr<ISelectable> me,
+	sf::Vector2i delta) 
+{
+	spr.setPosition(spr.getPosition().x + delta.x, spr.getPosition().y + delta.y);
+}
+
+void EditSession::DecorInfo::BrushDraw(sf::RenderTarget *target,
+	bool valid) 
+{
+	target->draw(spr);
+}
+
+void EditSession::DecorInfo::Draw(sf::RenderTarget *target)
+{
+	target->draw(spr);
+	if (selected)
+	{
+		sf::RectangleShape rs;
+		rs.setFillColor(Color::Transparent);
+		rs.setOutlineColor(Color::Green);
+		rs.setOutlineThickness(3 * EditSession::zoomMultiple);
+		rs.setPosition(spr.getGlobalBounds().left, spr.getGlobalBounds().top);
+		rs.setSize(Vector2f(spr.getGlobalBounds().width, spr.getGlobalBounds().height));
+		target->draw(rs);
+		//cout << "selected draw" << endl;
+	}
+}
+
+void EditSession::DecorInfo::Deactivate(EditSession *edit,
+	boost::shared_ptr<ISelectable> select)
+{
+	cout << "deactivating decor" << endl;
+	DecorPtr dec = boost::dynamic_pointer_cast<DecorInfo>(select);
+	
+	myList->remove(dec);
+}
+
+void EditSession::DecorInfo::Activate(EditSession *edit,
+	boost::shared_ptr<ISelectable> select)
+{
+	cout << "adding image" << endl;
+	DecorPtr dec = boost::dynamic_pointer_cast<DecorInfo>(select);
+
+	myList->push_back(dec);
+}
+
+void EditSession::DecorInfo::SetSelected(bool select)
+{
+	selected = select;
+}
+
+void EditSession::DecorInfo::WriteFile(std::ofstream &of )
+{
+	of << decorName << endl;
+	of << layer << endl;
+	of << spr.getPosition().x << " " << spr.getPosition().y << endl;
+	of << spr.getRotation() << endl;
+	of << spr.getScale().x << " " << spr.getScale().y << endl;
+	of << tile << endl;
 }
