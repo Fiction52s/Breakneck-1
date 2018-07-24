@@ -749,8 +749,14 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		//}
 		//else?
 		//if( d && dist >= 0 && dist <= radius )
-		if (d && dist <= radius) //changed when i did timestep change. hope everything is fine
+		if (d && dist <= radius && dist >= 0) //changed when i did timestep change. hope everything is fine
 		{
+
+			//recently added the dist >= 0 to make sure jumping off of a closed gate didn't trigger the opposite gate edge
+			/*if (dist < 0)
+			{
+				cout << "DIST LESS THAN 0 YOU KNOWWWW" << endl;
+			}*/
 			if( lineQuantity >= 0 && lineQuantity <= edgeLength ) //point is on the circle in the dir of the ege normal
 			{
 				LineIntersection li = lineIntersection( oldPosition + radius * -edgeNormal, position

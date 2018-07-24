@@ -3849,30 +3849,30 @@ bool GameSession::OpenFile( string fileName )
 		CreateZones();
 		SetupZones();
 
-		if( b_crawler != NULL )
-		{
-			b_crawler->Init();
-		}
+		//if( b_crawler != NULL )
+		//{
+		////	b_crawler->Init();
+		//}
 
-		if( b_bird != NULL )
-		{
-			b_bird->Init();
-		}
+		//if( b_bird != NULL )
+		//{
+		//	b_bird->Init();
+		//}
 
-		if( b_tiger != NULL )
-		{
-			b_tiger->Init();
-		}
+		//if( b_tiger != NULL )
+		//{
+		//	b_tiger->Init();
+		//}
 
-		if( b_gator != NULL )
-		{
-			b_gator->Init();
-		}
+		//if( b_gator != NULL )
+		//{
+		//	b_gator->Init();
+		//}
 
-		if( b_skeleton != NULL )
-		{
-			b_skeleton->Init();
-		}
+		//if( b_skeleton != NULL )
+		//{
+		//	b_skeleton->Init();
+		//}
 
 		for( int i = 0; i < numGates; ++i )
 		{
@@ -5384,12 +5384,19 @@ bool GameSession::Load()
 		}
 	}
 
+
+
 	Actor *p = NULL;
 	for( int i = 0; i < 4; ++i )
 	{
 		p = GetPlayer( i );
 		if( p != NULL )
 			p->InitAfterEnemies();
+	}
+
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->Init();
 	}
 
 	
@@ -14144,7 +14151,7 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 		{
 			assert( (*it)->spawned == false );
 
-			(*it)->Init();
+			//(*it)->Init();
 			(*it)->spawned = true;
 			AddEnemy( (*it) );
 		}

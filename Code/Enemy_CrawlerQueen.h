@@ -74,6 +74,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		//might need roll info?
 	};
 
+	void Init();
 
 	Tileset *ts[Count];
 

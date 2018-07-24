@@ -1498,7 +1498,15 @@ struct EditSession : GUIHandler
 		TOOL_CUT
 	};
 
+	enum ImageEditTool
+	{
+		ITOOL_EDIT,
+		ITOOL_ROTATE,
+		ITOOL_SCALE
+	};
+
 	Tool currTool;
+	ImageEditTool currImageTool;
 	TilesetManager tm;
 
 	EditSession( MainMenu *p_mainMenu );

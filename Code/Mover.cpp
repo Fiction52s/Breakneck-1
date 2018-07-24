@@ -213,6 +213,8 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 		if (ground == e || e->edgeType == Edge::BORDER  )
 			return;
 
+
+
 		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
 		{
 			Gate *g = (Gate*)ground->info;
@@ -237,6 +239,10 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 				{
 					return;
 				}
+			}
+			else
+			{
+				assert(0);
 			}
 		}
 		if( ground != NULL )
@@ -265,6 +271,10 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 						return;
 					}
 				}
+				else
+				{
+					assert(0);
+				}
 			}
 			
 			
@@ -292,10 +302,15 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 						return;
 					}
 				}
+				else
+				{
+					assert(0);
+				}
 			}
 		}
 
 		Contact *c = owner->coll.collideEdge( physBody.globalPosition + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
+
 
 		if( c != NULL )
 		{

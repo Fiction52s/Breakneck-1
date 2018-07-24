@@ -152,7 +152,7 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 
 	edgeRef = NULL;
 
-	InitEdgeInfo();
+	
 
 	bombPool = new ObjectPool;
 	
@@ -172,7 +172,7 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	decidePoints = new EdgeInfo[MAX_DECISIONS];
 	decisions = new Decision[MAX_DECISIONS];
 
-	ResetEnemy();
+	//ResetEnemy();
 	//frame = actionLength[UNDERGROUND];
 }
 
@@ -218,6 +218,8 @@ void CrawlerQueen::InitEdgeInfo()
 		++edgeIndex;
 	}
 	while (curr != startEdge);
+
+	int f = 0;
 }
 
 void CrawlerQueen::ResetEnemy()
@@ -1021,10 +1023,20 @@ double CrawlerQueen::GetDistanceClockwise(int index)
 	sum += length(curr->v1 - curr->v0) - currQ;
 	curr = curr->edge1;
 
+	Edge *sEdge = curr;
+
+	//for( int i = 0; i < numTotalEdges; ++i )
+	int counter = 0;
 	while (curr != e)
 	{
 		sum += length(curr->v1 - curr->v0);
 		curr = curr->edge1;
+		++counter;
+
+		if (counter > numTotalEdges)
+		{
+			int f = 5;
+		}
 	}
 
 	sum += q;
@@ -1075,6 +1087,12 @@ bool CrawlerQueen::GetClockwise(int index)
 			return false;
 		}
 	}
+}
+
+void CrawlerQueen::Init()
+{
+	InitEdgeInfo();
+	ResetEnemy();
 }
 
 FloatingBomb::FloatingBomb(GameSession *owner, ObjectPool *p_myPool, int index )

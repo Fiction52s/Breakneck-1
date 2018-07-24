@@ -7754,6 +7754,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							if (ev.key.code == Keyboard::I && ev.key.control )
 							{
 								mode = CREATE_IMAGES;
+								currImageTool = ITOOL_EDIT;
 								showPanel = decorPanel;
 							}
 							if( ev.key.code == Keyboard::C && ev.key.control )
@@ -9944,8 +9945,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 			case CREATE_IMAGES:
 			{
-				
-
 				switch (ev.type)
 				{
 				case Event::MouseButtonPressed:
