@@ -265,6 +265,7 @@ void CrawlerQueen::ResetEnemy()
 	UpdateHitboxes();
 
 	action = DECIDE;
+	SetLevel();
 	frame = 0;
 	SetDecisions();
 	DecidePoints();
@@ -380,7 +381,7 @@ void CrawlerQueen::ProcessState()
 			break;
 		case POPOUT:
 			++digAttackCounter;
-			if (digAttackCounter == currDigAttacks)
+			if (digAttackCounter == numDecisions)
 			{
 				mover->ground = digInfo.edge;
 				mover->edgeQuantity = digInfo.quantity;
@@ -403,6 +404,7 @@ void CrawlerQueen::ProcessState()
 	if (redecide)
 	{
 		action = DECIDE;
+		SetLevel();
 		SetDecisions();
 		DecidePoints();
 		frame = 0;
@@ -888,9 +890,39 @@ void CrawlerQueen::SetDecisions()
 {
 	for (int i = 0; i < numDecisions; ++i)
 	{
-		int r = rand() % D_Count;
+		int r = rand() % (maxDecision);
 		//r = D_JUMP;
 		decisions[i] = (Decision)r;//D_DIG;//(Decision)r;
+	}
+}
+
+void CrawlerQueen::SetLevel()
+{
+	//max health is 120 
+	if (numHealth > 100)
+	{
+		numDecisions = 1;
+		maxDecision = 1;
+	}
+	else if (numHealth > 80)
+	{
+		numDecisions = 2;
+		maxDecision = 1;
+	}
+	else if (numHealth > 60)
+	{
+		numDecisions = 2;
+		maxDecision = 2;
+	}
+	else if (numHealth > 40)
+	{
+		numDecisions = 2;
+		maxDecision = 3;
+	}
+	else if (numHealth > 20)
+	{
+		numDecisions = 3;
+		maxDecision = 3;
 	}
 }
 
@@ -1090,6 +1122,17 @@ bool CrawlerQueen::GetClockwise(int index)
 }
 
 void CrawlerQueen::Init()
+{
+	if (owner->mh->bossFightType == 1)
+	{
+		PoiInfo *pi = owner->poiMap["crawlercam"];
+		assert(pi != NULL);
+		owner->cam.manual = true;
+		owner->cam.Ease(Vector2f(pi->pos), 1.75, 60, CubicBezier());
+	}
+}
+
+void CrawlerQueen::Setup()
 {
 	InitEdgeInfo();
 	ResetEnemy();

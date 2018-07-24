@@ -1505,6 +1505,8 @@ struct EditSession : GUIHandler
 		ITOOL_SCALE
 	};
 
+	int bossType;
+
 	Tool currTool;
 	ImageEditTool currImageTool;
 	TilesetManager tm;

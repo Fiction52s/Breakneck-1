@@ -849,7 +849,7 @@ void GameSession::AddEnemy( Enemy *e )
 	}
 	
 	e->spawned = true;
-
+	e->Init();
 
 	//^^note remove this later
 	//debugging only
@@ -5394,10 +5394,10 @@ bool GameSession::Load()
 			p->InitAfterEnemies();
 	}
 
-	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	/*for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
 		(*it)->Init();
-	}
+	}*/
 
 	
 
@@ -6536,7 +6536,18 @@ int GameSession::Run()
 				//polyShader.setUniform( "oldZoom", cam.GetZoom() );
 				//polyShader.setUniform( "oldBotLeft", view.getCenter().x - view.getSize().x / 2, 
 				//	view.getCenter().y + view.getSize().y / 2 );
-				if (mh->bossFightType == 0)
+
+
+				if (raceFight != NULL)
+				{
+					cam.UpdateVS(GetPlayer(0), GetPlayer(1));
+				}
+				else
+				{
+					cam.Update(GetPlayer(0));
+				}
+
+				/*if (mh->bossFightType == 0)
 				{
 					if (raceFight != NULL)
 					{
@@ -6551,7 +6562,7 @@ int GameSession::Run()
 				{
 					cam.UpdateBossFight( mh->bossFightType );
 				}
-				
+				*/
 				
 
 				Vector2f camPos = cam.GetPos();
@@ -14151,7 +14162,7 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 		{
 			assert( (*it)->spawned == false );
 
-			//(*it)->Init();
+			(*it)->Init();
 			(*it)->spawned = true;
 			AddEnemy( (*it) );
 		}

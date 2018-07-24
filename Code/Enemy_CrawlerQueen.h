@@ -66,6 +66,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		D_Count
 	};
 
+	int maxDecision;
+
 	struct EdgeInfo //for decisions
 	{
 		Edge *edge;
@@ -75,9 +77,10 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	};
 
 	void Init();
+	void Setup();
 
 	Tileset *ts[Count];
-
+	void SetLevel();
 	~CrawlerQueen();
 	void HitTerrainAerial(Edge *e, double q);
 	void Boost();

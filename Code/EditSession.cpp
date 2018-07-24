@@ -707,6 +707,8 @@ bool EditSession::OpenFile()
 
 		int numPoints = mh->numVertices;
 
+		bossType = mh->bossFightType;
+
 		delete mh;
 		mh = NULL;
 
@@ -2768,7 +2770,7 @@ void EditSession::WriteFile(string fileName)
 	mapHeader.boundsWidth = boundWidth;
 	mapHeader.boundsHeight = boundHeight;
 
-
+	mapHeader.bossFightType = bossType;
 	/*int totalPoints = 0;
 	for (auto it = polygons.begin(); it != polygons.end(); ++it)
 	{
@@ -5943,7 +5945,7 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
 	currTool = TOOL_ADD;
-
+	//bosstype = 0;
 	currentFile = p_filePath.string();
 	currentPath = p_filePath;
 	
@@ -9425,6 +9427,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								//showPoints = true;
 								showPanel = mapOptionsPanel;
 								mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
+								mapOptionsPanel->textBoxes["bosstype"]->text.setString(to_string(bossType));
 								mode = menuDownStored;
 							}
 							else if( menuSelection == "bottom" )
@@ -14296,6 +14299,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//string s = p->textBoxes["minedgesize"]->text.getString().toAnsiString();
 			string s = p->textBoxes["minedgesize"]->text.getString().toAnsiString();
 			string drainStr = p->textBoxes["draintime"]->text.getString().toAnsiString();
+			string bossTypeStr = p->textBoxes["bosstype"]->text.getString().toAnsiString();
 			ss << s;
 			
 			ss >> minEdgeSize;
@@ -14331,6 +14335,18 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			if (!ss.fail())
 			{
 				drainSeconds = dSecs;
+			}
+
+			ss.clear();
+
+			ss << bossTypeStr;
+
+			int bType;
+			ss >> bType;
+
+			if (!ss.fail())
+			{
+				bossType = bType;
 			}
 
 			showPanel = NULL;
@@ -16721,6 +16737,8 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
 		p->AddLabel("draintime_label", Vector2i(20, 200), 20, "drain seconds:");
 		p->AddTextBox("draintime", Vector2i(20, 250), 200, 20, "60");
+		p->AddTextBox("bosstype", Vector2i(20, 300), 200, 20, "0");
+		
 		return p;
 	}
 	else if( name == "terrain" )

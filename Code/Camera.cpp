@@ -1025,9 +1025,19 @@ void Camera::UpdateBossFight(int bossFightType)
 
 	if (bossFightType == 1)
 	{
-		pos.x = owner->mh->leftBounds + owner->mh->boundsWidth / 2.f;
-		pos.y = owner->mh->topBounds + owner->mh->boundsHeight / 2.f;
-		zoomFactor = 1.75f;
+		//PoiInfo *pi = owner->poiMap["crawlercam"];
+		//if (pi == NULL)
+		//{
+		//	assert(0);
+		//	return;
+		//}
+		//else
+		//{
+		//	pos.x = pi->pos.x;//owner->mh->leftBounds + owner->mh->boundsWidth / 2.f;
+		//	pos.y = pi->pos.y;//owner->mh->topBounds + owner->mh->boundsHeight / 2.f;
+		//	zoomFactor = 1.75f;
+		//}
+		
 	}
 }
 

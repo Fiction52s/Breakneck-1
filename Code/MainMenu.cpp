@@ -1305,7 +1305,7 @@ void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 				TreeNode * toNode = ls.dirNode[ls.selectedIndex];
 
 				std::stringstream ssPath;
-				ssPath << toNode->GetLocalPath() << ls.newLevelName << ".brknk";
+				ssPath << "Resources/" << toNode->GetLocalPath() << ls.newLevelName << ".brknk";
 				string toString = ssPath.str();
 
 				path to(toString);
