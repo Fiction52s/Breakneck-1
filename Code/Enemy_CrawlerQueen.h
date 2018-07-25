@@ -55,6 +55,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		RUMBLE,
 		POPOUT,
 		UNBURROW,
+		HURT,
+		RETREATBURROW,
 		Count
 	};
 
@@ -75,7 +77,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		int index;
 		//might need roll info?
 	};
-
+	std::list<Gate*> crawlerGates;
+	void ConfirmKill();
 	void Init();
 	void Setup();
 

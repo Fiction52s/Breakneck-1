@@ -259,7 +259,7 @@ void GateInfo::SetType( const std::string &gType )
 	}
 	else if( gType == "birdfight" )
 	{
-		type = GateTypes::BIRDFIGHT;
+		type = GateTypes::CRAWLER_UNLOCK;
 	}
 	else if( gType == "reform" )
 	{
@@ -272,7 +272,7 @@ void GateInfo::SetType( const std::string &gType )
 	}
 	else if( gType == "nexus1unlock" )
 	{
-		type = GateTypes::NEXUS1_UNLOCK;
+		type = GateTypes::CRAWLER_UNLOCK;
 	}
 	else
 	{
@@ -331,10 +331,10 @@ void GateInfo::WriteFile( ofstream &of )
 		<< index0 << " " << poly1->writeIndex << " " << index1 << " ";
 
 
-	if( type == GateTypes::BIRDFIGHT )
+	/*if( type == GateTypes::BIRDFIGHT )
 	{
 		reformBehindYou = true;
-	}
+	}*/
 
 	if( reformBehindYou )
 	{
@@ -377,18 +377,18 @@ void GateInfo::UpdateLine()
 			color = Color( 200, 200, 200 );
 		}
 	}
-	else if( type == GateTypes::BIRDFIGHT )
+	/*else if( type == GateTypes::BIRDFIGHT )
 	{
 		color = Color( 0, 255, 40 );
-	}
+	}*/
 	else if( type == GateTypes::CRAWLER_UNLOCK )
 	{
 		color = Color( 0, 0, 255);
 	}
-	else if( type == GateTypes::NEXUS1_UNLOCK )
+	/*else if( type == GateTypes::NEXUS1_UNLOCK )
 	{
 		color = Color::Cyan;
-	}
+	}*/
 	/*else if( type == GateTypes::GREEN )
 	{
 		c = Color( 0, 255, 0 );
@@ -1307,6 +1307,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -1326,6 +1328,60 @@ bool EditSession::OpenFile()
 
 					a.reset( new ShipPickupParams( this, terrain.get(), edgeIndex, edgeQuantity, facingRight ) );
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
+					terrain->UpdateBounds();
+				}
+				else if (typeName == "groundtrigger")
+				{
+					//always grounded
+					assert(is.good());
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int facingRight;
+					is >> facingRight;
+
+					int tType;
+					is >> tType;
+
+					PolyPtr terrain(NULL);
+					if (terrainIndex == -1)
+					{
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+						{
+							if ((*it)->inverse)
+								continue;
+
+							if (testIndex == terrainIndex)
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
+						}
+					}
+
+					if (terrain == NULL)
+						assert(0 && "failure terrain indexing goal");
+
+					if (edgeIndex == terrain->numPoints - 1)
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					a.reset(new GroundTriggerParams(this, terrain.get(), edgeIndex, edgeQuantity, facingRight,
+						tType ));
+					terrain->enemies[a->groundInfo->edgeStart].push_back(a);
 					terrain->UpdateBounds();
 				}
 				else if( typeName == "shard" )
@@ -6213,6 +6269,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	ActorType *shipPickupType = new ActorType( "shippickup", shipPickupPanel );
 
 	types["shippickup"] = shipPickupType;
+
+	Panel *groundTriggerPanel = CreateOptionsPanel("groundtrigger");
+	ActorType *groundTriggerType = new ActorType("groundtrigger", groundTriggerPanel);
+
+	types["groundtrigger"] = groundTriggerType;
+
 	Panel *lightPanel = CreateOptionsPanel( "light" );
 
 	messagePopup = CreatePopupPanel( "message" );
@@ -6230,6 +6292,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	gs->Set( 5, 0, Sprite( shardType->iconTexture ), "shard" );
 	gs->Set( 6, 0, Sprite( raceFightTargetType->iconTexture ), "racefighttarget" );
 	gs->Set(7, 0, Sprite(blockerType->iconTexture), "blocker");
+	gs->Set(8, 0, Sprite(groundTriggerType->iconTexture), "groundtrigger");
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
 	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
@@ -8746,6 +8809,19 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											shipPickup->group = groups["--"];
 
 											CreateActor( shipPickup );
+										}
+									}
+									else if (trackingEnemy->name == "groundtrigger")
+									{
+										if (enemyEdgePolygon != NULL)
+										{
+											showPanel = enemySelectPanel;
+											trackingEnemy = NULL;
+											ActorPtr groundTrigger(new GroundTriggerParams(this, enemyEdgePolygon, enemyEdgeIndex,
+												enemyEdgeQuantity));
+											groundTrigger->group = groups["--"];
+
+											CreateActor(groundTrigger);
 										}
 									}
 									else if( trackingEnemy->name == "shard" )
@@ -11425,7 +11501,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					bool groundType = w1Grounded || w2Grounded
 						|| w3Grounded || w4Grounded || w5Grounded
 						|| w6Grounded || name == "goal" || name == "poi"
-						|| name == "nexus" || name == "shippickup";
+						|| name == "nexus" || name == "shippickup" || name == "groundtrigger";
 
 					if( groundType )
 					{
@@ -14288,7 +14364,37 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if (p->name == "groundtrigger_options")
+	{
+		if (b->name == "ok")
+		{
+			if (mode == EDIT)
+				//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				GroundTriggerParams *groundTrigger = (GroundTriggerParams*)select;
+				groundTrigger->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
 
+
+				ActorPtr groundTrigger(tempActor);//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				groundTrigger->SetParams();
+				groundTrigger->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor(groundTrigger);
+
+				tempActor = NULL;
+
+
+			}
+			showPanel = NULL;
+		}
+	}
 	else if( p->name == "map_options" )
 	{
 		if( b->name == "ok" );
@@ -16221,7 +16327,6 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		Panel *p = new Panel( "poi_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "NO NAME" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 		p->AddTextBox( "camzoom", Vector2i( 20, 180 ), 200, 20, "not test" );
 		p->AddCheckBox( "camprops", Vector2i( 20, 240 ) );
 		p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
@@ -16717,6 +16822,18 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "nexusindex", Vector2i( 20, 150 ), 200, 20, "1" );
 		return p;
 	}
+
+	else if (name == "groundtrigger")
+	{
+		Panel *p = new Panel("groundtrigger_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+
+		p->AddCheckBox("facingright", Vector2i(20, 250));
+		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
+		return p;
+	}
 	//else if( name == "racefighttarget" )
 	//{
 	
@@ -16812,6 +16929,11 @@ void EditSession::SetEnemyEditPanel()
 	{
 		ShipPickupParams *shipPickup = (ShipPickupParams*)ap;
 		shipPickup->SetPanelInfo();
+	}
+	else if (name == "groundtrigger")
+	{
+		GroundTriggerParams *gTrigger = (GroundTriggerParams*)ap;
+		gTrigger->SetPanelInfo();
 	}
 	else if( name == "key" )
 	{
@@ -18585,6 +18707,13 @@ void ActorType::Init()
 		canBeAerial = true;
 	}
 	if( name == "shippickup" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
+	}
+	if (name == "groundtrigger")
 	{
 		width = 32;
 		height = 32;

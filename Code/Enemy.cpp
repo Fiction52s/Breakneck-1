@@ -1494,7 +1494,7 @@ void Enemy::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if (hasMonitor && !suppressMonitor)
+			if (hasMonitor && !suppressMonitor )
 			{
 				owner->keyMarker->CollectKey();
 			}
@@ -1760,7 +1760,7 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		case EnemyType::EN_CRAWLERQUEEN:
-			ep = new EnemyParams(1, 5, .8, 6, 120);
+			ep = new EnemyParams(1, 5, .8, 6, 3);// 120);
 			break;
 		case EnemyType::EN_FLOATINGBOMB:
 			ep = new EnemyParams(1, 5, .8, 6, 3);

@@ -14,9 +14,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	{
 		BLACK,
 		KEYGATE,
-		BIRDFIGHT,
 		CRAWLER_UNLOCK,
-		NEXUS1_UNLOCK,
 		Count
 	};
 

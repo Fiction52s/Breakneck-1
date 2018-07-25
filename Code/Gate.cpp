@@ -166,6 +166,7 @@ void Gate::UpdateLine()
 		tileHeight = 128;
 		}
 		break;
+	case CRAWLER_UNLOCK:
 	case KEYGATE:
 		{
 		
@@ -216,21 +217,21 @@ void Gate::UpdateLine()
 		tileHeight = 128;
 		}
 		break;
-	case BIRDFIGHT:
+	/*case BIRDFIGHT:
 		c = Color::Green;
 		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
 		tileHeight = 128;
-		break;
-	case CRAWLER_UNLOCK:
-		c = Color::Blue;
+		break;*/
+	//case CRAWLER_UNLOCK:
+		/*c = Color::Blue;
 		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
-		tileHeight = 128;
-		break;
-	case NEXUS1_UNLOCK:
+		tileHeight = 128;*/
+	//	break;
+	/*case NEXUS1_UNLOCK:
 		c = Color::Cyan;
 		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
 		tileHeight = 128;
-		break;
+		break;*/
 	}
 	/*thickLine[0].color = c;
 	thickLine[1].color = c;
@@ -475,7 +476,7 @@ void Gate::Update()
 		flowFrame = 0;
 	}
 
-	if( type != BLACK )
+	if( type != BLACK && type != CRAWLER_UNLOCK )
 	{
 		Zone *currZone = owner->currentZone;
 		bool enoughKeys = (owner->keyMarker->keysRequired == 0);

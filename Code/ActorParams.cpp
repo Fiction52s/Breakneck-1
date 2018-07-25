@@ -821,7 +821,7 @@ void PoiParams::SetParams()
 
 	ss << zoomStr;
 
-	int zoom;
+	float zoom;
 	ss >> zoom;
 
 	if( !ss.fail() )
@@ -877,7 +877,7 @@ void PoiParams::SetPanelInfo()
 	p->textBoxes["name"]->text.setString( name );
 	if( group != NULL )
 	{
-		p->textBoxes["group"]->text.setString( group->name );
+		//p->textBoxes["group"]->text.setString( group->name );
 	}
 
 	p->textBoxes["barrier"]->text.setString( s );
@@ -1069,6 +1069,83 @@ void NexusParams::WriteParamFile( ofstream &of )
 ActorParams *NexusParams::Copy()
 {
 	NexusParams *copy = new NexusParams( *this );
+	return copy;
+}
+
+GroundTriggerParams::GroundTriggerParams(EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+	bool fr, int p_trigType)
+	:ActorParams(PosType::GROUND_ONLY), triggerType(p_trigType), facingRight( fr )
+{
+	type = edit->types["groundtrigger"];
+	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+
+	SetBoundingQuad();
+}
+
+GroundTriggerParams::GroundTriggerParams(EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	:ActorParams(PosType::GROUND_ONLY)
+{
+	type = edit->types["groundtrigger"];
+	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+
+	triggerType = 0;
+	facingRight = true;
+
+	SetBoundingQuad();
+}
+
+bool GroundTriggerParams::CanApply()
+{
+	if (groundInfo != NULL)
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void GroundTriggerParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+		p->textBoxes["group"]->text.setString(group->name);
+	//p->checkBoxes["clockwise"]->checked = clockwise;
+	p->textBoxes["triggertype"]->text.setString(boost::lexical_cast<string>(triggerType));
+	p->checkBoxes["facingright"]->checked = facingRight;
+	
+}
+
+void GroundTriggerParams::SetParams()
+{
+	Panel *p = type->panel;
+
+
+	int tType;
+
+	stringstream ss;
+	string s = p->textBoxes["triggertype"]->text.getString().toAnsiString();
+	ss << s;
+
+
+	ss >> tType;
+
+	if (!ss.fail())
+	{
+		triggerType = tType;
+	}
+
+	bool right = p->checkBoxes["facingright"]->checked;
+}
+
+void GroundTriggerParams::WriteParamFile(ofstream &of)
+{
+	of << (int)facingRight << endl;
+	of << triggerType << endl;
+}
+
+ActorParams *GroundTriggerParams::Copy()
+{
+	GroundTriggerParams *copy = new GroundTriggerParams(*this);
 	return copy;
 }
 

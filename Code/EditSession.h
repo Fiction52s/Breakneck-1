@@ -364,9 +364,7 @@ struct GateInfo : ISelectable
 	{
 		BLACK,
 		KEYGATE,
-		BIRDFIGHT,
 		CRAWLER_UNLOCK,
-		NEXUS1_UNLOCK,
 		Count
 	};
 
@@ -509,6 +507,28 @@ struct ActorParams : ISelectable
 
 typedef boost::shared_ptr<ActorParams> ActorPtr;
 typedef std::map<TerrainPoint*,std::list<ActorPtr>> EnemyMap;
+
+struct GroundTriggerParams : public ActorParams
+{
+	GroundTriggerParams(EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
+		double edgeQuantity,
+		bool facingRight,
+		int trigType);
+	GroundTriggerParams(EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
+		double edgeQuantity);
+	GroundTriggerParams(EditSession *edit);
+	bool CanApply();
+	ActorParams *Copy();
+	void SetParams();
+	void SetPanelInfo();
+	void WriteParamFile(std::ofstream &of);
+	int triggerType;
+	bool facingRight;
+};
 
 //all
 struct NexusParams : public ActorParams

@@ -479,16 +479,16 @@ bool EnterNexus1Seq::Update()
 
 			for( int i =0; i < owner->numGates; ++i )
 			{
-				Gate *g = owner->gates[i];
-				if( g->type == Gate::NEXUS1_UNLOCK )
-				{
-					owner->UnlockGate( g );
-					if( owner->currentZone == g->zoneA )
-						owner->ActivateZone( g->zoneB );
-					else
-						owner->ActivateZone( g->zoneA );
-					//g->gState = Gate::OPEN;
-				}
+				//Gate *g = owner->gates[i];
+				//if( g->type == Gate::NEXUS1_UNLOCK )
+				//{
+				//	owner->UnlockGate( g );
+				//	if( owner->currentZone == g->zoneA )
+				//		owner->ActivateZone( g->zoneB );
+				//	else
+				//		owner->ActivateZone( g->zoneA );
+				//	//g->gState = Gate::OPEN;
+				//}
 			}
 
 			owner->ClearFX();
@@ -1120,3 +1120,31 @@ void SkeletonFightSeq::Reset()
 	frame = 0;
 }
 
+NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
+	:owner( p_owner )
+{
+	pi = owner->poiMap["nexuscore"];
+	assert(pi != NULL);
+
+
+}
+bool NexusCore1Seq::Update()
+{
+	/*if (frame == 0)
+	{
+		owner->cam.manual = true;
+		owner->cam.Ease()->
+	}*/
+	++frame;
+	return true;
+}
+void NexusCore1Seq::Draw(sf::RenderTarget *target)
+{
+
+}
+void NexusCore1Seq::Reset()
+{
+	frame = 0;
+}
+
+GameSession *owner;

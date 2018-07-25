@@ -649,6 +649,8 @@ void CrawlerQueen::HitTerrainAerial(Edge *e, double q)
 
 void CrawlerQueen::UpdateSprite()
 {
+	if (action == HURT)
+		return;
 	if (action == RUMBLE)
 	{
 		return;
@@ -895,6 +897,20 @@ void CrawlerQueen::SetDecisions()
 		decisions[i] = (Decision)r;//D_DIG;//(Decision)r;
 	}
 }
+void CrawlerQueen::ConfirmKill()
+{
+	owner->Fade(true, 60, Color::White);
+	action = HURT;
+	frame = 0;
+	for (auto it = crawlerGates.begin(); it != crawlerGates.end(); ++it)
+	{
+		(*it)->gState = Gate::SOFTEN;
+		(*it)->frame = 0;
+		//(*it)->SetLocked(false);
+	}
+
+	owner->cam.EaseOutOfManual(60);
+}
 
 void CrawlerQueen::SetLevel()
 {
@@ -919,7 +935,7 @@ void CrawlerQueen::SetLevel()
 		numDecisions = 2;
 		maxDecision = 3;
 	}
-	else if (numHealth > 20)
+	else// if (numHealth > 20)
 	{
 		numDecisions = 3;
 		maxDecision = 3;
@@ -1135,6 +1151,17 @@ void CrawlerQueen::Init()
 void CrawlerQueen::Setup()
 {
 	InitEdgeInfo();
+
+	for (int i = 0; i < owner->numGates; ++i)
+	{
+		if (owner->gates[i]->type == Gate::CRAWLER_UNLOCK)
+		{
+			crawlerGates.push_back(owner->gates[i]);
+		}
+	}
+
+	//nexusCorePI = owner->poiMap["nexuscore"];
+
 	ResetEnemy();
 }
 

@@ -21,6 +21,7 @@
 #include "WorldMap.h"
 #include "SaveFile.h"
 #include "PauseMenu.h"
+#include "GroundTrigger.h"
 
 using namespace sf;
 using namespace std;
@@ -1094,6 +1095,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
 		actionLength[SPRINT] = 8 * 4;
 		actionLength[STAND] = 20 * 8;
+		actionLength[SEQ_ENTERCORE1] = 60;
 		actionLength[SPRINGSTUN] = 8;
 		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
 		actionLength[DASHATTACK] = 8 * 2;
@@ -1754,6 +1756,9 @@ void Actor::ActionEnded()
 		case SEQ_WAIT:
 			frame = 0;
 			break;
+		case SEQ_ENTERCORE1:
+			frame = 0;
+			break;
 		}
 	}
 }
@@ -2183,7 +2188,7 @@ void Actor::UpdatePrePhysics()
 	if (owner->powerRing != NULL && action != DEATH)
 	{
 		if (owner->drain && !desperationMode 
-			&& !IsIntroAction( action ) && !IsGoalKillAction( action ) && !IsExitAction( action ))
+			&& !IsIntroAction( action ) && !IsGoalKillAction( action ) && !IsExitAction( action ) && !IsSequenceAction( action ))
 		{
 			drainCounter++;
 			if (drainCounter == drainCounterMax)
@@ -2418,7 +2423,7 @@ void Actor::UpdatePrePhysics()
 
 	if( IsIntroAction( action ) || (IsGoalKillAction(action) && action != GOALKILLWAIT) || action == EXIT 
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
-		|| action == GRABSHIP || action == EXITWAIT )
+		|| action == GRABSHIP || action == EXITWAIT || IsSequenceAction( action ) )
 	{
 		/*if (action == SPAWNWAIT && frame == actionLength[SPAWNWAIT] - 6)
 		{
@@ -16651,6 +16656,38 @@ bool Actor::IsBeingSlowed()
 	}
 }
 
+void Actor::HandleGroundTrigger(int trigType,
+	Edge *e, double q, bool fr)
+{
+	switch (trigType)
+	{
+	case TRIGGER_SHIPPICKUP:
+		ShipPickupPoint(q, fr);
+		break;
+	case TRIGGER_NEXUSCORE1:
+	{
+		action = SEQ_ENTERCORE1;
+		frame = 0;
+
+		desperationMode = false;
+		SetExpr(Expr_NEUTRAL);
+		assert(ground != NULL);
+		edgeQuantity = q;
+		groundSpeed = 0;
+		facingRight = fr;
+
+		if (ground->Normal().y == -1)
+		{
+			offsetX = 0;
+		}
+	}
+
+
+		groundSpeed = 0;
+		break;
+	}
+}
+
 sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 {
 	double normalGravity;
@@ -16733,6 +16770,11 @@ bool Actor::IsGoalKillAction(Action a)
 bool Actor::IsIntroAction(Action a)
 {
 	return a == INTRO || a == SPAWNWAIT;
+}
+
+bool Actor::IsSequenceAction(Action a)
+{
+	return (a == SEQ_ENTERCORE1);
 }
 
 bool Actor::IsExitAction(Action a)
@@ -19080,6 +19122,7 @@ void Actor::UpdateSprite()
 	switch( action )
 	{
 	case SEQ_CRAWLERFIGHT_STAND:
+	case SEQ_ENTERCORE1:
 	case STAND:
 		{	
 			SetSpriteTexture( STAND );
@@ -22748,7 +22791,7 @@ bool Actor::CanUnlockGate( Gate *g )
 		canUnlock = true;
 	}
 	else */
-	if( g->type == Gate::BLACK || g->type == Gate::CRAWLER_UNLOCK || g->type == Gate::NEXUS1_UNLOCK )
+	if( g->type == Gate::BLACK )//|| g->type == Gate::CRAWLER_UNLOCK || g->type == Gate::NEXUS1_UNLOCK )
 	{
 		canUnlock = false;
 	}

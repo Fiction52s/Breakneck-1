@@ -63,6 +63,7 @@
 #include "Enemy_FootTrap.h"
 //#include "Enemy_Ghost.h"
 #include "Enemy_Goal.h"
+#include "GroundTrigger.h"
 //#include "Enemy_Gorilla.h"
 //#include "Enemy_GrowingTree.h"
 //#include "Enemy_HealthFly.h"
@@ -2820,6 +2821,31 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					shipExitSeq = new ShipExitSeq( this );
 				}
 			}
+			else if (typeName == "groundtrigger")
+			{
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				int facingRight;
+				is >> facingRight;
+
+				int tType;
+				is >> tType;
+
+				GroundTrigger *enemy = new GroundTrigger(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+					facingRight, (TriggerType)tType);
+
+				fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);
+			}
 			//w6
 			else if( typeName == "racefighttarget" )
 			{
@@ -3877,15 +3903,15 @@ bool GameSession::OpenFile( string fileName )
 		for( int i = 0; i < numGates; ++i )
 		{
 			Gate *g = gates[i];
-			if( g->type == Gate::BIRDFIGHT )
-			{
-				if( g->zoneA != NULL )
-					g->zoneA->showShadow = false;
-					//ActivateZone( zone
-					//g->zoneA->ac
-				//g->SetLocked( false );
-				//g->SetLocked( true );
-			}
+			//if( g->type == Gate::BIRDFIGHT )
+			//{
+			//	if( g->zoneA != NULL )
+			//		g->zoneA->showShadow = false;
+			//		//ActivateZone( zone
+			//		//g->zoneA->ac
+			//	//g->SetLocked( false );
+			//	//g->SetLocked( true );
+			//}
 		}
 		
 		if( poiMap.count( "ship" ) > 0 )
@@ -6428,6 +6454,41 @@ int GameSession::Run()
 						p->UpdatePostPhysics();
 				}
 
+				switch (mh->bossFightType)
+				{
+				case 0:
+					break;
+				case 1:
+				{
+					PoiInfo *pi = poiMap["nexuscore"];
+					assert(pi != NULL);
+					double halfX = 480 * pi->cameraZoom;
+					double halfY = 270 * pi->cameraZoom;
+					V2d A(pi->pos.x - halfX, pi->pos.y - halfY);
+					V2d B(pi->pos.x + halfX, pi->pos.y - halfY);
+					V2d C(pi->pos.x + halfX, pi->pos.y + halfY);
+					V2d D(pi->pos.x - halfX, pi->pos.y + halfY);
+					V2d pPos = GetPlayer(0)->position;
+					if (QuadContainsPoint(A, B, C, D, pPos))
+					{
+						if (!cam.manual)
+						{
+							cam.manual = true;
+							cam.Ease(Vector2f(pi->pos), pi->cameraZoom, 120, CubicBezier());
+						}
+					}
+					else
+					{
+						if (cam.manual)
+						{
+							cam.EaseOutOfManual(60);
+						}
+					}
+					break;
+				}
+				}
+
+
 				if( recGhost != NULL )
 					recGhost->RecordFrame();
 
@@ -6767,7 +6828,7 @@ int GameSession::Run()
 				queryMode = "enemy";
 
 				sf::Rect<double> spawnRect = screenRect;
-				double spawnExtra = 800;
+				double spawnExtra = 600;//800
 				spawnRect.left -= spawnExtra;
 				spawnRect.width += 2 * spawnExtra;
 				spawnRect.top -= spawnExtra;

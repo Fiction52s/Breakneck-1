@@ -145,6 +145,24 @@ struct CrawlerAfterFightSeq : Sequence
 	GameSession *owner;
 };
 
+struct NexusCore1Seq : Sequence
+{
+	enum State
+	{
+	INIT,
+	FIGHTSTARTMSG,
+	Count
+	};
+
+	NexusCore1Seq(GameSession *owner);
+	bool Update();
+	void Draw(sf::RenderTarget *target);
+	void Reset();
+
+	PoiInfo *pi;
+	GameSession *owner;
+};
+
 struct Nexus;
 struct EnterNexus1Seq : Sequence
 {

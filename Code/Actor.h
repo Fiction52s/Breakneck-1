@@ -165,6 +165,8 @@ struct EffectPool;
 struct EnemyParams;
 struct SoundNode;
 
+struct GroundTrigger;
+
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
@@ -175,7 +177,8 @@ struct Actor : QuadTreeCollider,
 
 	EffectPool *dustParticles;
 	RisingParticleUpdater rpu;
-
+	void HandleGroundTrigger(int trigType,
+		Edge *e, double q, bool fr);
 	
 	enum Action
 	{
@@ -235,6 +238,7 @@ struct Actor : QuadTreeCollider,
 		DIAGUPATTACK,
 		DIAGDOWNATTACK,
 		SPRINGSTUN,
+		SEQ_ENTERCORE1,
 		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
 		SEQ_CRAWLERFIGHT_LAND,
 		SEQ_CRAWLERFIGHT_STAND,
@@ -313,6 +317,7 @@ struct Actor : QuadTreeCollider,
 	bool IsGoalKillAction(Action a);
 	bool IsIntroAction(Action a);
 	bool IsExitAction(Action a);
+	bool IsSequenceAction(Action a);
 
 	void CreateAttackLightning();
 	EffectPool *fairLightningPool[4];
