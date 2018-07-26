@@ -448,6 +448,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void RemoveGravityGrassFromExplodeList(Grass *g);
 	bool showDebugDraw;
 	bool showTerrainDecor;
+	bool showHUD;
 	
 
 	void ResetShipSequence(); 
@@ -1090,6 +1091,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	float *fBubbleRadiusSize;
 	sf::Vector2f *fBubblePos;
 	float *fBubbleFrame;
+
 
 	Sequence *activeSequence;
 	Sequence *startMapSeq;
