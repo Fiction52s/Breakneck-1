@@ -7,6 +7,7 @@
 
 struct GameSession;
 struct MovementSequence;
+
 struct Cutscene
 {
 	Cutscene( GameSession *owner,
@@ -149,11 +150,15 @@ struct NexusCore1Seq : Sequence
 {
 	enum State
 	{
-	INIT,
-	FIGHTSTARTMSG,
+	ENTERCORE,
+	DESTROYCORE,
+	FADEEXIT,
+	EXITCORE,
+	END,
 	Count
 	};
 
+	State state;
 	NexusCore1Seq(GameSession *owner);
 	bool Update();
 	void Draw(sf::RenderTarget *target);
@@ -161,6 +166,7 @@ struct NexusCore1Seq : Sequence
 
 	PoiInfo *pi;
 	GameSession *owner;
+	sf::Vertex darkQuad[4];
 };
 
 struct Nexus;
