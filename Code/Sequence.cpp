@@ -24,6 +24,7 @@
 #include "PauseMenu.h"
 #include "Parallax.h"
 #include "Movement.h"
+#include "ScoreDisplay.h"
 
 using namespace sf;
 using namespace std;
@@ -1126,17 +1127,99 @@ NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
 	pi = owner->poiMap["nexuscore"];
 	assert(pi != NULL);
 
-
+	state = ENTERCORE;
 }
 bool NexusCore1Seq::Update()
 {
-	/*if (frame == 0)
+	switch (state)
 	{
-		owner->cam.manual = true;
-		owner->cam.Ease()->
-	}*/
-	++frame;
-	return true;
+	case END:
+		break;
+	case ENTERCORE:
+		if (frame == 60)
+		{
+			state = DESTROYCORE;
+			frame = 0;
+		}
+
+		break;
+	case DESTROYCORE:
+	{
+		if (frame == 120)
+		{
+			state = FADEEXIT;
+			frame = 0;
+		}
+		break;
+	}
+	case FADEEXIT:
+		if (frame == 60)
+		{
+			state = EXITCORE;
+			frame = 0;
+		}
+		break;
+	case EXITCORE:
+		if (frame == 120)
+		{
+			state = END;
+			frame = 0;
+		}
+		break;
+	}
+
+	switch (state)
+	{
+	case ENTERCORE:
+		if (frame == 0)
+		{
+			owner->Fade(false, 60, Color::Black);
+		}
+		break;
+	case DESTROYCORE:
+	{
+		if (frame == 0)
+		{
+			owner->fadeLength = 0;
+			owner->cam.zoomFactor = 1.f;
+			//owner->showHUD = false;
+			frame = 0;
+		}
+
+		break;
+	}
+
+	case FADEEXIT:
+		if (frame == 0)
+		{
+			owner->Fade(false, 60, Color::Black);
+
+		}
+		break;
+	case EXITCORE:
+		if (frame == 0)
+		{
+			owner->Fade(true, 60, Color::Black);
+			//owner->showHUD = true;
+			owner->cam.Set(Vector2f(pi->pos), pi->cameraZoom, 0);
+		}
+		break;
+	case END:
+	{
+		if (frame == 0)
+		{
+			//owner->GetPlayer(0)->SetAction(Actor::NEXUSKILLWAIT);
+			frame = 0;
+			owner->scoreDisplay->Activate();
+			return false;
+		}
+		break;
+	}
+
+}
+++frame;
+
+return true;
 }
 void NexusCore1Seq::Draw(sf::RenderTarget *target)
 {
@@ -1144,6 +1227,7 @@ void NexusCore1Seq::Draw(sf::RenderTarget *target)
 }
 void NexusCore1Seq::Reset()
 {
+	state = ENTERCORE;
 	frame = 0;
 }
 

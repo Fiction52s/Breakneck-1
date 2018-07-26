@@ -16661,13 +16661,14 @@ void Actor::HandleGroundTrigger(int trigType,
 {
 	switch (trigType)
 	{
-	case TRIGGER_SHIPPICKUP:
-		ShipPickupPoint(q, fr);
-		break;
+	
 	case TRIGGER_NEXUSCORE1:
 	{
 		action = SEQ_ENTERCORE1;
 		frame = 0;
+
+		owner->nexusCoreSeq->Reset();
+		owner->activeSequence = owner->nexusCoreSeq;
 
 		desperationMode = false;
 		SetExpr(Expr_NEUTRAL);
@@ -16680,10 +16681,10 @@ void Actor::HandleGroundTrigger(int trigType,
 		{
 			offsetX = 0;
 		}
+		break;
 	}
-
-
-		groundSpeed = 0;
+	case TRIGGER_SHIPPICKUP:
+		ShipPickupPoint(q, fr);
 		break;
 	}
 }

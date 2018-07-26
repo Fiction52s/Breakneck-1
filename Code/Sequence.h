@@ -149,11 +149,15 @@ struct NexusCore1Seq : Sequence
 {
 	enum State
 	{
-	INIT,
-	FIGHTSTARTMSG,
-	Count
+		ENTERCORE,
+		DESTROYCORE,
+		FADEEXIT,
+		EXITCORE,
+		END,
+		Count
 	};
 
+	State state;
 	NexusCore1Seq(GameSession *owner);
 	bool Update();
 	void Draw(sf::RenderTarget *target);
@@ -161,21 +165,24 @@ struct NexusCore1Seq : Sequence
 
 	PoiInfo *pi;
 	GameSession *owner;
+
+	sf::Vertex darkQuad[4];
 };
 
 struct Nexus;
 struct EnterNexus1Seq : Sequence
 {
-	/*enum State
+	enum State
 	{
 		INIT,
 		FIGHTSTARTMSG,
 		Count
 	};
 
+
 	
 	State state;
-	int stateLength[State::Count];*/
+	//int stateLength[State::Count];*/
 
 	Nexus *nexus;
 	EnterNexus1Seq( GameSession *owner );

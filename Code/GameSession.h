@@ -449,7 +449,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool showDebugDraw;
 	bool showTerrainDecor;
 	
-
+	bool showHUD;
 	void ResetShipSequence(); 
 	Tileset *ts_w1ShipClouds0;
 	Tileset *ts_w1ShipClouds1;
