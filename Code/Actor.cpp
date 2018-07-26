@@ -2478,7 +2478,7 @@ void Actor::UpdatePrePhysics()
 		}
 		return;
 	}
-	else if( action == GOALKILLWAIT  || action == NEXUSKILLWAIT )
+	else if( action == GOALKILLWAIT )
 	{
 		bool a = currInput.A && !prevInput.A;
 		bool x = currInput.X && !prevInput.X;
@@ -2502,8 +2502,7 @@ void Actor::UpdatePrePhysics()
 		if( !owner->scoreDisplay->active )
 		{
 			SetAction(EXIT);
-			if (action == GOALKILLWAIT)
-				position = V2d(owner->goalNodePos.x, owner->goalNodePos.y -80.f);
+			position = V2d(owner->goalNodePos.x, owner->goalNodePos.y -80.f);
 			frame = 0;
 		}
 		return;
@@ -16662,12 +16661,14 @@ void Actor::HandleGroundTrigger(int trigType,
 {
 	switch (trigType)
 	{
+	case TRIGGER_SHIPPICKUP:
+		ShipPickupPoint(q, fr);
+		break;
 	case TRIGGER_NEXUSCORE1:
 	{
 		action = SEQ_ENTERCORE1;
 		frame = 0;
-		owner->nexusCoreSeq->Reset();
-		owner->activeSequence = owner->nexusCoreSeq;
+
 		desperationMode = false;
 		SetExpr(Expr_NEUTRAL);
 		assert(ground != NULL);
@@ -16679,10 +16680,10 @@ void Actor::HandleGroundTrigger(int trigType,
 		{
 			offsetX = 0;
 		}
-		break;
 	}
-	case TRIGGER_SHIPPICKUP:
-		ShipPickupPoint(q, fr);
+
+
+		groundSpeed = 0;
 		break;
 	}
 }
@@ -21393,7 +21394,6 @@ void Actor::UpdateSprite()
 			sprite->setRotation( 0 );
 			break;
 		}
-	case NEXUSKILLWAIT:
 	case GOALKILLWAIT:
 		{
 			SetSpriteTexture(GOALKILL4);
