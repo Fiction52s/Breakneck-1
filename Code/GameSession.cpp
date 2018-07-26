@@ -5697,8 +5697,6 @@ int GameSession::Run()
 
 	//rain = new Rain(this);
 
-	showHUD = true;
-
 	preScreenTex->setView(view);
 	
 	bool showFrameRate = true;
@@ -6029,15 +6027,6 @@ int GameSession::Run()
 		postProcessTex1->clear(Color::Red);
 		postProcessTex2->clear(Color::Red);
 		
-		switch (mh->bossFightType)
-		{
-		case 0:
-			break;
-		case 1:
-			//cameraTriggers.push_back( new CameraFix)
-			nexusCoreSeq = new NexusCore1Seq(this);
-			break;
-		}
 		
 		coll.ClearDebug();
 		
@@ -7545,11 +7534,6 @@ int GameSession::Run()
 			railDrawList = next;
 		}
 
-		for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
-		{
-			(*it)->Draw(preScreenTex);
-		}
-
 		DrawEffects( EffectLayer::BEHIND_ENEMIES );
 
 		//cout << "enemies draw" << endl;
@@ -7563,7 +7547,10 @@ int GameSession::Run()
 		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
 		//bigBulletVA->draw( preScreenTex );
 
-		
+		for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
+		{
+			(*it)->Draw(preScreenTex);
+		}
 
 		//window->display();
 		//continue;
@@ -7733,192 +7720,191 @@ int GameSession::Run()
 
 
 		//coll.DebugDraw( preScreenTex );
-		if (showHUD) {
-			//double minimapZoom = 8;// * cam.GetZoom();// + cam.GetZoom();
-			double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
 
+		//double minimapZoom = 8;// * cam.GetZoom();// + cam.GetZoom();
+		double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
 
+		
 
-			View vv;
-			vv.setCenter(p0->position.x, p0->position.y);
-			vv.setSize(minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom);
+		View vv;
+		vv.setCenter( p0->position.x, p0->position.y );
+		vv.setSize( minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom );
 
-			minimapTex->setView(vv);
-			minimapTex->clear(Color(0, 0, 0, 191));
-			//minimapTex->clear( Color( 0, 0, 0, 255 ) );
+		minimapTex->setView( vv );
+		minimapTex->clear( Color( 0, 0, 0, 191 ) );
+		//minimapTex->clear( Color( 0, 0, 0, 255 ) );
+		
 
-
-			for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
-			{
-				(*it)->Draw(minimapTex);
-			}
-
-
-
-			queryMode = "border";
-			numBorders = 0;
-			sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
-				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
-
-			borderTree->Query(this, minimapRect);
-
-			Color testColor(0x75, 0x70, 0x90, 191);
-			listVAIter = listVA;
-			while (listVAIter != NULL)
-			{
-				int vertexCount = listVAIter->terrainVA->getVertexCount();
-				for (int i = 0; i < vertexCount; ++i)
-				{
-					(*listVAIter->terrainVA)[i].color = testColor;
-				}
-				minimapTex->draw(*listVAIter->terrainVA);
-				for (int i = 0; i < vertexCount; ++i)
-				{
-					(*listVAIter->terrainVA)[i].color = Color::White;
-				}
-
-				listVAIter = listVAIter->next;
-			}
-
-			minimapTex->draw(blackBorderQuadsMini, 8, sf::Quads);
-			minimapTex->draw(topBorderQuadMini, 4, sf::Quads);
-			//minimapTex->draw(topBorderQuad, 4, sf::Quads);
-
-
-			queryMode = "item";
-			drawCritical = NULL;
-			itemTree->Query(this, minimapRect);
-			while (drawCritical != NULL)
-			{
-				//cout << "draw crit " << endl;
-				drawCritical->Draw(preScreenTex);
-				drawCritical = drawCritical->next;
-			}
-
-			testGateCount = 0;
-			queryMode = "gate";
-			gateList = NULL;
-			gateTree->Query(this, minimapRect);
-			Gate *mGateList = gateList;
-			while (gateList != NULL)
-			{
-				//gateList->Draw( preScreenTex );
-				if (gateList->locked)
-				{
-
-					V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
-					V2d other(along.y, -along.x);
-					double width = 25;
-
-
-
-					V2d leftGround = gateList->edgeA->v0 + other * -width;
-					V2d rightGround = gateList->edgeA->v0 + other * width;
-					V2d leftAir = gateList->edgeA->v1 + other * -width;
-					V2d rightAir = gateList->edgeA->v1 + other * width;
-					//cout << "drawing color: " << gateList->c.b << endl;
-					sf::Vertex activePreview[4] =
-					{
-						//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
-						//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
-
-						sf::Vertex(sf::Vector2<float>(leftGround.x, leftGround.y), gateList->c),
-						sf::Vertex(sf::Vector2<float>(leftAir.x, leftAir.y), gateList->c),
-
-
-						sf::Vertex(sf::Vector2<float>(rightAir.x, rightAir.y), gateList->c),
-
-
-						sf::Vertex(sf::Vector2<float>(rightGround.x, rightGround.y), gateList->c)
-					};
-					minimapTex->draw(activePreview, 4, sf::Quads);
-				}
-
-				Gate *next = gateList->next;//edgeA->edge1;
-				gateList = next;
-			}
-
-
-			//CircleShape playerCircle;
-			//playerCircle.setFillColor( COLOR_TEAL );
-			//playerCircle.setRadius( 60 );//60 );
-			//playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
-			//playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
-
-			for (int i = 0; i < 4; ++i)
-			{
-				p = GetPlayer(0);
-				if (p != NULL)
-				{
-					if ((p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK))
-					{
-						p->rightWire->DrawMinimap(minimapTex);
-						p->leftWire->DrawMinimap(minimapTex);
-					}
-				}
-			}
-
-
-			/*queryMode = "enemyminimap";
-			enemyTree->Query( this, minimapRect );
-
-			Enemy *currEnemy = activeEnemyList;
-			int counter = 0;
-
-
-			while( currEnemy != NULL )
-			{
-				currEnemy->DrawMinimap( minimapTex );
-				currEnemy = currEnemy->next;
-			}*/
-
-
-			/*queryMode = "enemyminimap";
-			enemyTree->Query(this, minimapRect);
-
-			while (listVA != NULL)
-			{
-				TestVA *t = listVA->next;
-				listVA->next = NULL;
-				listVA = t;
-			}*/
-
-			//shouldn't this draw all enemies that are active not just the ones from the current
-			//zone?
-			for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
-			{
-				(*it)->CheckedMiniDraw(minimapTex, FloatRect(minimapRect));
-			}
-
-			//if( currentZone != NULL )
-			//{
-			//	for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
-			//	{
-			//		(*it)->DrawMinimap( minimapTex );
-			//	}
-			//}
-			//else
-			//{
-			//	//probably inefficient. only happens when there arent any gates. do a little
-			//	//collision check to make sure they're relevant before drawing
-			//	//also dont make circles every frame. just store it in the enemy
-			//	for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
-			//	{
-			//		(*it)->DrawMinimap( minimapTex );
-			//	}
-			//}
-
-			/*if( player->action != Actor::DEATH )
-			{
-				player->Draw( minimapTex );
-			}*/
-
-			minimapTex->display();
-			const Texture &miniTex = minimapTex->getTexture();
-			minimapShader.setUniform("u_texture", minimapTex->getTexture());
-
-			minimapSprite.setTexture(miniTex);
+		for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+		{
+			(*it)->Draw( minimapTex );
 		}
+		
+		
+
+		queryMode = "border";
+		numBorders = 0;
+		sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
+			vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
+
+		borderTree->Query( this, minimapRect );
+
+		Color testColor( 0x75, 0x70, 0x90, 191 );
+		listVAIter = listVA;
+		while( listVAIter != NULL )
+		{
+			int vertexCount = listVAIter->terrainVA->getVertexCount();
+			for( int i = 0; i < vertexCount; ++i )
+			{
+				(*listVAIter->terrainVA)[i].color = testColor;
+			}
+			minimapTex->draw( *listVAIter->terrainVA );
+			for( int i = 0; i < vertexCount; ++i )
+			{
+				(*listVAIter->terrainVA)[i].color = Color::White;
+			}
+
+			listVAIter = listVAIter->next;
+		}
+
+		minimapTex->draw(blackBorderQuadsMini, 8, sf::Quads);
+		minimapTex->draw(topBorderQuadMini, 4, sf::Quads);
+		//minimapTex->draw(topBorderQuad, 4, sf::Quads);
+		
+
+		queryMode = "item";
+		drawCritical = NULL;
+		itemTree->Query( this, minimapRect );
+		while( drawCritical != NULL )
+		{
+			//cout << "draw crit " << endl;
+			drawCritical->Draw( preScreenTex );
+			drawCritical = drawCritical->next;
+		}
+
+		testGateCount = 0;
+		queryMode = "gate";
+		gateList = NULL;
+		gateTree->Query( this, minimapRect );
+		Gate *mGateList = gateList;
+		while( gateList != NULL )
+		{
+			//gateList->Draw( preScreenTex );
+			if( gateList->locked )
+			{
+
+				V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
+				V2d other( along.y, -along.x );
+				double width = 25;
+				
+				
+
+				V2d leftGround = gateList->edgeA->v0 + other * -width;
+				V2d rightGround = gateList->edgeA->v0 + other * width;
+				V2d leftAir = gateList->edgeA->v1 + other * -width;
+				V2d rightAir = gateList->edgeA->v1 + other * width;
+				//cout << "drawing color: " << gateList->c.b << endl;
+				sf::Vertex activePreview[4] =
+				{
+					//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
+					//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
+
+					sf::Vertex(sf::Vector2<float>( leftGround.x, leftGround.y ), gateList->c ),
+					sf::Vertex(sf::Vector2<float>( leftAir.x, leftAir.y ), gateList->c ),
+
+
+					sf::Vertex(sf::Vector2<float>( rightAir.x, rightAir.y ), gateList->c ),
+
+					
+					sf::Vertex(sf::Vector2<float>( rightGround.x, rightGround.y ), gateList->c )
+				};
+				minimapTex->draw( activePreview, 4, sf::Quads );
+			}
+
+			Gate *next = gateList->next;//edgeA->edge1;
+			gateList = next;
+		}
+		
+
+		//CircleShape playerCircle;
+		//playerCircle.setFillColor( COLOR_TEAL );
+		//playerCircle.setRadius( 60 );//60 );
+		//playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
+		//playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
+		
+		for( int i = 0; i < 4; ++i )
+		{
+			p = GetPlayer( 0 );
+			if( p != NULL )
+			{
+				if( ( p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK ) )
+				{
+					p->rightWire->DrawMinimap( minimapTex );
+					p->leftWire->DrawMinimap( minimapTex );
+				}
+			}
+		}
+		
+
+		/*queryMode = "enemyminimap";
+		enemyTree->Query( this, minimapRect );
+
+		Enemy *currEnemy = activeEnemyList;
+		int counter = 0;
+		
+		
+		while( currEnemy != NULL )
+		{
+			currEnemy->DrawMinimap( minimapTex );
+			currEnemy = currEnemy->next;
+		}*/
+
+
+		/*queryMode = "enemyminimap";
+		enemyTree->Query(this, minimapRect);
+
+		while (listVA != NULL)
+		{
+			TestVA *t = listVA->next;
+			listVA->next = NULL;
+			listVA = t;
+		}*/
+
+		//shouldn't this draw all enemies that are active not just the ones from the current
+		//zone?
+		for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+		{
+			(*it)->CheckedMiniDraw(minimapTex, FloatRect(minimapRect));
+		}
+
+		//if( currentZone != NULL )
+		//{
+		//	for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
+		//	{
+		//		(*it)->DrawMinimap( minimapTex );
+		//	}
+		//}
+		//else
+		//{
+		//	//probably inefficient. only happens when there arent any gates. do a little
+		//	//collision check to make sure they're relevant before drawing
+		//	//also dont make circles every frame. just store it in the enemy
+		//	for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
+		//	{
+		//		(*it)->DrawMinimap( minimapTex );
+		//	}
+		//}
+
+		/*if( player->action != Actor::DEATH )
+		{
+			player->Draw( minimapTex );
+		}*/
+
+		minimapTex->display();
+		const Texture &miniTex = minimapTex->getTexture();
+		minimapShader.setUniform( "u_texture", minimapTex->getTexture() );
+
+		minimapSprite.setTexture( miniTex );
 
 		if( false )
 		{
@@ -8076,7 +8062,7 @@ int GameSession::Run()
 		//preScreenTex->draw( leftHUDBlankSprite );
 		//preScreenTex->draw( speedBarSprite, &speedBarShader );
 		
-		if (mh->gameMode == MapHeader::MapType::T_STANDARD && showHUD)
+		if (mh->gameMode == MapHeader::MapType::T_STANDARD)
 		{
 			/*if (p0->speedLevel == 0)
 			{
@@ -8104,26 +8090,115 @@ int GameSession::Run()
 				preScreenTex->draw(p0->kinFaceBG);
 			}
 			preScreenTex->draw(p0->kinFace);
-
-			momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
-			momentumBar->Draw(preScreenTex);
-
-			preScreenTex->draw(minimapSprite, &minimapShader);
-
-			preScreenTex->draw(kinMinimapIcon);
 		}
-		if (powerRing != NULL  && showHUD )
+
+		momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
+		momentumBar->Draw(preScreenTex);
+		
+		/*sf::Sprite testNumbers;
+		testNumbers.setTexture(*(GetTileset("keynum_95x100.png", 95, 100)->texture));
+		testNumbers.setOrigin(testNumbers.getLocalBounds().width, 0);
+		testNumbers.setPosition(1920, 0);
+		preScreenTex->draw(testNumbers);*/
+
+		//else 
+
+		/*sf::Vertex blah[] = 
+		{ 
+			Vertex(  ),
+			Vertex( Vector2f( 300, 0 )),
+			Vertex( Vector2f( 300, 300 )),
+			Vertex( Vector2f( 0, 300 ) )
+		};*/
+		//VertexArray va( sf::Quads, 4 );
+	
+		preScreenTex->draw( minimapSprite, &minimapShader);
+		//preScreenTex->draw( lifeBarSprite );
+		//preScreenTex->draw( minimapVA, &minimapShader );
+		//preScreenTex->draw( miniCircle );
+
+		//draw gate directions
+		/*if( currentZone != NULL )
+		{
+			int index = 0;
+			list<Edge*> gList = currentZone->gates;
+			for( list<Edge*>::iterator it = gList.begin(); it != gList.end(); ++it )
+			{
+				Gate *tGate = (Gate*)(*it)->info;
+				if( tGate->gState == Gate::OPEN || tGate->gState == Gate::DISSOLVE
+					|| tGate->gState == Gate::REFORM
+					|| tGate->gState == Gate::LOCKFOREVER ||
+					tGate->type == Gate::BLACK )
+				{
+					continue;
+				}
+
+				V2d avg = ( tGate->edgeA->v1 + tGate->edgeA->v0 ) / 2.0;
+
+				double rad = minimapRect.width / 2 - 100;
+				if( length( p0->position - avg ) < rad )
+				{
+					continue;
+				}
+				
+				V2d dir = normalize( avg - p0->position );
+				double angle = atan2( dir.y, -dir.x );
+				gateDirections[index].setRotation( -angle / PI * 180 - 90 );
+				preScreenTex->draw( gateDirections[index] );
+				index++;
+
+			}
+			
+		}*/
+		
+		/*for( int i = 0; i < 6; ++i )
+		{
+			Sprite &gds = gateDirections[i];
+			gds.setTexture( *ts_minimapGateDirection->texture );
+			gds.setTextureRect( ts_minimapGateDirection->GetSubRect( 0 ) );
+			gds.setOrigin( gds.getLocalBounds().width / 2, 300 + gds.getLocalBounds().height );
+			gds.setPosition( miniCircle.getPosition() );
+		}*/
+		
+		//inefficient because its in the draw call
+		//kinMinimapIcon.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
+		
+		
+
+
+		preScreenTex->draw( kinMinimapIcon );
+	//minimapSprite.draw( preScreenTex );
+		//preScreenTex->draw( minimapSprite, &minimapShader );
+		
+		
+		
+		//powerOrbs->Draw( preScreenTex );
+		
+		//powerWheel->Draw( preScreenTex );
+		if (powerRing != NULL )
 		{
 			powerRing->Draw(preScreenTex);
 			despOrb->Draw(preScreenTex);
 		}
-
-		if (showHUD)
-		{
-			keyMarker->Draw(preScreenTex);
-		}
-		
+		keyMarker->Draw( preScreenTex );
 		scoreDisplay->Draw( preScreenTex );
+		//preScreenTex->draw( leftHUDSprite );
+
+		//window->setView( uiView );
+	//	window->draw( healthSprite );
+		
+
+		//preScreenTex->draw( topbarSprite );
+
+		//preScreenTex->draw( player->kinFace );
+		//topbarSprite.draw( preScreenTex );
+
+		//preScreenTex->draw( keyHolderSprite );
+
+
+		//note: gotta fix these later for number of keys
+	
+
 
 		if( showFrameRate )
 		{
@@ -8302,8 +8377,6 @@ int GameSession::Run()
 		absorbDarkParticles->Draw(preScreenTex);
 
 		absorbShardParticles->Draw(preScreenTex);
-
-		DrawFade(preScreenTex);
 
 		preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
 
@@ -9957,8 +10030,6 @@ void GameSession::RestartLevel()
 	{
 		ResetShipSequence();
 	}
-
-	
 	//currentZone = NULL;
 	cam.zoomFactor = 1;
 	
@@ -9980,9 +10051,6 @@ void GameSession::RestartLevel()
 		if( player != NULL )
 			player->Respawn();
 	}
-
-	fadeLength = 0;
-	showHUD = true;
 
 	absorbParticles->Reset();
 	absorbDarkParticles->Reset();
@@ -12601,7 +12669,7 @@ void GameSession::UpdateFade()
 
 	++fadeFrame;
 
-	if( fadeFrame > fadeLength || fadeLength == 0 )
+	if( fadeFrame > fadeLength )
 	{
 		fadingIn = false;
 		fadingOut = false;
@@ -12623,7 +12691,7 @@ void GameSession::UpdateFade()
 
 void GameSession::DrawFade( sf::RenderTarget *target )
 {
-	if( fadeAlpha > 0 && fadeLength > 0)
+	if( fadeAlpha > 0 )
 	{
 		target->draw( fadeRect );
 	}

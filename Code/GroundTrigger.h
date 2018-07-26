@@ -4,8 +4,8 @@
 #include "Enemy.h"
 enum TriggerType
 {
+	TRIGGER_SHIPPICKUP,
 	TRIGGER_NEXUSCORE1,
-	TRIGGER_SHIPPICKUP
 };
 
 struct GroundTrigger : Enemy
