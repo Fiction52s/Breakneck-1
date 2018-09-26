@@ -51,7 +51,7 @@
 #include "Enemy_BasicEffect.h"
 #include "Enemy_BasicTurret.h"
 #include "ShipPickup.h"
-//#include "Enemy_Bat.h"
+#include "Enemy_Bat.h"
 #include "Enemy_Blocker.h"
 #include "Enemy_Booster.h"
 //#include "Enemy_Cactus.h"
@@ -2111,13 +2111,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int framesBetweenNodes;
 				is >> framesBetweenNodes;
 
-				/*Bat *enemy = new Bat( this, hasMonitor, Vector2i( xPos, yPos ), localPath, 
+				Bat *enemy = new Bat( this, hasMonitor, Vector2i( xPos, yPos ), localPath, 
 					bulletSpeed, framesBetweenNodes, loop );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "poisonfrog" )
 			{
@@ -8086,7 +8086,7 @@ int GameSession::Run()
 		//preScreenTex->draw( leftHUDBlankSprite );
 		//preScreenTex->draw( speedBarSprite, &speedBarShader );
 		
-		if (mh->gameMode == MapHeader::MapType::T_STANDARD)
+		if (mh->gameMode == MapHeader::MapType::T_STANDARD && showHUD)
 		{
 			/*if (p0->speedLevel == 0)
 			{
@@ -8116,8 +8116,13 @@ int GameSession::Run()
 			preScreenTex->draw(p0->kinFace);
 		}
 
-		momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
-		momentumBar->Draw(preScreenTex);
+		if (showHUD)
+		{
+
+			momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
+			momentumBar->Draw(preScreenTex);
+		}
+		
 		
 		/*sf::Sprite testNumbers;
 		testNumbers.setTexture(*(GetTileset("keynum_95x100.png", 95, 100)->texture));

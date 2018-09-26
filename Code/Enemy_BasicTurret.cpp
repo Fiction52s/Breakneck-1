@@ -198,7 +198,7 @@ void BasicTurret::DebugDraw(sf::RenderTarget *target)
 
 void BasicTurret::DirectKill()
 {
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < numLaunchers; ++i)
 	{
 		BasicBullet *b = launchers[i]->activeBullets;
 		while (b != NULL)

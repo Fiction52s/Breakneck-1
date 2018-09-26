@@ -711,6 +711,7 @@ void BasicBullet::UpdatePhysics()
 
 bool BasicBullet::HitTerrain()
 {
+	cout << "hit terrain" << endl;
 	launcher->handler->BulletHitTerrain( this,
 		minContact.edge, minContact.position );
 	return true;
@@ -784,6 +785,7 @@ void BasicBullet::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( c != NULL )
 	{
+		cout << "attempted hit!" << endl;
 		if( !col )
 		{
 			minContact = *c;
@@ -1770,6 +1772,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			break;
 		case EnemyType::EN_BOSS_BIRD:
 			ep = new EnemyParams(2, 5, .8, 6, 40);
+			break;
+		case EnemyType::EN_BAT:
+			ep = new EnemyParams(2, 5, .8, 6, 3);
 			break;
 		default:
 			return NULL;

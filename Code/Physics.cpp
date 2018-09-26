@@ -720,7 +720,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		V2d edgeNormal = e->Normal();
 
 		double lineQuantity = dot( position - v0, normalize( v1 - v0 ) );
-		double dist = cross( position - v0, normalize( v1 - v0 ) );
+		double dist = cross(position - v0, normalize( v1 - v0 ) );
 		double testD = dot( -vel, edgeNormal );
 		bool d = testD > 0;
 
@@ -749,10 +749,11 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		//}
 		//else?
 		//if( d && dist >= 0 && dist <= radius )
-		if (d && dist <= radius && dist >= 0) //changed when i did timestep change. hope everything is fine
+		if (d && dist <= radius && dist > -radius) //changed when i did timestep change. hope everything is fine
 		{
 
 			//recently added the dist >= 0 to make sure jumping off of a closed gate didn't trigger the opposite gate edge
+			//I think this should still cover the case, it might fail on a border case. need to check.
 			/*if (dist < 0)
 			{
 				cout << "DIST LESS THAN 0 YOU KNOWWWW" << endl;

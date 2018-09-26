@@ -1127,6 +1127,9 @@ NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
 	pi = owner->poiMap["nexuscore"];
 	assert(pi != NULL);
 
+	SetRectCenter(darkQuad, 960, 540, Vector2f(pi->pos));
+	SetRectColor(darkQuad, Color(Color::Black));
+
 	state = ENTERCORE;
 }
 bool NexusCore1Seq::Update()
@@ -1182,7 +1185,7 @@ bool NexusCore1Seq::Update()
 		{
 			owner->fadeLength = 0;
 			owner->cam.zoomFactor = 1.f;
-			//owner->showHUD = false;
+			owner->showHUD = false;
 			frame = 0;
 		}
 
@@ -1200,7 +1203,7 @@ bool NexusCore1Seq::Update()
 		if (frame == 0)
 		{
 			owner->Fade(true, 60, Color::Black);
-			//owner->showHUD = true;
+			owner->showHUD = true;
 			owner->cam.Set(Vector2f(pi->pos), pi->cameraZoom, 0);
 		}
 		break;
@@ -1223,7 +1226,10 @@ return true;
 }
 void NexusCore1Seq::Draw(sf::RenderTarget *target)
 {
-
+	if (state == DESTROYCORE || state == FADEEXIT)
+	{
+		target->draw(darkQuad, 4, sf::Quads);
+	}
 }
 void NexusCore1Seq::Reset()
 {
