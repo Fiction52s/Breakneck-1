@@ -1244,6 +1244,33 @@ void Enemy::SetZoneSpritePosition()
 	zonedSprite.setPosition(position.x, position.y);
 }
 
+void Enemy::DrawSpriteIfExists( sf::RenderTarget *target, sf::Sprite &spr )
+{
+	if (hasMonitor && !suppressMonitor)
+	{
+		if (owner->pauseFrames < 2 || receivedHit == NULL)
+		{
+			target->draw(spr, keyShader);
+		}
+		else
+		{
+			target->draw(spr, hurtShader);
+		}
+		target->draw(*keySprite);
+	}
+	else
+	{
+		if (owner->pauseFrames < 2 || receivedHit == NULL)
+		{
+			target->draw(spr);
+		}
+		else
+		{
+			target->draw(spr, hurtShader);
+		}
+	}
+}
+
 int Enemy::NumTotalBullets()
 {
 	return 0;

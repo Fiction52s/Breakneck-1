@@ -154,31 +154,7 @@ void Shroom::ProcessState()
 
 void Shroom::EnemyDraw(sf::RenderTarget *target)
 {
-	//cout << "shroomdraw" << endl;
-	if (hasMonitor && !suppressMonitor)
-	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
-		{
-			target->draw(sprite, keyShader);
-		}
-		else
-		{
-			target->draw(sprite, hurtShader);
-		}
-		target->draw(*keySprite);
-	}
-	else
-	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
-		{
-			target->draw(sprite);
-		}
-		else
-		{
-			target->draw(sprite, hurtShader);
-		}
-
-	}
+	DrawSpriteIfExists(target, sprite);
 }
 
 void Shroom::UpdateSprite()
@@ -404,30 +380,7 @@ void ShroomJelly::EnemyDraw(sf::RenderTarget *target)
 		return;
 	}
 
-	if (hasMonitor && !suppressMonitor)
-	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
-		{
-			target->draw(sprite, keyShader);
-		}
-		else
-		{
-			target->draw(sprite, hurtShader);
-		}
-		target->draw(*keySprite);
-	}
-	else
-	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
-		{
-			target->draw(sprite);
-		}
-		else
-		{
-			target->draw(sprite, hurtShader);
-		}
-
-	}
+	DrawSpriteIfExists(target, sprite);
 }
 
 void ShroomJelly::UpdateSprite()

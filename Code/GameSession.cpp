@@ -74,7 +74,7 @@
 //#include "Enemy_Owl.h"
 #include "Enemy_Patroller.h"
 #include "Enemy_BirdBoss.h"
-//#include "Enemy_PoisonFrog.h"
+#include "Enemy_PoisonFrog.h"
 //#include "Enemy_Pulser.h"
 #include "Enemy_RaceFightTarget.h"
 #include "Background.h"
@@ -2145,13 +2145,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int jumpFramesWait;
 				is >> jumpFramesWait;
 
-				/*PoisonFrog *enemy = new PoisonFrog( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
+				PoisonFrog *enemy = new PoisonFrog( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
 					edgeQuantity, gravFactor, Vector2i( jumpStrengthX, jumpStrengthY ), jumpFramesWait );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "stagbeetle" )
 			{

@@ -188,30 +188,7 @@ void FootTrap::ProcessState()
 
 void FootTrap::EnemyDraw(sf::RenderTarget *target )
 {
-	if( hasMonitor && !suppressMonitor )
-	{
-		if( owner->pauseFrames < 2 || receivedHit == NULL )
-		{ 
-			target->draw( sprite, keyShader );
-		}
-		else
-		{
-			target->draw( sprite, hurtShader );
-		}
-		target->draw( *keySprite );
-	}
-	else
-	{
-		if( owner->pauseFrames < 2 || receivedHit == NULL )
-		{
-			target->draw( sprite );
-		}
-		else
-		{
-			target->draw( sprite, hurtShader );
-		}
-			
-	}
+	DrawSpriteIfExists(target, sprite);
 }
 
 void FootTrap::UpdateSprite()

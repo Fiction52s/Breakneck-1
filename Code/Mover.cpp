@@ -943,6 +943,7 @@ void GroundMover::HitTerrain( double &q )
 
 void GroundMover::HitTerrainAerial()
 {
+	cout << "hit terrain aerial" << endl;
 	bool corner = false;
 	V2d en = minContact.normal;
 	if( en.x == 0 && en.y == 0 )
@@ -952,7 +953,8 @@ void GroundMover::HitTerrainAerial()
 		en = normalize( physBody.globalPosition - minContact.position );
 	}
 
-	if( framesInAir > 100 && en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
+	//I had this as framesInAir > 100 before. why?
+	if( framesInAir > 10 && en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
 		|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
 	{
 		ground = minContact.edge;

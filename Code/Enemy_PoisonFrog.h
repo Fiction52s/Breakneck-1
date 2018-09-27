@@ -18,25 +18,6 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 		Count
 	};
 
-	//struct Bullet
-	//{
-	//	Bullet();
-	//	//Bullet *prev;
-	//	//Bullet *next;
-	//	sf::Vector2<double> position;
-	//	sf::Vector2<double> velocity;
-	//	CollisionBox hurtBody;
-	//	CollisionBox hitBody;
-	//	CollisionBox physBody;
-	//	bool active;
-	//	int frame;
-	//	int slowCounter;
-	//	int slowMultiple;
-	//	
-	//	//int maxFramesToLive;
-	//	//int framesToLive;
-	//};
-
 	PoisonFrog(GameSession *owner,
 		bool hasMonitor,
 		Edge *ground, double quantity,
@@ -47,16 +28,13 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	int actionLength[Action::Count];
 	int animFactor[Action::Count];
 	//void DirectKill();
-
+	void UpdateEnemyPhysics();
 
 	Tileset *ts_test;
-	//int queryIndex;
 
-	//sf::VertexArray bulletVA;
 	Action action;
-	int frame;
-	double gravity;
 	bool facingRight;
+	double gravity;
 	sf::Vector2<double> velocity;
 	double angle;
 
@@ -64,7 +42,6 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	int hitsCounter;
 	int invincibleFrames;
 
-	//double jumpStrength;
 	double xSpeed;
 	int jumpFramesWait;
 	double gravityFactor;
@@ -73,34 +50,12 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 
 	GroundMover *mover;
 
-
-	//int wallTouchCounter;
-	//sf::Vector2<double> position;
-
-
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
+	void ProcessState();
 	void ActionEnded();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap(sf::RenderTarget *target);
-	void Draw(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	bool PlayerSlowingMe();
+	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	bool ResolvePhysics(sf::Vector2<double> vel);
 	void ResetEnemy();
-
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void UpdatePhysics2();
-	void UpdatePhysics3();
-
-
 
 	void HitTerrain(double &q);
 	bool StartRoll();
@@ -111,51 +66,18 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 
-	//void FireBullets();
-	//void UpdateBulletSprites();
-	//void UpdateBulletHitboxes();
-
-
 	sf::Sprite sprite;
 	Tileset *ts_walk;
 	Tileset *ts_roll;
 
-
-	//double groundSpeed;
-	//Edge *ground;
-
-	//double edgeQuantity;
-
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	//CollisionBox physBody;
+	CollisionBody * hurtBody;
+	CollisionBody * hitBody;
 	HitboxInfo *hitboxInfo;
-	sf::Vector2<double> tempVel;
 
 	double maxFallSpeed;
 
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
 	Edge *startGround;
 	double startQuant;
-	sf::Vector2<double> offset;
-
-
-
-
-	bool dead;
-	int deathFrame;
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
 };
 
 #endif

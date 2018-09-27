@@ -504,7 +504,6 @@ void Patroller::UpdateSprite()
 
 void Patroller::EnemyDraw( sf::RenderTarget *target )
 {
-	
 	RenderStates rs;
 	rs.texture = ts->texture;
 	if( hasMonitor && !suppressMonitor )
@@ -543,12 +542,8 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 			eye->Draw(target, hurtShader);
 			target->draw(bodyVA, 8, sf::Quads, rs);
 
-		}
-			
-	}
-	
-
-	
+		}		
+	}	
 }
 
 void Patroller::UpdateHitboxes()

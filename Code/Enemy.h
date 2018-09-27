@@ -481,6 +481,9 @@ public:
 		currHurtboxFrame = -1;
 	}
 	void SetHurtboxes(CollisionBody *cb, int frame);
+	void DrawSpriteIfExists( 
+		sf::RenderTarget *target,
+		sf::Sprite &spr );
 	//CollisionBox physBox;
 	int currHitboxFrame;
 	CollisionBody *currHurtboxes;
@@ -579,19 +582,9 @@ public:
 
 	Enemy *tempPrev;
 	Enemy *tempNext;
-
-	struct Stored
-	{
-		bool dead;
-		Enemy *prev;
-		Enemy *next;
-		bool spawned;		
-		HitboxInfo *receivedHit;
-		int slowMultiple;
-		int slowCounter;
-	};
-	Stored stored;
 };
+
+
 
 struct EnemyParamsManager
 {
