@@ -262,13 +262,17 @@ void Bat::ProcessState()
 		//testSeq.currMovementStartTime = 0;
 	}
 
-	if( fireCounter == framesBetween - 1 && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
+	if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
 	{
 		launchers[0]->position = position;
 		launchers[0]->facingDir = normalize( owner->GetPlayer( 0 )->position - position );
 		launchers[0]->Fire();
-		cout << "shoot:" << position.x << ", " << position.y << endl;
-		fireCounter = 0;
+		//cout << "shoot:" << position.x << ", " << position.y << endl;
+		
+	}
+	if (fireCounter == framesBetween - 1 && slowCounter == 1)
+	{
+		fireCounter = -1;
 	}
 }
 

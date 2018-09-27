@@ -812,6 +812,38 @@ void BasicBullet::UpdateSprite()
 	Vector2f botRight = dims;
 	Vector2f botLeft = Vector2f( -dims.x, dims.y );
 
+	
+
+	
+	switch (bulletType)
+	{
+	case BAT:
+	{
+		double angle = atan2(velocity.y, velocity.x);
+		angle = angle * 180 / PI;
+		transform = transform.Identity;
+		transform.rotate(angle);
+		break;
+	}
+	/*case CURVE_TURRET:
+	{
+		double gangle = atan2(gravity.y, gravity.x);
+		gangle = gangle * 180 / PI;
+		transform.rotate(gangle);
+		break;
+	}
+	case BASIC_TURRET:
+		transform.rotate(angle);
+		break;
+	case BOSS_BIRD:
+	{
+		transform.rotate(angle);
+		break;
+	}*/
+
+	}
+
+
 
 	VA[index*4+0].position = center + transform.transformPoint( topLeft );
 	VA[index*4+1].position = center + transform.transformPoint( topRight );
@@ -1355,6 +1387,11 @@ void Enemy::RecordEnemy()
 
 void Enemy::UpdatePrePhysics()
 {
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->UpdatePrePhysics();
+	}
+
 	if ( dead )
 		return;
 
@@ -1362,10 +1399,7 @@ void Enemy::UpdatePrePhysics()
 
 	ProcessState();
 
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		launchers[i]->UpdatePrePhysics();
-	}
+	
 
 
 	double len = length(position - owner->GetPlayer( 0 )->position );
