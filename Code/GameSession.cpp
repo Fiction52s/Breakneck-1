@@ -54,12 +54,13 @@
 #include "Enemy_Bat.h"
 #include "Enemy_Blocker.h"
 #include "Enemy_Booster.h"
+#include "Enemy_Comboer.h"
 //#include "Enemy_Cactus.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
 #include "Enemy_Crawler.h"
-//#include "Enemy_CurveTurret.h"
+#include "Enemy_CurveTurret.h"
 #include "Enemy_FootTrap.h"
 //#include "Enemy_Ghost.h"
 #include "Enemy_Goal.h"
@@ -84,7 +85,7 @@
 #include "Enemy_CrawlerQueen.h"
 //#include "Enemy_Shark.h"
 //#include "Enemy_Specter.h"
-//#include "Enemy_Spider.h"
+#include "Enemy_Spider.h"
 //#include "Enemy_Spring.h"
 //#include "Enemy_StagBeetle.h"
 //#include "Enemy_Swarm.h"
@@ -1770,6 +1771,60 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert(enemy);
 			}
+			else if (typeName == "comboer")
+			{
+
+				int xPos, yPos;
+
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+
+				int hasMonitor;
+				is >> hasMonitor;
+
+
+				int pathLength;
+				is >> pathLength;
+
+				list<Vector2i> localPath;
+				for (int i = 0; i < pathLength; ++i)
+				{
+					int localX, localY;
+					is >> localX;
+					is >> localY;
+					localPath.push_back(Vector2i(localX, localY));
+				}
+
+
+				bool loop;
+				string loopStr;
+				is >> loopStr;
+
+				if (loopStr == "+loop")
+				{
+					loop = true;
+				}
+				else if (loopStr == "-loop")
+				{
+					loop = false;
+				}
+				else
+				{
+					assert(false && "should be a boolean");
+				}
+
+				int speed;
+				is >> speed;
+				Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, speed);
+
+				fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);
+			}
 			else if (typeName == "booster")
 			{
 				int xPos, yPos;
@@ -2229,13 +2284,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 					relative = true;
 				}
 
-				/*CurveTurret *enemy = new CurveTurret( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
+				CurveTurret *enemy = new CurveTurret( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
 					Vector2i( xGravFactor, yGravFactor ), relative );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "bossbird" )
 			{
@@ -2518,14 +2573,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int speed;
 				is >> speed;
 				
-				//Spider *enemy = new Spider( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-				//	speed );
+				Spider *enemy = new Spider( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+					speed );
 
 
-				//fullEnemyList.push_back( enemy );
-				//enem = enemy;
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
-				//enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "bosstiger" )
 			{
@@ -5722,6 +5777,7 @@ int GameSession::Run()
 
 	Actor *p0 = GetPlayer(0);
 	Actor *p = NULL;
+	
 	//use player->setactivepowers to set it up from the level. need to add it
 	//to the editor
 

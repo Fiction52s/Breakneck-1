@@ -756,6 +756,35 @@ struct BlockerParams : public ActorParams
 	//will have multiple types
 };
 
+struct ComboerParams: public ActorParams
+{
+	ComboerParams(EditSession *edit,
+		sf::Vector2i pos,
+		std::list<sf::Vector2i> &globalPath,
+		float speed,
+		bool loop);
+	ComboerParams(EditSession *edit,
+		sf::Vector2i &pos);
+	void WriteParamFile(std::ofstream &of);
+	void SetPath(
+		std::list<sf::Vector2i> &globalPath);
+	std::list<sf::Vector2i> GetGlobalPath();
+	void Draw(sf::RenderTarget *target);
+
+	bool CanApply();
+	ActorParams *Copy();
+
+	void SetParams();
+	void SetPanelInfo();
+
+	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
+
+	bool loop;
+	int speed;
+	int swoopSpeed;
+};
+
 struct RailParams : public ActorParams
 {
 	RailParams(EditSession *edit,

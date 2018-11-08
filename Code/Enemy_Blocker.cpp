@@ -82,6 +82,7 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 	{
 		(*it) += pos;
 	}
+
 	//
 	auto currPoint = pathParam.begin();
 	++currPoint;

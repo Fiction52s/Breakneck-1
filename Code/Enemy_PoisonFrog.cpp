@@ -117,6 +117,10 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	frame = 0;
 	position = mover->physBody.globalPosition;//gPoint + ground->Normal() * physBody.rh; //16.0;
 
+	cutObject->SetTileset(ts_test);
+	cutObject->SetSubRectFront(10);
+	cutObject->SetSubRectBack(9);
+
 	ResetEnemy();
 }
 

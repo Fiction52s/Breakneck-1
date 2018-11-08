@@ -313,6 +313,7 @@ enum EnemyType
 {
 	EN_BASICEFFECT,
 	EN_PATROLLER,
+	EN_AIRDASHER,
 	EN_CRAWLER,
 	EN_SHROOM,
 	EN_SHROOMJELLY,
@@ -366,6 +367,7 @@ enum EnemyType
 	EN_GRAVITYGRASS,
 	EN_SPRING,
 	EN_RAIL,
+	EN_COMBOER,
 	EN_Count
 };
 
@@ -584,7 +586,10 @@ public:
 	Enemy *tempNext;
 };
 
+struct PathFollower
+{
 
+};
 
 struct EnemyParamsManager
 {

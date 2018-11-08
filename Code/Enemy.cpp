@@ -1837,6 +1837,15 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_BAT:
 			ep = new EnemyParams(2, 5, .8, 6, 3);
 			break;
+		case EnemyType::EN_POISONFROG:
+			ep = new EnemyParams(2, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_CURVETURRET:
+			ep = new EnemyParams(2, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_SPIDER:
+			ep = new EnemyParams(2, 5, .8, 6, 3);
+			break;
 		default:
 			return NULL;
 		}

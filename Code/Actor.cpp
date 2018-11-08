@@ -578,7 +578,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		currHitboxInfo->hitstunFrames = 30;
 		currHitboxInfo->knockback = 0;
 		currHitboxInfo->freezeDuringStun = true;
-		
 
 		/*if( !fairBuffer.loadFromFile( "fair.ogg" ) )
 		{
@@ -1410,6 +1409,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			noPowers = true;
 		}
 		
+		noPowers = false;
 		if( noPowers )
 		{
 			hasPowerAirDash = false;
@@ -8983,6 +8983,118 @@ facingRight = false;
 
 	wallNormal.x = 0;
 	wallNormal.y = 0;
+
+	//sets directionality of attacks
+	switch (action)
+	{
+	case FAIR:
+		if (facingRight)
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+		}
+		else
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+		}
+		break;
+	case DAIR:
+		currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWN;
+		break;
+	case UAIR:
+		currHitboxInfo->hDir = HitboxInfo::HitDirection::UP;
+		break;
+	case STANDN:
+		if ((!reversed && facingRight )|| (reversed && !facingRight ))
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+		}
+		else
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+		}
+		break;
+	case STEEPCLIMBATTACK:
+		if (reversed)
+		{
+			if (facingRight)
+			{
+				currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNLEFT;
+			}
+			else
+			{
+				currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNRIGHT;
+			}
+		}
+		else
+		{
+			if (facingRight)
+			{
+				currHitboxInfo->hDir = HitboxInfo::HitDirection::UPRIGHT;
+			}
+			else
+			{
+				currHitboxInfo->hDir = HitboxInfo::HitDirection::UPLEFT;
+			}
+		}
+		break;
+	case STEEPSLIDEATTACK:
+		if (reversed)
+		{
+			if (facingRight)
+			{
+				currHitboxInfo->hDir = HitboxInfo::HitDirection::UPLEFT;
+			}
+			else
+			{
+				currHitboxInfo->hDir = HitboxInfo::HitDirection::UPRIGHT;
+			}
+		}
+		else
+		{
+			if (facingRight)
+			{
+				currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNRIGHT;
+			}
+			else
+			{
+				currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNLEFT;
+			}
+		}
+		break;
+	case WALLATTACK:
+		if (facingRight)
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+		}
+		else
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+		}
+		break;
+	case DIAGUPATTACK:
+		if (facingRight)
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::UPRIGHT;
+		}
+		else
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::UPLEFT;
+		}
+		break;
+	case DIAGDOWNATTACK:
+		if (facingRight)
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNRIGHT;
+		}
+		else
+		{
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNLEFT;
+		}
+		break;
+	default:
+		currHitboxInfo->hDir = HitboxInfo::HitDirection::NONE;
+		break;
+	}
 
 	ClearPauseBufferedActions();
 }

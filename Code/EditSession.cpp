@@ -1451,6 +1451,50 @@ bool EditSession::OpenFile()
 					a.reset(new BlockerParams(this, pos, globalPath, bType, armored, spacing));
 					//a->hasMonitor = (bool)hasMonitor;
 				}
+				else if (typeName == "comboer")
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int hasMonitor;
+					is >> hasMonitor;
+
+					int pathLength;
+					is >> pathLength;
+
+					list<Vector2i> globalPath;
+					globalPath.push_back(Vector2i(pos.x, pos.y));
+
+					for (int i = 0; i < pathLength; ++i)
+					{
+						int localX, localY;
+						is >> localX;
+						is >> localY;
+						globalPath.push_back(Vector2i(pos.x + localX, pos.y + localY));
+					}
+
+
+					bool loop;
+					string loopStr;
+					is >> loopStr;
+					if (loopStr == "+loop")
+						loop = true;
+					else if (loopStr == "-loop")
+						loop = false;
+					else
+						assert(false && "should be a boolean");
+
+
+					float speed;
+					is >> speed;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset(new ComboerParams(this, pos, globalPath, speed, loop));
+					a->hasMonitor = (bool)hasMonitor;
+				}
 				else if (typeName == "rail")
 				{
 					Vector2i pos;
@@ -1891,6 +1935,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -1958,6 +2004,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -2018,9 +2066,10 @@ bool EditSession::OpenFile()
 					else
 					{
 						int testIndex = 0;
-						PolyPtr terrain( NULL );
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -2133,6 +2182,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -2192,6 +2243,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -2277,6 +2330,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -2330,6 +2385,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -2427,6 +2484,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -2629,6 +2688,8 @@ bool EditSession::OpenFile()
 						int testIndex = 0;
 						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 						{
+							if ((*it)->inverse)
+								continue;
 							if( testIndex == terrainIndex )
 							{
 								terrain = (*it);
@@ -6092,6 +6153,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Panel *blockerPanel = CreateOptionsPanel("blocker");
 	ActorType *blockerType = new ActorType("blocker", blockerPanel);
 
+	Panel *comboerPanel = CreateOptionsPanel("comboer");
+	ActorType *comboerType = new ActorType("comboer", comboerPanel);
+
 	Panel *railPanel = CreateOptionsPanel("rail");
 	ActorType *railType = new ActorType("rail", railPanel);
 
@@ -6111,6 +6175,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	types["racefighttarget"] = raceFightTargetType;
 
 	types["blocker"] = blockerType;
+	types["comboer"] = comboerType;
 	types["rail"] = railType;
 
 	types["booster"] = boosterType;
@@ -6281,7 +6346,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	errorPopup = CreatePopupPanel( "error" );
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 10, 10, 32, 32, false, true );
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 20, 20, 32, 32, false, true );
 	gs->active = false;
 
 	gs->Set( 0, 0, Sprite( goalType->iconTexture ), "goal" );
@@ -6293,6 +6358,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	gs->Set( 6, 0, Sprite( raceFightTargetType->iconTexture ), "racefighttarget" );
 	gs->Set(7, 0, Sprite(blockerType->iconTexture), "blocker");
 	gs->Set(8, 0, Sprite(groundTriggerType->iconTexture), "groundtrigger");
+	gs->Set(9, 0, Sprite(comboerType->iconTexture), "comboer");
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
 	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
@@ -8856,6 +8922,18 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										//showPanel = trackingEnemy->panel;
 										//tempActor->SetPanelInfo();
 										//showPanel = enemySelectPanel;
+									}
+									else if (trackingEnemy->name == "comboer")
+									{
+										tempActor = new ComboerParams(this, Vector2i(worldPos.x,
+											worldPos.y));
+										tempActor->SetPanelInfo();
+										//tempActor->SetDefaultPanelInfo();
+
+										showPanel = trackingEnemy->panel;
+
+										patrolPath.clear();
+										patrolPath.push_back(Vector2i(worldPos.x, worldPos.y));
 									}
 									else if (trackingEnemy->name == "rail")
 									{
@@ -13355,6 +13433,56 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		//	//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		//}
 	}
+	else if (p->name == "comboer_options")
+	{
+		if (b->name == "ok")
+		{
+			//showPanel = trackingEnemy->panel;
+			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
+			if (mode == EDIT)
+				//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				ComboerParams *comboer = (ComboerParams*)select;
+				comboer->SetParams();
+
+				//patroller->monitorType = GetMonitorType( p );
+				//patroller->speed = speed;
+				//patroller->loop = loop;
+				//patroller->SetPath( patrolPath );
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				//eventually can convert this between indexes or 
+				//something to simplify when i have more types
+				//cout << "tempActor: " << tempActor->type->name << endl;
+				ActorPtr comboer(tempActor);//new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+
+				comboer->SetParams();
+				comboer->group = groups["--"];
+				//patroller->SetParams();
+				//patroller->group = groups["--"];
+				//patroller->monitorType = GetMonitorType( p );
+
+				CreateActor(comboer);
+
+				tempActor = NULL;
+			}
+			showPanel = NULL;
+		}
+		else if (b->name == "createpath")
+		{
+			//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+
+			showPanel = NULL;
+			mode = CREATE_PATROL_PATH;
+			Vector2i front = patrolPath.front();
+			patrolPath.clear();
+			patrolPath.push_back(front);
+			patrolPathLengthSize = 0;
+			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+		}
+	}
 	else if (p->name == "rail_options")
 	{
 		if (b->name == "ok")
@@ -16379,6 +16507,20 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		return p;
 		//p->
 	}
+	else if (name == "comboer")
+	{
+		Panel *p = new Panel("comboer_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
+		p->AddCheckBox("loop", Vector2i(120, 155));
+		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
+		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+		return p;
+	}
 	else if (name == "shard")
 	{
 		Panel *p = new Panel("shard_options", 200, 500, this);
@@ -16950,6 +17092,12 @@ void EditSession::SetEnemyEditPanel()
 		BlockerParams *block = (BlockerParams*)ap;
 		block->SetPanelInfo();
 		patrolPath = block->GetGlobalChain();
+	}
+	else if (name == "comboer")
+	{
+		ComboerParams *comboer = (ComboerParams*)ap;
+		comboer->SetPanelInfo();
+		patrolPath = comboer->GetGlobalPath();
 	}
 	else if (name == "rail")
 	{
@@ -18735,6 +18883,13 @@ void ActorType::Init()
 		canBeAerial = true;
 	}
 	else if (name == "blocker")
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
+	}
+	else if (name == "comboer")
 	{
 		width = 32;
 		height = 32;

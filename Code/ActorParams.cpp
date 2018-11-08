@@ -1562,7 +1562,7 @@ ActorParams *BlockerParams::Copy()
 {
 	BlockerParams *bp = new BlockerParams(*this);
 	return bp;
-	/*PatrollerParams *copy = new PatrollerParams(*this);
+	/*ComboerParams *copy = new ComboerParams(*this);
 	if (copy->lines != NULL)
 	{
 		int numVertices = copy->lines->getVertexCount();
@@ -1762,7 +1762,7 @@ ActorParams *RailParams::Copy()
 {
 	RailParams *rp = new RailParams(*this);
 	return rp;
-	/*PatrollerParams *copy = new PatrollerParams(*this);
+	/*ComboerParams *copy = new ComboerParams(*this);
 	if (copy->lines != NULL)
 	{
 	int numVertices = copy->lines->getVertexCount();
@@ -2022,4 +2022,270 @@ std::list<sf::Vector2i> SpringParams::GetGlobalPath()
 		globalPath.push_back(position + (*it));
 	}
 	return globalPath;
+}
+
+ComboerParams::ComboerParams(EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop)
+	:ActorParams(PosType::AIR_ONLY)
+{
+	lines = NULL;
+	position = pos;
+	type = edit->types["comboer"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	//list<Vector2i> localPath;
+	SetPath(globalPath);
+
+	loop = p_loop;
+	speed = p_speed;
+
+	SetBoundingQuad();
+}
+
+ComboerParams::ComboerParams(EditSession *edit,
+	sf::Vector2i &pos)
+	:ActorParams(PosType::AIR_ONLY)
+{
+	lines = NULL;
+	position = pos;
+	type = edit->types["comboer"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	loop = false;
+	speed = 10;
+
+	SetBoundingQuad();
+
+	//image.setTexture( type->imageTexture );
+	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	//image.setPosition( pos.x, pos.y );
+
+	//list<Vector2i> localPath;
+	//SetPath( globalPath );
+
+	//loop = p_loop;
+	//speed = p_speed;
+
+	//SetBoundingQuad();
+
+	//ss << localPath.size();
+	//params.push_back( ss.str() );
+	//ss.str( "" );
+
+	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
+	{
+	ss << (*it).x  << " " << (*it).y;
+	params.push_back( ss.str() );
+	ss.str( "" );
+	}
+
+	if( loop )
+	params.push_back( "+loop" );
+	else
+	params.push_back( "-loop" );
+
+	ss.precision( 5 );
+	ss << fixed << speed;
+	params.push_back( ss.str() );*/
+}
+
+void ComboerParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	bool loop = p->checkBoxes["loop"]->checked;
+
+
+	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << speedStr;
+
+	int t_speed;
+	ss >> t_speed;
+
+	if (!ss.fail())
+	{
+		speed = t_speed;
+	}
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+	//try
+	//{
+	//	speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
+	//}
+	//catch(boost::bad_lexical_cast &)
+	//{
+	//	//error
+	//}
+}
+
+void ComboerParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+		p->textBoxes["group"]->text.setString(group->name);
+	p->textBoxes["speed"]->text.setString(boost::lexical_cast<string>(speed));
+	p->checkBoxes["loop"]->checked = loop;
+	p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+bool ComboerParams::CanApply()
+{
+	return true;
+	//see note for keyparams
+}
+
+void ComboerParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	if (lines != NULL)
+	{
+		delete lines;
+		lines = NULL;
+	}
+
+
+
+
+	localPath.clear();
+	if (globalPath.size() > 1)
+	{
+
+		int numLines = globalPath.size();
+
+		lines = new VertexArray(sf::LinesStrip, numLines);
+		VertexArray &li = *lines;
+		li[0].position = Vector2f(0, 0);
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for (; it != globalPath.end(); ++it)
+		{
+
+			Vector2i temp((*it).x - position.x, (*it).y - position.y);
+			localPath.push_back(temp);
+
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f(temp.x, temp.y);
+			li[index].color = Color::Magenta;
+			++index;
+		}
+	}
+
+
+
+}
+
+void ComboerParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += Vector2f(position.x, position.y);
+		}
+
+
+		target->draw(li);
+
+
+
+		if (loop)
+		{
+
+			//draw the line between the first and last
+			sf::Vertex vertices[2] =
+			{
+				sf::Vertex(li[localPathSize].position, Color::Magenta),
+				sf::Vertex(li[0].position, Color::White)
+			};
+
+			target->draw(vertices, 2, sf::Lines);
+		}
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= Vector2f(position.x, position.y);
+		}
+	}
+
+	ActorParams::Draw(target);
+	//target->draw( image );
+
+	//DrawBoundar
+}
+
+std::list<sf::Vector2i> ComboerParams::GetGlobalPath()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back(position);
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		globalPath.push_back(position + (*it));
+	}
+	return globalPath;
+}
+
+void ComboerParams::WriteParamFile(ofstream &of)
+{
+	int hMon;
+	if (hasMonitor)
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
+
+	of << localPath.size() << endl;
+
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		of << (*it).x << " " << (*it).y << endl;
+	}
+
+	if (loop)
+	{
+		of << "+loop" << endl;
+	}
+	else
+	{
+		of << "-loop" << endl;
+	}
+
+	//of.precision( 5 );
+	of << speed << endl;
+	//of << fixed << speed << endl;
+}
+
+ActorParams *ComboerParams::Copy()
+{
+	ComboerParams *copy = new ComboerParams(*this);
+	if (copy->lines != NULL)
+	{
+		int numVertices = copy->lines->getVertexCount();
+
+		VertexArray &oldli = *copy->lines;
+		copy->lines = new VertexArray(sf::LinesStrip, numVertices);
+		VertexArray &li = *copy->lines;
+
+
+		for (int i = 0; i < numVertices; ++i)
+		{
+			li[i] = oldli[i];
+		}
+	}
+	return copy;
 }
