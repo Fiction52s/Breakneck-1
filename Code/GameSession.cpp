@@ -65,6 +65,7 @@
 //#include "Enemy_Ghost.h"
 #include "Enemy_Goal.h"
 #include "GroundTrigger.h"
+#include "Enemy_Airdasher.h"
 //#include "Enemy_Gorilla.h"
 //#include "Enemy_GrowingTree.h"
 //#include "Enemy_HealthFly.h"
@@ -1818,7 +1819,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				int speed;
 				is >> speed;
+
+				//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
 				Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, speed);
+
 
 				fullEnemyList.push_back(enemy);
 				enem = enemy;

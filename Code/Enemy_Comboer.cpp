@@ -77,6 +77,9 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	hitBody = new CollisionBody(1);
 	hitBody->AddCollisionBox(0, hitBox);
 
+	enemyHitBody = new CollisionBody(1);
+	enemyHitBody->AddCollisionBox(0, hitBox);
+
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
@@ -85,6 +88,16 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+
+	enemyHitboxInfo = new HitboxInfo;
+	enemyHitboxInfo->damage = 20;
+	enemyHitboxInfo->drainX = .5;
+	enemyHitboxInfo->drainY = .5;
+	enemyHitboxInfo->hitlagFrames = 0;
+	enemyHitboxInfo->hitstunFrames = 30;
+	enemyHitboxInfo->knockback = 0;
+	enemyHitboxInfo->freezeDuringStun = true;
+	enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
 	hitBody->hitboxInfo = hitboxInfo;
 
@@ -107,7 +120,7 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 
 	//bloodSprite.setTexture( *ts_testBlood->texture );
 
-	UpdateHitboxes();
+	//UpdateHitboxes();
 
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_SHOT] = 3;
@@ -122,6 +135,8 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 
 void Comboer::ResetEnemy()
 {
+	enemyHitboxFrame = 0;
+	nextComboer = NULL;
 	velocity = V2d(0, 0);
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
@@ -148,7 +163,8 @@ void Comboer::ProcessHit()
 		ConfirmHitNoKill();
 		action = S_SHOT;
 		frame = 0;
-		SetHitboxes(hitBody, 0);
+		//SetHitboxes(hitBody, 0);
+		SetHitboxes(NULL, 0);
 		SetHurtboxes(NULL, 0);
 
 		V2d dir;
@@ -159,7 +175,7 @@ void Comboer::ProcessHit()
 			dir = V2d(-1, 0);
 			break;
 		case HitboxInfo::RIGHT:
-			dir = V2d(-1, 0);
+			dir = V2d(1, 0);
 			break;
 		case HitboxInfo::UP:
 			dir = V2d(0, -1);
@@ -186,6 +202,8 @@ void Comboer::ProcessHit()
 		dir = normalize(dir);
 
 		velocity = dir * 10.0;
+
+		owner->GetPlayer(0)->AddActiveComboer(this);
 	}
 }
 
@@ -299,34 +317,12 @@ void Comboer::UpdateSprite()
 
 void Comboer::EnemyDraw(sf::RenderTarget *target)
 {
-	RenderStates rs;
-	rs.texture = ts->texture;
-	if (hasMonitor && !suppressMonitor)
-	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
-		{
-			rs.shader = keyShader;
-			target->draw( sprite, keyShader );
-		}
-		else
-		{
-			rs.shader = hurtShader;
-			target->draw( sprite, hurtShader );
-		}
-		target->draw(*keySprite);
-	}
-	else
-	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
-		{
-			target->draw( sprite );
-		}
-		else
-		{
-			rs.shader = hurtShader;
-			target->draw( sprite, hurtShader );
-		}
-	}
+	DrawSpriteIfExists(target, sprite);
+}
+
+CollisionBox &Comboer::GetEnemyHitbox()
+{
+	return enemyHitBody->GetCollisionBoxes(enemyHitboxFrame)->front();
 }
 
 void Comboer::UpdateHitboxes()
@@ -337,6 +333,8 @@ void Comboer::UpdateHitboxes()
 	hurtBox.globalAngle = 0;
 	hitBox.globalPosition = position;
 	hitBox.globalAngle = 0;
+
+	GetEnemyHitbox().globalPosition = position;
 
 	if (owner->GetPlayer(0)->ground != NULL)
 	{

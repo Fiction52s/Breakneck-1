@@ -93,6 +93,7 @@ struct HitboxInfo
 		WIREHITRED,
 		WIREHITBLUE,
 		SCORPIONSTRIKE,
+		COMBO,
 		Count
 	};
 
@@ -129,6 +130,7 @@ struct HitboxInfo
 	int damage;
 	bool freezeDuringStun;
 	bool hitToSidePlayerIsOn;
+
 };
 
 struct CollisionBox

@@ -504,11 +504,13 @@ void Patroller::UpdateSprite()
 
 void Patroller::EnemyDraw( sf::RenderTarget *target )
 {
+	bool b = (owner->pauseFrames < 2 && pauseFrames < 2) || (receivedHit == NULL && pauseFrames < 2);
+
 	RenderStates rs;
 	rs.texture = ts->texture;
 	if( hasMonitor && !suppressMonitor )
 	{			
-		if( owner->pauseFrames < 2 || receivedHit == NULL )
+		if( b )
 		{
 			rs.shader = keyShader;
 			//target->draw( sprite, keyShader );
@@ -528,7 +530,7 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 	}
 	else
 	{
-		if( owner->pauseFrames < 2 || receivedHit == NULL )
+		if( b )
 		{
 			//target->draw( sprite );
 			eye->Draw(target);

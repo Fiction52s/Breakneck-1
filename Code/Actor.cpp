@@ -22,6 +22,7 @@
 #include "SaveFile.h"
 #include "PauseMenu.h"
 #include "GroundTrigger.h"
+#include "Enemy_Comboer.h"
 
 using namespace sf;
 using namespace std;
@@ -240,7 +241,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	//dustParticles->SetTileset(owner->GetTileset( "dust_8x8.png", 8,8));
 	//dustParticles->ActivateEffect(&params);
 
-	
+	activeComboerList = NULL;
 
 	cout << "Start player" << endl;
 	repeatingSound = NULL;
@@ -1946,8 +1947,47 @@ void Actor::CreateAttackLightning()
 	}
 }
 
+void Actor::AddActiveComboer(Comboer *c)
+{
+	if (activeComboerList == NULL)
+	{
+		activeComboerList = c;
+	}
+	else
+	{
+		c->nextComboer = activeComboerList;
+		activeComboerList = c;
+	}
+}
+
+void Actor::RemoveActiveComboer(Comboer *c)
+{
+	assert(activeComboerList != NULL);
+
+	if (c == activeComboerList)
+	{
+		activeComboerList = activeComboerList->nextComboer;
+	}
+
+	Comboer *curr = activeComboerList;
+	Comboer *prev = NULL;
+	while (curr != NULL)
+	{
+		if (curr == c)
+		{
+			prev->nextComboer = curr->nextComboer;
+			break;
+		}
+
+		prev = curr;
+		curr = curr->nextComboer;
+	}
+}
+
 void Actor::Respawn()
 {
+	activeComboerList = NULL;
+
 	currBBoostCounter = 0;
 	repeatingSound = NULL;
 	currBooster = NULL;
@@ -8994,7 +9034,7 @@ facingRight = false;
 		}
 		else
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::LEFT;
 		}
 		break;
 	case DAIR:
@@ -9010,7 +9050,7 @@ facingRight = false;
 		}
 		else
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::LEFT;
 		}
 		break;
 	case STEEPCLIMBATTACK:
@@ -9064,7 +9104,7 @@ facingRight = false;
 	case WALLATTACK:
 		if (facingRight)
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+			currHitboxInfo->hDir = HitboxInfo::HitDirection::LEFT;
 		}
 		else
 		{
@@ -11433,6 +11473,49 @@ double Actor::GetDashSpeed()
 		return dashSpeed2;
 		break;
 	}
+}
+
+bool Actor::EnemyIsFar(V2d &enemyPos)
+{
+	double len = length(position - enemyPos);
+	bool isFar;
+	isFar = (len > MAX_VELOCITY * 2);
+
+	if (!isFar)
+		return false;
+	else
+	{
+		Comboer *curr = activeComboerList;
+		while (curr != NULL)
+		{
+			len = length(curr->position - enemyPos);
+			isFar = (len > MAX_VELOCITY * 2);
+			if (!isFar)
+				return false;
+			curr = curr->nextComboer;
+		}
+	}
+
+	return true;
+}
+
+Comboer * Actor::IntersectMyComboHitboxes(CollisionBody *cb,
+	int cbFrame)
+{
+	if (cb == NULL || activeComboerList == NULL)
+		return NULL;
+
+	Comboer *curr = activeComboerList;
+	while (curr != NULL)
+	{
+		if (curr->enemyHitBody->Intersects(curr->enemyHitboxFrame, cb, cbFrame))
+		{
+			return curr;
+		}
+		curr = curr->nextComboer;
+	}
+
+	return NULL;
 }
 
 bool Actor::IntersectMyHurtboxes(CollisionBody *cb, int cbFrame )

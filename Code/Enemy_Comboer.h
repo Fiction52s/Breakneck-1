@@ -25,15 +25,18 @@ struct Comboer : Enemy
 	void ResetEnemy();
 	void HandleNoHealth();
 	void AdvanceTargetNode();
+	CollisionBox &GetEnemyHitbox();
 
 	V2d velocity;
-
+	Comboer *nextComboer;
 
 	Action action;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
 	CollisionBody *hurtBody;
 	CollisionBody *hitBody;
+	CollisionBody *enemyHitBody;
+	int enemyHitboxFrame;
 	sf::Vector2i *path; //global
 	int pathLength;
 	bool loop;
@@ -45,6 +48,7 @@ struct Comboer : Enemy
 	sf::Sprite sprite;
 	Tileset *ts;
 	HitboxInfo *hitboxInfo;
+	HitboxInfo *enemyHitboxInfo;
 	bool facingRight;
 };
 

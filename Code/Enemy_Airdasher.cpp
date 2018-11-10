@@ -25,6 +25,9 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 
 	initHealth = 80;
 	health = initHealth;
+	dashRadius = 500;
+	dashFrames = 60;
+	returnFrames = 60;
 
 	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
 
@@ -127,15 +130,23 @@ void Airdasher::ProcessState()
 		{
 		case S_DASH:
 			{
-			action = S_RETURN;
+			//action = S_RETURN;
 				break;
 			}
 		case S_RETURN:
-			action = S_FLOAT;
+			//action = S_FLOAT;
 			break;
 		}
 	}
 	V2d playerPos = owner->GetPlayer(0)->position;
+
+	if (action == S_FLOAT && length(playerPos - position) < dashRadius)
+	{
+		action = S_DASH;
+		frame = 0;
+		playerDir = normalize(playerPos - position);
+		physStepIndex = 0;
+	}
 }
 
 void Airdasher::UpdateEnemyPhysics()
@@ -145,12 +156,41 @@ void Airdasher::UpdateEnemyPhysics()
 	{
 	case S_DASH:
 	{
-		double a = (double)physStepIndex / 
+		double a = (double)physStepIndex / (dashFrames * NUM_MAX_STEPS * 5);
+		if (a > 1.0)
+		{
+			action = S_RETURN;
+			frame = 0;
+			physStepIndex = 0;
+		}
+		double f = dashBez.GetValue(a);
+		double rf = 1.0 - f;
 
-		V2d movementVec = velocity;
-		movementVec /= slowMultiple * (double)numPhysSteps;
+		position = origPos * rf + dest * f;
 
-		position += movementVec;
+
+		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
+
+		physStepIndex += steps;
+		break;
+	}
+	case S_RETURN:
+	{
+		double a = (double)physStepIndex / (dashFrames * NUM_MAX_STEPS * 5);
+		if (a > 1.0)
+		{
+			action = S_FLOAT;
+			frame = 0;
+		}
+		double f = returnBez.GetValue(a);
+		double rf = 1.0 - f;
+
+		position = dest * rf + origPos * f;
+
+
+		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
+
+		physStepIndex += steps;
 		break;
 	}
 	}
@@ -171,34 +211,7 @@ void Airdasher::UpdateSprite()
 
 void Airdasher::EnemyDraw(sf::RenderTarget *target)
 {
-	RenderStates rs;
-	rs.texture = ts->texture;
-	if (hasMonitor && !suppressMonitor)
-	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
-		{
-			rs.shader = keyShader;
-			target->draw(sprite, keyShader);
-		}
-		else
-		{
-			rs.shader = hurtShader;
-			target->draw(sprite, hurtShader);
-		}
-		target->draw(*keySprite);
-	}
-	else
-	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
-		{
-			target->draw(sprite);
-		}
-		else
-		{
-			rs.shader = hurtShader;
-			target->draw(sprite, hurtShader);
-		}
-	}
+	DrawSpriteIfExists(target, sprite);
 }
 
 void Airdasher::UpdateHitboxes()

@@ -550,6 +550,7 @@ public:
 
 	void Reset();
 	
+	int pauseFrames;
 	double numPhysSteps;
 	Enemy *prev;
 	Enemy *next;

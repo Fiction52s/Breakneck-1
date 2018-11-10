@@ -7,6 +7,7 @@
 #include <sstream>
 #include "Boss.h"
 #include "KeyMarker.h"
+#include "Enemy_Comboer.h"
 
 using namespace std;
 using namespace sf;
@@ -1070,6 +1071,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 		owner->numTotalKeys++;
 	}
 
+	pauseFrames = 0;
 	ts_zoned = owner->GetTileset("Enemies/enemy_zone_icon_128x128.png", 128, 128);
 	zonedSprite.setTexture(*ts_zoned->texture);
 	
@@ -1246,9 +1248,10 @@ void Enemy::SetZoneSpritePosition()
 
 void Enemy::DrawSpriteIfExists( sf::RenderTarget *target, sf::Sprite &spr )
 {
+	bool b = (owner->pauseFrames < 2 && pauseFrames < 2) || ( receivedHit == NULL && pauseFrames < 2 );
 	if (hasMonitor && !suppressMonitor)
 	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
+		if ( b )
 		{
 			target->draw(spr, keyShader);
 		}
@@ -1260,7 +1263,7 @@ void Enemy::DrawSpriteIfExists( sf::RenderTarget *target, sf::Sprite &spr )
 	}
 	else
 	{
-		if (owner->pauseFrames < 2 || receivedHit == NULL)
+		if( b )
 		{
 			target->draw(spr);
 		}
@@ -1299,6 +1302,7 @@ void Enemy::Reset()
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
 	dead = false;
+	pauseFrames = 0;
 
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -1414,6 +1418,9 @@ void Enemy::RecordEnemy()
 
 void Enemy::UpdatePrePhysics()
 {
+	if (pauseFrames > 0)
+		return;
+
 	for (int i = 0; i < numLaunchers; ++i)
 	{
 		launchers[i]->UpdatePrePhysics();
@@ -1430,7 +1437,8 @@ void Enemy::UpdatePrePhysics()
 
 
 	double len = length(position - owner->GetPlayer( 0 )->position );
-	if (len > MAX_VELOCITY * 2)
+	bool isFar = owner->GetPlayer(0)->EnemyIsFar(position);
+	if (isFar)
 	{
 		numPhysSteps = NUM_STEPS;
 	}
@@ -1460,10 +1468,25 @@ bool Enemy::LaunchersAreDone()
 
 void Enemy::UpdatePostPhysics()
 {
+	
 	//cout << "suppress: " << (int)suppressMonitor << endl;
 	for (int i = 0; i < numLaunchers; ++i)
 	{
 		launchers[i]->UpdatePostPhysics();
+	}
+
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->UpdateSprites();
+	}
+
+	if (pauseFrames > 0)
+	{
+		if (UpdateAccountingForSlow())
+		{
+			--pauseFrames;
+		}
+		return;
 	}
 	
 	ProcessHit();
@@ -1494,11 +1517,6 @@ void Enemy::UpdatePostPhysics()
 	}
 	else if( cutObject != NULL )
 		cutObject->UpdateCutObject( slowCounter );
-
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		launchers[i]->UpdateSprites();
-	}
 
 	if (UpdateAccountingForSlow())
 	{
@@ -1585,7 +1603,18 @@ void Enemy::MovePos(V2d &vel,
 
 void Enemy::ConfirmHitNoKill()
 {
-	owner->Pause(5);
+	assert(receivedHit != NULL);
+
+	if (receivedHit->hType != HitboxInfo::COMBO)
+	{
+		owner->Pause(5);
+		pauseFrames = 0;
+	}
+	else
+	{
+		pauseFrames = 5;
+	}
+	
 	HandleHitAndSurvive();
 	owner->cam.SetRumble(.5, .5, 5);
 	//owner->cam.SetRumble(3, 3, 5);
@@ -1593,8 +1622,20 @@ void Enemy::ConfirmHitNoKill()
 
 void Enemy::ConfirmKill()
 {
+	assert(receivedHit != NULL);
+
+	if (receivedHit->hType != HitboxInfo::COMBO)
+	{
+		owner->Pause(7);
+		pauseFrames = 0;
+	}
+	else
+	{
+		pauseFrames = 7;
+	}
+
+
 	owner->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, position, true, 0, 10, 5, true);
-	owner->Pause(7);
 	owner->cam.SetRumble(1, 1, 7 );
 	
 	if (hasMonitor)
@@ -1701,6 +1742,8 @@ void Enemy::DebugDraw(sf::RenderTarget *target)
 
 void Enemy::UpdatePhysics( int substep )
 {
+	if (pauseFrames > 0)
+		return;
 	specterProtected = false;
 	bool validSubstep = (substep < numPhysSteps);
 
@@ -1743,6 +1786,17 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 	if (player->IntersectMyHitboxes(currHurtboxes, currHurtboxFrame))
 	{
 		return player->currHitboxes->hitboxInfo;
+	}
+
+	if (type != EnemyType::EN_COMBOER)
+	{
+		Comboer *co = player->IntersectMyComboHitboxes(currHurtboxes, currHurtboxFrame);
+		if (co != NULL)
+		{
+			HitboxInfo *hi = co->enemyHitboxInfo;
+			co->pauseFrames = 5;
+			return hi;
+		}
 	}
 	
 	return NULL;
@@ -1813,6 +1867,12 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_FOOTTRAP:
 			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
 			break;
+		case EnemyType::EN_COMBOER:
+			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
+			break;
+		case EnemyType::EN_AIRDASHER:
+			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
+			break;
 		case EnemyType::EN_BASICTURRET:
 			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
 			break;
@@ -1880,7 +1940,8 @@ bool HittableObject::CheckHit( Actor *player, EnemyType et )
 		}
 		else
 		{
-			assert(0);
+			int ff = 0;
+			//assert(0);
 		}
 	}
 	return false;
