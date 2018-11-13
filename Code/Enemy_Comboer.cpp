@@ -130,11 +130,17 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	animFactor[S_SHOT] = 6;
 	animFactor[S_EXPLODE] = 1;
 
+	shootLimit = 120;
+	hitLimit = 6;
+
 	ResetEnemy();
 }
 
 void Comboer::ResetEnemy()
 {
+	shootFrames = 0;
+	currHits = 0;
+	
 	enemyHitboxFrame = 0;
 	nextComboer = NULL;
 	velocity = V2d(0, 0);
@@ -215,9 +221,13 @@ void Comboer::ProcessState()
 
 		switch (action)
 		{
-
+		case S_EXPLODE:
+			numHealth = 0;
+			dead = true;
+			break;
 		}
 	}
+
 	V2d playerPos = owner->GetPlayer(0)->position;
 }
 
@@ -308,6 +318,27 @@ void Comboer::FrameIncrement()
 	{
 	++fireCounter;
 	}*/
+	if (action == S_SHOT)
+	{
+		if (shootFrames == shootLimit)
+		{
+			action = S_EXPLODE;
+		}
+		else
+		{
+			++shootFrames;
+		}
+	}
+}
+
+void Comboer::ShotHit()
+{
+	++currHits;
+	if (currHits >= hitLimit)
+	{
+		action = S_EXPLODE;
+		frame = 0;
+	}
 }
 
 void Comboer::UpdateSprite()

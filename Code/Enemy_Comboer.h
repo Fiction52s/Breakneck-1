@@ -26,9 +26,14 @@ struct Comboer : Enemy
 	void HandleNoHealth();
 	void AdvanceTargetNode();
 	CollisionBox &GetEnemyHitbox();
+	void ShotHit();
 
 	V2d velocity;
 	Comboer *nextComboer;
+	int shootFrames;
+	int shootLimit;
+	int hitLimit;
+	int currHits;
 
 	Action action;
 	int actionLength[S_Count];

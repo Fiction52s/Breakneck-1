@@ -1795,6 +1795,7 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 		{
 			HitboxInfo *hi = co->enemyHitboxInfo;
 			co->pauseFrames = 5;
+			co->ShotHit();
 			return hi;
 		}
 	}
