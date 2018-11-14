@@ -23,11 +23,11 @@ struct Monitor;
 struct Enemy;
 struct Aura;
 struct Rail;
+struct ComboObject;
 struct Actor;
 struct ObjectPool;
 struct RelEffectInstance;
 struct VertexBuffer;
-struct Comboer;
 
 struct KinSkin
 {
@@ -779,9 +779,9 @@ struct Actor : QuadTreeCollider,
 		currHitboxes = cBody;
 		currHitboxFrame = p_frame;
 	}
-	Comboer *activeComboerList;
-	void AddActiveComboer(Comboer *c);
-	void RemoveActiveComboer(Comboer *c);
+	ComboObject *activeComboObjList;
+	void AddActiveComboObj(ComboObject *c);
+	void RemoveActiveComboObj(ComboObject *c);
 
 	//int numCurrHitboxes;
 
@@ -794,7 +794,7 @@ struct Actor : QuadTreeCollider,
 		int cbFrame);
 	bool IntersectMySlowboxes(CollisionBody *cb,
 		int cbFrame );
-	Comboer * IntersectMyComboHitboxes(CollisionBody *cb,
+	ComboObject * IntersectMyComboHitboxes(CollisionBody *cb,
 		int cbFrame);
 	bool EnemyIsFar(V2d &enemyPos);
 

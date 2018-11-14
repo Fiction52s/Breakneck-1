@@ -77,8 +77,7 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	hitBody = new CollisionBody(1);
 	hitBody->AddCollisionBox(0, hitBox);
 
-	enemyHitBody = new CollisionBody(1);
-	enemyHitBody->AddCollisionBox(0, hitBox);
+	
 
 
 	hitboxInfo = new HitboxInfo;
@@ -89,15 +88,24 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	enemyHitboxInfo = new HitboxInfo;
-	enemyHitboxInfo->damage = 20;
-	enemyHitboxInfo->drainX = .5;
-	enemyHitboxInfo->drainY = .5;
-	enemyHitboxInfo->hitlagFrames = 0;
-	enemyHitboxInfo->hitstunFrames = 30;
-	enemyHitboxInfo->knockback = 0;
-	enemyHitboxInfo->freezeDuringStun = true;
-	enemyHitboxInfo->hType = HitboxInfo::COMBO;
+
+	comboObj = new ComboObject(this);
+	
+
+	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->damage = 20;
+	comboObj->enemyHitboxInfo->drainX = .5;
+	comboObj->enemyHitboxInfo->drainY = .5;
+	comboObj->enemyHitboxInfo->hitlagFrames = 0;
+	comboObj->enemyHitboxInfo->hitstunFrames = 30;
+	comboObj->enemyHitboxInfo->knockback = 0;
+	comboObj->enemyHitboxInfo->freezeDuringStun = true;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+
+	comboObj->enemyHitBody = new CollisionBody(1);
+	comboObj->enemyHitBody->AddCollisionBox(0, hitBox);
+
+	comboObj->enemyHitboxFrame = 0;
 
 	hitBody->hitboxInfo = hitboxInfo;
 
@@ -141,8 +149,8 @@ void Comboer::ResetEnemy()
 	shootFrames = 0;
 	currHits = 0;
 	
-	enemyHitboxFrame = 0;
-	nextComboer = NULL;
+	comboObj->Reset();
+	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
@@ -174,6 +182,8 @@ void Comboer::ProcessHit()
 		SetHurtboxes(NULL, 0);
 
 		V2d dir;
+
+		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
 
 		switch (receivedHit->hDir)
 		{
@@ -209,7 +219,7 @@ void Comboer::ProcessHit()
 
 		velocity = dir * 10.0;
 
-		owner->GetPlayer(0)->AddActiveComboer(this);
+		owner->GetPlayer(0)->AddActiveComboObj(comboObj);
 	}
 }
 
@@ -323,6 +333,7 @@ void Comboer::FrameIncrement()
 		if (shootFrames == shootLimit)
 		{
 			action = S_EXPLODE;
+			frame = 0;
 		}
 		else
 		{
@@ -331,8 +342,9 @@ void Comboer::FrameIncrement()
 	}
 }
 
-void Comboer::ShotHit()
+void Comboer::ComboHit()
 {
+	pauseFrames = 5;
 	++currHits;
 	if (currHits >= hitLimit)
 	{
@@ -353,7 +365,7 @@ void Comboer::EnemyDraw(sf::RenderTarget *target)
 
 CollisionBox &Comboer::GetEnemyHitbox()
 {
-	return enemyHitBody->GetCollisionBoxes(enemyHitboxFrame)->front();
+	return comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front();
 }
 
 void Comboer::UpdateHitboxes()

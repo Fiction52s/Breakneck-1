@@ -91,7 +91,7 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 
 	animFactor[NEUTRAL] = 3;
 	animFactor[BOOST] = 3;
-	animFactor[REFRESH] = 7;
+	animFactor[REFRESH] = 5;
 }
 
 bool Booster::Boost()

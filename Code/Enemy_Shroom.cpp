@@ -76,6 +76,8 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	hitBody->AddCollisionBox(0, hitBox);
 	hitBody->hitboxInfo = hitboxInfo;
 
+
+
 	frame = 0;
 
 	jelly = new ShroomJelly(owner, position);
@@ -186,6 +188,8 @@ void Shroom::HandleNoHealth()
 }
 
 
+
+
 void Shroom::UpdateHitboxes()
 {
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
@@ -204,6 +208,9 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	action = RISING;
 	initHealth = 40;
 	health = initHealth;
+
+	shootLimit = 40;
+	hitLimit = 3;
 
 	double height = 160;
 	ts = owner->GetTileset("Enemies/shroom_jelly_160x160.png", 160, 160);
@@ -250,6 +257,24 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	hitBody->AddCollisionBox(0, hitBox);
 	hitBody->hitboxInfo = hitboxInfo;
 
+	comboObj = new ComboObject(this);
+
+
+	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->damage = 20;
+	comboObj->enemyHitboxInfo->drainX = .5;
+	comboObj->enemyHitboxInfo->drainY = .5;
+	comboObj->enemyHitboxInfo->hitlagFrames = 0;
+	comboObj->enemyHitboxInfo->hitstunFrames = 30;
+	comboObj->enemyHitboxInfo->knockback = 0;
+	comboObj->enemyHitboxInfo->freezeDuringStun = true;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+
+	comboObj->enemyHitBody = new CollisionBody(1);
+	comboObj->enemyHitBody->AddCollisionBox(0, hitBox);
+
+	comboObj->enemyHitboxFrame = 0;
+
 	frame = 0;
 
 	float halfWidth = ts->tileWidth / 2;
@@ -278,13 +303,99 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	UpdateSprite();
 }
 
-HitboxInfo * ShroomJelly::IsHit(Actor *player)
+//HitboxInfo * ShroomJelly::IsHit(Actor *player)
+//{
+//	return NULL;
+//}
+
+void ShroomJelly::ProcessHit()
 {
-	return NULL;
+	if (!dead && ReceivedHit() && numHealth > 0)
+	{
+		if (receivedHit->hDir == HitboxInfo::DOWN ||
+			receivedHit->hDir == HitboxInfo::DOWNLEFT ||
+			receivedHit->hDir == HitboxInfo::DOWNRIGHT)
+		{
+			action = DISSIPATING;
+			frame = 0;
+			SetHitboxes(NULL, 0);
+			SetHurtboxes(NULL, 0);
+			owner->GetPlayer(0)->ConfirmEnemyKill(this);
+			ConfirmKill();
+			return;
+		}
+
+		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+		ConfirmHitNoKill();
+		action = SHOT;
+		frame = 0;
+		SetHitboxes(NULL, 0);
+		SetHurtboxes(NULL, 0);
+
+		V2d dir;
+		double speed = 10;
+
+		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
+
+		dir = V2d(0, -1);
+		comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
+
+		/*switch (receivedHit->hDir)
+		{
+		case HitboxInfo::LEFT:
+			dir = V2d(0, -1);
+			comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
+			break;
+		case HitboxInfo::RIGHT:
+			dir = V2d(0, -1);
+			comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
+			break;
+		case HitboxInfo::UP:
+			dir = V2d(0, -1);
+			comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
+			break;
+		case HitboxInfo::DOWN:
+			dir = V2d(0, 1);
+			break;
+		case HitboxInfo::UPLEFT:
+			dir = V2d(-1, -1);
+			break;
+		case HitboxInfo::UPRIGHT:
+			dir = V2d(1, -1);
+			break;
+		case HitboxInfo::DOWNLEFT:
+			dir = V2d(-1, 1);
+			break;
+		case HitboxInfo::DOWNRIGHT:
+			dir = V2d(1, 1);
+			break;
+		default:
+			assert(0);
+
+		}*/
+		dir = normalize(dir);
+
+		velocity = dir * speed;
+
+		owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+	}
+}
+
+void ShroomJelly::ComboHit()
+{
+	pauseFrames = 5;
+	++currHits;
+	if (currHits >= hitLimit)
+	{
+		action = DISSIPATING;
+		frame = 0;
+	}
 }
 
 void ShroomJelly::ResetEnemy()
 {
+	comboObj->Reset();
+	comboObj->enemyHitboxFrame = 0;
 	position = orig;
 	action = WAIT;
 	currentCycle = 0;
@@ -295,6 +406,8 @@ void ShroomJelly::ResetEnemy()
 	slowCounter = 1;
 	slowMultiple = 1;
 	velocity = V2d(0, 0);
+	shootFrames = 0;
+	currHits = 0;
 }
 
 void ShroomJelly::UpdateEnemyPhysics()
@@ -340,36 +453,41 @@ void ShroomJelly::ProcessState()
 
 	
 
+	if (action == SHOT)
+	{
+
+	}
+	else
+	{
+		if (action != DISSIPATING && action != APPEARING && action != WAIT)
+		{
+			if (abs(playerPos.x - position.x) < 10)
+			{
+				velocity.x = 0;
+			}
+			else if (playerPos.x > position.x)
+			{
+				velocity.x = 5;
+			}
+			else
+			{
+				velocity.x = -5;
+			}
+		}
+
+		if (action == RISING)
+		{
+			//double f = (double)frame / (double)animFactor[RISING]
+			//	/ (double)actionLength[RISING];
+			//risingBez.GetValue( f );
+			velocity.y = -5;
 
 
-	if (action != DISSIPATING && action != APPEARING && action != WAIT )
-	{
-		if (abs( playerPos.x - position.x ) < 10 )
-		{
-			velocity.x = 0;
 		}
-		else if( playerPos.x > position.x )
+		else if (action == DROOPING)
 		{
-			velocity.x = 5;
+			velocity.y = 5;
 		}
-		else
-		{
-			velocity.x = -5;
-		}
-	}
-	
-	if (action == RISING)
-	{
-		//double f = (double)frame / (double)animFactor[RISING]
-		//	/ (double)actionLength[RISING];
-		//risingBez.GetValue( f );
-		velocity.y = -5;
-		
-		
-	}
-	else if (action == DROOPING)
-	{
-		velocity.y = 5;
 	}
 }
 
@@ -429,5 +547,7 @@ void ShroomJelly::UpdateHitboxes()
 	hurtBox.globalAngle = 0;
 	hitBox.globalPosition = position;
 	hitBox.globalAngle = 0;
+
+	comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front().globalPosition = position;
 }
 

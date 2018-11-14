@@ -1660,6 +1660,11 @@ void Enemy::ConfirmKill()
 	
 }
 
+void Enemy::ComboHit()
+{
+	//empty default
+}
+
 void Enemy::Draw(sf::RenderTarget *target)
 {
 	if (cutObject != NULL)
@@ -1788,16 +1793,13 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 		return player->currHitboxes->hitboxInfo;
 	}
 
-	if (type != EnemyType::EN_COMBOER)
+	ComboObject *co = player->IntersectMyComboHitboxes(currHurtboxes, currHurtboxFrame);
+	if (co != NULL)
 	{
-		Comboer *co = player->IntersectMyComboHitboxes(currHurtboxes, currHurtboxFrame);
-		if (co != NULL)
-		{
-			HitboxInfo *hi = co->enemyHitboxInfo;
-			co->pauseFrames = 5;
-			co->ShotHit();
-			return hi;
-		}
+		HitboxInfo *hi = co->enemyHitboxInfo;
+
+		co->enemy->ComboHit();
+		return hi;
 	}
 	
 	return NULL;
@@ -2119,4 +2121,22 @@ void CuttableObject::IncrementFrame()
 			active = false;
 		}
 	}
+}
+
+V2d ComboObject::GetComboPos()
+{
+	sf::Rect<double> r = enemyHitBody->GetAABB(enemyHitboxFrame);
+	
+	return V2d(r.left + r.width / 2.0, r.top + r.height / 2.0);
+}
+
+void ComboObject::ComboHit()
+{
+
+}
+
+void ComboObject::Reset()
+{
+	enemyHitboxFrame = 0;
+	nextComboObj = NULL;
 }

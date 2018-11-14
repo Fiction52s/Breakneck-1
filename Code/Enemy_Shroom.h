@@ -51,7 +51,8 @@ struct ShroomJelly : Enemy
 		APPEARING,
 		RISING,
 		DROOPING,
-		DISSIPATING
+		DISSIPATING,
+		SHOT
 	};
 
 	Action action;
@@ -60,12 +61,14 @@ struct ShroomJelly : Enemy
 
 	ShroomJelly(GameSession *owner, V2d &pos );
 	void EnemyDraw(sf::RenderTarget *target);
+	
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	HitboxInfo *IsHit(Actor *player);
+	void ProcessHit();
+	void ComboHit();
 
 	sf::Sprite sprite;
 	Tileset *ts;
@@ -75,7 +78,14 @@ struct ShroomJelly : Enemy
 	int cycleLimit;
 	int currentCycle;
 
+	int shootFrames;
+	int shootLimit;
+	int hitLimit;
+	int currHits;
+
 	V2d velocity;
+	ComboObject *comboObj;
+
 
 	CollisionBody *hurtBody;
 	CollisionBody *hitBody;

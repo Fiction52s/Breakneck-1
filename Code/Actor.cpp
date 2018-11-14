@@ -241,7 +241,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	//dustParticles->SetTileset(owner->GetTileset( "dust_8x8.png", 8,8));
 	//dustParticles->ActivateEffect(&params);
 
-	activeComboerList = NULL;
+	activeComboObjList = NULL;
 
 	cout << "Start player" << endl;
 	repeatingSound = NULL;
@@ -1947,46 +1947,46 @@ void Actor::CreateAttackLightning()
 	}
 }
 
-void Actor::AddActiveComboer(Comboer *c)
+void Actor::AddActiveComboObj(ComboObject *c)
 {
-	if (activeComboerList == NULL)
+	if (activeComboObjList == NULL)
 	{
-		activeComboerList = c;
+		activeComboObjList = c;
 	}
 	else
 	{
-		c->nextComboer = activeComboerList;
-		activeComboerList = c;
+		c->nextComboObj = activeComboObjList;
+		activeComboObjList = c;
 	}
 }
 
-void Actor::RemoveActiveComboer(Comboer *c)
+void Actor::RemoveActiveComboObj(ComboObject *c)
 {
-	assert(activeComboerList != NULL);
+	assert(activeComboObjList != NULL);
 
-	if (c == activeComboerList)
+	if (c == activeComboObjList)
 	{
-		activeComboerList = activeComboerList->nextComboer;
+		activeComboObjList = activeComboObjList->nextComboObj;
 	}
 
-	Comboer *curr = activeComboerList;
-	Comboer *prev = NULL;
+	ComboObject *curr = activeComboObjList;
+	ComboObject *prev = NULL;
 	while (curr != NULL)
 	{
 		if (curr == c)
 		{
-			prev->nextComboer = curr->nextComboer;
+			prev->nextComboObj = curr->nextComboObj;
 			break;
 		}
 
 		prev = curr;
-		curr = curr->nextComboer;
+		curr = curr->nextComboObj;
 	}
 }
 
 void Actor::Respawn()
 {
-	activeComboerList = NULL;
+	activeComboObjList = NULL;
 
 	currBBoostCounter = 0;
 	repeatingSound = NULL;
@@ -11475,6 +11475,8 @@ double Actor::GetDashSpeed()
 	}
 }
 
+
+
 bool Actor::EnemyIsFar(V2d &enemyPos)
 {
 	double len = length(position - enemyPos);
@@ -11485,34 +11487,34 @@ bool Actor::EnemyIsFar(V2d &enemyPos)
 		return false;
 	else
 	{
-		Comboer *curr = activeComboerList;
+		ComboObject *curr = activeComboObjList;
 		while (curr != NULL)
 		{
-			len = length(curr->position - enemyPos);
+			len = length(curr->GetComboPos() - enemyPos); //doesnt account for origin of shape
 			isFar = (len > MAX_VELOCITY * 2);
 			if (!isFar)
 				return false;
-			curr = curr->nextComboer;
+			curr = curr->nextComboObj;
 		}
 	}
 
 	return true;
 }
 
-Comboer * Actor::IntersectMyComboHitboxes(CollisionBody *cb,
+ComboObject * Actor::IntersectMyComboHitboxes(CollisionBody *cb,
 	int cbFrame)
 {
-	if (cb == NULL || activeComboerList == NULL)
+	if (cb == NULL || activeComboObjList == NULL)
 		return NULL;
 
-	Comboer *curr = activeComboerList;
+	ComboObject *curr = activeComboObjList;
 	while (curr != NULL)
 	{
 		if (curr->enemyHitBody->Intersects(curr->enemyHitboxFrame, cb, cbFrame))
 		{
 			return curr;
 		}
-		curr = curr->nextComboer;
+		curr = curr->nextComboObj;
 	}
 
 	return NULL;
@@ -23829,6 +23831,10 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		switch (parent->abType)
 		{
 		case ENERGY:
+			if (parent->owner->powerRing != NULL)
+			{
+				parent->owner->powerRing->Fill(20);
+			}
 			break;
 		case DARK:
 		{

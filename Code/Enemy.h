@@ -463,6 +463,26 @@ private:
 	sf::Vector2f rootPos;
 };
 
+struct Enemy;
+struct ComboObject
+{
+	ComboObject( Enemy *en)
+		:enemyHitboxFrame( -1 ),
+		enemyHitBody( NULL ),
+		nextComboObj( NULL ),
+		enemy( en )
+	{
+	}
+	void Reset();
+	V2d GetComboPos();
+	CollisionBody *enemyHitBody;
+	HitboxInfo *enemyHitboxInfo;
+	int enemyHitboxFrame;
+	ComboObject *nextComboObj;
+	void ComboHit();
+	Enemy *enemy;
+};
+
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
@@ -472,6 +492,7 @@ public:
 	virtual void UpdatePreLauncherPhysics() {}
 	CuttableObject *cutObject;
 	Launcher **launchers;
+	virtual void ComboHit();
 	CollisionBody *currHitboxes;
 	void SetHitboxes(CollisionBody *cb, int frame);
 	void ClearHitboxes() { 
