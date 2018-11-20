@@ -601,7 +601,7 @@ void Crawler::Accelerate(double amount)
 		amount = -abs(amount);
 	}
 
-	double max = 30.0;
+	double max = 20.0;
 	double am = mover->groundSpeed + amount;
 	if (am > max)
 		am = max;
