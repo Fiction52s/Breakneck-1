@@ -2,6 +2,7 @@
 #define __ENEMY_BASICTURRET_H__
 
 #include "Enemy.h"
+struct Shield;
 
 struct BasicTurret : Enemy, LauncherEnemy
 {
@@ -32,6 +33,8 @@ struct BasicTurret : Enemy, LauncherEnemy
 	const static int maxBullets = 16;
 
 	void DirectKill();
+
+	Shield *testShield;
 
 	HitboxInfo *bulletHitboxInfo;
 

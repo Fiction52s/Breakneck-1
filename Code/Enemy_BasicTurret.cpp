@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_BasicTurret.h"
+#include "Shield.h"
 
 using namespace std;
 using namespace sf;
@@ -28,6 +29,9 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	initHealth = 60;
 	health = initHealth;
+
+	testShield = new Shield(Shield::ShieldType::T_BLOCK, 100, 5, this);
+	testShield->SetPosition(position);
 
 	double width = 176;
 	double height = 176;
@@ -120,6 +124,10 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(12);
 	cutObject->SetSubRectBack(11);
+
+	testShield->SetPosition(position);
+
+	ResetEnemy();
 }
 
 void BasicTurret::ResetEnemy()
@@ -131,6 +139,9 @@ void BasicTurret::ResetEnemy()
 
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
+
+	currShield = testShield;
+	testShield->Reset();
 }
 
 void BasicTurret::BulletHitTerrain( BasicBullet *b,

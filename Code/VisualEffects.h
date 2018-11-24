@@ -105,9 +105,9 @@ struct EffectPool : ObjectPool
 	int maxNumFX;
 };
 
-struct VertexBufferMember
+struct VertexBufMember
 {
-	VertexBufferMember()
+	VertexBufMember()
 	{
 		Reset();
 	}
@@ -119,15 +119,15 @@ struct VertexBufferMember
 	sf::Color color;
 };
 
-struct VertexBuffer
+struct VertexBuf
 {
-	VertexBuffer(int numVertices, sf::PrimitiveType pType );
-	~VertexBuffer();
+	VertexBuf(int numVertices, sf::PrimitiveType pType );
+	~VertexBuf();
 	void SetScale(int index, sf::Vector2f &scale);
 	void SetPosition(int index, sf::Vector2f &pos);
 	void SetRotation(int index, double angle ); //ccw
 	void RotateMemberCW( int index, float angle);
-	const VertexBufferMember const &GetMemberInfo( int index );
+	const VertexBufMember const &GetMemberInfo( int index );
 	void SetTileset(Tileset *p_ts);
 	void Draw(sf::RenderTarget *rt, sf::Shader *shader = NULL );
 	void UpdateVertices();
@@ -144,7 +144,7 @@ struct VertexBuffer
 	int verticesPerMember;
 	int numMembers;
 	int numActiveMembers;
-	VertexBufferMember *members;
+	VertexBufMember *members;
 	bool *dirty;
 	bool dirtyTS;
 };

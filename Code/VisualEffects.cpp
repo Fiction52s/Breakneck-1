@@ -377,7 +377,7 @@ void RelEffectInstance::ClearLockPos()
 	lockPos = NULL;
 }
 
-VertexBuffer::VertexBuffer(int p_numMembers, sf::PrimitiveType p_pType )
+VertexBuf::VertexBuf(int p_numMembers, sf::PrimitiveType p_pType )
 	:numMembers(p_numMembers), vb( NULL ), ts( NULL ), pType( p_pType )
 {
 	switch (p_pType)
@@ -395,26 +395,26 @@ VertexBuffer::VertexBuffer(int p_numMembers, sf::PrimitiveType p_pType )
 		assert(0);
 	}
 
-	members = new VertexBufferMember[numMembers];
+	members = new VertexBufMember[numMembers];
 	dirty = new bool[numMembers];
 	vb = new Vertex[numMembers * verticesPerMember];
 	Reset();
 }
 
-void VertexBuffer::Reset()
+void VertexBuf::Reset()
 {
 	memset(dirty, 0, sizeof(dirty));
 	dirtyTS = false;
 	SetNumActiveMembers(0);
 }
 
-VertexBuffer::~VertexBuffer()
+VertexBuf::~VertexBuf()
 {
 	delete[] members;
 	delete[] vb;
 }
 
-void VertexBuffer::SetScale(int index, sf::Vector2f &scale)
+void VertexBuf::SetScale(int index, sf::Vector2f &scale)
 {
 	/*if (ts == NULL)
 	{
@@ -425,41 +425,41 @@ void VertexBuffer::SetScale(int index, sf::Vector2f &scale)
 	dirty[index] = true;
 }
 
-void VertexBuffer::SetPosition(int index, sf::Vector2f &pos)
+void VertexBuf::SetPosition(int index, sf::Vector2f &pos)
 {
 	members[index].pos = pos;
 	dirty[index] = true;
 }
-void VertexBuffer::SetRotation(int index, double angle)
+void VertexBuf::SetRotation(int index, double angle)
 {
 	members[index].angle = angle;
 	dirty[index] = true;
 }
 
-const VertexBufferMember const &VertexBuffer::GetMemberInfo( int index )
+const VertexBufMember const &VertexBuf::GetMemberInfo( int index )
 {
 	return members[index];
 }
 
-void VertexBuffer::RotateMemberCW(int index, float angle)
+void VertexBuf::RotateMemberCW(int index, float angle)
 {
 	members[index].angle += angle;
 	dirty[index] = true;
 }
 
-void VertexBuffer::SetTileset(Tileset *p_ts)
+void VertexBuf::SetTileset(Tileset *p_ts)
 {
 	ts = p_ts;
 	dirtyTS = true;
 }
 
-void VertexBuffer::SetTile(int index, int tileIndex)
+void VertexBuf::SetTile(int index, int tileIndex)
 {
 	members[index].tileIndex = tileIndex;
 	dirty[index] = true;
 }
 
-void VertexBuffer::UpdateVertices()
+void VertexBuf::UpdateVertices()
 {
 	if (ts == NULL)
 		return;
@@ -476,7 +476,7 @@ void VertexBuffer::UpdateVertices()
 			if (!dirtyTS && !dirty[i])
 				continue; 
 
-			VertexBufferMember &currMember = members[i];
+			VertexBufMember &currMember = members[i];
 			if (ts == NULL)
 			{
 				quadSize = Vector2f(64, 64);
@@ -519,19 +519,19 @@ void VertexBuffer::UpdateVertices()
 	dirtyTS = false;
 }
 
-void VertexBuffer::SetColor(int index, sf::Color &color)
+void VertexBuf::SetColor(int index, sf::Color &color)
 {
 	members[index].color = color;
 	dirty[index] = true;
 }
 
-void VertexBuffer::SetNumActiveMembers(int p_numActiveMembers)
+void VertexBuf::SetNumActiveMembers(int p_numActiveMembers)
 {
 	assert(p_numActiveMembers <= numMembers && p_numActiveMembers >= 0);
 	numActiveMembers = p_numActiveMembers;
 }
 
-void VertexBuffer::Draw(sf::RenderTarget *rt, sf::Shader *shader )
+void VertexBuf::Draw(sf::RenderTarget *rt, sf::Shader *shader )
 {
 	RenderStates rs;
 	rs.shader = shader;
@@ -548,7 +548,7 @@ void VertexBuffer::Draw(sf::RenderTarget *rt, sf::Shader *shader )
 	}
 }
 
-void VertexBufferMember::Reset()
+void VertexBufMember::Reset()
 {
 	pos = Vector2f(0, 0);
 	angle = 0;

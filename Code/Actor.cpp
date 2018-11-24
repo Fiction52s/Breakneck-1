@@ -288,10 +288,10 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//testPool = new EffectPool( EffectType::FX_RELATIVE, 100, 1.f );
 		//testPool->ts = owner->GetTileset("elec_01_96x96.png", 96, 96);
 
-		motionGhostBuffer = new VertexBuffer(80, sf::Quads);
-		motionGhostBufferBlue = new VertexBuffer(80, sf::Quads);
-		motionGhostBufferPurple = new VertexBuffer(80, sf::Quads);
-		testBuffer = new VertexBuffer(1, sf::Quads);
+		motionGhostBuffer = new VertexBuf(80, sf::Quads);
+		motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
+		motionGhostBufferPurple = new VertexBuf(80, sf::Quads);
+		testBuffer = new VertexBuf(1, sf::Quads);
 		testBuffer->SetTile(0, 0);
 		testBuffer->SetTileset(owner->GetTileset("jump_64x64.png", 64, 64));
 		testBuffer->SetScale( 0, Vector2f( 4, 4 ));
@@ -23945,7 +23945,7 @@ void AbsorbParticles::Reset()
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )
 	:shader( NULL ), ts( NULL )
 {
-	motionGhostBuffer = new VertexBuffer( maxGhosts, sf::Quads);
+	motionGhostBuffer = new VertexBuf( maxGhosts, sf::Quads);
 }
 
 void MotionGhostEffect::SetDistInBetween(float dist)

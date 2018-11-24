@@ -8,6 +8,7 @@
 #include "Boss.h"
 #include "KeyMarker.h"
 #include "Enemy_Comboer.h"
+#include "Shield.h"
 
 using namespace std;
 using namespace sf;
@@ -1081,6 +1082,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	launchers = NULL;
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
+	currShield = NULL;
 	EnemyParams *ep = own->eHitParamsMan->GetHitParams(t);
 	ResetSlow();
 	if (ep == NULL)
@@ -1302,6 +1304,7 @@ void Enemy::Reset()
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
 	dead = false;
+	currShield = NULL;
 	pauseFrames = 0;
 
 	for (int i = 0; i < numLaunchers; ++i)
@@ -1432,9 +1435,13 @@ void Enemy::UpdatePrePhysics()
 	receivedHit = NULL;
 
 	ProcessState();
-
-	
-
+	if (currShield != NULL)
+	{
+		if (!currShield->ProcessState())
+		{
+			currShield = NULL;
+		}
+	}
 
 	double len = length(position - owner->GetPlayer( 0 )->position );
 	bool isFar = owner->GetPlayer(0)->EnemyIsFar(position);
@@ -1480,6 +1487,18 @@ void Enemy::UpdatePostPhysics()
 		launchers[i]->UpdateSprites();
 	}
 
+	if (currShield != NULL)
+	{
+		if (currShield->pauseFrames > 0)
+		{
+			--currShield->pauseFrames;
+			//if (UpdateAccountingForSlow()) //shield might have its own at some point
+			//{
+			//	
+			//}
+		}
+	}
+
 	if (pauseFrames > 0)
 	{
 		if (UpdateAccountingForSlow())
@@ -1489,7 +1508,16 @@ void Enemy::UpdatePostPhysics()
 		return;
 	}
 	
-	ProcessHit();
+	if (currShield != NULL)
+	{
+		if( currShield->pauseFrames == 0)
+			currShield->ProcessHit();
+	}
+	else
+	{
+		ProcessHit();
+	}
+	
 
 	if (numHealth == 0 && LaunchersAreDone()
 		&& ( ( cutObject != NULL && !cutObject->active ) 
@@ -1514,6 +1542,11 @@ void Enemy::UpdatePostPhysics()
 			keySprite->setColor(Color(255, 255, 255, 255));
 		}
 		UpdateSprite();
+		if (currShield != NULL)
+		{
+			currShield->UpdateSprite();
+		}
+
 	}
 	else if( cutObject != NULL )
 		cutObject->UpdateCutObject( slowCounter );
@@ -1524,8 +1557,14 @@ void Enemy::UpdatePostPhysics()
 		if (cutObject != NULL)
 			cutObject->IncrementFrame();
 		
-		if( !dead )
+		if (!dead)
+		{
 			FrameIncrement();
+			if (currShield != NULL && currShield->pauseFrames == 0 )
+			{
+				currShield->FrameIncrement();
+			}
+		}
 	}
 }
 
@@ -1565,6 +1604,12 @@ void Enemy::CheckedZoneUpdate(sf::FloatRect &rect)
 			UpdateZoneSprite();
 		}
 	}
+}
+
+
+void Enemy::ProcessShieldHit()
+{
+
 }
 
 void Enemy::ProcessHit()
@@ -1676,11 +1721,19 @@ void Enemy::Draw(sf::RenderTarget *target)
 		else if( !dead )
 		{
 			EnemyDraw( target );
+			if (currShield != NULL)
+			{
+				currShield->Draw(target);
+			}
 		}
 	}
 	else
 	{
 		EnemyDraw( target );
+		if (currShield != NULL)
+		{
+			currShield->Draw(target);
+		}
 	}
 }
 
@@ -1773,7 +1826,15 @@ void Enemy::UpdatePhysics( int substep )
 
 	SlowCheck(0);
 
-	CheckHit(owner->GetPlayer(0), type);
+	if (currShield != NULL)
+	{
+		if( currShield->pauseFrames == 0 )
+			currShield->CheckHit(owner->GetPlayer(0), type);
+	}
+	else
+	{
+		CheckHit(owner->GetPlayer(0), type);
+	}
 
 	if (CheckHitPlayer(0))
 	{

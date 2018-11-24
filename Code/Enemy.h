@@ -483,6 +483,8 @@ struct ComboObject
 	Enemy *enemy;
 };
 
+struct Shield;
+
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
@@ -538,6 +540,7 @@ public:
 	virtual void Init(){};
 	virtual void Setup() {};
 	virtual void ProcessHit();
+	virtual void ProcessShieldHit();
 	virtual void ConfirmHitNoKill();
 	virtual void ConfirmKill();
 	void MovePos(V2d &vel,
@@ -571,6 +574,7 @@ public:
 
 	void Reset();
 	
+	Shield *currShield;
 	int pauseFrames;
 	double numPhysSteps;
 	Enemy *prev;

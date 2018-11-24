@@ -27,7 +27,7 @@ struct ComboObject;
 struct Actor;
 struct ObjectPool;
 struct RelEffectInstance;
-struct VertexBuffer;
+struct VertexBuf;
 
 struct KinSkin
 {
@@ -64,7 +64,7 @@ struct MotionGhostEffect
 	void SetScaleParams(CubicBezier &sBez, float p_maxScaleUp, float p_maxScaleDown, int startScaleGhost = 0 );
 	void ApplyUpdates();
 
-	VertexBuffer *motionGhostBuffer;
+	VertexBuf *motionGhostBuffer;
 	sf::Color rootColor;
 	sf::Color tailColor;
 	CubicBezier colorBez; //starts at root
@@ -730,10 +730,10 @@ struct Actor : QuadTreeCollider,
 	double offSlopeByWallThresh;
 	//const static int MAX_MOTION_GHOSTS = 10;
 	sf::Sprite *motionGhosts;// [MAX_MOTION_GHOSTS];
-	VertexBuffer *motionGhostBuffer;
-	VertexBuffer *motionGhostBufferBlue;
-	VertexBuffer *motionGhostBufferPurple;
-	VertexBuffer *testBuffer;
+	VertexBuf *motionGhostBuffer;
+	VertexBuf *motionGhostBufferBlue;
+	VertexBuf *motionGhostBufferPurple;
+	VertexBuf *testBuffer;
 	
 
 	int maxMotionGhosts;
