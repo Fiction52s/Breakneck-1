@@ -30,7 +30,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	initHealth = 60;
 	health = initHealth;
 
-	testShield = new Shield(Shield::ShieldType::T_BLOCK, 100, 5, this);
+	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80, 3, this);
 	testShield->SetPosition(position);
 
 	double width = 176;
@@ -93,7 +93,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	SetHitboxes(hitBody, 0);
 
 	frame = 0;
-	animationFactor = 3;
+	animationFactor = 4;
 
 	dead = false;
 
@@ -102,19 +102,19 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	V2d along = normalize(ground->v1 - ground->v0);
 
 	V2d launchPos = gPoint + ground->Normal() * 20.0;
-	numLaunchers = 3;
+	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
 	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos + ground->Normal() * 60.0, gn, 0, 300 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->hitboxInfo->damage = 18;
 
-	launchers[1] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos + along * 20.0 , along, 0, 300);
+	/*launchers[1] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos + along * 20.0 , along, 0, 300);
 	launchers[1]->SetBulletSpeed(bulletSpeed);
 	launchers[1]->hitboxInfo->damage = 18;
 
 	launchers[2] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos - along * 20.0, -along, 0, 300);
 	launchers[2]->SetBulletSpeed(bulletSpeed);
-	launchers[2]->hitboxInfo->damage = 18;
+	launchers[2]->hitboxInfo->damage = 18;*/
 	//launcher->Reset();
 	
 	
@@ -137,6 +137,7 @@ void BasicTurret::ResetEnemy()
 	dead = false;
 	frame = 0;
 
+	action = WAIT;
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
 
@@ -171,22 +172,42 @@ void BasicTurret::BulletHitPlayer( BasicBullet *b )
 
 void BasicTurret::ProcessState()
 {
-	if (frame == 11 * animationFactor)
+	switch (action)
 	{
-		frame = 0;
-	}
-
-	if (frame == 3 * animationFactor && slowCounter == 1)
-	{
-		launchers[0]->Fire();
-		launchers[1]->Fire();
-		launchers[2]->Fire();
+		case WAIT:
+		{
+			if (length(owner->GetPlayer(0)->position - position) < 500)
+			{
+				action = ATTACK;
+				frame = 0;
+			}
+			break;
+		}
+		case ATTACK:
+		{
+			if (frame == 11 * animationFactor)
+			{
+				frame = 0;
+				if (length(owner->GetPlayer(0)->position - position) >= 500)
+				{
+					action = WAIT;
+					frame = 0;
+				}
+			}
+			else if (frame == 3 * animationFactor && slowCounter == 1)
+			{
+				launchers[0]->Fire();
+				//launchers[1]->Fire();
+				//launchers[2]->Fire();
+			}
+			break;
+		}
 	}
 }
 
 void BasicTurret::UpdatePreLauncherPhysics()
 {
-	for (int i = 0; i < 3; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		if (!prelimBox[i].Intersects(owner->players[0]->hurtBody))
 		{
@@ -233,7 +254,15 @@ void BasicTurret::EnemyDraw(sf::RenderTarget *target )
 
 void BasicTurret::UpdateSprite()
 {
-	sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
+	if (action == WAIT)
+	{
+		sprite.setTextureRect(ts->GetSubRect(0));
+	}
+	else
+	{
+		sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
+	}
+	
 }
 
 void BasicTurret::UpdateHitboxes()
@@ -253,7 +282,7 @@ void BasicTurret::SetupPreCollision()
 
 void BasicTurret::Setup()
 {
-	for (int li = 0; li < 3; ++li)
+	for (int li = 0; li < 1; ++li)
 	{
 		launchers[li]->Reset();
 		launchers[li]->Fire();

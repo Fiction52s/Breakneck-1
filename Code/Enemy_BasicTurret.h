@@ -6,6 +6,12 @@ struct Shield;
 
 struct BasicTurret : Enemy, LauncherEnemy
 {
+	enum Action
+	{
+		WAIT,
+		ATTACK,
+	};
+
 	BasicTurret(GameSession *owner, bool hasMonitor, Edge *ground, double quantity,
 		double bulletSpeed,
 		int framesWait);
@@ -29,6 +35,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 
 	sf::Sprite sprite;
 	Tileset *ts;
+	Action action;
 
 	const static int maxBullets = 16;
 
