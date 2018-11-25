@@ -949,6 +949,19 @@ struct FootTrapParams : public ActorParams
 	//void Draw( sf::RenderTarget *target );
 };
 
+struct AirdasherParams : public ActorParams
+{
+	AirdasherParams(EditSession *edit,
+		sf::Vector2i &pos);
+	void WriteParamFile(std::ofstream &of);
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	ActorParams *Copy();
+};
+
 struct BossCrawlerParams : public ActorParams
 {
 	BossCrawlerParams( 

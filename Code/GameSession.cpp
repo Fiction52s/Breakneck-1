@@ -2114,6 +2114,28 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 			}
+			else if (typeName == "airdasher")
+			{
+
+				int xPos, yPos;
+
+				//always air
+
+
+				is >> xPos;
+				is >> yPos;
+
+				int hasMonitor;
+				is >> hasMonitor;
+
+
+				Airdasher *enemy = new Airdasher( this, hasMonitor, Vector2i( xPos, yPos ));
+
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
+
+				enemyTree->Insert( enemy );
+			}
 
 			//w2
 			else if( typeName == "bat" )

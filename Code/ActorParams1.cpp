@@ -596,3 +596,56 @@ ActorParams *FootTrapParams::Copy()
 	FootTrapParams *copy = new FootTrapParams( *this );
 	return copy;
 }
+
+AirdasherParams::AirdasherParams(EditSession *edit, sf::Vector2i &pos)
+	:ActorParams(PosType::AIR_ONLY)
+{
+	position = pos;
+	type = edit->types["airdasher"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	SetBoundingQuad();
+}
+
+void AirdasherParams::WriteParamFile(std::ofstream &of)
+{
+	int hMon;
+	if (hasMonitor)
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
+}
+
+void AirdasherParams::SetParams()
+{
+	Panel *p = type->panel;
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+void AirdasherParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+	{
+		p->textBoxes["group"]->text.setString(group->name);
+	}
+
+	p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+bool AirdasherParams::CanApply()
+{
+	return true;
+}
+
+ActorParams *AirdasherParams::Copy()
+{
+	AirdasherParams *copy = new AirdasherParams(*this);
+	return copy;
+}

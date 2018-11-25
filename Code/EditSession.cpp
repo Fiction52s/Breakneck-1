@@ -1836,6 +1836,21 @@ bool EditSession::OpenFile()
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
+				else if (typeName == "airdasher")
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					int hasMonitor;
+					is >> hasMonitor;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset(new AirdasherParams(this, pos ));
+					a->hasMonitor = (bool)hasMonitor;
+				}
 
 				//w2
 				else if( typeName == "bat" )
@@ -6182,6 +6197,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	types["spring"] = springType;
 
 	//w1
+
+	Panel *airdasherPanel = CreateOptionsPanel("airdasher");
+	ActorType *airdasherType = new ActorType("airdasher", airdasherPanel);
+
 	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
@@ -6201,7 +6220,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	ActorType *bossCoyoteType = new ActorType( "bosscoyote", bossCoyotePanel );
 
 	
-
+	types["airdasher"] = airdasherType;
 	types["patroller"] = patrollerType;
 	types["foottrap"] = footTrapType;
 	types["bosscrawler"] = bossCrawlerType;
@@ -6359,12 +6378,14 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	gs->Set(7, 0, Sprite(blockerType->iconTexture), "blocker");
 	gs->Set(8, 0, Sprite(groundTriggerType->iconTexture), "groundtrigger");
 	gs->Set(9, 0, Sprite(comboerType->iconTexture), "comboer");
+	
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
 	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
 	gs->Set( 2, 1, Sprite( basicTurretType->iconTexture ), "basicturret" );
 	gs->Set( 3, 1, Sprite( footTrapType->iconTexture ), "foottrap" );
-	gs->Set( 4, 1, Sprite( bossCrawlerType->iconTexture ), "bosscrawler" );
+	gs->Set( 4, 1, Sprite(comboerType->iconTexture), "airdasher");
+	gs->Set( 5, 1, Sprite( bossCrawlerType->iconTexture ), "bosscrawler" );
 
 	gs->Set( 0, 2, Sprite( batType->iconTexture ), "bat" );
 	gs->Set( 1, 2, Sprite( curveTurretType->iconTexture ), "curveturret" );
@@ -8935,6 +8956,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										patrolPath.clear();
 										patrolPath.push_back(Vector2i(worldPos.x, worldPos.y));
 									}
+									
 									else if (trackingEnemy->name == "rail")
 									{
 										//trackingEnemy = NULL;
@@ -9043,6 +9065,13 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										bossCrawler->group = groups["--"];
 
 										CreateActor( bossCrawler );
+									}
+									else if (trackingEnemy->name == "airdasher")
+									{
+										tempActor = new AirdasherParams(this, Vector2i(worldPos.x,
+											worldPos.y));
+										tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
 									}
 
 									//w2
@@ -13782,6 +13811,44 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			//showPanel = enemySelectPanel;
 		}
 	}
+	else if (p->name == "airdasher_options")
+	{
+		if (b->name == "ok")
+		{
+			//showPanel = trackingEnemy->panel;
+			//PatrollerParams *patroller = (PatrollerParams*)trackingEnemy;
+			if (mode == EDIT)
+				//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				AirdasherParams *airdasher = (AirdasherParams*)select;
+				airdasher->SetParams();
+
+				//patroller->monitorType = GetMonitorType( p );
+				//patroller->speed = speed;
+				//patroller->loop = loop;
+				//patroller->SetPath( patrolPath );
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				//eventually can convert this between indexes or 
+				//something to simplify when i have more types
+				//cout << "tempActor: " << tempActor->type->name << endl;
+				ActorPtr airdasher(tempActor);//new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+
+				airdasher->SetParams();
+				airdasher->group = groups["--"];
+				//patroller->SetParams();
+				//patroller->group = groups["--"];
+				//patroller->monitorType = GetMonitorType( p );
+
+				CreateActor(airdasher);
+
+				tempActor = NULL;
+			}
+			showPanel = NULL;
+		}
+	}
 
 	else if( p->name == "bat_options" )
 	{
@@ -16644,6 +16711,15 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
+	else if (name == "airdasher")
+	{
+		Panel *p = new Panel("airdasher_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+		return p;
+	}
 
 	//w2
 	else if( name == "bat" )
@@ -17138,6 +17214,11 @@ void EditSession::SetEnemyEditPanel()
 	{
 		CrawlerParams *crawler = (CrawlerParams*)ap;
 		crawler->SetPanelInfo();
+	}
+	else if (name == "airdasher")
+	{
+		AirdasherParams *airdasher = (AirdasherParams*)ap;
+		airdasher->SetPanelInfo();
 	}
 
 	//w2
@@ -18952,6 +19033,13 @@ void ActorType::Init()
 		height = 144;
 		canBeGrounded = true;
 		canBeAerial = false;
+	}
+	else if (name == "airdasher")
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
 	}
 
 	//w2

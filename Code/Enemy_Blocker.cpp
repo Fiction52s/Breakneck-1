@@ -208,7 +208,7 @@ void BlockerChain::ResetEnemy()
 {
 	for (int i = 0; i < numBlockers; ++i)
 	{
-		blockers[i]->ResetEnemy();
+		blockers[i]->Reset();
 	}
 }
 
@@ -284,9 +284,6 @@ void BlockerChain::DebugDraw(RenderTarget *target)
 Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	:Enemy(p_bc->owner, EnemyType::EN_BLOCKER, false, 1, false), bc(p_bc), vaIndex(index)
 {
-	initHealth = 40;
-	health = initHealth;
-
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
@@ -348,10 +345,7 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 
 	
 
-	Vector2f p(position.x, position.y);
-
-	Vector2f spriteSize(bc->ts->tileWidth, bc->ts->tileHeight);
-	SetRectCenter(bc->va + vaIndex * 4, spriteSize.x, spriteSize.y, p);
+	
 }
 
 void Blocker::ProcessState()
@@ -464,6 +458,11 @@ void Blocker::ClearSprite()
 
 void Blocker::ResetEnemy()
 {
+	Vector2f p(position.x, position.y);
+
+	Vector2f spriteSize(bc->ts->tileWidth, bc->ts->tileHeight);
+	SetRectCenter(bc->va + vaIndex * 4, spriteSize.x, spriteSize.y, p);
+
 	action = WAIT;
 	dead = false;
 
@@ -477,7 +476,6 @@ void Blocker::ResetEnemy()
 	//UpdateHitboxes();
 
 	UpdateSprite();
-	health = initHealth;
 }
 
 void Blocker::IHitPlayer(int index)
