@@ -8,7 +8,9 @@ struct Airdasher : Enemy
 	enum Action
 	{
 		S_FLOAT,
+		S_CHARGE,
 		S_DASH,
+		S_OUT,
 		S_RETURN,
 		S_Count
 	};
@@ -26,6 +28,9 @@ struct Airdasher : Enemy
 
 	V2d velocity;
 
+	int chargeFrames;
+	int maxCharge;
+
 	CubicBezier dashBez;
 	CubicBezier returnBez;
 
@@ -37,6 +42,7 @@ struct Airdasher : Enemy
 	Action action;
 	int physStepIndex;
 	V2d origPos;
+	V2d currOrig;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
 	CollisionBody *hurtBody;

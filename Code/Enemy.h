@@ -34,6 +34,7 @@ struct BasicBullet : QuadTreeCollider
 	enum BType
 	{
 		BASIC_TURRET,
+		PATROLLER,
 		BAT,
 		CURVE_TURRET,
 		BOSS_CRAWLER,

@@ -26,8 +26,8 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	initHealth = 80;
 	health = initHealth;
 	dashRadius = 500;
-	dashFrames = 60;
-	returnFrames = 60;
+	dashFrames = 36;
+	returnFrames = 30;
 
 	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
 
@@ -89,16 +89,21 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_DASH] = 30;
 	actionLength[S_RETURN] = 60;
+	actionLength[S_OUT] = 20;
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_DASH] = 1;
 	animFactor[S_RETURN] = 1;
+	animFactor[S_OUT] = 1;
 
 	ResetEnemy();
+
+	maxCharge = 15;
 }
 
 void Airdasher::ResetEnemy()
 {
+	currOrig = origPos;
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
 	dead = false;
@@ -122,6 +127,8 @@ void Airdasher::ProcessHit()
 
 void Airdasher::ProcessState()
 {
+
+
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		frame = 0;
@@ -136,22 +143,51 @@ void Airdasher::ProcessState()
 		case S_RETURN:
 			//action = S_FLOAT;
 			break;
+		case S_OUT:
+			action = S_RETURN;
+			break;
 		}
 	}
 	V2d playerPos = owner->GetPlayer(0)->position;
 
-	if (action == S_FLOAT && length(playerPos - position) < dashRadius)
+	bool withinRange = length(playerPos - position) < ( dashRadius + 100.0 );
+	if (withinRange)
 	{
-		action = S_DASH;
-		frame = 0;
-		playerDir = normalize(playerPos - position);
-		physStepIndex = 0;
+		if (action == S_FLOAT)
+		{
+			action = S_CHARGE;
+			frame = 0;
+			chargeFrames = 0;
+		}
+		else if (action == S_CHARGE)
+		{
+			if (chargeFrames == maxCharge)
+			{
+				action = S_DASH;
+				frame = 0;
+				playerDir = normalize(playerPos - position);
+				physStepIndex = 0;
+			}
+			else
+			{
+				chargeFrames++;
+			}
+		}
 	}
+	else
+	{
+		if (action == S_CHARGE)
+		{
+			action = S_FLOAT;
+			frame = 0;
+		}
+	}
+	
 }
 
 void Airdasher::UpdateEnemyPhysics()
 {
-	V2d dest = origPos + playerDir * dashRadius;
+	V2d dest = currOrig + playerDir * dashRadius;
 	switch (action)
 	{
 	case S_DASH:
@@ -159,14 +195,15 @@ void Airdasher::UpdateEnemyPhysics()
 		double a = (double)physStepIndex / (dashFrames * NUM_MAX_STEPS * 5);
 		if (a > 1.0)
 		{
-			action = S_RETURN;
+			action = S_OUT;
 			frame = 0;
 			physStepIndex = 0;
+			break;
 		}
 		double f = dashBez.GetValue(a);
 		double rf = 1.0 - f;
 
-		position = origPos * rf + dest * f;
+		position = currOrig * rf + dest * f;
 
 
 		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
@@ -176,16 +213,20 @@ void Airdasher::UpdateEnemyPhysics()
 	}
 	case S_RETURN:
 	{
-		double a = (double)physStepIndex / (dashFrames * NUM_MAX_STEPS * 5);
+		V2d d = currOrig + playerDir * ( dashRadius / 2.0 );
+		double a = (double)physStepIndex / (returnFrames * NUM_MAX_STEPS * 5);
 		if (a > 1.0)
 		{
-			action = S_FLOAT;
+			action = S_CHARGE;
+			chargeFrames = maxCharge - 5;
 			frame = 0;
+			currOrig = position;
+			break;
 		}
 		double f = returnBez.GetValue(a);
 		double rf = 1.0 - f;
 
-		position = dest * rf + origPos * f;
+		position = dest * rf + d * f;
 
 
 		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;

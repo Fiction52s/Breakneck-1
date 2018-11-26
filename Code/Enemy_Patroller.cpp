@@ -48,7 +48,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	
 	//eventually maybe put this on a multiplier for more variation?
 	//doubt ill need it though
-	speed = pspeed;
+	speed = 3;//pspeed;
 
 
 
@@ -135,8 +135,8 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	turnAnimFactor = 4;
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher(this, BasicBullet::BAT, owner, 16, 1, position, V2d(1, 0), 0, 300);
-	launchers[0]->SetBulletSpeed(20);//70);
+	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, owner, 16, 1, position, V2d(1, 0), 0, 300);
+	launchers[0]->SetBulletSpeed(5);//70);
 	launchers[0]->hitboxInfo->damage = 18;
 	maxAimingFrames = 60;
 

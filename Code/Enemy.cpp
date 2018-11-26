@@ -77,6 +77,7 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		bulletTilesetIndex = 0;
 		break;
 	case BasicBullet::BAT:
+	case BasicBullet::PATROLLER:
 		bulletTilesetIndex = 2;
 		break;
 	case BasicBullet::CURVE_TURRET:
@@ -452,6 +453,7 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	transform = transform.Identity;
 	switch( bulletType )
 	{
+	case PATROLLER:
 	case BAT:
 		transform.rotate( angle );
 		break;
@@ -713,7 +715,7 @@ void BasicBullet::UpdatePhysics()
 
 bool BasicBullet::HitTerrain()
 {
-	cout << "hit terrain" << endl;
+	//cout << "hit terrain" << endl;
 	launcher->handler->BulletHitTerrain( this,
 		minContact.edge, minContact.position );
 	return true;
@@ -804,7 +806,14 @@ void BasicBullet::UpdateSprite()
 {
 	VertexArray &VA = *(launcher->owner->bigBulletVA);
 	//IntRect ir = ts->GetSubRect( (maxFramesToLive - framesToLive) % 5 );
-	Vector2f dims( 32, 32 );
+	Vector2f dims(32, 32);
+	
+	switch (bulletType)
+	{
+	case PATROLLER:
+		dims = Vector2f(64, 64);
+		break;
+	}
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 
 	Vector2f center( position.x, position.y );
@@ -820,6 +829,7 @@ void BasicBullet::UpdateSprite()
 	switch (bulletType)
 	{
 	case BAT:
+	case PATROLLER:
 	{
 		double angle = atan2(velocity.y, velocity.x);
 		angle = angle * 180 / PI;
@@ -1926,7 +1936,7 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(1, 5, .8, 6, 3);
 			break;
 		case EnemyType::EN_PATROLLER:
-			ep = new EnemyParams(1, 5, .8, (3*60)/4, 4);
+			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
 			break;
 		case EnemyType::EN_FOOTTRAP:
 			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
