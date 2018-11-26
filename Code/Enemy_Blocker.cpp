@@ -71,80 +71,81 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 	
 	
 	
-	if (pathSize > 0)
-	{
-		
-	}
-
-	pathParam.push_front(Vector2i( 0, 0 ) );
-
-	for (auto it = pathParam.begin(); it != pathParam.end(); ++it)
-	{
-		(*it) += pos;
-	}
-
-	//
-	auto currPoint = pathParam.begin();
-	++currPoint;
-	auto nextPoint = currPoint;
-	--currPoint;
-
-	V2d currWalk = position;
-	V2d nextD((*nextPoint).x, (*nextPoint).y);
-	double pathWalk = 0;
-	double travel = 0;
-	double tempLen = 0;
-	bool end = false;
-	//while (pathWalk < totalLength)
-	int ind = 0;
-
-	while( true )
-	{
-		if (ind == numBlockers)
-			break;
-		assert(ind < numBlockers);
-		blockers[ind] = new Blocker(this, Vector2i(round(currWalk.x), round(currWalk.y)), ind);
-		cout << blockers[ind]->position.x << ", " << blockers[ind]->position.y << endl;
-		travel = dist;
-
-		tempLen = length(nextD - currWalk);
-		
-		while (tempLen < travel)
-		{
-			travel -= tempLen;
-			currPoint = nextPoint;
-			currWalk = nextD;
-			nextPoint++;
-			if (nextPoint == pathParam.end())
-			{
-				end = true;
-				break;
-			}
-
-			nextD = V2d((*nextPoint).x, (*nextPoint).y);
-				
-			tempLen = length(nextD - currWalk);
-		}
-
-		if (end)
-			break;
-
-		if (travel > 0)
-		{
-			currWalk += travel * normalize(nextD - currWalk);
-		}
-
-		++ind;
-	}
-
-	V2d prevPos;
-	V2d nextPos;
-	V2d currPos;
-	V2d bisector;
-	V2d dir0;
-	V2d dir1;
 	if (numBlockers > 1)
 	{
+		if (pathSize > 0)
+		{
+
+		}
+
+		pathParam.push_front(Vector2i(0, 0));
+
+		for (auto it = pathParam.begin(); it != pathParam.end(); ++it)
+		{
+			(*it) += pos;
+		}
+
+		//
+		auto currPoint = pathParam.begin();
+		++currPoint;
+		auto nextPoint = currPoint;
+		--currPoint;
+
+		V2d currWalk = position;
+		V2d nextD((*nextPoint).x, (*nextPoint).y);
+		double pathWalk = 0;
+		double travel = 0;
+		double tempLen = 0;
+		bool end = false;
+		//while (pathWalk < totalLength)
+		int ind = 0;
+
+		while (true)
+		{
+			if (ind == numBlockers)
+				break;
+			assert(ind < numBlockers);
+			blockers[ind] = new Blocker(this, Vector2i(round(currWalk.x), round(currWalk.y)), ind);
+			cout << blockers[ind]->position.x << ", " << blockers[ind]->position.y << endl;
+			travel = dist;
+
+			tempLen = length(nextD - currWalk);
+
+			while (tempLen < travel)
+			{
+				travel -= tempLen;
+				currPoint = nextPoint;
+				currWalk = nextD;
+				nextPoint++;
+				if (nextPoint == pathParam.end())
+				{
+					end = true;
+					break;
+				}
+
+				nextD = V2d((*nextPoint).x, (*nextPoint).y);
+
+				tempLen = length(nextD - currWalk);
+			}
+
+			if (end)
+				break;
+
+			if (travel > 0)
+			{
+				currWalk += travel * normalize(nextD - currWalk);
+			}
+
+			++ind;
+		}
+
+		V2d prevPos;
+		V2d nextPos;
+		V2d currPos;
+		V2d bisector;
+		V2d dir0;
+		V2d dir1;
+		
 		for (int i = 0; i < numBlockers; ++i)
 		{
 			currPos = blockers[i]->position;
@@ -163,7 +164,7 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 				dir0 = V2d(dir0.y, -dir0.x);
 				dir1 = normalize(nextPos - currPos);
 				dir1 = V2d(dir1.y, -dir1.x);
-				bisector = normalize( dir0 + dir1 );
+				bisector = normalize(dir0 + dir1);
 			}
 			else if (i == 0)
 			{
@@ -181,8 +182,10 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 			blockers[i]->hitboxInfo->kbDir = bisector;
 		}
 	}
-	
-	
+	else
+	{
+		blockers[0] = new Blocker(this, Vector2i(round(pos.x), round(pos.y)), 0);
+	}
 	int minX = blockers[0]->spawnRect.left;
 	int maxX = blockers[0]->spawnRect.left + blockers[0]->spawnRect.width;
 	int minY = blockers[0]->spawnRect.top;
