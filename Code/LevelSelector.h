@@ -56,6 +56,8 @@ struct LevelSelector
 	std::string newLevelName;
 	//LevelServer levelServer;
 	sf::RenderTexture drawPanel;
+	int viewOffset;
+	void ChangeViewOffset( int delta );
 };
 
 

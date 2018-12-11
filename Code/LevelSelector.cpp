@@ -52,6 +52,7 @@ LevelSelector::LevelSelector( MainMenu *mainMenu )
 	localPaths = NULL;
 	mouseDown = false;
 	dirNode = NULL;
+	viewOffset = 0;
 	//entries = new TreeNode;
 	//entries->name = "Maps";
 	//entries->next = NULL;
@@ -118,7 +119,7 @@ void LevelSelector::MouseUpdate( sf::Vector2f mousePos )
 	Vector2f adjPos( mousePos.x - position.x, mousePos.y - position.y );
 	if( adjPos.x >= 0 && adjPos.x <= width && adjPos.y >= 0 && adjPos.y < yspacing * numTotalEntries )
 	{
-		mouseOverIndex = (int)adjPos.y / yspacing;
+		mouseOverIndex = (int)adjPos.y / yspacing + viewOffset;
 		//cout << "selectedIndex: " << selectedIndex << endl;
 	}
 	else
@@ -141,7 +142,7 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 			Vector2f adjPos( mousePos.x - position.x, mousePos.y - position.y );
 			if( adjPos.x >= 0 && adjPos.x <= width && adjPos.y >= 0 && adjPos.y < yspacing * numTotalEntries )
 			{
-				mouseDownIndex = (int)adjPos.y / yspacing;
+				mouseDownIndex = (int)adjPos.y / yspacing + viewOffset;
 				//cout << "selectedIndex: " << selectedIndex << endl;
 			}
 			else
@@ -159,7 +160,7 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 			Vector2f adjPos( mousePos.x - position.x, mousePos.y - position.y );
 			if( adjPos.x >= 0 && adjPos.x <= width && adjPos.y >= 0 && adjPos.y < yspacing * numTotalEntries )
 			{
-				int testIndex = (int)adjPos.y / yspacing;
+				int testIndex = (int)adjPos.y / yspacing + viewOffset;
 				if( mouseDownIndex == testIndex )
 				{
 					selectedIndex = testIndex;
@@ -323,18 +324,28 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 
 void LevelSelector::Draw( RenderTarget *target )
 {
-	drawPanel.clear(sf::Color::Green);
+	int totalShown = 27;
 
-	if( selectedIndex >= 0 )
+	drawPanel.clear(sf::Color::Green);
+	View v;
+	v.setCenter(drawPanel.getSize().x / 2, drawPanel.getSize().y / 2 + yspacing * viewOffset);
+	v.setSize(drawPanel.getSize().x, drawPanel.getSize().y);
+	drawPanel.setView(v);
+//	View v;
+//	)
+	///drawPanel.setView( )
+
+	int tSelected = selectedIndex;// -viewOffset;
+	if(tSelected >= 0 )
 	{
 		sf::RectangleShape rs;
 		rs.setFillColor( Color::Blue );
 		rs.setSize( Vector2f( width, yspacing ) );
-		rs.setPosition( position.x, position.y + yspacing * selectedIndex );
+		rs.setPosition( position.x, position.y + yspacing * tSelected);
 		drawPanel.draw( rs );
 	}
 	
-	if( mouseOverIndex >= 0 && mouseOverIndex != selectedIndex )
+	if( mouseOverIndex >= 0 && mouseOverIndex != tSelected )
 	{
 		sf::RectangleShape rs;
 		rs.setFillColor( Color::Magenta );
@@ -343,8 +354,13 @@ void LevelSelector::Draw( RenderTarget *target )
 		drawPanel.draw( rs );
 	}
 
+	
 	for( int i = 0; i < numTotalEntries; ++i )
 	{
+		if (i < viewOffset || i >= numTotalEntries || i > viewOffset + totalShown )
+		{
+			continue;
+		}
 		drawPanel.draw( text[i] );
 	}
 
@@ -383,5 +399,16 @@ void LevelSelector::PrintDir( TreeNode * dir )
 	{
 		cout << "+ " << (*it)->name << endl;
 		PrintDir( (*it) );
+	}
+}
+
+void LevelSelector::ChangeViewOffset(int delta)
+{
+	viewOffset += delta;
+	if (viewOffset < 0)
+		viewOffset = 0;
+	else if (viewOffset + 27 > numTotalEntries)
+	{
+		viewOffset = numTotalEntries - 27;
 	}
 }

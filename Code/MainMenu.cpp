@@ -1224,6 +1224,12 @@ void MainMenu::CustomMapsOption()
 					}
 					break;
 				}
+			case sf::Event::MouseWheelMoved:
+			 {
+				 //std::cout << event.mouseWheel.delta << '\n';
+				ls.ChangeViewOffset(-ev.mouseWheel.delta);
+				break;
+			 }
 			}
 		}
 
