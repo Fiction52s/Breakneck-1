@@ -5,7 +5,7 @@
 
 struct ComboObject;
 
-struct Comboer : Enemy
+struct Comboer : Enemy, SurfaceMoverHandler
 {
 	enum Action
 	{
@@ -15,8 +15,22 @@ struct Comboer : Enemy
 		S_Count
 	};
 
+	enum ComboerType
+	{
+		T_STRAIGHT,
+		T_GRAVITY,
+		T_REVERSEGRAVITY,
+		T_BOUNCE,
+		T_Count
+	};
+
 	Comboer(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
+		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed,
+		ComboerType t );
+
+	SurfaceMover *mover;
+	void HitTerrainAerial(Edge *, double);
+
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -30,8 +44,12 @@ struct Comboer : Enemy
 	void AdvanceTargetNode();
 	CollisionBox &GetEnemyHitbox();
 
+	double gravFactor;
+	double maxFallSpeed;
+
 	ComboObject *comboObj;
 
+	ComboerType cType;
 	V2d velocity;
 	int shootFrames;
 	int shootLimit;

@@ -345,10 +345,6 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	animFactor[EXPLODE] = 2;
 
 	ResetEnemy();
-
-	
-
-	
 }
 
 void Blocker::ProcessState()

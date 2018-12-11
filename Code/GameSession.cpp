@@ -1821,7 +1821,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> speed;
 
 				//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-				Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, speed);
+				Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, speed, Comboer::ComboerType::T_STRAIGHT);
 
 
 				fullEnemyList.push_back(enemy);
@@ -3783,10 +3783,6 @@ bool GameSession::OpenFile( string fileName )
 		bool topBorderOn = false;
 		if (inversePoly != NULL)
 		{
-
-
-
-
 			int trueTop = mh->topBounds;
 			int possibleTop = inversePoly->aabb.top; //- extraBorder;
 			if (possibleTop > trueTop)
@@ -3794,35 +3790,31 @@ bool GameSession::OpenFile( string fileName )
 			else
 			{
 				topBorderOn = true;
-				
 			}
-
-
-
-			//mh->topBounds = ;
-			//mh->leftBounds = inversePoly->aabb.left - extra;
-			//mh->boundsWidth = inversePoly->aabb.width + extra * 2;
-			mh->topBounds = trueTop - extraBorder/2 ;
-			mh->boundsHeight = (inversePoly->aabb.top + inversePoly->aabb.height + extraBorder) - trueTop;
+			mh->topBounds = trueTop - extraBorder/2;
+			int inversePolyBottom = inversePoly->aabb.top + inversePoly->aabb.height;
+			mh->boundsHeight = (inversePolyBottom + extraBorder) - trueTop;
 		}
 
-
-
 		bool blackBorder[2];
-		int newRight = (inversePoly->aabb.left + inversePoly->aabb.width);
-		blackBorder[0]= inversePoly->aabb.left < mh->leftBounds;
-		blackBorder[1] = newRight > (mh->leftBounds + mh->boundsWidth);
+		int inversePolyRight = (inversePoly->aabb.left + inversePoly->aabb.width);
+		blackBorder[0]= inversePoly->aabb.left < mh->leftBounds; //inverse is further left than border
+		blackBorder[1] = inversePolyRight > (mh->leftBounds + mh->boundsWidth); //inverse is further right than border
 
 		int leftB = mh->leftBounds;
 		int rightB = mh->leftBounds + mh->boundsWidth;
 		if (!blackBorder[0])
 		{
 			mh->leftBounds = inversePoly->aabb.left - extraBorder;
+			mh->boundsWidth = rightB - mh->leftBounds;
 		}
 		if (!blackBorder[1])
 		{
-			int newRight = (inversePoly->aabb.left + inversePoly->aabb.width);
-			mh->boundsWidth = (newRight + extraBorder) - mh->leftBounds;
+			mh->boundsWidth = (inversePolyRight + extraBorder) - mh->leftBounds;
+		}
+		else
+		{
+			cout << "creating black border at " << (mh->leftBounds + mh->boundsWidth) << endl;
 		}
 
 		for (int i = 0; i < 8; ++i)
@@ -4074,6 +4066,7 @@ void GameSession::SetGlobalBorders()
 	right->v0 = bottomRight;
 	right->v1 = topRight;
 	right->edgeType = Edge::BORDER;
+	cout << "making new edge at x value: " << right->v0.x << endl;
 
 	Edge *top = new Edge;
 	top->v0 = topRight;

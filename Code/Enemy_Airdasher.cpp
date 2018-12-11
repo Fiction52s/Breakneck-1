@@ -45,8 +45,8 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
-	hurtBox.rw = 16;
-	hurtBox.rh = 16;
+	hurtBox.rw = 48;
+	hurtBox.rh = 48;
 	hurtBody = new CollisionBody(1);
 	hurtBody->AddCollisionBox(0, hurtBox);
 
@@ -56,8 +56,8 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 16;
-	hitBox.rh = 16;
+	hitBox.rw = 48;
+	hitBox.rh = 48;
 	hitBody = new CollisionBody(1);
 	hitBody->AddCollisionBox(0, hitBox);
 
