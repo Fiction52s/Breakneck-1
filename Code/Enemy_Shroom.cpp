@@ -21,6 +21,8 @@ using namespace sf;
 Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	:Enemy(owner, EnemyType::EN_SHROOM, p_hasMonitor, 1), ground(g), edgeQuantity(q)
 {
+	
+
 	action = LATENT;
 	initHealth = 40;
 	health = initHealth;
@@ -159,7 +161,6 @@ void Shroom::EnemyDraw(sf::RenderTarget *target)
 
 void Shroom::UpdateSprite()
 {
-	
 	switch (action)
 	{
 	case LATENT:
@@ -286,16 +287,12 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	actionLength[RISING] = 30;
 	actionLength[DROOPING] = 30;
 	actionLength[DISSIPATING] = 1;
-	actionLength[SHOT] = 30;
-	actionLength[EXPLODE] = 20;
 
 	animFactor[WAIT] = 1;
 	animFactor[APPEARING] = 2;
 	animFactor[RISING] = 2;
 	animFactor[DROOPING] = 2;
 	animFactor[DISSIPATING] = 2;
-	animFactor[SHOT] = 1;
-	animFactor[EXPLODE] = 1;
 
 	currentCycle = 0;
 	cycleLimit = 3;
@@ -315,20 +312,47 @@ void ShroomJelly::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
+		if (receivedHit->hDir == HitboxInfo::DOWN ||
+			receivedHit->hDir == HitboxInfo::DOWNLEFT ||
+			receivedHit->hDir == HitboxInfo::DOWNRIGHT)
+		{
+			action = DISSIPATING;
+			frame = 0;
+			SetHitboxes(NULL, 0);
+			SetHurtboxes(NULL, 0);
+			owner->GetPlayer(0)->ConfirmEnemyKill(this);
+			ConfirmKill();
+			return;
+		}
+
+		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+		ConfirmHitNoKill();
+		action = SHOT;
+		frame = 0;
+		SetHitboxes(NULL, 0);
+		SetHurtboxes(NULL, 0);
+
 		V2d dir;
+		double speed = 10;
 
 		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
 
-		switch (receivedHit->hDir)
+		dir = V2d(0, -1);
+		comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
+
+		/*switch (receivedHit->hDir)
 		{
 		case HitboxInfo::LEFT:
-			dir = V2d(-1, 0);
+			dir = V2d(0, -1);
+			comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
 			break;
 		case HitboxInfo::RIGHT:
-			dir = V2d(1, 0);
+			dir = V2d(0, -1);
+			comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
 			break;
 		case HitboxInfo::UP:
 			dir = V2d(0, -1);
+			comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
 			break;
 		case HitboxInfo::DOWN:
 			dir = V2d(0, 1);
@@ -348,21 +372,8 @@ void ShroomJelly::ProcessHit()
 		default:
 			assert(0);
 
-		}
-
-
+		}*/
 		dir = normalize(dir);
-
-		double speed = 10;
-
-		velocity = dir * speed;
-
-		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
-		ConfirmHitNoKill();
-		action = SHOT;
-		frame = 0;
-		SetHitboxes(NULL, 0);
-		SetHurtboxes(NULL, 0);
 
 		velocity = dir * speed;
 
@@ -376,9 +387,8 @@ void ShroomJelly::ComboHit()
 	++currHits;
 	if (currHits >= hitLimit)
 	{
-		action = EXPLODE;
+		action = DISSIPATING;
 		frame = 0;
-		velocity = V2d(0, 0);
 	}
 }
 
@@ -416,12 +426,11 @@ void ShroomJelly::ProcessState()
 		switch (action)
 		{
 		case WAIT:
-			action = RISING;
+			action = APPEARING;
 			SetHitboxes(hitBody, 0);
 			SetHurtboxes(hurtBody, 0);
 			break;
 		case APPEARING:
-			
 			action = RISING;
 			break;
 		case RISING:
@@ -433,18 +442,9 @@ void ShroomJelly::ProcessState()
 			if (currentCycle == cycleLimit)
 			{
 				action = DISSIPATING;
-				velocity = V2d(0, 0);
 			}
 			break;
 		case DISSIPATING:
-			numHealth = 0;
-			dead = true;
-			break;
-		case SHOT:
-			action = EXPLODE;
-			velocity = V2d(0, 0);
-			break;
-		case EXPLODE:
 			numHealth = 0;
 			dead = true;
 			break;
@@ -459,7 +459,7 @@ void ShroomJelly::ProcessState()
 	}
 	else
 	{
-		if (action != DISSIPATING && action != APPEARING && action != WAIT && action != EXPLODE)
+		if (action != DISSIPATING && action != APPEARING && action != WAIT)
 		{
 			if (abs(playerPos.x - position.x) < 10)
 			{
@@ -527,9 +527,6 @@ void ShroomJelly::UpdateSprite()
 	case DISSIPATING: 
 		sprite.setTextureRect(ts->GetSubRect(18
 			+ frame / animFactor[DISSIPATING]) );
-		break;
-	case EXPLODE:
-		sprite.setTextureRect(ts->GetSubRect(0));
 		break;
 	}
 

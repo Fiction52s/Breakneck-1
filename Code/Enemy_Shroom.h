@@ -52,7 +52,6 @@ struct ShroomJelly : Enemy
 		RISING,
 		DROOPING,
 		DISSIPATING,
-		EXPLODE,
 		SHOT
 	};
 
