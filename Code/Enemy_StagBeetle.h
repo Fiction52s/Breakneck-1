@@ -35,6 +35,8 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	bool StartRoll();
 	void FinishedRoll();
 
+	Shield *shield;
+
 	sf::Sprite sprite;
 
 	Tileset *ts;

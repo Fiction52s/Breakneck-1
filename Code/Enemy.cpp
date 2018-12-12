@@ -1356,7 +1356,7 @@ void Enemy::DirectKill()
 
 	dead = true;
 
-	health = 0;
+	numHealth = 0;
 	HandleNoHealth();
 	receivedHit = NULL;
 
@@ -1976,6 +1976,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			break;
 		case EnemyType::EN_CURVETURRET:
 			ep = new EnemyParams(2, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_STAGBEETLE:
+			ep = new EnemyParams(2, 5, .8, 6, 4);
 			break;
 		case EnemyType::EN_SPIDER:
 			ep = new EnemyParams(2, 5, .8, 6, 3);

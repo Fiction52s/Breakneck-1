@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_StagBeetle.h"
+#include "Shield.h"
 
 using namespace std;
 using namespace sf;
@@ -115,9 +116,6 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	hitboxInfo->knockback = 0;
 	hitBody->hitboxInfo = hitboxInfo;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-
 	crawlAnimationFactor = 5;
 	rollAnimationFactor = 5;
 
@@ -130,18 +128,25 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	cutObject->SetSubRectFront(0);
 	cutObject->SetSubRectBack(1);
 
+	shield = new Shield(Shield::ShieldType::T_BLOCK, 80, 3, this);
+	shield->SetPosition(position);
+
 	ResetEnemy();
 }
 
 void StagBeetle::DebugDraw(RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
-	if (!dead)
-		testMover->physBody.DebugDraw(target);
+	//if (!dead)
+		//testMover->physBody.DebugDraw(target);
 }
 
 void StagBeetle::ResetEnemy()
 {
+
+	SetHitboxes(hitBody, 0);
+	SetHurtboxes(hurtBody, 0);
+
 	action = IDLE;
 	testMover->ground = startGround;
 	testMover->edgeQuantity = startQuant;
@@ -165,6 +170,10 @@ void StagBeetle::ResetEnemy()
 
 	UpdateSprite();
 	UpdateHitboxes();
+
+	currShield = shield;
+	shield->Reset();
+	shield->SetPosition(position);
 }
 
 void StagBeetle::UpdateHitboxes()
@@ -329,6 +338,8 @@ void StagBeetle::UpdateEnemyPhysics()
 	{
 		testMover->Move(slowMultiple, numPhysSteps);
 		position = testMover->physBody.globalPosition;
+
+		shield->SetPosition(position);
 	}
 
 
