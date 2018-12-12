@@ -52,12 +52,14 @@ struct ShroomJelly : Enemy
 		RISING,
 		DROOPING,
 		DISSIPATING,
-		SHOT
+		SHOT,
+		EXPLODING,
+		A_Count
 	};
 
 	Action action;
-	int actionLength[DISSIPATING + 1];
-	int animFactor[DISSIPATING + 1];
+	int actionLength[A_Count];
+	int animFactor[A_Count];
 
 	ShroomJelly(GameSession *owner, V2d &pos );
 	void EnemyDraw(sf::RenderTarget *target);

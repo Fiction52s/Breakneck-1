@@ -98,8 +98,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	hitBody->hitboxInfo = hitboxInfo;
 
 
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	SetHurtboxes(NULL, 0);
+	SetHitboxes(NULL, 0);
 
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 5;
@@ -124,8 +124,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 void Crawler::ResetEnemy()
 {
 	clockwise = origCW;
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	SetHurtboxes(NULL, 0);
+	SetHitboxes(NULL, 0);
 	framesUntilBurrow = maxFramesUntilBurrow;
 	
 	mover->ground = startGround;
@@ -275,12 +275,22 @@ void Crawler::ProcessState()
 	switch (action)
 	{
 	case UNBURROW:
+		if (frame == 4 * 14)
+		{
+			SetHurtboxes(hurtBody, 0);
+			SetHitboxes(hitBody, 0);
+		}
 		break;
 	case CRAWL:
 		break;
 	case DASH:
 		break;
 	case BURROW:
+		if (frame == 4 * 12)
+		{
+			SetHurtboxes(NULL, 0);
+			SetHitboxes(NULL, 0);
+		}
 		break;
 	}
 
@@ -497,8 +507,8 @@ void Crawler::UpdateSprite()
 void Crawler::DebugDraw(RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
-	if (!dead)
-		mover->physBody.DebugDraw(target);
+	//if (!dead)
+	//	mover->physBody.DebugDraw(target);
 }
 
 void Crawler::TransferEdge(Edge *e)

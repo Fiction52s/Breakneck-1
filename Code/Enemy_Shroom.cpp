@@ -210,7 +210,7 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	health = initHealth;
 
 	shootLimit = 40;
-	hitLimit = 3;
+	hitLimit = 1;
 
 	double height = 160;
 	ts = owner->GetTileset("Enemies/shroom_jelly_160x160.png", 160, 160);
@@ -235,6 +235,8 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	hurtBox.offset.y = 0;
 	hurtBox.rw = 32;
 	hurtBox.rh = 32;
+
+	
 	hurtBody->AddCollisionBox(0, hurtBox);
 
 	hitboxInfo = new HitboxInfo;
@@ -244,6 +246,8 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
+
+	
 
 	hitBody = new CollisionBody(1);
 	CollisionBox hitBox;
@@ -256,6 +260,8 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	hitBox.rh = 32;
 	hitBody->AddCollisionBox(0, hitBox);
 	hitBody->hitboxInfo = hitboxInfo;
+
+	
 
 	comboObj = new ComboObject(this);
 
@@ -270,8 +276,20 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody = new CollisionBody(1);
+	comboObj->enemyHitBody = new CollisionBody(2);
+
 	comboObj->enemyHitBody->AddCollisionBox(0, hitBox);
+
+	CollisionBox exBox;
+	exBox.type = CollisionBox::Hit;
+	exBox.isCircle = true;
+	exBox.globalAngle = 0;
+	exBox.offset.x = 0;
+	exBox.offset.y = 0;
+	exBox.rw = 128;
+	exBox.rh = 128;
+
+	comboObj->enemyHitBody->AddCollisionBox(1, exBox);
 
 	comboObj->enemyHitboxFrame = 0;
 
@@ -287,12 +305,16 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	actionLength[RISING] = 30;
 	actionLength[DROOPING] = 30;
 	actionLength[DISSIPATING] = 1;
+	actionLength[SHOT] = 30;
+	actionLength[EXPLODING] = 20;
 
 	animFactor[WAIT] = 1;
 	animFactor[APPEARING] = 2;
 	animFactor[RISING] = 2;
 	animFactor[DROOPING] = 2;
 	animFactor[DISSIPATING] = 2;
+	animFactor[SHOT] = 1;
+	animFactor[EXPLODING] = 1;
 
 	currentCycle = 0;
 	cycleLimit = 3;
@@ -312,19 +334,6 @@ void ShroomJelly::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		if (receivedHit->hDir == HitboxInfo::DOWN ||
-			receivedHit->hDir == HitboxInfo::DOWNLEFT ||
-			receivedHit->hDir == HitboxInfo::DOWNRIGHT)
-		{
-			action = DISSIPATING;
-			frame = 0;
-			SetHitboxes(NULL, 0);
-			SetHurtboxes(NULL, 0);
-			owner->GetPlayer(0)->ConfirmEnemyKill(this);
-			ConfirmKill();
-			return;
-		}
-
 		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 		action = SHOT;
@@ -337,22 +346,16 @@ void ShroomJelly::ProcessHit()
 
 		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
 
-		dir = V2d(0, -1);
-		comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
-
-		/*switch (receivedHit->hDir)
+		switch (receivedHit->hDir)
 		{
 		case HitboxInfo::LEFT:
-			dir = V2d(0, -1);
-			comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
+			dir = V2d(-1, 0);
 			break;
 		case HitboxInfo::RIGHT:
-			dir = V2d(0, -1);
-			comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
+			dir = V2d(1, 0);
 			break;
 		case HitboxInfo::UP:
 			dir = V2d(0, -1);
-			comboObj->enemyHitboxInfo->hDir = HitboxInfo::UP;
 			break;
 		case HitboxInfo::DOWN:
 			dir = V2d(0, 1);
@@ -372,7 +375,7 @@ void ShroomJelly::ProcessHit()
 		default:
 			assert(0);
 
-		}*/
+		}
 		dir = normalize(dir);
 
 		velocity = dir * speed;
@@ -387,7 +390,9 @@ void ShroomJelly::ComboHit()
 	++currHits;
 	if (currHits >= hitLimit)
 	{
-		action = DISSIPATING;
+		action = EXPLODING;
+		comboObj->enemyHitboxFrame = 1;
+		velocity = V2d(0, 0);
 		frame = 0;
 	}
 }
@@ -442,24 +447,37 @@ void ShroomJelly::ProcessState()
 			if (currentCycle == cycleLimit)
 			{
 				action = DISSIPATING;
+				velocity = V2d(0, 0);
 			}
 			break;
+		case EXPLODING:
 		case DISSIPATING:
 			numHealth = 0;
 			dead = true;
+			break;
+		case SHOT:
+			action = EXPLODING;
+			comboObj->enemyHitboxFrame = 1;
+			velocity = V2d(0, 0);
 			break;
 		}
 	}
 
 	
-
-	if (action == SHOT)
+	if (action == EXPLODING)
+	{
+		if (frame == 3)
+		{
+			
+		}
+	}
+	else if (action == SHOT)
 	{
 
 	}
 	else
 	{
-		if (action != DISSIPATING && action != APPEARING && action != WAIT)
+		if (action != DISSIPATING && action != APPEARING && action != WAIT )
 		{
 			if (abs(playerPos.x - position.x) < 10)
 			{
@@ -528,6 +546,9 @@ void ShroomJelly::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(18
 			+ frame / animFactor[DISSIPATING]) );
 		break;
+	case EXPLODING:
+		sprite.setTextureRect(ts->GetSubRect( 0 ));
+		break;
 	}
 
 	if (hasMonitor && !suppressMonitor)
@@ -542,6 +563,7 @@ void ShroomJelly::UpdateSprite()
 void ShroomJelly::UpdateHitboxes()
 {
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+
 	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
 	hurtBox.globalPosition = position;
 	hurtBox.globalAngle = 0;
