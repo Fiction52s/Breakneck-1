@@ -101,12 +101,12 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	hurtBody = new CollisionBody(1);
 	CollisionBox hurtBox;
 	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
+	hurtBox.isCircle = false;
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 40;
-	hurtBox.rh = 40;
+	hurtBox.offset.y = 20;
+	hurtBox.rw = 80;
+	hurtBox.rh = 100;
 	hurtBox.globalAngle = angle;
 	hurtBox.globalPosition = position;
 

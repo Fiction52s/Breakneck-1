@@ -597,7 +597,7 @@ void Camera::UpdateEase()
 	}
 }
 
-void Camera::ManualUpdate()
+void Camera::ManualUpdate( Actor *player )
 {
 	if (manual && currMove != NULL)
 	{
@@ -605,7 +605,6 @@ void Camera::ManualUpdate()
 		{
 			currMove->Update();
 		}
-
 
 		if (relativeMoveSeq)
 		{
@@ -621,9 +620,14 @@ void Camera::ManualUpdate()
 
 
 	}
+	
+
 	UpdateRumble();
 
 	UpdateEase();
+
+	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
+	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 }
 
 void Camera::UpdateZoomLevel( ControllerState &con, ControllerState &prevcon )
@@ -1017,6 +1021,8 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	{
 		zoomFactor = barrierZoom;
 	}
+
+
 }
 
 void Camera::UpdateBossFight(int bossFightType)
@@ -1048,7 +1054,7 @@ void Camera::Update( Actor *player )
 
 	if (manual)
 	{
-		ManualUpdate();
+		ManualUpdate( player );
 		return;
 	}
 	V2d playerPos = player->position;
@@ -1105,7 +1111,7 @@ void Camera::Update( Actor *player )
 	pos.x += offset.x;
 	pos.y += offset.y;
 
-	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
+	
 
 	double enemyZoom = GetNewEnemyZoom( player );
 	//if( numActive == 0 )
@@ -1156,13 +1162,12 @@ void Camera::Update( Actor *player )
 	else if( zoomFactor > maxZoom )
 		zoomFactor = maxZoom;
 
-	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
-
-	
-
 	UpdateEaseOut();
 
 	UpdateRumble();
+
+	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
+	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 
 
 

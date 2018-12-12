@@ -88,7 +88,7 @@ struct Camera
 	double GetNewEnemyZoom( Actor *a );
 	void Update( Actor *a );
 	void UpdateBossFight(int bossFightType);
-	void ManualUpdate();
+	void ManualUpdate( Actor *a );
 	void UpdateZoomLevel(ControllerState &con, ControllerState &prevcon);
 	void UpdateVS( Actor *a, 
 		Actor *a2 );

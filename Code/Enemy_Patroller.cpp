@@ -68,20 +68,20 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	hurtBox.isCircle = true;
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 16;
-	hurtBox.rh = 16;
+	hurtBox.offset.y = 30;
+	hurtBox.rw = 32;
+	hurtBox.rh = 72;
 	hurtBody = new CollisionBody(1);
 	hurtBody->AddCollisionBox(0, hurtBox);
 
 	CollisionBox hitBox;
 	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
+	hitBox.isCircle = false;
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 16;
-	hitBox.rh = 16;
+	hitBox.offset.y = 30;
+	hitBox.rw = 32;
+	hitBox.rh = 72;
 	hitBody = new CollisionBody(1);
 	hitBody->AddCollisionBox(0, hitBox);
 	
@@ -553,9 +553,9 @@ void Patroller::UpdateHitboxes()
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
 	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
 	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
+	hurtBox.globalAngle = currentAngle;
 	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
+	hitBox.globalAngle = currentAngle;
 
 	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
