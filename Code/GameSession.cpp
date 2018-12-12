@@ -9997,6 +9997,8 @@ void GameSession::ClearFX()
 	}
 }
 
+
+
 void GameSession::RestartLevel()
 {
 	if( raceFight != NULL )
@@ -10062,12 +10064,7 @@ void GameSession::RestartLevel()
 		ResetShipSequence();
 	}
 	//currentZone = NULL;
-	cam.zoomFactor = 1;
-	
-	cam.offset = Vector2f( 0, 0 );
-	cam.manual = false;
-	cam.rumbling = false;
-	cam.easing = false;
+	cam.Reset();
 
 	/*if( !cam.bossCrawler )
 	{

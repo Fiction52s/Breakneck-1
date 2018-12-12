@@ -54,6 +54,23 @@ Camera::Camera()
 	offsetVel = Vector2f(0, 0);
 }
 
+void Camera::Reset()
+{
+	rX = 0;
+	rY = 0;
+	currMove = NULL;
+	easingOut = false;
+	zoomLevel = 0;
+	easing = false;
+	manual = false;
+	rumbling = false;
+	zoomFactor = 1;
+	offset.x = 0;
+	offset.y = 0;
+	pos.x = 0;
+	pos.y = 0;
+}
+
 void Camera::EaseOutOfManual( int frames )
 {
 	SetManual( false );
@@ -527,7 +544,7 @@ void Camera::UpdateRumble()
 	if( !rumbling )
 		return;
 
-	if( rumbleFrame > 0 )
+	if (rumbleFrame > 0)
 	{
 		pos.x -= rX;
 		pos.y -= rY;
@@ -536,6 +553,8 @@ void Camera::UpdateRumble()
 	if( rumbleFrame == rumbleLength )
 	{
 		rumbling = false;
+		rX = 0;
+		rY = 0;
 		return;
 	}
 	//this needs to be random?
@@ -829,34 +848,36 @@ void Camera::SetMovementOffset( V2d &pVel )
 
 void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg, float &yChangePos, float &yChangeNeg )
 {
+	Vector2f truePos = pos;// +Vector2f(rX, rY);
+
 	int topBoundsCamExtra = 50;
 	int topBounds = owner->mh->topBounds + topBoundsCamExtra;
 
 	float halfw = 960 / 2;
 	float halfh = 540 / 2;
 
-	float left = pos.x - halfw * GetZoom();
+	float left = truePos.x - halfw * GetZoom();
 
 	float tdiff = owner->mh->leftBounds - left;
 	if (tdiff > 0)
 	{
 		xChangePos = tdiff;
 	}
-	float right = pos.x + halfw * GetZoom();
+	float right = truePos.x + halfw * GetZoom();
 
 	tdiff = right - (owner->mh->leftBounds + owner->mh->boundsWidth);
 	if (tdiff > 0)
 	{
 		xChangeNeg = -tdiff;
 	}
-	float top = pos.y - halfh * GetZoom();
+	float top = truePos.y - halfh * GetZoom();
 	tdiff = topBounds - top;
 	if (tdiff > 0)
 	{
 		yChangePos = tdiff;
 	}
 
-	float bot = pos.y + halfh * GetZoom();
+	float bot = truePos.y + halfh * GetZoom();
 	tdiff = bot - (owner->mh->topBounds + owner->mh->boundsHeight);
 	if (tdiff > 0)
 	{

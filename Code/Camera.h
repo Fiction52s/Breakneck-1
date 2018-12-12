@@ -15,6 +15,7 @@ struct Camera
 	float GetZoom();
 	void Set( sf::Vector2f &pos, float zFactor,
 		int zLevel );
+	void Reset();
 	void SetRumble( int xFactor, int yFactor, int duration );
 	void UpdateRumble();
 	void EaseOutOfManual( int frames );
