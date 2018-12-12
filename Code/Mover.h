@@ -34,6 +34,8 @@ struct SurfaceMover : QuadTreeCollider
 		double radius);
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void Update();
+	void AddAirForce(V2d &force);
+	void ClearAirForces();
 	void SetSpeed( double speed );
 	void Move( int slowMultiple, int numPhysSteps );
 	bool RollClockwise( double &q,
@@ -62,6 +64,7 @@ struct SurfaceMover : QuadTreeCollider
 	double groundSpeed;
 	Contact minContact;
 	bool col;
+	V2d force;
 	//std::string queryMode;
 	sf::Vector2<double> tempVel;
 

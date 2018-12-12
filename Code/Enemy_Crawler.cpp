@@ -356,7 +356,7 @@ void Crawler::ProcessState()
 
 void Crawler::UpdateEnemyPhysics()
 {
-	if (health > 0 ) //!dead
+	if (numHealth > 0 ) //!dead
 	{
 		mover->Move(slowMultiple, numPhysSteps );
 		position = mover->physBody.globalPosition;

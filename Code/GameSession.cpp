@@ -55,6 +55,7 @@
 #include "Enemy_Blocker.h"
 #include "Enemy_Booster.h"
 #include "Enemy_Comboer.h"
+#include "Enemy_StagBeetle.h"
 //#include "Enemy_Cactus.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
@@ -2267,12 +2268,12 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> speed;
 
 				
-				/*StagBeetle *enemy = new StagBeetle( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
+				StagBeetle *enemy = new StagBeetle( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
 					edgeQuantity, clockwise, speed );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "curveturret" )
 			{

@@ -28,8 +28,17 @@ SurfaceMover::SurfaceMover( GameSession *p_owner, Edge *startGround,
 	physBody.rw = radius;
 	physBody.rh = radius;
 	physBody.offset = V2d( 0, 0 );
-
+	force = V2d(0, 0);
 	UpdateGroundPos();
+}
+
+void SurfaceMover::AddAirForce(V2d &p_force)
+{
+	force += p_force;
+}
+void SurfaceMover::ClearAirForces()
+{
+	force = V2d(0, 0);
 }
 
 void SurfaceMover::UpdateGroundPos()
@@ -768,7 +777,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 	}
 	else 
 	{
-		//velocity += gravity / NUM_STEPS / (double)slowMultiple;
+		velocity += force / NUM_STEPS / (double)slowMultiple;
 		//cout << "move through the air" << endl;
 
 		V2d movementVec = velocity;
