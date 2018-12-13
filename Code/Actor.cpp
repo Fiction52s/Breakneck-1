@@ -8885,14 +8885,14 @@ facingRight = false;
 		{
 			if( slowMultiple == 1 )
 			{
-				cout << "a" << endl;
+				//cout << "a" << endl;
 				slowCounter = 1;
 				slowMultiple = timeSlowStrength;
 			}
 		}
 		else
 		{
-			cout << "b" << endl;
+			//cout << "b" << endl;
 			slowCounter = 1;
 			slowMultiple = 1;
 		}

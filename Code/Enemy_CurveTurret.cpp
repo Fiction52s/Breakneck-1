@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_CurveTurret.h"
+#include "Shield.h"
 
 using namespace std;
 using namespace sf;
@@ -22,7 +23,14 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	Vector2i &gravFactor, bool relative )
 		:Enemy( owner, EnemyType::EN_CURVETURRET, p_hasMonitor, 2 ), framesWait( wait), bulletSpeed( speed ), ground( g ),
 		edgeQuantity( q )
-{
+{	
+	shield = new Shield(Shield::ShieldType::T_BLOCK, 80, 3, this);
+	currShield = shield;
+	shield->Reset();
+	shield->SetPosition(position);
+
+	
+
 	animationFactor = 3;
 	assert( framesWait > 13 * animationFactor );
 
@@ -121,6 +129,13 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(12);
 	cutObject->SetSubRectBack(11);
+
+	ResetEnemy();
+}
+
+void CurveTurret::Setup()
+{
+	TurretSetup();
 }
 
 void CurveTurret::BulletHitTerrain(BasicBullet *b, 
@@ -131,6 +146,9 @@ void CurveTurret::BulletHitTerrain(BasicBullet *b,
 	double angle = atan2( norm.y, -norm.x );
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
+
+	if (b->launcher->def_e == NULL)
+		b->launcher->SetDefaultCollision(b->framesToLive, edge, pos);
 }
 
 void CurveTurret::BulletHitPlayer(BasicBullet *b )
@@ -146,24 +164,48 @@ void CurveTurret::BulletHitPlayer(BasicBullet *b )
 void CurveTurret::ResetEnemy()
 {
 	dead = false;
+	action = WAIT;
 	frame = 0;
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
 	health = initHealth;
+	currShield = shield;
+	shield->Reset();
+	shield->SetPosition(position);
 }
 
 void CurveTurret::ProcessState()
 {
-	if( frame == framesWait )
+	switch (action)
 	{
-		frame = 0;
-	}
-
-	//if( frame == 12 * animationFactor && slowCounter == 1 )
-	if( frame == 4 * animationFactor && slowCounter == 1 )
+	case WAIT:
 	{
-		launchers[0]->Fire();
+		if (length(owner->GetPlayer(0)->position - position) < 500)
+		{
+			action = ATTACK;
+			frame = 0;
+		}
+		break;
 	}
+	case ATTACK:
+	{
+		if (frame == 13 * animationFactor)
+		{
+			frame = 0;
+			if (length(owner->GetPlayer(0)->position - position) >= 500)
+			{
+				action = WAIT;
+				frame = 0;
+			}
+		}
+		else if (frame == 4 * animationFactor && slowCounter == 1)
+		{
+			launchers[0]->Fire();
+		}
+		break;
+	}
+	}
+	
 }
 
 void CurveTurret::EnemyDraw(sf::RenderTarget *target )
@@ -193,13 +235,20 @@ void CurveTurret::DirectKill()
 
 void CurveTurret::UpdateSprite()
 {
-	if( frame / animationFactor > 12 )
+	if (action == WAIT)
 	{
-		sprite.setTextureRect( ts->GetSubRect( 0 ) );
+		sprite.setTextureRect(ts->GetSubRect(0));
 	}
 	else
 	{
-		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor  ) );//frame / animationFactor ) );
+		if (frame / animationFactor > 12)
+		{
+			sprite.setTextureRect(ts->GetSubRect(0));
+		}
+		else
+		{
+			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
+		}
 	}
 }
 

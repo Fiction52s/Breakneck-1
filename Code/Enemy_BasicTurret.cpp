@@ -284,7 +284,7 @@ void BasicTurret::Setup()
 {
 	for (int li = 0; li < 1; ++li)
 	{
-		launchers[li]->Reset();
+		/*launchers[li]->Reset();
 		launchers[li]->Fire();
 		BasicBullet *bb = launchers[li]->activeBullets;
 		V2d finalPos;
@@ -308,7 +308,9 @@ void BasicTurret::Setup()
 			finalPos = launchers[li]->def_pos;
 		}
 
-		launchers[li]->interactWithTerrain = false;
+		launchers[li]->interactWithTerrain = false;*/
+
+		V2d finalPos = TurretSetup();
 
 		double rad = Launcher::GetRadius(launchers[li]->bulletType);
 		double width = length(finalPos - launchers[li]->position) + rad * 2;

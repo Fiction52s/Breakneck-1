@@ -546,26 +546,25 @@ void BasicBullet::ResetSprite()
 	bva[index*4+3].position = Vector2f( 0, 0 );
 }
 
-//bool BasicBullet::PlayerSlowingMe()
-//{
-//	Actor *player = launcher->owner->GetPlayer( 0 );
-//	for( int i = 0; i < player->maxBubbles; ++i )
-//	{
-//		if( player->bubbleFramesToLive[i] > 0 )
-//		{
-//			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-//			{
-//				return true;
-//			}
-//		}
-//	}
-//	return false;
-//}
+bool BasicBullet::PlayerSlowingMe()
+{
+	Actor *player = launcher->owner->GetPlayer( 0 );
+	for( int i = 0; i < player->maxBubbles; ++i )
+	{
+		if( player->bubbleFramesToLive[i] > 0 )
+		{
+			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
 
 void BasicBullet::UpdatePrePhysics()
 {
-	
-	/*if( PlayerSlowingMe() )
+	if( PlayerSlowingMe() )
 	{
 		if( slowMultiple == 1 )
 		{
@@ -577,7 +576,7 @@ void BasicBullet::UpdatePrePhysics()
 	{
 		slowMultiple = 1;
 		slowCounter = 1;
-	}*/
+	}
 
 	velocity += gravity / (double)slowMultiple;
 	V2d playerPos = launcher->owner->GetPlayer(0)->position;
@@ -789,7 +788,7 @@ void BasicBullet::HandleEntrant( QuadTreeEntrant *qte )
 
 	if( c != NULL )
 	{
-		cout << "attempted hit!" << endl;
+		//cout << "attempted hit!" << endl;
 		if( !col )
 		{
 			minContact = *c;
@@ -1364,6 +1363,42 @@ void Enemy::DirectKill()
 	{
 		cutObject->SetCutRootPos(Vector2f(position.x, position.y));
 	}
+}
+
+V2d Enemy::TurretSetup()
+{
+	for (int li = 0; li < 1; ++li)
+	{
+		launchers[li]->Reset();
+		launchers[li]->Fire();
+		BasicBullet *bb = launchers[li]->activeBullets;
+		V2d finalPos;
+		bool collide = true;
+		while (launchers[li]->GetActiveCount() > 0)
+		{
+			launchers[li]->UpdatePrePhysics();
+			launchers[li]->UpdatePhysics(0, true);
+
+			if (bb->framesToLive == 0)
+			{
+				finalPos = bb->position;
+				collide = false;
+			}
+
+			launchers[li]->UpdatePostPhysics();
+		}
+
+		if (collide)
+		{
+			finalPos = launchers[li]->def_pos;
+		}
+
+		launchers[li]->interactWithTerrain = false;
+
+		return finalPos;
+	}
+
+	return V2d(0, 0);
 }
 
 bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )

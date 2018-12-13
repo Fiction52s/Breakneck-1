@@ -69,7 +69,7 @@ struct BasicBullet : QuadTreeCollider
 	virtual void ResetSprite();
 	bool ResolvePhysics( 
 		sf::Vector2<double> vel );
-	//bool PlayerSlowingMe();
+	bool PlayerSlowingMe();
 	virtual bool HitTerrain();
 	void HitPlayer();
 	//CollisionBox physBody;
@@ -537,7 +537,7 @@ public:
 	virtual void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdateHitboxes() {}
 	virtual void ResetEnemy() = 0;
-
+	virtual V2d TurretSetup();//return finals pos
 	virtual void Init(){};
 	virtual void Setup() {};
 	virtual void ProcessHit();

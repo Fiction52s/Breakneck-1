@@ -5,6 +5,13 @@
 
 struct CurveTurret : Enemy, LauncherEnemy
 {
+	enum Action
+	{
+		WAIT,
+		ATTACK,
+	};
+
+	Action action;
 	CurveTurret(GameSession *owner, bool hasMonitor,
 		Edge *ground, double quantity,
 		double bulletSpeed,
@@ -13,6 +20,7 @@ struct CurveTurret : Enemy, LauncherEnemy
 		bool relativeGrav);
 	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessState();
+	void Setup();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
@@ -37,6 +45,7 @@ struct CurveTurret : Enemy, LauncherEnemy
 	CollisionBody *hurtBody;
 	CollisionBody *hitBody;
 	HitboxInfo *hitboxInfo;
+	Shield *shield;
 
 	double angle;
 
