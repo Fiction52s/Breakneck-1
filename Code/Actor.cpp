@@ -19133,10 +19133,12 @@ void Actor::DebugDraw( RenderTarget *target )
 	{
 		currHitboxes->DebugDraw( currHitboxFrame, target);
 	}
-	if (currHurtboxes != NULL)
+
+	hurtBody.DebugDraw(target);
+	/*if (currHurtboxes != NULL)
 	{
 		currHurtboxes->DebugDraw( currHurtboxFrame, target);
-	}
+	}*/
 
 	b.DebugDraw(target);
 	/*sf::CircleShape cs;

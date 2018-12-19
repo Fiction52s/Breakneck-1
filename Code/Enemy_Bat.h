@@ -19,6 +19,7 @@ struct Bat : Enemy, LauncherEnemy
 	void ProcessState();
 	bool physicsOver;
 	void EnemyDraw(sf::RenderTarget *target);
+	void HandleHitAndSurvive();
 	
 	//void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();

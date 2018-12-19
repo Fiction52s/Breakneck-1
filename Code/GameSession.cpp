@@ -78,7 +78,7 @@
 #include "Enemy_Patroller.h"
 #include "Enemy_BirdBoss.h"
 #include "Enemy_PoisonFrog.h"
-//#include "Enemy_Pulser.h"
+#include "Enemy_Pulser.h"
 #include "Enemy_RaceFightTarget.h"
 #include "Background.h"
 //#include "Enemy_SecurityWeb.h"
@@ -2391,13 +2391,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int framesBetweenNodes;
 				is >> framesBetweenNodes;
 
-				/*Pulser *enemy = new Pulser( this,hasMonitor, Vector2i( xPos, yPos ), localPath,
+				Pulser *enemy = new Pulser( this,hasMonitor, Vector2i( xPos, yPos ), localPath,
 					framesBetweenNodes, loop );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "cactus" )
 			{

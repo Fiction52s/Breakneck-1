@@ -74,9 +74,10 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	switch( bulletType )
 	{
 	case BasicBullet::BASIC_TURRET:
+	case BasicBullet::BAT_DOWN:
 		bulletTilesetIndex = 0;
 		break;
-	case BasicBullet::BAT:
+	case BasicBullet::BAT_UP:
 	case BasicBullet::PATROLLER:
 		bulletTilesetIndex = 2;
 		break;
@@ -454,7 +455,8 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	switch( bulletType )
 	{
 	case PATROLLER:
-	case BAT:
+	case BAT_UP:
+	case BAT_DOWN:
 		transform.rotate( angle );
 		break;
 	case CURVE_TURRET:
@@ -502,7 +504,9 @@ BasicBullet::BasicBullet( int indexVA, BType bType, Launcher *launch )
 	{
 	case BASIC_TURRET:
 		break;
-	case BAT:
+	case BAT_UP:
+		break;
+	case BAT_DOWN:
 		break;
 	case CURVE_TURRET:
 		break;
@@ -827,7 +831,8 @@ void BasicBullet::UpdateSprite()
 	
 	switch (bulletType)
 	{
-	case BAT:
+	case BAT_UP:
+	case BAT_DOWN:
 	case PATROLLER:
 	{
 		double angle = atan2(velocity.y, velocity.x);
@@ -2016,6 +2021,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(2, 5, .8, 6, 4);
 			break;
 		case EnemyType::EN_SPIDER:
+			ep = new EnemyParams(2, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_PULSER:
 			ep = new EnemyParams(2, 5, .8, 6, 3);
 			break;
 		default:

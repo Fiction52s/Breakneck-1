@@ -437,45 +437,64 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	else if( c.isCircle && !this->isCircle )
 	{
 		V2d cCenterPos = c.GetTrueCenter();
-		V2d pA = GetQuadVertex(0);//globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pB = GetQuadVertex(1);//globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
-		V2d pC = GetQuadVertex(2);//globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
-		V2d pD = GetQuadVertex(3);//globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
-		
-		double A = cross(cCenterPos - pA, normalize(pB - pA) );
-		double B = cross(cCenterPos - pB, normalize(pC - pB) );
-		double C = cross(cCenterPos - pC, normalize(pD - pC) );
-		double D = cross(cCenterPos - pD, normalize(pA - pD) );
+		V2d pA = GetQuadVertex(0);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pB = GetQuadVertex(1);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
+		V2d pC = GetQuadVertex(2);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d pD = GetQuadVertex(3);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		bool intersect = (QuadContainsPoint(pA, pB, pC, pD, cCenterPos)
+			|| IsEdgeTouchingCircle(pA, pB, cCenterPos, rw)
+			|| IsEdgeTouchingCircle(pB, pC, cCenterPos, rw)
+			|| IsEdgeTouchingCircle(pC, pD, cCenterPos, rw)
+			|| IsEdgeTouchingCircle(pD, pA, cCenterPos, rw));
+		return intersect;
+		//V2d cCenterPos = c.GetTrueCenter();
+		//V2d pA = GetQuadVertex(0);//globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		//V2d pB = GetQuadVertex(1);//globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
+		//V2d pC = GetQuadVertex(2);//globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
+		//V2d pD = GetQuadVertex(3);//globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
+		//
+		//double A = cross(cCenterPos - pA, normalize(pB - pA) );
+		//double B = cross(cCenterPos - pB, normalize(pC - pB) );
+		//double C = cross(cCenterPos - pC, normalize(pD - pC) );
+		//double D = cross(cCenterPos - pD, normalize(pA - pD) );
 
-		if( A <= c.rw && B <= c.rw && C <= c.rw && D <= c.rw )
-		{
-			return true;
-		}
+		//if( A <= c.rw && B <= c.rw && C <= c.rw && D <= c.rw )
+		//{
+		//	return true;
+		//}
 
 
-		return false;
+		//return false;
 	}
 	else if( !c.isCircle && this->isCircle )
 	{
+		V2d cCenterPos = GetTrueCenter();
 		V2d pA = c.GetQuadVertex(0);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
 		V2d pB = c.GetQuadVertex(1);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
 		V2d pC = c.GetQuadVertex(2);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
 		V2d pD = c.GetQuadVertex(3);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		bool intersect = (QuadContainsPoint(pA, pB, pC, pD, cCenterPos)
+			|| IsEdgeTouchingCircle(pA, pB, cCenterPos, rw)
+			|| IsEdgeTouchingCircle(pB, pC, cCenterPos, rw)
+			|| IsEdgeTouchingCircle(pC, pD, cCenterPos, rw)
+			|| IsEdgeTouchingCircle(pD, pA, cCenterPos, rw));
+		return intersect;
+
 		
-		double A = cross( globalPosition - pA, normalize(pB - pA) );
-		double B = cross( globalPosition - pB, normalize(pC - pB) );
-		double C = cross( globalPosition - pC, normalize(pD - pC) );
-		double D = cross( globalPosition - pD, normalize(pA - pD) );
+		//double A = cross(cCenterPos - pA, normalize(pB - pA) );
+		//double B = cross(cCenterPos - pB, normalize(pC - pB) );
+		//double C = cross(cCenterPos - pC, normalize(pD - pC) );
+		//double D = cross( cCenterPos - pD, normalize(pA - pD) );
 
-		//cout << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d << ", rw: " << rw << endl;
+		////cout << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d << ", rw: " << rw << endl;
 
-		if( A <= rw && B <= rw && C <= rw && D <= rw )
-		{
-			return true;
-		}
+		//if( (A <= rw && A >= 0)|| (B <= rw && B >= 0 ) || (C <= rw && C >= 0 )|| (D <= rw && D >= 0 ))
+		//{
+		//	return true;
+		//}
 
 
-		return false;
+		//return false;
 	}
 	else //both are boxes
 	{

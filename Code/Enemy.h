@@ -35,7 +35,8 @@ struct BasicBullet : QuadTreeCollider
 	{
 		BASIC_TURRET,
 		PATROLLER,
-		BAT,
+		BAT_UP,
+		BAT_DOWN,
 		CURVE_TURRET,
 		BOSS_CRAWLER,
 		BOSS_BIRD,

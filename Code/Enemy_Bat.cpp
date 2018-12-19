@@ -40,12 +40,18 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	//ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
 
 
-	numLaunchers = 1;
+	numLaunchers = 2;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
+	launchers[0] = new Launcher( this, BasicBullet::BAT_DOWN, owner, 16, 1, position, V2d( 1, 0 ), 0, 60 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );	
 	launchers[0]->hitboxInfo->damage = 18;
-	launchers[0]->SetGravity( V2d( 0, .5 ));
+	launchers[0]->SetGravity(V2d(0, .5));
+
+	launchers[1] = new Launcher(this, BasicBullet::BAT_UP, owner, 16, 1, position, V2d(1, 0), 0, 60);
+	launchers[1]->SetBulletSpeed(bulletSpeed);
+	launchers[1]->hitboxInfo->damage = 18;
+	launchers[1]->SetGravity(V2d(0, -.5));
+	
 
 	initHealth = 40;
 	health = initHealth;
@@ -106,9 +112,12 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	{
 		V2d A( path[i].x, path[i].y );
 		V2d B( path[i+1].x, path[i+1].y );
+		double len = length(A - B);
+		double speed = 4;
+		int fra = ceil( len / speed);
 		//A += position;
 		//B += position;
-		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), 60 * 10 );
+		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), fra * 10 );
 	}
 	if( pathLength == 1 )
 	{
@@ -176,6 +185,8 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(7);
 	cutObject->SetSubRectBack(6);
+
+	ResetEnemy();
 }
 
 
@@ -227,15 +238,18 @@ void Bat::ResetEnemy()
 
 void Bat::DirectKill()
 {
-	BasicBullet *b = launchers[0]->activeBullets;
-	while( b != NULL )
+	for (int i = 0; i < numLaunchers; ++i)
 	{
-		BasicBullet *next = b->next;
-		double angle = atan2( b->velocity.y, -b->velocity.x );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-		b->launcher->DeactivateBullet( b );
+		BasicBullet *b = launchers[0]->activeBullets;
+		while (b != NULL)
+		{
+			BasicBullet *next = b->next;
+			double angle = atan2(b->velocity.y, -b->velocity.x);
+			owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+			b->launcher->DeactivateBullet(b);
 
-		b = next;
+			b = next;
+		}
 	}
 	health = 0;
 	receivedHit = NULL;
@@ -249,6 +263,16 @@ void Bat::FrameIncrement()
 
 void Bat::ProcessState()
 {
+	/*if (owner->GetPlayer(0)->position.y < position.y)
+	{
+		launchers[0]->SetGravity(V2d(0, -.5));
+	}
+	else
+	{
+		launchers[0]->SetGravity(V2d(0, .5));
+	}*/
+	
+
 	if( frame == 5 * animationFactor )
 	{
 		frame = 0;
@@ -264,9 +288,14 @@ void Bat::ProcessState()
 
 	if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
 	{
-		launchers[0]->position = position;
-		launchers[0]->facingDir = normalize( owner->GetPlayer( 0 )->position - position );
-		launchers[0]->Fire();
+		int launcherIndex = 0;
+		if (owner->GetPlayer(0)->position.y > position.y)
+		{
+			launcherIndex = 1;
+		}
+		launchers[launcherIndex]->position = position;
+		launchers[launcherIndex]->facingDir = normalize( owner->GetPlayer( 0 )->position - position );
+		launchers[launcherIndex]->Fire();	
 		//cout << "shoot:" << position.x << ", " << position.y << endl;
 		
 	}
@@ -328,4 +357,9 @@ void Bat::UpdateHitboxes()
 	{
 		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
+}
+
+void Bat::HandleHitAndSurvive()
+{
+	fireCounter = 0;
 }

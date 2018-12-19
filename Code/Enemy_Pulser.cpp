@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Pulser.h"
+#include "Shield.h"
 
 using namespace std;
 using namespace sf;
@@ -21,8 +22,18 @@ using namespace sf;
 
 Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos, 
 	list<Vector2i> &pathParam, int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::PULSER, p_hasMonitor, 3 ), deathFrame( 0 )
+	:Enemy( owner, EnemyType::EN_PULSER, p_hasMonitor, 2 )
 {
+	highResPhysics = true;
+
+	pulseWait = 60;
+	actionLength[SHIELDOFF] = 4;
+	actionLength[SHIELDON] = 4;
+	actionLength[NOSHIELD] = 4;
+
+	animFactor[SHIELDOFF] = 5;
+	animFactor[SHIELDON] = 5;
+	animFactor[NOSHIELD] = 5;
 
 	loop = p_loop;
 
@@ -30,13 +41,10 @@ Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 	position.x = pos.x;
 	position.y = pos.y;
 	
+	shield = new Shield(Shield::ShieldType::T_BLOCK, 128, 100, this);
+	shield->SetPosition(position);
+
 	framesBetween = p_framesBetweenNodes;
-
-	//latchedOn = true; 
-	deathFrame = 0;
-
-	initHealth = 40;
-	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
@@ -110,37 +118,51 @@ Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 		testSeq.AddMovement( new WaitMovement( A, framesBetween ) );
 	}
 
-	testSeq.InitMovementDebug();
-
-	testSeq.Reset();
+	//testSeq.InitMovementDebug();
 
 	frame = 0;
 
-	animationFactor = 5;
-
 	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Bat_48x48.png", 48, 48 );
+	ts = owner->GetTileset( "Enemies/pulser_64x64.png", 64, 64 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
-	//position.x = 0;
-	//position.y = 0;
-	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
-	hurtBody.globalAngle = 0;
-	hurtBody.offset.x = 0;
-	hurtBody.offset.y = 0;
-	hurtBody.rw = 16;
-	hurtBody.rh = 16;
 
-	hitBody.type = CollisionBox::Hit;
-	hitBody.isCircle = true;
-	hitBody.globalAngle = 0;
-	hitBody.offset.x = 0;
-	hitBody.offset.y = 0;
-	hitBody.rw = 128;
-	hitBody.rh = 128;
+	hurtBody = new CollisionBody(1);
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hurt;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = 26;
+	hurtBox.rh = 26;
+	hurtBody->AddCollisionBox(0, hurtBox);
+
+	hitBody = new CollisionBody(2);
+	CollisionBox smallHitbox;
+	smallHitbox.type = CollisionBox::Hit;
+	smallHitbox.isCircle = true;
+	smallHitbox.globalAngle = 0;
+	smallHitbox.offset.x = 0;
+	smallHitbox.offset.y = 0;
+	smallHitbox.rw = 26;
+	smallHitbox.rh = 26;
+
+	CollisionBox bigHitbox;
+	bigHitbox.type = CollisionBox::Hit;
+	bigHitbox.isCircle = true;
+	bigHitbox.globalAngle = 0;
+	bigHitbox.offset.x = 0;
+	bigHitbox.offset.y = 0;
+	bigHitbox.rw = 128;
+	bigHitbox.rh = 128;
+
+	hitBody->AddCollisionBox(0, smallHitbox);
+	hitBody->AddCollisionBox(1, bigHitbox);
+
+	
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -149,324 +171,143 @@ Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
-	//hitboxInfo->kbDir;
 
-	dead = false;
-
-	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
-	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
-	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
-
-	deathPartingSpeed = .4;
-	deathVector = V2d( 1, -1 );
+	hitBody->hitboxInfo = hitboxInfo;
 
 	facingRight = true;
-	 
-	ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	bloodSprite.setTexture( *ts_testBlood->texture );
 
-	UpdateHitboxes();
+	cutObject->SetTileset(ts);
+	cutObject->SetSubRectFront(5);
+	cutObject->SetSubRectBack(4);
 
+	ResetEnemy();
 	//cout << "finish init" << endl;
-}
-
-void Pulser::HandleEntrant( QuadTreeEntrant *qte )
-{
-	SpecterArea *sa = (SpecterArea*)qte;
-	if( sa->barrier.Intersects( hurtBody ) )
-	{
-		specterProtected = true;
-	}
 }
 
 void Pulser::ResetEnemy()
 {
 	testSeq.Reset();
 	dead = false;
-	deathFrame = 0;
 	frame = 0;
 	position.x = path[0].x;
 	position.y = path[0].y;
 	receivedHit = NULL;
-	
+
+	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
+
+	action = SHIELDOFF;
 
 	UpdateHitboxes();
-
 	UpdateSprite();
-	health = initHealth;
-	
+	testSeq.Reset();
+
+	currShield = NULL;
+	//currShield = shield;
+	shield->Reset();
 }
 
-void Pulser::UpdatePrePhysics()
+void Pulser::ProcessState()
 {
-	
-
-	if( !dead && receivedHit != NULL )
-	{
-		//owner->Pause( 5 );
-		
-		//gotta factor in getting hit by a clone
-		health -= 20;
-
-		//cout << "health now: " << health << endl;
-
-		if( health <= 0 )
-		{
-			if( hasMonitor && !suppressMonitor )
-				owner->keyMarker->CollectKey();
-			dead = true;
-			//cout << "dying" << endl;
-		}
-
-		receivedHit = NULL;
-	}
-}
-
-void Pulser::UpdatePhysics()
-{	
-	specterProtected = false;
-	if( !dead )
-	{
-		testSeq.Update();
-		position = testSeq.position;
-
-		//assert( testSeq.currMovement != NULL );
-		if( testSeq.currMovement == NULL )
-		{
-			cout << "RESETTING-----------------------" << endl;
-			testSeq.Reset();
-			
-		}
-
-		PhysicsResponse();
-	}
-
-	if( PlayerSlowingMe() )
-	{
-		if( slowMultiple == 1 )
-		{
-			slowCounter = 1;
-			slowMultiple = 5;
-		}
-	}
-	else
-	{
-		slowMultiple = 1;
-		slowCounter = 1;
-	}
-
-	return;
-}
-
-void Pulser::PhysicsResponse()
-{
-	//the dumb bug happens when it doesn't have a path. fix that tomorrow
-	assert( testSeq.currMovement != NULL );
-	if( !dead && receivedHit == NULL )
-	{
-		UpdateHitboxes();
-
-		pair<bool,bool> result = PlayerHitMe();
-		if( result.first )
-		{
-			//cout << "color blue" << endl;
-			//triggers multiple times per frame? bad?
-			owner->GetPlayer( 0 )->ConfirmHit( 3, 5, .8, 6 );
-
-
-			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
-			{
-				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
-			}
-
-		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
-
-			//owner->GetPlayer( 0 )->frame--;
-			owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 6, 3, facingRight );
-			
-		//	cout << "Bat received damage of: " << receivedHit->damage << endl;
-			/*if( !result.second )
-			{
-				owner->Pause( 8 );
-			}
-		
-			health -= 20;
-
-			if( health <= 0 )
-				dead = true;
-
-			receivedHit = NULL;*/
-			//dead = true;
-			//receivedHit = NULL;
-		}
-
-		if( IHitPlayer() )
-		{
-		//	cout << "Bat just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-	}
-}
-
-void Pulser::UpdatePostPhysics()
-{
-	if( receivedHit != NULL )
-	{
-		owner->Pause( 5 );
-	}
-
-	if( slowCounter == slowMultiple )
-	{
-		//cout << "fireCounter: " << fireCounter << endl;
-		++frame;
-		slowCounter = 1;
-	
-		if( dead )
-		{
-			//cout << "deathFrame: " << deathFrame << endl;
-			deathFrame++;
-		}
-
-	}
-	else
-	{
-		slowCounter++;
-	}
-
-	if( frame == 10 * animationFactor )
+	if (frame == actionLength[action] * animFactor[action])
 	{
 		frame = 0;
 	}
-
-	if( deathFrame == 60 && dead )
+	
+	if ((owner->totalGameFrames % pulseWait) == 0 && owner->totalGameFrames > 0)
 	{
-		//cout << "switching dead" << endl;
-		
-		//cout << "REMOVING" << endl;
-		//testLauncher->Reset();
-		owner->RemoveEnemy( this );
-		return;
+		if (action == SHIELDOFF)
+		{
+			action = SHIELDON;
+			frame = 0;
+			currShield = shield;
+			SetHitboxes(hitBody, 1);
+			
+		}
+		else if (action == SHIELDON)
+		{
+			action = SHIELDOFF;
+			frame = 0;
+			currShield = NULL;
+			SetHitboxes(hitBody, 0);
+		}
 	}
 
-	UpdateSprite();
+
+	switch (action)
+	{
+	case SHIELDOFF:
+		break;
+	case SHIELDON:
+		break;
+	case NOSHIELD:
+		break;
+	}
+
+	switch (action)
+	{
+	case SHIELDOFF:
+		break;
+	case SHIELDON:
+		break;
+	case NOSHIELD:
+		break;
+	}
+	
+}
+
+void Pulser::UpdateEnemyPhysics()
+{
+	if (numPhysSteps == 1)
+	{
+		for (int i = 0; i < 10; ++i)
+			testSeq.Update(slowMultiple);
+	}
+	else
+	{
+		testSeq.Update(slowMultiple);
+	}
+
+	position = testSeq.position;
 }
 
 void Pulser::UpdateSprite()
 {
-	if( !dead )
-	{
-		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
-		sprite.setPosition( position.x, position.y );
-	}
-	else
-	{
-
-		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 0 ) );
-		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
-		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + deathVector.y * deathPartingSpeed * deathFrame );
-
-		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 1 ) );
-		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-	}
+	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setPosition(position.x, position.y);
 }
 
-void Pulser::Draw( sf::RenderTarget *target )
+void Pulser::EnemyDraw( sf::RenderTarget *target )
 {
-	//cout << "draw" << endl;
-	if( !dead )
+	/*assert(testSeq.currMovement != NULL);
+	if (testSeq.currMovement->moveType == Movement::WAIT)
 	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( Color::Black );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
+		CircleShape cs;
+		cs.setRadius(128);
+		cs.setFillColor(COLOR_YELLOW);
+		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+		cs.setPosition(position.x, position.y);
+		target->draw(cs);
+	}*/
 
-		assert( testSeq.currMovement != NULL );
-		if( testSeq.currMovement->moveType == Movement::WAIT )
-		{
-			CircleShape cs;
-			cs.setRadius( 128 );
-			cs.setFillColor( COLOR_YELLOW );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
-		target->draw( sprite );
-	}
-	else
-	{
-		target->draw( botDeathSprite );
-
-		if( deathFrame / 3 < 6 )
-		{
-			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
-		}
-		
-		target->draw( topDeathSprite );
-	}
-}
-
-void Pulser::DrawMinimap( sf::RenderTarget *target )
-{
-	if( !dead )
-	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			CircleShape cs;
-			cs.setRadius( 50 );
-			cs.setFillColor( Color::White );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
-		else
-		{
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( Color::Red );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
-	}
-}
-
-bool Pulser::IHitPlayer( int index )
-{
-	assert( testSeq.currMovement != NULL );
-	if( testSeq.currMovement->moveType == Movement::WAIT )
-	{
-		Actor *player = owner->GetPlayer( 0 );
-	
-		if( hitBody.Intersects( player->hurtBody ) )
-		{
-			player->ApplyHit( hitboxInfo );
-			return true;
-		}
-	}
-	return false;
+	DrawSpriteIfExists(target, sprite);
 }
 
 void Pulser::UpdateHitboxes()
 {
-	hurtBody.globalPosition = position;
-	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position;
-	hitBody.globalAngle = 0;
+	int hitboxIndex = 0;
+	if (action == SHIELDON)
+	{
+		hitboxIndex = 1;
+	}
+
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(hitboxIndex)->front();
+
+	hurtBox.globalPosition = position;
+	hurtBox.globalAngle = 0;
+	hitBox.globalPosition = position;
+	hitBox.globalAngle = 0;
 
 	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
@@ -478,130 +319,21 @@ void Pulser::UpdateHitboxes()
 	}
 }
 
-//return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Pulser::PlayerHitMe( int index )
-{
-	assert( testSeq.currMovement != NULL );
-	if( testSeq.currMovement->moveType == Movement::WAIT )
-		return pair<bool,bool>(false,false);
 
 
-	Actor *player = owner->GetPlayer( 0 );
-	if( player->currHitboxes != NULL )
-	{
-		bool hit = false;
-
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
-		{
-			if( hurtBody.Intersects( (*it) ) )
-			{
-				hit = true;
-				break;
-			}
-		}
-		
-
-		if( hit )
-		{
-			sf::Rect<double> qRect( position.x - hurtBody.rw,
-			position.y - hurtBody.rw, hurtBody.rw * 2, 
-			hurtBody.rw * 2 );
-			owner->specterTree->Query( this, qRect );
-
-			if( !specterProtected )
-			{
-				receivedHit = player->currHitboxInfo;
-				return pair<bool, bool>(true,false);
-			}
-			else
-			{
-				return pair<bool, bool>(false,false);
-			}
-			
-		}
-		
-	}
-
-	for( int i = 0; i < player->recordedGhosts; ++i )
-	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
-		{
-			if( player->ghosts[i]->currHitboxes != NULL )
-			{
-				bool hit = false;
-				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
-				{
-					if( hurtBody.Intersects( (*it) ) )
-					{
-						hit = true;
-						break;
-					}
-				}
-		
-
-				if( hit )
-				{
-					receivedHit = player->currHitboxInfo;
-					return pair<bool, bool>(true,true);
-				}
-			}
-			//player->ghosts[i]->curhi
-		}
-	}
-
-	return pair<bool, bool>(false,false);
-}
-
-bool Pulser::PlayerSlowingMe()
-{
-	Actor *player = owner->GetPlayer( 0 );
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-void Pulser::DebugDraw( RenderTarget *target )
-{
-	if( !dead )
-	{
-		assert( testSeq.currMovement != NULL );
-		if( testSeq.currMovement != NULL )
-		{
-			if( testSeq.currMovement->vertices != NULL )
-			{
-				testSeq.currMovement->DebugDraw( target );
-			}
-		}
-		hurtBody.DebugDraw( target );
-		hitBody.DebugDraw( target );
-	}
-}
-
-void Pulser::SaveEnemyState()
-{
-	stored.dead = dead;
-	stored.deathFrame = deathFrame;
-	stored.frame = frame;
-	stored.hitlagFrames = hitlagFrames;
-	stored.hitstunFrames = hitstunFrames;
-	stored.position = position;
-}
-
-void Pulser::LoadEnemyState()
-{
-	dead = stored.dead;
-	deathFrame = stored.deathFrame;
-	frame = stored.frame;
-	hitlagFrames = stored.hitlagFrames;
-	hitstunFrames = stored.hitstunFrames;
-	position = stored.position;
-}
+//void Pulser::DebugDraw( RenderTarget *target )
+//{
+//	if( !dead )
+//	{
+//		assert( testSeq.currMovement != NULL );
+//		if( testSeq.currMovement != NULL )
+//		{
+//			if( testSeq.currMovement->vertices != NULL )
+//			{
+//				testSeq.currMovement->DebugDraw( target );
+//			}
+//		}
+//		hurtBody.DebugDraw( target );
+//		hitBody.DebugDraw( target );
+//	}
+//}
