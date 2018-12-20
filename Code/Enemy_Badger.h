@@ -25,34 +25,26 @@ struct Badger : Enemy, GroundMoverHandler
 		bool clockwise, int speed,
 		int jumpStrength);
 	void ActionEnded();
-	int NumTotalBullets();
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap(sf::RenderTarget *target);
-	void Draw(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	bool PlayerSlowingMe();
+	void ProcessState();
+	void UpdateEnemyPhysics();
+	
+	
+	
+	void EnemyDraw(sf::RenderTarget *target);
+	
 	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
+	
 	void UpdateHitboxes();
-	//bool ResolvePhysics( sf::Vector2<double> vel );
+	
 	void ResetEnemy();
 	void Jump(double strengthx,
 		double strengthy);
 	void UpdateNextAction();
 
-	void SaveEnemyState();
-	void LoadEnemyState();
-
 	void HitTerrain(double &q);
 	bool StartRoll();
 	void FinishedRoll();
 
-	Launcher *testLaunch;
 	Action landedAction;
 	//sf::Vector2<double> velocity;
 	sf::Sprite sprite;
@@ -62,7 +54,6 @@ struct Badger : Enemy, GroundMoverHandler
 
 	Action action;
 	bool facingRight;
-	double angle;
 
 	Action nextAction;
 
@@ -83,8 +74,8 @@ struct Badger : Enemy, GroundMoverHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
+	CollisionBody * hurtBody;
+	CollisionBody * hitBody;
 	//CollisionBox physBody;
 	HitboxInfo *hitboxInfo;
 	sf::Vector2<double> tempVel;
@@ -93,31 +84,17 @@ struct Badger : Enemy, GroundMoverHandler
 	int attackFrame;
 	int attackMult;
 
-	//double rollFactor;
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-
-	int possibleEdgeCount;
+	
+	
 
 	Edge *startGround;
 	double startQuant;
 	//sf::Vector2<double> offset;
-	int frame;
 	bool originalFacingRight;
 	//bool roll;
 
-	int deathFrame;
 	int crawlAnimationFactor;
 	int rollAnimationFactor;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
 
 	double maxGroundSpeed;
 	double maxFallSpeed;

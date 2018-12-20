@@ -30,7 +30,7 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	//health = initHealth;
 	dead = false;
 
-	maxFallSpeed = 25;
+	maxFallSpeed = 40;
 
 	attackFrame = -1;
 	attackMult = 3;
@@ -234,6 +234,7 @@ void StagBeetle::ActionEnded()
 
 void StagBeetle::ProcessState()
 {
+	//cout << "vel: " << testMover->velocity.x << ", " << testMover->velocity.y << endl;
 	Actor *player = owner->GetPlayer( 0 );
 
 	ActionEnded();
@@ -337,6 +338,15 @@ void StagBeetle::UpdateEnemyPhysics()
 	if (numHealth > 0) //!dead
 	{
 		testMover->Move(slowMultiple, numPhysSteps);
+
+		if (testMover->ground == NULL)
+		{
+			if (testMover->velocity.y > maxFallSpeed)
+			{
+				testMover->velocity.y = maxFallSpeed;
+			}
+		}
+
 		position = testMover->physBody.globalPosition;
 
 		shield->SetPosition(position);

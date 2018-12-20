@@ -47,7 +47,7 @@
 #include "ShardMenu.h"
 #include "KeyMarker.h"
 #include "ScoreDisplay.h"
-//#include "Enemy_Badger.h"
+#include "Enemy_Badger.h"
 #include "Enemy_BasicEffect.h"
 #include "Enemy_BasicTurret.h"
 #include "ShipPickup.h"
@@ -2486,13 +2486,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int jumpStrength;
 				is >> jumpStrength;
 				
-				//Badger *enemy = new Badger( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, true,
-				//	speed, jumpStrength );
+				Badger *enemy = new Badger( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, true,
+					speed, jumpStrength );
 
-				//fullEnemyList.push_back( enemy );
-				//enem = enemy;
+				fullEnemyList.push_back( enemy );
+				enem = enemy;
 
-				//enemyTree->Insert( enemy );
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "bosscoyote" )
 			{

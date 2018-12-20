@@ -2026,6 +2026,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_PULSER:
 			ep = new EnemyParams(2, 5, .8, 6, 3);
 			break;
+		case EnemyType::EN_BADGER:
+			ep = new EnemyParams(2, 5, .8, 6, 3);
+			break;
 		default:
 			return NULL;
 		}

@@ -777,7 +777,8 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 	}
 	else 
 	{
-		velocity += force / NUM_STEPS / (double)slowMultiple;
+		double nSteps = numPhysSteps;
+		velocity += force / nSteps / (double)slowMultiple;
 		//cout << "move through the air" << endl;
 
 		V2d movementVec = velocity;
