@@ -229,7 +229,6 @@ void CurveTurret::DirectKill()
 			b = next;
 		}
 	}
-	health = 0;
 	receivedHit = NULL;
 }
 

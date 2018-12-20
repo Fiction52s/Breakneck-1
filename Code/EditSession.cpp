@@ -9838,11 +9838,21 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						Vector2i worldi(testPoint.x, testPoint.y);
 						patrolPath.push_back(worldi);
 
-						ISelectable *select = selectedBrush->objects.front().get();
-						ActorParams *actor = (ActorParams*)select;
+						ActorParams *actor;
+						if (tempActor != NULL)
+						{
+							actor = tempActor;
+							mode = CREATE_ENEMY;
+						}
+						else
+						{
+							ISelectable *select = selectedBrush->objects.front().get();
+							actor = (ActorParams*)select;
+							mode = EDIT;
+						}
+						
 						showPanel = actor->type->panel;
 						actor->SetPath(patrolPath);
-						mode = EDIT;
 					}
 					break;
 				}

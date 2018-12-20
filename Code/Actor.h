@@ -161,7 +161,7 @@ struct AbsorbParticles
 };
 
 struct Booster;
-//struct Spring;
+struct Spring;
 struct EffectPool;
 struct EnemyParams;
 struct SoundNode;
@@ -643,7 +643,7 @@ struct Actor : QuadTreeCollider,
 	bool scorpOn;
 	bool scorpSet;
 
-//	Spring *currSpring;
+	Spring *currSpring;
 	Booster *currBooster;
 	Booster *oldBooster;
 	sf::Vector2<double> springVel;

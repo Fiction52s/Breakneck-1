@@ -88,10 +88,9 @@
 //#include "Enemy_Shark.h"
 //#include "Enemy_Specter.h"
 #include "Enemy_Spider.h"
-//#include "Enemy_Spring.h"
-//#include "Enemy_StagBeetle.h"
+#include "Enemy_Spring.h"
 //#include "Enemy_Swarm.h"
-//#include "Enemy_Turtle.h"
+#include "Enemy_Turtle.h"
 #include "HitboxManager.h"
 #include "ShaderTester.h"
 
@@ -1882,12 +1881,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				
 				
-				/*Spring *enemy = new Spring(this, Vector2i( xPos, yPos ), other, moveFrames );
+				Spring *enemy = new Spring(this, Vector2i( xPos, yPos ), other, moveFrames );
+
+				activeItemTree->Insert(enemy);
 
 				fullEnemyList.push_back(enemy);
 				enem = enemy;
 
-				enemyTree->Insert(enemy);*/
+				enemyTree->Insert(enemy);
 			}
 			else if (typeName == "rail")
 			{
@@ -2526,11 +2527,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				Vector2i delta( 1000, -1000 );
 				Vector2i pos( xPos, yPos );
-				/*Turtle *enemy = new Turtle( this, hasMonitor, Vector2i( xPos, yPos ) );
+				Turtle *enemy = new Turtle( this, hasMonitor, Vector2i( xPos, yPos ) );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "coral" )
 			{

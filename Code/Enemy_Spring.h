@@ -8,37 +8,28 @@ struct Spring : Enemy
 	//MovementSequence testSeq;
 	Spring(GameSession *owner,
 		sf::Vector2i &pos, sf::Vector2i &other, int moveFrames);
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	bool physicsOver;
+	void ProcessState();
+	//void UpdateEnemyPhysics();
 
-	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target);
-	void DrawMinimap(sf::RenderTarget *target);
-	void DebugDraw(sf::RenderTarget *target);
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
+	
+	void EnemyDraw(sf::RenderTarget *target);
+	
+	
 	void UpdateSprite();
-	void UpdateHitboxes();
-	bool PlayerSlowingMe();
+	
 	void ResetEnemy();
 
-	//void HandleQuery(QuadTreeCollider * qtc);
-	//bool IsTouchingBox(const sf::Rect<double> &r);
 
-	int frame;
+
+
 
 	sf::Sprite sprite;
 	Tileset *ts;
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
+	CollisionBody * hurtBody;
+	CollisionBody* hitBody;
 	//HitboxInfo *hitboxInfo;
 
 	int animationFactor;
-
-	void SaveEnemyState() {}
-	void LoadEnemyState() {}
 
 	sf::Vector2<double> dir;
 	int speed;

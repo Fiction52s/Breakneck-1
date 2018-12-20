@@ -23,6 +23,7 @@
 #include "PauseMenu.h"
 #include "GroundTrigger.h"
 #include "Enemy_Comboer.h"
+#include "Enemy_Spring.h"
 
 using namespace sf;
 using namespace std;
@@ -358,7 +359,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		regrindOffMax = 3;
 		regrindOffCount = 3;
 
-		//currSpring = NULL;
+		currSpring = NULL;
 		currBooster = NULL;
 
 		railTest.setSize(Vector2f(64, 64));
@@ -1991,6 +1992,7 @@ void Actor::Respawn()
 	currBBoostCounter = 0;
 	repeatingSound = NULL;
 	currBooster = NULL;
+	currSpring = NULL;
 	oldBooster = NULL;
 	currWall = NULL;
 	wallClimbGravityOn = false;
@@ -2014,8 +2016,6 @@ void Actor::Respawn()
 
 	testGrassCount = 0;
 	gravityGrassCount = 0;
-	//currSpring = NULL;
-	//currBooster = NULL;
 	regrindOffCount = 3;
 	scorpAdditionalCap = 0.0;
 	prevRail = NULL;
@@ -15181,14 +15181,14 @@ void Actor::PhysicsResponse()
 	}
 	else
 	{
-		/*if (currSpring != NULL)
+		if (currSpring != NULL)
 		{
 			springVel = currSpring->dir * (double)currSpring->speed;
 			springStunFrames = currSpring->stunFrames;
 			currSpring = NULL;
 			action = SPRINGSTUN;
 			frame = 0;
-		}*/
+		}
 
 		if( action == GROUNDHITSTUN )
 		{
@@ -18409,18 +18409,18 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else if (en->type == EnemyType::EN_SPRING)
 		{
-			//Spring *spr = (Spring*)qte;
-			//if (currSpring == NULL)
-			//{
-			//	if (spr->hurtBody.Intersects(hurtBody))
-			//	{
-			//		currSpring = spr;
-			//	}
-			//}
-			//else
-			//{
-			//	//some replacement formula later
-			//}
+			Spring *spr = (Spring*)qte;
+			if (currSpring == NULL)
+			{
+				if (spr->hurtBody->Intersects(spr->currHurtboxFrame, &hurtBody))
+				{
+					currSpring = spr;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
 		}
 	}
 	

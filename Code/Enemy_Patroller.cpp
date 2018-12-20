@@ -362,7 +362,7 @@ void Patroller::HandleHitAndSurvive()
 void Patroller::HandleNoHealth()
 {
 	cutObject->SetFlipHoriz( sin( currentAngle ) < 0 );
-	cutObject->SetCutRootPos(Vector2f( position ));
+	//cutObject->SetCutRootPos(Vector2f( position ));
 }
 
 void Patroller::UpdateEnemyPhysics()

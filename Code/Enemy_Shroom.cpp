@@ -99,7 +99,7 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	cutObject->SetSubRectBack(30);
 	//cutObject->SetFlipHoriz(false);
 	cutObject->rotateAngle = sprite.getRotation();
-	cutObject->SetCutRootPos( Vector2f( position ) );
+	//cutObject->SetCutRootPos( Vector2f( position ) );
 
 	UpdateSprite();
 }
