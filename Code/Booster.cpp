@@ -56,8 +56,8 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
+	hitBox.rw = 64;
+	hitBox.rh = 64;
 
 
 	hurtBody = new CollisionBody(1);
@@ -67,8 +67,8 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
+	hurtBox.rw = 64;
+	hurtBox.rh = 64;
 	//need hitbox info?
 
 	
@@ -77,7 +77,7 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 
 	dead = false;
 
-	UpdateHitboxes();
+	//UpdateHitboxes();
 
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
@@ -92,6 +92,8 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	animFactor[NEUTRAL] = 3;
 	animFactor[BOOST] = 3;
 	animFactor[REFRESH] = 5;
+
+	ResetEnemy();
 }
 
 bool Booster::Boost()

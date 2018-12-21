@@ -74,7 +74,8 @@
 //#include "Enemy_Mine.h"
 //#include "Enemy_Narwhal.h"
 //#include "Enemy_Overgrowth.h"
-//#include "Enemy_Owl.h"
+#include "Enemy_GravityFaller.h"
+#include "Enemy_Owl.h"
 #include "Enemy_Patroller.h"
 #include "Enemy_BirdBoss.h"
 #include "Enemy_PoisonFrog.h"
@@ -1915,7 +1916,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int energized;
 				is >> energized;
 
-				//Rail *r = new Rail(this, Vector2i( xPos, yPos ), localPath, energized);
+				Rail *r = new Rail(this, Vector2i( xPos, yPos ), localPath, energized);
 			}
 
 
@@ -2228,8 +2229,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int jumpFramesWait;
 				is >> jumpFramesWait;
 
-				PoisonFrog *enemy = new PoisonFrog( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, gravFactor, Vector2i( jumpStrengthX, jumpStrengthY ), jumpFramesWait );
+				/*PoisonFrog *enemy = new PoisonFrog( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, gravFactor, Vector2i( jumpStrengthX, jumpStrengthY ), jumpFramesWait );*/
+				GravityFaller *enemy = new GravityFaller(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+					edgeQuantity, 0);
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
@@ -2457,13 +2460,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> rhythmFrames;
 				
 
-				/*Owl *enemy = new Owl( this, hasMonitor, Vector2i( xPos, yPos ), moveSpeed,
+				Owl *enemy = new Owl( this, hasMonitor, Vector2i( xPos, yPos ), moveSpeed,
 					bulletSpeed, rhythmFrames );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "badger" )
 			{
@@ -3603,7 +3606,7 @@ bool GameSession::OpenFile( string fileName )
 
 			int totalGrassIndex = 0;
 			Tileset *ts_grass = GetTileset("grass_32x32.png", 32, 32);
-			if( false )
+			//if( false )
 			for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
 			{
 				V2d A, B, C, D;
@@ -3637,13 +3640,13 @@ bool GameSession::OpenFile( string fileName )
 				C = ABmax;
 				D = ABmin;
 
-				/*Grass * g = new Grass(this, ts_grass, tdCotalGrassIndex,);
-				g->A = A;
+				Grass * g = new Grass(this, ts_grass, totalGrassIndex, A, B, C, D, testva );
+				/*g->A = A;
 				g->B = B;
 				g->C = C;
-				g->D = D;
+				g->D = D;*/
 
-				grassTree->Insert(g);*/
+				grassTree->Insert(g);
 
 				totalGrassIndex++;
 			}

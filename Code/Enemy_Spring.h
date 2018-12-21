@@ -9,19 +9,11 @@ struct Spring : Enemy
 	Spring(GameSession *owner,
 		sf::Vector2i &pos, sf::Vector2i &other, int moveFrames);
 	void ProcessState();
-	//void UpdateEnemyPhysics();
-
-	
 	void EnemyDraw(sf::RenderTarget *target);
-	
 	
 	void UpdateSprite();
 	
 	void ResetEnemy();
-
-
-
-
 
 	sf::Sprite sprite;
 	Tileset *ts;

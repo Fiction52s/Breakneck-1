@@ -327,6 +327,7 @@ enum EnemyType
 	EN_STAGBEETLE,
 	EN_POISONFROG,
 	EN_CURVETURRET,
+	EN_GRAVITYFALLER,
 	EN_PULSER,
 	EN_BADGER,
 	EN_CACTUS,
@@ -482,6 +483,7 @@ struct ComboObject
 	int enemyHitboxFrame;
 	ComboObject *nextComboObj;
 	void ComboHit();
+	void Draw(sf::RenderTarget *target);
 	Enemy *enemy;
 };
 

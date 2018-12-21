@@ -176,7 +176,6 @@ void Comboer::ResetEnemy()
 
 	shootFrames = 0;
 	currHits = 0;
-	
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
@@ -287,6 +286,7 @@ void Comboer::ProcessState()
 		case S_EXPLODE:
 			numHealth = 0;
 			dead = true;
+			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
 			break;
 		}
 	}

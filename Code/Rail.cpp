@@ -40,7 +40,7 @@ Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 		int ind = 0;
 		auto it = path.begin();
 		Edge *curr = NULL;
-		double width = 32;
+		double width = 16;
 		double hw = width / 2;
 		int subIndex = 0;
 		if (energized)

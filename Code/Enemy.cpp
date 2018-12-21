@@ -78,8 +78,10 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		bulletTilesetIndex = 0;
 		break;
 	case BasicBullet::BAT_UP:
-	case BasicBullet::PATROLLER:
 		bulletTilesetIndex = 2;
+		break;
+	case BasicBullet::PATROLLER:
+		bulletTilesetIndex = 3;
 		break;
 	case BasicBullet::CURVE_TURRET:
 		bulletTilesetIndex = 1;
@@ -2020,6 +2022,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_STAGBEETLE:
 			ep = new EnemyParams(2, 5, .8, 6, 4);
 			break;
+		case EnemyType::EN_GRAVITYFALLER:
+			ep = new EnemyParams(2, 5, .8, 6, 4);
+			break;
 		case EnemyType::EN_SPIDER:
 			ep = new EnemyParams(2, 5, .8, 6, 3);
 			break;
@@ -2027,6 +2032,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(2, 5, .8, 6, 3);
 			break;
 		case EnemyType::EN_BADGER:
+			ep = new EnemyParams(2, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_OWL:
 			ep = new EnemyParams(2, 5, .8, 6, 3);
 			break;
 		default:
@@ -2259,4 +2267,9 @@ void ComboObject::Reset()
 {
 	enemyHitboxFrame = 0;
 	nextComboObj = NULL;
+}
+
+void ComboObject::Draw(RenderTarget *target)
+{
+	enemyHitBody->DebugDraw( enemyHitboxFrame, target);
 }

@@ -782,6 +782,7 @@ struct Actor : QuadTreeCollider,
 	ComboObject *activeComboObjList;
 	void AddActiveComboObj(ComboObject *c);
 	void RemoveActiveComboObj(ComboObject *c);
+	void DebugDrawComboObj(sf::RenderTarget *target);
 
 	//int numCurrHitboxes;
 

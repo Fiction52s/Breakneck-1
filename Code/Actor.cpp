@@ -1426,7 +1426,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		else
 		{
 			hasPowerAirDash = true;
-			hasPowerGravReverse = true;
+			hasPowerGravReverse = false;
 			hasPowerBounce = true;
 			hasPowerGrindBall = true;
 			hasPowerTimeSlow = true;
@@ -1963,7 +1963,9 @@ void Actor::AddActiveComboObj(ComboObject *c)
 
 void Actor::RemoveActiveComboObj(ComboObject *c)
 {
-	assert(activeComboObjList != NULL);
+	if (activeComboObjList == NULL)
+		return;
+	//assert(activeComboObjList != NULL);
 
 	if (c == activeComboObjList)
 	{
@@ -1981,6 +1983,16 @@ void Actor::RemoveActiveComboObj(ComboObject *c)
 		}
 
 		prev = curr;
+		curr = curr->nextComboObj;
+	}
+}
+
+void Actor::DebugDrawComboObj(sf::RenderTarget *target)
+{
+	ComboObject *curr = activeComboObjList;
+	while (curr != NULL)
+	{
+		curr->Draw(target);
 		curr = curr->nextComboObj;
 	}
 }
@@ -6656,7 +6668,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if (grindEdge != NULL )
 			{
-				assert(0);
+				//assert(0);
 				//V2d ev0, ev1;
 				Edge tempEdge(*grindEdge);
 				/*if (tempEdge.Normal().y > 0)
@@ -8114,7 +8126,7 @@ facingRight = false;
 	
 	if (currBooster != NULL && oldBooster == NULL && action != AIRDASH && currBooster->Boost())
 	{	
-		if (ground == NULL && bounceEdge == NULL && (grindEdge == NULL || action == RAILGRIND))
+		if (ground == NULL && bounceEdge == NULL && grindEdge == NULL  )
 		{
 			velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
 		}
@@ -8127,6 +8139,11 @@ facingRight = false;
 			else if (grindSpeed < 0)
 			{
 				grindSpeed -= currBooster->strength;
+			}
+
+			if (action == RAILGRIND)
+			{
+				velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 			}
 		}
 		else if (ground != NULL)
@@ -19178,6 +19195,8 @@ void Actor::DebugDraw( RenderTarget *target )
 
 	leftWire->DebugDraw( target );
 	rightWire->DebugDraw( target );
+
+	DebugDrawComboObj(target);
 
 }
 

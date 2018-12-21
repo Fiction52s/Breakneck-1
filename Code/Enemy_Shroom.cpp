@@ -454,6 +454,7 @@ void ShroomJelly::ProcessState()
 		case DISSIPATING:
 			numHealth = 0;
 			dead = true;
+			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
 			break;
 		case SHOT:
 			action = EXPLODING;
