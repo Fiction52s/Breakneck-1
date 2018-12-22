@@ -149,7 +149,11 @@ void Patroller::ResetEnemy()
 	aimingFrames = 0;
 	if (currFacingRight)
 	{
-		turnFrame = (7 * turnAnimFactor) - 1;
+		turnFrame = (6 * turnAnimFactor) - 1;
+	}
+	else
+	{
+		turnFrame = 0;
 	}
 	targetAngle = 0;
 	currentAngle = targetAngle;

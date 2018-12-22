@@ -12,6 +12,8 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 		FALLDOWN,
 		UPCHARGE,
 		FALLUP,
+		REVERSEUPTODOWN,
+		REVERSEDOWNTOUP,
 		A_Count
 	};
 
@@ -25,6 +27,8 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	Tileset *ts;
+
+	int fallFrames;
 
 	Action action;
 	bool facingRight;

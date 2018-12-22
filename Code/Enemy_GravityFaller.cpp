@@ -29,16 +29,21 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	actionLength[FALLDOWN] = 10;
 	actionLength[UPCHARGE] = 10;
 	actionLength[FALLUP] = 10;
+	actionLength[REVERSEUPTODOWN] = 10;
+	actionLength[REVERSEDOWNTOUP] = 10;
+
 
 	animFactor[IDLE] = 1;
 	animFactor[DOWNCHARGE] = 1;
 	animFactor[FALLDOWN] = 1;
 	animFactor[UPCHARGE] = 1;
 	animFactor[FALLUP] = 1;
+	animFactor[REVERSEUPTODOWN] = 1;
+	animFactor[REVERSEDOWNTOUP] = 1;
 
-	double width = 80;
-	double height = 80;
-	ts = owner->GetTileset("frog_80x80.png", width, height);
+	double width = 128;
+	double height = 128;
+	ts = owner->GetTileset("Enemies/gravity_faller_128x128.png", width, height);
 
 	
 	mover = new SurfaceMover(p_owner, g, q, 30);
@@ -72,23 +77,23 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	hurtBody = new CollisionBody(1);
 	CollisionBox hurtBox;
 	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
+	hurtBox.isCircle = false;
+	hurtBox.globalAngle = PI / 4.0;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
-	hurtBox.rw = 30;
-	hurtBox.rh = 30;
+	hurtBox.rw = 40;
+	hurtBox.rh = 40;
 	hurtBody->AddCollisionBox(0, hurtBox);
 
 	hitBody = new CollisionBody(1);
 	CollisionBox hitBox;
 	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
+	hitBox.isCircle = false;
+	hitBox.globalAngle = PI / 4.0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 30;
-	hitBox.rh = 30;
+	hitBox.rw = 40;
+	hitBox.rh = 40;
 	hitBody->AddCollisionBox(0, hitBox);
 
 	hitboxInfo = new HitboxInfo;
@@ -107,8 +112,8 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	position = mover->physBody.globalPosition;//gPoint + ground->Normal() * physBody.rh; //16.0;
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(10);
-	cutObject->SetSubRectBack(9);
+	cutObject->SetSubRectFront(6);
+	cutObject->SetSubRectBack(5);
 
 	ResetEnemy();
 
@@ -123,6 +128,7 @@ void GravityFaller::ResetEnemy()
 	mover->UpdateGroundPos();
 	mover->SetSpeed(0);
 
+	fallFrames = 0;
 	position = mover->physBody.globalPosition;
 
 	SetHurtboxes(hurtBody, 0);
@@ -130,6 +136,8 @@ void GravityFaller::ResetEnemy()
 	dead = false;
 
 	chargeFrame = 0;
+
+	mover->ClearAirForces();
 
 	//----
 
@@ -152,6 +160,10 @@ void GravityFaller::FrameIncrement()
 	if (action == DOWNCHARGE || action == UPCHARGE)
 	{
 		chargeFrame++;
+	}
+	else if (action == FALLDOWN || action == FALLUP)
+	{
+		fallFrames++;
 	}
 }
 
@@ -204,45 +216,89 @@ void GravityFaller::ProcessState()
 
 	Actor *player = owner->GetPlayer(0);
 
-	if (chargeFrame == chargeLength)
+	if (action == IDLE)
+	{
+		if (length(player->position - position) < 500)
+		{
+			if (mover->ground->Normal().y < 0)
+			{
+				action = UPCHARGE;
+				frame = 0;
+				chargeFrame = 0;
+			}
+			else
+			{
+				action = DOWNCHARGE;
+				frame = 0;
+				chargeFrame = 0;
+			}
+		}
+	}
+
+	if (chargeFrame == chargeLength && ( action == DOWNCHARGE || action == UPCHARGE))
 	{
 		mover->ClearAirForces();
 		if (action == DOWNCHARGE)
 		{
+			action = FALLDOWN;
+			frame = 0;
 			mover->Jump(V2d(0, 0));
-			mover->AddAirForce(V2d(0, 2));
+			mover->AddAirForce(V2d(0, 1));
+			fallFrames = 0;
 		}
 		else if (action == UPCHARGE)
 		{
+			action = FALLUP;
+			frame = 0;
 			mover->Jump(V2d(0, 0));
-			mover->AddAirForce(V2d(0, -2));
+			mover->AddAirForce(V2d(0, -1));
+			fallFrames = 0;
 		}
 	}
+	else if ((action == FALLDOWN || action == FALLUP) && fallFrames == 60)
+	{
+		mover->ClearAirForces();
+		if (action == FALLDOWN)
+		{
+			action = REVERSEDOWNTOUP;
+			frame = 0;
+			mover->AddAirForce(V2d(0, -1));
+		}
+		else if (action == FALLUP)
+		{
+			action = REVERSEUPTODOWN;
+			frame = 0;
+			mover->AddAirForce(V2d(0, 1));
+		}
+		
+	}
+
+	//cout << "vel: " << mover->velocity.x << ", " << mover->velocity.y << endl;
 }
 
 void GravityFaller::UpdateEnemyPhysics()
 {
-	if (health == 0)
-		return;
-
 	if (mover->ground != NULL)
 	{
 	}
 	else
 	{
-		double grav = gravity;
-		//if (action == WALLCLING)
-		//{
-		//	grav = 0;//.1 * grav;
-		//}
-		mover->velocity.y += grav / (numPhysSteps * slowMultiple);
+		//double grav = gravity;
+		////if (action == WALLCLING)
+		////{
+		////	grav = 0;//.1 * grav;
+		////}
+		//mover->velocity.y += grav / (numPhysSteps * slowMultiple);
 
 		if (mover->velocity.y >= maxFallSpeed)
 		{
 			mover->velocity.y = maxFallSpeed;
 		}
+		else if (mover->velocity.y <= -maxFallSpeed)
+		{
+			mover->velocity.y = -maxFallSpeed;
+		}
 	}
-
 
 	mover->Move(slowMultiple, numPhysSteps);
 
@@ -277,25 +333,50 @@ void GravityFaller::UpdateSprite()
 
 	sprite.setTexture(*ts->texture);
 
-	sprite.setTextureRect(ts->GetSubRect(0));
+	int tIndex = 0;
+	switch (action)
+	{
+	case IDLE:
+		tIndex = 0;
+		break;
+	case DOWNCHARGE:
+		tIndex = 3;
+		break;
+	case FALLDOWN:
+	case REVERSEUPTODOWN:
+		tIndex = 4;
+		break;
+	case UPCHARGE:
+	case REVERSEDOWNTOUP:
+		tIndex = 1;
+		break;
+	case FALLUP:
+		tIndex = 2;
+		break;
+	}
+
+	sprite.setTextureRect(ts->GetSubRect(tIndex));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setRotation(0);
 	sprite.setPosition(position.x, position.y);
 
-	if (!facingRight)
+
+
+
+	/*if (!facingRight)
 	{
 		sf::IntRect r = sprite.getTextureRect();
 		sprite.setTextureRect(sf::IntRect(r.left + r.width, r.top, -r.width, r.height));
-	}
+	}*/
 }
 
 void GravityFaller::HitTerrainAerial(Edge * e, double quant)
 {
-	if (action == FALLDOWN)
+	if (action == FALLDOWN || action == REVERSEDOWNTOUP )
 	{
 		action = UPCHARGE;
 	}
-	else if (action == FALLUP)
+	else if (action == FALLUP || action == REVERSEUPTODOWN )
 	{
 		action = DOWNCHARGE;
 	}

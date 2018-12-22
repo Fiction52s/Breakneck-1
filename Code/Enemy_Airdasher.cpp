@@ -15,7 +15,7 @@ using namespace sf;
 
 
 Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
-	:Enemy(owner, EnemyType::EN_AIRDASHER, p_hasMonitor, 1, false)
+	:Enemy(owner, EnemyType::EN_AIRDASHER, p_hasMonitor, 1)
 {
 	action = S_FLOAT;
 	//receivedHit = NULL;
@@ -34,7 +34,7 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	frame = 0;
 
 	//ts = owner->GetTileset( "Airdasher.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
+	ts = owner->GetTileset("Enemies/dasher_256x160.png", 256, 160);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -99,6 +99,10 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	ResetEnemy();
 
 	maxCharge = 15;
+
+	cutObject->SetTileset(ts);
+	cutObject->SetSubRectFront(13);
+	cutObject->SetSubRectBack(12);
 }
 
 void Airdasher::ResetEnemy()
@@ -111,6 +115,8 @@ void Airdasher::ResetEnemy()
 	frame = 0;
 	position = origPos;
 	receivedHit = NULL;
+
+	sprite.setRotation(0);
 
 	UpdateHitboxes();
 
@@ -167,6 +173,39 @@ void Airdasher::ProcessState()
 				frame = 0;
 				playerDir = normalize(playerPos - position);
 				physStepIndex = 0;
+
+
+				double angle = -atan2(playerDir.y, -playerDir.x) / PI * 180.0;
+				//V2d dest = currOrig + playerDir * dashRadius;
+				//float angle = atan2(playerDir.y, playerDir.x);
+				//angle = angle / PI * 180.f;
+
+
+				if (playerDir.x < 0)
+				{
+					facingRight = false;
+				}
+				else if (playerDir.x > 0)
+				{
+					facingRight = true;
+					angle += 180;
+					//angle = -angle;
+				}
+				else if (playerDir.y == 1)
+				{
+					facingRight = true;
+					//angle = -angle;
+				}
+				else if (playerDir.y == -1)
+				{
+					facingRight = false;
+				}
+				else
+				{
+					assert(0);
+				}
+				sprite.setRotation(angle);
+				//cout << "angle : " << angle << endl;
 			}
 			else
 			{
@@ -248,6 +287,38 @@ void Airdasher::FrameIncrement()
 void Airdasher::UpdateSprite()
 {
 	sprite.setPosition(position.x, position.y);
+
+	int tIndex = 0;
+
+	
+	switch (action)
+	{
+	case S_FLOAT:
+		tIndex = 0;
+		
+		break;
+	case S_CHARGE:
+		//sprite.setRotation(angle);
+		tIndex = 1;
+		break;
+	case S_DASH:
+		tIndex = 4;
+		break;
+	case S_OUT:
+		tIndex = 5;
+		break;
+	case S_RETURN:
+		tIndex = 9;
+		break;
+	}
+
+	IntRect ir = ts->GetSubRect(tIndex);
+	if (!facingRight)
+	{
+		ir = sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height);
+	}
+	sprite.setTextureRect(ir);
+
 }
 
 void Airdasher::EnemyDraw(sf::RenderTarget *target)

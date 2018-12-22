@@ -830,7 +830,7 @@ void BasicBullet::UpdateSprite()
 
 	
 
-	
+	int animFactor = 2;
 	switch (bulletType)
 	{
 	case BAT_UP:
@@ -841,6 +841,7 @@ void BasicBullet::UpdateSprite()
 		angle = angle * 180 / PI;
 		transform = transform.Identity;
 		transform.rotate(angle);
+		animFactor = 4;
 		break;
 	}
 	/*case CURVE_TURRET:
@@ -873,7 +874,8 @@ void BasicBullet::UpdateSprite()
 	VA[index*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
 	VA[index*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );*/
 
-	int ind = 6 * launcher->bulletTilesetIndex + ((frame/2) % 6);
+	
+	int ind = 6 * launcher->bulletTilesetIndex + ((frame/ animFactor) % 6);
 	//cout << "index: " << ind << ", frame: " << frame << endl;
 	IntRect sub = launcher->owner->ts_basicBullets->GetSubRect( ind );
 	/*VA[index*4+0].color = Color::Red;

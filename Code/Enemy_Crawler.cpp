@@ -253,6 +253,7 @@ void Crawler::ProcessState()
 			frame = 0;
 			break;
 		case BURROW:
+			SetHurtboxes(NULL, 0);
 			action = UNDERGROUND;
 			frame = 0;
 			mover->ground = startGround;
@@ -261,6 +262,7 @@ void Crawler::ProcessState()
 			mover->UpdateGroundPos();
 			break;
 		case UNDERGROUND:
+			SetHurtboxes(hurtBody, 0);
 			action = UNBURROW;
 			framesUntilBurrow = maxFramesUntilBurrow;
 			frame = 0;
@@ -277,7 +279,7 @@ void Crawler::ProcessState()
 	case UNBURROW:
 		if (frame == 4 * 14)
 		{
-			SetHurtboxes(hurtBody, 0);
+			
 			SetHitboxes(hitBody, 0);
 		}
 		break;
@@ -288,7 +290,6 @@ void Crawler::ProcessState()
 	case BURROW:
 		if (frame == 4 * 12)
 		{
-			SetHurtboxes(NULL, 0);
 			SetHitboxes(NULL, 0);
 		}
 		break;
