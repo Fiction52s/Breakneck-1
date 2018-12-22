@@ -2109,6 +2109,60 @@ bool EditSession::OpenFile()
 					terrain->enemies[a->groundInfo->edgeStart].push_back( a );
 					terrain->UpdateBounds();
 				}
+				else if (typeName == "gravityfaller")
+				{
+
+					//always grounded
+
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					int hasMonitor;
+					is >> hasMonitor;
+
+					int var;
+					is >> var;
+
+					PolyPtr terrain(NULL);
+					if (terrainIndex == -1)
+					{
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+						{
+							if ((*it)->inverse)
+								continue;
+							if (testIndex == terrainIndex)
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
+						}
+					}
+
+					if (terrain == NULL)
+						assert(0 && "failure terrain indexing faller");
+
+					if (edgeIndex == terrain->numPoints - 1)
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					a.reset(new GravityFallerParams(this, terrain.get(), edgeIndex, edgeQuantity, var));
+					a->hasMonitor = (bool)hasMonitor;
+					terrain->enemies[a->groundInfo->edgeStart].push_back(a);
+					terrain->UpdateBounds();
+				}
 				else if( typeName == "bossbird" )
 				{
 					Vector2i pos;
@@ -6240,7 +6294,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	ActorType *stagBeetleType = new ActorType( "stagbeetle", stagBeetlePanel );
 
 	Panel *poisonFrogPanel = CreateOptionsPanel( "poisonfrog" );
-	ActorType *poisonFrogType = new ActorType( "poisonfrog", poisonFrogPanel );
+	ActorType *poisonFrogType = new ActorType("poisonfrog", poisonFrogPanel);
+
+	Panel *gravityFallerPanel= CreateOptionsPanel("gravityfaller");
+	ActorType *gravityFallerType = new ActorType("gravityfaller", gravityFallerPanel);
 
 	ActorType *bossBirdType = new ActorType( "bossbird", NULL );
 
@@ -6249,6 +6306,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	types["poisonfrog"] = poisonFrogType;
 	types["stagbeetle"] = stagBeetleType;
 	types["bossbird"] = bossBirdType;
+	types["gravityfaller"] = gravityFallerType;
 
 	//w3
 	Panel *pulserPanel = CreateOptionsPanel( "pulser" );
@@ -6391,7 +6449,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	gs->Set( 1, 2, Sprite( curveTurretType->iconTexture ), "curveturret" );
 	gs->Set( 2, 2, Sprite( poisonFrogType->iconTexture ), "poisonfrog" );
 	gs->Set( 3, 2, Sprite( stagBeetleType->iconTexture ), "stagbeetle" );
-	gs->Set( 4, 2, Sprite( bossCoyoteType->iconTexture ), "bossbird" );
+	gs->Set(4, 2, Sprite(poisonFrogType->iconTexture), "gravityfaller");
+	gs->Set( 5, 2, Sprite( bossCoyoteType->iconTexture ), "bossbird" );
 
 	gs->Set( 0, 3, Sprite( pulserType->iconTexture ), "pulser" );
 	gs->Set( 1, 3, Sprite( badgerType->iconTexture ), "badger" );
@@ -9100,6 +9159,16 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											//trackingEnemy = NULL;
 										}
 									}
+									else if (trackingEnemy->name == "gravityfaller")
+									{
+										if (enemyEdgePolygon != NULL)
+										{
+											tempActor = new GravityFallerParams(this, enemyEdgePolygon, enemyEdgeIndex,
+												enemyEdgeQuantity);
+											showPanel = trackingEnemy->panel;
+											tempActor->SetPanelInfo();
+										}
+									}
 									else if( trackingEnemy->name == "stagbeetle" )
 									{
 										//groups["--"]->name
@@ -11596,10 +11665,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						|| name == "basicturret"
 						|| name == "bosscrawler";
 
-					bool w2Grounded = 
+					bool w2Grounded =
 						name == "stagbeetle"
 						|| name == "curveturret"
-						|| name == "poisonfrog";
+						|| name == "poisonfrog"
+						|| name == "gravityfaller";
 
 					bool w3Grounded =
 						name == "badger"
@@ -13928,6 +13998,32 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 
 				CreateActor( poisonFrog );
+				tempActor = NULL;
+			}
+			showPanel = NULL;
+			//showPanel = enemySelectPanel;
+		}
+	}
+	else if (p->name == "gravityfaller_options")
+	{
+		if (b->name == "ok");
+		{
+			//not sure if this is what i need
+			//if( mode == EDIT && selectedActor != NULL )
+			if (mode == EDIT)
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				GravityFallerParams*gFaller = (GravityFallerParams*)select;
+				gFaller->SetParams();
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				ActorPtr gFaller(tempActor);
+				gFaller->SetParams();
+
+				gFaller->group = groups["--"];
+
+				CreateActor(gFaller);
 				tempActor = NULL;
 			}
 			showPanel = NULL;
@@ -16768,6 +16864,21 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		return p;
 	}
+	else if (name == "gravityfaller")
+	{
+		Panel *p = new Panel("gravityfaller_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("var", Vector2i(20, 150), 200, 20, "0");
+		//p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
+		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		return p;
+	}
 	else if( name == "stagbeetle" )
 	{
 		Panel *p = new Panel( "stagbeetle_options", 200, 500, this );
@@ -17247,6 +17358,11 @@ void EditSession::SetEnemyEditPanel()
 	{
 		PoisonFrogParams *poisonFrog = (PoisonFrogParams*)ap;
 		poisonFrog->SetPanelInfo();
+	}
+	else if (name == "gravityFaller")
+	{
+		GravityFallerParams *gFaller = (GravityFallerParams*)ap;
+		gFaller->SetPanelInfo();
 	}
 	else if( name == "curveturret" )
 	{
@@ -19075,6 +19191,13 @@ void ActorType::Init()
 		canBeAerial = false;
 	}
 	else if( name == "poisonfrog" )
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
+	}
+	else if (name == "gravityfaller")
 	{
 		width = 32;
 		height = 32;

@@ -993,3 +993,99 @@ void BossBirdParams::CreateFormation()
 		debugLines[i].color = Color::Green;
 	}
 }
+
+GravityFallerParams::GravityFallerParams(EditSession *edit, TerrainPolygon *p_edgePolygon,
+	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
+	:ActorParams(PosType::GROUND_ONLY)
+{
+	variation = 0;
+
+	type = edit->types["gravityfaller"];
+
+	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+
+	SetBoundingQuad();
+}
+
+GravityFallerParams::GravityFallerParams(EditSession *edit, TerrainPolygon *p_edgePolygon,
+	int p_edgeIndex, double p_edgeQuantity, int var )
+	:ActorParams(PosType::GROUND_ONLY)
+{
+	variation = var;
+	type = edit->types["gravityfaller"];
+
+	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+
+	SetBoundingQuad();
+}
+
+bool GravityFallerParams::CanApply()
+{
+	if (groundInfo != NULL)
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void GravityFallerParams::WriteParamFile(ofstream &of)
+{
+	int hMon;
+	if (hasMonitor)
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
+	of << variation << endl;
+	/*if( clockwise )
+	of << "+clockwise" << endl;
+	else
+	of << "-clockwise" << endl;
+
+	of.precision( 5 );
+	of << fixed << speed << endl;*/
+}
+
+void GravityFallerParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	//bool clockwise = p->checkBoxes["clockwise"]->checked;
+	//double speed;
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+
+	stringstream ss;
+	string varStr = p->textBoxes["var"]->text.getString().toAnsiString();
+
+	ss << varStr;
+
+	int t_variation;
+	ss >> t_variation;
+
+	if (!ss.fail())
+	{
+		variation = t_variation;
+	}
+}
+
+void GravityFallerParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+		p->textBoxes["group"]->text.setString(group->name);
+	p->textBoxes["var"]->text.setString(boost::lexical_cast<string>(variation));
+	p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+void GravityFallerParams::Draw(sf::RenderTarget *target)
+{
+	ActorParams::Draw(target);
+}
+
+ActorParams *GravityFallerParams::Copy()
+{
+	GravityFallerParams *copy = new GravityFallerParams(*this);
+	return copy;
+}

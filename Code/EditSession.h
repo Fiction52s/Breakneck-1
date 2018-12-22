@@ -1007,6 +1007,27 @@ struct BatParams : public ActorParams
 	//int speed;
 };
 
+struct GravityFallerParams : public ActorParams
+{
+	GravityFallerParams(EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
+		double edgeQuantity,
+		int variation );
+	GravityFallerParams(EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
+		double edgeQuantity);
+	void WriteParamFile(std::ofstream &of);
+	void Draw(sf::RenderTarget *target);
+	ActorParams *Copy();
+	bool CanApply();
+	void SetParams();
+	void SetPanelInfo();
+
+	int variation;
+};
+
 struct StagBeetleParams : public ActorParams
 { 
 	StagBeetleParams( EditSession *edit, 

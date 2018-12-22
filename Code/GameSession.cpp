@@ -2229,15 +2229,38 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int jumpFramesWait;
 				is >> jumpFramesWait;
 
-				/*PoisonFrog *enemy = new PoisonFrog( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, gravFactor, Vector2i( jumpStrengthX, jumpStrengthY ), jumpFramesWait );*/
-				GravityFaller *enemy = new GravityFaller(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-					edgeQuantity, 0);
+				PoisonFrog *enemy = new PoisonFrog( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, gravFactor, Vector2i( jumpStrengthX, jumpStrengthY ), jumpFramesWait );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
 				enemyTree->Insert( enemy );
+			}
+			else if (typeName == "gravityfaller")
+			{
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				int hasMonitor;
+				is >> hasMonitor;
+
+				int var;
+				is >> var;
+
+				GravityFaller *enemy = new GravityFaller(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+					edgeQuantity, var);
+
+				fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);
 			}
 			else if( typeName == "stagbeetle" )
 			{

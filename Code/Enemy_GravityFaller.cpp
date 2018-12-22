@@ -255,7 +255,7 @@ void GravityFaller::ProcessState()
 			fallFrames = 0;
 		}
 	}
-	else if ((action == FALLDOWN || action == FALLUP) && fallFrames == 60)
+	else if ((action == FALLDOWN || action == FALLUP) && fallFrames == 40)
 	{
 		mover->ClearAirForces();
 		if (action == FALLDOWN)
@@ -272,6 +272,18 @@ void GravityFaller::ProcessState()
 		}
 		
 	}
+	/*else if (action == REVERSEUPTODOWN && mover->velocity.y > 0)
+	{
+		action = FALLDOWN;
+		frame = 0;
+		fallFrames = 0;
+	}
+	else if (action == REVERSEDOWNTOUP && mover->velocity.y < 0)
+	{
+		action = FALLUP;
+		frame = 0;
+		fallFrames = 0;
+	}*/
 
 	//cout << "vel: " << mover->velocity.x << ", " << mover->velocity.y << endl;
 }

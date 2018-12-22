@@ -1,5 +1,5 @@
-#ifndef __ENEMY_POISONFROG_H__
-#define __ENEMY_POISONFROG_H__
+#ifndef __ENEMY_GRAVITYFALLER_H__
+#define __ENEMY_GRAVITYFALLER_H__
 
 #include "Enemy.h"
 
