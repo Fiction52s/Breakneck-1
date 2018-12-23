@@ -18,11 +18,10 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	ComboerType t)
 	:Enemy(owner, EnemyType::EN_COMBOER, p_hasMonitor, 1, false), cType( t )
 {
-	cType = T_BOUNCE;
+	cType = T_GRAVITY;
 	switch (cType)
 	{
 	case T_STRAIGHT:
-
 		break;
 	case T_GRAVITY:
 		sprite.setColor(Color::Green);
@@ -71,7 +70,7 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	frame = 0;
 	
 	//ts = owner->GetTileset( "Comboer.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
+	ts = owner->GetTileset("Enemies/comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -159,6 +158,8 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	animFactor[S_SHOT] = 6;
 	animFactor[S_EXPLODE] = 1;
 
+	
+
 	shootLimit = 120;
 	hitLimit = 6;
 
@@ -172,8 +173,8 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 
 void Comboer::ResetEnemy()
 {
-	
-
+	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setRotation(0);
 	shootFrames = 0;
 	currHits = 0;
 	comboObj->Reset();
@@ -259,6 +260,54 @@ void Comboer::ProcessHit()
 
 		velocity = dir * speed;
 
+		IntRect ir;
+		
+		
+
+		if (velocity.x == 0 || velocity.y == 0)
+		{
+			ir = ts->GetSubRect(1);
+			sprite.setTextureRect(ts->GetSubRect(1));
+		}
+		else
+		{
+			ir = ts->GetSubRect(2);
+			
+		}
+
+		if( velocity.x < 0 )
+		{
+			ir = sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height);
+		}
+		if (velocity.x == 0)
+		{
+			if (velocity.y > 0)
+			{
+				sprite.setRotation(90);
+			}
+			else
+			{
+				sprite.setRotation(-90);
+			}	
+		}
+		else
+		{
+			if (velocity.x > 0 && velocity.y > 0)
+			{
+				sprite.setRotation(90);
+			}
+			else if( velocity.x < 0 && velocity.y > 0 )
+			{
+				sprite.setRotation(-90);
+			}
+		}
+
+		sprite.setTextureRect(ir);
+
+		/*if (velocity.y > 0 && velocity.x < 0)
+		{
+			sprite.setTextureRect(sf::IntRect(ir.left, ir.top, -ir.width, ir.height));
+		}*/
 
 		if (cType == T_GRAVITY)
 		{
@@ -446,6 +495,19 @@ void Comboer::ComboHit()
 void Comboer::UpdateSprite()
 {
 	sprite.setPosition(position.x, position.y);
+	/*int tIndex = 0;
+	switch (action)
+	{
+	case S_FLOAT:
+		tIndex = 0;
+		break;
+	case S_SHOT:
+		
+		break;
+	case S_EXPLODE:
+		break;
+	}
+	sprite.setTextureRect(ts->GetSubRect(frame));*/
 }
 
 void Comboer::EnemyDraw(sf::RenderTarget *target)
