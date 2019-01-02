@@ -58,12 +58,18 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	bulletSpeed = p_bulletSpeed;
 	framesBetween = p_framesBetweenFiring;
 	
-	numLaunchers = 1;
+	numLaunchers = 2;
 	launchers = new Launcher*[numLaunchers];
 	launchers[0] = new Launcher( this, BasicBullet::OWL, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->hitboxInfo->damage = 18;
 	launchers[0]->Reset();
+
+	launchers[1] = new Launcher(this, BasicBullet::BIG_OWL, owner, 16, 6, position, V2d(0, -1), 2 * PI, 300);
+	launchers[1]->SetBulletSpeed(bulletSpeed);
+	launchers[1]->hitboxInfo->damage = 18;
+	launchers[1]->Reset();
+	//launchers[1]->facingDir = V2d(0, -1);
 
 	initHealth = 40;
 	health = initHealth;
@@ -291,6 +297,12 @@ void Owl::ActionEnded()
 	}
 }
 
+void Owl::ShieldDestroyed(Shield *shield)
+{
+	launchers[1]->position = position;
+	//launchers[1]->facingDir = fireDir;//normalize( owner->GetPlayer( 0 )->position - position );
+	launchers[1]->Fire();
+}
 
 void Owl::ProcessState()
 {

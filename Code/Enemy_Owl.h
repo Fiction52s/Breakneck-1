@@ -25,7 +25,7 @@ struct Owl : Enemy, LauncherEnemy
 		Edge *edge, sf::Vector2<double> &pos);
 	void BulletHitPlayer(BasicBullet *b);
 	void ActionEnded();
-	
+	void ShieldDestroyed(Shield *shield);
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	

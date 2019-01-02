@@ -783,7 +783,8 @@ struct Actor : QuadTreeCollider,
 	void AddActiveComboObj(ComboObject *c);
 	void RemoveActiveComboObj(ComboObject *c);
 	void DebugDrawComboObj(sf::RenderTarget *target);
-
+	bool IsMovingRight();
+	bool IsMovingLeft();
 	//int numCurrHitboxes;
 
 	CollisionBody *currHurtboxes;

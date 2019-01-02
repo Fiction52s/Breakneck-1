@@ -8,6 +8,7 @@ struct Pulser : Enemy
 
 	enum Action
 	{
+		IDLE,
 		SHIELDOFF,
 		SHIELDON,
 		NOSHIELD,
@@ -30,6 +31,8 @@ struct Pulser : Enemy
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();
+	void HandleHitAndSurvive();
+	void FrameIncrement();
 	Shield *shield;
 
 	int framesBetween;
@@ -47,6 +50,9 @@ struct Pulser : Enemy
 	CollisionBody *hurtBody;
 	CollisionBody *hitBody;
 	HitboxInfo *hitboxInfo;
+	HitboxInfo *shieldHitboxInfo;
+
+	int pulseFrame;
 
 	bool facingRight;
 };

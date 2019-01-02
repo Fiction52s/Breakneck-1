@@ -25,13 +25,14 @@ struct Shield : HittableObject
 	};
 
 	Shield( ShieldType type, float rad, int maxH,
-		Enemy *e);
+		Enemy *e, HitboxInfo *hInfo = NULL );
 	~Shield();
 	void ConfirmKill();
 	void ConfirmHitNoKill();
 	ShieldType sType;
 	Action action;
 	int frame;
+	HitboxInfo *hitboxInfo;
 
 	Enemy *parent;
 

@@ -42,6 +42,7 @@ struct BasicBullet : QuadTreeCollider
 		BOSS_BIRD,
 		CACTUS_TURRET,
 		OWL,
+		BIG_OWL,
 		BOSS_COYOTE,
 		TURTLE,
 		BOSS_TIGER,
@@ -331,6 +332,7 @@ enum EnemyType
 	EN_PULSER,
 	EN_BADGER,
 	EN_CACTUS,
+	EN_ROADRUNNER,
 	EN_OWL,
 	EN_TURTLE,
 	EN_CHEETAH,
@@ -526,6 +528,7 @@ public:
 		sf::FloatRect &rect);
 	void SetZoneSpritePosition();
 	void CheckedZoneUpdate(sf::FloatRect &rect);
+	virtual void ShieldDestroyed( Shield *shield ) {};
 	//std::list<CollisionBox> *activeHurtboxes;
 	CollisionBox *physicsBox;
 	virtual void UpdatePhysics( int substep );

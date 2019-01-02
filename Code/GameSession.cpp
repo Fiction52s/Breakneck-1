@@ -77,6 +77,7 @@
 #include "Enemy_GravityFaller.h"
 #include "Enemy_Owl.h"
 #include "Enemy_Patroller.h"
+#include "Enemy_RoadRunner.h"
 #include "Enemy_BirdBoss.h"
 #include "Enemy_PoisonFrog.h"
 #include "Enemy_Pulser.h"
@@ -2076,8 +2077,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				}
 
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				Crawler *enemy = new Crawler( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
-					edgeQuantity, clockwise, speed, dist );
+				//Crawler *enemy = new Crawler( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
+				//	edgeQuantity, clockwise, speed, dist );
+				RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+					edgeQuantity);
 
 
 				/*if( enemy->hasMonitor )

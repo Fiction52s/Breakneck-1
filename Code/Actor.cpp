@@ -19081,6 +19081,8 @@ void Actor::GrabShipWire()
 	frame = 0;
 }
 
+
+
 void Actor::ShipPickupPoint( double eq, bool fr )
 {
 	if( action != WAITFORSHIP && action != GRABSHIP )
@@ -19273,6 +19275,48 @@ int Actor::GetJumpFrame()
 
 	//assert(tFrame != -1);
 	return tFrame;
+}
+
+bool Actor::IsMovingRight()
+{
+	if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
+	{
+		if (velocity.x > 0)
+		{
+			return true;
+		}
+	}
+	else if (ground != NULL)
+	{
+		if ((!reversed && groundSpeed > 0) || (reversed && groundSpeed < 0))
+		{
+			return true;
+		}
+	}
+	
+	return false;
+	//fill out grind and bounce later
+}
+
+bool Actor::IsMovingLeft()
+{
+	if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
+	{
+		if (velocity.x < 0)
+		{
+			return true;
+		}
+	}
+	else if (ground != NULL)
+	{
+		if ((!reversed && groundSpeed < 0) || (reversed && groundSpeed > 0))
+		{
+			return true;
+		}
+	}
+
+	return false;
+	//fill out grind and bounce later
 }
 
 void Actor::UpdateSprite()

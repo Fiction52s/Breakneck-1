@@ -6,7 +6,7 @@
 using namespace std;
 using namespace sf;
 
-Shield::Shield(ShieldType type, float rad, int maxH, Enemy *e)
+Shield::Shield(ShieldType type, float rad, int maxH, Enemy *e, HitboxInfo *hInfo)
 	:sType( type ), maxHits( maxH ), radius( rad ), parent( e )
 {
 	CollisionBox box;
@@ -20,6 +20,12 @@ Shield::Shield(ShieldType type, float rad, int maxH, Enemy *e)
 	body = new CollisionBody(1);
 	body->AddCollisionBox(0, box);
 	pauseFrames = 0;
+
+	hitboxInfo = hInfo;
+	if (hitboxInfo == NULL && type == T_REFLECT)
+	{
+		assert(0 && "needs a hitbox info");
+	}
 }
 
 Shield::~Shield()
@@ -122,7 +128,6 @@ void Shield::ProcessHit()
 {
 	if (action != S_BREAK && ReceivedHit() && currHits > 0)
 	{
-		cout << "hits before: " << currHits << endl;
 		--currHits;
 		if (currHits == 0)
 		{
@@ -139,9 +144,10 @@ void Shield::ProcessHit()
 			{
 				action = S_HURT;
 			}
-			else if (sType == T_REFLECT)
+			else if (sType == T_REFLECT && receivedHit->hType != HitboxInfo::HitboxType::COMBO)
 			{
 				action = S_REFLECT;
+				parent->owner->GetPlayer(0)->ApplyHit(hitboxInfo);
 			}
 			frame = 0;
 		}

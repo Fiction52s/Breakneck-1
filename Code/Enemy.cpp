@@ -90,6 +90,7 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		bulletTilesetIndex = 1;
 		break;
 	case BasicBullet::OWL:
+	case BasicBullet::BIG_OWL:
 		bulletTilesetIndex = 1;
 		break;
 	case BasicBullet::TURTLE:
@@ -283,7 +284,7 @@ void Launcher::Fire()
 			b->Reset( position, dir * bulletSpeed );
 		}
 
-		dirAngle += angleSpread / (perShot-1);
+		dirAngle += angleSpread / (perShot);
 		//dir = V2d( cos( dirAngle - PI / 2.0 ), sin( dirAngle - PI / 2.0 ) );
 	}
 }
@@ -459,6 +460,7 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	case PATROLLER:
 	case BAT_UP:
 	case BAT_DOWN:
+	case BIG_OWL:
 		transform.rotate( angle );
 		break;
 	case CURVE_TURRET:
@@ -818,6 +820,8 @@ void BasicBullet::UpdateSprite()
 	case PATROLLER:
 		dims = Vector2f(64, 64);
 		break;
+	case BIG_OWL:
+		dims = Vector2f(48, 48);
 	}
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 
@@ -836,6 +840,8 @@ void BasicBullet::UpdateSprite()
 	case BAT_UP:
 	case BAT_DOWN:
 	case PATROLLER:
+	case OWL:
+	case BIG_OWL:
 	{
 		double angle = atan2(velocity.y, velocity.x);
 		angle = angle * 180 / PI;
@@ -1493,6 +1499,7 @@ void Enemy::UpdatePrePhysics()
 	{
 		if (!currShield->ProcessState())
 		{
+			ShieldDestroyed(currShield);
 			currShield = NULL;
 		}
 	}
@@ -2037,6 +2044,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(2, 5, .8, 6, 3);
 			break;
 		case EnemyType::EN_OWL:
+			ep = new EnemyParams(2, 5, .8, 6, 3);
+			break;
+		case EnemyType::EN_ROADRUNNER:
 			ep = new EnemyParams(2, 5, .8, 6, 3);
 			break;
 		default:

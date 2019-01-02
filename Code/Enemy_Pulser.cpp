@@ -26,11 +26,13 @@ Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 {
 	highResPhysics = true;
 
-	pulseWait = 60;
+	pulseWait = 40;
+	actionLength[IDLE] = 4;
 	actionLength[SHIELDOFF] = 4;
 	actionLength[SHIELDON] = 4;
 	actionLength[NOSHIELD] = 4;
 
+	animFactor[IDLE] = 5;
 	animFactor[SHIELDOFF] = 5;
 	animFactor[SHIELDON] = 5;
 	animFactor[NOSHIELD] = 5;
@@ -41,8 +43,7 @@ Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 	position.x = pos.x;
 	position.y = pos.y;
 	
-	shield = new Shield(Shield::ShieldType::T_BLOCK, 128, 100, this);
-	shield->SetPosition(position);
+	
 
 	framesBetween = p_framesBetweenNodes;
 
@@ -174,11 +175,26 @@ Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 
 	hitBody->hitboxInfo = hitboxInfo;
 
+
+	shieldHitboxInfo = new HitboxInfo;
+	shieldHitboxInfo->damage = 18;
+	shieldHitboxInfo->drainX = 0;
+	shieldHitboxInfo->drainY = 0;
+	shieldHitboxInfo->hitlagFrames = 0;
+	shieldHitboxInfo->hitstunFrames = 30;
+	shieldHitboxInfo->knockback = 5;
+
+
 	facingRight = true;
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(5);
 	cutObject->SetSubRectBack(4);
+
+
+	shield = new Shield(Shield::ShieldType::T_REFLECT, /*128*/150, 100, this, shieldHitboxInfo);
+	//give it a unique hitboxinfo later
+	shield->SetPosition(position);
 
 	ResetEnemy();
 	//cout << "finish init" << endl;
@@ -196,7 +212,7 @@ void Pulser::ResetEnemy()
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
 
-	action = SHIELDOFF;
+	action = IDLE;
 
 	UpdateHitboxes();
 	UpdateSprite();
@@ -205,6 +221,19 @@ void Pulser::ResetEnemy()
 	currShield = NULL;
 	//currShield = shield;
 	shield->Reset();
+	pulseFrame = 0;
+}
+
+void Pulser::FrameIncrement()
+{
+	++pulseFrame;
+}
+
+void Pulser::HandleHitAndSurvive()
+{
+	--pulseFrame;
+	if (pulseFrame < 0)
+		pulseFrame = 0;
 }
 
 void Pulser::ProcessState()
@@ -213,15 +242,19 @@ void Pulser::ProcessState()
 	{
 		frame = 0;
 	}
+
+	Actor *player = owner->GetPlayer(0);
+	if( length( player->position - position ) )
 	
-	if ((owner->totalGameFrames % pulseWait) == 0 && owner->totalGameFrames > 0)
+	if (pulseFrame == pulseWait) 
 	{
+		pulseFrame = 0;
 		if (action == SHIELDOFF)
 		{
 			action = SHIELDON;
 			frame = 0;
 			currShield = shield;
-			SetHitboxes(hitBody, 1);
+			
 			
 		}
 		else if (action == SHIELDON)
@@ -296,9 +329,14 @@ void Pulser::EnemyDraw( sf::RenderTarget *target )
 void Pulser::UpdateHitboxes()
 {
 	int hitboxIndex = 0;
-	if (action == SHIELDON)
+	if (action == SHIELDON && pulseFrame == pulseWait - 1)
 	{
+		SetHitboxes(hitBody, 1);
 		hitboxIndex = 1;
+	}
+	else
+	{
+		SetHitboxes(hitBody, 0);
 	}
 
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
