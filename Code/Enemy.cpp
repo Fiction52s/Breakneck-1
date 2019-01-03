@@ -2005,49 +2005,55 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
 			break;
 		case EnemyType::EN_SHROOMJELLY:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
+			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_CRAWLERQUEEN:
-			ep = new EnemyParams(1, 5, .8, 6, 3);// 120);
+			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);// 120);
 			break;
 		case EnemyType::EN_FLOATINGBOMB:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
+			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_BLOCKER:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
+			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_BOSS_BIRD:
-			ep = new EnemyParams(2, 5, .8, 6, 40);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 40, 40);
 			break;
 		case EnemyType::EN_BAT:
-			ep = new EnemyParams(2, 5, .8, 6, 3);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_POISONFROG:
-			ep = new EnemyParams(2, 5, .8, 6, 3);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_CURVETURRET:
-			ep = new EnemyParams(2, 5, .8, 6, 3);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_STAGBEETLE:
-			ep = new EnemyParams(2, 5, .8, 6, 4);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 4, 4);
 			break;
 		case EnemyType::EN_GRAVITYFALLER:
-			ep = new EnemyParams(2, 5, .8, 6, 4);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 4, 4);
 			break;
 		case EnemyType::EN_SPIDER:
-			ep = new EnemyParams(2, 5, .8, 6, 3);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_PULSER:
-			ep = new EnemyParams(2, 5, .8, 6, 3);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_BADGER:
-			ep = new EnemyParams(2, 5, .8, 6, 3);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_OWL:
-			ep = new EnemyParams(2, 5, .8, 6, 3);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_ROADRUNNER:
-			ep = new EnemyParams(2, 5, .8, 6, 3);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
+			break;
+		case EnemyType::EN_CACTUS:
+			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
+			break;
+		case EnemyType::EN_CACTUSSHOTGUN:
+			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
 			break;
 		default:
 			return NULL;

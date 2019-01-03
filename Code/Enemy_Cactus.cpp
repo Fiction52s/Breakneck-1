@@ -23,7 +23,7 @@ Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 		edgeQuantity( q )
 {
 
-	bulletSpeed = 10;
+	bulletSpeed = 6;
 	
 	firingCounter = 120;
 	initHealth = 60;
@@ -166,7 +166,7 @@ void Cactus::ProcessState()
 	switch (action)
 	{
 	case IDLE:
-		if (dist < 500)
+		if (dist < 700)
 		{
 			action = ACTIVE;
 			frame = 0;
@@ -261,7 +261,7 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 {
 	va = parent->shotgunVA + poolIndex * 4;
 	myPool = pool;
-	bulletSpeed = 10;
+	bulletSpeed = 6;
 
 	double width = 64; //112;
 	double height = 64;
@@ -276,8 +276,8 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
+	hurtBox.rw = 16;
+	hurtBox.rh = 16;
 	hurtBody->AddCollisionBox(0, hurtBox);
 
 	hitBody = new CollisionBody(1);
@@ -288,8 +288,8 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
+	hitBox.rw = 16;
+	hitBox.rh = 16;
 	hitBody->AddCollisionBox(0, hitBox);
 
 	hitboxInfo = new HitboxInfo;
@@ -304,24 +304,35 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 
 	double size = max(width, height);
 
-	numLaunchers = 1;
+	numLaunchers = 4;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher(this, BasicBullet::CACTUS_SHOTGUN, owner, 16, 16, position, V2d( 1,0),
-		40, 90, false, 60, 60);
-	launchers[0]->SetBulletSpeed(bulletSpeed);
-	launchers[0]->hitboxInfo->damage = 18;
+
+	Vector2f dir = normalize(Vector2f(1, 1));
+	sf::Transform t;
+	for (int i = 0; i < 4; ++i)
+	{
+		launchers[i] = new Launcher(this, BasicBullet::CACTUS_SHOTGUN, owner, 3, 3, position, V2d(t.transformPoint(dir)),
+			PI / 6.0, 90, false);
+		launchers[i]->SetBulletSpeed(bulletSpeed);
+		launchers[i]->hitboxInfo->damage = 18;
+		t.rotate(90);
+	}
+	
 
 	spawnRect = sf::Rect<double>(position.x - size / 2, position.y - size / 2, size, size);
 
-	actionLength[CHASINGPLAYER] = 60;
-	actionLength[BLINKING] = 1;
+	actionLength[CHASINGPLAYER] = 120;
+	actionLength[BLINKING] = 40;
 	actionLength[SHOOTING] = 20;
 	actionLength[PUSHBACK] = 40;
+	actionLength[STASIS] = 180;
 
 	animFactor[CHASINGPLAYER] = 1;
 	animFactor[BLINKING] = 1;
 	animFactor[SHOOTING] = 1;
+	animFactor[STASIS] = 1;
 	animFactor[PUSHBACK] = 1;
+	
 
 	ResetEnemy();
 }
@@ -373,14 +384,31 @@ void CactusShotgun::ActionEnded()
 			action = BLINKING;
 			break;
 		case BLINKING:
+		{
 			action = SHOOTING;
-			launchers[0]->facingDir = normalize(owner->GetPlayer(0)->position - position);
-			launchers[0]->Fire();
+
+			Vector2f dir(normalize(owner->GetPlayer(0)->position - position));
+			Transform t;
+			for (int i = 0; i < 4; ++i)
+			{
+				launchers[i]->facingDir = V2d( t.transformPoint( dir ) );
+				launchers[i]->position = position;
+				launchers[i]->Fire();
+				t.rotate(90);
+			}
+			/*
+			launchers[0]->position = position;
+			launchers[0]->Fire();*/
 			break;
+		}
 		case SHOOTING:
-			action = EXPLODING;
+			action = STASIS;
 			break;
 		case PUSHBACK:
+			break;
+		case STASIS:
+			action = EXPLODING;
+			frame = 0;
 			break;
 		case EXPLODING:
 			dead = true;
@@ -411,7 +439,7 @@ void CactusShotgun::ProcessState()
 	case CHASINGPLAYER:
 	{
 		double dist = length(player->position - position);
-		if (dist < 300)
+		if (dist < 250)
 		{
 			action = BLINKING;
 			frame = 0;
@@ -455,6 +483,8 @@ void CactusShotgun::ProcessState()
 void CactusShotgun::UpdateEnemyPhysics()
 {
 	position += velocity / ((double)slowMultiple) / numPhysSteps;
+	//cout << "position: " << position.x << ", " << position.y << endl;
+	//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 }
 
 void CactusShotgun::EnemyDraw(sf::RenderTarget *target)
@@ -473,7 +503,7 @@ void CactusShotgun::DirectKill()
 void CactusShotgun::UpdateSprite()
 {
 	SetRectCenter(va, parent->ts_shotgun->tileWidth, parent->ts_shotgun->tileHeight, Vector2f(position));
-	SetRectSubRect(va, parent->ts_shotgun->GetSubRect(0));
+	SetRectSubRect(va, parent->ts_shotgun->GetSubRect(1));
 	//sprite.setTextureRect(ts->GetSubRect(0));//frame / animationFactor ) );
 }
 

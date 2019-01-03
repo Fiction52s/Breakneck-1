@@ -12,6 +12,7 @@ struct CactusShotgun : Enemy, LauncherEnemy, PoolMember
 		BLINKING,
 		SHOOTING,
 		PUSHBACK,
+		STASIS,
 		EXPLODING,
 		A_Count,
 	};
