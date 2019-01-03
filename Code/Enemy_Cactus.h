@@ -3,80 +3,99 @@
 
 #include "Enemy.h"
 
-struct Cactus : Enemy, LauncherEnemy
+struct Cactus;
+struct CactusShotgun : Enemy, LauncherEnemy, PoolMember
 {
-	Cactus(GameSession *owner, bool hasMonitor,
-		Edge *ground, double quantity,
-		int p_bulletSpeed, int p_rhythm,
-		int p_amplitude);
-	//	void HandleEdge( Edge *e );
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void PhysicsResponse();
-	void UpdatePostPhysics();
-	void DrawMinimap(sf::RenderTarget *target);
-	void Draw(sf::RenderTarget *target);
-	bool IHitPlayerWithBullets();
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	std::pair<bool, bool> PlayerHitMyBullets();
-	bool PlayerSlowingMe();
+	enum Action
+	{
+		CHASINGPLAYER,
+		BLINKING,
+		SHOOTING,
+		PUSHBACK,
+		EXPLODING,
+		A_Count,
+	};
+
+	int actionLength[A_Count];
+	int animFactor[A_Count];
+	Action action;
+	CactusShotgun(GameSession *owner, Cactus *parent, 
+		ObjectPool *pool, int poolIndex);
+	
+	void ActionEnded();
+	void ClearSprite();
+	void ProcessState();
+	void UpdateEnemyPhysics();
+	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
-	//void UpdateBulletHitboxes();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,
 		sf::Vector2<double> &pos);
 	void BulletHitPlayer(BasicBullet *b);
 	void DirectKill();
-	void SaveEnemyState();
-	void LoadEnemyState();
 	void ResetEnemy();
+	void SetParams(V2d &position, V2d &dir);
+	sf::Vertex *va;
 
-	Tileset *ts_bulletExplode;
-	Launcher *testLauncher;
+	Cactus *parent;
+
+	V2d velocity;
+	Edge *ground;
+	double edgeQuantity;
+
+	CollisionBody *hurtBody;
+	CollisionBody *hitBody;
+	HitboxInfo *hitboxInfo;
+	ObjectPool *myPool;
+	double bulletSpeed;
+};
+
+struct Cactus : Enemy
+{
+	enum Action
+	{
+		IDLE,
+		ACTIVE,
+		SHOOT,
+		A_Count,
+	};
+
+	int actionLength[A_Count];
+	int animFactor[A_Count];
+
+	Action action;
+	Cactus(GameSession *owner, bool hasMonitor,
+		Edge *ground, double quantity );
+	void ProcessState();
+	void ActionEnded();
+	void UpdateEnemyPhysics();
+	void FrameIncrement();
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void UpdateHitboxes();
+	void DirectKill();
+	void ResetEnemy();
+	void ThrowShotgun();
 
 	sf::Sprite sprite;
 	Tileset *ts;
-
-	const static int maxBullets = 16;
-	sf::Vector2<double> tempVel;
+	Tileset *ts_shotgun;
+	Tileset *ts_bulletExplode;
+	const static int MAX_SHOTGUNS = 16;
+	ObjectPool *shotgunPool;
+	sf::Vertex *shotgunVA;
 
 	int framesWait;
 	int firingCounter;
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
+	CollisionBody *hurtBody;
+	CollisionBody *hitBody;
 	HitboxInfo *hitboxInfo;
 
-	double angle;
-
-	sf::Vector2<double> gravity;
-
-	Contact minContact;
-	bool col;
-	std::string queryMode;
-	int possibleEdgeCount;
-
-	int frame;
-	int deathFrame;
-	int animationFactor;
-	sf::Vector2<double> gn;
 	double bulletSpeed;
-
-	bool dying;
-
-	sf::Vector2<double> deathVector;
-	double deathPartingSpeed;
-	sf::Sprite botDeathSprite;
-	sf::Sprite topDeathSprite;
-	Tileset * ts_death;
-	Tileset *ts_testBlood;
-	sf::Sprite bloodSprite;
-	int bloodFrame;
 };
 
 #endif

@@ -56,7 +56,7 @@
 #include "Enemy_Booster.h"
 #include "Enemy_Comboer.h"
 #include "Enemy_StagBeetle.h"
-//#include "Enemy_Cactus.h"
+#include "Enemy_Cactus.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -2113,7 +2113,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> hasMonitor;
 
 				//FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				Shroom *enemy = new Shroom( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+				//Shroom *enemy = new Shroom( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+				Cactus *enemy = new Cactus( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;

@@ -238,7 +238,7 @@ void Badger::UpdateNextAction()
 
 void Badger::ActionEnded()
 {
-	if( ( frame / animFactor[action] ) == actionLength[action] )
+	if( frame == animFactor[action] * actionLength[action] )
 	{
 		switch( action )
 		{

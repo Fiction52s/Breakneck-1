@@ -8,7 +8,6 @@
 using namespace std;
 using namespace sf;
 
-
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_GREEN Color( 0, 0xcc, 0x44 )
@@ -187,9 +186,6 @@ void Shroom::HandleNoHealth()
 	owner->AddEnemy(jelly);
 }
 
-
-
-
 void Shroom::UpdateHitboxes()
 {
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
@@ -324,11 +320,6 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 
 	UpdateSprite();
 }
-
-//HitboxInfo * ShroomJelly::IsHit(Actor *player)
-//{
-//	return NULL;
-//}
 
 void ShroomJelly::ProcessHit()
 {

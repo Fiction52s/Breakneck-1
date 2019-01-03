@@ -86,7 +86,7 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::CURVE_TURRET:
 		bulletTilesetIndex = 1;
 		break;
-	case BasicBullet::CACTUS_TURRET:
+	case BasicBullet::CACTUS_SHOTGUN:
 		bulletTilesetIndex = 1;
 		break;
 	case BasicBullet::OWL:
@@ -896,7 +896,7 @@ void BasicBullet::UpdateSprite()
 }
 
 SinBullet::SinBullet( int indexVA, Launcher *launcher )
-	:BasicBullet( indexVA, BasicBullet::CACTUS_TURRET, launcher )
+	:BasicBullet( indexVA, BasicBullet::BASIC_TURRET, launcher )
 {
 }
 
