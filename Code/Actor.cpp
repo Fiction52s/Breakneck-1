@@ -708,7 +708,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		slideAttackOffset[0] = Vector2f(0, -56);
 		slideAttackOffset[1] = Vector2f(0, -64);
 		slideAttackOffset[2] = Vector2f(0, -96);
-		
 
 		std::map<int, std::list<CollisionBox>> & fairAList = 
 			owner->hitboxManager->GetHitboxList("fairahitboxes");
@@ -853,8 +852,16 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		for (int i = 0; i < 3; ++i)
 		{	
-			steepClimbHitboxes[i]->OffsetAllFrames(climbAttackOffset[i]);
-			steepSlideHitboxes[i]->OffsetAllFrames(slideAttackOffset[i]);
+			Vector2f testOffset = -slideAttackOffset[i];
+			testOffset.y -= ts_steepSlideAttackSword[i]->tileHeight / 2.0;
+			steepSlideHitboxes[i]->OffsetAllFrames(testOffset);
+		}
+
+		for (int i = 0; i < 3; ++i)
+		{
+			Vector2f testOffset = -climbAttackOffset[i];
+			testOffset.y -= ts_steepClimbAttackSword[i]->tileHeight / 2.0;
+			steepClimbHitboxes[i]->OffsetAllFrames(testOffset);
 		}
 
 		//up
