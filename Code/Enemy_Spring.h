@@ -19,6 +19,7 @@ struct Spring : Enemy
 	Tileset *ts;
 	CollisionBody * hurtBody;
 	CollisionBody* hitBody;
+	void DebugDraw(sf::RenderTarget *target);
 	//HitboxInfo *hitboxInfo;
 
 	int animationFactor;
@@ -26,6 +27,9 @@ struct Spring : Enemy
 	sf::Vector2<double> dir;
 	int speed;
 	int stunFrames;
+
+	sf::Vertex debugLine[2];
+	sf::Text debugSpeed;
 };
 
 #endif

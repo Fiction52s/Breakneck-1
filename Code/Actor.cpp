@@ -18429,7 +18429,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			Spring *spr = (Spring*)qte;
 			if (currSpring == NULL)
 			{
-				if (spr->hurtBody->Intersects(spr->currHurtboxFrame, &hurtBody))
+				if (spr->hitBody->Intersects(spr->currHitboxFrame, &hurtBody))
 				{
 					currSpring = spr;
 				}

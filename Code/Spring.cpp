@@ -18,12 +18,22 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_moveFrames )
+Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	:Enemy(owner, EnemyType::EN_SPRING, false, 2, false )
 {
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
+
+	debugSpeed.setFont(owner->mainMenu->arial);
+	debugSpeed.setFillColor(Color::White);
+	debugSpeed.setCharacterSize(30);
+	stringstream ss;
+	ss << p_speed;
+	debugSpeed.setString(ss.str());
+	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
+	debugSpeed.setPosition(Vector2f(position));
+	
 
 	frame = 0;
 
@@ -42,9 +52,9 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_moveFra
 	double angle = atan2(springVec.x, -springVec.y);//atan2(-springVec.x, springVec.y);
 	sprite.setRotation(angle / PI * 180.0 );
 
-	speed = length( dOther ) / (double)p_moveFrames;
-	
-	stunFrames = p_moveFrames;
+	speed = p_speed;//length( dOther ) / (double)p_moveFrames;
+	double dist = length( V2d(other));
+	stunFrames =  ceil(dist / speed);
 	dir = springVec;
 
 	hurtBody = new CollisionBody(1);
@@ -75,10 +85,20 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_moveFra
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	
+
+	debugLine[0].color = Color::Red;
+	debugLine[1].color = Color::Red;
+	debugLine[0].position = Vector2f(pos);
+	debugLine[1].position = Vector2f(pos + other);
 
 	ResetEnemy();
+}
+void Spring::DebugDraw(sf::RenderTarget *target)
+{
+	Enemy::DebugDraw(target);
+	target->draw(debugLine, 2, sf::Lines);
+	target->draw(debugSpeed);
 }
 
 void Spring::ResetEnemy()
@@ -88,6 +108,9 @@ void Spring::ResetEnemy()
 	frame = 0;
 
 	receivedHit = NULL;
+
+	SetHitboxes(hitBody, 0);
+	//SetHurtboxes(hurtBody, 0);
 
 	UpdateHitboxes();
 
