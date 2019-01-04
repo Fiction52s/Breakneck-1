@@ -852,9 +852,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		}
 
 		for (int i = 0; i < 3; ++i)
-		{
-			steepClimbHitboxes[i]->OffsetAllFrames(slideAttackOffset[i]);
-			steepSlideHitboxes[i]->OffsetAllFrames(climbAttackOffset[i]);
+		{	
+			steepClimbHitboxes[i]->OffsetAllFrames(climbAttackOffset[i]);
+			steepSlideHitboxes[i]->OffsetAllFrames(slideAttackOffset[i]);
 		}
 
 		//up
@@ -1411,7 +1411,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			noPowers = true;
 		}
 		
-		noPowers = false;
+		noPowers = true;
 		if( noPowers )
 		{
 			hasPowerAirDash = false;
@@ -7710,7 +7710,7 @@ void Actor::UpdatePrePhysics()
 	case GRAVREVERSE:
 		break;
 	case SPRINGSTUN:
-	{
+	{		
 		velocity = springVel;
 		break;
 	}
@@ -8162,7 +8162,7 @@ facingRight = false;
 	}
 	double maxReal = maxVelocity + scorpAdditionalCap;
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
-		&& action != ENTERNEXUS1)
+		&& action != ENTERNEXUS1 && action != SPRINGSTUN)
 	{
 		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH)
 		{
@@ -15201,11 +15201,17 @@ void Actor::PhysicsResponse()
 		if (currSpring != NULL)
 		{
 			currSpring->Launch();
+			position = currSpring->position;
 			springVel = currSpring->dir * (double)currSpring->speed;
 			springStunFrames = currSpring->stunFrames;
 			currSpring = NULL;
 			action = SPRINGSTUN;
+			holdJump = false;
+			holdDouble = false;
+			velocity = V2d(0, 0);
 			frame = 0;
+			UpdateHitboxes();
+			return;
 		}
 
 		if( action == GROUNDHITSTUN )

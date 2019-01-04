@@ -34,15 +34,18 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
 	debugSpeed.setPosition(Vector2f(position));
 	
+	ts_idle = owner->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
+	ts_recover = owner->GetTileset("Enemies/spring_recover_256x256.png", 256, 256);
+	ts_springing = owner->GetTileset("Enemies/spring_spring_512x576.png", 512, 576);
 
 	frame = 0;
 
 	animationFactor = 10;
 
 	//ts = owner->GetTileset( "Spring.png", 80, 80 );
-	ts = owner->GetTileset("spring_64x64.png", 64, 64);
-	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(frame));
+	//ts = owner->GetTileset("spring_64x64.png", 64, 64);
+	sprite.setTexture(*ts_idle->texture);
+	sprite.setTextureRect(ts_idle->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(pos.x, pos.y);
 	
@@ -85,13 +88,13 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
 
-	actionLength[IDLE] = 1;
-	actionLength[SPRINGING] = 1;
-	actionLength[RECOVERING] = 1;
+	actionLength[IDLE] = 12;
+	actionLength[SPRINGING] = 8;
+	actionLength[RECOVERING] = 8;
 
-	animFactor[IDLE] = 1;
-	animFactor[SPRINGING] = 1;
-	animFactor[RECOVERING] = 1;
+	animFactor[IDLE] = 4;
+	animFactor[SPRINGING] = 4;
+	animFactor[RECOVERING] = 4;
 
 	debugLine[0].color = Color::Red;
 	debugLine[1].color = Color::Red;
@@ -111,10 +114,11 @@ void Spring::ResetEnemy()
 {
 	dead = false;
 
-	frame = 0;
-
+	
 	receivedHit = NULL;
-
+	action = IDLE; 
+	sprite.setTexture(*ts_idle->texture);
+	frame = 0;
 	SetHitboxes(hitBody, 0);
 	//SetHurtboxes(hurtBody, 0);
 
@@ -127,16 +131,18 @@ void Spring::ActionEnded()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
+		frame = 0;
 		switch (action)
 		{
-			frame = 0;
 		case IDLE:
 			break;
 		case SPRINGING:
 			action = RECOVERING;
+			sprite.setTexture(*ts_recover->texture);
 			break;
 		case RECOVERING:
 			action = IDLE;
+			sprite.setTexture(*ts_idle->texture);
 			break;
 		}
 	}
@@ -146,18 +152,31 @@ void Spring::Launch()
 {
 	assert(action == IDLE);
 	action = SPRINGING;
+	sprite.setTexture(*ts_springing->texture);
 	frame = 0;
 }
 
 void Spring::ProcessState()
 {
+	ActionEnded();
 }
 
 
 void Spring::UpdateSprite()
 {
-	IntRect ir = ts->GetSubRect(0);
-	sprite.setTextureRect(ir);
+	switch (action)
+	{
+	case IDLE:
+		sprite.setTextureRect(ts_idle->GetSubRect(frame / animFactor[action]));
+		break;
+	case SPRINGING:
+		sprite.setTextureRect(ts_springing->GetSubRect(frame / animFactor[action]));
+		break;
+	case RECOVERING:
+		sprite.setTextureRect(ts_recover->GetSubRect(frame / animFactor[action]));
+		break;
+	}
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
 void Spring::EnemyDraw(sf::RenderTarget *target)

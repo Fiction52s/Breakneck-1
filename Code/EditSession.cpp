@@ -665,10 +665,10 @@ void EditSession::UpdateFullBounds()
 	fullBounds[7].position = Vector2f( ( leftBound + boundWidth ) - boundRectWidth, topBound + boundHeight );
 
 	//bottom rect
-	fullBounds[8].position = Vector2f( leftBound, ( topBound + boundHeight ) - boundRectWidth );
-	fullBounds[9].position = Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) - boundRectWidth );
-	fullBounds[10].position = Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) + boundRectWidth );
-	fullBounds[11].position = Vector2f( leftBound, ( topBound + boundHeight ) + boundRectWidth );
+	fullBounds[8].position = Vector2f(0, 0);//Vector2f( leftBound, ( topBound + boundHeight ) - boundRectWidth );
+	fullBounds[9].position = Vector2f(0, 0);//Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) - boundRectWidth );
+	fullBounds[10].position = Vector2f(0, 0);//Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) + boundRectWidth );
+	fullBounds[11].position = Vector2f(0, 0);//Vector2f( leftBound, ( topBound + boundHeight ) + boundRectWidth );
 
 	//left rect
 	fullBounds[12].position = Vector2f( leftBound - boundRectWidth, topBound );
