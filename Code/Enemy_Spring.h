@@ -5,6 +5,17 @@
 
 struct Spring : Enemy
 {
+	enum Action
+	{
+		IDLE,
+		SPRINGING,
+		RECOVERING,
+		A_Count
+	};
+
+	Action action;
+	int actionLength[A_Count];
+	int animFactor[A_Count];
 	//MovementSequence testSeq;
 	Spring(GameSession *owner,
 		sf::Vector2i &pos, sf::Vector2i &other, int moveFrames);
@@ -14,7 +25,8 @@ struct Spring : Enemy
 	void UpdateSprite();
 	
 	void ResetEnemy();
-
+	void ActionEnded();
+	void Launch();
 	sf::Sprite sprite;
 	Tileset *ts;
 	CollisionBody * hurtBody;

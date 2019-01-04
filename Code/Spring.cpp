@@ -85,7 +85,13 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
 
-	
+	actionLength[IDLE] = 1;
+	actionLength[SPRINGING] = 1;
+	actionLength[RECOVERING] = 1;
+
+	animFactor[IDLE] = 1;
+	animFactor[SPRINGING] = 1;
+	animFactor[RECOVERING] = 1;
 
 	debugLine[0].color = Color::Red;
 	debugLine[1].color = Color::Red;
@@ -117,9 +123,34 @@ void Spring::ResetEnemy()
 	UpdateSprite();
 }
 
+void Spring::ActionEnded()
+{
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		switch (action)
+		{
+			frame = 0;
+		case IDLE:
+			break;
+		case SPRINGING:
+			action = RECOVERING;
+			break;
+		case RECOVERING:
+			action = IDLE;
+			break;
+		}
+	}
+}
+
+void Spring::Launch()
+{
+	assert(action == IDLE);
+	action = SPRINGING;
+	frame = 0;
+}
+
 void Spring::ProcessState()
 {
-	frame = 0;
 }
 
 

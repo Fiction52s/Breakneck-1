@@ -15200,6 +15200,7 @@ void Actor::PhysicsResponse()
 	{
 		if (currSpring != NULL)
 		{
+			currSpring->Launch();
 			springVel = currSpring->dir * (double)currSpring->speed;
 			springStunFrames = currSpring->stunFrames;
 			currSpring = NULL;
@@ -18429,7 +18430,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			Spring *spr = (Spring*)qte;
 			if (currSpring == NULL)
 			{
-				if (spr->hitBody->Intersects(spr->currHitboxFrame, &hurtBody))
+				if (spr->hitBody->Intersects(spr->currHitboxFrame, &hurtBody) && spr->action == Spring::IDLE)
 				{
 					currSpring = spr;
 				}
