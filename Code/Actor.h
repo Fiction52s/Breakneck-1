@@ -1099,7 +1099,7 @@ struct Actor : QuadTreeCollider,
 	void ClearPauseBufferedActions();
 	void UpdateInHitlag();
 	bool IsAttackAction( Action a );
-
+	bool IsGroundAttackAction(Action a);
 
 
 

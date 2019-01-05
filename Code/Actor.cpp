@@ -3150,7 +3150,10 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			
+			if (GroundAttack())
+			{
+				break;
+			}
 
 			if( reversed )
 			{
@@ -3191,12 +3194,6 @@ void Actor::UpdatePrePhysics()
 						break;
 					}
 				}
-			}
-
-
-			if (GroundAttack())
-			{
-				break;
 			}
 
 			if( currInput.B && !prevInput.B )
@@ -3507,6 +3504,18 @@ void Actor::UpdatePrePhysics()
 				BounceFlameOff();
 			}
 
+			if (currInput.A && !prevInput.A)
+			{
+				SetActionExpr(JUMPSQUAT);
+				frame = 0;
+				////runTappingSound.stop();
+				break;
+			}
+
+			if (GroundAttack())
+			{
+				break;
+			}
 
 			if( reversed )
 			{
@@ -4693,43 +4702,43 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if( reversed )
-				{
-					if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-					{
-						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
-						{
-							SetAction(STEEPCLIMB);
-							frame = 0;
-							break;
-						}
-						else
-						{
-							SetAction(STEEPSLIDE);
-							frame = 0;
-							break;
-						}
-					}
-				}
-				else
-				{
-					if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-					{
-						if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
-						{
-							//cout << "steep clzzzimb" << endl;
-							SetAction(STEEPCLIMB);
-							frame = 0;
-							break;
-						}
-						else
-						{
-							SetAction(STEEPSLIDE);
-							frame = 0;
-							break;
-						}
-					}
-				}
+				//if( reversed )
+				//{
+				//	if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+				//	{
+				//		if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+				//		{
+				//			SetAction(STEEPCLIMB);
+				//			frame = 0;
+				//			break;
+				//		}
+				//		else
+				//		{
+				//			SetAction(STEEPSLIDE);
+				//			frame = 0;
+				//			break;
+				//		}
+				//	}
+				//}
+				//else
+				//{
+				//	if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+				//	{
+				//		if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+				//		{
+				//			//cout << "steep clzzzimb" << endl;
+				//			SetAction(STEEPCLIMB);
+				//			frame = 0;
+				//			break;
+				//		}
+				//		else
+				//		{
+				//			SetAction(STEEPSLIDE);
+				//			frame = 0;
+				//			break;
+				//		}
+				//	}
+				//}
 
 				if( (currInput.A && !prevInput.A) || pauseBufferedJump )
 				{
@@ -4759,7 +4768,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDEATTACK:
 		{
-			if( currAttackHit && frame > 0 )
+			if( currAttackHit )//&& frame > 0 )
 			{
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
@@ -4807,39 +4816,39 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if( reversed )
-				{
-					if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
-					{
-						SetAction(LAND2);
-						frame = 0;
-					}
-				}
-				else
-				{
-					if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
-					{
-						cout << "is it really this wtf" << endl;
-						SetAction(LAND2);
-						frame = 0;
-						//not steep
-					}
-					else
-					{
-						//is steep
-						if( ( gNorm.x < 0 && groundSpeed > 0 ) || (gNorm.x > 0 && groundSpeed < 0 ) )
-						{
-							SetAction(STEEPCLIMB);
-							frame = 1;
-						}
-					}
-				}
+				//if( reversed )
+				//{
+				//	if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
+				//	{
+				//		SetAction(LAND2);
+				//		frame = 0;
+				//	}
+				//}
+				//else
+				//{
+				//	if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
+				//	{
+				//		cout << "is it really this wtf" << endl;
+				//		SetAction(LAND2);
+				//		frame = 0;
+				//		//not steep
+				//	}
+				//	else
+				//	{
+				//		//is steep
+				//		if( ( gNorm.x < 0 && groundSpeed > 0 ) || (gNorm.x > 0 && groundSpeed < 0 ) )
+				//		{
+				//			SetAction(STEEPCLIMB);
+				//			frame = 1;
+				//		}
+				//	}
+				//}
 			}
 			break;
 		}
 	case STEEPCLIMBATTACK:
 		{
-			if( currAttackHit && frame > 0 )
+			if( currAttackHit )//&& frame > 0 )
 			{
 				if( hasPowerBounce && currInput.X && !bounceFlameOn )
 				{
@@ -4889,34 +4898,34 @@ void Actor::UpdatePrePhysics()
 				//	break;
 				//}
 
-				if( reversed )
-				{
-					if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
-					{
-						SetAction(LAND2);
-						frame = 0;
-					}
-				}
-				else
-				{
-					if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
-					{
-						cout << "is it really this wtf" << endl;
-						SetAction(LAND2);
-						frame = 0;
-						//not steep
-					}
-					else
-					{
-						//is steep
-						if( ( gNorm.x < 0 && groundSpeed < 0 ) || (gNorm.x > 0 && groundSpeed > 0 ) )
-						{
-							SetAction(STEEPSLIDE);
-							frame = 0;
-							//frame = 1;
-						}
-					}
-				}
+				//if( reversed )
+				//{
+				//	if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
+				//	{
+				//		SetAction(LAND2);
+				//		frame = 0;
+				//	}
+				//}
+				//else
+				//{
+				//	if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
+				//	{
+				//		cout << "is it really this wtf" << endl;
+				//		SetAction(LAND2);
+				//		frame = 0;
+				//		//not steep
+				//	}
+				//	else
+				//	{
+				//		//is steep
+				//		if( ( gNorm.x < 0 && groundSpeed < 0 ) || (gNorm.x > 0 && groundSpeed > 0 ) )
+				//		{
+				//			SetAction(STEEPSLIDE);
+				//			frame = 0;
+				//			//frame = 1;
+				//		}
+				//	}
+				//}
 			}
 			
 			break;
@@ -5789,6 +5798,49 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
+			if (reversed)
+			{
+				if (-gNorm.y <= -steepThresh || !(approxEquals(offsetX, b.rw) || approxEquals(offsetX, -b.rw)))
+				{
+					SetAction(LAND2);
+					frame = 0;
+					if (GroundAttack())
+					{
+
+					}
+					break;
+				}
+			}
+			else
+			{
+				if (gNorm.y <= -steepThresh || !(approxEquals(offsetX, b.rw) || approxEquals(offsetX, -b.rw)))
+				{
+					cout << "is it really this wtf" << endl;
+					SetAction(LAND2);
+					frame = 0;
+					if (GroundAttack())
+					{
+
+					}
+					break;
+					//not steep
+				}
+				else
+				{
+					//is steep
+					if ((gNorm.x < 0 && groundSpeed > 0) || (gNorm.x > 0 && groundSpeed < 0))
+					{
+						SetAction(STEEPCLIMB);
+						frame = 1;
+						if (SteepClimbAttack())
+						{
+							
+						}
+						break;
+					}
+				}
+			}
+
 			if (SteepSlideAttack())
 			{
 				break;
@@ -5820,33 +5872,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if( reversed )
-			{
-				if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
-				{
-					SetAction(LAND2);
-					frame = 0;
-				}
-			}
-			else
-			{
-				if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
-				{
-					cout << "is it really this wtf" << endl;
-					SetAction(LAND2);
-					frame = 0;
-					//not steep
-				}
-				else
-				{
-					//is steep
-					if( ( gNorm.x < 0 && groundSpeed > 0 ) || (gNorm.x > 0 && groundSpeed < 0 ) )
-					{
-						SetAction(STEEPCLIMB);
-						frame = 1;
-					}
-				}
-			}
+			
 			
 			break;
 		}
@@ -5903,6 +5929,81 @@ void Actor::UpdatePrePhysics()
 				SetActionExpr( JUMPSQUAT );
 				frame = 0;
 				break;
+			}
+
+			if (reversed)
+			{
+				if (-gNorm.y <= -steepThresh || !(approxEquals(offsetX, b.rw) || approxEquals(offsetX, -b.rw)))
+				{
+					SetAction(LAND2);
+					frame = 0;
+					if (GroundAttack())
+					{
+
+					}
+					break;
+				}
+
+				if (gNorm.x > 0 && groundSpeed >= 0)
+				{
+					SetAction(STEEPSLIDE);
+					frame = 0;
+					facingRight = true;
+					if (SteepSlideAttack())
+					{
+
+					}
+					break;
+				}
+				else if (gNorm.x < 0 && groundSpeed <= 0)
+				{
+					SetAction(STEEPSLIDE);
+					frame = 0;
+					facingRight = false;
+					if (SteepSlideAttack())
+					{
+
+					}
+					break;
+				}
+			}
+			else
+			{
+				if (gNorm.y <= -steepThresh || !(approxEquals(offsetX, b.rw) || approxEquals(offsetX, -b.rw)))
+				{
+					//cout << "blahzzz" << endl;
+					SetAction(LAND2);
+					frame = 0;
+					if (GroundAttack())
+					{
+
+					}
+					break;
+					//not steep
+				}
+
+				if (gNorm.x > 0 && groundSpeed >= 0)
+				{
+					SetAction(STEEPSLIDE);
+					frame = 0;
+					facingRight = true;
+					if (SteepSlideAttack())
+					{
+						
+					}
+					break;
+				}
+				else if (gNorm.x < 0 && groundSpeed <= 0)
+				{
+					SetAction(STEEPSLIDE);
+					frame = 0;
+					facingRight = false;
+					if (SteepSlideAttack())
+					{
+
+					}
+					break;
+				}
 			}
 
 			if (SteepClimbAttack())
@@ -5978,50 +6079,7 @@ void Actor::UpdatePrePhysics()
 			}
 			
 
-			if( reversed )
-			{
-				if( -gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
-				{
-					SetAction(LAND2);
-					frame = 0;
-				}
-
-				if( gNorm.x > 0 && groundSpeed >= 0 )
-				{
-					SetAction(STEEPSLIDE);
-					frame = 0;
-					facingRight = true;
-				}
-				else if( gNorm.x < 0 && groundSpeed <= 0 )
-				{
-					SetAction(STEEPSLIDE);
-					frame = 0;
-					facingRight = false;	
-				}
-			}
-			else
-			{
-				if( gNorm.y <= -steepThresh || !( approxEquals( offsetX, b.rw ) || approxEquals( offsetX, -b.rw ) ) )
-				{
-					//cout << "blahzzz" << endl;
-					SetAction(LAND2);
-					frame = 0;
-					//not steep
-				}
-
-				if( gNorm.x > 0 && groundSpeed >= 0 )
-				{
-					SetAction(STEEPSLIDE);
-					frame = 0;
-					facingRight = true;
-				}
-				else if( gNorm.x < 0 && groundSpeed <= 0 )
-				{
-					SetAction(STEEPSLIDE);
-					frame = 0;
-					facingRight = false;	
-				}
-			}
+			
 
 			
 			break;
@@ -9363,6 +9421,11 @@ void Actor::SetAction( Action a )
 
 	action = a;
 
+	if (action == LAND2)
+	{
+		int f = 56;
+	}
+
 	if (repeatingSound != NULL)
 	{
 		owner->soundNodeList->DeactivateSound(repeatingSound);
@@ -10198,8 +10261,12 @@ V2d Actor::UpdateReversePhysics()
 								else
 								{
 									facingRight = true;
-									SetAction(STEEPSLIDE);
-									frame = 0;
+									if (!IsGroundAttackAction(action ) )
+									{
+
+										SetAction(STEEPSLIDE);
+										frame = 0;
+									}
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
@@ -10518,8 +10585,12 @@ V2d Actor::UpdateReversePhysics()
 								else
 								{
 									facingRight = false;
-									SetAction(STEEPSLIDE);
-									frame = 0;
+									if (!IsGroundAttackAction(action))
+									{
+
+										SetAction(STEEPSLIDE);
+										frame = 0;
+									}
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
@@ -12295,8 +12366,12 @@ void Actor::UpdatePhysics()
 								{
 								//	cout << "this steep" << endl;
 									facingRight = false;
-									SetAction(STEEPSLIDE);
-									frame = 0;
+									if (!IsGroundAttackAction(action))
+									{
+
+										SetAction(STEEPSLIDE);
+										frame = 0;
+									}
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
@@ -12452,8 +12527,13 @@ void Actor::UpdatePhysics()
 						//			cout << "this steep 1" << endl;
 									//cout << "slidin" << endl;
 									facingRight = true;
-									SetAction(STEEPSLIDE);
-									frame = 0;
+									if (!IsGroundAttackAction(action))
+									{
+
+										SetAction(STEEPSLIDE);
+										frame = 0;
+									}
+									
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
@@ -23335,7 +23415,12 @@ void Actor::ClearPauseBufferedActions()
 bool Actor::IsAttackAction( Action a )
 {
 	return (a == FAIR || a == DAIR || a == UAIR || a == STANDN || a == DIAGDOWNATTACK
-		|| a == DIAGUPATTACK || a == WALLATTACK );
+		|| a == DIAGUPATTACK || a == WALLATTACK || a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK );
+}
+
+bool Actor::IsGroundAttackAction(Action a)
+{
+	return (a == STANDN || a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK);
 }
 
 void Actor::UpdateInHitlag()
