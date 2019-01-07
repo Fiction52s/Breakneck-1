@@ -25,6 +25,8 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	position.x = pos.x;
 	position.y = pos.y;
 
+	launchSoundBuf = owner->soundManager->GetSound("Enemies/spring_launch");
+
 	debugSpeed.setFont(owner->mainMenu->arial);
 	debugSpeed.setFillColor(Color::White);
 	debugSpeed.setCharacterSize(30);
@@ -79,8 +81,8 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
+	hitBox.rw = 64;
+	hitBox.rh = 64;
 	hitBox.globalPosition = position;
 
 	hitBody->AddCollisionBox(0, hitBox);
@@ -154,6 +156,7 @@ void Spring::Launch()
 	action = SPRINGING;
 	sprite.setTexture(*ts_springing->texture);
 	frame = 0;
+	owner->soundNodeList->ActivateSound(launchSoundBuf);
 }
 
 void Spring::ProcessState()

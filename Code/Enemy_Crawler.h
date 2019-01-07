@@ -22,6 +22,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int framesUntilBurrow );
 	void SetActionDash();
 	void ProcessState();
+	void PlayDeathSound();
 	bool TryDash();
 	void HandleNoHealth();
 	void DecideMovement();
@@ -46,6 +47,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 
+	sf::SoundBuffer *deathSound;
 	sf::Sprite sprite;
 	double totalDistBeforeBurrow;
 	double currDistTravelled;

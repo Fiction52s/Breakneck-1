@@ -30,6 +30,8 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
+	shootSound = owner->soundManager->GetSound("Enemies/patroller_shoot");
+
 	pathLength = pathParam.size() + 1;
 	//cout << "pathLength: " << pathLength << endl;
 	path = new Vector2i[pathLength];
@@ -201,6 +203,7 @@ void Patroller::ProcessState()
 			V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
 			launchers[0]->facingDir = normalize(targetPos - position);
 			launchers[0]->Fire();
+			owner->soundNodeList->ActivateSound(shootSound);
 			break;
 		}
 		case S_BEAKHOLDOPEN:

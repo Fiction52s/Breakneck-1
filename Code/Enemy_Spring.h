@@ -21,6 +21,7 @@ struct Spring : Enemy
 		sf::Vector2i &pos, sf::Vector2i &other, int moveFrames);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
+	sf::SoundBuffer *launchSoundBuf;
 	
 	void UpdateSprite();
 	

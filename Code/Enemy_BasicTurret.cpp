@@ -36,6 +36,8 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	double width = 176;
 	double height = 176;
 
+	fireSound = owner->soundManager->GetSound("Enemies/turret_shoot");
+
 	ts = owner->GetTileset("Enemies/turret_176x176.png", width, height);//"basicturret_128x80.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
@@ -197,6 +199,7 @@ void BasicTurret::ProcessState()
 			else if (frame == 3 * animationFactor && slowCounter == 1)
 			{
 				launchers[0]->Fire();
+				owner->soundNodeList->ActivateSound(fireSound);
 				//launchers[1]->Fire();
 				//launchers[2]->Fire();
 			}

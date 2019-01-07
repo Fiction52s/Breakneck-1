@@ -2,7 +2,9 @@
 #define __ENEMY_BASICTURRET_H__
 
 #include "Enemy.h"
+
 struct Shield;
+
 
 struct BasicTurret : Enemy, LauncherEnemy
 {
@@ -27,8 +29,9 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos);
 	void BulletHitPlayer(BasicBullet *b);
-
+	sf::SoundBuffer *fireSound;
 	CollisionBox prelimBox[3];
+
 	//bool playerPrelimHit[4];
 
 	void ResetEnemy();

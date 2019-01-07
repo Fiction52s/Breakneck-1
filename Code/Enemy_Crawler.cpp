@@ -36,6 +36,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	health = initHealth;
 	dead = false;
 
+	deathSound = owner->soundManager->GetSound("Enemies/crawler_die");
+
 	double height = 160;
 	double width = 160;
 	ts = owner->GetTileset( "Enemies/crawler_160x160.png", width, height );
@@ -119,6 +121,12 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 
 	action = UNDERGROUND;
 	frame = actionLength[UNDERGROUND];
+}
+
+void Crawler::PlayDeathSound()
+{
+	Enemy::PlayDeathSound();
+	owner->soundNodeList->ActivateSound(deathSound);
 }
 
 void Crawler::ResetEnemy()
@@ -420,6 +428,7 @@ void Crawler::HandleNoHealth()
 	//cutObject->flipHoriz = !clockwise;
 	cutObject->SetFlipHoriz(!clockwise);
 	cutObject->rotateAngle = sprite.getRotation();
+	
 	//cutObject->SetCutRootPos(Vector2f(position.x, position.y));
 	//action = DYING;
 	//dead = true;

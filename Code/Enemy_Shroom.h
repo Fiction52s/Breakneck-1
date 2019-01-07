@@ -25,6 +25,7 @@ struct Shroom : Enemy
 	void HandleNoHealth();
 	void ResetEnemy();
 	void ProcessState();
+	sf::SoundBuffer *hitSound;
 
 	sf::Sprite sprite;
 	Tileset *ts;
@@ -74,6 +75,7 @@ struct ShroomJelly : Enemy
 
 	sf::Sprite sprite;
 	Tileset *ts;
+	sf::SoundBuffer *floatSound;
 
 	V2d orig;
 

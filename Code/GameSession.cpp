@@ -2077,10 +2077,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				}
 
 				//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-				//Crawler *enemy = new Crawler( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
-				//	edgeQuantity, clockwise, speed, dist );
-				RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-					edgeQuantity);
+				Crawler *enemy = new Crawler( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], 
+					edgeQuantity, clockwise, speed, dist );
+				//RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+				//	edgeQuantity);
 
 
 				/*if( enemy->hasMonitor )
@@ -5285,6 +5285,8 @@ bool GameSession::Load()
 
 	activeItemTree = new QuadTree(1000000, 1000000);
 
+	soundManager = new SoundManager;
+
 	cout << "weird timing 1" << endl;
 
 	//sets up fx so that they can be used
@@ -5364,7 +5366,7 @@ bool GameSession::Load()
 
 	cout << "weird timing 2" << endl;
 
-	soundManager = new SoundManager;
+	
 
 	gameSoundBuffers[S_KEY_COMPLETE_W1] = soundManager->GetSound( "key_complete_w1.ogg" );
 	gameSoundBuffers[S_KEY_COMPLETE_W2] = soundManager->GetSound( "key_complete_w2.ogg" );

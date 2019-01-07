@@ -5774,7 +5774,6 @@ void Actor::UpdatePrePhysics()
 		}
 	case STEEPSLIDE:
 		{
-
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
 			{
 				BounceFlameOn();
@@ -22134,14 +22133,14 @@ void Actor::UpdateSprite()
 
 void Actor::ConfirmEnemyKill( Enemy *e )
 {
-	if( e->hasMonitor && !e->suppressMonitor )
+	/*if( e->hasMonitor && !e->suppressMonitor )
 	{
 		owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL_KEY] );
 	}
 	else
 	{
 		owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL] );
-	}
+	}*/
 	enemiesKilledThisFrame++;
 
 

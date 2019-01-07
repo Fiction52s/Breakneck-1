@@ -1100,6 +1100,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	ts_zoned = owner->GetTileset("Enemies/enemy_zone_icon_128x128.png", 128, 128);
 	zonedSprite.setTexture(*ts_zoned->texture);
 	
+	genericDeathSound = owner->soundManager->GetSound("Enemies/kill");
 
 	highResPhysics = false;
 	numLaunchers = 0;
@@ -1258,13 +1259,11 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	}
 	hurtShader->setUniform( "toColor", Glsl::Vec4( Color::White.r, Color::White.g, Color::White.b, Color::White.a ));
 	hurtShader->setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
+}
 
-		//hurtShader->setUniform( "toColor", keyColor );
-	
-
-	
-	
-
+void Enemy::PlayDeathSound()
+{
+	owner->soundNodeList->ActivateSound(genericDeathSound);
 }
 
 void Enemy::SetZoneSpritePosition()
@@ -1726,6 +1725,11 @@ void Enemy::ConfirmHitNoKill()
 	//owner->cam.SetRumble(3, 3, 5);
 }
 
+void Enemy::HandleNoHealth()
+{
+	PlayDeathSound();
+}
+
 void Enemy::ConfirmKill()
 {
 	assert(receivedHit != NULL);
@@ -1757,10 +1761,12 @@ void Enemy::ConfirmKill()
 	dead = true;
 
 	HandleNoHealth();
+	PlayDeathSound();
 
 	if (cutObject != NULL)
 	{
 		cutObject->SetCutRootPos(Vector2f(position.x, position.y));
+
 	}
 
 	

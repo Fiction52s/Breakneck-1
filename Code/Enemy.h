@@ -7,6 +7,7 @@
 #include "Mover.h"
 #include "Movement.h"
 #include "EffectLayer.h"
+#include <SFML/Audio.hpp>
 
 struct Zone;
 struct Monitor;
@@ -501,6 +502,8 @@ public:
 	virtual void UpdatePreLauncherPhysics() {}
 	CuttableObject *cutObject;
 	Launcher **launchers;
+	sf::SoundBuffer *genericDeathSound;
+	virtual void PlayDeathSound();
 	virtual void ComboHit();
 	CollisionBody *currHitboxes;
 	void SetHitboxes(CollisionBody *cb, int frame);
@@ -539,7 +542,7 @@ public:
 	virtual HitboxInfo * IsHit(Actor *player);
 	Enemy( GameSession *owner, EnemyType t,
 		bool hasMonitor, int world, bool cuttable = true );
-	virtual void HandleNoHealth() {}
+	virtual void HandleNoHealth();
 	virtual void ProcessState() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdateHitboxes() {}

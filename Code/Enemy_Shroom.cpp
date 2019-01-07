@@ -20,8 +20,6 @@ using namespace sf;
 Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	:Enemy(owner, EnemyType::EN_SHROOM, p_hasMonitor, 1), ground(g), edgeQuantity(q)
 {
-	
-
 	action = LATENT;
 	initHealth = 40;
 	health = initHealth;
@@ -33,6 +31,8 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	V2d gPoint = g->GetPoint(edgeQuantity);
 
 	receivedHit = NULL;
+
+	hitSound = owner->soundManager->GetSound("Enemies/shroom_spark");
 
 	gn = g->Normal();
 	angle = atan2(gn.x, -gn.y);
@@ -140,6 +140,7 @@ void Shroom::ProcessState()
 		if (length(owner->GetPlayer(0)->position - position) < 60)
 		{
 			action = HITTING;
+			owner->soundNodeList->ActivateSound(hitSound);
 			frame = 0;
 		}
 		break;
@@ -215,7 +216,8 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 
 	receivedHit = NULL;
 
-	
+	floatSound = owner->soundManager->GetSound("Enemies/shroom_float");
+
 	angle = 0;
 
 	sprite.setTextureRect(ts->GetSubRect(0));
@@ -428,12 +430,14 @@ void ShroomJelly::ProcessState()
 			break;
 		case APPEARING:
 			action = RISING;
+			owner->soundNodeList->ActivateSound(floatSound);
 			break;
 		case RISING:
 			action = DROOPING;
 			break;
 		case DROOPING:
 			action = RISING;
+			owner->soundNodeList->ActivateSound(floatSound);
 			currentCycle++;
 			if (currentCycle == cycleLimit)
 			{

@@ -45,6 +45,7 @@ struct Patroller : Enemy, LauncherEnemy
 	V2d targetPos;
 	float currentAngle;
 	float beakTurnSpeed;
+	sf::SoundBuffer *shootSound;
 
 	Action action;
 	int fireCounter;
