@@ -3809,7 +3809,7 @@ bool GameSession::OpenFile( string fileName )
 
 		//loading done. now setup
 
-		SetGlobalBorders();
+		
 
 		double extraBorder = 100;
 		bool topBorderOn = false;
@@ -3848,6 +3848,8 @@ bool GameSession::OpenFile( string fileName )
 		{
 			cout << "creating black border at " << (mh->leftBounds + mh->boundsWidth) << endl;
 		}
+
+		SetGlobalBorders();
 
 		for (int i = 0; i < 8; ++i)
 		{
@@ -4083,7 +4085,6 @@ void GameSession::SetGlobalBorders()
 {
 	borderEdge = NULL;
 	//borders not allowed to intersect w/ gates
-
 	V2d topLeft( mh->leftBounds, mh->topBounds );
 	V2d topRight(mh->leftBounds + mh->boundsWidth, mh->topBounds );
 	V2d bottomRight(mh->leftBounds + mh->boundsWidth, mh->topBounds + mh->boundsHeight );

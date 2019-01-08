@@ -39,11 +39,11 @@ Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet, int type )
 			va[i].color.a = 255;
 			break;
 		case 1:
-			va[i].color = Color::Blue;//Color(0x94, 0xfa, 0xff);//Color::White;
+			va[i].color = Color(101, 177, 254);//Color::Blue;//Color(0x94, 0xfa, 0xff);//Color::White;
 			va[i].color.a = 255;
 			break;
 		case 2:
-			va[i].color = Color(100, 0, 255);//Color::Green;//Color(0x00, 0x96, 0x9e);//Color::Black;
+			va[i].color = Color::White;//Color(100, 0, 255);//Color::Green;//Color(0x00, 0x96, 0x9e);//Color::Black;
 			va[i].color.a = 255;
 			break;
 		case 3:

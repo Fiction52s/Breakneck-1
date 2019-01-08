@@ -15096,6 +15096,25 @@ void Actor::PhysicsResponse()
 	}
 	else if( ground != NULL )
 	{
+		if (currSpring != NULL)
+		{
+			currSpring->Launch();
+			position = currSpring->position;
+			springVel = currSpring->dir * (double)currSpring->speed;
+			springStunFrames = currSpring->stunFrames;
+			currSpring = NULL;
+			action = SPRINGSTUN;
+			holdJump = false;
+			holdDouble = false;
+			velocity = V2d(0, 0);
+			frame = 0;
+			UpdateHitboxes();
+			ground = NULL;
+			wallNormal = V2d(0, 0);
+			currWall = NULL;
+			return;
+		}
+
 		//e = ground;
 		bool leaveGround = false;
 		if( ground->edgeType == Edge::CLOSED_GATE )
@@ -15297,6 +15316,9 @@ void Actor::PhysicsResponse()
 			velocity = V2d(0, 0);
 			frame = 0;
 			UpdateHitboxes();
+			ground = NULL;
+			wallNormal = V2d(0, 0);
+			currWall = NULL;
 			return;
 		}
 
@@ -15421,6 +15443,8 @@ void Actor::PhysicsResponse()
 			owner->soundNodeList->ActivateSound(soundBuffers[S_HITCEILING]);
 		}
 	}
+
+	
 
 	if( groundedWallBounce )
 	{
@@ -18668,19 +18692,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	}*/
 	//target->draw( *pTrail->particles );
 	
-	if (action != DEATH)
-	{
-		if (speedLevel > 1)
-		{
-			testAura2->Draw(target);
-		}
-		if (speedLevel > 0)
-		{
-			testAura1->Draw(target);
-		}
-
-		testAura->Draw(target);
-	}
+	//auras were here before
 	
 	
 	//testAura3->Draw(target);
@@ -18877,6 +18889,19 @@ void Actor::Draw( sf::RenderTarget *target )
 		
 	}
 
+	if (action != DEATH)
+	{
+		if (speedLevel > 1)
+		{
+			testAura2->Draw(target);
+		}
+		if (speedLevel > 0)
+		{
+			testAura1->Draw(target);
+		}
+
+		testAura->Draw(target);
+	}
 	
 	{
 
@@ -22051,7 +22076,7 @@ void Actor::UpdateSprite()
 
 	if (auraPoints[1][spriteAction] != NULL)
 	{
-		testAura1->ActivateParticles(auraPoints[1][spriteAction][currTileIndex], tr, Vector2f(spriteCenter) + extraParticle1, &np, 1);
+		testAura1->ActivateParticles(auraPoints[1][spriteAction][currTileIndex], tr, Vector2f(spriteCenter) + extraParticle1, &np, 3);
 	}
 
 	if (auraPoints[2][spriteAction] != NULL)

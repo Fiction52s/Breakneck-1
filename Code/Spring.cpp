@@ -61,6 +61,8 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	double dist = length( V2d(other));
 	stunFrames =  ceil(dist / speed);
 	dir = springVec;
+	
+	float hurtboxRadius = 64;
 
 	hurtBody = new CollisionBody(1);
 	CollisionBox hurtBox;
@@ -69,8 +71,8 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
-	hurtBox.rw = 40;
-	hurtBox.rh = 40;
+	hurtBox.rw = hurtboxRadius;
+	hurtBox.rh = hurtboxRadius;
 	hurtBox.globalPosition = position;
 	hurtBody->AddCollisionBox(0, hurtBox);
 
@@ -87,8 +89,8 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 
 	hitBody->AddCollisionBox(0, hitBox);
 
-	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
-		64, 64);
+	spawnRect = sf::Rect<double>(position.x - hurtboxRadius, position.y - hurtboxRadius,
+		hurtboxRadius *2, hurtboxRadius*2);
 
 	actionLength[IDLE] = 12;
 	actionLength[SPRINGING] = 8;
