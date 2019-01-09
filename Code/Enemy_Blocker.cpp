@@ -215,6 +215,15 @@ void BlockerChain::ResetEnemy()
 	}
 }
 
+void BlockerChain::SetZone(Zone *p_zone)
+{
+	zone = p_zone;
+	for (int i = 0; i < numBlockers; ++i)
+	{
+		blockers[i]->SetZone(p_zone);
+	}
+}
+
 void BlockerChain::UpdatePhysics( int substep )
 {
 	for (int i = 0; i < numBlockers; ++i)

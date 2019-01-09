@@ -1768,8 +1768,9 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> spacing;
 
 				BlockerChain *enemy =new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
-
+				
 				fullEnemyList.push_back(enemy);
+				
 				enem = enemy;
 
 				enemyTree->Insert(enemy);
@@ -4692,7 +4693,7 @@ void GameSession::SetupZones()
 
 				if( mostSpecific )
 				{
-					(*it)->zone = (*zit);
+					(*it)->SetZone((*zit));
 				}
 			}
 		}

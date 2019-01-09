@@ -505,6 +505,7 @@ public:
 	sf::SoundBuffer *genericDeathSound;
 	virtual void PlayDeathSound();
 	virtual void ComboHit();
+	virtual void SetZone(Zone *p_zone) { zone = p_zone; }
 	CollisionBody *currHitboxes;
 	void SetHitboxes(CollisionBody *cb, int frame);
 	void ClearHitboxes() { 

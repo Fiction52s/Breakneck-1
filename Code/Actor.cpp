@@ -15975,7 +15975,22 @@ void Actor::UpdateHitboxes()
 
 void Actor::UpdatePostPhysics()
 {
-	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % 10 == 0)
+
+	int smallLightningCounter = -1;
+	switch (speedLevel)
+	{
+	case 0:
+		smallLightningCounter = 30;
+		break;
+	case 1:
+		smallLightningCounter = 20;
+		break;
+	case 2:
+		smallLightningCounter = 10;
+		break;
+	}
+
+	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % smallLightningCounter == 0)
 	{
 		RelEffectInstance params;
 		//EffectInstance params;
@@ -22081,6 +22096,8 @@ void Actor::UpdateSprite()
 
 	if (auraPoints[2][spriteAction] != NULL)
 	{
+		//np.thickness = 10.f;
+		//tr.scale(2, 2);
 		testAura2->ActivateParticles(auraPoints[2][spriteAction][currTileIndex], tr, Vector2f(spriteCenter) + extraParticle2, &np, 1);
 	}
 

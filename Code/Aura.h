@@ -17,13 +17,14 @@ struct Aura
 			NORMAL
 		};
 
-		AuraParams( ParamType pt )
-			:pType( pt )
+		AuraParams( ParamType pt, int p_thickness = 1 )
+			:pType( pt ), thickness( p_thickness )
 		{
 
 		}
 		
 		ParamType pType;
+		int thickness;
 	};
 
 	struct NormalParams : AuraParams
@@ -68,9 +69,10 @@ struct Aura
 		Aura *aura;
 		Particle **particles;
 		int numParticlesFromSprite;
-		AuraParams *ap;
+		//AuraParams *ap;
 		//void CheckActive();
 		bool actuallyDone;
+		float thickness;
 	};
 
 

@@ -66,6 +66,7 @@ struct BlockerChain : Enemy
 		int bType, bool armored, int spacing = 0);
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
+	void SetZone(Zone *p_zone);
 	void UpdatePhysics( int substep );
 	void UpdatePrePhysics();
 	void DebugDraw(sf::RenderTarget *target);

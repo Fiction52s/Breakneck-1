@@ -653,16 +653,34 @@ void Camera::UpdateZoomLevel( ControllerState &con, ControllerState &prevcon )
 {
 	if (con.PUp() && !prevcon.PUp())
 	{
-
-		zoomLevel -= .5;
-		if (zoomLevel < 0)
-			zoomLevel = 0;
+		if (zoomLevel > 0)
+		{
+			zoomLevel -= .5;
+			if (zoomLevel < 0)
+				zoomLevel = 0;
+		}
+		else
+		{
+			zoomLevel -= .1;
+			if (zoomLevel < -.8)
+				zoomLevel = -.8;
+		}
+		
+		if (zoomLevel < -1)
+			zoomLevel = -1;
 	}
 	else if (con.PDown() && !prevcon.PDown())
 	{
-		zoomLevel += .5;
-		if (zoomLevel > 3)
-			zoomLevel = 3;
+		if (zoomLevel < 0)
+		{
+			zoomLevel += .1;
+		}
+		else
+		{
+			zoomLevel += .5;
+			if (zoomLevel > 3)
+				zoomLevel = 3;
+		}
 	}
 }
 

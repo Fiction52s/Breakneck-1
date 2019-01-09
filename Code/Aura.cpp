@@ -118,7 +118,8 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 	int pointsSize = points.size();
 	ps->numParticlesFromSprite = pointsSize;
 	ps->frame = 0;
-	ps->ap = ap;
+	//ps->ap = ap;
+	ps->thickness = ap->thickness;
 	ps->actuallyDone = false;
 	int ind = 0;
 	Vector2f playerPos(player->position.x, player->position.y);
@@ -142,9 +143,8 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 		Aura::NormalParams *np = (Aura::NormalParams*)ap;
 		center = np->centerPos;
 	}
-	
 
-
+	Vector2f halfSize;
 	for (auto it = points.begin(); it != points.end(); ++it)
 	{
 		int ranX = 0;
@@ -162,9 +162,12 @@ void Aura::ActivateParticles(list<Vector2f> &points, sf::Transform &tr, const sf
 		}
 
 		Vector2f ranVec(ranX, ranY);
-
-		p = tr.transformPoint((*it) - Vector2f( player->sprite->getLocalBounds().width / 2,
-			player->sprite->getLocalBounds().height / 2 )) + origin + ranVec;
+		Vector2f currPoint = (*it);
+		halfSize = Vector2f(player->sprite->getLocalBounds().width / 2,
+			player->sprite->getLocalBounds().height / 2);
+		currPoint -= halfSize;
+		//currPoint *= 2.f;
+		p = tr.transformPoint(currPoint) + origin + ranVec;
 
 		//sf::Vector2<double> vel = normalize(player->ground->v1 - player->ground->v0) * player->groundSpeed / 2.0;
 		//v =  * 2.f;
@@ -452,18 +455,19 @@ void Aura::Particle::Update()
 	{
 		Actor *player = ps->aura->player;
 		float hw;
-		switch (player->speedLevel)
-		{
-		case 0:
-			hw = 1.f;//8
-			break;
-		case 1:
-			hw = 1;//8
-			break;
-		case 2:
-			hw = 1;//8
-			break;
-		}
+		hw =  ps->thickness;
+		//switch (player->speedLevel)
+		//{
+		//case 0:
+		//	hw = 1.f;//8
+		//	break;
+		//case 1:
+		//	hw = 1;//8
+		//	break;
+		//case 2:
+		//	hw = 1.f;//8
+		//	break;
+		//}
 
 		quad[0].position = Vector2f(pos.x - hw, pos.y - hw);
 		quad[1].position = Vector2f(pos.x + hw, pos.y - hw);
