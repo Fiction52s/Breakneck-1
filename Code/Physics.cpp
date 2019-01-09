@@ -442,10 +442,10 @@ bool CollisionBox::Intersects( CollisionBox &c )
 		V2d pC = GetQuadVertex(2);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
 		V2d pD = GetQuadVertex(3);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
 		bool intersect = (QuadContainsPoint(pA, pB, pC, pD, cCenterPos)
-			|| IsEdgeTouchingCircle(pA, pB, cCenterPos, rw)
-			|| IsEdgeTouchingCircle(pB, pC, cCenterPos, rw)
-			|| IsEdgeTouchingCircle(pC, pD, cCenterPos, rw)
-			|| IsEdgeTouchingCircle(pD, pA, cCenterPos, rw));
+			|| IsEdgeTouchingCircle(pA, pB, cCenterPos, c.rw)
+			|| IsEdgeTouchingCircle(pB, pC, cCenterPos, c.rw)
+			|| IsEdgeTouchingCircle(pC, pD, cCenterPos, c.rw)
+			|| IsEdgeTouchingCircle(pD, pA, cCenterPos, c.rw));
 		return intersect;
 		//V2d cCenterPos = c.GetTrueCenter();
 		//V2d pA = GetQuadVertex(0);//globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );

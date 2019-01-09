@@ -23,8 +23,8 @@ PatrollerEye::PatrollerEye( GameSession *owner )
 	actionLength[S_ACTIVE] = 1 * animFactor[S_ACTIVE];
 	actionLength[S_UNTARGET] = 1 * animFactor[S_UNTARGET];
 	actionLength[S_SHUTDOWN] = 2 * animFactor[S_SHUTDOWN];
-	activateRange = 700;
-	trackRange = 600;
+	activateRange = 900;
+	trackRange = 700;
 	deactivateRange = 1200;
 	deactivateTrackRange = 1000;
 }

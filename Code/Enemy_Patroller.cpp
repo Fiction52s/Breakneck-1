@@ -56,7 +56,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 
 	//speed = 2;
 	frame = 0;
-	beakTurnSpeed = .1;
+	beakTurnSpeed = .13;
 	//ts = owner->GetTileset( "patroller.png", 80, 80 );
 	ts = owner->GetTileset( "Enemies/patroller_256x256.png", 256, 256 );
 	sprite.setTexture( *ts->texture );
@@ -140,7 +140,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, owner, 16, 1, position, V2d(1, 0), 0, 300);
 	launchers[0]->SetBulletSpeed(5);//70);
 	launchers[0]->hitboxInfo->damage = 18;
-	maxAimingFrames = 60;
+	maxAimingFrames = 35;
 
 	ResetEnemy();
 }
@@ -244,9 +244,6 @@ void Patroller::ProcessState()
 			if (turnFrame < 6 * turnAnimFactor)
 				++turnFrame;
 		}
-
-		
-		
 
 		if (eye->IsEyeActivated())
 		{

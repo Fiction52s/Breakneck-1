@@ -28,7 +28,7 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	ts = owner->GetTileset("Enemies/shroom_192x192.png", 192, 192);
 	ts_aura = owner->GetTileset("Enemies/shroom_aura_192x192.png", 192, 192);
 	sprite.setTexture(*ts->texture);
-	auraSprite.setTexture(*ts_aura->texture);
+	auraSprite.setTexture(*ts->texture);
 
 	V2d gPoint = g->GetPoint(edgeQuantity);
 

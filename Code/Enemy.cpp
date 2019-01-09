@@ -164,15 +164,33 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	hitboxInfo->knockback = 0;
 }
 
+void Launcher::DebugDraw(sf::RenderTarget *target)
+{
+	BasicBullet *curr = activeBullets;
+	while (curr != NULL)
+	{
+		curr->DebugDraw(target);
+		curr = curr->next;
+	}
+	//target->draw( )
+}
+
 double Launcher::GetRadius(BasicBullet::BType bt)
 {
 	switch (bt)
 	{
 	case BasicBullet::BASIC_TURRET:
 		return 12;
+	case BasicBullet::PATROLLER:
+		return 44;
 	}
 
 	return 10;
+}
+
+Vector2f Launcher::GetOffset(BasicBullet::BType bt)
+{
+	return Vector2f(-20, 0);
 }
 
 Launcher::Launcher( LauncherEnemy *handler, GameSession *owner,
@@ -544,6 +562,11 @@ BasicBullet::BasicBullet( int indexVA, BType bType, Launcher *launch )
 	//ResetSprite();
 }
 
+void BasicBullet::DebugDraw(sf::RenderTarget *target)
+{
+	hitBody.DebugDraw(target);
+}
+
 void BasicBullet::ResetSprite()
 {
 	frame = 0;
@@ -824,15 +847,13 @@ void BasicBullet::UpdateSprite()
 		dims = Vector2f(48, 48);
 	}
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
-
+	Vector2f offset = Launcher::GetOffset(bulletType);
 	Vector2f center( position.x, position.y );
 
-	Vector2f topLeft = -dims;
-	Vector2f topRight = Vector2f( dims.x, -dims.y );
-	Vector2f botRight = dims;
-	Vector2f botLeft = Vector2f( -dims.x, dims.y );
-
-	
+	Vector2f topLeft = -dims + offset;
+	Vector2f topRight = Vector2f( dims.x, -dims.y ) + offset;
+	Vector2f botRight = dims + offset;
+	Vector2f botLeft = Vector2f( -dims.x, dims.y ) + offset;
 
 	int animFactor = 2;
 	switch (bulletType)
@@ -867,7 +888,6 @@ void BasicBullet::UpdateSprite()
 	}*/
 
 	}
-
 
 
 	VA[index*4+0].position = center + transform.transformPoint( topLeft );
@@ -1867,6 +1887,12 @@ void Enemy::DebugDraw(sf::RenderTarget *target)
 {
 	if (!dead)
 	{
+		for (int i = 0; i < numLaunchers; ++i)
+		{
+			launchers[i]->DebugDraw(target);
+		}
+
+
 		if( currHitboxes != NULL )
 			currHitboxes->DebugDraw( currHitboxFrame, target);
 		if( currHurtboxes != NULL )
