@@ -28,7 +28,9 @@ struct Shroom : Enemy
 	sf::SoundBuffer *hitSound;
 
 	sf::Sprite sprite;
+	sf::Sprite auraSprite;
 	Tileset *ts;
+	Tileset *ts_aura;
 
 	Edge *ground;
 	double edgeQuantity;
@@ -75,6 +77,7 @@ struct ShroomJelly : Enemy
 
 	sf::Sprite sprite;
 	Tileset *ts;
+	
 	sf::SoundBuffer *floatSound;
 
 	V2d orig;

@@ -1455,6 +1455,15 @@ bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 	return false;
 }
 
+void Enemy::SyncSpriteInfo(sf::Sprite &dest, sf::Sprite &source)
+{
+	dest.setTextureRect(source.getTextureRect());
+	dest.setOrigin(source.getOrigin());
+	dest.setRotation(source.getRotation());
+	dest.setScale(source.getScale());
+	dest.setPosition(source.getPosition());
+}
+
 void Enemy::Record( int enemyIndex )
 {
 	Buf & b = owner->testBuf;

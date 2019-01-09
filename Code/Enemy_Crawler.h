@@ -49,9 +49,11 @@ struct Crawler : Enemy, SurfaceMoverHandler
 
 	sf::SoundBuffer *deathSound;
 	sf::Sprite sprite;
+	sf::Sprite auraSprite;
 	double totalDistBeforeBurrow;
 	double currDistTravelled;
 	Tileset *ts;
+	Tileset *ts_aura;
 	bool origCW;
 
 	int maxFramesUntilBurrow;

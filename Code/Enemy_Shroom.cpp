@@ -26,7 +26,9 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 
 	double height = 192;
 	ts = owner->GetTileset("Enemies/shroom_192x192.png", 192, 192);
+	ts_aura = owner->GetTileset("Enemies/shroom_aura_192x192.png", 192, 192);
 	sprite.setTexture(*ts->texture);
+	auraSprite.setTexture(*ts_aura->texture);
 
 	V2d gPoint = g->GetPoint(edgeQuantity);
 
@@ -156,6 +158,7 @@ void Shroom::ProcessState()
 
 void Shroom::EnemyDraw(sf::RenderTarget *target)
 {
+	target->draw(auraSprite);
 	DrawSpriteIfExists(target, sprite);
 }
 
@@ -172,6 +175,8 @@ void Shroom::UpdateSprite()
 		sprite.setPosition(position.x, position.y);
 		break;
 	}
+
+	SyncSpriteInfo(auraSprite, sprite);
 
 	if (hasMonitor && !suppressMonitor)
 	{

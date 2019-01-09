@@ -39,6 +39,9 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	fireSound = owner->soundManager->GetSound("Enemies/turret_shoot");
 
 	ts = owner->GetTileset("Enemies/turret_176x176.png", width, height);//"basicturret_128x80.png", width, height );
+	ts_aura = owner->GetTileset("Enemies/turret_aura_176x176.png", width, height);
+
+	auraSprite.setTexture(*ts_aura->texture);
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -145,6 +148,8 @@ void BasicTurret::ResetEnemy()
 
 	currShield = testShield;
 	testShield->Reset();
+
+	UpdateSprite();
 }
 
 void BasicTurret::BulletHitTerrain( BasicBullet *b,
@@ -252,6 +257,7 @@ void BasicTurret::DirectKill()
 
 void BasicTurret::EnemyDraw(sf::RenderTarget *target )
 {
+	target->draw(auraSprite);
 	DrawSpriteIfExists(target, sprite);
 }
 
@@ -266,6 +272,7 @@ void BasicTurret::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
 	}
 	
+	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void BasicTurret::UpdateHitboxes()

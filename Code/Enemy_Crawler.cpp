@@ -41,6 +41,9 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	double height = 160;
 	double width = 160;
 	ts = owner->GetTileset( "Enemies/crawler_160x160.png", width, height );
+	ts_aura = owner->GetTileset("Enemies/crawler_aura_160x160.png", width, height);
+
+	auraSprite.setTexture(*ts_aura->texture);
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
@@ -382,6 +385,7 @@ void Crawler::EnemyDraw(sf::RenderTarget *target )
 {
 	if (action == UNDERGROUND)
 		return; 
+	target->draw(auraSprite);
 	DrawSpriteIfExists(target, sprite);
 }
 
@@ -512,6 +516,8 @@ void Crawler::UpdateSprite()
 			sprite.setPosition(pp.x, pp.y);
 		}
 	}
+
+	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void Crawler::DebugDraw(RenderTarget *target)

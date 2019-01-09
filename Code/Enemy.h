@@ -509,6 +509,7 @@ public:
 	virtual void ComboHit();
 	virtual void SetZone(Zone *p_zone) { zone = p_zone; }
 	CollisionBody *currHitboxes;
+	static void SyncSpriteInfo(sf::Sprite &dest, sf::Sprite &source);
 	void SetHitboxes(CollisionBody *cb, int frame);
 	void ClearHitboxes() { 
 		currHitboxes = NULL;
