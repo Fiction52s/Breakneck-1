@@ -67,6 +67,8 @@ struct BlockerChain : Enemy
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void SetZone(Zone *p_zone);
+	int GetNumCamPoints();
+	V2d GetCamPoint(int index);
 	void UpdatePhysics( int substep );
 	void UpdatePrePhysics();
 	void DebugDraw(sf::RenderTarget *target);

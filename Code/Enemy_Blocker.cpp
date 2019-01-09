@@ -293,6 +293,17 @@ void BlockerChain::DebugDraw(RenderTarget *target)
 	}
 }
 
+int BlockerChain::GetNumCamPoints()
+{
+	return numBlockers;
+}
+
+
+V2d BlockerChain::GetCamPoint(int index)
+{
+	return blockers[index]->position;
+}
+
 Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	:Enemy(p_bc->owner, EnemyType::EN_BLOCKER, false, 1, false), bc(p_bc), vaIndex(index)
 {

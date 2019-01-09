@@ -504,6 +504,8 @@ public:
 	Launcher **launchers;
 	sf::SoundBuffer *genericDeathSound;
 	virtual void PlayDeathSound();
+	virtual int GetNumCamPoints() { return 1; }
+	virtual V2d GetCamPoint(int index) { return position; }
 	virtual void ComboHit();
 	virtual void SetZone(Zone *p_zone) { zone = p_zone; }
 	CollisionBody *currHitboxes;

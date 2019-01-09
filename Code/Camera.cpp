@@ -124,36 +124,39 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 			continue;
 		}
 
+		int numPoints = curr->GetNumCamPoints();
 		
-
-		double currX = curr->position.x;
-		double currY = curr->position.y;
-
-		if (currX < capMinX || currX > capMaxX || currY < capMinY || currY > capMaxY )
+		V2d currPos;
+		for (int i = 0; i < numPoints; ++i)
 		{
-			curr = curr->next;
-			continue;
-		}
+			currPos = curr->GetCamPoint(i);
+			if (currPos.x < capMinX || currPos.x > capMaxX || currPos.y < capMinY || currPos.y > capMaxY)
+			{
+				//curr = curr->next;
+				continue;
+			}
 
-		++numEnemies;
+			++numEnemies;
 
-		if (currX < origMinX)
-		{
-			minX = min(minX, currX - extra);
-		}
-		else if (currX > origMaxX)
-		{
-			maxX = max(maxX, currX + extra);
-		}
+			if (currPos.x < origMinX)
+			{
+				minX = min(minX, currPos.x - extra);
+			}
+			else if (currPos.x > origMaxX)
+			{
+				maxX = max(maxX, currPos.x + extra);
+			}
 
-		if (currY < origMinY)
-		{
-			minY = min(minY, currY - extra);
+			if (currPos.y < origMinY)
+			{
+				minY = min(minY, currPos.y - extra);
+			}
+			else if (currPos.y > origMaxY)
+			{
+				maxY = max(maxY, currPos.y + extra);
+			}
 		}
-		else if (currY > origMaxY )
-		{
-			maxY = max(maxY, currY + extra);
-		}
+		
 
 		
 		/*double len = length(curr->position - vPos);
