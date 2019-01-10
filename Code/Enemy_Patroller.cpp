@@ -59,6 +59,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	beakTurnSpeed = .13;
 	//ts = owner->GetTileset( "patroller.png", 80, 80 );
 	ts = owner->GetTileset( "Enemies/patroller_256x256.png", 256, 256 );
+	ts_aura = owner->GetTileset("Enemies/patroller_aura_256x256.png", 256, 256);
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -456,8 +457,6 @@ void Patroller::UpdateSprite()
 	{
 		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth, ts->tileHeight,
 			Vector2f(position));
-		
-
 		SetRectSubRect(bodyVA, ts->GetSubRect(frame / animFactor[S_FLAP]));
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(27 + turnFrame / turnAnimFactor));
 	}
@@ -512,12 +511,16 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 
 	RenderStates rs;
 	rs.texture = ts->texture;
+
+	RenderStates rsAura;
+	rsAura.texture = ts_aura->texture;
 	if( hasMonitor && !suppressMonitor )
 	{			
 		if( b )
 		{
 			rs.shader = keyShader;
 			//target->draw( sprite, keyShader );
+			target->draw(bodyVA, 8, sf::Quads, rsAura);
 			eye->Draw(target, keyShader);
 			target->draw(bodyVA, 8, sf::Quads, rs);
 			
@@ -526,6 +529,7 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 		{
 			rs.shader = hurtShader;
 			//target->draw( sprite, hurtShader );
+			target->draw(bodyVA, 8, sf::Quads, rsAura);
 			eye->Draw(target, hurtShader);
 			target->draw(bodyVA, 8, sf::Quads, rs);
 			
@@ -537,6 +541,7 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 		if( b )
 		{
 			//target->draw( sprite );
+			target->draw(bodyVA, 8, sf::Quads, rsAura);
 			eye->Draw(target);
 			target->draw(bodyVA, 8, sf::Quads, rs);
 			
@@ -544,6 +549,7 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 		else
 		{
 			rs.shader = hurtShader;
+			target->draw(bodyVA, 8, sf::Quads, rsAura);
 			//target->draw( sprite, hurtShader );
 			eye->Draw(target, hurtShader);
 			target->draw(bodyVA, 8, sf::Quads, rs);

@@ -28,7 +28,7 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	ts = owner->GetTileset("Enemies/shroom_192x192.png", 192, 192);
 	ts_aura = owner->GetTileset("Enemies/shroom_aura_192x192.png", 192, 192);
 	sprite.setTexture(*ts->texture);
-	auraSprite.setTexture(*ts->texture);
+	auraSprite.setTexture(*ts_aura->texture);
 
 	V2d gPoint = g->GetPoint(edgeQuantity);
 
@@ -216,8 +216,9 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 
 	double height = 160;
 	ts = owner->GetTileset("Enemies/shroom_jelly_160x160.png", 160, 160);
+	ts_aura = owner->GetTileset("Enemies/shroom_jelly_aura_160x160.png", 160, 160);
 	sprite.setTexture(*ts->texture);
-
+	auraSprite.setTexture(*ts_aura->texture);
 
 	receivedHit = NULL;
 
@@ -517,6 +518,7 @@ void ShroomJelly::EnemyDraw(sf::RenderTarget *target)
 		return;
 	}
 
+	target->draw(auraSprite);
 	DrawSpriteIfExists(target, sprite);
 }
 
@@ -551,6 +553,8 @@ void ShroomJelly::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect( 0 ));
 		break;
 	}
+
+	SyncSpriteInfo(auraSprite, sprite);
 
 	if (hasMonitor && !suppressMonitor)
 	{

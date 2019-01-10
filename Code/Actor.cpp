@@ -14233,8 +14233,6 @@ void Actor::UpdatePhysics()
 	while( (ground != NULL && !approxEquals( movement, 0 ) ) || ( ground == NULL && length( movementVec ) > 0 ) );
 
 
-
-	
 	PhysicsResponse();
 
 	//cout << "post vel: " << velocity.x << ", " << velocity.y << endl;

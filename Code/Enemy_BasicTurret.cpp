@@ -33,13 +33,13 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80, 3, this);
 	testShield->SetPosition(position);
 
-	double width = 176;
+	double width = 192;
 	double height = 176;
 
 	fireSound = owner->soundManager->GetSound("Enemies/turret_shoot");
 
-	ts = owner->GetTileset("Enemies/turret_176x176.png", width, height);//"basicturret_128x80.png", width, height );
-	ts_aura = owner->GetTileset("Enemies/turret_aura_176x176.png", width, height);
+	ts = owner->GetTileset("Enemies/turret_192x176.png", width, height);//"basicturret_128x80.png", width, height );
+	ts_aura = owner->GetTileset("Enemies/turret_aura_192x176.png", width, height);
 
 	auraSprite.setTexture(*ts_aura->texture);
 	sprite.setTexture( *ts->texture );

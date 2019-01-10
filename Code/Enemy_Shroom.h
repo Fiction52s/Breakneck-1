@@ -76,7 +76,9 @@ struct ShroomJelly : Enemy
 	void ComboHit();
 
 	sf::Sprite sprite;
+	sf::Sprite auraSprite;
 	Tileset *ts;
+	Tileset *ts_aura;
 	
 	sf::SoundBuffer *floatSound;
 
