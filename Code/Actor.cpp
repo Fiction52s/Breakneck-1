@@ -3793,7 +3793,7 @@ void Actor::UpdatePrePhysics()
 		}
 	case SPRINGSTUN:
 	{
-		if (CheckWall(false))
+		/*if (CheckWall(false))
 		{
 			if (!currInput.LDown() && currInput.LRight() && !prevInput.LRight())
 			{
@@ -3832,7 +3832,7 @@ void Actor::UpdatePrePhysics()
 				}
 				break;
 			}
-		}
+		}*/
 
 		if (springStunFrames == 0)
 		{
@@ -11807,7 +11807,7 @@ void Actor::UpdatePhysics()
 	leftGround = false;
 	double movement = 0;
 	double maxMovement = min( b.rw, b.rh );
-	V2d movementVec;
+	V2d movementVec(0, 0);
 	V2d lastExtra( 100000, 100000 );
 	
 	if( grindEdge != NULL )
@@ -11851,6 +11851,12 @@ void Actor::UpdatePhysics()
 		return;
 	}
 	
+	if ( grindEdge == NULL && movement == 0 && movementVec.x == 0 && movementVec.y == 0)
+	{
+		ResolvePhysics(V2d(0, 0));
+		PhysicsResponse();
+		return;
+	}
 
 	if( grindEdge != NULL && ( action == GRINDBALL || action == GRINDATTACK ))
 	{
@@ -12168,13 +12174,17 @@ void Actor::UpdatePhysics()
 					movement = maxMovement;
 				}
 			}
-			else 
+			else if( movement < 0 )
 			{
 				if( movement < -maxMovement )
 				{
 					steal = movement + maxMovement;
 					movement = -maxMovement;
 				}
+			}
+			else
+			{
+				
 			}
 
 
@@ -18581,7 +18591,19 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 {
 	//cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
 	double gSpeed = 0; //groundSpeed;
-	if( ( currInput.LLeft() && testVel.x < 0 ) || ( currInput.LRight() && testVel.x > 0 ) || currInput.LDown() || currInput.LUp() )
+	bool noLeftRight = !(currInput.LLeft() || currInput.LRight());
+
+	double alongSpeed = dot(testVel, alongVel);
+
+	if (currInput.LDown() && noLeftRight)
+	{
+		gSpeed = alongSpeed;
+	}
+	else if (currInput.LUp() && noLeftRight)
+	{
+		gSpeed = alongSpeed;
+	}
+	else if( ( currInput.LLeft() && testVel.x < 0 ) || ( currInput.LRight() && testVel.x > 0 ))// || currInput.LDown() || currInput.LUp() )
 	{
 		double res = dot( testVel, alongVel );
 
