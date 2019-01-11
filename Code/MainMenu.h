@@ -163,10 +163,10 @@ struct MapHeader
 	MapHeader()
 		:ver1(0), ver2(0), collectionName("nothing"),
 		description("no description"), gameMode(T_STANDARD),
-		envType(0), envLevel(0), leftBounds(0),
-		topBounds(0), boundsWidth(0), boundsHeight(0),
+		leftBounds(0),topBounds(0), boundsWidth(0), boundsHeight(0),
 		numVertices(-1), songLevelsModified(false), numShards( 0 ),
-		drainSeconds( 60 ), bossFightType( 0 )
+		drainSeconds( 60 ), bossFightType( 0 ), envName("w1_01"),
+		envWorldType( 0 )
 	{
 
 	}
@@ -179,8 +179,8 @@ struct MapHeader
 	std::string description;
 	MapType gameMode;
 	int drainSeconds;
-	int envType;
-	int envLevel;
+	std::string envName;
+	int envWorldType;
 	int leftBounds;
 	int topBounds;
 	int boundsWidth;

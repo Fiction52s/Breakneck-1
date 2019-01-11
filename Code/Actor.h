@@ -1099,6 +1099,9 @@ struct Actor : QuadTreeCollider,
 	//bool bufferedAttack;
 	Action bufferedAttack;
 	Action doubleJumpBufferedAttack;
+	Action wallJumpBufferedAttack;
+
+	bool SpringLaunch();
 
 	Action pauseBufferedAttack;
 	bool pauseBufferedJump;

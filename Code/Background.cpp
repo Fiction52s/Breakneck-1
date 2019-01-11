@@ -50,6 +50,48 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	Reset();
 }
 
+Background::Background(GameSession *owner, const string &bgName)
+{
+	stringstream ss;
+
+	string folder = "Backgrounds/";
+
+	//int eType = envLevel + 1; //adjust for alex naming -_-
+	//ss << folder << "w" << envType + 1 << "_BG";
+	ss << folder << bgName;
+
+	//ss << eType;
+
+	string bgStr = ss.str();
+
+	string bgFile = bgStr + ".png";
+	string paletteFile = string("Resources/") + bgStr + "_palette.png";
+	string shapeFile = bgStr + "_shape.png";
+
+	Tileset *ts_bg = owner->GetTileset(bgFile, 1920, 1080);
+	Tileset *ts_shape = owner->GetTileset(shapeFile, 1920, 1080);
+	//Image im(rtt->getTexture().copyToImage());
+	bool loadPalette = palette.loadFromFile(paletteFile);
+	assert(loadPalette);
+
+	background.setTexture(*ts_bg->texture);
+	background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
+	background.setPosition(0, 0);
+
+	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
+
+	shape.setTexture(*ts_shape->texture);
+	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
+	shape.setPosition(0, 0);
+
+	transFrames = 60 * 20;
+
+	bgView.setCenter(0, 0);
+	bgView.setSize(1920, 1080);
+
+	Reset();
+}
+
 Background::Background(MainMenu *mm)
 {
 	stringstream ss;

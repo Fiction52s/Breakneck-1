@@ -165,6 +165,7 @@ ScrollingBackground::ScrollingBackground( Tileset *p_ts, int index,
 		:ts( p_ts ), va( sf::Quads, 2 * 4 ), depthLevel( p_depthLevel ),
 		depth( p_depthLevel * .01f ), tsIndex( index ), scrollSpeedX( p_scrollSpeedX )
 {
+	assert(p_ts != NULL);
 	SetTileIndex( tsIndex );
 	SetLeftPos( Vector2f( 0, 0 ) );
 	scrollOffset = 0;

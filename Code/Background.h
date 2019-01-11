@@ -11,6 +11,7 @@ struct MainMenu;
 struct Background
 {
 	Background( GameSession *owner, int envLevel, int envType);
+	Background(GameSession *owner, const std::string &bgName);
 	Background(MainMenu *mm);
 	void Update();
 	void Reset();

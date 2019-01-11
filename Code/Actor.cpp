@@ -3710,6 +3710,14 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLJUMP:
 		{
+			if ((frame == 1 || (frame == 0 && slowCounter > 1)) && wallJumpBufferedAttack != WALLJUMP)
+			{
+				SetAction(wallJumpBufferedAttack);
+				wallJumpBufferedAttack = WALLJUMP;
+				frame = 0;
+				break;
+			}
+
 			BasicAirAction();
 			break;
 		}
@@ -8908,6 +8916,29 @@ void Actor::SetAction( Action a )
 		currBBoostCounter = 0;
 	}
 
+	if (action == WALLJUMP)
+	{
+		if (currInput.rightShoulder)
+		{
+			if (currInput.LUp())
+			{
+				wallJumpBufferedAttack = UAIR; //none
+			}
+			else if (currInput.LDown())
+			{
+				wallJumpBufferedAttack = DAIR;
+			}
+			else
+			{
+				wallJumpBufferedAttack = FAIR;
+			}
+		}
+		else
+		{
+			wallJumpBufferedAttack = WALLJUMP;
+		}
+	}
+
 	switch (action)
 	{
 	case STEEPSLIDE:
@@ -11109,6 +11140,7 @@ void Actor::CheckBounceFlame()
 
 bool Actor::TryWallJump()
 {
+	bool wj = false;
 	if (CheckWall(false))
 	{
 		if (!currInput.LDown() && currInput.LRight() && !prevInput.LRight())
@@ -11116,10 +11148,9 @@ bool Actor::TryWallJump()
 			SetAction(WALLJUMP);
 			frame = 0;
 			facingRight = true;
-			return true;
+			wj = true;
 		}
 	}
-
 
 	if (CheckWall(true))
 	{
@@ -11128,9 +11159,15 @@ bool Actor::TryWallJump()
 			SetAction(WALLJUMP);
 			frame = 0;
 			facingRight = false;
-			return true;
+			wj = true;
 		}
 	}
+
+	if (wj)
+	{
+		
+	}
+	
 
 	return false;
 }
@@ -14668,24 +14705,7 @@ void Actor::PhysicsResponse()
 	}
 	else if( ground != NULL )
 	{
-		if (currSpring != NULL)
-		{
-			currSpring->Launch();
-			position = currSpring->position;
-			springVel = currSpring->dir * (double)currSpring->speed;
-			springStunFrames = currSpring->stunFrames;
-			currSpring = NULL;
-			action = SPRINGSTUN;
-			holdJump = false;
-			holdDouble = false;
-			velocity = V2d(0, 0);
-			frame = 0;
-			UpdateHitboxes();
-			ground = NULL;
-			wallNormal = V2d(0, 0);
-			currWall = NULL;
-			return;
-		}
+		if (SpringLaunch()) return;
 
 		//e = ground;
 		bool leaveGround = false;
@@ -14875,24 +14895,7 @@ void Actor::PhysicsResponse()
 	}
 	else
 	{
-		if (currSpring != NULL)
-		{
-			currSpring->Launch();
-			position = currSpring->position;
-			springVel = currSpring->dir * (double)currSpring->speed;
-			springStunFrames = currSpring->stunFrames;
-			currSpring = NULL;
-			action = SPRINGSTUN;
-			holdJump = false;
-			holdDouble = false;
-			velocity = V2d(0, 0);
-			frame = 0;
-			UpdateHitboxes();
-			ground = NULL;
-			wallNormal = V2d(0, 0);
-			currWall = NULL;
-			return;
-		}
+		if (SpringLaunch()) return;
 
 		if( action == GROUNDHITSTUN )
 		{
@@ -16663,6 +16666,42 @@ sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 //		break;
 //	}
 //}
+
+bool Actor::SpringLaunch()
+{
+	if (currSpring != NULL)
+	{
+		currSpring->Launch();
+		position = currSpring->position;
+		springVel = currSpring->dir * (double)currSpring->speed;
+
+		if (springVel.x > 0)
+		{
+			facingRight = true;
+		}
+		else if (springVel.x < 0)
+		{
+			facingRight = false;
+		}
+
+		springStunFrames = currSpring->stunFrames;
+		currSpring = NULL;
+		action = SPRINGSTUN;
+		holdJump = false;
+		holdDouble = false;
+		hasDoubleJump = true;
+		hasAirDash = true;
+		velocity = V2d(0, 0);
+		frame = 0;
+		UpdateHitboxes();
+		ground = NULL;
+		wallNormal = V2d(0, 0);
+		currWall = NULL;
+		return true;
+	}
+
+	return false;
+}
 
 void Actor::SetActivePowers(
 		bool p_canAirDash,

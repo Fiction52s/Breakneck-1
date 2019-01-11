@@ -169,9 +169,7 @@ void Gate::UpdateLine()
 	case CRAWLER_UNLOCK:
 	case KEYGATE:
 		{
-		
-
-		switch( owner->mh->envType )
+		switch( owner->mh->envWorldType ) 
 		{
 		case 0:
 			c = COLOR_BLUE;

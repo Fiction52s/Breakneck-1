@@ -1319,7 +1319,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 
 		ss << "Borders/bor_" << matWorld + 1 << "_";
 
-		if( mh->envLevel < 10 )
+		if( matVariation < 10 )
 		{
 			ss << "0" << matVariation + 1;
 		}
@@ -3034,7 +3034,7 @@ bool GameSession::OpenFile( string fileName )
 	hasGoal = false;
 	numTotalKeys = 0;
 	numKeysCollected = 0;
-
+	
 	currentFile = fileName;
 	int insertCount = 0;
 	ifstream is;
@@ -3683,7 +3683,7 @@ bool GameSession::OpenFile( string fileName )
 
 			ss << "Borders/bor_" << matWorld + 1 << "_";
 
-			if(mh->envLevel < 10 )
+			if(matVariation < 10 )
 			{
 				ss << "0" << matVariation + 1;
 			}
@@ -5339,11 +5339,6 @@ bool GameSession::Load()
 		gds.setPosition(miniCircle.getPosition());
 	}
 
-	ts_testParallax = GetTileset("parallax_w2_01.png", 960, 540);
-	testParallaxSprite.setTexture(*ts_testParallax->texture);
-	testParallaxSprite.setOrigin(testParallaxSprite.getLocalBounds().width / 2,
-		testParallaxSprite.getLocalBounds().height / 2);
-
 	keyMarker = new KeyMarker(this);
 
 	ts_w1ShipClouds0 = GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
@@ -5454,7 +5449,9 @@ bool GameSession::Load()
 		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( fileName );
 
-	background = new Background( this, mh->envLevel, mh->envType);
+	//background = new Background(this, mh->envLevel, mh->envType);
+	SetupBackgrounds("w1_01");
+
 
 	cout << "done opening file" << endl;
 	int maxBubbles = 5;
@@ -5559,7 +5556,8 @@ bool GameSession::Load()
 	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
 
 	int goalTile = -1;
-	switch(mh->envType )
+	
+	switch(mh->envWorldType)//mh->envType )
 	{
 	case 0:
 		goalTile = 5;
@@ -5703,36 +5701,8 @@ bool GameSession::Load()
 
 	LevelSpecifics();
 
-	stringstream pss;
-	pss << "Parallax/w" << (mh->envType + 1) << "_0" << (mh->envLevel + 1);
-	string pStr = pss.str();
-	string eStr = ".png";
-	string cloudStr = "_cloud_";
 	
-	Tileset *cloud1 = GetTileset(pStr + cloudStr + string("1") + eStr, 1920, 1080);
-	Tileset *cloud2 = GetTileset(pStr + cloudStr + string("2") + eStr, 1920, 1080);
-
-	scrollingBackgrounds.push_back( 
-		new ScrollingBackground( 
-		GetTileset( pStr + string( "c" ) + eStr, 1920, 1080 ), 0, 3 ) );
-	if (cloud1 != NULL)
-	{
-		scrollingBackgrounds.push_back(
-			new ScrollingBackground(cloud1, 0, 4, 10));
-	}
 	
-	scrollingBackgrounds.push_back( 
-		new ScrollingBackground( 
-		GetTileset(pStr + string("b") + eStr, 1920, 1080 ), 0, 5 ) );
-	if (cloud2 != NULL)
-	{
-		scrollingBackgrounds.push_back(
-			new ScrollingBackground(cloud2, 0, 8, 10));
-	}
-	
-	scrollingBackgrounds.push_back( 
-		new ScrollingBackground( 
-		GetTileset(pStr + string("a") + eStr, 1920, 1080 ), 0, 10 ) );
 
 
 	//this is outdated!
@@ -7237,7 +7207,6 @@ int GameSession::Run()
 		pView.setCenter( Vector2f( pxx, 0 ) );
 		pView.setSize( 1920, 1080 );
 		//preScreenTex->setView( pView );
-		//preScreenTex->draw( testParallaxSprite );
 		preScreenTex->setView( view );
 
 		//testPar->Draw( preScreenTex );
@@ -9742,6 +9711,89 @@ void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 	//	//currEnemy->moni
 	//	currEnemy = currEnemy->next;
 	//}
+}
+
+void GameSession::SetupBackgrounds( const std::string &bgInfoFileName )
+{
+	assert(scrollingBackgrounds.empty());
+
+	ifstream is;
+	stringstream fss;
+	fss << "Resources/BGInfo/" << bgInfoFileName << ".bg";
+	string fStr = fss.str();
+	string eStr = ".png";
+	string parDirStr = "Parallax/";
+	
+	is.open(fStr);
+
+	if (is.is_open())
+	{
+		string bgStr;
+		is >> bgStr;
+
+		background = new Background(this, bgStr);
+		//background = new Background(this, mh->envLevel, mh->envType);
+
+		int numPar;
+		is >> numPar;
+
+		string pStr;
+		int tsIndex;
+		int depthLevel;
+		float scrollSpeed;
+		for (int i = 0; i < numPar; ++i)
+		{
+			is >> pStr;
+			
+			is >> tsIndex;
+
+			is >> depthLevel;
+
+			is >> scrollSpeed;
+
+			scrollingBackgrounds.push_back(
+				new ScrollingBackground(
+					GetTileset(parDirStr + pStr + eStr, 1920, 1080), tsIndex, depthLevel, scrollSpeed ));
+		}
+
+		is.close();
+	}
+	else
+	{
+		assert(0 && "problem loading bg info file");
+	}
+	
+
+	/*stringstream pss;
+	pss << "Parallax/w" << (mh->envType + 1) << "_0" << (mh->envLevel + 1);
+	string pStr = pss.str();
+	
+	string cloudStr = "_cloud_";
+
+	Tileset *cloud1 = GetTileset(pStr + cloudStr + string("1") + eStr, 1920, 1080);
+	Tileset *cloud2 = GetTileset(pStr + cloudStr + string("2") + eStr, 1920, 1080);
+
+	scrollingBackgrounds.push_back(
+		new ScrollingBackground(
+			GetTileset(pStr + string("c") + eStr, 1920, 1080), 0, 3));
+	if (cloud1 != NULL)
+	{
+		scrollingBackgrounds.push_back(
+			new ScrollingBackground(cloud1, 0, 4, 10));
+	}
+
+	scrollingBackgrounds.push_back(
+		new ScrollingBackground(
+			GetTileset(pStr + string("b") + eStr, 1920, 1080), 0, 5));
+	if (cloud2 != NULL)
+	{
+		scrollingBackgrounds.push_back(
+			new ScrollingBackground(cloud2, 0, 8, 10));
+	}
+
+	scrollingBackgrounds.push_back(
+		new ScrollingBackground(
+			GetTileset(pStr + string("a") + eStr, 1920, 1080), 0, 10));*/
 }
 
 void GameSession::KillAllEnemies()

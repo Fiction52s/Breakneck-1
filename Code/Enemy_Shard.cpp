@@ -33,7 +33,7 @@ void Shard::SetupShardMaps()
 }
 
 Shard::Shard( GameSession *p_owner, Vector2i pos, ShardType p_sType )
-	:Enemy( p_owner, EnemyType::EN_SHARD, false, p_owner->mh->envType + 1 ), shardType( p_sType )
+	:Enemy( p_owner, EnemyType::EN_SHARD, false, p_owner->mh->envWorldType + 1 ), shardType( p_sType )
 {
 	initHealth = 60;
 	health = initHealth;

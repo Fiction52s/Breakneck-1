@@ -491,10 +491,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	SoundNodeList * pauseSoundNodeList;
 	ScoreDisplay *scoreDisplay;
 	State state;
-
-	Tileset *ts_testParallax;
-	sf::Sprite testParallaxSprite;
-	
+	void SetupBackgrounds( const std::string &bgInfoFileName );
 	
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;
@@ -672,7 +669,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	bool stormCeilingOn;
 	double stormCeilingHeight;
-
 	//HitboxInfo *stormCeilingInfo;
 
 	EnvPlant *activeEnvPlants;

@@ -3077,9 +3077,12 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	int gameMode;
 	is >> gameMode;
 
-	is >> mh->envType;
+	is >> mh->envWorldType;
 
-	is >> mh->envLevel;
+	//is >> mh->envType;
+	string envName;
+	is >> envName;
+	//is >> mh->envLevel;
 
 	is >> mh->leftBounds;
 	is >> mh->topBounds;
@@ -3121,7 +3124,7 @@ void MapSelectionMenu::LoadItems()
 		if (is.is_open())
 		{
 			MapHeader *mh = ReadMapHeader(is);
-			string pFile = string( "Maps/") + (*it).relative_path().stem().string() + string("_preview_912x492.png");//string("Maps/") + (*it).filename().stem().string() + string("_preview_960x540.png");
+			string pFile = string( "Maps/Previews/") + (*it).relative_path().stem().string() + string("_preview_912x492.png");//string("Maps/") + (*it).filename().stem().string() + string("_preview_960x540.png");
 			//string defaultFile = "Menu/nopreview_960x540.png";
 
 			if (collectionMap.find(mh->collectionName) != collectionMap.end())
@@ -3265,7 +3268,9 @@ bool MapSelectionMenu::WriteMapHeader(std::ofstream &of, MapHeader *mh)
 	of << mh->collectionName << "\n";
 	of << mh->gameMode << "\n";
 
-	of << (int)mh->envType << " " << mh->envLevel << endl;
+	//of << (int)mh->envType << " " << mh->envLevel << endl;
+	of << mh->envWorldType << " ";
+	of << mh->envName << endl;
 
 	of << mh->leftBounds << " " << mh->topBounds << " " << mh->boundsWidth << " " << mh->boundsHeight << endl;
 
@@ -4496,7 +4501,9 @@ void MapHeader::Save(std::ofstream &of)
 	of << collectionName << "\n";
 	of << gameMode << "\n";
 
-	of << (int)envType << " " << envLevel << endl;
+	//of << (int)envType << " " << envLevel << endl;
+	of << envWorldType << " ";
+	of << envName << endl;
 
 	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;
 

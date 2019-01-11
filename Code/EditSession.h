@@ -1659,6 +1659,9 @@ struct EditSession : GUIHandler
 	sf::Vector2i airPos;
 	MapHeader mapHeader;
 
+	std::string envName;
+	int envWorldType;
+
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;
 	int validityRadius;
@@ -1678,19 +1681,6 @@ struct EditSession : GUIHandler
 
 	bool makingRect;
 	sf::Vector2i rectStart;
-
-	enum EnvType
-	{
-		MOUNTAIN,
-		GLADE,
-		DESERT,
-		COVE,
-		JUNGLE,
-		FORTRESS,
-		CORE
-	};
-	EnvType environmentType;
-	int envLevel;
 
 	void ExtendPolygon( TerrainPoint *startPoint,
 		TerrainPoint *endPoint, PolyPtr inProgress );

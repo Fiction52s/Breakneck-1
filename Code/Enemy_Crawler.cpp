@@ -288,7 +288,7 @@ void Crawler::ProcessState()
 	switch (action)
 	{
 	case UNBURROW:
-		if (frame == 4 * 14)
+		if (frame == 4 * 11)
 		{
 			
 			SetHitboxes(hitBody, 0);

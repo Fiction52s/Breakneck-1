@@ -17,7 +17,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	double width;
 	double height;
 
-	int world = owner->mh->envType;
+	int world = owner->mh->envWorldType;
 	switch (world)
 	{
 	case 0:
@@ -55,7 +55,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	miniSprite.setTextureRect( ts_mini->GetSubRect( 2 ) );
 	miniSprite.setScale( 16, 16 );
 	
-	switch( owner->mh->envType )
+	switch( owner->mh->envWorldType)
 	{
 	case 0:
 		miniSprite.setTextureRect( ts_mini->GetSubRect( 5 ) );

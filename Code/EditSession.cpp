@@ -511,8 +511,6 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		fullBounds[i].color = COLOR_ORANGE;
 		fullBounds[i].position = Vector2f( 0, 0 );
 	}
-
-	environmentType = MOUNTAIN;
 	grabbedObject = NULL;
 	zoomMultiple = 1;
 	editMouseDownBox = false;
@@ -694,9 +692,9 @@ bool EditSession::OpenFile()
 		mapHeader.ver1 = mh->ver1;
 		mapHeader.ver2 = mh->ver2;
 		
-		environmentType = (EnvType)mh->envType;
-		envLevel = mh->envLevel;
-		
+		envName = mh->envName;
+
+		envWorldType = mh->envWorldType;
 		
 		leftBound = mh->leftBounds;
 		topBound = mh->topBounds;
@@ -2985,6 +2983,10 @@ void EditSession::WriteFile(string fileName)
 	mapHeader.numShards = numShards;
 
 	mapHeader.drainSeconds = drainSeconds;
+
+	mapHeader.envName = envName;
+
+	mapHeader.envWorldType = envWorldType;
 
 	ofstream of;
 	of.open( fileName );//+ ".brknk" );
@@ -17789,31 +17791,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 
 		Color inversePolyTypeColor;// = Color::Blue;
 
-
-		switch (environmentType)
-		{
-		case 0:
-			inversePolyTypeColor = Color::Blue;
-			break;
-		case 1:
-			inversePolyTypeColor = Color::Green;
-			break;
-		case 2:
-			inversePolyTypeColor = Color::Yellow;
-			break;
-		case 3:
-			inversePolyTypeColor = Color(100, 200, 200);
-			break;
-		case 4:
-			inversePolyTypeColor = Color::Red;
-			break;
-		case 5:
-			inversePolyTypeColor = Color::Magenta;
-			break;
-		case 6:
-			inversePolyTypeColor = Color::White;
-			break;
-		}
+		inversePolyTypeColor = Color::Blue;
 
 		mapPreviewTex->clear(inversePolyTypeColor);
 		mapPreviewTex->setView( pView );
@@ -17905,7 +17883,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		Image img = mapPreviewTex->getTexture().copyToImage();
 		
 		std::stringstream ssPrev;
-		ssPrev << currentPath.parent_path().relative_path().string() << "/" << currentPath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
+		ssPrev << currentPath.parent_path().relative_path().string() << "/Previews/" << currentPath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
 		std::string previewFile = ssPrev.str();
 		img.saveToFile( previewFile );
 	}
