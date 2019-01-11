@@ -362,9 +362,12 @@ struct Actor : QuadTreeCollider,
 
 	Action GetDoubleJump();
 	bool CanDoubleJump();
+	void ExecuteDoubleJump();
+	void ExecuteWallJump();
 	bool IsSingleWirePulling();
 	bool IsDoubleWirePulling();
 	bool TryDoubleJump();
+	
 	bool TryAirDash();
 
 	int framesSinceRightWireBoost;
@@ -483,7 +486,11 @@ struct Actor : QuadTreeCollider,
 	bool physicsOver;
 	void UpdatePostPhysics();
 	bool CheckWall( bool right );
+	bool TryWallJump();
 	bool CheckStandUp();
+	void CheckBounceFlame();
+	bool BasicAirAction();
+	bool BasicAirAttackAction();
 	sf::Vector2<double> UpdateReversePhysics();
 	void Draw( sf::RenderTarget *target );
 	void DebugDraw( sf::RenderTarget *target );
@@ -1091,6 +1098,7 @@ struct Actor : QuadTreeCollider,
 
 	//bool bufferedAttack;
 	Action bufferedAttack;
+	Action doubleJumpBufferedAttack;
 
 	Action pauseBufferedAttack;
 	bool pauseBufferedJump;

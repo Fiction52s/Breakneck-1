@@ -1821,35 +1821,20 @@ bool IsCircleTouchingCircle( V2d pos0, double rad_0, V2d pos1, double rad_1 )
 }
 
 bool IsEdgeTouchingCircle( V2d &v0, V2d &v1, V2d &pos, double rad )
-{
-	double dist = cross( pos - v0, normalize( v1 - v0 ) );
+{	
 	double q = dot( pos - v0, normalize( v1 - v0 ) );
-	double edgeLength = length( v1 - v0 );
-
 
 	if( q < 0 )
 	{
-		if( length( v0 - pos ) < rad )
-		{
-			return true;
-		}
+		return length(v0 - pos) < rad;
 	}
-	else if( q > edgeLength )
+	else if( q > length(v1 - v0))
 	{
-		if( length( v1 - pos ) < rad )
-		{
-			return true;
-		}
-	}
-	else
-	{
-		if( abs(dist) < rad )
-		{
-			return true;
-		}
+		return length(v1 - pos) < rad;
 	}
 
-	return false;
+	double dist = cross(pos - v0, normalize(v1 - v0));
+	return abs(dist) < rad;
 }
 
 bool IsQuadTouchingCircle( V2d &A, V2d &B, V2d &C, V2d &D, V2d &pos, double rad )

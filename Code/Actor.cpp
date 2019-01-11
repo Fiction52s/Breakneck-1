@@ -3298,88 +3298,11 @@ void Actor::UpdatePrePhysics()
 			{
 				SetAction( bufferedAttack );
 				bufferedAttack = JUMP;
-				//action = bufferedAttack;
 				frame = 0;
 				break;
 			}
-			/*if( currInput.rightTrigger > 200 && prevInput.rightTrigger <= 200 && wireState == 0 )
-			{
-			//	action = WIREHOLD;
-				framesFiring = 0;
-				frame = 0;
-				wireState = 1;
-				break;
-			}*/
 
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
-			{
-				//bounceGrounded = true;
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
-				//break;
-			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
-			{
-				BounceFlameOff();
-			}
-
-			if( TryAirDash() ) break;
-
-			
-
-			if( TryDoubleJump() ) break;
-
-
-			//cout << CheckWall( true ) << endl;
-			
-			if( CheckWall( false ) )
-			{
-				//cout << "special walljump right" << endl;
-				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
-				{
-					SetAction(WALLJUMP);
-					frame = 0;
-					facingRight = true;
-
-					if( currInput.A )
-					{
-						longWallJump = true;
-					}
-					else
-					{
-						longWallJump = false;
-					}
-					break;
-				}
-			}
-			
-			
-			if( CheckWall( true ) )
-			{		
-				//cout << "special walljump left" << endl;
-				if( !currInput.LDown() && currInput.LLeft() && !prevInput.LLeft() )
-				{
-					
-					SetAction(WALLJUMP);
-					frame = 0;
-					facingRight = false;
-
-					if( currInput.A )
-					{
-						longWallJump = true;
-					}
-					else
-					{
-						longWallJump = false;
-					}
-					break;
-				}
-			}
-
-			
-
-			AirAttack();
+			BasicAirAction();
 
 			break;
 		}
@@ -3414,65 +3337,14 @@ void Actor::UpdatePrePhysics()
 	case BACKWARDSDOUBLE:
 	case DOUBLE:
 		{
-
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
+			if ((frame == 1 || (frame == 0 && slowCounter > 1)) && doubleJumpBufferedAttack != DOUBLE)
 			{
-				//bounceGrounded = true;
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
-				//break;
+				SetAction(doubleJumpBufferedAttack);
+				doubleJumpBufferedAttack = DOUBLE;
+				frame = 0;
+				break;
 			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
-
-			if( TryAirDash() ) break;
-
-			if( CheckWall( false ) )
-			{
-				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
-				{
-					SetAction(WALLJUMP);
-					frame = 0;
-					facingRight = true;
-
-					if( currInput.A )
-					{
-						longWallJump = true;
-					}
-					else
-					{
-						longWallJump = false;
-					}
-					break;
-				}
-			}
-			
-			
-			if( CheckWall( true ) )
-			{				
-				if( !currInput.LDown() && currInput.LLeft() && !prevInput.LLeft() )
-				{
-					SetAction(WALLJUMP);
-					frame = 0;
-					facingRight = false;
-
-					if( currInput.A )
-					{
-						longWallJump = true;
-					}
-					else
-					{
-						longWallJump = false;
-					}
-					break;
-				}
-			}
-
-			AirAttack();
+			BasicAirAction();
 
 			break;
 		}
@@ -3793,47 +3665,6 @@ void Actor::UpdatePrePhysics()
 		}
 	case SPRINGSTUN:
 	{
-		/*if (CheckWall(false))
-		{
-			if (!currInput.LDown() && currInput.LRight() && !prevInput.LRight())
-			{
-				SetAction(WALLJUMP);
-				frame = 0;
-				facingRight = true;
-
-				if (currInput.A)
-				{
-					longWallJump = true;
-				}
-				else
-				{
-					longWallJump = false;
-				}
-				break;
-			}
-		}
-
-
-		if (CheckWall(true))
-		{
-			if (!currInput.LDown() && currInput.LLeft() && !prevInput.LLeft())
-			{
-				SetAction(WALLJUMP);
-				frame = 0;
-				facingRight = false;
-
-				if (currInput.A)
-				{
-					longWallJump = true;
-				}
-				else
-				{
-					longWallJump = false;
-				}
-				break;
-			}
-		}*/
-
 		if (springStunFrames == 0)
 		{
 			SetAction(JUMP);
@@ -3879,263 +3710,66 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLJUMP:
 		{
-			if( TryAirDash() ) break;
-
-
-			if( TryDoubleJump() ) break;
-
-			if( CheckWall( false ) )
-			{
-				if( !currInput.LDown() && currInput.LRight() && !prevInput.LRight() )
-				{
-					SetAction(WALLJUMP);
-
-					if( currInput.A )
-					{
-						longWallJump = true;
-					}
-					else
-					{
-						longWallJump = false;
-					}
-
-					frame = 0;
-					facingRight = true;
-					break;
-				}
-			}
-			
-			
-			if( CheckWall( true ) )
-			{				
-				if( !currInput.LDown() && currInput.LLeft() && !prevInput.LLeft() )
-				{
-					SetAction(WALLJUMP);
-					frame = 0;
-					facingRight = false;
-
-					if( currInput.A )
-					{
-						longWallJump = true;
-					}
-					else
-					{
-						longWallJump = false;
-					}
-					break;
-				}
-			}
-
-		
-			
-			AirAttack();
-			
+			BasicAirAction();
 			break;
 		}
 	case WALLATTACK:
 		{
-			//cout << "WALL ATTACK" << endl;
-			if( frame > 6 )
+			if( !BasicAirAttackAction() && frame > 6 )
 			{
-			if( currInput.LDown() )
-			{
-				SetAction(JUMP);
-				frame = 1;
-				break;
-			}
-			else
-			{
-				if( !facingRight )
+				if( currInput.LDown() )
 				{
-					if( currInput.LLeft() )
-					{
-						SetAction(WALLJUMP);
-						frame = 0;
-						break;
-					}
+					SetAction(JUMP);
+					frame = 1;
+					break;
 				}
 				else
 				{
-					if( currInput.LRight() )
+					if( !facingRight )
 					{
-						SetAction(WALLJUMP);
-						frame = 0;
-						break;
+						if( currInput.LLeft() )
+						{
+							SetAction(WALLJUMP);
+							frame = 0;
+							break;
+						}
+					}
+					else
+					{
+						if( currInput.LRight() )
+						{
+							SetAction(WALLJUMP);
+							frame = 0;
+							break;
+						}
 					}
 				}
-			}
-			}
-
-			
-
-			if( currAttackHit )// && frame > 0 )
-			{
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
-			{
-				//bounceGrounded = true;
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
-				//break;
-			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
-
-			if( TryAirDash() ) break;
-
-			if( TryDoubleJump() ) break;
-
 			}
 			break;
 		}
 	case FAIR:
 		{
-			if (hasPowerBounce && currInput.X && !bounceFlameOn)
-			{
-				//bounceGrounded = true;
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
-				//break;
-			}
-			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
-
-			if( currAttackHit )//&& frame > 0 )
-			{
-			
-
-			if( TryAirDash() ) break;
-
-			if( TryDoubleJump() ) break;
-
-			AirAttack();
-
-			}
-
+			BasicAirAttackAction();
 			break;
 		}
 	case DAIR:
 		{
-			if (hasPowerBounce && currInput.X && !bounceFlameOn)
-			{
-				//bounceGrounded = true;
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
-				//break;
-			}
-			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
-
-			if( currAttackHit )// && frame > 0 )
-			{
-			
-			
-
-			if( TryAirDash() ) break;
-
-			if( TryDoubleJump() ) break;
-
-			AirAttack();
-			}
+			BasicAirAttackAction();
 			break;
 		}
 	case UAIR:
 		{
-			if (hasPowerBounce && currInput.X && !bounceFlameOn)
-			{
-				//bounceGrounded = true;
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
-				//break;
-			}
-			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
-
-			if( currAttackHit )//&& frame > 0 )
-			{
-			
-			
-
-			if( TryAirDash() ) break;
-
-			if( TryDoubleJump() ) break;
-
-			AirAttack();
-			}
+			BasicAirAttackAction();
 			break;
 		}
 	case DIAGUPATTACK:
 		{
-			if (hasPowerBounce && currInput.X && !bounceFlameOn)
-			{
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
-				//break;
-			}
-			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
-
-			if( currAttackHit )
-			{
-			
-			
-
-			if( TryAirDash() ) break;
-
-			if( TryDoubleJump() ) break;
-
-			AirAttack();
-			}
+			BasicAirAttackAction();
 			break;
 		}
 	case DIAGDOWNATTACK:
 		{
-			if (hasPowerBounce && currInput.X && !bounceFlameOn)
-			{
-				//bounceGrounded = true;
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
-				//break;
-			}
-			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
-
-			if( currAttackHit )
-			{
-			
-			
-
-			
-
-			if( TryAirDash() ) break;
-
-			if( TryDoubleJump() ) break;
-
-			AirAttack();
-			}
+			BasicAirAttackAction();
 			break;
 		}
 	case DASH:
@@ -5338,34 +4972,14 @@ void Actor::UpdatePrePhysics()
 	}
 	case RAILDASH:
 	{
-		if (hasPowerBounce && currInput.X && !bounceFlameOn)
+		if (!BasicAirAction())
 		{
-			//bounceGrounded = true;
-			BounceFlameOn();
-			oldBounceEdge = NULL;
-			bounceMovingTerrain = NULL;
-			//break;
+			if (!currInput.B)
+			{
+				SetAction(JUMP);
+				frame = 1;
+			}
 		}
-		else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
-		{
-			BounceFlameOff();
-		}
-
-		//if (TryAirDash()) break;
-
-
-
-		if (TryDoubleJump()) break;
-
-
-		AirAttack();
-
-		if (!currInput.B)
-		{
-			SetAction(JUMP);
-			frame = 1;
-		}
-		
 		break;
 	}
 	case GRINDATTACK:
@@ -5735,41 +5349,21 @@ void Actor::UpdatePrePhysics()
 		
 	case GRINDLUNGE:
 		{
-			if( !currInput.B )
-			{
-				SetAction(JUMP);
-				frame = 1;
-			}
-			else if( currInput.rightShoulder && !prevInput.rightShoulder )
+			if (currInput.rightShoulder && !prevInput.rightShoulder)
 			{
 				SetAction(GRINDSLASH);
 				frame = 0;
+			}
+			else if( !BasicAirAction() && !currInput.B )
+			{
+				SetAction(JUMP);
+				frame = 1;
 			}
 			break;
 		}
 	case GRINDSLASH:
 		{
-			if( currAttackHit && frame > 0 )
-			{
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
-			{
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
-				//break;
-			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
-
-			if( TryAirDash() ) break;
-
-			if( TryDoubleJump() ) break;
-
-			AirAttack();
-			}
+			BasicAirAttackAction();
 			break;
 		}
 	case STEEPSLIDE:
@@ -5877,31 +5471,24 @@ void Actor::UpdatePrePhysics()
 		}
 	case AIRDASH:
 		{
-			if (AirAttack())
-				break;
-
-			if (TryDoubleJump()) break;
-
-			if( !currInput.B )//|| ( oldInBubble && !inBubble ) )
+			if (!BasicAirAction())
 			{
-				SetActionExpr( JUMP );
-				frame = 1;
-				holdJump = false;
-				
-				if( rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING )
+				if (!currInput.B)//|| ( oldInBubble && !inBubble ) )
 				{
+					SetActionExpr(JUMP);
+					frame = 1;
+					holdJump = false;
+
+					if (rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING)
+					{
+					}
+					else
+					{
+						//velocity = V2d( 0, 0 );
+					}
+					break;
 				}
-				else
-				{
-					//velocity = V2d( 0, 0 );
-				}
-				break;
 			}
-			//else if( currInput.A && !prevInput.A && hasDoubleJump )
-
-			
-
-			
 			break;
 		}
 	case STEEPCLIMB:
@@ -6972,44 +6559,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( frame == 0 )
 			{
-				//double xDiff = 20;
-				//if( facingRight )
-				//	xDiff = -xDiff;
-				//owner->ActivateEffect( ts_fx_wallJump, V2d( position.x + xDiff, position.y ), false, 0, 12, 4, facingRight );
-				wallJumpFrameCounter = 0;
-				double strengthX = wallJumpStrength.x;
-				double strengthY = wallJumpStrength.y;
-
-				if( !longWallJump )
-				{
-					strengthX = strengthX;
-				}
-				else
-				{
-					strengthY = strengthY;// + 3;
-				}
-				
-
-				if( facingRight )
-				{
-					velocity.x = strengthX;
-				}
-				else
-				{
-					velocity.x = -strengthX;
-				}
-
-				if( velocity.y < -strengthY )
-				{
-					
-				}
-				else
-				{
-					velocity.y = -strengthY;
-				}
-				
-
-				owner->soundNodeList->ActivateSound( soundBuffers[S_WALLJUMP] );
+				ExecuteWallJump();
 			}
 			else if( frame >= wallJumpMovementLimit )
 			{
@@ -7248,85 +6798,7 @@ void Actor::UpdatePrePhysics()
 		//	b.offset.y = -5;
 			if( frame == 0 )
 			{
-				framesSinceDouble = 0;
-			
-				//add direction later
-				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_double, 
-					V2d( position.x, position.y - 20), false, 0, 14, 2, facingRight );
-			
-				//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
-				if( velocity.y > 0 )
-					velocity.y = 0;
-
-				if (action == BACKWARDSDOUBLE)
-				{
-					velocity.y = -backDoubleJumpStrength;
-				}
-				else
-				{
-					velocity.y = -doubleJumpStrength;
-				}
-
-				
-				hasDoubleJump = false;
-
-				if( currInput.LLeft() )
-				{
-					if( velocity.x > -maxRunInit )
-					{
-						velocity.x = -maxRunInit;
-					}
-				}
-				else if( currInput.LRight() )
-				{
-					if( velocity.x < maxRunInit )
-					{
-						velocity.x = maxRunInit;
-					}
-				}
-				else
-				{
-					velocity.x = 0;
-				}
-
-				if (aerialHitCancelDouble)
-				{
-					if (cancelAttack == FAIR)
-					{
-						if (facingRight && currInput.LLeft()
-							|| (!facingRight && currInput.LRight()))
-						{
-							if (facingRight)
-							{
-								velocity.x = -GetDashSpeed();
-							}
-							else
-							{
-								velocity.x = GetDashSpeed();
-							}
-							facingRight = !facingRight;
-						}
-					}
-					else if (cancelAttack == DAIR || cancelAttack == DIAGDOWNATTACK)
-					{
-						velocity.y -= dairBoostVel;
-						if (cancelAttack == DIAGDOWNATTACK)
-						{
-							if (facingRight && currInput.LLeft()
-								|| (!facingRight && currInput.LRight()))
-							{
-								if (facingRight)
-								{
-									velocity.x = -GetDashSpeed();
-								}
-								else
-								{
-									velocity.x = GetDashSpeed();
-								}
-							}
-						}
-					}
-				}
+				ExecuteDoubleJump();
 			}
 			else
 			{
@@ -9448,16 +8920,34 @@ void Actor::SetAction( Action a )
 		repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_SLIDE], true);
 		break;
 	}
-	case DOUBLE:
+	/*case UAIR:
 	{
-		owner->soundNodeList->ActivateSound(soundBuffers[S_DOUBLE]);
+		if (currLockedUairFX != NULL && a != UAIR)
+		{
+			currLockedUairFX->ClearLockPos();
+			currLockedUairFX = NULL;
+		}
 		break;
 	}
-	case BACKWARDSDOUBLE:
+	case FAIR:
 	{
-		owner->soundNodeList->ActivateSound(soundBuffers[S_DOUBLEBACK]);
+		if (currLockedFairFX != NULL && a != FAIR)
+		{
+			currLockedFairFX->ClearLockPos();
+			currLockedFairFX = NULL;
+		}
 		break;
 	}
+	case DAIR:
+	{
+		if (currLockedDairFX != NULL && a != UAIR)
+		{
+			currLockedDairFX->ClearLockPos();
+			currLockedDairFX = NULL;
+		}
+		break;
+	}
+	*/
 		
 		
 	}
@@ -11569,7 +11059,81 @@ double Actor::GetDashSpeed()
 	}
 }
 
+bool Actor::BasicAirAction()
+{
+	CheckBounceFlame();
 
+	if (TryDoubleJump()) return true;
+
+	if (TryAirDash()) return true;
+
+	if (TryWallJump()) return true;
+
+	if( AirAttack()) return true;
+
+	return false;
+}
+
+bool Actor::BasicAirAttackAction()
+{
+	CheckBounceFlame();
+
+	if (currAttackHit)
+	{
+		if (TryAirDash()) return true;
+
+		if (TryDoubleJump()) return true;
+
+		if (AirAttack()) return true;
+	}
+	
+	return false;
+}
+
+void Actor::CheckBounceFlame()
+{
+	if (hasPowerBounce)
+	{
+		if (currInput.X && !bounceFlameOn)
+		{
+			BounceFlameOn();
+			oldBounceEdge = NULL;
+			bounceMovingTerrain = NULL;
+		}
+		else if (!currInput.X && bounceFlameOn)
+		{
+			BounceFlameOff();
+		}
+	}
+}
+
+bool Actor::TryWallJump()
+{
+	if (CheckWall(false))
+	{
+		if (!currInput.LDown() && currInput.LRight() && !prevInput.LRight())
+		{
+			SetAction(WALLJUMP);
+			frame = 0;
+			facingRight = true;
+			return true;
+		}
+	}
+
+
+	if (CheckWall(true))
+	{
+		if (!currInput.LDown() && currInput.LLeft() && !prevInput.LLeft())
+		{
+			SetAction(WALLJUMP);
+			frame = 0;
+			facingRight = false;
+			return true;
+		}
+	}
+
+	return false;
+}
 
 bool Actor::EnemyIsFar(V2d &enemyPos)
 {
@@ -20014,28 +19578,7 @@ void Actor::UpdateSprite()
 		{
 			if( frame == 0 && slowCounter == 1 )
 			{
-				V2d fxPos = position;
-				if( facingRight )
-				{
-					fxPos += V2d( 0, 0 );
-				}
-				else
-				{
-					fxPos += V2d( 0, 0 );
-				}
-
-				switch (speedLevel)
-				{
-				case 0:
-					owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[0], fxPos, false, 0, 7, 3, facingRight);
-					break;
-				case 1:
-					owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[1], fxPos, false, 0, 7, 3, facingRight);
-					break;
-				case 2:
-					owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[2], fxPos, false, 0, 7, 3, facingRight);
-					break;
-				}
+				
 
 				
 				
@@ -23251,6 +22794,149 @@ void Actor::SetExpr( Expr ex )
 	expr = ex;
 }
 
+void Actor::ExecuteDoubleJump()
+{
+	framesSinceDouble = 0;
+
+	//add direction later
+	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_double,
+		V2d(position.x, position.y - 20), false, 0, 14, 2, facingRight);
+
+	//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
+	if (velocity.y > 0)
+		velocity.y = 0;
+
+	if (action == BACKWARDSDOUBLE)
+	{
+		velocity.y = -backDoubleJumpStrength;
+	}
+	else
+	{
+		velocity.y = -doubleJumpStrength;
+	}
+
+
+	hasDoubleJump = false;
+
+	if (currInput.LLeft())
+	{
+		if (velocity.x > -maxRunInit)
+		{
+			velocity.x = -maxRunInit;
+		}
+	}
+	else if (currInput.LRight())
+	{
+		if (velocity.x < maxRunInit)
+		{
+			velocity.x = maxRunInit;
+		}
+	}
+	else
+	{
+		velocity.x = 0;
+	}
+
+	if (aerialHitCancelDouble)
+	{
+		if (cancelAttack == FAIR)
+		{
+			if (facingRight && currInput.LLeft()
+				|| (!facingRight && currInput.LRight()))
+			{
+				if (facingRight)
+				{
+					velocity.x = -GetDashSpeed();
+				}
+				else
+				{
+					velocity.x = GetDashSpeed();
+				}
+				facingRight = !facingRight;
+			}
+		}
+		else if (cancelAttack == DAIR || cancelAttack == DIAGDOWNATTACK)
+		{
+			velocity.y -= dairBoostVel;
+			if (cancelAttack == DIAGDOWNATTACK)
+			{
+				if (facingRight && currInput.LLeft()
+					|| (!facingRight && currInput.LRight()))
+				{
+					if (facingRight)
+					{
+						velocity.x = -GetDashSpeed();
+					}
+					else
+					{
+						velocity.x = GetDashSpeed();
+					}
+				}
+			}
+		}
+	}
+
+	if( action == DOUBLE)
+	{
+		owner->soundNodeList->ActivateSound(soundBuffers[S_DOUBLE]);
+	}
+	else if( action == BACKWARDSDOUBLE)
+	{
+		owner->soundNodeList->ActivateSound(soundBuffers[S_DOUBLEBACK]);
+	}
+}
+
+void Actor::ExecuteWallJump()
+{
+	wallJumpFrameCounter = 0;
+	double strengthX = wallJumpStrength.x;
+	double strengthY = wallJumpStrength.y;
+
+	if (facingRight)
+	{
+		velocity.x = strengthX;
+	}
+	else
+	{
+		velocity.x = -strengthX;
+	}
+
+	if (velocity.y < -strengthY)
+	{
+
+	}
+	else
+	{
+		velocity.y = -strengthY;
+	}
+
+
+	owner->soundNodeList->ActivateSound(soundBuffers[S_WALLJUMP]);
+
+	V2d fxPos = position;
+	if (facingRight)
+	{
+		fxPos += V2d(0, 0);
+	}
+	else
+	{
+		fxPos += V2d(0, 0);
+	}
+
+	switch (speedLevel)
+	{
+	case 0:
+		owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[0], fxPos, false, 0, 7, 3, facingRight);
+		break;
+	case 1:
+		owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[1], fxPos, false, 0, 7, 3, facingRight);
+		break;
+	case 2:
+		owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[2], fxPos, false, 0, 7, 3, facingRight);
+		break;
+	}
+}
+
 Actor::Action Actor::GetDoubleJump()
 {
 	if( (facingRight && currInput.LLeft()) || ( !facingRight && currInput.LRight() ) )
@@ -23291,6 +22977,27 @@ bool Actor::TryDoubleJump()
 		}
 		dairBoostedDouble = (action == DAIR || action == UAIR || action == DIAGDOWNATTACK || action == DIAGUPATTACK );
 		SetActionExpr( DOUBLE );
+
+		if (currInput.rightShoulder)
+		{
+			if (currInput.LUp())
+			{
+				doubleJumpBufferedAttack = UAIR; //none
+			}
+			else if (currInput.LDown())
+			{
+				doubleJumpBufferedAttack = DAIR;
+			}
+			else
+			{
+				doubleJumpBufferedAttack = FAIR;
+			}
+		}
+		else
+		{
+			doubleJumpBufferedAttack = DOUBLE;
+		}
+
 		return true;
 	}
 	
@@ -23353,7 +23060,6 @@ void Actor::SetActionExpr( Action a )
 			{
 				bufferedAttack = FAIR; 
 			}
-			//bufferedAttack = true;
 		}
 		break;
 	case BACKWARDSDOUBLE:
