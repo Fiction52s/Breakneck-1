@@ -197,7 +197,18 @@ struct GameSession;
 struct KeyMarker;
 
 
+enum EdgeAngleType
+{
+	EDGE_FLAT,
+	EDGE_SLOPED,
+	EDGE_STEEPSLOPE,
+	EDGE_WALL,
+	EDGE_STEEPCEILING,
+	EDGE_SLOPEDCEILING,
+	EDGE_FLATCEILING
+};
 
+EdgeAngleType GetEdgeAngleType(V2d &normal);
 
 struct MomentumBar
 {

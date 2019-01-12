@@ -163,6 +163,7 @@ struct TerrainRender : QuadTreeCollider, RayCastHandler
 	//TerrainPoint *startPoint;
 	//TerrainPoint *endPoint;
 	Edge *startEdge;
+
 	//TerrainPoint *startPoint;
 
 	Edge * rcEdge;

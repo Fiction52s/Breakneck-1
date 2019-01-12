@@ -138,6 +138,49 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
+EdgeAngleType GetEdgeAngleType(V2d &normal)
+{
+	if (GameSession::IsFlatGround(normal) == 0)
+	{
+		if (normal.y < 0)
+			return EDGE_FLAT;
+		else
+			return EDGE_FLATCEILING;
+	}
+	else if (GameSession::IsSlopedGround(normal) == 1)
+	{
+		if (normal.y < 0)
+		{
+			return EDGE_SLOPED;
+		}
+		else
+		{
+			return EDGE_SLOPEDCEILING;
+		}
+	}
+	else
+	{
+		int steep = GameSession::IsSteepGround(normal);
+		if (steep == 2)
+		{
+			return EDGE_STEEPSLOPE;
+		}
+		else if (steep == 3)
+		{
+			return EDGE_STEEPCEILING;
+		}
+		else if( GameSession::IsWall( normal ) > 0 )
+		{
+			return EDGE_WALL;
+		}
+		else
+		{
+			assert(0 && "couldn't find edge angle type");
+			return EDGE_FLAT;
+		}
+	}
+}
+
 
 Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
 	sf::Vector2<double> &pA, sf::Vector2<double> &pB,

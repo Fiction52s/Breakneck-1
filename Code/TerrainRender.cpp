@@ -73,35 +73,20 @@ struct EdgeInfo
 
 void TerrainRender::GenerateBorderMesh()
 {
-	/*int worldNum = 0;
-	if( envType < 1 )
+	/*bool useEdges = true;
+	if (startEdge == NULL && startPoint != NULL)
 	{
-		worldNum = 0;
-	}
-	else if( envType < 2 )
-	{
-
+		useEdges = false;
 	}*/
-	//int worldNum = (int)envType; //temporary
-
-	//rayMode = "border_quads";
-	//QuadTree *qt = NULL;
-	/*if( bgLayer == 0 )
-	{
-		qt = terrainTree;
-	}
-	else if( bgLayer == 1 )
-	{
-		qt = terrainBGTree;
-	}*/
-	//QuadTree *qt = terrainTree;
-	//assert( qt != NULL );
 
 	Triple totalQuads;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
 
 	map<Edge*, Triple> numQuadMap[E_WALL +1];
+	//map<TerrainPoint*, Triple> numQuadMapPoints[E_WALL + 1];
+
 	list<Edge*> transEdges;
+	//list<TerrainPoint*> transPoints;
 
 	int startInter128 = 4;
 	int startInter32 = 4;

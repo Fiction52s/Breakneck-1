@@ -185,7 +185,7 @@ struct DetailedInter
 	TerrainPoint *otherPoint;
 };
 
-//struct TerrainRender;
+struct TerrainRender;
 struct TerrainPolygon : ISelectable
 {
 	enum TerrainWorldType
@@ -209,6 +209,7 @@ struct TerrainPolygon : ISelectable
 	TerrainPolygon( sf::Texture *grassTex );
 	TerrainPolygon( TerrainPolygon &poly, bool pointsOnly );
 	~TerrainPolygon();
+	void UpdateLineColor( sf::Vertex *line, TerrainPoint *p, int index );
 	bool SwitchPolygon( bool cw, TerrainPoint *rootPoint,
 		TerrainPoint *switchStart);
 	void CopyPoints( TerrainPoint *&start,

@@ -10,8 +10,9 @@
 #include <boost/lexical_cast.hpp>
 #include "Physics.h"
 #include "Action.h"
-//#include "TerrainRender.h"
+#include "TerrainRender.h"
 #include <set>
+#include "GameSession.h"
 
 using namespace std;
 using namespace sf;
@@ -44,6 +45,7 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
+	//tr = NULL;
 
 	pShader = &session->polyShaders[terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation];
 }
@@ -1017,11 +1019,13 @@ void TerrainPolygon::FinalizeInverse()
 		//	delete tris[i];
 	}
 
+	assert(numPoints > 0);
 	if( numPoints > 0 )
 	{
 		int i = 0;
 		curr = pointStart;
 		lines[0] = sf::Vector2f( curr->pos.x, curr->pos.y );
+		UpdateLineColor( lines, curr, i );
 		lines[2 * numPoints - 1 ] = sf::Vector2f( curr->pos.x, curr->pos.y );
 		curr = curr->next;
 		++i;
@@ -1029,10 +1033,16 @@ void TerrainPolygon::FinalizeInverse()
 		{
 			lines[i] = sf::Vector2f( curr->pos.x, curr->pos.y );
 			lines[++i] = sf::Vector2f( curr->pos.x, curr->pos.y ); 
+			//if( curr->next != NULL )
+			//	UpdateLineColor(lines, curr->next, i);
 			++i;
 			curr = curr->next;
 		}
+
+		
 	}
+
+	
 
 	UpdateBounds();
 	
@@ -1219,6 +1229,7 @@ void TerrainPolygon::Finalize()
 		int i = 0;
 		curr = pointStart;
 		lines[0] = sf::Vector2f( curr->pos.x, curr->pos.y );
+		//UpdateLineColor(lines, curr, 0 );
 		lines[2 * numPoints - 1 ] = sf::Vector2f( curr->pos.x, curr->pos.y );
 		curr = curr->next;
 		++i;
@@ -1226,12 +1237,18 @@ void TerrainPolygon::Finalize()
 		{
 			lines[i] = sf::Vector2f( curr->pos.x, curr->pos.y );
 			lines[++i] = sf::Vector2f( curr->pos.x, curr->pos.y ); 
+			//if( curr->next != NULL)
+			//	UpdateLineColor(lines, curr->next, i);
 			++i;
 			curr = curr->next;
+			
 		}
+
+		
 	}
 
 	UpdateBounds();
+	
 	
 
 	double grassSize = 22;
@@ -2032,6 +2049,136 @@ void TerrainPolygon::FixWinding()
 		pointEnd = tt;
 
     }
+}
+
+void TerrainPolygon::UpdateLineColor( sf::Vertex *li, TerrainPoint *p, int index )
+{
+	TerrainPoint *next = p->next;
+	if (next == NULL)
+	{
+		next = pointStart;
+	}
+
+	Vector2f diff = Vector2f( next->pos - p->pos );//p1 - p0;
+	V2d dir = normalize(V2d(diff));
+	V2d norm = V2d(dir.y, -dir.x);
+
+	EdgeAngleType eat = GetEdgeAngleType(norm);
+
+	Color edgeColor;
+	switch (eat)
+	{
+	case EDGE_FLAT:
+		edgeColor = Color::Cyan;
+		break;
+	case EDGE_SLOPED:
+		edgeColor = Color::Green;
+		break;
+	case EDGE_STEEPSLOPE:
+		edgeColor = Color::Red;
+		break;
+	case EDGE_WALL:
+		edgeColor = Color::Magenta;
+		break;
+	case EDGE_STEEPCEILING:
+		edgeColor = Color::Yellow;
+		break;
+	case EDGE_SLOPEDCEILING:
+		edgeColor = Color::Blue;
+		break;
+	case EDGE_FLATCEILING:
+		edgeColor = Color::White;
+		break;
+	}
+
+	lines[index].color = edgeColor;
+	lines[index + 1].color = edgeColor;
+
+
+	//int index = 0;
+	//Vector2f p0, p1;
+	//Vector2f diff;
+	//V2d dir, norm;
+	//for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	//{
+	//	TerrainPoint *prev;
+	//	if (curr == pointStart)
+	//		prev = pointEnd;
+	//	else
+	//		prev = curr->prev;
+
+	//	p0 = Vector2f(prev->pos.x, prev->pos.y);
+	//	p1 = Vector2f(curr->pos.x, curr->pos.y);
+	//	//lines[index * 2].position = p0;
+	//	//lines[index * 2 + 1].position = p1;
+
+	//	diff = p1 - p0;//p1 - p0;
+	//	dir = normalize(V2d(diff));
+	//	norm = V2d(dir.y, -dir.x);
+
+	//	EdgeAngleType eat = GetEdgeAngleType(norm);
+
+	//	Color edgeColor;
+	//	switch (eat)
+	//	{
+	//	case EDGE_FLAT:
+	//		edgeColor = Color::Cyan;
+	//		break;
+	//	case EDGE_SLOPED:
+	//		edgeColor = Color::Green;
+	//		break;
+	//	case EDGE_STEEPSLOPE:
+	//		edgeColor = Color::Red;
+	//		break;
+	//	case EDGE_WALL:
+	//		edgeColor = Color::Magenta;
+	//		break;
+	//	case EDGE_STEEPCEILING:
+	//		edgeColor = Color::Yellow;
+	//		break;
+	//	case EDGE_SLOPEDCEILING:
+	//		edgeColor = Color::Blue;
+	//		break;
+	//	case EDGE_FLATCEILING:
+	//		edgeColor = Color::White;
+	//		break;
+	//	}
+
+	//	lines[index * 2].color = edgeColor;
+	//	lines[index * 2 + 1].color = edgeColor;
+
+	//	++index;
+	//}
+
+
+
+
+
+
+
+
+
+	/*int pointIndex = 0;
+	TerrainPoint *prev = pointStart;
+	TerrainPoint *curr;
+	while (curr != NULL)
+	{
+		if (curr->next == NULL)
+		{
+			next = pointStart;
+		}
+		else
+		{
+			next = curr->next;
+		}
+
+		V2d dir = normalize(V2d(next->pos - curr->pos));
+		V2d norm = (dir.y, -dir.x);
+		
+
+
+		curr = curr->next;
+	}*/
 }
 
 void TerrainPolygon::FixWindingInverse()
