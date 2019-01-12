@@ -553,6 +553,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		soundBuffers[S_WALLJUMP] = owner->soundManager->GetSound("Kin/walljump");
 		soundBuffers[S_WALLSLIDE] = owner->soundManager->GetSound("Kin/wallslide");
 
+		soundBuffers[S_GOALKILLSLASH1] = owner->soundManager->GetSound("Kin/goal_kill_01");
+		soundBuffers[S_GOALKILLSLASH2] = owner->soundManager->GetSound("Kin/goal_kill_02");
+		soundBuffers[S_GOALKILLSLASH3] = owner->soundManager->GetSound("Kin/goal_kill_03");
+		soundBuffers[S_GOALKILLSLASH4] = owner->soundManager->GetSound("Kin/goal_kill_04");
+
 
 		/*soundBuffers[S_DASH_START] = owner->soundManager->GetSound( "Kin/dash_02" );
 		soundBuffers[S_HIT] = owner->soundManager->GetSound( "kin_hitspack_short" );
@@ -21358,6 +21363,28 @@ void Actor::UpdateSprite()
 		}
 	case GOALKILL:
 		{
+			assert(slowCounter == 1);
+			if (slowCounter == 1)
+			{
+				if (frame == 20)
+				{
+					owner->soundNodeList->ActivateSound(soundBuffers[S_GOALKILLSLASH1]);
+				}
+				else if (frame == 36)
+				{
+					owner->soundNodeList->ActivateSound(soundBuffers[S_GOALKILLSLASH2]);
+				}
+				else if (frame == 60)
+				{
+					owner->soundNodeList->ActivateSound(soundBuffers[S_GOALKILLSLASH3]);
+				}
+				else if (frame == 84)
+				{
+					owner->soundNodeList->ActivateSound(soundBuffers[S_GOALKILLSLASH4]);
+				}
+			}
+
+
 			int tsIndex = (frame / 2) / 16;
 			switch (tsIndex)
 			{
@@ -21383,7 +21410,7 @@ void Actor::UpdateSprite()
 			//radius is 24. 100 pixel offset
 
 			int realFrame = (frame / 2 ) % 16;
-			//cout << "goalkill index: " << tsIndex << ", realFrame: " << realFrame << endl;
+			//cout << "goalkill index: " << tsIndex << ", realFrame: " << realFrame << ", frame: " << frame << endl;
 			
 			SetSpriteTile(realFrame, facingRight);
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,

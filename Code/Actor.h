@@ -293,6 +293,10 @@ struct Actor : QuadTreeCollider,
 		S_STEEPSLIDE,
 		S_STEEPSLIDEATTACK,
 		S_WALLSLIDE,
+		S_GOALKILLSLASH1,
+		S_GOALKILLSLASH2,
+		S_GOALKILLSLASH3,
+		S_GOALKILLSLASH4,
 		S_Count
 	};
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
