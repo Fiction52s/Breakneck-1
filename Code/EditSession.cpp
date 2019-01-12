@@ -10536,6 +10536,20 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		showTerrainPath = true;
 
+
+		if (Keyboard::isKeyPressed(Keyboard::Num4))
+		{
+			Vector2f halfSize(scaleSprite.getGlobalBounds().width / 2.f, 
+				scaleSprite.getGlobalBounds().height / 2.f);
+			scaleSprite.setPosition(Vector2f(pixelPos) - halfSize );
+			scaleSpriteBGRect.setPosition(Vector2f(pixelPos) - halfSize );
+		}
+		else
+		{
+			scaleSprite.setPosition(0, 80);
+			scaleSpriteBGRect.setPosition(0, 80);
+		}
+
 		// temp;
 		//V2d temp1;
 		//double tempQuant;
