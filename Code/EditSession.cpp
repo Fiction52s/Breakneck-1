@@ -11486,6 +11486,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										curr->gate->UpdateLine();
 									}
 
+									(*it)->UpdateLineColor((*it)->lines, prev, (*it)->GetPointIndex(prev) * 2);
+									(*it)->UpdateLineColor((*it)->lines, curr, (*it)->GetPointIndex(curr) * 2);
+
 									if( (*it)->enemies.count( curr ) > 0 )
 									{
 										list<ActorPtr> &enemies = (*it)->enemies[curr];
@@ -15531,6 +15534,9 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 					{
 						curr->gate->UpdateLine();
 					}
+
+					poly->UpdateLineColor(poly->lines, prev, poly->GetPointIndex(prev) * 2);
+					poly->UpdateLineColor(poly->lines, curr, poly->GetPointIndex(curr) * 2);
 
 					if( poly->enemies.count( curr ) > 0 )
 					{

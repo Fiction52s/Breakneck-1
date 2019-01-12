@@ -235,6 +235,7 @@ struct TerrainPolygon : ISelectable
 	void DestroyEnemies();
 	void ClearPoints();
 	TerrainPoint *GetPointAtIndex(int index);
+	int GetPointIndex( TerrainPoint *p);
 	void SetMaterialType(
 		int world, int variation );
 	void RemoveSlivers( double minAngle );

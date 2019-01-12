@@ -119,6 +119,25 @@ bool TerrainPolygon::CanApply()
 	return applyOkay;
 }
 
+int TerrainPolygon::GetPointIndex(TerrainPoint *p)
+{
+	int i = 0;
+	TerrainPoint *curr = pointStart;
+	while (curr != NULL)
+	{
+		if (curr == p)
+		{
+			return i;
+		}
+		curr = curr->next;
+		++i;
+	}
+
+	assert(0);
+
+	return -1;
+}
+
 TerrainPoint *TerrainPolygon::GetPointAtIndex(int index)
 {
 	int i = 0;
@@ -2767,6 +2786,7 @@ void TerrainPolygon::MoveSelectedPoints( Vector2i move )
 {
 	movingPointMode = true;
 
+	int ind = 0;
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
 		if( curr->selected )
@@ -2777,6 +2797,8 @@ void TerrainPolygon::MoveSelectedPoints( Vector2i move )
 				curr->gate->UpdateLine();
 			}
 		}
+		UpdateLineColor(lines, curr, ind);
+		ind += 2;
 	}
 }
 
