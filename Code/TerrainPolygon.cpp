@@ -43,6 +43,8 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
+
+	pShader = &session->polyShaders[terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation];
 }
 
 bool TerrainPolygon::SwitchPolygon( bool cw, TerrainPoint *rootPoint,
@@ -892,6 +894,11 @@ void TerrainPolygon::SetMaterialType( int world, int variation )
 {
 	terrainWorldType = (TerrainPolygon::TerrainWorldType)world;
 	terrainVariation = variation;
+
+	int texInd = terrainWorldType * session->MAX_TERRAINTEX_PER_WORLD + terrainVariation;
+	pShader = &session->polyShaders[texInd];
+	//pShader->setUniform("u_texture", session->terrainTextures[texInd]);
+
 	Color sCol( 0x77, 0xBB, 0xDD );
 	//factor in variation later
 	//Color newColor;
@@ -919,7 +926,7 @@ void TerrainPolygon::SetMaterialType( int world, int variation )
 		fillCol = Color::White;
 		break;
 	}
-
+	fillCol = Color::White;
 	selectCol = sCol;
 	//selectCol = 
 
@@ -1850,23 +1857,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		rt->draw(*grassVA, grassTex );
 
 	if( va != NULL )
-		rt->draw( *va );
-
-
-	//for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-	//{
-	//	CircleShape cs;
-	//	cs.setRadius( 8 * zoomMultiple );
-	//	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-
-	//	if( curr->selected )
-	//		cs.setFillColor( Color::Red );
-	//	else
-	//		cs.setFillColor( Color::Green );
-
-	//	cs.setPosition( curr->pos.x, curr->pos.y );
-	////	rt->draw( cs );
-	//}
+		rt->draw( *va, pShader );
 
 	//always do this now for awhile
 	if( false )

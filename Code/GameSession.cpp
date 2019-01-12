@@ -3698,14 +3698,14 @@ bool GameSession::OpenFile( string fileName )
 			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
 			Tileset *ts_border = GetTileset( ss.str(), 32, 64 );
 
-			VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
+			/*VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsFlatGround );
 			VertexArray *slopeVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsSlopedGround );
 			VertexArray *steepVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 				&GameSession::IsSteepGround );
 			VertexArray *wallVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
-				&GameSession::IsWall );
+				&GameSession::IsWall );*/
 
 			Tileset *ts_plant = GetTileset( "testgrass.png", 32, 32 );
 			
@@ -3761,10 +3761,10 @@ bool GameSession::OpenFile( string fileName )
 			
 
 			testva->ts_border = ts_border;
-			testva->groundva = groundVA;
+			/*testva->groundva = groundVA;
 			testva->slopeva = slopeVA;
 			testva->steepva = steepVA;
-			testva->wallva = wallVA;
+			testva->wallva = wallVA;*/
 			testva->triva = triVA;
 			testva->plantva = plantVA;
 			testva->ts_plant = ts_plant;
@@ -5685,7 +5685,6 @@ bool GameSession::Load()
 		//polyShaders[tType]->setUniform( "u_texture", *(ts_poly->texture) );
 		polyShaders[index].setUniform( "Resolution", Vector2f( 1920, 1080 ) );
 		polyShaders[index].setUniform( "AmbientColor", Glsl::Vec4( 1, 1, 1, 1 ) );
-		//polyShaders[index].setUniform( "u_normals", *undergroundTilesetNormal->texture );
 		
 		++index;
 	}
@@ -7488,8 +7487,8 @@ int GameSession::Run()
 
 
 
-			sf::RenderStates rs;
-			rs.texture = listVAIter->ts_border->texture;
+			//sf::RenderStates rs;
+			//rs.texture = listVAIter->ts_border->texture;
 
 			if( showTerrainDecor )
 			{

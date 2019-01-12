@@ -201,6 +201,8 @@ struct TerrainPolygon : ISelectable
 	int terrainVariation;
 	TerrainWorldType terrainWorldType;
 
+	sf::Shader *pShader;
+
 	TerrainPolygon( sf::Texture *grassTex );
 	TerrainPolygon( TerrainPolygon &poly, bool pointsOnly );
 	~TerrainPolygon();
@@ -313,15 +315,14 @@ struct TerrainPolygon : ISelectable
 		bool intersectAllowed,
 		int minDistance );
 
-	
 	sf::Color selectCol;
 	sf::Color fillCol;
 
-
+	
 	bool CanApply();
 	bool CanAdd();
 
-
+	
 
 
 	bool movingPointMode;
@@ -1588,11 +1589,18 @@ struct EditSession : GUIHandler
 		ITOOL_SCALE
 	};
 
+	const static int MAX_TERRAINTEX_PER_WORLD = 7;
+	sf::Texture *terrainTextures[7 * MAX_TERRAINTEX_PER_WORLD];
+	sf::Shader polyShaders[7 * MAX_TERRAINTEX_PER_WORLD];
+
 	int bossType;
 
 	Tool currTool;
 	ImageEditTool currImageTool;
 	TilesetManager tm;
+
+
+	
 
 	EditSession( MainMenu *p_mainMenu );
 	~EditSession();

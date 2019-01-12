@@ -6137,6 +6137,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	currentFile = p_filePath.string();
 	currentPath = p_filePath;
 	
+	
 
 	cutChoose = false;
 	cutChooseUp = false;
@@ -6563,29 +6564,37 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	
 	int numWorlds = 7;
-	sf::Texture terrainTile[7 * 4];
-	
-
 	for( int worldI = 0; worldI < numWorlds; ++worldI )
 	{
 		int ind;
-		for( int i = 0; i < 4; ++i )
+		for( int i = 0; i < MAX_TERRAINTEX_PER_WORLD; ++i )
 		{
-			ind = worldI * 4 + i;
+			ind = worldI * MAX_TERRAINTEX_PER_WORLD + i;
 			stringstream ss;
 			ss << "Resources/Terrain/" << "terrain_" << (worldI+1) << "_0" << (i+1) << "_512x512.png";
-			if (!terrainTile[ind].loadFromFile(ss.str()))
+			terrainTextures[ind] = new Texture;
+			if (!terrainTextures[ind]->loadFromFile(ss.str()))
 			{
+				delete terrainTextures[ind];
+				terrainTextures[ind] = NULL;
 				break;
 			}
 
-			terrainSel->Set(worldI, i, Sprite(terrainTile[ind], sf::IntRect(0, 0, 64, 64)),
+			terrainSel->Set(worldI, i, Sprite(*terrainTextures[ind], sf::IntRect(0, 0, 64, 64)),
 				"xx");
+
+			if (!polyShaders[ind].loadFromFile("Resources/Shader/mat_shader2.frag", sf::Shader::Fragment))
+			{
+				cout << "MATERIAL SHADER NOT LOADING CORRECTLY EDITOR" << endl;
+				assert(0 && "polygon shader not loaded editor");
+			}
+
+			polyShaders[ind].setUniform("u_texture", *terrainTextures[ind]);
+			polyShaders[ind].setUniform("Resolution", Vector2f(1920, 1080));
+			polyShaders[ind].setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+			polyShaders[ind].setUniform("skyColor", ColorGL(Color::White));
 		}
 	}
-
-	
-
 
 	int returnVal = 0;
 	w->setMouseCursorVisible( true );
@@ -12057,7 +12066,20 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		}
 		
 		
+		Vector2f vSize = view.getSize();
 
+		float zoom = vSize.x / 960;
+		Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
+		for (int i = 0; i < 7 * MAX_TERRAINTEX_PER_WORLD; ++i)
+		{
+			if (terrainTextures[i] != NULL)
+			{
+				polyShaders[i].setUniform("zoom", zoom);
+				polyShaders[i].setUniform("topLeft", botLeft); 
+				//just need to change the name topleft  to botleft eventually
+			}
+			
+		}
 
 	/*	if( mode == PLACE_PLAYER )
 		{
@@ -12084,6 +12106,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		parTest.setFillColor( Color::Red );
 		parTest.setPosition( 0, 0 );
 		preScreenTex->draw( parTest );*/
+
+
+
 
 		preScreenTex->draw(border, 8, sf::Lines);
 
