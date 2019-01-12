@@ -10,6 +10,7 @@
 #include <boost/lexical_cast.hpp>
 #include "Physics.h"
 #include "Action.h"
+//#include "TerrainRender.h"
 #include <set>
 
 using namespace std;
@@ -902,7 +903,7 @@ void TerrainPolygon::SetMaterialType( int world, int variation )
 	Color sCol( 0x77, 0xBB, 0xDD );
 	//factor in variation later
 	//Color newColor;
-	switch( world )
+	/*switch( world )
 	{
 	case 0:
 		fillCol = Color::Blue;
@@ -925,7 +926,7 @@ void TerrainPolygon::SetMaterialType( int world, int variation )
 	case 6:
 		fillCol = Color::White;
 		break;
-	}
+	}*/
 	fillCol = Color::White;
 	selectCol = sCol;
 	//selectCol = 
@@ -1339,6 +1340,12 @@ void TerrainPolygon::Finalize()
 		delete grassVA;
 	}*/
 	grassVA = gva;	
+
+	/*if (tr != NULL)
+	{
+		delete tr;
+		tr = new TerrainRender()
+	}*/
 }
 
 void TerrainPolygon::RemoveSelectedPoints()

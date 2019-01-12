@@ -99,6 +99,7 @@ enum TerrainWorldType
 
 
 struct Edge;
+struct TerrainPoint;
 
 struct DecorRect : QuadTreeEntrant
 {
@@ -162,6 +163,7 @@ struct TerrainRender : QuadTreeCollider, RayCastHandler
 	//TerrainPoint *startPoint;
 	//TerrainPoint *endPoint;
 	Edge *startEdge;
+	//TerrainPoint *startPoint;
 
 	Edge * rcEdge;
 	double rcQuant;

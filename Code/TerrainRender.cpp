@@ -94,8 +94,8 @@ void TerrainRender::GenerateBorderMesh()
 	{
 		qt = terrainBGTree;
 	}*/
-	QuadTree *qt = terrainTree;
-	assert( qt != NULL );
+	//QuadTree *qt = terrainTree;
+	//assert( qt != NULL );
 
 	Triple totalQuads;
 	Edge *te = startEdge;//edges[currentEdgeIndex];

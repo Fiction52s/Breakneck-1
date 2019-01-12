@@ -184,6 +184,8 @@ struct DetailedInter
 	Inter inter;
 	TerrainPoint *otherPoint;
 };
+
+//struct TerrainRender;
 struct TerrainPolygon : ISelectable
 {
 	enum TerrainWorldType
@@ -198,9 +200,10 @@ struct TerrainPolygon : ISelectable
 		Count
 	};
 
+	//TerrainRender *tr;
 	int terrainVariation;
 	TerrainWorldType terrainWorldType;
-
+	
 	sf::Shader *pShader;
 
 	TerrainPolygon( sf::Texture *grassTex );
