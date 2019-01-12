@@ -6559,25 +6559,29 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	terrainSelectorPopup = CreatePopupPanel( "terrainselector" );
 	GridSelector *terrainSel = terrainSelectorPopup->AddGridSelector(
-		"terraintypes", Vector2i( 20, 20 ), 7, 1, 64, 64, false, true );
+		"terraintypes", Vector2i( 20, 20 ), 7, 7, 64, 64, false, true );
 
 	
 	int numWorlds = 7;
-	sf::Texture terrainTile[7];
-	for( int worldI = 1; worldI <= numWorlds; ++worldI )
-	{
-		for( int i = 1; i <= 1; ++i )
-		{
-			stringstream ss;
-			ss << "Resources/" << "terrain_" << worldI << "_0" << i << ".png";
-			terrainTile[worldI-1].loadFromFile( ss.str() );
-		}
+	sf::Texture terrainTile[7 * 4];
+	
 
-		terrainSel->Set( 
-			worldI-1, 
-			0, 
-			Sprite( terrainTile[worldI-1], sf::IntRect( 0,0, 64, 64 ) ),
-			"xx" );
+	for( int worldI = 0; worldI < numWorlds; ++worldI )
+	{
+		int ind;
+		for( int i = 0; i < 4; ++i )
+		{
+			ind = worldI * 4 + i;
+			stringstream ss;
+			ss << "Resources/Terrain/" << "terrain_" << (worldI+1) << "_0" << (i+1) << "_512x512.png";
+			if (!terrainTile[ind].loadFromFile(ss.str()))
+			{
+				break;
+			}
+
+			terrainSel->Set(worldI, i, Sprite(terrainTile[ind], sf::IntRect(0, 0, 64, 64)),
+				"xx");
+		}
 	}
 
 	
@@ -16565,7 +16569,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	}
 	else if( type == "terrainselector" )
 	{
-		Panel *p = new Panel( "terrain_popup", 400, 150, this );
+		Panel *p = new Panel( "terrain_popup", 400, 400, this );
 		return p;
 	}
 	return NULL;

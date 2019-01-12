@@ -5450,7 +5450,7 @@ bool GameSession::Load()
 	OpenFile( fileName );
 
 	//background = new Background(this, mh->envLevel, mh->envType);
-	SetupBackgrounds("w1_01");
+	SetupBackgrounds(mh->envName);
 
 
 	cout << "done opening file" << endl;
@@ -5664,7 +5664,7 @@ bool GameSession::Load()
 		indexConvert[pair<int,int>(matWorld,matVariation)] = index;
 
 		stringstream ss1;
-		ss1 << "terrain_";
+		ss1 << "Terrain/terrain_";
 		
 		ss1 << matWorld + 1 << "_";
 		if( matVariation < 10 )

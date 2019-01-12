@@ -3080,8 +3080,7 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 	is >> mh->envWorldType;
 
 	//is >> mh->envType;
-	string envName;
-	is >> envName;
+	is >> mh->envName;
 	//is >> mh->envLevel;
 
 	is >> mh->leftBounds;
