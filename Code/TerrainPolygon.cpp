@@ -2365,8 +2365,18 @@ sf::Vector2i TerrainPolygon::TrimSliverPos(sf::Vector2<double> &prevPos,
 	}
 	else
 	{
-		cout << "all points the same clipping" << endl;
-		return Vector2i(aStart); //all points the same?
+		if (aStart == aEnd && aStart == bStart && aStart == bEnd)
+		{
+			cout << "all points the same clipping" << endl;
+			return Vector2i(aStart); //all points the same?
+		}
+		else
+		{
+			cout << "another case?" << endl;
+			return Vector2i(aStart);
+		}
+		
+		
 		//assert(0);
 		//return Vector2i(-5, -5);
 	}
