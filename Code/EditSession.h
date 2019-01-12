@@ -206,6 +206,7 @@ struct TerrainPolygon : ISelectable
 	
 	sf::Shader *pShader;
 
+	void UpdateLines();
 	TerrainPolygon( sf::Texture *grassTex );
 	TerrainPolygon( TerrainPolygon &poly, bool pointsOnly );
 	~TerrainPolygon();
