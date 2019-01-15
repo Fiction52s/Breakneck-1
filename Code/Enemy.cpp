@@ -513,6 +513,17 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	bva[index*4+1].position = Vector2f( 0, 0 );
 	bva[index*4+2].position = Vector2f( 0, 0 );
 	bva[index*4+3].position = Vector2f( 0, 0 );
+
+	double len = length(pos - launcher->owner->GetPlayer(0)->position);
+	if (len > MAX_VELOCITY * 2)
+	{
+		numPhysSteps = NUM_STEPS;
+	}
+	else
+	{
+		numPhysSteps = NUM_MAX_STEPS;
+		launcher->owner->GetPlayer(0)->highAccuracyHitboxes = true;
+	}
 	//transform.
 }
 
@@ -691,12 +702,22 @@ void BasicBullet::UpdatePhysics()
 	V2d movement = velocity / numPhysSteps / (double)slowMultiple;
 
 	double movementLen = length( movement );
+
+	//for debugging, numphyssteps wasnt getting initialized correctly when launching the bullet
+	if (movementLen == INFINITY)
+	{
+		cout << "vel is:" << velocity.x << ", " << velocity.y << endl;
+		cout << "num: " << numPhysSteps << endl;
+		cout << "slowmultiple: " << slowMultiple << endl;
+		cout << "movement: " << movement.x << ", " << movement.y << endl;
+	}
+	assert(movementLen != INFINITY);
 	V2d moveDir = normalize( movement );
 	double move = 0;
 
 	do
 	{
-		//cout << "loop: " << movementLen << endl;
+		cout << "loop: " << movementLen << endl;
 		if( movementLen > physBody.rw )
 		{
 			movementLen -= physBody.rw;

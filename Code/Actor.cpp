@@ -10908,6 +10908,8 @@ bool Actor::BasicGroundAction( V2d &gNorm)
 	else if (currInput.B && !prevInput.B)
 	{
 		SetActionExpr(DASH);
+		frame = 0;
+		return true;
 	}
 
 	if (BasicSteepAction( gNorm )) return true;
