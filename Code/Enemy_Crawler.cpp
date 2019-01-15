@@ -122,8 +122,9 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	actionLength[UNDERGROUND] = 20;//3 * crawlAnimationFactor;
 	//actionLength[DYING] = 1;//3 * crawlAnimationFactor;
 
-	action = UNDERGROUND;
-	frame = actionLength[UNDERGROUND];
+	//action = UNDERGROUND;
+	//frame = actionLength[UNDERGROUND];
+	ResetEnemy();
 }
 
 void Crawler::PlayDeathSound()
@@ -152,7 +153,7 @@ void Crawler::ResetEnemy()
 
 	frame = 0;
 	V2d gPoint = mover->ground->GetPoint( startQuant );
-	sprite.setPosition( gPoint.x, gPoint.y );
+	//sprite.setPosition( gPoint.x, gPoint.y );
 	
 	//position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
 	V2d gn = mover->ground->Normal();
@@ -161,16 +162,77 @@ void Crawler::ResetEnemy()
 	double angle = 0;
 	angle = atan2( gn.x, -gn.y );
 
-	sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
-	V2d pp = mover->ground->GetPoint(mover->edgeQuantity );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	sprite.setRotation( angle / PI * 180 );
-	sprite.setPosition( pp.x, pp.y );
+	//sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
+	//V2d pp = mover->ground->GetPoint(mover->edgeQuantity );
+	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	//sprite.setRotation( angle / PI * 180 );
+	//sprite.setPosition( pp.x, pp.y );
 
 	UpdateHitboxes();
 
-	action = UNDERGROUND;
-	frame = actionLength[UNDERGROUND];
+	action = UNBURROW;
+	frame = 15 * 4;
+
+	SetHitboxes(hitBody, 0);
+	SetHurtboxes(hurtBody, 0);
+	framesUntilBurrow = maxFramesUntilBurrow;
+	
+	DecideDirection();
+
+	UpdateSprite();
+}
+
+void Crawler::DecideDirection()
+{
+	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d gn = mover->ground->Normal();
+	if (gn.y < 0)
+	{
+		if (playerPos.x < position.x)
+		{
+			clockwise = false;
+		}
+		else
+		{
+			clockwise = true;
+		}
+	}
+	else if (gn.y > 0)
+	{
+		if (playerPos.x < position.x)
+		{
+			clockwise = true;
+		}
+		else
+		{
+			clockwise = false;
+		}
+	}
+	else
+	{
+		if (gn.x < 0)
+		{
+			if (playerPos.y < position.y)
+			{
+				clockwise = false;
+			}
+			else
+			{
+				clockwise = true;
+			}
+		}
+		else if (gn.x > 0)
+		{
+			if (playerPos.y > position.y)
+			{
+				clockwise = true;
+			}
+			else
+			{
+				clockwise = false;
+			}
+		}
+	}
 }
 
 void Crawler::UpdateHitboxes()
@@ -277,10 +339,7 @@ void Crawler::ProcessState()
 			action = UNBURROW;
 			framesUntilBurrow = maxFramesUntilBurrow;
 			frame = 0;
-			if (!PlayerInFront())
-			{
-				clockwise = !clockwise;
-			}
+			DecideDirection();
 			break;
 		}
 	}

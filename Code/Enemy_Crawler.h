@@ -21,6 +21,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	int actionLength[UNDERGROUND +1];
 	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int framesUntilBurrow );
 	void SetActionDash();
+	void DecideDirection();
 	void ProcessState();
 	void PlayDeathSound();
 	bool TryDash();

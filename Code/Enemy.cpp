@@ -717,7 +717,7 @@ void BasicBullet::UpdatePhysics()
 
 	do
 	{
-		cout << "loop: " << movementLen << endl;
+		//cout << "loop: " << movementLen << endl;
 		if( movementLen > physBody.rw )
 		{
 			movementLen -= physBody.rw;
