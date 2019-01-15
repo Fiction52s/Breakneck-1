@@ -12,6 +12,8 @@
 #include "Action.h"
 #include <set>
 #include "MainMenu.h"
+#include "Background.h"
+#include "Parallax.h"
 //#include "TerrainRender.h"
 
 using namespace std;
@@ -703,6 +705,8 @@ bool EditSession::OpenFile()
 		boundHeight  = mh->boundsHeight;
 
 		drainSeconds = mh->drainSeconds;
+
+		Background::SetupFullBG(envName, tm, currBackground, scrollingBackgrounds);
 
 		int numPoints = mh->numVertices;
 
@@ -6718,6 +6722,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	selectedActorGrabbed = false;
 	selectedLightGrabbed = false;
 
+	showBG = false;
+
 	while( !quit )
 	{
 		
@@ -6747,6 +6753,14 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		sf::Event ev;
 		while( w->pollEvent( ev ) )
 		{
+			if (ev.type == Event::KeyPressed)
+			{
+				if (ev.key.code == Keyboard::Num5)
+				{
+					showBG = !showBG;
+					continue;
+				}
+			}
 			switch( mode )
 			{
 			case CREATE_TERRAIN:
@@ -12120,6 +12134,22 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		preScreenTex->clear();
 		preScreenTex->setView( view );
 
+
+		if (showBG)
+		{
+			currBackground->Draw(preScreenTex);
+
+			sf::View viewP = view;
+			viewP.setSize(1920, 1080);
+			viewP.setCenter(960, 0);
+			preScreenTex->setView(viewP);
+			for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
+				it != scrollingBackgrounds.end(); ++it)
+			{
+				(*it)->Draw(preScreenTex);
+			}
+			preScreenTex->setView(view);
+		}
 		/*sf::RectangleShape parTest( Vector2f( 1000, 1000 ) );
 		parTest.setFillColor( Color::Red );
 		parTest.setPosition( 0, 0 );

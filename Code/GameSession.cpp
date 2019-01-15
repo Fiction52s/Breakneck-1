@@ -5493,7 +5493,7 @@ bool GameSession::Load()
 	OpenFile( fileName );
 
 	//background = new Background(this, mh->envLevel, mh->envType);
-	SetupBackgrounds(mh->envName);
+	Background::SetupFullBG(mh->envName, tm, background, scrollingBackgrounds);
 
 
 	cout << "done opening file" << endl;
@@ -9755,88 +9755,7 @@ void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 	//}
 }
 
-void GameSession::SetupBackgrounds( const std::string &bgInfoFileName )
-{
-	assert(scrollingBackgrounds.empty());
 
-	ifstream is;
-	stringstream fss;
-	fss << "Resources/BGInfo/" << bgInfoFileName << ".bg";
-	string fStr = fss.str();
-	string eStr = ".png";
-	string parDirStr = "Parallax/";
-	
-	is.open(fStr);
-
-	if (is.is_open())
-	{
-		string bgStr;
-		is >> bgStr;
-
-		background = new Background(this, bgStr);
-		//background = new Background(this, mh->envLevel, mh->envType);
-
-		int numPar;
-		is >> numPar;
-
-		string pStr;
-		int tsIndex;
-		int depthLevel;
-		float scrollSpeed;
-		for (int i = 0; i < numPar; ++i)
-		{
-			is >> pStr;
-			
-			is >> tsIndex;
-
-			is >> depthLevel;
-
-			is >> scrollSpeed;
-
-			scrollingBackgrounds.push_back(
-				new ScrollingBackground(
-					GetTileset(parDirStr + pStr + eStr, 1920, 1080), tsIndex, depthLevel, scrollSpeed ));
-		}
-
-		is.close();
-	}
-	else
-	{
-		assert(0 && "problem loading bg info file");
-	}
-	
-
-	/*stringstream pss;
-	pss << "Parallax/w" << (mh->envType + 1) << "_0" << (mh->envLevel + 1);
-	string pStr = pss.str();
-	
-	string cloudStr = "_cloud_";
-
-	Tileset *cloud1 = GetTileset(pStr + cloudStr + string("1") + eStr, 1920, 1080);
-	Tileset *cloud2 = GetTileset(pStr + cloudStr + string("2") + eStr, 1920, 1080);
-
-	scrollingBackgrounds.push_back(
-		new ScrollingBackground(
-			GetTileset(pStr + string("c") + eStr, 1920, 1080), 0, 3));
-	if (cloud1 != NULL)
-	{
-		scrollingBackgrounds.push_back(
-			new ScrollingBackground(cloud1, 0, 4, 10));
-	}
-
-	scrollingBackgrounds.push_back(
-		new ScrollingBackground(
-			GetTileset(pStr + string("b") + eStr, 1920, 1080), 0, 5));
-	if (cloud2 != NULL)
-	{
-		scrollingBackgrounds.push_back(
-			new ScrollingBackground(cloud2, 0, 8, 10));
-	}
-
-	scrollingBackgrounds.push_back(
-		new ScrollingBackground(
-			GetTileset(pStr + string("a") + eStr, 1920, 1080), 0, 10));*/
-}
 
 void GameSession::KillAllEnemies()
 {

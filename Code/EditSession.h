@@ -1549,6 +1549,8 @@ struct PointMoveInfo
 typedef std::map<TerrainPolygon*,
 	std::list<PointMoveInfo>> PointMap;
 
+struct Background;
+struct ScrollingBackground;
 struct MainMenu;
 struct EditSession : GUIHandler
 {
@@ -1595,6 +1597,10 @@ struct EditSession : GUIHandler
 		ITOOL_SCALE
 	};
 
+	Background *currBackground;
+	std::list<ScrollingBackground*> scrollingBackgrounds;
+
+	bool showBG;
 	const static int MAX_TERRAINTEX_PER_WORLD = 7;
 	sf::Texture *terrainTextures[7 * MAX_TERRAINTEX_PER_WORLD];
 	sf::Shader polyShaders[7 * MAX_TERRAINTEX_PER_WORLD];

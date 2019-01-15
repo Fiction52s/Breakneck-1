@@ -502,7 +502,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	SoundNodeList * pauseSoundNodeList;
 	ScoreDisplay *scoreDisplay;
 	State state;
-	void SetupBackgrounds( const std::string &bgInfoFileName );
 	
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;

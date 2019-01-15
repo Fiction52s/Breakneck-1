@@ -2,6 +2,7 @@
 #include "GameSession.h"
 #include <sstream>
 #include <assert.h>
+#include "Parallax.h"
 #include <random>
 
 using namespace std;
@@ -50,7 +51,87 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	Reset();
 }
 
-Background::Background(GameSession *owner, const string &bgName)
+string Background::GetBGNameFromBGInfo(const std::string &fileName)
+{
+	ifstream is;
+	stringstream fss;
+	fss << "Resources/BGInfo/" << fileName << ".bg";
+	string fStr = fss.str();
+
+	is.open(fStr);
+
+	if (is.is_open())
+	{
+		string bgStr;
+		is >> bgStr;
+
+		is.close();
+
+		return bgStr;
+		//background = new Background(tm, bgStr);
+	}
+	else
+	{
+		return string("bg error");
+	}
+
+		//background = new Background(this, mh->envLevel, mh->envType);
+}
+
+void Background::SetupFullBG(const std::string &fName, TilesetManager &tm,
+	Background *& bg, std::list<ScrollingBackground*> &sBG)
+{
+	assert(sBG.empty());
+
+	ifstream is;
+	stringstream fss;
+	fss << "Resources/BGInfo/" << fName << ".bg";
+	string fStr = fss.str();
+	string eStr = ".png";
+	string parDirStr = "Parallax/";
+
+	is.open(fStr);
+
+	if (is.is_open())
+	{
+		string bgStr;
+		is >> bgStr;
+
+		bg = new Background(tm, bgStr);
+		//background = new Background(this, mh->envLevel, mh->envType);
+
+		int numPar;
+		is >> numPar;
+
+		string pStr;
+		int tsIndex;
+		int depthLevel;
+		float scrollSpeed;
+		for (int i = 0; i < numPar; ++i)
+		{
+			is >> pStr;
+
+			is >> tsIndex;
+
+			is >> depthLevel;
+
+			is >> scrollSpeed;
+
+			sBG.push_back(
+				new ScrollingBackground(
+					tm.GetTileset(parDirStr + pStr + eStr, 1920, 1080), tsIndex, depthLevel, scrollSpeed));
+		}
+
+		is.close();
+	}
+	else
+	{
+		assert(0 && "problem loading bg info file");
+	}
+}
+
+
+Background::Background(TilesetManager &tm, const string &bgName)
 {
 	stringstream ss;
 
@@ -68,8 +149,8 @@ Background::Background(GameSession *owner, const string &bgName)
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
 	string shapeFile = bgStr + "_shape.png";
 
-	Tileset *ts_bg = owner->GetTileset(bgFile, 1920, 1080);
-	Tileset *ts_shape = owner->GetTileset(shapeFile, 1920, 1080);
+	Tileset *ts_bg = tm.GetTileset(bgFile, 1920, 1080);
+	Tileset *ts_shape = tm.GetTileset(shapeFile, 1920, 1080);
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);

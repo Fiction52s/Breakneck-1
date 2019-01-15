@@ -2,17 +2,23 @@
 #define __BACKGROUND_H__
 
 #include <SFML/Graphics.hpp>
+#include "Tileset.h""
 
 struct GameSession;
 struct MainMenu;
-
+struct ScrollingBackground;
 
 
 struct Background
 {
 	Background( GameSession *owner, int envLevel, int envType);
-	Background(GameSession *owner, const std::string &bgName);
+	Background(TilesetManager &tm, const std::string &bgName);
 	Background(MainMenu *mm);
+	static std::string GetBGNameFromBGInfo(const std::string &fileName);
+	static void SetupFullBG(const std::string &fName,
+		TilesetManager &tm,
+		Background *& bg,
+		std::list<ScrollingBackground*> &sBG);
 	void Update();
 	void Reset();
 	void Draw(sf::RenderTarget *target);
