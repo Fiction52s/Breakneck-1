@@ -8538,7 +8538,7 @@ void Actor::SetAction( Action a )
 
 	if (action == WALLJUMP)
 	{
-		if (currInput.rightShoulder)
+		if (currInput.rightShoulder && !prevInput.rightShoulder)
 		{
 			if (currInput.LUp())
 			{
@@ -22868,7 +22868,7 @@ bool Actor::TryDoubleJump()
 		dairBoostedDouble = (action == DAIR || action == UAIR || action == DIAGDOWNATTACK || action == DIAGUPATTACK );
 		SetActionExpr( DOUBLE );
 
-		if (currInput.rightShoulder)
+		if (currInput.rightShoulder && !pauseBufferedJump)
 		{
 			if (currInput.LUp())
 			{
