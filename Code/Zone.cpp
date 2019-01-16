@@ -21,6 +21,7 @@ using namespace std;
 Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
 	:active( false ), owner( p_owner )
 {
+	parentZone = NULL;
 	requiredKeys = 0;
 	showShadow = true;
 	tp.FixWinding();
@@ -174,8 +175,8 @@ void Zone::Init()
 						++it;
 					}
 				}
-				
 				//this fixes a loose gate so that the correct shadow polygon can be created.
+				//if( false && !found )
 				if( !found )
 				{
 					//cout << "fixing loose gate" << endl;
@@ -596,20 +597,20 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 			break;
 		}
 	}
-	
 
-	switch (zType)
-	{
-	case NORMAL:
-		
-		break;
-	case NEXUS:
-		zShader->setUniform("zoom", zoom);
-		zShader->setUniform("topLeft", botLeft); //just need to change the name topleft eventually
-		zShader->setUniform("playertest", playertest);
-		break;
-	}
-	++frame;
+
+switch (zType)
+{
+case NORMAL:
+
+	break;
+case NEXUS:
+	zShader->setUniform("zoom", zoom);
+	zShader->setUniform("topLeft", botLeft); //just need to change the name topleft eventually
+	zShader->setUniform("playertest", playertest);
+	break;
+}
+++frame;
 }
 
 float Zone::GetOpeningAlpha()
@@ -617,13 +618,13 @@ float Zone::GetOpeningAlpha()
 	return 1.f - frame / 60.f;
 }
 
-void Zone::Draw( RenderTarget *target )
+void Zone::Draw(RenderTarget *target)
 {
 	//target->draw( *definedArea );
 	//return;
-	if( action != OPEN )//!active )
+	if (action != OPEN)//!active )
 	{
-		if( showShadow )
+		if (showShadow)
 		{
 			//cout << "drawing area " << this << endl;
 			switch (zType)
@@ -634,25 +635,25 @@ void Zone::Draw( RenderTarget *target )
 			case NEXUS:
 
 				assert(zShader != NULL);
-				target->draw(*definedArea, zShader );
+				target->draw(*definedArea, zShader);
 				break;
 			}
 		}
 	}
 }
 
-bool Zone::ContainsPoint( V2d test )
+bool Zone::ContainsPoint(V2d test)
 {
 	int pointCount = points.size();
 
 	bool c = false;
 
 	Vector2i prev = points.back();
-	for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
+	for (list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it)
 	{
-		if ( ( ( (*it).y > test.y ) != ( prev.y > test.y ) ) &&
-			(test.x < (prev.x-(*it).x) * (test.y-(*it).y) / (prev.y-(*it).y) + (*it).x) )
-				c = !c;
+		if ((((*it).y > test.y) != (prev.y > test.y)) &&
+			(test.x < (prev.x - (*it).x) * (test.y - (*it).y) / (prev.y - (*it).y) + (*it).x))
+			c = !c;
 
 		prev = (*it);
 	}
@@ -660,12 +661,12 @@ bool Zone::ContainsPoint( V2d test )
 	return c;
 }
 
-bool Zone::ContainsZone( Zone *z )
+bool Zone::ContainsZone(Zone *z)
 {
 	//midpoint on the gate
-	for( list<Vector2i>::iterator it = z->points.begin(); it != z->points.end(); ++it )
+	for (list<Vector2i>::iterator it = z->points.begin(); it != z->points.end(); ++it)
 	{
-		if( !ContainsPoint( V2d( (*it).x, (*it).y ) ) )
+		if (!ContainsPoint(V2d((*it).x, (*it).y)))
 		{
 			return false;
 		}
@@ -678,8 +679,8 @@ bool Zone::ContainsZone( Zone *z )
 
 
 	z->
-	V2d p( 
-		( z->gates.front()->edge0->v0.x + z->gates.front()->edge1->v1.x ) / 2, 
+	V2d p(
+		( z->gates.front()->edge0->v0.x + z->gates.front()->edge1->v1.x ) / 2,
 		( z->gates.front()->edge0->v0.y + z->gates.front()->edge0->v1.y ) / 2);
 	return ContainsPoint( p );*/
 }
@@ -688,6 +689,23 @@ bool Zone::ContainsZone( Zone *z )
 //{
 //
 //}
+
+bool Zone::ContainsZoneMostSpecific(Zone *z)
+{
+	if (ContainsZone(z))
+	{
+		for (auto it = subZones.begin(); it != subZones.end(); ++it)
+		{
+			if ((*it)->ContainsZone( z ) )
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+	return false;
+}
 
 Zone* Zone::ContainsPointMostSpecific( sf::Vector2i test )
 {

@@ -4593,6 +4593,33 @@ void GameSession::CreateZones()
 	}
 	}
 
+
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		for (list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2)
+		{
+			if ((*it) == (*it2))
+				continue;
+
+			if ((*it)->ContainsZone((*it2)))
+			{
+				//cout << "contains zone!" << endl;
+				(*it)->subZones.push_back((*it2));
+			}
+		}
+	}
+
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		for (list<Zone*>::iterator it2 = (*it)->subZones.begin();
+			it2 != (*it)->subZones.end(); ++it2)
+		{
+			if ((*it)->ContainsZoneMostSpecific((*it2)))
+			{
+				(*it2)->parentZone = (*it);
+			}
+		}
+	}
 	//list<Gate*> ;
 	list<Edge*> outsideGates;
 
@@ -4600,7 +4627,7 @@ void GameSession::CreateZones()
 	for( int i = 0; i < numGates; ++i )
 	{
 		Gate *g = gates[i];
-		if (g->zoneA == NULL || g->zoneB == NULL)
+		if (g->zoneA == NULL && g->zoneB == NULL)
 		{
 			for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
 			{
@@ -4610,18 +4637,33 @@ void GameSession::CreateZones()
 					g->zoneB = (*zit);
 				}
 			}
-			
 		}
-		/*if( g->zoneA == NULL )
+		else if( g->zoneA == NULL )
 		{
-			outsideGates.push_back( g->edgeA );
-			numOutsideGates++;
+			if (g->zoneB->parentZone != NULL)
+			{
+				g->zoneA = g->zoneB->parentZone;
+				g->zoneA->gates.push_back(g->edgeA);
+			}
+			else
+			{
+				outsideGates.push_back(g->edgeA);
+				numOutsideGates++;
+			}
 		}
 		else if( g->zoneB == NULL )
 		{
-			outsideGates.push_back( g->edgeB );
-			numOutsideGates++;
-		}*/
+			if (g->zoneA->parentZone != NULL)
+			{
+				g->zoneB = g->zoneA->parentZone;
+				g->zoneB->gates.push_back(g->edgeB);
+			}
+			else
+			{
+				outsideGates.push_back(g->edgeB);
+				numOutsideGates++;
+			}
+		}
 	}
 
 	/*for (auto it = outsideGates.begin(); it != outsideGates.end();)
@@ -4644,18 +4686,19 @@ void GameSession::CreateZones()
 	//cout << "numoutside gates!!: " << numOutsideGates << endl;
 	//wish i knew what this was supposed to do. you turned this off because
 	//borderEdge is always null now.
-	if( numOutsideGates > 0 && borderEdge != NULL )
+	if( numOutsideGates > 0 )//&& borderEdge != NULL )
 	{
-		assert( borderEdge != NULL );
+		assert( inverseEdgeTree != NULL );
 
 		TerrainPolygon tp( NULL );
-		Edge *curr = borderEdge;
+		Edge *startEdge = edges[0];
+		Edge *curr = startEdge;
 		
 		tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
 
 		curr = curr->edge1;
 
-		while( curr != borderEdge )
+		while( curr != startEdge)
 		{
 			tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
 
@@ -4684,6 +4727,28 @@ void GameSession::CreateZones()
 		}
 
 		
+		for (list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2)
+		{
+			if (z == (*it2))
+				continue;
+
+			if (z->ContainsZone((*it2)))
+			{
+				//cout << "contains zone!" << endl;
+				z->subZones.push_back((*it2));
+			}
+		}
+		
+
+		
+		for (list<Zone*>::iterator it2 = z->subZones.begin();
+			it2 != z->subZones.end(); ++it2)
+		{
+			if (z->ContainsZoneMostSpecific((*it2)))
+			{
+				(*it2)->parentZone = z;
+			}
+		}
 	
 		//TerrainPolygon tp( NULL );
 		
@@ -4700,20 +4765,33 @@ void GameSession::SetupZones()
 {
 	//cout << "setupzones" << endl;
 	//setup subzones
-	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-	{
-		for( list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2 )
-		{
-			if( (*it) == (*it2) ) 
-				continue;
+	//for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+	//{
+	//	for( list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2 )
+	//	{
+	//		if( (*it) == (*it2) ) 
+	//			continue;
 
-			if( (*it)->ContainsZone( (*it2) ) )
-			{
-				cout << "contains zone!" << endl;
-				(*it)->subZones.push_back( (*it2) );
-			}
-		}
-	}
+	//		if( (*it)->ContainsZone( (*it2) ) )
+	//		{
+	//			//cout << "contains zone!" << endl;
+	//			(*it)->subZones.push_back( (*it2) );
+	//		}
+	//	}
+	//}
+
+	//for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	//{
+	//	for (list<Zone*>::iterator it2 = (*it)->subZones.begin();
+	//		it2 != (*it)->subZones.end(); ++it2)
+	//	{
+	//		if ((*it)->ContainsZoneMostSpecific((*it2)))
+	//		{
+	//			(*it2)->parentZone = (*it);
+	//		}
+	//	}
+	//}
+
 
 	//	cout << "1" << endl;
 	//add enemies to the correct zone.

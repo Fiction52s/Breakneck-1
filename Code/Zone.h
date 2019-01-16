@@ -21,10 +21,13 @@ struct Zone
 
 	bool ContainsPoint( sf::Vector2<double> point );
 	bool ContainsZone( Zone *z );
+
 	void SetShadowColor( sf::Color c );
 	//bool ContainsPlayer(); super 
 	Zone * ContainsPointMostSpecific( 
 		sf::Vector2i test );
+	bool ContainsZoneMostSpecific(
+		Zone *z);
 	void Update( float zoom, sf::Vector2f &botLeft,
 		sf::Vector2f &playertest );
 	int frame;
@@ -64,6 +67,8 @@ struct Zone
 	bool showShadow;
 	GameSession *owner;
 	Zone *activeNext;
+
+	Zone *parentZone;
 
 	sf::Shader *zShader;
 	Tileset *ts_z;
