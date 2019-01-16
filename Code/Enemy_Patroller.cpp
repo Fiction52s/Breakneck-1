@@ -138,7 +138,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	turnAnimFactor = 4;
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, owner, 16, 1, position, V2d(1, 0), 0, 300, false);
+	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, owner, 16, 1, position, V2d(1, 0), 0, 200, false);
 	launchers[0]->SetBulletSpeed(5);//70);
 	launchers[0]->hitboxInfo->damage = 18;
 	maxAimingFrames = 35;

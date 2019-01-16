@@ -11508,7 +11508,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 			if( rcEdge != NULL )
 			{
 				
-				if( rcEdge->edgeType == Edge::BORDER )
+				if( rcEdge->edgeType == Edge::BORDER || rcEdge->edgeType == Edge::CLOSED_GATE )
 				{
 				//	cout << "secret break" << endl;
 					break;
@@ -11525,8 +11525,9 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 					if( pointList.size() > 0 && pointList.back().second == false )
 					{
 						pointList.pop_back();
-						//cout << "failing here: " << i << endl;
-						assert( 0 );
+						cout << "goal lines failing here: " << i << " although nothing seems wrong"  
+							<< endl;
+						//assert( 0 );
 					}
 					else
 					{

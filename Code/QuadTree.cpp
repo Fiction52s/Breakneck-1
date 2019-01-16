@@ -85,12 +85,12 @@ void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double
 	{
 		//shouldn't this check for box touching box right here??
 		ParentNode *n = (ParentNode*)node;
-
+		sf::Rect<double> r2;
 		if( IsBoxTouchingBox( r, nodeBox ) )
 		{
 			for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
 			{
-				sf::Rect<double> r2 = r;
+				r2 = r;
 				if( (*it)->IsTouchingBox( r2 ) )
 				{
 					(*it)->HandleQuery( qtc );
