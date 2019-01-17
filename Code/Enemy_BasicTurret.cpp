@@ -77,8 +77,8 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
+	hurtBox.rw = 64;
+	hurtBox.rh = 64;
 	hurtBody->AddCollisionBox(0, hurtBox);
 
 	hitBody = new CollisionBody(1);
@@ -88,8 +88,8 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
+	hitBox.rw = 64;
+	hitBox.rh = 64;
 	hitBody->hitboxInfo = hitboxInfo;
 	hitBody->AddCollisionBox(0, hitBox);
 

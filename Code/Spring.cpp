@@ -83,14 +83,14 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 64;
-	hitBox.rh = 64;
+	hitBox.rw = hurtboxRadius;
+	hitBox.rh = hurtboxRadius;
 	hitBox.globalPosition = position;
 
 	hitBody->AddCollisionBox(0, hitBox);
 
-	spawnRect = sf::Rect<double>(position.x - hurtboxRadius, position.y - hurtboxRadius,
-		hurtboxRadius *2, hurtboxRadius*2);
+	spawnRect = sf::Rect<double>(position.x - hurtboxRadius - 10, position.y - hurtboxRadius - 10,
+		hurtboxRadius *2 + 10, hurtboxRadius*2 + 10);
 
 	actionLength[IDLE] = 12;
 	actionLength[SPRINGING] = 8;

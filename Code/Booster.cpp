@@ -20,7 +20,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
-	:Enemy(owner, EnemyType::EN_BOOSTER, false, 1), strength( p_strength )
+	:Enemy(owner, EnemyType::EN_BOOSTER, false, 1, false), strength( p_strength )
 {
 
 	action = NEUTRAL;
@@ -56,8 +56,8 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 64;
-	hitBox.rh = 64;
+	hitBox.rw = 90;
+	hitBox.rh = 90;
 
 
 	hurtBody = new CollisionBody(1);
@@ -67,8 +67,8 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
-	hurtBox.rw = 64;
-	hurtBox.rh = 64;
+	hurtBox.rw = 90;
+	hurtBox.rh = 90;
 	//need hitbox info?
 
 	
@@ -79,8 +79,8 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
 
 	//UpdateHitboxes();
 
-	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
-		64, 64);
+	spawnRect = sf::Rect<double>(position.x - 100, position.y - 100,
+		200, 200);
 
 	SetHitboxes(hitBody, 0);
 	SetHitboxes(hurtBody, 0);

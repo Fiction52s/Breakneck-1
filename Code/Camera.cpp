@@ -564,8 +564,8 @@ void Camera::UpdateRumble()
 	int fx = ( rand() % 3 ) - 1;
 	int fy = (rand() % 3) - 1;
 	
-	rX = fx * rumbleX;
-	rY = fy * rumbleY;
+	rX = fx * rumbleX * GetZoom();
+	rY = fy * rumbleY * GetZoom();
 
 	//pos += sf::Vector2f( rX, rY );
 
@@ -664,9 +664,9 @@ void Camera::UpdateZoomLevel( ControllerState &con, ControllerState &prevcon )
 		}
 		else
 		{
-			zoomLevel -= .1;
-			if (zoomLevel < -.8)
-				zoomLevel = -.8;
+			zoomLevel -= .05;
+			if (zoomLevel < -.95)
+				zoomLevel = -.95;
 		}
 		
 		if (zoomLevel < -1)

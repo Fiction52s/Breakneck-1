@@ -472,7 +472,7 @@ MusicManager::~MusicManager()
 bool MusicManager::LoadFolderPaths()
 {
 	ifstream is;
-	is.open("Audio/Music/musicpaths.txt");
+	is.open("Resources/Audio/Music/musicpaths.txt");
 	if (is.is_open())
 	{
 		string s;
@@ -487,7 +487,7 @@ bool MusicManager::LoadFolderPaths()
 		//assert(0 && "failed to open music directories sheet");
 	}
 
-	folderPaths.push_back(current_path().string() + "/Audio/Music/");
+	folderPaths.push_back(current_path().string() + "/Resources/Audio/Music/");
 	return true;
 }
 

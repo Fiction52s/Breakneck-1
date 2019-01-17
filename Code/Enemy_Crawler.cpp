@@ -36,7 +36,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	health = initHealth;
 	dead = false;
 
-	deathSound = owner->soundManager->GetSound("Enemies/crawler_die");
+	deathSound = owner->soundManager->GetSound("Enemies/crawler_death");
 
 	double height = 160;
 	double width = 160;

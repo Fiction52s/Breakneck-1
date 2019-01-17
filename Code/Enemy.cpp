@@ -1796,7 +1796,8 @@ void Enemy::ConfirmKill()
 
 
 	owner->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, position, true, 0, 10, 5, true);
-	owner->cam.SetRumble(1, 1, 7 );
+	//owner->cam.SetRumble(1, 1, 7 );
+	owner->cam.SetRumble(1, 1, 7);
 	
 	if (hasMonitor)
 	{

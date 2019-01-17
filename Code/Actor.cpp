@@ -418,7 +418,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//grindLungeExtraMax = 10.0;
 
 		speedLevel = 0;
-		speedBarTarget = 0;
 		currentSpeedBar = 0;
 
 		Vector2f facePos( 0, 0 );
@@ -2095,7 +2094,6 @@ void Actor::Respawn()
 	receivedHit = NULL;
 	speedParticleCounter = 1;
 	speedLevel = 0;
-	speedBarTarget = 0;//60;
 	currentSpeedBar = 0;//60;
 
 	bounceFlameOn = false;
@@ -3120,10 +3118,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if (GroundAttack())
-			{
-				break;
-			}
+			
 
 			if( reversed )
 			{
@@ -3139,6 +3134,10 @@ void Actor::UpdatePrePhysics()
 						
 						SetAction(STEEPCLIMB);
 
+						if (SteepClimbAttack())
+						{
+
+						}
 						frame = 0;
 						break;
 					}
@@ -3149,6 +3148,10 @@ void Actor::UpdatePrePhysics()
 						else
 							facingRight = false;
 						SetAction(STEEPSLIDE);
+						if (SteepSlideAttack())
+						{
+
+						}
 						frame = 0;
 						break;
 					}
@@ -3184,6 +3187,11 @@ void Actor::UpdatePrePhysics()
 						SetActionExpr( STAND );
 						frame = 0;
 					}
+
+					if (GroundAttack())
+					{
+						break;
+					}
 				}
 			}
 			else
@@ -3198,6 +3206,11 @@ void Actor::UpdatePrePhysics()
 						else
 							facingRight = false;
 						SetAction(STEEPCLIMB);
+
+						if (SteepClimbAttack())
+						{
+
+						}
 						frame = 0;
 						break;
 					}
@@ -3211,15 +3224,14 @@ void Actor::UpdatePrePhysics()
 						{
 							facingRight = false;
 						}
-						/*if( groundSpeed > 0 )
-							facingRight = true;
-						else if( groundSpeed < 0 )
-							facingRight = false;
-						else
-						{
-							if( g
-						}*/
+						
 						SetAction(STEEPSLIDE);
+
+						if (SteepSlideAttack())
+						{
+
+						}
+
 						frame = 0;
 						break;
 					}
@@ -3227,13 +3239,13 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					if( currInput.A && !prevInput.A )
-					{
-						SetActionExpr( JUMPSQUAT );
-						frame = 0;
-						////runTappingSound.stop();
-						break;
-					}
+					//if( currInput.A && !prevInput.A )
+					//{
+					//	SetActionExpr( JUMPSQUAT );
+					//	frame = 0;
+					//	////runTappingSound.stop();
+					//	break;
+					//}
 
 					if( currInput.B || !canStandUp )
 					{
@@ -3292,6 +3304,9 @@ void Actor::UpdatePrePhysics()
 						SetActionExpr( STAND );
 						frame = 0;
 					}
+
+					if (GroundAttack())
+						break;
 				}
 			}
 		
@@ -4048,7 +4063,7 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if( currInput.A && !prevInput.A )
+				if( currInput.A && !prevInput.A || pauseBufferedJump )
 				{
 					SetActionExpr( JUMPSQUAT );
 					frame = 0;
@@ -4128,7 +4143,7 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if( currInput.A && !prevInput.A )
+				if( currInput.A && !prevInput.A || pauseBufferedJump )
 				{
 					SetActionExpr( JUMPSQUAT );
 					frame = 0;
@@ -10858,6 +10873,7 @@ bool Actor::TrySprint(V2d &gNorm)
 
 double Actor::GetDashSpeed()
 {
+	
 	switch( speedLevel )
 	{
 	case 0:
@@ -10867,8 +10883,14 @@ double Actor::GetDashSpeed()
 		return dashSpeed1;
 		break;
 	case 2:
-		return dashSpeed2;
+	{
+		double sbp = GetSpeedBarPart();
+		if (sbp > .8)
+			sbp = 1.0;
+		return dashSpeed2 + 4.0 * sbp;
 		break;
+	}
+		
 	}
 }
 
@@ -15269,7 +15291,7 @@ void Actor::UpdateHitboxes()
 		hurtBody.rw = 7;
 		
 		
-		hurtBody.offset = b.offset;
+		//hurtBody.offset = b.offset;
 	}
 
 	
@@ -15282,7 +15304,11 @@ void Actor::UpdateHitboxes()
 	{
 		if( gn.x == 0 )
 		{
-			hurtBody.globalPosition = position + hurtBody.offset ;//+ V2d( 0, -hurtBody.rh );
+			if (action == DASH)
+			{
+				int xxxx = 6;
+			}
+			hurtBody.globalPosition = ground->GetPoint(edgeQuantity) + V2d( offsetX, 0 ) + hurtBody.offset + gn * hurtBody.rh ;//+ V2d( 0, -hurtBody.rh );
 			hurtBody.globalAngle = angle;
 		}
 		else if( gn.y > -steepThresh && !reversed )
@@ -17991,7 +18017,19 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		if (en->type == EnemyType::EN_BOOSTER)
 		{
 			Booster *boost = (Booster*)qte;
-			currBooster = boost;
+
+			if (currBooster == NULL)
+			{
+				if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody))
+				{
+					currBooster = boost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+			//currBooster = boost;
 			//booster priority later
 		}
 		else if (en->type == EnemyType::EN_GRAVITYGRASS)
@@ -18746,7 +18784,11 @@ void Actor::DebugDraw( RenderTarget *target )
 		currHurtboxes->DebugDraw( currHurtboxFrame, target);
 	}*/
 
-	b.DebugDraw(target);
+	//b.DebugDraw(target);
+
+
+
+
 	/*sf::CircleShape cs;
 	cs.setOutlineThickness( 10 );
 	cs.setOutlineColor( Color::Red );
@@ -18782,8 +18824,8 @@ void Actor::DebugDraw( RenderTarget *target )
 		//testGhost->UpdatePrePhysics( ghostFrame );
 	}*/
 
-	leftWire->DebugDraw( target );
-	rightWire->DebugDraw( target );
+	//leftWire->DebugDraw( target );
+	//rightWire->DebugDraw( target );
 
 	DebugDrawComboObj(target);
 
@@ -21859,6 +21901,7 @@ double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
 	double angle = 0;
 
 	bool extraCase;
+	//wtf is the extra case??? its bugging
 	if( !reversed )
 	{
 		extraCase = ( offsetX < 0 && approxEquals( edgeQuantity, 0 ) )
@@ -21869,7 +21912,7 @@ double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
 		extraCase = ( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
 		|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) );
 	}
-
+	extraCase = false;
 	if( !approxEquals( abs(offsetX), b.rw ) || extraCase )
 	{
 		trueNormal = V2d( 0, -1 );

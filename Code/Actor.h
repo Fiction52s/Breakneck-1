@@ -545,7 +545,6 @@ struct Actor : QuadTreeCollider,
 	double speedChangeUp;
 	double speedChangeDown;
 	int speedLevel; //0,1,2
-	double speedBarTarget;
 	double currentSpeedBar;
 	sf::CircleShape speedCircle;
 
@@ -882,6 +881,7 @@ struct Actor : QuadTreeCollider,
 	double maxAirXSpeed;
 	double maxAirXControl;
 	double dashSpeed;
+	
 	double dashSpeed0;
 	double dashSpeed1;
 	double dashSpeed2;

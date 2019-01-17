@@ -684,7 +684,7 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 		}
 		else if( type == Hurt )
 		{
-			col = Color(0, 0, 255, 100);
+			col = Color(0, 0, 255, 255);
 		}
 
 		sf::Vertex quad[4];
