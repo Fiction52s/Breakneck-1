@@ -664,13 +664,13 @@ void Camera::UpdateZoomLevel( ControllerState &con, ControllerState &prevcon )
 		}
 		else
 		{
-			zoomLevel -= .05;
-			if (zoomLevel < -.95)
-				zoomLevel = -.95;
+			zoomLevel -= .1;
+			if (zoomLevel < -2)
+				zoomLevel = -2;
 		}
 		
-		if (zoomLevel < -1)
-			zoomLevel = -1;
+		/*if (zoomLevel < -1)
+			zoomLevel = -1;*/
 	}
 	else if (con.PDown() && !prevcon.PDown())
 	{
@@ -684,6 +684,10 @@ void Camera::UpdateZoomLevel( ControllerState &con, ControllerState &prevcon )
 			if (zoomLevel > 3)
 				zoomLevel = 3;
 		}
+	}
+	else if (con.PLeft() || con.PRight())
+	{
+		zoomLevel = 0;
 	}
 }
 
@@ -1328,7 +1332,10 @@ void Camera::SetManual( bool man )
 
 float Camera::GetZoom()
 {
-	return zoomLevel + zoomFactor;
+	float z = zoomLevel + zoomFactor;
+	if (z < .1)
+		z = .1;
+	return z;
 }
 
 sf::Vector2f Camera::GetPos()
