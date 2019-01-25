@@ -142,7 +142,7 @@ void Shroom::ProcessState()
 		if (length(owner->GetPlayer(0)->position - position) < 60)
 		{
 			action = HITTING;
-			owner->soundNodeList->ActivateSound(hitSound);
+			owner->ActivateSound( position, hitSound);
 			frame = 0;
 		}
 		break;
@@ -436,14 +436,14 @@ void ShroomJelly::ProcessState()
 			break;
 		case APPEARING:
 			action = RISING;
-			owner->soundNodeList->ActivateSound(floatSound);
+			owner->ActivateSound( position, floatSound);
 			break;
 		case RISING:
 			action = DROOPING;
 			break;
 		case DROOPING:
 			action = RISING;
-			owner->soundNodeList->ActivateSound(floatSound);
+			owner->ActivateSound( position, floatSound);
 			currentCycle++;
 			if (currentCycle == cycleLimit)
 			{

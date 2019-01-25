@@ -1438,6 +1438,9 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 {
 	is >> numGates;
 	gates = new Gate*[numGates];
+
+	
+
 	for( int i = 0; i < numGates; ++i )
 	{
 		int gType;
@@ -1452,6 +1455,8 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		is >> poly1Index;
 		is >> vertexIndex1;
 		is >> behindyouStr;
+
+		
 		
 		bool reformBehindYou;
 		if( behindyouStr == "+reform" )
@@ -1493,7 +1498,10 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 
 		Gate * gate = new Gate( this, gateType, reformBehindYou );
 
-		
+		if (!visibleTerrain[poly0Index] || !visibleTerrain[poly1Index])
+		{
+			gate->visible = false;
+		}
 
 		gate->temp0prev = edge0->edge0;
 		gate->temp0next = edge0;
@@ -3249,6 +3257,14 @@ bool GameSession::OpenFile( string fileName )
 			int matVariation;
 			is >> matVariation;
 			
+			bool currentVisible = true;
+			if (matWorld == 8 && matVariation == 0)
+			{
+				currentVisible = false;
+			}
+
+			visibleTerrain[polyCounter] = currentVisible;
+
 			//matWorld = 6;
 			//matWorld = 2;
 			matSet.insert( pair<int,int>( matWorld, matVariation ) );
@@ -3362,7 +3378,7 @@ bool GameSession::OpenFile( string fileName )
 			TestVA * testva = NULL;
 			Tileset *ts_bush = GetTileset( "bush_01_64x64.png", 64, 64 );
 
-			if( !inverse )
+			if( !inverse && currentVisible )
 			{
 				vector<p2t::Point*> polyline;
 				for( int i = 0; i < polyPoints; ++i )
@@ -3424,28 +3440,13 @@ bool GameSession::OpenFile( string fileName )
 				//VertexArray *bushVA = SetupBushes( 0,  edges[currentEdgeIndex], ts_bush );
 
 				testva = new TestVA;
-
-
-				//int minDistanceApart = 10;
-	//int maxDistanceApart = 300;
-	//int minPen = 20;
-	//int maxPen = 200;
-				//list<Vector2f> bushPositions;
-				
-
-
-				
-
-				
 				testva->polyArea = polygonArea;
-				//testva->bushVA = bushVA;
-				//testva->va = va;
 				testva->aabb.left = left;
 				testva->aabb.top = top;
 				testva->aabb.width = right - left;
 				testva->aabb.height = bottom - top;
 				testva->terrainVA = va;
-
+				testva->visible = true;
 				polygons.push_back( va );
 
 				delete cdt;
@@ -3455,11 +3456,12 @@ bool GameSession::OpenFile( string fileName )
 				}
 
 			}
-			else
+			else if( inverse )
 			{
 				inversePoly = new TestVA;
 				inversePoly->numPoints = polyPoints;
 				//testva->va = va;
+				inversePoly->visible = true;
 				inversePoly->aabb.left = left;
 				inversePoly->aabb.top = top;
 				inversePoly->aabb.width = right - left;
@@ -3470,111 +3472,128 @@ bool GameSession::OpenFile( string fileName )
 				testva->ts_bush = ts_bush;
 				//va = NULL;
 			}
-
-			switch( matWorld )
-				{
-				case 0:
-					{
-						switch( matVariation )
-						{
-						case 0:
-							//testva->AddDecorExpression( 
-							//testva->bushes.push_back( 
-							break;
-						}
-						break;
-					}
-				case 1:
-					{
-						switch( matVariation )
-						{
-						case 0:
-							break;
-						}
-						break;
-					}
-				case 2:
-					{
-						switch( matVariation )
-						{
-						case 0:
-							break;
-						}
-						break;
-					}
-				case 3:
-					{
-						switch( matVariation )
-						{
-						case 0:
-							break;
-						}
-						break;
-					}
-				case 4:
-					{
-						switch( matVariation )
-						{
-						case 0:
-							break;
-						}
-						break;
-					}
-				case 5:
-					{
-						switch( matVariation )
-						{
-						case 0:
-							break;
-						}
-						break;
-					}
-				case 6:
-					{
-						switch( matVariation )
-						{
-						case 0:
-							break;
-						}
-						break;
-					}
-				}
-
-			for (int i = 0; i < 6; ++i)
+			else
 			{
-				DecorExpression *expr = CreateDecorExpression(DecorType(D_W1_VEINS1 + i), 0, edges[currentEdgeIndex]);
-				if (expr != NULL)
-					testva->AddDecorExpression(expr);
+				testva = new TestVA;
+				testva->polyArea = 0;//polygonArea;
+				testva->visible = false;
+				testva->aabb.left = left;
+				testva->aabb.top = top;
+				testva->aabb.width = right - left;
+				testva->aabb.height = bottom - top;
+				testva->terrainVA = NULL;//va;
+
+				//polygons.push_back(va);
 			}
 
-			Tileset *ts_testBush = GetTileset("bush_1_01_512x512.png", 512, 512);
+			if (testva->visible)
+			{
 
-			DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, edges[currentEdgeIndex]);
-			if (rock1 != NULL)
-				testva->AddDecorExpression(rock1);
 
-			DecorExpression *rock2 = CreateDecorExpression(D_W1_ROCK_2, 0, edges[currentEdgeIndex]);
-			if (rock2 != NULL)
-				testva->AddDecorExpression(rock2);
+				switch (matWorld)
+				{
+				case 0:
+				{
+					switch (matVariation)
+					{
+					case 0:
+						//testva->AddDecorExpression( 
+						//testva->bushes.push_back( 
+						break;
+					}
+					break;
+				}
+				case 1:
+				{
+					switch (matVariation)
+					{
+					case 0:
+						break;
+					}
+					break;
+				}
+				case 2:
+				{
+					switch (matVariation)
+					{
+					case 0:
+						break;
+					}
+					break;
+				}
+				case 3:
+				{
+					switch (matVariation)
+					{
+					case 0:
+						break;
+					}
+					break;
+				}
+				case 4:
+				{
+					switch (matVariation)
+					{
+					case 0:
+						break;
+					}
+					break;
+				}
+				case 5:
+				{
+					switch (matVariation)
+					{
+					case 0:
+						break;
+					}
+					break;
+				}
+				case 6:
+				{
+					switch (matVariation)
+					{
+					case 0:
+						break;
+					}
+					break;
+				}
+				}
 
-			DecorExpression *rock3 = CreateDecorExpression(D_W1_ROCK_3, 0, edges[currentEdgeIndex]);
-			if (rock3 != NULL)
-				testva->AddDecorExpression(rock3);
+				for (int i = 0; i < 6; ++i)
+				{
+					DecorExpression *expr = CreateDecorExpression(DecorType(D_W1_VEINS1 + i), 0, edges[currentEdgeIndex]);
+					if (expr != NULL)
+						testva->AddDecorExpression(expr);
+				}
 
-			DecorExpression *grassyRock= CreateDecorExpression(D_W1_GRASSYROCK, 0, edges[currentEdgeIndex]);
-			if (grassyRock != NULL)
-				testva->AddDecorExpression(grassyRock);
+				Tileset *ts_testBush = GetTileset("bush_1_01_512x512.png", 512, 512);
 
-			DecorExpression *normalExpr = CreateDecorExpression(D_W1_BUSH_NORMAL, 0, edges[currentEdgeIndex] );
-			if( normalExpr != NULL )
-				testva->AddDecorExpression( normalExpr );
- 
-			DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, edges[currentEdgeIndex]);
-			if (exprPlantRock != NULL)
-				testva->AddDecorExpression(exprPlantRock);
+				DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, edges[currentEdgeIndex]);
+				if (rock1 != NULL)
+					testva->AddDecorExpression(rock1);
 
-			
-			
+				DecorExpression *rock2 = CreateDecorExpression(D_W1_ROCK_2, 0, edges[currentEdgeIndex]);
+				if (rock2 != NULL)
+					testva->AddDecorExpression(rock2);
+
+				DecorExpression *rock3 = CreateDecorExpression(D_W1_ROCK_3, 0, edges[currentEdgeIndex]);
+				if (rock3 != NULL)
+					testva->AddDecorExpression(rock3);
+
+				DecorExpression *grassyRock = CreateDecorExpression(D_W1_GRASSYROCK, 0, edges[currentEdgeIndex]);
+				if (grassyRock != NULL)
+					testva->AddDecorExpression(grassyRock);
+
+				DecorExpression *normalExpr = CreateDecorExpression(D_W1_BUSH_NORMAL, 0, edges[currentEdgeIndex]);
+				if (normalExpr != NULL)
+					testva->AddDecorExpression(normalExpr);
+
+				DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, edges[currentEdgeIndex]);
+				if (exprPlantRock != NULL)
+					testva->AddDecorExpression(exprPlantRock);
+
+
+			}
 
 			
 
@@ -3605,7 +3624,8 @@ bool GameSession::OpenFile( string fileName )
 
 			VertexArray *grassVA = NULL;
 			
-			if( numGrassTotal > 0 )
+			//should this even be made on invisible terrain?
+			if( numGrassTotal > 0 ) 
 			{
 				grassVA = new VertexArray( sf::Quads, numGrassTotal * 4 );
 
@@ -3722,46 +3742,58 @@ bool GameSession::OpenFile( string fileName )
 				totalGrassIndex++;
 			}
 
-			stringstream ss;
-
-			ss << "Borders/bor_" << matWorld + 1 << "_";
-
-			if(matVariation < 10 )
+			Tileset *ts_border = NULL;
+			Tileset *ts_plant = NULL;
+			VertexArray *plantVA = NULL;
+			if (testva->visible)
 			{
-				ss << "0" << matVariation + 1;
+
+
+				stringstream ss;
+
+				ss << "Borders/bor_" << matWorld + 1 << "_";
+
+				if (matVariation < 10)
+				{
+					ss << "0" << matVariation + 1;
+				}
+				else
+				{
+					ss << matVariation + 1;
+				}
+
+				//ss << "_128x64.png";
+				ss << "_32x64.png";
+
+				//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
+				ts_border = GetTileset(ss.str(), 32, 64);
+
+				/*VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
+					&GameSession::IsFlatGround );
+				VertexArray *slopeVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
+					&GameSession::IsSlopedGround );
+				VertexArray *steepVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
+					&GameSession::IsSteepGround );
+				VertexArray *wallVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
+					&GameSession::IsWall );*/
+
+				ts_plant = GetTileset("testgrass.png", 32, 32);
+
+
+				plantVA = SetupPlants(edges[currentEdgeIndex], ts_plant);
+
+				Tileset *ts_border1 = GetTileset("Borders/bor_1_01_512x704.png", 128, 64);
+				testva->tr = new TerrainRender(&tm, terrainTree);// (terrainTree);
+				testva->tr->startEdge = edges[currentEdgeIndex];
+				testva->tr->GenerateBorderMesh();
+				testva->tr->GenerateDecor();
+				testva->tr->ts_border = ts_border1;
+
 			}
 			else
 			{
-				ss << matVariation + 1;
+				testva->tr = NULL;
 			}
-
-			//ss << "_128x64.png";
-			ss << "_32x64.png";
-		
-			//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-			Tileset *ts_border = GetTileset( ss.str(), 32, 64 );
-
-			/*VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
-				&GameSession::IsFlatGround );
-			VertexArray *slopeVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
-				&GameSession::IsSlopedGround );
-			VertexArray *steepVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
-				&GameSession::IsSteepGround );
-			VertexArray *wallVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
-				&GameSession::IsWall );*/
-
-			Tileset *ts_plant = GetTileset( "testgrass.png", 32, 32 );
-			
-
-			VertexArray *plantVA = SetupPlants( edges[currentEdgeIndex], ts_plant );
-
-			Tileset *ts_border1 = GetTileset("Borders/bor_1_01_512x704.png", 128, 64);
-			testva->tr = new TerrainRender( &tm, terrainTree );// (terrainTree);
-			testva->tr->startEdge = edges[currentEdgeIndex];
-			testva->tr->GenerateBorderMesh();
-			testva->tr->GenerateDecor();
-			testva->tr->ts_border = ts_border1;
-			
 
 			/*double polygonArea = 0;
 			for( vector<p2t::Triangle*>::iterator it = tris.begin();
@@ -5817,6 +5849,8 @@ bool GameSession::Load()
 		//cout << "real index: " << realIndex << endl;
 		(*it)->pShader = &polyShaders[realIndex];
 		(*it)->ts_terrain = ts_polyShaders[realIndex];
+
+
 	}
 
 	LevelSpecifics();
@@ -7124,7 +7158,8 @@ int GameSession::Run()
 				TestVA *te = listVA;
 				while( te != NULL )
 				{
-					te->tr->UpdateDecorSprites();
+					if( te->tr != NULL )
+						te->tr->UpdateDecorSprites();
 					//te->tr->UpdateDecorLayers();
 					//te->UpdateBushSprites();
 					te = te->next;
@@ -7568,90 +7603,98 @@ int GameSession::Run()
 		while( listVAIter != NULL )
 		//for( int i = 0; i < numBorders; ++i )
 		{
-			if( listVAIter->grassVA != NULL )
-				preScreenTex->draw(*listVAIter->grassVA , ts_gravityGrass->texture );
-
-			if( usePolyShader )
-			//if(false )
+			if (listVAIter->visible)
 			{
 
-				sf::Rect<double> polyAndScreen;
-				sf::Rect<double> aabb = listVAIter->aabb;
-				double rightScreen = screenRect.left + screenRect.width;
-				double bottomScreen = screenRect.top + screenRect.height;
-				double rightPoly = aabb.left + aabb.width;
-				double bottomPoly = aabb.top + aabb.height;
-
-				double left = std::max( screenRect.left, aabb.left );
-
-				double right = std::min( rightPoly, rightScreen );
-				
-				double top = std::max( screenRect.top, aabb.top );
-
-				double bottom = std::min( bottomScreen, bottomPoly );
-
-
-				polyAndScreen.left = left;
-				polyAndScreen.top = top;
-				polyAndScreen.width = right - left;
-				polyAndScreen.height = bottom - top;
-			
-				assert( listVAIter->pShader != NULL );
-				preScreenTex->draw( *listVAIter->terrainVA, listVAIter->pShader );// listVAIter->ts_terrain->texture );//listVAIter->pShader );//listVAIter->pShader );
-			}
-			else
-			{
-				preScreenTex->draw( *listVAIter->terrainVA );
-			}
-			//cout << "drawing border" << endl;
-			//preScreenTex->draw( *listVAIter->va );
 
 
 
-			//sf::RenderStates rs;
-			//rs.texture = listVAIter->ts_border->texture;
+				if (listVAIter->grassVA != NULL)
+					preScreenTex->draw(*listVAIter->grassVA, ts_gravityGrass->texture);
 
-			if( showTerrainDecor )
-			{
-			/*if( listVAIter->triva != NULL )
-				preScreenTex->draw( *listVAIter->triva, rs );
-			if(listVAIter->wallva != NULL )
-				preScreenTex->draw(*listVAIter->wallva, rs);
+				if (usePolyShader)
+					//if(false )
+				{
+
+					sf::Rect<double> polyAndScreen;
+					sf::Rect<double> aabb = listVAIter->aabb;
+					double rightScreen = screenRect.left + screenRect.width;
+					double bottomScreen = screenRect.top + screenRect.height;
+					double rightPoly = aabb.left + aabb.width;
+					double bottomPoly = aabb.top + aabb.height;
+
+					double left = std::max(screenRect.left, aabb.left);
+
+					double right = std::min(rightPoly, rightScreen);
+
+					double top = std::max(screenRect.top, aabb.top);
+
+					double bottom = std::min(bottomScreen, bottomPoly);
 
 
-			if (listVAIter->steepva)
-			{
-				preScreenTex->draw(*listVAIter->steepva, rs);
-			}
-			
-			if (listVAIter->slopeva)
-			{
-				preScreenTex->draw(*listVAIter->slopeva, rs);
-			}
-			
-			if (listVAIter->groundva)
-			{
-				preScreenTex->draw(*listVAIter->groundva, rs);
-			}*/
-				//listVAIter->tr->UpdateDecor();
-				listVAIter->tr->Draw(preScreenTex);
-			
+					polyAndScreen.left = left;
+					polyAndScreen.top = top;
+					polyAndScreen.width = right - left;
+					polyAndScreen.height = bottom - top;
 
-			//preScreenTex->setSmooth( false );
-			//listVAIter->DrawBushes( preScreenTex );
-			/*if( listVAIter->bushVA != NULL )
-			{
-				RenderStates bushRS;
-				bushRS.texture = listVAIter->ts_bush->texture;
+					assert(listVAIter->pShader != NULL);
+					preScreenTex->draw(*listVAIter->terrainVA, listVAIter->pShader);// listVAIter->ts_terrain->texture );//listVAIter->pShader );//listVAIter->pShader );
+				}
+				else
+				{
+					preScreenTex->draw(*listVAIter->terrainVA);
+				}
+				//cout << "drawing border" << endl;
+				//preScreenTex->draw( *listVAIter->va );
 
-				preScreenTex->draw( *listVAIter->bushVA, bushRS );
-			}*/
 
-			if( listVAIter->plantva != NULL )
-			{
-				//rs.texture = listVAIter->ts_plant->texture;
-				//preScreenTex->draw( *listVAIter->plantva, rs );
-			}
+
+				//sf::RenderStates rs;
+				//rs.texture = listVAIter->ts_border->texture;
+
+				if (showTerrainDecor)
+				{
+					/*if( listVAIter->triva != NULL )
+						preScreenTex->draw( *listVAIter->triva, rs );
+					if(listVAIter->wallva != NULL )
+						preScreenTex->draw(*listVAIter->wallva, rs);
+
+
+					if (listVAIter->steepva)
+					{
+						preScreenTex->draw(*listVAIter->steepva, rs);
+					}
+
+					if (listVAIter->slopeva)
+					{
+						preScreenTex->draw(*listVAIter->slopeva, rs);
+					}
+
+					if (listVAIter->groundva)
+					{
+						preScreenTex->draw(*listVAIter->groundva, rs);
+					}*/
+					//listVAIter->tr->UpdateDecor();
+					listVAIter->tr->Draw(preScreenTex);
+
+
+					//preScreenTex->setSmooth( false );
+					//listVAIter->DrawBushes( preScreenTex );
+					/*if( listVAIter->bushVA != NULL )
+					{
+						RenderStates bushRS;
+						bushRS.texture = listVAIter->ts_bush->texture;
+
+						preScreenTex->draw( *listVAIter->bushVA, bushRS );
+					}*/
+
+					if (listVAIter->plantva != NULL)
+					{
+						//rs.texture = listVAIter->ts_plant->texture;
+						//preScreenTex->draw( *listVAIter->plantva, rs );
+					}
+
+				}
 
 			}
 
@@ -7973,15 +8016,18 @@ int GameSession::Run()
 			listVAIter = listVA;
 			while (listVAIter != NULL)
 			{
-				int vertexCount = listVAIter->terrainVA->getVertexCount();
-				for (int i = 0; i < vertexCount; ++i)
+				if (listVAIter->visible)
 				{
-					(*listVAIter->terrainVA)[i].color = testColor;
-				}
-				minimapTex->draw(*listVAIter->terrainVA);
-				for (int i = 0; i < vertexCount; ++i)
-				{
-					(*listVAIter->terrainVA)[i].color = Color::White;
+					int vertexCount = listVAIter->terrainVA->getVertexCount();
+					for (int i = 0; i < vertexCount; ++i)
+					{
+						(*listVAIter->terrainVA)[i].color = testColor;
+					}
+					minimapTex->draw(*listVAIter->terrainVA);
+					for (int i = 0; i < vertexCount; ++i)
+					{
+						(*listVAIter->terrainVA)[i].color = Color::White;
+					}
 				}
 
 				listVAIter = listVAIter->next;
@@ -8012,7 +8058,7 @@ int GameSession::Run()
 			while (gateList != NULL)
 			{
 				//gateList->Draw( preScreenTex );
-				if (gateList->locked)
+				if (gateList->locked && gateList->visible)
 				{
 
 					V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
@@ -8694,15 +8740,18 @@ int GameSession::Run()
 			TestVA * listVAIter = listVA;
 			while( listVAIter != NULL )
 			{
-				int vertexCount = listVAIter->terrainVA->getVertexCount();
-				for( int i = 0; i < vertexCount; ++i )
+				if (listVAIter->visible)
 				{
-					(*listVAIter->terrainVA)[i].color = testColor;
-				}
-				mapTex->draw( *listVAIter->terrainVA );
-				for( int i = 0; i < vertexCount; ++i )
-				{
-					(*listVAIter->terrainVA)[i].color = Color::White;
+					int vertexCount = listVAIter->terrainVA->getVertexCount();
+					for (int i = 0; i < vertexCount; ++i)
+					{
+						(*listVAIter->terrainVA)[i].color = testColor;
+					}
+					mapTex->draw(*listVAIter->terrainVA);
+					for (int i = 0; i < vertexCount; ++i)
+					{
+						(*listVAIter->terrainVA)[i].color = Color::White;
+					}
 				}
 
 				listVAIter = listVAIter->next;
@@ -8716,7 +8765,7 @@ int GameSession::Run()
 			while( gateList != NULL )
 			{
 				//gateList->Draw( preScreenTex );
-				if( gateList->locked )
+				if( gateList->locked && gateList->visible )
 				{
 
 					V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
@@ -9833,7 +9882,24 @@ void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 	//}
 }
 
+SoundNode *GameSession::ActivateSound( V2d &pos, SoundBuffer *buffer, bool loop )
+{
+	sf::Rect<double> soundRect = screenRect;
+	double soundExtra = 300;//800
+	soundRect.left -= soundExtra;
+	soundRect.width += 2 * soundExtra;
+	soundRect.top -= soundExtra;
+	soundRect.height += 2 * soundExtra;
 
+	if (soundRect.contains(pos))
+	{
+		return soundNodeList->ActivateSound(buffer, loop);
+	}
+	else
+	{
+		return NULL;
+	}
+}
 
 void GameSession::KillAllEnemies()
 {

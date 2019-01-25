@@ -4494,7 +4494,7 @@ void MapHeader::Save(std::ofstream &of)
 	of << songLevels.size() << "\n";
 	for (auto it = songLevels.begin(); it != songLevels.end(); ++it)
 	{
-		of << (*it).first << " " << (*it).second << "\n";
+		of << (*it).first << "\n" << (*it).second << "\n";
 	}
 
 	of << collectionName << "\n";

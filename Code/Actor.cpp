@@ -12800,18 +12800,42 @@ void Actor::UpdatePhysics()
 									}
 									else //STEEPCLIMB
 									{
-										velocity = testVel;
 
+										//if (length(testVel) < 15)
+										//{
+										//	testVel = normalize(testVel) * 15.0;
+										//}
+										//velocity = testVel;
+
+
+										//
+										////groundSpeed *= .7;
+										////velocity 
 										
-										//groundSpeed *= .7;
-										//velocity 
-										//movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						
+										////leftGround = true;
+										////ground = NULL;
+										////cout << "airborne 12" << endl;
+										////SetActionExpr( JUMPSQUAT );
+										////physicsOver = true;
+										////frame = 0;
+
 										//leftGround = true;
+										//SetActionExpr(JUMP);
+										//holdJump = false;
+										//frame = 1;
+										////rightWire->UpdateAnchors( V2d( 0, 0 ) );
+										////leftWire->UpdateAnchors( V2d( 0, 0 ) );
 										//ground = NULL;
-										//cout << "airborne 12" << endl;
-										SetActionExpr( JUMPSQUAT );
-										
+										//movingGround = NULL;
+
+										movementVec = normalize(ground->v1 - ground->v0) * extra;
+										velocity = testVel;
+										leftGround = true;
+										ground = NULL;
+										movingGround = NULL;
+										SetActionExpr(JUMP);
+										holdJump = false;
 										frame = 1;
 										
 										//rightWire->UpdateAnchors( V2d( 0, 0 ) );

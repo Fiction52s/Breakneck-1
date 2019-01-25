@@ -44,6 +44,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	GateType type;
 	GameSession *owner;
 	GateState gState;
+	bool visible;
 	bool locked;
 	int frame;
 	int flowFrame;

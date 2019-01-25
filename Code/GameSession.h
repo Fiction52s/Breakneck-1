@@ -336,6 +336,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int numVertices;
 	};
 
+	SoundNode *ActivateSound( V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
 	std::map<std::string, Tileset*> decorTSMap;
 	//std::map<std::string, std::list<int>> decorTileIndexes;
 	std::list<DecorDraw*> decorBetween;
@@ -550,6 +551,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Music *currMusic;
 	sf::Texture backTex;
 
+
+	std::map<int, bool> visibleTerrain;
 	Parallax *testPar;
 
 	virtual int Run();
@@ -936,6 +939,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		//static int bushAnimLength;
 		//static int bushAnimFactor;
 		//sf::VertexArray *va;
+		bool visible;
 		std::list<DecorExpression*> bushes;
 		sf::VertexArray *groundva;
 		Tileset *ts_border;

@@ -1602,8 +1602,8 @@ struct EditSession : GUIHandler
 
 	bool showBG;
 	const static int MAX_TERRAINTEX_PER_WORLD = 7;
-	sf::Texture *terrainTextures[7 * MAX_TERRAINTEX_PER_WORLD];
-	sf::Shader polyShaders[7 * MAX_TERRAINTEX_PER_WORLD];
+	sf::Texture *terrainTextures[9 * MAX_TERRAINTEX_PER_WORLD];
+	sf::Shader polyShaders[9 * MAX_TERRAINTEX_PER_WORLD];
 
 	int bossType;
 

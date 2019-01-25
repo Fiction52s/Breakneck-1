@@ -1304,7 +1304,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 
 void Enemy::PlayDeathSound()
 {
-	owner->soundNodeList->ActivateSound(genericDeathSound);
+	owner->ActivateSound( position, genericDeathSound);
 }
 
 void Enemy::SetZoneSpritePosition()

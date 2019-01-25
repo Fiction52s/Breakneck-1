@@ -204,7 +204,7 @@ void BasicTurret::ProcessState()
 			else if (frame == 3 * animationFactor && slowCounter == 1)
 			{
 				launchers[0]->Fire();
-				owner->soundNodeList->ActivateSound(fireSound);
+				owner->ActivateSound( position, fireSound);
 				//launchers[1]->Fire();
 				//launchers[2]->Fire();
 			}

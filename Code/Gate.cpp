@@ -21,6 +21,7 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
 	reformBehindYou( p_reformBehindYou )
 {
+	visible = true;
 	blackGate = NULL;
 	reformBehindYou = true;
 	//breakFrame = 0;
@@ -109,6 +110,9 @@ void Gate::Reset()
 
 void Gate::Draw( sf::RenderTarget *target )
 {
+	if (!visible)
+		return;
+
 	if( gQuads != NULL )
 	{
 		if( gState != OPEN )

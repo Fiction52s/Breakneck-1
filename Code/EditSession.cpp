@@ -690,10 +690,12 @@ bool EditSession::OpenFile()
 	if( is.is_open() )
 	{
 		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
-		mapHeader.description = mh->description;
-		mapHeader.collectionName = mh->collectionName;
-		mapHeader.ver1 = mh->ver1;
-		mapHeader.ver2 = mh->ver2;
+		//mapHeader.description = mh->description;
+		//mapHeader.collectionName = mh->collectionName;
+		//mapHeader.ver1 = mh->ver1;
+		//mapHeader.ver2 = mh->ver2;
+
+		mapHeader = *mh;
 		
 		envName = mh->envName;
 
@@ -751,6 +753,7 @@ bool EditSession::OpenFile()
 			dSpr.setTexture(*ts->texture);
 			dSpr.setTextureRect(ts->GetSubRect(dTile));
 			dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
+			dSpr.setColor(Color(255, 255, 255, 100));
 			//dSpr.setTexture do this after dinner
 
 
@@ -6565,10 +6568,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	terrainSelectorPopup = CreatePopupPanel( "terrainselector" );
 	GridSelector *terrainSel = terrainSelectorPopup->AddGridSelector(
-		"terraintypes", Vector2i( 20, 20 ), 7, 7, 64, 64, false, true );
+		"terraintypes", Vector2i( 20, 20 ), 9, 7, 64, 64, false, true );
 
 	
-	int numWorlds = 7;
+	int numWorlds = 9;//6 plus core plus bear core plus special terrain
 	for( int worldI = 0; worldI < numWorlds; ++worldI )
 	{
 		int ind;
@@ -12102,7 +12105,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		float zoom = vSize.x / 960;
 		Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
-		for (int i = 0; i < 7 * MAX_TERRAINTEX_PER_WORLD; ++i)
+		for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
 		{
 			if (terrainTextures[i] != NULL)
 			{
@@ -16645,7 +16648,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	}
 	else if( type == "terrainselector" )
 	{
-		Panel *p = new Panel( "terrain_popup", 400, 400, this );
+		Panel *p = new Panel( "terrain_popup", 100, 100, this );
 		return p;
 	}
 	return NULL;

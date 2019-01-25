@@ -130,7 +130,7 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 void Crawler::PlayDeathSound()
 {
 	Enemy::PlayDeathSound();
-	owner->soundNodeList->ActivateSound(deathSound);
+	owner->ActivateSound( position, deathSound);
 }
 
 void Crawler::ResetEnemy()

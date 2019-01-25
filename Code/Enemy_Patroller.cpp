@@ -204,7 +204,7 @@ void Patroller::ProcessState()
 			V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
 			launchers[0]->facingDir = normalize(targetPos - position);
 			launchers[0]->Fire();
-			owner->soundNodeList->ActivateSound(shootSound);
+			owner->ActivateSound( position, shootSound);
 			break;
 		}
 		case S_BEAKHOLDOPEN:
