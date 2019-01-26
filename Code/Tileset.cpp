@@ -161,6 +161,17 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	Tileset *t = new Tileset();
 	t->texture = tex;
 
+	if (tileWidth == 0 )
+	{
+		tileWidth = tex->getSize().x;
+		
+	}
+	if (tileHeight == 0)
+	{
+		tileHeight = tex->getSize().y;
+	}
+	
+
 	t->altColorIndex = altColorIndex;
 	t->tileWidth = tileWidth;
 	t->tileHeight = tileHeight;

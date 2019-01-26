@@ -5905,11 +5905,13 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 	}
 }
 
-
+#include "StorySequence.h"
 int GameSession::Run()
 {
 	//ShaderTester shaderTester(ShaderTester::FIRE, this);
-	
+	StorySequence storySeq(&tm);
+	storySeq.Load("kinhouse");
+	storySeq.Reset();
 	//Tileset *ts_perlin = GetTileset("Shader/perlin01.png", 400, 400);
 	//Tileset *ts_grad = GetTileset("Shader/gradient01.png", 400, 400);
 	//sf::Shader fireShader;
@@ -6073,7 +6075,7 @@ int GameSession::Run()
 	}
 	else
 	{
-		state = RUN;
+		state = STORY; //RUN
 	}
 
 	//Rain rain(this);
@@ -8901,27 +8903,7 @@ int GameSession::Run()
 
 			while ( accumulator >= TIMESTEP  )
 			{
-				for( int i = 0; i < 4; ++i )
-				{
-					GetPrevInput( i ) = GetCurrInput( i );
-					GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-					GameController &con = GetController( i );
-					bool canControllerUpdate = con.UpdateState();
-					if( !canControllerUpdate )
-					{
-						//KeyboardUpdate( 0 );
-					}
-					else
-					{
-						con.UpdateState();
-						GetCurrInput( i ) = con.GetState();
-						GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
-					}
-				}
-
-			
-
-				
+				UpdateInput();
 
 				if( ( GetCurrInput( 0 ).back && !GetPrevInput( 0 ).back ) && state == MAP )
 				{
@@ -8932,21 +8914,7 @@ int GameSession::Run()
 
 				accumulator -= TIMESTEP;
 			}
-
-			if( state == RUN )
-			{
-			//	continue;
-			}
-
-
-			//if( !cutPlayerInput )
-			//	player->currInput = currInput;
-
-
-			//double mapZoom = 16;
-
-			//window->clear();
-			
+		
 			View vv;
 			vv.setCenter( pauseMenu->mapCenter );
 			vv.setSize(  mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor );
@@ -9175,6 +9143,56 @@ int GameSession::Run()
 
 			++raceFight->raceFightResultsFrame;
 		}
+		else if (state == STORY)
+		{
+			window->clear();
+			window->setView(v);
+			preScreenTex->clear();
+
+			sf::Event ev;
+			while (window->pollEvent(ev))
+			{
+				/*if( ev.type == sf::Event::KeyPressed )
+				{
+				if( ev.key.code = Keyboard::O )
+				{
+				state = RUN;
+				soundNodeList->Pause( false );
+				break;
+				}
+				}*/
+				if (ev.type == sf::Event::GainedFocus)
+				{
+					//state = RUN;
+					//soundNodeList->Pause( false );
+					//break;
+				}
+				else if (ev.type == sf::Event::KeyPressed)
+				{
+					//if( ev.key.code == Keyboard::
+				}
+			}
+
+
+
+			if (!storySeq.Update())
+			{
+				state = RUN;
+			}
+			else
+			{
+				preScreenTex->setView(uiView);
+				storySeq.Draw(preScreenTex);
+			}
+
+			Sprite preTexSprite;
+			preTexSprite.setTexture(preScreenTex->getTexture());
+			preTexSprite.setPosition(-960 / 2, -540 / 2);
+			preTexSprite.setScale(.5, .5);
+			window->draw(preTexSprite);
+		}
+
+
 		window->display();
 
 		
