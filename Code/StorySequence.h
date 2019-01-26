@@ -9,9 +9,11 @@ struct StoryText
 {
 	StoryText( sf::Font &font, const std::string &p_str, sf::Vector2f &pos);
 	void Draw(sf::RenderTarget *target);
-	void Update( ControllerState &prev, ControllerState &curr);
+	bool Update( ControllerState &prev, ControllerState &curr);
+	void Reset();
 	std::string textStr;
 	sf::Text text;
+	bool done;
 };
 
 struct StoryPart
@@ -35,7 +37,7 @@ struct StoryPart
 
 struct StorySequence
 {
-	StorySequence(TilesetManager *tm);
+	StorySequence( sf::Font &font, TilesetManager *tm);
 	bool Load( const std::string &sequenceName );
 	void Reset();
 	bool Update(ControllerState &prev, ControllerState &curr);
@@ -43,6 +45,7 @@ struct StorySequence
 	std::list<StoryPart*> parts;
 	std::list<StoryPart*>::iterator currPartIt;
 	TilesetManager *tm;
+	sf::Font &myFont;
 };
 
 #endif

@@ -5909,7 +5909,7 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 int GameSession::Run()
 {
 	//ShaderTester shaderTester(ShaderTester::FIRE, this);
-	StorySequence storySeq(&tm);
+	StorySequence storySeq( mainMenu->arial, &tm);
 	storySeq.Load("kinhouse");
 	storySeq.Reset();
 	//Tileset *ts_perlin = GetTileset("Shader/perlin01.png", 400, 400);
@@ -9173,9 +9173,9 @@ int GameSession::Run()
 				}
 			}
 
+			UpdateInput();
 
-
-			if (!storySeq.Update())
+			if (!storySeq.Update( GetPrevInput( 0 ), GetCurrInput( 0 ) ))
 			{
 				state = RUN;
 			}

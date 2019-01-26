@@ -14,11 +14,23 @@ StoryText::StoryText( sf::Font &font, const std::string &p_str, Vector2f &pos )
 	text.setFillColor(Color::White);
 	text.setCharacterSize(20);
 	text.setPosition(pos);
+	text.setString(textStr);
 }
 
-void StoryText::Update(ControllerState &prev, ControllerState &curr)
+bool StoryText::Update(ControllerState &prev, ControllerState &curr)
 {
+	if (curr.A && !prev.A)
+	{
+		done = true;
+		return false;
+	}
 
+	return true;
+}
+
+void StoryText::Reset()
+{
+	done = false;
 }
 
 void StoryText::Draw(sf::RenderTarget *target)
@@ -26,8 +38,9 @@ void StoryText::Draw(sf::RenderTarget *target)
 	target->draw(text);
 }
 
-StorySequence::StorySequence(TilesetManager *p_tm)
-	:tm(p_tm)
+//eventually make this the font manager
+StorySequence::StorySequence(sf::Font &font, TilesetManager *p_tm)
+	:tm(p_tm), myFont(font)
 {
 	
 }
@@ -137,6 +150,71 @@ bool StorySequence::Load(const std::string &sequenceName)
 			cout << "hasSublayer: " << hasSubLayer << endl;
 			cout << "has text: " << hasText << endl;*/
 
+			StoryText *sText = NULL;
+			if (bHasText)
+			{
+				if (!getline(is, line))
+				{
+					assert(0);
+				}
+
+				std::replace(line.begin(), line.end(), ',', ' ');
+
+				ss << line;
+
+				ss >> waste;
+
+				int tposx, tposy;
+				ss >> tposx;
+				ss >> tposy;
+
+				ss >> waste;
+
+				string fontStr;
+				ss >> fontStr;
+
+				ss >> waste;
+
+				int fontSize;
+				ss >> fontSize;
+
+				//read the actual text
+
+				std::vector<char> readTextVec;
+				readTextVec.reserve(2048);
+				char c;
+				while (true)
+				{
+					c = is.peek();
+					if (c == EOF)
+					{
+						assert(0);
+						return false;
+					}
+					
+					if (c == '{')
+					{
+					}
+					else if (c == '}')
+					{
+						getline(is, line);
+						break;
+					}
+					else
+					{
+						readTextVec.push_back(c);
+					}
+
+					is.get();
+				}
+
+				std::string textStr(readTextVec.begin(), readTextVec.end());
+
+				sText = new StoryText(myFont, textStr, Vector2f(tposx, tposy));
+
+			}
+
+
 			StoryPart *sp = new StoryPart;
 			string fullImagePath = string("Story/") + imageName + string(".png");
 			sp->imageName = imageName;
@@ -151,6 +229,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 			sp->layer = layer;
 			sp->time = time;
 			sp->totalFrames = time * 60.f;
+			sp->text = sText;
 
 			if (parentPart != NULL)
 			{
@@ -201,7 +280,7 @@ bool StorySequence::Update(ControllerState &prev, ControllerState &curr)
 		return false;
 	}
 
-	bool updateSuccess = (*currPartIt)->Update();
+	bool updateSuccess = (*currPartIt)->Update( prev, curr );
 	if (!updateSuccess)
 	{
 		++currPartIt;
@@ -233,19 +312,34 @@ void StoryPart::Reset()
 		sub->Reset();
 	}
 	frame = 0;
+	if (text != NULL)
+		text->Reset();
 }
 
 void StoryPart::Draw(sf::RenderTarget *target)
 {
-	if ( frame == totalFrames && sub != NULL && sub->layer < layer)
+	bool showText = false;
+	if (frame == totalFrames && text != NULL && !text->done)
+	{
+		showText = true;
+	}
+
+	if ( !showText && frame == totalFrames && sub != NULL && sub->layer < layer)
 	{
 		sub->Draw(target);
 	}
 	target->draw(spr);
-	if ( frame == totalFrames && sub != NULL && sub->layer >= layer)
+	if ( !showText && frame == totalFrames && sub != NULL && sub->layer >= layer)
 	{
 		sub->Draw(target);
 	}
+
+	if (showText)
+	{
+		text->Draw(target);
+	}
+
+	
 
 }
 
@@ -253,7 +347,15 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 {	
 	if (frame == totalFrames)
 	{
-		if ( sub != NULL && sub->Update())
+		if (text != NULL && !text->done)
+		{
+			if (text->Update(prev, curr))
+			{
+				return true;
+			}
+		}
+
+		if ( sub != NULL && sub->Update(prev, curr))
 		{
 			return true;
 		}
