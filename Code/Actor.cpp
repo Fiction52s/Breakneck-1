@@ -16458,12 +16458,10 @@ bool Actor::IsBeingSlowed()
 	}
 }
 
-void Actor::HandleGroundTrigger(int trigType,
-	Edge *e, double q, bool fr)
+void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 {
-	switch (trigType)
+	switch (trigger->trigType)
 	{
-	
 	case TRIGGER_NEXUSCORE1:
 	{
 		action = SEQ_ENTERCORE1;
@@ -16475,9 +16473,9 @@ void Actor::HandleGroundTrigger(int trigType,
 		desperationMode = false;
 		SetExpr(Expr_NEUTRAL);
 		assert(ground != NULL);
-		edgeQuantity = q;
+		edgeQuantity = trigger->edgeQuantity;
 		groundSpeed = 0;
-		facingRight = fr;
+		facingRight = trigger->facingRight;
 
 		if (ground->Normal().y == -1)
 		{
@@ -16486,7 +16484,24 @@ void Actor::HandleGroundTrigger(int trigType,
 		break;
 	}
 	case TRIGGER_SHIPPICKUP:
-		ShipPickupPoint(q, fr);
+		ShipPickupPoint(trigger->edgeQuantity, trigger->facingRight);
+		break;
+	case TRIGGER_HOUSEFAMILY:
+		desperationMode = false;
+		SetExpr(Expr_NEUTRAL);
+		assert(ground != NULL);
+		edgeQuantity = trigger->edgeQuantity;
+		groundSpeed = 0;
+		//facingRight = trigger->facingRight;
+
+		if (ground->Normal().y == -1)
+		{
+			offsetX = 0;
+		}
+
+		owner->currStorySequence = trigger->storySeq;
+		owner->state = GameSession::STORY;
+		
 		break;
 	}
 }

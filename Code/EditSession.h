@@ -522,7 +522,7 @@ struct GroundTriggerParams : public ActorParams
 		int edgeIndex,
 		double edgeQuantity,
 		bool facingRight,
-		int trigType);
+		const std::string &typeStr );
 	GroundTriggerParams(EditSession *edit,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
@@ -533,7 +533,7 @@ struct GroundTriggerParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 	void WriteParamFile(std::ofstream &of);
-	int triggerType;
+	std::string typeStr;
 	bool facingRight;
 };
 
@@ -560,12 +560,12 @@ struct NexusParams : public ActorParams
 
 struct ShipPickupParams : public ActorParams
 {
-	ShipPickupParams ( EditSession *edit,
+	ShipPickupParams( EditSession *edit,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity,
 		bool facingRight );
-	ShipPickupParams ( EditSession *edit,
+	ShipPickupParams( EditSession *edit,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );

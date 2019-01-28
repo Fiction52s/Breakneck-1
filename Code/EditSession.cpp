@@ -1352,8 +1352,8 @@ bool EditSession::OpenFile()
 					int facingRight;
 					is >> facingRight;
 
-					int tType;
-					is >> tType;
+					string typeStr;
+					is >> typeStr;
 
 					PolyPtr terrain(NULL);
 					if (terrainIndex == -1)
@@ -1386,7 +1386,7 @@ bool EditSession::OpenFile()
 						edgeIndex++;
 
 					a.reset(new GroundTriggerParams(this, terrain.get(), edgeIndex, edgeQuantity, facingRight,
-						tType ));
+						typeStr ));
 					terrain->enemies[a->groundInfo->edgeStart].push_back(a);
 					terrain->UpdateBounds();
 				}
@@ -8994,13 +8994,19 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									{
 										if (enemyEdgePolygon != NULL)
 										{
-											showPanel = enemySelectPanel;
+											/*showPanel = enemySelectPanel;
 											trackingEnemy = NULL;
 											ActorPtr groundTrigger(new GroundTriggerParams(this, enemyEdgePolygon, enemyEdgeIndex,
 												enemyEdgeQuantity));
 											groundTrigger->group = groups["--"];
 
-											CreateActor(groundTrigger);
+											CreateActor(groundTrigger);*/
+
+
+											tempActor = new GroundTriggerParams(this, enemyEdgePolygon, enemyEdgeIndex,
+												enemyEdgeQuantity);
+											tempActor->SetPanelInfo();
+											showPanel = trackingEnemy->panel;
 										}
 									}
 									else if( trackingEnemy->name == "shard" )

@@ -1073,8 +1073,8 @@ ActorParams *NexusParams::Copy()
 }
 
 GroundTriggerParams::GroundTriggerParams(EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
-	bool fr, int p_trigType)
-	:ActorParams(PosType::GROUND_ONLY), triggerType(p_trigType), facingRight( fr )
+	bool fr, const std::string &p_typeStr)
+	:ActorParams(PosType::GROUND_ONLY), facingRight( fr ), typeStr( p_typeStr )
 {
 	type = edit->types["groundtrigger"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
@@ -1088,7 +1088,7 @@ GroundTriggerParams::GroundTriggerParams(EditSession *edit, TerrainPolygon *p_ed
 	type = edit->types["groundtrigger"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
-	triggerType = 0;
+	typeStr = "NONE";
 	facingRight = true;
 
 	SetBoundingQuad();
@@ -1110,7 +1110,7 @@ void GroundTriggerParams::SetPanelInfo()
 	if (group != NULL)
 		p->textBoxes["group"]->text.setString(group->name);
 	//p->checkBoxes["clockwise"]->checked = clockwise;
-	p->textBoxes["triggertype"]->text.setString(boost::lexical_cast<string>(triggerType));
+	p->textBoxes["triggertype"]->text.setString(typeStr);
 	p->checkBoxes["facingright"]->checked = facingRight;
 	
 }
@@ -1119,20 +1119,9 @@ void GroundTriggerParams::SetParams()
 {
 	Panel *p = type->panel;
 
-
-	int tType;
-
-	stringstream ss;
 	string s = p->textBoxes["triggertype"]->text.getString().toAnsiString();
-	ss << s;
 
-
-	ss >> tType;
-
-	if (!ss.fail())
-	{
-		triggerType = tType;
-	}
+	typeStr = s;
 
 	bool right = p->checkBoxes["facingright"]->checked;
 }
@@ -1140,7 +1129,7 @@ void GroundTriggerParams::SetParams()
 void GroundTriggerParams::WriteParamFile(ofstream &of)
 {
 	of << (int)facingRight << endl;
-	of << triggerType << endl;
+	of << typeStr << endl;
 }
 
 ActorParams *GroundTriggerParams::Copy()

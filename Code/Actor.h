@@ -178,8 +178,7 @@ struct Actor : QuadTreeCollider,
 
 	EffectPool *dustParticles;
 	RisingParticleUpdater rpu;
-	void HandleGroundTrigger(int trigType,
-		Edge *e, double q, bool fr);
+	void HandleGroundTrigger(GroundTrigger *trigger);
 	
 	enum Action
 	{

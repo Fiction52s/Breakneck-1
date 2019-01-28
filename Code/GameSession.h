@@ -284,6 +284,7 @@ struct BasicEffect;
 struct EnemyParamsManager;
 struct HitboxManager;
 struct Background;
+struct StorySequence;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -341,6 +342,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::map<std::string, Tileset*> decorTSMap;
 	//std::map<std::string, std::list<int>> decorTileIndexes;
 	std::list<DecorDraw*> decorBetween;
+
+	StorySequence *currStorySequence;
 
 	struct DecorInfo
 	{

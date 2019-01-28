@@ -338,9 +338,6 @@ void StoryPart::Draw(sf::RenderTarget *target)
 	{
 		text->Draw(target);
 	}
-
-	
-
 }
 
 bool StoryPart::Update(ControllerState &prev, ControllerState &curr)

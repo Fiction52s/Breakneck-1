@@ -6,12 +6,13 @@ enum TriggerType
 {
 	TRIGGER_NEXUSCORE1,
 	TRIGGER_SHIPPICKUP,
+	TRIGGER_HOUSEFAMILY
 };
+
+struct StorySequence;
 
 struct GroundTrigger : Enemy
 {
-	
-
 	enum Action
 	{
 		IDLE,
@@ -25,11 +26,14 @@ struct GroundTrigger : Enemy
 	int actionLength[Count];
 	int animFactor[Count];
 
+	StorySequence *storySeq;
+
 	GroundTrigger(GameSession *owner,
 		Edge *ground, double quantity, 
 		bool facingRight,
-		TriggerType t );
+		const std::string &trigTypeStr );
 	void ProcessState();
+	TriggerType GetTriggerType(const std::string &typeStr);
 	void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);

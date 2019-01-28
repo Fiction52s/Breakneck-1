@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "StorySequence.h"
 
 using namespace std;
 using namespace sf;
@@ -17,11 +18,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facingRight,TriggerType tType)
+GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facingRight,const std::string &trigTypeStr)
 	:Enemy(owner, EnemyType::EN_GROUNDTRIGGER, false, 1), ground(g), edgeQuantity(q),
-	facingRight( p_facingRight ), trigType( tType )
+	facingRight( p_facingRight )//, trigType( tType )
 {
-
+	trigType = GetTriggerType(trigTypeStr);
 	initHealth = 40;
 	health = initHealth;
 
@@ -30,7 +31,15 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 	sprite.setTexture(*ts->texture);
 
 	V2d gPoint = g->GetPoint(edgeQuantity);
+	storySeq = NULL;
 
+	switch (trigType)
+	{
+	case TRIGGER_HOUSEFAMILY:
+		storySeq = new StorySequence(owner->mainMenu->arial, &owner->tm);
+		storySeq->Load("kinhouse");
+		break;
+	}
 
 	receivedHit = NULL;
 
@@ -68,6 +77,21 @@ void GroundTrigger::ResetEnemy()
 	slowCounter = 1;
 	slowMultiple = 1;
 	action = IDLE;
+	storySeq->Reset();
+}
+
+TriggerType GroundTrigger::GetTriggerType(const std::string &typeStr)
+{
+	string testStr = typeStr;
+	std::transform(testStr.begin(), testStr.end(), testStr.begin(), ::tolower);
+	if (testStr == "housefamily")
+		return TRIGGER_HOUSEFAMILY;
+	else
+	{
+		assert(0);
+		return TRIGGER_NEXUSCORE1;
+	}
+		
 }
 
 void GroundTrigger::ProcessState()
@@ -102,7 +126,7 @@ void GroundTrigger::UpdateEnemyPhysics()
 		{
 			if (abs((player->edgeQuantity + player->offsetX) - edgeQuantity) < 5)
 			{
-				player->HandleGroundTrigger( trigType, ground, edgeQuantity, facingRight );
+				player->HandleGroundTrigger( this );
 				//player->GroundTriggerPoint(edgeQuantity, facingRight);
 				action = FOUND;
 				frame = 0;
@@ -112,7 +136,7 @@ void GroundTrigger::UpdateEnemyPhysics()
 		{
 			if (abs(player->edgeQuantity - edgeQuantity) < 5)
 			{
-				player->HandleGroundTrigger(trigType, ground, edgeQuantity, facingRight);
+				player->HandleGroundTrigger(this);
 				//player->GroundTriggerPoint(edgeQuantity, facingRight);
 				action = FOUND;
 				frame = 0;

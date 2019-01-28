@@ -3000,11 +3000,11 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int facingRight;
 				is >> facingRight;
 
-				int tType;
+				string tType;
 				is >> tType;
 
 				GroundTrigger *enemy = new GroundTrigger(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-					facingRight, (TriggerType)tType);
+					facingRight, tType);
 
 				fullEnemyList.push_back(enemy);
 				enem = enemy;
@@ -5909,9 +5909,8 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 int GameSession::Run()
 {
 	//ShaderTester shaderTester(ShaderTester::FIRE, this);
-	StorySequence storySeq( mainMenu->arial, &tm);
-	storySeq.Load("kinhouse");
-	storySeq.Reset();
+	currStorySequence = NULL;
+	
 	//Tileset *ts_perlin = GetTileset("Shader/perlin01.png", 400, 400);
 	//Tileset *ts_grad = GetTileset("Shader/gradient01.png", 400, 400);
 	//sf::Shader fireShader;
@@ -6075,7 +6074,7 @@ int GameSession::Run()
 	}
 	else
 	{
-		state = STORY; //RUN
+		state = RUN;
 	}
 
 	//Rain rain(this);
@@ -9175,14 +9174,18 @@ int GameSession::Run()
 
 			UpdateInput();
 
-			if (!storySeq.Update( GetPrevInput( 0 ), GetCurrInput( 0 ) ))
+			if (currStorySequence != NULL)
 			{
-				state = RUN;
-			}
-			else
-			{
-				preScreenTex->setView(uiView);
-				storySeq.Draw(preScreenTex);
+				if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
+				{
+					state = RUN;
+					currStorySequence = NULL;
+				}
+				else
+				{
+					preScreenTex->setView(uiView);
+					currStorySequence->Draw(preScreenTex);
+				}
 			}
 
 			Sprite preTexSprite;
