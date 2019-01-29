@@ -10,6 +10,8 @@ struct StoryMusic
 {
 	std::string musicName;
 	MusicInfo *musicInfo;
+	sf::Time startTime;
+	float transitionSeconds;
 };
 
 struct StoryText

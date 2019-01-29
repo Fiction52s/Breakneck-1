@@ -446,9 +446,21 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	boost::mutex continueLoadingLock;
 
 	MusicInfo *levelMusic;
+	MusicInfo *endTransMusic;
 	MusicInfo *originalMusic;
 	std::map<std::string, MusicInfo*> musicMap;
-	void PlayMusic(const std::string &name); //add transitions later
+	void PlayMusic(const std::string &name, sf::Time &startTime ); //add transitions later
+	void TransitionMusic(const std::string &name, sf::Time &startTime,
+		int crossFadeFrames);
+
+	void StopMusic();
+	void FadeOutCurrentMusic(int numFrames);
+	int musicFadeOutMax;
+	int musicFadeOutCurr;
+
+	int musicFadeInMax;
+	int musicFadeInCurr;
+
 
 	//int playerScore[4];
 

@@ -166,6 +166,13 @@ bool StorySequence::Load(const std::string &sequenceName)
 				float startTime;
 				ss >> startTime;
 
+				ss >> waste;
+
+				float fadeTime = 0;
+				if (!ss.fail())
+				{
+					ss >> fadeTime;
+				}
 				/*ss >> waste;
 
 				string transitionType;
@@ -182,7 +189,12 @@ bool StorySequence::Load(const std::string &sequenceName)
 
 				sm = new StoryMusic;
 				sm->musicName = musicName;
+				sm->startTime = sf::seconds(startTime);
+				sm->transitionSeconds = fadeTime;
 			}
+
+			ss.clear();
+			ss.str("");
 
 			StoryText *sText = NULL;
 			if (bHasText)
@@ -342,7 +354,18 @@ bool StorySequence::Update(ControllerState &prev, ControllerState &curr)
 	{
 		if ((*currPartIt)->music != NULL)
 		{
-			owner->PlayMusic((*currPartIt)->music->musicName);
+			float transTime = (*currPartIt)->music->transitionSeconds;
+			if ( transTime > 0)
+			{
+				int transFrames = transTime * 60.f;
+				owner->TransitionMusic((*currPartIt)->music->musicName, 
+					(*currPartIt)->music->startTime, transFrames);
+			}
+			else
+			{
+				owner->PlayMusic((*currPartIt)->music->musicName, (*currPartIt)->music->startTime);
+			}
+			
 		}
 	}
 

@@ -5910,7 +5910,9 @@ int GameSession::Run()
 {
 	//ShaderTester shaderTester(ShaderTester::FIRE, this);
 	currStorySequence = NULL;
-	
+	musicFadeOutMax = -1;
+	musicFadeInMax = -1;
+
 	//Tileset *ts_perlin = GetTileset("Shader/perlin01.png", 400, 400);
 	//Tileset *ts_grad = GetTileset("Shader/gradient01.png", 400, 400);
 	//sf::Shader fireShader;
@@ -9195,6 +9197,43 @@ int GameSession::Run()
 					}
 				}
 
+				int maxVol = mainMenu->config->GetData().musicVolume;
+				if (musicFadeOutMax > 0)
+				{
+					assert(levelMusic != NULL);
+					if (musicFadeOutCurr == musicFadeOutMax)
+					{
+						StopMusic();
+						musicFadeOutMax = -1;
+					}
+					else
+					{
+						musicFadeOutCurr++;
+						float fadeOutPart = ((float)musicFadeOutCurr) / musicFadeOutMax;
+						
+						int vol = maxVol - (fadeOutPart * maxVol);
+						levelMusic->music->setVolume(vol);
+					}
+				}
+				if (musicFadeInMax > 0)
+				{
+					assert(endTransMusic != NULL);
+					if (musicFadeInCurr == musicFadeInMax)
+					{
+						levelMusic = endTransMusic;
+						levelMusic->music->setVolume(maxVol);
+						musicFadeInMax = -1;
+						
+					}
+					else
+					{
+						musicFadeInCurr++;
+						float fadeInPart = ((float)musicFadeInCurr) / musicFadeInMax;
+						int vol = fadeInPart *  maxVol;
+						endTransMusic->music->setVolume(vol);
+					}
+				}
+
 				accumulator -= TIMESTEP;
 			}
 
@@ -10227,19 +10266,55 @@ void GameSession::ClearFX()
 	}
 }
 
-void GameSession::PlayMusic(const std::string &name)
+void GameSession::PlayMusic(const std::string &name, sf::Time &startTime)
 {
 	MusicInfo *newMusic = musicMap[name];
-	levelMusic->music->setVolume(false);
-	levelMusic->music->stop();
+
+	StopMusic();
+	
 
 	newMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
 	newMusic->music->setLoop(true);
-	newMusic->music->setPlayingOffset(sf::Time::Zero);
+	newMusic->music->setPlayingOffset(startTime);
 	newMusic->music->play();
 
 	levelMusic = newMusic;
 }
+
+void GameSession::TransitionMusic(const std::string &name, sf::Time &startTime,
+	int crossFadeFrames)
+{
+	musicFadeInMax = crossFadeFrames;
+	musicFadeOutMax = crossFadeFrames;
+	musicFadeInCurr = 0;
+	musicFadeOutCurr = 0;
+
+	MusicInfo *newMusic = musicMap[name];
+	newMusic->music->setVolume(0);
+	newMusic->music->setLoop(true);
+	newMusic->music->setPlayingOffset(startTime);
+	newMusic->music->play();
+
+	endTransMusic = newMusic;
+}
+
+void GameSession::StopMusic()
+{
+	if (levelMusic != NULL)
+	{
+		levelMusic->music->setVolume(0);
+		levelMusic->music->stop();
+		levelMusic = NULL;
+	}
+}
+
+void GameSession::FadeOutCurrentMusic(int numFrames)
+{
+	musicFadeOutMax = numFrames;
+	musicFadeOutCurr = 0;
+}
+
+
 
 void GameSession::RestartLevel()
 {
@@ -10250,6 +10325,9 @@ void GameSession::RestartLevel()
 		levelMusic->music->setLoop(true);
 		levelMusic->music->play();
 	}*/
+
+	musicFadeOutMax = -1;
+	musicFadeInMax = -1;
 
 	if( raceFight != NULL )
 		raceFight->Reset();
