@@ -6181,6 +6181,8 @@ int GameSession::Run()
 				}
 				
 				levelMusic = mainMenu->musicManager->songMap[(*it).first];
+				musicMap[(*it).first] = levelMusic;
+				originalMusic = levelMusic;
 				if (levelMusic == NULL)
 				{
 					assert(0);
@@ -6198,6 +6200,7 @@ int GameSession::Run()
 		levelMusic->Load();
 		levelMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
 		levelMusic->music->setLoop(true);
+		levelMusic->music->setPlayingOffset(sf::Time::Zero);
 		levelMusic->music->play();
 	}
 
@@ -9144,10 +9147,6 @@ int GameSession::Run()
 		}
 		else if (state == STORY)
 		{
-			window->clear();
-			window->setView(v);
-			preScreenTex->clear();
-
 			sf::Event ev;
 			while (window->pollEvent(ev))
 			{
@@ -9172,27 +9171,44 @@ int GameSession::Run()
 				}
 			}
 
-			UpdateInput();
+			accumulator += frameTime;
+			Sprite preTexSprite;
+			while (accumulator >= TIMESTEP)
+			{
+				window->clear();
+				window->setView(v);
+				preScreenTex->clear();
+
+				UpdateInput();
+
+				if (currStorySequence != NULL)
+				{
+					if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
+					{
+						state = RUN;
+						//preScreenTex->setView(uiView);
+						//currStorySequence->Draw(preScreenTex);
+						currStorySequence = NULL;
+					}
+					else
+					{
+					}
+				}
+
+				accumulator -= TIMESTEP;
+			}
 
 			if (currStorySequence != NULL)
 			{
-				if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
-				{
-					state = RUN;
-					currStorySequence = NULL;
-				}
-				else
-				{
-					preScreenTex->setView(uiView);
-					currStorySequence->Draw(preScreenTex);
-				}
+				preScreenTex->setView(uiView);
+				currStorySequence->Draw(preScreenTex);
 			}
-
-			Sprite preTexSprite;
 			preTexSprite.setTexture(preScreenTex->getTexture());
 			preTexSprite.setPosition(-960 / 2, -540 / 2);
 			preTexSprite.setScale(.5, .5);
 			window->draw(preTexSprite);
+			//UpdateInput();
+		
 		}
 
 
@@ -10211,10 +10227,30 @@ void GameSession::ClearFX()
 	}
 }
 
+void GameSession::PlayMusic(const std::string &name)
+{
+	MusicInfo *newMusic = musicMap[name];
+	levelMusic->music->setVolume(false);
+	levelMusic->music->stop();
 
+	newMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
+	newMusic->music->setLoop(true);
+	newMusic->music->setPlayingOffset(sf::Time::Zero);
+	newMusic->music->play();
+
+	levelMusic = newMusic;
+}
 
 void GameSession::RestartLevel()
 {
+	/*if (levelMusic != originalMusic)
+	{
+		levelMusic = originalMusic;
+		levelMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
+		levelMusic->music->setLoop(true);
+		levelMusic->music->play();
+	}*/
+
 	if( raceFight != NULL )
 		raceFight->Reset();
 

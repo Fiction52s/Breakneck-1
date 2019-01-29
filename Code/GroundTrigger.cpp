@@ -36,7 +36,7 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 	switch (trigType)
 	{
 	case TRIGGER_HOUSEFAMILY:
-		storySeq = new StorySequence(owner->mainMenu->arial, &owner->tm);
+		storySeq = new StorySequence(owner);
 		storySeq->Load("kinhouse");
 		break;
 	}

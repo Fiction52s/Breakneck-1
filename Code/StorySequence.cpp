@@ -3,6 +3,9 @@
 #include <fstream>
 #include <assert.h>
 #include <sstream>
+#include "GameSession.h"
+#include "MusicSelector.h"
+#include "Config.h"
 
 using namespace std;
 using namespace sf;
@@ -45,6 +48,13 @@ StorySequence::StorySequence(sf::Font &font, TilesetManager *p_tm)
 	
 }
 
+StorySequence::StorySequence(GameSession *p_owner)
+	:owner( p_owner ), tm( &p_owner->tm ), myFont( p_owner->mainMenu->arial)
+
+{
+
+}
+
 bool StorySequence::Load(const std::string &sequenceName)
 {
 	ifstream is;
@@ -68,30 +78,19 @@ bool StorySequence::Load(const std::string &sequenceName)
 			string imageName;
 			ss >> imageName;
 
+			if (imageName == "")
+			{
+				continue;
+			}
+
 			ss >> waste;
 			int posx, posy;
 			ss >> posx;
 			ss >> posy;
 
-			string intro;
-			ss >> intro;
+			
 
-			bool bHasIntro;
-			if (intro == "has")
-			{
-				bHasIntro = true;
-			}
-			else if (intro == "no")
-			{
-				bHasIntro = false;
-			}
-			else
-			{
-				bHasIntro = false;
-				assert(0);
-			}
-
-			ss >> waste;
+			//ss >> waste;
 
 			ss >> waste;
 
@@ -103,52 +102,87 @@ bool StorySequence::Load(const std::string &sequenceName)
 
 			ss >> waste;
 
-			string hasSubLayer;
-			ss >> hasSubLayer;
+			
+			bool bHasIntro = false;
+			bool bHasOutro = false;
+			bool bhasSubLayer = false;
+			bool bHasMusic = false;
+			bool bHasText = false;
 
-			bool bhasSubLayer;
-			if (hasSubLayer == "has")
+
+			while (true)
 			{
-				bhasSubLayer = true;
-			}
-			else if (hasSubLayer == "no")
-			{
-				bhasSubLayer = false;
-			}
-			else
-			{
-				bhasSubLayer = false;
-				assert(0);
+				string typeStr;
+				ss >> typeStr;
+				if (ss.fail())
+				{
+					break;
+				}
+				if (typeStr == "intro")
+				{
+					bHasIntro = true;
+				}
+				else if (typeStr == "outro")
+				{
+					bHasOutro = true;
+				}
+				else if (typeStr == "music")
+				{
+					bHasMusic = true;
+				}
+				else if (typeStr == "text")
+				{
+					bHasText = true;
+				}
+				else if (typeStr == "sublayer")
+				{
+					bhasSubLayer = true;
+				}
+				//continue;
 			}
 
-			ss >> waste;
+			ss.clear();
+			ss.str("");
 
-			string hasText;
-
-			ss >> hasText;
-
-			bool bHasText;
-			if (hasText == "has")
+			StoryMusic *sm = NULL;
+			if (bHasMusic)
 			{
-				bHasText = true;
-			}
-			else if (hasText == "no")
-			{
-				bHasText = false;
-			}
-			else
-			{
-				bHasText = false;
-				assert(0);
-			}
+				if (!getline(is, line))
+				{
+					assert(0);
+				}
 
-			/*cout << "image: " << imageName << endl;
-			cout << "pos: " << posx << ", " << posy << endl;
-			cout << "hasIntro: " << intro << endl;
-			cout << "layer: " << layer << endl;
-			cout << "time: " << time << endl;
-			cout << "hasSublayer: " << hasSubLayer << endl;
-			cout << "has text: " << hasText << endl;*/
+				std::replace(line.begin(), line.end(), ',', ' ');
+
+				ss << line;
+
+				ss >> waste;
+
+				string musicName;
+				ss >> musicName;
+
+				ss >> waste;
+
+				float startTime;
+				ss >> startTime;
+
+				/*ss >> waste;
+
+				string transitionType;
+				ss >> transitionType;
+
+				if (transitionType == "fade")
+				{
+
+				}
+				else
+				{
+
+				}*/
+
+				sm = new StoryMusic;
+				sm->musicName = musicName;
+			}
 
 			StoryText *sText = NULL;
 			if (bHasText)
@@ -215,6 +249,8 @@ bool StorySequence::Load(const std::string &sequenceName)
 			}
 
 
+			
+
 			StoryPart *sp = new StoryPart;
 			string fullImagePath = string("Story/") + imageName + string(".png");
 			sp->imageName = imageName;
@@ -230,6 +266,27 @@ bool StorySequence::Load(const std::string &sequenceName)
 			sp->time = time;
 			sp->totalFrames = time * 60.f;
 			sp->text = sText;
+			sp->music = sm;
+
+			/*if (owner->mainMenu->musicManager->songMap.count() == 0)
+			{
+				assert(0);
+			}*/
+
+			if (owner != NULL)
+			{
+				if (sm != NULL)
+				{
+					sm->musicInfo = NULL;
+					sm->musicInfo = owner->mainMenu->musicManager->songMap[sm->musicName];
+					if (sm->musicInfo == NULL)
+					{
+						assert(0);
+					}
+					sm->musicInfo->Load();
+					owner->musicMap[sm->musicName] = sm->musicInfo;
+				}
+			}
 
 			if (parentPart != NULL)
 			{
@@ -249,6 +306,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 				parentPart = NULL;
 			}
 		}
+
 		
 		is.close();
 	}
@@ -278,6 +336,14 @@ bool StorySequence::Update(ControllerState &prev, ControllerState &curr)
 	if (currPartIt == parts.end())
 	{
 		return false;
+	}
+
+	if ((*currPartIt)->frame == 0)
+	{
+		if ((*currPartIt)->music != NULL)
+		{
+			owner->PlayMusic((*currPartIt)->music->musicName);
+		}
 	}
 
 	bool updateSuccess = (*currPartIt)->Update( prev, curr );
