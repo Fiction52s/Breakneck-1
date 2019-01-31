@@ -6202,8 +6202,8 @@ int GameSession::Run()
 		levelMusic->Load();
 		levelMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
 		levelMusic->music->setLoop(true);
-		levelMusic->music->setPlayingOffset(sf::Time::Zero);
 		levelMusic->music->play();
+		
 	}
 
 
@@ -9200,37 +9200,40 @@ int GameSession::Run()
 				int maxVol = mainMenu->config->GetData().musicVolume;
 				if (musicFadeOutMax > 0)
 				{
-					assert(levelMusic != NULL);
+					assert(fadingOutMusic != NULL);
 					if (musicFadeOutCurr == musicFadeOutMax)
 					{
-						StopMusic();
+						StopMusic(fadingOutMusic);
 						musicFadeOutMax = -1;
 					}
 					else
 					{
 						musicFadeOutCurr++;
 						float fadeOutPart = ((float)musicFadeOutCurr) / musicFadeOutMax;
+						//fadeOutPart *= fadeOutPart;
 						
 						int vol = maxVol - (fadeOutPart * maxVol);
-						levelMusic->music->setVolume(vol);
+						fadingOutMusic->music->setVolume(vol);
 					}
 				}
 				if (musicFadeInMax > 0)
 				{
-					assert(endTransMusic != NULL);
+					assert(fadingInMusic != NULL);
 					if (musicFadeInCurr == musicFadeInMax)
 					{
-						levelMusic = endTransMusic;
+						levelMusic = fadingInMusic;
 						levelMusic->music->setVolume(maxVol);
 						musicFadeInMax = -1;
-						
 					}
 					else
 					{
 						musicFadeInCurr++;
 						float fadeInPart = ((float)musicFadeInCurr) / musicFadeInMax;
+						//float prop = fadeInPart;
+						//fadeInPart = 1.f - (1.f - fadeInPart * fadeInPart);
 						int vol = fadeInPart *  maxVol;
-						endTransMusic->music->setVolume(vol);
+						//cout << "prop: " << prop << ", fadeInPart: " << fadeInPart << "\n";
+						fadingInMusic->music->setVolume(vol);
 					}
 				}
 
@@ -10270,13 +10273,14 @@ void GameSession::PlayMusic(const std::string &name, sf::Time &startTime)
 {
 	MusicInfo *newMusic = musicMap[name];
 
-	StopMusic();
+	if( levelMusic != NULL )
+		StopMusic(levelMusic);
 	
 
 	newMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
 	newMusic->music->setLoop(true);
-	newMusic->music->setPlayingOffset(startTime);
 	newMusic->music->play();
+	newMusic->music->setPlayingOffset(startTime);
 
 	levelMusic = newMusic;
 }
@@ -10289,22 +10293,26 @@ void GameSession::TransitionMusic(const std::string &name, sf::Time &startTime,
 	musicFadeInCurr = 0;
 	musicFadeOutCurr = 0;
 
+	fadingOutMusic = levelMusic;
+	
+
 	MusicInfo *newMusic = musicMap[name];
 	newMusic->music->setVolume(0);
 	newMusic->music->setLoop(true);
-	newMusic->music->setPlayingOffset(startTime);
 	newMusic->music->play();
+	newMusic->music->setPlayingOffset(startTime);
+	
 
-	endTransMusic = newMusic;
+	fadingInMusic = newMusic;
 }
 
-void GameSession::StopMusic()
+void GameSession::StopMusic( MusicInfo *m)
 {
-	if (levelMusic != NULL)
+	if (m != NULL)
 	{
-		levelMusic->music->setVolume(0);
-		levelMusic->music->stop();
-		levelMusic = NULL;
+		m->music->setVolume(0);
+		m->music->stop();
+		m = NULL;
 	}
 }
 

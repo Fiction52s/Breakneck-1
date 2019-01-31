@@ -20,6 +20,7 @@
 #include "IntroMovie.h"
 #include "WorldMap.h"
 #include "LevelSelector.h"
+#include "KinBoostScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -692,8 +693,6 @@ MainMenu::MainMenu()
 	soundNodeList = new SoundNodeList( 10 );
 	soundNodeList->SetGlobalVolume( config->GetData().soundVolume );
 
-	//menuMode = SPLASH;
-	//menuMode = MAPSELECT;
 
 	if( preScreenTexture == NULL )
 	{
@@ -787,7 +786,7 @@ MainMenu::MainMenu()
 
 	worldMap = new WorldMap( this );
 
-	
+	kinBoostScreen = new KinBoostScreen;
 
 	levelSelector = new LevelSelector( this );
 
@@ -1013,88 +1012,90 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 
 void MainMenu::SetMode(Mode m)
 {
-	switch (m)
-	{
-	case TRANS_OPTIONS_TO_MAIN:
-	{
-		slideCurrFrame = 0;
-		slideStart = topCenter;
-		slideEnd = trueCenter;
-		break;
-	}
-	case TRANS_MAIN_TO_OPTIONS:
-	{
-		slideCurrFrame = 0;
-		slideStart = trueCenter;
-		slideEnd = topCenter;
-		break;
-	}
-	case TRANS_MAIN_TO_SAVE:
-	{
-		transFrame = 0;
-		transLength = 60;
-		saveMenu->Reset();
-		saveMenu->Update();
-		slideCurrFrame = 0;
-		slideStart = trueCenter;
-		slideEnd = rightCenter;
-		break;
-	}
-	case TRANS_SAVE_TO_MAIN:
-	{
-		transLength = 60;
-		transFrame = 0;
-		slideCurrFrame = 0;
-		slideStart = rightCenter;
-		slideEnd = trueCenter;
-		break;
-	}
-	case TRANS_MAIN_TO_CREDITS:
-	{
-		slideCurrFrame = 0;
-		slideStart = trueCenter;
-		slideEnd = bottomCenter;
-		break;
-	}
-	case TRANS_CREDITS_TO_MAIN:
-	{
-		slideCurrFrame = 0;
-		slideStart = bottomCenter;
-		slideEnd = trueCenter;
-		break;
-	}
-	case TRANS_MAIN_TO_MAPSELECT:
-	{
-		slideCurrFrame = 0;
-		slideStart = trueCenter;
-		slideEnd = leftCenter;
+	//switch (m)
+	//{
+	//case TRANS_OPTIONS_TO_MAIN:
+	//{
+	//	slideCurrFrame = 0;
+	//	slideStart = topCenter;
+	//	slideEnd = trueCenter;
+	//	break;
+	//}
+	//case TRANS_MAIN_TO_OPTIONS:
+	//{
+	//	slideCurrFrame = 0;
+	//	slideStart = trueCenter;
+	//	slideEnd = topCenter;
+	//	break;
+	//}
+	//case TRANS_MAIN_TO_SAVE:
+	//{
+	//	transFrame = 0;
+	//	transLength = 60;
+	//	saveMenu->Reset();
+	//	saveMenu->Update();
+	//	slideCurrFrame = 0;
+	//	slideStart = trueCenter;
+	//	slideEnd = rightCenter;
+	//	break;
+	//}
+	//case TRANS_SAVE_TO_MAIN:
+	//{
+	//	transLength = 60;
+	//	transFrame = 0;
+	//	slideCurrFrame = 0;
+	//	slideStart = rightCenter;
+	//	slideEnd = trueCenter;
+	//	break;
+	//}
+	//case TRANS_MAIN_TO_CREDITS:
+	//{
+	//	slideCurrFrame = 0;
+	//	slideStart = trueCenter;
+	//	slideEnd = bottomCenter;
+	//	break;
+	//}
+	//case TRANS_CREDITS_TO_MAIN:
+	//{
+	//	slideCurrFrame = 0;
+	//	slideStart = bottomCenter;
+	//	slideEnd = trueCenter;
+	//	break;
+	//}
+	//case TRANS_MAIN_TO_MAPSELECT:
+	//{
+	//	slideCurrFrame = 0;
+	//	slideStart = trueCenter;
+	//	slideEnd = leftCenter;
 
-		break;
-	}
-	case TRANS_MAPSELECT_TO_MAIN:
-	{
-		slideCurrFrame = 0;
-		slideStart = leftCenter;
-		slideEnd = trueCenter;
-		break;
-	}
-	case TRANS_MAPSELECT_TO_MULTIPREVIEW:
-	{
-		slideCurrFrame = 0;
-		slideStart = leftCenter;
-		slideEnd = doubleLeftCenter;
-		break;
-	}
-	case TRANS_MULTIPREVIEW_TO_MAPSELECT:
-	{
-		slideCurrFrame = 0;
-		slideStart = doubleLeftCenter;
-		slideEnd = leftCenter;
-		break;
-	}
-	}
+	//	break;
+	//}
+	//case TRANS_MAPSELECT_TO_MAIN:
+	//{
+	//	slideCurrFrame = 0;
+	//	slideStart = leftCenter;
+	//	slideEnd = trueCenter;
+	//	break;
+	//}
+	//case TRANS_MAPSELECT_TO_MULTIPREVIEW:
+	//{
+	//	slideCurrFrame = 0;
+	//	slideStart = leftCenter;
+	//	slideEnd = doubleLeftCenter;
+	//	break;
+	//}
+	//case TRANS_MULTIPREVIEW_TO_MAPSELECT:
+	//{
+	//	slideCurrFrame = 0;
+	//	slideStart = doubleLeftCenter;
+	//	slideEnd = leftCenter;
+	//	break;
+	//}
+	//}
 
 	menuMode = m;
+
+	changedMode = true;
 }
 
 void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
@@ -1118,7 +1119,7 @@ void MainMenu::CustomMapsOption()
 	LevelSelector &ls = *levelSelector;
 	sf::Event ev;
 	window->setView( uiView );
-	bool quit = false;
+	quit = false;
 
 	CustomMapsHandler customMapHandler( this );
 
@@ -1362,9 +1363,7 @@ void MainMenu::Run()
 
 	sf::Event ev;
 
-	bool quit = false;
-
-	bool worldMapUpdate = false;
+	quit = false;
 	double currentTime = 0;
 	double accumulator = TIMESTEP + .1;
 
@@ -1386,9 +1385,7 @@ void MainMenu::Run()
 
 	gameClock.restart();
 
-	//saveTexture->setView( v );
-	//menuMode = MAPSELECT;//menuMode = SPLASH;//DEBUG_RACEFIGHT_RESULTS;
-	//menuMode = OPTIONS;
+	
 
 	//SetMode(TRANS_MAIN_TO_OPTIONS);
 	//SetMode(TRANS_MAIN_TO_SAVE);
@@ -1397,7 +1394,7 @@ void MainMenu::Run()
 	//SetMode(SPLASH);
 	SetMode(MAINMENU);
 	//SetMode(OPTIONS);
-	//menuMode = MainMenu::Mode::TRANS_MAIN_TO_OPTIONS;//MainMenu::Mode::MULTIPREVIEW;
+	
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
 	assert( sh.loadFromFile("Resources/Shader/test.frag", sf::Shader::Fragment ) );
@@ -1442,7 +1439,6 @@ void MainMenu::Run()
 
 			sh.setUniform("texture", currImage);
 #endif
-			worldMapUpdate = false;
 
 			menuPrevInput = menuCurrInput;
 			menuCurrInput.Set( ControllerState() );
@@ -1481,919 +1477,14 @@ void MainMenu::Run()
 				}
 
 			}
-			
 
-			switch( menuMode )
-		{
-			case DEBUG_RACEFIGHT_RESULTS:
-				{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				GameSession *gs = new GameSession( NULL, this, "Resources/Maps/W1/arena04.brknk" );
-				GameSession::sLoad(gs);
-				gs->Run();
-				return;
-				break;
-				}
-			case SPLASH:
-				{
-				while (window->pollEvent(ev))
-				{
-
-				}
-					bool A = menuCurrInput.A && !menuPrevInput.A;
-					bool B = menuCurrInput.B && !menuPrevInput.B;
-					bool X = menuCurrInput.X && !menuPrevInput.X;
-					bool Y = menuCurrInput.Y && !menuPrevInput.Y;
-					bool r = menuCurrInput.rightShoulder && !menuPrevInput.rightShoulder;
-					bool l = menuCurrInput.leftShoulder && !menuPrevInput.leftShoulder;
-
-					if( A || B || X || Y || r || l )
-					{
-						menuMode = SPLASH_TRANS;
-						splashFadeFrame = 0;
-
-						sf::Color fadeColor = fadeRect.getFillColor();
-						fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
-							fadeColor.b, 
-							(((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
-					}
-					break;
-				}
-			case SPLASH_TRANS:
-				{
-				while (window->pollEvent(ev))
-				{
-
-				}
-					if( splashFadeFrame > splashFadeOutLength )
-					{
-						menuMode = MAINMENU;
-						splashFadeFrame = 0;
-
-						sf::Color fadeColor = fadeRect.getFillColor();
-						fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
-							fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
-					}
-					else
-					{
-						sf::Color fadeColor = fadeRect.getFillColor();
-						fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
-							fadeColor.b, 
-							(((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
-						++splashFadeFrame;
-					}
-					break;
-				}
-			case MAINMENU:
-				{
-					titleScreen->Update();
-					if( splashFadeFrame <= splashFadeOutLength )
-					{
-						sf::Color fadeColor = fadeRect.getFillColor();
-						fadeRect.setFillColor( Color( fadeColor.r, fadeColor.g, 
-							fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255 ) );
-						++splashFadeFrame;
-					}
-
-
-					while( window->pollEvent( ev ) )
-					{
-						switch( ev.type )
-				{
-				case sf::Event::KeyPressed:
-					{
-						/*if( ev.key.code == Keyboard::Num1 )
-						{
-							cout << "starting level 1" << endl;
-							titleMusic.stop();
-							GameEditLoop2( "test1" );
-							window->setView( v );
-							titleMusic.play();
-						}
-						else if( ev.key.code == Keyboard::Num2 )
-						{
-							cout << "starting level 2" << endl;
-							titleMusic.stop();
-							GameEditLoop2( "test2" );
-							window->setView( v );
-							titleMusic.play();
-						}
-						else if( ev.key.code == Keyboard::Num3 )
-						{
-							cout << "starting level 3" << endl;
-							titleMusic.stop();
-
-							GameEditLoop2( "test3" );
-							window->setView( v );
-							titleMusic.play();
-						}*/
-						if( ev.key.code == Keyboard::Escape )
-						{
-							//quit = true;
-						}
-						else if( ev.key.code == Keyboard::M )
-						{
-							CustomMapsOption();
-							//WorldSelectMenu();
-						}
-						else if( ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space )
-						{
-							//menuMode = WORLDMAP;
-							//worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
-							//worldMap->frame = 0;
-							//worldMap->UpdateMapList();
-
-						}
-						else if( ev.key.code == Keyboard::Up )
-						{
-							/*currentMenuSelect--;
-							if( currentMenuSelect < 0 )
-								currentMenuSelect = 4;*/
-						}
-						else if( ev.key.code == Keyboard::Down )
-						{
-							/*currentMenuSelect++;
-							if( currentMenuSelect > 4 )
-								currentMenuSelect = 0;*/
-						}
-						else
-						{
-							//titleMusic.stop();
-							//GameEditLoop2( "Maps/aba.brknk" );
-							//window->setView( v );
-							//titleMusic.play();
-						}
-						break;
-					}
-				case sf::Event::MouseButtonPressed:
-					{
-						if( ev.mouseButton.button == Mouse::Button::Left )
-						{
-					//		ls.LeftClick( true, sf::Mouse::getPosition( *window ) );
-						}
-						break;
-					}
-				case sf::Event::MouseButtonReleased:
-					{
-						if( ev.mouseButton.button == Mouse::Button::Left )
-						{
-					//		ls.LeftClick( false, sf::Mouse::getPosition( *window ) );
-						}
-						break;
-					}
-				case sf::Event::Resized:
-					{
-						windowWidth = window->getSize().x;
-						windowHeight = window->getSize().y;
-						cout << "window: " << windowWidth << ", " << windowHeight << endl;
-						break;
-					}
-				
-				}
-					}
-
-					if( menuCurrInput.B && !menuPrevInput.B )
-					{
-						quit = true;
-						break;
-					}
-
-					if( menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X || 
-						menuCurrInput.rightShoulder || menuCurrInput.leftShoulder )
-					{
-						soundNodeList->ActivateSound(soundManager.GetSound("main_menu_select"));
-						switch (saSelector->currIndex)
-						{
-						case M_ADVENTURE:
-						{
-							SetMode(TRANS_MAIN_TO_SAVE);
-							break;
-						}
-						case M_FREE_PLAY:
-						{
-							SetMode(TRANS_MAIN_TO_MAPSELECT);
-							break;
-						}
-						case M_LOCAL_MULTIPLAYER:
-						{
-							SetMode(TRANS_MAIN_TO_MAPSELECT);
-							break;
-						}
-						case M_LEVEL_EDITOR:
-						{
-							SetMode(TRANS_MAIN_TO_MAPSELECT);
-							break;
-						}
-						case M_OPTIONS:
-						{
-							//config->Load();
-							Config::CreateLoadThread(config);
-							SetMode(TRANS_MAIN_TO_OPTIONS);
-							break;
-						}
-						case M_CREDITS:
-						{
-							SetMode(TRANS_MAIN_TO_CREDITS);
-							break;
-						}
-						case M_EXIT:
-						{
-							quit = true;
-							break;
-						}
-						}
-
-						/*case M_ADVENTURE:
-							{
-								menuMode = MULTIPREVIEW;
-								multiLoadingScreen->Reset( "Maps/W1/arena04.brknk" );
-
-
-								break;
-
-
-								menuMode = SAVEMENU;
-								saveMenu->Reset();
-								
-								break;
-							}
-						case M_CONTINUE:
-							{
-								menuMode = SAVEMENU;
-								saveMenu->Reset();
-								break;
-							}
-						case M_CUSTOM_MAPS:
-							break;
-						case M_LEVEL_EDITOR:
-							break;
-						case M_OPTIONS:
-							break;
-						case M_CREDITS:
-							break;
-						case M_EXIT:
-							break;
-						}*/
-					}
-					else
-					{
-						int oldIndex = saSelector->currIndex;
-						int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
-
-						if (res != 0)
-						{
-							soundNodeList->ActivateSound(soundManager.GetSound( "main_menu_change") );
-						}
-
-						while (!activatedMainMenuOptions[saSelector->currIndex])
-						{
-							if (saSelector->currIndex != oldIndex)
-							{
-								if (saSelector->currIndex > oldIndex ||( saSelector->currIndex == 0 && oldIndex == saSelector->totalItems - 1))
-								{
-									//down
-									++saSelector->currIndex;
-									if (saSelector->currIndex == saSelector->totalItems)
-									{
-										saSelector->currIndex = 0;
-									}
-								}
-								else
-								{
-									--saSelector->currIndex;
-									if (saSelector->currIndex < 0)
-									{
-										saSelector->currIndex = saSelector->totalItems - 1;
-									}
-								}
-							}
-						}
-
-					}
-
-					UpdateMenuOptionText();
-
-					//bool canMoveSame = (moveDelayCounter == 0);
-
-				
-					//if( (menuCurrInput.LDown() || menuCurrInput.PDown()) && ( !moveDown || canMoveSame ) )
-					//{
-					//	currentMenuSelect++;
-					//	if( currentMenuSelect == M_Count )
-					//		currentMenuSelect = 0;
-					//	//moveDown = true;
-					//	moveDelayCounter = moveDelayFrames;
-					//}
-					//else if( ( menuCurrInput.LUp() || menuCurrInput.PUp() ) && ( !moveUp || canMoveSame ) )
-					//{
-					//	currentMenuSelect--;
-					//	if( currentMenuSelect < 0 )
-					//		currentMenuSelect = M_Count - 1;
-					//	//moveUp = true;
-					//	moveDelayCounter = moveDelayFrames;
-					//}
-					//else
-					//{
-					//}
-				
-
-					/*if( moveDelayCounter > 0 )
-					{
-						moveDelayCounter--;
-					}*/
-				
-					/*if( !(menuCurrInput.LDown() || menuCurrInput.PDown()) )
-						{
-							moveDelayCounter = 0;
-							moveDown = false;
-						}
-						else if( ! ( menuCurrInput.LUp() || menuCurrInput.PUp() ) )
-						{
-							moveDelayCounter = 0;
-							moveUp = false;
-						}*/
-				
-
-					/*if( kinTitleSpriteFrame == kinTotalFrames )
-					{
-						kinTitleSpriteFrame = 0;
-					}
-
-					int trueKinFrame = 0;
-					if( kinTitleSpriteFrame < 8 * 2 )
-					{
-						trueKinFrame = 0;
-					}
-					else if( kinTitleSpriteFrame < 16 * 2 )
-					{
-						trueKinFrame = 1;
-					}
-					else if( kinTitleSpriteFrame < 24 * 2 )
-					{
-						trueKinFrame = 2;
-					}
-					else if( kinTitleSpriteFrame < 48 * 2 )
-					{
-						trueKinFrame = 3;
-					}
-					else if( kinTitleSpriteFrame < 56 * 2 )
-					{
-						trueKinFrame = 4;
-					}
-					else if( kinTitleSpriteFrame < 60 * 2 )
-					{
-						trueKinFrame = 5;
-					}
-					else
-					{
-						trueKinFrame = 6;
-					}*/
-
-					//cout << "kinsprite: " << trueKinFrame << endl;
-					//kinTitleSprite.setTexture( *(ts_kinTitle[ trueKinFrame ]->texture) );
-					//kinTitleSprite.setOrigin( 0, kinTitleSprite.getLocalBounds().height );
-
-					//kinTitleSpriteFrame++;	
-					break;
-				}
-			case WORLDMAP:
-				{
-					while( window->pollEvent( ev ) )
-					{
-						switch( ev.type )
-						{
-							case sf::Event::KeyPressed:
-							{
-								if( ev.key.code == Keyboard::Escape )
-								{
-									//quit = true;
-								}
-							}
-						}
-					}
-
-					worldMap->Update(menuPrevInput, menuCurrInput);
-
-					break;
-				}
-			case LOADINGMAP:
+			do
 			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-
-				
-				if (loadThread != NULL)
-				{
-					if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
-					{
-						delete loadThread;
-						loadThread = NULL;
-						menuMode = RUNNINGMAP;
-						cout << "RUNNING MAP" << endl;
-					}
-					else
-					{
-						loadingIconBackpack[1].rotate(-1);
-						loadingIconBackpack[2].rotate(2);
-					}
-				//	//menuMode = MAINMENU;
-				//	//preScreenTexture->clear(Color::Yellow);
-				}
-				break;
-			}
-			case RUNNINGMAP:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				View oldView = window->getView();
-				
-				GameSession::GameResultType result = 
-					(GameSession::GameResultType)currLevel->Run();
-				SaveFile *currFile = GetCurrentProgress();
-
-				World & world = currFile->worlds[worldMap->selectedColony];
-				int secIndex = worldMap->selectors[worldMap->selectedColony]->saSelector->currIndex;
-				Sector &sec = world.sectors[secIndex];
-				int levIndex = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector->currIndex;
-				if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
-				{
-					//currLevel->mh->envType];
-					bool doneCheck = false;
-					//for (int i = 0; i < world.numSectors && !doneCheck; ++i)
-					//for (int j = 0; j < sec.numLevels && !doneCheck; ++j)
-					{
-						Level &lev = sec.levels[levIndex];
-						//if (lev.GetFullName() == currLevel->fileName)
-						{
-							if (!lev.GetComplete())
-							{
-								lev.justBeaten = true;
-							}
-
-							lev.SetComplete(true);
-
-							doneCheck = true;
-						}
-					}
-				}
-				switch (result)
-				{
-				case GameSession::GR_EXITLEVEL:
-					//currFile->Save();
-					break;
-				case GameSession::GR_EXITTITLE:
-					//currFile->Save();
-					break;
-				case GameSession::GR_EXITGAME:
-					//currFile->Save();
-					break;
-				}
-
-				currFile->Save();
-
-				delete currLevel;
-				currLevel = NULL;
-
-				window->setView(oldView);
-
-				SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector;
-				int numLevels = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
-				if (result == GameSession::GR_WIN)
-				{
-					/*if (sa->currIndex < sa->totalItems - 1)
-					{
-						sa->currIndex++;
-					}*/
-					menuMode = MainMenu::WORLDMAP;
-					worldMap->Update(menuPrevInput, menuCurrInput);
-				}
-				else if (result == GameSession::GR_WINCONTINUE)
-				{
-					if (sa->currIndex < numLevels - 1)
-					{
-						sa->currIndex++;
-						//sa->totalItems++;
-						AdventureLoadLevel(&(sec.levels[sa->currIndex]));
-					}
-					else
-					{
-						menuMode = MainMenu::WORLDMAP;
-						worldMap->Update(menuPrevInput, menuCurrInput);
-					}
-					
-				}
-				else
-				{
-					for (int i = 0; i < sec.numLevels; ++i)
-					{
-						sec.levels[i].justBeaten = false;
-					}
-					//fix this later for other options
-					menuMode = MainMenu::WORLDMAP;
-					worldMap->Update(menuPrevInput, menuCurrInput);
-				}
-				break;
-				
-			}
-			case SAVEMENU:
-				{
-				worldMap->Update(menuPrevInput, menuCurrInput);
-				saveMenu->Update();
-					//parBack->Update( offset0 );
-					//parFront->Update( offset1 );
-
-					//backPar->Update( 
-
-					break;
-				}
-			case TRANS_MAIN_TO_SAVE:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				if (transFrame == transLength)
-				{
-					menuMode = SAVEMENU;
-					break;
-				}
-				
-				float fadeFactor; 
-
-				if (transFrame >= transLength / 2)
-				{
-					fadeFactor = (float)( transFrame - (transLength / 2) ) / (transLength / 2);
-					fadeFactor = 1.f - fadeFactor;
-				}
-				else
-				{
-					fadeFactor = (float)transFrame / (transLength / 2);
-				}
-				sf::Color fadeColor = fadeRect.getFillColor();
-				fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
-					fadeColor.b, (fadeFactor * 255) ) );
-				
-				if (transFrame * 2 == transLength)
-				{
-					saveMenu->Reset();
-				}
-
-				if (transFrame < transLength / 2)
-				{
-					titleScreen->Update();
-				}
-				else
-				{
-					saveMenu->Update();
-					worldMap->Update(menuPrevInput, menuCurrInput);
-				}
-				++transFrame;
-				//worldMap->Reset( );
-				//worldMap->Update( currInput, prevInput );
-				/*if (slideCurrFrame > numSlideFrames)
-				{
-					
-				}
-				else
-				{
-					Slide();
-				}*/
-				break;
-			}
-			case TRANS_SAVE_TO_MAIN:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				UpdateMenuOptionText();
-
-
-				if (transFrame == transLength)
-				{
-					menuMode = MAINMENU;
-					break;
-				}
-
-				
-
-				float fadeFactor;
-
-				if (transFrame >= transLength / 2)
-				{
-					fadeFactor = (float)(transFrame - (transLength / 2)) / (transLength / 2);
-					fadeFactor = 1.f - fadeFactor;
-				}
-				else
-				{
-					fadeFactor = (float)transFrame / (transLength / 2);
-				}
-				sf::Color fadeColor = fadeRect.getFillColor();
-				fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
-					fadeColor.b, (fadeFactor * 255)));
-
-				if (transFrame * 2 == transLength)
-				{
-					saveMenu->Reset();
-				}
-
-				if (transFrame < transLength / 2)
-				{
-					saveMenu->Update();
-					worldMap->Update(menuPrevInput, menuCurrInput);
-				}
-				else
-				{
-					titleScreen->Update();
-				}
-				++transFrame;
-				
-				/*if (slideCurrFrame > numSlideFrames)
-				{
-					menuMode = MAINMENU;
-				}
-				else
-				{
-					Slide();
-				}*/
-				break;
-			}
-			case TRANS_SAVE_TO_WORLDMAP:
-				{
-				while (window->pollEvent(ev))
-				{
-
-				}
-					//menuMode = INTROMOVIE;
-					//introMovie->Play();
-					menuMode = WORLDMAP;
-					//worldMap->testSelector->UpdateAllInfo();
-					break;
-					//saveTexture->clear();
-					//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
-					//{
-					//	menuMode = WORLDMAP;
-					//	break;
-					//	//kinFaceFrame = 0;
-					//}
-
-					//if( kinFaceFrame < saveKinFaceTurnLength * 3 )
-					//{
-					//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( kinFaceFrame / 3 ) );
-					//}
-					//else
-					//{
-					//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( saveKinFaceTurnLength - 1 ) );
-					//}
-				
-					//if( kinFaceFrame < saveJumpLength * saveJumpFactor )
-					//{
-					//	if( kinFaceFrame == 0 )
-					//	{
-					//		saveKinJump.setTexture( *ts_saveKinJump1->texture );
-					//	}
-					//	else if( kinFaceFrame == 3 * saveJumpFactor )
-					//	{
-					//		saveKinJump.setTexture( *ts_saveKinJump2->texture );
-					//	}
-
-					//	int f = kinFaceFrame / saveJumpFactor;
-					//	if( kinFaceFrame < 3 * saveJumpFactor )
-					//	{
-					//		saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( f ) );
-					//	}
-					//	else
-					//	{
-					//		saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f - 3 ) );
-					//	}
-
-					//	saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
-					//}
-				
-					//transAlpha = (1.f - transWorldMapFrame / 40.f) * 255;
-
-					//kinFaceFrame++;
-
-					//if( kinFaceFrame >= saveKinFaceTurnLength * 3 )
-					//{
-					//	transWorldMapFrame++;
-					//}
-				
-
-					//UpdateClouds();
-					break;
-				}
-			case MULTIPREVIEW:
-				{
-				while (window->pollEvent(ev))
-				{
-
-				}
-					multiLoadingScreen->Update();
-					break;
-				}
-			case TRANS_MAPSELECT_TO_MULTIPREVIEW:
-				{
-				while (window->pollEvent(ev))
-				{
-
-				}
-					menuMode = MULTIPREVIEW;
-					/*if (slideCurrFrame > numSlideFrames)
-					{
-						menuMode = MULTIPREVIEW;
-					}
-					else
-					{
-						Slide();
-					}*/
-					break;
-				}
-			case TRANS_MULTIPREVIEW_TO_MAPSELECT:
-				{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				menuMode = MAPSELECT;
-				/*if (slideCurrFrame > numSlideFrames)
-				{
-					menuMode = MAPSELECT;
-				}
-				else
-				{
-					Slide();
-				}*/
-					break;
-				}
-			case TRANS_MAIN_TO_MAPSELECT:
-				{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				menuMode = MAPSELECT;
-				/*if (slideCurrFrame > numSlideFrames)
-				{
-					menuMode = MAPSELECT;
-				}
-				else
-				{
-					Slide();
-				}*/
-					break;
-				}
-			case MAPSELECT:
-				{
-
-				mapSelectionMenu->Update(menuCurrInput, menuPrevInput);
-					break;
-				}
-			case TRANS_MAPSELECT_TO_MAIN:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				menuMode = MAINMENU;
-				/*if (slideCurrFrame > numSlideFrames)
-				{
-					menuMode = MAINMENU;
-				}
-				else
-				{
-					Slide();
-				}*/
-				break;
-			}
-			case TRANS_MAIN_TO_OPTIONS:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				menuMode = OPTIONS;
-				config->WaitForLoad();
-
-				optionsMenu->Load();
-				optionsMenu->Center(Vector2f(1920, 1080));
-				/*if (slideCurrFrame > numSlideFrames)
-				{
-					menuMode = OPTIONS;
-					config->WaitForLoad();
-
-					optionsMenu->Load();
-				}
-				else
-				{
-					Slide();
-				}*/
-				break;
-			}
-			case OPTIONS:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				optionsMenu->Update( menuCurrInput, menuPrevInput );
-				break;
-			}
-			case TRANS_OPTIONS_TO_MAIN:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				menuMode = MAINMENU;
-				/*if (slideCurrFrame > numSlideFrames)
-				{
-					menuMode = MAINMENU;
-				}
-				else
-				{
-					Slide();
-				}*/
-				break;
-			}
-			case TRANS_MAIN_TO_CREDITS:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				menuMode = CREDITS;
-				/*if (slideCurrFrame > numSlideFrames)
-				{
-					menuMode = CREDITS;
-				}
-				else
-				{
-					Slide();
-				}*/
-				break;
-			}
-			case CREDITS:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				creditsMenu->Update();
-				break;
-			}
-			case TRANS_CREDITS_TO_MAIN:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				menuMode = MAINMENU;
-				/*if (slideCurrFrame > numSlideFrames)
-				{
-					menuMode = MAINMENU;
-				}
-				else
-				{
-					Slide();
-				}*/
-				break;
-			}
-			case INTROMOVIE:
-			{
-				while (window->pollEvent(ev))
-				{
-
-				}
-				if (!introMovie->Update() || (menuCurrInput.A && !menuPrevInput.A))
-				{
-					introMovie->Stop();
-
-					if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
-					{
-						delete loadThread;
-						loadThread = NULL;
-						menuMode = RUNNINGMAP;
-					}
-					else
-					{
-						//menuMode = LOADINGMAP;
-						SetModeLoadingMap(0);
-					}
-					//AdventureLoadLevel(&GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
-				}
-				
-				break;
-			}
-				
-		}
+				changedMode = false;
+				HandleMenuMode();
+					//preScreenTexture->clear();
+					//window->clear();
+			} while (changedMode);
 			
 
 			soundNodeList->Update();
@@ -2445,12 +1536,8 @@ void MainMenu::Run()
 		case TRANS_SAVE_TO_WORLDMAP:
 		case SAVEMENU:
 			{
-			///	preScreenTexture->draw( worldMap->
-			worldMap->Draw(preScreenTexture);
-			saveMenu->Draw(preScreenTexture);
-
-				
-				
+				worldMap->Draw(preScreenTexture);
+				saveMenu->Draw(preScreenTexture);
 				break;
 			}
 		case MULTIPREVIEW:
@@ -2468,6 +1555,12 @@ void MainMenu::Run()
 
 			break;
 		}
+		case KINBOOSTLOADINGMAP:
+		{
+			kinBoostScreen->Draw(preScreenTexture);
+			break;
+		}
+			
 		case TRANS_MAIN_TO_MAPSELECT:
 		{
 			preScreenTexture->setView(v);
@@ -2679,11 +1772,21 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 
 void MainMenu::SetModeLoadingMap( int wIndex )
 {
-	menuMode = LOADINGMAP;
+	SetMode( LOADINGMAP );
 	preScreenTexture->setView(v);
 	//int wIndex = lev->sec->world->index;
 	wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
 	loadingBGSpr.setTexture(*ts_loadBG[wIndex]->texture);
+}
+
+void MainMenu::SetModeKinBoostLoadingMap(int variation)
+{
+	SetMode(KINBOOSTLOADINGMAP);
+	preScreenTexture->setView(v);
+	//wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
+	//loadingBGSpr.setTexture(*ts_loadBG[wIndex]->texture);
+
+
 }
 
 void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
@@ -2696,10 +1799,19 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	if (loadingScreen)
 	{
 		int wIndex = lev->sec->world->index;
+		//SetModeKinBoostLoadingMap(wIndex);
 		SetModeLoadingMap( wIndex );
 	}
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
+}
+
+void MainMenu::AdventureNextLevel(Level *lev)
+{
+	string levelPath = lev->GetFullName();// name;
+										  //View oldView = window->getView();
+	SetModeKinBoostLoadingMap(0);
+	deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, levelPath );
 }
 
 void MainMenu::PlayIntroMovie()
@@ -2709,12 +1821,949 @@ void MainMenu::PlayIntroMovie()
 	worldMap->selectedLevel = 0;
 	//worldMap->testSelector->UpdateAllInfo();
 
-	menuMode = MainMenu::Mode::INTROMOVIE;
+	SetMode(INTROMOVIE);
 	//menuMode = MainMenu::Mode::LOADINGMAP;
 	introMovie->Play();
 
 	AdventureLoadLevel(&(GetCurrentProgress()->worlds[0].sectors[0].levels[0]), false);
 	//soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
+}
+
+void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
+{
+	m->deadLevel = m->currLevel;
+	m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], m, levName);
+	
+	m->loadThread = new boost::thread(GameSession::sLoad, m->currLevel);
+
+	SaveFile *currFile = m->GetCurrentProgress();
+	currFile->Save();
+
+	delete m->deadLevel;
+
+	m->deadLevel = NULL;
+}
+
+void MainMenu::HandleMenuMode()
+{
+
+	sf::Event ev;
+	switch (menuMode)
+	{
+	case DEBUG_RACEFIGHT_RESULTS:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		GameSession *gs = new GameSession(NULL, this, "Resources/Maps/W1/arena04.brknk");
+		GameSession::sLoad(gs);
+		gs->Run();
+
+		break;
+	}
+	case SPLASH:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		bool A = menuCurrInput.A && !menuPrevInput.A;
+		bool B = menuCurrInput.B && !menuPrevInput.B;
+		bool X = menuCurrInput.X && !menuPrevInput.X;
+		bool Y = menuCurrInput.Y && !menuPrevInput.Y;
+		bool r = menuCurrInput.rightShoulder && !menuPrevInput.rightShoulder;
+		bool l = menuCurrInput.leftShoulder && !menuPrevInput.leftShoulder;
+
+		if (A || B || X || Y || r || l)
+		{
+			SetMode( SPLASH_TRANS );
+			splashFadeFrame = 0;
+
+			sf::Color fadeColor = fadeRect.getFillColor();
+			fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
+				fadeColor.b,
+				(((double)splashFadeFrame) / splashFadeOutLength) * 255));
+
+			changedMode = true;
+		}
+		break;
+	}
+	case SPLASH_TRANS:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		if (splashFadeFrame > splashFadeOutLength)
+		{
+			SetMode(MAINMENU);
+			splashFadeFrame = 0;
+
+			sf::Color fadeColor = fadeRect.getFillColor();
+			fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
+				fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255));
+		}
+		else
+		{
+			sf::Color fadeColor = fadeRect.getFillColor();
+			fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
+				fadeColor.b,
+				(((double)splashFadeFrame) / splashFadeOutLength) * 255));
+			++splashFadeFrame;
+		}
+		break;
+	}
+	case MAINMENU:
+	{
+		titleScreen->Update();
+		if (splashFadeFrame <= splashFadeOutLength)
+		{
+			sf::Color fadeColor = fadeRect.getFillColor();
+			fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
+				fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255));
+			++splashFadeFrame;
+		}
+
+
+		while (window->pollEvent(ev))
+		{
+			switch (ev.type)
+			{
+			case sf::Event::KeyPressed:
+			{
+				/*if( ev.key.code == Keyboard::Num1 )
+				{
+				cout << "starting level 1" << endl;
+				titleMusic.stop();
+				GameEditLoop2( "test1" );
+				window->setView( v );
+				titleMusic.play();
+				}
+				else if( ev.key.code == Keyboard::Num2 )
+				{
+				cout << "starting level 2" << endl;
+				titleMusic.stop();
+				GameEditLoop2( "test2" );
+				window->setView( v );
+				titleMusic.play();
+				}
+				else if( ev.key.code == Keyboard::Num3 )
+				{
+				cout << "starting level 3" << endl;
+				titleMusic.stop();
+
+				GameEditLoop2( "test3" );
+				window->setView( v );
+				titleMusic.play();
+				}*/
+				if (ev.key.code == Keyboard::Escape)
+				{
+					//quit = true;
+				}
+				else if (ev.key.code == Keyboard::M)
+				{
+					CustomMapsOption();
+					//WorldSelectMenu();
+				}
+				else if (ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space)
+				{
+					//menuMode = WORLDMAP;
+					//worldMap->state = WorldMap::PLANET_AND_SPACE;//WorldMap::PLANET_AND_SPACE;
+					//worldMap->frame = 0;
+					//worldMap->UpdateMapList();
+
+				}
+				else if (ev.key.code == Keyboard::Up)
+				{
+					/*currentMenuSelect--;
+					if( currentMenuSelect < 0 )
+					currentMenuSelect = 4;*/
+				}
+				else if (ev.key.code == Keyboard::Down)
+				{
+					/*currentMenuSelect++;
+					if( currentMenuSelect > 4 )
+					currentMenuSelect = 0;*/
+				}
+				else
+				{
+					//titleMusic.stop();
+					//GameEditLoop2( "Maps/aba.brknk" );
+					//window->setView( v );
+					//titleMusic.play();
+				}
+				break;
+			}
+			case sf::Event::MouseButtonPressed:
+			{
+				if (ev.mouseButton.button == Mouse::Button::Left)
+				{
+					//		ls.LeftClick( true, sf::Mouse::getPosition( *window ) );
+				}
+				break;
+			}
+			case sf::Event::MouseButtonReleased:
+			{
+				if (ev.mouseButton.button == Mouse::Button::Left)
+				{
+					//		ls.LeftClick( false, sf::Mouse::getPosition( *window ) );
+				}
+				break;
+			}
+			case sf::Event::Resized:
+			{
+				windowWidth = window->getSize().x;
+				windowHeight = window->getSize().y;
+				cout << "window: " << windowWidth << ", " << windowHeight << endl;
+				break;
+			}
+
+			}
+		}
+
+		if (menuCurrInput.B && !menuPrevInput.B)
+		{
+			quit = true;
+			break;
+		}
+
+		if (menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X ||
+			menuCurrInput.rightShoulder || menuCurrInput.leftShoulder)
+		{
+			soundNodeList->ActivateSound(soundManager.GetSound("main_menu_select"));
+			switch (saSelector->currIndex)
+			{
+			case M_ADVENTURE:
+			{
+				SetMode(TRANS_MAIN_TO_SAVE);
+				break;
+			}
+			case M_FREE_PLAY:
+			{
+				SetMode(TRANS_MAIN_TO_MAPSELECT);
+				break;
+			}
+			case M_LOCAL_MULTIPLAYER:
+			{
+				SetMode(TRANS_MAIN_TO_MAPSELECT);
+				break;
+			}
+			case M_LEVEL_EDITOR:
+			{
+				SetMode(TRANS_MAIN_TO_MAPSELECT);
+				break;
+			}
+			case M_OPTIONS:
+			{
+				//config->Load();
+				Config::CreateLoadThread(config);
+				SetMode(TRANS_MAIN_TO_OPTIONS);
+				break;
+			}
+			case M_CREDITS:
+			{
+				SetMode(TRANS_MAIN_TO_CREDITS);
+				break;
+			}
+			case M_EXIT:
+			{
+				quit = true;
+				break;
+			}
+			}
+
+			/*case M_ADVENTURE:
+			{
+			menuMode = MULTIPREVIEW;
+			multiLoadingScreen->Reset( "Maps/W1/arena04.brknk" );
+
+
+			break;
+
+
+			menuMode = SAVEMENU;
+			saveMenu->Reset();
+
+			break;
+			}
+			case M_CONTINUE:
+			{
+			menuMode = SAVEMENU;
+			saveMenu->Reset();
+			break;
+			}
+			case M_CUSTOM_MAPS:
+			break;
+			case M_LEVEL_EDITOR:
+			break;
+			case M_OPTIONS:
+			break;
+			case M_CREDITS:
+			break;
+			case M_EXIT:
+			break;
+			}*/
+		}
+		else
+		{
+			int oldIndex = saSelector->currIndex;
+			int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
+
+			if (res != 0)
+			{
+				soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
+			}
+
+			while (!activatedMainMenuOptions[saSelector->currIndex])
+			{
+				if (saSelector->currIndex != oldIndex)
+				{
+					if (saSelector->currIndex > oldIndex || (saSelector->currIndex == 0 && oldIndex == saSelector->totalItems - 1))
+					{
+						//down
+						++saSelector->currIndex;
+						if (saSelector->currIndex == saSelector->totalItems)
+						{
+							saSelector->currIndex = 0;
+						}
+					}
+					else
+					{
+						--saSelector->currIndex;
+						if (saSelector->currIndex < 0)
+						{
+							saSelector->currIndex = saSelector->totalItems - 1;
+						}
+					}
+				}
+			}
+
+		}
+
+		UpdateMenuOptionText();
+
+		//bool canMoveSame = (moveDelayCounter == 0);
+
+
+		//if( (menuCurrInput.LDown() || menuCurrInput.PDown()) && ( !moveDown || canMoveSame ) )
+		//{
+		//	currentMenuSelect++;
+		//	if( currentMenuSelect == M_Count )
+		//		currentMenuSelect = 0;
+		//	//moveDown = true;
+		//	moveDelayCounter = moveDelayFrames;
+		//}
+		//else if( ( menuCurrInput.LUp() || menuCurrInput.PUp() ) && ( !moveUp || canMoveSame ) )
+		//{
+		//	currentMenuSelect--;
+		//	if( currentMenuSelect < 0 )
+		//		currentMenuSelect = M_Count - 1;
+		//	//moveUp = true;
+		//	moveDelayCounter = moveDelayFrames;
+		//}
+		//else
+		//{
+		//}
+
+
+		/*if( moveDelayCounter > 0 )
+		{
+		moveDelayCounter--;
+		}*/
+
+		/*if( !(menuCurrInput.LDown() || menuCurrInput.PDown()) )
+		{
+		moveDelayCounter = 0;
+		moveDown = false;
+		}
+		else if( ! ( menuCurrInput.LUp() || menuCurrInput.PUp() ) )
+		{
+		moveDelayCounter = 0;
+		moveUp = false;
+		}*/
+
+
+		/*if( kinTitleSpriteFrame == kinTotalFrames )
+		{
+		kinTitleSpriteFrame = 0;
+		}
+
+		int trueKinFrame = 0;
+		if( kinTitleSpriteFrame < 8 * 2 )
+		{
+		trueKinFrame = 0;
+		}
+		else if( kinTitleSpriteFrame < 16 * 2 )
+		{
+		trueKinFrame = 1;
+		}
+		else if( kinTitleSpriteFrame < 24 * 2 )
+		{
+		trueKinFrame = 2;
+		}
+		else if( kinTitleSpriteFrame < 48 * 2 )
+		{
+		trueKinFrame = 3;
+		}
+		else if( kinTitleSpriteFrame < 56 * 2 )
+		{
+		trueKinFrame = 4;
+		}
+		else if( kinTitleSpriteFrame < 60 * 2 )
+		{
+		trueKinFrame = 5;
+		}
+		else
+		{
+		trueKinFrame = 6;
+		}*/
+
+		//cout << "kinsprite: " << trueKinFrame << endl;
+		//kinTitleSprite.setTexture( *(ts_kinTitle[ trueKinFrame ]->texture) );
+		//kinTitleSprite.setOrigin( 0, kinTitleSprite.getLocalBounds().height );
+
+		//kinTitleSpriteFrame++;	
+		break;
+	}
+	case WORLDMAP:
+	{
+		while (window->pollEvent(ev))
+		{
+			switch (ev.type)
+			{
+			case sf::Event::KeyPressed:
+			{
+				if (ev.key.code == Keyboard::Escape)
+				{
+					//quit = true;
+				}
+			}
+			}
+		}
+
+		worldMap->Update(menuPrevInput, menuCurrInput);
+
+		break;
+	}
+	case LOADINGMAP:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+
+		if (loadThread != NULL)
+		{
+			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				delete loadThread;
+				loadThread = NULL;
+				SetMode( RUNNINGMAP );
+				//return HandleMenuMode();
+				cout << "RUNNING MAP" << endl;
+			}
+			else
+			{
+				loadingIconBackpack[1].rotate(-1);
+				loadingIconBackpack[2].rotate(2);
+			}
+			//	//menuMode = MAINMENU;
+			//	//preScreenTexture->clear(Color::Yellow);
+		}
+		break;
+	}
+	case KINBOOSTLOADINGMAP:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		if (deadThread != NULL)
+		{
+			if (deadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				delete deadThread;
+				deadThread = NULL;
+			}
+			else
+			{
+			}
+		}
+
+		if (deadThread == NULL)
+		{
+			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				delete loadThread;
+				loadThread = NULL;
+			}
+		}
+
+		if (loadThread == NULL && deadThread == NULL)
+		{
+			SetMode( RUNNINGMAP );
+			//return HandleMenuMode();
+		}
+		break;
+	}
+
+	case RUNNINGMAP:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		View oldView = window->getView();
+
+		GameSession::GameResultType result =
+			(GameSession::GameResultType)currLevel->Run();
+		SaveFile *currFile = GetCurrentProgress();
+
+		World & world = currFile->worlds[worldMap->selectedColony];
+		int secIndex = worldMap->selectors[worldMap->selectedColony]->saSelector->currIndex;
+		Sector &sec = world.sectors[secIndex];
+		int levIndex = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector->currIndex;
+		if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
+		{
+			//currLevel->mh->envType];
+			bool doneCheck = false;
+			//for (int i = 0; i < world.numSectors && !doneCheck; ++i)
+			//for (int j = 0; j < sec.numLevels && !doneCheck; ++j)
+			{
+				Level &lev = sec.levels[levIndex];
+				//if (lev.GetFullName() == currLevel->fileName)
+				{
+					if (!lev.GetComplete())
+					{
+						lev.justBeaten = true;
+					}
+
+					lev.SetComplete(true);
+
+					doneCheck = true;
+				}
+			}
+		}
+		switch (result)
+		{
+		case GameSession::GR_EXITLEVEL:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITTITLE:
+			//currFile->Save();
+			break;
+		case GameSession::GR_EXITGAME:
+			//currFile->Save();
+			break;
+		}
+
+		
+
+		window->setView(oldView);
+
+		SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector;
+		int numLevels = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
+		if (result == GameSession::GR_WIN)
+		{
+			/*if (sa->currIndex < sa->totalItems - 1)
+			{
+			sa->currIndex++;
+			}*/
+
+			currFile->Save();
+
+			delete currLevel;
+			currLevel = NULL;
+
+			SetMode(WORLDMAP);
+			worldMap->Update(menuPrevInput, menuCurrInput);
+		}
+		else if (result == GameSession::GR_WINCONTINUE)
+		{
+			if (sa->currIndex < numLevels - 1)
+			{
+				sa->currIndex++;
+				//sa->totalItems++;
+				//AdventureLoadLevel(&(sec.levels[sa->currIndex]));
+
+				
+
+				AdventureNextLevel(&(sec.levels[sa->currIndex]));
+
+				preScreenTexture->clear();
+				window->clear();
+			}
+			else
+			{
+				currFile->Save();
+
+				delete currLevel;
+				currLevel = NULL;
+
+				SetMode( MainMenu::WORLDMAP );
+				worldMap->Update(menuPrevInput, menuCurrInput);
+			}
+
+		}
+		else
+		{
+			for (int i = 0; i < sec.numLevels; ++i)
+			{
+				sec.levels[i].justBeaten = false;
+			}
+			//fix this later for other options
+
+			currFile->Save();
+
+			delete currLevel;
+			currLevel = NULL;
+
+			SetMode( MainMenu::WORLDMAP );
+			worldMap->Update(menuPrevInput, menuCurrInput);
+		}
+		break;
+
+	}
+	case SAVEMENU:
+	{
+		worldMap->Update(menuPrevInput, menuCurrInput);
+		saveMenu->Update();
+		//parBack->Update( offset0 );
+		//parFront->Update( offset1 );
+
+		//backPar->Update( 
+
+		break;
+	}
+	case TRANS_MAIN_TO_SAVE:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		if (transFrame == transLength)
+		{
+			SetMode( SAVEMENU );
+			break;
+		}
+
+		float fadeFactor;
+
+		if (transFrame >= transLength / 2)
+		{
+			fadeFactor = (float)(transFrame - (transLength / 2)) / (transLength / 2);
+			fadeFactor = 1.f - fadeFactor;
+		}
+		else
+		{
+			fadeFactor = (float)transFrame / (transLength / 2);
+		}
+		sf::Color fadeColor = fadeRect.getFillColor();
+		fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
+			fadeColor.b, (fadeFactor * 255)));
+
+		if (transFrame * 2 == transLength)
+		{
+			saveMenu->Reset();
+		}
+
+		if (transFrame < transLength / 2)
+		{
+			titleScreen->Update();
+		}
+		else
+		{
+			saveMenu->Update();
+			worldMap->Update(menuPrevInput, menuCurrInput);
+		}
+		++transFrame;
+		//worldMap->Reset( );
+		//worldMap->Update( currInput, prevInput );
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case TRANS_SAVE_TO_MAIN:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		UpdateMenuOptionText();
+
+
+		if (transFrame == transLength)
+		{
+			SetMode( MAINMENU );
+			break;
+		}
+
+
+
+		float fadeFactor;
+
+		if (transFrame >= transLength / 2)
+		{
+			fadeFactor = (float)(transFrame - (transLength / 2)) / (transLength / 2);
+			fadeFactor = 1.f - fadeFactor;
+		}
+		else
+		{
+			fadeFactor = (float)transFrame / (transLength / 2);
+		}
+		sf::Color fadeColor = fadeRect.getFillColor();
+		fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
+			fadeColor.b, (fadeFactor * 255)));
+
+		if (transFrame * 2 == transLength)
+		{
+			saveMenu->Reset();
+		}
+
+		if (transFrame < transLength / 2)
+		{
+			saveMenu->Update();
+			worldMap->Update(menuPrevInput, menuCurrInput);
+		}
+		else
+		{
+			titleScreen->Update();
+		}
+		++transFrame;
+
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+		menuMode = MAINMENU;
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case TRANS_SAVE_TO_WORLDMAP:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		SetMode(WORLDMAP);
+
+		break;
+	}
+	case MULTIPREVIEW:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		multiLoadingScreen->Update();
+		break;
+	}
+	case TRANS_MAPSELECT_TO_MULTIPREVIEW:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		SetMode( MULTIPREVIEW );
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+		menuMode = MULTIPREVIEW;
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case TRANS_MULTIPREVIEW_TO_MAPSELECT:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		SetMode( MAPSELECT );
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+		menuMode = MAPSELECT;
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case TRANS_MAIN_TO_MAPSELECT:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		SetMode( MAPSELECT );
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+		menuMode = MAPSELECT;
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case MAPSELECT:
+	{
+
+		mapSelectionMenu->Update(menuCurrInput, menuPrevInput);
+		break;
+	}
+	case TRANS_MAPSELECT_TO_MAIN:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		SetMode( MAINMENU );
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+		menuMode = MAINMENU;
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case TRANS_MAIN_TO_OPTIONS:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		SetMode( OPTIONS );
+		config->WaitForLoad();
+
+		optionsMenu->Load();
+		optionsMenu->Center(Vector2f(1920, 1080));
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+		menuMode = OPTIONS;
+		config->WaitForLoad();
+
+		optionsMenu->Load();
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case OPTIONS:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		optionsMenu->Update(menuCurrInput, menuPrevInput);
+		break;
+	}
+	case TRANS_OPTIONS_TO_MAIN:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		SetMode( MAINMENU );
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+		menuMode = MAINMENU;
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case TRANS_MAIN_TO_CREDITS:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		SetMode(CREDITS);
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+		menuMode = CREDITS;
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case CREDITS:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		creditsMenu->Update();
+		break;
+	}
+	case TRANS_CREDITS_TO_MAIN:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		SetMode( MAINMENU );
+		/*if (slideCurrFrame > numSlideFrames)
+		{
+		menuMode = MAINMENU;
+		}
+		else
+		{
+		Slide();
+		}*/
+		break;
+	}
+	case INTROMOVIE:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		if (!introMovie->Update() || (menuCurrInput.A && !menuPrevInput.A))
+		{
+			introMovie->Stop();
+
+			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				delete loadThread;
+				loadThread = NULL;
+				SetMode( RUNNINGMAP );
+			}
+			else
+			{
+				//menuMode = LOADINGMAP;
+				SetModeLoadingMap(0);
+			}
+
+		}
+
+		break;
+	}
+
+	}
 }
 
 CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )

@@ -46,6 +46,8 @@ struct ControlProfileManager;
 struct UIControlGrid;
 struct FillRing;
 
+struct KinBoostScreen;
+
 struct MultiSelectionSection : UIEventHandlerBase
 {
 	
@@ -473,6 +475,7 @@ struct MainMenu
 		MAINMENU,
 		WORLDMAP,
 		LOADINGMAP,
+		KINBOOSTLOADINGMAP,
 		RUNNINGMAP,
 		SAVEMENU,
 		TRANS_MAIN_TO_SAVE,
@@ -531,6 +534,8 @@ struct MainMenu
 	void GameEditLoop2( const std::string &filename);
 	void CustomMapsOption();
 	void SetModeLoadingMap( int wIndex );
+	void SetModeKinBoostLoadingMap(int variation);
+
 	sf::RenderWindow *window;
 	sf::View v;
 	sf::View uiView;
@@ -546,7 +551,9 @@ struct MainMenu
 	SoundNodeList * soundNodeList;
 	TilesetManager tilesetManager;
 	MultiLoadingScreen *multiLoadingScreen;
-	
+	KinBoostScreen *kinBoostScreen;
+	bool quit;
+	bool changedMode;
 
 	sf::Text betaText; 
 
@@ -581,8 +588,17 @@ struct MainMenu
 	Mode menuMode;
 	void AdventureLoadLevel( Level *lev,
 		bool loadingScreen = true );
+	void AdventureNextLevel(Level *lev);
 	boost::thread *loadThread;
+	boost::thread *deadThread;
 	GameSession *currLevel;
+	GameSession *deadLevel;
+	void HandleMenuMode();
+
+	static void sGoToNextLevel(MainMenu *m,
+		const std::string &levName);
+
+
 
 	//ControllerState currInput;
 	//ControllerState prevInput;

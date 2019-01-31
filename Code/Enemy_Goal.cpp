@@ -138,6 +138,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 void Goal::ConfirmKill()
 {
 	dead = true;
+	//owner->absorbParticles->Activate(owner->GetPlayer(0), 64, position);
 	HandleNoHealth();
 }
 

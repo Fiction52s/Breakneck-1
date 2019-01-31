@@ -234,7 +234,7 @@ void SaveMenuScreen::Update()
 		case TRANSITION:
 		{
 			mainMenu->worldMap->SetDefaultSelections();
-			mainMenu->menuMode = MainMenu::Mode::TRANS_SAVE_TO_WORLDMAP;
+			mainMenu->SetMode(MainMenu::Mode::TRANS_SAVE_TO_WORLDMAP);
 			mainMenu->transAlpha = 255;
 			mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
 			mainMenu->worldMap->frame = 0;

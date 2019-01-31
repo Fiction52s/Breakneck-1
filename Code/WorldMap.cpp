@@ -538,7 +538,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		else if (currInput.B && !prevInput.B)
 		{
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
-			mainMenu->menuMode = MainMenu::SAVEMENU;
+			mainMenu->SetMode(MainMenu::SAVEMENU);
 			mainMenu->saveMenu->Reset();
 			mainMenu->saveMenu->action = SaveMenuScreen::FADEIN;
 			mainMenu->saveMenu->transparency = 1.f;

@@ -34,6 +34,8 @@ struct RaceFightHUD;
 struct Rail;
 struct InputVisualizer;
 
+
+
 struct ImageText;
 struct TimerText;
 
@@ -446,18 +448,18 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	boost::mutex continueLoadingLock;
 
 	MusicInfo *levelMusic;
-	MusicInfo *endTransMusic;
 	MusicInfo *originalMusic;
 	std::map<std::string, MusicInfo*> musicMap;
 	void PlayMusic(const std::string &name, sf::Time &startTime ); //add transitions later
 	void TransitionMusic(const std::string &name, sf::Time &startTime,
 		int crossFadeFrames);
 
-	void StopMusic();
+	void StopMusic(MusicInfo *m);
 	void FadeOutCurrentMusic(int numFrames);
 	int musicFadeOutMax;
 	int musicFadeOutCurr;
-
+	MusicInfo *fadingOutMusic;
+	MusicInfo *fadingInMusic;
 	int musicFadeInMax;
 	int musicFadeInCurr;
 
