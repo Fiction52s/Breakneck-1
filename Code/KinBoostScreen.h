@@ -2,12 +2,27 @@
 #define __KINBOOSTSCREEN_H__
 
 #include <SFML\Graphics.hpp>
+#include "Tileset.h"
 
+struct MainMenu;
 struct KinBoostScreen
 {
-	KinBoostScreen();
+	KinBoostScreen( MainMenu *mm);
 	void Draw(sf::RenderTarget *target);
-	sf::RectangleShape rect;
+	void Reset();
+	sf::Sprite bgSpr;
+	sf::Sprite bgShapeSpr;
+	sf::Sprite starSpr[4];
+	sf::Sprite lightSpr[2];
+	MainMenu *mainMenu;
+	Tileset *ts_stars[4];
+	Tileset *ts_light[2];
+	Tileset *ts_bg;
+	Tileset *ts_bgShape;
+	int frame;
+	void Update();
+	sf::Shader scrollShaderStars[4];
+	sf::Shader scrollShaderLight[2];
 };
 
 #endif

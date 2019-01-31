@@ -786,7 +786,7 @@ MainMenu::MainMenu()
 
 	worldMap = new WorldMap( this );
 
-	kinBoostScreen = new KinBoostScreen;
+	kinBoostScreen = new KinBoostScreen(this);
 
 	levelSelector = new LevelSelector( this );
 
@@ -1092,10 +1092,22 @@ void MainMenu::SetMode(Mode m)
 	//	break;
 	//}
 	//}
+	
+	
 
 	menuMode = m;
+	//only need this because the transition is seamless so inputs can
+	//get buffered
+	if (menuMode == MAINMENU)
+	{
+		changedMode = false;
+	}
+	else
+	{
+		changedMode = true;
+	}
 
-	changedMode = true;
+	
 }
 
 void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
@@ -2306,6 +2318,10 @@ void MainMenu::HandleMenuMode()
 		{
 			SetMode( RUNNINGMAP );
 			//return HandleMenuMode();
+		}
+		else
+		{
+			kinBoostScreen->Update();
 		}
 		break;
 	}

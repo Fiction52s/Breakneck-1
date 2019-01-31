@@ -1862,11 +1862,6 @@ void MapSector::Update(ControllerState &curr,
 
 	float facBack = fBack / (scrollFramesBack);
 	float facFront = fFront / (scrollFramesFront);
-
-	//facBack *= mult;
-	//facFront *= multFront;f
-
-	//cout << "fac: " << facBack << endl;// ", " << facFront << endl;
 	
 	horizScrollShader1.setUniform("quant", -facBack );
 	horizScrollShader2.setUniform("quant", -facFront );
