@@ -21,6 +21,7 @@
 #include "WorldMap.h"
 #include "LevelSelector.h"
 #include "KinBoostScreen.h"
+#include "TerrainRender.h"
 
 using namespace std;
 using namespace sf;
@@ -845,6 +846,7 @@ MainMenu::MainMenu()
 
 	assert( window != NULL );
 	window->setVerticalSyncEnabled( true );
+	//window->setFramerateLimit(120);
 	std::cout << "opened window" << endl;
 	
 	window->setView( v );
@@ -1100,6 +1102,7 @@ void MainMenu::SetMode(Mode m)
 	//get buffered
 	if (menuMode == MAINMENU)
 	{
+		//TerrainRender::CleanupLayers(); //saves a little time?
 		changedMode = false;
 	}
 	else
@@ -1431,8 +1434,8 @@ void MainMenu::Run()
 
 		accumulator += frameTime;
 
-		preScreenTexture->clear();
-		window->clear();
+		preScreenTexture->clear(Color::Black);
+		window->clear(Color::Red);
 		
 		
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Srcreen And Depth Buffer
@@ -1559,6 +1562,7 @@ void MainMenu::Run()
 			}
 		case LOADINGMAP:
 		{
+			preScreenTexture->setView(v);
 			//preScreenTexture->clear(Color::Green);
 			preScreenTexture->draw(loadingBGSpr);
 
@@ -1569,7 +1573,14 @@ void MainMenu::Run()
 		}
 		case KINBOOSTLOADINGMAP:
 		{
+			//window->clear(Color::Yellow);
+			//window->display();
+			//continue;
+			preScreenTexture->setView(v);
+			//kinBoostScreen->Draw(preScreenTexture);
 			kinBoostScreen->Draw(preScreenTexture);
+			//window->display();
+			//continue;
 			break;
 		}
 			
@@ -1685,48 +1696,11 @@ void MainMenu::Run()
 		case INTROMOVIE:
 			introMovie->Draw(preScreenTexture);
 			break;
-
+		default:
+			assert(0);
+			break;
 		}
-		//window->pushGLStates();
-		
-		//worldMap->Draw(preScreenTexture);
 
-		
-		//window->popGLStates();
-		
-		//window->setView( window->getDefaultView() );
-		
-		
-		//window->setView( //window->getDefaultView() );
-
-		
-		
-		//prim.DrawTetrahedron( window );
-
-		
-		//prim.Draw2( window );
-
-		//window->pushGLStates();
-		
-		
-
-		//window->popGLStates();
-
-		//if( menuMode == SAVEMENU || menuMode == TRANS_SAVE_TO_WORLDMAP )
-		//{
-		//	saveTexture->display();
-		//	sf::Sprite saveSpr;
-		//	saveSpr.setTexture( saveTexture->getTexture() );
-		//	//saveSpr.getOrigin( )
-
-		//	if( menuMode == TRANS_SAVE_TO_WORLDMAP )
-		//	{
-		//		saveSpr.setColor( Color( 255, 255, 255, transAlpha ) );
-		//	}
-		//	preScreenTexture->draw( saveSpr );
-		//}
-
-		//preScreenTexture->draw( ff, 4, sf::Quads,  &sh );
 #if defined( USE_MOVIE_TEST )
 		preScreenTexture->draw(m);// , &sh);
 #endif
@@ -1735,7 +1709,6 @@ void MainMenu::Run()
 		sf::Sprite pspr;
 		pspr.setTexture( preScreenTexture->getTexture() );
 		window->draw( pspr );
-
 		window->display();
 	}
 }
@@ -1803,6 +1776,8 @@ void MainMenu::SetModeKinBoostLoadingMap(int variation)
 
 void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 {
+	window->setVerticalSyncEnabled(false);
+	//window->setFramerateLimit(60);
 	string levelPath = lev->GetFullName();// name;
 	//View oldView = window->getView();
 
@@ -1820,6 +1795,8 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 
 void MainMenu::AdventureNextLevel(Level *lev)
 {
+	window->setVerticalSyncEnabled(false);
+	//window->setFramerateLimit(60);
 	string levelPath = lev->GetFullName();// name;
 										  //View oldView = window->getView();
 	SetModeKinBoostLoadingMap(0);
@@ -1843,17 +1820,39 @@ void MainMenu::PlayIntroMovie()
 
 void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
 {
-	m->deadLevel = m->currLevel;
-	m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], m, levName);
-	
-	m->loadThread = new boost::thread(GameSession::sLoad, m->currLevel);
+
+	sf::sleep(sf::milliseconds(5000));
 
 	SaveFile *currFile = m->GetCurrentProgress();
 	currFile->Save();
 
-	delete m->deadLevel;
+	//delete m->currLevel;
 
-	m->deadLevel = NULL;
+	GameSession *old = m->currLevel;
+	////m->deadLevel = m->currLevel;
+
+	delete old;
+
+	m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], m, levName);
+	//
+	
+	//
+	GameSession::sLoad(m->currLevel);
+
+	//sf::sleep(sf::milliseconds(50000));
+	//m->loadThread = new boost::thread(GameSession::sLoad, m->currLevel);
+	//m->loadThread->join();
+
+	//delete m->loadThread;
+	//m->loadThread = NULL;
+
+	//delete	m->loadThread;
+	//m->loadThread = NULL;
+
+	//cout << "deleting deadLevel: " << m->deadLevel << endl;
+	//delete m->deadLevel;
+
+	//m->deadLevel = NULL;
 }
 
 void MainMenu::HandleMenuMode()
@@ -2270,6 +2269,7 @@ void MainMenu::HandleMenuMode()
 		{
 			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
 			{
+				window->setVerticalSyncEnabled(true);
 				delete loadThread;
 				loadThread = NULL;
 				SetMode( RUNNINGMAP );
@@ -2307,15 +2307,16 @@ void MainMenu::HandleMenuMode()
 
 		if (deadThread == NULL)
 		{
-			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			if ( loadThread != NULL )//loadThread->try_join_for(boost::chrono::milliseconds(0)))
 			{
-				delete loadThread;
-				loadThread = NULL;
+				//loadThread->join();
+				
 			}
 		}
 
 		if (loadThread == NULL && deadThread == NULL)
 		{
+			window->setVerticalSyncEnabled(true);
 			SetMode( RUNNINGMAP );
 			//return HandleMenuMode();
 		}
@@ -2333,7 +2334,7 @@ void MainMenu::HandleMenuMode()
 
 		}
 		View oldView = window->getView();
-
+		//cout << "running currLevel: " << currLevel << endl;
 		GameSession::GameResultType result =
 			(GameSession::GameResultType)currLevel->Run();
 		SaveFile *currFile = GetCurrentProgress();
@@ -2409,8 +2410,8 @@ void MainMenu::HandleMenuMode()
 
 				AdventureNextLevel(&(sec.levels[sa->currIndex]));
 
-				preScreenTexture->clear();
-				window->clear();
+				//preScreenTexture->clear();
+				//window->clear();
 			}
 			else
 			{

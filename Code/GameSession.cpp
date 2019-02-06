@@ -5072,6 +5072,8 @@ void GameSession::LoadDecorImages()
 			decorTSMap[name] = ts;
 			//decorTileIndexes[name].push_back(tile);
 		}
+
+		is.close();
 	}
 	else
 	{
@@ -5251,11 +5253,18 @@ bool GameSession::ShouldContinueLoading()
 
 bool GameSession::Load()
 {
+	
 	cout << "start load" << endl;
+	//sf::sleep(sf::seconds(5));
+	//return true;
 	hitboxManager = new HitboxManager;
+
+	
 
 	momentumBar = new MomentumBar(this);
 	momentumBar->SetTopLeft(Vector2f(202, 117));
+
+	//return true;
 
 	if( progressDisplay != NULL )
 		progressDisplay->SetProgressString("started loading!", 0);
@@ -5266,6 +5275,10 @@ bool GameSession::Load()
 		Cleanup();
 		return false;
 	}
+
+	
+
+	//return true;
 	
 	//inputVis = new InputVisualizer;
 
@@ -5295,7 +5308,6 @@ bool GameSession::Load()
 	}
 	minimapShader.setUniform("imageSize", Vector2f(minimapTex->getSize().x,
 		minimapTex->getSize().y));
-
 	minimapSprite.setTexture(minimapTex->getTexture());
 	minimapSprite.setOrigin(minimapSprite.getLocalBounds().width / 2,
 		minimapSprite.getLocalBounds().height / 2);
@@ -5408,6 +5420,8 @@ bool GameSession::Load()
 		Cleanup();
 		return false;
 	}
+
+
 
 	terrainBGTree = new QuadTree(1000000, 1000000);
 	//soon make these the actual size of the bordered level
@@ -5572,7 +5586,7 @@ bool GameSession::Load()
 
 	activeSequence = NULL;
 
-	window->setMouseCursorVisible( true );
+	//window->setMouseCursorVisible( true );
 
 	view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 	//cout << "weird timing 3" << endl;
@@ -15326,6 +15340,7 @@ void GameSession::RaceFight::TickFrame()
 
 MomentumBar::MomentumBar(GameSession *owner)
 {
+	//ts_bar = owner->GetTileset("momentumbar_105x105.png", 105, 105);
 	ts_bar = owner->GetTileset("momentumbar_105x105.png", 105, 105);
 	ts_container = owner->GetTileset("momentumbar_115x115.png", 115, 115);
 	ts_num = owner->GetTileset("momentumnum_48x48.png", 48, 48);

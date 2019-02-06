@@ -141,12 +141,12 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	string s2 = string("Resources/") + s;
 	//not found
 
-	if (!boost::filesystem::exists(s2))
-	{
-		//take this out later. its not always an error to get this
-		cout << "NO FILE EXISTS: " << s << endl; 
-		return NULL;
-	}
+	//if (!boost::filesystem::exists(s2))
+	//{
+	//	//take this out later. its not always an error to get this
+	//	cout << "NO FILE EXISTS: " << s << endl; 
+	//	return NULL;
+	//}
 
 	Texture *tex = new Texture();
 	if( !tex->loadFromFile( s2 ) )

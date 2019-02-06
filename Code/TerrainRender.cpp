@@ -1277,6 +1277,11 @@ DecorLayer::DecorLayer(Tileset *p_ts, int p_animLength, int p_animFactor, int p_
 
 }
 
+DecorLayer::~DecorLayer()
+{
+	int x = 5;
+}
+
 void DecorLayer::Update()
 {
 	++frame;

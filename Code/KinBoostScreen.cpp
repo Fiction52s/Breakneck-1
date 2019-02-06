@@ -70,7 +70,7 @@ void KinBoostScreen::Update()
 
 	for (int i = 0; i < 4; ++i)
 	{
-		scrollShaderStars[i].setUniform("quant", 0);
+		scrollShaderStars[i].setUniform("quant", facFront);//0.f);
 	}
 
 	scrollShaderLight[0].setUniform("quant", -facFront);

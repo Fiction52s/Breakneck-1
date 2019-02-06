@@ -16,6 +16,8 @@ struct DecorLayer
 	DecorLayer(Tileset *ts, int animLength,
 		int animFactor, int tileStart = 0,
 		int loopWait = 0);
+	~DecorLayer();
+	
 	void Update();
 	Tileset *ts;
 	int frame;
