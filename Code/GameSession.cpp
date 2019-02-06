@@ -371,11 +371,6 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	mainMenu = p_mainMenu;
 	cam.owner = this;
 
-	
-	//stormCeilingInfo = NULL;
-
-
-	
 	Init();
 }
 
@@ -5077,8 +5072,6 @@ void GameSession::LoadDecorImages()
 			decorTSMap[name] = ts;
 			//decorTileIndexes[name].push_back(tile);
 		}
-
-		is.close();
 	}
 	else
 	{
@@ -5233,7 +5226,6 @@ void GameSession::KeyboardUpdate( int index )
 
 bool GameSession::sLoad( GameSession *gs )
 {
-	//gs->Init();
 	gs->SetContinueLoading(true);
 	return gs->Load();
 }
@@ -9393,27 +9385,27 @@ void GameSession::Init()
 	topClouds = NULL;
 
 	soundManager = NULL;
-
+	
 	keyMarker = NULL;
-
+	
 	specterTree = NULL;
 
 	activeItemTree = NULL;
-
+	
 	envPlantTree = NULL;
-
+	
 	itemTree = NULL;
-
+	
 	gateTree = NULL;
-
+	
 	lightTree = NULL;
-
+	
 	grassTree = NULL;
-
+	
 	borderTree = NULL;
-
+	
 	enemyTree = NULL;
-
+	
 	terrainTree = NULL;
 
 	staticItemTree = NULL;
@@ -9421,19 +9413,21 @@ void GameSession::Init()
 	railEdgeTree = NULL;
 
 	railDrawTree = NULL;
-
+	
 	terrainBGTree = NULL;
-
+	
 	scoreDisplay = NULL;
-
+	
 	soundNodeList = NULL;
 
 	pauseSoundNodeList = NULL;
-
+	
 	levelMusic = NULL;
 
 	rain = NULL;
+	//stormCeilingInfo = NULL;
 	
+
 	for (list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
 		delete (*it);
@@ -9441,7 +9435,7 @@ void GameSession::Init()
 	polygons.clear();
 
 	powerRing = NULL;
-
+	
 	polyShaders = NULL;
 	ts_polyShaders = NULL;
 	testPar = NULL;
@@ -10795,7 +10789,7 @@ GameSession::DecorLayer::DecorLayer( Tileset *p_ts, int p_animLength, int p_anim
 	:ts( p_ts ), frame( 0 ), animLength( p_animLength ), startTile( p_startTile ), animFactor( p_animFactor ),
 	loopWait( p_loopWait )
 {
-	assert(ts != NULL);
+
 }
 
 void GameSession::DecorLayer::Update()

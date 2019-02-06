@@ -1106,6 +1106,8 @@ void MainMenu::SetMode(Mode m)
 	{
 		changedMode = true;
 	}
+
+	
 }
 
 void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
@@ -1509,10 +1511,6 @@ void MainMenu::Run()
 
 		switch( menuMode )
 		{
-		default:
-			cout << "fail mode" << endl;
-			assert(0);
-			break;
 		case SPLASH:
 			{
 				preScreenTexture->draw( splashSprite );
@@ -1846,38 +1844,10 @@ void MainMenu::PlayIntroMovie()
 void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
 {
 	m->deadLevel = m->currLevel;
-
-	sf::Time t = sf::seconds(5);
-	sf::Time t2 = sf::seconds(2);
-	//sf::sleep(t);
-
-	//for (int i = 0; i < 100; ++i)
-	//{
-	//	int *x = new int[100];
-	//	delete[] x;
-	//	int *y = new int;
-	//	delete y;
-	//	//GameSession *gs = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], m, levName);
-	//	//m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], m, levName);
-	//	//delete gs;
-	//}
-	
-	//sf::sleep(t2);
-
 	m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], m, levName);
-	//delete m->currLevel;
-
-	//sf::sleep(t);
 	
-	//GameSession::sLoad(m->currLevel);
-	//GameSession::sLoad(m->currLevel);
 	m->loadThread = new boost::thread(GameSession::sLoad, m->currLevel);
-	
-	
-	m->loadThread->join();
-	delete m->loadThread;
-	m->loadThread = NULL;
-	
+
 	SaveFile *currFile = m->GetCurrentProgress();
 	currFile->Save();
 
@@ -2318,7 +2288,6 @@ void MainMenu::HandleMenuMode()
 	}
 	case KINBOOSTLOADINGMAP:
 	{
-		//kinBoostScreen->Update();
 		while (window->pollEvent(ev))
 		{
 
@@ -2327,7 +2296,6 @@ void MainMenu::HandleMenuMode()
 		if (deadThread != NULL)
 		{
 			if (deadThread->try_join_for(boost::chrono::milliseconds(0)))
-			//if (deadThread->timed_join(boost::posix_time::seconds(0)))//boost::chrono::milliseconds(0)))
 			{
 				delete deadThread;
 				deadThread = NULL;
@@ -2337,21 +2305,16 @@ void MainMenu::HandleMenuMode()
 			}
 		}
 
-		//if (deadThread == NULL)
-		//{
-		//	if (loadThread != NULL)
-		//	{
-		//		if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
-		//		//if (loadThread->timed_join(boost::posix_time::seconds(0)))
-		//		{
-		//			delete loadThread;
-		//			loadThread = NULL;
-		//		}
-		//	}
-		//}
-
-		//if (loadThread == NULL && deadThread == NULL)
 		if (deadThread == NULL)
+		{
+			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				delete loadThread;
+				loadThread = NULL;
+			}
+		}
+
+		if (loadThread == NULL && deadThread == NULL)
 		{
 			SetMode( RUNNINGMAP );
 			//return HandleMenuMode();
