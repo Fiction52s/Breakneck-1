@@ -57,8 +57,8 @@ void KinBoostScreen::Reset()
 
 void KinBoostScreen::Update()
 {
-	int scrollFramesBack = 180;
-	int scrollFramesFront = 360;
+	int scrollFramesBack = 20;
+	int scrollFramesFront = 30;
 	float fBack = frame % scrollFramesBack;
 	float fFront = frame % scrollFramesFront;
 
@@ -70,17 +70,17 @@ void KinBoostScreen::Update()
 
 	for (int i = 0; i < 4; ++i)
 	{
-		scrollShaderStars[i].setUniform("quant", 0);
+		scrollShaderStars[i].setUniform("quant", 0.f);
 	}
 
-	scrollShaderLight[0].setUniform("quant", -facFront);
-	scrollShaderLight[1].setUniform("quant", -facBack);
+	scrollShaderLight[0].setUniform("quant", facFront);
+	scrollShaderLight[1].setUniform("quant", facBack);
 
 	++frame;
-	/*for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 2; ++i)
 	{
 		scrollShaderLight[i].setUniform("quant", -facBack);
-	}*/
+	}
 
 	
 }
