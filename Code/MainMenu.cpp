@@ -561,6 +561,9 @@ MainMenu::MainMenu()
 	pauseMenu = new PauseMenu(this);
 
 	titleScreen = new TitleScreen(this);
+
+	deadThread = NULL;
+	loadThread = NULL;
 	
 	ts_mainOption = tilesetManager.GetTileset("Menu/mainmenu_text_560x64.png", 560, 64);
 
@@ -1108,6 +1111,11 @@ void MainMenu::SetMode(Mode m)
 	else
 	{
 		changedMode = true;
+	}
+
+	if (menuMode == KINBOOSTLOADINGMAP)
+	{
+		kinBoostScreen->Reset();
 	}
 
 	
@@ -1795,12 +1803,15 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 
 void MainMenu::AdventureNextLevel(Level *lev)
 {
-	window->setVerticalSyncEnabled(false);
+	//window->setVerticalSyncEnabled(false);
 	//window->setFramerateLimit(60);
 	string levelPath = lev->GetFullName();// name;
 										  //View oldView = window->getView();
 	SetModeKinBoostLoadingMap(0);
-	deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, levelPath );
+
+	kinBoostScreen->levName = levelPath;
+
+	//deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, levelPath);
 }
 
 void MainMenu::PlayIntroMovie()
@@ -1821,7 +1832,9 @@ void MainMenu::PlayIntroMovie()
 void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
 {
 
-	sf::sleep(sf::milliseconds(5000));
+	sf::sleep(sf::milliseconds(1000));
+
+	//m->window->setVerticalSyncEnabled(false);
 
 	SaveFile *currFile = m->GetCurrentProgress();
 	currFile->Save();
@@ -2314,7 +2327,7 @@ void MainMenu::HandleMenuMode()
 			}
 		}
 
-		if (loadThread == NULL && deadThread == NULL)
+		if ( kinBoostScreen->levName == "" && loadThread == NULL && deadThread == NULL)
 		{
 			window->setVerticalSyncEnabled(true);
 			SetMode( RUNNINGMAP );
@@ -2323,6 +2336,17 @@ void MainMenu::HandleMenuMode()
 		else
 		{
 			kinBoostScreen->Update();
+
+			if (kinBoostScreen->frame == 360)
+			{
+				window->setVerticalSyncEnabled(false);
+				//window->setFramerateLimit(60);
+				string levelPath = kinBoostScreen->levName;
+
+				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, levelPath);
+				kinBoostScreen->levName = "";
+			}
+			
 		}
 		break;
 	}

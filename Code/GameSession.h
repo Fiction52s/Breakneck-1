@@ -505,8 +505,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool fadingIn;
 	bool fadingOut;
 	int fadeAlpha;
-	void Fade( bool in, int frames, sf::Color c);
+	bool fadeSkipKin;
+	void Fade( bool in, int frames, sf::Color c, bool skipKin = false );
 	void UpdateFade();
+	bool IsFading();
 	void DrawFade( sf::RenderTarget *target );
 
 	bool drain;

@@ -8546,9 +8546,6 @@ int GameSession::Run()
 		//cloneShader.setUniform( "bubble5", pos5 );
 		//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
 		
-
-		
-		
 		
 
 
@@ -8597,10 +8594,27 @@ int GameSession::Run()
 		absorbDarkParticles->Draw(preScreenTex);
 
 		absorbShardParticles->Draw(preScreenTex);
-
+		
 		DrawFade(preScreenTex);
 
+		
+
 		preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
+		if (fadeSkipKin && fadeAlpha > 0 )//IsFading())
+		{
+			DrawEffects(EffectLayer::IN_FRONT);
+			for (int i = 0; i < 4; ++i)
+			{
+				p = GetPlayer(i);
+				if (p != NULL)
+				{
+					//if (p->action == Actor::DEATH)
+					{
+						p->Draw(preScreenTex);
+					}
+				}
+			}
+		}
 
 		preScreenTex->display();
 
@@ -13027,7 +13041,7 @@ void GameSession::Pause( int frames )
 	}
 }
 
-void GameSession::Fade( bool in, int frames, sf::Color c)
+void GameSession::Fade( bool in, int frames, sf::Color c, bool skipKin )
 {
 	if( in )
 	{
@@ -13044,6 +13058,13 @@ void GameSession::Fade( bool in, int frames, sf::Color c)
 	fadeRect.setFillColor( Color( c.r, c.g, c.b, 255 ) );
 	
 	fadeFrame = 0;
+
+	fadeSkipKin = skipKin;
+}
+
+bool GameSession::IsFading()
+{
+	return fadingIn || fadingOut;
 }
 
 void GameSession::UpdateFade()

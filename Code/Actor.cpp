@@ -2563,6 +2563,7 @@ void Actor::UpdatePrePhysics()
 		
 		if( !owner->scoreDisplay->active )
 		{
+			owner->Fade(false, 30, Color::Black, true);
 			SetAction(EXIT);
 			position = V2d(owner->goalNodePos.x, owner->goalNodePos.y -80.f);
 			frame = 0;

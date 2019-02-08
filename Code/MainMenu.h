@@ -610,6 +610,7 @@ struct MainMenu
 	ControllerState &GetCurrInput( int index );
 	ControllerState &GetPrevInputUnfiltered(int index);
 	ControllerState &GetCurrInputUnfiltered(int index);
+	
 
 	ControllerState menuPrevInput;
 	ControllerState menuCurrInput;
