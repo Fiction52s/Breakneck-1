@@ -1198,7 +1198,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 
 		grindActionLength = 32;
-		SetActionExpr( SPAWNWAIT );
+		//SetActionExpr( SPAWNWAIT );
+		SetActionExpr(INTRO);
 		frame = 0;
 		
 		timeSlowStrength = 5;

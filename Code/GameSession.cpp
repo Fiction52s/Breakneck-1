@@ -6729,7 +6729,7 @@ int GameSession::Run()
 					break;
 				case 1:
 				{
-					PoiInfo *pi = poiMap["nexuscore"];
+					/*PoiInfo *pi = poiMap["nexuscore"];
 					assert(pi != NULL);
 					double halfX = 480 * pi->cameraZoom;
 					double halfY = 270 * pi->cameraZoom;
@@ -6752,7 +6752,7 @@ int GameSession::Run()
 						{
 							cam.EaseOutOfManual(60);
 						}
-					}
+					}*/
 					break;
 				}
 				}

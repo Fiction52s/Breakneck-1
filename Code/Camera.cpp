@@ -649,7 +649,7 @@ void Camera::ManualUpdate( Actor *player )
 	UpdateEase();
 
 	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
-	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+	//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 }
 
 void Camera::UpdateZoomLevel( ControllerState &con, ControllerState &prevcon )

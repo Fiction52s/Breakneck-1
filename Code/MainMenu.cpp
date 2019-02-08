@@ -1103,7 +1103,7 @@ void MainMenu::SetMode(Mode m)
 	menuMode = m;
 	//only need this because the transition is seamless so inputs can
 	//get buffered
-	if (menuMode == MAINMENU)
+	if (menuMode == MAINMENU || menuMode == TRANS_MAIN_TO_SAVE)
 	{
 		//TerrainRender::CleanupLayers(); //saves a little time?
 		changedMode = false;
@@ -1832,7 +1832,7 @@ void MainMenu::PlayIntroMovie()
 void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
 {
 
-	sf::sleep(sf::milliseconds(1000));
+	//sf::sleep(sf::milliseconds(1000));
 
 	//m->window->setVerticalSyncEnabled(false);
 
@@ -2337,7 +2337,7 @@ void MainMenu::HandleMenuMode()
 		{
 			kinBoostScreen->Update();
 
-			if (kinBoostScreen->frame == 360)
+			if (kinBoostScreen->frame == 60)
 			{
 				window->setVerticalSyncEnabled(false);
 				//window->setFramerateLimit(60);

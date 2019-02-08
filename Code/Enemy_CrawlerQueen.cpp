@@ -350,6 +350,8 @@ void CrawlerQueen::ProcessState()
 	{
 		switch (action)
 		{
+		case HURT:
+			break;
 		case WAIT:
 			break;
 		case BOOST:
