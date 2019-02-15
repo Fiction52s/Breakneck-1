@@ -39,6 +39,10 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 		storySeq = new StorySequence(owner);
 		storySeq->Load("kinhouse");
 		break;
+	case TRIGGER_GETAIRDASH:
+		storySeq = new StorySequence(owner);
+		storySeq->Load("getairdash");
+		break;
 	}
 
 	receivedHit = NULL;
@@ -86,6 +90,10 @@ TriggerType GroundTrigger::GetTriggerType(const std::string &typeStr)
 	std::transform(testStr.begin(), testStr.end(), testStr.begin(), ::tolower);
 	if (testStr == "housefamily")
 		return TRIGGER_HOUSEFAMILY;
+	else if (testStr == "getairdash")
+	{
+		return TRIGGER_GETAIRDASH;
+	}
 	else
 	{
 		assert(0);

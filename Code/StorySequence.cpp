@@ -10,6 +10,30 @@
 using namespace std;
 using namespace sf;
 
+
+EffectLayer StringToEffectLayer(const std::string &str)
+{
+	string testStr = str;
+	std::transform(testStr.begin(), testStr.end(), testStr.begin(), ::tolower);
+
+	if (str == "behind_terrain")
+	{
+		return BEHIND_TERRAIN;
+	}
+	else if (str == "behind_enemies")
+	{
+		return BEHIND_ENEMIES;
+	}
+	else if (str == "between_player_and_enemies")
+	{
+		return BETWEEN_PLAYER_AND_ENEMIES;
+	}
+	else if (str == "in_front_of_ui")
+	{
+		return IN_FRONT_OF_UI;
+	}
+}
+
 StoryText::StoryText( sf::Font &font, const std::string &p_str, Vector2f &pos )
 {
 	textStr = p_str;
@@ -82,11 +106,23 @@ bool StorySequence::Load(const std::string &sequenceName)
 			{
 				continue;
 			}
+			bool blankImage = false;
+			if (imageName == "wait")
+			{
+				blankImage = true;
+				//empty wait on a certain layer
+			}
 
-			ss >> waste;
 			int posx, posy;
-			ss >> posx;
-			ss >> posy;
+			if (!blankImage)
+			{
+
+
+				ss >> waste;
+				ss >> posx;
+				ss >> posy;
+
+			}
 
 			
 
@@ -108,7 +144,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 			bool bhasSubLayer = false;
 			bool bHasMusic = false;
 			bool bHasText = false;
-
+			EffectLayer efL = IN_FRONT;
 
 			while (true)
 			{
@@ -137,6 +173,12 @@ bool StorySequence::Load(const std::string &sequenceName)
 				else if (typeStr == "sublayer")
 				{
 					bhasSubLayer = true;
+				}
+				else if (typeStr == "drawlayer")
+				{
+					string layerStr;
+					ss >> layerStr;
+					efL = StringToEffectLayer(layerStr);
 				}
 				//continue;
 			}
@@ -266,19 +308,30 @@ bool StorySequence::Load(const std::string &sequenceName)
 			StoryPart *sp = new StoryPart;
 			string fullImagePath = string("Story/") + imageName + string(".png");
 			sp->imageName = imageName;
-			sp->ts = tm->GetTileset(fullImagePath, 0, 0);
-			if (sp->ts == NULL)
+
+			if (!blankImage)
 			{
-				assert(false && "tileset not loading for story");
+				sp->ts = tm->GetTileset(fullImagePath, 0, 0);
+				if (sp->ts == NULL)
+				{
+					assert(false && "tileset not loading for story");
+				}
+				sp->spr.setTexture(*sp->ts->texture);
+				sp->spr.setPosition(posx, posy);
+				sp->blank = false;
 			}
-			sp->spr.setTexture(*sp->ts->texture);
-			sp->spr.setPosition(posx, posy);
+			else
+			{
+				sp->blank = true;
+			}
+			
 			sp->hasIntro = bHasIntro;
 			sp->layer = layer;
 			sp->time = time;
 			sp->totalFrames = time * 60.f;
 			sp->text = sText;
 			sp->music = sm;
+			sp->effectLayer = efL;
 
 			/*if (owner->mainMenu->musicManager->songMap.count() == 0)
 			{
@@ -306,7 +359,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 			}
 			else
 			{
-				parts.push_back(sp);
+				parts[layer].push_back(sp);
 			}
 
 			if (bhasSubLayer)
@@ -331,56 +384,110 @@ bool StorySequence::Load(const std::string &sequenceName)
 
 void StorySequence::Reset()
 {
-	for (auto it = parts.begin(); it != parts.end(); ++it)
+	for (int i = 0; i < NUM_LAYERS; ++i)
 	{
-		(*it)->Reset();
+		auto &layerParts = parts[i];
+
+		for (auto it = layerParts.begin(); it != layerParts.end(); ++it)
+		{
+			(*it)->Reset();
+		}
+
+		if (!layerParts.empty())
+		{
+			currPartIt[i] = layerParts.begin();
+		}
+
+		pUpdate[i] = false;
 	}
-	currPartIt = parts.begin();
 }
 
 void StorySequence::Draw(sf::RenderTarget *target)
 {
-	(*currPartIt)->Draw(target);
+	for (int i = 0; i < NUM_LAYERS; ++i)
+	{
+		if( pUpdate[i] )
+		{
+			(*currPartIt[i])->Draw(target);
+		}
+	}
 }
 
-bool StorySequence::Update(ControllerState &prev, ControllerState &curr)
+void StorySequence::DrawLayer(sf::RenderTarget *target, EffectLayer eLayer )
 {
-	if (currPartIt == parts.end())
+	int startIndex = 0;
+	int endIndex = NUM_LAYERS;
+
+	for (int i = startIndex; i < endIndex; ++i)
+	{
+		if (pUpdate[i])
+		{
+			auto &cpi = (*currPartIt[i]);
+			if (cpi->effectLayer == eLayer)
+			{
+				cpi->Draw(target);
+			}
+		}
+	}
+}
+
+bool StorySequence::UpdateLayer(int layer, ControllerState &prev, ControllerState &curr)
+{
+	list<StoryPart*> &layerParts = parts[layer];
+	list<StoryPart*>::iterator &layerCurrPartIt = currPartIt[layer];
+
+	if ( layerParts.empty() || layerCurrPartIt == layerParts.end())
 	{
 		return false;
 	}
 
-	if ((*currPartIt)->frame == 0)
+	if ((*layerCurrPartIt)->frame == 0)
 	{
-		if ((*currPartIt)->music != NULL)
+		if ((*layerCurrPartIt)->music != NULL)
 		{
-			float transTime = (*currPartIt)->music->transitionSeconds;
-			if ( transTime > 0)
+			float transTime = (*layerCurrPartIt)->music->transitionSeconds;
+			if (transTime > 0)
 			{
 				int transFrames = transTime * 60.f;
-				owner->TransitionMusic((*currPartIt)->music->musicName, 
-					(*currPartIt)->music->startTime, transFrames);
+				owner->TransitionMusic((*layerCurrPartIt)->music->musicName,
+					(*layerCurrPartIt)->music->startTime, transFrames);
 			}
 			else
 			{
-				owner->PlayMusic((*currPartIt)->music->musicName, (*currPartIt)->music->startTime);
+				owner->PlayMusic((*layerCurrPartIt)->music->musicName, (*layerCurrPartIt)->music->startTime);
 			}
-			
+
 		}
 	}
 
-	bool updateSuccess = (*currPartIt)->Update( prev, curr );
+	bool updateSuccess = (*layerCurrPartIt)->Update(prev, curr);
 	if (!updateSuccess)
 	{
-		++currPartIt;
+		++layerCurrPartIt;
 
-		if (currPartIt == parts.end())
+		if (layerCurrPartIt == layerParts.end())
 		{
 			return false;
 		}
 	}
 
 	return true;
+}
+
+bool StorySequence::Update(ControllerState &prev, ControllerState &curr)
+{
+	bool keepUpdating = false;
+	bool updateSuccess;
+	for (int i = 0; i < NUM_LAYERS; ++i)
+	{
+		updateSuccess = UpdateLayer(i, prev, curr);
+		pUpdate[i] = updateSuccess;
+		if (updateSuccess)
+		{
+			keepUpdating = true;
+		}
+	}
+	return keepUpdating;
 }
 
 StoryPart::StoryPart()
@@ -392,6 +499,8 @@ StoryPart::StoryPart()
 	totalFrames = -1;
 	sub = NULL;
 	text = NULL;
+	effectLayer = EffectLayer::IN_FRONT;
+	blank = true;
 }
 
 void StoryPart::Reset()
@@ -403,6 +512,7 @@ void StoryPart::Reset()
 	frame = 0;
 	if (text != NULL)
 		text->Reset();
+
 }
 
 void StoryPart::Draw(sf::RenderTarget *target)
@@ -417,7 +527,12 @@ void StoryPart::Draw(sf::RenderTarget *target)
 	{
 		sub->Draw(target);
 	}
-	target->draw(spr);
+
+	if (!blank)
+	{
+		target->draw(spr);
+	}
+
 	if ( !showText && frame == totalFrames && sub != NULL && sub->layer >= layer)
 	{
 		sub->Draw(target);
@@ -456,4 +571,145 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 		++frame;
 		return true;
 	}
+}
+
+StoryImage::StoryImage()
+{
+	isConfirmNeeded = false;
+	introLength = 0;
+	intro = I_NONE;
+
+	flipx = false;
+	flipy = false;
+
+	ts = NULL;
+}
+
+void StoryImage::SetIntro(ImageIntro iType, int frameLength)
+{
+	intro = iType;
+	introLength = frameLength;
+}
+
+void StoryImage::SetOutro(ImageOutro oType, int frameLength)
+{
+	outro = oType;
+	outroLength = frameLength;
+}
+
+void StoryImage::Reset()
+{
+	frame = 0;
+}
+
+void StoryImage::SetConfirmNeeded(bool cn)
+{
+	isConfirmNeeded = cn;
+}
+
+//to do multi image sequences in a row or animations, just make more of these objects
+bool StoryImage::Update( bool confirm )
+{
+	if (frame < introLength )
+	{
+		UpdateIntro();
+	}
+	else
+	{
+		
+		int aFrame = frame - introLength;
+		if (isConfirmNeeded && aFrame >= activeLength)
+		{
+			frame = introLength + activeLength - 1;
+		}
+
+		if (aFrame < activeLength)
+		{
+			UpdateActive();
+		}
+		else
+		{
+			int oFrame = aFrame - activeLength;
+			if (oFrame < outroLength)
+			{
+				UpdateOutro();
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
+
+	++frame;
+
+	return true;
+}
+
+void StoryImage::SetFlip(bool x, bool y)
+{
+	if (flipx != x || flipy != y)
+	{
+		flipx = x;
+		flipy = y;
+
+		UpdateImage();
+	}
+}
+
+void StoryImage::SetImage(Tileset *t, int tileIndex)
+{
+	ts = t;
+	tile = tileIndex;
+
+	UpdateImage();
+}
+
+void StoryImage::UpdateImage()
+{
+	IntRect ir = ts->GetSubRect(tile);
+	if (flipx)
+	{
+		ir.left += ir.width;
+		ir.width = -ir.width;
+	}
+	if (flipy)
+	{
+		ir.top += ir.height;
+		ir.height = -ir.height;
+	}
+
+	spr.setTextureRect(ir);
+}
+
+void StoryImage::UpdateIntro()
+{
+	int tFrame = frame;
+}
+
+void StoryImage::UpdateActive()
+{
+	int tFrame = frame - introLength;
+}
+
+void StoryImage::UpdateOutro()
+{
+	int tFrame = frame - introLength - activeLength;
+}
+
+void StoryImage::Draw(sf::RenderTarget *target)
+{
+	target->draw(spr);
+}
+
+void StoryImage::SetPositionTopLeft(sf::Vector2f &pos)
+{
+	spr.setPosition(pos);
+	spr.setOrigin(0, 0);
+}
+
+void StoryImage::SetPositionCenter(sf::Vector2f &pos)
+{
+	spr.setPosition(pos);
+	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2 );
 }

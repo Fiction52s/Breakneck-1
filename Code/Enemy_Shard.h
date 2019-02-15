@@ -29,7 +29,8 @@ struct Shard : Enemy
 	void ProcessHit();
 	void UpdateHitboxes();
 	void ResetEnemy();
-	void DissipateOnCapture();
+	void DissipateOnTouch();
+	void Capture();
 
 	CollisionBody *hitBody;
 	CollisionBody *hurtBody;

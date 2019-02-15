@@ -6707,6 +6707,17 @@ int GameSession::Run()
 						p->UpdatePrePhysics();
 				}
 
+				if (currStorySequence != NULL)
+				{
+					if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
+					{
+						currStorySequence = NULL;
+					}
+					else
+					{
+					}
+				}
+
 				if (inputVis != NULL)
 					inputVis->Update(GetPlayer(0)->currInput);
 
@@ -7591,7 +7602,7 @@ int GameSession::Run()
 		preScreenTex->draw(blackBorderQuads, 8, sf::Quads);
 		
 		
-
+		DrawStoryLayer(EffectLayer::BEHIND_TERRAIN);
 		DrawEffects( EffectLayer::BEHIND_TERRAIN );
 		
 		int timesDraw = 0;
@@ -7816,6 +7827,7 @@ int GameSession::Run()
 			(*it)->Draw(preScreenTex);
 		}
 
+		DrawStoryLayer(EffectLayer::BEHIND_ENEMIES);
 		DrawEffects( EffectLayer::BEHIND_ENEMIES );
 
 
@@ -7828,6 +7840,8 @@ int GameSession::Run()
 			activeSequence->Draw(preScreenTex);
 		}
 		
+
+		DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
 		//bigBulletVA->draw( preScreenTex );
 
@@ -7908,7 +7922,7 @@ int GameSession::Run()
 
 		//whited out hit enemies
 		
-
+		DrawStoryLayer(EffectLayer::IN_FRONT);
 		DrawEffects( EffectLayer::IN_FRONT );
 
 		if( ts_basicBullets != NULL )
@@ -9265,6 +9279,8 @@ int GameSession::Run()
 					}
 				}
 
+				UpdateFade();
+
 				accumulator -= TIMESTEP;
 			}
 
@@ -9273,6 +9289,10 @@ int GameSession::Run()
 				preScreenTex->setView(uiView);
 				currStorySequence->Draw(preScreenTex);
 			}
+
+			preScreenTex->setView(uiView);
+			DrawFade(preScreenTex);
+
 			preTexSprite.setTexture(preScreenTex->getTexture());
 			preTexSprite.setPosition(-960 / 2, -540 / 2);
 			preTexSprite.setScale(.5, .5);
@@ -9967,6 +9987,17 @@ void GameSession::DebugDrawActors()
 	}
 }
 
+void GameSession::DrawStoryLayer(EffectLayer ef)
+{
+	if (currStorySequence != NULL)
+	{
+		sf::View oldV = preScreenTex->getView();
+		preScreenTex->setView(uiView);
+		currStorySequence->DrawLayer(preScreenTex, ef);
+		preScreenTex->setView(oldV);
+	}
+}
+
 void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 {
 	for( list<Enemy*>::iterator it = currentZone->allEnemies.begin();
@@ -10362,6 +10393,7 @@ void GameSession::RestartLevel()
 		levelMusic->music->play();
 	}*/
 
+	currStorySequence = NULL;
 	musicFadeOutMax = -1;
 	musicFadeInMax = -1;
 

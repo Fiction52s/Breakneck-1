@@ -340,6 +340,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int numVertices;
 	};
 
+	void DrawStoryLayer(EffectLayer ef);
 	SoundNode *ActivateSound( V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
 	std::map<std::string, Tileset*> decorTSMap;
 	//std::map<std::string, std::list<int>> decorTileIndexes;

@@ -5,7 +5,7 @@
 #include "ObjectPool.h"
 
 
-
+struct StorySequence;
 struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 {
 	enum Action
@@ -81,6 +81,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void ConfirmKill();
 	void Init();
 	void Setup();
+
+	StorySequence *storySeq;
 
 	Tileset *ts[Count];
 	void SetLevel();

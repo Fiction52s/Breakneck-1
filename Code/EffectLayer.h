@@ -12,4 +12,6 @@ enum EffectLayer
 	Count
 };
 
+EffectLayer StringToEffectLayer(const std::string &str);
+
 #endif 

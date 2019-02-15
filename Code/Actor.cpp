@@ -1124,7 +1124,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SKYDIVETOFALL] = 10 * 4;
 		actionLength[WAITFORSHIP] = 60 * 1;
 		actionLength[GRABSHIP] = 10 * 5 + 20;
-		actionLength[GETPOWER_AIRDASH_MEDITATE] = 120;
+		actionLength[GETPOWER_AIRDASH_MEDITATE] = 300;
 		actionLength[RIDESHIP] = 1;
 		actionLength[SKYDIVE] = 9 * 2;
 		actionLength[EXIT] = 29 * 2;
@@ -1416,39 +1416,45 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//runPoints = new std::list<Vector2f>[runLen];
 		//standPoints = new std::list<Vector2f>[20];
 
-		bool noPowers = false;
-		if (owner->mainMenu->GetCurrentProgress() != NULL
-			&& owner->mainMenu->worldMap->selectedColony == 0)
-		{
-			noPowers = true;
-		}
+		hasPowerAirDash = false;
+		hasPowerGravReverse = false;
+		hasPowerBounce = false;
+		hasPowerGrindBall = false;
+		hasPowerTimeSlow = false;
+		hasPowerLeftWire = false;
+		hasPowerRightWire = false;
+
+		SaveFile *currProgress = owner->mainMenu->GetCurrentProgress();
+		//if (currProgress == NULL )
+		//{
+		//	hasPowerAirDash = true;
+		//	hasPowerGravReverse = true;
+		//	hasPowerBounce = true;
+		//	hasPowerGrindBall = true;
+		//	hasPowerTimeSlow = true;
+		//	hasPowerLeftWire = true;
+		//	hasPowerRightWire = true;
+		//	//hasPowerClones = MAX_GHOSTS;
+		//	hasPowerClones = 0;
+		//}
+
+		//bool noPowers = false;
 		
-		noPowers = true;
-		if( noPowers )
-		{
-			hasPowerAirDash = false;
-			hasPowerGravReverse = false;
-			hasPowerBounce = false;
-			hasPowerGrindBall = false;
-			hasPowerTimeSlow = false;
-			hasPowerLeftWire = false;
-			hasPowerRightWire = false;
-			hasPowerClones = 0;
-		}
-		else
+		if ( currProgress != NULL && currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
 		{
 			hasPowerAirDash = true;
-			hasPowerGravReverse = true;
-			hasPowerBounce = true;
-			hasPowerGrindBall = true;
-			hasPowerTimeSlow = true;
-
-			//wire still under development
-			hasPowerLeftWire = true;
-			hasPowerRightWire = true;
-			//hasPowerClones = MAX_GHOSTS;
-			hasPowerClones = 0;
 		}
+		
+		
+		
+
+		startHasPowerAirDash = hasPowerAirDash;
+		startHasPowerGravReverse =	hasPowerGravReverse;
+		startHasPowerBounce = hasPowerBounce;
+		startHasPowerGrindBall = hasPowerGrindBall;
+		startHasPowerTimeSlow = hasPowerTimeSlow;
+		startHasPowerLeftWire = hasPowerLeftWire;
+		startHasPowerRightWire = hasPowerRightWire;
 
 		//do this a little later.
 		owner->mainMenu->pauseMenu->kinMenu->UpdatePowers(this);
@@ -2011,6 +2017,14 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	hasPowerAirDash = startHasPowerAirDash;
+	hasPowerGravReverse = startHasPowerGravReverse;
+	hasPowerBounce = startHasPowerBounce;
+	hasPowerGrindBall = startHasPowerGrindBall;
+	hasPowerTimeSlow = startHasPowerTimeSlow;
+	hasPowerLeftWire = startHasPowerLeftWire;
+	hasPowerRightWire = startHasPowerRightWire;
+
 	activeComboObjList = NULL;
 
 	currBBoostCounter = 0;
@@ -16504,6 +16518,25 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		owner->currStorySequence = trigger->storySeq;
 		owner->state = GameSession::STORY;
 		
+		break;
+	case TRIGGER_GETAIRDASH:
+		desperationMode = false;
+		SetExpr(Expr_NEUTRAL);
+		assert(ground != NULL);
+		edgeQuantity = trigger->edgeQuantity;
+		groundSpeed = 0;
+		//facingRight = trigger->facingRight;
+
+		if (ground->Normal().y == -1)
+		{
+			offsetX = 0;
+		}
+
+		SetAction(GETPOWER_AIRDASH_MEDITATE);
+		frame = 0;
+		physicsOver = true;
+		owner->currStorySequence = trigger->storySeq;
+		//owner->state = GameSession::STORY;
 		break;
 	}
 }

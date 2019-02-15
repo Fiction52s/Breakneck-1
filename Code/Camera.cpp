@@ -1179,9 +1179,23 @@ void Camera::Update( Actor *player )
 	else if( enemyZoom <= zFactor )
 	{
 		double zDiff = zFactor - zoomFactor;
+		double changeThresh = .001;
+		double change;
 		if (zDiff > 0)
 		{
-			zoomFactor += zDiff / 100.0/*35.0*/ / player->slowMultiple;
+			change = zDiff / 100.0;
+			if (change < changeThresh)
+			{
+				change = changeThresh;
+			}
+			if (zDiff < changeThresh)
+			{
+				zoomFactor = zFactor;
+			}
+			else
+			{
+				zoomFactor += change / player->slowMultiple;
+			}
 		}
 		else if (zDiff < 0)
 		{
@@ -1189,8 +1203,23 @@ void Camera::Update( Actor *player )
 			//bool more = oldZoom > testZoom;
 			//if (numActive == 0 )// || more)
 			{
+				change = zDiff / 200.0;
+				if (-change < changeThresh)
+				{
+					change = -changeThresh;
+				}
+
+				if (-zDiff < changeThresh)
+				{
+					zoomFactor = zFactor;
+				}
+				else
+				{
+					zoomFactor += change / player->slowMultiple;
+				}
+				
 				//zoomFactor += zDiff / 350.0 / player->slowMultiple;
-				zoomFactor += zDiff / 200.0 / player->slowMultiple;
+				
 				/*if (more)
 				{
 					if (zoomFactor < testZoom)

@@ -4,6 +4,7 @@
 #include <SFML\Graphics.hpp>
 #include "Tileset.h"
 #include "Input.h"
+#include "EffectLayer.h"
 
 struct MusicInfo;
 struct StoryMusic
@@ -44,7 +45,10 @@ struct StoryPart
 	StoryText *text;
 	StoryPart *sub;
 
+	EffectLayer effectLayer;
+
 	StoryMusic *music;
+	bool blank;
 };
 
 struct GameSession;
@@ -54,15 +58,74 @@ struct StorySequence
 	StorySequence(GameSession *owner);
 	bool Load( const std::string &sequenceName );
 	void Reset();
-	bool Update(ControllerState &prev, ControllerState &curr);
+	bool Update( ControllerState &prev, ControllerState &curr);
+	bool UpdateLayer( int layer, ControllerState &prev, ControllerState &curr);
 	void Draw( sf::RenderTarget *target );
-	std::list<StoryPart*> parts;
-	std::list<StoryPart*>::iterator currPartIt;
+	void DrawLayer(sf::RenderTarget *target, EffectLayer eLayer);
+
+	const static int NUM_LAYERS = 16;
+	std::list<StoryPart*> parts[NUM_LAYERS];
+	bool pUpdate[NUM_LAYERS];
+	std::list<StoryPart*>::iterator currPartIt[NUM_LAYERS];
 	TilesetManager *tm;
 	sf::Font &myFont;
 	GameSession *owner;
 
 	MusicInfo *oldMusic;
+};
+
+
+
+struct StoryImage
+{
+	enum ImageIntro
+	{
+		I_NONE
+	};
+
+	enum ImageOutro
+	{
+		O_NONE
+	};
+
+	ImageIntro intro;
+	ImageOutro outro;
+	StoryImage();
+	void SetIntro(ImageIntro iType, int frameLength);
+	void SetOutro(ImageOutro iType, int frameLength);
+	void SetImage(Tileset *t, int tileIndex);
+	void Reset();
+	void SetScale(sf::Vector2f &scale);
+	void SetPositionTopLeft(sf::Vector2f &pos);
+	void SetPositionCenter(sf::Vector2f &pos);
+	void SetRotation(float rot);
+	void SetFlip(bool x, bool y);
+	void UpdateImage();
+	bool flipx;
+	bool flipy;
+	
+	void SetConfirmNeeded( bool cn );
+	bool isConfirmNeeded;
+	bool Update( bool confirm = false );
+	void UpdateIntro();
+	void UpdateActive();
+	void UpdateOutro();
+
+	void Draw(sf::RenderTarget *target);
+	
+	sf::Sprite spr;
+	Tileset *ts;
+	int tile;
+	int frame;
+	
+	int introLength;
+	int activeLength;
+	int outroLength;
+};
+
+struct StoryImageSequence
+{
+
 };
 
 #endif

@@ -26,6 +26,7 @@ void Shard::SetupShardMaps()
 {
 	shardTypeMap["SHARD_W1_TEACH_JUMP"] = SHARD_W1_TEACH_JUMP;
 	shardTypeMap["BACKWARDS_DASH_JUMP"] = SHARD_W1_BACKWARDS_DASH_JUMP;
+	shardTypeMap["SHARD_W1_GET_AIRDASH"] = SHARD_W1_GET_AIRDASH;
 	for (auto it = shardTypeMap.begin(); it != shardTypeMap.end(); ++it)
 	{
 		shardStrMap[(*it).second] = (*it).first;
@@ -142,14 +143,19 @@ std::string Shard::GetShardString(ShardType st)
 void Shard::IHitPlayer(int index)
 {
 	if( action == FLOAT )
-		DissipateOnCapture();
+		DissipateOnTouch();
 }
 
-void Shard::DissipateOnCapture()
+void Shard::DissipateOnTouch()
 {
 	action = DISSIPATE;
 	frame = 0;
 
+	Capture();
+}
+
+void Shard::Capture()
+{
 	if (owner->saveFile != NULL)
 	{
 		assert(!owner->saveFile->shardField.GetBit(shardType));
@@ -207,7 +213,7 @@ void Shard::ProcessHit()
 {
 	if (!dead && ReceivedHit() && action == FLOAT)
 	{
-		DissipateOnCapture();
+		DissipateOnTouch();
 	}
 }
 

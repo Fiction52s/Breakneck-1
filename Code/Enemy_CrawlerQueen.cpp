@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_CrawlerQueen.h"
 #include "VisualEffects.h"
+#include "StorySequence.h"
 
 using namespace std;
 using namespace sf;
@@ -28,6 +29,9 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	//ClearDecisionMarkers();
 
 	//memset(decideVA, 0, MAX_DECISIONS * 4);
+
+	storySeq = new StorySequence(owner);
+	storySeq->Load("queenhurt");
 
 	progressionLevel = 0;
 	bombSpeed = 2;
@@ -224,6 +228,7 @@ void CrawlerQueen::InitEdgeInfo()
 
 void CrawlerQueen::ResetEnemy()
 {
+	storySeq->Reset();
 	ClearDecisionMarkers();
 	decisionPool->DeactivateAll();
 	invinc = false;
@@ -356,8 +361,6 @@ void CrawlerQueen::ProcessState()
 			break;
 		case BOOST:
 		{
-			
-			
 			break;
 		}
 		case DECIDE:
@@ -912,6 +915,13 @@ void CrawlerQueen::ConfirmKill()
 	}
 
 	owner->cam.EaseOutOfManual(60);
+
+	mover->groundSpeed = 0;
+
+	Actor *p = owner->GetPlayer(0);
+
+	owner->currStorySequence = storySeq;
+	owner->state = GameSession::STORY;
 }
 
 void CrawlerQueen::SetLevel()

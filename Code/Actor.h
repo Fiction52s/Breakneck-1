@@ -319,6 +319,8 @@ struct Actor : QuadTreeCollider,
 		T_PURPLE
 	};
 	
+
+
 	bool IsGoalKillAction(Action a);
 	bool IsIntroAction(Action a);
 	bool IsExitAction(Action a);
@@ -1070,6 +1072,15 @@ struct Actor : QuadTreeCollider,
 	bool hasPowerTimeSlow;
 	bool hasPowerLeftWire;
 	bool hasPowerRightWire;
+
+	bool startHasPowerAirDash;
+	bool startHasPowerGravReverse;
+	bool startHasPowerBounce;
+	bool startHasPowerGrindBall;
+	bool startHasPowerTimeSlow;
+	bool startHasPowerLeftWire;
+	bool startHasPowerRightWire;
+
 	int hasPowerClones;
 
 
