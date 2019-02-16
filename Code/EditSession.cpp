@@ -9998,6 +9998,19 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					if (drawingCreateRect)
 					{
 						drawingCreateRect = false;
+
+						createRectCurrPoint = Vector2i(worldPos);
+
+						Vector2i rc = (createRectStartPoint + createRectCurrPoint) / 2;
+						float width = abs(createRectCurrPoint.x - createRectStartPoint.x);
+						float height = abs(createRectCurrPoint.y - createRectStartPoint.y);
+						rectCreatingTrigger->SetRect(width, height, rc);
+
+						if (trackingEnemy != NULL)
+						{
+							enemySprite.setPosition(Vector2f(rc));
+							enemyQuad.setPosition(enemySprite.getPosition());
+						}
 					}
 					break;
 				}
@@ -10017,11 +10030,20 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						{
 							//showPanel = trackingEnemy->panel;
 							ISelectable *select = selectedBrush->objects.front().get();
-							AirTriggerParams *airTrigger = (AirTriggerParams*)select;
-							showPanel = airTrigger->type->panel;
-							//airTrigger->SetRect();
+							AirTriggerParams *actor = (AirTriggerParams*)select;
+							showPanel = actor->type->panel;
+							//actor->SetPath(patrolPath);
 							//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
 							mode = EDIT;
+						}
+						else
+						{
+							showPanel = trackingEnemy->panel;
+							//ISelectable *select = selectedBrush->objects.front().get();
+							//ActorParams *actor = (ActorParams*)select;
+							//tempActor->SetPath(patrolPath);
+							//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+							mode = CREATE_ENEMY;
 						}
 					}
 					//	else
@@ -12040,6 +12062,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				float width = abs(createRectCurrPoint.x - createRectStartPoint.x);
 				float height = abs(createRectCurrPoint.y - createRectStartPoint.y);
 				rectCreatingTrigger->SetRect(width, height, rc);
+
+				if (trackingEnemy != NULL)
+				{
+					enemySprite.setPosition(Vector2f(rc));
+					enemyQuad.setPosition(enemySprite.getPosition());
+				}
 			}
 			break;
 		}
@@ -12457,6 +12485,32 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				break;
 			}
+		case CREATE_RECT:
+		{
+			rectCreatingTrigger->Draw(preScreenTex);
+			/*if (trackingEnemy != NULL)
+			{
+				if (tempActor != NULL)
+				{
+					tempActor->Draw(preScreenTex);
+				}
+				else
+				{
+					preScreenTex->draw(enemySprite);
+				}
+				preScreenTex->draw(enemyQuad);
+			}
+			else
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				AirTriggerParams *airTrigger = (AirTriggerParams*)select;
+
+				airTrigger->Draw(preScreenTex);
+			}*/
+			
+
+			break;
+		}
 		case CREATE_PATROL_PATH:
 			{
 
@@ -14968,7 +15022,9 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 
 			showPanel = NULL;
+			
 			mode = CREATE_RECT;
+			drawingCreateRect = false;
 			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 		}
 		//else if (b->name == "createpath")

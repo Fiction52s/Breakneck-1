@@ -2292,9 +2292,10 @@ AirTriggerParams::AirTriggerParams(EditSession *edit, sf::Vector2i &pos)
 
 	SetBoundingQuad();
 
-	triggerRect.setFillColor(Color::Transparent);
-	triggerRect.setOutlineColor(Color::Red);
-	triggerRect.setOutlineThickness(10);
+	//triggerRect.setFillColor(Color::Transparent);
+	//triggerRect.setOutlineColor(Color::Red);
+	//triggerRect.setOutlineThickness(10);
+	triggerRect.setFillColor(Color(200, 200, 200, 150));
 
 	rectWidth = 50;
 	rectHeight = 50;
@@ -2314,9 +2315,9 @@ AirTriggerParams::AirTriggerParams(EditSession *edit, sf::Vector2i &pos, const s
 	image.setPosition(pos.x, pos.y);
 
 
-	triggerRect.setFillColor(Color::Transparent);
-	triggerRect.setOutlineColor(Color::Red);
-	triggerRect.setOutlineThickness(10);
+	triggerRect.setFillColor(Color(200, 200, 200, 150));//Color::Transparent);
+	//triggerRect.setOutlineColor(Color::Red);
+	//triggerRect.setOutlineThickness(10);
 	
 	rectWidth = w;
 	rectHeight = h;
@@ -2334,6 +2335,7 @@ void AirTriggerParams::SetRect(int width, int height, Vector2i &center)
 		triggerRect.getLocalBounds().height / 2);
 	position = center;
 	triggerRect.setPosition(position.x, position.y);
+	image.setPosition(position.x, position.y);
 	SetBoundingQuad();
 }
 
