@@ -537,6 +537,29 @@ struct GroundTriggerParams : public ActorParams
 	bool facingRight;
 };
 
+struct AirTriggerParams : public ActorParams
+{
+	AirTriggerParams(EditSession *edit,
+		sf::Vector2i &pos, const std::string &typeStr,
+		int w, int h );
+	AirTriggerParams(EditSession *edit,
+		sf::Vector2i &pos);
+	void WriteParamFile(std::ofstream &of);
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool CanApply();
+	void SetRect(int width, int height, sf::Vector2i &center);
+	ActorParams *Copy();
+	void Draw(sf::RenderTarget *target);
+	std::string trigType;
+	int rectWidth;
+	int rectHeight;
+
+	sf::RectangleShape triggerRect;
+	sf::Text nameText;
+};
 //all
 struct NexusParams : public ActorParams
 {
@@ -714,6 +737,8 @@ struct RaceFightTargetParams : public ActorParams
 	bool CanApply();
 	ActorParams *Copy();
 };
+
+
 
 struct BlockerParams : public ActorParams
 {
@@ -1971,6 +1996,11 @@ struct EditSession : GUIHandler
 	std::map<std::string, std::list<int>> decorTileIndexMap;
 
 
+	bool drawingCreateRect;
+	sf::Vector2i createRectStartPoint;
+	sf::Vector2i createRectCurrPoint;
+	AirTriggerParams *rectCreatingTrigger;
+
 	enum Emode
 	{
 		CREATE_TERRAIN,
@@ -1978,6 +2008,7 @@ struct EditSession : GUIHandler
 		SELECT_MODE,
 		CREATE_PATROL_PATH,
 		CREATE_BLOCKER_CHAIN,
+		CREATE_RECT,
 		SET_DIRECTION,
 		//PLACE_PLAYER,
 		//PLACE_GOAL,

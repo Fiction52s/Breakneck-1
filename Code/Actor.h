@@ -250,6 +250,7 @@ struct Actor : QuadTreeCollider,
 		GETPOWER_AIRDASH_MEDITATE,		
 		GETPOWER_AIRDASH_FLIP,
 		ENTERNEXUS1,
+		AUTORUN,
 		Count
 	};
 
@@ -514,6 +515,9 @@ struct Actor : QuadTreeCollider,
 	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
 	sf::Vector2i GetWireOffset();
 	void RunMovement();
+	void AutoRunMovement();
+	void SetAutoRun( bool fr, double maxAutoRun );
+	double maxAutoRunSpeed;
 	void AttackMovement();
 	void DodecaLateDraw(sf::RenderTarget *target);
 	void SetActionGrind();

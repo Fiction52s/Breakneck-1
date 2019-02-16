@@ -1390,6 +1390,29 @@ bool EditSession::OpenFile()
 					terrain->enemies[a->groundInfo->edgeStart].push_back(a);
 					terrain->UpdateBounds();
 				}
+				else if (typeName == "airtrigger")
+				{
+					Vector2i pos;
+
+					//always air
+					is >> pos.x;
+					is >> pos.y;
+
+					string typeStr;
+					is >> typeStr;
+
+					int rectWidth;
+					is >> rectWidth;
+					
+					int rectHeight;
+					is >> rectHeight;
+					//int hasMonitor;
+					//is >> hasMonitor;
+
+					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
+					a.reset(new AirTriggerParams(this, pos, typeStr, rectWidth, rectHeight ));
+					//a->hasMonitor = (bool)hasMonitor;
+				}
 				else if( typeName == "shard" )
 				{
 					Vector2i pos;
@@ -6428,6 +6451,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	types["groundtrigger"] = groundTriggerType;
 
+	Panel *airTriggerPanel = CreateOptionsPanel("airtrigger");
+	ActorType *airTriggerType = new ActorType("airtrigger", airTriggerPanel);
+
+	types["airtrigger"] = airTriggerType;
+
 	Panel *lightPanel = CreateOptionsPanel( "light" );
 
 	messagePopup = CreatePopupPanel( "message" );
@@ -6447,6 +6475,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	gs->Set(7, 0, Sprite(blockerType->iconTexture), "blocker");
 	gs->Set(8, 0, Sprite(groundTriggerType->iconTexture), "groundtrigger");
 	gs->Set(9, 0, Sprite(comboerType->iconTexture), "comboer");
+	gs->Set(10, 0, Sprite(comboerType->iconTexture), "airtrigger");
 	
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
@@ -9009,6 +9038,13 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											showPanel = trackingEnemy->panel;
 										}
 									}
+									else if (trackingEnemy->name == "airtrigger")
+									{
+										tempActor = new AirTriggerParams(this, Vector2i(worldPos.x,
+											worldPos.y));
+										tempActor->SetPanelInfo();
+										showPanel = trackingEnemy->panel;
+									}
 									else if( trackingEnemy->name == "shard" )
 									{
 										tempActor = new ShardParams(this, Vector2i(worldPos.x,
@@ -9933,6 +9969,88 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				break;
 				}
+			case CREATE_RECT:
+			{
+				switch (ev.type)
+				{
+				case Event::MouseButtonPressed:
+				{
+					if (ev.mouseButton.button == Mouse::Left)
+					{
+						if (showPanel != NULL)
+						{
+							//cout << "edit mouse update" << endl;
+							showPanel->Update(true, uiMouse.x, uiMouse.y);
+							break;
+						}
+
+						if (!drawingCreateRect)
+						{
+							drawingCreateRect = true;
+							createRectStartPoint = Vector2i(worldPos);
+							createRectCurrPoint = Vector2i(worldPos);
+						}
+					}
+					break;
+				}
+				case Event::MouseButtonReleased:
+				{
+					if (drawingCreateRect)
+					{
+						drawingCreateRect = false;
+					}
+					break;
+				}
+				case Event::MouseWheelMoved:
+				{
+					break;
+				}
+				case Event::KeyPressed:
+				{
+					//if ((ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete) && patrolPath.size() > 1)
+					//{
+					//	patrolPath.pop_back();
+					//}
+					if (ev.key.code == Keyboard::Space)
+					{
+						if (selectedBrush->objects.size() == 1) //EDIT
+						{
+							//showPanel = trackingEnemy->panel;
+							ISelectable *select = selectedBrush->objects.front().get();
+							AirTriggerParams *airTrigger = (AirTriggerParams*)select;
+							showPanel = airTrigger->type->panel;
+							//airTrigger->SetRect();
+							//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+							mode = EDIT;
+						}
+					}
+					//	else
+					//	{
+					//		showPanel = trackingEnemy->panel;
+					//		//ISelectable *select = selectedBrush->objects.front().get();
+					//		//ActorParams *actor = (ActorParams*)select;
+					//		tempActor->SetPath(patrolPath);
+					//		//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
+					//		mode = CREATE_ENEMY;
+					//	}
+					//}
+					break;
+				}
+				case Event::KeyReleased:
+				{
+					break;
+				}
+				case Event::LostFocus:
+				{
+					break;
+				}
+				case Event::GainedFocus:
+				{
+					break;
+				}
+				}
+				break;
+			}
 			case SET_DIRECTION:
 			{
 				minimumPathEdgeLength = 16;
@@ -11908,6 +12026,23 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			{
 				break;
 			}
+		case CREATE_RECT:
+		{
+			if (showPanel != NULL)
+			break;
+
+
+			if (!panning && Mouse::isButtonPressed(Mouse::Left))
+			{
+				createRectCurrPoint = Vector2i(worldPos);
+
+				Vector2i rc = (createRectStartPoint + createRectCurrPoint) / 2;
+				float width = abs(createRectCurrPoint.x - createRectStartPoint.x);
+				float height = abs(createRectCurrPoint.y - createRectStartPoint.y);
+				rectCreatingTrigger->SetRect(width, height, rc);
+			}
+			break;
+		}
 		case CREATE_PATROL_PATH:
 			{
 				/*if( //polygonInProgress->points.size() > 0 && 
@@ -14784,6 +14919,71 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if (p->name == "airtrigger_options")
+	{
+		if (b->name == "ok")
+		{
+			if (mode == EDIT)
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				AirTriggerParams *airTrigger = (AirTriggerParams*)select;
+				airTrigger->SetParams();
+
+				//patroller->monitorType = GetMonitorType( p );
+				//patroller->speed = speed;
+				//patroller->loop = loop;
+				//patroller->SetPath( patrolPath );
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				//eventually can convert this between indexes or 
+				//something to simplify when i have more types
+				//cout << "tempActor: " << tempActor->type->name << endl;
+				ActorPtr airTrigger(tempActor);//new PatrollerParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+
+				airTrigger->SetParams();
+				airTrigger->group = groups["--"];
+				//patroller->SetParams();
+				//patroller->group = groups["--"];
+				//patroller->monitorType = GetMonitorType( p );
+
+				CreateActor(airTrigger);
+
+				tempActor = NULL;
+			}
+			showPanel = NULL;
+		}
+		else if (b->name == "createrect")
+		{
+			//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+			if (mode == EDIT)
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				AirTriggerParams *airTrigger = (AirTriggerParams*)select;
+				rectCreatingTrigger = airTrigger;
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				rectCreatingTrigger = (AirTriggerParams*)tempActor;
+			}
+
+			showPanel = NULL;
+			mode = CREATE_RECT;
+			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+		}
+		//else if (b->name == "createpath")
+		//{
+		//	//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
+
+		//	showPanel = NULL;
+		//	mode = CREATE_PATROL_PATH;
+		//	Vector2i front = patrolPath.front();
+		//	patrolPath.clear();
+		//	patrolPath.push_back(front);
+		//	patrolPathLengthSize = 0;
+		//	//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
+		//}
+	}
 	else if( p->name == "map_options" )
 	{
 		if( b->name == "ok" );
@@ -17264,6 +17464,16 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
 		return p;
 	}
+	else if (name == "airtrigger")
+	{
+		Panel *p = new Panel("airtrigger_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
+		p->AddButton("createrect", Vector2i(20, 350), Vector2f(100, 50), "Create Rect");
+		return p;
+	}
 	//else if( name == "racefighttarget" )
 	//{
 	
@@ -17364,6 +17574,11 @@ void EditSession::SetEnemyEditPanel()
 	{
 		GroundTriggerParams *gTrigger = (GroundTriggerParams*)ap;
 		gTrigger->SetPanelInfo();
+	}
+	else if (name == "airtrigger")
+	{
+		AirTriggerParams *aTrigger = (AirTriggerParams*)ap;
+		aTrigger->SetPanelInfo();
 	}
 	else if( name == "key" )
 	{
@@ -19141,6 +19356,13 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+	}
+	if (name == "airtrigger")
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = false;
+		canBeAerial = true;
 	}
 	else if( name == "shard" )
 	{

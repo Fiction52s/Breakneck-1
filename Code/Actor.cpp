@@ -1516,6 +1516,7 @@ void Actor::ActionEnded()
 		case STAND:
 			frame = 0;
 			break;
+		case AUTORUN:
 		case RUN:
 			frame = 0;
 			break;
@@ -5820,6 +5821,10 @@ void Actor::UpdatePrePhysics()
 			}
 			break;
 		}
+	case AUTORUN:
+	{
+		break;
+	}
 	
 	case DEATH:
 		{
@@ -7249,7 +7254,11 @@ facingRight = false;
 			}
 			break;
 		}
-	
+	case AUTORUN:
+	{
+		RunMovement();
+		break;
+	}
 	case DEATH:
 		{
 			velocity.x = 0;
@@ -19143,6 +19152,7 @@ void Actor::UpdateSprite()
 			break;
 		}
 	case SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY:
+	case AUTORUN:
 	case RUN:
 		{	
 			V2d oldv0 = ground->v0;
@@ -22530,12 +22540,25 @@ Vector2i Actor::GetWireOffset()
 	return offset;
 }
 
+void Actor::SetAutoRun(bool fr, double maxAutoRun)
+{
+	SetAction(AUTORUN);
+	frame = 0;
+
+	maxAutoRunSpeed = maxAutoRun;
+	facingRight = fr;
+}
+
 void Actor::RunMovement()
 {
-	if( currInput.LLeft() )
-		facingRight = false;
-	else if( currInput.LRight() )				
-		facingRight = true;
+	if (action != AUTORUN)
+	{
+		if (currInput.LLeft())
+			facingRight = false;
+		else if (currInput.LRight())
+			facingRight = true;
+	}
+	
 
 	if( !facingRight )
 	{
@@ -22560,10 +22583,13 @@ void Actor::RunMovement()
 		
 		GroundExtraAccel();
 
-		
-
-
-		facingRight = false;
+		if (action == AUTORUN)
+		{
+			if (-groundSpeed > maxAutoRunSpeed)
+			{
+				groundSpeed = -maxAutoRunSpeed;
+			}
+		}
 	}
 	else
 	{
@@ -22585,7 +22611,13 @@ void Actor::RunMovement()
 
 		GroundExtraAccel();
 
-		facingRight = true;
+		if (action == AUTORUN)
+		{
+			if (groundSpeed > maxAutoRunSpeed)
+			{
+				groundSpeed = maxAutoRunSpeed;
+			}
+		}
 	}
 }
 

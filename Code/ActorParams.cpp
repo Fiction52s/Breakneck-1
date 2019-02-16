@@ -2278,3 +2278,113 @@ ActorParams *ComboerParams::Copy()
 	}
 	return copy;
 }
+
+
+AirTriggerParams::AirTriggerParams(EditSession *edit, sf::Vector2i &pos)
+	:ActorParams(PosType::AIR_ONLY)
+{
+	position = pos;
+	type = edit->types["airtrigger"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+	SetBoundingQuad();
+
+	triggerRect.setFillColor(Color::Transparent);
+	triggerRect.setOutlineColor(Color::Red);
+	triggerRect.setOutlineThickness(10);
+
+	rectWidth = 50;
+	rectHeight = 50;
+	SetRect(rectWidth, rectHeight, pos);
+
+	trigType = "none";//"..no.shard..";
+}
+
+AirTriggerParams::AirTriggerParams(EditSession *edit, sf::Vector2i &pos, const std::string &typeStr, int w,int h)
+	:ActorParams(PosType::AIR_ONLY)
+{
+	position = pos;
+	type = edit->types["airtrigger"];
+
+	image.setTexture(type->imageTexture);
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image.setPosition(pos.x, pos.y);
+
+
+	triggerRect.setFillColor(Color::Transparent);
+	triggerRect.setOutlineColor(Color::Red);
+	triggerRect.setOutlineThickness(10);
+	
+	rectWidth = w;
+	rectHeight = h;
+
+	SetRect( w, h, pos);
+	SetBoundingQuad();
+
+	trigType = typeStr;
+}
+
+void AirTriggerParams::SetRect(int width, int height, Vector2i &center)
+{
+	triggerRect.setSize(Vector2f(width, height));
+	triggerRect.setOrigin(triggerRect.getLocalBounds().width / 2,
+		triggerRect.getLocalBounds().height / 2);
+	position = center;
+	triggerRect.setPosition(position.x, position.y);
+	SetBoundingQuad();
+}
+
+void AirTriggerParams::WriteParamFile(std::ofstream &of)
+{
+	of << trigType << endl;
+	of << rectWidth << endl;
+	of << rectHeight << endl;
+}
+
+void AirTriggerParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	trigType = p->textBoxes["triggertype"]->text.getString();
+}
+
+void AirTriggerParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+		p->textBoxes["group"]->text.setString(group->name);
+	//p->checkBoxes["clockwise"]->checked = clockwise;
+	p->textBoxes["triggertype"]->text.setString(trigType);
+}
+
+bool AirTriggerParams::CanApply()
+{
+	return true;
+}
+
+ActorParams *AirTriggerParams::Copy()
+{
+	AirTriggerParams *copy = new AirTriggerParams(*this);
+	return copy;
+}
+
+void AirTriggerParams::Draw(RenderTarget *target)
+{
+	ActorParams::Draw(target);
+
+	nameText.setString(trigType);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
+	nameText.setPosition(position.x, position.y - 40);
+
+	target->draw(nameText);
+
+	triggerRect.setPosition(position.x, position.y);
+	target->draw(triggerRect);
+	
+}
