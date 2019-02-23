@@ -381,6 +381,7 @@ enum EnemyType
 	EN_SPRING,
 	EN_RAIL,
 	EN_COMBOER,
+	EN_FLOWERPOD,
 	EN_Count
 };
 

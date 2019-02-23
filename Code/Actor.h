@@ -15,6 +15,7 @@
 #include "Gate.h"
 #include "VisualEffects.h"
 
+struct AirTrigger;
 struct Gate;
 struct Critical;
 struct GameSession;
@@ -179,6 +180,16 @@ struct Actor : QuadTreeCollider,
 	EffectPool *dustParticles;
 	RisingParticleUpdater rpu;
 	void HandleGroundTrigger(GroundTrigger *trigger);
+
+	AirTrigger *currAirTrigger;
+	void HandleAirTrigger();
+
+	enum AirTriggerBehavior
+	{
+		AT_NONE,
+		AT_AUTORUNRIGHT,
+	};
+	AirTriggerBehavior airTrigBehavior;
 	
 	enum Action
 	{

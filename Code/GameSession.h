@@ -287,6 +287,7 @@ struct EnemyParamsManager;
 struct HitboxManager;
 struct Background;
 struct StorySequence;
+struct AirTrigger;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -1066,6 +1067,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree *railEdgeTree;
 	QuadTree *railDrawTree;
 	QuadTree *activeItemTree; 
+	QuadTree *airTriggerTree;
+	std::list<AirTrigger*> fullAirTriggerList;
 	
 	Rail *railDrawList;
 

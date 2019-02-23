@@ -67,6 +67,8 @@
 #include "Enemy_Goal.h"
 #include "GroundTrigger.h"
 #include "Enemy_Airdasher.h"
+#include "AirTrigger.h"
+#include "FlowerPod.h"
 //#include "Enemy_Gorilla.h"
 //#include "Enemy_GrowingTree.h"
 //#include "Enemy_HealthFly.h"
@@ -602,7 +604,18 @@ void GameSession::Cleanup()
 		activeItemTree = NULL;
 	}
 
+	if (airTriggerTree != NULL)
+	{
+		delete airTriggerTree;
+		airTriggerTree = NULL;
+	}
+
 	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 	{
 		delete (*it);
 	}
@@ -2507,6 +2520,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int amplitude;
 				is >> amplitude;
 
+				FlowerPod *enemy = new FlowerPod(this, "test", 
+					edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+
+				fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);
+
 				/*Cactus *enemy = new Cactus( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, rhythm,
 					amplitude );
 
@@ -3010,6 +3031,28 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				enem = enemy;
 
 				enemyTree->Insert(enemy);
+			}
+			else if (typeName == "airtrigger")
+			{
+				Vector2i pos;
+
+				//always air
+				is >> pos.x;
+				is >> pos.y;
+
+				string typeStr;
+				is >> typeStr;
+
+				int rectWidth;
+				is >> rectWidth;
+
+				int rectHeight;
+				is >> rectHeight;
+				//int hasMonitor;
+				//is >> hasMonitor;
+				AirTrigger *at = new AirTrigger( this,V2d(pos), rectWidth, rectHeight, typeStr);
+				airTriggerTree->Insert(at);
+				fullAirTriggerList.push_back(at);
 			}
 			//w6
 			else if( typeName == "racefighttarget" )
@@ -5453,6 +5496,8 @@ bool GameSession::Load()
 	specterTree = new QuadTree(1000000, 1000000);
 
 	activeItemTree = new QuadTree(1000000, 1000000);
+
+	airTriggerTree = new QuadTree(1000000, 1000000);
 
 	soundManager = new SoundManager;
 
@@ -8004,8 +8049,15 @@ int GameSession::Run()
 		}
 		
 
-		if( showDebugDraw )
+		if (showDebugDraw)
+		{
 			DebugDrawActors();
+
+			for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
+			{
+				(*it)->DebugDraw(preScreenTex);
+			}
+		}
 
 		
 
@@ -10055,6 +10107,7 @@ void GameSession::KillAllEnemies()
 	}
 }
 
+
 void GameSession::TestVA::UpdateBushFrame()
 {
 	/*bushFrame++;
@@ -10449,6 +10502,11 @@ void GameSession::RestartLevel()
 	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
 	{
 		(*it)->frame = 0;//players[0]->actionLength[Actor::Action::SPAWNWAIT];
+	}
+
+	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
+	{
+		(*it)->Reset();
 	}
 
 //	currentZone = originalZone;

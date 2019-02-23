@@ -2337,6 +2337,9 @@ void AirTriggerParams::SetRect(int width, int height, Vector2i &center)
 	triggerRect.setPosition(position.x, position.y);
 	image.setPosition(position.x, position.y);
 	SetBoundingQuad();
+
+	rectWidth = width;
+	rectHeight = height;
 }
 
 void AirTriggerParams::WriteParamFile(std::ofstream &of)

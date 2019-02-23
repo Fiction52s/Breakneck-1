@@ -24,6 +24,7 @@
 #include "GroundTrigger.h"
 #include "Enemy_Comboer.h"
 #include "Enemy_Spring.h"
+#include "AirTrigger.h"
 
 using namespace sf;
 using namespace std;
@@ -1102,6 +1103,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SEQ_CRAWLERFIGHT_LAND] = 1;
 		actionLength[LAND2] = 1;
 		actionLength[RUN] = 10 * 4;
+		actionLength[AUTORUN] = actionLength[RUN];
 		actionLength[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = 10 * 4;
 		actionLength[SLIDE] = 1;
 		actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
@@ -1423,6 +1425,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		hasPowerTimeSlow = false;
 		hasPowerLeftWire = false;
 		hasPowerRightWire = false;
+		hasPowerClones = 0;
 
 		SaveFile *currProgress = owner->mainMenu->GetCurrentProgress();
 		//if (currProgress == NULL )
@@ -2018,6 +2021,9 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	airTrigBehavior = AT_NONE;
+	currAirTrigger = NULL;
+
 	hasPowerAirDash = startHasPowerAirDash;
 	hasPowerGravReverse = startHasPowerGravReverse;
 	hasPowerBounce = startHasPowerBounce;
@@ -2189,6 +2195,24 @@ double Actor::GetBounceFlameAccel()
 	return bounceFlameAccel;
 }
 
+void Actor::HandleAirTrigger()
+{
+	currAirTrigger = NULL;
+	queryMode = "airtrigger";
+	Rect<double> r(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
+	owner->airTriggerTree->Query(this, r);
+	if (currAirTrigger != NULL)
+	{
+		switch (currAirTrigger->triggerType)
+		{
+		case AirTrigger::AUTORUNRIGHT:
+			airTrigBehavior = AT_AUTORUNRIGHT;
+			break;
+		}
+		currAirTrigger = NULL;
+	}
+}
+
 void Actor::UpdatePrePhysics()
 {
 	if (owner->stormCeilingOn)
@@ -2259,8 +2283,27 @@ void Actor::UpdatePrePhysics()
 
 	}
 
+	HandleAirTrigger();
 	//cout << "Start frame" << endl;
-	
+	if (airTrigBehavior == AT_AUTORUNRIGHT)
+	{ 
+		if (ground != NULL)
+		{
+			SetAction(AUTORUN);
+			frame = 0;
+			maxAutoRunSpeed = 25;
+			/*if (groundSpeed > 0)
+			{
+				
+			}
+			else
+			{
+				groundSpeed = 10;
+			}*/
+			facingRight = true;
+			airTrigBehavior = AT_NONE;
+		}
+	}
 	//cout << "JFRAME BEHI: " << frame << endl;
 
 	if (owner->powerRing != NULL && action != DEATH)
@@ -2288,6 +2331,10 @@ void Actor::UpdatePrePhysics()
 
 	//cout << "action: " << action << endl;
 	
+	if (currAirTrigger != NULL)
+	{
+		HandleAirTrigger();
+	}
 
 	if( action == DEATH )
 	{
@@ -8396,7 +8443,7 @@ void Actor::LoadAllAuras()
 
 		Vector2f curr;
 
-		for (int j = 0; j < Action::Count; ++j)
+		for (int j = 0; j < Action::Count-1; ++j)
 		{
 			numT = iList[currIndex++];
 				
@@ -18135,6 +18182,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 	}
+	else if (queryMode == "airtrigger")
+	{
+		AirTrigger *at = (AirTrigger*)qte;
+		currAirTrigger = at;
+	}
 	
 	++possibleEdgeCount;
 }
@@ -19176,7 +19228,7 @@ void Actor::UpdateSprite()
 
 
 			//V2d along = normalize( ground->v1 - ground->v0 );
-			SetSpriteTexture( action );
+			SetSpriteTexture(RUN);
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
 			int f = (frame / 2) % 10;

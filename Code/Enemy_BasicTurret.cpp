@@ -183,7 +183,7 @@ void BasicTurret::ProcessState()
 	{
 		case WAIT:
 		{
-			if (length(owner->GetPlayer(0)->position - position) < 500)
+			if (length(owner->GetPlayer(0)->position - position) < 700)
 			{
 				action = ATTACK;
 				frame = 0;
@@ -195,7 +195,7 @@ void BasicTurret::ProcessState()
 			if (frame == 11 * animationFactor)
 			{
 				frame = 0;
-				if (length(owner->GetPlayer(0)->position - position) >= 500)
+				if (length(owner->GetPlayer(0)->position - position) >= 700)
 				{
 					action = WAIT;
 					frame = 0;
