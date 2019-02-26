@@ -6725,7 +6725,6 @@ int GameSession::Run()
 					//cout << "player frame: " << player->frame << endl;
 				}
 			}
-
 			if( activeDialogue != NULL )
 			{
 				if( GetCurrInput( 0 ).A && !GetPrevInput( 0 ).A )
@@ -9351,6 +9350,115 @@ int GameSession::Run()
 			window->draw(preTexSprite);
 			//UpdateInput();
 		
+		}
+		else if (state == SEQUENCE)
+		{
+			sf::Event ev;
+			while (window->pollEvent(ev))
+			{
+				/*if( ev.type == sf::Event::KeyPressed )
+				{
+				if( ev.key.code = Keyboard::O )
+				{
+				state = RUN;
+				soundNodeList->Pause( false );
+				break;
+				}
+				}*/
+				if (ev.type == sf::Event::GainedFocus)
+				{
+					//state = RUN;
+					//soundNodeList->Pause( false );
+					//break;
+				}
+				else if (ev.type == sf::Event::KeyPressed)
+				{
+					//if( ev.key.code == Keyboard::
+				}
+			}
+
+			accumulator += frameTime;
+			Sprite preTexSprite;
+			while (accumulator >= TIMESTEP)
+			{
+				window->clear();
+				window->setView(v);
+				preScreenTex->clear();
+
+				UpdateInput();
+
+				if (activeSequence != NULL)
+				{
+					if (!activeSequence->Update())
+					{
+						state = RUN;
+						activeSequence = NULL;
+					}
+					else
+					{
+					}
+				}
+
+				int maxVol = mainMenu->config->GetData().musicVolume;
+				if (musicFadeOutMax > 0)
+				{
+					assert(fadingOutMusic != NULL);
+					if (musicFadeOutCurr == musicFadeOutMax)
+					{
+						StopMusic(fadingOutMusic);
+						musicFadeOutMax = -1;
+					}
+					else
+					{
+						musicFadeOutCurr++;
+						float fadeOutPart = ((float)musicFadeOutCurr) / musicFadeOutMax;
+						//fadeOutPart *= fadeOutPart;
+
+						int vol = maxVol - (fadeOutPart * maxVol);
+						fadingOutMusic->music->setVolume(vol);
+					}
+				}
+				if (musicFadeInMax > 0)
+				{
+					assert(fadingInMusic != NULL);
+					if (musicFadeInCurr == musicFadeInMax)
+					{
+						levelMusic = fadingInMusic;
+						levelMusic->music->setVolume(maxVol);
+						musicFadeInMax = -1;
+					}
+					else
+					{
+						musicFadeInCurr++;
+						float fadeInPart = ((float)musicFadeInCurr) / musicFadeInMax;
+						//float prop = fadeInPart;
+						//fadeInPart = 1.f - (1.f - fadeInPart * fadeInPart);
+						int vol = fadeInPart *  maxVol;
+						//cout << "prop: " << prop << ", fadeInPart: " << fadeInPart << "\n";
+						fadingInMusic->music->setVolume(vol);
+					}
+				}
+
+				UpdateFade();
+
+				accumulator -= TIMESTEP;
+			}
+
+			if (activeSequence != NULL)
+			{
+				preScreenTex->setView(uiView);
+				activeSequence->Draw(preScreenTex);
+			}
+
+			preScreenTex->setView(uiView);
+			DrawFade(preScreenTex);
+
+			preTexSprite.setTexture(preScreenTex->getTexture());
+			preTexSprite.setPosition(-960 / 2, -540 / 2);
+			preTexSprite.setScale(.5, .5);
+			window->draw(preTexSprite);
+			//UpdateInput();
+
 		}
 
 

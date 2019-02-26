@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "StorySequence.h"
+#include "Sequence.h"
 
 using namespace std;
 using namespace sf;
@@ -32,6 +33,7 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 
 	V2d gPoint = g->GetPoint(edgeQuantity);
 	storySeq = NULL;
+	gameSequence = NULL;
 
 	switch (trigType)
 	{
@@ -42,6 +44,9 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 	case TRIGGER_GETAIRDASH:
 		storySeq = new StorySequence(owner);
 		storySeq->Load("getairdash");
+		break;
+	case TRIGGER_DESTROYNEXUS1:
+		gameSequence = new NexusCore1Seq(owner);
 		break;
 	}
 
@@ -81,7 +86,11 @@ void GroundTrigger::ResetEnemy()
 	slowCounter = 1;
 	slowMultiple = 1;
 	action = IDLE;
-	storySeq->Reset();
+	if( storySeq != NULL )
+		storySeq->Reset();
+
+	if( gameSequence != NULL )
+		gameSequence->Reset();
 }
 
 TriggerType GroundTrigger::GetTriggerType(const std::string &typeStr)
@@ -93,6 +102,10 @@ TriggerType GroundTrigger::GetTriggerType(const std::string &typeStr)
 	else if (testStr == "getairdash")
 	{
 		return TRIGGER_GETAIRDASH;
+	}
+	else if (testStr == "destroynexus1")
+	{
+		return TRIGGER_DESTROYNEXUS1;
 	}
 	else
 	{

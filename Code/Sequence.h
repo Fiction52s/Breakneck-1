@@ -29,6 +29,11 @@ struct Sequence
 {
 	//Sequence *next;
 	//Sequence *prev;
+	Sequence()
+		:frameCount(-1),frame(0)
+	{
+
+	}
 	int frameCount;
 	int frame;
 	virtual bool Update() = 0;
@@ -163,7 +168,7 @@ struct NexusCore1Seq : Sequence
 	void Draw(sf::RenderTarget *target);
 	void Reset();
 
-	PoiInfo *pi;
+
 	GameSession *owner;
 
 	sf::Vertex darkQuad[4];

@@ -2,15 +2,18 @@
 #define __GROUNDTRIGGER_H__
 
 #include "Enemy.h"
+
 enum TriggerType
 {
 	TRIGGER_NEXUSCORE1,
 	TRIGGER_SHIPPICKUP,
 	TRIGGER_HOUSEFAMILY,
 	TRIGGER_GETAIRDASH,
+	TRIGGER_DESTROYNEXUS1,
 };
 
 struct StorySequence;
+struct Sequence;
 
 struct GroundTrigger : Enemy
 {
@@ -28,6 +31,7 @@ struct GroundTrigger : Enemy
 	int animFactor[Count];
 
 	StorySequence *storySeq;
+	Sequence *gameSequence;
 
 	GroundTrigger(GameSession *owner,
 		Edge *ground, double quantity, 

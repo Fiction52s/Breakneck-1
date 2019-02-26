@@ -1124,11 +1124,8 @@ void SkeletonFightSeq::Reset()
 NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
 	:owner( p_owner )
 {
-	pi = owner->poiMap["nexuscore"];
-	assert(pi != NULL);
-
-	SetRectCenter(darkQuad, 960, 540, Vector2f(pi->pos));
-	SetRectColor(darkQuad, Color(Color::Black));
+	SetRectCenter(darkQuad, 1920, 1080, Vector2f(960, 540));// , Vector2f(pi->pos));
+	SetRectColor(darkQuad, Color(Color::Red));
 
 	state = ENTERCORE;
 }
@@ -1195,16 +1192,16 @@ bool NexusCore1Seq::Update()
 	case FADEEXIT:
 		if (frame == 0)
 		{
-			owner->Fade(false, 60, Color::Black);
+			owner->Fade(false, 60, Color::White);
 
 		}
 		break;
 	case EXITCORE:
 		if (frame == 0)
 		{
-			owner->Fade(true, 60, Color::Black);
-			owner->showHUD = true;
-			owner->cam.Set(Vector2f(pi->pos), pi->cameraZoom, 0);
+			owner->Fade(true, 60, Color::White);
+			//owner->showHUD = true;
+			//owner->cam.Set(Vector2f(pi->pos), pi->cameraZoom, 0);
 		}
 		break;
 	case END:
@@ -1236,5 +1233,3 @@ void NexusCore1Seq::Reset()
 	state = ENTERCORE;
 	frame = 0;
 }
-
-GameSession *owner;

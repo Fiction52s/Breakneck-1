@@ -16594,6 +16594,26 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		owner->currStorySequence = trigger->storySeq;
 		//owner->state = GameSession::STORY;
 		break;
+	case TRIGGER_DESTROYNEXUS1:
+		desperationMode = false;
+		//SetExpr(Expr_NEUTRAL);
+		//assert(ground != NULL);
+		edgeQuantity = trigger->edgeQuantity;
+		groundSpeed = 0;
+
+		if (ground->Normal().y == -1)
+		{
+			offsetX = 0;
+		}
+
+		owner->Fade(false, 30, Color::Black);
+
+		owner->activeSequence = trigger->gameSequence;
+		owner->state = GameSession::SEQUENCE;
+
+		//owner->currStorySequence = trigger->storySeq;
+		//owner->state = GameSession::STORY;
+		break;
 	}
 }
 

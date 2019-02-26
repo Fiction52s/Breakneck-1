@@ -308,6 +308,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		PAUSE,
 		RACEFIGHT_RESULTS,
 		STORY,
+		SEQUENCE,
 		MAP
 	};
 
