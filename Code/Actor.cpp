@@ -237,7 +237,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex ),rpu(this)
 	{
 	//hitCeilingLockoutFrames = 20;
-
+	storedTrigger = NULL;
 	//dustParticles = new EffectPool(EffectType::FX_REGULAR, 2000, 1);
 	//EffectInstance params;
 	//dustParticles->SetTileset(owner->GetTileset( "dust_8x8.png", 8,8));
@@ -1782,6 +1782,8 @@ void Actor::ActionEnded()
 			break;
 		case SEQ_ENTERCORE1:
 			frame = 0;
+			owner->activeSequence = storedTrigger->gameSequence;
+			owner->state = GameSession::SEQUENCE;
 			break;
 		}
 	}
@@ -2021,6 +2023,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	storedTrigger = NULL;
 	airTrigBehavior = AT_NONE;
 	currAirTrigger = NULL;
 
@@ -16532,6 +16535,7 @@ bool Actor::IsBeingSlowed()
 
 void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 {
+	storedTrigger = trigger;
 	switch (trigger->trigType)
 	{
 	case TRIGGER_NEXUSCORE1:
@@ -16608,8 +16612,11 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 
 		owner->Fade(false, 30, Color::Black);
 
-		owner->activeSequence = trigger->gameSequence;
-		owner->state = GameSession::SEQUENCE;
+		
+
+		SetAction(SEQ_ENTERCORE1);
+		frame = 0;
+		physicsOver = true;
 
 		//owner->currStorySequence = trigger->storySeq;
 		//owner->state = GameSession::STORY;

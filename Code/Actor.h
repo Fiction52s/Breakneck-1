@@ -180,6 +180,7 @@ struct Actor : QuadTreeCollider,
 	EffectPool *dustParticles;
 	RisingParticleUpdater rpu;
 	void HandleGroundTrigger(GroundTrigger *trigger);
+	GroundTrigger *storedTrigger;
 
 	AirTrigger *currAirTrigger;
 	void HandleAirTrigger();

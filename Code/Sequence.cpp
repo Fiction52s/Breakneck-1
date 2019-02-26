@@ -1136,7 +1136,7 @@ bool NexusCore1Seq::Update()
 	case END:
 		break;
 	case ENTERCORE:
-		if (frame == 60)
+		if (frame == 90)
 		{
 			state = DESTROYCORE;
 			frame = 0;
@@ -1171,35 +1171,28 @@ bool NexusCore1Seq::Update()
 	switch (state)
 	{
 	case ENTERCORE:
-		if (frame == 0)
+		if (frame == 30)
 		{
-			owner->Fade(false, 60, Color::Black);
+			owner->Fade(true, 60, Color::Black);
 		}
 		break;
 	case DESTROYCORE:
 	{
-		if (frame == 0)
-		{
-			owner->fadeLength = 0;
-			owner->cam.zoomFactor = 1.f;
-			owner->showHUD = false;
-			frame = 0;
-		}
-
+		owner->Fade(true, 60, Color::Black);
 		break;
 	}
 
 	case FADEEXIT:
 		if (frame == 0)
 		{
-			owner->Fade(false, 60, Color::White);
-
+			
 		}
 		break;
 	case EXITCORE:
 		if (frame == 0)
 		{
-			owner->Fade(true, 60, Color::White);
+			owner->Fade(false, 60, Color::White);
+			//owner->Fade(false, 60, Color::White);
 			//owner->showHUD = true;
 			//owner->cam.Set(Vector2f(pi->pos), pi->cameraZoom, 0);
 		}
@@ -1211,6 +1204,9 @@ bool NexusCore1Seq::Update()
 			//owner->GetPlayer(0)->SetAction(Actor::NEXUSKILLWAIT);
 			frame = 0;
 			owner->scoreDisplay->Activate();
+			owner->GetPlayer(0)->SetAction(Actor::GOALKILLWAIT);
+			owner->GetPlayer(0)->frame = 0;
+			owner->Fade(true, 60, Color::White);
 			return false;
 		}
 		break;
@@ -1225,7 +1221,7 @@ void NexusCore1Seq::Draw(sf::RenderTarget *target)
 {
 	if (state == DESTROYCORE || state == FADEEXIT)
 	{
-		target->draw(darkQuad, 4, sf::Quads);
+		//target->draw(darkQuad, 4, sf::Quads);
 	}
 }
 void NexusCore1Seq::Reset()
