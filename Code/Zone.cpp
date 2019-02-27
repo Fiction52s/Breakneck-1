@@ -329,12 +329,16 @@ void Zone::Init()
 
 	for( list<Enemy*>::iterator it = allEnemies.begin(); it != allEnemies.end(); ++it )
 	{
-		if( (*it)->type == EN_NEXUS )
+		if ((*it)->type == EN_CRAWLERQUEEN)
 		{
-			active = true;
-			//owner->ActivateZone( this );
-			break;
+			action = OPEN;
 		}
+		//if( (*it)->type == EN_NEXUS|| (*it)->type == EN_CRAWLERQUEEN )
+		//{
+		//	active = true;
+		//	//owner->ActivateZone( this );
+		//	break;
+		//}
 	}
 
 	

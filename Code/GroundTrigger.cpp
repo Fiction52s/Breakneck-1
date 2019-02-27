@@ -48,6 +48,9 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 	case TRIGGER_DESTROYNEXUS1:
 		gameSequence = new NexusCore1Seq(owner);
 		break;
+	case TRIGGER_CRAWLERATTACK:
+		gameSequence = new CrawlerAttackSeq(owner);
+		break;
 	}
 
 	receivedHit = NULL;
@@ -106,6 +109,10 @@ TriggerType GroundTrigger::GetTriggerType(const std::string &typeStr)
 	else if (testStr == "destroynexus1")
 	{
 		return TRIGGER_DESTROYNEXUS1;
+	}
+	else if (testStr == "crawlerattack")
+	{
+		return TRIGGER_CRAWLERATTACK;
 	}
 	else
 	{

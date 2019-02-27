@@ -113,6 +113,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	startQuant = q;
 	frame = 0;
 
+
+	
 	actionLength[UNBURROW] = 20;
 	actionLength[CRAWL] = 35;
 	actionLength[ROLL] = 5;

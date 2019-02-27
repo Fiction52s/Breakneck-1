@@ -45,6 +45,9 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 {
 	enum Action
 	{
+		INITIALWAIT,
+		INITIALIDLE,
+		INITIALUNBURROW,
 		WAIT,
 		DECIDE,
 		BOOST,
@@ -57,6 +60,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		UNBURROW,
 		HURT,
 		RETREATBURROW,
+		SEQ_ANGRY0,
 		Count
 	};
 
@@ -81,6 +85,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void ConfirmKill();
 	void Init();
 	void Setup();
+	void StartInitialUnburrow();
+	void StartAngryYelling();
 
 	StorySequence *storySeq;
 

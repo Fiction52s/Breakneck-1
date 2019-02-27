@@ -263,6 +263,7 @@ struct Actor : QuadTreeCollider,
 		GETPOWER_AIRDASH_FLIP,
 		ENTERNEXUS1,
 		AUTORUN,
+		SEQ_LOOKUP,
 		Count
 	};
 

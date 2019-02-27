@@ -4894,15 +4894,15 @@ void GameSession::SetupZones()
 			}
 		}
 
-		/*if( (*it)->type == Enemy::BOSS_BIRD )
-		{
-			cout << "whats this" << endl;
-			if( (*it)->zone != NULL )
-			{
-				(*it)->zone->spawnEnemies.push_back( (*it) );
-			}
-			
-		}*/
+		//if( (*it)->type == EnemyType::EN_CRAWLERQUEEN )
+		//{
+		//	//cout << "whats this" << endl;
+		//	if( (*it)->zone != NULL )
+		//	{
+		//		(*it)->zone->action = Zone::OPEN;
+		//	}
+		//	
+		//}
 		//else
 		//{
 		if( (*it)->zone != NULL )

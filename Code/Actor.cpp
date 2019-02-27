@@ -8445,8 +8445,8 @@ void Actor::LoadAllAuras()
 		list<Vector2f> *listPtr;
 
 		Vector2f curr;
-
-		for (int j = 0; j < Action::Count-1; ++j)
+		//autorun thing is temporary, should be < Count when fixed
+		for (int j = 0; j < Action::AUTORUN; ++j) 
 		{
 			numT = iList[currIndex++];
 				
@@ -16621,6 +16621,24 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		//owner->currStorySequence = trigger->storySeq;
 		//owner->state = GameSession::STORY;
 		break;
+	case TRIGGER_CRAWLERATTACK:
+	{
+		desperationMode = false;
+		edgeQuantity = trigger->edgeQuantity;
+		groundSpeed = 0;
+
+		if (ground->Normal().y == -1)
+		{
+			offsetX = 0;
+		}
+
+		SetAction(SEQ_LOOKUP);
+		frame = 0;
+		physicsOver = true;
+
+		owner->activeSequence = trigger->gameSequence;
+		break;
+	}
 	}
 }
 
@@ -19177,6 +19195,7 @@ void Actor::UpdateSprite()
 	{
 	case SEQ_CRAWLERFIGHT_STAND:
 	case SEQ_ENTERCORE1:
+	case SEQ_LOOKUP:
 	case STAND:
 		{	
 			SetSpriteTexture( STAND );
@@ -21661,17 +21680,17 @@ void Actor::UpdateSprite()
 			break;
 		}
 	case ENTERNEXUS1:
-		{
-			SetSpriteTexture( action );
+	{
+		SetSpriteTexture(action);
 
-			SetSpriteTile( frame / 4, facingRight );
+		SetSpriteTile(frame / 4, facingRight);
 
-			sprite->setOrigin( sprite->getLocalBounds().width / 2,
-				sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( position.x, position.y );
-			sprite->setRotation( 0 );
-			break;
-		}
+		sprite->setOrigin(sprite->getLocalBounds().width / 2,
+			sprite->getLocalBounds().height / 2);
+		sprite->setPosition(position.x, position.y);
+		sprite->setRotation(0);
+		break;
+	}
 	case SEQ_WAIT:
 		{
 		sprite->setTexture( *(tileset[JUMP]->texture));

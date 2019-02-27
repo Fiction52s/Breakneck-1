@@ -58,7 +58,7 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	health = initHealth;
 	dead = false;
 
-
+	
 	
 	actionLength[DECIDE] = 1;
 	actionLength[BOOST] = 1;
@@ -71,6 +71,11 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	actionLength[POPOUT] = 27;
 	actionLength[UNBURROW] = 12;
 
+	actionLength[INITIALUNBURROW] = 12;
+	actionLength[INITIALWAIT] = 1;
+	actionLength[INITIALIDLE] = 1;
+	actionLength[SEQ_ANGRY0] = 60;
+
 	animFactor[DECIDE] = 2;
 	animFactor[BOOST] = 1;
 	animFactor[TURNAROUNDBOOST] = 2;
@@ -81,6 +86,12 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	animFactor[RUMBLE] = 1;
 	animFactor[POPOUT] = 2;
 	animFactor[UNBURROW] = 2;
+
+
+	animFactor[INITIALUNBURROW] = 2;
+	animFactor[INITIALWAIT] = 1;
+	animFactor[INITIALIDLE] = 1;
+	animFactor[SEQ_ANGRY0] = 1;
 
 	double width = 320;
 	double height = 320;
@@ -95,6 +106,9 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	ts[RUMBLE] = NULL;//owner->GetTileset("Bosses/crawler_queen_dash_320x320.png", 320, 320);
 	ts[POPOUT] = owner->GetTileset("Bosses/Crawler/crawler_queen_slash_320x320.png", 320, 320);
 	ts[UNBURROW] = owner->GetTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png", 320, 320);
+	ts[INITIALUNBURROW] = ts[UNBURROW];
+	ts[INITIALIDLE] = ts[WAIT];
+	ts[SEQ_ANGRY0] = ts[DECIDE];
 
 	sprite.setTexture(*ts[WAIT]->texture);
 	sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
@@ -269,7 +283,8 @@ void CrawlerQueen::ResetEnemy()
 
 	UpdateHitboxes();
 
-	action = DECIDE;
+	//action = DECIDE;
+	action = INITIALWAIT;
 	SetLevel();
 	frame = 0;
 	SetDecisions();
@@ -349,12 +364,36 @@ HitboxInfo *CrawlerQueen::IsHit(Actor *player)
 	return NULL;
 }
 
+void CrawlerQueen::StartAngryYelling()
+{
+	assert(action == INITIALIDLE);
+	action = SEQ_ANGRY0;
+	frame = 0;
+}
+
+void CrawlerQueen::StartInitialUnburrow()
+{
+	assert(action == INITIALWAIT);
+	action = INITIALUNBURROW;
+	frame = 0;
+}
+
 void CrawlerQueen::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
 		{
+		case INITIALWAIT:
+			frame = 0;
+			break;
+		case INITIALIDLE:
+			frame = 0;
+			break;
+		case INITIALUNBURROW:
+			action = INITIALIDLE;
+			frame = 0;
+			break;
 		case HURT:
 			break;
 		case WAIT:
@@ -402,6 +441,11 @@ void CrawlerQueen::ProcessState()
 			break;
 		case UNBURROW:
 			Boost();
+			break;
+		case SEQ_ANGRY0:
+			action = DECIDE;
+			frame = 0;
+			//alert the game UI/kin/player that the fight has started
 			break;
 		}
 	}
@@ -610,6 +654,8 @@ void CrawlerQueen::FrameIncrement()
 
 void CrawlerQueen::EnemyDraw(sf::RenderTarget *target)
 {
+	if (action == INITIALWAIT)
+		return;
 	if (action == RUMBLE )
 	{
 		target->draw(decideVA, MAX_DECISIONS * 4*3, sf::Quads, ts_decideMarker->texture);
@@ -656,7 +702,7 @@ void CrawlerQueen::UpdateSprite()
 {
 	if (action == HURT)
 		return;
-	if (action == RUMBLE)
+	if (action == RUMBLE || action == INITIALWAIT)
 	{
 		return;
 	}
@@ -679,10 +725,12 @@ void CrawlerQueen::UpdateSprite()
 
 	switch (action)
 	{
+	case INITIALIDLE:
 	case WAIT:
 		currTile = 0;
 		break;
 	case DECIDE:
+	case SEQ_ANGRY0:
 		currTile = 0;
 		break;
 	case BOOST:
@@ -703,6 +751,7 @@ void CrawlerQueen::UpdateSprite()
 	case POPOUT:
 		currTile = frame / animFactor[action];
 		break;
+	case INITIALUNBURROW:
 	case UNBURROW:
 		currTile = frame / animFactor[action];
 		break;
@@ -1151,12 +1200,13 @@ bool CrawlerQueen::GetClockwise(int index)
 
 void CrawlerQueen::Init()
 {
+	
 	if (owner->mh->bossFightType == 1)
 	{
-		PoiInfo *pi = owner->poiMap["crawlercam"];
-		assert(pi != NULL);
-		owner->cam.manual = true;
-		owner->cam.Ease(Vector2f(pi->pos), 1.75, 60, CubicBezier());
+		//PoiInfo *pi = owner->poiMap["crawlercam"];
+		//assert(pi != NULL);
+		//owner->cam.manual = true;
+		//owner->cam.Ease(Vector2f(pi->pos), 1.75, 60, CubicBezier());
 	}
 }
 
@@ -1173,6 +1223,8 @@ void CrawlerQueen::Setup()
 	}
 
 	//nexusCorePI = owner->poiMap["nexuscore"];
+	if (zone != NULL)
+		zone->action = Zone::OPEN;
 
 	ResetEnemy();
 }

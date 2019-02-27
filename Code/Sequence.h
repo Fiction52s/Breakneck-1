@@ -174,6 +174,45 @@ struct NexusCore1Seq : Sequence
 	sf::Vertex darkQuad[4];
 };
 
+struct CrawlerQueen;
+struct CrawlerAttackSeq : Sequence
+{
+	enum State
+	{
+		KINSTOP,
+		ROCKSFALL,
+		CRAWLERSWOOP,
+		DIGGINGAROUND,
+		THROWOUT,
+		CONVERSATION,
+		END,
+		Count
+	};
+
+	State state;
+	int stateLength[Count];
+	void Init();
+	CrawlerAttackSeq(GameSession *owner);
+	bool Update();
+	void Draw(sf::RenderTarget *target);
+	void Reset();
+
+	CrawlerQueen *queen;
+
+	int frame;
+
+	PoiInfo *camPoint0;
+	PoiInfo *camPoint1;
+	PoiInfo *roomCenter;
+	PoiInfo *surface;
+	PoiInfo *throwkin;
+
+	Tileset *ts_queenGrab;
+	sf::Sprite queenGrabSprite;
+
+	GameSession *owner;
+};
+
 struct Nexus;
 struct EnterNexus1Seq : Sequence
 {
