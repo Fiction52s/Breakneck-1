@@ -7647,6 +7647,7 @@ int GameSession::Run()
 		
 		
 		DrawStoryLayer(EffectLayer::BEHIND_TERRAIN);
+		DrawActiveSequence(EffectLayer::BEHIND_TERRAIN);
 		DrawEffects( EffectLayer::BEHIND_TERRAIN );
 		
 		int timesDraw = 0;
@@ -7872,6 +7873,7 @@ int GameSession::Run()
 		}
 
 		DrawStoryLayer(EffectLayer::BEHIND_ENEMIES);
+		DrawActiveSequence(EffectLayer::BEHIND_ENEMIES);
 		DrawEffects( EffectLayer::BEHIND_ENEMIES );
 
 
@@ -7886,6 +7888,7 @@ int GameSession::Run()
 		
 
 		DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
 		//bigBulletVA->draw( preScreenTex );
 
@@ -7967,6 +7970,7 @@ int GameSession::Run()
 		//whited out hit enemies
 		
 		DrawStoryLayer(EffectLayer::IN_FRONT);
+		DrawActiveSequence(EffectLayer::IN_FRONT);
 		DrawEffects( EffectLayer::IN_FRONT );
 
 		if( ts_basicBullets != NULL )
@@ -8652,6 +8656,7 @@ int GameSession::Run()
 			DrawFade(preScreenTex);
 		}
 
+		DrawActiveSequence(EffectLayer::UI_FRONT);
 		DrawEffects(EffectLayer::UI_FRONT);
 
 		preScreenTex->setView(uiView);
@@ -10158,6 +10163,14 @@ void GameSession::DrawStoryLayer(EffectLayer ef)
 	}
 }
 
+void GameSession::DrawActiveSequence(EffectLayer layer )
+{
+	if (activeSequence != NULL)
+	{
+		activeSequence->Draw(preScreenTex, layer);
+	}
+}
+
 void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 {
 	for( list<Enemy*>::iterator it = currentZone->allEnemies.begin();
@@ -10659,14 +10672,16 @@ void GameSession::RestartLevel()
 	//RespawnPlayer();
 	pauseFrames = 0;
 
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->Reset();
+	}
+
 	ResetEnemies();
 	ResetPlants(); //eventually maybe treat these to reset like the rest of the stuff
 	//only w/ checkpoints. but for now its always back
 
-	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-	{
-		(*it)->Reset();
-	}
+	//was resetting zones here before
 
 	currentZone = NULL;
 	if (originalZone != NULL)
@@ -14851,6 +14866,8 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 	else
 	{
 		assert(0);
+		//int xxx = 5;
+		//already open
 	}
 	//z->SetShadowColor( Color( 0, 0, 255, 10 ) );
 	if (currentZone != NULL)

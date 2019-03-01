@@ -1048,6 +1048,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Enemy *cloneInactiveEnemyList;
 	Enemy *effectLists[EffectLayer::Count];
 	void DrawEffects( EffectLayer layer );
+	void DrawActiveSequence(EffectLayer layer);
 
 	sf::Vector2<double> originalPos;
 	Zone *originalZone;

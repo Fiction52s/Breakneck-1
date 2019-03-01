@@ -48,6 +48,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		INITIALWAIT,
 		INITIALIDLE,
 		INITIALUNBURROW,
+		SEQ_FINISHINITIALUNBURROW,
 		WAIT,
 		DECIDE,
 		BOOST,
@@ -81,6 +82,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		int index;
 		//might need roll info?
 	};
+	bool DecideShownAction();
 	std::list<Gate*> crawlerGates;
 	void ConfirmKill();
 	void Init();

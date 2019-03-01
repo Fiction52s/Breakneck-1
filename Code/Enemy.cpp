@@ -1996,6 +1996,7 @@ bool Enemy::CheckHitPlayer(int index)
 
 	if (currHitboxes != NULL)
 	{
+		//!player->IsSequenceAction(player->action) &&
 		if (player->IntersectMyHurtboxes(currHitboxes, currHitboxFrame))
 		{
 			IHitPlayer(index);

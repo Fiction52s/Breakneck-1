@@ -38,7 +38,8 @@ struct Sequence
 	int frame;
 	virtual bool Update() = 0;
 	virtual void Reset() = 0;
-	virtual void Draw( sf::RenderTarget *target ) = 0;
+	virtual void Draw( sf::RenderTarget *target, 
+		EffectLayer layer = EffectLayer::IN_FRONT ) = 0;
 };
 
 struct ShipExitSeq : Sequence
@@ -51,7 +52,8 @@ struct ShipExitSeq : Sequence
 
 	ShipExitSeq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
 	Tileset *ts_ship;
@@ -81,7 +83,8 @@ struct CrawlerFightSeq : Sequence
 
 	CrawlerFightSeq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 	void StartFightMsg();
 
@@ -123,7 +126,8 @@ struct CrawlerAfterFightSeq : Sequence
 
 	CrawlerAfterFightSeq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 	//void StartFightMsg();
 
@@ -165,7 +169,8 @@ struct NexusCore1Seq : Sequence
 	State state;
 	NexusCore1Seq(GameSession *owner);
 	bool Update();
-	void Draw(sf::RenderTarget *target);
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
 
@@ -194,7 +199,8 @@ struct CrawlerAttackSeq : Sequence
 	void Init();
 	CrawlerAttackSeq(GameSession *owner);
 	bool Update();
-	void Draw(sf::RenderTarget *target);
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
 	CrawlerQueen *queen;
@@ -231,7 +237,8 @@ struct EnterNexus1Seq : Sequence
 	Nexus *nexus;
 	EnterNexus1Seq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 	//void StartFightMsg();
 
@@ -276,7 +283,8 @@ struct MeetCoyoteSeq : Sequence
 
 	MeetCoyoteSeq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 	void CoyoteGone();
 
@@ -297,7 +305,8 @@ struct CoyoteFightSeq : Sequence
 {
 	CoyoteFightSeq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
 	Barrier *bleft;
@@ -323,7 +332,8 @@ struct CoyoteTalkSeq : Sequence
 {
 	CoyoteTalkSeq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
 	GameSession *owner;
@@ -333,7 +343,8 @@ struct SkeletonAttackCoyoteSeq : Sequence
 {
 	SkeletonAttackCoyoteSeq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
 	GameSession *owner;
@@ -343,7 +354,8 @@ struct SkeletonFightSeq : Sequence
 {
 	SkeletonFightSeq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
 	GameSession *owner;
@@ -353,7 +365,8 @@ struct BirdCrawlerAllianceSeq : Sequence
 {
 	BirdCrawlerAllianceSeq( GameSession *owner );
 	bool Update();
-	void Draw( sf::RenderTarget *target );
+	void Draw( sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
 	GameSession *owner;

@@ -124,6 +124,10 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
 	tileset[GETPOWER_AIRDASH_FLIP] = owner->GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
 
+	tileset[SEQ_LOOKUP] = owner->GetTileset("Kin/kin_cover_64x64.png", 64, 64, skin);
+
+	tileset[SEQ_KINTHROWN] = tileset[AIRHITSTUN];
+
 	tileset[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset("Kin/stand_64x64.png", 64, 64, skin);
 	tileset[SEQ_WAIT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
 	tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
@@ -1151,7 +1155,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SPAWNWAIT] = 120;
 		actionLength[RAILDASH] = 20;
 
+		actionLength[SEQ_LOOKUP] = 1;
+		actionLength[SEQ_LOOKUPDISAPPEAR] = 1;
 		
+		actionLength[SEQ_KINTHROWN] = 1;
+		actionLength[SEQ_KINSTAND] = actionLength[STAND];
 		}
 		 	
 
@@ -1516,6 +1524,7 @@ void Actor::ActionEnded()
 		
 		switch (action)
 		{
+		case SEQ_KINSTAND:
 		case STAND:
 			frame = 0;
 			break;
@@ -1523,6 +1532,7 @@ void Actor::ActionEnded()
 		case RUN:
 			frame = 0;
 			break;
+		case SEQ_KINFALL:
 		case JUMP:
 			frame = 1;
 			break;
@@ -1784,6 +1794,12 @@ void Actor::ActionEnded()
 			frame = 0;
 			owner->activeSequence = storedTrigger->gameSequence;
 			owner->state = GameSession::SEQUENCE;
+			break;
+		case SEQ_LOOKUP:
+			frame = 0;
+			break;
+		case SEQ_KINTHROWN:
+			frame = actionLength[SEQ_KINTHROWN] = 1;
 			break;
 		}
 	}
@@ -2603,6 +2619,10 @@ void Actor::UpdatePrePhysics()
 			{
 				owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}	
+		}
+		else if (action == SEQ_KINFALL)
+		{
+			velocity = AddGravity(velocity);
 		}
 		return;
 	}
@@ -6283,7 +6303,12 @@ void Actor::UpdatePrePhysics()
 		}
 	case WALLATTACK:
 		{
-			SetCurrHitboxes(wallHitboxes[speedLevel], frame / 2);
+			int f = frame / 2;
+			if (f < 7)
+			{
+				SetCurrHitboxes(wallHitboxes[speedLevel], frame / 2);
+			}
+			
 
 			if( frame == 0 )
 			{
@@ -8468,6 +8493,13 @@ void Actor::LoadAllAuras()
 				}
 			}
 		}
+		for (int j = Action::AUTORUN; j < Action::Count; ++j)
+		{
+			for (int f = 0; f < 3; ++f)
+			{
+				auraPoints[f][j] = NULL;
+			}
+		}
 		
 		
 		cout << "finished reading auras" << endl;
@@ -8604,6 +8636,15 @@ void Actor::InitAfterEnemies()
 	}
 }
 
+void Actor::StartSeqKinThrown( V2d &pos, V2d &vel )
+{
+	SetAction(SEQ_KINTHROWN);
+	frame = 0;
+	ground = NULL;
+	position = pos;
+	velocity = vel;
+}
+
 void Actor::SetAction( Action a )
 {
 	standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
@@ -8689,7 +8730,7 @@ void Actor::SetAction( Action a )
 		break;
 	}
 	*/
-		
+
 		
 	}
 
@@ -14712,6 +14753,13 @@ void Actor::PhysicsResponse()
 				SetAction(GROUNDHITSTUN);
 				frame = 0;
 			}
+			else if (action == SEQ_KINFALL)
+			{
+				SetAction(SEQ_KINSTAND);
+				frame = 0;
+				groundSpeed = 0;
+				physicsOver = true;
+			}
 			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND 
 				&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 				&& action != SEQ_CRAWLERFIGHT_LAND 
@@ -14963,11 +15011,20 @@ void Actor::PhysicsResponse()
 		}
 
 		if (collision && minContact.normal.y > 0 && !reversed && action != WALLCLING 
-			&& rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING )
+			&& rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING
+			&& action != SEQ_KINFALL )
 			//&& hitCeilingCounter == 0 )
 		{
 			//hitCeilingCounter = hitCeilingLockoutFrames;
 			owner->soundNodeList->ActivateSound(soundBuffers[S_HITCEILING]);
+
+			if (action == SEQ_KINTHROWN)
+			{
+				SetAction(SEQ_KINFALL);
+				frame = 1;
+				velocity = V2d(0, 0);
+				physicsOver = true;
+			}
 		}
 	}
 
@@ -16764,7 +16821,8 @@ bool Actor::IsIntroAction(Action a)
 
 bool Actor::IsSequenceAction(Action a)
 {
-	return (a == SEQ_ENTERCORE1);
+	return a == SEQ_ENTERCORE1 || action == SEQ_LOOKUP || action == SEQ_KINTHROWN
+		|| action == SEQ_KINFALL;
 }
 
 bool Actor::IsExitAction(Action a)
@@ -18357,7 +18415,7 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 void Actor::Draw( sf::RenderTarget *target )
 {
 	//dustParticles->Draw(target);
-	if (action == EXITWAIT || action == SPAWNWAIT || (action == INTRO && frame < 11 ))
+	if (action == EXITWAIT || action == SPAWNWAIT || (action == INTRO && frame < 11 ) || action == SEQ_LOOKUPDISAPPEAR )
 	{
 		return;
 	}
@@ -19195,7 +19253,7 @@ void Actor::UpdateSprite()
 	{
 	case SEQ_CRAWLERFIGHT_STAND:
 	case SEQ_ENTERCORE1:
-	case SEQ_LOOKUP:
+	case SEQ_KINSTAND:
 	case STAND:
 		{	
 			SetSpriteTexture( STAND );
@@ -19470,12 +19528,13 @@ void Actor::UpdateSprite()
 		}
 	case SEQ_CRAWLERFIGHT_STRAIGHTFALL:
 	case SEQ_CRAWLERFIGHT_DODGEBACK:
+	case SEQ_KINFALL:
 	case JUMP:
 		{
 			sf::IntRect ir;
 			int tFrame = GetJumpFrame();
 
-			SetSpriteTexture( action );
+			SetSpriteTexture(JUMP);
 			
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
 			SetSpriteTile( tFrame, r );		
@@ -21716,7 +21775,56 @@ void Actor::UpdateSprite()
 
 		break;
 		}
-		
+	case SEQ_LOOKUP:
+	{
+		SetSpriteTexture(action);
+
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+		SetSpriteTile(0, r);
+
+
+		double angle = GroundedAngle();
+
+
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+
+		sprite->setRotation(angle / PI * 180);
+
+		V2d oldv0 = ground->v0;
+		V2d oldv1 = ground->v1;
+
+		if (movingGround != NULL)
+		{
+			ground->v0 += movingGround->position;
+			ground->v1 += movingGround->position;
+		}
+
+		V2d pp = ground->GetPoint(edgeQuantity);
+
+		if (movingGround != NULL)
+		{
+			ground->v0 = oldv0;
+			ground->v1 = oldv1;
+		}
+
+		if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
+			sprite->setPosition(pp.x + offsetX, pp.y);
+		else
+			sprite->setPosition(pp.x, pp.y);
+		break;
+	}
+	case SEQ_KINTHROWN:
+	{
+		SetSpriteTexture(action);
+
+		SetSpriteTile(0, facingRight);
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+		sprite->setPosition(position.x, position.y);
+		sprite->setRotation(0);
+		break;
+	}
 	}
 
 	Vector2f oldOrigin = sprite->getOrigin();
@@ -22891,12 +22999,12 @@ bool Actor::CanUnlockGate( Gate *g )
 		canUnlock = true;
 	}
 	else */
-	if( g->type == Gate::BLACK )//|| g->type == Gate::CRAWLER_UNLOCK || g->type == Gate::NEXUS1_UNLOCK )
+	if( g->type == Gate::BLACK  )//|| g->type == Gate::CRAWLER_UNLOCK || g->type == Gate::NEXUS1_UNLOCK )
 	{
 		canUnlock = false;
 	}
 	else if( enoughKeys && g->gState != Gate::LOCKFOREVER
-		&& g->gState != Gate::REFORM )
+		&& g->gState != Gate::REFORM && g->gState != Gate::HARD )
 	{
 		//cout << "have keys: " << numKeys <<
 		//	"need keys: " << g->requiredKeys << endl;

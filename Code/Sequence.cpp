@@ -134,8 +134,13 @@ bool ShipExitSeq::Update()
 	return true;
 }
 
-void ShipExitSeq::Draw( RenderTarget *target )
+void ShipExitSeq::Draw( RenderTarget *target, EffectLayer layer)
 {
+	if (layer != EffectLayer::IN_FRONT)
+	{
+		return;
+	}
+
 	target->draw( shipSprite );
 }
 
@@ -253,9 +258,12 @@ bool CrawlerFightSeq::Update()
 		return true;
 }
 
-void CrawlerFightSeq::Draw( sf::RenderTarget *target )
+void CrawlerFightSeq::Draw( sf::RenderTarget *target, EffectLayer layer)
 {
-
+	if (layer != EffectLayer::IN_FRONT)
+	{
+		return;
+	}
 }
 
 void CrawlerFightSeq::StartFightMsg()
@@ -399,7 +407,7 @@ bool CrawlerAfterFightSeq::Update()
 		return true;
 }
 
-void CrawlerAfterFightSeq::Draw( sf::RenderTarget *target )
+void CrawlerAfterFightSeq::Draw( sf::RenderTarget *target, EffectLayer layer )
 {
 
 }
@@ -573,7 +581,7 @@ bool EnterNexus1Seq::Update()
 		return true;
 }
 
-void EnterNexus1Seq::Draw( sf::RenderTarget *target )
+void EnterNexus1Seq::Draw( sf::RenderTarget *target, EffectLayer layer)
 {
 
 }
@@ -685,7 +693,7 @@ void MeetCoyoteSeq::CoyoteGone()
 	//owner->powerWheel->Hide( false, 60 );
 }
 
-void MeetCoyoteSeq::Draw( RenderTarget *target )
+void MeetCoyoteSeq::Draw( RenderTarget *target, EffectLayer layer)
 {
 
 }
@@ -756,7 +764,7 @@ bool CoyoteTalkSeq::Update()
 	return true;
 }
 
-void CoyoteTalkSeq::Draw( RenderTarget *target )
+void CoyoteTalkSeq::Draw( RenderTarget *target, EffectLayer layer)
 {
 
 }
@@ -902,7 +910,7 @@ bool CoyoteFightSeq::Update()
 	return true;
 }
 
-void CoyoteFightSeq::Draw( RenderTarget *target )
+void CoyoteFightSeq::Draw( RenderTarget *target, EffectLayer layer)
 {
 
 }
@@ -971,7 +979,7 @@ bool SkeletonAttackCoyoteSeq::Update()
 	return true;
 }
 
-void SkeletonAttackCoyoteSeq::Draw( RenderTarget *target )
+void SkeletonAttackCoyoteSeq::Draw( RenderTarget *target, EffectLayer layer)
 {
 
 }
@@ -1065,7 +1073,7 @@ bool BirdCrawlerAllianceSeq::Update()
 	return true;
 }
 
-void BirdCrawlerAllianceSeq::Draw( RenderTarget *target )
+void BirdCrawlerAllianceSeq::Draw( RenderTarget *target, EffectLayer layer)
 {
 
 }
@@ -1111,7 +1119,7 @@ bool SkeletonFightSeq::Update()
 	return true;
 }
 
-void SkeletonFightSeq::Draw( RenderTarget *target )
+void SkeletonFightSeq::Draw( RenderTarget *target, EffectLayer layer)
 {
 
 }
@@ -1217,7 +1225,7 @@ bool NexusCore1Seq::Update()
 
 return true;
 }
-void NexusCore1Seq::Draw(sf::RenderTarget *target)
+void NexusCore1Seq::Draw(sf::RenderTarget *target, EffectLayer layer)
 {
 	if (state == DESTROYCORE || state == FADEEXIT)
 	{

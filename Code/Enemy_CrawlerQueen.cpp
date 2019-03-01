@@ -71,10 +71,12 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	actionLength[POPOUT] = 27;
 	actionLength[UNBURROW] = 12;
 
-	actionLength[INITIALUNBURROW] = 12;
+	actionLength[INITIALUNBURROW] = 9;
 	actionLength[INITIALWAIT] = 1;
 	actionLength[INITIALIDLE] = 1;
 	actionLength[SEQ_ANGRY0] = 60;
+	actionLength[SEQ_FINISHINITIALUNBURROW] = 3;
+	
 
 	animFactor[DECIDE] = 2;
 	animFactor[BOOST] = 1;
@@ -86,6 +88,8 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	animFactor[RUMBLE] = 1;
 	animFactor[POPOUT] = 2;
 	animFactor[UNBURROW] = 2;
+
+	animFactor[SEQ_FINISHINITIALUNBURROW] = 3;
 
 
 	animFactor[INITIALUNBURROW] = 2;
@@ -107,8 +111,9 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	ts[POPOUT] = owner->GetTileset("Bosses/Crawler/crawler_queen_slash_320x320.png", 320, 320);
 	ts[UNBURROW] = owner->GetTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png", 320, 320);
 	ts[INITIALUNBURROW] = ts[UNBURROW];
-	ts[INITIALIDLE] = ts[WAIT];
-	ts[SEQ_ANGRY0] = ts[DECIDE];
+	ts[INITIALIDLE] = ts[UNBURROW];
+	ts[SEQ_ANGRY0] = ts[UNBURROW];
+	ts[SEQ_FINISHINITIALUNBURROW] = ts[UNBURROW];
 
 	sprite.setTexture(*ts[WAIT]->texture);
 	sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
@@ -161,9 +166,7 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	hitBody->hitboxInfo = hitboxInfo;
 
 
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
-
+	
 	startGround = g;
 	startQuant = q;
 	frame = 0;
@@ -190,6 +193,9 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	decidePoints = new EdgeInfo[MAX_DECISIONS];
 	decisions = new Decision[MAX_DECISIONS];
 
+
+
+	//ResetEnemy();
 	//ResetEnemy();
 	//frame = actionLength[UNDERGROUND];
 }
@@ -242,6 +248,9 @@ void CrawlerQueen::InitEdgeInfo()
 
 void CrawlerQueen::ResetEnemy()
 {
+	if (zone != NULL)
+		zone->action = Zone::OPEN;
+
 	storySeq->Reset();
 	ClearDecisionMarkers();
 	decisionPool->DeactivateAll();
@@ -250,8 +259,7 @@ void CrawlerQueen::ResetEnemy()
 	invincHitCount = 0;
 	redecide = false;
 	clockwise = origCW;
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	
 	decideIndex = 0;
 	mover->ground = startGround;
 	mover->edgeQuantity = startQuant;
@@ -287,8 +295,6 @@ void CrawlerQueen::ResetEnemy()
 	action = INITIALWAIT;
 	SetLevel();
 	frame = 0;
-	SetDecisions();
-	DecidePoints();
 	
 
 	FloatingBomb *fb = (FloatingBomb*)bombPool->activeListStart;
@@ -443,9 +449,17 @@ void CrawlerQueen::ProcessState()
 			Boost();
 			break;
 		case SEQ_ANGRY0:
-			action = DECIDE;
+			action = SEQ_FINISHINITIALUNBURROW;
 			frame = 0;
 			//alert the game UI/kin/player that the fight has started
+			break;
+		case SEQ_FINISHINITIALUNBURROW:
+			action = DECIDE;
+			frame = 0;
+			SetHurtboxes(hurtBody, 0);
+			SetHitboxes(hitBody, 0);
+			SetDecisions();
+			DecidePoints();
 			break;
 		}
 	}
@@ -726,12 +740,16 @@ void CrawlerQueen::UpdateSprite()
 	switch (action)
 	{
 	case INITIALIDLE:
+		currTile = 8;
+		break;
 	case WAIT:
 		currTile = 0;
 		break;
 	case DECIDE:
-	case SEQ_ANGRY0:
 		currTile = 0;
+		break;
+	case SEQ_ANGRY0:
+		currTile = 8;
 		break;
 	case BOOST:
 		currTile = 0;
@@ -752,8 +770,13 @@ void CrawlerQueen::UpdateSprite()
 		currTile = frame / animFactor[action];
 		break;
 	case INITIALUNBURROW:
+		currTile = frame / animFactor[action];
+		break;
 	case UNBURROW:
 		currTile = frame / animFactor[action];
+		break;
+	case SEQ_FINISHINITIALUNBURROW:
+		currTile = frame / animFactor[action] + 9;
 		break;
 	}
 
@@ -823,24 +846,26 @@ void CrawlerQueen::UpdateSprite()
 		sprite.setPosition(Vector2f(mover->physBody.globalPosition));
 	}
 
-
-	for (int i = 0; i < numDecisions; ++i)
+	if (DecideShownAction())
 	{
-		if( i == 0 )
-			decDebugDraw[i].setFillColor(Color::Red);
-		else if( i == 1) 
-			decDebugDraw[i].setFillColor(Color::Blue);
-		else
+		for (int i = 0; i < numDecisions; ++i)
 		{
-			decDebugDraw[i].setFillColor(Color::Green);
+			if (i == 0)
+				decDebugDraw[i].setFillColor(Color::Red);
+			else if (i == 1)
+				decDebugDraw[i].setFillColor(Color::Blue);
+			else
+			{
+				decDebugDraw[i].setFillColor(Color::Green);
+			}
+
+			decDebugDraw[i].setRadius(32);
+			decDebugDraw[i].setOrigin(Vector2f(decDebugDraw[i].getLocalBounds().width / 2,
+				decDebugDraw[i].getLocalBounds().height / 2));
+			decDebugDraw[i].setPosition(
+				Vector2f(decidePoints[i].edge->GetPoint(decidePoints[i].quantity))
+				+ Vector2f(decidePoints[i].edge->Normal() * mover->physBody.rw));
 		}
-			
-		decDebugDraw[i].setRadius(32);
-		decDebugDraw[i].setOrigin(Vector2f(decDebugDraw[i].getLocalBounds().width / 2,
-			decDebugDraw[i].getLocalBounds().height / 2) );
-		decDebugDraw[i].setPosition(
-			Vector2f(decidePoints[i].edge->GetPoint(decidePoints[i].quantity)) 
-			+ Vector2f(decidePoints[i].edge->Normal() * mover->physBody.rw));
 	}
 
 	if (invinc)
@@ -871,6 +896,16 @@ void CrawlerQueen::UpdateSprite()
 		dm->Update();
 		pm = pm->pmnext;
 	}
+}
+
+bool CrawlerQueen::DecideShownAction()
+{
+	if (action == UNBURROW || action == POPOUT || action == RUMBLE || action == BURROW
+		|| action == JUMP || action == STOPBOOST || action == TURNAROUNDBOOST
+		|| action == WAIT)
+		return true;
+
+	return false;
 }
 
 void CrawlerQueen::DebugDraw(RenderTarget *target)
@@ -971,6 +1006,8 @@ void CrawlerQueen::ConfirmKill()
 
 	owner->currStorySequence = storySeq;
 	owner->state = GameSession::STORY;
+
+	dead = true;
 }
 
 void CrawlerQueen::SetLevel()
@@ -1223,8 +1260,7 @@ void CrawlerQueen::Setup()
 	}
 
 	//nexusCorePI = owner->poiMap["nexuscore"];
-	if (zone != NULL)
-		zone->action = Zone::OPEN;
+	
 
 	ResetEnemy();
 }

@@ -264,6 +264,10 @@ struct Actor : QuadTreeCollider,
 		ENTERNEXUS1,
 		AUTORUN,
 		SEQ_LOOKUP,
+		SEQ_LOOKUPDISAPPEAR,
+		SEQ_KINTHROWN,
+		SEQ_KINFALL,
+		SEQ_KINSTAND,
 		Count
 	};
 
@@ -339,6 +343,8 @@ struct Actor : QuadTreeCollider,
 	bool IsIntroAction(Action a);
 	bool IsExitAction(Action a);
 	bool IsSequenceAction(Action a);
+
+	void StartSeqKinThrown( V2d &pos, V2d &vel );
 
 	void CreateAttackLightning();
 	EffectPool *fairLightningPool[4];
