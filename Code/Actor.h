@@ -842,6 +842,8 @@ struct Actor : QuadTreeCollider,
 		int cbFrame);
 	bool EnemyIsFar(V2d &enemyPos);
 
+	void SeqAfterCrawlerFight();
+
 	sf::Vector2f fairSwordOffset[3];
 	sf::Vector2f dairSwordOffset[3];
 	sf::Vector2f diagUpSwordOffset[3];

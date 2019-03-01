@@ -16830,6 +16830,18 @@ bool Actor::IsExitAction(Action a)
 	return a == EXIT || a == EXITWAIT || a == WAITFORSHIP || a == GRABSHIP;
 }
 
+void Actor::SeqAfterCrawlerFight()
+{
+	PoiInfo *kp = owner->poiMap["kinaftercrawlerfight"];
+	assert(kp != NULL);
+	ground = kp->edge;
+	edgeQuantity = kp->edgeQuantity;
+	facingRight = true;
+	offsetX = 0;
+	SetAction(Actor::STAND);
+	frame = 0;
+}
+
 void Actor::HandleEntrant( QuadTreeEntrant *qte )
 {
 	

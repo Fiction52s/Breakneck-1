@@ -6755,6 +6755,7 @@ int GameSession::Run()
 				{
 					if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
 					{
+						currStorySequence->EndSequence();
 						currStorySequence = NULL;
 					}
 					else
@@ -9288,6 +9289,7 @@ int GameSession::Run()
 						state = RUN;
 						//preScreenTex->setView(uiView);
 						//currStorySequence->Draw(preScreenTex);
+						currStorySequence->EndSequence();
 						currStorySequence = NULL;
 					}
 					else

@@ -26,15 +26,28 @@ struct StoryText
 	bool done;
 };
 
+struct StorySequence;
 struct StoryPart
 {
-	StoryPart();
+	StoryPart(StorySequence *seq);
 	void Reset();
 	Tileset *ts;
 	sf::Sprite spr;
 	sf::Vector2f pos;
 	bool hasIntro;
-	
+	StorySequence *seq;
+
+	enum OutroType
+	{
+		O_NONE,
+		O_FADE
+	};
+
+	OutroType outType;
+	sf::Color fadeOutColor;
+	int fadeOutFrames;
+	int startOutroFadeFrame;
+
 	int layer;
 	float time;
 	int frame;
@@ -62,6 +75,7 @@ struct StorySequence
 	bool UpdateLayer( int layer, ControllerState &prev, ControllerState &curr);
 	void Draw( sf::RenderTarget *target );
 	void DrawLayer(sf::RenderTarget *target, EffectLayer eLayer);
+	void EndSequence();
 
 	const static int NUM_LAYERS = 16;
 	std::list<StoryPart*> parts[NUM_LAYERS];
@@ -70,6 +84,7 @@ struct StorySequence
 	TilesetManager *tm;
 	sf::Font &myFont;
 	GameSession *owner;
+	std::string seqName;
 
 	MusicInfo *oldMusic;
 };

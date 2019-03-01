@@ -79,12 +79,28 @@ StorySequence::StorySequence(GameSession *p_owner)
 
 }
 
+void StorySequence::EndSequence()
+{
+	if (seqName == "queenhurt")
+	{
+		owner->Fade(true, 60, Color::Black);
+		
+		Actor *player = owner->GetPlayer(0);
+		player->SeqAfterCrawlerFight();
+	}
+	else if (seqName == "kinhouse")
+	{
+		//owner->Fade(true, 60, Color::White);
+	}
+}
+
 bool StorySequence::Load(const std::string &sequenceName)
 {
 	ifstream is;
 	string fName = "Resources/Scripts/";
 	fName += sequenceName + string(".txt");
 	is.open(fName);
+	seqName = sequenceName;
 
 	
 	if (is.is_open())
@@ -139,6 +155,10 @@ bool StorySequence::Load(const std::string &sequenceName)
 			ss >> waste;
 
 			
+			StoryPart *sp = new StoryPart( this );
+			sp->time = time;
+			sp->totalFrames = time * 60.f;
+
 			bool bHasIntro = false;
 			bool bHasOutro = false;
 			bool bhasSubLayer = false;
@@ -185,6 +205,43 @@ bool StorySequence::Load(const std::string &sequenceName)
 
 			ss.clear();
 			ss.str("");
+
+			if (bHasOutro)
+			{
+				if (!getline(is, line))
+				{
+					assert(0);
+				}
+				std::replace(line.begin(), line.end(), ',', ' ');
+
+				ss << line;
+
+				string outroType;
+				ss >> outroType;
+
+				ss >> waste;
+
+				int colorR;
+				int colorG;
+				int colorB;
+				
+				ss >> colorR;
+				ss >> colorG;
+				ss >> colorB;
+
+				float otime;
+				ss >> otime;
+
+				if (outroType == "fade")
+				{
+					sp->outType = StoryPart::OutroType::O_FADE;
+				}
+
+				sp->fadeOutColor = Color(colorR, colorG, colorB);
+				sp->fadeOutFrames = otime * 60.f;
+				sp->startOutroFadeFrame = sp->totalFrames - sp->fadeOutFrames;
+			}
+
 
 			StoryMusic *sm = NULL;
 			if (bHasMusic)
@@ -305,7 +362,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 
 			
 
-			StoryPart *sp = new StoryPart;
+			
 			string fullImagePath = string("Story/") + imageName + string(".png");
 			sp->imageName = imageName;
 
@@ -327,8 +384,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 			
 			sp->hasIntro = bHasIntro;
 			sp->layer = layer;
-			sp->time = time;
-			sp->totalFrames = time * 60.f;
+			
 			sp->text = sText;
 			sp->music = sm;
 			sp->effectLayer = efL;
@@ -490,8 +546,9 @@ bool StorySequence::Update(ControllerState &prev, ControllerState &curr)
 	return keepUpdating;
 }
 
-StoryPart::StoryPart()
+StoryPart::StoryPart( StorySequence *p_seq)
 {
+	seq = p_seq;
 	ts = NULL;
 	layer = 0;
 	time = 0;
@@ -501,6 +558,7 @@ StoryPart::StoryPart()
 	text = NULL;
 	effectLayer = EffectLayer::IN_FRONT;
 	blank = true;
+	outType = OutroType::O_NONE;
 }
 
 void StoryPart::Reset()
@@ -568,6 +626,10 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 	}
 	else
 	{
+		if ( outType == O_FADE && frame == startOutroFadeFrame)
+		{
+			seq->owner->Fade(false, fadeOutFrames, fadeOutColor);
+		}
 		++frame;
 		return true;
 	}
