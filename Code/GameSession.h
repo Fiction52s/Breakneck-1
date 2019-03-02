@@ -511,6 +511,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool fadeSkipKin;
 	void Fade( bool in, int frames, sf::Color c, bool skipKin = false );
 	void UpdateFade();
+	void ClearFade();
 	bool IsFading();
 	void DrawFade( sf::RenderTarget *target );
 
@@ -1054,6 +1055,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Zone *originalZone;
 	sf::Rect<double> screenRect;
 	sf::Rect<double> tempSpawnRect;
+	
 
 	QuadTree *terrainBGTree;
 	QuadTree * terrainTree;

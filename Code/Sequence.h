@@ -167,6 +167,7 @@ struct NexusCore1Seq : Sequence
 	};
 
 	State state;
+	int stateLength[Count];
 	NexusCore1Seq(GameSession *owner);
 	bool Update();
 	void Draw(sf::RenderTarget *target,
@@ -261,6 +262,30 @@ struct EnterNexus1Seq : Sequence
 
 
 	//Tileset *
+
+	GameSession *owner;
+};
+
+struct GetAirdashPowerSeq : Sequence
+{
+	enum State
+	{
+		ENTERCORE,
+		DESTROYCORE,
+		FADEEXIT,
+		EXITCORE,
+		END,
+		Count
+	};
+
+	State state;
+	int stateLength[Count];
+	GetAirdashPowerSeq(GameSession *owner);
+	bool Update();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+	void Reset();
+
 
 	GameSession *owner;
 };
@@ -371,5 +396,7 @@ struct BirdCrawlerAllianceSeq : Sequence
 
 	GameSession *owner;
 };
+
+
 
 #endif 

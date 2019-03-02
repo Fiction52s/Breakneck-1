@@ -13282,6 +13282,16 @@ bool GameSession::IsFading()
 	return fadingIn || fadingOut;
 }
 
+void GameSession::ClearFade()
+{
+	fadingIn = false;
+	fadingOut = false;
+	fadeAlpha = 0;
+	fadeLength = 0;
+	Color oldColor = fadeRect.getFillColor();
+	fadeRect.setFillColor(Color(oldColor.r, oldColor.g, oldColor.b, fadeAlpha));
+}
+
 void GameSession::UpdateFade()
 {
 	if( !fadingIn && !fadingOut )

@@ -1791,9 +1791,9 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case SEQ_ENTERCORE1:
-			frame = 0;
-			owner->activeSequence = storedTrigger->gameSequence;
-			owner->state = GameSession::SEQUENCE;
+			frame = actionLength[SEQ_ENTERCORE1] - 1;
+			//owner->activeSequence = storedTrigger->gameSequence;
+			//owner->state = GameSession::SEQUENCE;
 			break;
 		case SEQ_LOOKUP:
 			frame = 0;
@@ -16595,27 +16595,6 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	storedTrigger = trigger;
 	switch (trigger->trigType)
 	{
-	case TRIGGER_NEXUSCORE1:
-	{
-		action = SEQ_ENTERCORE1;
-		frame = 0;
-
-		owner->nexusCoreSeq->Reset();
-		owner->activeSequence = owner->nexusCoreSeq;
-
-		desperationMode = false;
-		SetExpr(Expr_NEUTRAL);
-		assert(ground != NULL);
-		edgeQuantity = trigger->edgeQuantity;
-		groundSpeed = 0;
-		facingRight = trigger->facingRight;
-
-		if (ground->Normal().y == -1)
-		{
-			offsetX = 0;
-		}
-		break;
-	}
 	case TRIGGER_SHIPPICKUP:
 		ShipPickupPoint(trigger->edgeQuantity, trigger->facingRight);
 		break;
@@ -16667,9 +16646,9 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 			offsetX = 0;
 		}
 
-		owner->Fade(false, 30, Color::Black);
+		//owner->Fade(false, 30, Color::Black);
 
-		
+		owner->activeSequence = trigger->gameSequence;
 
 		SetAction(SEQ_ENTERCORE1);
 		frame = 0;
