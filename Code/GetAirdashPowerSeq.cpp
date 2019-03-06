@@ -42,12 +42,19 @@ GetAirdashPowerSeq::GetAirdashPowerSeq(GameSession *p_owner)
 
 
 
-	stateLength[ENTERCORE] = 30;
-	stateLength[DESTROYCORE] = 30;
-	stateLength[FADEEXIT] = 9 * 3;
-	stateLength[EXITCORE] = 180;
+	stateLength[KIN_KNEELING] = 60;
+	stateLength[START_MEDITATE] = 60;
+	stateLength[FADE_BACKGROUND] = 60;
+	stateLength[EXPEL_ENERGY] = 60;
+	stateLength[MASKOFF] = 120;
+	stateLength[FADE_BACK] = 90;
 
+	//ts_darkAura = owner->GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
+	//darkAuraSprite.setTexture(*ts_darkAura->texture);
 
+	darkRect.setFillColor(Color::Black);
+	darkRect.setSize(Vector2f(1920, 1080));
+	darkRect.setPosition(0, 0);
 
 	Reset();
 }
@@ -70,6 +77,7 @@ bool GetAirdashPowerSeq::Update()
 
 	if (state == END)
 	{
+		
 		return false;
 	}
 
@@ -77,16 +85,94 @@ bool GetAirdashPowerSeq::Update()
 
 	switch (state)
 	{
-	case ENTERCORE:
+	case KIN_KNEELING:
+		if (frame == 0)
+		{
+			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect( 0 ));
+			player->dirtyAuraSprite.setOrigin(player->dirtyAuraSprite.getLocalBounds().width / 2,
+				player->dirtyAuraSprite.getLocalBounds().height / 2);
+			
+			player->SeqKneel();
+		}
+		
 		break;
-	case DESTROYCORE:
+	case START_MEDITATE:
+		if (frame == 0)
+		{
+			player->SeqMeditateMaskOn();
+		}
 		break;
-	case FADEEXIT:
+	case FADE_BACKGROUND:
+		if (frame == 0)
+		{
+			owner->Fade(false, 60, Color::Black, true);
+		}
+		else if (frame == stateLength[FADE_BACKGROUND]-1)
+		{
+			owner->state = GameSession::SEQUENCE;
+		}
 		break;
+	case EXPEL_ENERGY:
+		if (frame == 0)
+		{	
+			owner->ClearFade();
+		}
+		
+
+		if (frame < 10 * 3)
+		{
+			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect(frame / 3 + 15));
+		}
+		
+
 		break;
-	case EXITCORE:
+	case MASKOFF:
+		if (frame == 0)
+		{
+			player->SeqMaskOffMeditate();
+		}
+
+		if (frame == stateLength[MASKOFF] - 1)
+		{
+			owner->state = GameSession::RUN;
+			owner->Fade(true, 60, Color::Black, true);
+		}
+		
+		break;
+	case FADE_BACK:
+		if (frame == 0)
+		{
+			
+		}
+		else if (frame == 60)
+		{
+			player->SeqGetAirdash();
+		}
+		
+		
 		break;
 	}
+
+	if (state != EXPEL_ENERGY)
+	{
+		player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect((frame % (15 * 3) / 3)));
+	}
+	
+	player->dirtyAuraSprite.setPosition(Vector2f(player->sprite->getPosition().x, 
+		player->sprite->getPosition().y - 32));
+
+	if (owner->state == GameSession::SEQUENCE)
+	{
+		owner->totalGameFrames++;
+		player->UpdatePrePhysics();
+		player->UpdatePostPhysics();
+	}
+	
+
+	
+
+	
+
 
 	++frame;
 
@@ -94,13 +180,40 @@ bool GetAirdashPowerSeq::Update()
 }
 void GetAirdashPowerSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 {
+
+	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	{		
+	}
+
 	if (layer != EffectLayer::IN_FRONT)
 	{
 		return;
 	}
+
+	if (owner->state == GameSession::SEQUENCE)
+	{
+		target->setView(owner->uiView);
+		/*sf::View v = target->getView();
+		target->setView(owner->uiView);*/
+
+		if (state >= EXPEL_ENERGY)
+		{
+			//darkRect.setPosition(owner->cam.pos);
+			target->draw(darkRect);
+		}
+
+		//target->setView(v);
+
+
+
+		target->setView(owner->view);
+
+
+		owner->GetPlayer(0)->Draw(target);
+	}
 }
 void GetAirdashPowerSeq::Reset()
 {
-	state = ENTERCORE;
+	state = KIN_KNEELING;
 	frame = 0;
 }

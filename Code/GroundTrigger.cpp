@@ -42,8 +42,9 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 		storySeq->Load("kinhouse");
 		break;
 	case TRIGGER_GETAIRDASH:
-		storySeq = new StorySequence(owner);
-		storySeq->Load("getairdash");
+		gameSequence = new GetAirdashPowerSeq(owner);
+		//storySeq = new StorySequence(owner);
+		//storySeq->Load("getairdash");
 		break;
 	case TRIGGER_DESTROYNEXUS1:
 		gameSequence = new NexusCore1Seq(owner);

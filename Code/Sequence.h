@@ -270,10 +270,12 @@ struct GetAirdashPowerSeq : Sequence
 {
 	enum State
 	{
-		ENTERCORE,
-		DESTROYCORE,
-		FADEEXIT,
-		EXITCORE,
+		KIN_KNEELING,
+		START_MEDITATE,
+		FADE_BACKGROUND,
+		EXPEL_ENERGY,
+		MASKOFF,
+		FADE_BACK,
 		END,
 		Count
 	};
@@ -286,6 +288,9 @@ struct GetAirdashPowerSeq : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
+	sf::Sprite darkAuraSprite;
+	Tileset *ts_darkAura;
+	sf::RectangleShape darkRect;
 
 	GameSession *owner;
 };

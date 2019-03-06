@@ -128,6 +128,12 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 
 	tileset[SEQ_KINTHROWN] = tileset[AIRHITSTUN];
 
+	tileset[SEQ_KNEEL] = owner->GetTileset("Kin/kin_meditate_64x96.png", 64, 96, skin);
+	tileset[SEQ_KNEEL_TO_MEDITATE] = tileset[SEQ_KNEEL];
+	tileset[SEQ_MEDITATE_MASKON] = tileset[SEQ_KNEEL];
+	tileset[SEQ_MASKOFF] = tileset[SEQ_KNEEL];
+	tileset[SEQ_MEDITATE] = tileset[SEQ_KNEEL];
+
 	tileset[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset("Kin/stand_64x64.png", 64, 64, skin);
 	tileset[SEQ_WAIT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
 	tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
@@ -370,6 +376,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		railTest.setSize(Vector2f(64, 64));
 		railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
 		railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
+
+		ts_dirtyAura = owner->GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
+		dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
+		//dirtyAuraSprite.setpo
+		//dirtyAuraSprite.setOrigin( )
 
 		//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 		testGrassCount = 0;
@@ -1160,6 +1171,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		actionLength[SEQ_KINTHROWN] = 1;
 		actionLength[SEQ_KINSTAND] = actionLength[STAND];
+
+		actionLength[SEQ_KNEEL] = 1;
+
+		actionLength[SEQ_KNEEL_TO_MEDITATE] = 10 * 3;
+		actionLength[SEQ_MEDITATE_MASKON] = 1;
+		actionLength[SEQ_MASKOFF] = 24 * 3;
+		actionLength[SEQ_MEDITATE] = 1;
 		}
 		 	
 
@@ -1782,10 +1800,9 @@ void Actor::ActionEnded()
 			hasPowerAirDash = true;
 			SetAction(STAND);
 			frame = 0;
-			//owner->cam.manualZoom = 1;
-			//owner->cam.manualPos
-			owner->cam.SetManual( false );
-			owner->cam.EaseOutOfManual( 60 );
+
+			//owner->cam.SetManual( false );
+			//owner->cam.EaseOutOfManual( 60 );
 			break;
 		case SEQ_WAIT:
 			frame = 0;
@@ -1800,6 +1817,23 @@ void Actor::ActionEnded()
 			break;
 		case SEQ_KINTHROWN:
 			frame = actionLength[SEQ_KINTHROWN] = 1;
+			break;
+		case SEQ_KNEEL:
+			frame = 0;
+			break;
+		case SEQ_KNEEL_TO_MEDITATE:
+			action = SEQ_MEDITATE_MASKON;
+			frame = 0;
+			break;
+		case SEQ_MEDITATE_MASKON:
+			frame = 0;
+			break;
+		case SEQ_MASKOFF:
+			action = SEQ_MEDITATE;
+			frame = 0;
+			break;
+		case SEQ_MEDITATE:
+			frame = 0;
 			break;
 		}
 	}
@@ -8643,6 +8677,30 @@ void Actor::StartSeqKinThrown( V2d &pos, V2d &vel )
 	ground = NULL;
 	position = pos;
 	velocity = vel;
+}
+
+void Actor::SeqKneel()
+{
+	SetAction(SEQ_KNEEL);
+	frame = 0;
+}
+
+void Actor::SeqMeditateMaskOn()
+{
+	SetAction(SEQ_KNEEL_TO_MEDITATE);
+	frame = 0;
+}
+
+void Actor::SeqMaskOffMeditate()
+{
+	SetAction(SEQ_MASKOFF);
+	frame = 0;
+}
+
+void Actor::SeqGetAirdash()
+{
+	SetAction(GETPOWER_AIRDASH_FLIP);
+	frame = 0;
 }
 
 void Actor::SetAction( Action a )
@@ -15578,7 +15636,10 @@ void Actor::UpdatePostPhysics()
 		break;
 	}
 
-	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % smallLightningCounter == 0)
+	bool dontActivateLightningAction = action == SEQ_MEDITATE_MASKON || 
+		action == SEQ_MASKOFF || action == SEQ_MEDITATE;
+
+	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % smallLightningCounter == 0 && !dontActivateLightningAction)
 	{
 		RelEffectInstance params;
 		//EffectInstance params;
@@ -16628,10 +16689,11 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 			offsetX = 0;
 		}
 
-		SetAction(GETPOWER_AIRDASH_MEDITATE);
-		frame = 0;
+		//SetAction(GETPOWER_AIRDASH_MEDITATE);
+		//frame = 0;
 		physicsOver = true;
-		owner->currStorySequence = trigger->storySeq;
+		owner->activeSequence = trigger->gameSequence;
+		//owner->currStorySequence = trigger->storySeq;
 		//owner->state = GameSession::STORY;
 		break;
 	case TRIGGER_DESTROYNEXUS1:
@@ -18432,6 +18494,12 @@ void Actor::Draw( sf::RenderTarget *target )
 	
 	
 	//testAura3->Draw(target);
+
+	if (action == SEQ_KNEEL || action == SEQ_KNEEL_TO_MEDITATE
+		|| action == SEQ_MEDITATE_MASKON)
+	{
+		target->draw(dirtyAuraSprite);
+	}
 
 
 	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
@@ -21814,6 +21882,134 @@ void Actor::UpdateSprite()
 		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 		sprite->setPosition(position.x, position.y);
 		sprite->setRotation(0);
+		break;
+	}
+	case SEQ_KNEEL:
+	{
+		SetSpriteTexture(action);
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+		SetSpriteTile(0, r);
+
+		double angle = 0;//GroundedAngle()
+
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height-16);
+		sprite->setRotation(angle / PI * 180);
+
+		V2d pp;
+		if (ground != NULL)
+			pp = ground->GetPoint(edgeQuantity);
+		else
+		{
+			assert(0);
+		}
+
+		sprite->setPosition(pp.x, pp.y);	
+
+		//dirtyAuraSprite.setTextureRect(ts_dirtyAura->GetSubRect((owner->totalGameFrames % (15 * 3) / 3)));
+		//dirtyAuraSprite.setOrigin(dirtyAuraSprite.getLocalBounds().width / 2, 
+		//	dirtyAuraSprite.getLocalBounds().height / 2);
+		//dirtyAuraSprite.setPosition(Vector2f(position));
+		break;
+	}
+	case SEQ_KNEEL_TO_MEDITATE:
+	{
+		SetSpriteTexture(action);
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+
+		int f = frame / 3 + 1;
+		SetSpriteTile( f, r);
+
+		double angle = 0;//GroundedAngle()
+
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height-16);
+		sprite->setRotation(angle / PI * 180);
+
+		V2d pp;
+		if (ground != NULL)
+			pp = ground->GetPoint(edgeQuantity);
+		else
+		{
+			assert(0);
+		}
+
+		sprite->setPosition(pp.x, pp.y);
+		break;
+	}
+	case SEQ_MEDITATE_MASKON:
+	{
+		SetSpriteTexture(action);
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+
+		int f = 10;
+		SetSpriteTile(f, r);
+
+		double angle = 0;//GroundedAngle()
+
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height-16);
+		sprite->setRotation(angle / PI * 180);
+
+		V2d pp;
+		if (ground != NULL)
+			pp = ground->GetPoint(edgeQuantity);
+		else
+		{
+			assert(0);
+		}
+
+		sprite->setPosition(pp.x, pp.y);
+		break;
+	}
+	case SEQ_MASKOFF:
+	{
+		SetSpriteTexture(action);
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+
+		int f = frame / 3 + 11;
+		SetSpriteTile(f, r);
+
+		double angle = 0;//GroundedAngle()
+
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height-16);
+		sprite->setRotation(angle / PI * 180);
+
+		V2d pp;
+		if (ground != NULL)
+			pp = ground->GetPoint(edgeQuantity);
+		else
+		{
+			assert(0);
+		}
+
+		sprite->setPosition(pp.x, pp.y);
+		break;
+	}
+	case SEQ_MEDITATE:
+	{
+		SetSpriteTexture(action);
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+
+		int f = 39;
+		SetSpriteTile(f, r);
+
+		double angle = 0;//GroundedAngle()
+
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height-16);
+		sprite->setRotation(angle / PI * 180);
+
+		V2d pp;
+		if (ground != NULL)
+			pp = ground->GetPoint(edgeQuantity);
+		else
+		{
+			assert(0);
+		}
+
+		sprite->setPosition(pp.x, pp.y);
 		break;
 	}
 	}

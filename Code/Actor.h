@@ -185,6 +185,12 @@ struct Actor : QuadTreeCollider,
 	AirTrigger *currAirTrigger;
 	void HandleAirTrigger();
 
+
+	//for when you're absorbing a power
+	sf::Sprite dirtyAuraSprite;
+	Tileset *ts_dirtyAura;
+	void UpdateDirtyAura();
+
 	enum AirTriggerBehavior
 	{
 		AT_NONE,
@@ -268,6 +274,11 @@ struct Actor : QuadTreeCollider,
 		SEQ_KINTHROWN,
 		SEQ_KINFALL,
 		SEQ_KINSTAND,
+		SEQ_KNEEL,
+		SEQ_KNEEL_TO_MEDITATE,
+		SEQ_MEDITATE_MASKON,
+		SEQ_MASKOFF,
+		SEQ_MEDITATE,
 		Count
 	};
 
@@ -337,7 +348,7 @@ struct Actor : QuadTreeCollider,
 		T_PURPLE
 	};
 	
-
+	
 
 	bool IsGoalKillAction(Action a);
 	bool IsIntroAction(Action a);
@@ -345,6 +356,10 @@ struct Actor : QuadTreeCollider,
 	bool IsSequenceAction(Action a);
 
 	void StartSeqKinThrown( V2d &pos, V2d &vel );
+	void SeqKneel();
+	void SeqMeditateMaskOn();
+	void SeqMaskOffMeditate();
+	void SeqGetAirdash();
 
 	void CreateAttackLightning();
 	EffectPool *fairLightningPool[4];

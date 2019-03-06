@@ -6267,11 +6267,12 @@ int GameSession::Run()
 
 
 	std::stringstream ss;
-
+	bool switchState = false;
 	
-
+//starttest:
 	while( !quit )
 	{
+		switchState = false;
 		double newTime = gameClock.getElapsedTime().asSeconds();
 		double frameTime = newTime - currentTime;
 
@@ -6723,6 +6724,11 @@ int GameSession::Run()
 				else
 				{
 					//cout << "player frame: " << player->frame << endl;
+				}
+
+				if (state == SEQUENCE)
+				{
+
 				}
 			}
 			if( activeDialogue != NULL )
@@ -9384,13 +9390,15 @@ int GameSession::Run()
 				}
 			}
 
+			window->clear();
+			window->setView(v);
+			preScreenTex->clear();
+
 			accumulator += frameTime;
 			Sprite preTexSprite;
 			while (accumulator >= TIMESTEP)
 			{
-				window->clear();
-				window->setView(v);
-				preScreenTex->clear();
+				
 
 				UpdateInput();
 
@@ -9403,6 +9411,12 @@ int GameSession::Run()
 					}
 					else
 					{
+						if (state == RUN)
+						{
+							switchState = true;
+							break;
+							//goto starttest;
+						}
 					}
 				}
 
@@ -9451,9 +9465,14 @@ int GameSession::Run()
 				accumulator -= TIMESTEP;
 			}
 
+			if (switchState)
+			{
+				continue;
+			}
+
 			if (activeSequence != NULL)
 			{
-				preScreenTex->setView(uiView);
+				//preScreenTex->setView(uiView);
 				activeSequence->Draw(preScreenTex);
 			}
 
