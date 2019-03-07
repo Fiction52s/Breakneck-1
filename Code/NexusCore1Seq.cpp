@@ -36,16 +36,17 @@ NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
 	:owner(p_owner)
 {
 	SetRectCenter(darkQuad, 1920, 1080, Vector2f(960, 540));// , Vector2f(pi->pos));
-	SetRectColor(darkQuad, Color(Color::Red));
+	SetRectColor(darkQuad, Color(Color::Black));
 	
 	//state = ENTERCORE;
 
 	
 
+	stateLength[FADETOBLACK] = 31;
 	stateLength[ENTERCORE] = 60;
 	stateLength[DESTROYCORE] = 30;
 	stateLength[FADEEXIT] = 9 * 3;
-	stateLength[EXITCORE] = 180;
+	stateLength[EXITCORE] = 30;
 
 
 
@@ -70,6 +71,7 @@ bool NexusCore1Seq::Update()
 
 	if (state == END)
 	{
+		owner->Fade(true, 30, sf::Color::White);
 		owner->state = GameSession::RUN;
 		player->SetAction(Actor::GOALKILLWAIT);
 		player->frame = 0;
@@ -81,25 +83,35 @@ bool NexusCore1Seq::Update()
 
 	switch (state)
 	{
-	case ENTERCORE:
+	case FADETOBLACK:
 		if (frame == 0)
 		{
-			owner->Fade(false, 30, sf::Color::Black, true);
+			owner->Fade(false, 30, sf::Color::Black);
 			//owner->ClearFade();
 		}
-		else if (frame == 31)
+		if (frame == stateLength[FADETOBLACK] - 1)
+		{
+			owner->state = GameSession::SEQUENCE;
+		}
+		break;
+	case ENTERCORE:
+		
+		if (frame == 0)
 		{
 			owner->ClearFade();
-			owner->state = GameSession::SEQUENCE;
 		}
 		break;
 	case DESTROYCORE:
 		break;
 	case FADEEXIT:
-		break;
+		
 		break;
 	case EXITCORE:
-		
+		if (frame == 0)
+		{
+			owner->Fade(false, 30, sf::Color::White);
+		}
+			
 		break;
 	}
 
@@ -114,13 +126,13 @@ void NexusCore1Seq::Draw(sf::RenderTarget *target, EffectLayer layer)
 		return;
 	}
 
-	if (state != ENTERCORE || frame > 30)
+	if (state >= ENTERCORE )
 	{
 		target->draw(darkQuad, 4, sf::Quads);
 	}
 }
 void NexusCore1Seq::Reset()
 {
-	state = ENTERCORE;
+	state = FADETOBLACK;
 	frame = 0;
 }

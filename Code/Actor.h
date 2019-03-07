@@ -246,7 +246,7 @@ struct Actor : QuadTreeCollider,
 		GOALKILL3,
 		GOALKILL4,
 		GOALKILLWAIT,
-		NEXUSKILLWAIT,
+		NEXUSKILL,
 		SPAWNWAIT,
 		DEATH,
 		RIDESHIP,
@@ -279,6 +279,8 @@ struct Actor : QuadTreeCollider,
 		SEQ_MEDITATE_MASKON,
 		SEQ_MASKOFF,
 		SEQ_MEDITATE,
+		SEQ_FLOAT_TO_NEXUS_OPENING,
+		SEQ_FADE_INTO_NEXUS,
 		Count
 	};
 
@@ -499,6 +501,7 @@ struct Actor : QuadTreeCollider,
 	HitboxInfo *wireChargeInfo;
 	//sf::Shader speedBarShader;
 	bool hitGoal;
+	bool hitNexus;
 	int enemiesKilledThisFrame;
 	int enemiesKilledLastFrame;
 

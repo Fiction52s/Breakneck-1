@@ -97,6 +97,11 @@ void GroundTrigger::ResetEnemy()
 		gameSequence->Reset();
 }
 
+void GroundTrigger::DirectKill()
+{
+
+}
+
 TriggerType GroundTrigger::GetTriggerType(const std::string &typeStr)
 {
 	string testStr = typeStr;

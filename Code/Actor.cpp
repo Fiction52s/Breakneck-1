@@ -25,6 +25,7 @@
 #include "Enemy_Comboer.h"
 #include "Enemy_Spring.h"
 #include "AirTrigger.h"
+#include "Nexus.h"
 
 using namespace sf;
 using namespace std;
@@ -133,6 +134,9 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[SEQ_MEDITATE_MASKON] = tileset[SEQ_KNEEL];
 	tileset[SEQ_MASKOFF] = tileset[SEQ_KNEEL];
 	tileset[SEQ_MEDITATE] = tileset[SEQ_KNEEL];
+
+	tileset[SEQ_FLOAT_TO_NEXUS_OPENING] = tileset[AIRDASH];
+	tileset[SEQ_FADE_INTO_NEXUS] = tileset[AIRDASH];
 
 	tileset[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset("Kin/stand_64x64.png", 64, 64, skin);
 	tileset[SEQ_WAIT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
@@ -415,6 +419,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		followerVel = V2d( 0, 0 );
 		followerFac = 1.0 / 60.0;
 		hitGoal = false;
+		hitNexus = false;
 		ground = NULL;
 		//re = new RotaryParticleEffect( this );
 		//re1 = new RotaryParticleEffect( this );
@@ -1160,11 +1165,17 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[BOUNCEGROUNDEDWALL] = 30;
 		actionLength[DEATH] = 44 * 2;
 		actionLength[GETPOWER_AIRDASH_FLIP] = 20 * 5;
-		actionLength[GOALKILL] = 72 * 2;
+		
 		actionLength[ENTERNEXUS1] = 10 * 4;
-		actionLength[GOALKILLWAIT] = 2;
+		
 		actionLength[SPAWNWAIT] = 120;
 		actionLength[RAILDASH] = 20;
+
+
+		actionLength[GOALKILL] = 72 * 2;
+		actionLength[GOALKILLWAIT] = 2;
+
+		actionLength[NEXUSKILL] = actionLength[GOALKILL];
 
 		actionLength[SEQ_LOOKUP] = 1;
 		actionLength[SEQ_LOOKUPDISAPPEAR] = 1;
@@ -1178,6 +1189,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SEQ_MEDITATE_MASKON] = 1;
 		actionLength[SEQ_MASKOFF] = 24 * 3;
 		actionLength[SEQ_MEDITATE] = 1;
+
+		actionLength[SEQ_FLOAT_TO_NEXUS_OPENING] = 30;
+		actionLength[SEQ_FADE_INTO_NEXUS] = 30;
 		}
 		 	
 
@@ -1764,6 +1778,12 @@ void Actor::ActionEnded()
 			//action = EXIT;
 			frame = 0;
 			break;
+		case NEXUSKILL:
+			SetAction(SEQ_FLOAT_TO_NEXUS_OPENING);
+			frame = 0;
+			//owner->scoreDisplay->Activate();
+			//grab the nexus and start its sequence.
+			break;
 		case DEATH:
 			frame = 0;
 			break;
@@ -1834,6 +1854,14 @@ void Actor::ActionEnded()
 			break;
 		case SEQ_MEDITATE:
 			frame = 0;
+			break;
+		case SEQ_FLOAT_TO_NEXUS_OPENING:
+			action = SEQ_FADE_INTO_NEXUS;
+			frame = 0;
+			break;
+		case SEQ_FADE_INTO_NEXUS:
+			frame = actionLength[SEQ_FADE_INTO_NEXUS] - 1;
+			owner->activeSequence = owner->nexus->insideSeq;
 			break;
 		}
 	}
@@ -2135,6 +2163,7 @@ void Actor::Respawn()
 	//clean up the checkpoint code at some point
 
 	hitGoal = false;
+	hitNexus = false;
 	position = owner->originalPos;
 
 	followerPos = position;
@@ -8505,7 +8534,7 @@ void Actor::LoadAllAuras()
 
 		Vector2f curr;
 		//autorun thing is temporary, should be < Count when fixed
-		for (int j = 0; j < Action::AUTORUN; ++j) 
+		for (int j = 0; j < Action::Count; ++j)  //AUTORUN
 		{
 			numT = iList[currIndex++];
 				
@@ -8527,13 +8556,13 @@ void Actor::LoadAllAuras()
 				}
 			}
 		}
-		for (int j = Action::AUTORUN; j < Action::Count; ++j)
+		/*for (int j = Action::AUTORUN; j < Action::Count; ++j)
 		{
 			for (int f = 0; f < 3; ++f)
 			{
 				auraPoints[f][j] = NULL;
 			}
-		}
+		}*/
 		
 		
 		cout << "finished reading auras" << endl;
@@ -15823,11 +15852,11 @@ void Actor::UpdatePostPhysics()
 		}
 	}*/
 
-	if( hitGoal && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
+	if( hitGoal )// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
 		SetActionExpr( GOALKILL );
 		desperationMode = false;
-
+		hitGoal = false;
 		if( owner->recPlayer != NULL )
 		{
 			owner->recPlayer->RecordFrame();
@@ -15839,6 +15868,30 @@ void Actor::UpdatePostPhysics()
 		{
 			owner->recGhost->StopRecording();
 			owner->recGhost->WriteToFile( "testghost.bghst" );
+		}
+
+		frame = 0;
+		position = owner->goalNodePos;
+		rightWire->Reset();
+		leftWire->Reset();
+		desperationMode = false;
+	}
+	else if (hitNexus)
+	{
+		SetActionExpr(NEXUSKILL);
+		desperationMode = false;
+		hitNexus = false;
+		if (owner->recPlayer != NULL)
+		{
+			owner->recPlayer->RecordFrame();
+			owner->recPlayer->StopRecording();
+			owner->recPlayer->WriteToFile("testreplay.brep");
+		}
+
+		if (owner->recGhost != NULL)
+		{
+			owner->recGhost->StopRecording();
+			owner->recGhost->WriteToFile("testghost.bghst");
 		}
 
 		frame = 0;
@@ -16852,7 +16905,8 @@ void Actor::SetActivePowers(
 
 bool Actor::IsGoalKillAction(Action a)
 {
-	return (a == GOALKILL || a == GOALKILL1 || a == GOALKILL2 || a == GOALKILL3 || a == GOALKILL4 || a == GOALKILLWAIT);
+	return (a == GOALKILL || a == GOALKILL1 || a == GOALKILL2 || a == GOALKILL3 || a == GOALKILL4 || a == GOALKILLWAIT
+		|| a == NEXUSKILL || a == SEQ_FLOAT_TO_NEXUS_OPENING || a == SEQ_FADE_INTO_NEXUS);
 }
 
 bool Actor::IsIntroAction(Action a)
@@ -21529,6 +21583,7 @@ void Actor::UpdateSprite()
 			sprite->setRotation( 0 );
 			break;
 		}
+	case NEXUSKILL:
 	case GOALKILL:
 		{
 			assert(slowCounter == 1);
@@ -21584,6 +21639,7 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
 				sprite->getLocalBounds().height / 2 );
 			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );//- 24.f );
+			sprite->setPosition(Vector2f(position));
 			sprite->setRotation( 0 );
 			break;
 		}
@@ -23521,6 +23577,7 @@ void Actor::SetActionExpr( Action a )
 	case SPRINT:
 		//SetExpr( Expr_SPRINT );
 		break;
+	case NEXUSKILL:
 	case GOALKILL:
 		SetExpr( Expr_NEUTRAL );
 		velocity = V2d(0, 0);

@@ -288,6 +288,7 @@ struct HitboxManager;
 struct Background;
 struct StorySequence;
 struct AirTrigger;
+struct Nexus;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
@@ -866,8 +867,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void ClearFX();
 
 	bool hasGoal;
+	Nexus *nexus;
+	
 	sf::Vector2<double> goalPos;
 	sf::Vector2<double> goalNodePos;
+	V2d nexusPos;
 	std::string rayMode;
 	sf::VertexArray * SetupEnergyFlow1(
 		int bgLayer,

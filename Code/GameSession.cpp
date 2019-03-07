@@ -57,6 +57,7 @@
 #include "Enemy_Comboer.h"
 #include "Enemy_StagBeetle.h"
 #include "Enemy_Cactus.h"
+#include "Nexus.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -1603,7 +1604,6 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
 				Goal *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
@@ -2972,13 +2972,17 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int nexusIndex;
 				is >> nexusIndex;
 
-				/*Nexus *enemy = new Nexus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-					nexusIndex );
+				Nexus *enemy = new Nexus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+
+				goalNodePos = enemy->GetKillPos();
+				hasGoal = true;
+				nexus = enemy;
+				//nexusPos = enemy->GetKillPos();//enemy->position;
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 
-				enemyTree->Insert( enemy );*/
+				enemyTree->Insert( enemy );
 			}
 			else if( typeName == "shippickup" )
 			{
@@ -9404,6 +9408,7 @@ int GameSession::Run()
 
 				if (activeSequence != NULL)
 				{
+					State oldState = state;
 					if (!activeSequence->Update())
 					{
 						state = RUN;
@@ -9411,7 +9416,7 @@ int GameSession::Run()
 					}
 					else
 					{
-						if (state == RUN)
+						if (state != oldState)
 						{
 							switchState = true;
 							break;
@@ -10240,7 +10245,7 @@ void GameSession::KillAllEnemies()
 	{
 		Enemy *next = curr->next;
 
-		if( curr->type != EnemyType::EN_GOAL )
+		if( curr->type != EnemyType::EN_GOAL && curr->type != EnemyType::EN_NEXUS )
 		{
 			curr->DirectKill();
 			//curr->health = 0;

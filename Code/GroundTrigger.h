@@ -39,6 +39,7 @@ struct GroundTrigger : Enemy
 		bool facingRight,
 		const std::string &trigTypeStr );
 	void ProcessState();
+	void DirectKill();
 	TriggerType GetTriggerType(const std::string &typeStr);
 	void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target);

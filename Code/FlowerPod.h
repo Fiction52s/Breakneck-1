@@ -32,7 +32,6 @@ struct FlowerPod : Enemy, RayCastHandler
 	V2d rayStart;
 	double rcQuantity;
 
-
 	static PodType GetType(const std::string &tStr);
 	PodType podType;
 	Action action;

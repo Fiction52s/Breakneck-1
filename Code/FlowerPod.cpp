@@ -204,12 +204,6 @@ void FlowerPod::EnemyDraw(sf::RenderTarget *target)
 	DrawSpriteIfExists(target, sprite);
 }
 
-void FlowerPod::DirectKill()
-{
-	health = 0;
-	receivedHit = NULL;
-}
-
 void FlowerPod::UpdateSprite()
 {
 	sprite.setTextureRect(ts->GetSubRect(0));//frame / animationFactor ) );
@@ -220,4 +214,9 @@ void FlowerPod::UpdateHitboxes()
 	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
 	hitBox.globalPosition = position;// + gn * 8.0;
 	//hitBox.globalAngle = 0;
+}
+
+void FlowerPod::DirectKill()
+{
+
 }
