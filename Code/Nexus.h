@@ -3,6 +3,7 @@
 
 #include "Enemy.h"
 
+
 struct Sequence;
 struct Nexus : Enemy
 {
@@ -17,6 +18,11 @@ struct Nexus : Enemy
 	Nexus(GameSession *owner, Edge *ground, double quantity);
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
+
+
+
+
+
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();

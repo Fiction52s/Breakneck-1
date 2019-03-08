@@ -6721,13 +6721,20 @@ int GameSession::Run()
 
 			if( activeSequence != NULL )// && activeSequence == startSeq )
 			{
-				if( !activeSequence->Update() )
+				State oldState = state;
+				if (!activeSequence->Update())
 				{
-					activeSequence = NULL;	
+					state = RUN;
+					activeSequence = NULL;
 				}
 				else
 				{
-					//cout << "player frame: " << player->frame << endl;
+					if (state != oldState)
+					{
+						switchState = true;
+						break;
+						//goto starttest;
+					}
 				}
 
 				if (state == SEQUENCE)
@@ -7318,6 +7325,10 @@ int GameSession::Run()
 			}
 		}
 
+		if (switchState)
+		{
+			continue;
+		}
 		//window->display();
 		//continue;
 
@@ -9482,7 +9493,15 @@ int GameSession::Run()
 			}
 
 			preScreenTex->setView(uiView);
+
+			
+
 			DrawFade(preScreenTex);
+
+			if (showFrameRate)
+			{
+				preScreenTex->draw(frameRate);
+			}
 
 			preTexSprite.setTexture(preScreenTex->getTexture());
 			preTexSprite.setPosition(-960 / 2, -540 / 2);

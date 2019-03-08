@@ -4,6 +4,7 @@
 #include "SFML/Graphics.hpp"
 #include <list>
 #include "Movement.h"
+#include <boost/thread.hpp>
 
 struct GameSession;
 struct MovementSequence;
@@ -154,6 +155,9 @@ struct CrawlerAfterFightSeq : Sequence
 	GameSession *owner;
 };
 
+
+
+
 struct NexusCore1Seq : Sequence
 {
 	enum State
@@ -170,15 +174,48 @@ struct NexusCore1Seq : Sequence
 	State state;
 	int stateLength[Count];
 	NexusCore1Seq(GameSession *owner);
+	~NexusCore1Seq();
 	bool Update();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
+	sf::Texture tex;
+
+	std::string imageNames[52];
 
 	GameSession *owner;
+	static void LoadNextTex(NexusCore1Seq *seq);
+	boost::thread *loadThread;
+	sf::Image coreImages[52];
+	Tileset *ts_core[52];
+	Tileset *ts_firstCore;
+	sf::Texture coreTex[2];
+	sf::Sprite coreSprite;
 
+	bool endThread;
+
+	boost::mutex mut;
+	boost::mutex mut1;
+	boost::mutex mut2;
+	boost::mutex mut3;
+
+	
 	sf::Vertex darkQuad[4];
+
+	bool ShouldLoad();
+	bool ShouldLoadNext();
+	bool ThreadEnded();
+
+	int ci;
+
+	bool shouldLoad;
+	bool doneLoading;
+
+
+	int loadIndex;
+
+
 };
 
 struct CrawlerQueen;
