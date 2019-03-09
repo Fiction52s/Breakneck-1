@@ -26,7 +26,9 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 		ts_mini = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
 		ts_explosion = owner->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
 		ts_explosion1 = owner->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
-		explosionLength = 18;
+		ts_node1 = owner->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
+		ts_node2 = owner->GetTileset("Goal/nexus_node_2_512x512.png", 512, 512);
+		explosionLength = 24;
 		explosionAnimFactor = 3;
 		explosionYOffset = 80;
 		initialYOffset = 30;
@@ -37,7 +39,8 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 		height = 256;
 		ts = owner->GetTileset("Goal/goal_w02_a_288x256.png", width, height);
 		ts_mini = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
-
+		ts_node1 = owner->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
+		ts_node2 = owner->GetTileset("Goal/nexus_node_2_512x512.png", 512, 512);
 		ts_explosion = owner->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
 		ts_explosion1 = NULL;
 		explosionLength = 15;
@@ -48,7 +51,7 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 	}
 
 
-	sprite.setTexture(*ts->texture);
+	
 
 	miniSprite.setTexture(*ts_mini->texture);
 	miniSprite.setTextureRect(ts_mini->GetSubRect(2));
@@ -91,11 +94,12 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 	miniSprite.setPosition(gPoint.x, gPoint.y);
 	miniSprite.setRotation(angle / PI * 180);
 
-
-	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setTexture(*ts_node1->texture);
+	sprite.setTextureRect(ts_node1->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
 	sprite.setPosition(gPoint.x, gPoint.y);
 	sprite.setRotation(angle / PI * 180);
+	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
 
 	hurtBody = new CollisionBody(1);
 	CollisionBox hurtBox;
@@ -127,6 +131,8 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 
 	spawnRect = sf::Rect<double>(gPoint.x - 160 / 2, gPoint.y - 160 / 2, 160, 160);
 
+	
+
 	//health = 1;
 	//numHealth = 1;
 
@@ -149,9 +155,11 @@ void Nexus::ResetEnemy()
 	insideSeq->Reset();
 	SetHurtboxes(hurtBody, 0);
 	//numHealth = 1;
-	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setTexture(*ts_node1->texture);
+	sprite.setTextureRect(ts_node1->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+
+
 }
 
 void Nexus::ProcessState()
@@ -228,7 +236,10 @@ void Nexus::HandleNoHealth()
 
 void Nexus::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(sprite);
+	if (action != A_DESTROYED)
+	{
+		target->draw(sprite);
+	}
 }
 
 void Nexus::DrawMinimap(sf::RenderTarget *target)
@@ -255,47 +266,47 @@ void Nexus::UpdateSprite()
 		}
 		else
 		{
-			trueFrame = 4;
+			trueFrame = 3;
 		}
-		sprite.setTexture(*ts->texture);
-		sprite.setTextureRect(ts->GetSubRect(trueFrame));
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+		sprite.setTexture(*ts_node1->texture);
+		sprite.setTextureRect(ts_node1->GetSubRect(trueFrame));
+		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
 	}
 	else if (action == A_EXPLODING)
 	{
 		trueFrame = frame / explosionAnimFactor;
-		int numTiles = ts_explosion->GetNumTiles();
+		int numTiles = 16;//ts_explosion->GetNumTiles();
 		if (trueFrame >= numTiles)
 		{
 			trueFrame -= numTiles;
-			sprite.setTexture(*ts_explosion1->texture);
-			sprite.setTextureRect(ts_explosion1->GetSubRect(trueFrame));
+			sprite.setTexture(*ts_node2->texture);
+			sprite.setTextureRect(ts_node2->GetSubRect(trueFrame));
 		}
 		else
 		{
-			sprite.setTexture(*ts_explosion->texture);
-			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
+			sprite.setTexture(*ts_node1->texture);
+			sprite.setTextureRect(ts_node1->GetSubRect(trueFrame));
 		}
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
+		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 	}
-	else if (action == A_DESTROYED)
-	{
-		trueFrame = explosionLength - 1;
-		int numTiles = ts_explosion->GetNumTiles();
-		if (trueFrame >= numTiles)
-		{
-			trueFrame -= numTiles;
-			sprite.setTexture(*ts_explosion1->texture);
-			sprite.setTextureRect(ts_explosion1->GetSubRect(trueFrame));
-		}
-		else
-		{
-			sprite.setTexture(*ts_explosion->texture);
-			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
-		}
+	//else if (action == A_DESTROYED)
+	//{
+	//	trueFrame = //explosionLength - 1;
+	//	int numTiles = 16;//ts_explosion->GetNumTiles();
+	//	if (trueFrame >= numTiles)
+	//	{
+	//		trueFrame -= numTiles;
+	//		sprite.setTexture(*ts_node2->texture);
+	//		sprite.setTextureRect(ts_node2->GetSubRect(trueFrame));
+	//	}
+	//	else
+	//	{
+	//		sprite.setTexture(*ts_node1->texture);
+	//		sprite.setTextureRect(ts_node1->GetSubRect(trueFrame));
+	//	}
 
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
-	}
+	//	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
+	//}
 
 
 }

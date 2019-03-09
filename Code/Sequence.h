@@ -199,6 +199,7 @@ struct NexusCore1Seq : Sequence
 	boost::mutex mut1;
 	boost::mutex mut2;
 	boost::mutex mut3;
+	boost::mutex mut4;
 
 	
 	sf::Vertex darkQuad[4];

@@ -101,9 +101,10 @@ void NexusCore1Seq::LoadNextTex( NexusCore1Seq *seq )
 			//seq->doneLoading = false;
 			//seq->coreImages[seq->ci].loadFromFile(seq->imageNames[seq->loadIndex]);
 			
+			//seq->mut4.lock();
 			seq->coreTex[seq->ci].loadFromFile(seq->imageNames[seq->loadIndex]);
-
 			seq->ci = !seq->ci;
+			//seq->mut4.unlock();
 			//seq->coreImages[1].loadFromFile(seq->imageNames[seq->loadIndex+1]);
 			seq->doneLoading = true;
 
@@ -227,7 +228,9 @@ bool NexusCore1Seq::Update()
 
 			shouldLoad = true;
 
+			mut4.lock();
 			int c = !ci;
+			mut4.unlock();
 			//loadFromImage(coreImages[c]);
 			coreSprite.setTexture(coreTex[c]);
 		}
@@ -283,6 +286,7 @@ void NexusCore1Seq::Reset()
 	state = FADETOBLACK;
 	frame = 0;
 	ci = 0;
+	endThread = false;
 	doneLoading = false;
 	loadIndex = 0;
 	shouldLoad = true;

@@ -19,9 +19,8 @@ struct Nexus : Enemy
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 
-
-
-
+	Tileset *ts_node1;
+	Tileset *ts_node2;
 
 	void UpdateSprite();
 	void ResetEnemy();

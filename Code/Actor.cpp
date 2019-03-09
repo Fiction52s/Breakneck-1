@@ -11398,7 +11398,7 @@ void Actor::GroundExtraAccel()
 //int blah = 0;
 void Actor::UpdatePhysics()
 {
-	if( action == INTRO || action == SPAWNWAIT || action == GOALKILL || action == EXIT || action == GOALKILLWAIT
+	if( action == INTRO || action == SPAWNWAIT || IsGoalKillAction(action) || action == EXIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT)
 		return;
@@ -16047,7 +16047,7 @@ void Actor::UpdatePostPhysics()
 		
 	speed = length( trueVel );
 
-	bool careAboutSpeedAction = action != DEATH && action != EXIT && action != GOALKILL && action != GOALKILLWAIT && action != RIDESHIP && action != GRINDBALL
+	bool careAboutSpeedAction = action != DEATH && action != EXIT && !IsGoalKillAction(action) && action != RIDESHIP && action != GRINDBALL
 		&& action != GRINDATTACK;
 	if (careAboutSpeedAction)
 	{
@@ -18556,8 +18556,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 
 
-	if( bounceFlameOn && action != DEATH && action != EXIT && action != GOALKILL
-		&& action != GOALKILLWAIT && action != BOUNCEGROUNDEDWALL && action != GRINDBALL 
+	if( bounceFlameOn && action != DEATH && action != EXIT && !IsGoalKillAction(action) && action != BOUNCEGROUNDEDWALL && action != GRINDBALL 
 		&& action != RAILGRIND )
 	{
 		target->draw( scorpSprite );
