@@ -12,12 +12,14 @@ struct Nexus : Enemy
 		A_SITTING,
 		A_KINKILLING,
 		A_EXPLODING,
-		A_DESTROYED
+		A_DESTROYED,
+		A_NEXUSDESTROYED,
 	};
 
 	Nexus(GameSession *owner, Edge *ground, double quantity);
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
+	void FinishDestruction();
 
 	Tileset *ts_node1;
 	Tileset *ts_node2;
@@ -39,7 +41,10 @@ struct Nexus : Enemy
 	Action action;
 	sf::Sprite sprite;
 	sf::Sprite miniSprite;
-	Tileset *ts;
+	sf::Sprite nexSprite;
+	//Tileset *ts;
+	Tileset *ts_nexusOpen;
+	Tileset *ts_nexusDestroyed;
 	Tileset *ts_mini;
 	Tileset *ts_explosion;
 	Tileset *ts_explosion1;

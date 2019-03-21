@@ -24,6 +24,11 @@ V2d Edge::Normal()
 	return V2d( temp.y, -temp.x );
 }
 
+V2d Edge::Along()
+{
+	return normalize(v1 - v0);
+}
+
 V2d Edge::GetPoint( double quantity )
 {
 	//gets the point on a line w/ length quantity in the direction of the edge vector

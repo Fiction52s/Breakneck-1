@@ -951,8 +951,12 @@ void GameSession::AddEnemy( Enemy *e )
 
 void GameSession::RemoveEnemy( Enemy *e )
 {
-	cout << "removing enemy: " << e << endl;
-	assert( activeEnemyList != NULL );
+	if (activeEnemyList == NULL)
+	{
+		return;
+	}
+	//cout << "removing enemy: " << e << endl;
+	//assert( activeEnemyList != NULL );
 	Enemy *prev = e->prev;
 	Enemy *next = e->next;
 
@@ -6343,7 +6347,6 @@ int GameSession::Run()
 		case 0:
 			break;
 		case 1:
-			nexusCoreSeq = new NexusCore1Seq(this);
 			break;
 		}
 		

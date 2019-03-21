@@ -26,6 +26,7 @@
 #include "Movement.h"
 #include "ScoreDisplay.h"
 #include "Enemy_CrawlerQueen.h"
+#include "Nexus.h"
 
 using namespace sf;
 using namespace std;
@@ -257,6 +258,7 @@ bool NexusCore1Seq::Update()
 		if (frame == 0)
 		{
 			owner->Fade(false, 30, sf::Color::White);
+			owner->nexus->FinishDestruction();
 		}
 			
 		break;

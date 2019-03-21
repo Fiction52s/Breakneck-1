@@ -105,7 +105,7 @@ bool CrawlerAttackSeq::Update()
 	{
 	case KINSTOP:
 		if( frame == 0 )
-			owner->cam.Ease(Vector2f(player->position), 1, 30, CubicBezier());
+			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
 		break;
 	case ROCKSFALL:
 		break;
@@ -149,6 +149,9 @@ bool CrawlerAttackSeq::Update()
 	case THROWOUT:
 		if (frame == 0)
 		{
+			//owner->currentZone->LockAllGates();
+			//owner->currentZone = queen->zone;
+			owner->currentZone->ReformAllGates();
 			player->StartSeqKinThrown(V2d(surface->pos), V2d(-10, -10));
 			
 		}

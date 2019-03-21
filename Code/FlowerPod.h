@@ -25,6 +25,8 @@ struct FlowerPod : Enemy, RayCastHandler
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 
+	Actor *healingPlayer;
+
 	StorySequence *storySeq;
 	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
 	Edge *rcEdge;
@@ -49,7 +51,9 @@ struct FlowerPod : Enemy, RayCastHandler
 	void IHitPlayer(int index = 0);
 
 	sf::Sprite sprite;
-	Tileset *ts;
+	Tileset *ts_flower;
+	Tileset *ts_bud;
+	Tileset *ts_rise;
 
 	Edge *ground;
 	double edgeQuantity;

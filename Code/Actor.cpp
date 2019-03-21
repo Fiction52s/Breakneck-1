@@ -135,8 +135,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[SEQ_MASKOFF] = tileset[SEQ_KNEEL];
 	tileset[SEQ_MEDITATE] = tileset[SEQ_KNEEL];
 
-	tileset[SEQ_FLOAT_TO_NEXUS_OPENING] = tileset[AIRDASH];
-	tileset[SEQ_FADE_INTO_NEXUS] = tileset[AIRDASH];
+	tileset[SEQ_FLOAT_TO_NEXUS_OPENING] = owner->GetTileset("Kin/nexus_enter_384x256.png", 384, 256, skin);
+	tileset[SEQ_FADE_INTO_NEXUS] = tileset[SEQ_FLOAT_TO_NEXUS_OPENING];//tileset[AIRDASH];
 
 	tileset[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset("Kin/stand_64x64.png", 64, 64, skin);
 	tileset[SEQ_WAIT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
@@ -240,11 +240,11 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	ts_fx_death_1e = owner->GetTileset("death_fx_1e_160x160.png", 160, 160);
 	ts_fx_death_1f = owner->GetTileset("death_fx_1f_160x160.png", 160, 160);
 
-	tileset[GOALKILL] = owner->GetTileset("goal_w01_killa_384x256.png", 384, 256);
-	tileset[GOALKILL1] = owner->GetTileset("goal_w01_killb_384x256.png", 384, 256);
-	tileset[GOALKILL2] = owner->GetTileset("goal_w01_killc_384x256.png", 384, 256);
-	tileset[GOALKILL3] = owner->GetTileset("goal_w01_killd_384x256.png", 384, 256);
-	tileset[GOALKILL4] = owner->GetTileset("goal_w01_kille_384x256.png", 384, 256);
+	tileset[GOALKILL] = owner->GetTileset("Kin/goal_w01_killa_384x256.png", 384, 256);
+	tileset[GOALKILL1] = owner->GetTileset("Kin/goal_w01_killb_384x256.png", 384, 256);
+	tileset[GOALKILL2] = owner->GetTileset("Kin/goal_w01_killc_384x256.png", 384, 256);
+	tileset[GOALKILL3] = owner->GetTileset("Kin/goal_w01_killd_384x256.png", 384, 256);
+	tileset[GOALKILL4] = owner->GetTileset("Kin/goal_w01_kille_384x256.png", 384, 256);
 }
 
 Actor::Actor( GameSession *gs, int p_actorIndex )
@@ -1164,7 +1164,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[BOUNCEGROUND] = 15;
 		actionLength[BOUNCEGROUNDEDWALL] = 30;
 		actionLength[DEATH] = 44 * 2;
-		actionLength[GETPOWER_AIRDASH_FLIP] = 20 * 5;
+		actionLength[GETPOWER_AIRDASH_FLIP] = 133 * 2;
 		
 		actionLength[ENTERNEXUS1] = 10 * 4;
 		
@@ -1175,7 +1175,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[GOALKILL] = 72 * 2;
 		actionLength[GOALKILLWAIT] = 2;
 
-		actionLength[NEXUSKILL] = actionLength[GOALKILL];
+		actionLength[NEXUSKILL] = 63 * 2;//actionLength[GOALKILL];
 
 		actionLength[SEQ_LOOKUP] = 1;
 		actionLength[SEQ_LOOKUPDISAPPEAR] = 1;
@@ -1185,13 +1185,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		actionLength[SEQ_KNEEL] = 1;
 
-		actionLength[SEQ_KNEEL_TO_MEDITATE] = 10 * 3;
+		actionLength[SEQ_KNEEL_TO_MEDITATE] = 7 * 3;
 		actionLength[SEQ_MEDITATE_MASKON] = 1;
 		actionLength[SEQ_MASKOFF] = 24 * 3;
 		actionLength[SEQ_MEDITATE] = 1;
 
-		actionLength[SEQ_FLOAT_TO_NEXUS_OPENING] = 30;
-		actionLength[SEQ_FADE_INTO_NEXUS] = 30;
+		actionLength[SEQ_FLOAT_TO_NEXUS_OPENING] = 3 * 10;
+		actionLength[SEQ_FADE_INTO_NEXUS] = 8 * 10;
 		}
 		 	
 
@@ -2714,7 +2714,7 @@ void Actor::UpdatePrePhysics()
 		{
 			owner->Fade(false, 30, Color::Black, true);
 			SetAction(EXIT);
-			position = V2d(owner->goalNodePos.x, owner->goalNodePos.y -80.f);
+			//position = V2d(owner->goalNodePos.x, owner->goalNodePos.y -80.f);
 			frame = 0;
 		}
 		return;
@@ -8706,6 +8706,7 @@ void Actor::StartSeqKinThrown( V2d &pos, V2d &vel )
 	ground = NULL;
 	position = pos;
 	velocity = vel;
+
 }
 
 void Actor::SeqKneel()
@@ -15236,66 +15237,33 @@ void Actor::PhysicsResponse()
 			//lock all the gates from this zone now that I chose one
 			owner->SuppressEnemyKeys( g->type );			
 
+			Zone *oldZone;
+			Zone *newZone;
 			if( edge == g->edgeA )
 			{
-				if( g->zoneB != NULL && g->zoneB->active )
-				{
-					list<Edge*> &zGates = g->zoneB->gates;
-					for( list<Edge*>::iterator it = zGates.begin(); it != 
-						zGates.end(); ++it )
-					{
-						Gate *og = (Gate*)(*it)->info;
-						if( g == og )
-							continue;
-						if( (og->gState == Gate::HARD
-							|| og->gState == Gate::SOFT
-							|| og->gState == Gate::SOFTEN ) )
-						{
-							og->gState = Gate::REFORM;
-							og->frame = 0;
-							float aa = .5;
-							og->centerShader.setUniform("breakPosQuant", aa);
-						}
-					}
-				}
-				owner->ActivateZone( g->zoneA );
+				oldZone = g->zoneB;
+				newZone = g->zoneA;	
 			}
 			else
 			{
-				if( g->zoneA != NULL && g->zoneA->active )
-				{
-					list<Edge*> &zGates = g->zoneA->gates;
-					for( list<Edge*>::iterator it = zGates.begin(); it != 
-						zGates.end(); ++it )
-					{
-						Gate *og = (Gate*)(*it)->info;
-						if( g == og )
-							continue;
-						if( (og->gState == Gate::HARD
-							|| og->gState == Gate::SOFT
-							|| og->gState == Gate::SOFTEN ) )
-						{
-							og->gState = Gate::REFORM;
-							og->frame = 0;
-							float aa = .5;
-							og->centerShader.setUniform("breakPosQuant", aa);
-						}
-					}
-				}
-				owner->ActivateZone( g->zoneB );
+				oldZone = g->zoneA;
+				newZone = g->zoneB;
 			}
-			//cout << "clear!---------------------------------" << endl;
+
+			if (oldZone != NULL && oldZone->active)
+			{
+				oldZone->ReformAllGates(g);
+			}
+			owner->ActivateZone(newZone);
 			
 			if( g->reformBehindYou )
 			{
-				//Gate::GateState::
 				owner->LockGate( g );
 				
 				g->gState = Gate::REFORM;
 				g->frame = 0;
 				float aa = alongAmount;
 				g->centerShader.setUniform("breakPosQuant", aa);
-				cout << "LOCKING BEHIND YOU" << endl;
 			}
 			else
 			{
@@ -15303,50 +15271,12 @@ void Actor::PhysicsResponse()
 				g->frame = 0;
 				float aa = alongAmount;
 				g->centerShader.setUniform("breakPosQuant", aa);
-				//g->centerShader.setUniform("breakPosQuant", .5f);
-				//g->gateShader.setUniform( "breakPosQuant")
 			}
 
 			V2d gEnterPos = alongPos + nEdge;// *32.0;
 			Tileset *ts_gateEnter = owner->GetTileset("FX/gateenter_256x320.png",256, 320);
 			owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				ts_gateEnter, gEnterPos, false, ang, 8, 3, true);
-			
-			//for( int i = 0; i < owner->numGates; ++i )
-			//{
-			//	Gate *og = owner->gates[i];
-			//	if( g == og )
-			//		continue;
-			//	else
-			//	{
-			//		if( og->keyGate && (og->gState == Gate::HARD
-			//			|| og->gState == Gate::SOFT
-			//			|| og->gState == Gate::HARDEN
-			//			|| og->gState == Gate::SOFTEN )
-			//			&& (og->zoneA != NULL && og->zoneA->active)
-			//				|| (og->zoneB != NULL && og->zoneB->active ) )
-			//		{
-			//			og->gState = Gate::LOCKFOREVER;
-			//			//frame = 0;
-			//			//frame = 0;
-			//		}
-
-			//	}
-			//}
-
-			
-
-			
-
-			/*while( owner->unlockedGateList != NULL )
-			{
-				owner->LockGate( gList );
-
-			}*/
-			//g->type = Gate::BLUE;
-			//
-
-
 
 			//set gate action to disperse
 			//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
@@ -21571,7 +21501,6 @@ void Actor::UpdateSprite()
 		}
 	case EXIT:
 		{
-
 			SetSpriteTexture( action );
 
 			SetSpriteTile( frame / 2, facingRight );
@@ -21636,8 +21565,36 @@ void Actor::UpdateSprite()
 			
 			SetSpriteTile(realFrame, facingRight);
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
-				sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );//- 24.f );
+				sprite->getLocalBounds().height / 2 + 24 );
+
+			if (action == GOALKILL)
+			{
+				CubicBezier cb(.61, .3, .4, 1);//0, 0, 1, 1 );
+				
+
+				//cb.GetValue()
+				float space = 78.f;
+				V2d start = owner->goalNodePos;
+				V2d end(owner->goalNodePos.x, owner->goalNodePos.y - space);
+				int st = 48 * 2;
+				if (frame >= st)
+				{
+					double a = (frame - st) / (double)(actionLength[GOALKILL] - (st+1));
+					double t = cb.GetValue(a);
+					V2d newPos = start + (end - start) * t;
+					position = newPos;
+				}
+
+				//72 * 2
+				
+				/*float fff = 78.f / (actionLength[GOALKILL] - st);
+				if (frame >= st)
+				{
+					position.y -= fff;
+				}*/
+			}
+			
+			//sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );//- 24.f );
 			sprite->setPosition(Vector2f(position));
 			sprite->setRotation( 0 );
 			break;
@@ -21647,8 +21604,9 @@ void Actor::UpdateSprite()
 			SetSpriteTexture(GOALKILL4);
 			SetSpriteTile(7, facingRight);
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
-				sprite->getLocalBounds().height / 2 );
-			sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );
+				sprite->getLocalBounds().height / 2 + 24);
+			sprite->setPosition(Vector2f(position));
+			//sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );
 			sprite->setRotation( 0 );
 			break;
 		}
@@ -21815,7 +21773,8 @@ void Actor::UpdateSprite()
 		{
 			SetSpriteTexture( action );
 
-			int f = min( frame / 5, 11 );
+			//int f = min( frame / 2, 11 );
+			int f = frame / 2;
 
 			bool r = (facingRight && !reversed ) || (!facingRight && reversed );
 			SetSpriteTile( f, r );
@@ -21825,7 +21784,7 @@ void Actor::UpdateSprite()
 			
 			double angle = GroundedAngle();
 
-			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - 16);
 
 			V2d oldv0 = ground->v0;
 			V2d oldv1 = ground->v1;
@@ -21997,7 +21956,7 @@ void Actor::UpdateSprite()
 		SetSpriteTexture(action);
 		bool r = (facingRight && !reversed) || (!facingRight && reversed);
 
-		int f = 10;
+		int f = 8;
 		SetSpriteTile(f, r);
 
 		double angle = 0;//GroundedAngle()
@@ -22067,6 +22026,31 @@ void Actor::UpdateSprite()
 		sprite->setPosition(pp.x, pp.y);
 		break;
 	}
+	case SEQ_FLOAT_TO_NEXUS_OPENING:
+	{
+		SetSpriteTexture(action);
+		SetSpriteTile(frame / 10, facingRight);
+		sprite->setOrigin(sprite->getLocalBounds().width / 2,
+			sprite->getLocalBounds().height / 2 + 24);
+		sprite->setPosition(Vector2f(position));
+		//sprite->setPosition(owner->goalNodePos.x, owner->goalNodePos.y - 24.f);//- 24.f );
+		//sprite->setPosition(Vector2f(position));
+		sprite->setRotation(0);
+		break;
+	}
+	case SEQ_FADE_INTO_NEXUS:
+	{
+		SetSpriteTexture(action);
+		SetSpriteTile(frame / 10 + 3, facingRight);
+		sprite->setOrigin(sprite->getLocalBounds().width / 2,
+			sprite->getLocalBounds().height / 2 + 24);
+		sprite->setPosition(Vector2f(position));
+		//sprite->setPosition(owner->goalNodePos.x, owner->goalNodePos.y - 24.f);//- 24.f );
+		//sprite->setPosition(Vector2f(position));
+		sprite->setRotation(0);
+		break;
+	}
+		
 	}
 
 	Vector2f oldOrigin = sprite->getOrigin();

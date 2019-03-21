@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "FlowerPod.h"
 #include "StorySequence.h"
+#include "PowerOrbs.h"
 
 using namespace std;
 using namespace sf;
@@ -13,8 +14,8 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	:Enemy(owner, EnemyType::EN_FLOWERPOD, false, 0, false), ground(g),
 	edgeQuantity(q)
 {
-	double width = 64; //112;
-	double height = 64;
+	double width = 128; //112;
+	double height = 128;
 
 	podType = GetType(typeStr);
 
@@ -26,35 +27,40 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 		break;
 	}
 
-	ts = owner->GetTileset("curveturret_64x64.png", width, height);
-	sprite.setTexture(*ts->texture);
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	ts_flower = owner->GetTileset("Momenta/momentaflower_128x128.png", width, height);
+	ts_bud = owner->GetTileset("Momenta/momentabud_128x128.png", width, height);
+	ts_rise = owner->GetTileset("Momenta/momentaflower_rise_128x128.png", width, height);
+	sprite.setTexture(*ts_bud->texture);
+	sprite.setTextureRect(ts_bud->GetSubRect(0));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height -16);
 	V2d gPoint = g->GetPoint(edgeQuantity);
 	sprite.setPosition(gPoint.x, gPoint.y);
+	
 
 	V2d gn = g->Normal();
 
 	V2d gAlong = normalize(g->v1 - g->v0);
 
-	position = gPoint + gn * height / 2.0;
+	position = gPoint + gn * (height / 2.0);
 
 	double angle = atan2(gn.x, -gn.y);
-
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	sprite.setPosition(gPoint.x, gPoint.y);
 	sprite.setRotation(angle / PI * 180);
+	//
+	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	//sprite.setPosition(gPoint.x, gPoint.y);
+	
 
-	actionLength[IDLE] = 1;
-	actionLength[ACTIVATE] = 20;
-	actionLength[BROADCAST] = 120;
-	actionLength[HIDE] = 120;
+	actionLength[IDLE] = 12;
+	actionLength[ACTIVATE] = 36;
+	actionLength[BROADCAST] = 12 * 4;//10
+	actionLength[HIDE] = 36;
 	actionLength[DEACTIVATED] = 120;
 
-	animFactor[IDLE] = 1;
-	animFactor[ACTIVATE] = 1;
-	animFactor[BROADCAST] = 1;
-	animFactor[HIDE] = 1;
+
+	animFactor[IDLE] = 6;
+	animFactor[ACTIVATE] = 6;
+	animFactor[BROADCAST] = 6;
+	animFactor[HIDE] = 6;
 	animFactor[DEACTIVATED] = 1;
 
 
@@ -90,7 +96,7 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 void FlowerPod::ResetEnemy()
 {
 	action = IDLE;
-	frame = 0;
+	sprite.setTexture(*ts_bud->texture);
 	dead = false;
 	frame = 0;
 	SetHitboxes(hitBody, 0);
@@ -98,6 +104,7 @@ void FlowerPod::ResetEnemy()
 	UpdateSprite();
 	sprite.setColor(Color::White);
 	storySeq->Reset();
+	healingPlayer = NULL;
 }
 
 void FlowerPod::IHitPlayer(int index)
@@ -105,7 +112,9 @@ void FlowerPod::IHitPlayer(int index)
 	if (action == IDLE)
 	{
 		action = ACTIVATE;
-		sprite.setColor(Color::Red);
+		frame = 0;
+		sprite.setTexture(*ts_rise->texture);
+		//sprite.setColor(Color::Red);
 	}
 }
 
@@ -146,14 +155,19 @@ void FlowerPod::ActionEnded()
 		case IDLE:
 			break;
 		case ACTIVATE:
+			sprite.setTexture(*ts_flower->texture);
 			action = BROADCAST;
+			frame = 0;
 			owner->currStorySequence = storySeq;
 			break;
 		case BROADCAST:
 			action = HIDE;
+			frame = 0;
+			sprite.setTexture(*ts_rise->texture);
 			break;
 		case HIDE:
 			action = DEACTIVATED;
+			frame = 0;
 			break;
 		case DEACTIVATED:
 			//remove from active pool
@@ -168,6 +182,22 @@ void FlowerPod::ProcessState()
 
 	Actor *player = owner->GetPlayer(0);
 	double dist = length(player->position - position);
+
+	if (dist <= 200 && healingPlayer == NULL)
+	{
+		healingPlayer = player;
+		//enter
+	}
+	else if (dist > 200 && healingPlayer != NULL)
+	{
+		healingPlayer = NULL;
+		//exit
+	}
+
+	if (healingPlayer != NULL && healingPlayer->drainCounter == 0)
+	{
+		owner->powerRing->Fill( player->drainAmount + 1 );//powerWheel->Use( 1 );	
+	}
 
 	switch (action)
 	{
@@ -206,7 +236,26 @@ void FlowerPod::EnemyDraw(sf::RenderTarget *target)
 
 void FlowerPod::UpdateSprite()
 {
-	sprite.setTextureRect(ts->GetSubRect(0));//frame / animationFactor ) );
+	switch (action)
+	{
+	case IDLE:
+		sprite.setTextureRect(ts_bud->GetSubRect(0));
+		break;
+	case ACTIVATE:
+		sprite.setTextureRect(ts_rise->GetSubRect(frame/animFactor[ACTIVATE]));
+		break;
+	case BROADCAST:
+		sprite.setTextureRect(ts_flower->GetSubRect( (frame / animFactor[BROADCAST]) % 12));
+		break;
+	case HIDE:
+		sprite.setTextureRect(ts_rise->GetSubRect((actionLength[HIDE] - 1) - frame / animFactor[HIDE]));
+		break;
+	case DEACTIVATED:
+		sprite.setTextureRect(ts_rise->GetSubRect(0));
+		break;
+	}
+
+	//sprite.setTextureRect(ts->GetSubRect(0));//frame / animationFactor ) );
 }
 
 void FlowerPod::UpdateHitboxes()

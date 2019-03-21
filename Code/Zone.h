@@ -21,7 +21,7 @@ struct Zone
 
 	bool ContainsPoint( sf::Vector2<double> point );
 	bool ContainsZone( Zone *z );
-
+	void Close();
 	void SetShadowColor( sf::Color c );
 	//bool ContainsPlayer(); super 
 	Zone * ContainsPointMostSpecific( 
@@ -53,6 +53,7 @@ struct Zone
 	void SetZoneType( ZoneType zt );
 	ZoneType zType;
 	void Reset();
+	void ReformAllGates( Gate *ignoreGate = NULL);
 
 	sf::VertexArray *definedArea;
 	std::list<Edge*> gates;

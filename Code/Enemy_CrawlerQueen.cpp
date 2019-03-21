@@ -297,15 +297,7 @@ void CrawlerQueen::ResetEnemy()
 	frame = 0;
 	
 
-	FloatingBomb *fb = (FloatingBomb*)bombPool->activeListStart;
-	while( fb != NULL )
-	{		
-		FloatingBomb *fbNext = (FloatingBomb*)fb->pmnext;
-		fb->Reset();
-		fb = fbNext;
-	}
-
-	bombPool->DeactivateAll();
+	DeactivateAllBombs();
 
 	UpdateSprite();
 }
@@ -699,6 +691,20 @@ void CrawlerQueen::HandleNoHealth()
 {
 }
 
+void CrawlerQueen::DeactivateAllBombs()
+{
+	FloatingBomb *fb = (FloatingBomb*)bombPool->activeListStart;
+	while (fb != NULL)
+	{
+		FloatingBomb *fbNext = (FloatingBomb*)fb->pmnext;
+		fb->Reset();
+		owner->RemoveEnemy(fb);
+		fb = fbNext;
+	}
+
+	bombPool->DeactivateAll();
+}
+
 void CrawlerQueen::HitTerrainAerial(Edge *e, double q)
 {
 	mover->ground = e;
@@ -1008,6 +1014,8 @@ void CrawlerQueen::ConfirmKill()
 	owner->state = GameSession::STORY;
 
 	dead = true;
+
+	DeactivateAllBombs();
 }
 
 void CrawlerQueen::SetLevel()

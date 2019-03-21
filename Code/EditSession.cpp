@@ -2964,7 +2964,7 @@ void EditSession::WriteFile(string fileName)
 		ActorGroup *group = (*it).second;
 		for( list<ActorPtr>::iterator it2 = group->actors.begin(); it2 != group->actors.end(); ++it2 )
 		{
-			if( (*it2)->type == types["goal"] || (*it2)->type == types["shippickup"])
+			if( (*it2)->type == types["goal"] || (*it2)->type == types["shippickup"] || (*it2)->type == types["nexus"])
 			{
 				hasGoal = true;
 				break;

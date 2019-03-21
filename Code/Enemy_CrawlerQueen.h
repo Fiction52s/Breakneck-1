@@ -98,6 +98,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void HitTerrainAerial(Edge *e, double q);
 	void Boost();
 	void Jump();
+	void DeactivateAllBombs();
 	void Popout();
 	EdgeInfo digInfo;
 	int currDigAttacks;

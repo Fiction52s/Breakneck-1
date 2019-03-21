@@ -59,6 +59,26 @@ void Zone::SetZoneType( ZoneType zt )
 	zType = zt;
 }
 
+void Zone::ReformAllGates( Gate *ignoreGate)
+{
+	for (list<Edge*>::iterator it = gates.begin(); it !=
+		gates.end(); ++it)
+	{
+		Gate *og = (Gate*)(*it)->info;
+		if (ignoreGate == og)
+			continue;
+		if ((og->gState == Gate::HARD
+			|| og->gState == Gate::SOFT
+			|| og->gState == Gate::SOFTEN))
+		{
+			og->gState = Gate::REFORM;
+			og->frame = 0;
+			float aa = .5;
+			og->centerShader.setUniform("breakPosQuant", aa);
+		}
+	}
+}
+
 void Zone::Init()
 {
 	vector<p2t::Point*> polyline;
@@ -405,9 +425,7 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 		case CLOSING:
 			if (frame == 60)
 			{
-				action = CLOSED;
-				frame = 0;
-				zShader->setUniform("alpha", 1.f);
+				Close();
 			}
 			else
 			{
@@ -437,6 +455,13 @@ case NEXUS:
 float Zone::GetOpeningAlpha()
 {
 	return 1.f - frame / 60.f;
+}
+
+void Zone::Close()
+{
+	action = CLOSED;
+	frame = 0;
+	zShader->setUniform("alpha", 1.f);
 }
 
 void Zone::Draw(RenderTarget *target)

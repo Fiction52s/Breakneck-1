@@ -22,6 +22,7 @@ struct Edge : QuadTreeEntrant
 
 	Edge();
 	sf::Vector2<double> Normal();
+	sf::Vector2<double> Along();
 	sf::Vector2<double> GetPoint( double quantity );
 	double GetQuantity( sf::Vector2<double> p );
 	double GetQuantityGivenX( double x );
