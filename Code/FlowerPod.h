@@ -4,6 +4,30 @@
 #include "Enemy.h"
 
 struct StorySequence;
+struct FlowerPod;
+
+struct MomentaBroadcast
+{
+	enum BroadcastType
+	{
+		SEESHARDS,
+	};
+
+	MomentaBroadcast( FlowerPod *pod, const std::string &btypeStr );
+	static BroadcastType GetType(const std::string &tStr);
+	BroadcastType bType;
+	Tileset *ts_broadcast;
+	sf::Sprite sprite;
+	FlowerPod *pod;
+	int *imageLength;
+	int numImages;
+	bool Update();
+	int imageIndex;
+	int frame;
+	void Reset();
+	void Draw(sf::RenderTarget *target);
+};
+
 
 struct FlowerPod : Enemy, RayCastHandler
 {
@@ -26,15 +50,15 @@ struct FlowerPod : Enemy, RayCastHandler
 	int animFactor[A_Count];
 
 	Actor *healingPlayer;
-
-	StorySequence *storySeq;
+	MomentaBroadcast *broadcast;
+	//StorySequence *storySeq;
 	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
 	Edge *rcEdge;
 	V2d rayEnd;
 	V2d rayStart;
 	double rcQuantity;
 
-	static PodType GetType(const std::string &tStr);
+	
 	PodType podType;
 	Action action;
 	FlowerPod(GameSession *owner, const std::string &podType,

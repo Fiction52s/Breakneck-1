@@ -108,6 +108,10 @@ bool CrawlerAttackSeq::Update()
 			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
 		break;
 	case ROCKSFALL:
+		if (frame == 0)
+		{
+			owner->cam.SetRumble(2, 2, stateLength[ROCKSFALL]);
+		}
 		break;
 	case CRAWLERSWOOP:
 	{
@@ -129,8 +133,11 @@ bool CrawlerAttackSeq::Update()
 		break;
 	}
 	case DIGGINGAROUND:
+
+		
 		if (frame == 0)
 		{
+			owner->cam.SetRumble(5, 5, stateLength[DIGGINGAROUND]);
 			owner->cam.SetManual(true);
 			//owner->cam.Set(Vector2f(camPoint0->pos), 1, 0);
 			owner->cam.Ease(Vector2f(camPoint0->pos), 1, 60, CubicBezier());

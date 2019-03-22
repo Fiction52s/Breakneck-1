@@ -33,7 +33,7 @@ struct Config;
 struct RaceFightHUD;
 struct Rail;
 struct InputVisualizer;
-
+struct MomentaBroadcast;
 
 
 struct ImageText;
@@ -350,6 +350,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::list<DecorDraw*> decorBetween;
 
 	StorySequence *currStorySequence;
+	MomentaBroadcast *currBroadcast;
 
 	struct DecorInfo
 	{

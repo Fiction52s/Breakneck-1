@@ -5977,6 +5977,7 @@ int GameSession::Run()
 {
 	//ShaderTester shaderTester(ShaderTester::FIRE, this);
 	currStorySequence = NULL;
+	currBroadcast = NULL;
 	musicFadeOutMax = -1;
 	musicFadeInMax = -1;
 
@@ -6777,6 +6778,18 @@ int GameSession::Run()
 					{
 						currStorySequence->EndSequence();
 						currStorySequence = NULL;
+					}
+					else
+					{
+					}
+				}
+
+				if (currBroadcast != NULL)
+				{
+					if (!currBroadcast->Update() )
+					{
+						//currStorySequence->EndSequence();
+						currBroadcast = NULL;
 					}
 					else
 					{
@@ -8681,6 +8694,11 @@ int GameSession::Run()
 			DrawFade(preScreenTex);
 		}
 
+		if (currBroadcast != NULL)
+		{
+			preScreenTex->setView(uiView);
+			currBroadcast->Draw(preScreenTex);
+		}
 		DrawActiveSequence(EffectLayer::UI_FRONT);
 		DrawEffects(EffectLayer::UI_FRONT);
 
@@ -9365,6 +9383,8 @@ int GameSession::Run()
 
 				accumulator -= TIMESTEP;
 			}
+
+			
 
 			if (currStorySequence != NULL)
 			{

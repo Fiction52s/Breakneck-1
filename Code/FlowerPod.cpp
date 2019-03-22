@@ -17,15 +17,15 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	double width = 128; //112;
 	double height = 128;
 
-	podType = GetType(typeStr);
-
-	switch (podType)
+	//podType = GetType(typeStr);
+	broadcast = new MomentaBroadcast( this, typeStr);
+	/*switch (podType)
 	{
 	case SEESHARDS:
 		storySeq = new StorySequence(owner);
 		storySeq->Load("getairdash");
 		break;
-	}
+	}*/
 
 	ts_flower = owner->GetTileset("Momenta/momentaflower_128x128.png", width, height);
 	ts_bud = owner->GetTileset("Momenta/momentabud_128x128.png", width, height);
@@ -103,7 +103,8 @@ void FlowerPod::ResetEnemy()
 	UpdateHitboxes();
 	UpdateSprite();
 	sprite.setColor(Color::White);
-	storySeq->Reset();
+	//storySeq->Reset();
+	broadcast->Reset();
 	healingPlayer = NULL;
 }
 
@@ -118,19 +119,7 @@ void FlowerPod::IHitPlayer(int index)
 	}
 }
 
-FlowerPod::PodType FlowerPod::GetType(const std::string &tStr)
-{
-	string testStr = tStr;
-	std::transform(testStr.begin(), testStr.end(), testStr.begin(), ::tolower);
-	if (testStr == "seeshards")
-	{
-		return SEESHARDS;
-	}
-	else
-	{
-		return  SEESHARDS;
-	}
-}
+
 
 void FlowerPod::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
 {
@@ -158,7 +147,8 @@ void FlowerPod::ActionEnded()
 			sprite.setTexture(*ts_flower->texture);
 			action = BROADCAST;
 			frame = 0;
-			owner->currStorySequence = storySeq;
+			owner->currBroadcast = broadcast;
+			//owner->currStorySequence = storySeq;
 			break;
 		case BROADCAST:
 			action = HIDE;
@@ -268,4 +258,84 @@ void FlowerPod::UpdateHitboxes()
 void FlowerPod::DirectKill()
 {
 
+}
+
+MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeStr)
+{
+	bType = GetType(btypeStr);
+	pod = p_pod;
+	switch (bType)
+	{
+	case SEESHARDS:
+	{
+		ts_broadcast = pod->owner->GetTileset("Momenta/momentaportrait_320x288.png", 320, 288);
+		numImages = 10;
+		imageLength = new int[numImages];
+		imageLength[0] = 60;
+		imageLength[1] = 60;
+		imageLength[2] = 60;
+		imageLength[3] = 60;
+		imageLength[4] = 60;
+		imageLength[5] = 60;
+		imageLength[6] = 60;
+		imageLength[7] = 60;
+		imageLength[8] = 60;
+		imageLength[9] = 60;
+		break;
+	}	
+	}
+	sprite.setTexture(*ts_broadcast->texture);
+	
+	
+	Reset();
+	
+	//sprite.setTextureRect(ts_broadcast->GetSubRect(0));
+	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	int xSpacing = 10;
+	int ySpacing = 10;
+	sprite.setPosition((1920 - ts_broadcast->tileWidth) - xSpacing, ySpacing);
+}
+
+bool MomentaBroadcast::Update()
+{
+	++frame;
+	if (frame == imageLength[imageIndex])
+	{
+		++imageIndex;
+		frame = 0;
+		if (imageIndex == numImages)
+		{
+			return false;
+		}
+		sprite.setTextureRect(ts_broadcast->GetSubRect(imageIndex));
+	}
+
+	return true;
+}
+
+void MomentaBroadcast::Draw( RenderTarget *target )
+{
+	target->draw(sprite);
+}
+
+void MomentaBroadcast::Reset()
+{
+	imageIndex = 0;
+	frame = 0;
+
+	sprite.setTextureRect(ts_broadcast->GetSubRect(0));
+}
+
+MomentaBroadcast::BroadcastType MomentaBroadcast::GetType(const std::string &tStr)
+{
+	string testStr = tStr;
+	std::transform(testStr.begin(), testStr.end(), testStr.begin(), ::tolower);
+	if (testStr == "seeshards")
+	{
+		return SEESHARDS;
+	}
+	else
+	{
+		return  SEESHARDS;
+	}
 }
