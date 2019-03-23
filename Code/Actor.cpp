@@ -12976,7 +12976,9 @@ void Actor::UpdatePhysics()
 
 									//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
 									//if( action != STEEPCLIMB )
-									if( action != STEEPCLIMB || minContact.position == minContact.edge->v0 )
+									//if( minContact.position == minContact.edge->v0 )
+									//if( action != STEEPCLIMB || minContact.position == minContact.edge->v0 )
+									if( true )
 									{
 									
 
@@ -13002,7 +13004,7 @@ void Actor::UpdatePhysics()
 									groundSpeed = 0;
 									edgeQuantity = q;
 									}
-									else //STEEPCLIMB
+									else //if( false )//STEEPCLIMB
 									{
 
 										//if (length(testVel) < 15)
@@ -13044,7 +13046,7 @@ void Actor::UpdatePhysics()
 										
 										//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 										//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-										break;
+										//break;
 
 									}
 								}
@@ -19058,13 +19060,16 @@ void Actor::DebugDraw( RenderTarget *target )
 		currHitboxes->DebugDraw( currHitboxFrame, target);
 	}
 
-	hurtBody.DebugDraw(target);
+	//hurtBody.DebugDraw(target);
+
+
+
 	/*if (currHurtboxes != NULL)
 	{
 		currHurtboxes->DebugDraw( currHurtboxFrame, target);
 	}*/
 
-	//b.DebugDraw(target);
+	b.DebugDraw(target);
 
 
 
