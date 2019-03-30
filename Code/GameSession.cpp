@@ -5279,7 +5279,10 @@ void GameSession::KeyboardUpdate( int index )
 
 bool GameSession::sLoad( GameSession *gs )
 {
+	
 	gs->SetContinueLoading(true);
+
+	
 	return gs->Load();
 }
 
@@ -5304,10 +5307,24 @@ bool GameSession::ShouldContinueLoading()
 
 bool GameSession::Load()
 {
-	
-	cout << "start load" << endl;
+	//sf::sleep(sf::seconds(2));
+	//while (true);
+	//cout << "start load" << endl;
 	//sf::sleep(sf::seconds(5));
 	//return true;
+
+	//for (int i = 0; i < 50; ++i)
+	//{
+	//	if (!speedBarShader.loadFromFile("Resources/Shader/speedbar_shader.frag", sf::Shader::Fragment))
+	//	{
+	//		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
+	//		//assert( 0 && "polygon shader not loaded" );
+	//	}
+	//	speedBarShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+	//}
+
+	//while (true);
+
 	hitboxManager = new HitboxManager;
 
 	
@@ -5351,6 +5368,9 @@ bool GameSession::Load()
 	lifeBarTex.loadFromFile("Resources/lifebar_768x768.png");
 	lifeBarSprite.setTexture(lifeBarTex);
 	lifeBarSprite.setPosition(30, 200);
+
+
+	
 
 	if (!minimapShader.loadFromFile("Resources/Shader/minimap_shader.frag", sf::Shader::Fragment))
 	{
@@ -5454,6 +5474,8 @@ bool GameSession::Load()
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
 	}
 
+	
+
 	stringstream ss;
 
 	for (int i = 1; i <= 17; ++i)
@@ -5511,6 +5533,10 @@ bool GameSession::Load()
 
 	cout << "weird timing 1" << endl;
 
+	//sleep(5000);
+	//return;
+	
+
 	//sets up fx so that they can be used
 	for (int i = 0; i < MAX_EFFECTS; ++i)
 	{
@@ -5521,6 +5547,8 @@ bool GameSession::Load()
 	{
 		AllocateLight();
 	}
+
+	
 
 	ts_miniIcons = GetTileset("minimap_icons_64x64.png", 64, 64);
 	kinMinimapIcon.setTexture(*ts_miniIcons->texture);
@@ -5559,6 +5587,8 @@ bool GameSession::Load()
 		gds.setPosition(miniCircle.getPosition());
 	}
 
+	//blah
+
 	keyMarker = new KeyMarker(this);
 
 	ts_w1ShipClouds0 = GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
@@ -5583,7 +5613,7 @@ bool GameSession::Load()
 
 	cout << "weird timing 2" << endl;
 
-	
+	//blah 2
 
 	gameSoundBuffers[S_KEY_COMPLETE_W1] = soundManager->GetSound( "key_complete_w1.ogg" );
 	gameSoundBuffers[S_KEY_COMPLETE_W2] = soundManager->GetSound( "key_complete_w2.ogg" );
@@ -5599,7 +5629,7 @@ bool GameSession::Load()
 	gameSoundBuffers[S_KEY_ENTER_5] = soundManager->GetSound( "key_enter_5.ogg" );
 	gameSoundBuffers[S_KEY_ENTER_6] = soundManager->GetSound( "key_enter_6.ogg" );
 
-	
+	//blah 3
 
 	currMusic = NULL;
 	cutPlayerInput = false;
@@ -5627,10 +5657,14 @@ bool GameSession::Load()
 
 	sf::Texture &underTrans01Tex = *GetTileset( "undertrans01.png", 1920, 650 / 2 )->texture;
 
+	
+
 	SetupClouds();
 	
-	undergroundTileset = GetTileset( "terrainworld1.png", 128, 128 );//GetTileset( "underground01.png", 32, 32 );
-	undergroundTilesetNormal = GetTileset( "terrainworld1_NORMALS.png", 128, 128 );
+	
+
+	//undergroundTileset = GetTileset( "terrainworld1.png", 128, 128 );//GetTileset( "underground01.png", 32, 32 );
+	//undergroundTilesetNormal = GetTileset( "terrainworld1_NORMALS.png", 128, 128 );
 
 	undergroundPar[0].position = Vector2f( 0, 0 );
 	undergroundPar[1].position = Vector2f( 0, 0 );
@@ -5638,6 +5672,9 @@ bool GameSession::Load()
 	undergroundPar[3].position = Vector2f( 0, 0 );
 
 	activeSequence = NULL;
+
+	
+	//still too far
 
 	//window->setMouseCursorVisible( true );
 
@@ -5671,6 +5708,8 @@ bool GameSession::Load()
 
 	//background = new Background(this, mh->envLevel, mh->envType);
 	Background::SetupFullBG(mh->envName, tm, background, scrollingBackgrounds);
+
+	//still too far
 
 
 	cout << "done opening file" << endl;
@@ -5753,7 +5792,7 @@ bool GameSession::Load()
 	}*/
 
 	
-
+	//too far
 	
 
 	if( mh->gameMode == MapHeader::MapType::T_STANDARD )

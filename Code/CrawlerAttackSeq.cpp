@@ -32,6 +32,75 @@ using namespace std;
 
 #define TIMESTEP 1.0 / 60.0
 
+
+FlashedImage::FlashedImage(Tileset *ts,
+	int tileIndex, int appearFrames,
+	int holdFrames,
+	int disappearFrames,
+	sf::Vector2f &pos)
+{
+	spr.setTexture(*ts->texture);
+	spr.setTextureRect(ts->GetSubRect(tileIndex));
+	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+	spr.setPosition(pos);
+
+	Reset();
+
+	aFrames = appearFrames;
+	hFrames = holdFrames;
+	dFrames = disappearFrames;
+}
+
+void FlashedImage::Reset()
+{
+	frame = 0;
+	flashing = false;
+}
+
+void FlashedImage::Flash()
+{
+	flashing = true;
+	frame = 0;
+}
+
+void FlashedImage::Update()
+{
+	if (!flashing)
+		return;
+
+	int a = 0;
+	if (frame < aFrames)
+	{
+		a = (frame / (float)aFrames) * 255.f;
+	}
+	else if (frame < aFrames + hFrames)
+	{
+		a = 255;
+	}
+	else
+	{
+		int fr = frame - (aFrames + hFrames);
+		a = (1.f - fr / (float)dFrames) * 255.f;
+	}
+	spr.setColor(Color(255, 255, 255, a));
+
+	if (frame == aFrames + hFrames + dFrames)
+	{
+		flashing = false;
+	}
+
+	++frame;
+}
+
+void FlashedImage::Draw(sf::RenderTarget *target)
+{
+	if (flashing)
+	{
+		target->draw(spr);
+	}
+	
+}
+
 CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	:owner(p_owner)
 {
@@ -48,6 +117,15 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	queenGrabSprite.setTexture(*ts_queenGrab->texture);
 	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
 
+	detailedGrab = new FlashedImage(owner->GetTileset("Story/grabdetailed.png", 726, 684),
+		0,30, 60, 30, Vector2f( 1500, 500 ));
+	//ts_detailedGrab = owner->GetTileset("Bosses/Crawler/");
+	//detailedGrabSpr.setTexture(*ts_detailedGrab);
+	//detailedGrabSpr.setTextureRect(ts_detailedGrab->GetSubRect(0));
+	//detailedGrabSpr.setOrigin(detailedGrabSpr.getLocalBounds().width / 2,
+	//	detailedGrabSpr.getLocalBounds().height] / 2);
+	//detailedGrabSpr.setPosition(800, 500);
+
 	stateLength[KINSTOP] = 30;
 	stateLength[ROCKSFALL] = 30;
 	stateLength[CRAWLERSWOOP] = 9 * 3;
@@ -62,6 +140,11 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	
 
 	Reset();
+}
+
+CrawlerAttackSeq::~CrawlerAttackSeq()
+{
+	delete detailedGrab;
 }
 
 void CrawlerAttackSeq::Init()
@@ -133,8 +216,6 @@ bool CrawlerAttackSeq::Update()
 		break;
 	}
 	case DIGGINGAROUND:
-
-		
 		if (frame == 0)
 		{
 			owner->cam.SetRumble(5, 5, stateLength[DIGGINGAROUND]);
@@ -144,6 +225,7 @@ bool CrawlerAttackSeq::Update()
 		}
 		else if (frame == 60)
 		{
+			
 			//owner->cam.Set(Vector2f(camPoint1->pos), 1, 0);
 			owner->cam.Ease(Vector2f(camPoint1->pos), 1, 60, CubicBezier());
 		}
@@ -151,6 +233,11 @@ bool CrawlerAttackSeq::Update()
 		{
 			//owner->cam.Set(Vector2f(roomCenter->pos), 1.75, 0);
 			owner->cam.Ease(Vector2f(roomCenter->pos), 1.75, 60, CubicBezier());
+		}
+
+		if (frame == 20)
+		{
+			detailedGrab->Flash();
 		}
 		break;
 	case THROWOUT:
@@ -177,6 +264,8 @@ bool CrawlerAttackSeq::Update()
 		break;
 	}
 
+	detailedGrab->Update();
+
 	++frame;
 
 	return true;
@@ -192,10 +281,16 @@ void CrawlerAttackSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 	{
 		target->draw(queenGrabSprite);
 	}
+
+	View v = target->getView();
+	target->setView(owner->uiView);
+	detailedGrab->Draw(target);
+	target->setView(v);
 }
 void CrawlerAttackSeq::Reset()
 {
 	state = KINSTOP;
 	frame = 0;
 	queen->Reset();
+	detailedGrab->Reset();
 }

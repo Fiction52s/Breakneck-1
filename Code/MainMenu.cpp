@@ -1394,7 +1394,7 @@ void MainMenu::Run()
 
 #if defined( USE_MOVIE_TEST )
 	sfe::Movie m;
-	assert( m.openFromFile("Resources/Movie/testvid.ogv") );
+	assert( m.openFromFile("Resources/Movie/Kin Monument 01.ogv") );
 	m.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 	
@@ -1447,7 +1447,6 @@ void MainMenu::Run()
 		
 		
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Srcreen And Depth Buffer
-
 		while ( accumulator >= TIMESTEP  )
         {
 #if defined( USE_MOVIE_TEST )
@@ -1514,7 +1513,7 @@ void MainMenu::Run()
 
 			accumulator -= TIMESTEP;
 		}
-		
+
 		if( quit )
 		{
 			break;
@@ -1570,8 +1569,13 @@ void MainMenu::Run()
 			}
 		case LOADINGMAP:
 		{
+
 			preScreenTexture->setView(v);
+			//window->clear(Color::Yellow);
 			//preScreenTexture->clear(Color::Green);
+			//preScreenTexture->clear(Color::Green);
+
+
 			preScreenTexture->draw(loadingBGSpr);
 
 			for( int i = 0; i < 3; ++i )
@@ -1584,6 +1588,8 @@ void MainMenu::Run()
 			//window->clear(Color::Yellow);
 			//window->display();
 			//continue;
+			
+			//preScreenTexture->clear(Color::Green);
 			preScreenTexture->setView(v);
 			//kinBoostScreen->Draw(preScreenTexture);
 			kinBoostScreen->Draw(preScreenTexture);
@@ -1766,7 +1772,7 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 void MainMenu::SetModeLoadingMap( int wIndex )
 {
 	SetMode( LOADINGMAP );
-	preScreenTexture->setView(v);
+	//preScreenTexture->setView(v);
 	//int wIndex = lev->sec->world->index;
 	wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
 	loadingBGSpr.setTexture(*ts_loadBG[wIndex]->texture);
@@ -1775,7 +1781,7 @@ void MainMenu::SetModeLoadingMap( int wIndex )
 void MainMenu::SetModeKinBoostLoadingMap(int variation)
 {
 	SetMode(KINBOOSTLOADINGMAP);
-	preScreenTexture->setView(v);
+	//preScreenTexture->setView(v);
 	//wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
 	//loadingBGSpr.setTexture(*ts_loadBG[wIndex]->texture);
 
@@ -1784,7 +1790,7 @@ void MainMenu::SetModeKinBoostLoadingMap(int variation)
 
 void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 {
-	window->setVerticalSyncEnabled(false);
+	//window->setVerticalSyncEnabled(false);
 	//window->setFramerateLimit(60);
 	string levelPath = lev->GetFullName();// name;
 	//View oldView = window->getView();
@@ -2272,17 +2278,14 @@ void MainMenu::HandleMenuMode()
 	}
 	case LOADINGMAP:
 	{
-		while (window->pollEvent(ev))
-		{
-
-		}
+		
 
 
 		if (loadThread != NULL)
 		{
 			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
 			{
-				window->setVerticalSyncEnabled(true);
+				//window->setVerticalSyncEnabled(true);
 				delete loadThread;
 				loadThread = NULL;
 				SetMode( RUNNINGMAP );
@@ -2362,7 +2365,6 @@ void MainMenu::HandleMenuMode()
 		GameSession::GameResultType result =
 			(GameSession::GameResultType)currLevel->Run();
 		SaveFile *currFile = GetCurrentProgress();
-
 		World & world = currFile->worlds[worldMap->selectedColony];
 		int secIndex = worldMap->selectors[worldMap->selectedColony]->saSelector->currIndex;
 		Sector &sec = world.sectors[secIndex];

@@ -8,6 +8,27 @@
 
 struct GameSession;
 struct MovementSequence;
+
+struct FlashedImage
+{
+	FlashedImage( Tileset *ts,
+		int tileIndex, int appearFrames,
+		int holdFrames,
+		int disappearFrames,
+		sf::Vector2f &pos );
+	void Reset();
+	void Flash();
+	void Update();
+	void Draw(sf::RenderTarget *target);
+
+	sf::Sprite spr;
+	int frame;
+	bool flashing;
+	int aFrames;
+	int dFrames;
+	int hFrames;
+};
+
 struct Cutscene
 {
 	Cutscene( GameSession *owner,
@@ -233,7 +254,7 @@ struct CrawlerAttackSeq : Sequence
 		END,
 		Count
 	};
-
+	~CrawlerAttackSeq();
 	State state;
 	int stateLength[Count];
 	void Init();
@@ -255,6 +276,7 @@ struct CrawlerAttackSeq : Sequence
 
 	Tileset *ts_queenGrab;
 	sf::Sprite queenGrabSprite;
+	FlashedImage *detailedGrab;
 
 	GameSession *owner;
 };
