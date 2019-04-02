@@ -3,8 +3,11 @@
 
 #include "Enemy.h"
 
+
 struct StorySequence;
 struct FlowerPod;
+struct TextDisp;
+struct Script;
 
 struct MomentaBroadcast
 {
@@ -25,6 +28,10 @@ struct MomentaBroadcast
 	int imageIndex;
 	int frame;
 	void Reset();
+	TextDisp *textDisp;
+	Script *script;
+	bool endPadding;
+	int numPadding;
 	void Draw(sf::RenderTarget *target);
 };
 

@@ -955,3 +955,92 @@ void SkeletonFightSeq::Reset()
 	frame = 0;
 }
 
+
+CrawlerDefeatedSeq::CrawlerDefeatedSeq( GameSession *p_owner)
+	:owner( p_owner )
+{
+	Reset();
+
+	stateLength[PLAYMOVIE] = 1000000;
+
+	assert(mov.openFromFile("Resources/Movie/Kin_Meditate_01.mp4"));
+	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
+}
+
+void CrawlerDefeatedSeq::Reset()
+{
+	state = PLAYMOVIE;
+	frame = 0;
+}
+
+bool CrawlerDefeatedSeq::Update()
+{
+	Actor *player = owner->GetPlayer(0);
+
+	if (frame == stateLength[state] && state != END)
+	{
+		int s = state;
+		s++;
+		state = (State)s;
+		frame = 0;
+
+		if (state == END)
+		{
+		}
+	}
+
+	if (state == END)
+	{
+		//owner->Fade(true, 60, sf::Color::White);
+		owner->state = GameSession::RUN;
+		owner->Fade(true, 60, Color::Black);
+
+		Actor *player = owner->GetPlayer(0);
+		player->SeqAfterCrawlerFight();
+		//player->SetAction(Actor::GOALKILLWAIT);
+		//player->frame = 0;
+		//owner->scoreDisplay->Activate();
+		return false;
+	}
+
+
+	if( state == PLAYMOVIE )
+	{
+		sfe::Status movStatus = mov.getStatus();
+		if (frame == 0)
+		{
+			mov.setPlayingOffset(sf::Time::Zero);
+			mov.play();
+		}
+		else
+		{
+			mov.update();
+
+			//cout << "mov: " << mov.getPlayingOffset().asSeconds() << endl;
+			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
+			{
+				frame = stateLength[PLAYMOVIE] - 1;
+
+				//owner->state = GameSession::RUN;
+				//owner->Fade(true, 60, Color::Black, true);
+				/*if (frame == stateLength[MASKOFF] - 1)
+				{
+
+				}*/
+			}
+		}
+	}
+	++frame;
+}
+
+
+void CrawlerDefeatedSeq::Draw(sf::RenderTarget *target,
+	EffectLayer layer)
+{
+	if (layer != EffectLayer::IN_FRONT)
+	{
+		return;
+	}
+
+	target->draw(mov);
+}

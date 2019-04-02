@@ -34,4 +34,34 @@ struct TimerText : ImageText
 	void UpdateSprite();
 };
 
+struct Script
+{
+	~Script();
+	void Load(const std::string &name);
+	std::string *sections;
+	int numSections;
+	//int numLinesPerSection;
+	const std::string &GetSection(int index);
+};
+
+struct GameSession;
+struct TextDisp
+{
+	TextDisp( GameSession *owner );
+	void SetTopLeft(sf::Vector2f &pos);
+	//static void LoadScript()
+	void SetTextSize();
+	void SetString(const std::string &str);
+	void Reset();
+	bool Update();
+	void Draw(sf::RenderTarget *target);
+	sf::Text text;
+	sf::Vector2f rectSize;
+	std::string message;
+	sf::RectangleShape bgRect;
+	int nextLetterWait;
+	int frame;
+};
+
+
 #endif

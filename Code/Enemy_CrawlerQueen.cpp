@@ -5,7 +5,8 @@
 #include <assert.h>
 #include "Enemy_CrawlerQueen.h"
 #include "VisualEffects.h"
-#include "StorySequence.h"
+//#include "StorySequence.h"
+#include "Sequence.h"
 
 using namespace std;
 using namespace sf;
@@ -30,8 +31,11 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 
 	//memset(decideVA, 0, MAX_DECISIONS * 4);
 
-	storySeq = new StorySequence(owner);
-	storySeq->Load("queenhurt");
+	seq = new CrawlerDefeatedSeq(owner);
+	//assert(mov.openFromFile("Resources/Movie/Kin_Meditate_01.mp4"));
+	//mov.fit(sf::FloatRect(0, 0, 1920, 1080));
+	//storySeq = new StorySequence(owner);
+	//storySeq->Load("queenhurt");
 
 	progressionLevel = 0;
 	bombSpeed = 2;
@@ -211,6 +215,7 @@ void CrawlerQueen::ClearDecisionMarkers()
 CrawlerQueen::~CrawlerQueen()
 {
 	delete[] edgeRef;
+	delete seq;
 }
 
 void CrawlerQueen::InitEdgeInfo()
@@ -251,7 +256,8 @@ void CrawlerQueen::ResetEnemy()
 	if (zone != NULL)
 		zone->action = Zone::OPEN;
 
-	storySeq->Reset();
+	seq->Reset();
+	//storySeq->Reset();
 	ClearDecisionMarkers();
 	decisionPool->DeactivateAll();
 	invinc = false;
@@ -1010,8 +1016,8 @@ void CrawlerQueen::ConfirmKill()
 
 	Actor *p = owner->GetPlayer(0);
 
-	owner->currStorySequence = storySeq;
-	owner->state = GameSession::STORY;
+	owner->activeSequence = seq;
+	owner->state = GameSession::SEQUENCE;
 
 	dead = true;
 

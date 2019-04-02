@@ -6,6 +6,7 @@
 #include "FlowerPod.h"
 #include "StorySequence.h"
 #include "PowerOrbs.h"
+#include "ImageText.h"
 
 using namespace std;
 using namespace sf;
@@ -262,6 +263,21 @@ void FlowerPod::DirectKill()
 
 MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeStr)
 {
+
+	//can currently handle 30 chars per line
+
+	script = new Script;
+	script->Load("test");
+
+	textDisp = new TextDisp( p_pod->owner );
+	//textDisp->SetString(
+	//	"hello this is a test hello this\n"
+	//	"hello this is a test hello this\n"
+	//	"hello this is a test hello this\n"
+	//	"hello this is a test hello this");
+	
+	textDisp->SetTopLeft(Vector2f(1920 - textDisp->rectSize.x - 350, 50));
+
 	bType = GetType(btypeStr);
 	pod = p_pod;
 	switch (bType)
@@ -271,16 +287,16 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 		ts_broadcast = pod->owner->GetTileset("Momenta/momentaportrait_320x288.png", 320, 288);
 		numImages = 10;
 		imageLength = new int[numImages];
-		imageLength[0] = 60;
-		imageLength[1] = 60;
-		imageLength[2] = 60;
-		imageLength[3] = 60;
-		imageLength[4] = 60;
-		imageLength[5] = 60;
-		imageLength[6] = 60;
-		imageLength[7] = 60;
-		imageLength[8] = 60;
-		imageLength[9] = 60;
+		imageLength[0] = 4000;
+		imageLength[1] = 4000;
+		imageLength[2] = 4000;
+		imageLength[3] = 4000;
+		imageLength[4] = 4000;
+		imageLength[5] = 400;
+		imageLength[6] = 400;
+		imageLength[7] = 400;
+		imageLength[8] = 400;
+		imageLength[9] = 400;
 		break;
 	}	
 	}
@@ -294,15 +310,33 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	int xSpacing = 10;
 	int ySpacing = 10;
 	sprite.setPosition((1920 - ts_broadcast->tileWidth) - xSpacing, ySpacing);
+
+	numPadding = 60;
 }
 
 bool MomentaBroadcast::Update()
 {
+	if (!textDisp->Update() && !endPadding)
+	{
+		frame = imageLength[imageIndex] - numPadding;
+		endPadding = true;
+	}
+	
+
+	//need to figure out how to add a delay after the text is done. then the images will auto time
+	//to the text
+
 	++frame;
 	if (frame == imageLength[imageIndex])
 	{
 		++imageIndex;
+		if (imageIndex < script->numSections )
+		{
+			textDisp->SetString(script->GetSection(imageIndex));
+		}
+		
 		frame = 0;
+		endPadding = false;
 		if (imageIndex == numImages)
 		{
 			return false;
@@ -316,14 +350,17 @@ bool MomentaBroadcast::Update()
 void MomentaBroadcast::Draw( RenderTarget *target )
 {
 	target->draw(sprite);
+	textDisp->Draw(target);
 }
 
 void MomentaBroadcast::Reset()
 {
 	imageIndex = 0;
 	frame = 0;
-
+	textDisp->Reset();
+	textDisp->SetString(script->GetSection(0));
 	sprite.setTextureRect(ts_broadcast->GetSubRect(0));
+	endPadding = false;
 }
 
 MomentaBroadcast::BroadcastType MomentaBroadcast::GetType(const std::string &tStr)

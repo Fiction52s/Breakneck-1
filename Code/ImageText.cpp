@@ -1,5 +1,6 @@
 #include "ImageText.h"
 #include <assert.h>
+#include "GameSession.h"
 
 using namespace std;
 using namespace sf;
@@ -163,4 +164,92 @@ void TimerText::UpdateSprite()
 	vert[4*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
 
 	activeDigits = maxDigits;
+}
+
+TextDisp::TextDisp( GameSession *owner)
+{
+	//message = "hello this is a test";
+	bgRect.setFillColor(Color( 0, 0, 0, 100 ));
+	rectSize = Vector2f(500, 200);
+	bgRect.setSize(rectSize);
+	nextLetterWait = 3;
+
+	text.setCharacterSize(40);
+	text.setFont(owner->mainMenu->arial);
+	text.setFillColor(Color::White);
+	//bgRect.setOrigin(bgRect.getLocalBounds().width / 2, bgRect.getLocalBounds().height / 2);
+	//Reset()
+}
+
+//have a character limit for each line. you place text on each line as the writer.
+
+void TextDisp::SetTopLeft(sf::Vector2f &pos)
+{
+	bgRect.setPosition(pos);
+	Vector2f spacing(10, 5);
+	text.setPosition(bgRect.getPosition().x + spacing.x, bgRect.getPosition().y + spacing.y);
+}
+
+void TextDisp::SetString(const std::string &str)
+{
+	message = str;
+	Reset();
+}
+
+void TextDisp::Reset()
+{
+	text.setString("");
+	frame = 0;
+}
+
+bool TextDisp::Update()
+{
+	int len = message.length();
+	int textLen = text.getString().getSize();
+
+	//text.setString(message);//.substr(0, textLen + 1));
+	if (textLen == len)
+	{
+		return false;
+	}
+	else
+	{
+		if (frame >= nextLetterWait)
+		{
+			frame = 0;
+			text.setString(message.substr(0, textLen + 1));
+		}
+		++frame;
+	}
+}
+
+void TextDisp::Draw(sf::RenderTarget *target)
+{
+	target->draw(bgRect);
+	target->draw(text);
+}
+
+void Script::Load(const std::string &name)
+{
+	numSections = 5;
+	sections = new string[5];
+	for (int i = 0; i < 5; ++i)
+	{
+		sections[i] = "hello this is a test hello this\n"
+			"hello this is a test hello this\n"
+			"hello this is a test hello this\n"
+			"hello this is a test hello this";
+	}
+
+	sections[1] = "blah blah";
+}
+
+const std::string & Script::GetSection(int index)
+{
+	return sections[index];
+}
+
+Script::~Script()
+{
+	delete[] sections;
 }

@@ -177,7 +177,30 @@ struct CrawlerAfterFightSeq : Sequence
 	GameSession *owner;
 };
 
+struct CrawlerDefeatedSeq : Sequence
+{
+	enum State
+	{
+		PLAYMOVIE,
+		END,
+		Count
+	};
 
+	State state;
+	int stateLength[Count];
+	CrawlerDefeatedSeq(GameSession *owner);
+	~CrawlerDefeatedSeq();
+	bool Update();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+	void Reset();
+
+	GameSession *owner;
+
+	sfe::Movie mov;
+
+	sf::Vertex darkQuad[4];
+};
 
 
 struct NexusCore1Seq : Sequence
@@ -202,7 +225,7 @@ struct NexusCore1Seq : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
-	sf::Texture tex;
+	//sf::Texture tex;
 
 	//std::string imageNames[52];
 

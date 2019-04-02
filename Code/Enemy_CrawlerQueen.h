@@ -3,6 +3,7 @@
 
 #include "Enemy.h"
 #include "ObjectPool.h"
+#include <sfeMovie/Movie.hpp>
 
 
 struct StorySequence;
@@ -90,7 +91,9 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void StartInitialUnburrow();
 	void StartAngryYelling();
 
-	StorySequence *storySeq;
+	//StorySequence *storySeq;
+	//sfe::Movie mov;
+	Sequence *seq;
 
 	Tileset *ts[Count];
 	void SetLevel();

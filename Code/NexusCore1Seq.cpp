@@ -49,8 +49,8 @@ NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
 	//stateLength[FADEEXIT] = 60;
 	stateLength[EXITCORE] = 30;
 
-	assert(mov.openFromFile("Resources/Movie/Kin_Meditate_01.mp4"));
-
+	assert(mov.openFromFile("Resources/Movie/nexus_core.mp4"));
+	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 	//string base = "Resources/Nexus/nexus_core_1920x1080_";
 	//string num;
 	//string end = ".png";
