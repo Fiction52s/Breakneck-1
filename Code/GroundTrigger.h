@@ -34,6 +34,8 @@ struct GroundTrigger : Enemy
 	StorySequence *storySeq;
 	Sequence *gameSequence;
 
+	
+
 	GroundTrigger(GameSession *owner,
 		Edge *ground, double quantity, 
 		bool facingRight,

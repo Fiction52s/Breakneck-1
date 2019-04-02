@@ -78,7 +78,7 @@ void FlashedImage::Update()
 		a = 255;
 	}
 	else
-	{
+{	
 		int fr = frame - (aFrames + hFrames);
 		a = (1.f - fr / (float)dFrames) * 255.f;
 	}
@@ -117,8 +117,8 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	queenGrabSprite.setTexture(*ts_queenGrab->texture);
 	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
 
-	detailedGrab = new FlashedImage(owner->GetTileset("Story/grabdetailed.png", 726, 684),
-		0,30, 60, 30, Vector2f( 1500, 500 ));
+	detailedGrab = new FlashedImage(owner->GetTileset("Story/grabdetailed_1920x1080.png", 1920, 1080),
+		0, 30, 60, 30, Vector2f(0, 0));//Vector2f( 1500, 500 ));
 	//ts_detailedGrab = owner->GetTileset("Bosses/Crawler/");
 	//detailedGrabSpr.setTexture(*ts_detailedGrab);
 	//detailedGrabSpr.setTextureRect(ts_detailedGrab->GetSubRect(0));

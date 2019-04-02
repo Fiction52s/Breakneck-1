@@ -45,25 +45,27 @@ NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
 
 	stateLength[FADETOBLACK] = 31;
 	stateLength[ENTERCORE] = 30;
-	stateLength[DESTROYCORE] = 52 * 2;
-	stateLength[FADEEXIT] = 60;
+	stateLength[DESTROYCORE] = 1000000;//52 * 2;
+	//stateLength[FADEEXIT] = 60;
 	stateLength[EXITCORE] = 30;
 
-	string base = "Resources/Nexus/nexus_core_1920x1080_";
-	string num;
-	string end = ".png";
-	for (int i = 0; i < 52; ++i)
-	{
-		num = to_string(i+1);
-		imageNames[i] = base + num + end;
-		//bool succ = coreImages[i].create(1920, 1080,Color::Red);///loadFromFile(base + num + end);
-		//coreImages[i].create(1920, 1080, Color::Red);
-		//assert(succ);
-		
-		//ts_core[i] = owner->GetTileset(base + num + end, 1920, 1080);
-	}
+	assert(mov.openFromFile("Resources/Movie/Kin_Meditate_01.mp4"));
 
-	ts_firstCore = owner->GetTileset( "Nexus/nexus_core_1920x1080_1.png", 1920, 1080);
+	//string base = "Resources/Nexus/nexus_core_1920x1080_";
+	//string num;
+	//string end = ".png";
+	//for (int i = 0; i < 52; ++i)
+	//{
+	//	num = to_string(i+1);
+	//	imageNames[i] = base + num + end;
+	//	//bool succ = coreImages[i].create(1920, 1080,Color::Red);///loadFromFile(base + num + end);
+	//	//coreImages[i].create(1920, 1080, Color::Red);
+	//	//assert(succ);
+	//	
+	//	//ts_core[i] = owner->GetTileset(base + num + end, 1920, 1080);
+	//}
+
+	//ts_firstCore = owner->GetTileset( "Nexus/nexus_core_1920x1080_1.png", 1920, 1080);
 	/*for (int i = 0; i < 5; ++i)
 	{
 		coreImages[0].loadFromFile(imageNames[frame]);
@@ -80,7 +82,7 @@ NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
 	Reset();
 	
 
-	loadThread = new boost::thread(LoadNextTex, this);
+	//loadThread = new boost::thread(LoadNextTex, this);
 
 	/*while (!ShouldLoad())
 	{
@@ -90,60 +92,36 @@ NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
 	//Reset();
 }
 
-void NexusCore1Seq::LoadNextTex( NexusCore1Seq *seq )
-{
-	while (!seq->ThreadEnded())
-	{
-		if (seq->ShouldLoadNext())
-		{
-			//seq->mut1.lock();
-			//seq->mut.lock();
-			seq->shouldLoad = false;
-			//seq->doneLoading = false;
-			//seq->coreImages[seq->ci].loadFromFile(seq->imageNames[seq->loadIndex]);
-			
-			//seq->mut4.lock();
-			seq->coreTex[seq->ci].loadFromFile(seq->imageNames[seq->loadIndex]);
-			seq->ci = !seq->ci;
-			//seq->mut4.unlock();
-			//seq->coreImages[1].loadFromFile(seq->imageNames[seq->loadIndex+1]);
-			seq->doneLoading = true;
-
-			//seq->mut1.unlock();
-			//seq->coreImages[1].copy(seq->coreImages[0],0,0);
-		}
-	}
-}
+//void NexusCore1Seq::LoadNextTex( NexusCore1Seq *seq )
+//{
+//	while (!seq->ThreadEnded())
+//	{
+//		if (seq->ShouldLoadNext())
+//		{
+//			//seq->mut1.lock();
+//			//seq->mut.lock();
+//			seq->shouldLoad = false;
+//			//seq->doneLoading = false;
+//			//seq->coreImages[seq->ci].loadFromFile(seq->imageNames[seq->loadIndex]);
+//			
+//			//seq->mut4.lock();
+//			seq->coreTex[seq->ci].loadFromFile(seq->imageNames[seq->loadIndex]);
+//			seq->ci = !seq->ci;
+//			//seq->mut4.unlock();
+//			//seq->coreImages[1].loadFromFile(seq->imageNames[seq->loadIndex+1]);
+//			seq->doneLoading = true;
+//
+//			//seq->mut1.unlock();
+//			//seq->coreImages[1].copy(seq->coreImages[0],0,0);
+//		}
+//	}
+//}
 
 NexusCore1Seq::~NexusCore1Seq()
 {
-	endThread = true;
-	loadThread->join();
-	delete loadThread;
-}
-
-bool NexusCore1Seq::ThreadEnded()
-{
-	mut.lock();
-	bool b = endThread;
-	mut.unlock();
-	return b;
-}
-
-bool NexusCore1Seq::ShouldLoadNext()
-{
-	mut.lock();
-	bool b = shouldLoad;
-	mut.unlock();
-	return b;
-}
-
-bool NexusCore1Seq::ShouldLoad()
-{
-	mut1.lock();
-	bool b = doneLoading;
-	mut1.unlock();
-	return b;
+	//endThread = true;
+	//loadThread->join();
+	//delete loadThread;
 }
 
 bool NexusCore1Seq::Update()
@@ -210,31 +188,49 @@ bool NexusCore1Seq::Update()
 		break;
 	case DESTROYCORE:
 	{
+		sfe::Status movStatus = mov.getStatus();
 		if (frame == 0)
 		{
-			//tex.update(coreImages[frame / 4 + 10]);
+			mov.setPlayingOffset(sf::Time::Zero);
+			mov.play();
 		}
+		else
+		{
+			mov.update();
 
+			//cout << "mov: " << mov.getPlayingOffset().asSeconds() << endl;
+			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
+			{
+				frame = stateLength[DESTROYCORE] - 1;
+
+				//owner->state = GameSession::RUN;
+				//owner->Fade(true, 60, Color::Black, true);
+				/*if (frame == stateLength[MASKOFF] - 1)
+				{
+
+				}*/
+			}
+		}
 		
 
 
-		if (frame % 2 == 0)
-		{
-			while (!ShouldLoad())
-			{
+		//if (frame % 2 == 0)
+		//{
+		//	while (!ShouldLoad())
+		//	{
 
-			}
-			loadIndex = frame / 2;
-			doneLoading = false;
+		//	}
+		//	loadIndex = frame / 2;
+		//	doneLoading = false;
 
-			shouldLoad = true;
+		//	shouldLoad = true;
 
-			mut4.lock();
-			int c = !ci;
-			mut4.unlock();
-			//loadFromImage(coreImages[c]);
-			coreSprite.setTexture(coreTex[c]);
-		}
+		//	mut4.lock();
+		//	int c = !ci;
+		//	mut4.unlock();
+		//	//loadFromImage(coreImages[c]);
+		//	coreSprite.setTexture(coreTex[c]);
+		//}
 		
 
 		
@@ -251,9 +247,9 @@ bool NexusCore1Seq::Update()
 		//coreSprite.setTexture(//*ts_core[frame / 4]->texture);
 		break;
 	}
-	case FADEEXIT:
+	//case FADEEXIT:
 		
-		break;
+	//	break;
 	case EXITCORE:
 		if (frame == 0)
 		{
@@ -275,11 +271,17 @@ void NexusCore1Seq::Draw(sf::RenderTarget *target, EffectLayer layer)
 		return;
 	}
 
-	if (state >= ENTERCORE )
+	if (state >= ENTERCORE)
 	{
 		target->draw(darkQuad, 4, sf::Quads);
-		if( state <= DESTROYCORE )
-			target->draw(coreSprite);
+		/*if( state <= DESTROYCORE )
+			target->draw(coreSprite);*/
+
+
+	}
+	if (state == DESTROYCORE)
+	{
+		target->draw(mov);
 	}
 	
 }
@@ -287,12 +289,12 @@ void NexusCore1Seq::Reset()
 {
 	state = FADETOBLACK;
 	frame = 0;
-	ci = 0;
+	/*ci = 0;
 	endThread = false;
 	doneLoading = false;
 	loadIndex = 0;
 	shouldLoad = true;
 
-	coreSprite.setTexture(*ts_firstCore->texture);
+	coreSprite.setTexture(*ts_firstCore->texture);*/
 	//coreSprite.setTexture(coreTex[c]);
 }

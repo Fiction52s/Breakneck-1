@@ -256,7 +256,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	//EffectInstance params;
 	//dustParticles->SetTileset(owner->GetTileset( "dust_8x8.png", 8,8));
 	//dustParticles->ActivateEffect(&params);
-
+	SetDirtyAura(false);
 	activeComboObjList = NULL;
 
 	cout << "Start player" << endl;
@@ -2101,6 +2101,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	SetDirtyAura(false);
+
 	storedTrigger = NULL;
 	airTrigBehavior = AT_NONE;
 	currAirTrigger = NULL;
@@ -18481,8 +18483,9 @@ void Actor::Draw( sf::RenderTarget *target )
 	
 	//testAura3->Draw(target);
 
-	if (action == SEQ_KNEEL || action == SEQ_KNEEL_TO_MEDITATE
-		|| action == SEQ_MEDITATE_MASKON)
+	//if (action == SEQ_KNEEL || action == SEQ_KNEEL_TO_MEDITATE
+	//	|| action == SEQ_MEDITATE_MASKON)
+	if (showDirtyAura)
 	{
 		target->draw(dirtyAuraSprite);
 	}
@@ -19231,6 +19234,11 @@ bool Actor::IsMovingLeft()
 
 	return false;
 	//fill out grind and bounce later
+}
+
+void Actor::SetDirtyAura(bool on)
+{
+	showDirtyAura = on;
 }
 
 void Actor::UpdateSprite()

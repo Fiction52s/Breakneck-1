@@ -39,14 +39,17 @@ GetAirdashPowerSeq::GetAirdashPowerSeq(GameSession *p_owner)
 	//SetRectColor(darkQuad, Color(Color::Red));
 
 	//state = ENTERCORE;
-
+	assert(mov.openFromFile("Resources/Movie/Kin_Meditate_01.mp4"));
+	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 
 	stateLength[KIN_KNEELING] = 60;
 	stateLength[START_MEDITATE] = 60;
 	stateLength[FADE_BACKGROUND] = 60;
 	stateLength[EXPEL_ENERGY] = 60;
+	stateLength[WAITAFTEREXPEL] = 60;
 	stateLength[MASKOFF] = 120;
+	stateLength[PLAYMOVIE] = 1000000;
 	stateLength[FADE_BACK] = 90;
 
 	//ts_darkAura = owner->GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
@@ -57,6 +60,8 @@ GetAirdashPowerSeq::GetAirdashPowerSeq(GameSession *p_owner)
 	darkRect.setPosition(0, 0);
 
 	Reset();
+
+	//mov.stop();
 }
 
 bool GetAirdashPowerSeq::Update()
@@ -88,9 +93,13 @@ bool GetAirdashPowerSeq::Update()
 	case KIN_KNEELING:
 		if (frame == 0)
 		{
+			owner->cam.SetManual(true);
+			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 68), .75, 60, CubicBezier());
 			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect( 0 ));
 			player->dirtyAuraSprite.setOrigin(player->dirtyAuraSprite.getLocalBounds().width / 2,
 				player->dirtyAuraSprite.getLocalBounds().height / 2);
+
+			player->SetDirtyAura(true);
 			
 			player->SeqKneel();
 		}
@@ -113,32 +122,72 @@ bool GetAirdashPowerSeq::Update()
 		}
 		break;
 	case EXPEL_ENERGY:
+	{
 		if (frame == 0)
-		{	
+		{
 			owner->ClearFade();
 		}
-		
 
-		if (frame < 10 * 3)
-		{
-			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect(frame / 3 + 15));
-		}
-		
+			int f = 60 - 3 * 10;
+			int ff = frame - f;
+			if (ff >= 0 && ff < 10 * 3)
+			//if( frame < 10 * 3 )
+			{
+				player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect(ff / 3 + 15));
+			}
+			else
+			{
+				player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect((frame % (15 * 3) / 3)));
+			}
+
 
 		break;
+	}
+	case WAITAFTEREXPEL:
+	{
+		if (frame == 0)
+		{
+			player->SetDirtyAura(false);
+		}
+		break;
+	}
 	case MASKOFF:
 		if (frame == 0)
 		{
 			player->SeqMaskOffMeditate();
 		}
-
-		if (frame == stateLength[MASKOFF] - 1)
-		{
-			owner->state = GameSession::RUN;
-			owner->Fade(true, 60, Color::Black, true);
-		}
-		
 		break;
+
+	case PLAYMOVIE:
+	{
+
+		sfe::Status movStatus = mov.getStatus();
+		if (frame == 0)
+		{
+			mov.setPlayingOffset(sf::Time::Zero);
+			mov.play();
+		}
+		else
+		{
+			mov.update();
+
+			//cout << "mov: " << mov.getPlayingOffset().asSeconds() << endl;
+			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
+			{
+				frame = stateLength[PLAYMOVIE] - 1;
+
+				owner->state = GameSession::RUN;
+				owner->Fade(true, 60, Color::Black, true);
+				/*if (frame == stateLength[MASKOFF] - 1)
+				{
+					
+				}*/
+			}
+		}
+
+		break;
+	}
+	
 	case FADE_BACK:
 		if (frame == 0)
 		{
@@ -147,6 +196,11 @@ bool GetAirdashPowerSeq::Update()
 		else if (frame == 60)
 		{
 			player->SeqGetAirdash();
+			
+		}
+		else if (frame == stateLength[FADE_BACK] - 1)
+		{
+			owner->cam.EaseOutOfManual(120);
 		}
 		
 		
@@ -201,6 +255,12 @@ void GetAirdashPowerSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 			//darkRect.setPosition(owner->cam.pos);
 			target->draw(darkRect);
 		}
+
+		if (state == PLAYMOVIE)
+		{
+			target->draw(mov);
+		}
+		
 
 		//target->setView(v);
 

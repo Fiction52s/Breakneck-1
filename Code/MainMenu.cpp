@@ -1098,12 +1098,12 @@ void MainMenu::SetMode(Mode m)
 	//}
 	//}
 	
-	
+	modeFrame = 0;
 
 	menuMode = m;
 	//only need this because the transition is seamless so inputs can
 	//get buffered
-	if (menuMode == MAINMENU || menuMode == TRANS_MAIN_TO_SAVE)
+	if (menuMode == MAINMENU || menuMode == TRANS_MAIN_TO_SAVE )//|| menuMode == WORLDMAP)
 	{
 		//TerrainRender::CleanupLayers(); //saves a little time?
 		changedMode = false;
@@ -1387,14 +1387,14 @@ void MainMenu::Run()
 	sf::Event ev;
 
 	quit = false;
-	double currentTime = 0;
-	double accumulator = TIMESTEP + .1;
+	currentTime = 0;
+	accumulator = TIMESTEP + .1;
 
 	
 
 #if defined( USE_MOVIE_TEST )
 	sfe::Movie m;
-	assert( m.openFromFile("Resources/Movie/Kin Monument 01.ogv") );
+	assert( m.openFromFile("Resources/Movie/Kin_Meditate_01.mp4") );
 	m.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 	
@@ -1445,22 +1445,24 @@ void MainMenu::Run()
 		preScreenTexture->clear(Color::Black);
 		window->clear(Color::Red);
 		
-		
+	#if defined( USE_MOVIE_TEST )
+		if (m.getStatus() == sfe::Status::Stopped)
+		{
+			m.setPlayingOffset(sf::Time::Zero);
+			m.play();
+		}
+
+		m.update();
+			//const sf::Texture &currImage = m.getCurrentImage();
+
+			//sh.setUniform("texture", currImage);
+	#endif
+
 		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Srcreen And Depth Buffer
+		
 		while ( accumulator >= TIMESTEP  )
         {
-#if defined( USE_MOVIE_TEST )
-			if (m.getStatus() == sfe::Status::Stopped)
-			{
-				m.setPlayingOffset(sf::Time::Zero);
-				m.play();
-			}
 
-			m.update();
-			const sf::Texture &currImage = m.getCurrentImage();
-
-			sh.setUniform("texture", currImage);
-#endif
 
 			menuPrevInput = menuCurrInput;
 			menuCurrInput.Set( ControllerState() );
@@ -1519,6 +1521,7 @@ void MainMenu::Run()
 			break;
 		}
 
+		
 		switch( menuMode )
 		{
 		case SPLASH:
@@ -1727,7 +1730,40 @@ void MainMenu::Run()
 	}
 }
 
+void DispLoadTest( MainMenu *mm )
+{
+	RenderTexture *pTex = mm->preScreenTexture;
+	RenderWindow * win = mm->window;
+	//pTex->setActive(true);
+	win->setActive(true);
+	while (!mm->doneLoading)
+	{
+		
+		//pTex->clear(Color::Black);
+		win->clear(Color::Red);
+		//win->clear(Color::Green);
 
+		mm->loadingIconBackpack[1].rotate(-1);
+		mm->loadingIconBackpack[2].rotate(2);
+
+		win->draw(mm->loadingBGSpr);
+
+		//for (int i = 0; i < 3; ++i)
+		//	pTex->draw(mm->loadingIconBackpack[i]);
+
+
+	//	pTex->display();
+//		sf::Sprite spr;
+//		spr.setTexture(pTex->getTexture());
+		//win->draw(spr);
+		win->display();
+		
+	}
+
+	win->setActive(false);
+	//pTex->setActive(false);
+	
+}
 
 void MainMenu::ResizeWindow( int p_windowWidth, 
 		int p_windowHeight, int p_style )
@@ -1795,16 +1831,53 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	string levelPath = lev->GetFullName();// name;
 	//View oldView = window->getView();
 
+	
+
+	//preScreenTexture->setActive(false);
+	window->setActive(false);
+	doneLoading = false;
+
+	int wIndex = lev->sec->world->index;
+	SetModeLoadingMap(wIndex);
+
+	doneLoading = false;
+
+	loadThread = new boost::thread(DispLoadTest, this);// , currLevel);
+
+	//sf::sleep(sf::milliseconds(5000));
+
 	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
 
-	if (loadingScreen)
-	{
-		int wIndex = lev->sec->world->index;
-		//SetModeKinBoostLoadingMap(wIndex);
-		SetModeLoadingMap( wIndex );
-	}
+	currLevel->Load();
 
-	loadThread = new boost::thread(GameSession::sLoad, currLevel);
+	//doneLoading = true;
+
+	
+
+	//loadThread->join();
+	doneLoading = true;
+
+	loadThread->join();
+	delete loadThread;
+	loadThread = NULL;
+
+	//preScreenTexture->setActive(true);
+	window->setActive(true);
+
+	accumulator = 0;//TIMESTEP + .1;
+	currentTime = 0;
+	gameClock.restart();
+	//delete loadThread;
+	//loadThread = NULL;
+	//SetMode(RUNNINGMAP);
+	//if (loadingScreen)
+	//{
+	//	int wIndex = lev->sec->world->index;
+	//	//SetModeKinBoostLoadingMap(wIndex);
+	
+	//}
+
+	//loadThread = new boost::thread(GameSession::sLoad, currLevel);
 }
 
 void MainMenu::AdventureNextLevel(Level *lev)
@@ -2278,28 +2351,31 @@ void MainMenu::HandleMenuMode()
 	}
 	case LOADINGMAP:
 	{
-		
+		loadingIconBackpack[1].rotate(-1);
+		loadingIconBackpack[2].rotate(2);
 
+		if( modeFrame == 120 )
+			SetMode(RUNNINGMAP);
 
-		if (loadThread != NULL)
-		{
-			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
-			{
-				//window->setVerticalSyncEnabled(true);
-				delete loadThread;
-				loadThread = NULL;
-				SetMode( RUNNINGMAP );
-				//return HandleMenuMode();
-				cout << "RUNNING MAP" << endl;
-			}
-			else
-			{
-				loadingIconBackpack[1].rotate(-1);
-				loadingIconBackpack[2].rotate(2);
-			}
-			//	//menuMode = MAINMENU;
-			//	//preScreenTexture->clear(Color::Yellow);
-		}
+		//if (loadThread != NULL)
+		//{
+		//	if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+		//	{
+		//		//window->setVerticalSyncEnabled(true);
+		//		delete loadThread;
+		//		loadThread = NULL;
+		//		SetMode( RUNNINGMAP );
+		//		//return HandleMenuMode();
+		//		cout << "RUNNING MAP" << endl;
+		//	}
+		//	else
+		//	{
+		//		loadingIconBackpack[1].rotate(-1);
+		//		loadingIconBackpack[2].rotate(2);
+		//	}
+		//	//	//menuMode = MAINMENU;
+		//	//	//preScreenTexture->clear(Color::Yellow);
+		//}
 		break;
 	}
 	case KINBOOSTLOADINGMAP:
@@ -2332,7 +2408,7 @@ void MainMenu::HandleMenuMode()
 
 		if ( kinBoostScreen->levName == "" && loadThread == NULL && deadThread == NULL)
 		{
-			window->setVerticalSyncEnabled(true);
+			//window->setVerticalSyncEnabled(true);
 			SetMode( RUNNINGMAP );
 			//return HandleMenuMode();
 		}
@@ -2807,6 +2883,7 @@ void MainMenu::HandleMenuMode()
 	}
 
 	}
+	++modeFrame;
 }
 
 CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )

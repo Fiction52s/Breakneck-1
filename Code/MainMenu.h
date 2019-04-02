@@ -523,6 +523,10 @@ struct MainMenu
 	~MainMenu();
 	void Init();
 
+	double accumulator;
+	double currentTime;
+	int modeFrame;
+
 	void SetMode(Mode m);
 	int transFrame;
 	int transLength;
@@ -553,6 +557,7 @@ struct MainMenu
 	MultiLoadingScreen *multiLoadingScreen;
 	KinBoostScreen *kinBoostScreen;
 	bool quit;
+	bool doneLoading;
 	bool changedMode;
 
 	sf::Text betaText; 

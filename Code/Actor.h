@@ -189,7 +189,9 @@ struct Actor : QuadTreeCollider,
 	//for when you're absorbing a power
 	sf::Sprite dirtyAuraSprite;
 	Tileset *ts_dirtyAura;
-	void UpdateDirtyAura();
+	//void UpdateDirtyAura();
+	void SetDirtyAura(bool on);
+	bool showDirtyAura;
 
 	enum AirTriggerBehavior
 	{

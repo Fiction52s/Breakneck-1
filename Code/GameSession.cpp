@@ -6318,6 +6318,16 @@ int GameSession::Run()
 	bool switchState = false;
 	
 //starttest:
+	
+	/*mainMenu->doneLoading = true;
+
+	mainMenu->loadThread->join();
+	delete mainMenu->loadThread;
+	mainMenu->loadThread = NULL;
+
+	preScreenTex->setActive(true);
+	window->setActive(true);*/
+	
 	while( !quit )
 	{
 		switchState = false;
@@ -10673,7 +10683,7 @@ void GameSession::RestartLevel()
 		levelMusic->music->setLoop(true);
 		levelMusic->music->play();
 	}*/
-
+	currBroadcast = NULL;
 	currStorySequence = NULL;
 	musicFadeOutMax = -1;
 	musicFadeInMax = -1;

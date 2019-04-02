@@ -5,6 +5,7 @@
 #include <list>
 #include "Movement.h"
 #include <boost/thread.hpp>
+#include <sfeMovie\Movie.hpp>
 
 struct GameSession;
 struct MovementSequence;
@@ -186,7 +187,7 @@ struct NexusCore1Seq : Sequence
 		FADETOBLACK,
 		ENTERCORE,
 		DESTROYCORE,
-		FADEEXIT,
+		//FADEEXIT,
 		EXITCORE,
 		END,
 		Count
@@ -203,41 +204,20 @@ struct NexusCore1Seq : Sequence
 
 	sf::Texture tex;
 
-	std::string imageNames[52];
+	//std::string imageNames[52];
 
 	GameSession *owner;
-	static void LoadNextTex(NexusCore1Seq *seq);
-	boost::thread *loadThread;
-	sf::Image coreImages[52];
-	Tileset *ts_core[52];
-	Tileset *ts_firstCore;
-	sf::Texture coreTex[2];
-	sf::Sprite coreSprite;
+	//static void LoadNextTex(NexusCore1Seq *seq);
+	//boost::thread *loadThread;
+	//sf::Image coreImages[52];
+	//Tileset *ts_core[52];
+	//Tileset *ts_firstCore;
+	//sf::Texture coreTex[2];
+	//sf::Sprite coreSprite;
 
-	bool endThread;
+	sfe::Movie mov;
 
-	boost::mutex mut;
-	boost::mutex mut1;
-	boost::mutex mut2;
-	boost::mutex mut3;
-	boost::mutex mut4;
-
-	
 	sf::Vertex darkQuad[4];
-
-	bool ShouldLoad();
-	bool ShouldLoadNext();
-	bool ThreadEnded();
-
-	int ci;
-
-	bool shouldLoad;
-	bool doneLoading;
-
-
-	int loadIndex;
-
-
 };
 
 struct CrawlerQueen;
@@ -292,7 +272,9 @@ struct GetAirdashPowerSeq : Sequence
 		START_MEDITATE,
 		FADE_BACKGROUND,
 		EXPEL_ENERGY,
+		WAITAFTEREXPEL,
 		MASKOFF,
+		PLAYMOVIE,
 		FADE_BACK,
 		END,
 		Count
@@ -309,6 +291,9 @@ struct GetAirdashPowerSeq : Sequence
 	sf::Sprite darkAuraSprite;
 	Tileset *ts_darkAura;
 	sf::RectangleShape darkRect;
+
+
+	sfe::Movie mov;
 
 	GameSession *owner;
 };
