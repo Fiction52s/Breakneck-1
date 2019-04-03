@@ -70,15 +70,20 @@ struct ShipExitSeq : Sequence
 	enum State
 	{
 		SHIP_SWOOP,
-
+		//FADEOUT,
+		PLAYMOVIE,
+		END
 	};
 
+	State state;
+	int stateLength[END];
 	ShipExitSeq( GameSession *owner );
 	bool Update();
 	void Draw( sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
+	sfe::Movie mov;
 	Tileset *ts_ship;
 	sf::Sprite shipSprite;
 	MovementSequence shipMovement;
@@ -320,6 +325,7 @@ struct GetAirdashPowerSeq : Sequence
 
 	GameSession *owner;
 };
+
 
 struct Barrier;
 struct MeetCoyoteSeq : Sequence

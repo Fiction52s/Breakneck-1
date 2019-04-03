@@ -36,7 +36,7 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	:owner( p_owner )
 {
 	enterTime = 60;
-	exitTime = 60;
+	exitTime = 60 + 60;
 	center.AddLineMovement( V2d( 0, 0 ), V2d( 0, 0 ), 
 		CubicBezier( 0, 0, 1, 1 ), 60 );
 	//shipMovement.AddCubicMovement( 
@@ -53,82 +53,144 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	//shipSprite.setOrigin(960, 700);
 	//shipSprite.setOrigin(960 / 2, 700);
 	shipSprite.setOrigin(421, 425);
+
+	assert(mov.openFromFile("Resources/Movie/nexus_core.mp4"));
+	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
+
+	stateLength[SHIP_SWOOP]= 1000000;
+	//stateLength[FADEOUT] = 90;
+
+	stateLength[PLAYMOVIE] = 1000000;
 }
 
 bool ShipExitSeq::Update()
 {
 	Actor *player = owner->GetPlayer( 0 );
-	int shipOffsetY = -200;
-	int pOffsetY = -170;
-	int sOffsetY = pOffsetY;//shipOffsetY + pOffsetY;
-	
-	//player->action = Actor::SPAWNWAIT;
-	//player->frame = 0;
 
-	int jumpLength = 6 * 5;
-	int startGrabWire = enterTime - jumpLength;
-
-	if( frame == 0 )
+	if (frame == stateLength[state] && state != END)
 	{
-			owner->cam.SetManual( true );
-			center.movementList->start = V2d( owner->cam.pos.x, owner->cam.pos.y );
-			center.movementList->end = V2d( owner->GetPlayer( 0 )->position.x, 
-				owner->GetPlayer( 0 )->position.y - 200 );
-			
+		int s = state;
+		s++;
+		state = (State)s;
+		frame = 0;
+
+		if (state == END)
+		{
+			//owner->goalDestroyed = true;
+			//owner->state = GameSession::RUN;
+			return false;
+		}
+	}
+
+	switch (state)
+	{
+	case SHIP_SWOOP:
+	{
+		int shipOffsetY = -200;
+		int pOffsetY = -170;
+		int sOffsetY = pOffsetY;//shipOffsetY + pOffsetY;
+		int jumpLength = 6 * 5;
+		int startGrabWire = enterTime - jumpLength;
+
+		if (frame == 0)
+		{
+			owner->cam.SetManual(true);
+			center.movementList->start = V2d(owner->cam.pos.x, owner->cam.pos.y);
+			center.movementList->end = V2d(owner->GetPlayer(0)->position.x,
+				owner->GetPlayer(0)->position.y - 200);
+
 			center.Reset();
-			owner->cam.SetMovementSeq( &center, false );
+			owner->cam.SetMovementSeq(&center, false);
 
-			abovePlayer = V2d( player->position.x, player->position.y - 300 );
+			abovePlayer = V2d(player->position.x, player->position.y - 300);
 
-			shipMovement.movementList->start = abovePlayer + V2d( -1500, -900 );//player->position + V2d( -1000, sOffsetY );
+			shipMovement.movementList->start = abovePlayer + V2d(-1500, -900);//player->position + V2d( -1000, sOffsetY );
 			shipMovement.movementList->end = abovePlayer;//player->position + V2d( 1000, sOffsetY );
 			shipMovement.Reset();
 
 			Movement *m = shipMovement.movementList->next;
 
 			m->start = abovePlayer;
-			m->end = abovePlayer + V2d(1500, -900);
+			m->end = abovePlayer + V2d(1500, -900) + V2d( 1500, -900 );
 
-			origPlayer = owner->GetPlayer( 0 )->position;
+			origPlayer = owner->GetPlayer(0)->position;
 			attachPoint = abovePlayer;//V2d(player->position.x, player->position.y);//abovePlayer.y + 170 );
-	}
-	else  if (frame ==  startGrabWire )
-	{
-		owner->GetPlayer( 0 )->GrabShipWire();	
-	}
+		}
+		else  if (frame == startGrabWire)
+		{
+			owner->GetPlayer(0)->GrabShipWire();
+		}
 
-	for (int i = 0; i < NUM_STEPS; ++i)
-	{
-		shipMovement.Update();
-	}
+		for (int i = 0; i < NUM_STEPS; ++i)
+		{
+			shipMovement.Update();
+		}
 
-	int jumpSquat = startGrabWire + 3 * 5;
-	int startJump = 4 * 5;//60 - jumpSquat;
-	if( frame > enterTime)
-	{
-		owner->GetPlayer( 0 )->position = V2d( shipMovement.position.x, shipMovement.position.y + 48.0 );
-	}
-	else if( frame >= jumpSquat && frame <= enterTime )//startJump )
-	{
-		double adjF = frame - jumpSquat;
-		double eTime = enterTime - jumpSquat;
-		double a = adjF / eTime;//(double)(frame - (60 - (startJump + 1))) / (60 - (startJump - 1));
-		//double a = 
-		//cout << "a: " << a << endl;
-		V2d pAttachPoint = attachPoint;
-		pAttachPoint.y += 48.f;
-		owner->GetPlayer( 0 )->position = origPlayer * (1.0 - a ) + pAttachPoint * a;
-	}
+		int jumpSquat = startGrabWire + 3 * 5;
+		int startJump = 4 * 5;//60 - jumpSquat;
 
-	if (shipMovement.currMovement == NULL)
-	{
-		owner->goalDestroyed = true;
-		return false;
-	}
-	
-	shipSprite.setPosition( shipMovement.position.x,
-		shipMovement.position.y );
+		if (frame > enterTime)
+		{
+			owner->GetPlayer(0)->position = V2d(shipMovement.position.x, shipMovement.position.y + 48.0);
+		}
+		else if (frame >= jumpSquat && frame <= enterTime)//startJump )
+		{
+			double adjF = frame - jumpSquat;
+			double eTime = enterTime - jumpSquat;
+			double a = adjF / eTime;//(double)(frame - (60 - (startJump + 1))) / (60 - (startJump - 1));
+			//double a = 
+			//cout << "a: " << a << endl;
+			V2d pAttachPoint = attachPoint;
+			pAttachPoint.y += 48.f;
+			owner->GetPlayer(0)->position = origPlayer * (1.0 - a) + pAttachPoint * a;
+		}
 
+		if (shipMovement.currMovement == NULL)
+		{
+			frame = stateLength[SHIP_SWOOP] - 1;
+			owner->state = GameSession::SEQUENCE;
+		}
+
+		if (frame == (enterTime + exitTime) - 60)
+		{
+			owner->Fade(false, 60, Color::Black);
+		}
+
+		shipSprite.setPosition(shipMovement.position.x,
+			shipMovement.position.y);
+		break;
+	}
+	//case FADEOUT:
+	//{
+	//	if (frame == 30)
+	//	{
+			//owner->Fade(false, 60, Color::Black);
+	//	}
+	//	break;
+	//}
+	case PLAYMOVIE:
+	{
+		owner->ClearFade();
+		sfe::Status movStatus = mov.getStatus();
+		if (frame == 0)
+		{
+			//owner->Fade(true, 60, Color::Black);
+			mov.setPlayingOffset(sf::Time::Zero);
+			mov.play();
+		}
+		else
+		{
+			mov.update();
+			
+			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
+			{
+				frame = stateLength[PLAYMOVIE] - 1;
+				owner->goalDestroyed = true;
+			}
+		}
+		break;
+	}
+	}
 	++frame;
 
 	return true;
@@ -141,12 +203,21 @@ void ShipExitSeq::Draw( RenderTarget *target, EffectLayer layer)
 		return;
 	}
 
-	target->draw( shipSprite );
+	if (state == SHIP_SWOOP)
+	{
+		target->draw(shipSprite);
+	}
+	else if (state == PLAYMOVIE)
+	{
+		target->draw(mov);
+	}
+	
 }
 
 void ShipExitSeq::Reset()
 {
 	frame = 0;
+	state = SHIP_SWOOP;
 }
 
 

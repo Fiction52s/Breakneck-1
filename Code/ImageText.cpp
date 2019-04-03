@@ -233,6 +233,16 @@ void Script::Load(const std::string &name)
 {
 	numSections = 5;
 	sections = new string[5];
+
+	string path = "Resources/Text/";
+	string suffix = ".script";
+
+	//ifstream is;
+	//is.open(path + name + suffix);
+
+	//assert(is.is_open());
+
+
 	for (int i = 0; i < 5; ++i)
 	{
 		sections[i] = "hello this is a test hello this\n"

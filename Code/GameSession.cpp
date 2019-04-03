@@ -9508,6 +9508,8 @@ int GameSession::Run()
 					}
 				}
 
+				
+
 				int maxVol = mainMenu->config->GetData().musicVolume;
 				if (musicFadeOutMax > 0)
 				{
@@ -9551,6 +9553,15 @@ int GameSession::Run()
 				UpdateFade();
 
 				accumulator -= TIMESTEP;
+
+				if (goalDestroyed)
+				{
+					quit = true;
+
+					//returnVal = GR_WIN;
+					returnVal = resType;
+					break;
+				}
 			}
 
 			if (switchState)

@@ -197,7 +197,7 @@ bool NexusCore1Seq::Update()
 		else
 		{
 			mov.update();
-
+			//cout << "len: " << mov.getDuration().asSeconds() << endl;
 			//cout << "mov: " << mov.getPlayingOffset().asSeconds() << endl;
 			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
 			{

@@ -161,6 +161,9 @@ void Nexus::ResetEnemy()
 	insideSeq->Reset();
 	SetHurtboxes(hurtBody, 0);
 	nexSprite.setTexture(*ts_nexusOpen->texture);
+
+	sprite.setTexture(*ts_node1->texture);
+	sprite.setTextureRect(ts_node1->GetSubRect(0));
 	//numHealth = 1;
 	UpdateSprite();
 	//sprite.setTexture(*ts_node1->texture);
