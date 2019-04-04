@@ -90,6 +90,10 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void Setup();
 	void StartInitialUnburrow();
 	void StartAngryYelling();
+	void StartFight();
+
+	sf::Sprite crawlerFaceSpr;
+	sf::Sprite kinFaceSpr;
 
 	//StorySequence *storySeq;
 	//sfe::Movie mov;

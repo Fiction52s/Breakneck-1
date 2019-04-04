@@ -375,6 +375,14 @@ void CrawlerQueen::StartAngryYelling()
 	frame = 0;
 }
 
+void CrawlerQueen::StartFight()
+{
+	assert(action == SEQ_ANGRY0);
+	action = SEQ_FINISHINITIALUNBURROW;
+	frame = 0;
+}
+
+
 void CrawlerQueen::StartInitialUnburrow()
 {
 	assert(action == INITIALWAIT);
@@ -447,7 +455,7 @@ void CrawlerQueen::ProcessState()
 			Boost();
 			break;
 		case SEQ_ANGRY0:
-			action = SEQ_FINISHINITIALUNBURROW;
+			action = SEQ_ANGRY0;
 			frame = 0;
 			//alert the game UI/kin/player that the fight has started
 			break;

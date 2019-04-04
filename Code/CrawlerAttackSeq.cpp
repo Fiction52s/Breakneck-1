@@ -131,7 +131,7 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	stateLength[CRAWLERSWOOP] = 9 * 3;
 	stateLength[DIGGINGAROUND] = 180;
 	stateLength[THROWOUT] = 60;
-	stateLength[CONVERSATION] = 30;
+	stateLength[CONVERSATION] = 10000;
 	stateLength[END] = 30;
 
 	queen = new CrawlerQueen(owner, surface->edge, surface->edgeQuantity, false);
@@ -170,7 +170,7 @@ bool CrawlerAttackSeq::Update()
 
 	if (state == END)
 	{
-		if (queen->action == CrawlerQueen::DECIDE)
+		if (queen->action == CrawlerQueen::SEQ_FINISHINITIALUNBURROW)
 		{
 			player->SetAction(Actor::STAND);
 			player->frame = 0;
@@ -178,6 +178,7 @@ bool CrawlerAttackSeq::Update()
 		}
 		else
 		{
+			queen->StartFight();
 			return true;
 		}
 	}
@@ -259,6 +260,11 @@ bool CrawlerAttackSeq::Update()
 		if (frame == 0)
 		{
 			queen->StartAngryYelling();
+		}
+
+		if (frame == 60)
+		{
+			frame = stateLength[CONVERSATION] - 1;
 		}
 		
 		break;
