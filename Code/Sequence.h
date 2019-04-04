@@ -286,6 +286,8 @@ struct CrawlerAttackSeq : Sequence
 	sf::Sprite queenGrabSprite;
 	FlashedImage *detailedGrab;
 
+	FlashedImage *crawlerFace;
+
 	GameSession *owner;
 };
 

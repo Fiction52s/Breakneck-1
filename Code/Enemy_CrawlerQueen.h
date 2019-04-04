@@ -5,7 +5,6 @@
 #include "ObjectPool.h"
 #include <sfeMovie/Movie.hpp>
 
-
 struct StorySequence;
 struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 {
@@ -92,8 +91,9 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void StartAngryYelling();
 	void StartFight();
 
-	sf::Sprite crawlerFaceSpr;
-	sf::Sprite kinFaceSpr;
+	
+	//sf::Sprite crawlerFaceSpr;
+	//sf::Sprite kinFaceSpr;
 
 	//StorySequence *storySeq;
 	//sfe::Movie mov;

@@ -119,6 +119,9 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 
 	detailedGrab = new FlashedImage(owner->GetTileset("Story/grabdetailed_1920x1080.png", 1920, 1080),
 		0, 30, 60, 30, Vector2f(0, 0));//Vector2f( 1500, 500 ));
+
+	crawlerFace = new FlashedImage(owner->GetTileset("Story/Crawler_Dig_02.png", 1920, 1080),
+		0, 30, 120, 30, Vector2f(960, 540));//Vector2f( 1500, 500 ));
 	//ts_detailedGrab = owner->GetTileset("Bosses/Crawler/");
 	//detailedGrabSpr.setTexture(*ts_detailedGrab);
 	//detailedGrabSpr.setTextureRect(ts_detailedGrab->GetSubRect(0));
@@ -262,7 +265,12 @@ bool CrawlerAttackSeq::Update()
 			queen->StartAngryYelling();
 		}
 
-		if (frame == 60)
+		if (frame == 0)
+		{
+			crawlerFace->Flash();
+		}
+
+		if (!crawlerFace->flashing)
 		{
 			frame = stateLength[CONVERSATION] - 1;
 		}
@@ -270,6 +278,7 @@ bool CrawlerAttackSeq::Update()
 		break;
 	}
 
+	crawlerFace->Update();
 	detailedGrab->Update();
 
 	++frame;
@@ -291,6 +300,7 @@ void CrawlerAttackSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 	View v = target->getView();
 	target->setView(owner->uiView);
 	detailedGrab->Draw(target);
+	crawlerFace->Draw(target);
 	target->setView(v);
 }
 void CrawlerAttackSeq::Reset()
@@ -299,4 +309,5 @@ void CrawlerAttackSeq::Reset()
 	frame = 0;
 	queen->Reset();
 	detailedGrab->Reset();
+	crawlerFace->Reset();
 }
