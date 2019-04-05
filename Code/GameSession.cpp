@@ -367,7 +367,7 @@ void Barrier::SetPositive()
 GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu, 
 	const boost::filesystem::path &p_filePath )
 	:groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
-	onTopPar( sf::Quads, 4 * 6 ), miniVA( sf::Quads, 4 ), saveFile( sf ),
+	onTopPar( sf::Quads, 4 * 6 ), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), fileName( p_filePath.string() ),
 	filePath( p_filePath ), eHitParamsMan( NULL ), drain(true )
@@ -3944,160 +3944,107 @@ bool GameSession::OpenFile( string fileName )
 		
 	
 		
-
+		bool blackBorder[2];
+		bool topBorderOn = false;
 		//loading done. now setup
 
-		
+		//bool topBorderOn = false;
 
-		double extraBorder = 100;
-		bool topBorderOn = false;
-		if (inversePoly != NULL)
-		{
-			int trueTop = mh->topBounds;
-			int possibleTop = inversePoly->aabb.top; //- extraBorder;
-			if (possibleTop > trueTop)
-				trueTop = possibleTop;
-			else
-			{
-				topBorderOn = true;
-			}
-			mh->topBounds = trueTop - extraBorder/2;
-			int inversePolyBottom = inversePoly->aabb.top + inversePoly->aabb.height;
-			mh->boundsHeight = (inversePolyBottom + extraBorder) - trueTop;
-		}
+		//double extraBorder = 100;
+		//
+		//if (inversePoly != NULL)
+		//{
+		//	int trueTop = mh->topBounds;
+		//	int possibleTop = inversePoly->aabb.top; //- extraBorder;
+		//	if (possibleTop > trueTop)
+		//		trueTop = possibleTop;
+		//	else
+		//	{
+		//		topBorderOn = true;
+		//	}
+		//	mh->topBounds = trueTop - extraBorder/2;
+		//	int inversePolyBottom = inversePoly->aabb.top + inversePoly->aabb.height;
+		//	mh->boundsHeight = (inversePolyBottom + extraBorder) - trueTop;
+		//}
 
-		bool blackBorder[2];
-		int inversePolyRight = (inversePoly->aabb.left + inversePoly->aabb.width);
-		blackBorder[0]= inversePoly->aabb.left < mh->leftBounds; //inverse is further left than border
-		blackBorder[1] = inversePolyRight > (mh->leftBounds + mh->boundsWidth); //inverse is further right than border
+		//bool blackBorder[2];
+		//int inversePolyRight = (inversePoly->aabb.left + inversePoly->aabb.width);
+		//blackBorder[0]= inversePoly->aabb.left < mh->leftBounds; //inverse is further left than border
+		//blackBorder[1] = inversePolyRight > (mh->leftBounds + mh->boundsWidth); //inverse is further right than border
 
-		int leftB = mh->leftBounds;
-		int rightB = mh->leftBounds + mh->boundsWidth;
-		if (!blackBorder[0])
-		{
-			mh->leftBounds = inversePoly->aabb.left - extraBorder;
-			mh->boundsWidth = rightB - mh->leftBounds;
-		}
-		if (!blackBorder[1])
-		{
-			mh->boundsWidth = (inversePolyRight + extraBorder) - mh->leftBounds;
-		}
-		else
-		{
-			cout << "creating black border at " << (mh->leftBounds + mh->boundsWidth) << endl;
-		}
+		//int leftB = mh->leftBounds;
+		//int rightB = mh->leftBounds + mh->boundsWidth;
+		//if (!blackBorder[0])
+		//{
+		//	mh->leftBounds = inversePoly->aabb.left - extraBorder;
+		//	mh->boundsWidth = rightB - mh->leftBounds;
+		//}
+		//if (!blackBorder[1])
+		//{
+		//	mh->boundsWidth = (inversePolyRight + extraBorder) - mh->leftBounds;
+		//}
+		//else
+		//{
+		//	cout << "creating black border at " << (mh->leftBounds + mh->boundsWidth) << endl;
+		//}
 
-		SetGlobalBorders();
+		//SetGlobalBorders();
 
-		for (int i = 0; i < 8; ++i)
-		{
-			//blackBorderQuads[i].color = Color::Black;
-			blackBorderQuads[i].position.y = mh->topBounds;
-		}
+		//for (int i = 0; i < 8; ++i)
+		//{
+		//	//blackBorderQuads[i].color = Color::Black;
+		//	blackBorderQuads[i].position.y = mh->topBounds;
+		//}
 
-		int quadWidth = 200;
-		blackBorderQuads[0].position.x = mh->leftBounds;
-		blackBorderQuads[3].position.x = mh->leftBounds;
+		//int quadWidth = 200;
+		//blackBorderQuads[0].position.x = mh->leftBounds;
+		//blackBorderQuads[3].position.x = mh->leftBounds;
 
-		blackBorderQuads[1].position.x = mh->leftBounds + quadWidth;
-		blackBorderQuads[2].position.x = mh->leftBounds + quadWidth;
+		//blackBorderQuads[1].position.x = mh->leftBounds + quadWidth;
+		//blackBorderQuads[2].position.x = mh->leftBounds + quadWidth;
 
-		blackBorderQuads[5].position.x = mh->leftBounds + mh->boundsWidth;
-		blackBorderQuads[6].position.x = mh->leftBounds + mh->boundsWidth;
+		//blackBorderQuads[5].position.x = mh->leftBounds + mh->boundsWidth;
+		//blackBorderQuads[6].position.x = mh->leftBounds + mh->boundsWidth;
 
-		blackBorderQuads[4].position.x = blackBorderQuads[5].position.x - quadWidth;
-		blackBorderQuads[7].position.x = blackBorderQuads[5].position.x - quadWidth;
+		//blackBorderQuads[4].position.x = blackBorderQuads[5].position.x - quadWidth;
+		//blackBorderQuads[7].position.x = blackBorderQuads[5].position.x - quadWidth;
 
-		blackBorderQuads[2].position.y += mh->boundsHeight;
-		blackBorderQuads[3].position.y += mh->boundsHeight;
-		blackBorderQuads[6].position.y += mh->boundsHeight;
-		blackBorderQuads[7].position.y += mh->boundsHeight;
+		//blackBorderQuads[2].position.y += mh->boundsHeight;
+		//blackBorderQuads[3].position.y += mh->boundsHeight;
+		//blackBorderQuads[6].position.y += mh->boundsHeight;
+		//blackBorderQuads[7].position.y += mh->boundsHeight;
 
-		if (blackBorder[0])
-		{
-			//SetRectColor(blackBorderQuads, Color(100, 100, 100));
-			SetRectColor(blackBorderQuads, Color(Color::Black));
-			blackBorderQuads[1].color.a = 0;
-			blackBorderQuads[2].color.a = 0;
-		}
-		else
-		{
-			SetRectColor(blackBorderQuads, Color(Color::Transparent));
-		}
-		if (blackBorder[1])
-		{
-			SetRectColor(blackBorderQuads + 4, Color(Color::Black));
-			blackBorderQuads[4].color.a = 0;
-			blackBorderQuads[7].color.a = 0;
-		}
-		else
-		{
-			SetRectColor(blackBorderQuads + 4, Color(Color::Transparent));
-		}
-
-		int miniQuadWidth = 4000;
-		int inverseTerrainBorder = 4000;
-		int blackMiniTop = mh->topBounds - inverseTerrainBorder;
-		int blackMiniBot = mh->topBounds + mh->boundsHeight + inverseTerrainBorder;
-		int blackMiniLeft = mh->leftBounds - miniQuadWidth;
-		int rightBounds = mh->leftBounds + mh->boundsWidth;
-		int blackMiniRight = rightBounds + miniQuadWidth;
-
-		sf::Vertex *blackBorderQuadsMini = mini->blackBorderQuadsMini;
-
-		blackBorderQuadsMini[1].position.x = mh->leftBounds;
-		blackBorderQuadsMini[2].position.x = mh->leftBounds;
-		blackBorderQuadsMini[0].position.x = mh->leftBounds - miniQuadWidth;
-		blackBorderQuadsMini[3].position.x = mh->leftBounds - miniQuadWidth;
-
-		blackBorderQuadsMini[0].position.y = blackMiniTop;
-		blackBorderQuadsMini[1].position.y = blackMiniTop;
-
-		blackBorderQuadsMini[2].position.y = blackMiniBot;
-		blackBorderQuadsMini[3].position.y = blackMiniBot;
-
-		
-		blackBorderQuadsMini[5].position.x = rightBounds + miniQuadWidth;
-		blackBorderQuadsMini[6].position.x = rightBounds + miniQuadWidth;
-		blackBorderQuadsMini[4].position.x = rightBounds;
-		blackBorderQuadsMini[7].position.x = rightBounds;
-
-		blackBorderQuadsMini[4].position.y = blackMiniTop;
-		blackBorderQuadsMini[5].position.y = blackMiniTop;
-
-		blackBorderQuadsMini[6].position.y = blackMiniBot;
-		blackBorderQuadsMini[7].position.y = blackMiniBot;
-
-		Color miniBorderColor = Color(100, 100, 100);
-		Color miniTopBorderColor = Color(0x10, 0x40, 0xff);
-		//SetRectColor(blackBorderQuads + 4, Color( 100, 100, 100 ));
-
-		if( blackBorder[0] )
-			SetRectColor(blackBorderQuadsMini, miniTopBorderColor);
-		if (blackBorder[1])
-			SetRectColor(blackBorderQuadsMini + 4, miniTopBorderColor);
-		
+		//if (blackBorder[0])
+		//{
+		//	//SetRectColor(blackBorderQuads, Color(100, 100, 100));
+		//	SetRectColor(blackBorderQuads, Color(Color::Black));
+		//	blackBorderQuads[1].color.a = 0;
+		//	blackBorderQuads[2].color.a = 0;
+		//}
+		//else
+		//{
+		//	SetRectColor(blackBorderQuads, Color(Color::Transparent));
+		//}
+		//if (blackBorder[1])
+		//{
+		//	SetRectColor(blackBorderQuads + 4, Color(Color::Black));
+		//	blackBorderQuads[4].color.a = 0;
+		//	blackBorderQuads[7].color.a = 0;
+		//}
+		//else
+		//{
+		//	SetRectColor(blackBorderQuads + 4, Color(Color::Transparent));
+		//}
+		SetupStormCeiling();
+		SetupMapBorderQuads(blackBorder, topBorderOn);
+		SetupMinimapBorderQuads(blackBorder, topBorderOn);
 
 		if (topBorderOn)
 		{
-			Vertex *topBorderQuadMini = mini->topBorderQuadMini;
-
-			SetRectColor(topBorderQuadMini, Color(0x10, 0x40, 0xff));
-
-			topBorderQuadMini[0].position.x = blackMiniLeft;
-			topBorderQuadMini[1].position.x = blackMiniRight;
-			topBorderQuadMini[2].position.x = blackMiniRight;
-			topBorderQuadMini[3].position.x = blackMiniLeft;
-
-			topBorderQuadMini[0].position.y = blackMiniTop;
-			topBorderQuadMini[1].position.y = blackMiniTop;
-			topBorderQuadMini[2].position.y = mh->topBounds;
-			topBorderQuadMini[3].position.y = mh->topBounds;
-
 			topClouds = new TopClouds(this);
 		}
 
-		if (poiMap.count("stormceiling") > 0)
+		/*if (poiMap.count("stormceiling") > 0)
 		{
 			stormCeilingOn = true;
 			stormCeilingHeight = poiMap["stormceiling"]->pos.y;
@@ -4121,7 +4068,7 @@ bool GameSession::OpenFile( string fileName )
 			topBorderQuadMini[2].position.y = mh->topBounds;
 			topBorderQuadMini[3].position.y = mh->topBounds;
 
-		}
+		}*/
 
 
 		CreateZones();
@@ -5116,6 +5063,174 @@ Actor *GameSession::GetPlayer( int index )
 	return players[index];
 }
 
+void GameSession::SetupMinimapBorderQuads( bool *blackBorder, bool topBorderOn )
+{
+	int miniQuadWidth = 4000;
+	int inverseTerrainBorder = 4000;
+	int blackMiniTop = mh->topBounds - inverseTerrainBorder;
+	int blackMiniBot = mh->topBounds + mh->boundsHeight + inverseTerrainBorder;
+	int blackMiniLeft = mh->leftBounds - miniQuadWidth;
+	int rightBounds = mh->leftBounds + mh->boundsWidth;
+	int blackMiniRight = rightBounds + miniQuadWidth;
+
+	sf::Vertex *blackBorderQuadsMini = mini->blackBorderQuadsMini;
+
+	blackBorderQuadsMini[1].position.x = mh->leftBounds;
+	blackBorderQuadsMini[2].position.x = mh->leftBounds;
+	blackBorderQuadsMini[0].position.x = mh->leftBounds - miniQuadWidth;
+	blackBorderQuadsMini[3].position.x = mh->leftBounds - miniQuadWidth;
+
+	blackBorderQuadsMini[0].position.y = blackMiniTop;
+	blackBorderQuadsMini[1].position.y = blackMiniTop;
+
+	blackBorderQuadsMini[2].position.y = blackMiniBot;
+	blackBorderQuadsMini[3].position.y = blackMiniBot;
+
+
+	blackBorderQuadsMini[5].position.x = rightBounds + miniQuadWidth;
+	blackBorderQuadsMini[6].position.x = rightBounds + miniQuadWidth;
+	blackBorderQuadsMini[4].position.x = rightBounds;
+	blackBorderQuadsMini[7].position.x = rightBounds;
+
+	blackBorderQuadsMini[4].position.y = blackMiniTop;
+	blackBorderQuadsMini[5].position.y = blackMiniTop;
+
+	blackBorderQuadsMini[6].position.y = blackMiniBot;
+	blackBorderQuadsMini[7].position.y = blackMiniBot;
+
+	Color miniBorderColor = Color(100, 100, 100);
+	Color miniTopBorderColor = Color(0x10, 0x40, 0xff);
+	//SetRectColor(blackBorderQuads + 4, Color( 100, 100, 100 ));
+
+	if (blackBorder[0])
+		SetRectColor(blackBorderQuadsMini, miniTopBorderColor);
+	if (blackBorder[1])
+		SetRectColor(blackBorderQuadsMini + 4, miniTopBorderColor);
+
+	if (stormCeilingOn || topBorderOn )
+	{
+		Vertex *topBorderQuadMini = mini->topBorderQuadMini;
+
+		SetRectColor(topBorderQuadMini, miniTopBorderColor);
+
+		topBorderQuadMini[0].position.x = blackMiniLeft;
+		topBorderQuadMini[1].position.x = blackMiniRight;
+		topBorderQuadMini[2].position.x = blackMiniRight;
+		topBorderQuadMini[3].position.x = blackMiniLeft;
+
+		topBorderQuadMini[0].position.y = blackMiniTop;
+		topBorderQuadMini[1].position.y = blackMiniTop;
+		topBorderQuadMini[2].position.y = mh->topBounds;
+		topBorderQuadMini[3].position.y = mh->topBounds;
+	}
+	
+}
+
+void GameSession::SetupMapBorderQuads(bool *blackBorder,
+	bool &topBorderOn)
+{
+	double extraBorder = 100;
+	if (inversePoly != NULL)
+	{
+		int trueTop = mh->topBounds;
+		int possibleTop = inversePoly->aabb.top; //- extraBorder;
+		if (possibleTop > trueTop)
+			trueTop = possibleTop;
+		else
+		{
+			topBorderOn = true;
+		}
+		mh->topBounds = trueTop - extraBorder / 2;
+		int inversePolyBottom = inversePoly->aabb.top + inversePoly->aabb.height;
+		mh->boundsHeight = (inversePolyBottom + extraBorder) - trueTop;
+	}
+
+	
+	int inversePolyRight = (inversePoly->aabb.left + inversePoly->aabb.width);
+	blackBorder[0] = inversePoly->aabb.left < mh->leftBounds; //inverse is further left than border
+	blackBorder[1] = inversePolyRight >(mh->leftBounds + mh->boundsWidth); //inverse is further right than border
+
+	int leftB = mh->leftBounds;
+	int rightB = mh->leftBounds + mh->boundsWidth;
+	if (!blackBorder[0])
+	{
+		mh->leftBounds = inversePoly->aabb.left - extraBorder;
+		mh->boundsWidth = rightB - mh->leftBounds;
+	}
+	if (!blackBorder[1])
+	{
+		mh->boundsWidth = (inversePolyRight + extraBorder) - mh->leftBounds;
+	}
+	else
+	{
+		cout << "creating black border at " << (mh->leftBounds + mh->boundsWidth) << endl;
+	}
+
+	SetGlobalBorders();
+
+	for (int i = 0; i < 8; ++i)
+	{
+		//blackBorderQuads[i].color = Color::Black;
+		blackBorderQuads[i].position.y = mh->topBounds;
+	}
+
+	int quadWidth = 200;
+	blackBorderQuads[0].position.x = mh->leftBounds;
+	blackBorderQuads[3].position.x = mh->leftBounds;
+
+	blackBorderQuads[1].position.x = mh->leftBounds + quadWidth;
+	blackBorderQuads[2].position.x = mh->leftBounds + quadWidth;
+
+	blackBorderQuads[5].position.x = mh->leftBounds + mh->boundsWidth;
+	blackBorderQuads[6].position.x = mh->leftBounds + mh->boundsWidth;
+
+	blackBorderQuads[4].position.x = blackBorderQuads[5].position.x - quadWidth;
+	blackBorderQuads[7].position.x = blackBorderQuads[5].position.x - quadWidth;
+
+	blackBorderQuads[2].position.y += mh->boundsHeight;
+	blackBorderQuads[3].position.y += mh->boundsHeight;
+	blackBorderQuads[6].position.y += mh->boundsHeight;
+	blackBorderQuads[7].position.y += mh->boundsHeight;
+
+	if (blackBorder[0])
+	{
+		SetRectColor(blackBorderQuads, Color(Color::Black));
+		blackBorderQuads[1].color.a = 0;
+		blackBorderQuads[2].color.a = 0;
+	}
+	else
+	{
+		SetRectColor(blackBorderQuads, Color(Color::Transparent));
+	}
+	if (blackBorder[1])
+	{
+		SetRectColor(blackBorderQuads + 4, Color(Color::Black));
+		blackBorderQuads[4].color.a = 0;
+		blackBorderQuads[7].color.a = 0;
+	}
+	else
+	{
+		SetRectColor(blackBorderQuads + 4, Color(Color::Transparent));
+	}
+
+	if (stormCeilingOn)
+	{
+		int oldBottom = mh->topBounds + mh->boundsHeight - extraBorder;
+		mh->topBounds = stormCeilingHeight;
+		mh->boundsHeight = oldBottom - stormCeilingHeight;
+		assert(mh->boundsHeight > 0);
+	}
+}
+
+void GameSession::SetupStormCeiling()
+{
+	if (poiMap.count("stormceiling") > 0)
+	{
+		stormCeilingOn = true;
+		stormCeilingHeight = poiMap["stormceiling"]->pos.y;
+	}
+}
+
 void GameSession::LoadDecorImages()
 {
 	ifstream is;
@@ -5388,22 +5503,6 @@ bool GameSession::Load()
 	lifeBarSprite.setTexture(lifeBarTex);
 	lifeBarSprite.setPosition(30, 200);
 
-
-	
-
-	if (!minimapShader.loadFromFile("Resources/Shader/minimap_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "minimap SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0 && "minimap shader not loaded");
-	}
-	minimapShader.setUniform("imageSize", Vector2f(minimapTex->getSize().x,
-		minimapTex->getSize().y));
-	minimapSprite.setTexture(minimapTex->getTexture());
-	minimapSprite.setOrigin(minimapSprite.getLocalBounds().width / 2,
-		minimapSprite.getLocalBounds().height / 2);
-	minimapSprite.setPosition(Vector2f(200, preScreenTex->getSize().y - 200));
-	minimapSprite.setScale(1, -1);
-
 	if (!speedBarShader.loadFromFile("Resources/Shader/speedbar_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
@@ -5567,44 +5666,17 @@ bool GameSession::Load()
 		AllocateLight();
 	}
 
-	
 
-	ts_miniIcons = GetTileset("minimap_icons_64x64.png", 64, 64);
-	kinMinimapIcon.setTexture(*ts_miniIcons->texture);
-	kinMinimapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
-	kinMinimapIcon.setOrigin(kinMinimapIcon.getLocalBounds().width / 2,
-		kinMinimapIcon.getLocalBounds().height / 2);
-	kinMinimapIcon.setPosition(minimapSprite.getPosition());
-
-
-	kinMapSpawnIcon.setTexture(*ts_miniIcons->texture);
-	kinMapSpawnIcon.setTextureRect(ts_miniIcons->GetSubRect(1));
+	kinMapSpawnIcon.setTexture(*mini->ts_miniIcons->texture);
+	kinMapSpawnIcon.setTextureRect(mini->ts_miniIcons->GetSubRect(1));
 	kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
 		kinMapSpawnIcon.getLocalBounds().height / 2);
 
 
-	goalMapIcon.setTexture(*ts_miniIcons->texture);
-	goalMapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
+	goalMapIcon.setTexture(*mini->ts_miniIcons->texture);
+	goalMapIcon.setTextureRect(mini->ts_miniIcons->GetSubRect(0));
 	goalMapIcon.setOrigin(goalMapIcon.getLocalBounds().width / 2,
 		goalMapIcon.getLocalBounds().height / 2);
-
-	ts_miniCircle = GetTileset("minimap_circle_320x320.png", 320, 320);
-	miniCircle.setTexture(*ts_miniCircle->texture);
-	miniCircle.setScale(2, 2);
-	miniCircle.setOrigin(miniCircle.getLocalBounds().width / 2, miniCircle.getLocalBounds().height / 2);
-
-
-	miniCircle.setPosition(kinMinimapIcon.getPosition());
-
-	ts_minimapGateDirection = GetTileset("minimap_gate_w02_192x64.png", 192, 64);
-	for (int i = 0; i < 6; ++i)
-	{
-		Sprite &gds = gateDirections[i];
-		gds.setTexture(*ts_minimapGateDirection->texture);
-		gds.setTextureRect(ts_minimapGateDirection->GetSubRect(0));
-		gds.setOrigin(gds.getLocalBounds().width / 2, 120 + gds.getLocalBounds().height);
-		gds.setPosition(miniCircle.getPosition());
-	}
 
 	//blah
 
@@ -5862,7 +5934,7 @@ bool GameSession::Load()
 		break;
 	}
 	assert( goalTile >= 0 );
-	goalMapIcon.setTextureRect( ts_miniIcons->GetSubRect( goalTile ) );
+	goalMapIcon.setTextureRect(mini->ts_miniIcons->GetSubRect( goalTile ) );
 
 	float numSecondsToDrain = mh->drainSeconds;
 	float totalHealth = 3600;
@@ -6750,22 +6822,6 @@ int GameSession::Run()
 				//}
 
 				UpdateFade();
-				//powerWheel->UpdateHide();
-
-				//miniCircle.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
-				miniCircle.setPosition(180, preScreenTex->getSize().y - 180);
-				for( int i = 0; i < 6; ++i )
-				{
-					Sprite &gds = gateDirections[i];
-					gds.setPosition( miniCircle.getPosition() );
-				}
-
-				Vector2f miniPos = Vector2f( 30, 750 );
-				//miniPos.x += ( powerWheel->basePos.x - powerWheel->origBasePos.x );
-				miniVA[0].position = miniPos + Vector2f( 0, 0 );
-				miniVA[1].position = miniPos + Vector2f( 300, 0 );
-				miniVA[2].position = miniPos + Vector2f( 300, 300 );
-				miniVA[3].position = miniPos + Vector2f( 0, 300 );
 
 				pauseFrames--;
 				//accumulator = 0;
@@ -6993,24 +7049,6 @@ int GameSession::Run()
 				if (rain != NULL)
 					rain->Update();
 
-				
-				//powerWheel->UpdateHide();
-
-
-				//miniCircle.setPosition( 180 + ( powerWheel->basePos.x - powerWheel->origBasePos.x ), preScreenTex->getSize().y - 180 );
-				miniCircle.setPosition(180, preScreenTex->getSize().y - 180);
-				for( int i = 0; i < 6; ++i )
-				{
-					Sprite &gds = gateDirections[i];
-					gds.setPosition( miniCircle.getPosition() );
-				}
-
-				Vector2f miniPos = Vector2f( 30, 750 );
-				//miniPos.x += ( powerWheel->basePos.x - powerWheel->origBasePos.x );
-				miniVA[0].position = miniPos + Vector2f( 0, 0 );
-				miniVA[1].position = miniPos + Vector2f( 300, 0 );
-				miniVA[2].position = miniPos + Vector2f( 300, 300 );
-				miniVA[3].position = miniPos + Vector2f( 0, 300 );
 
 				oldZoom = cam.GetZoom();
 				oldCamBotLeft = view.getCenter();
@@ -8168,212 +8206,6 @@ int GameSession::Run()
 			}
 		}
 
-		
-
-
-
-		//grassTree->DebugDraw( preScreenTex );
-
-
-		//coll.DebugDraw( preScreenTex );
-
-		//double minimapZoom = 8;// * cam.GetZoom();// + cam.GetZoom();
-
-
-		
-		if (false )//adventureHUD != NULL && adventureHUD->state != AdventureHUD::HIDDEN) 
-			
-		{
-			double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
-
-
-
-			View vv;
-			vv.setCenter(p0->position.x, p0->position.y);
-			vv.setSize(minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom);
-
-			minimapTex->setView(vv);
-			minimapTex->clear(Color(0, 0, 0, 191));
-			//minimapTex->clear( Color( 0, 0, 0, 255 ) );
-
-
-			for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
-			{
-				(*it)->Draw(minimapTex);
-			}
-
-
-
-			queryMode = "border";
-			numBorders = 0;
-			sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
-				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
-
-			borderTree->Query(this, minimapRect);
-
-			Color testColor(0x75, 0x70, 0x90, 191);
-			listVAIter = listVA;
-			while (listVAIter != NULL)
-			{
-				if (listVAIter->visible)
-				{
-					int vertexCount = listVAIter->terrainVA->getVertexCount();
-					for (int i = 0; i < vertexCount; ++i)
-					{
-						(*listVAIter->terrainVA)[i].color = testColor;
-					}
-					minimapTex->draw(*listVAIter->terrainVA);
-					for (int i = 0; i < vertexCount; ++i)
-					{
-						(*listVAIter->terrainVA)[i].color = Color::White;
-					}
-				}
-
-				listVAIter = listVAIter->next;
-			}
-
-			//minimapTex->draw(blackBorderQuadsMini, 8, sf::Quads);
-			//minimapTex->draw(topBorderQuadMini, 4, sf::Quads);
-
-
-			//minimapTex->draw(topBorderQuad, 4, sf::Quads);
-
-
-			queryMode = "item";
-			drawCritical = NULL;
-			itemTree->Query(this, minimapRect);
-			while (drawCritical != NULL)
-			{
-				//cout << "draw crit " << endl;
-				drawCritical->Draw(preScreenTex);
-				drawCritical = drawCritical->next;
-			}
-
-			testGateCount = 0;
-			queryMode = "gate";
-			gateList = NULL;
-			gateTree->Query(this, minimapRect);
-			Gate *mGateList = gateList;
-			while (gateList != NULL)
-			{
-				//gateList->Draw( preScreenTex );
-				if (gateList->locked && gateList->visible)
-				{
-
-					V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
-					V2d other(along.y, -along.x);
-					double width = 25;
-
-
-
-					V2d leftGround = gateList->edgeA->v0 + other * -width;
-					V2d rightGround = gateList->edgeA->v0 + other * width;
-					V2d leftAir = gateList->edgeA->v1 + other * -width;
-					V2d rightAir = gateList->edgeA->v1 + other * width;
-					//cout << "drawing color: " << gateList->c.b << endl;
-					sf::Vertex activePreview[4] =
-					{
-						//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
-						//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
-
-						sf::Vertex(sf::Vector2<float>(leftGround.x, leftGround.y), gateList->c),
-						sf::Vertex(sf::Vector2<float>(leftAir.x, leftAir.y), gateList->c),
-
-
-						sf::Vertex(sf::Vector2<float>(rightAir.x, rightAir.y), gateList->c),
-
-
-						sf::Vertex(sf::Vector2<float>(rightGround.x, rightGround.y), gateList->c)
-					};
-					minimapTex->draw(activePreview, 4, sf::Quads);
-				}
-
-				Gate *next = gateList->next;//edgeA->edge1;
-				gateList = next;
-			}
-
-
-			//CircleShape playerCircle;
-			//playerCircle.setFillColor( COLOR_TEAL );
-			//playerCircle.setRadius( 60 );//60 );
-			//playerCircle.setOrigin( playerCircle.getLocalBounds().width / 2, playerCircle.getLocalBounds().height / 2 );
-			//playerCircle.setPosition( vv.getCenter().x, vv.getCenter().y );
-
-			for (int i = 0; i < 4; ++i)
-			{
-				p = GetPlayer(0);
-				if (p != NULL)
-				{
-					if ((p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK))
-					{
-						p->rightWire->DrawMinimap(minimapTex);
-						p->leftWire->DrawMinimap(minimapTex);
-					}
-				}
-			}
-
-
-			/*queryMode = "enemyminimap";
-			enemyTree->Query( this, minimapRect );
-
-			Enemy *currEnemy = activeEnemyList;
-			int counter = 0;
-
-
-			while( currEnemy != NULL )
-			{
-				currEnemy->DrawMinimap( minimapTex );
-				currEnemy = currEnemy->next;
-			}*/
-
-
-			/*queryMode = "enemyminimap";
-			enemyTree->Query(this, minimapRect);
-
-			while (listVA != NULL)
-			{
-				TestVA *t = listVA->next;
-				listVA->next = NULL;
-				listVA = t;
-			}*/
-
-			//shouldn't this draw all enemies that are active not just the ones from the current
-			//zone?
-			for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
-			{
-				(*it)->CheckedMiniDraw(minimapTex, FloatRect(minimapRect));
-			}
-
-			//if( currentZone != NULL )
-			//{
-			//	for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
-			//	{
-			//		(*it)->DrawMinimap( minimapTex );
-			//	}
-			//}
-			//else
-			//{
-			//	//probably inefficient. only happens when there arent any gates. do a little
-			//	//collision check to make sure they're relevant before drawing
-			//	//also dont make circles every frame. just store it in the enemy
-			//	for( list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
-			//	{
-			//		(*it)->DrawMinimap( minimapTex );
-			//	}
-			//}
-
-			/*if( player->action != Actor::DEATH )
-			{
-				player->Draw( minimapTex );
-			}*/
-
-			minimapTex->display();
-			const Texture &miniTex = minimapTex->getTexture();
-			minimapShader.setUniform("u_texture", minimapTex->getTexture());
-
-			minimapSprite.setTexture(miniTex);
-
-		}
 
 		if( false )
 		{
@@ -8427,8 +8259,6 @@ int GameSession::Run()
 
 
 		preScreenTex->setView( uiView );
-
-		//shaderTester.Draw( preScreenTex );
 
 		if( raceFight != NULL )
 		{
@@ -8520,16 +8350,6 @@ int GameSession::Run()
 				}
 			}
 		}
-
-		//postProcessTex->display();
-
-		
-
-		//preScreenTex->draw( minimapSprite );
-
-		
-		//preScreenTex->draw( leftHUDBlankSprite );
-		//preScreenTex->draw( speedBarSprite, &speedBarShader );
 		
 		//if (mh->gameMode == MapHeader::MapType::T_STANDARD && showHUD)
 		if( adventureHUD != NULL && !adventureHUD->IsHidden())
@@ -8568,9 +8388,7 @@ int GameSession::Run()
 			/*momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
 			momentumBar->Draw(preScreenTex);
 
-			preScreenTex->draw(minimapSprite, &minimapShader);
-
-			preScreenTex->draw(kinMinimapIcon);
+		
 			if (powerRing != NULL)
 			{
 				powerRing->Draw(preScreenTex);
@@ -9013,7 +8831,7 @@ int GameSession::Run()
 			realPos.y = floor( realPos.y + .5f );
 
 			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			//kinMinimapIcon.setPosition( realPos );
+			
 			//mapTex->draw( kinMinimapIcon );
 
 			mapTex->setView( vv );			
@@ -9050,10 +8868,6 @@ int GameSession::Run()
 				{
 					//cout << "drawing map" << endl;
 					(*it)->DrawMinimap( mapTex );
-					/*if( (*it)->spawned && !(*it)->dead )
-					{
-
-					}*/
 				}
 			}
 
@@ -9840,25 +9654,6 @@ void GameSession::Init()
 	b_skeleton = NULL;
 
 	cutPlayerInput = false;
-
-	Vector2f miniPos = Vector2f(30, 750);
-	miniVA[0].position = miniPos + Vector2f(0, 0);
-	miniVA[1].position = miniPos + Vector2f(300, 0);
-	miniVA[2].position = miniPos + Vector2f(300, 300);
-	miniVA[3].position = miniPos + Vector2f(0, 300);
-
-	miniVA[0].texCoords = Vector2f(0, 0);
-	miniVA[1].texCoords = Vector2f(300, 0);
-	miniVA[2].texCoords = Vector2f(300, 300);
-	miniVA[3].texCoords = Vector2f(0, 300);
-
-	miniVA[0].color = Color::Red;
-	miniVA[1].color = Color::Blue;
-	miniVA[2].color = Color::Green;
-	miniVA[3].color = Color::Magenta;
-
-	miniRect.setSize(Vector2f(300, 300));
-	miniRect.setPosition(500, 500);
 
 	bigBulletVA = NULL;
 

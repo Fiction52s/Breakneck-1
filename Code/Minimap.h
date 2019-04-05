@@ -16,8 +16,6 @@ struct Minimap
 	sf::Sprite minimapSprite;
 	sf::Sprite kinMinimapIcon;
 	sf::Sprite goalMapIcon;
-	sf::Sprite kinMapSpawnIcon;
-	sf::Sprite miniCircle;
 
 	sf::RenderTexture *minimapTex;
 
@@ -25,11 +23,11 @@ struct Minimap
 
 	GameSession *owner;
 
+	void SetCenter(sf::Vector2f &center);
 	
 
 	Tileset *ts_miniIcons;
 	Tileset *ts_miniCircle;
-	Tileset *ts_minimapGateDirection;
 
 	sf::Vertex blackBorderQuadsMini[4 * 2];
 	sf::Vertex topBorderQuadMini[4];

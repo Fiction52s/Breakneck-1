@@ -22,8 +22,9 @@ Minimap::Minimap( GameSession *p_owner)
 	minimapSprite.setTexture(minimapTex->getTexture());
 	minimapSprite.setOrigin(minimapSprite.getLocalBounds().width / 2,
 		minimapSprite.getLocalBounds().height / 2);
-	minimapSprite.setPosition(Vector2f(200, owner->preScreenTex->getSize().y - 200));
+	
 	minimapSprite.setScale(1, -1);
+	
 
 
 	ts_miniIcons = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
@@ -31,12 +32,7 @@ Minimap::Minimap( GameSession *p_owner)
 	kinMinimapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
 	kinMinimapIcon.setOrigin(kinMinimapIcon.getLocalBounds().width / 2,
 		kinMinimapIcon.getLocalBounds().height / 2);
-	kinMinimapIcon.setPosition(0, 0);//minimapSprite.getPosition());
-
-	kinMapSpawnIcon.setTexture(*ts_miniIcons->texture);
-	kinMapSpawnIcon.setTextureRect(ts_miniIcons->GetSubRect(1));
-	kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
-		kinMapSpawnIcon.getLocalBounds().height / 2);
+	kinMinimapIcon.setPosition(0, 0);
 
 
 	goalMapIcon.setTexture(*ts_miniIcons->texture);
@@ -44,38 +40,17 @@ Minimap::Minimap( GameSession *p_owner)
 	goalMapIcon.setOrigin(goalMapIcon.getLocalBounds().width / 2,
 		goalMapIcon.getLocalBounds().height / 2);
 
-	ts_miniCircle = owner->GetTileset("minimap_circle_320x320.png", 320, 320);
-	miniCircle.setTexture(*ts_miniCircle->texture);
-	miniCircle.setScale(2, 2);
-	miniCircle.setOrigin(miniCircle.getLocalBounds().width / 2, miniCircle.getLocalBounds().height / 2);
+	SetCenter(Vector2f(200, owner->preScreenTex->getSize().y - 200));
+}
 
-	miniCircle.setPosition(minimapSprite.getPosition());
-
-	ts_minimapGateDirection = owner->GetTileset("minimap_gate_w02_192x64.png", 192, 64);
-	for (int i = 0; i < 6; ++i)
-	{
-		Sprite &gds = owner->gateDirections[i];
-		gds.setTexture(*ts_minimapGateDirection->texture);
-		gds.setTextureRect(ts_minimapGateDirection->GetSubRect(0));
-		gds.setOrigin(gds.getLocalBounds().width / 2, 120 + gds.getLocalBounds().height);
-		gds.setPosition(miniCircle.getPosition());
-	}
+void Minimap::SetCenter(sf::Vector2f &center)
+{
+	minimapSprite.setPosition(center);
 }
 
 void Minimap::Update()
 {
-	miniCircle.setPosition(180, owner->preScreenTex->getSize().y - 180);
-	for (int i = 0; i < 6; ++i)
-	{
-		Sprite &gds = owner->gateDirections[i];
-		gds.setPosition(miniCircle.getPosition());
-	}
 
-	/*Vector2f miniPos = Vector2f(30, 750);
-	miniVA[0].position = miniPos + Vector2f(0, 0);
-	miniVA[1].position = miniPos + Vector2f(300, 0);
-	miniVA[2].position = miniPos + Vector2f(300, 300);
-	miniVA[3].position = miniPos + Vector2f(0, 300);*/
 }
 
 void Minimap::DrawToTex()

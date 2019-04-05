@@ -437,8 +437,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	MomentumBar *momentumBar;
 
 	sf::Vertex blackBorderQuads[4 * 2];
-	//sf::Vertex blackBorderQuadsMini[4 * 2];
-	//sf::Vertex topBorderQuadMini[4];
 
 	HitboxManager *hitboxManager;
 	AbsorbParticles *absorbParticles;
@@ -819,11 +817,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	Rain *rain;
 	
-	Tileset *ts_miniCircle;
-	sf::Sprite miniCircle;
-	Tileset *ts_minimapGateDirection;
-	sf::Sprite gateDirections[6];
-	
 
 	Background *background;
 
@@ -1043,9 +1036,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void LockGate( Gate *g );
 	Gate *unlockedGateList;
 
-	sf::Sprite kinMinimapIcon;
-	sf::CircleShape kinMinimapTemp;
-	Tileset *ts_miniIcons;
 	sf::Sprite kinMapSpawnIcon;
 	Tileset *ts_mapIcons;
 	sf::Sprite goalMapIcon;
@@ -1121,11 +1111,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	sf::View uiView;
 
-	//sf::CircleShape minimapCircle;
-	sf::Texture miniMaskTex;
-	sf::Shader minimapShader;
-	sf::RectangleShape miniRect;
-	sf::VertexArray miniVA;
+	
 
 	void QueryBorderTree(sf::Rect<double>&rect);
 	void QueryGateTree(sf::Rect<double>&rect);
@@ -1137,16 +1123,17 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		sf::FloatRect &rect);
 	void DrawAllMapWires(
 		sf::RenderTarget *target);
+	void SetupMinimapBorderQuads(
+		bool *blackBorder,
+		bool topBorderOn);
+	void SetupMapBorderQuads(
+		bool *blackBorder,
+		bool &topBorderOn);
+	void SetupStormCeiling();
 
-	sf::Sprite minimapSprite;
-	//sf::VertexArray *minimapVA;
-	//sf::Vector2f minimapCenter;
 
 	sf::Texture lifeBarTex;
 	sf::Sprite lifeBarSprite;
-
-	sf::Texture miniGoalPtrTex;
-	sf::Sprite miniGoalPtrSprite;
 	//temp only^^
 
 	float *fBubbleRadiusSize;
