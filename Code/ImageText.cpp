@@ -22,6 +22,7 @@ void ImageText::SetCenter(sf::Vector2f &p_center)
 {
 	center = p_center;
 	positionCenter = true;
+	UpdateSprite();
 }
 
 void ImageText::SetTopRight(sf::Vector2f &p_topRight)

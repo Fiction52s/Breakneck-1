@@ -40,26 +40,24 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 	keyNumberNeededHUDBack = new ImageText(2, ts_keyNumLight);
 	keyNumberTotalHUD = new ImageText(2, scoreTS);
 
-	Tileset *keyBGTS = owner->GetTileset("keyframe_81x81.png", 81, 81);
-
-	keyNumberHUDBG.setTexture(*keyBGTS->texture);
-
-	SetPosition(Vector2f(226 + 10, 141 + 10));
-
-	//keyNumberNeededHUD->SetCenter(Vector2f(400, 400));
-	//keyNumberTotalHUD->SetCenter(Vector2f(600, 400));
-	
+	SetPosition(Vector2f(1920 - 100, 100));
+	//SetPosition(Vector2f(226 + 10, 141 + 10));
 }
 
 void KeyMarker::SetPosition(Vector2f &pos)
 {
-	keyNumberHUDBG.setPosition(pos);
-	neededCenter = Vector2f(1920- 100, 100 );//Vector2f(62, 33) + pos;
+	neededCenter = pos;//Vector2f(1920- 100, 100 );//Vector2f(62, 33) + pos;
 	keyNumberNeededHUD->SetCenter(neededCenter );
 	keyNumberNeededHUDBack->SetCenter(neededCenter);
-	keyRingSpr.setPosition(neededCenter);
+	//keyRingSpr.setPosition(neededCenter);
 
 	keyNumberTotalHUD->SetCenter(neededCenter + Vector2f(-60, -40));
+	
+}
+
+Vector2f KeyMarker::GetPosition()
+{
+	return neededCenter;
 }
 
 void KeyMarker::CollectKey()
@@ -149,7 +147,6 @@ void KeyMarker::Reset()
 
 void KeyMarker::Draw( sf::RenderTarget *target )
 {
-	//target->draw(keyNumberHUDBG);
 
 	if (action == VIBRATING && frame < 20 )
 	{

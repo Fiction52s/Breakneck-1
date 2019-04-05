@@ -32,6 +32,7 @@ struct KeyMarker
 	void Update();
 	void CollectKey();
 	void SetPosition(sf::Vector2f &pos);
+	sf::Vector2f GetPosition();
 
 	sf::Vector2f neededCenter;
 	//void SetEnergySprite();
@@ -41,7 +42,7 @@ struct KeyMarker
 	//sf::Sprite backSprite;
 	//sf::Sprite energySprite;
 
-	sf::Sprite keyNumberHUDBG;
+
 	sf::Sprite keyNumberSpecialSpr;
 	Tileset *ts_keyNumLight;
 	Tileset *ts_keyNumDark;

@@ -123,8 +123,8 @@ struct AdventureHUD
 	sf::Vector2f miniShowPos;
 	sf::Vector2f miniHidePos;
 
-	sf::Vector2f momentumShowPos;
-	sf::Vector2f momentumHidePos;
+	sf::Vector2f keyMarkerShowPos;
+	sf::Vector2f keyMarkerHidePos;
 
 	sf::Vector2f kinMaskShowPos;
 	sf::Vector2f kinMaskHidePos;
@@ -134,7 +134,7 @@ struct AdventureHUD
 	
 	Minimap *mini;
 	KinMask *kinMask;
-	
+	KeyMarker *keyMarker;
 
 	GameSession *owner;
 };
