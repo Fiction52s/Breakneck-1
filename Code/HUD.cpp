@@ -130,6 +130,11 @@ void RaceFightHUD::ScorePoint(RaceFightHUD::PlayerColor pc)
 AdventureHUD::AdventureHUD(GameSession *p_owner)
 	:owner(p_owner)
 {
+	mini = owner->mini;
+
+	miniShowPos = mini->minimapSprite.getPosition();
+	miniHidePos = Vector2f(-300, miniShowPos.y);
+
 	Reset();
 }
 
@@ -164,6 +169,14 @@ void AdventureHUD::Update()
 		{
 			state = SHOWN;
 			frame = 0;
+			mini->SetCenter(miniShowPos);
+		}
+		else
+		{
+			double prog = frame/(double)processFrames;
+			float a = showBez.GetValue(prog);	
+			Vector2f center = miniHidePos * (1.f - a) + a * miniShowPos;
+			mini->SetCenter(center);
 		}
 		break;
 	case EXITING:
@@ -171,6 +184,14 @@ void AdventureHUD::Update()
 		{
 			state = HIDDEN;
 			frame = 0;
+			mini->SetCenter(miniHidePos);
+		}
+		else
+		{
+			double prog = frame / (double)processFrames;
+			float a = showBez.GetValue(prog);
+			Vector2f center = miniShowPos * (1.f - a) + a * miniHidePos;
+			mini->SetCenter(center);
 		}
 		break;
 	case HIDDEN:
@@ -187,6 +208,8 @@ void AdventureHUD::Reset()
 	show = true;
 	state = SHOWN;
 	frame = 0;
+
+	mini->SetCenter(miniShowPos);
 }
 
 void AdventureHUD::Draw(RenderTarget *target)

@@ -3164,12 +3164,6 @@ bool GameSession::OpenFile( string fileName )
 		}
 
 		
-
-		//cout << "-------------" << endl;
-		//pauseMenu = new PauseMenu( this );
-		//pauseMenu->SetTab( PauseMenu::Tab::KIN );
-		//cout << "after-------------" << endl;
-		
 		points = new Vector2<double>[mh->numVertices];
 		
 		int numDecorImages;
@@ -3925,7 +3919,6 @@ bool GameSession::OpenFile( string fileName )
 			++polyCounter;
 		}
 		
-		
 
 		LoadMovingPlats( is, polyIndex );
 
@@ -3939,102 +3932,9 @@ bool GameSession::OpenFile( string fileName )
 
 		is.close();
 
-
-
-		
-	
-		
 		bool blackBorder[2];
 		bool topBorderOn = false;
-		//loading done. now setup
-
-		//bool topBorderOn = false;
-
-		//double extraBorder = 100;
-		//
-		//if (inversePoly != NULL)
-		//{
-		//	int trueTop = mh->topBounds;
-		//	int possibleTop = inversePoly->aabb.top; //- extraBorder;
-		//	if (possibleTop > trueTop)
-		//		trueTop = possibleTop;
-		//	else
-		//	{
-		//		topBorderOn = true;
-		//	}
-		//	mh->topBounds = trueTop - extraBorder/2;
-		//	int inversePolyBottom = inversePoly->aabb.top + inversePoly->aabb.height;
-		//	mh->boundsHeight = (inversePolyBottom + extraBorder) - trueTop;
-		//}
-
-		//bool blackBorder[2];
-		//int inversePolyRight = (inversePoly->aabb.left + inversePoly->aabb.width);
-		//blackBorder[0]= inversePoly->aabb.left < mh->leftBounds; //inverse is further left than border
-		//blackBorder[1] = inversePolyRight > (mh->leftBounds + mh->boundsWidth); //inverse is further right than border
-
-		//int leftB = mh->leftBounds;
-		//int rightB = mh->leftBounds + mh->boundsWidth;
-		//if (!blackBorder[0])
-		//{
-		//	mh->leftBounds = inversePoly->aabb.left - extraBorder;
-		//	mh->boundsWidth = rightB - mh->leftBounds;
-		//}
-		//if (!blackBorder[1])
-		//{
-		//	mh->boundsWidth = (inversePolyRight + extraBorder) - mh->leftBounds;
-		//}
-		//else
-		//{
-		//	cout << "creating black border at " << (mh->leftBounds + mh->boundsWidth) << endl;
-		//}
-
-		//SetGlobalBorders();
-
-		//for (int i = 0; i < 8; ++i)
-		//{
-		//	//blackBorderQuads[i].color = Color::Black;
-		//	blackBorderQuads[i].position.y = mh->topBounds;
-		//}
-
-		//int quadWidth = 200;
-		//blackBorderQuads[0].position.x = mh->leftBounds;
-		//blackBorderQuads[3].position.x = mh->leftBounds;
-
-		//blackBorderQuads[1].position.x = mh->leftBounds + quadWidth;
-		//blackBorderQuads[2].position.x = mh->leftBounds + quadWidth;
-
-		//blackBorderQuads[5].position.x = mh->leftBounds + mh->boundsWidth;
-		//blackBorderQuads[6].position.x = mh->leftBounds + mh->boundsWidth;
-
-		//blackBorderQuads[4].position.x = blackBorderQuads[5].position.x - quadWidth;
-		//blackBorderQuads[7].position.x = blackBorderQuads[5].position.x - quadWidth;
-
-		//blackBorderQuads[2].position.y += mh->boundsHeight;
-		//blackBorderQuads[3].position.y += mh->boundsHeight;
-		//blackBorderQuads[6].position.y += mh->boundsHeight;
-		//blackBorderQuads[7].position.y += mh->boundsHeight;
-
-		//if (blackBorder[0])
-		//{
-		//	//SetRectColor(blackBorderQuads, Color(100, 100, 100));
-		//	SetRectColor(blackBorderQuads, Color(Color::Black));
-		//	blackBorderQuads[1].color.a = 0;
-		//	blackBorderQuads[2].color.a = 0;
-		//}
-		//else
-		//{
-		//	SetRectColor(blackBorderQuads, Color(Color::Transparent));
-		//}
-		//if (blackBorder[1])
-		//{
-		//	SetRectColor(blackBorderQuads + 4, Color(Color::Black));
-		//	blackBorderQuads[4].color.a = 0;
-		//	blackBorderQuads[7].color.a = 0;
-		//}
-		//else
-		//{
-		//	SetRectColor(blackBorderQuads + 4, Color(Color::Transparent));
-		//}
+		
 		SetupStormCeiling();
 		SetupMapBorderQuads(blackBorder, topBorderOn);
 		SetupMinimapBorderQuads(blackBorder, topBorderOn);
@@ -4044,60 +3944,8 @@ bool GameSession::OpenFile( string fileName )
 			topClouds = new TopClouds(this);
 		}
 
-		/*if (poiMap.count("stormceiling") > 0)
-		{
-			stormCeilingOn = true;
-			stormCeilingHeight = poiMap["stormceiling"]->pos.y;
-
-			int oldBottom = mh->topBounds + mh->boundsHeight - extraBorder;
-			mh->topBounds = stormCeilingHeight;
-			mh->boundsHeight = oldBottom - stormCeilingHeight;
-			assert(mh->boundsHeight > 0);
-
-			Vertex *topBorderQuadMini = mini->topBorderQuadMini;
-
-			SetRectColor(topBorderQuadMini, miniTopBorderColor);
-
-			topBorderQuadMini[0].position.x = blackMiniLeft;
-			topBorderQuadMini[1].position.x = blackMiniRight;
-			topBorderQuadMini[2].position.x = blackMiniRight;
-			topBorderQuadMini[3].position.x = blackMiniLeft;
-
-			topBorderQuadMini[0].position.y = blackMiniTop;
-			topBorderQuadMini[1].position.y = blackMiniTop;
-			topBorderQuadMini[2].position.y = mh->topBounds;
-			topBorderQuadMini[3].position.y = mh->topBounds;
-
-		}*/
-
-
 		CreateZones();
 		SetupZones();
-
-		//if( b_crawler != NULL )
-		//{
-		////	b_crawler->Init();
-		//}
-
-		//if( b_bird != NULL )
-		//{
-		//	b_bird->Init();
-		//}
-
-		//if( b_tiger != NULL )
-		//{
-		//	b_tiger->Init();
-		//}
-
-		//if( b_gator != NULL )
-		//{
-		//	b_gator->Init();
-		//}
-
-		//if( b_skeleton != NULL )
-		//{
-		//	b_skeleton->Init();
-		//}
 
 		for( int i = 0; i < numGates; ++i )
 		{
@@ -4145,11 +3993,6 @@ bool GameSession::OpenFile( string fileName )
 			//player->action = Actor::Action::Se;
 			//player->frame = 1;
 		}
-
-		
-
-
-		//cout << "end of this" << endl;
 
 		return true;
 	}

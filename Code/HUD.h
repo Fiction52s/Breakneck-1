@@ -54,6 +54,7 @@ struct RaceFightHUD
 
 
 
+struct Minimap;
 
 struct AdventureHUD
 {
@@ -77,6 +78,13 @@ struct AdventureHUD
 	bool show;
 	int frame;
 	State state;
+
+	sf::Vector2f miniShowPos;
+	sf::Vector2f miniHidePos;
+	CubicBezier showBez;
+	CubicBezier hideBez;
+	
+	Minimap *mini;
 
 	GameSession *owner;
 };
