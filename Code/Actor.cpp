@@ -26,6 +26,7 @@
 #include "Enemy_Spring.h"
 #include "AirTrigger.h"
 #include "Nexus.h"
+#include "HUD.h"
 
 using namespace sf;
 using namespace std;
@@ -2373,6 +2374,7 @@ void Actor::UpdatePrePhysics()
 	{ 
 		if (ground != NULL)
 		{
+			owner->adventureHUD->Hide(60);
 			SetAction(AUTORUN);
 			frame = 0;
 			maxAutoRunSpeed = 25;
@@ -18982,6 +18984,15 @@ void Actor::Draw( sf::RenderTarget *target )
 	testBuffer->UpdateVertices();
 
 	//testBuffer->Draw(target);
+}
+
+void Actor::DrawMapWires(sf::RenderTarget *target)
+{
+	if ((action != Actor::GRINDBALL && action != Actor::GRINDATTACK))
+	{
+		rightWire->DrawMinimap(target);
+		leftWire->DrawMinimap(target);
+	}
 }
 
 void Actor::GrabShipWire()

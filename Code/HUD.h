@@ -52,4 +52,33 @@ struct RaceFightHUD
 	GameSession::RaceFight *raceFight;
 };
 
+
+
+
+struct AdventureHUD
+{
+	enum State
+	{
+		SHOWN,
+		ENTERING,
+		EXITING,
+		HIDDEN
+	};
+
+	AdventureHUD(GameSession *owner);
+	void Hide(int frames);
+	void Show(int frames);
+	void Draw(sf::RenderTarget *target);
+	void Update();
+	void Reset();
+	bool IsHidden();
+
+	int processFrames;
+	bool show;
+	int frame;
+	State state;
+
+	GameSession *owner;
+};
+
 #endif

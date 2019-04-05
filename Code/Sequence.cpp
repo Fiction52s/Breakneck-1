@@ -54,7 +54,7 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	//shipSprite.setOrigin(960 / 2, 700);
 	shipSprite.setOrigin(421, 425);
 
-	assert(mov.openFromFile("Resources/Movie/nexus_core.mp4"));
+	assert(mov.openFromFile("Resources/Movie/kin_ship.mp4"));
 	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 	stateLength[SHIP_SWOOP]= 1000000;

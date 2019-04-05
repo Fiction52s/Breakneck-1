@@ -26,6 +26,7 @@
 #include "Movement.h"
 #include "ScoreDisplay.h"
 #include "Enemy_CrawlerQueen.h"
+#include "HUD.h"
 
 using namespace sf;
 using namespace std;
@@ -177,6 +178,7 @@ bool CrawlerAttackSeq::Update()
 		{
 			player->SetAction(Actor::STAND);
 			player->frame = 0;
+			owner->adventureHUD->Show(60);
 			return false;
 		}
 		else

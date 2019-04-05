@@ -23,6 +23,7 @@
 #include "SaveFile.h"
 #include "MainMenu.h"
 #include "GoalExplosion.h"
+#include "Minimap.h"
 #include "PauseMenu.h"
 #include "Parallax.h"
 #include <boost/thread.hpp>
@@ -380,6 +381,16 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 void GameSession::Cleanup()
 {
 	TerrainRender::CleanupLayers();
+
+	if (mini != NULL)
+	{
+		delete mini;
+	}
+
+	if (adventureHUD != NULL)
+	{
+		delete adventureHUD;
+	}
 
 	if (eHitParamsMan != NULL)
 	{
@@ -4031,6 +4042,9 @@ bool GameSession::OpenFile( string fileName )
 		int blackMiniLeft = mh->leftBounds - miniQuadWidth;
 		int rightBounds = mh->leftBounds + mh->boundsWidth;
 		int blackMiniRight = rightBounds + miniQuadWidth;
+
+		sf::Vertex *blackBorderQuadsMini = mini->blackBorderQuadsMini;
+
 		blackBorderQuadsMini[1].position.x = mh->leftBounds;
 		blackBorderQuadsMini[2].position.x = mh->leftBounds;
 		blackBorderQuadsMini[0].position.x = mh->leftBounds - miniQuadWidth;
@@ -4066,6 +4080,8 @@ bool GameSession::OpenFile( string fileName )
 
 		if (topBorderOn)
 		{
+			Vertex *topBorderQuadMini = mini->topBorderQuadMini;
+
 			SetRectColor(topBorderQuadMini, Color(0x10, 0x40, 0xff));
 
 			topBorderQuadMini[0].position.x = blackMiniLeft;
@@ -4090,6 +4106,8 @@ bool GameSession::OpenFile( string fileName )
 			mh->topBounds = stormCeilingHeight;
 			mh->boundsHeight = oldBottom - stormCeilingHeight;
 			assert(mh->boundsHeight > 0);
+
+			Vertex *topBorderQuadMini = mini->topBorderQuadMini;
 
 			SetRectColor(topBorderQuadMini, miniTopBorderColor);
 
@@ -5346,10 +5364,11 @@ bool GameSession::Load()
 
 	
 
+
 	//return true;
 	
 	//inputVis = new InputVisualizer;
-
+	mini = new Minimap(this);
 	
 
 	eHitParamsMan = new EnemyParamsManager;
@@ -5555,7 +5574,7 @@ bool GameSession::Load()
 	kinMinimapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
 	kinMinimapIcon.setOrigin(kinMinimapIcon.getLocalBounds().width / 2,
 		kinMinimapIcon.getLocalBounds().height / 2);
-	kinMinimapIcon.setPosition(minimapSprite.getPosition());//180, preScreenTex->getSize().y - 180 );
+	kinMinimapIcon.setPosition(minimapSprite.getPosition());
 
 
 	kinMapSpawnIcon.setTexture(*ts_miniIcons->texture);
@@ -5798,6 +5817,8 @@ bool GameSession::Load()
 	if( mh->gameMode == MapHeader::MapType::T_STANDARD )
 	{ 
 		recGhost = new RecordGhost(GetPlayer(0));
+
+		adventureHUD = new AdventureHUD(this);
 	}
 	
 	pauseMenu = mainMenu->pauseMenu;
@@ -6045,7 +6066,7 @@ int GameSession::Run()
 	fadeAlpha = 0;
 	fadingIn = false;
 	fadingOut = false;
-	showHUD = true;
+	//showHUD = true;
 
 	preScreenTex->setView(view);
 	
@@ -6956,6 +6977,11 @@ int GameSession::Run()
 
 				keyMarker->Update();
 
+				mini->Update();
+
+				if( adventureHUD != NULL )
+					adventureHUD->Update();
+
 				scoreDisplay->Update();
 
 				soundNodeList->Update();
@@ -6985,13 +7011,6 @@ int GameSession::Run()
 				miniVA[1].position = miniPos + Vector2f( 300, 0 );
 				miniVA[2].position = miniPos + Vector2f( 300, 300 );
 				miniVA[3].position = miniPos + Vector2f( 0, 300 );
-				//kinMinimapIcon.setPosition
-
-				
-
-				//rainView.setCenter(
-
-				
 
 				oldZoom = cam.GetZoom();
 				oldCamBotLeft = view.getCenter();
@@ -8159,7 +8178,11 @@ int GameSession::Run()
 		//coll.DebugDraw( preScreenTex );
 
 		//double minimapZoom = 8;// * cam.GetZoom();// + cam.GetZoom();
-		if (showHUD)
+
+
+		
+		if (false )//adventureHUD != NULL && adventureHUD->state != AdventureHUD::HIDDEN) 
+			
 		{
 			double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
 
@@ -8209,8 +8232,8 @@ int GameSession::Run()
 				listVAIter = listVAIter->next;
 			}
 
-			minimapTex->draw(blackBorderQuadsMini, 8, sf::Quads);
-			minimapTex->draw(topBorderQuadMini, 4, sf::Quads);
+			//minimapTex->draw(blackBorderQuadsMini, 8, sf::Quads);
+			//minimapTex->draw(topBorderQuadMini, 4, sf::Quads);
 
 
 			//minimapTex->draw(topBorderQuad, 4, sf::Quads);
@@ -8508,7 +8531,8 @@ int GameSession::Run()
 		//preScreenTex->draw( leftHUDBlankSprite );
 		//preScreenTex->draw( speedBarSprite, &speedBarShader );
 		
-		if (mh->gameMode == MapHeader::MapType::T_STANDARD && showHUD)
+		//if (mh->gameMode == MapHeader::MapType::T_STANDARD && showHUD)
+		if( adventureHUD != NULL && !adventureHUD->IsHidden())
 		{
 			/*if (p0->speedLevel == 0)
 			{
@@ -8537,33 +8561,13 @@ int GameSession::Run()
 			}
 			preScreenTex->draw(p0->kinFace);
 		}
-
-		if (showHUD)
+	
+		if (adventureHUD != NULL && !adventureHUD->IsHidden())
 		{
-
-			momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
+			adventureHUD->Draw(preScreenTex);
+			/*momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
 			momentumBar->Draw(preScreenTex);
-		}
-		
-		
-		/*sf::Sprite testNumbers;
-		testNumbers.setTexture(*(GetTileset("keynum_95x100.png", 95, 100)->texture));
-		testNumbers.setOrigin(testNumbers.getLocalBounds().width, 0);
-		testNumbers.setPosition(1920, 0);
-		preScreenTex->draw(testNumbers);*/
 
-		//else 
-
-		/*sf::Vertex blah[] = 
-		{ 
-			Vertex(  ),
-			Vertex( Vector2f( 300, 0 )),
-			Vertex( Vector2f( 300, 300 )),
-			Vertex( Vector2f( 0, 300 ) )
-		};*/
-		//VertexArray va( sf::Quads, 4 );
-		if (showHUD)
-		{
 			preScreenTex->draw(minimapSprite, &minimapShader);
 
 			preScreenTex->draw(kinMinimapIcon);
@@ -8572,9 +8576,10 @@ int GameSession::Run()
 				powerRing->Draw(preScreenTex);
 				despOrb->Draw(preScreenTex);
 			}
-			keyMarker->Draw(preScreenTex);
-			scoreDisplay->Draw(preScreenTex);
+			keyMarker->Draw(preScreenTex);*/
 		}
+
+		scoreDisplay->Draw(preScreenTex);
 
 		if( showFrameRate )
 		{
@@ -9708,10 +9713,14 @@ void GameSession::Init()
 {
 	LoadDecorImages();
 
+	mini = NULL;
+
 	stormCeilingOn = false;
 	stormCeilingHeight = 0;
 
 	inputVis = NULL;
+
+	adventureHUD = NULL;
 
 	mh = NULL;
 	goalPulse = NULL;
@@ -10356,6 +10365,67 @@ void GameSession::KillAllEnemies()
 	}
 }
 
+void GameSession::QueryBorderTree(sf::Rect<double> &rect)
+{
+	queryMode = "border";
+	numBorders = 0;
+
+	borderTree->Query(this, rect);
+}
+
+void GameSession::QueryGateTree(sf::Rect<double>&rect)
+{
+	testGateCount = 0;
+	queryMode = "gate";
+	gateList = NULL;
+	gateTree->Query(this, rect);
+}
+
+void GameSession::DrawColoredMapTerrain(sf::RenderTarget *target, sf::Color &c)
+{
+	//must be already filled from a query
+	TestVA * listVAIter = listVA;
+	while (listVAIter != NULL)
+	{
+		if (listVAIter->visible)
+		{
+			int vertexCount = listVAIter->terrainVA->getVertexCount();
+			for (int i = 0; i < vertexCount; ++i)
+			{
+				(*listVAIter->terrainVA)[i].color = c;
+			}
+			target->draw(*listVAIter->terrainVA);
+			for (int i = 0; i < vertexCount; ++i)
+			{
+				(*listVAIter->terrainVA)[i].color = Color::White;
+			}
+		}
+		listVAIter = listVAIter->next;
+	}
+}
+
+void GameSession::EnemiesCheckedMiniDraw( RenderTarget *target,
+	sf::FloatRect &rect)
+{
+	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->CheckedMiniDraw(target, rect);
+	}
+}
+
+void GameSession::DrawAllMapWires(
+	sf::RenderTarget *target)
+{
+	Actor *p;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DrawMapWires(target);
+		}
+	}
+}
 
 void GameSession::TestVA::UpdateBushFrame()
 {
@@ -10723,6 +10793,11 @@ void GameSession::RestartLevel()
 	fadingOut = false;
 	numKeysCollected = 0;
 
+	if (adventureHUD != NULL)
+	{
+		adventureHUD->Reset();
+	}
+
 	//crawlerFightSeq->Reset();
 	//crawlerAfterFightSeq->Reset();
 	//enterNexus1Seq->Reset();
@@ -10790,7 +10865,6 @@ void GameSession::RestartLevel()
 	
 	fadeLength = 0;
 	fadeAlpha = 0;
-	showHUD = true;
 	fadingIn = false;
 	fadingOut = false;
 

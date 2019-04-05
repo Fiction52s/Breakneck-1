@@ -547,6 +547,7 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> UpdateReversePhysics();
 	void Draw( sf::RenderTarget *target );
 	void DebugDraw( sf::RenderTarget *target );
+	void DrawMapWires(sf::RenderTarget *target);
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateHitboxes();
 	void AirMovement();

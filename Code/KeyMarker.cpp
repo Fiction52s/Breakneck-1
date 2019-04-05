@@ -45,6 +45,7 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 	keyNumberHUDBG.setTexture(*keyBGTS->texture);
 
 	SetPosition(Vector2f(226 + 10, 141 + 10));
+
 	//keyNumberNeededHUD->SetCenter(Vector2f(400, 400));
 	//keyNumberTotalHUD->SetCenter(Vector2f(600, 400));
 	

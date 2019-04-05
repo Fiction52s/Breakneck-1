@@ -22,6 +22,7 @@
 #include "Actor.h"
 #include "EffectLayer.h"
 
+struct Minimap;
 struct ScreenRecorder;
 struct TopClouds;
 struct TerrainRender;
@@ -42,6 +43,8 @@ struct TimerText;
 struct AbsorbParticles;
 struct KinSkin;
 struct Tileset;
+
+struct AdventureHUD;
 
 struct Barrier;
 struct PoiInfo
@@ -343,6 +346,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int numVertices;
 	};
 
+	Minimap *mini;
 	void DrawStoryLayer(EffectLayer ef);
 	SoundNode *ActivateSound( V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
 	std::map<std::string, Tileset*> decorTSMap;
@@ -433,8 +437,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	MomentumBar *momentumBar;
 
 	sf::Vertex blackBorderQuads[4 * 2];
-	sf::Vertex blackBorderQuadsMini[4 * 2];
-	sf::Vertex topBorderQuadMini[4];
+	//sf::Vertex blackBorderQuadsMini[4 * 2];
+	//sf::Vertex topBorderQuadMini[4];
 
 	HitboxManager *hitboxManager;
 	AbsorbParticles *absorbParticles;
@@ -488,7 +492,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool showDebugDraw;
 	bool showTerrainDecor;
 	
-	bool showHUD;
+	AdventureHUD *adventureHUD;
 	void ResetShipSequence(); 
 	Tileset *ts_w1ShipClouds0;
 	Tileset *ts_w1ShipClouds1;
@@ -1122,6 +1126,17 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Shader minimapShader;
 	sf::RectangleShape miniRect;
 	sf::VertexArray miniVA;
+
+	void QueryBorderTree(sf::Rect<double>&rect);
+	void QueryGateTree(sf::Rect<double>&rect);
+	void DrawColoredMapTerrain(
+		sf::RenderTarget *target,
+		sf::Color &c);
+	void EnemiesCheckedMiniDraw(
+		sf::RenderTarget *target,
+		sf::FloatRect &rect);
+	void DrawAllMapWires(
+		sf::RenderTarget *target);
 
 	sf::Sprite minimapSprite;
 	//sf::VertexArray *minimapVA;

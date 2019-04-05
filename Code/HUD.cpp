@@ -1,5 +1,9 @@
 #include "HUD.h"
 #include "GameSession.h"
+#include "PowerOrbs.h"
+#include "Keymarker.h"
+#include "Minimap.h"
+
 
 using namespace sf;
 using namespace std;
@@ -121,4 +125,88 @@ void RaceFightHUD::ScorePoint(RaceFightHUD::PlayerColor pc)
 		break;
 	}
 
+}
+
+AdventureHUD::AdventureHUD(GameSession *p_owner)
+	:owner(p_owner)
+{
+	Reset();
+}
+
+void AdventureHUD::Hide(int frames)
+{
+	processFrames = frames;
+	state = EXITING;
+	frame = 0;
+}
+
+void AdventureHUD::Show(int frames)
+{
+	processFrames = frames;
+	state = ENTERING;
+	frame = 0;
+}
+
+bool AdventureHUD::IsHidden()
+{
+	return state == HIDDEN;
+}
+
+void AdventureHUD::Update()
+{
+	switch (state)
+	{
+	case SHOWN:
+		frame = 0;
+		break;
+	case ENTERING:
+		if (frame == processFrames)
+		{
+			state = SHOWN;
+			frame = 0;
+		}
+		break;
+	case EXITING:
+		if (frame == processFrames)
+		{
+			state = HIDDEN;
+			frame = 0;
+		}
+		break;
+	case HIDDEN:
+		frame = 0;
+		break;
+	}
+
+	++frame;
+}
+
+
+void AdventureHUD::Reset()
+{
+	show = true;
+	state = SHOWN;
+	frame = 0;
+}
+
+void AdventureHUD::Draw(RenderTarget *target)
+{
+	if (state != HIDDEN)
+	{
+		Actor *p0 = owner->GetPlayer(0);
+		owner->momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
+		owner->momentumBar->Draw(target);
+
+		owner->mini->Draw(target);
+		//target->draw(owner->minimapSprite, &owner->minimapShader);
+
+		//target->draw(owner->kinMinimapIcon);
+		if (owner->powerRing != NULL)
+		{
+			owner->powerRing->Draw(target);
+			owner->despOrb->Draw(target);
+		}
+		owner->keyMarker->Draw(target);
+		
+	}
 }
