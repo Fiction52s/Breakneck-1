@@ -169,10 +169,14 @@ struct SoundNode;
 
 struct GroundTrigger;
 
+struct KinMask;
+
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
 	//EffectPool *testPool;
+	KinMask *kinMask;
+
 	EffectPool *smallLightningPool[7];
 	EffectPool *risingAuraPool;
 	MotionGhostEffect *motionGhostsEffects[3];

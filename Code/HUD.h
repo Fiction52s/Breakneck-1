@@ -55,6 +55,41 @@ struct RaceFightHUD
 
 
 struct Minimap;
+struct Actor;
+
+struct KinMask
+{
+	enum Expr
+	{
+		Expr_NEUTRAL,
+		Expr_HURT,
+		Expr_SPEED1,
+		Expr_SPEED2,
+		Expr_DESP,
+		Expr_DEATH,
+		Expr_DEATHYELL,
+		Expr_NONE
+	};
+
+	KinMask( GameSession *owner);
+	void Update( int speedLevel,
+		bool desp );
+	void Draw(sf::RenderTarget *target,
+		Actor *p );
+	void SetTopLeft(sf::Vector2f &pos);
+	sf::Vector2f GetTopLeft();
+
+	void Reset();
+
+	void SetExpr(Expr ex);
+	int frame;
+	Expr expr;
+
+	Tileset *ts_face;
+	sf::Sprite face;
+	sf::Sprite faceBG;
+	GameSession *owner;
+};
 
 struct AdventureHUD
 {
@@ -81,10 +116,15 @@ struct AdventureHUD
 
 	sf::Vector2f miniShowPos;
 	sf::Vector2f miniHidePos;
+
+	sf::Vector2f momentumShowPos;
+	sf::Vector2f momentumHidePos;
+
 	CubicBezier showBez;
 	CubicBezier hideBez;
 	
 	Minimap *mini;
+	MomentumBar *momentumBar;
 
 	GameSession *owner;
 };

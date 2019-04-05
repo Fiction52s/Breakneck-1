@@ -223,6 +223,7 @@ struct MomentumBar
 	sf::Sprite purp;
 	sf::Sprite container;
 	sf::Sprite levelNumSpr;
+	sf::Vector2f GetTopLeft();
 	void SetTopLeft(sf::Vector2f &pos);
 	int level;
 	float part;

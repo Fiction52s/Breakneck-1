@@ -8197,23 +8197,7 @@ int GameSession::Run()
 		//if (mh->gameMode == MapHeader::MapType::T_STANDARD && showHUD)
 		if( adventureHUD != NULL && !adventureHUD->IsHidden())
 		{
-			/*if (p0->speedLevel == 0)
-			{
-				preScreenTex->draw(p0->kinUnderOutline);
-				preScreenTex->draw(p0->kinTealOutline, &speedBarShader);
-			}
-			else if (p0->speedLevel == 1)
-			{
-				preScreenTex->draw(p0->kinTealOutline);
-				preScreenTex->draw(p0->kinBlueOutline, &speedBarShader);
-			}
-			else if (p0->speedLevel == 2)
-			{
-				preScreenTex->draw(p0->kinBlueOutline);
-				preScreenTex->draw(p0->kinPurpleOutline, &speedBarShader);
-			}*/
-
-
+			
 			if (p0->desperationMode)
 			{
 				preScreenTex->draw(p0->kinFaceBG, &(p0->despFaceShader));
@@ -15466,6 +15450,11 @@ void MomentumBar::SetTopLeft(sf::Vector2f &pos)
 	purp.setPosition(pos + extra);
 	container.setPosition(pos);
 	levelNumSpr.setPosition(pos + Vector2f(76, -50));
+}
+
+Vector2f MomentumBar::GetTopLeft()
+{
+	return container.getPosition();
 }
 
 void MomentumBar::SetMomentumInfo(int p_level, float p_part)

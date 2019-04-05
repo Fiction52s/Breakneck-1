@@ -131,9 +131,12 @@ AdventureHUD::AdventureHUD(GameSession *p_owner)
 	:owner(p_owner)
 {
 	mini = owner->mini;
-
+	momentumBar = owner->momentumBar;
 	miniShowPos = mini->minimapSprite.getPosition();
 	miniHidePos = Vector2f(-300, miniShowPos.y);
+
+	momentumShowPos = momentumBar->GetTopLeft();
+	momentumHidePos = Vector2f(-200, momentumShowPos.y);
 
 	Reset();
 }
@@ -170,6 +173,7 @@ void AdventureHUD::Update()
 			state = SHOWN;
 			frame = 0;
 			mini->SetCenter(miniShowPos);
+			momentumBar->SetTopLeft(momentumShowPos);
 		}
 		else
 		{
@@ -177,6 +181,8 @@ void AdventureHUD::Update()
 			float a = showBez.GetValue(prog);	
 			Vector2f center = miniHidePos * (1.f - a) + a * miniShowPos;
 			mini->SetCenter(center);
+			Vector2f topLeft = momentumHidePos * (1.f - a) + a * momentumShowPos;
+			momentumBar->SetTopLeft(topLeft);
 		}
 		break;
 	case EXITING:
@@ -192,6 +198,8 @@ void AdventureHUD::Update()
 			float a = showBez.GetValue(prog);
 			Vector2f center = miniShowPos * (1.f - a) + a * miniHidePos;
 			mini->SetCenter(center);
+			Vector2f topLeft = momentumShowPos * (1.f - a) + a * momentumHidePos;
+			momentumBar->SetTopLeft(topLeft);
 		}
 		break;
 	case HIDDEN:
@@ -210,6 +218,7 @@ void AdventureHUD::Reset()
 	frame = 0;
 
 	mini->SetCenter(miniShowPos);
+	momentumBar->SetTopLeft(momentumShowPos);
 }
 
 void AdventureHUD::Draw(RenderTarget *target)
@@ -232,4 +241,128 @@ void AdventureHUD::Draw(RenderTarget *target)
 		owner->keyMarker->Draw(target);
 		
 	}
+}
+
+KinMask::KinMask( GameSession *p_owner )
+{
+	owner = p_owner;
+
+	ts_face = owner->GetTileset("kinportrait_320x288.png", 320, 288);
+	face.setTexture(*ts_face->texture);
+	face.setTextureRect(ts_face->GetSubRect(0));
+
+	faceBG.setTexture(*ts_face->texture);
+	faceBG.setTextureRect(ts_face->GetSubRect(0));
+}
+
+void KinMask::Reset()
+{
+	SetExpr(Expr_NEUTRAL);
+	Update(0,false);
+	frame = 0;
+
+	faceBG.setTextureRect(ts_face->GetSubRect(0));
+	
+}
+
+void KinMask::Draw(RenderTarget *target, Actor *p)
+{
+	if (p->desperationMode )
+	{
+		target->draw(faceBG, &(p->despFaceShader));
+	}
+	else
+	{
+		target->draw(faceBG);
+	}
+	target->draw(face);
+}
+
+void KinMask::SetExpr(KinMask::Expr ex)
+{
+	frame = 0;
+	expr = ex;
+}
+
+void KinMask::Update( int speedLevel, bool desp )
+{
+	if (expr == Expr_DEATH )
+	{
+		int faceDeathAnimLength = 11;
+		int an = 6;
+		int f = frame / an;
+		
+		face.setTextureRect(ts_face->GetSubRect(11 + f));
+		
+		++frame;
+	}
+	else if (expr == Expr_DEATHYELL)
+	{
+		faceBG.setTextureRect(ts_face->GetSubRect(5));
+		face.setTextureRect(ts_face->GetSubRect(11));
+	}
+	else
+	{ 
+		if (expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2)
+		{
+			switch (speedLevel)
+			{
+			case 0:
+				expr = Expr_NEUTRAL;
+				break;
+			case 1:
+				expr = Expr_SPEED1;
+				break;
+			case 2:
+				expr = Expr_SPEED2;
+				break;
+			}
+
+			if (desp)
+			{
+				expr = Expr_DESP;
+			}
+		}
+
+		face.setTextureRect(ts_face->GetSubRect(expr + 6));
+		faceBG.setTextureRect(ts_face->GetSubRect(expr));
+	}
+	/*switch (expr)
+	{
+	case Expr_NEUTRAL:
+		frame = 0;
+		face.setTextureRect(ts_face->GetSubRect(expr + 6));
+		break;
+	Expr_HURT:
+		frame = 0;
+		break;
+	Expr_SPEED1:
+		frame = 0;
+		break;
+	Expr_SPEED2:
+		frame = 0;
+		break;
+	Expr_DESP:
+		frame = 0;
+		break;
+	Expr_DEATH:
+		
+		break;
+	Expr_NONE:
+		frame = 0;
+		break;
+	}*/
+
+	++frame;
+}
+
+void KinMask::SetTopLeft(sf::Vector2f &pos)
+{
+	face.setPosition(pos);
+	faceBG.setPosition(pos);
+}
+
+sf::Vector2f KinMask::GetTopLeft()
+{
+	return face.getPosition();
 }

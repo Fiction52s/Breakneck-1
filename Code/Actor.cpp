@@ -44,7 +44,7 @@ using namespace std;
 
 void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 {
-	ts_kinFace = owner->GetTileset("kinportrait_320x288.png", 320, 288, skin);
+	//ts_kinFace = owner->GetTileset("kinportrait_320x288.png", 320, 288, skin);
 	ts_fx_rune0 = owner->GetTileset("fx_health_rune_64x64.png", 64, 64, skin);
 	ts_fx_rune1 = owner->GetTileset("fx_health_rune_128x128.png", 128, 128, skin);
 	ts_fx_rune2 = owner->GetTileset("fx_health_rune_256x256.png", 256, 256, skin);
@@ -328,6 +328,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
 		gateBlackFXPool->ts = owner->GetTileset("FX/keydrain_160x160.png", 160, 160);
 
+		kinMask = new KinMask(owner);
+
 		//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
 		//risingAuraPool->ts = owner->GetTileset("rising_8x8.png", 8, 8);
 
@@ -442,35 +444,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		speedLevel = 0;
 		currentSpeedBar = 0;
 
-		Vector2f facePos( 0, 0 );
+		//Vector2f facePos( 0, 0 );
 		
-		kinFace.setTexture( *ts_kinFace->texture );
-		kinFace.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
+		//kinMask->SetTopLeft(Vector2f(0, 0));
+		//kinFace.setPosition( facePos );
+		//kinFaceBG.setPosition(facePos);
 
-		kinFaceBG.setTexture(*ts_kinFace->texture);
-		kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
-
-		kinUnderOutline.setTexture( *ts_kinFace->texture );
-		kinUnderOutline.setTextureRect( ts_kinFace->GetSubRect( 0 ) );
-		kinUnderOutline.setPosition( facePos );
-
-		kinTealOutline.setTexture( *ts_kinFace->texture );
-		kinTealOutline.setTextureRect( ts_kinFace->GetSubRect( 1 ) );
-		kinTealOutline.setPosition( facePos );
-
-		kinBlueOutline.setTexture( *ts_kinFace->texture );
-		kinBlueOutline.setTextureRect( ts_kinFace->GetSubRect( 2 ) );
-		kinBlueOutline.setPosition( facePos );
-
-		kinPurpleOutline.setTexture( *ts_kinFace->texture );
-		kinPurpleOutline.setPosition( facePos );
-		kinPurpleOutline.setTextureRect( ts_kinFace->GetSubRect( 3 ) );
-		//kinFace.setPosition( 2, 48 );
-		//kinFace.setPosition( 1920 / 2 - 512, 0 );
-		kinFace.setPosition( facePos );
-		kinFaceBG.setPosition(facePos);
-
-		SetExpr( Expr::Expr_NEUTRAL );
+		//SetExpr( Expr::Expr_NEUTRAL );
 
 		
 
@@ -15741,6 +15721,16 @@ void Actor::UpdatePostPhysics()
 		int faceDeathAnimLength = 11;
 		int an = 6;
 		int extra = 22;
+
+		if (frame == 0)
+		{
+			kinMask->SetExpr(KinMask::Expr_DEATHYELL);
+		}
+		else if (frame == extra)
+		{
+			kinMask->SetExpr(KinMask::Expr_DEATH);
+		}
+
 		if( frame < faceDeathAnimLength * an + extra && frame >= extra )
 		{
 			int f = (frame - extra) / an;
