@@ -170,6 +170,7 @@ struct SoundNode;
 struct GroundTrigger;
 
 struct KinMask;
+struct KinRing;
 
 struct Actor : QuadTreeCollider,
 	RayCastHandler
@@ -180,6 +181,8 @@ struct Actor : QuadTreeCollider,
 	EffectPool *smallLightningPool[7];
 	EffectPool *risingAuraPool;
 	MotionGhostEffect *motionGhostsEffects[3];
+
+	KinRing *kinRing;
 
 	EffectPool *dustParticles;
 	RisingParticleUpdater rpu;
@@ -512,6 +515,8 @@ struct Actor : QuadTreeCollider,
 	int enemiesKilledLastFrame;
 
 	Actor( GameSession *owner, int actorIndex );
+	~Actor();
+	float totalHealth;
 	int actorIndex;
 	void UpdateSprite();
 	void ConfirmEnemyNoKill( Enemy *e );

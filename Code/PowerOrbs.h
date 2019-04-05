@@ -1,3 +1,6 @@
+#ifndef __PoWERORBS_H__
+#define __PoWERORBS_H__
+
 #include <SFML/Graphics.hpp>
 #include "Tileset.h"
 #include <map>
@@ -166,7 +169,8 @@ struct DesperationOrb
 	Tileset *ts_orb;
 	DesperationOrb(TilesetManager &tm, sf::Vector2f &pos );
 	void Draw(sf::RenderTarget *target);
-	sf::Vector2f center;
+	void SetPosition(sf::Vector2f &pos);
+	sf::Vector2f GetPosition();
 	sf::Sprite orbSpr;
 };
 
@@ -224,3 +228,20 @@ struct PowerRing : FillRing
 	Mode mode;
 	sf::CircleShape despCircle;
 };
+
+struct Actor;
+struct KinRing
+{
+	KinRing( Actor *actor );
+	~KinRing();
+
+	sf::Vector2f GetCenter();
+	void SetCenter(sf::Vector2f &pos);
+	void Draw(sf::RenderTarget *target);
+	void Reset();
+	void Update();
+	PowerRing *powerRing;
+	DesperationOrb *despOrb;
+};
+
+#endif

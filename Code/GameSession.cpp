@@ -434,12 +434,6 @@ void GameSession::Cleanup()
 		polyShaders = NULL;
 	}
 
-	if (powerRing != NULL)
-	{
-		delete powerRing;
-		powerRing = NULL;
-	}
-
 	if (goalPulse != NULL)
 	{
 		delete goalPulse;
@@ -5305,8 +5299,7 @@ bool GameSession::Load()
 
 	
 
-	momentumBar = new MomentumBar(this);
-	momentumBar->SetTopLeft(Vector2f(202, 117));
+	
 
 	//return true;
 
@@ -5346,12 +5339,6 @@ bool GameSession::Load()
 	lifeBarSprite.setTexture(lifeBarTex);
 	lifeBarSprite.setPosition(30, 200);
 
-	if (!speedBarShader.loadFromFile("Resources/Shader/speedbar_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "speed bar SHADER NOT LOADING CORRECTLY" << endl;
-		//assert( 0 && "polygon shader not loaded" );
-	}
-	speedBarShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 	if (!glowShader.loadFromFile("Resources/Shader/glow_shader.frag", sf::Shader::Fragment))
 	{
@@ -5577,9 +5564,6 @@ bool GameSession::Load()
 	activatedZoneList = NULL;
 
 	ts_leftHUD = GetTileset( "lefthud_560x1080.png", 560, 1080 );
-	ts_speedBar = GetTileset("momentumbar_115x115.png", 115, 115);
-	ts_speedBar = GetTileset( "momentumbar_560x210.png", 560, 210 );
-	speedBarSprite.setTexture( *ts_speedBar->texture );
 
 	leftHUDSprite.setTexture( *ts_leftHUD->texture );
 	leftHUDBlankSprite.setTexture( *ts_leftHUD->texture );
@@ -5780,8 +5764,7 @@ bool GameSession::Load()
 	goalMapIcon.setTextureRect(mini->ts_miniIcons->GetSubRect( goalTile ) );
 
 	float numSecondsToDrain = mh->drainSeconds;
-	float totalHealth = 3600;
-	float drainPerSecond = totalHealth / numSecondsToDrain;
+	float drainPerSecond = GetPlayer(0)->totalHealth / numSecondsToDrain;
 	float drainPerFrame = drainPerSecond / 60.f;
 	float drainFrames = 1.f;
 	if (drainPerFrame < 1.f)
@@ -5793,19 +5776,10 @@ bool GameSession::Load()
 		drainPerFrame = 1.0;
 	GetPlayer(0)->drainAmount = drainPerFrame;
 
-	if (mh->gameMode == MapHeader::MapType::T_STANDARD)
+	/*if (mh->gameMode == MapHeader::MapType::T_STANDARD)
 	{
-		FillRingSection *blah[] = {
-			//new FillRingSection(tm, Color::Black, sf::Color::Black, sf::Color::Black,0, 300, 0),
-			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, totalHealth/3, 0),
-			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,2, totalHealth / 3, 0),
-			new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,3, totalHealth / 3, 0)
-		};
-
-		Vector2f powerRingPos(80, 220);
-		powerRing = new PowerRing(powerRingPos, sizeof(blah) / sizeof(FillRingSection*), blah);
-		despOrb = new DesperationOrb(tm, powerRingPos);
-	}
+		
+	}*/
 
 	if (hasGoal)
 	{
@@ -6865,8 +6839,8 @@ int GameSession::Run()
 				//	powerWheel->UpdateSections();
 
 				//if (GetPlayer(0)->action != Actor::Action::SPAWNWAIT || GetPlayer(0)->frame > 20)
-				if( powerRing != NULL )
-					powerRing->Update();
+				/*if( powerRing != NULL )
+					powerRing->Update();*/
 
 				absorbParticles->Update();
 				absorbDarkParticles->Update();
@@ -7113,8 +7087,6 @@ int GameSession::Run()
 				}
 				
 				int speedLevel = p0->speedLevel;
-				//speedBarShader.setUniform( "onPortion", (float)speedLevel );
-				//speedBarShader.setUniform( "quant", (float)currentSpeedBar );
 				float quant = 0;
 				if( speedLevel == 0 )
 				{
@@ -7130,7 +7102,6 @@ int GameSession::Run()
 				}
 
 				//cout << "quant: " << quant << endl;
-				speedBarShader.setUniform( "onPortion", quant );
 
 				queryMode = "enemy";
 
@@ -8193,35 +8164,10 @@ int GameSession::Run()
 				}
 			}
 		}
-		
-		//if (mh->gameMode == MapHeader::MapType::T_STANDARD && showHUD)
-		if( adventureHUD != NULL && !adventureHUD->IsHidden())
-		{
-			
-			if (p0->desperationMode)
-			{
-				preScreenTex->draw(p0->kinFaceBG, &(p0->despFaceShader));
-			}
-			else
-			{
-				preScreenTex->draw(p0->kinFaceBG);
-			}
-			preScreenTex->draw(p0->kinFace);
-		}
 	
-		if (adventureHUD != NULL && !adventureHUD->IsHidden())
+		if (adventureHUD != NULL)
 		{
 			adventureHUD->Draw(preScreenTex);
-			/*momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
-			momentumBar->Draw(preScreenTex);
-
-		
-			if (powerRing != NULL)
-			{
-				powerRing->Draw(preScreenTex);
-				despOrb->Draw(preScreenTex);
-			}
-			keyMarker->Draw(preScreenTex);*/
 		}
 
 		scoreDisplay->Draw(preScreenTex);
@@ -9424,8 +9370,6 @@ void GameSession::Init()
 		delete (*it);
 	}
 	polygons.clear();
-
-	powerRing = NULL;
 	
 	polyShaders = NULL;
 	ts_polyShaders = NULL;
@@ -15408,87 +15352,7 @@ void GameSession::RaceFight::TickFrame()
 	}
 }
 
-MomentumBar::MomentumBar(GameSession *owner)
-{
-	//ts_bar = owner->GetTileset("momentumbar_105x105.png", 105, 105);
-	ts_bar = owner->GetTileset("momentumbar_105x105.png", 105, 105);
-	ts_container = owner->GetTileset("momentumbar_115x115.png", 115, 115);
-	ts_num = owner->GetTileset("momentumnum_48x48.png", 48, 48);
 
-	levelNumSpr.setTexture(*ts_num->texture);
-	levelNumSpr.setTextureRect(ts_bar->GetSubRect(0));
-
-	teal.setTexture(*ts_bar->texture);
-	teal.setTextureRect(ts_bar->GetSubRect(0));
-
-	blue.setTexture(*ts_bar->texture);
-	blue.setTextureRect(ts_bar->GetSubRect(1));
-
-	purp.setTexture(*ts_bar->texture);
-	purp.setTextureRect(ts_bar->GetSubRect(2));
-
-	container.setTexture(*ts_container->texture);
-	container.setTextureRect(ts_container->GetSubRect(0));
-
-	levelNumSpr.setTexture(*ts_num->texture);
-	levelNumSpr.setTextureRect(ts_num->GetSubRect(0));
-
-	if (!partShader.loadFromFile("Resources/Shader/momentum_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "momentum bar SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0);
-	}
-
-	partShader.setUniform("barTex", sf::Shader::CurrentTexture);
-}
-
-void MomentumBar::SetTopLeft(sf::Vector2f &pos)
-{
-	Vector2f extra(5, 5);
-	teal.setPosition(pos + extra);
-	blue.setPosition(pos + extra);
-	purp.setPosition(pos + extra);
-	container.setPosition(pos);
-	levelNumSpr.setPosition(pos + Vector2f(76, -50));
-}
-
-Vector2f MomentumBar::GetTopLeft()
-{
-	return container.getPosition();
-}
-
-void MomentumBar::SetMomentumInfo(int p_level, float p_part)
-{
-	level = p_level;
-	part = p_part;
-	partShader.setUniform("tile", (float)level);
-	partShader.setUniform("factor", part);
-
-	container.setTextureRect(ts_container->GetSubRect(level));
-	levelNumSpr.setTextureRect(ts_num->GetSubRect(level));
-}
-
-void MomentumBar::Draw(sf::RenderTarget *target)
-{
-	target->draw(container);
-
-	if (level == 0)
-	{
-		target->draw(teal, &partShader);
-	}
-	else if (level == 1)
-	{
-		//target->draw(teal);
-		target->draw(blue, &partShader);
-	}
-	else if (level == 2)
-	{
-		//target->draw(blue);
-		target->draw(purp, &partShader);
-	}
-
-	target->draw(levelNumSpr);
-}
 
 GameSession::DecorDraw::DecorDraw(sf::Vertex *q,
 	int numVerts,

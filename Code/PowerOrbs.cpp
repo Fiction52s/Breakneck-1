@@ -2,6 +2,7 @@
 #include "GameSession.h"
 #include <sstream>
 #include <iostream>
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -1089,10 +1090,71 @@ DesperationOrb::DesperationOrb(TilesetManager &tm, Vector2f &pos )
 	orbSpr.setTexture(*ts_orb->texture);
 	orbSpr.setOrigin(orbSpr.getLocalBounds().width / 2, orbSpr.getLocalBounds().height / 2);
 	orbSpr.setPosition(pos);
-	center = pos;
+}
+
+void DesperationOrb::SetPosition(sf::Vector2f &pos)
+{
+	orbSpr.setPosition(pos);
+}
+
+sf::Vector2f DesperationOrb::GetPosition()
+{
+	return orbSpr.getPosition();
 }
 
 void DesperationOrb::Draw(sf::RenderTarget *target)
 {
 	target->draw(orbSpr);
+}
+
+KinRing::KinRing( Actor *actor )
+{
+
+	TilesetManager &tm = actor->owner->tm;
+	float totalHealth = actor->totalHealth;
+	FillRingSection *blah[] = {
+		//new FillRingSection(tm, Color::Black, sf::Color::Black, sf::Color::Black,0, 300, 0),
+		new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, totalHealth / 3, 0),
+		new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,2, totalHealth / 3, 0),
+		new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,3, totalHealth / 3, 0)
+	};
+
+	//Vector2f powerRingPos(80, 220);
+	Vector2f powerRingPos(0, 0);
+	powerRing = new PowerRing(powerRingPos, sizeof(blah) / sizeof(FillRingSection*), blah);
+	despOrb = new DesperationOrb(tm, powerRingPos);
+}
+
+sf::Vector2f KinRing::GetCenter()
+{
+	return despOrb->GetPosition();
+}
+
+void KinRing::SetCenter(sf::Vector2f &pos)
+{
+	powerRing->SetPosition(pos);
+	despOrb->SetPosition(pos);
+}
+
+void KinRing::Reset()
+{
+	powerRing->ResetFull();
+}
+
+KinRing::~KinRing()
+{
+	delete powerRing;
+	delete despOrb;
+}
+
+void KinRing::Update()
+{
+	powerRing->Update();
+	//despOrb->Update();
+}
+
+void KinRing::Draw(RenderTarget *target)
+{
+	powerRing->Draw(target);
+	despOrb->Draw(target);
 }

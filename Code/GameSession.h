@@ -22,6 +22,7 @@
 #include "Actor.h"
 #include "EffectLayer.h"
 
+
 struct Minimap;
 struct ScreenRecorder;
 struct TopClouds;
@@ -115,7 +116,6 @@ struct PowerBar
 struct PowerOrbs;
 struct PowerWheel;
 struct FillRing;
-struct PowerRing;
 struct DesperationOrb;
 
 struct Critical : QuadTreeEntrant
@@ -215,25 +215,7 @@ enum EdgeAngleType
 
 EdgeAngleType GetEdgeAngleType(V2d &normal);
 
-struct MomentumBar
-{
-	MomentumBar( GameSession *owner );
-	sf::Sprite teal;
-	sf::Sprite blue;
-	sf::Sprite purp;
-	sf::Sprite container;
-	sf::Sprite levelNumSpr;
-	sf::Vector2f GetTopLeft();
-	void SetTopLeft(sf::Vector2f &pos);
-	int level;
-	float part;
-	void SetMomentumInfo(int level, float part);
-	Tileset *ts_bar;
-	Tileset *ts_container;
-	Tileset *ts_num;
-	void Draw(sf::RenderTarget *target);
-	sf::Shader partShader;
-};
+
 
 struct KeyNumberObj
 {
@@ -434,8 +416,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 	int numTotalKeys;
 	int numKeysCollected;
-
-	MomentumBar *momentumBar;
 
 	sf::Vertex blackBorderQuads[4 * 2];
 
@@ -766,11 +746,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::View oldView;
 
 	Tileset *ts_leftHUD;
-	Tileset *ts_speedBar;
-	sf::Shader speedBarShader;
 	sf::Sprite leftHUDSprite;
 	sf::Sprite leftHUDBlankSprite;
-	sf::Sprite speedBarSprite;
 
 	sf::Shader glowShader;
 	sf::Shader motionBlurShader;
@@ -1083,12 +1060,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::list<ReplayGhost*> replayGhosts;
 
 	bool usePolyShader;
-
-	//PowerBar powerBar;
-	//PowerOrbs *powerOrbs;
-	//PowerWheel *powerWheel;
-	PowerRing *powerRing;
-	DesperationOrb *despOrb;
 
 	int pauseFrames;
 

@@ -3,6 +3,8 @@
 #include "PowerOrbs.h"
 #include "Keymarker.h"
 #include "Minimap.h"
+#include "Momentumbar.h"
+#include "PowerOrbs.h"
 
 
 using namespace sf;
@@ -131,12 +133,15 @@ AdventureHUD::AdventureHUD(GameSession *p_owner)
 	:owner(p_owner)
 {
 	mini = owner->mini;
-	momentumBar = owner->momentumBar;
 	miniShowPos = mini->minimapSprite.getPosition();
-	miniHidePos = Vector2f(-300, miniShowPos.y);
+	miniHidePos = Vector2f(-500, miniShowPos.y);
 
-	momentumShowPos = momentumBar->GetTopLeft();
-	momentumHidePos = Vector2f(-200, momentumShowPos.y);
+	kinMask = owner->GetPlayer(0)->kinMask;
+
+	kinMaskShowPos = kinMask->GetTopLeft();
+	kinMaskHidePos = Vector2f(-500, kinMaskShowPos.y);
+	/*momentumShowPos = momentumBar->GetTopLeft();
+	momentumHidePos = Vector2f(-200, momentumShowPos.y);*/
 
 	Reset();
 }
@@ -173,7 +178,8 @@ void AdventureHUD::Update()
 			state = SHOWN;
 			frame = 0;
 			mini->SetCenter(miniShowPos);
-			momentumBar->SetTopLeft(momentumShowPos);
+
+			//momentumBar->SetTopLeft(momentumShowPos);
 		}
 		else
 		{
@@ -181,8 +187,9 @@ void AdventureHUD::Update()
 			float a = showBez.GetValue(prog);	
 			Vector2f center = miniHidePos * (1.f - a) + a * miniShowPos;
 			mini->SetCenter(center);
-			Vector2f topLeft = momentumHidePos * (1.f - a) + a * momentumShowPos;
-			momentumBar->SetTopLeft(topLeft);
+			Vector2f topLeft = kinMaskHidePos * (1.f - a) + a * kinMaskShowPos;
+			kinMask->SetTopLeft(topLeft);
+			//momentumBar->SetTopLeft(topLeft);
 		}
 		break;
 	case EXITING:
@@ -198,8 +205,10 @@ void AdventureHUD::Update()
 			float a = showBez.GetValue(prog);
 			Vector2f center = miniShowPos * (1.f - a) + a * miniHidePos;
 			mini->SetCenter(center);
-			Vector2f topLeft = momentumShowPos * (1.f - a) + a * momentumHidePos;
-			momentumBar->SetTopLeft(topLeft);
+			Vector2f topLeft = kinMaskShowPos * (1.f - a) + a * kinMaskHidePos;
+			kinMask->SetTopLeft(topLeft);
+			
+			//momentumBar->SetTopLeft(topLeft);
 		}
 		break;
 	case HIDDEN:
@@ -218,34 +227,38 @@ void AdventureHUD::Reset()
 	frame = 0;
 
 	mini->SetCenter(miniShowPos);
-	momentumBar->SetTopLeft(momentumShowPos);
+	kinMask->SetTopLeft(kinMaskShowPos);
+	//momentumBar->SetTopLeft(momentumShowPos);
 }
 
 void AdventureHUD::Draw(RenderTarget *target)
 {
 	if (state != HIDDEN)
 	{
-		Actor *p0 = owner->GetPlayer(0);
-		owner->momentumBar->SetMomentumInfo(p0->speedLevel, p0->GetSpeedBarPart());
-		owner->momentumBar->Draw(target);
+		//Actor *p0 = owner->GetPlayer(0);
+		kinMask->Draw(target);
+		
+		
 
 		owner->mini->Draw(target);
 		//target->draw(owner->minimapSprite, &owner->minimapShader);
 
+		//kinRing->Draw(target);
 		//target->draw(owner->kinMinimapIcon);
-		if (owner->powerRing != NULL)
+		/*if (owner->powerRing != NULL)
 		{
 			owner->powerRing->Draw(target);
 			owner->despOrb->Draw(target);
-		}
+		}*/
 		owner->keyMarker->Draw(target);
 		
 	}
 }
 
-KinMask::KinMask( GameSession *p_owner )
+KinMask::KinMask( Actor *a )
 {
-	owner = p_owner;
+	actor = a;
+	owner = actor->owner;
 
 	ts_face = owner->GetTileset("kinportrait_320x288.png", 320, 288);
 	face.setTexture(*ts_face->texture);
@@ -253,6 +266,21 @@ KinMask::KinMask( GameSession *p_owner )
 
 	faceBG.setTexture(*ts_face->texture);
 	faceBG.setTextureRect(ts_face->GetSubRect(0));
+
+	momentumBar = new MomentumBar(owner);
+
+
+	kinRing = actor->kinRing;
+
+	SetTopLeft(Vector2f(0, 0));
+
+	Reset();
+}
+
+KinMask::~KinMask()
+{
+	delete momentumBar;
+	delete kinRing;
 }
 
 void KinMask::Reset()
@@ -262,20 +290,26 @@ void KinMask::Reset()
 	frame = 0;
 
 	faceBG.setTextureRect(ts_face->GetSubRect(0));
-	
+
+	kinRing->Reset();
 }
 
-void KinMask::Draw(RenderTarget *target, Actor *p)
+void KinMask::Draw(RenderTarget *target)
 {
-	if (p->desperationMode )
+	if (actor->desperationMode )
 	{
-		target->draw(faceBG, &(p->despFaceShader));
+		target->draw(faceBG, &(actor->despFaceShader));
 	}
 	else
 	{
 		target->draw(faceBG);
 	}
 	target->draw(face);
+
+	momentumBar->SetMomentumInfo(actor->speedLevel, actor->GetSpeedBarPart());
+	momentumBar->Draw(target);
+
+	kinRing->Draw(target);
 }
 
 void KinMask::SetExpr(KinMask::Expr ex)
@@ -360,6 +394,8 @@ void KinMask::SetTopLeft(sf::Vector2f &pos)
 {
 	face.setPosition(pos);
 	faceBG.setPosition(pos);
+	momentumBar->SetTopLeft(pos + Vector2f(202, 117));
+	kinRing->SetCenter(pos + Vector2f(80, 220));
 }
 
 sf::Vector2f KinMask::GetTopLeft()

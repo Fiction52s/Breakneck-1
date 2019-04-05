@@ -187,7 +187,7 @@ void FlowerPod::ProcessState()
 
 	if (healingPlayer != NULL && healingPlayer->drainCounter == 0)
 	{
-		owner->powerRing->Fill( player->drainAmount + 1 );//powerWheel->Use( 1 );	
+		owner->GetPlayer(0)->kinRing->powerRing->Fill( player->drainAmount + 1 );//powerWheel->Use( 1 );	
 	}
 
 	switch (action)

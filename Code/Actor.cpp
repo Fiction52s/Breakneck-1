@@ -252,6 +252,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex ),rpu(this)
 	{
 	//hitCeilingLockoutFrames = 20;
+	totalHealth = 3600;
 	storedTrigger = NULL;
 	//dustParticles = new EffectPool(EffectType::FX_REGULAR, 2000, 1);
 	//EffectInstance params;
@@ -328,7 +329,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
 		gateBlackFXPool->ts = owner->GetTileset("FX/keydrain_160x160.png", 160, 160);
 
-		kinMask = new KinMask(owner);
+		kinRing = new KinRing(this);
+		kinMask = new KinMask(this);
 
 		//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
 		//risingAuraPool->ts = owner->GetTileset("rising_8x8.png", 8, 8);
@@ -1529,6 +1531,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		cout << "end player" << endl;
 }
 
+Actor::~Actor()
+{
+	//eventually delete everything here lol
+}
+
 void Actor::ActionEnded()
 {
 	//cout << "length: " << actionLength[action] << endl;
@@ -2082,6 +2089,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	kinMask->Reset();
 	SetDirtyAura(false);
 
 	storedTrigger = NULL;
@@ -2228,11 +2236,11 @@ void Actor::Respawn()
 
 	SetExpr( Actor::Expr::Expr_NEUTRAL );
 
-	kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
-	kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
+	//kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
+	//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
 
-	if( owner->powerRing != NULL )
-		owner->powerRing->ResetFull(); //only means anything for single player
+	if( kinRing->powerRing != NULL )
+		kinRing->powerRing->ResetFull(); //only means anything for single player
 }
 
 double Actor::GetBounceFlameAccel()
@@ -2372,7 +2380,7 @@ void Actor::UpdatePrePhysics()
 	}
 	//cout << "JFRAME BEHI: " << frame << endl;
 
-	if (owner->powerRing != NULL && action != DEATH)
+	if (kinRing->powerRing != NULL && action != DEATH)
 	{
 		if (owner->drain && !desperationMode 
 			&& !IsIntroAction( action ) && !IsGoalKillAction( action ) && !IsExitAction( action ) && !IsSequenceAction( action ))
@@ -2380,7 +2388,7 @@ void Actor::UpdatePrePhysics()
 			drainCounter++;
 			if (drainCounter == drainCounterMax)
 			{
-				int res = owner->powerRing->Drain(drainAmount);//powerWheel->Use( 1 );	
+				int res = kinRing->powerRing->Drain(drainAmount);//powerWheel->Use( 1 );	
 
 				if (res > 0)
 				{
@@ -2494,7 +2502,7 @@ void Actor::UpdatePrePhysics()
 		if( despCounter == maxDespFrames )
 		{
 			desperationMode = false;
-			if (owner->powerRing->IsEmpty())
+			if (kinRing->powerRing->IsEmpty())
 			{
 
 				SetAction(DEATH);
@@ -2513,7 +2521,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else
 			{
-				owner->powerRing->mode == PowerRing::NORMAL;
+				kinRing->powerRing->mode == PowerRing::NORMAL;
 			}
 			//	||  owner->powerWheel->activeSection > 0 )
 			//{
@@ -2543,7 +2551,7 @@ void Actor::UpdatePrePhysics()
 			ghosts[record]->currFrame = 0;
 			ghostFrame = 0;
 			//owner->powerWheel->Use( 20 );
-			owner->powerRing->Drain(20);
+			kinRing->powerRing->Drain(20);
 			record++;
 			changingClone = true;
 			percentCloneChanged = 0;
@@ -2591,7 +2599,7 @@ void Actor::UpdatePrePhysics()
 		ghostFrame = 1;
 		//cout << "recordedGhosts: " << recordedGhosts << endl;
 		//owner->powerBar.Charge( 20 );
-		owner->powerRing->Fill(20);
+		kinRing->powerRing->Fill(20);
 	}
 
 
@@ -2738,7 +2746,7 @@ void Actor::UpdatePrePhysics()
 
 		owner->soundNodeList->ActivateSound( soundBuffers[S_HURT] );
 
-		owner->powerRing->Drain(receivedHit->damage);
+		kinRing->powerRing->Drain(receivedHit->damage);
 
 		SetExpr( Expr::Expr_HURT );
 		//expr = Expr::Expr_HURT;
@@ -2796,7 +2804,7 @@ void Actor::UpdatePrePhysics()
 					{
 						position = op;
 						//owner->powerWheel->Damage( receivedHit->damage );
-						owner->powerRing->Drain(receivedHit->damage);
+						kinRing->powerRing->Drain(receivedHit->damage);
 						
 						//apply extra damage since you cant stand up
 					}
@@ -2858,7 +2866,7 @@ void Actor::UpdatePrePhysics()
 						position = op;
 
 						//owner->powerWheel->Damage( receivedHit->damage );
-						owner->powerRing->Drain(receivedHit->damage);
+						kinRing->powerRing->Drain(receivedHit->damage);
 						
 						//apply extra damage since you cant stand up
 					}
@@ -15718,34 +15726,34 @@ void Actor::UpdatePostPhysics()
 		//if( slowCounter == slowMultiple )
 		//{
 		int total = actionLength[DEATH];
-		int faceDeathAnimLength = 11;
-		int an = 6;
-		int extra = 22;
+		//int faceDeathAnimLength = 11;
+		//int an = 6;
+		//int extra = 22;
 
-		if (frame == 0)
-		{
-			kinMask->SetExpr(KinMask::Expr_DEATHYELL);
-		}
-		else if (frame == extra)
-		{
-			kinMask->SetExpr(KinMask::Expr_DEATH);
-		}
+		//if (frame == 0)
+		//{
+		//	kinMask->SetExpr(KinMask::Expr_DEATHYELL);
+		//}
+		//else if (frame == extra)
+		//{
+		//	kinMask->SetExpr(KinMask::Expr_DEATH);
+		//}
 
-		if( frame < faceDeathAnimLength * an + extra && frame >= extra )
-		{
-			int f = (frame - extra) / an;
-			expr = (Expr)(f);
-		}
-		else
-		{
-			expr = (Expr)0;
-		}
+		//if( frame < faceDeathAnimLength * an + extra && frame >= extra )
+		//{
+		//	int f = (frame - extra) / an;
+		//	expr = (Expr)(f);
+		//}
+		//else
+		//{
+		//	expr = (Expr)0;
+		//}
 	
 
-		//cout << "death: " << expr + 11 << endl;
-		kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 11 ) );
-		kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(5));
-		
+		////cout << "death: " << expr + 11 << endl;
+		//kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 11 ) );
+		//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(5));
+		kinMask->Update( speedLevel, desperationMode );
 
 
 		++frame;
@@ -16507,31 +16515,33 @@ void Actor::UpdatePostPhysics()
 	cs.setPosition( position.x, position.y );
 	speedCircle = cs;
 
-	if( expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2 )
-	{
-		switch( speedLevel )
-		{
-		case 0:
-			expr = Expr_NEUTRAL;
-			break;
-		case 1:
-			expr = Expr_SPEED1;
-			break;
-		case 2:
-			expr = Expr_SPEED2;
-			break;
-		}
-		//despCounter == maxDespFrames )
-		if( desperationMode )
-		{
-			expr = Expr_DESP;
-		}
-	}
+	kinMask->Update(speedLevel, desperationMode);
+
+	//if( expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2 )
+	//{
+	//	switch( speedLevel )
+	//	{
+	//	case 0:
+	//		expr = Expr_NEUTRAL;
+	//		break;
+	//	case 1:
+	//		expr = Expr_SPEED1;
+	//		break;
+	//	case 2:
+	//		expr = Expr_SPEED2;
+	//		break;
+	//	}
+	//	//despCounter == maxDespFrames )
+	//	if( desperationMode )
+	//	{
+	//		expr = Expr_DESP;
+	//	}
+	//}
 
 	//if (action != DEATH)
 	//{
-		kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
-		kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(expr));
+		//kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
+		//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(expr));
 	//}
 	
 
@@ -16554,7 +16564,11 @@ void Actor::UpdatePostPhysics()
 	{
 		owner->goalDestroyed = true;	
 	}
-		
+	
+
+	if (kinRing != NULL)
+		kinRing->Update();
+
 	/*switch( expr )
 	{
 	case Expr::NEUTRAL:
@@ -22283,8 +22297,8 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 
 	//owner->powerWheel->Charge( charge );
 
-	if( owner->powerRing != NULL )
-		owner->powerRing->Fill(hitParams->charge);
+	if( kinRing != NULL )
+		kinRing->powerRing->Fill(hitParams->charge);
 	
 	desperationMode = false;
 
@@ -24250,11 +24264,14 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		switch (parent->abType)
 		{
 		case ENERGY:
-			if (parent->owner->powerRing != NULL)
+		{
+			PowerRing *powerRing = parent->owner->GetPlayer(0)->kinRing->powerRing;
+			if (powerRing != NULL)
 			{
-				parent->owner->powerRing->Fill(20);
+				powerRing->Fill(20);
 			}
 			break;
+		}
 		case DARK:
 		{
 			Tileset *tss = parent->owner->GetTileset("FX/keyexplode_128x128.png", 128, 128);
