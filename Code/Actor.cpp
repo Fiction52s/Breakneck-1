@@ -147,6 +147,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = owner->GetTileset("Kin/run_64x64.png", 64, 64, skin);
 	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
 
+	tileset[SEQ_TURNFACE] = owner->GetTileset("Kin/shipjump_160x96.png", 160, 96, skin);
+
 	ts_fairSword[0] = owner->GetTileset("Sword/fair_sworda_256x256.png", 256, 256, swordSkin);
 	ts_fairSword[1] = owner->GetTileset("Sword/fair_swordb_288x288.png", 288, 288, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
 	ts_fairSword[2] = owner->GetTileset("Sword/fair_swordc_384x384.png", 384, 384, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
@@ -1850,6 +1852,9 @@ void Actor::ActionEnded()
 		case SEQ_FADE_INTO_NEXUS:
 			frame = actionLength[SEQ_FADE_INTO_NEXUS] - 1;
 			owner->activeSequence = owner->nexus->insideSeq;
+			break;
+		case SEQ_TURNFACE:
+			frame = 0;
 			break;
 		}
 	}
@@ -8859,6 +8864,20 @@ float Actor::GetSpeedBarPart()
 	{
 		speedLevel = 0;
 	}*/
+}
+
+void Actor::TurnFace()
+{
+	assert(ground != NULL);
+	SetAction(SEQ_TURNFACE);
+	frame = 0;
+}
+
+void Actor::StandInPlace()
+{
+	assert(ground != NULL);
+	SetAction(STAND);
+	frame = 0;
 }
 
 bool Actor::CheckWall( bool right )
@@ -16664,7 +16683,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		{
 			offsetX = 0;
 		}
-
+		TurnFace();
 		//owner->currStorySequence = trigger->storySeq;
 		//owner->state = GameSession::STORY;
 		//owner->state = GameSession::SEQUENCE;
@@ -22081,7 +22100,48 @@ void Actor::UpdateSprite()
 		sprite->setRotation(0);
 		break;
 	}
-		
+	case SEQ_TURNFACE:
+	{
+
+		SetSpriteTexture(action);
+
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+		SetSpriteTile(0, r);
+
+		if (ground != NULL)
+		{
+			double angle = GroundedAngle();
+
+			sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+
+			V2d oldv0 = ground->v0;
+			V2d oldv1 = ground->v1;
+
+			if (movingGround != NULL)
+			{
+				ground->v0 += movingGround->position;
+				ground->v1 += movingGround->position;
+			}
+
+			V2d pp = ground->GetPoint(edgeQuantity);
+
+			if (movingGround != NULL)
+			{
+				ground->v0 = oldv0;
+				ground->v1 = oldv1;
+			}
+
+			if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
+				sprite->setPosition(pp.x + offsetX, pp.y);
+			else
+				sprite->setPosition(pp.x, pp.y);
+			sprite->setRotation(angle / PI * 180);
+
+
+			//cout << "angle: " << angle / PI * 180  << endl;
+		}
+	}
+	break;
 	}
 
 	Vector2f oldOrigin = sprite->getOrigin();

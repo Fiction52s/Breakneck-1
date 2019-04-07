@@ -290,6 +290,7 @@ struct Actor : QuadTreeCollider,
 		SEQ_MEDITATE,
 		SEQ_FLOAT_TO_NEXUS_OPENING,
 		SEQ_FADE_INTO_NEXUS,
+		SEQ_TURNFACE,
 		Count
 	};
 
@@ -360,7 +361,8 @@ struct Actor : QuadTreeCollider,
 	};
 	
 	
-
+	void TurnFace();
+	void StandInPlace();
 	bool IsGoalKillAction(Action a);
 	bool IsIntroAction(Action a);
 	bool IsExitAction(Action a);

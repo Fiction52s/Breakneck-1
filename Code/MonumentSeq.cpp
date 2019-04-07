@@ -5,7 +5,7 @@ using namespace sf;
 using namespace std;
 
 MonumentSeq::MonumentSeq(GameSession *owner)
-	:BasicMovieSeq( owner, "kin_monument_01b", 60, 60 )
+	:BasicMovieSeq( owner, "kin_monument_01b", 60, 1 )
 {
 	
 }
@@ -28,6 +28,7 @@ void MonumentSeq::PostMovieUpdate()
 	if (frame == stateLength[POSTMOVIE] - 1)
 	{
 		owner->Fade(true, 60, Color::Black);
+		owner->GetPlayer(0)->StandInPlace();
 		//owner->PlayMusic();
 	}
 }

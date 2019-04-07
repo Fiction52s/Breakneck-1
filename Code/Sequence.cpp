@@ -1137,6 +1137,11 @@ BasicMovieSeq::BasicMovieSeq(GameSession *p_owner,
 	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 }
 
+
+BasicMovieSeq::~BasicMovieSeq()
+{
+
+}
 void BasicMovieSeq::Reset()
 {
 	state = PREMOVIE;
