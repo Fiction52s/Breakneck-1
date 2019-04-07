@@ -3,6 +3,8 @@
 #include "MainMenu.h"
 #include "Background.h"
 #include "Parallax.h"
+#include "MusicPlayer.h"
+#include "MusicSelector.h"
 
 using namespace std;
 using namespace sf;
@@ -58,6 +60,11 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 			p_mainMenu->tilesetManager.GetTileset("Title/titlecloud_2_1920x1080.png", 1920, 1080), 0, 1, 10 * 5));
 
 	frame = 0;
+
+	
+	titleMusic = mainMenu->musicManager->songMap["Breakneck_Title_01"];
+	titleMusic->Load();
+
 }
 
 void TitleScreen::Reset()
@@ -68,6 +75,11 @@ void TitleScreen::Reset()
 
 void TitleScreen::Update()
 {
+	if (frame == 0)
+	{
+		mainMenu->musicPlayer->PlayMusic(titleMusic);
+	}
+
 	background->Update();
 
 	for (int i = 0; i < 4; ++i)

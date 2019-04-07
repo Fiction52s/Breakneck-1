@@ -7,6 +7,8 @@
 #include "VisualEffects.h"
 //#include "StorySequence.h"
 #include "Sequence.h"
+#include "MusicPlayer.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -1018,7 +1020,9 @@ void CrawlerQueen::ConfirmKill()
 		//(*it)->SetLocked(false);
 	}
 
-	owner->FadeOutCurrentMusic(60);
+	MainMenu *mm = owner->mainMenu;
+	
+	mm->musicPlayer->FadeOutCurrentMusic(60);
 
 	owner->cam.EaseOutOfManual(60);
 

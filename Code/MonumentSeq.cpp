@@ -1,6 +1,8 @@
 #include "Sequence.h"
 #include "GameSession.h"
 #include "Actor.h"
+#include "MusicPlayer.h"
+#include "MainMenu.h"
 using namespace sf;
 using namespace std;
 
@@ -14,7 +16,8 @@ void MonumentSeq::PreMovieUpdate()
 {
 	if (frame == 0)
 	{
-		owner->FadeOutCurrentMusic(60);
+		MainMenu *mm = owner->mainMenu;
+		mm->musicPlayer->FadeOutCurrentMusic(60);
 		owner->Fade(false, 60, Color::Black);
 	}
 	//if (frame == stateLength[PREMOVIE] - 1)

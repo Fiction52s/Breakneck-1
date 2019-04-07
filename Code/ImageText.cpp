@@ -222,6 +222,7 @@ bool TextDisp::Update()
 		}
 		++frame;
 	}
+	return true;
 }
 
 void TextDisp::Draw(sf::RenderTarget *target)

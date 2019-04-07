@@ -6,6 +6,8 @@
 #include "GameSession.h"
 #include "MusicSelector.h"
 #include "Config.h"
+#include "MusicPlayer.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -497,6 +499,8 @@ bool StorySequence::UpdateLayer(int layer, ControllerState &prev, ControllerStat
 		return false;
 	}
 
+
+	MainMenu *mm = owner->mainMenu;
 	if ((*layerCurrPartIt)->frame == 0)
 	{
 		if ((*layerCurrPartIt)->music != NULL)
@@ -505,12 +509,12 @@ bool StorySequence::UpdateLayer(int layer, ControllerState &prev, ControllerStat
 			if (transTime > 0)
 			{
 				int transFrames = transTime * 60.f;
-				owner->TransitionMusic((*layerCurrPartIt)->music->musicName,
-					(*layerCurrPartIt)->music->startTime, transFrames);
+				mm->musicPlayer->TransitionMusic((*layerCurrPartIt)->music->musicInfo, transFrames,
+					(*layerCurrPartIt)->music->startTime );
 			}
 			else
 			{
-				owner->PlayMusic((*layerCurrPartIt)->music->musicName, (*layerCurrPartIt)->music->startTime);
+				mm->musicPlayer->PlayMusic((*layerCurrPartIt)->music->musicInfo, (*layerCurrPartIt)->music->startTime);
 			}
 
 		}

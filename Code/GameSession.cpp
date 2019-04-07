@@ -59,6 +59,7 @@
 #include "Enemy_StagBeetle.h"
 #include "Enemy_Cactus.h"
 #include "Nexus.h"
+#include "MusicPlayer.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -5552,7 +5553,6 @@ bool GameSession::Load()
 
 	//blah 3
 
-	currMusic = NULL;
 	cutPlayerInput = false;
 	activeEnvPlants = NULL;
 	totalGameFrames = 0;	
@@ -5924,32 +5924,8 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 #include "StorySequence.h"
 int GameSession::Run()
 {
-	//ShaderTester shaderTester(ShaderTester::FIRE, this);
 	currStorySequence = NULL;
 	currBroadcast = NULL;
-	musicFadeOutMax = -1;
-	musicFadeInMax = -1;
-
-	//Tileset *ts_perlin = GetTileset("Shader/perlin01.png", 400, 400);
-	//Tileset *ts_grad = GetTileset("Shader/gradient01.png", 400, 400);
-	//sf::Shader fireShader;
-	//if (!fireShader.loadFromFile("Shader/fire.frag", sf::Shader::Fragment))
-	//{
-	//	assert(0);
-	//}
-	//fireShader.setUniform("u_noiseTex", *ts_perlin->texture);
-	//fireShader.setUniform("u_gradTex", *ts_grad->texture);
-
-	//sf::Vertex fireV[4];
-	//fireV.
-	/*while (true)
-	{
-		window->clear(Color::Green);
-		window->display();
-		continue;
-	}*/
-
-	//rain = new Rain(this);
 
 	fadeLength = 0;
 	fadeAlpha = 0;
@@ -5976,28 +5952,9 @@ int GameSession::Run()
 
 	Actor *p0 = GetPlayer(0);
 	Actor *p = NULL;
-	
-	//use player->setactivepowers to set it up from the level. need to add it
-	//to the editor
-
-	//sf::Vertex *line = new sf::Vertex[mh->numVertices * 2];
-	//for (int i = 0; i < mh->numVertices; ++i)
-	//{
-	//	//cout << "i: " << i << endl;
-	//	line[i * 2] = sf::Vertex(Vector2f(edges[i]->v0.x, edges[i]->v0.y));
-	//	line[i * 2 + 1] = sf::Vertex(Vector2f(edges[i]->v1.x, edges[i]->v1.y));
-	//}
-
-	//sf::Vector2<double> nLine((line[1].position - line[0].position).x, (line[1].position - line[0].position).y);
-	//nLine = normalize(nLine);
-
-	//sf::Vector2<double> lineNormal(-nLine.y, nLine.x);
 
 	sf::CircleShape circle(30);
 	circle.setFillColor(Color::Blue);
-
-
-	//sf::Clock inGameClock;
 
 	sf::Clock gameClock;
 	double currentTime = 0;
@@ -6050,20 +6007,12 @@ int GameSession::Run()
 	debugScreenRecorder = NULL;
 
 	//debugScreenRecorder = new ScreenRecorder("BACKWARDS_DASH_JUMP");
-	
-	//#define SYNCEDDRAWWITHPHYSICS
-
-	//lights.push_back( new Light( this ) );
 
 	View v;
 	v.setCenter(0, 0);
 	v.setSize(1920 / 2, 1080 / 2);
 	window->setView(v);
 	lastFrameTex->setView(v);
-
-	//stringstream ss;
-	//ss.clear(); //needed?
-
 	
 	int frameCounter = 0;
 	int frameCounterWait = 20;
@@ -6072,14 +6021,6 @@ int GameSession::Run()
 	cloudView = View(Vector2f(0, 0), Vector2f(1920, 1080));
 
 	int flowSize = 64;
-	//GPUFlow *f = new GPUFlow( Vector2i( player->position.x + 100, player->position.y ), flowSize, flowSize ); 
-	//Flow *f = new Flow( Vector2i( player->position.x + 100, player->position.y ), flowSize, flowSize );
-	//f->player = &player;
-
-	//Cutscene cut( this, Vector2i( player->position.x, player->position.y ) );
-	//cut.LoadFromFile( "gametest" );
-	//int cutFrame = 0;
-
 
 	if (raceFight != NULL)
 	{
@@ -6098,49 +6039,6 @@ int GameSession::Run()
 
 	//Rain rain(this);
 	sf::View rainView(Vector2f(0, 0), Vector2f(1920, 1080));
-
-	//scrollingTest = new ScrollingBackground( GetTileset( "Parallax/w1_01a.png", 1920, 1080 ), 0, 10 );
-
-	//Tileset *ts_blah = GetTileset( "Parallax/w2_tree_01_1920x1080.png", 1920, 1080 );
-	//Tileset *ts_cloud0 = GetTileset( "Parallax/w1_cloud_01_1920x1080.png", 1920, 1080 );
-	//Tileset *ts_cloud1 = GetTileset( "Parallax/w1_cloud_02_1920x1080.png", 1920, 1080 );
-	//Tileset *ts_cloud2 = GetTileset( "Parallax/w1_cloud_03_1920x1080.png", 1920, 1080 );
-
-
-
-
-	//testPar->AddRepeatingSprite( ts_blah, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
-	//testPar->AddRepeatingSprite( ts_blah, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
-	//testPar->AddRepeatingSprite( ts_cloud0, 0, Vector2f( 0, 0 ), 1920 * 2, 50 );
-	//testPar->AddRepeatingSprite( ts_cloud1, 0, Vector2f( 500, -200 ), 1920 * 2, 30 );
-	//testPar->AddRepeatingSprite( ts_cloud2, 0, Vector2f( 1500, 300 ), 1920 * 2, 25 );
-
-	/*Tileset *ts_mountain0 = GetTileset( "Parallax/parallax_w1_mountain_01.png", 1920, 1080 );
-	Tileset *ts_mountain1 = GetTileset( "Parallax/parallax_w1_mountain_02.png", 1920, 1080 );
-	Tileset *ts_mountain2 = GetTileset( "Parallax/parallax_w1_mountain_03.png", 1920, 1080 );
-	Tileset *ts_mountain3 = GetTileset( "Parallax/parallax_w1_mountain_04.png", 1920, 1080 );
-	Tileset *ts_mountain4 = GetTileset( "Parallax/parallax_w1_mountain_05.png", 1920, 1080 );
-	Tileset *ts_mountain5 = GetTileset( "Parallax/parallax_w1_mountain_06.png", 1920, 1080 );*/
-
-
-	/*Tileset *ts_mountain0 = GetTileset( "Parallax/parallax_w2_tree_01.png", 1920, 1080 );
-	Tileset *ts_mountain1 = GetTileset( "Parallax/parallax_w2_tree_02.png", 1920, 1080 );
-	Tileset *ts_mountain2 = GetTileset( "Parallax/parallax_w2_tree_03.png", 1920, 1080 );
-	Tileset *ts_mountain3 = GetTileset( "Parallax/parallax_w2_tree_04.png", 1920, 1080 );
-	Tileset *ts_mountain4 = GetTileset( "Parallax/parallax_w2_tree_05.png", 1920, 1080 );
-	Tileset *ts_mountain5 = GetTileset( "Parallax/parallax_w2_tree_06.png", 1920, 1080 );
-	testPar->AddRepeatingSprite( ts_mountain5, 0, Vector2f( 0, 0 ), 1920 * 2, 5 );
-	testPar->AddRepeatingSprite( ts_mountain5, 0, Vector2f( 1920, 0 ), 1920 * 2, 5 );
-	testPar->AddRepeatingSprite( ts_mountain4, 0, Vector2f( 0, 0 ), 1920 * 2, 10 );
-	testPar->AddRepeatingSprite( ts_mountain4, 0, Vector2f( 1920, 0 ), 1920 * 2, 10 );
-	testPar->AddRepeatingSprite( ts_mountain3, 0, Vector2f( 0, 0 ), 1920 * 2, 15 );
-	testPar->AddRepeatingSprite( ts_mountain3, 0, Vector2f( 1920, 0 ), 1920 * 2, 15 );
-	testPar->AddRepeatingSprite( ts_mountain2, 0, Vector2f( 0, 0 ), 1920 * 2, 20 );
-	testPar->AddRepeatingSprite( ts_mountain2, 0, Vector2f( 1920, 0 ), 1920 * 2, 20 );
-	testPar->AddRepeatingSprite( ts_mountain1, 0, Vector2f( 0, 0 ), 1920 * 2, 25 );
-	testPar->AddRepeatingSprite( ts_mountain1, 0, Vector2f( 1920, 0 ), 1920 * 2, 25 );
-	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 0, 0 ), 1920 * 2, 30 );
-	testPar->AddRepeatingSprite( ts_mountain0, 0, Vector2f( 1920, 0 ), 1920 * 2, 30 );*/
 
 	//might move replay stuff later
 	cout << "loop about to start" << endl;
@@ -6171,72 +6069,10 @@ int GameSession::Run()
 		threa = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of );
 	}
 
-	int pointsTotal = 0;
-	if( mh->songLevels.size() > 0 )
-	{
-		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
-		{
-			pointsTotal += (*it).second;
-		}
-	}
-
-
-	//TODO : use a better random algorithm later
-	srand(time(0));
-
-	if (levelMusic == NULL && pointsTotal > 0)
-	{
-		int r = rand() % ( pointsTotal );
-
-		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
-		{
-			r -= (*it).second;
-			if (r < 0)
-			{
-				//assumes that this is a valid check
-				if (mainMenu->musicManager->songMap.count((*it).first) == 0)
-				{
-					assert(0);
-				}
-				
-				levelMusic = mainMenu->musicManager->songMap[(*it).first];
-				musicMap[(*it).first] = levelMusic;
-				originalMusic = levelMusic;
-				if (levelMusic == NULL)
-				{
-					assert(0);
-				}
-				break;
-			}
-		}
-	}
-	if (levelMusic == NULL && pointsTotal > 0 )
-	{
-		assert(0);
-	}
-	else if( levelMusic != NULL )
-	{
-		levelMusic->Load();
-		levelMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
-		levelMusic->music->setLoop(true);
-		levelMusic->music->play();
-		
-	}
-
+	SetOriginalMusic();
 
 	std::stringstream ss;
 	bool switchState = false;
-	
-//starttest:
-	
-	/*mainMenu->doneLoading = true;
-
-	mainMenu->loadThread->join();
-	delete mainMenu->loadThread;
-	mainMenu->loadThread = NULL;
-
-	preScreenTex->setActive(true);
-	window->setActive(true);*/
 	
 	while( !quit )
 	{
@@ -8979,46 +8815,8 @@ int GameSession::Run()
 					{
 					}
 				}
-
-				int maxVol = mainMenu->config->GetData().musicVolume;
-				if (musicFadeOutMax > 0)
-				{
-					assert(fadingOutMusic != NULL);
-					if (musicFadeOutCurr == musicFadeOutMax)
-					{
-						StopMusic(fadingOutMusic);
-						musicFadeOutMax = -1;
-					}
-					else
-					{
-						musicFadeOutCurr++;
-						float fadeOutPart = ((float)musicFadeOutCurr) / musicFadeOutMax;
-						//fadeOutPart *= fadeOutPart;
-						
-						int vol = maxVol - (fadeOutPart * maxVol);
-						fadingOutMusic->music->setVolume(vol);
-					}
-				}
-				if (musicFadeInMax > 0)
-				{
-					assert(fadingInMusic != NULL);
-					if (musicFadeInCurr == musicFadeInMax)
-					{
-						levelMusic = fadingInMusic;
-						levelMusic->music->setVolume(maxVol);
-						musicFadeInMax = -1;
-					}
-					else
-					{
-						musicFadeInCurr++;
-						float fadeInPart = ((float)musicFadeInCurr) / musicFadeInMax;
-						//float prop = fadeInPart;
-						//fadeInPart = 1.f - (1.f - fadeInPart * fadeInPart);
-						int vol = fadeInPart *  maxVol;
-						//cout << "prop: " << prop << ", fadeInPart: " << fadeInPart << "\n";
-						fadingInMusic->music->setVolume(vol);
-					}
-				}
+				
+				mainMenu->musicPlayer->Update();
 
 				UpdateFade();
 
@@ -9100,47 +8898,7 @@ int GameSession::Run()
 					}
 				}
 
-				
-
-				int maxVol = mainMenu->config->GetData().musicVolume;
-				if (musicFadeOutMax > 0)
-				{
-					assert(fadingOutMusic != NULL);
-					if (musicFadeOutCurr == musicFadeOutMax)
-					{
-						StopMusic(fadingOutMusic);
-						musicFadeOutMax = -1;
-					}
-					else
-					{
-						musicFadeOutCurr++;
-						float fadeOutPart = ((float)musicFadeOutCurr) / musicFadeOutMax;
-						//fadeOutPart *= fadeOutPart;
-
-						int vol = maxVol - (fadeOutPart * maxVol);
-						fadingOutMusic->music->setVolume(vol);
-					}
-				}
-				if (musicFadeInMax > 0)
-				{
-					assert(fadingInMusic != NULL);
-					if (musicFadeInCurr == musicFadeInMax)
-					{
-						levelMusic = fadingInMusic;
-						levelMusic->music->setVolume(maxVol);
-						musicFadeInMax = -1;
-					}
-					else
-					{
-						musicFadeInCurr++;
-						float fadeInPart = ((float)musicFadeInCurr) / musicFadeInMax;
-						//float prop = fadeInPart;
-						//fadeInPart = 1.f - (1.f - fadeInPart * fadeInPart);
-						int vol = fadeInPart *  maxVol;
-						//cout << "prop: " << prop << ", fadeInPart: " << fadeInPart << "\n";
-						fadingInMusic->music->setVolume(vol);
-					}
-				}
+				mainMenu->musicPlayer->Update();
 
 				UpdateFade();
 
@@ -9220,26 +8978,9 @@ int GameSession::Run()
 		//recGhost->WriteToFile(fss.str());
 	}
 
-	if (levelMusic != NULL)
-	{
-		levelMusic->music->stop();
-		levelMusic->music->setVolume(0);
-		levelMusic = NULL;
-	}
-	
-	//delete [] line;
-
-	//window->setView( window->getDefaultView() );
-	//window->clear( Color::Red );
-	//window->display();
-	if( currMusic != NULL )
-	{
-		currMusic->stop();
-		currMusic = NULL;
-	}
+	mainMenu->musicPlayer->StopCurrentMusic();
 	
 	testBuf.SetRecOver( true );
-	
 
 	if( recPlayer != NULL )
 	{
@@ -9287,10 +9028,7 @@ int GameSession::Run()
 		SetFilterDefault( GetController(i).filter );
 	}
 
-	//pauseMenu = mainMenu->pauseMenu;
 	pauseMenu->owner = NULL;
-
-
 
 	return returnVal;
 }
@@ -9359,7 +9097,7 @@ void GameSession::Init()
 
 	pauseSoundNodeList = NULL;
 	
-	levelMusic = NULL;
+	originalMusic = NULL;
 
 	rain = NULL;
 	//stormCeilingInfo = NULL;
@@ -9931,6 +9669,55 @@ void GameSession::KillAllEnemies()
 	}
 }
 
+void GameSession::SetOriginalMusic()
+{
+	int pointsTotal = 0;
+	if (mh->songLevels.size() > 0)
+	{
+		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+		{
+			pointsTotal += (*it).second;
+		}
+	}
+
+	//TODO : use a better random algorithm later
+	srand(time(0));
+
+	if (pointsTotal > 0)
+	{
+		int r = rand() % (pointsTotal);
+
+		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+		{
+			r -= (*it).second;
+			if (r < 0)
+			{
+				//assumes that this is a valid check
+				if (mainMenu->musicManager->songMap.count((*it).first) == 0)
+				{
+					assert(0);
+				}
+
+				originalMusic = mainMenu->musicManager->songMap[(*it).first];
+				//musicMap[(*it).first] = originalMusic;
+				originalMusic->Load();
+				originalMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
+				originalMusic->music->setLoop(true);
+				originalMusic->music->play();
+				if (originalMusic == NULL)
+				{
+					assert(0);
+				}
+				break;
+			}
+		}
+	}
+	if (originalMusic == NULL && pointsTotal > 0)
+	{
+		assert(0);
+	}
+}
+
 void GameSession::QueryBorderTree(sf::Rect<double> &rect)
 {
 	queryMode = "border";
@@ -10266,75 +10053,14 @@ void GameSession::ClearFX()
 	}
 }
 
-void GameSession::PlayMusic(const std::string &name, sf::Time &startTime)
-{
-	MusicInfo *newMusic = musicMap[name];
 
-	if( levelMusic != NULL )
-		StopMusic(levelMusic);
-	
-
-	newMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
-	newMusic->music->setLoop(true);
-	newMusic->music->play();
-	newMusic->music->setPlayingOffset(startTime);
-
-	levelMusic = newMusic;
-}
-
-void GameSession::TransitionMusic(const std::string &name, sf::Time &startTime,
-	int crossFadeFrames)
-{
-	musicFadeInMax = crossFadeFrames;
-	musicFadeOutMax = crossFadeFrames;
-	musicFadeInCurr = 0;
-	musicFadeOutCurr = 0;
-
-	fadingOutMusic = levelMusic;
-	
-
-	MusicInfo *newMusic = musicMap[name];
-	newMusic->music->setVolume(0);
-	newMusic->music->setLoop(true);
-	newMusic->music->play();
-	newMusic->music->setPlayingOffset(startTime);
-	
-
-	fadingInMusic = newMusic;
-}
-
-void GameSession::StopMusic( MusicInfo *m)
-{
-	if (m != NULL)
-	{
-		m->music->setVolume(0);
-		m->music->stop();
-		m = NULL;
-	}
-}
-
-void GameSession::FadeOutCurrentMusic(int numFrames)
-{
-	fadingOutMusic = levelMusic;
-	musicFadeOutMax = numFrames;
-	musicFadeOutCurr = 0;
-}
 
 
 
 void GameSession::RestartLevel()
 {
-	/*if (levelMusic != originalMusic)
-	{
-		levelMusic = originalMusic;
-		levelMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
-		levelMusic->music->setLoop(true);
-		levelMusic->music->play();
-	}*/
 	currBroadcast = NULL;
 	currStorySequence = NULL;
-	musicFadeOutMax = -1;
-	musicFadeInMax = -1;
 
 	if( raceFight != NULL )
 		raceFight->Reset();

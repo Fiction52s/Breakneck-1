@@ -251,7 +251,7 @@ void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInpu
 	{
 		if (mapMenu->gs != NULL)
 		{
-			mapMenu->gs->levelMusic = songs[saSelector->currIndex];
+			mapMenu->gs->originalMusic = songs[saSelector->currIndex];
 		}
 	}
 	if (currInput.B && !prevInput.B)

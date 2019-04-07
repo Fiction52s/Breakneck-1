@@ -8,7 +8,7 @@ struct MainMenu;
 struct Tileset;
 struct Background;
 struct ScrollingBackground;
-
+struct MusicInfo;
 
 struct TitleScreen
 {
@@ -34,6 +34,8 @@ struct TitleScreen
 	Tileset *ts_kinHandEnergy;
 	MainMenu *mainMenu;
 	Background *background;
+
+	MusicInfo *titleMusic;
 	
 };
 

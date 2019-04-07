@@ -22,6 +22,7 @@
 #include "LevelSelector.h"
 #include "KinBoostScreen.h"
 #include "TerrainRender.h"
+#include "MusicPlayer.h"
 
 using namespace std;
 using namespace sf;
@@ -550,8 +551,12 @@ MainMenu::MainMenu()
 	transLength = 60;
 	transFrame = 0;
 
+	
+
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
+
+	
 
 	Shard::SetupShardMaps();
 	//MusicManager mm(this);
@@ -560,7 +565,7 @@ MainMenu::MainMenu()
 
 	pauseMenu = new PauseMenu(this);
 
-	titleScreen = new TitleScreen(this);
+	
 
 	deadThread = NULL;
 	loadThread = NULL;
@@ -636,7 +641,13 @@ MainMenu::MainMenu()
 	windowWidth = config->GetData().resolutionX;
 	windowHeight = config->GetData().resolutionY;
 
-	cout << "start mm constfr" << endl;
+	musicPlayer = new MusicPlayer(this);
+
+	menuMusic = musicManager->songMap["Breakneck_Menu_01"];
+	menuMusic->Load();
+
+	titleScreen = new TitleScreen(this);
+	//cout << "start mm constfr" << endl;
 	//load a preferences file at some point for window resolution and stuff
 
 	//could be bad cuz its static
@@ -940,7 +951,7 @@ void MainMenu::Init()
 	ts_kinTitle[4] = tilesetManager.GetTileset( "Title/kin_title_5_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[5] = tilesetManager.GetTileset( "Title/kin_title_6_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[6] = tilesetManager.GetTileset( "Title/kin_title_7_1216x1080.png", 1216, 1080 );*/
-	
+
 	
 
 	soundBuffers[S_DOWN] = soundManager.GetSound( "menu_down.ogg" );
@@ -1100,6 +1111,15 @@ void MainMenu::SetMode(Mode m)
 	
 	modeFrame = 0;
 
+	if (menuMode == MAINMENU && m != MAINMENU )
+	{
+		musicPlayer->TransitionMusic(menuMusic, 60);
+	}
+	else if (menuMode != MAINMENU && m == MAINMENU)
+	{
+		musicPlayer->TransitionMusic(titleScreen->titleMusic, 60);
+	}
+
 	menuMode = m;
 	//only need this because the transition is seamless so inputs can
 	//get buffered
@@ -1117,6 +1137,11 @@ void MainMenu::SetMode(Mode m)
 	{
 		kinBoostScreen->Reset();
 	}
+
+	/*if (menuMode == MAINMENU)
+	{
+		
+	}*/
 
 	
 }
@@ -1416,7 +1441,9 @@ void MainMenu::Run()
 	//SetMode(TRANS_MAIN_TO_CREDITS);
 	//SetMode(TRANS_MAIN_TO_MAPSELECT);
 	//SetMode(SPLASH);
-	SetMode(MAINMENU);
+	menuMode = MAINMENU;
+	//SetMode(MAINMENU);
+	musicPlayer->PlayMusic(titleScreen->titleMusic);
 	//SetMode(OPTIONS);
 	
 #if defined( USE_MOVIE_TEST )
@@ -1511,6 +1538,7 @@ void MainMenu::Run()
 					//window->clear();
 			} while (changedMode);
 			
+			musicPlayer->Update();
 
 			soundNodeList->Update();
 
@@ -1521,8 +1549,8 @@ void MainMenu::Run()
 		{
 			break;
 		}
-
 		
+
 		switch( menuMode )
 		{
 		case SPLASH:

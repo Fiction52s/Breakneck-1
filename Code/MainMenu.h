@@ -25,6 +25,8 @@ struct SaveMenuScreen;
 struct MainMenu;
 struct PauseMenu;
 struct LevelSelector;
+struct MusicInfo;
+
 struct CustomMapsHandler : GUIHandler
 {
 	//LevelSelector &ls;
@@ -450,6 +452,7 @@ struct FillRing;
 struct Level;
 struct TitleScreen;
 struct IntroMovie;
+struct MusicPlayer;
 
 
 struct MainMenu
@@ -519,10 +522,12 @@ struct MainMenu
 	
 	MusicManager *musicManager;
 	FillRing *testRing;
+
+	
 	MainMenu();
 	~MainMenu();
 	void Init();
-
+	MusicPlayer *musicPlayer;
 	double accumulator;
 	double currentTime;
 	int modeFrame;
@@ -584,6 +589,8 @@ struct MainMenu
 	//Tileset *ts_kinTitle[7];
 	TitleScreen *titleScreen;
 	IntroMovie *introMovie;
+
+	MusicInfo *menuMusic;
 
 	sf::Sprite splashSprite;
 	Tileset *ts_splashScreen;
