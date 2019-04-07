@@ -2469,6 +2469,9 @@ void MainMenu::HandleMenuMode()
 		//cout << "running currLevel: " << currLevel << endl;
 		GameSession::GameResultType result =
 			(GameSession::GameResultType)currLevel->Run();
+
+		musicPlayer->TransitionMusic(menuMusic, 60);
+
 		SaveFile *currFile = GetCurrentProgress();
 		World & world = currFile->worlds[worldMap->selectedColony];
 		int secIndex = worldMap->selectors[worldMap->selectedColony]->saSelector->currIndex;

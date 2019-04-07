@@ -14,6 +14,7 @@ struct MainMenu;
 
 struct MusicManager;
 struct MapSelectionMenu;
+struct MusicPlayer;
 struct MusicSelector
 {
 	static const int NUM_SLIDER_OPTIONS;
@@ -24,7 +25,7 @@ struct MusicSelector
 	static const int BOX_SPACING;
 
 	int GetNumBoxes();
-
+	MusicPlayer *musicPlayer;
 	MusicSelector ( MainMenu *mainMenu, MapSelectionMenu *mapMenu,
 		sf::Vector2f &p_topMid,
 		MusicManager *mm );

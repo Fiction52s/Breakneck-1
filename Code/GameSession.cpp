@@ -6069,6 +6069,7 @@ int GameSession::Run()
 		threa = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of );
 	}
 
+	//mainMenu->musicPlayer->StopCurrentMusic();
 	SetOriginalMusic();
 
 	std::stringstream ss;
@@ -6687,6 +6688,8 @@ int GameSession::Run()
 				keyMarker->Update();
 
 				mini->Update();
+
+				mainMenu->musicPlayer->Update();
 
 				if( adventureHUD != NULL )
 					adventureHUD->Update();
@@ -8978,7 +8981,7 @@ int GameSession::Run()
 		//recGhost->WriteToFile(fss.str());
 	}
 
-	mainMenu->musicPlayer->StopCurrentMusic();
+	
 	
 	testBuf.SetRecOver( true );
 
@@ -9699,18 +9702,25 @@ void GameSession::SetOriginalMusic()
 				}
 
 				originalMusic = mainMenu->musicManager->songMap[(*it).first];
-				//musicMap[(*it).first] = originalMusic;
-				originalMusic->Load();
-				originalMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
-				originalMusic->music->setLoop(true);
-				originalMusic->music->play();
+
 				if (originalMusic == NULL)
 				{
 					assert(0);
 				}
+				//musicMap[(*it).first] = originalMusic;
+				originalMusic->Load();
+				mainMenu->musicPlayer->TransitionMusic(originalMusic, 60);
+				//originalMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
+				//originalMusic->music->setLoop(true);
+				//originalMusic->music->play();
+				
 				break;
 			}
 		}
+	}
+	else
+	{
+		mainMenu->musicPlayer->FadeOutCurrentMusic(60);
 	}
 	if (originalMusic == NULL && pointsTotal > 0)
 	{

@@ -6,7 +6,7 @@
 #include "UIWindow.h"
 #include "MainMenu.h"
 #include "GameSession.h"
-
+#include "MusicPlayer.h"
 
 using namespace sf;
 using namespace std;
@@ -55,6 +55,8 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu,
 	mapNameRect.setSize(Vector2f(BOX_WIDTH, 80));
 	mapNameRect.setOrigin(mapNameRect.getLocalBounds().width / 2, mapNameRect.getLocalBounds().height);
 	mapNameRect.setPosition(topMid);
+
+	musicPlayer = mainMenu->musicPlayer;
 }
 
 void MusicSelector::SetMapName(const std::string &mName)
@@ -216,13 +218,15 @@ void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInpu
 			{
 				if (mi->music->getStatus() == sf::Music::Status::Playing)
 				{
-					mi->music->pause();
+					musicPlayer->PauseCurrentMusic();
+					//mi->music->pause();
 				}
 				else
 				{
-					mi->music->setVolume(100);
-					mi->music->setLoop(true);
-					mi->music->play();
+					musicPlayer->UnpauseCurrentMusic();
+					//mi->music->setVolume(100);
+					//mi->music->setLoop(true);
+					//mi->music->play();
 				}
 				
 				//previewSong = NULL;
@@ -231,20 +235,21 @@ void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInpu
 			}
 			else
 			{
-				previewSong->music->stop();
+				//previewSong->music->stop();
 				mi->Load();
 				previewSong = mi;
-				mi->music->setLoop(true);
-				mi->music->setVolume(100);
-				previewSong->music->play();
+
+				musicPlayer->TransitionMusic(mi, 60);
+				//mi->music->setLoop(true);
+				//mi->music->setVolume(100);
+				//previewSong->music->play();
 			}
 		}
 		else
 		{
 			mi->Load();
-			mi->music->setVolume(100);
-			mi->music->play();
 			previewSong = mi;
+			musicPlayer->PlayMusic(mi);
 		}
 	}
 	else if (currInput.X && !prevInput.X)
@@ -310,7 +315,7 @@ void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInpu
 	{
 		if (previewSong != NULL && previewSong->music->getStatus() == Music::Status::Paused)
 		{
-			previewSong->music->stop();
+			musicPlayer->StopCurrentMusic();
 			previewSong = NULL;
 		}
 

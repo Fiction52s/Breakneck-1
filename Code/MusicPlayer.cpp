@@ -79,6 +79,22 @@ void MusicPlayer::Update()
 	}
 }
 
+void MusicPlayer::PauseCurrentMusic()
+{
+	if (currMusic != NULL)
+	{
+		currMusic->music->pause();
+	}
+}
+
+void MusicPlayer::UnpauseCurrentMusic()
+{
+	if (currMusic != NULL)
+	{
+		currMusic->music->play();
+	}
+}
+
 void MusicPlayer::TransitionMusic(MusicInfo *newMusic,
 	int crossFadeFrames, sf::Time startTime)
 {

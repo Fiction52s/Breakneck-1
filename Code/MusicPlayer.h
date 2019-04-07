@@ -18,6 +18,8 @@ struct MusicPlayer
 	void StopCurrentMusic();
 	void FadeOutCurrentMusic(int numFrames);
 	void Update();
+	void PauseCurrentMusic();
+	void UnpauseCurrentMusic();
 	int musicFadeOutMax;
 	int musicFadeOutCurr;
 	MusicInfo *fadingOutMusic;
