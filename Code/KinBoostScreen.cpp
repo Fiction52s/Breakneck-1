@@ -18,10 +18,10 @@ KinBoostScreen::KinBoostScreen( MainMenu *mm )
 	ts_stars[2] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_stars_01c.png", 1920, 1080);
 	ts_stars[3] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_stars_01d.png", 1920, 1080);
 
-	ts_kinBoost = mainMenu->tilesetManager.GetTileset("KinBoost/kin_loadboost_64x64.png", 64, 64);
+	ts_kinBoost = mainMenu->tilesetManager.GetTileset("Kin/kin_exit_128x128.png", 128, 128);
 
 	kinSpr.setTexture(*ts_kinBoost->texture);
-	kinSpr.setTextureRect(ts_kinBoost->GetSubRect(0));
+	kinSpr.setTextureRect(ts_kinBoost->GetSubRect(71));
 	kinSpr.setOrigin(kinSpr.getLocalBounds().width / 2, kinSpr.getLocalBounds().height / 2);
 	kinSpr.setPosition(Vector2f(960, 540));
 	kinSpr.setScale(2, 2);

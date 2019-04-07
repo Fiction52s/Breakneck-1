@@ -113,7 +113,10 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[DEATH] = owner->GetTileset("Kin/death_128x96.png", 128, 96, skin);
 	tileset[JUMPSQUAT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
 	tileset[INTRO] = owner->GetTileset("Kin/enter_64x64.png", 64, 64, skin);
+	
 	tileset[EXIT] = owner->GetTileset("Kin/exit_64x128.png", 64, 128, skin);
+	tileset[EXITBOOST] = owner->GetTileset("Kin/kin_exit_128x128.png", 128, 128, skin);
+	tileset[INTROBOOST] = tileset[EXITBOOST];
 	tileset[EXITWAIT] = NULL;
 	tileset[GRAVREVERSE] = owner->GetTileset("Kin/grav_64x64.png", 64, 64, skin);
 	tileset[RIDESHIP] = owner->GetTileset("Kin/dive_64x64.png", 64, 64, skin);
@@ -1134,11 +1137,14 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[GETPOWER_AIRDASH_MEDITATE] = 300;
 		actionLength[RIDESHIP] = 1;
 		actionLength[SKYDIVE] = 9 * 2;
-		actionLength[EXIT] = 29 * 2;
+		actionLength[EXIT] = 29 * 2; //16 * 7
+		actionLength[EXITBOOST] = 68 * 2;
+
 		actionLength[EXITWAIT] = 6 * 3 * 2;
 		actionLength[GRAVREVERSE] = 20;
 		actionLength[JUMPSQUAT] = 3;
 		actionLength[INTRO] = 18 * 2;
+		actionLength[INTROBOOST] = 43 * 2;
 		actionLength[AIRDASH] = 33;//27;
 		actionLength[STEEPSLIDEATTACK] = 16;
 		actionLength[AIRHITSTUN] = 1;
@@ -1226,7 +1232,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		grindActionLength = 32;
 		//SetActionExpr( SPAWNWAIT );
-		SetActionExpr(INTRO);
+		SetActionExpr(INTROBOOST);//INTRO
 		frame = 0;
 		
 		timeSlowStrength = 5;
@@ -1747,6 +1753,10 @@ void Actor::ActionEnded()
 			SetAction(JUMP);
 			frame = 1;
 			break;
+		case INTROBOOST:
+			SetAction(JUMP);
+			frame = 1;
+			break;
 		case EXIT:
 			SetAction(EXITWAIT);
 			frame = 0;
@@ -1755,11 +1765,15 @@ void Actor::ActionEnded()
 			
 			//frame = 0;
 			break;
+		case EXITBOOST:
+			
+			break;
 		case SPAWNWAIT:
 			SetAction(INTRO);
 			frame = 0;
 			break;
 		case GOALKILL:
+			facingRight = true;
 			SetAction(GOALKILLWAIT);
 			frame = 0;
 			owner->scoreDisplay->Activate();
@@ -2169,7 +2183,7 @@ void Actor::Respawn()
 
 	if( !owner->poiMap.count( "ship" ) > 0 )
 	{
-		SetAction(INTRO);
+		SetAction(INTROBOOST);
 		frame = 0;
 		//owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
 	}
@@ -2627,7 +2641,7 @@ void Actor::UpdatePrePhysics()
 
 	if( IsIntroAction( action ) || (IsGoalKillAction(action) && action != GOALKILLWAIT) || action == EXIT 
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
-		|| action == GRABSHIP || action == EXITWAIT || IsSequenceAction( action ) )
+		|| action == GRABSHIP || action == EXITWAIT || IsSequenceAction( action ) || action == EXITBOOST )
 	{
 		/*if (action == SPAWNWAIT && frame == actionLength[SPAWNWAIT] - 6)
 		{
@@ -2641,7 +2655,7 @@ void Actor::UpdatePrePhysics()
 				bool x = currInput.X && !prevInput.X;
 				if ( ( a || x ) && owner->scoreDisplay->waiting)
 				{
-					if (a)
+					if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 					{
 						owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 					}
@@ -2693,13 +2707,11 @@ void Actor::UpdatePrePhysics()
 		if( ( a || x ) && owner->scoreDisplay->waiting )
 		{
 			//owner->scoreDisplay->Reset();
-			
-			
-			if (a)
+			if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 			{
 				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 			}
-			else if (x)
+			else
 			{
 				owner->resType = GameSession::GameResultType::GR_WIN;
 			}
@@ -2710,7 +2722,15 @@ void Actor::UpdatePrePhysics()
 		if( !owner->scoreDisplay->active )
 		{
 			owner->Fade(false, 30, Color::Black, true);
-			SetAction(EXIT);
+			//SetAction(EXIT);
+
+			if (owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
+			{
+				SetAction(EXITBOOST);
+			}
+			else
+				SetAction(EXIT);
+
 			//position = V2d(owner->goalNodePos.x, owner->goalNodePos.y -80.f);
 			frame = 0;
 		}
@@ -8534,7 +8554,7 @@ void Actor::LoadAllAuras()
 		for (int j = 0; j < Action::Count; ++j)  //AUTORUN
 		{
 			numT = iList[currIndex++];
-				
+
 			for (int f = 0; f < 3; ++f)
 			{
 				fListArr = new list<Vector2f>[numT];
@@ -8553,13 +8573,6 @@ void Actor::LoadAllAuras()
 				}
 			}
 		}
-		/*for (int j = Action::AUTORUN; j < Action::Count; ++j)
-		{
-			for (int f = 0; f < 3; ++f)
-			{
-				auraPoints[f][j] = NULL;
-			}
-		}*/
 		
 		
 		cout << "finished reading auras" << endl;
@@ -8597,10 +8610,7 @@ void Actor::LoadAllAuras()
 			}
 
 			sizeExtra += numT * 3;
-			//++totalSize;
-			//totalSize += auraPoints[0][j]->size() + auraPoints[1][j]->size() + auraPoints[2][j]->size();
 		}
-		//outPointList = new list<Vector2f>[numTiles];
 		totalSize *= 2; //because there are 2 position values for each value
 		totalSize += Action::Count; //number of tiles
 
@@ -11410,9 +11420,9 @@ void Actor::GroundExtraAccel()
 //int blah = 0;
 void Actor::UpdatePhysics()
 {
-	if( action == INTRO || action == SPAWNWAIT || IsGoalKillAction(action) || action == EXIT
+	if( IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
-		|| action == GRABSHIP || action == EXITWAIT)
+		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST)
 		return;
 
 	/*if (ground != NULL && groundSpeed != 0)
@@ -15611,7 +15621,7 @@ void Actor::UpdatePostPhysics()
 	bool dontActivateLightningAction = action == SEQ_MEDITATE_MASKON || 
 		action == SEQ_MASKOFF || action == SEQ_MEDITATE;
 
-	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % smallLightningCounter == 0 && !dontActivateLightningAction)
+	if (!IsIntroAction(action) && owner->totalGameFrames % smallLightningCounter == 0 && !dontActivateLightningAction)
 	{
 		RelEffectInstance params;
 		//EffectInstance params;
@@ -15626,7 +15636,7 @@ void Actor::UpdatePostPhysics()
 		smallLightningPool[r]->ActivateEffect(&params);
 	}
 
-	if (action != INTRO && action != SPAWNWAIT && owner->totalGameFrames % 30 == 0)
+	if (!IsIntroAction(action) && owner->totalGameFrames % 30 == 0)
 	{
 		RelEffectInstance params;
 		//EffectInstance params;
@@ -16444,7 +16454,7 @@ void Actor::UpdatePostPhysics()
 
 		slowCounter = 1;
 
-		if( action != INTRO && action != SPAWNWAIT )
+		if( !IsIntroAction(action) )
 			if( invincibleFrames > 0 )
 				--invincibleFrames;
 
@@ -16582,6 +16592,10 @@ void Actor::UpdatePostPhysics()
 	if (action == EXITWAIT && frame == actionLength[EXITWAIT])
 	{
 		owner->goalDestroyed = true;	
+	}
+	else if (action == EXITBOOST && frame == actionLength[EXITBOOST])
+	{
+		owner->goalDestroyed = true;
 	}
 	
 
@@ -16873,7 +16887,7 @@ bool Actor::IsGoalKillAction(Action a)
 
 bool Actor::IsIntroAction(Action a)
 {
-	return a == INTRO || a == SPAWNWAIT;
+	return a == INTRO || a == SPAWNWAIT || a == INTROBOOST;
 }
 
 bool Actor::IsSequenceAction(Action a)
@@ -16884,7 +16898,7 @@ bool Actor::IsSequenceAction(Action a)
 
 bool Actor::IsExitAction(Action a)
 {
-	return a == EXIT || a == EXITWAIT || a == WAITFORSHIP || a == GRABSHIP;
+	return a == EXIT || a == EXITWAIT || a == WAITFORSHIP || a == GRABSHIP || a == EXITBOOST;
 }
 
 void Actor::SeqAfterCrawlerFight()
@@ -18484,7 +18498,7 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 void Actor::Draw( sf::RenderTarget *target )
 {
 	//dustParticles->Draw(target);
-	if (action == EXITWAIT || action == SPAWNWAIT || (action == INTRO && frame < 11 ) || action == SEQ_LOOKUPDISAPPEAR )
+	if (action == EXITWAIT || action == SPAWNWAIT /*|| (action == INTRO && frame < 11 )*/ || action == SEQ_LOOKUPDISAPPEAR )
 	{
 		return;
 	}
@@ -21549,6 +21563,17 @@ void Actor::UpdateSprite()
 			}
 			break;
 		}
+	case INTROBOOST:
+	{
+		SetSpriteTexture(action);
+		SetSpriteTile((frame / 2)+68, facingRight);
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2,
+			sprite->getLocalBounds().height / 2);
+		sprite->setPosition(position.x, position.y);
+		sprite->setRotation(0);
+		break;
+	}
 	case EXIT:
 		{
 			SetSpriteTexture( action );
@@ -21561,6 +21586,18 @@ void Actor::UpdateSprite()
 			sprite->setRotation( 0 );
 			break;
 		}
+	case EXITBOOST:
+	{
+		SetSpriteTexture(action);
+
+		SetSpriteTile(frame / 2, facingRight);
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2,
+			sprite->getLocalBounds().height / 2);
+		sprite->setPosition(position.x, position.y);//position.x, position.y );
+		sprite->setRotation(0);
+		break;
+	}
 	case NEXUSKILL:
 	case GOALKILL:
 		{

@@ -468,7 +468,9 @@ void MultiLoadingScreen::Update()
 				mainMenu->GetController( i ).SetFilter( playerSection[i]->profileSelect->currProfile->filter );
 			}
 
+			mainMenu->gameRunType = MainMenu::GRT_FREEPLAY;
 			int res = gs->Run();
+			
 
 			XBoxButton filter[ControllerSettings::Count];
 			SetFilterDefault( filter );
@@ -993,6 +995,7 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 		GameSession *gs = new GameSession( NULL, this, p_path );
 		GameSession::sLoad(gs);
 		
+		gameRunType = GRT_FREEPLAY;
 		result = gs->Run();
 	
 
@@ -1010,9 +1013,11 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 	Vector2f lastViewCenter( 0, 0 );
 	while( result == 0 )
 	{
+		gameRunType = MainMenu::GRT_FREEPLAY;
 		window->setView( v );
 		GameSession *gs = new GameSession( NULL, this, p_path );
 		GameSession::sLoad(gs);
+		
 		result = gs->Run();
 		lastViewCenter = gs->lastViewCenter;
 		lastViewSize = gs->lastViewSize;
@@ -1443,7 +1448,7 @@ void MainMenu::Run()
 	//SetMode(SPLASH);
 	menuMode = MAINMENU;
 	//SetMode(MAINMENU);
-	musicPlayer->PlayMusic(titleScreen->titleMusic);
+	//musicPlayer->PlayMusic(titleScreen->titleMusic);
 	//SetMode(OPTIONS);
 	
 #if defined( USE_MOVIE_TEST )
@@ -1867,6 +1872,7 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	doneLoading = false;
 
 	int wIndex = lev->sec->world->index;
+	gameRunType = GameRunType::GRT_ADVENTURE;
 	SetModeLoadingMap(wIndex);
 
 	doneLoading = false;
@@ -1984,6 +1990,7 @@ void MainMenu::HandleMenuMode()
 	{
 	case DEBUG_RACEFIGHT_RESULTS:
 	{
+		gameRunType = MainMenu::GRT_FREEPLAY;
 		while (window->pollEvent(ev))
 		{
 
@@ -2438,6 +2445,7 @@ void MainMenu::HandleMenuMode()
 		if ( kinBoostScreen->levName == "" && loadThread == NULL && deadThread == NULL)
 		{
 			//window->setVerticalSyncEnabled(true);
+			gameRunType = GRT_ADVENTURE;
 			SetMode( RUNNINGMAP );
 			//return HandleMenuMode();
 		}
@@ -2902,10 +2910,12 @@ void MainMenu::HandleMenuMode()
 				delete loadThread;
 				loadThread = NULL;
 				SetMode( RUNNINGMAP );
+				gameRunType = GameRunType::GRT_ADVENTURE;
 			}
 			else
 			{
 				//menuMode = LOADINGMAP;
+				gameRunType = GameRunType::GRT_ADVENTURE;
 				SetModeLoadingMap(0);
 			}
 
@@ -2930,6 +2940,7 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 	{
 		if( b->name == "Play" )
 		{
+			menu->gameRunType = MainMenu::GRT_FREEPLAY;
 			optionChosen = true;
 			GameSession *gs = new GameSession( NULL, menu, ls.GetSelectedPath() );
 			GameSession::sLoad( gs );
@@ -3840,6 +3851,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 					//into list
 				}
 
+				mainMenu->gameRunType = MainMenu::GRT_FREEPLAY;
 				int res = gs->Run();
 
 				XBoxButton filter[ControllerSettings::Count];
@@ -4089,7 +4101,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 					{
 						mainMenu->GetController(i).SetFilter(multiPlayerSection[i]->profileSelect->currProfile->filter);
 					}
-
+					mainMenu->gameRunType = MainMenu::GRT_FREEPLAY;
 					int res = gs->Run();
 
 					XBoxButton filter[ControllerSettings::Count];

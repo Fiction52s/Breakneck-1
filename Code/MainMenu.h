@@ -508,6 +508,13 @@ struct MainMenu
 		S_Count
 	};
 
+	enum GameRunType
+	{
+		GRT_ADVENTURE,
+		GRT_FREEPLAY
+	};
+
+	GameRunType gameRunType;
 	SaveFile *GetCurrentProgress();
 	ControlProfileManager *cpm;
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];

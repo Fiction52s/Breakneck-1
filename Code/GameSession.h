@@ -552,6 +552,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//sf::Music *currMusic;
 	sf::Texture backTex;
 
+	bool boostIntro;
+
 	void SetOriginalMusic();
 
 

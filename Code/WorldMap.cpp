@@ -1775,6 +1775,7 @@ void MapSector::Update(ControllerState &curr,
 				{
 					state = NORMAL;
 				}
+				ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
 				ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
 				ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));
 			}

@@ -77,7 +77,7 @@ void TitleScreen::Update()
 {
 	if (frame == 0)
 	{
-		mainMenu->musicPlayer->PlayMusic(titleMusic);
+		//mainMenu->musicPlayer->PlayMusic(titleMusic);
 	}
 
 	background->Update();

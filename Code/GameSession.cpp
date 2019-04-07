@@ -9043,6 +9043,8 @@ void GameSession::Init()
 
 	mini = NULL;
 
+	boostIntro = false;
+
 	stormCeilingOn = false;
 	stormCeilingHeight = 0;
 

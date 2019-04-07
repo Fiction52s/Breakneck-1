@@ -14,6 +14,8 @@ void MusicPlayer::Reset()
 {
 	musicFadeOutMax = -1;
 	musicFadeInMax = -1;
+	fadingOutMusic = NULL;
+	fadingInMusic = NULL;
 }
 
 void MusicPlayer::StopCurrentMusic()
@@ -28,6 +30,9 @@ void MusicPlayer::StopCurrentMusic()
 void MusicPlayer::PlayMusic(MusicInfo *newMusic, sf::Time startTime)
 {
 	//MusicInfo *newMusic = musicMap[name];
+
+	musicFadeOutMax = -1;
+	musicFadeInMax = -1;
 
 	if (currMusic != NULL)
 		StopMusic(currMusic);
@@ -103,6 +108,7 @@ void MusicPlayer::TransitionMusic(MusicInfo *newMusic,
 		musicFadeInMax = crossFadeFrames;
 		musicFadeInCurr = 0;
 
+		musicFadeOutMax = -1;
 	}
 	else
 	{
@@ -141,7 +147,10 @@ void MusicPlayer::StopMusic(MusicInfo *m)
 
 void MusicPlayer::FadeOutCurrentMusic(int numFrames)
 {
-	fadingOutMusic = currMusic;
-	musicFadeOutMax = numFrames;
-	musicFadeOutCurr = 0;
+	if (currMusic != NULL)
+	{
+		fadingOutMusic = currMusic;
+		musicFadeOutMax = numFrames;
+		musicFadeOutCurr = 0;
+	}
 }
