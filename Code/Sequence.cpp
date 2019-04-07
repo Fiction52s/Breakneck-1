@@ -1034,7 +1034,7 @@ CrawlerDefeatedSeq::CrawlerDefeatedSeq( GameSession *p_owner)
 
 	stateLength[PLAYMOVIE] = 1000000;
 
-	assert(mov.openFromFile("Resources/Movie/Kin_Meditate_01.mp4"));
+	assert(mov.openFromFile("Resources/Movie/crawler_slash.mp4"));
 	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 }
 
@@ -1074,7 +1074,6 @@ bool CrawlerDefeatedSeq::Update()
 		return false;
 	}
 
-
 	if( state == PLAYMOVIE )
 	{
 		sfe::Status movStatus = mov.getStatus();
@@ -1102,10 +1101,108 @@ bool CrawlerDefeatedSeq::Update()
 		}
 	}
 	++frame;
+
+	return true;
 }
 
 
 void CrawlerDefeatedSeq::Draw(sf::RenderTarget *target,
+	EffectLayer layer)
+{
+	if (layer != EffectLayer::IN_FRONT)
+	{
+		return;
+	}
+
+	target->draw(mov);
+}
+
+
+BasicMovieSeq::BasicMovieSeq(GameSession *p_owner,
+	const std::string &movieName, int preMovieLength, int postMovieLength)
+	:owner(p_owner)
+{
+	Reset();
+
+	stateLength[PREMOVIE] = preMovieLength;
+	stateLength[PLAYMOVIE] = 1000000;
+	stateLength[POSTMOVIE] = postMovieLength;
+
+
+	string path = "Resources/Movie/";
+	string ext = ".ogv";
+	string movieFull = path + movieName + ext;
+
+	assert(mov.openFromFile(movieFull));
+	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
+}
+
+void BasicMovieSeq::Reset()
+{
+	state = PREMOVIE;
+	frame = 0;
+}
+
+bool BasicMovieSeq::Update()
+{
+	Actor *player = owner->GetPlayer(0);
+
+	if (frame == stateLength[state] && state != END)
+	{
+		int s = state;
+		s++;
+		state = (State)s;
+		frame = 0;
+
+		if (state == END)
+		{
+		}
+	}
+
+	if (state == END)
+	{
+		owner->state = GameSession::RUN;
+		owner->Fade(true, 60, Color::Black);
+		return false;
+	}
+
+	if (state == PREMOVIE)
+	{
+		PreMovieUpdate();
+	}
+	else if (state == PLAYMOVIE)
+	{
+		
+		sfe::Status movStatus = mov.getStatus();
+		if (frame == 0)
+		{
+			owner->ClearFade();
+			owner->state = GameSession::SEQUENCE;
+			mov.setPlayingOffset(sf::Time::Zero);
+			mov.play();
+		}
+		else
+		{
+			mov.update();
+
+			//cout << "mov: " << mov.getPlayingOffset().asSeconds() << endl;
+			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
+			{
+				frame = stateLength[PLAYMOVIE] - 1;
+			}
+		}
+	}
+	else if (state == POSTMOVIE)
+	{
+		PostMovieUpdate();
+	}
+	++frame;
+
+	return true;
+}
+
+
+void BasicMovieSeq::Draw(sf::RenderTarget *target,
 	EffectLayer layer)
 {
 	if (layer != EffectLayer::IN_FRONT)

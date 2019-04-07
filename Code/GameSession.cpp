@@ -10315,6 +10315,7 @@ void GameSession::StopMusic( MusicInfo *m)
 
 void GameSession::FadeOutCurrentMusic(int numFrames)
 {
+	fadingOutMusic = levelMusic;
 	musicFadeOutMax = numFrames;
 	musicFadeOutCurr = 0;
 }

@@ -16665,8 +16665,11 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 			offsetX = 0;
 		}
 
-		owner->currStorySequence = trigger->storySeq;
-		owner->state = GameSession::STORY;
+		//owner->currStorySequence = trigger->storySeq;
+		//owner->state = GameSession::STORY;
+		//owner->state = GameSession::SEQUENCE;
+		//physicsOver = true;
+		owner->activeSequence = trigger->gameSequence;
 		
 		break;
 	case TRIGGER_GETAIRDASH:

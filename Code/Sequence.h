@@ -6,9 +6,12 @@
 #include "Movement.h"
 #include <boost/thread.hpp>
 #include <sfeMovie\Movie.hpp>
+#include "EffectLayer.h"
 
+struct Edge;
 struct GameSession;
 struct MovementSequence;
+struct PoiInfo;
 
 struct FlashedImage
 {
@@ -207,6 +210,47 @@ struct CrawlerDefeatedSeq : Sequence
 	sf::Vertex darkQuad[4];
 };
 
+
+
+struct BasicMovieSeq : Sequence
+{
+	BasicMovieSeq(GameSession *owner,
+		const std::string &movieName,
+		int preMovieLength,
+		int postMovieLength );
+	~BasicMovieSeq();
+
+	enum State
+	{
+		PREMOVIE,
+		PLAYMOVIE,
+		POSTMOVIE,
+		END,
+		Count
+	};
+
+	State state;
+	int stateLength[Count];
+	
+	bool Update();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+	void Reset();
+
+	virtual void PreMovieUpdate() {}
+	virtual void PostMovieUpdate() {}
+
+
+	GameSession *owner;
+	sfe::Movie mov;
+};
+
+struct MonumentSeq : BasicMovieSeq
+{
+	MonumentSeq(GameSession *owner);
+	void PreMovieUpdate();
+	void PostMovieUpdate();
+};
 
 struct NexusCore1Seq : Sequence
 {

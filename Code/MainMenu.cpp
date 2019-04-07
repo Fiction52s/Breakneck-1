@@ -1394,7 +1394,8 @@ void MainMenu::Run()
 
 #if defined( USE_MOVIE_TEST )
 	sfe::Movie m;
-	assert( m.openFromFile("Resources/Movie/Kin_Meditate_01.mp4") );
+	assert( m.openFromFile("Resources/Movie/crawler_slash.ogv") );
+	m.setVolume(100);
 	m.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 	

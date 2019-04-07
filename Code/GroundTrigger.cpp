@@ -38,8 +38,9 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 	switch (trigType)
 	{
 	case TRIGGER_HOUSEFAMILY:
-		storySeq = new StorySequence(owner);
-		storySeq->Load("kinhouse");
+		gameSequence = new MonumentSeq(owner);
+		//storySeq = new StorySequence(owner);
+		//storySeq->Load("kinhouse");
 		break;
 	case TRIGGER_GETAIRDASH:
 		gameSequence = new GetAirdashPowerSeq(owner);

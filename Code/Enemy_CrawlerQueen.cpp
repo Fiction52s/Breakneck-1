@@ -1018,6 +1018,8 @@ void CrawlerQueen::ConfirmKill()
 		//(*it)->SetLocked(false);
 	}
 
+	owner->FadeOutCurrentMusic(60);
+
 	owner->cam.EaseOutOfManual(60);
 
 	mover->groundSpeed = 0;
