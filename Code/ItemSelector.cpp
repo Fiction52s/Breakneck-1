@@ -143,6 +143,14 @@ void SingleAxisSelector::Reset()
 	currIndex = startIndex;
 }
 
+void SingleAxisSelector::ResetCounters()
+{
+	currWaitLevel = 0;
+	flipCounterUp = 0;
+	flipCounterDown = 0;
+	framesWaiting = 0;
+}
+
 VertSlider::VertSlider()
 {
 }

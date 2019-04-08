@@ -1626,6 +1626,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				V2d norm = enemy->ground->Normal();
 				double nodeHeight = 104;
 				goalNodePos = gPos + norm * nodeHeight;
+				float space = 78.f;
+				goalNodePosFinal = V2d(goalNodePos.x, goalNodePos.y - space);
 				cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
 			}
 			else if( typeName == "healthfly" )
@@ -2985,6 +2987,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Nexus *enemy = new Nexus( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
 
 				goalNodePos = enemy->GetKillPos();
+				float space = 78.f;
+				V2d end(goalNodePos.x, goalNodePos.y - space);
 				hasGoal = true;
 				nexus = enemy;
 				//nexusPos = enemy->GetKillPos();//enemy->position;
@@ -8259,27 +8263,32 @@ int GameSession::Run()
 
 			//savedinput when you enter pause
 
-			UpdateInput();
-			
-			//cout << "up: " << (int)currInput.LUp() << "down: " << (int)currInput.LDown() <<
-			//	", left: " << (int)currInput.LLeft() << ", right: " << (int)currInput.LRight() << endl;
-			PauseMenu::UpdateResponse ur = pauseMenu->Update( GetCurrInputUnfiltered( 0 ), GetPrevInputUnfiltered( 0 ) );
-			switch( ur )
+			accumulator += frameTime;
+
+			while (accumulator >= TIMESTEP)
 			{
-			case PauseMenu::R_NONE:
+
+
+
+				UpdateInput();
+
+				PauseMenu::UpdateResponse ur = pauseMenu->Update(GetCurrInputUnfiltered(0), GetPrevInputUnfiltered(0));
+				switch (ur)
+				{
+				case PauseMenu::R_NONE:
 				{
 					//do nothing as usual
 					break;
 				}
-			case PauseMenu::R_P_RESUME:
+				case PauseMenu::R_P_RESUME:
 				{
 					state = GameSession::RUN;
 					pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_off"));
-					soundNodeList->Pause( false );
+					soundNodeList->Pause(false);
 					pauseMenu->shardMenu->StopMusic();
 					break;
 				}
-			case PauseMenu::R_P_RESPAWN:
+				case PauseMenu::R_P_RESPAWN:
 				{
 					state = GameSession::RUN;
 					RestartLevel();
@@ -8291,28 +8300,29 @@ int GameSession::Run()
 					//kill sounds on respawn
 					break;
 				}
-			case PauseMenu::R_P_EXITLEVEL:
+				case PauseMenu::R_P_EXITLEVEL:
 				{
 					quit = true;
 					returnVal = GR_EXITLEVEL;
 					break;
 				}
-			case PauseMenu::R_P_EXITTITLE:
+				case PauseMenu::R_P_EXITTITLE:
 				{
 					quit = true;
 					returnVal = GR_EXITTITLE;
 					break;
 				}
-			case PauseMenu::R_P_EXITGAME:
+				case PauseMenu::R_P_EXITGAME:
 				{
 					quit = true;
 					returnVal = GR_EXITGAME;
 					break;
 				}
 
-			}
+				}
 
-			
+				accumulator -= TIMESTEP;
+			}
 			//if( currInput.
 
 			/*if( Keyboard::isKeyPressed( Keyboard::O ) )

@@ -159,8 +159,8 @@ void Goal::ProcessState()
 	{
 		if (frame == 1)
 		{
-			owner->cam.manual = true;
-			owner->cam.Ease(Vector2f(position), 1, 60, CubicBezier());
+			
+			//owner->cam.Ease(Vector2f(position), 1, 60, CubicBezier());
 		}
 
 		//if (frame == 1)

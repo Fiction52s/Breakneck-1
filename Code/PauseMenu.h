@@ -151,6 +151,7 @@ struct PauseMenu
 	PauseMenu( MainMenu *p_mainMenu );
 	~PauseMenu();
 	void Draw( sf::RenderTarget *target );
+	void ResetCounters();
 	void SetTab( Tab t );
 	void TabLeft();
 	void TabRight();

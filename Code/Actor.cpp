@@ -1138,13 +1138,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[RIDESHIP] = 1;
 		actionLength[SKYDIVE] = 9 * 2;
 		actionLength[EXIT] = 29 * 2; //16 * 7
-		actionLength[EXITBOOST] = 68 * 2;
+		actionLength[EXITBOOST] = 71 * 2;
 
 		actionLength[EXITWAIT] = 6 * 3 * 2;
 		actionLength[GRAVREVERSE] = 20;
 		actionLength[JUMPSQUAT] = 3;
 		actionLength[INTRO] = 18 * 2;
-		actionLength[INTROBOOST] = 43 * 2;
+		actionLength[INTROBOOST] = 40 * 2;
 		actionLength[AIRDASH] = 33;//27;
 		actionLength[STEEPSLIDEATTACK] = 16;
 		actionLength[AIRHITSTUN] = 1;
@@ -15817,6 +15817,7 @@ void Actor::UpdatePostPhysics()
 
 	if( hitGoal )// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
+		
 		SetActionExpr( GOALKILL );
 		desperationMode = false;
 		hitGoal = false;
@@ -15835,6 +15836,7 @@ void Actor::UpdatePostPhysics()
 
 		frame = 0;
 		position = owner->goalNodePos;
+		owner->cam.Ease(Vector2f(owner->goalNodePosFinal), 1, 60, CubicBezier());
 		rightWire->Reset();
 		leftWire->Reset();
 		desperationMode = false;
@@ -21566,7 +21568,7 @@ void Actor::UpdateSprite()
 	case INTROBOOST:
 	{
 		SetSpriteTexture(action);
-		SetSpriteTile((frame / 2)+68, facingRight);
+		SetSpriteTile((frame / 2)+71, facingRight);
 
 		sprite->setOrigin(sprite->getLocalBounds().width / 2,
 			sprite->getLocalBounds().height / 2);
@@ -21654,15 +21656,16 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2,
 				sprite->getLocalBounds().height / 2 + 24 );
 
-			if (action == GOALKILL)
+			if (action == GOALKILL) //move this laster ewww
 			{
 				CubicBezier cb(.61, .3, .4, 1);//0, 0, 1, 1 );
 				
 
 				//cb.GetValue()
-				float space = 78.f;
+				
 				V2d start = owner->goalNodePos;
-				V2d end(owner->goalNodePos.x, owner->goalNodePos.y - space);
+				
+				V2d end = owner->goalNodePosFinal;
 				int st = 48 * 2;
 				if (frame >= st)
 				{

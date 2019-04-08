@@ -839,6 +839,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 	sf::Vector2<double> goalPos;
 	sf::Vector2<double> goalNodePos;
+	sf::Vector2<double> goalNodePosFinal;
 	V2d nexusPos;
 	std::string rayMode;
 	sf::VertexArray * SetupEnergyFlow1(

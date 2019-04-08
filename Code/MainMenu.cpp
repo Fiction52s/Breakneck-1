@@ -1773,23 +1773,22 @@ void DispLoadTest( MainMenu *mm )
 	while (!mm->doneLoading)
 	{
 		
-		//pTex->clear(Color::Black);
+		pTex->clear(Color::Black);
 		win->clear(Color::Red);
 		//win->clear(Color::Green);
 
 		mm->loadingIconBackpack[1].rotate(-1);
 		mm->loadingIconBackpack[2].rotate(2);
 
-		win->draw(mm->loadingBGSpr);
+		pTex->draw(mm->loadingBGSpr);
 
-		//for (int i = 0; i < 3; ++i)
-		//	pTex->draw(mm->loadingIconBackpack[i]);
+		for (int i = 0; i < 3; ++i)
+			pTex->draw(mm->loadingIconBackpack[i]);
 
-
-	//	pTex->display();
-//		sf::Sprite spr;
-//		spr.setTexture(pTex->getTexture());
-		//win->draw(spr);
+		pTex->display();
+		sf::Sprite spr;
+		spr.setTexture(pTex->getTexture());
+		win->draw(spr);
 		win->display();
 		
 	}

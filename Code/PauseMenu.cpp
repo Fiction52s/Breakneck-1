@@ -646,7 +646,10 @@ void PauseMenu::ApplySoundSettings()
 }
 
 //run this in a loop
-
+void PauseMenu::ResetCounters()
+{
+	pauseSelector->ResetCounters();
+}
 
 PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
@@ -659,6 +662,9 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}*/
 		//else
 		{
+			ResetCounters();
+			
+
 			if (currentTab == OPTIONS)
 			{
 				controlSettingsMenu->SetButtonAssoc();
@@ -673,6 +679,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 
 	if( currInput.leftShoulder && !prevInput.leftShoulder )
 	{
+		ResetCounters();
 		if (currentTab == OPTIONS)
 		{
 			controlSettingsMenu->SetButtonAssoc();
@@ -694,6 +701,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 	}
 	else if( currInput.rightShoulder && !prevInput.rightShoulder )
 	{
+		ResetCounters();
 		if (currentTab == OPTIONS)
 		{
 			controlSettingsMenu->SetButtonAssoc();

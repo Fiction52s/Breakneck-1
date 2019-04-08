@@ -13,6 +13,7 @@ struct SingleAxisSelector
 		int startIndex,
 		bool loop = true);
 	~SingleAxisSelector();
+	void ResetCounters();
 	void Reset();
 	int *waitFrames;// [3];
 	int *waitModeThresh;//[2];
