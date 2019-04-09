@@ -46,6 +46,7 @@ struct KinSkin;
 struct Tileset;
 
 struct AdventureHUD;
+struct Fader;
 
 struct Barrier;
 struct PoiInfo
@@ -329,6 +330,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int numVertices;
 	};
 
+	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
+	bool IsFading();
+	void ClearFade();
+
+	Fader *fader;
 	Minimap *mini;
 	void DrawStoryLayer(EffectLayer ef);
 	SoundNode *ActivateSound( V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
@@ -475,18 +481,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Sprite shipSprite;
 	sf::RectangleShape middleClouds;
 
-	sf::RectangleShape fadeRect;
-	int fadeFrame;
-	int fadeLength;
-	bool fadingIn;
-	bool fadingOut;
-	int fadeAlpha;
-	bool fadeSkipKin;
-	void Fade( bool in, int frames, sf::Color c, bool skipKin = false );
-	void UpdateFade();
-	void ClearFade();
-	bool IsFading();
-	void DrawFade( sf::RenderTarget *target );
 
 	bool drain;
 	bool shipSequence;

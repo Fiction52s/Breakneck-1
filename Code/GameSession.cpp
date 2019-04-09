@@ -48,6 +48,7 @@
 #include "ShardMenu.h"
 #include "KeyMarker.h"
 #include "ScoreDisplay.h"
+#include "Fader.h"
 #include "Enemy_Badger.h"
 #include "Enemy_BasicEffect.h"
 #include "Enemy_BasicTurret.h"
@@ -3984,7 +3985,7 @@ bool GameSession::OpenFile( string fileName )
 			startMapSeq = new BirdCrawlerAllianceSeq( this );
 			activeSequence = startMapSeq;
 			startMapSeq->Reset();
-			fadeAlpha = 255;
+			//fadeAlpha = 255;
 			//owner->Fade( false, 60, Color::Black );
 			//owner->Pause( 60 );
 			//activeSequence = 
@@ -5931,10 +5932,7 @@ int GameSession::Run()
 	currStorySequence = NULL;
 	currBroadcast = NULL;
 
-	fadeLength = 0;
-	fadeAlpha = 0;
-	fadingIn = false;
-	fadingOut = false;
+	
 	//showHUD = true;
 
 	preScreenTex->setView(view);
@@ -6078,7 +6076,12 @@ int GameSession::Run()
 
 	std::stringstream ss;
 	bool switchState = false;
-	
+
+	if (GetPlayer(0)->action == Actor::INTROBOOST)
+	{
+		Fade(true, 60, Color::Black, true);
+	}
+
 	while( !quit )
 	{
 		switchState = false;
@@ -6479,7 +6482,7 @@ int GameSession::Run()
 				//	currFX = currFX->next;
 				//}
 
-				UpdateFade();
+				fader->Update();
 
 				pauseFrames--;
 				//accumulator = 0;
@@ -6768,7 +6771,7 @@ int GameSession::Run()
 					}
 				}
 
-				UpdateFade();
+				fader->Update();
 				background->Update();
 				if( topClouds != NULL )
 					topClouds->Update();
@@ -8179,7 +8182,7 @@ int GameSession::Run()
 			preScreenTex->draw(*debugBorders);
 
 			preScreenTex->setView(uiView);
-			DrawFade(preScreenTex);
+			fader->Draw(preScreenTex);
 		}
 
 		if (currBroadcast != NULL)
@@ -8196,12 +8199,12 @@ int GameSession::Run()
 
 		absorbShardParticles->Draw(preScreenTex);
 		
-		DrawFade(preScreenTex);
+		fader->Draw(preScreenTex);
 
 		
 
 		preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
-		if (fadeSkipKin && fadeAlpha > 0 )//IsFading())
+		if (fader->fadeSkipKin && fader->fadeAlpha > 0 )//IsFading()) //adjust later?
 		{
 			DrawEffects(EffectLayer::IN_FRONT);
 			for (int i = 0; i < 4; ++i)
@@ -8831,7 +8834,7 @@ int GameSession::Run()
 				
 				mainMenu->musicPlayer->Update();
 
-				UpdateFade();
+				fader->Update();
 
 				accumulator -= TIMESTEP;
 			}
@@ -8845,7 +8848,7 @@ int GameSession::Run()
 			}
 
 			preScreenTex->setView(uiView);
-			DrawFade(preScreenTex);
+			fader->Draw(preScreenTex);
 
 			preTexSprite.setTexture(preScreenTex->getTexture());
 			preTexSprite.setPosition(-960 / 2, -540 / 2);
@@ -8913,7 +8916,7 @@ int GameSession::Run()
 
 				mainMenu->musicPlayer->Update();
 
-				UpdateFade();
+				fader->Update();
 
 				accumulator -= TIMESTEP;
 
@@ -8941,8 +8944,7 @@ int GameSession::Run()
 			preScreenTex->setView(uiView);
 
 			
-
-			DrawFade(preScreenTex);
+			fader->Draw(preScreenTex);
 
 			if (showFrameRate)
 			{
@@ -9046,10 +9048,26 @@ int GameSession::Run()
 	return returnVal;
 }
 
+void GameSession::Fade(bool in, int frames, sf::Color c, bool skipKin)
+{
+	fader->Fade(in, frames, c, skipKin);
+}
+
+void GameSession::ClearFade()
+{
+	fader->Clear();
+}
+
+bool GameSession::IsFading()
+{
+	return fader->IsFading();
+}
 
 void GameSession::Init()
 {
 	LoadDecorImages();
+
+	fader = mainMenu->fader;
 
 	mini = NULL;
 
@@ -9212,11 +9230,6 @@ void GameSession::Init()
 
 	drawInversePoly = true;
 	showDebugDraw = false;
-
-	fadingIn = false;
-	fadingOut = false;
-	fadeRect.setSize(Vector2f(1920, 1080));
-
 
 	testBuf.SetRecOver(false);
 
@@ -10104,8 +10117,7 @@ void GameSession::RestartLevel()
 
 	activeDialogue = NULL;
 
-	fadingIn = false;
-	fadingOut = false;
+	fader->Reset();
 	numKeysCollected = 0;
 
 	if (adventureHUD != NULL)
@@ -10177,11 +10189,6 @@ void GameSession::RestartLevel()
 	absorbDarkParticles->Reset();
 	absorbShardParticles->Reset();
 	//player->Respawn();
-	
-	fadeLength = 0;
-	fadeAlpha = 0;
-	fadingIn = false;
-	fadingOut = false;
 
 	cam.pos.x = GetPlayer( 0 )->position.x;
 	cam.pos.y = GetPlayer( 0 )->position.y;
@@ -12768,78 +12775,6 @@ void GameSession::Pause( int frames )
 		{
 			p->ClearPauseBufferedActions();
 		}
-	}
-}
-
-void GameSession::Fade( bool in, int frames, sf::Color c, bool skipKin )
-{
-	if( in )
-	{
-		fadeLength = frames;
-		fadingIn = true;
-		fadingOut = false;
-	}
-	else
-	{
-		fadeLength = frames;
-		fadingIn = false;
-		fadingOut = true;
-	}
-	fadeRect.setFillColor( Color( c.r, c.g, c.b, 255 ) );
-	
-	fadeFrame = 0;
-
-	fadeSkipKin = skipKin;
-}
-
-bool GameSession::IsFading()
-{
-	return fadingIn || fadingOut;
-}
-
-void GameSession::ClearFade()
-{
-	fadingIn = false;
-	fadingOut = false;
-	fadeAlpha = 0;
-	fadeLength = 0;
-	Color oldColor = fadeRect.getFillColor();
-	fadeRect.setFillColor(Color(oldColor.r, oldColor.g, oldColor.b, fadeAlpha));
-}
-
-void GameSession::UpdateFade()
-{
-	if( !fadingIn && !fadingOut )
-		return;
-	//cout << "fade frame: " << fadeFrame << endl;
-
-	++fadeFrame;
-
-	if( fadeFrame > fadeLength && fadeLength > 0 )
-	{
-		fadingIn = false;
-		fadingOut = false;
-		return;
-	}
-
-	if( fadingIn )
-	{
-		fadeAlpha = floor( (255.0 - 255.0 * fadeFrame / (double)fadeLength) + .5 );
-	}
-	else if( fadingOut )
-	{
-		fadeAlpha = floor( 255.0 * fadeFrame / (double)fadeLength + .5 );
-	}
-
-	Color oldColor = fadeRect.getFillColor();
-	fadeRect.setFillColor( Color( oldColor.r, oldColor.g, oldColor.b, fadeAlpha ) );
-}
-
-void GameSession::DrawFade( sf::RenderTarget *target )
-{
-	if( fadeAlpha > 0 && fadeLength > 0)
-	{
-		target->draw( fadeRect );
 	}
 }
 

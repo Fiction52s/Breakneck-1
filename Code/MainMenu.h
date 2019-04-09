@@ -453,6 +453,7 @@ struct Level;
 struct TitleScreen;
 struct IntroMovie;
 struct MusicPlayer;
+struct Fader;
 
 
 struct MainMenu
@@ -497,6 +498,7 @@ struct MainMenu
 		TRANS_MAIN_TO_CREDITS,
 		CREDITS,
 		TRANS_CREDITS_TO_MAIN,
+		TRANS_WORLDMAP_TO_LOADING,
 		INTROMOVIE
 	};
 
@@ -514,6 +516,8 @@ struct MainMenu
 		GRT_FREEPLAY
 	};
 
+
+	Fader *fader;
 	GameRunType gameRunType;
 	SaveFile *GetCurrentProgress();
 	ControlProfileManager *cpm;

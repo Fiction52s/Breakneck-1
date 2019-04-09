@@ -238,6 +238,12 @@ void WorldMap::UpdateColonySelect()
 	//colonySelectSprZoomed.setPosition(colonySpr[selectedColony].getPosition());
 }
 
+void WorldMap::RunSelectedMap()
+{
+	MapSelector *ms = CurrSelector();
+	ms->RunSelectedMap();
+}
+
 void WorldMap::Reset( SaveFile *sf )
 {
 	fontHeight = 24;
@@ -1150,6 +1156,11 @@ void MapSelector::UpdateSprites()
 
 }
 
+void MapSelector::RunSelectedMap()
+{
+	sectors[saSelector->currIndex]->RunSelectedMap();
+}
+
 void MapSelector::Draw(sf::RenderTarget *target)
 {
 	
@@ -1628,6 +1639,12 @@ void MapSector::UpdateNodePosition()
 	//endSpr.
 }
 
+void MapSector::RunSelectedMap()
+{
+	ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
+	ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));
+}
+
 void MapSector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
@@ -1702,6 +1719,7 @@ void MapSector::Update(ControllerState &curr,
 
 	UpdateNodes();
 
+
 	if (state == NORMAL || state == COMPLETE || ( state == LEVELJUSTCOMPLETE && stateFrame >= 3 * 7 ))
 	{
 		int old = saSelector->currIndex;
@@ -1751,22 +1769,7 @@ void MapSector::Update(ControllerState &curr,
 		{
 			if (selectedYIndex == 1)
 			{
-				//string levelPath = sec->levels[saSelector->currIndex].GetFullName();// name;
-				//View oldView = ms->mainMenu->window->getView();
-
-				//GameSession *gs = new GameSession(NULL, ms->mainMenu, levelPath);
-
-				//ms->mainMenu->menuMode = MainMenu::LOADINGMAP;
-
-				//ms->loadThread = new boost::thread(GameSession::sLoad, gs);
-
-				//GameSession *gs = new GameSession(NULL, ms->mainMenu, level);
-				//GameSession::sLoad(gs);
-				//int result = gs->Run();
-
-				//delete gs;
-
-				//ms->mainMenu->window->setView(oldView);
+				
 				if (sec->IsComplete())
 				{
 					state = COMPLETE;
@@ -1775,9 +1778,12 @@ void MapSector::Update(ControllerState &curr,
 				{
 					state = NORMAL;
 				}
-				ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
+				
 				ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
-				ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));
+				ms->mainMenu->SetMode(MainMenu::TRANS_WORLDMAP_TO_LOADING);
+				/*ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
+				ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
+				ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));*/
 			}
 		}
 	}
@@ -2151,6 +2157,8 @@ int MapSector::GetNodeBonusIndexBot(int node)
 //	}
 //	return false;
 //}
+
+
 
 void MapSector::Init(Sector *m_sec)
 {

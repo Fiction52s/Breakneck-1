@@ -52,7 +52,7 @@ struct MapSector
 	
 	sf::Vertex backScrollEnergy[4];
 	sf::Vertex frontScrollEnergy[4];
-
+	void RunSelectedMap();
 	Tileset *ts_scrollingEnergy;
 	State state;
 	int stateFrame;
@@ -145,7 +145,7 @@ struct MapSelector
 	};
 
 	
-
+	void RunSelectedMap();
 	State state;
 	int slideDuration;
 	MapSelector( MainMenu *mm, sf::Vector2f &pos );
@@ -215,8 +215,11 @@ struct WorldMap
 		COLONY,
 		COLONY_TO_PLANET,
 		PLANET_TO_SPACE,
+		START_LEVEL
 	};
 
+
+	void RunSelectedMap();
 	WorldSelector *worldSelector;
 	sf::Shader zoomShader;
 	WorldMap( MainMenu *mainMenu );

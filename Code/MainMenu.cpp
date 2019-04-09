@@ -23,6 +23,7 @@
 #include "KinBoostScreen.h"
 #include "TerrainRender.h"
 #include "MusicPlayer.h"
+#include "Fader.h"
 
 using namespace std;
 using namespace sf;
@@ -954,6 +955,7 @@ void MainMenu::Init()
 	ts_kinTitle[5] = tilesetManager.GetTileset( "Title/kin_title_6_1216x1080.png", 1216, 1080 );
 	ts_kinTitle[6] = tilesetManager.GetTileset( "Title/kin_title_7_1216x1080.png", 1216, 1080 );*/
 
+	fader = new Fader;
 	
 
 	soundBuffers[S_DOWN] = soundManager.GetSound( "menu_down.ogg" );
@@ -1545,6 +1547,8 @@ void MainMenu::Run()
 			
 			musicPlayer->Update();
 
+			fader->Update();
+
 			soundNodeList->Update();
 
 			accumulator -= TIMESTEP;
@@ -1744,6 +1748,15 @@ void MainMenu::Run()
 			multiLoadingScreen->Draw(preScreenTexture);
 			break;
 		}
+		case TRANS_WORLDMAP_TO_LOADING:
+		{
+			if (modeFrame < 30)
+			{
+				worldMap->Draw(preScreenTexture);
+			}
+
+			break;
+		}
 		case INTROMOVIE:
 			introMovie->Draw(preScreenTexture);
 			break;
@@ -1751,6 +1764,8 @@ void MainMenu::Run()
 			assert(0);
 			break;
 		}
+
+		fader->Draw(preScreenTexture);
 
 #if defined( USE_MOVIE_TEST )
 		preScreenTexture->draw(m);// , &sh);
@@ -1777,6 +1792,8 @@ void DispLoadTest( MainMenu *mm )
 		win->clear(Color::Red);
 		//win->clear(Color::Green);
 
+		
+		//mm->fader->Update();
 		mm->loadingIconBackpack[1].rotate(-1);
 		mm->loadingIconBackpack[2].rotate(2);
 
@@ -1784,6 +1801,8 @@ void DispLoadTest( MainMenu *mm )
 
 		for (int i = 0; i < 3; ++i)
 			pTex->draw(mm->loadingIconBackpack[i]);
+
+		mm->fader->Draw(pTex);
 
 		pTex->display();
 		sf::Sprite spr;
@@ -1874,26 +1893,29 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	gameRunType = GameRunType::GRT_ADVENTURE;
 	SetModeLoadingMap(wIndex);
 
-	doneLoading = false;
+	//doneLoading = false;
 
-	loadThread = new boost::thread(DispLoadTest, this);// , currLevel);
+	
+	//loadThread = new boost::thread(DispLoadTest, this);// , currLevel);
 
 	//sf::sleep(sf::milliseconds(5000));
 
 	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
 
-	currLevel->Load();
+	loadThread = new boost::thread(GameSession::sLoad, currLevel);
+
+	//currLevel->Load();
 
 	//doneLoading = true;
 
 	
 
 	//loadThread->join();
-	doneLoading = true;
+	//doneLoading = true;
 
-	loadThread->join();
-	delete loadThread;
-	loadThread = NULL;
+	//loadThread->join();
+	//delete loadThread;
+	//loadThread = NULL;
 
 	//preScreenTexture->setActive(true);
 	window->setActive(true);
@@ -2389,28 +2411,28 @@ void MainMenu::HandleMenuMode()
 		loadingIconBackpack[1].rotate(-1);
 		loadingIconBackpack[2].rotate(2);
 
-		if( modeFrame == 120 )
-			SetMode(RUNNINGMAP);
+		//if( modeFrame == 120 )
+		//	SetMode(RUNNINGMAP);
 
-		//if (loadThread != NULL)
-		//{
-		//	if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
-		//	{
-		//		//window->setVerticalSyncEnabled(true);
-		//		delete loadThread;
-		//		loadThread = NULL;
-		//		SetMode( RUNNINGMAP );
-		//		//return HandleMenuMode();
-		//		cout << "RUNNING MAP" << endl;
-		//	}
-		//	else
-		//	{
-		//		loadingIconBackpack[1].rotate(-1);
-		//		loadingIconBackpack[2].rotate(2);
-		//	}
-		//	//	//menuMode = MAINMENU;
-		//	//	//preScreenTexture->clear(Color::Yellow);
-		//}
+		if (loadThread != NULL)
+		{
+			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			{
+				//window->setVerticalSyncEnabled(true);
+				delete loadThread;
+				loadThread = NULL;
+				SetMode( RUNNINGMAP );
+				//return HandleMenuMode();
+				//cout << "RUNNING MAP" << endl;
+			}
+			else
+			{
+				loadingIconBackpack[1].rotate(-1);
+				loadingIconBackpack[2].rotate(2);
+			}
+			//	//menuMode = MAINMENU;
+			//	//preScreenTexture->clear(Color::Yellow);
+		}
 		break;
 	}
 	case KINBOOSTLOADINGMAP:
@@ -2446,6 +2468,7 @@ void MainMenu::HandleMenuMode()
 			//window->setVerticalSyncEnabled(true);
 			gameRunType = GRT_ADVENTURE;
 			SetMode( RUNNINGMAP );
+			
 			//return HandleMenuMode();
 		}
 		else
@@ -2454,7 +2477,7 @@ void MainMenu::HandleMenuMode()
 
 			if (kinBoostScreen->frame == 60)
 			{
-				window->setVerticalSyncEnabled(false);
+				//window->setVerticalSyncEnabled(false);
 				//window->setFramerateLimit(60);
 				string levelPath = kinBoostScreen->levName;
 
@@ -2892,6 +2915,29 @@ void MainMenu::HandleMenuMode()
 		{
 		Slide();
 		}*/
+		break;
+	}
+	case TRANS_WORLDMAP_TO_LOADING:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+		if (modeFrame == 1)
+		{
+			fader->CrossFade(30, 0, Color::Black);
+		}		
+
+		if (modeFrame == 30)
+		{
+			worldMap->RunSelectedMap();
+		}
+		else if (modeFrame < 30)
+		{
+			menuPrevInput = ControllerState();
+			menuCurrInput = ControllerState();
+			worldMap->Update( menuPrevInput, menuCurrInput);
+		}
 		break;
 	}
 	case INTROMOVIE:

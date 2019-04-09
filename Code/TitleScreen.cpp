@@ -5,6 +5,7 @@
 #include "Parallax.h"
 #include "MusicPlayer.h"
 #include "MusicSelector.h"
+#include "Fader.h"
 
 using namespace std;
 using namespace sf;
@@ -75,8 +76,9 @@ void TitleScreen::Reset()
 
 void TitleScreen::Update()
 {
-	if (frame == 0)
+	if (frame == 60)
 	{
+		//mainMenu->fader->CrossFade(60, 60, Color::Red);
 		//mainMenu->musicPlayer->PlayMusic(titleMusic);
 	}
 
