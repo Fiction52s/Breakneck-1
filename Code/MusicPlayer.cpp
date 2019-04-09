@@ -55,6 +55,7 @@ void MusicPlayer::Update()
 		{
 			StopMusic(fadingOutMusic);
 			musicFadeOutMax = -1;
+			fadingOutMusic = NULL;
 		}
 		else
 		{
@@ -72,6 +73,7 @@ void MusicPlayer::Update()
 		{
 			currMusic = fadingInMusic;
 			currMusic->music->setVolume(maxVol);
+			fadingInMusic = NULL;
 			musicFadeInMax = -1;
 		}
 		else
@@ -152,5 +154,6 @@ void MusicPlayer::FadeOutCurrentMusic(int numFrames)
 		fadingOutMusic = currMusic;
 		musicFadeOutMax = numFrames;
 		musicFadeOutCurr = 0;
+		currMusic = NULL;
 	}
 }

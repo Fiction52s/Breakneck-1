@@ -39,7 +39,7 @@ GetAirdashPowerSeq::GetAirdashPowerSeq(GameSession *p_owner)
 	//SetRectColor(darkQuad, Color(Color::Red));
 
 	//state = ENTERCORE;
-	assert(mov.openFromFile("Resources/Movie/Kin_Meditate_01.mp4"));
+	assert(mov.openFromFile("Resources/Movie/kin_meditate_01.ogv"));
 	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 

@@ -25,6 +25,7 @@
 #include "Parallax.h"
 #include "Movement.h"
 #include "ScoreDisplay.h"
+#include "MusicPlayer.h"
 
 using namespace sf;
 using namespace std;
@@ -54,7 +55,7 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	//shipSprite.setOrigin(960 / 2, 700);
 	shipSprite.setOrigin(421, 425);
 
-	assert(mov.openFromFile("Resources/Movie/kin_ship.mp4"));
+	assert(mov.openFromFile("Resources/Movie/kin_ship.ogv"));
 	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 	stateLength[SHIP_SWOOP]= 1000000;
@@ -148,6 +149,7 @@ bool ShipExitSeq::Update()
 		if (shipMovement.currMovement == NULL)
 		{
 			frame = stateLength[SHIP_SWOOP] - 1;
+			owner->mainMenu->musicPlayer->FadeOutCurrentMusic(30);
 			owner->state = GameSession::SEQUENCE;
 		}
 
@@ -1034,7 +1036,7 @@ CrawlerDefeatedSeq::CrawlerDefeatedSeq( GameSession *p_owner)
 
 	stateLength[PLAYMOVIE] = 1000000;
 
-	assert(mov.openFromFile("Resources/Movie/crawler_slash.mp4"));
+	assert(mov.openFromFile("Resources/Movie/crawler_slash.ogv"));
 	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 }
 

@@ -2422,6 +2422,7 @@ void MainMenu::HandleMenuMode()
 				delete loadThread;
 				loadThread = NULL;
 				SetMode( RUNNINGMAP );
+				//fader->CrossFade(30, 0, Color::Black);
 				//return HandleMenuMode();
 				//cout << "RUNNING MAP" << endl;
 			}
@@ -2500,7 +2501,7 @@ void MainMenu::HandleMenuMode()
 		GameSession::GameResultType result =
 			(GameSession::GameResultType)currLevel->Run();
 
-		musicPlayer->TransitionMusic(menuMusic, 60);
+		
 
 		SaveFile *currFile = GetCurrentProgress();
 		World & world = currFile->worlds[worldMap->selectedColony];
@@ -2604,6 +2605,10 @@ void MainMenu::HandleMenuMode()
 
 			SetMode( MainMenu::WORLDMAP );
 			worldMap->Update(menuPrevInput, menuCurrInput);
+
+			musicPlayer->TransitionMusic(menuMusic, 60);
+
+			//fader->CrossFade(30, 0, Color::Black);
 		}
 		break;
 
@@ -2925,7 +2930,7 @@ void MainMenu::HandleMenuMode()
 		}
 		if (modeFrame == 1)
 		{
-			fader->CrossFade(30, 0, Color::Black);
+			fader->CrossFade(30, 0, 30, Color::Black);
 		}		
 
 		if (modeFrame == 30)

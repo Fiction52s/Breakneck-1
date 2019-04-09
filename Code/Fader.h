@@ -15,13 +15,14 @@ struct Fader
 	bool fadeSkipKin;
 	int crossFadeFrame;
 	int crossPauseLength;
-	int crossFadeLength;
+	int crossFadeInLength;
+	int crossFadeOutLength;
 	bool crossFading;
 	bool crossSkipKin;
 	sf::Color crossColor;
 	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
 	void CrossFade(int fadeOutFrames,
-		int pauseFrames, 
+		int pauseFrames, int fadeInFrames,
 		sf::Color c, bool skipKin = false);
 	bool IsFading();
 	void Update();

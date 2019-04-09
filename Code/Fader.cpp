@@ -30,9 +30,10 @@ void Fader::Fade(bool in, int frames, sf::Color c, bool skipKin)
 	fadeSkipKin = skipKin;
 }
 
-void Fader::CrossFade(int fadeOutFrames, int pauseFrames, sf::Color c, bool skipKin)
+void Fader::CrossFade(int fadeOutFrames, int pauseFrames, int fadeInFrames, sf::Color c, bool skipKin)
 {
-	crossFadeLength = fadeOutFrames;
+	crossFadeOutLength = fadeOutFrames;
+	crossFadeInLength = fadeInFrames;
 	crossPauseLength = pauseFrames;
 	crossSkipKin = skipKin;
 	crossColor = c;
@@ -80,7 +81,7 @@ void Fader::Update()
 		{
 			if ( fadingOut && fadeFrame > fadeLength + crossPauseLength)
 			{
-				Fade(true, crossFadeLength, crossColor, crossSkipKin);
+				Fade(true, crossFadeInLength, crossColor, crossSkipKin);
 			}
 			else if( fadingIn )
 			{
