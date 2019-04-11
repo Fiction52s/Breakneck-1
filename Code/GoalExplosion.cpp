@@ -89,3 +89,60 @@ void GoalPulse::Draw( sf::RenderTarget *target )
 	}
 	
 }
+
+const int Ring::circlePoints = 32;
+
+Ring::Ring()
+	:circleVA(sf::Quads, circlePoints * 4), innerRadius(100),
+	outerRadius(200), shader( NULL )
+{
+	position = Vector2f(0, 0);
+	color = Color::White;
+	UpdatePoints();
+}
+
+void Ring::SetShader(sf::Shader *sh)
+{
+	shader = sh;
+}
+
+void Ring::SetColor(sf::Color c)
+{
+	color = c;
+}
+
+void Ring::Set(sf::Vector2f pos,
+	float innerR, float outerR)
+{
+	position = pos;
+	innerRadius = innerR;
+	outerRadius = outerR;
+	UpdatePoints();
+}
+
+void Ring::UpdatePoints()
+{
+	Transform tr;
+	Vector2f offsetInner(0, -innerRadius);
+	Vector2f offsetOuter(0, -outerRadius);
+	for (int i = 0; i < circlePoints; ++i)
+	{
+		circleVA[i * 4 + 0].position = position + tr.transformPoint(offsetInner);
+		circleVA[i * 4 + 1].position = position + tr.transformPoint(offsetOuter);
+
+		tr.rotate(360.f / circlePoints);
+
+		circleVA[i * 4 + 2].position = position + tr.transformPoint(offsetOuter);
+		circleVA[i * 4 + 3].position = position + tr.transformPoint(offsetInner);
+
+		circleVA[i * 4 + 0].color = color;
+		circleVA[i * 4 + 1].color = color;
+		circleVA[i * 4 + 2].color = color;
+		circleVA[i * 4 + 3].color = color;
+	}
+}
+
+void Ring::Draw(sf::RenderTarget *target)
+{
+	target->draw(circleVA);
+}

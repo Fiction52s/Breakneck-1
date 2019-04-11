@@ -52,6 +52,7 @@ const int MapSelectionMenu::BOX_HEIGHT = 40;
 const int MapSelectionMenu::BOX_SPACING = 0;
 
 sf::Font MainMenu::arial;
+sf::Font MainMenu::consolas;
 int MainMenu::masterVolume = 100;
 
 MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MapSelectionMenu *p_parent,
@@ -550,6 +551,7 @@ MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight(1080)
 {
 	arial.loadFromFile("Breakneck_Font_01.ttf");
+	consolas.loadFromFile("Courier New.ttf");
 
 	transLength = 60;
 	transFrame = 0;

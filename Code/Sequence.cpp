@@ -1092,6 +1092,11 @@ bool CrawlerDefeatedSeq::Update()
 			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
 			{
 				frame = stateLength[PLAYMOVIE] - 1;
+				if (owner->originalMusic != NULL)
+				{
+					MainMenu *mm = owner->mainMenu;
+					mm->musicPlayer->TransitionMusic(owner->originalMusic, 60);
+				}
 
 				//owner->state = GameSession::RUN;
 				//owner->Fade(true, 60, Color::Black, true);

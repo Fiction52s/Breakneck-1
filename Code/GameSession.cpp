@@ -2533,7 +2533,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int amplitude;
 				is >> amplitude;
 
-				FlowerPod *enemy = new FlowerPod(this, "test", 
+				FlowerPod *enemy = new FlowerPod(this, "destroygoals", 
 					edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
 
 				fullEnemyList.push_back(enemy);

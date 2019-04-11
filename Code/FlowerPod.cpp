@@ -7,6 +7,7 @@
 #include "StorySequence.h"
 #include "PowerOrbs.h"
 #include "ImageText.h"
+#include "GoalExplosion.h"
 
 using namespace std;
 using namespace sf;
@@ -15,6 +16,9 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	:Enemy(owner, EnemyType::EN_FLOWERPOD, false, 0, false), ground(g),
 	edgeQuantity(q)
 {
+	healRing = new Ring;
+	
+
 	double width = 128; //112;
 	double height = 128;
 
@@ -37,12 +41,19 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	V2d gPoint = g->GetPoint(edgeQuantity);
 	sprite.setPosition(gPoint.x, gPoint.y);
 	
+	
+	
 
 	V2d gn = g->Normal();
 
 	V2d gAlong = normalize(g->v1 - g->v0);
 
+	camPosition = gPoint + gn * ( height + 0.0 );
+
 	position = gPoint + gn * (height / 2.0);
+
+	healRing->SetColor(Color::Cyan);
+	healRing->Set(Vector2f(position), 100, 110);
 
 	double angle = atan2(gn.x, -gn.y);
 	sprite.setRotation(angle / PI * 180);
@@ -53,7 +64,7 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 
 	actionLength[IDLE] = 12;
 	actionLength[ACTIVATE] = 36;
-	actionLength[BROADCAST] = 12 * 4;//10
+	actionLength[BROADCAST] = 12;// *4;//10
 	actionLength[HIDE] = 36;
 	actionLength[DEACTIVATED] = 120;
 
@@ -152,9 +163,14 @@ void FlowerPod::ActionEnded()
 			//owner->currStorySequence = storySeq;
 			break;
 		case BROADCAST:
-			action = HIDE;
+			
 			frame = 0;
-			sprite.setTexture(*ts_rise->texture);
+			if (owner->currBroadcast == NULL)
+			{
+				action = HIDE;
+				sprite.setTexture(*ts_rise->texture);
+			}
+		
 			break;
 		case HIDE:
 			action = DEACTIVATED;
@@ -173,16 +189,31 @@ void FlowerPod::ProcessState()
 
 	Actor *player = owner->GetPlayer(0);
 	double dist = length(player->position - position);
-
-	if (dist <= 200 && healingPlayer == NULL)
+	float rad = healRing->innerRadius;
+	
+	if ( action == BROADCAST && dist <= rad && healingPlayer == NULL)
 	{
 		healingPlayer = player;
 		//enter
 	}
-	else if (dist > 200 && healingPlayer != NULL)
+	else if ( action != BROADCAST || (dist > rad && healingPlayer != NULL))
 	{
 		healingPlayer = NULL;
 		//exit
+	}
+
+
+	if (healingPlayer != NULL)
+	{
+		if( !owner->cam.manual )
+			owner->cam.Ease(Vector2f(camPosition), .8, 300, CubicBezier());
+	}
+	else
+	{
+		if (owner->cam.manual)
+		{
+			owner->cam.EaseOutOfManual(60);
+		}
 	}
 
 	if (healingPlayer != NULL && healingPlayer->drainCounter == 0)
@@ -223,6 +254,10 @@ void FlowerPod::UpdateEnemyPhysics()
 void FlowerPod::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSpriteIfExists(target, sprite);
+	if (action == BROADCAST)
+	{
+		healRing->Draw(target);
+	}
 }
 
 void FlowerPod::UpdateSprite()
@@ -264,10 +299,12 @@ void FlowerPod::DirectKill()
 MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeStr)
 {
 
+	ts_basicFlower = p_pod->owner->GetTileset("Momenta/momentaflower_320x288.png", 320, 288);
+	initialFlowerLength = 120;
 	//can currently handle 30 chars per line
 
 	script = new Script;
-	script->Load("test");
+	
 
 	textDisp = new TextDisp( p_pod->owner );
 	//textDisp->SetString(
@@ -284,10 +321,15 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	{
 	case SEESHARDS:
 	{
-		ts_broadcast = pod->owner->GetTileset("Momenta/momentaportrait_320x288.png", 320, 288);
-		numImages = 10;
+		ts_broadcast = pod->owner->GetTileset("Momenta/momentabroadcast_w1_1_320x288.png", 320, 288);
+		script->Load("momenta1");
+		numImages = script->numSections;
 		imageLength = new int[numImages];
-		imageLength[0] = 4000;
+		for (int i = 0; i < numImages; ++i)
+		{
+			imageLength[i] = 4000;
+		}
+		/*imageLength[0] = 4000;
 		imageLength[1] = 4000;
 		imageLength[2] = 4000;
 		imageLength[3] = 4000;
@@ -296,9 +338,22 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 		imageLength[6] = 400;
 		imageLength[7] = 400;
 		imageLength[8] = 400;
-		imageLength[9] = 400;
+		imageLength[9] = 400;*/
 		break;
 	}	
+	case DESTROYGOALS:
+	{
+		ts_broadcast = pod->owner->GetTileset("Momenta/momentabroadcast_w1_2_320x288.png", 320, 288);
+		script->Load("momenta2");
+		numImages = script->numSections;
+		imageLength = new int[numImages];
+		for (int i = 0; i < numImages; ++i)
+		{
+			imageLength[i] = 4000;
+		}
+		break;
+	}
+		
 	}
 	sprite.setTexture(*ts_broadcast->texture);
 	
@@ -311,11 +366,33 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	int ySpacing = 10;
 	sprite.setPosition((1920 - ts_broadcast->tileWidth) - xSpacing, ySpacing);
 
-	numPadding = 60;
+	numPadding = 120;//60;
 }
 
 bool MomentaBroadcast::Update()
 {
+	if (basicFlower)
+	{
+		if (frame == initialFlowerLength)
+		{
+			if (imageIndex == numImages)
+			{
+				return false;
+			}
+
+			basicFlower = false;
+			frame = 0;
+			sprite.setTexture(*ts_broadcast->texture);
+		}
+		else
+		{
+			++frame;
+			return true;
+		}
+	}
+
+
+
 	if (!textDisp->Update() && !endPadding)
 	{
 		frame = imageLength[imageIndex] - numPadding;
@@ -339,7 +416,12 @@ bool MomentaBroadcast::Update()
 		endPadding = false;
 		if (imageIndex == numImages)
 		{
-			return false;
+			basicFlower = true;
+			frame = 0;
+			sprite.setTexture(*ts_basicFlower->texture);
+			sprite.setTextureRect(ts_basicFlower->GetSubRect(0));
+			return true;
+			//return false;
 		}
 		sprite.setTextureRect(ts_broadcast->GetSubRect(imageIndex));
 	}
@@ -350,7 +432,10 @@ bool MomentaBroadcast::Update()
 void MomentaBroadcast::Draw( RenderTarget *target )
 {
 	target->draw(sprite);
-	textDisp->Draw(target);
+	if (!basicFlower)
+	{
+		textDisp->Draw(target);
+	}
 }
 
 void MomentaBroadcast::Reset()
@@ -359,8 +444,10 @@ void MomentaBroadcast::Reset()
 	frame = 0;
 	textDisp->Reset();
 	textDisp->SetString(script->GetSection(0));
-	sprite.setTextureRect(ts_broadcast->GetSubRect(0));
+	sprite.setTexture(*ts_basicFlower->texture);
+	sprite.setTextureRect(ts_basicFlower->GetSubRect(0));
 	endPadding = false;
+	basicFlower = true;
 }
 
 MomentaBroadcast::BroadcastType MomentaBroadcast::GetType(const std::string &tStr)
@@ -370,6 +457,10 @@ MomentaBroadcast::BroadcastType MomentaBroadcast::GetType(const std::string &tSt
 	if (testStr == "seeshards")
 	{
 		return SEESHARDS;
+	}
+	else if (testStr == "destroygoals")
+	{
+		return DESTROYGOALS;
 	}
 	else
 	{

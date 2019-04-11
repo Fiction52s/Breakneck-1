@@ -32,8 +32,11 @@ void MonumentSeq::PostMovieUpdate()
 	{
 		owner->Fade(true, 60, Color::Black);
 		owner->GetPlayer(0)->StandInPlace();
-		MainMenu *mm = owner->mainMenu;
-		mm->musicPlayer->TransitionMusic(owner->originalMusic, 60);
+		if (owner->originalMusic != NULL)
+		{
+			MainMenu *mm = owner->mainMenu;
+			mm->musicPlayer->TransitionMusic(owner->originalMusic, 60);
+		}
 		//owner->PlayMusic();
 	}
 }

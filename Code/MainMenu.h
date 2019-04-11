@@ -646,6 +646,7 @@ struct MainMenu
 	sf::Sprite kinTitleSprite;
 	
 	static sf::Font arial;
+	static sf::Font consolas;
 	sf::Clock gameClock;
 
 	LevelSelector *levelSelector; 

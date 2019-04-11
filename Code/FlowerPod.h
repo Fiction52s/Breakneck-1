@@ -8,18 +8,23 @@ struct StorySequence;
 struct FlowerPod;
 struct TextDisp;
 struct Script;
+struct Ring;
 
 struct MomentaBroadcast
 {
 	enum BroadcastType
 	{
 		SEESHARDS,
+		DESTROYGOALS,
 	};
 
 	MomentaBroadcast( FlowerPod *pod, const std::string &btypeStr );
 	static BroadcastType GetType(const std::string &tStr);
 	BroadcastType bType;
 	Tileset *ts_broadcast;
+	Tileset *ts_basicFlower;
+	int initialFlowerLength;
+	bool basicFlower;
 	sf::Sprite sprite;
 	FlowerPod *pod;
 	int *imageLength;
@@ -56,6 +61,7 @@ struct FlowerPod : Enemy, RayCastHandler
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 
+	Ring *healRing;
 	Actor *healingPlayer;
 	MomentaBroadcast *broadcast;
 	//StorySequence *storySeq;
@@ -65,7 +71,7 @@ struct FlowerPod : Enemy, RayCastHandler
 	V2d rayStart;
 	double rcQuantity;
 
-	
+	V2d camPosition;
 	PodType podType;
 	Action action;
 	FlowerPod(GameSession *owner, const std::string &podType,

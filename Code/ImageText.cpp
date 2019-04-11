@@ -171,12 +171,12 @@ TextDisp::TextDisp( GameSession *owner)
 {
 	//message = "hello this is a test";
 	bgRect.setFillColor(Color( 0, 0, 0, 100 ));
-	rectSize = Vector2f(500, 200);
+	rectSize = Vector2f(670, 220);
 	bgRect.setSize(rectSize);
 	nextLetterWait = 3;
 
-	text.setCharacterSize(40);
-	text.setFont(owner->mainMenu->arial);
+	text.setCharacterSize(30);
+	text.setFont(owner->mainMenu->consolas);
 	text.setFillColor(Color::White);
 	//bgRect.setOrigin(bgRect.getLocalBounds().width / 2, bgRect.getLocalBounds().height / 2);
 	//Reset()
@@ -233,27 +233,73 @@ void TextDisp::Draw(sf::RenderTarget *target)
 
 void Script::Load(const std::string &name)
 {
-	numSections = 5;
-	sections = new string[5];
+	
+
+	for (int i = 0; i < numSections; ++i)
+	{
+		sections[i] = "";
+	}
 
 	string path = "Resources/Text/";
 	string suffix = ".script";
 
-	//ifstream is;
-	//is.open(path + name + suffix);
+	ifstream is;
+	is.open(path + name + suffix);
 
 	//assert(is.is_open());
 
-
-	for (int i = 0; i < 5; ++i)
+	if (is.is_open())
 	{
-		sections[i] = "hello this is a test hello this\n"
+		list<string> lineList;
+
+		string fullText;
+		string line;
+
+		while (std::getline(is, line))
+		{
+			if (line == "")
+			{
+				lineList.push_back(fullText);
+				fullText = "";
+			}
+			else
+			{
+				fullText += line + "\n";
+			}
+		}
+
+		lineList.push_back(fullText);
+
+		numSections = lineList.size();
+		sections = new string[numSections];
+		int sectionIndex = 0;
+		for (auto it = lineList.begin(); it != lineList.end(); ++it)
+		{
+			sections[sectionIndex] = (*it);
+			++sectionIndex;
+		}
+
+		is.close();
+	}
+	else
+	{
+		assert(0);
+	}
+
+	//int x = 5;
+	//sections[sectionIndex] = fullText;
+	//fullText = "";
+	//sectionIndex++;
+
+	/*for (int i = 0; i < 5; ++i)
+	{
+		sections[i] = "hello this is a test hello this abcdefghijklmno\n"
 			"hello this is a test hello this\n"
 			"hello this is a test hello this\n"
 			"hello this is a test hello this";
 	}
 
-	sections[1] = "blah blah";
+	sections[1] = "blah blah";*/
 }
 
 const std::string & Script::GetSection(int index)
