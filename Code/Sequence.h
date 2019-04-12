@@ -25,7 +25,11 @@ struct FlashedImage
 	void Flash();
 	void Update();
 	void Draw(sf::RenderTarget *target);
-
+	int GetNumFrames();
+	bool IsDone();
+	void StopHolding();
+	bool IsHolding();
+	bool IsFadingIn();
 	sf::Sprite spr;
 	int frame;
 	bool flashing;
@@ -294,6 +298,7 @@ struct NexusCore1Seq : Sequence
 };
 
 struct CrawlerQueen;
+struct TextDisp;
 struct CrawlerAttackSeq : Sequence
 {
 	enum State
@@ -303,7 +308,8 @@ struct CrawlerAttackSeq : Sequence
 		CRAWLERSWOOP,
 		DIGGINGAROUND,
 		THROWOUT,
-		CONVERSATION,
+		CRAWLERTALK,
+		KINTALK,
 		END,
 		Count
 	};
@@ -317,6 +323,7 @@ struct CrawlerAttackSeq : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
+	TextDisp *textDisp;
 	CrawlerQueen *queen;
 
 	int frame;
@@ -332,6 +339,7 @@ struct CrawlerAttackSeq : Sequence
 	FlashedImage *detailedGrab;
 
 	FlashedImage *crawlerFace;
+	FlashedImage *kinFace;
 
 	GameSession *owner;
 };

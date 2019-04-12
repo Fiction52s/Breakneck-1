@@ -197,10 +197,21 @@ void TextDisp::SetString(const std::string &str)
 	Reset();
 }
 
+void TextDisp::Show()
+{
+	show = true;
+}
+
+void TextDisp::Hide()
+{
+	show = false;
+}
+
 void TextDisp::Reset()
 {
 	text.setString("");
 	frame = 0;
+	show = false;
 }
 
 bool TextDisp::Update()
@@ -209,7 +220,7 @@ bool TextDisp::Update()
 	int textLen = text.getString().getSize();
 
 	//text.setString(message);//.substr(0, textLen + 1));
-	if (textLen == len)
+	if (textLen == len || !show )
 	{
 		return false;
 	}
@@ -227,8 +238,11 @@ bool TextDisp::Update()
 
 void TextDisp::Draw(sf::RenderTarget *target)
 {
-	target->draw(bgRect);
-	target->draw(text);
+	if (show)
+	{
+		target->draw(bgRect);
+		target->draw(text);
+	}
 }
 
 void Script::Load(const std::string &name)

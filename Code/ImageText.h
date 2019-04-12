@@ -54,6 +54,8 @@ struct TextDisp
 	void SetString(const std::string &str);
 	void Reset();
 	bool Update();
+	void Show();
+	void Hide();
 	void Draw(sf::RenderTarget *target);
 	sf::Text text;
 	sf::Vector2f rectSize;
@@ -61,6 +63,7 @@ struct TextDisp
 	sf::RectangleShape bgRect;
 	int nextLetterWait;
 	int frame;
+	bool show;
 };
 
 

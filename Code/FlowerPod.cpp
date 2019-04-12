@@ -372,6 +372,7 @@ bool MomentaBroadcast::Update()
 			basicFlower = false;
 			frame = 0;
 			sprite.setTexture(*ts_broadcast->texture);
+			textDisp->Show();
 		}
 		else
 		{
@@ -406,6 +407,7 @@ bool MomentaBroadcast::Update()
 		if (imageIndex == numImages)
 		{
 			basicFlower = true;
+			textDisp->Hide();
 			frame = 0;
 			sprite.setTexture(*ts_basicFlower->texture);
 			sprite.setTextureRect(ts_basicFlower->GetSubRect(0));
@@ -421,10 +423,7 @@ bool MomentaBroadcast::Update()
 void MomentaBroadcast::Draw( RenderTarget *target )
 {
 	target->draw(sprite);
-	if (!basicFlower)
-	{
-		textDisp->Draw(target);
-	}
+	textDisp->Draw(target);
 }
 
 void MomentaBroadcast::Reset()
