@@ -40,9 +40,6 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height -16);
 	V2d gPoint = g->GetPoint(edgeQuantity);
 	sprite.setPosition(gPoint.x, gPoint.y);
-	
-	
-	
 
 	V2d gn = g->Normal();
 
@@ -193,27 +190,19 @@ void FlowerPod::ProcessState()
 	
 	if ( action == BROADCAST && dist <= rad && healingPlayer == NULL)
 	{
+		if (!owner->cam.manual)
+			owner->cam.Ease(Vector2f(camPosition), .8, 300, CubicBezier());
 		healingPlayer = player;
 		//enter
 	}
-	else if ( action != BROADCAST || (dist > rad && healingPlayer != NULL))
-	{
-		healingPlayer = NULL;
-		//exit
-	}
-
-
-	if (healingPlayer != NULL)
-	{
-		if( !owner->cam.manual )
-			owner->cam.Ease(Vector2f(camPosition), .8, 300, CubicBezier());
-	}
-	else
+	else if (  (dist > rad || action == BROADCAST ) && healingPlayer != NULL )
 	{
 		if (owner->cam.manual)
 		{
 			owner->cam.EaseOutOfManual(60);
 		}
+		healingPlayer = NULL;
+		//exit
 	}
 
 	if (healingPlayer != NULL && healingPlayer->drainCounter == 0)

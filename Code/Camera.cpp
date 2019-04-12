@@ -78,7 +78,10 @@ void Camera::EaseOutOfManual( int frames )
 	easingOut = true;
 	easeOutCount = frames;
 	easeOutFrame = 0;
-	manualPos = pos;
+	//manualPos = pos;
+	//manualZoom = zoomFactor;
+
+	startEase = pos;
 }
 
 int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, double &minY, double &maxY )
@@ -479,8 +482,6 @@ double Camera::GetNewEnemyZoom( Actor *player )
 			framesActive = 0;
 	}
 
-	
-
 	double tw = max( abs( maxX - pos.x ), abs( minX - pos.x ) ) * 2;
 	double th = max( abs( maxY - pos.y ), abs( minY - pos.y ) ) * 2;
 
@@ -492,28 +493,7 @@ double Camera::GetNewEnemyZoom( Actor *player )
 	ratio = max( ratio, 1.0 );
 	testZoom = ratio;
 
-	double blah = .01;
-	double zFactor = zoomFactor;
-
 	return testZoom;
-
-	/*if (numActive > 0)
-	{
-		if (testZoom > zFactor)
-		{
-			zFactor += blah;
-			if (zFactor > testZoom)
-				zFactor = testZoom;
-		}
-	}
-
-	if (zFactor < 1)
-		zFactor = 1;
-	else if (zFactor > maxZoom)
-		zFactor = maxZoom;
-
-	return zFactor;*/
-	//cout << "numActive: " << numActive << endl;
 }
 
 void Camera::SetRumble( int xFactor, int yFactor, int duration )
@@ -639,16 +619,15 @@ void Camera::ManualUpdate( Actor *player )
 
 		if (currMove->currMovement == NULL)
 			currMove = NULL;
-
-
 	}
-	
 
 	UpdateRumble();
 
 	UpdateEase();
 
 	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
+
+	//cout << "manual pos: " << pos.x << ", " << pos.y << "z: " << zoomFactor << endl;
 	//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 }
 
@@ -1103,8 +1082,8 @@ void Camera::Update( Actor *player )
 		ManualUpdate( player );
 		return;
 	}
-	V2d playerPos = player->position;
 
+	V2d playerPos = player->position;
 
 	if( player->action == Actor::RIDESHIP || player->action == Actor::SKYDIVE )
 	{
@@ -1122,7 +1101,7 @@ void Camera::Update( Actor *player )
 	
 	ControllerState & con = player->currInput;
 	ControllerState & prevcon = player->prevInput;
-	UpdateZoomLevel(con, prevcon);
+	//UpdateZoomLevel(con, prevcon);
 
 	V2d pVel = GetPlayerVel(player);
 
@@ -1137,8 +1116,6 @@ void Camera::Update( Actor *player )
 			framesFalling--;
 	}
 
-
-
 	pos.x = playerPos.x;
 	pos.y = playerPos.y;
 	
@@ -1151,16 +1128,12 @@ void Camera::Update( Actor *player )
 	else
 	{
 		SetTestOffset(pVel);
-		//SetMovementOffset(pVel);
 	}
 
 	pos.x += offset.x;
 	pos.y += offset.y;
 
-	
-
 	double enemyZoom = GetNewEnemyZoom( player );
-	//if( numActive == 0 )
 	double zFactor = GetNewZoomFactor(player);
 
 	if (enemyZoom > zFactor)
@@ -1217,48 +1190,26 @@ void Camera::Update( Actor *player )
 				{
 					zoomFactor += change / player->slowMultiple;
 				}
-				
-				//zoomFactor += zDiff / 350.0 / player->slowMultiple;
-				
-				/*if (more)
-				{
-					if (zoomFactor < testZoom)
-						zoomFactor = testZoom;
-				}*/
 			}
 		}
 	}
-
-
-	
 
 	if( zoomFactor < 1 )
 		zoomFactor = 1;
 	else if( zoomFactor > maxZoom )
 		zoomFactor = maxZoom;
 
+	
+
 	UpdateEaseOut();
+
+	//cout << "anyway pos: " << pos.x << ", " << pos.y << ", z: "
+	//	<< zoomFactor << endl;
 
 	UpdateRumble();
 
 	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
 	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
-
-
-
-
-	//offset.y += (double)framesFalling / 60 * 100.0;
-
-
-	//cout << "offset: " << offset.x << ", " << offset.y << endl;
-	/*double numActive = 0;
-	Enemy *curr = owner->activeEnemyList;
-	while( curr != NULL )
-	{
-		++numActive;
-		curr = curr->next;
-	}
-	cout << "num active: " << numActive << endl;*/
 }
 
 void Camera::UpdateEaseOut()
@@ -1268,9 +1219,11 @@ void Camera::UpdateEaseOut()
 		double r = (double)easeOutFrame / easeOutCount;
 		sf::Vector2<double> p;
 		p = r * sf::Vector2<double>(pos.x, pos.y) + (1.0 - r) * sf::Vector2<double>(manualPos.x, manualPos.y);
+		//cout << "p: " << p.x << ", " << p.y << ", pos: " << pos.x << ", " << pos.y << endl;
 		pos = Vector2f(p.x, p.y);
 		zoomFactor = r * zoomFactor + (1 - r) * manualZoom;
-
+		//cout << "pos: " << pos.x << ", " << pos.y << ", z: " 
+		//	<< zoomFactor << ", easeframe: " << easeOutFrame << endl;
 		++easeOutFrame;
 		if (easeOutFrame == easeOutCount)
 		{

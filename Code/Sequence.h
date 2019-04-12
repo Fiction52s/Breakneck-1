@@ -12,6 +12,7 @@ struct Edge;
 struct GameSession;
 struct MovementSequence;
 struct PoiInfo;
+struct MusicInfo;
 
 struct FlashedImage
 {
@@ -362,10 +363,11 @@ struct GetAirdashPowerSeq : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
+	
 	sf::Sprite darkAuraSprite;
 	Tileset *ts_darkAura;
 	sf::RectangleShape darkRect;
-
+	MusicInfo *sceneMusic;
 
 	sfe::Movie mov;
 

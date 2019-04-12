@@ -6754,6 +6754,7 @@ int GameSession::Run()
 				
 
 				Vector2f camPos = cam.GetPos();
+				//cout << "in game cam pos: " << camPos.x << ", " << camPos.y << endl;
 
 				if (totalGameFrames % 60 == 0)
 				{

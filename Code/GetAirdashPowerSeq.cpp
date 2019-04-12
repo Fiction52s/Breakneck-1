@@ -26,6 +26,8 @@
 #include "Movement.h"
 #include "ScoreDisplay.h"
 #include "Enemy_CrawlerQueen.h"
+#include "MusicSelector.h"
+#include "MusicPlayer.h"
 
 using namespace sf;
 using namespace std;
@@ -42,6 +44,8 @@ GetAirdashPowerSeq::GetAirdashPowerSeq(GameSession *p_owner)
 	assert(mov.openFromFile("Resources/Movie/kin_meditate_01.ogv"));
 	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 
+	sceneMusic = owner->mainMenu->musicManager->songMap["w1_26_Edge"];
+	sceneMusic->Load();
 
 	stateLength[KIN_KNEELING] = 60;
 	stateLength[START_MEDITATE] = 60;
@@ -82,7 +86,7 @@ bool GetAirdashPowerSeq::Update()
 
 	if (state == END)
 	{
-		
+		owner->mainMenu->musicPlayer->TransitionMusic(owner->originalMusic, 60);
 		return false;
 	}
 
@@ -93,7 +97,8 @@ bool GetAirdashPowerSeq::Update()
 	case KIN_KNEELING:
 		if (frame == 0)
 		{
-			owner->cam.SetManual(true);
+			owner->mainMenu->musicPlayer->TransitionMusic(sceneMusic, 60);
+			//owner->cam.SetManual(true);
 			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 68), .75, 60, CubicBezier());
 			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect( 0 ));
 			player->dirtyAuraSprite.setOrigin(player->dirtyAuraSprite.getLocalBounds().width / 2,
@@ -200,6 +205,7 @@ bool GetAirdashPowerSeq::Update()
 		}
 		else if (frame == stateLength[FADE_BACK] - 1)
 		{
+			cout << "set easting out of manual" << endl;
 			owner->cam.EaseOutOfManual(120);
 		}
 		
