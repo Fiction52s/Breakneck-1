@@ -182,7 +182,7 @@ bool ShipExitSeq::Update()
 		}
 		else
 		{
-			mov.update();
+			//mov.update();
 			
 			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
 			{
@@ -211,6 +211,7 @@ void ShipExitSeq::Draw( RenderTarget *target, EffectLayer layer)
 	}
 	else if (state == PLAYMOVIE)
 	{
+		mov.update();
 		target->draw(mov);
 	}
 	

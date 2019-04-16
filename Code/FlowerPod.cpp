@@ -182,6 +182,7 @@ void FlowerPod::ActionEnded()
 
 void FlowerPod::ProcessState()
 {
+	//cout << "update" << endl;
 	ActionEnded();
 
 	Actor *player = owner->GetPlayer(0);
@@ -195,7 +196,7 @@ void FlowerPod::ProcessState()
 		healingPlayer = player;
 		//enter
 	}
-	else if (  (dist > rad || action == BROADCAST ) && healingPlayer != NULL )
+	else if (  (dist > rad || action != BROADCAST ) && healingPlayer != NULL )
 	{
 		if (owner->cam.manual)
 		{
@@ -208,6 +209,7 @@ void FlowerPod::ProcessState()
 	if (healingPlayer != NULL && healingPlayer->drainCounter == 0)
 	{
 		owner->GetPlayer(0)->kinRing->powerRing->Fill( player->drainAmount + 1 );//powerWheel->Use( 1 );	
+		//cout << "fill by 2" << endl;
 	}
 
 	switch (action)

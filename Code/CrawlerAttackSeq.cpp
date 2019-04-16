@@ -144,14 +144,14 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	queenGrabSprite.setTexture(*ts_queenGrab->texture);
 	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
 
-	detailedGrab = new FlashedImage(owner->GetTileset("Story/03a_Crawler_Dig_01.png", 1920, 1080),
-		0, 30, 60, 30, Vector2f(960, 540));//Vector2f( 1500, 500 ));
+	detailedGrab = new FlashedImage(owner->GetTileset("Story/Crawler_Dig_01_860x830.png", 860, 830),
+		0, 30, 60, 30, Vector2f(1160, 540));//Vector2f( 1500, 500 ));
 
-	crawlerFace = new FlashedImage(owner->GetTileset("Story/Crawler_Dig_02.png", 1920, 1080),
-		0, 30, 100000, 30, Vector2f(960, 540));//Vector2f( 1500, 500 ));
+	crawlerFace = new FlashedImage(owner->GetTileset("Story/Crawler_Dig_02_828x875.png", 828, 875),
+		0, 30, 180, 30, Vector2f(1350, 325));//Vector2f(960, 540));//Vector2f( 1500, 500 ));
 
-	kinFace = new FlashedImage(owner->GetTileset("Story/03c_Crawler_Dig_03.png", 1920, 1080),
-		0, 30, 60, 30, Vector2f(960, 540));//Vector2f( 1500, 500 ));
+	kinFace = new FlashedImage(owner->GetTileset("Story/Crawler_Dig_03_510x565.png", 510, 565),
+		0, 30, 60, 30, Vector2f(625, 325));//Vector2f( 1500, 500 ));
 	//ts_detailedGrab = owner->GetTileset("Bosses/Crawler/");
 	//detailedGrabSpr.setTexture(*ts_detailedGrab);
 	//detailedGrabSpr.setTextureRect(ts_detailedGrab->GetSubRect(0));
@@ -232,7 +232,7 @@ bool CrawlerAttackSeq::Update()
 	case ROCKSFALL:
 		if (frame == 0)
 		{
-			owner->cam.SetRumble(2, 2, stateLength[ROCKSFALL]);
+			owner->cam.SetRumble(3, 3, stateLength[ROCKSFALL]);
 		}
 		break;
 	case CRAWLERSWOOP:
@@ -257,7 +257,7 @@ bool CrawlerAttackSeq::Update()
 	case DIGGINGAROUND:
 		if (frame == 0)
 		{
-			owner->cam.SetRumble(5, 5, stateLength[DIGGINGAROUND]);
+			owner->cam.SetRumble(10, 10, stateLength[DIGGINGAROUND]);
 			owner->cam.SetManual(true);
 			//owner->cam.Set(Vector2f(camPoint0->pos), 1, 0);
 			owner->cam.Ease(Vector2f(camPoint0->pos), 1, 60, CubicBezier());
@@ -306,10 +306,7 @@ bool CrawlerAttackSeq::Update()
 			textDisp->Show();
 		}
 
-		if ( crawlerFace->IsHolding() && !textDisp->Update())
-		{
-			crawlerFace->StopHolding();
-		}
+		textDisp->Update();
 		
 		if (crawlerFace->IsDone())
 		{

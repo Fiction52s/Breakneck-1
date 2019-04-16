@@ -868,9 +868,9 @@ int FillRingSection::Drain(int dmg)
 int FillRingSection::Fill(int power)
 {
 	currPower += power;
-	if (currPower > maxPower)
+	if (currPower >= maxPower)
 	{
-		int ret = -currPower;
+		int ret = (currPower - maxPower);//-currPower - 1;
 		currPower = maxPower;
 		return ret;
 	}
@@ -1062,6 +1062,7 @@ void FillRing::Draw( sf::RenderTarget *target )
 
 int FillRing::Fill( int fill )
 {
+	//cout << "fill: " << fill << endl;
 	int res = rings[currRing]->Fill(fill);
 	if (res > 0 && currRing < numRings - 1)
 	{

@@ -1870,6 +1870,7 @@ void MainMenu::SetModeLoadingMap( int wIndex )
 
 void MainMenu::SetModeKinBoostLoadingMap(int variation)
 {
+	fader->Clear();
 	SetMode(KINBOOSTLOADINGMAP);
 	//preScreenTexture->setView(v);
 	//wIndex = min(wIndex, 1); //because there are only screens for 2 worlds

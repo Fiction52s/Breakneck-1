@@ -2408,7 +2408,7 @@ void Actor::UpdatePrePhysics()
 			if (drainCounter == drainCounterMax)
 			{
 				int res = kinRing->powerRing->Drain(drainAmount);//powerWheel->Use( 1 );	
-
+				//cout << "drain by " << drainAmount << endl;
 				if (res > 0)
 				{
 					desperationMode = true;

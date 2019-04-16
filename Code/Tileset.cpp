@@ -14,8 +14,9 @@ Tileset::~Tileset()
 IntRect Tileset::GetSubRect( int localID )
 {
 	int xi,yi;
-	int sx = (texture->getSize().x / tileWidth );
-	int sy = (texture->getSize().y / tileHeight );
+	Vector2i size(texture->getSize());
+	int sx = size.x / tileWidth;
+	int sy = size.y / tileHeight;
 
 	xi = localID % sx;
 	yi = localID / sx;

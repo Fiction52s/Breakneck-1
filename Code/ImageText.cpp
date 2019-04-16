@@ -194,7 +194,9 @@ void TextDisp::SetTopLeft(sf::Vector2f &pos)
 void TextDisp::SetString(const std::string &str)
 {
 	message = str;
+	bool s = show;
 	Reset();
+	show = s;
 }
 
 void TextDisp::Show()

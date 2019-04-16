@@ -63,7 +63,7 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	frame = 0;
 
 	
-	titleMusic = mainMenu->musicManager->songMap["Breakneck_Title_01"];
+	titleMusic = mainMenu->musicManager->songMap["w0_Breakneck_Title_02"];
 	titleMusic->Load();
 
 }
@@ -79,7 +79,7 @@ void TitleScreen::Update()
 	if (frame == 60)
 	{
 		//mainMenu->fader->CrossFade(60, 60, Color::Red);
-		//mainMenu->musicPlayer->PlayMusic(titleMusic);
+		mainMenu->musicPlayer->PlayMusic(titleMusic);
 	}
 
 	background->Update();
