@@ -330,6 +330,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int numVertices;
 	};
 
+
+	double accumulator;
 	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
 	bool IsFading();
 	void ClearFade();

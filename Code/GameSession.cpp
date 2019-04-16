@@ -5960,7 +5960,7 @@ int GameSession::Run()
 
 	sf::Clock gameClock;
 	double currentTime = 0;
-	double accumulator = TIMESTEP + .1;
+	accumulator = TIMESTEP + .1;
 
 	Vector2<double> otherPlayerPos;
 
@@ -8271,9 +8271,6 @@ int GameSession::Run()
 
 			while (accumulator >= TIMESTEP)
 			{
-
-
-
 				UpdateInput();
 
 				PauseMenu::UpdateResponse ur = pauseMenu->Update(GetCurrInputUnfiltered(0), GetPrevInputUnfiltered(0));
@@ -8325,8 +8322,19 @@ int GameSession::Run()
 
 				}
 
+				if (state != PAUSE)
+				{
+					break;
+				}
+
 				accumulator -= TIMESTEP;
 			}
+
+			if (state != PAUSE)
+			{
+				continue;
+			}
+
 			//if( currInput.
 
 			/*if( Keyboard::isKeyPressed( Keyboard::O ) )
@@ -10095,6 +10103,7 @@ void GameSession::ClearFX()
 
 void GameSession::RestartLevel()
 {
+	//accumulator = TIMESTEP + .1;
 	currBroadcast = NULL;
 	currStorySequence = NULL;
 
@@ -10232,6 +10241,8 @@ void GameSession::RestartLevel()
 	cloneInactiveEnemyList = NULL;
 
 	cam.SetManual( false );
+
+	
 	//inGameClock.restart();
 }
 
