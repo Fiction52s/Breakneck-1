@@ -80,6 +80,7 @@ struct Aura
 	int totalParticles;
 	Aura( Actor *player, int numSets, int maxParticlesPerSet,
 		int type = 0 );
+	~Aura();
 	int testType;
 	void Update();
 	void Draw(sf::RenderTarget *target);
@@ -99,6 +100,7 @@ struct Aura
 
 	void DeactivateParticles(ParticleSet *ps);
 	void AddToInactive(ParticleSet *ps);
+	void DeactivateAllParticles();
 	int InactiveCount();
 	int ActiveCount();
 	Tileset *ts;

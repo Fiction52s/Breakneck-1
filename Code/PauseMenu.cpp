@@ -45,6 +45,11 @@ OptionSelector::OptionSelector( Vector2f &p_pos, int p_optionCount,
 	//cout << "end selector init" << endl;
 }
 
+OptionSelector::~OptionSelector()
+{
+	delete[] options;
+}
+
 void OptionSelector::Right()
 {
 	if( framesWaiting >= currWaitFrames || momentum <= 0 )
@@ -376,11 +381,23 @@ void PauseMenu::UpdatePauseOptions()
 
 PauseMenu::~PauseMenu()
 {
-	/*for( int i = 0; i < numVideoOptions; ++i )
+	delete pauseSelector;
+	delete controlSettingsMenu;
+	delete optionsMenu;
+	for (int i = 0; i < numVideoOptions; ++i)
 	{
 		delete videoSelectors[i];
 	}
-	delete [] videoSelectors;*/
+	delete[] videoSelectors;
+
+	delete shardMenu;
+	delete kinMenu;
+
+	for (int i = 0; i < numSoundOptions; ++i)
+	{
+		delete soundSelectors[i];
+	}
+	delete[] soundSelectors;
 }
 
 

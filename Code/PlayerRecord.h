@@ -173,12 +173,15 @@ struct GhostFolder
 		autoLoaded( false ), saveLoaded( false )
 	{
 	}
+	~GhostFolder();
 
 	//std::string folderName;
 	boost::filesystem::path folderPath;
 	//std::list<GhostEntry*> ghosts;
 	bool autoExpanded;
 	bool saveExpanded;
+	void DestroyAutoGhosts();
+	void DestroySaveGhosts();
 	std::list<GhostEntry*> autoGhosts;
 	std::list<GhostEntry*> saveGhosts;
 	bool expanded;
@@ -208,6 +211,7 @@ struct RecordGhostMenu
 
 	RecordGhostMenu(MainMenu *p_mainMenu,
 		sf::Vector2f &p_pos);
+	~RecordGhostMenu();
 	MainMenu *mainMenu;
 	void SetupBoxes();
 	void LoadItems();
@@ -229,11 +233,11 @@ struct RecordGhostMenu
 
 	sf::Vertex boxes[NUM_BOXES * 4];
 	sf::Text itemName[NUM_BOXES];
-	std::pair<std::string, GhostIndexInfo> *allItems;
+	//std::pair<std::string, GhostIndexInfo> *allItems;
 	sf::Vector2f topMid;
-	std::list<GhostFolder*> folders;
-	GhostFolder *autoFolder;
-	GhostFolder *saveFolder;
+	//std::list<GhostFolder*> folders;
+	//GhostFolder *autoFolder;
+	//GhostFolder *saveFolder;
 
 	int oldCurrIndex;
 	int topIndex;

@@ -220,6 +220,11 @@ SingleAxisSlider::SingleAxisSlider(Vector2f &p_topMid, int numOptions, int start
 	UpdateSliderPos();
 }
 
+SingleAxisSlider::~SingleAxisSlider()
+{
+	delete saSelector;
+}
+
 int SingleAxisSlider::Update(ControllerState &currInput, ControllerState &prevInput)
 {
 	int currIndex = saSelector->currIndex;

@@ -53,6 +53,23 @@ Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet, int type )
 		}
 	}
 }
+
+Aura::~Aura()
+{
+	delete[] va;
+	
+	DeactivateAllParticles();
+
+	ParticleSet *curr = inactiveSets;
+	ParticleSet *next = NULL;
+	while (curr != NULL)
+	{
+		next = curr->next;
+		delete curr;
+		curr = next;
+	}
+}
+
 void Aura::Update()
 {
 	ParticleSet *ps = activeSets;
@@ -302,6 +319,18 @@ void Aura::DeactivateParticles(ParticleSet *ps)
 	}
 	ps->Clear();
 	AddToInactive(ps);
+}
+
+void Aura::DeactivateAllParticles()
+{
+	ParticleSet *curr = activeSets;
+	ParticleSet *next = NULL;
+	while (curr != NULL)
+	{
+		next = curr->next;
+		DeactivateParticles(curr);
+		curr = next;
+	}
 }
 
 void Aura::CreateParticlePointList( RenderTexture *rtt, Tileset *ts, int tileIndex,

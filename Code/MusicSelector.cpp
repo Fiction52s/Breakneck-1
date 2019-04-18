@@ -44,7 +44,8 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu,
 	//mapName.setOrigin( )
 	mapName.setPosition(Vector2f(topMid.x, topMid.y - 40));
 
-	for (int i = 0; i < NUM_BOXES; ++i)
+	int nBox = GetNumBoxes();
+	for (int i = 0; i < nBox; ++i)
 	{
 		musicNames[i].setFont(font);
 		musicNames[i].setCharacterSize(40);
@@ -59,6 +60,16 @@ MusicSelector::MusicSelector(MainMenu *p_mainMenu,
 	musicPlayer = mainMenu->musicPlayer;
 }
 
+MusicSelector::~MusicSelector()
+{
+	delete saSelector;
+	for (int i = 0; i < NUM_BOXES; ++i)
+	{
+		delete oftenSlider[i];
+	}
+	delete[] songs;
+}
+
 void MusicSelector::SetMapName(const std::string &mName)
 {
 	mapName.setString(mName);
@@ -67,8 +78,9 @@ void MusicSelector::SetMapName(const std::string &mName)
 
 void MusicSelector::Draw(sf::RenderTarget *target)
 {
-	target->draw(boxes, GetNumBoxes() * 4, sf::Quads);
-	for (int i = 0; i < GetNumBoxes(); ++i)
+	int nBox = GetNumBoxes();
+	target->draw(boxes, nBox * 4, sf::Quads);
+	for (int i = 0; i < nBox; ++i)
 	{
 		//cout << "drawing: " << profileNames[i].getString().toAnsiString() << "\n";
 		target->draw(musicNames[i]);
@@ -131,12 +143,13 @@ void MusicSelector::UpdateNames()
 	int i = 0;
 
 	string nameStr;
-	for (; i < GetNumBoxes(); ++i)
+	int nBox = GetNumBoxes();
+	for (; i < nBox; ++i)
 	{
-		trueI = (topIndex + i) % GetNumBoxes();
+		trueI = (topIndex + i) % nBox;
 		if (i == numTotalSongs)
 		{
-			for (; i < GetNumBoxes(); ++i)
+			for (; i < nBox; ++i)
 			{
 				musicNames[i].setString("");
 			}
@@ -275,9 +288,10 @@ void MusicSelector::Update(ControllerState &currInput, ControllerState &prevInpu
 
 	if (inc)
 	{
-		if (cIndex - topIndex == GetNumBoxes())
+		int nBox = GetNumBoxes();
+		if (cIndex - topIndex == nBox)
 		{
-			topIndex = cIndex - (GetNumBoxes() - 1);
+			topIndex = cIndex - (nBox - 1);
 		}
 		else if (cIndex == 0)
 		{
@@ -379,7 +393,8 @@ void MusicSelector::SetupBoxes()
 	sf::Vector2f currTopMid;
 	int extraHeight = 0;
 
-	for (int i = 0; i < GetNumBoxes(); ++i)
+	int nBox = GetNumBoxes();
+	for (int i = 0; i < nBox; ++i)
 	{
 		currTopMid = topMid + Vector2f(0, extraHeight);
 
@@ -433,8 +448,8 @@ void MusicSelector::UpdateBoxesDebug()
 	Color c;
 	int trueI = (saSelector->currIndex - topIndex);
 	
-
-	for (int i = 0; i < GetNumBoxes(); ++i)
+	int nBox = GetNumBoxes();
+	for (int i = 0; i < nBox; ++i)
 	{
 		if (i == trueI)
 		{
@@ -580,7 +595,8 @@ MusicInfo::MusicInfo()
 
 MusicInfo::~MusicInfo()
 {
-	delete music;
+	if( music != NULL )
+		delete music;
 }
 
 bool MusicManager::LoadMusicNames()

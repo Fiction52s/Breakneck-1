@@ -19,6 +19,11 @@ struct TreeNode
 	std::string GetLocalPath();
 };
 
+struct LevelHolder
+{
+	TreeNode **dirNode;
+};
+
 struct MainMenu;
 struct LevelSelector
 {

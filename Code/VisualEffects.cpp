@@ -42,6 +42,12 @@ EffectPool::EffectPool(EffectType et, int p_maxNumFX, float p_depth )
 	}
 }
 
+EffectPool::~EffectPool()
+{
+	//DestroyAllMembers();
+	delete[] va;
+}
+
 void EffectPool::SetTileset(Tileset *p_ts)
 {
 	ts = p_ts;
@@ -412,6 +418,7 @@ VertexBuf::~VertexBuf()
 {
 	delete[] members;
 	delete[] vb;
+	delete[] dirty;
 }
 
 void VertexBuf::SetScale(int index, sf::Vector2f &scale)

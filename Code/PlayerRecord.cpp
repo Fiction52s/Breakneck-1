@@ -544,7 +544,7 @@ RecordGhostMenu::RecordGhostMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos)
 	:mainMenu(p_mainMenu), font(p_mainMenu->arial), topIndex(0),
 	oldCurrIndex(0)
 {
-	allItems = NULL;
+	//allItems = NULL;
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 0, 0);
@@ -580,6 +580,11 @@ RecordGhostMenu::RecordGhostMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos)
 
 	//folders.push_back(autoFolder);
 	//folders.push_back(saveFolder);
+}
+
+RecordGhostMenu::~RecordGhostMenu()
+{
+
 }
 
 void RecordGhostMenu::SetupBoxes()
@@ -1272,6 +1277,31 @@ std::string GhostIndexInfo::GetName()
 	}
 
 	assert(0);
+}
+
+GhostFolder::~GhostFolder()
+{
+	DestroyAutoGhosts();
+	DestroySaveGhosts();
+//	for( auto it = autoGhosts.begin(); it != autoGhosts.end();)
+}
+
+void GhostFolder::DestroyAutoGhosts()
+{
+	for (auto it = autoGhosts.begin(); it != autoGhosts.end(); ++it)
+	{
+		delete (*it);
+	}
+	autoGhosts.clear();
+}
+
+void GhostFolder::DestroySaveGhosts()
+{
+	for (auto it = saveGhosts.begin(); it != saveGhosts.end(); ++it)
+	{
+		delete (*it);
+	}
+	saveGhosts.clear();
 }
 
 bool GhostFolder::IsSaveActive()

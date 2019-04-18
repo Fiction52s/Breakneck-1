@@ -149,6 +149,7 @@ struct MapSelector
 	State state;
 	int slideDuration;
 	MapSelector( MainMenu *mm, sf::Vector2f &pos );
+	~MapSelector();
 	MapSector **sectors;
 	Tileset *ts_sectorLevelBG;
 	Tileset *ts_levelStatsBG;

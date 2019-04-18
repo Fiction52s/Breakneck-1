@@ -201,6 +201,15 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 }
 
+SaveMenuScreen::~SaveMenuScreen()
+{
+	for (int i = 0; i < 6; ++i)
+	{
+		delete files[i];
+		delete fileDisplay[i];
+	}
+}
+
 void SaveMenuScreen::Update()
 {
 	if (frame == actionLength[action])

@@ -594,7 +594,7 @@ struct Actor : QuadTreeCollider,
 	// 0 is not started, 1 is right, 2 is
 	//left
 	bool airDashStall;
-	Light *testLight;
+	//Light *testLight;
 	//Gate *gateTouched;
 	Edge *gateTouched;
 	
@@ -608,7 +608,7 @@ struct Actor : QuadTreeCollider,
 
 	//RotaryParticleEffect *re;
 	//RotaryParticleEffect *re1;
-	ParticleTrail *pTrail;
+	//ParticleTrail *pTrail;
 	double rotaryAngle;
 	//AirParticleEffect *ae;
 	//double speedBarVel;
@@ -805,11 +805,9 @@ struct Actor : QuadTreeCollider,
 	
 	double offSlopeByWallThresh;
 	//const static int MAX_MOTION_GHOSTS = 10;
-	sf::Sprite *motionGhosts;// [MAX_MOTION_GHOSTS];
 	VertexBuf *motionGhostBuffer;
 	VertexBuf *motionGhostBufferBlue;
 	VertexBuf *motionGhostBufferPurple;
-	VertexBuf *testBuffer;
 	
 
 	int maxMotionGhosts;
@@ -846,7 +844,6 @@ struct Actor : QuadTreeCollider,
 
 	CollisionBox b;
 	CollisionBox hurtBody;
-	//CollisionBox grindHurtBody;
 	CollisionBody *currHitboxes;
 	int currHitboxFrame;
 	void SetCurrHitboxes(CollisionBody *cBody,
@@ -865,7 +862,7 @@ struct Actor : QuadTreeCollider,
 
 	CollisionBody *currHurtboxes;
 	int currHurtboxFrame;
-	std::map<Action, CollisionBody*> hurtboxMap;
+	//std::map<Action, CollisionBody*> hurtboxMap;
 	bool IntersectMyHurtboxes(CollisionBody *cb,
 		int cbFrame );
 	bool IntersectMyHitboxes(CollisionBody *cb,
@@ -1117,7 +1114,6 @@ struct Actor : QuadTreeCollider,
 	float *fBubbleRadiusSize;
 	sf::Vector2f *fBubblePos;
 	CollisionBody **bubbleHitboxes;
-	HitboxInfo *hInfo;
 
 	float *fBubbleFrame;
 
@@ -1199,7 +1195,7 @@ struct Actor : QuadTreeCollider,
 	int drainCounterMax;
 	int drainAmount;
 
-	Critical *currentCheckPoint;
+	//Critical *currentCheckPoint;
 
 	sf::Vector2<double> dWireAirDash;
 	sf::Vector2<double> dWireAirDashOld;
@@ -1306,7 +1302,7 @@ struct Actor : QuadTreeCollider,
 
 
 
-	PlayerGhost *testGhost;
+	//PlayerGhost *testGhost;
 	const static int MAX_GHOSTS = 4;
 	PlayerGhost *ghosts[MAX_GHOSTS];
 	int recordedGhosts;

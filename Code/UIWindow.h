@@ -239,7 +239,7 @@ struct UIHorizSelector : UIControl
 		framesWaiting = 0;
 	}
 
-	~UIHorizSelector()
+	virtual ~UIHorizSelector()
 	{
 		delete bar;
 		delete nameBar;
@@ -466,7 +466,7 @@ struct UIVerticalControlList : UIControl
 	UIVerticalControlList( UIControl *p_parent,
 		int p_numControls, UIControl **p_controls,
 		int p_spacing );
-	~UIVerticalControlList();
+	virtual ~UIVerticalControlList();
 	void SetTopLeft( float x, float y );
 	const sf::Vector2f &GetTopLeftGlobal();
 	bool Update( ControllerState &curr,
@@ -494,7 +494,7 @@ struct UIControlGrid : UIControl
 		UIControl **p_controls,
 		int p_spacingX, int p_spacingY,
 		bool horizontalDominant );
-	~UIControlGrid();
+	virtual ~UIControlGrid();
 	void SetTopLeft( float x, float y );
 	const sf::Vector2f &GetTopLeftGlobal();
 	bool Update( ControllerState &curr,
@@ -532,7 +532,7 @@ struct UIButton : UIControl
 		const std::string &text,
 		int p_width,
 		int p_height = 80 );
-	~UIButton();
+	virtual ~UIButton();
 	void Focus();
 	void Unfocus();
 	void SetTopLeft( float x, float y );
@@ -558,7 +558,7 @@ struct UICheckbox : UIControl
 		const std::string &text,
 		int p_width,
 		int p_height = 80 );
-	~UICheckbox();
+	virtual ~UICheckbox();
 	void Focus();
 	void Unfocus();
 	void SetTopLeft( float x, float y );
@@ -602,7 +602,7 @@ struct UIWindow : UIControl
 	UIWindow( UIControl *p_parent, 
 		Tileset *t,
 		sf::Vector2f &p_windowSize );
-	~UIWindow();
+	virtual ~UIWindow();
 	void AssignTextureToCorners();
 	void AssignTextureToCornerEdges();
 	void AssignTextureToEdges();

@@ -22,8 +22,9 @@
 #include "WorldMap.h"
 #include "SaveFile.h"
 #include "MainMenu.h"
-#include <crtdbg.h>
+//#include <crtdbg.h>
 #include "Enemy.h"
+#include <vld.h>
 
 using namespace std;
 using namespace sf;
@@ -65,20 +66,25 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 	}
 }
 
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
+
 int main()
 {
+	//_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 	// _CrtSetDbgFlag (
-    //  _CRTDBG_ALLOC_MEM_DF |
-    //  _CRTDBG_LEAK_CHECK_DF
+ //     _CRTDBG_ALLOC_MEM_DF |
+ //     _CRTDBG_LEAK_CHECK_DF
 	//  | _CRTDBG_CHECK_ALWAYS_DF
 	//	);
 
-	 //_CrtMemState state;
-	 //_CrtMemCheckpoint(&state);
-	 //state.
+	// _CrtMemState state;
+	// _CrtMemCheckpoint(&state);
+	// //state.
 
-   //_CrtSetReportMode ( _CRT_ERROR,
-    //  _CRTDBG_MODE_DEBUG);
+	//_CrtSetReportMode ( _CRT_ERROR,
+ //     _CRTDBG_MODE_DEBUG);
 
 	std::cout << "starting program" << endl;
 
@@ -113,5 +119,7 @@ int main()
 	MainMenu *mm = new MainMenu();
 	mm->Run();
 	delete mm;
+
+	//_CrtDumpMemoryLeaks();
 }
 

@@ -90,7 +90,14 @@ void Background::SetupFullBG(const std::string &fName, TilesetManager &tm,
 	string eStr = ".png";
 	string parDirStr = "Parallax/";
 
-	is.open(fStr);
+	try {
+		is.open(fStr);
+	}
+	catch (std::system_error &e)
+	{
+		cout << "blizzle: " << e.code().message() << endl;
+		assert(0);
+	}
 
 	if (is.is_open())
 	{
@@ -126,6 +133,8 @@ void Background::SetupFullBG(const std::string &fName, TilesetManager &tm,
 	}
 	else
 	{
+	//	strerror_s()
+	//	cout << "file opening error: " << strerror_s(errno);
 		assert(0 && "problem loading bg info file");
 	}
 }

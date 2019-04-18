@@ -35,6 +35,7 @@ struct SaveMenuScreen
 	int actionLength[Count];
 	int frame;
 	SaveMenuScreen(MainMenu *p_mainMenu);
+	~SaveMenuScreen();
 	Tileset *ts_background;//ts_saveMenuBG;
 	Tileset *ts_selectSlot;//ts_saveMenuSelect;
 	Tileset *ts_kinFace;//ts_saveMenuKinFace;

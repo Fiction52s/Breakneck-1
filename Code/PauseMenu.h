@@ -16,7 +16,7 @@ struct OptionSelector
 	OptionSelector( sf::Vector2f &pos,
 		int optionCount,
 		std::string *options ); 
-
+	~OptionSelector();
 	void Right();
 	void Left();
 	void Stop();

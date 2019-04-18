@@ -91,6 +91,12 @@ MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MapSelectionM
 	//profileSelect->UpdateNames();	
 }
 
+MultiSelectionSection::~MultiSelectionSection()
+{
+	delete profileSelect;
+	delete backLoader;
+}
+
 bool MultiSelectionSection::IsReady()
 {
 	if (profileSelect->state == ControlProfileMenu::S_SELECTED)
@@ -637,10 +643,6 @@ MainMenu::MainMenu()
 		controllers[i] = new GameController(i);
 	}
 
-	fadeRect.setFillColor(Color::Black);
-	fadeRect.setSize(Vector2f(1920, 1080));
-	fadeRect.setPosition(0, 0);
-
 	config = new Config();
 	config->WaitForLoad();
 	windowWidth = config->GetData().resolutionX;
@@ -660,10 +662,6 @@ MainMenu::MainMenu()
 
 	uiView = View(sf::Vector2f(960, 540), sf::Vector2f(1920, 1080));
 	v = View(Vector2f(1920 / 2, 1080 / 2), Vector2f(1920, 1080));
-
-
-	splashFadeFrame = 0;
-	splashFadeOutLength = 40;
 
 	sf::Text t;
 	t.setFont(arial);
@@ -898,9 +896,9 @@ MainMenu::MainMenu()
 	worldMap->Draw(preScreenTexture);
 	saveMenu->Draw(preScreenTexture);
 
-	FillRingSection *blah[] = { new FillRingSection(tilesetManager, Color::Red, sf::Color::Black,
-		sf::Color::Blue,
-		3, 300, 0) };
+	//FillRingSection *blah[] = { new FillRingSection(tilesetManager, Color::Red, sf::Color::Black,
+	//	sf::Color::Blue,
+	//	3, 300, 0) };
 
 	Tileset *ts_loadIcon = tilesetManager.GetTileset("Menu/loadicon_320x320.png", 320, 320);
 
@@ -927,21 +925,49 @@ MainMenu::~MainMenu()
 {
 	window->close();
 
+	delete cpm;
+	delete musicManager;
+	delete pauseMenu;
+	delete introMovie;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		delete controllers[i];
+	}
 	delete config;
 
-	delete window;
+	delete musicPlayer;
+	delete titleScreen;
+	delete saSelector;
+	delete soundNodeList;
 
-	delete pauseMenu;
-	
 	delete preScreenTexture;
 	delete lastFrameTexture;
+	delete extraScreenTexture;
 	delete postProcessTexture;
 	delete postProcessTexture1;
 	delete postProcessTexture2;
 	delete minimapTexture;
 	delete mapTexture;
 
-	delete soundNodeList;
+	delete pauseTexture;
+	delete saveTexture;
+	delete mapPreviewTexture;
+	delete auraCheckTexture;
+
+
+	delete worldMap;
+	delete kinBoostScreen;
+	delete levelSelector;
+	delete window;
+
+	delete multiLoadingScreen;
+	delete mapSelectionMenu;
+	delete optionsMenu;
+	delete creditsMenu;
+	delete saveMenu;
+
+	delete fader;
 }
 
 void MainMenu::Init()
@@ -1572,7 +1598,6 @@ void MainMenu::Run()
 		case SPLASH_TRANS:
 			{
 				preScreenTexture->draw( splashSprite );
-				preScreenTexture->draw( fadeRect );
 				break;
 			}
 		case MAINMENU:
@@ -1585,10 +1610,7 @@ void MainMenu::Run()
 
 				//preScreenTexture->setView( uiView );
 				
-				if( splashFadeFrame <= splashFadeOutLength )
-				{
-					preScreenTexture->draw(fadeRect);
-				}
+				
 
 				break;
 			}
@@ -1674,7 +1696,7 @@ void MainMenu::Run()
 			//preScreenTexture->setView(v);
 			
 
-			preScreenTexture->draw(fadeRect);
+			
 
 			
 			break;
@@ -1695,7 +1717,7 @@ void MainMenu::Run()
 			//preScreenTexture->setView(v);
 
 
-			preScreenTexture->draw(fadeRect);
+			
 			break;
 		}
 		case TRANS_OPTIONS_TO_MAIN:
@@ -2041,13 +2063,6 @@ void MainMenu::HandleMenuMode()
 		if (A || B || X || Y || r || l)
 		{
 			SetMode( SPLASH_TRANS );
-			splashFadeFrame = 0;
-
-			sf::Color fadeColor = fadeRect.getFillColor();
-			fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
-				fadeColor.b,
-				(((double)splashFadeFrame) / splashFadeOutLength) * 255));
-
 			changedMode = true;
 		}
 		break;
@@ -2058,35 +2073,14 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		if (splashFadeFrame > splashFadeOutLength)
-		{
-			SetMode(MAINMENU);
-			splashFadeFrame = 0;
-
-			sf::Color fadeColor = fadeRect.getFillColor();
-			fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
-				fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255));
-		}
-		else
-		{
-			sf::Color fadeColor = fadeRect.getFillColor();
-			fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
-				fadeColor.b,
-				(((double)splashFadeFrame) / splashFadeOutLength) * 255));
-			++splashFadeFrame;
-		}
+		
+		SetMode(MAINMENU);
+		
 		break;
 	}
 	case MAINMENU:
 	{
 		titleScreen->Update();
-		if (splashFadeFrame <= splashFadeOutLength)
-		{
-			sf::Color fadeColor = fadeRect.getFillColor();
-			fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
-				fadeColor.b, 255 - (((double)splashFadeFrame) / splashFadeOutLength) * 255));
-			++splashFadeFrame;
-		}
 
 
 		while (window->pollEvent(ev))
@@ -2639,20 +2633,6 @@ void MainMenu::HandleMenuMode()
 			break;
 		}
 
-		float fadeFactor;
-
-		if (transFrame >= transLength / 2)
-		{
-			fadeFactor = (float)(transFrame - (transLength / 2)) / (transLength / 2);
-			fadeFactor = 1.f - fadeFactor;
-		}
-		else
-		{
-			fadeFactor = (float)transFrame / (transLength / 2);
-		}
-		sf::Color fadeColor = fadeRect.getFillColor();
-		fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
-			fadeColor.b, (fadeFactor * 255)));
 
 		if (transFrame * 2 == transLength)
 		{
@@ -2696,22 +2676,6 @@ void MainMenu::HandleMenuMode()
 			break;
 		}
 
-
-
-		float fadeFactor;
-
-		if (transFrame >= transLength / 2)
-		{
-			fadeFactor = (float)(transFrame - (transLength / 2)) / (transLength / 2);
-			fadeFactor = 1.f - fadeFactor;
-		}
-		else
-		{
-			fadeFactor = (float)transFrame / (transLength / 2);
-		}
-		sf::Color fadeColor = fadeRect.getFillColor();
-		fadeRect.setFillColor(Color(fadeColor.r, fadeColor.g,
-			fadeColor.b, (fadeFactor * 255)));
 
 		if (transFrame * 2 == transLength)
 		{
@@ -3153,6 +3117,20 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	}
 	
 	//filterOptions = new UIVerticalControlList()
+}
+
+MapSelectionMenu::~MapSelectionMenu()
+{
+	delete saSelector;
+	delete singleSection;
+	delete filterOptions;
+	delete progressDisplay;
+	delete musicSelector;
+	delete ghostSelector;
+	for (int i = 0; i < 4; ++i)
+	{
+		delete multiPlayerSection[i];
+	}
 }
 
 int MapSelectionMenu::NumPlayersReady()
@@ -4572,6 +4550,11 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	cList->SetTopLeft( 50,  50);
 	optionsWindow->controls.push_back(cList);
 	//optionsWindow->controls.push_back(check);
+}
+
+OptionsMenuScreen::~OptionsMenuScreen()
+{
+	delete optionsWindow;
 }
 
 bool OptionsMenuScreen::ButtonEvent(UIEvent eType,

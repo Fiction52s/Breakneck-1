@@ -103,6 +103,12 @@ ControlProfileMenu::ControlProfileMenu( MultiSelectionSection *p_section,
 
 }
 
+ControlProfileMenu::~ControlProfileMenu()
+{
+	delete editProfileGrid;
+	delete saSelector;
+}
+
 bool ControlProfileMenu::ButtonEvent( UIEvent eType,
 		ButtonEventParams *param )
 {
@@ -961,10 +967,7 @@ void ControlProfileManager::WriteProfiles()
 
 ControlProfileManager::~ControlProfileManager()
 {
-	for( list<ControlProfile*>::iterator it = profiles.begin(); it != profiles.end(); ++it )
-	{
-		delete (*it);
-	}
+	ClearProfiles();
 }
 
 ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,

@@ -72,6 +72,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 		MapSelectionMenu *parent,
 		int p_playerIndex,
 		sf::Vector2f &topMid );
+	~MultiSelectionSection();
 	bool ButtonEvent( UIEvent eType,
 		ButtonEventParams *param );
 	Team team;
@@ -132,6 +133,7 @@ struct MultiLoadingScreen
 struct OptionsMenuScreen : UIEventHandlerBase
 {
 	OptionsMenuScreen(MainMenu *p_mainMenu);
+	~OptionsMenuScreen();
 	UIWindow *optionsWindow;
 	void Update( 
 	ControllerState &curr,
@@ -317,6 +319,7 @@ struct MapSelectionMenu
 
 	MapSelectionMenu( MainMenu *p_mainMenu,
 		sf::Vector2f &p_pos );
+	~MapSelectionMenu();
 	MainMenu *mainMenu;
 	void SetupBoxes();
 	void LoadItems();
@@ -691,10 +694,6 @@ struct MainMenu
 	
 
 	Config *config;
-
-	int splashFadeFrame;
-	int splashFadeOutLength;
-	sf::RectangleShape fadeRect;
 
 	int numSlideFrames;
 	int slideCurrFrame;

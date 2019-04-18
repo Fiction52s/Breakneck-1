@@ -120,6 +120,8 @@ float SaveFile::GetCompletionPercentage()
 
 SaveFile::~SaveFile()
 {
+	if( worlds != NULL )
+		delete[] worlds;
 	/*for( int i = 0; i < 6; ++i )
 	{
 		if( worlds[i] != NULL )
@@ -297,33 +299,7 @@ void SaveFile::Save()
 //	}*/
 //}
 
-World::World()
-{
-	sectors = NULL;
-	numSectors = 0;
-}
 
-World::~World()
-{
-	if (sectors != NULL)
-	{
-		delete[] sectors;
-	}
-}
-
-float World::GetCompletionPercentage()
-{
-	float totalComplete = 0;
-	float totalPossible = 0;
-
-	for (int i = 0; i < numSectors; ++i)
-	{
-		totalComplete += sectors[i].GetCompletionPercentage();
-		totalPossible += 100.f;
-	}
-
-	return (totalComplete / totalPossible) * 100.f;
-}
 
 Sector::Sector()
 {
@@ -761,6 +737,34 @@ bool Level::IsOneHundredPercent()
 std::string Level::GetFullName()
 {
 	return "Resources/Maps/" + name + ".brknk";
+}
+
+World::World()
+{
+	sectors = NULL;
+	numSectors = 0;
+}
+
+World::~World()
+{
+	if (sectors != NULL)
+	{
+		delete[] sectors;
+	}
+}
+
+float World::GetCompletionPercentage()
+{
+	float totalComplete = 0;
+	float totalPossible = 0;
+
+	for (int i = 0; i < numSectors; ++i)
+	{
+		totalComplete += sectors[i].GetCompletionPercentage();
+		totalPossible += 100.f;
+	}
+
+	return (totalComplete / totalPossible) * 100.f;
 }
 
 bool World::Load(std::ifstream &is)

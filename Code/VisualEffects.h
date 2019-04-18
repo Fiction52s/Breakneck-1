@@ -91,6 +91,7 @@ struct RisingParticleUpdater : EffectPoolUpdater
 struct EffectPool : ObjectPool
 {
 	EffectPool( EffectType et, int maxNumFX, float depth = 1.f );
+	virtual ~EffectPool();
 	void Reset();
 	void Update( EffectPoolUpdater *epu = NULL );
 	void DeactivateMember(PoolMember *pm);

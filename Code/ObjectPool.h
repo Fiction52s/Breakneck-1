@@ -25,8 +25,8 @@ struct ObjectPool
 	PoolMember *ActivatePoolMember( bool front = true );
 	void DeactivatePoolMember(PoolMember *pm);
 	void AddToInactiveList(PoolMember *pm);
-	void AllocateMember(int index);
 	void DeactivateAll();
+	void DestroyAllMembers();
 	virtual void DeactivateMember(PoolMember *pm) {}
 
 	//int numMembersTotal;

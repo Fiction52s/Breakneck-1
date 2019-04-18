@@ -19,6 +19,23 @@ void ObjectPool::ResetPool()
 	//inactiveListStart = NULL;
 }
 
+void ObjectPool::DestroyAllMembers()
+{
+	DeactivateAll();
+
+	PoolMember *curr = inactiveListStart;
+	PoolMember *tNext = NULL;
+	while (curr != NULL)
+	{
+		tNext = curr->pmnext;
+		delete curr;
+		curr = tNext;
+	}
+
+	inactiveListStart = NULL;
+	numInactiveMembers = 0;
+}
+
 PoolMember *ObjectPool::ActivatePoolMember( bool front )
 {
 	PoolMember *newActiveMember = NULL;

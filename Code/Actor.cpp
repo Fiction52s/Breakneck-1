@@ -314,11 +314,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		motionGhostBuffer = new VertexBuf(80, sf::Quads);
 		motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
 		motionGhostBufferPurple = new VertexBuf(80, sf::Quads);
-		testBuffer = new VertexBuf(1, sf::Quads);
-		testBuffer->SetTile(0, 0);
-		testBuffer->SetTileset(owner->GetTileset("jump_64x64.png", 64, 64));
-		testBuffer->SetScale( 0, Vector2f( 4, 4 ));
-		testBuffer->SetNumActiveMembers(1);
 		
 
 		for (int i = 0; i < 3; ++i)
@@ -341,7 +336,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//risingAuraPool->ts = owner->GetTileset("rising_8x8.png", 8, 8);
 
 		maxMotionGhosts = 80;
-		//motionGhosts = new Sprite[maxMotionGhosts];
 		memset(tileset, 0, sizeof(tileset));
 		sf::Color startChanges[] = {
 			sf::Color(0x14, 0x59, 0x22),
@@ -433,7 +427,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		ground = NULL;
 		//re = new RotaryParticleEffect( this );
 		//re1 = new RotaryParticleEffect( this );
-		pTrail = new ParticleTrail( this );
+		//pTrail = new ParticleTrail( this );
 		//re1->angle += PI;
 		//ae = new AirParticleEffect( position );
 
@@ -469,7 +463,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		drainCounterMax = 10;
 		drainAmount = 1;
 		drainCounter = 0;
-		currentCheckPoint = NULL;
+		//currentCheckPoint = NULL;
 		flashFrames = 0;
 		test = false;
 
@@ -486,7 +480,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		//testLight = owner->ActivateLight( 200, 15, COLOR_TEAL );
 		//testLight->pos = Vector2i( 0, 0 );
-		testLight = new Light( owner, Vector2i( 0, 0 ), COLOR_TEAL , 200, 15 ); 
+		//testLight = new Light( owner, Vector2i( 0, 0 ), COLOR_TEAL , 200, 15 ); 
 
 		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		//numActiveEdges = 0;
@@ -593,55 +587,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		currHitboxInfo->hitstunFrames = 30;
 		currHitboxInfo->knockback = 0;
 		currHitboxInfo->freezeDuringStun = true;
-
-		/*if( !fairBuffer.loadFromFile( "fair.ogg" ) )
-		{
-			assert( 0 && "failed to load test fair noise" );
-		}
-		fairSound.setBuffer( fairBuffer);
-		fairSound.setVolume( 0 );*/
-
-		/*if( !runTappingBuffer.loadFromFile( "runtapping.ogg" ) )
-		{
-			assert( 0 && "failed to load test runtapping noise" );
-		}
-		runTappingSound.setBuffer( runTappingBuffer);
-		runTappingSound.setVolume( 0 );*/
-
-		/*if( !playerHitBuffer.loadFromFile( "playerhit.ogg" ) )
-		{
-			assert( 0 && "failed to load test runtapping noise" );
-		}
-		playerHitSound.setBuffer( playerHitBuffer );
-		playerHitSound.setVolume( 0 );
-*/
-		//if( !dashStartBuffer.loadFromFile( "dashstart.ogg" ) )
-		//if( !dashStartBuffer.loadFromFile( "a_dash.wav" ) )
-		/*if( !dashStartBuffer.loadFromFile( "a_dash.ogg" ) )
-		{
-			assert( 0 && "failed to load test dashstart noise" );
-		}
-		dashStartSound.setBuffer( dashStartBuffer);
-		dashStartSound.setVolume( 0 );*/
-		//dashStartSound.setVolume( 10 );
-		//dashStartSound.setLoop( true );
-
-		//if( !jumpBuffer.loadFromFile( "a_jump.ogg" ) )
-		//{
-		//	assert( 0 && "failed to load test jump noise" );
-		//}
-		//jumpSound.setBuffer( jumpBuffer);
-		////jumpSound.setVolume( 20 );
-		//jumpSound.setVolume( 0 );
-
-		//testBuffer.loadFromSamples( dashStartBuffer.getSamples(), dashStartBuffer.getSampleCount(),
-		//	dashStartBuffer.getChannelCount(), dashStartBuffer.getSampleRate() / 5 );
-
-		//Vector2i lightPos( position.x, position.y );
-		//Color lightColor = Color::Green;
-		//playerLight = new Light( owner, lightPos, lightColor );
-		//dashStartSound.setBuffer( testBuffer );
-		
 		
 		framesGrinding = 0;
 		percentCloneChanged = 0;
@@ -1461,13 +1406,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		SaveFile *currProgress = owner->mainMenu->GetCurrentProgress();
 		//if (currProgress == NULL )
 		//{
-		//	hasPowerAirDash = true;
-		//	hasPowerGravReverse = true;
-		//	hasPowerBounce = true;
-		//	hasPowerGrindBall = true;
-		//	hasPowerTimeSlow = true;
-		//	hasPowerLeftWire = true;
-		//	hasPowerRightWire = true;
+			hasPowerAirDash = true;
+			hasPowerGravReverse = true;
+			hasPowerBounce = true;
+			hasPowerGrindBall = true;
+			hasPowerTimeSlow = true;
+			hasPowerLeftWire = true;
+			hasPowerRightWire = true;
 		//	//hasPowerClones = MAX_GHOSTS;
 		//	hasPowerClones = 0;
 		//}
@@ -1541,6 +1486,96 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 Actor::~Actor()
 {
+	list<Vector2f> *currP = NULL;
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < Action::Count; ++j)
+		{
+			currP = auraPoints[i][j];
+			if (currP != NULL)
+			{
+				delete currP;
+			}
+		}
+	}
+
+	delete kinMask;
+	for (int i = 0; i < 7; ++i)
+	{
+		delete smallLightningPool[i];
+	}
+
+	delete risingAuraPool;
+	for (int i = 0; i < 3; ++i)
+	{
+		delete motionGhostsEffects[i];
+	}
+
+	delete kinRing;
+	delete dustParticles;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		delete fairLightningPool[i];
+		delete uairLightningPool[i];
+		delete dairLightningPool[i];
+	}
+	delete gateBlackFXPool;
+	delete wireChargeInfo;
+	
+	delete sprite;
+
+	delete testAura;
+	delete testAura1;
+	delete testAura2;
+	delete testAura3;
+
+	delete motionGhostBuffer;
+	delete motionGhostBufferBlue;
+	delete motionGhostBufferPurple;
+
+	delete currHitboxInfo;
+
+	for (int i = 0; i < 3; ++i)
+	{
+		delete fairHitboxes[i];
+		delete uairHitboxes[i];
+		delete dairHitboxes[i];
+		delete standHitboxes[i];
+		delete dashHitboxes[i];
+		delete wallHitboxes[i];
+		delete steepClimbHitboxes[i];
+		delete steepSlideHitboxes[i];
+		delete diagUpHitboxes[i];
+		delete diagDownHitboxes[i];
+		delete grindHitboxes[i];
+	}
+
+	
+	//delete shockwaveHitboxes;
+
+	if (rightWire != NULL)
+		delete rightWire;
+	if (leftWire != NULL)
+		delete leftWire;
+
+	delete[] bubblePos;
+	delete[] bubbleFramesToLive;
+	delete[] bubbleRadiusSize;
+	delete [] fBubbleRadiusSize;
+	delete[] fBubbleFrame;
+
+	for (int i = 0; i < maxBubbles; ++i)
+	{
+		delete bubbleHitboxes[i];
+	}
+	delete[] bubbleHitboxes;
+
+	for (int i = 0; i < MAX_GHOSTS; ++i)
+	{
+		if (ghosts[i] != NULL)
+			delete ghosts[i];
+	}
 	//eventually delete everything here lol
 }
 
@@ -2596,10 +2631,6 @@ void Actor::UpdatePrePhysics()
 			
 			
 		}
-
-		
-		
-		//testGhost->currFrame = 0;
 
 		//record = true;
 		blah = false;
@@ -7460,7 +7491,6 @@ facingRight = false;
 			if( ghostFrame < ghosts[i]->totalRecorded )
 				ghosts[i]->UpdatePrePhysics( ghostFrame );
 		}
-		//testGhost->UpdatePrePhysics( ghostFrame );
 	}
 
 	Wire::WireState oldLeftWireState = leftWire->state;
@@ -16170,18 +16200,7 @@ void Actor::UpdatePostPhysics()
 	
 	
 	
-	testLight->pos.x = position.x;
-	testLight->pos.y = position.y;
-	if( action == FAIR || action == UAIR || action == DAIR || action == STANDN || action == DASHATTACK )
-	{
-		testLight->brightness = 40;
-		testLight->radius = 150;
-	}
-	else
-	{
-		testLight->brightness = 15;
-		testLight->radius = 100;
-	}
+	
 	//vi0 = vi1 = vi2 = vi;
 	
 
@@ -16516,7 +16535,7 @@ void Actor::UpdatePostPhysics()
 		re1->Update( position );*/
 	}
 
-	pTrail->Update( position );
+	//pTrail->Update( position );
 
 	
 
@@ -18174,7 +18193,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				{
 					if( (*it).Intersects( c->box ) )
 					{
-						currentCheckPoint = c;
+						//currentCheckPoint = c;
 						//for( int i = 2; i < Gate::GateType::Count; ++i )
 						//{
 						//	c->hadKey[i] = hasKey[i];
@@ -18192,7 +18211,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 			if( hurtBody.Intersects( c->box ) )
 			{
-				currentCheckPoint = c;
+				//currentCheckPoint = c;
 				/*for( int i = 2; i < Gate::GateType::Count; ++i )
 				{
 					c->hadKey[i] = hasKey[i];
@@ -19020,12 +19039,6 @@ void Actor::Draw( sf::RenderTarget *target )
 	{
 		smallLightningPool[i]->Draw(target);
 	}
-	
-
-	testBuffer->SetPosition(0, Vector2f(position));
-	testBuffer->UpdateVertices();
-
-	//testBuffer->Draw(target);
 }
 
 void Actor::DrawMapWires(sf::RenderTarget *target)

@@ -972,6 +972,16 @@ FillRing::FillRing( Vector2f &pos, int p_numRings, FillRingSection **p_rings)
 	//CreateRing();
 }
 
+FillRing::~FillRing()
+{
+	for (int i = 0; i < numRings; ++i)
+	{
+		delete rings[i];
+	}
+	delete[] rings;
+}
+
+
 bool FillRing::IsFull()
 {
 	for (int i = 0; i < numRings; ++i)
@@ -1010,14 +1020,6 @@ void FillRing::ResetFull()
 	}
 }
 
-FillRing::~FillRing()
-{
-	for (int i = 0; i < numRings; ++i)
-	{
-		delete rings[i];
-	}
-	delete[] rings;
-}
 
 void FillRing::Update()
 {

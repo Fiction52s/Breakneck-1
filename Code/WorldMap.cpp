@@ -280,7 +280,11 @@ WorldMap::~WorldMap()
 	//delete planetAndSpaceTex;
 	//delete planetTex;
 
-
+	delete worldSelector;
+	for (int i = 0; i < 7; ++i)
+	{
+		delete selectors[i];
+	}
 
 	//for( int i = 0; i < 6; ++i )
 	//{
@@ -288,8 +292,9 @@ WorldMap::~WorldMap()
 		//delete colonyTex[i];
 	//}
 
-	delete [] text;
-	delete [] localPaths;
+	ClearEntries();
+	//delete [] text;
+	//delete [] localPaths;
 }
 
 void WorldMap::ClearEntries()
@@ -314,8 +319,12 @@ void WorldMap::ClearEntries()
 		delete [] localPaths;
 	}
 
-	if( dirNode != NULL  )
-		delete [] dirNode;
+	if (dirNode != NULL)
+	{
+
+		delete[] dirNode;
+	}
+		
 }
 
 int WorldMap::Tex( int index, int level, TreeNode *entry )
@@ -1150,6 +1159,11 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 
 }
 
+MapSelector::~MapSelector()
+{
+	delete[] ts_bossFight;
+	delete[] ts_sectorOpen;
+}
 
 void MapSelector::UpdateSprites()
 {

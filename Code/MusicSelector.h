@@ -29,6 +29,7 @@ struct MusicSelector
 	MusicSelector ( MainMenu *mainMenu, MapSelectionMenu *mapMenu,
 		sf::Vector2f &p_topMid,
 		MusicManager *mm );
+	~MusicSelector();
 	void SetMapName(const std::string &mName);
 	VertSlider vSlider;
 	MainMenu *mainMenu;

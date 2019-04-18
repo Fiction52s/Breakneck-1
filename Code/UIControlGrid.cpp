@@ -44,8 +44,14 @@ UIControlGrid::UIControlGrid( UIControl *p_parent, int p_numControlsX, int p_num
 
 UIControlGrid::~UIControlGrid()
 {
-	
-	//delete [][] controls;
+	for (int i = 0; i < numControlsX; ++i)
+	{
+		for (int j = 0; j < numControlsY; ++j)
+		{
+			delete controls[i*numControlsY + j];
+		}
+	}
+	delete [] controls;
 }
 
 bool UIControlGrid::Update( ControllerState &curr, ControllerState &prev )

@@ -246,8 +246,15 @@ void LevelSelector::ClearEntries()
 		delete [] localPaths;
 	}
 
-	if( dirNode != NULL  )
-		delete [] dirNode;
+	if (dirNode != NULL)
+	{
+		/*for (int i = 0; i < numTotalEntries; ++i)
+		{
+			dirNode[i]->
+		}*/
+		delete[] dirNode;
+	}
+		
 }
 
 void LevelSelector::ClearEntries(TreeNode *n)

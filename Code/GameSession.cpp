@@ -384,6 +384,11 @@ void GameSession::Cleanup()
 {
 	TerrainRender::CleanupLayers();
 
+	if (recGhost != NULL)
+	{
+		delete recGhost;
+	}
+
 	if (mini != NULL)
 	{
 		delete mini;
@@ -10322,162 +10327,6 @@ void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
 	
 	float windowx = 1920;//window->getSize().x;
 	float windowy = 1080;//window->getSize().y;
-	//cout << "windowx: " << windowx << ", " << windowy << endl;
-
-	//if( lightsAtOnce > 0 )
-	//{
-	//	float depth0 = touchedLights[0]->depth;
-	//	Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) );
-	//	
-
-	//	Vector3f pos0( vi0.x / windowx, -1 + vi0.y / windowy, depth0 ); 
-	//	//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, depth0 ); 
-	//	Color c0 = touchedLights[0]->color;
-	//	
-	//	//underShader.setUniform( "On0", true );
-	//	on[0] = true;
-	//	polyShader.setUniform( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
-	//	polyShader.setUniform( "LightColor0", c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 );
-	//	polyShader.setUniform( "Radius0", touchedLights[0]->radius );
-	//	polyShader.setUniform( "Brightness0", touchedLights[0]->brightness);
-	//	
-	//}
-	//if( lightsAtOnce > 1 )
-	//{
-	//	float depth1 = touchedLights[1]->depth;
-	//	Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) ); 
-	//	Vector3f pos1( vi1.x / windowx, -1 + vi1.y / windowy, depth1 ); 
-	//	//Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, depth1 ); 
-	//	Color c1 = touchedLights[1]->color;
-	//	
-	//	on[1] = true;
-	//	//underShader.setUniform( "On1", true );
-	//	polyShader.setUniform( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
-	//	polyShader.setUniform( "LightColor1", c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 );
-	//	polyShader.setUniform( "Radius1", touchedLights[1]->radius );
-	//	polyShader.setUniform( "Brightness1", touchedLights[1]->brightness);
-	//}
-	//if( lightsAtOnce > 2 )
-	//{
-	//	float depth2 = touchedLights[2]->depth;
-	//	Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
-	//	Vector3f pos2( vi2.x / windowx, -1 + vi2.y / windowy, depth2 ); 
-	//	//Vector3f pos2( vi2.x / (float)window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, depth2 ); 
-	//	Color c2 = touchedLights[2]->color;
-	//	
-	//	on[2] = true;
-	//	//underShader.setUniform( "On2", true );
-	//	polyShader.setUniform( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
-	//	polyShader.setUniform( "LightColor2", c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 );
-	//	polyShader.setUniform( "Radius2", touchedLights[2]->radius );
-	//	polyShader.setUniform( "Brightness2", touchedLights[2]->brightness);
-	//}
-	//if( lightsAtOnce > 3 )
-	//{
-	//	float depth3 = touchedLights[3]->depth;
-	//	Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[3]->pos.x, touchedLights[3]->pos.y ) );
-	//	Vector3f pos3( vi3.x / windowx, -1 + vi3.y / windowy, depth3 ); 
-	//	//Vector3f pos3( vi3.x / (float)window->getSize().x, ((float)window->getSize().y - vi3.y) / (float)window->getSize().y, depth3 ); 
-	//	Color c3 = touchedLights[3]->color;
-	//	
-	//	on[3] = true;
-	//	//underShader.setUniform( "On3", true );
-	//	polyShader.setUniform( "LightPos3", pos3 );
-	//	polyShader.setUniform( "LightColor3", c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 );
-	//	polyShader.setUniform( "Radius3", touchedLights[3]->radius );
-	//	polyShader.setUniform( "Brightness3", touchedLights[3]->brightness);
-	//}
-	//if( lightsAtOnce > 4 )
-	//{
-	//	float depth4 = touchedLights[4]->depth;
-	//	Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[4]->pos.x, touchedLights[4]->pos.y ) );
-	//	Vector3f pos4( vi4.x / windowx, -1 + vi4.y / windowy, depth4 ); 
-	//	//Vector3f pos4( vi4.x / (float)window->getSize().x, ((float)window->getSize().y - vi4.y) / (float)window->getSize().y, depth4 ); 
-	//	Color c4 = touchedLights[4]->color;
-	//	
-	//	
-	//	on[4] = true;
-	//	polyShader.setUniform( "LightPos4", pos4 );
-	//	polyShader.setUniform( "LightColor4", c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 );
-	//	polyShader.setUniform( "Radius4", touchedLights[4]->radius );
-	//	polyShader.setUniform( "Brightness4", touchedLights[4]->brightness);
-	//}
-	//if( lightsAtOnce > 5 )
-	//{
-	//	float depth5 = touchedLights[5]->depth;
-	//	Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[5]->pos.x, touchedLights[5]->pos.y ) );
-	//	Vector3f pos5( vi5.x / windowx, -1 + vi5.y / windowy, depth5 ); 
-	//	//Vector3f pos5( vi5.x / (float)window->getSize().x, ((float)window->getSize().y - vi5.y) / (float)window->getSize().y, depth5 ); 
-	//	Color c5 = touchedLights[5]->color;
-	//	
-	//	
-	//	on[5] = true;
-	//	polyShader.setUniform( "LightPos5", pos5 );
-	//	polyShader.setUniform( "LightColor5", c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 );
-	//	polyShader.setUniform( "Radius5", touchedLights[5]->radius );
-	//	polyShader.setUniform( "Brightness5", touchedLights[5]->brightness);
-	//}
-	//if( lightsAtOnce > 6 )
-	//{
-	//	float depth6 = touchedLights[6]->depth;
-	//	Vector2i vi6 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[6]->pos.x, touchedLights[6]->pos.y ) );
-	//	Vector3f pos6( vi6.x / windowx, -1 + vi6.y / windowy, depth6 ); 
-	//	//Vector3f pos6( vi6.x / (float)window->getSize().x, ((float)window->getSize().y - vi6.y) / (float)window->getSize().y, depth6 ); 
-	//	Color c6 = touchedLights[6]->color;
-	//	
-	//	on[6] = true;
-	//	polyShader.setUniform( "LightPos6", pos6 );
-	//	polyShader.setUniform( "LightColor6", c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 );
-	//	polyShader.setUniform( "Radius6", touchedLights[0]->radius );
-	//	polyShader.setUniform( "Brightness6", touchedLights[0]->brightness);
-	//}
-	//if( lightsAtOnce > 7 )
-	//{
-	//	float depth7 = touchedLights[7]->depth;
-	//	Vector2i vi7 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[7]->pos.x, touchedLights[7]->pos.y ) );
-	//	Vector3f pos7( vi7.x / windowx, -1 + vi7.y / windowy, depth7 ); 
-	//	//Vector3f pos7( vi7.x / (float)window->getSize().x, ((float)window->getSize().y - vi7.y) / (float)window->getSize().y, depth7 ); 
-	//	Color c7 = touchedLights[7]->color;
-	//	
-	//	on[7] = true;
-	//	polyShader.setUniform( "LightPos7", pos7 );
-	//	polyShader.setUniform( "LightColor7", c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 );
-	//	polyShader.setUniform( "Radius7", touchedLights[7]->radius );
-	//	polyShader.setUniform( "Brightness7", touchedLights[7]->brightness);
-	//}
-	//if( lightsAtOnce > 8 )
-	//{
-	//	float depth8 = touchedLights[8]->depth;
-	//	Vector2i vi8 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[8]->pos.x, touchedLights[8]->pos.y ) );
-	//	Vector3f pos8( vi8.x / windowx, -1 + vi8.y / windowy, depth8 ); 
-	//	//Vector3f pos8( vi8.x / (float)window->getSize().x, ((float)window->getSize().y - vi8.y) / (float)window->getSize().y, depth8 ); 
-	//	Color c8 = touchedLights[8]->color;
-	//	
-	//	on[8] = true;
-	//	polyShader.setUniform( "LightPos8", pos8 );
-	//	polyShader.setUniform( "LightColor8", c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 );
-	//	polyShader.setUniform( "Radius8", touchedLights[8]->radius );
-	//	polyShader.setUniform( "Brightness8", touchedLights[8]->brightness);
-	//}
-
-	//polyShader.setUniform( "On0", on[0] );
-	//polyShader.setUniform( "On1", on[1] );
-	//polyShader.setUniform( "On2", on[2] );
-	//polyShader.setUniform( "On3", on[3] );
-	//polyShader.setUniform( "On4", on[4] );
-	//polyShader.setUniform( "On5", on[5] );
-	//polyShader.setUniform( "On6", on[6] );
-	//polyShader.setUniform( "On7", on[7] );
-	//polyShader.setUniform( "On8", on[8] );
-
-	//Color c = player->testLight->color;
-	//Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player->testLight->pos.x, player->testLight->pos.y ) );
-	//Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player->testLight->depth ); 
-	//polyShader.setUniform( "LightPosPlayer", posp );
-	//polyShader.setUniform( "LightColorPlayer", c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 );
-	//polyShader.setUniform( "RadiusPlayer", player->testLight->radius );
-	//polyShader.setUniform( "BrightnessPlayer", player->testLight->brightness );
-	//polyShader.setUniform( "OnD0", true );
 }
 
 double GameSession::GetTriangleArea( p2t::Triangle * t )
@@ -14224,13 +14073,13 @@ void GameSession::SetUndergroundParAndDraw()
 	underShader.setUniform( "On7", on[7] );
 	underShader.setUniform( "On8", on[8] );
 
-	Color c = player->testLight->color;
-	Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player->testLight->pos.x, player->testLight->pos.y ) );
-	Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player->testLight->depth ); 
-	underShader.setUniform( "LightPosPlayer", posp );
-	underShader.setUniform( "LightColorPlayer", Glsl::Vec4( c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 ) );
-	underShader.setUniform( "RadiusPlayer", player->testLight->radius );
-	underShader.setUniform( "BrightnessPlayer", player->testLight->brightness );
+	//Color c = player->testLight->color;
+	//Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player->testLight->pos.x, player->testLight->pos.y ) );
+	//Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player->testLight->depth ); 
+	//underShader.setUniform( "LightPosPlayer", posp );
+	//underShader.setUniform( "LightColorPlayer", Glsl::Vec4( c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 ) );
+	//underShader.setUniform( "RadiusPlayer", player->testLight->radius );
+	//underShader.setUniform( "BrightnessPlayer", player->testLight->brightness );
 
 	/*undergroundPar[0].color = Color::Red;
 	undergroundPar[1].color = Color::Red;

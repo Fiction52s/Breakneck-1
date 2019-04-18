@@ -161,6 +161,37 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	//SetCurrSequence();
 }
 
+ShardMenu::~ShardMenu()
+{
+	for (int i = 0; i < xSelector->totalItems; ++i)
+	{
+		delete[] shardNames[i];
+		delete[] shardDesc[i];
+		for (int j = 0; j < ySelector->totalItems; ++j)
+		{
+			if (shardSeq[i][j] != NULL)
+				delete shardSeq[i][j];
+		}
+		delete[] shardDescriptionNames[i];
+		delete[] shardSeq[i];
+		delete[] seqLoadThread[i];
+
+	}
+	delete[] ts_preview;
+
+	delete[] shardNames;
+	delete[] shardDesc;
+	delete[] shardSeq;
+	delete[] shardDescriptionNames;
+	delete[] seqLoadThread;
+	delete xSelector;
+	delete ySelector;
+
+	delete[] shardQuads;
+	delete[] shardSelectQuads;
+	delete sparklePool;
+}
+
 bool ShardMenu::IsShardCaptured( int x, int y )
 {
 	SaveFile *saveFile = mainMenu->GetCurrentProgress();
@@ -306,31 +337,7 @@ MusicInfo *ShardMenu::GetShardMusic(const std::string &str)
 	//sf::Music *m = mainMenu->musicManager->//LoadSong("Audio/Music/.ogg");
 }
 
-ShardMenu::~ShardMenu()
-{
-	for (int i = 0; i < xSelector->totalItems; ++i)
-	{
-		delete[] shardNames[i];
-		delete[] shardDesc[i];
-		for (int j = 0; j < ySelector->totalItems; ++j)
-		{
-			if( shardSeq[i][j] != NULL )
-				delete shardSeq[i][j];
-		}
-		delete[] shardSeq[i];
-		delete[] seqLoadThread[i];
-			
-	}
-	delete[] ts_preview;
-	delete[] shardNames;
-	delete[] shardDesc;
-	delete[] shardSeq;
-	delete[] seqLoadThread;
-	delete xSelector;
-	delete ySelector;
 
-	
-}
 
 PNGSeq * ShardMenu::GetSequence(const std::string &str)
 {
