@@ -481,12 +481,12 @@ MusicManager::MusicManager(MainMenu *p_mainMenu)
 
 MusicManager::~MusicManager()
 {
-	for (auto it = songs.begin(); it != songs.end(); ++it)
+	for (auto it = songMap.begin(); it != songMap.end(); ++it)
 	{
-		delete (*it);
+		delete (*it).second;
 		
 	}
-	songs.clear();
+	//songs.clear();
 }
 
 bool MusicManager::LoadFolderPaths()
@@ -540,7 +540,6 @@ bool MusicManager::rLoadMusicNames(const path &p)
 						assert("probably don't want to have this multiple music");
 					}
 
-					//songs.push_back(mi);
 					//songPaths.push_back(p.string());
 					//cout << "loading ogg: " << p.filename().string() << "\n";
 					return true;
@@ -622,14 +621,23 @@ bool MusicInfo::Load()
 
 bool MusicManager::LoadSong(const std::string &name)
 {
-	for (auto it = songs.begin(); it != songs.end(); ++it)
+	if (songMap.count(name) > 0 )
 	{
-		string fName = (*it)->songPath.filename().stem().string();
+		return songMap[name]->Load();
+	}
+	else
+	{
+		assert(0);
+		return false;
+	}
+	/*for (auto it = songMap.begin(); it != songMap.end(); ++it)
+	{
+		string fName = (*it).second->songPath.filename().stem().string();
 		if (name == fName)
 		{
 			return (*it)->Load();
 		}
-	}
+	}*/
 	assert(0);
 	return false;
 }
@@ -643,7 +651,6 @@ bool MusicManager::DebugLoadMusic()
 	//	info->music->openFromFile((*it).string());//mainMenu->soundManager.GetMusic((*it).string());
 	//	//info->name = (*it).filename().stem().string();
 	//	info->songPath = (*it);
-	//	songs.push_back(info);
 	//}
 
 	return true;

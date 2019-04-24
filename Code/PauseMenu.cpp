@@ -157,6 +157,11 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 	csm = pauseMenu->controlSettingsMenu;
 }
 
+OptionsMenu::~OptionsMenu()
+{
+	delete optionModeSelector;
+}
+
 void OptionsMenu::UpdateOptionModeQuads()
 {
 	for (int i = 0; i < 4; ++i)
@@ -1323,12 +1328,17 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 
 KinMenu::~KinMenu()
 {
+	delete xSelector;
+	delete ySelector;
+
 	delete aura1AShifter;
 	delete aura1BShifter;
 	delete aura2AShifter;
 	delete aura2BShifter;
 
 	delete bgShifter;
+
+	delete selectedShifter;
 }
 
 void KinMenu::UpdateSelector()

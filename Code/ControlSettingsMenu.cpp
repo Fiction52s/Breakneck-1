@@ -94,6 +94,20 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	SetGreyActionTiles(!editMode);
 }
 
+ControlSettingsMenu::~ControlSettingsMenu()
+{
+	delete pSel;
+
+	delete[] actionQuads;
+	delete[] buttonQuads;
+	delete[] selectQuads;
+	delete[] labelQuads;
+	delete[] actionText;
+
+	delete xSelector;
+	delete ySelector;
+}
+
 void ControlSettingsMenu::UpdateSelectedQuad()
 {
 	int selIndex = xSelector->currIndex + ySelector->currIndex * 5;
@@ -146,14 +160,7 @@ void ControlSettingsMenu::SetActionTile(int actionIndex, int actionType)
 	SetRectSubRect(actionQuads + actionIndex * 4, ts_actionIcons->GetSubRect(actionType));
 }
 
-ControlSettingsMenu::~ControlSettingsMenu()
-{
-	delete[] actionQuads;
-	delete[] buttonQuads;
 
-	delete xSelector;
-	delete ySelector;
-}
 
 void ControlSettingsMenu::SetButtonAssoc()
 {

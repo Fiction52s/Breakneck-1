@@ -93,7 +93,6 @@ struct MusicManager
 	std::list<std::string> folderPaths;
 	//std::list<boost::filesystem::path> songPaths;
 	std::map<std::string, MusicInfo*> songMap;
-	std::list<MusicInfo*> songs;
 	MainMenu *mainMenu;
 };
 

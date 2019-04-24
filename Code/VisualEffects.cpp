@@ -14,6 +14,11 @@ EffectInstance::EffectInstance(EffectPool *p_parent, int index )
 
 }
 
+EffectInstance::~EffectInstance()
+{
+
+}
+
 EffectPool::EffectPool(EffectType et, int p_maxNumFX, float p_depth )
 	:ObjectPool(), maxNumFX( p_maxNumFX ), depth( p_depth )
 {
@@ -21,6 +26,7 @@ EffectPool::EffectPool(EffectType et, int p_maxNumFX, float p_depth )
 	va = new Vertex[maxNumFX * 4];
 	memset(va, 0, sizeof(va));
 	effectShader = NULL;
+
 	EffectInstance *ei = NULL;
 	for (int i = 0; i < maxNumFX; ++i)
 	{
@@ -44,7 +50,7 @@ EffectPool::EffectPool(EffectType et, int p_maxNumFX, float p_depth )
 
 EffectPool::~EffectPool()
 {
-	//DestroyAllMembers();
+	DestroyAllMembers();
 	delete[] va;
 }
 
@@ -285,6 +291,11 @@ bool EffectInstance::Update()
 
 RelEffectInstance::RelEffectInstance(EffectPool *parent, int index)
 	:EffectInstance( parent, index ), lockPos(NULL)
+{
+
+}
+
+RelEffectInstance::~RelEffectInstance()
 {
 
 }

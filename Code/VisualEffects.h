@@ -25,6 +25,7 @@ struct EffectInstance : PoolMember
 		sf::Transform &tr, int frameCount, 
 		int animFactor, 
 		int startTile );
+	~EffectInstance();
 	virtual	void InitFromParams(EffectInstance *ei);
 	virtual void SetParams(
 		sf::Vector2f &p_pos, 
@@ -57,6 +58,7 @@ struct RelEffectInstance : EffectInstance
 		:EffectInstance()
 	{}
 	RelEffectInstance( EffectPool *parent, int index);
+	~RelEffectInstance();
 	virtual bool Update() override;
 	virtual void Init(sf::Vector2f &pos,
 		sf::Transform &tr, int frameCount,

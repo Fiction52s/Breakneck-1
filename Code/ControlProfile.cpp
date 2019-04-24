@@ -1004,6 +1004,11 @@ ProfileSelector::ProfileSelector(MainMenu *p_mainMenu,
 	UpdateNames();
 }
 
+ProfileSelector::~ProfileSelector()
+{
+	delete saSelector;
+}
+
 void ProfileSelector::UpdateButtonIcons()
 {
 

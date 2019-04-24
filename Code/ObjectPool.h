@@ -8,6 +8,7 @@ struct PoolMember
 	PoolMember(int p_index)
 		:pmprev(NULL), pmnext(NULL), index( p_index )
 	{}
+	virtual ~PoolMember() {}
 	PoolMember *pmnext;
 	PoolMember *pmprev;
 	int index;

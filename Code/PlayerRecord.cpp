@@ -584,7 +584,13 @@ RecordGhostMenu::RecordGhostMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos)
 
 RecordGhostMenu::~RecordGhostMenu()
 {
+	for (auto it = ghostFolders.begin(); it != ghostFolders.end(); ++it)
+	{
+		delete (*it).second;
+	}
 
+	delete saSelector;
+	delete ghostOptions;
 }
 
 void RecordGhostMenu::SetupBoxes()

@@ -68,6 +68,16 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 }
 
+TitleScreen::~TitleScreen()
+{
+	delete background;
+
+	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
+	{
+		delete (*it);
+	}
+}
+
 void TitleScreen::Reset()
 {
 	background->Reset();

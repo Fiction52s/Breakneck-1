@@ -351,6 +351,11 @@ MultiLoadingScreen::MultiLoadingScreen( MainMenu *p_mainMenu )
 	loadThread = NULL;	
 }
 
+MultiLoadingScreen::~MultiLoadingScreen()
+{
+	delete progressDisplay;
+}
+
 void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
 {
 	filePath = p_path;
@@ -968,6 +973,8 @@ MainMenu::~MainMenu()
 	delete saveMenu;
 
 	delete fader;
+
+
 }
 
 void MainMenu::Init()
@@ -3121,6 +3128,11 @@ MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 
 MapSelectionMenu::~MapSelectionMenu()
 {
+	for (auto it = collections.begin(); it != collections.end(); ++it)
+	{
+		delete (*it);
+	}
+
 	delete saSelector;
 	delete singleSection;
 	delete filterOptions;
@@ -3130,6 +3142,11 @@ MapSelectionMenu::~MapSelectionMenu()
 	for (int i = 0; i < 4; ++i)
 	{
 		delete multiPlayerSection[i];
+	}
+
+	if (allItems != NULL)
+	{
+		delete[] allItems;
 	}
 }
 
@@ -4490,6 +4507,14 @@ MapCollection::MapCollection()
 	tags = 0;
 }
 
+MapCollection::~MapCollection()
+{
+	for (auto mit = maps.begin(); mit != maps.end(); ++mit)
+	{
+		delete (*mit);
+	}
+}
+
 void OptionsMenuScreen::Center( Vector2f &windowSize)
 {
 	optionsWindow->SetTopLeftVec(Vector2f(windowSize.x / 2 - optionsWindow->dimensions.x / 2, windowSize.y / 2 - optionsWindow->dimensions.y / 2));
@@ -4679,6 +4704,12 @@ LoadingMapProgressDisplay::LoadingMapProgressDisplay( MainMenu *p_mainMenu,
 	}
 }
 
+LoadingMapProgressDisplay::~LoadingMapProgressDisplay()
+{
+	delete[] text;
+	delete[] currString;
+}
+
 void LoadingMapProgressDisplay::Reset()
 {
 	for (int i = 0; i < NUM_LOAD_THREADS; ++i)
@@ -4688,11 +4719,7 @@ void LoadingMapProgressDisplay::Reset()
 	}
 }
 
-LoadingMapProgressDisplay::~LoadingMapProgressDisplay()
-{
-	delete[] text;
-	delete[] currString;
-}
+
 
 void LoadingMapProgressDisplay::SetProgressString(const std::string & str,
 	int threadIndex)

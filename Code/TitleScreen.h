@@ -13,6 +13,7 @@ struct MusicInfo;
 struct TitleScreen
 {
 	TitleScreen(MainMenu *p_mainMenu);
+	~TitleScreen();
 	void Draw(sf::RenderTarget *target);
 	void Reset();
 	void Update();

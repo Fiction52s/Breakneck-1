@@ -66,6 +66,7 @@ struct OptionsMenu
 	SingleAxisSelector *optionModeSelector;
 	sf::Vector2f basePos;
 	OptionsMenu( PauseMenu *pauseMenu );
+	~OptionsMenu();
 	void Update( ControllerState &currInput,
 		ControllerState &prevInput );
 	void Draw( sf::RenderTarget *target );

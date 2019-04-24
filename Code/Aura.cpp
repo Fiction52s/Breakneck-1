@@ -56,8 +56,6 @@ Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet, int type )
 
 Aura::~Aura()
 {
-	delete[] va;
-	
 	DeactivateAllParticles();
 
 	ParticleSet *curr = inactiveSets;
@@ -68,6 +66,8 @@ Aura::~Aura()
 		delete curr;
 		curr = next;
 	}
+
+	delete[] va;
 }
 
 void Aura::Update()

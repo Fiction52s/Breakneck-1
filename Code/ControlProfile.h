@@ -85,6 +85,7 @@ struct ProfileSelector
 	State state;
 	ProfileSelector( MainMenu *p_mainMenu,
 		sf::Vector2f &topMid );
+	~ProfileSelector();
 	void UpdateNames();
 	void UpdateButtonIcons();
 	ControlProfileManager *cpm;

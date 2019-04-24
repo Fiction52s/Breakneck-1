@@ -109,6 +109,7 @@ struct LoadingMapProgressDisplay;
 struct MultiLoadingScreen
 {
 	MultiLoadingScreen( MainMenu *p_mainMenu );
+	~MultiLoadingScreen();
 	void Reset(boost::filesystem::path path );
 	void Update();
 	void Draw( sf::RenderTarget *target );
@@ -213,6 +214,7 @@ struct MapCollection
 	int tags;
 
 	MapCollection();
+	~MapCollection();
 	//bool Load(boost::filesystem::path path);
 
 	std::string collectionName;

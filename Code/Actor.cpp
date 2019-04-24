@@ -1505,16 +1505,16 @@ Actor::~Actor()
 		delete smallLightningPool[i];
 	}
 
-	delete risingAuraPool;
+	//delete risingAuraPool;
 	for (int i = 0; i < 3; ++i)
 	{
 		delete motionGhostsEffects[i];
 	}
 
-	delete kinRing;
-	delete dustParticles;
+	//delete kinRing;
+//	delete dustParticles;
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 3; ++i)
 	{
 		delete fairLightningPool[i];
 		delete uairLightningPool[i];
@@ -1542,13 +1542,14 @@ Actor::~Actor()
 		delete uairHitboxes[i];
 		delete dairHitboxes[i];
 		delete standHitboxes[i];
-		delete dashHitboxes[i];
-		delete wallHitboxes[i];
+//		delete dashHitboxes[i];
+
+	//	delete wallHitboxes[i];
 		delete steepClimbHitboxes[i];
 		delete steepSlideHitboxes[i];
 		delete diagUpHitboxes[i];
 		delete diagDownHitboxes[i];
-		delete grindHitboxes[i];
+		//delete grindHitboxes[i];
 	}
 
 	
