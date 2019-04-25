@@ -50,6 +50,54 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	pShader = &session->polyShaders[terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation];
 }
 
+TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly)
+	:ISelectable(ISelectable::TERRAIN)
+{
+	layer = 0;
+	inverse = poly.inverse;
+	grassTex = poly.grassTex;
+	terrainWorldType = poly.terrainWorldType;
+	terrainVariation = poly.terrainVariation;
+	//SetMaterialType( poly.terrainWorldType, poly.terrainVariation );
+	if (pointsOnly)
+	{
+		va = NULL;
+		lines = NULL;
+		selected = false;
+		grassVA = NULL;
+		isGrassShowing = false;
+		finalized = false;
+		numPoints = 0;
+		pointStart = NULL;
+		pointEnd = NULL;
+		movingPointMode = false;
+
+		poly.CopyPoints(pointStart, pointEnd);
+		numPoints = poly.numPoints;
+	}
+	else
+	{
+
+		assert(false && "havent implemented yet");
+	}
+}
+
+TerrainPolygon::~TerrainPolygon()
+{
+	if (lines != NULL)
+		delete[] lines;
+
+	if (va != NULL)
+		delete va;
+
+	if (grassVA != NULL)
+		delete grassVA;
+
+	//DestroyEnemies();
+
+	ClearPoints();
+}
+
 bool TerrainPolygon::SwitchPolygon( bool cw, TerrainPoint *rootPoint,
 	TerrainPoint *otherEnd )
 {
@@ -501,37 +549,7 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 	}
 }
 
-TerrainPolygon::TerrainPolygon( TerrainPolygon &poly, bool pointsOnly )
-	:ISelectable( ISelectable::TERRAIN )
-{
-	layer = 0;
-	inverse = poly.inverse;
-	grassTex = poly.grassTex;
-	terrainWorldType = poly.terrainWorldType;
-	terrainVariation = poly.terrainVariation;
-	//SetMaterialType( poly.terrainWorldType, poly.terrainVariation );
-	if( pointsOnly )
-	{
-		va = NULL;
-		lines = NULL;
-		selected = false;
-		grassVA = NULL;
-		isGrassShowing = false;
-		finalized = false;
-		numPoints = 0;
-		pointStart = NULL;
-		pointEnd = NULL;
-		movingPointMode = false;
 
-		poly.CopyPoints( pointStart, pointEnd );
-		numPoints = poly.numPoints;
-	}
-	else
-	{
-
-		assert( false && "havent implemented yet" );
-	}	
-}
 
 void TerrainPolygon::AlignExtremes( double primLimit )
 {
@@ -747,20 +765,7 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 	}
 }
 
-TerrainPolygon::~TerrainPolygon()
-{
-	if( lines != NULL )
-		delete [] lines;
-	if( va != NULL )
-		delete va;
 
-	if( grassVA != NULL )
-		delete grassVA;
-
-	//DestroyEnemies();
-
-	ClearPoints();
-}
 
 void TerrainPolygon::DestroyEnemies()
 {
@@ -1032,6 +1037,12 @@ void TerrainPolygon::FinalizeInverse()
 
 	//assert( tris.size() * 3 == points.size() );
 	delete cdt;
+
+	for (auto it = outerQuadPoints.begin(); it != outerQuadPoints.end(); ++it)
+	{
+		delete (*it);
+	}
+
 	for (int i = 0; i < numPoints; ++i)
 	{
 		delete polyline[i];

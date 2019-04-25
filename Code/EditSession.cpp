@@ -477,6 +477,11 @@ void GateInfo::Draw( sf::RenderTarget *target )
 EditSession::EditSession( MainMenu *p_mainMenu )
 	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu )
 {
+	for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD * 9; ++i)
+	{
+		terrainTextures[i] = NULL;
+	}
+
 	copiedBrush = NULL;
 	mapHeader.ver1 = 1;
 	mapHeader.ver2 = 5;
@@ -554,17 +559,51 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 EditSession::~EditSession()
 {
-	//delete polygonInProgress;
-
-
 	polygonInProgress.reset();
 
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
 		(*it).reset();
 	}
+
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		(*it).reset();
+	}
+
 	delete progressBrush;
+	delete selectedBrush;
+
+	for (auto it = allPopups.begin(); it != allPopups.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	delete currBackground;
+	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = types.begin(); it != types.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		delete(*it).second;
+	}
+
+	delete[] decorTileIndexes;
+
+	for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
+	{
+		if (terrainTextures[i] != NULL)
+			delete terrainTextures[i];
+	}
 }
+
 
 void EditSession::Draw()
 {
@@ -6223,8 +6262,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 //	p.AddButton( Vector2i( 50, 100 ), Vector2f( 50, 50 ), "LOL");
 //	p.AddTextBox( Vector2i( 200, 200 ), 200, 15, "testing" );
 
-	ActorGroup *emptyGroup = new ActorGroup( "--" );
-	groups[emptyGroup->name] = emptyGroup;
+	//ActorGroup *emptyGroup = new ActorGroup( "--" );
+	//groups[emptyGroup->name] = emptyGroup;
 
 	//groups["player"]->actors.push_back( player );
 	Panel *mapOptionsPanel = CreateOptionsPanel( "map" );
@@ -6289,7 +6328,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Panel *airdasherPanel = CreateOptionsPanel("airdasher");
 	ActorType *airdasherType = new ActorType("airdasher", airdasherPanel);
 
-	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );//new Panel( 300, 300, this );
+	Panel *patrollerPanel = CreateOptionsPanel( "patroller" );
 	ActorType *patrollerType = new ActorType( "patroller", patrollerPanel );
 
 	Panel *crawlerPanel = CreateOptionsPanel( "crawler" );
@@ -6462,6 +6501,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	errorPopup = CreatePopupPanel( "error" );
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
+	allPopups.push_back(enemySelectPanel);
 	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 20, 20, 32, 32, false, true );
 	gs->active = false;
 
@@ -15498,6 +15538,7 @@ void EditSession::InitDecorPanel()
 	int sh = 64;
 	LoadDecorImages();
 	decorPanel = new Panel("decorpanel", 650, 800, this);
+	allPopups.push_back(decorPanel);
 	GridSelector *gs = decorPanel->AddGridSelector("decorselector", Vector2i(0, 0), w, h, sw, sh, false, true );
 	decorPanel->AddTextBox("layer", Vector2i( 0, 650), 100, 3, "0");
 	decorTileIndexes = new int[w*h];
@@ -15532,6 +15573,7 @@ void EditSession::InitDecorPanel()
 	}
 
 	editDecorPanel = new Panel("editdecorpanel", 500, 500, this);
+	allPopups.push_back(editDecorPanel);
 	editDecorPanel->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 
 	editDecorPanel->AddTextBox("xpos", Vector2i(20, 20), 200, 20, "x");
@@ -16872,48 +16914,46 @@ void EditSession::GridSelectPop( const std::string &type )
 }
 Panel * EditSession::CreatePopupPanel( const std::string &type )
 {
+	Panel *p = NULL;
 	if( type == "message" )
 	{
-		Panel *p = new Panel( "message_popup", 400, 100, this );
+		p = new Panel( "message_popup", 400, 100, this );
 		p->pos.x = 300;
 		p->pos.y = 300;
 		//p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "message", Vector2i( 10, 10 ), 12, "_EMPTY\n_MESSAGE_" );
 		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
-		return p;
 		//p->
 	}
 	else if( type == "error" )
 	{
-		Panel *p = new Panel( "error_popup", 400, 100, this );
+		p = new Panel( "error_popup", 400, 100, this );
 		//p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "message", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
 		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
-		return p;
 	}
 	else if( type == "confirmation" )
 	{
-		Panel *p = new Panel( "confirmation_popup", 400, 100, this );
-
+		p = new Panel( "confirmation_popup", 400, 100, this );
 		p->AddButton( "confirmOK", Vector2i( 50, 25 ), Vector2f( 100, 50 ), "OK" );
 		p->AddButton( "cancel", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "Cancel" );
 		p->AddLabel( "question", Vector2i( 10, 10 ), 12, "_EMPTY\n_QUESTION_" );
 		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
-		//p->AddLabel( "Cancel", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
-		return p;
 	}
 	else if( type == "gateselector" )
 	{
-		Panel *p = new Panel( "gate_popup", 200, 500, this );
-		//p->AddCheckBox( "reform", Vector2i( 20, 300 ) );
-		return p;
+		p = new Panel( "gate_popup", 200, 500, this );
 	}
 	else if( type == "terrainselector" )
 	{
-		Panel *p = new Panel( "terrain_popup", 100, 100, this );
-		return p;
+		p = new Panel( "terrain_popup", 100, 100, this );
 	}
-	return NULL;
+
+
+	if( p != NULL )
+		allPopups.push_back(p);
+
+	return p;
 }
 
 //-1 means you denied it, 0 means it didnt work, and 1 means it will work
@@ -16958,32 +16998,29 @@ int EditSession::IsRemovePointsOkay()
 
 Panel * EditSession::CreateOptionsPanel( const std::string &name )
 {
+	Panel *p = NULL;
 	if( name == "healthfly" )
 	{
-		Panel *p = new Panel( "healthfly_options", 200, 500, this );
+		p = new Panel( "healthfly_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
-		//p->
+		
 	}
 	else if( name == "poi" )
 	{
-		Panel *p = new Panel( "poi_options", 200, 500, this );
+		p = new Panel( "poi_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "NO NAME" );
 		p->AddTextBox( "camzoom", Vector2i( 20, 180 ), 200, 20, "not test" );
 		p->AddCheckBox( "camprops", Vector2i( 20, 240 ) );
 		p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "shippickup" )
 	{
-		Panel *p = new Panel( "shippickup_options", 200, 500, this );
+		p = new Panel( "shippickup_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "NO NAME" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -16991,23 +17028,19 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		//p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
 		p->AddCheckBox( "facingright", Vector2i( 20, 250 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "key" )
 	{
-		Panel *p = new Panel( "key_options", 200, 600, this );
+		p = new Panel( "key_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 		p->AddTextBox( "numkeys", Vector2i( 20, 150 ), 200, 20, "3" );
 		p->AddTextBox("zonetype", Vector2i(20, 200), 200, 20, "0" );
-
-		return p;
 	}
 	else if (name == "blocker")
 	{
-		Panel *p = new Panel("blocker_options", 200, 500, this);
+		p = new Panel("blocker_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
@@ -17016,20 +17049,11 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox("btype", Vector2i(20, 200), 200, 20, "0");
 		p->AddTextBox("spacing", Vector2i(20, 250), 200, 20, "0");
 		p->AddButton("createchain", Vector2i(20, 300), Vector2f(100, 50), "Create Chain");
-
-		//p->AddCheckBox("monitor", Vector2i(20, 330));
-		/*GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );*/
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 		//p->
 	}
 	else if (name == "comboer")
 	{
-		Panel *p = new Panel("comboer_options", 200, 500, this);
+		p = new Panel("comboer_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
@@ -17039,18 +17063,15 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
 
 		p->AddCheckBox("monitor", Vector2i(20, 330));
-		return p;
 	}
 	else if (name == "shard")
 	{
-		Panel *p = new Panel("shard_options", 200, 500, this);
+		p = new Panel("shard_options", 200, 500, this);
 		p->AddTextBox("shardtype", Vector2i(20, 200), 200, 20, "SHARD_W1_TEACH_JUMP");
-
-		return p;
 	}
 	else if (name == "rail")
 	{
-		Panel *p = new Panel("rail_options", 200, 500, this);
+		p = new Panel("rail_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
@@ -17058,22 +17079,20 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddCheckBox("energized", Vector2i(120, 155));
 		p->AddButton("createrail", Vector2i(20, 300), Vector2f(100, 50), "Create Rail");
 
-		return p;
 	}
 	else if (name == "booster")
 	{
-		Panel *p = new Panel("booster_options", 200, 500, this);
+		p = new Panel("booster_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
 
 		p->AddTextBox("strength", Vector2i(20, 200), 200, 3, "");
-		return p;
 	}
 
 	else if (name == "spring")
 	{
-		Panel *p = new Panel("spring_options", 200, 500, this);
+		p = new Panel("spring_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
@@ -17081,33 +17100,11 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
 
 		p->AddTextBox("moveframes", Vector2i(20, 200), 200, 3, "");
-		return p;
 	}
-	//else if( name == "shard1" )
-	//{
-	//	Panel *p = new Panel( "turtle_options", 200, 600, this );
-	//	p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-	//	p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-	//	p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-	//	//maybe bullet speed later but it might be too hard if it has variation
-	//	//could have params to have them teleport to offsets around your position
-	//	//instead of always DIRECTLY on it
-
-	//	//p->AddTextBox( "movespeed", Vector2i( 20, 150 ), 200, 1, "1" ); 
-	//	//p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 1, "1" ); 
-	//	//p->AddTextBox( "rhythmframes", Vector2i( 20, 250 ), 200, 1, "1" ); 
-	//	
-	//	
-
-	//	p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-	//	//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	//	return p;
-	//}
 	//w1
 	else if( name == "patroller" )
 	{
-		Panel *p = new Panel( "patroller_options", 200, 500, this );
+		p = new Panel( "patroller_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17123,23 +17120,21 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
 		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );*/
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
+		
 		//p->
 	}
 	else if( name == "foottrap" )
 	{
-		Panel *p = new Panel( "foottrap_options", 200, 500, this );
+		p = new Panel( "foottrap_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "basicturret" )
 	{
-		Panel *p = new Panel( "basicturret_options", 200, 500, this );
+		p = new Panel( "basicturret_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
@@ -17147,12 +17142,10 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "crawler" )
 	{
-		Panel *p = new Panel( "crawler_options", 200, 500, this );
+		p = new Panel( "crawler_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
@@ -17161,23 +17154,20 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "1.5" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if (name == "airdasher")
 	{
-		Panel *p = new Panel("airdasher_options", 200, 500, this);
+		p = new Panel("airdasher_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
 		p->AddCheckBox("monitor", Vector2i(20, 330));
-		return p;
 	}
 
 	//w2
 	else if( name == "bat" )
 	{
-		Panel *p = new Panel( "bat_options", 200, 600, this );
+		p = new Panel( "bat_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17190,12 +17180,11 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 		//p->
 	}
 	else if( name == "poisonfrog" )
 	{
-		Panel *p = new Panel( "poisonfrog_options", 200, 500, this );
+		p = new Panel( "poisonfrog_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
@@ -17209,11 +17198,10 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if (name == "gravityfaller")
 	{
-		Panel *p = new Panel("gravityfaller_options", 200, 500, this);
+		p = new Panel("gravityfaller_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
@@ -17224,11 +17212,10 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "stagbeetle" )
 	{
-		Panel *p = new Panel( "stagbeetle_options", 200, 500, this );
+		p = new Panel( "stagbeetle_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
@@ -17238,11 +17225,10 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "curveturret" )
 	{
-		Panel *p = new Panel( "curveturret_options", 200, 550, this );
+		p = new Panel( "curveturret_options", 200, 550, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
@@ -17254,14 +17240,12 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 
 	//w3
 	else if( name == "pulser" )
 	{
-		Panel *p = new Panel( "pulser_options", 200, 600, this );
+		p = new Panel( "pulser_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17272,12 +17256,11 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 		//p->
 	}
 	else if( name == "cactus" )
 	{
-		Panel *p = new Panel( "cactus_options", 200, 550, this );
+		p = new Panel( "cactus_options", 200, 550, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
@@ -17289,12 +17272,10 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "badger" )
 	{
-		Panel *p = new Panel( "badger_options", 200, 500, this );
+		p = new Panel( "badger_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
@@ -17306,11 +17287,10 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "owl" )
 	{
-		Panel *p = new Panel( "owl_options", 200, 600, this );
+		p = new Panel( "owl_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17323,14 +17303,13 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 		//p->
 	}
 	
 	//w4
 	else if( name == "turtle" )
 	{
-		Panel *p = new Panel( "turtle_options", 200, 600, this );
+		p = new Panel( "turtle_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17347,22 +17326,20 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "cheetah" )
 	{
-		Panel *p = new Panel( "cheetah_options", 200, 550, this );
+		p = new Panel( "cheetah_options", 200, 550, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "spider" )
 	{
-		Panel *p = new Panel( "spider_options", 200, 500, this );
+		p = new Panel( "spider_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
@@ -17376,11 +17353,10 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "coral" )
 	{
-		Panel *p = new Panel( "coral_options", 200, 600, this );
+		p = new Panel( "coral_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17389,13 +17365,12 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	
 	//w5
 	else if( name == "shark" )
 	{
-		Panel *p = new Panel( "shark_options", 200, 600, this );
+		p = new Panel( "shark_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17411,22 +17386,20 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "overgrowth" )
 	{
-		Panel *p = new Panel( "overgrowth_options", 200, 550, this );
+		p = new Panel( "overgrowth_options", 200, 550, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "ghost" )
 	{
-		Panel *p = new Panel( "ghost_options", 200, 600, this );
+		p = new Panel( "ghost_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17435,11 +17408,10 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "swarm" )
 	{
-		Panel *p = new Panel( "swarm_options", 200, 600, this );
+		p = new Panel( "swarm_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17449,21 +17421,19 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "specter" )
 	{
-		Panel *p = new Panel( "specter_options", 200, 600, this );
+		p = new Panel( "specter_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		return p;
 	}
 	else if( name == "gorilla" )
 	{
-		Panel *p = new Panel( "gorilla_options", 200, 600, this );
+		p = new Panel( "gorilla_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17473,21 +17443,19 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		return p;
 	}
 	else if( name == "copycat" )
 	{
-		Panel *p = new Panel( "copycat_options", 200, 600, this );
+		p = new Panel( "copycat_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		return p;
 	}
 	else if( name == "narwhal" )
 	{
-		Panel *p = new Panel( "narwhal_options", 200, 600, this );
+		p = new Panel( "narwhal_options", 200, 600, this );
 		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
@@ -17496,77 +17464,62 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		return p;
 	}
 	else if( name == "nexus" )
 	{
-		Panel *p = new Panel( "nexus_options", 200, 500, this );
+		p = new Panel( "nexus_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
 		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
 
 		p->AddTextBox( "nexusindex", Vector2i( 20, 150 ), 200, 20, "1" );
-		return p;
 	}
 
 	else if (name == "groundtrigger")
 	{
-		Panel *p = new Panel("groundtrigger_options", 200, 500, this);
+		p = new Panel("groundtrigger_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
 
 		p->AddCheckBox("facingright", Vector2i(20, 250));
 		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
-		return p;
 	}
 	else if (name == "airtrigger")
 	{
-		Panel *p = new Panel("airtrigger_options", 200, 500, this);
+		p = new Panel("airtrigger_options", 200, 500, this);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
 		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
 		p->AddButton("createrect", Vector2i(20, 350), Vector2f(100, 50), "Create Rect");
-		return p;
 	}
 	//else if( name == "racefighttarget" )
 	//{
 	
-		/*Panel *p = new Panel( "racefighttarget_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-
-		return p;*/
-	//}
 
 
 	else if( name == "map" )
 	{
-		Panel *p = new Panel( "map_options", 200, 400, this );
+		p = new Panel( "map_options", 200, 400, this );
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
 		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
 		p->AddLabel("draintime_label", Vector2i(20, 200), 20, "drain seconds:");
 		p->AddTextBox("draintime", Vector2i(20, 250), 200, 20, "60");
 		p->AddTextBox("bosstype", Vector2i(20, 300), 200, 20, "0");
-		
-		return p;
 	}
 	else if( name == "terrain" )
 	{
-		Panel *p = new Panel( "terrain_options", 200, 400, this );
+		p = new Panel( "terrain_options", 200, 400, this );
 		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
 		//p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
 		//p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
 		p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
-		
-		return p;
 	}
 	else if( name == "light" )
 	{
-		Panel *p = new Panel( "light_options", 240, 300, this );
+		p = new Panel( "light_options", 240, 300, this );
 		int textBoxX = 130;
 		p->AddButton( "ok", Vector2i( 100, 230 ), Vector2f( 100, 50 ), "OK" );
 		p->AddTextBox( "red", Vector2i( textBoxX, 20 ), 60, 3, "255" );
@@ -17580,9 +17533,12 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddLabel( "blue_label", Vector2i( 20, 100 ), 20, "Blue: " );
 		p->AddLabel( "rad_label", Vector2i( 20, 140 ), 20, "Radius: " );
 		p->AddLabel( "bright_label", Vector2i( 20, 180 ), 20, "Brightness: " );
-		return p;
 	}
-	return NULL;
+
+	if( p != NULL )
+		allPopups.push_back(p);
+
+	return p;
 }
 
 void EditSession::SetPanelDefault( ActorType *type )

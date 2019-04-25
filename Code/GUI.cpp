@@ -37,6 +37,17 @@ GridSelector::GridSelector( Vector2i p_pos, int xSizep, int ySizep, int iconX, i
 	mouseOverY = -1;
 }
 
+GridSelector::~GridSelector()
+{
+	for (int i = 0; i < xSize; ++i)
+	{
+		delete[] icons[i];
+		delete[] names[i];
+	}
+	delete[] icons;
+	delete[] names;
+}
+
 void GridSelector::Set( int xi, int yi, Sprite s, const std::string &name )
 {
 	icons[xi][yi] = s;

@@ -1622,6 +1622,8 @@ struct EditSession : GUIHandler
 		ITOOL_SCALE
 	};
 
+	std::list<Panel*> allPopups;
+
 	Background *currBackground;
 	std::list<ScrollingBackground*> scrollingBackgrounds;
 

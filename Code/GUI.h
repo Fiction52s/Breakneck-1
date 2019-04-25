@@ -13,6 +13,7 @@ struct GridSelector
 
 	GridSelector( sf::Vector2i pos, int xSize, int ySize, int iconX, int iconY, 
 		bool displaySelected, bool displayMouseOver, Panel * p );
+	~GridSelector();
 	void Set( int xi, int yi, sf::Sprite s, const std::string &name );
 	void Draw( sf::RenderTarget *target );
 	bool Update( bool mouseDown, int posx, int posy );
