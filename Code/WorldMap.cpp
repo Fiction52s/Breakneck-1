@@ -1163,6 +1163,19 @@ MapSelector::~MapSelector()
 {
 	delete[] ts_bossFight;
 	delete[] ts_sectorOpen;
+
+	if (sectors != NULL )
+	{
+		for (int i = 0; i < numSectors; ++i)
+		{
+			delete sectors[i];
+		}
+		delete[] sectors;
+		sectors = NULL;
+
+		delete saSelector;
+		saSelector = NULL;
+	}
 }
 
 void MapSelector::UpdateSprites()
@@ -1387,6 +1400,34 @@ MapSector::~MapSector()
 {
 	delete [] levelCollectedShards;
 	delete [] levelCollectedShardsBG;
+
+	if (saSelector != NULL)
+	{
+		delete saSelector;
+	}
+
+	if (nodes != NULL)
+	{
+		delete[] nodes;
+		nodes = NULL;
+	}
+
+	if (topBonusNodes != NULL)
+	{
+		delete[] topBonusNodes;
+		topBonusNodes = NULL;
+	}
+
+	if (botBonusNodes != NULL)
+	{
+		delete[] botBonusNodes;
+		botBonusNodes = NULL;
+	}
+
+	if (unlockCondText != NULL)
+	{
+		delete []unlockCondText;
+	}
 }
 
 void MapSector::Draw(sf::RenderTarget *target)
@@ -2143,36 +2184,6 @@ int MapSector::GetNodeBonusIndexBot(int node)
 		return 0;
 	}
 }
-
-//void MapSector::S_Init(Sector *m_sec, MapSector *ms)
-//{
-//	ms->Init(m_sec);
-//}
-//
-//void MapSector::ThreadedInit( Sector *m_sec )
-//{
-//	if (sec != m_sec)
-//	{
-//		if (initThread != NULL)
-//		{
-//			TerminateThread(initThread->native_handle(), 0); //windows only
-//			//pthread_cancel(u.native_handle()); //linux
-//		}
-//		initThread = new boost::thread(&(MapSector::ThreadedInit), m_sec, this);
-//	}
-//}
-//
-//bool MapSector::IsInitialized()
-//{
-//	assert(initThread);
-//	if (initThread->try_join_for(boost::chrono::milliseconds(0)))
-//	{
-//		return true;
-//	}
-//	return false;
-//}
-
-
 
 void MapSector::Init(Sector *m_sec)
 {

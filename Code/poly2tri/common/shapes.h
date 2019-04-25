@@ -53,6 +53,14 @@ struct Point {
     y = 0.0;
   }
 
+  /*~Point()
+  {
+	  for (auto it = edge_list.begin(); it != edge_list.end(); ++it)
+	  {
+		  delete (*it);
+	  }
+  }*/
+
   /// The edges this point constitutes an upper ending point
   std::vector<Edge*> edge_list;
 

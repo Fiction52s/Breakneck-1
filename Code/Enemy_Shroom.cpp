@@ -105,6 +105,11 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	UpdateSprite();
 }
 
+Shroom::~Shroom()
+{
+	delete jelly;
+}
+
 void Shroom::ResetEnemy()
 {
 	jelly->Reset();
@@ -327,6 +332,11 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	SetHurtboxes(hurtBody, 0);
 
 	UpdateSprite();
+}
+
+ShroomJelly::~ShroomJelly()
+{
+	delete comboObj;
 }
 
 void ShroomJelly::ProcessHit()

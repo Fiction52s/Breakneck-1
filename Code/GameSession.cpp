@@ -384,6 +384,15 @@ void GameSession::Cleanup()
 {
 	TerrainRender::CleanupLayers();
 
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = allVA.begin(); it != allVA.end(); ++it)
+	{
+		delete (*it);
+	}
 
 	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
@@ -436,10 +445,10 @@ void GameSession::Cleanup()
 		delete hitboxManager;
 	}
 
-	if (inversePoly != NULL)
+	/*if (inversePoly != NULL)
 	{
 		delete inversePoly;
-	}
+	}*/
 
 	if (recGhost != NULL)
 	{
@@ -663,11 +672,11 @@ void GameSession::Cleanup()
 		edges = NULL;
 	}
 
-	for (list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	/*for (list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
 		delete (*it);
 	}
-	polygons.clear();
+	polygons.clear();*/
 
 	if (mh != NULL)
 	{
@@ -1998,7 +2007,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				Booster *enemy = new Booster(this, Vector2i(xPos, yPos),strength);
 
 				activeItemTree->Insert(enemy);
-				//fullEnemyList.push_back(enemy);
+				fullEnemyList.push_back(enemy);
 				enem = enemy;
 
 				enemyTree->Insert(enemy);

@@ -19,6 +19,7 @@ struct Shroom : Enemy
 
 	Shroom(GameSession *owner, bool hasMonitor,
 		Edge *ground, double quantity);
+	~Shroom();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void UpdateHitboxes();
@@ -61,6 +62,7 @@ struct ShroomJelly : Enemy
 	int animFactor[A_Count];
 
 	ShroomJelly(GameSession *owner, V2d &pos );
+	~ShroomJelly();
 	void EnemyDraw(sf::RenderTarget *target);
 	
 	void UpdateSprite();

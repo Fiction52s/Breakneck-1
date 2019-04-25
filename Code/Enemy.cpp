@@ -2425,3 +2425,12 @@ void ComboObject::Draw(RenderTarget *target)
 {
 	enemyHitBody->DebugDraw( enemyHitboxFrame, target);
 }
+
+ComboObject::~ComboObject()
+{
+	if (enemyHitboxInfo != NULL)
+		delete enemyHitboxInfo;
+	
+	if (enemyHitBody != NULL)
+		delete enemyHitBody;
+}

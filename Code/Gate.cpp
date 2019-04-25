@@ -94,6 +94,9 @@ Gate::~Gate()
 
 	if (blackGate != NULL)
 		delete blackGate;
+
+	delete edgeA;
+	delete edgeB;
 }
 
 void Gate::Reset()

@@ -50,6 +50,7 @@ Zone::~Zone()
 	delete definedArea;
 	if (zShader != NULL)
 	{
+		delete zShader;
 		zShader = NULL;
 	}
 }
@@ -81,16 +82,19 @@ void Zone::ReformAllGates( Gate *ignoreGate)
 
 void Zone::Init()
 {
+	p2t::Point *testP = new p2t::Point(0, 0);
+	delete testP;
+
 	vector<p2t::Point*> polyline;
 
-	int numPoints = 0;
+	//int numPoints = 0;
 
 	for (list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it)
 	{
 		polyline.push_back(new p2t::Point((*it).x, (*it).y));
 	}
 
-	p2t::CDT * cdt = new p2t::CDT(polyline);
+	p2t::CDT cdt(polyline);
 
 	//cout << "adding holes for my: " << subZones.size() << " subzones" << endl;
 	list<Zone*> possibleSubs = subZones;
@@ -249,13 +253,13 @@ void Zone::Init()
 			}
 		}
 
-		cdt->AddHole( holePolyline );
+		cdt.AddHole( holePolyline );
 	}
 	
 	
-	cdt->Triangulate();
+	cdt.Triangulate();
 	vector<p2t::Triangle*> tris;
-	tris = cdt->GetTriangles();
+	tris = cdt.GetTriangles();
 	
 	int vaSize = tris.size() * 3;
 	definedArea = new VertexArray( sf::Triangles , vaSize );
@@ -335,10 +339,11 @@ void Zone::Init()
 	//SetShadowColor(shadowColor);
 
 	//assert( tris.size() * 3 == points.size() );
-	delete cdt;
-	for( int i = 0; i < numPoints; ++i )
+	//delete cdt;
+	//for( int i = 0; i < numPoints; ++i )
+	for( auto it = polyline.begin(); it != polyline.end(); ++it )
 	{
-		delete polyline[i];
+		delete (*it);
 	//	delete tris[i];
 	}
 	

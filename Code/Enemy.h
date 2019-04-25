@@ -489,6 +489,7 @@ struct ComboObject
 		enemy( en )
 	{
 	}
+	~ComboObject();
 	void Reset();
 	V2d GetComboPos();
 	CollisionBody *enemyHitBody;
