@@ -52,10 +52,6 @@ struct RoadRunner : Enemy, GroundMoverHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-
-	HitboxInfo *hitboxInfo;
 
 	int actionLength[Action::Count];
 	int animFactor[Action::Count];

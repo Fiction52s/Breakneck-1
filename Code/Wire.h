@@ -25,6 +25,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	sf::Clock wireTestClock;
 	//sf::Vector2<double> 
 	Wire( Actor *player, bool right );
+	~Wire();
 	void UpdateAnchors( sf::Vector2<double> vel );
 	void UpdateAnchors2( sf::Vector2<double> vel );
 	void SetFireDirection( sf::Vector2<double> dir );
@@ -136,6 +137,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	WireCharge * GetWireCharge();
 	void ActivateWireCharge( int index );
 	void ClearCharges();
+	void DestroyDeactivatedCharges();
 	void ActivateRetractionCharges();
 	void UpdateChargesPhysics();
 	void UpdateChargesSprites();

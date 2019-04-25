@@ -18,6 +18,11 @@ ImageText::ImageText( int p_maxDigits, Tileset *ts_tex )
 	activeDigits = 1;
 }
 
+ImageText::~ImageText()
+{
+	delete[]vert;
+}
+
 void ImageText::SetCenter(sf::Vector2f &p_center)
 {
 	center = p_center;

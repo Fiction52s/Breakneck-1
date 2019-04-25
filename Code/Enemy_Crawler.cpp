@@ -129,11 +129,18 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool
 	ResetEnemy();
 }
 
+Crawler::~Crawler()
+{
+	delete mover;
+}
+
 void Crawler::PlayDeathSound()
 {
 	Enemy::PlayDeathSound();
 	owner->ActivateSound( position, deathSound);
 }
+
+
 
 void Crawler::ResetEnemy()
 {

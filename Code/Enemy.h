@@ -162,6 +162,7 @@ struct Launcher
 	Launcher( LauncherEnemy *handler,
 		GameSession *owner,
 		int maxFramesToLive );
+	~Launcher();
 	static double GetRadius(BasicBullet::BType bt);
 	static sf::Vector2f GetOffset(BasicBullet::BType bt);
 	//Launcher( LauncherEnemy *handler,
@@ -172,6 +173,7 @@ struct Launcher
 	BasicBullet *inactiveBullets;
 	BasicBullet *activeBullets;
 	void DeactivateBullet( BasicBullet *b );
+	void DeactivateAllBullets();
 	void UpdatePrePhysics();
 	void UpdatePhysics( int substep, 
 		bool lowRes = false );
@@ -509,6 +511,9 @@ public:
 	virtual void UpdatePreLauncherPhysics() {}
 	CuttableObject *cutObject;
 	Launcher **launchers;
+	CollisionBody *hurtBody;
+	CollisionBody *hitBody;
+	HitboxInfo *hitboxInfo;
 	sf::SoundBuffer *genericDeathSound;
 	virtual void PlayDeathSound();
 	virtual int GetNumCamPoints() { return 1; }
@@ -553,6 +558,7 @@ public:
 	virtual HitboxInfo * IsHit(Actor *player);
 	Enemy( GameSession *owner, EnemyType t,
 		bool hasMonitor, int world, bool cuttable = true );
+	virtual ~Enemy();
 	virtual void HandleNoHealth();
 	virtual void ProcessState() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);

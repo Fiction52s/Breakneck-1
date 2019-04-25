@@ -360,8 +360,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			sf::Color(0x53, 0xf9, 0xf9)
 		};
 
-		KinSkin *swordSkin = new KinSkin(startChanges, endChanges, 9, 1);
-		KinSkin *skin = new KinSkin(startChanges, endChanges, 9, 1);
+		//KinSkin *swordSkin = new KinSkin(startChanges, endChanges, 9, 1);
+		//KinSkin *skin = new KinSkin(startChanges, endChanges, 9, 1);
 		
 		team = (Team)actorIndex; //debug
 		//SetupTilesets(skin, swordSkin);
@@ -770,9 +770,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		standHitboxes[2] = new CollisionBody(8, standCList, currHitboxInfo);
 
 		////dashHitboxes[0] = NULL;
-		wallHitboxes[0] = new CollisionBody(7, wallAList, currHitboxInfo);
-		wallHitboxes[1] = new CollisionBody(7, wallBList, currHitboxInfo);
-		wallHitboxes[2] = new CollisionBody(7, wallCList, currHitboxInfo);
+		wallHitboxes[0] = new CollisionBody(8, wallAList, currHitboxInfo);
+
+		wallHitboxes[1] = new CollisionBody(8, wallBList, currHitboxInfo);
+
+		wallHitboxes[2] = new CollisionBody(8, wallCList, currHitboxInfo);
 
 
 		steepClimbHitboxes[0] = new CollisionBody(8, climbAList, currHitboxInfo);
@@ -1486,6 +1488,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 Actor::~Actor()
 {
+	//delete skin;
+	//delete swordSkin;
+
 	list<Vector2f> *currP = NULL;
 	for (int i = 0; i < 3; ++i)
 	{
@@ -1494,7 +1499,7 @@ Actor::~Actor()
 			currP = auraPoints[i][j];
 			if (currP != NULL)
 			{
-				delete currP;
+				delete [] currP;
 			}
 		}
 	}
@@ -1542,6 +1547,7 @@ Actor::~Actor()
 		delete uairHitboxes[i];
 		delete dairHitboxes[i];
 		delete standHitboxes[i];
+		delete wallHitboxes[i];
 //		delete dashHitboxes[i];
 
 	//	delete wallHitboxes[i];
@@ -1552,6 +1558,8 @@ Actor::~Actor()
 		//delete grindHitboxes[i];
 	}
 
+	delete grindHitboxes[0];
+
 	
 	//delete shockwaveHitboxes;
 
@@ -1561,6 +1569,7 @@ Actor::~Actor()
 		delete leftWire;
 
 	delete[] bubblePos;
+	delete[] fBubblePos;
 	delete[] bubbleFramesToLive;
 	delete[] bubbleRadiusSize;
 	delete [] fBubbleRadiusSize;
@@ -6416,7 +6425,7 @@ void Actor::UpdatePrePhysics()
 	case WALLATTACK:
 		{
 			int f = frame / 2;
-			if (f < 7)
+			if (f < 8)
 			{
 				SetCurrHitboxes(wallHitboxes[speedLevel], frame / 2);
 			}
@@ -8604,6 +8613,8 @@ void Actor::LoadAllAuras()
 				}
 			}
 		}
+
+		delete[] iList;
 		
 		
 		cout << "finished reading auras" << endl;
@@ -8695,6 +8706,8 @@ void Actor::LoadAllAuras()
 		os.write((char*)viList, sizeof(sf::Uint32) * totalSize);
 		os.close();
 		cout << "finished creating aura file" << endl;
+
+		delete[] viList;
 	}
 	
 }
@@ -24499,6 +24512,11 @@ MotionGhostEffect::MotionGhostEffect( int maxGhosts )
 	:shader( NULL ), ts( NULL )
 {
 	motionGhostBuffer = new VertexBuf( maxGhosts, sf::Quads);
+}
+
+MotionGhostEffect::~MotionGhostEffect()
+{
+	delete motionGhostBuffer;
 }
 
 void MotionGhostEffect::SetDistInBetween(float dist)

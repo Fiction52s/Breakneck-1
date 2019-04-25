@@ -166,6 +166,7 @@ struct EnvPlant : QuadTreeEntrant
 		sf::Vector2<double>&d,
 		int vi, sf::VertexArray *v,
 		Tileset *ts );
+	~EnvPlant();
 	void Reset();
 	void SetupQuad();
 
@@ -656,6 +657,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	void DeactivateEffect( BasicEffect *be );
 	BasicEffect *inactiveEffects;
+	std::list<BasicEffect*> allEffectList;
 
 	sf::View view;
 
@@ -722,6 +724,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//	TerrainPolygon::TerrainType::Count];
 	sf::Shader cloneShader;
 	Edge **edges;
+	std::list<Edge*> globalBorderEdges;
 	sf::Vector2<double> *points;
 
 	int numGates;
@@ -928,6 +931,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	struct TestVA : QuadTreeEntrant
 	{
+		TestVA();
+		~TestVA();
 		TerrainRender *tr;
 		void AddDecorExpression( DecorExpression *expr );
 		void UpdateBushSprites();
@@ -1031,6 +1036,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree * gateTree;
 	QuadTree * itemTree;
 	QuadTree *envPlantTree;
+	std::list<EnvPlant*> allEnvPlants;
 	QuadTree *specterTree;
 	QuadTree *inverseEdgeTree;
 	QuadTree *staticItemTree;

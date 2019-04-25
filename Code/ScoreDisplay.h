@@ -42,6 +42,7 @@ struct ScoreDisplay
 	ScoreDisplay(GameSession *owner,
 		sf::Vector2f &position,
 		sf::Font & testFont);
+	~ScoreDisplay();
 	sf::Sprite score;
 	void Draw(sf::RenderTarget *target);
 	int numEnemiesTotal;

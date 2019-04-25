@@ -121,6 +121,7 @@ struct TerrainRender : QuadTreeCollider, RayCastHandler
 {
 	TerrainRender( TilesetManager *tMan,
 		QuadTree *terrainTree );
+	~TerrainRender();
 	sf::Vertex *borderVA;
 	sf::Vertex *centerVA;
 	void SetType(int tWorldType, int tWorldVariation);

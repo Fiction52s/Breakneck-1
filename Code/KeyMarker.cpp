@@ -44,6 +44,13 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 	//SetPosition(Vector2f(226 + 10, 141 + 10));
 }
 
+KeyMarker::~KeyMarker()
+{
+	delete keyNumberNeededHUD;
+	delete keyNumberNeededHUDBack;
+	delete keyNumberTotalHUD;
+}
+
 void KeyMarker::SetPosition(Vector2f &pos)
 {
 	neededCenter = pos;//Vector2f(1920- 100, 100 );//Vector2f(62, 33) + pos;

@@ -28,6 +28,7 @@ struct MainMenu;
 struct LevelSelector
 {
 	LevelSelector( MainMenu *mainMenu );
+	~LevelSelector();
 	void UpdateMapList(TreeNode *parentNode, const std::string &relativePath);
 	void UpdateMapList();
 	void PrintDir( TreeNode * dir );

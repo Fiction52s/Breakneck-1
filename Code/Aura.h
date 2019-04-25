@@ -58,6 +58,7 @@ struct Aura
 	struct ParticleSet
 	{
 		ParticleSet(Aura *aura, int index);
+		~ParticleSet();
 		int index;
 		ParticleSet *next;
 		ParticleSet *prev;

@@ -14,6 +14,7 @@ struct Goal : Enemy
 	};
 
 	Goal(GameSession *owner, Edge *ground, double quantity);
+	~Goal();
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
@@ -23,7 +24,6 @@ struct Goal : Enemy
 	void ConfirmKill();
 	int explosionLength;
 
-	CollisionBody *hurtBody;
 	int explosionAnimFactor;
 	int explosionYOffset;
 	int initialYOffset;

@@ -22,10 +22,10 @@ ParentNode::ParentNode( const V2d &poss, double rww, double rhh )
 
 ParentNode::~ParentNode()
 {
-	for (auto it = extraChildren.begin(); it != extraChildren.end(); ++it)
+	/*for (auto it = extraChildren.begin(); it != extraChildren.end(); ++it)
 	{
 		delete (*it);
-	}
+	}*/
 }
 
 LeafNode::LeafNode( const V2d &poss, double rww, double rhh )
@@ -54,6 +54,7 @@ QuadTree::QuadTree( int p_width, int p_height )
 
 QuadTree::~QuadTree()
 {
+	rClear(startNode);
 	//Clear();
 }
 

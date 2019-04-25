@@ -42,7 +42,6 @@ struct RaceFightTarget : Enemy
 	sf::Sprite sprite;
 	Tileset *ts;
 
-	CollisionBody *hurtBody;
 	//CollisionBox hurtBody;
 	//CollisionBox hitBody;
 	//HitboxInfo *hitboxInfo;

@@ -153,6 +153,34 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 	arial.loadFromFile("Breakneck_Font_01.ttf");
 }
 
+Panel::~Panel()
+{
+	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = buttons.begin(); it != buttons.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = labels.begin(); it != labels.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = checkBoxes.begin(); it != checkBoxes.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = gridSelectors.begin(); it != gridSelectors.end(); ++it)
+	{
+		delete (*it).second;
+	}
+}
+
 void Panel::Update( bool mouseDown, int posx, int posy )
 {
 	//cout << "posx: " << posx << ", posy: " << posy << ", pos.x: " << pos.x << ", pos.y: " << pos.y << endl;

@@ -74,10 +74,7 @@ struct Badger : Enemy, GroundMoverHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 
-	CollisionBody * hurtBody;
-	CollisionBody * hitBody;
 	//CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
 	sf::Vector2<double> tempVel;
 	sf::Vector2<double> gravity;
 

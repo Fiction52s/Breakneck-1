@@ -60,11 +60,6 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-
-	HitboxInfo *hitboxInfo;
-
 
 	sf::Vector2<double> tempVel;
 	sf::Vector2<double> gravity;

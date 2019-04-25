@@ -9,6 +9,7 @@ struct GameSession;
 struct TopClouds
 {
 	TopClouds( GameSession *owner );
+	~TopClouds();
 	void Update();
 	void Draw(sf::RenderTarget *target);
 	int numClouds;

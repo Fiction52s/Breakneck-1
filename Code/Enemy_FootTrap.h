@@ -28,10 +28,6 @@ struct FootTrap : Enemy
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
-
 	double angle;
 
 	Contact minContact;

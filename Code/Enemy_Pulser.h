@@ -47,9 +47,6 @@ struct Pulser : Enemy
 	int nodeWaitFrames;
 	sf::Sprite sprite;
 	Tileset *ts;
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
 	HitboxInfo *shieldHitboxInfo;
 
 	int pulseFrame;

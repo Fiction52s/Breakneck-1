@@ -41,6 +41,28 @@ TerrainRender::TerrainRender(TilesetManager *p_tMan, QuadTree *p_terrainTree)
 	:tMan( p_tMan ), terrainTree(p_terrainTree )
 {
 	decorTree = new QuadTree(1000000, 1000000);
+	borderVA = NULL;
+	centerVA = NULL;
+}
+
+TerrainRender::~TerrainRender()
+{
+	delete decorTree;
+
+	for (auto it = decorExprList.begin(); it != decorExprList.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = currDecorRects.begin(); it != currDecorRects.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	if (borderVA != NULL)
+		delete[] borderVA;
+	if (centerVA != NULL)
+		delete[] centerVA;
 }
 
 struct Triple

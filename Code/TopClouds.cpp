@@ -37,6 +37,11 @@ TopClouds::TopClouds( GameSession *p_owner )
 	}
 }
 
+TopClouds::~TopClouds()
+{
+	delete[] cloudVA;
+}
+
 void TopClouds::Update()
 {
 	int frame = (owner->totalGameFrames % (animFactor * animLength)) / animFactor;

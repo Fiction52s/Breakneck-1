@@ -83,6 +83,15 @@ Wire::Wire( Actor *p, bool r)
 	//lockEdge = NULL;
 }
 
+Wire::~Wire()
+{
+	delete[] quads;
+	delete[] minimapQuads;
+
+	ClearCharges();
+	DestroyDeactivatedCharges();
+}
+
 void Wire::ActivateCharges()
 {
 	for( int i = 0; i < numPoints; ++i )
@@ -2391,6 +2400,18 @@ void Wire::DeactivateWireCharge( WireCharge *charge )
 		inactiveChargeList = charge;
 	}
 	//cout << "AFTER removing active: " << CountActiveCharges() << ", inact: " << CountInactiveCharges() << endl;
+}
+
+void Wire::DestroyDeactivatedCharges()
+{
+	WireCharge *curr = inactiveChargeList;
+	WireCharge *n = NULL;
+	while (curr != NULL)
+	{
+		n = curr->next;
+		delete curr;
+		curr = n;
+	}
 }
 
 Wire::WireCharge *Wire::GetWireCharge()

@@ -83,10 +83,7 @@ struct Spider : Enemy, RayCastHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
 	//CollisionBox physBody;
-	HitboxInfo *hitboxInfo;
 	HitboxInfo *laserInfo0;
 	HitboxInfo *laserInfo1;
 	HitboxInfo *laserInfo2;

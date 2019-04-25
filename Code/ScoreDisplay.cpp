@@ -53,6 +53,14 @@ ScoreDisplay::ScoreDisplay(GameSession *p_owner, Vector2f &position,
 	//SetScoreBarPos( 0, 0 );
 }
 
+ScoreDisplay::~ScoreDisplay()
+{
+	for (int i = 0; i <= NUM_BARS; ++i)
+	{
+		delete bars[i];
+	}
+}
+
 void ScoreDisplay::Draw(RenderTarget *target)
 {
 	if (active)

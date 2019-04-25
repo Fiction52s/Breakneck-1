@@ -34,7 +34,6 @@ struct Nexus : Enemy
 
 	Sequence *insideSeq;
 
-	CollisionBody *hurtBody;
 	int explosionAnimFactor;
 	int explosionYOffset;
 	int initialYOffset;

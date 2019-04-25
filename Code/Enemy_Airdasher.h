@@ -45,8 +45,6 @@ struct Airdasher : Enemy
 	V2d currOrig;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
 	sf::Vector2i *path; //global
 	int pathLength;
 	bool loop;
@@ -57,7 +55,6 @@ struct Airdasher : Enemy
 	int nodeWaitFrames;
 	sf::Sprite sprite;
 	Tileset *ts;
-	HitboxInfo *hitboxInfo;
 	bool facingRight;
 };
 

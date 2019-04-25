@@ -5,6 +5,8 @@
 
 struct SoundInfo
 {
+	SoundInfo();
+	~SoundInfo();
 	sf::SoundBuffer *buffer;
 	std::string name;
 };

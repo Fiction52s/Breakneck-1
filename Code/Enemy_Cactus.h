@@ -45,9 +45,6 @@ struct CactusShotgun : Enemy, LauncherEnemy, PoolMember
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
 	ObjectPool *myPool;
 	double bulletSpeed;
 };
@@ -92,9 +89,6 @@ struct Cactus : Enemy
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
 
 	double bulletSpeed;
 };

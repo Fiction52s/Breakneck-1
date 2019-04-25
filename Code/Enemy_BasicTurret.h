@@ -57,9 +57,6 @@ struct BasicTurret : Enemy, LauncherEnemy
 
 	void SetupPreCollision();
 	CollisionBody *prelimBody;
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
 
 	double angle;
 

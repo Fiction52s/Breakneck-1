@@ -135,6 +135,10 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 	//kinKillFrame = 0;
 }
 
+Goal::~Goal()
+{
+}
+
 void Goal::ConfirmKill()
 {
 	dead = true;

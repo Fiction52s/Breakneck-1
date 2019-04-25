@@ -59,6 +59,15 @@ LevelSelector::LevelSelector( MainMenu *mainMenu )
 	///entries->parent = NULL;
 }
 
+LevelSelector::~LevelSelector()
+{
+	//entries
+	//text
+	//localPaths
+	//dirNode
+	ClearEntries();
+}
+
 void LevelSelector::UpdateMapList()
 {
 	ClearEntries();

@@ -452,7 +452,7 @@ sf::SoundBuffer * SoundManager::GetSound( const std::string &name )
 	if( !res )
 	{
 		cout << "failed to load sound: " << fullName << endl;
-		delete si->buffer;
+		//delete si->buffer;
 		delete si;
 		sounds.pop_back();
 
@@ -476,4 +476,14 @@ void SoundManager::ClearAll()
 	{
 		delete (*it);
 	}*/
+}
+
+SoundInfo::~SoundInfo()
+{
+	delete buffer;
+}
+
+SoundInfo::SoundInfo()
+{
+	buffer = NULL;
 }

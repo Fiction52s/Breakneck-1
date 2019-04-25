@@ -35,10 +35,6 @@ struct Shroom : Enemy
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
-
 	double angle;
 
 	sf::Vector2<double> gn;
@@ -94,11 +90,6 @@ struct ShroomJelly : Enemy
 
 	V2d velocity;
 	ComboObject *comboObj;
-
-
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
 
 	CubicBezier risingBez;
 	CubicBezier fallingBez;

@@ -146,6 +146,12 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	ResetEnemy();
 }
 
+Patroller::~Patroller()
+{
+	delete eye;
+	delete []path;
+}
+
 void Patroller::ResetEnemy()
 {
 	currFacingRight = facingRight;

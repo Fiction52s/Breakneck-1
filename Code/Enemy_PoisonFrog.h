@@ -70,9 +70,6 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	Tileset *ts_walk;
 	Tileset *ts_roll;
 
-	CollisionBody * hurtBody;
-	CollisionBody * hitBody;
-	HitboxInfo *hitboxInfo;
 
 	double maxFallSpeed;
 

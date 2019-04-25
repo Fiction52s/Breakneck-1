@@ -384,6 +384,63 @@ void GameSession::Cleanup()
 {
 	TerrainRender::CleanupLayers();
 
+
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	if (goalEnergyFlowVA != NULL)
+	{
+		delete goalEnergyFlowVA;
+	}
+
+	for (auto it = globalBorderEdges.begin(); it != globalBorderEdges.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = decorLayerMap.begin(); it != decorLayerMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	if (background != NULL)
+	{
+		delete background;
+	}
+	
+
+	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	if (points != NULL)
+	{
+		delete[] points;
+	}
+
+	for (auto it = allEffectList.begin(); it != allEffectList.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = allEnvPlants.begin(); it != allEnvPlants.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	if (hitboxManager != NULL)
+	{
+		delete hitboxManager;
+	}
+
+	if (inversePoly != NULL)
+	{
+		delete inversePoly;
+	}
+
 	if (recGhost != NULL)
 	{
 		delete recGhost;
@@ -474,6 +531,7 @@ void GameSession::Cleanup()
 		keyMarker = NULL;
 	}
 
+
 	if (specterTree != NULL)
 	{
 		delete specterTree;
@@ -497,6 +555,12 @@ void GameSession::Cleanup()
 	{
 		delete itemTree;
 		itemTree = NULL;
+	}
+
+	if (inverseEdgeTree != NULL)
+	{
+		delete inverseEdgeTree;
+		inverseEdgeTree = NULL;
 	}
 
 	if (gateTree != NULL)
@@ -631,6 +695,11 @@ void GameSession::Cleanup()
 	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 	{
 		delete (*it);
+	}
+
+	if (bigBulletVA != NULL)
+	{
+		delete bigBulletVA;
 	}
 }
 
@@ -3132,6 +3201,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 	else
 	{
 		ts_basicBullets = NULL;
+		bigBulletVA = NULL;
 	}
 
 	if( raceFight != NULL )
@@ -4066,6 +4136,11 @@ void GameSession::SetGlobalBorders()
 	terrainTree->Insert(left);
 	terrainTree->Insert(right);
 	terrainTree->Insert(top);
+
+	globalBorderEdges.push_back(left);
+	globalBorderEdges.push_back(right);
+	globalBorderEdges.push_back(top);
+	globalBorderEdges.push_back(bot);
 	//terrainTree->Insert(bot);
 
 }
@@ -5464,9 +5539,6 @@ bool GameSession::Load()
 	staticItemTree = new QuadTree(1000000, 1000000);
 	railDrawTree = new QuadTree(1000000, 1000000);
 	railEdgeTree = new QuadTree(1000000, 1000000);
-	//testTree = new EdgeLeafNode( V2d( 0, 0), 1000000, 1000000);
-	//testTree->parent = NULL;
-	//testTree->debug = rw;
 
 	enemyTree = new QuadTree(1000000, 1000000);
 
@@ -5502,10 +5574,10 @@ bool GameSession::Load()
 		AllocateEffect();
 	}
 
-	for (int i = 0; i < MAX_DYN_LIGHTS; ++i)
+	/*for (int i = 0; i < MAX_DYN_LIGHTS; ++i)
 	{
 		AllocateLight();
-	}
+	}*/
 
 
 	kinMapSpawnIcon.setTexture(*mini->ts_miniIcons->texture);
@@ -10357,6 +10429,46 @@ void GameSession::TestVA::AddDecorExpression( GameSession::DecorExpression *exp 
 	bushes.push_back( exp );
 }
 
+GameSession::TestVA::TestVA()
+{
+	groundva = NULL;
+	slopeva = NULL;
+	steepva = NULL;
+	wallva = NULL;
+	triva = NULL;
+	flowva = NULL;
+	plantva = NULL;
+	decorLayer0va = NULL;
+	bushVA = NULL;
+
+	terrainVA = NULL;
+	grassVA = NULL;
+}
+
+GameSession::TestVA::~TestVA()
+{
+	if (tr != NULL)
+		delete tr;
+
+	for (auto it = bushes.begin(); it != bushes.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	delete groundva;
+	delete slopeva;
+	delete steepva;
+	delete wallva;
+	delete triva;
+	delete flowva;
+	delete plantva;
+	delete decorLayer0va;
+	delete bushVA;
+
+	delete terrainVA;
+	delete grassVA;
+}
+
 void GameSession::TestVA::UpdateBushSprites()
 {
 	for (list<DecorExpression*>::iterator it = bushes.begin();
@@ -10755,6 +10867,7 @@ sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, in
 		V2d airRight = groundPoint + w * along + norm * (double)th;
 
 		EnvPlant * ep = new EnvPlant( groundLeft,airLeft,airRight,groundRight, vaIndex, va, ts );
+		allEnvPlants.push_back(ep);
 
 		envPlantTree->Insert( ep );
 
@@ -12722,12 +12835,14 @@ void GameSession::AllocateEffect()
 	if( inactiveEffects == NULL )
 	{
 		inactiveEffects = new BasicEffect( this );
+		allEffectList.push_back(inactiveEffects);
 		inactiveEffects->prev = NULL;
 		inactiveEffects->next = NULL;
 	}
 	else
 	{
 		BasicEffect *b = new BasicEffect( this ) ;
+		allEffectList.push_back(b);
 		b->next = inactiveEffects;
 		inactiveEffects->prev = b;
 		inactiveEffects = b;
@@ -12824,76 +12939,6 @@ void GameSession::RemoveEffect( EffectLayer layer, Enemy *e )
 		}
 		
 	}
-
-	//	if( inactiveEnemyList == NULL )
-	//	{
-	//		inactiveEnemyList = e;
-	//		e->next = NULL;
-	//		e->prev = NULL;
-	//	}
-	//	else
-	//	{
-	//		//cout << "creating more dead clone enemies" << endl;
-	//		e->next = inactiveEnemyList;
-	//		inactiveEnemyList->prev = e;
-	//		inactiveEnemyList = e;
-	//	}
-
-	//if( e->type != e->BASICEFFECT )
-	//{
-	//	/*if( e->hasMonitor )
-	//	{
-	//		cout << "adding monitor!" << endl;
-	//		e->monitor->position = e->position;
-	//		AddEnemy( e->monitor );
-	//	}*/
-
-	//	cout << "adding an inactive enemy!" << endl;
-	//	//cout << "secret count: " << CountActiveEnemies() << endl;
-	//	if( inactiveEnemyList == NULL )
-	//	{
-	//		inactiveEnemyList = e;
-	//		e->next = NULL;
-	//		e->prev = NULL;
-	//	}
-	//	else
-	//	{
-	//		//cout << "creating more dead clone enemies" << endl;
-	//		e->next = inactiveEnemyList;
-	//		inactiveEnemyList->prev = e;
-	//		inactiveEnemyList = e;
-	//	}
-	//}
-
-	//might need to give enemies a second next/prev pair for clone power?
-	//totally does >.> CLONE POWER
-	//if( player->record > 0 )
-	//{
-	//	if( cloneInactiveEnemyList == NULL )
-	//	{
-	//		cloneInactiveEnemyList = e;
-	//		e->next = NULL;
-	//		e->prev = NULL;
-	//		//cout << "creating first dead clone enemy" << endl;
-
-	//		/*int listSize = 0;
-	//		Enemy *ba = cloneInactiveEnemyList;
-	//		while( ba != NULL )
-	//		{
-	//			listSize++;
-	//			ba = ba->next;
-	//		}
-
-	//		cout << "size of dead list after first add: " << listSize << endl;*/
-	//	}
-	//	else
-	//	{
-	//		//cout << "creating more dead clone enemies" << endl;
-	//		e->next = cloneInactiveEnemyList;
-	//		cloneInactiveEnemyList->prev = e;
-	//		cloneInactiveEnemyList = e;
-	//	}
-	//}
 }
 
 void GameSession::DeactivateEffect( BasicEffect *b )
@@ -13470,6 +13515,11 @@ EnvPlant::EnvPlant(sf::Vector2<double>&a, V2d &b, V2d &c, V2d &d, int vi, Vertex
 	disperseLength = particle->maxDurationToLive + particle->emitDuration;
 	disperseFactor = 1;
 	SetupQuad();
+}
+
+EnvPlant::~EnvPlant()
+{
+	delete particle;
 }
 
 void EnvPlant::SetupQuad()

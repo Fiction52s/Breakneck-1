@@ -46,9 +46,6 @@ struct Turtle : Enemy, LauncherEnemy
 
 	sf::Sprite sprite;
 	Tileset *ts;
-	CollisionBody * hurtBody;
-	CollisionBody * hitBody;
-	HitboxInfo *hitboxInfo;
 
 	int hitlagFrames;
 	int hitstunFrames;

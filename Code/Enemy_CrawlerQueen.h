@@ -19,11 +19,8 @@ struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 	FloatingBomb(GameSession *owner, ObjectPool *myPool, int index );
 	int actionLength[Count];
 	int animFactor[Count];
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
 	SurfaceMover *mover;
 	Tileset *ts;
-	HitboxInfo *hitboxInfo;
 	sf::Sprite sprite;
 	ObjectPool *myPool;
 	void Init( V2d pos, V2d vel );
@@ -174,11 +171,6 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 
 	Action action;
 	bool clockwise;
-
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-
-	HitboxInfo *hitboxInfo;
 
 	Edge *startGround;
 	double startQuant;

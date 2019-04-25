@@ -42,9 +42,6 @@ struct CurveTurret : Enemy, LauncherEnemy
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
 	Shield *shield;
 
 	double angle;

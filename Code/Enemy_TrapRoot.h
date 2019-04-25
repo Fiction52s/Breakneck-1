@@ -30,9 +30,6 @@ struct TrapRoot : Enemy
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
 
 	double angle;
 

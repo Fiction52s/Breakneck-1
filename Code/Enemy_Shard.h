@@ -32,9 +32,6 @@ struct Shard : Enemy
 	void DissipateOnTouch();
 	void Capture();
 
-	CollisionBody *hitBody;
-	CollisionBody *hurtBody;
-
 	int radius;
 
 	sf::Sprite sprite;

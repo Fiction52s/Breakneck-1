@@ -20,10 +20,7 @@ struct GravRing : Enemy, PoolMember
 	GravRing(GameSession *owner, BirdBoss *parent, ObjectPool *myPool, int index);
 	int actionLength[Count];
 	int animFactor[Count];
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
 	Tileset *ts;
-	HitboxInfo *hitboxInfo;
 	sf::Sprite sprite;
 	V2d fallDir;
 	double grav;
@@ -142,8 +139,6 @@ struct BirdBoss : Enemy, RayCastHandler
 	Tileset *tilesets[S_Count];
 	Action action;
 
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
 	sf::Sprite sprite;
 
 	HitboxInfo *bodyHitboxInfo;

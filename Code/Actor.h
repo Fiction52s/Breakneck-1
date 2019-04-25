@@ -48,6 +48,7 @@ struct KinSkin
 struct MotionGhostEffect
 {
 	MotionGhostEffect( int maxGhosts );
+	~MotionGhostEffect();
 	void SetParams();
 	void SetShader(sf::Shader *pShad);
 	void SetRootPos(sf::Vector2f &pos );

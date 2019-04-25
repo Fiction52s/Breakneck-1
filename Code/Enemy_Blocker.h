@@ -32,14 +32,10 @@ struct Blocker : Enemy, QuadTreeEntrant
 	int animFactor[Count];
 
 	Action action;
-	HitboxInfo *hitboxInfo;
 
 	int animationFactor;
 
 	BlockerChain *bc;
-
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
 
 	bool checkCol;
 

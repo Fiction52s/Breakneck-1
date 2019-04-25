@@ -8,6 +8,7 @@ struct ImageText
 {
 	ImageText( int maxDigits, 
 		Tileset *ts_tex );
+	~ImageText();
 	sf::Vector2f topRight;
 	sf::Vector2f center;
 	bool positionCenter;

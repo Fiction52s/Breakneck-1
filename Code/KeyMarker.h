@@ -25,6 +25,7 @@ struct KeyMarker
 	int startKeys;
 	GameSession *owner;
 	KeyMarker( GameSession *owner );
+	~KeyMarker();
 	void Reset();
 	void SetStartKeys( int neededKeys,
 		int totalKeys );

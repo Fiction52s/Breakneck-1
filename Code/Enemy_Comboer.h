@@ -59,8 +59,6 @@ struct Comboer : Enemy, SurfaceMoverHandler
 	Action action;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
 	sf::Vector2i *path; //global
 	int pathLength;
 	bool loop;
@@ -71,7 +69,6 @@ struct Comboer : Enemy, SurfaceMoverHandler
 	int nodeWaitFrames;
 	sf::Sprite sprite;
 	Tileset *ts;
-	HitboxInfo *hitboxInfo;
 	bool facingRight;
 };
 

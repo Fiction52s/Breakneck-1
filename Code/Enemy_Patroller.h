@@ -19,6 +19,7 @@ struct Patroller : Enemy, LauncherEnemy
 
 	Patroller(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
+	~Patroller();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos);
 	void BulletHitPlayer(BasicBullet *b);
@@ -51,8 +52,6 @@ struct Patroller : Enemy, LauncherEnemy
 	int fireCounter;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
 	sf::Vector2i *path; //global
 	int pathLength;
 	bool loop;
@@ -67,7 +66,6 @@ struct Patroller : Enemy, LauncherEnemy
 	//sf::Vertex bodyAuraVA[4 * 2];
 	Tileset *ts;
 	Tileset *ts_aura;
-	HitboxInfo *hitboxInfo;
 	bool facingRight;
 };
 

@@ -200,6 +200,32 @@ Launcher::Launcher( LauncherEnemy *handler, GameSession *owner,
 	skipPlayerCollideForSubstep = false;
 }
 
+Launcher::~Launcher()
+{
+	DeactivateAllBullets();
+	BasicBullet *curr = inactiveBullets;
+	BasicBullet *cn = NULL;
+	while (curr != NULL)
+	{
+		cn = curr->next;
+		delete curr;
+		curr = cn;
+	}
+	delete hitboxInfo;
+}
+
+void Launcher::DeactivateAllBullets()
+{
+	BasicBullet *curr = activeBullets;
+	BasicBullet *cn = NULL;
+	while (curr != NULL)
+	{
+		cn = curr->next;
+		DeactivateBullet(curr);
+		curr = cn;
+	}
+}
+
 void Launcher::SetDefaultCollision(int framesToLive, Edge*e, V2d &pos)
 {
 	def_framesToLive = framesToLive;
@@ -1132,6 +1158,10 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
 	affectCameraZoom( true )
 {
+	hurtBody = NULL;
+	hitBody = NULL;
+	hitboxInfo = NULL;
+
 	if (p_hasMonitor)
 	{
 		owner->numTotalKeys++;
@@ -1149,6 +1179,8 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
 	currShield = NULL;
+	hurtShader = NULL;
+	keyShader = NULL;
 	EnemyParams *ep = own->eHitParamsMan->GetHitParams(t);
 	ResetSlow();
 	if (ep == NULL)
@@ -1300,6 +1332,44 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	}
 	hurtShader->setUniform( "toColor", Glsl::Vec4( Color::White.r, Color::White.g, Color::White.b, Color::White.a ));
 	hurtShader->setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
+}
+
+Enemy::~Enemy()
+{
+	if (numLaunchers > 0)
+	{
+		for (int i = 0; i < numLaunchers; ++i)
+		{
+			delete launchers[i];
+		}
+		delete[] launchers;
+	}
+
+	if (cutObject != NULL)
+	{
+		delete cutObject;
+	}
+
+	if (currShield != NULL)
+		delete currShield;
+
+	if (keyShader != NULL)
+		delete keyShader;
+
+	if (hurtShader != NULL)
+		delete hurtShader;
+
+	if (keySprite != NULL)
+		delete keySprite;
+
+	if (hurtBody != NULL)
+		delete hurtBody;
+	if (hitBody != NULL)
+		delete hitBody;
+
+	if (hitboxInfo != NULL)
+		delete hitboxInfo;
+
 }
 
 void Enemy::PlayDeathSound()
@@ -2039,7 +2109,7 @@ EnemyParamsManager::EnemyParamsManager()
 
 EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 {
-	EnemyParams *ep = params[et];
+	EnemyParams *& ep = params[et];
 	if ( ep == NULL)
 	{
 		switch (et)
@@ -2129,7 +2199,7 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 
 EnemyParamsManager::~EnemyParamsManager()
 {
-	for (int i = 0; i < E_Count; ++i)
+	for (int i = 0; i < EN_Count; ++i)
 	{
 		if (params[i] != NULL)
 		{

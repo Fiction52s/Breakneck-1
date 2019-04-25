@@ -96,6 +96,7 @@ struct CheckBox
 struct Panel
 {
 	Panel( const std::string &name, int width, int height, GUIHandler *handler );
+	~Panel();
 	void Draw(sf::RenderTarget *rt);
 	void Update( bool mouseDown, int posx, int posy );
 	

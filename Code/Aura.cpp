@@ -231,6 +231,16 @@ Aura::ParticleSet::ParticleSet(Aura *p_aura, int p_index)
 	}
 }
 
+Aura::ParticleSet::~ParticleSet()
+{
+	int maxParticles = aura->maxParticlesPerSet;
+	for (int i = 0; i < maxParticles; ++i)
+	{
+		delete particles[i];
+	}
+	delete[] particles;
+}
+
 int Aura::InactiveCount()
 {
 	int count = 0;
