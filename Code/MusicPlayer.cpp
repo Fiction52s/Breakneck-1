@@ -105,6 +105,12 @@ void MusicPlayer::UnpauseCurrentMusic()
 void MusicPlayer::TransitionMusic(MusicInfo *newMusic,
 	int crossFadeFrames, sf::Time startTime)
 {
+	if (newMusic == NULL)
+	{
+		FadeOutCurrentMusic(crossFadeFrames);
+		return;
+		//assert(0);
+	}
 	if (currMusic == NULL)
 	{
 		musicFadeInMax = crossFadeFrames;
