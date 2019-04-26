@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include "IntroMovie.h"
 #include "WorldMap.h"
+#include "Fader.h"
 
 using namespace sf;
 using namespace std;
@@ -286,6 +287,7 @@ void SaveMenuScreen::Update()
 		if (menuCurrInput.B && !menuPrevInput.B )
 		{
 			mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
+			mainMenu->fader->CrossFade(30, 0, 30, Color::Black);
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
 			return;
 		}

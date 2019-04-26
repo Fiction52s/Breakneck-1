@@ -1429,6 +1429,57 @@ bool EditSession::OpenFile()
 					terrain->enemies[a->groundInfo->edgeStart].push_back(a);
 					terrain->UpdateBounds();
 				}
+				else if (typeName == "flowerpod")
+				{
+					//always grounded
+					assert(is.good());
+					int terrainIndex;
+					is >> terrainIndex;
+
+					int edgeIndex;
+					is >> edgeIndex;
+
+					double edgeQuantity;
+					is >> edgeQuantity;
+
+					string typeStr;
+					is >> typeStr;
+
+					PolyPtr terrain(NULL);
+					if (terrainIndex == -1)
+					{
+						terrain = inversePolygon;
+					}
+					else
+					{
+						int testIndex = 0;
+						for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+						{
+							if ((*it)->inverse)
+								continue;
+
+							if (testIndex == terrainIndex)
+							{
+								terrain = (*it);
+								break;
+							}
+							testIndex++;
+						}
+					}
+
+					if (terrain == NULL)
+						assert(0 && "failure terrain indexing goal");
+
+					if (edgeIndex == terrain->numPoints - 1)
+						edgeIndex = 0;
+					else
+						edgeIndex++;
+
+					a.reset(new FlowerPodParams(this, terrain.get(), edgeIndex, edgeQuantity,
+						typeStr));
+					terrain->enemies[a->groundInfo->edgeStart].push_back(a);
+					terrain->UpdateBounds();
+				}
 				else if (typeName == "airtrigger")
 				{
 					Vector2i pos;
@@ -6295,6 +6346,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Panel *blockerPanel = CreateOptionsPanel("blocker");
 	ActorType *blockerType = new ActorType("blocker", blockerPanel);
 
+	Panel *flowerPodPanel = CreateOptionsPanel("flowerpod");
+	ActorType *flowerPodType = new ActorType("flowerpod", flowerPodPanel);
+
 	Panel *comboerPanel = CreateOptionsPanel("comboer");
 	ActorType *comboerType = new ActorType("comboer", comboerPanel);
 
@@ -6317,6 +6371,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	types["racefighttarget"] = raceFightTargetType;
 
 	types["blocker"] = blockerType;
+	types["flowerpod"] = flowerPodType;
 	types["comboer"] = comboerType;
 	types["rail"] = railType;
 
@@ -6516,6 +6571,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	gs->Set(8, 0, Sprite(groundTriggerType->iconTexture), "groundtrigger");
 	gs->Set(9, 0, Sprite(comboerType->iconTexture), "comboer");
 	gs->Set(10, 0, Sprite(comboerType->iconTexture), "airtrigger");
+	gs->Set(11, 0, Sprite(flowerPodType->iconTexture), "flowerpod");
 	
 
 	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
@@ -9117,6 +9173,25 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										//showPanel = trackingEnemy->panel;
 										//tempActor->SetPanelInfo();
 										//showPanel = enemySelectPanel;
+									}
+									else if (trackingEnemy->name == "flowerpod")
+									{
+										if (enemyEdgePolygon != NULL)
+										{
+											/*showPanel = enemySelectPanel;
+											trackingEnemy = NULL;
+											ActorPtr groundTrigger(new GroundTriggerParams(this, enemyEdgePolygon, enemyEdgeIndex,
+											enemyEdgeQuantity));
+											groundTrigger->group = groups["--"];
+
+											CreateActor(groundTrigger);*/
+
+
+											tempActor = new FlowerPodParams(this, enemyEdgePolygon, enemyEdgeIndex,
+												enemyEdgeQuantity);
+											tempActor->SetPanelInfo();
+											showPanel = trackingEnemy->panel;
+										}
 									}
 									else if (trackingEnemy->name == "comboer")
 									{
@@ -11924,7 +11999,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					bool groundType = w1Grounded || w2Grounded
 						|| w3Grounded || w4Grounded || w5Grounded
 						|| w6Grounded || name == "goal" || name == "poi"
-						|| name == "nexus" || name == "shippickup" || name == "groundtrigger";
+						|| name == "nexus" || name == "shippickup" || name == "groundtrigger" || name == "flowerpod";
 
 					if( groundType )
 					{
@@ -15013,6 +15088,37 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			showPanel = NULL;
 		}
 	}
+	else if (p->name == "flowerpod_options")
+	{
+		if (b->name == "ok")
+		{
+			if (mode == EDIT)
+				//if( mode == EDIT && selectedActor != NULL )
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				FlowerPodParams *flowerPod = (FlowerPodParams*)select;
+				flowerPod->SetParams();
+				//pulser->monitorType = GetMonitorType( p );
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				//eventually can convert this between indexes or something to simplify when i have more types
+
+
+				ActorPtr flowerPod(tempActor);//new BatParams( this, patrolPath.front(), patrolPath, speed, loop ) );
+				flowerPod->SetParams();
+				flowerPod->group = groups["--"];
+				//pulser->monitorType = GetMonitorType( p );
+
+				CreateActor(flowerPod);
+
+				tempActor = NULL;
+
+
+			}
+			showPanel = NULL;
+		}
+	}
 	else if (p->name == "airtrigger_options")
 	{
 		if (b->name == "ok")
@@ -17534,7 +17640,15 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddLabel( "rad_label", Vector2i( 20, 140 ), 20, "Radius: " );
 		p->AddLabel( "bright_label", Vector2i( 20, 180 ), 20, "Brightness: " );
 	}
+	else if (name == "flowerpod")
+	{
+		p = new Panel("flowerpod_options", 200, 500, this);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
 
+		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
+	}
 	if( p != NULL )
 		allPopups.push_back(p);
 
@@ -17607,6 +17721,11 @@ void EditSession::SetEnemyEditPanel()
 		BlockerParams *block = (BlockerParams*)ap;
 		block->SetPanelInfo();
 		patrolPath = block->GetGlobalChain();
+	}
+	else if (name == "flowerpod")
+	{
+		FlowerPodParams *flowerPod = (FlowerPodParams*)ap;
+		flowerPod->SetPanelInfo();
 	}
 	else if (name == "comboer")
 	{
@@ -19396,6 +19515,13 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+	}
+	else if (name == "flowerpod")
+	{
+		width = 32;
+		height = 32;
+		canBeGrounded = true;
+		canBeAerial = false;
 	}
 	else if (name == "comboer")
 	{

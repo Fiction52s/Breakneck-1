@@ -26,6 +26,7 @@
 #include "Movement.h"
 #include "ScoreDisplay.h"
 #include "MusicPlayer.h"
+#include "ButtonHolder.h"
 
 using namespace sf;
 using namespace std;
@@ -1130,6 +1131,8 @@ BasicMovieSeq::BasicMovieSeq(GameSession *p_owner,
 	const std::string &movieName, int preMovieLength, int postMovieLength)
 	:owner(p_owner)
 {
+
+	startHolder = new ButtonHolder( 60 );
 	Reset();
 
 	stateLength[PREMOVIE] = preMovieLength;
@@ -1148,17 +1151,20 @@ BasicMovieSeq::BasicMovieSeq(GameSession *p_owner,
 
 BasicMovieSeq::~BasicMovieSeq()
 {
-
+	delete startHolder;
 }
 void BasicMovieSeq::Reset()
 {
 	state = PREMOVIE;
 	frame = 0;
+	startHolder->Reset();
 }
 
 bool BasicMovieSeq::Update()
 {
 	Actor *player = owner->GetPlayer(0);
+
+	bool start = owner->GetController(0).GetState().A;
 
 	if (frame == stateLength[state] && state != END)
 	{
@@ -1185,7 +1191,12 @@ bool BasicMovieSeq::Update()
 	}
 	else if (state == PLAYMOVIE)
 	{
-		
+		startHolder->Update(start);
+		if (startHolder->IsHoldComplete())
+		{
+			frame = stateLength[PLAYMOVIE] - 1;
+			mov.stop();
+		}
 		sfe::Status movStatus = mov.getStatus();
 		if (frame == 0)
 		{

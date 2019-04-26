@@ -81,8 +81,8 @@ void KinBoostScreen::Update()
 		scrollShaderStars[i].setUniform("quant", facFront);//0.f);
 	}
 
-	scrollShaderLight[0].setUniform("quant", -facFront);
-	scrollShaderLight[1].setUniform("quant", -facBack);
+	scrollShaderLight[0].setUniform("quant", facFront);
+	scrollShaderLight[1].setUniform("quant", facBack);
 
 	float bgFade = 360;
 	int bgFadeI = bgFade;
@@ -110,7 +110,7 @@ void KinBoostScreen::Draw(RenderTarget *target)
 		//target->draw(kinSpr);
 		//return;
 	}
-	/*target->draw(bgShapeSpr);
+	target->draw(bgShapeSpr);
 	for (int i = 3; i >= 0; --i)
 	{
 		target->draw(starSpr[i], &scrollShaderStars[i]);
@@ -119,7 +119,7 @@ void KinBoostScreen::Draw(RenderTarget *target)
 	for (int i = 1; i >= 0; --i)
 	{
 		target->draw(lightSpr[i], &scrollShaderLight[i]);
-	}*/
+	}
 
 	target->draw(kinSpr);
 }

@@ -277,6 +277,7 @@ struct Background;
 struct StorySequence;
 struct AirTrigger;
 struct Nexus;
+struct ButtonHolder;
 
 struct GameSession : QuadTreeCollider, RayCastHandler
 {

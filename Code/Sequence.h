@@ -216,6 +216,7 @@ struct CrawlerDefeatedSeq : Sequence
 };
 
 
+struct ButtonHolder;
 
 struct BasicMovieSeq : Sequence
 {
@@ -234,6 +235,7 @@ struct BasicMovieSeq : Sequence
 		Count
 	};
 
+	ButtonHolder *startHolder;
 	State state;
 	int stateLength[Count];
 	

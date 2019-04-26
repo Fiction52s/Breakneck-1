@@ -537,6 +537,27 @@ struct GroundTriggerParams : public ActorParams
 	bool facingRight;
 };
 
+struct FlowerPodParams : public ActorParams
+{
+	FlowerPodParams(EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
+		double edgeQuantity,
+		const std::string &typeStr);
+	FlowerPodParams(EditSession *edit,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
+		double edgeQuantity);
+	FlowerPodParams(EditSession *edit);
+	bool CanApply();
+	ActorParams *Copy();
+	void SetParams();
+	void SetPanelInfo();
+	void WriteParamFile(std::ofstream &of);
+	std::string typeStr;
+	bool facingRight;
+};
+
 struct AirTriggerParams : public ActorParams
 {
 	AirTriggerParams(EditSession *edit,

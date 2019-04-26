@@ -1070,6 +1070,7 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 
 void MainMenu::SetMode(Mode m)
 {
+	transFrame = 0;
 	//switch (m)
 	//{
 	//case TRANS_OPTIONS_TO_MAIN:
@@ -2201,6 +2202,7 @@ void MainMenu::HandleMenuMode()
 			case M_ADVENTURE:
 			{
 				SetMode(TRANS_MAIN_TO_SAVE);
+				fader->CrossFade(30, 0, 30, Color::Black);
 				break;
 			}
 			case M_FREE_PLAY:

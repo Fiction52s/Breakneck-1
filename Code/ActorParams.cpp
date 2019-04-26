@@ -2393,3 +2393,67 @@ void AirTriggerParams::Draw(RenderTarget *target)
 	target->draw(triggerRect);
 	
 }
+
+FlowerPodParams::FlowerPodParams(EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, 
+	const std::string &p_typeStr)
+	:ActorParams(PosType::GROUND_ONLY), facingRight(true), typeStr(p_typeStr)
+{
+	type = edit->types["flowerpod"];
+	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+
+	SetBoundingQuad();
+}
+
+FlowerPodParams::FlowerPodParams(EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	:ActorParams(PosType::GROUND_ONLY)
+{
+	type = edit->types["flowerpod"];
+	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+
+	typeStr = "NONE";
+	facingRight = true;
+
+	SetBoundingQuad();
+}
+
+bool FlowerPodParams::CanApply()
+{
+	if (groundInfo != NULL)
+		return true;
+	//hmm not sure about this now
+
+	return false;
+}
+
+void FlowerPodParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+		p->textBoxes["group"]->text.setString(group->name);
+	//p->checkBoxes["clockwise"]->checked = clockwise;
+	p->textBoxes["podtype"]->text.setString(typeStr);
+}
+
+void FlowerPodParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	string s = p->textBoxes["podtype"]->text.getString().toAnsiString();
+
+	typeStr = s;
+
+	//bool right = p->checkBoxes["facingright"]->checked;
+}
+
+void FlowerPodParams::WriteParamFile(ofstream &of)
+{
+	//of << (int)facingRight << endl;
+	of << typeStr << endl;
+}
+
+ActorParams *FlowerPodParams::Copy()
+{
+	FlowerPodParams *copy = new FlowerPodParams(*this);
+	return copy;
+}

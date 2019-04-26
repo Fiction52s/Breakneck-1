@@ -2616,21 +2616,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int amplitude;
 				is >> amplitude;
 
-				FlowerPod *enemy = new FlowerPod(this, "destroygoals", 
+				Cactus *enemy = new Cactus(this, hasMonitor,
 					edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+
 
 				fullEnemyList.push_back(enemy);
 				enem = enemy;
 
 				enemyTree->Insert(enemy);
-
-				/*Cactus *enemy = new Cactus( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, rhythm,
-					amplitude );
-
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
-
-				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "owl" )
 			{
@@ -3155,6 +3148,28 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				AirTrigger *at = new AirTrigger( this,V2d(pos), rectWidth, rectHeight, typeStr);
 				airTriggerTree->Insert(at);
 				fullAirTriggerList.push_back(at);
+			}
+			else if (typeName == "flowerpod")
+			{
+				int terrainIndex;
+				is >> terrainIndex;
+
+				int edgeIndex;
+				is >> edgeIndex;
+
+				double edgeQuantity;
+				is >> edgeQuantity;
+
+				string tType;
+				is >> tType;
+
+				FlowerPod *enemy = new FlowerPod(this, tType,
+					edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+
+				fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);
 			}
 			//w6
 			else if( typeName == "racefighttarget" )
