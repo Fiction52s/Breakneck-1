@@ -114,6 +114,10 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[JUMPSQUAT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
 	tileset[INTRO] = owner->GetTileset("Kin/enter_64x64.png", 64, 64, skin);
 	
+	ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
+	exitAuraSprite.setTexture(*ts_exitAura->texture);
+
+
 	tileset[EXIT] = owner->GetTileset("Kin/exit_64x128.png", 64, 128, skin);
 	tileset[EXITBOOST] = owner->GetTileset("Kin/exit_96x128.png", 96, 128, skin);// kin_exit_128x128.png", 128, 128, skin);
 	tileset[INTROBOOST] = tileset[EXITBOOST];
@@ -1085,7 +1089,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[RIDESHIP] = 1;
 		actionLength[SKYDIVE] = 9 * 2;
 		actionLength[EXIT] = 29 * 2; //16 * 7
-		actionLength[EXITBOOST] = 71 * 2;
+		actionLength[EXITBOOST] = 79 * 2;//71 * 2;
 
 		actionLength[EXITWAIT] = 6 * 3 * 2;
 		actionLength[GRAVREVERSE] = 20;
@@ -18772,6 +18776,13 @@ void Actor::Draw( sf::RenderTarget *target )
 		testAura->Draw(target);
 	}
 	
+	if (showExitAura)
+	{
+		target->draw(exitAuraSprite);
+		//if we add another "extra aura" should just make a single sprite for them, combining
+		//this and dirtyaura
+	}
+
 	{
 
 		//RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
@@ -19324,6 +19335,7 @@ void Actor::SetDirtyAura(bool on)
 void Actor::UpdateSprite()
 {
 	scorpSet = false;
+	showExitAura = false;
 
 	if (ground != NULL)
 	{
@@ -21620,11 +21632,21 @@ void Actor::UpdateSprite()
 		SetSpriteTexture(action);
 
 		SetSpriteTile(frame / 2, facingRight);
-
+		//cout << "f: " << frame / 2 << endl;
 		sprite->setOrigin(sprite->getLocalBounds().width / 2,
 			sprite->getLocalBounds().height / 2);
 		sprite->setPosition(position.x, position.y);//position.x, position.y );
 		sprite->setRotation(0);
+
+		int aF = frame / 2 - 55;
+		if (aF < 61 && aF >= 0)
+		{
+			showExitAura = true;
+			exitAuraSprite.setTextureRect(ts_exitAura->GetSubRect(aF));
+			exitAuraSprite.setOrigin(exitAuraSprite.getLocalBounds().width / 2,
+				exitAuraSprite.getLocalBounds().height / 2);
+			exitAuraSprite.setPosition(sprite->getPosition());
+		}
 		break;
 	}
 	case NEXUSKILL:

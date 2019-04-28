@@ -20,17 +20,26 @@ KinBoostScreen::KinBoostScreen( MainMenu *mm )
 	ts_stars[3] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_stars_01d.png", 1920, 1080);
 
 	ts_kinBoost = mainMenu->tilesetManager.GetTileset("Kin/exit_96x128.png", 96, 128);
+	ts_kinAura = mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
 
 	kinSpr.setTexture(*ts_kinBoost->texture);
 	kinSpr.setTextureRect(ts_kinBoost->GetSubRect(71));
 	kinSpr.setOrigin(kinSpr.getLocalBounds().width / 2, kinSpr.getLocalBounds().height / 2);
 	kinSpr.setPosition(Vector2f(960, 540));
 	kinSpr.setScale(2, 2);
+	
+	kinAuraSpr.setTexture(*ts_kinAura->texture);
+	kinAuraSpr.setTextureRect(ts_kinAura->GetSubRect(0));
+	kinAuraSpr.setOrigin(kinAuraSpr.getLocalBounds().width / 2, kinAuraSpr.getLocalBounds().height / 2);
+	kinAuraSpr.setPosition(kinSpr.getPosition());
+	kinAuraSpr.setScale(kinSpr.getScale());
+	
+
 
 	numCoverTiles = 2;
 
-	kinLoopLength = 39;
-	kinLoopTileStart = 71;
+	kinLoopLength = 22;//39;
+	kinLoopTileStart = 79;
 
 	//load this by streaming it or in another thread while in the boost screen. do not load until running
 	//the gamesession
@@ -89,6 +98,7 @@ void KinBoostScreen::Reset()
 
 void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
 {
+	target->draw(kinAuraSpr);
 	target->draw(kinSpr);
 }
 
@@ -146,7 +156,12 @@ void KinBoostScreen::Update()
 
 		int kFrame = (frame % (kinLoopLength * 2));
 
-		kinSpr.setTextureRect(ts_kinBoost->GetSubRect(kFrame/2 + kinLoopTileStart));
+		int kActual = kFrame / 2 + kinLoopTileStart;
+		kinSpr.setTextureRect(ts_kinBoost->GetSubRect(kActual));
+
+		kinAuraSpr.setTextureRect( ts_kinAura->GetSubRect( kActual - 55 ) );
+
+		//cout << "ff: " << kActual << endl;
 
 		if (state == ENDING && kFrame == kinLoopLength * 2 - 1 )
 		{

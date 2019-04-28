@@ -25,12 +25,14 @@ struct KinBoostScreen
 	sf::Sprite bgShapeSpr;
 	sf::Sprite starSpr[4];
 	sf::Sprite lightSpr[2];
+	sf::Sprite kinAuraSpr;
 	MainMenu *mainMenu;
 	Tileset *ts_stars[4];
 	Tileset *ts_light[2];
 	Tileset *ts_bg;
 	Tileset *ts_bgShape;
 	Tileset *ts_kinBoost;
+	Tileset *ts_kinAura;
 	sf::Sprite kinSpr;
 	int kinLoopLength;
 	int kinLoopTileStart;

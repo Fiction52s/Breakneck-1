@@ -193,6 +193,9 @@ struct Actor : QuadTreeCollider,
 	AirTrigger *currAirTrigger;
 	void HandleAirTrigger();
 
+	sf::Sprite exitAuraSprite;
+	Tileset *ts_exitAura;
+	bool showExitAura;
 
 	//for when you're absorbing a power
 	sf::Sprite dirtyAuraSprite;
