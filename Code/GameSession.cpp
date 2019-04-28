@@ -6180,7 +6180,7 @@ int GameSession::Run()
 
 	if (GetPlayer(0)->action == Actor::INTROBOOST)
 	{
-		Fade(true, 60, Color::Black, true);
+		//Fade(true, 60, Color::Black, true);
 	}
 
 	while( !quit )
@@ -6584,6 +6584,7 @@ int GameSession::Run()
 				//}
 
 				fader->Update();
+				swiper->Update();
 
 				pauseFrames--;
 				//accumulator = 0;
@@ -6874,6 +6875,7 @@ int GameSession::Run()
 				}
 
 				fader->Update();
+				swiper->Update();
 				background->Update();
 				if( topClouds != NULL )
 					topClouds->Update();
@@ -8285,6 +8287,7 @@ int GameSession::Run()
 
 			preScreenTex->setView(uiView);
 			fader->Draw(preScreenTex);
+			swiper->Draw(preScreenTex);
 		}
 
 		if (currBroadcast != NULL)
@@ -8302,11 +8305,12 @@ int GameSession::Run()
 		absorbShardParticles->Draw(preScreenTex);
 		
 		fader->Draw(preScreenTex);
+		swiper->Draw(preScreenTex);
 
 		
 
 		preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
-		if (fader->fadeSkipKin && fader->fadeAlpha > 0 )//IsFading()) //adjust later?
+		if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()) )//IsFading()) //adjust later?
 		{
 			DrawEffects(EffectLayer::IN_FRONT);
 			for (int i = 0; i < 4; ++i)
@@ -8945,6 +8949,7 @@ int GameSession::Run()
 				mainMenu->musicPlayer->Update();
 
 				fader->Update();
+				swiper->Update();
 
 				accumulator -= TIMESTEP;
 			}
@@ -8959,6 +8964,7 @@ int GameSession::Run()
 
 			preScreenTex->setView(uiView);
 			fader->Draw(preScreenTex);
+			swiper->Draw(preScreenTex);
 
 			preTexSprite.setTexture(preScreenTex->getTexture());
 			preTexSprite.setPosition(-960 / 2, -540 / 2);
@@ -9027,6 +9033,7 @@ int GameSession::Run()
 				mainMenu->musicPlayer->Update();
 
 				fader->Update();
+				swiper->Update();
 
 				accumulator -= TIMESTEP;
 
@@ -9055,6 +9062,7 @@ int GameSession::Run()
 
 			
 			fader->Draw(preScreenTex);
+			swiper->Draw(preScreenTex);
 
 			if (showFrameRate)
 			{
@@ -9178,6 +9186,7 @@ void GameSession::Init()
 	LoadDecorImages();
 
 	fader = mainMenu->fader;
+	swiper = mainMenu->swiper;
 
 	mini = NULL;
 

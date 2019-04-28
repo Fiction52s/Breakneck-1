@@ -201,6 +201,20 @@ void TilesetManager::ClearTilesets()
 	}
 }
 
+void TilesetManager::DestroyTileset(Tileset * t)
+{
+	for (auto it = tilesetList.begin(); it != tilesetList.end(); ++it)
+	{
+		if (t == (*it))
+		{
+			tilesetList.remove((*it));
+			break;
+		}
+	}
+
+	delete t;
+}
+
 TilesetManager::~TilesetManager()
 {
 	ClearTilesets();

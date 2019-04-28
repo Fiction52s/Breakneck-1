@@ -115,7 +115,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[INTRO] = owner->GetTileset("Kin/enter_64x64.png", 64, 64, skin);
 	
 	tileset[EXIT] = owner->GetTileset("Kin/exit_64x128.png", 64, 128, skin);
-	tileset[EXITBOOST] = owner->GetTileset("Kin/kin_exit_128x128.png", 128, 128, skin);
+	tileset[EXITBOOST] = owner->GetTileset("Kin/exit_96x128.png", 96, 128, skin);// kin_exit_128x128.png", 128, 128, skin);
 	tileset[INTROBOOST] = tileset[EXITBOOST];
 	tileset[EXITWAIT] = NULL;
 	tileset[GRAVREVERSE] = owner->GetTileset("Kin/grav_64x64.png", 64, 64, skin);
@@ -1091,7 +1091,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[GRAVREVERSE] = 20;
 		actionLength[JUMPSQUAT] = 3;
 		actionLength[INTRO] = 18 * 2;
-		actionLength[INTROBOOST] = 40 * 2;
+		actionLength[INTROBOOST] = 57 * 2;//40 * 2;
 		actionLength[AIRDASH] = 33;//27;
 		actionLength[STEEPSLIDEATTACK] = 16;
 		actionLength[AIRHITSTUN] = 1;
@@ -21595,7 +21595,7 @@ void Actor::UpdateSprite()
 	case INTROBOOST:
 	{
 		SetSpriteTexture(action);
-		SetSpriteTile((frame / 2)+71, facingRight);
+		SetSpriteTile((frame/2 )+110, facingRight);
 
 		sprite->setOrigin(sprite->getLocalBounds().width / 2,
 			sprite->getLocalBounds().height / 2);

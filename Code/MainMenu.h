@@ -459,6 +459,7 @@ struct TitleScreen;
 struct IntroMovie;
 struct MusicPlayer;
 struct Fader;
+struct Swiper;
 
 
 struct MainMenu
@@ -523,6 +524,7 @@ struct MainMenu
 
 
 	Fader *fader;
+	Swiper *swiper;
 	GameRunType gameRunType;
 	SaveFile *GetCurrentProgress();
 	ControlProfileManager *cpm;

@@ -991,6 +991,9 @@ void MainMenu::Init()
 	ts_kinTitle[6] = tilesetManager.GetTileset( "Title/kin_title_7_1216x1080.png", 1216, 1080 );*/
 
 	fader = new Fader;
+	swiper = new Swiper();
+
+	Swiper::LoadSwipeType( this, Swiper::W1);
 	
 
 	soundBuffers[S_DOWN] = soundManager.GetSound( "menu_down.ogg" );
@@ -1584,6 +1587,7 @@ void MainMenu::Run()
 			musicPlayer->Update();
 
 			fader->Update();
+			swiper->Update();
 
 			soundNodeList->Update();
 
@@ -1798,6 +1802,13 @@ void MainMenu::Run()
 		}
 
 		fader->Draw(preScreenTexture);
+		swiper->Draw(preScreenTexture);
+
+		if (menuMode == KINBOOSTLOADINGMAP)
+		{
+			preScreenTexture->setView(v);
+			kinBoostScreen->DrawLateKin(preScreenTexture);
+		}
 
 #if defined( USE_MOVIE_TEST )
 		preScreenTexture->draw(m);// , &sh);
@@ -1825,7 +1836,6 @@ void DispLoadTest( MainMenu *mm )
 		//win->clear(Color::Green);
 
 		
-		//mm->fader->Update();
 		mm->loadingIconBackpack[1].rotate(-1);
 		mm->loadingIconBackpack[2].rotate(2);
 
@@ -1835,7 +1845,7 @@ void DispLoadTest( MainMenu *mm )
 			pTex->draw(mm->loadingIconBackpack[i]);
 
 		mm->fader->Draw(pTex);
-
+		mm->swiper->Draw(pTex);
 		pTex->display();
 		sf::Sprite spr;
 		spr.setTexture(pTex->getTexture());
@@ -2202,7 +2212,8 @@ void MainMenu::HandleMenuMode()
 			case M_ADVENTURE:
 			{
 				SetMode(TRANS_MAIN_TO_SAVE);
-				fader->CrossFade(30, 0, 30, Color::Black);
+				swiper->Swipe(Swiper::SwipeType::W1, 15);
+				//fader->CrossFade(30, 0, 30, Color::Black);
 				break;
 			}
 			case M_FREE_PLAY:
@@ -2470,19 +2481,39 @@ void MainMenu::HandleMenuMode()
 			}
 		}
 
-		if ( kinBoostScreen->levName == "" && loadThread == NULL && deadThread == NULL)
+		if (swiper->IsPostWipe())
 		{
-			//window->setVerticalSyncEnabled(true);
 			gameRunType = GRT_ADVENTURE;
-			SetMode( RUNNINGMAP );
+			SetMode(RUNNINGMAP);
+		}
+		else if (kinBoostScreen->IsEnded() && !swiper->IsSwiping())
+		{
+			//gameRunType = GRT_ADVENTURE;
+			//SetMode(RUNNINGMAP);
+			swiper->Swipe(Swiper::W1, 15, true);
+			//kinBoostScreen->Update();
+		}
+		else if ( kinBoostScreen->levName == "" && loadThread == NULL && deadThread == NULL && kinBoostScreen->IsBoosting())
+		{
+			//gameRunType = GRT_ADVENTURE;
+			//SetMode(RUNNINGMAP);
+			kinBoostScreen->End();
 			
+			//gameRunType = GRT_ADVENTURE;
+			//SetMode(RUNNINGMAP);
+			//window->setVerticalSyncEnabled(true);
+			//kinBoostScreen->
+			//kinBoostScreen->End();
+			
+			
+			//swiper->Swipe(Swiper::W1, 15);
 			//return HandleMenuMode();
 		}
 		else
 		{
-			kinBoostScreen->Update();
+			//kinBoostScreen->Update();
 
-			if (kinBoostScreen->frame == 60)
+			if (kinBoostScreen->frame == 60 && kinBoostScreen->IsBoosting() )
 			{
 				//window->setVerticalSyncEnabled(false);
 				//window->setFramerateLimit(60);
@@ -2493,6 +2524,7 @@ void MainMenu::HandleMenuMode()
 			}
 			
 		}
+		kinBoostScreen->Update();
 		break;
 	}
 

@@ -23,6 +23,7 @@ struct TilesetManager
 	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
 		sf::Color *startColorBuf, sf::Color *endColorBuf);
 	void ClearTilesets();
+	void DestroyTileset(Tileset * t);
 
 	sf::Texture *CreateAltColorTex( sf::Image &im,
 		int numAltColors, 

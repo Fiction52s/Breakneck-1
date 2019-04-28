@@ -339,6 +339,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void ClearFade();
 
 	Fader *fader;
+	Swiper *swiper;
 	Minimap *mini;
 	void DrawStoryLayer(EffectLayer ef);
 	SoundNode *ActivateSound( V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
