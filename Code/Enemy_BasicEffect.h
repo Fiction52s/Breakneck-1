@@ -28,6 +28,7 @@ struct BasicEffect : Enemy
 	bool facingRight;
 	EffectLayer layer;
 	int stored_frame;
+	int startFrame;
 	//sf::Vector2<double> position;
 };
 

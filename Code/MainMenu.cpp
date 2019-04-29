@@ -1910,7 +1910,9 @@ void MainMenu::SetModeLoadingMap( int wIndex )
 
 void MainMenu::SetModeKinBoostLoadingMap(int variation)
 {
-	fader->Clear();
+	//fader->Clear();
+	//fader->
+	//swiper->Swipe(Swiper::W1, 15, true);
 	SetMode(KINBOOSTLOADINGMAP);
 	//preScreenTexture->setView(v);
 	//wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
@@ -2481,17 +2483,12 @@ void MainMenu::HandleMenuMode()
 			}
 		}
 
-		if (swiper->IsPostWipe())
+		if (kinBoostScreen->IsEnded())//swiper->IsPostWipe())
 		{
+			//mainMenu->fader->Fade(true, 30, Color::Black, true);
+			fader->Fade(true, 30, Color::Black, true);
 			gameRunType = GRT_ADVENTURE;
 			SetMode(RUNNINGMAP);
-		}
-		else if (kinBoostScreen->IsEnded() && !swiper->IsSwiping())
-		{
-			//gameRunType = GRT_ADVENTURE;
-			//SetMode(RUNNINGMAP);
-			swiper->Swipe(Swiper::W1, 15, true);
-			//kinBoostScreen->Update();
 		}
 		else if ( kinBoostScreen->levName == "" && loadThread == NULL && deadThread == NULL && kinBoostScreen->IsBoosting())
 		{

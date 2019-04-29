@@ -1184,6 +1184,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		grindActionLength = 32;
 		//SetActionExpr( SPAWNWAIT );
 		SetActionExpr(INTROBOOST);//INTRO
+		
+		
+
 		frame = 0;
 		
 		timeSlowStrength = 5;
@@ -2157,6 +2160,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	
+
 	kinMask->Reset();
 	SetDirtyAura(false);
 
@@ -2766,15 +2771,19 @@ void Actor::UpdatePrePhysics()
 		
 		if( !owner->scoreDisplay->active )
 		{
-			owner->Fade(false, 30, Color::Black, true);
+			
 			//SetAction(EXIT);
 
 			if (owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
 			{
 				SetAction(EXITBOOST);
+				owner->Fade(false, 30, Color::Black, true);
 			}
 			else
+			{
 				SetAction(EXIT);
+				owner->Fade(false, 30, Color::Black, true);
+			}
 
 			//position = V2d(owner->goalNodePos.x, owner->goalNodePos.y -80.f);
 			frame = 0;
@@ -21606,6 +21615,16 @@ void Actor::UpdateSprite()
 		}
 	case INTROBOOST:
 	{
+		if (frame == 0 && slowCounter == 1)
+		{
+			owner->ActivateEffect(EffectLayer::IN_FRONT, ts_exitAura, position, false, 0, 8, 2, true, 55);
+			owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 19, 2, true);
+			owner->cam.SetManual(true);
+		}
+		else if (frame == 20)
+		{
+			owner->cam.SetManual(false);
+		}
 		SetSpriteTexture(action);
 		SetSpriteTile((frame/2 )+110, facingRight);
 
@@ -23770,6 +23789,7 @@ void Actor::SetActionExpr( Action a )
 		frame = 0;
 		break;
 	}
+	
 		
 	}
 

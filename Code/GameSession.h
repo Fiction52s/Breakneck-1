@@ -639,15 +639,16 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void GameStartMovie();
 
 	void AllocateEffect();
-	BasicEffect * ActivateEffect( 
+	BasicEffect * ActivateEffect(
 		EffectLayer layer,
-		Tileset *ts, 
-		sf::Vector2<double> pos, 
+		Tileset *ts,
+		sf::Vector2<double> pos,
 		bool pauseImmune,
-		double angle, 
+		double angle,
 		int frameCount,
 		int animationFactor,
 		bool right,
+		int startFrame = 0,
 		float depth = 1.f);
 	void AllocateLight();
 	Light * ActivateLight( int radius,  int brightness, const sf::Color color );

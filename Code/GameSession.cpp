@@ -10298,12 +10298,7 @@ void GameSession::RestartLevel()
 		cam.offset = Vector2f( 0, 0 );
 	}*/
 
-	for( int i = 0; i < 4; ++i )
-	{
-		Actor *player = GetPlayer( i );
-		if( player != NULL )
-			player->Respawn();
-	}
+	
 
 	absorbParticles->Reset();
 	absorbDarkParticles->Reset();
@@ -10352,6 +10347,12 @@ void GameSession::RestartLevel()
 
 	cam.SetManual( false );
 
+	for (int i = 0; i < 4; ++i)
+	{
+		Actor *player = GetPlayer(i);
+		if (player != NULL)
+			player->Respawn();
+	}
 	
 	//inGameClock.restart();
 }
@@ -12900,7 +12901,7 @@ void GameSession::AllocateLight()
 }
 
 BasicEffect * GameSession::ActivateEffect( EffectLayer layer, Tileset *ts, V2d pos, bool pauseImmune, double angle, int frameCount,
-	int animationFactor, bool right, float depth )
+	int animationFactor, bool right, int startFrame, float depth )
 {
 	if( inactiveEffects == NULL )
 	{
@@ -12923,11 +12924,13 @@ BasicEffect * GameSession::ActivateEffect( EffectLayer layer, Tileset *ts, V2d p
 		}
 
 		//assert( ts != NULL );
+		b->startFrame = startFrame;
 		b->Init( ts, pos, angle, frameCount, animationFactor, right, depth );
 		b->prev = NULL;
 		b->next = NULL;
 		b->pauseImmune = pauseImmune;
 		b->layer = layer;
+		
 
 		AddEffect( layer, b );
 		//AddEnemy( b );

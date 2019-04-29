@@ -24,6 +24,7 @@ struct Fader
 	void CrossFade(int fadeOutFrames,
 		int pauseFrames, int fadeInFrames,
 		sf::Color c, bool skipKin = false);
+	bool IsFullyFadedOut();
 	bool IsFading();
 	void Update();
 	void Clear();

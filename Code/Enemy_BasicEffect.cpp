@@ -54,7 +54,7 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 
 	//pos /= (double)depth;
 
-	sf::IntRect ir = t->GetSubRect( 0 );		
+	sf::IntRect ir = t->GetSubRect( startFrame );		
 
 	if( facingRight )
 	{
@@ -96,7 +96,7 @@ void BasicEffect::EnemyDraw(sf::RenderTarget *target )
 
 void BasicEffect::UpdateSprite()
 {
-	sf::IntRect ir = ts->GetSubRect(frame / animationFactor);
+	sf::IntRect ir = ts->GetSubRect(frame / animationFactor + startFrame);
 
 	if (facingRight)
 	{

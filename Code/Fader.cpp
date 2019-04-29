@@ -45,6 +45,11 @@ void Fader::CrossFade(int fadeOutFrames, int pauseFrames, int fadeInFrames, sf::
 	Fade(false, fadeOutFrames, c, skipKin);
 }
 
+bool Fader::IsFullyFadedOut()
+{
+	return fadeAlpha == 255;
+}
+
 void Fader::Reset()
 {
 	fadeLength = 0;
@@ -71,8 +76,6 @@ void Fader::Clear()
 
 void Fader::Update()
 {
-	
-
 	if (!fadingIn && !fadingOut)
 		return;
 	//cout << "fade frame: " << fadeFrame << endl;
