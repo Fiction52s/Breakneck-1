@@ -667,14 +667,30 @@ void IndEffectInstance::SetTileset(Tileset *p_ts)
 
 void IndEffectInstance::SetColor(sf::Color &c)
 {
-	sprite.setColor(c);
+	SetRectColor(quad, c);
 }
 
 void IndEffectInstance::ApplyTransform()
 {
 	assert(ts != NULL);
-	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(startTile));
+
+	float width = ts->tileWidth;
+	float height = ts->tileHeight;
+	Vector2f p[4];
+	p[0] = Vector2f(-width / 2.f, -height / 2.f);
+	p[1] = Vector2f(+width / 2.f, -height / 2.f);
+	p[2] = Vector2f(+width / 2.f, +height / 2.f);
+	p[3] = Vector2f(-width / 2.f, +height / 2.f);
+
+	for (int i = 0; i < 4; ++i)
+	{
+		p[i] = tr.transformPoint(p[i]);
+		quad[i].position = pos + p[i];
+	}
+	//SetRectSubRect()
+	//SetRectCenter(quad, ts->tileWidth / 2, ts->tileHeight / 2, pos);
+	//SetRectSubRect(quad, ts->GetSubRect(startTile));
+	//TransformRect(quad, tr);
 }
 
 Tileset *IndEffectInstance::GetTileset()
@@ -685,15 +701,15 @@ Tileset *IndEffectInstance::GetTileset()
 
 void IndEffectInstance::Draw(sf::RenderTarget * target)
 {
-	target->draw(sprite);
+	target->draw(quad, 4, sf::Quads, ts->texture );
 }
 
 void IndEffectInstance::SetSubRect(sf::IntRect &ir)
 {
-	sprite.setTextureRect(ir);
+	SetRectSubRect(quad, ir);
 }
 
 void IndEffectInstance::Clear()
 {
-
+	ClearRect( quad );
 }

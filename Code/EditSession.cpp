@@ -6877,7 +6877,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		testPoint.x = worldPos.x;
 		testPoint.y = worldPos.y;
-		int borderMove = 1000;
+		int borderMove = 100;
 		sf::Event ev;
 		while( w->pollEvent( ev ) )
 		{

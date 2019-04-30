@@ -58,5 +58,7 @@ void SetRectRotation(sf::Vertex *v,
 	sf::Vector2f &origin,
 	bool flipHoriz = false,
 	bool flipVert = false );
+void TransformRect(sf::Vertex *v, sf::Transform &tr);
+void ClearRect( sf::Vertex *v );
 
 #endif

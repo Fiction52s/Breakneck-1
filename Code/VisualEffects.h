@@ -53,7 +53,8 @@ struct EffectInstance : PoolMember
 	int startTile;
 	sf::Vector2f vel;
 	sf::Vector2f accel;
-	sf::Transform tr; 
+	sf::Transform tr;
+
 	sf::Vector2f pos;
 	float maxVel;
 	EffectPool *parent;
@@ -62,7 +63,7 @@ struct EffectInstance : PoolMember
 struct IndEffectInstance : EffectInstance
 {
 	IndEffectInstance();
-	sf::Sprite sprite;
+	sf::Vertex quad[4];
 	void SetTileset(Tileset *ts);
 	void ApplyTransform();
 	Tileset *GetTileset();

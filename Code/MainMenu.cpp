@@ -2249,8 +2249,8 @@ void MainMenu::HandleMenuMode()
 			case M_ADVENTURE:
 			{
 				SetMode(TRANS_MAIN_TO_SAVE);
-				swiper->Swipe(Swiper::SwipeType::W1, 15);
-				//fader->CrossFade(30, 0, 30, Color::Black);
+				//swiper->Swipe(Swiper::SwipeType::W1, 15);
+				fader->CrossFade(30, 0, 30, Color::Black);
 				break;
 			}
 			case M_FREE_PLAY:

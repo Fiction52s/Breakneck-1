@@ -1,6 +1,7 @@
 #include "KinBoostScreen.h"
 #include "MainMenu.h"
 #include "Fader.h"
+#include "VectorMath.h" 
 
 using namespace std;
 using namespace sf;
@@ -174,6 +175,12 @@ void KinBoostScreen::Update()
 
 		float facBack = fBack / (scrollFramesBack);
 		float facFront = fFront / (scrollFramesFront);*/
+
+		if (frame == 4)
+		{
+			//mainMenu->ActivateIndEffect(
+			//	mainMenu->tilesetManager.GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), V2d(960, 540), false, 0, 6, 2, true);
+		}
 
 		for (int i = 0; i < 4; ++i)
 		{

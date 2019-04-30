@@ -320,6 +320,22 @@ void SetRectCenter(sf::Vertex *v, float width, float height,
 	v[3].position = origin + Vector2f(-width / 2, height / 2);
 }
 
+void TransformRect(sf::Vertex *v, sf::Transform &tr)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		v[i].position = tr.transformPoint(v[i].position);
+	}
+}
+
+void ClearRect(sf::Vertex *v)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		v[i].position = Vector2f(0, 0);
+	}
+}
+
 void SetRectColor(sf::Vertex *v, sf::Color &c)
 {
 	v[0].color = c;
