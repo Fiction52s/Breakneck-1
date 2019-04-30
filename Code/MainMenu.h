@@ -27,6 +27,8 @@ struct PauseMenu;
 struct LevelSelector;
 struct MusicInfo;
 
+struct EffectPool;
+
 struct CustomMapsHandler : GUIHandler
 {
 	//LevelSelector &ls;
@@ -522,7 +524,9 @@ struct MainMenu
 		GRT_FREEPLAY
 	};
 
-
+	EffectPool *indEffectPool;
+	void DrawEffects( sf::RenderTarget *target );
+	void UpdateEffects();
 	Fader *fader;
 	Swiper *swiper;
 	GameRunType gameRunType;

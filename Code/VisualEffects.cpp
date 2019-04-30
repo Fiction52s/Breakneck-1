@@ -23,8 +23,17 @@ EffectPool::EffectPool(EffectType et, int p_maxNumFX, float p_depth )
 	:ObjectPool(), maxNumFX( p_maxNumFX ), depth( p_depth )
 {
 	eType = et;
-	va = new Vertex[maxNumFX * 4];
-	memset(va, 0, sizeof(va));
+
+	if (eType != FX_IND)
+	{
+		va = new Vertex[maxNumFX * 4];
+		memset(va, 0, sizeof(va));
+	}
+	else
+	{
+		va = NULL;
+	}
+	
 	effectShader = NULL;
 
 	EffectInstance *ei = NULL;
@@ -37,6 +46,9 @@ EffectPool::EffectPool(EffectType et, int p_maxNumFX, float p_depth )
 			break;
 		case FX_RELATIVE:
 			ei = new RelEffectInstance(this, i);
+			break;
+		case FX_IND:
+			ei = new IndEffectInstance;
 			break;
 		default:
 			ei = new EffectInstance(this, i);
@@ -51,7 +63,8 @@ EffectPool::EffectPool(EffectType et, int p_maxNumFX, float p_depth )
 EffectPool::~EffectPool()
 {
 	DestroyAllMembers();
-	delete[] va;
+	if( va != NULL )
+		delete[] va;
 }
 
 void EffectPool::SetTileset(Tileset *p_ts)
@@ -74,6 +87,7 @@ void EffectPool::Update(EffectPoolUpdater *epu)
 {
 	switch (eType)
 	{
+	case FX_IND:
 	case FX_REGULAR:
 	{
 		EffectInstance *ei = (EffectInstance*)activeListStart;
@@ -135,6 +149,26 @@ EffectInstance* EffectPool::ActivateEffect( EffectInstance *params )
 	
 }
 
+IndEffectInstance * EffectPool::ActivateIndEffect(EffectInstance *params,
+	Tileset *p_ts)
+{
+	assert(eType == FX_IND);
+
+	IndEffectInstance *ei = (IndEffectInstance*)ActivatePoolMember();
+
+
+	if (ei == NULL)
+	{
+		return NULL;
+		//cout << "cannot produce effect!" << endl;
+		//assert(ei != NULL);
+	}
+
+	ei->parent = this;
+	ei->SetTileset(p_ts);
+	ei->InitFromParams(params);
+}
+
 void EffectPool::Draw(sf::RenderTarget *target)
 {
 	sf::View oldView = target->getView();
@@ -148,18 +182,36 @@ void EffectPool::Draw(sf::RenderTarget *target)
 		target->setView(newView);
 	}
 
-	RenderStates rs;
-	rs.texture = ts->texture;
-
-	assert(ts != NULL);
-	if (effectShader == NULL)
+	if (eType != FX_IND)
 	{
-		target->draw(va, maxNumFX * 4, sf::Quads, rs);
+		RenderStates rs;
+		rs.texture = ts->texture;
+
+		assert(ts != NULL);
+		if (effectShader == NULL)
+		{
+			target->draw(va, maxNumFX * 4, sf::Quads, rs);
+		}
+		else
+		{
+			target->draw(va, maxNumFX * 4, sf::Quads, effectShader);
+		}
 	}
 	else
 	{
-		target->draw(va, maxNumFX * 4, sf::Quads, effectShader );
+		IndEffectInstance *ei = (IndEffectInstance*)activeListStart;
+		IndEffectInstance *tNext = NULL;
+		while (ei != NULL)
+		{
+			tNext = (IndEffectInstance*)ei->pmnext;
+
+			ei->Draw( target );
+
+			ei = tNext;
+		}
 	}
+	
+	
 
 	if (depth != 1.f)
 	{
@@ -201,11 +253,15 @@ void EffectInstance::Init( sf::Vector2f &p_pos, sf::Transform &p_tr, int p_frame
 	accel = Vector2f(0, 0);
 	frame = 0;
 	SetParams(p_pos, p_tr, p_frameCount, p_animFactor, p_startTile);
+	
+	ApplyTransform();
+}
+
+void EffectInstance::ApplyTransform()
+{
 	float width = parent->ts->tileWidth;
 	float height = parent->ts->tileHeight;
-
 	Vector2f p[4];
-
 	p[0] = Vector2f(-width / 2.f, -height / 2.f);
 	p[1] = Vector2f(+width / 2.f, -height / 2.f);
 	p[2] = Vector2f(+width / 2.f, +height / 2.f);
@@ -227,6 +283,8 @@ void EffectInstance::Clear()
 	
 }
 
+
+
 void EffectInstance::SetVelocityParams(sf::Vector2f &p_vel,
 	sf::Vector2f &p_accel, float p_maxVel )
 {
@@ -235,11 +293,25 @@ void EffectInstance::SetVelocityParams(sf::Vector2f &p_vel,
 	maxVel = p_maxVel;
 }
 
+Tileset *EffectInstance::GetTileset()
+{
+	return parent->ts;
+}
+
+
+void EffectInstance::SetSubRect(IntRect &sub)
+{
+	parent->va[index * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
+	parent->va[index * 4 + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
+	parent->va[index * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
+	parent->va[index * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+}
+
 bool EffectInstance::Update()
 {
 	if (frame < 0)
 	{
-		int f = 10;
+		int f = 10; //wtf is this
 	}
 	if (frame == frameCount * animFactor )
 	{
@@ -248,33 +320,14 @@ bool EffectInstance::Update()
 		return false;
 	}
 
-	IntRect sub = parent->ts->GetSubRect(frame / animFactor + startTile);
-
-	parent->va[index * 4 + 0].texCoords = Vector2f( sub.left, sub.top );
-	parent->va[index * 4 + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
-	parent->va[index * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
-	parent->va[index * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);
-
-
-	float width = parent->ts->tileWidth;
-	float height = parent->ts->tileHeight;
-
-	Vector2f p[4];
-
-	p[0] = Vector2f(-width / 2.f, -height / 2.f);
-	p[1] = Vector2f(+width / 2.f, -height / 2.f);
-	p[2] = Vector2f(+width / 2.f, +height / 2.f);
-	p[3] = Vector2f(-width / 2.f, +height / 2.f);
+	IntRect sub = GetTileset()->GetSubRect(frame / animFactor + startTile);
+	SetSubRect(sub);
+	
 
 	if (vel.x != 0 || vel.y != 0)
 	{
 		pos += vel;
-
-		for (int i = 0; i < 4; ++i)
-		{
-			p[i] = tr.transformPoint(p[i]);
-			parent->va[index * 4 + i].position = pos + p[i];
-		}
+		ApplyTransform();
 	}
 
 	vel += accel;
@@ -596,4 +649,47 @@ void RisingParticleUpdater::UpdateEffect(EffectInstance *ei)
 	f = 1.0 - f;
 	Color  testC = Color(255, 255, 255, 100 * f);
 	ei->SetColor(testC);
+}
+
+IndEffectInstance::IndEffectInstance()
+	:EffectInstance()
+{
+
+}
+
+void IndEffectInstance::SetTileset(Tileset *p_ts)
+{
+	ts = p_ts;
+}
+
+void IndEffectInstance::SetColor(sf::Color &c)
+{
+	sprite.setColor(c);
+}
+
+void IndEffectInstance::ApplyTransform()
+{
+	assert(ts != NULL);
+	sprite.setTexture(*ts->texture);
+	sprite.setTextureRect(ts->GetSubRect(startTile));
+}
+
+Tileset *IndEffectInstance::GetTileset()
+{
+	return ts;
+}
+
+void IndEffectInstance::Draw(sf::RenderTarget * target)
+{
+	target->draw(sprite);
+}
+
+void IndEffectInstance::SetSubRect(sf::IntRect &ir)
+{
+	sprite.setTextureRect(ir);
+}
+
+void IndEffectInstance::Clear()
+{
+
 }

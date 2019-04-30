@@ -13,7 +13,7 @@
 #include "AirParticles.h"
 #include "Movement.h"
 #include "Gate.h"
-#include "VisualEffects.h"
+
 
 struct AirTrigger;
 struct Gate;
@@ -172,6 +172,8 @@ struct GroundTrigger;
 
 struct KinMask;
 struct KinRing;
+struct RisingParticleUpdater;
+struct EffectPool;
 
 struct Actor : QuadTreeCollider,
 	RayCastHandler
@@ -186,7 +188,7 @@ struct Actor : QuadTreeCollider,
 	KinRing *kinRing;
 
 	EffectPool *dustParticles;
-	RisingParticleUpdater rpu;
+	RisingParticleUpdater *rpu;
 	void HandleGroundTrigger(GroundTrigger *trigger);
 	GroundTrigger *storedTrigger;
 

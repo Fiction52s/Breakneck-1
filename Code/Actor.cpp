@@ -27,6 +27,7 @@
 #include "AirTrigger.h"
 #include "Nexus.h"
 #include "HUD.h"
+#include "VisualEffects.h"
 
 using namespace sf;
 using namespace std;
@@ -258,8 +259,9 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 }
 
 Actor::Actor( GameSession *gs, int p_actorIndex )
-	:owner( gs ), dead( false ), actorIndex( p_actorIndex ),rpu(this)
+	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+	rpu = new RisingParticleUpdater( this );
 	//hitCeilingLockoutFrames = 20;
 	totalHealth = 3600;
 	storedTrigger = NULL;
@@ -1497,6 +1499,7 @@ Actor::~Actor()
 {
 	//delete skin;
 	//delete swordSkin;
+	delete rpu;
 
 	list<Vector2f> *currP = NULL;
 	for (int i = 0; i < 3; ++i)

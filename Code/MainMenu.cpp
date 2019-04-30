@@ -24,6 +24,7 @@
 #include "TerrainRender.h"
 #include "MusicPlayer.h"
 #include "Fader.h"
+#include "VisualEffects.h"
 
 using namespace std;
 using namespace sf;
@@ -995,6 +996,9 @@ void MainMenu::Init()
 
 	Swiper::LoadSwipeType( this, Swiper::W1);
 	
+	indEffectPool = new EffectPool(EffectType::FX_IND, 4);
+	indEffectPool->Reset();
+
 
 	soundBuffers[S_DOWN] = soundManager.GetSound( "menu_down.ogg" );
 	soundBuffers[S_UP] = soundManager.GetSound( "menu_up.ogg" );
@@ -1013,6 +1017,16 @@ void MainMenu::Init()
 
 	//asteroidFrame = 0;
 	
+}
+
+void MainMenu::DrawEffects( RenderTarget *target )
+{
+	indEffectPool->Draw(target);
+}
+
+void MainMenu::UpdateEffects()
+{
+	indEffectPool->Update();
 }
 
 void MainMenu::GameEditLoop( const std::string &p_path )
@@ -1591,6 +1605,8 @@ void MainMenu::Run()
 
 			soundNodeList->Update();
 
+			UpdateEffects();
+
 			accumulator -= TIMESTEP;
 		}
 
@@ -1803,6 +1819,8 @@ void MainMenu::Run()
 
 		fader->Draw(preScreenTexture);
 		swiper->Draw(preScreenTexture);
+		DrawEffects(preScreenTexture);
+
 
 		if (menuMode == KINBOOSTLOADINGMAP)
 		{
@@ -2980,6 +2998,8 @@ void MainMenu::HandleMenuMode()
 	}
 
 	}
+
+	
 	++modeFrame;
 }
 
@@ -4529,6 +4549,8 @@ void MapSelectionMenu::Draw(sf::RenderTarget *target)
 	{
 		ghostSelector->Draw(target);
 	}
+
+	
 }
 
 #include <fstream>

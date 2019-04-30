@@ -2,6 +2,7 @@
 #define __ENEMY_CACTUS_H__
 
 #include "Enemy.h"
+#include "ObjectPool.h"
 
 struct Cactus;
 struct CactusShotgun : Enemy, LauncherEnemy, PoolMember

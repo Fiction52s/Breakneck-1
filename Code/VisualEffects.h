@@ -12,8 +12,12 @@ enum EffectType
 {
 	FX_REGULAR,
 	FX_RELATIVE,
+	FX_IND,
 	FX_Count
 };
+
+
+
 
 struct EffectInstance : PoolMember
 {
@@ -33,15 +37,18 @@ struct EffectInstance : PoolMember
 		int p_frameCount, 
 		int p_animFactor, 
 		int p_startTile);
+	virtual void ApplyTransform();
 	virtual void SetVelocityParams(sf::Vector2f &vel,
 		sf::Vector2f &accel, float maxVelocity );
-	void Clear();
+	virtual void Clear();
+	virtual Tileset *GetTileset();
+	virtual void SetSubRect(sf::IntRect &ir);
 	virtual bool Update();
-	void SetColor(sf::Color &c);
+	virtual void SetColor(sf::Color &c);
 	int frame;
 	sf::Color color;
 	int animFactor;
-	int startFrame;
+	//int startFrame;
 	int frameCount;
 	int startTile;
 	sf::Vector2f vel;
@@ -50,6 +57,21 @@ struct EffectInstance : PoolMember
 	sf::Vector2f pos;
 	float maxVel;
 	EffectPool *parent;
+};
+
+struct IndEffectInstance : EffectInstance
+{
+	IndEffectInstance();
+	sf::Sprite sprite;
+	void SetTileset(Tileset *ts);
+	void ApplyTransform();
+	Tileset *GetTileset();
+	void SetColor(sf::Color &c);
+	void Draw(sf::RenderTarget * target);
+	void SetSubRect(sf::IntRect &ir);
+	void Clear();
+	Tileset *ts;
+	//float depth;
 };
 
 struct RelEffectInstance : EffectInstance
@@ -99,6 +121,8 @@ struct EffectPool : ObjectPool
 	void DeactivateMember(PoolMember *pm);
 	void SetTileset(Tileset *ts);
 	virtual EffectInstance * ActivateEffect( EffectInstance *params );
+	virtual IndEffectInstance * ActivateIndEffect(EffectInstance *params,
+		Tileset *ts );
 	void Draw( sf::RenderTarget *target );
 	Tileset *ts;
 	sf::Vertex *va;
