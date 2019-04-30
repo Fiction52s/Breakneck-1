@@ -527,6 +527,15 @@ struct MainMenu
 	EffectPool *indEffectPool;
 	void DrawEffects( sf::RenderTarget *target );
 	void UpdateEffects();
+	void ActivateIndEffect(
+			Tileset *ts,
+			sf::Vector2<double> pos,
+			bool pauseImmune,
+			double angle,
+			int frameCount,
+			int animationFactor,
+			bool right,
+			int startFrame = 0 );
 	Fader *fader;
 	Swiper *swiper;
 	GameRunType gameRunType;

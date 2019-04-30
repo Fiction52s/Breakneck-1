@@ -6585,6 +6585,7 @@ int GameSession::Run()
 
 				fader->Update();
 				swiper->Update();
+				mainMenu->UpdateEffects();
 
 				pauseFrames--;
 				//accumulator = 0;
@@ -6880,6 +6881,8 @@ int GameSession::Run()
 				if( topClouds != NULL )
 					topClouds->Update();
 				//rain.Update();
+
+				mainMenu->UpdateEffects();
 
 				testPar->Update( camPos );
 
@@ -8288,6 +8291,8 @@ int GameSession::Run()
 			preScreenTex->setView(uiView);
 			fader->Draw(preScreenTex);
 			swiper->Draw(preScreenTex);
+
+			mainMenu->DrawEffects(preScreenTex);
 		}
 
 		if (currBroadcast != NULL)
@@ -8307,7 +8312,7 @@ int GameSession::Run()
 		fader->Draw(preScreenTex);
 		swiper->Draw(preScreenTex);
 
-		
+		mainMenu->DrawEffects(preScreenTex);
 
 		preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
 		if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()) )//IsFading()) //adjust later?
@@ -8950,7 +8955,7 @@ int GameSession::Run()
 
 				fader->Update();
 				swiper->Update();
-
+				mainMenu->UpdateEffects();
 				accumulator -= TIMESTEP;
 			}
 
@@ -8965,6 +8970,8 @@ int GameSession::Run()
 			preScreenTex->setView(uiView);
 			fader->Draw(preScreenTex);
 			swiper->Draw(preScreenTex);
+
+			mainMenu->DrawEffects(preScreenTex);
 
 			preTexSprite.setTexture(preScreenTex->getTexture());
 			preTexSprite.setPosition(-960 / 2, -540 / 2);
@@ -9034,6 +9041,7 @@ int GameSession::Run()
 
 				fader->Update();
 				swiper->Update();
+				mainMenu->UpdateEffects();
 
 				accumulator -= TIMESTEP;
 
@@ -9063,6 +9071,8 @@ int GameSession::Run()
 			
 			fader->Draw(preScreenTex);
 			swiper->Draw(preScreenTex);
+
+			mainMenu->DrawEffects(preScreenTex);
 
 			if (showFrameRate)
 			{

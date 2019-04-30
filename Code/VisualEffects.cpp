@@ -171,17 +171,6 @@ IndEffectInstance * EffectPool::ActivateIndEffect(EffectInstance *params,
 
 void EffectPool::Draw(sf::RenderTarget *target)
 {
-	sf::View oldView = target->getView();
-	if (depth != 1.f)
-	{	
-		sf::View newView;
-		float oldFactor = oldView.getSize().x / 1920.f;
-		float newFactor = depth;
-		newView.setCenter(oldView.getCenter() / depth);
-		newView.setSize(Vector2f(1920, 1080) * newFactor * oldFactor);
-		target->setView(newView);
-	}
-
 	if (eType != FX_IND)
 	{
 		RenderStates rs;
@@ -199,6 +188,16 @@ void EffectPool::Draw(sf::RenderTarget *target)
 	}
 	else
 	{
+		sf::View oldView = target->getView();
+		if (depth != 1.f)
+		{
+			sf::View newView;
+			float oldFactor = oldView.getSize().x / 1920.f;
+			float newFactor = depth;
+			newView.setCenter(oldView.getCenter() / depth);
+			newView.setSize(Vector2f(1920, 1080) * newFactor * oldFactor);
+			target->setView(newView);
+		}
 		IndEffectInstance *ei = (IndEffectInstance*)activeListStart;
 		IndEffectInstance *tNext = NULL;
 		while (ei != NULL)
@@ -209,14 +208,16 @@ void EffectPool::Draw(sf::RenderTarget *target)
 
 			ei = tNext;
 		}
+
+		if (depth != 1.f)
+		{
+			target->setView(oldView);
+		}
 	}
 	
 	
 
-	if (depth != 1.f)
-	{
-		target->setView(oldView);
-	}
+	
 }
 
 void EffectInstance::SetParams( sf::Vector2f &p_pos, sf::Transform &p_tr, int p_frameCount, int p_animFactor, int p_startTile )
@@ -320,7 +321,9 @@ bool EffectInstance::Update()
 		return false;
 	}
 
-	IntRect sub = GetTileset()->GetSubRect(frame / animFactor + startTile);
+	int s = frame / animFactor + startTile;
+	Tileset *t_ts = GetTileset();
+	IntRect sub = t_ts->GetSubRect(s);
 	SetSubRect(sub);
 	
 
@@ -654,7 +657,7 @@ void RisingParticleUpdater::UpdateEffect(EffectInstance *ei)
 IndEffectInstance::IndEffectInstance()
 	:EffectInstance()
 {
-
+	ts = NULL;
 }
 
 void IndEffectInstance::SetTileset(Tileset *p_ts)
@@ -676,6 +679,7 @@ void IndEffectInstance::ApplyTransform()
 
 Tileset *IndEffectInstance::GetTileset()
 {
+	assert(ts != NULL);
 	return ts;
 }
 

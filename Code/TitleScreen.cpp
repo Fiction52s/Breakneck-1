@@ -171,19 +171,7 @@ void TitleScreen::Update()
 		kinSpr.setTextureRect(ts_kin->GetSubRect(0));
 	}
 	
-	if (frame % 120 == 0 )
-	{
-		EffectInstance params;
-		//EffectInstance params;
-		Transform tr = sf::Transform::Identity;
-		//params.SetParams(Vector2f(position.x, position.y - 100) , tr, 7, 1, 0);
-		Vector2f randPos(rand() % 100 - 50, rand() % 100 - 50);
-
-		params.SetParams(Vector2f(400, 400), tr, 6, 3, 0);
-
-		mainMenu->indEffectPool->ActivateIndEffect( &params, 
-			mainMenu->tilesetManager.GetTileset( "Kin/exitenergy_0_512x512.png", 512, 512  ));
-	}
+	
 	
 	kinHandEnergySpr.setTextureRect(ts_kinHandEnergy->GetSubRect(kinFrame % 12));
 

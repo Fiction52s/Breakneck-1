@@ -1029,6 +1029,23 @@ void MainMenu::UpdateEffects()
 	indEffectPool->Update();
 }
 
+void MainMenu::ActivateIndEffect(
+	Tileset *ts,
+	sf::Vector2<double> pos,
+	bool pauseImmune,
+	double angle,
+	int frameCount,
+	int animationFactor,
+	bool right,
+	int startFrame)
+{
+	EffectInstance params;
+	Transform tr = sf::Transform::Identity;
+
+	params.SetParams(Vector2f(pos), tr, frameCount, animationFactor, startFrame );
+	indEffectPool->ActivateIndEffect(&params, ts);
+}
+
 void MainMenu::GameEditLoop( const std::string &p_path )
 {
 	int result = 0;
