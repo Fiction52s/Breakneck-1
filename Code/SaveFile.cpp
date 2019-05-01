@@ -402,6 +402,9 @@ bool Sector::IsComplete()
 
 bool Sector::Load(std::ifstream &is)
 {
+	is.get();
+	std::getline(is, name);
+	//is >> name;
 	is >> sectorType;
 	is >> numUnlockConditions;
 
@@ -420,7 +423,6 @@ bool Sector::Load(std::ifstream &is)
 			conditions[i] = conditionType;
 			numTypesNeeded[i] = numOfTypeNeeded;
 		}
-
 	}
 
 	is >> numLevels;
@@ -506,6 +508,7 @@ bool Sector::IsUnlocked()
 
 void Sector::Save(std::ofstream &of)
 {
+	of << name << endl;
 	of << sectorType << endl;
 	of << numUnlockConditions << endl;
 	if (numUnlockConditions > 0)
@@ -769,6 +772,8 @@ float World::GetCompletionPercentage()
 
 bool World::Load(std::ifstream &is)
 {
+	is.get();
+	std::getline(is, name);
 	is >> numSectors;
 	assert(numSectors > 0);
 	sectors = new Sector[numSectors];
@@ -846,6 +851,7 @@ int World::GetNumSectorTypeComplete(int sType)
 
 bool World::Save(std::ofstream &of)
 {
+	of << name << endl;
 	of << numSectors << endl;
 	cout << "numSectors: " << numSectors << endl;
 	for (int i = 0; i < numSectors; ++i)

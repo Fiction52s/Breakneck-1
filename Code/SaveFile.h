@@ -110,6 +110,7 @@ struct Sector
 	bool hasBottomBonus(int index);
 	int numLevels;
 	Level *levels;
+	std::string name;
 	int index;
 	World *world;
 	bool IsLevelUnlocked(int index);
@@ -136,6 +137,7 @@ struct World
 {
 	World();
 	~World();
+	std::string name;
 	int numSectors;
 	Sector *sectors;
 	SaveFile *sf;

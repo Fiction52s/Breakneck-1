@@ -1164,7 +1164,7 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 	//shardBG.setOrigin(shardBG.getLocalBounds().width / 2, shardBG.getLocalBounds().height / 2);
 
 
-
+	frame = 0;
 
 
 
@@ -2087,7 +2087,9 @@ void MapSelector::UpdateHighlight()
 	if (trans > 1)
 	{
 		trans = 2.f - trans;
+
 	}
+	cout << "trans: " << trans << endl;
 	nodeHighlight.setColor(Color(255, 255, 255, 255 * trans));
 }
 
@@ -2328,11 +2330,12 @@ void MapSector::Init(Sector *m_sec)
 	thumbnail.setTexture(*ts_thumb->texture);
 	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().height / 2);
 
-	ss.clear();
-	ss.str("");
-	ss << "Sector " << sec->index+1;
+	//ss.clear();
+	//ss.str("");
+	//ss << "Sector " << sec->index+1;
 
-	sectorNameText.setString(ss.str());
+	//sectorNameText.setString(ss.str());
+	sectorNameText.setString(sec->name);
 
 	int waitFrames[3] = { 30, 10, 5 };
 	int waitModeThresh[2] = { 2, 2 };

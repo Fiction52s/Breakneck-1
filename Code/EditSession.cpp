@@ -18176,6 +18176,42 @@ void EditSession::CreatePreview(Vector2i imageSize)
 			}
 		}
 
+		int extraBound = 200;
+		if (left < leftBound)
+		{
+			left = leftBound;
+		}
+		else
+		{
+			left -= extraBound;
+		}
+
+		if (top < topBound)
+		{
+			top = topBound;
+		}
+		else
+		{
+			top -= extraBound;
+		}
+		int bRight = leftBound + boundWidth;
+		if (right > bRight)
+		{
+			right = bRight;
+		}
+		else
+		{
+			right += extraBound;
+		}
+
+		
+		bot += extraBound;
+		
+		//fullBounds[0].position = Vector2f(leftBound, topBound - boundRectWidth);
+		//fullBounds[1].position = Vector2f(leftBound + boundWidth, topBound - boundRectWidth);
+		//fullBounds[2].position = Vector2f(leftBound + boundWidth, topBound + boundRectWidth);
+		//fullBounds[3].position = Vector2f(leftBound, topBound + boundRectWidth);
+
 		
 
 		int width = right - left;
@@ -18222,13 +18258,14 @@ void EditSession::CreatePreview(Vector2i imageSize)
 
 		sf::View pView;
 		pView.setCenter( middle );
-		pView.setSize( Vector2f( width, -height ) * 1.05f );
+		pView.setSize(Vector2f(width, -height));// *1.05f );
 
 		Color inversePolyTypeColor;// = Color::Blue;
 
+		Color purp(109, 82, 190);
 		inversePolyTypeColor = Color::Blue;
 
-		mapPreviewTex->clear(inversePolyTypeColor);
+		mapPreviewTex->clear(purp);
 		mapPreviewTex->setView( pView );
 		
 
@@ -18275,7 +18312,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 
 
 		CircleShape cs;
-		cs.setRadius( 10.f * ( (float)width / 1920 ) );
+		cs.setRadius( 6.f * ( (float)width / 1920 ) );
 		cs.setFillColor( Color::Red );
 		cs.setOrigin( cs.getLocalBounds().width / 2, 
 			cs.getLocalBounds().height / 2 );
@@ -18293,6 +18330,21 @@ void EditSession::CreatePreview(Vector2i imageSize)
 			//(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
 		}
 
+		sf::RectangleShape borderRect;
+		borderRect.setFillColor(Color( 30, 30, 30));
+		borderRect.setSize(Vector2f(1000000, bot - top));
+		borderRect.setPosition(left, top);
+		borderRect.setOrigin(borderRect.getLocalBounds().width, 0);
+		mapPreviewTex->draw(borderRect);
+
+		borderRect.setOrigin(0, 0);
+		borderRect.setPosition(right, top);
+		mapPreviewTex->draw(borderRect);
+		//sf::Vertex borderRect[4];
+		//SetRectColor(borderRect, Color::Cyan);
+		
+		
+
 		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 		{
 			for( list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
@@ -18306,10 +18358,14 @@ void EditSession::CreatePreview(Vector2i imageSize)
 			//(*it).second->DrawPreview( mapPreviewTex );
 		}
 
+		cs.setPosition(player->position.x, player->position.y );
+		cs.setFillColor(Color::Green);
+		mapPreviewTex->draw(cs);
+
 		sf::RectangleShape rs;
 		rs.setPosition(pView.getCenter().x - pView.getSize().x / 2, top);// pView.getCenter().y);
 		rs.setSize(Vector2f(pView.getSize().x, top - (pView.getCenter().y - pView.getSize().y / 2 )));
-		rs.setFillColor(Color::Red);
+		rs.setFillColor(Color::Cyan);
 		mapPreviewTex->draw(rs);
 		//this rectangle shape is just a placeholder, because eventually we will texture stuff.
 
