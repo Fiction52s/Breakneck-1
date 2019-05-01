@@ -474,6 +474,44 @@ void GateInfo::Draw( sf::RenderTarget *target )
 	target->draw( thickLine );
 }
 
+void GateInfo::DrawPreview(sf::RenderTarget * target)
+{
+	sf::Vertex thickerLine[4];
+	double width = 80;
+	V2d dv0(point0->pos.x, point0->pos.y);
+	V2d dv1(point1->pos.x, point1->pos.y);
+	V2d along = normalize(dv1 - dv0);
+	V2d other(along.y, -along.x);
+
+	V2d leftv0 = dv0 - other * width;
+	V2d rightv0 = dv0 + other * width;
+
+	V2d leftv1 = dv1 - other * width;
+	V2d rightv1 = dv1 + other * width;
+
+	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
+
+	//Color c;
+	if (type == GateTypes::BLACK)
+	{
+		color = Color::Cyan;
+		//color = Color(150, 150, 150);
+	}
+	else if (type == GateTypes::KEYGATE)
+	{
+		color = Color::Cyan;//Color(100, 100, 100);
+	}
+	
+	SetRectColor(thickerLine, color);
+
+	thickerLine[0].position = Vector2f(leftv0.x, leftv0.y);
+	thickerLine[1].position = Vector2f(leftv1.x, leftv1.y);
+	thickerLine[2].position = Vector2f(rightv1.x, rightv1.y);
+	thickerLine[3].position = Vector2f(rightv0.x, rightv0.y);
+
+	target->draw(thickerLine, 4, sf::Quads);
+}
+
 EditSession::EditSession( MainMenu *p_mainMenu )
 	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu )
 {
@@ -18265,61 +18303,24 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		Color purp(109, 82, 190);
 		inversePolyTypeColor = Color::Blue;
 
-		mapPreviewTex->clear(purp);
+		mapPreviewTex->clear(Color::Black);
 		mapPreviewTex->setView( pView );
-		
-
-
-
-		vector<p2t::Point*> polyline;
-
-		for (TerrainPoint *tp = inversePolygon->pointStart; tp != NULL; tp = tp->next)
-		{
-			polyline.push_back(new p2t::Point(tp->pos.x, tp->pos.y));
-		}
-		p2t::CDT * cdt = new p2t::CDT(polyline);
-
-		vector<p2t::Triangle*> tris;
-
-		cdt->Triangulate();
-
-		tris = cdt->GetTriangles();
-
-		VertexArray *tempva = new VertexArray(sf::Triangles, tris.size() * 3);
-		VertexArray & v = *tempva;
-		Color testColor(0x75, 0x70, 0x90);
-		testColor = Color::Black;
-		Vector2f topLeft(left, top);
-		for (int i = 0; i < tris.size(); ++i)
-		{
-			p2t::Point *p = tris[i]->GetPoint(0);
-			p2t::Point *p1 = tris[i]->GetPoint(1);
-			p2t::Point *p2 = tris[i]->GetPoint(2);
-			v[i * 3] = Vertex(Vector2f(p->x, p->y), testColor);
-			v[i * 3 + 1] = Vertex(Vector2f(p1->x, p1->y), testColor);
-			v[i * 3 + 2] = Vertex(Vector2f(p2->x, p2->y), testColor);
-		}
-
-		delete cdt;
-		int ii = 0;
-		for (TerrainPoint *tp = inversePolygon->pointStart; tp != NULL; tp = tp->next)
-		{
-			delete polyline[ii];
-			++ii;
-		}
-
-		//TerrainPolygon *tempPoly = new TerrainPolygon(&grassTex);
 
 
 		CircleShape cs;
-		cs.setRadius( 6.f * ( (float)width / 1920 ) );
+		cs.setRadius( 10.f * ( (float)width / 1920 ) );
 		cs.setFillColor( Color::Red );
 		cs.setOrigin( cs.getLocalBounds().width / 2, 
 			cs.getLocalBounds().height / 2 );
 
+		CircleShape goalCS;
+		goalCS.setRadius(16.f * ((float)width / 1920));
+		goalCS.setFillColor(Color::Magenta);
+		goalCS.setOrigin(cs.getLocalBounds().width / 2,
+			cs.getLocalBounds().height / 2);
 
-		mapPreviewTex->draw(*tempva);
-		delete tempva;
+		//mapPreviewTex->draw(*tempva);
+		//delete tempva;
 
 		for( list<boost::shared_ptr<TerrainPolygon>>::iterator it
 			= polygons.begin(); it != polygons.end(); ++it )
@@ -18327,7 +18328,12 @@ void EditSession::CreatePreview(Vector2i imageSize)
 			//if( (*it)->IsTouching( inversePolygon.get() ) )
 			//	continue;
 
-			//(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
+			(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
+		}
+
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			(*it)->DrawPreview(mapPreviewTex);
 		}
 
 		sf::RectangleShape borderRect;
@@ -18350,8 +18356,17 @@ void EditSession::CreatePreview(Vector2i imageSize)
 			for( list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
 				it2 != (*it).second->actors.end(); ++it2 )
 			{
-				cs.setPosition( (*it2)->position.x, (*it2)->position.y );
-				mapPreviewTex->draw( cs );
+				if ((*it2)->type == types["goal"])
+				{
+					goalCS.setPosition((*it2)->position.x, (*it2)->position.y);
+					mapPreviewTex->draw(goalCS);
+				}
+				else
+				{
+					cs.setPosition((*it2)->position.x, (*it2)->position.y);
+					mapPreviewTex->draw(cs);
+				}
+				
 			}
 
 			

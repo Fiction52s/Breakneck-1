@@ -392,6 +392,7 @@ struct GateInfo : ISelectable
 	void UpdateLine();
 	void WriteFile( std::ofstream &of );
 	void Draw( sf::RenderTarget *target );
+	void DrawPreview(sf::RenderTarget *target);
 	bool reformBehindYou;
 	int numKeysRequired;
 	sf::Color color;
