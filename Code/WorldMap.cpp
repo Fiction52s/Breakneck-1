@@ -222,7 +222,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	for (int i = 0; i < 7; ++i)
 	{
-		selectors[i] = new MapSelector(mainMenu, Vector2f(960, 540));
+		selectors[i] = new MapSelector(mainMenu, Vector2f(960, 540), i);
 	}
 }
 
@@ -531,7 +531,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				}
 			}
 
-			currSelector->saSelector->currIndex = startSector;
+			currSelector->sectorSelector->currIndex = startSector;
 
 			for (int se = 0; se < currSelector->numSectors; ++se)
 			{
@@ -545,7 +545,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 						break;
 					}
 				}
-				currSelector->sectors[startSector]->saSelector->currIndex = startLevel;
+				currSelector->mapSelector->currIndex = startLevel;
 			}
 			
 			break;
@@ -1070,29 +1070,47 @@ void WorldMap::Draw( RenderTarget *target )
 	}
 }
 
-MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
+MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 	:centerPos( pos )
 {
+	worldIndex = wIndex;
 	state = S_IDLE;
 	mainMenu = mm;
+
+	string worldIndexStr = to_string(1);//to_string(worldIndex+1);
+	string nodeFile = string("WorldMap/node_w") + worldIndexStr + string("_128x128.png");
+
+	ts_node = mm->tilesetManager.GetTileset(nodeFile, 128, 128);
 	//numNodeColumns = 10;
 	//nodeSelectorWidth = 400;
-	ts_node[0] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
+	/*ts_node[0] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	ts_node[1] = mm->tilesetManager.GetTileset("Worldmap/node_w2_128x128.png", 128, 128);
 	ts_node[2] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	ts_node[3] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	ts_node[4] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	ts_node[5] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
-	ts_node[6] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
+	ts_node[6] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);*/
 
-	ts_scrollingEnergy[0] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[1] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w2_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[2] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[3] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[4] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[5] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
-	ts_scrollingEnergy[6] = mainMenu->tilesetManager.GetTileset("WorldMap/sector_aura_w1_1200x400.png", 1200, 400);
+	string scrollEnergyFile = string("WorldMap/sector_aura_w") + worldIndexStr + string("_1200x400.png");
+
+	ts_scrollingEnergy = mainMenu->tilesetManager.GetTileset(scrollEnergyFile, 1200, 400);
 	//Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
+	SetRectSubRect(frontScrollEnergy, ts_scrollingEnergy->GetSubRect(0));
+	SetRectSubRect(backScrollEnergy, ts_scrollingEnergy->GetSubRect(1));
+
+	if (!horizScrollShader1.loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment))
+	{
+		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	horizScrollShader1.setUniform("u_texture", sf::Shader::CurrentTexture);
+
+
+	if (!horizScrollShader2.loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment))//("Shader/horizslider.frag", sf::Shader::Fragment))
+	{
+		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	horizScrollShader2.setUniform("u_texture", sf::Shader::CurrentTexture);
+
 
 	ts_bossFight = new Tileset*[1];
 	ts_bossFight[0] = mm->tilesetManager.GetTileset("Worldmap/boss_w1_128x128.png", 128, 128);
@@ -1104,12 +1122,6 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	ts_sectorKey = mm->tilesetManager.GetTileset("Worldmap/sectorkey_80x80.png", 80, 80);
 	ts_sectorOpen = new Tileset*[1];
 	ts_sectorOpen[0] = mm->tilesetManager.GetTileset("Worldmap/sectorunlock_256x256.png", 256, 256);
-
-	ts_shoulderIcons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
-	SetRectCenter(shoulderIcons, 128, 128, Vector2f(200, 200));
-	SetRectCenter(shoulderIcons + 4, 128, 128, Vector2f(1920 - 200, 200));
-	SetRectSubRect(shoulderIcons, ts_shoulderIcons->GetSubRect(6));
-	SetRectSubRect(shoulderIcons + 4, ts_shoulderIcons->GetSubRect(4));
 
 	//ts_path = mm->tilesetManager.GetTileset("Worldmap/nodepath_96x96.png", 96, 96);
 
@@ -1127,8 +1139,9 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	+ Vector2f(bottomBG.getLocalBounds().width / 2,
 		bottomBG.getLocalBounds().height / 2);*/
 
-	saSelector = NULL;
-	slideDuration = 50;
+	sectorSelector = NULL;
+	mapSelector = NULL;
+	//slideDuration = 50;
 	////bottomCenter.x = 0;
 	//sectors = new MapSector*[numSectors];
 	//for (int i = 0; i < numSectors; ++i)
@@ -1141,9 +1154,11 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos )
 	//	
 	//}
 
+	//int waitFrames[3] = { 10, 5, 2 };
+	int waitFrames[3] = { 30, 15, 10 };
+	int waitModeThresh[2] = { 2, 2 };
+	mapSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	
-
-
 	//bottomBG.setOrigin(bottomBG.getLocalBounds().width / 2, bottomBG.getLocalBounds().height / 2);
 	//thumbnailBG.setOrigin(thumbnailBG.getLocalBounds().width / 2, thumbnailBG.getLocalBounds().height / 2);
 	//shardBG.setOrigin(shardBG.getLocalBounds().width / 2, shardBG.getLocalBounds().height / 2);
@@ -1173,8 +1188,8 @@ MapSelector::~MapSelector()
 		delete[] sectors;
 		sectors = NULL;
 
-		delete saSelector;
-		saSelector = NULL;
+		delete sectorSelector;
+		delete mapSelector;
 	}
 }
 
@@ -1185,93 +1200,154 @@ void MapSelector::UpdateSprites()
 
 void MapSelector::RunSelectedMap()
 {
-	sectors[saSelector->currIndex]->RunSelectedMap();
+	sectors[sectorSelector->currIndex]->RunSelectedMap();
 }
 
 void MapSelector::Draw(sf::RenderTarget *target)
 {
-	
-	if (state == S_SLIDINGLEFT || state == S_SLIDINGRIGHT)
+	sf::RenderStates rs;
+	rs.texture = ts_scrollingEnergy->texture;
+	rs.shader = &horizScrollShader1;
+
+	target->draw(backScrollEnergy, 4, sf::Quads, rs);
+
+	rs.shader = &horizScrollShader2;
+
+	target->draw(frontScrollEnergy, 4, sf::Quads, rs);
+
+	/*if (state == S_SLIDINGLEFT || state == S_SLIDINGRIGHT)
 	{
 		sectors[saSelector->oldCurrIndex]->Draw(target);
 	}
 	else
 	{
 		target->draw(shoulderIcons, 8, sf::Quads, ts_shoulderIcons->texture);
+	}*/
+
+	for (int i = 0; i < numSectors; ++i)
+	{
+		//sectors[saSelector->currIndex]->Draw(target);
+		sectors[i]->Draw(target);
 	}
 
-	sectors[saSelector->currIndex]->Draw(target);
+	//if (ms->state == MapSelector::S_IDLE)
+	//{
+	target->draw(nodeHighlight);
+	//}
+	
+
+
 	//target->draw(thumbnail);
 
 	//target->draw( paths, sectors[currSectorIndex]->numLevels  )
 }
 
+MapSector * MapSelector::GetFocusedSector()
+{
+	return sectors[sectorSelector->currIndex];
+}
+
 void MapSelector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
-	MapSector::State currSectorState = sectors[saSelector->currIndex]->state;
+	ControllerState empty;
+	MapSector::State currSectorState = GetFocusedSector()->state;
 	if (state == S_IDLE && (currSectorState == MapSector::NORMAL || currSectorState == MapSector::COMPLETE ))
 	{
 		bool left = curr.LLeft();
 		bool right = curr.LRight();
 
-		int changed = saSelector->UpdateIndex(curr.leftShoulder, curr.rightShoulder);
+		int changed = sectorSelector->UpdateIndex(curr.LUp(), curr.LDown());
 
-		if (changed > 0 && saSelector->totalItems > 1 )
+		int numCurrLevels = GetFocusedSector()->unlockedLevelCount;
+		if (changed != 0 )//&& mapSelector->currIndex > numCurrLevels)
 		{
-			state = S_SLIDINGRIGHT;
-			frame = 0;
+			mapSelector->SetTotalSize(numCurrLevels);
 		}
-		else if (changed < 0 && saSelector->totalItems > 1 )
+		//if (changed > 0 && saSelector->totalItems > 1 )
+		//{
+		//	//state = S_SLIDINGRIGHT;
+		//	//frame = 0;
+		//}
+		//else if (changed < 0 && saSelector->totalItems > 1 )
+		//{
+		//	//state = S_SLIDINGLEFT;
+		//	//frame = 0;
+		//}
+		//else
 		{
-			state = S_SLIDINGLEFT;
-			frame = 0;
-		}
-		else
-		{
-			sectors[saSelector->currIndex]->Update(curr, prev);
+			sectors[sectorSelector->currIndex]->Update(curr, prev);
 		}
 	}
 	else if (state == S_IDLE)
 	{
-		sectors[saSelector->currIndex]->Update(curr, prev);
+		sectors[sectorSelector->currIndex]->Update(curr, prev);
 	}
-	else if (state == S_SLIDINGLEFT)
+
+	for (int i = 0; i < numSectors; ++i)
 	{
-		if (frame == slideDuration+1)
-		{
-			state = S_IDLE;
-			frame = 0;
-			//sectors[saSelector->currIndex]->SetXCenter(sectorCenter.x);
-		}
-		else
-		{
-			float diff = 1920.f * (float)frame / slideDuration;
-			float oldCenter = sectorCenter.x + diff;
-			float newCenter = -960.f + diff;
-			sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
-			sectors[saSelector->currIndex]->SetXCenter(newCenter);
-		}
-		
+		if (sectorSelector->currIndex == i)
+			continue;
+
+		sectors[i]->UpdateNodes();
 	}
-	else if (state == S_SLIDINGRIGHT)
-	{
-		if (frame == slideDuration+1)
-		{
-			state = S_IDLE;
-			frame = 0;
-			//sectors[saSelector->currIndex]->SetXCenter(sectorCenter.x);
-		}
-		else
-		{
-			float diff = 1920.f * (float)frame / slideDuration;
-			float oldCenter = sectorCenter.x - diff;
-			float newCenter = (1920.f + 960.f) - diff;
-			sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
-			sectors[saSelector->currIndex]->SetXCenter(newCenter);
-		}
-		
-	}
+
+	UpdateHighlight();
+	//else if (state == S_SLIDINGLEFT)
+	//{
+	//	if (frame == slideDuration+1)
+	//	{
+	//		state = S_IDLE;
+	//		frame = 0;
+	//		//sectors[saSelector->currIndex]->SetXCenter(sectorCenter.x);
+	//	}
+	//	else
+	//	{
+	//		float diff = 1920.f * (float)frame / slideDuration;
+	//		float oldCenter = sectorCenter.x + diff;
+	//		float newCenter = -960.f + diff;
+	//		sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
+	//		sectors[saSelector->currIndex]->SetXCenter(newCenter);
+	//	}
+	//	
+	//}
+	//else if (state == S_SLIDINGRIGHT)
+	//{
+	//	if (frame == slideDuration+1)
+	//	{
+	//		state = S_IDLE;
+	//		frame = 0;
+	//		//sectors[saSelector->currIndex]->SetXCenter(sectorCenter.x);
+	//	}
+	//	else
+	//	{
+	//		float diff = 1920.f * (float)frame / slideDuration;
+	//		float oldCenter = sectorCenter.x - diff;
+	//		float newCenter = (1920.f + 960.f) - diff;
+	//		sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
+	//		sectors[saSelector->currIndex]->SetXCenter(newCenter);
+	//	}
+	//	
+	//}
+
+	int scrollHeight = 400 + sectorSelector->currIndex * 120;
+	SetRectCenter(backScrollEnergy, 1200, 200, Vector2f(960, scrollHeight));
+	SetRectCenter(frontScrollEnergy, 1200, 200, Vector2f(960, scrollHeight));
+
+	int scrollFramesBack = 180;
+	int scrollFramesFront = 360;
+	float fBack = frame % scrollFramesBack;
+	float fFront = frame % scrollFramesFront;
+
+	int mult = frame / scrollFramesBack;
+	int multFront = frame / scrollFramesFront;
+
+	float facBack = fBack / (scrollFramesBack);
+	float facFront = fFront / (scrollFramesFront);
+
+	horizScrollShader1.setUniform("quant", -facBack);
+	horizScrollShader2.setUniform("quant", -facFront);
+
 	++frame;
 }
 
@@ -1283,7 +1359,7 @@ void MapSelector::UpdateAllInfo(int index)
 	MapSector *mSector;
 	//Vector2f bottomCenter = bottomBG.getPosition() + Vector2f(bottomBG.getLocalBounds().width / 2, bottomBG.getLocalBounds().height / 2);
 
-	int waitFrames[3] = { 10, 5, 2 };
+	int waitFrames[3] = { 30, 15, 10 };
 	int waitModeThresh[2] = { 2, 2 };
 	
 
@@ -1296,8 +1372,10 @@ void MapSelector::UpdateAllInfo(int index)
 		delete[] sectors;
 		sectors = NULL;
 		
-		delete saSelector;
-		saSelector = NULL;
+		delete sectorSelector;
+		sectorSelector = NULL;
+		//delete saSelector;
+		//saSelector = NULL;
 		
 	}
 
@@ -1314,7 +1392,7 @@ void MapSelector::UpdateAllInfo(int index)
 			mSector->Init(&(w.sectors[i]));
 		}
 
-		saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numSectors, 0);
+		sectorSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numSectors, 0);
 	}
 	else
 	{
@@ -1324,7 +1402,13 @@ void MapSelector::UpdateAllInfo(int index)
 		}
 	}
 
-	
+	/*SetRectCenter(backScrollEnergy, 1200, 400, Vector2f(960, 500));
+	SetRectCenter(frontScrollEnergy, 1200, 400, Vector2f(960, 500));*/
+	int scrollHeight = 400 + sectorSelector->currIndex * 120;
+	SetRectCenter(backScrollEnergy, 1200, 200, Vector2f(960, scrollHeight));
+	SetRectCenter(frontScrollEnergy, 1200, 200, Vector2f(960, scrollHeight));
+
+	mapSelector->SetTotalSize(GetFocusedSector()->unlockedLevelCount);
 	//int numLevelsInWorld = 7;
 	//if (saSelector != NULL)
 		
@@ -1337,24 +1421,13 @@ void MapSelector::UpdateAllInfo(int index)
 MapSector::MapSector(MapSelector *p_ms, int index )
 	:numLevels(-1), ms(p_ms), sectorIndex( index )
 {
-
-	
-	//initThread = NULL;
-	
-	//ts_scrollingEnergy->texture->setRepeated(true);
-	
-
 	unlockedIndex = -1;
 	numUnlockConditions = -1;
 	nodeSize = 128;
 	pathLen = 16;
 	frame = 0;
 	nodes = NULL;
-	saSelector = NULL;
 	unlockCondText = NULL;
-
-	
-	
 
 	//SetRectColor(levelBG, Color(100, 100, 100, 100));
 	SetRectSubRect(levelBG, ms->ts_sectorLevelBG->GetSubRect(0));
@@ -1363,7 +1436,6 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	//SetRectColor(statsBG, Color(100, 100, 100, 100));
 	//SetRectColor(sectorStatsBG, Color(100, 100, 100, 100));
 
-
 	ts_energyCircle = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80); 
 	ts_energyTri = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_tri_80x80.png", 80, 80);
 	ts_energyMask = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
@@ -1371,29 +1443,29 @@ MapSector::MapSector(MapSelector *p_ms, int index )
 	nodeExplodeSpr.setTexture(*ts_nodeExplode->texture);
 	nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(0));
 	nodeExplodeSpr.setOrigin(nodeExplodeSpr.getLocalBounds().width / 2, nodeExplodeSpr.getLocalBounds().height / 2);
-	//SetRectCenter( shoulderIcons, 
 	
 
 	endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
 	endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(0));
 
-	if (!horizScrollShader1.loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment))
-	{
-		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	horizScrollShader1.setUniform("u_texture", sf::Shader::CurrentTexture );
+	shardsCollectedText.setFont(ms->mainMenu->arial);
+	completionPercentText.setFont(ms->mainMenu->arial);
+
+	shardsCollectedText.setCharacterSize(40);
+	completionPercentText.setCharacterSize(40);
+
+	shardsCollectedText.setFillColor(Color::White);
+	completionPercentText.setFillColor(Color::White);
 
 
-	if (!horizScrollShader2.loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment ))//("Shader/horizslider.frag", sf::Shader::Fragment))
-	{
-		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	horizScrollShader2.setUniform("u_texture", sf::Shader::CurrentTexture);
+	levelPercentCompleteText.setFillColor(Color::White);
+	levelPercentCompleteText.setCharacterSize(40);
+	levelPercentCompleteText.setFont(ms->mainMenu->arial);
 
-	
-	//endSpr.setOrigin(//endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
-	//endSpr.setPosition(1038, 106);
-	//SetXCenter(960);
+	sectorNameText.setFillColor(Color::White);
+	sectorNameText.setCharacterSize(40);
+	sectorNameText.setFont(ms->mainMenu->arial);
+	sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
 }
 
 MapSector::~MapSector()
@@ -1401,10 +1473,6 @@ MapSector::~MapSector()
 	delete [] levelCollectedShards;
 	delete [] levelCollectedShardsBG;
 
-	if (saSelector != NULL)
-	{
-		delete saSelector;
-	}
 
 	if (nodes != NULL)
 	{
@@ -1430,23 +1498,79 @@ MapSector::~MapSector()
 	}
 }
 
+void MapSector::UpdateUnlockedLevelCount()
+{
+	unlockedLevelCount = numLevels;
+	for (int i = 0; i < numLevels - 1; ++i)
+	{
+		if (!sec->levels[i].GetComplete())
+		{
+			unlockedLevelCount = max(1, i + 1);
+			break;
+		}
+	}
+}
+
+bool MapSector::IsFocused()
+{
+	if (ms->sectorSelector == NULL)
+		return false;
+
+	return ms->sectorSelector->currIndex == sectorIndex;
+}
+
 void MapSector::Draw(sf::RenderTarget *target)
 {
 	
-	target->draw(sectorNameText);
-	target->draw(levelBG, 4, sf::Quads, ms->ts_sectorLevelBG->texture);
+	bool focused = IsFocused();
+	bool unlocked = sec->IsUnlocked();
 
-	sf::RenderStates rs;
-	rs.texture = ts_scrollingEnergy->texture;
-	rs.shader = &horizScrollShader1;
+//	sectorNameText.setPosition(960, 100 + rand() % 200 );
+	
 
-	target->draw(backScrollEnergy, 4, sf::Quads, rs);
+	if (focused)
+	{
+		
+		target->draw(sectorNameText);
+		if (unlocked)
+		{
+			DrawStats(target);
+			DrawLevelStats(target);
 
-	rs.shader = &horizScrollShader2;
+			
+		}
+		else
+		{
+			DrawUnlockConditions(target);
+		}
 
-	target->draw(frontScrollEnergy, 4, sf::Quads, rs);
-	target->draw(statsBG, 4, sf::Quads, ms->ts_levelStatsBG->texture);
-	target->draw(sectorStatsBG, 4, sf::Quads, ms->ts_sectorStatsBG->texture);
+		target->draw(thumbnail);
+
+		
+	}
+
+	if (unlocked)
+	{
+		for (int i = 0; i < numLevels; ++i)
+		{
+			target->draw(topBonusNodes[i]);
+			target->draw(nodes[i]);
+			target->draw(botBonusNodes[i]);
+		}
+
+		target->draw(endSpr);
+
+		if (state == LEVELJUSTCOMPLETE)
+		{
+			target->draw(nodeExplodeSpr);
+		}
+	}
+	
+	//target->draw(levelBG, 4, sf::Quads, ms->ts_sectorLevelBG->texture);
+
+	
+	//target->draw(statsBG, 4, sf::Quads, ms->ts_levelStatsBG->texture);
+	//target->draw(sectorStatsBG, 4, sf::Quads, ms->ts_sectorStatsBG->texture);
 
 	
 
@@ -1458,37 +1582,41 @@ void MapSector::Draw(sf::RenderTarget *target)
 		}
 	}*/
 	//target->draw( paths, numLevels )
-	if (sec->IsUnlocked()) //just for testing
-	{
-		DrawStats(target);
-		DrawLevelStats(target);
-		for (int i = 0; i < numLevels; ++i)
-		{
-			target->draw(topBonusNodes[i]);
-			target->draw(nodes[i]);
-			target->draw(botBonusNodes[i]);
-		}
+	//if (sec->IsUnlocked()) //just for testing
+	//{
+	//	if (focused)
+	//	{
 
-		target->draw(endSpr);
 
-		if (ms->state == MapSelector::S_IDLE)
-		{
-			target->draw(nodeHighlight);
-		}
-		
-		if (state == LEVELJUSTCOMPLETE)
-		{
-			target->draw(nodeExplodeSpr);
-		}
-		//target->draw(nodeHighlight);
-		//target->draw(nodes, numLevels * 4 * 3, sf::Quads, ms->ts_node->texture);
-	}
-	else
-	{
-		DrawUnlockConditions(target);
-	}
-	
-	target->draw(thumbnail);
+	//		
+	//	}
+	//	for (int i = 0; i < numLevels; ++i)
+	//	{
+	//		target->draw(topBonusNodes[i]);
+	//		target->draw(nodes[i]);
+	//		target->draw(botBonusNodes[i]);
+	//	}
+
+	//	target->draw(endSpr);
+
+	//	if (focused)
+	//	{
+	//		
+	//	}
+	//	
+	//	if (state == LEVELJUSTCOMPLETE)
+	//	{
+	//		target->draw(nodeExplodeSpr);
+	//	}
+	//}
+	//else
+	//{
+	//	if( focused )
+	//		DrawUnlockConditions(target);
+	//}
+	//
+	//if( focused )
+	//	target->draw(thumbnail);
 	
 }
 
@@ -1503,20 +1631,21 @@ void MapSector::SetXCenter( float x )
 {
 	xCenter = x;
 
-	left = Vector2f(xCenter, ms->sectorCenter.y);
+	left = Vector2f(xCenter - 600, 400 + sectorIndex * 120 );
 	int numLevelsPlus = numLevels + 0;
 	if (numLevelsPlus % 2 == 0)
 	{
-		left.x -= pathLen / 2 + nodeSize + (pathLen + nodeSize) * (numLevelsPlus / 2 - 1);
+		//left.x -= pathLen / 2 + nodeSize + (pathLen + nodeSize) * (numLevelsPlus / 2 - 1);
 	}
 	else
 	{
-		left.x -= nodeSize / 2 + (pathLen + nodeSize) * (numLevelsPlus / 2);
+		//left.x -= nodeSize / 2 + (pathLen + nodeSize) * (numLevelsPlus / 2);
 	}
 
 
 	
 	thumbnail.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
+	//sectorNameText.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
 	sectorNameText.setPosition(x, 0);
 	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 370);
 	Vector2f sectorStatsSize(256, 256);
@@ -1530,8 +1659,7 @@ void MapSector::SetXCenter( float x )
 	SetRectCenter(levelBG, 1200, 400, Vector2f( x, ms->sectorCenter.y ));
 	SetRectCenter(statsBG, levelStatsSize.x, levelStatsSize.y, levelStatsCenter );
 	
-	SetRectCenter(backScrollEnergy, 1200, 400, Vector2f(x, ms->sectorCenter.y));
-	SetRectCenter(frontScrollEnergy, 1200, 400, Vector2f(x, ms->sectorCenter.y));
+	
 
 	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x/2, sectorStatsCenter.y - sectorStatsSize.y/2);
 
@@ -1604,6 +1732,16 @@ void MapSector::UpdateStats()
 	completionPercentText.setString(ss.str());
 }
 
+int MapSector::GetSelectedIndex()
+{
+	return ms->mapSelector->currIndex;
+}
+
+Level &MapSector::GetSelectedLevel()
+{
+	return sec->levels[GetSelectedIndex()];
+}
+
 void MapSector::UpdateLevelStats()
 {
 
@@ -1618,7 +1756,7 @@ void MapSector::UpdateLevelStats()
 
 	int gridIndex = 0;
 	int uncaptured = 0;
-	auto &snList = sec->levels[saSelector->currIndex].shardNameList;
+	auto &snList = GetSelectedLevel().shardNameList;
 	//numTotalShards = snList.size();
 	for (int i = 0; i < numTotalShards; ++i)
 	{
@@ -1644,7 +1782,7 @@ void MapSector::UpdateLevelStats()
 	}
 
 	stringstream ss;
-	int percent = floor(sec->levels[saSelector->currIndex].GetCompletionPercentage());
+	int percent = floor(GetSelectedLevel().GetCompletionPercentage());
 
 	ss << percent << "%";
 
@@ -1658,6 +1796,11 @@ void MapSector::UpdateLevelStats()
 sf::Vector2f MapSector::GetNodePos(int node)
 {
 	return left + Vector2f(nodeSize / 2, 0) + Vector2f((pathLen + nodeSize) * node, 0);
+}
+
+sf::Vector2f MapSector::GetSelectedNodePos()
+{
+	return GetNodePos(GetSelectedIndex());
 }
 
 sf::Vector2f MapSector::GetTopNodePos(int n)
@@ -1697,26 +1840,22 @@ void MapSector::UpdateNodePosition()
 void MapSector::RunSelectedMap()
 {
 	ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
-	ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));
+	ms->mainMenu->AdventureLoadLevel(&GetSelectedLevel());
+}
+
+int MapSector::GetNumLevels()
+{
+	return sec->numLevels;
 }
 
 void MapSector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
-	int unlockedLevelCount = numLevels;
-	for (int i = 0; i < numLevels-1; ++i)
-	{
-		if (!sec->levels[i].GetComplete())
-		{
-			unlockedLevelCount = max( 1, i+1);
-			break;
-		}
-	}
+	UpdateUnlockedLevelCount();
 
-	if (unlockedLevelCount != saSelector->totalItems)
+	if (unlockedLevelCount != GetNumLevels())
 	{
-		saSelector->SetTotalSize(unlockedLevelCount);
-		
+		//saSelector->SetTotalSize(unlockedLevelCount);
 	}
 	
 	/*if (state == NORMAL && sec->IsComplete() )
@@ -1745,16 +1884,6 @@ void MapSector::Update(ControllerState &curr,
 			if (sec->levels[i].justBeaten)
 			{
 				state = LEVELCOMPLETEDWAIT;
-
-				
-				/*if (i < numLevels - 1)
-				{
-					
-				}
-				else
-				{
-					state = JUSTCOMPLETE;
-				}			*/	
 				
 				stateFrame = 0;
 				unlockedIndex = i;//saSelector->currIndex;
@@ -1775,21 +1904,22 @@ void MapSector::Update(ControllerState &curr,
 	UpdateNodes();
 
 
+
 	if (state == NORMAL || state == COMPLETE || ( state == LEVELJUSTCOMPLETE && stateFrame >= 3 * 7 ))
 	{
-		int old = saSelector->currIndex;
+		int old = GetSelectedIndex();//saSelector->currIndex;
 
 		bool left = curr.LLeft();
 		bool right = curr.LRight();
 
-		int changed = saSelector->UpdateIndex(left, right);
+		int changed = ms->mapSelector->UpdateIndex(left, right);
 
 		if (changed != 0)
 		{
 			UpdateLevelStats();
 		}
 
-		int oldYIndex = selectedYIndex;
+		/*int oldYIndex = selectedYIndex;
 
 		if ((selectedYIndex == 0 && !HasTopBonus(saSelector->currIndex)
 			|| (selectedYIndex == 2 && !HasBotBonus(saSelector->currIndex))))
@@ -1810,14 +1940,11 @@ void MapSector::Update(ControllerState &curr,
 			{
 				++selectedYIndex;
 			}
-		}
-		if (changed != 0 || oldYIndex != selectedYIndex)
+		}*/
+		if (changed != 0 )//|| oldYIndex != selectedYIndex)
 		{
 			ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_change"));
 			UpdateNodes();
-			//UpdateNodes();
-			//Vertex *n = (nodes + selectedYIndex * numLevels * 4 + old * 4);
-			//	SetRectSubRect( n, )
 		}
 
 		if (curr.A && !prev.A)
@@ -1836,14 +1963,11 @@ void MapSector::Update(ControllerState &curr,
 				
 				ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
 				ms->mainMenu->SetMode(MainMenu::TRANS_WORLDMAP_TO_LOADING);
-				/*ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
-				ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
-				ms->mainMenu->AdventureLoadLevel(&(sec->levels[saSelector->currIndex]));*/
 			}
 		}
 	}
 	
-	UpdateHighlight();
+	//UpdateHighlight();
 	
 	if (state == LEVELJUSTCOMPLETE )//unlockedIndex != -1)
 	{
@@ -1861,14 +1985,18 @@ void MapSector::Update(ControllerState &curr,
 				state = NORMAL;	
 				//unlockedIndex
 			}
+			UpdateUnlockedLevelCount();
+			ms->mapSelector->SetTotalSize(unlockedLevelCount);
+			
 			stateFrame = 0;
 		}
 		else if (ff == 3)
 		{
 			nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(ff));
-			if (unlockedIndex < numLevels - 1)
+			if (unlockedLevelCount < numLevels - 1)
 			{
-				saSelector->currIndex = unlockedIndex + 1;
+				ms->mapSelector->currIndex = unlockedLevelCount - 1;
+				//saSelector->currIndex = unlockedIndex + 1;
 			}
 		}
 		else
@@ -1876,25 +2004,13 @@ void MapSector::Update(ControllerState &curr,
 			//paths[unlockedIndex].setTextureRect(ms->ts_path->GetSubRect(ff));
 			if( stateFrame == 0 )
 			{
-				nodeExplodeSpr.setPosition(nodeHighlight.getPosition());
+				nodeExplodeSpr.setPosition(ms->nodeHighlight.getPosition());
 			}
 			nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(ff));
 		}
 
 	}
 	
-	
-	
-	
-
-	int breathe = 60;
-	float trans = (float)(frame%breathe) / (breathe/2);
-	if (trans > 1)
-	{
-		trans = 2.f - trans;
-	}
-	nodeHighlight.setColor(Color(255, 255, 255, 255 * trans));
-
 	
 
 	if( state == EXPLODECOMPLETE )
@@ -1914,27 +2030,13 @@ void MapSector::Update(ControllerState &curr,
 		}
 	}
 
-	int scrollFramesBack = 180;
-	int scrollFramesFront = 360;
-	float fBack = frame % scrollFramesBack;
-	float fFront = frame % scrollFramesFront;
-
-	int mult = frame / scrollFramesBack;
-	int multFront = frame / scrollFramesFront;
-
-	float facBack = fBack / (scrollFramesBack);
-	float facFront = fFront / (scrollFramesFront);
-	
-	horizScrollShader1.setUniform("quant", -facBack );
-	horizScrollShader2.setUniform("quant", -facFront );
-
 	++frame;
 	++stateFrame;
 }
 
-void MapSector::UpdateHighlight()
+void MapSelector::UpdateHighlight()
 {
-	if (selectedYIndex == 0)
+	/*if (selectedYIndex == 0)
 	{
 		nodeHighlight.setPosition(GetTopNodePos(saSelector->currIndex));
 	}
@@ -1945,12 +2047,13 @@ void MapSector::UpdateHighlight()
 	else
 	{
 		nodeHighlight.setPosition(GetBotNodePos(saSelector->currIndex));
-	}
+	}*/
+	MapSector *currSec = sectors[sectorSelector->currIndex];
+	nodeHighlight.setPosition(currSec->GetSelectedNodePos());
+	int n = currSec->GetSelectedNodeSubIndex();
 
-	int n = GetNodeSubIndex(saSelector->currIndex);
 
-
-	int bossFightT = sec->levels[saSelector->currIndex].bossFightType;
+	int bossFightT = currSec->GetSelectedNodeBossFightType();//sec->levels[saSelector->currIndex].bossFightType;
 	
 	switch (bossFightT)
 	{
@@ -1959,8 +2062,8 @@ void MapSector::UpdateHighlight()
 		nodeHighlight.setTextureRect(ts_node->GetSubRect(9 + (n % 3)));
 		break;
 	case 1:
-		nodeHighlight.setTexture(*ms->ts_bossFight[0]->texture);
-		nodeHighlight.setTextureRect(ms->ts_bossFight[0]->GetSubRect(6));
+		nodeHighlight.setTexture(*ts_bossFight[0]->texture);
+		nodeHighlight.setTextureRect(ts_bossFight[0]->GetSubRect(6));
 		break;
 	}
 	
@@ -1978,6 +2081,14 @@ void MapSector::UpdateHighlight()
 	}*/
 	
 	nodeHighlight.setOrigin(nodeHighlight.getLocalBounds().width / 2, nodeHighlight.getLocalBounds().height / 2);
+
+	int breathe = 60;
+	float trans = (float)(frame%breathe) / (breathe / 2);
+	if (trans > 1)
+	{
+		trans = 2.f - trans;
+	}
+	nodeHighlight.setColor(Color(255, 255, 255, 255 * trans));
 }
 
 bool MapSector::HasTopBonus(int node)
@@ -1991,6 +2102,7 @@ bool MapSector::HasBotBonus(int node)
 
 void MapSector::UpdateNodes()
 {
+	Tileset *ts_node = ms->ts_node;
 	for (int i = 0; i < numLevels; ++i)
 	{
 		//Vertex *n = (nodes + 1 * numLevels * 4 + i * 4);
@@ -2053,7 +2165,7 @@ int MapSector::GetNodeSubIndex(int node)
 		}
 		else
 		{
-			if (selectedYIndex == 1 && saSelector->currIndex == node)
+			if ( IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
 			{
 				if (sec->levels[node].IsOneHundredPercent())
 				{
@@ -2098,7 +2210,7 @@ int MapSector::GetNodeSubIndex(int node)
 		}
 		else
 		{
-			if (selectedYIndex == 1 && saSelector->currIndex == node)
+			if ( IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
 			{
 				if (sec->levels[node].IsOneHundredPercent())
 				{
@@ -2139,6 +2251,16 @@ int MapSector::GetNodeSubIndex(int node)
 	return res;
 }
 
+int MapSector::GetSelectedNodeSubIndex()
+{
+	return GetNodeSubIndex(GetSelectedIndex());
+}
+
+int MapSector::GetSelectedNodeBossFightType()
+{
+	return sec->levels[GetSelectedIndex()].bossFightType;
+}
+
 void MapSector::UpdateUnlockConditions()
 {
 	int numUnlock = sec->numUnlockConditions;
@@ -2155,7 +2277,7 @@ void MapSector::UpdateUnlockConditions()
 
 int MapSector::GetNodeBonusIndexTop(int node)
 {
-	if (selectedYIndex == 0 && saSelector->currIndex == node)
+	if (selectedYIndex == 0 && GetSelectedIndex() == node)
 	{
 		return 0;
 	}
@@ -2175,7 +2297,7 @@ int MapSector::GetNodeBonusIndexTop(int node)
 
 int MapSector::GetNodeBonusIndexBot(int node)
 {
-	if (selectedYIndex == 2 && saSelector->currIndex == node)
+	if (selectedYIndex == 2 && GetSelectedIndex() == node)
 	{
 		return 0;
 	}
@@ -2189,14 +2311,8 @@ void MapSector::Init(Sector *m_sec)
 {
 	unlockedIndex = -1;
 	sec = m_sec;
+	int oldNumLevels = numLevels;
 	numLevels = sec->numLevels;
-
-	ts_node = ms->ts_node[sec->world->index];
-
-	ts_scrollingEnergy = ms->ts_scrollingEnergy[sec->world->index];
-
-	SetRectSubRect(frontScrollEnergy, ts_scrollingEnergy->GetSubRect(0));
-	SetRectSubRect(backScrollEnergy, ts_scrollingEnergy->GetSubRect(1));
 
 	stringstream ss;
 	ss.str("");
@@ -2221,25 +2337,26 @@ void MapSector::Init(Sector *m_sec)
 	int waitFrames[3] = { 30, 10, 5 };
 	int waitModeThresh[2] = { 2, 2 };
 
-	bool blank = saSelector == NULL;
+	bool blank = ms->mapSelector == NULL;
 	bool diffNumLevels = false;
-	if (saSelector != NULL && saSelector->totalItems != numLevels)
-	{
-		diffNumLevels = true;
-	}
 
-	if (diffNumLevels)
+	//if (ms->mapSelector != NULL && ms->mapSelector->totalItems != numLevels)
+	//{
+	//	diffNumLevels = true;
+	//}
+
+	/*if (diffNumLevels)
 	{
 		delete saSelector;
 		saSelector = NULL;
 	}
 	
 	if( saSelector == NULL )
-		saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numLevels, 0);
+		saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numLevels, 0);*/
 
 	selectedYIndex = 1;
 
-	if (diffNumLevels)
+	if (oldNumLevels > 0 && oldNumLevels != numLevels)
 	{
 		delete[] nodes;
 		nodes = NULL;
@@ -2255,6 +2372,8 @@ void MapSector::Init(Sector *m_sec)
 	}
 	if (nodes == NULL)
 	{
+
+		Tileset *ts_node = ms->ts_node;
 		nodes = new Sprite[numLevels];
 		//paths = new Sprite[numLevels];
 		topBonusNodes = new Sprite[numLevels];
@@ -2314,7 +2433,7 @@ void MapSector::Init(Sector *m_sec)
 		}
 	}
 	
-	if (blank)
+	/*if (blank)
 	{
 		shardsCollectedText.setFont(ms->mainMenu->arial);
 		completionPercentText.setFont(ms->mainMenu->arial);
@@ -2334,7 +2453,7 @@ void MapSector::Init(Sector *m_sec)
 		sectorNameText.setCharacterSize(40);
 		sectorNameText.setFont(ms->mainMenu->arial);
 		sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
-	}
+	}*/
 
 	if (sec->IsComplete())
 	{
@@ -2346,18 +2465,20 @@ void MapSector::Init(Sector *m_sec)
 		state = NORMAL;
 	}
 
-	auto &snList = sec->levels[saSelector->currIndex].shardNameList;
+	auto &snList = GetSelectedLevel().shardNameList;
 	numTotalShards = snList.size();
 
 	levelCollectedShards = new Vertex[numTotalShards * 4];
 	levelCollectedShardsBG = new Vertex[numTotalShards * 4];
 
 	SetXCenter(960);
+
 	UpdateNodes();
 	UpdateUnlockConditions();
 	UpdateStats();
 	UpdateLevelStats();
-	UpdateHighlight();
+	UpdateUnlockedLevelCount();
+	//UpdateHighlight();
 }
 
 WorldSelector::WorldSelector(MainMenu *mm)

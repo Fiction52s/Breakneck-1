@@ -35,8 +35,16 @@ SingleAxisSelector::~SingleAxisSelector()
 void SingleAxisSelector::SetTotalSize( int total )
 {
 	totalItems = total;
-	currIndex = currIndex % totalItems;
-	oldCurrIndex = oldCurrIndex % totalItems;
+	if (currIndex >= total)
+	{
+		currIndex = total - 1;
+	}
+	if (oldCurrIndex >= total)
+	{
+		oldCurrIndex = total - 1;
+	}
+	//currIndex = currIndex % totalItems;
+	//oldCurrIndex = oldCurrIndex % totalItems;
 }
 
 int SingleAxisSelector::UpdateIndex(bool dec, bool inc)
@@ -150,6 +158,186 @@ void SingleAxisSelector::ResetCounters()
 	flipCounterDown = 0;
 	framesWaiting = 0;
 }
+
+//DoubleAxisSelector::DoubleAxisSelector(int numWaitFramesLevels, int*p_waitFrames, int numWaitModeThreshLevels,
+//	int *p_waitModeThresh, int p_totalItemsX, int p_totalItemsY, int p_startIndex, bool p_loop)
+//	:startIndex(p_startIndex), loop(p_loop), currIndex(p_startIndex)
+//{
+//	totalItemsX = p_totalItemsX;
+//	totalItemsY = p_totalItemsY;
+//	waitFrames = new int[numWaitFramesLevels];
+//	for (int i = 0; i < numWaitFramesLevels; ++i)
+//	{
+//		waitFrames[i] = p_waitFrames[i];
+//	}
+//
+//	waitModeThresh = new int[numWaitModeThreshLevels];
+//	for (int i = 0; i < numWaitModeThreshLevels; ++i)
+//	{
+//		waitModeThresh[i] = p_waitModeThresh[i];
+//	}
+//
+//	currWaitLevel = 0;
+//	flipCounterUp = 0;
+//	flipCounterDown = 0;
+//	framesWaiting = 0;
+//	oldCurrIndex = startIndex;
+//}
+//
+//DoubleAxisSelector::~DoubleAxisSelector()
+//{
+//	delete[] waitFrames;
+//	delete[] waitModeThresh;
+//}
+//
+//void DoubleAxisSelector::SetTotalSize(int totalX, int totalY)
+//{
+//	totalItemsX = totalX;
+//	if (currIndexX >= totalX)
+//	{
+//		currIndexX = totalX - 1;
+//	}
+//	if (oldCurrIndexX >= totalX)
+//	{
+//		oldCurrIndexX = totalX - 1;
+//	}
+//
+//	totalItemsY = totalY;
+//	if (currIndexY >= totalY)
+//	{
+//		currIndexY = totalY - 1;
+//	}
+//	if (oldCurrIndexY >= totalY)
+//	{
+//		oldCurrIndexY = totalY - 1;
+//	}
+//	//currIndex = currIndex % totalItems;
+//	//oldCurrIndex = oldCurrIndex % totalItems;
+//}
+//
+//int DoubleAxisSelector::UpdateIndex(bool left, bool right, bool dec, bool inc)
+//{
+//	oldCurrIndexX = currIndexX;
+//	oldCurrIndexY = currIndexY;
+//
+//	if (left && dec)
+//	{
+//
+//	}
+//
+//	if (inc)
+//	{
+//		if (flipCounterDown == 0
+//			|| (flipCounterDown > 0 && framesWaiting == waitFrames[currWaitLevel])
+//			)
+//		{
+//			if (flipCounterDown == 0)
+//			{
+//				currWaitLevel = 0;
+//			}
+//
+//			++flipCounterDown;
+//
+//			if (flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+//			{
+//				currWaitLevel++;
+//			}
+//
+//			flipCounterUp = 0;
+//			framesWaiting = 0;
+//
+//			if (currIndexY < totalItemsY - 1)
+//			{
+//				currIndexY++;
+//			}
+//			else
+//			{
+//				if (!loop)
+//					return 0;
+//
+//				currIndexY = 0;
+//			}
+//			return 1;
+//		}
+//		else
+//		{
+//			++framesWaiting;
+//			return 0;
+//		}
+//
+//	}
+//	else if (dec)
+//	{
+//		if (flipCounterUp == 0
+//			|| (flipCounterUp > 0 && framesWaiting == waitFrames[currWaitLevel])
+//			)
+//		{
+//			if (flipCounterUp == 0)
+//			{
+//				currWaitLevel = 0;
+//			}
+//
+//			++flipCounterUp;
+//
+//			if (flipCounterUp == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+//			{
+//				currWaitLevel++;
+//			}
+//
+//			flipCounterDown = 0;
+//			framesWaiting = 0;
+//			if (currIndexY > 0)
+//			{
+//				currIndexY--;
+//			}
+//			else
+//			{
+//				if (!loop)
+//					return 0;
+//
+//				currIndexY = totalItemsY - 1;
+//			}
+//			return -1;
+//		}
+//		else
+//		{
+//			++framesWaiting;
+//			return 0;
+//		}
+//
+//	}
+//	else
+//	{
+//		flipCounterUp = 0;
+//		flipCounterDown = 0;
+//		currWaitLevel = 0;
+//		framesWaiting = 0;
+//		return 0;
+//	}
+//}
+//
+//void DoubleAxisSelector::Reset()
+//{
+//	currWaitLevel = 0;
+//	flipCounterUp = 0;
+//	flipCounterDown = 0;
+//	framesWaiting = 0;
+//	oldCurrIndexX = startIndexX;
+//	oldCurrIndexY = startIndexY;
+//
+//	currIndexX = startIndexX;
+//	currIndexY = startIndexY;
+//}
+//
+//void DoubleAxisSelector::ResetCounters()
+//{
+//	currWaitLevel = 0;
+//	flipCounterUp = 0;
+//	flipCounterDown = 0;
+//	flipCounterLeft = 0;
+//	flipCounterRight = 0;
+//	framesWaiting = 0;
+//}
 
 VertSlider::VertSlider()
 {

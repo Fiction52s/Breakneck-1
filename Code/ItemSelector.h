@@ -31,6 +31,41 @@ struct SingleAxisSelector
 	void SetTotalSize( int total );
 };
 
+//struct DoubleAxisSelector
+//{
+//	DoubleAxisSelector(int numWaitFramesLevels,
+//		int*p_waitFrames,
+//		int numWaitModeThreshLevels,
+//		int *p_waitModeThresh,
+//		int totalItemsX, int totalItemsY,
+//		int startIndex,
+//		bool loop = true);
+//	~DoubleAxisSelector();
+//	void ResetCounters();
+//	void Reset();
+//	int *waitFrames;// [3];
+//	int *waitModeThresh;//[2];
+//	int framesWaiting;
+//	//0 for none, 1 for inc, -1 for dec
+//	int UpdateIndex(bool left, bool right, bool dec, bool inc);
+//	int currWaitLevel;
+//	int flipCounterUp;
+//	int flipCounterDown;
+//	int flipCounterLeft;
+//	int flipCounterRight;
+//	bool loop;
+//	int currIndexX;
+//	int currIndexY;
+//	int totalItemsX;
+//	int totalItemsY;
+//	int oldCurrIndexX;
+//	int oldCurrIndexY;
+//	int startIndexX;
+//	int startIndexY;
+//	void SetTotalSize(int totalX, int totalY);
+//};
+
+
 struct VertSlider
 {
 	VertSlider();

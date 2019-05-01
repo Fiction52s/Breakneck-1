@@ -2575,9 +2575,9 @@ void MainMenu::HandleMenuMode()
 
 		SaveFile *currFile = GetCurrentProgress();
 		World & world = currFile->worlds[worldMap->selectedColony];
-		int secIndex = worldMap->selectors[worldMap->selectedColony]->saSelector->currIndex;
+		int secIndex = worldMap->selectors[worldMap->selectedColony]->sectorSelector->currIndex;
 		Sector &sec = world.sectors[secIndex];
-		int levIndex = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector->currIndex;
+		int levIndex = worldMap->selectors[worldMap->selectedColony]->mapSelector->currIndex;
 		if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
 		{
 			//currLevel->mh->envType];
@@ -2616,7 +2616,7 @@ void MainMenu::HandleMenuMode()
 
 		window->setView(oldView);
 
-		SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->saSelector;
+		SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->mapSelector;
 		int numLevels = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
 		if (result == GameSession::GR_WIN)
 		{
@@ -2629,7 +2629,7 @@ void MainMenu::HandleMenuMode()
 
 			delete currLevel;
 			currLevel = NULL;
-
+			fader->Clear();
 			SetMode(WORLDMAP);
 			worldMap->Update(menuPrevInput, menuCurrInput);
 		}
@@ -2655,6 +2655,7 @@ void MainMenu::HandleMenuMode()
 				delete currLevel;
 				currLevel = NULL;
 
+				fader->Clear();
 				SetMode( MainMenu::WORLDMAP );
 				worldMap->Update(menuPrevInput, menuCurrInput);
 			}

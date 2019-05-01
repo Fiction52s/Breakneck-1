@@ -7,7 +7,7 @@
 #include "Input.h"
 #include "Tileset.h"
 #include "ItemSelector.h"
-
+#include "SaveFile.h"
 
 struct MainMenu;
 struct SaveFile;
@@ -35,6 +35,11 @@ struct MapColony
 
 };
 
+struct MapNode
+{
+
+};
+
 struct MapSector
 {
 	enum State
@@ -47,57 +52,59 @@ struct MapSector
 		COMPLETE
 	};
 
-	sf::Shader horizScrollShader1;
-	sf::Shader horizScrollShader2;
-	
-	sf::Vertex backScrollEnergy[4];
-	sf::Vertex frontScrollEnergy[4];
-	void RunSelectedMap();
-	Tileset *ts_scrollingEnergy;
-	State state;
-	int stateFrame;
 	MapSector(MapSelector *ms, int index);
 	~MapSector();
-	Tileset *ts_thumb;
-	Tileset *ts_importantNodeIcons;
-	/*static void S_Init(Sector *m_sec,
-		MapSector *ms );
-	void ThreadedInit( Sector *m_sec );
-	boost::thread *initThread;
-	bool IsInitialized();*/
-	sf::Text sectorNameText;
+	void UpdateUnlockedLevelCount();
+	int unlockedLevelCount;
+
 	int frame;
-	//int *bossNumbers;
+	int stateFrame;
+	State state;
+
+	bool IsFocused();
+	void RunSelectedMap();
+
+	
+	Tileset *ts_thumb;
+	sf::Text sectorNameText;
+	
 	int nodeSize;
 	int pathLen;
 	sf::Vector2f left;
 	void Init(Sector *sec);
 	Sector *sec;
+
+	int GetNumLevels();
+
 	void UpdateNodePosition();
-	//shard stuff
+	int GetSelectedIndex();
+	Level &GetSelectedLevel();
+
+
 	int numLevels;
 	void Load();
-	Tileset *ts_node;
-	int topUnlockedIndex;
-	int botUnlockedIndex;
 	int unlockedIndex;
 	int unlockFrame;
-	SingleAxisSelector *saSelector;
-	//sf::Vertex *shardQuads;
+	//SingleAxisSelector *saSelector; //select level
+
 	int numTotalShards;
 	sf::Vertex *levelCollectedShards;
 	sf::Vertex *levelCollectedShardsBG;
+
+	sf::Sprite *nodes;
+
+	//worry about bonuses later
 	int selectedYIndex;
 	sf::Sprite *topBonusNodes;
 	sf::Sprite *botBonusNodes;
-	sf::Sprite *nodes;
-	sf::Sprite nodeHighlight;
-	void UpdateHighlight();
+	
+	
 	int sectorIndex;
 	sf::Sprite thumbnail;
 	sf::Vertex levelBG[4];
 	sf::Vertex statsBG[4];
 	sf::Vertex sectorStatsBG[4];
+	
 	sf::Text *unlockCondText;
 	int numUnlockConditions;
 	sf::Text shardsCollectedText;
@@ -109,24 +116,36 @@ struct MapSector
 	Tileset *ts_energyTri;
 	Tileset *ts_energyMask;
 	Tileset *ts_nodeExplode;
+	Tileset *ts_shards;
+
 	sf::Sprite nodeExplodeSpr;
+
 	void Update(ControllerState &curr,
 		ControllerState &prev);
 	void SetXCenter( float x );
 	void Draw(sf::RenderTarget *target);
-	Tileset *ts_shards;
-	MapSelector *ms;
-	float xCenter;
-	float percentComplete;
+	
+	
+	
 	void UpdateNodes();
-	bool HasTopBonus(int node);
 	sf::Vector2f GetNodePos(int n);
+	sf::Vector2f GetSelectedNodePos();
+	int GetNodeSubIndex(int node);
+	int GetSelectedNodeSubIndex();
+
+	int GetSelectedNodeBossFightType();
+
+	bool HasTopBonus(int node);
+	bool HasBotBonus(int node);
 	sf::Vector2f GetTopNodePos(int n);
 	sf::Vector2f GetBotNodePos(int n);
-	bool HasBotBonus(int node);
-	int GetNodeSubIndex(int node);
 	int GetNodeBonusIndexTop(int node);
 	int GetNodeBonusIndexBot(int node);
+	
+	float xCenter;
+	float percentComplete;
+	MapSelector *ms;
+	
 	void UpdateLevelStats();
 	void DrawLevelStats(sf::RenderTarget *target);
 	void DrawStats(sf::RenderTarget *target);
@@ -139,56 +158,60 @@ struct MapSelector
 {
 	enum State
 	{
-		S_SLIDINGLEFT,
-		S_SLIDINGRIGHT,
+		//S_SLIDINGLEFT,
+		//S_SLIDINGRIGHT,
 		S_IDLE,
 	};
+
+	sf::Sprite nodeHighlight;
+	void UpdateHighlight();
+
+	sf::Shader horizScrollShader1;
+	sf::Shader horizScrollShader2;
+
+	sf::Vertex backScrollEnergy[4];
+	sf::Vertex frontScrollEnergy[4];
+	//Tileset *ts_scrollingEnergy;
 
 	
 	void RunSelectedMap();
 	State state;
-	int slideDuration;
-	MapSelector( MainMenu *mm, sf::Vector2f &pos );
+	//int slideDuration;
+	MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex );
+	int worldIndex;
 	~MapSelector();
 	MapSector **sectors;
 	Tileset *ts_sectorLevelBG;
 	Tileset *ts_levelStatsBG;
 	Tileset *ts_sectorStatsBG;
-	Tileset *ts_scrollingEnergy[7];
-	
-	sf::Vertex shoulderIcons[8];
-	Tileset *ts_shoulderIcons;
+	Tileset *ts_scrollingEnergy;
+	MapSector *GetFocusedSector();
+
 	int numSectors;
+	
+	//int currSectorIndex;
 	sf::Vector2f sectorCenter;
-	int currSectorIndex;
+	
 	void UpdateAllInfo(int index);
 	MainMenu *mainMenu;
-	//int numNodeColumns;
-	//int nodeSelectorWidth;
+
 	sf::Vector2f centerPos;
 	MapNodeState *nodeStates[3];
 	void UpdateSprites();
 	void Update(ControllerState &curr,
 		ControllerState &prev);
-	//sf::Sprite *nodes;
-	
-	//sf::Vertex *nodes;
 
-	//sf::Vertex thumbnail[4];
-	
-	//sf::RectangleShape bottomBGRect;
 	sf::Sprite bottomBG;
 	sf::Sprite thumbnailBG;
 	sf::Sprite shardBG;
 	void Draw(sf::RenderTarget *target);
-	SingleAxisSelector *saSelector;
-	Tileset *ts_node[7];
+	SingleAxisSelector *sectorSelector;
+	SingleAxisSelector *mapSelector;
+	Tileset *ts_node;
 	Tileset **ts_bossFight;
 	Tileset *ts_sectorKey;
 	Tileset **ts_sectorOpen;
-
 	int frame;
-	//boost::thread *loadThread;
 };
 
 struct WorldSelector
