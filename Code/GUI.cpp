@@ -305,7 +305,7 @@ void Panel::Draw( RenderTarget *target )
 {
 	sf::RectangleShape rs;
 	rs.setSize( size );
-	rs.setFillColor( Color::Yellow );
+	rs.setFillColor( Color( 83, 102, 188) );
 	rs.setPosition( pos.x, pos.y );
 	target->draw( rs );
 

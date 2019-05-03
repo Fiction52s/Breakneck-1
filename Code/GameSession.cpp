@@ -5090,74 +5090,118 @@ void GameSession::SetupMapBorderQuads(bool *blackBorder,
 		mh->topBounds = trueTop - extraBorder / 2;
 		int inversePolyBottom = inversePoly->aabb.top + inversePoly->aabb.height;
 		mh->boundsHeight = (inversePolyBottom + extraBorder) - trueTop;
-	}
 
-	
-	int inversePolyRight = (inversePoly->aabb.left + inversePoly->aabb.width);
-	blackBorder[0] = inversePoly->aabb.left < mh->leftBounds; //inverse is further left than border
-	blackBorder[1] = inversePolyRight >(mh->leftBounds + mh->boundsWidth); //inverse is further right than border
+		int inversePolyRight = (inversePoly->aabb.left + inversePoly->aabb.width);
+		blackBorder[0] = inversePoly->aabb.left < mh->leftBounds; //inverse is further left than border
+		blackBorder[1] = inversePolyRight >(mh->leftBounds + mh->boundsWidth); //inverse is further right than border
 
-	int leftB = mh->leftBounds;
-	int rightB = mh->leftBounds + mh->boundsWidth;
-	if (!blackBorder[0])
-	{
-		mh->leftBounds = inversePoly->aabb.left - extraBorder;
-		mh->boundsWidth = rightB - mh->leftBounds;
-	}
-	if (!blackBorder[1])
-	{
-		mh->boundsWidth = (inversePolyRight + extraBorder) - mh->leftBounds;
+		int leftB = mh->leftBounds;
+		int rightB = mh->leftBounds + mh->boundsWidth;
+		if (!blackBorder[0])
+		{
+			mh->leftBounds = inversePoly->aabb.left - extraBorder;
+			mh->boundsWidth = rightB - mh->leftBounds;
+		}
+		if (!blackBorder[1])
+		{
+			mh->boundsWidth = (inversePolyRight + extraBorder) - mh->leftBounds;
+		}
+		else
+		{
+			cout << "creating black border at " << (mh->leftBounds + mh->boundsWidth) << endl;
+		}
 	}
 	else
 	{
-		cout << "creating black border at " << (mh->leftBounds + mh->boundsWidth) << endl;
+		auto it = allVA.begin();
+		int maxY = (*it)->aabb.top + (*it)->aabb.height;
+		int minX = (*it)->aabb.left;
+		int maxX = (*it)->aabb.left + (*it)->aabb.width;
+
+		++it;
+		int temp;
+		for (; it != allVA.end(); ++it)
+		{
+			temp = (*it)->aabb.top + (*it)->aabb.height;
+			if (temp > maxY)
+			{
+				maxY = temp;
+			}
+			temp = (*it)->aabb.left;
+			if (temp < minX)
+			{
+				minX = temp;
+			}
+			temp = (*it)->aabb.left + (*it)->aabb.width;
+			if (temp > maxX)
+			{
+				maxX = temp;
+			}
+		}
+		
+		mh->boundsHeight = maxY - mh->topBounds - extraBorder;
+		int oldRight = mh->leftBounds + mh->boundsWidth;
+		int oldLeft = mh->leftBounds;
+		if (minX > oldLeft)
+		{
+			mh->leftBounds = minX;
+		}
+		if (maxX <= oldRight)
+		{
+			mh->boundsWidth = maxX - mh->leftBounds;
+		}
 	}
+
+	
+	
+
+	
 
 	SetGlobalBorders();
 
-	for (int i = 0; i < 8; ++i)
-	{
-		//blackBorderQuads[i].color = Color::Black;
-		blackBorderQuads[i].position.y = mh->topBounds;
-	}
+	
 
 	int quadWidth = 200;
-	blackBorderQuads[0].position.x = mh->leftBounds;
-	blackBorderQuads[3].position.x = mh->leftBounds;
+	int extra = 1000;
 
-	blackBorderQuads[1].position.x = mh->leftBounds + quadWidth;
-	blackBorderQuads[2].position.x = mh->leftBounds + quadWidth;
+	int top = mh->topBounds;
+	int lBound = mh->leftBounds;
+	int rBound = mh->leftBounds + mh->boundsWidth;
+	int height = mh->boundsHeight;
+	
+	SetRectCenter(blackBorderQuads, quadWidth, height, Vector2f(lBound + quadWidth / 2,
+		top + height / 2));
+	SetRectCenter(blackBorderQuads + 4, quadWidth, height, Vector2f(rBound - quadWidth / 2,
+		top + height / 2));
 
-	blackBorderQuads[5].position.x = mh->leftBounds + mh->boundsWidth;
-	blackBorderQuads[6].position.x = mh->leftBounds + mh->boundsWidth;
-
-	blackBorderQuads[4].position.x = blackBorderQuads[5].position.x - quadWidth;
-	blackBorderQuads[7].position.x = blackBorderQuads[5].position.x - quadWidth;
-
-	blackBorderQuads[2].position.y += mh->boundsHeight;
-	blackBorderQuads[3].position.y += mh->boundsHeight;
-	blackBorderQuads[6].position.y += mh->boundsHeight;
-	blackBorderQuads[7].position.y += mh->boundsHeight;
+	SetRectCenter(blackBorderQuads + 8, extra, height, Vector2f(lBound - extra / 2,
+		top + height / 2));
+	SetRectCenter(blackBorderQuads + 12, extra, height, Vector2f(rBound + extra / 2,
+		top + height / 2));
+	SetRectColor(blackBorderQuads, Color(Color::Black));
+	SetRectColor(blackBorderQuads + 4, Color(Color::Black));
+	SetRectColor(blackBorderQuads + 8, Color(Color::Black));
+	SetRectColor(blackBorderQuads + 12, Color(Color::Black));
 
 	if (blackBorder[0])
 	{
-		SetRectColor(blackBorderQuads, Color(Color::Black));
 		blackBorderQuads[1].color.a = 0;
 		blackBorderQuads[2].color.a = 0;
 	}
 	else
 	{
 		SetRectColor(blackBorderQuads, Color(Color::Transparent));
+		SetRectColor(blackBorderQuads + 8, Color(Color::Transparent));
 	}
 	if (blackBorder[1])
 	{
-		SetRectColor(blackBorderQuads + 4, Color(Color::Black));
 		blackBorderQuads[4].color.a = 0;
 		blackBorderQuads[7].color.a = 0;
 	}
 	else
 	{
 		SetRectColor(blackBorderQuads + 4, Color(Color::Transparent));
+		SetRectColor(blackBorderQuads + 12, Color(Color::Transparent));
 	}
 
 	if (stormCeilingOn)
@@ -7554,7 +7598,15 @@ int GameSession::Run()
 		if( topClouds != NULL )
 			topClouds->Draw(preScreenTex);
 
-		preScreenTex->draw(blackBorderQuads, 8, sf::Quads);
+		if (cam.manual)
+		{
+			preScreenTex->draw(blackBorderQuads, 16, sf::Quads);
+		}
+		else
+		{
+			preScreenTex->draw(blackBorderQuads, 8, sf::Quads);
+		}
+		
 		
 		
 		DrawStoryLayer(EffectLayer::BEHIND_TERRAIN);
@@ -9173,6 +9225,7 @@ int GameSession::Run()
 
 	pauseMenu->owner = NULL;
 
+	fader->Clear();
 	return returnVal;
 }
 

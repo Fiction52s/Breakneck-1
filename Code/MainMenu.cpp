@@ -3029,7 +3029,7 @@ CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
 void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 {
 	LevelSelector &ls = *menu->levelSelector;
-	if( ls.text[ls.selectedIndex].getFillColor() == Color::Blue )
+	if( ls.text[ls.selectedIndex].getFillColor() == Color::White )
 	{
 		if( b->name == "Play" )
 		{

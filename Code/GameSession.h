@@ -428,7 +428,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int numTotalKeys;
 	int numKeysCollected;
 
-	sf::Vertex blackBorderQuads[4 * 2];
+	sf::Vertex blackBorderQuads[4 * 4];
 
 	HitboxManager *hitboxManager;
 	AbsorbParticles *absorbParticles;

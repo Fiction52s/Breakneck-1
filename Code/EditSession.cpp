@@ -18191,208 +18191,239 @@ void EditSession::CreateDecorImage(DecorPtr dec)
 
 void EditSession::CreatePreview(Vector2i imageSize)
 {
+	int extraBound = 0;
+	int left;
+	int top;
+	int right;
+	int bot;
+	cout << "CREATING PREVIEW" << endl;
+
 	if (inversePolygon != NULL)
 	{
-		cout << "CREATING PREVIEW" << endl;
-		int left = inversePolygon->left;
-		int top = inversePolygon->top;
-		int right = inversePolygon->right;
-		int bot = inversePolygon->bottom;
+		left = inversePolygon->left;
+		top = inversePolygon->top;
+		right = inversePolygon->right;
+		bot = inversePolygon->bottom;
 
-		for (auto it = groups.begin(); it != groups.end(); ++it)
-		{
-			for (auto it2 = (*it).second->actors.begin(); it2 != (*it).second->actors.end(); ++it2)
-			{
-				if ((*it2)->type->name == "poi" )
-				{
-					boost::shared_ptr<PoiParams> pp = boost::static_pointer_cast<PoiParams>((*it2));
-					if (pp->name == "stormceiling")
-					{
-						top = pp->position.y;
-					}
-				}
-			}
-		}
-
-		int extraBound = 200;
-		if (left < leftBound)
-		{
-			left = leftBound;
-		}
-		else
-		{
-			left -= extraBound;
-		}
-
-		if (top < topBound)
-		{
-			top = topBound;
-		}
-		else
-		{
-			top -= extraBound;
-		}
-		int bRight = leftBound + boundWidth;
-		if (right > bRight)
-		{
-			right = bRight;
-		}
-		else
-		{
-			right += extraBound;
-		}
-
-		
-		bot += extraBound;
-		
-		//fullBounds[0].position = Vector2f(leftBound, topBound - boundRectWidth);
-		//fullBounds[1].position = Vector2f(leftBound + boundWidth, topBound - boundRectWidth);
-		//fullBounds[2].position = Vector2f(leftBound + boundWidth, topBound + boundRectWidth);
-		//fullBounds[3].position = Vector2f(leftBound, topBound + boundRectWidth);
-
-		
-
-		int width = right - left;
-		int height = bot - top;
-
-		Vector2f middle( left + width / 2, top + height / 2 );
-
-		int remX = (right - left) % imageSize.x;
-		int remY = (bot - top) % imageSize.y;
-
-		double idealXYRatio = (double)imageSize.x/imageSize.y;
-		double realXYRatio = (double)width/(double)height;
-
-		double facX = (right - left) / (double)imageSize.x;
-		double facY = (bot - top) / (double)imageSize.y;
-
-		if( realXYRatio > idealXYRatio )
-		{
-			//wider than it should be
-			
-
-			height = ceil(height * (realXYRatio / idealXYRatio));
-
-			if( height % imageSize.y == 1 )
-				height--;
-			else if( height % imageSize.y == imageSize.y - 1 )
-				height++;
-		}
-		else if( realXYRatio < idealXYRatio )
-		{
-			//taller than it should be
-
-			width = ceil( width * (idealXYRatio / realXYRatio) );
-
-			if( width % imageSize.x == 1 )
-				width--;
-			if( width % imageSize.x == imageSize.x - 1 )
-				width++;
-		}
-		else
-		{
-			//its exactly right
-		}
-
-		sf::View pView;
-		pView.setCenter( middle );
-		pView.setSize(Vector2f(width, -height));// *1.05f );
-
-		Color inversePolyTypeColor;// = Color::Blue;
-
-		Color purp(109, 82, 190);
-		inversePolyTypeColor = Color::Blue;
-
-		mapPreviewTex->clear(Color::Black);
-		mapPreviewTex->setView( pView );
-
-
-		CircleShape cs;
-		cs.setRadius( 10.f * ( (float)width / 1920 ) );
-		cs.setFillColor( Color::Red );
-		cs.setOrigin( cs.getLocalBounds().width / 2, 
-			cs.getLocalBounds().height / 2 );
-
-		CircleShape goalCS;
-		goalCS.setRadius(16.f * ((float)width / 1920));
-		goalCS.setFillColor(Color::Magenta);
-		goalCS.setOrigin(cs.getLocalBounds().width / 2,
-			cs.getLocalBounds().height / 2);
-
-		//mapPreviewTex->draw(*tempva);
-		//delete tempva;
-
-		for( list<boost::shared_ptr<TerrainPolygon>>::iterator it
-			= polygons.begin(); it != polygons.end(); ++it )
-		{
-			//if( (*it)->IsTouching( inversePolygon.get() ) )
-			//	continue;
-
-			(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
-		}
-
-		for (auto it = gates.begin(); it != gates.end(); ++it)
-		{
-			(*it)->DrawPreview(mapPreviewTex);
-		}
-
-		sf::RectangleShape borderRect;
-		borderRect.setFillColor(Color( 30, 30, 30));
-		borderRect.setSize(Vector2f(1000000, bot - top));
-		borderRect.setPosition(left, top);
-		borderRect.setOrigin(borderRect.getLocalBounds().width, 0);
-		mapPreviewTex->draw(borderRect);
-
-		borderRect.setOrigin(0, 0);
-		borderRect.setPosition(right, top);
-		mapPreviewTex->draw(borderRect);
-		//sf::Vertex borderRect[4];
-		//SetRectColor(borderRect, Color::Cyan);
-		
-		
-
-		for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-		{
-			for( list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
-				it2 != (*it).second->actors.end(); ++it2 )
-			{
-				if ((*it2)->type == types["goal"])
-				{
-					goalCS.setPosition((*it2)->position.x, (*it2)->position.y);
-					mapPreviewTex->draw(goalCS);
-				}
-				else
-				{
-					cs.setPosition((*it2)->position.x, (*it2)->position.y);
-					mapPreviewTex->draw(cs);
-				}
-				
-			}
-
-			
-			//(*it).second->DrawPreview( mapPreviewTex );
-		}
-
-		cs.setPosition(player->position.x, player->position.y );
-		cs.setFillColor(Color::Green);
-		mapPreviewTex->draw(cs);
-
-		sf::RectangleShape rs;
-		rs.setPosition(pView.getCenter().x - pView.getSize().x / 2, top);// pView.getCenter().y);
-		rs.setSize(Vector2f(pView.getSize().x, top - (pView.getCenter().y - pView.getSize().y / 2 )));
-		rs.setFillColor(Color::Cyan);
-		mapPreviewTex->draw(rs);
-		//this rectangle shape is just a placeholder, because eventually we will texture stuff.
-
-		
-
-		Image img = mapPreviewTex->getTexture().copyToImage();
-		
-		std::stringstream ssPrev;
-		ssPrev << currentPath.parent_path().relative_path().string() << "/Previews/" << currentPath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
-		std::string previewFile = ssPrev.str();
-		img.saveToFile( previewFile );
+		extraBound = 200;
 	}
+	else
+	{
+		int pLeft;
+		int pTop;
+		int pRight;
+		int pBot;
+		for (list<boost::shared_ptr<TerrainPolygon>>::iterator it
+			= polygons.begin(); it != polygons.end(); ++it)
+		{
+			if (polygons.front() == (*it))
+			{
+				pLeft = (*it)->left;
+				pTop = (*it)->top;
+				pRight = (*it)->right;
+				pBot = (*it)->bottom;
+			}
+			else
+			{
+				pLeft = max((*it)->left, pLeft);
+				pRight = min((*it)->right, pRight);
+				pTop = max((*it)->top, pTop);
+				pBot = min((*it)->bottom, pBot );
+			}
+		}
+
+		left = pLeft;
+		top = topBound;
+		right = pRight;
+		bot = pBot;
+	}
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto it2 = (*it).second->actors.begin(); it2 != (*it).second->actors.end(); ++it2)
+		{
+			if ((*it2)->type->name == "poi" )
+			{
+				boost::shared_ptr<PoiParams> pp = boost::static_pointer_cast<PoiParams>((*it2));
+				if (pp->name == "stormceiling")
+				{
+					top = pp->position.y;
+				}
+			}
+		}
+	}
+
+		
+	if (left < leftBound)
+	{
+		left = leftBound;
+	}
+	else
+	{
+		left -= extraBound;
+	}
+
+	if (top < topBound)
+	{
+		top = topBound;
+	}
+	else
+	{
+		top -= extraBound;
+	}
+	int bRight = leftBound + boundWidth;
+	if (right > bRight)
+	{
+		right = bRight;
+	}
+	else
+	{
+		right += extraBound;
+	}
+
+		
+	bot += extraBound;
+
+	int width = right - left;
+	int height = bot - top;
+
+	Vector2f middle( left + width / 2, top + height / 2 );
+
+	int remX = (right - left) % imageSize.x;
+	int remY = (bot - top) % imageSize.y;
+
+	double idealXYRatio = (double)imageSize.x/imageSize.y;
+	double realXYRatio = (double)width/(double)height;
+
+	double facX = (right - left) / (double)imageSize.x;
+	double facY = (bot - top) / (double)imageSize.y;
+
+	if( realXYRatio > idealXYRatio )
+	{
+		//wider than it should be
+			
+
+		height = ceil(height * (realXYRatio / idealXYRatio));
+
+		if( height % imageSize.y == 1 )
+			height--;
+		else if( height % imageSize.y == imageSize.y - 1 )
+			height++;
+	}
+	else if( realXYRatio < idealXYRatio )
+	{
+		//taller than it should be
+
+		width = ceil( width * (idealXYRatio / realXYRatio) );
+
+		if( width % imageSize.x == 1 )
+			width--;
+		if( width % imageSize.x == imageSize.x - 1 )
+			width++;
+	}
+	else
+	{
+		//its exactly right
+	}
+
+	sf::View pView;
+	pView.setCenter( middle );
+	pView.setSize(Vector2f(width, -height));// *1.05f );
+
+	//Color inversePolyTypeColor;// = Color::Blue;
+
+	Color purp(109, 82, 190);
+	//inversePolyTypeColor = Color::Blue;
+
+	mapPreviewTex->clear(Color::Black);
+	mapPreviewTex->setView( pView );
+
+
+	CircleShape cs;
+	cs.setRadius( 10.f * ( (float)width / 1920 ) );
+	cs.setFillColor( Color::Red );
+	cs.setOrigin( cs.getLocalBounds().width / 2, 
+		cs.getLocalBounds().height / 2 );
+
+	CircleShape goalCS;
+	goalCS.setRadius(16.f * ((float)width / 1920));
+	goalCS.setFillColor(Color::Magenta);
+	goalCS.setOrigin(cs.getLocalBounds().width / 2,
+		cs.getLocalBounds().height / 2);
+
+	//mapPreviewTex->draw(*tempva);
+	//delete tempva;
+
+	for( list<boost::shared_ptr<TerrainPolygon>>::iterator it
+		= polygons.begin(); it != polygons.end(); ++it )
+	{
+		//if( (*it)->IsTouching( inversePolygon.get() ) )
+		//	continue;
+
+		(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
+	}
+
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		(*it)->DrawPreview(mapPreviewTex);
+	}
+
+	sf::RectangleShape borderRect;
+	borderRect.setFillColor(Color( 30, 30, 30));
+	borderRect.setSize(Vector2f(1000000, bot - top));
+	borderRect.setPosition(left, top);
+	borderRect.setOrigin(borderRect.getLocalBounds().width, 0);
+	mapPreviewTex->draw(borderRect);
+
+	borderRect.setOrigin(0, 0);
+	borderRect.setPosition(right, top);
+	mapPreviewTex->draw(borderRect);
+	//sf::Vertex borderRect[4];
+	//SetRectColor(borderRect, Color::Cyan);
+		
+		
+
+	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+	{
+		for( list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
+			it2 != (*it).second->actors.end(); ++it2 )
+		{
+			if ((*it2)->type == types["goal"])
+			{
+				goalCS.setPosition((*it2)->position.x, (*it2)->position.y);
+				mapPreviewTex->draw(goalCS);
+			}
+			else
+			{
+				cs.setPosition((*it2)->position.x, (*it2)->position.y);
+				mapPreviewTex->draw(cs);
+			}
+				
+		}
+
+			
+		//(*it).second->DrawPreview( mapPreviewTex );
+	}
+
+	cs.setPosition(player->position.x, player->position.y );
+	cs.setFillColor(Color::Green);
+	mapPreviewTex->draw(cs);
+
+	sf::RectangleShape rs;
+	rs.setPosition(pView.getCenter().x - pView.getSize().x / 2, top);// pView.getCenter().y);
+	rs.setSize(Vector2f(pView.getSize().x, top - (pView.getCenter().y - pView.getSize().y / 2 )));
+	rs.setFillColor(Color::Cyan);
+	mapPreviewTex->draw(rs);
+	//this rectangle shape is just a placeholder, because eventually we will texture stuff.
+
+		
+
+	Image img = mapPreviewTex->getTexture().copyToImage();
+		
+	std::stringstream ssPrev;
+	ssPrev << currentPath.parent_path().relative_path().string() << "/Previews/" << currentPath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
+	std::string previewFile = ssPrev.str();
+	img.saveToFile( previewFile );
 	//currentFile
 }
 

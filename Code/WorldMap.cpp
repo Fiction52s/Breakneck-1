@@ -1091,9 +1091,9 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 	ts_node[5] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
 	ts_node[6] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);*/
 
-	string scrollEnergyFile = string("WorldMap/sector_aura_w") + worldIndexStr + string("_1200x400.png");
+	string scrollEnergyFile = string("WorldMap/sector_aura_w") + worldIndexStr + string("_1200x300.png");
 
-	ts_scrollingEnergy = mainMenu->tilesetManager.GetTileset(scrollEnergyFile, 1200, 400);
+	ts_scrollingEnergy = mainMenu->tilesetManager.GetTileset(scrollEnergyFile, 1200, 300);
 	//Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
 	SetRectSubRect(frontScrollEnergy, ts_scrollingEnergy->GetSubRect(0));
 	SetRectSubRect(backScrollEnergy, ts_scrollingEnergy->GetSubRect(1));
@@ -1331,8 +1331,8 @@ void MapSelector::Update(ControllerState &curr,
 	//}
 
 	int scrollHeight = 400 + sectorSelector->currIndex * 120;
-	SetRectCenter(backScrollEnergy, 1200, 200, Vector2f(960, scrollHeight));
-	SetRectCenter(frontScrollEnergy, 1200, 200, Vector2f(960, scrollHeight));
+	SetRectCenter(backScrollEnergy, 1200, 100, Vector2f(960, scrollHeight));
+	SetRectCenter(frontScrollEnergy, 1200, 100, Vector2f(960, scrollHeight));
 
 	int scrollFramesBack = 180;
 	int scrollFramesFront = 360;

@@ -222,7 +222,7 @@ int LevelSelector::Tex(int index, int level, TreeNode *entry)
 
 
 		t.setString( name );
-		t.setFillColor( Color::Blue );
+		t.setFillColor( Color::White );
 		t.setPosition( (level + 1) * xspacing, index * yspacing );
 		localPaths[index] = string("Resources/") + (entry->GetLocalPath() / (*it).filename()).string();
 		dirNode[index] = entry;
@@ -342,7 +342,7 @@ void LevelSelector::Draw( RenderTarget *target )
 {
 	int totalShown = 27;
 
-	drawPanel.clear(sf::Color::Green);
+	drawPanel.clear(sf::Color::Black);
 	View v;
 	v.setCenter(drawPanel.getSize().x / 2, drawPanel.getSize().y / 2 + yspacing * viewOffset);
 	v.setSize(drawPanel.getSize().x, drawPanel.getSize().y);

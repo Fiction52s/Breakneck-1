@@ -21622,11 +21622,11 @@ void Actor::UpdateSprite()
 		{
 			owner->ActivateEffect(EffectLayer::IN_FRONT, ts_exitAura, position, false, 0, 8, 2, true, 55);
 			owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 19, 2, true);
-			owner->cam.SetManual(true);
+			//owner->cam.SetManual(true);
 		}
 		else if (frame == 20)
 		{
-			owner->cam.SetManual(false);
+			//owner->cam.SetManual(false);
 		}
 		SetSpriteTexture(action);
 		SetSpriteTile((frame/2 )+110, facingRight);
