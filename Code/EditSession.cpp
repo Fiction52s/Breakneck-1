@@ -18225,10 +18225,10 @@ void EditSession::CreatePreview(Vector2i imageSize)
 			}
 			else
 			{
-				pLeft = max((*it)->left, pLeft);
-				pRight = min((*it)->right, pRight);
-				pTop = max((*it)->top, pTop);
-				pBot = min((*it)->bottom, pBot );
+				pLeft = min((*it)->left, pLeft);
+				pRight = max((*it)->right, pRight);
+				pTop = min((*it)->top, pTop);
+				pBot = max((*it)->bottom, pBot );
 			}
 		}
 

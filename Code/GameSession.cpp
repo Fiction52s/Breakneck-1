@@ -5113,6 +5113,10 @@ void GameSession::SetupMapBorderQuads(bool *blackBorder,
 	}
 	else
 	{
+		blackBorder[0] = true;
+		blackBorder[1] = true;
+
+
 		auto it = allVA.begin();
 		int maxY = (*it)->aabb.top + (*it)->aabb.height;
 		int minX = (*it)->aabb.left;
