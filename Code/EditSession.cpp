@@ -642,6 +642,29 @@ EditSession::~EditSession()
 	}
 }
 
+sf::Vector2f EditSession::SnapPointToGraph(Vector2f &p, int gridSize )
+{
+	int adjX, adjY;
+
+	p.x /= gridSize;
+	p.y /= gridSize;
+
+	if (p.x > 0)
+		p.x += .5f;
+	else if (p.x < 0)
+		p.x -= .5f;
+
+	if (p.y > 0)
+		p.y += .5f;
+	else if (p.y < 0)
+		p.y -= .5f;
+
+	adjX = ((int)p.x) * gridSize;
+	adjY = ((int)p.y) * gridSize;
+
+	//V2d tempTest = GraphPos( testPoint
+	return Vector2f(adjX, adjY);
+}
 
 void EditSession::Draw()
 {
@@ -3527,6 +3550,66 @@ bool EditSession::PointOnLine( V2d &pos, V2d &p0, V2d &p1, double width)
 		}
 	}
 	return false;
+}
+
+
+void EditSession::TryPlaceGatePoint(V2d &pos)
+{
+	modifyGate = NULL;
+	bool found = false;
+
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end() && !found; ++it)
+	{
+		//extended aabb 
+		TerrainPoint *closePoint = (*it)->GetClosePoint(8 * zoomMultiple, pos);
+
+		if (closePoint != NULL)
+		{
+			if (gatePoints == 0)
+			{
+				for (list<GateInfoPtr>::iterator git = gates.begin(); git != gates.end() && !found; ++git)
+				{
+					if ((*git)->point0 == closePoint || (*git)->point1 == closePoint)
+					{
+						GateInfoPtr gi = (*git);
+
+						view.setCenter(closePoint->pos.x, closePoint->pos.y);
+						preScreenTex->setView(view);
+
+						modifyGate = gi;
+
+
+						found = true;
+					}
+				}
+
+				if (!found)
+				{
+					found = true;
+					gatePoints = 1;
+					testGateInfo.poly0 = (*it);
+					testGateInfo.point0 = closePoint;
+					testGateInfo.vertexIndex0 = (*it)->GetPointIndex(closePoint);
+				}
+			}
+			else
+			{
+				found = true;
+				gatePoints = 2;
+
+				testGateInfo.poly1 = (*it);
+				testGateInfo.point1 = closePoint;
+				testGateInfo.vertexIndex1 = (*it)->GetPointIndex(closePoint);
+				view.setCenter(testGateInfo.point1->pos.x, testGateInfo.point1->pos.y);
+				preScreenTex->setView(view);
+			}
+		}
+	}
+
+	if (!found)
+	{
+		gatePoints = 0;
+	}
 }
 
 //returns true if attach is successful
@@ -6992,7 +7075,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 							if( ev.key.code == Keyboard::Space )
 							{
-								if( !(showPoints && extendingPolygon) )
+								//if( !(showPoints && extendingPolygon) )
 								{
 									ExecuteTerrainCompletion();
 								}
@@ -7022,14 +7105,14 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							}
 							else if( ev.key.code == sf::Keyboard::E )
 							{
-								if( !showPoints )
-								 // this is only turned off for the beta build so I don't have to debug this.
-								{
-									showPoints = true;
-									extendingPolygon = NULL;
-									extendingPoint = NULL;
-									polygonInProgress->ClearPoints();
-								}
+								//if( !showPoints )
+								// // this is only turned off for the beta build so I don't have to debug this.
+								//{
+								//	showPoints = true;
+								//	extendingPolygon = NULL;
+								//	extendingPoint = NULL;
+								//	polygonInProgress->ClearPoints();
+								//}
 							}
 							else if( ev.key.code == sf::Keyboard::Z && ev.key.control )
 							{
@@ -7367,7 +7450,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 
 								//lights
-								if( sf::Keyboard::isKeyPressed( Keyboard::F ) )
+								if( false )//sf::Keyboard::isKeyPressed( Keyboard::F ) )
 								{
 									StaticLight *closest = NULL;
 									bool foundAny = false;
@@ -10409,77 +10492,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-								modifyGate = NULL;
-								bool found = false;
-								if( inversePolygon != NULL )
-									polygons.push_back( inversePolygon );
-								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end() && !found; ++it )
-								{
-									//extended aabb 
-									int range = 8 * zoomMultiple;
-									if( worldPos.x <= (*it)->right + range && worldPos.x >= (*it)->left - range
-										&& worldPos.y <= (*it)->bottom + range && worldPos.y >= (*it)->top - range )
-									{
-										int index = 0;
-										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL && !found; curr = curr->next )
-										{
-											if( length( worldPos - V2d( curr->pos.x, curr->pos.y ) ) <= range )
-											{
-												if( gatePoints == 0 )
-												{
-
-													for( list<GateInfoPtr>::iterator git = gates.begin(); git != gates.end() && !found; ++git )
-													{
-														if( (*git)->point0 == curr || (*git)->point1 == curr )
-														{
-
-															GateInfoPtr gi = (*git);
-
-															view.setCenter( curr->pos.x, curr->pos.y );
-															preScreenTex->setView( view );
-
-															modifyGate = gi;
-															
-															
-															found = true;
-														}
-													}
-
-													if( !found )
-													{
-														found = true;
-														gatePoints = 1;
-														testGateInfo.poly0 = (*it);
-														testGateInfo.point0 = curr;
-														testGateInfo.vertexIndex0 = index;
-													}
-												}
-												else
-												{
-													found = true;
-													gatePoints = 2;
-													
-													testGateInfo.poly1 = (*it);
-													testGateInfo.point1 = curr;
-													testGateInfo.vertexIndex1 = index;
-													view.setCenter( testGateInfo.point1->pos.x, testGateInfo.point1->pos.y );
-													preScreenTex->setView( view );
-												}
-											}
-
-											++index;
-										}
-									}
-								}
-
-								if( inversePolygon != NULL )
-									polygons.pop_back();
-
-								if( !found )
-								{
-									gatePoints = 0;
-								}
-
+								TryPlaceGatePoint(worldPos);
 							}
 							break;
 						}
@@ -10849,7 +10862,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			break;
 
 		showGraph = false;
-
 		showTerrainPath = true;
 
 
@@ -10935,45 +10947,22 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
 				}*/
 
-			//	GroundInfo g = ConvertPointToGround( Vector2i( worldPos.x, worldPos.y ) );
-			//	if( g.ground == NULL )
-			//	{
-			//		cout << "no ground" << endl;
-			//	}
-			//	else
-			//	{
-			//		cout << "gi: " << g.GetEdgeIndex() << endl;
-			//	}
-
 				if( showPanel != NULL )
 					break;
 
-				
-
-				if( //polygonInProgress->points.size() > 0 && 
-					Keyboard::isKeyPressed( Keyboard::G ) )
+				if( Keyboard::isKeyPressed( Keyboard::G ) )
 				{
-					int adjX, adjY;
-					
-					testPoint.x /= 32;
-					testPoint.y /= 32;
-
-					if( testPoint.x > 0 )
-						testPoint.x += .5f;
-					else if( testPoint.x < 0 )
-						testPoint.x -= .5f;
-
-					if( testPoint.y > 0 )
-						testPoint.y += .5f;
-					else if( testPoint.y < 0 )
-						testPoint.y -= .5f;
-
-					adjX = ((int)testPoint.x) * 32;
-					adjY = ((int)testPoint.y) * 32;
-					
-					//V2d tempTest = GraphPos( testPoint
-					testPoint = Vector2f( adjX, adjY );
+					testPoint = SnapPointToGraph(testPoint, 32);
 					showGraph = true;
+				}
+				else if (Keyboard::isKeyPressed(Keyboard::F))
+				{
+					testPoint = SnapPosToPoint(testPoint, 8);
+					showPoints = true;
+				}
+				else
+				{
+					showPoints = false;
 				}
 
 				
@@ -11029,7 +11018,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						break;
 					}
 
-					if( showPoints && extendingPolygon == NULL )
+					if( false && showPoints && extendingPolygon == NULL )
 					{
 
 						bool none = true;
@@ -11070,7 +11059,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						}	
 					}
 
-					if( ( !showPoints || (showPoints && extendingPolygon != NULL )) && emptySpace )
+					//if( ( !showPoints || ( false && showPoints && extendingPolygon != NULL )) && emptySpace )
+					if( emptySpace )
 					{
 						
 						Vector2i worldi( testPoint.x, testPoint.y );
@@ -13025,8 +13015,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 					if( result )
 					{
-						
-
 						GridSelectPop( "gateselect" );
 
 						if( tempGridResult == "delete" )
@@ -13034,31 +13022,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 						}
 						else
-						{			
-							//MessagePop( "gate created" );
-							//GateInfoPtr gi = shared_ptr<GateInfo>( new GateInfo );
-
+						{
 							Action * action = new CreateGateAction( testGateInfo, tempGridResult );
 							action->Perform();
 							doneActionStack.push_back( action );
-
-							/*GateInfoPtr gi( new GateInfo );
-							//GateInfo *gi = new GateInfo;
-
-							gi->SetType( tempGridResult );
-
-							gi->edit = this;
-							gi->poly0 = testGateInfo.poly0;
-							gi->vertexIndex0 = testGateInfo.vertexIndex0;
-							gi->point0 = testGateInfo.point0;
-							gi->point0->gate = gi;
-
-							gi->poly1 = testGateInfo.poly1;
-							gi->vertexIndex1 = testGateInfo.vertexIndex1;
-							gi->point1 = testGateInfo.point1;
-							gi->point1->gate = gi;
-							gi->UpdateLine();
-							gates.push_back( gi );*/
 						}
 					}
 					else
@@ -15672,7 +15639,19 @@ void EditSession::ClearUndoneActions()
 	undoneActionStack.clear();
 }
 
+sf::Vector2f EditSession::SnapPosToPoint(sf::Vector2f &p, double radius)
+{
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		TerrainPoint *closePoint = (*it)->GetClosePoint( radius, V2d(p));
+		if (closePoint != NULL)
+		{
+			return Vector2f(closePoint->pos);
+		}
+	}
 
+	return p;
+}
 
 void EditSession::InitDecorPanel()
 {
@@ -16140,7 +16119,7 @@ void EditSession::ExtendPolygon( TerrainPoint *startPoint,
 
 	ClearUndoneActions();
 
-	progressBrush->Clear();	
+	progressBrush->Clear();
 
 	//ExtendAdd();
 

@@ -3396,6 +3396,22 @@ bool TerrainPolygon::TooClose( TerrainPolygon *poly, bool intersectAllowed, int 
 	return false;
 }
 
+TerrainPoint *TerrainPolygon::GetClosePoint(double radius, V2d &wPos)
+{
+	if (wPos.x <= right + radius && wPos.x >= left - radius
+		&& wPos.y <= bottom + radius && wPos.y >= top - radius)
+	{
+		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+		{
+			if (length(wPos - V2d(curr->pos.x, curr->pos.y)) <= radius)
+			{
+				return curr;
+			}
+		}
+	}
+	return NULL;
+}
+
 bool TerrainPolygon::IsPoint(sf::Vector2i &p)
 {
 	for (TerrainPoint *tp = pointStart; tp != NULL; tp = tp->next)

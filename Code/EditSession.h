@@ -105,7 +105,6 @@ struct TerrainPoint
 	bool firstPoint; 
 	TerrainPoint *next;
 	TerrainPoint *prev;
-	int GetEdgeIndex();
 
 	bool ContainsPoint( sf::Vector2f test );
 	bool Intersects( sf::IntRect rect );
@@ -320,6 +319,7 @@ struct TerrainPolygon : ISelectable
 	bool TooClose( TerrainPolygon *poly,
 		bool intersectAllowed,
 		int minDistance );
+	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 
 	sf::Color selectCol;
 	sf::Color fillCol;
@@ -1672,7 +1672,10 @@ struct EditSession : GUIHandler
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
 	void Draw();
+	sf::Vector2f SnapPointToGraph(sf::Vector2f &p, int gridSize);
+	sf::Vector2f SnapPosToPoint(sf::Vector2f &p, double radius);
 	static bool PointOnLine(V2d &pos, V2d &p0, V2d &p1, double width = 0);
+	void TryPlaceGatePoint(V2d &pos);
 	bool OpenFile();
 	void WriteFile(std::string fileName);
 	void ButtonCallback( Button *b, const std::string & e );
