@@ -1061,6 +1061,8 @@ struct Actor : QuadTreeCollider,
 	int testGrassCount;
 	int gravityGrassCount;
 	Action action;
+	int steepClimbBoostStart;
+	bool TryClimbBoost( V2d &gNorm);
 	int frame;
 	sf::Vector2<double> position;
 	sf::Vector2<double> velocity;

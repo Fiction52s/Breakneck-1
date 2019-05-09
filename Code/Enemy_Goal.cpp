@@ -215,9 +215,10 @@ void Goal::ProcessState()
 
 void Goal::HandleNoHealth()
 {
+	owner->GetPlayer(0)->hitGoal = true;
 	owner->KillAllEnemies();
 	frame = 0;
-	owner->GetPlayer(0)->hitGoal = true;
+	
 	SetHurtboxes(NULL, 0);
 	action = A_KINKILLING;
 

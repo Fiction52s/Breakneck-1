@@ -7602,7 +7602,9 @@ int GameSession::Run()
 		if( topClouds != NULL )
 			topClouds->Draw(preScreenTex);
 
-		if (cam.manual)
+		bool narrowMap = mh->boundsWidth < 1920 * 2;
+
+		if (cam.manual || narrowMap )
 		{
 			preScreenTex->draw(blackBorderQuads, 16, sf::Quads);
 		}

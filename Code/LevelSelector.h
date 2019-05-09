@@ -4,6 +4,7 @@
 #include <boost/filesystem.hpp>
 #include <list>
 #include <string>
+#include <map>
 #include <SFML/Graphics.hpp>
 #include "LevelServer.h"
 
@@ -25,6 +26,7 @@ struct LevelHolder
 };
 
 struct MainMenu;
+struct Tileset;
 struct LevelSelector
 {
 	LevelSelector( MainMenu *mainMenu );
@@ -64,6 +66,11 @@ struct LevelSelector
 	sf::RenderTexture drawPanel;
 	int viewOffset;
 	void ChangeViewOffset( int delta );
+	sf::Sprite previewSpr;
+	std::map<std::string, Tileset*> previewTS;
+	Tileset *ts_previewNotFound;
+	MainMenu *mainMenu;
+	
 };
 
 

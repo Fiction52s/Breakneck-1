@@ -194,7 +194,8 @@ void Shroom::UpdateSprite()
 
 void Shroom::HandleNoHealth()
 {
-	owner->AddEnemy(jelly);
+	if( !owner->GetPlayer(0)->hitGoal)
+		owner->AddEnemy(jelly);
 }
 
 void Shroom::UpdateHitboxes()

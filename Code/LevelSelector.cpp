@@ -32,10 +32,14 @@ string TreeNode::GetLocalPath()
 	return full;
 }
 
-LevelSelector::LevelSelector( MainMenu *mainMenu )
+LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 {
+	mainMenu = p_mainMenu;
+	previewSpr.setPosition(500, 500);
 	width = 400;
 	height = 1080;
+	
+	ts_previewNotFound = mainMenu->tilesetManager.GetTileset("Maps/Previews/notfound.png", 912, 492);
 	drawPanel.create( width, height );
 	drawPanel.clear();
 	entries = NULL;
@@ -174,6 +178,15 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 				{
 					selectedIndex = testIndex;
 					cout << "selected index: " << selectedIndex << endl;
+					string indexText = text[selectedIndex].getString().toAnsiString();
+					Tileset *currTS = previewTS[indexText];
+
+					if( currTS != NULL )
+						previewSpr.setTexture(*currTS->texture);
+					else
+					{
+						previewSpr.setTexture(*ts_previewNotFound->texture);
+					}
 				}
 				//cout << "selectedIndex: " << selectedIndex << endl;
 			}
@@ -273,16 +286,19 @@ void LevelSelector::ClearEntries(TreeNode *n)
 		ClearEntries( (*it) );
 	}
 
+	previewTS.clear();
+	
 	delete n;
 }
 
 void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &relativePath )
 {
 	path p( current_path() / relativePath );
-	
+	//string pFile =  + (*it).relative_path().stem().string() + );
 	vector<path> v;
 	try
 	{
+		//previewTS.clear();
 		if (exists(p))    // does p actually exist?
 		{
 			if (is_regular_file(p))        // is p a regular file?   
@@ -292,6 +308,10 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 					//string name = p.filename().string();
 					parentNode->files.push_back( p );//name.substr( 0, name.size() - 6 ) );
 					numTotalEntries++;
+
+					string mapName = p.relative_path().stem().string();
+					string fileName = string("Maps/Previews/") + mapName + string("_preview_912x492.png");
+					previewTS[mapName] = mainMenu->tilesetManager.GetTileset(fileName, 912, 492);
 				}
 			}
 			else if (is_directory(p))      // is p a directory?
@@ -394,6 +414,8 @@ void LevelSelector::Draw( RenderTarget *target )
 	sf::Sprite dSprite;
 	dSprite.setTexture( drawPanel.getTexture() );
 	target->draw( dSprite );
+
+	target->draw(previewSpr);
 }
 
 void LevelSelector::Print()
