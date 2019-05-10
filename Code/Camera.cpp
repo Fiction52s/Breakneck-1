@@ -4,6 +4,7 @@
 #include "GameSession.h"
 #include "Movement.h"
 #include "Enemy.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;

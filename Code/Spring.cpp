@@ -4,6 +4,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;

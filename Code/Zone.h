@@ -4,12 +4,12 @@
 #include <SFML/Graphics.hpp>
 #include "Gate.h"
 #include <list>
-#include "EditSession.h"
 #include "poly2tri\poly2tri.h"
 
 //typedef std::pair <Gate*,bool> GateBool;
 struct Enemy;
 struct GameSession;
+struct TerrainPolygon;
 struct Zone
 {
 	Zone( GameSession *owner, TerrainPolygon & tp );

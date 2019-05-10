@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Nexus.h"
 #include "Sequence.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;

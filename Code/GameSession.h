@@ -21,6 +21,9 @@
 #include "EnvEffects.h"
 #include "Actor.h"
 #include "EffectLayer.h"
+#include <boost/filesystem.hpp>
+
+struct MapHeader;
 
 
 struct Minimap;
@@ -37,6 +40,8 @@ struct Rail;
 struct InputVisualizer;
 struct MomentaBroadcast;
 
+struct LoadingMapProgressDisplay;
+
 
 struct ImageText;
 struct TimerText;
@@ -47,6 +52,7 @@ struct Tileset;
 
 struct AdventureHUD;
 struct Fader;
+struct Swiper;
 
 struct Barrier;
 struct PoiInfo

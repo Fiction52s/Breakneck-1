@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "Parallax.h"
 #include <random>
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;

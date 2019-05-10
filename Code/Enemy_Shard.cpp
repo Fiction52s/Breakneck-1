@@ -5,6 +5,8 @@
 #include <assert.h>
 #include "Enemy_Shard.h"
 #include "SaveFile.h"
+#include "MainMenu.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;

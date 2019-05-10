@@ -7,6 +7,7 @@
 #include "MainMenu.h"
 #include "GameSession.h"
 #include "MusicPlayer.h"
+#include "MapHeader.h"
 
 using namespace sf;
 using namespace std;

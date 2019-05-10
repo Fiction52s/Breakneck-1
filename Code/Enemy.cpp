@@ -9,6 +9,7 @@
 #include "KeyMarker.h"
 #include "Enemy_Comboer.h"
 #include "Shield.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;

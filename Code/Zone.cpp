@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Enemy.h"
 #include "GameSession.h"
+#include "EditSession.h"
 
 #define TIMESTEP 1.0 / 60.0
 

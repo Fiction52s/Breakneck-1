@@ -25,6 +25,7 @@
 #include "MusicPlayer.h"
 #include "Fader.h"
 #include "VisualEffects.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;

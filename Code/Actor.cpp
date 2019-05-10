@@ -28,6 +28,7 @@
 #include "Nexus.h"
 #include "HUD.h"
 #include "VisualEffects.h"
+#include "MapHeader.h"
 
 using namespace sf;
 using namespace std;

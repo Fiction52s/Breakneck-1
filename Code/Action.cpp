@@ -1,6 +1,7 @@
 #include "Action.h"
 #include <assert.h>
 #include <iostream>
+#include "EditSession.h"
 
 
 EditSession *Action::session = NULL;

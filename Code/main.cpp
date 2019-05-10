@@ -7,7 +7,7 @@
 #include <fstream>
 #include <list> 
 #include <stdlib.h>
-#include "EditSession.h"
+//#include "EditSession.h"
 #include "VectorMath.h"
 #include "Input.h"
 #include "poly2tri/poly2tri.h"

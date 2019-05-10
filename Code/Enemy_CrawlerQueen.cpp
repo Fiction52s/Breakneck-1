@@ -9,6 +9,7 @@
 #include "Sequence.h"
 #include "MusicPlayer.h"
 #include "MainMenu.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;

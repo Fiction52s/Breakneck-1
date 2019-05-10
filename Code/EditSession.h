@@ -13,9 +13,11 @@
 #include <map>
 #include <boost/filesystem.hpp>
 #include "MainMenu.h"
+#include "MapHeader.h"
 #include "ShardTypes.h"
 
 struct EditSession;
+struct MainMenu;
 struct ISelectable
 {
 	enum ISelectableType
@@ -1593,8 +1595,7 @@ struct PointMoveInfo
 	sf::Vector2i delta;
 };
 
-typedef std::map<TerrainPolygon*,
-	std::list<PointMoveInfo>> PointMap;
+typedef std::map<TerrainPolygon*,std::list<PointMoveInfo>> PointMap;
 
 struct Background;
 struct ScrollingBackground;
@@ -1673,6 +1674,7 @@ struct EditSession : GUIHandler
 		sf::Vector2f cameraSize );
 	void Draw();
 	sf::Vector2f SnapPointToGraph(sf::Vector2f &p, int gridSize);
+	V2d SnapPointToGraph(V2d &p, int gridSize);
 	sf::Vector2f SnapPosToPoint(sf::Vector2f &p, double radius);
 	static bool PointOnLine(V2d &pos, V2d &p0, V2d &p1, double width = 0);
 	void TryPlaceGatePoint(V2d &pos);
@@ -1691,7 +1693,6 @@ struct EditSession : GUIHandler
 	bool IsPolygonInternallyValid( TerrainPolygon &poly );
 	bool IsPolygonValid( TerrainPolygon &poly,
 		TerrainPolygon* ignore );
-	sf::Vector2<double> GraphPos( sf::Vector2<double> realPos );
 	void SetEnemyEditPanel();
 	void SetDecorEditPanel();
 	void SetDecorParams();
@@ -1701,7 +1702,12 @@ struct EditSession : GUIHandler
 	bool CanCreateGate( GateInfo &testGate );
 	void SetPanelDefault( ActorType *type );
 	void ClearSelectedPoints();
+	void SelectPoint(TerrainPolygon *poly,
+		TerrainPoint *point);
+	void DeselectPoint(TerrainPolygon *poly,
+		TerrainPoint *point);
 	bool PolyIntersectGate( TerrainPolygon &poly );
+
 
 	void SetInversePoly();
 	sf::Sprite scaleSprite;
@@ -1991,6 +1997,8 @@ struct EditSession : GUIHandler
 	
 	void PointSelectPoint(sf::Vector2<double> &worldPos,
 		bool &emptysp );
+	void BoxSelectPoints(sf::IntRect rect,
+		double radius);
 	void PointSelectPolygon();
 	void ExecuteTerrainCompletion();
 	Action* ExecuteTerrainAdd(

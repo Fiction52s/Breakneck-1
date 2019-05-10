@@ -1904,6 +1904,11 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 		cs.setFillColor( Color::Magenta );
 
+		CircleShape csSel;
+		csSel.setRadius(8 * zoomMultiple);
+		csSel.setOrigin(csSel.getLocalBounds().width / 2, csSel.getLocalBounds().height / 2);
+		csSel.setFillColor(Color::Green);
+
 		for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 		{
 			if( curr == dontShow )
@@ -1911,9 +1916,18 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 				continue;
 			}
 			
-
-			cs.setPosition( curr->pos.x, curr->pos.y );
-			rt->draw( cs );
+			if (curr->selected)
+			{
+				csSel.setPosition(curr->pos.x, curr->pos.y);
+				rt->draw(csSel);
+			}
+			else
+			{
+				cs.setPosition(curr->pos.x, curr->pos.y);
+				rt->draw(cs);
+			}
+			
+			
 		}
 	}
 

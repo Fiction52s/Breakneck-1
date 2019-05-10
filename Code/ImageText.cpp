@@ -1,6 +1,7 @@
 #include "ImageText.h"
 #include <assert.h>
 #include "GameSession.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;

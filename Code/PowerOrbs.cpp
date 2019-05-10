@@ -3,6 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include "Actor.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;

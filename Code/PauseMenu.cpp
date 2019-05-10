@@ -10,6 +10,7 @@
 #include "ControlSettingsMenu.h"
 #include "ControlProfile.h"
 #include "ColorShifter.h"
+#include "MapHeader.h"
 
 using namespace sf;
 using namespace std;

@@ -1,8 +1,8 @@
 #ifndef __ACTION_H__
 #define __ACTION_H__
 
-#include "EditSession.h"
 #include <list>
+#include "EditSession.h"
 
 struct CompoundAction;
 struct Brush

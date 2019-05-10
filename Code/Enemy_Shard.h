@@ -3,6 +3,7 @@
 
 #include "Enemy.h"
 #include <map>
+#include "ShardTypes.h"
 
 struct Shard : Enemy
 {

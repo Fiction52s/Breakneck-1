@@ -1,6 +1,7 @@
 #include "VictoryScreen.h"
 #include "GameSession.h"
 #include "UIWindow.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;

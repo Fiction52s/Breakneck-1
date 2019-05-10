@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "GoalExplosion.h"
 #include "Enemy_Goal.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;

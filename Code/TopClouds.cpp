@@ -1,5 +1,6 @@
 #include "TopClouds.h"
 #include "GameSession.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;

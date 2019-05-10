@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Physics.h"
 #include "KeyMarker.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;

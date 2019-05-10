@@ -644,6 +644,11 @@ EditSession::~EditSession()
 
 sf::Vector2f EditSession::SnapPointToGraph(Vector2f &p, int gridSize )
 {
+	return Vector2f(SnapPointToGraph( V2d( p ), gridSize ));
+}
+
+V2d EditSession::SnapPointToGraph(V2d &p, int gridSize)
+{
 	int adjX, adjY;
 
 	p.x /= gridSize;
@@ -662,8 +667,7 @@ sf::Vector2f EditSession::SnapPointToGraph(Vector2f &p, int gridSize )
 	adjX = ((int)p.x) * gridSize;
 	adjY = ((int)p.y) * gridSize;
 
-	//V2d tempTest = GraphPos( testPoint
-	return Vector2f(adjX, adjY);
+	return V2d(adjX, adjY);
 }
 
 void EditSession::Draw()
@@ -7229,10 +7233,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										}
 
 
-										bool alt = Keyboard::isKeyPressed( Keyboard::LAlt ) ||
-											Keyboard::isKeyPressed( Keyboard::RAlt );
+									bool pointSelectKeyHeld = Keyboard::isKeyPressed(Keyboard::B);//Keyboard::isKeyPressed( Keyboard::LAlt ) ||
+											//Keyboard::isKeyPressed( Keyboard::RAlt );
 									//concerning selecting a point
-									if( alt )
+									if(pointSelectKeyHeld)
 									{
 										PointSelectPoint( worldPos, emptysp );
 									}
@@ -7912,110 +7916,48 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										}
 									}
 
-									bool alt = Keyboard::isKeyPressed( Keyboard::LAlt )
-										|| Keyboard::isKeyPressed( Keyboard::RAlt );
-									if( alt ) //always use point selection for now
+									bool pointSelectButtonHeld = Keyboard::isKeyPressed(Keyboard::B);//alt = Keyboard::isKeyPressed( Keyboard::LAlt )
+										//|| Keyboard::isKeyPressed( Keyboard::RAlt );
+									if(pointSelectButtonHeld) //always use point selection for now
 									{
 										if( HoldingShift() )
 										{
-											ClearSelectedPoints();
+											//ClearSelectedPoints();
 										}
 
-										for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-										{
-											double rad = 8 * zoomMultiple;
-											IntRect adjustedR( r.left - rad, r.top, r.width, r.height );
-
-											//aabb w/ polygon
-
-											if( (*it)->Intersects( adjustedR ) )
-											{
-												TerrainPoint *curr = (*it)->pointStart;
-												while( curr != NULL )
-												{
-													if( IsQuadTouchingCircle( V2d( r.left, r.top ), 
-														V2d( r.left + r.width, r.top ),
-														V2d( r.left + r.width, r.top + r.height ),
-														V2d( r.left, r.top + r.height ),
-														V2d( curr->pos.x, curr->pos.y ), rad ) 
-														|| adjustedR.contains( curr->pos ) )
-													{
-														if( !curr->selected )
-														{
-															curr->selected = true;
-															selectedPoints[(*it).get()].push_back( PointMoveInfo( curr ) );
-														}
-													}
-													curr = curr->next;
-												}
-											}
-										}
-										
-										//for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
-										//{
-										//	list<PointMoveInfo> &pList = (*it).second;
-
-										//	for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
-										//	{
-										//		Vector2i pointPos = (*pit).point->pos;
-										//		double rad = 8 * zoomMultiple;
-										//		
-										//		//check if the point is within the quad that i drew
-										//		if( IsQuadTouchingCircle( V2d( r.left, r.top ), 
-										//			V2d( r.left + r.width, r.top ),
-										//			V2d( r.left + r.width, r.top + r.height ),
-										//			V2d( r.left, r.top + r.height ),
-										//			V2d( pointPos.x, pointPos.y ), rad ) )
-										//		{
-										//			bool shift = Keyboard::isKeyPressed( Keyboard::LShift )
-										//				|| Keyboard::isKeyPressed( Keyboard::RShift );
-
-										//			if( shift )
-										//			{
-
-										//			}
-										//			else
-										//			{
-										//				//clear selectedPoints //make this a function
-										//			}
-										//		}
-										//	}
-										//}
-										//Rect<double> 
-										//if( IsQuadTouchingCircle( V2d( 
+										BoxSelectPoints(r, 8 * zoomMultiple);
 									}
-
-
-									else
-									//if( false ) //polygon selection. don't use it for a little bit
-									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+									else if (!showPoints)//polygon selection. don't use it for a little bit
 									{
-										if( (*it)->Intersects( r ) )
+										for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 										{
-
-											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-
-											if( HoldingShift() )
+											if ((*it)->Intersects(r))
 											{
-												if( sp->selected )
+
+												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+												if (HoldingShift())
 												{
-													sp->SetSelected( false );
-													selectedBrush->RemoveObject( sp );
+													if (sp->selected)
+													{
+														sp->SetSelected(false);
+														selectedBrush->RemoveObject(sp);
+													}
+													else
+													{
+														sp->SetSelected(true);
+														selectedBrush->AddObject(sp);
+													}
 												}
 												else
 												{
-													sp->SetSelected( true );
-													selectedBrush->AddObject( sp );
+													sp->SetSelected(true);
+													selectedBrush->AddObject(sp);
 												}
-											}
-											else
-											{
-												sp->SetSelected( true );
-												selectedBrush->AddObject( sp );
-											}
 
-											selectionEmpty = false;
-											//break;
+												selectionEmpty = false;
+												//break;
+											}
 										}
 									}
 									
@@ -8560,7 +8502,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									
 									if( Keyboard::isKeyPressed( Keyboard::G ) )
 									{
-										V2d graphPos = GraphPos( worldPos );
+										V2d graphPos = SnapPointToGraph(worldPos, 32);
 										pointGrabPos = Vector2i( graphPos.x, graphPos.y );
 										//pointGrabPos = Vector2i( worldPos.x, worldPos.y );
 									}
@@ -8575,7 +8517,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 									if( Keyboard::isKeyPressed( Keyboard::G ) )
 									{
-										V2d graphPos = GraphPos( worldPos );
+										V2d graphPos = SnapPointToGraph( worldPos, 32 );
 										polyGrabPos = Vector2i( graphPos.x, graphPos.y );//Vector2i( graphPos.x, graphPos.y );
 									}
 									else
@@ -8613,83 +8555,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							}
 							else if( ev.key.code == Keyboard::B )
 							{
-								int countPoints = CountSelectedPoints();
-								bool first = true;
-								bool ddone = false;
-
-								GateInfo testInfo;
-								if( countPoints == 2 )
-								{
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end() && !ddone; ++it )
-									{
-										int index = 0;
-										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL && !ddone; curr = curr->next )
-										{
-											if( curr->selected ) //selected
-											{
-												if( first )
-												{
-													testInfo.poly0 = (*it);
-													testInfo.vertexIndex0 = index;
-													testInfo.point0 = curr;
-													first = false;
-												}
-												else
-												{
-													testInfo.poly1 = (*it);
-													testInfo.vertexIndex1 = index;
-													ddone = true;
-													testInfo.point1 = curr;
-												}
-											}
-											++index;
-										}
-									}
-
-									bool result = CanCreateGate( testInfo );
-
-									/*if( result )
-									{
-
-										
-
-										GridSelectPop( "gatetype" );
-
-										
-										//MessagePop( "gate created" );
-										GateInfo *gi = new GateInfo;
-
-										gi->SetType( tempGridResult );
-										//gi->type = tempGridResult;
-
-										gi->edit = this;
-										gi->poly0 = testInfo.poly0;
-										gi->vertexIndex0 = testInfo.vertexIndex0;
-										gi->point0 = testInfo.point0;
-										gi->point0->gate = gi;
-
-										gi->poly1 = testInfo.poly1;
-										gi->vertexIndex1 = testInfo.vertexIndex1;
-										gi->point1 = testInfo.point1;
-										gi->point1->gate = gi;
-										gi->UpdateLine();
-
-
-										
-
-										gates.push_back( gi );
-									}
-									else
-									{
-										MessagePop( "gate would intersect some terrain" );
-									}*/
-								}
-								else
-								{
-									MessagePop( "you require two points to create a gate" );
-								}
-
-								
+								//showPoints = true;
+								//showPoints = true;
 							}
 							else if( ev.key.code == Keyboard::P )
 							{
@@ -11285,7 +11152,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				if( //polygonInProgress->points.size() > 0 && 
 					Keyboard::isKeyPressed( Keyboard::G ) )
 				{
-					pPoint = GraphPos( worldPos );
+					pPoint = SnapPointToGraph( worldPos, 32 );
 					showGraph = true;
 
 					int countSelected = CountSelectedPoints();
@@ -11379,6 +11246,17 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							}
 						}*/
 					}
+				}
+				
+				if (Keyboard::isKeyPressed(Keyboard::B))
+				{
+					showPoints = true;
+
+				}
+				else
+				{
+					ClearSelectedPoints();
+					showPoints = false;
 				}
 
 				if( ( editMouseDownMove && !editStartMove && length( V2d( editMouseGrabPos.x, editMouseGrabPos.y ) - worldPos ) > editMoveThresh * zoomMultiple ) )
@@ -15748,6 +15626,34 @@ void EditSession::ClearSelectedPoints()
 	selectedPoints.clear();
 }
 
+void EditSession::SelectPoint(TerrainPolygon *poly,
+	TerrainPoint *point)
+{
+	if (!point->selected)
+	{
+		selectedPoints[poly].push_back(PointMoveInfo(point));
+		point->selected = true;
+	}
+}
+
+void EditSession::DeselectPoint(TerrainPolygon *poly,
+	TerrainPoint *point)
+{
+	if (point->selected)
+	{
+		point->selected = false;
+		auto & infoList = selectedPoints[poly];
+		for (auto it = infoList.begin(); it != infoList.end(); ++it)
+		{
+			if ((*it).point == point)
+			{
+				infoList.erase(it);
+				break;
+			}
+		}
+	}
+}
+
 void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 {
 	//Vector2i pos( worldPos.x, worldPos.y );
@@ -18627,27 +18533,6 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 	}*/
 }
 
-sf::Vector2<double> EditSession::GraphPos( sf::Vector2<double> realPos )
-{
-	int adjX, adjY;			
-	realPos.x /= 32;
-	realPos.y /= 32;
-
-	if( realPos.x > 0 )
-		realPos.x += .5f;
-	else if( realPos.x < 0 )
-		realPos.x -= .5f;
-
-	if( realPos.y > 0 )
-		realPos.y += .5f;
-	else if( realPos.y < 0 )
-		realPos.y -= .5f;
-
-	adjX = ((int)realPos.x) * 16;
-	adjY = ((int)realPos.y) * 16;
-
-	return V2d( adjX, adjY );
-}
 
 void EditSession::ExecuteTerrainCompletion()
 {
@@ -19419,91 +19304,112 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 void EditSession::PointSelectPoint( V2d &worldPos,
 	bool &emptysp )
 {
-	double rad = 8 * zoomMultiple;
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	bool shift = Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift);
+
+	TerrainPoint *foundPoint = NULL;
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
 	{
-		//if its not even close dont check
-		if( !(*it)->TempAABB().intersects( Rect<int>( worldPos.x - rad, worldPos.y - rad, rad * 2,
-			rad * 2 ) ) )
+		foundPoint = (*it)->GetClosePoint( 8, worldPos );
+		if (foundPoint != NULL)
 		{
-			continue;
-		}
+			emptysp = false;
 
-		TerrainPoint *tp = (*it)->pointStart;
-		while( tp != NULL )
-		{
-			V2d tpPos( tp->pos.x, tp->pos.y );
-			double dist = length( tpPos - worldPos );
-			if( dist <= rad )
+			if (shift && foundPoint->selected )
 			{
-				bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
-				if( !tp->selected )
-				{
-					if( !shift )
-					{
-						//ClearSelectedPoints();
-					}
-														
-					//cout << "selecting a point!" << endl;
-					//select a point
-					selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
-														
-
-					/*bool hasPoly = false;
-					for( PointMap::iterator pit = selectedPoints.begin();
-						pit != selectedPoints.end(); ++pit )
-					{
-						if( (*pit).first == (*it).get() )
-						{
-							hasPoly = true;
-							break;
-						}
-					}
-					if( !hasPoly )
-					{
-						pointPolyList.push_back( (*it).get() );
-					}*/
-					tp->selected = true;
-					emptysp = false;
-				}
-				else
-				{
-					//point is selected
-
-					//deselect a point
-					//TerrainPolygon *removedPoly;
-					//PointMap::iterator tempIt;
-					//bool found = false;
-					//for( PointMap::iterator it = selectedPoints.begin();
-					//	it != selectedPoints.end() && !found; ++it )
-					//{
-					//	list<PointMoveInfo> &pList = (*it).second;
-					//	for( list<PointMoveInfo>::iterator pit = pList.begin();
-					//		pit != pList.end() && !found; ++pit )
-					//	{
-					//		if( (*pit).point == tp )
-					//		{
-					//			pList.erase( pit );
-					//			if( (*it).second.empty() )
-					//			{
-					//				selectedPoints.erase( it );
-					//			}
-					//			found = true;
-					//			
-					//			//removedPoly = (*it).poly;
-					//			
-					//		}
-					//	}
-					//}
-
-					//tp->selected = false;
-					emptysp = false;
-				}
-													
-				//selectedPoints.push_back( tp );
-													
+				DeselectPoint((*it).get(), foundPoint);
 			}
-			tp = tp->next;
+			else
+			{	
+				if (!foundPoint->selected)
+				{
+					if (!shift)
+						ClearSelectedPoints();
+
+					SelectPoint((*it).get(), foundPoint);
+				}			
+			}
+			break;
+		}
+	}
+
+	if (foundPoint == NULL)
+	{
+	//	ClearSelectedPoints();
+	}
+
+	
+
+	
+	//double rad = 8 * zoomMultiple;
+	//for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	//{
+	//	//if its not even close dont check
+	//	if( !(*it)->TempAABB().intersects( Rect<int>( worldPos.x - rad, worldPos.y - rad, rad * 2,
+	//		rad * 2 ) ) )
+	//	{
+	//		continue;
+	//	}
+
+	//	TerrainPoint *tp = (*it)->pointStart;
+	//	while( tp != NULL )
+	//	{
+	//		V2d tpPos( tp->pos.x, tp->pos.y );
+	//		double dist = length( tpPos - worldPos );
+	//		if( dist <= rad )
+	//		{
+	//			bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
+	//			if( !tp->selected )
+	//			{
+	//				if( !shift )
+	//				{
+	//					//ClearSelectedPoints();
+	//				}
+	//													
+	//				selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
+	//													
+
+	//				tp->selected = true;
+	//				emptysp = false;
+	//			}
+	//			else
+	//			{
+	//				emptysp = false;
+	//			}
+	//												
+	//			//selectedPoints.push_back( tp );
+	//												
+	//		}
+	//		tp = tp->next;
+	//	}
+	//}
+}
+
+void EditSession::BoxSelectPoints(sf::IntRect r,
+	double radius)
+{
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		//double rad = 8 * zoomMultiple;
+		IntRect adjustedR(r.left - radius, r.top, r.width, r.height);
+
+		//aabb w/ polygon
+
+		if ((*it)->Intersects(adjustedR))
+		{
+			TerrainPoint *curr = (*it)->pointStart;
+			while (curr != NULL)
+			{
+				if (IsQuadTouchingCircle(V2d(r.left, r.top),
+					V2d(r.left + r.width, r.top),
+					V2d(r.left + r.width, r.top + r.height),
+					V2d(r.left, r.top + r.height),
+					V2d(curr->pos.x, curr->pos.y), radius)
+					|| adjustedR.contains(curr->pos))
+				{
+					SelectPoint((*it).get(), curr);
+				}
+				curr = curr->next;
+			}
 		}
 	}
 }
