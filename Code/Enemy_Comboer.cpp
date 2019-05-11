@@ -220,7 +220,8 @@ void Comboer::ProcessHit()
 
 		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
 
-		switch (receivedHit->hDir)
+		dir = normalize(receivedHit->hDir);
+		/*switch (receivedHit->hDir)
 		{
 		case HitboxInfo::LEFT:
 			dir = V2d(-1, 0);
@@ -249,7 +250,7 @@ void Comboer::ProcessHit()
 		default: 
 			assert(0);
 		
-		}
+		}*/
 
 		if (cType == T_GRAVITY)
 		{

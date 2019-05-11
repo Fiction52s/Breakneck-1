@@ -355,8 +355,8 @@ void ShroomJelly::ProcessHit()
 		double speed = 10;
 
 		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
-
-		switch (receivedHit->hDir)
+		dir = normalize(receivedHit->hDir);
+		/*switch (receivedHit->hDir)
 		{
 		case HitboxInfo::LEFT:
 			dir = V2d(-1, 0);
@@ -385,8 +385,8 @@ void ShroomJelly::ProcessHit()
 		default:
 			assert(0);
 
-		}
-		dir = normalize(dir);
+		}*/
+		//dir = normalize(dir);
 
 		velocity = dir * speed;
 

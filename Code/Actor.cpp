@@ -8428,27 +8428,31 @@ facingRight = false;
 	case FAIR:
 		if (facingRight)
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+			currHitboxInfo->hDir = V2d(1, 0);//HitboxInfo::HitDirection::RIGHT;
 		}
 		else
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::LEFT;
+			currHitboxInfo->hDir = V2d(-1, 0);
 		}
 		break;
 	case DAIR:
-		currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWN;
+		currHitboxInfo->hDir = V2d(0, 1);
 		break;
 	case UAIR:
-		currHitboxInfo->hDir = HitboxInfo::HitDirection::UP;
+		currHitboxInfo->hDir = V2d(0, -1);
 		break;
 	case STANDN:
 		if ((!reversed && facingRight )|| (reversed && !facingRight ))
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+			V2d trueNorm;
+			GroundedAngleAttack(trueNorm);
+			currHitboxInfo->hDir = V2d(-trueNorm.y, trueNorm.x);//HitboxInfo::HitDirection::RIGHT;
 		}
 		else
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::LEFT;
+			V2d trueNorm;
+			GroundedAngleAttack(trueNorm);
+			currHitboxInfo->hDir = -V2d(-trueNorm.y, trueNorm.x);
 		}
 		break;
 	case STEEPCLIMBATTACK:
@@ -8456,22 +8460,22 @@ facingRight = false;
 		{
 			if (facingRight)
 			{
-				currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNLEFT;
+				currHitboxInfo->hDir = V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
 			}
 			else
 			{
-				currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNRIGHT;
+				currHitboxInfo->hDir = V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
 			}
 		}
 		else
 		{
 			if (facingRight)
 			{
-				currHitboxInfo->hDir = HitboxInfo::HitDirection::UPRIGHT;
+				currHitboxInfo->hDir = V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
 			}
 			else
 			{
-				currHitboxInfo->hDir = HitboxInfo::HitDirection::UPLEFT;
+				currHitboxInfo->hDir = V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
 			}
 		}
 		break;
@@ -8480,57 +8484,57 @@ facingRight = false;
 		{
 			if (facingRight)
 			{
-				currHitboxInfo->hDir = HitboxInfo::HitDirection::UPLEFT;
+				currHitboxInfo->hDir = V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
 			}
 			else
 			{
-				currHitboxInfo->hDir = HitboxInfo::HitDirection::UPRIGHT;
+				currHitboxInfo->hDir = V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
 			}
 		}
 		else
 		{
 			if (facingRight)
 			{
-				currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNRIGHT;
+				currHitboxInfo->hDir = V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
 			}
 			else
 			{
-				currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNLEFT;
+				currHitboxInfo->hDir = V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
 			}
 		}
 		break;
 	case WALLATTACK:
 		if (facingRight)
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::LEFT;
+			currHitboxInfo->hDir = V2d(-1, 0);//HitboxInfo::HitDirection::LEFT;
 		}
 		else
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::RIGHT;
+			currHitboxInfo->hDir = V2d(1, 0);//HitboxInfo::HitDirection::RIGHT;
 		}
 		break;
 	case DIAGUPATTACK:
 		if (facingRight)
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::UPRIGHT;
+			currHitboxInfo->hDir = V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
 		}
 		else
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::UPLEFT;
+			currHitboxInfo->hDir = V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
 		}
 		break;
 	case DIAGDOWNATTACK:
 		if (facingRight)
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNRIGHT;
+			currHitboxInfo->hDir = V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
 		}
 		else
 		{
-			currHitboxInfo->hDir = HitboxInfo::HitDirection::DOWNLEFT;
+			currHitboxInfo->hDir = V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
 		}
 		break;
 	default:
-		currHitboxInfo->hDir = HitboxInfo::HitDirection::NONE;
+		currHitboxInfo->hDir = V2d(0, 0);//HitboxInfo::HitDirection::NONE;
 		break;
 	}
 

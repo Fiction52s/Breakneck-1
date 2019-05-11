@@ -17,6 +17,7 @@ using namespace sf;
 Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	:Enemy(owner, EnemyType::EN_AIRDASHER, p_hasMonitor, 1)
 {
+	hitLimit = 5;
 	action = S_FLOAT;
 	//receivedHit = NULL;
 	position.x = pos.x;
@@ -25,7 +26,7 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 
 	initHealth = 80;
 	health = initHealth;
-	dashRadius = 500;
+	dashRadius = 700;//500;
 	dashFrames = 36;
 	returnFrames = 30;
 
@@ -74,6 +75,37 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
+
+	comboObj = new ComboObject(this);
+
+
+	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->damage = 20;
+	comboObj->enemyHitboxInfo->drainX = .5;
+	comboObj->enemyHitboxInfo->drainY = .5;
+	comboObj->enemyHitboxInfo->hitlagFrames = 0;
+	comboObj->enemyHitboxInfo->hitstunFrames = 30;
+	comboObj->enemyHitboxInfo->knockback = 0;
+	comboObj->enemyHitboxInfo->freezeDuringStun = true;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+
+	comboObj->enemyHitBody = new CollisionBody(2);
+
+	comboObj->enemyHitBody->AddCollisionBox(0, hitBox);
+
+	CollisionBox exBox;
+	exBox.type = CollisionBox::Hit;
+	exBox.isCircle = true;
+	exBox.globalAngle = 0;
+	exBox.offset.x = 0;
+	exBox.offset.y = 0;
+	exBox.rw = 48;
+	exBox.rh = 48;
+
+	comboObj->enemyHitBody->AddCollisionBox(1, exBox);
+
+	comboObj->enemyHitboxFrame = 0;
+
 	//hitboxInfo->kbDir;
 
 	targetNode = 1;
@@ -90,11 +122,13 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	actionLength[S_DASH] = 30;
 	actionLength[S_RETURN] = 60;
 	actionLength[S_OUT] = 20;
+	actionLength[S_COMBO] = 40;
 
 	animFactor[S_FLOAT] = 4;
 	animFactor[S_DASH] = 1;
 	animFactor[S_RETURN] = 1;
 	animFactor[S_OUT] = 1;
+	animFactor[S_COMBO] = 1;
 
 	ResetEnemy();
 
@@ -105,8 +139,29 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	cutObject->SetSubRectBack(14);
 }
 
+Airdasher::~Airdasher()
+{
+	delete comboObj;
+}
+
+void Airdasher::ComboHit()
+{
+	pauseFrames = 5;
+	++currHits;
+	if (currHits >= hitLimit)
+	{
+		dead = true;
+		owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+		//action = EXPLODING;
+		//comboObj->enemyHitboxFrame = 1;
+		velocity = V2d(0, 0);
+		//frame = 0;
+	}
+}
+
 void Airdasher::ResetEnemy()
 {
+	currHits = 0;
 	currOrig = origPos;
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
@@ -115,6 +170,7 @@ void Airdasher::ResetEnemy()
 	frame = 0;
 	position = origPos;
 	receivedHit = NULL;
+	comboObj->Reset();
 
 	sprite.setRotation(0);
 
@@ -126,7 +182,29 @@ void Airdasher::ResetEnemy()
 
 void Airdasher::ProcessHit()
 {
-	Enemy::ProcessHit();
+	if ( action == S_DASH && !dead && ReceivedHit() && numHealth > 0)
+	{
+		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+		ConfirmHitNoKill();
+		action = S_COMBO;
+		frame = 0;
+		SetHitboxes(NULL, 0);
+		SetHurtboxes(NULL, 0);
+
+		V2d dir;
+		double speed = 20;
+		facingRight = !facingRight;
+
+		comboObj->enemyHitboxInfo->hDir = -playerDir;//receivedHit->hDir;
+		dir = -playerDir;
+		velocity = dir * speed;
+
+		owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+	}
+	else
+	{
+		Enemy::ProcessHit();
+	}
 
 	//might add more later to return
 }
@@ -143,18 +221,24 @@ void Airdasher::ProcessState()
 		switch (action)
 		{
 		case S_DASH:
-			{
+		{
 			//action = S_RETURN;
-				break;
-			}
+			break;
+		}
 		case S_RETURN:
 			//action = S_FLOAT;
 			break;
 		case S_OUT:
+		{
 			action = S_RETURN;
 			sprite.setRotation(0);
 			V2d pDir = normalize(playerPos - position);
 			SetFacingSide(pDir);
+			break;
+		}
+		case S_COMBO:
+			dead = true;
+			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
 			break;
 		}
 	}
@@ -308,6 +392,15 @@ void Airdasher::UpdateEnemyPhysics()
 		physStepIndex += steps;
 		break;
 	}
+	case S_COMBO:
+	{
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * (double)numPhysSteps;
+
+		position += movementVec;
+		break;
+	}
+		
 	}
 }
 
@@ -345,6 +438,9 @@ void Airdasher::UpdateSprite()
 		//tIndex = 0;
 		tIndex = (frame / animFactor[S_FLOAT]) % actionLength[S_FLOAT];
 		break;
+	case S_COMBO:
+		tIndex = 13;
+		break;
 	}
 
 	IntRect ir = ts->GetSubRect(tIndex);
@@ -378,4 +474,6 @@ void Airdasher::UpdateHitboxes()
 	{
 		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
 	}
+
+	comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front().globalPosition = position;
 }

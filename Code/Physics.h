@@ -98,28 +98,14 @@ struct HitboxInfo
 		Count
 	};
 
-	enum HitDirection
-	{
-		NONE,
-		LEFT,
-		RIGHT,
-		UP,
-		DOWN,
-		UPLEFT,
-		UPRIGHT,
-		DOWNLEFT,
-		DOWNRIGHT,
-		H_Count
-	};
-
 	HitboxInfo()
 		:knockback(0), kbDir(0, 0),
 		drainX(0), drainY(0), hitstunFrames(1), hitlagFrames(1), damage(10),
-		freezeDuringStun(false), hType(NORMAL), hitToSidePlayerIsOn(true), hDir( HitDirection::NONE )
+		freezeDuringStun(false), hType(NORMAL), hitToSidePlayerIsOn(true)
 	{
 	};
 
-	HitDirection hDir;
+	sf::Vector2<double> hDir;
 	HitboxType hType;
 	double knockback; //0+
 	sf::Vector2<double> kbDir;

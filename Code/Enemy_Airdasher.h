@@ -12,11 +12,13 @@ struct Airdasher : Enemy
 		S_DASH,
 		S_OUT,
 		S_RETURN,
+		S_COMBO,
 		S_Count
 	};
 
 	Airdasher(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos );
+	~Airdasher();
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -27,9 +29,16 @@ struct Airdasher : Enemy
 	void ResetEnemy();
 	double SetFacingPlayerAngle();
 	void SetFacingSide( V2d pDir );
+	void ComboHit();
+
+	int hitLimit;
+	int currHits;
 
 	V2d playerDir;
 	V2d velocity;
+
+	ComboObject *comboObj;
+
 
 	int chargeFrames;
 	int maxCharge;
