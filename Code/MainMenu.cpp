@@ -1244,6 +1244,10 @@ void MainMenu::CustomMapsOption()
 {
 	LevelSelector &ls = *levelSelector;
 	sf::Event ev;
+
+	sf::View oldPreView = preScreenTexture->getView();
+
+	sf::View oldView = window->getView();
 	window->setView( uiView );
 	quit = false;
 
@@ -1372,7 +1376,9 @@ void MainMenu::CustomMapsOption()
 		
 		
 	}
-	window->setView( v );
+	//window->setView( v );
+	window->setView(oldView);
+	//preScreenTexture->setView(oldPreView);
 }
 
 

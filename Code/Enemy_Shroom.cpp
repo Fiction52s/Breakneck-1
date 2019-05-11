@@ -311,10 +311,10 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 		- halfHeight, halfWidth * 2, halfHeight * 2);
 
 	actionLength[WAIT] = 30;
-	actionLength[APPEARING] = 3;
-	actionLength[RISING] = 30;
+	actionLength[APPEARING] = 4;
+	actionLength[RISING] = 17 * 2;
 	actionLength[DROOPING] = 30;
-	actionLength[DISSIPATING] = 1;
+	actionLength[DISSIPATING] = 6;
 	actionLength[SHOT] = 30;
 	actionLength[EXPLODING] = 20;
 
@@ -322,7 +322,7 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	animFactor[APPEARING] = 2;
 	animFactor[RISING] = 2;
 	animFactor[DROOPING] = 2;
-	animFactor[DISSIPATING] = 2;
+	animFactor[DISSIPATING] = 3;
 	animFactor[SHOT] = 1;
 	animFactor[EXPLODING] = 1;
 
@@ -545,7 +545,7 @@ void ShroomJelly::UpdateSprite()
 		break;
 	case RISING:
 		sprite.setTextureRect(ts->GetSubRect(actionLength[APPEARING] 
-			+ ( ( frame/ animFactor[APPEARING]) % 15 ) ) );
+			+ ( ( frame/ animFactor[RISING]) % 17 ) ) );
 		break;
 	case DROOPING:
 	{
@@ -557,11 +557,11 @@ void ShroomJelly::UpdateSprite()
 		break;
 	}
 	case DISSIPATING: 
-		sprite.setTextureRect(ts->GetSubRect(18
+		sprite.setTextureRect(ts->GetSubRect(21
 			+ frame / animFactor[DISSIPATING]) );
 		break;
 	case EXPLODING:
-		sprite.setTextureRect(ts->GetSubRect( 0 ));
+		sprite.setTextureRect(ts->GetSubRect(0));
 		break;
 	}
 

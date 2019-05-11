@@ -714,33 +714,33 @@ void EditSession::Draw()
 		}		
 	}
 
-	if( inversePolygon != NULL && inversePolygon->finalized )
-	{
-		if( extendingPolygon == NULL )
-		{
-			inversePolygon->Draw( false, zoomMultiple, preScreenTex, showPoints, NULL );
-			//(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, showPoints, extendingPoint );
-		}
-		else
-		{
-			if( inversePolygon == extendingPolygon )
-			{
-				inversePolygon->Draw( false, zoomMultiple, preScreenTex, true, extendingPoint );
-			}
-			else
-			{
-				if( extendingPolygon == NULL )
-				{
-					inversePolygon->Draw( false, zoomMultiple, preScreenTex, showPoints, extendingPoint );
-				}
-				else
-				{
-					inversePolygon->Draw( false, zoomMultiple, preScreenTex, false, extendingPoint );
-				}
-			}
-		}
-		
-	}
+	//if( inversePolygon != NULL && inversePolygon->finalized )
+	//{
+	//	if( extendingPolygon == NULL )
+	//	{
+	//		inversePolygon->Draw( false, zoomMultiple, preScreenTex, showPoints, NULL );
+	//		//(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, showPoints, extendingPoint );
+	//	}
+	//	else
+	//	{
+	//		if( inversePolygon == extendingPolygon )
+	//		{
+	//			inversePolygon->Draw( false, zoomMultiple, preScreenTex, true, extendingPoint );
+	//		}
+	//		else
+	//		{
+	//			if( extendingPolygon == NULL )
+	//			{
+	//				inversePolygon->Draw( false, zoomMultiple, preScreenTex, showPoints, extendingPoint );
+	//			}
+	//			else
+	//			{
+	//				inversePolygon->Draw( false, zoomMultiple, preScreenTex, false, extendingPoint );
+	//			}
+	//		}
+	//	}
+	//	
+	//}
 	
 	if (mode == PASTE)
 	{
@@ -6378,12 +6378,13 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
+	sf::View oldPreTexView = preScreenTex->getView();//mainMenu->preScreenTexture->
+	sf::View oldWindowView = w->getView();
+
 	currTool = TOOL_ADD;
 	//bosstype = 0;
 	currentFile = p_filePath.string();
 	currentPath = p_filePath;
-	
-	
 
 	cutChoose = false;
 	cutChooseUp = false;
@@ -6890,7 +6891,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	polygonInProgress.reset( new TerrainPolygon(&grassTex ) );
 	//inversePolygon.reset( NULL );
 
-	zoomMultiple = 1;
+	zoomMultiple = 2;
+
+	view.setSize(Vector2f(960 * (zoomMultiple), 540 * (zoomMultiple)));
+	preScreenTex->setView(view);
+
+	UpdateFullBounds();
 	Vector2<double> prevWorldPos;
 	Vector2i pixelPos;
 	Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(sf::Mouse::getPosition( *w ));
@@ -7249,7 +7255,15 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										bool pressF1 = Keyboard::isKeyPressed(Keyboard::F1);
 										if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
 											continue;
-										if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
+
+										bool sel = (*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y));
+										if ((*it)->inverse)
+										{
+											sel = !sel;
+										}
+
+										if( sel )
+										//if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
 										{
 
 											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
@@ -10824,7 +10838,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				else if (Keyboard::isKeyPressed(Keyboard::F))
 				{
-					testPoint = SnapPosToPoint(testPoint, 8);
+					testPoint = SnapPosToPoint(testPoint, 8 * zoomMultiple);
 					showPoints = true;
 				}
 				else
@@ -13248,6 +13262,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 
 		//float scaleDiff = zoomMultiple - 1.f;//1.f / zoomMultiple;
+		cout << "viewsize: " << view.getSize().x << ", mult: " << zoomMultiple << endl;
 		float sca = view.getSize().x / 960.f / 2.f;
 		scaleSprite.setScale( 1.f / sca, 1.f / sca );
 		scaleTextSS << "scale: x" << scaleSprite.getScale().x;
@@ -13427,7 +13442,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		w->display();
 	}
 	
-
+	preScreenTex->setView(oldPreTexView);
+	w->setView(oldWindowView);
 	
 	return returnVal;
 	
@@ -19309,7 +19325,7 @@ void EditSession::PointSelectPoint( V2d &worldPos,
 	TerrainPoint *foundPoint = NULL;
 	for (auto it = polygons.begin(); it != polygons.end(); ++it)
 	{
-		foundPoint = (*it)->GetClosePoint( 8, worldPos );
+		foundPoint = (*it)->GetClosePoint( 8 * zoomMultiple, worldPos );
 		if (foundPoint != NULL)
 		{
 			emptysp = false;

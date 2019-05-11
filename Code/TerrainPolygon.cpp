@@ -2018,7 +2018,6 @@ bool TerrainPolygon::ContainsPoint( Vector2f test )
 		it = it->next;
 	}
 
-
 	return c;
 	//if( !inverse )
 	//{

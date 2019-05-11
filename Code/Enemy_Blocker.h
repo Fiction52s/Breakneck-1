@@ -5,6 +5,26 @@
 
 struct BlockerChain;
 
+struct CircleGroup
+{
+	CircleGroup(int num, int rad, sf::Color col, int pointsPerCircle );
+	~CircleGroup();
+	int numCircles;
+	sf::Vertex *va;
+	float radius;
+	sf::Color color;
+	void SetVisible(int index, bool vis);
+	void SetPosition(int index, sf::Vector2f &pos);
+	void Draw(sf::RenderTarget *target);
+	void ShowAll();
+	void HideAll();
+	int pointsPerCircle;
+	int numVerts;
+	sf::Vector2f *circleCenters;
+
+};
+
+
 struct Blocker : Enemy, QuadTreeEntrant
 {
 	enum Action
@@ -35,6 +55,9 @@ struct Blocker : Enemy, QuadTreeEntrant
 
 	int animationFactor;
 
+	int minimapCirclePoints;
+	int minimapCircleRadius;
+
 	BlockerChain *bc;
 
 	bool checkCol;
@@ -56,10 +79,11 @@ struct BlockerChain : Enemy
 	};
 
 	sf::Vertex *va;
-
+	CircleGroup *circleGroup;
 	BlockerChain(GameSession *owner,
 		sf::Vector2i &pos, std::list<sf::Vector2i> &path,
 		int bType, bool armored, int spacing = 0);
+	~BlockerChain();
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void SetZone(Zone *p_zone);
