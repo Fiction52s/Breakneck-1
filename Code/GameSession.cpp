@@ -6081,6 +6081,8 @@ int GameSession::Run()
 	currStorySequence = NULL;
 	currBroadcast = NULL;
 
+	View oldPreTexView = preScreenTex->getView();
+	View oldWindowView = window->getView();
 	
 	//showHUD = true;
 
@@ -9232,6 +9234,10 @@ int GameSession::Run()
 	pauseMenu->owner = NULL;
 
 	fader->Clear();
+
+	preScreenTex->setView(oldPreTexView);
+	window->setView(oldWindowView);
+
 	return returnVal;
 }
 

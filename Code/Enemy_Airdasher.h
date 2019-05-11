@@ -25,7 +25,10 @@ struct Airdasher : Enemy
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();
+	double SetFacingPlayerAngle();
+	void SetFacingSide( V2d pDir );
 
+	V2d playerDir;
 	V2d velocity;
 
 	int chargeFrames;
@@ -35,7 +38,6 @@ struct Airdasher : Enemy
 	CubicBezier returnBez;
 
 	double dashRadius;
-	V2d playerDir;
 	int dashFrames;
 	int returnFrames;
 

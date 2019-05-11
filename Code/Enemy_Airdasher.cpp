@@ -34,7 +34,7 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	frame = 0;
 
 	//ts = owner->GetTileset( "Airdasher.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/dasher_256x160.png", 256, 160);
+	ts = owner->GetTileset("Enemies/dasher_208x144.png", 208, 144);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -86,12 +86,12 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 
 	UpdateHitboxes();
 
-	actionLength[S_FLOAT] = 18;
+	actionLength[S_FLOAT] = 11;
 	actionLength[S_DASH] = 30;
 	actionLength[S_RETURN] = 60;
 	actionLength[S_OUT] = 20;
 
-	animFactor[S_FLOAT] = 2;
+	animFactor[S_FLOAT] = 4;
 	animFactor[S_DASH] = 1;
 	animFactor[S_RETURN] = 1;
 	animFactor[S_OUT] = 1;
@@ -101,8 +101,8 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 	maxCharge = 15;
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(13);
-	cutObject->SetSubRectBack(12);
+	cutObject->SetSubRectFront(15);
+	cutObject->SetSubRectBack(14);
 }
 
 void Airdasher::ResetEnemy()
@@ -133,7 +133,8 @@ void Airdasher::ProcessHit()
 
 void Airdasher::ProcessState()
 {
-
+	V2d playerPos = owner->GetPlayer(0)->position;
+	
 
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -151,10 +152,12 @@ void Airdasher::ProcessState()
 			break;
 		case S_OUT:
 			action = S_RETURN;
+			sprite.setRotation(0);
+			V2d pDir = normalize(playerPos - position);
+			SetFacingSide(pDir);
 			break;
 		}
 	}
-	V2d playerPos = owner->GetPlayer(0)->position;
 
 	bool withinRange = length(playerPos - position) < ( dashRadius + 100.0 );
 	if (withinRange)
@@ -164,47 +167,19 @@ void Airdasher::ProcessState()
 			action = S_CHARGE;
 			frame = 0;
 			chargeFrames = 0;
+			playerDir = normalize(playerPos - position);
+			SetFacingPlayerAngle();
 		}
 		else if (action == S_CHARGE)
 		{
+			playerDir = normalize(playerPos - position);
+			SetFacingPlayerAngle();
 			if (chargeFrames == maxCharge)
 			{
 				action = S_DASH;
 				frame = 0;
-				playerDir = normalize(playerPos - position);
 				physStepIndex = 0;
-
-
-				double angle = -atan2(playerDir.y, -playerDir.x) / PI * 180.0;
-				//V2d dest = currOrig + playerDir * dashRadius;
-				//float angle = atan2(playerDir.y, playerDir.x);
-				//angle = angle / PI * 180.f;
-
-
-				if (playerDir.x < 0)
-				{
-					facingRight = false;
-				}
-				else if (playerDir.x > 0)
-				{
-					facingRight = true;
-					angle += 180;
-					//angle = -angle;
-				}
-				else if (playerDir.y == 1)
-				{
-					facingRight = true;
-					//angle = -angle;
-				}
-				else if (playerDir.y == -1)
-				{
-					facingRight = false;
-				}
-				else
-				{
-					assert(0);
-				}
-				sprite.setRotation(angle);
+				
 				//cout << "angle : " << angle << endl;
 			}
 			else
@@ -219,13 +194,71 @@ void Airdasher::ProcessState()
 		{
 			action = S_FLOAT;
 			frame = 0;
+			sprite.setRotation(0);
 		}
 	}
 	
 }
 
+void Airdasher::SetFacingSide( V2d pDir )
+{
+	if (pDir.x < 0)
+	{
+		facingRight = false;
+	}
+	else if (pDir.x > 0)
+	{
+		facingRight = true;
+	}
+	else if (pDir.y == 1)
+	{
+		facingRight = true;
+	}
+	else if (pDir.y == -1)
+	{
+		facingRight = false;
+	}
+	else
+	{
+		assert(0);
+	}
+}
+
+double Airdasher::SetFacingPlayerAngle()
+{
+	double angle = -atan2(playerDir.y, -playerDir.x) / PI * 180.0;
+	
+
+	if (playerDir.x < 0)
+	{
+		facingRight = false;
+	}
+	else if (playerDir.x > 0)
+	{
+		facingRight = true;
+		angle += 180;
+	}
+	else if (playerDir.y == 1)
+	{
+		facingRight = true;
+	}
+	else if (playerDir.y == -1)
+	{
+		facingRight = false;
+	}
+	else
+	{
+		assert(0);
+	}
+
+	sprite.setRotation(angle);
+
+	return angle;
+}
+
 void Airdasher::UpdateEnemyPhysics()
 {
+	V2d playerPos = owner->GetPlayer(0)->position;
 	V2d dest = currOrig + playerDir * dashRadius;
 	switch (action)
 	{
@@ -257,6 +290,8 @@ void Airdasher::UpdateEnemyPhysics()
 		if (a > 1.0)
 		{
 			action = S_CHARGE;
+			playerDir = normalize(playerPos - position);
+			SetFacingPlayerAngle();
 			chargeFrames = maxCharge - 5;
 			frame = 0;
 			currOrig = position;
@@ -266,7 +301,7 @@ void Airdasher::UpdateEnemyPhysics()
 		double rf = 1.0 - f;
 
 		position = dest * rf + d * f;
-
+		
 
 		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
 
@@ -294,21 +329,21 @@ void Airdasher::UpdateSprite()
 	switch (action)
 	{
 	case S_FLOAT:
-		tIndex = 0;
-		
+		tIndex = frame / animFactor[S_FLOAT];
 		break;
 	case S_CHARGE:
 		//sprite.setRotation(angle);
-		tIndex = 1;
+		tIndex = 11;
 		break;
 	case S_DASH:
-		tIndex = 4;
+		tIndex = 12;
 		break;
 	case S_OUT:
-		tIndex = 5;
+		tIndex = 11;
 		break;
 	case S_RETURN:
-		tIndex = 9;
+		//tIndex = 0;
+		tIndex = (frame / animFactor[S_FLOAT]) % actionLength[S_FLOAT];
 		break;
 	}
 
