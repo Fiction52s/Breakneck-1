@@ -37,23 +37,22 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	seq = new CrawlerDefeatedSeq(owner);
 
 	progressionLevel = 0;
-	bombSpeed = 2;
-	currDigAttacks = 3;
+	
 	highResPhysics = true;
 	redecide = false;
 	origCW = cw;
 	mover = new SurfaceMover(owner, g, q, 80);
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
+	
 	baseSpeed = 8;
-
 	numDecisions = 3;
+	bombSpeed = 2;
+	currDigAttacks = 3;
 
 	totalInvincFramesOnHit = 60;
-	//currInvincFramesOnHit = 0;
 	invincHitThresh = 3;
 	notHitCap = 10;
-	//invincHitCount = 0;
 
 	decMarkerPool = new EffectPool(EffectType::FX_REGULAR, MAX_DECISIONS, 1.f);
 	decideIndex = 0;
@@ -61,8 +60,6 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	health = initHealth;
 	dead = false;
 
-	
-	
 	actionLength[DECIDE] = 1;
 	actionLength[BOOST] = 1;
 	actionLength[TURNAROUNDBOOST] = 4;

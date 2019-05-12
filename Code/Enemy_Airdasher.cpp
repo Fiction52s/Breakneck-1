@@ -26,7 +26,7 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
 
 	initHealth = 80;
 	health = initHealth;
-	dashRadius = 700;//500;
+	dashRadius = 600;//500;
 	dashFrames = 36;
 	returnFrames = 30;
 
@@ -243,7 +243,7 @@ void Airdasher::ProcessState()
 		}
 	}
 
-	bool withinRange = length(playerPos - position) < ( dashRadius + 100.0 );
+	bool withinRange = length(playerPos - position) < ( dashRadius + 10.0 );
 	if (withinRange)
 	{
 		if (action == S_FLOAT)

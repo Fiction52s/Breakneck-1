@@ -6082,16 +6082,38 @@ void Actor::UpdatePrePhysics()
 						if( currInput.LRight() && velocity.x < dSpeed )
 						{
 							velocity.x = dSpeed;
+							if (!facingRight)
+							{
+								if (gNorm.x < 0)
+								{
+									velocity.y -= 16 * abs(gNorm.x);// 1.3;
+								}
+							}
 						}
 						else if( currInput.LLeft() && velocity.x > -dSpeed)
 						{							
 							velocity.x = -dSpeed;
+							if (facingRight)
+							{
+								if (gNorm.x > 0)
+								{
+									velocity.y -= 16 * abs(gNorm.x);
+								}
+							}
 						}
 						else
 						{
-							velocity.x = (velocity.x + groundSpeed) / 2.0;
+							velocity.x = (velocity.x + groundSpeed) / 2.0;	
 						}
 					}
+					else
+					{
+						velocity.x = (velocity.x + groundSpeed) / 2.0;
+					}
+
+
+					//if( currInput.B && velocity.y < 0 && ( gNorm.x > 0 && groundSpeed )
+
 					if( velocity.y > 0 )
 					{
 						//min jump velocity for jumping off of edges.

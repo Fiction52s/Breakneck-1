@@ -12,6 +12,7 @@ struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 	{
 		FLOATING,
 		EXPLODING,
+		COMBO,
 		Count
 	};
 
