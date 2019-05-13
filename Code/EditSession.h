@@ -1881,6 +1881,7 @@ struct EditSession : GUIHandler
 	Panel * CreatePopupPanel( const std::string &p );
 	Panel *messagePopup;
 	Panel *errorPopup;
+	Panel *bgPopup;
 
 	Panel *gateSelectorPopup;
 	Panel *terrainSelectorPopup;
@@ -2009,8 +2010,6 @@ struct EditSession : GUIHandler
 	
 	bool HoldingShift();
 	bool HoldingControl();
-
-	
 
 	std::list<boost::shared_ptr<DecorInfo>> decorImagesBehindTerrain;
 	std::list<boost::shared_ptr<DecorInfo>> decorImagesBetween;

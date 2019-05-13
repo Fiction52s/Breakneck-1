@@ -167,8 +167,9 @@ void ControlSettingsMenu::SetButtonAssoc()
 	mainMenu->GetController(0).SetFilter(pSel->currProfile->filter);//mainMenu->cpm->profiles.front()->filter);
 }
 
-void ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &prevInput )
+ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 {
+	UpdateState uState = NORMAL;
 	int oldSel = pSel->saSelector->currIndex;
 	if( !editMode )
 		pSel->Update( currInput, prevInput);
@@ -189,6 +190,7 @@ void ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &p
 		editMode = false;
 		SetGreyActionTiles(!editMode);
 		currButtonState = S_NEUTRAL;
+		uState = CONFIRM;
 	}
 	
 
@@ -260,7 +262,7 @@ void ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &p
 				}
 				SetFilterDefault(pSel->currProfile->filter);
 				mainMenu->GetController(0).SetFilter(pSel->currProfile->filter);
-				return;
+				return CONFIRM;
 			}
 			break;
 		case S_SELECTED:
@@ -286,7 +288,7 @@ void ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &p
 		//xboxInputAssoc[useControllerSchemeIndex][ControllerSettings::JUMP] = b;
 
 		//UpdateXboxButtonIcons(useControllerSchemeIndex);
-	
+	return uState;
 
 }
 

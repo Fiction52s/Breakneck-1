@@ -217,6 +217,7 @@ void OptionsMenu::Update( ControllerState &currInput,
 		break;
 	}
 	case CONTROL:
+	{
 		if (csm->currButtonState != ControlSettingsMenu::S_SELECTED)
 		{
 			if (currInput.B && !prevInput.B)
@@ -225,8 +226,15 @@ void OptionsMenu::Update( ControllerState &currInput,
 				break;
 			}
 		}
-		csm->Update(currInput, prevInput);
+
+		ControlSettingsMenu::UpdateState uState = csm->Update(currInput, prevInput);
+		if (uState == ControlSettingsMenu::CONFIRM)
+		{
+			//GameSession *owner = mainMenu->pauseMenu->owner;
+			//owner->GetController(0).SetFilter(csm->pSel->currProfile->filter);
+		}
 		break;
+	}
 	case SOUND:
 		if (currInput.B && !prevInput.B)
 		{

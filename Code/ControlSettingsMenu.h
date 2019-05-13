@@ -20,13 +20,20 @@ struct ControlSettingsMenu
 		S_WAITING,
 	};
 
+	enum UpdateState
+	{
+		CONFIRM,
+		NORMAL
+	};
+
+
 	ButtonState currButtonState;
 	ControlSettingsMenu(MainMenu *p_mm);
 	XBoxButton GetFilteredButton( ControllerSettings::ButtonType b );
 	~ControlSettingsMenu();
 	void InitAssocSymbols();
 	XBoxButton CheckXBoxInput(ControllerState &currInput);
-	void Update(ControllerState &currInput, 
+	UpdateState Update(ControllerState &currInput, 
 		ControllerState &prevInput);
 	void UpdateControlIcons();
 	SingleAxisSelector *xSelector;

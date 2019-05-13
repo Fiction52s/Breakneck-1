@@ -18,7 +18,7 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	ComboerType t)
 	:Enemy(owner, EnemyType::EN_COMBOER, p_hasMonitor, 1, false), cType( t )
 {
-	cType = T_GRAVITY;
+	cType = T_STRAIGHT;
 	switch (cType)
 	{
 	case T_STRAIGHT:

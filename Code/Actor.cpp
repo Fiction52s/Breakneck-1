@@ -2366,6 +2366,11 @@ void Actor::HandleAirTrigger()
 
 void Actor::UpdatePrePhysics()
 {
+	if (currInput.A)
+	{
+		int x = 5;
+	}
+
 	if (owner->stormCeilingOn)
 	{
 		//if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
@@ -6082,24 +6087,24 @@ void Actor::UpdatePrePhysics()
 						if( currInput.LRight() && velocity.x < dSpeed )
 						{
 							velocity.x = dSpeed;
-							if (!facingRight)
-							{
-								if (gNorm.x < 0)
-								{
-									velocity.y -= 16 * abs(gNorm.x);// 1.3;
-								}
-							}
+							//if (!facingRight && !steepJump)
+							//{
+							//	if (gNorm.x < 0)
+							//	{
+							//		velocity.y -= 16 * abs(gNorm.x);// 1.3;
+							//	}
+							//}
 						}
 						else if( currInput.LLeft() && velocity.x > -dSpeed)
 						{							
 							velocity.x = -dSpeed;
-							if (facingRight)
+							/*if (facingRight && !steepJump)
 							{
 								if (gNorm.x > 0)
 								{
 									velocity.y -= 16 * abs(gNorm.x);
 								}
-							}
+							}*/
 						}
 						else
 						{
@@ -18414,7 +18419,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 			if (currBooster == NULL)
 			{
-				if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody))
+				if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable() )
 				{
 					currBooster = boost;
 				}

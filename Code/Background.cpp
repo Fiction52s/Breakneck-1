@@ -79,10 +79,23 @@ string Background::GetBGNameFromBGInfo(const std::string &fileName)
 		//background = new Background(this, mh->envLevel, mh->envType);
 }
 
-void Background::SetupFullBG(const std::string &fName, TilesetManager &tm,
+bool Background::SetupFullBG(const std::string &fName, TilesetManager &tm,
 	Background *& bg, std::list<ScrollingBackground*> &sBG)
 {
-	assert(sBG.empty());
+	//assert(sBG.empty());
+	if (!sBG.empty())
+	{
+		for (auto it = sBG.begin(); it != sBG.end(); ++it)
+		{
+			delete (*it);
+		}
+		sBG.clear();
+
+		assert(bg != NULL);
+		delete bg;
+		bg = NULL;
+	}
+
 
 	ifstream is;
 	stringstream fss;
@@ -131,12 +144,15 @@ void Background::SetupFullBG(const std::string &fName, TilesetManager &tm,
 		}
 
 		is.close();
+
+		return true;
 	}
 	else
 	{
 	//	strerror_s()
 	//	cout << "file opening error: " << strerror_s(errno);
-		assert(0 && "problem loading bg info file");
+		//assert(0 && "problem loading bg info file");
+		return false;
 	}
 }
 

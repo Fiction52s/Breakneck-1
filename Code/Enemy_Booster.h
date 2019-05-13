@@ -23,6 +23,7 @@ struct Booster : Enemy
 	void UpdateHitboxes();
 	void ResetEnemy();
 	bool Boost();
+	bool IsBoostable();
 
 	sf::Sprite sprite;
 	Tileset *ts;

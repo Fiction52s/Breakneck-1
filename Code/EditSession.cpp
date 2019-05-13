@@ -6680,6 +6680,28 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	messagePopup = CreatePopupPanel( "message" );
 	errorPopup = CreatePopupPanel( "error" );
+	bgPopup = CreatePopupPanel("bg");
+
+	GridSelector *bgSel = bgPopup->AddGridSelector(
+		"terraintypes", Vector2i(20, 20), 6, 1, 1920/8, 1080/8, false, true);
+
+	Tileset *bgTS;
+	string path = "BGInfo/";
+	string bgName = "w1_0";
+	string png = ".png";
+	string numStr;
+	string fullName;
+	for (int i = 0; i < 6; ++i)
+	{
+		numStr = to_string(i+1);
+		fullName = path + bgName + numStr + png;
+		bgTS = tm.GetTileset( fullName, 1920, 1080);
+		Sprite bgSpr(*bgTS->texture);
+		bgSpr.setScale(.125, .125);
+		bgSel->Set(i, 0, bgSpr, bgName + numStr);
+	}
+
+	
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
 	allPopups.push_back(enemySelectPanel);
@@ -7014,7 +7036,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		{
 			if (ev.type == Event::KeyPressed)
 			{
-				if (ev.key.code == Keyboard::Num5)
+				if (ev.key.code == Keyboard::F5)
 				{
 					showBG = !showBG;
 					continue;
@@ -9872,6 +9894,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								showPanel = mapOptionsPanel;
 								mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
 								mapOptionsPanel->textBoxes["bosstype"]->text.setString(to_string(bossType));
+								//mapOptionsPanel->textBoxes["envtype"]->text.setString(envName);
 								mode = menuDownStored;
 							}
 							else if( menuSelection == "bottom" )
@@ -15087,7 +15110,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	}
 	else if( p->name == "map_options" )
 	{
-		if( b->name == "ok" );
+		if( b->name == "ok" )
 		{
 			int minEdgeSize;
 
@@ -15145,7 +15168,14 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				bossType = bType;
 			}
 
+
 			showPanel = NULL;
+		}
+		else if (b->name == "envtype")
+		{
+			GridSelectPop("bg");
+
+			//envName = tempGridResult;
 		}
 	}
 	else if( p->name == "terrain_options" )
@@ -15445,6 +15475,17 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 		else
 		{
 			//	cout << "not set" << endl;
+		}
+	}
+	else if (panel == bgPopup)
+	{
+		if (name != "not set")
+		{
+			if (Background::SetupFullBG(name, tm, currBackground, scrollingBackgrounds))
+			{
+				tempGridResult = name;
+				envName = name;
+			}
 		}
 	}
 }
@@ -16842,6 +16883,10 @@ void EditSession::GridSelectPop( const std::string &type )
 	{
 		panel = terrainSelectorPopup;
 	}
+	else if (type == "bg")
+	{
+		panel = bgPopup;
+	}
 
 	assert( panel != NULL );
 	//cout << "grid select popupppp" << endl;
@@ -16863,7 +16908,7 @@ void EditSession::GridSelectPop( const std::string &type )
 	Vector2i pixelPos = sf::Mouse::getPosition( *w );
 	pixelPos.x *= 1920 / w->getSize().x;
 	pixelPos.y *= 1920 / w->getSize().y;
-	pixelPos = Vector2i( 960, 540 );
+	//pixelPos = Vector2i( 960, 540 );
 
 
 	Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
@@ -16992,6 +17037,10 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	else if( type == "terrainselector" )
 	{
 		p = new Panel( "terrain_popup", 100, 100, this );
+	}
+	else if (type == "bg")
+	{
+		p = new Panel("bg_popup", 1500, 600, this);
 	}
 
 
@@ -17546,13 +17595,15 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 
 	else if( name == "map" )
 	{
-		p = new Panel( "map_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
+		p = new Panel( "map_options", 200, 800, this );
+		p->AddButton( "ok", Vector2i( 100, 600 ), Vector2f( 100, 50 ), "OK" );
 		p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
 		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
 		p->AddLabel("draintime_label", Vector2i(20, 200), 20, "drain seconds:");
 		p->AddTextBox("draintime", Vector2i(20, 250), 200, 20, "60");
 		p->AddTextBox("bosstype", Vector2i(20, 300), 200, 20, "0");
+		p->AddButton( "envtype", Vector2i(20, 400), Vector2f(100, 50), "Choose BG");
+		//p->AddTextBox("envtype", Vector2i(20, 400), 200, 20, "w1_01");
 	}
 	else if( name == "terrain" )
 	{

@@ -1593,7 +1593,7 @@ void MainMenu::Run()
 
 				if( active )
 				{
-					currInput = c.GetState();
+					currInput = c.GetUnfilteredState();
 
 					menuCurrInput.A |= ( currInput.A && !prevInput.A );
 					menuCurrInput.B |= ( currInput.B && !prevInput.B );

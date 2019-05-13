@@ -136,6 +136,7 @@ struct KinMenu
 	sf::Text description;
 };
 
+struct GameSession;
 struct PauseMenu
 {
 	OptionsMenu *cOptions;

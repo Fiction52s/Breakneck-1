@@ -15,7 +15,7 @@ struct Background
 	Background(TilesetManager &tm, const std::string &bgName);
 	Background(MainMenu *mm);
 	static std::string GetBGNameFromBGInfo(const std::string &fileName);
-	static void SetupFullBG(const std::string &fName,
+	static bool SetupFullBG(const std::string &fName,
 		TilesetManager &tm,
 		Background *& bg,
 		std::list<ScrollingBackground*> &sBG);

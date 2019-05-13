@@ -107,7 +107,10 @@ bool Booster::Boost()
 	return false;
 }
 
-
+bool Booster::IsBoostable()
+{
+	return action == NEUTRAL;
+}
 
 void Booster::ResetEnemy()
 {

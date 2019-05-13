@@ -777,9 +777,9 @@ void KeyboardSettings::Update( ControllerState &cs )
 void SetFilterDefault( XBoxButton *filter)
 {
 	filter[ControllerSettings::JUMP] = XBOX_A;
-	filter[ControllerSettings::DASH] = XBOX_B;
+	filter[ControllerSettings::DASH] = XBOX_X;
 	filter[ControllerSettings::ATTACK] = XBOX_R1;
-	filter[ControllerSettings::BOUNCE] = XBOX_X;
+	filter[ControllerSettings::BOUNCE] = XBOX_B;
 	filter[ControllerSettings::GRIND] = XBOX_Y;
 	filter[ControllerSettings::TIMESLOW] = XBOX_L1;
 	filter[ControllerSettings::LEFTWIRE] = XBOX_L2;

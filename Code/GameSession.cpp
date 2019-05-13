@@ -101,6 +101,7 @@
 #include "Enemy_Turtle.h"
 #include "HitboxManager.h"
 #include "ShaderTester.h"
+#include "ControlSettingsMenu.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -869,7 +870,7 @@ void GameSession::RecordReplayEnemies()
 
 void GameSession::UpdateInput()
 {
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		GetPrevInput(i) = GetCurrInput(i);
 		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
@@ -4997,12 +4998,12 @@ ControllerState &GameSession::GetCurrInput( int index )
 
 ControllerState &GameSession::GetPrevInputUnfiltered(int index)
 {
-	return mainMenu->GetPrevInput(index);
+	return mainMenu->GetPrevInputUnfiltered(index);
 }
 
 ControllerState &GameSession::GetCurrInputUnfiltered(int index)
 {
-	return mainMenu->GetCurrInput(index);
+	return mainMenu->GetCurrInputUnfiltered(index);
 }
 
 Actor *GameSession::GetPlayer( int index )
@@ -5879,11 +5880,11 @@ bool GameSession::Load()
 	pauseMenu->SetTab(PauseMenu::PAUSE);
 	//pauseMenu->SetTab( PauseMenu::Tab::KIN );
 
-	for( int i = 0; i < 4; ++i )
+	for( int i = 0; i < 1; ++i )
 	{
 		//temporary
 		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
-		GetController(i).SetFilter( mainMenu->cpm->profiles.front()->filter );
+		GetController(i).SetFilter(pauseMenu->controlSettingsMenu->pSel->currProfile->filter);//mainMenu->cpm->profiles.front()->filter );
 	}
 
 	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
@@ -6477,7 +6478,7 @@ int GameSession::Run()
 				}
 			}
 
-			for( int i = 0; i < 4; ++i )
+			for( int i = 0; i < 1; ++i )
 			{
 				GameController &con = GetController( i );
 				bool canControllerUpdate = con.UpdateState();
@@ -6487,8 +6488,9 @@ int GameSession::Run()
 				}
 				else
 				{
-					con.UpdateState();
-					GetCurrInput( i ) = con.GetState();
+					ControllerState &currInput = GetCurrInput(i);
+					ControllerState &conState = con.GetState();
+					currInput = conState;
 					GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
 				}
 			}
@@ -10373,7 +10375,12 @@ void GameSession::RestartLevel()
 		cam.offset = Vector2f( 0, 0 );
 	}*/
 
-	
+	for (int i = 0; i < 4; ++i)
+	{
+		Actor *player = GetPlayer(i);
+		if (player != NULL)
+			player->Respawn();
+	}
 
 	absorbParticles->Reset();
 	absorbDarkParticles->Reset();
@@ -10422,12 +10429,7 @@ void GameSession::RestartLevel()
 
 	cam.SetManual( false );
 
-	for (int i = 0; i < 4; ++i)
-	{
-		Actor *player = GetPlayer(i);
-		if (player != NULL)
-			player->Respawn();
-	}
+	
 	
 	//inGameClock.restart();
 }
@@ -11523,17 +11525,16 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 	double width = 16;
 
 	list<list<pair<V2d,bool>>> allInfo;
-	//cout << "number of divs: " << divs << endl;
-	for( int i = 0; i < divs; ++i )//while( angle <= PI * 2 )
-	//int i = 3;
-	//int i = 23;
+	double rayCheck = 0;
+
+	for( int i = 0; i < divs; ++i )
 	{
 		rayIgnoreEdge1 = NULL;
 		rayIgnoreEdge = NULL;
 
 		allInfo.push_back( list<pair<V2d,bool>>() );
 		list<pair<V2d,bool>> &pointList = allInfo.back();
-		//cout << "div " << i << endl;
+
 		double angle = (tau / divs) * i;
 		V2d rayDir( cos( angle ), sin( angle ) );
 
@@ -11564,7 +11565,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 			//start ray
 			if( rcEdge != NULL )
 			{
-				
+				cout << "point list size: " << pointList.size() << endl;
 				if( rcEdge->edgeType == Edge::BORDER || rcEdge->edgeType == Edge::CLOSED_GATE )
 				{
 				//	cout << "secret break" << endl;
@@ -11629,7 +11630,19 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 				rayEnd = rayStart + rayDir * rayLen;
 			}
 
-			rayOkay = length( (goalPos + rayDir * startRadius) - rayEnd ) <= 10000;
+			double oldRayCheck = rayCheck;
+			rayCheck = length((goalPos + rayDir * startRadius) - rayEnd);
+
+			if (rayCheck == oldRayCheck)
+			{
+				rayOkay = false;
+			}
+			else
+			{
+				rayOkay = rayCheck <= 10000;
+			}
+			//cout << "rayLen: " << rayLen << endl;
+			
 			//rayOkay = rayEnd.x >= leftBounds && rayEnd.y >= topBounds && rayEnd.x <= leftBounds + boundsWidth 
 			//	&& rayEnd.y <= topBounds + boundsHeight;
 		}
