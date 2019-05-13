@@ -3695,7 +3695,7 @@ void MapSelectionMenu::UpdateMultiInput()
 			//pInput = cInput;
 			bool active = c.UpdateState();
 
-			if (active)
+			if (active )
 			{
 				cInput = c.GetState();
 				multiMusicCurr.A |= (cInput.A && !pInput.A);

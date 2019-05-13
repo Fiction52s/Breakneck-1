@@ -9930,7 +9930,15 @@ void GameSession::SetOriginalMusic()
 				}
 				//musicMap[(*it).first] = originalMusic;
 				originalMusic->Load();
-				mainMenu->musicPlayer->TransitionMusic(originalMusic, 60);
+				if (originalMusic == mainMenu->musicPlayer->currMusic)
+				{
+
+				}
+				else
+				{
+					mainMenu->musicPlayer->TransitionMusic(originalMusic, 60);
+				}
+				
 				//originalMusic->music->setVolume(mainMenu->config->GetData().musicVolume);
 				//originalMusic->music->setLoop(true);
 				//originalMusic->music->play();

@@ -133,7 +133,7 @@ bool GameController::UpdateState()
 	ZeroMemory( &state, sizeof( XINPUT_STATE ) );
 	DWORD result = XInputGetState( m_index, &state );
 
-	if( result == ERROR_SUCCESS )
+	if( false )//result == ERROR_SUCCESS )
 	{
 		//cout << "updating controller state " << m_index << endl;
 		double LX = state.Gamepad.sThumbLX;
@@ -346,20 +346,20 @@ bool GameController::UpdateState()
 		if( up )
 		{
 			m_state.leftStickMagnitude = 1.0;
-			m_state.leftStickPad += 1 << 1;
+			m_state.leftStickPad += 1;
 			//cout << "UP" << endl;
 		}
 		else if( down )
 		{
 			m_state.leftStickMagnitude = 1.0;
-			m_state.leftStickPad += 1;
+			m_state.leftStickPad += 1 << 1;
 			//cout << "DOWN" << endl;
 		}
 
 		m_state.rightStickMagnitude = 0;
 		m_state.rightStickPad = 0;
 
-
+		m_unfilteredState = m_state;
 		//if( m_state.leftStickMagnitude > stickThresh )
 		//{
 		//	//cout << "left stick radians: " << currInput.leftStickRadians << endl;
