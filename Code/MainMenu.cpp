@@ -1201,7 +1201,7 @@ void MainMenu::SetMode(Mode m)
 	menuMode = m;
 	//only need this because the transition is seamless so inputs can
 	//get buffered
-	if (menuMode == MAINMENU || menuMode == TRANS_MAIN_TO_SAVE )//|| menuMode == WORLDMAP)
+	if (menuMode == MAINMENU || menuMode == TRANS_MAIN_TO_SAVE || menuMode == TRANS_MAIN_TO_MAPSELECT)//|| menuMode == WORLDMAP)
 	{
 		//TerrainRender::CleanupLayers(); //saves a little time?
 		changedMode = false;
@@ -3405,10 +3405,21 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 		is >> oftenLevel;
 
 		mh->songLevels[tempSongStr] = oftenLevel;
+		is.get();
 	}
+	
 
 	string collectionName;
 	is >> collectionName;
+
+	if (collectionName == "")
+	{
+		string test;
+		is >> test;
+		int bb = 65;
+	}
+	
+	
 
 	//string gameTypeName;
 	int gameMode;

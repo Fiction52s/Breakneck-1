@@ -89,7 +89,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[LAND] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
 	tileset[LAND2] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
 	tileset[RUN] = owner->GetTileset("Kin/run_64x64.png", 64, 64, skin);
-	tileset[SPRINGSTUN] = owner->GetTileset("Kin/launch_96x.png", 96, 64, skin);
+	tileset[SPRINGSTUN] = owner->GetTileset("Kin/launch_96x64.png", 96, 64, skin);
 	tileset[SLIDE] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
 	tileset[SPRINT] = owner->GetTileset("Kin/sprint_80x48.png", 80, 48, skin);	
 	//tileset[DASHATTACK] = owner->GetTileset("dash_attack_128x96.png", 128, 96);
