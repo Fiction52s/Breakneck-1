@@ -64,7 +64,7 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	frame = 0;
 
 	
-	titleMusic = mainMenu->musicManager->songMap["w0_Breakneck_Title_02"];
+	titleMusic = mainMenu->musicManager->songMap["w0_1_Breakneck_Title"];
 	titleMusic->Load();
 
 }

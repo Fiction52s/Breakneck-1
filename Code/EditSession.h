@@ -1651,7 +1651,7 @@ struct EditSession : GUIHandler
 	std::list<ScrollingBackground*> scrollingBackgrounds;
 
 	bool showBG;
-	const static int MAX_TERRAINTEX_PER_WORLD = 7;
+	const static int MAX_TERRAINTEX_PER_WORLD = 10;
 	sf::Texture *terrainTextures[9 * MAX_TERRAINTEX_PER_WORLD];
 	sf::Shader polyShaders[9 * MAX_TERRAINTEX_PER_WORLD];
 

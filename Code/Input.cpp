@@ -133,7 +133,7 @@ bool GameController::UpdateState()
 	ZeroMemory( &state, sizeof( XINPUT_STATE ) );
 	DWORD result = XInputGetState( m_index, &state );
 
-	if( false )//result == ERROR_SUCCESS )
+	if( result == ERROR_SUCCESS )
 	{
 		//cout << "updating controller state " << m_index << endl;
 		double LX = state.Gamepad.sThumbLX;
@@ -264,7 +264,7 @@ bool GameController::UpdateState()
 
 		m_state = tempState;
 	}
-	else
+	else if( m_index == 0 )
 	{
 		//cout << "updating controller state keyboard " << m_index << endl;
 		using namespace sf;
@@ -392,9 +392,7 @@ bool GameController::UpdateState()
 		//		m_state.rightStickPad += 1 << 1;
 		//}
 
-		
-
-		
+		result = ERROR_SUCCESS;
 	}
 
 	

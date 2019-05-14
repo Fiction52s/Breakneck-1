@@ -1419,6 +1419,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		SaveFile *currProgress = owner->mainMenu->GetCurrentProgress();
 		//if (currProgress == NULL )
 		//{
+
+
+
+		if (false)
+		{
 			hasPowerAirDash = true;
 			hasPowerGravReverse = true;
 			hasPowerBounce = true;
@@ -1426,6 +1431,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			hasPowerTimeSlow = true;
 			hasPowerLeftWire = true;
 			hasPowerRightWire = true;
+		}
+
+
+
+
 		//	//hasPowerClones = MAX_GHOSTS;
 		//	hasPowerClones = 0;
 		//}

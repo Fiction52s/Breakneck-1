@@ -6841,7 +6841,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	terrainSelectorPopup = CreatePopupPanel( "terrainselector" );
 	GridSelector *terrainSel = terrainSelectorPopup->AddGridSelector(
-		"terraintypes", Vector2i( 20, 20 ), 9, 7, 64, 64, false, true );
+		"terraintypes", Vector2i( 20, 20 ), 9, MAX_TERRAINTEX_PER_WORLD, 64, 64, false, true );
 
 	
 	int numWorlds = 9;//6 plus core plus bear core plus special terrain

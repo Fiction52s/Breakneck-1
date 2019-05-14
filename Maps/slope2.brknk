@@ -1,10 +1,12 @@
 1.5
 This is the beginning of the song<>
 0
-0
+1
+w1_03_launchers
+29
 CollectionTest
 1
-0 w1_06
+0 w1_01
 -5300 -6000 43300 15000
 60
 0
@@ -189,30 +191,30 @@ crawler 0 63 229.859
 0
 +clockwise
 5
--842150451
+188
 crawler 0 66 288.806
 0
 +clockwise
 5
--842150451
+482
 crawler 0 65 44.998
 0
 +clockwise
 5
--842150451
+133960705
 crawler 0 121 1668.8
 0
 +clockwise
 5
-1000
+134000045
 crawler 0 121 330.957
 0
 +clockwise
 5
-1000
+133955772
 crawler 0 89 664.586
 0
 +clockwise
 5
-1000
+133955772
 0

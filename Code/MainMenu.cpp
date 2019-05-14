@@ -657,7 +657,7 @@ MainMenu::MainMenu()
 
 	musicPlayer = new MusicPlayer(this);
 
-	menuMusic = musicManager->songMap["Breakneck_Menu_01"];
+	menuMusic = musicManager->songMap["w0_2_Breakneck_Menu_01"];
 	menuMusic->Load();
 
 	titleScreen = new TitleScreen(this);
@@ -3961,6 +3961,19 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				MapSelectionItem *mi = allItems[pIndex].second.item;
 				if (mi->headerInfo->songLevelsModified )
 				{
+					/*auto &songLevels = mi->headerInfo->songLevels;
+					for (auto it = songLevels.begin(); it != songLevels.end();)
+					{
+						if (mainMenu->musicManager->songMap.count((*it).first) == 0)
+						{
+							songLevels.erase(it++);
+						}
+						else
+						{
+							++it;
+						}
+					}*/
+
 					ReplaceHeader(mi->path, mi->headerInfo);
 				}
 

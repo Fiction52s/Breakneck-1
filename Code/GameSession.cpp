@@ -870,7 +870,7 @@ void GameSession::RecordReplayEnemies()
 
 void GameSession::UpdateInput()
 {
-	for (int i = 0; i < 1; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
 		GetPrevInput(i) = GetCurrInput(i);
 		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
@@ -9900,6 +9900,11 @@ void GameSession::SetOriginalMusic()
 	{
 		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
 		{
+			if (mainMenu->musicManager->songMap.count((*it).first) == 0)
+			{
+				continue;
+			}
+
 			pointsTotal += (*it).second;
 		}
 	}
@@ -9913,14 +9918,17 @@ void GameSession::SetOriginalMusic()
 
 		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
 		{
+			if (mainMenu->musicManager->songMap.count((*it).first) == 0)
+			{
+				//song doesnt exist!
+				continue;
+			}
+
 			r -= (*it).second;
 			if (r < 0)
 			{
 				//assumes that this is a valid check
-				if (mainMenu->musicManager->songMap.count((*it).first) == 0)
-				{
-					assert(0);
-				}
+				
 
 				originalMusic = mainMenu->musicManager->songMap[(*it).first];
 
