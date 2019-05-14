@@ -1655,6 +1655,8 @@ struct EditSession : GUIHandler
 	sf::Texture *terrainTextures[9 * MAX_TERRAINTEX_PER_WORLD];
 	sf::Shader polyShaders[9 * MAX_TERRAINTEX_PER_WORLD];
 
+	void DrawBG(sf::RenderTarget *target);
+
 	int bossType;
 
 	Tool currTool;

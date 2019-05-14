@@ -12367,18 +12367,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		if (showBG)
 		{
-			currBackground->Draw(preScreenTex);
-
-			sf::View viewP = view;
-			viewP.setSize(1920, 1080);
-			viewP.setCenter(960, 0);
-			preScreenTex->setView(viewP);
-			for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
-				it != scrollingBackgrounds.end(); ++it)
-			{
-				(*it)->Draw(preScreenTex);
-			}
-			preScreenTex->setView(view);
+			DrawBG(preScreenTex);
 		}
 		/*sf::RectangleShape parTest( Vector2f( 1000, 1000 ) );
 		parTest.setFillColor( Color::Red );
@@ -15683,6 +15672,22 @@ void EditSession::ClearSelectedPoints()
 	selectedPoints.clear();
 }
 
+void EditSession::DrawBG(sf::RenderTarget *target)
+{
+	currBackground->Draw(target);
+
+	sf::View viewP = view;
+	viewP.setSize(1920, 1080);
+	viewP.setCenter(960, 0);
+	target->setView(viewP);
+	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
+		it != scrollingBackgrounds.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+	target->setView(view);
+}
+
 void EditSession::SelectPoint(TerrainPolygon *poly,
 	TerrainPoint *point)
 {
@@ -18143,6 +18148,9 @@ void EditSession::CreateDecorImage(DecorPtr dec)
 
 void EditSession::CreatePreview(Vector2i imageSize)
 {
+	
+
+
 	int extraBound = 0;
 	int left;
 	int top;
@@ -18282,12 +18290,30 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	pView.setCenter( middle );
 	pView.setSize(Vector2f(width, -height));// *1.05f );
 
+	Vector2f vSize = pView.getSize();
+	float zoom = vSize.x / 960;
+	Vector2f botLeft(pView.getCenter().x - vSize.x / 2, pView.getCenter().y + vSize.y / 2);
+	for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
+	{
+		if (terrainTextures[i] != NULL)
+		{
+			polyShaders[i].setUniform("zoom", zoom);
+			polyShaders[i].setUniform("topLeft", botLeft);
+			//just need to change the name topleft  to botleft eventually
+		}
+
+	}
+
 	//Color inversePolyTypeColor;// = Color::Blue;
 
 	Color purp(109, 82, 190);
 	//inversePolyTypeColor = Color::Blue;
 
 	mapPreviewTex->clear(Color::Black);
+
+	//DrawBG(mapPreviewTex);
+	
+
 	mapPreviewTex->setView( pView );
 
 

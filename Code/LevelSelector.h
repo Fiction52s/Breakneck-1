@@ -40,6 +40,9 @@ struct LevelSelector
 	void MouseUpdate( sf::Vector2f mousePos );
 	void LeftClick( bool click, sf::Vector2f mousePos );
 	const std::string &GetSelectedPath();
+	void GetPreview(const std::string &mName,
+		bool update );
+	void UpdateSelectedPreview();
 	//std::list<std::string> maps;
 	TreeNode *entries;
 	void Print();

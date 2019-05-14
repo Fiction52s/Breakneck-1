@@ -183,6 +183,49 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	return t;
 }
 
+Tileset *TilesetManager::GetUpdatedTileset(
+	const std::string & s, int tileWidth, int tileHeight, int altColorIndex)
+{
+	for (list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it)
+	{
+		if ((*it)->sourceName == s && (*it)->altColorIndex == altColorIndex)
+		{
+			DestroyTileset((*it));
+			break;
+		}
+	}
+
+	string s2 = string("Resources/") + s;
+
+	Texture *tex = new Texture();
+	if (!tex->loadFromFile(s2))
+	{
+		delete tex;
+		return NULL;
+	}
+
+	Tileset *t = new Tileset();
+	t->texture = tex;
+
+	if (tileWidth == 0)
+	{
+		tileWidth = tex->getSize().x;
+
+	}
+	if (tileHeight == 0)
+	{
+		tileHeight = tex->getSize().y;
+	}
+
+	t->altColorIndex = altColorIndex;
+	t->tileWidth = tileWidth;
+	t->tileHeight = tileHeight;
+	t->sourceName = s;
+	tilesetList.push_back(t);
+
+	return t;
+}
+
 void TilesetManager::ClearTilesets()
 {
 	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )

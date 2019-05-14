@@ -157,21 +157,32 @@ AdventureHUD::AdventureHUD(GameSession *p_owner)
 
 void AdventureHUD::Hide(int frames)
 {
-	processFrames = frames;
-	state = EXITING;
-	frame = 0;
+	if (state == SHOWN)
+	{
+		processFrames = frames;
+		state = EXITING;
+		frame = 0;
+	}
 }
 
 void AdventureHUD::Show(int frames)
 {
-	processFrames = frames;
-	state = ENTERING;
-	frame = 0;
+	if (state == HIDDEN)
+	{
+		processFrames = frames;
+		state = ENTERING;
+		frame = 0;
+	}
 }
 
 bool AdventureHUD::IsHidden()
 {
 	return state == HIDDEN;
+}
+
+bool AdventureHUD::IsShown()
+{
+	return state == SHOWN;
 }
 
 void AdventureHUD::Update()

@@ -114,6 +114,7 @@ struct AdventureHUD
 	void Update();
 	void Reset();
 	bool IsHidden();
+	bool IsShown();
 
 	int processFrames;
 	bool show;

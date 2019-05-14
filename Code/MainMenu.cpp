@@ -3052,6 +3052,7 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		{
 			optionChosen = true;
 			menu->GameEditLoop( ls.GetSelectedPath() );//ls.paths[ls.selectedIndex].().string() );//ls.text[ls.selectedIndex].getString() );
+			ls.UpdateSelectedPreview();
 			menu->window->setView( menu->uiView );
 		}
 		else if( b->name == "Delete" )
@@ -4055,6 +4056,19 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				
 				MapSelectionItem *mi = allItems[pIndex].second.item;
 				
+				auto &songLevels = mi->headerInfo->songLevels;
+				for (auto it = songLevels.begin(); it != songLevels.end();)
+				{
+					if (mainMenu->musicManager->songMap.count((*it).first) == 0)
+					{
+						songLevels.erase(it++);
+					}
+					else
+					{
+						++it;
+					}
+				}
+
 				//guaranteed to be a file not a folder
 				ReplaceHeader(mi->path, mi->headerInfo );
 

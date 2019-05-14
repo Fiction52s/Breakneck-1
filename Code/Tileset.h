@@ -22,6 +22,8 @@ struct TilesetManager
 	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight,  int altColorIndex = 0 );
 	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
 		sf::Color *startColorBuf, sf::Color *endColorBuf);
+	Tileset *GetUpdatedTileset(
+		const std::string & s, int tileWidth, int tileHeight, int altColorIndex = 0);
 	void ClearTilesets();
 	void DestroyTileset(Tileset * t);
 

@@ -89,7 +89,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[LAND] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
 	tileset[LAND2] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
 	tileset[RUN] = owner->GetTileset("Kin/run_64x64.png", 64, 64, skin);
-	tileset[SPRINGSTUN] = owner->GetTileset("Kin/double_64x64.png", 64, 64, skin);
+	tileset[SPRINGSTUN] = owner->GetTileset("Kin/launch_96x.png", 96, 64, skin);
 	tileset[SLIDE] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
 	tileset[SPRINT] = owner->GetTileset("Kin/sprint_80x48.png", 80, 48, skin);	
 	//tileset[DASHATTACK] = owner->GetTileset("dash_attack_128x96.png", 128, 96);
@@ -1099,7 +1099,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[GRAVREVERSE] = 20;
 		actionLength[JUMPSQUAT] = 3;
 		actionLength[INTRO] = 18 * 2;
-		actionLength[INTROBOOST] = 57 * 2;//40 * 2;
+		actionLength[INTROBOOST] = 22 * 2;//40 * 2;
 		actionLength[AIRDASH] = 33;//27;
 		actionLength[STEEPSLIDEATTACK] = 16;
 		actionLength[AIRHITSTUN] = 1;
@@ -2473,7 +2473,7 @@ void Actor::UpdatePrePhysics()
 	}
 	//cout << "JFRAME BEHI: " << frame << endl;
 
-	if (kinRing->powerRing != NULL && action != DEATH)
+	if (kinRing->powerRing != NULL && action != DEATH && owner->adventureHUD->IsShown() )
 	{
 		if (owner->drain && !desperationMode 
 			&& !IsIntroAction( action ) && !IsGoalKillAction( action ) && !IsExitAction( action ) && !IsSequenceAction( action ))
@@ -20667,7 +20667,11 @@ void Actor::UpdateSprite()
 
 		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 		sprite->setPosition(position.x, position.y);
-		sprite->setRotation(0);
+
+		V2d vel = velocity;
+		
+		double a = GetVectorAngleCW(velocity) * 180 / PI;
+		sprite->setRotation(a);
 
 		if (scorpOn)
 			SetAerialScorpSprite();

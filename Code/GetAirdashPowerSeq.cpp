@@ -28,6 +28,7 @@
 #include "Enemy_CrawlerQueen.h"
 #include "MusicSelector.h"
 #include "MusicPlayer.h"
+#include "HUD.h"
 
 using namespace sf;
 using namespace std;
@@ -183,6 +184,7 @@ bool GetAirdashPowerSeq::Update()
 
 				owner->state = GameSession::RUN;
 				owner->Fade(true, 60, Color::Black, true);
+				owner->adventureHUD->Show(60);
 				/*if (frame == stateLength[MASKOFF] - 1)
 				{
 					

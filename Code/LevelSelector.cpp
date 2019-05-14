@@ -141,6 +141,20 @@ void LevelSelector::MouseUpdate( sf::Vector2f mousePos )
 	}
 }
 
+void LevelSelector::GetPreview(const std::string &mName, bool update)
+{
+	string fileName = string("Maps/Previews/") + mName + string("_preview_912x492.png");
+	if (update)
+	{
+		previewTS[mName] = mainMenu->tilesetManager.GetUpdatedTileset(fileName, 912, 492);
+	}
+	else
+	{
+		previewTS[mName] = mainMenu->tilesetManager.GetTileset(fileName, 912, 492);
+	}
+	
+}
+
 void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 {
 	if( click )
@@ -205,6 +219,20 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 const std::string &LevelSelector::GetSelectedPath()
 {
 	return localPaths[selectedIndex];
+}
+
+void LevelSelector::UpdateSelectedPreview()
+{
+	string indexText = text[selectedIndex].getString().toAnsiString();
+	GetPreview(indexText, true);
+	Tileset *currTS = previewTS[indexText];
+
+	if (currTS != NULL)
+		previewSpr.setTexture(*currTS->texture);
+	else
+	{
+		previewSpr.setTexture(*ts_previewNotFound->texture);
+	}
 }
 
 
@@ -310,8 +338,7 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 					numTotalEntries++;
 
 					string mapName = p.relative_path().stem().string();
-					string fileName = string("Maps/Previews/") + mapName + string("_preview_912x492.png");
-					previewTS[mapName] = mainMenu->tilesetManager.GetTileset(fileName, 912, 492);
+					GetPreview(mapName, false);
 				}
 			}
 			else if (is_directory(p))      // is p a directory?
