@@ -16927,11 +16927,11 @@ bool Actor::SpringLaunch()
 		position = currSpring->position;
 		springVel = currSpring->dir * (double)currSpring->speed;
 
-		if (springVel.x > 0)
+		if (springVel.x > .01)
 		{
 			facingRight = true;
 		}
-		else if (springVel.x < 0)
+		else if (springVel.x < -.01)
 		{
 			facingRight = false;
 		}
@@ -20667,11 +20667,17 @@ void Actor::UpdateSprite()
 
 		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 		sprite->setPosition(position.x, position.y);
-
-		V2d vel = velocity;
 		
-		double a = GetVectorAngleCW(velocity) * 180 / PI;
-		sprite->setRotation(a);
+		if (facingRight)
+		{
+			double a = GetVectorAngleCW(normalize(springVel)) * 180 / PI;
+			sprite->setRotation(a);
+		}
+		else
+		{
+			double a = GetVectorAngleCCW(normalize(springVel)) * 180 / PI;
+			sprite->setRotation(-a + 180);
+		}
 
 		if (scorpOn)
 			SetAerialScorpSprite();
