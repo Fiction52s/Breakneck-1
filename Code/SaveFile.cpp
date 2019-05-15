@@ -558,6 +558,11 @@ Level::Level( )
 	justBeaten = false;
 }
 
+bool Level::IsLastInSector()
+{
+	return (index == sec->numLevels - 1);
+}
+
 void Level::UpdateFromMapHeader()
 {
 	if (shardsLoaded) return;

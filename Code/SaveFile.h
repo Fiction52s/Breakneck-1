@@ -74,6 +74,7 @@ struct Level
 	bool justBeaten;
 	int bossFightType;
 	void SetComplete(bool comp);
+	bool IsLastInSector();
 	//void SetJustUnlocked(bool unlocked);
 	//void SetJustUnlockedTop(bool unlocked);
 	//void SetJustUnlockedBottom(bool unlocked);

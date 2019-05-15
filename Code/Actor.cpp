@@ -2725,7 +2725,8 @@ void Actor::UpdatePrePhysics()
 				bool x = currInput.X && !prevInput.X;
 				if ( ( a || x ) && owner->scoreDisplay->waiting)
 				{
-					if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+					bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
+					if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
 					{
 						owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 					}
@@ -2774,10 +2775,12 @@ void Actor::UpdatePrePhysics()
 	{
 		bool a = currInput.A && !prevInput.A;
 		bool x = currInput.X && !prevInput.X;
-		if( ( a || x ) && owner->scoreDisplay->waiting )
+		if( ( a || x ) && owner->scoreDisplay->waiting)
 		{
 			//owner->scoreDisplay->Reset();
-			if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+			bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
+			if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE
+				&& levValid )
 			{
 				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
 			}

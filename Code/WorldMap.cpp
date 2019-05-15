@@ -1947,7 +1947,7 @@ void MapSector::Update(ControllerState &curr,
 			UpdateNodes();
 		}
 
-		if (curr.A && !prev.A)
+		if (curr.A && !prev.A && sec->IsUnlocked())
 		{
 			if (selectedYIndex == 1)
 			{

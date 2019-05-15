@@ -9267,6 +9267,8 @@ void GameSession::Init()
 
 	mini = NULL;
 
+	level = NULL;
+
 	boostIntro = false;
 
 	stormCeilingOn = false;

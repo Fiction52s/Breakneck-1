@@ -637,6 +637,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	GoalPulse *goalPulse;
 	sf::VertexArray *debugBorders;
 
+	Level *level;
+
 	void DebugDrawActors();
 
 	void HandleEntrant( QuadTreeEntrant *qte );

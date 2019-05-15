@@ -1991,6 +1991,8 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	//sf::sleep(sf::milliseconds(5000));
 
 	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
+	currLevel->level = lev;
+
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
 
@@ -2064,6 +2066,7 @@ void MainMenu::PlayIntroMovie()
 	//SetModeLoadingMap(wIndex);
 
 	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
+	currLevel->level = lev;
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
 
@@ -2082,9 +2085,12 @@ void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
 
 	//m->window->setVerticalSyncEnabled(false);
 
+	
+
 	SaveFile *currFile = m->GetCurrentProgress();
 	currFile->Save();
 
+	Level *lev = &(currFile->worlds[0].sectors[0].levels[0]);
 	//delete m->currLevel;
 
 	GameSession *old = m->currLevel;
@@ -2093,6 +2099,7 @@ void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
 	delete old;
 
 	m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], m, levName);
+	m->currLevel->level = lev;
 	//
 	
 	//
