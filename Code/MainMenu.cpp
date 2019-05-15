@@ -26,6 +26,7 @@
 #include "Fader.h"
 #include "VisualEffects.h"
 #include "MapHeader.h"
+#include "ButtonHolder.h"
 
 using namespace std;
 using namespace sf;
@@ -632,6 +633,8 @@ MainMenu::MainMenu()
 	
 
 	introMovie = new IntroMovie;
+	MusicInfo *filmMusicInfo = musicManager->songMap["w0_0_Film"];
+	filmMusicInfo->Load();
 	
   	int wholeX = 1920;
 	int wholeY = 1080;
@@ -1982,7 +1985,7 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 
 	//doneLoading = false;
 
-	
+
 	//loadThread = new boost::thread(DispLoadTest, this);// , currLevel);
 
 	//sf::sleep(sf::milliseconds(5000));
@@ -1991,6 +1994,10 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
 
+	accumulator = 0;//TIMESTEP + .1;
+	currentTime = 0;
+	gameClock.restart();
+	window->setActive(true);
 	//currLevel->Load();
 
 	//doneLoading = true;
@@ -2005,11 +2012,9 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	//loadThread = NULL;
 
 	//preScreenTexture->setActive(true);
-	window->setActive(true);
+	
 
-	accumulator = 0;//TIMESTEP + .1;
-	currentTime = 0;
-	gameClock.restart();
+	
 	//delete loadThread;
 	//loadThread = NULL;
 	//SetMode(RUNNINGMAP);
@@ -2044,11 +2049,30 @@ void MainMenu::PlayIntroMovie()
 	//worldMap->testSelector->UpdateAllInfo();
 
 	SetMode(INTROMOVIE);
-	//menuMode = MainMenu::Mode::LOADINGMAP;
 	introMovie->Play();
 
-	AdventureLoadLevel(&(GetCurrentProgress()->worlds[0].sectors[0].levels[0]), false);
-	//soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
+	//musicPlayer->FadeOutCurrentMusic(30);
+	MusicInfo *info = musicManager->songMap["w0_0_Film"];
+	musicPlayer->TransitionMusic(info, 60, sf::seconds( 60 ));
+	Level *lev = &(GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
+	string levelPath = lev->GetFullName();
+	window->setActive(false);
+	doneLoading = false;
+
+	//int wIndex = lev->sec->world->index;
+	gameRunType = GameRunType::GRT_ADVENTURE;
+	//SetModeLoadingMap(wIndex);
+
+	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
+
+	loadThread = new boost::thread(GameSession::sLoad, currLevel);
+
+	accumulator = 0;//TIMESTEP + .1;
+	currentTime = 0;
+	gameClock.restart();
+	window->setActive(true);
+
+	//AdventureLoadLevel(, false);
 }
 
 void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
@@ -2999,6 +3023,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
+		introMovie->skipHolder->Update(menuCurrInput.A);
 		if (!introMovie->Update() || (menuCurrInput.A && !menuPrevInput.A))
 		{
 			introMovie->Stop();

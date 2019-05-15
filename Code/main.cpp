@@ -123,3 +123,12 @@ int main()
 	//_CrtDumpMemoryLeaks();
 }
 
+INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+	PSTR lpCmdLine, INT nCmdShow)
+{
+	MainMenu *mm = new MainMenu();
+	mm->Run();
+	delete mm;
+
+	return 0;
+}
