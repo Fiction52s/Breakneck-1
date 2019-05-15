@@ -1,10 +1,14 @@
 1.5
 This is the beginning of the song<>
 0
-0
+2
+W1_04_infiltration
+29
+w1_27_Cliffs_02
+29
 CollectionTest
 1
-0 w1_06
+0 w1_05
 -5700 -3000 15400 12000
 60
 0
@@ -12,14 +16,14 @@ CollectionTest
 0
 -3046 907
 no_borderpoly
-0 0
+0 1
 4
 7654 -492
 7654 -40
 6515 -40
 6515 -492
 0
-0 0
+0 1
 46
 5773 1193
 5773 -53
@@ -68,7 +72,7 @@ no_borderpoly
 6023 1331
 5805 1229
 0
-0 0
+0 1
 171
 -3748 4142
 -3748 1592
