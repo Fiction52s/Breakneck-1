@@ -4,7 +4,7 @@
 
 IntroMovie::IntroMovie()
 {
-	assert(movie.openFromFile("Resources/Movie/Kin Intro.ogv"));
+	assert(movie.openFromFile("Resources/Movie/Kin_Intro.ogv"));
 	movie.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 	/*const sf::Texture &currImage = m.getCurrentImage();*/

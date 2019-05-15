@@ -593,9 +593,9 @@ MainMenu::MainMenu()
 
 
 	activatedMainMenuOptions[0] = true;
-	activatedMainMenuOptions[1] = true;//false;
-	activatedMainMenuOptions[2] = true;//false;
-	activatedMainMenuOptions[3] = true;//false;
+	activatedMainMenuOptions[1] = false;//false;
+	activatedMainMenuOptions[2] = false;//false;
+	activatedMainMenuOptions[3] = false;//false;
 	activatedMainMenuOptions[4] = true;
 	activatedMainMenuOptions[5] = true;
 	activatedMainMenuOptions[6] = true;
@@ -3031,7 +3031,7 @@ void MainMenu::HandleMenuMode()
 
 		}
 		introMovie->skipHolder->Update(menuCurrInput.A);
-		if (!introMovie->Update() || (menuCurrInput.A && !menuPrevInput.A))
+		if (!introMovie->Update() )
 		{
 			introMovie->Stop();
 

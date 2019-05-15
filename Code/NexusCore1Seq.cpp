@@ -197,10 +197,17 @@ bool NexusCore1Seq::Update()
 		else
 		{
 			mov.update();
+			float sec = mov.getDuration().asSeconds();
+			float pos = mov.getPlayingOffset().asSeconds();
 			//cout << "len: " << mov.getDuration().asSeconds() << endl;
 			//cout << "mov: " << mov.getPlayingOffset().asSeconds() << endl;
-			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
+			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped
+				|| pos > sec - 2.0 )
 			{
+				if (pos > sec - 2.0)
+				{
+					owner->Fade(true, 30, sf::Color::White);
+				}
 				frame = stateLength[DESTROYCORE] - 1;
 
 				//owner->state = GameSession::RUN;

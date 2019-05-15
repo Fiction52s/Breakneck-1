@@ -6089,7 +6089,7 @@ int GameSession::Run()
 
 	preScreenTex->setView(view);
 	
-	bool showFrameRate = true;
+	bool showFrameRate = false;
 
 	sf::Text frameRate("00", mainMenu->arial, 30);
 	frameRate.setFillColor(Color::Red);
