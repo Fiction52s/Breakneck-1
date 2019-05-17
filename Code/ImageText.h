@@ -37,6 +37,7 @@ struct TimerText : ImageText
 
 struct Script
 {
+	Script();
 	~Script();
 	void Load(const std::string &name);
 	std::string *sections;

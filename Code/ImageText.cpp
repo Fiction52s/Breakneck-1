@@ -253,6 +253,12 @@ void TextDisp::Draw(sf::RenderTarget *target)
 	}
 }
 
+Script::Script()
+{
+	sections = NULL;
+	numSections = 0;
+}
+
 void Script::Load(const std::string &name)
 {
 	
@@ -332,5 +338,6 @@ const std::string & Script::GetSection(int index)
 
 Script::~Script()
 {
-	delete[] sections;
+	if( sections != NULL)
+		delete[] sections;
 }

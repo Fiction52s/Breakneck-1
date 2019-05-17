@@ -102,6 +102,12 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	ResetEnemy();
 }
 
+FlowerPod::~FlowerPod()
+{
+	delete healRing;
+	delete broadcast;
+}
+
 void FlowerPod::ResetEnemy()
 {
 	action = IDLE;
@@ -359,6 +365,18 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	sprite.setPosition((1920 - ts_broadcast->tileWidth) - xSpacing, ySpacing);
 
 	numPadding = 120;//60;
+}
+
+MomentaBroadcast::~MomentaBroadcast()
+{
+	delete script;
+	delete textDisp;
+
+	if (numImages > 0)
+	{
+		assert(imageLength != NULL);
+		delete[] imageLength;
+	}
 }
 
 bool MomentaBroadcast::Update()

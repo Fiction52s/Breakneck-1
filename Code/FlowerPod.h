@@ -19,6 +19,7 @@ struct MomentaBroadcast
 	};
 
 	MomentaBroadcast( FlowerPod *pod, const std::string &btypeStr );
+	~MomentaBroadcast();
 	static BroadcastType GetType(const std::string &tStr);
 	BroadcastType bType;
 	Tileset *ts_broadcast;
@@ -76,6 +77,7 @@ struct FlowerPod : Enemy, RayCastHandler
 	Action action;
 	FlowerPod(GameSession *owner, const std::string &podType,
 		Edge *ground, double quantity);
+	~FlowerPod();
 	void ProcessState();
 	void ActionEnded();
 	void UpdateEnemyPhysics();

@@ -307,6 +307,8 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 BlockerChain::~BlockerChain()
 {
 	delete circleGroup;
+	delete[] blockers;
+	delete[] va;
 }
 
 void BlockerChain::ResetEnemy()
