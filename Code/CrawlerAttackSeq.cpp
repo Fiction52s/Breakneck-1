@@ -182,6 +182,9 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 CrawlerAttackSeq::~CrawlerAttackSeq()
 {
 	delete detailedGrab;
+	delete crawlerFace;
+	delete kinFace;
+	delete textDisp;
 }
 
 void CrawlerAttackSeq::Init()

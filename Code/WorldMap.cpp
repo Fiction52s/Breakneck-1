@@ -1189,8 +1189,9 @@ MapSelector::~MapSelector()
 		sectors = NULL;
 
 		delete sectorSelector;
-		delete mapSelector;
+		
 	}
+	delete mapSelector;
 }
 
 void MapSelector::UpdateSprites()

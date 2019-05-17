@@ -129,6 +129,15 @@ void Fader::Draw(sf::RenderTarget *target)
 Swiper::SwipeTypeInfo::SwipeTypeInfo()
 {
 	loaded = false;
+	tilesets = NULL;
+}
+
+Swiper::SwipeTypeInfo::~SwipeTypeInfo()
+{
+	if (tilesets != NULL)
+	{
+		delete[] tilesets;
+	}
 }
 
 sf::IntRect Swiper::SwipeTypeInfo::GetSubRect(int index)
@@ -149,7 +158,6 @@ void Swiper::LoadSwipeType(MainMenu *mm, SwipeType st)
 {
 	swipeTypeMap[st].Load(mm);
 }
-
 void Swiper::SwipeTypeInfo::Load( MainMenu *mm)
 {
 	if (!loaded)

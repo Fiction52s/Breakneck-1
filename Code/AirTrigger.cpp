@@ -39,12 +39,26 @@ AirTrigger::TriggerType AirTrigger::GetTriggerType(const std::string &typeStr)
 	{
 		return AUTORUNRIGHT;
 	}
+	else if (typeStr == "autorunrightairdash")
+	{
+		return AUTORUNRIGHTAIRDASH;
+	}
 }
 
 void AirTrigger::Reset()
 {
 	//debugRect.setPosition(Vector2f(owner->GetPlayer(0)->position));
 	triggered = false;
+
+	switch (triggerType)
+	{
+	case AUTORUNRIGHTAIRDASH:
+		if (owner->HasPowerUnlocked(Actor::POWER_AIRDASH))
+		{
+			triggered = true;
+		}
+		break;
+	}
 }
 
 void AirTrigger::DebugDraw(sf::RenderTarget *target)

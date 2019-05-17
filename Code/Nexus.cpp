@@ -148,6 +148,12 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 	action = A_SITTING;
 }
 
+
+Nexus::~Nexus()
+{
+	delete insideSeq;
+}
+
 void Nexus::ConfirmKill()
 {
 	dead = true;

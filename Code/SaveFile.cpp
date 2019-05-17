@@ -99,7 +99,8 @@ void BitField::Save(std::ofstream &of)
 //}
 
 SaveFile::SaveFile( const std::string &name )
-	:shardField( 32 * 5 ), newShardField( 32 * 5 )
+	:shardField( 32 * 5 ), newShardField( 32 * 5 ), powerField(32),
+	momentaField( 32 * 2 )
 {
 	stringstream ss;
 	ss << "Resources/Data/" << name << ".kin";
@@ -119,6 +120,16 @@ float SaveFile::GetCompletionPercentage()
 	}
 
 	return (totalComplete / totalPossible) * 100.f;
+}
+
+bool SaveFile::HasPowerUnlocked(Actor::PowerType pow)
+{
+	return powerField.GetBit((int)pow);
+}
+
+void SaveFile::UnlockPower(Actor::PowerType pType)
+{
+	powerField.SetBit((int)pType, true);
 }
 
 SaveFile::~SaveFile()
@@ -160,6 +171,9 @@ bool SaveFile::LoadInfo(ifstream &is)
 			worlds[i].index = i;
 			worlds[i].Load(is);
 		}
+
+		powerField.Load(is);
+		momentaField.Load(is);
 
 		shardField.Load(is);
 		newShardField.Load(is);
@@ -266,6 +280,9 @@ void SaveFile::Save()
 		{
 			worlds[i].Save( of );
 		}
+
+		powerField.Save(of);
+		momentaField.Save(of);
 
 		shardField.Save(of);
 		newShardField.Save(of);
@@ -486,6 +503,11 @@ Sector::~Sector()
 	{
 		delete[] levels;
 	}
+
+	if (conditions != NULL)
+		delete[] conditions;
+	if (numTypesNeeded != NULL)
+		delete[] numTypesNeeded;
 }
 
 

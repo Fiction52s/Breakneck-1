@@ -1,4 +1,6 @@
 #include "ButtonHolder.h"
+#include <iostream>
+using namespace std;
 
 ButtonHolder::ButtonHolder(int m_holdLength)
 {
@@ -10,7 +12,9 @@ void ButtonHolder::Update(bool held)
 	if (held)
 	{
 		if (holdFrame < 0)
+		{
 			holdFrame = 1;
+		}
 		else
 		{
 			if (holdFrame == holdLength)
@@ -23,7 +27,7 @@ void ButtonHolder::Update(bool held)
 			
 		}
 	}
-	else
+	else if( !IsHoldComplete() )
 	{
 		holdFrame = -1;
 	}

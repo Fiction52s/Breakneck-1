@@ -625,6 +625,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 	void SetUndergroundParAndDraw();
 	void SetupClouds();
+	SaveFile *GetCurrentProgress();
+	bool HasPowerUnlocked( int pIndex );
 
 	void CreateZones();
 	void SetupZones();

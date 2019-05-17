@@ -45,6 +45,7 @@ struct Swiper
 	struct SwipeTypeInfo
 	{
 		SwipeTypeInfo();
+		~SwipeTypeInfo();
 		int numImages;
 		int numTiles;
 		int name;

@@ -6,6 +6,7 @@
 #include "ShardTypes.h"
 #include <list>
 #include <string>
+#include "Actor.h"
 
 struct Sector;
 struct World;
@@ -170,12 +171,20 @@ struct SaveFile
 	/*void SetJustUnlocked(int world,
 		int sec, int lev);*/
 
+	BitField powerField;
+	bool HasPowerUnlocked(Actor::PowerType pType);
+	void UnlockPower(Actor::PowerType pType);
+
+	BitField momentaField;
+
 	BitField shardField;
 	BitField newShardField; //for unviewed shards
 	std::string fileName;
 	bool ShardIsCaptured(ShardType sType);
 	World *worlds;
 	int numWorlds;
+
+
 };
 
 #endif

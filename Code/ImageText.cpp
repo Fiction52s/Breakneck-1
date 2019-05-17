@@ -257,10 +257,7 @@ void Script::Load(const std::string &name)
 {
 	
 
-	for (int i = 0; i < numSections; ++i)
-	{
-		sections[i] = "";
-	}
+	
 
 	string path = "Resources/Text/";
 	string suffix = ".script";
@@ -294,6 +291,10 @@ void Script::Load(const std::string &name)
 
 		numSections = lineList.size();
 		sections = new string[numSections];
+		for (int i = 0; i < numSections; ++i)
+		{
+			sections[i] = "";
+		}
 		int sectionIndex = 0;
 		for (auto it = lineList.begin(); it != lineList.end(); ++it)
 		{

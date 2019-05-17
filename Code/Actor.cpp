@@ -262,6 +262,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+	airTrigBehavior = AT_NONE;
 	rpu = new RisingParticleUpdater( this );
 	//hitCeilingLockoutFrames = 20;
 	totalHealth = 3600;
@@ -1416,7 +1417,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		hasPowerRightWire = false;
 		hasPowerClones = 0;
 
-		SaveFile *currProgress = owner->mainMenu->GetCurrentProgress();
+		SaveFile *currProgress = owner->GetCurrentProgress();
 		//if (currProgress == NULL )
 		//{
 
@@ -1442,7 +1443,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		//bool noPowers = false;
 		
-		if ( currProgress != NULL && currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
+		if (currProgress != NULL && currProgress->HasPowerUnlocked(POWER_AIRDASH))//currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
 		{
 			hasPowerAirDash = true;
 		}
@@ -2367,6 +2368,7 @@ void Actor::HandleAirTrigger()
 		switch (currAirTrigger->triggerType)
 		{
 		case AirTrigger::AUTORUNRIGHT:
+		case AirTrigger::AUTORUNRIGHTAIRDASH:
 			airTrigBehavior = AT_AUTORUNRIGHT;
 			break;
 		}
@@ -2850,7 +2852,7 @@ void Actor::UpdatePrePhysics()
 
 		kinRing->powerRing->Drain(receivedHit->damage);
 
-		SetExpr( Expr::Expr_HURT );
+		//kinMask->SetExpr( KinMask::Expr::Expr_HURT );
 		//expr = Expr::Expr_HURT;
 		
 		//cout << "damaging player with: " << receivedHit->damage << endl;

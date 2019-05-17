@@ -185,6 +185,8 @@ bool GetAirdashPowerSeq::Update()
 				owner->state = GameSession::RUN;
 				owner->Fade(true, 60, Color::Black, true);
 				owner->adventureHUD->Show(60);
+				owner->mainMenu->GetCurrentProgress()
+					->UnlockPower(Actor::PowerType::POWER_AIRDASH);
 				/*if (frame == stateLength[MASKOFF] - 1)
 				{
 					

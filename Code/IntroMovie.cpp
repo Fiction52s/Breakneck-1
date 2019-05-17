@@ -1,8 +1,10 @@
 #include "IntroMovie.h"
 #include <assert.h>
 #include "ButtonHolder.h"
+#include "MainMenu.h"
+#include "Config.h"
 
-IntroMovie::IntroMovie()
+IntroMovie::IntroMovie( MainMenu *mm)
 {
 	assert(movie.openFromFile("Resources/Movie/Kin_Intro.ogv"));
 	movie.fit(sf::FloatRect(0, 0, 1920, 1080));
@@ -21,6 +23,7 @@ void IntroMovie::Play()
 {
 	movie.setPlayingOffset(sf::Time::Zero);
 	movie.play();
+	movie.setVolume(mainMenu->config->GetData().musicVolume);
 	skipHolder->Reset();
 }
 

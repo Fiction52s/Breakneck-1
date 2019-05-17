@@ -5,6 +5,8 @@
 #include <assert.h>
 #include "StorySequence.h"
 #include "Sequence.h"
+#include "MainMenu.h"
+#include "SaveFile.h"
 
 using namespace std;
 using namespace sf;
@@ -43,7 +45,15 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 		//storySeq->Load("kinhouse");
 		break;
 	case TRIGGER_GETAIRDASH:
-		gameSequence = new GetAirdashPowerSeq(owner);
+		owner->drain = false;
+		if (owner->HasPowerUnlocked(Actor::POWER_AIRDASH))
+		{
+		}
+		else
+		{
+			gameSequence = new GetAirdashPowerSeq(owner);
+		}
+		
 		//storySeq = new StorySequence(owner);
 		//storySeq->Load("getairdash");
 		break;
@@ -82,6 +92,14 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 	ResetEnemy();
 }
 
+GroundTrigger::~GroundTrigger()
+{
+	if (gameSequence != NULL)
+	{
+		delete gameSequence;
+	}
+}
+
 void GroundTrigger::ResetEnemy()
 {
 	health = initHealth;
@@ -90,7 +108,21 @@ void GroundTrigger::ResetEnemy()
 	receivedHit = NULL;
 	slowCounter = 1;
 	slowMultiple = 1;
+
 	action = IDLE;
+
+	switch (trigType)
+	{
+	case TRIGGER_GETAIRDASH:
+	{
+		if (owner->HasPowerUnlocked(Actor::POWER_AIRDASH))
+		{
+			action = DONE;
+		}
+		break;
+	}
+	}
+	
 	if( storySeq != NULL )
 		storySeq->Reset();
 

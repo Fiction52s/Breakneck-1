@@ -362,7 +362,7 @@ void KinMask::Update( int speedLevel, bool desp )
 	}
 	else
 	{ 
-		if (expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2)
+		if (expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2 || expr == Expr_HURT)
 		{
 			switch (speedLevel)
 			{
@@ -380,6 +380,11 @@ void KinMask::Update( int speedLevel, bool desp )
 			if (desp)
 			{
 				expr = Expr_DESP;
+			}
+
+			if (actor->action == Actor::GROUNDHITSTUN || actor->action == Actor::AIRHITSTUN)
+			{
+				expr = Expr_HURT;
 			}
 		}
 

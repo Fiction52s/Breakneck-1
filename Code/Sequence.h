@@ -67,6 +67,7 @@ struct Sequence
 	}
 	int frameCount;
 	int frame;
+	virtual ~Sequence() {}
 	virtual bool Update() = 0;
 	virtual void Reset() = 0;
 	virtual void Draw( sf::RenderTarget *target, 
@@ -202,7 +203,6 @@ struct CrawlerDefeatedSeq : Sequence
 	State state;
 	int stateLength[Count];
 	CrawlerDefeatedSeq(GameSession *owner);
-	~CrawlerDefeatedSeq();
 	bool Update();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);

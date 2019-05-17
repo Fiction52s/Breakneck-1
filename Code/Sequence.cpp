@@ -27,12 +27,12 @@
 #include "ScoreDisplay.h"
 #include "MusicPlayer.h"
 #include "ButtonHolder.h"
+#include "Config.h"
 
 using namespace sf;
 using namespace std;
 
 #define TIMESTEP 1.0 / 60.0
-
 
 ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	:owner( p_owner )
@@ -178,6 +178,7 @@ bool ShipExitSeq::Update()
 		if (frame == 0)
 		{
 			//owner->Fade(true, 60, Color::Black);
+			mov.setVolume(owner->mainMenu->config->GetData().musicVolume);
 			mov.setPlayingOffset(sf::Time::Zero);
 			mov.play();
 		}
@@ -1083,6 +1084,7 @@ bool CrawlerDefeatedSeq::Update()
 		sfe::Status movStatus = mov.getStatus();
 		if (frame == 0)
 		{
+			mov.setVolume(owner->mainMenu->config->GetData().musicVolume);
 			mov.setPlayingOffset(sf::Time::Zero);
 			mov.play();
 		}
@@ -1203,6 +1205,7 @@ bool BasicMovieSeq::Update()
 			owner->ClearFade();
 			owner->state = GameSession::SEQUENCE;
 			mov.setPlayingOffset(sf::Time::Zero);
+			mov.setVolume(owner->mainMenu->config->GetData().musicVolume);
 			mov.play();
 		}
 		else

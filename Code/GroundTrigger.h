@@ -40,6 +40,7 @@ struct GroundTrigger : Enemy
 		Edge *ground, double quantity, 
 		bool facingRight,
 		const std::string &trigTypeStr );
+	~GroundTrigger();
 	void ProcessState();
 	void DirectKill();
 	TriggerType GetTriggerType(const std::string &typeStr);

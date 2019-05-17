@@ -597,7 +597,7 @@ MainMenu::MainMenu()
 	activatedMainMenuOptions[2] = false;//false;
 	activatedMainMenuOptions[3] = false;//false;
 	activatedMainMenuOptions[4] = true;
-	activatedMainMenuOptions[5] = true;
+	activatedMainMenuOptions[5] = false;
 	activatedMainMenuOptions[6] = true;
 
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
@@ -632,7 +632,7 @@ MainMenu::MainMenu()
 
 	
 
-	introMovie = new IntroMovie;
+	introMovie = new IntroMovie(this);
 	MusicInfo *filmMusicInfo = musicManager->songMap["w0_0_Film"];
 	filmMusicInfo->Load();
 	
@@ -938,7 +938,9 @@ MainMenu::~MainMenu()
 	delete cpm;
 	delete musicManager;
 	delete pauseMenu;
-	delete introMovie;
+
+	if( introMovie != NULL)
+		delete introMovie;
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -978,7 +980,8 @@ MainMenu::~MainMenu()
 	delete saveMenu;
 
 	delete fader;
-
+	delete swiper;
+	delete indEffectPool;
 
 }
 
@@ -1594,6 +1597,8 @@ void MainMenu::Run()
 				prevInput = currInput;
 				bool active = c.UpdateState();
 
+				menuCurrInputUnfiltered = ControllerState();
+
 				if( active )
 				{
 					currInput = c.GetUnfilteredState();
@@ -1609,6 +1614,19 @@ void MainMenu::Run()
 					menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
 					menuCurrInput.back |= ( currInput.back && !prevInput.back );
 					menuCurrInput.leftStickPad |= currInput.leftStickPad;
+
+
+					/*menuCurrInputUnfiltered.A |= currInput.A;
+					menuCurrInputUnfiltered.B |= currInput.B;
+					menuCurrInputUnfiltered.X |= currInput.X;
+					menuCurrInputUnfiltered.Y |= currInput.Y;;
+					menuCurrInputUnfiltered.rightShoulder |= currInput.rightShoulder;
+					menuCurrInputUnfiltered.leftShoulder |= currInput.leftShoulder;
+					menuCurrInputUnfiltered.start |= currInput.start;
+					menuCurrInputUnfiltered.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
+					menuCurrInputUnfiltered.rightTrigger = max(menuCurrInput.rightTrigger, currInput.rightTrigger);
+					menuCurrInputUnfiltered.back |= currInput.back;
+					menuCurrInputUnfiltered.leftStickPad |= currInput.leftStickPad;*/
 				}
 				else
 				{
@@ -2724,6 +2742,10 @@ void MainMenu::HandleMenuMode()
 	}
 	case SAVEMENU:
 	{
+		while (window->pollEvent(ev))
+		{
+
+		}
 		worldMap->Update(menuPrevInput, menuCurrInput);
 		saveMenu->Update();
 		//parBack->Update( offset0 );
@@ -2887,7 +2909,10 @@ void MainMenu::HandleMenuMode()
 	}
 	case MAPSELECT:
 	{
+		while (window->pollEvent(ev))
+		{
 
+		}
 		mapSelectionMenu->Update(menuCurrInput, menuPrevInput);
 		break;
 	}
@@ -3030,7 +3055,8 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		introMovie->skipHolder->Update(menuCurrInput.A);
+		ControllerState &introInput = GetCurrInputUnfiltered(0);
+		introMovie->skipHolder->Update(introInput.A);
 		if (!introMovie->Update() )
 		{
 			introMovie->Stop();
@@ -4757,6 +4783,14 @@ bool OptionsMenuScreen::ButtonEvent(UIEvent eType,
 			mainMenu->config->SetData(d);
 			Config::CreateSaveThread(mainMenu->config);
 			mainMenu->config->WaitForSave();
+
+			
+			mainMenu->musicPlayer->Update();
+			mainMenu->musicPlayer->UpdateVolume();
+			mainMenu->soundNodeList->musicVolume = mVol;
+			mainMenu->soundNodeList->soundVolume = sVol;
+
+
 
 			mainMenu->ResizeWindow(res.x, res.y, winMode);
 			//mainMenu->config->

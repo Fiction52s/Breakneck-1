@@ -79,7 +79,7 @@ struct Movement
 
 	Movement( CubicBezier &bez, int duration,
 		Types moveType );
-	~Movement();
+	virtual ~Movement();
 	void InitDebugDraw();
 	CubicBezier bez;
 	virtual sf::Vector2<double> GetPosition( int t ) = 0;
@@ -158,6 +158,7 @@ struct GameSession;
 struct MovementSequence
 {
 	MovementSequence();
+	~MovementSequence();
 	GameSession *owner;
 	sf::Vector2<double> position;
 	double rotation;

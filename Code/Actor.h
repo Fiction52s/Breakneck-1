@@ -30,6 +30,8 @@ struct ObjectPool;
 struct RelEffectInstance;
 struct VertexBuf;
 
+
+
 struct KinSkin
 {
 	KinSkin(sf::Color *startCols, sf::Color *endCols,
@@ -178,6 +180,17 @@ struct EffectPool;
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
+	enum PowerType
+	{
+		POWER_AIRDASH,
+		POWER_GRAV,
+		POWER_BOUNCE,
+		POWER_GRIND,
+		POWER_TIME,
+		POWER_RWIRE,
+		POWER_LWIRE
+	};
+
 	//EffectPool *testPool;
 	KinMask *kinMask;
 

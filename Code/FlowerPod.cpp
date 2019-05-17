@@ -124,6 +124,7 @@ void FlowerPod::IHitPlayer(int index)
 		action = ACTIVATE;
 		frame = 0;
 		sprite.setTexture(*ts_rise->texture);
+		SetHitboxes(NULL, 0);
 		//sprite.setColor(Color::Red);
 	}
 }

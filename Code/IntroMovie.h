@@ -4,9 +4,10 @@
 #include <sfeMovie\Movie.hpp>
 struct ButtonHolder;
 
+struct MainMenu;
 struct IntroMovie
 {
-	IntroMovie();
+	IntroMovie( MainMenu *mm);
 	~IntroMovie();
 	sfe::Movie movie;
 	void Play();
@@ -14,6 +15,7 @@ struct IntroMovie
 	bool Update();
 	void Draw(sf::RenderTarget *target);
 	ButtonHolder *skipHolder;
+	MainMenu *mainMenu;
 };
 
 

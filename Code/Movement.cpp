@@ -276,6 +276,19 @@ MovementSequence::MovementSequence()
 	Reset();
 }
 
+MovementSequence::~MovementSequence()
+{
+	Movement *curr = movementList;
+	Movement *next = NULL;
+	while (curr != NULL)
+	{
+		next = curr->next;
+		delete curr;
+		curr = next;
+	}
+	movementList = NULL;
+}
+
 //void MovementSequence::PushMovementLauncher( int numTotalBullets, 
 //	int bulletsPerShot, sf::Vector2<double> &position,
 //	sf::Vector2<double> &direction, double angleSpread )

@@ -13,10 +13,10 @@ struct MusicPlayer
 	void PlayMusic(MusicInfo *music, sf::Time startTime = sf::Time::Zero); //add transitions later
 	void TransitionMusic(MusicInfo *music,
 		int crossFadeFrames, sf::Time startTime = sf::Time::Zero );
-
 	void StopMusic(MusicInfo *m);
 	void StopCurrentMusic();
 	void FadeOutCurrentMusic(int numFrames);
+	void UpdateVolume();
 	void Update();
 	void PauseCurrentMusic();
 	void UnpauseCurrentMusic();

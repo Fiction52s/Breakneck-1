@@ -10,7 +10,8 @@ struct AirTrigger : QuadTreeEntrant
 {
 	enum TriggerType
 	{
-		AUTORUNRIGHT
+		AUTORUNRIGHT,
+		AUTORUNRIGHTAIRDASH
 	};
 
 	AirTrigger(GameSession *owner, V2d &pos, int width, int height,

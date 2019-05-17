@@ -711,6 +711,17 @@ void GameSession::Cleanup()
 	{
 		delete bigBulletVA;
 	}
+
+	for (auto it = poiMap.begin(); it != poiMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	if (shipExitSeq != NULL)
+	{
+		delete shipExitSeq;
+	}
+	
 }
 
 GameSession::~GameSession()
@@ -3244,6 +3255,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 bool GameSession::OpenFile( string fileName )
 {
+	drain = true;
 	hasGoal = false;
 	numTotalKeys = 0;
 	numKeysCollected = 0;
@@ -4075,7 +4087,7 @@ bool GameSession::OpenFile( string fileName )
 		}
 		else
 		{
-			drain = true;
+			
 			shipSequence = false;
 			//normal map
 		}
@@ -9981,6 +9993,22 @@ void GameSession::QueryGateTree(sf::Rect<double>&rect)
 	queryMode = "gate";
 	gateList = NULL;
 	gateTree->Query(this, rect);
+}
+
+SaveFile *GameSession::GetCurrentProgress()
+{
+	return mainMenu->GetCurrentProgress();
+}
+
+bool GameSession::HasPowerUnlocked( int pIndex )
+{
+	SaveFile *prog = GetCurrentProgress();
+	if ( mainMenu->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE && prog != NULL && prog->HasPowerUnlocked((Actor::PowerType)pIndex))
+	{
+		return true;
+	}
+
+	return false;
 }
 
 void GameSession::DrawColoredMapTerrain(sf::RenderTarget *target, sf::Color &c)

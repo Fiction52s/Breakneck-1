@@ -210,7 +210,21 @@ void CrawlerQueen::ClearDecisionMarkers()
 
 CrawlerQueen::~CrawlerQueen()
 {
+	delete mover;
+
+	delete decMarkerPool;
+
+	delete[] decideVA;
+
 	delete[] edgeRef;
+	delete[] decidePoints;
+	delete[] decisions;
+
+	bombPool->DestroyAllMembers();
+	decisionPool->DestroyAllMembers();
+
+	delete decisionPool;
+	delete bombPool;
 	delete seq;
 }
 
@@ -1353,6 +1367,11 @@ void FloatingBomb::Init(V2d pos, V2d vel)
 	action = FLOATING;
 	frame = 0;
 	mover->physBody.globalPosition = position;
+}
+
+FloatingBomb::~FloatingBomb()
+{
+	delete mover;
 }
 
 void FloatingBomb::ProcessState()

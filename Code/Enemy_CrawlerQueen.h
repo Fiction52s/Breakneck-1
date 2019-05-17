@@ -18,6 +18,7 @@ struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 
 	Action action;
 	FloatingBomb(GameSession *owner, ObjectPool *myPool, int index );
+	~FloatingBomb();
 	int actionLength[Count];
 	int animFactor[Count];
 	SurfaceMover *mover;
