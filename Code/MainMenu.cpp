@@ -2052,11 +2052,12 @@ void MainMenu::AdventureNextLevel(Level *lev)
 {
 	//window->setVerticalSyncEnabled(false);
 	//window->setFramerateLimit(60);
-	string levelPath = lev->GetFullName();// name;
+	//string levelPath = lev->GetFullName();// name;
 										  //View oldView = window->getView();
+	kinBoostScreen->level = lev;
 	SetModeKinBoostLoadingMap(0);
-
-	kinBoostScreen->levName = levelPath;
+	
+	//kinBoostScreen->levName = levelPath;
 
 	//deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, levelPath);
 }
@@ -2096,7 +2097,7 @@ void MainMenu::PlayIntroMovie()
 	//AdventureLoadLevel(, false);
 }
 
-void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
+void MainMenu::sGoToNextLevel(MainMenu *m, Level *lev )//const std::string &levName)
 {
 
 	//sf::sleep(sf::milliseconds(1000));
@@ -2108,7 +2109,8 @@ void MainMenu::sGoToNextLevel(MainMenu *m, const std::string &levName)
 	SaveFile *currFile = m->GetCurrentProgress();
 	currFile->Save();
 
-	Level *lev = &(currFile->worlds[0].sectors[0].levels[0]);
+	string levName = lev->GetFullName();
+	//Level *lev = &(currFile->worlds[0].sectors[0].levels[0]);
 	//delete m->currLevel;
 
 	GameSession *old = m->currLevel;
@@ -2581,7 +2583,7 @@ void MainMenu::HandleMenuMode()
 			gameRunType = GRT_ADVENTURE;
 			SetMode(RUNNINGMAP);
 		}
-		else if ( kinBoostScreen->levName == "" && loadThread == NULL && deadThread == NULL && kinBoostScreen->IsBoosting())
+		else if ( kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && kinBoostScreen->IsBoosting())
 		{
 			//gameRunType = GRT_ADVENTURE;
 			//SetMode(RUNNINGMAP);
@@ -2605,10 +2607,10 @@ void MainMenu::HandleMenuMode()
 			{
 				//window->setVerticalSyncEnabled(false);
 				//window->setFramerateLimit(60);
-				string levelPath = kinBoostScreen->levName;
-
-				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, levelPath);
-				kinBoostScreen->levName = "";
+				//string levelPath = kinBoostScreen->level->GetFullName();//kinBoostScreen->levName;
+				Level *lev = kinBoostScreen->level;
+				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, lev);
+				kinBoostScreen->level = NULL;
 			}
 			
 		}

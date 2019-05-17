@@ -600,7 +600,7 @@ struct MainMenu
 	void HandleMenuMode();
 
 	static void sGoToNextLevel(MainMenu *m,
-		const std::string &levName);
+		Level *lev);
 
 
 

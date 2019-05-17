@@ -5,6 +5,7 @@
 #include "Tileset.h"
 
 struct MainMenu;
+struct Level;
 struct KinBoostScreen
 {
 	enum State
@@ -64,7 +65,8 @@ struct KinBoostScreen
 
 	sf::Sprite swipeSpr;
 
-	std::string levName;
+	//std::string levName;
+	Level *level;
 };
 
 #endif
