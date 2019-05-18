@@ -26,6 +26,10 @@
 #include "Enemy.h"
 //#include <vld.h>
 
+
+
+
+
 using namespace std;
 using namespace sf;
 
@@ -88,6 +92,20 @@ int main()
 
 	std::cout << "starting program" << endl;
 
+	//GCC::USBDriver driver;
+	//GCC::VJoyGCControllers joys(driver);
+
+	/*while (true)
+	{
+		auto controllers = driver.getState();
+
+		if (controllers[0].buttons.a)
+		{
+			cout << (int)(controllers[0].axis.left_x) << endl;
+			break;
+		}
+	}*/
+	
 	/*Text mainMenu[5];
 	int fontSize = 32;
 

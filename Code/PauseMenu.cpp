@@ -263,6 +263,19 @@ void OptionsMenu::Draw( sf::RenderTarget *target )
 	}
 }
 
+bool OptionsMenu::CanChangeTab()
+{
+	if (state == CONTROL)
+	{
+		if (csm->IsEditingButtons())
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	:mainMenu( p_mainMenu ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
 	
@@ -472,6 +485,20 @@ void PauseMenu::SetTab( Tab t )
 		pauseSelector->currIndex = 0;
 		break;
 	}
+}
+
+bool PauseMenu::CanChangeTab()
+{
+	if (currentTab == OPTIONS)
+	{
+		if (!optionsMenu->CanChangeTab())
+		{
+			return false;
+		}
+	}
+
+
+	return true;
 }
 
 void PauseMenu::Draw( sf::RenderTarget *target )
@@ -708,49 +735,52 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 		}
 	}
 
-	if( currInput.leftShoulder && !prevInput.leftShoulder )
+	if (CanChangeTab())
 	{
-		ResetCounters();
-		if (currentTab == OPTIONS)
+		if (currInput.leftShoulder && !prevInput.leftShoulder)
 		{
-			controlSettingsMenu->SetButtonAssoc();
-			optionsMenu->state = OptionsMenu::CHOOSESTATE;
-			optionsMenu->optionModeSelector->currIndex = 0;
-		}
-		TabLeft();
+			ResetCounters();
+			if (currentTab == OPTIONS)
+			{
+				controlSettingsMenu->SetButtonAssoc();
+				optionsMenu->state = OptionsMenu::CHOOSESTATE;
+				optionsMenu->optionModeSelector->currIndex = 0;
+			}
+			TabLeft();
 
-		if (currentTab == OPTIONS)
-		{
-			optionsMenu->state = OptionsMenu::CHOOSESTATE;
-			mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+			if (currentTab == OPTIONS)
+			{
+				optionsMenu->state = OptionsMenu::CHOOSESTATE;
+				mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+			}
+			else if (currentTab == SHARDS)
+			{
+				shardMenu->SetShardTab();
+			}
+			return R_NONE;
 		}
-		else if (currentTab == SHARDS)
+		else if (currInput.rightShoulder && !prevInput.rightShoulder)
 		{
-			shardMenu->SetShardTab();
-		}
-		return R_NONE;
-	}
-	else if( currInput.rightShoulder && !prevInput.rightShoulder )
-	{
-		ResetCounters();
-		if (currentTab == OPTIONS)
-		{
-			controlSettingsMenu->SetButtonAssoc();
-			optionsMenu->state = OptionsMenu::CHOOSESTATE;
-			optionsMenu->optionModeSelector->currIndex = 0;
-		}
-		TabRight();
+			ResetCounters();
+			if (currentTab == OPTIONS)
+			{
+				controlSettingsMenu->SetButtonAssoc();
+				optionsMenu->state = OptionsMenu::CHOOSESTATE;
+				optionsMenu->optionModeSelector->currIndex = 0;
+			}
+			TabRight();
 
-		if (currentTab == OPTIONS)
-		{
-			optionsMenu->state = OptionsMenu::CHOOSESTATE;
-			mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+			if (currentTab == OPTIONS)
+			{
+				optionsMenu->state = OptionsMenu::CHOOSESTATE;
+				mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+			}
+			else if (currentTab == SHARDS)
+			{
+				shardMenu->SetShardTab();
+			}
+			return R_NONE;
 		}
-		else if (currentTab == SHARDS)
-		{
-			shardMenu->SetShardTab();
-		}
-		return R_NONE;
 	}
 
 	switch( currentTab )

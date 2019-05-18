@@ -71,6 +71,7 @@ struct OptionsMenu
 		ControllerState &prevInput );
 	void Draw( sf::RenderTarget *target );
 	void UpdateOptionModeQuads();
+	bool CanChangeTab();
 	ControlSettingsMenu *csm;
 };
 
@@ -159,6 +160,7 @@ struct PauseMenu
 	void TabRight();
 	void ApplyVideoSettings();
 	void ApplySoundSettings( );
+	bool CanChangeTab();
 
 	Tileset *ts_pauseOptions;
 	sf::Vertex pauseOptionQuads[5 * 4];

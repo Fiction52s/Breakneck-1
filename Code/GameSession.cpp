@@ -881,11 +881,13 @@ void GameSession::RecordReplayEnemies()
 
 void GameSession::UpdateInput()
 {
+	auto controllers = mainMenu->gccDriver->getState();
 	for (int i = 0; i < 4; ++i)
 	{
 		GetPrevInput(i) = GetCurrInput(i);
 		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 		GameController &con = GetController(i);
+		con.gcController = controllers[i];
 		con.UpdateState();
 		GetCurrInput(i) = con.GetState();
 		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
@@ -6149,9 +6151,12 @@ int GameSession::Run()
 	bool oneFrameMode = false;
 	quit = false;
 
+	auto controllers = mainMenu->gccDriver->getState();
 	for (int i = 0; i < 4; ++i)
 	{
-		GetController(i).UpdateState();
+		GameController &c = GetController(i);
+		c.gcController = controllers[i];
+		c.UpdateState();
 		GetCurrInput(i) = GetController(i).GetState();
 	}
 
@@ -6343,9 +6348,12 @@ int GameSession::Run()
 					//prevInput = currInput;
 					//player->prevInput = currInput;
 
-					for( int i = 0; i < 4; ++i )
+					auto controllers = mainMenu->gccDriver->getState();
+					for (int i = 0; i < 4; ++i)
 					{
-						GetController( i ).UpdateState();
+						GameController &c = GetController(i);
+						c.gcController = controllers[i];
+						c.UpdateState();
 					}
 					/*controller.UpdateState();
 					con = controller.GetState();
@@ -6490,9 +6498,14 @@ int GameSession::Run()
 				}
 			}
 
+			auto controllers = mainMenu->gccDriver->getState();
 			for( int i = 0; i < 1; ++i )
 			{
 				GameController &con = GetController( i );
+
+				con.gcController = controllers[i];
+
+
 				bool canControllerUpdate = con.UpdateState();
 				if( !canControllerUpdate )
 				{
@@ -6554,9 +6567,11 @@ int GameSession::Run()
 					}
 				}
 
+				auto controllers = mainMenu->gccDriver->getState();
 				for (int i = 0; i < 4; ++i)
 				{
 					GameController &con = GetController(i);
+					con.gcController = controllers[i];
 					bool canControllerUpdate = con.UpdateState();
 					if (!canControllerUpdate)
 					{

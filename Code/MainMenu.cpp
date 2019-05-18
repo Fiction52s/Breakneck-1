@@ -28,6 +28,13 @@
 #include "MapHeader.h"
 #include "ButtonHolder.h"
 
+
+#include <Windows.h>
+#include "public.h"
+#include "vjoyinterface.h"
+#include "GCC/USBDriver.h"
+#include "GCC/VJoyGCController.h"
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
@@ -570,7 +577,8 @@ MainMenu::MainMenu()
 	transLength = 60;
 	transFrame = 0;
 
-	
+	gccDriver = NULL;
+	joys = NULL;
 
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
@@ -983,10 +991,37 @@ MainMenu::~MainMenu()
 	delete swiper;
 	delete indEffectPool;
 
+	if (joys != NULL)
+		delete joys;
+
+	if( gccDriver != NULL )
+		delete gccDriver;
 }
 
 void MainMenu::Init()
 {	
+	//GCC::USBDriver driver;
+	gccDriver = new GCC::USBDriver;
+	joys = new GCC::VJoyGCControllers(*gccDriver);
+	
+	{
+		auto controllers = gccDriver->getState();
+		for (int i = 0; i < 4; ++i)
+		{
+			GameController &c = GetController(i);
+
+			//c.gcDefaultControl.x = controllers[i].enabled
+		}
+	}
+	
+	//controllers[0]
+	/*if (controllers[0].buttons.a)
+	{
+		cout << (int)(controllers[0].axis.left_x) << endl;
+		break;
+	}*/
+
+
 	ts_splashScreen = tilesetManager.GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
 	splashSprite.setTexture( *ts_splashScreen->texture );
 
@@ -1588,6 +1623,9 @@ void MainMenu::Run()
 			//int upCount = 0;
 			//int downCount = 0;
 
+			auto controllers = gccDriver->getState();
+
+
 			for( int i = 0; i < 4; ++i )
 			{
 				ControllerState &prevInput = GetPrevInputUnfiltered( i );
@@ -1595,6 +1633,8 @@ void MainMenu::Run()
 				GameController &c = GetController( i );
 
 				prevInput = currInput;
+
+				c.gcController = controllers[i];
 				bool active = c.UpdateState();
 
 				menuCurrInputUnfiltered = ControllerState();

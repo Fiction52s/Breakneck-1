@@ -4,6 +4,7 @@
 #include <Xinput.h>
 #include <map>
 #include <SFML/Graphics.hpp>
+#include "GCC/GCController.h"
 
 //true if down, false if up
 //^^make this more efficient if I'm using it for networking
@@ -211,6 +212,9 @@ public:
 	ControllerState m_unfilteredState;
 	KeyboardSettings keySettings;
 	static float stickThresh;
+	GCC::GCController gcController;
+	sf::Vector2i gcDefaultControl;
+	sf::Vector2i gcDefaultC;
 private:
 	DWORD m_index;
 	
@@ -219,6 +223,8 @@ private:
 	const static DWORD LEFT_STICK_DEADZONE;
 	const static DWORD RIGHT_STICK_DEADZONE;
 	const static DWORD TRIGGER_THRESHOLD;
+	const static double GC_LEFT_STICK_DEADZONE;
+	const static double GC_RIGHT_STICK_DEADZONE;
 };
 
 //wButtons

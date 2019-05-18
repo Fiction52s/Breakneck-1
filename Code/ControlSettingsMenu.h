@@ -40,6 +40,7 @@ struct ControlSettingsMenu
 	SingleAxisSelector *ySelector;
 	void SetGreyActionTiles( bool greyOn );
 	void SetButtonAssoc();
+	bool IsEditingButtons();
 
 	MainMenu *mainMenu;
 	void SetActionTile(int actionIndex, int actionType);

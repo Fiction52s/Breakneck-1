@@ -432,6 +432,11 @@ void ControlSettingsMenu::UpdateControlIcons()
 	}
 }
 
+bool ControlSettingsMenu::IsEditingButtons()
+{
+	return editMode;
+}
+
 void ControlSettingsMenu::InitAssocSymbols()
 {
 	int symbolX = 288;

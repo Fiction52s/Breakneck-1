@@ -16,6 +16,8 @@
 #include "ItemSelector.h"
 #include "Movement.h"
 #include <boost/filesystem.hpp>
+#include "GCC/USBDriver.h"
+#include "GCC/VJoyGCController.h"
 
 struct MapHeader;
 
@@ -484,6 +486,9 @@ struct MainMenu
 		GRT_ADVENTURE,
 		GRT_FREEPLAY
 	};
+
+	GCC::USBDriver *gccDriver;
+	GCC::VJoyGCControllers *joys;
 
 	EffectPool *indEffectPool;
 	void DrawEffects( sf::RenderTarget *target );

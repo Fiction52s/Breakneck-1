@@ -2723,9 +2723,11 @@ void Actor::UpdatePrePhysics()
 		{ 
 			if (owner->scoreDisplay->waiting)
 			{
-				bool a = currInput.A && !prevInput.A;
-				bool x = currInput.X && !prevInput.X;
-				if ( ( a || x ) && owner->scoreDisplay->waiting)
+				ControllerState &unfilteredCurr = owner->GetCurrInputUnfiltered(0);
+				ControllerState &unfiltetedPrev = owner->GetPrevInputUnfiltered(0);
+				bool a = unfilteredCurr.A && !unfilteredCurr.A;
+				bool x = unfilteredCurr.X && !unfilteredCurr.X;
+				if ( a || x )
 				{
 					bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
 					if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
@@ -2775,8 +2777,11 @@ void Actor::UpdatePrePhysics()
 	}
 	else if( action == GOALKILLWAIT )
 	{
-		bool a = currInput.A && !prevInput.A;
-		bool x = currInput.X && !prevInput.X;
+		ControllerState &unfilteredCurr = owner->GetCurrInputUnfiltered(0);
+		ControllerState &unfiltetedPrev = owner->GetPrevInputUnfiltered(0);
+		bool a = unfilteredCurr.A && !unfilteredCurr.A;
+		bool x = unfilteredCurr.X && !unfilteredCurr.X;
+
 		if( ( a || x ) && owner->scoreDisplay->waiting)
 		{
 			//owner->scoreDisplay->Reset();
@@ -2815,13 +2820,14 @@ void Actor::UpdatePrePhysics()
 		}
 		return;
 	}
-	else if (action == GRABSHIP)
+	/*else if (action == GRABSHIP)
 	{
+
 		if (currInput.A && !prevInput.A && owner->scoreDisplay->waiting)
 		{
 			owner->scoreDisplay->Deactivate();
 		}
-	}
+	}*/
 
 	/*if( bounceAttackHit && enemiesKilledLastFrame > 0 )
 	{
