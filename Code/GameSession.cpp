@@ -5894,11 +5894,15 @@ bool GameSession::Load()
 	pauseMenu->SetTab(PauseMenu::PAUSE);
 	//pauseMenu->SetTab( PauseMenu::Tab::KIN );
 
+	ControlProfile *currProfile;
 	for( int i = 0; i < 1; ++i )
 	{
 		//temporary
 		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
-		GetController(i).SetFilter(pauseMenu->controlSettingsMenu->pSel->currProfile->filter);//mainMenu->cpm->profiles.front()->filter );
+		currProfile = pauseMenu->controlSettingsMenu->pSel->currProfile;
+		GameController &con = GetController(i);
+		currProfile->tempCType = con.GetCType();
+		con.SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
 	}
 
 	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );

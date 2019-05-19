@@ -143,6 +143,7 @@ enum XBoxButton
 	XBOX_Count
 };	
 void SetFilterDefault( XBoxButton *filter);
+void SetFilterDefaultGCC(XBoxButton *filter);
 std::string GetXBoxButtonString( XBoxButton button );
 
 struct ControllerSettings
@@ -165,15 +166,14 @@ struct ControllerSettings
 	
 };
 
-struct ControllerTypes
+enum ControllerType
 {
-	enum Type
-	{
-		XBOX,
-		GAMECUBE,
-		PS4,
-		Count
-	};
+	CTYPE_XBOX,
+	CTYPE_GAMECUBE,
+	CTYPE_PS4,
+	CTYPE_KEYBOARD,
+	CTYPE_NONE,
+	CTYPE_Count
 };
 
 void LoadInputMapKeyboard( ControllerState &cs, 
@@ -194,6 +194,7 @@ public:
 	GameController( DWORD index );
 	///Gets if the controller is plugged in or functioning
 	bool IsConnected();
+	ControllerType GetCType();
 	//Gets the that was passed to the constructor
 	DWORD GetIndex();
 	//Queries and stores the current state of the physical 
@@ -218,7 +219,7 @@ public:
 private:
 	DWORD m_index;
 	
-	
+	ControllerType controllerType;
 
 	const static DWORD LEFT_STICK_DEADZONE;
 	const static DWORD RIGHT_STICK_DEADZONE;

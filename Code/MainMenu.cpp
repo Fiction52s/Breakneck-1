@@ -258,7 +258,7 @@ void MultiSelectionSection::Update()
 		}
 
 		ControlProfile *oldProf = profileSelect->currProfile;
-
+		profileSelect->tempCType = mm->GetController(playerIndex).GetCType();
 		profileSelect->Update(currInput, prevInput);
 
 		/*if (profileSelect->currProfile != oldProf)
@@ -577,8 +577,21 @@ MainMenu::MainMenu()
 	transLength = 60;
 	transFrame = 0;
 
-	gccDriver = NULL;
-	joys = NULL;
+	gccDriver = new GCC::USBDriver;
+	joys = new GCC::VJoyGCControllers(*gccDriver);
+	{
+		auto controllers = gccDriver->getState();
+		for (int i = 0; i < 4; ++i)
+		{
+			//GameController &c = GetController(i);
+
+			//c.gcDefaultControl.x = controllers[i].enabled
+		}
+	}
+	for (int i = 0; i < 4; ++i)
+	{
+		controllers[i] = new GameController(i);
+	}
 
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
@@ -656,10 +669,7 @@ MainMenu::MainMenu()
 	bottomCenter = Vector2f(halfX, halfY + wholeY);
 
 
-	for (int i = 0; i < 4; ++i)
-	{
-		controllers[i] = new GameController(i);
-	}
+	
 
 	config = new Config();
 	config->WaitForLoad();
@@ -1001,18 +1011,7 @@ MainMenu::~MainMenu()
 void MainMenu::Init()
 {	
 	//GCC::USBDriver driver;
-	gccDriver = new GCC::USBDriver;
-	joys = new GCC::VJoyGCControllers(*gccDriver);
 	
-	{
-		auto controllers = gccDriver->getState();
-		for (int i = 0; i < 4; ++i)
-		{
-			GameController &c = GetController(i);
-
-			//c.gcDefaultControl.x = controllers[i].enabled
-		}
-	}
 	
 	//controllers[0]
 	/*if (controllers[0].buttons.a)
@@ -2034,7 +2033,7 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	
 
 	//preScreenTexture->setActive(false);
-	window->setActive(false);
+	//window->setActive(false);
 	doneLoading = false;
 
 	int wIndex = lev->sec->world->index;
@@ -2057,7 +2056,7 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	accumulator = 0;//TIMESTEP + .1;
 	currentTime = 0;
 	gameClock.restart();
-	window->setActive(true);
+	//window->setActive(true);
 	//currLevel->Load();
 
 	//doneLoading = true;
@@ -2117,7 +2116,7 @@ void MainMenu::PlayIntroMovie()
 	musicPlayer->TransitionMusic(info, 60, sf::seconds( 60 ));
 	Level *lev = &(GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
 	string levelPath = lev->GetFullName();
-	window->setActive(false);
+	//window->setActive(false);
 	doneLoading = false;
 
 	//int wIndex = lev->sec->world->index;
@@ -2132,7 +2131,7 @@ void MainMenu::PlayIntroMovie()
 	accumulator = 0;//TIMESTEP + .1;
 	currentTime = 0;
 	gameClock.restart();
-	window->setActive(true);
+	//window->setActive(true);
 
 	//AdventureLoadLevel(, false);
 }
@@ -3101,6 +3100,7 @@ void MainMenu::HandleMenuMode()
 		introMovie->skipHolder->Update(introInput.A);
 		if (!introMovie->Update() )
 		{
+			//fader->CrossFade(30, 0, 30, Color::Black);
 			introMovie->Stop();
 
 			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))

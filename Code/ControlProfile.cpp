@@ -15,6 +15,7 @@ using namespace std;
 #define INPUT_TYPE_END_CHAR ']'
 #define INPUT_TYPE_XBOX "XBOX"
 #define INPUT_TYPE_KEYBOARD "KEYBOARD"
+#define INPUT_TYPE_GAMECUBE "GAMECUBE"
 #define EQUALS '='
 
 //const int ControlProfileMenu::NUM_BOXES = 8;
@@ -261,7 +262,7 @@ void ControlProfileMenu::SetTopMid(Vector2f &tm)
 
 void ControlProfileMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
-{
+{	
 	if( currInput.A && !prevInput.A )
 	{
 		switch( state )
@@ -321,13 +322,17 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 				break;
 			}
 		case S_SHOWING_OPTIONS:
+		{
 			//state = S_SELECTED;
 			state = S_EDIT_CONFIG;
+			currProfile->tempCType = tempCType;
+			XBoxButton *fil = currProfile->GetCurrFilter();
 			for (int i = 0; i < ControllerSettings::Count; ++i)
 			{
-				tempFilter[i] = currProfile->filter[i];
+				tempFilter[i] = fil[i];
 			}
 			break;
+		}
 		case S_EDIT_CONFIG:
 			{
 				//save
@@ -472,11 +477,12 @@ void ControlProfileMenu::Update( ControllerState &currInput,
 bool ControlProfileMenu::SaveCurrConfig()
 {
 	bool different = false;
+	XBoxButton *fil = currProfile->GetCurrFilter();
 	for( int i = 0; i < ControllerSettings::Count; ++i )
 	{
-		if( currProfile->filter[i] != tempFilter[i] )
+		if(fil[i] != tempFilter[i] )
 		{
-			currProfile->filter[i] = tempFilter[i];
+			fil[i] = tempFilter[i];
 			different = true;
 		}
 	}
@@ -567,9 +573,6 @@ bool ControlProfileManager::LoadProfiles()
 {
 	ClearProfiles();
 
-	
-
-
 	is.open( "controlprofiles.txt" );
 
 	if( is.is_open() )
@@ -601,7 +604,7 @@ bool ControlProfileManager::LoadProfiles()
 					assert( 0 );
 					return false;
 				}
-				cout << "input type: " << inputTypeName << "\n";
+				//cout << "input type: " << inputTypeName << "\n";
 				if( inputTypeName == INPUT_TYPE_XBOX )
 				{
 					res = LoadXBOXConfig( newProfile );
@@ -615,6 +618,16 @@ bool ControlProfileManager::LoadProfiles()
 				else if( inputTypeName == INPUT_TYPE_KEYBOARD )
 				{
 					//TODO
+				}
+				else if (inputTypeName == INPUT_TYPE_GAMECUBE)
+				{
+					res = LoadGamecubeConfig(newProfile);
+					if (!res)
+					{
+						SetFilterDefaultGCC(newProfile->gccFilter);
+						assert(0);
+						return false;
+					}
 				}
 			}
 			else
@@ -631,8 +644,7 @@ bool ControlProfileManager::LoadProfiles()
 	//DeleteProfile( profiles.begin() );
 
 	ControlProfile *def= new ControlProfile;
-	SetFilterDefault( def->filter );
-	def->hasXBoxFilter = true;
+	//def->hasXBoxFilter = true;
 	def->name = "KIN Default";
 	profiles.push_front( def );
 }
@@ -696,7 +708,6 @@ char ControlProfileManager::MoveToEquals( std::string &outStr )
 
 bool ControlProfileManager::LoadXBOXConfig( ControlProfile *profile ) 
 {
-	profile->hasXBoxFilter = true;
 	string inputName;
 	string buttonStr;
 
@@ -773,6 +784,81 @@ bool ControlProfileManager::LoadXBOXConfig( ControlProfile *profile )
 
 	profile->filter[buttonType] = b;
 
+	}
+}
+
+bool ControlProfileManager::LoadGamecubeConfig(ControlProfile *profile)
+{
+	string inputName;
+	string buttonStr;
+
+	while (true)
+	{
+
+		char ec = MoveToEquals(inputName);
+		char c = 0;
+
+		if (ec == 0)
+			return true;
+
+		if (IsSymbol(ec))
+		{
+			return true;
+		}
+
+
+		if (!is.get(c))
+		{
+			return false;
+		}
+
+
+		char mod = 0;
+		switch (c)
+		{
+		case 'a':
+		case 'A':
+			buttonStr = "A";
+			break;
+		case 'b':
+		case 'B':
+			buttonStr = "B";
+			break;
+		case 'x':
+		case 'X':
+			buttonStr = "X";
+			break;
+		case 'y':
+		case 'Y':
+			buttonStr = "Y";
+			break;
+		case 'r':
+		case 'R':
+
+			if (!is.get(mod))
+				return false;
+			if (mod == '1')
+				buttonStr = "R1";
+			else if (mod == '2')
+				buttonStr = "R2";
+			else
+			{
+				assert(0);
+				return false;
+			}
+			break;
+		case 'l':
+		case 'L':
+			buttonStr = "L2";
+			break;
+		}
+
+		XBoxButton b = GetButton(buttonStr);
+		ControllerSettings::ButtonType buttonType = GetButtonTypeFromAction(inputName);
+
+		assert(buttonType < ControllerSettings::Count);
+
+		profile->gccFilter[buttonType] = b;
 	}
 }
 
@@ -928,9 +1014,44 @@ bool ControlProfileManager::MoveToNextSymbolText( char startSymbol, char endSymb
 }
 
 ControlProfile::ControlProfile()
-	:hasXBoxFilter( false )
 {
 	SetFilterDefault(filter);
+	SetFilterDefaultGCC(gccFilter);
+	tempCType = ControllerType::CTYPE_NONE;
+}
+
+XBoxButton *ControlProfile::GetCurrFilter()
+{
+	if (tempCType == CTYPE_GAMECUBE)
+	{
+		return gccFilter;
+	}
+	else if (tempCType != CTYPE_NONE)
+	{
+		return filter;
+	}
+	else
+	{
+		assert(0);
+		return filter;
+	}
+}
+
+void ControlProfileManager::WriteFilter( ofstream &of, XBoxButton *filter)
+{
+	of << "JUMP=" << GetXBoxButtonString(filter[ControllerSettings::JUMP]) << "\n";
+	of << "DASH=" << GetXBoxButtonString(filter[ControllerSettings::DASH]) << "\n";
+	of << "ATTACK=" << GetXBoxButtonString(filter[ControllerSettings::ATTACK]) << "\n";
+	of << "POWER3=" << GetXBoxButtonString(filter[ControllerSettings::BOUNCE]) << "\n";
+	of << "POWER4=" << GetXBoxButtonString(filter[ControllerSettings::GRIND]) << "\n";
+	of << "POWER5=" << GetXBoxButtonString(filter[ControllerSettings::TIMESLOW]) << "\n";
+	of << "POWER6LEFT=" << GetXBoxButtonString(filter[ControllerSettings::LEFTWIRE]) << "\n";
+	of << "POWER6RIGHT=" << GetXBoxButtonString(filter[ControllerSettings::RIGHTWIRE]) << "\n\n";
+}
+
+void ControlProfileManager::WriteInputType(ofstream &of, const std::string &inputType)
+{
+	of << INPUT_TYPE_START_CHAR << inputType << INPUT_TYPE_END_CHAR << "\n";
 }
 
 void ControlProfileManager::WriteProfiles()
@@ -938,28 +1059,20 @@ void ControlProfileManager::WriteProfiles()
 	ofstream of;
 	of.open( "controlprofiles.txt" );
 
-	XBoxButton *filter = NULL;
 	list<ControlProfile*>::iterator it = profiles.begin();
 	++it; //always skip KIN
 
 	for( ; it != profiles.end(); ++it )
 	{
 		of << PROFILE_START_CHAR << (*it)->name << PROFILE_END_CHAR << "\n";
-		if( (*it)->hasXBoxFilter )
-		{
-			of << INPUT_TYPE_START_CHAR << INPUT_TYPE_XBOX << INPUT_TYPE_END_CHAR << "\n";
+		
+		WriteInputType(of, INPUT_TYPE_XBOX);
 
-			filter = (*it)->filter;
+		WriteFilter(of, (*it)->filter );
 
-			of << "JUMP=" << GetXBoxButtonString( filter[ControllerSettings::JUMP] ) << "\n";
-			of << "DASH=" << GetXBoxButtonString( filter[ControllerSettings::DASH] ) << "\n";
-			of << "ATTACK=" << GetXBoxButtonString( filter[ControllerSettings::ATTACK] ) << "\n";
-			of << "POWER3=" << GetXBoxButtonString( filter[ControllerSettings::BOUNCE] ) << "\n";
-			of << "POWER4=" << GetXBoxButtonString( filter[ControllerSettings::GRIND] ) << "\n";
-			of << "POWER5=" << GetXBoxButtonString( filter[ControllerSettings::TIMESLOW] ) << "\n";
-			of << "POWER6LEFT=" << GetXBoxButtonString( filter[ControllerSettings::LEFTWIRE] ) << "\n";
-			of << "POWER6RIGHT=" << GetXBoxButtonString( filter[ControllerSettings::RIGHTWIRE] ) << "\n\n";
-		}
+		WriteInputType(of, INPUT_TYPE_GAMECUBE);
+
+		WriteFilter(of, (*it)->gccFilter);
 
 		of << "\n";
 	}
@@ -1323,16 +1436,17 @@ bool ProfileSelector::SaveCurrConfig()
 {
 	bool different = false;
 	
+	XBoxButton *fil = currProfile->GetCurrFilter();
 	for (int i = 0; i < ControllerSettings::Count; ++i)
 	{
 		if (oldFilter[i] != tempFilter[i])
 		{
-			currProfile->filter[i] = tempFilter[i];
+			fil[i] = tempFilter[i];	
 			different = true;
 		}
 		else
-		{
-			currProfile->filter[i] = oldFilter[i];
+		{		
+			fil[i] = oldFilter[i];
 		}
 	}
 

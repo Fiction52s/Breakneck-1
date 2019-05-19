@@ -181,6 +181,7 @@ void OptionsMenu::UpdateOptionModeQuads()
 void OptionsMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
 {
+	ControllerType cType = mainMenu->GetController(0).GetCType();
 	switch (state)
 	{
 	case CHOOSESTATE:
@@ -227,6 +228,7 @@ void OptionsMenu::Update( ControllerState &currInput,
 			}
 		}
 
+		csm->currCType = cType;
 		ControlSettingsMenu::UpdateState uState = csm->Update(currInput, prevInput);
 		if (uState == ControlSettingsMenu::CONFIRM)
 		{
@@ -737,7 +739,8 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 
 	if (CanChangeTab())
 	{
-		if (currInput.leftShoulder && !prevInput.leftShoulder)
+		if ((currInput.leftShoulder && !prevInput.leftShoulder)
+			|| (currInput.LeftTriggerPressed() && !prevInput.LeftTriggerPressed()))
 		{
 			ResetCounters();
 			if (currentTab == OPTIONS)
@@ -759,7 +762,8 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			}
 			return R_NONE;
 		}
-		else if (currInput.rightShoulder && !prevInput.rightShoulder)
+		else if ( (currInput.rightShoulder && !prevInput.rightShoulder)
+			|| (currInput.RightTriggerPressed() && !prevInput.RightTriggerPressed()))
 		{
 			ResetCounters();
 			if (currentTab == OPTIONS)
@@ -1405,17 +1409,34 @@ void KinMenu::UpdatePowers( Actor *player )
 
 void KinMenu::UpdateCommandButton()
 {
-	ts_currentButtons = ts_xboxButtons;
+	GameController &con = mainMenu->GetController(0);
+	ts_currentButtons = NULL;
+	ControllerType cType = con.GetCType();
+	switch (cType)
+	{
+	case CTYPE_XBOX:
+		ts_currentButtons = ts_xboxButtons;
+		break;
+	case CTYPE_GAMECUBE:
+		ts_currentButtons = ts_xboxButtons;
+		break;
+	case CTYPE_PS4:
+		ts_currentButtons = ts_xboxButtons;
+		break;
+	case CTYPE_NONE:
+		assert(0);
+		break;
+	}
 
 	int index = GetCurrIndex();
 	IntRect sub;
 	if (index == 0)
-		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::JUMP)-1);
+		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType,ControllerSettings::JUMP)-1);
 	else if( index == 1)
-		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::ATTACK)-1);
+		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::ATTACK)-1);
 	else if (index == 3 || index == 9)
 	{
-		sub = ts_xboxButtons->GetSubRect(csm->GetFilteredButton(ControllerSettings::DASH)-1);
+		sub = ts_currentButtons->GetSubRect(csm->GetFilteredButton(cType, ControllerSettings::DASH)-1);
 	}
 
 	commandSpr.setTexture(*ts_currentButtons->texture);

@@ -1982,7 +1982,13 @@ bool Actor::SteepSlideAttack()
 		return true;
 	}
 
-	if (currInput.rightShoulder && !prevInput.rightShoulder)
+	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
+	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
+		|| (currInput.RLeft() && !prevInput.RLeft())
+		|| (currInput.RUp() && !prevInput.RUp())
+		|| (currInput.RRight() && !prevInput.RRight());
+
+	if (normalSwing || rightStickSwing )
 	{
 		SetAction(STEEPSLIDEATTACK);
 		frame = 0;
@@ -2001,7 +2007,13 @@ bool Actor::SteepClimbAttack()
 		return true;
 	}
 
-	if (currInput.rightShoulder && !prevInput.rightShoulder)
+	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
+	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
+		|| (currInput.RLeft() && !prevInput.RLeft())
+		|| (currInput.RUp() && !prevInput.RUp())
+		|| (currInput.RRight() && !prevInput.RRight());
+
+	if (normalSwing || rightStickSwing)
 	{
 		SetAction(STEEPCLIMBATTACK);
 		frame = 0;
@@ -2020,70 +2032,141 @@ bool Actor::AirAttack()
 		return true;
 	}
 
-	if( currInput.rightShoulder && !prevInput.rightShoulder )
+	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
+	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
+		|| (currInput.RLeft() && !prevInput.RLeft())
+		|| (currInput.RUp() && !prevInput.RUp())
+		|| (currInput.RRight() && !prevInput.RRight());
+
+
+	if( normalSwing || rightStickSwing )
 	{
 		if( action == AIRDASH )
 		{
-			if( currInput.LUp() )
+			if (normalSwing)
 			{
-				if( currInput.LRight() || currInput.LLeft() )
+				if (currInput.LUp())
 				{
-					cout << "diag up attack" << endl;
-					SetAction( DIAGUPATTACK );
-					frame = 0;
-					return true;
+					if (currInput.LRight() || currInput.LLeft())
+					{
+						SetAction(DIAGUPATTACK);
+						frame = 0;
+						return true;
+					}
+				}
+				else if (currInput.LDown())
+				{
+					if (currInput.LRight() || currInput.LLeft())
+					{
+						SetAction(DIAGDOWNATTACK);
+						frame = 0;
+						return true;
+					}
 				}
 			}
-			else if( currInput.LDown() )
+			else
 			{
-				if( currInput.LRight() || currInput.LLeft() )
+				return false;
+				/*bool sideInput = currInput.RRight() || currInput.RLeft();
+				if (currInput.RUp())
 				{
-					cout << "diag down attack" << endl;
-					SetAction( DIAGDOWNATTACK );
+					SetAction(DIAGUPATTACK);
 					frame = 0;
 					return true;
 				}
+				else if (currInput.RDown())
+				{
+					SetAction(DIAGDOWNATTACK);
+					frame = 0;
+					return true;
+				}*/
 			}
 		}
 		
-		if( currInput.LUp() )
+		if (normalSwing)
 		{
-			if (action == UAIR)
+			if ((currInput.LUp()))
 			{
-				if (currLockedUairFX != NULL && action != UAIR)
+				if (action == UAIR)
 				{
-					currLockedUairFX->ClearLockPos();
-					currLockedUairFX = NULL;
+					if (currLockedUairFX != NULL && action != UAIR)
+					{
+						currLockedUairFX->ClearLockPos();
+						currLockedUairFX = NULL;
+					}
 				}
+				SetAction(UAIR);
+				frame = 0;
 			}
-			SetAction( UAIR);
-			frame = 0;
-		}
-		else if( currInput.LDown() )
-		{
-			if (action == DAIR)
+			else if (currInput.LDown())
 			{
-				if (currLockedDairFX != NULL && action != DAIR)
+				if (action == DAIR)
 				{
-					currLockedDairFX->ClearLockPos();
-					currLockedDairFX = NULL;
+					if (currLockedDairFX != NULL && action != DAIR)
+					{
+						currLockedDairFX->ClearLockPos();
+						currLockedDairFX = NULL;
+					}
 				}
+				SetAction(DAIR);
+				frame = 0;
 			}
-			SetAction( DAIR );
-			frame = 0;
+			else
+			{
+				if (action == FAIR)
+				{
+					if (currLockedFairFX != NULL && action != FAIR)
+					{
+						currLockedFairFX->ClearLockPos();
+						currLockedFairFX = NULL;
+					}
+				}
+				SetAction(FAIR);
+				frame = 0;
+			}
 		}
 		else
 		{
-			if (action == FAIR)
+			if ((currInput.RUp()) )
 			{
-				if (currLockedFairFX != NULL && action != FAIR)
+				if (action == UAIR)
 				{
-					currLockedFairFX->ClearLockPos();
-					currLockedFairFX = NULL;
+					if (currLockedUairFX != NULL && action != UAIR)
+					{
+						currLockedUairFX->ClearLockPos();
+						currLockedUairFX = NULL;
+					}
 				}
+				SetAction(UAIR);
+				frame = 0;
 			}
-			SetAction( FAIR );
-			frame = 0;
+			else if (currInput.RDown() )
+			{
+				if (action == DAIR)
+				{
+					if (currLockedDairFX != NULL && action != DAIR)
+					{
+						currLockedDairFX->ClearLockPos();
+						currLockedDairFX = NULL;
+					}
+				}
+				SetAction(DAIR);
+				frame = 0;
+			}
+			else
+			{
+				if (action == FAIR)
+				{
+					if (currLockedFairFX != NULL && action != FAIR)
+					{
+						currLockedFairFX->ClearLockPos();
+						currLockedFairFX = NULL;
+					}
+				}
+				SetAction(FAIR);
+				frame = 0;
+			}
+
 		}
 		
 		return true;
@@ -2725,8 +2808,8 @@ void Actor::UpdatePrePhysics()
 			{
 				ControllerState &unfilteredCurr = owner->GetCurrInputUnfiltered(0);
 				ControllerState &unfiltetedPrev = owner->GetPrevInputUnfiltered(0);
-				bool a = unfilteredCurr.A && !unfilteredCurr.A;
-				bool x = unfilteredCurr.X && !unfilteredCurr.X;
+				bool a = unfilteredCurr.A && !unfiltetedPrev.A;
+				bool x = unfilteredCurr.X && !unfiltetedPrev.X;
 				if ( a || x )
 				{
 					bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
@@ -2779,8 +2862,8 @@ void Actor::UpdatePrePhysics()
 	{
 		ControllerState &unfilteredCurr = owner->GetCurrInputUnfiltered(0);
 		ControllerState &unfiltetedPrev = owner->GetPrevInputUnfiltered(0);
-		bool a = unfilteredCurr.A && !unfilteredCurr.A;
-		bool x = unfilteredCurr.X && !unfilteredCurr.X;
+		bool a = unfilteredCurr.A && !unfiltetedPrev.A;
+		bool x = unfilteredCurr.X && !unfiltetedPrev.X;
 
 		if( ( a || x ) && owner->scoreDisplay->waiting)
 		{
@@ -3702,10 +3785,23 @@ void Actor::UpdatePrePhysics()
 				frame = 1;
 				holdJump = false;
 			}
-			else if( currInput.rightShoulder && !prevInput.rightShoulder )
+			else //if( currInput.rightShoulder && !prevInput.rightShoulder )
 			{
-				SetActionExpr( WALLATTACK );
-				frame = 0;
+				bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
+				bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
+					|| (currInput.RLeft() && !prevInput.RLeft())
+					|| (currInput.RUp() && !prevInput.RUp())
+					|| (currInput.RRight() && !prevInput.RRight());
+
+				if (normalSwing || (rightStickSwing && (currInput.RLeft() || currInput.RRight())))
+				{
+					SetActionExpr(WALLATTACK);
+					frame = 0;
+				}
+				/*else if (!normalSwing && (rightStickSwing && (currInput.RUp() || currInput.RDown())))
+				{
+					AirAttack();
+				}*/
 			}
 
 
@@ -14716,16 +14812,37 @@ void Actor::HitEdge( V2d &newVel )
 
 bool Actor::GroundAttack()
 {
-	if ((currInput.rightShoulder && !prevInput.rightShoulder) || pauseBufferedAttack == Action::STANDN )
+	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
+	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
+		|| (currInput.RLeft() && !prevInput.RLeft())
+		|| (currInput.RUp() && !prevInput.RUp())
+		|| (currInput.RRight() && !prevInput.RRight());
+
+	if ( normalSwing || rightStickSwing || pauseBufferedAttack == Action::STANDN )
 	{
-		if (currInput.LLeft())
+		if (!rightStickSwing)
 		{
-			facingRight = false;
+			if (currInput.LLeft())
+			{
+				facingRight = false;
+			}
+			else if (currInput.LRight())
+			{
+				facingRight = true;
+			}
 		}
-		else if (currInput.LRight())
+		else
 		{
-			facingRight = true;
+			if (currInput.RLeft())
+			{
+				facingRight = false;
+			}
+			else if (currInput.RRight())
+			{
+				facingRight = true;
+			}
 		}
+
 
 		SetAction(STANDN);
 		frame = 0;

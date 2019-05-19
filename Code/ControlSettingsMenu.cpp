@@ -85,6 +85,7 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 		SetRectColor(labelQuads + i * 4, Color(Color::White));
 	}
 
+	pSel->currProfile->tempCType = mainMenu->GetController(0).GetCType();
 	UpdateXboxButtonIcons();
 
 	UpdateSelectedQuad();
@@ -164,16 +165,25 @@ void ControlSettingsMenu::SetActionTile(int actionIndex, int actionType)
 
 void ControlSettingsMenu::SetButtonAssoc()
 {
-	mainMenu->GetController(0).SetFilter(pSel->currProfile->filter);//mainMenu->cpm->profiles.front()->filter);
+	GameController &con = mainMenu->GetController(0);
+	pSel->currProfile->tempCType = con.GetCType();
+
+	con.SetFilter(pSel->currProfile->GetCurrFilter());
 }
 
 ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 {
+	GameController &con = mainMenu->GetController(0);
+	ControllerType cType = con.GetCType();
+
+
 	UpdateState uState = NORMAL;
 	int oldSel = pSel->saSelector->currIndex;
 	if( !editMode )
 		pSel->Update( currInput, prevInput);
 
+	
+	pSel->currProfile->tempCType = cType;
 	if (oldSel != pSel->saSelector->currIndex)
 	{
 		UpdateXboxButtonIcons();
@@ -255,13 +265,28 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 			{
 				currButtonState = S_SELECTED;
 				UpdateSelectedQuad();
+				pSel->currProfile->tempCType = cType;
+
+				XBoxButton *fil = pSel->currProfile->GetCurrFilter();
+
 				for (int i = 0; i < ControllerSettings::Count; ++i)
 				{
-					pSel->oldFilter[i] = pSel->currProfile->filter[i];
-					pSel->tempFilter[i] = pSel->currProfile->filter[i];
+					pSel->oldFilter[i] = fil[i];
+					pSel->tempFilter[i] = fil[i];
 				}
-				SetFilterDefault(pSel->currProfile->filter);
-				mainMenu->GetController(0).SetFilter(pSel->currProfile->filter);
+
+				if (cType == CTYPE_GAMECUBE)
+				{
+					SetFilterDefaultGCC(fil);	
+				}
+				else
+				{
+					SetFilterDefault(fil);
+				}
+
+				mainMenu->GetController(0).SetFilter(fil);
+				
+				
 				return CONFIRM;
 			}
 			break;
@@ -308,17 +333,35 @@ void ControlSettingsMenu::Draw(sf::RenderTarget *target )
 	pSel->Draw(target);
 }
 
-XBoxButton ControlSettingsMenu::GetFilteredButton( ControllerSettings::ButtonType b )
-{
+XBoxButton ControlSettingsMenu::GetFilteredButton( ControllerType cType,
+	ControllerSettings::ButtonType b )
+{	
+	switch (cType)
+	{
+	case CTYPE_XBOX:
+		return pSel->currProfile->filter[b];
+		break;
+	case CTYPE_GAMECUBE:
+		return pSel->currProfile->gccFilter[b];
+		break;
+	case CTYPE_PS4:
+		return pSel->currProfile->filter[b];
+		break;
+	case CTYPE_NONE:
+		assert(0);
+		break;
+	}
+
 	return pSel->currProfile->filter[b];
 }
 
 void ControlSettingsMenu::UpdateXboxButtonIcons()
 {
 	ts_currentButtons = ts_xboxButtons;
+	XBoxButton *fil = pSel->currProfile->GetCurrFilter();
 	for (int i = 0; i < ControllerSettings::ButtonType::Count; ++i)
 	{
-		int ind = pSel->currProfile->filter[i] - 1;
+		int ind = fil[i] - 1;
 		IntRect sub = ts_xboxButtons->GetSubRect(ind);
 		SetRectSubRect(buttonQuads + i * 4, sub);
 	}
@@ -426,10 +469,6 @@ void ControlSettingsMenu::UpdateControlIcons()
 {
 	Color unselectedColor = Color::Blue;
 	Color selectedColor = Color::Magenta;
-
-	for (int i = 0; i < ControllerTypes::Count; ++i)
-	{
-	}
 }
 
 bool ControlSettingsMenu::IsEditingButtons()

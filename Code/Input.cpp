@@ -136,7 +136,7 @@ bool GameController::UpdateState()
 	if (gcController.enabled)
 	{
 		result = ERROR_SUCCESS;
-
+		controllerType = ControllerType::CTYPE_GAMECUBE;
 		if (gcDefaultControl.x < 0)
 		{
 			gcDefaultControl.x = gcController.axis.left_x;
@@ -188,9 +188,10 @@ bool GameController::UpdateState()
 		//cout << "radians: " << m_state.leftStickRadians << endl;
 
 
-		Vector2i right(gcController.axis.right_x - gcDefaultC.x, gcController.axis.right_y - gcDefaultC.y);
+		Vector2i right(gcController.axis.right_x - gcDefaultC.x, 
+			gcController.axis.right_y - gcDefaultC.y);
 
-		double RX = right.x / 127;
+		double RX = right.x / 127.0;
 		double RY = right.y / 127.0;
 
 		magnitude = sqrt(RX * RX + RY * RY);
@@ -296,9 +297,7 @@ bool GameController::UpdateState()
 
 		if (result == ERROR_SUCCESS)
 		{
-
-			
-
+			controllerType = ControllerType::CTYPE_XBOX;
 			//cout << "updating controller state " << m_index << endl;
 			double LX = state.Gamepad.sThumbLX;
 			double LY = state.Gamepad.sThumbLY;
@@ -432,6 +431,7 @@ bool GameController::UpdateState()
 
 	if( m_index == 0 && result != ERROR_SUCCESS )
 	{
+		controllerType = ControllerType::CTYPE_PS4;
 		//cout << "updating controller state keyboard " << m_index << endl;
 		using namespace sf;
 		//WORD b = state.Gamepad.wButtons;
@@ -561,6 +561,11 @@ bool GameController::UpdateState()
 		result = ERROR_SUCCESS;
 	}
 
+	if (result != ERROR_SUCCESS)
+	{
+		controllerType = CTYPE_NONE;
+	}
+
 	return ( result == ERROR_SUCCESS );
 }
 
@@ -615,7 +620,9 @@ GameController::GameController( DWORD index )
 		filter[i] = (XBoxButton)(i+1);
 	}*/
 
-	SetFilterDefault( filter );
+	UpdateState();
+	//SetFilterDefault( filter );
+	//SetFilterDefaultGCC();
 }
 
 ControllerState & GameController::GetState()
@@ -628,14 +635,22 @@ ControllerState & GameController::GetUnfilteredState()
 	return m_unfilteredState;
 }
 
+ControllerType GameController::GetCType()
+{
+	return controllerType;
+}
+
 
 bool GameController::IsConnected()
 {
-	XINPUT_STATE state;
-	ZeroMemory( &state, sizeof( XINPUT_STATE ) );
-	DWORD result = XInputGetState( m_index, &state );
-
-	return ( result == ERROR_SUCCESS );
+	if (controllerType != CTYPE_NONE)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 DWORD GameController::GetIndex()
@@ -943,6 +958,20 @@ void SetFilterDefault( XBoxButton *filter)
 {
 	filter[ControllerSettings::JUMP] = XBOX_A;
 	filter[ControllerSettings::DASH] = XBOX_X;
+	filter[ControllerSettings::ATTACK] = XBOX_R1;
+	filter[ControllerSettings::BOUNCE] = XBOX_B;
+	filter[ControllerSettings::GRIND] = XBOX_Y;
+	filter[ControllerSettings::TIMESLOW] = XBOX_L1;
+	filter[ControllerSettings::LEFTWIRE] = XBOX_L2;
+	filter[ControllerSettings::RIGHTWIRE] = XBOX_R2;
+	filter[ControllerSettings::MAP] = XBOX_BACK;
+	filter[ControllerSettings::PAUSE] = XBOX_START;
+}
+
+void SetFilterDefaultGCC(XBoxButton *filter)
+{
+	filter[ControllerSettings::JUMP] = XBOX_X;
+	filter[ControllerSettings::DASH] = XBOX_A;
 	filter[ControllerSettings::ATTACK] = XBOX_R1;
 	filter[ControllerSettings::BOUNCE] = XBOX_B;
 	filter[ControllerSettings::GRIND] = XBOX_Y;

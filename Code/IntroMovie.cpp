@@ -5,6 +5,7 @@
 #include "Config.h"
 
 IntroMovie::IntroMovie( MainMenu *mm)
+	:mainMenu( mm )
 {
 	assert(movie.openFromFile("Resources/Movie/Kin_Intro.ogv"));
 	movie.fit(sf::FloatRect(0, 0, 1920, 1080));

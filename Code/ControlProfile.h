@@ -20,8 +20,10 @@ struct ControlProfile
 	
 	
 	std::string name;
+	ControllerType tempCType;
+	XBoxButton *GetCurrFilter();
 	XBoxButton filter[ControllerSettings::Count];
-	bool hasXBoxFilter;
+	XBoxButton gccFilter[ControllerSettings::Count];
 };
 
 struct ControlProfileManager
@@ -35,11 +37,14 @@ struct ControlProfileManager
 		GetButtonTypeFromAction( const std::string &str );
 	void WriteProfiles();
 private:
+	void WriteFilter( std::ofstream &of, XBoxButton *filter);
+	void WriteInputType(std::ofstream &of, const std::string &inputType);
 	bool MoveToNextSymbolText( char startSymbol,
 		char endSymbol, std::string &outStr );
 	bool MoveToPeekNextOpener( char &outChar );
 	char MoveToEquals( std::string &outStr );
 	bool LoadXBOXConfig( ControlProfile *profile );
+	bool LoadGamecubeConfig(ControlProfile *profile);
 	bool IsSymbol( char c );
 	void DeleteProfile( std::list<ControlProfile*>::iterator &it );
 	void ClearProfiles();
@@ -132,7 +137,7 @@ struct ControlProfileMenu : UIEventHandlerBase
 	int maxReceiveFrames;
 	ControllerSettings::ButtonType editIndex;
 	XBoxButton tempFilter[ControllerSettings::Count];
-	
+	ControllerType tempCType;
 
 	//TODO scrollbar to show how far in to the names you are
 	static const int NUM_BOXES = 7;

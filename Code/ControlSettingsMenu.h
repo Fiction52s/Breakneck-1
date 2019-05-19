@@ -29,7 +29,8 @@ struct ControlSettingsMenu
 
 	ButtonState currButtonState;
 	ControlSettingsMenu(MainMenu *p_mm);
-	XBoxButton GetFilteredButton( ControllerSettings::ButtonType b );
+	XBoxButton GetFilteredButton( ControllerType cType,
+		ControllerSettings::ButtonType b );
 	~ControlSettingsMenu();
 	void InitAssocSymbols();
 	XBoxButton CheckXBoxInput(ControllerState &currInput);
@@ -57,7 +58,7 @@ struct ControlSettingsMenu
 	Tileset *ts_currentButtons;
 	ProfileSelector *pSel;
 	bool editMode;
-
+	ControllerType currCType;
 };
 
 
