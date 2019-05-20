@@ -27,6 +27,7 @@ struct ScoreBar
 	void SetSymbolTransparency(float f);
 	void ClearSheet();
 	void Update();
+	void Reset();
 	int row;
 	State state;
 	int frame;

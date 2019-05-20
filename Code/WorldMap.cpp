@@ -1070,6 +1070,41 @@ void WorldMap::Draw( RenderTarget *target )
 	}
 }
 
+Sector &WorldMap::GetCurrSector()
+{
+	SaveFile * currFile = mainMenu->GetCurrentProgress();
+	World & world = currFile->worlds[selectedColony];
+	int secIndex = selectors[selectedColony]->sectorSelector->currIndex;
+	return world.sectors[secIndex];
+}
+
+void WorldMap::CompleteCurrentMap( SaveFile *sf )
+{
+	World & world = sf->worlds[selectedColony];
+	int secIndex = selectors[selectedColony]->sectorSelector->currIndex;
+	Sector &sec = world.sectors[secIndex];
+	int levIndex = selectors[selectedColony]->mapSelector->currIndex;
+	
+	Level &lev = sec.levels[levIndex];
+
+	if (!lev.GetComplete())
+	{
+		lev.justBeaten = true;
+		lev.SetComplete(true);
+	}
+	else
+	{
+		lev.justBeaten = false;
+	}
+}
+
+int WorldMap::GetCurrSectorNumLevels()
+{
+	MapSelector *currSelector = selectors[selectedColony];
+	int secIndex = currSelector->sectorSelector->currIndex;
+	return currSelector->sectors[secIndex]->numLevels;
+}
+
 MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 	:centerPos( pos )
 {

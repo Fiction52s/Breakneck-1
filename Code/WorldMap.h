@@ -253,6 +253,9 @@ struct WorldMap
 		ControllerState &prevInput,
 		ControllerState &currInput );
 	void Draw( sf::RenderTarget *target );
+	void CompleteCurrentMap( SaveFile *sf );
+	Sector &GetCurrSector();
+	int GetCurrSectorNumLevels();
 	void UpdateMapList();
 	const std::string & GetSelected();
 	void UpdateMapList( TreeNode *parentNode, const std::string &relativePath );

@@ -489,6 +489,7 @@ struct MainMenu
 
 	GCC::USBDriver *gccDriver;
 	GCC::VJoyGCControllers *joys;
+	bool gccDriverEnabled;
 
 	EffectPool *indEffectPool;
 	void DrawEffects( sf::RenderTarget *target );

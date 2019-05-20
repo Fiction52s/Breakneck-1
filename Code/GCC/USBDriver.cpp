@@ -92,8 +92,12 @@ namespace GCC
 
 	USBDriver::~USBDriver()
 	{
-		mEnabled = false;
-		mThread.join();
+		if (mEnabled)
+		{
+			mEnabled = false;
+			mThread.join();
+			
+		}
 		libusb_exit(mUSBContext);
 	}
 

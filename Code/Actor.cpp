@@ -2861,9 +2861,10 @@ void Actor::UpdatePrePhysics()
 	else if( action == GOALKILLWAIT )
 	{
 		ControllerState &unfilteredCurr = owner->GetCurrInputUnfiltered(0);
-		ControllerState &unfiltetedPrev = owner->GetPrevInputUnfiltered(0);
-		bool a = unfilteredCurr.A && !unfiltetedPrev.A;
-		bool x = unfilteredCurr.X && !unfiltetedPrev.X;
+		ControllerState &unfilteredPrev = owner->GetPrevInputUnfiltered(0);
+		bool a = unfilteredCurr.A && !unfilteredPrev.A;
+		bool x = unfilteredCurr.X && !unfilteredPrev.X;
+		bool b = unfilteredCurr.B && !unfilteredPrev.B;
 
 		if( ( a || x ) && owner->scoreDisplay->waiting)
 		{
@@ -2880,6 +2881,17 @@ void Actor::UpdatePrePhysics()
 			}
 			owner->scoreDisplay->Deactivate();
 			//owner->scoreDisplay->Activate();
+		}
+		else if (b && owner->scoreDisplay->waiting)
+		{
+			if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+			{
+				SaveFile *currFile = owner->GetCurrentProgress();
+				owner->mainMenu->worldMap->CompleteCurrentMap(currFile);
+				currFile->Save();
+			}
+			owner->NextFrameRestartLevel();
+			return;
 		}
 		
 		if( !owner->scoreDisplay->active )

@@ -117,14 +117,11 @@ void ScoreDisplay::Update()
 
 void ScoreDisplay::Reset()
 {
+	waiting = false;
 	active = false;
 	for (int i = 0; i < NUM_BARS+1; ++i)
 	{
-		bars[i]->state = ScoreBar::NONE;
-		bars[i]->frame = 0;
-		bars[i]->xDiffPos = 0;
-		if( !bars[i]->contBar )
-			bars[i]->SetSymbolTransparency(0);
+		bars[i]->Reset();
 	}
 }
 
@@ -201,6 +198,20 @@ ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent, bool p_contBar )
 	:parent(p_parent), frame(0), state(NONE), row(p_row), xDiffPos(0), contBar( p_contBar )
 {
 
+}
+
+void ScoreBar::Reset()
+{
+	SetBarPos(0);
+	state = NONE;
+	frame = 0;
+
+	if (!contBar)
+		SetSymbolTransparency(0);
+
+	
+	if (!contBar)
+		SetSheetFrame(0);
 }
 
 void ScoreBar::SetBarPos(float xDiff)

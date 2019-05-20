@@ -881,13 +881,16 @@ void GameSession::RecordReplayEnemies()
 
 void GameSession::UpdateInput()
 {
-	auto controllers = mainMenu->gccDriver->getState();
+	vector<GCC::GCController> controllers;
+	if( mainMenu->gccDriverEnabled ) 
+		controllers = mainMenu->gccDriver->getState();
 	for (int i = 0; i < 4; ++i)
 	{
 		GetPrevInput(i) = GetCurrInput(i);
 		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 		GameController &con = GetController(i);
-		con.gcController = controllers[i];
+		if(mainMenu->gccDriverEnabled )
+			con.gcController = controllers[i];
 		con.UpdateState();
 		GetCurrInput(i) = con.GetState();
 		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
@@ -6155,11 +6158,16 @@ int GameSession::Run()
 	bool oneFrameMode = false;
 	quit = false;
 
-	auto controllers = mainMenu->gccDriver->getState();
+
+	
+	vector<GCC::GCController> controllers;
+	if (mainMenu->gccDriverEnabled)
+		controllers = mainMenu->gccDriver->getState();
 	for (int i = 0; i < 4; ++i)
 	{
 		GameController &c = GetController(i);
-		c.gcController = controllers[i];
+		if (mainMenu->gccDriverEnabled)
+			c.gcController = controllers[i];
 		c.UpdateState();
 		GetCurrInput(i) = GetController(i).GetState();
 	}
@@ -6352,11 +6360,15 @@ int GameSession::Run()
 					//prevInput = currInput;
 					//player->prevInput = currInput;
 
-					auto controllers = mainMenu->gccDriver->getState();
+					vector<GCC::GCController> controllers;
+					if (mainMenu->gccDriverEnabled)
+						controllers = mainMenu->gccDriver->getState();
+
 					for (int i = 0; i < 4; ++i)
 					{
 						GameController &c = GetController(i);
-						c.gcController = controllers[i];
+						if (mainMenu->gccDriverEnabled)
+							c.gcController = controllers[i];
 						c.UpdateState();
 					}
 					/*controller.UpdateState();
@@ -6474,6 +6486,18 @@ int GameSession::Run()
 				returnVal = resType;
 				break;
 			}
+
+			if (nextFrameRestart)
+			{
+				state = GameSession::RUN;
+				RestartLevel();
+				gameClock.restart();
+				currentTime = 0;
+				accumulator = TIMESTEP + .1;
+				frameCounter = 0;
+			}
+			
+			
 			
 			//lastFrameTex->display();
 			
@@ -6502,12 +6526,16 @@ int GameSession::Run()
 				}
 			}
 
-			auto controllers = mainMenu->gccDriver->getState();
+			vector<GCC::GCController> controllers;
+			if (mainMenu->gccDriverEnabled)
+				controllers = mainMenu->gccDriver->getState();
+
 			for( int i = 0; i < 1; ++i )
 			{
 				GameController &con = GetController( i );
 
-				con.gcController = controllers[i];
+				if (mainMenu->gccDriverEnabled)
+					con.gcController = controllers[i];
 
 
 				bool canControllerUpdate = con.UpdateState();
@@ -6571,11 +6599,15 @@ int GameSession::Run()
 					}
 				}
 
-				auto controllers = mainMenu->gccDriver->getState();
+				vector<GCC::GCController> controllers;
+				if (mainMenu->gccDriverEnabled)
+					controllers = mainMenu->gccDriver->getState();
+				
 				for (int i = 0; i < 4; ++i)
 				{
 					GameController &con = GetController(i);
-					con.gcController = controllers[i];
+					if (mainMenu->gccDriverEnabled)
+						con.gcController = controllers[i];
 					bool canControllerUpdate = con.UpdateState();
 					if (!canControllerUpdate)
 					{
@@ -7311,6 +7343,8 @@ int GameSession::Run()
 			//player->maxFallSpeedSlo += maxFallSpeedFactor;
 			//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
 		}
+
+		
 		
 
 
@@ -9291,6 +9325,8 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	nextFrameRestart = false;
+
 	LoadDecorImages();
 
 	fader = mainMenu->fader;
@@ -10350,11 +10386,15 @@ void GameSession::ClearFX()
 }
 
 
-
+void GameSession::NextFrameRestartLevel()
+{
+	nextFrameRestart = true;
+}
 
 
 void GameSession::RestartLevel()
 {
+	nextFrameRestart = false;
 	//accumulator = TIMESTEP + .1;
 	currBroadcast = NULL;
 	currStorySequence = NULL;
@@ -10446,6 +10486,8 @@ void GameSession::RestartLevel()
 		if (player != NULL)
 			player->Respawn();
 	}
+
+	scoreDisplay->Reset();
 
 	absorbParticles->Reset();
 	absorbDarkParticles->Reset();

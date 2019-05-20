@@ -578,16 +578,26 @@ MainMenu::MainMenu()
 	transFrame = 0;
 
 	gccDriver = new GCC::USBDriver;
-	joys = new GCC::VJoyGCControllers(*gccDriver);
+	if (gccDriver->getStatus() == GCC::USBDriver::Status::READY)
 	{
-		auto controllers = gccDriver->getState();
-		for (int i = 0; i < 4; ++i)
+		gccDriverEnabled = true;
+		joys = new GCC::VJoyGCControllers(*gccDriver);
 		{
-			//GameController &c = GetController(i);
+			auto controllers = gccDriver->getState();
+			for (int i = 0; i < 4; ++i)
+			{
+				//GameController &c = GetController(i);
 
-			//c.gcDefaultControl.x = controllers[i].enabled
+				//c.gcDefaultControl.x = controllers[i].enabled
+			}
 		}
 	}
+	else
+	{
+		joys = NULL;
+		gccDriverEnabled = false;
+	}
+	
 	for (int i = 0; i < 4; ++i)
 	{
 		controllers[i] = new GameController(i);
@@ -1622,7 +1632,9 @@ void MainMenu::Run()
 			//int upCount = 0;
 			//int downCount = 0;
 
-			auto controllers = gccDriver->getState();
+			vector<GCC::GCController> controllers;
+			if (gccDriverEnabled)
+				controllers = gccDriver->getState();
 
 
 			for( int i = 0; i < 4; ++i )
@@ -1633,7 +1645,9 @@ void MainMenu::Run()
 
 				prevInput = currInput;
 
-				c.gcController = controllers[i];
+
+				if (gccDriverEnabled)
+					c.gcController = controllers[i];
 				bool active = c.UpdateState();
 
 				menuCurrInputUnfiltered = ControllerState();
@@ -2671,30 +2685,9 @@ void MainMenu::HandleMenuMode()
 		
 
 		SaveFile *currFile = GetCurrentProgress();
-		World & world = currFile->worlds[worldMap->selectedColony];
-		int secIndex = worldMap->selectors[worldMap->selectedColony]->sectorSelector->currIndex;
-		Sector &sec = world.sectors[secIndex];
-		int levIndex = worldMap->selectors[worldMap->selectedColony]->mapSelector->currIndex;
 		if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
 		{
-			//currLevel->mh->envType];
-			bool doneCheck = false;
-			//for (int i = 0; i < world.numSectors && !doneCheck; ++i)
-			//for (int j = 0; j < sec.numLevels && !doneCheck; ++j)
-			{
-				Level &lev = sec.levels[levIndex];
-				//if (lev.GetFullName() == currLevel->fileName)
-				{
-					if (!lev.GetComplete())
-					{
-						lev.justBeaten = true;
-					}
-
-					lev.SetComplete(true);
-
-					doneCheck = true;
-				}
-			}
+			worldMap->CompleteCurrentMap(currFile);
 		}
 		switch (result)
 		{
@@ -2714,14 +2707,9 @@ void MainMenu::HandleMenuMode()
 		window->setView(oldView);
 
 		SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->mapSelector;
-		int numLevels = worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
+		int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
 		if (result == GameSession::GR_WIN)
 		{
-			/*if (sa->currIndex < sa->totalItems - 1)
-			{
-			sa->currIndex++;
-			}*/
-
 			currFile->Save();
 
 			delete currLevel;
@@ -2735,15 +2723,8 @@ void MainMenu::HandleMenuMode()
 			if (sa->currIndex < numLevels - 1)
 			{
 				sa->currIndex++;
-				//sa->totalItems++;
-				//AdventureLoadLevel(&(sec.levels[sa->currIndex]));
 
-				
-
-				AdventureNextLevel(&(sec.levels[sa->currIndex]));
-
-				//preScreenTexture->clear();
-				//window->clear();
+				AdventureNextLevel(&(worldMap->GetCurrSector().levels[sa->currIndex]));
 			}
 			else
 			{
@@ -2760,6 +2741,7 @@ void MainMenu::HandleMenuMode()
 		}
 		else
 		{
+			Sector &sec = worldMap->GetCurrSector();
 			for (int i = 0; i < sec.numLevels; ++i)
 			{
 				sec.levels[i].justBeaten = false;

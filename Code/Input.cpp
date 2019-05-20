@@ -565,6 +565,12 @@ bool GameController::UpdateState()
 	{
 		controllerType = CTYPE_NONE;
 	}
+	/*else
+	{
+		cout << "working controller type: " << (int)(controllerType) << endl;
+	}*/
+
+	
 
 	return ( result == ERROR_SUCCESS );
 }
