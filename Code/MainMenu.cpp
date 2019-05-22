@@ -65,6 +65,29 @@ sf::Font MainMenu::arial;
 sf::Font MainMenu::consolas;
 int MainMenu::masterVolume = 100;
 
+std::string GetTimeStr(int numFrames)
+{
+	stringstream ss;
+
+	int seconds = numFrames / 60;
+	int remain = numFrames % 60;
+	int centiSecond = floor((double)remain * (1.0 / 60.0 * 100.0) + .5);
+
+	if (seconds < 10)
+	{
+		ss << "0";
+	}
+	ss << seconds << " : ";
+
+	if (centiSecond < 10)
+	{
+		ss << "0";
+	}
+	ss << centiSecond << endl;
+
+	return ss.str();
+}
+
 MultiSelectionSection::MultiSelectionSection(MainMenu *p_mainMenu, MapSelectionMenu *p_parent,
 	int p_playerIndex, Vector2f &p_topMid )
 	:mainMenu( p_mainMenu ), parent( p_parent ), playerIndex( p_playerIndex ), team( T_NOT_CHOSEN ),
@@ -747,7 +770,8 @@ MainMenu::MainMenu()
 	menuOptionsBG.setSize(Vector2f(560, (64 + textOptionSpacing) * 7));
 
 	soundNodeList = new SoundNodeList( 10 );
-	soundNodeList->SetGlobalVolume( config->GetData().soundVolume );
+	soundNodeList->SetSoundVolume(config->GetData().soundVolume);
+	//soundNodeList->SetGlobalVolume(100);//config->GetData().soundVolume );
 
 
 	if( preScreenTexture == NULL )
@@ -2345,11 +2369,11 @@ void MainMenu::HandleMenuMode()
 			}
 		}
 
-		if (menuCurrInput.B && !menuPrevInput.B)
+		/*if (menuCurrInput.B && !menuPrevInput.B)
 		{
 			quit = true;
 			break;
-		}
+		}*/
 
 		if (menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X ||
 			menuCurrInput.rightShoulder || menuCurrInput.leftShoulder)
@@ -2687,7 +2711,7 @@ void MainMenu::HandleMenuMode()
 		SaveFile *currFile = GetCurrentProgress();
 		if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
 		{
-			worldMap->CompleteCurrentMap(currFile);
+			worldMap->CompleteCurrentMap(currFile, currLevel->totalFramesBeforeGoal);
 		}
 		switch (result)
 		{
@@ -2715,7 +2739,9 @@ void MainMenu::HandleMenuMode()
 			delete currLevel;
 			currLevel = NULL;
 			fader->Clear();
+
 			SetMode(WORLDMAP);
+			worldMap->CurrSelector()->GetFocusedSector()->UpdateLevelStats();
 			worldMap->Update(menuPrevInput, menuCurrInput);
 		}
 		else if (result == GameSession::GR_WINCONTINUE)
@@ -2735,6 +2761,7 @@ void MainMenu::HandleMenuMode()
 
 				fader->Clear();
 				SetMode( MainMenu::WORLDMAP );
+				worldMap->CurrSelector()->GetFocusedSector()->UpdateLevelStats();
 				worldMap->Update(menuPrevInput, menuCurrInput);
 			}
 
@@ -2754,6 +2781,7 @@ void MainMenu::HandleMenuMode()
 			currLevel = NULL;
 
 			SetMode( MainMenu::WORLDMAP );
+			worldMap->CurrSelector()->GetFocusedSector()->UpdateLevelStats();
 			worldMap->Update(menuPrevInput, menuCurrInput);
 
 			musicPlayer->TransitionMusic(menuMusic, 60);
@@ -4811,10 +4839,7 @@ bool OptionsMenuScreen::ButtonEvent(UIEvent eType,
 			
 			mainMenu->musicPlayer->Update();
 			mainMenu->musicPlayer->UpdateVolume();
-			mainMenu->soundNodeList->musicVolume = mVol;
-			mainMenu->soundNodeList->soundVolume = sVol;
-
-
+			mainMenu->soundNodeList->SetSoundVolume(sVol);
 
 			mainMenu->ResizeWindow(res.x, res.y, winMode);
 			//mainMenu->config->

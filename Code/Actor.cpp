@@ -1218,7 +1218,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		slopeTooSteepLaunchLimitX = .1;
 		
 		
-		steepClimbGravFactor = .31;//.7;
+		steepClimbGravFactor = .31;//.2;//.31;//.7;
 		steepClimbFastFactor = .2;
 		framesSinceClimbBoost = 0;
 		climbBoostLimit = 25;//22;//15;
@@ -2810,6 +2810,7 @@ void Actor::UpdatePrePhysics()
 				ControllerState &unfiltetedPrev = owner->GetPrevInputUnfiltered(0);
 				bool a = unfilteredCurr.A && !unfiltetedPrev.A;
 				bool x = unfilteredCurr.X && !unfiltetedPrev.X;
+				bool b = unfilteredCurr.B && !unfiltetedPrev.B;
 				if ( a || x )
 				{
 					bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
@@ -2826,6 +2827,17 @@ void Actor::UpdatePrePhysics()
 					owner->scoreDisplay->Deactivate();
 					owner->activeSequence = owner->shipExitSeq;
 					owner->shipExitSeq->Reset();
+				}
+				else if (b)
+				{
+					if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+					{
+						SaveFile *currFile = owner->GetCurrentProgress();
+						owner->mainMenu->worldMap->CompleteCurrentMap(currFile, owner->totalFramesBeforeGoal);
+						currFile->Save();
+					}
+					owner->NextFrameRestartLevel();
+					return;
 				}
 			}
 		}
@@ -2866,32 +2878,35 @@ void Actor::UpdatePrePhysics()
 		bool x = unfilteredCurr.X && !unfilteredPrev.X;
 		bool b = unfilteredCurr.B && !unfilteredPrev.B;
 
-		if( ( a || x ) && owner->scoreDisplay->waiting)
+		if (owner->scoreDisplay->waiting)
 		{
-			//owner->scoreDisplay->Reset();
-			bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
-			if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE
-				&& levValid )
+			if (a || x)
 			{
-				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+				//owner->scoreDisplay->Reset();
+				bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
+				if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE
+					&& levValid)
+				{
+					owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+				}
+				else
+				{
+					owner->resType = GameSession::GameResultType::GR_WIN;
+				}
+				owner->scoreDisplay->Deactivate();
+				//owner->scoreDisplay->Activate();
 			}
-			else
+			else if (b)
 			{
-				owner->resType = GameSession::GameResultType::GR_WIN;
+				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+				{
+					SaveFile *currFile = owner->GetCurrentProgress();
+					owner->mainMenu->worldMap->CompleteCurrentMap(currFile, owner->totalFramesBeforeGoal);
+					currFile->Save();
+				}
+				owner->NextFrameRestartLevel();
+				return;
 			}
-			owner->scoreDisplay->Deactivate();
-			//owner->scoreDisplay->Activate();
-		}
-		else if (b && owner->scoreDisplay->waiting)
-		{
-			if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-			{
-				SaveFile *currFile = owner->GetCurrentProgress();
-				owner->mainMenu->worldMap->CompleteCurrentMap(currFile);
-				currFile->Save();
-			}
-			owner->NextFrameRestartLevel();
-			return;
 		}
 		
 		if( !owner->scoreDisplay->active )
@@ -5631,9 +5646,7 @@ void Actor::UpdatePrePhysics()
 			}
 
 
-			bool boost = TryClimbBoost(gNorm);
-			if (boost)
-				break;
+			
 
 			break;
 		}
@@ -6971,41 +6984,7 @@ void Actor::UpdatePrePhysics()
 			}
 
 
-			bool pressB = currInput.B && !prevInput.B;
-			if( pressB )
-			{
-				//cout << "climb" << endl;
-				
-				double sp = 5;//jumpStrength + 1;//28.0;
-				double fac = min( ((double)framesSinceClimbBoost) / climbBoostLimit, 1.0 );
-
-				double extra = 5.0;
-				if( currInput.LUp() )
-				{
-					//cout << "boost but better" << endl;
-					extra = 5.5;
-				}
-				
-				extra = extra * fac;
-
-				//cout << "frames: " << framesSinceClimbBoos
-				//cout << "fac: " << fac << " extra: " << extra << endl;
-				if( gNorm.x > 0 )//&& currInput.LLeft() )
-				{
-					groundSpeed = std::min( groundSpeed - extra, -sp );
-				}
-				else if( gNorm.x < 0 )// && currInput.LRight() )
-				{
-					groundSpeed = std::max( groundSpeed + extra, sp );
-				}
-
-				framesSinceClimbBoost = 0;
-				/*else
-				{
-					
-				}*/
-				break;
-			}
+			bool boost = TryClimbBoost(gNorm);
 
 			float factor = steepClimbGravFactor;//.7 ;
 			if( currInput.LUp() )
@@ -7486,6 +7465,8 @@ facingRight = false;
 	case STEEPCLIMB:
 	{
 		//if( groundSpeed > 0 )
+
+		bool boost = TryClimbBoost(gNorm);
 
 		//the factor is just to make you climb a little farther
 		float factor = steepClimbGravFactor;//.7 ;
@@ -9036,7 +9017,7 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 	bool pressB = currInput.B && !prevInput.B;
 	if (pressB)
 	{
-		double sp = 5;//jumpStrength + 1;//28.0;
+		double sp = 13;//10;//5;//20;//5;//jumpStrength + 1;//28.0;
 		double fac = min(((double)framesSinceClimbBoost) / climbBoostLimit, 1.0);
 
 		double extra = 5.0;
@@ -16059,7 +16040,7 @@ void Actor::UpdatePostPhysics()
 
 	if( hitGoal )// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
-		
+		owner->totalFramesBeforeGoal = owner->totalGameFrames;
 		SetActionExpr( GOALKILL );
 		desperationMode = false;
 		hitGoal = false;
@@ -16085,6 +16066,7 @@ void Actor::UpdatePostPhysics()
 	}
 	else if (hitNexus)
 	{
+		owner->totalFramesBeforeGoal = owner->totalGameFrames;
 		SetActionExpr(NEXUSKILL);
 		desperationMode = false;
 		hitNexus = false;
@@ -19282,6 +19264,7 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 {
 	if( action != WAITFORSHIP && action != GRABSHIP )
 	{
+		owner->totalFramesBeforeGoal = owner->totalGameFrames;
 		desperationMode = false;
 		SetExpr(Expr_NEUTRAL);
 		owner->scoreDisplay->Activate();

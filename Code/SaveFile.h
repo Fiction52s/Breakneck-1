@@ -74,7 +74,9 @@ struct Level
 	std::string name;
 	bool justBeaten;
 	int bossFightType;
+	int bestTimeFrames;
 	void SetComplete(bool comp);
+	bool TrySetRecord(int numFrames);
 	bool IsLastInSector();
 	//void SetJustUnlocked(bool unlocked);
 	//void SetJustUnlockedTop(bool unlocked);
@@ -118,6 +120,7 @@ struct Sector
 	bool IsLevelUnlocked(int index);
 	int numUnlockConditions;
 	void UpdateShardNameList();
+	int GetTotalFrames();
 	int GetNumTotalShards();
 	int GetNumShardsCaptured();
 	std::list<std::string> shardNameList;
@@ -144,6 +147,7 @@ struct World
 	Sector *sectors;
 	SaveFile *sf;
 	int index;
+	int GetTotalFrames();
 	void UpdateShardNameList();
 	int GetNumTotalShards();
 	bool Load(std::ifstream &is);
@@ -164,6 +168,7 @@ struct SaveFile
 	float GetCompletionPercentage();
 	void CopyFromDefault();
 
+	int GetTotalFrames();
 	void UpdateShardNameList();
 	int GetNumShardsCaptured();
 	int GetNumTotalShards();

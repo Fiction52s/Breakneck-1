@@ -5504,11 +5504,16 @@ bool GameSession::Load()
 	absorbDarkParticles = new AbsorbParticles( this, AbsorbParticles::DARK);
 	absorbShardParticles = new AbsorbParticles(this, AbsorbParticles::SHARD);
 
+
+
+	const ConfigData &cd = mainMenu->config->GetData();
+
 	soundNodeList = new SoundNodeList(10);
-	soundNodeList->SetGlobalVolume(mainMenu->config->GetData().soundVolume);
+	soundNodeList->SetSoundVolume(cd.soundVolume);
 
 	pauseSoundNodeList = new SoundNodeList(10);
-	pauseSoundNodeList->SetGlobalVolume(mainMenu->config->GetData().soundVolume);
+	pauseSoundNodeList->SetSoundVolume(cd.soundVolume);
+	//pauseSoundNodeList->SetGlobalVolume(mainMenu->config->GetData().soundVolume);
 	scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
 
 	lifeBarTex.loadFromFile("Resources/lifebar_768x768.png");
@@ -5728,6 +5733,7 @@ bool GameSession::Load()
 	cutPlayerInput = false;
 	activeEnvPlants = NULL;
 	totalGameFrames = 0;	
+	totalFramesBeforeGoal = -1;
 	originalZone = NULL;
 	
 	inactiveEnemyList = NULL;
@@ -6111,9 +6117,16 @@ int GameSession::Run()
 	preScreenTex->setView(view);
 	
 	bool showFrameRate = false;
+	bool showRunningTimer = true;
 
 	sf::Text frameRate("00", mainMenu->arial, 30);
 	frameRate.setFillColor(Color::Red);
+
+	sf::Text runningTimerText( "---- : --", mainMenu->arial, 30 );
+	runningTimerText.setFillColor(Color::Red);
+	runningTimerText.setOrigin(runningTimerText.getLocalBounds().left +
+		runningTimerText.getLocalBounds().width, 0 );
+	runningTimerText.setPosition(1920 - 30, 10);
 
 	sf::Texture alphaTex;
 	alphaTex.loadFromFile("Resources/alphatext.png");
@@ -6304,6 +6317,16 @@ int GameSession::Run()
 			ss.str("");*/
 		}
 
+		if (showRunningTimer && !scoreDisplay->active)
+		{
+			int tFrames = totalGameFrames;
+			if (totalFramesBeforeGoal >= 0)
+			{
+				tFrames = totalFramesBeforeGoal;
+			}
+			runningTimerText.setString(GetTimeStr(tFrames));
+			
+		}
 		//cout << "frameCounter: " << frameCounter << endl;
 		//for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
 		//{
@@ -6463,9 +6486,17 @@ int GameSession::Run()
 
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
 			{
-				
 				quit = true;
 				break;
+			}
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
+			{
+				showRunningTimer = true;
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
+			{
+				showRunningTimer = false;
 			}
 	
 			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
@@ -8257,6 +8288,11 @@ int GameSession::Run()
 			preScreenTex->draw( frameRate );
 		}
 		
+		if (showRunningTimer && !scoreDisplay->active)
+		{
+			preScreenTex->draw(runningTimerText);
+		}
+
 		if(inputVis != NULL)
 		inputVis->Draw(preScreenTex);
 
@@ -10407,7 +10443,7 @@ void GameSession::RestartLevel()
 	soundNodeList->Clear();
 
 	totalGameFrames = 0;
-
+	totalFramesBeforeGoal = -1;
 	/*if( GetPlayer->record > 1 )
 	{
 		player->LoadState();

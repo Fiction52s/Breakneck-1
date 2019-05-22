@@ -217,6 +217,12 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	leftBorder = 20;
 	//numTotalEntries = 0;
 
+	currLevelTimeText.setFillColor(Color::White);
+	currLevelTimeText.setCharacterSize(40);
+	currLevelTimeText.setFont(mainMenu->arial);
+	currLevelTimeText.setOrigin(currLevelTimeText.getLocalBounds().left + currLevelTimeText.getLocalBounds().width / 2, 0);
+	currLevelTimeText.setPosition(1300, 200);
+	currLevelTimeText.setString("");
 
 	Reset( NULL );
 
@@ -1052,6 +1058,7 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->clear(Color::Transparent);
 		rt->setView(uiView);
 		CurrSelector()->Draw(rt);
+		rt->draw(currLevelTimeText);
 		rt->display();
 		const sf::Texture &ttex = rt->getTexture();
 		selectorExtraPass.setTexture(ttex);
@@ -1067,6 +1074,8 @@ void WorldMap::Draw( RenderTarget *target )
 			selectorExtraPass.setColor(Color::White);
 		}
 		target->draw(selectorExtraPass);
+
+		
 	}
 }
 
@@ -1078,7 +1087,7 @@ Sector &WorldMap::GetCurrSector()
 	return world.sectors[secIndex];
 }
 
-void WorldMap::CompleteCurrentMap( SaveFile *sf )
+void WorldMap::CompleteCurrentMap( SaveFile *sf, int totalFrames )
 {
 	World & world = sf->worlds[selectedColony];
 	int secIndex = selectors[selectedColony]->sectorSelector->currIndex;
@@ -1091,10 +1100,20 @@ void WorldMap::CompleteCurrentMap( SaveFile *sf )
 	{
 		lev.justBeaten = true;
 		lev.SetComplete(true);
+
+		MapSector *mapSec = CurrSelector()->GetFocusedSector();
+		mapSec->UpdateUnlockedLevelCount();
+		mapSec->ms->mapSelector->SetTotalSize(mapSec->unlockedLevelCount);
 	}
 	else
 	{
 		lev.justBeaten = false;
+	}
+
+	bool isRecordSet = lev.TrySetRecord(totalFrames);
+	if (isRecordSet)
+	{
+		//create a flag so that you can get hype over this
 	}
 }
 
@@ -1299,6 +1318,7 @@ void MapSelector::Update(ControllerState &curr,
 		if (changed != 0 )//&& mapSelector->currIndex > numCurrLevels)
 		{
 			mapSelector->SetTotalSize(numCurrLevels);
+			GetFocusedSector()->UpdateLevelStats();
 		}
 		//if (changed > 0 && saSelector->totalItems > 1 )
 		//{
@@ -1792,7 +1812,8 @@ void MapSector::UpdateLevelStats()
 
 	int gridIndex = 0;
 	int uncaptured = 0;
-	auto &snList = GetSelectedLevel().shardNameList;
+	Level &lev = GetSelectedLevel();
+	auto &snList = lev.shardNameList;
 	//numTotalShards = snList.size();
 	for (int i = 0; i < numTotalShards; ++i)
 	{
@@ -1821,8 +1842,20 @@ void MapSector::UpdateLevelStats()
 	int percent = floor(GetSelectedLevel().GetCompletionPercentage());
 
 	ss << percent << "%";
+	
+	Text &currLevelTimeText = ms->mainMenu->worldMap->currLevelTimeText;
 
-	levelPercentCompleteText.setString(ss.str());
+	string levelTimeStr = "Fastest Level Time  ";
+	if (lev.bestTimeFrames < 0)
+	{
+		currLevelTimeText.setString(levelTimeStr + string("-- : --"));
+	}
+	else
+	{
+		currLevelTimeText.setString(levelTimeStr + GetTimeStr(lev.bestTimeFrames));
+	}
+
+	//ms->mainMenu->worldMap->currLevelTimeText.setString
 	/*for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
 	{
 
@@ -2021,8 +2054,8 @@ void MapSector::Update(ControllerState &curr,
 				state = NORMAL;	
 				//unlockedIndex
 			}
-			UpdateUnlockedLevelCount();
-			ms->mapSelector->SetTotalSize(unlockedLevelCount);
+			//UpdateUnlockedLevelCount();
+			//ms->mapSelector->SetTotalSize(unlockedLevelCount);
 			
 			stateFrame = 0;
 		}
@@ -2032,6 +2065,7 @@ void MapSector::Update(ControllerState &curr,
 			if (unlockedLevelCount < numLevels - 1)
 			{
 				ms->mapSelector->currIndex = unlockedLevelCount - 1;
+				UpdateLevelStats();
 				//saSelector->currIndex = unlockedIndex + 1;
 			}
 		}

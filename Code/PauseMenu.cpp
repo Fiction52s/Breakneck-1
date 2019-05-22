@@ -11,6 +11,7 @@
 #include "ControlProfile.h"
 #include "ColorShifter.h"
 #include "MapHeader.h"
+#include "Config.h"
 
 using namespace sf;
 using namespace std;
@@ -689,17 +690,17 @@ void PauseMenu::ApplySoundSettings()
 		enMusic = false;
 
 
-	owner->soundNodeList->SetGlobalVolume( master );
-	mainMenu->soundNodeList->SetGlobalVolume( master );
+	//owner->soundNodeList->SetGlobalVolume( master );
+	//mainMenu->soundNodeList->SetGlobalVolume( master );
 
-	owner->soundNodeList->SetSoundsEnable( enSounds );
-	mainMenu->soundNodeList->SetSoundsEnable( enSounds );
+	//owner->soundNodeList->SetSoundsEnable( enSounds );
+	//mainMenu->soundNodeList->SetSoundsEnable( enSounds );
 
 	//owner->soundNodeList->SetMusicEnable( enMusic );
 	//owner->mainMenu->soundNodeList->SetMusicEnable( enMusic );
 
-	owner->soundNodeList->SetRelativeSoundVolume( sound );
-	mainMenu->soundNodeList->SetRelativeSoundVolume( sound );
+	//owner->soundNodeList->SetRelativeSoundVolume( sound );
+	//mainMenu->soundNodeList->SetRelativeSoundVolume( sound );
 
 	//owner->soundNodeList->SetRelativeMusicVolume( music );
 	//owner->mainMenu->soundNodeList->SetRelativeMusicVolume( music );
@@ -727,6 +728,9 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 
 			if (currentTab == OPTIONS)
 			{
+				int sVol = mainMenu->config->GetData().soundVolume;
+				owner->soundNodeList->SetSoundVolume(sVol);
+				owner->pauseSoundNodeList->SetSoundVolume(sVol);
 				controlSettingsMenu->SetButtonAssoc();
 				optionsMenu->optionModeSelector->currIndex = 0;
 			}
@@ -748,6 +752,10 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				controlSettingsMenu->SetButtonAssoc();
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				optionsMenu->optionModeSelector->currIndex = 0;
+
+				int sVol = mainMenu->config->GetData().soundVolume;
+				owner->soundNodeList->SetSoundVolume(sVol);
+				owner->pauseSoundNodeList->SetSoundVolume(sVol);
 			}
 			TabLeft();
 
@@ -771,6 +779,10 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				controlSettingsMenu->SetButtonAssoc();
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				optionsMenu->optionModeSelector->currIndex = 0;
+
+				int sVol = mainMenu->config->GetData().soundVolume;
+				owner->soundNodeList->SetSoundVolume(sVol);
+				owner->pauseSoundNodeList->SetSoundVolume(sVol);
 			}
 			TabRight();
 

@@ -426,6 +426,7 @@ struct MusicPlayer;
 struct Fader;
 struct Swiper;
 
+std::string GetTimeStr(int numFrames);
 
 struct MainMenu
 {
@@ -675,6 +676,7 @@ struct MainMenu
 	Tileset *ts_mainOption;
 	sf::RectangleShape menuOptionsBG;
 	bool lastMovementDown;
+	
 	
 
 	Config *config;

@@ -253,7 +253,7 @@ struct WorldMap
 		ControllerState &prevInput,
 		ControllerState &currInput );
 	void Draw( sf::RenderTarget *target );
-	void CompleteCurrentMap( SaveFile *sf );
+	void CompleteCurrentMap( SaveFile *sf, int totalFrames );
 	Sector &GetCurrSector();
 	int GetCurrSectorNumLevels();
 	void UpdateMapList();
@@ -321,6 +321,8 @@ struct WorldMap
 	//MapSelector *testSelector;
 	MapSelector *selectors[7];
 	MainMenu *mainMenu;
+
+	sf::Text currLevelTimeText;
 
 	//ControllerState currInput;
 	//ControllerState prevInput;

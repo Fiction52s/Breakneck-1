@@ -108,6 +108,26 @@ SaveFile::SaveFile( const std::string &name )
 	fileName = ss.str();
 }
 
+int SaveFile::GetTotalFrames()
+{
+	int total = 0;
+	int temp;
+	for (int i = 0; i < numWorlds; ++i)
+	{
+		temp = worlds[i].GetTotalFrames();
+
+		if (temp == -1)
+		{
+			return -1;
+		}
+
+		total += temp;
+	}
+
+	return total;
+}
+
+
 float SaveFile::GetCompletionPercentage()
 {
 	float totalComplete = 0;
@@ -406,6 +426,25 @@ bool Sector::HasTopBonus(int index)
 bool Sector::hasBottomBonus(int index)
 {
 	return (bottomBonuses.count(index) > 0);
+}
+
+int Sector::GetTotalFrames()
+{
+	int total = 0;
+	int temp;
+	for (int i = 0; i < numLevels; ++i)
+	{
+		temp = levels[i].bestTimeFrames;
+
+		if (temp == -1)
+		{
+			return -1;
+		}
+
+		total += temp;
+	}
+
+	return total;
 }
 
 bool Sector::IsComplete()
@@ -710,6 +749,7 @@ bool Level::Load(std::ifstream &is)
 {
 	is >> name;
 	optionField.Load(is);
+	is >> bestTimeFrames;
 
 	UpdateFromMapHeader();
 
@@ -720,13 +760,24 @@ void Level::Save(std::ofstream &of)
 {
 	of << name << endl;
 	optionField.Save(of);
-
+	of << bestTimeFrames << endl;
 	//cout << "save level: " << name << endl;
 }
 
 void Level::SetComplete(bool comp)
 {
 	optionField.SetBit(COMPLETE, comp );
+}
+
+bool Level::TrySetRecord(int numFrames)
+{
+	if (bestTimeFrames < 0 || numFrames < bestTimeFrames)
+	{
+		bestTimeFrames = numFrames;
+		return true;
+	}
+
+	return false;
 }
 
 //void Level::SetJustUnlocked(bool unlocked)
@@ -784,6 +835,24 @@ World::~World()
 	{
 		delete[] sectors;
 	}
+}
+
+int World::GetTotalFrames()
+{
+	int total = 0;
+	int temp;
+	for (int i = 0; i < numSectors; ++i)
+	{
+		temp = sectors[i].GetTotalFrames();
+		if (temp == -1)
+		{
+			return -1;
+		}
+
+		total += temp;
+	}
+
+	return total;
 }
 
 float World::GetCompletionPercentage()

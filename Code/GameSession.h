@@ -456,7 +456,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	MusicInfo *originalMusic;
 	std::map<std::string, MusicInfo*> musicMap;
 
-
+	
 	//int playerScore[4];
 
 	//std::map<
@@ -704,6 +704,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	EnvPlant *activeEnvPlants;
 	int totalGameFrames;
+	int totalFramesBeforeGoal;
 	//int totalFrames; //including pausing?
 
 	sf::Shader mountainShader1;

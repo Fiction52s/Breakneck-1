@@ -8,7 +8,6 @@ using namespace sf;
 
 SoundNodeList::SoundNodeList( int p_maxSounds )
 {
-	globalVolume = 100;
 	maxSounds = p_maxSounds;
 	activeList = NULL;
 	inactiveList = NULL;
@@ -25,11 +24,8 @@ SoundNodeList::SoundNodeList( int p_maxSounds )
 	}
 
 	//load these from a prefs file
-	globalVolume = 100;
 	soundVolume = 100;
-	musicVolume = 100;
-	enableSounds = true;
-	enableMusic = true;
+	//enableSounds = true;
 }
 
 void SoundNodeList::Clear()
@@ -67,6 +63,9 @@ SoundNode * SoundNodeList::ActivateSound(SoundBuffer *buffer, bool loop )
 {
 	if (buffer == NULL)
 		return NULL;
+
+	if (soundVolume == 0)
+		return NULL;
 	//return;
 	//cout << "Activate sound!" << endl;
 	//SoundNode *node;
@@ -82,6 +81,7 @@ SoundNode * SoundNodeList::ActivateSound(SoundBuffer *buffer, bool loop )
 		curr->sound.stop();
 		curr->sound.setBuffer( *buffer );
 		curr->sound.setLoop(loop);
+		curr->sound.setVolume(soundVolume);
 		curr->sound.play();
 		return curr;
 		
@@ -97,6 +97,7 @@ SoundNode * SoundNodeList::ActivateSound(SoundBuffer *buffer, bool loop )
 
 			activeList->sound.setBuffer( *buffer );
 			activeList->sound.setLoop(loop);
+			activeList->sound.setVolume(soundVolume);
 			activeList->sound.play();
 			return activeList;
 			//activeList->sound.get
@@ -116,6 +117,7 @@ SoundNode * SoundNodeList::ActivateSound(SoundBuffer *buffer, bool loop )
 
 			activeList->sound.setBuffer( *buffer );
 			activeList->sound.setLoop(loop);
+			activeList->sound.setVolume(soundVolume);
 			activeList->sound.play();
 			return activeList;
 		}
@@ -256,77 +258,9 @@ void SoundNodeList::Update()
 	//cout << "end update" << endl;
 }
 
-void SoundNodeList::SetSoundsEnable( bool e )
-{
-	//if( enableSounds != e )
-	//{
-	enableSounds = e;
-	if( e )
-	{
-		SetRelativeSoundVolume( soundVolume );
-		//SetSoundVolume( 
-	}
-	else
-	{
-		SetSoundVolume( 0 );
-	}
-	//}
-}
-
-void SoundNodeList::SetRelativeMusicVolume( int vol )
-{
-	//no complicated music system is in yet. be able to control several simultaneous tracks
-}
-
-void SoundNodeList::SetSoundVolume( int v )
-{
-	assert(v >= 0);
-	if( !enableSounds )
-	{
-		v = 0;
-	}
-
-	cout << "set final volume: " << v << endl;
-
-	SoundNode *curr = activeList;
-	while( curr != NULL )
-	{
-		SoundNode *next = curr->next;
-		
-		curr->sound.setVolume( v );
-
-		curr = next;
-	}
-
-	curr = inactiveList;
-
-	while( curr != NULL )
-	{
-		SoundNode *next = curr->next;
-		
-		curr->sound.setVolume( v );
-
-		curr = next;
-	}
-}
-
-void SoundNodeList::SetRelativeSoundVolume( int vol )
+void SoundNodeList::SetSoundVolume(int vol)
 {
 	soundVolume = vol;
-	float percent = vol / 100.f;
-	float final = globalVolume * percent;
-
-	SetSoundVolume( final );
-	
-}
-
-void SoundNodeList::SetGlobalVolume( float vol )
-{
-	assert(vol >= 0);
-	globalVolume = vol;
-
-	SetRelativeSoundVolume( soundVolume );
-	//set relative music volume
 }
 
 int SoundNodeList::GetActiveCount()

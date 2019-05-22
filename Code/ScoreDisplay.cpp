@@ -1,6 +1,7 @@
 #include "ScoreDisplay.h"
 #include "GameSession.h"
 #include "Tileset.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -143,22 +144,7 @@ void ScoreDisplay::Activate()
 
 	stringstream ss;
 
-	int seconds = owner->totalGameFrames / 60;
-	int remain = owner->totalGameFrames % 60;
-	int centiSecond = floor((double)remain * (1.0 / 60.0 * 100.0) + .5);
-
-	if (seconds < 10)
-	{
-		ss << "0";
-	}
-	ss << seconds << " : ";
-
-	if (centiSecond < 10)
-	{
-		ss << "0";
-	}
-	ss << centiSecond << endl;
-	time.setString(ss.str());
+	time.setString(GetTimeStr( owner->totalFramesBeforeGoal));
 	
 	ss.str("");
 	ss << owner->numKeysCollected << " / " << owner->numTotalKeys;
