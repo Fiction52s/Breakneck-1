@@ -5018,3 +5018,23 @@ void MapHeader::Save(std::ofstream &of)
 	of << bossFightType << endl;
 	//of << numVertices << endl;
 }
+
+int MapHeader::GetLeft()
+{
+	return leftBounds;
+}
+
+int MapHeader::GetTop()
+{
+	return topBounds;
+}
+
+int MapHeader::GetRight()
+{
+	return leftBounds + boundsWidth;
+}
+
+int MapHeader::GetBot()
+{
+	return topBounds + boundsHeight;
+}

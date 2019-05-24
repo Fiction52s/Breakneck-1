@@ -21,7 +21,10 @@ struct MapHeader
 	}
 
 	void Save(std::ofstream &of);
-
+	int GetLeft();
+	int GetTop();
+	int GetRight();
+	int GetBot();
 	int ver1;
 	int ver2;
 	std::string collectionName;
