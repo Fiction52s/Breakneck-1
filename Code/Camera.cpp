@@ -483,6 +483,8 @@ double Camera::GetNewEnemyZoom( Actor *player )
 			framesActive = 0;
 	}
 
+	cout << "miny: " << minY << endl;
+
 	double tw = max( abs( maxX - pos.x ), abs( minX - pos.x ) ) * 2;
 	double th = max( abs( maxY - pos.y ), abs( minY - pos.y ) ) * 2;
 
@@ -1089,6 +1091,8 @@ void Camera::Update( Actor *player )
 		return;
 	}
 
+	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
+
 	V2d playerPos = player->position;
 
 	if( player->action == Actor::RIDESHIP || player->action == Actor::SKYDIVE )
@@ -1107,7 +1111,7 @@ void Camera::Update( Actor *player )
 	
 	ControllerState & con = player->currInput;
 	ControllerState & prevcon = player->prevInput;
-	UpdateZoomLevel(con, prevcon);
+	//UpdateZoomLevel(con, prevcon);
 
 	V2d pVel = GetPlayerVel(player);
 
@@ -1139,19 +1143,25 @@ void Camera::Update( Actor *player )
 	pos.x += offset.x;
 	pos.y += offset.y;
 
+	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+
 	double enemyZoom = GetNewEnemyZoom( player );
 	double zFactor = GetNewZoomFactor(player);
-
+	
+	cout << "numactive: " << numActive << endl;
+	cout << "enemyZoom: " << enemyZoom << endl;
+	cout << "zfactor: " << zFactor << endl;
 	if (enemyZoom > zFactor)
 	{
 		double blah = .01;
 		if (numActive > 0)
 		{
-			if (testZoom > zoomFactor)
+			cout << "zoomin out: " << enemyZoom - zoomFactor << endl;
+			if (enemyZoom > zoomFactor)
 			{
 				zoomFactor += blah;
-			if (zoomFactor > testZoom)
-				zoomFactor = testZoom;
+			if (zoomFactor > enemyZoom)
+				zoomFactor = enemyZoom;
 			}
 		}
 	}
@@ -1160,6 +1170,7 @@ void Camera::Update( Actor *player )
 		double zDiff = zFactor - zoomFactor;
 		double changeThresh = .001;
 		double change;
+		cout << "zoom in. zDiff: " << zDiff << endl;
 		if (zDiff > 0)
 		{
 			change = zDiff / 100.0;
@@ -1214,8 +1225,14 @@ void Camera::Update( Actor *player )
 
 	UpdateRumble();
 
-	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
-	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+	xChangePos = 0;
+	xChangeNeg = 0;
+	yChangePos = 0;
+	yChangeNeg = 0;
+	//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+
+	cout << GetPos().x << ", " << GetPos().y << endl;
+	cout << "zoom: " << GetZoom() << endl;
 }
 
 void Camera::UpdateEaseOut()

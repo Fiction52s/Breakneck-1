@@ -353,6 +353,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//std::map<std::string, std::list<int>> decorTileIndexes;
 	std::list<DecorDraw*> decorBetween;
 
+
 	StorySequence *currStorySequence;
 	MomentaBroadcast *currBroadcast;
 

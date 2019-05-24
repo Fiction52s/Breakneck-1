@@ -15482,7 +15482,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 void EditSession::LoadDecorImages()
 {
 	ifstream is;
-	is.open("decor");
+	is.open("decor.txt");
 	if (is.is_open())
 	{
 		string name;
@@ -15492,6 +15492,7 @@ void EditSession::LoadDecorImages()
 		while (!is.eof())
 		{
 			is >> name;
+
 			is >> width;
 			is >> height;
 
@@ -15579,15 +15580,15 @@ sf::Vector2f EditSession::SnapPosToPoint(sf::Vector2f &p, double radius)
 
 void EditSession::InitDecorPanel()
 {
-	int w = 10;
-	int h = 10;
-	int sw = 64;
-	int sh = 64;
+	int w = 8;
+	int h = 5;
+	int sw = 128;
+	int sh = 128;
 	LoadDecorImages();
 	decorPanel = new Panel("decorpanel", 650, 800, this);
 	allPopups.push_back(decorPanel);
 	GridSelector *gs = decorPanel->AddGridSelector("decorselector", Vector2i(0, 0), w, h, sw, sh, false, true );
-	decorPanel->AddTextBox("layer", Vector2i( 0, 650), 100, 3, "0");
+	decorPanel->AddTextBox("layer", Vector2i( 0, 800), 100, 3, "0");
 	decorTileIndexes = new int[w*h];
 	
 
@@ -15628,6 +15629,7 @@ void EditSession::InitDecorPanel()
 	editDecorPanel->AddTextBox("rotation", Vector2i(20, 100), 200, 20, "r");
 	editDecorPanel->AddTextBox("xscale", Vector2i(20, 180), 200, 20, "x");
 	editDecorPanel->AddTextBox("yscale", Vector2i(200, 180), 200, 20, "y");
+	editDecorPanel->AddTextBox("layer", Vector2i(20, 280), 200, 20, "l");
 	//editDecorPanel->AddTextBox("rotation", Vector2i(200, 100), 200, 20, "r");
 	//editDecorPanel->AddTextBox("strength", Vector2i(20, 200), 200, 3, "");
 }
@@ -17926,6 +17928,7 @@ void EditSession::SetDecorEditPanel()
 	editDecorPanel->textBoxes["xscale"]->text.setString(boost::lexical_cast<string>(di->spr.getScale().x));
 	editDecorPanel->textBoxes["yscale"]->text.setString(boost::lexical_cast<string>(di->spr.getScale().y));
 	
+	editDecorPanel->textBoxes["layer"]->text.setString(boost::lexical_cast<string>(di->layer));
 }
 
 void EditSession::SetDecorParams()
@@ -17939,6 +17942,7 @@ void EditSession::SetDecorParams()
 	string rotStr = editDecorPanel->textBoxes["rotation"]->text.getString().toAnsiString();
 	string xscaleStr = editDecorPanel->textBoxes["xscale"]->text.getString().toAnsiString();
 	string yscaleStr = editDecorPanel->textBoxes["yscale"]->text.getString().toAnsiString();
+	string layerStr = editDecorPanel->textBoxes["layer"]->text.getString().toAnsiString();
 
 	stringstream ss;
 	ss << xposStr;
@@ -17997,6 +18001,17 @@ void EditSession::SetDecorParams()
 	if (!ss.fail())
 	{
 		di->spr.setScale(di->spr.getScale().x, yScale );
+	}
+
+	ss.clear();
+
+	ss << layerStr;
+
+	int layer;
+	ss >> layer;
+	if (!ss.fail())
+	{
+		di->layer = layer;
 	}
 }
 

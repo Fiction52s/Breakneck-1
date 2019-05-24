@@ -5247,7 +5247,7 @@ void GameSession::SetupStormCeiling()
 void GameSession::LoadDecorImages()
 {
 	ifstream is;
-	is.open("decor");
+	is.open("decor.txt");
 	if (is.is_open())
 	{
 		string name;
@@ -5256,6 +5256,7 @@ void GameSession::LoadDecorImages()
 		int tile;
 		while (!is.eof())
 		{
+			
 			is >> name;
 			is >> width;
 			is >> height;
@@ -5263,6 +5264,7 @@ void GameSession::LoadDecorImages()
 			is >> tile;
 
 			string fullName = name + string(".png");
+			//fullName.split
 
 			Tileset *ts = tm.GetTileset(fullName, width, height);
 			assert(ts != NULL);
