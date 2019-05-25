@@ -18,6 +18,7 @@ struct BasicEffect : Enemy
 		double angle, int frameCount,
 		int animationFactor, bool right,
 		float depth);
+	int GetNumCamPoints() { return 0; }
 	float depth;
 	int frameCount;
 	sf::Sprite s;

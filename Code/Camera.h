@@ -25,7 +25,7 @@ struct Camera
 	void Ease(sf::Vector2f &pos, float zFactor,
 		int numFrames, CubicBezier &bez );
 	void UpdateEase();
-	void SetTestOffset( sf::Vector2<double> &pVel);
+	sf::Vector2f GetNewOffset( sf::Vector2<double> &pVel);
 	GameSession *owner;
 	sf::Vector2f offsetVel;
 	
@@ -93,7 +93,10 @@ struct Camera
 	void UpdateZoomLevel(ControllerState &con, ControllerState &prevcon);
 	void UpdateVS( Actor *a, 
 		Actor *a2 );
-	double GetNewZoomFactor( Actor *player );
+	double GetMovementZoomTarget( Actor *player );
+	double GetNextMovementZoom( double moveZoom );
+	double GetNextEnemyZoom(double enemyZoom);
+	int slowMultiple;
 
 	sf::Vector2<double> playerPos;
 	sf::Vector2<double> GetPlayerVel( Actor *player);

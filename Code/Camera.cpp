@@ -91,19 +91,16 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 	V2d playerPos = player->position;
 	V2d vPos = V2d(pos.x, pos.y);
 
-	
+	//FloatRect fr = GetRect();
 
-	minX = pos.x; -480;// *zoomFactor;
-	maxX = pos.x + 480;// *zoomFactor;
-	minY = pos.y - 270;// *zoomFactor;
-	maxY = pos.y + 270;// *zoomFactor;
+	
 
 	double origMinX = minX;
 	double origMaxX = maxX;
 	double origMinY = minY;
 	double origMaxY = maxY;
 
-	int testRadius = 1200;//900
+	//int testRadius = 1200;//900
 	double extraCap = 500;
 	double extra = 200;
 	double extraDist = 200;
@@ -116,18 +113,6 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 	Enemy *curr = owner->activeEnemyList;
 	while (curr != NULL)
 	{
-		//bool alwaysExclude = (curr->type == Enemy::BASICEFFECT || length( playerPos - curr->position ) > 900
-		//	|| curr->dead);
-		//bool extra = (curr->type == Enemy::GHOST || curr->type == Enemy::GORILLA );
-		//have stuff here for relative movers so 
-		//bool sometimesExclude = curr->type == Enemy::GHOST
-
-		if ( !curr->affectCameraZoom)
-		{
-			curr = curr->next;
-			continue;
-		}
-
 		int numPoints = curr->GetNumCamPoints();
 		
 		V2d currPos;
@@ -142,78 +127,24 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 
 			++numEnemies;
 
-			if (currPos.x < origMinX)
+			//if (currPos.x < origMinX)
 			{
 				minX = min(minX, currPos.x - extra);
 			}
-			else if (currPos.x > origMaxX)
+			//else if (currPos.x > origMaxX)
 			{
 				maxX = max(maxX, currPos.x + extra);
 			}
 
-			if (currPos.y < origMinY)
+			//if (currPos.y < origMinY)
 			{
 				minY = min(minY, currPos.y - extra);
 			}
-			else if (currPos.y > origMaxY)
+			//else if (currPos.y > origMaxY)
 			{
 				maxY = max(maxY, currPos.y + extra);
 			}
 		}
-		
-
-		
-		/*double len = length(curr->position - vPos);
-
-		V2d dir = normalize(curr->position - vPos);
-
-		double leftX = curr->position.x - extra;
-		double leftCap = minX - extraCap;
-		double rightX = curr->position.x + extra;
-		double rightCap = maxX + extraCap;
-		double topY = curr->position.y - extra;
-		double topCap = minY - extraCap;
-		double botY = curr->position.y + extra;
-		double botCap = maxY + extraCap;
-
-		bool a = leftX < minX && leftX >= leftCap;
-		bool b = rightX > maxX && rightX <= rightCap;
-		bool c = topY < minY && topY >= topCap;
-		bool d = botY > maxY && botY <= botCap;
-
-		bool in = leftX >= minX && rightX <= maxX && topY >= minY && botY <= maxY;
-		bool inX = leftX >= minX && rightX <= maxX;
-		bool inY = topY >= minY && botY <= maxY;
-
-		bool aa = (a || b) && (inY || c || d);
-		bool cc = (c || d) && (inX || a || b);
-
-		if (in)
-		{
-			++numEnemies;
-		}
-		else if (aa || cc )
-		{
-			++numEnemies;
-			if (a)
-			{
-				minX = leftX;
-			}
-			else if (b)
-			{
-				maxX = rightX;
-			}
-
-			if (c)
-			{
-				minY = topY;
-			}
-			else if (d)
-			{
-				maxY = botY;
-			}
-
-		}*/
 
 		curr = curr->next;
 	}
@@ -221,7 +152,7 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 	return numEnemies;
 }
 
-void Camera::SetTestOffset( V2d &pVel )
+Vector2f Camera::GetNewOffset( V2d &pVel )
 {
 	float offXAccelOut = .1;
 	float offXAccelIn = .1;
@@ -233,6 +164,7 @@ void Camera::SetTestOffset( V2d &pVel )
 	Vector2f moveFactor;
 	float moveF = 1.0;
 
+	Vector2f tempOffset = offset;
 
 	
 
@@ -285,15 +217,6 @@ void Camera::SetTestOffset( V2d &pVel )
 	else
 	{
 		moveFrames.y = 0;
-		/*float zFactor = 1.f;
-		if (moveFrames.y > 0)
-		{
-			moveFrames.y -= zFactor;
-		}
-		else if (moveFrames.y < 0)
-		{
-			moveFrames.y += zFactor;
-		}*/
 	}
 
 	float maxFramesX = 60;
@@ -420,7 +343,7 @@ void Camera::SetTestOffset( V2d &pVel )
 	//offset = targetOffset;
 	//offset = targetOffset;
 	Vector2f maxVel(1.0, 1.0);
-	if (targetOffset.x > offset.x)
+	if (targetOffset.x > tempOffset.x)
 	{
 		offsetVel.x = maxVel.x;
 	}
@@ -429,7 +352,7 @@ void Camera::SetTestOffset( V2d &pVel )
 		offsetVel.x = -maxVel.x;
 	}
 
-	if (targetOffset.y > offset.y)
+	if (targetOffset.y > tempOffset.y)
 	{
 		offsetVel.y = maxVel.y;
 	}
@@ -438,9 +361,9 @@ void Camera::SetTestOffset( V2d &pVel )
 		offsetVel.y = -maxVel.y;
 	}
 
-	Vector2f dir = normalize(targetOffset - offset);
+	Vector2f dir = normalize(targetOffset - tempOffset);
 	float speed = 2.0;
-	if ((pVel.x > 0 && offset.x < 0) || pVel.x < 0 && offset.x > 0 )
+	if ((pVel.x > 0 && tempOffset.x < 0) || pVel.x < 0 && tempOffset.x > 0 )
 	{
 		speed *= 2;
 	}
@@ -450,18 +373,20 @@ void Camera::SetTestOffset( V2d &pVel )
 	offsetVel = dir;// *speed;
 	//offsetVel.x *= abs(dir.x);
 	//offsetVel.y *= abs(dir.y);
-	offset += offsetVel;//targetOffset;
-	Vector2f diff = targetOffset - offset;
+	tempOffset += offsetVel;//targetOffset;
+	Vector2f diff = targetOffset - tempOffset;
 	if (abs(diff.x) <= maxVel.x ) 
 	{
-		offset.x = targetOffset.x;
+		tempOffset.x = targetOffset.x;
 		offsetVel.x = 0;
 	}
 	if( abs( diff.y ) <= maxVel.y )
 	{
-		offset.y = targetOffset.y;
+		tempOffset.y = targetOffset.y;
 		offsetVel.y = 0;
 	}
+
+	return tempOffset;
 	//cout << "offset: " << offset.x << " , " << offset.y << endl;
 }
 
@@ -469,7 +394,34 @@ double Camera::GetNewEnemyZoom( Actor *player )
 {
 	double minX, maxX, minY, maxY;
 
+	minX = pos.x; -480;// *zoomFactor;
+	maxX = pos.x + 480;// *zoomFactor;
+	minY = pos.y - 270;// *zoomFactor;
+	maxY = pos.y + 270;// *zoomFactor;
+
+	double origMinY = minY;
+
 	numActive = GetActiveEnemyCount( player, minX, maxX, minY, maxY );
+
+	FloatRect fr = GetRect();
+
+	if (fr.left < minX)
+	{
+		minX = fr.left;
+	}
+	if (fr.left + fr.width > maxX)
+	{
+		maxX = fr.left + fr.width;
+	}
+
+	if (fr.top < minY && origMinY != minY)
+	{
+		//minY = fr.top;
+	}
+	if (fr.top + fr.height > maxY)
+	{
+		maxY = fr.top + fr.height;
+	}
 
 	if( numActive > 0 )
 	{
@@ -483,10 +435,10 @@ double Camera::GetNewEnemyZoom( Actor *player )
 			framesActive = 0;
 	}
 
-	cout << "miny: " << minY << endl;
+	cout << "miny: " << minY << ", maxy: " << maxY << endl;
 
-	double tw = max( abs( maxX - pos.x ), abs( minX - pos.x ) ) * 2;
-	double th = max( abs( maxY - pos.y ), abs( minY - pos.y ) ) * 2;
+	double tw = maxX - minX;//max( abs( maxX - pos.x ), abs( minX - pos.x ) ) * 2;
+	double th = maxY - minY;//max( abs( maxY - pos.y ), abs( minY - pos.y ) ) * 2;
 
 	double w= tw/ 960.0;
 	double h= th/ 540.0;
@@ -749,7 +701,7 @@ sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 	return pVel;
 }
 
-double Camera::GetNewZoomFactor( Actor *player )
+double Camera::GetMovementZoomTarget( Actor *player )
 {
 	double zFactor = zoomFactor;
 	double temp;
@@ -856,6 +808,11 @@ void Camera::SetMovementOffset( V2d &pVel )
 void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg, float &yChangePos, float &yChangeNeg )
 {
 	Vector2f truePos = pos;// +Vector2f(rX, rY);
+
+	xChangePos = 0;
+	xChangeNeg = 0;
+	yChangePos = 0;
+	yChangeNeg = 0;
 
 	int topBoundsCamExtra = 50;
 	int topBounds = owner->mh->topBounds + topBoundsCamExtra;
@@ -1085,6 +1042,8 @@ void Camera::Update( Actor *player )
 	if( owner == NULL )
 		owner = player->owner;
 
+	slowMultiple = player->slowMultiple;
+
 	if (manual)
 	{
 		ManualUpdate( player );
@@ -1109,8 +1068,8 @@ void Camera::Update( Actor *player )
 		pos.y = playerPos.y + offset.y;
 	}
 	
-	ControllerState & con = player->currInput;
-	ControllerState & prevcon = player->prevInput;
+	//ControllerState & con = player->currInput;
+	//ControllerState & prevcon = player->prevInput;
 	//UpdateZoomLevel(con, prevcon);
 
 	V2d pVel = GetPlayerVel(player);
@@ -1129,6 +1088,8 @@ void Camera::Update( Actor *player )
 	pos.x = playerPos.x;
 	pos.y = playerPos.y;
 	
+	Vector2f currOffset;
+
 	if (owner->debugScreenRecorder != NULL)
 	{
 		offset.x = 0;
@@ -1137,102 +1098,102 @@ void Camera::Update( Actor *player )
 	}
 	else
 	{
-		SetTestOffset(pVel);
+		currOffset = GetNewOffset(pVel);
 	}
 
-	pos.x += offset.x;
-	pos.y += offset.y;
+	double moveZoom = GetMovementZoomTarget(player);
 
+	double oldZoomFactor = zoomFactor;
+
+	double nextMovementZoom = GetNextMovementZoom(moveZoom);
+	
+	zoomFactor = nextMovementZoom;
+
+	pos += currOffset;// *GetZoom();
 	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 
+
+	Vector2f oldOffset = offset;
+	offset = currOffset;
 	double enemyZoom = GetNewEnemyZoom( player );
-	double zFactor = GetNewZoomFactor(player);
+	offset = oldOffset;
+	//zoomFactor = oldZoomFactor;
+
+	if( numActive > 0 )
+	//if (enemyZoom > zoomFactor && numActive > 0 )
+	{
+		double nextEnemyZoom = GetNextEnemyZoom(enemyZoom);
+		zoomFactor = nextEnemyZoom;
+		
+		
+		//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+		/*zoomFactor = oldZoomFactor;
+		double nextEnemyZoom = GetNextEnemyZoom(enemyZoom);
+		if (nextEnemyZoom > nextMovementZoom)
+		{
+			zoomFactor = nextEnemyZoom;
+		}
+		else
+		{
+			zoomFactor = nextMovementZoom;
+		}*/
+
+		pos.x = playerPos.x;
+		pos.y = playerPos.y;
+
+		pos += currOffset;
+
+		UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
+
+		cout << "zooming out for enemy!: " << enemyZoom << " ";
+	}
+	else
+	{
+		cout << "enemy zoom: " << enemyZoom << " ";
+	}
 	
-	cout << "numactive: " << numActive << endl;
-	cout << "enemyZoom: " << enemyZoom << endl;
-	cout << "zfactor: " << zFactor << endl;
-	if (enemyZoom > zFactor)
-	{
-		double blah = .01;
-		if (numActive > 0)
-		{
-			cout << "zoomin out: " << enemyZoom - zoomFactor << endl;
-			if (enemyZoom > zoomFactor)
-			{
-				zoomFactor += blah;
-			if (zoomFactor > enemyZoom)
-				zoomFactor = enemyZoom;
-			}
-		}
-	}
-	else if( enemyZoom <= zFactor )
-	{
-		double zDiff = zFactor - zoomFactor;
-		double changeThresh = .001;
-		double change;
-		cout << "zoom in. zDiff: " << zDiff << endl;
-		if (zDiff > 0)
-		{
-			change = zDiff / 100.0;
-			if (change < changeThresh)
-			{
-				change = changeThresh;
-			}
-			if (zDiff < changeThresh)
-			{
-				zoomFactor = zFactor;
-			}
-			else
-			{
-				zoomFactor += change / player->slowMultiple;
-			}
-		}
-		else if (zDiff < 0)
-		{
-			double oldZoom = zoomFactor;
-			//bool more = oldZoom > testZoom;
-			//if (numActive == 0 )// || more)
-			{
-				change = zDiff / 200.0;
-				if (-change < changeThresh)
-				{
-					change = -changeThresh;
-				}
+	cout << "num enemies : " << numActive << endl;
 
-				if (-zDiff < changeThresh)
-				{
-					zoomFactor = zFactor;
-				}
-				else
-				{
-					zoomFactor += change / player->slowMultiple;
-				}
-			}
+	offset = currOffset;
+
+	if (false)
+	{
+
+		cout << "numactive: " << numActive << endl;
+		cout << "enemyZoom: " << enemyZoom << endl;
+		cout << "zfactor: " << moveZoom << endl;
+		if (enemyZoom > moveZoom)
+		{
+			
 		}
+		else if (enemyZoom <= moveZoom)
+		{
+			zoomFactor = GetNextMovementZoom(moveZoom);
+		}
+
+		if (zoomFactor < 1)
+			zoomFactor = 1;
+		else if (zoomFactor > maxZoom)
+			zoomFactor = maxZoom;
+
 	}
 
-	if( zoomFactor < 1 )
-		zoomFactor = 1;
-	else if( zoomFactor > maxZoom )
-		zoomFactor = maxZoom;
+	
 
 	
 
 	UpdateEaseOut();
 
-	//cout << "anyway pos: " << pos.x << ", " << pos.y << ", z: "
-	//	<< zoomFactor << endl;
-
 	UpdateRumble();
 
-	xChangePos = 0;
+	/*xChangePos = 0;
 	xChangeNeg = 0;
 	yChangePos = 0;
-	yChangeNeg = 0;
+	yChangeNeg = 0;*/
 	//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 
-	cout << GetPos().x << ", " << GetPos().y << endl;
-	cout << "zoom: " << GetZoom() << endl;
+	//cout << GetPos().x << ", " << GetPos().y << endl;
+	//cout << "zoom: " << GetZoom() << endl;
 }
 
 void Camera::UpdateEaseOut()
@@ -1356,3 +1317,74 @@ void Camera::SetMovementSeq( MovementSequence *move, bool relative )
 	sequenceStartZoom = GetZoom();
 }
 
+
+double Camera::GetNextEnemyZoom(double enemyZoom)
+{
+	double tempZoomFactor = zoomFactor;
+	double blah = .01;
+	if (numActive > 0)
+	{
+		//cout << "zoomin out: " << enemyZoom - tempZoomFactor << endl;
+		if (enemyZoom > tempZoomFactor)
+		{
+			tempZoomFactor += blah;
+			if (tempZoomFactor > enemyZoom)
+				tempZoomFactor = enemyZoom;
+		}
+	}
+
+	return tempZoomFactor;
+}
+
+double Camera::GetNextMovementZoom( double moveZoom )
+{
+	double tempZoomFactor = zoomFactor;
+	double zDiff = moveZoom - tempZoomFactor;
+	double changeThresh = .001;
+	double change;
+	if (zDiff > 0)
+	{
+		change = zDiff / 100.0;
+		if (change < changeThresh)
+		{
+			change = changeThresh;
+		}
+		if (zDiff < changeThresh)
+		{
+			tempZoomFactor = moveZoom;
+		}
+		else
+		{
+			tempZoomFactor += change / slowMultiple;
+		}
+	}
+	else if (zDiff < 0)
+	{
+		double oldZoom = tempZoomFactor;
+		//bool more = oldZoom > testZoom;
+		//if (numActive == 0 )// || more)
+		{
+			change = zDiff / 200.0;
+			if (-change < changeThresh)
+			{
+				change = -changeThresh;
+			}
+
+			if (-zDiff < changeThresh)
+			{
+				tempZoomFactor = moveZoom;
+			}
+			else
+			{
+				tempZoomFactor += change / slowMultiple;
+			}
+		}
+	}
+
+	if (tempZoomFactor < 1)
+		tempZoomFactor = 1;
+	else if (tempZoomFactor > maxZoom)
+		tempZoomFactor = maxZoom;
+
+	return tempZoomFactor;
+}

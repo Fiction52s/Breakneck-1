@@ -628,8 +628,6 @@ public:
 	sf::Shader *keyShader;
 	sf::Shader *hurtShader;
 
-	bool affectCameraZoom;
-
 	Tileset *ts_blood;
 
 	sf::Sprite *keySprite;

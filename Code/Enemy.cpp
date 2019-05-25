@@ -1156,8 +1156,7 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	int world, bool cuttable )
 	:owner( own ), prev( NULL ), next( NULL ), spawned( false ),
 	type( t ),zone( NULL ), dead( false ),
-	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL ),
-	affectCameraZoom( true )
+	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL )
 {
 	hurtBody = NULL;
 	hitBody = NULL;
