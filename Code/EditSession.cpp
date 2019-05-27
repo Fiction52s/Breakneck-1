@@ -670,6 +670,11 @@ V2d EditSession::SnapPointToGraph(V2d &p, int gridSize)
 	return V2d(adjX, adjY);
 }
 
+bool EditSession::IsKeyPressed(int k)
+{
+	return mainMenu->IsKeyPressed(k);
+}
+
 void EditSession::Draw()
 {
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -6973,7 +6978,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	}
 	
 
-	bool s = sf::Keyboard::isKeyPressed( sf::Keyboard::T );
+	bool s = IsKeyPressed( sf::Keyboard::T );
 	
 	V2d menuDownPos;
 	Emode menuDownStored;
@@ -7239,8 +7244,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 													}
 													else
 													{
-														if( !( Keyboard::isKeyPressed( Keyboard::LShift ) || 
-														Keyboard::isKeyPressed( Keyboard::RShift ) ) )
+														if( !( IsKeyPressed( Keyboard::LShift ) || 
+														IsKeyPressed( Keyboard::RShift ) ) )
 														{
 															selectedBrush->SetSelected( false );
 															selectedBrush->Clear();
@@ -7261,8 +7266,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										}
 
 
-									bool pointSelectKeyHeld = Keyboard::isKeyPressed(Keyboard::B);//Keyboard::isKeyPressed( Keyboard::LAlt ) ||
-											//Keyboard::isKeyPressed( Keyboard::RAlt );
+									bool pointSelectKeyHeld = IsKeyPressed(Keyboard::B);//IsKeyPressed( Keyboard::LAlt ) ||
+											//IsKeyPressed( Keyboard::RAlt );
 									//concerning selecting a point
 									if(pointSelectKeyHeld)
 									{
@@ -7274,7 +7279,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									//if(  )
 									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 									{
-										bool pressF1 = Keyboard::isKeyPressed(Keyboard::F1);
+										bool pressF1 = IsKeyPressed(Keyboard::F1);
 										if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
 											continue;
 
@@ -7339,8 +7344,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 												}
 												else
 												{
-													if (!(Keyboard::isKeyPressed(Keyboard::LShift) ||
-														Keyboard::isKeyPressed(Keyboard::RShift)))
+													if (!(IsKeyPressed(Keyboard::LShift) ||
+														IsKeyPressed(Keyboard::RShift)))
 													{
 														selectedBrush->SetSelected(false);
 														selectedBrush->Clear();
@@ -7393,7 +7398,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								}
 								break;
 
-								if( moveActive )//&& !Keyboard::isKeyPressed( Keyboard::LShift ) )
+								if( moveActive )//&& !IsKeyPressed( Keyboard::LShift ) )
 								{
 									moveActive = false;
 
@@ -7490,7 +7495,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 
 								//lights
-								if( false )//sf::Keyboard::isKeyPressed( Keyboard::F ) )
+								if( false )//sf::IsKeyPressed( Keyboard::F ) )
 								{
 									StaticLight *closest = NULL;
 									bool foundAny = false;
@@ -7587,7 +7592,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											}
 											else
 											{
-												if( Keyboard::isKeyPressed( Keyboard::LShift ) )
+												if( IsKeyPressed( Keyboard::LShift ) )
 												{
 													
 												}
@@ -7633,7 +7638,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 												}
 												else
 												{
-													if( sf::Keyboard::isKeyPressed( Keyboard::LShift ) )
+													if( IsKeyPressed( Keyboard::LShift ) )
 													{
 														selectedActor = NULL;
 														selectedGate = NULL;
@@ -7877,7 +7882,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 									bool selectionEmpty = true;
 
-									//bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
+									//bool shift = IsKeyPressed( Keyboard::LShift ) || IsKeyPressed( Keyboard::RShift );
 
 									if( !HoldingShift() )
 									{
@@ -7952,8 +7957,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										}
 									}
 
-									bool pointSelectButtonHeld = Keyboard::isKeyPressed(Keyboard::B);//alt = Keyboard::isKeyPressed( Keyboard::LAlt )
-										//|| Keyboard::isKeyPressed( Keyboard::RAlt );
+									bool pointSelectButtonHeld = IsKeyPressed(Keyboard::B);//alt = IsKeyPressed( Keyboard::LAlt )
+										//|| IsKeyPressed( Keyboard::RAlt );
 									if(pointSelectButtonHeld) //always use point selection for now
 									{
 										if( HoldingShift() )
@@ -8536,7 +8541,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									pointGrab = true;
 
 									
-									if( Keyboard::isKeyPressed( Keyboard::G ) )
+									if( IsKeyPressed( Keyboard::G ) )
 									{
 										V2d graphPos = SnapPointToGraph(worldPos, 32);
 										pointGrabPos = Vector2i( graphPos.x, graphPos.y );
@@ -8551,7 +8556,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								{
 									polyGrab = true;
 
-									if( Keyboard::isKeyPressed( Keyboard::G ) )
+									if( IsKeyPressed( Keyboard::G ) )
 									{
 										V2d graphPos = SnapPointToGraph( worldPos, 32 );
 										polyGrabPos = Vector2i( graphPos.x, graphPos.y );//Vector2i( graphPos.x, graphPos.y );
@@ -8771,7 +8776,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											{
 												if( curr->selected ) //selected 
 												{
-													if( Keyboard::isKeyPressed( Keyboard::LShift ) )
+													if( IsKeyPressed( Keyboard::LShift ) )
 													{
 														curr->selected = false;
 													}
@@ -8784,7 +8789,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 												}
 												else
 												{
-													if( Keyboard::isKeyPressed( Keyboard::LShift ) )
+													if( IsKeyPressed( Keyboard::LShift ) )
 													{
 													
 													}
@@ -8808,7 +8813,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											}
 											else
 											{
-												if( Keyboard::isKeyPressed( Keyboard::LShift ) )
+												if( IsKeyPressed( Keyboard::LShift ) )
 												{
 
 												}
@@ -8847,7 +8852,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 													
 													if( (*it)->selected )
 													{
-														if( sf::Keyboard::isKeyPressed( Keyboard::LShift ) )
+														if( IsKeyPressed( Keyboard::LShift ) )
 														{
 														}
 														else
@@ -8860,7 +8865,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 													}
 													else
 													{
-														if( sf::Keyboard::isKeyPressed( Keyboard::LShift ) )
+														if( IsKeyPressed( Keyboard::LShift ) )
 														{
 															
 														}
@@ -10673,7 +10678,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						}
 						else if( ev.key.code == Keyboard::Escape )
 						{
-							//if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+							//if( sf::IsKeyPressed( sf::Keyboard::Escape ) )
 							{
 								quit = true;
 								returnVal = 1;
@@ -10769,7 +10774,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		showTerrainPath = true;
 
 
-		if (Keyboard::isKeyPressed(Keyboard::Num4))
+		if (IsKeyPressed(Keyboard::Num4))
 		{
 			Vector2f halfSize(scaleSprite.getGlobalBounds().width / 2.f, 
 				scaleSprite.getGlobalBounds().height / 2.f);
@@ -10789,7 +10794,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		{
 		case CREATE_TERRAIN:
 			{
-				/*if( polygonInProgress->points.size() > 0 && Keyboard::isKeyPressed( Keyboard::LShift ) ) 
+				/*if( polygonInProgress->points.size() > 0 && IsKeyPressed( Keyboard::LShift ) ) 
 				{
 
 					Vector2i last = polygonInProgress->points.back();
@@ -10854,12 +10859,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				if( showPanel != NULL )
 					break;
 
-				if( Keyboard::isKeyPressed( Keyboard::G ) )
+				if( IsKeyPressed( Keyboard::G ) )
 				{
 					testPoint = SnapPointToGraph(testPoint, 32);
 					showGraph = true;
 				}
-				else if (Keyboard::isKeyPressed(Keyboard::F))
+				else if (IsKeyPressed(Keyboard::F))
 				{
 					testPoint = SnapPosToPoint(testPoint, 8 * zoomMultiple);
 					showPoints = true;
@@ -11187,7 +11192,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				{
 
 				if( //polygonInProgress->points.size() > 0 && 
-					Keyboard::isKeyPressed( Keyboard::G ) )
+					IsKeyPressed( Keyboard::G ) )
 				{
 					pPoint = SnapPointToGraph( worldPos, 32 );
 					showGraph = true;
@@ -11285,7 +11290,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					}
 				}
 				
-				if (Keyboard::isKeyPressed(Keyboard::B))
+				if (IsKeyPressed(Keyboard::B))
 				{
 					showPoints = true;
 
@@ -11466,7 +11471,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						
 
 						double prim_limit = PRIMARY_LIMIT;
-						if( Keyboard::isKeyPressed( Keyboard::LShift ) )
+						if( IsKeyPressed( Keyboard::LShift ) )
 						{
 							prim_limit = .99;
 						}
@@ -12132,7 +12137,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		case CREATE_PATROL_PATH:
 			{
 				/*if( //polygonInProgress->points.size() > 0 && 
-					Keyboard::isKeyPressed( Keyboard::G ) )
+					IsKeyPressed( Keyboard::G ) )
 				{
 					int adjX, adjY;
 					
@@ -13096,7 +13101,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		//preScreenTex->draw( iconSprite );
 
 		if( false )
-		//if( showPanel == NULL && sf::Keyboard::isKeyPressed( Keyboard::H ) )
+		//if( showPanel == NULL && sf::IsKeyPressed( Keyboard::H ) )
 		{
 			alphaTextSprite.setScale( .5 * view.getSize().x / 960.0, .5 * view.getSize().y / 540.0 );
 			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
@@ -15748,7 +15753,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 						
 
 		double prim_limit = PRIMARY_LIMIT;
-		if( Keyboard::isKeyPressed( Keyboard::LShift ) )
+		if( IsKeyPressed( Keyboard::LShift ) )
 		{
 			prim_limit = .99;
 		}
@@ -18755,7 +18760,7 @@ void EditSession::ExecuteTerrainCompletion()
 		{
 			bool empty = intersectingPolys.empty();
 
-			if( empty && Keyboard::isKeyPressed(Keyboard::LAlt))
+			if( empty && IsKeyPressed(Keyboard::LAlt))
 			{
 				polygonInProgress->inverse = true;
 			}
@@ -18896,20 +18901,20 @@ void EditSession::SetInversePoly()
 
 bool EditSession::HoldingShift()
 {
-	return ((Keyboard::isKeyPressed(Keyboard::LShift) ||
-		Keyboard::isKeyPressed(Keyboard::RShift)));
+	return ((IsKeyPressed(Keyboard::LShift) ||
+		IsKeyPressed(Keyboard::RShift)));
 }
 
 bool EditSession::HoldingControl()
 {
-	return ((Keyboard::isKeyPressed(Keyboard::LControl) ||
-		Keyboard::isKeyPressed(Keyboard::RControl)));
+	return ((IsKeyPressed(Keyboard::LControl) ||
+		IsKeyPressed(Keyboard::RControl)));
 }
 
 Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys)
 {
-	if (!(Keyboard::isKeyPressed(Keyboard::LShift) ||
-		Keyboard::isKeyPressed(Keyboard::RShift)))
+	if (!(IsKeyPressed(Keyboard::LShift) ||
+		IsKeyPressed(Keyboard::RShift)))
 	{
 		return ExecuteTerrainAdd( intersectingPolys);
 	}
@@ -19412,7 +19417,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 void EditSession::PointSelectPoint( V2d &worldPos,
 	bool &emptysp )
 {
-	bool shift = Keyboard::isKeyPressed(Keyboard::LShift) || Keyboard::isKeyPressed(Keyboard::RShift);
+	bool shift = IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift);
 
 	TerrainPoint *foundPoint = NULL;
 	for (auto it = polygons.begin(); it != polygons.end(); ++it)
@@ -19465,7 +19470,7 @@ void EditSession::PointSelectPoint( V2d &worldPos,
 	//		double dist = length( tpPos - worldPos );
 	//		if( dist <= rad )
 	//		{
-	//			bool shift = Keyboard::isKeyPressed( Keyboard::LShift ) || Keyboard::isKeyPressed( Keyboard::RShift );
+	//			bool shift = IsKeyPressed( Keyboard::LShift ) || IsKeyPressed( Keyboard::RShift );
 	//			if( !tp->selected )
 	//			{
 	//				if( !shift )

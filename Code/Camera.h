@@ -86,7 +86,7 @@ struct Camera
 
 	//int bType;
 
-	double GetNewEnemyZoom( Actor *a );
+	double GetEnemyZoomTarget( Actor *a );
 	void Update( Actor *a );
 	void UpdateBossFight(int bossFightType);
 	void ManualUpdate( Actor *a );

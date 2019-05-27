@@ -108,7 +108,6 @@ struct KeyboardSettings
 	sf::Keyboard::Key buttonMap[ButtonType::Count];
 	void LoadFromFile( const std::string &fileName );
 	void SaveToFile( const std::string &fileName );
-	void Update( ControllerState &cs );
 
 	bool toggleBounce;
 	bool toggleGrind;
@@ -185,14 +184,17 @@ Wrapper for XINPUT controller. Used to access the actual
 controllers and generate state information for use in the 
 game.
 */
+struct MainMenu;
 class GameController
 {
 public:
 	///index 0-3, corresponding to the different physical
 	///controllers. 0 = top left light, 1 = top right light,
 	///2 = bottom left light, 3 = bottom right light
-	GameController( DWORD index );
+	GameController( DWORD index);
+	sf::RenderWindow *window;
 	///Gets if the controller is plugged in or functioning
+	bool IsKeyPressed(int k);
 	bool IsConnected();
 	ControllerType GetCType();
 	//Gets the that was passed to the constructor

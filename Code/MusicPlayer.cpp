@@ -39,8 +39,23 @@ void MusicPlayer::PlayMusic(MusicInfo *newMusic, sf::Time startTime)
 	musicFadeOutMax = -1;
 	musicFadeInMax = -1;
 
+	if (fadingInMusic != NULL)
+	{
+		StopMusic(fadingInMusic);
+		fadingInMusic = NULL;
+	}
+
+	if (fadingOutMusic != NULL)
+	{
+		StopMusic(fadingOutMusic);
+		fadingOutMusic = NULL;
+	}
+
 	if (currMusic != NULL)
+	{
 		StopMusic(currMusic);
+	}
+		
 
 	newMusic->music->setVolume(mm->config->GetData().musicVolume);
 	newMusic->music->setLoop(true);
@@ -110,6 +125,19 @@ void MusicPlayer::UnpauseCurrentMusic()
 void MusicPlayer::TransitionMusic(MusicInfo *newMusic,
 	int crossFadeFrames, sf::Time startTime)
 {
+	if (fadingInMusic != NULL)
+	{
+		StopMusic(fadingInMusic);
+		fadingInMusic = NULL;
+	}
+
+	if (fadingOutMusic != NULL)
+	{
+		StopMusic(fadingOutMusic);
+		fadingOutMusic = NULL;
+	}
+
+
 	if (newMusic == NULL)
 	{
 		FadeOutCurrentMusic(crossFadeFrames);

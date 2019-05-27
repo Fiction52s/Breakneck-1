@@ -129,6 +129,20 @@ bool ControllerState::LeftTriggerPressed()
 	return leftTrigger >= triggerThresh;
 }
 
+bool GameController::IsKeyPressed(int k)
+{
+	Keyboard::Key key = (Keyboard::Key)k;
+
+	assert(window != NULL);
+
+	if (window->hasFocus())
+	{
+		return Keyboard::isKeyPressed(key);
+	}
+
+	return false;
+}
+
 bool GameController::UpdateState()
 {
 	DWORD result;
@@ -435,30 +449,30 @@ bool GameController::UpdateState()
 		//cout << "updating controller state keyboard " << m_index << endl;
 		using namespace sf;
 		//WORD b = state.Gamepad.wButtons;
-		m_state.start = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::PAUSE] );
-		m_state.back = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::MAP] );
-		m_state.leftShoulder = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::TIMESLOW] );
-		m_state.rightShoulder = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::SLASH] );
-		m_state.A = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::JUMP] );
-		m_state.B = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::DASH] );
-		m_state.X = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::BOUNCE] );
-		m_state.Y = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::GRIND] );
+		m_state.start = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::PAUSE] );
+		m_state.back = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::MAP] );
+		m_state.leftShoulder = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::TIMESLOW] );
+		m_state.rightShoulder = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::SLASH] );
+		m_state.A = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::JUMP] );
+		m_state.B = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::DASH] );
+		m_state.X = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::BOUNCE] );
+		m_state.Y = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::GRIND] );
 		m_state.leftPress = false;//b & XINPUT_GAMEPAD_LEFT_THUMB;
 		m_state.rightPress = false;//b & XINPUT_GAMEPAD_RIGHT_THUMB;
 		m_state.pad = 0;//( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 );
 
-		m_state.leftTrigger = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFTWIRE] );
-		m_state.rightTrigger = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::RIGHTWIRE] );
+		m_state.leftTrigger = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFTWIRE] );
+		m_state.rightTrigger = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::RIGHTWIRE] );
 
-		/*bool up = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::UP] );
-		bool down = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::DOWN] );
-		bool left = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFT] );
-		bool right = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::RIGHT] );*/
+		/*bool up = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::UP] );
+		bool down = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::DOWN] );
+		bool left = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFT] );
+		bool right = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::RIGHT] );*/
 
-		bool up = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::UP] );
-		bool down = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::DOWN] );
-		bool left = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFT] );
-		bool right = Keyboard::isKeyPressed( keySettings.buttonMap[KeyboardSettings::RIGHT] );
+		bool up = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::UP] );
+		bool down = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::DOWN] );
+		bool left = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::LEFT] );
+		bool right = IsKeyPressed( keySettings.buttonMap[KeyboardSettings::RIGHT] );
 
 		sf::Vector2<double> thing( 0, 0 );
 		if( left )
@@ -614,7 +628,7 @@ int GameController::Pressed( XBoxButton b )
 
 float GameController::stickThresh = .45;//.4;
 GameController::GameController( DWORD index )
-	:m_index( index )
+	:m_index( index ), window( NULL )
 {
 	gcDefaultControl.x = -1;
 	gcDefaultControl.y = -1;
@@ -625,8 +639,6 @@ GameController::GameController( DWORD index )
 	{
 		filter[i] = (XBoxButton)(i+1);
 	}*/
-
-	UpdateState();
 	//SetFilterDefault( filter );
 	//SetFilterDefaultGCC();
 }
@@ -676,7 +688,7 @@ void GameController::SetFilter( XBoxButton *buttons )
 //{
 //	using namespace sf;
 //
-//	/*if( Keyboard::isKeyPressed( buttonMap[UP] ) )
+//	/*if( IsKeyPressed( buttonMap[UP] ) )
 //	{
 //
 //	}*/
@@ -903,61 +915,6 @@ void KeyboardSettings::SaveToFile( const std::string &fileName )
 	}
 
 	of.close();
-}
-
-void KeyboardSettings::Update( ControllerState &cs )
-{
-	/*if( x > stickThresh )
-			m_state.leftStickPad += 1 << 3;
-		if( x < -stickThresh )
-			m_state.leftStickPad += 1 << 2;
-		if( y > stickThresh )
-			m_state.leftStickPad += 1;
-		if( y < -stickThresh )
-			m_state.leftStickPad += 1 << 1;*/
-
-	bool up = sf::Keyboard::isKeyPressed( buttonMap[UP] );
-	bool left = sf::Keyboard::isKeyPressed( buttonMap[LEFT] );
-	bool down = sf::Keyboard::isKeyPressed( buttonMap[DOWN] );
-	bool right = sf::Keyboard::isKeyPressed( buttonMap[RIGHT] );
-
-	bool jump = sf::Keyboard::isKeyPressed( buttonMap[JUMP] );
-	bool slash = sf::Keyboard::isKeyPressed( buttonMap[SLASH] );
-	bool dash = sf::Keyboard::isKeyPressed( buttonMap[DASH] );
-
-	bool bounce = sf::Keyboard::isKeyPressed( buttonMap[BOUNCE] );
-	bool grind = sf::Keyboard::isKeyPressed( buttonMap[GRIND] );
-	bool timeSlow = sf::Keyboard::isKeyPressed( buttonMap[TIMESLOW] );
-	bool leftWire = sf::Keyboard::isKeyPressed( buttonMap[LEFTWIRE] );
-	bool rightWire = sf::Keyboard::isKeyPressed( buttonMap[RIGHTWIRE] );
-
-	bool map = sf::Keyboard::isKeyPressed( buttonMap[MAP] );
-	bool pause = sf::Keyboard::isKeyPressed( buttonMap[PAUSE] );
-
-	
-	//if( up || left || down || right )
-	//{
-	//	cs.leftStickMagnitude = 1.0;
-	//}
-	//else
-	//{
-	//	cs.leftStickMagnitude = 0.0;
-	//}
-	//
-	//if( up 
-	//cs.leftStickRadians = atan( normalizedLY / normalizedLX );
-
-	//if( normalizedLX < 0.0f )
-	//	cs.leftStickRadians += PI;
-
-	//cs.rightStickMagnitude = normalizedMagnitude;
-	//cs.rightStickRadians = atan( normalizedRY / normalizedRX );
-	//if( normalizedRX < 0.0f )
-	//	cs.rightStickRadians += PI;
-
-	//cs.leftTrigger = state.Gamepad.bLeftTrigger; //0 or 255
-	//cs.rightTrigger = state.Gamepad.bRightTrigger;
-	
 }
 
 void SetFilterDefault( XBoxButton *filter)

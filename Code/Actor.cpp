@@ -12932,7 +12932,7 @@ void Actor::UpdatePhysics()
 							}
 							else
 							{
-						//		cout << "possible bug. solved secret??" << endl;
+								//cout << "possible bug. solved secret??" << endl;
 								//ground = next;
 								//q = length( ground->v1 - ground->v0 );	
 								break;
@@ -13273,7 +13273,10 @@ void Actor::UpdatePhysics()
 
 									}
 								}
-								break;
+
+								//took this out because of the situation with steep ceiling and wall letting you
+								//push through. hopefully didnt break anything else
+								//break;
 							}
 						}
 						else

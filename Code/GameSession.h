@@ -338,7 +338,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int numVertices;
 	};
 
-
+	bool IsKeyPressed(int key);
 	double accumulator;
 	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
 	bool IsFading();

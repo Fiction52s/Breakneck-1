@@ -492,6 +492,8 @@ struct MainMenu
 	GCC::VJoyGCControllers *joys;
 	bool gccDriverEnabled;
 
+	bool IsKeyPressed(int key);
+
 	EffectPool *indEffectPool;
 	void DrawEffects( sf::RenderTarget *target );
 	void UpdateEffects();

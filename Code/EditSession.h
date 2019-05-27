@@ -1645,6 +1645,7 @@ struct EditSession : GUIHandler
 		ITOOL_SCALE
 	};
 
+	bool IsKeyPressed(int k);
 	std::list<Panel*> allPopups;
 
 	Background *currBackground;

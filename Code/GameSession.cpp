@@ -5340,35 +5340,35 @@ void GameSession::ApplyToggleUpdates( int index )
 
 void GameSession::KeyboardUpdate( int index )
 {
-	bool up = Keyboard::isKeyPressed( Keyboard::Up );// || Keyboard::isKeyPressed( Keyboard::W );
-	bool down = Keyboard::isKeyPressed( Keyboard::Down );// || Keyboard::isKeyPressed( Keyboard::S );
-	bool left = Keyboard::isKeyPressed( Keyboard::Left );// || Keyboard::isKeyPressed( Keyboard::A );
-	bool right = Keyboard::isKeyPressed( Keyboard::Right );// || Keyboard::isKeyPressed( Keyboard::D );
+	bool up = IsKeyPressed( Keyboard::Up );// || IsKeyPressed( Keyboard::W );
+	bool down = IsKeyPressed( Keyboard::Down );// || IsKeyPressed( Keyboard::S );
+	bool left = IsKeyPressed( Keyboard::Left );// || IsKeyPressed( Keyboard::A );
+	bool right = IsKeyPressed( Keyboard::Right );// || IsKeyPressed( Keyboard::D );
 
-//	bool altUp = Keyboard::isKeyPressed( Keyboard::U );
-//	bool altLeft = Keyboard::isKeyPressed( Keyboard::H );
-//	bool altRight = Keyboard::isKeyPressed( Keyboard::K );
-//	bool altDown = Keyboard::isKeyPressed( Keyboard::J );
+//	bool altUp = IsKeyPressed( Keyboard::U );
+//	bool altLeft = IsKeyPressed( Keyboard::H );
+//	bool altRight = IsKeyPressed( Keyboard::K );
+//	bool altDown = IsKeyPressed( Keyboard::J );
 
 	ControllerState keyboardInput;    
-	keyboardInput.B = Keyboard::isKeyPressed( Keyboard::X );// || Keyboard::isKeyPressed( Keyboard::Period );
-	keyboardInput.rightShoulder = Keyboard::isKeyPressed( Keyboard::C );// || Keyboard::isKeyPressed( Keyboard::Comma );
-	keyboardInput.Y = Keyboard::isKeyPressed( Keyboard::D );// || Keyboard::isKeyPressed( Keyboard::M );
-	keyboardInput.A = Keyboard::isKeyPressed( Keyboard::Z ) || Keyboard::isKeyPressed( Keyboard::Space );// || Keyboard::isKeyPressed( Keyboard::Slash );
-	//keyboardInput.leftTrigger = 255 * (Keyboard::isKeyPressed( Keyboard::F ) || Keyboard::isKeyPressed( Keyboard::L ));
-	keyboardInput.leftShoulder = Keyboard::isKeyPressed( Keyboard::LShift );
-	keyboardInput.X = Keyboard::isKeyPressed( Keyboard::F );
-	keyboardInput.start = Keyboard::isKeyPressed( Keyboard::J );
-	keyboardInput.back = Keyboard::isKeyPressed( Keyboard::H );
-	keyboardInput.rightTrigger = 255 * Keyboard::isKeyPressed( Keyboard::LControl );
-	keyboardInput.leftTrigger = 255 * Keyboard::isKeyPressed( Keyboard::RControl );
+	keyboardInput.B = IsKeyPressed( Keyboard::X );// || IsKeyPressed( Keyboard::Period );
+	keyboardInput.rightShoulder = IsKeyPressed( Keyboard::C );// || IsKeyPressed( Keyboard::Comma );
+	keyboardInput.Y = IsKeyPressed( Keyboard::D );// || IsKeyPressed( Keyboard::M );
+	keyboardInput.A = IsKeyPressed( Keyboard::Z ) || IsKeyPressed( Keyboard::Space );// || IsKeyPressed( Keyboard::Slash );
+	//keyboardInput.leftTrigger = 255 * (IsKeyPressed( Keyboard::F ) || IsKeyPressed( Keyboard::L ));
+	keyboardInput.leftShoulder = IsKeyPressed( Keyboard::LShift );
+	keyboardInput.X = IsKeyPressed( Keyboard::F );
+	keyboardInput.start = IsKeyPressed( Keyboard::J );
+	keyboardInput.back = IsKeyPressed( Keyboard::H );
+	keyboardInput.rightTrigger = 255 * IsKeyPressed( Keyboard::LControl );
+	keyboardInput.leftTrigger = 255 * IsKeyPressed( Keyboard::RControl );
 			
 	keyboardInput.rightStickPad = 0;
-	if( Keyboard::isKeyPressed( Keyboard::A ) )
+	if( IsKeyPressed( Keyboard::A ) )
 	{
 		keyboardInput.rightStickPad += 1 << 1;
 	}
-	else if( Keyboard::isKeyPressed( Keyboard::S ) )
+	else if( IsKeyPressed( Keyboard::S ) )
 	{
 		keyboardInput.rightStickPad += 1;
 	}
@@ -6187,7 +6187,7 @@ int GameSession::Run()
 		GetCurrInput(i) = GetController(i).GetState();
 	}
 
-	bool t = GetCurrInput(0).start;//sf::Keyboard::isKeyPressed( sf::Keyboard::Y );
+	bool t = GetCurrInput(0).start;//sf::IsKeyPressed( sf::Keyboard::Y );
 	bool s = t;
 	t = false;
 
@@ -6365,7 +6365,7 @@ int GameSession::Run()
 		while ( accumulator >= TIMESTEP )
         {
 		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
-			bool skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
+			bool skipInput = IsKeyPressed( sf::Keyboard::PageUp );
 			if( oneFrameMode )
 			{
 				//controller.UpdateState();
@@ -6412,10 +6412,10 @@ int GameSession::Run()
 					
 					
 					//player->currInput = currInput;
-					skipInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageUp );
+					skipInput = IsKeyPressed( sf::Keyboard::PageUp );
 					
-					bool stopSkippingInput = sf::Keyboard::isKeyPressed( sf::Keyboard::PageDown );
-					screenShot = false;//Keyboard::isKeyPressed( sf::Keyboard::F );// && !tookScreenShot;
+					bool stopSkippingInput = IsKeyPressed( sf::Keyboard::PageDown );
+					screenShot = false;//IsKeyPressed( sf::Keyboard::F );// && !tookScreenShot;
 					
 					if( screenShot )
 					{
@@ -6436,7 +6436,7 @@ int GameSession::Run()
 					}
 					
 
-					if( !skipped && skipInput )//sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && !skipped )
+					if( !skipped && skipInput )//sf::IsKeyPressed( sf::Keyboard::K ) && !skipped )
 					{
 						skipped = true;
 						accumulator = 0;//TIMESTEP;
@@ -6445,18 +6445,18 @@ int GameSession::Run()
 
 						break;
 					}
-					if( skipped && !skipInput )//!sf::Keyboard::isKeyPressed( sf::Keyboard::K ) && skipped )
+					if( skipped && !skipInput )//!sf::IsKeyPressed( sf::Keyboard::K ) && skipped )
 					{
 						skipped = false;
 						//break;
 					}
-					if( sf::Keyboard::isKeyPressed( sf::Keyboard::L ) )
+					if( IsKeyPressed( sf::Keyboard::L ) )
 					{
 
 						//oneFrameMode = false;
 						break;
 					}
-					//if( sf::Keyboard::isKeyPressed( sf::Keyboard::M ) )
+					//if( sf::IsKeyPressed( sf::Keyboard::M ) )
 					if( stopSkippingInput )
 					{
 
@@ -6477,8 +6477,8 @@ int GameSession::Run()
 			if( skipInput )
 				oneFrameMode = true;
 
-			bool k = sf::Keyboard::isKeyPressed( sf::Keyboard::K );
-			bool levelReset = sf::Keyboard::isKeyPressed( sf::Keyboard::L );
+			bool k = IsKeyPressed( sf::Keyboard::K );
+			bool levelReset = IsKeyPressed( sf::Keyboard::L );
 			Enemy *monitorList = NULL;
 			//if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT && ( k || levelReset || player->dead /*|| (currInput.start && !prevInput.start )*/ ) )
 			{
@@ -6486,22 +6486,22 @@ int GameSession::Run()
 				//RestartLevel();
 			}
 
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
+			if( IsKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
 			{
 				quit = true;
 				break;
 			}
 
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num9))
+			if (IsKeyPressed(sf::Keyboard::Num9))
 			{
 				showRunningTimer = true;
 			}
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num0))
+			if (IsKeyPressed(sf::Keyboard::Num0))
 			{
 				showRunningTimer = false;
 			}
 	
-			if( sf::Keyboard::isKeyPressed( sf::Keyboard::Escape ) )
+			if( IsKeyPressed( sf::Keyboard::Escape ) )
 			{
 
 
@@ -7325,7 +7325,7 @@ int GameSession::Run()
 				{
 					ControllerState &currInput = GetCurrInput( 0 );
 					ControllerState &prevInput = GetPrevInput( 0 );
-					//if( Keyboard::isKeyPressed( Keyboard ) )
+					//if( IsKeyPressed( Keyboard ) )
 					if( currInput.start && !prevInput.start )
 					{
 						state = PAUSE;
@@ -7335,7 +7335,7 @@ int GameSession::Run()
 
 
 					}
-					else if( ( currInput.back && !prevInput.back ) || Keyboard::isKeyPressed( Keyboard::G ) )
+					else if( ( currInput.back && !prevInput.back ) || IsKeyPressed( Keyboard::G ) )
 					{
 						state = PAUSE;
 						pauseMenu->SetTab( PauseMenu::MAP );
@@ -7370,7 +7370,7 @@ int GameSession::Run()
 		//continue;
 
 		if( debugScreenRecorder != NULL )
-		if( Keyboard::isKeyPressed( Keyboard::R ) )
+		if( IsKeyPressed( Keyboard::R ) )
 		{
 			debugScreenRecorder->StartRecording();
 			//player->maxFallSpeedSlo += maxFallSpeedFactor;
@@ -8070,7 +8070,7 @@ int GameSession::Run()
 		//f->Draw( preScreenTex );
 		
 
-		if( false )//if( currInput.back || sf::Keyboard::isKeyPressed( sf::Keyboard::H ) )
+		if( false )//if( currInput.back || sf::IsKeyPressed( sf::Keyboard::H ) )
 		{
 			//alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 //			alphaTextSprite.setScale( .5, .5 );
@@ -8105,19 +8105,19 @@ int GameSession::Run()
 		//dont forget to actually remove this
 
 		
-		if( Keyboard::isKeyPressed( Keyboard::Num1 ) )
+		if( IsKeyPressed( Keyboard::Num1 ) )
 		{
 			showDebugDraw = true;
 		}
-		else if( Keyboard::isKeyPressed( Keyboard::Num2 ) )
+		else if( IsKeyPressed( Keyboard::Num2 ) )
 		{
 			showDebugDraw = false;
 		}
-		else if( Keyboard::isKeyPressed( Keyboard::Num3 ) )
+		else if( IsKeyPressed( Keyboard::Num3 ) )
 		{
 			showTerrainDecor = false;
 		}
-		else if( Keyboard::isKeyPressed( Keyboard::Num4 ) )
+		else if( IsKeyPressed( Keyboard::Num4 ) )
 		{
 			showTerrainDecor = true;
 		}
@@ -8612,7 +8612,7 @@ int GameSession::Run()
 
 			//if( currInput.
 
-			/*if( Keyboard::isKeyPressed( Keyboard::O ) )
+			/*if( IsKeyPressed( Keyboard::O ) )
 			{
 				state = RUN;
 				soundNodeList->Pause( false );
@@ -9344,6 +9344,11 @@ int GameSession::Run()
 	window->setView(oldWindowView);
 
 	return returnVal;
+}
+
+bool GameSession::IsKeyPressed(int key)
+{
+	return mainMenu->IsKeyPressed(key);
 }
 
 void GameSession::Fade(bool in, int frames, sf::Color c, bool skipKin)

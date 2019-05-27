@@ -702,12 +702,11 @@ MainMenu::MainMenu()
 	bottomCenter = Vector2f(halfX, halfY + wholeY);
 
 
-	
-
 	config = new Config();
 	config->WaitForLoad();
 	windowWidth = config->GetData().resolutionX;
 	windowHeight = config->GetData().resolutionY;
+	style = config->GetData().windowStyle;
 
 	musicPlayer = new MusicPlayer(this);
 
@@ -884,7 +883,7 @@ MainMenu::MainMenu()
 	
 	
 	
-	/*if( sf::Keyboard::isKeyPressed( Keyboard::W ) )
+	/*if( IsKeyPressed( Keyboard::W ) )
 	{
 		fullWindow = false;
 		windowWidth /= 2;
@@ -894,34 +893,13 @@ MainMenu::MainMenu()
 
 	window = new RenderWindow( sf::VideoMode( windowWidth, windowHeight ), "Breakneck",
 		config->GetData().windowStyle, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+
+	for (int i = 0; i < 4; ++i)
+	{
+		controllers[i]->window = window;
+		controllers[i]->UpdateState();
+	}
 	cout << "start mm constr 222" << endl;
-	//if( fullWindow )
-	//{
-	//	window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-	//		sf::VideoMode( windowWidth, windowHeight ), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	//	window->setPosition( Vector2i(800, 0 ));
-
-	//}
-	//else
-	//{
-	//	cout << "blah0" << endl;
-	//	std::vector<sf::VideoMode> i = sf::VideoMode::getFullscreenModes();
-	//	VideoMode vm( 1600, 900 );
- //       //sf::RenderWindow window(i.front(), "SFML WORKS!", sf::Style::Fullscreen);
-	//	//window = new sf::RenderWindow(/*sf::VideoMode(1400, 900)sf::VideoMode::getDesktopMode()*/
-	//	//	sf::VideoMode( 1920 / 1, 1079 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	//	//window = new sf::RenderWindow( VideoMode( 1920, 1080 ), "Breakneck", sf::Style::None);
-	//	style = sf::Style::None;
-	//	assert( i.size() != 0 );
-	//	VideoMode vidMode = i.front();
-
-	//	cout << "creating window: " << (int)vidMode.isValid() << endl;
-	//	window = new sf::RenderWindow( vidMode, "Breakneck", style);
-	//	cout << "blah1" << endl;
-	//	//window = new sf::RenderWindow( vm, "Breakneck", sf::Style::None);
-
-	//		//sf::VideoMode( 1920 / 1, 1080 / 1), "Breakneck", sf::Style::Fullscreen, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	//}
 
 	assert( window != NULL );
 	window->setVerticalSyncEnabled( true );
@@ -1092,6 +1070,18 @@ void MainMenu::Init()
 
 	//asteroidFrame = 0;
 	
+}
+
+bool MainMenu::IsKeyPressed(int k)
+{
+	Keyboard::Key key = (Keyboard::Key)k;
+
+	if (window->hasFocus())
+	{
+		return Keyboard::isKeyPressed(key);
+	}
+	
+	return false;
 }
 
 void MainMenu::DrawEffects( RenderTarget *target )
@@ -2007,7 +1997,7 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 		return;
 	}
 
-	style = p_style;
+	
 	windowWidth = p_windowWidth;
 	windowHeight = p_windowHeight;
 
@@ -2019,8 +2009,20 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 	//if( style == p_style )
 
 	//make sure to set to the center
-	window->setSize(Vector2u(windowWidth, windowHeight));
-	window->setPosition(Vector2i(0, 0));
+	
+
+	if (style != p_style)
+	{
+		window->create( sf::VideoMode(windowWidth, windowHeight), "Breakneck",
+			config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
+		style = p_style;
+	}
+	else
+	{
+		window->setSize(Vector2u(windowWidth, windowHeight));
+		window->setPosition(Vector2i(0, 0));
+	}
+	
 	//window->re
 	/*else
 	{
@@ -5038,3 +5040,4 @@ int MapHeader::GetBot()
 {
 	return topBounds + boundsHeight;
 }
+

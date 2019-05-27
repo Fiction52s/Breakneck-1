@@ -390,7 +390,7 @@ Vector2f Camera::GetNewOffset( V2d &pVel )
 	//cout << "offset: " << offset.x << " , " << offset.y << endl;
 }
 
-double Camera::GetNewEnemyZoom( Actor *player )
+double Camera::GetEnemyZoomTarget( Actor *player )
 {
 	double minX, maxX, minY, maxY;
 
@@ -435,7 +435,7 @@ double Camera::GetNewEnemyZoom( Actor *player )
 			framesActive = 0;
 	}
 
-	cout << "miny: " << minY << ", maxy: " << maxY << endl;
+	//cout << "miny: " << minY << ", maxy: " << maxY << endl;
 
 	double tw = maxX - minX;//max( abs( maxX - pos.x ), abs( minX - pos.x ) ) * 2;
 	double th = maxY - minY;//max( abs( maxY - pos.y ), abs( minY - pos.y ) ) * 2;
@@ -698,6 +698,8 @@ sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 	pVel.x /= player->slowMultiple;
 	pVel.y /= player->slowMultiple;
 
+	//pVel = V2d(60, -60);
+
 	return pVel;
 }
 
@@ -720,7 +722,6 @@ double Camera::GetMovementZoomTarget( Actor *player )
 		temp = length(player->velocity) / kk;
 		f = player->velocity * 10.0;
 	}
-
 
 	return max( 1.0, temp );
 
@@ -1115,7 +1116,7 @@ void Camera::Update( Actor *player )
 
 	Vector2f oldOffset = offset;
 	offset = currOffset;
-	double enemyZoom = GetNewEnemyZoom( player );
+	double enemyZoom = GetEnemyZoomTarget( player );
 	offset = oldOffset;
 	//zoomFactor = oldZoomFactor;
 
@@ -1145,14 +1146,14 @@ void Camera::Update( Actor *player )
 
 		UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 
-		cout << "zooming out for enemy!: " << enemyZoom << " ";
+		//cout << "zooming out for enemy!: " << enemyZoom << " ";
 	}
 	else
 	{
-		cout << "enemy zoom: " << enemyZoom << " ";
+		//cout << "enemy zoom: " << enemyZoom << " ";
 	}
 	
-	cout << "num enemies : " << numActive << endl;
+	//cout << "num enemies : " << numActive << endl;
 
 	offset = currOffset;
 
