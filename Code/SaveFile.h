@@ -189,6 +189,8 @@ struct SaveFile
 	World *worlds;
 	int numWorlds;
 
+	std::string controlProfileName;
+
 
 };
 

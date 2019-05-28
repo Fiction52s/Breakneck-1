@@ -183,6 +183,8 @@ bool SaveFile::LoadInfo(ifstream &is)
 {
 	if (is.is_open())
 	{
+		getline(is, controlProfileName);
+
 		is >> numWorlds;
 		worlds = new World[numWorlds];
 		for (int i = 0; i < numWorlds; ++i)
@@ -293,6 +295,8 @@ void SaveFile::Save()
 
 	if( of.is_open() )
 	{
+		of << controlProfileName << endl;
+
 		of << numWorlds << endl;
 		cout << "numworlds: " << numWorlds << endl;
 		//save worlds, then save shards

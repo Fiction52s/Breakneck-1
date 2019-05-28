@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <SFML/Graphics.hpp>
 #include "ControlProfile.h"
+#include "SaveFile.h"
 
 using namespace std;
 using namespace sf;
@@ -169,6 +170,13 @@ void ControlSettingsMenu::SetButtonAssoc()
 	pSel->currProfile->tempCType = con.GetCType();
 
 	con.SetFilter(pSel->currProfile->GetCurrFilter());
+
+	SaveFile *currFile = mainMenu->GetCurrentProgress();
+	if (currFile != NULL)
+	{
+		currFile->controlProfileName = pSel->currProfile->name;
+		currFile->Save();
+	}
 }
 
 ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &prevInput )

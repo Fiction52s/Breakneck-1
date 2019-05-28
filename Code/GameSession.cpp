@@ -5906,6 +5906,11 @@ bool GameSession::Load()
 	//pauseMenu->SetTab( PauseMenu::Tab::KIN );
 
 	ControlProfile *currProfile;
+	SaveFile *currFile = mainMenu->GetCurrentProgress();
+	if (currFile != NULL)
+	{
+		pauseMenu->controlSettingsMenu->pSel->SetCurrProfileByName(currFile->controlProfileName);
+	}
 	for( int i = 0; i < 1; ++i )
 	{
 		//temporary
