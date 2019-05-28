@@ -573,6 +573,10 @@ bool ControlProfileManager::LoadProfiles()
 {
 	ClearProfiles();
 
+	ControlProfile *def = new ControlProfile;
+	def->name = "KIN Default";
+	profiles.push_front(def);
+
 	is.open( "controlprofiles.txt" );
 
 	if( is.is_open() )
@@ -586,53 +590,57 @@ bool ControlProfileManager::LoadProfiles()
 			newProfile->name = profileName;
 			profiles.push_back( newProfile );
 
-			char opener = 0;
-			bool res = MoveToPeekNextOpener( opener );
-
-			char test = is.peek();
-
-			if( opener == PROFILE_START_CHAR )
+			while (true)
 			{
-				cout << "done with input types\n";
-				continue;
-			}
-			else if( opener == INPUT_TYPE_START_CHAR )
-			{
-				res = MoveToNextSymbolText( INPUT_TYPE_START_CHAR, INPUT_TYPE_END_CHAR, inputTypeName );
-				if( !res )
+
+				char opener = 0;
+				bool res = MoveToPeekNextOpener(opener);
+
+				char test = is.peek();
+
+				if (opener == PROFILE_START_CHAR)
 				{
-					assert( 0 );
-					return false;
+					cout << "done with input types\n";
+					break;
 				}
-				//cout << "input type: " << inputTypeName << "\n";
-				if( inputTypeName == INPUT_TYPE_XBOX )
+				else if (opener == INPUT_TYPE_START_CHAR)
 				{
-					res = LoadXBOXConfig( newProfile );
-					if( !res )
-					{
-						SetFilterDefault(newProfile->filter);
-						assert( 0 );
-						return false;
-					}
-				}
-				else if( inputTypeName == INPUT_TYPE_KEYBOARD )
-				{
-					//TODO
-				}
-				else if (inputTypeName == INPUT_TYPE_GAMECUBE)
-				{
-					res = LoadGamecubeConfig(newProfile);
+					res = MoveToNextSymbolText(INPUT_TYPE_START_CHAR, INPUT_TYPE_END_CHAR, inputTypeName);
 					if (!res)
 					{
-						SetFilterDefaultGCC(newProfile->gccFilter);
 						assert(0);
 						return false;
 					}
+					//cout << "input type: " << inputTypeName << "\n";
+					if (inputTypeName == INPUT_TYPE_XBOX)
+					{
+						res = LoadXBOXConfig(newProfile);
+						if (!res)
+						{
+							SetFilterDefault(newProfile->filter);
+							assert(0);
+							return false;
+						}
+					}
+					else if (inputTypeName == INPUT_TYPE_KEYBOARD)
+					{
+						//TODO
+					}
+					else if (inputTypeName == INPUT_TYPE_GAMECUBE)
+					{
+						res = LoadGamecubeConfig(newProfile);
+						if (!res)
+						{
+							SetFilterDefaultGCC(newProfile->gccFilter);
+							assert(0);
+							return false;
+						}
+					}
 				}
-			}
-			else
-			{
-				return true;
+				else
+				{
+					return true;
+				}
 			}
 		}
 	}
@@ -643,10 +651,7 @@ bool ControlProfileManager::LoadProfiles()
 	//WriteProfiles(); //debug, will be in other functions
 	//DeleteProfile( profiles.begin() );
 
-	ControlProfile *def= new ControlProfile;
-	//def->hasXBoxFilter = true;
-	def->name = "KIN Default";
-	profiles.push_front( def );
+	
 }
 
 void ControlProfileManager::DebugPrint()
@@ -849,7 +854,18 @@ bool ControlProfileManager::LoadGamecubeConfig(ControlProfile *profile)
 			break;
 		case 'l':
 		case 'L':
-			buttonStr = "L2";
+
+			if (!is.get(mod))
+				return false;
+			if (mod == '1')
+				buttonStr = "L1";
+			else if (mod == '2')
+				buttonStr = "L2";
+			else
+			{
+				assert(0);
+				return false;
+			}
 			break;
 		}
 

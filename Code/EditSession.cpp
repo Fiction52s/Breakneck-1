@@ -6383,6 +6383,13 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
+	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
+	bool oldMouseVis = mainMenu->GetMouseVisible();
+
+	mainMenu->SetMouseGrabbed(true);
+	mainMenu->SetMouseVisible(true);
+	//w->setMouseCursorVisible(true);
+
 	sf::View oldPreTexView = preScreenTex->getView();//mainMenu->preScreenTexture->
 	sf::View oldWindowView = w->getView();
 
@@ -6883,7 +6890,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	}
 
 	int returnVal = 0;
-	w->setMouseCursorVisible( true );
 	Color testColor( 0x75, 0x70, 0x90 );
 	view = View( cameraPos, cameraSize );
 	if( cameraSize.x == 0 && cameraSize.y == 0 )
@@ -13461,7 +13467,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	
 	preScreenTex->setView(oldPreTexView);
 	w->setView(oldWindowView);
-	
+	//w->setMouseCursorVisible(false);
+
+	mainMenu->SetMouseGrabbed(oldMouseGrabbed);
+	mainMenu->SetMouseVisible(oldMouseVis);
+
 	return returnVal;
 	
 }

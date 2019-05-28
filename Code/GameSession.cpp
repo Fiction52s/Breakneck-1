@@ -6108,6 +6108,13 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 #include "StorySequence.h"
 int GameSession::Run()
 {
+
+	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
+	bool oldMouseVisible = mainMenu->GetMouseVisible();
+
+	mainMenu->SetMouseGrabbed(true);
+	mainMenu->SetMouseVisible(false);
+
 	currStorySequence = NULL;
 	currBroadcast = NULL;
 
@@ -9342,6 +9349,9 @@ int GameSession::Run()
 
 	preScreenTex->setView(oldPreTexView);
 	window->setView(oldWindowView);
+
+	mainMenu->SetMouseGrabbed(oldMouseGrabbed);
+	mainMenu->SetMouseVisible(oldMouseVisible);
 
 	return returnVal;
 }

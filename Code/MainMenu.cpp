@@ -894,6 +894,15 @@ MainMenu::MainMenu()
 	window = new RenderWindow( sf::VideoMode( windowWidth, windowHeight ), "Breakneck",
 		config->GetData().windowStyle, sf::ContextSettings( 0, 0, 0, 0, 0 ));
 
+	mouseGrabbed = true;
+	mouseVisible = false;
+
+	SetMouseGrabbed(mouseGrabbed);
+	SetMouseVisible(mouseVisible);
+
+	//window->setMouseCursorVisible();
+	//window->setMouseCursorGrabbed(true);
+
 	for (int i = 0; i < 4; ++i)
 	{
 		controllers[i]->window = window;
@@ -1167,6 +1176,28 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 	}
 }
 
+void MainMenu::SetMouseGrabbed(bool grabbed)
+{
+	mouseGrabbed = grabbed;
+	window->setMouseCursorGrabbed(mouseGrabbed);
+}
+
+void MainMenu::SetMouseVisible(bool vis)
+{
+	mouseVisible = vis;
+	window->setMouseCursorVisible(mouseVisible);
+}
+
+bool MainMenu::GetMouseGrabbed()
+{
+	return mouseGrabbed;
+}
+
+bool MainMenu::GetMouseVisible()
+{
+	return mouseVisible;
+}
+
 void MainMenu::SetMode(Mode m)
 {
 	transFrame = 0;
@@ -1334,6 +1365,11 @@ void MainMenu::CustomMapsOption()
 
 	string empty = "5\n0 0\nmat\n5\n-209 78\n286 78\n286 132\n60 132\n-201 132\n0\n0\n0\n1\n-- 1\ngoal -air 0 0 76";
 
+	SetMouseGrabbed(true);
+	SetMouseVisible(true);
+	//window->setMouseCursorVisible(true);
+	//window->setMouseCursorGrabbed(true);
+
 	while( !quit )
 	{
 		window->clear();
@@ -1361,7 +1397,7 @@ void MainMenu::CustomMapsOption()
 					if( ev.key.code == Keyboard::Escape )
 					{
 						window->setView( v );
-						return;
+						quit = true;
 					}
 					else
 					{
@@ -1441,7 +1477,13 @@ void MainMenu::CustomMapsOption()
 		
 	}
 	//window->setView( v );
+
+	window->setMouseCursorVisible(false);
+	//window->setMouseCursorGrabbed(false);
+
 	window->setView(oldView);
+	SetMouseGrabbed(true);
+	SetMouseVisible(false);
 	//preScreenTexture->setView(oldPreView);
 }
 

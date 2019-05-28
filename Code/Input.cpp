@@ -933,8 +933,8 @@ void SetFilterDefault( XBoxButton *filter)
 
 void SetFilterDefaultGCC(XBoxButton *filter)
 {
-	filter[ControllerSettings::JUMP] = XBOX_X;
-	filter[ControllerSettings::DASH] = XBOX_A;
+	filter[ControllerSettings::JUMP] = XBOX_A;
+	filter[ControllerSettings::DASH] = XBOX_X;
 	filter[ControllerSettings::ATTACK] = XBOX_R1;
 	filter[ControllerSettings::BOUNCE] = XBOX_B;
 	filter[ControllerSettings::GRIND] = XBOX_Y;

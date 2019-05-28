@@ -23,6 +23,11 @@
 const uint_fast16_t GCC_VENDOR_ID = 0x57E;
 const uint_fast16_t GCC_PRODUCT_ID = 0x337;
 
+const uint_fast16_t TEST_VENDOR_ID = 0x1A34;
+const uint_fast16_t TEST_PRODUCT_ID = 0xF705;
+
+
+
 /*
 	Rumble. It seems it behaves by recieving a 5 byte message with 0x11 as its header, so:
 	0x11, 1, 0, 0, 0
@@ -62,8 +67,13 @@ namespace GCC
 
 		if (!mHandle)
 		{
-			mStatus = Status::ERR;
-			return;
+			//mHandle = libusb_open_device_with_vid_pid(mUSBContext, TEST_VENDOR_ID, TEST_PRODUCT_ID);
+
+			//if (!mHandle)
+			{
+				mStatus = Status::ERR;
+				return;
+			}
 		}
 		
 		if (

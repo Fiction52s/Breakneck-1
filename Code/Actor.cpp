@@ -13175,7 +13175,7 @@ void Actor::UpdatePhysics()
 									leftGround = true;
 									ground = NULL;
 									movingGround = NULL;
-									cout << "airborne 11" << endl;
+									//cout << "airborne 11" << endl;
 									SetActionExpr( JUMP );
 									holdJump = false;
 									frame = 1;

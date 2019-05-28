@@ -204,6 +204,9 @@ void OptionsMenu::Update( ControllerState &currInput,
 			state = (State)(optionModeSelector->currIndex + 1);
 			switch (state)
 			{
+			case CONTROL:
+				csm->UpdateXboxButtonIcons();
+				break;
 			case SOUND:
 				mainMenu->optionsMenu->Load();
 				break;
@@ -768,6 +771,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			{
 				shardMenu->SetShardTab();
 			}
+
 			return R_NONE;
 		}
 		else if ( (currInput.rightShoulder && !prevInput.rightShoulder)
@@ -1436,7 +1440,8 @@ void KinMenu::UpdateCommandButton()
 		ts_currentButtons = ts_xboxButtons;
 		break;
 	case CTYPE_NONE:
-		assert(0);
+		ts_currentButtons = ts_xboxButtons;
+		//assert(0);
 		break;
 	}
 
