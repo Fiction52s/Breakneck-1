@@ -771,6 +771,10 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			{
 				shardMenu->SetShardTab();
 			}
+			else if (currentTab == KIN)
+			{
+				kinMenu->UpdateCommandButton();
+			}
 
 			return R_NONE;
 		}
@@ -798,6 +802,10 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			else if (currentTab == SHARDS)
 			{
 				shardMenu->SetShardTab();
+			}
+			else if (currentTab == KIN)
+			{
+				kinMenu->UpdateCommandButton();
 			}
 			return R_NONE;
 		}
@@ -1382,7 +1390,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	UpdateSelector();
 	UpdatePowerSprite();
 	UpdateTutorial();
-	UpdateCommandButton();
+	
 }
 
 KinMenu::~KinMenu()
@@ -1443,6 +1451,9 @@ void KinMenu::UpdateCommandButton()
 		ts_currentButtons = ts_xboxButtons;
 		//assert(0);
 		break;
+	default:
+		assert(0);
+		ts_currentButtons = ts_xboxButtons;
 	}
 
 	int index = GetCurrIndex();

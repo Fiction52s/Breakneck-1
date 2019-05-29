@@ -93,7 +93,7 @@ struct ProfileSelector
 	~ProfileSelector();
 	void UpdateNames();
 	void UpdateButtonIcons();
-	void SetCurrProfileByName(const std::string &name);
+	bool SetCurrProfileByName(const std::string &name);
 	ControlProfileManager *cpm;
 	bool SaveCurrConfig();
 	XBoxButton tempFilter[ControllerSettings::Count];

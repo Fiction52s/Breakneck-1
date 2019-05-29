@@ -1829,17 +1829,17 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 						assert( 0 );
 					}
 
-					if( barStr != "-" )
-					{
-						if( fileName == "Resources/Maps/poitest.brknk" )
-						{
-							if( pname == "birdfighttrigger" )
-							{
-								/*BirdMeetingCallback *bmc = new BirdMeetingCallback( this );
-								barriers.back()->callback = bmc;*/
-							}
-						}
-					}
+					//if( barStr != "-" )
+					//{
+					//	if( fileName == "Resources/Maps/poitest.brknk" )
+					//	{
+					//		if( pname == "birdfighttrigger" )
+					//		{
+					//			/*BirdMeetingCallback *bmc = new BirdMeetingCallback( this );
+					//			barriers.back()->callback = bmc;*/
+					//		}
+					//	}
+					//}
 				}
 				else if( air == "-air" )
 				{
@@ -5909,7 +5909,13 @@ bool GameSession::Load()
 	SaveFile *currFile = mainMenu->GetCurrentProgress();
 	if (currFile != NULL)
 	{
-		pauseMenu->controlSettingsMenu->pSel->SetCurrProfileByName(currFile->controlProfileName);
+		bool set = pauseMenu->controlSettingsMenu->pSel->SetCurrProfileByName(currFile->controlProfileName);
+		if (!set)
+		{
+			//error. profile does not exist
+			currFile->controlProfileName = "KIN Default";
+			currFile->Save();
+		}
 	}
 	for( int i = 0; i < 1; ++i )
 	{

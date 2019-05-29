@@ -1143,7 +1143,7 @@ void ProfileSelector::UpdateButtonIcons()
 
 }
 
-void ProfileSelector::SetCurrProfileByName(const string &name)
+bool ProfileSelector::SetCurrProfileByName(const string &name)
 {
 	int i = 0;
 	for (auto it = cpm->profiles.begin(); it != cpm->profiles.end(); ++it)
@@ -1156,10 +1156,12 @@ void ProfileSelector::SetCurrProfileByName(const string &name)
 			oldCurrIndex = i;
 			UpdateNames();
 			selectedProfileText.setString(currProfile->name);
-			break;
+			return true;
 		}
 		++i;
 	}
+
+	return false;
 	//set the current profile to the profile named name.
 	//then in gamesession we use the same code on the current profile that we did before
 }

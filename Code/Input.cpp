@@ -133,7 +133,9 @@ bool GameController::IsKeyPressed(int k)
 {
 	Keyboard::Key key = (Keyboard::Key)k;
 
-	assert(window != NULL);
+	if (window == NULL)
+		return false;
+//	assert(window != NULL);
 
 	if (window->hasFocus())
 	{
@@ -239,8 +241,8 @@ bool GameController::UpdateState()
 		m_state.rightShoulder = gcController.buttons.z;
 		m_state.A = gcController.buttons.a;
 		m_state.B = gcController.buttons.b;
-		m_state.X = gcController.buttons.y;
-		m_state.Y = gcController.buttons.x;
+		m_state.X = gcController.buttons.x;
+		m_state.Y = gcController.buttons.y;
 		m_state.leftPress = false;//b & XINPUT_GAMEPAD_LEFT_THUMB;
 		m_state.rightPress = false;//b & XINPUT_GAMEPAD_RIGHT_THUMB;
 
@@ -289,6 +291,12 @@ bool GameController::UpdateState()
 		}
 		tempState = m_state;
 		m_unfilteredState = m_state;
+
+
+		//this is for the menus
+		bool tempX = m_unfilteredState.X;
+		m_unfilteredState.X = m_unfilteredState.Y;
+		m_unfilteredState.Y = tempX;
 
 		tempState.A = Pressed(filter[ControllerSettings::JUMP]);
 		tempState.B = Pressed(filter[ControllerSettings::DASH]);
@@ -635,6 +643,7 @@ GameController::GameController( DWORD index )
 	gcDefaultC.x = -1;
 	gcDefaultC.y = -1;
 
+	//UpdateState();
 	/*for( int i = 0; i < ControllerSettings::Count; ++i )
 	{
 		filter[i] = (XBoxButton)(i+1);
@@ -934,10 +943,10 @@ void SetFilterDefault( XBoxButton *filter)
 void SetFilterDefaultGCC(XBoxButton *filter)
 {
 	filter[ControllerSettings::JUMP] = XBOX_A;
-	filter[ControllerSettings::DASH] = XBOX_X;
+	filter[ControllerSettings::DASH] = XBOX_Y;
 	filter[ControllerSettings::ATTACK] = XBOX_R1;
 	filter[ControllerSettings::BOUNCE] = XBOX_B;
-	filter[ControllerSettings::GRIND] = XBOX_Y;
+	filter[ControllerSettings::GRIND] = XBOX_X;
 	filter[ControllerSettings::TIMESLOW] = XBOX_L1;
 	filter[ControllerSettings::LEFTWIRE] = XBOX_L2;
 	filter[ControllerSettings::RIGHTWIRE] = XBOX_R2;

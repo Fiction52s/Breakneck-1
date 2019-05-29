@@ -2159,7 +2159,7 @@ void MapSelector::UpdateHighlight()
 		trans = 2.f - trans;
 
 	}
-	cout << "trans: " << trans << endl;
+	//cout << "trans: " << trans << endl;
 	nodeHighlight.setColor(Color(255, 255, 255, 255 * trans));
 }
 

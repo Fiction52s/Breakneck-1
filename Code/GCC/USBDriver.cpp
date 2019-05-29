@@ -23,8 +23,8 @@
 const uint_fast16_t GCC_VENDOR_ID = 0x57E;
 const uint_fast16_t GCC_PRODUCT_ID = 0x337;
 
-const uint_fast16_t TEST_VENDOR_ID = 0x1A34;
-const uint_fast16_t TEST_PRODUCT_ID = 0xF705;
+const uint_fast16_t MAYFLASH_VENDOR_ID = 0x79;
+const uint_fast16_t MAYFLASH_PRODUCT_ID = 0x1844;
 
 
 
@@ -67,13 +67,13 @@ namespace GCC
 
 		if (!mHandle)
 		{
-			//mHandle = libusb_open_device_with_vid_pid(mUSBContext, TEST_VENDOR_ID, TEST_PRODUCT_ID);
+			//mHandle = libusb_open_device_with_vid_pid(mUSBContext, MAYFLASH_VENDOR_ID, MAYFLASH_PRODUCT_ID);
 
 			//if (!mHandle)
-			{
+			//{
 				mStatus = Status::ERR;
 				return;
-			}
+			//}
 		}
 		
 		if (
@@ -107,6 +107,12 @@ namespace GCC
 			mEnabled = false;
 			mThread.join();
 			
+		}
+
+		if (mHandle != NULL)
+		{
+			libusb_release_interface(mHandle, 0);
+			libusb_close(mHandle);
 		}
 		libusb_exit(mUSBContext);
 	}

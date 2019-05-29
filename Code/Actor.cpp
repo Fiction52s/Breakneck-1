@@ -1408,7 +1408,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//runPoints = new std::list<Vector2f>[runLen];
 		//standPoints = new std::list<Vector2f>[20];
 
-		hasPowerAirDash = false;
+		hasPowerAirDash = true;
 		hasPowerGravReverse = false;
 		hasPowerBounce = false;
 		hasPowerGrindBall = false;
@@ -2577,6 +2577,7 @@ void Actor::UpdatePrePhysics()
 			}
 		}
 	}
+	
 
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
