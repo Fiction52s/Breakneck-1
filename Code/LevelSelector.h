@@ -7,9 +7,11 @@
 #include <map>
 #include <SFML/Graphics.hpp>
 #include "LevelServer.h"
+#include <vector>
 
 struct TreeNode
 {
+	TreeNode();
 	TreeNode *parent;
 	TreeNode *next;
 	std::list<boost::filesystem::path> files;
@@ -18,6 +20,7 @@ struct TreeNode
 	boost::filesystem::path filePath;
 	int GetLevel();
 	std::string GetLocalPath();
+	bool expanded;
 };
 
 struct LevelHolder
@@ -27,6 +30,13 @@ struct LevelHolder
 
 struct MainMenu;
 struct Tileset;
+
+struct LevelDirectory
+{
+	//std::string * localPaths;
+	std::vector<std::string> localPaths;
+};
+
 struct LevelSelector
 {
 	LevelSelector( MainMenu *mainMenu );
@@ -36,21 +46,26 @@ struct LevelSelector
 	void PrintDir( TreeNode * dir );
 	void ClearEntries();
 	void ClearEntries(TreeNode *n);
+	void SetLocalPath(int index, TreeNode *entry);
 	void Draw( sf::RenderTarget *target );
 	void MouseUpdate( sf::Vector2f mousePos );
 	void LeftClick( bool click, sf::Vector2f mousePos );
 	const std::string &GetSelectedPath();
-	void GetPreview(const std::string &mName,
+	void GetPreview(const std::string &pathName,
+		const std::string &mName,
 		bool update );
 	void UpdateSelectedPreview();
+	TreeNode *GetEntryByName( const std::string &dirName );
 	//std::list<std::string> maps;
 	TreeNode *entries;
 	void Print();
 	int numTotalEntries;
+	std::map<std::string, TreeNode*> entryMap;
 	int Tex(int index, int level, TreeNode *entry);
 	sf::Font font;
 	sf::Text * text;
 	std::string * localPaths;
+	std::string * fullPaths;
 	TreeNode **dirNode;
 	int mouseOverIndex;
 	int selectedIndex;

@@ -19,6 +19,13 @@ int TreeNode::GetLevel()
 	return level;
 }
 
+TreeNode::TreeNode()
+{
+	expanded = false;
+	parent = NULL;
+	next = NULL;
+}
+
 string TreeNode::GetLocalPath()
 {
 	TreeNode *rent = this;
@@ -54,6 +61,7 @@ LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 	yspacing = 40;
 	mouseDownIndex = -1;
 	localPaths = NULL;
+	fullPaths = NULL;
 	mouseDown = false;
 	dirNode = NULL;
 	viewOffset = 0;
@@ -115,6 +123,7 @@ void LevelSelector::UpdateMapList()
 	text = new Text[numTotalEntries];
 
 	localPaths = new string[numTotalEntries];
+	fullPaths = new string[numTotalEntries];
 
 	dirNode = new TreeNode*[numTotalEntries];
 
@@ -141,9 +150,11 @@ void LevelSelector::MouseUpdate( sf::Vector2f mousePos )
 	}
 }
 
-void LevelSelector::GetPreview(const std::string &mName, bool update)
+void LevelSelector::GetPreview( const std::string &pName, const std::string &mName, bool update)
 {
-	string fileName = string("Maps/Previews/") + mName + string("_preview_912x492.png");
+	//string fileName = string("Maps/Previews/") + mName + string("_preview_912x492.png");
+	//string fileName = fName + string("_preview_912x492.png");
+	string fileName = string("Maps/") + pName + string("/Previews/") + mName + string("_preview_912x492.png");
 	if (update)
 	{
 		previewTS[mName] = mainMenu->tilesetManager.GetUpdatedTileset(fileName, 912, 492);
@@ -191,9 +202,24 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 				if( mouseDownIndex == testIndex )
 				{
 					selectedIndex = testIndex;
-					cout << "selected index: " << selectedIndex << endl;
+					//cout << "selected index: " << selectedIndex << endl;
 					string indexText = text[selectedIndex].getString().toAnsiString();
 					Tileset *currTS = previewTS[indexText];
+
+					if (text[selectedIndex].getFillColor() == Color::Red)
+					{
+						TreeNode *entry = GetEntryByName(indexText);
+						entry->expanded = !entry->expanded;
+						for (int i = 0; i < numTotalEntries; ++i)
+						{
+							text[i].setString("");
+						}
+						//Text &t0 = text[index];
+						Tex(0, 0, entries);
+
+						UpdateSelectedPreview();
+					}
+					
 
 					if( currTS != NULL )
 						previewSpr.setTexture(*currTS->texture);
@@ -218,14 +244,25 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 
 const std::string &LevelSelector::GetSelectedPath()
 {
-	return localPaths[selectedIndex];
+	return fullPaths[selectedIndex];
 }
 
 void LevelSelector::UpdateSelectedPreview()
 {
 	string indexText = text[selectedIndex].getString().toAnsiString();
-	GetPreview(indexText, true);
-	Tileset *currTS = previewTS[indexText];
+	string test = localPaths[selectedIndex];
+	/*if (text[selectedIndex].getFillColor() == Color::White)
+	{
+		indexText = 
+	}*/
+
+	Tileset *currTS = NULL;
+	if (text[selectedIndex].getFillColor() != Color::Red)
+	{
+		GetPreview(localPaths[selectedIndex], indexText, true);
+		currTS = previewTS[indexText];
+	}
+	
 
 	if (currTS != NULL)
 		previewSpr.setTexture(*currTS->texture);
@@ -235,43 +272,77 @@ void LevelSelector::UpdateSelectedPreview()
 	}
 }
 
+TreeNode *LevelSelector::GetEntryByName(const std::string &dirName)
+{
+	return entryMap[dirName];
+}
+
+void LevelSelector::SetLocalPath(int index, TreeNode *entry)
+{
+	//TreeNode *par = entry->parent;
+	if (entry->name != "Maps/" )
+	{
+		localPaths[index] = entry->name;
+	}
+	else
+	{
+		localPaths[index] = "";
+	}
+}
 
 int LevelSelector::Tex(int index, int level, TreeNode *entry)
 {
+	int innerLevel = level + 1;
+	if (entry->name == "Maps/")
+	{
+		innerLevel = level;
+	}
+
 	Text &t0 = text[index];
-	t0.setFont( font );
-	t0.setCharacterSize( fontHeight );
-	t0.setString( entry->name );
-	t0.setFillColor( Color::Red );
-	t0.setPosition( level * xspacing, index * yspacing );
-	localPaths[index] = string( "Resources/" ) + entry->GetLocalPath();//entry->filePath;
+	t0.setFont(font);
+	t0.setCharacterSize(fontHeight);
+	t0.setString(entry->name);
+	t0.setFillColor(Color::Red);
+	t0.setPosition(level * xspacing, index * yspacing);
+	fullPaths[index] = string("Resources/") + entry->GetLocalPath();
+
+	SetLocalPath(index, entry);
+	
 	dirNode[index] = NULL;
 	++index; //1 for me
-	for( list<TreeNode*>::iterator it = entry->dirs.begin(); it != entry->dirs.end(); ++it )
+
+	if (entry->expanded)
 	{
-		index = Tex( index, level + 1, (*it) );	//this does itself
+		for (list<TreeNode*>::iterator it = entry->dirs.begin(); it != entry->dirs.end(); ++it)
+		{
+			index = Tex(index, innerLevel, (*it));	//this does itself
+		}
 	}
+	
 
-	for( list<path>::iterator it = entry->files.begin(); it != entry->files.end(); ++it )
+	if (entry->expanded)
 	{
-		Text &t = text[index];
-		t.setFont( font );
-		t.setCharacterSize( fontHeight );
+		for (list<path>::iterator it = entry->files.begin(); it != entry->files.end(); ++it)
+		{
+			Text &t = text[index];
+			t.setFont(font);
+			t.setCharacterSize(fontHeight);
 
-		string name = (*it).filename().string();
-		name = name.substr( 0, name.size() - 6 );
+			string name = (*it).filename().string();
+			name = name.substr(0, name.size() - 6);
 
 
-		t.setString( name );
-		t.setFillColor( Color::White );
-		t.setPosition( (level + 1) * xspacing, index * yspacing );
-		localPaths[index] = string("Resources/") + (entry->GetLocalPath() / (*it).filename()).string();
-		dirNode[index] = entry;
+			t.setString(name);
+			t.setFillColor(Color::White);
+			t.setPosition(innerLevel * xspacing, index * yspacing);
+			fullPaths[index] = string("Resources/") + (entry->GetLocalPath() / (*it).filename()).string();
+			SetLocalPath(index, entry);
+			
+			dirNode[index] = entry;
 
-		++index; //1 for each file
+			++index; //1 for each file
+		}
 	}
-
-
 
 	return index;
 }
@@ -296,6 +367,11 @@ void LevelSelector::ClearEntries()
 		delete [] localPaths;
 	}
 
+	if (fullPaths != NULL)
+	{
+		delete[] fullPaths;
+	}
+
 	if (dirNode != NULL)
 	{
 		/*for (int i = 0; i < numTotalEntries; ++i)
@@ -309,6 +385,7 @@ void LevelSelector::ClearEntries()
 
 void LevelSelector::ClearEntries(TreeNode *n)
 {
+	entryMap.clear();
 	for( list<TreeNode*>::iterator it = n->dirs.begin(); it != n->dirs.end(); ++it )
 	{
 		ClearEntries( (*it) );
@@ -337,19 +414,29 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 					parentNode->files.push_back( p );//name.substr( 0, name.size() - 6 ) );
 					numTotalEntries++;
 
-					string mapName = p.relative_path().stem().string();
-					GetPreview(mapName, false);
+					string pathFolder = p.parent_path().stem().string();
+					string relPath = p.relative_path().string();
+					string mapName = pathFolder + "/" + p.relative_path().stem().string();
+					//GetPreview(localPaths[selectedIndex], indexText, true);
+					GetPreview( pathFolder, p.relative_path().stem().string(), false);
 				}
 			}
 			else if (is_directory(p))      // is p a directory?
 			{
 				//cout << p << " is a directory containing:\n";
+				if (p.filename().string() == "Previews")
+				{
+					return;
+				}
 
 				TreeNode *newDir = new TreeNode;
 				newDir->parent = parentNode;
 				newDir->next = NULL;
-				newDir->name = p.filename().string();
+				newDir->name = p.filename().string() + "/";
 				newDir->filePath = p;
+
+				assert(entryMap.count(newDir->name) == 0);
+				entryMap[newDir->name] = newDir;
 
 				copy(directory_iterator(p), directory_iterator(), back_inserter(v));
 
@@ -359,6 +446,7 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 				if( parentNode == NULL )
 				{
 					entries = newDir;
+					newDir->expanded = true;
 				}
 				else
 				{

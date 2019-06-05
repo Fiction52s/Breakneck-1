@@ -633,9 +633,22 @@ void Level::UpdateFromMapHeader()
 	if (shardsLoaded) return;
 
 	shardsLoaded = true;
+
+	string worldName = sec->world->name;
+
 	ifstream is;
-	string file = "Resources/Maps/" + name + ".brknk";
+
+	string file = "Resources/Maps/" + worldName + "/" + name + ".brknk";
 	is.open(file);
+
+	if (!is.is_open())
+	{
+		//check the general directory if its not in the folder
+		is = ifstream();
+		file = "Resources/Maps/" + name + ".brknk";
+		is.open(file);
+	}
+
 	if (is.is_open())
 	{
 		int capCount = 0;
@@ -655,6 +668,7 @@ void Level::UpdateFromMapHeader()
 	}
 	else
 	{
+		
 		assert(0);
 	}
 }
@@ -824,7 +838,7 @@ bool Level::IsOneHundredPercent()
 
 std::string Level::GetFullName()
 {
-	return "Resources/Maps/" + name + ".brknk";
+	return "Resources/Maps/" + sec->world->name + "/" + name + ".brknk";
 }
 
 World::World()
