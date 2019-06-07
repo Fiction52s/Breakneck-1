@@ -208,6 +208,8 @@ public:
 	ControllerState & GetUnfilteredState();
 	void SetFilter( XBoxButton *buttons );
 	int Pressed( XBoxButton b );
+	int GetGCCLeftTrigger();
+	int GetGCCRightTrigger();
 
 	XBoxButton filter[ControllerSettings::Count];
 	//ControllerState & GetKeyboardState(); //also updates
@@ -218,6 +220,8 @@ public:
 	GCC::GCController gcController;
 	sf::Vector2i gcDefaultControl;
 	sf::Vector2i gcDefaultC;
+	int gcDefaultLeftTrigger;
+	int gcDefaultRightTrigger;
 private:
 	DWORD m_index;
 	

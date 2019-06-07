@@ -17,7 +17,7 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	ts_xboxButtons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
 	ts_actionIcons = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
 
-	int numActions = 10;
+	numActions = 8;
 
 	actionQuads = new Vertex[numActions * 4];
 	buttonQuads = new Vertex[numActions * 4];
@@ -25,8 +25,8 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	labelQuads = new Vertex[numActions * 4];
 	actionText = new Text[numActions];
 
-	std::string buttonTexts[10] = { "JUMP", "DASH", "ATTACK", "POWER 3", "POWER 4",
-		"POWER 5", "POWER 6 LEFT", "POWER 6 RIGHT", "MAP", "PAUSE" };
+	std::string buttonTexts[8] = { "JUMP", "DASH", "ATTACK", "POWER 3", "POWER 4",
+		"POWER 5", "POWER 6 LEFT", "POWER 6 RIGHT" };// , "MAP", "PAUSE"
 
 	for (int i = 0; i < numActions; ++i)
 	{
@@ -47,12 +47,12 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	SetActionTile(5, 13);
 	SetActionTile(6, 14);
 	SetActionTile(7, 14);
-	SetActionTile(8, 7);
-	SetActionTile(9, 7);
+	//SetActionTile(8, 7);
+	//SetActionTile(9, 7);
 
 	int waitFrames[3] = { 10, 5, 2 };
 	int waitModeThresh[2] = { 2, 2 };
-	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 5, 0);
+	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 4, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
 
 	Vector2f originPos = Vector2f(100, 500);
@@ -64,11 +64,14 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	int borderSize = 20;
 	int labelHeight = 30;
 
+	int halfNumActions = numActions / 2;
 	for (int i = 0; i < numActions; ++i)
 	{
-		Vector2f index(i % (numActions/2), i / (numActions/2));
+		Vector2f index(i % halfNumActions, i / halfNumActions);
+
 		Vector2f quadCenter = originPos + Vector2f(actionSize.x / 2.f, actionSize.y / 2.f)
 			+ Vector2f((actionSize.x + buttonSize.x + spacing.x) * index.x, (actionSize.y + spacing.y) * index.y);
+
 		SetRectCenter( actionQuads + i * 4, actionSize.x, actionSize.y, quadCenter);
 		SetRectCenter(selectQuads + i * 4, actionSize.x + buttonSize.x + borderSize, actionSize.y + borderSize, quadCenter + Vector2f( actionSize.x / 2, 0 ) );
 		
@@ -112,8 +115,8 @@ ControlSettingsMenu::~ControlSettingsMenu()
 
 void ControlSettingsMenu::UpdateSelectedQuad()
 {
-	int selIndex = xSelector->currIndex + ySelector->currIndex * 5;
-	for (int i = 0; i < 10; ++i)
+	int selIndex = xSelector->currIndex + ySelector->currIndex * (numActions/2);
+	for (int i = 0; i < numActions; ++i)
 	{
 		if (i == selIndex)
 		{
@@ -140,7 +143,7 @@ void ControlSettingsMenu::SetGreyActionTiles(bool greyOn)
 	{
 
 		Color grey = Color(100, 100, 100);
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < numActions; ++i)
 		{
 			SetRectColor(actionQuads + i * 4, grey);
 			SetRectColor(buttonQuads + i * 4, grey);
@@ -149,7 +152,7 @@ void ControlSettingsMenu::SetGreyActionTiles(bool greyOn)
 	else
 	{
 		Color white = Color::White;
-		for (int i = 0; i < 10; ++i)
+		for (int i = 0; i < numActions; ++i)
 		{
 			SetRectColor(actionQuads + i * 4, white);
 			SetRectColor(buttonQuads + i * 4, white);
@@ -196,8 +199,8 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 	{
 		UpdateXboxButtonIcons();
 	}
-	
-	if (!editMode && pSel->state == ProfileSelector::S_SELECTED && currInput.X && !prevInput.X && pSel->saSelector->currIndex > 2)
+
+	if (!editMode && pSel->state == ProfileSelector::S_SELECTED && currInput.X && !prevInput.X && pSel->saSelector->currIndex > 0)
 	{
 		editMode = true;
 		SetGreyActionTiles(!editMode);
@@ -218,9 +221,9 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 		XBoxButton b = CheckXBoxInput(currInput);
 		if (b != XBoxButton::XBOX_BLANK)
 		{
-			int ind = xSelector->currIndex + ySelector->currIndex * 5;
+			int ind = xSelector->currIndex + ySelector->currIndex * 4;
 			XBoxButton old = pSel->tempFilter[ind];
-			for (int i = 0; i < 10; ++i)
+			for (int i = 0; i < numActions; ++i)
 			{
 				if (pSel->tempFilter[i] == b)
 				{
@@ -328,12 +331,12 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 void ControlSettingsMenu::Draw(sf::RenderTarget *target )
 {
 	if( editMode )
-		target->draw(selectQuads, 10 * 4, sf::Quads);
+		target->draw(selectQuads, numActions * 4, sf::Quads);
 
-	target->draw(labelQuads, 10 * 4, sf::Quads);
-	target->draw(actionQuads, 10 * 4, sf::Quads, ts_actionIcons->texture);
-	target->draw(buttonQuads, 10 * 4, sf::Quads, ts_currentButtons->texture);
-	for (int i = 0; i < 10; ++i)
+	target->draw(labelQuads, numActions * 4, sf::Quads);
+	target->draw(actionQuads, numActions * 4, sf::Quads, ts_actionIcons->texture);
+	target->draw(buttonQuads, numActions * 4, sf::Quads, ts_currentButtons->texture);
+	for (int i = 0; i < numActions; ++i)
 	{
 		target->draw(actionText[i]);
 	}
@@ -367,7 +370,7 @@ void ControlSettingsMenu::UpdateXboxButtonIcons()
 {
 	ts_currentButtons = ts_xboxButtons;
 	XBoxButton *fil = pSel->currProfile->GetCurrFilter();
-	for (int i = 0; i < ControllerSettings::ButtonType::Count; ++i)
+	for (int i = 0; i < ControllerSettings::ButtonType::Count-2; ++i)
 	{
 		int ind = fil[i] - 1;
 		IntRect sub = ts_xboxButtons->GetSubRect(ind);
@@ -461,11 +464,11 @@ XBoxButton ControlSettingsMenu::CheckXBoxInput(ControllerState &currInput)
 	}
 	else if (currInput.back)
 	{
-		return XBOX_BACK;
+		return XBOX_BLANK;//XBOX_BACK;
 	}
 	else if (currInput.start)
 	{
-		return XBOX_START;
+		return XBOX_BLANK;//XBOX_START;
 	}
 	else
 	{
@@ -505,9 +508,9 @@ void ControlSettingsMenu::InitAssocSymbols()
 	string toggleGrind = "toggle grind";
 	string toggleTimeSlow = "toggle time slow";
 	//these will be turned off when you dont have the powers
-	string possibleActions[ControllerSettings::Count] = { "jump", "dash", "attack", bounceSpecial,
-		grindSpecial, timeslowSpecial, wireLeftSpecial, wireRightSpecial,
-		"map", "pause" };
+	//string possibleActions[ControllerSettings::Count] = { "jump", "dash", "attack", bounceSpecial,
+	//	grindSpecial, timeslowSpecial, wireLeftSpecial, wireRightSpecial,
+	//	"map", "pause" };
 	int count = ControllerSettings::Count;
 	for (int i = 0; i < count; ++i)
 	{

@@ -1344,7 +1344,7 @@ void MainMenu::CustomMapsOption()
 
 	sf::View oldView = window->getView();
 	window->setView( uiView );
-	quit = false;
+	bool customMapQuit = false;
 
 	CustomMapsHandler customMapHandler( this );
 
@@ -1370,7 +1370,7 @@ void MainMenu::CustomMapsOption()
 	//window->setMouseCursorVisible(true);
 	//window->setMouseCursorGrabbed(true);
 
-	while( !quit )
+	while( !customMapQuit)
 	{
 		window->clear();
 		
@@ -1397,7 +1397,7 @@ void MainMenu::CustomMapsOption()
 					if( ev.key.code == Keyboard::Escape )
 					{
 						window->setView( v );
-						quit = true;
+						customMapQuit = true;
 					}
 					else
 					{

@@ -26,7 +26,7 @@ struct ControlSettingsMenu
 		NORMAL
 	};
 
-
+	int numActions;
 	ButtonState currButtonState;
 	ControlSettingsMenu(MainMenu *p_mm);
 	XBoxButton GetFilteredButton( ControllerType cType,

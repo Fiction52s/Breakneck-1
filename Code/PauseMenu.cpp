@@ -720,11 +720,11 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 {
 	if( (currInput.start && !prevInput.start))// || (currInput.back && !prevInput.back ) )
 	{
-		/*if (currentTab == OPTIONS && controlSettingsMenu->currButtonState == ControlSettingsMenu::S_SELECTED)
+		if (controlSettingsMenu->IsEditingButtons() )
 		{
 
-		}*/
-		//else
+		}
+		else
 		{
 			ResetCounters();
 			

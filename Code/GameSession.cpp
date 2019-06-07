@@ -6519,7 +6519,7 @@ int GameSession::Run()
 				showRunningTimer = false;
 			}
 	
-			if( IsKeyPressed( sf::Keyboard::Escape ) )
+			/*if( IsKeyPressed( sf::Keyboard::Escape ) )
 			{
 
 
@@ -6527,7 +6527,7 @@ int GameSession::Run()
 				returnVal = GR_EXITLEVEL;
 
 				break;
-			}
+			}*/
 
 			if( goalDestroyed )
 			{

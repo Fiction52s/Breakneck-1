@@ -145,6 +145,40 @@ bool GameController::IsKeyPressed(int k)
 	return false;
 }
 
+int GameController::GetGCCLeftTrigger()
+{
+	int lAxis = gcController.axis.l_axis;
+	if (gcDefaultLeftTrigger < 0)
+	{
+		gcDefaultLeftTrigger = lAxis;
+	}
+
+	int trueL = (lAxis - gcDefaultLeftTrigger) * 2;
+	if (trueL > 255)
+		trueL = 255;
+	if (trueL < 0)
+		trueL = 0;
+
+	return trueL;
+}
+
+int GameController::GetGCCRightTrigger()
+{
+	int rAxis = gcController.axis.r_axis;
+	if (gcDefaultRightTrigger < 0)
+	{
+		gcDefaultRightTrigger = rAxis;
+	}
+
+	int trueR = (rAxis - gcDefaultRightTrigger) * 2;
+	if (trueR > 255)
+		trueR = 255;
+	if (trueR < 0)
+		trueR = 0;
+
+	return trueR;
+}
+
 bool GameController::UpdateState()
 {
 	DWORD result;
@@ -160,6 +194,18 @@ bool GameController::UpdateState()
 			gcDefaultC.x = gcController.axis.right_x;
 			gcDefaultC.y = gcController.axis.right_y;
 		}
+
+
+		int lTrigger = GetGCCLeftTrigger();
+		int rTrigger = GetGCCRightTrigger();
+		/*if (gcDefaultLeftTrigger < 0)
+		{
+			gcDefaultLeftTrigger = 
+		}
+		if (gcDefaultRightTrigger < 0)
+		{
+			gcDefaultRightTrigger = 
+		}*/
 		
 		//int zeroAxis = 
 
@@ -255,6 +301,8 @@ bool GameController::UpdateState()
 
 		m_state.leftTrigger = 255 * (int)(gcController.buttons.l_shoulder);
 		m_state.rightTrigger = 255 * (int)(gcController.buttons.r_shoulder);
+
+		//can use analog triggers for the triggers here now.
 
 		m_state.leftStickPad = 0;
 		m_state.rightStickPad = 0;
@@ -642,6 +690,9 @@ GameController::GameController( DWORD index )
 	gcDefaultControl.y = -1;
 	gcDefaultC.x = -1;
 	gcDefaultC.y = -1;
+
+	gcDefaultLeftTrigger = -1;
+	gcDefaultRightTrigger = -1;
 
 	//UpdateState();
 	/*for( int i = 0; i < ControllerSettings::Count; ++i )
