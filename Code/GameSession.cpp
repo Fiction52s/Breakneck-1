@@ -9503,8 +9503,6 @@ void GameSession::UpdateDecorSprites()
 			te->tr->UpdateDecorSprites();
 		te = te->next;
 	}
-
-	
 }
 
 void GameSession::DrawPlayerWires()

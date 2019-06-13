@@ -1739,6 +1739,11 @@ void Actor::ActionEnded()
 			{
 				groundSpeed -= 5.0;
 			}*/
+
+			
+
+
+
 			SetActionExpr( STAND );
 			frame = 0;
 			break;
@@ -3945,6 +3950,36 @@ void Actor::UpdatePrePhysics()
 			{
 				if( !currInput.B )
 				{
+					if (currBBoostCounter > maxBBoostCount - 10 )
+					{
+						double dashFactor = 3.0;
+						double ag = abs(groundSpeed);
+
+						if (ag > 30)
+						{
+							dashFactor = 3.0;
+						}
+						else
+						{
+							dashFactor = 2.0;
+						}
+
+						double bboost = GetDashSpeed() / dashFactor;
+
+						if (groundSpeed > 0)
+						{
+							groundSpeed += bboost;
+						}
+						else
+						{
+							groundSpeed -= bboost;
+						}
+						//currBBoostCounter = 0;
+					}
+
+
+
+
 					if( currInput.LLeft() || currInput.LRight() )
 					{
 						SetActionExpr( RUN );
@@ -6764,10 +6799,10 @@ void Actor::UpdatePrePhysics()
 
 			
 			
-
+			double sprFactor = 2.0; //dash must be slower accel on slopes
 			if( currInput.LDown() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
 			{
-				double sprAccel = GetFullSprintAccel(true, gNorm);
+				double sprAccel = GetFullSprintAccel(true, gNorm) / sprFactor;
 				if( facingRight )
 				{
 					groundSpeed += sprAccel / slowMultiple;
@@ -6779,7 +6814,7 @@ void Actor::UpdatePrePhysics()
 			}
 			else if( currInput.LUp() && (( facingRight && gNorm.x > 0 ) || ( !facingRight && gNorm.x < 0 ) ) )
 			{
-				double sprAccel = GetFullSprintAccel(false, gNorm);
+				double sprAccel = GetFullSprintAccel(false, gNorm) / sprFactor;
 
 				if( facingRight )
 				{
@@ -8497,19 +8532,7 @@ facingRight = false;
 		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	}
 	
-	/*if (currBBoostCounter == maxBBoostCount && ground != NULL && groundSpeed != 0)
-	{
-		double bboost = 3.0;
-		if (groundSpeed > 0)
-		{
-			groundSpeed += bboost;
-		}
-		else
-		{
-			groundSpeed -= bboost;
-		}
-		currBBoostCounter = 0;
-	}*/
+	
 
 	
 	oldVelocity.x = velocity.x;
@@ -16629,13 +16652,13 @@ void Actor::UpdatePostPhysics()
 	}
 
 	//happens even when in time slow
-	/*if (ground != NULL && currInput.B)
+	if (action == DASH)
 	{
 		if (currBBoostCounter < maxBBoostCount)
 		{
 			currBBoostCounter++;
 		}
-	}*/
+	}
 
 	if( slowCounter == slowMultiple )
 	{
@@ -23998,6 +24021,7 @@ void Actor::SetActionExpr( Action a )
 	case DASH:
 	{
 		frame = 0;
+		currBBoostCounter = 0;
 		break;
 	}
 	
