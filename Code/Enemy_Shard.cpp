@@ -165,6 +165,7 @@ void Shard::Capture()
 		//both give you the shard and mark it as a new shard
 		owner->saveFile->shardField.SetBit(shardType, true);
 		owner->saveFile->newShardField.SetBit(shardType, true);
+		owner->saveFile->Save();
 	}
 
 
@@ -172,8 +173,9 @@ void Shard::Capture()
 	SetHurtboxes(NULL, 0);
 
 	owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
-
-	owner->mainMenu->GetCurrentProgress()->Save(); //might need to multithread at some point. this can be annoying
+	//owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position);
+	
+	//owner->mainMenu->GetCurrentProgress()->Save(); //might need to multithread at some point. this can be annoying
 }
 
 

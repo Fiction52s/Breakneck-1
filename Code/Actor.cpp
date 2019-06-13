@@ -2588,14 +2588,6 @@ void Actor::UpdatePrePhysics()
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
 
-	if (ground != NULL)
-	{
-		Rect<double> r(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
-		TerrainPiece *piece = ground->poly;
-		queryMode = "touchgrass";
-		piece->QueryTouchGrass(this, r);
-	}
-
 	//cout << "action: " << action << endl;
 	
 	if (currAirTrigger != NULL)
@@ -15923,7 +15915,28 @@ void Actor::UpdatePostPhysics()
 		currLockedUairFX = NULL;
 	}
 
+	if (ground != NULL)
+	{
+		Rect<double> r(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
+		TerrainPiece *piece = ground->poly;
+		if (piece != NULL)
+		{
+			queryMode = "touchgrass";
+			piece->QueryTouchGrass(this, r);
+		}
+	}
 
+	if (currWall != NULL)
+	{
+		Rect<double> r(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
+		TerrainPiece *piece = currWall->poly;
+		if (piece != NULL)
+		{
+			queryMode = "touchgrass";
+			piece->QueryTouchGrass(this, r);
+		}
+	}
+	//if( wallt)
 	
 	for (int i = 0; i < 7; ++i)
 	{
@@ -24397,6 +24410,10 @@ AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
 		ts = owner->GetTileset("FX/key_128x128.png", 128, 128);
 		animFactor = 2;
 		break;
+	case SHARD:
+		ts = owner->GetTileset("FX/key_128x128.png", 128, 128);
+		animFactor = 2;
+		break;
 	default:
 		ts = owner->GetTileset("FX/absorb_64x64.png", 64, 64);
 		animFactor = 3;
@@ -24594,10 +24611,7 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 	{
 		sub.width = 32;
 		sub.height = 32;
-		va[tileIndex * 4 + 0].color = Color::Red;
-		va[tileIndex * 4 + 1].color = Color::Red;
-		va[tileIndex * 4 + 2].color = Color::Red;
-		va[tileIndex * 4 + 3].color = Color::Red;
+		SetRectColor(va + tileIndex * 4, Color(Color::Red));
 		break;
 	}
 	
@@ -24764,16 +24778,17 @@ void AbsorbParticles::Update()
 
 void AbsorbParticles::Draw(sf::RenderTarget *target)
 {
-	target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
-	/*switch (abType)
+	//target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
+	switch (abType)
 	{
 	case ENERGY:
-		target->draw(va, maxNumParticles * 4, sf::Quads);
-		break;
 	case DARK:
 		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
 		break;
-	}*/
+	case SHARD:
+		target->draw(va, maxNumParticles * 4, sf::Quads);
+		break;
+	}
 	
 }
 
