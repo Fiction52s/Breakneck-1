@@ -102,6 +102,7 @@
 #include "HitboxManager.h"
 #include "ShaderTester.h"
 #include "ControlSettingsMenu.h"
+#include "TouchGrass.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -191,7 +192,7 @@ EdgeAngleType GetEdgeAngleType(V2d &normal)
 
 Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
 	sf::Vector2<double> &pA, sf::Vector2<double> &pB,
-	sf::Vector2<double> &pC, sf::Vector2<double> &pD, GameSession::TestVA *p_poly)
+	sf::Vector2<double> &pC, sf::Vector2<double> &pD, TerrainPiece *p_poly)
 	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),
 	ts_grass(p_ts_grass), A(pA), B(pB), C(pC), D(pD), owner(p_owner), poly( p_poly )
 {
@@ -696,6 +697,9 @@ void GameSession::Cleanup()
 		delete airTriggerTree;
 		airTriggerTree = NULL;
 	}
+
+	
+
 
 	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
 	{
@@ -1353,7 +1357,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 			poly.push_back( Vector2i( x, y ) );
 		}
 
-
+		TerrainPiece * tPiece = new TerrainPiece( this );
 
 		list<Vector2i>::iterator it = poly.begin();
 		list<Edge*> realEdges;
@@ -1361,7 +1365,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		for( ; it != poly.end(); ++it )
 		{
 			Edge *ee = new Edge();
-					
+			ee->poly = tPiece;
   			//edges[currentEdgeIndex + i] = ee;
 			ee->v0 = V2d( (*it).x, (*it).y );
 			list<Vector2i>::iterator temp = it;
@@ -1513,23 +1517,23 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 
 		bool first = true;
 
-		TestVA * testva = new TestVA;
-		testva->next = NULL;
+		
+		tPiece->next = NULL;
 		//testva->va = va;
-		testva->aabb.left = left;
-		testva->aabb.top = top;
-		testva->aabb.width = right - left;
-		testva->aabb.height = bottom - top;
-		testva->terrainVA = polygonVA;
-		testva->grassVA = NULL;//grassVA;
+		tPiece->aabb.left = left;
+		tPiece->aabb.top = top;
+		tPiece->aabb.width = right - left;
+		tPiece->aabb.height = bottom - top;
+		tPiece->terrainVA = polygonVA;
+		tPiece->grassVA = NULL;//grassVA;
 
-		testva->numPoints = polyPoints;
+		tPiece->numPoints = polyPoints;
 
-		testva->ts_border = ts_border;
-		testva->groundva = groundVA;
-		testva->slopeva = slopeVA;
-		testva->steepva = steepVA;
-		testva->wallva = wallVA;
+		tPiece->ts_border = ts_border;
+		tPiece->groundva = groundVA;
+		tPiece->slopeva = slopeVA;
+		tPiece->steepva = steepVA;
+		tPiece->wallva = wallVA;
 
 		
 		
@@ -1537,8 +1541,8 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		//cout << "before insert border: " << insertCount << endl;
 		//if( !inverse )
 		//{
-			borderTree->Insert( testva );
-			allVA.push_back( testva );
+			borderTree->Insert(tPiece);
+			allVA.push_back(tPiece);
 	//	}
 
 		//cout << "after insert border: " << insertCount << endl;
@@ -3445,6 +3449,8 @@ bool GameSession::OpenFile( string fileName )
 			int polyPoints;
 			is >> polyPoints;
 
+			TerrainPiece * tPiece = new TerrainPiece(this);
+
 			polyIndex[polyCounter] = pointCounter;
 			cout << "setting poly index at : " << polyCounter << " to " << pointCounter << endl;
 
@@ -3465,7 +3471,8 @@ bool GameSession::OpenFile( string fileName )
 			for( int i = 0; i < polyPoints; ++i )
 			{
 				Edge *ee = new Edge();
-					
+				ee->poly = tPiece;
+
   				edges[currentEdgeIndex + i] = ee;
 				ee->v0 = points[i+currentEdgeIndex];
 				if( i < polyPoints - 1 )
@@ -3548,7 +3555,7 @@ bool GameSession::OpenFile( string fileName )
 			}
 
 			
-			TestVA * testva = NULL;
+			
 			Tileset *ts_bush = GetTileset( "bush_01_64x64.png", 64, 64 );
 
 			if( !inverse && currentVisible )
@@ -3612,14 +3619,14 @@ bool GameSession::OpenFile( string fileName )
 
 				//VertexArray *bushVA = SetupBushes( 0,  edges[currentEdgeIndex], ts_bush );
 
-				testva = new TestVA;
-				testva->polyArea = polygonArea;
-				testva->aabb.left = left;
-				testva->aabb.top = top;
-				testva->aabb.width = right - left;
-				testva->aabb.height = bottom - top;
-				testva->terrainVA = va;
-				testva->visible = true;
+				//tPiece = new TerrainPiece(this);
+				tPiece->polyArea = polygonArea;
+				tPiece->aabb.left = left;
+				tPiece->aabb.top = top;
+				tPiece->aabb.width = right - left;
+				tPiece->aabb.height = bottom - top;
+				tPiece->terrainVA = va;
+				tPiece->visible = true;
 				polygons.push_back( va );
 
 				delete cdt;
@@ -3631,7 +3638,7 @@ bool GameSession::OpenFile( string fileName )
 			}
 			else if( inverse )
 			{
-				inversePoly = new TestVA;
+				inversePoly = tPiece;
 				inversePoly->numPoints = polyPoints;
 				//testva->va = va;
 				inversePoly->visible = true;
@@ -3641,25 +3648,25 @@ bool GameSession::OpenFile( string fileName )
 				inversePoly->aabb.height = bottom - top;
 				//testva->ts_bush = ts_bush;
 				SetupInversePoly( ts_bush, currentEdgeIndex );
-				testva = inversePoly;
-				testva->ts_bush = ts_bush;
+				tPiece = inversePoly;
+				tPiece->ts_bush = ts_bush;
 				//va = NULL;
 			}
 			else
 			{
-				testva = new TestVA;
-				testva->polyArea = 0;//polygonArea;
-				testva->visible = false;
-				testva->aabb.left = left;
-				testva->aabb.top = top;
-				testva->aabb.width = right - left;
-				testva->aabb.height = bottom - top;
-				testva->terrainVA = NULL;//va;
+				tPiece = tPiece;
+				tPiece->polyArea = 0;//polygonArea;
+				tPiece->visible = false;
+				tPiece->aabb.left = left;
+				tPiece->aabb.top = top;
+				tPiece->aabb.width = right - left;
+				tPiece->aabb.height = bottom - top;
+				tPiece->terrainVA = NULL;//va;
 
 				//polygons.push_back(va);
 			}
 
-			if (testva->visible)
+			if (tPiece->visible)
 			{
 
 
@@ -3736,34 +3743,34 @@ bool GameSession::OpenFile( string fileName )
 				{
 					DecorExpression *expr = CreateDecorExpression(DecorType(D_W1_VEINS1 + i), 0, edges[currentEdgeIndex]);
 					if (expr != NULL)
-						testva->AddDecorExpression(expr);
+						tPiece->AddDecorExpression(expr);
 				}
 
 				Tileset *ts_testBush = GetTileset("bush_1_01_512x512.png", 512, 512);
 
 				DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, edges[currentEdgeIndex]);
 				if (rock1 != NULL)
-					testva->AddDecorExpression(rock1);
+					tPiece->AddDecorExpression(rock1);
 
 				DecorExpression *rock2 = CreateDecorExpression(D_W1_ROCK_2, 0, edges[currentEdgeIndex]);
 				if (rock2 != NULL)
-					testva->AddDecorExpression(rock2);
+					tPiece->AddDecorExpression(rock2);
 
 				DecorExpression *rock3 = CreateDecorExpression(D_W1_ROCK_3, 0, edges[currentEdgeIndex]);
 				if (rock3 != NULL)
-					testva->AddDecorExpression(rock3);
+					tPiece->AddDecorExpression(rock3);
 
 				DecorExpression *grassyRock = CreateDecorExpression(D_W1_GRASSYROCK, 0, edges[currentEdgeIndex]);
 				if (grassyRock != NULL)
-					testva->AddDecorExpression(grassyRock);
+					tPiece->AddDecorExpression(grassyRock);
 
 				DecorExpression *normalExpr = CreateDecorExpression(D_W1_BUSH_NORMAL, 0, edges[currentEdgeIndex]);
 				if (normalExpr != NULL)
-					testva->AddDecorExpression(normalExpr);
+					tPiece->AddDecorExpression(normalExpr);
 
 				DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, edges[currentEdgeIndex]);
 				if (exprPlantRock != NULL)
-					testva->AddDecorExpression(exprPlantRock);
+					tPiece->AddDecorExpression(exprPlantRock);
 
 
 			}
@@ -3904,7 +3911,7 @@ bool GameSession::OpenFile( string fileName )
 				C = ABmax;
 				D = ABmin;
 
-				Grass * g = new Grass(this, ts_grass, totalGrassIndex, A, B, C, D, testva );
+				Grass * g = new Grass(this, ts_grass, totalGrassIndex, A, B, C, D, tPiece);
 				/*g->A = A;
 				g->B = B;
 				g->C = C;
@@ -3918,7 +3925,7 @@ bool GameSession::OpenFile( string fileName )
 			Tileset *ts_border = NULL;
 			Tileset *ts_plant = NULL;
 			VertexArray *plantVA = NULL;
-			if (testva->visible)
+			if (tPiece->visible)
 			{
 
 
@@ -3956,16 +3963,19 @@ bool GameSession::OpenFile( string fileName )
 				plantVA = SetupPlants(edges[currentEdgeIndex], ts_plant);
 
 				Tileset *ts_border1 = GetTileset("Borders/bor_1_01_512x704.png", 128, 64);
-				testva->tr = new TerrainRender(&tm, terrainTree);// (terrainTree);
-				testva->tr->startEdge = edges[currentEdgeIndex];
-				testva->tr->GenerateBorderMesh();
-				testva->tr->GenerateDecor();
-				testva->tr->ts_border = ts_border1;
+				tPiece->tr = new TerrainRender(&tm, terrainTree);// (terrainTree);
+				tPiece->tr->startEdge = edges[currentEdgeIndex];
+				tPiece->tr->GenerateBorderMesh();
+				tPiece->tr->GenerateDecor();
+				tPiece->tr->ts_border = ts_border1;
+
+				tPiece->AddTouchGrass();
+				//tPiece->tr->plan
 
 			}
 			else
 			{
-				testva->tr = NULL;
+				tPiece->tr = NULL;
 			}
 
 			/*double polygonArea = 0;
@@ -3999,31 +4009,31 @@ bool GameSession::OpenFile( string fileName )
 		
 
 			
-			testva->plantva = NULL; //temporary
-			testva->next = NULL;
+			tPiece->plantva = NULL; //temporary
+			tPiece->next = NULL;
 			
 			
-			testva->grassVA = grassVA;
-			testva->ts_bush = ts_bush;
+			tPiece->grassVA = grassVA;
+			tPiece->ts_bush = ts_bush;
 			//testva->bushVA = bushVA;
 			
 
-			testva->ts_border = ts_border;
+			tPiece->ts_border = ts_border;
 			/*testva->groundva = groundVA;
 			testva->slopeva = slopeVA;
 			testva->steepva = steepVA;
 			testva->wallva = wallVA;*/
-			testva->triva = triVA;
-			testva->plantva = plantVA;
-			testva->ts_plant = ts_plant;
-			testva->terrainWorldType = matWorld;
-			testva->terrainVariation = matVariation;
+			tPiece->triva = triVA;
+			tPiece->plantva = plantVA;
+			tPiece->ts_plant = ts_plant;
+			tPiece->terrainWorldType = matWorld;
+			tPiece->terrainVariation = matVariation;
 
 			//testva->flowva = energyFlowVA;
 			
 			//cout << "before insert border: " << insertCount << endl;
-			borderTree->Insert( testva );
-			allVA.push_back( testva );
+			borderTree->Insert(tPiece);
+			allVA.push_back(tPiece);
 
 			//cout << "after insert border: " << insertCount << endl;
 			insertCount++;
@@ -5560,12 +5570,6 @@ bool GameSession::Load()
 	keyHolderSprite.setTexture(*ts_keyHolder->texture);
 	keyHolderSprite.setPosition(10, 50);
 
-	if (!onTopShader.loadFromFile("Resources/Shader/ontop_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "on top SHADER NOT LOADING CORRECTLY" << endl;
-		//assert( 0 && "polygon shader not loaded" );
-	}
-
 	if (!flowShader.loadFromFile("Resources/Shader/flow_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
@@ -5576,23 +5580,6 @@ bool GameSession::Load()
 	flowShader.setUniform("flowSpacing", flowSpacing);
 	flowShader.setUniform("maxFlowRings", maxFlowRadius / maxFlowRings);
 
-	if (!mountainShader.loadFromFile("Resources/Shader/mountain_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "mountain SHADER NOT LOADING CORRECTLY" << endl;
-		//assert( 0 && "polygon shader not loaded" );
-	}
-
-	mountainShader.setUniform("u_texture", *GetTileset("w1mountains.png", 1920, 512)->texture);
-
-	if (!mountainShader1.loadFromFile("Resources/Shader/mountain_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "mountain SHADER 1 NOT LOADING CORRECTLY" << endl;
-		//assert( 0 && "polygon shader not loaded" );
-	}
-
-	mountainShader1.setUniform("u_texture", *GetTileset("w1mountains2.png", 1920, 406)->texture);
-
-	onTopShader.setUniform("u_texture", *GetTileset("w1undertrans.png", 1920, 540)->texture);
 
 	if (!underShader.loadFromFile("Resources/Shader/under_shader.frag", sf::Shader::Fragment))
 	{
@@ -5604,8 +5591,6 @@ bool GameSession::Load()
 	{
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
 	}
-
-	
 
 	stringstream ss;
 
@@ -5656,6 +5641,7 @@ bool GameSession::Load()
 	activeItemTree = new QuadTree(1000000, 1000000);
 
 	airTriggerTree = new QuadTree(1000000, 1000000);
+
 
 	soundManager = new SoundManager;
 
@@ -6053,7 +6039,7 @@ bool GameSession::Load()
 		++index;
 	}
 
-	for( list<TestVA*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
+	for( list<TerrainPiece*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
 	{
 		int realIndex = indexConvert[pair<int,int>((*it)->terrainWorldType,
 		(*it)->terrainVariation)];
@@ -6147,16 +6133,6 @@ int GameSession::Run()
 	runningTimerText.setOrigin(runningTimerText.getLocalBounds().left +
 		runningTimerText.getLocalBounds().width, 0 );
 	runningTimerText.setPosition(1920 - 30, 10);
-
-	sf::Texture alphaTex;
-	alphaTex.loadFromFile("Resources/alphatext.png");
-	Sprite alphaTextSprite(alphaTex);
-
-	sf::RectangleShape bDraw;
-	bDraw.setFillColor(Color::Red);
-	bDraw.setSize(sf::Vector2f(32 * 2, 32 * 2));
-	bDraw.setOrigin(bDraw.getLocalBounds().width / 2, bDraw.getLocalBounds().height / 2);
-	bool bdrawdraw = false;
 
 	Actor *p0 = GetPlayer(0);
 	Actor *p = NULL;
@@ -6948,13 +6924,6 @@ int GameSession::Run()
 					gates[i]->Update();
 				}
 
-				//if( GetPlayer( 0 )->action != Actor::Action::SPAWNWAIT || GetPlayer( 0 )->frame > 20 )
-				//	powerWheel->UpdateSections();
-
-				//if (GetPlayer(0)->action != Actor::Action::SPAWNWAIT || GetPlayer(0)->frame > 20)
-				/*if( powerRing != NULL )
-					powerRing->Update();*/
-
 				absorbParticles->Update();
 				absorbDarkParticles->Update();
 				absorbShardParticles->Update();
@@ -7062,23 +7031,13 @@ int GameSession::Run()
 				{
 					(*it)->Update( camPos );
 				}
-				//scrollingTest->Update( camPos );
 
-				//Vector2f diff = cam.pos - oldCam;
-
-				//cloudVel = Vector2f( -40, 0 );
-				//cloud0a.move( cloudVel );
-				//cloud0b.move( cloudVel );
-				//cloud1a.move( Vector2f( -2, 0 ) );
-				//cloud1b.move( Vector2f( -2, 0 ) );
 				if( shipSequence )
 				{
 					
 
 
 					float oldLeft = cloud0[0].position.x;
-					//float oldLeft1 = cloud0[1].position.x;
-					//float blah = std::max( 15.f, ( 30.f - relShipVel.x ) );
 					float blah = 30.f;
 					float newLeft = oldLeft - blah; //cloudVel.x;
 					float diff = ( shipStartPos.x - 480 ) - newLeft;
@@ -7092,11 +7051,8 @@ int GameSession::Run()
 						//cout << "diff: " << diff << endl;
 					}
 
-					float allDiff = newLeft - oldLeft;// - relShipVel.x;
-					//cout << "all diff: " << allDiff << endl;
-					//allDiff = .5;
+					float allDiff = newLeft - oldLeft;
 					Vector2f cl = relShipVel;
-					//cl.y = cl.y / 2;
 
 					middleClouds.move( Vector2f( 0, cl.y ) );// + Vector2f( allDiff, 0 ) );
 					for( int i = 0; i < 3 * 4; ++i)
@@ -7112,30 +7068,9 @@ int GameSession::Run()
 					if( shipSeqFrame >= 90 && shipSeqFrame <= 180 )
 					{
 						int tFrame = shipSeqFrame - 90;
-						//cout << "tFrame: " << tFrame << endl;
-						//CubicBezier b( 0, 0, 1, 1 );
-						//double a = tFrame / 60.0;
-						//double v = b.GetValue( a );
 						shipSprite.setPosition( shipSprite.getPosition() + relShipVel );
 
 						relShipVel += Vector2f( .3, -.8 );
-
-						/*if( shipSeqFrame >= 100 )
-						{
-							relShipVel = Vector2f( 0, 0 );
-						}
-						else
-						{
-							relShipVel += Vector2f( .3, -.8 );
-						}*/
-						
-
-						//V2d shipStart = V2d( shipStartPos.x, shipStartPos.y );
-						//V2d stuff = shipStart * ( 1.0 - v ) 
-						//	+ ( shipStart + V2d( 500, - 500 ) ) * v;
-						//shipSprite.setPosition( stuff.x, stuff.y );
-
-
 					}
 					else if( shipSeqFrame == 240 )//121 )
 					{
@@ -7150,29 +7085,10 @@ int GameSession::Run()
 						player->hasAirDash = false;
 						player->hasGravReverse = false;
 						drain = true;
-						//player->
-						//player->rightWire->= false;
 					}
 
 					++shipSeqFrame;
 				}
-				/*if( shipStartPos.x - cloud1b.getPosition().x > 960 )
-				{
-					
-					cout << "condition CLOUD B: " << shipStartPos.x - cloud1b.getPosition().x << endl;
-					cloud1b.setPosition( shipStartPos.x + 480, cloud1b.getPosition().y );
-				}
-				else if( shipStartPos.x - cloud1a.getPosition().x > 960 )
-				{
-					cout << "condition CLOUD A: " << shipStartPos.x - cloud1a.getPosition().x << endl;
-					cloud1a.setPosition( shipStartPos.x + 480, cloud1a.getPosition().y );
-				}*/
-				//cloud0a.setPosition( pi->pos.x - 480, pi->pos.y + 270 );
-				//cloud0b.setPosition( pi->pos.x, pi->pos.y + 270 );
-				
-				//cloud1a.setPosition( pi->pos.x - 480, pi->pos.y + 270 );
-				//cloud1b.setPosition( pi->pos.x, pi->pos.y + 270);// + 540 );
-
 
 				double camWidth = 960 * cam.GetZoom();
 				double camHeight = 540 * cam.GetZoom();
@@ -7187,23 +7103,7 @@ int GameSession::Run()
 
 				//flowShader.setUniform( "radius0", flow
 				
-				if (hasGoal)
-				{
-					flowRadius = (maxFlowRadius - (maxFlowRadius / flowFrameCount) * flowFrame);
-
-					flowShader.setUniform("radius", flowRadius / maxFlowRings);
-					//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
-					flowShader.setUniform("zoom", cam.GetZoom());
-					flowShader.setUniform("playerPos", Vector2f(p0->position.x, p0->position.y));
-
-
-
-					++flowFrame;
-					if (flowFrame == flowFrameCount)
-					{
-						flowFrame = 0;
-					}
-				}
+				UpdateGoalFlow();
 				
 				int speedLevel = p0->speedLevel;
 				float quant = 0;
@@ -7290,7 +7190,7 @@ int GameSession::Run()
 
 				while( listVA != NULL )
 				{
-					TestVA *t = listVA->next;
+					TerrainPiece *t = listVA->next;
 					listVA->next = NULL;
 					listVA = t;
 				}
@@ -7302,16 +7202,8 @@ int GameSession::Run()
 
 				drawInversePoly = ScreenIntersectsInversePoly( screenRect );
 
+				UpdateDecorSprites();
 				
-				TestVA *te = listVA;
-				while( te != NULL )
-				{
-					if( te->tr != NULL )
-						te->tr->UpdateDecorSprites();
-					//te->tr->UpdateDecorLayers();
-					//te->UpdateBushSprites();
-					te = te->next;
-				}
 
 				TerrainRender::UpdateDecorLayers();
 
@@ -7321,7 +7213,7 @@ int GameSession::Run()
 				{
 					(*mit).second->Update();
 				}
-				//TestVA::UpdateBushFrame();
+				//TerrainPiece::UpdateBushFrame();
 
 				//hacky
 				if( p0->dead )
@@ -7434,52 +7326,14 @@ int GameSession::Run()
 			}
 		}
 		Vector2f camOffset;
-		
-		
-		
-		
-		if( false )//activeSequence != NULL && activeSequence == startSeq )
-		{
-			//activeSequence->Draw( preScreenTex );
-			
-
-			preScreenTex->display();
-			const Texture &preTex = preScreenTex->getTexture();
-		
-			Sprite preTexSprite( preTex );
-			preTexSprite.setPosition( -960 / 2, -540 / 2 );
-			//preTexSprite.setScale( .5, .5 );	
-			window->draw( preTexSprite  );
-			
-		}
-		else
-		{
 
 		Vector2f camPos = cam.GetPos();
-	//	view.setSize( Vector2f( 1920 * cam.GetZoom(), 1080 * cam.GetZoom()) );
 		view.setSize(Vector2f(1920/2 * cam.GetZoom(), 1080/2 * cam.GetZoom()));
 
 		//this is because kin's sprite is 2x size in the game as well as other stuff
-
-		//view.setSize( cut.cameras[cutFrame].getSize() );
 		lastViewSize = view.getSize();
-
-		//view.setCenter( player->position.x + camOffset.x, player->position.y + camOffset.y );
 		view.setCenter( camPos.x, camPos.y );
-		
-		
-		//view.setCenter( cut.cameras[cutFrame].getCenter() );
 
-
-
-		//cout << "center: " << view.getCenter().x << ", " << view.getCenter().y << endl;
-		//view = //cut.cameras[cutFrame];
-		
-		//
-		//view.setCenter( cut.cameras[cutFrame].getCenter() );
-		//cout << "view zoom: " << view.getSize().x << ", " << view.getSize().y << endl;
-
-		//preScreenTex->setView( cut.GetView( cutFrame ) );
 		lastViewCenter = view.getCenter();
 
 		if (hasGoal)
@@ -7491,123 +7345,20 @@ int GameSession::Run()
 
 		background->Draw(preScreenTex);
 		
-		//window->setView( bgView );
-		//preScreenTex->setView( bgView );
-
-		//preScreenTex->draw(backgroundSky, 4, sf::Quads);
-		//preScreenTex->draw( background );
-
-		//temporary parallax
-		View pView;
-		float depth = .3;
-		int px = floor( view.getCenter().x * depth + .5 );
-		int pxx;
-		
-		if( px >= 0 )
-		{
-			pxx = (px % (1920 * 2)) - 1920;
-			//cout << ">0: " << pxx << ", realx: " << px << endl;
-		}
-		else
-		{
-			pxx = -(-px % (1920 * 2)) + 1920;
-			//cout << "<0: " << pxx << ", realx: " << px << endl;
-		}
-		pView.setCenter( Vector2f( pxx, 0 ) );
-		pView.setSize( 1920, 1080 );
-		//preScreenTex->setView( pView );
 		preScreenTex->setView( view );
 
-		//testPar->Draw( preScreenTex );
 		for( list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
 			it != scrollingBackgrounds.end(); ++it )
 		{
 			(*it)->Draw( preScreenTex );
 		}
-		//scrollingTest->Draw( preScreenTex );
-
-		//window->draw( background );
-
 		
-		
-		//window->setView( view );
-
-		
-
-		
-		//cloudView.setSize( 1920, 1080 );
 		cloudView.setCenter( 960, 540 );
-		
-		//preScreenTex->setView( cut.cameras[cutFrame] );
-		
-
-	//	SetParMountains( preScreenTex );
-
-	//	SetParMountains1( preScreenTex );
-
-	//	SetParOnTop( preScreenTex );
-
-		//cavedepth
-		//if( SetGroundPar() )
-		{
-		//	preScreenTex->draw( groundPar, &mountain01Tex );
-			//preScreenTex->draw( underTransPar, &underTrans01Tex );
-		}
-	
 		cloudView.setCenter( 960, 540 );	
 		preScreenTex->setView( cloudView );
 		
-		//float depth = 3;
-		//parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
-		//SetCloudParAndDraw();
-
-
-		
-		
-		
-		
-		//cloudView.setCenter( 0, 0 );
-		//preScreenTex->setView( cloudView );
-		//preScreenTex->setView( cloudView );
-		//SetUndergroundParAndDraw();
-
-		
-		//float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
-		//parTest.setScale( scale, scale );
-		//preScreenTex->draw( parTest );
 		
 		preScreenTex->setView( view );
-		
-		bDraw.setSize( sf::Vector2f(p0->b.rw * 2, p0->b.rh * 2) );
-		bDraw.setOrigin( bDraw.getLocalBounds().width /2, bDraw.getLocalBounds().height / 2 );
-		bDraw.setPosition( p0->position.x + p0->b.offset.x , p0->position.y + p0->b.offset.y );
-	//	bDraw.setRotation( player->sprite->getRotation() );
-		if( bdrawdraw)
-		{
-			preScreenTex->draw( bDraw );
-		}
-		//window->draw( bDraw );
-
-	/*	CircleShape cs;
-		cs.setFillColor( Color::Cyan );
-		cs.setRadius( 10 );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( player->position.x, player->position.y );
-		window->draw( cs );*/
-
-	
-		//player->sh.setUniform( "u_texture", *GetTileset( "testrocks.png", 25, 25 )->texture );
-		//player->sh.setUniform( "u_texture1", *GetTileset( "testrocksnormal.png", 25, 25 )->texture );
-		
-		
-		
-		
-		
-		
-
-
-		//player->sprite->setTextureRect( IntRect( 0, 0, 300, 225 ) );
-		//if( false )
 		
 		while( lightList != NULL )
 		{
@@ -7624,439 +7375,71 @@ int GameSession::Run()
 		{
 			lightListIter->Draw( preScreenTex );
 			lightListIter = lightListIter->next;
-		}
+		}		
 
+		UpdateEnvShaders();
 		
-		
-		
-		
-		sf::RectangleShape rs;
-		rs.setSize( Vector2f(64, 64) );
-		rs.setOrigin( rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2 );
-		rs.setPosition( otherPlayerPos.x, otherPlayerPos.y  );
-		rs.setFillColor( Color::Blue );
-		//window->draw( circle );
-		//window->draw(line, numPoints * 2, sf::Lines);
-		
-		//polyShader.setUniform( "u_texture", *GetTileset( "terrainworld1.png" , 128, 128 )->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//polyShader.setUniform( "u_normals", *GetTileset( "terrainworld1_NORMALS.png", 128, 128 )->texture );
+		DrawTopClouds();
 
-		
-
-
-		Vector2i vi = Mouse::getPosition();
-		//Vector2i vi = window->mapCoordsToPixel( Vector2f( player->position.x, player->position.y ) );
-		//Vector2i vi = window->mapCoordsToPixel( sf::Vector2f( 0, -300 ) );
-		//vi -= Vector2i( view.getSize().x / 2, view.getSize().y / 2 );
-		Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
-		blahblah.y = 1 - blahblah.y;
-
-
-		//polyShader.setUniform( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
-		//polyShader.setUniform( "LightColor", 1, .8, .6, 1 );
-		
-		//polyShader.setUniform( "Falloff", Vector3f( .4, 3, 20 ) );
-		//cout << "window size: " << window->getSize().x << ", " << window->getSize().y << endl;
-
-
-		Vector2f botLeft( view.getCenter().x - view.getSize().x / 2, 
-			view.getCenter().y + view.getSize().y / 2 );
-
-		Vector2f playertest = ( botLeft - oldCamBotLeft ) / 5.f;
-		//cout << "test: " << playertest.x << ", " << playertest.y << endl;
-		// window->getSize().x, window->getSize().y);
-		
-		for( int i = 0; i < numPolyTypes; ++i )
-		{
-			polyShaders[i].setUniform( "zoom", cam.GetZoom() );
-			polyShaders[i].setUniform( "topLeft", botLeft ); //just need to change the name topleft eventually
-			polyShaders[i].setUniform( "playertest", playertest );
-			polyShaders[i].setUniform("skyColor", ColorGL(background->GetSkyColor()));
-		}
-
-		for (auto it = zones.begin(); it != zones.end(); ++it)
-		{
-			(*it)->Update(cam.GetZoom(), botLeft, playertest);
-		}
-		
-		//polyShader.setUniform( "zoom", cam.GetZoom() );
-		//polyShader.setUniform( "topLeft", view.getCenter().x - view.getSize().x / 2, 
-		//	view.getCenter().y + view.getSize().y / 2 );
-
-		
-		//polyShader.setUniform( "u_texture", *GetTileset( "testterrain.png", 32, 32 )->texture );
-
-
-		//polyShader.setUniform(  = GetTileset( "testterrain.png", 25, 25 )->texture;
-
-		//for( list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-		//{
-		//	if( usePolyShader )
-		//	{
-		//		
-
-		//		UpdateTerrainShader();
-
-		//		preScreenTex->draw( *(*it ), &polyShader);
-		//	}
-		//	else
-		//	{
-		//		preScreenTex->draw( *(*it ) );
-		//	}
-		//	//GetTileset( "testrocks.png", 25, 25 )->texture );
-		//}
-		
-		
-
-		sf::Rect<double> testRect( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2,
-			view.getSize().x, view.getSize().y );
-
-		
-
-		
-		
-		
-
-		//screenRect = sf::Rect<double>( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-		
-		if( topClouds != NULL )
-			topClouds->Draw(preScreenTex);
-
-		bool narrowMap = mh->boundsWidth < 1920 * 2;
-
-		if (cam.manual || narrowMap )
-		{
-			preScreenTex->draw(blackBorderQuads, 16, sf::Quads);
-		}
-		else
-		{
-			preScreenTex->draw(blackBorderQuads, 8, sf::Quads);
-		}
-		
-		
+		DrawBlackBorderQuads();
 		
 		DrawStoryLayer(EffectLayer::BEHIND_TERRAIN);
 		DrawActiveSequence(EffectLayer::BEHIND_TERRAIN);
 		DrawEffects( EffectLayer::BEHIND_TERRAIN );
-		
-		int timesDraw = 0;
-		TestVA * listVAIter = listVA;
-		//listVAIter->next = NULL;
 
-		UpdateTerrainShader( screenRect );
-
-		if( drawInversePoly )
-		{
-			if( listVAIter == NULL )
-			{
-				listVAIter = inversePoly;
-				inversePoly->next = NULL;
-			}
-			else
-			{
-				listVAIter->next = inversePoly;
-				inversePoly->next = NULL;
-			}
-		}
-
-		for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
-		{
-			(*it)->Draw(preScreenTex);
-		}
-
-		//draw terrain
-		while( listVAIter != NULL )
-		//for( int i = 0; i < numBorders; ++i )
-		{
-			if (listVAIter->visible)
-			{
-
-
-
-
-				if (listVAIter->grassVA != NULL)
-					preScreenTex->draw(*listVAIter->grassVA, ts_gravityGrass->texture);
-
-				if (usePolyShader)
-					//if(false )
-				{
-
-					sf::Rect<double> polyAndScreen;
-					sf::Rect<double> aabb = listVAIter->aabb;
-					double rightScreen = screenRect.left + screenRect.width;
-					double bottomScreen = screenRect.top + screenRect.height;
-					double rightPoly = aabb.left + aabb.width;
-					double bottomPoly = aabb.top + aabb.height;
-
-					double left = std::max(screenRect.left, aabb.left);
-
-					double right = std::min(rightPoly, rightScreen);
-
-					double top = std::max(screenRect.top, aabb.top);
-
-					double bottom = std::min(bottomScreen, bottomPoly);
-
-
-					polyAndScreen.left = left;
-					polyAndScreen.top = top;
-					polyAndScreen.width = right - left;
-					polyAndScreen.height = bottom - top;
-
-					assert(listVAIter->pShader != NULL);
-					preScreenTex->draw(*listVAIter->terrainVA, listVAIter->pShader);// listVAIter->ts_terrain->texture );//listVAIter->pShader );//listVAIter->pShader );
-				}
-				else
-				{
-					preScreenTex->draw(*listVAIter->terrainVA);
-				}
-				//cout << "drawing border" << endl;
-				//preScreenTex->draw( *listVAIter->va );
-
-
-
-				//sf::RenderStates rs;
-				//rs.texture = listVAIter->ts_border->texture;
-
-				if (showTerrainDecor)
-				{
-					/*if( listVAIter->triva != NULL )
-						preScreenTex->draw( *listVAIter->triva, rs );
-					if(listVAIter->wallva != NULL )
-						preScreenTex->draw(*listVAIter->wallva, rs);
-
-
-					if (listVAIter->steepva)
-					{
-						preScreenTex->draw(*listVAIter->steepva, rs);
-					}
-
-					if (listVAIter->slopeva)
-					{
-						preScreenTex->draw(*listVAIter->slopeva, rs);
-					}
-
-					if (listVAIter->groundva)
-					{
-						preScreenTex->draw(*listVAIter->groundva, rs);
-					}*/
-					//listVAIter->tr->UpdateDecor();
-					listVAIter->tr->Draw(preScreenTex);
-
-
-					//preScreenTex->setSmooth( false );
-					//listVAIter->DrawBushes( preScreenTex );
-					/*if( listVAIter->bushVA != NULL )
-					{
-						RenderStates bushRS;
-						bushRS.texture = listVAIter->ts_bush->texture;
-
-						preScreenTex->draw( *listVAIter->bushVA, bushRS );
-					}*/
-
-					if (listVAIter->plantva != NULL)
-					{
-						//rs.texture = listVAIter->ts_plant->texture;
-						//preScreenTex->draw( *listVAIter->plantva, rs );
-					}
-
-				}
-
-			}
-
-		/*	if( listVAIter->flowva != NULL )
-			{
-				preScreenTex->draw( *listVAIter->flowva );
-			}*/
-			//preScreenTex->draw( *listVAIter->va );
-			listVAIter = listVAIter->next;
-			timesDraw++; 
-		}
-		
-		if (hasGoal)
-		{
-			preScreenTex->draw(*goalEnergyFlowVA, &flowShader);
-		}
-		
+		DrawZones();
 
 		
-		//motion blur
-		if( false )
-		{
-			preScreenTex->display();
-			//for motion blur
-
-
-			preScreenTex->setView( uiView );
-			sf::RectangleShape rectPost( Vector2f( 1920, 1080 ) );
-			rectPost.setPosition( 0, 0 );
-			//Vector2f camVel = cam.pos - oldCamCenter;
-			
-			Vector2f botLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, 
-				view.getCenter().y + view.getSize().y / 2 );
-			
-
-			motionBlurShader.setUniform( "tex", preScreenTex->getTexture() );
-			/*motionBlurShader.setUniform( "oldBotLeft", oldCamBotLeft );
-			motionBlurShader.setUniform( "botLeft", botLeft );
-			motionBlurShader.setUniform( "oldZoom", oldZoom );
-			motionBlurShader.setUniform( "zoom", cam.GetZoom() );*/
-			//negative player y because of bottom left origin
-
-			V2d t = p0->velocity;
-			double maxBlur = 8;
-			t.x = t.x / p0->maxGroundSpeed * maxBlur;
-			t.y = t.y / p0->maxGroundSpeed * maxBlur;
-
-			
-			Vector2f testVel = Vector2f( p0->velocity.x, -p0->velocity.y );
-
-			motionBlurShader.setUniform( "testVel", Vector2f( t.x, t.y ) );
-
-			motionBlurShader.setUniform( "g_ViewProjectionInverseMatrix", view.getTransform().getInverse().getMatrix() );
-			motionBlurShader.setUniform( "g_previousViewProjectionMatrix", oldView.getTransform().getMatrix() );
-
-			
-			postProcessTex->draw( rectPost, &motionBlurShader );
-
-			postProcessTex->display();
-
-			sf::Sprite pptSpr;
-			pptSpr.setTexture( postProcessTex->getTexture() );
-			//pptSpr.setScale( 2, 2 );
-			//RenderStates blahRender;
-			//blahRender.blendMode = sf::BlendAdd;//sf::BlendAdd;
-
-			preScreenTex->draw( pptSpr );
-			//postProcessTex->display();
-			preScreenTex->setView( view );
-		}
-
+		DrawTerrainPieces(listVA);
 		
+		DrawGoal();
 
-		testGateCount = 0;
-		queryMode = "gate";
-		gateList = NULL;
-		gateTree->Query( this, screenRect );
+		DrawGates();
 
-		while( gateList != NULL )
-		{
-			gateList->Draw( preScreenTex );
-			Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
-			gateList = next;
-		}
+		DrawRails();
 
-		railDrawList = NULL;
-		queryMode = "rail";
-		railDrawTree->Query(this, screenRect);
-		while (railDrawList != NULL)
-		{
-			railDrawList->Draw(preScreenTex);
-			Rail *next = railDrawList->drawNext;
-			railDrawList->drawNext = NULL;
-			railDrawList = next;
-		}
 
-		for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
-		{
-			(*it)->Draw(preScreenTex);
-		}
+		DrawDecorBetween();
 
 		DrawStoryLayer(EffectLayer::BEHIND_ENEMIES);
 		DrawActiveSequence(EffectLayer::BEHIND_ENEMIES);
 		DrawEffects( EffectLayer::BEHIND_ENEMIES );
 
-
-
-		//cout << "enemies draw" << endl;
 		UpdateEnemiesDraw();
 		
 		if (activeSequence != NULL)
 		{
 			activeSequence->Draw(preScreenTex);
 		}
-		
 
 		DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
-		//bigBulletVA->draw( preScreenTex );
-
-		
-
-		//window->display();
-		//continue;
 
 		goalPulse->Draw( preScreenTex );
 
-		for( int i = 0; i < 4; ++i )
-		{
-			p = GetPlayer( i );
-			if( p != NULL )
-			{
-				if( ( p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK ) || p->leftWire->state == Wire::RETRACTING )
-				{
-					p->leftWire->Draw( preScreenTex );
-				}
-				if( ( p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK ) || p->rightWire->state == Wire::RETRACTING )
-				{
-					p->rightWire->Draw( preScreenTex );
-				}
-			}
-		}
+		DrawPlayerWires();
+		
 
 		if( shipSequence )
 		{
-			//preScreenTex->draw( cloud0a );
 			preScreenTex->draw( cloud1, ts_w1ShipClouds1->texture );
 			preScreenTex->draw( cloud0, ts_w1ShipClouds0->texture );
 			preScreenTex->draw( middleClouds );
 			preScreenTex->draw( cloudBot1, ts_w1ShipClouds1->texture );
 			preScreenTex->draw( cloudBot0, ts_w1ShipClouds0->texture );
-			//preScreenTex->draw( cloud0b );
 			preScreenTex->draw( shipSprite );
 		}
 
-		Enemy *current = activeEnemyList;
-		while (current != NULL)
-		{
-			//	cout << "draw" << endl;
-			if ((pauseFrames >= 2 && current->receivedHit != NULL))
-			{
-				current->Draw(preScreenTex);
-			}
-			current = current->next;
-		}
+		DrawHitEnemies(); //whited out hit enemies
 
 		absorbParticles->Draw(preScreenTex);
 
 
-
-		for( int i = 0; i < 4; ++i )
-		{
-			p = GetPlayer( i );
-			if( p != NULL )
-			{
-				p->Draw( preScreenTex );
-			
-				/*if( repGhost != NULL && i == 0 )
-					repGhost->Draw( preScreenTex );*/
-				
-			}
-		}
-
-		for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
-		{
-			(*it)->Draw(preScreenTex);
-		}
-
-		if( shipSequence )
-		{
-			///preScreenTex->draw( cloud1a );
-			//preScreenTex->draw( cloud1b );
-			
-		}
-
-		//whited out hit enemies
+		DrawPlayers();
+		
+		
+		DrawReplayGhosts();
 		
 		DrawStoryLayer(EffectLayer::IN_FRONT);
 		DrawActiveSequence(EffectLayer::IN_FRONT);
@@ -8073,90 +7456,23 @@ int GameSession::Run()
 
 		if (rain != NULL)
 			rain->Draw(preScreenTex);
-		//rain.Draw( preScreenTex );
+
 		preScreenTex->setView( view );
-
-		//view.set
-		
-		//cut.Draw( preScreenTex, cutFrame );
-		//cutFrame++;
-		//if( cutFrame == cut.totalFrames )
-		//{
-		//	cutFrame = 0;
-		//}
-		preScreenTex->setView( view );
-		//f->Draw( preScreenTex );
-		
-
-		if( false )//if( currInput.back || sf::IsKeyPressed( sf::Keyboard::H ) )
-		{
-			//alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
-//			alphaTextSprite.setScale( .5, .5 );
-			alphaTextSprite.setScale( .5 * view.getSize().x / 960.0, .5 * view.getSize().y / 540.0 );
-			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
-			alphaTextSprite.setPosition( view.getCenter().x, view.getCenter().y );
-
-			preScreenTex->draw( alphaTextSprite );
-			//window->draw( alphaTextSprite );
-		}
-
-		/*Enemy *currFX = active;
-		while( currFX != NULL )
-		{
-			currFX->Draw( window );
-			currFX = currFX->next;
-		}*/
 		
 		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{
-			//(*it)->DebugDraw( preScreenTex );
 			(*it)->Draw( preScreenTex );
 		}
 
+		//DrawActiveEnvPlants();
 
-		/*EnvPlant *drawPlant = activeEnvPlants;
-		while( drawPlant != NULL )
-		{
-			preScreenTex->draw( *drawPlant->particle->particles );
-			drawPlant = drawPlant->next;
-		}*/
-		//dont forget to actually remove this
+		UpdateDebugModifiers();
 
+		DebugDraw();
 		
-		if( IsKeyPressed( Keyboard::Num1 ) )
-		{
-			showDebugDraw = true;
-		}
-		else if( IsKeyPressed( Keyboard::Num2 ) )
-		{
-			showDebugDraw = false;
-		}
-		else if( IsKeyPressed( Keyboard::Num3 ) )
-		{
-			showTerrainDecor = false;
-		}
-		else if( IsKeyPressed( Keyboard::Num4 ) )
-		{
-			showTerrainDecor = true;
-		}
-		
-
-		if (showDebugDraw)
-		{
-			DebugDrawActors();
-
-			for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
-			{
-				(*it)->DebugDraw(preScreenTex);
-			}
-		}
-
 
 		if( false )
 		{
-
-			
-			//sf::RectangleShape blah( Vector2f( 1920, 1080 ) );
 			Sprite blah;
 			blah.setTexture( preScreenTex->getTexture() );
 			postProcessTex2->draw( blah );
@@ -8314,131 +7630,16 @@ int GameSession::Run()
 		}
 
 		if(inputVis != NULL)
-		inputVis->Draw(preScreenTex);
+			inputVis->Draw(preScreenTex);
 
 
 		preScreenTex->setView( view );
-		//window->setView( view );
-
 		
 
+		DrawDyingPlayers();
 		
-
+		UpdateTimeSlowShader();
 		
-
-		
-		//terrainTree->DebugDraw( window );
-		//DebugDrawQuadTree( window, enemyTree );
-	//	enemyTree->DebugDraw( window );
-		
-
-		//if( deathWipe )
-		//{
-		//	//cout << "showing death wipe frame: " << deathWipeFrame << " panel: " << deathWipeFrame / 5 << endl;
-		//	wipeSprite.setTexture( wipeTextures[deathWipeFrame / 5] );
-		//	wipeSprite.setTextureRect( IntRect( 0, 0, wipeSprite.getTexture()->getSize().x, 
-		//		wipeSprite.getTexture()->getSize().y) );
-		//	wipeSprite.setOrigin( wipeSprite.getLocalBounds().width / 2, wipeSprite.getLocalBounds().height / 2 );
-		//	wipeSprite.setPosition( player->position.x, player->position.y );//view.getCenter().x, view.getCenter().y );
-		//	preScreenTex->draw( wipeSprite );
-		//}
-
-		
-		for( int i = 0; i < 4; ++i )
-		{
-			p = GetPlayer( i );
-			if( p != NULL )
-			{
-				if( p->action == Actor::DEATH )
-				{
-					p->Draw( preScreenTex );
-				}
-			}
-		}
-
-		cloneShader.setUniform( "u_texture", preScreenTex->getTexture() );
-		cloneShader.setUniform( "newscreen", p0->percentCloneChanged );
-		cloneShader.setUniform( "Resolution", Vector2f( 1920, 1080 ) );//window->getSize().x, window->getSize().y);
-		cloneShader.setUniform( "zoom", cam.GetZoom() );
-
-		cloneShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2, 
-			view.getCenter().y + view.getSize().y / 2 ) );
-
-		cloneShader.setUniform( "bubbleRadius0", (float)p0->bubbleRadiusSize[0] );
-		cloneShader.setUniform( "bubbleRadius1", (float)p0->bubbleRadiusSize[1] );
-		cloneShader.setUniform( "bubbleRadius2", (float)p0->bubbleRadiusSize[2] );
-		cloneShader.setUniform( "bubbleRadius3", (float)p0->bubbleRadiusSize[3] );
-		cloneShader.setUniform( "bubbleRadius4", (float)p0->bubbleRadiusSize[4] );
-		cloneShader.setUniformArray("bubbleRadius", fBubbleRadiusSize, 20);//p0->maxBubbles * m_numActivePlayers);
-		cloneShader.setUniformArray("bPos", fBubblePos, 20);//p0->maxBubbles * m_numActivePlayers);
-		cloneShader.setUniformArray("bFrame", fBubbleFrame, 20);//p0->maxBubbles * m_numActivePlayers);
-		cloneShader.setUniform("totalBubbles", p0->maxBubbles * m_numActivePlayers);
-		//too many assumptions that p0 will always be here lots of refactoring to do
-		
-
-		float windowx = 1920;//window->getSize().x;
-		float windowy = 1080;//window->getSize().y;
-
-		Vector2i vi0, vi1, vi2, vi3, vi4;
-		Vector2f tpos[5];
-		Actor *tPlayer = NULL;
-		for (int i = 0; i < 4; ++i)
-		{
-			if (tPlayer = GetPlayer(i))
-			{
-				vi0 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[0].x, tPlayer->bubblePos[0].y));
-				tpos[0] = Vector2f(vi0.x / windowx, -1 + vi0.y / windowy);
-
-				vi1 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[1].x, tPlayer->bubblePos[1].y));
-				tpos[1] = Vector2f(vi1.x / windowx, -1 + vi1.y / windowy);
-
-				vi2 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[2].x, tPlayer->bubblePos[2].y));
-				tpos[2] = Vector2f(vi2.x / windowx, -1 + vi2.y / windowy);
-
-				vi3 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[3].x, tPlayer->bubblePos[3].y));
-				tpos[3] = Vector2f(vi3.x / windowx, -1 + vi3.y / windowy);
-
-				vi4 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[4].x, tPlayer->bubblePos[4].y));
-				tpos[4] = Vector2f(vi4.x / windowx, -1 + vi4.y / windowy);
-
-				for (int j = 0; j < 5; ++j)
-				{
-					fBubblePos[i * 5 + j] = tpos[j];
-				}
-				
-				//vi5 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[5].x, tPlayer->bubblePos[5].y));
-				//Vector2f pos5(vi5.x / windowx, -1 + vi5.y / windowy);
-			}
-		}
-		
-
-
-		
-
-		cloneShader.setUniformArray("bPos", fBubblePos, 5 * 4);
-		//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
-		//cout << "b0frame: " << player->bubbleFramesToLive[0] << endl;
-		//cout << "b1frame: " << player->bubbleFramesToLive[1] << endl;
-		//cout << "b2frame: " << player->bubbleFramesToLive[2] << endl;
-
-		//cloneShader.setUniform( "bubble0", pos0 );
-		cloneShader.setUniform( "b0Frame", (float)p0->bubbleFramesToLive[0] );
-		//cloneShader.setUniform( "bubble1", pos1 );
-		cloneShader.setUniform( "b1Frame", (float)p0->bubbleFramesToLive[1] );
-		//cloneShader.setUniform( "bubble2", pos2 );
-		cloneShader.setUniform( "b2Frame", (float)p0->bubbleFramesToLive[2] );
-		//cloneShader.setUniform( "bubble3", pos3 );
-		cloneShader.setUniform( "b3Frame", (float)p0->bubbleFramesToLive[3] );
-		//cloneShader.setUniform( "bubble4", pos4 );
-		cloneShader.setUniform( "b4Frame", (float)p0->bubbleFramesToLive[4] );
-		//cloneShader.setUniform( "bubble5", pos5 );
-		//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
-		
-		
-
-
-		
-
 		//this is so inefficient LOL
 		if (false)
 		{
@@ -8483,6 +7684,8 @@ int GameSession::Run()
 			preScreenTex->setView(uiView);
 			currBroadcast->Draw(preScreenTex);
 		}
+
+
 		DrawActiveSequence(EffectLayer::UI_FRONT);
 		DrawEffects(EffectLayer::UI_FRONT);
 
@@ -8522,15 +7725,11 @@ int GameSession::Run()
 		preTexSprite.setScale(.5, .5);
 		preTexSprite.setTexture( preTex0 );
 		
-		//screenRecorder.Update( preTex0 );
-		//preTexSprite.setPosition( -960 / 2, -540 / 2 );
-		//preTexSprite.setScale( .5, .5 );
-		//lastFrameTex->draw(preTexSprite);
 		if (debugScreenRecorder != NULL)
 			debugScreenRecorder->Update(preTex0);
 
 		window->draw( preTexSprite );//, &cloneShader );
-		}
+		
 		}
 		else if( state == PAUSE )
 		{
@@ -8683,7 +7882,7 @@ int GameSession::Run()
 
 			Color testColor( 0x75, 0x70, 0x90, 191 );
 			testColor = Color::Green;
-			TestVA * listVAIter = listVA;
+			TerrainPiece * listVAIter = listVA;
 			while( listVAIter != NULL )
 			{
 				if (listVAIter->visible)
@@ -8881,7 +8080,7 @@ int GameSession::Run()
 
 			Color testColor( 0x75, 0x70, 0x90, 191 );
 			testColor = Color::Green;
-			TestVA * listVAIter = listVA;
+			TerrainPiece * listVAIter = listVA;
 			while( listVAIter != NULL )
 			{
 				int vertexCount = listVAIter->terrainVA->getVertexCount();
@@ -9631,15 +8830,15 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		if( listVA == NULL )
 		{
-			listVA = (TestVA*)qte;
+			listVA = (TerrainPiece*)qte;
 		//	cout << "1" << endl;
 			numBorders++;
 		}
 		else
 		{
 			
-			TestVA *tva = (TestVA*)qte;
-			TestVA *temp = listVA;
+			TerrainPiece *tva = (TerrainPiece*)qte;
+			TerrainPiece *temp = listVA;
 			bool okay = true;
 			while( temp != NULL )
 			{
@@ -9950,6 +9149,105 @@ void GameSession::DebugDrawActors()
 	}
 }
 
+void GameSession::DrawDyingPlayers()
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			if (p->action == Actor::DEATH)
+			{
+				p->Draw(preScreenTex);
+			}
+		}
+	}
+}
+
+void GameSession::UpdateTimeSlowShader()
+{
+	Actor *p0 = GetPlayer(0);
+
+	cloneShader.setUniform("u_texture", preScreenTex->getTexture());
+	cloneShader.setUniform("newscreen", p0->percentCloneChanged);
+	cloneShader.setUniform("Resolution", Vector2f(1920, 1080));//window->getSize().x, window->getSize().y);
+	cloneShader.setUniform("zoom", cam.GetZoom());
+
+	cloneShader.setUniform("topLeft", Vector2f(view.getCenter().x - view.getSize().x / 2,
+		view.getCenter().y + view.getSize().y / 2));
+
+	cloneShader.setUniform("bubbleRadius0", (float)p0->bubbleRadiusSize[0]);
+	cloneShader.setUniform("bubbleRadius1", (float)p0->bubbleRadiusSize[1]);
+	cloneShader.setUniform("bubbleRadius2", (float)p0->bubbleRadiusSize[2]);
+	cloneShader.setUniform("bubbleRadius3", (float)p0->bubbleRadiusSize[3]);
+	cloneShader.setUniform("bubbleRadius4", (float)p0->bubbleRadiusSize[4]);
+	cloneShader.setUniformArray("bubbleRadius", fBubbleRadiusSize, 20);//p0->maxBubbles * m_numActivePlayers);
+	cloneShader.setUniformArray("bPos", fBubblePos, 20);//p0->maxBubbles * m_numActivePlayers);
+	cloneShader.setUniformArray("bFrame", fBubbleFrame, 20);//p0->maxBubbles * m_numActivePlayers);
+	cloneShader.setUniform("totalBubbles", p0->maxBubbles * m_numActivePlayers);
+	//too many assumptions that p0 will always be here lots of refactoring to do
+
+
+	float windowx = 1920;//window->getSize().x;
+	float windowy = 1080;//window->getSize().y;
+
+	Vector2i vi0, vi1, vi2, vi3, vi4;
+	Vector2f tpos[5];
+	Actor *tPlayer = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (tPlayer = GetPlayer(i))
+		{
+			vi0 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[0].x, tPlayer->bubblePos[0].y));
+			tpos[0] = Vector2f(vi0.x / windowx, -1 + vi0.y / windowy);
+
+			vi1 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[1].x, tPlayer->bubblePos[1].y));
+			tpos[1] = Vector2f(vi1.x / windowx, -1 + vi1.y / windowy);
+
+			vi2 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[2].x, tPlayer->bubblePos[2].y));
+			tpos[2] = Vector2f(vi2.x / windowx, -1 + vi2.y / windowy);
+
+			vi3 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[3].x, tPlayer->bubblePos[3].y));
+			tpos[3] = Vector2f(vi3.x / windowx, -1 + vi3.y / windowy);
+
+			vi4 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[4].x, tPlayer->bubblePos[4].y));
+			tpos[4] = Vector2f(vi4.x / windowx, -1 + vi4.y / windowy);
+
+			for (int j = 0; j < 5; ++j)
+			{
+				fBubblePos[i * 5 + j] = tpos[j];
+			}
+
+			//vi5 = preScreenTex->mapCoordsToPixel(Vector2f(tPlayer->bubblePos[5].x, tPlayer->bubblePos[5].y));
+			//Vector2f pos5(vi5.x / windowx, -1 + vi5.y / windowy);
+		}
+	}
+
+
+
+
+
+	cloneShader.setUniformArray("bPos", fBubblePos, 5 * 4);
+	//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
+	//cout << "b0frame: " << player->bubbleFramesToLive[0] << endl;
+	//cout << "b1frame: " << player->bubbleFramesToLive[1] << endl;
+	//cout << "b2frame: " << player->bubbleFramesToLive[2] << endl;
+
+	//cloneShader.setUniform( "bubble0", pos0 );
+	cloneShader.setUniform("b0Frame", (float)p0->bubbleFramesToLive[0]);
+	//cloneShader.setUniform( "bubble1", pos1 );
+	cloneShader.setUniform("b1Frame", (float)p0->bubbleFramesToLive[1]);
+	//cloneShader.setUniform( "bubble2", pos2 );
+	cloneShader.setUniform("b2Frame", (float)p0->bubbleFramesToLive[2]);
+	//cloneShader.setUniform( "bubble3", pos3 );
+	cloneShader.setUniform("b3Frame", (float)p0->bubbleFramesToLive[3]);
+	//cloneShader.setUniform( "bubble4", pos4 );
+	cloneShader.setUniform("b4Frame", (float)p0->bubbleFramesToLive[4]);
+	//cloneShader.setUniform( "bubble5", pos5 );
+	//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
+}
+
 void GameSession::DrawStoryLayer(EffectLayer ef)
 {
 	if (currStorySequence != NULL)
@@ -9991,6 +9289,18 @@ void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 	//}
 }
 
+void GameSession::DrawActiveEnvPlants()
+{
+	EnvPlant *drawPlant = activeEnvPlants;
+	while( drawPlant != NULL )
+	{
+		preScreenTex->draw( *drawPlant->particle->particles );
+		drawPlant = drawPlant->next;
+	}
+}
+
+
+
 SoundNode *GameSession::ActivateSound( V2d &pos, SoundBuffer *buffer, bool loop )
 {
 	sf::Rect<double> soundRect = screenRect;
@@ -10010,6 +9320,247 @@ SoundNode *GameSession::ActivateSound( V2d &pos, SoundBuffer *buffer, bool loop 
 	}
 }
 
+void GameSession::DrawZones()
+{
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->Draw(preScreenTex);
+	}
+}
+
+void GameSession::DrawBlackBorderQuads()
+{
+	bool narrowMap = mh->boundsWidth < 1920 * 2;
+
+	if (cam.manual || narrowMap)
+	{
+		preScreenTex->draw(blackBorderQuads, 16, sf::Quads);
+	}
+	else
+	{
+		preScreenTex->draw(blackBorderQuads, 8, sf::Quads);
+	}
+}
+
+void GameSession::DrawTopClouds()
+{
+	if (topClouds != NULL)
+		topClouds->Draw(preScreenTex);
+}
+
+void GameSession::UpdateEnvShaders()
+{
+	Vector2f botLeft(view.getCenter().x - view.getSize().x / 2,
+		view.getCenter().y + view.getSize().y / 2);
+
+	Vector2f playertest = (botLeft - oldCamBotLeft) / 5.f;
+
+	UpdatePolyShaders(botLeft, playertest);
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->Update(cam.GetZoom(), botLeft, playertest);
+	}
+}
+
+void GameSession::DrawGates()
+{
+	testGateCount = 0;
+	queryMode = "gate";
+	gateList = NULL;
+	gateTree->Query(this, screenRect);
+
+	while (gateList != NULL)
+	{
+		gateList->Draw(preScreenTex);
+		Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
+		gateList = next;
+	}
+}
+
+void GameSession::DrawRails()
+{
+	railDrawList = NULL;
+	queryMode = "rail";
+	railDrawTree->Query(this, screenRect);
+	while (railDrawList != NULL)
+	{
+		railDrawList->Draw(preScreenTex);
+		Rail *next = railDrawList->drawNext;
+		railDrawList->drawNext = NULL;
+		railDrawList = next;
+	}
+}
+
+void GameSession::DrawDecorBetween()
+{
+	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
+	{
+		(*it)->Draw(preScreenTex);
+	}
+}
+
+void GameSession::DrawGoal()
+{
+	if (hasGoal)
+	{
+		preScreenTex->draw(*goalEnergyFlowVA, &flowShader);
+	}
+}
+
+void GameSession::UpdateGoalFlow()
+{
+	Actor *p0 = GetPlayer(0);
+	if (hasGoal)
+	{
+		flowRadius = (maxFlowRadius - (maxFlowRadius / flowFrameCount) * flowFrame);
+
+		flowShader.setUniform("radius", flowRadius / maxFlowRings);
+		//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
+		flowShader.setUniform("zoom", cam.GetZoom());
+		flowShader.setUniform("playerPos", Vector2f(p0->position.x, p0->position.y));
+
+
+
+		++flowFrame;
+		if (flowFrame == flowFrameCount)
+		{
+			flowFrame = 0;
+		}
+	}
+}
+
+void GameSession::UpdateDebugModifiers()
+{
+	if (IsKeyPressed(Keyboard::Num1))
+	{
+		showDebugDraw = true;
+	}
+	else if (IsKeyPressed(Keyboard::Num2))
+	{
+		showDebugDraw = false;
+	}
+	else if (IsKeyPressed(Keyboard::Num3))
+	{
+		showTerrainDecor = false;
+	}
+	else if (IsKeyPressed(Keyboard::Num4))
+	{
+		showTerrainDecor = true;
+	}
+}
+
+void GameSession::DebugDraw()
+{
+	if (showDebugDraw)
+	{
+		DebugDrawActors();
+
+		for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
+		{
+			(*it)->DebugDraw(preScreenTex);
+		}
+	}
+}
+
+void GameSession::DrawTerrainPieces(TerrainPiece *tPiece)
+{
+	if (drawInversePoly)
+	{
+		if (tPiece == NULL)
+		{
+			tPiece = inversePoly;
+			inversePoly->next = NULL;
+		}
+		else
+		{
+			tPiece->next = inversePoly;
+			inversePoly->next = NULL;
+		}
+	}
+
+	//draw terrain
+	while (tPiece != NULL)
+	{
+		tPiece->Draw(preScreenTex);
+		tPiece = tPiece->next;
+	}
+}
+
+void GameSession::UpdateActiveEnvPlants()
+{
+
+}
+
+void GameSession::UpdateDecorSprites()
+{
+	TerrainPiece *te = listVA;
+	while (te != NULL)
+	{
+
+		te->UpdateTouchGrass(); //put this in its own spot soon
+		if (te->tr != NULL)
+			te->tr->UpdateDecorSprites();
+		te = te->next;
+	}
+
+	
+}
+
+void GameSession::DrawPlayerWires()
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			if ((p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK) || p->leftWire->state == Wire::RETRACTING)
+			{
+				p->leftWire->Draw(preScreenTex);
+			}
+			if ((p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK) || p->rightWire->state == Wire::RETRACTING)
+			{
+				p->rightWire->Draw(preScreenTex);
+			}
+		}
+	}
+}
+
+void GameSession::DrawHitEnemies()
+{
+	Enemy *current = activeEnemyList;
+	while (current != NULL)
+	{
+		if ((pauseFrames >= 2 && current->receivedHit != NULL))
+		{
+			current->Draw(preScreenTex);
+		}
+		current = current->next;
+	}
+}
+
+void GameSession::DrawPlayers()
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->Draw(preScreenTex);
+		}
+	}
+}
+
+void GameSession::DrawReplayGhosts()
+{
+	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+	{
+		(*it)->Draw(preScreenTex);
+	}
+}
+
 void GameSession::KillAllEnemies()
 {
 	Enemy *curr = activeEnemyList;
@@ -10023,6 +9574,17 @@ void GameSession::KillAllEnemies()
 			//curr->health = 0;
 		}
 		curr = next;	
+	}
+}
+
+void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
+{
+	for (int i = 0; i < numPolyTypes; ++i)
+	{
+		polyShaders[i].setUniform("zoom", cam.GetZoom());
+		polyShaders[i].setUniform("topLeft", botLeft); //just need to change the name topleft eventually
+		polyShaders[i].setUniform("playertest", playertest);
+		polyShaders[i].setUniform("skyColor", ColorGL(background->GetSkyColor()));
 	}
 }
 
@@ -10133,7 +9695,7 @@ bool GameSession::HasPowerUnlocked( int pIndex )
 void GameSession::DrawColoredMapTerrain(sf::RenderTarget *target, sf::Color &c)
 {
 	//must be already filled from a query
-	TestVA * listVAIter = listVA;
+	TerrainPiece * listVAIter = listVA;
 	while (listVAIter != NULL)
 	{
 		if (listVAIter->visible)
@@ -10176,7 +9738,7 @@ void GameSession::DrawAllMapWires(
 	}
 }
 
-void GameSession::TestVA::UpdateBushFrame()
+void TerrainPiece::UpdateBushFrame()
 {
 	/*bushFrame++;
 	if( bushFrame == bushAnimLength * bushAnimFactor )
@@ -10185,7 +9747,7 @@ void GameSession::TestVA::UpdateBushFrame()
 	}*/
 }
 
-void GameSession::TestVA::DrawBushes( sf::RenderTarget *target )
+void TerrainPiece::DrawBushes( sf::RenderTarget *target )
 {
 	for( list<DecorExpression*>::iterator it = bushes.begin(); 
 		it != bushes.end(); ++it )
@@ -10196,7 +9758,7 @@ void GameSession::TestVA::DrawBushes( sf::RenderTarget *target )
 	//target->draw( 
 }
 
-void GameSession::TestVA::UpdateBushes()
+void TerrainPiece::UpdateBushes()
 {
 	//int numBushes = bushVA->getVertexCount() / 4;
 
@@ -10213,14 +9775,64 @@ void GameSession::TestVA::UpdateBushes()
 	//++bushFrame;
 }
 
-void GameSession::TestVA::HandleQuery( QuadTreeCollider *qtc )
+void TerrainPiece::HandleQuery( QuadTreeCollider *qtc )
 {
 	qtc->HandleEntrant( this );
 }
 
-bool GameSession::TestVA::IsTouchingBox( const sf::Rect<double> &r )
+bool TerrainPiece::IsTouchingBox( const sf::Rect<double> &r )
 {
 	return IsBoxTouchingBox( aabb, r );
+}
+
+void TerrainPiece::Draw(sf::RenderTarget *target)
+{
+	if (visible)
+	{
+		if (grassVA != NULL)
+			target->draw(*grassVA, owner->ts_gravityGrass->texture);
+
+		if (owner->usePolyShader)
+		{
+			sf::Rect<double> screenRect = owner->screenRect;
+			sf::Rect<double> polyAndScreen;
+			double rightScreen = screenRect.left + screenRect.width;
+			double bottomScreen = screenRect.top + screenRect.height;
+			double rightPoly = aabb.left + aabb.width;
+			double bottomPoly = aabb.top + aabb.height;
+
+			double left = std::max(screenRect.left, aabb.left);
+
+			double right = std::min(rightPoly, rightScreen);
+
+			double top = std::max(screenRect.top, aabb.top);
+
+			double bottom = std::min(bottomScreen, bottomPoly);
+
+
+			polyAndScreen.left = left;
+			polyAndScreen.top = top;
+			polyAndScreen.width = right - left;
+			polyAndScreen.height = bottom - top;
+
+			assert(pShader != NULL);
+			target->draw(*terrainVA, pShader);
+		}
+		else
+		{
+			target->draw(*terrainVA);
+		}
+
+		if (owner->showTerrainDecor)
+		{
+			tr->Draw(target);
+		}
+
+		for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+		{
+			(*it)->Draw(target);
+		}
+	}
 }
 
 void GameSession::ResetShipSequence()
@@ -10653,35 +10265,6 @@ void GameSession::UpdateExplodingGravityGrass()
 	}
 }
 
-void GameSession::UpdateTerrainShader( const sf::Rect<double> &aabb )
-{
-	lightsAtOnce = 0;
-	tempLightLimit = 9;
-
-	queryMode = "lights"; 
-	lightTree->Query( this, aabb );
-
-	Vector2i vi = Mouse::getPosition();
-	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
-	//polyShader.setUniform( "stuff", 10, 10, 10 );
-	
-/*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
-	pos0.y = 1 - pos0.y;
-	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
-	pos1.y = 1 - pos1.y;
-	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
-	pos2.y = 1 - pos2.y;*/
-	
-	bool on[9];
-	for( int i = 0; i < 9; ++i )
-	{
-		on[i] = false;
-	}
-
-	
-	float windowx = 1920;//window->getSize().x;
-	float windowy = 1080;//window->getSize().y;
-}
 
 double GameSession::GetTriangleArea( p2t::Triangle * t )
 {
@@ -10706,12 +10289,13 @@ double GameSession::GetTriangleArea( p2t::Triangle * t )
 	return A;
 }
 
-void GameSession::TestVA::AddDecorExpression( GameSession::DecorExpression *exp )
+void TerrainPiece::AddDecorExpression( DecorExpression *exp )
 {
 	bushes.push_back( exp );
 }
 
-GameSession::TestVA::TestVA()
+TerrainPiece::TerrainPiece( GameSession *p_owner)
+	:owner( p_owner )
 {
 	groundva = NULL;
 	slopeva = NULL;
@@ -10727,12 +10311,17 @@ GameSession::TestVA::TestVA()
 	grassVA = NULL;
 }
 
-GameSession::TestVA::~TestVA()
+TerrainPiece::~TerrainPiece()
 {
 	if (tr != NULL)
 		delete tr;
 
 	for (auto it = bushes.begin(); it != bushes.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
 	{
 		delete (*it);
 	}
@@ -10751,7 +10340,95 @@ GameSession::TestVA::~TestVA()
 	delete grassVA;
 }
 
-void GameSession::TestVA::UpdateBushSprites()
+struct PlantInfo
+{
+	PlantInfo(Edge*e, double q, double w)
+		:edge(e), quant(q), quadWidth(w)
+	{
+	}
+	Edge *edge;
+	double quant;
+	double quadWidth;
+};
+
+
+void TerrainPiece::AddTouchGrass()
+{
+	TouchGrassCollection *coll = new TouchGrassCollection;
+	touchGrassCollections.push_back(coll);
+
+	list<PlantInfo> info;
+
+	int tw = 32;
+	int th = 32;
+
+	Edge *startEdge = tr->startEdge;
+
+	Edge *te = startEdge;
+	do
+	{
+		int valid = 0;
+		if (valid != -1)
+		{
+			double len = length(te->v1 - te->v0);
+			int numQuads = len / tw;
+			double quadWidth = 32;//len / numQuads;
+
+			if (numQuads > 0)
+			{
+				for (int i = 0; i < numQuads; ++i)
+				{
+					int r = rand() % 100;
+					if (r < 50)
+					{
+						info.push_back(PlantInfo(te, quadWidth * i, quadWidth));
+					}
+				}
+			}
+		}
+		te = te->edge1;
+	} while (te != startEdge);
+
+	int infoSize = info.size();
+	int vaSize = infoSize * 4;
+
+	if (infoSize == 0)
+	{
+		return;
+	}
+
+	//cout << "number of plants: " << infoSize << endl;
+	coll->touchGrassVA = new Vertex[vaSize];
+
+	int vaIndex = 0;
+	for (list<PlantInfo>::iterator it = info.begin(); it != info.end(); ++it)
+	{
+		TouchGrass *tg = new TouchGrass(TouchGrass::TYPE_NORMAL, vaIndex, coll->touchGrassVA,
+			NULL, (*it).edge, (*it).quant, (*it).quadWidth, 0);
+		coll->myGrass.push_back(tg);
+		coll->touchGrassTree->Insert(tg);
+		vaIndex++;
+	}
+	coll->numTouchGrasses = infoSize;
+}
+
+void TerrainPiece::QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r)
+{
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		(*it)->Query(qtc, r);
+	}
+}
+
+void TerrainPiece::UpdateTouchGrass()
+{
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		(*it)->UpdateGrass();
+	}
+}
+
+void TerrainPiece::UpdateBushSprites()
 {
 	for (list<DecorExpression*>::iterator it = bushes.begin();
 		it != bushes.end(); ++it)
@@ -10760,90 +10437,7 @@ void GameSession::TestVA::UpdateBushSprites()
 	}
 }
 
-GameSession::DecorExpression::DecorExpression( std::list<sf::Vector2f> &pointList,
-	GameSession::DecorLayer *p_layer )
-	:layer( p_layer )
-{
-	int numBushes = pointList.size();
-	//cout << "numBushes: " << numBushes << endl;
-	Tileset *ts = layer->ts;
-
-	va = new VertexArray( sf::Quads, numBushes * 4 );
-	VertexArray &VA = *va;
-
-	IntRect subRect = ts->GetSubRect( 0 );
-	list<Vector2f>::iterator posIt;
-	if( numBushes > 0 )
-		posIt = pointList.begin();
-
-	Vector2f p;
-	for( int i = 0; i < numBushes; ++i )
-	{
-		p = (*posIt);
-		//cout << "i: " << i << ", p: " <<  p.x << ", " << p.y << endl;
-		VA[i*4+0].position = Vector2f( p.x - subRect.width / 2, p.y - subRect.height / 2 );
-		VA[i*4+1].position = Vector2f( p.x + subRect.width / 2, p.y - subRect.height / 2 );
-		VA[i*4+2].position = Vector2f( p.x + subRect.width / 2, p.y + subRect.height / 2 );
-		VA[i*4+3].position = Vector2f( p.x - subRect.width / 2, p.y + subRect.height / 2 );
-
-		/*VA[i*4+0].color= Color::Red;
-		VA[i*4+1].color= Color::Red;
-		VA[i*4+2].color= Color::Red;
-		VA[i*4+3].color= Color::Red;*/
-
-		VA[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-		VA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-		VA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-		VA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
-
-		++posIt;
-	}
-}
-
-GameSession::DecorExpression::~DecorExpression()
-{
-	delete va;
-}
-
-GameSession::DecorLayer::DecorLayer( Tileset *p_ts, int p_animLength, int p_animFactor, int p_startTile, int p_loopWait )
-	:ts( p_ts ), frame( 0 ), animLength( p_animLength ), startTile( p_startTile ), animFactor( p_animFactor ),
-	loopWait( p_loopWait )
-{
-
-}
-
-void GameSession::DecorLayer::Update()
-{
-	++frame;
-	if(frame == animLength * animFactor + loopWait )
-	{
-		frame = 0;
-	}
-}
-
-void GameSession::DecorExpression::UpdateSprites()
-{
-	int numBushes = va->getVertexCount() / 4;
-
-	Tileset *ts_bush = layer->ts;
-	int frame = max( layer->frame - layer->loopWait, 0 );
-	int animLength = layer->animLength;
-	int animFactor = layer->animFactor;
-
-	VertexArray &bVA = *va;
-
-	IntRect subRect = ts_bush->GetSubRect( (layer->startTile + frame) / animFactor );
-
-	for( int i = 0; i < numBushes; ++i )
-	{
-		bVA[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-		bVA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-		bVA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-		bVA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
-	}
-}
-
-GameSession::DecorExpression * GameSession::CreateDecorExpression(  DecorType dType,
+DecorExpression * GameSession::CreateDecorExpression(  DecorType dType,
 	int bgLayer,
 	Edge *startEdge)
 {
@@ -10889,9 +10483,9 @@ GameSession::DecorExpression * GameSession::CreateDecorExpression(  DecorType dT
 	DecorLayer *layer = NULL;
 	if( decorLayerMap.count(dType) == 0 )
 	{
-		//int GameSession::TestVA::bushFrame = 0;
-		//int GameSession::TestVA::bushAnimLength = 20;
-		//int GameSession::TestVA::bushAnimFactor = 8;
+		//int GameSession::TerrainPiece::bushFrame = 0;
+		//int GameSession::TerrainPiece::bushAnimLength = 20;
+		//int GameSession::TerrainPiece::bushAnimFactor = 8;
 
 		Tileset *ts_d = NULL;
 		switch (dType)
@@ -11077,16 +10671,7 @@ GameSession::DecorExpression * GameSession::CreateDecorExpression(  DecorType dT
 }
 
 
-struct PlantInfo
-{
-	PlantInfo( Edge*e, double q, double w )
-		:edge( e), quant( q), quadWidth(w)
-	{
-	}
-	Edge *edge;
-	double quant;
-	double quadWidth;
-};
+
 
 sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, int (*ValidEdge)(sf::Vector2<double> &) )
 {
@@ -11098,10 +10683,8 @@ sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, in
 	Edge *te = startEdge;
 	do
 	{
-		//V2d eNorm = te->Normal();
-		//int valid = ValidEdge( eNorm );
 		int valid = 0;
-		if( valid != -1 )//eNorm.x == 0 )
+		if( valid != -1 )
 		{
 			double len = length( te->v1 - te->v0 );
 			int numQuads = len / tw;
@@ -13851,320 +13434,6 @@ void EnvPlant::Reset()
 	particle->Reset();
 }
 
-void GameSession::SetParMountains( sf::RenderTarget *target )
-{
-	View vah = view;
-	double zoomFactor = 6.0;
-	double yChange = 100;
-	double zoom = view.getSize().x / 960.0;
-	double addZoom = (zoom - 1) / zoomFactor;
-	double newZoom = 1 + addZoom;
-
-	vah.setSize( 960 * newZoom, 540 * newZoom );
-	//vah.setSize( 960 * zoom, 540 * zoom );
-	vah.setCenter( vah.getCenter().x / zoomFactor, vah.getCenter().y / zoomFactor );
-
-	sf::RectangleShape rs;
-	rs.setSize( Vector2f( vah.getSize().x, 512 ) );
-	rs.setFillColor( Color::Red );
-	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, - 512 + yChange );
-
-	mountainShader.setUniform( "Resolution", Vector2f( 1920, 1080 ) );
-	mountainShader.setUniform( "zoom", (float)newZoom );
-	mountainShader.setUniform( "size", Vector2f( 1920, 1024 ) );
-	
-	Vector2f trueBotLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
-	Vector2i tempPos = preScreenTex->mapCoordsToPixel( trueBotLeft );
-	preScreenTex->setView( vah );
-	trueBotLeft = preScreenTex->mapPixelToCoords( tempPos );
-	trueBotLeft.y -= yChange;
-
-
-	mountainShader.setUniform( "topLeft", trueBotLeft );
-
-	preScreenTex->draw( rs, &mountainShader );
-
-	preScreenTex->setView( view );
-}
-
-void GameSession::SetParMountains1( sf::RenderTarget *target )
-{
-	View vah = view;
-	double zoomFactor = 4;
-	double yChange = 200;
-	double zoom = view.getSize().x / 960.0;
-	double addZoom = (zoom - 1) / zoomFactor;
-	double newZoom = 1 + addZoom;
-
-	//vah.setSize( 960 * newZoom, 540 * newZoom );
-	vah.setSize( 960 * newZoom, 540 * newZoom );
-	vah.setCenter( vah.getCenter().x / zoomFactor, vah.getCenter().y / zoomFactor );
-	
-	sf::RectangleShape rs;
-	rs.setSize( Vector2f( vah.getSize().x, 406 ) );
-	//rs.setFillColor( Color::Red );
-	rs.setPosition( vah.getCenter().x - vah.getSize().x / 2, -406 + yChange );//- 512 );
-
-	mountainShader1.setUniform( "Resolution", Vector2f( 1920, 1080 ) );
-	mountainShader1.setUniform( "zoom", (float)newZoom );
-	mountainShader1.setUniform( "size", Vector2f( 1920, 812 ) );
-	
-	
-	Vector2f trueBotLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y / 2 );
-	Vector2i tempPos = preScreenTex->mapCoordsToPixel( trueBotLeft );
-	preScreenTex->setView( vah );
-	trueBotLeft = preScreenTex->mapPixelToCoords( tempPos );
-	trueBotLeft.y -= yChange;
-
-	mountainShader1.setUniform( "topLeft", trueBotLeft );
-
-	preScreenTex->draw( rs, &mountainShader1 );
-
-	preScreenTex->setView( view );
-}
-
-void GameSession::SetParOnTop( sf::RenderTarget *target )
-{
-	//closeBack0.setPosition( -960, -400 );
-	//closeBack0.setTextureRect( IntRect( 0, 0, 1920, 400 ) );
-	//closeBack0.setColor( Color::Red );
-	
-	sf::RectangleShape rs;
-	rs.setSize( Vector2f( view.getSize().x, 370 / 2 ) );
-	rs.setFillColor( Color::White );
-	rs.setPosition( view.getCenter().x - view.getSize().x / 2, - 370 / 2 );
-
-	onTopShader.setUniform( "Resolution", Vector2f( 1920, 1080 ) );
-	onTopShader.setUniform( "zoom", cam.GetZoom() );
-	onTopShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2,
-		view.getCenter().y + view.getSize().y / 2 ) );
-
-	preScreenTex->draw( rs, &onTopShader );
-	//preScreenTex->draw( rs );
-
-
-	/*int tilesWide = 3;
-	int totalWidth = 1920 * tilesWide;
-	int camLeft = view.getCenter().x - view.getSize().x / 2;
-	int camRight = view.getCenter().x + view.getSize().x / 2;
-	int diff = camLeft / totalWidth;
-
-	sf::RectangleShape r0( Vector2f( 1920, 400 ) );
-
-	r0.setPosition( diff * totalWidth, -400 );
-	r0.setFillColor( Color::Red );
-
-	preScreenTex->draw( r0 );
-
-	r0.setPosition( 1920 + diff * totalWidth, -400 );
-	r0.setFillColor( Color::Green );
-
-	preScreenTex->draw( r0 );
-
-	r0.setPosition( 1920 * 2 + diff * totalWidth, -400 );
-	r0.setFillColor( Color::Blue );
-
-	
-	preScreenTex->draw( r0 );*/
-
-
-	
-	/*int tilesWide = 6;
-	int zoom = 1;
-	int height = 400;
-	int width = 1920;
-	int totalWidth = width * tilesWide;
-	for( int i = 0; i < tilesWide; ++i )
-	{
-		onTopPar[i*4].color = Color::Blue;
-		onTopPar[i*4+1].color= Color::Red;
-		onTopPar[i*4+2].color= Color::Red;
-		onTopPar[i*4+3].color= Color::Blue;
-	}
-
-	Vector2f delta;
-	delta.x = cam.pos.x / zoom;
-	delta.y = cam.pos.y / zoom;
-
-	cout << "blah: " << (int)cam.pos.x % totalWidth << endl;
-	for( int i = 0; i < tilesWide; ++i )
-	{
-		int x;
-		if( cam.pos.x >= 0 )
-		{
-			x = i * width + cam.pos.x - ;//- (int)cam.pos.x % totalWidth;
-
-			onTopPar[i*4].position = Vector2f( x, -height );
-			onTopPar[i*4+1].position = Vector2f( x + width, -height );
-			onTopPar[i*4+2].position = Vector2f( x + width, 0 );
-			onTopPar[i*4+3].position = Vector2f( x, 0 );
-		}
-		else
-		{
-			x = i * width + cam.pos.x - (int)cam.pos.x % totalWidth;
-			onTopPar[i*4].position = Vector2f( x, -height );
-			onTopPar[i*4+1].position = Vector2f( x + width, -height );
-			onTopPar[i*4+2].position = Vector2f( x + width, 0 );
-			onTopPar[i*4+3].position = Vector2f( x, 0 );
-		}
-
-		
-		
-	}
-
-	target->draw( onTopPar );*/
-	
-}
-
-bool GameSession::SetGroundPar()
-{	
-	Color undertransColor( 255, 50, 255, 255 );
-	Color altTransColor( 0, 255, 255, 255 );
-	int widthFactor = 1;
-	int yView = view.getCenter().y / widthFactor;
-	cloudView.setCenter( 960, 540 + yView );
-	int cloudBot = cloudView.getCenter().y + cloudView.getSize().y / 2;
-
-	//cout << "yView << " << yView << endl;
-	int tileHeight = 1080 / 2;//540;
-	int transTileHeight = 750;//650 / 2;
-
-	if( yView > 1080 + transTileHeight || yView < -tileHeight )
-	{
-	//	return false;
-	}
-	Vector2f offset( 0, -transTileHeight );
-	
-	int width = 1920 * widthFactor;
-	bool flipped = false;
-	int a = ((int)view.getCenter().x) % width;
-	double ratio = a / (double)width;
-	if( ratio < 0 )
-		ratio = 1 + ratio;
-
-	int b = ((int)view.getCenter().x) % (width * 2);
-	double ratiob = b / (double)(width);
-	if( ratiob < 0 )
-		ratiob = 2 + ratiob;
-
-	if( ratiob > ratio + .001 )
-	{
-	//	cout << "flipped ratiob: " << ratiob << ", oldratio: " << ratio << endl;
-		flipped = true;
-	}
-	
-
-	int i = 0;
-	if( flipped )
-	{
-		i = 1;
-		
-	}
-	//preScreenTex->setView( cloudView );
-	float screenBottom = view.getCenter().y + view.getSize().y / 2;
-	int transBot;
-	
-	int groundBottom = 1080;
-	int groundTop = groundBottom - tileHeight;
-	preScreenTex->setView( view );
-	
-
-	transBot = groundBottom + transTileHeight + 1;
-
-	if( screenBottom >= 0 )
-	{
-		//cout << "undergroundPos: " << 
-		Vector2i po = preScreenTex->mapCoordsToPixel( Vector2f( 0, 0 ) );
-		preScreenTex->setView( cloudView );
-		Vector2f la = preScreenTex->mapPixelToCoords( po );
-	//	cout << "under: " << la.y << endl;
-		transBot = -offset.y + la.y + 1;
-	//	Vector2f pix = preScreenTex->mapPixelToCoords( Vector2i( 1920, 1080 ) ).y;
-		//underground is visible
-		//transBot =  //1080 - screenBottom;;//cloudBot;//cloudBot; //
-		//transBot = view.getCenter().y / 2 / cam.GetZoom();
-	//	cout << "transbot: " << transBot << ", center: " << view.getCenter().y << endl;
-	}
-	//else
-	{
-		//underground isn't visible
-	//	cout << "transtop: " << groundBottom << endl;
-	//	cout << "transbot no underground: " << transBot << endl;
-	}
-	int transTop = groundBottom;
-	//ratio = 1 - ratio;
-	
-	ratio = 1 - ratio;
-	//cout << "ratio: " << ratio << endl;
-
-	groundPar[i*4].position = Vector2f( 0, groundTop ) + offset;
-	groundPar[i*4+1].position = Vector2f( 1920 * ratio, groundTop) + offset;
-	groundPar[i*4+2].position = Vector2f( 1920 * ratio, groundBottom ) + offset;
-	groundPar[i*4+3].position = Vector2f( 0, groundBottom ) + offset;
-
-	
-
-	groundPar[i*4].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * i );
-	groundPar[i*4 + 1].texCoords = Vector2f( 1920, tileHeight * i );
-	groundPar[i*4 + 2].texCoords = Vector2f( 1920, tileHeight * (i + 1) );
-	groundPar[i*4 + 3].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * (i + 1) );
-
-	//int what = transTileHeight;//tileHeight / 2 + 100;
-
-//	int bottom = transTileHeight + (1080);
-	
-	//preScreenTex->setView( view );
-	if( screenBottom >= 0 )
-	{
-	//	bottom = preScreenTex->mapCoordsToPixel( Vector2f( 0, 0 ) ).y;//transTileHeight + 1080 - screenBottom;
-	}
-	/*underTransPar[i*4].position = Vector2f( 0, transTop  ) + offset;
-	underTransPar[i*4+1].position = Vector2f( 1920 * ratio, transTop ) + offset;
-	underTransPar[i*4+2].position = Vector2f( 1920 * ratio, transBot ) + offset;
-	underTransPar[i*4+3].position = Vector2f( 0, transBot ) + offset;
-
-	underTransPar[i*4].color = undertransColor;
-	underTransPar[i*4 + 1].color = undertransColor;
-	underTransPar[i*4 + 2].color = altTransColor;
-	underTransPar[i*4 + 3].color = altTransColor;*/
-
-	if( flipped )
-	{
-		i = 0;
-	}
-	else
-	{
-		i = 1;
-	}
-
-
-
-	groundPar[i*4].position = Vector2f( 1920 * ratio , groundTop ) + offset;
-	groundPar[i*4+ 1].position = Vector2f( 1920, groundTop ) + offset;
-	groundPar[i*4+2].position = Vector2f( 1920, groundBottom ) + offset;
-	groundPar[i*4+3].position = Vector2f( 1920 * ratio , groundBottom ) + offset;
-
-	groundPar[i*4].texCoords = Vector2f( 0, tileHeight * i );
-	groundPar[i*4+1].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * i );
-	groundPar[i*4+2].texCoords = Vector2f( 1920 * (1-ratio), tileHeight * (i+1) );
-	groundPar[i*4+3].texCoords = Vector2f( 0, tileHeight * (i+1) );
-
-	/*underTransPar[i*4].position = Vector2f( 1920 * ratio , transTop ) + offset;
-	underTransPar[i*4+ 1].position = Vector2f( 1920, transTop ) + offset;
-	underTransPar[i*4+2].position = Vector2f( 1920, transBot ) + offset;
-	underTransPar[i*4+3].position = Vector2f( 1920 * ratio , transBot ) + offset;
-
-	underTransPar[i*4].color = undertransColor;
-	underTransPar[i*4 + 1].color = undertransColor;
-	underTransPar[i*4 + 2].color = altTransColor;
-	underTransPar[i*4 + 3].color = altTransColor;*/
-
-	
-	
-	preScreenTex->setView( cloudView );
-
-	return true;
-}
 
 void GameSession::SetupClouds()
 {

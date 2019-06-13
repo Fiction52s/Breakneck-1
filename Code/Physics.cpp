@@ -15,6 +15,7 @@ Edge::Edge()
 	edge0 = NULL;
 	edge1 = NULL;
 	edgeType = EdgeType::REGULAR;
+	poly = NULL;
 }
 
 V2d Edge::Normal()
@@ -345,7 +346,7 @@ void MovingTerrain::DebugDraw( sf::RenderTarget *target )
 void MovingTerrain::Draw( RenderTarget *target )
 {
 	sf::Rect<double> realRect( left + position.x, top + position.y, right - left, bottom - top );
-	owner->UpdateTerrainShader( realRect );
+	//owner->UpdateTerrainShader( realRect );
 //	owner->polyShader.setUniform( "topLeft", owner->view.getCenter().x - owner->view.getSize().x / 2 - ( position.x - path[0].x ),
 //			owner->view.getCenter().y - owner->view.getSize().y / 2 - ( position.y - path[0].y ) );
 //	target->draw( *polygonVA, &owner->polyShader );

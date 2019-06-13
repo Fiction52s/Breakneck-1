@@ -29,6 +29,7 @@
 #include "HUD.h"
 #include "VisualEffects.h"
 #include "MapHeader.h"
+#include "TouchGrass.h"
 
 using namespace sf;
 using namespace std;
@@ -1408,7 +1409,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//runPoints = new std::list<Vector2f>[runLen];
 		//standPoints = new std::list<Vector2f>[20];
 
-		hasPowerAirDash = true;
+		hasPowerAirDash = false;//true;
 		hasPowerGravReverse = false;
 		hasPowerBounce = false;
 		hasPowerGrindBall = false;
@@ -2581,6 +2582,14 @@ void Actor::UpdatePrePhysics()
 
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
+
+	if (ground != NULL)
+	{
+		Rect<double> r(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
+		TerrainPiece *piece = ground->poly;
+		queryMode = "touchgrass";
+		piece->QueryTouchGrass(this, r);
+	}
 
 	//cout << "action: " << action << endl;
 	
@@ -18592,8 +18601,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		AirTrigger *at = (AirTrigger*)qte;
 		currAirTrigger = at;
 	}
-	
-	++possibleEdgeCount;
+	else if (queryMode == "touchgrass")
+	{
+		TouchGrass *tGrass = (TouchGrass*)qte;
+		tGrass->Touch();
+	}
+	++possibleEdgeCount; //not needed
 }
 
 double Actor::CalcLandingSpeed( V2d &testVel,

@@ -187,6 +187,8 @@ struct TerrainRender : QuadTreeCollider, RayCastHandler
 
 	std::string rayMode;
 
+	sf::Vertex *movingGrass;
+
 	
 };
 

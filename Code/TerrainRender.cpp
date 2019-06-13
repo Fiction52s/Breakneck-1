@@ -783,9 +783,9 @@ DecorExpression * TerrainRender::CreateDecorExpression(DecorType dType,
 	Tileset *ts_d = NULL;
 	if (s_decorLayerMap.count(dType) == 0)
 	{
-		//int GameSession::TestVA::bushFrame = 0;
-		//int GameSession::TestVA::bushAnimLength = 20;
-		//int GameSession::TestVA::bushAnimFactor = 8;
+		//int GameSession::TerrainPiece::bushFrame = 0;
+		//int GameSession::TerrainPiece::bushAnimLength = 20;
+		//int GameSession::TerrainPiece::bushAnimFactor = 8;
 
 		
 		switch (dType)

@@ -17184,6 +17184,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	{
 		p = new Panel("shard_options", 200, 500, this);
 		p->AddTextBox("shardtype", Vector2i(20, 200), 200, 20, "SHARD_W1_TEACH_JUMP");
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 	}
 	else if (name == "rail")
 	{

@@ -285,6 +285,63 @@ struct AirTrigger;
 struct Nexus;
 struct ButtonHolder;
 
+struct DecorExpression;
+struct DecorLayer;
+struct TouchGrassCollection;
+
+struct TerrainPiece : QuadTreeEntrant
+{
+	TerrainPiece(GameSession *owner);
+	~TerrainPiece();
+	TerrainRender *tr;
+	void AddDecorExpression(DecorExpression *expr);
+	void AddTouchGrass();
+	void UpdateBushSprites();
+	void DrawBushes(sf::RenderTarget *target);
+	GameSession *owner;
+	std::list<TouchGrassCollection*> touchGrassCollections;
+	void QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r);
+	void UpdateTouchGrass();
+	bool visible;
+	std::list<DecorExpression*> bushes;
+	sf::VertexArray *groundva;
+	Tileset *ts_border;
+	sf::VertexArray *slopeva;
+	sf::VertexArray *steepva;
+	sf::VertexArray *wallva;
+	sf::VertexArray *triva;
+	sf::VertexArray *flowva;
+	sf::VertexArray *plantva;
+	sf::VertexArray *decorLayer0va;
+	sf::VertexArray *bushVA;
+	bool inverse;
+	Tileset *ts_plant;
+	Tileset *ts_terrain;
+	Tileset *ts_bush; //plant = surface
+	int numPoints;
+	//bush = middle area
+
+	sf::Shader *pShader;
+	//TerrainPolygon::TerrainType terrainType;
+	int terrainWorldType;
+	int terrainVariation;
+	//int terrainType;
+	//EditSession
+	//TerrainPolygon::material
+	static void UpdateBushFrame();
+	sf::VertexArray *terrainVA;
+	sf::VertexArray *grassVA;
+	bool show;
+	//TerrainPiece *prev;
+	TerrainPiece *next;
+	sf::Rect<double> aabb;
+	double polyArea;
+	void UpdateBushes();
+	void Draw(sf::RenderTarget *target);
+	void HandleQuery(QuadTreeCollider * qtc);
+	bool IsTouchingBox(const sf::Rect<double> &r);
+};
+
 struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum GameResultType
@@ -326,6 +383,30 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		Count
 	};
 	
+	//can make later children of this
+	//that implement more complex behaviors
+	
+
+	enum DecorType
+	{
+		D_W1_BUSH_NORMAL,
+		D_W1_ROCK_1,
+		D_W1_ROCK_2,
+		D_W1_ROCK_3,
+		D_W1_PLANTROCK,
+		D_W1_VEINS1,
+		D_W1_VEINS2,
+		D_W1_VEINS3,
+		D_W1_VEINS4,
+		D_W1_VEINS5,
+		D_W1_VEINS6,
+
+		D_W1_GRASSYROCK
+	};
+
+	
+	TerrainPiece *listVA;
+
 	struct DecorDraw
 	{
 		DecorDraw(sf::Vertex *q,
@@ -352,6 +433,22 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::map<std::string, Tileset*> decorTSMap;
 	//std::map<std::string, std::list<int>> decorTileIndexes;
 	std::list<DecorDraw*> decorBetween;
+	void DrawDecorBetween();
+	void DrawGoal();
+	void UpdateGoalFlow();
+	void DrawTerrainPieces(TerrainPiece *tPiece);
+	void UpdateActiveEnvPlants();
+	void DrawActiveEnvPlants();
+	void UpdateDecorSprites();
+	void DrawPlayerWires();
+	void DrawHitEnemies();
+	void DrawPlayers();
+	void DrawReplayGhosts();
+	void UpdateDebugModifiers();
+	void DebugDraw();
+	void DrawDyingPlayers();
+	void UpdateTimeSlowShader();
+	//void DrawActiveSequence();
 
 
 	StorySequence *currStorySequence;
@@ -457,6 +554,14 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	MusicInfo *originalMusic;
 	std::map<std::string, MusicInfo*> musicMap;
 
+	void UpdatePolyShaders(sf::Vector2f &botLeft,
+		sf::Vector2f &playertest);
+	void DrawZones();
+	void DrawBlackBorderQuads();
+	void DrawTopClouds();
+	void UpdateEnvShaders();
+	void DrawGates();
+	void DrawRails();
 	
 	//int playerScore[4];
 
@@ -619,9 +724,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void rResetEnemies( QNode *node );
 	void rResetPlants( QNode *node );
 	int CountActiveEnemies();
-	void UpdateTerrainShader( const sf::Rect<double> &aabb );
+	
 	void LevelSpecifics();
-	bool SetGroundPar();
 	void SetCloudParAndDraw();
 	
 	void SetUndergroundParAndDraw();
@@ -685,10 +789,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	std::list<MovingTerrain*> movingPlats;
 
-	sf::Shader onTopShader;
-	void SetParMountains( sf::RenderTarget *target );
-	sf::Shader mountainShader;
-
 	sf::Shader flowShader;
 	float flowRadius;
 	int flowFrameCount;
@@ -708,8 +808,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int totalFramesBeforeGoal;
 	//int totalFrames; //including pausing?
 
-	sf::Shader mountainShader1;
-	void SetParMountains1( sf::RenderTarget *target );
 
 	Tileset *ts_keyHolder;
 	sf::Sprite keyHolderSprite;
@@ -889,50 +987,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	
 	
-	//can make later children of this
-	//that implement more complex behaviors
-	struct DecorLayer
-	{
-		DecorLayer( Tileset *ts, int animLength,
-			int animFactor, int tileStart = 0,
-			int loopWait = 0 );
-		void Update();
-		Tileset *ts;
-		int frame;
-		int animLength;
-		int animFactor;
-		int startTile;
-		int loopWait;
-	};
-	struct DecorExpression
-	{
-		DecorExpression( 
-			std::list<sf::Vector2f> &pointList,
-			DecorLayer *layer );
-		~DecorExpression();
-
-		sf::VertexArray *va;
-		DecorLayer *layer;
-
-		void UpdateSprites();
-	};
-
-	enum DecorType
-	{
-		D_W1_BUSH_NORMAL,
-		D_W1_ROCK_1,
-		D_W1_ROCK_2,
-		D_W1_ROCK_3,
-		D_W1_PLANTROCK,
-		D_W1_VEINS1,
-		D_W1_VEINS2,
-		D_W1_VEINS3,
-		D_W1_VEINS4,
-		D_W1_VEINS5,
-		D_W1_VEINS6,
-
-		D_W1_GRASSYROCK
-	};
+	
 	std::map<DecorType,DecorLayer*> decorLayerMap;
 
 
@@ -946,67 +1001,17 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::list<ScrollingBackground*> scrollingBackgrounds;
 	//ScrollingBackground *scrollingTest;
 
-	struct TestVA : QuadTreeEntrant
-	{
-		TestVA();
-		~TestVA();
-		TerrainRender *tr;
-		void AddDecorExpression( DecorExpression *expr );
-		void UpdateBushSprites();
-		void DrawBushes( sf::RenderTarget *target );
-		//static int bushFrame;
-		//static int bushAnimLength;
-		//static int bushAnimFactor;
-		//sf::VertexArray *va;
-		bool visible;
-		std::list<DecorExpression*> bushes;
-		sf::VertexArray *groundva;
-		Tileset *ts_border;
-		sf::VertexArray *slopeva;
-		sf::VertexArray *steepva;
-		sf::VertexArray *wallva;
-		sf::VertexArray *triva;
-		sf::VertexArray *flowva;
-		sf::VertexArray *plantva;
-		sf::VertexArray *decorLayer0va;
-		sf::VertexArray *bushVA;
-		bool inverse;
-		Tileset *ts_plant;
-		Tileset *ts_terrain;
-		Tileset *ts_bush; //plant = surface
-		int numPoints;
-		//bush = middle area
-		
-		sf::Shader *pShader;
-		//TerrainPolygon::TerrainType terrainType;
-		int terrainWorldType;
-		int terrainVariation;
-		//int terrainType;
-		//EditSession
-		//TerrainPolygon::material
-		static void UpdateBushFrame();
-		sf::VertexArray *terrainVA;
-		sf::VertexArray *grassVA;
-		bool show;
-		//TestVA *prev;
-		TestVA *next;
-		sf::Rect<double> aabb;
-		double polyArea;
-		void UpdateBushes();
-		void HandleQuery( QuadTreeCollider * qtc );
-		bool IsTouchingBox( const sf::Rect<double> &r );
-	};
-	TestVA *listVA;
+	
 	std::string queryMode;
 
-	TestVA *inversePoly;
+	TerrainPiece *inversePoly;
 	void SetupInversePoly( Tileset *ts_bush,
 		int currentEdgeIndex );
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
 	bool drawInversePoly;
 	QuadTree *borderTree;
 	Edge *inverseEdgeList;
-	std::list<TestVA*> allVA;
+	std::list<TerrainPiece*> allVA;
 	int numBorders;
 
 	sf::Vector2f lastViewSize;
@@ -1163,7 +1168,7 @@ struct Grass : QuadTreeEntrant
 {
 	Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
 		sf::Vector2<double> &pA, sf::Vector2<double> &pB,
-		sf::Vector2<double> &pC, sf::Vector2<double> &pD, GameSession::TestVA *poly);
+		sf::Vector2<double> &pC, sf::Vector2<double> &pD, TerrainPiece *poly);
 
 	void Reset();
 	sf::Vector2<double> A;
@@ -1185,7 +1190,7 @@ struct Grass : QuadTreeEntrant
 	int explodeFrame;
 	int explodeLimit;
 	GameSession *owner;
-	GameSession::TestVA *poly;
+	TerrainPiece *poly;
 	sf::IntRect aabb;
 	//bool active;
 

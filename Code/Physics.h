@@ -9,6 +9,8 @@
 #define NUM_MAX_STEPS 10.0
 #define MAX_VELOCITY 100
 
+struct TerrainPiece;
+
 struct Edge : QuadTreeEntrant
 {
 	enum EdgeType
@@ -37,6 +39,8 @@ struct Edge : QuadTreeEntrant
 	Edge *edge0;
 	Edge *edge1;
 	EdgeType edgeType;
+	TerrainPiece *poly;
+
 
 	void *info;
 };
