@@ -8660,7 +8660,7 @@ void GameSession::Init()
 	
 	originalMusic = NULL;
 
-	rain = NULL;
+	rain = NULL;//new Rain(this);//NULL;
 	//stormCeilingInfo = NULL;
 	
 

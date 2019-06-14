@@ -5,6 +5,7 @@
 #include "Physics.h"
 #include <sstream>
 #include <boost/lexical_cast.hpp>
+#include "Enemy_Shard.h"
 
 using namespace std;
 using namespace sf;
@@ -20,8 +21,6 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 EditSession * ActorParams::session = NULL;
-
-
 
 
 sf::Font *PoiParams::font = NULL;
@@ -1207,13 +1206,34 @@ ShardParams::ShardParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["shard"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	//image.setTexture( type->imageTexture );
+	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
 
-	shardStr = "SHARD_W1_TEACH_JUMP";//"..no.shard..";
+	SetShard(0, 0, 0);
+	
+	//shardStr = "SHARD_W1_TEACH_JUMP";//"..no.shard..";
+}
+
+void ShardParams::SetShard(int w, int realX, int realY)
+{
+	world = w;
+	sX = realX;
+	sY = realY;
+
+	Tileset *ts = session->ts_shards[world];
+	image.setTexture(*ts->texture);
+	image.setTextureRect(ts->GetSubRect(realX + realY * 3));
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+
+	Panel *p = type->panel;
+	GridSelector *gs = p->gridSelectors["shardselector"];
+	gs->selectedX = sX + world * 3;
+	gs->selectedY = sY;
+
+	shardStr = gs->names[gs->selectedX][gs->selectedY];
 }
 
 ShardParams::ShardParams(EditSession *edit, sf::Vector2i &pos, const std::string &sStr )
@@ -1229,6 +1249,17 @@ ShardParams::ShardParams(EditSession *edit, sf::Vector2i &pos, const std::string
 	SetBoundingQuad();
 
 	shardStr = sStr;
+
+	SetShardFromStr();
+}
+
+void ShardParams::SetShardFromStr()
+{
+	ShardType st = Shard::GetShardType(shardStr);
+	int sti = st;
+	int rem = sti % 21;
+
+	SetShard(sti / 21, rem % 3, rem / 3);
 }
 
 void ShardParams::WriteParamFile( std::ofstream &of )
@@ -1240,14 +1271,18 @@ void ShardParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	shardStr = p->textBoxes["shardtype"]->text.getString();
+	shardStr = p->labels["shardtype"]->getString();
 }
 
 void ShardParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["shardtype"]->text.setString( shardStr );
+	p->labels["shardtype"]->setString( shardStr );
+
+	GridSelector *gs = p->gridSelectors["shardselector"];
+	gs->selectedX = sX + world * 3;
+	gs->selectedY = sY;
 }
 
 bool ShardParams::CanApply()

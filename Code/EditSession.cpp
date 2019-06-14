@@ -14,6 +14,7 @@
 #include "MainMenu.h"
 #include "Background.h"
 #include "Parallax.h"
+#include "Enemy_Shard.h"
 //#include "TerrainRender.h"
 
 using namespace std;
@@ -1587,7 +1588,7 @@ bool EditSession::OpenFile()
 					//is >> hasMonitor;
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					a.reset( new ShardParams( this, pos ) );
+					a.reset( new ShardParams( this, pos, shardStr ) );
 					//a->hasMonitor = (bool)hasMonitor;
 				}
 				else if( typeName == "racefighttarget" )
@@ -15492,6 +15493,30 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 			}
 		}
 	}
+	else if (panel->name == "shard_options")
+	{
+		int world = gs->selectedX / 3;
+		int realX = gs->selectedX % 3;
+		int realY = gs->selectedY;
+
+		ShardParams *shard = NULL;
+		if (mode == EDIT)
+		{
+			ISelectable *select = selectedBrush->objects.front().get();
+			shard = (ShardParams*)select;
+		}
+		else if (mode == CREATE_ENEMY)
+		{
+			shard = (ShardParams*)tempActor;
+		}
+		else
+		{
+			assert(0);
+		}
+		shard->SetShard(world, realX, realY);
+
+		panel->labels["shardtype"]->setString(name);
+	}
 }
 
 void EditSession::LoadDecorImages()
@@ -17182,9 +17207,50 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	else if (name == "shard")
 	{
-		p = new Panel("shard_options", 200, 500, this);
-		p->AddTextBox("shardtype", Vector2i(20, 200), 200, 20, "SHARD_W1_TEACH_JUMP");
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p = new Panel("shard_options", 700, 900, this);
+		p->AddLabel("shardtype", Vector2i(20, 500), 24, "SHARD_W1_TEACH_JUMP");
+
+		//GridSelector *gs = new GridSelector(Vector2i(0, 0), 3, 7, 64, 64, true, true, p);
+		GridSelector *gs = p->AddGridSelector( "shardselector", Vector2i(0, 0), 3 * 7, 7, 64, 64, true, true);
+		Sprite spr;
+
+		ts_shards[0] = tm.GetTileset("shards_w1_64x64.png", 64, 64);
+		ts_shards[1] = tm.GetTileset("shards_w2_64x64.png", 64, 64);
+		ts_shards[2] = tm.GetTileset("shards_w3_64x64.png", 64, 64);
+		ts_shards[3] = tm.GetTileset("shards_w4_64x64.png", 64, 64);
+		ts_shards[4] = tm.GetTileset("shards_w5_64x64.png", 64, 64);
+		ts_shards[5] = tm.GetTileset("shards_w6_64x64.png", 64, 64);
+		ts_shards[6] = tm.GetTileset("shards_w7_64x64.png", 64, 64);
+
+		
+		Tileset *ts_currShards;
+		int sInd = 0;
+		for (int w = 0; w < 7; ++w)
+		{
+			ts_currShards = ts_shards[w];
+			spr.setTexture(*ts_currShards->texture);
+			for (int y = 0; y < 7; ++y)
+			{
+				for (int x = 0; x < 3; ++x)
+				{
+					sInd = y * 3 + x;
+					spr.setTextureRect(ts_currShards->GetSubRect(sInd));
+					int shardT = (sInd + 21 * w);
+					if (shardT >= SHARD_Count)
+					{
+						gs->Set(x + w * 3, y, spr, "shard"); //need a way to set the names later
+					}
+					else
+					{
+						gs->Set(x + w * 3, y, spr, Shard::GetShardString((ShardType)shardT));
+					}
+
+				}
+			}
+		}
+		
+
+		p->AddButton("ok", Vector2i(100, 600), Vector2f(100, 50), "OK");
 	}
 	else if (name == "rail")
 	{

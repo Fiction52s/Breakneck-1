@@ -739,8 +739,14 @@ struct ShardParams : public ActorParams
 		sf::Vector2i &pos, const std::string &sStr );
 	void WriteParamFile( std::ofstream &of );
 
+	void SetShard(int world, int realX, int realY );
 	void SetParams();
 	void SetPanelInfo();
+	void SetShardFromStr();
+
+	int world;
+	int sX;
+	int sY;
 
 	bool CanApply();
 	ActorParams *Copy();
@@ -1664,7 +1670,7 @@ struct EditSession : GUIHandler
 	ImageEditTool currImageTool;
 	TilesetManager tm;
 
-
+	Tileset *ts_shards[7];
 	
 
 	EditSession( MainMenu *p_mainMenu );
