@@ -3111,7 +3111,7 @@ bool EditSession::OpenFile()
 		return false;
 	}
 
-	grassTex.loadFromFile( "Resources/placeholdergrass_22x22.png" );
+	grassTex.loadFromFile( "Resources/Env/placeholdergrass_22x22.png" );
 
 	return true;
 	
@@ -6442,7 +6442,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 
 	sf::Texture playerZoomIconTex;
-	playerZoomIconTex.loadFromFile( "Resources/playerzoomicon.png" );
+	playerZoomIconTex.loadFromFile( "Resources/Editor/playerzoomicon.png" );
 	sf::Sprite playerZoomIcon( playerZoomIconTex );
 	
 	playerZoomIcon.setOrigin( playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2 );
@@ -6788,23 +6788,13 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	//gs->Set( 3, 6, sPulser, "coral" );
 
 
-	//gs->Set( 1, 2, ss0, "greenkey" );
-	//gs->Set( 2, 2, ss1, "bluekey" );
+	
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
 	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 6, 4, 32, 32, false, true );
-	
-	sf::Texture greyTex;
-	greyTex.loadFromFile( "Resources/greygatecolor.png" );
-	sf::Sprite greySpr( greyTex );
-
-	sf::Texture blackTex;
-	blackTex.loadFromFile( "Resources/blackgatecolor.png" );
-	sf::Sprite blackSpr( blackTex );
-
 
 	sf::Texture whiteTex; //temp
-	whiteTex.loadFromFile( "Resources/whitesquare.png" );
+	whiteTex.loadFromFile( "Resources/Editor/whitesquare.png" );
 	Sprite tempSq;
 	tempSq.setTexture( whiteTex );
 
@@ -6897,22 +6887,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		view.setSize( 1920, 1080 );
 
 	preScreenTex->setView( view );
-	//Texture playerTex;
-	//playerTex.loadFromFile( "stand.png" );
-	//sf::Sprite playerSprite( playerTex );
-
-	//Texture goalTex;
-	//goalTex.loadFromFile( "goal.png" );
-	//Sprite goalSprite( goalTex );
-
-	/*sf::Texture iconsTex;
-	iconsTex.loadFromFile( "editoricons.png" );
-	Sprite iconSprite( iconsTex );*/
-
-	sf::Texture alphaTex;
-	alphaTex.loadFromFile( "Resources/alphatext.png" );
-	sf::Sprite alphaTextSprite( alphaTex );
-	alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
 
 	OpenFile();
 
@@ -6954,7 +6928,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	};
 
 	sf::Texture guiMenuCubeTexture;
-	guiMenuCubeTexture.loadFromFile( "Resources/guioptions.png" );
+	guiMenuCubeTexture.loadFromFile( "Resources/Editor/guioptions.png" );
 	sf::Sprite guiMenuSprite;
 	guiMenuSprite.setTexture( guiMenuCubeTexture );
 	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
@@ -13107,14 +13081,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		
 		//preScreenTex->draw( iconSprite );
 
-		if( false )
-		//if( showPanel == NULL && sf::IsKeyPressed( Keyboard::H ) )
-		{
-			alphaTextSprite.setScale( .5 * view.getSize().x / 960.0, .5 * view.getSize().y / 540.0 );
-			alphaTextSprite.setOrigin( alphaTextSprite.getLocalBounds().width / 2, alphaTextSprite.getLocalBounds().height / 2 );
-			alphaTextSprite.setPosition( view.getCenter().x, view.getCenter().y );
-			preScreenTex->draw( alphaTextSprite );
-		}
+		
 
 		//playerSprite.setPosition( player->position.x, player->position.y );
 
@@ -15400,10 +15367,6 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 	{
 		if( name != "not set" )
 		{
-			//if( name == "greenkey" || name == "bluekey" )
-			//{
-			//	name = "key";
-		//	}
 			trackingEnemy = types[name];
 			enemySprite.setTexture( trackingEnemy->imageTexture );
 
@@ -15522,7 +15485,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 void EditSession::LoadDecorImages()
 {
 	ifstream is;
-	is.open("decor.txt");
+	is.open("Resources/decor.txt");
 	if (is.is_open())
 	{
 		string name;
@@ -17214,13 +17177,13 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		GridSelector *gs = p->AddGridSelector( "shardselector", Vector2i(0, 0), 3 * 7, 7, 64, 64, true, true);
 		Sprite spr;
 
-		ts_shards[0] = tm.GetTileset("shards_w1_64x64.png", 64, 64);
-		ts_shards[1] = tm.GetTileset("shards_w2_64x64.png", 64, 64);
-		ts_shards[2] = tm.GetTileset("shards_w3_64x64.png", 64, 64);
-		ts_shards[3] = tm.GetTileset("shards_w4_64x64.png", 64, 64);
-		ts_shards[4] = tm.GetTileset("shards_w5_64x64.png", 64, 64);
-		ts_shards[5] = tm.GetTileset("shards_w6_64x64.png", 64, 64);
-		ts_shards[6] = tm.GetTileset("shards_w7_64x64.png", 64, 64);
+		ts_shards[0] = tm.GetTileset("Shard/shards_w1_64x64.png", 64, 64);
+		ts_shards[1] = tm.GetTileset("Shard/shards_w2_64x64.png", 64, 64);
+		ts_shards[2] = tm.GetTileset("Shard/shards_w3_64x64.png", 64, 64);
+		ts_shards[3] = tm.GetTileset("Shard/shards_w4_64x64.png", 64, 64);
+		ts_shards[4] = tm.GetTileset("Shard/shards_w5_64x64.png", 64, 64);
+		ts_shards[5] = tm.GetTileset("Shard/shards_w6_64x64.png", 64, 64);
+		ts_shards[6] = tm.GetTileset("Shard/shards_w7_64x64.png", 64, 64);
 
 		
 		Tileset *ts_currShards;
@@ -17297,12 +17260,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
 
 		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		/*GridSelector *gs = p->AddGridSelector( "monitortype", Vector2i( 20, 330 ), 4, 1, 32, 32, true, true);
-		gs->Set( 0, 0, sf::Sprite( types["key"]->iconTexture ), "none" );
-		gs->Set( 1, 0, sf::Sprite( types["key"]->iconTexture ), "red" );
-		gs->Set( 2, 0, sf::Sprite( types["greenkey"]->iconTexture ), "green" );
-		gs->Set( 3, 0, sf::Sprite( types["bluekey"]->iconTexture ), "blue" );*/
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+
 		
 		//p->
 	}
@@ -19607,9 +19565,9 @@ void EditSession::BoxSelectPoints(sf::IntRect r,
 ActorType::ActorType( const std::string & n, Panel *p )
 	:name( n ), panel( p )
 {
-	iconTexture.loadFromFile( string("Resources/") + name + "_icon.png" );
+	iconTexture.loadFromFile( string("Resources/Editor") + name + "_icon.png" );
 	//icon.setTexture( iconTexture );
-	imageTexture.loadFromFile(string("Resources/") + name + "_editor.png" );
+	imageTexture.loadFromFile(string("Resources/Editor") + name + "_editor.png" );
 	//image.setTexture( imageTexture );
 	Init();
 }

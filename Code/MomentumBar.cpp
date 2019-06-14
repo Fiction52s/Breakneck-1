@@ -6,10 +6,9 @@ using namespace sf;
 
 MomentumBar::MomentumBar(GameSession *owner)
 {
-	//ts_bar = owner->GetTileset("momentumbar_105x105.png", 105, 105);
-	ts_bar = owner->GetTileset("momentumbar_105x105.png", 105, 105);
-	ts_container = owner->GetTileset("momentumbar_115x115.png", 115, 115);
-	ts_num = owner->GetTileset("momentumnum_48x48.png", 48, 48);
+	ts_bar = owner->GetTileset("HUD/momentumbar_105x105.png", 105, 105);
+	ts_container = owner->GetTileset("HUD/momentumbar_115x115.png", 115, 115);
+	ts_num = owner->GetTileset("HUD/momentumnum_48x48.png", 48, 48);
 
 	levelNumSpr.setTexture(*ts_num->texture);
 	levelNumSpr.setTextureRect(ts_bar->GetSubRect(0));

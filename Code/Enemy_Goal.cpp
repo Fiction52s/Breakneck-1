@@ -25,7 +25,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 		width = 288;
 		height = 320;
 		ts = owner->GetTileset("Goal/goal_w01_a_288x320.png", width, height);
-		ts_mini = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
+		ts_mini = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 		ts_explosion = owner->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
 		ts_explosion1 = owner->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
 		explosionLength = 18;
@@ -38,7 +38,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q )
 		width = 288;
 		height = 256;
 		ts = owner->GetTileset("Goal/goal_w02_a_288x256.png", width, height);
-		ts_mini = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
+		ts_mini = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 		
 		ts_explosion = owner->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
 		ts_explosion1 = NULL;

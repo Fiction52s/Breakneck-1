@@ -594,8 +594,8 @@ void MainMenu::UpdateMenuOptionText()
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight(1080)
 {
-	arial.loadFromFile("Breakneck_Font_01.ttf");
-	consolas.loadFromFile("Courier New.ttf");
+	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
+	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
 
 	transLength = 60;
 	transFrame = 0;
@@ -3790,7 +3790,7 @@ bool MapSelectionMenu::ReplaceHeader(boost::filesystem::path &p, MapHeader *mh )
 	ifstream is;
 	is.open(p.string());
 
-	path from("map.tmp");
+	path from("Resources/map.tmp");
 	ofstream of;
 	of.open(from.string());
 	assert(of.is_open());
@@ -4797,8 +4797,8 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	int height = 700;
 	Vector2f menuOffset(0, 0);
 
-	optionsWindow = new UIWindow(NULL, mainMenu->tilesetManager.GetTileset("Menu/windows_64x24.png", 64, 24),//owner->GetTileset( "uiwindowtest_96x30.png", 96, 30 ),/*"window_64x24.png", 64, 24*/
-			Vector2f(width, height));
+	optionsWindow = new UIWindow(NULL, mainMenu->tilesetManager.GetTileset("Menu/windows_64x24.png", 64, 24),
+		Vector2f(width, height));
 	Center(Vector2f(1920, 1080));
 	//optionsWindow->SetTopLeftVec(Vector2f(1920/2 - width / 2, 1080/2 - height / 2) + menuOffset);
 

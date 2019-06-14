@@ -518,17 +518,6 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_leftWire;
 	Tileset *ts_fx_doubleWire;
 
-	Tileset *ts_fx_rune0;
-	Tileset *ts_fx_rune1;
-	Tileset *ts_fx_rune2;
-
-
-
-
-	sf::Sprite runeSprite;
-	int runeStep;
-	int runeLength;
-	bool showRune;
 
 	HitboxInfo *wireChargeInfo;
 	//sf::Shader speedBarShader;
@@ -1168,12 +1157,7 @@ struct Actor : QuadTreeCollider,
 	//dummy key at 0 for GREY
 	//int hasKey[Gate::GateType::Count];
 	int numKeys;
-	/*bool hasBlueKey;
-	bool hasGreenKey;
-	bool hasYellowKey;
-	bool hasOrangeKey;
-	bool hasRedKey;
-	bool hasMagentaKey;*/
+	
 
 	int framesSinceClimbBoost;
 	int climbBoostLimit;

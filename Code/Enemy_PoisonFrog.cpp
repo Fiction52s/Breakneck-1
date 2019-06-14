@@ -44,7 +44,7 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	invincibleFrames = 0;
 	double width = 80;
 	double height = 80;
-	ts_test = owner->GetTileset( "frog_80x80.png", width, height );
+	ts_test = owner->GetTileset( "Enemies/frog_80x80.png", width, height );
 
 	//jumpStrength = 10;
 	xSpeed = 8;

@@ -72,7 +72,6 @@ UIWindow::UIWindow( UIControl *p_parent, Tileset *t, sf::Vector2f &p_windowSize 
 	:UIControl( p_parent, NULL, UI_WINDOW ), ts_window( t )
 {
 	dimensions = p_windowSize;
-	//uiwindowtest_96x30.png
 	AssignTextureToCorners();
 	AssignTextureToCornerEdges();
 	AssignTextureToEdges();

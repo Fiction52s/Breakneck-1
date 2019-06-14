@@ -23,10 +23,10 @@ using namespace sf;
 Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpeed, int p_framesBetweenFiring, bool p_facingRight )
 	:Enemy( owner, EnemyType::EN_OWL, p_hasMonitor, 2 ), flyingBez( 0, 0, 1, 1 )
 {
-	ts_death = owner->GetTileset( "owl_death_160x160.png", 160, 160 );
-	ts_flap = owner->GetTileset( "owl_flap_160x160.png", 160, 160 );
-	ts_spin = owner->GetTileset( "owl_spin_160x160.png", 160, 160 );
-	ts_throw = owner->GetTileset( "owl_throw_160x160.png", 160, 160 );
+	ts_death = owner->GetTileset( "Enemies/owl_death_160x160.png", 160, 160 );
+	ts_flap = owner->GetTileset( "Enemies/owl_flap_160x160.png", 160, 160 );
+	ts_spin = owner->GetTileset( "Enemies/owl_spin_160x160.png", 160, 160 );
+	ts_throw = owner->GetTileset( "Enemies/owl_throw_160x160.png", 160, 160 );
 
 	cutObject->SetTileset(ts_death);
 	cutObject->SetSubRectFront(0);
@@ -109,7 +109,7 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	hitBody->hitboxInfo = hitboxInfo;
 
 
-	ts_bulletExplode = owner->GetTileset("bullet_explode3_64x64.png", 64, 64);
+	ts_bulletExplode = owner->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	//hitboxInfo->kbDir;
 

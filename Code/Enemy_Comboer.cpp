@@ -144,7 +144,7 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 
 	facingRight = true;
 
-	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	
 
 	//bloodSprite.setTexture( *ts_testBlood->texture );
 

@@ -72,7 +72,7 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw,
 		testMover->groundSpeed = -testMover->groundSpeed;
 	}*/
 
-	ts = owner->GetTileset( "badger_192x128.png", width, height );
+	ts = owner->GetTileset( "Enemies/badger_192x128.png", width, height );
 	sprite.setTexture( *ts->texture );
 	//sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);

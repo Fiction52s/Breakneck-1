@@ -26,7 +26,7 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	health = initHealth;
 
 	double height = 128;
-	ts = owner->GetTileset( "foottrap_160x128.png", 160, height );
+	ts = owner->GetTileset( "Enemies/foottrap_160x128.png", 160, height );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );

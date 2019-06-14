@@ -43,7 +43,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	double height = 96;
 
 	//ts = owner->GetTileset( "basicturret_112x64.png", width, height );
-	ts = owner->GetTileset( "curveturret_144x96.png", width, height );
+	ts = owner->GetTileset( "Enemies/curveturret_144x96.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -116,7 +116,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	double size = max( width, height );
 
 
-	ts_bulletExplode = owner->GetTileset( "bullet_explode2_64x64.png", 64, 64 );
+	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode2_64x64.png", 64, 64 );
 
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];

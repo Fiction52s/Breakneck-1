@@ -63,7 +63,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 	ts_shardContainer = mm->tilesetManager.GetTileset("Menu/shard_container_401x512.png", 401, 512);
 	ts_sparkle = mm->tilesetManager.GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
-	ts_bigShards = mm->tilesetManager.GetTileset("Menu/shards_w1_192x192.png", 192, 192);
+	ts_bigShards = mm->tilesetManager.GetTileset("Shard/shards_w1_192x192.png", 192, 192);
 	ts_notCapturedPreview = mm->tilesetManager.GetTileset("Menu/notcaptured.png", 512, 512);
 	ts_noPreview = mm->tilesetManager.GetTileset("Menu/nopreview.png", 512, 512);
 	ts_shardButtons = mm->tilesetManager.GetTileset("Menu/pause_shard_buttons_128x93.png", 128, 93);
@@ -83,7 +83,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 	state = PAUSED;
 
-	ts_shards[0] = mm->tilesetManager.GetTileset("Menu/shards_w1_48x48.png", 48, 48);
+	ts_shards[0] = mm->tilesetManager.GetTileset("Shard/shards_w1_48x48.png", 48, 48);
 
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;

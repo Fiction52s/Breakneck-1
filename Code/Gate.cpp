@@ -35,8 +35,8 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	activeNext = NULL;
 	ts = NULL;
-	ts_black = owner->GetTileset("gates_black_32x32.png", 32, 32);
-	ts_lightning = owner->GetTileset("gates_lightning_1_64x64.png", 64, 64);
+	ts_black = owner->GetTileset("Zone/gates_black_32x32.png", 32, 32);
+	ts_lightning = owner->GetTileset("Zone/gates_lightning_1_64x64.png", 64, 64);
 	
 	
 	if( type != BLACK )
@@ -170,7 +170,7 @@ void Gate::UpdateLine()
 	case BLACK:
 		{
 		c = Color( 150, 150, 150 );
-		ts = owner->GetTileset( "gate_black_128x128.png", 128, 128 );
+		ts = owner->GetTileset( "Zone/gate_black_128x128.png", 128, 128 );
 		tileHeight = 128;
 		}
 		break;
@@ -181,37 +181,37 @@ void Gate::UpdateLine()
 		{
 		case 0:
 			c = COLOR_BLUE;
-			ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
+			ts = owner->GetTileset( "Zone/gate_blue_128x128.png", 128, 128 );
 			break;
 		case 1:
 			c = COLOR_GREEN;
-			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 2:
 			c = COLOR_YELLOW;
-			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 3:
 			c = COLOR_ORANGE;
-			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 4:
 			c = COLOR_RED;
-			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 5:
 			c = COLOR_MAGENTA;
-			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 6:
 			c = COLOR_MAGENTA;
-			ts = owner->GetTileset( "gate_green_128x128.png", 128, 128 );
+			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		}
 		
 		//ts = owner->GetTileset("gate_32x64.png", 32, 64);
-		//Tileset *tts = owner->GetTileset("gatetest_32x64.png", 32, 64);
-		Tileset *tts = owner->GetTileset("gates_32x64.png", 32, 64);
+
+		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
 		gateShader.setUniform("u_texture", *tts->texture );
 		gateShader.setUniform("tile", 1.f);
 		//gateShader.setUniform("fadeQuant", 1.f);
@@ -293,7 +293,7 @@ void Gate::UpdateLine()
 	nodes[6].position = Vector2f(nodeBLeftv1);
 	nodes[7].position = Vector2f(nodeBRightv1);
 
-	ts_node = owner->GetTileset("gatenode_32x64.png", 32, 64);
+	ts_node = owner->GetTileset("Zone/gatenode_32x64.png", 32, 64);
 
 	SetRectSubRect(nodes, ts_node->GetSubRect(0) );
 	SetRectSubRect((nodes+4), ts_node->GetSubRect(0));

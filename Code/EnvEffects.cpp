@@ -17,7 +17,7 @@ const int Rain::ANIM_FACTOR = 5;
 Rain::Rain( GameSession *p_owner )
 	:owner( p_owner ), va( sf::Quads, TOTAL_QUADS * 4 ) 
 {
-	ts_rain = owner->GetTileset( "rain_64x64.png", 64, 64 );
+	ts_rain = owner->GetTileset( "Env/rain_64x64.png", 64, 64 );
 	frame = 0;
 	loopLength = 7;
 }

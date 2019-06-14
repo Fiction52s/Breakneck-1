@@ -370,8 +370,7 @@ void Barrier::SetPositive()
 
 GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu, 
 	const boost::filesystem::path &p_filePath )
-	:groundPar( sf::Quads, 2 * 4 ), undergroundPar( sf::Quads, 4 ), underTransPar( sf::Quads, 2 * 4 ),
-	onTopPar( sf::Quads, 4 * 6 ), saveFile( sf ),
+	:saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), fileName( p_filePath.string() ),
 	filePath( p_filePath ), eHitParamsMan( NULL ), drain(true )
@@ -3241,7 +3240,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 		{
 			bva[i].position = Vector2f( 0, 0 );
 		}
-		ts_basicBullets = GetTileset( "bullet_64x64.png", 64, 64 );
+		ts_basicBullets = GetTileset( "Enemies/bullet_64x64.png", 64, 64 );
 	}
 	else
 	{
@@ -3746,7 +3745,7 @@ bool GameSession::OpenFile( string fileName )
 						tPiece->AddDecorExpression(expr);
 				}
 
-				Tileset *ts_testBush = GetTileset("bush_1_01_512x512.png", 512, 512);
+				Tileset *ts_testBush = GetTileset("Env/bush_1_01_512x512.png", 512, 512);
 
 				DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, edges[currentEdgeIndex]);
 				if (rock1 != NULL)
@@ -3876,7 +3875,7 @@ bool GameSession::OpenFile( string fileName )
 			}
 
 			int totalGrassIndex = 0;
-			Tileset *ts_grass = GetTileset("grass_32x32.png", 32, 32);
+			Tileset *ts_grass = GetTileset("Env/grass_32x32.png", 32, 32);
 			//if( false )
 			for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
 			{
@@ -3957,7 +3956,7 @@ bool GameSession::OpenFile( string fileName )
 				VertexArray *wallVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 					&GameSession::IsWall );*/
 
-				ts_plant = GetTileset("testgrass.png", 32, 32);
+				ts_plant = GetTileset("Env/testgrass.png", 32, 32);
 
 
 				plantVA = SetupPlants(edges[currentEdgeIndex], ts_plant);
@@ -5257,7 +5256,7 @@ void GameSession::SetupStormCeiling()
 void GameSession::LoadDecorImages()
 {
 	ifstream is;
-	is.open("decor.txt");
+	is.open("Resources/decor.txt");
 	if (is.is_open())
 	{
 		string name;
@@ -5528,10 +5527,6 @@ bool GameSession::Load()
 	//pauseSoundNodeList->SetGlobalVolume(mainMenu->config->GetData().soundVolume);
 	scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
 
-	lifeBarTex.loadFromFile("Resources/lifebar_768x768.png");
-	lifeBarSprite.setTexture(lifeBarTex);
-	lifeBarSprite.setPosition(30, 200);
-
 
 	if (!glowShader.loadFromFile("Resources/Shader/glow_shader.frag", sf::Shader::Fragment))
 	{
@@ -5563,12 +5558,10 @@ bool GameSession::Load()
 	}
 	shockwaveShader.setUniform("resolution", Vector2f(1920, 1080));
 	shockwaveShader.setUniform("texSize", Vector2f(580, 580));
-	shockwaveTex.loadFromFile("Resources/shockwave_580x580.png");
+	shockwaveTex.loadFromFile("Resources/FX/shockwave_580x580.png");
 	shockwaveShader.setUniform("shockwaveTex", shockwaveTex);
 
-	ts_keyHolder = GetTileset("keyholder.png", 115, 40);
-	keyHolderSprite.setTexture(*ts_keyHolder->texture);
-	keyHolderSprite.setPosition(10, 50);
+	
 
 	if (!flowShader.loadFromFile("Resources/Shader/flow_shader.frag", sf::Shader::Fragment))
 	{
@@ -5580,27 +5573,9 @@ bool GameSession::Load()
 	flowShader.setUniform("flowSpacing", flowSpacing);
 	flowShader.setUniform("maxFlowRings", maxFlowRadius / maxFlowRings);
 
-
-	if (!underShader.loadFromFile("Resources/Shader/under_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "under shader not loading correctly!" << endl;
-		assert(false);
-	}
-
 	if (!cloneShader.loadFromFile("Resources/Shader/clone_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
-	}
-
-	stringstream ss;
-
-	for (int i = 1; i <= 17; ++i)
-	{
-		ss << i;
-		string texName = "Resources/deathbg" + ss.str() + ".png";
-		ss.str("");
-		ss.clear();
-		wipeTextures[i - 1].loadFromFile(texName);
 	}
 
 	if (!ShouldContinueLoading())
@@ -5729,31 +5704,6 @@ bool GameSession::Load()
 	unlockedGateList = NULL;
 	activatedZoneList = NULL;
 
-	ts_leftHUD = GetTileset( "lefthud_560x1080.png", 560, 1080 );
-
-	leftHUDSprite.setTexture( *ts_leftHUD->texture );
-	leftHUDBlankSprite.setTexture( *ts_leftHUD->texture );
-	leftHUDBlankSprite.setTextureRect( ts_leftHUD->GetSubRect( 0 ) );
-	leftHUDSprite.setTextureRect( ts_leftHUD->GetSubRect( 1 ) );
-
-	cloudTileset = GetTileset( "cloud01.png", 1920, 1080 );
-	sf::Texture &mountain01Tex = *GetTileset( "mountain01.png", 1920, 1080 / 2 /*540*/ )->texture;
-
-	sf::Texture &underTrans01Tex = *GetTileset( "undertrans01.png", 1920, 650 / 2 )->texture;
-
-	
-
-	SetupClouds();
-	
-	
-
-	//undergroundTileset = GetTileset( "terrainworld1.png", 128, 128 );//GetTileset( "underground01.png", 32, 32 );
-	//undergroundTilesetNormal = GetTileset( "terrainworld1_NORMALS.png", 128, 128 );
-
-	undergroundPar[0].position = Vector2f( 0, 0 );
-	undergroundPar[1].position = Vector2f( 0, 0 );
-	undergroundPar[2].position = Vector2f( 0, 0 );
-	undergroundPar[3].position = Vector2f( 0, 0 );
 
 	activeSequence = NULL;
 
@@ -6187,10 +6137,7 @@ int GameSession::Run()
 
 	int returnVal = GR_EXITLEVEL;
 
-	Texture & borderTex = *GetTileset("borders.png", 16, 16)->texture;
-
-	//Texture & grassTex = *GetTileset("placeholdergrass_22x22.png", 22, 22)->texture;
-	ts_gravityGrass = GetTileset("placeholdergrass_22x22.png", 22, 22);
+	ts_gravityGrass = GetTileset("Env/placeholdergrass_22x22.png", 22, 22);
 	
 
 	goalDestroyed = false;
@@ -10489,51 +10436,51 @@ DecorExpression * GameSession::CreateDecorExpression(  DecorType dType,
 		switch (dType)
 		{
 		case D_W1_BUSH_NORMAL:
-			ts_d = GetTileset("bush_01_64x64.png", 64, 64);
+			ts_d = GetTileset("Env/bush_01_64x64.png", 64, 64);
 			layer = new DecorLayer(ts_d, 20, 8);
 			break;
 		case D_W1_ROCK_1:
-			ts_d = GetTileset("rock_1_01_256x256.png", 256, 256);
+			ts_d = GetTileset("Env/rock_1_01_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_ROCK_2:
-			ts_d = GetTileset("rock_1_02_256x256.png", 256, 256);
+			ts_d = GetTileset("Env/rock_1_02_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_ROCK_3:
-			ts_d = GetTileset("rock_1_03_256x256.png", 256, 256);
+			ts_d = GetTileset("Env/rock_1_03_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_PLANTROCK:
-			ts_d = GetTileset("bush_1_01_256x256.png", 256, 256);
+			ts_d = GetTileset("Env/bush_1_01_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_GRASSYROCK:
-			ts_d = GetTileset("bush_1_02_256x256.png", 256, 256);
+			ts_d = GetTileset("Env/bush_1_02_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_VEINS1:
-			ts_d = GetTileset("veins_w1_1_512x512.png", 512, 512);
+			ts_d = GetTileset("Env/veins_w1_1_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS2:
-			ts_d = GetTileset("veins_w1_2_512x512.png", 512, 512);
+			ts_d = GetTileset("Env/veins_w1_2_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS3:
-			ts_d = GetTileset("veins_w1_3_512x512.png", 512, 512);
+			ts_d = GetTileset("Env/veins_w1_3_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS4:
-			ts_d = GetTileset("veins_w1_4_512x512.png", 512, 512);
+			ts_d = GetTileset("Env/veins_w1_4_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS5:
-			ts_d = GetTileset("veins_w1_5_512x512.png", 512, 512);
+			ts_d = GetTileset("Env/veins_w1_5_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS6:
-			ts_d = GetTileset("veins_w1_6_512x512.png", 512, 512);
+			ts_d = GetTileset("Env/veins_w1_6_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		}
@@ -13433,326 +13380,6 @@ void EnvPlant::Reset()
 }
 
 
-void GameSession::SetupClouds()
-{
-	clouds[0].setTexture( *cloudTileset->texture );//"cloud01.png
-	clouds[1].setTexture( *cloudTileset->texture );
-	clouds[2].setTexture( *cloudTileset->texture );
-	clouds[3].setTexture( *cloudTileset->texture );
-	clouds[4].setTexture( *cloudTileset->texture );
-
-	for( int i = 0; i < NUM_CLOUDS; ++i )
-	{
-		//clouds[i].setOrigin( clouds[i].getLocalBounds().width / 2, clouds[i].getLocalBounds().height / 2 );
-	}
-
-	clouds[0].setPosition( 0, 0 );
-	clouds[1].setPosition( 100, 100 );
-	clouds[2].setPosition( 200, 300 );
-	clouds[3].setPosition( 300, 500 );
-	clouds[4].setPosition( 400, 700 );
-}
-
-void GameSession::SetCloudParAndDraw()
-{
-	int depth = 8;
-	Vector2f orig( originalPos.x, originalPos.y );
-	int screenWidthFactor = 3;
-
-
-	for( int i = 0; i < NUM_CLOUDS; ++i )
-	{
-		if( view.getCenter().x < 0 )
-		{
-			int x = (int)((orig.x + view.getCenter().x) / depth - .5);
-			clouds[i].setPosition( -( x % ( 1920 * screenWidthFactor ) 
-				+ ( (1920 * screenWidthFactor) / 2 )), clouds[i].getPosition().y );
-		//	cout << "neg: " << clouds[i].getPosition().x << endl;
-		}
-		else
-		{
-			int x = (int)((orig.x + view.getCenter().x) / depth + .5);
-			clouds[i].setPosition( -(x % ( 1920 * screenWidthFactor ) 
-				- ( (1920 * screenWidthFactor) / 2 )), clouds[i].getPosition().y );
-		//	cout << "pos: " << clouds[i].getPosition().x << endl;
-		}
-
-		if( view.getCenter().y < 0 )
-		{
-			clouds[i].setPosition( clouds[i].getPosition().x, -((int)((orig.y + view.getCenter().y) / depth - .5) % ( -1080 * 3 ) ));// - ( 1080 * 3 / 2 )));
-		}
-		else
-		{
-			clouds[i].setPosition( clouds[i].getPosition().x, -((int)((orig.y + view.getCenter().y) / depth + .5) % ( 1080 * 3 ) ));// - ( 1080 * 3 / 2 )));
-		}
-		//cout << "cloudpos: " << clouds[i].getPosition().x << ", " << clouds[i].getPosition().y << endl;
-		
-		preScreenTex->draw( clouds[i] );
-	}
-
-	//float depth = 3;
-	//parTest.setPosition( orig / depth + ( cam.pos - orig ) / depth );
-	//float scale = 1 + ( 1 - 1 / ( cam.GetZoom() * depth ) );
-	//parTest.setScale( scale, scale );
-}
-
-void GameSession::SetUndergroundParAndDraw()
-{
-	Actor *player = GetPlayer( 0 );
-	preScreenTex->setView( view );
-
-	underShader.setUniform( "u_texture", *GetTileset( "underground01.png" , 128, 128 )->texture );
-	//underShader.setUniform( "u_normals", *GetTileset( "underground01_NORMALS.png", 128, 128 )->texture );
-	//underShader.setUniform( "u_pattern", *GetTileset( "terrainworld1_PATTERN.png", 16, 16 )->texture );
-
-	underShader.setUniform( "AmbientColor", Glsl::Vec4( 1, 1, 1, 1 ) );
-	underShader.setUniform( "Resolution", Vector2f( 1920, 1080 ) );//window->getSize().x, window->getSize().y);
-	underShader.setUniform( "zoom", cam.GetZoom() );
-	underShader.setUniform( "topLeft", Vector2f( view.getCenter().x - view.getSize().x / 2, 
-		view.getCenter().y + view.getSize().y / 2 ) );
-
-	lightsAtOnce = 0;
-	tempLightLimit = 0;//9; //only for now
-
-	sf::Rect<double> r( view.getCenter().x - view.getSize().x / 2, view.getCenter().y - view.getSize().y / 2, view.getSize().x, view.getSize().y );
-	
-	queryMode = "lights"; 
-	lightTree->Query( this, r );
-
-	Vector2i vi = Mouse::getPosition();
-	Vector3f blahblah( vi.x / 1920.f,  -1 + vi.y / 1080.f, .015 );
-	//polyShader.setUniform( "stuff", 10, 10, 10 );
-	
-/*	Vector3f pos0( vi0.x / 1920.f, (1080 - vi0.y) / 1080.f, .015 ); 
-	pos0.y = 1 - pos0.y;
-	Vector3f pos1( vi1.x / 1920.f, (1080 - vi1.y) / 1080.f, .015 ); 
-	pos1.y = 1 - pos1.y;
-	Vector3f pos2( vi2.x / 1920.f, (1080 - vi2.y) / 1080.f, .015 ); 
-	pos2.y = 1 - pos2.y;*/
-	
-	bool on[9];
-	for( int i = 0; i < 9; ++i )
-	{
-		on[i] = false;
-	}
-
-	float windowx = 1920;//window->getSize().x;
-	float windowy = 1080;//window->getSize().y;
-	
-	if( lightsAtOnce > 0 )
-	{
-		float depth0 = touchedLights[0]->depth;
-		Vector2i vi0 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[0]->pos.x, touchedLights[0]->pos.y ) );
-		
-
-		Vector3f pos0( vi0.x / windowx, -1 + vi0.y / windowy, depth0 ); 
-		//Vector3f pos0( vi0.x / (float)window->getSize().x, ((float)window->getSize().y - vi0.y) / (float)window->getSize().y, depth0 ); 
-		Color c0 = touchedLights[0]->color;
-		
-		//underShader.setUniform( "On0", true );
-		on[0] = true;
-		underShader.setUniform( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
-		underShader.setUniform( "LightColor0", Glsl::Vec4(c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 ) );
-		underShader.setUniform( "Radius0", touchedLights[0]->radius );
-		underShader.setUniform( "Brightness0", touchedLights[0]->brightness);
-		
-	}
-	if( lightsAtOnce > 1 )
-	{
-		float depth1 = touchedLights[1]->depth;
-		Vector2i vi1 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[1]->pos.x, touchedLights[1]->pos.y ) ); 
-		Vector3f pos1( vi1.x / windowx, -1 + vi1.y / windowy, depth1 ); 
-		//Vector3f pos1( vi1.x / (float)window->getSize().x, ((float)window->getSize().y - vi1.y) / (float)window->getSize().y, depth1 ); 
-		Color c1 = touchedLights[1]->color;
-		
-		on[1] = true;
-		//underShader.setUniform( "On1", true );
-		underShader.setUniform( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
-		underShader.setUniform( "LightColor1", Glsl::Vec4( c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 ) );
-		underShader.setUniform( "Radius1", touchedLights[1]->radius );
-		underShader.setUniform( "Brightness1", touchedLights[1]->brightness);
-	}
-	if( lightsAtOnce > 2 )
-	{
-		float depth2 = touchedLights[2]->depth;
-		Vector2i vi2 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[2]->pos.x, touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x / windowx, -1 + vi2.y / windowy, depth2 ); 
-		//Vector3f pos2( vi2.x / (float)window->getSize().x, ((float)window->getSize().y - vi2.y) / (float)window->getSize().y, depth2 ); 
-		Color c2 = touchedLights[2]->color;
-		
-		on[2] = true;
-		//underShader.setUniform( "On2", true );
-		underShader.setUniform( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
-		underShader.setUniform( "LightColor2", Glsl::Vec4( c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 ) );
-		underShader.setUniform( "Radius2", touchedLights[2]->radius );
-		underShader.setUniform( "Brightness2", touchedLights[2]->brightness);
-	}
-	if( lightsAtOnce > 3 )
-	{
-		float depth3 = touchedLights[3]->depth;
-		Vector2i vi3 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[3]->pos.x, touchedLights[3]->pos.y ) );
-		Vector3f pos3( vi3.x / windowx, -1 + vi3.y / windowy, depth3 ); 
-		//Vector3f pos3( vi3.x / (float)window->getSize().x, ((float)window->getSize().y - vi3.y) / (float)window->getSize().y, depth3 ); 
-		Color c3 = touchedLights[3]->color;
-		
-		on[3] = true;
-		//underShader.setUniform( "On3", true );
-		underShader.setUniform( "LightPos3", pos3 );
-		underShader.setUniform( "LightColor3", Glsl::Vec4( c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 ) );
-		underShader.setUniform( "Radius3", touchedLights[3]->radius );
-		underShader.setUniform( "Brightness3", touchedLights[3]->brightness);
-	}
-	if( lightsAtOnce > 4 )
-	{
-		float depth4 = touchedLights[4]->depth;
-		Vector2i vi4 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[4]->pos.x, touchedLights[4]->pos.y ) );
-		Vector3f pos4( vi4.x / windowx, -1 + vi4.y / windowy, depth4 ); 
-		//Vector3f pos4( vi4.x / (float)window->getSize().x, ((float)window->getSize().y - vi4.y) / (float)window->getSize().y, depth4 ); 
-		Color c4 = touchedLights[4]->color;
-		
-		
-		on[4] = true;
-		underShader.setUniform( "LightPos4", pos4 );
-		underShader.setUniform( "LightColor4", Glsl::Vec4( c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 ) );
-		underShader.setUniform( "Radius4", touchedLights[4]->radius );
-		underShader.setUniform( "Brightness4", touchedLights[4]->brightness);
-	}
-	if( lightsAtOnce > 5 )
-	{
-		float depth5 = touchedLights[5]->depth;
-		Vector2i vi5 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[5]->pos.x, touchedLights[5]->pos.y ) );
-		Vector3f pos5( vi5.x / windowx, -1 + vi5.y / windowy, depth5 ); 
-		//Vector3f pos5( vi5.x / (float)window->getSize().x, ((float)window->getSize().y - vi5.y) / (float)window->getSize().y, depth5 ); 
-		Color c5 = touchedLights[5]->color;
-		
-		
-		on[5] = true;
-		underShader.setUniform( "LightPos5", pos5 );
-		underShader.setUniform( "LightColor5", Glsl::Vec4( c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 ) );
-		underShader.setUniform( "Radius5", touchedLights[5]->radius );
-		underShader.setUniform( "Brightness5", touchedLights[5]->brightness);
-	}
-	if( lightsAtOnce > 6 )
-	{
-		float depth6 = touchedLights[6]->depth;
-		Vector2i vi6 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[6]->pos.x, touchedLights[6]->pos.y ) );
-		Vector3f pos6( vi6.x / windowx, -1 + vi6.y / windowy, depth6 ); 
-		//Vector3f pos6( vi6.x / (float)window->getSize().x, ((float)window->getSize().y - vi6.y) / (float)window->getSize().y, depth6 ); 
-		Color c6 = touchedLights[6]->color;
-		
-		on[6] = true;
-		underShader.setUniform( "LightPos6", pos6 );
-		underShader.setUniform( "LightColor6", Glsl::Vec4(c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 ) );
-		underShader.setUniform( "Radius6", touchedLights[0]->radius );
-		underShader.setUniform( "Brightness6", touchedLights[0]->brightness);
-	}
-	if( lightsAtOnce > 7 )
-	{
-		float depth7 = touchedLights[7]->depth;
-		Vector2i vi7 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[7]->pos.x, touchedLights[7]->pos.y ) );
-		Vector3f pos7( vi7.x / windowx, -1 + vi7.y / windowy, depth7 ); 
-		//Vector3f pos7( vi7.x / (float)window->getSize().x, ((float)window->getSize().y - vi7.y) / (float)window->getSize().y, depth7 ); 
-		Color c7 = touchedLights[7]->color;
-		
-		on[7] = true;
-		underShader.setUniform( "LightPos7", pos7 );
-		underShader.setUniform( "LightColor7", Glsl::Vec4(c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 ) );
-		underShader.setUniform( "Radius7", touchedLights[7]->radius );
-		underShader.setUniform( "Brightness7", touchedLights[7]->brightness);
-	}
-	if( lightsAtOnce > 8 )
-	{
-		float depth8 = touchedLights[8]->depth;
-		Vector2i vi8 = preScreenTex->mapCoordsToPixel( Vector2f( touchedLights[8]->pos.x, touchedLights[8]->pos.y ) );
-		Vector3f pos8( vi8.x / windowx, -1 + vi8.y / windowy, depth8 ); 
-		//Vector3f pos8( vi8.x / (float)window->getSize().x, ((float)window->getSize().y - vi8.y) / (float)window->getSize().y, depth8 ); 
-		Color c8 = touchedLights[8]->color;
-		
-		on[8] = true;
-		underShader.setUniform( "LightPos8", pos8 );
-		underShader.setUniform( "LightColor8", Glsl::Vec4(c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 ) );
-		underShader.setUniform( "Radius8", touchedLights[8]->radius );
-		underShader.setUniform( "Brightness8", touchedLights[8]->brightness);
-	}
-
-	underShader.setUniform( "On0", on[0] );
-	underShader.setUniform( "On1", on[1] );
-	underShader.setUniform( "On2", on[2] );
-	underShader.setUniform( "On3", on[3] );
-	underShader.setUniform( "On4", on[4] );
-	underShader.setUniform( "On5", on[5] );
-	underShader.setUniform( "On6", on[6] );
-	underShader.setUniform( "On7", on[7] );
-	underShader.setUniform( "On8", on[8] );
-
-	//Color c = player->testLight->color;
-	//Vector2i vip = preScreenTex->mapCoordsToPixel( Vector2f( player->testLight->pos.x, player->testLight->pos.y ) );
-	//Vector3f posp( vip.x / windowx, -1 + vip.y / windowy, player->testLight->depth ); 
-	//underShader.setUniform( "LightPosPlayer", posp );
-	//underShader.setUniform( "LightColorPlayer", Glsl::Vec4( c.r / 255.0, c.g / 255.0, c.b / 255.0, 1 ) );
-	//underShader.setUniform( "RadiusPlayer", player->testLight->radius );
-	//underShader.setUniform( "BrightnessPlayer", player->testLight->brightness );
-
-	/*undergroundPar[0].color = Color::Red;
-	undergroundPar[1].color = Color::Red;
-	undergroundPar[2].color = Color::Red;
-	undergroundPar[3].color = Color::Red;*/
-
-	Vector2f center = view.getCenter();
-
-	float top = center.y - view.getSize().y / 2;
-	float left = center.x - view.getSize().x / 2;
-	float bottom = center.y + view.getSize().y / 2;
-	float right = center.x + view.getSize().x / 2;
-	
-	
-	//cout << preScreenTex->getView().getCenter().x << ", " << preScreenTex->getView().getCenter().y << endl;
-//	cout << "zoom: " << cam.GetZoom() << ", dist: " << -center.y * cam.GetZoom() /  4  << endl;
-	
-	//int distFromTop = 
-	//cout << "distfrom: " << distFromTop << endl;
-	//if( distFromTop < 0 )
-	//	distFromTop = 0;
-	//if( distFromTop > 1080 )
-	//{
-		/*undergroundPar[0].position = Vector2f( 0, 0 );
-		undergroundPar[1].position = Vector2f( 0, 0 );
-		undergroundPar[2].position = Vector2f( 0, 0 );
-		undergroundPar[3].position = Vector2f( 0, 0 );*/
-	//}
-	//else
-	int blah = 0;
-	//cout << "blah: " << blah << endl;
-	if( bottom < blah )
-	{
-	}
-	else
-	{
-		
-		if( top < blah )
-		{
-			top = blah;
-		}
-		//preScreenTex->setView( view );
-		//top = 0;
-		undergroundPar[0].position = Vector2f( left, top );
-		undergroundPar[1].position = Vector2f( right, top );
-		undergroundPar[2].position = Vector2f( right, bottom );
-		undergroundPar[3].position = Vector2f( left, bottom );
-		preScreenTex->draw( undergroundPar, &underShader );
-	}
-	
-		
-	//else
-	{
-		
-		//cout << "NOT normal" << endl;
-	}
-
-	//cloudView.setCenter( cloudView.getCenter().x, center.y );
-
-	
-}
 
 //only activates zones if they're inactive. 
 void GameSession::ActivateZone( Zone *z, bool instant )
@@ -13956,7 +13583,7 @@ Critical::Critical( V2d &pointA, V2d &pointB )
 	{
 		hadKey[i] = false;
 	}
-	//hadBlueKey = false;
+
 
 	anchorA = pointA;
 	anchorB = pointB;
@@ -14043,11 +13670,7 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 {
 	hud = new RaceFightHUD(this);
 
-	ts_scoreTest = owner->GetTileset( "score_menu_01.png", 1920, 1080 );
-	scoreTestSprite.setTexture( *ts_scoreTest->texture );
-	scoreTestSprite.setPosition( 0, 0 );
-
-	Tileset *scoreTS = owner->GetTileset( "number_score_80x80.png", 80, 80 );
+	Tileset *scoreTS = owner->GetTileset( "HUD/number_score_80x80.png", 80, 80 );
 	Tileset *score2TS = scoreTS;
 	int numDigits = 2;
 	playerScoreImage = new ImageText( 2, scoreTS );

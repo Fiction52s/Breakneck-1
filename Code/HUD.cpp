@@ -14,19 +14,19 @@ RaceFightHUD::RaceFightHUD(GameSession::RaceFight* rf)
 	:raceFight( rf )
 {
 	owner = rf->owner;
-	//Tileset *scoreTS = owner->GetTileset("number_score_80x80.png", 80, 80);
-	Tileset *ts_scoreRed = owner->GetTileset("number_score_red_64x64.png", 64, 64);
-	Tileset *ts_scoreBlue = owner->GetTileset("number_score_blue_64x64.png", 64, 64);
+
+	Tileset *ts_scoreRed = owner->GetTileset("HUD/number_score_red_64x64.png", 64, 64);
+	Tileset *ts_scoreBlue = owner->GetTileset("HUD/number_score_blue_64x64.png", 64, 64);
 	scoreRed = new ImageText(2,ts_scoreRed );
 	scoreBlue = new ImageText(2,ts_scoreBlue );
-	ts_mask = owner->GetTileset("multi_mask_160x160.png", 160, 160);
+	ts_mask = owner->GetTileset("HUD/multi_mask_160x160.png", 160, 160);
 
-	ts_smallMask = owner->GetTileset("multi_mask_race_80x80.png", 80, 80);
+	ts_smallMask = owner->GetTileset("HUD/multi_mask_race_80x80.png", 80, 80);
 
-	ts_ready = owner->GetTileset("ready_320x128.png", 320, 128);
+	ts_ready = owner->GetTileset("HUD/ready_320x128.png", 320, 128);
 
-	ts_fx_gainPointBlue = owner->GetTileset("multi_mask_blue_fx_256x256.png", 256, 256);
-	ts_fx_gainPointRed = owner->GetTileset("multi_mask_red_fx_256x256.png", 256, 256);
+	ts_fx_gainPointBlue = owner->GetTileset("HUD/multi_mask_blue_fx_256x256.png", 256, 256);
+	ts_fx_gainPointRed = owner->GetTileset("HUD/multi_mask_red_fx_256x256.png", 256, 256);
 
 	mask.setTexture(*ts_mask->texture);
 	mask.setTextureRect(ts_mask->GetSubRect(0));
@@ -285,7 +285,7 @@ KinMask::KinMask( Actor *a )
 	actor = a;
 	owner = actor->owner;
 
-	ts_face = owner->GetTileset("kinportrait_320x288.png", 320, 288);
+	ts_face = owner->GetTileset("HUD/kinportrait_320x288.png", 320, 288);
 	face.setTexture(*ts_face->texture);
 	face.setTextureRect(ts_face->GetSubRect(0));
 

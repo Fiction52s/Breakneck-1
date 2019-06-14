@@ -1305,21 +1305,21 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 
 
 	stringstream ss;
-	ss << "hit_spack_" << world << "_128x128.png";
+	ss << "FX/hit_spack_" << world << "_128x128.png";
 
 	ts_hitSpack = owner->GetTileset( ss.str(), 128, 128 );
 
 	ss.clear();
 	ss.str("");
 
-	ss << "w" << world << "_kill_fx_512x512.png";
+	ss << "FX/w" << world << "_kill_fx_512x512.png";
 
 	ts_killSpack = owner->GetTileset(ss.str(), 512, 512);
 	assert(ts_killSpack != NULL);
 	ss.clear();
 	ss.str("");
 
-	ss << "fx_blood_" << world << "_256x256.png";
+	ss << "FX/fx_blood_" << world << "_256x256.png";
 
 	ts_blood = owner->GetTileset( ss.str(), 256, 256 );
 

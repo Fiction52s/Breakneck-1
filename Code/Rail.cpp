@@ -16,7 +16,7 @@ Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 	}
 	int pathSize = path.size();
 
-	ts_rail = owner->GetTileset("rail_32x32.png", 32, 32);
+	ts_rail = owner->GetTileset("Enemies/rail_32x32.png", 32, 32);
 	
 	drawNext = NULL;
 

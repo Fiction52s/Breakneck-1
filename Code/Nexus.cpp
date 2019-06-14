@@ -25,7 +25,7 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 		height = 320;
 		ts_nexusOpen = owner->GetTileset("Nexus/nexus_open_1296x904.png", 1296, 904);
 		ts_nexusDestroyed = owner->GetTileset("Nexus/nexus_destroyed_1296x904.png", 1296, 904);
-		ts_mini = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
+		ts_mini = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 		ts_explosion = owner->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
 		ts_explosion1 = owner->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
 		ts_node1 = owner->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
@@ -39,7 +39,7 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 	default:
 		width = 288;
 		height = 256;
-		ts_mini = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
+		ts_mini = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 		ts_node1 = owner->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
 		ts_node2 = owner->GetTileset("Goal/nexus_node_2_512x512.png", 512, 512);
 		ts_explosion = owner->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);

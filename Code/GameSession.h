@@ -121,7 +121,6 @@ struct PowerBar
 };
 
 struct PowerOrbs;
-struct PowerWheel;
 struct FillRing;
 struct DesperationOrb;
 
@@ -515,9 +514,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 		UIWindow *testWindow;
 
-		Tileset *ts_scoreTest;
-		sf::Sprite scoreTestSprite;
-
 		int playerHitCounter;
 		int player2HitCounter;
 
@@ -726,10 +722,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int CountActiveEnemies();
 	
 	void LevelSpecifics();
-	void SetCloudParAndDraw();
-	
-	void SetUndergroundParAndDraw();
-	void SetupClouds();
 	SaveFile *GetCurrentProgress();
 	bool HasPowerUnlocked( int pIndex );
 
@@ -806,21 +798,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	EnvPlant *activeEnvPlants;
 	int totalGameFrames;
 	int totalFramesBeforeGoal;
-	//int totalFrames; //including pausing?
-
-
-	Tileset *ts_keyHolder;
-	sf::Sprite keyHolderSprite;
-
-	sf::VertexArray groundPar;
-	sf::VertexArray underTransPar;
-	sf::VertexArray undergroundPar;
-
-	sf::VertexArray onTopPar;
-	sf::Sprite closeBack0;
-	Tileset *undergroundTileset;
-	Tileset *undergroundTilesetNormal;
-	sf::Shader underShader;
 
 	std::list<Zone*> zones;
 	Zone *currentZone;
@@ -850,10 +827,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	float oldZoom;
 	sf::Vector2f oldCamBotLeft;
 	sf::View oldView;
-
-	Tileset *ts_leftHUD;
-	sf::Sprite leftHUDSprite;
-	sf::Sprite leftHUDBlankSprite;
 
 	sf::Shader glowShader;
 	sf::Shader motionBlurShader;
@@ -1095,9 +1068,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int deathWipeFrame;
 	bool deathWipe;
 
-	sf::Texture wipeTextures[17];
-	sf::Sprite wipeSprite;
-
 	sf::View uiView;
 
 	
@@ -1119,11 +1089,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		bool *blackBorder,
 		bool &topBorderOn);
 	void SetupStormCeiling();
-
-
-	sf::Texture lifeBarTex;
-	sf::Sprite lifeBarSprite;
-	//temp only^^
 
 	float *fBubbleRadiusSize;
 	sf::Vector2f *fBubblePos;

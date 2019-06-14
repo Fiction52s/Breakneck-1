@@ -131,7 +131,7 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Bat_144x176.png", 144, 176 );
+	ts = owner->GetTileset( "Enemies/Bat_144x176.png", 144, 176 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -175,7 +175,7 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 
 	facingRight = true;
 	
-	ts_bulletExplode = owner->GetTileset( "bullet_explode3_64x64.png", 64, 64 );
+	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode3_64x64.png", 64, 64 );
 
 	UpdateHitboxes();
 

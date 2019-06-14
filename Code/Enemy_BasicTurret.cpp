@@ -47,7 +47,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
 	
-	ts_bulletExplode = owner->GetTileset( "bullet_explode1_64x64.png", 64, 64 );
+	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode1_64x64.png", 64, 64 );
 
 	gn = g->Normal();
 

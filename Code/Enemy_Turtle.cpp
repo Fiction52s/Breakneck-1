@@ -113,7 +113,7 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	ts_bulletExplode = owner->GetTileset( "bullet_explode3_64x64.png", 64, 64 );
+	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode3_64x64.png", 64, 64 );
 	//cout << "finish init" << endl;
 }
 

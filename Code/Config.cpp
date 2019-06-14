@@ -78,7 +78,7 @@ void Config::WaitForSave()
 void Config::Load()
 {
 	ifstream is;
-	is.open( "config" );
+	is.open( "Resources/config" );
 	if( is.is_open() )
 	{
 		std::string settingName;
@@ -164,7 +164,7 @@ void Config::Save()
 {
 	cout << "config::save\n";
 	ofstream of;
-	of.open("config");
+	of.open("Resources/config");
 	if (of.is_open())
 	{
 		of << "ResolutionX " << data.resolutionX << "\n";

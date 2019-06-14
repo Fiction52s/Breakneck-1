@@ -54,7 +54,7 @@ Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	}
 	
 
-	ts_bulletExplode = owner->GetTileset("bullet_explode3_64x64.png", 64, 64);
+	ts_bulletExplode = owner->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	V2d gn = g->Normal();
 
@@ -266,8 +266,6 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 	double width = 64; //112;
 	double height = 64;
 
-	
-	//ts_bulletExplode = owner->GetTileset("bullet_explode3_64x64.png", 64, 64);
 
 	hurtBody = new CollisionBody(1);
 	CollisionBox hurtBox;

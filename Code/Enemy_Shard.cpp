@@ -61,7 +61,7 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, ShardType p_sType )
 	{
 	case ShardType::SHARD_W1_TEACH_JUMP:
 	default:
-		ts = owner->GetTileset("shards_w1_64x64.png", 64, 64);
+		ts = owner->GetTileset("Shard/shards_w1_64x64.png", 64, 64);
 		sprite.setTexture(*ts->texture);
 		sprite.setTextureRect(ts->GetSubRect(shardType));
 		break;

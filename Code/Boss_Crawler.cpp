@@ -131,7 +131,7 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 
 	deathPartingSpeed = .4;
 
-	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
+	
 	//bloodSprite.setTexture( *ts_testBlood->texture );
 
 	totalDistanceAround = 0;

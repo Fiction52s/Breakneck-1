@@ -45,8 +45,6 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 
 	animationFactor = 10;
 
-	//ts = owner->GetTileset( "Spring.png", 80, 80 );
-	//ts = owner->GetTileset("spring_64x64.png", 64, 64);
 	sprite.setTexture(*ts_idle->texture);
 	sprite.setTextureRect(ts_idle->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);

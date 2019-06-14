@@ -25,7 +25,7 @@ Minimap::Minimap( GameSession *p_owner)
 	
 	minimapSprite.setScale(1, -1);
 
-	ts_miniIcons = owner->GetTileset("minimap_icons_64x64.png", 64, 64);
+	ts_miniIcons = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 	kinMinimapIcon.setTexture(*ts_miniIcons->texture);
 	kinMinimapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
 	kinMinimapIcon.setOrigin(kinMinimapIcon.getLocalBounds().width / 2,

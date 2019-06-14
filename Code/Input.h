@@ -12,7 +12,7 @@
 
 //
 
-#pragma comment(lib, "XInput.lib")
+#pragma comment(lib, "Resources/XInput.lib")
 
 /** Remarks:
 For each button, its bool its true if the it is down 

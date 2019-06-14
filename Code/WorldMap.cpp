@@ -1177,11 +1177,6 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 	ts_sectorOpen = new Tileset*[1];
 	ts_sectorOpen[0] = mm->tilesetManager.GetTileset("Worldmap/sectorunlock_256x256.png", 256, 256);
 
-	//ts_path = mm->tilesetManager.GetTileset("Worldmap/nodepath_96x96.png", 96, 96);
-
-	//Tileset *ts_thumb = mm->tilesetManager.GetTileset("Worldmap/Thumbnails/mapthumb_w1_1_256x256.png", 256, 256);
-	//Tileset *ts_shard = mm->tilesetManager.GetTileset("Worldmap/Thumbnails/worldmap_shards_272x256.png", 272, 256);
-	//bottomBG.setTexture(*ts_bottom->texture);
 
 	bottomBG.setPosition(624, 545);
 
@@ -2393,7 +2388,7 @@ void MapSector::Init(Sector *m_sec)
 	assert(ts_thumb != NULL);
 
 	ss.str("");
-	ss << "Menu/shards_w" << (sec->world->index + 1) << "_48x48.png";
+	ss << "Shard/shards_w" << (sec->world->index + 1) << "_48x48.png";
 
 	ts_shards = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
 

@@ -41,7 +41,7 @@ RaceFightTarget::RaceFightTarget( GameSession *owner, Vector2i &pos )
 	animationFactor = 10;
 
 	//ts = owner->GetTileset( "RaceFightTarget.png", 80, 80 );
-	ts = owner->GetTileset( "target_224x224.png", 224, 224 );
+	ts = owner->GetTileset( "Enemies/target_224x224.png", 224, 224 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );

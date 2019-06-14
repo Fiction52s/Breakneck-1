@@ -52,22 +52,22 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 		testMover->groundSpeed = -testMover->groundSpeed;
 	}*/
 
-	ts_death = owner->GetTileset( "stag_death_192x144.png", 192, 144 );
+	ts_death = owner->GetTileset( "Enemies/stag_death_192x144.png", 192, 144 );
 	//actionLength[DEATH] = 1;
 
-	ts_hop = owner->GetTileset( "stag_hop_192x144.png", 192, 144 );
-	ts_idle = owner->GetTileset( "stag_idle_192x144.png", 192, 144 );
+	ts_hop = owner->GetTileset( "Enemies/stag_hop_192x144.png", 192, 144 );
+	ts_idle = owner->GetTileset( "Enemies/stag_idle_192x144.png", 192, 144 );
 	actionLength[IDLE] = 11 * 5;
 
-	ts_run = owner->GetTileset( "stag_run_192x144.png", 192, 144 );
+	ts_run = owner->GetTileset( "Enemies/stag_run_192x144.png", 192, 144 );
 	actionLength[RUN] = 9 * 4;
-	ts_sweep = owner->GetTileset( "stag_sweep_192x208.png", 192, 208 );
+	ts_sweep = owner->GetTileset( "Enemies/stag_sweep_192x208.png", 192, 208 );
 
 	actionLength[LAND] = 1;
 
 	actionLength[JUMP] = 2;
 
-	ts_walk = owner->GetTileset( "stag_walk_192x144.png", 192, 144 );
+	ts_walk = owner->GetTileset( "Enemies/stag_walk_192x144.png", 192, 144 );
 
 	sprite.setTexture( *ts_idle->texture );
 	sprite.setTextureRect( ts_idle->GetSubRect( 0 ) );

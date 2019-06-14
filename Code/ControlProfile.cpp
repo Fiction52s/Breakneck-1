@@ -577,7 +577,7 @@ bool ControlProfileManager::LoadProfiles()
 	def->name = "KIN Default";
 	profiles.push_front(def);
 
-	is.open( "controlprofiles.txt" );
+	is.open( "Resources/controlprofiles.txt" );
 
 	if( is.is_open() )
 	{
@@ -1073,7 +1073,7 @@ void ControlProfileManager::WriteInputType(ofstream &of, const std::string &inpu
 void ControlProfileManager::WriteProfiles()
 {
 	ofstream of;
-	of.open( "controlprofiles.txt" );
+	of.open( "Resources/controlprofiles.txt" );
 
 	list<ControlProfile*>::iterator it = profiles.begin();
 	++it; //always skip KIN

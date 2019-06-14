@@ -53,7 +53,7 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 		mover->groundSpeed = -mover->groundSpeed;
 	}*/
 
-	ts = owner->GetTileset( "crawler_128x128.png", width, height );
+	ts = owner->GetTileset( "Enemies/crawler_160x160.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);

@@ -12,10 +12,10 @@ ScoreDisplay::ScoreDisplay(GameSession *p_owner, Vector2f &position,
 {
 	basePos = position;
 	owner = p_owner;
-	ts_scoreBar = owner->GetTileset("score_bar_384x80.png", 384, 80);
-	ts_scoreContinue = owner->GetTileset("score_continue_384x80.png", 384, 80);
-	ts_scoreSheet = owner->GetTileset("score_sheet_384x80.png", 384, 80);
-	ts_scoreSymbols = owner->GetTileset("score_symbol_384x80.png", 384, 80);
+	ts_scoreBar = owner->GetTileset("HUD/score_bar_384x80.png", 384, 80);
+	ts_scoreContinue = owner->GetTileset("HUD/score_continue_384x80.png", 384, 80);
+	ts_scoreSheet = owner->GetTileset("HUD/score_sheet_384x80.png", 384, 80);
+	ts_scoreSymbols = owner->GetTileset("HUD/score_symbol_384x80.png", 384, 80);
 
 	//scoreContinue.setTexture(*ts_scoreContinue->texture);
 	//scoreContinue.setTextureRect(ts_scoreContinue->GetSubRect(0));
