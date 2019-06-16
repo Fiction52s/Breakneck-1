@@ -6437,7 +6437,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	showPanel = NULL;
 
 	sf::Font arial;
-	arial.loadFromFile( "Breakneck_Font_01.ttf" );
+	arial.loadFromFile( "Resources/Fonts/Breakneck_Font_01.ttf" );
 
 
 
@@ -13253,7 +13253,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 
 		//float scaleDiff = zoomMultiple - 1.f;//1.f / zoomMultiple;
-		cout << "viewsize: " << view.getSize().x << ", mult: " << zoomMultiple << endl;
+		//cout << "viewsize: " << view.getSize().x << ", mult: " << zoomMultiple << endl;
 		float sca = view.getSize().x / 960.f / 2.f;
 		scaleSprite.setScale( 1.f / sca, 1.f / sca );
 		scaleTextSS << "scale: x" << scaleSprite.getScale().x;
@@ -19565,9 +19565,9 @@ void EditSession::BoxSelectPoints(sf::IntRect r,
 ActorType::ActorType( const std::string & n, Panel *p )
 	:name( n ), panel( p )
 {
-	iconTexture.loadFromFile( string("Resources/Editor") + name + "_icon.png" );
+	iconTexture.loadFromFile( string("Resources/Editor/") + name + "_icon.png" );
 	//icon.setTexture( iconTexture );
-	imageTexture.loadFromFile(string("Resources/Editor") + name + "_editor.png" );
+	imageTexture.loadFromFile(string("Resources/Editor/") + name + "_editor.png" );
 	//image.setTexture( imageTexture );
 	Init();
 }

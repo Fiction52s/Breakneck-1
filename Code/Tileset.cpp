@@ -153,7 +153,7 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	if( !tex->loadFromFile( s2 ) )
 	{
 		delete tex;
-		//cout << "failed to load: " << s << endl;
+		cout << "failed to load: " << s << endl;
 		//assert( false );
 
 		return NULL;

@@ -154,7 +154,16 @@ void LevelSelector::GetPreview( const std::string &pName, const std::string &mNa
 {
 	//string fileName = string("Maps/Previews/") + mName + string("_preview_912x492.png");
 	//string fileName = fName + string("_preview_912x492.png");
-	string fileName = string("Maps/") + pName + string("/Previews/") + mName + string("_preview_912x492.png");
+	string fileName;
+	if (pName == "Maps")
+	{
+		fileName = string("Maps/Previews/") + mName + string("_preview_912x492.png");
+	}
+	else
+	{
+		fileName = string("Maps/") + pName + string("/Previews/") + mName + string("_preview_912x492.png");
+	}
+	
 	if (update)
 	{
 		previewTS[mName] = mainMenu->tilesetManager.GetUpdatedTileset(fileName, 912, 492);
@@ -417,7 +426,6 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 					string pathFolder = p.parent_path().stem().string();
 					string relPath = p.relative_path().string();
 					string mapName = pathFolder + "/" + p.relative_path().stem().string();
-					//GetPreview(localPaths[selectedIndex], indexText, true);
 					GetPreview( pathFolder, p.relative_path().stem().string(), false);
 				}
 			}
