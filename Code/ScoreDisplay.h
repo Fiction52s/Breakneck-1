@@ -66,7 +66,6 @@ struct ScoreDisplay
 
 	GameSession *owner;
 	Tileset *ts_scoreBar;
-	Tileset *ts_scoreContinue;
 	Tileset *ts_scoreSheet;
 	Tileset *ts_scoreSymbols;
 

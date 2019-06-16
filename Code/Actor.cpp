@@ -328,11 +328,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		for (int i = 0; i < 3; ++i)
 		{
 			fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-			fairLightningPool[i]->ts = owner->GetTileset("fair_sword_lightninga_256x256.png", 256, 256);
+			fairLightningPool[i]->ts = owner->GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256);
 			dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-			dairLightningPool[i]->ts = owner->GetTileset("dair_sword_lightninga_256x256.png", 256, 256);
+			dairLightningPool[i]->ts = owner->GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256);
 			uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-			uairLightningPool[i]->ts = owner->GetTileset("uair_sword_lightninga_256x256.png", 256, 256);
+			uairLightningPool[i]->ts = owner->GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256);
 		}
 
 		gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);

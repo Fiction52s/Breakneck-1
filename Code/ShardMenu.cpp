@@ -129,8 +129,16 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 			std::string &currShardName = shardNames[x][y];
 
-			ss << "Shard/" << currShardName << "_preview.png";
-			ts_preview[x + y * xSize] = mainMenu->tilesetManager.GetTileset(ss.str(), 512, 512);
+			if (currShardName == "")
+			{
+				ts_preview[x + y * xSize] = NULL;
+			}
+			else
+			{
+				ss << "Shard/" << currShardName << "_preview.png";
+				ts_preview[x + y * xSize] = mainMenu->tilesetManager.GetTileset(ss.str(), 512, 512);
+			}
+			
 			
 			//currShardName = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
 			if(currShardName != "" )

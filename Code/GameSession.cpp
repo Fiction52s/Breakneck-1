@@ -3745,7 +3745,6 @@ bool GameSession::OpenFile( string fileName )
 						tPiece->AddDecorExpression(expr);
 				}
 
-				Tileset *ts_testBush = GetTileset("Env/bush_1_01_512x512.png", 512, 512);
 
 				DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, edges[currentEdgeIndex]);
 				if (rock1 != NULL)

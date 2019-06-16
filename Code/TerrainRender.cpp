@@ -682,8 +682,6 @@ void TerrainRender::GenerateDecor()
 			AddDecorExpression(expr);
 	}
 
-	Tileset *ts_testBush = tMan->GetTileset("bush_1_01_512x512.png", 512, 512);
-
 	DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, startEdge);
 	if (rock1 != NULL)
 		AddDecorExpression(rock1);
@@ -791,51 +789,51 @@ DecorExpression * TerrainRender::CreateDecorExpression(DecorType dType,
 		switch (dType)
 		{
 		case D_W1_BUSH_NORMAL:
-			ts_d = tMan->GetTileset("bush_01_64x64.png", 64, 64);
+			ts_d = tMan->GetTileset("Env/bush_01_64x64.png", 64, 64);
 			layer = new DecorLayer(ts_d, 20, 8);
 			break;
 		case D_W1_ROCK_1:
-			ts_d = tMan->GetTileset("rock_1_01_256x256.png", 256, 256);
+			ts_d = tMan->GetTileset("Env/rock_1_01_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_ROCK_2:
-			ts_d = tMan->GetTileset("rock_1_02_256x256.png", 256, 256);
+			ts_d = tMan->GetTileset("Env/rock_1_02_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_ROCK_3:
-			ts_d = tMan->GetTileset("rock_1_03_256x256.png", 256, 256);
+			ts_d = tMan->GetTileset("Env/rock_1_03_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_PLANTROCK:
-			ts_d = tMan->GetTileset("bush_1_01_256x256.png", 256, 256);
+			ts_d = tMan->GetTileset("Env/bush_1_01_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_GRASSYROCK:
-			ts_d = tMan->GetTileset("bush_1_02_256x256.png", 256, 256);
+			ts_d = tMan->GetTileset("Env/bush_1_02_256x256.png", 256, 256);
 			layer = new DecorLayer(ts_d, 1, 1);
 			break;
 		case D_W1_VEINS1:
-			ts_d = tMan->GetTileset("veins_w1_1_512x512.png", 512, 512);
+			ts_d = tMan->GetTileset("Env/veins_w1_1_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS2:
-			ts_d = tMan->GetTileset("veins_w1_2_512x512.png", 512, 512);
+			ts_d = tMan->GetTileset("Env/veins_w1_2_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS3:
-			ts_d = tMan->GetTileset("veins_w1_3_512x512.png", 512, 512);
+			ts_d = tMan->GetTileset("Env/veins_w1_3_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS4:
-			ts_d = tMan->GetTileset("veins_w1_4_512x512.png", 512, 512);
+			ts_d = tMan->GetTileset("Env/veins_w1_4_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS5:
-			ts_d = tMan->GetTileset("veins_w1_5_512x512.png", 512, 512);
+			ts_d = tMan->GetTileset("Env/veins_w1_5_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		case D_W1_VEINS6:
-			ts_d = tMan->GetTileset("veins_w1_6_512x512.png", 512, 512);
+			ts_d = tMan->GetTileset("Env/veins_w1_6_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		}
