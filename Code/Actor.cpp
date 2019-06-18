@@ -17082,6 +17082,8 @@ void Actor::QueryTouchGrass()
 	queryRExtended.width += extra * 2;
 	queryRExtended.height += extra * 2;
 
+	possibleEdgeCount = 0;
+
 	polyList = NULL;
 	queryMode = "touchgrasspoly";
 	owner->borderTree->Query(this, queryRExtended);
@@ -18611,7 +18613,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else
 		{
-			polyList->next = tPiece;
+			tPiece->next = polyList;
+			polyList = tPiece;
 		}
 	}
 	++possibleEdgeCount; //not needed

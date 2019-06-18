@@ -3555,7 +3555,7 @@ bool GameSession::OpenFile( string fileName )
 
 			
 			
-			Tileset *ts_bush = GetTileset( "bush_01_64x64.png", 64, 64 );
+			Tileset *ts_bush = GetTileset( "Env/bush_01_64x64.png", 64, 64 );
 
 			if( !inverse && currentVisible )
 			{
@@ -9406,6 +9406,8 @@ void GameSession::DebugDraw()
 		{
 			(*it)->DebugDraw(preScreenTex);
 		}
+
+		//borderTree->DebugDraw(preScreenTex);
 	}
 }
 
@@ -10335,6 +10337,7 @@ void TerrainPiece::AddTouchGrass()
 		{
 			valid = false;
 		}
+		valid = true;
 
 		if (valid)
 		{
@@ -10347,7 +10350,7 @@ void TerrainPiece::AddTouchGrass()
 				for (int i = 0; i < numQuads; ++i)
 				{
 					int r = rand() % 100;
-					if (r < 50)
+					if (r < 100 )//50)
 					{
 						info.push_back(PlantInfo(te, quadWidth * i, quadWidth));
 					}
