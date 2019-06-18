@@ -750,9 +750,11 @@ struct Actor : QuadTreeCollider,
 
 	void SetAerialScorpSprite();
 	int GetJumpFrame();
+	void QueryTouchGrass();
 
 	int framesExtendingAirdash;
 
+	TerrainPiece *polyList;
 	
 	Tileset *ts_scorpRun;
 	Tileset *ts_scorpSlide;

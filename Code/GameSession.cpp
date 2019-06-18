@@ -10014,6 +10014,11 @@ void GameSession::NextFrameRestartLevel()
 
 void GameSession::RestartLevel()
 {
+	for (auto it = allVA.begin(); it != allVA.end(); ++it)
+	{
+		(*it)->Reset();
+	}
+
 	nextFrameRestart = false;
 	//accumulator = TIMESTEP + .1;
 	currBroadcast = NULL;
@@ -10284,6 +10289,14 @@ TerrainPiece::~TerrainPiece()
 	delete grassVA;
 }
 
+void TerrainPiece::Reset()
+{
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		(*it)->Reset();
+	}
+}
+
 struct PlantInfo
 {
 	PlantInfo(Edge*e, double q, double w)
@@ -10311,8 +10324,19 @@ void TerrainPiece::AddTouchGrass()
 	Edge *te = startEdge;
 	do
 	{
-		int valid = 0;
-		if (valid != -1)
+		bool valid = true;
+
+		EdgeAngleType eat = GetEdgeAngleType(te->Normal());
+		if (eat == EDGE_FLAT || eat == EDGE_SLOPED)
+		{
+			valid = true;
+		}
+		else
+		{
+			valid = false;
+		}
+
+		if (valid)
 		{
 			double len = length(te->v1 - te->v0);
 			int numQuads = len / tw;
@@ -10344,16 +10368,19 @@ void TerrainPiece::AddTouchGrass()
 	//cout << "number of plants: " << infoSize << endl;
 	coll->touchGrassVA = new Vertex[vaSize];
 
+
+	Tileset *ts_touchGrass = owner->GetTileset("Env/bushtouch_1_01_64x64.png", 64, 64);
 	int vaIndex = 0;
 	for (list<PlantInfo>::iterator it = info.begin(); it != info.end(); ++it)
 	{
 		TouchGrass *tg = new TouchGrass(TouchGrass::TYPE_NORMAL, vaIndex, coll->touchGrassVA,
-			NULL, (*it).edge, (*it).quant, (*it).quadWidth, 0);
+			ts_touchGrass, (*it).edge, (*it).quant, (*it).quadWidth, 24);
 		coll->myGrass.push_back(tg);
 		coll->touchGrassTree->Insert(tg);
 		vaIndex++;
 	}
 	coll->numTouchGrasses = infoSize;
+	coll->ts_grass = ts_touchGrass;
 }
 
 void TerrainPiece::QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r)

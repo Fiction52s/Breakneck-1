@@ -292,6 +292,7 @@ struct TerrainPiece : QuadTreeEntrant
 {
 	TerrainPiece(GameSession *owner);
 	~TerrainPiece();
+	void Reset();
 	TerrainRender *tr;
 	void AddDecorExpression(DecorExpression *expr);
 	void AddTouchGrass();

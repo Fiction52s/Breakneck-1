@@ -15858,27 +15858,10 @@ void Actor::UpdatePostPhysics()
 		currLockedUairFX = NULL;
 	}
 
-	if (ground != NULL)
-	{
-		Rect<double> r(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
-		TerrainPiece *piece = ground->poly;
-		if (piece != NULL)
-		{
-			queryMode = "touchgrass";
-			piece->QueryTouchGrass(this, r);
-		}
-	}
+	
+	QueryTouchGrass();
 
-	if (currWall != NULL)
-	{
-		Rect<double> r(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
-		TerrainPiece *piece = currWall->poly;
-		if (piece != NULL)
-		{
-			queryMode = "touchgrass";
-			piece->QueryTouchGrass(this, r);
-		}
-	}
+
 	//if( wallt)
 	
 	for (int i = 0; i < 7; ++i)
@@ -17081,6 +17064,35 @@ bool Actor::IsGoalKillAction(Action a)
 {
 	return (a == GOALKILL || a == GOALKILL1 || a == GOALKILL2 || a == GOALKILL3 || a == GOALKILL4 || a == GOALKILLWAIT
 		|| a == NEXUSKILL || a == SEQ_FLOAT_TO_NEXUS_OPENING || a == SEQ_FADE_INTO_NEXUS);
+}
+
+void Actor::QueryTouchGrass()
+{
+	Rect<double> queryR = hurtBody.GetAABB();//(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
+	Rect<double> queryRExtended;
+	if (currHitboxes != NULL)
+	{
+		queryR = currHitboxes->GetAABB(currHitboxFrame);
+	}
+
+	queryRExtended = queryR;
+	double extra = 300;
+	queryRExtended.left -= extra;
+	queryRExtended.top -= extra;
+	queryRExtended.width += extra * 2;
+	queryRExtended.height += extra * 2;
+
+	polyList = NULL;
+	queryMode = "touchgrasspoly";
+	owner->borderTree->Query(this, queryRExtended);
+
+	queryMode = "touchgrass";
+	TerrainPiece *tempT = polyList;
+	while (tempT != NULL)
+	{
+		tempT->QueryTouchGrass(this, queryR);
+		tempT = tempT->next;
+	}
 }
 
 bool Actor::IsIntroAction(Action a)
@@ -18574,7 +18586,33 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	else if (queryMode == "touchgrass")
 	{
 		TouchGrass *tGrass = (TouchGrass*)qte;
-		tGrass->Touch();
+		if (currHitboxes != NULL)
+		{
+			if (tGrass->Intersects(currHitboxes, currHitboxFrame))
+			{
+				tGrass->Destroy( this );
+			}
+		}
+		else
+		{
+			if (tGrass->hurtBody->Intersects(0, &hurtBody))
+			{
+				tGrass->Touch(this);
+			}
+		}
+	}
+	else if (queryMode == "touchgrasspoly")
+	{
+		TerrainPiece *tPiece = (TerrainPiece*)qte;
+		tPiece->next = NULL;
+		if (polyList == NULL)
+		{
+			polyList = tPiece;
+		}
+		else
+		{
+			polyList->next = tPiece;
+		}
 	}
 	++possibleEdgeCount; //not needed
 }

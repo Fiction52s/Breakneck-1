@@ -179,6 +179,10 @@ void Shard::Capture()
 	//owner->mainMenu->GetCurrentProgress()->Save(); //might need to multithread at some point. this can be annoying
 }
 
+void Shard::DirectKill()
+{
+
+}
 
 void Shard::ResetEnemy()
 {

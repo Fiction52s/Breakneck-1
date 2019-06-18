@@ -19,6 +19,7 @@ struct Shard : Enemy
 	static void SetupShardMaps();
 	int actionLength[Count];
 	int animFactor[Count];
+	void DirectKill();
 	Action action;
 	//MovementSequence testSeq;
 	Shard(GameSession *owner, sf::Vector2i pos, ShardType p_sType );
