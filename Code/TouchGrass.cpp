@@ -193,6 +193,8 @@ void TouchGrass::Destroy(Actor *a)
 TouchGrassCollection::TouchGrassCollection()
 {
 	touchGrassTree = new QuadTree(1000000, 1000000);
+	touchGrassVA = NULL;
+	ts_grass = NULL;
 }
 
 TouchGrassCollection::~TouchGrassCollection()

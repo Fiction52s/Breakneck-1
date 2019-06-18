@@ -9406,8 +9406,6 @@ void GameSession::DebugDraw()
 		{
 			(*it)->DebugDraw(preScreenTex);
 		}
-
-		//borderTree->DebugDraw(preScreenTex);
 	}
 }
 
@@ -10313,9 +10311,6 @@ struct PlantInfo
 
 void TerrainPiece::AddTouchGrass()
 {
-	TouchGrassCollection *coll = new TouchGrassCollection;
-	touchGrassCollections.push_back(coll);
-
 	list<PlantInfo> info;
 
 	int tw = 32;
@@ -10337,22 +10332,34 @@ void TerrainPiece::AddTouchGrass()
 		{
 			valid = false;
 		}
-		valid = true;
 
 		if (valid)
 		{
 			double len = length(te->v1 - te->v0);
 			int numQuads = len / tw;
+			bool tooThin = false;
 			double quadWidth = 32;//len / numQuads;
-
+			if (numQuads == 0)
+			{
+				tooThin = true;
+				numQuads = 1;
+			}
 			if (numQuads > 0)
 			{
 				for (int i = 0; i < numQuads; ++i)
 				{
 					int r = rand() % 100;
-					if (r < 100 )//50)
+					if (r < 50 )//50)
 					{
-						info.push_back(PlantInfo(te, quadWidth * i, quadWidth));
+						if (tooThin)
+						{
+							info.push_back(PlantInfo(te, te->GetLength() / 2.0, quadWidth));
+						}
+						else
+						{
+							info.push_back(PlantInfo(te, quadWidth * i + quadWidth / 2, quadWidth));
+						}
+						
 					}
 				}
 			}
@@ -10367,6 +10374,9 @@ void TerrainPiece::AddTouchGrass()
 	{
 		return;
 	}
+
+	TouchGrassCollection *coll = new TouchGrassCollection;
+	touchGrassCollections.push_back(coll);
 
 	//cout << "number of plants: " << infoSize << endl;
 	coll->touchGrassVA = new Vertex[vaSize];
