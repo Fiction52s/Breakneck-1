@@ -9576,12 +9576,11 @@ V2d Actor::UpdateReversePhysics()
 						if( e0 == g->edgeA )
 						{
 							gateTouched = g->edgeB;
-						//	owner->ActivateZone( g->zoneB );
+						
 						}
 						else
 						{
 							gateTouched = g->edgeA;
-						//	owner->ActivateZone( g->zoneA );
 						}
 					}
 				}
@@ -10499,12 +10498,10 @@ V2d Actor::UpdateReversePhysics()
 										if( e0 == g->edgeA )
 										{
 											gateTouched = g->edgeB;
-											//owner->ActivateZone( g->zoneB );
 										}
 										else
 										{
 											gateTouched = g->edgeA;
-										//	owner->ActivateZone( g->zoneA );
 										}
 
 										offsetX = -offsetX;
@@ -10539,12 +10536,11 @@ V2d Actor::UpdateReversePhysics()
 									if( e0 == g->edgeA )
 									{
 										gateTouched = g->edgeB;
-										//owner->ActivateZone( g->zoneB );
 									}
 									else
 									{
 										gateTouched = g->edgeA;
-										//owner->ActivateZone( g->zoneA );
+										
 									}
 
 									offsetX = -offsetX;
@@ -10598,12 +10594,11 @@ V2d Actor::UpdateReversePhysics()
 										if( e1 == g->edgeA )
 										{
 											gateTouched = g->edgeB;
-											//owner->ActivateZone( g->zoneB );
 										}
 										else
 										{
 											gateTouched = g->edgeA;
-											//owner->ActivateZone( g->zoneA );
+											
 										}
 
 										offsetX = -offsetX;
@@ -10640,12 +10635,11 @@ V2d Actor::UpdateReversePhysics()
 									if( e1 == g->edgeA )
 									{
 										gateTouched = g->edgeB;
-										//owner->ActivateZone( g->zoneB );
 									}
 									else
 									{
 										gateTouched = g->edgeA;
-										//owner->ActivateZone( g->zoneA );
+										
 									}
 
 									offsetX = -offsetX;
@@ -11759,12 +11753,11 @@ void Actor::UpdatePhysics()
 								{
 									gateTouched = gg->edgeB;
 
-									//owner->ActivateZone( g->zoneB );
 								}
 								else
 								{
 									gateTouched = gg->edgeA;
-									//owner->ActivateZone( g->zoneA );
+									
 								}
 								
 								e1 = grindEdge->edge1;
@@ -11836,13 +11829,11 @@ void Actor::UpdatePhysics()
 								if( e0 == gg->edgeA )
 								{
 									gateTouched = gg->edgeB;
-
-									//owner->ActivateZone( g->zoneB );
 								}
 								else
 								{
 									gateTouched = gg->edgeA;
-									//owner->ActivateZone( g->zoneA );
+									
 								}
 								
 								e0 = grindEdge->edge0;
@@ -12135,13 +12126,11 @@ void Actor::UpdatePhysics()
 						if( e0 == g->edgeA )
 						{
 							gateTouched = g->edgeB;
-
-							//owner->ActivateZone( g->zoneB );
 						}
 						else
 						{
 							gateTouched = g->edgeA;
-							//owner->ActivateZone( g->zoneA );
+							
 						}
 						//break;
 					}
@@ -12297,12 +12286,11 @@ void Actor::UpdatePhysics()
 						if( e1 == g->edgeA )
 						{
 							gateTouched = g->edgeB;
-							//owner->ActivateZone( g->zoneB );
 						}
 						else
 						{
 							gateTouched = g->edgeA;
-							//owner->ActivateZone( g->zoneA );
+							
 						}
 					}
 				}
@@ -12787,12 +12775,11 @@ void Actor::UpdatePhysics()
 										if( e1 == g->edgeA )
 										{
 											gateTouched = g->edgeB;
-											//owner->ActivateZone( g->zoneB );
 										}
 										else
 										{
 											gateTouched = g->edgeA;
-											//owner->ActivateZone( g->zoneA );
+											
 										}
 
 										break;
@@ -12828,12 +12815,11 @@ void Actor::UpdatePhysics()
 									if( e1 == g->edgeA )
 									{
 										gateTouched = g->edgeB;
-										//owner->ActivateZone( g->zoneB );
 									}
 									else
 									{
 										gateTouched = g->edgeA;
-										//owner->ActivateZone( g->zoneA );
+										
 									}
 
 									break;
@@ -12883,12 +12869,11 @@ void Actor::UpdatePhysics()
 										if( e0 == g->edgeA )
 										{
 											gateTouched = g->edgeB;
-											//owner->ActivateZone( g->zoneB );
 										}
 										else
 										{
 											gateTouched = g->edgeA;
-											//owner->ActivateZone( g->zoneA );
+											
 										}
 
 										break;
@@ -12922,12 +12907,10 @@ void Actor::UpdatePhysics()
 										if( e0 == g->edgeA )
 										{
 											gateTouched = g->edgeB;
-											//owner->ActivateZone( g->zoneB );
 										}
 										else
 										{
 											gateTouched = g->edgeA;
-											//owner->ActivateZone( g->zoneA );
 										}
 
 										break;
@@ -15445,11 +15428,6 @@ void Actor::PhysicsResponse()
 			params.SetParams(Vector2f(0, 0), tr, 8, 2, 0, &spriteCenter);
 			//fair should be 25 but meh
 
-			/*if (!facingRight)
-			{
-				tr.scale(-s, s);
-			}*/
-			   
 			gateBlackFX = (RelEffectInstance*)gateBlackFXPool->ActivateEffect(&params);
 
 			//lock all the gates from this zone now that I chose one
