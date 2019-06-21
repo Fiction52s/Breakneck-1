@@ -23,10 +23,15 @@ using namespace std;
 Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
 	:active( false ), owner( p_owner )
 {
+	secretZone = false;
+	reexplored = false;
 	parentZone = NULL;
 	requiredKeys = 0;
 	showShadow = true;
 	tp.FixWinding();
+
+	openFrames = 60;
+	closeFrames = 60;
 
 	TerrainPoint * curr = tp.pointStart;
 
@@ -290,18 +295,8 @@ void Zone::Init()
 	switch (zType)
 	{
 	case MOMENTA:
-		if (miniShader != NULL)
-			delete miniShader;
-
-		miniShader = new sf::Shader;
-		if (!miniShader->loadFromFile("Resources/Shader/normalzone.frag", sf::Shader::Fragment))
-		{
-			cout << "mini zone shader not loading correctly!" << endl;
-			assert(false);
-		}
-
-		miniShader->setUniform("shadowColor", ColorGL(Minimap::terrainColor));
-		miniShader->setUniform("alpha", 1.f);
+	case SECRET:
+		secretZone = true;
 	case NORMAL:
 	{
 		if (zShader != NULL)
@@ -322,6 +317,24 @@ void Zone::Init()
 		//SetShadowColor(shadowColor);
 		zShader->setUniform("shadowColor", ColorGL(shadowColor));
 		zShader->setUniform("alpha", 1.f);
+
+		bool allSecret = true;
+		Gate *tempGate;
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			tempGate = (Gate*)((*it)->info);
+			if (tempGate->type != Gate::SECRET)
+			{
+				allSecret = false;
+				break;
+			}
+		}
+
+		if (allSecret)
+		{
+			secretZone = true;
+		}
+		
 
 		
 		//SetShadowColor(Color::White);
@@ -356,6 +369,22 @@ void Zone::Init()
 	}
 	//Color shadowColor(50, 50, 50, 200);
 	//SetShadowColor(shadowColor);
+
+	if (secretZone)
+	{
+		if (miniShader != NULL)
+			delete miniShader;
+
+		miniShader = new sf::Shader;
+		if (!miniShader->loadFromFile("Resources/Shader/normalzone.frag", sf::Shader::Fragment))
+		{
+			cout << "mini zone shader not loading correctly!" << endl;
+			assert(false);
+		}
+
+		miniShader->setUniform("shadowColor", ColorGL(Minimap::terrainColor));
+		miniShader->setUniform("alpha", 1.f);
+	}
 
 	//assert( tris.size() * 3 == points.size() );
 	//delete cdt;
@@ -420,6 +449,7 @@ void Zone::Reset()
 	active = false;
 	action = UNEXPLORED;
 	frame = 0;
+	reexplored = false;
 	if( zShader != NULL )
 		zShader->setUniform("alpha", 1.f);
 
@@ -429,17 +459,17 @@ void Zone::Reset()
 	}
 }
 
-void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
+void Zone::Update(float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest)
 {
 	VertexArray &va = *definedArea;
-	if (zType == NORMAL || zType == MOMENTA)
+	if (zType == NORMAL || zType == MOMENTA || zType == SECRET )
 	{
 		switch (action)
 		{
 		case UNEXPLORED:
 			break;
 		case OPENING:
-			if (frame == 60)
+			if (frame == openFrames)
 			{ 
 				action = OPEN;
 				frame = 0;
@@ -449,7 +479,7 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 				float a = GetOpeningAlpha();
 				zShader->setUniform("alpha", a);
 
-				if (zType == MOMENTA)
+				if (secretZone)
 				{
 					miniShader->setUniform("alpha", a);
 				}
@@ -458,7 +488,7 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 		case OPEN:
 			break;
 		case CLOSING:
-			if (frame == 60)
+			if (frame == closeFrames)
 			{
 				Close();
 			}
@@ -467,7 +497,7 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 				float a = 1.f - GetOpeningAlpha();
 				zShader->setUniform("alpha", a);
 
-				if (zType == MOMENTA)
+				if (secretZone)
 				{
 					miniShader->setUniform("alpha", a);
 				}
@@ -495,7 +525,7 @@ case NEXUS:
 
 float Zone::GetOpeningAlpha()
 {
-	return 1.f - frame / 60.f;
+	return 1.f - frame / ((float)openFrames);
 }
 
 void Zone::Close()
@@ -511,21 +541,25 @@ void Zone::DrawMinimap(sf::RenderTarget *target)
 	{
 		if (showShadow)
 		{
-			//cout << "drawing area " << this << endl;
-			switch (zType)
+			if (secretZone)
 			{
-			case MOMENTA:
 				target->draw(*definedArea, miniShader);
-				break;
-			case NORMAL:
-				target->draw(*definedArea, zShader); //target->draw(*definedArea);
-				break;
-			case NEXUS:
-
-				assert(zShader != NULL);
-				target->draw(*definedArea, zShader);
-				break;
 			}
+			//cout << "drawing area " << this << endl;
+			//switch (zType)
+			//{
+			//case MOMENTA:
+			//	target->draw(*definedArea, miniShader);
+			//	break;
+			//case NORMAL:
+			//	target->draw(*definedArea, zShader); //target->draw(*definedArea);
+			//	break;
+			//case NEXUS:
+
+			//	assert(zShader != NULL);
+			//	target->draw(*definedArea, zShader);
+			//	break;
+			//}
 		}
 	}
 }
@@ -542,6 +576,7 @@ void Zone::Draw(RenderTarget *target)
 			switch (zType)
 			{
 			case MOMENTA:
+			case SECRET:
 			case NORMAL:
 				target->draw(*definedArea, zShader); //target->draw(*definedArea);
 				break;

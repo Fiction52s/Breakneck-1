@@ -4,6 +4,7 @@
 #include "Physics.h"
 #include "KeyMarker.h"
 #include "MapHeader.h"
+#include "Minimap.h"
 
 using namespace std;
 using namespace sf;
@@ -176,6 +177,22 @@ void Gate::UpdateLine()
 		break;
 	case CRAWLER_UNLOCK:
 	case SECRET:
+	{
+		c = Color::Transparent;
+		ts = owner->GetTileset("Zone/gate_blue_128x128.png", 128, 128);
+
+		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
+		gateShader.setUniform("u_texture", *tts->texture);
+		gateShader.setUniform("tile", 1.f);
+		//gateShader.setUniform("fadeQuant", 1.f);
+
+		centerShader.setUniform("u_texture", *tts->texture);
+		frame = 0;
+
+		tileHeight = 128;
+
+		break;
+	}
 	case KEYGATE:
 		{
 		switch( owner->mh->envWorldType ) 

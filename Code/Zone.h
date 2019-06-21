@@ -33,11 +33,17 @@ struct Zone
 		sf::Vector2f &playertest );
 	int frame;
 	float GetOpeningAlpha();
+	bool secretZone;
+
+	bool reexplored;
+	int openFrames;
+	int closeFrames;
 	enum ZoneType
 	{
 		NORMAL,
 		NEXUS,
 		MOMENTA,
+		SECRET,
 		EXTRA
 	};
 

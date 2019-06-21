@@ -15451,6 +15451,8 @@ void Actor::PhysicsResponse()
 				{
 					oldZone->ReformAllGates(g);
 				}
+
+				owner->keyMarker->SetStartKeysZone(newZone);
 			}
 
 			owner->ActivateZone(newZone);

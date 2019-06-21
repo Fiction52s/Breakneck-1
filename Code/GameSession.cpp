@@ -4951,6 +4951,7 @@ void GameSession::SetupZones()
 		cout << "setting original zone to active: " << originalZone << endl;
 		//originalZone->active = true;
 		ActivateZone(originalZone, true);
+		keyMarker->SetStartKeysZone(originalZone);
 		//currentZone = originalZone;
 		//keyMarker->SetStartKeysZone(currentZone);
 	}
@@ -8748,28 +8749,6 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	else if( queryMode == "enemyzone" )
 	{
 		Enemy *e = (Enemy*)qte;
-
-		//if( e->spawnRect.intersects( tempSpawnRect ) )
-		//{
-			//cout << "spawning enemy! of type: " << e->type << endl;
-		//if (e->zonedSprite.getGlobalBounds().intersects(FloatRect(tempSpawnRect)))
-		//{
-		//	//e->ZoneDraw( )
-		//}
-
-
-		//	if (rect.intersects(zonedSprite.getGlobalBounds()))
-			//if( !e->spawned )
-		//	{
-		//		e->DrawMinimap( minimapTex );
-		//	}
-			
-			//e->spawned = true;
-
-			
-
-			//AddEnemy( e );
-		//}
 	}
 	else if( queryMode == "border" )
 	{
@@ -10141,6 +10120,7 @@ void GameSession::RestartLevel()
 	if (originalZone != NULL)
 	{
 		ActivateZone(originalZone, true);
+		keyMarker->SetStartKeysZone(originalZone);
 	}
 	//	originalZone->active = true;
 	//
@@ -13425,7 +13405,6 @@ void EnvPlant::Reset()
 //only activates zones if they're inactive. 
 void GameSession::ActivateZone( Zone *z, bool instant )
 {
-	bool momentaInvolved = z->zType == Zone::MOMENTA || (currentZone != NULL && currentZone->zType == Zone::MOMENTA);
 	if( z == NULL )
 		return;
 	//assert( z != NULL );
@@ -13469,26 +13448,36 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 	}
 	else
 	{
-		if( z->zType == Zone::MOMENTA )
+		z->reexplored = true;
 		{
+			
+			if (z->action == Zone::CLOSING)
+			{
+				z->frame = z->openFrames - z->frame;
+			}
+			else
+			{
+				z->frame = 0;
+			}
 			z->action = Zone::OPENING;
-			z->frame = 0;
 		}
 		//already activated
 		//assert(0);
 	}
-	//z->SetShadowColor( Color( 0, 0, 255, 10 ) );
-	if (currentZone != NULL && z->zType != Zone::MOMENTA)//&& !momentaInvolved)
+	if (currentZone != NULL )
 	{
+		if (currentZone->action == Zone::OPENING)
+		{
+			currentZone->frame = z->openFrames - currentZone->frame;
+		}
+		else
+		{
+			currentZone->frame = 0;
+		}
 		currentZone->action = Zone::CLOSING;
-		currentZone->frame = 0;
 	}
 
 	currentZone = z;
-
-	if( !momentaInvolved )
-		keyMarker->SetStartKeysZone(currentZone);
-
 
 	if (!instant)
 	{
