@@ -15,6 +15,7 @@
 #include "MainMenu.h"
 #include "MapHeader.h"
 #include "ShardTypes.h"
+#include "Gate.h"
 
 struct EditSession;
 struct MainMenu;
@@ -369,13 +370,6 @@ typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
 
 struct GateInfo : ISelectable
 {
-	enum GateTypes
-	{
-		BLACK,
-		KEYGATE,
-		CRAWLER_UNLOCK,
-		Count
-	};
 
 	GateInfo();
 	void SetType( const std::string &gType );
@@ -398,7 +392,7 @@ struct GateInfo : ISelectable
 	bool reformBehindYou;
 	int numKeysRequired;
 	sf::Color color;
-	GateTypes type;
+	Gate::GateType type;
 	
 };
 

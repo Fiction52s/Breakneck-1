@@ -248,7 +248,7 @@ struct ModifyGateAction : Action
 	void Undo();
 
 	GateInfoPtr gate;
-	GateInfo::GateTypes oldType;
+	Gate::GateType oldType;
 	std::string newType;
 };
 

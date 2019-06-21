@@ -6,6 +6,8 @@
 using namespace sf;
 using namespace std;
 
+Color Minimap::terrainColor(0x75, 0x70, 0x90);// , 191);
+
 Minimap::Minimap( GameSession *p_owner)
 {
 	owner = p_owner;
@@ -75,6 +77,8 @@ void Minimap::DrawToTex()
 
 	DrawTerrain(minimapRect, minimapTex);
 
+	DrawZones( minimapTex );
+
 	DrawMapBorders(minimapTex);
 
 	DrawGates(minimapRect, minimapTex);
@@ -104,11 +108,19 @@ void Minimap::Draw(sf::RenderTarget *target)
 	target->draw(minimapSprite, &minimapShader);
 }
 
+void Minimap::DrawZones( RenderTarget *target)
+{
+	auto &zones = owner->zones;
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->DrawMinimap(target);
+	}
+}
+
 void Minimap::DrawTerrain( sf::Rect<double> &rect, sf::RenderTarget *target )
 {
 	owner->QueryBorderTree(rect);
-	Color testColor(0x75, 0x70, 0x90, 191);
-	owner->DrawColoredMapTerrain(target, testColor);
+	owner->DrawColoredMapTerrain(target, terrainColor);
 }
 
 void Minimap::DrawMapBorders(

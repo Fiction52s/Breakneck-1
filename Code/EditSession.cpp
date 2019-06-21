@@ -254,54 +254,34 @@ void GateInfo::SetType( const std::string &gType )
 {
 	if( gType == "black" )
 	{
-		type = GateTypes::BLACK;
+		type = Gate::BLACK;
 	}
 	else if( gType == "keygate" )
 	{
-		type = GateTypes::KEYGATE;
+		type = Gate::KEYGATE;
 		reformBehindYou = false;
 	}
 	else if( gType == "birdfight" )
 	{
-		type = GateTypes::CRAWLER_UNLOCK;
+		type = Gate::CRAWLER_UNLOCK;
 	}
-	else if( gType == "reform" )
+	else if( gType == "secret" )
 	{
-		type = GateTypes::KEYGATE;
-		reformBehindYou = true;
+		type = Gate::SECRET;
+		//reformBehindYou = true;
 	}
 	else if( gType == "crawlerunlock" )
 	{
-		type = GateTypes::CRAWLER_UNLOCK;
+		type = Gate::CRAWLER_UNLOCK;
 	}
 	else if( gType == "nexus1unlock" )
 	{
-		type = GateTypes::CRAWLER_UNLOCK;
+		type = Gate::CRAWLER_UNLOCK;
 	}
 	else
 	{
 		assert( false );
 	}
-
-
-	/*if( gType == "grey" )
-	{
-		type = GateTypes::GREY;
-	}
-	else */
-	/*else if( gType == "green" )
-	{
-		type = GateTypes::GREEN;
-	}
-	else if( gType == "red" )
-	{
-		type = GateTypes::RED;
-	}
-	else if( gType == "critical" )
-	{
-		cout << "set type critical" << endl;
-		type = GateTypes::CRITICAL;
-	}*/
 }
 
 void GateInfo::WriteFile( ofstream &of )
@@ -335,11 +315,6 @@ void GateInfo::WriteFile( ofstream &of )
 		<< index0 << " " << poly1->writeIndex << " " << index1 << " ";
 
 
-	/*if( type == GateTypes::BIRDFIGHT )
-	{
-		reformBehindYou = true;
-	}*/
-
 	if( reformBehindYou )
 	{
 		of << "+reform" << endl;
@@ -368,11 +343,11 @@ void GateInfo::UpdateLine()
 	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 	
 	//Color c;
-	if( type == GateTypes::BLACK )
+	if( type == Gate::BLACK )
 	{
 		color = Color( 200, 200, 200 );
 	}
-	else if( type == GateTypes::KEYGATE )
+	else if( type == Gate::KEYGATE )
 	{
 		if( !reformBehindYou )
 			color = Color( 100, 100, 100 );
@@ -381,34 +356,14 @@ void GateInfo::UpdateLine()
 			color = Color( 200, 200, 200 );
 		}
 	}
-	/*else if( type == GateTypes::BIRDFIGHT )
+	else if( type == Gate::SECRET)
 	{
-		color = Color( 0, 255, 40 );
-	}*/
-	else if( type == GateTypes::CRAWLER_UNLOCK )
+		color = Color( 255, 0, 0);
+	}
+	else if( type == Gate::CRAWLER_UNLOCK )
 	{
 		color = Color( 0, 0, 255);
 	}
-	/*else if( type == GateTypes::NEXUS1_UNLOCK )
-	{
-		color = Color::Cyan;
-	}*/
-	/*else if( type == GateTypes::GREEN )
-	{
-		c = Color( 0, 255, 0 );
-	}
-	else if( type == GateTypes::BLUE )
-	{
-		c = Color( 0, 0, 255 );
-	}
-	else if( type == GateTypes::CRITICAL )
-	{
-		c = Color( 255, 255, 0 );
-	}
-	else if( type == GateTypes::BIRDFIGHT )
-	{
-		c = Color( 0, 255, 40 );
-	}*/
 	thickLine[0].color = color;
 	thickLine[1].color = color;
 	thickLine[2].color = color;
@@ -422,45 +377,6 @@ void GateInfo::UpdateLine()
 
 void GateInfo::Draw( sf::RenderTarget *target )
 {
-	/*Color c;
-	if( type == GateTypes::GREY )
-	{
-		c = Color( 150, 150, 150 );
-	}
-	else if( type == GateTypes::BLACK )
-	{
-		c = Color( 50, 50, 50 );
-	}
-	else if( type == GateTypes::RED)
-	{
-		c = Color( 255, 0, 0 );
-	}
-	else if( type == GateTypes::GREEN )
-	{
-		c = Color( 0, 255, 0 );
-	}
-	else if( type == GateTypes::BLUE )
-	{
-		c = Color( 0, 0, 255 );
-	}
-	else if( type == GateTypes::CRITICAL )
-	{
-		c = Color( 255, 255, 0 );
-	}*/
-
-	Color c;
-	/*if( type == GateTypes::BLACK )
-	{
-		c = Color::Black;
-	}
-	else if( type == GateTypes::KEYGATE )
-	{
-		c = Color( 150, 150, 150 );
-	}
-	else if( type == GateTypes::BIRDFIGHT )
-	{
-		c = Color( 0, 255, 40 );
-	}*/
 
 	CircleShape cs( 5 );
 	cs.setFillColor( color );
@@ -493,12 +409,12 @@ void GateInfo::DrawPreview(sf::RenderTarget * target)
 	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 
 	//Color c;
-	if (type == GateTypes::BLACK)
+	if (type == Gate::BLACK)
 	{
 		color = Color::Cyan;
 		//color = Color(150, 150, 150);
 	}
-	else if (type == GateTypes::KEYGATE)
+	else if (type == Gate::KEYGATE)
 	{
 		color = Color::Cyan;//Color(100, 100, 100);
 	}
@@ -2984,7 +2900,7 @@ bool EditSession::OpenFile()
 		int numGates;
 		is >> numGates;
 		cout << "numgates: " << numGates << endl;
-		for( int i = 0; i < numGates; ++i )
+		for (int i = 0; i < numGates; ++i)
 		{
 			int gType;
 			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
@@ -3000,60 +2916,63 @@ bool EditSession::OpenFile()
 			is >> vertexIndex1;
 			is >> reformBehindYouStr;
 			bool reformBehindYou;
-			if( reformBehindYouStr == "+reform" )
+			if (reformBehindYouStr == "+reform")
 			{
 				reformBehindYou = true;
 			}
-			else if( reformBehindYouStr == "-reform" )
+			else if (reformBehindYouStr == "-reform")
 			{
 				reformBehindYou = false;
 			}
 			else
 			{
-				assert( false );
+				assert(false);
 			}
 
 			int testIndex = 0;
-			PolyPtr terrain0(  NULL );
-			PolyPtr terrain1( NULL );
+			PolyPtr terrain0(NULL);
+			PolyPtr terrain1(NULL);
 			bool first = true;
 
-			if( poly0Index == -1 )
+			if (poly0Index == -1)
 			{
 				terrain0 = inversePolygon;
 			}
-			if( poly1Index == -1 )
+			if (poly1Index == -1)
 			{
 				terrain1 = inversePolygon;
 			}
-			for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+			for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 			{
 				if ((*it)->inverse) continue;
 
-				if( terrain0 != NULL && terrain1 != NULL )
+				if (terrain0 != NULL && terrain1 != NULL)
 					break;
 
-				if( testIndex == poly0Index && terrain0 == NULL )
+				if (testIndex == poly0Index && terrain0 == NULL)
 				{
 					terrain0 = (*it);
 
-					if( first )
+					if (first)
 						first = false;
 					else
 						break;
 				}
-				if( testIndex == poly1Index && terrain1 == NULL )
+				if (testIndex == poly1Index && terrain1 == NULL)
 				{
 					terrain1 = (*it);
 
-					if( first )
+					if (first)
 						first = false;
 					else
 						break;
 				}
 				testIndex++;
 			}
-
+			if (terrain0 == NULL || terrain1 == NULL)
+			{
+				int zzzerwr = 56;
+			}
 			//PolyPtr poly(  new TerrainPolygon( &grassTex ) );
 			GateInfoPtr gi( new GateInfo );
 			//GateInfo *gi = new GateInfo;
@@ -3063,7 +2982,7 @@ bool EditSession::OpenFile()
 			gi->poly1 = terrain1;
 			gi->vertexIndex0 = vertexIndex0;
 			gi->vertexIndex1 = vertexIndex1;
-			gi->type = (GateInfo::GateTypes)gType;
+			gi->type = (Gate::GateType)gType;
 			gi->edit = this;
 
 			int index = 0;
@@ -6810,8 +6729,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	tempSq.setColor( Color( 100, 100, 100 ) );
 	gateSel->Set( 1, 0, tempSq, "keygate" );
 
-	tempSq.setColor( Color::White );
-	gateSel->Set( 2, 0, tempSq, "reform" );
+	tempSq.setColor( Color::Red );
+	gateSel->Set( 2, 0, tempSq, "secret" );
 
 	tempSq.setColor( Color( 0, 255, 40 ) );
 	gateSel->Set( 3, 0, tempSq, "birdfight" );
@@ -15458,8 +15377,8 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 	}
 	else if (panel->name == "shard_options")
 	{
-		int world = gs->selectedX / 3;
-		int realX = gs->selectedX % 3;
+		int world = gs->selectedX / 11;
+		int realX = gs->selectedX % 11;
 		int realY = gs->selectedY;
 
 		ShardParams *shard = NULL;
@@ -17170,42 +17089,45 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 	}
 	else if (name == "shard")
 	{
-		p = new Panel("shard_options", 700, 900, this);
-		p->AddLabel("shardtype", Vector2i(20, 500), 24, "SHARD_W1_TEACH_JUMP");
+		p = new Panel("shard_options", 700, 1080, this);
+		p->AddLabel("shardtype", Vector2i(20, 900), 24, "SHARD_W1_TEACH_JUMP");
 
+		int xSize = 11;
+		int ySize = 2;
 		//GridSelector *gs = new GridSelector(Vector2i(0, 0), 3, 7, 64, 64, true, true, p);
-		GridSelector *gs = p->AddGridSelector( "shardselector", Vector2i(0, 0), 3 * 7, 7, 64, 64, true, true);
+		GridSelector *gs = p->AddGridSelector( "shardselector", Vector2i(0, 0), xSize, ySize * 7, 64, 64, true, true);
 		Sprite spr;
 
-		ts_shards[0] = tm.GetTileset("Shard/shards_w1_64x64.png", 64, 64);
-		ts_shards[1] = tm.GetTileset("Shard/shards_w2_64x64.png", 64, 64);
-		ts_shards[2] = tm.GetTileset("Shard/shards_w3_64x64.png", 64, 64);
-		ts_shards[3] = tm.GetTileset("Shard/shards_w4_64x64.png", 64, 64);
-		ts_shards[4] = tm.GetTileset("Shard/shards_w5_64x64.png", 64, 64);
-		ts_shards[5] = tm.GetTileset("Shard/shards_w6_64x64.png", 64, 64);
-		ts_shards[6] = tm.GetTileset("Shard/shards_w7_64x64.png", 64, 64);
+		ts_shards[0] = tm.GetTileset("Shard/shards_w1_48x48.png", 48, 48);
+		ts_shards[1] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[2] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[3] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[4] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[5] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[6] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
 
 		
 		Tileset *ts_currShards;
 		int sInd = 0;
+		
 		for (int w = 0; w < 7; ++w)
 		{
 			ts_currShards = ts_shards[w];
 			spr.setTexture(*ts_currShards->texture);
-			for (int y = 0; y < 7; ++y)
+			for (int y = 0; y < ySize; ++y)
 			{
-				for (int x = 0; x < 3; ++x)
+				for (int x = 0; x < xSize; ++x)
 				{
-					sInd = y * 3 + x;
+					sInd = y * xSize + x;
 					spr.setTextureRect(ts_currShards->GetSubRect(sInd));
-					int shardT = (sInd + 21 * w);
+					int shardT = (sInd + (xSize * ySize) * w);
 					if (shardT >= SHARD_Count)
 					{
-						gs->Set(x + w * 3, y, spr, "shard"); //need a way to set the names later
+						gs->Set(x, y + ySize * w, spr, "shard"); //need a way to set the names later
 					}
 					else
 					{
-						gs->Set(x + w * 3, y, spr, Shard::GetShardString((ShardType)shardT));
+						gs->Set(x, y + ySize * w, spr, Shard::GetShardString((ShardType)shardT));
 					}
 
 				}
@@ -17213,7 +17135,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		}
 		
 
-		p->AddButton("ok", Vector2i(100, 600), Vector2f(100, 50), "OK");
+		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
 	}
 	else if (name == "rail")
 	{

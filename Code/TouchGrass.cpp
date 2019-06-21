@@ -70,6 +70,8 @@ void TouchGrass::Reset()
 {
 	visible = true;
 	SetRectRotation(myQuad, angle, ts->tileWidth, ts->tileHeight, Vector2f(center));
+	action = STILL;
+	frame = 0;
 }
 
 bool TouchGrass::Intersects(CollisionBody *cb, int frame)

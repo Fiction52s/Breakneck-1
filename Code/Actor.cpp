@@ -1048,7 +1048,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//CreateAura(auraPoints[WALLATTACK], tileset[WALLATTACK]);
 		actionLength[DAIR] = 16;
 		//CreateAura(auraPoints[DAIR], tileset[DAIR]);
-		actionLength[DASH] = 45;
+		actionLength[DASH] = 45 + 10;
 		maxBBoostCount = actionLength[DASH];
 		//CreateAura(auraPoints[DASH], tileset[DASH] );
 		actionLength[DOUBLE] = 28 + 10;
@@ -2556,7 +2556,8 @@ void Actor::UpdatePrePhysics()
 	}
 	//cout << "JFRAME BEHI: " << frame << endl;
 
-	if (kinRing->powerRing != NULL && action != DEATH && owner->adventureHUD->IsShown() )
+	if (kinRing->powerRing != NULL && action != DEATH && owner->adventureHUD->IsShown() 
+		&& ( owner->currentZone == NULL || owner->currentZone->zType != Zone::MOMENTA))
 	{
 		if (owner->drain && !desperationMode 
 			&& !IsIntroAction( action ) && !IsGoalKillAction( action ) && !IsExitAction( action ) && !IsSequenceAction( action ))
@@ -3934,7 +3935,7 @@ void Actor::UpdatePrePhysics()
 			{
 				if( !currInput.B )
 				{
-					if (currBBoostCounter > maxBBoostCount - 10 )
+					if (currBBoostCounter > maxBBoostCount - 20 )
 					{
 						double dashFactor = 3.0;
 						double ag = abs(groundSpeed);
@@ -15504,7 +15505,7 @@ void Actor::PhysicsResponse()
 		{
 			gateTouched = NULL;
 			owner->LockGate( g );
-			cout << "went back" << endl;
+			//cout << "went back" << endl;
 		}
 		else
 		{

@@ -175,6 +175,7 @@ void Gate::UpdateLine()
 		}
 		break;
 	case CRAWLER_UNLOCK:
+	case SECRET:
 	case KEYGATE:
 		{
 		switch( owner->mh->envWorldType ) 
@@ -435,7 +436,15 @@ void Gate::Update()
 					{
 						SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(6));
 					}*/
-					gState = LOCKFOREVER;
+					if (type == SECRET)
+					{
+						gState = HARD;
+						frame = 0;
+					}
+					else
+					{
+						gState = LOCKFOREVER;
+					}
 				}
 				break;
 			}

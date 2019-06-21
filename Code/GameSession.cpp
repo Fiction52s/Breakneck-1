@@ -10332,6 +10332,7 @@ void TerrainPiece::AddTouchGrass()
 		{
 			valid = false;
 		}
+		//valid = true;
 
 		if (valid)
 		{
@@ -13492,7 +13493,7 @@ void GameSession::UnlockGate( Gate *g )
 {
 	g->SetLocked( false );
 
-	cout << "adding gate to unlock list: " << g << endl;
+	//cout << "adding gate to unlock list: " << g << endl;
 	if( unlockedGateList == NULL )
 	{
 		unlockedGateList = g;

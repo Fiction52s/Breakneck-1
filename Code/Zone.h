@@ -17,6 +17,7 @@ struct Zone
 	
 	void Init();
 	void Draw( sf::RenderTarget *target );
+	void DrawMinimap(sf::RenderTarget *target);
 	void AddHoles( p2t::CDT *cdt );
 
 	bool ContainsPoint( sf::Vector2<double> point );
@@ -36,6 +37,7 @@ struct Zone
 	{
 		NORMAL,
 		NEXUS,
+		MOMENTA,
 		EXTRA
 	};
 
@@ -72,6 +74,7 @@ struct Zone
 	Zone *parentZone;
 
 	sf::Shader *zShader;
+	sf::Shader *miniShader;
 	Tileset *ts_z;
 };
 

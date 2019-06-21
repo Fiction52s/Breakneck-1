@@ -4,6 +4,7 @@
 #include "Enemy.h"
 #include "GameSession.h"
 #include "EditSession.h"
+#include "Minimap.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -38,6 +39,7 @@ Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
 	activeNext = NULL;
 
 	zShader = NULL;
+	miniShader = NULL;
 
 	zType = NORMAL;
 
@@ -53,6 +55,12 @@ Zone::~Zone()
 	{
 		delete zShader;
 		zShader = NULL;
+	}
+
+	if (miniShader != NULL)
+	{
+		delete miniShader;
+		miniShader = NULL;
 	}
 }
 
@@ -281,6 +289,19 @@ void Zone::Init()
 
 	switch (zType)
 	{
+	case MOMENTA:
+		if (miniShader != NULL)
+			delete miniShader;
+
+		miniShader = new sf::Shader;
+		if (!miniShader->loadFromFile("Resources/Shader/normalzone.frag", sf::Shader::Fragment))
+		{
+			cout << "mini zone shader not loading correctly!" << endl;
+			assert(false);
+		}
+
+		miniShader->setUniform("shadowColor", ColorGL(Minimap::terrainColor));
+		miniShader->setUniform("alpha", 1.f);
 	case NORMAL:
 	{
 		if (zShader != NULL)
@@ -288,24 +309,21 @@ void Zone::Init()
 			delete zShader;
 		}
 		
+		
 		zShader = new sf::Shader;
 		if (!zShader->loadFromFile("Resources/Shader/normalzone.frag", sf::Shader::Fragment))
 		{
 			cout << "zone shader not loading correctly!" << endl;
 			assert(false);
 		}
-		//ts_z = owner->GetTileset("terrain_1_01_512x512.png", 512, 512);
-		//zShader->setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-		//zShader->setUniform("Resolution", Vector2f(1920, 1080));
-		//zShader->setUniform("u_texture", ts_z->texture);
-		
 
-		//Color shadowColor(50, 50, 50, 200);
 		Color shadowColor(0, 0, 0, 200);
 		
-		SetShadowColor(shadowColor);
+		//SetShadowColor(shadowColor);
 		zShader->setUniform("shadowColor", ColorGL(shadowColor));
 		zShader->setUniform("alpha", 1.f);
+
+		
 		//SetShadowColor(Color::White);
 		break;
 	}
@@ -404,12 +422,17 @@ void Zone::Reset()
 	frame = 0;
 	if( zShader != NULL )
 		zShader->setUniform("alpha", 1.f);
+
+	if (miniShader != NULL)
+	{
+		miniShader->setUniform("alpha", 1.f);
+	}
 }
 
 void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 {
 	VertexArray &va = *definedArea;
-	if (zType == NORMAL)
+	if (zType == NORMAL || zType == MOMENTA)
 	{
 		switch (action)
 		{
@@ -423,7 +446,13 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 			}
 			else
 			{
-				zShader->setUniform("alpha", GetOpeningAlpha());
+				float a = GetOpeningAlpha();
+				zShader->setUniform("alpha", a);
+
+				if (zType == MOMENTA)
+				{
+					miniShader->setUniform("alpha", a);
+				}
 			}
 			break;
 		case OPEN:
@@ -435,7 +464,13 @@ void Zone::Update( float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest )
 			}
 			else
 			{
-				zShader->setUniform("alpha", 1.f - GetOpeningAlpha());
+				float a = 1.f - GetOpeningAlpha();
+				zShader->setUniform("alpha", a);
+
+				if (zType == MOMENTA)
+				{
+					miniShader->setUniform("alpha", a);
+				}
 			}
 			break;
 		case CLOSED:
@@ -470,6 +505,31 @@ void Zone::Close()
 	zShader->setUniform("alpha", 1.f);
 }
 
+void Zone::DrawMinimap(sf::RenderTarget *target)
+{
+	if (action != OPEN)//!active )
+	{
+		if (showShadow)
+		{
+			//cout << "drawing area " << this << endl;
+			switch (zType)
+			{
+			case MOMENTA:
+				target->draw(*definedArea, miniShader);
+				break;
+			case NORMAL:
+				target->draw(*definedArea, zShader); //target->draw(*definedArea);
+				break;
+			case NEXUS:
+
+				assert(zShader != NULL);
+				target->draw(*definedArea, zShader);
+				break;
+			}
+		}
+	}
+}
+
 void Zone::Draw(RenderTarget *target)
 {
 	//target->draw( *definedArea );
@@ -481,6 +541,7 @@ void Zone::Draw(RenderTarget *target)
 			//cout << "drawing area " << this << endl;
 			switch (zType)
 			{
+			case MOMENTA:
 			case NORMAL:
 				target->draw(*definedArea, zShader); //target->draw(*definedArea);
 				break;

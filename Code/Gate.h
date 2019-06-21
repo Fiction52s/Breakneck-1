@@ -15,6 +15,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		BLACK,
 		KEYGATE,
 		CRAWLER_UNLOCK,
+		SECRET,
 		Count
 	};
 

@@ -24,15 +24,16 @@ struct Minimap
 	GameSession *owner;
 
 	void SetCenter(sf::Vector2f &center);
-	
+
 
 	Tileset *ts_miniIcons;
 	Tileset *ts_miniCircle;
 
 	sf::Vertex blackBorderQuadsMini[4 * 2];
 	sf::Vertex topBorderQuadMini[4];
-
+	static sf::Color terrainColor;
 private:
+	void DrawZones( sf::RenderTarget *target);
 	void DrawTerrain(
 		sf::Rect<double> &rect,
 		sf::RenderTarget *target);
