@@ -438,7 +438,7 @@ void Gate::Update()
 					}*/
 					if (type == SECRET)
 					{
-						gState = HARD;
+						gState = SOFT;
 						frame = 0;
 					}
 					else
@@ -495,6 +495,11 @@ void Gate::Update()
 	{
 		Zone *currZone = owner->currentZone;
 		bool enoughKeys = (owner->keyMarker->keysRequired == 0);
+
+		if (type == SECRET)
+		{
+			enoughKeys = true;
+		}
 
 		if( gState == HARD && enoughKeys && 
 			( currZone == NULL || ( currZone == zoneA || currZone == zoneB ) ))

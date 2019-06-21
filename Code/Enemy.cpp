@@ -1869,7 +1869,7 @@ void Enemy::ConfirmKill()
 	//owner->cam.SetRumble(1, 1, 7 );
 	owner->cam.SetRumble(1, 1, 7);
 	
-	if (hasMonitor)
+	if (hasMonitor && !suppressMonitor)
 	{
 		owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position);
 	}

@@ -4955,8 +4955,8 @@ void GameSession::SetupZones()
 		//keyMarker->SetStartKeysZone(currentZone);
 	}
 	
-	cout << "3: numgates: " << numGates << endl;
-	cout << "num zones: " << zones.size() << endl;
+	//cout << "3: numgates: " << numGates << endl;
+	//cout << "num zones: " << zones.size() << endl;
 	//assign correct zones to gates
 	//for( int i = 0; i < numGates; ++i )
 	//{
@@ -5000,7 +5000,6 @@ void GameSession::SetupZones()
 		(*it)->Init();
 	}
 
-	//cout << "init zones over" << endl;
 
 	/*for( int i = 0; i < numGates; ++i )
 	{
@@ -9215,6 +9214,9 @@ void GameSession::DrawActiveSequence(EffectLayer layer )
 
 void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 {
+	if (gType == Gate::SECRET)
+		return;
+
 	for( list<Enemy*>::iterator it = currentZone->allEnemies.begin();
 		it != currentZone->allEnemies.end(); ++it )
 	{
@@ -9228,7 +9230,6 @@ void GameSession::SuppressEnemyKeys( Gate::GateType gType )
 	//	
 	//	if( currEnemy->hasMonitor )
 	//	{
-	//		currEnemy->suppressMonitor = true;
 	//	}
 	//	//currEnemy->moni
 	//	currEnemy = currEnemy->next;
@@ -13424,6 +13425,7 @@ void EnvPlant::Reset()
 //only activates zones if they're inactive. 
 void GameSession::ActivateZone( Zone *z, bool instant )
 {
+	bool momentaInvolved = z->zType == Zone::MOMENTA || (currentZone != NULL && currentZone->zType == Zone::MOMENTA);
 	if( z == NULL )
 		return;
 	//assert( z != NULL );
@@ -13467,19 +13469,25 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 	}
 	else
 	{
-		assert(0);
-		//int xxx = 5;
-		//already open
+		if( z->zType == Zone::MOMENTA )
+		{
+			z->action = Zone::OPENING;
+			z->frame = 0;
+		}
+		//already activated
+		//assert(0);
 	}
 	//z->SetShadowColor( Color( 0, 0, 255, 10 ) );
-	if (currentZone != NULL)
+	if (currentZone != NULL && z->zType != Zone::MOMENTA)//&& !momentaInvolved)
 	{
 		currentZone->action = Zone::CLOSING;
 		currentZone->frame = 0;
 	}
 
 	currentZone = z;
-	keyMarker->SetStartKeysZone(currentZone);
+
+	if( !momentaInvolved )
+		keyMarker->SetStartKeysZone(currentZone);
 
 
 	if (!instant)

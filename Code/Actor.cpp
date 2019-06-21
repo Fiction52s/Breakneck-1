@@ -12863,7 +12863,6 @@ void Actor::UpdatePhysics()
 
 									if( CanUnlockGate( g ) )
 									{
-										//g->SetLocked( false );
 										UnlockGate( g );
 
 										if( e0 == g->edgeA )
@@ -12898,7 +12897,6 @@ void Actor::UpdatePhysics()
 								{
 							//		cout << "similar secret but not reversed D" << endl;
 									Gate *g = (Gate*)e0->info;
-									//g->SetLocked( false );
 
 									if( CanUnlockGate( g ) )
 									{
@@ -15431,7 +15429,8 @@ void Actor::PhysicsResponse()
 			gateBlackFX = (RelEffectInstance*)gateBlackFXPool->ActivateEffect(&params);
 
 			//lock all the gates from this zone now that I chose one
-			owner->SuppressEnemyKeys( g->type );			
+			
+			owner->SuppressEnemyKeys(g->type);
 
 			Zone *oldZone;
 			Zone *newZone;
@@ -15446,10 +15445,14 @@ void Actor::PhysicsResponse()
 				newZone = g->zoneB;
 			}
 
-			if (oldZone != NULL && oldZone->active)
+			if (g->type != Gate::SECRET)
 			{
-				oldZone->ReformAllGates(g);
+				if (oldZone != NULL && oldZone->active)
+				{
+					oldZone->ReformAllGates(g);
+				}
 			}
+
 			owner->ActivateZone(newZone);
 			
 			if( g->reformBehindYou )
@@ -23583,6 +23586,10 @@ bool Actor::CanUnlockGate( Gate *g )
 	bool canUnlock = false;
 
 	bool enoughKeys = (owner->keyMarker->keysRequired == 0);
+	if (g->type == Gate::SECRET)
+	{
+		enoughKeys = true;
+	}
 	//cout << "this gate is still locked" << endl;
 
 	/*if( g->type == Gate::GREY && g->gState != Gate::LOCKFOREVER

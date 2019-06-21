@@ -734,7 +734,6 @@ void Boss_Crawler::UpdatePrePhysics()
 			owner->activeSequence = crawlerAfterFightSeq;
 			//action = 
 			//if( hasMonitor && !suppressMonitor )
-			//	owner->keyMarker->CollectKey();
 
 			//dead = true;
 
