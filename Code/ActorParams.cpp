@@ -1213,8 +1213,14 @@ ShardParams::ShardParams( EditSession *edit, sf::Vector2i &pos )
 	SetBoundingQuad();
 
 	SetShard(0, 0, 0);
+	//shardStr = Shard::GetShardString(0, 0);
 	
 	//shardStr = "SHARD_W1_TEACH_JUMP";//"..no.shard..";
+}
+
+void ShardParams::SetShard(int w, int li)
+{
+	SetShard(w, li % 11, li / 11);
 }
 
 void ShardParams::SetShard(int w, int realX, int realY)
@@ -1223,20 +1229,27 @@ void ShardParams::SetShard(int w, int realX, int realY)
 	sX = realX;
 	sY = realY;
 
+	localIndex = realX + realY * 11;
 	Tileset *ts = session->ts_shards[world];
 	image.setTexture(*ts->texture);
-	image.setTextureRect(ts->GetSubRect(realX + realY * 3));
+	image.setTextureRect(ts->GetSubRect(localIndex));
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 
 	Panel *p = type->panel;
 	GridSelector *gs = p->gridSelectors["shardselector"];
-	gs->selectedX = sX + world * 3;
-	gs->selectedY = sY;
+	gs->selectedX = sX;
+	gs->selectedY = sY + world * 2;
 
 	shardStr = gs->names[gs->selectedX][gs->selectedY];
 }
 
-ShardParams::ShardParams(EditSession *edit, sf::Vector2i &pos, const std::string &sStr )
+int ShardParams::GetTotalIndex()
+{
+	return world * 22 + localIndex;
+}
+
+ShardParams::ShardParams(EditSession *edit, sf::Vector2i &pos, int p_world,
+	int p_localIndex)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	position = pos;
@@ -1247,24 +1260,25 @@ ShardParams::ShardParams(EditSession *edit, sf::Vector2i &pos, const std::string
 	image.setPosition(pos.x, pos.y);
 
 	SetBoundingQuad();
+	//
+	//shardStr = Shard::GetShardString(p_world, p_localIndex);
 
-	shardStr = sStr;
-
-	SetShardFromStr();
+	SetShard(p_world, p_localIndex);
+	//SetShardFromStr();
 }
 
 void ShardParams::SetShardFromStr()
 {
-	ShardType st = Shard::GetShardType(shardStr);
+	/*ShardType st = Shard::GetShardType(shardStr);
 	int sti = st;
 	int rem = sti % 21;
 
-	SetShard(sti / 21, rem % 3, rem / 3);
+	SetShard(sti / 21, rem % 3, rem / 3);*/
 }
 
 void ShardParams::WriteParamFile( std::ofstream &of )
 {
-	of << shardStr << endl;
+	of << world << " " << localIndex << endl;
 }
 
 void ShardParams::SetParams()
@@ -1281,8 +1295,8 @@ void ShardParams::SetPanelInfo()
 	p->labels["shardtype"]->setString( shardStr );
 
 	GridSelector *gs = p->gridSelectors["shardselector"];
-	gs->selectedX = sX + world * 3;
-	gs->selectedY = sY;
+	gs->selectedX = sX;
+	gs->selectedY = sY + world * 2;
 }
 
 bool ShardParams::CanApply()

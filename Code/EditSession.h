@@ -730,10 +730,12 @@ struct ShardParams : public ActorParams
 	ShardParams( EditSession *edit,
 		sf::Vector2i &pos);
 	ShardParams(EditSession *edit,
-		sf::Vector2i &pos, const std::string &sStr );
+		sf::Vector2i &pos, int world,
+		int li );
 	void WriteParamFile( std::ofstream &of );
 
 	void SetShard(int world, int realX, int realY );
+	void SetShard(int world, int li);
 	void SetParams();
 	void SetPanelInfo();
 	void SetShardFromStr();
@@ -741,6 +743,8 @@ struct ShardParams : public ActorParams
 	int world;
 	int sX;
 	int sY;
+	int localIndex;
+	int GetTotalIndex();
 
 	bool CanApply();
 	ActorParams *Copy();

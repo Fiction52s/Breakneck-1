@@ -1904,12 +1904,15 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 				
-				string shardStr;
-				is >> shardStr;
+				int w;
+				is >> w;
 
-				ShardType sType = Shard::GetShardType(shardStr);
+				int localIndex;
+				is >> localIndex;
+				//string shardStr;
+				//is >> shardStr;
 
-				Shard *enemy = new Shard( this, Vector2i( xPos, yPos ), sType );
+				Shard *enemy = new Shard( this, Vector2i( xPos, yPos ), w, localIndex );
 
 				fullEnemyList.push_back( enemy );
 				enem = enemy;

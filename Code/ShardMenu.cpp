@@ -115,8 +115,9 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 	stringstream ss;
 
-	shardNames[0][0] = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
-	shardNames[1][0] = Shard::GetShardString(ShardType::SHARD_W1_BACKWARDS_DASH_JUMP);
+	
+	
+	//shardNames[1][0] = Shard::GetShardString(ShardType::SHARD_W1_BACKWARDS_DASH_JUMP);
 
 	for (int x = 0; x < xSize; ++x)
 	{
@@ -125,7 +126,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 			ss.str("");
 			shardSeq[x][y] = NULL;
 			seqLoadThread[x][y] = NULL;
-			
+			shardNames[0][0] = Shard::GetShardString(x, y);
 
 			std::string &currShardName = shardNames[x][y];
 

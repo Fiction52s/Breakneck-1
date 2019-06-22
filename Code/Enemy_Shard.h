@@ -15,14 +15,19 @@ struct Shard : Enemy
 	};
 
 	static ShardType GetShardType(const std::string &str);
+	static ShardType GetShardType(int w, int li);
 	static std::string GetShardString(ShardType st);
+	static std::string GetShardString(int w,
+		int li );
 	static void SetupShardMaps();
 	int actionLength[Count];
 	int animFactor[Count];
 	void DirectKill();
+
 	Action action;
 	//MovementSequence testSeq;
-	Shard(GameSession *owner, sf::Vector2i pos, ShardType p_sType );
+	Shard(GameSession *owner, sf::Vector2i pos, 
+		int w, int li);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
@@ -42,6 +47,9 @@ struct Shard : Enemy
 	ShardType shardType;
 
 	bool caught;
+
+	int world;
+	int localIndex;
 
 private:
 	static std::map<std::string, ShardType> shardTypeMap;

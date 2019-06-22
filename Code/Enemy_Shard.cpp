@@ -26,18 +26,23 @@ std::map<ShardType, std::string> Shard::shardStrMap;
 
 void Shard::SetupShardMaps()
 {
-	shardTypeMap["SHARD_W1_TEACH_JUMP"] = SHARD_W1_TEACH_JUMP;
-	shardTypeMap["BACKWARDS_DASH_JUMP"] = SHARD_W1_BACKWARDS_DASH_JUMP;
-	shardTypeMap["SHARD_W1_GET_AIRDASH"] = SHARD_W1_GET_AIRDASH;
+	shardTypeMap["SHARD_W1_TEACH_JUMP"] = SHARD_W1_0_TEACH_JUMP;
+	shardTypeMap["BACKWARDS_DASH_JUMP"] = SHARD_W1_1_BACKWARDS_DASH_JUMP;
+	shardTypeMap["SHARD_W1_GET_AIRDASH"] = SHARD_W1_2_GET_AIRDASH;
 	for (auto it = shardTypeMap.begin(); it != shardTypeMap.end(); ++it)
 	{
 		shardStrMap[(*it).second] = (*it).first;
 	}
 }
 
-Shard::Shard( GameSession *p_owner, Vector2i pos, ShardType p_sType )
-	:Enemy( p_owner, EnemyType::EN_SHARD, false, p_owner->mh->envWorldType + 1 ), shardType( p_sType )
+Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
+	:Enemy( p_owner, EnemyType::EN_SHARD, false, w+1 )
 {
+	world = w;
+	localIndex = li;
+
+	shardType = Shard::GetShardType(w, localIndex);
+
 	initHealth = 60;
 	health = initHealth;
 
@@ -57,13 +62,15 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, ShardType p_sType )
 	
 	frame = 0;
 
-	switch (shardType)
+
+
+	switch (w)
 	{
-	case ShardType::SHARD_W1_TEACH_JUMP:
+	case 0://ShardType::SHARD_W1_TEACH_JUMP:
 	default:
-		ts = owner->GetTileset("Shard/shards_w1_64x64.png", 64, 64);
+		ts = owner->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
 		sprite.setTexture(*ts->texture);
-		sprite.setTextureRect(ts->GetSubRect(shardType));
+		sprite.setTextureRect(ts->GetSubRect(localIndex));
 		break;
 	/*default:
 		assert(0);
@@ -138,9 +145,36 @@ ShardType Shard::GetShardType(const std::string &str)
 	return shardTypeMap[str];
 }
 
+ShardType Shard::GetShardType(int w, int li)
+{
+	int totalIndex = w * 22 + li;
+	if (totalIndex >= SHARD_Count)
+	{
+		totalIndex = 0;
+	}
+
+	ShardType st = (ShardType)totalIndex;
+	return st;
+	//return shardTypeMap[str];
+}
+
 std::string Shard::GetShardString(ShardType st)
 {
 	return shardStrMap[st];
+}
+
+std::string Shard::GetShardString(int w, int li)
+{
+	int shardIndex = 22 * w + li;
+
+	if (shardIndex < ShardType::SHARD_Count)
+	{
+		return GetShardString((ShardType)shardIndex);
+	}
+	else
+	{
+		return string("-------");
+	}
 }
 
 void Shard::IHitPlayer(int index)
@@ -230,8 +264,8 @@ void Shard::UpdateSprite()
 {
 	int tile = 0;
 
-	sprite.setTextureRect(ts->GetSubRect(tile));
-	sprite.setPosition(position.x, position.y);
+	//sprite.setTextureRect(ts->GetSubRect(tile));
+	//sprite.setPosition(position.x, position.y);
 }
 
 void Shard::EnemyDraw( sf::RenderTarget *target )

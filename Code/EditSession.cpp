@@ -1498,13 +1498,16 @@ bool EditSession::OpenFile()
 					is >> pos.x;
 					is >> pos.y;
 
-					string shardStr;
-					is >> shardStr;
+					int w;
+					is >> w;
+
+					int li;
+					is >> li;
 					//int hasMonitor;
 					//is >> hasMonitor;
 
 					//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-					a.reset( new ShardParams( this, pos, shardStr ) );
+					a.reset( new ShardParams( this, pos, w, li ) );
 					//a->hasMonitor = (bool)hasMonitor;
 				}
 				else if( typeName == "racefighttarget" )
@@ -17123,7 +17126,7 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 					int shardT = (sInd + (xSize * ySize) * w);
 					if (shardT >= SHARD_Count)
 					{
-						gs->Set(x, y + ySize * w, spr, "shard"); //need a way to set the names later
+						gs->Set(x, y + ySize * w, spr, "---"); //need a way to set the names later
 					}
 					else
 					{
