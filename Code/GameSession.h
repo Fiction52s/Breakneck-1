@@ -295,7 +295,7 @@ struct TerrainPiece : QuadTreeEntrant
 	void Reset();
 	TerrainRender *tr;
 	void AddDecorExpression(DecorExpression *expr);
-	void AddTouchGrass();
+	void AddTouchGrass( int gType );
 	void UpdateBushSprites();
 	void DrawBushes(sf::RenderTarget *target);
 	GameSession *owner;

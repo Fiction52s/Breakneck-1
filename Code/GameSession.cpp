@@ -3967,7 +3967,8 @@ bool GameSession::OpenFile( string fileName )
 				tPiece->tr->GenerateDecor();
 				tPiece->tr->ts_border = ts_border1;
 
-				tPiece->AddTouchGrass();
+				tPiece->AddTouchGrass( TouchGrass::TYPE_NORMAL);
+				tPiece->AddTouchGrass(TouchGrass::TYPE_TEST);
 				//tPiece->tr->plan
 
 			}
@@ -10290,12 +10291,13 @@ struct PlantInfo
 };
 
 
-void TerrainPiece::AddTouchGrass()
+void TerrainPiece::AddTouchGrass( int gt )
 {
 	list<PlantInfo> info;
 
-	int tw = 32;
-	int th = 32;
+	TouchGrass::TouchGrassType gType = (TouchGrass::TouchGrassType)gt;
+
+	int tw = TouchGrass::GetQuadWidth( gType );
 
 	Edge *startEdge = tr->startEdge;
 
@@ -10320,7 +10322,7 @@ void TerrainPiece::AddTouchGrass()
 			double len = length(te->v1 - te->v0);
 			int numQuads = len / tw;
 			bool tooThin = false;
-			double quadWidth = 32;//len / numQuads;
+			double quadWidth = tw;//len / numQuads;
 			if (numQuads == 0)
 			{
 				tooThin = true;
@@ -10363,19 +10365,16 @@ void TerrainPiece::AddTouchGrass()
 	//cout << "number of plants: " << infoSize << endl;
 	coll->touchGrassVA = new Vertex[vaSize];
 
+	coll->ts_grass = TouchGrassCollection::GetTileset( owner, gType);
+	coll->gType = gType;
+	coll->numTouchGrasses = infoSize;
 
-	Tileset *ts_touchGrass = owner->GetTileset("Env/bushtouch_1_01_64x64.png", 64, 64);
 	int vaIndex = 0;
 	for (list<PlantInfo>::iterator it = info.begin(); it != info.end(); ++it)
 	{
-		TouchGrass *tg = new TouchGrass(TouchGrass::TYPE_NORMAL, vaIndex, coll->touchGrassVA,
-			ts_touchGrass, (*it).edge, (*it).quant, (*it).quadWidth, 24);
-		coll->myGrass.push_back(tg);
-		coll->touchGrassTree->Insert(tg);
+		coll->CreateGrass(vaIndex, (*it).edge, (*it).quant);
 		vaIndex++;
 	}
-	coll->numTouchGrasses = infoSize;
-	coll->ts_grass = ts_touchGrass;
 }
 
 void TerrainPiece::QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r)

@@ -8,59 +8,54 @@ struct TerrainPiece;
 struct Edge;
 struct Tileset;
 struct Actor;
-
+struct QuadTree;
+struct TouchGrassCollection;
 
 struct TouchGrass : QuadTreeEntrant
 {
 	enum TouchGrassType
 	{
-		TYPE_NORMAL
-	};
-
-	enum Action
-	{
-		STILL,
-		TOUCHEDLEFT,
-		TOUCHEDRIGHT,
-		TOUCHEDLAND,
+		TYPE_NORMAL,
+		TYPE_TEST,
 	};
 
 
-	TouchGrass(TouchGrassType type, int index, sf::Vertex *va,
-		Tileset *ts, Edge *e, double quant,
-		double rad, double yOff);
-	void Reset();
+	static int GetQuadWidth(TouchGrassType gt);
+	TouchGrass( TouchGrassCollection *coll, int index,
+		Edge *e, double quant);
+	void CommonInit(double yOff, double angle, double hitboxYOff,
+		double hitboxXSize, double hitboxYSize);
+	virtual void Reset() = 0;
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
-	void Update();
-	void Touch( Actor *a);
-	void Destroy(Actor *a);
+	virtual void Update() = 0;
+	virtual void Touch(Actor *a) = 0;
+	virtual void Destroy(Actor *a) = 0;
 	bool Intersects(CollisionBody *cb, int frame);
+	virtual void UpdateSprite() = 0;
+
 	bool visible;
 
 	CollisionBody *hurtBody;
 	CollisionBody *hitBody;
-	HitboxInfo *hitboxInfo;
-	
+
+
 	V2d center;
 	float angle;
-	Action action;
-	TouchGrassType gType;
+	
 	Edge *edge;
 	double quant;
 	int gIndex;
-	TerrainPiece *poly;
+	
 	double yOffset;
-	double radius;
-	Tileset *ts;
-	sf::Vertex *va;
+
 	sf::Vertex *myQuad;
 	int frame;
-	void UpdateSprite();
+
 	sf::Vector2<double> points[4];
+	TouchGrassCollection *coll;
 };
 
-struct QuadTree;
 struct TouchGrassCollection
 {
 	TouchGrassCollection();
@@ -72,8 +67,56 @@ struct TouchGrassCollection
 	void Draw(sf::RenderTarget *target);
 	void Query(QuadTreeCollider *qtc, sf::Rect<double> &r);
 	void UpdateGrass();
+	void CreateGrass(int index, Edge *edge, double quant);
+	static Tileset *GetTileset(GameSession *owner, TouchGrass::TouchGrassType gt);
 	std::list<TouchGrass*> myGrass;
 	Tileset *ts_grass;
+	TouchGrass::TouchGrassType gType;
+	TerrainPiece *poly;
+	HitboxInfo *hitboxInfo;
+};
+
+
+
+struct BasicTouchGrass : TouchGrass
+{
+	enum Action
+	{
+		STILL,
+		TOUCHEDLEFT,
+		TOUCHEDRIGHT,
+		TOUCHEDLAND,
+	};
+	Action action;
+
+	BasicTouchGrass(TouchGrassCollection *coll, int index,
+		Edge *e, double quant);
+	void Reset();
+	void Update();
+	void Touch(Actor *a);
+	void Destroy(Actor *a);
+	void UpdateSprite();
+	Tileset *myTS;
+};
+
+struct TestTouchGrass : TouchGrass
+{
+	enum Action
+	{
+		STILL,
+		TOUCHEDLEFT,
+		TOUCHEDRIGHT,
+		TOUCHEDLAND,
+	};
+	Action action;
+
+	TestTouchGrass(TouchGrassCollection *coll, int index,
+		Edge *e, double quant);
+	void Reset();
+	void Update();
+	void Touch(Actor *a);
+	void Destroy(Actor *a);
+	void UpdateSprite();
 };
 
 #endif
