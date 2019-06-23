@@ -28,6 +28,7 @@ struct Shard : Enemy
 	//MovementSequence testSeq;
 	Shard(GameSession *owner, sf::Vector2i pos, 
 		int w, int li);
+	~Shard();
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
@@ -38,7 +39,11 @@ struct Shard : Enemy
 	void ResetEnemy();
 	void DissipateOnTouch();
 	void Capture();
+	void FrameIncrement();
+	Tileset *ts_sparkle;
+	EffectPool *sparklePool;
 
+	V2d startPos;
 	int radius;
 
 	sf::Sprite sprite;
@@ -47,6 +52,7 @@ struct Shard : Enemy
 	ShardType shardType;
 
 	bool caught;
+	int totalFrame;
 
 	int world;
 	int localIndex;

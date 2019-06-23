@@ -7,6 +7,7 @@
 #include "SaveFile.h"
 #include "MainMenu.h"
 #include "MapHeader.h"
+#include "VisualEffects.h"
 
 using namespace std;
 using namespace sf;
@@ -52,6 +53,7 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
+	startPos = position;
 
 	initHealth = 20;
 	health = initHealth;
@@ -63,6 +65,10 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	frame = 0;
 
 
+	ts_sparkle = owner->GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
+
+	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
+	sparklePool->ts = ts_sparkle;
 
 	switch (w)
 	{
@@ -131,13 +137,23 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	hitBody->AddCollisionBox(0, hitBox);
 	hitBody->hitboxInfo = NULL;
 
-	actionLength[FLOAT] = 2;
+	actionLength[FLOAT] = 120;
 	actionLength[DISSIPATE] = 20;
 
 	animFactor[FLOAT] = 1;
 	animFactor[DISSIPATE] = 1;
 
 	ResetEnemy();
+}
+
+Shard::~Shard()
+{
+	delete sparklePool;
+}
+
+void Shard::FrameIncrement()
+{
+	++totalFrame;
 }
 
 ShardType Shard::GetShardType(const std::string &str)
@@ -220,7 +236,8 @@ void Shard::DirectKill()
 
 void Shard::ResetEnemy()
 {
-	
+	totalFrame = 0;
+	sparklePool->Reset();
 	action = FLOAT;
 	frame = 0;
 	receivedHit = NULL;
@@ -250,6 +267,48 @@ void Shard::ProcessState()
 			break;
 		}
 	}
+
+	if (action == FLOAT)
+	{
+		int floatFrames = 240;
+		double floatAmount = 4.0;
+		int t = totalFrame % floatFrames;
+		float tf = t;
+		tf /= (floatFrames - 1);
+		double f = cos(2 * PI * tf);
+		f -= .5;
+		position = startPos;
+		position.y += f * floatAmount;
+	}
+
+	sparklePool->Update();
+
+	Vector2f sparkleCenter(position);
+
+	if (totalFrame % 60 == 0)
+	{
+		Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
+		EffectInstance ei;
+
+		int r = rand() % 3;
+		if (r == 0)
+		{
+			ei.SetParams(sparkleCenter + off,
+				Transform(Transform::Identity), 11, 5, 0);
+		}
+		else if (r == 1)
+		{
+			ei.SetParams(sparkleCenter + off,
+				Transform(Transform::Identity), 10, 5, 11);
+		}
+		else if (r == 2)
+		{
+			ei.SetParams(sparkleCenter + off,
+				Transform(Transform::Identity), 10, 5, 11);
+		}
+
+		sparklePool->ActivateEffect(&ei);
+	}
 }
 
 void Shard::ProcessHit()
@@ -265,12 +324,13 @@ void Shard::UpdateSprite()
 	int tile = 0;
 
 	//sprite.setTextureRect(ts->GetSubRect(tile));
-	//sprite.setPosition(position.x, position.y);
+	sprite.setPosition(position.x, position.y);
 }
 
 void Shard::EnemyDraw( sf::RenderTarget *target )
 {
 	target->draw(sprite);
+	sparklePool->Draw(target);
 }
 
 void Shard::DrawMinimap( sf::RenderTarget *target )
