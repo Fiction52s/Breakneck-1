@@ -61,11 +61,21 @@ sf::Vector2i &Brush::GetCenter()
 
 	if (objects.size() > 0)
 	{
-		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>(objects.front());
-		left = poly->left;
-		right = poly->right;
-		top = poly->top;
-		bottom = poly->bottom;
+		SelectPtr sp = objects.front();
+		if (sp->selectableType == ISelectable::TERRAIN)
+		{
+			PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>(objects.front());
+			left = poly->left;
+			right = poly->right;
+			top = poly->top;
+			bottom = poly->bottom;
+		}
+		else if (sp->selectableType == ISelectable::ACTOR)
+		{
+			ActorPtr a = boost::dynamic_pointer_cast<ActorParams>(objects.front());
+			return a->position;
+		}
+		
 	}
 	else
 	{
@@ -106,7 +116,19 @@ Brush *Brush::Copy()
 			PolyPtr ptr(tp->Copy());
 			newBrush->AddObject(ptr);
 		}
+		else if ((*it)->selectableType == ISelectable::ACTOR)
+		{
+			ActorParams *ap = (ActorParams*)(*it).get();
+			ActorPtr aPtr(ap->Copy());
+			if (aPtr->groundInfo != NULL)
+			{
+				aPtr->AnchorToGround(*aPtr->groundInfo);
+			}
+			newBrush->AddObject(aPtr);
+		}
 	}
+
+
 	return newBrush;
 }
 

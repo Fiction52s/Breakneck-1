@@ -64,7 +64,6 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	
 	frame = 0;
 
-
 	ts_sparkle = owner->GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
 
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);

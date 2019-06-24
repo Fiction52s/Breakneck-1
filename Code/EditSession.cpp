@@ -8233,6 +8233,32 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								}
 
 							}
+							else if (ev.key.code == Keyboard::D && ev.key.control)
+							{
+								if (selectedBrush->objects.size() == 1)
+								{
+									SelectPtr sp = selectedBrush->objects.front();
+									if (sp->selectableType == ISelectable::ACTOR)
+									{
+										ActorParams *ap = (ActorParams*)sp.get();
+
+										selectedBrush->SetSelected(false);
+										selectedBrush->Clear();
+
+										ActorPtr aPtr(ap->Copy());
+										aPtr->group = groups["--"];
+
+										if (aPtr->groundInfo != NULL)
+										{
+											aPtr->AnchorToGround(*aPtr->groundInfo);
+										}
+										//selectedBrush->AddObject(aPtr);
+										//selectedBrush->SetSelected(true);
+
+										CreateActor(aPtr);
+									}
+								}
+							}
 							else if( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete )
 							{
 								if( !pasteBrushes.empty() )
@@ -18892,35 +18918,48 @@ void EditSession::PasteTerrain(Brush *b)
 	Brush applyBrush;
 	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
 	{
-		TerrainPolygon *tp = (TerrainPolygon*)((*bit).get());
-		polygonInProgress.reset(tp->Copy());
-		list<PolyPtr> intersectingPolys;
-		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		if ((*bit)->selectableType == ISelectable::TERRAIN)
 		{
-			if (polygonInProgress->LinesIntersect((*it).get()))
+			TerrainPolygon *tp = (TerrainPolygon*)((*bit).get());
+			polygonInProgress.reset(tp->Copy());
+			list<PolyPtr> intersectingPolys;
+			for (auto it = polygons.begin(); it != polygons.end(); ++it)
 			{
-				//not too close and I intersect, so I can add
-				intersectingPolys.push_back((*it));
+				if (polygonInProgress->LinesIntersect((*it).get()))
+				{
+					//not too close and I intersect, so I can add
+					intersectingPolys.push_back((*it));
+				}
+			}
+
+			if (intersectingPolys.empty())
+			{
+				applyBrush.AddObject((*bit));
+				//finalResultBrush.AddObject((*bit));
+				//Action *ac = new ApplyBrushAction(copiedBrush);
+				//ac->Perform();
+				//doneActionStack.push_back(ac);
+				//ClearUndoneActions();
+				//PolyPtr newPoly(new TerrainPolygon(&grassTex));
+				//polygonInProgress = newPoly;
+				//PolyPtr newPoly(new TerrainPolygon(&grassTex));
+				//polygonInProgress = newPoly;
+			}
+			else
+			{
+				Action * a = ChooseAddOrSub(intersectingPolys);
+				compoundAction->subActions.push_back(a);
 			}
 		}
-
-		if (intersectingPolys.empty())
+		else if ((*bit)->selectableType == ISelectable::ACTOR)
 		{
-			applyBrush.AddObject((*bit));
-			//finalResultBrush.AddObject((*bit));
-			//Action *ac = new ApplyBrushAction(copiedBrush);
-			//ac->Perform();
-			//doneActionStack.push_back(ac);
-			//ClearUndoneActions();
-			//PolyPtr newPoly(new TerrainPolygon(&grassTex));
-			//polygonInProgress = newPoly;
-			//PolyPtr newPoly(new TerrainPolygon(&grassTex));
-			//polygonInProgress = newPoly;
-		}
-		else
-		{
-			Action * a = ChooseAddOrSub( intersectingPolys );
-			compoundAction->subActions.push_back(a);
+			ActorPtr a = boost::dynamic_pointer_cast<ActorParams>((*bit));
+			ActorPtr ap(a->Copy());
+			if (ap->groundInfo != NULL)
+			{
+				ap->AnchorToGround(*ap->groundInfo);
+			}
+			applyBrush.AddObject(ap);
 		}
 	}
 

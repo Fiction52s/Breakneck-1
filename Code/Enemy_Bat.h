@@ -46,7 +46,9 @@ struct Bat : Enemy, LauncherEnemy
 	int nodeWaitFrames;
 	sf::Sprite sprite;
 	Tileset *ts;
-
+	int waitSwitchFrames;
+	int waitSwitchCounter;
+	int launcherIndex;
 
 	int hitlagFrames;
 	int hitstunFrames;

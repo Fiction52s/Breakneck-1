@@ -33,6 +33,9 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	position.x = pos.x;
 	position.y = pos.y;
 
+	launcherIndex = 0;
+	waitSwitchFrames = 30;
+
 	bulletSpeed = p_bulletSpeed;
 	//nodeDistance = p_nodeDistance;
 	framesBetween = p_framesBetweenNodes;
@@ -233,6 +236,8 @@ void Bat::ResetEnemy()
 	UpdateSprite();
 	health = initHealth;
 
+	waitSwitchCounter = 0;
+
 	
 }
 
@@ -258,7 +263,15 @@ void Bat::DirectKill()
 
 void Bat::FrameIncrement()
 {
-	++fireCounter;
+	if (waitSwitchCounter == waitSwitchFrames)
+	{
+		++fireCounter;
+	}
+	else
+	{
+		++waitSwitchCounter;
+	}
+	
 }
 
 void Bat::ProcessState()
@@ -286,23 +299,43 @@ void Bat::ProcessState()
 		//testSeq.currMovementStartTime = 0;
 	}
 
-	if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
+	//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
+	if( slowCounter == 1 && fireCounter % 20 == 0 && waitSwitchCounter == waitSwitchFrames )
 	{
-		int launcherIndex = 0;
-		if (owner->GetPlayer(0)->position.y > position.y)
+		bool changed = false;
+		if (owner->GetPlayer(0)->position.y < position.y )
 		{
-			launcherIndex = 1;
+			if (launcherIndex == 0)
+			{
+				waitSwitchCounter = 0;
+				launcherIndex = 1;
+				changed = true;
+			}
+			
 		}
-		launchers[launcherIndex]->position = position;
-		launchers[launcherIndex]->facingDir = normalize( owner->GetPlayer( 0 )->position - position );
-		launchers[launcherIndex]->Fire();	
+		else
+		{
+			if (launcherIndex == 1)
+			{
+				waitSwitchCounter = 0;
+				launcherIndex = 0;
+				changed = true;
+			}
+		}
+		if (!changed)
+		{
+			launchers[launcherIndex]->position = position;
+			launchers[launcherIndex]->facingDir = normalize(owner->GetPlayer(0)->position - position);
+			launchers[launcherIndex]->Fire();
+		}
+		
 		//cout << "shoot:" << position.x << ", " << position.y << endl;
 		
 	}
-	if (fireCounter == framesBetween - 1 && slowCounter == 1)
+	/*if (fireCounter == framesBetween - 1 && slowCounter == 1)
 	{
 		fireCounter = -1;
-	}
+	}*/
 }
 
 void Bat::UpdateEnemyPhysics()

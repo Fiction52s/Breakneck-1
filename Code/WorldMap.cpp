@@ -1312,6 +1312,7 @@ void MapSelector::Update(ControllerState &curr,
 		int numCurrLevels = GetFocusedSector()->unlockedLevelCount;
 		if (changed != 0 )//&& mapSelector->currIndex > numCurrLevels)
 		{
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_change"));
 			mapSelector->SetTotalSize(numCurrLevels);
 			GetFocusedSector()->UpdateLevelStats();
 		}
