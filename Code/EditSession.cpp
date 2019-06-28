@@ -6618,22 +6618,30 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	bgPopup = CreatePopupPanel("bg");
 
 	GridSelector *bgSel = bgPopup->AddGridSelector(
-		"terraintypes", Vector2i(20, 20), 6, 1, 1920/8, 1080/8, false, true);
+		"terraintypes", Vector2i(20, 20), 6, 7, 1920/8, 1080/8, false, true);
 
 	Tileset *bgTS;
 	string path = "BGInfo/";
-	string bgName = "w1_0";
+	string bgName; //"w1_0";
 	string png = ".png";
 	string numStr;
 	string fullName;
-	for (int i = 0; i < 6; ++i)
+	for (int w = 0; w < 2; ++w)
 	{
-		numStr = to_string(i+1);
-		fullName = path + bgName + numStr + png;
-		bgTS = tm.GetTileset( fullName, 1920, 1080);
-		Sprite bgSpr(*bgTS->texture);
-		bgSpr.setScale(.125, .125);
-		bgSel->Set(i, 0, bgSpr, bgName + numStr);
+		for (int i = 0; i < 6; ++i)
+		{
+			numStr = to_string(i + 1);
+			bgName = "w" + to_string(w + 1) + "_0";// +to_string(i + 1);
+			fullName = path + bgName + numStr + png;
+			bgTS = tm.GetTileset(fullName, 1920, 1080);
+			if (bgTS == NULL)
+			{
+				continue;
+			}
+			Sprite bgSpr(*bgTS->texture);
+			bgSpr.setScale(.125, .125);
+			bgSel->Set(i, w, bgSpr, bgName + numStr);
+		}
 	}
 
 	

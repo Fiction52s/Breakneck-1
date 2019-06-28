@@ -132,7 +132,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	cutObject->SetSubRectFront(12);
 	cutObject->SetSubRectBack(11);
 
-	turnFactor = 180;
+	//turnFactor = 3000;
 
 	ResetEnemy();
 }
