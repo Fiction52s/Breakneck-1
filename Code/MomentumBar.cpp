@@ -59,8 +59,18 @@ void MomentumBar::SetMomentumInfo(int p_level, float p_part)
 	partShader.setUniform("tile", (float)level);
 	partShader.setUniform("factor", part);
 
+	int tile;
+	if (level == 0 && part == 0)
+	{
+		tile = 0;
+	}
+	else
+	{
+		tile = level + 1;
+	}
+
 	container.setTextureRect(ts_container->GetSubRect(level));
-	levelNumSpr.setTextureRect(ts_num->GetSubRect(level));
+	levelNumSpr.setTextureRect(ts_num->GetSubRect(tile));
 }
 
 void MomentumBar::Draw(sf::RenderTarget *target)

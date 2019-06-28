@@ -8252,8 +8252,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										{
 											aPtr->AnchorToGround(*aPtr->groundInfo);
 										}
-										//selectedBrush->AddObject(aPtr);
-										//selectedBrush->SetSelected(true);
+
+										selectedBrush->AddObject(aPtr);
+										selectedBrush->SetSelected(true);
 
 										CreateActor(aPtr);
 									}
@@ -9345,7 +9346,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											//CurveTurretParams *ct = (CurveTurretParams*)tempActor.get();
 											//ct->SetPanelInfo();
 
-											
+											patrolPath.clear();
+											patrolPath.push_back(Vector2i(worldPos.x, worldPos.y));
 
 											//showPanel->textBoxes["name"]->text.setString( "test" );
 											//showPanel->textBoxes["group"]->text.setString( "not test" );

@@ -113,6 +113,8 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	dead = false;
 
+	bulletSpeed = 10;
+
 	double size = max( width, height );
 
 
@@ -122,7 +124,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	launchers = new Launcher*[numLaunchers];
 	launchers[0] = new Launcher( this, BasicBullet::CURVE_TURRET, owner, 16, 1, position, gn, 0, 300 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
-	launchers[0]->SetGravity( gravity );
+	//launchers[0]->SetGravity( gravity );
 	launchers[0]->hitboxInfo->damage = 18;
 	//UpdateSprite();
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
@@ -130,12 +132,22 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	cutObject->SetSubRectFront(12);
 	cutObject->SetSubRectBack(11);
 
+	turnFactor = 180;
+
 	ResetEnemy();
 }
 
 void CurveTurret::Setup()
 {
 	TurretSetup();
+}
+
+void CurveTurret::UpdateBullet(BasicBullet *b)
+{
+	//V2d vel = b->velocity;
+	double rad = turnFactor / 60.0;
+	rad = rad / 180.0 * PI;
+	RotateCW(b->velocity, rad);
 }
 
 void CurveTurret::BulletHitTerrain(BasicBullet *b, 
@@ -148,7 +160,7 @@ void CurveTurret::BulletHitTerrain(BasicBullet *b,
 	b->launcher->DeactivateBullet( b );
 
 	if (b->launcher->def_e == NULL)
-		b->launcher->SetDefaultCollision(b->framesToLive, edge, pos);
+		b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
 }
 
 void CurveTurret::BulletHitPlayer(BasicBullet *b )
@@ -176,11 +188,12 @@ void CurveTurret::ResetEnemy()
 
 void CurveTurret::ProcessState()
 {
+	V2d playerPos = owner->GetPlayer(0)->position;
 	switch (action)
 	{
 	case WAIT:
 	{
-		if (length(owner->GetPlayer(0)->position - position) < 500)
+		if (length(playerPos - position) < 500)
 		{
 			action = ATTACK;
 			frame = 0;
@@ -200,6 +213,7 @@ void CurveTurret::ProcessState()
 		}
 		else if (frame == 4 * animationFactor && slowCounter == 1)
 		{
+			//launchers[0]->facingDir = normalize(playerPos - position);
 			launchers[0]->Fire();
 		}
 		break;

@@ -101,7 +101,7 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 	double origMaxY = maxY;
 
 	//int testRadius = 1200;//900
-	double extraCap = 500;
+	double extraCap = 500;//500;
 	double extra = 200;
 	double extraDist = 200;
 
@@ -1120,8 +1120,8 @@ void Camera::Update( Actor *player )
 	offset = oldOffset;
 	//zoomFactor = oldZoomFactor;
 
-	if( numActive > 0 )
-	//if (enemyZoom > zoomFactor && numActive > 0 )
+	//if( numActive > 0 )
+	if (enemyZoom > zoomFactor && numActive > 0 )
 	{
 		double nextEnemyZoom = GetNextEnemyZoom(enemyZoom);
 		zoomFactor = nextEnemyZoom;

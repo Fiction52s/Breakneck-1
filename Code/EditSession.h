@@ -1173,6 +1173,8 @@ struct CurveTurretParams : public ActorParams
 	int framesWait;
 	sf::Vector2i gravFactor;
 	sf::VertexArray bulletPathQuads;
+
+	int curveFactor;
 };
 
 //w3

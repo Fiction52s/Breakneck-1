@@ -236,13 +236,10 @@ CrawlerFightSeq::CrawlerFightSeq( GameSession *p_owner )
 	nexus1Pos = owner->poiMap["nexus1"]->pos;
 	cfightCenter = owner->poiMap["cfightcenter"]->pos;
 
-	//camMove0.AddLineMovement( V2d( 0, 0 ), V2d( 1500, 0 ),
-	//	CubicBezier( 0, 0, 1, 1 ), 120 ); 
-	//camMove0.AddMovement( new WaitMovement( nexus1Pos, 60 ) );
 	camMove0.AddLineMovement( cfightCenter + V2d( 0, -300 ), cfightCenter, CubicBezier( 0, 0, 1, 1 ), 30 ); 
-	camMove0.AddMovement( new WaitMovement( cfightCenter, 60 ) );
+	camMove0.AddMovement( new WaitMovement(60 ) );
 	camMove0.AddLineMovement( cfightCenter, nexus1Pos, CubicBezier( 0, 0, 1, 1 ), 120 ); 
-	camMove0.AddMovement( new WaitMovement( nexus1Pos, 60 ) );
+	camMove0.AddMovement( new WaitMovement( 60 ) );
 	camMove0.AddLineMovement( nexus1Pos, cfightCenter, CubicBezier( 0, 0, 1, 1 ), 60 ); 
 
 	camMove0.Reset();

@@ -109,14 +109,14 @@ Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos,
 		V2d A( path[i].x, path[i].y );
 		V2d B( path[i+1].x, path[i+1].y );
 		testSeq.AddLineMovement( A, B, CubicBezier( 0,0,1,1 ), framesBetween );
-		testSeq.AddMovement( new WaitMovement( B, framesBetween ) );
+		testSeq.AddMovement( new WaitMovement( framesBetween ) );
 	}
 
 	if( pathLength == 1 )
 	{
 		V2d A( path[0].x, path[0].y );
 		testSeq.AddLineMovement( A, A, CubicBezier( 0, 0, 1, 1 ), framesBetween );
-		testSeq.AddMovement( new WaitMovement( A, framesBetween ) );
+		testSeq.AddMovement( new WaitMovement( framesBetween ) );
 	}
 
 	//testSeq.InitMovementDebug();

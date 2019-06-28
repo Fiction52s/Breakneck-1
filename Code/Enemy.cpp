@@ -10,6 +10,7 @@
 #include "Enemy_Comboer.h"
 #include "Shield.h"
 #include "MainMenu.h"
+#include "Enemy_CurveTurret.h"
 
 using namespace std;
 using namespace sf;
@@ -75,10 +76,9 @@ Launcher::Launcher( LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	switch( bulletType )
 	{
 	case BasicBullet::BASIC_TURRET:
-	case BasicBullet::BAT_DOWN:
 		bulletTilesetIndex = 0;
 		break;
-	case BasicBullet::BAT_UP:
+	case BasicBullet::BAT:
 		bulletTilesetIndex = 2;
 		break;
 	case BasicBullet::PATROLLER:
@@ -184,6 +184,8 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 		return 12;
 	case BasicBullet::PATROLLER:
 		return 44;
+	case BasicBullet::CURVE_TURRET:
+		return 20;
 	}
 
 	return 10;
@@ -191,7 +193,15 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 
 Vector2f Launcher::GetOffset(BasicBullet::BType bt)
 {
-	return Vector2f(-20, 0);
+	if (bt == BasicBullet::CURVE_TURRET)
+	{
+		return Vector2f(0, 0);
+	}
+	else
+	{
+		return Vector2f(-20, 0);
+	}
+	
 }
 
 Launcher::Launcher( LauncherEnemy *handler, GameSession *owner,
@@ -503,8 +513,7 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	switch( bulletType )
 	{
 	case PATROLLER:
-	case BAT_UP:
-	case BAT_DOWN:
+	case BAT:
 	case BIG_OWL:
 		transform.rotate( angle );
 		break;
@@ -564,9 +573,7 @@ BasicBullet::BasicBullet( int indexVA, BType bType, Launcher *launch )
 	{
 	case BASIC_TURRET:
 		break;
-	case BAT_UP:
-		break;
-	case BAT_DOWN:
+	case BAT:
 		break;
 	case CURVE_TURRET:
 		break;
@@ -649,6 +656,11 @@ void BasicBullet::UpdatePrePhysics()
 
 	velocity += gravity / (double)slowMultiple;
 	V2d playerPos = launcher->owner->GetPlayer(0)->position;
+
+	if (launcher->handler != NULL)
+	{
+		launcher->handler->UpdateBullet(this);
+	}
 
 	if( launcher->bulletType == BasicBullet::BOSS_BIRD )
 	{
@@ -906,8 +918,7 @@ void BasicBullet::UpdateSprite()
 	int animFactor = 2;
 	switch (bulletType)
 	{
-	case BAT_UP:
-	case BAT_DOWN:
+	case BAT:
 	case PATROLLER:
 	case OWL:
 	case BIG_OWL:
@@ -936,7 +947,6 @@ void BasicBullet::UpdateSprite()
 	}*/
 
 	}
-
 
 	VA[index*4+0].position = center + transform.transformPoint( topLeft );
 	VA[index*4+1].position = center + transform.transformPoint( topRight );
@@ -1502,6 +1512,8 @@ V2d Enemy::TurretSetup()
 		while (launchers[li]->GetActiveCount() > 0)
 		{
 			launchers[li]->UpdatePrePhysics();
+
+
 			launchers[li]->UpdatePhysics(0, true);
 
 			if (bb->framesToLive == 0)

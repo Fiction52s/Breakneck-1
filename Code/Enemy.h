@@ -25,6 +25,7 @@ struct LauncherEnemy
 	virtual void BulletHitTarget( BasicBullet *b ){};
 	virtual void BulletTTLDeath(BasicBullet *b) {};
 	virtual int GetAttackIndex(){return -1;};
+	virtual void UpdateBullet( BasicBullet *b) {};
 };
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
@@ -36,8 +37,7 @@ struct BasicBullet : QuadTreeCollider
 	{
 		BASIC_TURRET,
 		PATROLLER,
-		BAT_UP,
-		BAT_DOWN,
+		BAT,
 		CURVE_TURRET,
 		BOSS_CRAWLER,
 		BOSS_BIRD,

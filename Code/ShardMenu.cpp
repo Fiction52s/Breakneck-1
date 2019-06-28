@@ -439,26 +439,23 @@ void ShardMenu::UpdateShardSelectQuads()
 
 	index = (xSelector->currIndex + xSelector->totalItems * ySelector->currIndex);
 
-	selectedShardHighlight.setTextureRect(ts_shards[0]->GetSubRect(index + 22));
-	selectedShardHighlight.setOrigin(selectedShardHighlight.getLocalBounds().width / 2,
-		selectedShardHighlight.getLocalBounds().height / 2);
-
-
-	//SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(i * rectSize + xSpacing * i, j * rectSize + ySpacing * j) + gridStart);
-
-	selectedShardHighlight.setPosition((shardSelectQuads + index * 4)->position + Vector2f(24, 24));
 	//SetRectColor(shardSelectQuads + index, currColor);
-
+	int selectedShardTileIndex = -1;
 	if (IsCurrShardCaptured())
 	{
 		SetRectSubRect(largeShard, ts_bigShards->GetSubRect(index));
+		selectedShardTileIndex = index + 22;
 	}
 	else
 	{
 		SetRectSubRect(largeShard, FloatRect());
+		selectedShardTileIndex = index + 44;
 	}
-	
-	
+	selectedShardHighlight.setTextureRect(ts_shards[0]->GetSubRect(selectedShardTileIndex));
+	selectedShardHighlight.setOrigin(selectedShardHighlight.getLocalBounds().width / 2,
+		selectedShardHighlight.getLocalBounds().height / 2);
+
+	selectedShardHighlight.setPosition((shardSelectQuads + index * 4)->position + Vector2f(24, 24));
 }
 
 void ShardMenu::SetCurrentDescription( bool captured)

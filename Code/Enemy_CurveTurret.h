@@ -29,6 +29,7 @@ struct CurveTurret : Enemy, LauncherEnemy
 		Edge *edge,
 		sf::Vector2<double> &pos);
 	void BulletHitPlayer(BasicBullet *b);
+	void UpdateBullet(BasicBullet *b);
 	void ResetEnemy();
 
 	sf::Sprite sprite;
@@ -51,6 +52,8 @@ struct CurveTurret : Enemy, LauncherEnemy
 	int animationFactor;
 	sf::Vector2<double> gn;
 	double bulletSpeed;
+
+	int turnFactor;
 };
 
 #endif

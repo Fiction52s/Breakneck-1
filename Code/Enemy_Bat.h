@@ -5,7 +5,22 @@
 
 struct Bat : Enemy, LauncherEnemy
 {
+	enum Action
+	{
+		FLY,
+		RETREAT,
+		RETURN,
+	};
+
+
+	Action action;
 	MovementSequence testSeq;
+	MovementSequence retreatSeq;
+	MovementSequence returnSeq;
+	LineMovement *retreatMove;
+	LineMovement *returnMove;
+	WaitMovement *retreatWait;
+	int framesSinceBothered;
 	Bat(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos, std::list<sf::Vector2i> &path,
 		int bulletSpeed,
@@ -38,6 +53,10 @@ struct Bat : Enemy, LauncherEnemy
 	int pathLength;
 	bool loop;
 	int frame;
+	V2d startPos;
+	V2d currBasePos;
+	V2d retreatPos;
+	V2d startRetreatPos;
 
 	int fireCounter;
 
@@ -46,9 +65,6 @@ struct Bat : Enemy, LauncherEnemy
 	int nodeWaitFrames;
 	sf::Sprite sprite;
 	Tileset *ts;
-	int waitSwitchFrames;
-	int waitSwitchCounter;
-	int launcherIndex;
 
 	int hitlagFrames;
 	int hitstunFrames;

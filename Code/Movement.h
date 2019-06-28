@@ -96,8 +96,7 @@ struct Movement
 
 struct WaitMovement : Movement
 {
-	WaitMovement( sf::Vector2<double> &pos,
-		int duration );
+	WaitMovement( int duration );
 	sf::Vector2<double> GetPosition( int t );
 	sf::Vector2<double> pos;
 };
@@ -167,12 +166,12 @@ struct MovementSequence
 	void AddRotation( Rotation *rotation );
 	void InitMovementDebug();
 	void MovementDebugDraw( sf::RenderTarget *target );
-	void AddLineMovement( sf::Vector2<double> &A,
+	LineMovement * AddLineMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, CubicBezier&, int duration );
-	void AddCubicMovement( sf::Vector2<double> &A,
+	CubicMovement * AddCubicMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, sf::Vector2<double> &C,
 		sf::Vector2<double> &D, CubicBezier&, int duration );
-	void AddRadialMovement( sf::Vector2<double> &base, 
+	RadialMovement * AddRadialMovement( sf::Vector2<double> &base, 
 		double radius, double startAngle,
 		double endAngle, bool clockwise, 
 		sf::Vector2<double> scale,

@@ -69,7 +69,7 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	sf::Sprite sprite;
 	Tileset *ts_walk;
 	Tileset *ts_roll;
-
+	bool hasDoubleJump;
 
 	double maxFallSpeed;
 

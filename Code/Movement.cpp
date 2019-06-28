@@ -257,11 +257,11 @@ sf::Vector2<double> RadialMovement::GetPosition( int t )
 	return V2d( p0.x, p0.y ) + basePos;//Vector2f( basePos.x, basePos.y );
 }
 
-WaitMovement::WaitMovement(  sf::Vector2<double> &p_pos, int duration )
-	:Movement( CubicBezier(), duration, Types::WAIT ), pos( p_pos )
+WaitMovement::WaitMovement( int duration )
+	:Movement( CubicBezier(), duration, Types::WAIT )//, pos( p_pos )
 {
-	start = pos;
-	end = pos;
+	//start = pos;
+	//end = pos;
 }
 
 sf::Vector2<double> WaitMovement::GetPosition( int t )
@@ -311,27 +311,33 @@ MovementSequence::~MovementSequence()
 //	}
 //}
 
-void MovementSequence::AddLineMovement( sf::Vector2<double> &A,
+LineMovement * MovementSequence::AddLineMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, CubicBezier& bez, int duration )
 {
-	AddMovement( new LineMovement( A, B, bez, duration ) );
+	LineMovement *lm = new LineMovement(A, B, bez, duration);
+	AddMovement( lm );
+	return lm;
 }
 
-void MovementSequence::AddCubicMovement( sf::Vector2<double> &A,
+CubicMovement * MovementSequence::AddCubicMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, sf::Vector2<double> &C,
 		sf::Vector2<double> &D, CubicBezier& bez, int duration )
 {
- 	AddMovement( new CubicMovement( A,B,C,D,bez,duration ) );
+	CubicMovement *cm = new CubicMovement(A, B, C, D, bez, duration);
+ 	AddMovement( cm );
+	return cm;
 }
 
-void MovementSequence::AddRadialMovement( sf::Vector2<double> &base, double radius, double startAngle,
+RadialMovement * MovementSequence::AddRadialMovement( sf::Vector2<double> &base, double radius, double startAngle,
 		double endAngle, bool clockwise, sf::Vector2<double> scale,
 		double ellipseAngle,
 		CubicBezier &bez, int duration )
 {
-	AddMovement( new RadialMovement( base, radius, startAngle, endAngle, clockwise,
+	RadialMovement *rm = new RadialMovement(base, radius, startAngle, endAngle, clockwise,
 		scale, ellipseAngle, bez,
-		duration ) );
+		duration);
+	AddMovement( rm );
+	return rm;
 }
 
 void MovementSequence::InitMovementDebug()
@@ -369,20 +375,23 @@ void MovementSequence::Update( int slowMultiple )
 		//cout << "before" << endl;
 
 		//first one
-		if( currTime - currMovementStartTime == 0 )
+
+		if (currMovement->moveType != Movement::WAIT)
 		{
-			position = currMovement->start;
+			if (currTime - currMovementStartTime == 0)
+			{
+				position = currMovement->start;
+			}
+			//last one
+			else if (currTime - currMovementStartTime == currMovement->duration)
+			{
+				position = currMovement->end;
+			}
+			else
+			{
+				position = currMovement->GetPosition(currTime - currMovementStartTime);
+			}
 		}
-		//last one
-		else if( currTime - currMovementStartTime == currMovement->duration )
-		{
-			position = currMovement->end;
-		}
-		else
-		{
-			position = currMovement->GetPosition( currTime - currMovementStartTime  );
-		}
-		
 		//cout << "after" << endl;
 		//cout << "updating pos: " << position.x << ", " << position.y << endl;
 	}

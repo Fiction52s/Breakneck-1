@@ -3944,10 +3944,10 @@ bool GameSession::OpenFile( string fileName )
 				}
 
 				//ss << "_128x64.png";
-				ss << "_32x64.png";
+				ss << ".png";
 
 				//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
-				ts_border = GetTileset(ss.str(), 32, 64);
+				ts_border = GetTileset(ss.str(), 128, 64);
 
 				/*VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 					&GameSession::IsFlatGround );
@@ -3963,12 +3963,11 @@ bool GameSession::OpenFile( string fileName )
 
 				plantVA = SetupPlants(edges[currentEdgeIndex], ts_plant);
 
-				Tileset *ts_border1 = GetTileset("Borders/bor_1_01_512x704.png", 128, 64);
 				tPiece->tr = new TerrainRender(&tm, terrainTree);// (terrainTree);
 				tPiece->tr->startEdge = edges[currentEdgeIndex];
 				tPiece->tr->GenerateBorderMesh();
 				tPiece->tr->GenerateDecor();
-				tPiece->tr->ts_border = ts_border1;
+				tPiece->tr->ts_border = ts_border;
 
 				tPiece->AddTouchGrass( TouchGrass::TYPE_NORMAL);
 				tPiece->AddTouchGrass(TouchGrass::TYPE_TEST);

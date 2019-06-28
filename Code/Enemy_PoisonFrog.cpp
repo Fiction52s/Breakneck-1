@@ -130,7 +130,7 @@ void PoisonFrog::ResetEnemy()
 	health = initHealth;
 	//ground = startGround;
 	//edgeQuantity = startQuant;
-	
+	hasDoubleJump = true;
 
 	mover->ground = startGround;
 	mover->edgeQuantity = startQuant;
@@ -334,58 +334,20 @@ void PoisonFrog::ProcessState()
 					{
 						mover->Jump( V2d( -jumpStrength.x, -jumpStrength.y ) );
 					}
-				}
-				
-				/*if( owner->IsSteepGround( ground->Normal() ) >= 0 )
-				{
-					steepJump = true;
-				}
-				else
-				{
-					steepJump = false;
-				}*/
-				//cout << "frog jumping " << (int)steepJump << endl;
-				//ground = NULL;
-
-				
-				/*if( facingRight )
-				{
-					velocity = V2d( jumpStrength.x * (int)(!steepJump), -jumpStrength.y );
-				}
-				else
-				{
-					velocity = V2d( -jumpStrength.x * (int)(!steepJump), -jumpStrength.y );
-				}*/
-				
+				}				
 			}
 			else
 			{
-				//if( steepJump && velocity.y >= 0 )
-				//{
-				//	if( facingRight )
-				//	{
-				//		velocity.x += .3; //some number
-				//		if( velocity.x > jumpStrength.x )
-				//			velocity.x = jumpStrength.x;
-				//	}
-				//	else
-				//	{
-				//		velocity.x -= .3;
-				//		if( velocity.x < -jumpStrength.x )
-				//			velocity.x = -jumpStrength.x;
-				//	}
-				//}
-				//else if( !steepJump )
-				//{
-				//	if( facingRight )
-				//	{
-				//		velocity.x = jumpStrength.x;
-				//	}
-				//	else
-				//	{
-				//		velocity.x = -jumpStrength.x;
-				//	}
-				//}
+				if (hasDoubleJump )
+				{
+					//cout << "vel: " << velocity.y << endl;
+					V2d diff = player->position - position;
+					if (mover->velocity.y > 3  && length(diff) < 300 && diff.y < 0)
+					{
+						hasDoubleJump = false;
+						mover->velocity.y = -jumpStrength.y;
+					}
+				}
 
 
 				
@@ -546,7 +508,7 @@ void PoisonFrog::UpdateSprite()
 		sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
 	}
 
-	cout << "action: " << action << endl;
+	//cout << "action: " << action << endl;
 }
 
 void PoisonFrog::HitTerrain( double &q )
@@ -612,9 +574,10 @@ void PoisonFrog::HitOtherAerial( Edge *e )
 	//if( 
 void PoisonFrog::Land()
 {
-	cout << "LANDING" << endl;
+	//cout << "LANDING" << endl;
 	action = LAND;
 	frame = 0;
+	hasDoubleJump = true;
 	V2d gn = mover->ground->Normal();
 	angle = atan2(gn.x, -gn.y);
 }

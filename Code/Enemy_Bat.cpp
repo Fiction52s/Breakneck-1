@@ -33,27 +33,17 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	position.x = pos.x;
 	position.y = pos.y;
 
-	launcherIndex = 0;
-	waitSwitchFrames = 30;
-
 	bulletSpeed = p_bulletSpeed;
 	//nodeDistance = p_nodeDistance;
 	framesBetween = p_framesBetweenNodes;
-	
-	//ts_hitSpack = owner->GetTileset( "hit_spack_2_128x128.png", 128, 128 );
 
+	startPos = V2d(pos);
 
-	numLaunchers = 2;
+	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::BAT_DOWN, owner, 16, 1, position, V2d( 1, 0 ), 0, 60 );
+	launchers[0] = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 60 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );	
 	launchers[0]->hitboxInfo->damage = 18;
-	launchers[0]->SetGravity(V2d(0, .5));
-
-	launchers[1] = new Launcher(this, BasicBullet::BAT_UP, owner, 16, 1, position, V2d(1, 0), 0, 60);
-	launchers[1]->SetBulletSpeed(bulletSpeed);
-	launchers[1]->hitboxInfo->damage = 18;
-	launchers[1]->SetGravity(V2d(0, -.5));
 	
 
 	initHealth = 40;
@@ -64,10 +54,7 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	pathLength = pathParam.size() + 1;
 	if( loop )
 	{
-		
-		cout << "looping bat" << endl;
-		assert( false );
-		//tough cuz of set node distance from each other. for now don't use it.
+		//not implemented right maybe??
 	}
 	else
 	{
@@ -79,13 +66,13 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	}
 	
 	path = new Vector2i[pathLength];
-	path[0] = pos;
-	path[pathLength-1] = pos;
+	path[0] = Vector2i( 0, 0 );
+	path[pathLength-1] = Vector2i( 0, 0 );
 
 	int index = 1;
 	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
 	{
-		path[index] = (*it) + pos;
+		path[index] = (*it);// +pos;
 		++index;
 	}
 
@@ -124,11 +111,18 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	}
 	if( pathLength == 1 )
 	{
-		testSeq.AddMovement( new WaitMovement( position, 60 * 10 ) );
+		testSeq.AddMovement( new WaitMovement( 60 * 10 ) );
 	}
 	testSeq.InitMovementDebug();
 	testSeq.Reset();
 	
+	retreatMove = retreatSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 60 * 10);
+	//retreatWait = new WaitMovement(60 * 10);
+	//retreatSeq.AddMovement(retreatWait);
+	
+	returnMove = returnSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 20 * 10);
+
+
 	frame = 0;
 
 	animationFactor = 5;
@@ -219,14 +213,21 @@ void Bat::BulletHitPlayer(BasicBullet *b )
 
 void Bat::ResetEnemy()
 {
-	//keyFrame = 0;
+	framesSinceBothered = 0;
 	fireCounter = 0;
 	testSeq.Reset();
+	retreatSeq.Reset();
+	returnSeq.Reset();
 	dead = false;
-	frame = 0;
+	
 	position.x = path[0].x;
 	position.y = path[0].y;
 	receivedHit = NULL;
+
+	action = FLY;
+	frame = 0;
+
+	currBasePos = startPos;
 
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
@@ -235,10 +236,6 @@ void Bat::ResetEnemy()
 
 	UpdateSprite();
 	health = initHealth;
-
-	waitSwitchCounter = 0;
-
-	
 }
 
 void Bat::DirectKill()
@@ -263,94 +260,128 @@ void Bat::DirectKill()
 
 void Bat::FrameIncrement()
 {
-	if (waitSwitchCounter == waitSwitchFrames)
-	{
-		++fireCounter;
-	}
-	else
-	{
-		++waitSwitchCounter;
-	}
-	
+	++fireCounter;
+	++framesSinceBothered;
 }
 
 void Bat::ProcessState()
 {
-	/*if (owner->GetPlayer(0)->position.y < position.y)
-	{
-		launchers[0]->SetGravity(V2d(0, -.5));
-	}
-	else
-	{
-		launchers[0]->SetGravity(V2d(0, .5));
-	}*/
-	
-
 	if( frame == 5 * animationFactor )
 	{
 		frame = 0;
 	}
 
-	if( testSeq.currMovement == NULL )
-	{
-		//cout << "resetting" << endl;
-		testSeq.Reset();
-		//testSeq.currMovement = testSeq.movementList;
-		//testSeq.currMovementStartTime = 0;
-	}
+	double detectRange = 200;
+	double dodgeRange = 250;
 
-	//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
-	if( slowCounter == 1 && fireCounter % 20 == 0 && waitSwitchCounter == waitSwitchFrames )
+	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d diff = playerPos - position;
+	V2d pDir = normalize(diff);
+	if (action == FLY)
 	{
-		bool changed = false;
-		if (owner->GetPlayer(0)->position.y < position.y )
+		if (framesSinceBothered >= 140 && startPos != currBasePos )
 		{
-			if (launcherIndex == 0)
-			{
-				waitSwitchCounter = 0;
-				launcherIndex = 1;
-				changed = true;
-			}
-			
+			action = RETURN;
+			frame = 0;
+			V2d diff = startPos - position;
+			returnMove->end = diff;
+			double diffLen = length(diff);
+			returnMove->duration = diffLen / 100.0 * 60 * 10;
+			currBasePos = position;
+			returnSeq.Reset();
+		}
+		if (length(diff) < detectRange)
+		{
+			framesSinceBothered = 0;
+			action = RETREAT;
+			frame = 0;
+			currBasePos = position;
+			retreatMove->end = -pDir * dodgeRange;
+			//retreatWait->pos = retreatMove->end;
+			retreatSeq.Reset();
 		}
 		else
 		{
-			if (launcherIndex == 1)
+			if (testSeq.currMovement == NULL)
 			{
-				waitSwitchCounter = 0;
-				launcherIndex = 0;
-				changed = true;
+				testSeq.Reset();
 			}
 		}
-		if (!changed)
-		{
-			launchers[launcherIndex]->position = position;
-			launchers[launcherIndex]->facingDir = normalize(owner->GetPlayer(0)->position - position);
-			launchers[launcherIndex]->Fire();
-		}
-		
-		//cout << "shoot:" << position.x << ", " << position.y << endl;
-		
 	}
-	/*if (fireCounter == framesBetween - 1 && slowCounter == 1)
+	else if (action == RETREAT)
 	{
-		fireCounter = -1;
-	}*/
+		if (retreatSeq.currMovement == NULL)
+		{
+			retreatSeq.Reset();
+			testSeq.Reset();
+			action = FLY;
+			frame = 0;
+			currBasePos = position;
+		}
+	}
+	else if (action == RETURN)
+	{
+		if (length(diff) < detectRange)
+		{
+			framesSinceBothered = 0;
+			action = RETREAT;
+			frame = 0;
+			currBasePos = position;
+			retreatMove->end = -pDir * dodgeRange;
+			retreatSeq.Reset();
+		}
+		else if (returnSeq.currMovement == NULL)
+		{
+			retreatSeq.Reset();
+			testSeq.Reset();
+			action = FLY;
+			frame = 0;
+			currBasePos = position;
+		}
+	}
+
+
+	//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
+	if( slowCounter == 1 )//&& action == FLY )
+	{
+		int f = fireCounter % 60;
+
+		if (f % 5 == 0 && f < 25)
+		{
+			launchers[0]->position = position;
+			launchers[0]->facingDir = pDir;
+			launchers[0]->Fire();
+		}	
+	}
 }
 
 void Bat::UpdateEnemyPhysics()
 {	
+	MovementSequence *ms = NULL;
+	if (action == FLY)
+	{
+		ms = &testSeq;
+	}
+	else if( action == RETREAT )
+	{
+		ms = &retreatSeq;
+	}
+	else if (action == RETURN)
+	{
+		ms = &returnSeq;
+	}
+
 	if (numPhysSteps == 1)
 	{
 		for( int i = 0; i < 10; ++i )
-			testSeq.Update(slowMultiple);
+			ms->Update(slowMultiple);
 	}
 	else
 	{
-		testSeq.Update(slowMultiple);
+		ms->Update(slowMultiple);
 	}
 	
-	position = testSeq.position;
+	position = currBasePos + ms->position;
 }
 
 void Bat::UpdateSprite()
