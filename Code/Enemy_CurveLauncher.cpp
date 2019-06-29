@@ -1,0 +1,189 @@
+#include "Enemy.h"
+#include "Enemy_CurveLauncher.h"
+#include "GameSession.h"
+#include <iostream>
+#include "VectorMath.h"
+#include <assert.h>
+#include "MainMenu.h"
+
+using namespace std;
+using namespace sf;
+
+
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
+#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
+#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
+#define COLOR_RED Color( 0xff, 0x22, 0 )
+#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
+#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
+CurveLauncher::CurveLauncher(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed)
+	:Enemy(owner, EnemyType::EN_GRAVITYLAUNCHER, false, 2, false)
+{
+	receivedHit = NULL;
+	position.x = pos.x;
+	position.y = pos.y;
+
+	launchSoundBuf = owner->soundManager->GetSound("Enemies/CurveLauncher_launch");
+
+	debugSpeed.setFont(owner->mainMenu->arial);
+	debugSpeed.setFillColor(Color::White);
+	debugSpeed.setCharacterSize(30);
+	stringstream ss;
+	ss << p_speed;
+	debugSpeed.setString(ss.str());
+	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
+	debugSpeed.setPosition(Vector2f(position));
+
+	ts_idle = owner->GetTileset("Enemies/CurveLauncher_idle_256x256.png", 256, 256);
+	ts_recover = owner->GetTileset("Enemies/CurveLauncher_recover_256x256.png", 256, 256);
+	ts_springing = owner->GetTileset("Enemies/CurveLauncher_CurveLauncher_512x576.png", 512, 576);
+
+	frame = 0;
+
+	animationFactor = 10;
+
+	sprite.setTexture(*ts_idle->texture);
+	sprite.setTextureRect(ts_idle->GetSubRect(frame));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(pos.x, pos.y);
+
+	V2d dOther = V2d(other.x, other.y);
+	V2d CurveLauncherVec = normalize(dOther);
+
+	double angle = atan2(CurveLauncherVec.x, -CurveLauncherVec.y);//atan2(-CurveLauncherVec.x, CurveLauncherVec.y);
+	sprite.setRotation(angle / PI * 180.0);
+
+	speed = p_speed;//length( dOther ) / (double)p_moveFrames;
+	double dist = length(V2d(other));
+	stunFrames = ceil(dist / speed);
+	dir = CurveLauncherVec;
+
+	float hurtboxRadius = 64;
+
+	hurtBody = new CollisionBody(1);
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hurt;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = hurtboxRadius;
+	hurtBox.rh = hurtboxRadius;
+	hurtBox.globalPosition = position;
+	hurtBody->AddCollisionBox(0, hurtBox);
+
+	hitBody = new CollisionBody(1);
+	CollisionBox hitBox;
+	hitBox.type = CollisionBox::Hit;
+	hitBox.isCircle = true;
+	hitBox.globalAngle = 0;
+	hitBox.offset.x = 0;
+	hitBox.offset.y = 0;
+	hitBox.rw = hurtboxRadius;
+	hitBox.rh = hurtboxRadius;
+	hitBox.globalPosition = position;
+
+	hitBody->AddCollisionBox(0, hitBox);
+
+	spawnRect = sf::Rect<double>(position.x - hurtboxRadius - 10, position.y - hurtboxRadius - 10,
+		hurtboxRadius * 2 + 10, hurtboxRadius * 2 + 10);
+
+	actionLength[IDLE] = 12;
+	actionLength[LAUNCHING] = 8;
+	actionLength[RECOVERING] = 8;
+
+	animFactor[IDLE] = 4;
+	animFactor[LAUNCHING] = 4;
+	animFactor[RECOVERING] = 4;
+
+	debugLine[0].color = Color::Red;
+	debugLine[1].color = Color::Red;
+	debugLine[0].position = Vector2f(pos);
+	debugLine[1].position = Vector2f(pos + other);
+
+	ResetEnemy();
+}
+void CurveLauncher::DebugDraw(sf::RenderTarget *target)
+{
+	Enemy::DebugDraw(target);
+	target->draw(debugLine, 2, sf::Lines);
+	target->draw(debugSpeed);
+}
+
+void CurveLauncher::ResetEnemy()
+{
+	dead = false;
+
+
+	receivedHit = NULL;
+	action = IDLE;
+	sprite.setTexture(*ts_idle->texture);
+	frame = 0;
+	SetHitboxes(hitBody, 0);
+	//SetHurtboxes(hurtBody, 0);
+
+	UpdateHitboxes();
+
+	UpdateSprite();
+}
+
+void CurveLauncher::ActionEnded()
+{
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		frame = 0;
+		switch (action)
+		{
+		case IDLE:
+			break;
+		case LAUNCHING:
+			action = RECOVERING;
+			sprite.setTexture(*ts_recover->texture);
+			break;
+		case RECOVERING:
+			action = IDLE;
+			sprite.setTexture(*ts_idle->texture);
+			break;
+		}
+	}
+}
+
+void CurveLauncher::Launch()
+{
+	assert(action == IDLE);
+	action = LAUNCHING;
+	sprite.setTexture(*ts_springing->texture);
+	frame = 0;
+	owner->soundNodeList->ActivateSound(launchSoundBuf);
+}
+
+void CurveLauncher::ProcessState()
+{
+	ActionEnded();
+}
+
+
+void CurveLauncher::UpdateSprite()
+{
+	switch (action)
+	{
+	case IDLE:
+		sprite.setTextureRect(ts_idle->GetSubRect(frame / animFactor[action]));
+		break;
+	case LAUNCHING:
+		sprite.setTextureRect(ts_springing->GetSubRect(frame / animFactor[action]));
+		break;
+	case RECOVERING:
+		sprite.setTextureRect(ts_recover->GetSubRect(frame / animFactor[action]));
+		break;
+	}
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+}
+
+void CurveLauncher::EnemyDraw(sf::RenderTarget *target)
+{
+	target->draw(sprite);
+}

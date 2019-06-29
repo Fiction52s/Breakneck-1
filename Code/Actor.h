@@ -737,6 +737,7 @@ struct Actor : QuadTreeCollider,
 	int gravResetFrames;
 
 	sf::Vector2<double> springVel;
+	sf::Vector2<double> springExtra;
 	int springStunFrames;
 
 	//these are for your max vel

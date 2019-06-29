@@ -98,6 +98,7 @@
 //#include "Enemy_Specter.h"
 #include "Enemy_Spider.h"
 #include "Enemy_Spring.h"
+#include "Enemy_CurveLauncher.h"
 //#include "Enemy_Swarm.h"
 #include "Enemy_Turtle.h"
 #include "HitboxManager.h"
@@ -2068,7 +2069,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> other.y;
 
 				
-				
+				//CurveLauncher * enemy = new CurveLauncher(this, Vector2i(xPos, yPos), other, moveFrames);
 				Spring *enemy = new Spring(this, Vector2i( xPos, yPos ), other, moveFrames );
 
 				activeItemTree->Insert(enemy);

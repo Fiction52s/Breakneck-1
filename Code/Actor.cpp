@@ -1660,6 +1660,7 @@ void Actor::ActionEnded()
 		case SPRINGSTUN:
 			//action = JUMP;
 			frame = 0;
+			
 			//assert(ground == NULL);
 			break;
 		case STANDN:
@@ -3791,10 +3792,17 @@ void Actor::UpdatePrePhysics()
 		}
 	case SPRINGSTUN:
 	{
-		if (springStunFrames == 0)
+		if (!BasicAirAction())
 		{
-			SetAction(JUMP);
-			frame = 1;
+			if (springStunFrames == 0)
+			{
+				SetAction(JUMP);
+				frame = 1;
+			}
+		}
+		else
+		{
+			springStunFrames = 0;
 		}
 		break;
 	}
@@ -7218,7 +7226,31 @@ void Actor::UpdatePrePhysics()
 		break;
 	case SPRINGSTUN:
 	{		
-		velocity = springVel;
+		velocity = springVel + springExtra;
+		
+		V2d grav;
+		double fac = 1.0;
+		if (currInput.LUp())
+		{
+			grav = -AddGravity(V2d(0, 0));
+		}
+		else if (currInput.LDown())
+		{
+			grav = AddGravity(V2d(0, 0));
+		}
+		springExtra += grav;
+
+		double speed = length( springVel );
+		double thresh = speed;
+		if (springExtra.y > thresh)
+		{
+			springExtra.y = thresh;
+		}
+		else if( springExtra.y < -thresh)
+		{
+			springExtra.y = -thresh;
+		}
+
 		break;
 	}
 	case STEEPSLIDE:
@@ -17034,7 +17066,7 @@ bool Actor::SpringLaunch()
 		currSpring->Launch();
 		position = currSpring->position;
 		springVel = currSpring->dir * (double)currSpring->speed;
-
+		springExtra = V2d( 0, 0 );
 		if (springVel.x > .01)
 		{
 			facingRight = true;
@@ -20851,14 +20883,15 @@ void Actor::UpdateSprite()
 		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 		sprite->setPosition(position.x, position.y);
 		
+		V2d sVel = springVel + springExtra;
 		if (facingRight)
 		{
-			double a = GetVectorAngleCW(normalize(springVel)) * 180 / PI;
+			double a = GetVectorAngleCW(normalize(sVel)) * 180 / PI;
 			sprite->setRotation(a);
 		}
 		else
 		{
-			double a = GetVectorAngleCCW(normalize(springVel)) * 180 / PI;
+			double a = GetVectorAngleCCW(normalize(sVel)) * 180 / PI;
 			sprite->setRotation(-a + 180);
 		}
 
