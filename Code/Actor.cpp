@@ -30,6 +30,7 @@
 #include "VisualEffects.h"
 #include "MapHeader.h"
 #include "TouchGrass.h"
+#include "Enemy_GravityModifier.h"
 
 using namespace sf;
 using namespace std;
@@ -268,6 +269,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+	extraGravityModifier = 1.0;
 	airTrigBehavior = AT_NONE;
 	rpu = new RisingParticleUpdater( this );
 	//hitCeilingLockoutFrames = 20;
@@ -281,6 +283,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	repeatingSound = NULL;
 		currBooster = NULL;
 		oldBooster = NULL;
+
+		gravResetFrames = 0;
+
+		currModifier = NULL;
+		oldModifier = NULL;
 		currWall = NULL;
 		currHurtboxes = NULL;
 		currHitboxes = NULL;
@@ -2260,8 +2267,6 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
-	
-
 	kinMask->Reset();
 	SetDirtyAura(false);
 
@@ -2279,11 +2284,19 @@ void Actor::Respawn()
 
 	activeComboObjList = NULL;
 
+	gravResetFrames = 0;
+
 	currBBoostCounter = 0;
 	repeatingSound = NULL;
 	currBooster = NULL;
 	currSpring = NULL;
 	oldBooster = NULL;
+
+	currModifier = NULL;
+	oldModifier = NULL;
+	extraGravityModifier = 1.0;
+	
+
 	currWall = NULL;
 	wallClimbGravityOn = false;
 	currHurtboxes = NULL;
@@ -7659,6 +7672,15 @@ facingRight = false;
 		//currBooster = NULL;
 		//boostUsed = false;
 	}
+
+	if (currModifier != NULL && oldModifier == NULL && currModifier->Modify())
+	{
+		extraGravityModifier = currModifier->gravFactor;
+		gravResetFrames = currModifier->duration;
+	}
+
+
+
 	double maxReal = maxVelocity + scorpAdditionalCap;
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
 		&& action != ENTERNEXUS1 && action != SPRINGSTUN)
@@ -8522,6 +8544,7 @@ facingRight = false;
 	}*/
 
 	oldBooster = currBooster;
+	oldModifier = currModifier;
 
 	highAccuracyHitboxes = true;
 
@@ -9433,6 +9456,7 @@ bool Actor::ResolvePhysics( V2d vel )
 
 
 	currBooster = NULL;
+	currModifier = NULL;
 	queryMode = "activeitem";
 	owner->activeItemTree->Query(this, r);
 
@@ -16582,6 +16606,16 @@ void Actor::UpdatePostPhysics()
 		framesInAir++;
 		framesSinceDouble++;
 
+		if (gravResetFrames > 0)
+		{
+			gravResetFrames--;
+			if (gravResetFrames == 0)
+			{
+				extraGravityModifier = 1.0;
+			}
+		}
+
+
 		if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
 		{
 			framesGrinding++;
@@ -16954,6 +16988,8 @@ sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 	{
 		normalGravity *= wallClimbGravityFactor;
 	}
+
+	normalGravity *= extraGravityModifier;
 
 	vel += V2d(0, normalGravity );
 
@@ -18543,6 +18579,22 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 			//currBooster = boost;
 			//booster priority later
+		}
+		else if (en->type == EnemyType::EN_GRAVITYMODIFIER)
+		{
+			GravityModifier *mod = (GravityModifier*)qte;
+
+			if (currModifier == NULL)
+			{
+				if (mod->hitBody->Intersects(mod->currHitboxFrame, &hurtBody) && mod->IsModifiable())
+				{
+					currModifier = mod;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
 		}
 		else if (en->type == EnemyType::EN_GRAVITYGRASS)
 		{

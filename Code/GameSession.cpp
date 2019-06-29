@@ -61,6 +61,7 @@
 #include "Enemy_Cactus.h"
 #include "Nexus.h"
 #include "MusicPlayer.h"
+#include "Enemy_GravityModifier.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -2027,7 +2028,8 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				int strength;
 				is >> strength;
 
-				Booster *enemy = new Booster(this, Vector2i(xPos, yPos),strength);
+				//Booster *enemy = new Booster(this, Vector2i(xPos, yPos),strength);
+				GravityModifier *enemy = new GravityModifier( this, Vector2i(xPos, yPos), .5, 300);
 
 				activeItemTree->Insert(enemy);
 				fullEnemyList.push_back(enemy);
@@ -2534,6 +2536,27 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 			}
+			else if (typeName == "gravitymodifier")
+			{
+				int xPos, yPos;
+
+				//always air
+
+				is >> xPos;
+				is >> yPos;
+
+				double gFactor;
+				is >> gFactor;
+
+				GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), gFactor, 300);
+
+				activeItemTree->Insert(enemy);
+				fullEnemyList.push_back(enemy);
+				enem = enemy;
+
+				enemyTree->Insert(enemy);
+			}
+
 			else if( typeName == "bossbird" )
 			{
 

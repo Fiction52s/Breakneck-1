@@ -164,6 +164,7 @@ struct AbsorbParticles
 	void AllocateParticle(int tileIndex );
 };
 
+struct GravityModifier;
 struct Booster;
 struct Spring;
 struct EffectPool;
@@ -730,6 +731,11 @@ struct Actor : QuadTreeCollider,
 	Spring *currSpring;
 	Booster *currBooster;
 	Booster *oldBooster;
+
+	GravityModifier *currModifier;
+	GravityModifier *oldModifier;
+	int gravResetFrames;
+
 	sf::Vector2<double> springVel;
 	int springStunFrames;
 
@@ -941,6 +947,7 @@ struct Actor : QuadTreeCollider,
 	double maxFallSpeedSlow;
 	double maxFallSpeedFast;
 	double gravity;
+	double extraGravityModifier;
 	//double fastFallGravity;
 
 	double jumpStrength;
