@@ -29,8 +29,7 @@ BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globa
 	position = pos;	
 	type = edit->types["bat"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	//list<Vector2i> localPath;
@@ -72,8 +71,7 @@ BatParams::BatParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["bat"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	loop = false;
@@ -84,8 +82,6 @@ BatParams::BatParams( EditSession *edit, sf::Vector2i &pos )
 
 	SetBoundingQuad();
 
-	//image.setTexture( type->imageTexture );
-	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	//image.setPosition( pos.x, pos.y );
 
 	//list<Vector2i> localPath;
@@ -934,8 +930,7 @@ BossBirdParams::BossBirdParams( EditSession *edit, Vector2i &pos )
 
 	position = pos;
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	width = Boss_Bird::GRID_SIZE_X * 160;

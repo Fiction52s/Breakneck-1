@@ -31,8 +31,7 @@ PulserParams::PulserParams( EditSession *edit,
 	position = pos;	
 	type = edit->types["pulser"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	//list<Vector2i> localPath;
@@ -53,8 +52,7 @@ PulserParams::PulserParams( EditSession *edit,
 	position = pos;	
 	type = edit->types["pulser"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	loop = false;
@@ -258,8 +256,7 @@ OwlParams::OwlParams( EditSession *edit, sf::Vector2i &pos,
 	position = pos;	
 	type = edit->types["owl"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	moveSpeed = p_moveSpeed;
@@ -276,8 +273,7 @@ OwlParams::OwlParams( EditSession *edit,
 	position = pos;	
 	type = edit->types["owl"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	moveSpeed = 8;
@@ -604,8 +600,7 @@ BossCoyoteParams::BossCoyoteParams( EditSession *edit, sf::Vector2i &pos )
 
 	position = pos;
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	radius = 600;

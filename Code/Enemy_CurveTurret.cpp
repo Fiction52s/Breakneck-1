@@ -142,7 +142,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 void CurveTurret::Setup()
 {
-	TurretSetup();
+	//TurretSetup();
 }
 
 void CurveTurret::UpdateBullet(BasicBullet *b)
@@ -166,8 +166,8 @@ void CurveTurret::BulletHitTerrain(BasicBullet *b,
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
 
-	if (b->launcher->def_e == NULL)
-		b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
+	//if (b->launcher->def_e == NULL)
+	//	b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
 }
 
 void CurveTurret::BulletHitPlayer(BasicBullet *b )

@@ -28,8 +28,7 @@ SharkParams::SharkParams( EditSession *edit, sf::Vector2i &pos,
 	position = pos;	
 	type = edit->types["shark"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -43,8 +42,7 @@ SharkParams::SharkParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["shark"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -120,8 +118,7 @@ SwarmParams::SwarmParams( EditSession *edit, sf::Vector2i &pos,
 	position = pos;	
 	type = edit->types["swarm"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -135,8 +132,7 @@ SwarmParams::SwarmParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["swarm"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -209,8 +205,7 @@ GhostParams::GhostParams( EditSession *edit, sf::Vector2i &pos,
 	position = pos;	
 	type = edit->types["ghost"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -224,8 +219,7 @@ GhostParams::GhostParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["ghost"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -357,8 +351,7 @@ BossGatorParams::BossGatorParams( EditSession *edit, Vector2i &pos )
 
 	position = pos;
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	

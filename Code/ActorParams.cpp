@@ -303,14 +303,7 @@ void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double qu
 	
 	int testIndex = 0;
 
-	image.setTexture( type->imageTexture );	
-
-	if( type->name != "poi" )
-		image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
-	else
-	{
-		image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
-	}
+	image = type->GetSprite(true);// .setTexture(*type->ts_image->texture);	
 
 	Vector2i point;
 
@@ -349,10 +342,7 @@ void ActorParams::AnchorToGround( GroundInfo &gi )
 	groundInfo = new GroundInfo;
 	*groundInfo = gi;
 
-	image.setTexture( type->imageTexture );	
-
-	if( type->name != "poi" )
-		image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height );
+	image = type->GetSprite(true);
 
 	UpdateGroundedSprite();
 	SetBoundingQuad();
@@ -543,9 +533,7 @@ HealthFlyParams::HealthFlyParams( EditSession *edit,
 	type = edit->types["healthfly"];
 	position = pos;
 	
-
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 	
 	color = p_color;
@@ -622,8 +610,7 @@ PlayerParams::PlayerParams( EditSession *edit, sf::Vector2i pos )
 	position = pos;
 
 	type = edit->types["player"];
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -730,8 +717,7 @@ PoiParams::PoiParams( EditSession *edit,
 	position = pos;	
 	type = edit->types["poi"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -760,8 +746,7 @@ PoiParams::PoiParams( EditSession *edit,
 	position = pos;	
 	type = edit->types["poi"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -906,8 +891,7 @@ KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["key"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -924,8 +908,7 @@ KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos,
 	position = pos;	
 	type = edit->types["key"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -1206,7 +1189,6 @@ ShardParams::ShardParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["shard"];
 
-	//image.setTexture( type->imageTexture );
 	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
 
@@ -1255,7 +1237,7 @@ ShardParams::ShardParams(EditSession *edit, sf::Vector2i &pos, int p_world,
 	position = pos;
 	type = edit->types["shard"];
 
-	image.setTexture(type->imageTexture);
+	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
@@ -1316,8 +1298,7 @@ RaceFightTargetParams::RaceFightTargetParams( EditSession *edit, sf::Vector2i &p
 	position = pos;	
 	type = edit->types["racefighttarget"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -1367,7 +1348,7 @@ BlockerParams::BlockerParams(EditSession *edit, sf::Vector2i pos, list<sf::Vecto
 	position = pos;
 	type = edit->types["blocker"];
 
-	image.setTexture(type->imageTexture);
+	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
@@ -1393,7 +1374,7 @@ BlockerParams::BlockerParams(EditSession *edit,
 	position = pos;
 	type = edit->types["blocker"];
 
-	image.setTexture(type->imageTexture);
+	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
@@ -1627,7 +1608,7 @@ RailParams::RailParams(EditSession *edit, sf::Vector2i pos, list<sf::Vector2i> &
 	position = pos;
 	type = edit->types["rail"];
 
-	image.setTexture(type->imageTexture);
+	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
@@ -1648,7 +1629,7 @@ RailParams::RailParams(EditSession *edit,
 	position = pos;
 	type = edit->types["rail"];
 
-	image.setTexture(type->imageTexture);
+	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
@@ -1824,7 +1805,7 @@ BoosterParams::BoosterParams(EditSession *edit, sf::Vector2i &pos, int p_strengt
 	position = pos;
 	type = edit->types["booster"];
 
-	image.setTexture(type->imageTexture);
+	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
@@ -1837,7 +1818,7 @@ BoosterParams::BoosterParams(EditSession *edit, sf::Vector2i &pos)
 	position = pos;
 	type = edit->types["booster"];
 
-	image.setTexture(type->imageTexture);
+	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
@@ -1902,7 +1883,7 @@ SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos, std::list<sf::V
 	position = pos;
 	type = edit->types["spring"];
 
-	image.setTexture(type->imageTexture);
+	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
@@ -1919,7 +1900,7 @@ SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos)
 	position = pos;
 	type = edit->types["spring"];
 
-	image.setTexture(type->imageTexture);
+	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 	image.setPosition(pos.x, pos.y);
 
@@ -1974,7 +1955,17 @@ void SpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
 			li[index].color = Color::Magenta;
 			++index;
 		}
+
+		Vector2f diff = li[1].position - li[0].position;
+		float f = GetVectorAngleCW(diff);
+		float rot = f / PI * 180.f + 90;
+		image.setRotation(rot);
+		cout << "blah: " << rot << endl;
+
 	}
+
+	
+	//Vector2i diff = globalPath. - globalPath[0];
 }
 
 void SpringParams::SetParams()
@@ -2069,8 +2060,7 @@ ComboerParams::ComboerParams(EditSession *edit, sf::Vector2i pos, list<Vector2i>
 	position = pos;
 	type = edit->types["comboer"];
 
-	image.setTexture(type->imageTexture);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);
 
 	//list<Vector2i> localPath;
@@ -2090,8 +2080,7 @@ ComboerParams::ComboerParams(EditSession *edit,
 	position = pos;
 	type = edit->types["comboer"];
 
-	image.setTexture(type->imageTexture);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);
 
 	loop = false;
@@ -2099,7 +2088,6 @@ ComboerParams::ComboerParams(EditSession *edit,
 
 	SetBoundingQuad();
 
-	//image.setTexture( type->imageTexture );
 	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	//image.setPosition( pos.x, pos.y );
 
@@ -2335,8 +2323,7 @@ AirTriggerParams::AirTriggerParams(EditSession *edit, sf::Vector2i &pos)
 	position = pos;
 	type = edit->types["airtrigger"];
 
-	image.setTexture(type->imageTexture);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);
 
 	SetBoundingQuad();
@@ -2359,8 +2346,7 @@ AirTriggerParams::AirTriggerParams(EditSession *edit, sf::Vector2i &pos, const s
 	position = pos;
 	type = edit->types["airtrigger"];
 
-	image.setTexture(type->imageTexture);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);
 
 

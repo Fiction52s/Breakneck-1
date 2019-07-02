@@ -414,14 +414,17 @@ struct ActorType
 {
 	ActorType( const std::string & name, Panel *panel );
 	void Init();
+	sf::Sprite GetSprite( int xSize = 0, int ySize = 0 );
+	sf::Sprite GetSprite(bool grounded);
 	std::string name;
-	sf::Texture iconTexture;
-	sf::Texture imageTexture;
+	Tileset *ts_image;
 	int width;
 	int height;
 	bool canBeGrounded;
 	bool canBeAerial;
 	Panel *panel;
+	int imageTileIndex;
+	sf::Vector2i imageOffset;
 };
 
 struct GroundInfo
@@ -1603,10 +1606,11 @@ struct PointMoveInfo
 
 typedef std::map<TerrainPolygon*,std::list<PointMoveInfo>> PointMap;
 
+struct KinSkin;
 struct Background;
 struct ScrollingBackground;
 struct MainMenu;
-struct EditSession : GUIHandler
+struct EditSession : GUIHandler, TilesetManager
 {
 	struct DecorInfo : ISelectable
 	{
@@ -1653,7 +1657,8 @@ struct EditSession : GUIHandler
 
 	bool IsKeyPressed(int k);
 	std::list<Panel*> allPopups;
-
+	static EditSession *GetSession();
+	static EditSession *currSession;
 	Background *currBackground;
 	std::list<ScrollingBackground*> scrollingBackgrounds;
 
@@ -1668,7 +1673,6 @@ struct EditSession : GUIHandler
 
 	Tool currTool;
 	ImageEditTool currImageTool;
-	TilesetManager tm;
 
 	Tileset *ts_shards[7];
 	
@@ -1896,6 +1900,9 @@ struct EditSession : GUIHandler
 	Panel *terrainSelectorPopup;
 
 	Panel *enemySelectPanel;
+	void SetEnemyGridIndex( GridSelector *gs,
+		int x, int y,
+		const std::string &eName );
 
 	int IsRemovePointsOkay();
 

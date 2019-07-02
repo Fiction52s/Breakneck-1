@@ -19,7 +19,7 @@ struct Tileset
 struct TilesetManager
 {
 	~TilesetManager();
-	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight,  int altColorIndex = 0 );
+	Tileset * GetTileset( const std::string & s, int tileWidth = 0, int tileHeight = 0,  int altColorIndex = 0 );
 	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
 		sf::Color *startColorBuf, sf::Color *endColorBuf);
 	Tileset *GetUpdatedTileset(
@@ -31,6 +31,8 @@ struct TilesetManager
 		int numAltColors, 
 		sf::Color *startColorBuf,
 		sf::Color *endColorBuf );
+
+private:
 	std::list<Tileset*> tilesetList;
 };
 

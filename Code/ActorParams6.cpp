@@ -25,8 +25,7 @@ SpecterParams::SpecterParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["specter"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -80,8 +79,7 @@ CopycatParams::CopycatParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["copycat"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -138,8 +136,7 @@ GorillaParams::GorillaParams( EditSession *edit,
 	position = pos;	
 	type = edit->types["gorilla"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -153,8 +150,7 @@ GorillaParams::GorillaParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["gorilla"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -242,8 +238,7 @@ NarwhalParams::NarwhalParams( EditSession *edit,
 	position = pos;	
 	type = edit->types["narwhal"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -257,8 +252,7 @@ NarwhalParams::NarwhalParams( EditSession *edit, sf::Vector2i &pos )
 	position = pos;	
 	type = edit->types["narwhal"];
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
@@ -355,8 +349,7 @@ BossSkeletonParams::BossSkeletonParams( EditSession *edit, Vector2i &pos )
 
 	position = pos;
 
-	image.setTexture( type->imageTexture );
-	image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
+	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 				

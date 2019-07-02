@@ -34,6 +34,7 @@ using namespace sf;
 const double EditSession::PRIMARY_LIMIT = .999;
 double EditSession::zoomMultiple = 1;
 EditSession * TerrainPolygon::session = NULL;
+EditSession * EditSession::currSession = NULL;
 
 
 TerrainBrush::TerrainBrush( PolyPtr poly )
@@ -429,9 +430,15 @@ void GateInfo::DrawPreview(sf::RenderTarget * target)
 	target->draw(thickerLine, 4, sf::Quads);
 }
 
+EditSession *EditSession::GetSession()
+{
+	return currSession;
+}
+
 EditSession::EditSession( MainMenu *p_mainMenu )
 	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu )
 {
+	currSession = this;
 	for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD * 9; ++i)
 	{
 		terrainTextures[i] = NULL;
@@ -734,7 +741,7 @@ bool EditSession::OpenFile()
 
 		drainSeconds = mh->drainSeconds;
 
-		Background::SetupFullBG(envName, tm, currBackground, scrollingBackgrounds);
+		Background::SetupFullBG(envName, *this, currBackground, scrollingBackgrounds);
 
 		int numPoints = mh->numVertices;
 
@@ -6633,7 +6640,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			numStr = to_string(i + 1);
 			bgName = "w" + to_string(w + 1) + "_0";// +to_string(i + 1);
 			fullName = path + bgName + numStr + png;
-			bgTS = tm.GetTileset(fullName, 1920, 1080);
+			bgTS = GetTileset(fullName, 1920, 1080);
 			if (bgTS == NULL)
 			{
 				continue;
@@ -6648,77 +6655,123 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
 	allPopups.push_back(enemySelectPanel);
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 20, 20 ), 20, 20, 32, 32, false, true );
+	int gridSizeX = 80;
+	int gridSizeY = 80;
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 0, 0 ), 15, 10, gridSizeX,
+		gridSizeY, false, true );
 	gs->active = false;
-
-	gs->Set( 0, 0, Sprite( goalType->iconTexture ), "goal" );
-	gs->Set( 1, 0, Sprite( healthflyType->iconTexture ), "healthfly" );
-	gs->Set( 2, 0, Sprite( poiType->iconTexture ), "poi" );
-	gs->Set( 3, 0, Sprite( keyType->iconTexture ), "key" );
-	gs->Set( 4, 0, Sprite( shipPickupType->iconTexture ), "shippickup" );
-	gs->Set( 5, 0, Sprite( shardType->iconTexture ), "shard" );
-	gs->Set( 6, 0, Sprite( raceFightTargetType->iconTexture ), "racefighttarget" );
-	gs->Set(7, 0, Sprite(blockerType->iconTexture), "blocker");
-	gs->Set(8, 0, Sprite(groundTriggerType->iconTexture), "groundtrigger");
-	gs->Set(9, 0, Sprite(comboerType->iconTexture), "comboer");
-	gs->Set(10, 0, Sprite(comboerType->iconTexture), "airtrigger");
-	gs->Set(11, 0, Sprite(flowerPodType->iconTexture), "flowerpod");
 	
+	const char *firstRow[12] = { 
+		"goal", 
+		"healthfly", 
+		"poi", 
+		"key", 
+		"shippickup", 
+		"shard",
+		"racefighttarget", 
+		"blocker", 
+		"groundtrigger", 
+		"comboer", 
+		"airtrigger", 
+		"flowerpod" };
 
-	gs->Set( 0, 1, Sprite( patrollerType->iconTexture ), "patroller" );
-	gs->Set( 1, 1, Sprite( crawlerType->iconTexture ), "crawler" );
-	gs->Set( 2, 1, Sprite( basicTurretType->iconTexture ), "basicturret" );
-	gs->Set( 3, 1, Sprite( footTrapType->iconTexture ), "foottrap" );
-	gs->Set( 4, 1, Sprite(comboerType->iconTexture), "airdasher");
-	gs->Set( 5, 1, Sprite( bossCrawlerType->iconTexture ), "bosscrawler" );
+	for (int i = 0; i < 12; ++i)
+	{
+		SetEnemyGridIndex(gs, i, 0, firstRow[i]);
+	}
 
-	gs->Set( 0, 2, Sprite( batType->iconTexture ), "bat" );
-	gs->Set( 1, 2, Sprite( curveTurretType->iconTexture ), "curveturret" );
-	gs->Set( 2, 2, Sprite( poisonFrogType->iconTexture ), "poisonfrog" );
-	gs->Set( 3, 2, Sprite( stagBeetleType->iconTexture ), "stagbeetle" );
-	gs->Set(4, 2, Sprite(poisonFrogType->iconTexture), "gravityfaller");
-	gs->Set( 5, 2, Sprite( bossCoyoteType->iconTexture ), "bossbird" );
+	const char *secondRow[6] = {
+		"patroller",
+		"crawler",
+		"basicturret",
+		"foottrap",
+		"airdasher",
+		"bosscrawler"};
 
-	gs->Set( 0, 3, Sprite( pulserType->iconTexture ), "pulser" );
-	gs->Set( 1, 3, Sprite( badgerType->iconTexture ), "badger" );
-	gs->Set( 2, 3, Sprite( owlType->iconTexture ), "owl" );
-	gs->Set( 3, 3, Sprite( cactusType->iconTexture ), "cactus" );
-	gs->Set( 4, 3, Sprite( bossCoyoteType->iconTexture ), "bosscoyote" );
+	for (int i = 0; i < 6; ++i)
+	{
+		SetEnemyGridIndex(gs, i, 1, secondRow[i]);
+	}
 
-	gs->Set( 0, 4, Sprite( spiderType->iconTexture ), "spider" );
-	gs->Set( 1, 4, Sprite( turtleType->iconTexture ), "turtle" );
-	gs->Set( 2, 4, Sprite( cheetahType->iconTexture ), "cheetah" );
-	gs->Set( 3, 4, Sprite( coralType->iconTexture ), "coral" );
-	gs->Set( 4, 4, Sprite( bossCoyoteType->iconTexture ), "bosstiger" );
+	const char *thirdRow[6] = {
+		"bat",
+		"curveturret",
+		"poisonfrog",
+		"stagbeetle",
+		"gravityfaller",
+		"bossbird" };
 
-	gs->Set( 0, 5, Sprite( swarmType->iconTexture ), "swarm" );
-	gs->Set( 1, 5, Sprite( sharkType->iconTexture ), "shark" );
-	gs->Set( 2, 5, Sprite( overgrowthType->iconTexture ), "ov ergrowth" );
-	gs->Set( 3, 5, Sprite( ghostType->iconTexture ), "ghost" );
-	gs->Set( 4, 5, Sprite( bossCrawlerType->iconTexture ), "bossgator" );
+	for (int i = 0; i < 6; ++i)
+	{
+		SetEnemyGridIndex(gs, i, 2, thirdRow[i]);
+	}
 
-	gs->Set( 0, 6, Sprite( specterType->iconTexture ), "specter" );
-	gs->Set( 1, 6, Sprite( narwhalType->iconTexture ), "narwhal" );
-	gs->Set( 2, 6, Sprite( copycatType->iconTexture ), "copycat" );
-	gs->Set( 3, 6, Sprite( gorillaType->iconTexture ), "gorilla" );
-	gs->Set( 4, 6, Sprite( bossCrawlerType->iconTexture ), "bossskeleton" );
+	const char *fourthRow[5] = {
+		"pulser",
+		"badger",
+		"owl",
+		"cactus",
+		"bosscoyote" };
 
-	gs->Set( 0, 7, Sprite( nexusType->iconTexture ), "nexus" );
+	for (int i = 0; i < 5; ++i)
+	{
+		SetEnemyGridIndex(gs, i, 3, fourthRow[i]);
+	}
 
-	gs->Set(0, 8, Sprite(boosterType->iconTexture), "booster");
-	gs->Set(2, 8, Sprite(springType->iconTexture), "spring");
-	gs->Set(3, 8, Sprite(railType->iconTexture), "rail");
-	
+	const char *fifthRow[5] = {
+		"spider",
+		"turtle",
+		"cheetah",
+		"coral",
+		"bosstiger" };
 
-	
+	for (int i = 0; i < 5; ++i)
+	{
+		SetEnemyGridIndex(gs, i, 4, fifthRow[i]);
+	}
 
-	//gs->Set( 0, 6, Sprite( specterType->iconTexture ), "specter" );
-	//gs->Set( 1, 6, sPulser, "turtle" );
-	//gs->Set( 2, 6, sPulser, "cheetah" );
-	//gs->Set( 3, 6, sPulser, "coral" );
+	const char *sixthRow[5] = {
+		"swarm",
+		"shark",
+		"overgrowth",
+		"ghost",
+		"bossgator" };
 
+	for (int i = 0; i < 5; ++i)
+	{
+		SetEnemyGridIndex(gs, i, 5, sixthRow[i]);
+	}
 
-	
+	const char *seventhRow[5] = {
+		"specter",
+		"narwhal",
+		"copycat",
+		"gorilla",
+		"bossskeleton" };
+
+	for (int i = 0; i < 5; ++i)
+	{
+		SetEnemyGridIndex(gs, i, 6, seventhRow[i]);
+	}
+
+	const char *eighthRow[1] = {
+		"nexus" };
+
+	for (int i = 0; i < 1; ++i)
+	{
+		SetEnemyGridIndex(gs, i, 7, eighthRow[i]);
+	}
+
+	const char *ninthRow[3] = {
+		"booster",
+		"spring",
+		"rail"};
+
+	for (int i = 0; i < 3; ++i)
+	{
+		SetEnemyGridIndex(gs, i, 8, ninthRow[i]);
+	}
+
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
 	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 6, 4, 32, 32, false, true );
@@ -15326,12 +15379,8 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 		if( name != "not set" )
 		{
 			trackingEnemy = types[name];
-			enemySprite.setTexture( trackingEnemy->imageTexture );
 
-			enemySprite.setTextureRect( sf::IntRect( 0, 0, trackingEnemy->imageTexture.getSize().x, 
-				trackingEnemy->imageTexture.getSize().y ) );
-
-			enemySprite.setOrigin( enemySprite.getLocalBounds().width /2 , enemySprite.getLocalBounds().height / 2 );
+			enemySprite = trackingEnemy->GetSprite(false);
 
 			enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
 
@@ -15392,7 +15441,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 			}
 
 			showPanel = NULL;
-			//ts_currDecor = tm.GetTileset( currDecorName + string(".png"),  )
+			//ts_currDecor = GetTileset( currDecorName + string(".png"),  )
 			//tempDecorSprite.setTexture(ts_currDecor)
 			/*tempGridResult = name;
 			tempGridX = gs->selectedX;
@@ -15407,7 +15456,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 	{
 		if (name != "not set")
 		{
-			if (Background::SetupFullBG(name, tm, currBackground, scrollingBackgrounds))
+			if (Background::SetupFullBG(name, *this, currBackground, scrollingBackgrounds))
 			{
 				tempGridResult = name;
 				envName = name;
@@ -15461,7 +15510,7 @@ void EditSession::LoadDecorImages()
 
 			string fullName = name + string(".png");
 			
-			Tileset *ts = tm.GetTileset(fullName, width, height);
+			Tileset *ts = GetTileset(fullName, width, height);
 			assert(ts != NULL);
 			decorTSMap[name] = ts;
 			decorTileIndexMap[name].push_back(tile);
@@ -15633,6 +15682,11 @@ void EditSession::ClearSelectedPoints()
 		}
 	}
 	selectedPoints.clear();
+}
+
+void EditSession::SetEnemyGridIndex( GridSelector *gs, int x, int y, const std::string &eName)
+{
+	gs->Set(x, y, types[eName]->GetSprite(gs->tileSizeX, gs->tileSizeY), eName);
 }
 
 void EditSession::DrawBG(sf::RenderTarget *target)
@@ -17137,13 +17191,13 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		GridSelector *gs = p->AddGridSelector( "shardselector", Vector2i(0, 0), xSize, ySize * 7, 64, 64, true, true);
 		Sprite spr;
 
-		ts_shards[0] = tm.GetTileset("Shard/shards_w1_48x48.png", 48, 48);
-		ts_shards[1] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[2] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[3] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[4] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[5] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[6] = tm.GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[0] = GetTileset("Shard/shards_w1_48x48.png", 48, 48);
+		ts_shards[1] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[2] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[3] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[4] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[5] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		ts_shards[6] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
 
 		
 		Tileset *ts_currShards;
@@ -19536,18 +19590,61 @@ void EditSession::BoxSelectPoints(sf::IntRect r,
 	}
 }
 
-ActorType::ActorType( const std::string & n, Panel *p )
-	:name( n ), panel( p )
+ActorType::ActorType(const std::string & n, Panel *p)
+	:name(n), panel(p), imageTileIndex(0)
 {
-	iconTexture.loadFromFile( string("Resources/Editor/") + name + "_icon.png" );
-	//icon.setTexture( iconTexture );
-	imageTexture.loadFromFile(string("Resources/Editor/") + name + "_editor.png" );
-	//image.setTexture( imageTexture );
+	EditSession *session = EditSession::GetSession();
+	ts_image = NULL;
+	//ts_icon = session->GetTileset(editorStr + name + string("_icon.png"));
+	ts_image = session->GetTileset(string( "Editor/") + name + string("_editor.png"));
+
 	Init();
+}
+
+sf::Sprite ActorType::GetSprite( int xSize, int ySize )
+{
+	if (ts_image == NULL)
+	{
+		return Sprite();
+	}
+
+	Sprite spr(*ts_image->texture);
+	spr.setTextureRect(ts_image->GetSubRect(imageTileIndex));
+
+	if (xSize != 0 && ySize != 0)
+	{
+		float xx = ((float)xSize) / ts_image->tileWidth;
+		float yy = ((float)ySize) / ts_image->tileHeight;
+		float scale = min(xx, yy);
+		spr.setScale(scale, scale);
+	}
+	return spr;
+}
+
+sf::Sprite ActorType::GetSprite(bool grounded)
+{
+	Sprite s = GetSprite();
+	if (grounded)
+	{
+		if (name != "poi")
+			s.setOrigin(s.getLocalBounds().width / 2 + imageOffset.x, s.getLocalBounds().height + imageOffset.y);
+		else
+		{
+			s.setOrigin(s.getLocalBounds().width / 2 + imageOffset.x, s.getLocalBounds().height / 2 + imageOffset.y);
+		}
+	}
+	else
+	{
+		s.setOrigin(s.getLocalBounds().width / 2 + imageOffset.x, s.getLocalBounds().height / 2 + imageOffset.y);
+	}
+
+	return s;
 }
 
 void ActorType::Init()
 {
+	EditSession *session = EditSession::GetSession();
+
 	if( name == "healthfly" )
 	{
 		width = 32;
@@ -19561,6 +19658,8 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Goal/goal_w01_a_288x320.png", 288, 320);
+		imageOffset.y = -32;
 	}
 	else if( name == "player" )
 	{
@@ -19568,6 +19667,8 @@ void ActorType::Init()
 		height = 42;//64;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Kin/jump_64x64.png", 64, 64);
+		imageTileIndex = 2;
 	}
 	else if( name == "poi" )
 	{
@@ -19575,6 +19676,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Editor/poi_editor.png");
 	}
 	else if( name == "key" )
 	{
@@ -19582,6 +19684,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Editor/key_editor.png");
 	}
 	if( name == "shippickup" )
 	{
@@ -19589,6 +19692,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Ship/shipleave_128x128.png", 128, 128);
 	}
 	if (name == "groundtrigger")
 	{
@@ -19596,6 +19700,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Ship/shipleave_128x128.png", 128, 128);
 	}
 	if (name == "airtrigger")
 	{
@@ -19603,6 +19708,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Enemies/jayshield_128x128.png", 128, 128);
 	}
 	else if( name == "shard" )
 	{
@@ -19610,6 +19716,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
 	}
 	else if( name == "racefighttarget" )
 	{
@@ -19617,6 +19724,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Editor/racefighttarget_editor.png");
 	}
 	else if (name == "blocker")
 	{
@@ -19624,6 +19732,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
 	}
 	else if (name == "flowerpod")
 	{
@@ -19631,6 +19740,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Momenta/momentaflower_128x128.png", 128, 128);
 	}
 	else if (name == "comboer")
 	{
@@ -19638,6 +19748,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Enemies/comboer_128x128.png", 128, 128);
 	}
 	else if (name == "rail")
 	{
@@ -19645,6 +19756,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Editor/rail_editor.png");
 	}
 	else if (name == "booster")
 	{
@@ -19652,6 +19764,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Enemies/Booster_512x512.png", 512, 512);
 	}
 	else if (name == "spring")
 	{
@@ -19659,6 +19772,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
 	}
 	//w1
 	else if( name == "patroller" )
@@ -19667,6 +19781,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Editor/patroller_editor.png");
 	}
 	else if( name == "crawler" )
 	{
@@ -19674,6 +19789,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Enemies/crawler_160x160.png", 160, 160);
 	}
 	else if( name == "basicturret" )
 	{
@@ -19681,6 +19797,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Enemies/basicturret_128x80.png", 128, 80);
 	}
 	else if( name == "foottrap" )
 	{
@@ -19688,6 +19805,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Enemies/foottrap_editor.png");
 	}
 	else if( name == "bosscrawler" )
 	{
@@ -19695,6 +19813,7 @@ void ActorType::Init()
 		height = 144;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Bosses/crawler_queen_256x256.png", 256, 256);
 	}
 	else if (name == "airdasher")
 	{
@@ -19702,6 +19821,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Enemies/dasher_208x144.png", 208, 144);
 	}
 
 	//w2
@@ -19711,6 +19831,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Enemies/bat_144x176.png", 144, 176);
 	}
 	else if( name == "curveturret" )
 	{
@@ -19718,6 +19839,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Enemies/curveturret_144x96.png", 144, 96);
 	}
 	else if( name == "stagbeetle" )
 	{
@@ -19725,6 +19847,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Enemies/stag_idle_192x144.png", 192, 144);
 	}
 	else if( name == "poisonfrog" )
 	{
@@ -19732,6 +19855,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Enemies/frog_80x80.png", 80, 80);
 	}
 	else if (name == "gravityfaller")
 	{
@@ -19739,6 +19863,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = true;
 		canBeAerial = false;
+		ts_image = session->GetTileset("Enemies/gravity_faller_128x128.png", 128, 128);
 	}
 	else if( name == "bossbird" )
 	{
@@ -19746,6 +19871,7 @@ void ActorType::Init()
 		height = 64;
 		canBeGrounded = false;
 		canBeAerial = true;
+		ts_image = session->GetTileset("Enemies/bossbird_editor.png");
 	}
 	
 	//w3
@@ -19755,6 +19881,7 @@ void ActorType::Init()
 		height = 32;
 		canBeGrounded = false;
 		canBeAerial = true;
+		//ts_image = session->GetTileset("Editor//gravity_faller_128x128.png", 128, 128);
 	}
 	else if( name == "badger" )
 	{
@@ -19904,8 +20031,6 @@ void ActorType::Init()
 		canBeGrounded = true;
 		canBeAerial = false;
 	}
-
-
 }
 
 void ActorGroup::Draw( sf::RenderTarget *target )
