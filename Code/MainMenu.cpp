@@ -854,7 +854,7 @@ MainMenu::MainMenu()
 	if (auraCheckTexture == NULL)
 	{
 		auraCheckTexture = new RenderTexture;
-		auraCheckTexture->create(512, 512);
+		auraCheckTexture->create(256, 256);
 		auraCheckTexture->clear();
 	}
 

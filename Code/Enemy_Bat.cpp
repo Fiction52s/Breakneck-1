@@ -271,7 +271,7 @@ void Bat::ProcessState()
 		frame = 0;
 	}
 
-	double detectRange = 200;
+	double detectRange = 300;
 	double dodgeRange = 250;
 
 	V2d playerPos = owner->GetPlayer(0)->position;

@@ -288,6 +288,8 @@ struct Actor : QuadTreeCollider,
 		DIAGUPATTACK,
 		DIAGDOWNATTACK,
 		SPRINGSTUN,
+		SPRINGSTUNGLIDE,
+		GLIDE,
 		SEQ_ENTERCORE1,
 		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
 		SEQ_CRAWLERFIGHT_LAND,
@@ -447,6 +449,7 @@ struct Actor : QuadTreeCollider,
 	bool TrySprint(V2d &gNorm);
 	
 	bool TryAirDash();
+	bool TryGlide();
 
 	int framesSinceRightWireBoost;
 	int singleWireBoostTiming;
@@ -739,6 +742,10 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> springVel;
 	sf::Vector2<double> springExtra;
 	int springStunFrames;
+
+	double glideTurnFactor;
+	double glideTurnAccel;
+	double maxGlideTurnFactor;
 
 	//these are for your max vel
 	double scorpAdditionalCap;

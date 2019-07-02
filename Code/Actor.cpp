@@ -88,6 +88,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[LAND2] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
 	tileset[RUN] = owner->GetTileset("Kin/run_64x64.png", 64, 64, skin);
 	tileset[SPRINGSTUN] = owner->GetTileset("Kin/launch_96x64.png", 96, 64, skin);
+	tileset[SPRINGSTUNGLIDE] = tileset[SPRINGSTUN];
+	tileset[GLIDE] = tileset[SPRINGSTUN];
 	tileset[SLIDE] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
 	tileset[SPRINT] = owner->GetTileset("Kin/sprint_80x48.png", 80, 48, skin);	
 	//tileset[DASHATTACK] = owner->GetTileset("dash_attack_128x96.png", 128, 96);
@@ -415,8 +417,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		framesSinceLeftWireBoost = 0;
 		framesSinceDoubleWireBoost = 0;
 
+		glideTurnFactor = 0;
+
 		singleWireBoostTiming = 4;
 		doubleWireBoostTiming = 4;
+
+		glideTurnAccel = .01;
+		maxGlideTurnFactor = .08;
 
 		//(0x14, 0x59, 0x22) = Kin Green
 		// gonna try to make this red in his airdash animation
@@ -460,16 +467,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		speedLevel = 0;
 		currentSpeedBar = 0;
-
-		//Vector2f facePos( 0, 0 );
-		
-		//kinMask->SetTopLeft(Vector2f(0, 0));
-		//kinFace.setPosition( facePos );
-		//kinFaceBG.setPosition(facePos);
-
-		//SetExpr( Expr::Expr_NEUTRAL );
-
-		
 
 		motionGhostSpacing = 1;
 		ghostSpacingCounter = 0;
@@ -1080,6 +1077,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[STAND] = 20 * 8;
 		actionLength[SEQ_ENTERCORE1] = 60;
 		actionLength[SPRINGSTUN] = 8;
+		actionLength[SPRINGSTUNGLIDE] = 8;
+		actionLength[GLIDE] = 8;
 		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
 		actionLength[DASHATTACK] = 8 * 2;
 		actionLength[STANDN] = 8 * 2;
@@ -1661,6 +1660,18 @@ void Actor::ActionEnded()
 			//action = JUMP;
 			frame = 0;
 			
+			//assert(ground == NULL);
+			break;
+		case SPRINGSTUNGLIDE:
+			//action = JUMP;
+			frame = 0;
+
+			//assert(ground == NULL);
+			break;
+		case GLIDE:
+			//action = JUMP;
+			frame = 0;
+
 			//assert(ground == NULL);
 			break;
 		case STANDN:
@@ -2271,6 +2282,8 @@ void Actor::Respawn()
 	kinMask->Reset();
 	SetDirtyAura(false);
 
+
+	glideTurnFactor = 0;
 	storedTrigger = NULL;
 	airTrigBehavior = AT_NONE;
 	currAirTrigger = NULL;
@@ -3792,6 +3805,15 @@ void Actor::UpdatePrePhysics()
 		}
 	case SPRINGSTUN:
 	{
+		if (springStunFrames == 0)
+		{
+			SetAction(JUMP);
+			frame = 1;
+		}
+		break;
+	}
+	case SPRINGSTUNGLIDE:
+	{
 		if (!BasicAirAction())
 		{
 			if (springStunFrames == 0)
@@ -3803,6 +3825,22 @@ void Actor::UpdatePrePhysics()
 		else
 		{
 			springStunFrames = 0;
+		}
+		break;
+	}
+	case GLIDE:
+	{
+		if (!BasicAirAction())
+		{
+			/*if (springStunFrames == 0)
+			{
+				SetAction(JUMP);
+				frame = 1;
+			}*/
+		}
+		else
+		{
+			//springStunFrames = 0;
 		}
 		break;
 	}
@@ -7227,29 +7265,122 @@ void Actor::UpdatePrePhysics()
 	case SPRINGSTUN:
 	{		
 		velocity = springVel + springExtra;
-		
-		V2d grav;
-		double fac = 1.0;
+		break;
+	}
+	case SPRINGSTUNGLIDE:
+	{
 		if (currInput.LUp())
 		{
-			grav = -AddGravity(V2d(0, 0));
+			if (glideTurnFactor < 0)
+			{
+				glideTurnFactor = 0;
+			}
+			glideTurnFactor += glideTurnAccel;
+			if (glideTurnFactor > maxGlideTurnFactor)
+			{
+				glideTurnFactor = maxGlideTurnFactor;
+			}
+			//RotateCCW(springVel, glideTurnFactor);
 		}
 		else if (currInput.LDown())
 		{
-			grav = AddGravity(V2d(0, 0));
+			if (glideTurnFactor > 0)
+			{
+				glideTurnFactor = 0;
+			}
+			glideTurnFactor -= glideTurnAccel;
+			if (glideTurnFactor < -maxGlideTurnFactor)
+			{
+				glideTurnFactor = -maxGlideTurnFactor;
+			}
+			//RotateCCW(springVel, glideTurnFactor);
+			//grav = AddGravity(V2d(0, 0));
 		}
-		springExtra += grav;
+		else
+		{
+			glideTurnFactor = 0;
+		}
 
-		double speed = length( springVel );
-		double thresh = speed;
-		if (springExtra.y > thresh)
+
+		if (facingRight)
 		{
-			springExtra.y = thresh;
+			RotateCCW(springVel, glideTurnFactor);
 		}
-		else if( springExtra.y < -thresh)
+		else
 		{
-			springExtra.y = -thresh;
+			RotateCCW(springVel, -glideTurnFactor);
 		}
+
+		//springExtra = AddGravity(springExtra);
+		//if (springVel.y > 0)
+		if (false)
+		{
+			double gFac = 1.0;
+			V2d nsv = normalize(springVel);
+			springVel = nsv * (length(springVel) + gFac * nsv.y);//AddGravity(springVel);
+		}
+
+
+		//springExtra = tempVel - springVel;
+		velocity = springVel + springExtra;
+
+		break;
+	}
+	case GLIDE:
+	{
+		if (currInput.LUp())
+		{
+			if (glideTurnFactor < 0)
+			{
+				glideTurnFactor = 0;
+			}
+			glideTurnFactor += glideTurnAccel;
+			if (glideTurnFactor > maxGlideTurnFactor)
+			{
+				glideTurnFactor = maxGlideTurnFactor;
+			}
+			//RotateCCW(springVel, glideTurnFactor);
+		}
+		else if (currInput.LDown())
+		{
+			if (glideTurnFactor > 0)
+			{
+				glideTurnFactor = 0;
+			}
+			glideTurnFactor -= glideTurnAccel;
+			if (glideTurnFactor < -maxGlideTurnFactor)
+			{
+				glideTurnFactor = -maxGlideTurnFactor;
+			}
+			//RotateCCW(springVel, glideTurnFactor);
+			//grav = AddGravity(V2d(0, 0));
+		}
+		else
+		{
+			glideTurnFactor = 0;
+		}
+
+
+		if (facingRight)
+		{
+			RotateCCW(velocity, glideTurnFactor);
+		}
+		else
+		{
+			RotateCCW(velocity, -glideTurnFactor);
+		}
+
+		//springExtra = AddGravity(springExtra);
+		if (false)
+		{
+			double gFac = 1.0;
+			V2d nsv = normalize(velocity);
+			velocity = nsv * (length(velocity) + gFac * nsv.y);//AddGravity(springVel);
+		}
+
+
+		//springExtra = tempVel - springVel;
+		//velocity = velocity + springExtra;
 
 		break;
 	}
@@ -7715,7 +7846,7 @@ facingRight = false;
 
 	double maxReal = maxVelocity + scorpAdditionalCap;
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
-		&& action != ENTERNEXUS1 && action != SPRINGSTUN)
+		&& action != ENTERNEXUS1 && action != SPRINGSTUN && action != GLIDE && action != SPRINGSTUNGLIDE)
 	{
 		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH)
 		{
@@ -11396,6 +11527,8 @@ bool Actor::BasicAirAction()
 	if (TryDoubleJump()) return true;
 
 	if (TryAirDash()) return true;
+
+	//if (TryGlide()) return true;
 
 	if (TryWallJump()) return true;
 
@@ -17077,8 +17210,18 @@ bool Actor::SpringLaunch()
 		}
 
 		springStunFrames = currSpring->stunFrames;
+
+		if (currSpring->type == EnemyType::EN_GRAVITYLAUNCHER)
+		{
+			action = SPRINGSTUNGLIDE;
+		}
+		else
+		{
+			action = SPRINGSTUN;
+		}
+
 		currSpring = NULL;
-		action = SPRINGSTUN;
+		
 		holdJump = false;
 		holdDouble = false;
 		hasDoubleJump = true;
@@ -20899,6 +21042,56 @@ void Actor::UpdateSprite()
 			SetAerialScorpSprite();
 		break;
 	}
+	case SPRINGSTUNGLIDE:
+	{
+		SetSpriteTexture(action);
+
+		SetSpriteTile(0, facingRight);
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+		sprite->setPosition(position.x, position.y);
+
+		V2d sVel = springVel + springExtra;
+		if (facingRight)
+		{
+			double a = GetVectorAngleCW(normalize(sVel)) * 180 / PI;
+			sprite->setRotation(a);
+		}
+		else
+		{
+			double a = GetVectorAngleCCW(normalize(sVel)) * 180 / PI;
+			sprite->setRotation(-a + 180);
+		}
+
+		if (scorpOn)
+			SetAerialScorpSprite();
+		break;
+	}
+	case GLIDE:
+	{
+		SetSpriteTexture(action);
+
+		SetSpriteTile(0, facingRight);
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+		sprite->setPosition(position.x, position.y);
+
+		V2d sVel = velocity;//springVel + springExtra;
+		if (facingRight)
+		{
+			double a = GetVectorAngleCW(normalize(sVel)) * 180 / PI;
+			sprite->setRotation(a);
+		}
+		else
+		{
+			double a = GetVectorAngleCCW(normalize(sVel)) * 180 / PI;
+			sprite->setRotation(-a + 180);
+		}
+
+		if (scorpOn)
+			SetAerialScorpSprite();
+		break;
+	}
 	case DASH:
 		{
 			
@@ -23950,6 +24143,18 @@ bool Actor::TryAirDash()
 		}
 	}
 
+	return false;
+}
+
+bool Actor::TryGlide()
+{
+	bool ad = (hasPowerAirDash && !hasAirDash) || !hasPowerAirDash;
+	if (!prevInput.B && currInput.B)
+	{
+		SetAction(GLIDE);
+		frame = 0;
+		return true;
+	}
 	return false;
 }
 //you can pull with both or neither to return false. pulling with a single wire will return true;

@@ -105,7 +105,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 10;
+	hitboxInfo->knockback = 10; 
 
 	hitBody->hitboxInfo = hitboxInfo;
 
@@ -115,14 +115,17 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	bulletSpeed = 10;
 
-	double size = max( width, height );
+	double size = 400;//max( width, height );
 
 
 	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode2_64x64.png", 64, 64 );
 
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::CURVE_TURRET, owner, 16, 1, position, gn, 0, 300 );
+	V2d turretDir = gn;
+	//RotateCCW(gn, PI / 3);
+	V2d launchPos = gPoint + gn * 20.0;
+	launchers[0] = new Launcher( this, BasicBullet::CURVE_TURRET, owner, 16, 1, position, gn, 0, 90 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	//launchers[0]->SetGravity( gravity );
 	launchers[0]->hitboxInfo->damage = 18;
@@ -132,7 +135,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	cutObject->SetSubRectFront(12);
 	cutObject->SetSubRectBack(11);
 
-	//turnFactor = 3000;
+	turnFactor = 500;
 
 	ResetEnemy();
 }
@@ -145,9 +148,13 @@ void CurveTurret::Setup()
 void CurveTurret::UpdateBullet(BasicBullet *b)
 {
 	//V2d vel = b->velocity;
-	double rad = turnFactor / 60.0;
-	rad = rad / 180.0 * PI;
-	RotateCW(b->velocity, rad);
+	int diff = b->launcher->maxFramesToLive - b->framesToLive;
+	if ( diff > 30 )
+	{
+		double rad = turnFactor / 60.0;
+		rad = rad / 180.0 * PI;
+		RotateCW(b->velocity, rad);
+	}
 }
 
 void CurveTurret::BulletHitTerrain(BasicBullet *b, 
@@ -193,7 +200,7 @@ void CurveTurret::ProcessState()
 	{
 	case WAIT:
 	{
-		if (length(playerPos - position) < 500)
+		if (length(playerPos - position) < 1000)
 		{
 			action = ATTACK;
 			frame = 0;
@@ -213,7 +220,7 @@ void CurveTurret::ProcessState()
 		}
 		else if (frame == 4 * animationFactor && slowCounter == 1)
 		{
-			//launchers[0]->facingDir = normalize(playerPos - position);
+			launchers[0]->facingDir = normalize(playerPos - position);
 			launchers[0]->Fire();
 		}
 		break;
