@@ -26,7 +26,6 @@ struct Brush
 	bool CanAdd();
 	bool Has(SelectPtr sp);
 	bool terrainOnly;
-	static EditSession *session;
 	//bool activated;
 };
 
@@ -57,7 +56,6 @@ struct Action
 	//Action *prev;
 	ActionType actionType;
 	bool performed;
-	static EditSession *session;
 };
 
 struct CompoundAction : Action

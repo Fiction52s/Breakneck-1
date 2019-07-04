@@ -20,8 +20,6 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-EditSession * ActorParams::session = NULL;
-
 
 sf::Font *PoiParams::font = NULL;
 
@@ -618,6 +616,7 @@ PlayerParams::PlayerParams( EditSession *edit, sf::Vector2i pos )
 
 bool PlayerParams::CanApply()
 {
+	EditSession *session = EditSession::GetSession();
 	sf::IntRect me( position.x - image.getLocalBounds().width / 2, position.y - image.getLocalBounds().height / 2, 
 		image.getLocalBounds().width, image.getLocalBounds().height );
 	for( list<PolyPtr>::iterator it = session->polygons.begin(); it != session->polygons.end(); ++it )
@@ -1210,7 +1209,7 @@ void ShardParams::SetShard(int w, int realX, int realY)
 	world = w;
 	sX = realX;
 	sY = realY;
-
+	EditSession *session = EditSession::GetSession();
 	localIndex = realX + realY * 11;
 	Tileset *ts = session->ts_shards[world];
 	image.setTexture(*ts->texture);

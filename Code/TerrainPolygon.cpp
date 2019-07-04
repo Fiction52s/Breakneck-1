@@ -45,7 +45,14 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
+
+
+	
 	//tr = NULL;
+	EditSession *session = EditSession::GetSession();
+
+	grassSize = session->grassSize;//64;//64;//22;
+	grassSpacing = session->grassSpacing;//-20;//-5;
 
 	pShader = &session->polyShaders[terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation];
 }
@@ -141,6 +148,7 @@ bool TerrainPolygon::CanApply()
 	bool applyOkay = true;
 	bool linesNotOkay = true;
 	bool containsNotOkay = true;
+	EditSession *session = EditSession::GetSession();
 	for(list<PolyPtr>::iterator it = session->polygons.begin() ; it != session->polygons.end(); ++it )
 	{
 		if( (*it).get() == this )
@@ -924,6 +932,7 @@ void TerrainPolygon::SetMaterialType( int world, int variation )
 	terrainWorldType = (TerrainPolygon::TerrainWorldType)world;
 	terrainVariation = variation;
 
+	EditSession *session = EditSession::GetSession();
 	int texInd = terrainWorldType * session->MAX_TERRAINTEX_PER_WORLD + terrainVariation;
 	pShader = &session->polyShaders[texInd];
 	//pShader->setUniform("u_texture", session->terrainTextures[texInd]);
@@ -1057,112 +1066,129 @@ void TerrainPolygon::FinalizeInverse()
 	UpdateBounds();
 	
 
-	double grassSize = 22;
-	double grassSpacing = -5;
+	SetupGrass();	
+}
 
-	numGrassTotal = 0;
+int TerrainPolygon::GetNumGrass(TerrainPoint *curr, bool &rem)
+{
+	Vector2i next;
+	rem = false;
+	TerrainPoint *temp = curr->next;
+	if (temp == NULL)
+	{
+		next = pointStart->pos;
+	}
+	else
+	{
+		//++temp;
+		next = temp->pos;
+		//--temp;
+	}
+
+	V2d v0(curr->pos.x, curr->pos.y);
+	V2d v1(next.x, next.y);
+
+	double len = length(v1 - v0);
+	len -= grassSize / 2 + grassSpacing;
+	double reps = len / (grassSize + grassSpacing);
+	double remainder = reps - floor(reps);
+	if (remainder > 0)
+	{
+		reps += 1; //for the last one
+		rem = true;
+	}
+	reps += 1;
+
+	int num = reps;
+
+	return num;
+}
+
+int TerrainPolygon::GetNumGrassTotal()
+{
+	int total = 0;
 	int inds = 0;
-	for( curr = pointStart; curr != NULL; curr = curr->next )
+	TerrainPoint *curr = pointStart;
+	bool rem;
+	for (curr = pointStart; curr != NULL; curr = curr->next)
 	{
-		Vector2i next;
-
-		TerrainPoint *temp = curr->next;
-		if( temp == NULL )
-		{
-			next = pointStart->pos;
-		}
-		else
-		{
-			//++temp;
-			next = temp->pos;
-			//--temp;
-		}
-
-		V2d v0( curr->pos.x, curr->pos.y );
-		V2d v1( next.x, next.y );
-
-
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-				
-		int num = floor( remainder ) + 1;
-
-		numGrassTotal += num;
-		//cout << "plus: " << v0.x << ", " << v0.y << " " << v1.x << ", " << v1.y << endl;
-		++inds;
+		total += GetNumGrass(curr, rem);
 	}
-	//assert( numGrassTotal !=  0 );
-	//cout << "total grass: " << numGrassTotal << endl;
-	VertexArray *gva = new VertexArray( sf::Quads, numGrassTotal * 4 );
 
+	return total;
+}
 
-	VertexArray &grassVa = *gva;
-
-	int i = 0;
-	for( curr = pointStart; curr != NULL; curr = curr->next )
-	{
-		Vector2i next;
-
-		TerrainPoint *temp = curr->next;
-		if( temp == NULL )
-		{
-			next = pointStart->pos;
-		}
-		else
-		{
-			next = temp->pos;
-		}
-
-		V2d v0( curr->pos.x, curr->pos.y );
-		V2d v1( next.x, next.y );
-
-
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-
-		int num = floor( remainder ) + 1;
-
-		for( int j = 0; j < num; ++j )
-		{
-			V2d posd = v0 + (v1- v0) * ((double)j / num);
-			Vector2f pos( posd.x, posd.y );
-
-			Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
-			Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
-			Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
-			Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
-
-			//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
-			grassVa[i*4].color.a = 0;
-			grassVa[i*4].position = topLeft;
-			grassVa[i*4].texCoords = Vector2f( 0, 0 );
-
-			//grassVa[i*4+1].color = Color::Blue;
-			//borderVa[i*4+1].color.a = 10;
-			grassVa[i*4+1].color.a = 0;
-			grassVa[i*4+1].position = bottomLeft;
-			grassVa[i*4+1].texCoords = Vector2f( 0, grassSize );
-
-			//grassVa[i*4+2].color = Color::Blue;
-			//borderVa[i*4+2].color.a = 10;
-			grassVa[i*4+2].color.a = 0;
-			grassVa[i*4+2].position = bottomRight;
-			grassVa[i*4+2].texCoords = Vector2f( grassSize, grassSize );
-
-			//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
-			//borderVa[i*4+3].color.a = 10;
-			grassVa[i*4+3].color.a = 0;
-			grassVa[i*4+3].position = topRight;
-			grassVa[i*4+3].texCoords = Vector2f( grassSize, 0 );
-			++i;
-		}
-		
+void TerrainPolygon::SetupGrass(TerrainPoint *curr, int &i )
+{
+	VertexArray &grassVa = *grassVA;
 	
+	Vector2i next;
+
+	TerrainPoint *temp = curr->next;
+	if (temp == NULL)
+	{
+		next = pointStart->pos;
+	}
+	else
+	{
+		next = temp->pos;
 	}
 
-	/*if( grassVA != NULL )
+	V2d v0(curr->pos.x, curr->pos.y);
+	V2d v1(next.x, next.y);
+
+	bool rem;
+	int num = GetNumGrass(curr, rem);
+
+	V2d along = normalize(v1 - v0);
+	V2d realStart = v0 + along * (double)(grassSize + grassSpacing);
+	
+	for (int j = 0; j < num; ++j)
 	{
-		delete grassVA;
-	}*/
-	grassVA = gva;	
+		V2d posd = realStart + along * (double)((grassSize + grassSpacing) * (j - 1));//v0 + normalize(v1 - v0) * ((grassSize + grassSpacing) * (j-1) + );
+
+		if (j == 0)
+		{
+			posd = v0;
+		}
+		else if (j == num - 1 && rem)
+		{
+			//V2d prev = ;//v0 + (v1 - v0) * ((double)(j-1) / num);
+			posd = v1 + normalize(v0 - v1) * (grassSize / 2.0 + grassSpacing);//(v1 + prev) / 2.0;
+		}
+
+		Vector2f pos(posd.x, posd.y);
+
+
+		Vector2f topLeft = pos + Vector2f(-grassSize / 2, -grassSize / 2);
+		Vector2f topRight = pos + Vector2f(grassSize / 2, -grassSize / 2);
+		Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
+		Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
+
+		//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+		grassVa[i * 4].color.a = 0;
+		grassVa[i * 4].position = topLeft;
+		grassVa[i * 4].texCoords = Vector2f(0, 0);
+
+		//grassVa[i*4+1].color = Color::Blue;
+		//borderVa[i*4+1].color.a = 10;
+		grassVa[i * 4 + 1].color.a = 0;
+		grassVa[i * 4 + 1].position = bottomLeft;
+		grassVa[i * 4 + 1].texCoords = Vector2f(0, grassSize);
+
+		//grassVa[i*4+2].color = Color::Blue;
+		//borderVa[i*4+2].color.a = 10;
+		grassVa[i * 4 + 2].color.a = 0;
+		grassVa[i * 4 + 2].position = bottomRight;
+		grassVa[i * 4 + 2].texCoords = Vector2f(grassSize, grassSize);
+
+		//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+		//borderVa[i*4+3].color.a = 10;
+		grassVa[i * 4 + 3].color.a = 0;
+		grassVa[i * 4 + 3].position = topRight;
+		grassVa[i * 4 + 3].texCoords = Vector2f(grassSize, 0);
+		++i;
+	}
 }
 
 void TerrainPolygon::Finalize()
@@ -1237,121 +1263,23 @@ void TerrainPolygon::Finalize()
 	UpdateLines();
 
 	UpdateBounds();
-	
-	
 
-	double grassSize = 22;
-	double grassSpacing = -5;
+	SetupGrass();
+}
 
-	numGrassTotal = 0;
-	int inds = 0;
-	for( curr = pointStart; curr != NULL; curr = curr->next )
-	{
-		Vector2i next;
-
-		TerrainPoint *temp = curr->next;
-		if( temp == NULL )
-		{
-			next = pointStart->pos;
-		}
-		else
-		{
-			//++temp;
-			next = temp->pos;
-			//--temp;
-		}
-
-		V2d v0( curr->pos.x, curr->pos.y );
-		V2d v1( next.x, next.y );
-
-
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-				
-		int num = floor( remainder ) + 1;
-
-		numGrassTotal += num;
-		//cout << "plus: " << v0.x << ", " << v0.y << " " << v1.x << ", " << v1.y << endl;
-		++inds;
-	}
-	//assert( numGrassTotal !=  0 );
-	//cout << "total grass: " << numGrassTotal << endl;
-	VertexArray *gva = new VertexArray( sf::Quads, numGrassTotal * 4 );
-
+void TerrainPolygon::SetupGrass()
+{
+	numGrassTotal = GetNumGrassTotal();
+	VertexArray *gva = new VertexArray(sf::Quads, numGrassTotal * 4);
+	grassVA = gva;
 
 	VertexArray &grassVa = *gva;
 
 	int i = 0;
-	for( curr = pointStart; curr != NULL; curr = curr->next )
+	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
 	{
-		Vector2i next;
-
-		TerrainPoint *temp = curr->next;
-		if( temp == NULL )
-		{
-			next = pointStart->pos;
-		}
-		else
-		{
-			next = temp->pos;
-		}
-
-		V2d v0( curr->pos.x, curr->pos.y );
-		V2d v1( next.x, next.y );
-
-
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-
-		int num = floor( remainder ) + 1;
-
-		for( int j = 0; j < num; ++j )
-		{
-			V2d posd = v0 + (v1- v0) * ((double)j / num);
-			Vector2f pos( posd.x, posd.y );
-
-			Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
-			Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
-			Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
-			Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
-
-			//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
-			grassVa[i*4].color.a = 0;
-			grassVa[i*4].position = topLeft;
-			grassVa[i*4].texCoords = Vector2f( 0, 0 );
-
-			//grassVa[i*4+1].color = Color::Blue;
-			//borderVa[i*4+1].color.a = 10;
-			grassVa[i*4+1].color.a = 0;
-			grassVa[i*4+1].position = bottomLeft;
-			grassVa[i*4+1].texCoords = Vector2f( 0, grassSize );
-
-			//grassVa[i*4+2].color = Color::Blue;
-			//borderVa[i*4+2].color.a = 10;
-			grassVa[i*4+2].color.a = 0;
-			grassVa[i*4+2].position = bottomRight;
-			grassVa[i*4+2].texCoords = Vector2f( grassSize, grassSize );
-
-			//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
-			//borderVa[i*4+3].color.a = 10;
-			grassVa[i*4+3].color.a = 0;
-			grassVa[i*4+3].position = topRight;
-			grassVa[i*4+3].texCoords = Vector2f( grassSize, 0 );
-			++i;
-		}
-		
-	
+		SetupGrass(curr, i);
 	}
-
-	/*if( grassVA != NULL )
-	{
-		delete grassVA;
-	}*/
-	grassVA = gva;	
-
-	/*if (tr != NULL)
-	{
-		delete tr;
-		tr = new TerrainRender()
-	}*/
 }
 
 void TerrainPolygon::RemoveSelectedPoints()
@@ -1384,6 +1312,7 @@ void TerrainPolygon::Cut2( TerrainPoint* startPoint, TerrainPoint*endPoint, boos
 		return;
 	}
 
+	EditSession *session = EditSession::GetSession();
 	//inProgress->RemovePoint( inProgress->pointEnd );
 
 	TerrainPolygon *p0 = new TerrainPolygon( grassTex );
@@ -1751,12 +1680,37 @@ void TerrainPolygon::SwitchGrass( V2d mousePos )
 {
 	
 	VertexArray &grassVa = *grassVA;
-	double grassSize = 22;
-	double radius = grassSize / 2;
-	double grassSpacing = -5;
-
+	double radius = grassSize / 2 - 20;//+ grassSpacing / 2;
 	int i = 0;
 
+	V2d center;
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		center = V2d((grassVa[i * 4 + 0].position
+			+ grassVa[i * 4 + 1].position
+			+ grassVa[i * 4 + 2].position
+			+ grassVa[i * 4 + 3].position) / 4.f);
+		if (length(center - mousePos) <= radius)
+		{
+			if (grassVa[i * 4].color.a == 50)
+			{
+				grassVa[i * 4].color.a = 254;
+				grassVa[i * 4 + 1].color.a = 254;
+				grassVa[i * 4 + 2].color.a = 254;
+				grassVa[i * 4 + 3].color.a = 254;
+				//cout << "making full: " << i << endl;
+			}
+			else if (grassVa[i * 4].color.a == 255)
+			{
+				grassVa[i * 4].color.a = 49;
+				grassVa[i * 4 + 1].color.a = 49;
+				grassVa[i * 4 + 2].color.a = 49;
+				grassVa[i * 4 + 3].color.a = 49;
+				//cout << "making seethru: " << i << endl;
+			}
+			//break;
+		}
+	}
 
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
@@ -1775,34 +1729,16 @@ void TerrainPolygon::SwitchGrass( V2d mousePos )
 		V2d v0( curr->pos.x, curr->pos.y );
 		V2d v1( next.x, next.y );
 
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-
-		int num = floor( remainder ) + 1;
+		bool rem;
+		int num = GetNumGrass(curr, rem);
 
 		for( int j = 0; j < num; ++j )
 		{
 			V2d pos = v0 + (v1- v0) * ((double)(j )/ num);
-
-			//Vector2f pos( posd.x, posd.y );
 				
 			if( length( pos - mousePos ) <= radius )
 			{
-				if( grassVa[i*4].color.a == 50 )
-				{
-					grassVa[i*4].color.a = 254;
-					grassVa[i*4+1].color.a = 254;
-					grassVa[i*4+2].color.a = 254;
-					grassVa[i*4+3].color.a = 254;
-					//cout << "making full: " << i << endl;
-				}
-				else if( grassVa[i*4].color.a == 255 )
-				{
-					grassVa[i*4].color.a = 49;
-					grassVa[i*4+1].color.a = 49;
-					grassVa[i*4+2].color.a = 49;
-					grassVa[i*4+3].color.a = 49;
-					//cout << "making seethru: " << i << endl;
-				}
+				
 			}
 			++i;
 		}

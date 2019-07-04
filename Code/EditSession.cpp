@@ -33,7 +33,6 @@ using namespace sf;
 
 const double EditSession::PRIMARY_LIMIT = .999;
 double EditSession::zoomMultiple = 1;
-EditSession * TerrainPolygon::session = NULL;
 EditSession * EditSession::currSession = NULL;
 
 
@@ -487,10 +486,6 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	editMouseDownMove = false;
 	editMoveThresh = 5;
 	editStartMove = false;
-	Action::session = this;
-	Brush::session = this;
-	ActorParams::session = this;
-	TerrainPolygon::session = this;
 	//adding 5 for random distance buffer
 	playerHalfWidth = 32;
 	playerHalfHeight = 32;
@@ -517,6 +512,9 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	player.reset( new PlayerParams( this, Vector2i( 0, 0 ) ) );
 	groups["player"]->actors.push_back( player );
 	
+
+	grassSize = 128;//64;
+	grassSpacing = -60;//-40;//-20;//-10;
 }
 
 EditSession::~EditSession()
@@ -715,10 +713,6 @@ bool EditSession::OpenFile()
 {
 	ifstream is;
 	is.open( currentFile );
-
-	double grassSize = 22;
-	double radius = grassSize / 2;
-	double grassSpacing = -5;
 
 	if( is.is_open() )
 	{
@@ -946,9 +940,9 @@ bool EditSession::OpenFile()
 				V2d v0( polyCurr->pos.x, polyCurr->pos.y );
 				V2d v1( next.x, next.y );
 
-				double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-
-				int num = floor( remainder ) + 1;
+				//double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+				bool rem;
+				int num = poly->GetNumGrass(polyCurr, rem);//floor( remainder ) + 1;
 
 				grassIndex += num;
 
@@ -3040,7 +3034,8 @@ bool EditSession::OpenFile()
 		return false;
 	}
 
-	grassTex.loadFromFile( "Resources/Env/placeholdergrass_22x22.png" );
+	//grassTex.loadFromFile( "Resources/Env/placeholdergrass_22x22.png" );
+	grassTex.loadFromFile("Resources/Env/grass_128x128.png");
 
 	return true;
 	
@@ -3380,9 +3375,6 @@ void EditSession::WriteGrass( PolyPtr poly, ofstream &of )
 	int edgesWithSegments = 0;
 
 	VertexArray &grassVa = *poly->grassVA;
-	double grassSize = 22;
-	double radius = grassSize / 2;
-	double grassSpacing = -5;
 
 	int edgeIndex = 0;
 	int i = 0;
@@ -3404,9 +3396,8 @@ void EditSession::WriteGrass( PolyPtr poly, ofstream &of )
 		V2d v0( curr->pos.x, curr->pos.y );
 		V2d v1( next.x, next.y );
 
-		double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-
-		int num = floor( remainder ) + 1;
+		bool rem;
+		int num = poly->GetNumGrass(curr, rem);//floor( remainder ) + 1;
 
 		grassListList.push_back( list<GrassSeg>() );
 
@@ -3421,7 +3412,7 @@ void EditSession::WriteGrass( PolyPtr poly, ofstream &of )
 			if( grassVa[i*4].color.a == 255 || grassVa[i*4].color.a == 254 )
 			{
 				hasGrass = true;
-				if( gPtr == NULL )
+				if( gPtr == NULL )//|| (j == num - 1 && rem ))
 				{
 					grassList.push_back( GrassSeg( edgeIndex, j, 0 ) );
 					gPtr = &grassList.back();

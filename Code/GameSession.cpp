@@ -3476,11 +3476,14 @@ bool GameSession::OpenFile( string fileName )
 			is >> polyPoints;
 
 			TerrainPiece * tPiece = new TerrainPiece(this);
-
+			
 			polyIndex[polyCounter] = pointCounter;
 			cout << "setting poly index at : " << polyCounter << " to " << pointCounter << endl;
 
 			int currentEdgeIndex = pointCounter;
+
+			tPiece->startEdgeIndex = currentEdgeIndex;
+
 			for( int i = 0; i < polyPoints; ++i )
 			{
 				int px, py;
@@ -3645,7 +3648,6 @@ bool GameSession::OpenFile( string fileName )
 
 				//VertexArray *bushVA = SetupBushes( 0,  edges[currentEdgeIndex], ts_bush );
 
-				//tPiece = new TerrainPiece(this);
 				tPiece->polyArea = polygonArea;
 				tPiece->aabb.left = left;
 				tPiece->aabb.top = top;
@@ -3800,152 +3802,144 @@ bool GameSession::OpenFile( string fileName )
 
 			}
 
-			
-
-		/*	DecorExpression *testExpr = GetBush_NORMAL_Points(0, edges[currentEdgeIndex], 20,
-				300, CubicBezier(0, 0, 1, 1), 20, 1000, CubicBezier(0, 0, 1, 1));
-
-			if (testExpr != NULL)
-			{
-				testva->AddDecorExpression(testExpr);
-			}*/
 
 			VertexArray *polygonVA = va;
 
 			double totalPerimeter = 0;
 
 
-			double grassSize = 22;
-			double grassSpacing = -5;
+			tPiece->SetupGrass(segments);
 
-			Edge * testEdge = edges[currentEdgeIndex];
+			//double grassSize = 120;// 64;//22;
+			//double grassSpacing = -60;//-20;//-5;
 
-			int numGrassTotal = 0;
 
-			for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
-			{
-				numGrassTotal += (*it).reps + 1;
-			}
 
-			VertexArray *grassVA = NULL;
-			
-			//should this even be made on invisible terrain?
-			if( numGrassTotal > 0 ) 
-			{
-				grassVA = new VertexArray( sf::Quads, numGrassTotal * 4 );
+			//Edge * testEdge = edges[currentEdgeIndex];
 
-				//cout << "num grass total: " << numGrassTotal << endl;
-				VertexArray &grassVa = *grassVA;//*va;
+			//int numGrassTotal = 0;
 
-				int segIndex = 0;
-				int totalGrass = 0;
-				for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
-				{	
-					Edge *segEdge = edges[currentEdgeIndex + (*it).edgeIndex];
-					V2d v0 = segEdge->v0;
-					V2d v1 = segEdge->v1;
+			//for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
+			//{
+			//	numGrassTotal += (*it).reps + 1;
+			//}
 
-					int start = (*it).index;
-					int end = (*it).index + (*it).reps;
+			//VertexArray *grassVA = NULL;
+			//
+			////should this even be made on invisible terrain?
+			//if( numGrassTotal > 0 ) 
+			//{
+			//	grassVA = new VertexArray( sf::Quads, numGrassTotal * 4 );
 
-					int grassCount = (*it).reps + 1;
-					//cout << "Grasscount: " << grassCount << endl;
+			//	//cout << "num grass total: " << numGrassTotal << endl;
+			//	VertexArray &grassVa = *grassVA;//*va;
 
-					double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+			//	int segIndex = 0;
+			//	int totalGrass = 0;
+			//	for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
+			//	{	
+			//		Edge *segEdge = edges[currentEdgeIndex + (*it).edgeIndex];
+			//		V2d v0 = segEdge->v0;
+			//		V2d v1 = segEdge->v1;
 
-					int num = floor( remainder ) + 1;
+			//		int start = (*it).index;
+			//		int end = (*it).index + (*it).reps;
 
-					for( int i = 0; i < grassCount; ++i )
-					{
-						//cout << "indexing at: " << i*4 + segIndex * 4 << endl;
-						V2d posd = v0 + (v1 - v0 ) * ((double)( i + start ) / num);
-						Vector2f pos( posd.x, posd.y );
+			//		int grassCount = (*it).reps + 1;
+			//		bool rem;
+			//		int num = tPiece->GetNumGrass(segEdge, rem);
 
-						Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
-						Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
-						Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
-						Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
+			//		V2d along = normalize(v1 - v0);
+			//		V2d realStart = v0 + along * (double)(grassSize + grassSpacing);
 
-							//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
-					//borderVa[i*4].color.a = 10;
-						grassVa[(i+totalGrass)*4].position = topLeft;
-						grassVa[(i+totalGrass)*4].texCoords = Vector2f( 0, 0 );
+			//		for( int j = 0; j < grassCount; ++j )
+			//		{
+			//			V2d posd = realStart + along * (double)((grassSize + grassSpacing) * (j - 1));//v0 + normalize(v1 - v0) * ((grassSize + grassSpacing) * (j-1) + );
 
-							//grassVa[i*4+1].color = Color::Blue;
-					//borderVa[i*4+1].color.a = 10;
+			//			if (j == 0)
+			//			{
+			//				posd = v0;
+			//			}
+			//			else if (j == num - 1 && rem)
+			//			{
+			//				posd = v1 + normalize(v0 - v1) * (grassSize / 2.0 + grassSpacing);//(v1 + prev) / 2.0;
+			//			}
 
-						int stuff = (i + totalGrass) * 4 + 1;
+			//			Vector2f pos(posd.x, posd.y);
 
-						cout << "i: " << i << ", stuff: " << stuff << ", total: " << totalGrass << endl;
-						grassVa[(i+totalGrass)*4+1].position = bottomLeft;
-						grassVa[(i+totalGrass)*4+1].texCoords = Vector2f( 0, grassSize );
+			//			Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
+			//			Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
+			//			Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
+			//			Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
 
-							//grassVa[i*4+2].color = Color::Blue;
-					//borderVa[i*4+2].color.a = 10;
-						grassVa[(i+totalGrass)*4+2].position = bottomRight;
-						grassVa[(i+totalGrass)*4+2].texCoords = Vector2f( grassSize, grassSize );
+			//			grassVa[(j+totalGrass)*4].position = topLeft;
+			//			grassVa[(j+totalGrass)*4].texCoords = Vector2f( 0, 0 );
 
-							//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
-					//borderVa[i*4+3].color.a = 10;
-						grassVa[(i+totalGrass)*4+3].position = topRight;
-						grassVa[(i+totalGrass)*4+3].texCoords = Vector2f( grassSize, 0 );
-						//++i;
-					}
-					totalGrass += grassCount;
-					segIndex++;
-				}
-			}
-			else
-			{
-				grassVA = NULL;
-			}
+			//			grassVa[(j+totalGrass)*4+1].position = bottomLeft;
+			//			grassVa[(j+totalGrass)*4+1].texCoords = Vector2f( 0, grassSize );
 
-			int totalGrassIndex = 0;
-			Tileset *ts_grass = GetTileset("Env/grass_32x32.png", 32, 32);
-			//if( false )
-			for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
-			{
-				V2d A, B, C, D;
-				Edge * currE = edges[currentEdgeIndex + (*it).edgeIndex];
-				V2d v0 = currE->v0;
-				V2d v1 = currE->v1;
+			//			grassVa[(j+totalGrass)*4+2].position = bottomRight;
+			//			grassVa[(j+totalGrass)*4+2].texCoords = Vector2f( grassSize, grassSize );
 
-				double grassSize = 22;
-				double grassSpacing = -5;
+			//			grassVa[(j+totalGrass)*4+3].position = topRight;
+			//			grassVa[(j+totalGrass)*4+3].texCoords = Vector2f( grassSize, 0 );
+			//			//++i;
+			//		}
+			//		totalGrass += grassCount;
+			//		segIndex++;
+			//	}
+			//}
+			//else
+			//{
+			//	grassVA = NULL;
+			//}
 
-				double edgeLength = length(v1 - v0);
-				double remainder = edgeLength / (grassSize + grassSpacing);
+			//int totalGrassIndex = 0;
+			//Tileset *ts_grass = GetTileset("Env/grass_128x128.png", 128, 128);
+			//
+			//for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
+			//{
+			//	V2d A, B, C, D;
+			//	Edge * currE = edges[currentEdgeIndex + (*it).edgeIndex];
+			//	V2d v0 = currE->v0;
+			//	V2d v1 = currE->v1;
 
-				double num = floor(remainder) + 1;
+			//	//double grassSize = 22;
+			//	//double grassSpacing = -5;
 
-				int reps = (*it).reps;
+			//	double edgeLength = length(v1 - v0);
+			//	double remainder = edgeLength / (grassSize + grassSpacing);
 
-				V2d edgeDir = normalize(v1 - v0);
+			//	double num = floor(remainder) + 1;
 
-				//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
-				V2d ABmin = v0 + edgeDir * (edgeLength * (double)(*it).index / num - grassSize / 2);
-				V2d ABmax = v0 + edgeDir * (edgeLength * (double)((*it).index + reps) / num + grassSize / 2);
-				double height = grassSize / 2;
-				V2d normal = normalize(v1 - v0);
-				double temp = -normal.x;
-				normal.x = normal.y;
-				normal.y = temp;
+			//	int reps = (*it).reps;
 
-				A = ABmin + normal * height;
-				B = ABmax + normal * height;
-				C = ABmax;
-				D = ABmin;
+			//	V2d edgeDir = normalize(v1 - v0);
 
-				Grass * g = new Grass(this, ts_grass, totalGrassIndex, A, B, C, D, tPiece);
-				/*g->A = A;
-				g->B = B;
-				g->C = C;
-				g->D = D;*/
+			//	//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
+			//	V2d ABmin = v0 + edgeDir * (edgeLength * (double)(*it).index / num - grassSize / 2);
+			//	V2d ABmax = v0 + edgeDir * (edgeLength * (double)((*it).index + reps) / num + grassSize / 2);
+			//	double height = grassSize / 2;
+			//	V2d normal = normalize(v1 - v0);
+			//	double temp = -normal.x;
+			//	normal.x = normal.y;
+			//	normal.y = temp;
 
-				grassTree->Insert(g);
+			//	A = ABmin + normal * height;
+			//	B = ABmax + normal * height;
+			//	C = ABmax;
+			//	D = ABmin;
 
-				totalGrassIndex++;
-			}
+			//	Grass * g = new Grass(this, ts_grass, totalGrassIndex, A, B, C, D, tPiece);
+			//	/*g->A = A;
+			//	g->B = B;
+			//	g->C = C;
+			//	g->D = D;*/
+
+			//	grassTree->Insert(g);
+
+			//	totalGrassIndex++;
+			//}
 
 			Tileset *ts_border = NULL;
 			Tileset *ts_plant = NULL;
@@ -4038,7 +4032,7 @@ bool GameSession::OpenFile( string fileName )
 			tPiece->next = NULL;
 			
 			
-			tPiece->grassVA = grassVA;
+			//tPiece->grassVA = grassVA;
 			tPiece->ts_bush = ts_bush;
 			//testva->bushVA = bushVA;
 			
@@ -5279,6 +5273,139 @@ void GameSession::SetupStormCeiling()
 	}
 }
 
+Edge *GameSession::GetEdge(int index)
+{
+	return edges[index];
+}
+
+void TerrainPiece::SetupGrass( std::list<GrassSegment> &segments)
+{
+	int numGrassTotal = 0;
+
+	for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
+	{
+		numGrassTotal += (*it).reps + 1;
+	}
+
+	Tileset *ts_grass = owner->GetTileset("Env/grass_128x128.png", 128, 128);
+
+	//should this even be made on invisible terrain?
+
+	int totalGrassIndex = 0;
+
+	if (numGrassTotal > 0)
+	{
+		grassVA = new VertexArray(sf::Quads, numGrassTotal * 4);
+
+		//cout << "num grass total: " << numGrassTotal << endl;
+		VertexArray &grassVa = *grassVA;//*va;
+
+		int segIndex = 0;
+		int totalGrass = 0;
+		for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
+		{
+			Edge *segEdge = owner->GetEdge(startEdgeIndex + (*it).edgeIndex);
+			V2d v0 = segEdge->v0;
+			V2d v1 = segEdge->v1;
+
+			int start = (*it).index;
+			int end = (*it).index + (*it).reps;
+
+			int grassCount = (*it).reps + 1;
+			bool rem;
+			int num = GetNumGrass(segEdge, rem);
+
+			V2d along = normalize(v1 - v0);
+			V2d realStart = v0 + along * (double)(grassSize + grassSpacing);
+
+			int jj;
+			for (int j = 0; j < grassCount; ++j)
+			{
+				jj = j + start;
+				V2d posd = realStart + along * (double)((grassSize + grassSpacing) * (jj - 1));//v0 + normalize(v1 - v0) * ((grassSize + grassSpacing) * (j-1) + );
+
+				if (jj == 0)
+				{
+					posd = v0;
+				}
+				else if (jj == num - 1 && rem)
+				{
+					posd = v1 + normalize(v0 - v1) * (grassSize / 2.0 + grassSpacing);//(v1 + prev) / 2.0;
+				}
+
+				Vector2f pos(posd.x, posd.y);
+
+				Vector2f topLeft = pos + Vector2f(-grassSize / 2, -grassSize / 2);
+				Vector2f topRight = pos + Vector2f(grassSize / 2, -grassSize / 2);
+				Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
+				Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
+
+				grassVa[(j + totalGrass) * 4].position = topLeft;
+				grassVa[(j + totalGrass) * 4].texCoords = Vector2f(0, 0);
+
+				grassVa[(j + totalGrass) * 4 + 1].position = bottomLeft;
+				grassVa[(j + totalGrass) * 4 + 1].texCoords = Vector2f(0, grassSize);
+
+				grassVa[(j + totalGrass) * 4 + 2].position = bottomRight;
+				grassVa[(j + totalGrass) * 4 + 2].texCoords = Vector2f(grassSize, grassSize);
+
+				grassVa[(j + totalGrass) * 4 + 3].position = topRight;
+				grassVa[(j + totalGrass) * 4 + 3].texCoords = Vector2f(grassSize, 0);
+
+				Grass * g = new Grass(owner, ts_grass, totalGrassIndex, V2d( topLeft ), V2d(topRight), V2d(bottomRight), V2d(bottomLeft), this);
+				owner->grassTree->Insert(g);
+
+				++totalGrassIndex;
+			}
+			totalGrass += grassCount;
+			segIndex++;
+		}
+	}
+	else
+	{
+		grassVA = NULL;
+	}
+
+	//int totalGrassIndex = 0;
+
+	//for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
+	//{
+	//	V2d A, B, C, D;
+	//	Edge * currE = owner->GetEdge(startEdgeIndex + (*it).edgeIndex);
+	//	V2d v0 = currE->v0;
+	//	V2d v1 = currE->v1;
+
+	//	double edgeLength = length(v1 - v0);
+	//	double remainder = edgeLength / (grassSize + grassSpacing);
+
+	//	double num = floor(remainder) + 1;
+
+	//	int reps = (*it).reps;
+
+	//	V2d edgeDir = normalize(v1 - v0);
+
+	//	//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
+	//	V2d ABmin = v0 + edgeDir * (edgeLength * (double)(*it).index / num - grassSize / 2);
+	//	V2d ABmax = v0 + edgeDir * (edgeLength * (double)((*it).index + reps) / num + grassSize / 2);
+	//	double height = grassSize / 2;
+	//	V2d normal = normalize(v1 - v0);
+	//	double temp = -normal.x;
+	//	normal.x = normal.y;
+	//	normal.y = temp;
+
+	//	A = ABmin + normal * height;
+	//	B = ABmax + normal * height;
+	//	C = ABmax;
+	//	D = ABmin;
+
+	//	Grass * g = new Grass(this, ts_grass, totalGrassIndex, A, B, C, D, this);
+
+	//	owner->grassTree->Insert(g);
+
+	//	totalGrassIndex++;
+	//}
+}
+
 void GameSession::LoadDecorImages()
 {
 	ifstream is;
@@ -6163,7 +6290,7 @@ int GameSession::Run()
 
 	int returnVal = GR_EXITLEVEL;
 
-	ts_gravityGrass = GetTileset("Env/placeholdergrass_22x22.png", 22, 22);
+	ts_gravityGrass = GetTileset("Env/grass_128x128.png", 128, 128);
 	
 
 	goalDestroyed = false;
@@ -10266,6 +10393,9 @@ TerrainPiece::TerrainPiece( GameSession *p_owner)
 
 	terrainVA = NULL;
 	grassVA = NULL;
+
+	grassSize = 128;
+	grassSpacing = -60;
 }
 
 TerrainPiece::~TerrainPiece()
@@ -10302,6 +10432,90 @@ void TerrainPiece::Reset()
 	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
 	{
 		(*it)->Reset();
+	}
+}
+
+int TerrainPiece::GetNumGrass(Edge *e, bool &rem)
+{
+	rem = false;
+
+	V2d v0 = e->v0;
+	V2d v1 = e->v1;
+
+	double len = length(v1 - v0);
+	len -= grassSize / 2 + grassSpacing;
+	double reps = len / (grassSize + grassSpacing);
+	double remainder = reps - floor(reps);
+	if (remainder > 0)
+	{
+		reps += 1; //for the last one
+		rem = true;
+	}
+	reps += 1;
+
+	int num = reps;
+
+	return num;
+}
+
+void TerrainPiece::SetupGrass(Edge * e, int &i)
+{
+	VertexArray &grassVa = *grassVA;
+
+	V2d v0 = e->v0;
+	V2d v1 = e->v1;
+
+	bool rem;
+	int num = GetNumGrass(e, rem);
+
+	V2d along = normalize(v1 - v0);
+	V2d realStart = v0 + along * (double)(grassSize + grassSpacing);
+
+	for (int j = 0; j < num; ++j)
+	{
+		V2d posd = realStart + along * (double)((grassSize + grassSpacing) * (j - 1));//v0 + normalize(v1 - v0) * ((grassSize + grassSpacing) * (j-1) + );
+
+		if (j == 0)
+		{
+			posd = v0;
+		}
+		else if (j == num - 1 && rem)
+		{
+			//V2d prev = ;//v0 + (v1 - v0) * ((double)(j-1) / num);
+			posd = v1 + normalize(v0 - v1) * (grassSize / 2.0 + grassSpacing);//(v1 + prev) / 2.0;
+		}
+
+		Vector2f pos(posd.x, posd.y);
+
+
+		Vector2f topLeft = pos + Vector2f(-grassSize / 2, -grassSize / 2);
+		Vector2f topRight = pos + Vector2f(grassSize / 2, -grassSize / 2);
+		Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
+		Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
+
+		//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
+		grassVa[i * 4].color.a = 0;
+		grassVa[i * 4].position = topLeft;
+		grassVa[i * 4].texCoords = Vector2f(0, 0);
+
+		//grassVa[i*4+1].color = Color::Blue;
+		//borderVa[i*4+1].color.a = 10;
+		grassVa[i * 4 + 1].color.a = 0;
+		grassVa[i * 4 + 1].position = bottomLeft;
+		grassVa[i * 4 + 1].texCoords = Vector2f(0, grassSize);
+
+		//grassVa[i*4+2].color = Color::Blue;
+		//borderVa[i*4+2].color.a = 10;
+		grassVa[i * 4 + 2].color.a = 0;
+		grassVa[i * 4 + 2].position = bottomRight;
+		grassVa[i * 4 + 2].texCoords = Vector2f(grassSize, grassSize);
+
+		//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
+		//borderVa[i*4+3].color.a = 10;
+		grassVa[i * 4 + 3].color.a = 0;
+		grassVa[i * 4 + 3].position = topRight;
+		grassVa[i * 4 + 3].texCoords = Vector2f(grassSize, 0);
+		++i;
 	}
 }
 

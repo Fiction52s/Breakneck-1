@@ -3,10 +3,6 @@
 #include <iostream>
 #include "EditSession.h"
 
-
-EditSession *Action::session = NULL;
-EditSession *Brush::session = NULL;
-
 using namespace sf;
 using namespace std;
 
@@ -238,6 +234,7 @@ void Brush::Draw( RenderTarget *target )
 
 void Brush::Deactivate()
 {
+	EditSession *session = EditSession::GetSession();
 	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
 	{
 		(*it)->Deactivate( session, (*it) );
@@ -246,6 +243,7 @@ void Brush::Deactivate()
 
 void Brush::Activate()
 {
+	EditSession *session = EditSession::GetSession();
 	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
 	{
 		(*it)->Activate( session, (*it) );
@@ -294,7 +292,6 @@ ApplyBrushAction::ApplyBrushAction( Brush *brush )
 void ApplyBrushAction::Perform()
 {
 	//cout << "performing!" << endl;
-	assert( session != NULL );
 	assert( appliedBrush.objects.size() > 0 );
 	assert( !performed );
 
@@ -304,7 +301,6 @@ void ApplyBrushAction::Perform()
 
 void ApplyBrushAction::Undo()
 {
-	assert( session != NULL );
 	assert( performed );
 	
 	performed = false;
@@ -319,7 +315,6 @@ RemoveBrushAction::RemoveBrushAction( Brush *brush )
 
 void RemoveBrushAction::Perform()
 {
-	assert( session != NULL );
 	assert( !performed );
 	performed = true;
 
@@ -330,7 +325,6 @@ void RemoveBrushAction::Perform()
 
 void RemoveBrushAction::Undo()
 {
-	assert( session != NULL );
 	assert( performed );
 
 	performed = false;
@@ -354,7 +348,6 @@ ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement )
 
 void ReplaceBrushAction::Perform()
 {
-	assert( session != NULL );
 	assert( !performed );
 
 	performed = true;
@@ -371,7 +364,6 @@ void ReplaceBrushAction::Perform()
 void ReplaceBrushAction::Undo()
 {
 	//remove the polygon from the active list, but store it in case you need it for later
-	assert( session != NULL );
 	assert( performed );
 
 	performed = false;
@@ -387,14 +379,12 @@ EditObjectAction::EditObjectAction()
 
 void EditObjectAction::Perform()
 {
-	assert( session != NULL );
 	
 	//set the parameters and store the old parameters
 }
 
 void EditObjectAction::Undo()
 {
-	assert( session != NULL );
 	//restore the old parameters
 }
 
@@ -428,20 +418,19 @@ DeletePointsAction::DeletePointsAction()
 
 void DeletePointsAction::Perform()
 {
-	assert( session != NULL );
 	
 	//delete the points
 }
 
 void DeletePointsAction::Undo()
 {
-	assert( session != NULL );
 
 	//delete the polygon which resulted from the deletion and replace it with a copy of the old polygon
 }
 
 CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
 {
+	EditSession *session = EditSession::GetSession();
 	gate.reset( new GateInfo );
 	//GateInfo *gi = new GateInfo;
 
@@ -466,9 +455,8 @@ CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
 
 void CreateGateAction::Perform()
 {
-	assert( session != NULL );
 	assert( !performed );
-
+	EditSession *session = EditSession::GetSession();
 	performed = true;
 
 	session->gates.push_back( gate );
@@ -479,9 +467,8 @@ void CreateGateAction::Perform()
 
 void CreateGateAction::Undo()
 {
-	assert( session != NULL );
 	assert( performed );
-
+	EditSession *session = EditSession::GetSession();
 	performed = false;
 
 	session->gates.remove( gate );
@@ -496,9 +483,8 @@ DeleteGateAction::DeleteGateAction( GateInfoPtr &ptr )
 }
 
 void DeleteGateAction::Perform()
-{
-	assert( session != NULL );
-	
+{	
+	EditSession *session = EditSession::GetSession();
 	performed = true;
 	session->gates.remove( gate );
 	gate->point0->gate = NULL;
@@ -508,8 +494,7 @@ void DeleteGateAction::Perform()
 
 void DeleteGateAction::Undo()
 {
-	assert( session != NULL );
-
+	EditSession *session = EditSession::GetSession();
 	performed = false;
 	session->gates.push_back( gate );
 	gate->point0->gate = gate;
@@ -526,7 +511,6 @@ ModifyGateAction::ModifyGateAction( GateInfoPtr &ptr, const std::string &type )
 
 void ModifyGateAction::Perform()
 {
-	assert( session != NULL );
 	assert( !performed );
 
 	performed = true;
@@ -537,7 +521,6 @@ void ModifyGateAction::Perform()
 
 void ModifyGateAction::Undo()
 {
-	assert( session != NULL );
 	assert( performed );
 
 	performed = false;
@@ -558,7 +541,6 @@ MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_m
 
 void MoveBrushAction::Perform()
 {
-	assert( session != NULL );
 	assert( !performed );
 
 	performed = true;
@@ -594,7 +576,6 @@ void MoveBrushAction::Perform()
 
 void MoveBrushAction::Undo()
 {
-	assert( session != NULL );
 	assert( performed );
 
 	performed = false;
@@ -628,7 +609,6 @@ LeaveGroundAction::LeaveGroundAction( ActorPtr &p_actor )
 
 void LeaveGroundAction::Perform()
 {
-	assert( session != NULL );
 	assert( !performed );
 
 	performed = true;
@@ -638,7 +618,6 @@ void LeaveGroundAction::Perform()
 
 void LeaveGroundAction::Undo()
 {
-	assert( session != NULL );
 	assert( performed );
 
 	performed = false;
@@ -661,7 +640,6 @@ GroundAction::GroundAction( ActorPtr &p_actor )
 
 void GroundAction::Perform()
 {
-	assert( session != NULL );
 	assert( !performed );
 
 	actor->AnchorToGround( gi );
@@ -674,7 +652,6 @@ void GroundAction::Perform()
 
 void GroundAction::Undo()
 {
-	assert( session != NULL );
 	assert( performed );
 
 	performed = false;
@@ -733,7 +710,6 @@ ModifyTerrainTypeAction::ModifyTerrainTypeAction( Brush *brush,
 
 void ModifyTerrainTypeAction::Perform()
 {
-	assert( session != NULL );
 	assert( !performed );
 
 
@@ -759,7 +735,6 @@ void ModifyTerrainTypeAction::Perform()
 
 void ModifyTerrainTypeAction::Undo()
 {
-	assert( session != NULL );
 	assert( performed );
 
 	for( map<TerrainPolygon*, pair<int,int>>::iterator it = terrainTypeMap.begin();

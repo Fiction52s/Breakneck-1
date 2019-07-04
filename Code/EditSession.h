@@ -75,7 +75,7 @@ struct ActorParams;
 struct GrassSeg
 {
 	GrassSeg( int edgeI, int grassIndex, int rep )
-		:edgeIndex( edgeI ), index( grassIndex ), 
+		:edgeIndex( edgeI ), index( grassIndex), 
 		reps (rep)
 	{}
 	int edgeIndex;
@@ -205,7 +205,10 @@ struct TerrainPolygon : ISelectable
 	//TerrainRender *tr;
 	int terrainVariation;
 	TerrainWorldType terrainWorldType;
-	
+	int GetNumGrassTotal();
+	int GetNumGrass(TerrainPoint *tp, bool &rem);
+	void SetupGrass(TerrainPoint *tp, int &i);
+	void SetupGrass();
 	sf::Shader *pShader;
 
 	void UpdateLines();
@@ -265,6 +268,9 @@ struct TerrainPolygon : ISelectable
 	bool IsClockwise();
 	void AlignExtremes( double primLimit );
 	void UpdateGrass();
+
+	int grassSize;
+	int grassSpacing;
 	
 	
 	void ShowGrass( bool show );
@@ -359,7 +365,6 @@ struct TerrainPolygon : ISelectable
 	int writeIndex;
 	bool isGrassShowing;
 	bool finalized;
-	static EditSession *session;
 
 	int layer; //0 is game layer. 1 is bg
 
@@ -452,7 +457,6 @@ struct ActorParams : ISelectable
 	};
 
 	virtual ActorParams *Copy() = 0;
-	static EditSession *session;
 	ActorParams( PosType posType );
 	virtual void WriteParamFile( std::ofstream &of ) = 0;
 	void WriteFile( std::ofstream &of );
@@ -1676,6 +1680,9 @@ struct EditSession : GUIHandler, TilesetManager
 
 	Tileset *ts_shards[7];
 	
+	//need to clean this up
+	int grassSize;
+	int grassSpacing;
 
 	EditSession( MainMenu *p_mainMenu );
 	~EditSession();

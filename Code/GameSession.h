@@ -302,6 +302,14 @@ struct TerrainPiece : QuadTreeEntrant
 	std::list<TouchGrassCollection*> touchGrassCollections;
 	void QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r);
 	void UpdateTouchGrass();
+
+
+	void SetupGrass(Edge * e, int &i );
+	int GetNumGrass(Edge *e, bool &rem);
+	void SetupGrass(std::list<GrassSegment> &segments);
+	int grassSize;
+	int grassSpacing;
+
 	bool visible;
 	std::list<DecorExpression*> bushes;
 	sf::VertexArray *groundva;
@@ -335,6 +343,7 @@ struct TerrainPiece : QuadTreeEntrant
 	//TerrainPiece *prev;
 	TerrainPiece *next;
 	sf::Rect<double> aabb;
+	int startEdgeIndex;
 	double polyArea;
 	void UpdateBushes();
 	void Draw(sf::RenderTarget *target);
@@ -818,6 +827,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//	TerrainPolygon::TerrainType::Count];
 	sf::Shader cloneShader;
 	Edge **edges;
+	Edge *GetEdge(int index);
 	std::list<Edge*> globalBorderEdges;
 	sf::Vector2<double> *points;
 
