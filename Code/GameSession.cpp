@@ -192,11 +192,10 @@ EdgeAngleType GetEdgeAngleType(V2d &normal)
 }
 
 
-Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
-	sf::Vector2<double> &pA, sf::Vector2<double> &pB,
-	sf::Vector2<double> &pC, sf::Vector2<double> &pD, TerrainPiece *p_poly)
+Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex, 
+	V2d &p_pos, TerrainPiece *p_poly)
 	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),
-	ts_grass(p_ts_grass), A(pA), B(pB), C(pC), D(pD), owner(p_owner), poly( p_poly )
+	ts_grass(p_ts_grass), owner(p_owner), poly( p_poly ), pos( p_pos ), radius( 128 / 2.0 - 20 )
 {
 
 	explosion.isCircle = true;
@@ -204,19 +203,31 @@ Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
 	explosion.rh = 64;
 	explosion.type = CollisionBox::BoxType::Hit;
 
-	explosion.globalPosition = (A + B + C + D) / 4.0;
+	explosion.globalPosition = pos;//(A + B + C + D) / 4.0;
 
 	explodeFrame = 0;
 	explodeLimit = 20;
 	exploding = false;
 
-	aabb.left = min(min(A.x, B.x), min(C.x, D.x));
-	aabb.top = min(min(A.y, B.y), min(C.y, D.y));
-	int right = max(max(A.x, B.x), max(C.x, D.x));
-	int bot = max(max(A.y, B.y), max(C.y, D.y));
+	aabb.left = pos.x - radius;
+	aabb.top = pos.y - radius;
+	int right = pos.x + radius;
+	int bot = pos.y + radius;
 
 	aabb.width = right - aabb.left;
 	aabb.height = bot - aabb.top;
+}
+
+void Grass::HandleQuery(QuadTreeCollider *qtc)
+{
+	qtc->HandleEntrant(this);
+}
+
+bool Grass::IsTouchingBox(const Rect<double> &r)
+{
+	return IsQuadTouchingCircle(V2d(r.left, r.top), V2d(r.left + r.width, r.top),
+		V2d(r.left + r.width, r.top + r.height), V2d(r.left, r.top + r.height),
+		pos, radius);
 }
 
 void Grass::Reset()
@@ -249,12 +260,14 @@ void Grass::SetVisible(bool p_visible)
 {
 	visible = p_visible;
 	sf::VertexArray &gva = *(poly->grassVA);
+
+	int size = ts_grass->tileWidth;
 	if (visible)
 	{
-		gva[tileIndex * 4 + 0].position = Vector2f( A.x, A.y );
-		gva[tileIndex * 4 + 1].position = Vector2f(B.x, B.y);
-		gva[tileIndex * 4 + 2].position = Vector2f(C.x, C.y);
-		gva[tileIndex * 4 + 3].position = Vector2f(D.x, D.y);
+		gva[tileIndex * 4 + 0].position = Vector2f( pos.x - size, pos.y - size);
+		gva[tileIndex * 4 + 1].position = Vector2f( pos.x + size, pos.y - size);
+		gva[tileIndex * 4 + 2].position = Vector2f( pos.x + size, pos.y + size);
+		gva[tileIndex * 4 + 3].position = Vector2f( pos.x - size, pos.y + size);
 	}
 	else
 	{
@@ -5352,7 +5365,7 @@ void TerrainPiece::SetupGrass( std::list<GrassSegment> &segments)
 				grassVa[(j + totalGrass) * 4 + 3].position = topRight;
 				grassVa[(j + totalGrass) * 4 + 3].texCoords = Vector2f(grassSize, 0);
 
-				Grass * g = new Grass(owner, ts_grass, totalGrassIndex, V2d( topLeft ), V2d(topRight), V2d(bottomRight), V2d(bottomLeft), this);
+				Grass * g = new Grass(owner, ts_grass, totalGrassIndex, posd, this);
 				owner->grassTree->Insert(g);
 
 				++totalGrassIndex;
@@ -13564,30 +13577,6 @@ void PowerBar::Charge( int power )
 	}
 }
 
-void Grass::HandleQuery( QuadTreeCollider *qtc )
-{
-	qtc->HandleEntrant( this );
-}
-
-bool Grass::IsTouchingBox( const Rect<double> &r )
-{
-	return isQuadTouchingQuad( V2d( r.left, r.top ), V2d( r.left + r.width, r.top ), 
-		V2d( r.left + r.width, r.top + r.height ), V2d( r.left, r.top + r.height ),
-		A, B, C, D );
-
-
-	/*double left = min( edge->v0.x, edge->v1.x );
-	double right = max( edge->v0.x, edge->v1.x );
-	double top = min( edge->v0.y, edge->v1.y );
-	double bottom = max( edge->v0.y, edge->v1.y );
-
-	Rect<double> er( left, top, right - left, bottom - top );
-
-	if( er.intersects( r ) )
-	{
-		return true;
-	}*/
-}
 
  //groundLeft,airLeft,airRight,groundRight
 EnvPlant::EnvPlant(sf::Vector2<double>&a, V2d &b, V2d &c, V2d &d, int vi, VertexArray *v, Tileset *t )

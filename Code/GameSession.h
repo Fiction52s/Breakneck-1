@@ -1143,15 +1143,14 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 struct Grass : QuadTreeEntrant
 {
-	Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
-		sf::Vector2<double> &pA, sf::Vector2<double> &pB,
-		sf::Vector2<double> &pC, sf::Vector2<double> &pD, TerrainPiece *poly);
+	Grass(GameSession *p_owner, Tileset *p_ts_grass, 
+		int p_tileIndex, 
+		V2d &pos, 
+		TerrainPiece *poly);
 
 	void Reset();
-	sf::Vector2<double> A;
-	sf::Vector2<double> B;
-	sf::Vector2<double> C;
-	sf::Vector2<double> D;
+	V2d pos;
+	double radius;
 	void SetVisible(bool p_visible);
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
