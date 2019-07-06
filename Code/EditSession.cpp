@@ -508,7 +508,11 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	ActorGroup *playerGroup = new ActorGroup( "player" );
 	groups["player"] = playerGroup;
 	
-	playerType = new ActorType( "player", NULL );
+	ParamsInfo playerPI("player", NULL, NULL,
+		Vector2i(), Vector2i(32, 32),
+		GetTileset("Kin/jump_64x64.png", 64, 64));
+
+	playerType = new ActorType(playerPI);
 	types["player"] = playerType;
 
 	player.reset( new PlayerParams( Vector2i( 0, 0 ) ) );
@@ -518,70 +522,105 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	grassSize = 128;//64;
 	grassSpacing = -60;//-40;//-20;//-10;
 
-	AddExtraEnemy("goal");
-	AddExtraEnemy("poi");
-	AddExtraEnemy("key");
-	AddExtraEnemy("shippickup");
-	AddExtraEnemy("shard");
-	AddExtraEnemy("racefighttarget");
-	AddExtraEnemy("blocker");
-	AddExtraEnemy("groundtrigger");
-	AddExtraEnemy("airtrigger");
-	AddExtraEnemy("flowerpod");
-	AddExtraEnemy("nexus");
 
-	AddWorldEnemy("comboer", 1);
-	AddWorldEnemy("patroller", 1);
-	AddWorldEnemy("crawler", 1);
-	AddWorldEnemy("basicturret", 1);
-	AddWorldEnemy("airdasher", 1);
-	AddWorldEnemy("bosscrawler", 1);
-	AddWorldEnemy("booster", 1);
-	AddWorldEnemy("spring", 1);
+	AddExtraEnemy("goal", MakeParamsGrounded<GoalParams>, NULL, 
+		Vector2i( 0, -32 ), Vector2i( 32, 32 ), 
+		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
-	AddWorldEnemy("bat", 2);
-	AddWorldEnemy("curveturret", 2);
-	AddWorldEnemy("poisonfrog", 2);
-	AddWorldEnemy("stagbeetle", 2);
-	AddWorldEnemy("gravityfaller", 2);
-	AddWorldEnemy("gravityspring", 2);
-	AddWorldEnemy("bossbird", 2);
+	AddExtraEnemy("poi", MakeParamsGrounded<PoiParams>, MakeParamsAerial<PoiParams>,
+		Vector2i(0, 0), Vector2i(32, 32));
+
+	AddExtraEnemy("key", NULL, MakeParamsAerial<KeyParams>,
+		Vector2i(0, 0), Vector2i(32, 32));
+
+	AddExtraEnemy("shippickup", MakeParamsGrounded<ShipPickupParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Ship/shipleave_128x128.png", 128, 128));
+
+	AddExtraEnemy("shard", NULL, MakeParamsAerial<ShardParams>,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Shard/shards_w1_192x192.png", 192, 192));
+
+	AddExtraEnemy("racefighttarget", NULL, MakeParamsAerial<RaceFightTargetParams>,
+		Vector2i(0, 0), Vector2i(32, 32));
+
+	AddExtraEnemy("blocker", NULL, MakeParamsAerial<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), 
+		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
+
+	AddExtraEnemy("groundtrigger", MakeParamsGrounded<GroundTriggerParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Ship/shipleave_128x128.png", 128, 128));
+
+	AddExtraEnemy("airtrigger", NULL, MakeParamsAerial<AirTriggerParams>,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
+
+	AddExtraEnemy("flowerpod", MakeParamsGrounded<FlowerPodParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Momenta/momentaflower_128x128.png", 128, 128));
+
+	AddExtraEnemy("nexus", MakeParamsGrounded<NexusParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32) );
+
+	AddWorldEnemy("comboer", 1, NULL, MakeParamsAerial<ComboerParams>,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
+	AddWorldEnemy("patroller", 1, NULL, MakeParamsAerial<PatrollerParams>,
+		Vector2i(0, 0), Vector2i(32, 32));
+	//AddWorldEnemy("crawler", 1, MakeParams<CrawlerParams>);
+	//AddWorldEnemy("basicturret", 1, MakeParams<BasicTurretParams>);
+	//AddWorldEnemy("airdasher", 1, MakeParams<AirdasherParams>);
+	//AddWorldEnemy("bosscrawler", 1, MakeParams<BossCrawlerParams>);
+	//AddWorldEnemy("booster", 1, MakeParams<BoosterParams>);
+	//AddWorldEnemy("spring", 1, MakeParams<SpringParams>);
+
+	//AddWorldEnemy("bat", 2, MakeParams<BatParams>);
+	//AddWorldEnemy("curveturret", 2, MakeParams<CurveTurretParams>);
+	//AddWorldEnemy("poisonfrog", 2, MakeParams<PoisonFrogParams>);
+	//AddWorldEnemy("stagbeetle", 2, MakeParams<StagBeetleParams>);
+	//AddWorldEnemy("gravityfaller", 2, MakeParams<GravityFallerParams>);
+	////AddWorldEnemy("gravityspring", 2, MakeParams<GravitySpringParams>);
+	//AddWorldEnemy("bossbird", 2, MakeParams<BossBirdParams>);
 
 
-	AddWorldEnemy("pulser", 3);
-	AddWorldEnemy("badger", 3);
-	AddWorldEnemy("owl", 3);
-	AddWorldEnemy("cactus", 3);
-	AddWorldEnemy("bosscoyote", 3);
+	//AddWorldEnemy("pulser", 3, MakeParams<PulserParams>);
+	//AddWorldEnemy("badger", 3, MakeParams<BadgerParams>);
+	//AddWorldEnemy("owl", 3, MakeParams<OwlParams>);
+	//AddWorldEnemy("cactus", 3, MakeParams<CactusParams>);
+	//AddWorldEnemy("bosscoyote", 3, MakeParams<BossCoyoteParams>);
 
-	AddWorldEnemy("spider", 4);
-	AddWorldEnemy("turtle", 4);
-	AddWorldEnemy("cheetah", 4);
-	AddWorldEnemy("coral", 4);
-	AddWorldEnemy("bosstiger", 4);
-	AddExtraEnemy("rail");
+	//AddWorldEnemy("spider", 4, MakeParams<SpiderParams>);
+	//AddWorldEnemy("turtle", 4, MakeParams<TurtleParams>);
+	//AddWorldEnemy("cheetah", 4, MakeParams<CheetahParams>);
+	//AddWorldEnemy("coral", 4, MakeParams<CoralParams>);
+	//AddWorldEnemy("bosstiger", 4, MakeParams<BossTigerParams>);
+	//AddWorldEnemy("rail", 4, MakeParams<RailParams>);
 
-	AddWorldEnemy("swarm", 5);
-	AddWorldEnemy("shark", 5);
-	AddWorldEnemy("overgrowth", 5);
-	AddWorldEnemy("ghost", 5);
-	AddWorldEnemy("bossgator", 5);
+	//AddWorldEnemy("swarm", 5, MakeParams<SwarmParams>);
+	//AddWorldEnemy("shark", 5, MakeParams<SharkParams>);
+	//AddWorldEnemy("overgrowth", 5, MakeParams<OvergrowthParams>);
+	//AddWorldEnemy("ghost", 5, MakeParams<GhostParams>);
+	//AddWorldEnemy("bossgator", 5, MakeParams<BossGatorParams>);
 
-	AddWorldEnemy("specter", 6);
-	AddWorldEnemy("narwhal", 6);
-	AddWorldEnemy("copycat", 6);
-	AddWorldEnemy("gorilla", 6);
-	AddWorldEnemy("bossskeleton", 6);
+	//AddWorldEnemy("specter", 6, MakeParams<SpecterParams>);
+	//AddWorldEnemy("narwhal", 6, MakeParams<NarwhalParams>);
+	//AddWorldEnemy("copycat", 6, MakeParams<CopycatParams>);
+	//AddWorldEnemy("gorilla", 6, MakeParams<GorillaParams>);
+	//AddWorldEnemy("bossskeleton", 6, MakeParams<BossSkeletonParams>);
 }
 
-void EditSession::AddWorldEnemy( const std::string &name, int w)
+void EditSession::AddWorldEnemy( const std::string &name, int w, ParamsMaker* pmGround, ParamsMaker *pmAir,
+	Vector2i &off, Vector2i &size, Tileset *ts, int tileIndex )
 {
-	worldEnemyNames[w - 1].push_back(name);
+	worldEnemyNames[w - 1].push_back(ParamsInfo( name, pmGround, pmAir, off, size, ts, tileIndex ));
 }
 
-void EditSession::AddExtraEnemy(const std::string &name)
+void EditSession::AddExtraEnemy(const std::string &name, ParamsMaker *pmGround, ParamsMaker *pmAir,
+	Vector2i &off, Vector2i &size, Tileset *ts, int tileIndex)
 {
-	extraEnemyNames.push_back(name);
+	extraEnemyNames.push_back(ParamsInfo(name, pmGround, pmAir, off, size, ts, tileIndex));
 }
 
 TerrainPolygon *EditSession::GetPolygon(int index, int &edgeIndex )
@@ -4704,11 +4743,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	int counter = 0;
 	for (int i = 0; i < 8; ++i)
 	{
-		list<string> &wen = worldEnemyNames[i];
+		auto &wen = worldEnemyNames[i];
 		counter = 0;
 		for (auto it = wen.begin(); it != wen.end(); ++it)
 		{
-			SetEnemyGridIndex(gs, counter, i, (*it));
+			SetEnemyGridIndex(gs, counter, i, (*it).name);
 			++counter;
 		}
 	}
@@ -4717,7 +4756,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	int row = 8;
 	for (auto it = extraEnemyNames.begin(); it != extraEnemyNames.end(); ++it)
 	{
-		SetEnemyGridIndex(gs, counter, row, (*it));
+		SetEnemyGridIndex(gs, counter, row, (*it).name );
 		++counter;
 		if (counter == gs->xSize)
 		{
@@ -11461,7 +11500,7 @@ void EditSession::SetupEnemyTypes()
 {
 	for (int i = 0; i < 8; ++i)
 	{
-		list<string> &wen = worldEnemyNames[i];
+		auto &wen = worldEnemyNames[i];
 		for (auto it = wen.begin(); it != wen.end(); ++it)
 		{
 			SetupEnemyType((*it));
@@ -11474,9 +11513,10 @@ void EditSession::SetupEnemyTypes()
 	}
 }
 
-void EditSession::SetupEnemyType(const std::string &name)
+void EditSession::SetupEnemyType(ParamsInfo &pi)
 {
-	types[name] = new ActorType(name, CreateOptionsPanel(name));
+	pi.panel = CreateOptionsPanel(pi.name);
+	types[pi.name] = new ActorType(pi);
 }
 
 void EditSession::RegularOKButton()
@@ -12937,7 +12977,7 @@ int EditSession::IsRemovePointsOkay()
 Panel * EditSession::CreateOptionsPanel( const std::string &name )
 {
 	Panel *p = NULL;
-	else if( name == "poi" )
+	if( name == "poi" )
 	{
 		p = new Panel( "poi_options", 200, 500, this );
 		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
@@ -15147,13 +15187,28 @@ void EditSession::BoxSelectPoints(sf::IntRect r,
 	}
 }
 
-ActorType::ActorType(const std::string & n, Panel *p)
-	:name(n), panel(p), imageTileIndex(0)
+ActorType::ActorType( ParamsInfo &pi)
+	:name(pi.name), panel(pi.panel), imageTileIndex(pi.imageTileIndex), pMakerGround( pi.pmGround ), 
+	pMakerAir( pi.pmAir )
 {
 	EditSession *session = EditSession::GetSession();
-	ts_image = NULL;
-	//ts_icon = session->GetTileset(editorStr + name + string("_icon.png"));
-	ts_image = session->GetTileset(string( "Editor/") + name + string("_editor.png"));
+
+	if (pi.ts != NULL)
+	{
+		ts_image = pi.ts;
+	}
+	else
+	{
+		ts_image = session->GetTileset(string("Editor/") + name + string("_editor.png"));
+	}
+
+	canBeGrounded = (pMakerGround != NULL);
+	canBeAerial = (pMakerAir != NULL);
+
+	width = pi.size.x;
+	height = pi.size.y;
+
+	imageOffset = pi.offset;
 
 	Init();
 }
@@ -16307,387 +16362,51 @@ bool ActorType::IsGoalType()
 
 void ActorType::Init()
 {
-	EditSession *session = EditSession::GetSession();
+}
 
-	
-	if( name == "goal" )
+template <typename X>ActorParams * MakeParamsGrounded( ActorType *at)
+{
+	EditSession *edit = EditSession::GetSession();
+	if (edit->enemyEdgePolygon != NULL)
 	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Goal/goal_w01_a_288x320.png", 288, 320);
-		imageOffset.y = -32;
+		return new X(edit->enemyEdgePolygon,
+			edit->enemyEdgeIndex,
+			edit->enemyEdgeQuantity);
 	}
-	else if( name == "player" )
+	else
 	{
-		width = 22;//40;
-		height = 42;//64;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Kin/jump_64x64.png", 64, 64);
-		imageTileIndex = 2;
+		return NULL;
 	}
-	else if( name == "poi" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Editor/poi_editor.png");
-	}
-	else if( name == "key" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Editor/key_editor.png");
-	}
-	if( name == "shippickup" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Ship/shipleave_128x128.png", 128, 128);
-	}
-	if (name == "groundtrigger")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Ship/shipleave_128x128.png", 128, 128);
-	}
-	if (name == "airtrigger")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Enemies/jayshield_128x128.png", 128, 128);
-	}
-	else if( name == "shard" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
-	}
-	else if( name == "racefighttarget" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Editor/racefighttarget_editor.png");
-	}
-	else if (name == "blocker")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
-	}
-	else if (name == "flowerpod")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Momenta/momentaflower_128x128.png", 128, 128);
-	}
-	else if (name == "comboer")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Enemies/comboer_128x128.png", 128, 128);
-	}
-	else if (name == "rail")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Editor/rail_editor.png");
-	}
-	else if (name == "booster")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Enemies/Booster_512x512.png", 512, 512);
-	}
-	else if (name == "spring")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
-	}
-	//w1
-	else if( name == "patroller" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Editor/patroller_editor.png");
-	}
-	else if( name == "crawler" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Enemies/crawler_160x160.png", 160, 160);
-	}
-	else if( name == "basicturret" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Enemies/basicturret_128x80.png", 128, 80);
-	}
-	else if( name == "foottrap" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Enemies/foottrap_editor.png");
-	}
-	else if( name == "bosscrawler" )
-	{
-		width = 128;
-		height = 144;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Bosses/Crawler/crawler_queen_256x256.png", 256, 256);
-	}
-	else if (name == "airdasher")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Enemies/dasher_208x144.png", 208, 144);
-	}
+}
 
-	//w2
-	else if( name == "bat" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Enemies/bat_144x176.png", 144, 176);
-	}
-	else if( name == "curveturret" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Enemies/curveturret_144x96.png", 144, 96);
-	}
-	else if( name == "stagbeetle" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Enemies/stag_idle_192x144.png", 192, 144);
-	}
-	else if( name == "poisonfrog" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Enemies/frog_80x80.png", 80, 80);
-	}
-	else if (name == "gravityfaller")
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-		ts_image = session->GetTileset("Enemies/gravity_faller_128x128.png", 128, 128);
-	}
-	else if( name == "bossbird" )
-	{
-		width = 64;
-		height = 64;
-		canBeGrounded = false;
-		canBeAerial = true;
-		ts_image = session->GetTileset("Enemies/bossbird_editor.png");
-	}
-	
-	//w3
-	else if( name == "pulser" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-		//ts_image = session->GetTileset("Editor//gravity_faller_128x128.png", 128, 128);
-	}
-	else if( name == "badger" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-	}
-	else if( name == "cactus" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-	}
-	else if( name == "owl" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "bosscoyote" )
-	{
-		width = 200;
-		height = 200;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	
-	//w4
-	else if( name == "turtle" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "coral" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "spider" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-	}
-	else if( name == "cheetah" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-	}
-	else if( name == "bosstiger" )
-	{
-		width = 64;
-		height = 64;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	
-	//w5
-	else if( name == "swarm" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "shark" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "ghost" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "overgrowth" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
-	}
-	else if( name == "bossgator" )
-	{
-		width = 32;
-		height = 128;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
+template <typename X>ActorParams * MakeParamsAerial(ActorType *at)
+{
+	EditSession *edit = EditSession::GetSession();
+	return new X(sf::Vector2i(edit->worldPos));
+}
 
-	//w6
-	else if( name == "specter" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "narwhal" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "gorilla" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "copycat" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "bossskeleton" )
-	{
-		width = 32;
-		height = 128;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
+void ActorType::PlaceEnemy(ActorParams *ap )
+{
+	if (ap == NULL)
+		return;
 
-	//extra
-	else if( name == "nexus" )
+	EditSession *edit = EditSession::GetSession();
+	bool hasPanel = (ap->type->panel != NULL);
+
+	if (hasPanel)
 	{
-		width = 32;
-		height = 32;
-		canBeGrounded = true;
-		canBeAerial = false;
+		edit->tempActor = ap;
+		edit->showPanel = panel;
+		edit->tempActor->SetPanelInfo();
+	}
+	else
+	{
+		edit->showPanel = edit->enemySelectPanel;
+		edit->trackingEnemy = NULL;
+		ActorPtr ac(ap);
+		ac->group = edit->groups["--"];
+
+		edit->CreateActor(ac);
 	}
 }
 
@@ -16697,533 +16416,25 @@ void ActorType::PlaceEnemy()
 
 	Vector2i worldPos(edit->worldPos);
 
-	if (name == "goal")
+	bool placed = false;
+	if (pMakerGround != NULL)
 	{
 		if (edit->enemyEdgePolygon != NULL)
 		{
-			edit->showPanel = edit->enemySelectPanel;
-			edit->trackingEnemy = NULL;
-			ActorPtr goal(new GoalParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity));
-			goal->group = edit->groups["--"];
-
-			edit->CreateActor(goal);
+			PlaceEnemy(pMakerGround(this));
+			placed = true;
 		}
 	}
-	else if (name == "poi")
+	if ( !placed && pMakerAir != NULL)
 	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new PoiParams(
-				edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-		}
-		else
-		{
-			edit->tempActor = new PoiParams( worldPos);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-		}
+		PlaceEnemy(pMakerAir(this));
 	}
-	else if (name == "key")
+	
+	if (name == "blocker"|| name == "spring" || name == "patroller"|| name == "bat"
+		|| name == "pulser"|| name == "narwhal")//curve turret??
 	{
-		edit->tempActor = new KeyParams( worldPos);
-		edit->showPanel = panel;
-		edit->tempActor->SetPanelInfo();
-	}
-	else if (name == "shippickup")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->showPanel = edit->enemySelectPanel;
-			edit->trackingEnemy = NULL;
-			ActorPtr shipPickup(new ShipPickupParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity));
-			shipPickup->group = edit->groups["--"];
-
-			edit->CreateActor(shipPickup);
-		}
-	}
-	else if (name == "groundtrigger")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			/*edit->showPanel = edit->enemySelectPanel;
-			edit->trackingEnemy = NULL;
-			ActorPtr groundTrigger(new GroundTriggerParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-			edit->enemyEdgeQuantity));
-			groundTrigger->group = edit->groups["--"];
-
-			edit->CreateActor(groundTrigger);*/
-
-
-			edit->tempActor = new GroundTriggerParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity);
-			edit->tempActor->SetPanelInfo();
-			edit->showPanel = panel;
-		}
-	}
-	else if (name == "airtrigger")
-	{
-		edit->tempActor = new AirTriggerParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "shard")
-	{
-		edit->tempActor = new ShardParams(worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "racefighttarget")
-	{
-		edit->trackingEnemy = NULL;
-		ActorPtr raceFightTarget(new RaceFightTargetParams( worldPos));
-		raceFightTarget->group = edit->groups["--"];
-		edit->CreateActor(raceFightTarget);
-		edit->showPanel = edit->enemySelectPanel;
-	}
-	else if (name == "blocker")
-	{
-		//edit->trackingEnemy = NULL;
-		edit->tempActor = new BlockerParams( worldPos);
-		//blocker->group = edit->groups["--"];
-		//edit->CreateActor(blocker);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-
-
 		edit->patrolPath.clear();
 		edit->patrolPath.push_back(worldPos);
-		//edit->showPanel = panel;
-		//edit->tempActor->SetPanelInfo();
-		//edit->showPanel = edit->enemySelectPanel;
-	}
-	else if (name == "flowerpod")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			/*edit->showPanel = edit->enemySelectPanel;
-			edit->trackingEnemy = NULL;
-			ActorPtr groundTrigger(new GroundTriggerParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-			edit->enemyEdgeQuantity));
-			groundTrigger->group = edit->groups["--"];
-
-			edit->CreateActor(groundTrigger);*/
-
-
-			edit->tempActor = new FlowerPodParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity);
-			edit->tempActor->SetPanelInfo();
-			edit->showPanel = panel;
-		}
-	}
-	else if (name == "comboer")
-	{
-		edit->tempActor = new ComboerParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		//edit->tempActor->SetDefaultPanelInfo();
-
-		edit->showPanel = panel;
-
-		edit->patrolPath.clear();
-		edit->patrolPath.push_back(worldPos);
-	}
-
-	else if (name == "rail")
-	{
-		//edit->trackingEnemy = NULL;
-		edit->tempActor = new RailParams( worldPos);
-		//blocker->group = edit->groups["--"];
-		//edit->CreateActor(blocker);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-
-
-		edit->patrolPath.clear();
-		edit->patrolPath.push_back(worldPos);
-		//edit->showPanel = panel;
-		//edit->tempActor->SetPanelInfo();
-		//edit->showPanel = edit->enemySelectPanel;
-	}
-	else if (name == "booster")
-	{
-		edit->tempActor = new BoosterParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-
-
-		/*edit->trackingEnemy = NULL;
-		ActorPtr booster(new BoosterParams( Vector2i(worldPos.x,
-		worldPos.y)));
-		booster->group = edit->groups["--"];
-		edit->CreateActor(booster);
-		edit->showPanel = panel;*/
-	}
-	else if (name == "spring")
-	{
-		/*edit->trackingEnemy = NULL;
-		ActorPtr spring(new SpringParams( Vector2i(worldPos.x,
-		worldPos.y)));
-		spring->group = edit->groups["--"];
-		edit->CreateActor(spring);
-		edit->showPanel = edit->enemySelectPanel;*/
-
-
-
-		edit->tempActor = new SpringParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-
-		edit->patrolPath.clear();
-		edit->patrolPath.push_back(worldPos);
-	}
-
-
-	//w1
-	else if (name == "patroller")
-	{
-
-		edit->tempActor = new PatrollerParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		//edit->tempActor->SetDefaultPanelInfo();
-
-		edit->showPanel = panel;
-
-
-		edit->patrolPath.clear();
-		edit->patrolPath.push_back(worldPos);
-	}
-	else if (name == "crawler")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new CrawlerParams(
-				edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-		}
-	}
-	else if (name == "basicturret")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new BasicTurretParams(
-				edit->enemyEdgePolygon, edit->enemyEdgeIndex, edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-		}
-	}
-	else if (name == "foottrap")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-
-			edit->tempActor = new FootTrapParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-		}
-	}
-	else if (name == "bosscrawler")
-	{
-		edit->showPanel = edit->enemySelectPanel;
-		edit->trackingEnemy = NULL;
-		ActorPtr bossCrawler(new BossCrawlerParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-			edit->enemyEdgeQuantity));
-		bossCrawler->group = edit->groups["--"];
-
-		edit->CreateActor(bossCrawler);
-	}
-	else if (name == "airdasher")
-	{
-		edit->tempActor = new AirdasherParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-
-	//w2
-	else if (name == "bat")
-	{
-		edit->tempActor = new BatParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		//edit->tempActor->SetDefaultPanelInfo();
-
-		edit->showPanel = panel;
-
-		edit->patrolPath.clear();
-		edit->patrolPath.push_back(worldPos);
-	}
-	else if (name == "poisonfrog")
-	{
-		//edit->groups["--"]->name
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new PoisonFrogParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-			//edit->tempActor->SetDefaultPanelInfo();
-			//edit->trackingEnemy = NULL;
-		}
-	}
-	else if (name == "gravityfaller")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new GravityFallerParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-		}
-	}
-	else if (name == "stagbeetle")
-	{
-		//edit->groups["--"]->name
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new StagBeetleParams( edit->enemyEdgePolygon,
-				edit->enemyEdgeIndex, edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-			//edit->tempActor->SetDefaultPanelInfo();
-			//edit->trackingEnemy = NULL;
-		}
-	}
-	else if (name == "curveturret")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			//doesn't account for cancelling
-
-			edit->tempActor = new CurveTurretParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity);
-
-			edit->showPanel = panel;
-			//edit->tempActor->SetDefaultPanelInfo();
-			edit->tempActor->SetPanelInfo();
-			//CurveTurretParams *ct = (CurveTurretParams*)edit->tempActor.get();
-			//ct->SetPanelInfo();
-
-			edit->patrolPath.clear();
-			edit->patrolPath.push_back(worldPos);
-
-			//edit->showPanel->textBoxes["name"]->text.setString( "test" );
-			//edit->showPanel->textBoxes["group"]->text.setString( "not test" );
-			//edit->showPanel->textBoxes["bulletspeed"]->text.setString( "10" );
-			//edit->showPanel->textBoxes["waitframes"]->text.setString( "10" );
-		}
-	}
-	else if (name == "bossbird")
-	{
-		edit->showPanel = edit->enemySelectPanel;
-		edit->trackingEnemy = NULL;
-		ActorPtr bossBird(new BossBirdParams( worldPos));
-		bossBird->group = edit->groups["--"];
-
-		edit->CreateActor(bossBird);
-	}
-
-	//w3
-	else if (name == "pulser")
-	{
-		edit->tempActor = new PulserParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		//edit->tempActor->SetDefaultPanelInfo();
-
-		edit->showPanel = panel;
-
-		edit->patrolPath.clear();
-		edit->patrolPath.push_back(worldPos);
-	}
-	else if (name == "cactus")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new CactusParams( edit->enemyEdgePolygon,
-				edit->enemyEdgeIndex, edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-			//edit->tempActor->SetDefaultPanelInfo();
-			//edit->trackingEnemy = NULL;
-		}
-	}
-	else if (name == "badger")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new BadgerParams( edit->enemyEdgePolygon,
-				edit->enemyEdgeIndex, edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-			//edit->tempActor->SetDefaultPanelInfo();
-			//edit->trackingEnemy = NULL;
-		}
-	}
-	else if (name == "owl")
-	{
-		edit->tempActor = new OwlParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "bosscoyote")
-	{
-		edit->showPanel = edit->enemySelectPanel;
-		edit->trackingEnemy = NULL;
-		ActorPtr bossCoyote(new BossCoyoteParams(
-			worldPos));
-		bossCoyote->group = edit->groups["--"];
-
-		edit->CreateActor(bossCoyote);
-	}
-
-	//w4
-	else if (name == "coral")
-	{
-		edit->tempActor = new CoralParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "cheetah")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new CheetahParams( edit->enemyEdgePolygon,
-				edit->enemyEdgeIndex, edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-		}
-	}
-	else if (name == "turtle")
-	{
-		edit->tempActor = new TurtleParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "spider")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new SpiderParams( edit->enemyEdgePolygon,
-				edit->enemyEdgeIndex, edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-		}
-	}
-	else if (name == "bosstiger")
-	{
-		edit->showPanel = edit->enemySelectPanel;
-		edit->trackingEnemy = NULL;
-		ActorPtr bossTiger(new BossTigerParams( worldPos));
-
-		bossTiger->group = edit->groups["--"];
-
-		edit->CreateActor(bossTiger);
-		((BossTigerParams*)bossTiger.get())->CreateFormation();
-	}
-
-	//w5
-	else if (name == "overgrowth")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->tempActor = new OvergrowthParams( edit->enemyEdgePolygon,
-				edit->enemyEdgeIndex, edit->enemyEdgeQuantity);
-			edit->showPanel = panel;
-			edit->tempActor->SetPanelInfo();
-		}
-	}
-	else if (name == "ghost")
-	{
-		edit->tempActor = new GhostParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "shark")
-	{
-		edit->tempActor = new SharkParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "swarm")
-	{
-		edit->tempActor = new SwarmParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "bossgator")
-	{
-		edit->showPanel = edit->enemySelectPanel;
-		edit->trackingEnemy = NULL;
-		ActorPtr bossGator(new BossGatorParams( worldPos));
-		bossGator->group = edit->groups["--"];
-
-		edit->CreateActor(bossGator);
-	}
-
-	//w6
-	else if (name == "specter")
-	{
-		edit->tempActor = new SpecterParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "gorilla")
-	{
-		edit->tempActor = new GorillaParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-		//if( edit->enemyEdgePolygon != NULL )
-		//{
-		//	/*edit->tempActor = new GorillaParams( edit->enemyEdgePolygon, 
-		//		edit->enemyEdgeIndex, edit->enemyEdgeQuantity );
-		//	edit->showPanel = panel;
-		//	edit->tempActor->SetPanelInfo();*/
-		//}
-	}
-	else if (name == "narwhal")
-	{
-		edit->tempActor = new NarwhalParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-
-		edit->showPanel = panel;
-
-		edit->patrolPath.clear();
-		edit->patrolPath.push_back(worldPos);
-	}
-	else if (name == "copycat")
-	{
-		edit->tempActor = new CopycatParams( worldPos);
-		edit->tempActor->SetPanelInfo();
-		edit->showPanel = panel;
-	}
-	else if (name == "bossskeleton")
-	{
-		edit->showPanel = edit->enemySelectPanel;
-		edit->trackingEnemy = NULL;
-		ActorPtr bossSkeleton(new BossSkeletonParams( worldPos));
-		bossSkeleton->group = edit->groups["--"];
-
-		edit->CreateActor(bossSkeleton);
-	}
-
-
-	//w7
-	else if (name == "nexus")
-	{
-		if (edit->enemyEdgePolygon != NULL)
-		{
-			edit->showPanel = edit->enemySelectPanel;
-			edit->trackingEnemy = NULL;
-			ActorPtr nexus(new NexusParams( edit->enemyEdgePolygon, edit->enemyEdgeIndex,
-				edit->enemyEdgeQuantity));
-			nexus->group = edit->groups["--"];
-
-			edit->CreateActor(nexus);
-		}
 	}
 }
 

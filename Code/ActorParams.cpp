@@ -1,4 +1,4 @@
-#include "EditSession.h"
+//#include "EditSession.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -2456,4 +2456,27 @@ ActorParams *FlowerPodParams::Copy()
 {
 	FlowerPodParams *copy = new FlowerPodParams(*this);
 	return copy;
+}
+
+template<typename X> ActorParams *MakeParams(
+	ActorType *type)
+//TerrainPolygon *tp, int edgeIndex,
+//double quant, sf::Vector2i worldPos)
+{
+	EditSession *edit = EditSession::GetSession();
+	if (type->canBeGrounded)
+	{
+		if (edit->enemyEdgePolygon != NULL)
+		{
+			return new X(edit->enemyEdgePolygon,
+				edit->enemyEdgeIndex,
+				edit->enemyEdgeQuantity);
+		}
+	}
+	else if( type->canBeAerial )
+	{
+		return new X(sf::Vector2i(edit->worldPos));
+	}
+
+	return NULL;
 }

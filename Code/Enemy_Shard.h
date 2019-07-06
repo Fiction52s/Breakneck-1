@@ -5,6 +5,7 @@
 #include <map>
 #include "ShardTypes.h"
 
+struct EffectPool;
 struct Shard : Enemy
 {
 	enum Action

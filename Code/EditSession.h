@@ -18,8 +18,9 @@
 #include "Gate.h"
 #include "ISelectable.h"
 
-struct MainMenu;
 struct ActorParams;
+struct MainMenu;
+//struct ActorParams;
 struct TerrainPolygon;
 struct GateInfo;
 struct EditSession;
@@ -32,6 +33,38 @@ struct KinSkin;
 struct Background;
 struct ScrollingBackground;
 struct AirTriggerParams;
+
+
+struct ActorType;
+typedef ActorParams* ParamsMaker(ActorType*);
+//TerrainPolygon*, int,double, sf::Vector2i);
+
+template<typename X> ActorParams *MakeParamsGrounded(
+	ActorType *);
+template<typename X> ActorParams *MakeParamsAerial(
+	ActorType *);
+
+struct ParamsInfo
+{
+	ParamsInfo(const std::string &n,
+		ParamsMaker *pg, ParamsMaker *pa,
+		sf::Vector2i &off, sf::Vector2i &p_size,
+		Tileset *p_ts = NULL, int imageTile = 0)
+		:name(n), pmGround(pg), pmAir(pa),
+		offset(off), size(p_size),
+		ts(p_ts), imageTileIndex(imageTile), panel(NULL)
+	{
+
+	}
+	std::string name;
+	ParamsMaker* pmGround;
+	ParamsMaker* pmAir;
+	sf::Vector2i offset;
+	sf::Vector2i size;
+	Tileset *ts;
+	int imageTileIndex;
+	Panel *panel;
+};
 
 struct GrassSeg
 {
@@ -392,9 +425,10 @@ typedef std::map<TerrainPoint*,std::list<ActorPtr>> EnemyMap;
 
 struct ActorType
 {
-	ActorType(const std::string & name, Panel *panel);
+	ActorType( ParamsInfo &pi);
 	void Init();
 	void PlaceEnemy();
+	void PlaceEnemy(ActorParams *ap);
 	void LoadEnemy(std::ifstream &is,
 		ActorPtr &a);
 	bool IsGoalType();
@@ -409,6 +443,8 @@ struct ActorType
 	Panel *panel;
 	int imageTileIndex;
 	sf::Vector2i imageOffset;
+	ParamsMaker *pMakerGround;
+	ParamsMaker *pMakerAir;
 };
 
 
@@ -439,6 +475,8 @@ struct PointMoveInfo
 };
 
 typedef std::map<TerrainPolygon*,std::list<PointMoveInfo>> PointMap;
+
+
 
 
 struct EditSession : GUIHandler, TilesetManager
@@ -487,14 +525,26 @@ struct EditSession : GUIHandler, TilesetManager
 	};
 
 	TerrainPolygon *GetPolygon(int index, int &edgeIndex);
+	
+	
 
-	std::list<std::string> worldEnemyNames[8];
-	void AddWorldEnemy(const std::string &name, int w);
-	void AddExtraEnemy(const std::string &name);
-	std::list<std::string> extraEnemyNames;
+	std::list<ParamsInfo> worldEnemyNames[8];
+	void AddWorldEnemy(const std::string &name, int w,
+		ParamsMaker* pmGround, ParamsMaker *pmAir,
+		sf::Vector2i &off, 
+		sf::Vector2i &size,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	void AddExtraEnemy(const std::string &name,
+		ParamsMaker *pmGround, ParamsMaker *pmAir,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	std::list<ParamsInfo> extraEnemyNames;
 
 	void SetupEnemyTypes();
-	void SetupEnemyType(const std::string &name);
+	void SetupEnemyType(ParamsInfo &pi);
 
 	bool IsKeyPressed(int k);
 	std::list<Panel*> allPopups;
