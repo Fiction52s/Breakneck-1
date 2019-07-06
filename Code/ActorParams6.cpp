@@ -20,7 +20,7 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-SpecterParams::SpecterParams(  sf::Vector2i &pos )
+SpecterParams::SpecterParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( )
 {
 	position = pos;	
@@ -32,7 +32,7 @@ SpecterParams::SpecterParams(  sf::Vector2i &pos )
 	SetBoundingQuad();
 }
 
-void SpecterParams::WriteParamFile( std::ofstream &of )
+void SpecterParams::WriteParamFile(std::ofstream &of )
 {
 	int hMon;
 	if( hasMonitor )
@@ -74,7 +74,7 @@ ActorParams *SpecterParams::Copy()
 }
 
 
-CopycatParams::CopycatParams(  sf::Vector2i &pos )
+CopycatParams::CopycatParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( )
 {
 	position = pos;	
@@ -127,7 +127,7 @@ ActorParams *CopycatParams::Copy()
 	return copy;
 }
 
-GorillaParams::GorillaParams( 
+GorillaParams::GorillaParams(ActorType *at,
 		sf::Vector2i &pos, int p_wallWidth,
 		int p_followFrames )
 		:ActorParams( )
@@ -143,7 +143,7 @@ GorillaParams::GorillaParams(
 	SetBoundingQuad();
 }
 
-GorillaParams::GorillaParams(  sf::Vector2i &pos )
+GorillaParams::GorillaParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( )
 {
 	wallWidth = 400;
@@ -229,7 +229,7 @@ ActorParams *GorillaParams::Copy()
 	return copy;
 }
 
-NarwhalParams::NarwhalParams( 
+NarwhalParams::NarwhalParams(ActorType *at,
 		sf::Vector2i &pos, sf::Vector2i & p_dest,
 		int p_moveFrames )
 		:ActorParams( )
@@ -245,7 +245,7 @@ NarwhalParams::NarwhalParams(
 	SetBoundingQuad();
 }
 
-NarwhalParams::NarwhalParams(  sf::Vector2i &pos )
+NarwhalParams::NarwhalParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( )
 {
 	dest = pos + Vector2i( 500, 0 );
@@ -348,7 +348,7 @@ ActorParams *NarwhalParams::Copy()
 	return copy;
 }
 
-BossSkeletonParams::BossSkeletonParams(  Vector2i &pos )
+BossSkeletonParams::BossSkeletonParams(ActorType *at, Vector2i &pos )
 	:ActorParams( )
 {
 	type = EditSession::GetSession()->types["bossskeleton"];

@@ -21,7 +21,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-PulserParams::PulserParams( 
+PulserParams::PulserParams(ActorType *at,
 	sf::Vector2i &pos,
 	std::list<sf::Vector2i> &globalPath, 
 	int p_framesBetweenNodes,
@@ -45,7 +45,7 @@ PulserParams::PulserParams(
 	SetBoundingQuad();
 }
 
-PulserParams::PulserParams( 
+PulserParams::PulserParams(ActorType *at,
 	sf::Vector2i &pos )
 	:ActorParams( )
 {
@@ -253,7 +253,7 @@ ActorParams *PulserParams::Copy()
 
 
 
-OwlParams::OwlParams(  sf::Vector2i &pos,
+OwlParams::OwlParams(ActorType *at, sf::Vector2i &pos,
 	int p_moveSpeed, int p_bulletSpeed, int p_rhythmFrames )
 	:ActorParams( )
 {
@@ -270,7 +270,7 @@ OwlParams::OwlParams(  sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
-OwlParams::OwlParams( 
+OwlParams::OwlParams(ActorType *at,
 	sf::Vector2i &pos )
 	:ActorParams( )
 {
@@ -375,7 +375,7 @@ ActorParams *OwlParams::Copy()
 
 
 
-BadgerParams::BadgerParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed,
+BadgerParams::BadgerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed,
 	int p_jumpStrength )
 	:ActorParams( )
 {
@@ -389,7 +389,7 @@ BadgerParams::BadgerParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, dou
 	SetBoundingQuad();	
 }
 
-BadgerParams::BadgerParams( 
+BadgerParams::BadgerParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( )
 {
@@ -478,7 +478,7 @@ ActorParams *BadgerParams::Copy()
 
 
 
-CactusParams::CactusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+CactusParams::CactusParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int p_bulletSpeed, int p_rhythm, int p_amplitude )
 	:ActorParams( )
 {
@@ -493,7 +493,7 @@ CactusParams::CactusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, dou
 	SetBoundingQuad();	
 }
 
-CactusParams::CactusParams( 
+CactusParams::CactusParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( )
 {
@@ -597,7 +597,7 @@ ActorParams *CactusParams::Copy()
 	return copy;
 }
 
-BossCoyoteParams::BossCoyoteParams(  sf::Vector2i &pos )
+BossCoyoteParams::BossCoyoteParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( ), debugLines( sf::Lines, 6 * 2 )
 {
 	type = EditSession::GetSession()->types["bosscoyote"];

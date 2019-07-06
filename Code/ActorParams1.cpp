@@ -21,51 +21,52 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-PatrollerParams::PatrollerParams(  sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
-	:ActorParams()
+PatrollerParams::PatrollerParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
+	:ActorParams(at)
 {	
 	lines = NULL;
 	position = pos;	
-	type = EditSession::GetSession()->types["patroller"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
-	//list<Vector2i> localPath;
 	SetPath( globalPath );
 
 	loop = p_loop;
 	speed = p_speed;
 
 	SetBoundingQuad();
-	//ss << localPath.size();
-	//params.push_back( ss.str() );
-	//ss.str( "" );
-
-	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-		ss << (*it).x  << " " << (*it).y;
-		params.push_back( ss.str() );
-		ss.str( "" );
-	}
-
-	if( loop )
-		params.push_back( "+loop" );
-	else
-		params.push_back( "-loop" );
-	
-	ss.precision( 5 );
-	ss << fixed << speed;
-	params.push_back( ss.str() );*/
 }
 
-PatrollerParams::PatrollerParams( 
+PatrollerParams::PatrollerParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	LoadMonitor(is);
+
+	LoadGlobalPath(is);
+
+	string loopStr;
+	is >> loopStr;
+	if (loopStr == "+loop")
+		loop = true;
+	else if (loopStr == "-loop")
+		loop = false;
+	else
+		assert(false && "should be a boolean");
+
+	is >> speed;
+
+	lines = NULL;
+}
+
+PatrollerParams::PatrollerParams(ActorType *at,
 	sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {	
 	lines = NULL;
 	position = pos;	
-	type = EditSession::GetSession()->types["patroller"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -74,36 +75,6 @@ PatrollerParams::PatrollerParams(
 	speed = 10;
 
 	SetBoundingQuad();
-
-	//image.setPosition( pos.x, pos.y );
-
-	//list<Vector2i> localPath;
-	//SetPath( globalPath );
-
-	//loop = p_loop;
-	//speed = p_speed;
-
-	//SetBoundingQuad();
-
-	//ss << localPath.size();
-	//params.push_back( ss.str() );
-	//ss.str( "" );
-
-	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-		ss << (*it).x  << " " << (*it).y;
-		params.push_back( ss.str() );
-		ss.str( "" );
-	}
-
-	if( loop )
-		params.push_back( "+loop" );
-	else
-		params.push_back( "-loop" );
-	
-	ss.precision( 5 );
-	ss << fixed << speed;
-	params.push_back( ss.str() );*/
 }
 
 void PatrollerParams::SetParams()
@@ -305,36 +276,51 @@ ActorParams *PatrollerParams::Copy()
 	return copy;
 }
 
-CrawlerParams::CrawlerParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
-	:ActorParams()
+CrawlerParams::CrawlerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+	:ActorParams(at)
 {
 	clockwise = p_clockwise;
 	speed = p_speed;
-
-	type = EditSession::GetSession()->types["crawler"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
 }
 
-CrawlerParams::CrawlerParams(  
+CrawlerParams::CrawlerParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	//always grounded
+
+	LoadGrounded(is);
+
+	LoadMonitor(is);
+
+	string cwStr;
+	is >> cwStr;
+
+	if (cwStr == "+clockwise")
+		clockwise = true;
+	else if (cwStr == "-clockwise")
+		clockwise = false;
+	else
+	{
+		assert(false && "boolean problem");
+	}
+
+	is >> speed;
+
+	is >> dist;
+}
+
+CrawlerParams::CrawlerParams(ActorType *at,
 		TerrainPolygon *p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
-		:ActorParams( ), clockwise( true ), speed( 5 )
+		:ActorParams( at), clockwise( true ), speed( 5 )
 {
-	type = EditSession::GetSession()->types["crawler"];
-
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
-}
-
-CrawlerParams::CrawlerParams( EditSession *edit )
-	:ActorParams( ), clockwise( true ), speed( 0 )
-{
-	
-	type = EditSession::GetSession()->types["crawler"];
 }
 
 void CrawlerParams::SetPanelInfo()
@@ -412,15 +398,19 @@ ActorParams *CrawlerParams::Copy()
 
 
 
-BossCrawlerParams::BossCrawlerParams(  TerrainPolygon *p_edgePolygon, 
+BossCrawlerParams::BossCrawlerParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( )
+	:ActorParams( at)
 {
-	type = EditSession::GetSession()->types["bosscrawler"];
-
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
+}
+
+BossCrawlerParams::BossCrawlerParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadGrounded(is);
 }
 
 bool BossCrawlerParams::CanApply()
@@ -446,26 +436,32 @@ ActorParams *BossCrawlerParams::Copy()
 
 
 
-BasicTurretParams::BasicTurretParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
-	:ActorParams( )
+BasicTurretParams::BasicTurretParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
+	:ActorParams(at )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
-
-	type = EditSession::GetSession()->types["basicturret"];
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
 }
 
-BasicTurretParams::BasicTurretParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( )
+BasicTurretParams::BasicTurretParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadGrounded(is);
+	LoadMonitor(is);
+
+	is >> bulletSpeed;
+	is >> framesWait;
+}
+
+BasicTurretParams::BasicTurretParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams(at )
 {
 	bulletSpeed = 10;
 	framesWait = 60;
-
-	type = EditSession::GetSession()->types["basicturret"];
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
@@ -547,13 +543,19 @@ ActorParams *BasicTurretParams::Copy()
 
 
 
-FootTrapParams::FootTrapParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( )	
+FootTrapParams::FootTrapParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+	:ActorParams( at)	
 {
-	type = EditSession::GetSession()->types["foottrap"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
+}
+
+FootTrapParams::FootTrapParams(ActorType *at, ifstream &is )
+	:ActorParams(at)
+{
+	LoadGrounded(is);
+	LoadMonitor(is);
 }
 
 bool FootTrapParams::CanApply()
@@ -597,16 +599,21 @@ ActorParams *FootTrapParams::Copy()
 	return copy;
 }
 
-AirdasherParams::AirdasherParams( sf::Vector2i &pos)
-	:ActorParams()
+AirdasherParams::AirdasherParams(ActorType *at, sf::Vector2i &pos)
+	:ActorParams(at)
 {
 	position = pos;
-	type = EditSession::GetSession()->types["airdasher"];
 
 	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);
 
 	SetBoundingQuad();
+}
+
+AirdasherParams::AirdasherParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
 }
 
 void AirdasherParams::WriteParamFile(std::ofstream &of)

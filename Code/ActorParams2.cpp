@@ -23,7 +23,7 @@ using namespace sf;
 
 
 
-BatParams::BatParams(  sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_framesBetweenNodes, bool p_loop )
+BatParams::BatParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_framesBetweenNodes, bool p_loop )
 	:ActorParams( )
 {	
 	lines = NULL;
@@ -65,7 +65,7 @@ BatParams::BatParams(  sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulle
 	params.push_back( ss.str() );*/
 }
 
-BatParams::BatParams(  sf::Vector2i &pos )
+BatParams::BatParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams()
 {	
 	lines = NULL;
@@ -341,7 +341,7 @@ ActorParams *BatParams::Copy()
 
 
 
-StagBeetleParams::StagBeetleParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+StagBeetleParams::StagBeetleParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
 	:ActorParams( )
 {
 	clockwise = p_clockwise;
@@ -354,7 +354,7 @@ StagBeetleParams::StagBeetleParams(  TerrainPolygon *p_edgePolygon, int p_edgeIn
 	SetBoundingQuad();	
 }
 
-StagBeetleParams::StagBeetleParams( 
+StagBeetleParams::StagBeetleParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( ), clockwise( true ), speed( 0 )
 {
@@ -444,7 +444,7 @@ ActorParams *StagBeetleParams::Copy()
 
 
 
-PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon, 
+PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
 	:ActorParams(), pathQuads( sf::Quads, 4 * 50 )
 {
@@ -461,7 +461,7 @@ PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon,
 	UpdatePath();
 }
 
-PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon, 
+PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity, int p_gravFactor, sf::Vector2i &p_jumpStrength,
 	int p_jumpWaitFrames )
 	:ActorParams( ), pathQuads( sf::Quads, 4 * 50 )
@@ -478,7 +478,7 @@ PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon,
 	UpdatePath();
 }
 
-PoisonFrogParams::PoisonFrogParams( EditSession *edit )
+PoisonFrogParams::PoisonFrogParams(ActorType *at, EditSession *edit )
 	:ActorParams( )//, clockwise( true ), speed( 0 )
 {
 	
@@ -683,7 +683,7 @@ ActorParams *PoisonFrogParams::Copy()
 
 
 
-CurveTurretParams::CurveTurretParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
+CurveTurretParams::CurveTurretParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
 	sf::Vector2i p_gravFactor, bool relative )
 	:ActorParams( ), bulletPathQuads( sf::Quads, 100 * 4 )
 {
@@ -701,7 +701,7 @@ CurveTurretParams::CurveTurretParams(  TerrainPolygon *p_edgePolygon, int p_edge
 	//UpdateBulletCurve();
 }
 
-CurveTurretParams::CurveTurretParams( 
+CurveTurretParams::CurveTurretParams(ActorType *at,
 		TerrainPolygon *p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
 		:ActorParams( ), bulletPathQuads( sf::Quads, 100 * 4 )
@@ -927,7 +927,7 @@ ActorParams *CurveTurretParams::Copy()
 	return copy;
 }
 
-BossBirdParams::BossBirdParams(  Vector2i &pos )
+BossBirdParams::BossBirdParams(ActorType *at, Vector2i &pos )
 	:ActorParams( ), debugLines( sf::Lines, 4 * 2 )
 {
 	type = EditSession::GetSession()->types["bossbird"];
@@ -993,7 +993,7 @@ void BossBirdParams::CreateFormation()
 	}
 }
 
-GravityFallerParams::GravityFallerParams( TerrainPolygon *p_edgePolygon,
+GravityFallerParams::GravityFallerParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
 	:ActorParams()
 {
@@ -1006,7 +1006,7 @@ GravityFallerParams::GravityFallerParams( TerrainPolygon *p_edgePolygon,
 	SetBoundingQuad();
 }
 
-GravityFallerParams::GravityFallerParams( TerrainPolygon *p_edgePolygon,
+GravityFallerParams::GravityFallerParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity, int var )
 	:ActorParams()
 {

@@ -20,7 +20,7 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-SharkParams::SharkParams(  sf::Vector2i &pos,
+SharkParams::SharkParams(ActorType *at, sf::Vector2i &pos,
 	int p_circleFrames )
 	:ActorParams( )
 {
@@ -35,7 +35,7 @@ SharkParams::SharkParams(  sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
-SharkParams::SharkParams(  sf::Vector2i &pos )
+SharkParams::SharkParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( )
 {
 	circleFrames = 60;
@@ -110,7 +110,7 @@ ActorParams *SharkParams::Copy()
 
 
 
-SwarmParams::SwarmParams(  sf::Vector2i &pos,
+SwarmParams::SwarmParams(ActorType *at, sf::Vector2i &pos,
 	int p_liveFrames )
 	:ActorParams( )
 {
@@ -125,7 +125,7 @@ SwarmParams::SwarmParams(  sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
-SwarmParams::SwarmParams(  sf::Vector2i &pos )
+SwarmParams::SwarmParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( )
 {
 	liveFrames = 420;
@@ -197,7 +197,7 @@ ActorParams *SwarmParams::Copy()
 	return copy;
 }
 
-GhostParams::GhostParams(  sf::Vector2i &pos,
+GhostParams::GhostParams(ActorType *at, sf::Vector2i &pos,
 	int p_speed )
 	:ActorParams( )
 {
@@ -212,7 +212,7 @@ GhostParams::GhostParams(  sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
-GhostParams::GhostParams(  sf::Vector2i &pos )
+GhostParams::GhostParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( )
 {
 	speed = 1;
@@ -287,7 +287,7 @@ ActorParams *GhostParams::Copy()
 
 
 
-OvergrowthParams::OvergrowthParams( 
+OvergrowthParams::OvergrowthParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( )
 {
@@ -342,7 +342,7 @@ ActorParams *OvergrowthParams::Copy()
 	return copy;
 }
 
-BossGatorParams::BossGatorParams(  Vector2i &pos )
+BossGatorParams::BossGatorParams(ActorType *at, Vector2i &pos )
 	:ActorParams( )
 {
 	type = EditSession::GetSession()->types["bossgator"];

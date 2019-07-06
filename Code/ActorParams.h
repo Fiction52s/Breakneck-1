@@ -9,7 +9,7 @@ struct ActorParams : ISelectable
 {
 
 	virtual ActorParams *Copy() = 0;
-	ActorParams();
+	ActorParams(ActorType *at);
 	virtual void Init() {};
 	virtual void WriteParamFile(std::ofstream &of) = 0;
 	void WriteFile(std::ofstream &of);
@@ -21,7 +21,10 @@ struct ActorParams : ISelectable
 	virtual void SetPath(std::list<sf::Vector2i> &globalPath);
 	void DrawBoundary(sf::RenderTarget *target);
 	void DrawMonitor(sf::RenderTarget *target);
-
+	void LoadGrounded(std::ifstream &is);
+	void LoadAerial(std::ifstream &is);
+	void LoadGlobalPath(std::ifstream &is );
+	void LoadMonitor(std::ifstream &is);
 	virtual void SetParams();
 	virtual void SetPanelInfo();
 
@@ -69,9 +72,9 @@ struct ActorParams : ISelectable
 
 struct PlayerParams : public ActorParams
 {
-	PlayerParams(
+	PlayerParams( ActorType *at,
 		sf::Vector2i pos);
-	PlayerParams(
+	PlayerParams(ActorType *at,
 		std::ifstream &is );
 
 	bool CanApply();
@@ -87,15 +90,15 @@ struct PlayerParams : public ActorParams
 
 struct GroundTriggerParams : public ActorParams
 {
-	GroundTriggerParams(TerrainPolygon *edgePolygon,
+	GroundTriggerParams(ActorType *at, TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		bool facingRight,
 		const std::string &typeStr);
-	GroundTriggerParams(TerrainPolygon *edgePolygon,
+	GroundTriggerParams(ActorType *at, TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
-	GroundTriggerParams(
+	GroundTriggerParams(ActorType *at,
 		std::ifstream &is);
 	bool CanApply();
 	ActorParams *Copy();
@@ -108,16 +111,16 @@ struct GroundTriggerParams : public ActorParams
 
 struct FlowerPodParams : public ActorParams
 {
-	FlowerPodParams(
+	FlowerPodParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		const std::string &typeStr);
-	FlowerPodParams(
+	FlowerPodParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
-	FlowerPodParams(
+	FlowerPodParams(ActorType *at,
 		std::ifstream &is);
 	bool CanApply();
 	ActorParams *Copy();
@@ -130,11 +133,11 @@ struct FlowerPodParams : public ActorParams
 
 struct AirTriggerParams : public ActorParams
 {
-	AirTriggerParams(sf::Vector2i &pos, const std::string &typeStr,
+	AirTriggerParams(ActorType *at, sf::Vector2i &pos, const std::string &typeStr,
 		int w, int h);
-	AirTriggerParams(
+	AirTriggerParams(ActorType *at,
 		sf::Vector2i &pos);
-	AirTriggerParams(
+	AirTriggerParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -155,16 +158,16 @@ struct AirTriggerParams : public ActorParams
 
 struct NexusParams : public ActorParams
 {
-	NexusParams(
+	NexusParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		int nexusIndex);
-	NexusParams(
+	NexusParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
-	NexusParams(
+	NexusParams(ActorType *at,
 		std::ifstream &is);
 	bool CanApply();
 	ActorParams *Copy();
@@ -176,16 +179,16 @@ struct NexusParams : public ActorParams
 
 struct ShipPickupParams : public ActorParams
 {
-	ShipPickupParams(
+	ShipPickupParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		bool facingRight);
-	ShipPickupParams(
+	ShipPickupParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
-	ShipPickupParams(
+	ShipPickupParams(ActorType *at,
 		std::ifstream &is);
 	bool CanApply();
 	ActorParams *Copy();
@@ -197,11 +200,11 @@ struct ShipPickupParams : public ActorParams
 
 struct GoalParams : public ActorParams
 {
-	GoalParams(
+	GoalParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
-	GoalParams(
+	GoalParams(ActorType *at,
 		std::ifstream &is);
 	bool CanApply();
 	ActorParams *Copy();
@@ -219,23 +222,23 @@ struct PoiParams : public ActorParams
 	};
 
 	Barrier barrier;
-	PoiParams(
+	PoiParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity, Barrier bType,
 		const std::string &name);
-	PoiParams(
+	PoiParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
-	PoiParams(
+	PoiParams(ActorType *at,
 		sf::Vector2i &pos,
 		Barrier bType,
 		const std::string &name,
 		bool hasCameraProperties, float camZoom);
-	PoiParams(
+	PoiParams(ActorType *at,
 		sf::Vector2i &pos);
-	PoiParams(
+	PoiParams(ActorType *at,
 		std::ifstream &is);
 
 	void Draw(sf::RenderTarget *target);
@@ -260,12 +263,12 @@ struct PoiParams : public ActorParams
 
 struct KeyParams : public ActorParams
 {
-	KeyParams(
+	KeyParams(ActorType *at,
 		sf::Vector2i &pos, int numKeys,
 		int zoneType);
-	KeyParams(
+	KeyParams(ActorType *at,
 		sf::Vector2i &pos);
-	KeyParams(
+	KeyParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -280,12 +283,12 @@ struct KeyParams : public ActorParams
 
 struct ShardParams : public ActorParams
 {
-	ShardParams(
+	ShardParams(ActorType *at,
 		sf::Vector2i &pos);
-	ShardParams(
+	ShardParams(ActorType *at,
 		sf::Vector2i &pos, int world,
 		int li);
-	ShardParams(
+	ShardParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -310,9 +313,9 @@ struct ShardParams : public ActorParams
 
 struct RaceFightTargetParams : public ActorParams
 {
-	RaceFightTargetParams(
+	RaceFightTargetParams(ActorType *at,
 		sf::Vector2i &pos);
-	RaceFightTargetParams(
+	RaceFightTargetParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -337,13 +340,13 @@ struct BlockerParams : public ActorParams
 		BLACK
 	};
 
-	BlockerParams(
+	BlockerParams(ActorType *at,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
 		int bType, bool invinc, int spacing);
-	BlockerParams(
+	BlockerParams(ActorType *at,
 		sf::Vector2i &pos);
-	BlockerParams(
+	BlockerParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -377,14 +380,14 @@ struct BlockerParams : public ActorParams
 //w1
 struct ComboerParams : public ActorParams
 {
-	ComboerParams(
+	ComboerParams(ActorType *at,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
 		float speed,
 		bool loop);
-	ComboerParams(
+	ComboerParams(ActorType *at,
 		sf::Vector2i &pos);
-	ComboerParams(
+	ComboerParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -408,11 +411,11 @@ struct ComboerParams : public ActorParams
 
 struct BoosterParams : public ActorParams
 {
-	BoosterParams(
+	BoosterParams(ActorType *at,
 		sf::Vector2i &pos, int strength);
-	BoosterParams(
+	BoosterParams(ActorType *at,
 		sf::Vector2i &pos);
-	BoosterParams(
+	BoosterParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -427,13 +430,13 @@ struct BoosterParams : public ActorParams
 
 struct SpringParams : public ActorParams
 {
-	SpringParams(
+	SpringParams(ActorType *at,
 		sf::Vector2i &pos,
 		std::list<sf::Vector2i> &globalPath,
 		int moveFrames);
-	SpringParams(
+	SpringParams(ActorType *at,
 		sf::Vector2i &pos);
-	SpringParams(
+	SpringParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -454,14 +457,14 @@ struct SpringParams : public ActorParams
 
 struct PatrollerParams : public ActorParams
 {
-	PatrollerParams(
+	PatrollerParams(ActorType *at,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
 		float speed,
 		bool loop);
-	PatrollerParams(
+	PatrollerParams(ActorType *at,
 		sf::Vector2i &pos);
-	PatrollerParams(
+	PatrollerParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -485,15 +488,14 @@ struct PatrollerParams : public ActorParams
 
 struct CrawlerParams : public ActorParams
 {
-	CrawlerParams(
+	CrawlerParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		bool clockwise, float speed);
-	CrawlerParams(
+	CrawlerParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
-	CrawlerParams(EditSession *edit);
-	CrawlerParams(
+	CrawlerParams(ActorType *at,
 		std::ifstream &is);
 
 	void SetParams();
@@ -510,16 +512,16 @@ struct CrawlerParams : public ActorParams
 struct BasicTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
-	BasicTurretParams(
+	BasicTurretParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		double bulletSpeed,
 		int framesWait);
-	BasicTurretParams(
+	BasicTurretParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
-	BasicTurretParams(
+	BasicTurretParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	bool CanApply();
@@ -533,12 +535,12 @@ struct BasicTurretParams : public ActorParams
 
 struct FootTrapParams : public ActorParams
 {
-	FootTrapParams(
+	FootTrapParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
-	FootTrapParams(EditSession *edit);
-	FootTrapParams(
+	FootTrapParams(ActorType *at, EditSession *edit);
+	FootTrapParams(ActorType *at,
 		std::ifstream &is);
 	bool CanApply();
 	ActorParams *Copy();
@@ -550,9 +552,9 @@ struct FootTrapParams : public ActorParams
 
 struct AirdasherParams : public ActorParams
 {
-	AirdasherParams(
+	AirdasherParams(ActorType *at,
 		sf::Vector2i &pos);
-	AirdasherParams(
+	AirdasherParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -565,11 +567,11 @@ struct AirdasherParams : public ActorParams
 
 struct BossCrawlerParams : public ActorParams
 {
-	BossCrawlerParams(
+	BossCrawlerParams(ActorType *at,
 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
-	BossCrawlerParams(
+	BossCrawlerParams(ActorType *at,
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
@@ -581,16 +583,16 @@ struct BossCrawlerParams : public ActorParams
 //w2
 struct BatParams : public ActorParams
 {
-	BatParams(
+	BatParams(ActorType *at,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
 		int framesBetween,
 		//int nodeDistance,
 		int bulletSpeed,
 		bool loop);
-	BatParams(
+	BatParams(ActorType *at,
 		sf::Vector2i &pos);
-	BatParams(
+	BatParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -615,16 +617,16 @@ struct BatParams : public ActorParams
 
 struct GravityFallerParams : public ActorParams
 {
-	GravityFallerParams(
+	GravityFallerParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		int variation);
-	GravityFallerParams(
+	GravityFallerParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
-	GravityFallerParams(
+	GravityFallerParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
@@ -638,17 +640,17 @@ struct GravityFallerParams : public ActorParams
 
 struct StagBeetleParams : public ActorParams
 {
-	StagBeetleParams(
+	StagBeetleParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		bool clockwise, float speed);
 	//StagBeetleParams( 
 	//	sf::Vector2i &pos, bool facingRight,
 	//	float speed );
-	StagBeetleParams(
+	StagBeetleParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
-	StagBeetleParams(
+	StagBeetleParams(ActorType *at,
 		std::ifstream &is);
 
 	void WriteParamFile(std::ofstream &of);
@@ -664,19 +666,19 @@ struct StagBeetleParams : public ActorParams
 
 struct PoisonFrogParams : public ActorParams
 {
-	PoisonFrogParams(
+	PoisonFrogParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		int gravFactor,
 		sf::Vector2i &jumpStrength,
 		int jumpWaitFrames);
-	PoisonFrogParams(
+	PoisonFrogParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	PoisonFrogParams(EditSession *edit);
-	PoisonFrogParams(
+	PoisonFrogParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void UpdatePath();
@@ -699,7 +701,7 @@ struct PoisonFrogParams : public ActorParams
 struct CurveTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
-	CurveTurretParams(
+	CurveTurretParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
@@ -708,10 +710,10 @@ struct CurveTurretParams : public ActorParams
 		sf::Vector2i gravFactor,
 		bool relativeGrav);
 	ActorParams *Copy();
-	CurveTurretParams(
+	CurveTurretParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
-	CurveTurretParams(
+	CurveTurretParams(ActorType *at,
 		std::ifstream &is);
 	void SetParams();
 	void SetPanelInfo();
@@ -732,10 +734,10 @@ struct CurveTurretParams : public ActorParams
 
 struct BossBirdParams : public ActorParams
 {
-	BossBirdParams(
+	BossBirdParams(ActorType *at,
 
 		sf::Vector2i &pos);
-	BossBirdParams(
+	BossBirdParams(ActorType *at,
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
@@ -752,14 +754,14 @@ struct BossBirdParams : public ActorParams
 //w3
 struct PulserParams : public ActorParams
 {
-	PulserParams(
+	PulserParams(ActorType *at,
 		sf::Vector2i &pos,
 		std::list<sf::Vector2i> &globalPath,
 		int framesBetween,
 		bool loop);
-	PulserParams(
+	PulserParams(ActorType *at,
 		sf::Vector2i &pos);
-	PulserParams(
+	PulserParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -782,14 +784,14 @@ struct PulserParams : public ActorParams
 
 struct OwlParams : public ActorParams
 {
-	OwlParams(
+	OwlParams(ActorType *at,
 		sf::Vector2i &pos,
 		int moveSpeed,
 		int bulletSpeed,
 		int rhythmFrames);
-	OwlParams(
+	OwlParams(ActorType *at,
 		sf::Vector2i &pos);
-	OwlParams(
+	OwlParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -806,15 +808,15 @@ struct OwlParams : public ActorParams
 
 struct BadgerParams : public ActorParams
 {
-	BadgerParams(
+	BadgerParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		int speed, int jumpStrength);
 
-	BadgerParams(
+	BadgerParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
-	BadgerParams(
+	BadgerParams(ActorType *at,
 		std::ifstream &is);
 
 	void WriteParamFile(std::ofstream &of);
@@ -829,17 +831,17 @@ struct BadgerParams : public ActorParams
 
 struct CactusParams : public ActorParams
 {
-	CactusParams(
+	CactusParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		int bulletSpeed, int rhythm,
 		int amplitude);
 
-	CactusParams(
+	CactusParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
 
-	CactusParams(
+	CactusParams(ActorType *at,
 		std::ifstream &is);
 
 
@@ -856,9 +858,9 @@ struct CactusParams : public ActorParams
 
 struct BossCoyoteParams : public ActorParams
 {
-	BossCoyoteParams(
+	BossCoyoteParams(ActorType *at,
 		sf::Vector2i &pos);
-	BossCoyoteParams(
+	BossCoyoteParams(ActorType *at,
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
@@ -874,9 +876,9 @@ struct BossCoyoteParams : public ActorParams
 //w4
 struct TurtleParams : public ActorParams
 {
-	TurtleParams(
+	TurtleParams(ActorType *at,
 		sf::Vector2i &pos);
-	TurtleParams(
+	TurtleParams(ActorType *at,
 		std::ifstream &is);
 	/*int moveSpeed,
 	int bulletSpeed,
@@ -894,12 +896,12 @@ struct TurtleParams : public ActorParams
 
 struct CoralParams : public ActorParams
 {
-	CoralParams(
+	CoralParams(ActorType *at,
 		sf::Vector2i &pos,
 		int moveFrames);
-	CoralParams(
+	CoralParams(ActorType *at,
 		sf::Vector2i &pos);
-	CoralParams(
+	CoralParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -920,10 +922,10 @@ struct CheetahParams : public ActorParams
 	int bulletSpeed, int rhythm,
 	int amplitude );*/
 
-	CheetahParams(
+	CheetahParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
-	CheetahParams(
+	CheetahParams(ActorType *at,
 		std::ifstream &is);
 
 	void WriteParamFile(std::ofstream &of);
@@ -935,15 +937,15 @@ struct CheetahParams : public ActorParams
 
 struct SpiderParams : public ActorParams
 {
-	SpiderParams(
+	SpiderParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		int speed);
 
-	SpiderParams(
+	SpiderParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
-	SpiderParams(
+	SpiderParams(ActorType *at,
 		std::ifstream &is);
 
 	void WriteParamFile(std::ofstream &of);
@@ -957,13 +959,13 @@ struct SpiderParams : public ActorParams
 
 struct RailParams : public ActorParams
 {
-	RailParams(
+	RailParams(ActorType *at,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
 		bool energized);
-	RailParams(
+	RailParams(ActorType *at,
 		sf::Vector2i &pos);
-	RailParams(
+	RailParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -992,11 +994,10 @@ struct RailParams : public ActorParams
 
 struct BossTigerParams : public ActorParams
 {
-	BossTigerParams(
-
+	BossTigerParams(ActorType *at,
 		sf::Vector2i &pos);
 
-	BossTigerParams(
+	BossTigerParams(ActorType *at,
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
@@ -1013,12 +1014,12 @@ struct BossTigerParams : public ActorParams
 //w5
 struct SharkParams : public ActorParams
 {
-	SharkParams(
+	SharkParams(ActorType *at,
 		sf::Vector2i &pos,
 		int circleFrames);
-	SharkParams(
+	SharkParams(ActorType *at,
 		sf::Vector2i &pos);
-	SharkParams(
+	SharkParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -1033,12 +1034,12 @@ struct SharkParams : public ActorParams
 
 struct SwarmParams : public ActorParams
 {
-	SwarmParams(
+	SwarmParams(ActorType *at,
 		sf::Vector2i &pos,
 		int liveFrames);
-	SwarmParams(
+	SwarmParams(ActorType *at,
 		sf::Vector2i &pos);
-	SwarmParams(
+	SwarmParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -1053,12 +1054,12 @@ struct SwarmParams : public ActorParams
 
 struct GhostParams : public ActorParams
 {
-	GhostParams(
+	GhostParams(ActorType *at,
 		sf::Vector2i &pos,
 		int speed);
-	GhostParams(
+	GhostParams(ActorType *at,
 		sf::Vector2i &pos);
-	GhostParams(
+	GhostParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -1073,10 +1074,10 @@ struct GhostParams : public ActorParams
 
 struct OvergrowthParams : public ActorParams
 {
-	OvergrowthParams(
+	OvergrowthParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
-	OvergrowthParams(
+	OvergrowthParams(ActorType *at,
 		std::ifstream &is);
 	/*OvergrowthParams(
 	TerrainPolygon *edgePolygon,
@@ -1092,10 +1093,10 @@ struct OvergrowthParams : public ActorParams
 
 struct BossGatorParams : public ActorParams
 {
-	BossGatorParams(
+	BossGatorParams(ActorType *at,
 
 		sf::Vector2i &pos);
-	BossGatorParams(
+	BossGatorParams(ActorType *at,
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
@@ -1111,10 +1112,10 @@ struct BossGatorParams : public ActorParams
 //w6
 struct SpecterParams : public ActorParams
 {
-	SpecterParams(
+	SpecterParams(ActorType *at,
 		sf::Vector2i &pos);
 
-	SpecterParams(
+	SpecterParams(ActorType *at,
 		std::ifstream &is);
 	/*int moveSpeed,
 	int bulletSpeed,
@@ -1132,9 +1133,9 @@ struct SpecterParams : public ActorParams
 
 struct CopycatParams : public ActorParams
 {
-	CopycatParams(
+	CopycatParams(ActorType *at,
 		sf::Vector2i &pos);
-	CopycatParams(
+	CopycatParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -1147,12 +1148,12 @@ struct CopycatParams : public ActorParams
 
 struct NarwhalParams : public ActorParams
 {
-	NarwhalParams(
+	NarwhalParams(ActorType *at,
 		sf::Vector2i &pos,
 		sf::Vector2i &dest,
 		int moveFrames
 	);
-	NarwhalParams(
+	NarwhalParams(ActorType *at,
 		sf::Vector2i &pos);
 	NarwhalParams(
 		std::ifstream &is);
@@ -1173,12 +1174,12 @@ struct NarwhalParams : public ActorParams
 
 struct GorillaParams : public ActorParams
 {
-	GorillaParams(
+	GorillaParams(ActorType *at,
 		sf::Vector2i &pos, int wallWidth,
 		int followFrames);
-	GorillaParams(
+	GorillaParams(ActorType *at,
 		sf::Vector2i &pos);
-	GorillaParams(
+	GorillaParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 
@@ -1194,10 +1195,10 @@ struct GorillaParams : public ActorParams
 
 struct BossSkeletonParams : public ActorParams
 {
-	BossSkeletonParams(
+	BossSkeletonParams(ActorType *at,
 
 		sf::Vector2i &pos);
-	BossSkeletonParams(
+	BossSkeletonParams(ActorType *at,
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();

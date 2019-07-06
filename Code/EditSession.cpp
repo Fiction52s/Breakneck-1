@@ -515,7 +515,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	playerType = new ActorType(playerPI);
 	types["player"] = playerType;
 
-	player.reset( new PlayerParams( Vector2i( 0, 0 ) ) );
+	player.reset( new PlayerParams( playerType, Vector2i( 0, 0 ) ) );
 	groups["player"]->actors.push_back( player );
 	
 

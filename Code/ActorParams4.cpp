@@ -21,7 +21,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-CoralParams::CoralParams(  sf::Vector2i &pos, 
+CoralParams::CoralParams(ActorType *at, sf::Vector2i &pos,
 	int p_moveFrames )
 	:ActorParams( )
 {
@@ -35,7 +35,7 @@ CoralParams::CoralParams(  sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
-CoralParams::CoralParams(  sf::Vector2i &pos )
+CoralParams::CoralParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( )
 {
 	moveFrames = 60;
@@ -113,7 +113,7 @@ ActorParams *CoralParams::Copy()
 
 
 
-TurtleParams::TurtleParams(  sf::Vector2i &pos )
+TurtleParams::TurtleParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( )
 {
 	position = pos;	
@@ -166,7 +166,7 @@ ActorParams *TurtleParams::Copy()
 	return copy;
 }
 
-CheetahParams::CheetahParams( 
+CheetahParams::CheetahParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( )
 {
@@ -223,7 +223,7 @@ ActorParams *CheetahParams::Copy()
 
 
 
-SpiderParams::SpiderParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed )
+SpiderParams::SpiderParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed )
 	:ActorParams( )
 {
 	speed = p_speed;
@@ -309,7 +309,7 @@ ActorParams *SpiderParams::Copy()
 	return copy;
 }
 
-BossTigerParams::BossTigerParams(  Vector2i &pos )
+BossTigerParams::BossTigerParams(ActorType *at, Vector2i &pos )
 	:ActorParams( ), debugLines( sf::Lines, 30 * 2 )
 {
 	type = EditSession::GetSession()->types["bosstiger"];
