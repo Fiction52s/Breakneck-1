@@ -12937,16 +12937,6 @@ int EditSession::IsRemovePointsOkay()
 Panel * EditSession::CreateOptionsPanel( const std::string &name )
 {
 	Panel *p = NULL;
-	if( name == "healthfly" )
-	{
-		p = new Panel( "healthfly_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		
-	}
 	else if( name == "poi" )
 	{
 		p = new Panel( "poi_options", 200, 500, this );
@@ -13533,29 +13523,6 @@ void EditSession::SetEnemyEditPanel()
 	Panel *p = type->panel;
 
 	ap->SetPanelInfo();
-
-	//if( name == "healthfly" )
-	//{
-	//	HealthFlyParams *fly = (HealthFlyParams*)ap;
-
-	//	p->textBoxes["group"]->text.setString( fly->group->name );
-
-	//	p->checkBoxes["monitor"]->checked = false;
-	//	//SetMonitorGrid( fly->monitorType, p->gridSelectors["monitortype"] );
-
-	//	
-	//}
-	//else if( name == "foottrap" )
-	//{
-	//	FootTrapParams *footTrap = (FootTrapParams*)ap;
-	//	p->textBoxes["group"]->text.setString( footTrap->group->name );
-	//	p->checkBoxes["monitor"]->checked = false;
-	//}
-
-	//else
-	//{
-	//	ap->SetPanelInfo();
-	//}
 
 	showPanel = p;
 }
@@ -15255,20 +15222,6 @@ void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 		terrain->UpdateBounds();
 		//a->SetAsGoal( terrain, edgeIndex, edgeQuantity );
 	}
-	else if (name == "healthfly")
-	{
-		//always air
-		is >> pos.x;
-		is >> pos.y;
-		is >> hasMonitor;
-
-		int color;
-		is >> color;
-
-		//a->SetAsPatroller( at, pos, globalPath, speed, loop );	
-		a.reset(new HealthFlyParams(pos, color));
-		a->hasMonitor = (bool)hasMonitor;
-	}
 	else if (name == "poi")
 	{
 		string air;
@@ -16356,14 +16309,8 @@ void ActorType::Init()
 {
 	EditSession *session = EditSession::GetSession();
 
-	if( name == "healthfly" )
-	{
-		width = 32;
-		height = 32;
-		canBeGrounded = false;
-		canBeAerial = true;
-	}
-	else if( name == "goal" )
+	
+	if( name == "goal" )
 	{
 		width = 32;
 		height = 32;
@@ -16750,16 +16697,7 @@ void ActorType::PlaceEnemy()
 
 	Vector2i worldPos(edit->worldPos);
 
-	if (name == "healthfly")
-	{
-		edit->showPanel = panel;
-
-		edit->showPanel->textBoxes["name"]->text.setString("test");
-		edit->showPanel->textBoxes["group"]->text.setString("not test");
-
-		edit->airPos = worldPos;
-	}
-	else if (name == "goal")
+	if (name == "goal")
 	{
 		if (edit->enemyEdgePolygon != NULL)
 		{

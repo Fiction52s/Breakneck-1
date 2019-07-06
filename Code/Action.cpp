@@ -14,24 +14,6 @@ ISelectable::ISelectable( ISelectable::ISelectableType p_selectableType )
 {
 }
 
-/*void ISelectable::BrushDraw( RenderTarget *target, bool valid )
-{
-
-}
-
-void ISelectable::Draw( RenderTarget *target )
-{
-
-}
-
-bool ISelectable::ContainsPoint( sf::Vector2i point )
-{
-	return false;
-}
-
-bool ISelectable::Intersects( sf::IntRect rect )
-{
-}*/
 
 Brush::Brush()
 	:terrainOnly( true )

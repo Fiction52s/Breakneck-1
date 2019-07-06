@@ -4,6 +4,7 @@
 #include <fstream>
 #include "EditSession.h"
 
+
 struct ActorParams : ISelectable
 {
 	enum PosType
@@ -72,6 +73,22 @@ struct ActorParams : ISelectable
 	sf::VertexArray boundingQuad;
 };
 
+struct PlayerParams : public ActorParams
+{
+	PlayerParams(
+		sf::Vector2i pos);
+
+	bool CanApply();
+	void WriteParamFile(std::ofstream &of);
+	void Deactivate(EditSession *edit,
+		boost::shared_ptr<ISelectable>  select);
+	ActorParams *Copy();
+	void Activate(EditSession *edit,
+		boost::shared_ptr<ISelectable> select);
+};
+
+//extra
+
 struct GroundTriggerParams : public ActorParams
 {
 	GroundTriggerParams(TerrainPolygon *edgePolygon,
@@ -135,7 +152,7 @@ struct AirTriggerParams : public ActorParams
 	sf::RectangleShape triggerRect;
 	sf::Text nameText;
 };
-//all
+
 struct NexusParams : public ActorParams
 {
 	NexusParams(
@@ -176,18 +193,6 @@ struct ShipPickupParams : public ActorParams
 	bool facingRight;
 };
 
-struct HealthFlyParams : public ActorParams
-{
-	HealthFlyParams(
-		sf::Vector2i pos, int type);
-	//HealthFlyParams( EditSession *edit );
-	void WriteParamFile(std::ofstream &of);
-	void Draw(sf::RenderTarget *target);
-	ActorParams *Copy();
-	bool CanApply();
-	int color;
-};
-
 struct GoalParams : public ActorParams
 {
 	GoalParams(
@@ -200,22 +205,6 @@ struct GoalParams : public ActorParams
 	void WriteParamFile(std::ofstream &of);
 	//void Draw( sf::RenderTarget *target );
 };
-
-struct PlayerParams : public ActorParams
-{
-	PlayerParams(
-		sf::Vector2i pos);
-
-	bool CanApply();
-	void WriteParamFile(std::ofstream &of);
-	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable>  select);
-	ActorParams *Copy();
-	void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-};
-
-
 
 struct PoiParams : public ActorParams
 {
@@ -323,8 +312,6 @@ struct RaceFightTargetParams : public ActorParams
 	ActorParams *Copy();
 };
 
-
-
 struct BlockerParams : public ActorParams
 {
 	enum BlockerType
@@ -373,6 +360,8 @@ struct BlockerParams : public ActorParams
 	//will have multiple types
 };
 
+
+//w1
 struct ComboerParams : public ActorParams
 {
 	ComboerParams(
@@ -400,39 +389,6 @@ struct ComboerParams : public ActorParams
 	bool loop;
 	int speed;
 	int swoopSpeed;
-};
-
-struct RailParams : public ActorParams
-{
-	RailParams(
-		sf::Vector2i pos,
-		std::list<sf::Vector2i> &globalPath,
-		bool energized);
-	RailParams(
-		sf::Vector2i &pos);
-	void WriteParamFile(std::ofstream &of);
-	void SetPath(
-		std::list<int> &angleList);
-	std::list<int> GetAngleList();
-	void Draw(sf::RenderTarget *target);
-
-	bool CanApply();
-	ActorParams *Copy();
-	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
-	std::list<sf::Vector2i> GetGlobalChain();
-
-	void SetParams();
-	void SetPanelInfo();
-
-	//std::list<int> angleList;
-	bool armored;
-	//sf::VertexArray *lines; //local pos
-
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
-
-	bool energized;
 };
 
 struct BoosterParams : public ActorParams
@@ -476,7 +432,7 @@ struct SpringParams : public ActorParams
 
 	int moveFrames;
 };
-//w1
+
 struct PatrollerParams : public ActorParams
 {
 	PatrollerParams(
@@ -590,6 +546,7 @@ struct BossCrawlerParams : public ActorParams
 	void WriteParamFile(std::ofstream &of);
 	bool CanApply();
 };
+
 
 //w2
 struct BatParams : public ActorParams
@@ -734,6 +691,23 @@ struct CurveTurretParams : public ActorParams
 	int curveFactor;
 };
 
+struct BossBirdParams : public ActorParams
+{
+	BossBirdParams(
+
+		sf::Vector2i &pos);
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void WriteParamFile(std::ofstream &of);
+	bool CanApply();
+	void Draw(sf::RenderTarget *target);
+	sf::VertexArray debugLines;
+	void CreateFormation();
+	int width;
+	int height;
+};
+
+
 //w3
 struct PulserParams : public ActorParams
 {
@@ -831,6 +805,19 @@ struct CactusParams : public ActorParams
 	int amplitude;
 };
 
+struct BossCoyoteParams : public ActorParams
+{
+	BossCoyoteParams(
+		sf::Vector2i &pos);
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void WriteParamFile(std::ofstream &of);
+	bool CanApply();
+	void CreateFormation();
+	void Draw(sf::RenderTarget *target);
+	int radius;
+	sf::VertexArray debugLines;
+};
 
 
 //w4
@@ -911,6 +898,56 @@ struct SpiderParams : public ActorParams
 	int speed;
 };
 
+struct RailParams : public ActorParams
+{
+	RailParams(
+		sf::Vector2i pos,
+		std::list<sf::Vector2i> &globalPath,
+		bool energized);
+	RailParams(
+		sf::Vector2i &pos);
+	void WriteParamFile(std::ofstream &of);
+	void SetPath(
+		std::list<int> &angleList);
+	std::list<int> GetAngleList();
+	void Draw(sf::RenderTarget *target);
+
+	bool CanApply();
+	ActorParams *Copy();
+	void SetPath(
+		std::list<sf::Vector2i> &globalPath);
+	std::list<sf::Vector2i> GetGlobalChain();
+
+	void SetParams();
+	void SetPanelInfo();
+
+	//std::list<int> angleList;
+	bool armored;
+	//sf::VertexArray *lines; //local pos
+
+	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
+
+	bool energized;
+};
+
+struct BossTigerParams : public ActorParams
+{
+	BossTigerParams(
+
+		sf::Vector2i &pos);
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void CreateFormation();
+	void WriteParamFile(std::ofstream &of);
+	bool CanApply();
+	void Draw(sf::RenderTarget *target);
+	sf::VertexArray debugLines;
+	int radius1;
+	int radius2;
+};
+
+
 //w5
 struct SharkParams : public ActorParams
 {
@@ -983,6 +1020,22 @@ struct OvergrowthParams : public ActorParams
 	void SetPanelInfo();
 	ActorParams *Copy();
 };
+
+struct BossGatorParams : public ActorParams
+{
+	BossGatorParams(
+
+		sf::Vector2i &pos);
+	//CrawlerParams( EditSession *edit );
+	ActorParams *Copy();
+	void WriteParamFile(std::ofstream &of);
+	bool CanApply();
+	void Draw(sf::RenderTarget *target);
+	sf::CircleShape circles[5];
+	int orbRadius;
+	int radius;
+};
+
 
 //w6
 struct SpecterParams : public ActorParams
@@ -1057,67 +1110,6 @@ struct GorillaParams : public ActorParams
 
 	int wallWidth;
 	int followFrames;
-};
-
-struct BossBirdParams : public ActorParams
-{
-	BossBirdParams(
-
-		sf::Vector2i &pos);
-	//CrawlerParams( EditSession *edit );
-	ActorParams *Copy();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
-	void Draw(sf::RenderTarget *target);
-	sf::VertexArray debugLines;
-	void CreateFormation();
-	int width;
-	int height;
-};
-
-struct BossCoyoteParams : public ActorParams
-{
-	BossCoyoteParams(
-		sf::Vector2i &pos);
-	//CrawlerParams( EditSession *edit );
-	ActorParams *Copy();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
-	void CreateFormation();
-	void Draw(sf::RenderTarget *target);
-	int radius;
-	sf::VertexArray debugLines;
-};
-
-struct BossTigerParams : public ActorParams
-{
-	BossTigerParams(
-
-		sf::Vector2i &pos);
-	//CrawlerParams( EditSession *edit );
-	ActorParams *Copy();
-	void CreateFormation();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
-	void Draw(sf::RenderTarget *target);
-	sf::VertexArray debugLines;
-	int radius1;
-	int radius2;
-};
-
-struct BossGatorParams : public ActorParams
-{
-	BossGatorParams(
-
-		sf::Vector2i &pos);
-	//CrawlerParams( EditSession *edit );
-	ActorParams *Copy();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
-	void Draw(sf::RenderTarget *target);
-	sf::CircleShape circles[5];
-	int orbRadius;
-	int radius;
 };
 
 struct BossSkeletonParams : public ActorParams

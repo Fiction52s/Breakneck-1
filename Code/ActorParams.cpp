@@ -524,53 +524,6 @@ void ActorParams::Activate(EditSession *editsession, SelectPtr select )
 	}
 }
 
-
-HealthFlyParams::HealthFlyParams( 
-		sf::Vector2i pos, int p_color )
-		:ActorParams( ActorParams::AIR_ONLY )
-{
-	type = EditSession::GetSession()->types["healthfly"];
-	position = pos;
-	
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-	
-	color = p_color;
-
-	SetBoundingQuad();
-}
-
-void HealthFlyParams::WriteParamFile( std::ofstream &of )
-{
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
-	of << color << endl;
-}
-
-void HealthFlyParams::Draw( sf::RenderTarget *target )
-{
-	ActorParams::Draw( target );
-	//target->draw( image );
-}
-
-bool HealthFlyParams::CanApply()
-{
-	return true;
-}
-
-ActorParams *HealthFlyParams::Copy()
-{
-	HealthFlyParams *copy = new HealthFlyParams( *this );
-	return copy;
-}
-
-
-
-
 GoalParams::GoalParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )
 {

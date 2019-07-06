@@ -76,7 +76,6 @@
 #include "FlowerPod.h"
 //#include "Enemy_Gorilla.h"
 //#include "Enemy_GrowingTree.h"
-//#include "Enemy_HealthFly.h"
 //#include "Enemy_Jay.h"
 //#include "Enemy_Mine.h"
 //#include "Enemy_Narwhal.h"
@@ -1748,33 +1747,6 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				float space = 78.f;
 				goalNodePosFinal = V2d(goalNodePos.x, goalNodePos.y - space);
 				cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
-			}
-			else if( typeName == "healthfly" )
-			{
-				int xPos,yPos;
-
-				//always air
-
-
-				is >> xPos;
-				is >> yPos;
-				
-				int hasMonitor;
-				is >> hasMonitor;
-
-				int color;
-				is >> color;
-				
-				//HealthFly::FlyType fType = (HealthFly::FlyType)color;
-				
-				/*HealthFly *enemy = new HealthFly( this, Vector2i( xPos, yPos ), fType );
-				
-				
-
-				fullEnemyList.push_back( enemy );
-				enem = enemy;
-
-				enemyTree->Insert( enemy );*/
 			}
 			else if( typeName == "poi" )
 			{
