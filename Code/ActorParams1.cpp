@@ -20,12 +20,12 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
+PatrollerParams::PatrollerParams(  sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
 	:ActorParams( PosType::AIR_ONLY)
 {	
 	lines = NULL;
 	position = pos;	
-	type = edit->types["patroller"];
+	type = EditSession::GetSession()->types["patroller"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -58,13 +58,13 @@ PatrollerParams::PatrollerParams( EditSession *edit, sf::Vector2i pos, list<Vect
 	params.push_back( ss.str() );*/
 }
 
-PatrollerParams::PatrollerParams( EditSession *edit,
+PatrollerParams::PatrollerParams( 
 	sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {	
 	lines = NULL;
 	position = pos;	
-	type = edit->types["patroller"];
+	type = EditSession::GetSession()->types["patroller"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -145,6 +145,9 @@ void PatrollerParams::SetPanelInfo()
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 	p->checkBoxes["loop"]->checked = loop;
 	p->checkBoxes["monitor"]->checked = hasMonitor;
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
 }
 
 bool PatrollerParams::CanApply()
@@ -301,25 +304,25 @@ ActorParams *PatrollerParams::Copy()
 	return copy;
 }
 
-CrawlerParams::CrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+CrawlerParams::CrawlerParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
 	:ActorParams( PosType::GROUND_ONLY )
 {
 	clockwise = p_clockwise;
 	speed = p_speed;
 
-	type = edit->types["crawler"];
+	type = EditSession::GetSession()->types["crawler"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
 }
 
-CrawlerParams::CrawlerParams( EditSession *edit, 
+CrawlerParams::CrawlerParams(  
 		TerrainPolygon *p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
 		:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 5 )
 {
-	type = edit->types["crawler"];
+	type = EditSession::GetSession()->types["crawler"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
@@ -330,7 +333,7 @@ CrawlerParams::CrawlerParams( EditSession *edit )
 	:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 0 )
 {
 	
-	type = edit->types["crawler"];
+	type = EditSession::GetSession()->types["crawler"];
 }
 
 void CrawlerParams::SetPanelInfo()
@@ -408,11 +411,11 @@ ActorParams *CrawlerParams::Copy()
 
 
 
-BossCrawlerParams::BossCrawlerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
+BossCrawlerParams::BossCrawlerParams(  TerrainPolygon *p_edgePolygon, 
 	int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )
 {
-	type = edit->types["bosscrawler"];
+	type = EditSession::GetSession()->types["bosscrawler"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -442,26 +445,26 @@ ActorParams *BossCrawlerParams::Copy()
 
 
 
-BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
+BasicTurretParams::BasicTurretParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
 	:ActorParams( PosType::GROUND_ONLY )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
 
-	type = edit->types["basicturret"];
+	type = EditSession::GetSession()->types["basicturret"];
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
 }
 
-BasicTurretParams::BasicTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+BasicTurretParams::BasicTurretParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )
 {
 	bulletSpeed = 10;
 	framesWait = 60;
 
-	type = edit->types["basicturret"];
+	type = EditSession::GetSession()->types["basicturret"];
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
@@ -543,10 +546,10 @@ ActorParams *BasicTurretParams::Copy()
 
 
 
-FootTrapParams::FootTrapParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+FootTrapParams::FootTrapParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )	
 {
-	type = edit->types["foottrap"];
+	type = EditSession::GetSession()->types["foottrap"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
@@ -593,11 +596,11 @@ ActorParams *FootTrapParams::Copy()
 	return copy;
 }
 
-AirdasherParams::AirdasherParams(EditSession *edit, sf::Vector2i &pos)
+AirdasherParams::AirdasherParams( sf::Vector2i &pos)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	position = pos;
-	type = edit->types["airdasher"];
+	type = EditSession::GetSession()->types["airdasher"];
 
 	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);

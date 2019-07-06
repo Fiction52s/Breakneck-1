@@ -22,12 +22,12 @@ using namespace sf;
 
 
 
-BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_framesBetweenNodes, bool p_loop )
+BatParams::BatParams(  sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_framesBetweenNodes, bool p_loop )
 	:ActorParams( PosType::AIR_ONLY)
 {	
 	lines = NULL;
 	position = pos;	
-	type = edit->types["bat"];
+	type = EditSession::GetSession()->types["bat"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -64,12 +64,12 @@ BatParams::BatParams( EditSession *edit, sf::Vector2i pos, list<Vector2i> &globa
 	params.push_back( ss.str() );*/
 }
 
-BatParams::BatParams( EditSession *edit, sf::Vector2i &pos )
+BatParams::BatParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {	
 	lines = NULL;
 	position = pos;	
-	type = edit->types["bat"];
+	type = EditSession::GetSession()->types["bat"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -311,6 +311,9 @@ void BatParams::SetPanelInfo()
 	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
 	p->checkBoxes["loop"]->checked = loop;
 	p->checkBoxes["monitor"]->checked = false;
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
 	//EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
 
@@ -337,27 +340,27 @@ ActorParams *BatParams::Copy()
 
 
 
-StagBeetleParams::StagBeetleParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+StagBeetleParams::StagBeetleParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
 	:ActorParams( PosType::GROUND_ONLY )
 {
 	clockwise = p_clockwise;
 	speed = p_speed;
 
-	type = edit->types["stagbeetle"];
+	type = EditSession::GetSession()->types["stagbeetle"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
 }
 
-StagBeetleParams::StagBeetleParams( EditSession *edit,
+StagBeetleParams::StagBeetleParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 0 )
 {
 	
 	speed = 10;
 	clockwise = true;
-	type = edit->types["stagbeetle"];
+	type = EditSession::GetSession()->types["stagbeetle"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -440,7 +443,7 @@ ActorParams *StagBeetleParams::Copy()
 
 
 
-PoisonFrogParams::PoisonFrogParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
+PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon, 
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
 	:ActorParams( PosType::GROUND_ONLY ), pathQuads( sf::Quads, 4 * 50 )
 {
@@ -448,7 +451,7 @@ PoisonFrogParams::PoisonFrogParams( EditSession *edit, TerrainPolygon *p_edgePol
 	jumpWaitFrames = 60;
 	jumpStrength = Vector2i( 5, 12 );
 
-	type = edit->types["poisonfrog"];
+	type = EditSession::GetSession()->types["poisonfrog"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -457,7 +460,7 @@ PoisonFrogParams::PoisonFrogParams( EditSession *edit, TerrainPolygon *p_edgePol
 	UpdatePath();
 }
 
-PoisonFrogParams::PoisonFrogParams( EditSession *edit, TerrainPolygon *p_edgePolygon, 
+PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon, 
 	int p_edgeIndex, double p_edgeQuantity, int p_gravFactor, sf::Vector2i &p_jumpStrength,
 	int p_jumpWaitFrames )
 	:ActorParams( PosType::GROUND_ONLY ), pathQuads( sf::Quads, 4 * 50 )
@@ -465,7 +468,7 @@ PoisonFrogParams::PoisonFrogParams( EditSession *edit, TerrainPolygon *p_edgePol
 	gravFactor = p_gravFactor;
 	jumpStrength = p_jumpStrength;
 	jumpWaitFrames = p_jumpWaitFrames;
-	type = edit->types["poisonfrog"];
+	type = EditSession::GetSession()->types["poisonfrog"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -478,7 +481,7 @@ PoisonFrogParams::PoisonFrogParams( EditSession *edit )
 	:ActorParams( PosType::GROUND_ONLY )//, clockwise( true ), speed( 0 )
 {
 	
-	type = edit->types["poisonfrog"];
+	type = EditSession::GetSession()->types["poisonfrog"];
 }
 
 bool PoisonFrogParams::CanApply()
@@ -679,7 +682,7 @@ ActorParams *PoisonFrogParams::Copy()
 
 
 
-CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
+CurveTurretParams::CurveTurretParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
 	sf::Vector2i p_gravFactor, bool relative )
 	:ActorParams( PosType::GROUND_ONLY ), bulletPathQuads( sf::Quads, 100 * 4 )
 {
@@ -688,7 +691,7 @@ CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgeP
 	gravFactor = p_gravFactor;
 	relativeGrav = relative;
 
-	type = edit->types["curveturret"];
+	type = EditSession::GetSession()->types["curveturret"];
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
@@ -697,12 +700,12 @@ CurveTurretParams::CurveTurretParams( EditSession *edit, TerrainPolygon *p_edgeP
 	//UpdateBulletCurve();
 }
 
-CurveTurretParams::CurveTurretParams( EditSession *edit,
+CurveTurretParams::CurveTurretParams( 
 		TerrainPolygon *p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
 		:ActorParams( PosType::GROUND_ONLY ), bulletPathQuads( sf::Quads, 100 * 4 )
 {
-	type = edit->types["curveturret"];
+	type = EditSession::GetSession()->types["curveturret"];
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
@@ -923,10 +926,10 @@ ActorParams *CurveTurretParams::Copy()
 	return copy;
 }
 
-BossBirdParams::BossBirdParams( EditSession *edit, Vector2i &pos )
+BossBirdParams::BossBirdParams(  Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY ), debugLines( sf::Lines, 4 * 2 )
 {
-	type = edit->types["bossbird"];
+	type = EditSession::GetSession()->types["bossbird"];
 
 	position = pos;
 
@@ -989,25 +992,25 @@ void BossBirdParams::CreateFormation()
 	}
 }
 
-GravityFallerParams::GravityFallerParams(EditSession *edit, TerrainPolygon *p_edgePolygon,
+GravityFallerParams::GravityFallerParams( TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
 	:ActorParams(PosType::GROUND_ONLY)
 {
 	variation = 0;
 
-	type = edit->types["gravityfaller"];
+	type = EditSession::GetSession()->types["gravityfaller"];
 
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
 	SetBoundingQuad();
 }
 
-GravityFallerParams::GravityFallerParams(EditSession *edit, TerrainPolygon *p_edgePolygon,
+GravityFallerParams::GravityFallerParams( TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity, int var )
 	:ActorParams(PosType::GROUND_ONLY)
 {
 	variation = var;
-	type = edit->types["gravityfaller"];
+	type = EditSession::GetSession()->types["gravityfaller"];
 
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 

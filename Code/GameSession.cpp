@@ -2570,6 +2570,27 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert(enemy);
 			}
+			else if (typeName == "gravityspring")
+			{
+				//int xPos, yPos;
+
+				////always air
+
+				//is >> xPos;
+				//is >> yPos;
+
+				//double gFactor;
+				//is >> gFactor;
+
+				//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), gFactor, 300);
+
+				//activeItemTree->Insert(enemy);
+				//fullEnemyList.push_back(enemy);
+				//enem = enemy;
+
+				//enemyTree->Insert(enemy);
+			}
+
 
 			else if( typeName == "bossbird" )
 			{

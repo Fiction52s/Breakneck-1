@@ -496,7 +496,7 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 	image.setColor( Color::White );
 }
 
-void ActorParams::Deactivate( EditSession *edit, SelectPtr select )
+void ActorParams::Deactivate( EditSession *editsession, SelectPtr select )
 {
 	cout << "DEACTIVATING ACTOR PARAMS size from: " << group->actors.size() << endl;
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
@@ -510,7 +510,7 @@ void ActorParams::Deactivate( EditSession *edit, SelectPtr select )
 	}
 }
 
-void ActorParams::Activate( EditSession *edit, SelectPtr select )
+void ActorParams::Activate(EditSession *editsession, SelectPtr select )
 {
 	cout << "addding to group of size: " << group->actors.size() << endl;
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
@@ -524,11 +524,11 @@ void ActorParams::Activate( EditSession *edit, SelectPtr select )
 }
 
 
-HealthFlyParams::HealthFlyParams( EditSession *edit,
+HealthFlyParams::HealthFlyParams( 
 		sf::Vector2i pos, int p_color )
 		:ActorParams( ActorParams::AIR_ONLY )
 {
-	type = edit->types["healthfly"];
+	type = EditSession::GetSession()->types["healthfly"];
 	position = pos;
 	
 	image = type->GetSprite(false);
@@ -570,10 +570,10 @@ ActorParams *HealthFlyParams::Copy()
 
 
 
-GoalParams::GoalParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+GoalParams::GoalParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )
 {
-	type = edit->types["goal"];
+	type = EditSession::GetSession()->types["goal"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
@@ -602,12 +602,12 @@ ActorParams *GoalParams::Copy()
 
 
 //remnove the postype thing. we have 2 bools for that already
-PlayerParams::PlayerParams( EditSession *edit, sf::Vector2i pos )
+PlayerParams::PlayerParams(  sf::Vector2i pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;
 
-	type = edit->types["player"];
+	type = EditSession::GetSession()->types["player"];
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
@@ -634,12 +634,12 @@ void PlayerParams::WriteParamFile( std::ofstream &of )
 {
 }
 
-void PlayerParams::Deactivate( EditSession *edit, boost::shared_ptr<ISelectable> select)
+void PlayerParams::Deactivate(EditSession *editsession, boost::shared_ptr<ISelectable> select)
 {
 	//nothing
 }
 
-void PlayerParams::Activate( EditSession *edit, boost::shared_ptr<ISelectable> select )
+void PlayerParams::Activate(EditSession *editsession, boost::shared_ptr<ISelectable> select )
 {
 	//nothing
 }
@@ -651,7 +651,7 @@ ActorParams *PlayerParams::Copy()
 }
 
 
-PoiParams::PoiParams( EditSession *edit,
+PoiParams::PoiParams( 
 	TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, 
 	double p_edgeQuantity )
@@ -668,13 +668,13 @@ PoiParams::PoiParams( EditSession *edit,
 	nameText.setFillColor( Color::White );
 	
 	name = "-";
-	type = edit->types["poi"];
+	type = EditSession::GetSession()->types["poi"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
 }
 
-PoiParams::PoiParams( EditSession *edit,
+PoiParams::PoiParams( 
 	TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, 
 	double p_edgeQuantity, PoiParams::Barrier bType, const std::string &p_name )
@@ -688,13 +688,13 @@ PoiParams::PoiParams( EditSession *edit,
 	nameText.setCharacterSize( 18 );
 	nameText.setFillColor( Color::White );
 
-	type = edit->types["poi"];
+	type = EditSession::GetSession()->types["poi"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
 }
 
-PoiParams::PoiParams( EditSession *edit,
+PoiParams::PoiParams( 
 	sf::Vector2i &pos )
 	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ), barrier( NONE )
 {
@@ -714,7 +714,7 @@ PoiParams::PoiParams( EditSession *edit,
 
 	name = "-";
 	position = pos;	
-	type = edit->types["poi"];
+	type = EditSession::GetSession()->types["poi"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -722,7 +722,7 @@ PoiParams::PoiParams( EditSession *edit,
 	SetBoundingQuad();
 }
 
-PoiParams::PoiParams( EditSession *edit,
+PoiParams::PoiParams( 
 	sf::Vector2i &pos, PoiParams::Barrier bType, const std::string &p_name,
 	bool hasCam, float cZoom )
 	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ), 
@@ -743,7 +743,7 @@ PoiParams::PoiParams( EditSession *edit,
 
 	//name = "-";
 	position = pos;	
-	type = edit->types["poi"];
+	type = EditSession::GetSession()->types["poi"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -884,11 +884,11 @@ void PoiParams::Draw( sf::RenderTarget *target )
 	}
 }
 
-KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos )
+KeyParams::KeyParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
-	type = edit->types["key"];
+	type = EditSession::GetSession()->types["key"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -900,12 +900,12 @@ KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos )
 	zoneType = 0;
 }
 
-KeyParams::KeyParams( EditSession *edit, sf::Vector2i &pos,
+KeyParams::KeyParams(  sf::Vector2i &pos,
 	int p_numKeys, int p_zoneType )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
-	type = edit->types["key"];
+	type = EditSession::GetSession()->types["key"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -983,21 +983,21 @@ ActorParams *KeyParams::Copy()
 	return copy;
 }
 
-NexusParams::NexusParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+NexusParams::NexusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int p_nexusIndex )
 	:ActorParams( PosType::GROUND_ONLY ), nexusIndex( p_nexusIndex )
 {
-	type = edit->types["nexus"];
+	type = EditSession::GetSession()->types["nexus"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
 }
 
-NexusParams::NexusParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+NexusParams::NexusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )
 {
 	nexusIndex = 0;
-	type = edit->types["nexus"];
+	type = EditSession::GetSession()->types["nexus"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
@@ -1053,20 +1053,20 @@ ActorParams *NexusParams::Copy()
 	return copy;
 }
 
-GroundTriggerParams::GroundTriggerParams(EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+GroundTriggerParams::GroundTriggerParams( TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	bool fr, const std::string &p_typeStr)
 	:ActorParams(PosType::GROUND_ONLY), facingRight( fr ), typeStr( p_typeStr )
 {
-	type = edit->types["groundtrigger"];
+	type = EditSession::GetSession()->types["groundtrigger"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
 	SetBoundingQuad();
 }
 
-GroundTriggerParams::GroundTriggerParams(EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+GroundTriggerParams::GroundTriggerParams( TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(PosType::GROUND_ONLY)
 {
-	type = edit->types["groundtrigger"];
+	type = EditSession::GetSession()->types["groundtrigger"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
 	typeStr = "NONE";
@@ -1119,21 +1119,21 @@ ActorParams *GroundTriggerParams::Copy()
 	return copy;
 }
 
-ShipPickupParams::ShipPickupParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+ShipPickupParams::ShipPickupParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	bool p_facingRight )
 	:ActorParams( PosType::GROUND_ONLY ), facingRight( p_facingRight )
 {
-	type = edit->types["shippickup"];
+	type = EditSession::GetSession()->types["shippickup"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
 }
 
-ShipPickupParams::ShipPickupParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+ShipPickupParams::ShipPickupParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( PosType::GROUND_ONLY )
 {
 	facingRight = true;
-	type = edit->types["shippickup"];
+	type = EditSession::GetSession()->types["shippickup"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	SetBoundingQuad();
@@ -1182,11 +1182,11 @@ ActorParams *ShipPickupParams::Copy()
 	return copy;
 }
 
-ShardParams::ShardParams( EditSession *edit, sf::Vector2i &pos )
+ShardParams::ShardParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
-	type = edit->types["shard"];
+	type = EditSession::GetSession()->types["shard"];
 
 	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
@@ -1229,12 +1229,12 @@ int ShardParams::GetTotalIndex()
 	return world * 22 + localIndex;
 }
 
-ShardParams::ShardParams(EditSession *edit, sf::Vector2i &pos, int p_world,
+ShardParams::ShardParams( sf::Vector2i &pos, int p_world,
 	int p_localIndex)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	position = pos;
-	type = edit->types["shard"];
+	type = EditSession::GetSession()->types["shard"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -1291,11 +1291,11 @@ ActorParams *ShardParams::Copy()
 	return copy;
 }
 
-RaceFightTargetParams::RaceFightTargetParams( EditSession *edit, sf::Vector2i &pos )
+RaceFightTargetParams::RaceFightTargetParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
-	type = edit->types["racefighttarget"];
+	type = EditSession::GetSession()->types["racefighttarget"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -1338,14 +1338,14 @@ ActorParams *RaceFightTargetParams::Copy()
 	return copy;
 }
 
-BlockerParams::BlockerParams(EditSession *edit, sf::Vector2i pos, list<sf::Vector2i> &globalPath, int p_bType, bool p_armored,
+BlockerParams::BlockerParams( sf::Vector2i pos, list<sf::Vector2i> &globalPath, int p_bType, bool p_armored,
 	int p_spacing )
 	:ActorParams(PosType::AIR_ONLY)
 {
 	lines = NULL;
 	//lines = NULL;
 	position = pos;
-	type = edit->types["blocker"];
+	type = EditSession::GetSession()->types["blocker"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -1365,13 +1365,13 @@ BlockerParams::BlockerParams(EditSession *edit, sf::Vector2i pos, list<sf::Vecto
 	SetBoundingQuad();
 }
 
-BlockerParams::BlockerParams(EditSession *edit,
+BlockerParams::BlockerParams(
 	sf::Vector2i &pos)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	lines = NULL;
 	position = pos;
-	type = edit->types["blocker"];
+	type = EditSession::GetSession()->types["blocker"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -1489,6 +1489,9 @@ void BlockerParams::SetPanelInfo()
 	p->textBoxes["btype"]->text.setString(boost::lexical_cast<string>(bType));
 	p->checkBoxes["armored"]->checked = armored;
 	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalChain();
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -1599,13 +1602,13 @@ ActorParams *BlockerParams::Copy()
 
 }
 
-RailParams::RailParams(EditSession *edit, sf::Vector2i pos, list<sf::Vector2i> &globalPath, bool p_energized )
+RailParams::RailParams( sf::Vector2i pos, list<sf::Vector2i> &globalPath, bool p_energized )
 	:ActorParams(PosType::AIR_ONLY)
 {
 	lines = NULL;
 	//lines = NULL;
 	position = pos;
-	type = edit->types["rail"];
+	type = EditSession::GetSession()->types["rail"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -1620,13 +1623,13 @@ RailParams::RailParams(EditSession *edit, sf::Vector2i pos, list<sf::Vector2i> &
 	SetBoundingQuad();
 }
 
-RailParams::RailParams(EditSession *edit,
+RailParams::RailParams(
 	sf::Vector2i &pos)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	lines = NULL;
 	position = pos;
-	type = edit->types["rail"];
+	type = EditSession::GetSession()->types["rail"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -1700,6 +1703,9 @@ void RailParams::SetPanelInfo()
 	if (group != NULL)
 		p->textBoxes["group"]->text.setString(group->name);
 	p->checkBoxes["energized"]->checked = energized;
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalChain();
 }
 
 bool RailParams::CanApply()
@@ -1798,11 +1804,11 @@ ActorParams *RailParams::Copy()
 	return copy;*/
 }
 
-BoosterParams::BoosterParams(EditSession *edit, sf::Vector2i &pos, int p_strength )
+BoosterParams::BoosterParams( sf::Vector2i &pos, int p_strength )
 	:ActorParams(PosType::AIR_ONLY), strength( p_strength )
 {
 	position = pos;
-	type = edit->types["booster"];
+	type = EditSession::GetSession()->types["booster"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -1811,11 +1817,11 @@ BoosterParams::BoosterParams(EditSession *edit, sf::Vector2i &pos, int p_strengt
 	SetBoundingQuad();
 }
 
-BoosterParams::BoosterParams(EditSession *edit, sf::Vector2i &pos)
+BoosterParams::BoosterParams( sf::Vector2i &pos)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	position = pos;
-	type = edit->types["booster"];
+	type = EditSession::GetSession()->types["booster"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -1875,12 +1881,12 @@ ActorParams *BoosterParams::Copy()
 	return copy;
 }
 
-SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath,
+SpringParams::SpringParams( sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath,
 	int p_moveFrames)
 	:ActorParams(PosType::AIR_ONLY), moveFrames( p_moveFrames )
 {
 	position = pos;
-	type = edit->types["spring"];
+	type = EditSession::GetSession()->types["spring"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -1893,11 +1899,11 @@ SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos, std::list<sf::V
 	SetPath(globalPath);	
 }
 
-SpringParams::SpringParams(EditSession *edit, sf::Vector2i &pos)
+SpringParams::SpringParams( sf::Vector2i &pos)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	position = pos;
-	type = edit->types["spring"];
+	type = EditSession::GetSession()->types["spring"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -2000,6 +2006,9 @@ void SpringParams::SetPanelInfo()
 	}
 
 	p->textBoxes["moveframes"]->text.setString((boost::lexical_cast<string>(moveFrames)));
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -2052,12 +2061,12 @@ std::list<sf::Vector2i> SpringParams::GetGlobalPath()
 	return globalPath;
 }
 
-ComboerParams::ComboerParams(EditSession *edit, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop)
+ComboerParams::ComboerParams( sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	lines = NULL;
 	position = pos;
-	type = edit->types["comboer"];
+	type = EditSession::GetSession()->types["comboer"];
 
 	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);
@@ -2071,13 +2080,13 @@ ComboerParams::ComboerParams(EditSession *edit, sf::Vector2i pos, list<Vector2i>
 	SetBoundingQuad();
 }
 
-ComboerParams::ComboerParams(EditSession *edit,
+ComboerParams::ComboerParams(
 	sf::Vector2i &pos)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	lines = NULL;
 	position = pos;
-	type = edit->types["comboer"];
+	type = EditSession::GetSession()->types["comboer"];
 
 	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);
@@ -2159,6 +2168,9 @@ void ComboerParams::SetPanelInfo()
 	p->textBoxes["speed"]->text.setString(boost::lexical_cast<string>(speed));
 	p->checkBoxes["loop"]->checked = loop;
 	p->checkBoxes["monitor"]->checked = hasMonitor;
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
 }
 
 bool ComboerParams::CanApply()
@@ -2316,11 +2328,11 @@ ActorParams *ComboerParams::Copy()
 }
 
 
-AirTriggerParams::AirTriggerParams(EditSession *edit, sf::Vector2i &pos)
+AirTriggerParams::AirTriggerParams( sf::Vector2i &pos)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	position = pos;
-	type = edit->types["airtrigger"];
+	type = EditSession::GetSession()->types["airtrigger"];
 
 	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);
@@ -2339,11 +2351,11 @@ AirTriggerParams::AirTriggerParams(EditSession *edit, sf::Vector2i &pos)
 	trigType = "none";//"..no.shard..";
 }
 
-AirTriggerParams::AirTriggerParams(EditSession *edit, sf::Vector2i &pos, const std::string &typeStr, int w,int h)
+AirTriggerParams::AirTriggerParams( sf::Vector2i &pos, const std::string &typeStr, int w,int h)
 	:ActorParams(PosType::AIR_ONLY)
 {
 	position = pos;
-	type = edit->types["airtrigger"];
+	type = EditSession::GetSession()->types["airtrigger"];
 
 	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);
@@ -2428,20 +2440,20 @@ void AirTriggerParams::Draw(RenderTarget *target)
 	
 }
 
-FlowerPodParams::FlowerPodParams(EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, 
+FlowerPodParams::FlowerPodParams( TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, 
 	const std::string &p_typeStr)
 	:ActorParams(PosType::GROUND_ONLY), facingRight(true), typeStr(p_typeStr)
 {
-	type = edit->types["flowerpod"];
+	type = EditSession::GetSession()->types["flowerpod"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
 	SetBoundingQuad();
 }
 
-FlowerPodParams::FlowerPodParams(EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+FlowerPodParams::FlowerPodParams( TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(PosType::GROUND_ONLY)
 {
-	type = edit->types["flowerpod"];
+	type = EditSession::GetSession()->types["flowerpod"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
 	typeStr = "NONE";

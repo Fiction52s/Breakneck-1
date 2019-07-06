@@ -2589,7 +2589,7 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 	return -1;	
 }
 
-bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
+bool TerrainPolygon::IsMovePointsOkay( Vector2i delta )
 {
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
@@ -2599,7 +2599,7 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
 		}
 	}
 
-	bool result = edit->IsPolygonValid( *this, this );
+	bool result = EditSession::GetSession()->IsPolygonValid( *this, this );
 
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
@@ -2612,12 +2612,12 @@ bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i delta )
 	return result;
 }
 
-bool TerrainPolygon::IsMovePointsOkay( EditSession *edit, Vector2i pointGrabDelta, Vector2i *deltas )
+bool TerrainPolygon::IsMovePointsOkay( Vector2i pointGrabDelta, Vector2i *deltas )
 {
 	//TerrainPolygon tempPoly( grassTex );
 
 	int arraySize = numPoints;
-
+	EditSession *edit = EditSession::GetSession();
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
 		TerrainPoint *next;
@@ -2776,10 +2776,11 @@ void TerrainPolygon::MoveSelectedPoints( Vector2i move )
 	}
 }
 
-bool TerrainPolygon::IsMovePolygonOkay( EditSession *edit, sf::Vector2i delta )
+bool TerrainPolygon::IsMovePolygonOkay(sf::Vector2i delta )
 {
 	TerrainPolygon tempPoly( grassTex );
 
+	EditSession *edit = EditSession::GetSession();
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
 		//TerrainPoint  *tp =  new TerrainPoint( *curr );

@@ -119,7 +119,7 @@ struct TerrainPoint
 	void Draw( sf::RenderTarget *target );
 	void Deactivate(EditSession *edit,
 		boost::shared_ptr<ISelectable> select );
-	void Activate( EditSession *edit,
+	void Activate(EditSession *edit,
 		boost::shared_ptr<ISelectable> select);
 	bool CanApply();
 	bool CanAdd();
@@ -281,12 +281,12 @@ struct TerrainPolygon : ISelectable
 	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected( bool select );
 	
-	bool IsMovePointsOkay( EditSession *edit,
+	bool IsMovePointsOkay( 
 		sf::Vector2i delta );
-	bool IsMovePointsOkay( EditSession *edit,
+	bool IsMovePointsOkay( 
 		sf::Vector2i pointGrabDelta,
 		sf::Vector2i *deltas );
-	bool IsMovePolygonOkay( EditSession *edit, 
+	bool IsMovePolygonOkay(  
 		sf::Vector2i delta );
 	void MoveSelectedPoints(sf::Vector2i move);
 	void UpdateBounds();
@@ -302,7 +302,7 @@ struct TerrainPolygon : ISelectable
 	void Draw( sf::RenderTarget *target );
 	void Deactivate(EditSession *edit,
 		boost::shared_ptr<ISelectable> select);
-	void Activate( EditSession *edit,
+	void Activate(EditSession *edit,
 		boost::shared_ptr<ISelectable> select);
 	
 	bool IsTouching( TerrainPolygon *poly );
@@ -415,22 +415,7 @@ struct StaticLight
 	void WriteFile( std::ofstream &of );
 };
 
-struct ActorType
-{
-	ActorType( const std::string & name, Panel *panel );
-	void Init();
-	sf::Sprite GetSprite( int xSize = 0, int ySize = 0 );
-	sf::Sprite GetSprite(bool grounded);
-	std::string name;
-	Tileset *ts_image;
-	int width;
-	int height;
-	bool canBeGrounded;
-	bool canBeAerial;
-	Panel *panel;
-	int imageTileIndex;
-	sf::Vector2i imageOffset;
-};
+
 
 struct GroundInfo
 {
@@ -447,6 +432,7 @@ struct GroundInfo
 };
 
 struct ActorGroup;
+struct ActorType;
 struct ActorParams : ISelectable
 {
 	enum PosType
@@ -471,7 +457,6 @@ struct ActorParams : ISelectable
 
 	virtual void SetParams();
 	virtual void SetPanelInfo();
-	static  Panel * CreateOptionsPanel();
 
 
 	virtual void SetBoundingQuad();
@@ -487,9 +472,9 @@ struct ActorParams : ISelectable
 		bool valid );
 	virtual void Draw( sf::RenderTarget *target );
 	virtual void DrawPreview( sf::RenderTarget *target );
-	virtual void Deactivate( EditSession *edit,
+	virtual void Deactivate(EditSession *edit,
 		boost::shared_ptr<ISelectable> select);
-	virtual void Activate( EditSession *edit,
+	virtual void Activate(EditSession *edit,
 		boost::shared_ptr<ISelectable> select );
 
 	virtual void DrawQuad( sf::RenderTarget *target );
@@ -519,16 +504,35 @@ struct ActorParams : ISelectable
 typedef boost::shared_ptr<ActorParams> ActorPtr;
 typedef std::map<TerrainPoint*,std::list<ActorPtr>> EnemyMap;
 
+struct ActorType
+{
+	ActorType(const std::string & name, Panel *panel);
+	void Init();
+	void PlaceEnemy();
+	void LoadEnemy(std::ifstream &is,
+		ActorPtr &a);
+	bool IsGoalType();
+	sf::Sprite GetSprite(int xSize = 0, int ySize = 0);
+	sf::Sprite GetSprite(bool grounded);
+	std::string name;
+	Tileset *ts_image;
+	int width;
+	int height;
+	bool canBeGrounded;
+	bool canBeAerial;
+	Panel *panel;
+	int imageTileIndex;
+	sf::Vector2i imageOffset;
+};
+
 struct GroundTriggerParams : public ActorParams
 {
-	GroundTriggerParams(EditSession *edit,
-		TerrainPolygon *edgePolygon,
+	GroundTriggerParams(TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		bool facingRight,
 		const std::string &typeStr );
-	GroundTriggerParams(EditSession *edit,
-		TerrainPolygon *edgePolygon,
+	GroundTriggerParams(TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	GroundTriggerParams(EditSession *edit);
@@ -543,16 +547,16 @@ struct GroundTriggerParams : public ActorParams
 
 struct FlowerPodParams : public ActorParams
 {
-	FlowerPodParams(EditSession *edit,
+	FlowerPodParams(
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		const std::string &typeStr);
-	FlowerPodParams(EditSession *edit,
+	FlowerPodParams(
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
-	FlowerPodParams(EditSession *edit);
+	FlowerPodParams();
 	bool CanApply();
 	ActorParams *Copy();
 	void SetParams();
@@ -564,10 +568,9 @@ struct FlowerPodParams : public ActorParams
 
 struct AirTriggerParams : public ActorParams
 {
-	AirTriggerParams(EditSession *edit,
-		sf::Vector2i &pos, const std::string &typeStr,
+	AirTriggerParams(sf::Vector2i &pos, const std::string &typeStr,
 		int w, int h );
-	AirTriggerParams(EditSession *edit,
+	AirTriggerParams(
 		sf::Vector2i &pos);
 	void WriteParamFile(std::ofstream &of);
 
@@ -588,12 +591,12 @@ struct AirTriggerParams : public ActorParams
 //all
 struct NexusParams : public ActorParams
 {
-	NexusParams ( EditSession *edit,
+	NexusParams (
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity,
 		int nexusIndex );
-	NexusParams ( EditSession *edit,
+	NexusParams (
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
@@ -608,16 +611,16 @@ struct NexusParams : public ActorParams
 
 struct ShipPickupParams : public ActorParams
 {
-	ShipPickupParams( EditSession *edit,
+	ShipPickupParams(
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity,
 		bool facingRight );
-	ShipPickupParams( EditSession *edit,
+	ShipPickupParams(
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
-	ShipPickupParams ( EditSession *edit );
+	ShipPickupParams ( );
 	bool CanApply();
 	ActorParams *Copy();
 	void SetParams();
@@ -628,7 +631,7 @@ struct ShipPickupParams : public ActorParams
 
 struct HealthFlyParams : public ActorParams
 {
-	HealthFlyParams( EditSession *edit,
+	HealthFlyParams(
 		sf::Vector2i pos, int type ); 
 	//HealthFlyParams( EditSession *edit );
 	void WriteParamFile( std::ofstream &of );
@@ -640,11 +643,11 @@ struct HealthFlyParams : public ActorParams
 
 struct GoalParams : public ActorParams
 {
-	GoalParams ( EditSession *edit,
+	GoalParams ( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
-	GoalParams ( EditSession *edit );
+	GoalParams ( );
 	bool CanApply();
 	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
@@ -653,15 +656,15 @@ struct GoalParams : public ActorParams
 
 struct PlayerParams : public ActorParams
 {
-	PlayerParams( EditSession *edit, 
+	PlayerParams(  
 		sf::Vector2i pos );
 
 	bool CanApply();
 	void WriteParamFile( std::ofstream &of );
-	void Deactivate( EditSession *edit,
+	void Deactivate(EditSession *edit,
 		boost::shared_ptr<ISelectable>  select);
 	ActorParams *Copy();
-	void Activate( EditSession *edit,
+	void Activate(EditSession *edit,
 		boost::shared_ptr<ISelectable> select );
 };
 
@@ -677,21 +680,21 @@ struct PoiParams : public ActorParams
 	};
 
 	Barrier barrier;
-	PoiParams( EditSession *edit,
+	PoiParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity, Barrier bType,
 		const std::string &name );
-	PoiParams( EditSession *edit,
+	PoiParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
-	PoiParams( EditSession *edit,
+	PoiParams( 
 		sf::Vector2i &pos,
 		Barrier bType,
 		const std::string &name, 
 		bool hasCameraProperties, float camZoom );
-	PoiParams( EditSession *edit,
+	PoiParams( 
 		sf::Vector2i &pos );
 
 	void Draw( sf::RenderTarget *target );
@@ -716,10 +719,10 @@ struct PoiParams : public ActorParams
 
 struct KeyParams : public ActorParams
 {
-	KeyParams( EditSession *edit,
+	KeyParams( 
 		sf::Vector2i &pos, int numKeys,
 		int zoneType );
-	KeyParams( EditSession *edit,
+	KeyParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -734,9 +737,9 @@ struct KeyParams : public ActorParams
 
 struct ShardParams : public ActorParams
 {
-	ShardParams( EditSession *edit,
+	ShardParams( 
 		sf::Vector2i &pos);
-	ShardParams(EditSession *edit,
+	ShardParams(
 		sf::Vector2i &pos, int world,
 		int li );
 	void WriteParamFile( std::ofstream &of );
@@ -762,7 +765,7 @@ struct ShardParams : public ActorParams
 
 struct RaceFightTargetParams : public ActorParams
 {
-	RaceFightTargetParams( EditSession *edit,
+	RaceFightTargetParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -789,11 +792,11 @@ struct BlockerParams : public ActorParams
 		BLACK
 	};
 
-	BlockerParams(EditSession *edit,
+	BlockerParams(
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
 		int bType, bool invinc, int spacing );
-	BlockerParams(EditSession *edit,
+	BlockerParams(
 		sf::Vector2i &pos);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -825,12 +828,12 @@ struct BlockerParams : public ActorParams
 
 struct ComboerParams: public ActorParams
 {
-	ComboerParams(EditSession *edit,
+	ComboerParams(
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
 		float speed,
 		bool loop);
-	ComboerParams(EditSession *edit,
+	ComboerParams(
 		sf::Vector2i &pos);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -854,11 +857,11 @@ struct ComboerParams: public ActorParams
 
 struct RailParams : public ActorParams
 {
-	RailParams(EditSession *edit,
+	RailParams(
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
 		bool energized );
-	RailParams(EditSession *edit,
+	RailParams(
 		sf::Vector2i &pos);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -887,9 +890,9 @@ struct RailParams : public ActorParams
 
 struct BoosterParams : public ActorParams
 {
-	BoosterParams(EditSession *edit,
+	BoosterParams(
 		sf::Vector2i &pos, int strength );
-	BoosterParams(EditSession *edit,
+	BoosterParams(
 		sf::Vector2i &pos);
 	void WriteParamFile(std::ofstream &of);
 
@@ -904,11 +907,11 @@ struct BoosterParams : public ActorParams
 
 struct SpringParams : public ActorParams
 {
-	SpringParams(EditSession *edit,
+	SpringParams(
 		sf::Vector2i &pos,
 		std::list<sf::Vector2i> &globalPath,
 		int moveFrames);
-	SpringParams(EditSession *edit,
+	SpringParams(
 		sf::Vector2i &pos);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
@@ -929,12 +932,12 @@ struct SpringParams : public ActorParams
 //w1
 struct PatrollerParams : public ActorParams
 {
-	PatrollerParams( EditSession *edit,
+	PatrollerParams( 
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath, 
 		float speed,
 		bool loop ); 
-	PatrollerParams( EditSession *edit,
+	PatrollerParams( 
 		sf::Vector2i &pos);
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
@@ -958,11 +961,11 @@ struct PatrollerParams : public ActorParams
 
 struct CrawlerParams : public ActorParams
 { 
-	CrawlerParams( EditSession *edit, 
+	CrawlerParams(  
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, 
 		bool clockwise, float speed );
-	CrawlerParams( EditSession *edit, 
+	CrawlerParams(  
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 	CrawlerParams( EditSession *edit );
@@ -981,13 +984,13 @@ struct CrawlerParams : public ActorParams
 struct BasicTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
-	BasicTurretParams( EditSession *edit,  
+	BasicTurretParams(   
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity, 
 		double bulletSpeed, 
 		int framesWait );
-	BasicTurretParams( EditSession *edit,  
+	BasicTurretParams(   
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 	void WriteParamFile( std::ofstream &of );
@@ -1002,7 +1005,7 @@ struct BasicTurretParams : public ActorParams
 
 struct FootTrapParams : public ActorParams
 {
-	FootTrapParams( EditSession *edit,
+	FootTrapParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity );
@@ -1018,7 +1021,7 @@ struct FootTrapParams : public ActorParams
 
 struct AirdasherParams : public ActorParams
 {
-	AirdasherParams(EditSession *edit,
+	AirdasherParams(
 		sf::Vector2i &pos);
 	void WriteParamFile(std::ofstream &of);
 
@@ -1032,7 +1035,7 @@ struct AirdasherParams : public ActorParams
 struct BossCrawlerParams : public ActorParams
 {
 	BossCrawlerParams( 
-		EditSession *edit, 
+		 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 	//CrawlerParams( EditSession *edit );
@@ -1044,14 +1047,14 @@ struct BossCrawlerParams : public ActorParams
 //w2
 struct BatParams : public ActorParams
 {
-	BatParams( EditSession *edit,
+	BatParams( 
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath, 
 		int framesBetween,
 		//int nodeDistance,
 		int bulletSpeed,
 		bool loop ); 
-	BatParams( EditSession *edit,
+	BatParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
@@ -1076,12 +1079,12 @@ struct BatParams : public ActorParams
 
 struct GravityFallerParams : public ActorParams
 {
-	GravityFallerParams(EditSession *edit,
+	GravityFallerParams(
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		int variation );
-	GravityFallerParams(EditSession *edit,
+	GravityFallerParams(
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
@@ -1097,14 +1100,14 @@ struct GravityFallerParams : public ActorParams
 
 struct StagBeetleParams : public ActorParams
 { 
-	StagBeetleParams( EditSession *edit, 
+	StagBeetleParams(  
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, 
 		bool clockwise, float speed );
-	//StagBeetleParams( EditSession *edit,
+	//StagBeetleParams( 
 	//	sf::Vector2i &pos, bool facingRight,
 	//	float speed );
-	StagBeetleParams( EditSession *edit,
+	StagBeetleParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 
@@ -1122,14 +1125,14 @@ struct StagBeetleParams : public ActorParams
 
 struct PoisonFrogParams : public ActorParams
 {
-	PoisonFrogParams( EditSession *edit,
+	PoisonFrogParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		int gravFactor,
 		sf::Vector2i &jumpStrength,
 		int jumpWaitFrames );
-	PoisonFrogParams( EditSession *edit,
+	PoisonFrogParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
 		double edgeQuantity );
@@ -1155,7 +1158,7 @@ struct PoisonFrogParams : public ActorParams
 struct CurveTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
-	CurveTurretParams( EditSession *edit,  
+	CurveTurretParams(   
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, 
 		double edgeQuantity, 
@@ -1164,7 +1167,7 @@ struct CurveTurretParams : public ActorParams
 		sf::Vector2i gravFactor,
 		bool relativeGrav );
 	ActorParams *Copy();
-	CurveTurretParams( EditSession *edit,
+	CurveTurretParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 	void SetParams();
@@ -1187,12 +1190,12 @@ struct CurveTurretParams : public ActorParams
 //w3
 struct PulserParams : public ActorParams
 {
-	PulserParams( EditSession *edit,
+	PulserParams( 
 		sf::Vector2i &pos,
 		std::list<sf::Vector2i> &globalPath, 
 		int framesBetween,
 		bool loop ); 
-	PulserParams( EditSession *edit,
+	PulserParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 	void SetPath( 
@@ -1215,12 +1218,12 @@ struct PulserParams : public ActorParams
 
 struct OwlParams : public ActorParams
 {
-	OwlParams( EditSession *edit,
+	OwlParams( 
 		sf::Vector2i &pos,
 		int moveSpeed,
 		int bulletSpeed,
 		int rhythmFrames ); 
-	OwlParams( EditSession *edit,
+	OwlParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -1237,12 +1240,12 @@ struct OwlParams : public ActorParams
 
 struct BadgerParams : public ActorParams
 { 
-	BadgerParams( EditSession *edit, 
+	BadgerParams(  
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, 
 		int speed, int jumpStrength );
 
-	BadgerParams( EditSession *edit,
+	BadgerParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 
@@ -1259,13 +1262,13 @@ struct BadgerParams : public ActorParams
 
 struct CactusParams : public ActorParams
 { 
-	CactusParams( EditSession *edit, 
+	CactusParams(  
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, 
 		int bulletSpeed, int rhythm, 
 		int amplitude );
 
-	CactusParams( EditSession *edit,
+	CactusParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 
@@ -1286,12 +1289,12 @@ struct CactusParams : public ActorParams
 //w4
 struct TurtleParams : public ActorParams
 {
-	TurtleParams( EditSession *edit,
+	TurtleParams( 
 		sf::Vector2i &pos );
 		/*int moveSpeed,
 		int bulletSpeed,
 		int rhythmFrames ); 
-	TurtleParams( EditSession *edit,
+	TurtleParams( 
 		sf::Vector2i &pos );*/
 	void WriteParamFile( std::ofstream &of );
 
@@ -1304,10 +1307,10 @@ struct TurtleParams : public ActorParams
 
 struct CoralParams : public ActorParams
 {
-	CoralParams( EditSession *edit,
+	CoralParams( 
 		sf::Vector2i &pos,
 		int moveFrames );
-	CoralParams( EditSession *edit,
+	CoralParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -1322,13 +1325,13 @@ struct CoralParams : public ActorParams
 
 struct CheetahParams : public ActorParams
 { 
-	/*CactusParams( EditSession *edit, 
+	/*CactusParams(  
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, 
 		int bulletSpeed, int rhythm, 
 		int amplitude );*/
 
-	CheetahParams( EditSession *edit,
+	CheetahParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 
@@ -1342,12 +1345,12 @@ struct CheetahParams : public ActorParams
 
 struct SpiderParams : public ActorParams
 { 
-	SpiderParams( EditSession *edit, 
+	SpiderParams(  
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity, 
 		int speed );
 
-	SpiderParams( EditSession *edit,
+	SpiderParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 
@@ -1364,10 +1367,10 @@ struct SpiderParams : public ActorParams
 //w5
 struct SharkParams : public ActorParams
 {
-	SharkParams( EditSession *edit,
+	SharkParams( 
 		sf::Vector2i &pos,
 		int circleFrames );
-	SharkParams( EditSession *edit,
+	SharkParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -1382,10 +1385,10 @@ struct SharkParams : public ActorParams
 
 struct SwarmParams: public ActorParams
 {
-	SwarmParams( EditSession *edit,
+	SwarmParams( 
 		sf::Vector2i &pos,
 		int liveFrames );
-	SwarmParams( EditSession *edit,
+	SwarmParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -1400,10 +1403,10 @@ struct SwarmParams: public ActorParams
 
 struct GhostParams : public ActorParams
 {
-	GhostParams( EditSession *edit,
+	GhostParams( 
 		sf::Vector2i &pos,
 		int speed );
-	GhostParams( EditSession *edit,
+	GhostParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -1418,11 +1421,11 @@ struct GhostParams : public ActorParams
 
 struct OvergrowthParams : public ActorParams
 { 
-	OvergrowthParams( EditSession *edit, 
+	OvergrowthParams(  
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );
 
-	/*OvergrowthParams( EditSession *edit,
+	/*OvergrowthParams( 
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity );*/
 
@@ -1437,12 +1440,12 @@ struct OvergrowthParams : public ActorParams
 //w6
 struct SpecterParams : public ActorParams
 {
-	SpecterParams( EditSession *edit,
+	SpecterParams( 
 		sf::Vector2i &pos );
 		/*int moveSpeed,
 		int bulletSpeed,
 		int rhythmFrames ); 
-	TurtleParams( EditSession *edit,
+	TurtleParams( 
 		sf::Vector2i &pos );*/
 	void WriteParamFile( std::ofstream &of );
 
@@ -1455,7 +1458,7 @@ struct SpecterParams : public ActorParams
 
 struct CopycatParams : public ActorParams
 {
-	CopycatParams( EditSession *edit,
+	CopycatParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -1468,12 +1471,12 @@ struct CopycatParams : public ActorParams
 
 struct NarwhalParams : public ActorParams
 {
-	NarwhalParams( EditSession *edit,
+	NarwhalParams( 
 		sf::Vector2i &pos,
 		sf::Vector2i &dest,
 		int moveFrames
 		);
-	NarwhalParams( EditSession *edit,
+	NarwhalParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -1492,10 +1495,10 @@ struct NarwhalParams : public ActorParams
 
 struct GorillaParams : public ActorParams
 {
-	GorillaParams( EditSession *edit,
+	GorillaParams( 
 		sf::Vector2i &pos, int wallWidth,
 		int followFrames );
-	GorillaParams( EditSession *edit,
+	GorillaParams( 
 		sf::Vector2i &pos );
 	void WriteParamFile( std::ofstream &of );
 
@@ -1512,7 +1515,7 @@ struct GorillaParams : public ActorParams
 struct BossBirdParams : public ActorParams
 {
 	BossBirdParams( 
-		EditSession *edit, 
+		 
 		sf::Vector2i &pos );
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
@@ -1528,7 +1531,7 @@ struct BossBirdParams : public ActorParams
 struct BossCoyoteParams : public ActorParams
 {
 	BossCoyoteParams( 
-		EditSession *edit, sf::Vector2i &pos );
+		 sf::Vector2i &pos );
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
 	void WriteParamFile( std::ofstream &of );
@@ -1542,7 +1545,7 @@ struct BossCoyoteParams : public ActorParams
 struct BossTigerParams : public ActorParams
 {
 	BossTigerParams( 
-		EditSession *edit, 
+		 
 		sf::Vector2i &pos );
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
@@ -1558,7 +1561,7 @@ struct BossTigerParams : public ActorParams
 struct BossGatorParams : public ActorParams
 {
 	BossGatorParams( 
-		EditSession *edit, 
+		 
 		sf::Vector2i &pos );
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
@@ -1573,7 +1576,7 @@ struct BossGatorParams : public ActorParams
 struct BossSkeletonParams : public ActorParams
 {
 	BossSkeletonParams( 
-		EditSession *edit, 
+		 
 		sf::Vector2i &pos );
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
@@ -1659,6 +1662,16 @@ struct EditSession : GUIHandler, TilesetManager
 		ITOOL_SCALE
 	};
 
+	TerrainPolygon *GetPolygon(int index, int &edgeIndex);
+
+	std::list<std::string> worldEnemyNames[8];
+	void AddWorldEnemy(const std::string &name, int w);
+	void AddExtraEnemy(const std::string &name);
+	std::list<std::string> extraEnemyNames;
+
+	void SetupEnemyTypes();
+	void SetupEnemyType(const std::string &name);
+
 	bool IsKeyPressed(int k);
 	std::list<Panel*> allPopups;
 	static EditSession *GetSession();
@@ -1700,6 +1713,8 @@ struct EditSession : GUIHandler, TilesetManager
 	void TryPlaceGatePoint(V2d &pos);
 	bool OpenFile();
 	void WriteFile(std::string fileName);
+	void RegularOKButton();
+	void RegularCreatePathButton();
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
@@ -1753,6 +1768,7 @@ struct EditSession : GUIHandler, TilesetManager
 
 	std::list<ActorPtr> tempActors;
 	GroundInfo worldPosGround;
+	V2d worldPos;
 	ActorParams* tempActor;
 	sf::Vector2i airPos;
 	MapHeader mapHeader;
@@ -2075,7 +2091,6 @@ struct EditSession : GUIHandler, TilesetManager
 		CREATE_ENEMY,
 		DRAW_PATROL_PATH,
 		CREATE_TERRAIN_PATH,
-		CREATE_LIGHTS,
 		CREATE_GATES,
 		CREATE_IMAGES,
 		EDIT_IMAGES,

@@ -19,14 +19,14 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-SharkParams::SharkParams( EditSession *edit, sf::Vector2i &pos,
+SharkParams::SharkParams(  sf::Vector2i &pos,
 	int p_circleFrames )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	circleFrames = p_circleFrames;
 
 	position = pos;	
-	type = edit->types["shark"];
+	type = EditSession::GetSession()->types["shark"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -34,13 +34,13 @@ SharkParams::SharkParams( EditSession *edit, sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
-SharkParams::SharkParams( EditSession *edit, sf::Vector2i &pos )
+SharkParams::SharkParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	circleFrames = 60;
 
 	position = pos;	
-	type = edit->types["shark"];
+	type = EditSession::GetSession()->types["shark"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -109,14 +109,14 @@ ActorParams *SharkParams::Copy()
 
 
 
-SwarmParams::SwarmParams( EditSession *edit, sf::Vector2i &pos,
+SwarmParams::SwarmParams(  sf::Vector2i &pos,
 	int p_liveFrames )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	liveFrames = p_liveFrames;
 
 	position = pos;	
-	type = edit->types["swarm"];
+	type = EditSession::GetSession()->types["swarm"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -124,13 +124,13 @@ SwarmParams::SwarmParams( EditSession *edit, sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
-SwarmParams::SwarmParams( EditSession *edit, sf::Vector2i &pos )
+SwarmParams::SwarmParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	liveFrames = 420;
 
 	position = pos;	
-	type = edit->types["swarm"];
+	type = EditSession::GetSession()->types["swarm"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -196,14 +196,14 @@ ActorParams *SwarmParams::Copy()
 	return copy;
 }
 
-GhostParams::GhostParams( EditSession *edit, sf::Vector2i &pos,
+GhostParams::GhostParams(  sf::Vector2i &pos,
 	int p_speed )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	speed = p_speed;
 
 	position = pos;	
-	type = edit->types["ghost"];
+	type = EditSession::GetSession()->types["ghost"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -211,13 +211,13 @@ GhostParams::GhostParams( EditSession *edit, sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
-GhostParams::GhostParams( EditSession *edit, sf::Vector2i &pos )
+GhostParams::GhostParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	speed = 1;
 
 	position = pos;	
-	type = edit->types["ghost"];
+	type = EditSession::GetSession()->types["ghost"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -286,11 +286,11 @@ ActorParams *GhostParams::Copy()
 
 
 
-OvergrowthParams::OvergrowthParams( EditSession *edit,
+OvergrowthParams::OvergrowthParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( PosType::GROUND_ONLY )
 {
-	type = edit->types["overgrowth"];
+	type = EditSession::GetSession()->types["overgrowth"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -341,10 +341,10 @@ ActorParams *OvergrowthParams::Copy()
 	return copy;
 }
 
-BossGatorParams::BossGatorParams( EditSession *edit, Vector2i &pos )
+BossGatorParams::BossGatorParams(  Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
-	type = edit->types["bossgator"];
+	type = EditSession::GetSession()->types["bossgator"];
 
 	radius = 600;
 	orbRadius = 160;

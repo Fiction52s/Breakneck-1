@@ -19,11 +19,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-SpecterParams::SpecterParams( EditSession *edit, sf::Vector2i &pos )
+SpecterParams::SpecterParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
-	type = edit->types["specter"];
+	type = EditSession::GetSession()->types["specter"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -73,11 +73,11 @@ ActorParams *SpecterParams::Copy()
 }
 
 
-CopycatParams::CopycatParams( EditSession *edit, sf::Vector2i &pos )
+CopycatParams::CopycatParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
-	type = edit->types["copycat"];
+	type = EditSession::GetSession()->types["copycat"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -126,7 +126,7 @@ ActorParams *CopycatParams::Copy()
 	return copy;
 }
 
-GorillaParams::GorillaParams( EditSession *edit,
+GorillaParams::GorillaParams( 
 		sf::Vector2i &pos, int p_wallWidth,
 		int p_followFrames )
 		:ActorParams( PosType::AIR_ONLY )
@@ -134,7 +134,7 @@ GorillaParams::GorillaParams( EditSession *edit,
 	wallWidth = p_wallWidth;
 	followFrames = p_followFrames;
 	position = pos;	
-	type = edit->types["gorilla"];
+	type = EditSession::GetSession()->types["gorilla"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -142,13 +142,13 @@ GorillaParams::GorillaParams( EditSession *edit,
 	SetBoundingQuad();
 }
 
-GorillaParams::GorillaParams( EditSession *edit, sf::Vector2i &pos )
+GorillaParams::GorillaParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	wallWidth = 400;
 	followFrames = 60;
 	position = pos;	
-	type = edit->types["gorilla"];
+	type = EditSession::GetSession()->types["gorilla"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -228,7 +228,7 @@ ActorParams *GorillaParams::Copy()
 	return copy;
 }
 
-NarwhalParams::NarwhalParams( EditSession *edit,
+NarwhalParams::NarwhalParams( 
 		sf::Vector2i &pos, sf::Vector2i & p_dest,
 		int p_moveFrames )
 		:ActorParams( PosType::AIR_ONLY )
@@ -236,7 +236,7 @@ NarwhalParams::NarwhalParams( EditSession *edit,
 	dest = p_dest;
 	moveFrames = p_moveFrames;
 	position = pos;	
-	type = edit->types["narwhal"];
+	type = EditSession::GetSession()->types["narwhal"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -244,13 +244,13 @@ NarwhalParams::NarwhalParams( EditSession *edit,
 	SetBoundingQuad();
 }
 
-NarwhalParams::NarwhalParams( EditSession *edit, sf::Vector2i &pos )
+NarwhalParams::NarwhalParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	dest = pos + Vector2i( 500, 0 );
 	moveFrames = 60;
 	position = pos;	
-	type = edit->types["narwhal"];
+	type = EditSession::GetSession()->types["narwhal"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -329,6 +329,11 @@ void NarwhalParams::SetPanelInfo()
 	p->textBoxes["moveframes"]->text.setString( boost::lexical_cast<string>( moveFrames ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath.clear();
+	edit->patrolPath.push_back(position);
+	edit->patrolPath.push_back(dest);
 }
 
 bool NarwhalParams::CanApply()
@@ -342,10 +347,10 @@ ActorParams *NarwhalParams::Copy()
 	return copy;
 }
 
-BossSkeletonParams::BossSkeletonParams( EditSession *edit, Vector2i &pos )
+BossSkeletonParams::BossSkeletonParams(  Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
-	type = edit->types["bossskeleton"];
+	type = EditSession::GetSession()->types["bossskeleton"];
 
 	position = pos;
 

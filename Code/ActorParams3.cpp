@@ -20,7 +20,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-PulserParams::PulserParams( EditSession *edit,
+PulserParams::PulserParams( 
 	sf::Vector2i &pos,
 	std::list<sf::Vector2i> &globalPath, 
 	int p_framesBetweenNodes,
@@ -29,7 +29,7 @@ PulserParams::PulserParams( EditSession *edit,
 {
 	lines = NULL;
 	position = pos;	
-	type = edit->types["pulser"];
+	type = EditSession::GetSession()->types["pulser"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -44,13 +44,13 @@ PulserParams::PulserParams( EditSession *edit,
 	SetBoundingQuad();
 }
 
-PulserParams::PulserParams( EditSession *edit,
+PulserParams::PulserParams( 
 	sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	lines = NULL;
 	position = pos;	
-	type = edit->types["pulser"];
+	type = EditSession::GetSession()->types["pulser"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -217,6 +217,9 @@ void PulserParams::SetPanelInfo()
 	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
 	p->checkBoxes["loop"]->checked = loop;
 	p->checkBoxes["monitor"]->checked = hasMonitor;
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
 	//p->checkBoxes["monitor"]->checked = false;
 	//EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
@@ -249,12 +252,12 @@ ActorParams *PulserParams::Copy()
 
 
 
-OwlParams::OwlParams( EditSession *edit, sf::Vector2i &pos,
+OwlParams::OwlParams(  sf::Vector2i &pos,
 	int p_moveSpeed, int p_bulletSpeed, int p_rhythmFrames )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
-	type = edit->types["owl"];
+	type = EditSession::GetSession()->types["owl"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -266,12 +269,12 @@ OwlParams::OwlParams( EditSession *edit, sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
-OwlParams::OwlParams( EditSession *edit,
+OwlParams::OwlParams( 
 	sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY )
 {
 	position = pos;	
-	type = edit->types["owl"];
+	type = EditSession::GetSession()->types["owl"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -371,28 +374,28 @@ ActorParams *OwlParams::Copy()
 
 
 
-BadgerParams::BadgerParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed,
+BadgerParams::BadgerParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed,
 	int p_jumpStrength )
 	:ActorParams( PosType::GROUND_ONLY )
 {
 	speed = p_speed;
 	jumpStrength = p_jumpStrength;
 
-	type = edit->types["badger"];
+	type = EditSession::GetSession()->types["badger"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
 }
 
-BadgerParams::BadgerParams( EditSession *edit,
+BadgerParams::BadgerParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( PosType::GROUND_ONLY )
 {
 	
 	speed = 10;
 	jumpStrength = 5;
-	type = edit->types["badger"];
+	type = EditSession::GetSession()->types["badger"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -474,7 +477,7 @@ ActorParams *BadgerParams::Copy()
 
 
 
-CactusParams::CactusParams( EditSession *edit, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+CactusParams::CactusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int p_bulletSpeed, int p_rhythm, int p_amplitude )
 	:ActorParams( PosType::GROUND_ONLY )
 {
@@ -482,14 +485,14 @@ CactusParams::CactusParams( EditSession *edit, TerrainPolygon *p_edgePolygon, in
 	rhythm = p_rhythm;
 	amplitude = p_amplitude;
 
-	type = edit->types["cactus"];
+	type = EditSession::GetSession()->types["cactus"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
 }
 
-CactusParams::CactusParams( EditSession *edit,
+CactusParams::CactusParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( PosType::GROUND_ONLY )
 {
@@ -497,7 +500,7 @@ CactusParams::CactusParams( EditSession *edit,
 	rhythm = 60;
 	amplitude = 10;
 	
-	type = edit->types["cactus"];
+	type = EditSession::GetSession()->types["cactus"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -593,10 +596,10 @@ ActorParams *CactusParams::Copy()
 	return copy;
 }
 
-BossCoyoteParams::BossCoyoteParams( EditSession *edit, sf::Vector2i &pos )
+BossCoyoteParams::BossCoyoteParams(  sf::Vector2i &pos )
 	:ActorParams( PosType::AIR_ONLY ), debugLines( sf::Lines, 6 * 2 )
 {
-	type = edit->types["bosscoyote"];
+	type = EditSession::GetSession()->types["bosscoyote"];
 
 	position = pos;
 
