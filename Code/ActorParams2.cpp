@@ -6,6 +6,7 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include "Boss.h"
+#include "ActorParams.h"
 
 using namespace std;
 using namespace sf;

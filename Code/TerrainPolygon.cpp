@@ -13,6 +13,7 @@
 #include "TerrainRender.h"
 #include <set>
 #include "GameSession.h"
+#include "ActorParams.h"
 
 using namespace std;
 using namespace sf;

@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <iostream>
 #include "EditSession.h"
+#include "ActorParams.h"
 
 using namespace sf;
 using namespace std;

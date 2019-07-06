@@ -15,6 +15,7 @@
 #include "Background.h"
 #include "Parallax.h"
 #include "Enemy_Shard.h"
+#include "ActorParams.h"
 //#include "TerrainRender.h"
 
 using namespace std;
