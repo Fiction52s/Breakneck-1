@@ -187,7 +187,7 @@ CompoundAction * Brush::UnAnchor() //only works with grounded actors
 
 			if( actor->groundInfo != NULL )
 			{
-				if( objects.size() == 1 || actor->type->canBeAerial )
+				if( objects.size() == 1 || actor->type->CanBeAerial() )
 				{
 
 					Action *newAction = new LeaveGroundAction( actor );

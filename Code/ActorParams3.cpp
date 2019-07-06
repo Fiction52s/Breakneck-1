@@ -26,7 +26,7 @@ PulserParams::PulserParams(
 	std::list<sf::Vector2i> &globalPath, 
 	int p_framesBetweenNodes,
 	bool p_loop )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	lines = NULL;
 	position = pos;	
@@ -47,7 +47,7 @@ PulserParams::PulserParams(
 
 PulserParams::PulserParams( 
 	sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	lines = NULL;
 	position = pos;	
@@ -255,7 +255,7 @@ ActorParams *PulserParams::Copy()
 
 OwlParams::OwlParams(  sf::Vector2i &pos,
 	int p_moveSpeed, int p_bulletSpeed, int p_rhythmFrames )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	position = pos;	
 	type = EditSession::GetSession()->types["owl"];
@@ -272,7 +272,7 @@ OwlParams::OwlParams(  sf::Vector2i &pos,
 
 OwlParams::OwlParams( 
 	sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	position = pos;	
 	type = EditSession::GetSession()->types["owl"];
@@ -377,7 +377,7 @@ ActorParams *OwlParams::Copy()
 
 BadgerParams::BadgerParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed,
 	int p_jumpStrength )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	speed = p_speed;
 	jumpStrength = p_jumpStrength;
@@ -391,7 +391,7 @@ BadgerParams::BadgerParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, dou
 
 BadgerParams::BadgerParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	
 	speed = 10;
@@ -480,7 +480,7 @@ ActorParams *BadgerParams::Copy()
 
 CactusParams::CactusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int p_bulletSpeed, int p_rhythm, int p_amplitude )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	bulletSpeed = p_bulletSpeed;
 	rhythm = p_rhythm;
@@ -495,7 +495,7 @@ CactusParams::CactusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, dou
 
 CactusParams::CactusParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	bulletSpeed = 5;
 	rhythm = 60;
@@ -598,7 +598,7 @@ ActorParams *CactusParams::Copy()
 }
 
 BossCoyoteParams::BossCoyoteParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY ), debugLines( sf::Lines, 6 * 2 )
+	:ActorParams( ), debugLines( sf::Lines, 6 * 2 )
 {
 	type = EditSession::GetSession()->types["bosscoyote"];
 

@@ -22,7 +22,7 @@ using namespace sf;
 
 
 PatrollerParams::PatrollerParams(  sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
-	:ActorParams( PosType::AIR_ONLY)
+	:ActorParams()
 {	
 	lines = NULL;
 	position = pos;	
@@ -61,7 +61,7 @@ PatrollerParams::PatrollerParams(  sf::Vector2i pos, list<Vector2i> &globalPath,
 
 PatrollerParams::PatrollerParams( 
 	sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {	
 	lines = NULL;
 	position = pos;	
@@ -306,7 +306,7 @@ ActorParams *PatrollerParams::Copy()
 }
 
 CrawlerParams::CrawlerParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams()
 {
 	clockwise = p_clockwise;
 	speed = p_speed;
@@ -321,7 +321,7 @@ CrawlerParams::CrawlerParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, d
 CrawlerParams::CrawlerParams(  
 		TerrainPolygon *p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
-		:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 5 )
+		:ActorParams( ), clockwise( true ), speed( 5 )
 {
 	type = EditSession::GetSession()->types["crawler"];
 
@@ -331,7 +331,7 @@ CrawlerParams::CrawlerParams(
 }
 
 CrawlerParams::CrawlerParams( EditSession *edit )
-	:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 0 )
+	:ActorParams( ), clockwise( true ), speed( 0 )
 {
 	
 	type = EditSession::GetSession()->types["crawler"];
@@ -414,7 +414,7 @@ ActorParams *CrawlerParams::Copy()
 
 BossCrawlerParams::BossCrawlerParams(  TerrainPolygon *p_edgePolygon, 
 	int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	type = EditSession::GetSession()->types["bosscrawler"];
 
@@ -447,7 +447,7 @@ ActorParams *BossCrawlerParams::Copy()
 
 
 BasicTurretParams::BasicTurretParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
@@ -460,7 +460,7 @@ BasicTurretParams::BasicTurretParams(  TerrainPolygon *p_edgePolygon, int p_edge
 }
 
 BasicTurretParams::BasicTurretParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	bulletSpeed = 10;
 	framesWait = 60;
@@ -548,7 +548,7 @@ ActorParams *BasicTurretParams::Copy()
 
 
 FootTrapParams::FootTrapParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( PosType::GROUND_ONLY )	
+	:ActorParams( )	
 {
 	type = EditSession::GetSession()->types["foottrap"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
@@ -598,7 +598,7 @@ ActorParams *FootTrapParams::Copy()
 }
 
 AirdasherParams::AirdasherParams( sf::Vector2i &pos)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	position = pos;
 	type = EditSession::GetSession()->types["airdasher"];

@@ -1443,7 +1443,7 @@ void EditSession::WriteFile(string fileName)
 		std::list<ActorPtr> &aList = (*it).second->actors;
 		for (auto ait = aList.begin(); ait != aList.end(); ++ait)
 		{
-			if ((*ait)->type->name == "shard")
+			if ((*ait)->type->info.name == "shard")
 			{
 				numShards++;
 				sp = (ShardParams*)(ait->get());
@@ -7050,7 +7050,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 											cout << "pa: " << pa.x << ", " << pa.y << ", pb: " << pb.x << ", " << pb.y <<
 												", " << pc.x << ", " << pc.y << ", " << pd.x << ", " << pd.y << endl;
 
-											cout << "testing vs: " << params->type->height << endl;
+											cout << "testing vs: " << params->type->info.size.y << endl;
 											if( isQuadTouchingQuad( pa, pb, pc, pd, a, b, c, d ) )
 											{
 												cout << "IS TOUCHING" << endl;
@@ -8670,7 +8670,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						&& selectedPoints.empty() )
 					{
 						ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( selectedBrush->objects.front() );
-						if( actor->type->canBeGrounded )
+						if( actor->type->CanBeGrounded() )
 						{
 							if( worldPosGround.ground != NULL )
 							{
@@ -9250,9 +9250,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 				if( showPanel == NULL && trackingEnemy != NULL  )
 				{
-					string name = trackingEnemy->name;
+					string name = trackingEnemy->info.name;
 					
-					if(trackingEnemy->canBeGrounded)
+					if(trackingEnemy->CanBeGrounded())
 					{						
 						enemyEdgePolygon = NULL;
 						
@@ -9303,8 +9303,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									
 										//cout << testA << " " << testB << " " << testC << " " << testD << endl;
 
-										int hw = trackingEnemy->width / 2;
-										int hh = trackingEnemy->height / 2;
+										int hw = trackingEnemy->info.size.x / 2;
+										int hh = trackingEnemy->info.size.y / 2;
 										if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
 											&& length( newPoint - te ) < length( closestPoint - te ) )
 										{
@@ -10234,109 +10234,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			}
 			else if( selectedActorGrabbed && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
 			{
-				/*if(  false && selectedActor != NULL && ( selectedActor->type->name == "crawler" 
-					|| selectedActor->type->name== "basicturret"
-					|| selectedActor->type->name == "foottrap" 
-					|| selectedActor->type->name == "goal" ) )
-				{
-					enemyEdgePolygon = NULL;
-					V2d testPoint = worldPos;
-					double testRadius = 200;
-					
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-					{
-						if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
-							&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
-						{
-							list<Vector2i>::iterator prevIt = (*it)->points.end();
-							prevIt--;
-							list<Vector2i>::iterator currIt = (*it)->points.begin();
-
-							if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
-							{
-								//prev is starting at 0. start normally at 1
-								int edgeIndex = 0;
-								double minDistance = 10000000;
-								int storedIndex;
-								double storedQuantity;
-							
-								V2d closestPoint;
-
-								for( ; currIt != (*it)->points.end(); ++currIt )
-								{
-									double dist = abs(
-										cross( 
-										V2d( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
-										normalize( V2d( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) ) );
-									double testQuantity =  dot( 
-											V2d( testPoint.x - (*prevIt).x, testPoint.y - (*prevIt).y ), 
-											normalize( V2d( (*currIt).x - (*prevIt).x, (*currIt).y - (*prevIt).y ) ) );
-
-									V2d pr( (*prevIt).x, (*prevIt).y );
-									V2d cu( (*currIt).x, (*currIt).y );
-									V2d te( testPoint.x, testPoint.y );
-									
-									V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-											(testQuantity / length( cu - pr ) ) );
-
-									//int testA = dist < 100;
-									//int testB = testQuantity >= 0 && testQuantity <= length( cu - pr );
-									//int testC = testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2;
-									//int testD = length( newPoint - te ) < length( closestPoint - te );
-									
-									//cout << testA << " " << testB << " " << testC << " " << testD << endl;
-
-									if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2 
-										&& length( newPoint - te ) < length( closestPoint - te ) )
-									{
-										minDistance = dist;
-										storedIndex = edgeIndex;
-										double l = length( cu - pr );
-										
-										storedQuantity = testQuantity;
-										closestPoint = newPoint ;
-										//minDistance = length( closestPoint - te )  
-										
-										enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
-										enemySprite.setPosition( closestPoint.x, closestPoint.y );
-										enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
-									}
-									else
-									{
-										
-										//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
-									}
-
-									prevIt = currIt;
-									++edgeIndex;
-								}
-
-								enemyEdgeIndex = storedIndex;
-
-								enemyEdgeQuantity = storedQuantity;
-								
-								enemyEdgePolygon = (*it);
-								
-								//selectedActor->ground = enemyEdgeIndex;
-								//selectedActor->groundQuantity = enemyEdgeQuantity;
-
-								
-								//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
-								//cout << "minDist: " << minDistance << endl;
-
-								//break;
-							}
-						}
-					}
-				}
-				else*/
-				{
-					if( selectedActor->type->name == "patroller" )
-					{
-						selectedActor->position = Vector2i( worldPos.x, worldPos.y );
-						selectedActor->image.setPosition( worldPos.x, worldPos.y );
-					}
-				}
+				
 				
 			}
 			else if( selectedLightGrabbed && length( V2d( lightGrabPos.x, lightGrabPos.y ) - worldPos ) > 10 )
@@ -11189,7 +11087,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 
 			enemySprite = trackingEnemy->GetSprite(false);
 
-			enemyQuad.setSize( Vector2f( trackingEnemy->width, trackingEnemy->height ) );
+			enemyQuad.setSize( Vector2f( trackingEnemy->info.size.x, trackingEnemy->info.size.y) );
 
 			showPanel = NULL;
 
@@ -11515,7 +11413,6 @@ void EditSession::SetupEnemyTypes()
 
 void EditSession::SetupEnemyType(ParamsInfo &pi)
 {
-	pi.panel = CreateOptionsPanel(pi.name);
 	types[pi.name] = new ActorType(pi);
 }
 
@@ -12977,537 +12874,8 @@ int EditSession::IsRemovePointsOkay()
 Panel * EditSession::CreateOptionsPanel( const std::string &name )
 {
 	Panel *p = NULL;
-	if( name == "poi" )
-	{
-		p = new Panel( "poi_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "NO NAME" );
-		p->AddTextBox( "camzoom", Vector2i( 20, 180 ), 200, 20, "not test" );
-		p->AddCheckBox( "camprops", Vector2i( 20, 240 ) );
-		p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
-	}
-	else if( name == "shippickup" )
-	{
-		p = new Panel( "shippickup_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "NO NAME" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-
-		//p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
-		p->AddCheckBox( "facingright", Vector2i( 20, 250 ) );
-	}
-	else if( name == "key" )
-	{
-		p = new Panel( "key_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-		p->AddTextBox( "numkeys", Vector2i( 20, 150 ), 200, 20, "3" );
-		p->AddTextBox("zonetype", Vector2i(20, 200), 200, 20, "0" );
-	}
-	else if (name == "blocker")
-	{
-		p = new Panel("blocker_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		//p->AddLabel("type_label", Vector2i(20, 150), 20, "type");
-		p->AddCheckBox("armored", Vector2i(120, 155));
-		p->AddTextBox("btype", Vector2i(20, 200), 200, 20, "0");
-		p->AddTextBox("spacing", Vector2i(20, 250), 200, 20, "0");
-		p->AddButton("createchain", Vector2i(20, 300), Vector2f(100, 50), "Create Chain");
-		//p->
-	}
-	else if (name == "comboer")
-	{
-		p = new Panel("comboer_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
-		p->AddCheckBox("loop", Vector2i(120, 155));
-		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
-		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
-
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-	}
-	else if (name == "shard")
-	{
-		p = new Panel("shard_options", 700, 1080, this);
-		p->AddLabel("shardtype", Vector2i(20, 900), 24, "SHARD_W1_TEACH_JUMP");
-
-		int xSize = 11;
-		int ySize = 2;
-		//GridSelector *gs = new GridSelector(Vector2i(0, 0), 3, 7, 64, 64, true, true, p);
-		GridSelector *gs = p->AddGridSelector( "shardselector", Vector2i(0, 0), xSize, ySize * 7, 64, 64, true, true);
-		Sprite spr;
-
-		ts_shards[0] = GetTileset("Shard/shards_w1_48x48.png", 48, 48);
-		ts_shards[1] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[2] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[3] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[4] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[5] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		ts_shards[6] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-
-		
-		Tileset *ts_currShards;
-		int sInd = 0;
-		
-		for (int w = 0; w < 7; ++w)
-		{
-			ts_currShards = ts_shards[w];
-			spr.setTexture(*ts_currShards->texture);
-			for (int y = 0; y < ySize; ++y)
-			{
-				for (int x = 0; x < xSize; ++x)
-				{
-					sInd = y * xSize + x;
-					spr.setTextureRect(ts_currShards->GetSubRect(sInd));
-					int shardT = (sInd + (xSize * ySize) * w);
-					if (shardT >= SHARD_Count)
-					{
-						gs->Set(x, y + ySize * w, spr, "---"); //need a way to set the names later
-					}
-					else
-					{
-						gs->Set(x, y + ySize * w, spr, Shard::GetShardString((ShardType)shardT));
-					}
-
-				}
-			}
-		}
-		
-
-		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
-	}
-	else if (name == "rail")
-	{
-		p = new Panel("rail_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		
-		p->AddCheckBox("energized", Vector2i(120, 155));
-		p->AddButton("createrail", Vector2i(20, 300), Vector2f(100, 50), "Create Rail");
-
-	}
-	else if (name == "booster")
-	{
-		p = new Panel("booster_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-
-		p->AddTextBox("strength", Vector2i(20, 200), 200, 3, "");
-	}
-
-	else if (name == "spring")
-	{
-		p = new Panel("spring_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-
-		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
-
-		p->AddTextBox("moveframes", Vector2i(20, 200), 200, 3, "");
-	}
-	//w1
-	else if( name == "patroller" )
-	{
-		p = new Panel( "patroller_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
-		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
-		p->AddButton( "createpath", Vector2i( 20, 250 ), Vector2f( 100, 50 ), "Create Path" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-
-		
-		//p->
-	}
-	else if( name == "foottrap" )
-	{
-		p = new Panel( "foottrap_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-	}
-	else if( name == "basicturret" )
-	{
-		p = new Panel( "basicturret_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
-		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-	}
-	else if( name == "crawler" )
-	{
-		p = new Panel( "crawler_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
-		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "1.5" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-	}
-	else if (name == "airdasher")
-	{
-		p = new Panel("airdasher_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-	}
-
-	//w2
-	else if( name == "bat" )
-	{
-		p = new Panel( "bat_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
-		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 20, "10" );
-		//p->AddTextBox( "nodedistance", Vector2i( 20, 250 ), 200, 20, "10" );
-		p->AddTextBox( "framesbetweennodes", Vector2i( 20, 300 ), 200, 20, "10" );
-		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		//p->
-	}
-	else if( name == "poisonfrog" )
-	{
-		p = new Panel( "poisonfrog_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddTextBox( "xstrength", Vector2i( 20, 150 ), 200, 20, "10" );
-		p->AddTextBox( "ystrength", Vector2i( 20, 200 ), 200, 20, "10" );
-		p->AddTextBox( "gravfactor", Vector2i( 20, 250 ), 200, 20, "5" );
-		p->AddTextBox( "jumpwaitframes", Vector2i( 20, 300 ), 200, 20, "10" );
-		//p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
-		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-		
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if (name == "gravityfaller")
-	{
-		p = new Panel("gravityfaller_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddTextBox("var", Vector2i(20, 150), 200, 20, "0");
-		//p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
-		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-
-
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "stagbeetle" )
-	{
-		p = new Panel( "stagbeetle_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
-		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "3" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "curveturret" )
-	{
-		p = new Panel( "curveturret_options", 200, 550, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
-		p->AddTextBox( "waitframes", Vector2i( 20, 200 ), 200, 20, "10" );
-		p->AddTextBox( "xgravfactor", Vector2i( 20, 250 ), 200, 20, "0" );
-		p->AddTextBox( "ygravfactor", Vector2i( 20, 300 ), 200, 20, "0" );
-		p->AddCheckBox( "relativegrav", Vector2i( 20, 350 ) );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		
-	}
-
-	//w3
-	else if( name == "pulser" )
-	{
-		p = new Panel( "pulser_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-		p->AddLabel( "loop_label", Vector2i( 20, 150 ), 20, "loop" );
-		p->AddCheckBox( "loop", Vector2i( 120, 155 ) ); 
-		p->AddTextBox( "framesbetweennodes", Vector2i( 20, 300 ), 200, 20, "10" );
-		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		//p->
-	}
-	else if( name == "cactus" )
-	{
-		p = new Panel( "cactus_options", 200, 550, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-
-		p->AddTextBox( "bulletspeed", Vector2i( 20, 150 ), 200, 20, "10" );
-		p->AddTextBox( "rhythm", Vector2i( 20, 200 ), 200, 20, "60" );
-		p->AddTextBox( "amplitude", Vector2i( 20, 250 ), 200, 20, "10" );
-
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		
-	}
-	else if( name == "badger" )
-	{
-		p = new Panel( "badger_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
-		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "3" );
-		p->AddTextBox( "jumpstrength", Vector2i( 20, 200 ), 250, 20, "3" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "owl" )
-	{
-		p = new Panel( "owl_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddTextBox( "movespeed", Vector2i( 20, 150 ), 200, 1, "1" ); 
-		p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 1, "1" ); 
-		p->AddTextBox( "rhythmframes", Vector2i( 20, 250 ), 200, 1, "1" ); 
-		
-		
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		//p->
-	}
 	
-	//w4
-	else if( name == "turtle" )
-	{
-		p = new Panel( "turtle_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		//maybe bullet speed later but it might be too hard if it has variation
-		//could have params to have them teleport to offsets around your position
-		//instead of always DIRECTLY on it
-
-		//p->AddTextBox( "movespeed", Vector2i( 20, 150 ), 200, 1, "1" ); 
-		//p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 1, "1" ); 
-		//p->AddTextBox( "rhythmframes", Vector2i( 20, 250 ), 200, 1, "1" ); 
-		
-		
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "cheetah" )
-	{
-		p = new Panel( "cheetah_options", 200, 550, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "spider" )
-	{
-		p = new Panel( "spider_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
-		p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
-
-		//ground speed will probably be the param. not figured out fully yet
-
-		p->AddTextBox( "speed", Vector2i( 20, 200 ), 200, 20, "10" );
-		//p->AddTextBox( "jumpstrength", Vector2i( 20, 200 ), 250, 20, "3" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 330 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "coral" )
-	{
-		p = new Panel( "coral_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddTextBox( "moveframes", Vector2i( 20, 150 ), 200, 20, "60" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	
-	//w5
-	else if( name == "shark" )
-	{
-		p = new Panel( "shark_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddTextBox( "circleframes", Vector2i( 20, 150 ), 200, 20, "60" );
-		
-
-		//p->AddTextBox( "movespeed", Vector2i( 20, 150 ), 200, 1, "1" ); 
-		//p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 1, "1" ); 
-		//p->AddTextBox( "rhythmframes", Vector2i( 20, 250 ), 200, 1, "1" ); 
-		
-		
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "overgrowth" )
-	{
-		p = new Panel( "overgrowth_options", 200, 550, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "ghost" )
-	{
-		p = new Panel( "ghost_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddTextBox( "speed", Vector2i( 20, 150 ), 200, 20, "1" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "swarm" )
-	{
-		p = new Panel( "swarm_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddTextBox( "liveframes", Vector2i( 20, 150 ), 200, 3, "120" );
-		//maybe frames swarm is alive once launched?
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "specter" )
-	{
-		p = new Panel( "specter_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-	}
-	else if( name == "gorilla" )
-	{
-		p = new Panel( "gorilla_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddTextBox( "wallwidth", Vector2i( 20, 150 ), 200, 20, "1" );
-		p->AddTextBox( "followframes", Vector2i( 20, 200 ), 200, 20, "1" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-	}
-	else if( name == "copycat" )
-	{
-		p = new Panel( "copycat_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-	}
-	else if( name == "narwhal" )
-	{
-		p = new Panel( "narwhal_options", 200, 600, this );
-		p->AddButton( "ok", Vector2i( 100, 450 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "not test" );
-
-		p->AddTextBox( "moveframes", Vector2i( 20, 300 ), 200, 20, "10" );
-		p->AddButton( "createpath", Vector2i( 20, 350 ), Vector2f( 100, 50 ), "Create Path" );
-
-		p->AddCheckBox( "monitor", Vector2i( 20, 400 ) );
-	}
-	else if( name == "nexus" )
-	{
-		p = new Panel( "nexus_options", 200, 500, this );
-		p->AddButton( "ok", Vector2i( 100, 410 ), Vector2f( 100, 50 ), "OK" );
-		p->AddTextBox( "name", Vector2i( 20, 20 ), 200, 20, "name_test" );
-		p->AddTextBox( "group", Vector2i( 20, 100 ), 200, 20, "group_test" );
-
-		p->AddTextBox( "nexusindex", Vector2i( 20, 150 ), 200, 20, "1" );
-	}
-
-	else if (name == "groundtrigger")
-	{
-		p = new Panel("groundtrigger_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-
-		p->AddCheckBox("facingright", Vector2i(20, 250));
-		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
-	}
-	else if (name == "airtrigger")
-	{
-		p = new Panel("airtrigger_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
-		p->AddButton("createrect", Vector2i(20, 350), Vector2f(100, 50), "Create Rect");
-	}
-	//else if( name == "racefighttarget" )
-	//{
-	
-
-
-	else if( name == "map" )
+	if( name == "map" )
 	{
 		p = new Panel( "map_options", 200, 800, this );
 		p->AddButton( "ok", Vector2i( 100, 600 ), Vector2f( 100, 50 ), "OK" );
@@ -13558,7 +12926,7 @@ void EditSession::SetEnemyEditPanel()
 	
 	//ActorType *type = selectedActor->type;
 	ActorType *type = ap->type;
-	string name = type->name;
+	string name = type->info.name;
 
 	Panel *p = type->panel;
 
@@ -13869,7 +13237,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	{
 		for (auto it2 = (*it).second->actors.begin(); it2 != (*it).second->actors.end(); ++it2)
 		{
-			if ((*it2)->type->name == "poi" )
+			if ((*it2)->type->info.name == "poi" )
 			{
 				boost::shared_ptr<PoiParams> pp = boost::static_pointer_cast<PoiParams>((*it2));
 				if (pp->name == "stormceiling")
@@ -14092,12 +13460,6 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 			TerrainPoint *prev = (*it)->pointEnd;
 			TerrainPoint *curr = (*it)->pointStart;
 
-			//prev is starting at 0. start normally at 1
-			//int edgeIndex = 0;
-			//gi.ground = NULL;
-			//groundQuantity;
-			//gi.edgeStart = NULL;
-
 			double minDistance = 10000000;
 			//int storedIndex;
 			TerrainPoint *storedEdge = NULL;
@@ -14166,16 +13528,6 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 			gi.edgeStart = storedEdge;
 			gi.groundQuantity = storedQuantity;
 			gi.ground = storedPoly;
-			
-			//enemyEdgeIndex = storedIndex;
-			
-			//enemyEdgeQuantity = storedQuantity;
-								
-			//enemyEdgePolygon = (*it);
-								
-
-			//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
-			//cout << "minDist: " << minDistance << endl;
 
 			break;
 		}
@@ -14187,110 +13539,8 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 		}
 	}
-	/*if( inversePolygon != NULL )
-		polygons.pop_back();*/
 
 	return gi;
-
-	/*if( showPanel == NULL && trackingEnemy != NULL && ( trackingEnemy->name == "crawler" 
-		|| trackingEnemy->name == "basicturret"
-		|| trackingEnemy->name == "foottrap" 
-		|| trackingEnemy->name == "goal" ) )
-	{
-		enemyEdgePolygon = NULL;
-				
-		double testRadius = 200;
-					
-		for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-		{
-			if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
-				&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
-			{
-				TerrainPoint *prev = (*it)->pointEnd;
-				TerrainPoint *curr = (*it)->pointStart;
-
-				if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
-				{
-					//prev is starting at 0. start normally at 1
-					int edgeIndex = 0;
-					double minDistance = 10000000;
-					int storedIndex;
-					double storedQuantity;
-							
-					V2d closestPoint;
-
-					for( ; curr != NULL; curr = curr->next )
-					{
-						double dist = abs(
-							cross( 
-							V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
-							normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) ) );
-						double testQuantity =  dot( 
-								V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
-								normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) );
-
-						V2d pr( prev->pos.x, prev->pos.y );
-						V2d cu( curr->pos.x, curr->pos.y );
-						V2d te( testPoint.x, testPoint.y );
-									
-						V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-								(testQuantity / length( cu - pr ) ) );
-
-						//int testA = dist < 100;
-						//int testB = testQuantity >= 0 && testQuantity <= length( cu - pr );
-						//int testC = testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2;
-						//int testD = length( newPoint - te ) < length( closestPoint - te );
-									
-						//cout << testA << " " << testB << " " << testC << " " << testD << endl;
-
-						int hw = trackingEnemy->width / 2;
-						int hh = trackingEnemy->height / 2;
-						if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
-							&& length( newPoint - te ) < length( closestPoint - te ) )
-						{
-							minDistance = dist;
-							storedIndex = edgeIndex;
-							double l = length( cu - pr );
-										
-							storedQuantity = testQuantity;
-							closestPoint = newPoint ;
-							//minDistance = length( closestPoint - te )  
-										
-							enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
-							enemySprite.setPosition( closestPoint.x, closestPoint.y );
-							enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
-
-							enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
-							enemyQuad.setRotation( enemySprite.getRotation() );
-							enemyQuad.setPosition( enemySprite.getPosition() );
-						}
-						else
-						{
-										
-							//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
-						}
-
-						prev = curr;
-						++edgeIndex;
-					}
-
-					enemyEdgeIndex = storedIndex;
-
-					enemyEdgeQuantity = storedQuantity;
-								
-					enemyEdgePolygon = (*it);
-								
-
-					//cout << "pos: " << closestPoint.x << ", " << closestPoint.y << endl;
-					//cout << "minDist: " << minDistance << endl;
-
-					break;
-				}
-			}
-		}
-
-
-	}*/
 }
 
 
@@ -15188,45 +14438,43 @@ void EditSession::BoxSelectPoints(sf::IntRect r,
 }
 
 ActorType::ActorType( ParamsInfo &pi)
-	:name(pi.name), panel(pi.panel), imageTileIndex(pi.imageTileIndex), pMakerGround( pi.pmGround ), 
-	pMakerAir( pi.pmAir )
+	:info( pi )
 {
+	panel = CreatePanel();
 	EditSession *session = EditSession::GetSession();
 
-	if (pi.ts != NULL)
+	if(info.ts == NULL )
 	{
-		ts_image = pi.ts;
+		info.ts = session->GetTileset(string("Editor/") + info.name + string("_editor.png"));
 	}
-	else
-	{
-		ts_image = session->GetTileset(string("Editor/") + name + string("_editor.png"));
-	}
+}
 
-	canBeGrounded = (pMakerGround != NULL);
-	canBeAerial = (pMakerAir != NULL);
+bool ActorType::CanBeGrounded()
+{
+	return (info.pmGround != NULL);
+}
 
-	width = pi.size.x;
-	height = pi.size.y;
-
-	imageOffset = pi.offset;
-
-	Init();
+bool ActorType::CanBeAerial()
+{
+	return ( info.pmAir != NULL || info.name == "player" );
 }
 
 sf::Sprite ActorType::GetSprite( int xSize, int ySize )
 {
-	if (ts_image == NULL)
+	Tileset *ts = info.ts;
+
+	if (ts == NULL)
 	{
 		return Sprite();
 	}
 
-	Sprite spr(*ts_image->texture);
-	spr.setTextureRect(ts_image->GetSubRect(imageTileIndex));
+	Sprite spr(*ts->texture);
+	spr.setTextureRect(ts->GetSubRect(info.imageTileIndex));
 
 	if (xSize != 0 && ySize != 0)
 	{
-		float xx = ((float)xSize) / ts_image->tileWidth;
-		float yy = ((float)ySize) / ts_image->tileHeight;
+		float xx = ((float)xSize) / ts->tileWidth;
+		float yy = ((float)ySize) / ts->tileHeight;
 		float scale = min(xx, yy);
 		spr.setScale(scale, scale);
 	}
@@ -15238,21 +14486,540 @@ sf::Sprite ActorType::GetSprite(bool grounded)
 	Sprite s = GetSprite();
 	if (grounded)
 	{
-		if (name != "poi")
-			s.setOrigin(s.getLocalBounds().width / 2 + imageOffset.x, s.getLocalBounds().height + imageOffset.y);
+		if (info.name != "poi")
+			s.setOrigin(s.getLocalBounds().width / 2 + info.offset.x, s.getLocalBounds().height + info.offset.y);
 		else
 		{
-			s.setOrigin(s.getLocalBounds().width / 2 + imageOffset.x, s.getLocalBounds().height / 2 + imageOffset.y);
+			s.setOrigin(s.getLocalBounds().width / 2 + info.offset.x, s.getLocalBounds().height / 2 + info.offset.y);
 		}
 	}
 	else
 	{
-		s.setOrigin(s.getLocalBounds().width / 2 + imageOffset.x, s.getLocalBounds().height / 2 + imageOffset.y);
+		s.setOrigin(s.getLocalBounds().width / 2 + info.offset.x, s.getLocalBounds().height / 2 + info.offset.y);
 	}
 
 	return s;
 }
 
+Panel *ActorType::CreatePanel()
+{
+	EditSession *edit = EditSession::GetSession();
+	Panel *p = NULL;
+	string &name = info.name;
+	//extra
+	if (name == "poi")
+	{
+		p = new Panel("poi_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "NO NAME");
+		p->AddTextBox("camzoom", Vector2i(20, 180), 200, 20, "not test");
+		p->AddCheckBox("camprops", Vector2i(20, 240));
+		p->AddTextBox("barrier", Vector2i(20, 330), 50, 1, "-");
+	}
+	else if (name == "shippickup")
+	{
+		p = new Panel("shippickup_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "NO NAME");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		//p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
+		p->AddCheckBox("facingright", Vector2i(20, 250));
+	}
+	else if (name == "key")
+	{
+		p = new Panel("key_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddTextBox("numkeys", Vector2i(20, 150), 200, 20, "3");
+		p->AddTextBox("zonetype", Vector2i(20, 200), 200, 20, "0");
+	}
+	else if (name == "blocker")
+	{
+		p = new Panel("blocker_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		//p->AddLabel("type_label", Vector2i(20, 150), 20, "type");
+		p->AddCheckBox("armored", Vector2i(120, 155));
+		p->AddTextBox("btype", Vector2i(20, 200), 200, 20, "0");
+		p->AddTextBox("spacing", Vector2i(20, 250), 200, 20, "0");
+		p->AddButton("createchain", Vector2i(20, 300), Vector2f(100, 50), "Create Chain");
+		//p->
+	}
+	else if (name == "shard")
+	{
+		p = new Panel("shard_options", 700, 1080, edit);
+		p->AddLabel("shardtype", Vector2i(20, 900), 24, "SHARD_W1_TEACH_JUMP");
+
+		int xSize = 11;
+		int ySize = 2;
+		//GridSelector *gs = new GridSelector(Vector2i(0, 0), 3, 7, 64, 64, true, true, p);
+		GridSelector *gs = p->AddGridSelector("shardselector", Vector2i(0, 0), xSize, ySize * 7, 64, 64, true, true);
+		Sprite spr;
+
+		edit->ts_shards[0] = edit->GetTileset("Shard/shards_w1_48x48.png", 48, 48);
+		edit->ts_shards[1] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		edit->ts_shards[2] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		edit->ts_shards[3] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		edit->ts_shards[4] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		edit->ts_shards[5] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+		edit->ts_shards[6] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+
+
+		Tileset *ts_currShards;
+		int sInd = 0;
+
+		for (int w = 0; w < 7; ++w)
+		{
+			ts_currShards = edit->ts_shards[w];
+			spr.setTexture(*ts_currShards->texture);
+			for (int y = 0; y < ySize; ++y)
+			{
+				for (int x = 0; x < xSize; ++x)
+				{
+					sInd = y * xSize + x;
+					spr.setTextureRect(ts_currShards->GetSubRect(sInd));
+					int shardT = (sInd + (xSize * ySize) * w);
+					if (shardT >= SHARD_Count)
+					{
+						gs->Set(x, y + ySize * w, spr, "---"); //need a way to set the names later
+					}
+					else
+					{
+						gs->Set(x, y + ySize * w, spr, Shard::GetShardString((ShardType)shardT));
+					}
+
+				}
+			}
+		}
+
+
+		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
+	}
+
+	else if (name == "booster")
+	{
+		p = new Panel("booster_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("strength", Vector2i(20, 200), 200, 3, "");
+	}
+	else if (name == "comboer")
+	{
+		p = new Panel("comboer_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
+		p->AddCheckBox("loop", Vector2i(120, 155));
+		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
+		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+	}
+	else if (name == "spring")
+	{
+		p = new Panel("spring_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
+
+		p->AddTextBox("moveframes", Vector2i(20, 200), 200, 3, "");
+	}
+	//w1
+	else if (name == "patroller")
+	{
+		p = new Panel("patroller_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
+		p->AddCheckBox("loop", Vector2i(120, 155));
+		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
+		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+	}
+	else if (name == "basicturret")
+	{
+		p = new Panel("basicturret_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("bulletspeed", Vector2i(20, 150), 200, 20, "10");
+		p->AddTextBox("waitframes", Vector2i(20, 200), 200, 20, "10");
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+	}
+	else if (name == "crawler")
+	{
+		p = new Panel("crawler_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
+		p->AddCheckBox("clockwise", Vector2i(120, 155));
+		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "1.5");
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+	}
+	else if (name == "airdasher")
+	{
+		p = new Panel("airdasher_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+	}
+
+	//w2
+	else if (name == "bat")
+	{
+		p = new Panel("bat_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
+		p->AddCheckBox("loop", Vector2i(120, 155));
+		p->AddTextBox("bulletspeed", Vector2i(20, 200), 200, 20, "10");
+		//p->AddTextBox( "nodedistance", Vector2i( 20, 250 ), 200, 20, "10" );
+		p->AddTextBox("framesbetweennodes", Vector2i(20, 300), 200, 20, "10");
+		p->AddButton("createpath", Vector2i(20, 350), Vector2f(100, 50), "Create Path");
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		//p->
+	}
+	else if (name == "poisonfrog")
+	{
+		p = new Panel("poisonfrog_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("xstrength", Vector2i(20, 150), 200, 20, "10");
+		p->AddTextBox("ystrength", Vector2i(20, 200), 200, 20, "10");
+		p->AddTextBox("gravfactor", Vector2i(20, 250), 200, 20, "5");
+		p->AddTextBox("jumpwaitframes", Vector2i(20, 300), 200, 20, "10");
+		//p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
+		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "gravityfaller")
+	{
+		p = new Panel("gravityfaller_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("var", Vector2i(20, 150), 200, 20, "0");
+		//p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
+		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
+
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "stagbeetle")
+	{
+		p = new Panel("stagbeetle_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
+		p->AddCheckBox("clockwise", Vector2i(120, 155));
+		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "3");
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "curveturret")
+	{
+		p = new Panel("curveturret_options", 200, 550, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("bulletspeed", Vector2i(20, 150), 200, 20, "10");
+		p->AddTextBox("waitframes", Vector2i(20, 200), 200, 20, "10");
+		p->AddTextBox("xgravfactor", Vector2i(20, 250), 200, 20, "0");
+		p->AddTextBox("ygravfactor", Vector2i(20, 300), 200, 20, "0");
+		p->AddCheckBox("relativegrav", Vector2i(20, 350));
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+
+	}
+
+	//w3
+	else if (name == "pulser")
+	{
+		p = new Panel("pulser_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
+		p->AddCheckBox("loop", Vector2i(120, 155));
+		p->AddTextBox("framesbetweennodes", Vector2i(20, 300), 200, 20, "10");
+		p->AddButton("createpath", Vector2i(20, 350), Vector2f(100, 50), "Create Path");
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		//p->
+	}
+	else if (name == "cactus")
+	{
+		p = new Panel("cactus_options", 200, 550, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+
+		p->AddTextBox("bulletspeed", Vector2i(20, 150), 200, 20, "10");
+		p->AddTextBox("rhythm", Vector2i(20, 200), 200, 20, "60");
+		p->AddTextBox("amplitude", Vector2i(20, 250), 200, 20, "10");
+
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+
+	}
+	else if (name == "badger")
+	{
+		p = new Panel("badger_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
+		p->AddCheckBox("clockwise", Vector2i(120, 155));
+
+		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "3");
+		p->AddTextBox("jumpstrength", Vector2i(20, 200), 250, 20, "3");
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "owl")
+	{
+		p = new Panel("owl_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("movespeed", Vector2i(20, 150), 200, 1, "1");
+		p->AddTextBox("bulletspeed", Vector2i(20, 200), 200, 1, "1");
+		p->AddTextBox("rhythmframes", Vector2i(20, 250), 200, 1, "1");
+
+
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		//p->
+	}
+
+	//w4
+	else if (name == "turtle")
+	{
+		p = new Panel("turtle_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		//maybe bullet speed later but it might be too hard if it has variation
+		//could have params to have them teleport to offsets around your position
+		//instead of always DIRECTLY on it
+
+		//p->AddTextBox( "movespeed", Vector2i( 20, 150 ), 200, 1, "1" ); 
+		//p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 1, "1" ); 
+		//p->AddTextBox( "rhythmframes", Vector2i( 20, 250 ), 200, 1, "1" ); 
+
+
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "cheetah")
+	{
+		p = new Panel("cheetah_options", 200, 550, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "spider")
+	{
+		p = new Panel("spider_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
+		p->AddCheckBox("clockwise", Vector2i(120, 155));
+
+		//ground speed will probably be the param. not figured out fully yet
+
+		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
+		//p->AddTextBox( "jumpstrength", Vector2i( 20, 200 ), 250, 20, "3" );
+
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "coral")
+	{
+		p = new Panel("coral_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("moveframes", Vector2i(20, 150), 200, 20, "60");
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "rail")
+	{
+		p = new Panel("rail_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddCheckBox("energized", Vector2i(120, 155));
+		p->AddButton("createrail", Vector2i(20, 300), Vector2f(100, 50), "Create Rail");
+
+	}
+	//w5
+	else if (name == "shark")
+	{
+		p = new Panel("shark_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("circleframes", Vector2i(20, 150), 200, 20, "60");
+
+
+		//p->AddTextBox( "movespeed", Vector2i( 20, 150 ), 200, 1, "1" ); 
+		//p->AddTextBox( "bulletspeed", Vector2i( 20, 200 ), 200, 1, "1" ); 
+		//p->AddTextBox( "rhythmframes", Vector2i( 20, 250 ), 200, 1, "1" ); 
+
+
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "overgrowth")
+	{
+		p = new Panel("overgrowth_options", 200, 550, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "ghost")
+	{
+		p = new Panel("ghost_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("speed", Vector2i(20, 150), 200, 20, "1");
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "swarm")
+	{
+		p = new Panel("swarm_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("liveframes", Vector2i(20, 150), 200, 3, "120");
+		//maybe frames swarm is alive once launched?
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "specter")
+	{
+		p = new Panel("specter_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+	}
+	else if (name == "gorilla")
+	{
+		p = new Panel("gorilla_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("wallwidth", Vector2i(20, 150), 200, 20, "1");
+		p->AddTextBox("followframes", Vector2i(20, 200), 200, 20, "1");
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+	}
+	else if (name == "copycat")
+	{
+		p = new Panel("copycat_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+	}
+	else if (name == "narwhal")
+	{
+		p = new Panel("narwhal_options", 200, 600, edit);
+		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("moveframes", Vector2i(20, 300), 200, 20, "10");
+		p->AddButton("createpath", Vector2i(20, 350), Vector2f(100, 50), "Create Path");
+
+		p->AddCheckBox("monitor", Vector2i(20, 400));
+	}
+	else if (name == "nexus")
+	{
+		p = new Panel("nexus_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+
+		p->AddTextBox("nexusindex", Vector2i(20, 150), 200, 20, "1");
+	}
+
+	else if (name == "groundtrigger")
+	{
+		p = new Panel("groundtrigger_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+
+		p->AddCheckBox("facingright", Vector2i(20, 250));
+		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
+	}
+	else if (name == "airtrigger")
+	{
+		p = new Panel("airtrigger_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
+		p->AddButton("createrect", Vector2i(20, 350), Vector2f(100, 50), "Create Rect");
+	}
+
+	return p;
+}
 
 void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 {
@@ -15262,6 +15029,7 @@ void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 	Vector2i pos;
 	double edgeQuantity;
 	int hasMonitor;
+	string &name = info.name;
 
 	if (name == "goal")
 	{
@@ -16355,6 +16123,7 @@ void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 
 bool ActorType::IsGoalType()
 {
+	string &name = info.name;
 	return name == "goal"
 		|| name == "shippickup"
 		|| name == "nexus";
@@ -16417,19 +16186,20 @@ void ActorType::PlaceEnemy()
 	Vector2i worldPos(edit->worldPos);
 
 	bool placed = false;
-	if (pMakerGround != NULL)
+	if (info.pmGround!= NULL)
 	{
 		if (edit->enemyEdgePolygon != NULL)
 		{
-			PlaceEnemy(pMakerGround(this));
+			PlaceEnemy(info.pmGround(this));
 			placed = true;
 		}
 	}
-	if ( !placed && pMakerAir != NULL)
+	if ( !placed && info.pmAir != NULL)
 	{
-		PlaceEnemy(pMakerAir(this));
+		PlaceEnemy(info.pmAir(this));
 	}
 	
+	string &name = info.name;
 	if (name == "blocker"|| name == "spring" || name == "patroller"|| name == "bat"
 		|| name == "pulser"|| name == "narwhal")//curve turret??
 	{

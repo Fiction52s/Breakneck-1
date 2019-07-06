@@ -22,7 +22,7 @@ using namespace sf;
 
 SharkParams::SharkParams(  sf::Vector2i &pos,
 	int p_circleFrames )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	circleFrames = p_circleFrames;
 
@@ -36,7 +36,7 @@ SharkParams::SharkParams(  sf::Vector2i &pos,
 }
 
 SharkParams::SharkParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	circleFrames = 60;
 
@@ -112,7 +112,7 @@ ActorParams *SharkParams::Copy()
 
 SwarmParams::SwarmParams(  sf::Vector2i &pos,
 	int p_liveFrames )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	liveFrames = p_liveFrames;
 
@@ -126,7 +126,7 @@ SwarmParams::SwarmParams(  sf::Vector2i &pos,
 }
 
 SwarmParams::SwarmParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	liveFrames = 420;
 
@@ -199,7 +199,7 @@ ActorParams *SwarmParams::Copy()
 
 GhostParams::GhostParams(  sf::Vector2i &pos,
 	int p_speed )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	speed = p_speed;
 
@@ -213,7 +213,7 @@ GhostParams::GhostParams(  sf::Vector2i &pos,
 }
 
 GhostParams::GhostParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	speed = 1;
 
@@ -289,7 +289,7 @@ ActorParams *GhostParams::Copy()
 
 OvergrowthParams::OvergrowthParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	type = EditSession::GetSession()->types["overgrowth"];
 
@@ -343,7 +343,7 @@ ActorParams *OvergrowthParams::Copy()
 }
 
 BossGatorParams::BossGatorParams(  Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	type = EditSession::GetSession()->types["bossgator"];
 

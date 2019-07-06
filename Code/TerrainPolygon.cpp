@@ -2570,7 +2570,7 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 			if( edgeEnd == NULL )
 				edgeEnd = (*it)->groundInfo->ground->pointStart;
 
-			if( (*it)->type->canBeGrounded && 
+			if( (*it)->type->CanBeGrounded() && 
 				( (*(*it)->groundInfo->edgeStart).selected || edgeEnd->selected ) )
 			{
 				bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");

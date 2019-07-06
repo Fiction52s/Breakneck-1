@@ -21,7 +21,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 SpecterParams::SpecterParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	position = pos;	
 	type = EditSession::GetSession()->types["specter"];
@@ -75,7 +75,7 @@ ActorParams *SpecterParams::Copy()
 
 
 CopycatParams::CopycatParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	position = pos;	
 	type = EditSession::GetSession()->types["copycat"];
@@ -130,7 +130,7 @@ ActorParams *CopycatParams::Copy()
 GorillaParams::GorillaParams( 
 		sf::Vector2i &pos, int p_wallWidth,
 		int p_followFrames )
-		:ActorParams( PosType::AIR_ONLY )
+		:ActorParams( )
 {
 	wallWidth = p_wallWidth;
 	followFrames = p_followFrames;
@@ -144,7 +144,7 @@ GorillaParams::GorillaParams(
 }
 
 GorillaParams::GorillaParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	wallWidth = 400;
 	followFrames = 60;
@@ -232,7 +232,7 @@ ActorParams *GorillaParams::Copy()
 NarwhalParams::NarwhalParams( 
 		sf::Vector2i &pos, sf::Vector2i & p_dest,
 		int p_moveFrames )
-		:ActorParams( PosType::AIR_ONLY )
+		:ActorParams( )
 {
 	dest = p_dest;
 	moveFrames = p_moveFrames;
@@ -246,7 +246,7 @@ NarwhalParams::NarwhalParams(
 }
 
 NarwhalParams::NarwhalParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	dest = pos + Vector2i( 500, 0 );
 	moveFrames = 60;
@@ -349,7 +349,7 @@ ActorParams *NarwhalParams::Copy()
 }
 
 BossSkeletonParams::BossSkeletonParams(  Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	type = EditSession::GetSession()->types["bossskeleton"];
 

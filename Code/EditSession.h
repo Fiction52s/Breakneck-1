@@ -52,7 +52,7 @@ struct ParamsInfo
 		Tileset *p_ts = NULL, int imageTile = 0)
 		:name(n), pmGround(pg), pmAir(pa),
 		offset(off), size(p_size),
-		ts(p_ts), imageTileIndex(imageTile), panel(NULL)
+		ts(p_ts), imageTileIndex(imageTile)
 	{
 
 	}
@@ -63,7 +63,6 @@ struct ParamsInfo
 	sf::Vector2i size;
 	Tileset *ts;
 	int imageTileIndex;
-	Panel *panel;
 };
 
 struct GrassSeg
@@ -431,20 +430,16 @@ struct ActorType
 	void PlaceEnemy(ActorParams *ap);
 	void LoadEnemy(std::ifstream &is,
 		ActorPtr &a);
+	Panel * CreatePanel();
 	bool IsGoalType();
 	sf::Sprite GetSprite(int xSize = 0, int ySize = 0);
 	sf::Sprite GetSprite(bool grounded);
-	std::string name;
-	Tileset *ts_image;
-	int width;
-	int height;
-	bool canBeGrounded;
-	bool canBeAerial;
+	bool CanBeGrounded();
+	bool CanBeAerial();
+
 	Panel *panel;
-	int imageTileIndex;
-	sf::Vector2i imageOffset;
-	ParamsMaker *pMakerGround;
-	ParamsMaker *pMakerAir;
+
+	ParamsInfo info;
 };
 
 

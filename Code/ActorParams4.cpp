@@ -23,7 +23,7 @@ using namespace sf;
 
 CoralParams::CoralParams(  sf::Vector2i &pos, 
 	int p_moveFrames )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	moveFrames = p_moveFrames;
 	position = pos;	
@@ -36,7 +36,7 @@ CoralParams::CoralParams(  sf::Vector2i &pos,
 }
 
 CoralParams::CoralParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	moveFrames = 60;
 
@@ -114,7 +114,7 @@ ActorParams *CoralParams::Copy()
 
 
 TurtleParams::TurtleParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams( )
 {
 	position = pos;	
 	type = EditSession::GetSession()->types["turtle"];
@@ -168,7 +168,7 @@ ActorParams *TurtleParams::Copy()
 
 CheetahParams::CheetahParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	type = EditSession::GetSession()->types["cheetah"];
 
@@ -224,7 +224,7 @@ ActorParams *CheetahParams::Copy()
 
 
 SpiderParams::SpiderParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	speed = p_speed;
 
@@ -237,7 +237,7 @@ SpiderParams::SpiderParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, dou
 
 SpiderParams::SpiderParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	
 	speed = 10;
@@ -310,7 +310,7 @@ ActorParams *SpiderParams::Copy()
 }
 
 BossTigerParams::BossTigerParams(  Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY ), debugLines( sf::Lines, 30 * 2 )
+	:ActorParams( ), debugLines( sf::Lines, 30 * 2 )
 {
 	type = EditSession::GetSession()->types["bosstiger"];
 

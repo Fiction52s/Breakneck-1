@@ -24,7 +24,7 @@ using namespace sf;
 
 
 BatParams::BatParams(  sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_framesBetweenNodes, bool p_loop )
-	:ActorParams( PosType::AIR_ONLY)
+	:ActorParams( )
 {	
 	lines = NULL;
 	position = pos;	
@@ -66,7 +66,7 @@ BatParams::BatParams(  sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulle
 }
 
 BatParams::BatParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams()
 {	
 	lines = NULL;
 	position = pos;	
@@ -342,7 +342,7 @@ ActorParams *BatParams::Copy()
 
 
 StagBeetleParams::StagBeetleParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams( )
 {
 	clockwise = p_clockwise;
 	speed = p_speed;
@@ -356,7 +356,7 @@ StagBeetleParams::StagBeetleParams(  TerrainPolygon *p_edgePolygon, int p_edgeIn
 
 StagBeetleParams::StagBeetleParams( 
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( PosType::GROUND_ONLY ), clockwise( true ), speed( 0 )
+	:ActorParams( ), clockwise( true ), speed( 0 )
 {
 	
 	speed = 10;
@@ -446,7 +446,7 @@ ActorParams *StagBeetleParams::Copy()
 
 PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon, 
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
-	:ActorParams( PosType::GROUND_ONLY ), pathQuads( sf::Quads, 4 * 50 )
+	:ActorParams(), pathQuads( sf::Quads, 4 * 50 )
 {
 	gravFactor = 30;
 	jumpWaitFrames = 60;
@@ -464,7 +464,7 @@ PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon,
 PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon, 
 	int p_edgeIndex, double p_edgeQuantity, int p_gravFactor, sf::Vector2i &p_jumpStrength,
 	int p_jumpWaitFrames )
-	:ActorParams( PosType::GROUND_ONLY ), pathQuads( sf::Quads, 4 * 50 )
+	:ActorParams( ), pathQuads( sf::Quads, 4 * 50 )
 {
 	gravFactor = p_gravFactor;
 	jumpStrength = p_jumpStrength;
@@ -479,7 +479,7 @@ PoisonFrogParams::PoisonFrogParams(  TerrainPolygon *p_edgePolygon,
 }
 
 PoisonFrogParams::PoisonFrogParams( EditSession *edit )
-	:ActorParams( PosType::GROUND_ONLY )//, clockwise( true ), speed( 0 )
+	:ActorParams( )//, clockwise( true ), speed( 0 )
 {
 	
 	type = EditSession::GetSession()->types["poisonfrog"];
@@ -685,7 +685,7 @@ ActorParams *PoisonFrogParams::Copy()
 
 CurveTurretParams::CurveTurretParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
 	sf::Vector2i p_gravFactor, bool relative )
-	:ActorParams( PosType::GROUND_ONLY ), bulletPathQuads( sf::Quads, 100 * 4 )
+	:ActorParams( ), bulletPathQuads( sf::Quads, 100 * 4 )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
@@ -704,7 +704,7 @@ CurveTurretParams::CurveTurretParams(  TerrainPolygon *p_edgePolygon, int p_edge
 CurveTurretParams::CurveTurretParams( 
 		TerrainPolygon *p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
-		:ActorParams( PosType::GROUND_ONLY ), bulletPathQuads( sf::Quads, 100 * 4 )
+		:ActorParams( ), bulletPathQuads( sf::Quads, 100 * 4 )
 {
 	type = EditSession::GetSession()->types["curveturret"];
 	
@@ -928,7 +928,7 @@ ActorParams *CurveTurretParams::Copy()
 }
 
 BossBirdParams::BossBirdParams(  Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY ), debugLines( sf::Lines, 4 * 2 )
+	:ActorParams( ), debugLines( sf::Lines, 4 * 2 )
 {
 	type = EditSession::GetSession()->types["bossbird"];
 
@@ -995,7 +995,7 @@ void BossBirdParams::CreateFormation()
 
 GravityFallerParams::GravityFallerParams( TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
-	:ActorParams(PosType::GROUND_ONLY)
+	:ActorParams()
 {
 	variation = 0;
 
@@ -1008,7 +1008,7 @@ GravityFallerParams::GravityFallerParams( TerrainPolygon *p_edgePolygon,
 
 GravityFallerParams::GravityFallerParams( TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity, int var )
-	:ActorParams(PosType::GROUND_ONLY)
+	:ActorParams()
 {
 	variation = var;
 	type = EditSession::GetSession()->types["gravityfaller"];

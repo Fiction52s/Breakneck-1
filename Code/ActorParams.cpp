@@ -24,8 +24,8 @@ using namespace sf;
 
 sf::Font *PoiParams::font = NULL;
 
-ActorParams::ActorParams( ActorParams::PosType p_posType )
-	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ), posType( p_posType ),
+ActorParams::ActorParams()
+	:ISelectable( ISelectable::ACTOR ), boundingQuad( sf::Quads, 4 ),
 		hasMonitor( false ), group( NULL )
 {
 	groundInfo = NULL;
@@ -115,9 +115,11 @@ void ActorParams::WriteFile( ofstream &of )
 	//}
 	
 	//dont need number of params because the actortype determines that.
-	of << type->name << " ";
+	of << type->info.name << " ";
 
-	if( type->canBeGrounded && type->canBeAerial )
+	bool canGrounded = type->CanBeGrounded();
+	bool canAerial = type->CanBeAerial();
+	if( canGrounded && canAerial )
 	{
 		if( groundInfo != NULL )
 		{
@@ -129,7 +131,7 @@ void ActorParams::WriteFile( ofstream &of )
 			of << "+air" << " " << position.x << " " << position.y << endl;
 		}
 	}
-	else if( type->canBeGrounded )
+	else if( canGrounded )
 	{
 		assert( groundInfo != NULL );
 
@@ -137,7 +139,7 @@ void ActorParams::WriteFile( ofstream &of )
 
 		of << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
 	}
-	else if( type->canBeAerial )
+	else if( canAerial )
 	{
 		of << position.x << " " << position.y << endl;
 	}
@@ -146,11 +148,6 @@ void ActorParams::WriteFile( ofstream &of )
 		assert( false );
 	}
 	
-
-	/*for( list<string>::iterator it = params.begin(); it != params.end(); ++it )
-	{
-		of << (*it) << endl;
-	}*/
 	WriteParamFile( of );
 }
 
@@ -200,7 +197,10 @@ int GroundInfo::GetEdgeIndex()
 void ActorParams::SetBoundingQuad()
 {
 	//float note
-	if( type->canBeGrounded && groundInfo != NULL )
+	int width = type->info.size.x;
+	int height = type->info.size.y;
+
+	if( type->CanBeGrounded() && groundInfo != NULL )
 	{
 		V2d v0( (*groundInfo->edgeStart).pos.x, (*groundInfo->edgeStart).pos.y );
 		TerrainPoint *edgeEnd = groundInfo->edgeStart->next;
@@ -209,12 +209,13 @@ void ActorParams::SetBoundingQuad()
 		V2d v1( edgeEnd->pos.x, edgeEnd->pos.y );
 		V2d along = normalize( v1 - v0 );
 		V2d other( along.y, -along.x );
+		
 
 		V2d startGround = v0 + along * groundInfo->groundQuantity;
-		V2d leftGround = startGround - along * ( type->width / 2.0) + other * 1.0;
-		V2d rightGround = startGround + along * ( type->width / 2.0) + other * 1.0;
-		V2d leftAir = leftGround + other * (double)(type->height - 1) ;
-		V2d rightAir = rightGround + other * (double)(type->height - 1 );
+		V2d leftGround = startGround - along * ( width / 2.0) + other * 1.0;
+		V2d rightGround = startGround + along * ( width / 2.0) + other * 1.0;
+		V2d leftAir = leftGround + other * (double)(height - 1) ;
+		V2d rightAir = rightGround + other * (double)(height - 1 );
 
 		/*if( type->name == "poi" )
 		{
@@ -235,10 +236,10 @@ void ActorParams::SetBoundingQuad()
 	else
 	{
 		//patroller doesnt need a box because its not physical with the environment
-		boundingQuad[0].position = Vector2f( position.x - type->width / 2, position.y - type->height / 2);
-		boundingQuad[1].position = Vector2f( position.x + type->width / 2, position.y - type->height / 2);
-		boundingQuad[2].position = Vector2f( position.x + type->width / 2, position.y + type->height / 2);
-		boundingQuad[3].position = Vector2f( position.x - type->width / 2, position.y + type->height / 2);
+		boundingQuad[0].position = Vector2f( position.x - width / 2, position.y - height / 2);
+		boundingQuad[1].position = Vector2f( position.x + width / 2, position.y - height / 2);
+		boundingQuad[2].position = Vector2f( position.x + width / 2, position.y + height / 2);
+		boundingQuad[3].position = Vector2f( position.x - width / 2, position.y + height / 2);
 	}
 
 	UpdateExtraVisuals();
@@ -261,13 +262,15 @@ void ActorParams::UpdateGroundedSprite()
 
 	//this shouldn't remain here. i need more detailed checking.
 	double groundLength = length( pr - cu );
-	if( groundInfo->groundQuantity + type->width / 2 > groundLength )
+	int width = type->info.size.x;
+
+	if( groundInfo->groundQuantity + width / 2 > groundLength )
 	{
-		groundInfo->groundQuantity = groundLength - type->width / 2;
+		groundInfo->groundQuantity = groundLength - width / 2;
 	}
-	else if( groundInfo->groundQuantity - type->width / 2 < 0 )
+	else if( groundInfo->groundQuantity - width / 2 < 0 )
 	{
-		groundInfo->groundQuantity = type->width / 2;
+		groundInfo->groundQuantity = width / 2;
 	}
 
 	V2d newPoint( pr.x + (cu.x - pr.x) * (groundInfo->groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
@@ -524,14 +527,34 @@ void ActorParams::Activate(EditSession *editsession, SelectPtr select )
 	}
 }
 
-GoalParams::GoalParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( PosType::GROUND_ONLY )
+GoalParams::GoalParams(std::ifstream &is)
+	:ActorParams( )
 {
-	type = EditSession::GetSession()->types["goal"];
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+	EditSession *edit = EditSession::GetSession();
+	type = edit->types["goal"];
+
+	int terrainIndex, edgeIndex;
+	double edgeQuantity;
+	is >> terrainIndex;
+	is >> edgeIndex;
+	is >> edgeQuantity;
+
+	TerrainPolygon *terrain = edit->GetPolygon(terrainIndex, edgeIndex);
+
+	AnchorToGround(terrain, edgeIndex, edgeQuantity);
 
 	SetBoundingQuad();
 }
+
+GoalParams::GoalParams(TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	:ActorParams()
+{
+	type = EditSession::GetSession()->types["goal"];
+	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+
+	SetBoundingQuad();
+}
+
 
 bool GoalParams::CanApply()
 {
@@ -557,7 +580,7 @@ ActorParams *GoalParams::Copy()
 
 //remnove the postype thing. we have 2 bools for that already
 PlayerParams::PlayerParams(  sf::Vector2i pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams()
 {
 	position = pos;
 
@@ -609,7 +632,7 @@ PoiParams::PoiParams(
 	TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, 
 	double p_edgeQuantity )
-	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ),
+	:ActorParams(),
 	barrier( NONE )
 {
 	
@@ -632,7 +655,7 @@ PoiParams::PoiParams(
 	TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, 
 	double p_edgeQuantity, PoiParams::Barrier bType, const std::string &p_name )
-	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ),
+	:ActorParams(),
 	barrier( bType ), name( p_name )
 {
 	hasCamProperties = false;
@@ -650,7 +673,7 @@ PoiParams::PoiParams(
 
 PoiParams::PoiParams( 
 	sf::Vector2i &pos )
-	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ), barrier( NONE )
+	:ActorParams(), barrier( NONE )
 {
 	camRect.setFillColor( Color::Transparent );
 	camRect.setOutlineColor( Color::Red );
@@ -679,7 +702,7 @@ PoiParams::PoiParams(
 PoiParams::PoiParams( 
 	sf::Vector2i &pos, PoiParams::Barrier bType, const std::string &p_name,
 	bool hasCam, float cZoom )
-	:ActorParams( ActorParams::PosType::GROUND_AND_AIR ), 
+	:ActorParams(), 
 	barrier( bType ), name( p_name ), hasCamProperties( hasCam ),
 	camZoom( cZoom )
 {
@@ -839,7 +862,7 @@ void PoiParams::Draw( sf::RenderTarget *target )
 }
 
 KeyParams::KeyParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams()
 {
 	position = pos;	
 	type = EditSession::GetSession()->types["key"];
@@ -856,7 +879,7 @@ KeyParams::KeyParams(  sf::Vector2i &pos )
 
 KeyParams::KeyParams(  sf::Vector2i &pos,
 	int p_numKeys, int p_zoneType )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams()
 {
 	position = pos;	
 	type = EditSession::GetSession()->types["key"];
@@ -939,7 +962,7 @@ ActorParams *KeyParams::Copy()
 
 NexusParams::NexusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int p_nexusIndex )
-	:ActorParams( PosType::GROUND_ONLY ), nexusIndex( p_nexusIndex )
+	:ActorParams(), nexusIndex( p_nexusIndex )
 {
 	type = EditSession::GetSession()->types["nexus"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
@@ -948,7 +971,7 @@ NexusParams::NexusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, doubl
 }
 
 NexusParams::NexusParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams()
 {
 	nexusIndex = 0;
 	type = EditSession::GetSession()->types["nexus"];
@@ -1009,7 +1032,7 @@ ActorParams *NexusParams::Copy()
 
 GroundTriggerParams::GroundTriggerParams( TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	bool fr, const std::string &p_typeStr)
-	:ActorParams(PosType::GROUND_ONLY), facingRight( fr ), typeStr( p_typeStr )
+	:ActorParams(), facingRight( fr ), typeStr( p_typeStr )
 {
 	type = EditSession::GetSession()->types["groundtrigger"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
@@ -1018,7 +1041,7 @@ GroundTriggerParams::GroundTriggerParams( TerrainPolygon *p_edgePolygon, int p_e
 }
 
 GroundTriggerParams::GroundTriggerParams( TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams(PosType::GROUND_ONLY)
+	:ActorParams()
 {
 	type = EditSession::GetSession()->types["groundtrigger"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
@@ -1075,7 +1098,7 @@ ActorParams *GroundTriggerParams::Copy()
 
 ShipPickupParams::ShipPickupParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	bool p_facingRight )
-	:ActorParams( PosType::GROUND_ONLY ), facingRight( p_facingRight )
+	:ActorParams(), facingRight( p_facingRight )
 {
 	type = EditSession::GetSession()->types["shippickup"];
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
@@ -1084,7 +1107,7 @@ ShipPickupParams::ShipPickupParams(  TerrainPolygon *p_edgePolygon, int p_edgeIn
 }
 
 ShipPickupParams::ShipPickupParams(  TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams( PosType::GROUND_ONLY )
+	:ActorParams()
 {
 	facingRight = true;
 	type = EditSession::GetSession()->types["shippickup"];
@@ -1137,7 +1160,7 @@ ActorParams *ShipPickupParams::Copy()
 }
 
 ShardParams::ShardParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams()
 {
 	position = pos;	
 	type = EditSession::GetSession()->types["shard"];
@@ -1185,7 +1208,7 @@ int ShardParams::GetTotalIndex()
 
 ShardParams::ShardParams( sf::Vector2i &pos, int p_world,
 	int p_localIndex)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	position = pos;
 	type = EditSession::GetSession()->types["shard"];
@@ -1246,7 +1269,7 @@ ActorParams *ShardParams::Copy()
 }
 
 RaceFightTargetParams::RaceFightTargetParams(  sf::Vector2i &pos )
-	:ActorParams( PosType::AIR_ONLY )
+	:ActorParams()
 {
 	position = pos;	
 	type = EditSession::GetSession()->types["racefighttarget"];
@@ -1294,7 +1317,7 @@ ActorParams *RaceFightTargetParams::Copy()
 
 BlockerParams::BlockerParams( sf::Vector2i pos, list<sf::Vector2i> &globalPath, int p_bType, bool p_armored,
 	int p_spacing )
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	lines = NULL;
 	//lines = NULL;
@@ -1321,7 +1344,7 @@ BlockerParams::BlockerParams( sf::Vector2i pos, list<sf::Vector2i> &globalPath, 
 
 BlockerParams::BlockerParams(
 	sf::Vector2i &pos)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	lines = NULL;
 	position = pos;
@@ -1557,7 +1580,7 @@ ActorParams *BlockerParams::Copy()
 }
 
 RailParams::RailParams( sf::Vector2i pos, list<sf::Vector2i> &globalPath, bool p_energized )
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	lines = NULL;
 	//lines = NULL;
@@ -1579,7 +1602,7 @@ RailParams::RailParams( sf::Vector2i pos, list<sf::Vector2i> &globalPath, bool p
 
 RailParams::RailParams(
 	sf::Vector2i &pos)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	lines = NULL;
 	position = pos;
@@ -1759,7 +1782,7 @@ ActorParams *RailParams::Copy()
 }
 
 BoosterParams::BoosterParams( sf::Vector2i &pos, int p_strength )
-	:ActorParams(PosType::AIR_ONLY), strength( p_strength )
+	:ActorParams(), strength( p_strength )
 {
 	position = pos;
 	type = EditSession::GetSession()->types["booster"];
@@ -1772,7 +1795,7 @@ BoosterParams::BoosterParams( sf::Vector2i &pos, int p_strength )
 }
 
 BoosterParams::BoosterParams( sf::Vector2i &pos)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	position = pos;
 	type = EditSession::GetSession()->types["booster"];
@@ -1837,7 +1860,7 @@ ActorParams *BoosterParams::Copy()
 
 SpringParams::SpringParams( sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath,
 	int p_moveFrames)
-	:ActorParams(PosType::AIR_ONLY), moveFrames( p_moveFrames )
+	:ActorParams(), moveFrames( p_moveFrames )
 {
 	position = pos;
 	type = EditSession::GetSession()->types["spring"];
@@ -1854,7 +1877,7 @@ SpringParams::SpringParams( sf::Vector2i &pos, std::list<sf::Vector2i> &globalPa
 }
 
 SpringParams::SpringParams( sf::Vector2i &pos)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	position = pos;
 	type = EditSession::GetSession()->types["spring"];
@@ -2016,7 +2039,7 @@ std::list<sf::Vector2i> SpringParams::GetGlobalPath()
 }
 
 ComboerParams::ComboerParams( sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	lines = NULL;
 	position = pos;
@@ -2036,7 +2059,7 @@ ComboerParams::ComboerParams( sf::Vector2i pos, list<Vector2i> &globalPath, floa
 
 ComboerParams::ComboerParams(
 	sf::Vector2i &pos)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	lines = NULL;
 	position = pos;
@@ -2283,7 +2306,7 @@ ActorParams *ComboerParams::Copy()
 
 
 AirTriggerParams::AirTriggerParams( sf::Vector2i &pos)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	position = pos;
 	type = EditSession::GetSession()->types["airtrigger"];
@@ -2306,7 +2329,7 @@ AirTriggerParams::AirTriggerParams( sf::Vector2i &pos)
 }
 
 AirTriggerParams::AirTriggerParams( sf::Vector2i &pos, const std::string &typeStr, int w,int h)
-	:ActorParams(PosType::AIR_ONLY)
+	:ActorParams()
 {
 	position = pos;
 	type = EditSession::GetSession()->types["airtrigger"];
@@ -2396,7 +2419,7 @@ void AirTriggerParams::Draw(RenderTarget *target)
 
 FlowerPodParams::FlowerPodParams( TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, 
 	const std::string &p_typeStr)
-	:ActorParams(PosType::GROUND_ONLY), facingRight(true), typeStr(p_typeStr)
+	:ActorParams(), facingRight(true), typeStr(p_typeStr)
 {
 	type = EditSession::GetSession()->types["flowerpod"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
@@ -2405,7 +2428,7 @@ FlowerPodParams::FlowerPodParams( TerrainPolygon *p_edgePolygon, int p_edgeIndex
 }
 
 FlowerPodParams::FlowerPodParams( TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams(PosType::GROUND_ONLY)
+	:ActorParams()
 {
 	type = EditSession::GetSession()->types["flowerpod"];
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
