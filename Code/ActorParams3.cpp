@@ -26,11 +26,10 @@ PulserParams::PulserParams(ActorType *at,
 	std::list<sf::Vector2i> &globalPath, 
 	int p_framesBetweenNodes,
 	bool p_loop )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	lines = NULL;
 	position = pos;	
-	type = EditSession::GetSession()->types["pulser"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -46,12 +45,33 @@ PulserParams::PulserParams(ActorType *at,
 }
 
 PulserParams::PulserParams(ActorType *at,
+	ifstream &is)
+	:ActorParams(at)
+{
+	lines = NULL;
+
+	LoadAerial(is);
+	LoadMonitor(is);
+	LoadGlobalPath(is);
+
+	string loopStr;
+	is >> loopStr;
+	if (loopStr == "+loop")
+		loop = true;
+	else if (loopStr == "-loop")
+		loop = false;
+	else
+		assert(false && "should be a boolean");
+
+	is >> framesBetweenNodes;
+}
+
+PulserParams::PulserParams(ActorType *at,
 	sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	lines = NULL;
 	position = pos;	
-	type = EditSession::GetSession()->types["pulser"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -255,10 +275,9 @@ ActorParams *PulserParams::Copy()
 
 OwlParams::OwlParams(ActorType *at, sf::Vector2i &pos,
 	int p_moveSpeed, int p_bulletSpeed, int p_rhythmFrames )
-	:ActorParams( )
+	:ActorParams( at)
 {
 	position = pos;	
-	type = EditSession::GetSession()->types["owl"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -270,12 +289,22 @@ OwlParams::OwlParams(ActorType *at, sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
+OwlParams::OwlParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
+	
+	is >> moveSpeed;
+	is >> bulletSpeed;
+	is >> rhythmFrames;
+}
+
 OwlParams::OwlParams(ActorType *at,
 	sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	position = pos;	
-	type = EditSession::GetSession()->types["owl"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -377,26 +406,35 @@ ActorParams *OwlParams::Copy()
 
 BadgerParams::BadgerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed,
 	int p_jumpStrength )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	speed = p_speed;
 	jumpStrength = p_jumpStrength;
-
-	type = EditSession::GetSession()->types["badger"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
 }
 
+BadgerParams::BadgerParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	//always grounded
+
+	LoadGrounded(is);
+	LoadMonitor(is);
+	
+	is >> speed;
+	is >> jumpStrength;
+}
+
 BadgerParams::BadgerParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( )
+	:ActorParams(at )
 {
 	
 	speed = 10;
 	jumpStrength = 5;
-	type = EditSession::GetSession()->types["badger"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -480,28 +518,35 @@ ActorParams *BadgerParams::Copy()
 
 CactusParams::CactusParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int p_bulletSpeed, int p_rhythm, int p_amplitude )
-	:ActorParams( )
+	:ActorParams( at)
 {
 	bulletSpeed = p_bulletSpeed;
 	rhythm = p_rhythm;
 	amplitude = p_amplitude;
-
-	type = EditSession::GetSession()->types["cactus"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
 }
 
+CactusParams::CactusParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadGrounded(is);
+	LoadMonitor(is);
+
+	is >> bulletSpeed;
+	is >> rhythm;
+	is >> amplitude;
+}
+
 CactusParams::CactusParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( )
+	:ActorParams( at)
 {
 	bulletSpeed = 5;
 	rhythm = 60;
 	amplitude = 10;
-	
-	type = EditSession::GetSession()->types["cactus"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -598,9 +643,8 @@ ActorParams *CactusParams::Copy()
 }
 
 BossCoyoteParams::BossCoyoteParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( ), debugLines( sf::Lines, 6 * 2 )
+	:ActorParams(at ), debugLines( sf::Lines, 6 * 2 )
 {
-	type = EditSession::GetSession()->types["bosscoyote"];
 
 	position = pos;
 
@@ -613,6 +657,15 @@ BossCoyoteParams::BossCoyoteParams(ActorType *at, sf::Vector2i &pos )
 				
 	SetBoundingQuad();	
 
+	CreateFormation();
+}
+
+BossCoyoteParams::BossCoyoteParams(ActorType *at, ifstream &is)
+	:ActorParams(at), debugLines(sf::Lines, 6 * 2)
+{
+	LoadAerial(is);
+
+	radius = 600;
 	CreateFormation();
 }
 

@@ -24,11 +24,10 @@ using namespace sf;
 
 
 BatParams::BatParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_framesBetweenNodes, bool p_loop )
-	:ActorParams( )
+	:ActorParams(at )
 {	
 	lines = NULL;
 	position = pos;	
-	type = EditSession::GetSession()->types["bat"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -44,33 +43,38 @@ BatParams::BatParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath
 	//speed = p_speed;
 
 	SetBoundingQuad();
-	//ss << localPath.size();
-	//params.push_back( ss.str() );
-	//ss.str( "" );
+}
 
-	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-		ss << (*it).x  << " " << (*it).y;
-		params.push_back( ss.str() );
-		ss.str( "" );
-	}
+BatParams::BatParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	lines = NULL;
 
-	if( loop )
-		params.push_back( "+loop" );
+	LoadAerial(is);
+	LoadMonitor(is);
+	LoadGlobalPath(is);
+
+	loop;
+	string loopStr;
+	is >> loopStr;
+	if (loopStr == "+loop")
+		loop = true;
+	else if (loopStr == "-loop")
+		loop = false;
 	else
-		params.push_back( "-loop" );
+		assert(false && "should be a boolean");
+
+	is >> bulletSpeed;
+	is >> framesBetweenNodes;
+
 	
-	ss.precision( 5 );
-	ss << fixed << speed;
-	params.push_back( ss.str() );*/
 }
 
 BatParams::BatParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams()
+	:ActorParams(at)
 {	
 	lines = NULL;
 	position = pos;	
-	type = EditSession::GetSession()->types["bat"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -82,36 +86,6 @@ BatParams::BatParams(ActorType *at, sf::Vector2i &pos )
 	bulletSpeed = 10;
 
 	SetBoundingQuad();
-
-	//image.setPosition( pos.x, pos.y );
-
-	//list<Vector2i> localPath;
-	//SetPath( globalPath );
-
-	//loop = p_loop;
-	//speed = p_speed;
-
-	//SetBoundingQuad();
-
-	//ss << localPath.size();
-	//params.push_back( ss.str() );
-	//ss.str( "" );
-
-	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-		ss << (*it).x  << " " << (*it).y;
-		params.push_back( ss.str() );
-		ss.str( "" );
-	}
-
-	if( loop )
-		params.push_back( "+loop" );
-	else
-		params.push_back( "-loop" );
-	
-	ss.precision( 5 );
-	ss << fixed << speed;
-	params.push_back( ss.str() );*/
 }
 
 bool BatParams::CanApply()
@@ -342,26 +316,44 @@ ActorParams *BatParams::Copy()
 
 
 StagBeetleParams::StagBeetleParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
-	:ActorParams( )
+	:ActorParams( at)
 {
 	clockwise = p_clockwise;
 	speed = p_speed;
-
-	type = EditSession::GetSession()->types["stagbeetle"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
 }
 
+StagBeetleParams::StagBeetleParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadGrounded(is);
+	LoadMonitor(is);
+
+	string cwStr;
+	is >> cwStr;
+
+	if (cwStr == "+clockwise")
+		clockwise = true;
+	else if (cwStr == "-clockwise")
+		clockwise = false;
+	else
+	{
+		assert(false && "boolean problem");
+	}
+
+	is >> speed;
+}
+
 StagBeetleParams::StagBeetleParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( ), clockwise( true ), speed( 0 )
+	:ActorParams(at ), clockwise( true ), speed( 0 )
 {
 	
 	speed = 10;
 	clockwise = true;
-	type = EditSession::GetSession()->types["stagbeetle"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -446,13 +438,12 @@ ActorParams *StagBeetleParams::Copy()
 
 PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
-	:ActorParams(), pathQuads( sf::Quads, 4 * 50 )
+	:ActorParams(at), pathQuads( sf::Quads, 4 * 50 )
 {
 	gravFactor = 30;
 	jumpWaitFrames = 60;
 	jumpStrength = Vector2i( 5, 12 );
 
-	type = EditSession::GetSession()->types["poisonfrog"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -464,12 +455,11 @@ PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity, int p_gravFactor, sf::Vector2i &p_jumpStrength,
 	int p_jumpWaitFrames )
-	:ActorParams( ), pathQuads( sf::Quads, 4 * 50 )
+	:ActorParams( at), pathQuads( sf::Quads, 4 * 50 )
 {
 	gravFactor = p_gravFactor;
 	jumpStrength = p_jumpStrength;
 	jumpWaitFrames = p_jumpWaitFrames;
-	type = EditSession::GetSession()->types["poisonfrog"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -478,11 +468,18 @@ PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	UpdatePath();
 }
 
-PoisonFrogParams::PoisonFrogParams(ActorType *at, EditSession *edit )
-	:ActorParams( )//, clockwise( true ), speed( 0 )
+PoisonFrogParams::PoisonFrogParams(ActorType *at, ifstream &is)
+	:ActorParams(at), pathQuads(sf::Quads, 4 * 50)
 {
-	
-	type = EditSession::GetSession()->types["poisonfrog"];
+	LoadGrounded(is);
+	LoadMonitor(is);
+
+	is >> gravFactor;
+	is >> jumpStrength.x;
+	is >> jumpStrength.y;
+	is >> jumpWaitFrames;
+
+	UpdatePath();
 }
 
 bool PoisonFrogParams::CanApply()
@@ -685,14 +682,13 @@ ActorParams *PoisonFrogParams::Copy()
 
 CurveTurretParams::CurveTurretParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait,
 	sf::Vector2i p_gravFactor, bool relative )
-	:ActorParams( ), bulletPathQuads( sf::Quads, 100 * 4 )
+	:ActorParams(at ), bulletPathQuads( sf::Quads, 100 * 4 )
 {
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
 	gravFactor = p_gravFactor;
 	relativeGrav = relative;
 
-	type = EditSession::GetSession()->types["curveturret"];
 	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
@@ -701,13 +697,31 @@ CurveTurretParams::CurveTurretParams(ActorType *at, TerrainPolygon *p_edgePolygo
 	//UpdateBulletCurve();
 }
 
+CurveTurretParams::CurveTurretParams(ActorType *at, ifstream &is)
+	:ActorParams(at), bulletPathQuads(sf::Quads, 100 * 4)
+{
+	LoadGrounded(is);
+	LoadMonitor(is);
+
+	is >> bulletSpeed;
+	is >> framesWait;
+	is >> gravFactor.x;
+	is >> gravFactor.y;
+
+	relativeGrav = false;
+	string relativeGravStr;
+	is >> relativeGravStr;
+	if (relativeGravStr == "+relative")
+	{
+		relativeGrav = true;
+	}
+}
+
 CurveTurretParams::CurveTurretParams(ActorType *at,
 		TerrainPolygon *p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
-		:ActorParams( ), bulletPathQuads( sf::Quads, 100 * 4 )
-{
-	type = EditSession::GetSession()->types["curveturret"];
-	
+		:ActorParams(at ), bulletPathQuads( sf::Quads, 100 * 4 )
+{	
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	gravFactor = Vector2i( 0, 0 );
@@ -928,10 +942,8 @@ ActorParams *CurveTurretParams::Copy()
 }
 
 BossBirdParams::BossBirdParams(ActorType *at, Vector2i &pos )
-	:ActorParams( ), debugLines( sf::Lines, 4 * 2 )
+	:ActorParams( at), debugLines( sf::Lines, 4 * 2 )
 {
-	type = EditSession::GetSession()->types["bossbird"];
-
 	position = pos;
 
 	image = type->GetSprite(false);
@@ -943,6 +955,15 @@ BossBirdParams::BossBirdParams(ActorType *at, Vector2i &pos )
 	//CreateFormation();
 				
 	SetBoundingQuad();	
+}
+
+BossBirdParams::BossBirdParams(ActorType *at, ifstream &is)
+	:ActorParams(at), debugLines(sf::Lines, 4 * 2)
+{
+	LoadAerial(is);
+
+	width = Boss_Bird::GRID_SIZE_X * 160;
+	height = Boss_Bird::GRID_SIZE_Y * 80;
 }
 
 bool BossBirdParams::CanApply()
@@ -995,11 +1016,9 @@ void BossBirdParams::CreateFormation()
 
 GravityFallerParams::GravityFallerParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
-	:ActorParams()
+	:ActorParams(at)
 {
 	variation = 0;
-
-	type = EditSession::GetSession()->types["gravityfaller"];
 
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
@@ -1008,14 +1027,22 @@ GravityFallerParams::GravityFallerParams(ActorType *at, TerrainPolygon *p_edgePo
 
 GravityFallerParams::GravityFallerParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity, int var )
-	:ActorParams()
+	:ActorParams(at)
 {
 	variation = var;
-	type = EditSession::GetSession()->types["gravityfaller"];
 
 	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
 	SetBoundingQuad();
+}
+
+GravityFallerParams::GravityFallerParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadGrounded(is);
+	LoadMonitor(is);
+
+	is >> variation;
 }
 
 bool GravityFallerParams::CanApply()

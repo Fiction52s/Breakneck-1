@@ -23,11 +23,10 @@ using namespace sf;
 
 CoralParams::CoralParams(ActorType *at, sf::Vector2i &pos,
 	int p_moveFrames )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	moveFrames = p_moveFrames;
 	position = pos;	
-	type = EditSession::GetSession()->types["coral"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -36,12 +35,11 @@ CoralParams::CoralParams(ActorType *at, sf::Vector2i &pos,
 }
 
 CoralParams::CoralParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	moveFrames = 60;
 
 	position = pos;	
-	type = EditSession::GetSession()->types["coral"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -49,6 +47,14 @@ CoralParams::CoralParams(ActorType *at, sf::Vector2i &pos )
 	SetBoundingQuad();
 }
 
+CoralParams::CoralParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
+
+	is >> moveFrames;
+}
 
 
 void CoralParams::WriteParamFile( std::ofstream &of )
@@ -114,15 +120,20 @@ ActorParams *CoralParams::Copy()
 
 
 TurtleParams::TurtleParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	position = pos;	
-	type = EditSession::GetSession()->types["turtle"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
+}
+
+TurtleParams::TurtleParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
 }
 
 void TurtleParams::WriteParamFile( std::ofstream &of )
@@ -168,13 +179,18 @@ ActorParams *TurtleParams::Copy()
 
 CheetahParams::CheetahParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( )
+	:ActorParams(at )
 {
-	type = EditSession::GetSession()->types["cheetah"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
+}
+
+CheetahParams::CheetahParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadGrounded(is);
 }
 
 bool CheetahParams::CanApply()
@@ -224,24 +240,28 @@ ActorParams *CheetahParams::Copy()
 
 
 SpiderParams::SpiderParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	speed = p_speed;
-
-	type = EditSession::GetSession()->types["spider"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
 }
 
-SpiderParams::SpiderParams( 
-	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( )
+SpiderParams::SpiderParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
 {
-	
+	LoadGrounded(is);
+	LoadMonitor(is);
+	is >> speed;
+}
+
+SpiderParams::SpiderParams(ActorType *at,
+	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	:ActorParams(at )
+{
 	speed = 10;
-	type = EditSession::GetSession()->types["spider"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
@@ -310,10 +330,8 @@ ActorParams *SpiderParams::Copy()
 }
 
 BossTigerParams::BossTigerParams(ActorType *at, Vector2i &pos )
-	:ActorParams( ), debugLines( sf::Lines, 30 * 2 )
+	:ActorParams(at ), debugLines( sf::Lines, 30 * 2 )
 {
-	type = EditSession::GetSession()->types["bosstiger"];
-
 	position = pos;
 
 	image = type->GetSprite(false);
@@ -323,6 +341,15 @@ BossTigerParams::BossTigerParams(ActorType *at, Vector2i &pos )
 	radius2 = 1600;
 				
 	SetBoundingQuad();	
+}
+
+BossTigerParams::BossTigerParams(ActorType *at, ifstream &is)
+	:ActorParams(at), debugLines(sf::Lines, 30 * 2)
+{
+	LoadAerial(is);
+
+	radius1 = 800;
+	radius2 = 1600;
 }
 
 void BossTigerParams::Draw( sf::RenderTarget *target )

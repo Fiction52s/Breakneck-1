@@ -22,12 +22,11 @@ using namespace sf;
 
 SharkParams::SharkParams(ActorType *at, sf::Vector2i &pos,
 	int p_circleFrames )
-	:ActorParams( )
+	:ActorParams( at)
 {
 	circleFrames = p_circleFrames;
 
 	position = pos;	
-	type = EditSession::GetSession()->types["shark"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -35,13 +34,20 @@ SharkParams::SharkParams(ActorType *at, sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
+SharkParams::SharkParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
+	is >> circleFrames;
+}
+
 SharkParams::SharkParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	circleFrames = 60;
 
 	position = pos;	
-	type = EditSession::GetSession()->types["shark"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -112,12 +118,11 @@ ActorParams *SharkParams::Copy()
 
 SwarmParams::SwarmParams(ActorType *at, sf::Vector2i &pos,
 	int p_liveFrames )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	liveFrames = p_liveFrames;
 
 	position = pos;	
-	type = EditSession::GetSession()->types["swarm"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -125,13 +130,20 @@ SwarmParams::SwarmParams(ActorType *at, sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
+SwarmParams::SwarmParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
+	is >> liveFrames;
+}
+
 SwarmParams::SwarmParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	liveFrames = 420;
 
 	position = pos;	
-	type = EditSession::GetSession()->types["swarm"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -199,12 +211,11 @@ ActorParams *SwarmParams::Copy()
 
 GhostParams::GhostParams(ActorType *at, sf::Vector2i &pos,
 	int p_speed )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	speed = p_speed;
 
 	position = pos;	
-	type = EditSession::GetSession()->types["ghost"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -212,13 +223,20 @@ GhostParams::GhostParams(ActorType *at, sf::Vector2i &pos,
 	SetBoundingQuad();
 }
 
+GhostParams::GhostParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
+	is >> speed;
+}
+
 GhostParams::GhostParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams( at)
 {
 	speed = 1;
 
 	position = pos;	
-	type = EditSession::GetSession()->types["ghost"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -289,13 +307,19 @@ ActorParams *GhostParams::Copy()
 
 OvergrowthParams::OvergrowthParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams( )
+	:ActorParams(at )
 {
-	type = EditSession::GetSession()->types["overgrowth"];
 
 	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 				
 	SetBoundingQuad();	
+}
+
+OvergrowthParams::OvergrowthParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadGrounded(is);
+	LoadMonitor(is);
 }
 
 bool OvergrowthParams::CanApply()
@@ -343,10 +367,8 @@ ActorParams *OvergrowthParams::Copy()
 }
 
 BossGatorParams::BossGatorParams(ActorType *at, Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
-	type = EditSession::GetSession()->types["bossgator"];
-
 	radius = 600;
 	orbRadius = 160;
 
@@ -378,6 +400,33 @@ BossGatorParams::BossGatorParams(ActorType *at, Vector2i &pos )
 		
 				
 	SetBoundingQuad();	
+}
+
+BossGatorParams::BossGatorParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	radius = 600;
+	orbRadius = 160;
+
+	for (int i = 0; i < 5; ++i)
+	{
+		CircleShape &cs = circles[i];
+		cs.setFillColor(Color::Red);
+		cs.setRadius(orbRadius);
+		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+	}
+
+
+	Transform t;
+	Vector2f offset(0, -radius);
+	for (int i = 0; i < 5; ++i)
+	{
+		CircleShape &cs = circles[i];
+		Vector2f truePos = t.transformPoint(offset) + Vector2f(position.x, position.y);
+		cs.setPosition(truePos);
+		t.rotate(360.f / 5.f);
+	}
 }
 
 bool BossGatorParams::CanApply()

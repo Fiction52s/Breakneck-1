@@ -1326,10 +1326,9 @@ ActorParams *ShipPickupParams::Copy()
 }
 
 ShardParams::ShardParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams()
+	:ActorParams(at)
 {
 	position = pos;	
-	type = EditSession::GetSession()->types["shard"];
 
 	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
 	image.setPosition( pos.x, pos.y );
@@ -1451,7 +1450,6 @@ RaceFightTargetParams::RaceFightTargetParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams(at)
 {
 	position = pos;	
-	type = EditSession::GetSession()->types["racefighttarget"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -1526,8 +1524,9 @@ BlockerParams::BlockerParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i>
 BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 	:ActorParams(at)
 {
+	lines = NULL;
 	LoadAerial(is);
-
+	
 	LoadGlobalPath(is);
 
 	int ibType;
@@ -1539,7 +1538,7 @@ BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 	armored = iarmored;
 
 	is >> spacing;
-	lines = NULL;
+	
 }
 
 BlockerParams::BlockerParams(ActorType *at,
@@ -1799,6 +1798,7 @@ RailParams::RailParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i> &glob
 RailParams::RailParams(ActorType *at, ifstream &is )
 	:ActorParams(at)
 {
+	lines = NULL;
 	LoadAerial(is);
 	LoadGlobalPath(is);
 
@@ -1806,7 +1806,7 @@ RailParams::RailParams(ActorType *at, ifstream &is )
 	is >> ienergized;
 	energized = ienergized;
 
-	lines = NULL;
+	
 }
 
 RailParams::RailParams(ActorType *at,
@@ -1993,7 +1993,6 @@ BoosterParams::BoosterParams(ActorType *at, sf::Vector2i &pos, int p_strength )
 	:ActorParams(at), strength( p_strength )
 {
 	position = pos;
-	type = EditSession::GetSession()->types["booster"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -2015,7 +2014,6 @@ BoosterParams::BoosterParams(ActorType *at, sf::Vector2i &pos)
 	:ActorParams(at)
 {
 	position = pos;
-	type = EditSession::GetSession()->types["booster"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -2080,7 +2078,6 @@ SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos, std::list<sf::Vecto
 	:ActorParams(at), moveFrames( p_moveFrames )
 {
 	position = pos;
-	type = EditSession::GetSession()->types["spring"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -2117,7 +2114,6 @@ SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos)
 	:ActorParams(at)
 {
 	position = pos;
-	type = EditSession::GetSession()->types["spring"];
 
 	image = type->GetSprite(false);
 	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -2276,7 +2272,7 @@ std::list<sf::Vector2i> SpringParams::GetGlobalPath()
 }
 
 ComboerParams::ComboerParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop)
-	:ActorParams()
+	:ActorParams(at)
 {
 	lines = NULL;
 	position = pos;
@@ -2296,6 +2292,8 @@ ComboerParams::ComboerParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &gl
 ComboerParams::ComboerParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
+	lines = NULL;
+
 	LoadAerial(is);
 
 	LoadMonitor(is);
@@ -2312,56 +2310,22 @@ ComboerParams::ComboerParams(ActorType *at, ifstream &is)
 		assert(false && "should be a boolean");
 
 	is >> speed;
-
-	lines = NULL;
 }
 
 ComboerParams::ComboerParams(ActorType *at,
 	sf::Vector2i &pos)
-	:ActorParams()
+	:ActorParams(at)
 {
 	lines = NULL;
-	position = pos;
-	type = EditSession::GetSession()->types["comboer"];
 
+	position = pos;
 	image = type->GetSprite(false);
-	image.setPosition(pos.x, pos.y);
+	image.setPosition(position.x, position.y);
 
 	loop = false;
 	speed = 10;
 
 	SetBoundingQuad();
-
-	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
-	//image.setPosition( pos.x, pos.y );
-
-	//list<Vector2i> localPath;
-	//SetPath( globalPath );
-
-	//loop = p_loop;
-	//speed = p_speed;
-
-	//SetBoundingQuad();
-
-	//ss << localPath.size();
-	//params.push_back( ss.str() );
-	//ss.str( "" );
-
-	/*for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-	ss << (*it).x  << " " << (*it).y;
-	params.push_back( ss.str() );
-	ss.str( "" );
-	}
-
-	if( loop )
-	params.push_back( "+loop" );
-	else
-	params.push_back( "-loop" );
-
-	ss.precision( 5 );
-	ss << fixed << speed;
-	params.push_back( ss.str() );*/
 }
 
 void ComboerParams::SetParams()
@@ -2599,8 +2563,6 @@ AirTriggerParams::AirTriggerParams(ActorType *at, ifstream &is)
 
 	triggerRect.setFillColor(Color(200, 200, 200, 150));
 
-	rectWidth = 50;
-	rectHeight = 50;
 	SetRect(rectWidth, rectHeight, position);
 }
 
@@ -2608,7 +2570,6 @@ AirTriggerParams::AirTriggerParams(ActorType *at, sf::Vector2i &pos, const std::
 	:ActorParams(at)
 {
 	position = pos;
-	type = EditSession::GetSession()->types["airtrigger"];
 
 	image = type->GetSprite(false);
 	image.setPosition(pos.x, pos.y);

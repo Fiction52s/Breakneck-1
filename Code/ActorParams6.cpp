@@ -21,15 +21,21 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 SpecterParams::SpecterParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	position = pos;	
-	type = EditSession::GetSession()->types["specter"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
+}
+
+SpecterParams::SpecterParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
 }
 
 void SpecterParams::WriteParamFile(std::ofstream &of )
@@ -75,15 +81,21 @@ ActorParams *SpecterParams::Copy()
 
 
 CopycatParams::CopycatParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams( at)
 {
 	position = pos;	
-	type = EditSession::GetSession()->types["copycat"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
 
 	SetBoundingQuad();
+}
+
+CopycatParams::CopycatParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
 }
 
 void CopycatParams::WriteParamFile( std::ofstream &of )
@@ -130,12 +142,11 @@ ActorParams *CopycatParams::Copy()
 GorillaParams::GorillaParams(ActorType *at,
 		sf::Vector2i &pos, int p_wallWidth,
 		int p_followFrames )
-		:ActorParams( )
+		:ActorParams( at)
 {
 	wallWidth = p_wallWidth;
 	followFrames = p_followFrames;
 	position = pos;	
-	type = EditSession::GetSession()->types["gorilla"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -143,13 +154,21 @@ GorillaParams::GorillaParams(ActorType *at,
 	SetBoundingQuad();
 }
 
+GorillaParams::GorillaParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
+	is >> wallWidth;
+	is >> followFrames;
+}
+
 GorillaParams::GorillaParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	wallWidth = 400;
 	followFrames = 60;
 	position = pos;	
-	type = EditSession::GetSession()->types["gorilla"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -232,12 +251,11 @@ ActorParams *GorillaParams::Copy()
 NarwhalParams::NarwhalParams(ActorType *at,
 		sf::Vector2i &pos, sf::Vector2i & p_dest,
 		int p_moveFrames )
-		:ActorParams( )
+		:ActorParams( at)
 {
 	dest = p_dest;
 	moveFrames = p_moveFrames;
 	position = pos;	
-	type = EditSession::GetSession()->types["narwhal"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -245,13 +263,22 @@ NarwhalParams::NarwhalParams(ActorType *at,
 	SetBoundingQuad();
 }
 
+NarwhalParams::NarwhalParams(ActorType *at,ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
+	is >> dest.x;
+	is >> dest.y;
+	is >> moveFrames;
+}
+
 NarwhalParams::NarwhalParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
 	dest = pos + Vector2i( 500, 0 );
 	moveFrames = 60;
 	position = pos;	
-	type = EditSession::GetSession()->types["narwhal"];
 
 	image = type->GetSprite(false);
 	image.setPosition( pos.x, pos.y );
@@ -349,10 +376,8 @@ ActorParams *NarwhalParams::Copy()
 }
 
 BossSkeletonParams::BossSkeletonParams(ActorType *at, Vector2i &pos )
-	:ActorParams( )
+	:ActorParams(at )
 {
-	type = EditSession::GetSession()->types["bossskeleton"];
-
 	position = pos;
 
 	image = type->GetSprite(false);
@@ -360,6 +385,12 @@ BossSkeletonParams::BossSkeletonParams(ActorType *at, Vector2i &pos )
 
 				
 	SetBoundingQuad();	
+}
+
+BossSkeletonParams::BossSkeletonParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
 }
 
 bool BossSkeletonParams::CanApply()

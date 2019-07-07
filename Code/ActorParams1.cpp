@@ -41,6 +41,8 @@ PatrollerParams::PatrollerParams(ActorType *at, sf::Vector2i pos, list<Vector2i>
 PatrollerParams::PatrollerParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
+	lines = NULL;
+
 	LoadAerial(is);
 
 	LoadMonitor(is);
@@ -58,7 +60,7 @@ PatrollerParams::PatrollerParams(ActorType *at, ifstream &is)
 
 	is >> speed;
 
-	lines = NULL;
+	
 }
 
 PatrollerParams::PatrollerParams(ActorType *at,

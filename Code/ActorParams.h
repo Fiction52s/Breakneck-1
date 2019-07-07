@@ -1155,7 +1155,7 @@ struct NarwhalParams : public ActorParams
 	);
 	NarwhalParams(ActorType *at,
 		sf::Vector2i &pos);
-	NarwhalParams(
+	NarwhalParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 

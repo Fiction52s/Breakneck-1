@@ -37,26 +37,32 @@ struct AirTriggerParams;
 
 struct ActorType;
 typedef ActorParams* ParamsMaker(ActorType*);
-//TerrainPolygon*, int,double, sf::Vector2i);
+typedef ActorParams* ParamsLoader(ActorType*,
+	std::ifstream &is);
 
 template<typename X> ActorParams *MakeParamsGrounded(
 	ActorType *);
 template<typename X> ActorParams *MakeParamsAerial(
 	ActorType *);
+template<typename X> ActorParams *LoadParams(
+	ActorType *,std::ifstream &isa);
 
 struct ParamsInfo
 {
 	ParamsInfo(const std::string &n,
+		ParamsLoader *p_pLoader,
 		ParamsMaker *pg, ParamsMaker *pa,
 		sf::Vector2i &off, sf::Vector2i &p_size,
 		Tileset *p_ts = NULL, int imageTile = 0)
-		:name(n), pmGround(pg), pmAir(pa),
+		:name(n), pLoader( p_pLoader ),
+		pmGround(pg), pmAir(pa),
 		offset(off), size(p_size),
 		ts(p_ts), imageTileIndex(imageTile)
 	{
 
 	}
 	std::string name;
+	ParamsLoader *pLoader;
 	ParamsMaker* pmGround;
 	ParamsMaker* pmAir;
 	sf::Vector2i offset;
@@ -525,12 +531,14 @@ struct EditSession : GUIHandler, TilesetManager
 
 	std::list<ParamsInfo> worldEnemyNames[8];
 	void AddWorldEnemy(const std::string &name, int w,
+		ParamsLoader *pLoader,
 		ParamsMaker* pmGround, ParamsMaker *pmAir,
 		sf::Vector2i &off, 
 		sf::Vector2i &size,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
 	void AddExtraEnemy(const std::string &name,
+		ParamsLoader *pLoader,
 		ParamsMaker *pmGround, ParamsMaker *pmAir,
 		sf::Vector2i &off,
 		sf::Vector2i &size,
