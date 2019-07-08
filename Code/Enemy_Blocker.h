@@ -69,7 +69,6 @@ struct BlockerChain : Enemy
 {
 	enum BlockerType
 	{
-		NORMAL,
 		BLUE,
 		GREEN,
 		YELLOW,

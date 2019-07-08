@@ -84,10 +84,9 @@ Tileset *TouchGrassCollection::GetTileset( GameSession *owner,
 		t = owner->GetTileset("Env/bushtouch_1_01_64x64.png", 64, 64);
 		break;
 	case TouchGrass::TYPE_TEST:
-		t = owner->GetTileset("Env/bush_1_4_512x512.png", 512, 512);
+		t = owner->GetTileset("Env/bushtouch_1_02_128x128.png", 128, 128);
 		break;
 	}
-
 	return t;
 }
 
@@ -100,7 +99,7 @@ int TouchGrass::GetQuadWidth(TouchGrassType gt)
 		width = 32;
 		break;
 	case TYPE_TEST:
-		width = 512;
+		width = 128;
 		break;
 	}
 	return width;
@@ -298,17 +297,15 @@ void TestTouchGrass::UpdateSprite()
 	switch (action)
 	{
 	case TOUCHEDLEFT:
-		tileIndex = 1;
+		tileIndex = 3;
 		break;
 	case TOUCHEDRIGHT:
 		tileIndex = 2;
 		break;
 	case TOUCHEDLAND:
-		tileIndex = 3;
+		tileIndex = 1;
 		break;
 	}
-
-	tileIndex = 0;
 
 	SetRectSubRect(myQuad, coll->ts_grass->GetSubRect(tileIndex));
 }
@@ -369,9 +366,10 @@ void TestTouchGrass::Destroy(Actor *a)
 {
 	if (visible)
 	{
-		//GameSession *owner = a->owner;
-		//owner->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 8,
-		//	6, true, 4);
+		GameSession *owner = a->owner;
+		owner->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
+			6, true, 4);
+
 		ClearRect(myQuad);
 		visible = false;
 	}

@@ -13,12 +13,19 @@ struct Spring : Enemy
 		A_Count
 	};
 
+	enum SpringType
+	{
+		BLUE,
+		GREEN,
+	};
+
+	SpringType springType;
 	Action action;
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 	//MovementSequence testSeq;
-	Spring(GameSession *owner,
-		sf::Vector2i &pos, sf::Vector2i &other, int moveFrames);
+	Spring(GameSession *owner, SpringType springType,
+		sf::Vector2i &pos, sf::Vector2i &other, int speed);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	sf::SoundBuffer *launchSoundBuf;

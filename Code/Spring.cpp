@@ -19,8 +19,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
-	:Enemy(owner, EnemyType::EN_SPRING, false, 2, false )
+Spring::Spring(GameSession *owner, SpringType sp, Vector2i &pos, Vector2i &other, int p_speed )
+	:Enemy(owner, EnemyType::EN_SPRING, false, 2, false ), springType( sp )
 {
 	receivedHit = NULL;
 	position.x = pos.x;
@@ -37,9 +37,20 @@ Spring::Spring(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed )
 	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
 	debugSpeed.setPosition(Vector2f(position));
 	
-	ts_idle = owner->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
-	ts_recover = owner->GetTileset("Enemies/spring_recover_256x256.png", 256, 256);
-	ts_springing = owner->GetTileset("Enemies/spring_spring_512x576.png", 512, 576);
+	switch (springType)
+	{
+	case BLUE:
+		ts_idle = owner->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
+		ts_recover = owner->GetTileset("Enemies/spring_recover_256x256.png", 256, 256);
+		ts_springing = owner->GetTileset("Enemies/spring_spring_512x576.png", 512, 576);
+		break;
+	case GREEN:
+		ts_idle = owner->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
+		ts_recover = owner->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
+		ts_springing = owner->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
+		break;
+	}
+	
 
 	frame = 0;
 

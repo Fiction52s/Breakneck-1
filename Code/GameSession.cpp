@@ -1515,10 +1515,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 
 		ss << ".png";
 		
-		//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
 		Tileset *ts_border = GetTileset( ss.str(), 8, 64 );//128 );
-		//ts_border->texture->setSmooth( true );
-		//ts_border->texture->setSmooth( true );
 		VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
 			&GameSession::IsFlatGround );
 		VertexArray *slopeVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
@@ -1906,7 +1903,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert( enemy );
 			}
-			else if (typeName == "blocker")
+			else if (typeName == "blocker" || typeName == "greenblocker")
 			{
 				int xPos, yPos;
 
@@ -1930,6 +1927,15 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				int bType;
 				is >> bType;
+
+				if (typeName == "blocker")
+				{
+					bType = BlockerChain::BLUE;
+				}
+				else if (typeName == "greenblocker")
+				{
+					bType = BlockerChain::GREEN;
+				}
 
 				int armored;
 				is >> armored;
@@ -2037,7 +2043,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
 			}
-			else if (typeName == "spring")
+			else if (typeName == "spring" || typeName == "gravityspring")
 			{
 				int xPos, yPos;
 
@@ -2046,16 +2052,24 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				is >> xPos;
 				is >> yPos;
 
-				int moveFrames;
-				is >> moveFrames;
+				int speed;
+				is >> speed;
 
 				Vector2i other;
 				is >> other.x;
 				is >> other.y;
 
-				
+				Spring::SpringType sp;
+				if (typeName == "spring")
+				{
+					sp = Spring::BLUE;
+				}
+				else if (typeName == "gravityspring")
+				{
+					sp = Spring::GREEN;
+				}
 				//CurveLauncher * enemy = new CurveLauncher(this, Vector2i(xPos, yPos), other, moveFrames);
-				Spring *enemy = new Spring(this, Vector2i( xPos, yPos ), other, moveFrames );
+				Spring *enemy = new Spring(this, sp,Vector2i( xPos, yPos ), other, speed );
 
 				activeItemTree->Insert(enemy);
 
@@ -2542,28 +2556,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 				enemyTree->Insert(enemy);
 			}
-			else if (typeName == "gravityspring")
-			{
-				//int xPos, yPos;
-
-				////always air
-
-				//is >> xPos;
-				//is >> yPos;
-
-				//double gFactor;
-				//is >> gFactor;
-
-				//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), gFactor, 300);
-
-				//activeItemTree->Insert(enemy);
-				//fullEnemyList.push_back(enemy);
-				//enem = enemy;
-
-				//enemyTree->Insert(enemy);
-			}
-
-
+		
 			else if( typeName == "bossbird" )
 			{
 
@@ -3816,136 +3809,6 @@ bool GameSession::OpenFile( string fileName )
 
 			tPiece->SetupGrass(segments);
 
-			//double grassSize = 120;// 64;//22;
-			//double grassSpacing = -60;//-20;//-5;
-
-
-
-			//Edge * testEdge = edges[currentEdgeIndex];
-
-			//int numGrassTotal = 0;
-
-			//for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
-			//{
-			//	numGrassTotal += (*it).reps + 1;
-			//}
-
-			//VertexArray *grassVA = NULL;
-			//
-			////should this even be made on invisible terrain?
-			//if( numGrassTotal > 0 ) 
-			//{
-			//	grassVA = new VertexArray( sf::Quads, numGrassTotal * 4 );
-
-			//	//cout << "num grass total: " << numGrassTotal << endl;
-			//	VertexArray &grassVa = *grassVA;//*va;
-
-			//	int segIndex = 0;
-			//	int totalGrass = 0;
-			//	for( list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it )
-			//	{	
-			//		Edge *segEdge = edges[currentEdgeIndex + (*it).edgeIndex];
-			//		V2d v0 = segEdge->v0;
-			//		V2d v1 = segEdge->v1;
-
-			//		int start = (*it).index;
-			//		int end = (*it).index + (*it).reps;
-
-			//		int grassCount = (*it).reps + 1;
-			//		bool rem;
-			//		int num = tPiece->GetNumGrass(segEdge, rem);
-
-			//		V2d along = normalize(v1 - v0);
-			//		V2d realStart = v0 + along * (double)(grassSize + grassSpacing);
-
-			//		for( int j = 0; j < grassCount; ++j )
-			//		{
-			//			V2d posd = realStart + along * (double)((grassSize + grassSpacing) * (j - 1));//v0 + normalize(v1 - v0) * ((grassSize + grassSpacing) * (j-1) + );
-
-			//			if (j == 0)
-			//			{
-			//				posd = v0;
-			//			}
-			//			else if (j == num - 1 && rem)
-			//			{
-			//				posd = v1 + normalize(v0 - v1) * (grassSize / 2.0 + grassSpacing);//(v1 + prev) / 2.0;
-			//			}
-
-			//			Vector2f pos(posd.x, posd.y);
-
-			//			Vector2f topLeft = pos + Vector2f( -grassSize / 2, -grassSize / 2 );
-			//			Vector2f topRight = pos + Vector2f( grassSize / 2, -grassSize / 2 );
-			//			Vector2f bottomLeft = pos + Vector2f( -grassSize / 2, grassSize / 2 );
-			//			Vector2f bottomRight = pos + Vector2f( grassSize / 2, grassSize / 2 );
-
-			//			grassVa[(j+totalGrass)*4].position = topLeft;
-			//			grassVa[(j+totalGrass)*4].texCoords = Vector2f( 0, 0 );
-
-			//			grassVa[(j+totalGrass)*4+1].position = bottomLeft;
-			//			grassVa[(j+totalGrass)*4+1].texCoords = Vector2f( 0, grassSize );
-
-			//			grassVa[(j+totalGrass)*4+2].position = bottomRight;
-			//			grassVa[(j+totalGrass)*4+2].texCoords = Vector2f( grassSize, grassSize );
-
-			//			grassVa[(j+totalGrass)*4+3].position = topRight;
-			//			grassVa[(j+totalGrass)*4+3].texCoords = Vector2f( grassSize, 0 );
-			//			//++i;
-			//		}
-			//		totalGrass += grassCount;
-			//		segIndex++;
-			//	}
-			//}
-			//else
-			//{
-			//	grassVA = NULL;
-			//}
-
-			//int totalGrassIndex = 0;
-			//Tileset *ts_grass = GetTileset("Env/grass_128x128.png", 128, 128);
-			//
-			//for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
-			//{
-			//	V2d A, B, C, D;
-			//	Edge * currE = edges[currentEdgeIndex + (*it).edgeIndex];
-			//	V2d v0 = currE->v0;
-			//	V2d v1 = currE->v1;
-
-			//	//double grassSize = 22;
-			//	//double grassSpacing = -5;
-
-			//	double edgeLength = length(v1 - v0);
-			//	double remainder = edgeLength / (grassSize + grassSpacing);
-
-			//	double num = floor(remainder) + 1;
-
-			//	int reps = (*it).reps;
-
-			//	V2d edgeDir = normalize(v1 - v0);
-
-			//	//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
-			//	V2d ABmin = v0 + edgeDir * (edgeLength * (double)(*it).index / num - grassSize / 2);
-			//	V2d ABmax = v0 + edgeDir * (edgeLength * (double)((*it).index + reps) / num + grassSize / 2);
-			//	double height = grassSize / 2;
-			//	V2d normal = normalize(v1 - v0);
-			//	double temp = -normal.x;
-			//	normal.x = normal.y;
-			//	normal.y = temp;
-
-			//	A = ABmin + normal * height;
-			//	B = ABmax + normal * height;
-			//	C = ABmax;
-			//	D = ABmin;
-
-			//	Grass * g = new Grass(this, ts_grass, totalGrassIndex, A, B, C, D, tPiece);
-			//	/*g->A = A;
-			//	g->B = B;
-			//	g->C = C;
-			//	g->D = D;*/
-
-			//	grassTree->Insert(g);
-
-			//	totalGrassIndex++;
-			//}
 
 			Tileset *ts_border = NULL;
 			Tileset *ts_plant = NULL;
@@ -3958,21 +3821,22 @@ bool GameSession::OpenFile( string fileName )
 
 				ss << "Borders/bor_" << matWorld + 1 << "_";
 
-				if (matVariation < 10)
+				ss << "01";
+				/*if (matVariation < 10)
 				{
 					ss << "0" << matVariation + 1;
 				}
 				else
 				{
 					ss << matVariation + 1;
-				}
+				}*/
 
 				//ss << "_128x64.png";
 				ss << ".png";
 
-				//Tileset *ts_border = GetTileset( "w1_borders_64x64.png", 8, 64 );
 				ts_border = GetTileset(ss.str(), 128, 64);
 
+				assert(ts_border != NULL);
 				/*VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
 					&GameSession::IsFlatGround );
 				VertexArray *slopeVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,

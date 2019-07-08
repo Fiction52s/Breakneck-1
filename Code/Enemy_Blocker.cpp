@@ -121,8 +121,16 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 	animationFactor = 2;
 
 	
-
-	ts = owner->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
+	switch (bType)
+	{
+	case BLUE:
+		ts = owner->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
+		break;
+	case GREEN:
+		ts = owner->GetTileset("Enemies/blocker_w2_192x192.png", 192, 192);
+		break;
+	}
+	
 
 	double rad = 32;
 	double minDistance = 60;
@@ -623,8 +631,6 @@ bool Blocker::IsFastDying()
 {
 	switch (bc->bType)
 	{
-	case BlockerChain::NORMAL:
-		break;
 	case BlockerChain::BLUE:
 		if (receivedHit->hType == HitboxInfo::BLUE)
 			return true;

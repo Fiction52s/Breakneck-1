@@ -8714,6 +8714,7 @@ facingRight = false;
 	wallNormal.x = 0;
 	wallNormal.y = 0;
 
+	currHitboxInfo->hType = HitboxInfo::NORMAL;
 	//sets directionality of attacks
 	switch (action)
 	{
@@ -8806,6 +8807,7 @@ facingRight = false;
 		}
 		break;
 	case DIAGUPATTACK:
+		currHitboxInfo->hType = HitboxInfo::BLUE;
 		if (facingRight)
 		{
 			currHitboxInfo->hDir = V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
@@ -8816,6 +8818,7 @@ facingRight = false;
 		}
 		break;
 	case DIAGDOWNATTACK:
+		currHitboxInfo->hType = HitboxInfo::BLUE;
 		if (facingRight)
 		{
 			currHitboxInfo->hDir = V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
@@ -17211,7 +17214,7 @@ bool Actor::SpringLaunch()
 
 		springStunFrames = currSpring->stunFrames;
 
-		if (currSpring->type == EnemyType::EN_GRAVITYLAUNCHER)
+		if (currSpring->springType == Spring::GREEN )
 		{
 			action = SPRINGSTUNGLIDE;
 		}
