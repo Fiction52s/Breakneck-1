@@ -163,6 +163,27 @@ bool TouchGrass::IsTouchingBox(const sf::Rect<double> &r)
 	return touching;
 }
 
+bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, EdgeAngleType eat,
+	Edge *edge, int quadIndex)
+{
+	switch (grassType)
+	{
+	case TYPE_NORMAL:
+	{
+		int r = rand() % 100;
+		return (r < 50);
+		break;
+	}
+	case TYPE_TEST:
+	{
+		int r = rand() % 100;
+		return (r < 10);
+		break;
+	}
+		
+	}
+}
+
 BasicTouchGrass::BasicTouchGrass(TouchGrassCollection *coll, int index,
 	Edge *e, double quant )
 	:TouchGrass( coll, index, e, quant )

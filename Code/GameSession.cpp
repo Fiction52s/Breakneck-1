@@ -10442,8 +10442,8 @@ void TerrainPiece::AddTouchGrass( int gt )
 			{
 				for (int i = 0; i < numQuads; ++i)
 				{
-					int r = rand() % 100;
-					if (r < 50 )//50)
+					if (TouchGrass::IsPlacementOkay(gType, eat,
+						te, i))
 					{
 						if (tooThin)
 						{
