@@ -26,25 +26,14 @@ CoralParams::CoralParams(ActorType *at, sf::Vector2i &pos,
 	:ActorParams(at )
 {
 	moveFrames = p_moveFrames;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 CoralParams::CoralParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams(at )
 {
 	moveFrames = 60;
-
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 CoralParams::CoralParams(ActorType *at, ifstream &is)
@@ -59,13 +48,7 @@ CoralParams::CoralParams(ActorType *at, ifstream &is)
 
 void CoralParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
-
+	WriteMonitor(of);
 	of << moveFrames << endl;
 }
 
@@ -105,11 +88,6 @@ void CoralParams::SetPanelInfo()
 		boost::lexical_cast<string>( moveFrames ) );
 }
 
-bool CoralParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *CoralParams::Copy()
 {
 	CoralParams *copy = new CoralParams( *this );
@@ -122,12 +100,7 @@ ActorParams *CoralParams::Copy()
 TurtleParams::TurtleParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams(at )
 {
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 TurtleParams::TurtleParams(ActorType *at, ifstream &is)
@@ -138,12 +111,7 @@ TurtleParams::TurtleParams(ActorType *at, ifstream &is)
 
 void TurtleParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 }
 
 void TurtleParams::SetParams()
@@ -166,11 +134,6 @@ void TurtleParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
-bool TurtleParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *TurtleParams::Copy()
 {
 	TurtleParams *copy = new TurtleParams( *this );
@@ -181,10 +144,7 @@ CheetahParams::CheetahParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at )
 {
-
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 CheetahParams::CheetahParams(ActorType *at, ifstream &is)
@@ -193,23 +153,9 @@ CheetahParams::CheetahParams(ActorType *at, ifstream &is)
 	LoadGrounded(is);
 }
 
-bool CheetahParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
-}
-
 void CheetahParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 }
 
 void CheetahParams::SetParams()
@@ -244,9 +190,7 @@ SpiderParams::SpiderParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_e
 {
 	speed = p_speed;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 SpiderParams::SpiderParams(ActorType *at, ifstream &is)
@@ -263,28 +207,12 @@ SpiderParams::SpiderParams(ActorType *at,
 {
 	speed = 10;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
-}
-
-bool SpiderParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 void SpiderParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 	
 	of << speed << endl;
 }
@@ -332,15 +260,12 @@ ActorParams *SpiderParams::Copy()
 BossTigerParams::BossTigerParams(ActorType *at, Vector2i &pos )
 	:ActorParams(at ), debugLines( sf::Lines, 30 * 2 )
 {
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
+	PlaceAerial(pos);
 
 	radius1 = 800;
 	radius2 = 1600;
 				
-	SetBoundingQuad();	
+	
 }
 
 BossTigerParams::BossTigerParams(ActorType *at, ifstream &is)
@@ -457,19 +382,160 @@ void BossTigerParams::CreateFormation()
 	}
 }
 
-bool BossTigerParams::CanApply()
-{
-	CreateFormation();
-	return true;
-}
+//bool BossTigerParams::CanApply()
+//{
+//	CreateFormation();
+//	return true;
+//}
 
-void BossTigerParams::WriteParamFile( ofstream &of )
-{
-	//no params its a boss!
-}
 
 ActorParams *BossTigerParams::Copy()
 {
 	BossTigerParams *copy = new BossTigerParams( *this );
 	return copy;
+}
+
+RailParams::RailParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i> &globalPath, bool p_energized)
+	:ActorParams(at)
+{
+	lines = NULL;
+	
+	PlaceAerial(pos);
+
+	SetPath(globalPath);
+
+
+	energized = p_energized;
+}
+
+RailParams::RailParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	lines = NULL;
+	LoadAerial(is);
+	LoadGlobalPath(is);
+
+	LoadBool(is, energized);
+}
+
+RailParams::RailParams(ActorType *at,
+	sf::Vector2i &pos)
+	:ActorParams(at)
+{
+	lines = NULL;
+	PlaceAerial(pos);
+	energized = false;
+}
+
+std::list<sf::Vector2i> RailParams::GetGlobalChain()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back(position);
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		globalPath.push_back(position + (*it));
+	}
+	return globalPath;
+}
+
+void RailParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	if (lines != NULL)
+	{
+		delete lines;
+		lines = NULL;
+	}
+
+	localPath.clear();
+	if (globalPath.size() > 1)
+	{
+
+		int numLines = globalPath.size();
+
+		lines = new VertexArray(sf::LinesStrip, numLines);
+		VertexArray &li = *lines;
+		li[0].position = Vector2f(0, 0);
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for (; it != globalPath.end(); ++it)
+		{
+
+			Vector2i temp((*it).x - position.x, (*it).y - position.y);
+			localPath.push_back(temp);
+
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f(temp.x, temp.y);
+			li[index].color = Color::Magenta;
+			++index;
+		}
+	}
+}
+
+void RailParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	energized = p->checkBoxes["energized"]->checked;
+
+	hasMonitor = false;
+}
+
+void RailParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+		p->textBoxes["group"]->text.setString(group->name);
+	p->checkBoxes["energized"]->checked = energized;
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalChain();
+}
+
+void RailParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += Vector2f(position.x, position.y);
+		}
+
+
+		target->draw(li);
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= Vector2f(position.x, position.y);
+		}
+	}
+
+	ActorParams::Draw(target);
+}
+
+void RailParams::WriteParamFile(ofstream &of)
+{
+
+	of << localPath.size() << endl;
+
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		of << (*it).x << " " << (*it).y << endl;
+	}
+
+	of << (int)energized << "\n";
+}
+
+ActorParams *RailParams::Copy()
+{
+	RailParams *rp = new RailParams(*this);
+	return rp;
 }

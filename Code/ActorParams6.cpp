@@ -23,12 +23,7 @@ using namespace sf;
 SpecterParams::SpecterParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams(at )
 {
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 SpecterParams::SpecterParams(ActorType *at, ifstream &is)
@@ -40,12 +35,7 @@ SpecterParams::SpecterParams(ActorType *at, ifstream &is)
 
 void SpecterParams::WriteParamFile(std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 }
 
 void SpecterParams::SetParams()
@@ -68,11 +58,6 @@ void SpecterParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
-bool SpecterParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *SpecterParams::Copy()
 {
 	SpecterParams *copy = new SpecterParams( *this );
@@ -83,12 +68,7 @@ ActorParams *SpecterParams::Copy()
 CopycatParams::CopycatParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams( at)
 {
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 CopycatParams::CopycatParams(ActorType *at, ifstream &is)
@@ -100,12 +80,7 @@ CopycatParams::CopycatParams(ActorType *at, ifstream &is)
 
 void CopycatParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 }
 
 void CopycatParams::SetParams()
@@ -128,11 +103,6 @@ void CopycatParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
-bool CopycatParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *CopycatParams::Copy()
 {
 	CopycatParams *copy = new CopycatParams( *this );
@@ -146,12 +116,7 @@ GorillaParams::GorillaParams(ActorType *at,
 {
 	wallWidth = p_wallWidth;
 	followFrames = p_followFrames;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 GorillaParams::GorillaParams(ActorType *at, ifstream &is)
@@ -163,28 +128,17 @@ GorillaParams::GorillaParams(ActorType *at, ifstream &is)
 	is >> followFrames;
 }
 
-GorillaParams::GorillaParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams(at )
+GorillaParams::GorillaParams(ActorType *at, sf::Vector2i &pos)
+	:ActorParams(at)
 {
 	wallWidth = 400;
 	followFrames = 60;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 void GorillaParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
-
+	WriteMonitor(of);
 	of << wallWidth << endl;
 	of << followFrames << endl;
 }
@@ -236,12 +190,6 @@ void GorillaParams::SetPanelInfo()
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
-
-bool GorillaParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *GorillaParams::Copy()
 {
 	GorillaParams *copy = new GorillaParams( *this );
@@ -255,12 +203,7 @@ NarwhalParams::NarwhalParams(ActorType *at,
 {
 	dest = p_dest;
 	moveFrames = p_moveFrames;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 NarwhalParams::NarwhalParams(ActorType *at,ifstream &is)
@@ -278,12 +221,7 @@ NarwhalParams::NarwhalParams(ActorType *at, sf::Vector2i &pos )
 {
 	dest = pos + Vector2i( 500, 0 );
 	moveFrames = 60;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 void NarwhalParams::SetPath( std::list<sf::Vector2i> &globalPath )
@@ -309,13 +247,7 @@ void NarwhalParams::Draw( RenderTarget *target )
 
 void NarwhalParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
-
+	WriteMonitor(of);
 	of << dest.x << " " << dest.y << endl;
 	
 	of << moveFrames << endl;
@@ -364,11 +296,6 @@ void NarwhalParams::SetPanelInfo()
 	edit->patrolPath.push_back(dest);
 }
 
-bool NarwhalParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *NarwhalParams::Copy()
 {
 	NarwhalParams *copy = new NarwhalParams( *this );
@@ -378,29 +305,13 @@ ActorParams *NarwhalParams::Copy()
 BossSkeletonParams::BossSkeletonParams(ActorType *at, Vector2i &pos )
 	:ActorParams(at )
 {
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-				
-	SetBoundingQuad();	
+	PlaceAerial(pos);
 }
 
 BossSkeletonParams::BossSkeletonParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
 	LoadAerial(is);
-}
-
-bool BossSkeletonParams::CanApply()
-{
-	return true;
-}
-
-void BossSkeletonParams::WriteParamFile( ofstream &of )
-{
-	//no params its a boss!
 }
 
 ActorParams *BossSkeletonParams::Copy()

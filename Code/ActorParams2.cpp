@@ -27,22 +27,14 @@ BatParams::BatParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath
 	:ActorParams(at )
 {	
 	lines = NULL;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	//list<Vector2i> localPath;
+	PlaceAerial(pos);
 	SetPath( globalPath );
 
 	framesBetweenNodes = p_framesBetweenNodes; 
 	//nodeDistance = p_nodeDistance;
 	bulletSpeed = p_bulletSpeed;
 
-	loop = p_loop;
-	//speed = p_speed;
-
-	SetBoundingQuad();
+	loop = p_loop;	
 }
 
 BatParams::BatParams(ActorType *at, ifstream &is)
@@ -74,25 +66,15 @@ BatParams::BatParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams(at)
 {	
 	lines = NULL;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
+	PlaceAerial(pos);
 	loop = false;
 	//speed = 5;
 	framesBetweenNodes = 60;
 	//nodeDistance = 100;
 	bulletSpeed = 10;
 
-	SetBoundingQuad();
 }
 
-bool BatParams::CanApply()
-{
-	return true;
-	//see note for keyparams
-}
 
 void BatParams::SetPath(std::list<sf::Vector2i> &globalPath)
 {
@@ -193,12 +175,7 @@ std::list<sf::Vector2i> BatParams::GetGlobalPath()
 
 void BatParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 
 	of << localPath.size() << endl;
 
@@ -321,9 +298,7 @@ StagBeetleParams::StagBeetleParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	clockwise = p_clockwise;
 	speed = p_speed;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 StagBeetleParams::StagBeetleParams(ActorType *at, ifstream &is)
@@ -355,28 +330,12 @@ StagBeetleParams::StagBeetleParams(ActorType *at,
 	speed = 10;
 	clockwise = true;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
-}
-
-bool StagBeetleParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );	
 }
 
 void StagBeetleParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 	if( clockwise )
 		of << "+clockwise" << endl;
 	else
@@ -445,9 +404,7 @@ PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	jumpStrength = Vector2i( 5, 12 );
 
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	UpdatePath();
 }
@@ -461,9 +418,7 @@ PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	jumpStrength = p_jumpStrength;
 	jumpWaitFrames = p_jumpWaitFrames;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );	
 
 	UpdatePath();
 }
@@ -482,23 +437,9 @@ PoisonFrogParams::PoisonFrogParams(ActorType *at, ifstream &is)
 	UpdatePath();
 }
 
-bool PoisonFrogParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
-}
-
 void PoisonFrogParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 	of << gravFactor << endl;
 	of << jumpStrength.x << " " << jumpStrength.y << endl;
 	of << jumpWaitFrames << endl;
@@ -690,11 +631,7 @@ CurveTurretParams::CurveTurretParams(ActorType *at, TerrainPolygon *p_edgePolygo
 	relativeGrav = relative;
 
 	
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
-
-	//UpdateBulletCurve();
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 CurveTurretParams::CurveTurretParams(ActorType *at, ifstream &is)
@@ -722,16 +659,12 @@ CurveTurretParams::CurveTurretParams(ActorType *at,
 		int p_edgeIndex, double p_edgeQuantity )
 		:ActorParams(at ), bulletPathQuads( sf::Quads, 100 * 4 )
 {	
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
 	gravFactor = Vector2i( 0, 0 );
 	framesWait = 60;
 	relativeGrav = true;
-	bulletSpeed = 1;
-
-	SetBoundingQuad();
-
-	
+	bulletSpeed = 1;	
 }
 
 void CurveTurretParams::UpdateExtraVisuals()
@@ -739,24 +672,10 @@ void CurveTurretParams::UpdateExtraVisuals()
 	UpdateBulletCurve();
 }
 
-bool CurveTurretParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
-}
-
 void CurveTurretParams::WriteParamFile( ofstream &of )
 {
 	//cout << "write curve turret params. this: " << (int)this << endl;
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 	of << bulletSpeed << endl;
 	of << framesWait << endl;
 	of << gravFactor.x << endl;
@@ -944,17 +863,10 @@ ActorParams *CurveTurretParams::Copy()
 BossBirdParams::BossBirdParams(ActorType *at, Vector2i &pos )
 	:ActorParams( at), debugLines( sf::Lines, 4 * 2 )
 {
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
+	PlaceAerial(pos);
 
 	width = Boss_Bird::GRID_SIZE_X * 160;
 	height = Boss_Bird::GRID_SIZE_Y * 80;
-
-	//CreateFormation();
-				
-	SetBoundingQuad();	
 }
 
 BossBirdParams::BossBirdParams(ActorType *at, ifstream &is)
@@ -966,16 +878,6 @@ BossBirdParams::BossBirdParams(ActorType *at, ifstream &is)
 	height = Boss_Bird::GRID_SIZE_Y * 80;
 }
 
-bool BossBirdParams::CanApply()
-{
-	//CreateFormation();
-	return true;
-}
-
-void BossBirdParams::WriteParamFile( ofstream &of )
-{
-	//no params its a boss!
-}
 
 ActorParams *BossBirdParams::Copy()
 {
@@ -1020,9 +922,7 @@ GravityFallerParams::GravityFallerParams(ActorType *at, TerrainPolygon *p_edgePo
 {
 	variation = 0;
 
-	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-
-	SetBoundingQuad();
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 GravityFallerParams::GravityFallerParams(ActorType *at, TerrainPolygon *p_edgePolygon,
@@ -1031,9 +931,7 @@ GravityFallerParams::GravityFallerParams(ActorType *at, TerrainPolygon *p_edgePo
 {
 	variation = var;
 
-	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-
-	SetBoundingQuad();
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 GravityFallerParams::GravityFallerParams(ActorType *at, ifstream &is)
@@ -1045,23 +943,10 @@ GravityFallerParams::GravityFallerParams(ActorType *at, ifstream &is)
 	is >> variation;
 }
 
-bool GravityFallerParams::CanApply()
-{
-	if (groundInfo != NULL)
-		return true;
-	//hmm not sure about this now
-
-	return false;
-}
 
 void GravityFallerParams::WriteParamFile(ofstream &of)
 {
-	int hMon;
-	if (hasMonitor)
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 	of << variation << endl;
 	/*if( clockwise )
 	of << "+clockwise" << endl;
@@ -1114,4 +999,172 @@ ActorParams *GravityFallerParams::Copy()
 {
 	GravityFallerParams *copy = new GravityFallerParams(*this);
 	return copy;
+}
+
+GravitySpringParams::GravitySpringParams(ActorType *at, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath,
+	int p_speed)
+	:ActorParams(at), speed( p_speed )
+{
+	PlaceAerial(pos);
+
+	lines = NULL;
+
+	SetPath(globalPath);
+}
+
+GravitySpringParams::GravitySpringParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	is >> speed;
+
+	Vector2i other;
+	is >> other.x;
+	is >> other.y;
+
+	lines = NULL;
+
+	list<Vector2i> globalPath;
+	globalPath.push_back(Vector2i(position.x, position.y));
+	globalPath.push_back(position + other);
+	SetPath(globalPath);
+}
+
+GravitySpringParams::GravitySpringParams(ActorType *at, sf::Vector2i &pos)
+	:ActorParams(at)
+{
+	PlaceAerial(pos);
+
+	speed = 30;
+
+	lines = NULL;
+}
+
+void GravitySpringParams::WriteParamFile(std::ofstream &of)
+{
+	of << speed << "\n";
+	of << localPath.front().x << " " << localPath.front().y << endl;
+}
+
+void GravitySpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	if (lines != NULL)
+	{
+		delete lines;
+		lines = NULL;
+	}
+
+	localPath.clear();
+	if (globalPath.size() > 1)
+	{
+
+		int numLines = globalPath.size();
+
+		lines = new VertexArray(sf::LinesStrip, numLines);
+		VertexArray &li = *lines;
+		li[0].position = Vector2f(0, 0);
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for (; it != globalPath.end(); ++it)
+		{
+
+			Vector2i temp((*it).x - position.x, (*it).y - position.y);
+			localPath.push_back(temp);
+
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f(temp.x, temp.y);
+			li[index].color = Color::Magenta;
+			++index;
+		}
+
+		Vector2f diff = li[1].position - li[0].position;
+		float f = GetVectorAngleCW(diff);
+		float rot = f / PI * 180.f + 90;
+		image.setRotation(rot);
+	}
+}
+
+void GravitySpringParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << speedStr;
+
+	int t_speed;
+	ss >> t_speed;
+
+	if (!ss.fail())
+	{
+		speed = t_speed;
+	}
+
+	hasMonitor = false;
+}
+
+void GravitySpringParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+	{
+		p->textBoxes["group"]->text.setString(group->name);
+	}
+
+	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
+	//p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+ActorParams *GravitySpringParams::Copy()
+{
+	GravitySpringParams *copy = new GravitySpringParams(*this);
+	return copy;
+}
+
+void GravitySpringParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += Vector2f(position.x, position.y);
+		}
+
+
+		target->draw(li);
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= Vector2f(position.x, position.y);
+		}
+	}
+
+	ActorParams::Draw(target);
+}
+
+
+std::list<sf::Vector2i> GravitySpringParams::GetGlobalPath()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back(position);
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		globalPath.push_back(position + (*it));
+	}
+	return globalPath;
 }

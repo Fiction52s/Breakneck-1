@@ -25,17 +25,12 @@ PatrollerParams::PatrollerParams(ActorType *at, sf::Vector2i pos, list<Vector2i>
 	:ActorParams(at)
 {	
 	lines = NULL;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
+	PlaceAerial(pos);
 
 	SetPath( globalPath );
 
 	loop = p_loop;
 	speed = p_speed;
-
-	SetBoundingQuad();
 }
 
 PatrollerParams::PatrollerParams(ActorType *at, ifstream &is)
@@ -68,15 +63,10 @@ PatrollerParams::PatrollerParams(ActorType *at,
 	:ActorParams(at )
 {	
 	lines = NULL;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
+	PlaceAerial(pos);
 
 	loop = false;
 	speed = 10;
-
-	SetBoundingQuad();
 }
 
 void PatrollerParams::SetParams()
@@ -122,12 +112,6 @@ void PatrollerParams::SetPanelInfo()
 
 	EditSession *edit = EditSession::GetSession();
 	edit->patrolPath = GetGlobalPath();
-}
-
-bool PatrollerParams::CanApply()
-{
-	return true;
-	//see note for keyparams
 }
 
 void PatrollerParams::SetPath(std::list<sf::Vector2i> &globalPath)
@@ -230,12 +214,7 @@ std::list<sf::Vector2i> PatrollerParams::GetGlobalPath()
 
 void PatrollerParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 
 	of << localPath.size() << endl;
 
@@ -284,9 +263,7 @@ CrawlerParams::CrawlerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p
 	clockwise = p_clockwise;
 	speed = p_speed;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 CrawlerParams::CrawlerParams(ActorType *at, ifstream &is)
@@ -320,9 +297,7 @@ CrawlerParams::CrawlerParams(ActorType *at,
 		int p_edgeIndex, double p_edgeQuantity )
 		:ActorParams( at), clockwise( true ), speed( 5 )
 {
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 void CrawlerParams::SetPanelInfo()
@@ -363,23 +338,9 @@ void CrawlerParams::SetParams()
 	dist = 1000;
 }
 
-bool CrawlerParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
-}
-
 void CrawlerParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 	if( clockwise )
 		of << "+clockwise" << endl;
 	else
@@ -404,29 +365,13 @@ BossCrawlerParams::BossCrawlerParams(ActorType *at, TerrainPolygon *p_edgePolygo
 	int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( at)
 {
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 BossCrawlerParams::BossCrawlerParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
 	LoadGrounded(is);
-}
-
-bool BossCrawlerParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
-}
-
-void BossCrawlerParams::WriteParamFile( ofstream &of )
-{
-	//no params its a boss!
 }
 
 ActorParams *BossCrawlerParams::Copy()
@@ -444,9 +389,7 @@ BasicTurretParams::BasicTurretParams(ActorType *at, TerrainPolygon *p_edgePolygo
 	bulletSpeed = p_bulletSpeed;
 	framesWait = p_framesWait;
 	
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 BasicTurretParams::BasicTurretParams(ActorType *at, ifstream &is)
@@ -465,28 +408,12 @@ BasicTurretParams::BasicTurretParams(ActorType *at, TerrainPolygon *p_edgePolygo
 	bulletSpeed = 10;
 	framesWait = 60;
 	
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
-}
-
-bool BasicTurretParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 void BasicTurretParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 	of << bulletSpeed << endl;
 	of << framesWait << endl;
 }
@@ -548,9 +475,7 @@ ActorParams *BasicTurretParams::Copy()
 FootTrapParams::FootTrapParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( at)	
 {
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 FootTrapParams::FootTrapParams(ActorType *at, ifstream &is )
@@ -558,15 +483,6 @@ FootTrapParams::FootTrapParams(ActorType *at, ifstream &is )
 {
 	LoadGrounded(is);
 	LoadMonitor(is);
-}
-
-bool FootTrapParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
 }
 
 void FootTrapParams::SetParams()
@@ -587,12 +503,7 @@ void FootTrapParams::SetPanelInfo()
 
 void FootTrapParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 }
 
 ActorParams *FootTrapParams::Copy()
@@ -604,12 +515,7 @@ ActorParams *FootTrapParams::Copy()
 AirdasherParams::AirdasherParams(ActorType *at, sf::Vector2i &pos)
 	:ActorParams(at)
 {
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition(pos.x, pos.y);
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 AirdasherParams::AirdasherParams(ActorType *at, ifstream &is)
@@ -620,12 +526,7 @@ AirdasherParams::AirdasherParams(ActorType *at, ifstream &is)
 
 void AirdasherParams::WriteParamFile(std::ofstream &of)
 {
-	int hMon;
-	if (hasMonitor)
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 }
 
 void AirdasherParams::SetParams()
@@ -647,13 +548,491 @@ void AirdasherParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
-bool AirdasherParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *AirdasherParams::Copy()
 {
 	AirdasherParams *copy = new AirdasherParams(*this);
+	return copy;
+}
+
+BoosterParams::BoosterParams(ActorType *at, sf::Vector2i &pos, int p_strength)
+	:ActorParams(at), strength(p_strength)
+{
+	PlaceAerial(pos);
+}
+
+
+BoosterParams::BoosterParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	is >> strength;
+}
+
+BoosterParams::BoosterParams(ActorType *at, sf::Vector2i &pos)
+	:ActorParams(at)
+{
+	PlaceAerial(pos);
+
+	strength = 10;
+}
+
+void BoosterParams::WriteParamFile(std::ofstream &of)
+{
+	of << strength << "\n";
+}
+
+void BoosterParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	string strengthStr = p->textBoxes["strength"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << strengthStr;
+
+	int t_strength;
+	ss >> t_strength;
+
+	if (!ss.fail())
+	{
+		strength = t_strength;
+	}
+	//hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+void BoosterParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+	{
+		p->textBoxes["group"]->text.setString(group->name);
+	}
+
+	p->textBoxes["strength"]->text.setString(boost::lexical_cast<string>(strength));
+	//p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+ActorParams *BoosterParams::Copy()
+{
+	BoosterParams *copy = new BoosterParams(*this);
+	return copy;
+}
+
+SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath,
+	int p_moveFrames)
+	:ActorParams(at), moveFrames(p_moveFrames)
+{
+	PlaceAerial(pos);
+
+	lines = NULL;
+
+	SetPath(globalPath);
+}
+
+SpringParams::SpringParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	is >> moveFrames;
+
+	lines = NULL;
+
+	Vector2i other;
+	is >> other.x;
+	is >> other.y;
+
+	list<Vector2i> globalPath;
+	globalPath.push_back(Vector2i(position.x, position.y));
+	globalPath.push_back(position + other);
+	SetPath(globalPath);
+
+	
+}
+
+SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos)
+	:ActorParams(at)
+{
+	PlaceAerial(pos);
+
+	moveFrames = 60;
+
+	lines = NULL;
+
+
+}
+
+void SpringParams::WriteParamFile(std::ofstream &of)
+{
+
+	of << moveFrames << "\n";
+	of << localPath.front().x << " " << localPath.front().y << endl;
+
+
+}
+
+void SpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	if (lines != NULL)
+	{
+		delete lines;
+		lines = NULL;
+	}
+
+	localPath.clear();
+	if (globalPath.size() > 1)
+	{
+
+		int numLines = globalPath.size();
+
+		lines = new VertexArray(sf::LinesStrip, numLines);
+		VertexArray &li = *lines;
+		li[0].position = Vector2f(0, 0);
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for (; it != globalPath.end(); ++it)
+		{
+
+			Vector2i temp((*it).x - position.x, (*it).y - position.y);
+			localPath.push_back(temp);
+
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f(temp.x, temp.y);
+			li[index].color = Color::Magenta;
+			++index;
+		}
+
+		Vector2f diff = li[1].position - li[0].position;
+		float f = GetVectorAngleCW(diff);
+		float rot = f / PI * 180.f + 90;
+		image.setRotation(rot);
+		cout << "blah: " << rot << endl;
+
+	}
+
+
+	//Vector2i diff = globalPath. - globalPath[0];
+}
+
+void SpringParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	string moveFrameStr = p->textBoxes["moveframes"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << moveFrameStr;
+
+	int t_moveFrames;
+	ss >> t_moveFrames;
+
+	if (!ss.fail())
+	{
+		moveFrames = t_moveFrames;
+	}
+
+
+	hasMonitor = false;
+
+}
+
+void SpringParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+	{
+		p->textBoxes["group"]->text.setString(group->name);
+	}
+
+	p->textBoxes["moveframes"]->text.setString((boost::lexical_cast<string>(moveFrames)));
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
+	//p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+ActorParams *SpringParams::Copy()
+{
+	SpringParams *copy = new SpringParams(*this);
+	return copy;
+}
+
+void SpringParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += Vector2f(position.x, position.y);
+		}
+
+
+		target->draw(li);
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= Vector2f(position.x, position.y);
+		}
+	}
+
+	ActorParams::Draw(target);
+}
+
+
+std::list<sf::Vector2i> SpringParams::GetGlobalPath()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back(position);
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		globalPath.push_back(position + (*it));
+	}
+	return globalPath;
+}
+
+ComboerParams::ComboerParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop)
+	:ActorParams(at)
+{
+	lines = NULL;
+	PlaceAerial(pos);
+	SetPath(globalPath);
+
+	loop = p_loop;
+	speed = p_speed;
+
+}
+
+ComboerParams::ComboerParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	lines = NULL;
+
+	LoadAerial(is);
+
+	LoadMonitor(is);
+
+	LoadGlobalPath(is);
+
+	string loopStr;
+	is >> loopStr;
+	if (loopStr == "+loop")
+		loop = true;
+	else if (loopStr == "-loop")
+		loop = false;
+	else
+		assert(false && "should be a boolean");
+
+	is >> speed;
+}
+
+ComboerParams::ComboerParams(ActorType *at,
+	sf::Vector2i &pos)
+	:ActorParams(at)
+{
+	lines = NULL;
+
+	PlaceAerial(pos);
+	loop = false;
+	speed = 10;
+}
+
+void ComboerParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	bool loop = p->checkBoxes["loop"]->checked;
+
+
+	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << speedStr;
+
+	int t_speed;
+	ss >> t_speed;
+
+	if (!ss.fail())
+	{
+		speed = t_speed;
+	}
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+	//try
+	//{
+	//	speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
+	//}
+	//catch(boost::bad_lexical_cast &)
+	//{
+	//	//error
+	//}
+}
+
+void ComboerParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+		p->textBoxes["group"]->text.setString(group->name);
+	p->textBoxes["speed"]->text.setString(boost::lexical_cast<string>(speed));
+	p->checkBoxes["loop"]->checked = loop;
+	p->checkBoxes["monitor"]->checked = hasMonitor;
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
+}
+
+
+void ComboerParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	if (lines != NULL)
+	{
+		delete lines;
+		lines = NULL;
+	}
+
+
+
+
+	localPath.clear();
+	if (globalPath.size() > 1)
+	{
+
+		int numLines = globalPath.size();
+
+		lines = new VertexArray(sf::LinesStrip, numLines);
+		VertexArray &li = *lines;
+		li[0].position = Vector2f(0, 0);
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for (; it != globalPath.end(); ++it)
+		{
+
+			Vector2i temp((*it).x - position.x, (*it).y - position.y);
+			localPath.push_back(temp);
+
+			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
+			li[index].position = Vector2f(temp.x, temp.y);
+			li[index].color = Color::Magenta;
+			++index;
+		}
+	}
+
+
+
+}
+
+void ComboerParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += Vector2f(position.x, position.y);
+		}
+
+
+		target->draw(li);
+
+
+
+		if (loop)
+		{
+
+			//draw the line between the first and last
+			sf::Vertex vertices[2] =
+			{
+				sf::Vertex(li[localPathSize].position, Color::Magenta),
+				sf::Vertex(li[0].position, Color::White)
+			};
+
+			target->draw(vertices, 2, sf::Lines);
+		}
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= Vector2f(position.x, position.y);
+		}
+	}
+
+	ActorParams::Draw(target);
+	//target->draw( image );
+
+	//DrawBoundar
+}
+
+std::list<sf::Vector2i> ComboerParams::GetGlobalPath()
+{
+	list<Vector2i> globalPath;
+	globalPath.push_back(position);
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		globalPath.push_back(position + (*it));
+	}
+	return globalPath;
+}
+
+void ComboerParams::WriteParamFile(ofstream &of)
+{
+	WriteMonitor(of);
+
+	of << localPath.size() << endl;
+
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		of << (*it).x << " " << (*it).y << endl;
+	}
+
+	if (loop)
+	{
+		of << "+loop" << endl;
+	}
+	else
+	{
+		of << "-loop" << endl;
+	}
+
+	//of.precision( 5 );
+	of << speed << endl;
+	//of << fixed << speed << endl;
+}
+
+ActorParams *ComboerParams::Copy()
+{
+	ComboerParams *copy = new ComboerParams(*this);
+	if (copy->lines != NULL)
+	{
+		int numVertices = copy->lines->getVertexCount();
+
+		VertexArray &oldli = *copy->lines;
+		copy->lines = new VertexArray(sf::LinesStrip, numVertices);
+		VertexArray &li = *copy->lines;
+
+
+		for (int i = 0; i < numVertices; ++i)
+		{
+			li[i] = oldli[i];
+		}
+	}
 	return copy;
 }

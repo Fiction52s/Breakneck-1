@@ -4,6 +4,20 @@
 #include <fstream>
 #include "EditSession.h"
 
+struct PositionInfo
+{
+	PositionInfo(TerrainPolygon *poly,
+		int ei, double q)
+		:tp(poly), edgeIndex(ei),
+		quant(q)
+	{
+
+	}
+	TerrainPolygon *tp;
+	int edgeIndex;
+	double quant;
+	sf::Vector2i pos;
+};
 
 struct ActorParams : ISelectable
 {
@@ -11,8 +25,11 @@ struct ActorParams : ISelectable
 	virtual ActorParams *Copy() = 0;
 	ActorParams(ActorType *at);
 	virtual void Init() {};
-	virtual void WriteParamFile(std::ofstream &of) = 0;
+	virtual void WriteParamFile(std::ofstream &of) {};
 	void WriteFile(std::ofstream &of);
+	void WriteMonitor(std::ofstream &of);
+	void LoadBool(std::ifstream &is, bool &b);
+	void WriteBool(std::ofstream &of, bool b);
 	void AnchorToGround(TerrainPolygon *poly,
 		int eIndex, double quantity);
 	void AnchorToGround(GroundInfo &gi);
@@ -27,6 +44,9 @@ struct ActorParams : ISelectable
 	void LoadMonitor(std::ifstream &is);
 	virtual void SetParams();
 	virtual void SetPanelInfo();
+	void PlaceAerial(sf::Vector2i &pos);
+	void PlaceGrounded( TerrainPolygon *tp,
+		int edgeIndex, double quant);
 
 
 	virtual void SetBoundingQuad();
@@ -51,7 +71,7 @@ struct ActorParams : ISelectable
 
 	virtual void SetSelected(bool select);
 
-	virtual bool CanApply() = 0;
+	virtual bool CanApply();
 	bool CanAdd();
 
 	//sf::Sprite icon;
@@ -78,7 +98,6 @@ struct PlayerParams : public ActorParams
 		std::ifstream &is );
 
 	bool CanApply();
-	void WriteParamFile(std::ofstream &of);
 	void Deactivate(EditSession *edit,
 		boost::shared_ptr<ISelectable>  select);
 	ActorParams *Copy();
@@ -100,7 +119,6 @@ struct GroundTriggerParams : public ActorParams
 		double edgeQuantity);
 	GroundTriggerParams(ActorType *at,
 		std::ifstream &is);
-	bool CanApply();
 	ActorParams *Copy();
 	void SetParams();
 	void SetPanelInfo();
@@ -122,7 +140,7 @@ struct FlowerPodParams : public ActorParams
 		double edgeQuantity);
 	FlowerPodParams(ActorType *at,
 		std::ifstream &is);
-	bool CanApply();
+	
 	ActorParams *Copy();
 	void SetParams();
 	void SetPanelInfo();
@@ -144,7 +162,7 @@ struct AirTriggerParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	void SetRect(int width, int height, sf::Vector2i &center);
 	ActorParams *Copy();
 	void Draw(sf::RenderTarget *target);
@@ -169,7 +187,6 @@ struct NexusParams : public ActorParams
 		double edgeQuantity);
 	NexusParams(ActorType *at,
 		std::ifstream &is);
-	bool CanApply();
 	ActorParams *Copy();
 	void SetParams();
 	void SetPanelInfo();
@@ -190,7 +207,7 @@ struct ShipPickupParams : public ActorParams
 		double edgeQuantity);
 	ShipPickupParams(ActorType *at,
 		std::ifstream &is);
-	bool CanApply();
+	
 	ActorParams *Copy();
 	void SetParams();
 	void SetPanelInfo();
@@ -206,7 +223,6 @@ struct GoalParams : public ActorParams
 		double edgeQuantity);
 	GoalParams(ActorType *at,
 		std::ifstream &is);
-	bool CanApply();
 	ActorParams *Copy();
 	void WriteParamFile(std::ofstream &of);
 	//void Draw( sf::RenderTarget *target );
@@ -244,7 +260,6 @@ struct PoiParams : public ActorParams
 	void Draw(sf::RenderTarget *target);
 	//PoiParams( EditSession *edit );
 
-	bool CanApply();
 	ActorParams *Copy();
 	void WriteParamFile(std::ofstream &of);
 	void SetParams();
@@ -275,7 +290,7 @@ struct KeyParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 	int numKeys;
 	int zoneType;
@@ -304,7 +319,7 @@ struct ShardParams : public ActorParams
 	int localIndex;
 	int GetTotalIndex();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	std::string shardStr;
@@ -317,12 +332,11 @@ struct RaceFightTargetParams : public ActorParams
 		sf::Vector2i &pos);
 	RaceFightTargetParams(ActorType *at,
 		std::ifstream &is);
-	void WriteParamFile(std::ofstream &of);
 
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 };
 
@@ -354,7 +368,7 @@ struct BlockerParams : public ActorParams
 	std::list<int> GetAngleList();
 	void Draw(sf::RenderTarget *target);
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 	void SetPath(
 		std::list<sf::Vector2i> &globalPath);
@@ -395,7 +409,7 @@ struct ComboerParams : public ActorParams
 	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw(sf::RenderTarget *target);
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	void SetParams();
@@ -422,7 +436,7 @@ struct BoosterParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	int strength;
@@ -443,7 +457,7 @@ struct SpringParams : public ActorParams
 		std::list<sf::Vector2i> &globalPath);
 	void Draw(sf::RenderTarget *target);
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	void SetParams();
@@ -472,7 +486,7 @@ struct PatrollerParams : public ActorParams
 	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw(sf::RenderTarget *target);
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	void SetParams();
@@ -501,7 +515,7 @@ struct CrawlerParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	ActorParams *Copy();
 	//void Draw( sf::RenderTarget *target );
 	bool clockwise;
@@ -524,7 +538,7 @@ struct BasicTurretParams : public ActorParams
 	BasicTurretParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	ActorParams *Copy();
 	void SetParams();
 	void SetPanelInfo();
@@ -542,7 +556,7 @@ struct FootTrapParams : public ActorParams
 	FootTrapParams(ActorType *at, EditSession *edit);
 	FootTrapParams(ActorType *at,
 		std::ifstream &is);
-	bool CanApply();
+	
 	ActorParams *Copy();
 	void WriteParamFile(std::ofstream &of);
 	void SetParams();
@@ -561,7 +575,7 @@ struct AirdasherParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 };
 
@@ -575,8 +589,6 @@ struct BossCrawlerParams : public ActorParams
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
 };
 
 
@@ -603,7 +615,7 @@ struct BatParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
@@ -631,7 +643,7 @@ struct GravityFallerParams : public ActorParams
 	void WriteParamFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
 	ActorParams *Copy();
-	bool CanApply();
+	
 	void SetParams();
 	void SetPanelInfo();
 
@@ -654,7 +666,7 @@ struct StagBeetleParams : public ActorParams
 		std::ifstream &is);
 
 	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void SetParams();
 	void SetPanelInfo();
 	ActorParams *Copy();
@@ -687,7 +699,7 @@ struct PoisonFrogParams : public ActorParams
 	//void SetParams();
 	//void SetPanelInfo();
 	ActorParams *Copy();
-	bool CanApply();
+	
 	void SetParams();
 	void SetPanelInfo();
 	int gravFactor;
@@ -718,7 +730,7 @@ struct CurveTurretParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void UpdateBulletCurve();
 	void Draw(sf::RenderTarget *target);
 	void UpdateExtraVisuals();
@@ -741,13 +753,39 @@ struct BossBirdParams : public ActorParams
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void Draw(sf::RenderTarget *target);
 	sf::VertexArray debugLines;
 	void CreateFormation();
 	int width;
 	int height;
+};
+
+struct GravitySpringParams: public ActorParams
+{
+	GravitySpringParams(ActorType *at,
+		sf::Vector2i &pos,
+		std::list<sf::Vector2i> &globalPath,
+		int speed);
+	GravitySpringParams(ActorType *at,
+		sf::Vector2i &pos);
+	GravitySpringParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void SetPath(
+		std::list<sf::Vector2i> &globalPath);
+	void Draw(sf::RenderTarget *target);
+
+	
+	ActorParams *Copy();
+
+	void SetParams();
+	void SetPanelInfo();
+	std::list<sf::Vector2i> GetGlobalPath();
+	std::list<sf::Vector2i> localPath;
+	sf::VertexArray *lines; //local pos
+
+	int speed;
 };
 
 
@@ -772,7 +810,7 @@ struct PulserParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 	std::list<sf::Vector2i> localPath;
 	sf::VertexArray *lines; //local pos
@@ -798,7 +836,7 @@ struct OwlParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	int moveSpeed;
@@ -820,7 +858,7 @@ struct BadgerParams : public ActorParams
 		std::ifstream &is);
 
 	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void SetParams();
 	void SetPanelInfo();
 	ActorParams *Copy();
@@ -846,7 +884,7 @@ struct CactusParams : public ActorParams
 
 
 	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void SetParams();
 	void SetPanelInfo();
 	ActorParams *Copy();
@@ -864,8 +902,7 @@ struct BossCoyoteParams : public ActorParams
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void CreateFormation();
 	void Draw(sf::RenderTarget *target);
 	int radius;
@@ -890,7 +927,7 @@ struct TurtleParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 };
 
@@ -908,7 +945,7 @@ struct CoralParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	int moveFrames;
@@ -929,7 +966,7 @@ struct CheetahParams : public ActorParams
 		std::ifstream &is);
 
 	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void SetParams();
 	void SetPanelInfo();
 	ActorParams *Copy();
@@ -949,7 +986,7 @@ struct SpiderParams : public ActorParams
 		std::ifstream &is);
 
 	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void SetParams();
 	void SetPanelInfo();
 	ActorParams *Copy();
@@ -973,7 +1010,7 @@ struct RailParams : public ActorParams
 	std::list<int> GetAngleList();
 	void Draw(sf::RenderTarget *target);
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 	void SetPath(
 		std::list<sf::Vector2i> &globalPath);
@@ -1002,8 +1039,7 @@ struct BossTigerParams : public ActorParams
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
 	void CreateFormation();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void Draw(sf::RenderTarget *target);
 	sf::VertexArray debugLines;
 	int radius1;
@@ -1026,7 +1062,7 @@ struct SharkParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	int circleFrames;
@@ -1046,7 +1082,7 @@ struct SwarmParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	int liveFrames;
@@ -1066,7 +1102,7 @@ struct GhostParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	int speed;
@@ -1085,7 +1121,7 @@ struct OvergrowthParams : public ActorParams
 
 
 	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void SetParams();
 	void SetPanelInfo();
 	ActorParams *Copy();
@@ -1100,8 +1136,7 @@ struct BossGatorParams : public ActorParams
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
+	
 	void Draw(sf::RenderTarget *target);
 	sf::CircleShape circles[5];
 	int orbRadius;
@@ -1127,7 +1162,7 @@ struct SpecterParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 };
 
@@ -1142,7 +1177,7 @@ struct CopycatParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 };
 
@@ -1162,7 +1197,7 @@ struct NarwhalParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 	void SetPath(
 		std::list<sf::Vector2i> &globalPath);
@@ -1186,7 +1221,7 @@ struct GorillaParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool CanApply();
+	
 	ActorParams *Copy();
 
 	int wallWidth;
@@ -1202,8 +1237,6 @@ struct BossSkeletonParams : public ActorParams
 		std::ifstream &is);
 	//CrawlerParams( EditSession *edit );
 	ActorParams *Copy();
-	void WriteParamFile(std::ofstream &of);
-	bool CanApply();
 };
 
 

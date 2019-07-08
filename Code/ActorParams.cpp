@@ -34,8 +34,34 @@ ActorParams::ActorParams( ActorType *at)
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
 }
 
+void ActorParams::WriteMonitor(ofstream  &of)
+{
+	int hMon;
+	if (hasMonitor)
+		hMon = 1;
+	else
+		hMon = 0;
+	of << hMon << endl;
+}
+
 void ActorParams::SetPath( std::list<sf::Vector2i> &globalPath )
 {
+}
+
+void ActorParams::PlaceAerial(sf::Vector2i &pos)
+{
+	position = pos;
+	image = type->GetSprite(false);
+	image.setPosition(position.x, position.y);
+
+	SetBoundingQuad();
+}
+
+void ActorParams::PlaceGrounded(TerrainPolygon *tp,
+	int edgeIndex, double quant)
+{
+	AnchorToGround(tp, edgeIndex, quant);
+	SetBoundingQuad();
 }
 
 void ActorParams::LoadGrounded(std::ifstream &is)
@@ -49,8 +75,19 @@ void ActorParams::LoadGrounded(std::ifstream &is)
 
 	EditSession *edit = EditSession::GetSession();
 	TerrainPolygon *terrain = edit->GetPolygon(terrainIndex, edgeIndex);
-	AnchorToGround(terrain, edgeIndex, edgeQuantity);
-	SetBoundingQuad();
+	PlaceGrounded(terrain, edgeIndex, edgeQuantity);
+}
+
+void ActorParams::LoadBool(ifstream &is, bool &b)
+{
+	int x;
+	is >> x;
+	b = x;
+}
+
+void ActorParams::WriteBool(ofstream &of, bool b)
+{
+	of << (int)b << "\n";
 }
 
 void ActorParams::LoadAerial(std::ifstream &is)
@@ -58,10 +95,7 @@ void ActorParams::LoadAerial(std::ifstream &is)
 	is >> position.x;
 	is >> position.y;
 
-	image = type->GetSprite(false);
-	image.setPosition(position.x, position.y);
-
-	SetBoundingQuad();
+	PlaceAerial( position );
 }
 
 void ActorParams::LoadGlobalPath( ifstream &is)
@@ -102,6 +136,21 @@ void ActorParams::SetSelected( bool select )
 {
 	cout << "------selected: " << select << endl;
 	selected = select;
+}
+
+bool ActorParams::CanApply()
+{
+	if (type->CanBeGrounded())
+	{
+		if (groundInfo != NULL)
+			return true;
+	}
+	else if (type->CanBeAerial())
+	{
+		return true;
+	}
+
+	return false;
 }
 
 bool ActorParams::CanAdd()
@@ -588,18 +637,7 @@ GoalParams::GoalParams(ActorType *at, std::ifstream &is)
 GoalParams::GoalParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at)
 {
-	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-	SetBoundingQuad();
-}
-
-
-bool GoalParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 void GoalParams::WriteParamFile( ofstream &of )
@@ -613,18 +651,11 @@ ActorParams *GoalParams::Copy()
 }
 
 
-
-
 //remnove the postype thing. we have 2 bools for that already
 PlayerParams::PlayerParams(ActorType *at, sf::Vector2i pos )
 	:ActorParams(at)
 {
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 PlayerParams::PlayerParams(ActorType *at, ifstream &is )
@@ -647,10 +678,6 @@ bool PlayerParams::CanApply()
 		}
 	}
 	return true;
-}
-
-void PlayerParams::WriteParamFile( std::ofstream &of )
-{
 }
 
 void PlayerParams::Deactivate(EditSession *editsession, boost::shared_ptr<ISelectable> select)
@@ -687,9 +714,9 @@ PoiParams::PoiParams(ActorType *at,
 	nameText.setFillColor( Color::White );
 	
 	name = "-";
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 
-	SetBoundingQuad();
+
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 PoiParams::PoiParams(ActorType *at,
@@ -804,9 +831,7 @@ PoiParams::PoiParams(ActorType *at,
 	nameText.setCharacterSize( 18 );
 	nameText.setFillColor( Color::White );
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 PoiParams::PoiParams(ActorType *at,
@@ -828,12 +853,8 @@ PoiParams::PoiParams(ActorType *at,
 	camZoom = 1;
 
 	name = "-";
-	position = pos;	
 
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 PoiParams::PoiParams(ActorType *at,
@@ -855,18 +876,7 @@ PoiParams::PoiParams(ActorType *at,
 	nameText.setCharacterSize( 18 );
 	nameText.setFillColor( Color::White );
 
-	//name = "-";
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
-}
-
-bool PoiParams::CanApply()
-{
-	return true;
+	PlaceAerial(pos);
 }
 
 ActorParams *PoiParams::Copy()
@@ -894,7 +904,7 @@ void PoiParams::WriteParamFile( std::ofstream &of )
 
 	if( groundInfo == NULL )
 	{
-		of << (int)hasCamProperties << endl;
+		WriteBool(of, hasCamProperties);
 		if( hasCamProperties )
 			of << camZoom << endl;
 	}
@@ -1000,13 +1010,7 @@ void PoiParams::Draw( sf::RenderTarget *target )
 KeyParams::KeyParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams(at)
 {
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
-
+	PlaceAerial(pos);
 	
 	numKeys = 3;
 	zoneType = 0;
@@ -1024,13 +1028,7 @@ KeyParams::KeyParams(ActorType *at, sf::Vector2i &pos,
 	int p_numKeys, int p_zoneType )
 	:ActorParams(at)
 {
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
-
+	PlaceAerial(pos);
 	
 	numKeys = p_numKeys;
 	zoneType = p_zoneType;
@@ -1091,11 +1089,6 @@ void KeyParams::SetPanelInfo()
 	p->textBoxes["zonetype"]->text.setString(boost::lexical_cast<string>(zoneType));
 }
 
-bool KeyParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *KeyParams::Copy()
 {
 	KeyParams *copy = new KeyParams( *this );
@@ -1106,18 +1099,14 @@ NexusParams::NexusParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edg
 	int p_nexusIndex )
 	:ActorParams(at), nexusIndex( p_nexusIndex )
 {
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 NexusParams::NexusParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams(at)
 {
 	nexusIndex = 0;
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 NexusParams::NexusParams(ActorType *at, ifstream &is)
@@ -1126,15 +1115,6 @@ NexusParams::NexusParams(ActorType *at, ifstream &is)
 	LoadGrounded(is);
 
 	is >> nexusIndex;
-}
-
-bool NexusParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
 }
 
 void NexusParams::SetPanelInfo()
@@ -1182,9 +1162,7 @@ GroundTriggerParams::GroundTriggerParams(ActorType *at, TerrainPolygon *p_edgePo
 	bool fr, const std::string &p_typeStr)
 	:ActorParams(at), facingRight( fr ), typeStr( p_typeStr )
 {
-	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-
-	SetBoundingQuad();
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 GroundTriggerParams::GroundTriggerParams(ActorType *at, ifstream &is)
@@ -1192,9 +1170,7 @@ GroundTriggerParams::GroundTriggerParams(ActorType *at, ifstream &is)
 {
 	LoadGrounded(is);
 
-	int ifacingRight;
-	is >> ifacingRight;
-	facingRight = ifacingRight;
+	LoadBool(is, facingRight);
 
 	is >> typeStr;
 }
@@ -1202,21 +1178,11 @@ GroundTriggerParams::GroundTriggerParams(ActorType *at, ifstream &is)
 GroundTriggerParams::GroundTriggerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at)
 {
-	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 	typeStr = "NONE";
 	facingRight = true;
 
-	SetBoundingQuad();
-}
-
-bool GroundTriggerParams::CanApply()
-{
-	if (groundInfo != NULL)
-		return true;
-	//hmm not sure about this now
-
-	return false;
+	
 }
 
 void GroundTriggerParams::SetPanelInfo()
@@ -1244,7 +1210,7 @@ void GroundTriggerParams::SetParams()
 
 void GroundTriggerParams::WriteParamFile(ofstream &of)
 {
-	of << (int)facingRight << endl;
+	WriteBool(of, facingRight);
 	of << typeStr << endl;
 }
 
@@ -1258,37 +1224,21 @@ ShipPickupParams::ShipPickupParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	bool p_facingRight )
 	:ActorParams(at), facingRight( p_facingRight )
 {
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 ShipPickupParams::ShipPickupParams(ActorType *at, ifstream &is )
 	:ActorParams(at)
 {
 	LoadGrounded(is);
-
-	int ifacingRight;
-	is >> ifacingRight;
-	facingRight = ifacingRight;
+	LoadBool(is, facingRight);
 }
 
 ShipPickupParams::ShipPickupParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams(at)
 {
 	facingRight = true;
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-
-	SetBoundingQuad();
-}
-
-bool ShipPickupParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 void ShipPickupParams::SetPanelInfo()
@@ -1316,7 +1266,7 @@ void ShipPickupParams::SetParams()
 
 void ShipPickupParams::WriteParamFile( ofstream &of )
 {
-	of << (int)facingRight << endl;
+	WriteBool(of, facingRight);
 }
 
 ActorParams *ShipPickupParams::Copy()
@@ -1328,17 +1278,8 @@ ActorParams *ShipPickupParams::Copy()
 ShardParams::ShardParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams(at)
 {
-	position = pos;	
-
-	//image.setOrigin( image.getLocalBounds().width / 2, image.getLocalBounds().height / 2 );
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
-
+	PlaceAerial(pos);
 	SetShard(0, 0, 0);
-	//shardStr = Shard::GetShardString(0, 0);
-	
-	//shardStr = "SHARD_W1_TEACH_JUMP";//"..no.shard..";
 }
 
 void ShardParams::SetShard(int w, int li)
@@ -1375,15 +1316,7 @@ ShardParams::ShardParams(ActorType *at, sf::Vector2i &pos, int p_world,
 	int p_localIndex)
 	:ActorParams(at)
 {
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
-	image.setPosition(pos.x, pos.y);
-
-	SetBoundingQuad();
-	//
-	//shardStr = Shard::GetShardString(p_world, p_localIndex);
+	PlaceAerial(pos);
 
 	SetShard(p_world, p_localIndex);
 	//SetShardFromStr();
@@ -1435,11 +1368,6 @@ void ShardParams::SetPanelInfo()
 	gs->selectedY = sY + world * 2;
 }
 
-bool ShardParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *ShardParams::Copy()
 {
 	ShardParams *copy = new ShardParams( *this );
@@ -1449,22 +1377,13 @@ ActorParams *ShardParams::Copy()
 RaceFightTargetParams::RaceFightTargetParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams(at)
 {
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 RaceFightTargetParams::RaceFightTargetParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
 	LoadAerial(is);
-}
-
-void RaceFightTargetParams::WriteParamFile( std::ofstream &of )
-{
 }
 
 void RaceFightTargetParams::SetParams()
@@ -1487,11 +1406,6 @@ void RaceFightTargetParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;*/
 }
 
-bool RaceFightTargetParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *RaceFightTargetParams::Copy()
 {
 	RaceFightTargetParams *copy = new RaceFightTargetParams( *this );
@@ -1503,12 +1417,8 @@ BlockerParams::BlockerParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i>
 	:ActorParams(at)
 {
 	lines = NULL;
-	//lines = NULL;
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
-	image.setPosition(pos.x, pos.y);
+	
+	PlaceAerial(pos);
 
 	spacing = p_spacing;
 	SetPath(globalPath);
@@ -1518,7 +1428,7 @@ BlockerParams::BlockerParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i>
 	armored = p_armored;
 
 
-	SetBoundingQuad();
+	
 }
 
 BlockerParams::BlockerParams(ActorType *at,ifstream &is)
@@ -1533,9 +1443,7 @@ BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 	is >> ibType;
 	bType = (BlockerType)ibType;
 
-	int iarmored;
-	is >> iarmored;
-	armored = iarmored;
+	LoadBool(is, armored);
 
 	is >> spacing;
 	
@@ -1546,19 +1454,12 @@ BlockerParams::BlockerParams(ActorType *at,
 	:ActorParams(at)
 {
 	lines = NULL;
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
-	image.setPosition(pos.x, pos.y);
-
+	PlaceAerial(pos);
 	armored = false;
 
 	bType = NORMAL;
 
 	spacing = 0;
-
-	SetBoundingQuad();
 }
 
 std::list<sf::Vector2i> BlockerParams::GetGlobalChain()
@@ -1668,12 +1569,6 @@ void BlockerParams::SetPanelInfo()
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
-bool BlockerParams::CanApply()
-{
-	return true;
-	//see note for keyparams
-}
-
 void BlockerParams::Draw(sf::RenderTarget *target)
 {
 	int localPathSize = localPath.size();
@@ -1718,13 +1613,6 @@ void BlockerParams::Draw(sf::RenderTarget *target)
 
 void BlockerParams::WriteParamFile(ofstream &of)
 {
-	/*int hMon;
-	if (hasMonitor)
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;*/
-
 	of << localPath.size() << endl;
 
 	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
@@ -1734,813 +1622,22 @@ void BlockerParams::WriteParamFile(ofstream &of)
 
 	of << bType << "\n";
 
-	of << (int)armored << "\n";
+	WriteBool(of, armored);
 	
 	of << spacing << endl;
-
-	/*if (loop)
-	{
-		of << "+loop" << endl;
-	}
-	else
-	{
-		of << "-loop" << endl;
-	}*/
-
-	//of.precision( 5 );
-	//of << speed << endl;
-	//of << fixed << speed << endl;
 }
 
 ActorParams *BlockerParams::Copy()
 {
 	BlockerParams *bp = new BlockerParams(*this);
 	return bp;
-	/*ComboerParams *copy = new ComboerParams(*this);
-	if (copy->lines != NULL)
-	{
-		int numVertices = copy->lines->getVertexCount();
-
-		VertexArray &oldli = *copy->lines;
-		copy->lines = new VertexArray(sf::LinesStrip, numVertices);
-		VertexArray &li = *copy->lines;
-
-
-		for (int i = 0; i < numVertices; ++i)
-		{
-			li[i] = oldli[i];
-		}
-	}
-	return copy;*/
-
-}
-
-RailParams::RailParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i> &globalPath, bool p_energized )
-	:ActorParams(at)
-{
-	lines = NULL;
-	//lines = NULL;
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
-	image.setPosition(pos.x, pos.y);
-
-	SetPath(globalPath);
-	
-
-	energized = p_energized;
-
-
-	SetBoundingQuad();
-}
-
-RailParams::RailParams(ActorType *at, ifstream &is )
-	:ActorParams(at)
-{
-	lines = NULL;
-	LoadAerial(is);
-	LoadGlobalPath(is);
-
-	int ienergized;
-	is >> ienergized;
-	energized = ienergized;
-
-	
-}
-
-RailParams::RailParams(ActorType *at,
-	sf::Vector2i &pos)
-	:ActorParams(at)
-{
-	lines = NULL;
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
-	image.setPosition(pos.x, pos.y);
-
-	energized = false;
-
-	SetBoundingQuad();
-}
-
-std::list<sf::Vector2i> RailParams::GetGlobalChain()
-{
-	list<Vector2i> globalPath;
-	globalPath.push_back(position);
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		globalPath.push_back(position + (*it));
-	}
-	return globalPath;
-}
-
-void RailParams::SetPath(std::list<sf::Vector2i> &globalPath)
-{
-	if (lines != NULL)
-	{
-		delete lines;
-		lines = NULL;
-	}
-
-	localPath.clear();
-	if (globalPath.size() > 1)
-	{
-
-		int numLines = globalPath.size();
-
-		lines = new VertexArray(sf::LinesStrip, numLines);
-		VertexArray &li = *lines;
-		li[0].position = Vector2f(0, 0);
-		li[0].color = Color::Magenta;
-
-		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for (; it != globalPath.end(); ++it)
-		{
-
-			Vector2i temp((*it).x - position.x, (*it).y - position.y);
-			localPath.push_back(temp);
-
-			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
-			li[index].position = Vector2f(temp.x, temp.y);
-			li[index].color = Color::Magenta;
-			++index;
-		}
-	}
-}
-
-void RailParams::SetParams()
-{
-	Panel *p = type->panel;
-
-	energized = p->checkBoxes["energized"]->checked;
-
-	hasMonitor = false;
-}
-
-void RailParams::SetPanelInfo()
-{
-	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-		p->textBoxes["group"]->text.setString(group->name);
-	p->checkBoxes["energized"]->checked = energized;
-
-	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalChain();
-}
-
-bool RailParams::CanApply()
-{
-	return true;
-	//see note for keyparams
-}
-
-void RailParams::Draw(sf::RenderTarget *target)
-{
-	int localPathSize = localPath.size();
-
-	if (localPathSize > 0)
-	{
-		VertexArray &li = *lines;
-
-
-		for (int i = 0; i < localPathSize + 1; ++i)
-		{
-			li[i].position += Vector2f(position.x, position.y);
-		}
-
-
-		target->draw(li);
-
-
-
-		//if (loop)
-		//{
-
-		//	//draw the line between the first and last
-		//	sf::Vertex vertices[2] =
-		//	{
-		//		sf::Vertex(li[localPathSize].position, Color::Magenta),
-		//		sf::Vertex(li[0].position, Color::White)
-		//	};
-
-		//	target->draw(vertices, 2, sf::Lines);
-		//}
-
-
-		for (int i = 0; i < localPathSize + 1; ++i)
-		{
-			li[i].position -= Vector2f(position.x, position.y);
-		}
-	}
-
-	ActorParams::Draw(target);
-}
-
-void RailParams::WriteParamFile(ofstream &of)
-{
-
-	of << localPath.size() << endl;
-
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		of << (*it).x << " " << (*it).y << endl;
-	}
-
-	of << (int)energized << "\n";
-
-	/*if (loop)
-	{
-	of << "+loop" << endl;
-	}
-	else
-	{
-	of << "-loop" << endl;
-	}*/
-
-	//of.precision( 5 );
-	//of << speed << endl;
-	//of << fixed << speed << endl;
-}
-
-ActorParams *RailParams::Copy()
-{
-	RailParams *rp = new RailParams(*this);
-	return rp;
-	/*ComboerParams *copy = new ComboerParams(*this);
-	if (copy->lines != NULL)
-	{
-	int numVertices = copy->lines->getVertexCount();
-
-	VertexArray &oldli = *copy->lines;
-	copy->lines = new VertexArray(sf::LinesStrip, numVertices);
-	VertexArray &li = *copy->lines;
-
-
-	for (int i = 0; i < numVertices; ++i)
-	{
-	li[i] = oldli[i];
-	}
-	}
-	return copy;*/
-}
-
-BoosterParams::BoosterParams(ActorType *at, sf::Vector2i &pos, int p_strength )
-	:ActorParams(at), strength( p_strength )
-{
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
-	image.setPosition(pos.x, pos.y);
-
-	SetBoundingQuad();
-}
-
-
-BoosterParams::BoosterParams(ActorType *at, ifstream &is)
-	:ActorParams(at)
-{
-	LoadAerial(is);
-
-	is >> strength;
-}
-
-BoosterParams::BoosterParams(ActorType *at, sf::Vector2i &pos)
-	:ActorParams(at)
-{
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
-	image.setPosition(pos.x, pos.y);
-
-	SetBoundingQuad();
-	
-	strength = 10;
-}
-
-void BoosterParams::WriteParamFile(std::ofstream &of)
-{
-	of << strength << "\n";
-}
-
-void BoosterParams::SetParams()
-{
-	Panel *p = type->panel;
-
-	string strengthStr = p->textBoxes["strength"]->text.getString().toAnsiString();
-
-	stringstream ss;
-	ss << strengthStr;
-
-	int t_strength;
-	ss >> t_strength;
-
-	if (!ss.fail())
-	{
-		strength = t_strength;
-	}
-	//hasMonitor = p->checkBoxes["monitor"]->checked;
-}
-
-void BoosterParams::SetPanelInfo()
-{
-	Panel *p = type->panel;
-
-	p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-	{
-		p->textBoxes["group"]->text.setString(group->name);
-	}
-
-	p->textBoxes["strength"]->text.setString(boost::lexical_cast<string>(strength));
-	//p->checkBoxes["monitor"]->checked = hasMonitor;
-}
-
-bool BoosterParams::CanApply()
-{
-	return true;
-}
-
-ActorParams *BoosterParams::Copy()
-{
-	BoosterParams *copy = new BoosterParams(*this);
-	return copy;
-}
-
-SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath,
-	int p_moveFrames)
-	:ActorParams(at), moveFrames( p_moveFrames )
-{
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
-	image.setPosition(pos.x, pos.y);
-
-	SetBoundingQuad();
-
-	lines = NULL;
-
-	SetPath(globalPath);	
-}
-
-SpringParams::SpringParams(ActorType *at, ifstream &is)
-	:ActorParams(at)
-{
-	LoadAerial(is);
-
-	int moveFrames;
-	is >> moveFrames;
-
-	Vector2i other;
-	is >> other.x;
-	is >> other.y;
-
-	list<Vector2i> globalPath;
-	globalPath.push_back(Vector2i(position.x, position.y));
-	globalPath.push_back(position + other);
-	SetPath(globalPath);
-
-	lines = NULL;
-}
-
-SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos)
-	:ActorParams(at)
-{
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
-	image.setPosition(pos.x, pos.y);
-
-	SetBoundingQuad();
-
-	moveFrames = 60;
-
-	lines = NULL;
-
-
-}
-
-void SpringParams::WriteParamFile(std::ofstream &of)
-{
-
-	of << moveFrames << "\n";
-	of << localPath.front().x << " " << localPath.front().y << endl;
-
-	
-}
-
-void SpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
-{
-	if (lines != NULL)
-	{
-		delete lines;
-		lines = NULL;
-	}
-
-	localPath.clear();
-	if (globalPath.size() > 1)
-	{
-
-		int numLines = globalPath.size();
-
-		lines = new VertexArray(sf::LinesStrip, numLines);
-		VertexArray &li = *lines;
-		li[0].position = Vector2f(0, 0);
-		li[0].color = Color::Magenta;
-
-		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for (; it != globalPath.end(); ++it)
-		{
-
-			Vector2i temp((*it).x - position.x, (*it).y - position.y);
-			localPath.push_back(temp);
-
-			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
-			li[index].position = Vector2f(temp.x, temp.y);
-			li[index].color = Color::Magenta;
-			++index;
-		}
-
-		Vector2f diff = li[1].position - li[0].position;
-		float f = GetVectorAngleCW(diff);
-		float rot = f / PI * 180.f + 90;
-		image.setRotation(rot);
-		cout << "blah: " << rot << endl;
-
-	}
-
-	
-	//Vector2i diff = globalPath. - globalPath[0];
-}
-
-void SpringParams::SetParams()
-{
-	Panel *p = type->panel;
-
-	string moveFrameStr = p->textBoxes["moveframes"]->text.getString().toAnsiString();
-
-	stringstream ss;
-	ss << moveFrameStr;
-
-	int t_moveFrames;
-	ss >> t_moveFrames;
-
-	if (!ss.fail())
-	{
-		moveFrames = t_moveFrames;
-	}
-
-	
-	hasMonitor = false;
-
-}
-
-void SpringParams::SetPanelInfo()
-{
-	Panel *p = type->panel;
-
-	p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-	{
-		p->textBoxes["group"]->text.setString(group->name);
-	}
-
-	p->textBoxes["moveframes"]->text.setString((boost::lexical_cast<string>(moveFrames)));
-
-	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
-	//p->checkBoxes["monitor"]->checked = hasMonitor;
-}
-
-bool SpringParams::CanApply()
-{
-	return true;
-}
-
-ActorParams *SpringParams::Copy()
-{
-	SpringParams *copy = new SpringParams(*this);
-	return copy;
-}
-
-void SpringParams::Draw(sf::RenderTarget *target)
-{
-	int localPathSize = localPath.size();
-
-	if (localPathSize > 0)
-	{
-		VertexArray &li = *lines;
-
-
-		for (int i = 0; i < localPathSize + 1; ++i)
-		{
-			li[i].position += Vector2f(position.x, position.y);
-		}
-
-
-		target->draw(li);
-
-		for (int i = 0; i < localPathSize + 1; ++i)
-		{
-			li[i].position -= Vector2f(position.x, position.y);
-		}
-	}
-
-	ActorParams::Draw(target);
-}
-
-
-std::list<sf::Vector2i> SpringParams::GetGlobalPath()
-{
-	list<Vector2i> globalPath;
-	globalPath.push_back(position);
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		globalPath.push_back(position + (*it));
-	}
-	return globalPath;
-}
-
-ComboerParams::ComboerParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop)
-	:ActorParams(at)
-{
-	lines = NULL;
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition(pos.x, pos.y);
-
-	//list<Vector2i> localPath;
-	SetPath(globalPath);
-
-	loop = p_loop;
-	speed = p_speed;
-
-	SetBoundingQuad();
-}
-
-ComboerParams::ComboerParams(ActorType *at, ifstream &is)
-	:ActorParams(at)
-{
-	lines = NULL;
-
-	LoadAerial(is);
-
-	LoadMonitor(is);
-	
-	LoadGlobalPath(is);
-
-	string loopStr;
-	is >> loopStr;
-	if (loopStr == "+loop")
-		loop = true;
-	else if (loopStr == "-loop")
-		loop = false;
-	else
-		assert(false && "should be a boolean");
-
-	is >> speed;
-}
-
-ComboerParams::ComboerParams(ActorType *at,
-	sf::Vector2i &pos)
-	:ActorParams(at)
-{
-	lines = NULL;
-
-	position = pos;
-	image = type->GetSprite(false);
-	image.setPosition(position.x, position.y);
-
-	loop = false;
-	speed = 10;
-
-	SetBoundingQuad();
-}
-
-void ComboerParams::SetParams()
-{
-	Panel *p = type->panel;
-
-	bool loop = p->checkBoxes["loop"]->checked;
-
-
-	string speedStr = p->textBoxes["speed"]->text.getString().toAnsiString();
-
-	stringstream ss;
-	ss << speedStr;
-
-	int t_speed;
-	ss >> t_speed;
-
-	if (!ss.fail())
-	{
-		speed = t_speed;
-	}
-
-	hasMonitor = p->checkBoxes["monitor"]->checked;
-	//try
-	//{
-	//	speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
-	//}
-	//catch(boost::bad_lexical_cast &)
-	//{
-	//	//error
-	//}
-}
-
-void ComboerParams::SetPanelInfo()
-{
-	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-		p->textBoxes["group"]->text.setString(group->name);
-	p->textBoxes["speed"]->text.setString(boost::lexical_cast<string>(speed));
-	p->checkBoxes["loop"]->checked = loop;
-	p->checkBoxes["monitor"]->checked = hasMonitor;
-
-	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
-}
-
-bool ComboerParams::CanApply()
-{
-	return true;
-	//see note for keyparams
-}
-
-void ComboerParams::SetPath(std::list<sf::Vector2i> &globalPath)
-{
-	if (lines != NULL)
-	{
-		delete lines;
-		lines = NULL;
-	}
-
-
-
-
-	localPath.clear();
-	if (globalPath.size() > 1)
-	{
-
-		int numLines = globalPath.size();
-
-		lines = new VertexArray(sf::LinesStrip, numLines);
-		VertexArray &li = *lines;
-		li[0].position = Vector2f(0, 0);
-		li[0].color = Color::Magenta;
-
-		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for (; it != globalPath.end(); ++it)
-		{
-
-			Vector2i temp((*it).x - position.x, (*it).y - position.y);
-			localPath.push_back(temp);
-
-			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
-			li[index].position = Vector2f(temp.x, temp.y);
-			li[index].color = Color::Magenta;
-			++index;
-		}
-	}
-
-
-
-}
-
-void ComboerParams::Draw(sf::RenderTarget *target)
-{
-	int localPathSize = localPath.size();
-
-	if (localPathSize > 0)
-	{
-		VertexArray &li = *lines;
-
-
-		for (int i = 0; i < localPathSize + 1; ++i)
-		{
-			li[i].position += Vector2f(position.x, position.y);
-		}
-
-
-		target->draw(li);
-
-
-
-		if (loop)
-		{
-
-			//draw the line between the first and last
-			sf::Vertex vertices[2] =
-			{
-				sf::Vertex(li[localPathSize].position, Color::Magenta),
-				sf::Vertex(li[0].position, Color::White)
-			};
-
-			target->draw(vertices, 2, sf::Lines);
-		}
-
-
-		for (int i = 0; i < localPathSize + 1; ++i)
-		{
-			li[i].position -= Vector2f(position.x, position.y);
-		}
-	}
-
-	ActorParams::Draw(target);
-	//target->draw( image );
-
-	//DrawBoundar
-}
-
-std::list<sf::Vector2i> ComboerParams::GetGlobalPath()
-{
-	list<Vector2i> globalPath;
-	globalPath.push_back(position);
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		globalPath.push_back(position + (*it));
-	}
-	return globalPath;
-}
-
-void ComboerParams::WriteParamFile(ofstream &of)
-{
-	int hMon;
-	if (hasMonitor)
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
-
-	of << localPath.size() << endl;
-
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		of << (*it).x << " " << (*it).y << endl;
-	}
-
-	if (loop)
-	{
-		of << "+loop" << endl;
-	}
-	else
-	{
-		of << "-loop" << endl;
-	}
-
-	//of.precision( 5 );
-	of << speed << endl;
-	//of << fixed << speed << endl;
-}
-
-ActorParams *ComboerParams::Copy()
-{
-	ComboerParams *copy = new ComboerParams(*this);
-	if (copy->lines != NULL)
-	{
-		int numVertices = copy->lines->getVertexCount();
-
-		VertexArray &oldli = *copy->lines;
-		copy->lines = new VertexArray(sf::LinesStrip, numVertices);
-		VertexArray &li = *copy->lines;
-
-
-		for (int i = 0; i < numVertices; ++i)
-		{
-			li[i] = oldli[i];
-		}
-	}
-	return copy;
 }
 
 
 AirTriggerParams::AirTriggerParams(ActorType *at, sf::Vector2i &pos)
 	:ActorParams(at)
 {
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition(pos.x, pos.y);
-
-	SetBoundingQuad();
-
-	//triggerRect.setFillColor(Color::Transparent);
-	//triggerRect.setOutlineColor(Color::Red);
-	//triggerRect.setOutlineThickness(10);
+	PlaceAerial(pos);
 	triggerRect.setFillColor(Color(200, 200, 200, 150));
 
 	rectWidth = 50;
@@ -2569,11 +1666,7 @@ AirTriggerParams::AirTriggerParams(ActorType *at, ifstream &is)
 AirTriggerParams::AirTriggerParams(ActorType *at, sf::Vector2i &pos, const std::string &typeStr, int w,int h)
 	:ActorParams(at)
 {
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition(pos.x, pos.y);
-
+	PlaceAerial(pos);
 
 	triggerRect.setFillColor(Color(200, 200, 200, 150));//Color::Transparent);
 	//triggerRect.setOutlineColor(Color::Red);
@@ -2583,7 +1676,6 @@ AirTriggerParams::AirTriggerParams(ActorType *at, sf::Vector2i &pos, const std::
 	rectHeight = h;
 
 	SetRect( w, h, pos);
-	SetBoundingQuad();
 
 	trigType = typeStr;
 }
@@ -2627,11 +1719,6 @@ void AirTriggerParams::SetPanelInfo()
 	p->textBoxes["triggertype"]->text.setString(trigType);
 }
 
-bool AirTriggerParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *AirTriggerParams::Copy()
 {
 	AirTriggerParams *copy = new AirTriggerParams(*this);
@@ -2658,9 +1745,7 @@ FlowerPodParams::FlowerPodParams(ActorType *at, TerrainPolygon *p_edgePolygon, i
 	const std::string &p_typeStr)
 	:ActorParams(at), facingRight(true), typeStr(p_typeStr)
 {
-	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-
-	SetBoundingQuad();
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 FlowerPodParams::FlowerPodParams(ActorType *at, ifstream &is)
@@ -2674,21 +1759,10 @@ FlowerPodParams::FlowerPodParams(ActorType *at, ifstream &is)
 FlowerPodParams::FlowerPodParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at)
 {
-	AnchorToGround(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
 	typeStr = "NONE";
 	facingRight = true;
-
-	SetBoundingQuad();
-}
-
-bool FlowerPodParams::CanApply()
-{
-	if (groundInfo != NULL)
-		return true;
-	//hmm not sure about this now
-
-	return false;
 }
 
 void FlowerPodParams::SetPanelInfo()

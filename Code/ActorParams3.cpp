@@ -29,19 +29,12 @@ PulserParams::PulserParams(ActorType *at,
 	:ActorParams(at )
 {
 	lines = NULL;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	//list<Vector2i> localPath;
+	PlaceAerial(pos);
 	SetPath( globalPath );
 
 	framesBetweenNodes = p_framesBetweenNodes; 
 
 	loop = p_loop;
-
-	SetBoundingQuad();
 }
 
 PulserParams::PulserParams(ActorType *at,
@@ -71,26 +64,16 @@ PulserParams::PulserParams(ActorType *at,
 	:ActorParams(at )
 {
 	lines = NULL;
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
+	PlaceAerial(pos);
 
 	loop = false;
 	//speed = 5;
 	framesBetweenNodes = 60;
-
-	SetBoundingQuad();
 }
 
 void PulserParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 
 	of << localPath.size() << endl;
 
@@ -245,11 +228,6 @@ void PulserParams::SetPanelInfo()
 	//EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
 
-bool PulserParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *PulserParams::Copy()
 {
 	PulserParams *copy = new PulserParams( *this );
@@ -277,16 +255,11 @@ OwlParams::OwlParams(ActorType *at, sf::Vector2i &pos,
 	int p_moveSpeed, int p_bulletSpeed, int p_rhythmFrames )
 	:ActorParams( at)
 {
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
+	PlaceAerial(pos);
 
 	moveSpeed = p_moveSpeed;
 	bulletSpeed = p_bulletSpeed;
 	rhythmFrames = p_rhythmFrames;
-
-	SetBoundingQuad();
 }
 
 OwlParams::OwlParams(ActorType *at, ifstream &is)
@@ -304,26 +277,17 @@ OwlParams::OwlParams(ActorType *at,
 	sf::Vector2i &pos )
 	:ActorParams(at )
 {
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
+	PlaceAerial(pos);
 
 	moveSpeed = 8;
 	bulletSpeed = 10;
 	rhythmFrames = 60;
 
-	SetBoundingQuad();
 }
 
 void OwlParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 
 	of << moveSpeed << " " << bulletSpeed << " " << rhythmFrames << endl;
 }
@@ -391,11 +355,6 @@ void OwlParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
-bool OwlParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *OwlParams::Copy()
 {
 	OwlParams *copy = new OwlParams( *this );
@@ -411,9 +370,7 @@ BadgerParams::BadgerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_e
 	speed = p_speed;
 	jumpStrength = p_jumpStrength;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 BadgerParams::BadgerParams(ActorType *at, ifstream &is)
@@ -436,28 +393,12 @@ BadgerParams::BadgerParams(ActorType *at,
 	speed = 10;
 	jumpStrength = 5;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
-}
-
-bool BadgerParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );	
 }
 
 void BadgerParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 	
 	of << speed << " " << jumpStrength << endl;
 }
@@ -524,9 +465,7 @@ CactusParams::CactusParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_e
 	rhythm = p_rhythm;
 	amplitude = p_amplitude;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 CactusParams::CactusParams(ActorType *at, ifstream &is)
@@ -548,29 +487,11 @@ CactusParams::CactusParams(ActorType *at,
 	rhythm = 60;
 	amplitude = 10;
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
-
-bool CactusParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
-}
-
 void CactusParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
-	
+	WriteMonitor(of);
 	of << bulletSpeed << " " << rhythm << " " << amplitude << endl;
 }
 
@@ -646,16 +567,8 @@ BossCoyoteParams::BossCoyoteParams(ActorType *at, sf::Vector2i &pos )
 	:ActorParams(at ), debugLines( sf::Lines, 6 * 2 )
 {
 
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
+	PlaceAerial(pos);
 	radius = 600;
-
-	//AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
 
 	CreateFormation();
 }
@@ -669,16 +582,11 @@ BossCoyoteParams::BossCoyoteParams(ActorType *at, ifstream &is)
 	CreateFormation();
 }
 
-bool BossCoyoteParams::CanApply()
-{
-	CreateFormation();
-	return true;
-}
-
-void BossCoyoteParams::WriteParamFile( ofstream &of )
-{
-	//no params its a boss!
-}
+//bool BossCoyoteParams::CanApply()
+//{
+//	CreateFormation();
+//	return true;
+//}
 
 ActorParams *BossCoyoteParams::Copy()
 {

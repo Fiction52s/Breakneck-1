@@ -26,12 +26,7 @@ SharkParams::SharkParams(ActorType *at, sf::Vector2i &pos,
 {
 	circleFrames = p_circleFrames;
 
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 SharkParams::SharkParams(ActorType *at, ifstream &is)
@@ -47,23 +42,12 @@ SharkParams::SharkParams(ActorType *at, sf::Vector2i &pos )
 {
 	circleFrames = 60;
 
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 void SharkParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
-
+	WriteMonitor(of);
 	of << circleFrames << endl;
 }
 
@@ -101,12 +85,6 @@ void SharkParams::SetPanelInfo()
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
-
-bool SharkParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *SharkParams::Copy()
 {
 	SharkParams *copy = new SharkParams( *this );
@@ -122,12 +100,7 @@ SwarmParams::SwarmParams(ActorType *at, sf::Vector2i &pos,
 {
 	liveFrames = p_liveFrames;
 
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 SwarmParams::SwarmParams(ActorType *at, ifstream &is)
@@ -143,22 +116,12 @@ SwarmParams::SwarmParams(ActorType *at, sf::Vector2i &pos )
 {
 	liveFrames = 420;
 
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 void SwarmParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 
 	of << liveFrames << endl;
 }
@@ -198,11 +161,6 @@ void SwarmParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
-bool SwarmParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *SwarmParams::Copy()
 {
 	SwarmParams *copy = new SwarmParams( *this );
@@ -215,12 +173,7 @@ GhostParams::GhostParams(ActorType *at, sf::Vector2i &pos,
 {
 	speed = p_speed;
 
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 GhostParams::GhostParams(ActorType *at, ifstream &is)
@@ -236,22 +189,12 @@ GhostParams::GhostParams(ActorType *at, sf::Vector2i &pos )
 {
 	speed = 1;
 
-	position = pos;	
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	SetBoundingQuad();
+	PlaceAerial(pos);
 }
 
 void GhostParams::WriteParamFile( std::ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 
 	of << speed << endl;
 }
@@ -291,11 +234,6 @@ void GhostParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
-bool GhostParams::CanApply()
-{
-	return true;
-}
-
 ActorParams *GhostParams::Copy()
 {
 	GhostParams *copy = new GhostParams( *this );
@@ -310,9 +248,7 @@ OvergrowthParams::OvergrowthParams(ActorType *at,
 	:ActorParams(at )
 {
 
-	AnchorToGround( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-				
-	SetBoundingQuad();	
+	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 OvergrowthParams::OvergrowthParams(ActorType *at, ifstream &is)
@@ -322,23 +258,9 @@ OvergrowthParams::OvergrowthParams(ActorType *at, ifstream &is)
 	LoadMonitor(is);
 }
 
-bool OvergrowthParams::CanApply()
-{
-	if( groundInfo != NULL )
-		return true;
-	//hmm not sure about this now
-
-	return false;
-}
-
 void OvergrowthParams::WriteParamFile( ofstream &of )
 {
-	int hMon;
-	if( hasMonitor )
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteMonitor(of);
 }
 
 void OvergrowthParams::SetParams()
@@ -372,12 +294,7 @@ BossGatorParams::BossGatorParams(ActorType *at, Vector2i &pos )
 	radius = 600;
 	orbRadius = 160;
 
-	position = pos;
-
-	image = type->GetSprite(false);
-	image.setPosition( pos.x, pos.y );
-
-	
+	PlaceAerial(pos);
 	for( int i = 0; i < 5; ++i )
 	{
 		CircleShape &cs = circles[i];
@@ -399,7 +316,7 @@ BossGatorParams::BossGatorParams(ActorType *at, Vector2i &pos )
 	
 		
 				
-	SetBoundingQuad();	
+	
 }
 
 BossGatorParams::BossGatorParams(ActorType *at, ifstream &is)
@@ -429,24 +346,19 @@ BossGatorParams::BossGatorParams(ActorType *at, ifstream &is)
 	}
 }
 
-bool BossGatorParams::CanApply()
-{
-	Transform t;
-	Vector2f offset( 0, -radius );
-	for( int i = 0; i < 5; ++i )
-	{
-		CircleShape &cs = circles[i];
-		Vector2f truePos = t.transformPoint( offset ) + Vector2f( position.x, position.y );
-		cs.setPosition( truePos );
-		t.rotate( 360.f / 5.f );
-	}
-	return true;
-}
-
-void BossGatorParams::WriteParamFile( ofstream &of )
-{
-	//no params its a boss!
-}
+//bool BossGatorParams::CanApply()
+//{
+//	Transform t;
+//	Vector2f offset( 0, -radius );
+//	for( int i = 0; i < 5; ++i )
+//	{
+//		CircleShape &cs = circles[i];
+//		Vector2f truePos = t.transformPoint( offset ) + Vector2f( position.x, position.y );
+//		cs.setPosition( truePos );
+//		t.rotate( 360.f / 5.f );
+//	}
+//	return true;
+//}
 
 ActorParams *BossGatorParams::Copy()
 {
