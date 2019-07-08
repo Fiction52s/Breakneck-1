@@ -545,9 +545,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddExtraEnemy("racefighttarget", LoadParams<RaceFightTargetParams>, NULL, MakeParamsAerial<RaceFightTargetParams>,
 		Vector2i(0, 0), Vector2i(32, 32));
 
-	AddExtraEnemy("blocker", LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
-		Vector2i(0, 0), Vector2i(32, 32), 
-		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
+	
 
 	AddExtraEnemy("groundtrigger", LoadParams<GroundTriggerParams>, MakeParamsGrounded<GroundTriggerParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32),
@@ -566,7 +564,9 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 
 	//w1
-
+	AddWorldEnemy("blocker", 1, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
 
 	AddWorldEnemy("comboer", 1, LoadParams<ComboerParams>, NULL, MakeParamsAerial<ComboerParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
@@ -596,9 +596,10 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/spring_idle_256x256.png", 256, 256));
 
-
 	//w2
-
+	AddWorldEnemy("greenblocker", 2, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
 
 	AddWorldEnemy("bat", 2, LoadParams<BatParams>, NULL, MakeParamsAerial<BatParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
@@ -619,6 +620,10 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddWorldEnemy("gravityfaller", 2, LoadParams<GravityFallerParams>, MakeParamsGrounded<GravityFallerParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/gravity_faller_128x128.png", 128, 128));
+
+	AddWorldEnemy("gravitymodifier", 2, LoadParams<GravityModifierParams>, NULL, MakeParamsAerial<GravityModifierParams>,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 
 	AddWorldEnemy("gravityspring", 2, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
@@ -14632,7 +14637,7 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("numkeys", Vector2i(20, 150), 200, 20, "3");
 		p->AddTextBox("zonetype", Vector2i(20, 200), 200, 20, "0");
 	}
-	else if (name == "blocker")
+	else if (name == "blocker" || name == "greenblocker")
 	{
 		p = new Panel("blocker_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
@@ -14643,6 +14648,15 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("btype", Vector2i(20, 200), 200, 20, "0");
 		p->AddTextBox("spacing", Vector2i(20, 250), 200, 20, "0");
 		p->AddButton("createchain", Vector2i(20, 300), Vector2f(100, 50), "Create Chain");
+
+
+		/*GridSelector *gs = p->AddGridSelector("blockerSelector", Vector2i(0, 0), 8, 1, 64, 64, true, true);
+		Tileset *tsws = edit->GetTileset("Editor/whitesquare.png");
+		Sprite sqSpr;
+		sqSpr.setTexture(*tsws->texture);
+
+		gs->Set(0, 0, sqSpr, "");*/
+
 		//p->
 	}
 	else if (name == "shard")
@@ -14691,12 +14705,10 @@ Panel *ActorType::CreatePanel()
 				}
 			}
 		}
-
-
 		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
 	}
 
-	else if (name == "booster")
+	else if (name == "booster" || name == "gravitymodifier")
 	{
 		p = new Panel("booster_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
@@ -15234,7 +15246,7 @@ void ActorType::PlaceEnemy()
 	}
 	
 	string &name = info.name;
-	if (name == "blocker"|| name == "spring" || name == "patroller"|| name == "bat"
+	if (name == "blocker"|| name == "greenblocker" || name == "spring" || name == "patroller"|| name == "bat"
 		|| name == "pulser"|| name == "narwhal")//curve turret??
 	{
 		edit->patrolPath.clear();

@@ -1168,3 +1168,70 @@ std::list<sf::Vector2i> GravitySpringParams::GetGlobalPath()
 	}
 	return globalPath;
 }
+
+GravityModifierParams::GravityModifierParams(ActorType *at, sf::Vector2i &pos, int p_strength)
+	:ActorParams(at), strength(p_strength)
+{
+	PlaceAerial(pos);
+}
+
+
+GravityModifierParams::GravityModifierParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	is >> strength;
+}
+
+GravityModifierParams::GravityModifierParams(ActorType *at, sf::Vector2i &pos)
+	:ActorParams(at)
+{
+	PlaceAerial(pos);
+
+	strength = 50;;
+}
+
+void GravityModifierParams::WriteParamFile(std::ofstream &of)
+{
+	of << strength << "\n";
+}
+
+void GravityModifierParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	string strengthStr = p->textBoxes["strength"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << strengthStr;
+
+	int t_strength;
+	ss >> t_strength;
+
+	if (!ss.fail())
+	{
+		strength = t_strength;
+	}
+	//hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+void GravityModifierParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+	{
+		p->textBoxes["group"]->text.setString(group->name);
+	}
+
+	p->textBoxes["strength"]->text.setString(boost::lexical_cast<string>(strength));
+	//p->checkBoxes["monitor"]->checked = hasMonitor;
+}
+
+ActorParams *GravityModifierParams::Copy()
+{
+	GravityModifierParams *copy = new GravityModifierParams(*this);
+	return copy;
+}
