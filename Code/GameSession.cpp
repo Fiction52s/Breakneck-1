@@ -1714,7 +1714,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 			Enemy *enem = NULL;
 
-			if( typeName == "goal" )
+			if( typeName == "goal" || typeName == "greengoal")
 			{
 				//always grounded
 
@@ -1727,8 +1727,14 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 				double edgeQuantity;
 				is >> edgeQuantity;
 
-				cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
-				Goal *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+				int w = 0;
+				if (typeName == "greengoal")
+				{
+					w = 1;
+				}
+
+				//cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
+				Goal *enemy = new Goal( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, w );
 				fullEnemyList.push_back( enemy );
 				enem = enemy;
 

@@ -524,9 +524,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 	//extras
 
-	AddExtraEnemy("goal", LoadParams<GoalParams>, MakeParamsGrounded<GoalParams>, NULL, 
-		Vector2i( 0, -32 ), Vector2i( 32, 32 ), 
-		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
+	
 
 	AddExtraEnemy("poi", LoadParams<PoiParams>, MakeParamsGrounded<PoiParams>, MakeParamsAerial<PoiParams>,
 		Vector2i(0, 0), Vector2i(32, 32));
@@ -564,6 +562,11 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 
 	//w1
+
+	AddWorldEnemy("goal", 1, LoadParams<GoalParams>, MakeParamsGrounded<GoalParams>, NULL,
+		Vector2i(0, -32), Vector2i(32, 32),
+		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
+
 	AddWorldEnemy("blocker", 1, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
@@ -597,6 +600,11 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		GetTileset("Enemies/spring_idle_256x256.png", 256, 256));
 
 	//w2
+
+	AddWorldEnemy("greengoal", 2, LoadParams<GoalParams>, MakeParamsGrounded<GoalParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Goal/goal_w02_a_288x256.png", 288, 256));
+
 	AddWorldEnemy("greenblocker", 2, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
@@ -13504,7 +13512,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		for( list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
 			it2 != (*it).second->actors.end(); ++it2 )
 		{
-			if ((*it2)->type == types["goal"])
+			if ((*it2)->type->IsGoalType())
 			{
 				goalCS.setPosition((*it2)->position.x, (*it2)->position.y);
 				mapPreviewTex->draw(goalCS);
@@ -15165,6 +15173,7 @@ bool ActorType::IsGoalType()
 {
 	string &name = info.name;
 	return name == "goal"
+		|| name == "greengoal"
 		|| name == "shippickup"
 		|| name == "nexus";
 }

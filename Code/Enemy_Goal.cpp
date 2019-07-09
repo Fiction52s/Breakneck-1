@@ -11,14 +11,14 @@ using namespace std;
 using namespace sf;
 
 
-Goal::Goal( GameSession *owner, Edge *g, double q )
+Goal::Goal( GameSession *owner, Edge *g, double q, int world )
 		:Enemy( owner, EnemyType::EN_GOAL, false, 0, false ), 
 	ground( g ), edgeQuantity( q ), dead( false )
 {	
 	double width;
 	double height;
 
-	int world = owner->mh->envWorldType;
+	//int world = owner->mh->envWorldType;
 	switch (world)
 	{
 	case 0:

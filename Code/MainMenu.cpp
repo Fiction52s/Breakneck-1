@@ -3571,6 +3571,7 @@ MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
 		string test;
 		is >> test;
 		int bb = 65;
+		assert(0);
 	}
 	
 	

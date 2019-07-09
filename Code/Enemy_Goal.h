@@ -13,7 +13,8 @@ struct Goal : Enemy
 		A_DESTROYED
 	};
 
-	Goal(GameSession *owner, Edge *ground, double quantity);
+	Goal(GameSession *owner, Edge *ground, double quantity,
+		int world);
 	~Goal();
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
@@ -40,7 +41,7 @@ struct Goal : Enemy
 	Edge *ground;
 	double edgeQuantity;
 
-	
+	int world;
 
 	double angle;
 
