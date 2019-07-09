@@ -43,7 +43,7 @@ struct Shard : Enemy
 	void FrameIncrement();
 	Tileset *ts_sparkle;
 	EffectPool *sparklePool;
-
+	Tileset *ts_explodeCreate;
 	V2d startPos;
 	int radius;
 

@@ -348,6 +348,7 @@ void MovementSequence::InitMovementDebug()
 		curr->InitDebugDraw();
 		curr = curr->next;
 	}
+
 }
 
 void MovementSequence::MovementDebugDraw( sf::RenderTarget *target )
@@ -378,6 +379,7 @@ void MovementSequence::Update( int slowMultiple )
 
 		if (currMovement->moveType != Movement::WAIT)
 		{
+			//cout << "localtime: " << (currTime - currMovementStartTime) << ", dur: " << currMovement->duration << endl;
 			if (currTime - currMovementStartTime == 0)
 			{
 				position = currMovement->start;
@@ -416,6 +418,7 @@ void MovementSequence::Update( int slowMultiple )
 
 			if (currMovement != NULL)
 			{
+				//cout << "switching:" << currTime << endl;
 				currMovementStartTime = currTime;
 			}
 		}

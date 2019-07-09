@@ -21,7 +21,7 @@ struct TouchGrass : QuadTreeEntrant
 
 	static bool IsPlacementOkay(
 		TouchGrassType grassType, 
-		EdgeAngleType eat,
+		int eat,
 		Edge *edge, int quadIndex);
 	static int GetQuadWidth(TouchGrassType gt);
 	TouchGrass( TouchGrassCollection *coll, int index,

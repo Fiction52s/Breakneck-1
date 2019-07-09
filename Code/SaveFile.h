@@ -22,6 +22,7 @@ struct BitField
 	~BitField();
 	void SetBit(int index, bool val );
 	bool GetBit(int index);
+	bool IsNonZero();
 	void Reset();
 	sf::Uint32 *optionField;
 	int numOptions;
@@ -172,6 +173,7 @@ struct SaveFile
 	void UpdateShardNameList();
 	int GetNumShardsCaptured();
 	int GetNumTotalShards();
+	bool HasNewShards();
 	std::list<std::string> shardNameList;
 	/*void SetJustUnlocked(int world,
 		int sec, int lev);*/

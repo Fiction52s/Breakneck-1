@@ -95,6 +95,9 @@ struct KinMask
 	GameSession *owner;
 	MomentumBar *momentumBar;
 	KinRing *kinRing;
+
+	Tileset *ts_newShardMarker;
+	sf::Sprite shardMarker;
 };
 
 struct AdventureHUD

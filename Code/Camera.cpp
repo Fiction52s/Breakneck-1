@@ -960,11 +960,6 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 		borderOffset.y = yChangeNeg;
 	}
 
-	if (owner->mh->boundsWidth < 1920 * 2) //for very vertical maps
-	{
-		borderOffset.x = 0;
-	}
-
 	pos += borderOffset;
 
 	float barrierZoom = -1;

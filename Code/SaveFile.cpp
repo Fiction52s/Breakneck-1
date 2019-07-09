@@ -60,6 +60,19 @@ bool BitField::GetBit(int index)
 	}
 }
 
+bool BitField::IsNonZero()
+{
+	for (int i = 0; i < numFields; ++i)
+	{
+		if (optionField[i] > 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void BitField::Reset()
 {
 	for (int i = 0; i < numFields; ++i)
@@ -256,6 +269,11 @@ int SaveFile::GetNumShardsCaptured()
 int SaveFile::GetNumTotalShards()
 {
 	return shardNameList.size();
+}
+
+bool SaveFile::HasNewShards()
+{
+	return newShardField.IsNonZero();
 }
 
 //return true on normal loading, and false if you need to make a default

@@ -151,6 +151,8 @@ struct AbsorbParticles
 	float startAngle;
 	GameSession *owner;
 	Tileset *ts;
+	//Tileset *ts_explodeCreate;
+	Tileset *ts_explodeDestroy;
 	int animFactor;
 	sf::Vector2f pos;
 	sf::Vector2f *particlePos;

@@ -66,6 +66,8 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 
 	ts_sparkle = owner->GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
 
+	ts_explodeCreate = owner->GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
+
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;
 
@@ -137,7 +139,7 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	hitBody->hitboxInfo = NULL;
 
 	actionLength[FLOAT] = 120;
-	actionLength[DISSIPATE] = 20;
+	actionLength[DISSIPATE] = 10;
 
 	animFactor[FLOAT] = 1;
 	animFactor[DISSIPATE] = 1;
@@ -203,11 +205,17 @@ void Shard::DissipateOnTouch()
 	action = DISSIPATE;
 	frame = 0;
 
-	Capture();
+	owner->ActivateEffect(EffectLayer::IN_FRONT,
+		ts_explodeCreate, position, true, 0, 12, 3, true);
+
+	SetHitboxes(NULL, 0);
+	SetHurtboxes(NULL, 0);
+	//Capture();
 }
 
 void Shard::Capture()
 {
+	owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
 	if (owner->saveFile != NULL)
 	{
 		assert(!owner->saveFile->shardField.GetBit(shardType));
@@ -217,12 +225,6 @@ void Shard::Capture()
 		owner->saveFile->newShardField.SetBit(shardType, true);
 		owner->saveFile->Save();
 	}
-
-
-	SetHitboxes(NULL, 0);
-	SetHurtboxes(NULL, 0);
-
-	owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
 	//owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position);
 	
 	//owner->mainMenu->GetCurrentProgress()->Save(); //might need to multithread at some point. this can be annoying
@@ -263,9 +265,13 @@ void Shard::ProcessState()
 		case DISSIPATE:
 			numHealth = 0;
 			dead = true;
+			Capture();
 			break;
 		}
 	}
+	
+
+	//case DISSI
 
 	if (action == FLOAT)
 	{
@@ -328,8 +334,11 @@ void Shard::UpdateSprite()
 
 void Shard::EnemyDraw( sf::RenderTarget *target )
 {
-	target->draw(sprite);
-	sparklePool->Draw(target);
+	if (action != DISSIPATE)
+	{
+		target->draw(sprite);
+		sparklePool->Draw(target);
+	}
 }
 
 void Shard::DrawMinimap( sf::RenderTarget *target )

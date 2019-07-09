@@ -163,9 +163,10 @@ bool TouchGrass::IsTouchingBox(const sf::Rect<double> &r)
 	return touching;
 }
 
-bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, EdgeAngleType eat,
+bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int p_eat,
 	Edge *edge, int quadIndex)
 {
+	EdgeAngleType eat = (EdgeAngleType)p_eat;
 	switch (grassType)
 	{
 	case TYPE_NORMAL:

@@ -41,7 +41,7 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 60 );
+	launchers[0] = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 120 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );	
 	launchers[0]->hitboxInfo->damage = 18;
 	
@@ -87,7 +87,7 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 		
 		for(  ;rit != pathParam.rend(); ++rit )
 		{
-			path[index] = (*rit) + pos;
+			path[index] = (*rit);// +pos;
 			++index;
 		}
 	}
@@ -220,8 +220,9 @@ void Bat::ResetEnemy()
 	returnSeq.Reset();
 	dead = false;
 	
-	position.x = path[0].x;
-	position.y = path[0].y;
+	currBasePos = startPos;
+
+	position = startPos;
 	receivedHit = NULL;
 
 	action = FLY;
@@ -353,6 +354,19 @@ void Bat::ProcessState()
 			launchers[0]->Fire();
 		}	
 	}
+
+	/*switch (action)
+	{
+	case FLY:
+		cout << "fly" << endl;
+		break;
+	case RETREAT:
+		cout << "retreat" << endl;
+		break;
+	case RETURN:
+		cout << "return" << endl;
+		break;
+	}*/
 }
 
 void Bat::UpdateEnemyPhysics()
@@ -380,12 +394,14 @@ void Bat::UpdateEnemyPhysics()
 	{
 		ms->Update(slowMultiple);
 	}
-	
+
 	position = currBasePos + ms->position;
+	//cout << "basePos: " << currBasePos.x << ", " << currBasePos.y << "   ms: " << ms->position.x << ", " << ms->position.y << endl;
 }
 
 void Bat::UpdateSprite()
 {
+	
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
 	sprite.setPosition( position.x, position.y );
 

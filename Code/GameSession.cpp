@@ -3821,7 +3821,7 @@ bool GameSession::OpenFile( string fileName )
 
 				ss << "Borders/bor_" << matWorld + 1 << "_";
 
-				ss << "01";
+				ss << "01_512x704";
 				/*if (matVariation < 10)
 				{
 					ss << "0" << matVariation + 1;
@@ -9626,7 +9626,14 @@ void GameSession::QueryGateTree(sf::Rect<double>&rect)
 
 SaveFile *GameSession::GetCurrentProgress()
 {
-	return mainMenu->GetCurrentProgress();
+	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+	{
+		return mainMenu->GetCurrentProgress();
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 bool GameSession::HasPowerUnlocked( int pIndex )

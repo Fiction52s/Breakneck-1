@@ -24627,6 +24627,9 @@ AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
 		AllocateParticle( i );
 	}
 
+	//ts_explodeCreate = NULL;
+	ts_explodeDestroy = NULL;
+
 	switch (p_abType)
 	{
 	case DARK:
@@ -24634,8 +24637,10 @@ AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
 		animFactor = 2;
 		break;
 	case SHARD:
-		ts = owner->GetTileset("FX/key_128x128.png", 128, 128);
+		ts = owner->GetTileset("HUD/shard_get_128x128.png", 128, 128);
 		animFactor = 2;
+		//ts_explodeCreate = owner->GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
+		ts_explodeDestroy = owner->GetTileset("FX/shard_explode_02_256x256.png", 256, 256);
 		break;
 	default:
 		ts = owner->GetTileset("FX/absorb_64x64.png", 64, 64);
@@ -24660,7 +24665,7 @@ sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
 		return Vector2f(1920 - 100, 100);//owner->keyMarker->keyNumberNeededHUD->center;
 		break;
 	case SHARD:
-		return Vector2f(200, 100);
+		return Vector2f(286, 202);
 		break;
 	}
 }
@@ -24736,6 +24741,8 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 	}
 	case SHARD:
 	{
+		//owner->ActivateEffect()
+
 		startPos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
 		targetPos = GetTargetPos(SHARD);
 		//pos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
@@ -24778,6 +24785,8 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 		
 		t.rotate(360.f / numProjectiles);
 	}
+
+	
 }
 
 AbsorbParticles::SingleEnergyParticle::SingleEnergyParticle(AbsorbParticles *p_parent,
@@ -24832,9 +24841,9 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 	}	
 	case SHARD:
 	{
-		sub.width = 32;
-		sub.height = 32;
-		SetRectColor(va + tileIndex * 4, Color(Color::Red));
+		sub.width = 128;
+		sub.height = 128;
+		SetRectSubRect(va + tileIndex * 4, parent->ts->GetSubRect(0));
 		break;
 	}
 	
@@ -24924,6 +24933,11 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 			parent->owner->keyMarker->VibrateNumbers();
 			break;
 		}
+		case SHARD:
+		{
+			parent->owner->ActivateEffect(EffectLayer::UI_FRONT,
+				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 9, 3, true);
+		}
 		}
 		return false;
 	}
@@ -25009,7 +25023,7 @@ void AbsorbParticles::Draw(sf::RenderTarget *target)
 		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
 		break;
 	case SHARD:
-		target->draw(va, maxNumParticles * 4, sf::Quads);
+		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
 		break;
 	}
 	

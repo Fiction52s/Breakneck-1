@@ -51,9 +51,17 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	
 	//tr = NULL;
 	EditSession *session = EditSession::GetSession();
-
-	grassSize = session->grassSize;//64;//64;//22;
-	grassSpacing = session->grassSpacing;//-20;//-5;
+	if (session != NULL)
+	{
+		grassSize = session->grassSize;//64;//64;//22;
+		grassSpacing = session->grassSpacing;//-20;//-5;
+	}
+	else
+	{
+		grassSize = 0;
+		grassSpacing = 0;
+	}
+	
 
 	pShader = &session->polyShaders[terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation];
 }
