@@ -43,7 +43,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q, int world )
 		ts_explosion = owner->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
 		ts_explosion1 = NULL;
 		explosionLength = 15;
-		explosionAnimFactor = 2;
+		explosionAnimFactor = 3;
 		explosionYOffset = 0;
 		initialYOffset = 0;
 		break;

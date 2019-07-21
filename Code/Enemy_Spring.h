@@ -31,6 +31,7 @@ struct Spring : Enemy
 	sf::SoundBuffer *launchSoundBuf;
 	
 	void UpdateSprite();
+	void DirectKill();
 	
 	void ResetEnemy();
 	void ActionEnded();

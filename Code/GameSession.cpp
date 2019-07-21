@@ -7414,6 +7414,7 @@ int GameSession::Run()
 
 		DrawPlayers();
 		
+		absorbShardParticles->Draw(preScreenTex);
 		
 		DrawReplayGhosts();
 		
@@ -7669,7 +7670,7 @@ int GameSession::Run()
 
 		absorbDarkParticles->Draw(preScreenTex);
 
-		absorbShardParticles->Draw(preScreenTex);
+		//absorbShardParticles->Draw(preScreenTex);
 		
 		fader->Draw(preScreenTex);
 		swiper->Draw(preScreenTex);

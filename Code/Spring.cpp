@@ -124,6 +124,11 @@ void Spring::DebugDraw(sf::RenderTarget *target)
 	target->draw(debugSpeed);
 }
 
+void Spring::DirectKill()
+{
+
+}
+
 void Spring::ResetEnemy()
 {
 	dead = false;

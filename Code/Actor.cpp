@@ -3814,12 +3814,20 @@ void Actor::UpdatePrePhysics()
 	}
 	case SPRINGSTUNGLIDE:
 	{
-		if (!BasicAirAction())
+		if (!GlideAction())
 		{
 			if (springStunFrames == 0)
 			{
 				SetAction(JUMP);
 				frame = 1;
+				if (velocity.x < 0)
+				{
+					facingRight = false;
+				}
+				else if (velocity.x > 0)
+				{
+					facingRight = true;
+				}
 			}
 		}
 		else
@@ -3830,18 +3838,7 @@ void Actor::UpdatePrePhysics()
 	}
 	case GLIDE:
 	{
-		if (!BasicAirAction())
-		{
-			/*if (springStunFrames == 0)
-			{
-				SetAction(JUMP);
-				frame = 1;
-			}*/
-		}
-		else
-		{
-			//springStunFrames = 0;
-		}
+		GlideAction();
 		break;
 	}
 	case WALLCLING:
@@ -11536,6 +11533,34 @@ bool Actor::BasicAirAction()
 	if (TryWallJump()) return true;
 
 	if( AirAttack()) return true;
+
+	return false;
+}
+
+bool Actor::GlideAction()
+{
+	CheckBounceFlame();
+
+	if (TryDoubleJump()) return true;
+
+	if (TryAirDash()) return true;
+
+	//if (TryGlide()) return true;
+
+	if (TryWallJump()) return true;
+
+	if (AirAttack())
+	{
+		if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
+		else if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
+		return true;
+	}
 
 	return false;
 }
@@ -24665,8 +24690,11 @@ sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
 		return Vector2f(1920 - 100, 100);//owner->keyMarker->keyNumberNeededHUD->center;
 		break;
 	case SHARD:
-		return Vector2f(286, 202);
+	{
+		V2d playerPos = playerTarget->position;
+		return Vector2f(playerPos);//Vector2f(286, 202);
 		break;
+	}
 	}
 }
 
@@ -24743,7 +24771,7 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 	{
 		//owner->ActivateEffect()
 
-		startPos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
+		startPos = Vector2f(p_pos);//Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
 		targetPos = GetTargetPos(SHARD);
 		//pos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
 		//startPos = Vector2f(400, 200);
@@ -24935,7 +24963,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		}
 		case SHARD:
 		{
-			parent->owner->ActivateEffect(EffectLayer::UI_FRONT,
+			parent->owner->ActivateEffect(EffectLayer::IN_FRONT,
 				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 9, 3, true);
 		}
 		}

@@ -566,6 +566,7 @@ struct Actor : QuadTreeCollider,
 	void CheckBounceFlame();
 
 	bool BasicAirAction();
+	bool GlideAction();
 	bool BasicGroundAction( V2d &gNorm);
 	bool BasicSteepAction(V2d &gNorm);
 	bool BasicAirAttackAction();
