@@ -39,6 +39,15 @@ void Shard::SetupShardMaps()
 Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	:Enemy( p_owner, EnemyType::EN_SHARD, false, w+1 )
 {
+	for (int i = 0; i < 5; ++i)
+	{
+		triTest[i] = new SpinningTri(0 + i * PI / 2.5, Vector2f(pos));
+	}
+	laser = new Laser(0, Vector2f(pos));
+
+	mRing = new MovingRing(32, 20, 10, 200, 20, Vector2f(pos), Vector2f(pos),
+		Color::White, Color( 255, 0, 0, 10 ), 30);
+
 	world = w;
 	localIndex = li;
 
@@ -237,6 +246,13 @@ void Shard::DirectKill()
 
 void Shard::ResetEnemy()
 {
+	laser->Reset();
+	mRing->Reset();
+	for( int i = 0; i < 5; ++i )
+	{
+		triTest[i]->Reset();
+	}
+
 	totalFrame = 0;
 	sparklePool->Reset();
 	action = FLOAT;
@@ -285,7 +301,13 @@ void Shard::ProcessState()
 		position = startPos;
 		position.y += f * floatAmount;
 	}
-
+	for (int i = 0; i < 5; ++i)
+	{
+		triTest[i]->Update();
+	}
+	laser->Update();
+	mRing->Update();
+	
 	sparklePool->Update();
 
 	Vector2f sparkleCenter(position);
@@ -334,11 +356,21 @@ void Shard::UpdateSprite()
 
 void Shard::EnemyDraw( sf::RenderTarget *target )
 {
+	mRing->Draw(target);
+	laser->Draw(target);
+	for (int i = 0; i < 5; ++i)
+	{
+		triTest[i]->Draw(target);
+	}
+	
+
 	if (action != DISSIPATE)
 	{
 		target->draw(sprite);
 		sparklePool->Draw(target);
 	}
+
+	
 }
 
 void Shard::DrawMinimap( sf::RenderTarget *target )

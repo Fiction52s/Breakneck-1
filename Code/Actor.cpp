@@ -2282,7 +2282,6 @@ void Actor::Respawn()
 	kinMask->Reset();
 	SetDirtyAura(false);
 
-
 	glideTurnFactor = 0;
 	storedTrigger = NULL;
 	airTrigBehavior = AT_NONE;

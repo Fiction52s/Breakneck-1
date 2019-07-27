@@ -24,7 +24,7 @@ const uint_fast16_t GCC_VENDOR_ID = 0x57E;
 const uint_fast16_t GCC_PRODUCT_ID = 0x337;
 
 const uint_fast16_t MAYFLASH_VENDOR_ID = 0x79;
-const uint_fast16_t MAYFLASH_PRODUCT_ID = 0x1844;
+const uint_fast16_t MAYFLASH_PRODUCT_ID = 0x1843;
 
 
 

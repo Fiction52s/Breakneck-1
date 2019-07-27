@@ -8,6 +8,7 @@
 #include "PowerOrbs.h"
 #include "ImageText.h"
 #include "GoalExplosion.h"
+#include "MovingGeo.h"
 
 using namespace std;
 using namespace sf;
@@ -16,7 +17,7 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	:Enemy(owner, EnemyType::EN_FLOWERPOD, false, 0, false), ground(g),
 	edgeQuantity(q)
 {
-	healRing = new Ring;
+	healRing = new Ring(32);
 	
 
 	double width = 128; //112;
