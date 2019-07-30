@@ -413,13 +413,18 @@ void DeletePointsAction::Undo()
 
 CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
 {
-	EditSession *session = EditSession::GetSession();
+	//EditSession *session = EditSession::GetSession();
 	gate.reset( new GateInfo );
 	//GateInfo *gi = new GateInfo;
 
 	gate->SetType( type );
+	if (gate->type == Gate::SHARD)
+	{
+		gate->SetShard(info.shardWorld, info.shardIndex);
+	}
 
-	gate->edit = session;
+
+	//gate->edit = session;
 	gate->poly0 = info.poly0;
 	gate->vertexIndex0 = info.vertexIndex0;
 	gate->point0 = info.point0;
@@ -428,8 +433,6 @@ CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
 	gate->poly1 = info.poly1;
 	gate->vertexIndex1 = info.vertexIndex1;
 	gate->point1 = info.point1;
-
-	gate->reformBehindYou = info.reformBehindYou;
 	//gate->point1->gate = gate;
 
 

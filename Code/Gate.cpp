@@ -20,13 +20,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
-	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner ),
-	reformBehindYou( p_reformBehindYou )
+Gate::Gate( GameSession *p_owner, GateType p_type )
+	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner )
 {
 	visible = true;
 	blackGate = NULL;
-	reformBehindYou = true;
 	//breakFrame = 0;
 	flowFrame = 0;
 	//this could just be temporary
@@ -77,6 +75,11 @@ bool Gate::IsTwoWay()
 bool Gate::IsAlwaysUnlocked()
 {
 	return type == SECRET;
+}
+
+bool Gate::IsReformingType()
+{
+	return true;
 }
 
 void Gate::CalcAABB()
@@ -470,7 +473,7 @@ void Gate::Update()
 				//whatever length
 				if(frame == dissolveLength)
 				{
-					if( reformBehindYou )
+					if(IsReformingType())
 					{
 						gState = REFORM;
 						frame = 0;

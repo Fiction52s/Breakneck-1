@@ -15673,7 +15673,7 @@ void Actor::PhysicsResponse()
 
 			owner->ActivateZone(newZone);
 			
-			if( g->reformBehindYou )
+			if( g->IsReformingType())
 			{
 				owner->LockGate( g );
 				

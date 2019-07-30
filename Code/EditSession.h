@@ -369,9 +369,9 @@ typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
 
 struct GateInfo : ISelectable
 {
-
 	GateInfo();
 	void SetType( const std::string &gType );
+	void SetShard(int shardW, int shardI);
 	TerrainPoint *point0;
 	TerrainPoint *point1;
 	void Deactivate(EditSession *edit,
@@ -388,10 +388,14 @@ struct GateInfo : ISelectable
 	void WriteFile( std::ofstream &of );
 	void Draw( sf::RenderTarget *target );
 	void DrawPreview(sf::RenderTarget *target);
-	bool reformBehindYou;
 	int numKeysRequired;
 	sf::Color color;
 	Gate::GateType type;
+
+	int shardWorld;
+	int shardIndex;
+	sf::Sprite shardSpr;
+	sf::RectangleShape shardBG;
 	
 };
 
@@ -795,6 +799,12 @@ struct EditSession : GUIHandler, TilesetManager
 	Panel *messagePopup;
 	Panel *errorPopup;
 	Panel *bgPopup;
+	Panel *shardSelectPopup;
+
+	void CreateShardGridSelector( Panel *p,
+		sf::Vector2i &pos );
+	void GetShardWorldAndIndex(int selX, int selY,
+		int &w, int &li );
 
 	Panel *gateSelectorPopup;
 	Panel *terrainSelectorPopup;

@@ -224,7 +224,6 @@ GateInfo::GateInfo()
 	:ISelectable( ISelectable::GATE ), thickLine( sf::Quads, 4 )
 {
 	edit = EditSession::GetSession();
-	reformBehindYou = true;
 	numKeysRequired = -1;
 	thickLine[0].color = Color( 255, 0, 0, 255 );
 	thickLine[1].color = Color( 255, 0, 0, 255 );
@@ -261,7 +260,6 @@ void GateInfo::SetType( const std::string &gType )
 	else if( gType == "keygate" )
 	{
 		type = Gate::KEYGATE;
-		reformBehindYou = false;
 	}
 	else if( gType == "birdfight" )
 	{
@@ -270,11 +268,11 @@ void GateInfo::SetType( const std::string &gType )
 	else if( gType == "secret" )
 	{
 		type = Gate::SECRET;
-		//reformBehindYou = true;
 	}
 	else if (gType == "shard")
 	{
 		type = Gate::SHARD;
+		SetShard(0, 0);
 	}
 	else if( gType == "crawlerunlock" )
 	{
@@ -288,6 +286,18 @@ void GateInfo::SetType( const std::string &gType )
 	{
 		assert( false );
 	}
+}
+
+void GateInfo::SetShard(int shardW, int shardI)
+{
+	shardWorld = shardW;
+	shardIndex = shardI;
+
+	Tileset *ts_shard = Shard::GetShardTileset(shardWorld, edit);
+	shardSpr.setTexture(*ts_shard->texture);
+	shardSpr.setTextureRect(ts_shard->GetSubRect(shardIndex));
+	shardSpr.setOrigin(shardSpr.getLocalBounds().width / 2,
+		shardSpr.getLocalBounds().height / 2);
 }
 
 void GateInfo::WriteFile( ofstream &of )
@@ -320,16 +330,10 @@ void GateInfo::WriteFile( ofstream &of )
 	of << (int)type << " " << poly0->writeIndex << " " 
 		<< index0 << " " << poly1->writeIndex << " " << index1 << " ";
 
-
-	if( reformBehindYou )
+	if (type == Gate::SHARD)
 	{
-		of << "+reform" << endl;
+		of << shardWorld << " " << shardIndex << endl;
 	}
-	else
-	{
-		of << "-reform" << endl;
-	}
-		//endl;
 }
 
 void GateInfo::UpdateLine()
@@ -355,12 +359,12 @@ void GateInfo::UpdateLine()
 	}
 	else if( type == Gate::KEYGATE )
 	{
-		if( !reformBehindYou )
-			color = Color( 100, 100, 100 );
-		else
-		{
+		//if(!IsReformingType())
+		//	color = Color( 100, 100, 100 );
+		//else
+		//{
 			color = Color( 200, 200, 200 );
-		}
+		//}
 	}
 	else if( type == Gate::SECRET)
 	{
@@ -383,6 +387,9 @@ void GateInfo::UpdateLine()
 	thickLine[1].position = Vector2f( leftv1.x, leftv1.y );
 	thickLine[2].position = Vector2f( rightv1.x, rightv1.y );
 	thickLine[3].position = Vector2f( rightv0.x, rightv0.y );
+
+	V2d center = (dv0 + dv1) / 2.0;
+	shardSpr.setPosition(Vector2f(center));
 }
 
 void GateInfo::Draw( sf::RenderTarget *target )
@@ -399,6 +406,11 @@ void GateInfo::Draw( sf::RenderTarget *target )
 	target->draw( cs );
 
 	target->draw( thickLine );
+
+	if (type == Gate::SHARD)
+	{
+		target->draw(shardSpr);
+	}
 }
 
 void GateInfo::DrawPreview(sf::RenderTarget * target)
@@ -1385,28 +1397,12 @@ bool EditSession::OpenFile()
 			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
 			int numKeysRequired = -1;
 
-			string reformBehindYouStr;
-
 			is >> gType;
 			//is >> numKeysRequired;
 			is >> poly0Index;
 			is >> vertexIndex0;
 			is >> poly1Index;
 			is >> vertexIndex1;
-			is >> reformBehindYouStr;
-			bool reformBehindYou;
-			if (reformBehindYouStr == "+reform")
-			{
-				reformBehindYou = true;
-			}
-			else if (reformBehindYouStr == "-reform")
-			{
-				reformBehindYou = false;
-			}
-			else
-			{
-				assert(false);
-			}
 
 			int testIndex = 0;
 			PolyPtr terrain0(NULL);
@@ -1455,7 +1451,6 @@ bool EditSession::OpenFile()
 			//PolyPtr poly(  new TerrainPolygon( &grassTex ) );
 			GateInfoPtr gi( new GateInfo );
 			//GateInfo *gi = new GateInfo;
-			gi->reformBehindYou = reformBehindYou;
 			gi->numKeysRequired = numKeysRequired;
 			gi->poly0 = terrain0;
 			gi->poly1 = terrain1;
@@ -1463,6 +1458,14 @@ bool EditSession::OpenFile()
 			gi->vertexIndex1 = vertexIndex1;
 			gi->type = (Gate::GateType)gType;
 			gi->edit = this;
+
+			if (gType == Gate::SHARD)
+			{
+				int sw, si;
+				is >> sw;
+				is >> si;
+				gi->SetShard(sw, si);
+			}
 
 			int index = 0;
 			for( TerrainPoint *curr = gi->poly0->pointStart; curr != NULL; curr = curr->next )
@@ -4752,6 +4755,7 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
+	testGateInfo.edit = EditSession::GetSession();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVis = mainMenu->GetMouseVisible();
 
@@ -4778,6 +4782,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	w->setView( v );
 
 	modifyGate = NULL;
+
+
+	shardSelectPopup = CreatePopupPanel("shardselector");
 
 	confirm = CreatePopupPanel( "confirmation" );
 	validityRadius = 4;
@@ -10225,7 +10232,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				{
 					GridSelectPop( "gateselect" );
 
-					if( tempGridResult == "delete" )
+					string gateResult = tempGridResult;
+
+					if(gateResult == "delete" )
 					{
 						Action * action = new DeleteGateAction( modifyGate );
 						action->Perform();
@@ -10240,8 +10249,20 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					else
 					{
 
-						Action * action = new ModifyGateAction( modifyGate, tempGridResult );
+						Action * action = new ModifyGateAction(modifyGate, gateResult);
 						action->Perform();
+
+						if (gateResult == "shard")
+						{
+							GridSelectPop("shardselector");
+
+							int sw, si;
+							GetShardWorldAndIndex(tempGridX, tempGridY, sw, si);
+							modifyGate->SetShard(sw, si);
+							//string shardStr = tempGridResult;
+						}
+
+						
 						doneActionStack.push_back( action );
 
 						//modifyGate->SetType( tempGridResult );
@@ -10299,17 +10320,32 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 					if( result )
 					{
-						GridSelectPop( "gateselect" );
+						GridSelectPop("gateselect");
+						string gateResult = tempGridResult;
 
-						if( tempGridResult == "delete" )
+						if (gateResult == "delete")
 						{
-
 						}
 						else
 						{
-							Action * action = new CreateGateAction( testGateInfo, tempGridResult );
+
+							if (gateResult == "shard")
+							{
+								GridSelectPop("shardselector");
+
+								int sw, si;
+								GetShardWorldAndIndex(tempGridX, tempGridY, sw, si);
+								testGateInfo.SetShard(sw, si);
+								//string shardStr = tempGridResult;
+							}
+
+							Action * action = new CreateGateAction(testGateInfo, gateResult);
 							action->Perform();
-							doneActionStack.push_back( action );
+
+							
+
+
+							doneActionStack.push_back(action);
 						}
 					}
 					else
@@ -11107,6 +11143,13 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		tempGridResult = "delete";
 	}
+	else if (p == shardSelectPopup)
+	{
+		if (b->name == "ok")
+		{
+			tempGridResult = "shardclose";
+		}
+	}
 	else
 	{
 		if (b->name == "ok")
@@ -11290,7 +11333,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 			}
 		}
 	}
-	else if (panel->name == "shard_options")
+	else if (panel->name == "shard_options" )
 	{
 		int world = gs->selectedX / 11;
 		int realX = gs->selectedX % 11;
@@ -11312,6 +11355,13 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 		}
 		shard->SetShard(world, realX, realY);
 
+		panel->labels["shardtype"]->setString(name);
+	}
+	else if (panel->name == "shardselector")
+	{
+		tempGridResult = name;
+		tempGridX = gs->selectedX;
+		tempGridY = gs->selectedY;
 		panel->labels["shardtype"]->setString(name);
 	}
 }
@@ -12790,6 +12840,10 @@ void EditSession::GridSelectPop( const std::string &type )
 	{
 		panel = bgPopup;
 	}
+	else if (type == "shardselector")
+	{
+		panel = shardSelectPopup;//types["shard"]->panel;
+	}
 
 	assert( panel != NULL );
 	//cout << "grid select popupppp" << endl;
@@ -12808,7 +12862,7 @@ void EditSession::GridSelectPop( const std::string &type )
 
 	preScreenTex->setView( uiView );
 
-	Vector2i pixelPos = sf::Mouse::getPosition( *w );
+	Vector2i pixelPos = Vector2i(960, 540) - Vector2i( panel->size.x / 2, panel->size.y / 2 );//sf::Mouse::getPosition( *w );
 	pixelPos.x *= 1920 / w->getSize().x;
 	pixelPos.y *= 1920 / w->getSize().y;
 	//pixelPos = Vector2i( 960, 540 );
@@ -12830,9 +12884,20 @@ void EditSession::GridSelectPop( const std::string &type )
 		uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 		w->clear();
 
-		if( tempGridResult != "nothing" )
+		bool shardClose = tempGridResult == "shardclose";
+		if (panel != shardSelectPopup)
 		{
-			return;
+			if (tempGridResult != "nothing")
+			{
+				return;
+			}
+		}
+		else
+		{
+			if (tempGridResult == "shardclose")
+			{
+				return;
+			}
 		}
 
 		while( w->pollEvent( ev ) )
@@ -12945,7 +13010,13 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	{
 		p = new Panel("bg_popup", 1500, 600, this);
 	}
-
+	else if (type == "shardselector")
+	{
+		p = new Panel("shardselector", 700, 1080, this);
+		p->AddLabel("shardtype", Vector2i(20, 900), 24, "SHARD_W1_TEACH_JUMP");
+		CreateShardGridSelector(p, Vector2i(0, 0));
+		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
+	}
 
 	if( p != NULL )
 		allPopups.push_back(p);
@@ -13930,6 +14001,63 @@ bool EditSession::HoldingControl()
 		IsKeyPressed(Keyboard::RControl)));
 }
 
+void EditSession::CreateShardGridSelector( Panel *p, sf::Vector2i &pos )
+{
+	int xSize = 11;
+	int ySize = 2;
+
+	GridSelector *gs = p->AddGridSelector("shardselector", pos, xSize, ySize * 7, 64, 64, true, true);
+	Sprite spr;
+
+
+	ts_shards[0] = GetTileset("Shard/shards_w1_48x48.png", 48, 48);
+	ts_shards[1] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+	ts_shards[2] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+	ts_shards[3] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+	ts_shards[4] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+	ts_shards[5] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+	ts_shards[6] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
+
+
+	Tileset *ts_currShards;
+	int sInd = 0;
+
+	for (int w = 0; w < 7; ++w)
+	{
+		ts_currShards = ts_shards[w];
+		spr.setTexture(*ts_currShards->texture);
+		for (int y = 0; y < ySize; ++y)
+		{
+			for (int x = 0; x < xSize; ++x)
+			{
+				sInd = y * xSize + x;
+				spr.setTextureRect(ts_currShards->GetSubRect(sInd));
+				int shardT = (sInd + (xSize * ySize) * w);
+				if (shardT >= SHARD_Count)
+				{
+					gs->Set(x, y + ySize * w, spr, "---"); //need a way to set the names later
+				}
+				else
+				{
+					gs->Set(x, y + ySize * w, spr, Shard::GetShardString((ShardType)shardT));
+				}
+
+			}
+		}
+	}
+}
+
+void EditSession::GetShardWorldAndIndex(int selX, int selY,
+	int &w, int &li)
+{
+	int world = selX / 11;
+	int realX = selX % 11;
+	int realY = selY;
+
+	w = world;
+	li = realX + realY * 11;
+}
+
 Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys)
 {
 	if (!(IsKeyPressed(Keyboard::LShift) ||
@@ -14683,47 +14811,7 @@ Panel *ActorType::CreatePanel()
 		p = new Panel("shard_options", 700, 1080, edit);
 		p->AddLabel("shardtype", Vector2i(20, 900), 24, "SHARD_W1_TEACH_JUMP");
 
-		int xSize = 11;
-		int ySize = 2;
-		//GridSelector *gs = new GridSelector(Vector2i(0, 0), 3, 7, 64, 64, true, true, p);
-		GridSelector *gs = p->AddGridSelector("shardselector", Vector2i(0, 0), xSize, ySize * 7, 64, 64, true, true);
-		Sprite spr;
-
-		edit->ts_shards[0] = edit->GetTileset("Shard/shards_w1_48x48.png", 48, 48);
-		edit->ts_shards[1] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		edit->ts_shards[2] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		edit->ts_shards[3] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		edit->ts_shards[4] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		edit->ts_shards[5] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-		edit->ts_shards[6] = edit->GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-
-
-		Tileset *ts_currShards;
-		int sInd = 0;
-
-		for (int w = 0; w < 7; ++w)
-		{
-			ts_currShards = edit->ts_shards[w];
-			spr.setTexture(*ts_currShards->texture);
-			for (int y = 0; y < ySize; ++y)
-			{
-				for (int x = 0; x < xSize; ++x)
-				{
-					sInd = y * xSize + x;
-					spr.setTextureRect(ts_currShards->GetSubRect(sInd));
-					int shardT = (sInd + (xSize * ySize) * w);
-					if (shardT >= SHARD_Count)
-					{
-						gs->Set(x, y + ySize * w, spr, "---"); //need a way to set the names later
-					}
-					else
-					{
-						gs->Set(x, y + ySize * w, spr, Shard::GetShardString((ShardType)shardT));
-					}
-
-				}
-			}
-		}
+		edit->CreateShardGridSelector(p, Vector2i(0, 0));
 		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
 	}
 

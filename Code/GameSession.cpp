@@ -1593,24 +1593,6 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		is >> vertexIndex0;
 		is >> poly1Index;
 		is >> vertexIndex1;
-		is >> behindyouStr;
-
-		
-		
-		bool reformBehindYou;
-		if( behindyouStr == "+reform" )
-		{
-			reformBehindYou = true;
-		}
-		else if( behindyouStr == "-reform" )
-		{
-			reformBehindYou = false;
-		}
-		else
-		{
-			cout << "behind you error: " << behindyouStr << endl;
-			assert( false );
-		}
 
 		Edge *edge0 = edges[polyIndex[poly0Index] + vertexIndex0];
 		Edge *edge1 = edges[polyIndex[poly1Index] + vertexIndex1];
@@ -1619,6 +1601,9 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		V2d point1 = edge1->v0;
 
 		Gate::GateType gateType = (Gate::GateType)gType;
+
+		
+
 		//if( gateType == Gate::CRITICAL )
 		//{
 		//	cout << "MAKING NEW CRITICAL" << endl;
@@ -1635,7 +1620,15 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		//	continue;
 		//}
 
-		Gate * gate = new Gate( this, gateType, reformBehindYou );
+		Gate * gate = new Gate( this, gateType);
+
+		if (gType == Gate::SHARD)
+		{
+			int sw, si;
+			is >> sw;
+			is >> si;
+			gate->SetShard(sw, si);
+		}
 
 		if (!visibleTerrain[poly0Index] || !visibleTerrain[poly1Index])
 		{

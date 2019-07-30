@@ -37,11 +37,10 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	
 	bool IsTwoWay();
 	bool IsAlwaysUnlocked();
+	bool IsReformingType();
 	//bool keyGate;
 	//int requiredKeys;
-	bool reformBehindYou;
-	Gate( GameSession *owner, GateType type,
-		bool reformBehindYou );
+	Gate( GameSession *owner, GateType type );
 	int dissolveLength;
 	~Gate();
 	void Reset();
