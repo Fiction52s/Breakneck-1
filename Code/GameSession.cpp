@@ -475,6 +475,11 @@ void GameSession::Cleanup()
 		delete mini;
 	}
 
+	if (shardsCapturedField != NULL)
+	{
+		delete shardsCapturedField;
+	}
+
 	if (adventureHUD != NULL)
 	{
 		delete adventureHUD;
@@ -5507,7 +5512,7 @@ bool GameSession::Load()
 	hitboxManager = new HitboxManager;
 
 	
-
+	shardsCapturedField = new BitField(32 * 5);
 	
 
 	//return true;
@@ -8565,6 +8570,8 @@ void GameSession::Init()
 	fader = mainMenu->fader;
 	swiper = mainMenu->swiper;
 
+	shardsCapturedField = NULL;
+
 	mini = NULL;
 
 	level = NULL;
@@ -9215,9 +9222,9 @@ void GameSession::DrawActiveSequence(EffectLayer layer )
 	}
 }
 
-void GameSession::SuppressEnemyKeys( Gate::GateType gType )
+void GameSession::SuppressEnemyKeys( Gate *g )
 {
-	if (gType == Gate::SECRET)
+	if( g->IsTwoWay() )
 		return;
 
 	for( list<Enemy*>::iterator it = currentZone->allEnemies.begin();
@@ -10030,6 +10037,8 @@ void GameSession::RestartLevel()
 		(*it)->Reset();
 	}
 
+	shardsCapturedField->Reset();
+
 	nextFrameRestart = false;
 	//accumulator = TIMESTEP + .1;
 	currBroadcast = NULL;
@@ -10213,6 +10222,17 @@ void GameSession::RemoveGravityGrassFromExplodeList(Grass *g)
 	}
 }
 
+bool GameSession::IsShardCaptured(ShardType shardType)
+{
+	if (saveFile != NULL)
+	{
+		return saveFile->ShardIsCaptured(shardType);
+	}
+	else
+	{
+		return shardsCapturedField->GetBit(shardType);
+	}
+}
 
 void GameSession::UpdateExplodingGravityGrass()
 {

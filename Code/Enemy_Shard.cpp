@@ -238,6 +238,7 @@ void Shard::DissipateOnTouch()
 void Shard::Capture()
 {
 	owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
+	owner->shardsCapturedField->SetBit(shardType, true);
 	if (owner->saveFile != NULL)
 	{
 		assert(!owner->saveFile->shardField.GetBit(shardType));

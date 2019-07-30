@@ -6,6 +6,7 @@
 #include "MapHeader.h"
 #include "Minimap.h"
 #include "Enemy_Shard.h"
+#include "SaveFile.h"
 
 using namespace std;
 using namespace sf;
@@ -80,6 +81,54 @@ bool Gate::IsAlwaysUnlocked()
 bool Gate::IsReformingType()
 {
 	return true;
+}
+
+bool Gate::CanUnlock()
+{
+	if (gState == Gate::OPEN)
+	{
+		return false;
+	}
+
+	bool unlockableState = false;
+	if (gState != Gate::LOCKFOREVER && gState != Gate::REFORM && gState != Gate::HARD)
+	{
+		unlockableState = true;
+	}
+
+	if (unlockableState)
+	{
+		if (IsAlwaysUnlocked())
+			return true;
+
+		switch (type)
+		{
+		case BLACK:
+			return false;
+		case KEYGATE:
+		{
+			//bool enoughKeys = (owner->keyMarker->keysRequired == 0);
+			//if (enoughKeys)
+				return true;
+			break;
+		}
+		case SHARD:
+		{
+			//double len = length(owner->GetPlayer(0)->position - GetCenter());
+			//if (owner->IsShardCaptured( shardType )// && len < 300 )
+			return true;
+			break;
+		}
+		}
+
+	}
+
+	return false;
+}
+
+V2d Gate::GetCenter()
+{
+	return (edgeA->v0 + edgeA->v1) / 2.0;
 }
 
 void Gate::CalcAABB()
@@ -173,6 +222,11 @@ void Gate::Draw( sf::RenderTarget *target )
 		target->draw(nodes, 8, sf::Quads, ts_node->texture);
 	}
 
+	if (type == Gate::SHARD)
+	{
+		target->draw(shardSprite);
+	}
+
 }
 
 void Gate::SetShard(int w, int li)
@@ -182,9 +236,12 @@ void Gate::SetShard(int w, int li)
 	shardWorld = w;
 	shardIndex = li;
 	ts_shard = Shard::GetShardTileset(shardWorld, &owner->tm);
-	shardSprite.setColor(Color::Black);
+	//shardSprite.setColor(Color::Black);
 	shardSprite.setTexture(*ts_shard->texture);
 	shardSprite.setTextureRect(ts_shard->GetSubRect(shardIndex));
+	shardSprite.setOrigin(shardSprite.getLocalBounds().width / 2, shardSprite.getLocalBounds().height / 2);
+
+	shardType = Shard::GetShardType(shardWorld, shardIndex);
 }
 
 void Gate::UpdateLine()
@@ -216,6 +273,10 @@ void Gate::UpdateLine()
 		frame = 0;
 
 		tileHeight = 128;
+
+		V2d center = (edgeA->v0 + edgeA->v1) / 2.0;
+		shardSprite.setPosition(Vector2f(center));
+		break;
 	}
 	case CRAWLER_UNLOCK:
 	case SECRET:
@@ -495,7 +556,7 @@ void Gate::Update()
 					{
 						SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(6));
 					}*/
-					if (type == SECRET)
+					if (IsTwoWay())
 					{
 						gState = SOFT;
 						frame = 0;
@@ -550,7 +611,7 @@ void Gate::Update()
 		flowFrame = 0;
 	}
 
-	if( type != BLACK && type != CRAWLER_UNLOCK )
+	if( type != BLACK && type != CRAWLER_UNLOCK && type != SHARD)
 	{
 		Zone *currZone = owner->currentZone;
 		bool enoughKeys = (owner->keyMarker->keysRequired == 0);
@@ -586,6 +647,15 @@ void Gate::Update()
 			{
 				lw->Reset();
 			}
+		}
+	}
+	else if (type == SHARD)
+	{
+		double len = length(owner->GetPlayer(0)->position - GetCenter());
+		if (gState == HARD && owner->IsShardCaptured( shardType ) && len < 300 )
+		{
+			gState = SOFTEN;
+			frame = 0;
 		}
 	}
 

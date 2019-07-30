@@ -55,6 +55,8 @@ struct Fader;
 struct Swiper;
 
 struct Barrier;
+
+struct BitField;
 struct PoiInfo
 {
 	PoiInfo( const std::string &name, sf::Vector2i &p );
@@ -546,6 +548,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	AbsorbParticles *absorbShardParticles;
 	EnemyParamsManager *eHitParamsMan;
 
+	bool IsShardCaptured(ShardType sType);
+
 	static bool sLoad( GameSession *gs );
 	bool Load();	
 	RaceFight *raceFight;
@@ -616,6 +620,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	PauseMenu *pauseMenu;
 
 	SaveFile *saveFile;
+	BitField *shardsCapturedField;
 
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
 	SoundNodeList * soundNodeList;
@@ -693,7 +698,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool LoadEnemies( std::ifstream &is,
 		std::map<int, int> &polyIndex);
 	std::list<Enemy*> fullEnemyList;
-	void SuppressEnemyKeys( Gate::GateType gType );
+	void SuppressEnemyKeys( Gate *g );
 
 	sf::RenderWindow *window;
 	std::string currentFile;

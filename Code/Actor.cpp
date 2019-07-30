@@ -15646,7 +15646,7 @@ void Actor::PhysicsResponse()
 
 			//lock all the gates from this zone now that I chose one
 			
-			owner->SuppressEnemyKeys(g->type);
+			owner->SuppressEnemyKeys(g);
 
 			Zone *oldZone;
 			Zone *newZone;
@@ -23881,44 +23881,45 @@ void Actor::SetActionGrind()
 
 bool Actor::CanUnlockGate( Gate *g )
 {
-	//if( g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER 
-	//	|| g->gState == Gate::DISSOLVE
-	//	|| g->gState )
-	if( g->gState == Gate::OPEN )//!g->locked )
-	{
-		cout << "return early" << endl;
-		return false;
-	}
+	return g->CanUnlock();
+	////if( g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER 
+	////	|| g->gState == Gate::DISSOLVE
+	////	|| g->gState )
+	//if( g->gState == Gate::OPEN )//!g->locked )
+	//{
+	//	cout << "return early" << endl;
+	//	return false;
+	//}
 
-	bool canUnlock = false;
+	//bool canUnlock = false;
 
-	bool enoughKeys = (owner->keyMarker->keysRequired == 0);
-	if (g->IsAlwaysUnlocked())
-	{
-		enoughKeys = true;
-	}
-	//cout << "this gate is still locked" << endl;
+	//bool enoughKeys = (owner->keyMarker->keysRequired == 0);
+	//if (g->IsAlwaysUnlocked())
+	//{
+	//	enoughKeys = true;
+	//}
+	////cout << "this gate is still locked" << endl;
 
-	/*if( g->type == Gate::GREY && g->gState != Gate::LOCKFOREVER
-		&& g->gState != Gate::REFORM )
-	{
-		cout << "gstate: " << (int)g->gState << endl;
-		canUnlock = true;
-	}
-	else */
-	if( g->type == Gate::BLACK  )//|| g->type == Gate::CRAWLER_UNLOCK || g->type == Gate::NEXUS1_UNLOCK )
-	{
-		canUnlock = false;
-	}
-	else if( enoughKeys && g->gState != Gate::LOCKFOREVER
-		&& g->gState != Gate::REFORM && g->gState != Gate::HARD )
-	{
-		//cout << "have keys: " << numKeys <<
-		//	"need keys: " << g->requiredKeys << endl;
-		canUnlock = true;
-	}
+	///*if( g->type == Gate::GREY && g->gState != Gate::LOCKFOREVER
+	//	&& g->gState != Gate::REFORM )
+	//{
+	//	cout << "gstate: " << (int)g->gState << endl;
+	//	canUnlock = true;
+	//}
+	//else */
+	//if( g->type == Gate::BLACK  )//|| g->type == Gate::CRAWLER_UNLOCK || g->type == Gate::NEXUS1_UNLOCK )
+	//{
+	//	canUnlock = false;
+	//}
+	//else if( g->type == Gate::KEYGATE && g->gState != Gate::LOCKFOREVER
+	//	&& g->gState != Gate::REFORM && g->gState != Gate::HARD )
+	//{
+	//	//cout << "have keys: " << numKeys <<
+	//	//	"need keys: " << g->requiredKeys << endl;
+	//	canUnlock = true;
+	//}
 
-	return canUnlock;
+	//return canUnlock;
 }
 
 bool Actor::CaptureMonitor( Monitor * m )

@@ -3,6 +3,7 @@
 
 #include "Physics.h"
 #include "Tileset.h"
+#include "ShardTypes.h"
 
 struct GameSession;
 struct Zone;
@@ -38,6 +39,8 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	bool IsTwoWay();
 	bool IsAlwaysUnlocked();
 	bool IsReformingType();
+	bool CanUnlock();
+	V2d GetCenter();
 	//bool keyGate;
 	//int requiredKeys;
 	Gate( GameSession *owner, GateType type );
@@ -101,6 +104,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	Tileset *ts_shard;
 	int shardWorld;
 	int shardIndex;
+	ShardType shardType;
 	
 };
 
