@@ -12,6 +12,17 @@ struct Bat : Enemy, LauncherEnemy
 		RETURN,
 	};
 
+	enum Visual
+	{
+		FLAP,
+		KICK,
+		V_Count
+	};
+
+	Visual currVisual;
+	int visualLength[V_Count];
+	int visualMult[V_Count];
+	int visFrame;
 
 	Action action;
 	MovementSequence testSeq;
@@ -36,6 +47,7 @@ struct Bat : Enemy, LauncherEnemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
 	
+	void IHitPlayer(int index = 0);
 	//void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void UpdateHitboxes();
@@ -70,6 +82,9 @@ struct Bat : Enemy, LauncherEnemy
 	int hitstunFrames;
 	int animationFactor;
 	bool facingRight;
+
+	Tileset *ts_aura;
+	sf::Sprite auraSprite;
 };
 
 #endif

@@ -16,6 +16,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		KEYGATE,
 		CRAWLER_UNLOCK,
 		SECRET,
+		SHARD,
 		Count
 	};
 
@@ -34,6 +35,8 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		State_Count
 	};
 	
+	bool IsTwoWay();
+	bool IsAlwaysUnlocked();
 	//bool keyGate;
 	//int requiredKeys;
 	bool reformBehindYou;
@@ -74,6 +77,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 
 	void Draw( sf::RenderTarget *target );
 	void CalcAABB();
+	void SetShard(int w, int li);
 
 	sf::Rect<double> aabb;
 
@@ -93,7 +97,11 @@ struct Gate : public QuadTreeEntrant//: public Edge
 
 	Gate *activeNext;
 	//
-
+	sf::Sprite shardSprite;
+	sf::Sprite shardBGSprite;
+	Tileset *ts_shard;
+	int shardWorld;
+	int shardIndex;
 	
 };
 

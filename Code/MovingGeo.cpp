@@ -1,5 +1,6 @@
 #include "MovingGeo.h"
 #include "VectorMath.h"
+#include <assert.h>
 
 using namespace std;
 using namespace sf;
@@ -18,6 +19,90 @@ sf::Color GetBlendColor(
 	return blendColor;
 }
 
+
+MovingGeo::MovingGeo()
+	:points( NULL )
+{
+
+}
+
+MovingGeo::~MovingGeo()
+{
+
+}
+
+MovingGeoGroup::~MovingGeoGroup()
+{
+	delete[] points;
+}
+
+void MovingGeo::SetColor(sf::Color c)
+{
+	assert(points != NULL);
+	color = c;
+	int numPoints = GetNumPoints();
+	for (int i = 0; i < numPoints; ++i)
+	{
+		points[i].color = color;
+	}
+}
+
+void MovingGeo::SetPoints(sf::Vertex *p)
+{
+	assert(points == NULL);
+	points = p;
+}
+
+void MovingGeoGroup::Reset()
+{
+	for (auto it = geoList.begin(); it != geoList.end(); ++it)
+	{
+		(*it)->Reset();
+	}
+}
+
+void MovingGeoGroup::Update()
+{
+	for (auto it = geoList.begin(); it != geoList.end(); ++it)
+	{
+		(*it)->Update();
+	}
+}
+
+void MovingGeoGroup::Draw(sf::RenderTarget *target)
+{
+	target->draw(points, numTotalPoints, sf::Quads);
+}
+
+void MovingGeoGroup::AddGeo(MovingGeo *mg)
+{
+	geoList.push_back(mg);
+}
+
+void MovingGeoGroup::Init()
+{
+	numTotalPoints = 0;
+	for (auto it = geoList.begin(); it != geoList.end(); ++it)
+	{
+		numTotalPoints += (*it)->GetNumPoints();
+	}
+
+	points = new Vertex[numTotalPoints];
+
+	sf::Vertex *curr = points;
+	int np;
+	for (auto it = geoList.begin(); it != geoList.end(); ++it)
+	{
+		np = (*it)->GetNumPoints();
+		(*it)->SetPoints(curr);
+		curr += np;
+		(*it)->Init();
+	}
+}
+
+
+
+
 SpinningTri::SpinningTri(float p_startAngle, sf::Vector2f &p_center)
 	:center( p_center ), startAngle( p_startAngle )
 {
@@ -27,18 +112,16 @@ SpinningTri::SpinningTri(float p_startAngle, sf::Vector2f &p_center)
 	stateLength[S_ROTATE_AND_FADE] = 45;
 	
 	maxLength = 2000;
-	tri[0].position = center;
-	Reset();
 	width = 100;
 	startWidth = 100;
 	finalWidth = 200;
-	startColor = Color::White;
+	startColor = Color::Blue;
 	fadeColor = Color(40, 40, 40, 80);
 }
 
 void SpinningTri::Reset()
 {
-	currColor = startColor;
+	color = startColor;
 	length = 0;
 	frame = 0;
 	state = S_EXPANDING;
@@ -96,10 +179,12 @@ void SpinningTri::Update()
 
 	Vector2f end = center + dir * length;
 
-	tri[1].position = end + norm * (width / 2.f);
-	tri[2].position = end - norm * (width / 2.f);
+	points[0].position = center;
+	points[1].position = center;
+	points[2].position = end + norm * (width / 2.f);
+	points[3].position = end - norm * (width / 2.f);
 
-	SetColor(currColor);
+	SetColor(color);
 	++frame;
 }
 
@@ -111,29 +196,18 @@ void SpinningTri::SetColorChange(sf::Color &startC,
 	blendColor.g = startC.g * (1.0 - progress) + endC.g * (progress);
 	blendColor.b = startC.b * (1.0 - progress) + endC.b * (progress);
 	blendColor.a = startC.a * (1.0 - progress) + endC.a * (progress);
-	currColor = blendColor;
-}
-
-void SpinningTri::SetColor(sf::Color c)
-{
-	for (int i = 0; i < 3; ++i)
-	{
-		tri[i].color = c;
-	}
+	color = blendColor;
 }
 
 void SpinningTri::SetColorGrad(sf::Color startCol,
 	sf::Color endCol)
 {
-	tri[0].color = startCol;
-	tri[1].color = endCol;
-	tri[2].color = endCol;
+	points[0].color = startCol;
+	points[1].color = startCol;
+	points[2].color = endCol;
+	points[3].color = endCol;
 }
 
-void SpinningTri::Draw(RenderTarget *target)
-{
-	//target->draw(tri, 3, sf::Triangles);
-}
 
 Laser::Laser(float p_startAngle, sf::Vector2f &p_center)
 	:center(p_center), startAngle(p_startAngle)
@@ -153,16 +227,14 @@ Laser::Laser(float p_startAngle, sf::Vector2f &p_center)
 	shrinkWidth = 150;
 
 	startColor = Color::White;
-
-	Reset();
 }
 
 void Laser::Reset()
 {
 	SetHeight(0);
 	SetWidth(startWidth);
-	currColor = startColor;
-	SetColor(currColor);
+	color = startColor;
+	SetColor(color);
 	height = 0;
 	width = 100;
 	frame = 0;
@@ -176,15 +248,15 @@ void Laser::SetHeight(float h)
 	height = h;
 	float top = center.y - height / 2.f;
 	float bot = center.y + height / 2.f;
-	quad[0].position.y = top;
-	quad[1].position.y = top;
-	quad[2].position.y = bot;
-	quad[3].position.y = bot;
+	points[0].position.y = top;
+	points[1].position.y = top;
+	points[2].position.y = bot;
+	points[3].position.y = bot;
 
-	quad[4].position.y = top;
-	quad[5].position.y = top;
-	quad[6].position.y = bot;
-	quad[7].position.y = bot;
+	points[4].position.y = top;
+	points[5].position.y = top;
+	points[6].position.y = bot;
+	points[7].position.y = bot;
 }
 
 void Laser::SetWidth(float w)
@@ -192,15 +264,15 @@ void Laser::SetWidth(float w)
 	width = w;
 	float left = center.x - width / 2.f;
 	float right = center.x + width / 2.f;
-	quad[0].position.x = left;
-	quad[3].position.x = left;
-	quad[1].position.x = right;
-	quad[2].position.x = right;
+	points[0].position.x = left;
+	points[3].position.x = left;
+	points[1].position.x = right;
+	points[2].position.x = right;
 
-	quad[4].position.x = center.x;
-	quad[7].position.x = center.x;
-	quad[5].position.x = right + 20;
-	quad[6].position.x = right + 20;
+	points[4].position.x = center.x;
+	points[7].position.x = center.x;
+	points[5].position.x = right + 20;
+	points[6].position.x = right + 20;
 	
 }
 
@@ -269,59 +341,57 @@ void Laser::Update()
 void Laser::SetColorChange(sf::Color &startC,
 	sf::Color &endC, float progress)
 {
-	currColor = GetBlendColor( startC, endC, progress );
+	color = GetBlendColor( startC, endC, progress );
 }
 
 void Laser::SetColor(sf::Color c)
 {
 	for (int i = 0; i < 4; ++i)
 	{
-		quad[i].color = c;
+		points[i].color = c;
 	}
 
 	Color test = Color::Cyan;
 	test.a = 10;
 	for (int i = 0; i < 4; ++i)
 	{
-		quad[i+4].color = test;
+		points[i+4].color = test;
 	}
 
 }
 
-void Laser::Draw(RenderTarget *target)
-{
-	//target->draw(quad, 8, sf::Quads);
-}
-
-//const int Ring::circlePoints = 32;
 
 Ring::Ring(int p_circlePoints)
 	:innerRadius(100), outerRadius(200), shader(NULL), circlePoints(p_circlePoints)
 {
+	ownsPoints = false;
 	position = Vector2f(0, 0);
 	color = Color::White;
-	circle = new Vertex[circlePoints * 4];
-	UpdatePoints();
 }
 
 Ring::~Ring()
 {
-	delete[] circle;
+	if (ownsPoints)
+	{
+		delete[]points;
+	}
+}
+
+void Ring::CreatePoints()
+{
+	points = new Vertex[circlePoints * 4];
+	ownsPoints = true;
+}
+
+void Ring::SetPoints(sf::Vertex *p)
+{
+	points = p;
+	UpdatePoints();
 }
 
 void Ring::SetShader(sf::Shader *sh)
 {
 	shader = sh;
-}
-
-void Ring::SetColor(sf::Color c)
-{
-	color = c;
-	for (int i = 0; i < circlePoints * 4; ++i)
-	{
-		circle[i].color = color;
-	}
-	
 }
 
 void Ring::Set(sf::Vector2f pos,
@@ -340,13 +410,13 @@ void Ring::UpdatePoints()
 	Vector2f offsetOuter(0, -outerRadius);
 	for (int i = 0; i < circlePoints; ++i)
 	{
-		circle[i * 4 + 0].position = position + tr.transformPoint(offsetInner);
-		circle[i * 4 + 1].position = position + tr.transformPoint(offsetOuter);
+		points[i * 4 + 0].position = position + tr.transformPoint(offsetInner);
+		points[i * 4 + 1].position = position + tr.transformPoint(offsetOuter);
 
 		tr.rotate(360.f / circlePoints);
 
-		circle[i * 4 + 2].position = position + tr.transformPoint(offsetOuter);
-		circle[i * 4 + 3].position = position + tr.transformPoint(offsetInner);
+		points[i * 4 + 2].position = position + tr.transformPoint(offsetOuter);
+		points[i * 4 + 3].position = position + tr.transformPoint(offsetInner);
 	}
 }
 
@@ -354,11 +424,11 @@ void Ring::Draw(sf::RenderTarget *target)
 {
 	if (shader == NULL)
 	{
-		target->draw(circle, circlePoints * 4, sf::Quads);
+		target->draw(points, circlePoints * 4, sf::Quads);
 	}
 	else
 	{
-		target->draw(circle, circlePoints * 4, sf::Quads, shader);
+		target->draw(points, circlePoints * 4, sf::Quads, shader);
 	}
 	
 }
@@ -373,23 +443,21 @@ MovingRing::MovingRing(int p_circlePoints,
 	sf::Color p_startCol,
 	sf::Color p_endCol,
 	int p_totalFrames)
-	:startInner(p_startInner), startWidth(p_startWidth), endInner(p_endInner), endWidth(p_endWidth),
+	:Ring( p_circlePoints ), startInner(p_startInner), startWidth(p_startWidth), endInner(p_endInner), endWidth(p_endWidth),
 	startPos(p_startPos), endPos(p_endPos), totalFrames( p_totalFrames ),
 	startColor(p_startCol), endColor(p_endCol)
 {
-	ring = new Ring(p_circlePoints);
-	Reset();
 }
 
 void MovingRing::Reset()
 {
-	ring->Set(startPos, startInner, startWidth);
+	Set(startPos, startInner, startWidth);
 	frame = 0;
 }
 
 void MovingRing::Update()
 {
-	if( frame > totalFrames )
+	if (frame > totalFrames)
 	{
 		Reset(); //debugging
 	}
@@ -405,13 +473,8 @@ void MovingRing::Update()
 	float currInner = startInner * (1.f - ia) + endInner * ia;
 	float currWidth = startWidth * (1.f - sa) + endWidth * sa;
 
-	ring->Set(currPos, currInner, currWidth);
-	ring->SetColor(currColor);
+	Set(currPos, currInner, currWidth);
+	SetColor(currColor);
 
 	++frame;
-}
-
-void MovingRing::Draw(sf::RenderTarget *target)
-{
-	ring->Draw(target);
 }

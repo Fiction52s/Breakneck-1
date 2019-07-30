@@ -5,6 +5,7 @@
 #include "KeyMarker.h"
 #include "MapHeader.h"
 #include "Minimap.h"
+#include "Enemy_Shard.h"
 
 using namespace std;
 using namespace sf;
@@ -66,6 +67,16 @@ Gate::Gate( GameSession *p_owner, GateType p_type, bool p_reformBehindYou )
 
 	gQuads = NULL;
 	frame = 0;
+}
+
+bool Gate::IsTwoWay()
+{
+	return type == SECRET || type == SHARD;
+}
+
+bool Gate::IsAlwaysUnlocked()
+{
+	return type == SECRET;
 }
 
 void Gate::CalcAABB()
@@ -161,6 +172,18 @@ void Gate::Draw( sf::RenderTarget *target )
 
 }
 
+void Gate::SetShard(int w, int li)
+{
+	assert(type == SHARD);
+	
+	shardWorld = w;
+	shardIndex = li;
+	ts_shard = Shard::GetShardTileset(shardWorld, &owner->tm);
+	shardSprite.setColor(Color::Black);
+	shardSprite.setTexture(*ts_shard->texture);
+	shardSprite.setTextureRect(ts_shard->GetSubRect(shardIndex));
+}
+
 void Gate::UpdateLine()
 {
 	dissolveLength = 20 * max( 1.0, length(edgeA->v1 - edgeA->v0) / 400.0 );
@@ -175,6 +198,22 @@ void Gate::UpdateLine()
 		tileHeight = 128;
 		}
 		break;
+	
+	case SHARD:
+	{
+		c = Color::Transparent;
+		ts = owner->GetTileset("Zone/gate_blue_128x128.png", 128, 128);
+
+		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
+		gateShader.setUniform("u_texture", *tts->texture);
+		gateShader.setUniform("tile", 1.f);
+		//gateShader.setUniform("fadeQuant", 1.f);
+
+		centerShader.setUniform("u_texture", *tts->texture);
+		frame = 0;
+
+		tileHeight = 128;
+	}
 	case CRAWLER_UNLOCK:
 	case SECRET:
 	{

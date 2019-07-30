@@ -3,6 +3,8 @@
 
 #include <SFML\Graphics.hpp>
 #include "Movement.h"
+#include <list>
+
 
 sf::Color GetBlendColor(
 	sf::Color c0,
@@ -12,15 +14,32 @@ sf::Color GetBlendColor(
 struct MovingGeo
 {
 	MovingGeo();
-	virtual void Draw(sf::RenderTarget *target);
-	virtual void Update();
-
-	int numPoints;
+	~MovingGeo();
+	virtual void Init() { Reset(); };
+	virtual void Reset() = 0;
+	virtual void Update() = 0;
+	virtual void SetColor(sf::Color c);
+	virtual int GetNumPoints() = 0;
+	virtual void SetPoints(sf::Vertex *p);
 	sf::Vertex *points;
-
+	sf::Color color;
 };
 
-struct SpinningTri
+struct MovingGeoGroup
+{
+	~MovingGeoGroup();
+	void Reset();
+	void Update();
+	void AddGeo(MovingGeo *mg);
+	void Init();
+	void Draw(sf::RenderTarget *target);
+
+	std::list<MovingGeo*> geoList;
+	sf::Vertex *points;
+	int numTotalPoints;
+};
+
+struct SpinningTri : MovingGeo
 {
 	enum State
 	{
@@ -35,14 +54,12 @@ struct SpinningTri
 	SpinningTri(float startAngle, sf::Vector2f &center );
 	void Reset();
 	void Update();
-	void Draw(sf::RenderTarget *target);
 
-	void SetColor(sf::Color c);
 	void SetColorGrad(sf::Color startCol,
 		sf::Color endCol);
 	void SetColorChange(sf::Color &startC,
 		sf::Color &endC, float progress);
-
+	int GetNumPoints() { return 4; }
 	int stateLength[S_Count];
 	int maxLength;
 	State state;
@@ -53,17 +70,14 @@ struct SpinningTri
 	float angle;
 	float startAngle;
 	sf::Color startColor;
-	sf::Color currColor;
 	sf::Color fadeColor;
 
 	float finalWidth;
 	float startWidth;
 	sf::Vector2f center;
-	sf::Vertex tri[3];
-
 };
 
-struct Laser
+struct Laser: MovingGeo
 {
 	enum State
 	{
@@ -79,15 +93,13 @@ struct Laser
 	Laser(float startAngle, sf::Vector2f &center);
 	void Reset();
 	void Update();
-	void Draw(sf::RenderTarget *target);
 
 	void SetColor(sf::Color c);
-	/*void SetColorGrad(sf::Color startCol,
-		sf::Color endCol);*/
 	void SetColorChange(sf::Color &startC,
 		sf::Color &endC, float progress);
 	void SetHeight(float h);
 	void SetWidth(float w);
+	int GetNumPoints() { return 8; }
 
 	int stateLength[S_Count];
 	int maxHeight;
@@ -99,39 +111,37 @@ struct Laser
 	float angle;
 	float startAngle;
 	sf::Color startColor;
-	sf::Color currColor;
-	//sf::Color fadeColor;
 
 	float growWidth;
 	float shrinkWidth;
 	float startWidth;
 	sf::Vector2f center;
-	sf::Vertex quad[8];
 };
 
-struct Ring
+struct Ring : MovingGeo
 {
 	Ring( int p_circlePoints );
 	~Ring();
+	virtual void Reset() {};
+	virtual void Update() {};
+	void SetPoints(sf::Vertex *p);
+	void CreatePoints();
 	void Draw(sf::RenderTarget *target);
 	void UpdatePoints();
 	void Set(sf::Vector2f pos,
 		float innerR, float ringWidth);
-	void SetColor(sf::Color c);
 	void SetShader(sf::Shader *sh);
+	int GetNumPoints() { return circlePoints * 4; }
 	sf::Vector2f position;
+	bool ownsPoints;
 	float innerRadius;
 	float outerRadius;
-	sf::Vertex *circle;
-	sf::Color color;
 	sf::Shader *shader;
 	int circlePoints;
 };
 
-struct MovingRing
-{
-	Ring *ring;
-
+struct MovingRing : Ring
+{	
 	MovingRing(int p_circlePoints,
 		float p_startInner,
 		float p_startWidth,
@@ -144,7 +154,6 @@ struct MovingRing
 		int totalFrames);
 	void Reset();
 	void Update();
-	void Draw(sf::RenderTarget *target);
 	//void UpdatePoints();
 	//void SetColor(sf::Color c);
 	//void SetShader(sf::Shader *sh);

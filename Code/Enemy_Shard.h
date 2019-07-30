@@ -7,6 +7,7 @@
 #include "MovingGeo.h"
 
 struct EffectPool;
+struct TilesetManager;
 struct Shard : Enemy
 {
 	enum Action
@@ -16,9 +17,12 @@ struct Shard : Enemy
 		Count
 	};
 
-	SpinningTri *triTest[5];
-	Laser *laser;
-	MovingRing *mRing;
+	static Tileset *GetShardTileset(int w,
+		TilesetManager *ttm);
+	MovingGeoGroup geoGroup;
+	//SpinningTri *triTest[5];
+	//Laser *laser;
+	//MovingRing *mRing;
 	static ShardType GetShardType(const std::string &str);
 	static ShardType GetShardType(int w, int li);
 	static std::string GetShardString(ShardType st);

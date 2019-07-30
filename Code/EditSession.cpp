@@ -272,6 +272,10 @@ void GateInfo::SetType( const std::string &gType )
 		type = Gate::SECRET;
 		//reformBehindYou = true;
 	}
+	else if (gType == "shard")
+	{
+		type = Gate::SHARD;
+	}
 	else if( gType == "crawlerunlock" )
 	{
 		type = Gate::CRAWLER_UNLOCK;
@@ -361,6 +365,10 @@ void GateInfo::UpdateLine()
 	else if( type == Gate::SECRET)
 	{
 		color = Color( 255, 0, 0);
+	}
+	else if (type == Gate::SHARD)
+	{
+		color = Color(100, 255, 10);
 	}
 	else if( type == Gate::CRAWLER_UNLOCK )
 	{
@@ -4878,7 +4886,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
-	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 6, 4, 32, 32, false, true );
+	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 7, 4, 32, 32, false, true );
 
 	sf::Texture whiteTex; //temp
 	whiteTex.loadFromFile( "Resources/Editor/whitesquare.png" );
@@ -4908,6 +4916,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	tempSq.setColor( Color::Cyan );
 	gateSel->Set( 5, 0 , tempSq, "nexus1unlock" );
+
+	tempSq.setColor(Color(100, 255, 10));
+	gateSel->Set(6, 0, tempSq, "shard");
 	
 	
 	/*tempSq.setColor( Color::Blue );

@@ -15661,7 +15661,7 @@ void Actor::PhysicsResponse()
 				newZone = g->zoneB;
 			}
 
-			if (g->type != Gate::SECRET)
+			if (!g->IsTwoWay()) //for secret gates
 			{
 				if (oldZone != NULL && oldZone->active)
 				{
@@ -23893,7 +23893,7 @@ bool Actor::CanUnlockGate( Gate *g )
 	bool canUnlock = false;
 
 	bool enoughKeys = (owner->keyMarker->keysRequired == 0);
-	if (g->type == Gate::SECRET)
+	if (g->IsAlwaysUnlocked())
 	{
 		enoughKeys = true;
 	}

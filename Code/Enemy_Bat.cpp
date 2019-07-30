@@ -128,7 +128,8 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Enemies/Bat_144x176.png", 144, 176 );
+	ts = owner->GetTileset( "Enemies/bat_208x272.png", 208, 272 );
+	ts_aura = owner->GetTileset("Enemies/bat_aura_208x272.png", 208, 272);
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -180,8 +181,15 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 		400, 400 );
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(7);
-	cutObject->SetSubRectBack(6);
+	cutObject->SetSubRectFront(53);
+	cutObject->SetSubRectBack(52);
+
+
+	visualLength[FLAP] = 23;
+	visualLength[KICK] = 29;
+
+	visualMult[FLAP] = 2;
+	visualMult[KICK] = 1;
 
 	ResetEnemy();
 }
@@ -213,6 +221,8 @@ void Bat::BulletHitPlayer(BasicBullet *b )
 
 void Bat::ResetEnemy()
 {
+	currVisual = FLAP;
+	visFrame = 0;
 	framesSinceBothered = 0;
 	fireCounter = 0;
 	testSeq.Reset();
@@ -237,6 +247,9 @@ void Bat::ResetEnemy()
 
 	UpdateSprite();
 	health = initHealth;
+
+	visFrame = 0;
+	currVisual = FLAP;
 }
 
 void Bat::DirectKill()
@@ -263,13 +276,23 @@ void Bat::FrameIncrement()
 {
 	++fireCounter;
 	++framesSinceBothered;
+	++visFrame;
 }
 
 void Bat::ProcessState()
 {
-	if( frame == 5 * animationFactor )
+	if (visFrame == visualLength[currVisual] * visualMult[currVisual])
 	{
-		frame = 0;
+		switch (currVisual)
+		{
+		case FLAP:
+			visFrame = 0;
+			break;
+		case KICK:
+			visFrame = 0;
+			currVisual = FLAP;
+			break;
+		}
 	}
 
 	double detectRange = 300;
@@ -280,10 +303,10 @@ void Bat::ProcessState()
 	V2d pDir = normalize(diff);
 	if (action == FLY)
 	{
-		if (framesSinceBothered >= 140 && startPos != currBasePos )
+		if (framesSinceBothered >= 60 && startPos != currBasePos )
 		{
 			action = RETURN;
-			frame = 0;
+			//frame = 0;
 			V2d diff = startPos - position;
 			returnMove->end = diff;
 			double diffLen = length(diff);
@@ -295,7 +318,7 @@ void Bat::ProcessState()
 		{
 			framesSinceBothered = 0;
 			action = RETREAT;
-			frame = 0;
+			//frame = 0;
 			currBasePos = position;
 			retreatMove->end = -pDir * dodgeRange;
 			//retreatWait->pos = retreatMove->end;
@@ -316,7 +339,7 @@ void Bat::ProcessState()
 			retreatSeq.Reset();
 			testSeq.Reset();
 			action = FLY;
-			frame = 0;
+			//frame = 0;
 			currBasePos = position;
 		}
 	}
@@ -326,7 +349,7 @@ void Bat::ProcessState()
 		{
 			framesSinceBothered = 0;
 			action = RETREAT;
-			frame = 0;
+			//frame = 0;
 			currBasePos = position;
 			retreatMove->end = -pDir * dodgeRange;
 			retreatSeq.Reset();
@@ -336,7 +359,7 @@ void Bat::ProcessState()
 			retreatSeq.Reset();
 			testSeq.Reset();
 			action = FLY;
-			frame = 0;
+			//frame = 0;
 			currBasePos = position;
 		}
 	}
@@ -367,6 +390,21 @@ void Bat::ProcessState()
 		cout << "return" << endl;
 		break;
 	}*/
+}
+
+void Bat::IHitPlayer(int index)
+{
+	currVisual = KICK;
+	visFrame = 0;
+	Actor *p = owner->GetPlayer(index);
+	if (p->position.x > position.x)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 }
 
 void Bat::UpdateEnemyPhysics()
@@ -401,8 +439,17 @@ void Bat::UpdateEnemyPhysics()
 
 void Bat::UpdateSprite()
 {
-	
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
+	int trueFrame = 0;
+	switch (currVisual)
+	{
+	case FLAP:
+		trueFrame = visFrame / visualMult[currVisual];
+		break;
+	case KICK:
+		trueFrame = visFrame / visualMult[currVisual] + visualLength[FLAP];
+		break;
+	}
+	sprite.setTextureRect( ts->GetSubRect( trueFrame) );
 	sprite.setPosition( position.x, position.y );
 
 	if( hasMonitor && !suppressMonitor )
@@ -413,10 +460,13 @@ void Bat::UpdateSprite()
 			keySprite->getLocalBounds().height / 2 );
 		keySprite->setPosition( position.x, position.y );
 	}
+
+	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void Bat::EnemyDraw( sf::RenderTarget *target )
 {
+	target->draw(auraSprite);
 	DrawSpriteIfExists(target, sprite);
 }
 

@@ -6166,7 +6166,7 @@ int GameSession::Run()
 
 	int returnVal = GR_EXITLEVEL;
 
-	ts_gravityGrass = GetTileset("Env/grass_128x128.png", 128, 128);
+	ts_gravityGrass = GetTileset("Env/gravity_grass_128x128.png", 128, 128);
 	
 
 	goalDestroyed = false;
