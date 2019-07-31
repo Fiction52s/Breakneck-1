@@ -15,24 +15,29 @@ struct MovingGeo
 {
 	MovingGeo();
 	~MovingGeo();
+	void Clear();
 	virtual void Init() { Reset(); };
 	virtual void Reset() = 0;
 	virtual void Update() = 0;
 	virtual void SetColor(sf::Color c);
 	virtual int GetNumPoints() = 0;
 	virtual void SetPoints(sf::Vertex *p);
+	void SetBase(sf::Vector2f &base);
 	sf::Vertex *points;
 	sf::Color color;
+	sf::Vector2f basePos;
+	bool done;
 };
 
 struct MovingGeoGroup
 {
 	~MovingGeoGroup();
 	void Reset();
-	void Update();
+	bool Update();
 	void AddGeo(MovingGeo *mg);
 	void Init();
 	void Draw(sf::RenderTarget *target);
+	void SetBase(sf::Vector2f &pos);
 
 	std::list<MovingGeo*> geoList;
 	sf::Vertex *points;
@@ -51,7 +56,7 @@ struct SpinningTri : MovingGeo
 	};
 
 
-	SpinningTri(float startAngle, sf::Vector2f &center );
+	SpinningTri(float startAngle);
 	void Reset();
 	void Update();
 
@@ -60,6 +65,7 @@ struct SpinningTri : MovingGeo
 	void SetColorChange(sf::Color &startC,
 		sf::Color &endC, float progress);
 	int GetNumPoints() { return 4; }
+	void UpdatePoints();
 	int stateLength[S_Count];
 	int maxLength;
 	State state;
@@ -74,7 +80,6 @@ struct SpinningTri : MovingGeo
 
 	float finalWidth;
 	float startWidth;
-	sf::Vector2f center;
 };
 
 struct Laser: MovingGeo
@@ -90,7 +95,7 @@ struct Laser: MovingGeo
 	};
 
 
-	Laser(float startAngle, sf::Vector2f &center);
+	Laser(float startAngle);
 	void Reset();
 	void Update();
 
@@ -132,11 +137,11 @@ struct Ring : MovingGeo
 		float innerR, float ringWidth);
 	void SetShader(sf::Shader *sh);
 	int GetNumPoints() { return circlePoints * 4; }
-	sf::Vector2f position;
 	bool ownsPoints;
 	float innerRadius;
 	float outerRadius;
 	sf::Shader *shader;
+	sf::Vector2f position;
 	int circlePoints;
 };
 

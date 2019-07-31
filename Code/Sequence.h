@@ -7,6 +7,7 @@
 #include <boost/thread.hpp>
 #include <sfeMovie\Movie.hpp>
 #include "EffectLayer.h"
+#include "MovingGeo.h"
 
 struct Edge;
 struct GameSession;
@@ -492,6 +493,24 @@ struct BirdCrawlerAllianceSeq : Sequence
 	GameSession *owner;
 };
 
+struct GetShardSequence : Sequence
+{
+	enum State
+	{
+		GET,
+		END
+	};
 
+	State state;
+	int stateLength[END];
+	GetShardSequence(GameSession *owner);
+	bool Update();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+	void Reset();
+
+	MovingGeoGroup geoGroup;
+	GameSession *owner;
+};
 
 #endif 

@@ -1114,6 +1114,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Sequence *activeSequence;
 	Sequence *startMapSeq;
 
+	Sequence *getShardSeq;
+
 
 
 	/*struct GameStartSeq : Sequence

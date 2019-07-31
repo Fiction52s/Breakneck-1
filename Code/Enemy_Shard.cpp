@@ -7,6 +7,7 @@
 #include "SaveFile.h"
 #include "MainMenu.h"
 #include "MapHeader.h"
+#include "Sequence.h"
 #include "VisualEffects.h"
 
 using namespace std;
@@ -39,15 +40,7 @@ void Shard::SetupShardMaps()
 Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	:Enemy( p_owner, EnemyType::EN_SHARD, false, w+1 )
 {
-	for (int i = 0; i < 5; ++i)
-	{
-		geoGroup.AddGeo(new SpinningTri(0 + i * PI / 2.5, Vector2f(pos)));
-	}
-	geoGroup.AddGeo(new Laser(0, Vector2f(pos)));
-
-	geoGroup.AddGeo(new MovingRing(32, 20, 10, 200, 20, Vector2f(pos), Vector2f(pos),
-		Color::Cyan, Color( 0, 0, 100, 10 ), 30));
-	geoGroup.Init();
+	
 	world = w;
 	localIndex = li;
 
@@ -237,7 +230,7 @@ void Shard::DissipateOnTouch()
 
 void Shard::Capture()
 {
-	owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
+	//owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
 	owner->shardsCapturedField->SetBit(shardType, true);
 	if (owner->saveFile != NULL)
 	{
@@ -248,6 +241,13 @@ void Shard::Capture()
 		owner->saveFile->newShardField.SetBit(shardType, true);
 		owner->saveFile->Save();
 	}
+
+	owner->getShardSeq->Reset();
+	owner->activeSequence = owner->getShardSeq;
+
+	owner->GetPlayer(0)->SetAction(Actor::GETSHARD);
+	owner->GetPlayer(0)->frame = 0;
+	//owner->state = GameSession::SEQUENCE;
 	//owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position);
 	
 	//owner->mainMenu->GetCurrentProgress()->Save(); //might need to multithread at some point. this can be annoying
@@ -260,7 +260,6 @@ void Shard::DirectKill()
 
 void Shard::ResetEnemy()
 {
-	geoGroup.Reset();
 
 	totalFrame = 0;
 	sparklePool->Reset();
@@ -310,7 +309,7 @@ void Shard::ProcessState()
 		position = startPos;
 		position.y += f * floatAmount;
 	}
-	geoGroup.Update();
+	
 	
 	sparklePool->Update();
 
@@ -360,7 +359,6 @@ void Shard::UpdateSprite()
 
 void Shard::EnemyDraw( sf::RenderTarget *target )
 {
-	geoGroup.Draw(target);
 	
 
 	if (action != DISSIPATE)

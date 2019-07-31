@@ -3307,6 +3307,11 @@ bool GameSession::OpenFile( string fileName )
 		mh = MapSelectionMenu::ReadMapHeader(is);
 		assert(mh != NULL);
 
+		if (mh->numShards > 0)
+		{
+			getShardSeq = new GetShardSequence(this);
+		}
+
 		if (mh->gameMode == MapHeader::MapType::T_RACEFIGHT)
 		{
 			assert(raceFight == NULL);
@@ -8566,6 +8571,8 @@ void GameSession::Init()
 	nextFrameRestart = false;
 
 	LoadDecorImages();
+
+	getShardSeq = NULL;
 
 	fader = mainMenu->fader;
 	swiper = mainMenu->swiper;

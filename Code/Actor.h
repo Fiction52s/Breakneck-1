@@ -317,6 +317,7 @@ struct Actor : QuadTreeCollider,
 		SEQ_FLOAT_TO_NEXUS_OPENING,
 		SEQ_FADE_INTO_NEXUS,
 		SEQ_TURNFACE,
+		GETSHARD,
 		Count
 	};
 

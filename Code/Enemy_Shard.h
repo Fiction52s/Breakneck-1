@@ -4,7 +4,7 @@
 #include "Enemy.h"
 #include <map>
 #include "ShardTypes.h"
-#include "MovingGeo.h"
+
 
 struct EffectPool;
 struct TilesetManager;
@@ -19,7 +19,7 @@ struct Shard : Enemy
 
 	static Tileset *GetShardTileset(int w,
 		TilesetManager *ttm);
-	MovingGeoGroup geoGroup;
+	
 	//SpinningTri *triTest[5];
 	//Laser *laser;
 	//MovingRing *mRing;

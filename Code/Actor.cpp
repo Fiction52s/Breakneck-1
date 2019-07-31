@@ -158,6 +158,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 
 	tileset[SEQ_TURNFACE] = owner->GetTileset("Kin/shipjump_160x96.png", 160, 96, skin);
 
+	tileset[GETSHARD] = tileset[DEATH];
+
 	ts_fairSword[0] = owner->GetTileset("Sword/fair_sworda_256x256.png", 256, 256, swordSkin);
 	ts_fairSword[1] = owner->GetTileset("Sword/fair_swordb_288x288.png", 288, 288, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
 	ts_fairSword[2] = owner->GetTileset("Sword/fair_swordc_384x384.png", 384, 384, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
@@ -1143,6 +1145,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		actionLength[SEQ_FLOAT_TO_NEXUS_OPENING] = 3 * 10;
 		actionLength[SEQ_FADE_INTO_NEXUS] = 8 * 10;
+
+		actionLength[GETSHARD] = 44 * 2;
 		}
 		 	
 
@@ -1957,6 +1961,10 @@ void Actor::ActionEnded()
 			break;
 		case SEQ_TURNFACE:
 			frame = 0;
+			break;
+		case GETSHARD:
+			SetAction(JUMP);
+			frame = 1;
 			break;
 		}
 	}
@@ -6187,6 +6195,10 @@ void Actor::UpdatePrePhysics()
 
 			break;
 		}
+	case GETSHARD:
+	{
+		break;
+	}
 	}
 	
 	currHitboxes = NULL;
@@ -7751,6 +7763,22 @@ facingRight = false;
 		//cout << "frame: " << frame << endl;
 		//velocity = V2d( -30, -100 );
 		break;
+	case GETSHARD:
+	{
+		if (frame == 0)
+		{
+			if (ground != NULL)
+			{
+				ground = NULL;
+				framesInAir = 0;
+				hasAirDash = true;
+				hasDoubleJump = true;
+			}
+		}
+
+		velocity = V2d(0, 0);
+		break;
+	}
 	}
 	
 	//if( action != GRINDBALL && action != GROUNDHITSTUN && action != AIRHITSTUN )
@@ -7844,7 +7872,7 @@ facingRight = false;
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
 		&& action != ENTERNEXUS1 && action != SPRINGSTUN && action != GLIDE && action != SPRINGSTUNGLIDE)
 	{
-		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH)
+		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD )
 		{
 			velocity = AddGravity(velocity);
 		}
@@ -22755,8 +22783,15 @@ void Actor::UpdateSprite()
 
 			//cout << "angle: " << angle / PI * 180  << endl;
 		}
+		break;
 	}
-	break;
+	case GETSHARD:
+	{
+		SetSpriteTexture(action);
+		sprite->setPosition(position.x, position.y);
+		SetSpriteTile(0, facingRight);
+		break;
+	}
 	}
 
 	Vector2f oldOrigin = sprite->getOrigin();
