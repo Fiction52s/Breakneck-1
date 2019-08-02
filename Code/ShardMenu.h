@@ -58,6 +58,9 @@ struct EffectPool;
 //	sf::Vertex 
 //};
 
+
+
+
 struct ShardMenu
 {
 	//looping movie that plays
@@ -93,7 +96,6 @@ struct ShardMenu
 	void SetCurrShard();
 
 	int totalFrame;
-
 	sf::Text currShardText;
 	sf::Text currShardNameText;
 	std::string **shardDesc;// [ShardType::SHARD_W1_TEACH_JUMP];
@@ -106,7 +108,7 @@ struct ShardMenu
 	sf::Vertex *shardQuads;
 	MainMenu *mainMenu;
 	int numShardsTotal;
-	
+	std::string GetShardDesc(int w, int li);
 	sf::Vector2f imagePos;
 	void SetCurrSequence();
 	void SetupShardImages();
@@ -130,6 +132,8 @@ struct ShardMenu
 		ShardMenu *sMenu );
 	PNGSeq *&GetCurrSeq();
 	boost::thread *&GetCurrLoadThread();
+
+
 	
 	void UpdateUnlockedShards();
 	bool IsShardCaptured( int x, int y );

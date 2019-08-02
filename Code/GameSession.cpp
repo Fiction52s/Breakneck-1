@@ -480,6 +480,11 @@ void GameSession::Cleanup()
 		delete shardsCapturedField;
 	}
 
+	if (shardPop != NULL)
+	{
+		delete shardPop;
+	}
+
 	if (adventureHUD != NULL)
 	{
 		delete adventureHUD;
@@ -5516,6 +5521,8 @@ bool GameSession::Load()
 
 	hitboxManager = new HitboxManager;
 
+	shardPop = new ShardPopup(this);
+
 	
 	shardsCapturedField = new BitField(32 * 5);
 	
@@ -7251,7 +7258,7 @@ int GameSession::Run()
 			}
 		}
 
-		if (switchState)
+		if (switchState && state != FROZEN)
 		{
 			continue;
 		}
@@ -7665,7 +7672,6 @@ int GameSession::Run()
 			currBroadcast->Draw(preScreenTex);
 		}
 
-
 		DrawActiveSequence(EffectLayer::UI_FRONT);
 		DrawEffects(EffectLayer::UI_FRONT);
 
@@ -7711,7 +7717,7 @@ int GameSession::Run()
 		window->draw( preTexSprite );//, &cloneShader );
 		
 		}
-		else if( state == PAUSE )
+		else if( state == FROZEN )
 		{
 			sf::Event ev;
 			while( window->pollEvent( ev ) )
@@ -7745,56 +7751,26 @@ int GameSession::Run()
 			{
 				UpdateInput();
 
-				PauseMenu::UpdateResponse ur = pauseMenu->Update(GetCurrInputUnfiltered(0), GetPrevInputUnfiltered(0));
-				switch (ur)
+				if (activeSequence != NULL)
 				{
-				case PauseMenu::R_NONE:
-				{
-					//do nothing as usual
-					break;
-				}
-				case PauseMenu::R_P_RESUME:
-				{
-					state = GameSession::RUN;
-					pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_off"));
-					soundNodeList->Pause(false);
-					pauseMenu->shardMenu->StopMusic();
-					break;
-				}
-				case PauseMenu::R_P_RESPAWN:
-				{
-					state = GameSession::RUN;
-					RestartLevel();
-					gameClock.restart();
-					currentTime = 0;
-					accumulator = TIMESTEP + .1;
-					frameCounter = 0;
-					//soundNodeList->Pause( false );
-					//kill sounds on respawn
-					break;
-				}
-				case PauseMenu::R_P_EXITLEVEL:
-				{
-					quit = true;
-					returnVal = GR_EXITLEVEL;
-					break;
-				}
-				case PauseMenu::R_P_EXITTITLE:
-				{
-					quit = true;
-					returnVal = GR_EXITTITLE;
-					break;
-				}
-				case PauseMenu::R_P_EXITGAME:
-				{
-					quit = true;
-					returnVal = GR_EXITGAME;
-					break;
+					State oldState = state;
+					if (!activeSequence->Update())
+					{
+						state = RUN;
+						activeSequence = NULL;
+					}
+					else
+					{
+						if (state != oldState)
+						{
+							switchState = true;
+							break;
+							//goto starttest;
+						}
+					}
 				}
 
-				}
-
-				if (state != PAUSE)
+				if (state != FROZEN)
 				{
 					break;
 				}
@@ -7802,19 +7778,12 @@ int GameSession::Run()
 				accumulator -= TIMESTEP;
 			}
 
-			if (state != PAUSE)
+			if (state != FROZEN)
 			{
 				continue;
 			}
 
-			//if( currInput.
-
-			/*if( IsKeyPressed( Keyboard::O ) )
-			{
-				state = RUN;
-				soundNodeList->Pause( false );
-			}*/
-			pauseTex->clear();		
+			//pauseTex->clear( Color( 100, 100, 100, 50 ));	
 			window->clear();
 			Sprite preTexSprite;
 			preTexSprite.setTexture( preScreenTex->getTexture() );
@@ -7822,184 +7791,15 @@ int GameSession::Run()
 			preTexSprite.setScale( .5, .5 );
 			window->draw( preTexSprite );
 
-			pauseMenu->Draw( pauseTex );
+			//pauseMenu->Draw( pauseTex );
 			
-			pauseTex->display();
-			Sprite pauseMenuSprite;
-			pauseMenuSprite.setTexture( pauseTex->getTexture() );
-			//bgSprite.setPosition( );
-			pauseMenuSprite.setPosition( (1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2 );
-			pauseMenuSprite.setScale( .5, .5 );
-			window->draw( pauseMenuSprite );
-
-			//draw map
-
-			if( pauseMenu->currentTab == PauseMenu::MAP )
-			{
-			View vv;
-			vv.setCenter( pauseMenu->mapCenter );
-			vv.setSize(  mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor );
-
-			mapTex->clear();
-			mapTex->setView( vv );
-			mapTex->clear( Color( 0, 0, 0, 255 ) );
-			
-			View vuiView;
-			vuiView.setSize( Vector2f( mapTex->getSize().x * 1.f, mapTex->getSize().y * 1.f ) );
-			vuiView.setCenter( 0, 0 );
-			
-			for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-			{
-				(*it)->Draw( mapTex );
-			}
-
-			queryMode = "border";
-			numBorders = 0;
-			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
-				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
-
-			borderTree->Query( this, mapRect );
-
-			Color testColor( 0x75, 0x70, 0x90, 191 );
-			testColor = Color::Green;
-			TerrainPiece * listVAIter = listVA;
-			while( listVAIter != NULL )
-			{
-				if (listVAIter->visible)
-				{
-					int vertexCount = listVAIter->terrainVA->getVertexCount();
-					for (int i = 0; i < vertexCount; ++i)
-					{
-						(*listVAIter->terrainVA)[i].color = testColor;
-					}
-					mapTex->draw(*listVAIter->terrainVA);
-					for (int i = 0; i < vertexCount; ++i)
-					{
-						(*listVAIter->terrainVA)[i].color = Color::White;
-					}
-				}
-
-				listVAIter = listVAIter->next;
-			}
-
-			testGateCount = 0;
-			queryMode = "gate";
-			gateList = NULL;
-			gateTree->Query( this, mapRect );
-			Gate *mGateList = gateList;
-			while( gateList != NULL )
-			{
-				//gateList->Draw( preScreenTex );
-				if( gateList->locked && gateList->visible )
-				{
-
-					V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
-					V2d other( along.y, -along.x );
-					double width = 25;
-				
-				
-
-					V2d leftGround = gateList->edgeA->v0 + other * -width;
-					V2d rightGround = gateList->edgeA->v0 + other * width;
-					V2d leftAir = gateList->edgeA->v1 + other * -width;
-					V2d rightAir = gateList->edgeA->v1 + other * width;
-					//cout << "drawing color: " << gateList->c.b << endl;
-					sf::Vertex activePreview[4] =
-					{
-						//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
-						//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
-
-						sf::Vertex(sf::Vector2<float>( leftGround.x, leftGround.y ), gateList->c ),
-						sf::Vertex(sf::Vector2<float>( leftAir.x, leftAir.y ), gateList->c ),
-
-
-						sf::Vertex(sf::Vector2<float>( rightAir.x, rightAir.y ), gateList->c ),
-
-					
-						sf::Vertex(sf::Vector2<float>( rightGround.x, rightGround.y ), gateList->c )
-					};
-					mapTex->draw( activePreview, 4, sf::Quads );
-				}
-
-				Gate *next = gateList->next;//edgeA->edge1;
-				gateList = next;
-			}
-
-
-			
-
-			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( p0->position.x, p0->position.y ) );
-
-			mapTex->setView( vuiView );
-
-			Vector2f realPos = mapTex->mapPixelToCoords( b );
-			realPos.x = floor( realPos.x + .5f );
-			realPos.y = floor( realPos.y + .5f );
-
-			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			
-			//mapTex->draw( kinMinimapIcon );
-
-			mapTex->setView( vv );			
-
-			Vector2i b1 = mapTex->mapCoordsToPixel( Vector2f( originalPos.x, originalPos.y ) );
-
-			mapTex->setView( vuiView );
-
-			Vector2f realPos1 = mapTex->mapPixelToCoords( b1 );
-			realPos1.x = floor( realPos1.x + .5f );
-			realPos1.y = floor( realPos1.y + .5f );
-
-			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			kinMapSpawnIcon.setPosition( realPos1 );
-			mapTex->draw( kinMapSpawnIcon );
-			
-			mapTex->setView( vv );
-
-			Vector2i bGoal = mapTex->mapCoordsToPixel( Vector2f( goalPos.x, goalPos.y ) );
-
-			mapTex->setView( vuiView );
-
-			Vector2f realPosGoal = mapTex->mapPixelToCoords( bGoal );
-			realPosGoal.x = floor( realPosGoal.x + .5f );
-			realPosGoal.y = floor( realPosGoal.y + .5f );
-
-			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			goalMapIcon.setPosition( realPosGoal );
-			mapTex->draw( goalMapIcon );
-
-			if( currentZone != NULL )
-			{
-				for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
-				{
-					//cout << "drawing map" << endl;
-					(*it)->DrawMinimap( mapTex );
-				}
-			}
-
-			//mapTex->clear();
-			Sprite mapTexSprite;
-			mapTexSprite.setTexture( mapTex->getTexture() );
-			mapTexSprite.setOrigin( mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2 );
-			mapTexSprite.setPosition( 0, 0 );
-			
-
-			//pauseTex->setView( bigV );
-			//window->setView( bigV );
-
-			//mapTexSprite.setScale( .5, -.5 );
-			mapTexSprite.setScale( .5, -.5 );
-			//mapTexSprite.setScale( 1, -1 );
-
-  			window->draw( mapTexSprite );
-			//pauseTex->draw( mapTexSprite );
-
-			//pauseTex->setV
-			}
-
-
-			
-
+			//pauseTex->display();
+			//Sprite pauseMenuSprite;
+			//pauseMenuSprite.setTexture( pauseTex->getTexture() );
+			////bgSprite.setPosition( );
+			//pauseMenuSprite.setPosition( (1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2 );
+			//pauseMenuSprite.setScale( .5, .5 );
+			//window->draw( pauseMenuSprite );
 		}
 		else if( state == MAP )
 		{
@@ -8448,7 +8248,296 @@ int GameSession::Run()
 			//UpdateInput();
 
 		}
+		else if (state == PAUSE)
+		{
+			sf::Event ev;
+			while (window->pollEvent(ev))
+			{
+				/*if( ev.type == sf::Event::KeyPressed )
+				{
+				if( ev.key.code = Keyboard::O )
+				{
+				state = RUN;
+				soundNodeList->Pause( false );
+				break;
+				}
+				}*/
+				if (ev.type == sf::Event::GainedFocus)
+				{
+					//state = RUN;
+					//soundNodeList->Pause( false );
+					//break;
+				}
+				else if (ev.type == sf::Event::KeyPressed)
+				{
+					//if( ev.key.code == Keyboard::
+				}
+			}
 
+			//savedinput when you enter pause
+
+			accumulator += frameTime;
+
+			while (accumulator >= TIMESTEP)
+			{
+				UpdateInput();
+
+				PauseMenu::UpdateResponse ur = pauseMenu->Update(GetCurrInputUnfiltered(0), GetPrevInputUnfiltered(0));
+				switch (ur)
+				{
+				case PauseMenu::R_NONE:
+				{
+					//do nothing as usual
+					break;
+				}
+				case PauseMenu::R_P_RESUME:
+				{
+					state = GameSession::RUN;
+					pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_off"));
+					soundNodeList->Pause(false);
+					pauseMenu->shardMenu->StopMusic();
+					break;
+				}
+				case PauseMenu::R_P_RESPAWN:
+				{
+					state = GameSession::RUN;
+					RestartLevel();
+					gameClock.restart();
+					currentTime = 0;
+					accumulator = TIMESTEP + .1;
+					frameCounter = 0;
+					//soundNodeList->Pause( false );
+					//kill sounds on respawn
+					break;
+				}
+				case PauseMenu::R_P_EXITLEVEL:
+				{
+					quit = true;
+					returnVal = GR_EXITLEVEL;
+					break;
+				}
+				case PauseMenu::R_P_EXITTITLE:
+				{
+					quit = true;
+					returnVal = GR_EXITTITLE;
+					break;
+				}
+				case PauseMenu::R_P_EXITGAME:
+				{
+					quit = true;
+					returnVal = GR_EXITGAME;
+					break;
+				}
+
+				}
+
+				if (state != PAUSE)
+				{
+					break;
+				}
+
+				accumulator -= TIMESTEP;
+			}
+
+			if (state != PAUSE)
+			{
+				continue;
+			}
+
+			//if( currInput.
+
+			/*if( IsKeyPressed( Keyboard::O ) )
+			{
+			state = RUN;
+			soundNodeList->Pause( false );
+			}*/
+			pauseTex->clear();
+			window->clear();
+			Sprite preTexSprite;
+			preTexSprite.setTexture(preScreenTex->getTexture());
+			preTexSprite.setPosition(-960 / 2, -540 / 2);
+			preTexSprite.setScale(.5, .5);
+			window->draw(preTexSprite);
+
+			pauseMenu->Draw(pauseTex);
+
+			pauseTex->display();
+			Sprite pauseMenuSprite;
+			pauseMenuSprite.setTexture(pauseTex->getTexture());
+			//bgSprite.setPosition( );
+			pauseMenuSprite.setPosition((1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2);
+			pauseMenuSprite.setScale(.5, .5);
+			window->draw(pauseMenuSprite);
+
+			//draw map
+
+			if (pauseMenu->currentTab == PauseMenu::MAP)
+			{
+				View vv;
+				vv.setCenter(pauseMenu->mapCenter);
+				vv.setSize(mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor);
+
+				mapTex->clear();
+				mapTex->setView(vv);
+				mapTex->clear(Color(0, 0, 0, 255));
+
+				View vuiView;
+				vuiView.setSize(Vector2f(mapTex->getSize().x * 1.f, mapTex->getSize().y * 1.f));
+				vuiView.setCenter(0, 0);
+
+				for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+				{
+					(*it)->Draw(mapTex);
+				}
+
+				queryMode = "border";
+				numBorders = 0;
+				sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
+					vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
+
+				borderTree->Query(this, mapRect);
+
+				Color testColor(0x75, 0x70, 0x90, 191);
+				testColor = Color::Green;
+				TerrainPiece * listVAIter = listVA;
+				while (listVAIter != NULL)
+				{
+					if (listVAIter->visible)
+					{
+						int vertexCount = listVAIter->terrainVA->getVertexCount();
+						for (int i = 0; i < vertexCount; ++i)
+						{
+							(*listVAIter->terrainVA)[i].color = testColor;
+						}
+						mapTex->draw(*listVAIter->terrainVA);
+						for (int i = 0; i < vertexCount; ++i)
+						{
+							(*listVAIter->terrainVA)[i].color = Color::White;
+						}
+					}
+
+					listVAIter = listVAIter->next;
+				}
+
+				testGateCount = 0;
+				queryMode = "gate";
+				gateList = NULL;
+				gateTree->Query(this, mapRect);
+				Gate *mGateList = gateList;
+				while (gateList != NULL)
+				{
+					//gateList->Draw( preScreenTex );
+					if (gateList->locked && gateList->visible)
+					{
+
+						V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
+						V2d other(along.y, -along.x);
+						double width = 25;
+
+
+
+						V2d leftGround = gateList->edgeA->v0 + other * -width;
+						V2d rightGround = gateList->edgeA->v0 + other * width;
+						V2d leftAir = gateList->edgeA->v1 + other * -width;
+						V2d rightAir = gateList->edgeA->v1 + other * width;
+						//cout << "drawing color: " << gateList->c.b << endl;
+						sf::Vertex activePreview[4] =
+						{
+							//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
+							//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
+
+							sf::Vertex(sf::Vector2<float>(leftGround.x, leftGround.y), gateList->c),
+							sf::Vertex(sf::Vector2<float>(leftAir.x, leftAir.y), gateList->c),
+
+
+							sf::Vertex(sf::Vector2<float>(rightAir.x, rightAir.y), gateList->c),
+
+
+							sf::Vertex(sf::Vector2<float>(rightGround.x, rightGround.y), gateList->c)
+						};
+						mapTex->draw(activePreview, 4, sf::Quads);
+					}
+
+					Gate *next = gateList->next;//edgeA->edge1;
+					gateList = next;
+				}
+
+
+
+
+				Vector2i b = mapTex->mapCoordsToPixel(Vector2f(p0->position.x, p0->position.y));
+
+				mapTex->setView(vuiView);
+
+				Vector2f realPos = mapTex->mapPixelToCoords(b);
+				realPos.x = floor(realPos.x + .5f);
+				realPos.y = floor(realPos.y + .5f);
+
+				//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+
+				//mapTex->draw( kinMinimapIcon );
+
+				mapTex->setView(vv);
+
+				Vector2i b1 = mapTex->mapCoordsToPixel(Vector2f(originalPos.x, originalPos.y));
+
+				mapTex->setView(vuiView);
+
+				Vector2f realPos1 = mapTex->mapPixelToCoords(b1);
+				realPos1.x = floor(realPos1.x + .5f);
+				realPos1.y = floor(realPos1.y + .5f);
+
+				//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+				kinMapSpawnIcon.setPosition(realPos1);
+				mapTex->draw(kinMapSpawnIcon);
+
+				mapTex->setView(vv);
+
+				Vector2i bGoal = mapTex->mapCoordsToPixel(Vector2f(goalPos.x, goalPos.y));
+
+				mapTex->setView(vuiView);
+
+				Vector2f realPosGoal = mapTex->mapPixelToCoords(bGoal);
+				realPosGoal.x = floor(realPosGoal.x + .5f);
+				realPosGoal.y = floor(realPosGoal.y + .5f);
+
+				//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+				goalMapIcon.setPosition(realPosGoal);
+				mapTex->draw(goalMapIcon);
+
+				if (currentZone != NULL)
+				{
+					for (list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it)
+					{
+						//cout << "drawing map" << endl;
+						(*it)->DrawMinimap(mapTex);
+					}
+				}
+
+				//mapTex->clear();
+				Sprite mapTexSprite;
+				mapTexSprite.setTexture(mapTex->getTexture());
+				mapTexSprite.setOrigin(mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2);
+				mapTexSprite.setPosition(0, 0);
+
+
+				//pauseTex->setView( bigV );
+				//window->setView( bigV );
+
+				//mapTexSprite.setScale( .5, -.5 );
+				mapTexSprite.setScale(.5, -.5);
+				//mapTexSprite.setScale( 1, -1 );
+
+				window->draw(mapTexSprite);
+				//pauseTex->draw( mapTexSprite );
+
+				//pauseTex->setV
+			}
+
+
+
+
+		}
 
 		window->display();
 
@@ -8568,6 +8657,8 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	shardPop = NULL;
+
 	nextFrameRestart = false;
 
 	LoadDecorImages();
@@ -9223,9 +9314,21 @@ void GameSession::DrawStoryLayer(EffectLayer ef)
 
 void GameSession::DrawActiveSequence(EffectLayer layer )
 {
+
+	sf::View oldView = preScreenTex->getView();
+	if (layer == UI_FRONT)
+	{
+		preScreenTex->setView(uiView);
+	}
+
 	if (activeSequence != NULL)
 	{
 		activeSequence->Draw(preScreenTex, layer);
+	}
+
+	if (layer == UI_FRONT)
+	{
+		preScreenTex->setView(oldView);
 	}
 }
 
@@ -9370,6 +9473,18 @@ void GameSession::DrawGoal()
 	{
 		preScreenTex->draw(*goalEnergyFlowVA, &flowShader);
 	}
+}
+
+void GameSession::UpdateShapeParticle(ShapeParticle *sp)
+{
+	Vector2f playerPos = Vector2f(GetPlayer(0)->position);
+	Vector2f dir = normalize(playerPos - sp->pos);
+	sp->vel += dir * .1f;
+}
+
+void GameSession::ActivateShapeParticle(ShapeParticle *sp)
+{
+
 }
 
 void GameSession::UpdateGoalFlow()

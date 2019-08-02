@@ -4,12 +4,82 @@
 #include <SFML\Graphics.hpp>
 #include "Movement.h"
 #include <list>
+#include "Tileset.h"
+#include "ParticleHandler.h"
 
 
 sf::Color GetBlendColor(
 	sf::Color c0,
 	sf::Color c1,
 	float progress);
+
+struct ShapeEmitter;
+
+struct ShapeParticle
+{
+	ShapeParticle(int numPoints, sf::Vertex *v,
+		ShapeEmitter *emit);
+	
+	void Activate(float radius,
+		sf::Vector2f &pos,
+		sf::Vector2f &vel,
+		float angle, int ttl);
+	void SetTileIndex(int ti);
+	void Update();
+	void Clear();
+	void SetColor(sf::Color &c);
+	sf::Vector2f vel;
+	sf::Vector2f pos;
+	float angle;
+	sf::Vertex *points;
+	int numPoints;
+	float radius;
+	int ttl;
+	sf::Color color;
+	int tileIndex;
+	ShapeEmitter *emit;
+};
+
+struct ShapeEmitter
+{
+	enum ParticleType
+	{
+		TEST
+	};
+
+	ShapeEmitter(int pointsPerShape,
+		int numShapes, float angle,
+		float angleRange,
+		float minSpeed, float maxSpeed,
+		ParticleHandler *h = NULL );
+	~ShapeEmitter();
+	void SetPos(sf::Vector2f &pos);
+	void SetColor(sf::Color &c);
+	void Reset();
+	void Update();
+	void Draw(sf::RenderTarget *target);
+	void ActivateParticle( int index );
+	void AddForce(sf::Vector2f &f);
+	void ClearForces();
+	void SetForce(sf::Vector2f &f);
+	int pointsPerShape;
+	int numShapesTotal;
+	int numPoints;
+	float angle;
+	float angleRange;
+	float minSpeed;
+	float maxSpeed;
+	sf::Vector2f pos;
+	sf::Vertex *points;
+	ShapeParticle **particles;
+	int frame;
+	ParticleHandler *handler;
+
+	sf::Vector2f accel;
+	Tileset *ts;
+
+	ParticleType pType;
+};
 
 struct MovingGeo
 {
@@ -34,12 +104,14 @@ struct MovingGeoGroup
 	~MovingGeoGroup();
 	void Reset();
 	bool Update();
-	void AddGeo(MovingGeo *mg);
+	void AddGeo(MovingGeo *mg, int waitFrames = 0);
 	void Init();
 	void Draw(sf::RenderTarget *target);
 	void SetBase(sf::Vector2f &pos);
 
 	std::list<MovingGeo*> geoList;
+	int frame;
+	std::list<int> waitFrames;
 	sf::Vertex *points;
 	int numTotalPoints;
 };
@@ -149,8 +221,8 @@ struct MovingRing : Ring
 {	
 	MovingRing(int p_circlePoints,
 		float p_startInner,
-		float p_startWidth,
 		float p_endInner,
+		float p_startWidth,
 		float p_endWidth,
 		sf::Vector2f p_startPos,
 		sf::Vector2f p_endPos,

@@ -17,6 +17,7 @@ struct Camera
 		int zLevel );
 	void Reset();
 	void SetRumble( int xFactor, int yFactor, int duration );
+	void StopRumble();
 	void UpdateRumble();
 	void EaseOutOfManual( int frames );
 	void SetManual( bool man );

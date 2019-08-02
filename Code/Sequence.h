@@ -493,6 +493,8 @@ struct BirdCrawlerAllianceSeq : Sequence
 	GameSession *owner;
 };
 
+struct Shard;
+struct ShardPopup;
 struct GetShardSequence : Sequence
 {
 	enum State
@@ -509,8 +511,12 @@ struct GetShardSequence : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
+	Shard *shard;
+	ShardPopup *shardPop;
 	MovingGeoGroup geoGroup;
 	GameSession *owner;
+
+	sf::Vertex overlayRect[4];
 };
 
 #endif 

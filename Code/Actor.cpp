@@ -1146,7 +1146,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SEQ_FLOAT_TO_NEXUS_OPENING] = 3 * 10;
 		actionLength[SEQ_FADE_INTO_NEXUS] = 8 * 10;
 
-		actionLength[GETSHARD] = 44 * 2;
+		actionLength[GETSHARD] = 2;//44 * 2;
 		}
 		 	
 
@@ -1963,8 +1963,7 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case GETSHARD:
-			SetAction(JUMP);
-			frame = 1;
+			frame = 0;
 			break;
 		}
 	}
@@ -22788,6 +22787,7 @@ void Actor::UpdateSprite()
 	case GETSHARD:
 	{
 		SetSpriteTexture(action);
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height/2);
 		sprite->setPosition(position.x, position.y);
 		SetSpriteTile(0, facingRight);
 		break;

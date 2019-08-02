@@ -462,6 +462,24 @@ void Camera::SetRumble( int xFactor, int yFactor, int duration )
 	rumbleFrame = 0;
 }
 
+void Camera::StopRumble()
+{
+	if (!rumbling)
+		return;
+
+	rumbling = false;
+	if (rX != 0)
+	{
+		pos.x -= rX;
+	}
+	if (rY != 0)
+	{
+		pos.y -= rY;
+	}
+	rX = 0;
+	rY = 0;
+}
+
 void Camera::Ease( Vector2f &p_pos, float zFactor, int numFrames, CubicBezier &bez)
 {
 	if (!manual)
@@ -482,11 +500,11 @@ void Camera::UpdateRumble()
 	if( !rumbling )
 		return;
 
-	if (rumbleFrame > 0)
+	/*if (rumbleFrame > 0 && !easing )
 	{
 		pos.x -= rX;
 		pos.y -= rY;
-	}
+	}*/
 	
 	if( rumbleFrame == rumbleLength )
 	{
@@ -520,10 +538,10 @@ sf::FloatRect Camera::GetRect()
 
 void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 {
-	if (!manual)
+	/*if (!manual)
 	{
 		int x = 5;
-	}
+	}*/
 	assert( manual );
 	pos.x = p.x;
 	pos.y = p.y;
@@ -579,6 +597,8 @@ void Camera::ManualUpdate( Actor *player )
 	UpdateRumble();
 
 	UpdateEase();
+
+
 
 	float xChangePos = 0, xChangeNeg = 0, yChangePos = 0, yChangeNeg = 0;
 

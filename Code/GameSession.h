@@ -21,7 +21,7 @@
 #include "EnvEffects.h"
 #include "Actor.h"
 #include "EffectLayer.h"
-#include <boost/filesystem.hpp>
+#include <boost/filesystem.hpp>"
 
 struct MapHeader;
 
@@ -57,6 +57,9 @@ struct Swiper;
 struct Barrier;
 
 struct BitField;
+
+struct ShardPopup;
+
 struct PoiInfo
 {
 	PoiInfo( const std::string &name, sf::Vector2i &p );
@@ -353,7 +356,8 @@ struct TerrainPiece : QuadTreeEntrant
 	bool IsTouchingBox(const sf::Rect<double> &r);
 };
 
-struct GameSession : QuadTreeCollider, RayCastHandler
+struct GameSession : QuadTreeCollider, RayCastHandler,
+	ParticleHandler
 {
 	enum GameResultType
 	{
@@ -373,6 +377,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		RACEFIGHT_RESULTS,
 		STORY,
 		SEQUENCE,
+		FROZEN,
 		MAP
 	};
 
@@ -415,8 +420,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		D_W1_GRASSYROCK
 	};
 
-	
+	ShardPopup *shardPop;
 	TerrainPiece *listVA;
+
+
+	void UpdateShapeParticle(ShapeParticle *sp);
+	void ActivateShapeParticle(ShapeParticle *sp);
 
 	struct DecorDraw
 	{

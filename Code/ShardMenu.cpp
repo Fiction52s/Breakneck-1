@@ -347,7 +347,6 @@ MusicInfo *ShardMenu::GetShardMusic(const std::string &str)
 }
 
 
-
 PNGSeq * ShardMenu::GetSequence(const std::string &str)
 {
 	if (str == "")
@@ -465,6 +464,14 @@ void ShardMenu::SetCurrentDescription( bool captured)
 	currShardNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
 	if( captured )
 		currShardText.setString(shardDesc[xSelector->currIndex][ySelector->currIndex]);
+}
+
+std::string ShardMenu::GetShardDesc(int w, int li)
+{
+	int x = li + (w % 2) * 11;
+	int y = w / 2;
+
+	return shardDesc[x][y];
 }
 
 void ShardMenu::StopMusic()

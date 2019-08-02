@@ -9,6 +9,8 @@
 #include "MapHeader.h"
 #include "Sequence.h"
 #include "VisualEffects.h"
+#include "PauseMenu.h"
+#include "ShardMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -40,7 +42,13 @@ void Shard::SetupShardMaps()
 Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	:Enemy( p_owner, EnemyType::EN_SHARD, false, w+1 )
 {
-	
+	testEmitter = new ShapeEmitter(4, 50, PI / 2.0, 2 * PI, 1.0, 2.5, owner);
+	testEmitter->SetPos(Vector2f(pos));
+
+	Tileset *ts_fatGoku = owner->GetTileset("FX/fatgoku.png", 0, 0);
+	testEmitter->ts = ts_fatGoku;
+	//testEmitter->AddForce(Vector2f(0, .1));
+
 	world = w;
 	localIndex = li;
 
@@ -147,10 +155,15 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	animFactor[DISSIPATE] = 1;
 
 	ResetEnemy();
+
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(pos), Vector2f(pos),
+		Color::Cyan, Color(0, 0, 100, 0), 60));
+	geoGroup.Init();
 }
 
 Shard::~Shard()
 {
+	delete testEmitter;
 	delete sparklePool;
 }
 
@@ -225,6 +238,15 @@ void Shard::DissipateOnTouch()
 
 	SetHitboxes(NULL, 0);
 	SetHurtboxes(NULL, 0);
+
+	GetShardSequence *gss = (GetShardSequence*)owner->getShardSeq;
+	gss->shard = this;
+	owner->getShardSeq->Reset();
+	owner->activeSequence = owner->getShardSeq;
+
+	owner->GetPlayer(0)->SetAction(Actor::GETSHARD);
+	owner->GetPlayer(0)->frame = 0;
+	owner->GetPlayer(0)->velocity = V2d(0, 0);
 	//Capture();
 }
 
@@ -242,11 +264,7 @@ void Shard::Capture()
 		owner->saveFile->Save();
 	}
 
-	owner->getShardSeq->Reset();
-	owner->activeSequence = owner->getShardSeq;
-
-	owner->GetPlayer(0)->SetAction(Actor::GETSHARD);
-	owner->GetPlayer(0)->frame = 0;
+	
 	//owner->state = GameSession::SEQUENCE;
 	//owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position);
 	
@@ -260,7 +278,7 @@ void Shard::DirectKill()
 
 void Shard::ResetEnemy()
 {
-
+	geoGroup.Reset();
 	totalFrame = 0;
 	sparklePool->Reset();
 	action = FLOAT;
@@ -275,6 +293,8 @@ void Shard::ResetEnemy()
 
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
+
+	testEmitter->Reset();
 }
 
 void Shard::ProcessState()
@@ -310,8 +330,12 @@ void Shard::ProcessState()
 		position.y += f * floatAmount;
 	}
 	
-	
+	testEmitter->Update();
 	sparklePool->Update();
+	if (!geoGroup.Update())
+	{
+		geoGroup.Reset();
+	}
 
 	Vector2f sparkleCenter(position);
 
@@ -359,7 +383,7 @@ void Shard::UpdateSprite()
 
 void Shard::EnemyDraw( sf::RenderTarget *target )
 {
-	
+	//geoGroup.Draw( target );
 
 	if (action != DISSIPATE)
 	{
@@ -367,7 +391,7 @@ void Shard::EnemyDraw( sf::RenderTarget *target )
 		sparklePool->Draw(target);
 	}
 
-	
+	testEmitter->Draw(target);
 }
 
 void Shard::DrawMinimap( sf::RenderTarget *target )
@@ -383,4 +407,74 @@ void Shard::UpdateHitboxes()
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
 	hurtBox.globalPosition = position;
 	hurtBox.globalAngle = 0;
+}
+
+ShardPopup::ShardPopup(GameSession *p_owner)
+	:owner( p_owner )
+{
+	w = -1;
+	li = -1;
+
+	desc.setCharacterSize(20);
+	desc.setFillColor(Color::White);
+	desc.setFont(owner->mainMenu->arial);
+
+	descRel = Vector2f(200, 20);
+	effectRel = Vector2f(20, 20);
+	shardRel = Vector2f(100, 20);
+
+	Tileset *ts_bg = owner->GetTileset("Menu/GetShard/getshardbg.png", 0, 0 );
+	bgSpr.setTexture(*ts_bg->texture);
+}
+
+void ShardPopup::Reset()
+{
+	state = SHOW;
+	frame = 0;
+}
+
+void ShardPopup::Update()
+{
+	++frame;
+}
+
+void ShardPopup::Draw(RenderTarget *target)
+{
+	target->draw(bgSpr);
+	target->draw(shardSpr);
+	target->draw(effectSpr);
+	target->draw(desc);
+}
+
+void ShardPopup::SetShard(int p_w, int p_li)
+{
+	w = p_w;
+	li = p_li;
+
+	Tileset *ts_shard = Shard::GetShardTileset(w, &owner->tm);
+	shardSpr.setTexture(*ts_shard->texture);
+	shardSpr.setTextureRect(ts_shard->GetSubRect(li));
+
+	effectSpr.setTexture(*shardSpr.getTexture());
+	effectSpr.setTextureRect(shardSpr.getTextureRect());
+
+	string test = owner->pauseMenu->shardMenu->GetShardDesc(0, 0);
+	desc.setString(test);
+}
+
+void ShardPopup::SetTopLeft(sf::Vector2f &pos)
+{
+	topLeft = pos;
+	shardSpr.setPosition(topLeft + shardRel);
+	effectSpr.setPosition(topLeft + effectRel);
+	desc.setPosition(topLeft + descRel);
+	bgSpr.setPosition(topLeft);
+}
+
+void ShardPopup::SetCenter(sf::Vector2f &pos)
+{
+	float width = bgSpr.getLocalBounds().width;
+	float height = bgSpr.getLocalBounds().height;
+
+	SetTopLeft(Vector2f( pos.x - width / 2, pos.y - height / 2));
 }

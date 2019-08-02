@@ -20,6 +20,280 @@ sf::Color GetBlendColor(
 }
 
 
+ShapeParticle::ShapeParticle(int p_numPoints, sf::Vertex *v,
+	ShapeEmitter *p_emit)
+	:numPoints(p_numPoints), points(v), emit( p_emit )
+{
+
+}
+
+void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
+	sf::Vector2f &p_vel, float p_angle, int p_ttl)
+{
+	pos = p_pos;
+	vel = p_vel;
+	ttl = p_ttl;
+	radius = p_radius;
+	angle = p_angle;
+
+	if (emit->handler != NULL)
+	{
+		emit->handler->ActivateShapeParticle(this);
+	}
+
+	sf::Transform tr;
+
+	int extraAngle = rand() % 360;
+	tr.rotate(angle);//extraAngle);
+
+	sf::Vector2f dir(0, -1);
+
+
+	if (numPoints == 3)
+	{
+		points[0].position = pos + tr.transformPoint(dir * radius);
+		tr.rotate(360.f / numPoints);
+		points[1].position = pos + tr.transformPoint(dir * radius);
+		tr.rotate(360.f / numPoints);
+		points[2].position = pos + tr.transformPoint(dir * radius);
+	}
+	else if (numPoints == 4)
+	{
+		tr.rotate(-45);
+		points[0].position = pos + tr.transformPoint(dir * radius);
+		tr.rotate(90);
+		points[1].position = pos + tr.transformPoint(dir * radius);
+		tr.rotate(90);
+		points[2].position = pos + tr.transformPoint(dir * radius);
+		tr.rotate(90);
+		points[3].position = pos + tr.transformPoint(dir * radius);
+	}
+	else if (numPoints > 4)
+	{
+		int numOuterPoints = numPoints / 3;
+		for (int i = 0; i < numOuterPoints; ++i)
+		{
+			points[i * 3].position = pos;
+			points[i * 3 + 1].position = pos + tr.transformPoint(dir * radius);
+			tr.rotate(360.f / numOuterPoints);
+			points[i * 3 + 2].position = pos + tr.transformPoint(dir * radius);
+		}
+	}
+	else
+	{
+		assert(0);
+	}
+}
+
+void ShapeParticle::SetColor(sf::Color &c)
+{
+	color = c;
+	for (int i = 0; i < numPoints; ++i)
+	{
+		points[i].color = c;
+	}
+}
+
+void ShapeParticle::SetTileIndex(int ti)
+{
+	assert(numPoints == 4);
+
+	tileIndex = ti;
+	SetRectSubRect(points, emit->ts->GetSubRect( ti ));
+}
+
+void ShapeParticle::Update()
+{
+	if (ttl < 0)
+	{
+		return;
+	}
+
+	Vector2f oldPos = pos;
+
+	if (emit->handler != NULL)
+	{
+		emit->handler->UpdateShapeParticle(this);
+	}
+
+	pos += vel;
+	vel += emit->accel;
+
+	for (int i = 0; i < numPoints; ++i)
+	{
+		points[i].position += vel;
+	}
+
+	//UpdatePoints();
+
+	--ttl;
+
+	if (ttl < 0)
+	{
+		Clear();
+	}
+}
+
+void ShapeParticle::Clear()
+{
+	for (int i = 0; i < numPoints; ++i)
+	{
+		points[i].position = Vector2f(0, 0);
+	}
+	ttl = -1;
+}
+
+ShapeEmitter::ShapeEmitter(int p_pointsPerShape,
+	int p_numShapes, float p_angle,
+	float p_angleRange,
+	float p_minSpeed, float p_maxSpeed, ParticleHandler *h)
+	:pointsPerShape( p_pointsPerShape ), numShapesTotal( p_numShapes ),
+	angle( p_angle ), angleRange( p_angleRange ), minSpeed( p_minSpeed ),
+	maxSpeed( p_maxSpeed ), handle( h )
+{
+	if (pointsPerShape > 4)
+	{
+		pointsPerShape *= 3;
+	}
+	numPoints = numShapesTotal * pointsPerShape;
+	points = new Vertex[numPoints];
+	particles = new ShapeParticle*[numShapesTotal];
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		particles[i] = new ShapeParticle(pointsPerShape, points + i * pointsPerShape, this);
+	}
+	Color r = Color::Red;
+	SetColor(r);
+}
+
+ShapeEmitter::~ShapeEmitter()
+{
+	delete[] points;
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		delete particles[i];
+	}
+	delete[] particles;
+}
+
+void ShapeEmitter::SetPos(sf::Vector2f &p_pos)
+{
+	pos = p_pos;
+}
+
+void ShapeEmitter::Reset()
+{
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		particles[i]->Clear();
+	}
+	frame = 0;
+}
+
+void ShapeEmitter::SetColor(sf::Color &c)
+{
+
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		sf::Color randColor(rand() % 255, rand() % 255, rand() % 255, 100 + rand() % 155);
+		particles[i]->SetColor(randColor);
+	}
+}
+
+void ShapeEmitter::ActivateParticle( int index )
+{
+	float a = angle;
+	float f = (float)rand() / RAND_MAX * 2.0 - 1.0;
+	a += angleRange * f;
+
+	float s = minSpeed;
+	float f1 = (float)rand() / RAND_MAX;
+	s += (maxSpeed - minSpeed) * f1;
+
+	Vector2f vel(1, 0);
+	vel *= s;
+	RotateCCW(vel, a);
+
+	int rad = 2 + rand() % 15;
+
+	int extraAngle = rand() % 360;
+
+	particles[index]->Activate( rad, pos, vel, extraAngle, 180 );
+	particles[index]->SetTileIndex(0);
+}
+
+void ShapeEmitter::Update()
+{
+	bool activate = false;
+	//if( frame == 0 )
+	if (frame % 10 == 0)
+	{
+		activate = true;
+	}
+
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		if (particles[i]->ttl < 0 && activate)
+		{
+			ActivateParticle(i);
+			activate = false;
+		}
+		else
+		{
+			particles[i]->Update();
+		}
+
+		if (particles[i]->ttl < 0 && activate)
+		{
+			ActivateParticle(i);
+			activate = false;
+		}
+	}
+
+	++frame;
+}
+
+void ShapeEmitter::Draw(sf::RenderTarget *target)
+{
+	if (pointsPerShape == 4)
+	{
+		if (ts != NULL)
+		{
+			target->draw(points, numPoints, sf::Quads, ts->texture);
+		}
+		else
+		{
+			target->draw(points, numPoints, sf::Quads);
+		}
+		
+	}
+	else
+	{
+		target->draw(points, numPoints, sf::Triangles);
+	}
+}
+
+void ShapeEmitter::AddForce(sf::Vector2f &f)
+{
+	accel += f;
+}
+
+void ShapeEmitter::ClearForces()
+{
+	accel = Vector2f(0, 0);
+}
+
+void ShapeEmitter::SetForce(sf::Vector2f &f)
+{
+	accel = f;
+}
+
+//void ShapeParticle::UpdatePoints()
+//{
+//	
+//}
+
+
 MovingGeo::MovingGeo()
 	:points( NULL )
 {
@@ -69,6 +343,7 @@ void MovingGeo::Clear()
 
 void MovingGeoGroup::Reset()
 {
+	frame = 0;
 	for (auto it = geoList.begin(); it != geoList.end(); ++it)
 	{
 		(*it)->Reset();
@@ -87,14 +362,26 @@ bool MovingGeoGroup::Update()
 {
 	bool running = false;
 
-	for (auto it = geoList.begin(); it != geoList.end(); ++it)
+	auto wit = waitFrames.begin();
+	int wFrames;
+	for (auto it = geoList.begin(); it != geoList.end(); ++it, ++wit)
 	{
-		(*it)->Update();
-		if (!(*it)->done)
+		wFrames = (*wit);
+		if (frame >= wFrames)
+		{
+			(*it)->Update();
+			if (!(*it)->done)
+			{
+				running = true;
+			}
+		}
+		else
 		{
 			running = true;
 		}
 	}
+
+	++frame;
 
 	return running;
 }
@@ -104,9 +391,10 @@ void MovingGeoGroup::Draw(sf::RenderTarget *target)
 	target->draw(points, numTotalPoints, sf::Quads);
 }
 
-void MovingGeoGroup::AddGeo(MovingGeo *mg)
+void MovingGeoGroup::AddGeo(MovingGeo *mg, int wf)
 {
 	geoList.push_back(mg);
+	waitFrames.push_back(wf);
 }
 
 void MovingGeoGroup::Init()
@@ -146,7 +434,7 @@ SpinningTri::SpinningTri(float p_startAngle)
 	startWidth = 100;
 	finalWidth = 200;
 	startColor = Color::Blue;
-	fadeColor = Color(40, 40, 40, 80);
+	fadeColor = Color(40, 40, 40, 0);
 }
 
 void SpinningTri::Reset()
@@ -158,8 +446,8 @@ void SpinningTri::Reset()
 	angle = startAngle;
 	width = startWidth;
 	done = false;
-
-	UpdatePoints();
+	Clear();
+	//UpdatePoints();
 }
 
 void SpinningTri::Update()
@@ -274,10 +562,8 @@ Laser::Laser(float p_startAngle)
 
 void Laser::Reset()
 {
-	SetHeight(0);
-	SetWidth(startWidth);
-	color = startColor;
 	SetColor(color);
+	color = startColor;
 	height = 0;
 	width = 100;
 	frame = 0;
@@ -357,6 +643,7 @@ void Laser::Update()
 	switch (state)
 	{
 	case S_VERTICALGROW:
+		SetWidth(startWidth);
 		SetHeight( fac * maxHeight);
 		//length = fac * maxLength;
 		break;
@@ -482,8 +769,8 @@ void Ring::Draw(sf::RenderTarget *target)
 
 MovingRing::MovingRing(int p_circlePoints,
 	float p_startInner,
-	float p_startWidth,
 	float p_endInner,
+	float p_startWidth,
 	float p_endWidth,
 	Vector2f p_startPos,
 	Vector2f p_endPos,
@@ -498,7 +785,7 @@ MovingRing::MovingRing(int p_circlePoints,
 
 void MovingRing::Reset()
 {
-	Set(startPos, startInner, startWidth);
+	Clear();//Set(startPos, startInner, startWidth);
 	frame = 0;
 	done = false;
 }

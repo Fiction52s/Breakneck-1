@@ -20,6 +20,7 @@ struct Airdasher : Enemy
 		sf::Vector2i pos );
 	~Airdasher();
 	void ProcessState();
+
 	void ProcessHit();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
@@ -30,6 +31,7 @@ struct Airdasher : Enemy
 	double SetFacingPlayerAngle();
 	void SetFacingSide( V2d pDir );
 	void ComboHit();
+	void IHitPlayer(int index = 0);
 
 	int hitLimit;
 	int currHits;
@@ -38,6 +40,8 @@ struct Airdasher : Enemy
 	V2d velocity;
 
 	ComboObject *comboObj;
+
+	int hitFrame;
 
 
 	int chargeFrames;

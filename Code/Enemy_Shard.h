@@ -5,9 +5,50 @@
 #include <map>
 #include "ShardTypes.h"
 
+#include "MovingGeo.h"
+
 
 struct EffectPool;
 struct TilesetManager;
+struct GameSesssion;
+
+struct ShardPopup
+{
+	enum State
+	{
+		SHOW,
+		Count
+	};
+
+
+	ShardPopup( GameSession *p_owner );
+	void SetTopLeft(sf::Vector2f &pos);
+	void SetCenter(sf::Vector2f &pos);
+	void Reset();
+	void Update();
+	void SetShard(int w, int li);
+	void SetDescription(const std::string &desc);
+	void Draw(sf::RenderTarget *target);
+	sf::Text desc;
+	sf::Sprite shardSpr;
+	sf::Sprite effectSpr;
+	sf::Sprite bgSpr;
+
+	sf::Vector2f topLeft;
+	sf::Vector2f descRel;
+	sf::Vector2f effectRel;
+	sf::Vector2f shardRel;
+
+	GameSession *owner;
+	int w;
+	int li;
+	int frame;
+	State state;
+
+};
+
+
+struct ShapeEmitter;
 struct Shard : Enemy
 {
 	enum Action
@@ -16,6 +57,8 @@ struct Shard : Enemy
 		DISSIPATE,
 		Count
 	};
+	ShapeEmitter *testEmitter;
+	MovingGeoGroup geoGroup;
 
 	static Tileset *GetShardTileset(int w,
 		TilesetManager *ttm);

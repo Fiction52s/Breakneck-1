@@ -161,6 +161,8 @@ void Airdasher::ComboHit()
 
 void Airdasher::ResetEnemy()
 {
+	hitFrame = -1;
+
 	currHits = 0;
 	currOrig = origPos;
 	SetHitboxes(hitBody, 0);
@@ -282,6 +284,11 @@ void Airdasher::ProcessState()
 		}
 	}
 	
+}
+
+void Airdasher::IHitPlayer(int index)
+{
+
 }
 
 void Airdasher::SetFacingSide( V2d pDir )

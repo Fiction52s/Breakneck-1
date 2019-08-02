@@ -1,5 +1,6 @@
 #include "Sequence.h"
 #include "GameSession.h"
+#include "Enemy_Shard.h"
 
 using namespace sf;
 using namespace std;
@@ -11,13 +12,64 @@ GetShardSequence::GetShardSequence(GameSession *p_owner)
 
 	for (int i = 0; i < 5; ++i)
 	{
-		geoGroup.AddGeo(new SpinningTri(0 + i * PI / 2.5));
+		geoGroup.AddGeo(new SpinningTri(0 + i * PI / 2.5), 30);
 	}
-	geoGroup.AddGeo(new Laser(0));
+	//geoGroup.AddGeo(new Laser(0));
 
-	geoGroup.AddGeo(new MovingRing(32, 20, 10, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
-		Color::Cyan, Color(0, 0, 100, 10), 30));
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::White, Color(100, 0, 0, 0), 30), 0);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0), 30));
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0), 30), 10);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Blue, Color(0, 0, 100, 0), 30), 20);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0), 
+		Color::White, Color(0, 100, 0, 0), 30), 45);
+
+	Color c = Color::White;
+	c.a = 100;
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(100, 0, 0, 0), 30), 0);
+	c = Color::Cyan;
+	c.a = 100;
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(0, 0, 100, 0), 30));
+
+	//c = Color::Red;
+	//c.a = 100;
+
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(0, 0, 100, 0), 30), 10);
+
+	c = Color::Blue;
+	c.a = 100;
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(0, 0, 100, 0), 30), 20);
+
+	c = Color::White;
+	c.a = 100;
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(0, 100, 0, 0), 30), 45);
+
+	/*geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::White, Color(100, 0, 0, 0), 30), 30);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0), 30));
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0), 30), 10);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Blue, Color(0, 0, 100, 0), 30), 20);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::White, Color(0, 100, 0, 0), 30), 45);*/
 	geoGroup.Init();
+
+	shard = NULL;
+
+	shardPop = owner->shardPop;
+
+	SetRectColor(overlayRect, Color(100, 100, 100, 100));
+	SetRectCenter(overlayRect, 1920, 1080, Vector2f( 960, 540 ));
 }
 
 bool GetShardSequence::Update()
@@ -34,6 +86,9 @@ bool GetShardSequence::Update()
 		if (state == END)
 		{
 			owner->cam.EaseOutOfManual(60);
+			player->SetAction(Actor::JUMP);
+			player->frame = 1;
+			owner->cam.StopRumble();
 			//owner->state = GameSession::RUN;;
 			//owner->goalDestroyed = true;
 			//owner->state = GameSession::RUN;
@@ -49,9 +104,23 @@ bool GetShardSequence::Update()
 		{
 			owner->cam.SetManual(true);
 			owner->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
+			owner->cam.SetRumble(10, 10, 90);
 		}
 
+		int freezeFrame = 100;
+		if (frame == freezeFrame)
+		{
+			owner->state = GameSession::FROZEN;
+		}
+		else if (frame > freezeFrame)
+		{
+			if (owner->GetCurrInputUnfiltered(0).A && !owner->GetPrevInputUnfiltered(0).A)
+			{
+				owner->state = GameSession::RUN;
+			}
+		}
 
+		if( owner->state == GameSession::RUN)
 		if (!geoGroup.Update())
 		{
 			frame = stateLength[state] - 1;
@@ -65,14 +134,20 @@ bool GetShardSequence::Update()
 
 void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
 {
-	if (layer != EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
+	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
-		return;
+		if (state != END)
+		{
+			geoGroup.Draw(target);
+		}
 	}
-
-	if (state != END)
+	else if (layer == EffectLayer::UI_FRONT)
 	{
-		geoGroup.Draw(target);
+		if (state != END && owner->state == GameSession::FROZEN)
+		{
+			target->draw(overlayRect, 4, sf::Quads);
+			shardPop->Draw(target);
+		}
 	}
 }
 
@@ -82,4 +157,11 @@ void GetShardSequence::Reset()
 	state = GET;
 	geoGroup.SetBase(Vector2f(owner->GetPlayer(0)->position));
 	geoGroup.Reset();
+
+	assert(shard != NULL);
+
+	shardPop->SetShard(shard->world, shard->localIndex);
+	shardPop->SetCenter(Vector2f( 960, 800 ));
+	shardPop->Reset();
+
 }
