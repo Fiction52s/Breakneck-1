@@ -5,8 +5,8 @@ struct ShapeParticle;
 
 struct ParticleHandler
 {
-	virtual void UpdateShapeParticle(ShapeParticle *sp) = 0;
-	virtual void ActivateShapeParticle(ShapeParticle *sp) = 0;
+	virtual void UpdateShapeParticle(ShapeParticle *sp) {};
+	virtual void ActivateShapeParticle(ShapeParticle *sp) {};
 };
 
 #endif 

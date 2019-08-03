@@ -48,7 +48,6 @@ using namespace std;
 
 void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 {
-
 	ts_scorpRun = owner->GetTileset("Kin/scorp_run_192x128.png", 192, 128);
 	ts_scorpSlide = owner->GetTileset("Kin/scorp_slide_160x96.png", 160, 96);
 	ts_scorpSteepSlide = owner->GetTileset("Kin/scorp_steep_slide_224x128.png", 224, 128);

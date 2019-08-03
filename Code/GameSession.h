@@ -22,6 +22,7 @@
 #include "Actor.h"
 #include "EffectLayer.h"
 #include <boost/filesystem.hpp>"
+#include "ParticleHandler.h"
 
 struct MapHeader;
 

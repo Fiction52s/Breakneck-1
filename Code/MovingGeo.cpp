@@ -1,6 +1,7 @@
 #include "MovingGeo.h"
 #include "VectorMath.h"
 #include <assert.h>
+#include <iostream>
 
 using namespace std;
 using namespace sf;
@@ -20,6 +21,53 @@ sf::Color GetBlendColor(
 }
 
 
+FadingParticle::FadingParticle(int numPoints,
+	sf::Vertex *v,
+	ShapeEmitter *emit)
+	:ShapeParticle(numPoints, v, emit)
+{
+	fadeThresh = 40;
+}
+
+void FadingParticle::SpecialActivate()
+{
+	action = NORMAL;
+	if (ttl < fadeThresh)
+	{
+		action = FADE;
+		startAlpha = color.a;
+	}
+}
+
+void FadingParticle::SpecialUpdate()
+{
+	switch (action)
+	{
+	case NORMAL:
+		if (ttl < fadeThresh)
+		{
+			action = FADE;
+			startAlpha = color.a;
+		}
+		break;
+	case FADE:
+		break;
+	}
+
+	switch (action)
+	{
+	case NORMAL:
+		break;
+	case FADE:
+	{
+		float fttl = ttl;
+		color.a = startAlpha * fttl / fadeThresh;
+		SetColor(color);
+		break;
+	}
+	}
+}
+
 ShapeParticle::ShapeParticle(int p_numPoints, sf::Vertex *v,
 	ShapeEmitter *p_emit)
 	:numPoints(p_numPoints), points(v), emit( p_emit )
@@ -28,13 +76,16 @@ ShapeParticle::ShapeParticle(int p_numPoints, sf::Vertex *v,
 }
 
 void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
-	sf::Vector2f &p_vel, float p_angle, int p_ttl)
+	sf::Vector2f &p_vel, float p_angle, int p_ttl, sf::Color c)
 {
+	SetColor(c);
 	pos = p_pos;
 	vel = p_vel;
 	ttl = p_ttl;
 	radius = p_radius;
 	angle = p_angle;
+
+	SpecialActivate();
 
 	if (emit->handler != NULL)
 	{
@@ -44,7 +95,7 @@ void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 	sf::Transform tr;
 
 	int extraAngle = rand() % 360;
-	tr.rotate(angle);//extraAngle);
+	tr.rotate(angle);
 
 	sf::Vector2f dir(0, -1);
 
@@ -116,6 +167,8 @@ void ShapeParticle::Update()
 		emit->handler->UpdateShapeParticle(this);
 	}
 
+	SpecialUpdate();
+
 	pos += vel;
 	vel += emit->accel;
 
@@ -149,7 +202,7 @@ ShapeEmitter::ShapeEmitter(int p_pointsPerShape,
 	float p_minSpeed, float p_maxSpeed, ParticleHandler *h)
 	:pointsPerShape( p_pointsPerShape ), numShapesTotal( p_numShapes ),
 	angle( p_angle ), angleRange( p_angleRange ), minSpeed( p_minSpeed ),
-	maxSpeed( p_maxSpeed ), handle( h )
+	maxSpeed( p_maxSpeed ), handler( h )
 {
 	if (pointsPerShape > 4)
 	{
@@ -160,10 +213,12 @@ ShapeEmitter::ShapeEmitter(int p_pointsPerShape,
 	particles = new ShapeParticle*[numShapesTotal];
 	for (int i = 0; i < numShapesTotal; ++i)
 	{
-		particles[i] = new ShapeParticle(pointsPerShape, points + i * pointsPerShape, this);
+		//particles[i] = new ShapeParticle(pointsPerShape, points + i * pointsPerShape, this);
+		particles[i] = new FadingParticle(pointsPerShape, points + i * pointsPerShape, this);
 	}
-	Color r = Color::Red;
+	Color r = Color::White;
 	SetColor(r);
+	ratePerSecond = 10;
 }
 
 ShapeEmitter::~ShapeEmitter()
@@ -181,22 +236,29 @@ void ShapeEmitter::SetPos(sf::Vector2f &p_pos)
 	pos = p_pos;
 }
 
+void ShapeEmitter::SetTileset(Tileset *p_ts)
+{
+	assert(pointsPerShape == 4);
+	ts = p_ts;
+}
+
 void ShapeEmitter::Reset()
 {
+	emitting = true;
 	for (int i = 0; i < numShapesTotal; ++i)
 	{
 		particles[i]->Clear();
 	}
 	frame = 0;
+	lastCreationTime = 0;
 }
 
 void ShapeEmitter::SetColor(sf::Color &c)
 {
-
 	for (int i = 0; i < numShapesTotal; ++i)
 	{
-		sf::Color randColor(rand() % 255, rand() % 255, rand() % 255, 100 + rand() % 155);
-		particles[i]->SetColor(randColor);
+		//sf::Color randColor(rand() % 255, rand() % 255, rand() % 255, 255); //100 + rand() % 155);
+		particles[i]->SetColor(c);
 	}
 }
 
@@ -218,25 +280,46 @@ void ShapeEmitter::ActivateParticle( int index )
 
 	int extraAngle = rand() % 360;
 
+	sf::Color randColor(rand() % 255, rand() % 255, rand() % 255, 255); //100 + rand() % 155);
+	particles[index]->SetColor(randColor);
+
 	particles[index]->Activate( rad, pos, vel, extraAngle, 180 );
-	particles[index]->SetTileIndex(0);
+	//particles[index]->SetTileIndex(0);
+	//cout << "activating: " << index << endl;
+}
+
+void ShapeEmitter::SetRatePerSecond(int rate)
+{
+	ratePerSecond = rate;
 }
 
 void ShapeEmitter::Update()
 {
 	bool activate = false;
-	//if( frame == 0 )
-	if (frame % 10 == 0)
+
+	int numActivateThisFrame = 0;
+
+	float rf = 1.f / ratePerSecond;
+	float cTime = frame / 60.f;
+	float diff = cTime - lastCreationTime;
+	float num = diff / rf;
+
+	numActivateThisFrame = floor(num);
+	if (numActivateThisFrame > 0)
 	{
-		activate = true;
+		lastCreationTime = cTime;
 	}
+	/*if (frame % 10 == 0)
+	{
+		numActivateThisFrame++;
+	}*/
 
 	for (int i = 0; i < numShapesTotal; ++i)
 	{
-		if (particles[i]->ttl < 0 && activate)
+		if (particles[i]->ttl < 0 && numActivateThisFrame > 0 && emitting )
 		{
 			ActivateParticle(i);
-			activate = false;
+			numActivateThisFrame--;
 		}
 		else
 		{
@@ -251,6 +334,11 @@ void ShapeEmitter::Update()
 	}
 
 	++frame;
+}
+
+void ShapeEmitter::SetOn(bool on)
+{
+	emitting = on;
 }
 
 void ShapeEmitter::Draw(sf::RenderTarget *target)
@@ -287,12 +375,6 @@ void ShapeEmitter::SetForce(sf::Vector2f &f)
 {
 	accel = f;
 }
-
-//void ShapeParticle::UpdatePoints()
-//{
-//	
-//}
-
 
 MovingGeo::MovingGeo()
 	:points( NULL )

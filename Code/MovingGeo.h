@@ -17,14 +17,19 @@ struct ShapeEmitter;
 
 struct ShapeParticle
 {
+	
+
 	ShapeParticle(int numPoints, sf::Vertex *v,
 		ShapeEmitter *emit);
 	
 	void Activate(float radius,
 		sf::Vector2f &pos,
 		sf::Vector2f &vel,
-		float angle, int ttl);
+		float angle, int ttl,
+		sf::Color c = sf::Color::White );
 	void SetTileIndex(int ti);
+	virtual void SpecialActivate() {};
+	virtual void SpecialUpdate() {};
 	void Update();
 	void Clear();
 	void SetColor(sf::Color &c);
@@ -38,6 +43,24 @@ struct ShapeParticle
 	sf::Color color;
 	int tileIndex;
 	ShapeEmitter *emit;
+};
+
+struct FadingParticle : ShapeParticle
+{
+	enum Action
+	{
+		NORMAL,
+		FADE,
+	};
+	FadingParticle(int numPoints,
+		sf::Vertex *v,
+		ShapeEmitter *emit);
+	void SpecialUpdate();
+	void SpecialActivate();
+	Action action;
+	int fadeThresh;
+	int startAlpha;
+	
 };
 
 struct ShapeEmitter
@@ -54,6 +77,7 @@ struct ShapeEmitter
 		ParticleHandler *h = NULL );
 	~ShapeEmitter();
 	void SetPos(sf::Vector2f &pos);
+	void SetTileset(Tileset *ts);
 	void SetColor(sf::Color &c);
 	void Reset();
 	void Update();
@@ -62,6 +86,7 @@ struct ShapeEmitter
 	void AddForce(sf::Vector2f &f);
 	void ClearForces();
 	void SetForce(sf::Vector2f &f);
+	void SetOn(bool on);
 	int pointsPerShape;
 	int numShapesTotal;
 	int numPoints;
@@ -74,11 +99,17 @@ struct ShapeEmitter
 	ShapeParticle **particles;
 	int frame;
 	ParticleHandler *handler;
+	int alphaStartFade;
 
 	sf::Vector2f accel;
+	bool emitting;
+	void SetRatePerSecond(int rate);
+	int ratePerSecond;
 	Tileset *ts;
 
 	ParticleType pType;
+
+	float lastCreationTime;
 };
 
 struct MovingGeo

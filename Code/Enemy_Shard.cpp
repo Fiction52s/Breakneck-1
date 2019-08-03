@@ -42,11 +42,10 @@ void Shard::SetupShardMaps()
 Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	:Enemy( p_owner, EnemyType::EN_SHARD, false, w+1 )
 {
-	testEmitter = new ShapeEmitter(4, 50, PI / 2.0, 2 * PI, 1.0, 2.5, owner);
+	testEmitter = new ShapeEmitter(6, 300, PI / 2.0, 2 * PI, 1.0, 2.5);
 	testEmitter->SetPos(Vector2f(pos));
-
-	Tileset *ts_fatGoku = owner->GetTileset("FX/fatgoku.png", 0, 0);
-	testEmitter->ts = ts_fatGoku;
+	//testEmitter->SetTileset( owner->GetTileset("FX/fatgoku.png", 0, 0));
+	testEmitter->SetRatePerSecond(120);
 	//testEmitter->AddForce(Vector2f(0, .1));
 
 	world = w;
