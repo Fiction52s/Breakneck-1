@@ -135,10 +135,10 @@ void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 
 	SpecialActivate();
 
-	if (emit->handler != NULL)
-	{
-		emit->handler->ActivateShapeParticle(this);
-	}
+	//if (emit->handler != NULL)
+	//{
+	//	emit->handler->ActivateShapeParticle(this);
+	//}
 
 	sf::Transform tr;
 
@@ -213,10 +213,10 @@ bool ShapeParticle::Update()
 
 	Vector2f oldPos = pos;
 
-	if (emit->handler != NULL)
+	/*if (emit->handler != NULL)
 	{
 		emit->handler->UpdateShapeParticle(this);
-	}
+	}*/
 
 	UpdateColor();
 
@@ -258,7 +258,7 @@ ShapeEmitter::ShapeEmitter(int p_pointsPerShape,
 	float p_minSpeed, float p_maxSpeed )
 	:pointsPerShape( p_pointsPerShape ), numShapesTotal( p_numShapes ),
 	angle( p_angle ), angleRange( p_angleRange ), minSpeed( p_minSpeed ),
-	maxSpeed( p_maxSpeed ), handler( h )
+	maxSpeed( p_maxSpeed )
 {
 	if (pointsPerShape > 4)
 	{
@@ -468,7 +468,7 @@ BoxEmitter::BoxEmitter(int pointsPerShape,
 	int numShapes, float angle,
 	float angleRange,
 	float minSpeed, float maxSpeed, float w, float h )
-	:ShapeEmitter(pointsPerShape, numShapes, angle, angleRange, minSpeed, maxSpeed, handle),
+	:ShapeEmitter(pointsPerShape, numShapes, angle, angleRange, minSpeed, maxSpeed),
 	width( w ), height( h )
 {
 

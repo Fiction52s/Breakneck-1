@@ -9557,18 +9557,6 @@ void GameSession::ClearEmitters()
 	}
 }
 
-void GameSession::UpdateShapeParticle(ShapeParticle *sp)
-{
-	Vector2f playerPos = Vector2f(GetPlayer(0)->position);
-	Vector2f dir = normalize(playerPos - sp->pos);
-	sp->vel += dir * .1f;
-}
-
-void GameSession::ActivateShapeParticle(ShapeParticle *sp)
-{
-
-}
-
 void GameSession::UpdateGoalFlow()
 {
 	Actor *p0 = GetPlayer(0);
