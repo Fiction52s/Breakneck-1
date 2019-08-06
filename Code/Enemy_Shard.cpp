@@ -45,7 +45,8 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	testEmitter = new ShapeEmitter(6, 300, PI / 2.0, 2 * PI, 1.0, 2.5);
 	testEmitter->SetPos(Vector2f(pos));
 	//testEmitter->SetTileset( owner->GetTileset("FX/fatgoku.png", 0, 0));
-	testEmitter->SetRatePerSecond(120);
+	testEmitter->SetRatePerSecond(30);
+	
 	//testEmitter->AddForce(Vector2f(0, .1));
 
 	world = w;
@@ -294,6 +295,7 @@ void Shard::ResetEnemy()
 	SetHurtboxes(hurtBody, 0);
 
 	testEmitter->Reset();
+	testEmitter->SetOn(false);
 }
 
 void Shard::ProcessState()
@@ -329,7 +331,7 @@ void Shard::ProcessState()
 		position.y += f * floatAmount;
 	}
 	
-	testEmitter->Update();
+	//testEmitter->Update();
 	sparklePool->Update();
 	if (!geoGroup.Update())
 	{

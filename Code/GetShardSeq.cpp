@@ -8,6 +8,10 @@ using namespace std;
 GetShardSequence::GetShardSequence(GameSession *p_owner)
 	:owner(p_owner)
 {
+
+	emitter = new ShapeEmitter(6, 300, PI / 2.0, 2 * PI, 1.0, 2.5);
+	emitter->SetRatePerSecond(120);
+
 	stateLength[GET] = 1000000;
 
 	for (int i = 0; i < 5; ++i)
@@ -52,16 +56,6 @@ GetShardSequence::GetShardSequence(GameSession *p_owner)
 	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
 		c, Color(0, 100, 0, 0), 30), 45);
 
-	/*geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
-		Color::White, Color(100, 0, 0, 0), 30), 30);
-	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
-		Color::Cyan, Color(0, 0, 100, 0), 30));
-	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
-		Color::Cyan, Color(0, 0, 100, 0), 30), 10);
-	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
-		Color::Blue, Color(0, 0, 100, 0), 30), 20);
-	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
-		Color::White, Color(0, 100, 0, 0), 30), 45);*/
 	geoGroup.Init();
 
 	shard = NULL;
@@ -70,6 +64,11 @@ GetShardSequence::GetShardSequence(GameSession *p_owner)
 
 	SetRectColor(overlayRect, Color(100, 100, 100, 100));
 	SetRectCenter(overlayRect, 1920, 1080, Vector2f( 960, 540 ));
+}
+
+GetShardSequence::~GetShardSequence()
+{
+	delete emitter;
 }
 
 bool GetShardSequence::Update()
@@ -89,9 +88,6 @@ bool GetShardSequence::Update()
 			player->SetAction(Actor::JUMP);
 			player->frame = 1;
 			owner->cam.StopRumble();
-			//owner->state = GameSession::RUN;;
-			//owner->goalDestroyed = true;
-			//owner->state = GameSession::RUN;
 			return false;
 		}
 	}
@@ -111,6 +107,7 @@ bool GetShardSequence::Update()
 		if (frame == freezeFrame)
 		{
 			owner->state = GameSession::FROZEN;
+			emitter->SetOn(false);
 		}
 		else if (frame > freezeFrame)
 		{
@@ -129,11 +126,14 @@ bool GetShardSequence::Update()
 	}
 	++frame;
 
+	//emitter->Update();
+
 	return true;
 }
 
 void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
 {
+	owner->DrawEmitters(layer);
 	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		if (state != END)
@@ -153,9 +153,10 @@ void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
 
 void GetShardSequence::Reset()
 {
+	Vector2f pPos = Vector2f(owner->GetPlayer(0)->position);
 	frame = 0;
 	state = GET;
-	geoGroup.SetBase(Vector2f(owner->GetPlayer(0)->position));
+	geoGroup.SetBase(pPos);
 	geoGroup.Reset();
 
 	assert(shard != NULL);
@@ -163,5 +164,9 @@ void GetShardSequence::Reset()
 	shardPop->SetShard(shard->world, shard->localIndex);
 	shardPop->SetCenter(Vector2f( 960, 800 ));
 	shardPop->Reset();
+
+	emitter->SetPos(Vector2f(pPos));
+	emitter->Reset();
+	owner->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 }

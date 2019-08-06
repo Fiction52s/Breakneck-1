@@ -5,7 +5,6 @@
 #include "Movement.h"
 #include <list>
 #include "Tileset.h"
-#include "ParticleHandler.h"
 
 
 sf::Color GetBlendColor(
@@ -17,8 +16,6 @@ struct ShapeEmitter;
 
 struct ShapeParticle
 {
-	
-
 	ShapeParticle(int numPoints, sf::Vertex *v,
 		ShapeEmitter *emit);
 	
@@ -30,7 +27,9 @@ struct ShapeParticle
 	void SetTileIndex(int ti);
 	virtual void SpecialActivate() {};
 	virtual void SpecialUpdate() {};
-	void Update();
+	virtual void UpdateColor() {};
+	//void SetEndColor(sf::Color &c );
+	bool Update();
 	void Clear();
 	void SetColor(sf::Color &c);
 	sf::Vector2f vel;
@@ -43,23 +42,38 @@ struct ShapeParticle
 	sf::Color color;
 	int tileIndex;
 	ShapeEmitter *emit;
+
 };
 
 struct FadingParticle : ShapeParticle
 {
 	enum Action
 	{
+		FADEIN,
 		NORMAL,
-		FADE,
+		FADEOUT,
 	};
 	FadingParticle(int numPoints,
 		sf::Vertex *v,
 		ShapeEmitter *emit);
 	void SpecialUpdate();
 	void SpecialActivate();
+	void SetColorShift( sf::Color &start,
+		sf::Color &end, int fadeInFrames,
+		int fadeOutFrames);
+	float GetNormalPortion();
+	//void SetSizeShift( )
+	
 	Action action;
-	int fadeThresh;
+	int fadeOutThresh;
+	int fadeInThresh;
 	int startAlpha;
+
+	void UpdateColor();
+	sf::Color startColor;
+	sf::Color endColor;
+
+	int maxTimeToLive;
 	
 };
 
@@ -67,26 +81,30 @@ struct ShapeEmitter
 {
 	enum ParticleType
 	{
-		TEST
+		NORMAL,
+		FADE
 	};
+	
 
 	ShapeEmitter(int pointsPerShape,
 		int numShapes, float angle,
 		float angleRange,
-		float minSpeed, float maxSpeed,
-		ParticleHandler *h = NULL );
+		float minSpeed, float maxSpeed);
 	~ShapeEmitter();
 	void SetPos(sf::Vector2f &pos);
+	virtual sf::Vector2f GetSpawnPos();
 	void SetTileset(Tileset *ts);
 	void SetColor(sf::Color &c);
 	void Reset();
 	void Update();
 	void Draw(sf::RenderTarget *target);
-	void ActivateParticle( int index );
+	virtual void ActivateParticle( int index );
 	void AddForce(sf::Vector2f &f);
 	void ClearForces();
 	void SetForce(sf::Vector2f &f);
 	void SetOn(bool on);
+	
+	
 	int pointsPerShape;
 	int numShapesTotal;
 	int numPoints;
@@ -98,8 +116,8 @@ struct ShapeEmitter
 	sf::Vertex *points;
 	ShapeParticle **particles;
 	int frame;
-	ParticleHandler *handler;
-	int alphaStartFade;
+	int numActive;
+	bool IsDone();
 
 	sf::Vector2f accel;
 	bool emitting;
@@ -110,7 +128,26 @@ struct ShapeEmitter
 	ParticleType pType;
 
 	float lastCreationTime;
+
+	ShapeEmitter *next;
 };
+
+struct BoxEmitter : ShapeEmitter
+{
+	BoxEmitter(int pointsPerShape,
+		int numShapes, float angle,
+		float angleRange,
+		float minSpeed, float maxSpeed,
+		float w, float h );
+
+	sf::Vector2f GetSpawnPos();
+	void SetRect(float w, float h);
+
+	int width;
+	int height;
+};
+
+
 
 struct MovingGeo
 {

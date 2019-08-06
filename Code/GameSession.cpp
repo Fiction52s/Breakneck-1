@@ -5507,6 +5507,11 @@ bool GameSession::Load()
 	//sf::sleep(sf::seconds(5));
 	//return true;
 
+	//testEmit = new BoxEmitter(4, 100, PI, PI / 6, 1, 5, 1000, 1000);
+	testEmit = new BoxEmitter(4, 1000, PI, PI / 6, 0, 0, 1000, 1000);
+	testEmit->SetTileset(GetTileset("Env/leaves_128x128.png", 128, 128));
+	testEmit->SetRatePerSecond(120);
+		//leaf_1_128x128
 	//for (int i = 0; i < 50; ++i)
 	//{
 	//	if (!speedBarShader.loadFromFile("Resources/Shader/speedbar_shader.frag", sf::Shader::Fragment))
@@ -6094,7 +6099,7 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 #include "StorySequence.h"
 int GameSession::Run()
 {
-
+	ClearEmitters();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVisible = mainMenu->GetMouseVisible();
 
@@ -6714,6 +6719,7 @@ int GameSession::Run()
 				fader->Update();
 				swiper->Update();
 				mainMenu->UpdateEffects();
+				
 
 				pauseFrames--;
 				//accumulator = 0;
@@ -6915,6 +6921,7 @@ int GameSession::Run()
 				absorbShardParticles->Update();
 
 				UpdateEffects();
+				UpdateEmitters();
 
 				keyMarker->Update();
 
@@ -7372,6 +7379,8 @@ int GameSession::Run()
 		DrawStoryLayer(EffectLayer::BEHIND_TERRAIN);
 		DrawActiveSequence(EffectLayer::BEHIND_TERRAIN);
 		DrawEffects( EffectLayer::BEHIND_TERRAIN );
+		DrawEmitters(EffectLayer::BEHIND_TERRAIN);
+		
 
 		DrawZones();
 
@@ -7390,6 +7399,7 @@ int GameSession::Run()
 		DrawStoryLayer(EffectLayer::BEHIND_ENEMIES);
 		DrawActiveSequence(EffectLayer::BEHIND_ENEMIES);
 		DrawEffects( EffectLayer::BEHIND_ENEMIES );
+		DrawEmitters(EffectLayer::BEHIND_ENEMIES);
 
 		UpdateEnemiesDraw();
 		
@@ -7401,6 +7411,7 @@ int GameSession::Run()
 		DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
+		DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 		goalPulse->Draw( preScreenTex );
 
@@ -7431,6 +7442,7 @@ int GameSession::Run()
 		DrawStoryLayer(EffectLayer::IN_FRONT);
 		DrawActiveSequence(EffectLayer::IN_FRONT);
 		DrawEffects( EffectLayer::IN_FRONT );
+		DrawEmitters(EffectLayer::IN_FRONT);
 
 		if( ts_basicBullets != NULL )
 		{
@@ -7674,6 +7686,7 @@ int GameSession::Run()
 
 		DrawActiveSequence(EffectLayer::UI_FRONT);
 		DrawEffects(EffectLayer::UI_FRONT);
+		DrawEmitters(EffectLayer::UI_FRONT);
 
 		preScreenTex->setView(uiView);
 
@@ -8204,6 +8217,7 @@ int GameSession::Run()
 				fader->Update();
 				swiper->Update();
 				mainMenu->UpdateEffects();
+				UpdateEmitters();
 
 				accumulator -= TIMESTEP;
 
@@ -9475,6 +9489,74 @@ void GameSession::DrawGoal()
 	}
 }
 
+
+void GameSession::AddEmitter(ShapeEmitter *emit,
+	EffectLayer layer)
+{
+	ShapeEmitter *&currList = emitterLists[layer];
+	if (currList == NULL)
+	{
+		currList = emit;
+		emit->next = NULL;
+	}
+	else
+	{
+		emit->next = currList;
+		currList = emit;
+	}
+}
+
+void GameSession::DrawEmitters(EffectLayer layer)
+{
+	ShapeEmitter *curr = emitterLists[layer];
+	while (curr != NULL)
+	{
+		curr->Draw(preScreenTex);
+		curr = curr->next;
+	}
+}
+
+void GameSession::UpdateEmitters()
+{
+	ShapeEmitter *prev = NULL;
+	ShapeEmitter *curr;
+	for (int i = 0; i < EffectLayer::Count; ++i)
+	{
+		curr = emitterLists[i];
+		prev = NULL;
+		while (curr != NULL)
+		{
+			if (curr->IsDone())
+			{
+				if (curr == emitterLists[i])
+				{
+					emitterLists[i] = curr->next;
+				}
+				else
+				{
+					prev->next = curr->next;
+				}
+				curr = curr->next;
+			}
+			else
+			{
+				curr->Update();
+
+				prev = curr;
+				curr = curr->next;
+			}
+		}
+	}
+}
+
+void GameSession::ClearEmitters()
+{
+	for (int i = 0; i < EffectLayer::Count; ++i)
+	{
+		emitterLists[i] = NULL;
+	}
+}
+
 void GameSession::UpdateShapeParticle(ShapeParticle *sp)
 {
 	Vector2f playerPos = Vector2f(GetPlayer(0)->position);
@@ -10154,6 +10236,11 @@ void GameSession::NextFrameRestartLevel()
 
 void GameSession::RestartLevel()
 {
+	
+	ClearEmitters();
+	AddEmitter(testEmit, EffectLayer::IN_FRONT);
+	testEmit->Reset();
+
 	for (auto it = allVA.begin(); it != allVA.end(); ++it)
 	{
 		(*it)->Reset();
@@ -10228,6 +10315,9 @@ void GameSession::RestartLevel()
 	{
 		(*it)->Reset();
 	}
+
+
+	testEmit->SetPos(Vector2f(GetPlayer(0)->position));
 
 //	currentZone = originalZone;
 //	if( currentZone != NULL )

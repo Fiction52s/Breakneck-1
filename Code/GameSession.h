@@ -22,11 +22,11 @@
 #include "Actor.h"
 #include "EffectLayer.h"
 #include <boost/filesystem.hpp>"
-#include "ParticleHandler.h"
 
 struct MapHeader;
 
-
+struct BoxEmitter;
+struct ShapeEmitter;
 struct Minimap;
 struct ScreenRecorder;
 struct TopClouds;
@@ -357,8 +357,7 @@ struct TerrainPiece : QuadTreeEntrant
 	bool IsTouchingBox(const sf::Rect<double> &r);
 };
 
-struct GameSession : QuadTreeCollider, RayCastHandler,
-	ParticleHandler
+struct GameSession : QuadTreeCollider, RayCastHandler
 {
 	enum GameResultType
 	{
@@ -421,12 +420,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler,
 		D_W1_GRASSYROCK
 	};
 
+	BoxEmitter *testEmit;
+
+
 	ShardPopup *shardPop;
 	TerrainPiece *listVA;
-
-
-	void UpdateShapeParticle(ShapeParticle *sp);
-	void ActivateShapeParticle(ShapeParticle *sp);
 
 	struct DecorDraw
 	{
@@ -1041,6 +1039,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler,
 	Enemy *pauseImmuneEffects;
 	Enemy *cloneInactiveEnemyList;
 	Enemy *effectLists[EffectLayer::Count];
+	ShapeEmitter *emitterLists[EffectLayer::Count];
+	void AddEmitter(ShapeEmitter *emit,
+		EffectLayer layer);
+	void UpdateEmitters();
+	void ClearEmitters();
+	void DrawEmitters(EffectLayer layer);
 	void DrawEffects( EffectLayer layer );
 	void DrawActiveSequence(EffectLayer layer);
 

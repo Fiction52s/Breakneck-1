@@ -26,47 +26,93 @@ FadingParticle::FadingParticle(int numPoints,
 	ShapeEmitter *emit)
 	:ShapeParticle(numPoints, v, emit)
 {
-	fadeThresh = 40;
+	fadeOutThresh = 40;
+	fadeInThresh = 40;
 }
 
 void FadingParticle::SpecialActivate()
 {
-	action = NORMAL;
-	if (ttl < fadeThresh)
+	action = FADEIN;
+	if (ttl < fadeOutThresh)
 	{
-		action = FADE;
-		startAlpha = color.a;
+		action = FADEOUT;
 	}
+
+	startAlpha = color.a;
+	SetColor(sf::Color(color.r, color.g, color.b, 0));
+
+	maxTimeToLive = ttl;
 }
 
 void FadingParticle::SpecialUpdate()
 {
 	switch (action)
 	{
-	case NORMAL:
-		if (ttl < fadeThresh)
+	case FADEIN:
+		if (ttl <= maxTimeToLive - fadeInThresh)
 		{
-			action = FADE;
+			action = NORMAL;
+		}
+	case NORMAL:
+		if (ttl <= fadeOutThresh)
+		{
+			action = FADEOUT;
 			startAlpha = color.a;
 		}
 		break;
-	case FADE:
+	case FADEOUT:
 		break;
 	}
 
 	switch (action)
 	{
+	case FADEIN:
+	{
+		float fttl = maxTimeToLive - ttl;
+		color.a = startAlpha * fttl / fadeInThresh;
+		SetColor(color);
+		break;
+	}
 	case NORMAL:
 		break;
-	case FADE:
+	case FADEOUT:
 	{
 		float fttl = ttl;
-		color.a = startAlpha * fttl / fadeThresh;
+		color.a = startAlpha * fttl / fadeOutThresh;
 		SetColor(color);
 		break;
 	}
 	}
 }
+
+void FadingParticle::SetColorShift(sf::Color &start,
+	sf::Color &end, int p_fadeInFrames, int p_fadeOutFrames)
+{
+	fadeInThresh = p_fadeInFrames;
+	fadeOutThresh = p_fadeOutFrames;
+	startColor = start;
+	endColor = end;
+	SetColor(startColor);
+}
+
+void FadingParticle::UpdateColor()
+{
+	if (action == NORMAL)
+	{
+		float portion = GetNormalPortion();
+		SetColor(GetBlendColor(startColor, endColor, 1.f - portion));
+	}
+}
+
+float FadingParticle::GetNormalPortion()
+{
+	int nStart = (maxTimeToLive - fadeInThresh);
+	int nFrame = nStart - ttl;
+	int nLength = nStart - fadeOutThresh;
+
+	return (float)nFrame / nLength;
+}
+
 
 ShapeParticle::ShapeParticle(int p_numPoints, sf::Vertex *v,
 	ShapeEmitter *p_emit)
@@ -75,10 +121,12 @@ ShapeParticle::ShapeParticle(int p_numPoints, sf::Vertex *v,
 
 }
 
+
+
 void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
 	sf::Vector2f &p_vel, float p_angle, int p_ttl, sf::Color c)
 {
-	SetColor(c);
+	//SetColor(c);
 	pos = p_pos;
 	vel = p_vel;
 	ttl = p_ttl;
@@ -149,15 +197,18 @@ void ShapeParticle::SetTileIndex(int ti)
 {
 	assert(numPoints == 4);
 
+	if (emit->ts == NULL)
+		return;
+
 	tileIndex = ti;
 	SetRectSubRect(points, emit->ts->GetSubRect( ti ));
 }
 
-void ShapeParticle::Update()
+bool ShapeParticle::Update()
 {
 	if (ttl < 0)
 	{
-		return;
+		return false;
 	}
 
 	Vector2f oldPos = pos;
@@ -166,6 +217,8 @@ void ShapeParticle::Update()
 	{
 		emit->handler->UpdateShapeParticle(this);
 	}
+
+	UpdateColor();
 
 	SpecialUpdate();
 
@@ -176,15 +229,18 @@ void ShapeParticle::Update()
 	{
 		points[i].position += vel;
 	}
-
 	//UpdatePoints();
 
 	--ttl;
 
 	if (ttl < 0)
 	{
+		
 		Clear();
+		return false;
 	}
+
+	return true;
 }
 
 void ShapeParticle::Clear()
@@ -199,7 +255,7 @@ void ShapeParticle::Clear()
 ShapeEmitter::ShapeEmitter(int p_pointsPerShape,
 	int p_numShapes, float p_angle,
 	float p_angleRange,
-	float p_minSpeed, float p_maxSpeed, ParticleHandler *h)
+	float p_minSpeed, float p_maxSpeed )
 	:pointsPerShape( p_pointsPerShape ), numShapesTotal( p_numShapes ),
 	angle( p_angle ), angleRange( p_angleRange ), minSpeed( p_minSpeed ),
 	maxSpeed( p_maxSpeed ), handler( h )
@@ -211,14 +267,20 @@ ShapeEmitter::ShapeEmitter(int p_pointsPerShape,
 	numPoints = numShapesTotal * pointsPerShape;
 	points = new Vertex[numPoints];
 	particles = new ShapeParticle*[numShapesTotal];
+
+	pType = FADE;
 	for (int i = 0; i < numShapesTotal; ++i)
 	{
 		//particles[i] = new ShapeParticle(pointsPerShape, points + i * pointsPerShape, this);
-		particles[i] = new FadingParticle(pointsPerShape, points + i * pointsPerShape, this);
+		FadingParticle *fp = new FadingParticle(pointsPerShape, points + i * pointsPerShape, this);
+		particles[i] = fp;
 	}
 	Color r = Color::White;
 	SetColor(r);
 	ratePerSecond = 10;
+
+	next = NULL;
+	ts = NULL;
 }
 
 ShapeEmitter::~ShapeEmitter()
@@ -251,6 +313,7 @@ void ShapeEmitter::Reset()
 	}
 	frame = 0;
 	lastCreationTime = 0;
+	numActive = 0;
 }
 
 void ShapeEmitter::SetColor(sf::Color &c)
@@ -276,16 +339,42 @@ void ShapeEmitter::ActivateParticle( int index )
 	vel *= s;
 	RotateCCW(vel, a);
 
-	int rad = 2 + rand() % 15;
+	//int rad = 2 + rand() % 15;
+	int rad = 20 + rand() % 30;
 
 	int extraAngle = rand() % 360;
 
 	sf::Color randColor(rand() % 255, rand() % 255, rand() % 255, 255); //100 + rand() % 155);
-	particles[index]->SetColor(randColor);
+	sf::Color randColor1(rand() % 255, rand() % 255, rand() % 255, 255); //100 + rand() % 155);
+	switch (pType)
+	{
+	case NORMAL:
+	{
+		sf::Color randColor(rand() % 255, rand() % 255, rand() % 255, 255); //100 + rand() % 155);
+		particles[index]->SetColor(randColor);
+		break;
+	}
+	case FADE:
+	{
+		FadingParticle *fp = (FadingParticle*)particles[index];
+		sf::Color leafColor(255, 255, 255, 150);
+		fp->SetColorShift(leafColor, leafColor, 40, 40);
+		particles[index]->SetTileIndex(rand() % 5);
+		//fp->SetColorShift(Color( Color::Blue ), Color(Color::Cyan), 0, 40);
 
-	particles[index]->Activate( rad, pos, vel, extraAngle, 180 );
-	//particles[index]->SetTileIndex(0);
+		//particles[index]->SetColor(randColor);
+		break;
+	}
+	}
+
+	particles[index]->Activate( rad, GetSpawnPos(), vel, extraAngle, 200 );
+	
 	//cout << "activating: " << index << endl;
+}
+
+sf::Vector2f ShapeEmitter::GetSpawnPos()
+{
+	return pos;
 }
 
 void ShapeEmitter::SetRatePerSecond(int rate)
@@ -293,10 +382,13 @@ void ShapeEmitter::SetRatePerSecond(int rate)
 	ratePerSecond = rate;
 }
 
+bool ShapeEmitter::IsDone()
+{
+	return numActive == 0 && !emitting;
+}
+
 void ShapeEmitter::Update()
 {
-	bool activate = false;
-
 	int numActivateThisFrame = 0;
 
 	float rf = 1.f / ratePerSecond;
@@ -309,11 +401,8 @@ void ShapeEmitter::Update()
 	{
 		lastCreationTime = cTime;
 	}
-	/*if (frame % 10 == 0)
-	{
-		numActivateThisFrame++;
-	}*/
 
+	numActive = 0;
 	for (int i = 0; i < numShapesTotal; ++i)
 	{
 		if (particles[i]->ttl < 0 && numActivateThisFrame > 0 && emitting )
@@ -323,13 +412,9 @@ void ShapeEmitter::Update()
 		}
 		else
 		{
-			particles[i]->Update();
-		}
-
-		if (particles[i]->ttl < 0 && activate)
-		{
-			ActivateParticle(i);
-			activate = false;
+			bool on = particles[i]->Update();
+			if (on)
+				numActive++;
 		}
 	}
 
@@ -340,6 +425,8 @@ void ShapeEmitter::SetOn(bool on)
 {
 	emitting = on;
 }
+
+
 
 void ShapeEmitter::Draw(sf::RenderTarget *target)
 {
@@ -374,6 +461,48 @@ void ShapeEmitter::ClearForces()
 void ShapeEmitter::SetForce(sf::Vector2f &f)
 {
 	accel = f;
+}
+
+
+BoxEmitter::BoxEmitter(int pointsPerShape,
+	int numShapes, float angle,
+	float angleRange,
+	float minSpeed, float maxSpeed, float w, float h )
+	:ShapeEmitter(pointsPerShape, numShapes, angle, angleRange, minSpeed, maxSpeed, handle),
+	width( w ), height( h )
+{
+
+}
+
+void BoxEmitter::SetRect(float w, float h)
+{
+	width = w;
+	height = h;
+}
+
+sf::Vector2f BoxEmitter::GetSpawnPos()
+{
+	int rw, rh;
+
+	if (width == 0)
+	{
+		rw = 0;
+	}
+	else
+	{
+		rw = (rand() % width) - width / 2;
+	}
+
+	if (height == 0)
+	{
+		rh = 0;
+	}
+	else
+	{
+		rh = (rand() % height) - height / 2;
+	}
+
+	return pos + Vector2f(rw, rh);
 }
 
 MovingGeo::MovingGeo()

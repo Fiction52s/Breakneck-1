@@ -506,6 +506,7 @@ struct GetShardSequence : Sequence
 	State state;
 	int stateLength[END];
 	GetShardSequence(GameSession *owner);
+	~GetShardSequence();
 	bool Update();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
@@ -514,6 +515,7 @@ struct GetShardSequence : Sequence
 	Shard *shard;
 	ShardPopup *shardPop;
 	MovingGeoGroup geoGroup;
+	ShapeEmitter *emitter;
 	GameSession *owner;
 
 	sf::Vertex overlayRect[4];
