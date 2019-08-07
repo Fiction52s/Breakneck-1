@@ -14,6 +14,7 @@ struct GameSession;
 struct MovementSequence;
 struct PoiInfo;
 struct MusicInfo;
+struct ShapeEmitter;
 
 struct FlashedImage
 {

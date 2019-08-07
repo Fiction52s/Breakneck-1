@@ -1,6 +1,7 @@
 #include "Sequence.h"
 #include "GameSession.h"
 #include "Enemy_Shard.h"
+#include "ParticleEffects.h"
 
 using namespace sf;
 using namespace std;
@@ -9,7 +10,7 @@ GetShardSequence::GetShardSequence(GameSession *p_owner)
 	:owner(p_owner)
 {
 
-	emitter = new ShapeEmitter(6, 300, PI / 2.0, 2 * PI, 1.0, 2.5);
+	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
 	emitter->SetRatePerSecond(120);
 
 	stateLength[GET] = 1000000;

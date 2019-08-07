@@ -105,6 +105,8 @@
 #include "ControlSettingsMenu.h"
 #include "TouchGrass.h"
 
+#include "ParticleEffects.h"
+
 #define TIMESTEP 1.0 / 60.0
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
@@ -5508,9 +5510,11 @@ bool GameSession::Load()
 	//return true;
 
 	//testEmit = new BoxEmitter(4, 100, PI, PI / 6, 1, 5, 1000, 1000);
-	testEmit = new BoxEmitter(4, 1000, PI, PI / 6, 0, 0, 1000, 1000);
-	testEmit->SetTileset(GetTileset("Env/leaves_128x128.png", 128, 128));
+	testEmit = new ShapeEmitter(4, 1000);// PI, PI / 6, 0, 0, 1000, 1000);
+	//testEmit->SetTileset(GetTileset("Env/leaves_128x128.png", 128, 128));
 	testEmit->SetRatePerSecond(120);
+
+	testEmit->posSpawner = new BoxPosSpawner(400, 400);
 		//leaf_1_128x128
 	//for (int i = 0; i < 50; ++i)
 	//{

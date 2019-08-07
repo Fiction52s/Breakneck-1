@@ -420,7 +420,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		D_W1_GRASSYROCK
 	};
 
-	BoxEmitter *testEmit;
+	ShapeEmitter *testEmit;
 
 
 	ShardPopup *shardPop;
