@@ -136,13 +136,18 @@ ShapeParticle::~ShapeParticle()
 
 
 void ShapeParticle::Activate(float p_radius, sf::Vector2f &p_pos,
-	float p_angle, int p_ttl, sf::Color c)
+	float p_angle, int p_ttl, sf::Color c, int tIndex )
 {
 	pos = p_pos;
 	ttl = p_ttl;
 	radius = p_radius;
 	angle = p_angle;
 	SetColor(c);
+	
+	if (emit->ts != NULL)
+	{
+		SetTileIndex(tIndex);
+	}
 
 	//SpecialActivate();
 
@@ -229,7 +234,7 @@ bool ShapeParticle::Update()
 	emit->handler->UpdateShapeParticle(this);
 	}*/
 
-
+	
 	if (posUpdater != NULL)
 	{
 		posUpdater->PUpdatePos(this);
@@ -255,10 +260,10 @@ bool ShapeParticle::Update()
 	//pos += vel;
 	//vel += emit->accel;
 
-	/*for (int i = 0; i < numPoints; ++i)
+	for (int i = 0; i < numPoints; ++i)
 	{
-		points[i].position += vel;
-	}*/
+		points[i].position += (pos - oldPos);
+	}
 	//UpdatePoints();
 
 	
@@ -296,10 +301,7 @@ ShapeEmitter::ShapeEmitter(int p_pointsPerShape, int p_numShapes)
 	particles = new ShapeParticle*[numShapesTotal];
 
 	//pType = FADE;
-	for (int i = 0; i < numShapesTotal; ++i)
-	{
-		particles[i] = CreateParticle(i);
-	}
+	
 
 	//Color r = Color::White;
 	//SetColor(r);
@@ -313,6 +315,14 @@ ShapeEmitter::ShapeEmitter(int p_pointsPerShape, int p_numShapes)
 	radiusSpawner = NULL;
 	angleSpawner = NULL;
 	ttlSpawner = NULL;
+}
+
+void ShapeEmitter::CreateParticles()
+{
+	for (int i = 0; i < numShapesTotal; ++i)
+	{
+		particles[i] = CreateParticle(i);
+	}
 }
 
 ShapeParticle * ShapeEmitter::CreateParticle(int index)
@@ -376,7 +386,8 @@ void ShapeEmitter::Reset()
 
 void ShapeEmitter::ActivateParticle(int index)
 {
-	particles[index]->Activate(GetSpawnRadius(), GetSpawnPos(), GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor());
+	particles[index]->Activate(GetSpawnRadius(), GetSpawnPos(), GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor(),
+		GetSpawnTile());
 
 	/*float a = angle;
 	float f = (float)rand() / RAND_MAX * 2.0 - 1.0;
@@ -454,6 +465,11 @@ float ShapeEmitter::GetSpawnAngle()
 	}
 }
 
+int ShapeEmitter::GetSpawnTile() 
+{ 
+	return 0; 
+}
+
 int ShapeEmitter::GetSpawnTTL()
 {
 	if (ttlSpawner != NULL)
@@ -474,7 +490,7 @@ float ShapeEmitter::GetSpawnRadius()
 	}
 	else
 	{
-		return 50.f;
+		return 20.f;
 	}
 }
 
@@ -559,44 +575,6 @@ void ShapeEmitter::Draw(sf::RenderTarget *target)
 	}
 }
 
-BoxEmitter::BoxEmitter(int pointsPerShape,
-	int numShapes, float w, float h)
-	:ShapeEmitter(pointsPerShape, numShapes), width(w), height(h)
-{
-
-}
-
-void BoxEmitter::SetRect(float w, float h)
-{
-	width = w;
-	height = h;
-}
-
-sf::Vector2f BoxEmitter::GetSpawnPos()
-{
-	int rw, rh;
-
-	if (width == 0)
-	{
-		rw = 0;
-	}
-	else
-	{
-		rw = (rand() % width) - width / 2;
-	}
-
-	if (height == 0)
-	{
-		rh = 0;
-	}
-	else
-	{
-		rh = (rand() % height) - height / 2;
-	}
-
-	return pos + Vector2f(rw, rh);
-}
-
 BoxPosSpawner::BoxPosSpawner(int w, int h)
 	:width( w ), height( h )
 {
@@ -632,4 +610,50 @@ sf::Vector2f BoxPosSpawner::GetSpawnPos(ShapeEmitter *emit)
 	}
 
 	return emit->pos + Vector2f(rw, rh);
+}
+
+LinearVelPPosUpdater::LinearVelPPosUpdater()
+{
+
+}
+
+void LinearVelPPosUpdater::PUpdatePos(ShapeParticle* p)
+{
+	p->pos += vel;
+}
+
+LeafEmitter::LeafEmitter()
+	:ShapeEmitter( 4, 500)
+{
+	posSpawner = new BoxPosSpawner(400, 400);
+	SetRatePerSecond(120);
+}
+
+ShapeParticle *LeafEmitter::CreateParticle(int index)
+{
+	ShapeParticle *sp = new ShapeParticle(pointsPerShape, points + index * pointsPerShape, this);
+	sp->posUpdater = new LinearVelPPosUpdater;
+	return sp;
+}
+
+void LeafEmitter::ActivateParticle(int index)
+{
+	ShapeParticle *sp = particles[index];
+	Vector2f sPos = GetSpawnPos();
+	sp->Activate(GetSpawnRadius(), sPos, GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor(), GetSpawnTile());
+	LinearVelPPosUpdater * velUpdater = (LinearVelPPosUpdater*)sp->posUpdater;
+	velUpdater->vel = normalize(sPos - pos) * 10.f;
+}
+
+int LeafEmitter::GetSpawnTTL()
+{
+	int variation = 40;
+	int r = (rand() % variation) - variation / 2;
+
+	return 90 + r;
+}
+
+int LeafEmitter::GetSpawnTile()
+{
+	return rand() % 5;
 }

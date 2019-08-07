@@ -11,6 +11,7 @@ GetShardSequence::GetShardSequence(GameSession *p_owner)
 {
 
 	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
+	emitter->CreateParticles();
 	emitter->SetRatePerSecond(120);
 
 	stateLength[GET] = 1000000;

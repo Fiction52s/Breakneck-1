@@ -41,7 +41,8 @@ struct ShapeParticle
 	virtual void Activate(float radius,
 		sf::Vector2f &pos,
 		float angle, int ttl,
-		sf::Color c = sf::Color::White);
+		sf::Color c = sf::Color::White,
+		int tileIndex = 0 );
 
 	void Clear();
 	bool Update();
@@ -144,6 +145,7 @@ struct ShapeEmitter
 
 	ShapeEmitter(int pointsPerShape,
 		int numShapes);
+	void CreateParticles();
 	~ShapeEmitter();
 
 	void Reset();
@@ -154,15 +156,16 @@ struct ShapeEmitter
 	void SetTileset(Tileset *ts);
 
 	void SetRatePerSecond(int rate);
-	virtual void ActivateParticle(int index);
+
 	sf::Vector2f GetSpawnPos();
 	virtual sf::Vector2f GetSpawnVel();
 	virtual sf::Color GetSpawnColor();
 	virtual float GetSpawnAngle();
 	virtual float GetSpawnRadius();
 	virtual int GetSpawnTTL();
+	virtual int GetSpawnTile();
 
-
+	virtual void ActivateParticle(int index);
 	virtual ShapeParticle * CreateParticle(int index);
 
 	PosSpawner *posSpawner;
@@ -170,7 +173,6 @@ struct ShapeEmitter
 	RadiusSpawner *radiusSpawner;
 	AngleSpawner *angleSpawner;
 	TTLSpawner *ttlSpawner;
-
 
 	void SetOn(bool on);
 	bool IsDone();
@@ -195,17 +197,7 @@ struct ShapeEmitter
 	ShapeEmitter *next;
 };
 
-struct BoxEmitter : ShapeEmitter
-{
-	BoxEmitter(int pointsPerShape,
-		int numShapes, float w, float h);
 
-	sf::Vector2f GetSpawnPos();
-	void SetRect(float w, float h);
-
-	int width;
-	int height;
-};
 
 
 struct BoxPosSpawner : PosSpawner
@@ -215,6 +207,22 @@ struct BoxPosSpawner : PosSpawner
 	void SetRect(int w, int h);
 	int width;
 	int height;
+};
+
+struct LinearVelPPosUpdater : PPosUpdater
+{
+	LinearVelPPosUpdater();
+	void PUpdatePos(ShapeParticle*);
+	sf::Vector2f vel;
+};
+
+struct LeafEmitter : ShapeEmitter
+{
+	LeafEmitter();
+	int GetSpawnTTL();
+	ShapeParticle * CreateParticle(int index);
+	void ActivateParticle(int index);
+	int GetSpawnTile();
 };
 
 #endif

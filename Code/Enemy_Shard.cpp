@@ -45,6 +45,7 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	:Enemy( p_owner, EnemyType::EN_SHARD, false, w+1 )
 {
 	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
+	testEmitter->CreateParticles();
 	testEmitter->SetPos(Vector2f(pos));
 	//testEmitter->SetTileset( owner->GetTileset("FX/fatgoku.png", 0, 0));
 	testEmitter->SetRatePerSecond(30);

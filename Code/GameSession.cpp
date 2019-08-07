@@ -5510,11 +5510,13 @@ bool GameSession::Load()
 	//return true;
 
 	//testEmit = new BoxEmitter(4, 100, PI, PI / 6, 1, 5, 1000, 1000);
-	testEmit = new ShapeEmitter(4, 1000);// PI, PI / 6, 0, 0, 1000, 1000);
-	//testEmit->SetTileset(GetTileset("Env/leaves_128x128.png", 128, 128));
-	testEmit->SetRatePerSecond(120);
+	testEmit = new LeafEmitter;// (4, 1000);// PI, PI / 6, 0, 0, 1000, 1000);
+	testEmit->SetTileset(GetTileset("Env/leaves_128x128.png", 128, 128));
+	testEmit->CreateParticles();
+	
+	//testEmit->SetRatePerSecond(120);
 
-	testEmit->posSpawner = new BoxPosSpawner(400, 400);
+	//testEmit->posSpawner = new BoxPosSpawner(400, 400);
 		//leaf_1_128x128
 	//for (int i = 0; i < 50; ++i)
 	//{
