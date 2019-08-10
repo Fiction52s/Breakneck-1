@@ -43,6 +43,7 @@ TerrainRender::TerrainRender(TilesetManager *p_tMan, QuadTree *p_terrainTree)
 	decorTree = new QuadTree(1000000, 1000000);
 	borderVA = NULL;
 	centerVA = NULL;
+	tdInfo = NULL;
 }
 
 TerrainRender::~TerrainRender()
@@ -675,7 +676,24 @@ sf::IntRect TerrainRender::GetBorderSubRect(int tileWidth, EdgeType et, int var)
 
 void TerrainRender::GenerateDecor()
 {
-	for (int i = 0; i < 6; ++i)
+	if (tdInfo != NULL)
+	{
+		assert(tdInfo != NULL);
+		int numDecors = tdInfo->numDecors;
+		DecorExpression *expr;
+		for (int i = 0; i < numDecors; ++i)
+		{
+			expr = CreateDecorExpression(tdInfo->decors[i], 0, startEdge);
+			if (expr != NULL)
+				AddDecorExpression(expr);
+		}
+	}
+	else
+	{
+
+	}
+
+	/*for (int i = 0; i < 6; ++i)
 	{
 		DecorExpression *expr = CreateDecorExpression(DecorType(D_W1_VEINS1 + i), 0, startEdge);
 		if (expr != NULL)
@@ -704,7 +722,7 @@ void TerrainRender::GenerateDecor()
 
 	DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, startEdge);
 	if (exprPlantRock != NULL)
-		AddDecorExpression(exprPlantRock);
+		AddDecorExpression(exprPlantRock);*/
 }
 
 void TerrainRender::AddDecorExpression(DecorExpression *exp)
@@ -834,6 +852,30 @@ DecorExpression * TerrainRender::CreateDecorExpression(DecorType dType,
 			break;
 		case D_W1_VEINS6:
 			ts_d = tMan->GetTileset("Env/veins_w1_6_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS1:
+			ts_d = tMan->GetTileset("Env/veins_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS2:
+			ts_d = tMan->GetTileset("Env/veins_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS3:
+			ts_d = tMan->GetTileset("Env/veins_w2_3_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS4:
+			ts_d = tMan->GetTileset("Env/veins_w2_4_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS5:
+			ts_d = tMan->GetTileset("Env/veins_w2_5_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS6:
+			ts_d = tMan->GetTileset("Env/veins_w2_6_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
 		}
@@ -1359,4 +1401,100 @@ V2d TerrainRender::GetBisector(Edge *e)
 	V2d prev = normalize(e->edge0->v0 - e->v0);
 	return normalize(curr + prev);
 	
+}
+
+DecorType TerrainRender::GetDecorType(const std::string &dStr)
+{
+	if (dStr == "D_W1_BUSH_NORMAL")
+	{
+		return D_W1_BUSH_NORMAL;
+	}
+	else if (dStr == "D_W1_ROCK_1")
+	{
+		return D_W1_ROCK_1;
+	}
+	else if (dStr == "D_W1_ROCK_2")
+	{
+		return D_W1_ROCK_2;
+	}
+	else if (dStr == "D_W1_ROCK_3")
+	{
+		return D_W1_ROCK_3;
+	}
+	else if (dStr == "D_W1_PLANTROCK")
+	{
+		return D_W1_PLANTROCK;
+	}
+	else if (dStr == "D_W1_VEINS1")
+	{
+		return D_W1_VEINS1;
+	}
+	else if (dStr == "D_W1_VEINS2")
+	{
+		return D_W1_VEINS2;
+	}
+	else if (dStr == "D_W1_VEINS3")
+	{
+		return D_W1_VEINS3;
+	}
+	else if (dStr == "D_W1_VEINS4")
+	{
+		return D_W1_VEINS4;
+	}
+	else if (dStr == "D_W1_VEINS5")
+	{
+		return D_W1_VEINS5;
+	}
+	else if (dStr == "D_W1_VEINS6")
+	{
+		return D_W1_VEINS6;
+	}
+	else if (dStr == "D_W1_GRASSYROCK")
+	{
+		return D_W1_GRASSYROCK;
+	}
+	else if (dStr == "D_W2_VEINS1")
+	{
+		return D_W2_VEINS1;
+	}
+	else if (dStr == "D_W2_VEINS2")
+	{
+		return D_W2_VEINS2;
+	}
+	else if (dStr == "D_W2_VEINS3")
+	{
+		return D_W2_VEINS3;
+	}
+	else if (dStr == "D_W2_VEINS4")
+	{
+		return D_W2_VEINS4;
+	}
+	else if (dStr == "D_W2_VEINS5")
+	{
+		return D_W2_VEINS5;
+	}
+	else if (dStr == "D_W2_VEINS6")
+	{
+		return D_W2_VEINS6;
+	}
+	else
+	{ 
+		assert(0);
+		return D_W1_BUSH_NORMAL;
+	}
+}
+
+TerrainDecorInfo::TerrainDecorInfo(int p_numDecors)
+{
+	numDecors = p_numDecors;
+	assert(numDecors != 0);
+	decors = new DecorType[numDecors];
+	percents = new int[numDecors];
+	
+}
+
+TerrainDecorInfo::~TerrainDecorInfo()
+{
+	delete[] decors;
+	delete[] percents;
 }

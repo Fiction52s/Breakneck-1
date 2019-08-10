@@ -22,6 +22,7 @@
 #include "Actor.h"
 #include "EffectLayer.h"
 #include <boost/filesystem.hpp>"
+#include "DecorTypes.h"
 
 struct MapHeader;
 
@@ -40,6 +41,7 @@ struct RaceFightHUD;
 struct Rail;
 struct InputVisualizer;
 struct MomentaBroadcast;
+struct TerrainDecorInfo;
 
 struct LoadingMapProgressDisplay;
 
@@ -308,7 +310,7 @@ struct TerrainPiece : QuadTreeEntrant
 	std::list<TouchGrassCollection*> touchGrassCollections;
 	void QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r);
 	void UpdateTouchGrass();
-
+	
 
 	void SetupGrass(Edge * e, int &i );
 	int GetNumGrass(Edge *e, bool &rem);
@@ -403,22 +405,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//that implement more complex behaviors
 	
 
-	enum DecorType
-	{
-		D_W1_BUSH_NORMAL,
-		D_W1_ROCK_1,
-		D_W1_ROCK_2,
-		D_W1_ROCK_3,
-		D_W1_PLANTROCK,
-		D_W1_VEINS1,
-		D_W1_VEINS2,
-		D_W1_VEINS3,
-		D_W1_VEINS4,
-		D_W1_VEINS5,
-		D_W1_VEINS6,
 
-		D_W1_GRASSYROCK
-	};
 
 	ShapeEmitter *testEmit;
 
@@ -836,6 +823,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int numPolyTypes;
 	sf::Shader *polyShaders;
 	Tileset **ts_polyShaders;
+
+	TerrainDecorInfo **terrainDecorInfos;
 	//std::map<int,sf::Shader> *polyShaderMap[
 	//	TerrainPolygon::TerrainType::Count];
 	sf::Shader cloneShader;
@@ -907,6 +896,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Tileset *cloudTileset;
 
 	std::set<std::pair<int,int>> matSet;
+	
 
 	int xxx;
 

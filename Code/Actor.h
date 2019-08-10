@@ -179,6 +179,7 @@ struct KinMask;
 struct KinRing;
 struct RisingParticleUpdater;
 struct EffectPool;
+struct ShapeEmitter;
 
 struct Actor : QuadTreeCollider,
 	RayCastHandler
@@ -193,6 +194,8 @@ struct Actor : QuadTreeCollider,
 		POWER_RWIRE,
 		POWER_LWIRE
 	};
+
+	//ShapeEmitter *glideEmitter;
 
 	//EffectPool *testPool;
 	KinMask *kinMask;

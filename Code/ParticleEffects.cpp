@@ -289,6 +289,16 @@ void ShapeParticle::Clear()
 	ttl = -1;
 }
 
+float ShapeEmitter::GetRandomAngle(float baseAngle,
+	float angleRange)
+{
+	float a = baseAngle;
+	float f = (float)rand() / RAND_MAX * 2.0 - 1.0;
+	a += angleRange * f;
+
+	return a;
+}
+
 ShapeEmitter::ShapeEmitter(int p_pointsPerShape, int p_numShapes)
 	:pointsPerShape(p_pointsPerShape), numShapesTotal(p_numShapes)
 {
@@ -622,6 +632,28 @@ void LinearVelPPosUpdater::PUpdatePos(ShapeParticle* p)
 	p->pos += vel;
 }
 
+//LimitedAngleSpawner::LimitedAngleSpawner( float p_angle, float range)
+//	:angle( p_angle ), angleRange( range )
+//{
+//
+//}
+//
+//float LimitedAngleSpawner::GetSpawnAngle(ShapeEmitter *emit)
+//{
+//	float a = angle;
+//	float f = (float)rand() / RAND_MAX * 2.0 - 1.0;
+//	a += angleRange * f;
+//
+//	return a;
+//}
+
+//void LimitedAngleSpawner::SetAngleRange(float p_angle, float range)
+//{
+//	angle = p_angle;
+//	angleRange = range;
+//}
+
+
 LeafEmitter::LeafEmitter()
 	:ShapeEmitter( 4, 500)
 {
@@ -642,6 +674,7 @@ void LeafEmitter::ActivateParticle(int index)
 	Vector2f sPos = GetSpawnPos();
 	sp->Activate(GetSpawnRadius(), sPos, GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor(), GetSpawnTile());
 	LinearVelPPosUpdater * velUpdater = (LinearVelPPosUpdater*)sp->posUpdater;
+
 	velUpdater->vel = normalize(sPos - pos) * 10.f;
 }
 
@@ -657,3 +690,72 @@ int LeafEmitter::GetSpawnTile()
 {
 	return rand() % 5;
 }
+
+
+GlideEmitter::GlideEmitter(GameSession *p_owner)
+	:ShapeEmitter( 4, 1000 ), owner(p_owner)
+{
+	SetTileset(owner->GetTileset("Env/feathers_128x128.png", 128, 128));
+	SetRatePerSecond(500);
+	posSpawner = new BoxPosSpawner(50, 50);
+}
+
+int GlideEmitter::GetSpawnTTL()
+{
+	return 20;
+}
+
+ShapeParticle * GlideEmitter::CreateParticle(int index)
+{
+	ShapeParticle *sp = new ShapeParticle(pointsPerShape, points + index * pointsPerShape, this);
+	sp->posUpdater = new FeatherPosUpdater;
+	return sp;
+}
+
+void GlideEmitter::ActivateParticle(int index)
+{
+	ShapeParticle *sp = particles[index];
+	Vector2f sPos = GetSpawnPos();
+
+	sp->Activate(GetSpawnRadius(), sPos, GetSpawnAngle(), GetSpawnTTL(), GetSpawnColor(), GetSpawnTile());
+
+	FeatherPosUpdater * velUpdater = (FeatherPosUpdater*)sp->posUpdater;
+
+	V2d dirD = normalize(owner->GetPlayer(0)->velocity);
+	V2d diffDir = normalize(V2d(sPos) - owner->GetPlayer(0)->position);
+
+	if (cross(diffDir, dirD) < 0)
+	{
+		dirD = -dirD;
+	}
+
+	Vector2f dirF = Vector2f(dirD.y, -dirD.x);
+	
+
+	//float f = GetRandValue();
+
+	//RotateCCW(dir, PI / 12.f * f);
+
+	velUpdater->vel = dirF * 1.5f;
+}
+
+int GlideEmitter::GetSpawnTile()
+{
+	return 0;
+}
+
+bool GlideEmitter::IsDone()
+{
+	return false;
+}
+
+FeatherPosUpdater::FeatherPosUpdater()
+{
+
+}
+
+void FeatherPosUpdater::PUpdatePos(ShapeParticle* p)
+{
+	p->pos += vel;
+}
+

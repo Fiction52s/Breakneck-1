@@ -61,4 +61,6 @@ void SetRectRotation(sf::Vertex *v,
 void TransformRect(sf::Vertex *v, sf::Transform &tr);
 void ClearRect( sf::Vertex *v );
 
+double GetRandValue(); //-1 to 1
+
 #endif

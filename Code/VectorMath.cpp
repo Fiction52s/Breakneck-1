@@ -397,3 +397,8 @@ void SetRectRotation(sf::Vertex *v, float angleRad, int width, int height, sf::V
 		v[i].position += origin;
 	}
 }
+
+double GetRandValue()
+{
+	return ((double)rand() / RAND_MAX * 2.0 - 1.0);
+}

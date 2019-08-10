@@ -4,6 +4,7 @@
 #include <SFML\Graphics.hpp>
 #include "Physics.h"
 #include "QuadTree.h"
+#include "DecorTypes.h"
 
 struct TilesetManager;
 struct Tileset;
@@ -39,21 +40,15 @@ struct DecorExpression
 	void UpdateSprites();
 };
 
-enum DecorType
-{
-	D_W1_BUSH_NORMAL,
-	D_W1_ROCK_1,
-	D_W1_ROCK_2,
-	D_W1_ROCK_3,
-	D_W1_PLANTROCK,
-	D_W1_VEINS1,
-	D_W1_VEINS2,
-	D_W1_VEINS3,
-	D_W1_VEINS4,
-	D_W1_VEINS5,
-	D_W1_VEINS6,
 
-	D_W1_GRASSYROCK
+
+struct TerrainDecorInfo
+{
+	TerrainDecorInfo(int numDecors);
+	~TerrainDecorInfo();
+	DecorType *decors;
+	int *percents;
+	int numDecors;
 };
 
 
@@ -122,8 +117,10 @@ struct TerrainRender : QuadTreeCollider, RayCastHandler
 	TerrainRender( TilesetManager *tMan,
 		QuadTree *terrainTree );
 	~TerrainRender();
+	static DecorType GetDecorType(const std::string &dStr);
 	sf::Vertex *borderVA;
 	sf::Vertex *centerVA;
+	TerrainDecorInfo *tdInfo;
 	void SetType(int tWorldType, int tWorldVariation);
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void DrawDecor( sf::RenderTarget *target );

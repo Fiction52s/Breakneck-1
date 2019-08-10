@@ -31,6 +31,7 @@
 #include "MapHeader.h"
 #include "TouchGrass.h"
 #include "Enemy_GravityModifier.h"
+#include "ParticleEffects.h"
 
 using namespace sf;
 using namespace std;
@@ -283,6 +284,14 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	activeComboObjList = NULL;
 
 	cout << "Start player" << endl;
+
+
+	//glideEmitter = new GlideEmitter(owner);
+	//glideEmitter->CreateParticles();
+	//glideEmitter->Reset();
+	//glideEmitter->SetOn(false);
+	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+
 	repeatingSound = NULL;
 		currBooster = NULL;
 		oldBooster = NULL;
@@ -1517,6 +1526,11 @@ Actor::~Actor()
 {
 	//delete skin;
 	//delete swordSkin;
+	/*if (glideEmitter != NULL)
+	{
+		delete glideEmitter;
+	}*/
+
 	delete rpu;
 
 	list<Vector2f> *currP = NULL;
@@ -1622,7 +1636,6 @@ void Actor::ActionEnded()
 	//cout << "length: " << actionLength[action] << endl;
 	if( frame >= actionLength[action] )
 	{
-		
 		switch (action)
 		{
 		case SEQ_KINSTAND:
@@ -2285,6 +2298,9 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	//glideEmitter->Reset();
+	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+
 	kinMask->Reset();
 	SetDirtyAura(false);
 
@@ -7377,11 +7393,16 @@ void Actor::UpdatePrePhysics()
 		}
 
 		//springExtra = AddGravity(springExtra);
-		if (false)
+		//if (false)
 		{
-			double gFac = 1.0;
+			double gFac = .2;//1.0;
 			V2d nsv = normalize(velocity);
-			velocity = nsv * (length(velocity) + gFac * nsv.y);//AddGravity(springVel);
+			double len = length(velocity) + gFac * nsv.y;
+			if (len < 10)
+			{
+				len = 10;
+			}
+			velocity = nsv * len;//AddGravity(springVel);
 		}
 
 
@@ -16599,7 +16620,7 @@ void Actor::UpdatePostPhysics()
 	//vi0 = vi1 = vi2 = vi;
 	
 
-	
+	//glideEmitter->SetPos(Vector2f(position));
 	
 	
 	

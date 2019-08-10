@@ -4982,6 +4982,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			polyShaders[ind].setUniform("Resolution", Vector2f(1920, 1080));
 			polyShaders[ind].setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
 			polyShaders[ind].setUniform("skyColor", ColorGL(Color::White));
+
+			
+
 		}
 	}
 

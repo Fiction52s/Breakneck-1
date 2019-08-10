@@ -534,6 +534,19 @@ void GameSession::Cleanup()
 		polyShaders = NULL;
 	}
 
+	if (terrainDecorInfos != NULL)
+	{
+		for (int i = 0; i < numPolyTypes; ++i)
+		{
+			if (terrainDecorInfos[i] != NULL)
+			{
+				delete terrainDecorInfos[i];
+			}
+		}
+		delete[] terrainDecorInfos;
+		terrainDecorInfos = NULL;
+	}
+
 	if (goalPulse != NULL)
 	{
 		delete goalPulse;
@@ -3782,37 +3795,39 @@ bool GameSession::OpenFile( string fileName )
 				}
 				}
 
-				for (int i = 0; i < 6; ++i)
-				{
-					DecorExpression *expr = CreateDecorExpression(DecorType(D_W1_VEINS1 + i), 0, edges[currentEdgeIndex]);
-					if (expr != NULL)
-						tPiece->AddDecorExpression(expr);
-				}
+				//add the veins to the terrain
+				//for (int i = 0; i < 6; ++i)
+				//{
+				//	DecorExpression *expr = CreateDecorExpression(DecorType(D_W1_VEINS1 + i), 0, edges[currentEdgeIndex]);
+				//	if (expr != NULL)
+				//		tPiece->AddDecorExpression(expr);
+				//}
 
 
-				DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, edges[currentEdgeIndex]);
-				if (rock1 != NULL)
-					tPiece->AddDecorExpression(rock1);
+				////add the rocks and bushes to the terrain
+				//DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, edges[currentEdgeIndex]);
+				//if (rock1 != NULL)
+				//	tPiece->AddDecorExpression(rock1);
 
-				DecorExpression *rock2 = CreateDecorExpression(D_W1_ROCK_2, 0, edges[currentEdgeIndex]);
-				if (rock2 != NULL)
-					tPiece->AddDecorExpression(rock2);
+				//DecorExpression *rock2 = CreateDecorExpression(D_W1_ROCK_2, 0, edges[currentEdgeIndex]);
+				//if (rock2 != NULL)
+				//	tPiece->AddDecorExpression(rock2);
 
-				DecorExpression *rock3 = CreateDecorExpression(D_W1_ROCK_3, 0, edges[currentEdgeIndex]);
-				if (rock3 != NULL)
-					tPiece->AddDecorExpression(rock3);
+				//DecorExpression *rock3 = CreateDecorExpression(D_W1_ROCK_3, 0, edges[currentEdgeIndex]);
+				//if (rock3 != NULL)
+				//	tPiece->AddDecorExpression(rock3);
 
-				DecorExpression *grassyRock = CreateDecorExpression(D_W1_GRASSYROCK, 0, edges[currentEdgeIndex]);
-				if (grassyRock != NULL)
-					tPiece->AddDecorExpression(grassyRock);
+				//DecorExpression *grassyRock = CreateDecorExpression(D_W1_GRASSYROCK, 0, edges[currentEdgeIndex]);
+				//if (grassyRock != NULL)
+				//	tPiece->AddDecorExpression(grassyRock);
 
-				DecorExpression *normalExpr = CreateDecorExpression(D_W1_BUSH_NORMAL, 0, edges[currentEdgeIndex]);
-				if (normalExpr != NULL)
-					tPiece->AddDecorExpression(normalExpr);
+				//DecorExpression *normalExpr = CreateDecorExpression(D_W1_BUSH_NORMAL, 0, edges[currentEdgeIndex]);
+				//if (normalExpr != NULL)
+				//	tPiece->AddDecorExpression(normalExpr);
 
-				DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, edges[currentEdgeIndex]);
-				if (exprPlantRock != NULL)
-					tPiece->AddDecorExpression(exprPlantRock);
+				//DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, edges[currentEdgeIndex]);
+				//if (exprPlantRock != NULL)
+				//	tPiece->AddDecorExpression(exprPlantRock);
 
 
 			}
@@ -3870,7 +3885,7 @@ bool GameSession::OpenFile( string fileName )
 				tPiece->tr = new TerrainRender(&tm, terrainTree);// (terrainTree);
 				tPiece->tr->startEdge = edges[currentEdgeIndex];
 				tPiece->tr->GenerateBorderMesh();
-				tPiece->tr->GenerateDecor();
+				//tPiece->tr->GenerateDecor();
 				tPiece->tr->ts_border = ts_border;
 
 				tPiece->AddTouchGrass( TouchGrass::TYPE_NORMAL);
@@ -5990,7 +6005,11 @@ bool GameSession::Load()
 
 	numPolyTypes = matSet.size();
 	polyShaders = new Shader[numPolyTypes];
-
+	terrainDecorInfos = new TerrainDecorInfo*[numPolyTypes];
+	for (int i = 0; i < numPolyTypes; ++i)
+	{
+		terrainDecorInfos[i] = NULL;
+	}
 	ts_polyShaders = new Tileset*[numPolyTypes];
 
 	cout << "progress more" << endl;
@@ -6036,6 +6055,51 @@ bool GameSession::Load()
 		polyShaders[index].setUniform( "Resolution", Vector2f( 1920, 1080 ) );
 		polyShaders[index].setUniform( "AmbientColor", Glsl::Vec4( 1, 1, 1, 1 ) );
 		
+
+		ifstream is;
+		ss1.clear();
+		ss1.str("");
+
+		ss1 << "Resources/Terrain/Decor/" << "terraindecor_" 
+			<< (matWorld + 1) << "_0" << (matVariation + 1) << ".txt";
+		is.open(ss1.str());
+
+		if (is.is_open())
+		{
+			list<pair<string, int>> loadedDecorList;
+			while (!is.eof())
+			{
+				string dStr;
+				is >> dStr;
+
+				if (dStr == "")
+				{
+					break;
+				}
+
+				int frequencyPercent;
+				is >> frequencyPercent;
+
+				loadedDecorList.push_back(pair<string, int>(dStr, frequencyPercent));
+			}
+			is.close();
+
+
+			TerrainDecorInfo *tdInfo = new TerrainDecorInfo(loadedDecorList.size());
+			terrainDecorInfos[index] = tdInfo;
+			int dI = 0;
+			for (auto it = loadedDecorList.begin(); it != loadedDecorList.end(); ++it)
+			{
+				tdInfo->decors[dI] = TerrainRender::GetDecorType((*it).first);
+				tdInfo->percents[dI] = (*it).second;
+				++dI;
+			}
+		}
+		else
+		{
+			//not found, thats fine.
+		}
+
 		++index;
 	}
 
@@ -6046,12 +6110,11 @@ bool GameSession::Load()
 		//cout << "real index: " << realIndex << endl;
 		(*it)->pShader = &polyShaders[realIndex];
 		(*it)->ts_terrain = ts_polyShaders[realIndex];
-
-
+		(*it)->tr->tdInfo = terrainDecorInfos[realIndex];
+		(*it)->tr->GenerateDecor();
 	}
 
 	LevelSpecifics();
-
 	
 	
 
@@ -8767,6 +8830,7 @@ void GameSession::Init()
 	
 	polyShaders = NULL;
 	ts_polyShaders = NULL;
+	terrainDecorInfos = NULL;
 	testPar = NULL;
 	va = NULL;
 	edges = NULL;
@@ -10444,45 +10508,45 @@ void GameSession::UpdateExplodingGravityGrass()
 {
 	Grass *curr = explodingGravityGrass;
 	Grass *next;
-	while (curr != NULL)
-	{
-		next = curr->next;
-		curr->Update();
-		curr = next;
-	}
+while (curr != NULL)
+{
+	next = curr->next;
+	curr->Update();
+	curr = next;
+}
 }
 
 
-double GameSession::GetTriangleArea( p2t::Triangle * t )
+double GameSession::GetTriangleArea(p2t::Triangle * t)
 {
-	p2t::Point *p_0 = t->GetPoint( 0 );
-	p2t::Point *p_1 = t->GetPoint( 0 );
-	p2t::Point *p_2 = t->GetPoint( 0 );
+	p2t::Point *p_0 = t->GetPoint(0);
+	p2t::Point *p_1 = t->GetPoint(0);
+	p2t::Point *p_2 = t->GetPoint(0);
 
-	V2d p0( p_0->x, p_0->y );
-	V2d p1( p_1->x, p_1->y );
-	V2d p2( p_2->x, p_2->y );
+	V2d p0(p_0->x, p_0->y);
+	V2d p1(p_1->x, p_1->y);
+	V2d p2(p_2->x, p_2->y);
 
-	double len0 = length( p1 - p0 );
-	double len1 = length( p2 - p1 );
-	double len2 = length( p0 - p2 );
+	double len0 = length(p1 - p0);
+	double len1 = length(p2 - p1);
+	double len2 = length(p0 - p2);
 
 	//s = .5 * (a + b + c)
 	//A = sqrt( s(s - a)(s - b)(s - c) )
 
-	double s = .5 * ( len0 + len1 + len2 );
-	double A = sqrt( s * ( s - len0 ) * ( s - len1 ) * ( s - len2 ) );
+	double s = .5 * (len0 + len1 + len2);
+	double A = sqrt(s * (s - len0) * (s - len1) * (s - len2));
 
 	return A;
 }
 
-void TerrainPiece::AddDecorExpression( DecorExpression *exp )
+void TerrainPiece::AddDecorExpression(DecorExpression *exp)
 {
-	bushes.push_back( exp );
+	bushes.push_back(exp);
 }
 
-TerrainPiece::TerrainPiece( GameSession *p_owner)
-	:owner( p_owner )
+TerrainPiece::TerrainPiece(GameSession *p_owner)
+	:owner(p_owner)
 {
 	groundva = NULL;
 	slopeva = NULL;

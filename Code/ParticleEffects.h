@@ -7,6 +7,7 @@
 struct ShapeEmitter;
 struct Tileset;
 struct ShapeParticle;
+struct GameSession;
 
 struct PSizeUpdater
 {
@@ -165,6 +166,9 @@ struct ShapeEmitter
 	virtual int GetSpawnTTL();
 	virtual int GetSpawnTile();
 
+	static float GetRandomAngle(float baseAngle,
+		float angleRange);
+
 	virtual void ActivateParticle(int index);
 	virtual ShapeParticle * CreateParticle(int index);
 
@@ -175,7 +179,7 @@ struct ShapeEmitter
 	TTLSpawner *ttlSpawner;
 
 	void SetOn(bool on);
-	bool IsDone();
+	virtual bool IsDone();
 
 	int pointsPerShape;
 	int numShapesTotal;
@@ -197,13 +201,10 @@ struct ShapeEmitter
 	ShapeEmitter *next;
 };
 
-
-
-
 struct BoxPosSpawner : PosSpawner
 {
 	BoxPosSpawner(int w, int h);
-	sf::Vector2f GetSpawnPos(ShapeEmitter *emit);
+	virtual sf::Vector2f GetSpawnPos(ShapeEmitter *emit);
 	void SetRect(int w, int h);
 	int width;
 	int height;
@@ -212,9 +213,27 @@ struct BoxPosSpawner : PosSpawner
 struct LinearVelPPosUpdater : PPosUpdater
 {
 	LinearVelPPosUpdater();
-	void PUpdatePos(ShapeParticle*);
+	virtual void PUpdatePos(ShapeParticle*);
 	sf::Vector2f vel;
 };
+
+struct FeatherPosUpdater : PPosUpdater
+{
+	FeatherPosUpdater();
+	virtual void PUpdatePos(ShapeParticle*);
+	sf::Vector2f startVel;
+	sf::Vector2f vel;
+};
+
+//struct LimitedAngleSpawner : 
+//{
+//	LimitedAngleSpawner(float angle, float range);
+//	void SetAngleRange(float angle, float range);
+//	virtual float GetSpawnAngle(ShapeEmitter *emit);
+//
+//	float angleRange;
+//	float angle;
+//};
 
 struct LeafEmitter : ShapeEmitter
 {
@@ -223,6 +242,17 @@ struct LeafEmitter : ShapeEmitter
 	ShapeParticle * CreateParticle(int index);
 	void ActivateParticle(int index);
 	int GetSpawnTile();
+};
+
+struct GlideEmitter : ShapeEmitter
+{
+	GlideEmitter(GameSession *p_owner);
+	int GetSpawnTTL();
+	int GetSpawnTile();
+	GameSession *owner;
+	ShapeParticle * CreateParticle(int index);
+	void ActivateParticle(int index);
+	bool IsDone();
 };
 
 #endif
