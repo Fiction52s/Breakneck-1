@@ -878,6 +878,98 @@ DecorExpression * TerrainRender::CreateDecorExpression(DecorType dType,
 			ts_d = tMan->GetTileset("Env/veins_w2_6_512x512.png", 512, 512);
 			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
 			break;
+		case D_W2_BUSH0:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 0);
+			break;
+		case D_W2_BUSH1:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 1);
+			break;
+		case D_W2_BUSH2:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 2);
+			break;
+		case D_W2_BUSH3:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 3);
+			break;
+		case D_W2_BUSH4:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 4);
+			break;
+		case D_W2_BUSH5:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 5);
+			break;
+		case D_W2_BUSH6:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 6);
+			break;
+		case D_W2_BUSH7:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 7);
+			break;
+		case D_W2_BUSH8:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 8);
+			break;
+		case D_W2_BUSH9:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 9);
+			break;
+		case D_W2_BUSH10:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 10);
+			break;
+		case D_W2_BUSH11:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 11);
+			break;
+		case D_W2_BUSH12:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 12);
+			break;
+		case D_W2_BUSH13:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 13);
+			break;
+		case D_W2_BUSH14:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 14);
+			break;
+		case D_W2_BUSH15:
+			ts_d = tMan->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 15);
+			break;
+		case D_W2_BUSH_1_0:
+			ts_d = tMan->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 0);
+			break;
+		case D_W2_BUSH_1_1:
+			ts_d = tMan->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 1);
+			break;
+		case D_W2_BUSH_1_2:
+			ts_d = tMan->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 2);
+			break;
+		case D_W2_BUSH_1_3:
+			ts_d = tMan->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 3);
+			break;
+		case D_W2_BUSH_1_4:
+			ts_d = tMan->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 4);
+			break;
+		case D_W2_BUSH_1_5:
+			ts_d = tMan->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 5);
+			break;
+		case D_W2_BUSH_1_6:
+			ts_d = tMan->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 6);
+			break;
 		}
 
 		s_decorLayerMap[dType] = layer;
@@ -1476,6 +1568,98 @@ DecorType TerrainRender::GetDecorType(const std::string &dStr)
 	else if (dStr == "D_W2_VEINS6")
 	{
 		return D_W2_VEINS6;
+	}
+	else if (dStr == "D_W2_BUSH0")
+	{
+		return D_W2_BUSH0;
+	}
+	else if (dStr == "D_W2_BUSH1")
+	{
+		return D_W2_BUSH1;
+	}
+	else if (dStr == "D_W2_BUSH2")
+	{
+		return D_W2_BUSH2;
+	}
+	else if (dStr == "D_W2_BUSH3")
+	{
+		return D_W2_BUSH3;
+	}
+	else if (dStr == "D_W2_BUSH4")
+	{
+		return D_W2_BUSH4;
+	}
+	else if (dStr == "D_W2_BUSH5")
+	{
+		return D_W2_BUSH5;
+	}
+	else if (dStr == "D_W2_BUSH6")
+	{
+		return D_W2_BUSH6;
+	}
+	else if (dStr == "D_W2_BUSH7")
+	{
+		return D_W2_BUSH7;
+	}
+	else if (dStr == "D_W2_BUSH8")
+	{
+		return D_W2_BUSH8;
+	}
+	else if (dStr == "D_W2_BUSH9")
+	{
+		return D_W2_BUSH9;
+	}
+	else if (dStr == "D_W2_BUSH10")
+	{
+		return D_W2_BUSH10;
+	}
+	else if (dStr == "D_W2_BUSH11")
+	{
+		return D_W2_BUSH11;
+	}
+	else if (dStr == "D_W2_BUSH12")
+	{
+		return D_W2_BUSH12;
+	}
+	else if (dStr == "D_W2_BUSH13")
+	{
+		return D_W2_BUSH13;
+	}
+	else if (dStr == "D_W2_BUSH14")
+	{
+		return D_W2_BUSH14;
+	}
+	else if (dStr == "D_W2_BUSH15")
+	{
+		return D_W2_BUSH15;
+	}
+	else if (dStr == "D_W2_BUSH_1_0")
+	{
+		return D_W2_BUSH_1_0;
+	}
+	else if (dStr == "D_W2_BUSH_1_1")
+	{
+		return D_W2_BUSH_1_1;
+	}
+	else if (dStr == "D_W2_BUSH_1_2")
+	{
+		return D_W2_BUSH_1_2;
+	}
+	else if (dStr == "D_W2_BUSH_1_3")
+	{
+		return D_W2_BUSH_1_3;
+	}
+	else if (dStr == "D_W2_BUSH_1_4")
+	{
+		return D_W2_BUSH_1_4;
+	}
+	else if (dStr == "D_W2_BUSH_1_5")
+	{
+		return D_W2_BUSH_1_5;
+	}
+	else if (dStr == "D_W2_BUSH_1_6")
+	{
+		return D_W2_BUSH_1_6;
 	}
 	else
 	{ 
