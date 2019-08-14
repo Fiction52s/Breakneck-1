@@ -1437,7 +1437,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 
 
-		if (false)
+		if (true)
 		{
 			hasPowerAirDash = true;
 			hasPowerGravReverse = true;

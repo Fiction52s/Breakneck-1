@@ -39,6 +39,12 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	actionLength[SUPERKICKRECOVER] = 50;
 	actionLength[SUPERKICKIMPACT] = 30;
 
+	actionLength[COUNTERPUNCHWAIT] = 30;
+	actionLength[COUNTERPUNCHFLY] = 30;
+	actionLength[COUNTERPUNCHHIT] = 30;
+
+
+
 	animFactor[WAIT] = 1;
 	animFactor[MOVE] = 1;
 	animFactor[STARTGLIDE] = 1;
@@ -57,6 +63,10 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	animFactor[SUPERKICK] = 1;
 	animFactor[SUPERKICKRECOVER] = 1;
 	animFactor[SUPERKICKIMPACT] = 1;
+
+	animFactor[COUNTERPUNCHWAIT] = 1;
+	animFactor[COUNTERPUNCHFLY] = 1;
+	animFactor[COUNTERPUNCHHIT] = 1;
 
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
