@@ -2,6 +2,7 @@
 #define __MOVER_H__
 
 #include "Physics.h"
+#include "Movement.h"
 //#include "GameSession.h"
 
 //struct SurfaceMoverHandler
@@ -106,6 +107,92 @@ struct GroundMover : SurfaceMover
 	//sf::Vector2<double> velocity;
 
 
+};
+
+
+struct CubicCurve
+{
+	CubicCurve();
+	CubicCurve(V2d &A,
+		V2d &B,
+		V2d &C,
+		V2d &D,
+		CubicBezier &bez );
+
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+	sf::Vector2<double> C;
+	sf::Vector2<double> D;
+
+	sf::Vector2<double> GetPosition(double t);
+};
+
+struct QuadraticCurve
+{
+	QuadraticCurve();
+	QuadraticCurve(V2d &A,
+		V2d &B, V2d &C);
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+	sf::Vector2<double> C;
+	sf::Vector2<double> GetPosition(double t);
+};
+
+struct SpaceMover
+{
+	enum SpaceMovementState
+	{
+		S_WAIT,
+		S_HOVER,
+		S_STRAIGHTMOVE,
+		S_HOVERMOVE,
+		S_CURVEDMOVE,
+	};
+
+	//CubicCurve curve;
+	QuadraticCurve curve;
+
+	SpaceMovementState state;
+
+	SpaceMover();
+	void Reset();
+	void SetHover(double dipPixels, int loopFrames);
+	void SetMove(V2d &target, double maxSpeed,
+		double accel, int decelFrames, double decelRad);
+	void SetCurvedMoveContinue(V2d target, 
+		V2d targetVel);
+	void SetCurvedMove( V2d startVelocity, V2d target,
+		V2d targetVel);
+	void StateEnded();
+	bool Update();
+	void SetState(SpaceMovementState newState);
+	void ApplyHover();
+	void ApplyLinearMove();
+	void DebugDraw(sf::RenderTarget *target);
+	bool IsIdle();
+
+	V2d position;
+	V2d targetPos;
+	V2d startPos;
+
+	V2d velocity;
+	V2d targetVelocity;
+
+	double accel;
+	double maxVel;
+	double decelRadius;
+	int decelFrames;
+	double currentHoverOffset;
+
+	double hoverDipPixels;
+
+	double currentT;
+	double curvedSpeed;
+
+	int frame;
+	int currStateLength;
+
+	bool stateOver;
 };
 
 #endif

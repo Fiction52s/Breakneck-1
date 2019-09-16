@@ -46,8 +46,10 @@ struct GravRing : Enemy, PoolMember
 	void ProcessHit();
 };
 
+struct SpaceMover;
 struct BirdBoss : Enemy, RayCastHandler
 {
+	SpaceMover *spaceMover;
 	enum RingType
 	{
 		NORMAL_SMALL,
@@ -100,6 +102,7 @@ struct BirdBoss : Enemy, RayCastHandler
 		S_Count
 	};
 
+	void DebugDraw(sf::RenderTarget *target);
 	V2d rayStart;
 	V2d rayEnd;
 	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
@@ -162,7 +165,6 @@ struct BirdBoss : Enemy, RayCastHandler
 
 	V2d punchVel;
 	V2d maxPunchVel;
-
 
 	int superKickWaitChoices;
 

@@ -1061,3 +1061,313 @@ void GroundMover::FinishedRoll()
 {
 }
 
+
+void SpaceMover::Reset()
+{
+	SetState(S_WAIT);
+	currStateLength = -1;
+}
+
+void SpaceMover::SetHover(double dipPixels, int loopFrames)
+{
+	SetState(S_HOVER);
+	hoverDipPixels = dipPixels;
+	currStateLength = loopFrames;
+	frame = 0;
+	startPos = position;
+}
+
+void SpaceMover::StateEnded()
+{
+	if (frame == currStateLength || stateOver )
+	{
+		switch (state)
+		{
+		case S_HOVER:
+		{
+			frame = 0;
+			break;
+		}
+		case S_STRAIGHTMOVE:
+		{
+			SetState(S_WAIT);
+			break;
+		}
+		case S_CURVEDMOVE:
+		{
+			SetState(S_WAIT);
+			velocity = targetVelocity;
+			break;
+		}
+			
+		}
+	}
+}
+
+void SpaceMover::ApplyHover()
+{
+	int t = frame % currStateLength;
+	double tf = t;
+	tf /= (currStateLength - 1);
+	double f = sin(2 * PI * tf);
+
+	currentHoverOffset = f * hoverDipPixels;
+	//position = startPos;
+	//position.y += f * hoverDipPixels;
+}
+
+void SpaceMover::ApplyLinearMove()
+{
+	double len = length(targetPos - position);
+	double velLen = length(velocity);
+	if (len < velLen)
+	{
+		position = targetPos;
+		velocity = V2d(0, 0);
+		stateOver = true;
+	}
+	else
+	{
+		position += velocity;
+		double newSpeed;
+		if (accel == 0)
+		{
+			newSpeed = maxVel;
+		}
+		else
+		{
+			newSpeed = min(maxVel, velLen + accel);
+		}
+
+		velocity = normalize(targetPos - position) * newSpeed;
+	}
+}
+
+SpaceMover::SpaceMover()
+{
+
+}
+
+void SpaceMover::SetCurvedMove(V2d startVelocity, V2d target,
+	V2d targetVel)
+{
+	velocity = startVelocity;
+	SetCurvedMoveContinue(target, targetVel);
+}
+
+void SpaceMover::SetCurvedMoveContinue(V2d target, V2d targetVel)
+{
+	double tuning = 40.0;
+	double tuning1 = 40.0;
+
+	if (targetVel.x == 0 && targetVel.y == 0)
+	{
+		if (target.x == position.x && target.y == position.y)
+		{
+			SetState(S_WAIT);
+			currStateLength = -1;
+			frame = 0;
+			return;
+		}
+
+		targetVel = normalize(target - position);
+		targetVel *= curvedSpeed;
+		//control0 = position + dir * tuning;
+	}
+
+	if (velocity.x == 0 && velocity.y == 0)
+	{
+		velocity = normalize(target - position) * 5.0;
+	}
+
+	V2d control0 = position + velocity * tuning;
+	//V2d control1 = target - targetVel * tuning1;
+	curvedSpeed = 10.0;
+	targetVelocity = targetVel;
+
+
+	curve.A = position;
+	curve.B = control0;
+	curve.C = target;//control1;
+	//curve.D = target;
+
+	SetState(S_CURVEDMOVE);
+	currentT = 0;
+	frame = 0;
+	currStateLength = -1;
+	
+}
+
+bool SpaceMover::Update()
+{
+	StateEnded();
+
+	if (state == S_WAIT)
+	{
+		return false;
+	}
+
+	switch (state)
+	{
+	case S_HOVER:
+	{
+		//if( frame > 0)
+		ApplyHover();
+		position.y += currentHoverOffset;
+		break;
+	}
+	case S_STRAIGHTMOVE:
+	{
+		ApplyLinearMove();
+
+		ApplyHover();
+		position.y += currentHoverOffset;
+		break;
+	}
+	case S_HOVERMOVE:
+	{
+		break;
+	}
+	case S_CURVEDMOVE:
+	{
+		//double t;// = ((double)frame) / currStateLength;
+		//v1 = -3A + 9B -  9C + 3D
+		//v2 = 6A - 12B + 6C
+		//v3 = -3A + 3B
+		//V2d v1 = curve.A * -3.0 + curve.B * 9.0 - curve.C * 9.0 + curve.D * 3.0;
+		//V2d v2 = curve.A * 6.0 - curve.B * 12.0 + curve.C * 6.0;
+		//V2d v3 = curve.A * -3.0 + curve.B * 3.0;
+
+		V2d v1 = 2.0 * curve.A - 4.0 * curve.B + 2.0 * curve.C;
+		V2d v2 = -2.0 * curve.A + 2.0 * curve.B;
+
+		double denom = length(currentT * v1 + v2);
+		double step = curvedSpeed / denom;
+
+		//double denom = (length(v1 * currentT * currentT + v2 * currentT + v3));
+		//double step = curvedSpeed / denom;
+		currentT = currentT + step;//1 / 60.0; //+ step;
+
+		if (currentT >= 1.0)
+		{
+			currentT = 1.0;
+			stateOver = true;
+		}
+		V2d pos = curve.GetPosition(currentT);
+		position = pos;
+
+		if (frame == 0)
+		{
+			//cout << "denom:" << denom << ", step: " << step << endl;
+			//if (denom == 0)
+			//{
+			//	int xxxx = 5;
+			//}
+		}
+		//cout << "t: " << t << ", pos: " << position.x << ", " << position.y << endl;
+	}
+		
+	}
+	++frame;
+	
+	return (state != S_WAIT); //all movement has ceased
+}
+
+bool SpaceMover::IsIdle()
+{
+	return state == S_WAIT;
+}
+
+void SpaceMover::SetState(SpaceMovementState newState)
+{
+	state = newState;
+	stateOver = false;
+
+	if (state == S_WAIT)
+	{
+		currStateLength = -1;
+	}
+}
+
+void SpaceMover::SetMove(V2d &target, double maxSpeed,
+	double p_accel, int dFrames, double decelRad)
+{
+	targetPos = target;
+	velocity = V2d(0, 0);
+	SetState(S_STRAIGHTMOVE);
+	accel = p_accel;
+	decelRadius = decelRad;
+	decelFrames = dFrames;
+	maxVel = maxSpeed;
+	currStateLength = -1;
+}
+
+void SpaceMover::DebugDraw(sf::RenderTarget *target)
+{
+	if (state == S_CURVEDMOVE)
+	{
+		sf::CircleShape cs;
+		cs.setFillColor(Color::Red);
+		cs.setRadius(20);
+		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+
+		int divs = 10;
+		for (int i = 0; i < divs; i++)
+		{
+			cs.setPosition(Vector2f(curve.GetPosition((double)i / divs)));
+			target->draw(cs);
+		}
+
+		cs.setFillColor(Color::White);
+		cs.setPosition(Vector2f(curve.A));
+		target->draw(cs);
+		cs.setPosition(Vector2f(curve.B));
+		target->draw(cs);
+		cs.setPosition(Vector2f(curve.C));
+		target->draw(cs);
+		//cs.setPosition(Vector2f(curve.D));
+		//target->draw(cs);
+	}
+}
+
+CubicCurve::CubicCurve() {}
+
+
+CubicCurve::CubicCurve(sf::Vector2<double> &a,
+	sf::Vector2<double> &b,
+	sf::Vector2<double> &c,
+	sf::Vector2<double> &d,
+	CubicBezier &bez)
+	:A(a), B(b), C(c), D(d)
+{
+}
+
+V2d CubicCurve::GetPosition(double t)
+{
+	//double v = t / 
+	//double v = bez.GetValue(t / (double)duration);
+	double v = t;
+	double rv = (1 - v);
+	return pow(rv, 3) * A
+		+ 3 * rv * rv * v * B
+		+ 3 * rv * v * v * C
+		+ pow(v, 3) * D;
+}
+
+QuadraticCurve::QuadraticCurve(sf::Vector2<double> &a,
+	sf::Vector2<double> &b,
+	sf::Vector2<double> &c)
+	:A(a), B(b), C(c)
+{
+}
+
+QuadraticCurve::QuadraticCurve() {}
+
+V2d QuadraticCurve::GetPosition(double t)
+{
+	//double v = t / 
+	//double v = bez.GetValue(t / (double)duration);
+	double v = t;
+	double rv = (1 - v);
+	return pow(rv, 2) * A + 2 * rv * v * B + pow(v, 2)*C;
+}

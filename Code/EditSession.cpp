@@ -1148,6 +1148,7 @@ bool EditSession::OpenFile()
 
 			int polyPoints;
 			is >> polyPoints;
+
 			
 			numPoints -= polyPoints;
 			int x,y;
@@ -13872,30 +13873,39 @@ void EditSession::ExecuteTerrainCompletion()
 			}*/
 			if( empty )
 			{
-				polygonInProgress->FixWinding();
-				polygonInProgress->RemoveSlivers(PI / 20.0);
-				polygonInProgress->Finalize();
-
-				/*if (polygonInProgress->inverse)
+				if (polygonInProgress->inverse)
 				{
-					inversePolygon = polygonInProgress;
-				}*/
+					SetInversePoly();
+				}
+				else
+				{
 
-				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( polygonInProgress );
 
-				progressBrush->Clear();
-											
+					polygonInProgress->FixWinding();
+					polygonInProgress->RemoveSlivers(PI / 20.0);
+					polygonInProgress->Finalize();
 
-				progressBrush->AddObject( sp );
-									
-				Action *action = new ApplyBrushAction( progressBrush );
-				action->Perform();
-				doneActionStack.push_back( action );
+					/*if (polygonInProgress->inverse)
+					{
+						inversePolygon = polygonInProgress;
+					}*/
 
-				ClearUndoneActions();
+					SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(polygonInProgress);
 
-				PolyPtr newPoly( new TerrainPolygon(&grassTex) );
-				polygonInProgress = newPoly;
+					progressBrush->Clear();
+
+
+					progressBrush->AddObject(sp);
+
+					Action *action = new ApplyBrushAction(progressBrush);
+					action->Perform();
+					doneActionStack.push_back(action);
+
+					ClearUndoneActions();
+
+					PolyPtr newPoly(new TerrainPolygon(&grassTex));
+					polygonInProgress = newPoly;
+				}
 			}
 			else
 			{

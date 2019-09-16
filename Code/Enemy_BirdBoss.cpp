@@ -7,6 +7,9 @@ using namespace sf;
 BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	:Enemy( owner, EnemyType::EN_BOSS_BIRD, false, 1,false )
 {
+	spaceMover = new SpaceMover;
+	
+
 	ringPool = new ObjectPool;
 	for (int i = 0; i < 100; ++i)
 	{
@@ -40,8 +43,8 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	actionLength[SUPERKICKIMPACT] = 30;
 
 	actionLength[COUNTERPUNCHWAIT] = 30;
-	actionLength[COUNTERPUNCHFLY] = 30;
-	actionLength[COUNTERPUNCHHIT] = 30;
+	actionLength[COUNTERPUNCHFLY] =1000;
+	actionLength[COUNTERPUNCHHIT] = 1000;
 
 
 
@@ -71,6 +74,40 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
 
+	bodyHitboxInfo = new HitboxInfo;
+	bodyHitboxInfo->damage = 18;
+	bodyHitboxInfo->drainX = 0;
+	bodyHitboxInfo->drainY = 0;
+	bodyHitboxInfo->hitlagFrames = 0;
+	bodyHitboxInfo->hitstunFrames = 10;
+	bodyHitboxInfo->knockback = 4;
+
+	hurtBody = new CollisionBody(1);
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hurt;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = 48;
+	hurtBox.rh = 48;
+	hurtBody->AddCollisionBox(0, hurtBox);
+
+	hitBody = new CollisionBody(1);
+	CollisionBox hitBox;
+	hitBox.type = CollisionBox::Hit;
+	hitBox.isCircle = true;
+	hitBox.globalAngle = 0;
+	hitBox.offset.x = 0;
+	hitBox.offset.y = 0;
+	hitBox.rw = 48;
+	hitBox.rh = 48;
+	hitBody->hitboxInfo = bodyHitboxInfo;
+	hitBody->AddCollisionBox(0, hitBox);
+
+	SetHurtboxes(hurtBody, 0);
+	//SetHitboxes(hitBody, 0);
+
 	ResetEnemy();
 }
 
@@ -98,12 +135,546 @@ void BirdBoss::ResetEnemy()
 	}
 
 	ringPool->DeactivateAll();
+
+	SetHurtboxes(hurtBody, 0);
+	//SetHitboxes(hitBody, 0);
+
+	spaceMover->Reset();
+	spaceMover->position = position;
+
 }
 
 BirdBoss::~BirdBoss()
 {
 	delete[]choices;
 }
+
+
+
+void BirdBoss::ActionEnded()
+{
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		frame = 0;
+		switch (action)
+		{
+		case COUNTERPUNCHWAIT:
+			action = COUNTERPUNCHFLY;
+			break;
+		case COUNTERPUNCHFLY:
+			action = COUNTERPUNCHHIT;
+			break;
+		case COUNTERPUNCHHIT:
+			//action = COUNTERPUNCHWAIT;
+			break;
+		}
+		
+	}
+
+	if (false)
+	{
+		if (frame == actionLength[action] * animFactor[action])
+		{
+			switch (action)
+			{
+			case WAIT:
+				frame = 0;
+				break;
+			case MOVE:
+				frame = 0;
+				break;
+			case STARTGLIDE:
+				action = GLIDE;
+				frame = 0;
+				break;
+			case GLIDE:
+				break;
+			case ENDGLIDE:
+				break;
+			case STARTFOCUS:
+				action = FOCUSLOOP;
+				frame = 0;
+				break;
+			case FOCUSLOOP:
+				break;
+			case ENDFOCUS:
+				NextChoice();
+				break;
+			case FOCUSATTACK:
+				NextChoice();
+				break;
+			case STARTPUNCH:
+				action = HOLDPUNCH;
+				frame = 0;
+				break;
+			case HOLDPUNCH:
+				//keep going
+				break;
+			case PUNCH:
+				NextChoice();
+				break;
+			case RINGTHROW:
+				NextChoice();
+				break;
+			case GRAVITYCHOOSE:
+				NextChoice();
+				break;
+			case AIMSUPERKICK:
+				NextChoice();
+				break;
+			case SUPERKICK:
+				//BeginChoice();
+				break;
+			case SUPERKICKRECOVER:
+			{
+				break;
+			}
+			case SUPERKICKIMPACT:
+			{
+				action = SUPERKICKRECOVER;
+				frame = 0;
+				break;
+			}
+			}
+		}
+	}
+}
+
+
+void BirdBoss::ProcessState()
+{
+	ActionEnded();
+	Actor *player = owner->GetPlayer(0);
+	V2d playerPos = player->position;
+	V2d punchTarget;
+	if (facingRight)
+	{
+		punchTarget = playerPos + V2d(-300, 0 );
+	}
+	else
+	{
+		punchTarget = playerPos + V2d(300, 0);
+	}
+
+	if (false)
+	{
+		switch (action)
+		{
+		case WAIT:
+			if (length(position - playerPos) < 1000.0)
+			{
+				BeginChoice();
+			}
+			break;
+		case MOVE:
+		{
+			moveSpeed = moveSpeed + moveAccel;
+			V2d along = normalize(endMovePos - startMovePos);
+			double posAlong = dot(position - startMovePos, along);
+			/*double test = cross(position - startMovePos, along);
+			if (abs(test) > .001)
+			{
+				int zzzz = 5;
+			}*/
+			double len = length(endMovePos - startMovePos);
+			if (posAlong + moveSpeed > len)
+			{
+				//posAlong = len;
+				position = endMovePos;
+				velocity = V2d(0, 0);
+				NextChoice();
+			}
+			else
+			{
+				velocity = moveSpeed * along;
+				//position += moveSpeed * along;
+			}
+			break;
+		}
+		case STARTGLIDE:
+			break;
+		case GLIDE:
+			break;
+		case ENDGLIDE:
+			break;
+		case STARTFOCUS:
+			if (length(playerPos - position) < focusRadius)
+			{
+				action = FOCUSATTACK;
+				frame = 0;
+				position = playerPos;
+				break;
+			}
+			if (frame == 60)
+			{
+				action = ENDFOCUS;
+				frame = 0;
+			}
+			break;
+		case FOCUSLOOP:
+			if (length(playerPos - position) < focusRadius)
+			{
+				action = FOCUSATTACK;
+				frame = 0;
+				position = playerPos;
+				break;
+			}
+			if (frame == 60)
+			{
+				action = ENDFOCUS;
+				frame = 0;
+			}
+			break;
+		case ENDFOCUS:
+			break;
+		case FOCUSATTACK:
+			break;
+		case STARTPUNCH:
+			break;
+		case HOLDPUNCH:
+		{
+			if ((((velocity.y >= 0 && position.y > punchTarget.y) || (velocity.y < 0 && position.y < punchTarget.y)) && abs(position.x - punchTarget.x) < 200) || frame > 180)
+			{
+				action = PUNCH;
+				frame = 0;
+				if (facingRight)
+				{
+					velocity.x = 20;
+				}
+				else
+				{
+					velocity.x = -20;
+				}
+				velocity.y = 0;
+			}
+			else
+			{
+				double seekAccel = .1;
+				if (punchTarget.y < position.y)
+				{
+					velocity.y -= seekAccel;
+				}
+				else if (punchTarget.y > position.y)
+				{
+					velocity.y += seekAccel;
+				}
+				else
+				{
+					//velocity.y = 0;
+				}
+
+				if (punchTarget.x > position.x + 20)
+				{
+					velocity.x = 10;
+				}
+				else if (punchTarget.x < position.x - 20)
+				{
+					velocity.x = -10;
+				}
+				else
+				{
+					velocity.x = 0;
+				}
+				//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+				//velocity = punchVel;
+				//position += punchVel;
+			}
+			break;
+		}
+		case PUNCH:
+			velocity = V2d(velocity.x, velocity.y);
+			break;
+		case RINGTHROW:
+			break;
+		case GRAVITYCHOOSE:
+			break;
+		case AIMSUPERKICK:
+
+			break;
+		case SUPERKICK:
+			break;
+		case SUPERKICKRECOVER:
+		{
+			break;
+		}
+		case SUPERKICKIMPACT:
+		{
+			break;
+		}
+		}
+
+		switch (action)
+		{
+		case WAIT:
+			break;
+		case MOVE:
+			break;
+		case STARTGLIDE:
+			break;
+		case GLIDE:
+			break;
+		case ENDGLIDE:
+			break;
+		case STARTFOCUS:
+			focusRadius += choices[0].focusRadius / actionLength[STARTFOCUS];
+			break;
+		case FOCUSLOOP:
+			break;
+		case ENDFOCUS:
+			break;
+		case FOCUSATTACK:
+			break;
+		case STARTPUNCH:
+			break;
+		case HOLDPUNCH:
+			break;
+		case PUNCH:
+			break;
+		case RINGTHROW:
+			break;
+		case GRAVITYCHOOSE:
+			break;
+		case AIMSUPERKICK:
+			break;
+		case SUPERKICK:
+		{
+			velocity += normalize(superKickPoint - superKickStart) * .1;
+			break;
+		}
+		case SUPERKICKRECOVER:
+		{
+			velocity += normalize(superKickPoint - superKickStart) * .1;
+			break;
+		}
+		case SUPERKICKIMPACT:
+		{
+			break;
+		}
+
+		}
+	}
+
+	if (spaceMover->IsIdle() && frame > 0 )
+	{
+		if (action == COUNTERPUNCHHIT)
+		{
+			frame = 0;
+		}
+		else if (action == COUNTERPUNCHFLY)
+		{
+			action = COUNTERPUNCHHIT;
+			frame = 0;
+		}
+	}
+
+	V2d playerVel = player->velocity;
+	if (length(playerVel) > 10.0)
+	{
+		playerVel = normalize(playerVel) *10.0;
+	}
+	switch (action)
+	{
+	case COUNTERPUNCHWAIT:
+		velocity = V2d(0, 0);
+		break;
+	case COUNTERPUNCHFLY:
+		if (frame == 0)
+		{
+			//spaceMover->SetHover(10, 60);
+			//spaceMover->SetMove(playerPos, 20, .5, 60, 100);
+			spaceMover->SetCurvedMove(V2d( 10, 0 ), playerPos, playerVel);
+			//velocity = normalize(punchTarget - position) * 10.0;
+		}
+		break;
+	case COUNTERPUNCHHIT:
+		if (frame == 0)
+		{
+			spaceMover->SetCurvedMoveContinue(playerPos, playerVel);
+		}
+		velocity = V2d(0, 0);
+		break;
+	}
+
+
+	//if (length(velocity) > 60)
+	//{
+	//	velocity = normalize(velocity) * 60.0;
+	//}
+
+	position = spaceMover->position;
+
+	bool update = spaceMover->Update();
+	if (!update)
+	{
+		
+	}
+	//position += velocity;
+
+	if (false)
+	{
+		if (action == SUPERKICK)
+		{
+			double len = length(position - superKickStart);
+
+			if (len >= length(superKickPoint - superKickStart))
+			{
+				position = superKickPoint;
+				if (rcEdge == NULL)
+				{
+					velocity = V2d(0, 0);
+					NextChoice();
+				}
+				else
+				{
+					superKickPoint = superKickPoint + rcEdge->Normal() * 300.0;
+					superKickStart = position;
+					velocity = V2d(0, 0);
+					action = SUPERKICKIMPACT;
+					frame = 0;
+				}
+				//NextChoice(); //not great
+			}
+		}
+		else if (action == SUPERKICKRECOVER)
+		{
+			double len = length(position - superKickStart);
+			if (len >= length(superKickPoint - superKickStart))
+			{
+				position = superKickPoint;
+				superKickPoint = superKickStart + normalize(superKickPoint - superKickStart) * 300.0;
+				superKickStart = position;
+				velocity = V2d(0, 0);
+				//action = SUPERKICKRECOVER;
+				NextChoice(); //not great
+			}
+		}
+	}
+}
+
+void BirdBoss::HandleHitAndSurvive()
+{
+	if (action == WAIT)
+	{
+		action = COUNTERPUNCHWAIT;
+		frame = 0;
+	}
+}
+
+void BirdBoss::UpdateEnemyPhysics()
+{
+
+}
+
+void BirdBoss::FrameIncrement()
+{
+	if (action == AIMSUPERKICK)
+	{
+		++currTrackingFrame;
+	}
+}
+
+void BirdBoss::EnemyDraw(sf::RenderTarget *target)
+{
+	if (action == STARTFOCUS || action == FOCUSLOOP)
+	{
+		sf::CircleShape cs;
+		cs.setFillColor(Color(0, 0, 255, 60));
+		cs.setRadius(focusRadius);
+		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+		cs.setPosition(position.x, position.y);
+		target->draw(cs);
+	}
+	target->draw(sprite);
+	
+}
+
+void BirdBoss::DebugDraw(sf::RenderTarget *target)
+{
+	Enemy::DebugDraw(target);
+	spaceMover->DebugDraw(target);
+}
+
+void BirdBoss::UpdateSprite()
+{
+	switch (action)
+	{
+	case WAIT:
+		break;
+	case MOVE:
+		break;
+	case STARTGLIDE:
+		break;
+	case GLIDE:
+		break;
+	case ENDGLIDE:
+		break;
+	case STARTFOCUS:
+		break;
+	case FOCUSLOOP:
+		break;
+	case ENDFOCUS:
+		break;
+	case FOCUSATTACK:
+		break;
+	case STARTPUNCH:
+		break;
+	case HOLDPUNCH:
+		break;
+	case PUNCH:
+		break;
+	case RINGTHROW:
+		break;
+	case GRAVITYCHOOSE:
+		break;
+	case AIMSUPERKICK:
+		break;
+	case SUPERKICK:
+		break;
+	}
+
+	sprite.setPosition(position.x, position.y);
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+}
+
+void BirdBoss::UpdateHitboxes()
+{
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	hurtBox.globalPosition = position;
+	hurtBox.globalAngle = 0;
+	hitBox.globalPosition = position;
+	hitBox.globalAngle = 0;
+
+	if (owner->GetPlayer(0)->ground != NULL)
+	{
+		bodyHitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
+	}
+	else
+	{
+		bodyHitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
+	}
+}
+
+
+void BirdBoss::HandleNoHealth()
+{
+
+}
+
+
+void BirdBoss::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
+{
+	V2d dir = normalize(rayEnd - rayStart);
+	V2d pos = edge->GetPoint(edgeQuantity);
+	double along = dot(dir, edge->Normal());
+	if (along < 0 && (rcEdge == NULL || length(edge->GetPoint(edgeQuantity) - rayStart) <
+		length(rcEdge->GetPoint(rcQuantity) - rayStart)))
+	{
+		rcEdge = edge;
+		rcQuantity = edgeQuantity;
+	}
+}
+
 
 void BirdBoss::BeginChoice()
 {
@@ -139,74 +710,6 @@ void BirdBoss::NextChoice()
 	PlanChoice(numChoices - 1);
 
 	BeginChoice();
-}
-
-void BirdBoss::ActionEnded()
-{
-	if (frame == actionLength[action] * animFactor[action])
-	{		
-		switch (action)
-		{
-		case WAIT:
-			frame = 0;
-			break;
-		case MOVE:
-			frame = 0;
-			break;
-		case STARTGLIDE:
-			action = GLIDE;
-			frame = 0;
-			break;
-		case GLIDE:
-			break;
-		case ENDGLIDE:
-			break;
-		case STARTFOCUS:
-			action = FOCUSLOOP;
-			frame = 0;
-			break;
-		case FOCUSLOOP:
-			break;
-		case ENDFOCUS:
-			NextChoice();
-			break;
-		case FOCUSATTACK:
-			NextChoice();
-			break;
-		case STARTPUNCH:
-			action = HOLDPUNCH;
-			frame = 0;
-			break;
-		case HOLDPUNCH:
-			//keep going
-			break;
-		case PUNCH:
-			NextChoice();
-			break;
-		case RINGTHROW:
-			NextChoice();
-			break;
-		case GRAVITYCHOOSE:
-			NextChoice();
-			break;
-		case AIMSUPERKICK:
-			NextChoice();
-			break;
-		case SUPERKICK:
-			//BeginChoice();
-			break;
-		case SUPERKICKRECOVER:
-		{
-			break;
-		}
-		case SUPERKICKIMPACT:
-		{
-			action = SUPERKICKRECOVER;
-			frame = 0;
-			break;
-		}
-		}
-	}
 }
 
 void BirdBoss::BeginMove()
@@ -258,7 +761,7 @@ void BirdBoss::BeginThrow()
 
 	GravRing *r = (GravRing*)ringPool->ActivatePoolMember();
 	assert(r != NULL);
-	r->Init( position, V2d( 0, 0 ));
+	r->Init(position, V2d(0, 0));
 	owner->AddEnemy(r);
 	velocity = V2d(0, 0);
 	//cout << "spawning bomb: " << fb << ": " << fb->position.x << ", " << fb->position.y << endl;
@@ -293,23 +796,10 @@ void BirdBoss::BeginSuperKick()
 	//superKickPoint = owner->GetPlayer(0)->position;//rcEdge->GetPoint(rcQuantity);
 
 	superKickStart = position;//later move this to when you activate super kick
-	
+
 
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(3));
-}
-
-void BirdBoss::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
-{
-	V2d dir = normalize(rayEnd - rayStart);
-	V2d pos = edge->GetPoint(edgeQuantity);
-	double along = dot(dir, edge->Normal());
-	if( along < 0 && ( rcEdge == NULL || length(edge->GetPoint(edgeQuantity) - rayStart) <
-		length(rcEdge->GetPoint(rcQuantity) - rayStart)))
-	{
-		rcEdge = edge;
-		rcQuantity = edgeQuantity;
-	}
 }
 
 void BirdBoss::BeginGravityChoose()
@@ -324,12 +814,12 @@ void BirdBoss::BeginGravityChoose()
 	while (pm != NULL)
 	{
 		GravRing *gr = (GravRing*)pm;
-		gr->SetFall( fallDir, fallGrav );
+		gr->SetFall(fallDir, fallGrav);
 		pm = pm->pmnext;
 	}
 }
 
-void BirdBoss::PlanChoice( int ind )
+void BirdBoss::PlanChoice(int ind)
 {
 	int r = rand() % C_Count;
 	ChoiceParams &cp = choices[ind];
@@ -344,7 +834,7 @@ void BirdBoss::PlanChoice( int ind )
 	//	cp.cType = C_RINGTHROW; //for testing this one thing
 	//}
 	//cp.cType = C_FOCUS;
-		
+
 	switch (cp.cType)
 	{
 	case C_FLYTOWARDS:
@@ -365,345 +855,14 @@ void BirdBoss::PlanChoice( int ind )
 	}
 }
 
-void BirdBoss::ProcessState()
-{
-	ActionEnded();
-	V2d playerPos = owner->GetPlayer(0)->position;
-	V2d punchTarget;
-	if (facingRight)
-	{
-		punchTarget = playerPos + V2d(-300, 0 );
-	}
-	else
-	{
-		punchTarget = playerPos + V2d(300, 0);
-	}
-	switch (action)
-	{
-	case WAIT:
-		if (length(position - playerPos) < 1000.0)
-		{
-			BeginChoice();
-		}
-		break;
-	case MOVE:
-	{
-		moveSpeed = moveSpeed + moveAccel;
-		V2d along = normalize(endMovePos - startMovePos);
-		double posAlong = dot(position - startMovePos, along);
-		/*double test = cross(position - startMovePos, along);
-		if (abs(test) > .001)
-		{
-			int zzzz = 5;
-		}*/
-		double len = length(endMovePos - startMovePos);
-		if (posAlong + moveSpeed > len)
-		{
-			//posAlong = len;
-			position = endMovePos;
-			velocity = V2d(0, 0);
-			NextChoice();
-		}
-		else
-		{
-			velocity = moveSpeed * along;
-			//position += moveSpeed * along;
-		}
-		break;
-	}
-	case STARTGLIDE:
-		break;
-	case GLIDE:
-		break;
-	case ENDGLIDE:
-		break;
-	case STARTFOCUS:
-		if (length(playerPos - position) < focusRadius)
-		{
-			action = FOCUSATTACK;
-			frame = 0;
-			position = playerPos;
-			break;
-		}
-		if (frame == 60)
-		{
-			action = ENDFOCUS;
-			frame = 0;
-		}
-		break;
-	case FOCUSLOOP:
-		if (length(playerPos - position) < focusRadius)
-		{
-			action = FOCUSATTACK;
-			frame = 0;
-			position = playerPos;
-			break;
-		}
-		if (frame == 60)
-		{
-			action = ENDFOCUS;
-			frame = 0;
-		}
-		break;
-	case ENDFOCUS:
-		break;
-	case FOCUSATTACK:
-		break;
-	case STARTPUNCH:
-		break;
-	case HOLDPUNCH:
-	{
-		if ( (((velocity.y >= 0 && position.y > punchTarget.y)|| (velocity.y < 0 && position.y < punchTarget.y) ) && abs( position.x - punchTarget.x ) < 200 ) || frame > 180)
-		{
-			action = PUNCH;
-			frame = 0;
-			if (facingRight)
-			{
-				velocity.x = 20;
-			}
-			else
-			{
-				velocity.x = -20;
-			}
-			velocity.y = 0;
-		}
-		else
-		{
-			double seekAccel = .1;
-			if (punchTarget.y < position.y)
-			{
-				velocity.y -= seekAccel;
-			}
-			else if (punchTarget.y > position.y)
-			{
-				velocity.y += seekAccel;
-			}
-			else
-			{
-				//velocity.y = 0;
-			}
-
-			if (punchTarget.x > position.x + 20)
-			{
-				velocity.x = 10;
-			}
-			else if (punchTarget.x < position.x - 20)
-			{
-				velocity.x = -10;
-			}
-			else
-			{
-				velocity.x = 0;
-			}
-			//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
-			//velocity = punchVel;
-			//position += punchVel;
-		}
-		break;
-	}
-	case PUNCH:
-		velocity = V2d(velocity.x, velocity.y);
-		break;
-	case RINGTHROW:
-		break;
-	case GRAVITYCHOOSE:
-		break;
-	case AIMSUPERKICK:
-
-		break;
-	case SUPERKICK:
-		break;
-	case SUPERKICKRECOVER:
-	{
-		break;
-	}
-	case SUPERKICKIMPACT:
-	{
-		break;
-	}
-	}
-
-	switch (action)
-	{
-	case WAIT:
-		break;
-	case MOVE:
-		break;
-	case STARTGLIDE:
-		break;
-	case GLIDE:
-		break;
-	case ENDGLIDE:
-		break;
-	case STARTFOCUS:
-		focusRadius += choices[0].focusRadius / actionLength[STARTFOCUS];
-		break;
-	case FOCUSLOOP:
-		break;
-	case ENDFOCUS:
-		break;
-	case FOCUSATTACK:
-		break;
-	case STARTPUNCH:
-		break;
-	case HOLDPUNCH:
-		break;
-	case PUNCH:
-		break;
-	case RINGTHROW:
-		break;
-	case GRAVITYCHOOSE:
-		break;
-	case AIMSUPERKICK:
-		break;
-	case SUPERKICK:
-	{
-		velocity += normalize(superKickPoint - superKickStart) * .1;
-		break;
-	}
-	case SUPERKICKRECOVER:
-	{
-		velocity += normalize(superKickPoint - superKickStart) * .1;
-		break;
-	}
-	case SUPERKICKIMPACT:
-	{
-		break;
-	}
-		
-	}
-
-	if (length(velocity) > 60)
-	{
-		velocity = normalize(velocity) * 60.0;
-	}
-
-	position += velocity;
-
-	if (action == SUPERKICK)
-	{
-		double len = length(position - superKickStart);
-		
-		if ( len >= length(superKickPoint - superKickStart))
-		{
-			position = superKickPoint;
-			if (rcEdge == NULL)
-			{
-				velocity = V2d(0, 0);
-				NextChoice();
-			}
-			else
-			{
-				superKickPoint = superKickPoint + rcEdge->Normal() * 300.0;
-				superKickStart = position;
-				velocity = V2d(0, 0);
-				action = SUPERKICKIMPACT;
-				frame = 0;
-			}
-			//NextChoice(); //not great
-		}
-	}
-	else if (action == SUPERKICKRECOVER)
-	{
-		double len = length(position - superKickStart);
-		if (len >= length(superKickPoint - superKickStart))
-		{
-			position = superKickPoint;
-			superKickPoint = superKickStart + normalize(superKickPoint - superKickStart) * 300.0;
-			superKickStart = position;
-			velocity = V2d(0, 0);
-			//action = SUPERKICKRECOVER;
-			NextChoice(); //not great
-		}
-	}
-}
-
-void BirdBoss::HandleHitAndSurvive()
-{
-
-}
-
-void BirdBoss::UpdateEnemyPhysics()
-{
-
-}
-
-void BirdBoss::FrameIncrement()
-{
-	if (action == AIMSUPERKICK)
-	{
-		++currTrackingFrame;
-	}
-}
-
-void BirdBoss::EnemyDraw(sf::RenderTarget *target)
-{
-	if (action == STARTFOCUS || action == FOCUSLOOP)
-	{
-		sf::CircleShape cs;
-		cs.setFillColor(Color(0, 0, 255, 60));
-		cs.setRadius(focusRadius);
-		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-		cs.setPosition(position.x, position.y);
-		target->draw(cs);
-	}
-	target->draw(sprite);
-	
-}
-
-void BirdBoss::UpdateSprite()
-{
-	switch (action)
-	{
-	case WAIT:
-		break;
-	case MOVE:
-		break;
-	case STARTGLIDE:
-		break;
-	case GLIDE:
-		break;
-	case ENDGLIDE:
-		break;
-	case STARTFOCUS:
-		break;
-	case FOCUSLOOP:
-		break;
-	case ENDFOCUS:
-		break;
-	case FOCUSATTACK:
-		break;
-	case STARTPUNCH:
-		break;
-	case HOLDPUNCH:
-		break;
-	case PUNCH:
-		break;
-	case RINGTHROW:
-		break;
-	case GRAVITYCHOOSE:
-		break;
-	case AIMSUPERKICK:
-		break;
-	case SUPERKICK:
-		break;
-	}
-
-	sprite.setPosition(position.x, position.y);
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-}
-
-void BirdBoss::UpdateHitboxes()
-{
-
-}
 
 
 
-void BirdBoss::HandleNoHealth()
-{
 
-}
+
+
+
+
 
 GravRing::GravRing(GameSession *owner, BirdBoss *p_parent, ObjectPool *p_myPool, int index)
 	:Enemy(owner, EnemyType::EN_GRAVRING, false, 1, false),

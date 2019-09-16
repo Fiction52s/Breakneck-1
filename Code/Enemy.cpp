@@ -2163,7 +2163,7 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_BOSS_BIRD:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 40, 40);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 40, 400);
 			break;
 		case EnemyType::EN_BAT:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
