@@ -75,50 +75,6 @@ BatParams::BatParams(ActorType *at, sf::Vector2i &pos )
 
 }
 
-
-void BatParams::SetPath(std::list<sf::Vector2i> &globalPath)
-{
-	if( lines != NULL )
-	{
-		//cout << "SET PATH REMOVCE LINES-------------------------------------------" << endl;
-		delete lines;
-		lines = NULL;
-	}
-	
-	
-	
-
-	localPath.clear();
-	if( globalPath.size() > 1 )
-	{
-
-		int numLines = globalPath.size();
-	
-		lines = new VertexArray( sf::LinesStrip, numLines );
-		VertexArray &li = *lines;
-		li[0].position = Vector2f( 0, 0 );
-		li[0].color = Color::Magenta;
-
-		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for( ; it != globalPath.end(); ++it )
-		{
-			
-			Vector2i temp( (*it).x - position.x, (*it).y - position.y );
-			localPath.push_back( temp );
-
-			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
-			li[index].position = Vector2f( temp.x, temp.y );
-			li[index].color = Color::Magenta;
-			++index;
-		}
-	}
-
-	
-	
-}
-
 void BatParams::Draw( sf::RenderTarget *target )
 {
 	int localPathSize = localPath.size();
@@ -160,17 +116,6 @@ void BatParams::Draw( sf::RenderTarget *target )
 	}
 
 	ActorParams::Draw( target );
-}
-
-std::list<sf::Vector2i> BatParams::GetGlobalPath()
-{
-	list<Vector2i> globalPath;
-	globalPath.push_back( position );
-	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-		globalPath.push_back( position + (*it) );
-	}
-	return globalPath;
 }
 
 void BatParams::WriteParamFile( ofstream &of )
@@ -1049,38 +994,10 @@ void GravitySpringParams::WriteParamFile(std::ofstream &of)
 
 void GravitySpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
 {
-	if (lines != NULL)
-	{
-		delete lines;
-		lines = NULL;
-	}
-
-	localPath.clear();
+	ActorParams::SetPath(globalPath);
 	if (globalPath.size() > 1)
 	{
-
-		int numLines = globalPath.size();
-
-		lines = new VertexArray(sf::LinesStrip, numLines);
 		VertexArray &li = *lines;
-		li[0].position = Vector2f(0, 0);
-		li[0].color = Color::Magenta;
-
-		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for (; it != globalPath.end(); ++it)
-		{
-
-			Vector2i temp((*it).x - position.x, (*it).y - position.y);
-			localPath.push_back(temp);
-
-			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
-			li[index].position = Vector2f(temp.x, temp.y);
-			li[index].color = Color::Magenta;
-			++index;
-		}
-
 		Vector2f diff = li[1].position - li[0].position;
 		float f = GetVectorAngleCW(diff);
 		float rot = f / PI * 180.f + 90;
@@ -1155,18 +1072,6 @@ void GravitySpringParams::Draw(sf::RenderTarget *target)
 	}
 
 	ActorParams::Draw(target);
-}
-
-
-std::list<sf::Vector2i> GravitySpringParams::GetGlobalPath()
-{
-	list<Vector2i> globalPath;
-	globalPath.push_back(position);
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		globalPath.push_back(position + (*it));
-	}
-	return globalPath;
 }
 
 GravityModifierParams::GravityModifierParams(ActorType *at, sf::Vector2i &pos, int p_strength)

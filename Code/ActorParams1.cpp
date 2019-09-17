@@ -114,48 +114,6 @@ void PatrollerParams::SetPanelInfo()
 	edit->patrolPath = GetGlobalPath();
 }
 
-void PatrollerParams::SetPath(std::list<sf::Vector2i> &globalPath)
-{
-	if( lines != NULL )
-	{
-		delete lines;
-		lines = NULL;
-	}
-	
-	
-	
-
-	localPath.clear();
-	if( globalPath.size() > 1 )
-	{
-
-		int numLines = globalPath.size();
-	
-		lines = new VertexArray( sf::LinesStrip, numLines );
-		VertexArray &li = *lines;
-		li[0].position = Vector2f( 0, 0 );
-		li[0].color = Color::Magenta;
-
-		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for( ; it != globalPath.end(); ++it )
-		{
-			
-			Vector2i temp( (*it).x - position.x, (*it).y - position.y );
-			localPath.push_back( temp );
-
-			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
-			li[index].position = Vector2f( temp.x, temp.y );
-			li[index].color = Color::Magenta;
-			++index;
-		}
-	}
-
-	
-	
-}
-
 void PatrollerParams::Draw( sf::RenderTarget *target )
 {
 	int localPathSize = localPath.size();
@@ -199,17 +157,6 @@ void PatrollerParams::Draw( sf::RenderTarget *target )
 	//target->draw( image );
 
 	//DrawBoundar
-}
-
-std::list<sf::Vector2i> PatrollerParams::GetGlobalPath()
-{
-	list<Vector2i> globalPath;
-	globalPath.push_back( position );
-	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-		globalPath.push_back( position + (*it) );
-	}
-	return globalPath;
 }
 
 void PatrollerParams::WriteParamFile( ofstream &of )
@@ -676,48 +623,15 @@ void SpringParams::WriteParamFile(std::ofstream &of)
 
 void SpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
 {
-	if (lines != NULL)
-	{
-		delete lines;
-		lines = NULL;
-	}
-
-	localPath.clear();
+	ActorParams::SetPath(globalPath);
 	if (globalPath.size() > 1)
 	{
-
-		int numLines = globalPath.size();
-
-		lines = new VertexArray(sf::LinesStrip, numLines);
 		VertexArray &li = *lines;
-		li[0].position = Vector2f(0, 0);
-		li[0].color = Color::Magenta;
-
-		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for (; it != globalPath.end(); ++it)
-		{
-
-			Vector2i temp((*it).x - position.x, (*it).y - position.y);
-			localPath.push_back(temp);
-
-			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
-			li[index].position = Vector2f(temp.x, temp.y);
-			li[index].color = Color::Magenta;
-			++index;
-		}
-
 		Vector2f diff = li[1].position - li[0].position;
 		float f = GetVectorAngleCW(diff);
 		float rot = f / PI * 180.f + 90;
 		image.setRotation(rot);
-		cout << "blah: " << rot << endl;
-
 	}
-
-
-	//Vector2i diff = globalPath. - globalPath[0];
 }
 
 void SpringParams::SetParams()
@@ -790,17 +704,6 @@ void SpringParams::Draw(sf::RenderTarget *target)
 	ActorParams::Draw(target);
 }
 
-
-std::list<sf::Vector2i> SpringParams::GetGlobalPath()
-{
-	list<Vector2i> globalPath;
-	globalPath.push_back(position);
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		globalPath.push_back(position + (*it));
-	}
-	return globalPath;
-}
 
 ComboerParams::ComboerParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop)
 	:ActorParams(at)
@@ -894,48 +797,6 @@ void ComboerParams::SetPanelInfo()
 }
 
 
-void ComboerParams::SetPath(std::list<sf::Vector2i> &globalPath)
-{
-	if (lines != NULL)
-	{
-		delete lines;
-		lines = NULL;
-	}
-
-
-
-
-	localPath.clear();
-	if (globalPath.size() > 1)
-	{
-
-		int numLines = globalPath.size();
-
-		lines = new VertexArray(sf::LinesStrip, numLines);
-		VertexArray &li = *lines;
-		li[0].position = Vector2f(0, 0);
-		li[0].color = Color::Magenta;
-
-		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for (; it != globalPath.end(); ++it)
-		{
-
-			Vector2i temp((*it).x - position.x, (*it).y - position.y);
-			localPath.push_back(temp);
-
-			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
-			li[index].position = Vector2f(temp.x, temp.y);
-			li[index].color = Color::Magenta;
-			++index;
-		}
-	}
-
-
-
-}
-
 void ComboerParams::Draw(sf::RenderTarget *target)
 {
 	int localPathSize = localPath.size();
@@ -979,17 +840,6 @@ void ComboerParams::Draw(sf::RenderTarget *target)
 	//target->draw( image );
 
 	//DrawBoundar
-}
-
-std::list<sf::Vector2i> ComboerParams::GetGlobalPath()
-{
-	list<Vector2i> globalPath;
-	globalPath.push_back(position);
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		globalPath.push_back(position + (*it));
-	}
-	return globalPath;
 }
 
 void ComboerParams::WriteParamFile(ofstream &of)

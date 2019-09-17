@@ -7481,7 +7481,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					{
 					case Event::MouseButtonPressed:
 						{
-
 							break;
 						}
 					case Event::MouseButtonReleased:
@@ -7507,46 +7506,14 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									ActorParams *actor = (ActorParams*)select;
 									showPanel = actor->type->panel;
 									actor->SetPath( patrolPath );
-									//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
 									mode = EDIT;
 								}
 								else
 								{
 									showPanel = trackingEnemy->panel;
-									//ISelectable *select = selectedBrush->objects.front().get();
-									//ActorParams *actor = (ActorParams*)select;
 									tempActor->SetPath( patrolPath );
-									//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
 									mode = CREATE_ENEMY;
 								}
-								//if( selectedActor != NULL )
-								//{
-								//	showPanel = selectedActor->type->panel;
-								//	((PatrollerParams*)selectedActor)->SetPath( patrolPath );
-								//	mode = EDIT;
-								//}
-								//else
-								//{
-								//	showPanel = trackingEnemy->panel;
-								//	
-								//	assert( selectedBrush->objects.size() == 1 );
-
-								//	ISelectable *select = selectedBrush->objects.front().get();
-								//	ActorParams *actor = (ActorParams*)select;
-								//	actor->SetPath( patrolPath );
-								//	//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
-								//	mode = EDIT;
-								//	//mode = CREATE_ENEMY;
-								//}
-								
-								/*showPanel = trackingEnemy->panel;
-								trackingEnemy = NULL;
-								ActorParams *actor = new ActorParams;
-								actor->SetAsPatroller( patrollerType, patrolPath.front(), patrolPath, 10, false );
-								groups["--"]->actors.push_back( actor);
-								actor->group = groups["--"];
-								patrolPath.clear();
-								mode = CREATE_ENEMY;*/
 							}
 							break;
 						}
@@ -7564,97 +7531,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						}
 					}
 					break;
-				}
-			case CREATE_BLOCKER_CHAIN:
-				{
-				minimumPathEdgeLength = 16;
-				switch (ev.type)
-				{
-				case Event::MouseButtonPressed:
-				{
-
-					break;
-				}
-				case Event::MouseButtonReleased:
-				{
-					break;
-				}
-				case Event::MouseWheelMoved:
-				{
-					break;
-				}
-				case Event::KeyPressed:
-				{
-					if ((ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete) && patrolPath.size() > 1)
-					{
-						patrolPath.pop_back();
-					}
-					else if (ev.key.code == Keyboard::Space)
-					{
-						if (selectedBrush->objects.size() == 1) //EDIT
-						{
-							//showPanel = trackingEnemy->panel;
-							ISelectable *select = selectedBrush->objects.front().get();
-							ActorParams *actor = (ActorParams*)select;
-							showPanel = actor->type->panel;
-							actor->SetPath(patrolPath);
-							//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
-							mode = EDIT;
-						}
-						else
-						{
-							showPanel = trackingEnemy->panel;
-							//ISelectable *select = selectedBrush->objects.front().get();
-							//ActorParams *actor = (ActorParams*)select;
-							tempActor->SetPath(patrolPath);
-							//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
-							mode = CREATE_ENEMY;
-						}
-						//if( selectedActor != NULL )
-						//{
-						//	showPanel = selectedActor->type->panel;
-						//	((PatrollerParams*)selectedActor)->SetPath( patrolPath );
-						//	mode = EDIT;
-						//}
-						//else
-						//{
-						//	showPanel = trackingEnemy->panel;
-						//	
-						//	assert( selectedBrush->objects.size() == 1 );
-
-						//	ISelectable *select = selectedBrush->objects.front().get();
-						//	ActorParams *actor = (ActorParams*)select;
-						//	actor->SetPath( patrolPath );
-						//	//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
-						//	mode = EDIT;
-						//	//mode = CREATE_ENEMY;
-						//}
-
-						/*showPanel = trackingEnemy->panel;
-						trackingEnemy = NULL;
-						ActorParams *actor = new ActorParams;
-						actor->SetAsPatroller( patrollerType, patrolPath.front(), patrolPath, 10, false );
-						groups["--"]->actors.push_back( actor);
-						actor->group = groups["--"];
-						patrolPath.clear();
-						mode = CREATE_ENEMY;*/
-					}
-					break;
-				}
-				case Event::KeyReleased:
-				{
-					break;
-				}
-				case Event::LostFocus:
-				{
-					break;
-				}
-				case Event::GainedFocus:
-				{
-					break;
-				}
-				}
-				break;
 				}
 			case CREATE_RECT:
 			{
@@ -9522,30 +9398,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		}
 		case CREATE_PATROL_PATH:
 			{
-				/*if( //polygonInProgress->points.size() > 0 && 
-					IsKeyPressed( Keyboard::G ) )
-				{
-					int adjX, adjY;
-					
-					testPoint.x /= 32;
-					testPoint.y /= 32;
-
-					if( testPoint.x > 0 )
-						testPoint.x += .5f;
-					else if( testPoint.x < 0 )
-						testPoint.x -= .5f;
-
-					if( testPoint.y > 0 )
-						testPoint.y += .5f;
-					else if( testPoint.y < 0 )
-						testPoint.y -= .5f;
-
-					adjX = ((int)testPoint.x) * 32;
-					adjY = ((int)testPoint.y) * 32;
-					
-					testPoint = Vector2f( adjX, adjY );
-					showGraph = true;
-				}*/
 				if( showPanel != NULL )
 					break;
 
@@ -9581,43 +9433,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				break;
 			}
-		case CREATE_BLOCKER_CHAIN:
-		{
-			if (showPanel != NULL)
-				break;
-
-
-			if (!panning && Mouse::isButtonPressed(Mouse::Left))
-			{
-				//double test = 100;
-				//worldPos before testPoint
-				V2d temp = V2d(testPoint.x, testPoint.y) - Vector2<double>(patrolPath.back().x,
-					patrolPath.back().y);
-				double tempQuant = length(temp);
-				if (tempQuant >= minimumPathEdgeLength * std::max(zoomMultiple, 1.0)
-					&& tempQuant > patrolPathLengthSize / 2)
-				{
-
-					if (patrolPathLengthSize > 0)
-					{
-						V2d temp1 = V2d(patrolPath.back().x, patrolPath.back().y);
-						temp = normalize(V2d(testPoint.x, testPoint.y) - temp1)
-							* (double)patrolPathLengthSize + temp1;
-						Vector2i worldi(temp.x, temp.y);
-						patrolPath.push_back(worldi);
-					}
-					else
-					{
-						Vector2i worldi(testPoint.x, testPoint.y);
-						patrolPath.push_back(worldi);
-					}
-
-
-
-				}
-			}
-			break;
-		}
 		case SET_DIRECTION:
 		{
 			if (showPanel != NULL)
@@ -10011,68 +9826,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				break;
 			}
-		case CREATE_BLOCKER_CHAIN:
-		{
-
-			if (trackingEnemy != NULL)
-			{
-				if (tempActor != NULL)
-					tempActor->Draw(preScreenTex);
-				else
-				{
-					preScreenTex->draw(enemySprite);
-				}
-				preScreenTex->draw(enemyQuad);
-			}
-			int pathSize = patrolPath.size();
-			if (pathSize > 0)
-			{
-				Vector2i backPoint = patrolPath.back();
-
-				Color validColor = Color::Green;
-				Color invalidColor = Color::Red;
-				Color colorSelection;
-				if (true)
-				{
-					colorSelection = validColor;
-				}
-				sf::Vertex activePreview[2] =
-				{
-					sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection),
-					sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
-				};
-				preScreenTex->draw(activePreview, 2, sf::Lines);
-
-				if (pathSize > 1)
-				{
-					VertexArray v(sf::LinesStrip, pathSize);
-					int i = 0;
-					for (list<sf::Vector2i>::iterator it = patrolPath.begin();
-						it != patrolPath.end(); ++it)
-					{
-						v[i] = Vertex(Vector2f((*it).x, (*it).y));
-						++i;
-					}
-					preScreenTex->draw(v);
-				}
-			}
-
-			if (pathSize > 0) //always
-			{
-				CircleShape cs;
-				cs.setRadius(5 * zoomMultiple);
-				cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-				cs.setFillColor(Color::Green);
-
-
-				for (list<Vector2i>::iterator it = patrolPath.begin(); it != patrolPath.end(); ++it)
-				{
-					cs.setPosition((*it).x, (*it).y);
-					preScreenTex->draw(cs);
-				}
-			}
-			break;
-		}
 		case SET_DIRECTION:
 		{
 
@@ -10551,7 +10304,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		stringstream cursorPosSS;
 		stringstream scaleTextSS;
-		if( mode == CREATE_PATROL_PATH || mode == CREATE_BLOCKER_CHAIN || mode == SET_DIRECTION )
+		if( mode == CREATE_PATROL_PATH || mode == SET_DIRECTION )
 		{
 			V2d temp = V2d( testPoint.x, testPoint.y ) - Vector2<double>(patrolPath.back().x, 
 				patrolPath.back().y );
@@ -11163,11 +10916,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		else if (b->name == "createpath" || b->name == "createrail")
 		{
 			RegularCreatePathButton();
-		}
-		else if (b->name == "createchain")
-		{
-			RegularCreatePathButton();
-			mode = CREATE_BLOCKER_CHAIN;
 		}
 		else if (b->name == "setdirection")
 		{
@@ -14807,7 +14555,7 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("armored", Vector2i(120, 155));
 		p->AddTextBox("btype", Vector2i(20, 200), 200, 20, "0");
 		p->AddTextBox("spacing", Vector2i(20, 250), 200, 20, "0");
-		p->AddButton("createchain", Vector2i(20, 300), Vector2f(100, 50), "Create Chain");
+		p->AddButton("createpath", Vector2i(20, 300), Vector2f(100, 50), "Create Chain");
 
 
 		/*GridSelector *gs = p->AddGridSelector("blockerSelector", Vector2i(0, 0), 8, 1, 64, 64, true, true);

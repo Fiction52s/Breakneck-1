@@ -29,9 +29,15 @@ ActorParams::ActorParams( ActorType *at)
 		hasMonitor( false ), group( NULL ), type( at )
 {
 	groundInfo = NULL;
-
+	lines = NULL;
 	for( int i = 0; i < 4; ++i )
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
+}
+
+ActorParams::~ActorParams()
+{
+	if (lines != NULL)
+		delete lines;
 }
 
 void ActorParams::WriteMonitor(ofstream  &of)
@@ -45,7 +51,47 @@ void ActorParams::WriteMonitor(ofstream  &of)
 }
 
 void ActorParams::SetPath( std::list<sf::Vector2i> &globalPath )
+{	
+	if (lines != NULL)
+	{
+		delete lines;
+		lines = NULL;
+	}
+
+	localPath.clear();
+	if (globalPath.size() > 1)
+	{
+		int numLines = globalPath.size();
+
+		lines = new VertexArray(sf::LinesStrip, numLines);
+		VertexArray &li = *lines;
+		li[0].position = Vector2f(0, 0);
+		li[0].color = Color::Magenta;
+
+		int index = 1;
+		list<Vector2i>::iterator it = globalPath.begin();
+		++it;
+		for (; it != globalPath.end(); ++it)
+		{
+
+			Vector2i temp((*it).x - position.x, (*it).y - position.y);
+			localPath.push_back(temp);
+			li[index].position = Vector2f(temp.x, temp.y);
+			li[index].color = Color::Magenta;
+			++index;
+		}
+	}
+}
+
+std::list<sf::Vector2i> ActorParams::GetGlobalPath()
 {
+	list<Vector2i> globalPath;
+	globalPath.push_back(position);
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		globalPath.push_back(position + (*it));
+	}
+	return globalPath;
 }
 
 void ActorParams::PlaceAerial(sf::Vector2i &pos)
@@ -1462,53 +1508,6 @@ BlockerParams::BlockerParams(ActorType *at,
 	spacing = 0;
 }
 
-std::list<sf::Vector2i> BlockerParams::GetGlobalChain()
-{
-	list<Vector2i> globalPath;
-	globalPath.push_back(position);
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		globalPath.push_back(position + (*it));
-	}
-	return globalPath;
-}
-
-void BlockerParams::SetPath(std::list<sf::Vector2i> &globalPath)
-{
-	if (lines != NULL)
-	{
-		delete lines;
-		lines = NULL;
-	}
-
-	localPath.clear();
-	if (globalPath.size() > 1)
-	{
-
-		int numLines = globalPath.size();
-
-		lines = new VertexArray(sf::LinesStrip, numLines);
-		VertexArray &li = *lines;
-		li[0].position = Vector2f(0, 0);
-		li[0].color = Color::Magenta;
-
-		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
-		++it;
-		for (; it != globalPath.end(); ++it)
-		{
-
-			Vector2i temp((*it).x - position.x, (*it).y - position.y);
-			localPath.push_back(temp);
-
-			//cout << "temp: " << index << ", " << temp.x << ", " << temp.y << endl;
-			li[index].position = Vector2f(temp.x, temp.y);
-			li[index].color = Color::Magenta;
-			++index;
-		}
-	}
-}
-
 void BlockerParams::SetParams()
 {
 	Panel *p = type->panel;
@@ -1565,7 +1564,7 @@ void BlockerParams::SetPanelInfo()
 	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalChain();
+	edit->patrolPath = GetGlobalPath();
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 

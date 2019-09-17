@@ -23,6 +23,7 @@ struct ActorParams : ISelectable
 {
 
 	virtual ActorParams *Copy() = 0;
+	~ActorParams();
 	ActorParams(ActorType *at);
 	virtual void Init() {};
 	virtual void WriteParamFile(std::ofstream &of) {};
@@ -35,7 +36,11 @@ struct ActorParams : ISelectable
 	void AnchorToGround(GroundInfo &gi);
 	void UnAnchor(boost::shared_ptr<ActorParams> &me);
 	void UpdateGroundedSprite();
+
+	virtual std::list<sf::Vector2i> GetGlobalPath();
 	virtual void SetPath(std::list<sf::Vector2i> &globalPath);
+
+
 	void DrawBoundary(sf::RenderTarget *target);
 	void DrawMonitor(sf::RenderTarget *target);
 	void LoadGrounded(std::ifstream &is);
@@ -88,6 +93,10 @@ struct ActorParams : ISelectable
 	GroundInfo *groundInfo;
 	bool hasMonitor;
 	sf::VertexArray boundingQuad;
+
+	std::list<sf::Vector2i> localPath;
+	bool loop;
+	sf::VertexArray *lines; //local pos
 };
 
 struct PlayerParams : public ActorParams
@@ -363,16 +372,10 @@ struct BlockerParams : public ActorParams
 	BlockerParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
-	void SetPath(
-		std::list<int> &angleList);
-	std::list<int> GetAngleList();
 	void Draw(sf::RenderTarget *target);
 
 	
 	ActorParams *Copy();
-	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
-	std::list<sf::Vector2i> GetGlobalChain();
 
 	void SetParams();
 	void SetPanelInfo();
@@ -381,8 +384,7 @@ struct BlockerParams : public ActorParams
 	bool armored;
 	//sf::VertexArray *lines; //local pos
 
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
+	
 
 	int spacing;
 
@@ -404,9 +406,6 @@ struct ComboerParams : public ActorParams
 	ComboerParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
-	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
-	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw(sf::RenderTarget *target);
 
 	
@@ -415,10 +414,6 @@ struct ComboerParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
-
-	bool loop;
 	int speed;
 	int swoopSpeed;
 };
@@ -453,18 +448,13 @@ struct SpringParams : public ActorParams
 	SpringParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
-	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
 	void Draw(sf::RenderTarget *target);
-
+	void SetPath(std::list<sf::Vector2i> &globalPath);
 	
 	ActorParams *Copy();
 
 	void SetParams();
 	void SetPanelInfo();
-	std::list<sf::Vector2i> GetGlobalPath();
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
 
 	int moveFrames;
 };
@@ -481,9 +471,6 @@ struct PatrollerParams : public ActorParams
 	PatrollerParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
-	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
-	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw(sf::RenderTarget *target);
 
 	
@@ -492,10 +479,6 @@ struct PatrollerParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
-
-	bool loop;
 	int speed;
 	int swoopSpeed;
 };
@@ -607,9 +590,6 @@ struct BatParams : public ActorParams
 	BatParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
-	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
-	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw(sf::RenderTarget *target);
 
 	void SetParams();
@@ -617,13 +597,10 @@ struct BatParams : public ActorParams
 
 	
 	ActorParams *Copy();
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
 
 	int bulletSpeed;
 	//int nodeDistance;
 	int framesBetweenNodes;
-	bool loop;
 	//int speed;
 };
 
@@ -801,9 +778,6 @@ struct GravitySpringParams: public ActorParams
 
 	void SetParams();
 	void SetPanelInfo();
-	std::list<sf::Vector2i> GetGlobalPath();
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
 
 	int speed;
 };
@@ -822,9 +796,6 @@ struct PulserParams : public ActorParams
 	PulserParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
-	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
-	std::list<sf::Vector2i> GetGlobalPath();
 	void Draw(sf::RenderTarget *target);
 
 	void SetParams();
@@ -832,11 +803,8 @@ struct PulserParams : public ActorParams
 
 	
 	ActorParams *Copy();
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
 
 	int framesBetweenNodes;
-	bool loop;
 	//int speed;
 };
 
@@ -1025,26 +993,16 @@ struct RailParams : public ActorParams
 	RailParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
-	void SetPath(
-		std::list<int> &angleList);
-	std::list<int> GetAngleList();
 	void Draw(sf::RenderTarget *target);
 
 	
 	ActorParams *Copy();
-	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
-	std::list<sf::Vector2i> GetGlobalChain();
 
 	void SetParams();
 	void SetPanelInfo();
 
 	//std::list<int> angleList;
 	bool armored;
-	//sf::VertexArray *lines; //local pos
-
-	std::list<sf::Vector2i> localPath;
-	sf::VertexArray *lines; //local pos
 
 	bool energized;
 };
@@ -1213,14 +1171,12 @@ struct NarwhalParams : public ActorParams
 	NarwhalParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
-
+	void SetPath(std::list<sf::Vector2i> &globalPath);
 	void SetParams();
 	void SetPanelInfo();
 
 	
 	ActorParams *Copy();
-	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
 
 	int moveFrames;
 	sf::Vector2i dest;
