@@ -645,6 +645,8 @@ public:
 
 	Enemy *tempPrev;
 	Enemy *tempNext;
+
+	int level;
 };
 
 struct PathFollower

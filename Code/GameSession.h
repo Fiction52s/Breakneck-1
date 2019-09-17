@@ -693,8 +693,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		std::map<int, int> &polyIndex);
 	bool LoadEnemies( std::ifstream &is,
 		std::map<int, int> &polyIndex);
-	void LoadEnemyOld(std::ifstream &is,
-		std::map<int, int> &polyIndex);
+	//void LoadEnemyOld(std::ifstream &is,
+	//	std::map<int, int> &polyIndex);
 	void LoadEnemy(std::ifstream &is,
 		std::map<int, int> &polyIndex);
 	std::list<Enemy*> fullEnemyList;

@@ -18,11 +18,12 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, int s, int p_framesUntilBurrow )
-	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), clockwise( cw ), groundSpeed( s )
+Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
+	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), clockwise( true ), groundSpeed( 5 )
 {
-	origCW = cw;
-	maxFramesUntilBurrow = p_framesUntilBurrow;
+	level = p_level;
+	origCW = true;
+	//maxFramesUntilBurrow = p_framesUntilBurrow;
 	maxFramesUntilBurrow = 200;
 	framesUntilBurrow = maxFramesUntilBurrow;
 

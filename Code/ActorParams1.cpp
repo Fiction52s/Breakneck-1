@@ -205,7 +205,7 @@ CrawlerParams::CrawlerParams(ActorType *at, ifstream &is)
 CrawlerParams::CrawlerParams(ActorType *at,
 		TerrainPolygon *p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
-		:ActorParams( at), clockwise( true ), speed( 5 )
+		:ActorParams( at)
 {
 	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }

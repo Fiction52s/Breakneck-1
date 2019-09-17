@@ -19,7 +19,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 
 	int animFactor[UNDERGROUND + 1];
 	int actionLength[UNDERGROUND +1];
-	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, bool clockwise, int speed, int framesUntilBurrow );
+	Crawler(GameSession *owner, bool hasMonitor, Edge *ground, double quantity, int level);
 	~Crawler();
 	void SetActionDash();
 	void DecideDirection();
