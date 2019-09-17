@@ -26,11 +26,14 @@ struct ActorParams : ISelectable
 	~ActorParams();
 	ActorParams(ActorType *at);
 	virtual void Init() {};
-	virtual void WriteParamFile(std::ofstream &of) {};
+	virtual void WriteParamFile(std::ofstream &of);
 	void WriteFile(std::ofstream &of);
 	void WriteMonitor(std::ofstream &of);
 	void LoadBool(std::ifstream &is, bool &b);
 	void WriteBool(std::ofstream &of, bool b);
+	void WriteLevel(std::ofstream &of);
+	void WritePath( std::ofstream &of );
+	void WriteLoop( std::ofstream &of );
 	void AnchorToGround(TerrainPolygon *poly,
 		int eIndex, double quantity);
 	void AnchorToGround(GroundInfo &gi);
@@ -97,6 +100,8 @@ struct ActorParams : ISelectable
 	std::list<sf::Vector2i> localPath;
 	bool loop;
 	sf::VertexArray *lines; //local pos
+
+	int enemyLevel;
 };
 
 struct PlayerParams : public ActorParams
@@ -233,8 +238,6 @@ struct GoalParams : public ActorParams
 	GoalParams(ActorType *at,
 		std::ifstream &is);
 	ActorParams *Copy();
-	void WriteParamFile(std::ofstream &of);
-	//void Draw( sf::RenderTarget *target );
 };
 
 struct PoiParams : public ActorParams

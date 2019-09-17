@@ -47,14 +47,7 @@ PulserParams::PulserParams(ActorType *at,
 	LoadMonitor(is);
 	LoadGlobalPath(is);
 
-	string loopStr;
-	is >> loopStr;
-	if (loopStr == "+loop")
-		loop = true;
-	else if (loopStr == "-loop")
-		loop = false;
-	else
-		assert(false && "should be a boolean");
+	LoadBool(is, loop);
 
 	is >> framesBetweenNodes;
 }
@@ -75,21 +68,8 @@ void PulserParams::WriteParamFile( std::ofstream &of )
 {
 	WriteMonitor(of);
 
-	of << localPath.size() << endl;
-
-	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-		of << (*it).x  << " " << (*it).y << endl;
-	}
-
-	if( loop )
-	{
-		of << "+loop" << endl;
-	}
-	else
-	{
-		of << "-loop" << endl;
-	}
+	WritePath(of);
+	WriteLoop(of);
 
 	of << framesBetweenNodes << endl;
 }

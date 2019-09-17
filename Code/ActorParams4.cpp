@@ -476,15 +476,8 @@ void RailParams::Draw(sf::RenderTarget *target)
 
 void RailParams::WriteParamFile(ofstream &of)
 {
-
-	of << localPath.size() << endl;
-
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		of << (*it).x << " " << (*it).y << endl;
-	}
-
-	of << (int)energized << "\n";
+	WritePath(of);
+	WriteBool(of, energized);
 }
 
 ActorParams *RailParams::Copy()

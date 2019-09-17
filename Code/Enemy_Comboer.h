@@ -27,7 +27,7 @@ struct Comboer : Enemy, SurfaceMoverHandler
 	Comboer(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed,
 		ComboerType t );
-
+	//Comboer(GameSession *owner, std::ifstream &is);
 	SurfaceMover *mover;
 	void HitTerrainAerial(Edge *, double);
 

@@ -138,10 +138,6 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 
 	dead = false;
 
-	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
-	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
-	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
-
 	facingRight = true;
 
 	
@@ -170,6 +166,30 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 
 	ResetEnemy();
 }
+
+//Comboer::Comboer(GameSession *owner, std::ifstream &is)
+//{
+//	int xPos, yPos;
+//
+//	is >> xPos;
+//	is >> yPos;
+//
+//	int hasMonitor;
+//	is >> hasMonitor;
+//
+//	int pathLength;
+//	list<Vector2i> localPath;
+//	ReadPath(is, pathLength, localPath);
+//
+//	bool loop;
+//	ReadBool(is, loop);
+//
+//	int speed;
+//	is >> speed;
+//
+//	//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
+//	Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, speed, Comboer::ComboerType::T_STRAIGHT);
+//}
 
 void Comboer::ResetEnemy()
 {

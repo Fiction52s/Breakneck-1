@@ -546,7 +546,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool IsShardCaptured(ShardType sType);
 
 	static bool sLoad( GameSession *gs );
-	bool Load();	
+	bool Load();
+	
 	RaceFight *raceFight;
 
 	
@@ -691,6 +692,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool LoadGates( std::ifstream &is,
 		std::map<int, int> &polyIndex);
 	bool LoadEnemies( std::ifstream &is,
+		std::map<int, int> &polyIndex);
+	void LoadEnemyOld(std::ifstream &is,
+		std::map<int, int> &polyIndex);
+	void LoadEnemy(std::ifstream &is,
 		std::map<int, int> &polyIndex);
 	std::list<Enemy*> fullEnemyList;
 	void SuppressEnemyKeys( Gate *g );

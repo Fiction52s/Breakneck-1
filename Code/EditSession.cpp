@@ -591,6 +591,10 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
 
+	AddWorldEnemy("patroller", 1, LoadParams<PatrollerParams>, NULL, MakeParamsAerial<PatrollerParams>,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));
+
 	AddWorldEnemy("comboer", 1, LoadParams<ComboerParams>, NULL, MakeParamsAerial<ComboerParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));

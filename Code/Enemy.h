@@ -511,6 +511,12 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 private:
 	static EnemyParams * enemyTypeHitParams[Count];
 public:
+
+	static bool ReadBool(std::ifstream &is,
+		bool &b);
+	static bool ReadPath(std::ifstream &is,
+		int &pLen, std::list<sf::Vector2i> &localPath);
+
 	virtual void UpdatePreLauncherPhysics() {}
 	CuttableObject *cutObject;
 	Launcher **launchers;

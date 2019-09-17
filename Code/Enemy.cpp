@@ -1382,6 +1382,32 @@ Enemy::~Enemy()
 
 }
 
+
+bool Enemy::ReadPath(std::ifstream &is,
+	int &pLen, std::list<Vector2i> &localPath)
+{
+	is >> pLen;
+
+	for (int i = 0; i < pLen; ++i)
+	{
+		int localX, localY;
+		is >> localX;
+		is >> localY;
+		localPath.push_back(Vector2i(localX, localY));
+	}
+
+	return true;
+}
+
+bool Enemy::ReadBool(std::ifstream &is,
+	bool &b)
+{
+	int x;
+	is >> x;
+	b = x;
+	return true;
+}
+
 void Enemy::PlayDeathSound()
 {
 	owner->ActivateSound( position, genericDeathSound);

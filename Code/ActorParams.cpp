@@ -30,6 +30,7 @@ ActorParams::ActorParams( ActorType *at)
 {
 	groundInfo = NULL;
 	lines = NULL;
+	enemyLevel = 0;
 	for( int i = 0; i < 4; ++i )
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
 }
@@ -40,14 +41,34 @@ ActorParams::~ActorParams()
 		delete lines;
 }
 
+void ActorParams::WriteLevel(std::ofstream &of)
+{
+	of << enemyLevel << endl;
+}
+
 void ActorParams::WriteMonitor(ofstream  &of)
 {
-	int hMon;
-	if (hasMonitor)
-		hMon = 1;
-	else
-		hMon = 0;
-	of << hMon << endl;
+	WriteBool(of, hasMonitor);
+}
+
+void ActorParams::WriteParamFile(std::ofstream &of)
+{
+
+}
+
+void ActorParams::WritePath( std::ofstream &of )
+{
+	of << localPath.size() << endl;
+
+	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	{
+		of << (*it).x << " " << (*it).y << endl;
+	}
+}
+
+void ActorParams::WriteLoop(std::ofstream &of)
+{
+	WriteBool(of, loop);
 }
 
 void ActorParams::SetPath( std::list<sf::Vector2i> &globalPath )
@@ -256,26 +277,25 @@ void ActorParams::DrawMonitor( sf::RenderTarget *target )
 
 void ActorParams::WriteFile( ofstream &of )
 {
-	//if( params.size() == 0 )
-	//{
-	//	assert( false && "no params" );
-	//}
-	
-	//dont need number of params because the actortype determines that.
 	of << type->info.name << " ";
 
 	bool canGrounded = type->CanBeGrounded();
 	bool canAerial = type->CanBeAerial();
+	
+	int air = 0;
+	int ground = 1;
+
 	if( canGrounded && canAerial )
 	{
 		if( groundInfo != NULL )
 		{
 			int edgeIndex = groundInfo->GetEdgeIndex();
-			of << "-air" << " " << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
+			//of << "-air" << " " << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
+			of << ground << " " << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
 		}
 		else
 		{
-			of << "+air" << " " << position.x << " " << position.y << endl;
+			of << air << " " << position.x << " " << position.y << endl;
 		}
 	}
 	else if( canGrounded )
@@ -684,10 +704,6 @@ GoalParams::GoalParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeI
 	:ActorParams(at)
 {
 	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-}
-
-void GoalParams::WriteParamFile( ofstream &of )
-{
 }
 
 ActorParams *GoalParams::Copy()
@@ -1612,12 +1628,7 @@ void BlockerParams::Draw(sf::RenderTarget *target)
 
 void BlockerParams::WriteParamFile(ofstream &of)
 {
-	of << localPath.size() << endl;
-
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		of << (*it).x << " " << (*it).y << endl;
-	}
+	WritePath(of);
 
 	of << bType << "\n";
 

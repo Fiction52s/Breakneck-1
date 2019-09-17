@@ -44,14 +44,7 @@ PatrollerParams::PatrollerParams(ActorType *at, ifstream &is)
 
 	LoadGlobalPath(is);
 
-	string loopStr;
-	is >> loopStr;
-	if (loopStr == "+loop")
-		loop = true;
-	else if (loopStr == "-loop")
-		loop = false;
-	else
-		assert(false && "should be a boolean");
+	LoadBool(is, loop);
 
 	is >> speed;
 
@@ -163,25 +156,10 @@ void PatrollerParams::WriteParamFile( ofstream &of )
 {
 	WriteMonitor(of);
 
-	of << localPath.size() << endl;
+	WritePath(of);
+	WriteLoop(of);
 
-	for( list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it )
-	{
-		of << (*it).x  << " " << (*it).y << endl;
-	}
-
-	if( loop )
-	{
-		of << "+loop" << endl;
-	}
-	else
-	{
-		of << "-loop" << endl;
-	}
-
-	//of.precision( 5 );
 	of << speed << endl;
-	//of << fixed << speed << endl;
 }
 
 ActorParams *PatrollerParams::Copy()
@@ -469,6 +447,7 @@ AirdasherParams::AirdasherParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
 	LoadAerial(is);
+	LoadMonitor(is);
 }
 
 void AirdasherParams::WriteParamFile(std::ofstream &of)
@@ -614,11 +593,8 @@ SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos)
 
 void SpringParams::WriteParamFile(std::ofstream &of)
 {
-
 	of << moveFrames << "\n";
 	of << localPath.front().x << " " << localPath.front().y << endl;
-
-
 }
 
 void SpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
@@ -728,14 +704,7 @@ ComboerParams::ComboerParams(ActorType *at, ifstream &is)
 
 	LoadGlobalPath(is);
 
-	string loopStr;
-	is >> loopStr;
-	if (loopStr == "+loop")
-		loop = true;
-	else if (loopStr == "-loop")
-		loop = false;
-	else
-		assert(false && "should be a boolean");
+	LoadBool(is, loop);
 
 	is >> speed;
 }
@@ -846,25 +815,10 @@ void ComboerParams::WriteParamFile(ofstream &of)
 {
 	WriteMonitor(of);
 
-	of << localPath.size() << endl;
+	WritePath(of);
+	WriteLoop(of);
 
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
-	{
-		of << (*it).x << " " << (*it).y << endl;
-	}
-
-	if (loop)
-	{
-		of << "+loop" << endl;
-	}
-	else
-	{
-		of << "-loop" << endl;
-	}
-
-	//of.precision( 5 );
 	of << speed << endl;
-	//of << fixed << speed << endl;
 }
 
 ActorParams *ComboerParams::Copy()
