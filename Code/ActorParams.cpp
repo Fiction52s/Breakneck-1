@@ -191,6 +191,11 @@ void ActorParams::LoadMonitor(std::ifstream &is)
 	hasMonitor = ihasMonitor;
 }
 
+void ActorParams::LoadEnemyLevel(std::ifstream &is)
+{
+	is >> enemyLevel;
+}
+
 void ActorParams::SetParams()
 {
 }

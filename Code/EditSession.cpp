@@ -563,8 +563,6 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddExtraEnemy("racefighttarget", LoadParams<RaceFightTargetParams>, NULL, MakeParamsAerial<RaceFightTargetParams>,
 		Vector2i(0, 0), Vector2i(32, 32));
 
-	
-
 	AddExtraEnemy("groundtrigger", LoadParams<GroundTriggerParams>, MakeParamsGrounded<GroundTriggerParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Ship/shipleave_128x128.png", 128, 128));
@@ -14644,10 +14642,7 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
-		p->AddCheckBox("clockwise", Vector2i(120, 155));
-		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "1.5");
-
+		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 	}
 	else if (name == "airdasher")

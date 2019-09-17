@@ -50,6 +50,7 @@ struct ActorParams : ISelectable
 	void LoadAerial(std::ifstream &is);
 	void LoadGlobalPath(std::ifstream &is );
 	void LoadMonitor(std::ifstream &is);
+	void LoadEnemyLevel(std::ifstream &is);
 	virtual void SetParams();
 	virtual void SetPanelInfo();
 	void PlaceAerial(sf::Vector2i &pos);
@@ -383,12 +384,7 @@ struct BlockerParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	//std::list<int> angleList;
 	bool armored;
-	//sf::VertexArray *lines; //local pos
-
-	
-
 	int spacing;
 
 	BlockerType bType;
@@ -491,7 +487,7 @@ struct CrawlerParams : public ActorParams
 	CrawlerParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity,
-		bool clockwise, float speed);
+		int level );
 	CrawlerParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity);
@@ -504,9 +500,9 @@ struct CrawlerParams : public ActorParams
 	
 	ActorParams *Copy();
 	//void Draw( sf::RenderTarget *target );
-	bool clockwise;
-	int speed;
-	int dist;
+	//bool clockwise;
+	//int speed;
+	//int dist;
 };
 
 struct BasicTurretParams : public ActorParams

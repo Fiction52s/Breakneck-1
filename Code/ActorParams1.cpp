@@ -182,12 +182,11 @@ ActorParams *PatrollerParams::Copy()
 	return copy;
 }
 
-CrawlerParams::CrawlerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, bool p_clockwise, float p_speed )
+CrawlerParams::CrawlerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+	int level )
 	:ActorParams(at)
 {
-	clockwise = p_clockwise;
-	speed = p_speed;
-
+	enemyLevel = level;
 	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
@@ -200,21 +199,7 @@ CrawlerParams::CrawlerParams(ActorType *at, ifstream &is)
 
 	LoadMonitor(is);
 
-	string cwStr;
-	is >> cwStr;
-
-	if (cwStr == "+clockwise")
-		clockwise = true;
-	else if (cwStr == "-clockwise")
-		clockwise = false;
-	else
-	{
-		assert(false && "boolean problem");
-	}
-
-	is >> speed;
-
-	is >> dist;
+	LoadEnemyLevel(is);
 }
 
 CrawlerParams::CrawlerParams(ActorType *at,
@@ -228,11 +213,7 @@ CrawlerParams::CrawlerParams(ActorType *at,
 void CrawlerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
-	p->checkBoxes["clockwise"]->checked = clockwise;
-	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
+	p->textBoxes["level"]->text.setString( boost::lexical_cast<string>( enemyLevel ) );
 	
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -240,40 +221,27 @@ void CrawlerParams::SetPanelInfo()
 void CrawlerParams::SetParams()
 {
 	Panel *p = type->panel;
-
-	clockwise = p->checkBoxes["clockwise"]->checked;
-	double sp;
+	
+	int level;
 
 	stringstream ss;
-	string s = p->textBoxes["speed"]->text.getString().toAnsiString();
+	string s = p->textBoxes["level"]->text.getString().toAnsiString();
 	ss << s;
 
-
-	ss >> sp;
+	ss >> level;
 
 	if( !ss.fail() )
 	{
-		speed = sp;
+		enemyLevel = level;
 	}
 
 	hasMonitor = p->checkBoxes["monitor"]->checked;
-
-	//s = p->textBoxes["dist"]->text.getString().toAnsiString();
-	//ss
-	dist = 1000;
 }
 
 void CrawlerParams::WriteParamFile( ofstream &of )
 {
 	WriteMonitor(of);
-	if( clockwise )
-		of << "+clockwise" << endl;
-	else
-		of << "-clockwise" << endl;
-	
-	of << speed << endl;
-
-	of << dist << endl;
+	WriteLevel(of);
 }
 
 ActorParams *CrawlerParams::Copy()
