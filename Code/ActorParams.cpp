@@ -53,8 +53,41 @@ void ActorParams::WriteMonitor(ofstream  &of)
 
 void ActorParams::WriteParamFile(std::ofstream &of)
 {
-
+	WriteBasicParamFile(of);
 }
+
+void ActorParams::WriteBasicParamFile(std::ofstream &of)
+{
+	WriteMonitor(of);
+	WriteLevel(of);
+}
+
+void ActorParams::SetParams()
+{
+	SetBasicParams();
+}
+
+void ActorParams::SetBasicParams()
+{
+	Panel *p = type->panel;
+
+	int level;
+
+	stringstream ss;
+	string s = p->textBoxes["level"]->text.getString().toAnsiString();
+	ss << s;
+
+	ss >> level;
+
+	if (!ss.fail())
+	{
+		enemyLevel = level;
+	}
+
+	hasMonitor = p->checkBoxes["monitor"]->checked;
+}
+
+
 
 void ActorParams::WritePath( std::ofstream &of )
 {
@@ -196,12 +229,18 @@ void ActorParams::LoadEnemyLevel(std::ifstream &is)
 	is >> enemyLevel;
 }
 
-void ActorParams::SetParams()
+void ActorParams::SetBasicPanelInfo()
 {
+	Panel *p = type->panel;
+	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
+	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
+
+
 
 void ActorParams::SetPanelInfo()
 {
+	SetBasicPanelInfo();
 }
 
 void ActorParams::SetSelected( bool select )
@@ -711,11 +750,29 @@ GoalParams::GoalParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeI
 	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
+
+void GoalParams::SetParams()
+{
+
+}
+
+void GoalParams::SetPanelInfo()
+{
+
+}
+
+void GoalParams::WriteParamFile(std::ofstream &of)
+{
+
+}
+
 ActorParams *GoalParams::Copy()
 {
 	GoalParams *copy = new GoalParams( *this );
 	return copy;
 }
+
+
 
 
 //remnove the postype thing. we have 2 bools for that already
@@ -1834,4 +1891,36 @@ template<typename X> ActorParams *MakeParams(
 	}
 
 	return NULL;
+}
+
+BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+	int level)
+	:ActorParams(at)
+{
+	enemyLevel = level;
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+}
+
+BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadGrounded(is);
+
+	LoadMonitor(is);
+
+	LoadEnemyLevel(is);
+}
+
+BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at,
+	TerrainPolygon *p_edgePolygon,
+	int p_edgeIndex, double p_edgeQuantity)
+	:ActorParams(at)
+{
+	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+}
+
+ActorParams *BasicGroundEnemyParams::Copy()
+{
+	BasicGroundEnemyParams *copy = new BasicGroundEnemyParams(*this);
+	return copy;
 }

@@ -193,8 +193,6 @@ CrawlerParams::CrawlerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p
 CrawlerParams::CrawlerParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
-	//always grounded
-
 	LoadGrounded(is);
 
 	LoadMonitor(is);
@@ -208,40 +206,6 @@ CrawlerParams::CrawlerParams(ActorType *at,
 		:ActorParams( at)
 {
 	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-}
-
-void CrawlerParams::SetPanelInfo()
-{
-	Panel *p = type->panel;
-	p->textBoxes["level"]->text.setString( boost::lexical_cast<string>( enemyLevel ) );
-	
-	p->checkBoxes["monitor"]->checked = hasMonitor;
-}
-
-void CrawlerParams::SetParams()
-{
-	Panel *p = type->panel;
-	
-	int level;
-
-	stringstream ss;
-	string s = p->textBoxes["level"]->text.getString().toAnsiString();
-	ss << s;
-
-	ss >> level;
-
-	if( !ss.fail() )
-	{
-		enemyLevel = level;
-	}
-
-	hasMonitor = p->checkBoxes["monitor"]->checked;
-}
-
-void CrawlerParams::WriteParamFile( ofstream &of )
-{
-	WriteMonitor(of);
-	WriteLevel(of);
 }
 
 ActorParams *CrawlerParams::Copy()
@@ -276,12 +240,9 @@ ActorParams *BossCrawlerParams::Copy()
 
 
 
-BasicTurretParams::BasicTurretParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, double p_bulletSpeed, int p_framesWait )
+BasicTurretParams::BasicTurretParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at )
 {
-	bulletSpeed = p_bulletSpeed;
-	framesWait = p_framesWait;
-	
 	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
@@ -290,49 +251,22 @@ BasicTurretParams::BasicTurretParams(ActorType *at, ifstream &is)
 {
 	LoadGrounded(is);
 	LoadMonitor(is);
-
-	is >> bulletSpeed;
-	is >> framesWait;
-}
-
-BasicTurretParams::BasicTurretParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams(at )
-{
-	bulletSpeed = 10;
-	framesWait = 60;
-	
-	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 void BasicTurretParams::WriteParamFile( ofstream &of )
 {
 	WriteMonitor(of);
-	of << bulletSpeed << endl;
-	of << framesWait << endl;
+	WriteLevel(of);
 }
 
 void BasicTurretParams::SetParams()
 {
-	Panel *p = type->panel;
+	/*Panel *p = type->panel;
 	stringstream ss;
 	string bulletSpeedString = p->textBoxes["bulletspeed"]->text.getString().toAnsiString();
 	string framesWaitString = p->textBoxes["waitframes"]->text.getString().toAnsiString();
 	ss << bulletSpeedString;
 			
-	
-	double bSpeed;
-	ss >> bSpeed;
-
-	if( !ss.fail() )
-	{
-		bulletSpeed = bSpeed;
-		//assert( false );
-	}
-
-	ss.clear();
-
-	ss << framesWaitString;
-
 	int fWait;
 	ss >> fWait;
 
@@ -341,19 +275,19 @@ void BasicTurretParams::SetParams()
 		framesWait = fWait;
 	}
 
-	hasMonitor = p->checkBoxes["monitor"]->checked;
+	hasMonitor = p->checkBoxes["monitor"]->checked;*/
 }
 
 void BasicTurretParams::SetPanelInfo()
 {
-	Panel *p = type->panel;
+	/*Panel *p = type->panel;
 	p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
 	p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( framesWait ) );
 
-	p->checkBoxes["monitor"]->checked = hasMonitor;
+	p->checkBoxes["monitor"]->checked = hasMonitor;*/
 }
 
 ActorParams *BasicTurretParams::Copy()

@@ -50,6 +50,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	V2d gPoint = mover->ground->GetPoint( q );
 	sprite.setPosition( gPoint.x, gPoint.y );
+
+	sprite.setScale(2.0, 2.0);
 	V2d gNorm = mover->ground->Normal();
 
 	cutObject->SetTileset(ts);

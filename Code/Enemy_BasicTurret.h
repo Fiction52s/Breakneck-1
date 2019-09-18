@@ -15,8 +15,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	};
 
 	BasicTurret(GameSession *owner, bool hasMonitor, Edge *ground, double quantity,
-		double bulletSpeed,
-		int framesWait);
+		int level );
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

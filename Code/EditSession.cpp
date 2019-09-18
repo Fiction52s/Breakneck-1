@@ -597,11 +597,11 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
-	AddWorldEnemy("crawler", 1, LoadParams<CrawlerParams>, MakeParamsGrounded<CrawlerParams>, NULL,
+	AddWorldEnemy("crawler", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
 
-	AddWorldEnemy("basicturret", 1, LoadParams<BasicTurretParams>, MakeParamsGrounded<BasicTurretParams>, NULL,
+	AddWorldEnemy("basicturret", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/basicturret_128x80.png", 128, 80));
 
@@ -14631,8 +14631,7 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddTextBox("bulletspeed", Vector2i(20, 150), 200, 20, "10");
-		p->AddTextBox("waitframes", Vector2i(20, 200), 200, 20, "10");
+		p->AddTextBox("level", Vector2i(20, 150), 200, 20, "0");
 
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 	}
@@ -14651,6 +14650,7 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddTextBox("level", Vector2i(20, 150), 200, 20, "0");
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 	}
 
@@ -14663,9 +14663,11 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
 		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
 		p->AddCheckBox("loop", Vector2i(120, 155));
-		p->AddTextBox("bulletspeed", Vector2i(20, 200), 200, 20, "10");
+		//p->AddTextBox("bulletspeed", Vector2i(20, 200), 200, 20, "10");
 		//p->AddTextBox( "nodedistance", Vector2i( 20, 250 ), 200, 20, "10" );
-		p->AddTextBox("framesbetweennodes", Vector2i(20, 300), 200, 20, "10");
+		//p->AddTextBox("framesbetweennodes", Vector2i(20, 300), 200, 20, "10");
+		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
+
 		p->AddButton("createpath", Vector2i(20, 350), Vector2f(100, 50), "Create Path");
 
 		p->AddCheckBox("monitor", Vector2i(20, 400));

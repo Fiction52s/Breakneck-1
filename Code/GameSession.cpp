@@ -2205,13 +2205,15 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			double bulletSpeed;
+			int level;
+			is >> level;
+			/*double bulletSpeed;
 			is >> bulletSpeed;
 
 			int framesWait;
-			is >> framesWait;
+			is >> framesWait;*/
 
-			BasicTurret *enemy = new BasicTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait);
+			BasicTurret *enemy = new BasicTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,level);
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
 

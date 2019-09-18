@@ -27,6 +27,7 @@ struct ActorParams : ISelectable
 	ActorParams(ActorType *at);
 	virtual void Init() {};
 	virtual void WriteParamFile(std::ofstream &of);
+	void WriteBasicParamFile(std::ofstream &of);
 	void WriteFile(std::ofstream &of);
 	void WriteMonitor(std::ofstream &of);
 	void LoadBool(std::ifstream &is, bool &b);
@@ -52,7 +53,10 @@ struct ActorParams : ISelectable
 	void LoadMonitor(std::ifstream &is);
 	void LoadEnemyLevel(std::ifstream &is);
 	virtual void SetParams();
+	void SetBasicParams();
+	void SetBasicPanelInfo();
 	virtual void SetPanelInfo();
+	
 	void PlaceAerial(sf::Vector2i &pos);
 	void PlaceGrounded( TerrainPolygon *tp,
 		int edgeIndex, double quant);
@@ -239,6 +243,9 @@ struct GoalParams : public ActorParams
 	GoalParams(ActorType *at,
 		std::ifstream &is);
 	ActorParams *Copy();
+	void SetParams();
+	void SetPanelInfo();
+	void WriteParamFile(std::ofstream &of);
 };
 
 struct PoiParams : public ActorParams
@@ -482,6 +489,21 @@ struct PatrollerParams : public ActorParams
 	int swoopSpeed;
 };
 
+
+struct BasicGroundEnemyParams : public ActorParams
+{
+	BasicGroundEnemyParams(ActorType *at,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity,
+		int level);
+	BasicGroundEnemyParams(ActorType *at,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex, double edgeQuantity);
+	BasicGroundEnemyParams(ActorType *at,
+		std::ifstream &is);
+	ActorParams *Copy();
+};
+
 struct CrawlerParams : public ActorParams
 {
 	CrawlerParams(ActorType *at,
@@ -493,16 +515,8 @@ struct CrawlerParams : public ActorParams
 		int edgeIndex, double edgeQuantity);
 	CrawlerParams(ActorType *at,
 		std::ifstream &is);
-
-	void SetParams();
-	void SetPanelInfo();
-	void WriteParamFile(std::ofstream &of);
 	
 	ActorParams *Copy();
-	//void Draw( sf::RenderTarget *target );
-	//bool clockwise;
-	//int speed;
-	//int dist;
 };
 
 struct BasicTurretParams : public ActorParams
@@ -511,12 +525,7 @@ struct BasicTurretParams : public ActorParams
 	BasicTurretParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
-		double edgeQuantity,
-		double bulletSpeed,
-		int framesWait);
-	BasicTurretParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity);
+		double edgeQuantity);
 	BasicTurretParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
@@ -524,9 +533,6 @@ struct BasicTurretParams : public ActorParams
 	ActorParams *Copy();
 	void SetParams();
 	void SetPanelInfo();
-	//void Draw( sf::RenderTarget *target );
-	float bulletSpeed;
-	int framesWait;
 };
 
 struct FootTrapParams : public ActorParams

@@ -350,17 +350,14 @@ foottrap -1 12 107.482
 0
 basicturret -1 45 33.1339
 0
-10
-60
+0
 basicturret -1 75 275.701
 0
-10
-60
+0
 goal -1 126 298.659
 basicturret -1 129 168.312
 0
-10
-60
+0
 foottrap -1 152 294.827
 0
 crawler -1 151 115.926
