@@ -14,9 +14,10 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos)
+Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level )
 	:Enemy(owner, EnemyType::EN_AIRDASHER, p_hasMonitor, 1)
 {
+	level = p_level;
 	hitLimit = 5;
 	action = S_FLOAT;
 	//receivedHit = NULL;

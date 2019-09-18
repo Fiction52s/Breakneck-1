@@ -17,7 +17,7 @@ struct Airdasher : Enemy
 	};
 
 	Airdasher(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos );
+		sf::Vector2i pos, int level );
 	~Airdasher();
 	void ProcessState();
 

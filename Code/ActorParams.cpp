@@ -31,6 +31,7 @@ ActorParams::ActorParams( ActorType *at)
 	groundInfo = NULL;
 	lines = NULL;
 	enemyLevel = 0;
+	loop = false;
 	for( int i = 0; i < 4; ++i )
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
 }
@@ -1911,16 +1912,120 @@ BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, ifstream &is)
 	LoadEnemyLevel(is);
 }
 
-BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at,
-	TerrainPolygon *p_edgePolygon,
-	int p_edgeIndex, double p_edgeQuantity)
-	:ActorParams(at)
-{
-	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-}
-
 ActorParams *BasicGroundEnemyParams::Copy()
 {
 	BasicGroundEnemyParams *copy = new BasicGroundEnemyParams(*this);
 	return copy;
+}
+
+BasicAirEnemyParams::BasicAirEnemyParams(ActorType *at, sf::Vector2i &pos, int level )
+	:ActorParams(at)
+{
+	enemyLevel = level;
+	PlaceAerial(pos);
+}
+
+BasicAirEnemyParams::BasicAirEnemyParams(ActorType *at, ifstream &is)
+	: ActorParams(at)
+{
+	LoadAerial(is);
+	LoadMonitor(is);
+
+	LoadEnemyLevel(is);
+}
+
+ActorParams *BasicAirEnemyParams::Copy()
+{
+	BasicAirEnemyParams *copy = new BasicAirEnemyParams(*this);
+	return copy;
+}
+
+AirPathEnemyParamsLoop::AirPathEnemyParamsLoop(ActorType *at, sf::Vector2i &pos, int level)
+	:ActorParams(at)
+{
+	enemyLevel = level;
+	PlaceAerial(pos);
+}
+
+AirPathEnemyParamsLoop::AirPathEnemyParamsLoop(ActorType *at, ifstream &is)
+	: ActorParams(at)
+{
+	LoadAerial(is);
+
+	LoadMonitor(is);
+
+	LoadGlobalPath(is);
+
+	LoadBool(is, loop);
+
+	LoadEnemyLevel(is);
+}
+
+ActorParams *AirPathEnemyParamsLoop::Copy()
+{
+	AirPathEnemyParamsLoop *copy = new AirPathEnemyParamsLoop(*this);
+	return copy;
+}
+
+void AirPathEnemyParamsLoop::WriteParamFile(std::ofstream &of)
+{
+	WriteMonitor(of);
+	WritePath(of);
+	WriteLoop(of);
+	WriteLevel(of);
+}
+
+void AirPathEnemyParamsLoop::SetPanelInfo()
+{
+	SetBasicPanelInfo();
+
+	Panel *p = type->panel;
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
+
+	p->checkBoxes["loop"]->checked = loop;
+}
+
+void AirPathEnemyParamsLoop::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+
+		VertexArray &li = *lines;
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += Vector2f(position.x, position.y);
+		}
+
+
+		target->draw(li);
+
+
+
+		if (loop)
+		{
+
+			//draw the line between the first and last
+			sf::Vertex vertices[2] =
+			{
+				sf::Vertex(li[localPathSize].position, Color::Magenta),
+				sf::Vertex(li[0].position, Color::White)
+			};
+
+			target->draw(vertices, 2, sf::Lines);
+		}
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= Vector2f(position.x, position.y);
+		}
+	}
+
+	ActorParams::Draw(target);
 }

@@ -14,10 +14,12 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed,
+Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, 
+	int p_level,
 	ComboerType t)
 	:Enemy(owner, EnemyType::EN_COMBOER, p_hasMonitor, 1, false), cType( t )
 {
+	level = p_level;
 	cType = T_STRAIGHT;
 	switch (cType)
 	{

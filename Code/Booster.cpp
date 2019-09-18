@@ -19,10 +19,10 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Booster::Booster(GameSession *owner, Vector2i &pos, int p_strength)
-	:Enemy(owner, EnemyType::EN_BOOSTER, false, 1, false), strength( p_strength )
+Booster::Booster(GameSession *owner, Vector2i &pos, int p_level)
+	:Enemy(owner, EnemyType::EN_BOOSTER, false, 1, false), strength( 20 )
 {
-
+	level = p_level;
 	action = NEUTRAL;
 	frame = 0;
 	initHealth = 60;

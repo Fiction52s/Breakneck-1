@@ -17,9 +17,10 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
+Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level)
 	:Enemy(owner, EnemyType::EN_SHROOM, p_hasMonitor, 1), ground(g), edgeQuantity(q)
 {
+	level = p_level;
 	action = LATENT;
 	initHealth = 40;
 	health = initHealth;

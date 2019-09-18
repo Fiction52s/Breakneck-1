@@ -18,7 +18,7 @@ struct Shroom : Enemy
 	int animFactor[HITTING + 1];
 
 	Shroom(GameSession *owner, bool hasMonitor,
-		Edge *ground, double quantity);
+		Edge *ground, double quantity, int level);
 	~Shroom();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

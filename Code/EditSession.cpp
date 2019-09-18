@@ -589,11 +589,11 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
 
-	AddWorldEnemy("patroller", 1, LoadParams<PatrollerParams>, NULL, MakeParamsAerial<PatrollerParams>,
+	AddWorldEnemy("patroller", 1, LoadParams<AirPathEnemyParamsLoop>, NULL, MakeParamsAerial<AirPathEnemyParamsLoop>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));
 
-	AddWorldEnemy("comboer", 1, LoadParams<ComboerParams>, NULL, MakeParamsAerial<ComboerParams>,
+	AddWorldEnemy("comboer", 1, LoadParams<AirPathEnemyParamsLoop>, NULL, MakeParamsAerial<AirPathEnemyParamsLoop>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
@@ -601,11 +601,15 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
 
+	AddWorldEnemy("shroom", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32),
+		GetTileset("Enemies/shroom_192x192.png", 192, 192));
+
 	AddWorldEnemy("basicturret", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/basicturret_128x80.png", 128, 80));
 
-	AddWorldEnemy("airdasher", 1, LoadParams<AirdasherParams>, NULL, MakeParamsAerial<AirdasherParams>,
+	AddWorldEnemy("airdasher", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/dasher_208x144.png", 208, 144));
 
@@ -613,7 +617,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(128, 144),
 		GetTileset("Bosses/Crawler/crawler_queen_256x256.png", 256, 256));
 
-	AddWorldEnemy("booster", 1, LoadParams<BoosterParams>, NULL, MakeParamsAerial<BoosterParams>,
+	AddWorldEnemy("booster", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 
@@ -4865,7 +4869,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	allPopups.push_back(enemySelectPanel);
 	int gridSizeX = 80;
 	int gridSizeY = 80;
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 0, 0 ), 10, 10, gridSizeX,
+	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 0, 0 ), 15, 10, gridSizeX,
 		gridSizeY, false, true );
 	gs->active = false;
 	
@@ -14585,7 +14589,7 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
 
-		p->AddTextBox("strength", Vector2i(20, 200), 200, 3, "");
+		p->AddTextBox("level", Vector2i(20, 200), 200, 3, "0");
 	}
 	else if (name == "comboer")
 	{
@@ -14595,7 +14599,7 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
 		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
 		p->AddCheckBox("loop", Vector2i(120, 155));
-		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
+		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
 		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
 
 		p->AddCheckBox("monitor", Vector2i(20, 330));
@@ -14620,7 +14624,7 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
 		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
 		p->AddCheckBox("loop", Vector2i(120, 155));
-		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
+		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
 		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
 
 		p->AddCheckBox("monitor", Vector2i(20, 330));
@@ -14638,6 +14642,15 @@ Panel *ActorType::CreatePanel()
 	else if (name == "crawler")
 	{
 		p = new Panel("crawler_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+	}
+	else if (name == "shroom")
+	{
+		p = new Panel("shroom_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");

@@ -19,10 +19,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int level )
+BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
 		:Enemy( owner, EnemyType::EN_BASICTURRET, p_hasMonitor, 1 ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q )
 {
+	level = p_level;
 	framesWait = 60;
 	bulletSpeed = 10;
 	receivedHit = NULL;

@@ -14,9 +14,10 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int pspeed )
+Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
 	:Enemy( owner, EnemyType::EN_PATROLLER, p_hasMonitor, 1 )
 {
+	level = p_level;
 	eye = new PatrollerEye(owner);
 	
 	action = S_FLAP;

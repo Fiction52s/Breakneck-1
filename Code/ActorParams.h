@@ -495,13 +495,40 @@ struct BasicGroundEnemyParams : public ActorParams
 	BasicGroundEnemyParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex, double edgeQuantity,
-		int level);
-	BasicGroundEnemyParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
-		int edgeIndex, double edgeQuantity);
+		int level=0);
 	BasicGroundEnemyParams(ActorType *at,
 		std::ifstream &is);
 	ActorParams *Copy();
+};
+
+struct BasicAirEnemyParams : public ActorParams
+{
+	BasicAirEnemyParams(ActorType *at,
+		sf::Vector2i &pos, int level =0);
+	BasicAirEnemyParams(ActorType *at,
+		std::ifstream &is);
+	ActorParams *Copy();
+};
+
+struct BasicAirEnemyParamsNoMonitor : public ActorParams
+{
+	BasicAirEnemyParamsNoMonitor(ActorType *at,
+		sf::Vector2i &pos, int level = 0);
+	BasicAirEnemyParamsNoMonitor(ActorType *at,
+		std::ifstream &is);
+	ActorParams *Copy();
+};
+
+struct AirPathEnemyParamsLoop : public ActorParams
+{
+	AirPathEnemyParamsLoop(ActorType *at,
+		sf::Vector2i &pos, int level = 0);
+	AirPathEnemyParamsLoop(ActorType *at,
+		std::ifstream &is);
+	ActorParams *Copy();
+	void SetPanelInfo();
+	void WriteParamFile(std::ofstream &of);
+	void Draw(sf::RenderTarget *target);
 };
 
 struct CrawlerParams : public ActorParams

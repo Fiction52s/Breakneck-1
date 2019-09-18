@@ -2027,11 +2027,11 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			bool loop;
 			Enemy::ReadBool(is, loop);
 
-			int speed;
-			is >> speed;
+			int level;
+			is >> level;
 
 			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-			Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, speed, Comboer::ComboerType::T_STRAIGHT);
+			Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level, Comboer::ComboerType::T_STRAIGHT);
 
 
 			fullEnemyList.push_back(enemy);
@@ -2048,11 +2048,11 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			is >> xPos;
 			is >> yPos;
 
-			int strength;
-			is >> strength;
+			int level;
+			is >> level;
 
-			//Booster *enemy = new Booster(this, Vector2i(xPos, yPos),strength);
-			GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
+			Booster *enemy = new Booster(this, Vector2i(xPos, yPos), level);
+			//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
 
 			activeItemTree->Insert(enemy);
 			fullEnemyList.push_back(enemy);
@@ -2152,9 +2152,9 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			bool loop;
 			Enemy::ReadBool(is, loop);
 
-			int speed;
-			is >> speed;
-			Patroller *enemy = new Patroller(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, speed);
+			int level;
+			is >> level;
+			Patroller *enemy = new Patroller(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
@@ -2256,7 +2256,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			enemyTree->Insert(enemy);
 		}
-		else if (typeName == "foottrap")
+		else if (typeName == "shroom")
 		{
 			//cout << "loading foottrap" << endl;
 			//always grounded
@@ -2274,8 +2274,11 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
+			int level;
+			is >> level;
+
 			//FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-			Shroom *enemy = new Shroom(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+			Shroom *enemy = new Shroom(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
 			//Cactus *enemy = new Cactus( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
 
 			fullEnemyList.push_back(enemy);
@@ -2297,8 +2300,11 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
+			int level;
+			is >> level;
 
-			Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
+
+			Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos), level);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;

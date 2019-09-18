@@ -53,6 +53,8 @@ struct ParamsInfo
 		ParamsLoader *p_pLoader,
 		ParamsMaker *pg, ParamsMaker *pa,
 		sf::Vector2i &off, sf::Vector2i &p_size,
+		bool w_monitor, bool w_level,
+		bool w_path, bool w_loop,
 		Tileset *p_ts = NULL, int imageTile = 0)
 		:name(n), pLoader( p_pLoader ),
 		pmGround(pg), pmAir(pa),
@@ -69,6 +71,11 @@ struct ParamsInfo
 	sf::Vector2i size;
 	Tileset *ts;
 	int imageTileIndex;
+
+	bool writeMonitor;
+	bool writeLevel;
+	bool writePath;
+	bool writeLoop;
 };
 
 struct GrassSeg
@@ -448,6 +455,8 @@ struct ActorType
 	bool CanBeAerial();
 
 	Panel *panel;
+
+	
 
 	ParamsInfo info;
 };
