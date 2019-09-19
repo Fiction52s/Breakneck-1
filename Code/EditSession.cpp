@@ -529,7 +529,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	groups["player"] = playerGroup;
 	
 	ParamsInfo playerPI("player", NULL,NULL, NULL,
-		Vector2i(), Vector2i(22, 42),
+		Vector2i(), Vector2i(22, 42), false, false, false, false,
 		GetTileset("Kin/jump_64x64.png", 64, 64));
 
 	playerType = new ActorType(playerPI);
@@ -544,127 +544,129 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 	//extras
 
-	
+	//monitor,level, path, loop, 
 
 	AddExtraEnemy("poi", LoadParams<PoiParams>, MakeParamsGrounded<PoiParams>, MakeParamsAerial<PoiParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false );
 
 	AddExtraEnemy("key", LoadParams<KeyParams>, NULL, MakeParamsAerial<KeyParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false);
 
 	AddExtraEnemy("shippickup", LoadParams<ShipPickupParams>, MakeParamsGrounded<ShipPickupParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Ship/shipleave_128x128.png", 128, 128));
 
 	AddExtraEnemy("shard", LoadParams<ShardParams>, NULL, MakeParamsAerial<ShardParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Shard/shards_w1_192x192.png", 192, 192));
 
 	AddExtraEnemy("racefighttarget", LoadParams<RaceFightTargetParams>, NULL, MakeParamsAerial<RaceFightTargetParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddExtraEnemy("groundtrigger", LoadParams<GroundTriggerParams>, MakeParamsGrounded<GroundTriggerParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Ship/shipleave_128x128.png", 128, 128));
 
 	AddExtraEnemy("airtrigger", LoadParams<AirTriggerParams>, NULL, MakeParamsAerial<AirTriggerParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
 
 	AddExtraEnemy("flowerpod", LoadParams<FlowerPodParams>, MakeParamsGrounded<FlowerPodParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Momenta/momentaflower_128x128.png", 128, 128));
 
 	AddExtraEnemy("nexus", LoadParams<NexusParams>, MakeParamsGrounded<NexusParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32) );
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 
 	//w1
 
-	AddWorldEnemy("goal", 1, LoadParams<GoalParams>, MakeParamsGrounded<GoalParams>, NULL,
-		Vector2i(0, -32), Vector2i(32, 32),
+	AddWorldEnemy("goal", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
+		Vector2i(0, -32), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
 	AddWorldEnemy("blocker", 1, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, true, false,
 		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
 
-	AddWorldEnemy("patroller", 1, LoadParams<AirPathEnemyParamsLoop>, NULL, MakeParamsAerial<AirPathEnemyParamsLoop>,
-		Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("patroller", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), true, true, true, true,
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));
 
-	AddWorldEnemy("comboer", 1, LoadParams<AirPathEnemyParamsLoop>, NULL, MakeParamsAerial<AirPathEnemyParamsLoop>,
-		Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("comboer", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), true, true, true, true,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
 	AddWorldEnemy("crawler", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
 
 	AddWorldEnemy("shroom", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
 		GetTileset("Enemies/shroom_192x192.png", 192, 192));
 
 	AddWorldEnemy("basicturret", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
 		GetTileset("Enemies/basicturret_128x80.png", 128, 80));
 
 	AddWorldEnemy("airdasher", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
 		GetTileset("Enemies/dasher_208x144.png", 208, 144));
 
 	AddWorldEnemy("bosscrawler", 1, LoadParams<BossCrawlerParams>, MakeParamsGrounded<BossCrawlerParams>, NULL,
-		Vector2i(0, 0), Vector2i(128, 144),
+		Vector2i(0, 0), Vector2i(128, 144), false, false, false, false,
 		GetTileset("Bosses/Crawler/crawler_queen_256x256.png", 256, 256));
 
 	AddWorldEnemy("booster", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false,true, false, false,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 
 	AddWorldEnemy("spring", 1, LoadParams<SpringParams>, NULL, MakeParamsAerial<SpringParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Enemies/spring_idle_256x256.png", 256, 256));
 
 	//w2
 
 	AddWorldEnemy("greengoal", 2, LoadParams<GoalParams>, MakeParamsGrounded<GoalParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Goal/goal_w02_a_288x256.png", 288, 256));
 
 	AddWorldEnemy("greenblocker", 2, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
 
-	AddWorldEnemy("bat", 2, LoadParams<BatParams>, NULL, MakeParamsAerial<BatParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("bat", 2, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), true, true, true, true,
 		GetTileset("Enemies/bat_144x176.png", 144, 176));
 
-	AddWorldEnemy("curveturret", 2, LoadParams<CurveTurretParams>, MakeParamsGrounded<CurveTurretParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("curveturret", 2, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
 		GetTileset("Enemies/curveturret_144x96.png", 144, 96));
 
-	AddWorldEnemy("poisonfrog", 2, LoadParams<PoisonFrogParams>, MakeParamsGrounded<PoisonFrogParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("poisonfrog", 2, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
 		GetTileset("Enemies/frog_80x80.png", 80, 80));
 
-	AddWorldEnemy("stagbeetle", 2, LoadParams<StagBeetleParams>, MakeParamsGrounded<StagBeetleParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("stagbeetle", 2, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
 		GetTileset("Enemies/stag_idle_192x144.png", 192, 144));
 
-	AddWorldEnemy("gravityfaller", 2, LoadParams<GravityFallerParams>, MakeParamsGrounded<GravityFallerParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("gravityfaller", 2, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
 		GetTileset("Enemies/gravity_faller_128x128.png", 128, 128));
 
 	AddWorldEnemy("gravitymodifier", 2, LoadParams<GravityModifierParams>, NULL, MakeParamsAerial<GravityModifierParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 
 	AddWorldEnemy("gravityspring", 2, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
-		Vector2i(0, 0), Vector2i(32, 32),
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 
 	AddWorldEnemy("bossbird", 2, LoadParams<BossBirdParams>, NULL, MakeParamsAerial<BossBirdParams>,
-		Vector2i(0, 0), Vector2i(64, 64));
+		Vector2i(0, 0), Vector2i(64, 64), false, false, false, false);
 
 
 
@@ -672,92 +674,96 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 
 	AddWorldEnemy("pulser", 3, LoadParams<PulserParams>, NULL, MakeParamsAerial<PulserParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("badger", 3, LoadParams<BadgerParams>, MakeParamsGrounded<BadgerParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("owl", 3, LoadParams<OwlParams>, NULL, MakeParamsAerial<OwlParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("cactus", 3, LoadParams<CactusParams>, MakeParamsGrounded<CactusParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("bosscoyote", 3, LoadParams<BossCoyoteParams>, NULL, MakeParamsAerial<BossCoyoteParams>,
-		Vector2i(0, 0), Vector2i(200, 200));
+		Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 
 
 	//w4
 
 
 	AddWorldEnemy("spider", 4, LoadParams<SpiderParams>, MakeParamsGrounded<SpiderParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("turtle", 4, LoadParams<TurtleParams>, NULL, MakeParamsAerial<TurtleParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("cheetah", 4, LoadParams<CheetahParams>, MakeParamsGrounded<CheetahParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("coral", 4, LoadParams<CoralParams>, NULL, MakeParamsAerial<CoralParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("bosstiger", 4, LoadParams<BossTigerParams>, NULL, MakeParamsAerial<BossTigerParams>,
-		Vector2i(0, 0), Vector2i(64, 64));
+		Vector2i(0, 0), Vector2i(64, 64), false, false, false, false);
 
 	AddWorldEnemy("rail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	//w5
 
 
 	AddWorldEnemy("swarm", 5, LoadParams<SwarmParams>, NULL, MakeParamsAerial<SwarmParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("shark", 5, LoadParams<SharkParams>, NULL, MakeParamsAerial<SharkParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("overgrowth", 5, LoadParams<OvergrowthParams>, MakeParamsGrounded<OvergrowthParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("ghost", 5, LoadParams<GhostParams>, NULL, MakeParamsAerial<GhostParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("bossgator", 5, LoadParams<BossGatorParams>, NULL, MakeParamsAerial<BossGatorParams>,
-		Vector2i(0, 0), Vector2i(32, 128));
+		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);
 
 
 	//w6
 
 
 	AddWorldEnemy("specter", 6, LoadParams<SpecterParams>, NULL, MakeParamsAerial<SpecterParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("narwhal", 6, LoadParams<NarwhalParams>, NULL, MakeParamsAerial<NarwhalParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("copycat", 6, LoadParams<CopycatParams>, NULL, MakeParamsAerial<CopycatParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("gorilla", 6, LoadParams<GorillaParams>, NULL, MakeParamsAerial<GorillaParams>,
-		Vector2i(0, 0), Vector2i(32, 32));
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("bossskeleton", 6, LoadParams<BossSkeletonParams>, NULL, MakeParamsAerial<BossSkeletonParams>,
-		Vector2i(0, 0), Vector2i(32, 128));
+		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);
 }
 
 void EditSession::AddWorldEnemy( const std::string &name, int w, ParamsLoader *pLoader, 
 	ParamsMaker* pmGround, ParamsMaker *pmAir,
-	Vector2i &off, Vector2i &size, Tileset *ts, int tileIndex )
+	Vector2i &off, Vector2i &size, bool w_mon, 
+	bool w_level, bool w_path, bool w_loop, Tileset *ts, int tileIndex )
 {
-	worldEnemyNames[w - 1].push_back(ParamsInfo( name, pLoader, pmGround, pmAir, off, size, ts, tileIndex ));
+	worldEnemyNames[w - 1].push_back(ParamsInfo( name, pLoader, pmGround, pmAir, off, size, 
+		w_mon, w_level, w_path, w_loop, ts, tileIndex ));
 }
 
 void EditSession::AddExtraEnemy(const std::string &name, ParamsLoader *pLoader, 
 	ParamsMaker *pmGround, ParamsMaker *pmAir,
-	Vector2i &off, Vector2i &size, Tileset *ts, int tileIndex)
+	Vector2i &off, Vector2i &size, bool w_mon,
+	bool w_level, bool w_path, bool w_loop, Tileset *ts, int tileIndex)
 {
-	extraEnemyNames.push_back(ParamsInfo(name, pLoader, pmGround, pmAir, off, size, ts, tileIndex));
+	extraEnemyNames.push_back(ParamsInfo(name, pLoader, pmGround, pmAir, off, size,
+		w_mon, w_level, w_path, w_loop, ts, tileIndex));
 }
 
 TerrainPolygon *EditSession::GetPolygon(int index, int &edgeIndex )
@@ -14693,10 +14699,10 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddTextBox("xstrength", Vector2i(20, 150), 200, 20, "10");
-		p->AddTextBox("ystrength", Vector2i(20, 200), 200, 20, "10");
-		p->AddTextBox("gravfactor", Vector2i(20, 250), 200, 20, "5");
-		p->AddTextBox("jumpwaitframes", Vector2i(20, 300), 200, 20, "10");
+		p->AddTextBox("level", Vector2i(20, 150), 200, 20, "0");
+		//p->AddTextBox("ystrength", Vector2i(20, 200), 200, 20, "10");
+		//p->AddTextBox("gravfactor", Vector2i(20, 250), 200, 20, "5");
+		//p->AddTextBox("jumpwaitframes", Vector2i(20, 300), 200, 20, "10");
 		//p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
 		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 
@@ -14710,7 +14716,7 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddTextBox("var", Vector2i(20, 150), 200, 20, "0");
+		p->AddTextBox("level", Vector2i(20, 150), 200, 20, "0");
 		//p->AddLabel( "clockwise_label", Vector2i( 20, 150 ), 20, "clockwise" );
 		//p->AddCheckBox( "clockwise", Vector2i( 120, 155 ) ); 
 
@@ -14735,9 +14741,9 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
-		p->AddCheckBox("clockwise", Vector2i(120, 155));
-		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "3");
+		//p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
+		//p->AddCheckBox("clockwise", Vector2i(120, 155));
+		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
 
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
@@ -14748,11 +14754,11 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddTextBox("bulletspeed", Vector2i(20, 150), 200, 20, "10");
-		p->AddTextBox("waitframes", Vector2i(20, 200), 200, 20, "10");
-		p->AddTextBox("xgravfactor", Vector2i(20, 250), 200, 20, "0");
-		p->AddTextBox("ygravfactor", Vector2i(20, 300), 200, 20, "0");
-		p->AddCheckBox("relativegrav", Vector2i(20, 350));
+		p->AddTextBox("level", Vector2i(20, 150), 200, 20, "0");
+		//p->AddTextBox("waitframes", Vector2i(20, 200), 200, 20, "10");
+		//p->AddTextBox("xgravfactor", Vector2i(20, 250), 200, 20, "0");
+		//p->AddTextBox("ygravfactor", Vector2i(20, 300), 200, 20, "0");
+		//p->AddCheckBox("relativegrav", Vector2i(20, 350));
 
 		p->AddCheckBox("monitor", Vector2i(20, 400));
 

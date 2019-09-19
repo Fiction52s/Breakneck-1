@@ -1538,7 +1538,7 @@ ActorParams *RaceFightTargetParams::Copy()
 }
 
 BlockerParams::BlockerParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i> &globalPath, int p_bType, bool p_armored,
-	int p_spacing )
+	int p_spacing, int p_level )
 	:ActorParams(at)
 {
 	lines = NULL;
@@ -1553,7 +1553,7 @@ BlockerParams::BlockerParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i>
 	armored = p_armored;
 
 
-	
+	enemyLevel = p_level;
 }
 
 BlockerParams::BlockerParams(ActorType *at,ifstream &is)
@@ -1571,6 +1571,8 @@ BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 	LoadBool(is, armored);
 
 	is >> spacing;
+
+	is >> enemyLevel;
 	
 }
 
@@ -1698,6 +1700,8 @@ void BlockerParams::WriteParamFile(ofstream &of)
 	WriteBool(of, armored);
 	
 	of << spacing << endl;
+
+	of << level << endl;
 }
 
 ActorParams *BlockerParams::Copy()
@@ -1907,9 +1911,32 @@ BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, ifstream &is)
 {
 	LoadGrounded(is);
 
-	LoadMonitor(is);
+	ParamsInfo &pi = at->info;
 
-	LoadEnemyLevel(is);
+	if (pi.writeMonitor)
+	{
+		LoadMonitor(is);
+	}
+
+	if (pi.writeLevel)
+	{
+		LoadEnemyLevel(is);
+	}
+}
+
+void BasicGroundEnemyParams::WriteParamFile(std::ofstream &of)
+{
+	ParamsInfo &pi = type->info;
+
+	if (pi.writeMonitor)
+	{
+		WriteMonitor(of);
+	}
+
+	if (pi.writeLevel)
+	{
+		WriteLevel(of);
+	}
 }
 
 ActorParams *BasicGroundEnemyParams::Copy()
@@ -1929,9 +1956,108 @@ BasicAirEnemyParams::BasicAirEnemyParams(ActorType *at, ifstream &is)
 	: ActorParams(at)
 {
 	LoadAerial(is);
-	LoadMonitor(is);
 
-	LoadEnemyLevel(is);
+	ParamsInfo &pi = at->info;
+	if (pi.writeMonitor)
+	{
+		LoadMonitor(is);
+	}
+	
+	if (pi.writePath)
+	{
+		LoadGlobalPath(is);
+	}
+
+	if (pi.writeLoop)
+	{
+		LoadBool(is, loop);
+	}
+
+	if (pi.writeLevel)
+	{
+		LoadEnemyLevel(is);
+	}
+}
+
+void BasicAirEnemyParams::WriteParamFile(std::ofstream &of)
+{
+	ParamsInfo &pi = type->info;
+	if (pi.writeMonitor)
+	{
+		WriteMonitor(of);
+	}
+
+	if (pi.writePath)
+	{
+		WritePath(of);
+	}
+
+	if (pi.writeLoop)
+	{
+		WriteLoop(of);
+	}
+
+	if (pi.writeLevel)
+	{
+		WriteLevel(of);
+	}
+}
+
+void BasicAirEnemyParams::SetPanelInfo()
+{
+	//SetBasicPanelInfo();
+
+	Panel *p = type->panel;
+
+	ParamsInfo &pi = type->info;
+	if (pi.writeLevel)
+	{
+		p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
+	}
+
+	if (pi.writeMonitor)
+	{
+		p->checkBoxes["monitor"]->checked = hasMonitor;
+	}
+	
+	if (pi.writePath)
+	{
+		EditSession *edit = EditSession::GetSession();
+		edit->patrolPath = GetGlobalPath();
+	}
+
+	if (pi.writeLoop)
+	{
+		p->checkBoxes["loop"]->checked = loop;
+	}
+}
+
+void BasicAirEnemyParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	stringstream ss;
+
+	ParamsInfo &pi = type->info;
+
+	if (pi.writeLevel)
+	{
+		int level;
+		string s = p->textBoxes["level"]->text.getString().toAnsiString();
+		ss << s;
+
+		ss >> level;
+
+		if (!ss.fail())
+		{
+			enemyLevel = level;
+		}
+	}
+	
+	if (pi.writeMonitor)
+	{
+		hasMonitor = p->checkBoxes["monitor"]->checked;
+	}
 }
 
 ActorParams *BasicAirEnemyParams::Copy()
@@ -1940,90 +2066,91 @@ ActorParams *BasicAirEnemyParams::Copy()
 	return copy;
 }
 
-AirPathEnemyParamsLoop::AirPathEnemyParamsLoop(ActorType *at, sf::Vector2i &pos, int level)
-	:ActorParams(at)
+//AirPathEnemyParamsLoop::AirPathEnemyParamsLoop(ActorType *at, sf::Vector2i &pos, int level)
+//	:ActorParams(at)
+//{
+//	enemyLevel = level;
+//	PlaceAerial(pos);
+//}
+//
+//AirPathEnemyParamsLoop::AirPathEnemyParamsLoop(ActorType *at, ifstream &is)
+//	: ActorParams(at)
+//{
+//	LoadAerial(is);
+//
+//	LoadMonitor(is);
+//
+//	LoadGlobalPath(is);
+//
+//	LoadBool(is, loop);
+//
+//	LoadEnemyLevel(is);
+//}
+//
+//ActorParams *AirPathEnemyParamsLoop::Copy()
+//{
+//	AirPathEnemyParamsLoop *copy = new AirPathEnemyParamsLoop(*this);
+//	return copy;
+//}
+//
+//void AirPathEnemyParamsLoop::WriteParamFile(std::ofstream &of)
+//{
+//	WriteMonitor(of);
+//	WritePath(of);
+//	WriteLoop(of);
+//	WriteLevel(of);
+//}
+//
+//void AirPathEnemyParamsLoop::SetPanelInfo()
+//{
+//	SetBasicPanelInfo();
+//
+//	Panel *p = type->panel;
+//
+//	EditSession *edit = EditSession::GetSession();
+//	edit->patrolPath = GetGlobalPath();
+//
+//	p->checkBoxes["loop"]->checked = loop;
+//}
+
+void BasicAirEnemyParams::Draw(sf::RenderTarget *target)
 {
-	enemyLevel = level;
-	PlaceAerial(pos);
-}
-
-AirPathEnemyParamsLoop::AirPathEnemyParamsLoop(ActorType *at, ifstream &is)
-	: ActorParams(at)
-{
-	LoadAerial(is);
-
-	LoadMonitor(is);
-
-	LoadGlobalPath(is);
-
-	LoadBool(is, loop);
-
-	LoadEnemyLevel(is);
-}
-
-ActorParams *AirPathEnemyParamsLoop::Copy()
-{
-	AirPathEnemyParamsLoop *copy = new AirPathEnemyParamsLoop(*this);
-	return copy;
-}
-
-void AirPathEnemyParamsLoop::WriteParamFile(std::ofstream &of)
-{
-	WriteMonitor(of);
-	WritePath(of);
-	WriteLoop(of);
-	WriteLevel(of);
-}
-
-void AirPathEnemyParamsLoop::SetPanelInfo()
-{
-	SetBasicPanelInfo();
-
-	Panel *p = type->panel;
-
-	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
-
-	p->checkBoxes["loop"]->checked = loop;
-}
-
-void AirPathEnemyParamsLoop::Draw(sf::RenderTarget *target)
-{
-	int localPathSize = localPath.size();
-
-	if (localPathSize > 0)
+	if (type->info.writePath)
 	{
+		int localPathSize = localPath.size();
 
-		VertexArray &li = *lines;
-
-
-		for (int i = 0; i < localPathSize + 1; ++i)
-		{
-			li[i].position += Vector2f(position.x, position.y);
-		}
-
-
-		target->draw(li);
-
-
-
-		if (loop)
+		if (localPathSize > 0)
 		{
 
-			//draw the line between the first and last
-			sf::Vertex vertices[2] =
+			VertexArray &li = *lines;
+
+
+			for (int i = 0; i < localPathSize + 1; ++i)
 			{
-				sf::Vertex(li[localPathSize].position, Color::Magenta),
-				sf::Vertex(li[0].position, Color::White)
-			};
-
-			target->draw(vertices, 2, sf::Lines);
-		}
+				li[i].position += Vector2f(position.x, position.y);
+			}
 
 
-		for (int i = 0; i < localPathSize + 1; ++i)
-		{
-			li[i].position -= Vector2f(position.x, position.y);
+			target->draw(li);
+
+			if (loop)
+			{
+
+				//draw the line between the first and last
+				sf::Vertex vertices[2] =
+				{
+					sf::Vertex(li[localPathSize].position, Color::Magenta),
+					sf::Vertex(li[0].position, Color::White)
+				};
+
+				target->draw(vertices, 2, sf::Lines);
+			}
+
+
+			for (int i = 0; i < localPathSize + 1; ++i)
+			{
+				li[i].position -= Vector2f(position.x, position.y);
+			}
 		}
 	}
 

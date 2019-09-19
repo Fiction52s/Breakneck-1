@@ -19,12 +19,14 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q, bool cw, double s )
-	:Enemy( owner, EnemyType::EN_STAGBEETLE, p_hasMonitor, 2 ), facingRight( cw ),
+StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
+	:Enemy( owner, EnemyType::EN_STAGBEETLE, p_hasMonitor, 2 ),
 	moveBezTest( .22,.85,.3,.91 )
 {
+	facingRight = true;
+	level = p_level;
 	gravity = V2d( 0, .6 );
-	maxGroundSpeed = s;
+	maxGroundSpeed = 10;
 	action = IDLE;
 	//initHealth = 60;
 	//health = initHealth;

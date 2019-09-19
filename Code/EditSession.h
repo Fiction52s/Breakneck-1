@@ -59,7 +59,10 @@ struct ParamsInfo
 		:name(n), pLoader( p_pLoader ),
 		pmGround(pg), pmAir(pa),
 		offset(off), size(p_size),
-		ts(p_ts), imageTileIndex(imageTile)
+		ts(p_ts), imageTileIndex(imageTile),
+		writeMonitor( w_monitor ), writeLevel( w_level ),
+		writePath( w_path ), writeLoop ( w_loop )
+
 	{
 
 	}
@@ -548,6 +551,10 @@ struct EditSession : GUIHandler, TilesetManager
 		ParamsMaker* pmGround, ParamsMaker *pmAir,
 		sf::Vector2i &off, 
 		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
 	void AddExtraEnemy(const std::string &name,
@@ -555,6 +562,10 @@ struct EditSession : GUIHandler, TilesetManager
 		ParamsMaker *pmGround, ParamsMaker *pmAir,
 		sf::Vector2i &off,
 		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
 	std::list<ParamsInfo> extraEnemyNames;

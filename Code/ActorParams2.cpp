@@ -313,9 +313,6 @@ ActorParams *StagBeetleParams::Copy()
 	return copy;
 }
 
-
-
-
 PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
 	:ActorParams(at), pathQuads( sf::Quads, 4 * 50 )
@@ -323,7 +320,6 @@ PoisonFrogParams::PoisonFrogParams(ActorType *at, TerrainPolygon *p_edgePolygon,
 	gravFactor = 30;
 	jumpWaitFrames = 60;
 	jumpStrength = Vector2i( 5, 12 );
-
 
 	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 

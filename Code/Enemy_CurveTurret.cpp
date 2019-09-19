@@ -19,17 +19,18 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double q, double speed,int wait,
-	Vector2i &gravFactor, bool relative )
-		:Enemy( owner, EnemyType::EN_CURVETURRET, p_hasMonitor, 2 ), framesWait( wait), bulletSpeed( speed ), ground( g ),
+CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
+		:Enemy( owner, EnemyType::EN_CURVETURRET, p_hasMonitor, 2 ), ground( g ),
 		edgeQuantity( q )
 {	
+	level = p_level;
 	shield = new Shield(Shield::ShieldType::T_BLOCK, 80, 3, this);
 	currShield = shield;
 	shield->Reset();
 	shield->SetPosition(position);
 
-	
+	framesWait = 60;
+	bulletSpeed = 10;
 
 	animationFactor = 3;
 	assert( framesWait > 13 * animationFactor );
@@ -55,7 +56,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	gravity = V2d( 0,0 );
 
-	if( relative )
+	/*if( relative )
 	{
 		gravity += gAlong * ( gravFactor.x / 256.0);
 		gravity += gn * ( -gravFactor.y / 256.0 );
@@ -63,7 +64,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	else
 	{
 		gravity = V2d( gravFactor.x / 256.0, gravFactor.y / 256.0 );
-	}
+	}*/
 	
 
 	position = gPoint + gn * height / 2.0;

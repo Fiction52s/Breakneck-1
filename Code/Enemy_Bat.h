@@ -34,10 +34,8 @@ struct Bat : Enemy, LauncherEnemy
 	int framesSinceBothered;
 	Bat(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos, std::list<sf::Vector2i> &path,
-		int bulletSpeed,
-		//int nodeDistance,
-		int framesBetween,
-		bool loop);
+		bool loop,
+		int level);
 	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos);

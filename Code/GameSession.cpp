@@ -1997,7 +1997,10 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int spacing;
 			is >> spacing;
 
-			BlockerChain *enemy = new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing);
+			int level;
+			is >> level;
+
+			BlockerChain *enemy = new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing, level);
 
 			fullEnemyList.push_back(enemy);
 
@@ -2336,17 +2339,12 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			bool loop;
 			Enemy::ReadBool(is, loop);
 
-			int bulletSpeed;
-			is >> bulletSpeed;
+			int level;
+			is >> level;
 
-			//int nodeDistance;
-			//is >> nodeDistance;
 
-			int framesBetweenNodes;
-			is >> framesBetweenNodes;
 
-			Bat *enemy = new Bat(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-				bulletSpeed, framesBetweenNodes, loop);
+			Bat *enemy = new Bat(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
@@ -2367,7 +2365,9 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int gravFactor;
+			int level;
+			is >> level;
+			/*int gravFactor;
 			is >> gravFactor;
 
 			int jumpStrengthX;
@@ -2377,10 +2377,10 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			is >> jumpStrengthY;
 
 			int jumpFramesWait;
-			is >> jumpFramesWait;
+			is >> jumpFramesWait;*/
 
 			PoisonFrog *enemy = new PoisonFrog(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-				edgeQuantity, gravFactor, Vector2i(jumpStrengthX, jumpStrengthY), jumpFramesWait);
+				edgeQuantity, level);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
@@ -2401,11 +2401,11 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int var;
-			is >> var;
+			int level;
+			is >> level;
 
 			GravityFaller *enemy = new GravityFaller(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-				edgeQuantity, var);
+				edgeQuantity, level);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
@@ -2428,25 +2428,12 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			bool clockwise;
-			string cwStr;
-			is >> cwStr;
-
-			if (cwStr == "+clockwise")
-				clockwise = true;
-			else if (cwStr == "-clockwise")
-				clockwise = false;
-			else
-			{
-				assert(false && "boolean problem");
-			}
-
-			float speed;
-			is >> speed;
+			int level;
+			is >> level;
 
 
 			StagBeetle *enemy = new StagBeetle(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-				edgeQuantity, clockwise, speed);
+				edgeQuantity, level );
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
 
@@ -2468,7 +2455,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			double bulletSpeed;
+			/*double bulletSpeed;
 			is >> bulletSpeed;
 
 			int framesWait;
@@ -2486,10 +2473,12 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			if (relativeGravStr == "+relative")
 			{
 				relative = true;
-			}
+			}*/
 
-			CurveTurret *enemy = new CurveTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, bulletSpeed, framesWait,
-				Vector2i(xGravFactor, yGravFactor), relative);
+			int level;
+			is >> level;
+
+			CurveTurret *enemy = new CurveTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;

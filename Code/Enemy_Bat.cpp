@@ -20,11 +20,10 @@ using namespace sf;
 
 
 Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos, 
-	list<Vector2i> &pathParam, int p_bulletSpeed,
-	//int p_nodeDistance, 
-	int p_framesBetweenNodes, bool p_loop )
+	list<Vector2i> &pathParam,bool p_loop, int p_level )
 	:Enemy( owner, EnemyType::EN_BAT, p_hasMonitor, 2 )
 {
+	level = p_level;
 	loop = p_loop;
 	//loop = false; //no looping on bat for now
 
@@ -33,9 +32,9 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	position.x = pos.x;
 	position.y = pos.y;
 
-	bulletSpeed = p_bulletSpeed;
+	bulletSpeed = 10;
 	//nodeDistance = p_nodeDistance;
-	framesBetween = p_framesBetweenNodes;
+	framesBetween = 60;
 
 	startPos = V2d(pos);
 

@@ -13,11 +13,7 @@ struct CurveTurret : Enemy, LauncherEnemy
 
 	Action action;
 	CurveTurret(GameSession *owner, bool hasMonitor,
-		Edge *ground, double quantity,
-		double bulletSpeed,
-		int framesWait,
-		sf::Vector2i &gravFactor,
-		bool relativeGrav);
+		Edge *ground, double quantity, int level);
 	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessState();
 	void Setup();

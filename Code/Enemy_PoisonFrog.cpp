@@ -20,12 +20,15 @@ using namespace sf;
 
 
 
-PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double q, int gFactor,
-	sf::Vector2i &jStrength, int framesWait )
-	:Enemy( p_owner, EnemyType::EN_POISONFROG, p_hasMonitor, 2 ), 
-	gravityFactor( gFactor ), jumpStrength( jStrength.x, jStrength.y ), 
-	jumpFramesWait( framesWait )
+PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double q, int p_level )
+	:Enemy( p_owner, EnemyType::EN_POISONFROG, p_hasMonitor, 2 )
 {
+	gravityFactor = 30;
+	jumpFramesWait = 60;
+	jumpStrength = V2d(5, 12);
+
+
+	level = p_level;
 	maxFallSpeed = 25;
 	actionLength[STAND] = 10;
 	actionLength[JUMPSQUAT] = 2;

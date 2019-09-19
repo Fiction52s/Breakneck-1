@@ -20,9 +20,10 @@ using namespace sf;
 
 
 
-GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, double q, int fallerVariation)
+GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, double q, int p_level)
 	:Enemy(p_owner, EnemyType::EN_GRAVITYFALLER, p_hasMonitor, 2)
 {
+	level = p_level;
 	maxFallSpeed = 25;
 	actionLength[IDLE] = 10;
 	actionLength[DOWNCHARGE] = 10;

@@ -377,7 +377,8 @@ struct BlockerParams : public ActorParams
 	BlockerParams(ActorType *at,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
-		int bType, bool invinc, int spacing);
+		int bType, bool invinc, int spacing,
+		int level);
 	BlockerParams(ActorType *at,
 		sf::Vector2i &pos);
 	BlockerParams(ActorType *at,
@@ -393,6 +394,8 @@ struct BlockerParams : public ActorParams
 
 	bool armored;
 	int spacing;
+
+	int level;
 
 	BlockerType bType;
 	//will have multiple types
@@ -498,6 +501,7 @@ struct BasicGroundEnemyParams : public ActorParams
 		int level=0);
 	BasicGroundEnemyParams(ActorType *at,
 		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
 	ActorParams *Copy();
 };
 
@@ -507,29 +511,26 @@ struct BasicAirEnemyParams : public ActorParams
 		sf::Vector2i &pos, int level =0);
 	BasicAirEnemyParams(ActorType *at,
 		std::ifstream &is);
-	ActorParams *Copy();
-};
-
-struct BasicAirEnemyParamsNoMonitor : public ActorParams
-{
-	BasicAirEnemyParamsNoMonitor(ActorType *at,
-		sf::Vector2i &pos, int level = 0);
-	BasicAirEnemyParamsNoMonitor(ActorType *at,
-		std::ifstream &is);
-	ActorParams *Copy();
-};
-
-struct AirPathEnemyParamsLoop : public ActorParams
-{
-	AirPathEnemyParamsLoop(ActorType *at,
-		sf::Vector2i &pos, int level = 0);
-	AirPathEnemyParamsLoop(ActorType *at,
-		std::ifstream &is);
-	ActorParams *Copy();
-	void SetPanelInfo();
 	void WriteParamFile(std::ofstream &of);
-	void Draw(sf::RenderTarget *target);
+	void SetPanelInfo();
+	void SetParams();
+	ActorParams *Copy();
+	virtual void Draw(sf::RenderTarget *target);
 };
+
+
+
+//struct AirPathEnemyParamsLoop : public ActorParams
+//{
+//	AirPathEnemyParamsLoop(ActorType *at,
+//		sf::Vector2i &pos, int level = 0);
+//	AirPathEnemyParamsLoop(ActorType *at,
+//		std::ifstream &is);
+//	ActorParams *Copy();
+//	void SetPanelInfo();
+//	void WriteParamFile(std::ofstream &of);
+//	void Draw(sf::RenderTarget *target);
+//};
 
 struct CrawlerParams : public ActorParams
 {

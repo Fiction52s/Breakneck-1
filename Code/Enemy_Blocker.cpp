@@ -104,9 +104,10 @@ void CircleGroup::Draw(sf::RenderTarget *target)
 }
 
 BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pathParam, int p_bType, bool p_armored,
-	int spacing )
+	int spacing, int p_level )
 	:Enemy(owner, EnemyType::EN_BLOCKERCHAIN, false, 1, false)
 {
+	level = p_level;
 	bType = (BlockerType)p_bType;
 	armored = p_armored;
 	//receivedHit = NULL;

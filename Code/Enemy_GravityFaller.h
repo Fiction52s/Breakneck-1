@@ -20,7 +20,7 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 	GravityFaller(GameSession *owner,
 		bool hasMonitor,
 		Edge *ground, double quantity,
-		int fallerVariation );
+		int level );
 
 	int actionLength[A_Count];
 	int animFactor[A_Count];

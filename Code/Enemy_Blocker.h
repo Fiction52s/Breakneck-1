@@ -81,7 +81,8 @@ struct BlockerChain : Enemy
 	CircleGroup *circleGroup;
 	BlockerChain(GameSession *owner,
 		sf::Vector2i &pos, std::list<sf::Vector2i> &path,
-		int bType, bool armored, int spacing = 0);
+		int bType, bool armored, int spacing,
+		int level );
 	~BlockerChain();
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);

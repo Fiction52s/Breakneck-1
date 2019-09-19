@@ -21,9 +21,7 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	PoisonFrog(GameSession *owner,
 		bool hasMonitor,
 		Edge *ground, double quantity,
-		int gravFactor,
-		sf::Vector2i &jumpStrength,
-		int jumpFramesWait);
+		int level );
 
 	int actionLength[Action::Count];
 	int animFactor[Action::Count];

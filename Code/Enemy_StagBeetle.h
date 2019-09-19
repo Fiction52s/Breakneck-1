@@ -16,9 +16,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	};
 
 	StagBeetle(GameSession *owner, bool hasMonitor,
-		Edge *ground,
-		double quantity,
-		bool clockwise, double speed);
+		Edge *ground, double q, int level );
 	void ActionEnded();
 	void ProcessState();
 	void UpdateEnemyPhysics();
