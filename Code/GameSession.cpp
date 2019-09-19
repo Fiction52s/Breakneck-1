@@ -2485,8 +2485,10 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			enemyTree->Insert(enemy);
 		}
-		else if (typeName == "gravitymodifier")
+		else if (typeName == "gravityincreaser" || typeName == "gravitydecreaser" )
 		{
+			bool increaser = (typeName == "gravityincreaser");
+
 			int xPos, yPos;
 
 			//always air
@@ -2494,10 +2496,10 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			is >> xPos;
 			is >> yPos;
 
-			double gFactor;
-			is >> gFactor;
+			int level;
+			is >> level;
 
-			GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), gFactor, 300);
+			GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), level, increaser);
 
 			activeItemTree->Insert(enemy);
 			fullEnemyList.push_back(enemy);

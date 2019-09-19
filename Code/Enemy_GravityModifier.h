@@ -15,7 +15,8 @@ struct GravityModifier : Enemy
 
 	Action action;
 	GravityModifier(GameSession *owner,
-		sf::Vector2i &pos, double gFactor, int duration);
+		sf::Vector2i &pos, int level,
+		bool increaser);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);

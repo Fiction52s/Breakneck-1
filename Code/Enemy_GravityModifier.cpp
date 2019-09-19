@@ -19,9 +19,20 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-GravityModifier::GravityModifier(GameSession *owner, Vector2i &pos, double p_gFactor, int p_duration )
-	:Enemy(owner, EnemyType::EN_GRAVITYMODIFIER, false, 1, false), gravFactor(p_gFactor), duration( p_duration )
+GravityModifier::GravityModifier(GameSession *owner, Vector2i &pos, int p_level, bool increaser )
+	:Enemy(owner, EnemyType::EN_GRAVITYMODIFIER, false, 1, false), gravFactor(1.0), duration( 300 )
 {
+	if (increaser) //expand more on this later
+	{
+		gravFactor = 2.0;
+	}
+	else
+	{
+		gravFactor = .5;
+	}
+
+
+	level = p_level;
 	action = NEUTRAL;
 	frame = 0;
 	initHealth = 60;

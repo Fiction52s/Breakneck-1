@@ -657,9 +657,13 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
 		GetTileset("Enemies/gravity_faller_128x128.png", 128, 128));
 
-	AddWorldEnemy("gravitymodifier", 2, LoadParams<GravityModifierParams>, NULL, MakeParamsAerial<GravityModifierParams>,
+	AddWorldEnemy("gravityincreaser", 2, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
+
+	AddWorldEnemy("gravitydecreaser", 2, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false,
+		GetTileset("Enemies/spring_idle_2_256x256.png", 512, 512));
 
 	AddWorldEnemy("gravityspring", 2, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
@@ -14588,9 +14592,18 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
 	}
 
-	else if (name == "booster" || name == "gravitymodifier")
+	else if (name == "booster")
 	{
 		p = new Panel("booster_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddTextBox("level", Vector2i(20, 200), 200, 3, "0");
+	}
+	else if (name == "gravityincreaser" || name == "gravitydecreaser")
+	{
+		p = new Panel("gravchanger_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
