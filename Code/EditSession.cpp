@@ -529,7 +529,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	groups["player"] = playerGroup;
 	
 	ParamsInfo playerPI("player", NULL,NULL, NULL,
-		Vector2i(), Vector2i(22, 42), false, false, false, false,
+		Vector2i(), Vector2i(22, 42), false, false, false, false, 1,
 		GetTileset("Kin/jump_64x64.png", 64, 64));
 
 	playerType = new ActorType(playerPI);
@@ -555,26 +555,26 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		false, false, false, false);
 
 	AddExtraEnemy("shippickup", LoadParams<ShipPickupParams>, MakeParamsGrounded<ShipPickupParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Ship/shipleave_128x128.png", 128, 128));
 
 	AddExtraEnemy("shard", LoadParams<ShardParams>, NULL, MakeParamsAerial<ShardParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Shard/shards_w1_192x192.png", 192, 192));
 
 	AddExtraEnemy("racefighttarget", LoadParams<RaceFightTargetParams>, NULL, MakeParamsAerial<RaceFightTargetParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddExtraEnemy("groundtrigger", LoadParams<GroundTriggerParams>, MakeParamsGrounded<GroundTriggerParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Ship/shipleave_128x128.png", 128, 128));
 
 	AddExtraEnemy("airtrigger", LoadParams<AirTriggerParams>, NULL, MakeParamsAerial<AirTriggerParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
 
 	AddExtraEnemy("flowerpod", LoadParams<FlowerPodParams>, MakeParamsGrounded<FlowerPodParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Momenta/momentaflower_128x128.png", 128, 128));
 
 	AddExtraEnemy("nexus", LoadParams<NexusParams>, MakeParamsGrounded<NexusParams>, NULL,
@@ -583,90 +583,74 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 	//w1
 
-	AddWorldEnemy("goal", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, -32), Vector2i(32, 32), false, false, false, false,
+	AddBasicGroundWorldEnemy("goal", 1, Vector2i(0, -32), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
 	AddWorldEnemy("blocker", 1, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, true, false,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, true, false, 1,
 		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
 
-	AddWorldEnemy("patroller", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, true, true,
+	AddBasicAerialWorldEnemy("patroller", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 1,
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));
 
-	AddWorldEnemy("comboer", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, true, true,
+	AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 1,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
-	AddWorldEnemy("crawler", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
+	AddBasicGroundWorldEnemy("crawler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 4,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
 
-	AddWorldEnemy("shroom", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
+	AddBasicGroundWorldEnemy("shroom", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/shroom_192x192.png", 192, 192));
 
-	AddWorldEnemy("basicturret", 1, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
+	AddBasicGroundWorldEnemy("basicturret", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
 		GetTileset("Enemies/basicturret_128x80.png", 128, 80));
 
-	AddWorldEnemy("airdasher", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
+	AddBasicAerialWorldEnemy("airdasher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
 		GetTileset("Enemies/dasher_208x144.png", 208, 144));
 
 	AddWorldEnemy("bosscrawler", 1, LoadParams<BossCrawlerParams>, MakeParamsGrounded<BossCrawlerParams>, NULL,
-		Vector2i(0, 0), Vector2i(128, 144), false, false, false, false,
+		Vector2i(0, 0), Vector2i(128, 144), false, false, false, false, 1,
 		GetTileset("Bosses/Crawler/crawler_queen_256x256.png", 256, 256));
 
-	AddWorldEnemy("booster", 1, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false,true, false, false,
+	AddBasicAerialWorldEnemy("booster", 1, Vector2i(0, 0), Vector2i(32, 32), false,true, false, false, 1,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 
 	AddWorldEnemy("spring", 1, LoadParams<SpringParams>, NULL, MakeParamsAerial<SpringParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/spring_idle_256x256.png", 256, 256));
 
 	//w2
 
-	AddWorldEnemy("greengoal", 2, LoadParams<GoalParams>, MakeParamsGrounded<GoalParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+	AddBasicGroundWorldEnemy("greengoal", 2, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Goal/goal_w02_a_288x256.png", 288, 256));
 
 	AddWorldEnemy("greenblocker", 2, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
 
-	AddWorldEnemy("bat", 2, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, true, true,
+	AddBasicAerialWorldEnemy("bat", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 1,
 		GetTileset("Enemies/bat_144x176.png", 144, 176));
 
-	AddWorldEnemy("curveturret", 2, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
+	AddBasicGroundWorldEnemy("curveturret", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
 		GetTileset("Enemies/curveturret_144x96.png", 144, 96));
 
-	AddWorldEnemy("poisonfrog", 2, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
+	AddBasicGroundWorldEnemy("poisonfrog", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
 		GetTileset("Enemies/frog_80x80.png", 80, 80));
 
-	AddWorldEnemy("stagbeetle", 2, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
+	AddBasicGroundWorldEnemy("stagbeetle", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
 		GetTileset("Enemies/stag_idle_192x144.png", 192, 144));
 
-	AddWorldEnemy("gravityfaller", 2, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false,
+	AddBasicGroundWorldEnemy("gravityfaller", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
 		GetTileset("Enemies/gravity_faller_128x128.png", 128, 128));
 
-	AddWorldEnemy("gravityincreaser", 2, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false,
+	AddBasicAerialWorldEnemy("gravityincreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 
-	AddWorldEnemy("gravitydecreaser", 2, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false,
+	AddBasicAerialWorldEnemy("gravitydecreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
 		GetTileset("Enemies/spring_idle_2_256x256.png", 512, 512));
 
 	AddWorldEnemy("gravityspring", 2, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 
 	AddWorldEnemy("bossbird", 2, LoadParams<BossBirdParams>, NULL, MakeParamsAerial<BossBirdParams>,
@@ -752,22 +736,46 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);
 }
 
+
+void EditSession::AddBasicGroundWorldEnemy(const std::string &name, int w,
+	Vector2i &off, Vector2i &size, bool w_mon,
+	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
+{
+	worldEnemyNames[w - 1].push_back(ParamsInfo(name, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL, off, size,
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex));
+}
+
+void EditSession::AddBasicAerialWorldEnemy(const std::string &name, int w,
+	sf::Vector2i &off,
+	sf::Vector2i &size,
+	bool w_mon,
+	bool w_level,
+	bool w_path,
+	bool w_loop,
+	int p_numLevels,
+	Tileset *ts,
+	int tileIndex)
+{
+	worldEnemyNames[w - 1].push_back(ParamsInfo(name, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>, off, size,
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex));
+}
+
 void EditSession::AddWorldEnemy( const std::string &name, int w, ParamsLoader *pLoader, 
 	ParamsMaker* pmGround, ParamsMaker *pmAir,
 	Vector2i &off, Vector2i &size, bool w_mon, 
-	bool w_level, bool w_path, bool w_loop, Tileset *ts, int tileIndex )
+	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex )
 {
 	worldEnemyNames[w - 1].push_back(ParamsInfo( name, pLoader, pmGround, pmAir, off, size, 
-		w_mon, w_level, w_path, w_loop, ts, tileIndex ));
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex ));
 }
 
 void EditSession::AddExtraEnemy(const std::string &name, ParamsLoader *pLoader, 
 	ParamsMaker *pmGround, ParamsMaker *pmAir,
 	Vector2i &off, Vector2i &size, bool w_mon,
-	bool w_level, bool w_path, bool w_loop, Tileset *ts, int tileIndex)
+	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
 {
 	extraEnemyNames.push_back(ParamsInfo(name, pLoader, pmGround, pmAir, off, size,
-		w_mon, w_level, w_path, w_loop, ts, tileIndex));
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex));
 }
 
 TerrainPolygon *EditSession::GetPolygon(int index, int &edgeIndex )
@@ -4879,35 +4887,50 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	allPopups.push_back(enemySelectPanel);
 	int gridSizeX = 80;
 	int gridSizeY = 80;
-	GridSelector *gs = enemySelectPanel->AddGridSelector( "world0enemies", Vector2i( 0, 0 ), 15, 10, gridSizeX,
-		gridSizeY, false, true );
-	gs->active = false;
-	
+
+	GridSelector *gs = NULL;
 	int counter = 0;
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < 4; ++i)
 	{
-		auto &wen = worldEnemyNames[i];
+		gs = enemySelectPanel->AddGridSelector(to_string(i), Vector2i(0, 0), 15, 10, gridSizeX,
+			gridSizeY, false, true);
+		gs->active = false;
+		enemyGrid[i] = gs;
+
 		counter = 0;
-		for (auto it = wen.begin(); it != wen.end(); ++it)
+		for (int j = 0; j < 8; ++j)
 		{
-			SetEnemyGridIndex(gs, counter, i, (*it).name);
-			++counter;
-		}
-	}
-
-	counter = 0;
-	int row = 8;
-	for (auto it = extraEnemyNames.begin(); it != extraEnemyNames.end(); ++it)
-	{
-		SetEnemyGridIndex(gs, counter, row, (*it).name );
-		++counter;
-		if (counter == gs->xSize)
-		{
+			auto &wen = worldEnemyNames[j];
 			counter = 0;
-			++row;
+			for (auto it = wen.begin(); it != wen.end(); ++it)
+			{
+				if ((*it).numLevels >= i+1)
+				{
+					SetEnemyGridIndex(gs, counter, j, (*it).name);
+				}
+				++counter;
+			}
 		}
+
+		counter = 0;
+		int row = 8;
+		for (auto it = extraEnemyNames.begin(); it != extraEnemyNames.end(); ++it)
+		{
+			if ((*it).numLevels >= i + 1)
+			{
+				SetEnemyGridIndex(gs, counter, row, (*it).name);
+			}
+			++counter;
+			if (counter == gs->xSize)
+			{
+				counter = 0;
+				++row;
+			}
+		}
+
 	}
 
+	SetActiveEnemyGrid(0);
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
 	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 7, 4, 32, 32, false, true );
@@ -5093,7 +5116,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	mode = EDIT;
 	Emode stored = mode;
 	bool canCreatePoint = true;
-	gs->active = true;
+	//gs->active = true;
 
 
 	double circleDist = 100;
@@ -6330,6 +6353,13 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								break;
 							}
 
+							if (ev.key.code == Keyboard::Tilde)
+							{
+								mode = SET_LEVEL;
+								setLevelCurrent = 1;
+								showPanel = NULL;
+							}
+
 							if (ev.key.code == Keyboard::I && ev.key.control )
 							{
 								mode = CREATE_IMAGES;
@@ -7247,6 +7277,29 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						{
 							if( showPanel != NULL )
 							{
+								if (showPanel == enemySelectPanel)
+								{
+									if (ev.key.code == Keyboard::Num1)
+									{
+										SetActiveEnemyGrid(0);
+										//enemySelectPanel->gridSelectors["level1enemies"]->active = true;
+										//enemySelectPanel->gridSelectors["level2enemies"]->active = false;
+										
+									}
+									else if (ev.key.code == Keyboard::Num2)
+									{
+										SetActiveEnemyGrid(1);
+									}
+									else if (ev.key.code == Keyboard::Num3)
+									{
+										SetActiveEnemyGrid(2);
+									}
+									else if (ev.key.code == Keyboard::Num4)
+									{
+										SetActiveEnemyGrid(3);
+									}
+								}
+
 								showPanel->SendKey( ev.key.code, ev.key.shift );
 								break;
 							}
@@ -7947,7 +8000,58 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			{
 				break;
 			}
-			
+			case SET_LEVEL:
+			{
+				switch (ev.type)
+				{
+				case Event::MouseButtonPressed:
+				{
+				}
+				case Event::MouseButtonReleased:
+				{
+					break;
+				}
+				case Event::MouseWheelMoved:
+				{
+					break;
+				}
+				case Event::KeyPressed:
+				{
+					if (ev.key.code == sf::Keyboard::Num1 )
+					{
+						setLevelCurrent = 1;
+						/*if (doneActionStack.size() > 0)
+						{
+							Action *action = doneActionStack.back();
+							doneActionStack.pop_back();
+
+							action->Undo();
+
+							undoneActionStack.push_back(action);
+						}*/
+					}
+					else if (ev.key.code == sf::Keyboard::Num2)
+					{
+						setLevelCurrent = 2;
+					}
+					else if (ev.key.code == sf::Keyboard::Num3)
+					{
+						setLevelCurrent = 3;
+					}
+					else if (ev.key.code == sf::Keyboard::Num4)
+					{
+						setLevelCurrent = 4;
+					}
+					break;
+				}
+				case Event::KeyReleased:
+				{
+					break;
+				}
+				}
+				break;
+			}
+				
 				
 			}
 
@@ -8659,6 +8763,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					ClearSelectedPoints();
 					showPoints = false;
 				}
+
+
+				
+				
 
 				if( ( editMouseDownMove && !editStartMove && length( V2d( editMouseGrabPos.x, editMouseGrabPos.y ) - worldPos ) > editMoveThresh * zoomMultiple ) )
 				{
@@ -9538,6 +9646,25 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			}
 			break;
 		}
+		case SET_LEVEL:
+		{
+			if (Mouse::isButtonPressed(Mouse::Button::Left))
+			{
+				for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+				{
+					list<ActorPtr> &actors = it->second->actors;
+					for (list<ActorPtr>::iterator it2 = actors.begin(); it2 != actors.end(); ++it2)
+					{
+						sf::FloatRect bounds = (*it2)->image.getGlobalBounds();
+						if (bounds.contains(Vector2f(worldPos.x, worldPos.y)))
+						{
+							(*it2)->SetLevel(setLevelCurrent);
+						}
+					}
+				}
+			}
+			break;
+		}
 		}
 
 		//cout << "here before crash" << endl;
@@ -10128,8 +10255,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 					gatePoints = 0;
 				}
+
+				break;
 			}
-			break;
+		
+			
+			
 		}
 		
 		for( list<StaticLight*>::iterator it = lights.begin(); it != lights.end(); ++it )
@@ -11332,6 +11463,16 @@ void EditSession::ClearSelectedPoints()
 void EditSession::SetEnemyGridIndex( GridSelector *gs, int x, int y, const std::string &eName)
 {
 	gs->Set(x, y, types[eName]->GetSprite(gs->tileSizeX, gs->tileSizeY), eName);
+}
+
+void EditSession::SetActiveEnemyGrid(int index)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		enemyGrid[i]->active = false;
+	}
+	enemyGrid[index]->active = true;
+	enemySelectLevel = index+1;
 }
 
 void EditSession::SetupEnemyTypes()
@@ -15107,7 +15248,11 @@ void ActorType::PlaceEnemy(ActorParams *ap )
 	if (ap == NULL)
 		return;
 
+	
+
 	EditSession *edit = EditSession::GetSession();
+	ap->enemyLevel = edit->enemySelectLevel;
+
 	bool hasPanel = (ap->type->panel != NULL);
 
 	if (hasPanel)
@@ -15132,7 +15277,6 @@ void ActorType::PlaceEnemy()
 	EditSession *edit = EditSession::GetSession();
 
 	Vector2i worldPos(edit->worldPos);
-
 	bool placed = false;
 	if (info.pmGround!= NULL)
 	{
@@ -15154,6 +15298,8 @@ void ActorType::PlaceEnemy()
 		edit->patrolPath.clear();
 		edit->patrolPath.push_back(worldPos);
 	}
+
+
 }
 
 void ActorGroup::Draw( sf::RenderTarget *target )

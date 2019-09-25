@@ -104,7 +104,8 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 	//cout << "update: " << posx << ", " << posy << endl;
 	if( !active )
 	{
-		assert( false && "trying to update inactive grid selector" );
+		return false;
+		//assert( false && "trying to update inactive grid selector" );
 	}
 	if( mouseDown )
 	{

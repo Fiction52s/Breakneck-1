@@ -30,7 +30,7 @@ ActorParams::ActorParams( ActorType *at)
 {
 	groundInfo = NULL;
 	lines = NULL;
-	enemyLevel = 0;
+	enemyLevel = 1;
 	loop = false;
 	for( int i = 0; i < 4; ++i )
 		boundingQuad[i].color = Color( 0, 255, 0, 100);
@@ -44,7 +44,22 @@ ActorParams::~ActorParams()
 
 void ActorParams::WriteLevel(std::ofstream &of)
 {
+	if (enemyLevel < 1)
+		enemyLevel = 1;
 	of << enemyLevel << endl;
+}
+
+bool ActorParams::SetLevel(int lev)
+{
+	if (lev >= 1 && lev <= type->info.numLevels)
+	{
+		enemyLevel = lev;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void ActorParams::WriteMonitor(ofstream  &of)
@@ -80,7 +95,7 @@ void ActorParams::SetBasicParams()
 
 	ss >> level;
 
-	if (!ss.fail())
+	if (!ss.fail() && level > 0 && level < type->info.numLevels)
 	{
 		enemyLevel = level;
 	}
@@ -228,11 +243,14 @@ void ActorParams::LoadMonitor(std::ifstream &is)
 void ActorParams::LoadEnemyLevel(std::ifstream &is)
 {
 	is >> enemyLevel;
+	if (enemyLevel < 1)
+		enemyLevel = 1;
 }
 
 void ActorParams::SetBasicPanelInfo()
 {
 	Panel *p = type->panel;
+
 	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -277,6 +295,8 @@ void ActorParams::Draw( sf::RenderTarget *target )
 	
 
 	//temporary checks might make it lag less?
+
+	DrawLevel(target);
 
 	DrawMonitor( target );
 
@@ -614,6 +634,32 @@ void ActorParams::DrawBoundary( sf::RenderTarget *target )
 		rs.setSize( Vector2f( image.getGlobalBounds().width, image.getGlobalBounds().height ) );
 		target->draw( rs );
 		//cout << "selected draw" << endl;
+	}
+}
+
+void ActorParams::DrawLevel(sf::RenderTarget *target)
+{
+	if (type->info.numLevels > 1 && enemyLevel > 1 )
+	{
+		int extra = 10;
+		sf::RectangleShape rs;
+		rs.setFillColor(Color::Transparent);
+		rs.setOutlineColor(Color( 255, 0, 0, 100));
+		rs.setOutlineThickness(3 * EditSession::zoomMultiple);
+		rs.setPosition(image.getGlobalBounds().left - extra, image.getGlobalBounds().top - extra);
+		rs.setSize(Vector2f(image.getGlobalBounds().width + extra, image.getGlobalBounds().height + extra));
+		target->draw(rs);
+	}
+	if (type->info.numLevels > 2 && enemyLevel > 2)
+	{
+		int extra = 20;
+		sf::RectangleShape rs;
+		rs.setFillColor(Color::Transparent);
+		rs.setOutlineColor(Color(100, 100, 255, 100));
+		rs.setOutlineThickness(3 * EditSession::zoomMultiple);
+		rs.setPosition(image.getGlobalBounds().left - extra, image.getGlobalBounds().top - extra);
+		rs.setSize(Vector2f(image.getGlobalBounds().width + extra, image.getGlobalBounds().height + extra));
+		target->draw(rs);
 	}
 }
 
@@ -2048,7 +2094,7 @@ void BasicAirEnemyParams::SetParams()
 
 		ss >> level;
 
-		if (!ss.fail())
+		if (!ss.fail() && level > 0 && level <= pi.numLevels)
 		{
 			enemyLevel = level;
 		}

@@ -25,6 +25,7 @@ struct ActorParams : ISelectable
 	virtual ActorParams *Copy() = 0;
 	~ActorParams();
 	ActorParams(ActorType *at);
+	bool SetLevel(int lev);
 	virtual void Init() {};
 	virtual void WriteParamFile(std::ofstream &of);
 	void WriteBasicParamFile(std::ofstream &of);
@@ -44,7 +45,7 @@ struct ActorParams : ISelectable
 	virtual std::list<sf::Vector2i> GetGlobalPath();
 	virtual void SetPath(std::list<sf::Vector2i> &globalPath);
 
-
+	void DrawLevel(sf::RenderTarget *target);
 	void DrawBoundary(sf::RenderTarget *target);
 	void DrawMonitor(sf::RenderTarget *target);
 	void LoadGrounded(std::ifstream &is);

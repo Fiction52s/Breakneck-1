@@ -54,14 +54,15 @@ struct ParamsInfo
 		ParamsMaker *pg, ParamsMaker *pa,
 		sf::Vector2i &off, sf::Vector2i &p_size,
 		bool w_monitor, bool w_level,
-		bool w_path, bool w_loop,
+		bool w_path, bool w_loop, int p_numLevels = 1,
 		Tileset *p_ts = NULL, int imageTile = 0)
 		:name(n), pLoader( p_pLoader ),
 		pmGround(pg), pmAir(pa),
 		offset(off), size(p_size),
 		ts(p_ts), imageTileIndex(imageTile),
 		writeMonitor( w_monitor ), writeLevel( w_level ),
-		writePath( w_path ), writeLoop ( w_loop )
+		writePath( w_path ), writeLoop ( w_loop ), 
+		numLevels( p_numLevels )
 
 	{
 
@@ -79,6 +80,8 @@ struct ParamsInfo
 	bool writeLevel;
 	bool writePath;
 	bool writeLoop;
+
+	int numLevels;
 };
 
 struct GrassSeg
@@ -555,6 +558,27 @@ struct EditSession : GUIHandler, TilesetManager
 		bool w_level,
 		bool w_path,
 		bool w_loop,
+		int p_numLevels = 1,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	void AddBasicGroundWorldEnemy(const std::string &name, int w,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
+		int p_numLevels = 1,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	void AddBasicAerialWorldEnemy(const std::string &name, int w,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
+		int p_numLevels = 1,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
 	void AddExtraEnemy(const std::string &name,
@@ -566,6 +590,7 @@ struct EditSession : GUIHandler, TilesetManager
 		bool w_level,
 		bool w_path,
 		bool w_loop,
+		int p_numLevels = 1,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
 	std::list<ParamsInfo> extraEnemyNames;
@@ -830,9 +855,12 @@ struct EditSession : GUIHandler, TilesetManager
 	Panel *terrainSelectorPopup;
 
 	Panel *enemySelectPanel;
+	int enemySelectLevel;
+	GridSelector *enemyGrid[4];
 	void SetEnemyGridIndex( GridSelector *gs,
 		int x, int y,
 		const std::string &eName );
+	void SetActiveEnemyGrid(int i);
 
 	int IsRemovePointsOkay();
 
@@ -981,6 +1009,8 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Vector2i createRectCurrPoint;
 	AirTriggerParams *rectCreatingTrigger;
 
+	int setLevelCurrent;
+
 	enum Emode
 	{
 		CREATE_TERRAIN,
@@ -998,6 +1028,7 @@ struct EditSession : GUIHandler, TilesetManager
 		CREATE_GATES,
 		CREATE_IMAGES,
 		EDIT_IMAGES,
+		SET_LEVEL,
 	};
 
 	Emode mode;
