@@ -50,10 +50,17 @@ GravityModifier::GravityModifier(GameSession *owner, Vector2i &pos, int p_level,
 	frame = 0;
 
 	//animationFactor = 10;
-
+	if (increaser)
+	{
+		ts = owner->GetTileset("Enemies/grav_increase_256x256.png", 256, 256);
+	}
+	else
+	{
+		ts = owner->GetTileset("Enemies/grav_decrease_256x256.png", 256, 256);
+	}
 	//ts = owner->GetTileset( "GravityModifier.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/booster_512x512.png", 512, 512);
-	ts_refresh = owner->GetTileset("Enemies/booster_on_256x256.png", 256, 256);
+	
+	//ts_refresh = owner->GetTileset("Enemies/booster_on_256x256.png", 256, 256);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -95,13 +102,13 @@ GravityModifier::GravityModifier(GameSession *owner, Vector2i &pos, int p_level,
 	SetHitboxes(hitBody, 0);
 	SetHitboxes(hurtBody, 0);
 
-	actionLength[NEUTRAL] = 6;
-	actionLength[MODIFY] = 8;
-	actionLength[REFRESH] = 7;
+	actionLength[NEUTRAL] = 15;
+	actionLength[MODIFY] = 1;
+	actionLength[REFRESH] = 2;
 
-	animFactor[NEUTRAL] = 3;
-	animFactor[MODIFY] = 3;
-	animFactor[REFRESH] = 5;
+	animFactor[NEUTRAL] = 5;
+	animFactor[MODIFY] = 45;
+	animFactor[REFRESH] = 30;
 
 	ResetEnemy();
 }
@@ -137,6 +144,7 @@ void GravityModifier::ResetEnemy()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(position.x, position.y);
+	
 
 	UpdateSprite();
 }
@@ -156,14 +164,13 @@ void GravityModifier::ProcessState()
 		{
 			action = REFRESH;
 			frame = 0;
-			sprite.setTexture(*ts_refresh->texture);
 			break;
 		}
 		case REFRESH:
 		{
 			action = NEUTRAL;
 			frame = 0;
-			sprite.setTexture(*ts->texture);
+			
 			break;
 		}
 		}
@@ -185,8 +192,8 @@ void GravityModifier::UpdateSprite()
 		ir = ts->GetSubRect(tile);
 		break;
 	case REFRESH:
-		tile = frame / animFactor[REFRESH];
-		ir = ts_refresh->GetSubRect(tile);
+		tile = frame / animFactor[REFRESH] + 16;
+		ir = ts->GetSubRect(tile);
 		break;
 	}
 

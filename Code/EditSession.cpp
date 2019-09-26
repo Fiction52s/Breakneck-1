@@ -644,10 +644,10 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		GetTileset("Enemies/gravity_faller_128x128.png", 128, 128));
 
 	AddBasicAerialWorldEnemy("gravityincreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
-		GetTileset("Enemies/Booster_512x512.png", 512, 512));
+		GetTileset("Enemies/grav_increase_256x256.png", 256, 256));
 
 	AddBasicAerialWorldEnemy("gravitydecreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
-		GetTileset("Enemies/spring_idle_2_256x256.png", 512, 512));
+		GetTileset("Enemies/grav_decrease_256x256.png", 256, 256));
 
 	AddWorldEnemy("gravityspring", 2, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
@@ -8237,7 +8237,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		showTerrainPath = true;
 
 
-		if (IsKeyPressed(Keyboard::Num4))
+		if (IsKeyPressed(Keyboard::Num5))
 		{
 			Vector2f halfSize(scaleSprite.getGlobalBounds().width / 2.f, 
 				scaleSprite.getGlobalBounds().height / 2.f);
