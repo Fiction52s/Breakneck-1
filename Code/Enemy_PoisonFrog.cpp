@@ -54,9 +54,6 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 
 	mover = new GroundMover( p_owner, g, q, 30, true, this );
 	mover->SetSpeed( 0 );
-
-	initHealth = 60;
-	health = initHealth;
 	
 	//cout << "creating the boss crawler" << endl;
 	action = STAND;
@@ -130,7 +127,6 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 void PoisonFrog::ResetEnemy()
 {
 	invincibleFrames = 0;
-	health = initHealth;
 	//ground = startGround;
 	//edgeQuantity = startQuant;
 	hasDoubleJump = true;
@@ -392,8 +388,8 @@ void PoisonFrog::ProcessState()
 
 void PoisonFrog::UpdateEnemyPhysics()
 {
-	if (health == 0)
-		return;
+	//if (health == 0)
+	//	return;
 
 	if( mover->ground != NULL )
 	{

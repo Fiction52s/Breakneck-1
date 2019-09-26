@@ -1168,6 +1168,8 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	type( t ),zone( NULL ), dead( false ),
 	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL )
 {
+	scale = 1.f;
+
 	hurtBody = NULL;
 	hitBody = NULL;
 	hitboxInfo = NULL;
@@ -1195,12 +1197,16 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 	ResetSlow();
 	if (ep == NULL)
 	{
-		numHealth = 1;
+		maxHealth = 1;
+		//numHealth = 1;
 	}
 	else
 	{
-		numHealth = ep->maxHealth;
+		maxHealth = ep->maxHealth;
+		//numHealth = ep->maxHealth;
 	}
+
+	numHealth = maxHealth;
 	
 	if (cuttable)
 	{
@@ -1453,15 +1459,7 @@ int Enemy::NumTotalBullets()
 
 void Enemy::Reset()
 {
-	EnemyParams *eInfo = owner->eHitParamsMan->GetHitParams(type);
-	if (eInfo != NULL)
-	{
-		numHealth = eInfo->maxHealth;
-	}
-	else
-	{
-		numHealth = 1;
-	}
+	numHealth = maxHealth;
 	
 	if (cutObject != NULL)
 		cutObject->Reset();
@@ -2275,6 +2273,7 @@ CuttableObject::CuttableObject()
 	ts = NULL;
 	rectWidth = 32;
 	rectHeight = 32;
+	scale = 1.f;
 
 	for (int i = 0; i < 2; ++i)
 	{
@@ -2372,8 +2371,8 @@ void CuttableObject::UpdateCutObject( int slowCounter )
 
 		currSplitDir = sprT.transformPoint(currSplitDir);
 
-		int halfWidth = rectWidth / 2;
-		int halfHeight = rectHeight / 2;
+		int halfWidth = rectWidth / 2 * scale;
+		int halfHeight = rectHeight / 2 * scale;
 
 		Vector2f root[2];
 		root[0] = rootPos + currSplitDir
@@ -2416,6 +2415,11 @@ void CuttableObject::UpdateCutObject( int slowCounter )
 			
 		}
 	}
+}
+
+void CuttableObject::SetScale(float p_scale)
+{
+	scale = p_scale;
 }
 
 void CuttableObject::Draw(sf::RenderTarget *target)

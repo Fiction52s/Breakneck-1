@@ -48,9 +48,6 @@ Boss_Crawler::Boss_Crawler( GameSession *owner, Edge *g, double q )
 
 	ts_face = owner->GetTileset( "Bosses/Crawler/01_crawler_face_02_384x384.png", 384, 384 );
 
-
-	initHealth = 60;
-	health = initHealth;
 	dead = false;
 	deathFrame = 0;
 
@@ -218,7 +215,6 @@ void Boss_Crawler::ResetEnemy()
 	//testLaunch->facingDir = startGround->Normal();
 
 	bezFrame = 0;
-	health = initHealth;
 	attackFrame = -1;
 	//lastReverser = false;
 	//roll = false;
@@ -724,10 +720,9 @@ void Boss_Crawler::UpdatePrePhysics()
 	if( !dead && receivedHit != NULL )
 	{	
 		//gotta factor in getting hit by a clone
-		health -= 20;
 
 		//cout << "health now: " << health << endl;
-		if( health <= 0 )
+		//if( health <= 0 )
 		{
 			action = AFTERFIGHT0;
 			frame = 0;

@@ -25,8 +25,6 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 	position.y = pos.y;
 	origPos = position;
 
-	initHealth = 80;
-	health = initHealth;
 	dashRadius = 600;//500;
 	dashFrames = 36;
 	returnFrames = 30;
@@ -180,7 +178,6 @@ void Airdasher::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
-	health = initHealth;
 }
 
 void Airdasher::ProcessHit()

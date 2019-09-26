@@ -21,16 +21,9 @@ using namespace sf;
 RaceFightTarget::RaceFightTarget( GameSession *owner, Vector2i &pos )
 	:Enemy( owner, EnemyType::EN_RACEFIGHTTARGET, false, 1 )
 {
-	initHealth = 60;
-	health = initHealth;
-
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
-
-	initHealth = 20;
-	health = initHealth;
-
 	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	frame = 0;
@@ -94,8 +87,6 @@ void RaceFightTarget::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
-	health = initHealth;
-
 	pPrev = NULL;
 	pNext = NULL;
 	p2Prev = NULL;

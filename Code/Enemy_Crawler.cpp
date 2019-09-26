@@ -22,6 +22,23 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), clockwise( true ), groundSpeed( 5 )
 {
 	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
+
 	origCW = true;
 	//maxFramesUntilBurrow = p_framesUntilBurrow;
 	maxFramesUntilBurrow = 200;
@@ -29,12 +46,10 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 
 	dashAccel = .1;
 	currDistTravelled = 0;
-	mover = new SurfaceMover(owner, g, q, 32 );
+	mover = new SurfaceMover(owner, g, q, 32 * scale );
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
 
-	initHealth = 60;
-	health = initHealth;
 	dead = false;
 
 	deathSound = owner->soundManager->GetSound("Enemies/crawler_death");
@@ -44,6 +59,9 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 	ts = owner->GetTileset( "Enemies/crawler_160x160.png", width, height );
 	ts_aura = owner->GetTileset("Enemies/crawler_aura_160x160.png", width, height);
 
+	height *= scale;
+	width *= scale;
+
 	auraSprite.setTexture(*ts_aura->texture);
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
@@ -51,12 +69,13 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 	V2d gPoint = mover->ground->GetPoint( q );
 	sprite.setPosition( gPoint.x, gPoint.y );
 
-	sprite.setScale(2.0, 2.0);
+	sprite.setScale(scale, scale);
 	V2d gNorm = mover->ground->Normal();
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(86);
 	cutObject->SetSubRectBack(87);
+	cutObject->SetScale(scale);
 	
 	double angle = atan2( gNorm.x, -gNorm.y );
 	sprite.setRotation( angle / PI * 180.f );
@@ -88,8 +107,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
+	hurtBox.rw = 32 * scale;
+	hurtBox.rh = 32 * scale;
 	hurtBody->AddCollisionBox( 0, hurtBox);
 	
 	
@@ -100,8 +119,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
 	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
+	hitBox.rw = 32 * scale;
+	hitBox.rh = 32 * scale;
 	hitBody->AddCollisionBox(0, hitBox);
 	hitBody->hitboxInfo = hitboxInfo;
 
@@ -161,7 +180,6 @@ void Crawler::ResetEnemy()
 	position = mover->physBody.globalPosition;
 
 	currDistTravelled = 0;
-	health = initHealth;
 
 	frame = 0;
 	V2d gPoint = mover->ground->GetPoint( startQuant );
@@ -266,6 +284,10 @@ void Crawler::UpdateHitboxes()
 		knockbackDir = normalize( knockbackDir );
 		double maxExtraKB = 15.0;
 		double baseKB = 8;
+		double scaleFactor = .2;
+		double sc = scale * scaleFactor - scaleFactor;
+		maxExtraKB += maxExtraKB * sc;
+		baseKB += baseKB * sc;
 		if( mover->groundSpeed > 0 )
 		{
 			hitboxInfo->kbDir = knockbackDir;

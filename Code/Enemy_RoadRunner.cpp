@@ -24,8 +24,6 @@ RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	//gravity = V2d(0, .6);
 	maxGroundSpeed = 70;
 	action = IDLE;
-	//initHealth = 60;
-	//health = initHealth;
 	dead = false;
 
 	maxFallSpeed = 40;

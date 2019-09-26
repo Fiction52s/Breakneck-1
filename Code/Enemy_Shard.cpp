@@ -57,9 +57,6 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 
 	shardType = Shard::GetShardType(w, localIndex);
 
-	initHealth = 60;
-	health = initHealth;
-
 	//hopefully this doesnt cause deletion bugs
 	radius = 400;
 
@@ -67,9 +64,6 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	position.x = pos.x;
 	position.y = pos.y;
 	startPos = position;
-
-	initHealth = 20;
-	health = initHealth;
 
 	caught = false;
 
@@ -292,7 +286,6 @@ void Shard::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
-	health = initHealth;
 
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);

@@ -21,10 +21,6 @@ ShipPickup::ShipPickup( GameSession *owner, Edge *g, double q, bool p_facingRigh
 		:Enemy( owner, EnemyType::EN_SHIPPICKUP, false, 1 ), ground( g ), edgeQuantity( q ),
 	facingRight( p_facingRight )
 {
-	
-	initHealth = 40;
-	health = initHealth;
-
 	double height = 128;
 	ts = owner->GetTileset( "Ship/shipleave_128x128.png", 128, height );
 	sprite.setTexture( *ts->texture );
@@ -66,7 +62,6 @@ ShipPickup::ShipPickup( GameSession *owner, Edge *g, double q, bool p_facingRigh
 
 void ShipPickup::ResetEnemy()
 {
-	health = initHealth;
 	frame = 0;
 	dead = false;
 	receivedHit = NULL;

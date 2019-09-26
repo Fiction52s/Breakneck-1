@@ -463,6 +463,7 @@ struct CuttableObject
 		flipVert = v;
 	}
 	void UpdateCutObject( int slowCounter );
+	void SetScale(float scale);
 	int rectWidth;
 	int rectHeight;
 
@@ -476,6 +477,7 @@ struct CuttableObject
 	void SetSubRectBack( int bIndex );
 	void SetTileset(Tileset *ts);
 	int rotateAngle;
+	float scale;
 
 private:
 	sf::Vector2f rootPos;
@@ -623,8 +625,6 @@ public:
 	int frame;
 	EnemyType type;
 	bool spawnedByClone;
-	int initHealth;
-	int health;
 	sf::Vector2<double> position;
 	Zone *zone;
 	bool hasMonitor;
@@ -647,6 +647,8 @@ public:
 	Enemy *tempNext;
 
 	int level;
+	float scale;
+	int maxHealth;
 };
 
 struct PathFollower

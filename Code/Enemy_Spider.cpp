@@ -26,9 +26,6 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 	gravity = V2d( 0, .6 );
 	maxGroundSpeed = speed;
 	action = MOVE;
-	initHealth = 60;
-	health = initHealth;
-
 	maxFallSpeed = 25;
 
 	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
@@ -162,7 +159,6 @@ void Spider::ResetEnemy()
 	position = mover->physBody.globalPosition;
 
 	bezFrame = 0;
-	health = initHealth;
 	attackFrame = -1;
 	V2d gPoint = mover->ground->GetPoint( mover->edgeQuantity );
 	frame = 0;
@@ -433,7 +429,7 @@ void Spider::ProcessState()
 
 void Spider::UpdateEnemyPhysics()
 {
-	if (health > 0) //!dead
+	//if (health > 0) //!dead
 	{
 		mover->Move(slowMultiple, numPhysSteps);
 		position = mover->physBody.globalPosition;

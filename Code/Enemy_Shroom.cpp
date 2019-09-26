@@ -22,8 +22,6 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_l
 {
 	level = p_level;
 	action = LATENT;
-	initHealth = 40;
-	health = initHealth;
 
 	double height = 192;
 	ts = owner->GetTileset("Enemies/shroom_192x192.png", 192, 192);
@@ -115,7 +113,6 @@ void Shroom::ResetEnemy()
 {
 	jelly->Reset();
 	action = LATENT;
-	health = initHealth;
 	frame = 0;
 	dead = false;
 	receivedHit = NULL;
@@ -215,9 +212,6 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	position = pos;
 	orig = position;
 	action = RISING;
-	initHealth = 40;
-	health = initHealth;
-
 	shootLimit = 40;
 	hitLimit = 1;
 
@@ -415,7 +409,6 @@ void ShroomJelly::ResetEnemy()
 	position = orig;
 	action = WAIT;
 	currentCycle = 0;
-	health = initHealth;
 	frame = 0;
 	dead = false;
 	receivedHit = NULL;

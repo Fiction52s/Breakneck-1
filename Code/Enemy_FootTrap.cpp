@@ -22,8 +22,6 @@ FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 		:Enemy( owner, EnemyType::EN_FOOTTRAP, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
 {
 	action = LATENT;
-	initHealth = 40;
-	health = initHealth;
 
 	double height = 128;
 	ts = owner->GetTileset( "Enemies/foottrap_160x128.png", 160, height );
@@ -99,7 +97,6 @@ void FootTrap::ResetEnemy()
 {
 	action = LATENT;
 	//cout << "reset" << endl;
-	health = initHealth;
 	frame = 0;
 	//deathFrame = 0;
 	dead = false;

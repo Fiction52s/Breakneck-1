@@ -71,9 +71,6 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	launchers[1]->Reset();
 	//launchers[1]->facingDir = V2d(0, -1);
 
-	initHealth = 40;
-	health = initHealth;
-
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 
 	hurtBody = new CollisionBody(1);
@@ -185,8 +182,6 @@ void Owl::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
-	health = initHealth;
-
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
 	

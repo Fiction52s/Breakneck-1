@@ -51,9 +51,6 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
 
-	initHealth = 60;
-	health = initHealth;
-
 	//cout << "creating the boss crawler" << endl;
 	action = IDLE;
 	gravity = gravityFactor / 64.0;

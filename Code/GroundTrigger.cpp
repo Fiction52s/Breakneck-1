@@ -26,8 +26,6 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 	facingRight( p_facingRight )//, trigType( tType )
 {
 	trigType = GetTriggerType(trigTypeStr);
-	initHealth = 40;
-	health = initHealth;
 
 	double height = 128;
 	ts = owner->GetTileset("Ship/shipleave_128x128.png", 128, height);
@@ -102,7 +100,6 @@ GroundTrigger::~GroundTrigger()
 
 void GroundTrigger::ResetEnemy()
 {
-	health = initHealth;
 	frame = 0;
 	dead = false;
 	receivedHit = NULL;

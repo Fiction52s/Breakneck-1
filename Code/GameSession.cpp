@@ -1059,6 +1059,7 @@ void GameSession::AddEnemy( Enemy *e )
 		assert(e->spawned == false);
 	}
 	
+	e->Reset();
 	e->spawned = true;
 	e->Init();
 

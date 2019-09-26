@@ -56,8 +56,6 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 
 	decMarkerPool = new EffectPool(EffectType::FX_REGULAR, MAX_DECISIONS, 1.f);
 	decideIndex = 0;
-	initHealth = 60;
-	health = initHealth;
 	dead = false;
 
 	actionLength[DECIDE] = 1;
@@ -284,8 +282,6 @@ void CrawlerQueen::ResetEnemy()
 	mover->SetSpeed(0);
 
 	position = mover->physBody.globalPosition;
-
-	health = initHealth;
 
 	frame = 0;
 	V2d gPoint = mover->ground->GetPoint(startQuant);

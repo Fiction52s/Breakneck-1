@@ -51,9 +51,6 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->Reset();
 
-	initHealth = 40;
-	health = initHealth;
-
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	frame = 0;

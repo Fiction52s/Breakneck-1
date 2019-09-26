@@ -25,15 +25,10 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_level)
 	level = p_level;
 	action = NEUTRAL;
 	frame = 0;
-	initHealth = 60;
-	health = initHealth;
-
 	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
-	initHealth = 20;
-	health = initHealth;
 
 	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 

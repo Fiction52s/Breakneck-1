@@ -43,10 +43,6 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	launchers[0] = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 120 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );	
 	launchers[0]->hitboxInfo->damage = 18;
-	
-
-	initHealth = 40;
-	health = initHealth;
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
@@ -245,7 +241,6 @@ void Bat::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
-	health = initHealth;
 
 	visFrame = 0;
 	currVisual = FLAP;
@@ -266,7 +261,6 @@ void Bat::DirectKill()
 			b = next;
 		}
 	}
-	health = 0;
 	receivedHit = NULL;
 }
 

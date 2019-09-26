@@ -27,11 +27,6 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	framesWait = 60;
 	bulletSpeed = 10;
 	receivedHit = NULL;
-	//keyFrame = 0;
-	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
-
-	initHealth = 60;
-	health = initHealth;
 
 	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80, 3, this);
 	testShield->SetPosition(position);
@@ -140,7 +135,6 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 void BasicTurret::ResetEnemy()
 {
-	health = initHealth;
 	//launchers[0]->Reset();
 	dead = false;
 	frame = 0;
@@ -254,7 +248,6 @@ void BasicTurret::DirectKill()
 			b = next;
 		}
 	}
-	health = 0;
 	receivedHit = NULL;
 }
 

@@ -26,9 +26,6 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	position.y = pos.y;
 	eye->SetPosition(Vector2f(pos));
 
-	initHealth = 80;
-	health = initHealth;
-
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	shootSound = owner->soundManager->GetSound("Enemies/patroller_shoot");
@@ -186,7 +183,6 @@ void Patroller::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
-	health = initHealth;
 
 	targetAngle = 0;
 	currentAngle = targetAngle;

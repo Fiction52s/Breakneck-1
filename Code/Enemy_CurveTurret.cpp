@@ -37,9 +37,6 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	realWait = framesWait - 13 * animationFactor;
 
-	initHealth = 60;
-	health = initHealth;
-
 	double width = 144; //112;
 	double height = 96;
 
@@ -188,7 +185,6 @@ void CurveTurret::ResetEnemy()
 	frame = 0;
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
-	health = initHealth;
 	currShield = shield;
 	shield->Reset();
 	shield->SetPosition(position);

@@ -28,8 +28,6 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	gravity = V2d( 0, .6 );
 	maxGroundSpeed = 10;
 	action = IDLE;
-	//initHealth = 60;
-	//health = initHealth;
 	dead = false;
 
 	maxFallSpeed = 40;
@@ -159,7 +157,6 @@ void StagBeetle::ResetEnemy()
 	position = testMover->physBody.globalPosition;
 
 	bezFrame = 0;
-	//health = initHealth;
 	attackFrame = -1;
 	V2d gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
 	frame = 0;

@@ -114,9 +114,6 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 	position.x = pos.x;
 	position.y = pos.y;
 
-	initHealth = 40;
-	health = initHealth;
-
 	frame = 0;
 
 	animationFactor = 2;

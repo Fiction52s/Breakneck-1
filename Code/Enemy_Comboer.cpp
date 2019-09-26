@@ -45,9 +45,6 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	position.x = pos.x;
 	position.y = pos.y;
 
-	initHealth = 80;
-	health = initHealth;
-
 	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
 
 	pathLength = pathParam.size() + 1;
@@ -223,7 +220,6 @@ void Comboer::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
-	health = initHealth;
 }
 
 void Comboer::ProcessHit()

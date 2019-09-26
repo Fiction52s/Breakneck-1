@@ -26,8 +26,6 @@ Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	bulletSpeed = 6;
 	
 	firingCounter = 120;
-	initHealth = 60;
-	health = initHealth;
 
 	double width = 64; //112;
 	double height = 64;
@@ -131,7 +129,6 @@ void Cactus::ResetEnemy()
 	frame = 0;
 	dead = false;
 	frame = 0;
-	health = initHealth;
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
 	UpdateHitboxes();
@@ -220,7 +217,6 @@ void Cactus::EnemyDraw(sf::RenderTarget *target )
 
 void Cactus::DirectKill()
 {
-	health = 0;
 	receivedHit = NULL;
 }
 
@@ -492,7 +488,6 @@ void CactusShotgun::EnemyDraw(sf::RenderTarget *target)
 
 void CactusShotgun::DirectKill()
 {
-	health = 0;
 	receivedHit = NULL;
 	ClearSprite();
 	myPool->DeactivatePoolMember(this);

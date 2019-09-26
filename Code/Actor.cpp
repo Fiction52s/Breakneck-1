@@ -7543,7 +7543,20 @@ void Actor::UpdatePrePhysics()
 					if( extraAirDashY > 0 )
 						extraAirDashY = 0;
 
-					velocity.y = -aSpeed + extraAirDashY;
+					if (extraGravityModifier == 1.0)
+					{
+						velocity.y = -aSpeed + extraAirDashY;
+					}
+					else if( extraGravityModifier < 1.0 )
+					{
+						velocity.y = -aSpeed / (extraGravityModifier * 1.5) + extraAirDashY;
+					}
+					else
+					{
+						velocity.y = -aSpeed / (extraGravityModifier * .75) + extraAirDashY;
+					}
+					//extragravitymodifier must not be 0
+					
 
 					if( extraAirDashY < 0 )
 					{
@@ -7589,7 +7602,7 @@ void Actor::UpdatePrePhysics()
 					{
 						velocity.x = min( startAirDashVel.x, -aSpeed );
 					}
-facingRight = false;
+					facingRight = false;
 
 				}
 				else if (currInput.LRight())
