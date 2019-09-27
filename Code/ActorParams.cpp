@@ -1618,8 +1618,7 @@ BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 
 	is >> spacing;
 
-	is >> enemyLevel;
-	
+	LoadEnemyLevel(is);
 }
 
 BlockerParams::BlockerParams(ActorType *at,
@@ -1641,10 +1640,23 @@ void BlockerParams::SetParams()
 
 	armored = p->checkBoxes["armored"]->checked;
 
+	
+	stringstream ss;
 
 	string typeStr = p->textBoxes["btype"]->text.getString().toAnsiString();
 
-	stringstream ss;
+	int lev;
+	string levelStr = p->textBoxes["level"]->text.getString().toAnsiString();
+	ss << levelStr;
+
+	ss >> lev;
+
+	if (!ss.fail() && lev > 0 && lev <= type->info.numLevels)
+	{
+		enemyLevel = lev;
+	}
+
+	
 	ss << typeStr;
 
 	int t_type;
@@ -1689,6 +1701,8 @@ void BlockerParams::SetPanelInfo()
 	p->textBoxes["btype"]->text.setString(boost::lexical_cast<string>(bType));
 	p->checkBoxes["armored"]->checked = armored;
 	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
+
+	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
 
 	EditSession *edit = EditSession::GetSession();
 	edit->patrolPath = GetGlobalPath();
@@ -1741,13 +1755,15 @@ void BlockerParams::WriteParamFile(ofstream &of)
 {
 	WritePath(of);
 
+	//WriteLoop(of);
+
 	of << bType << "\n";
 
 	WriteBool(of, armored);
 	
 	of << spacing << endl;
 
-	of << level << endl;
+	WriteLevel(of);
 }
 
 ActorParams *BlockerParams::Copy()

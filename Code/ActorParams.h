@@ -396,8 +396,6 @@ struct BlockerParams : public ActorParams
 	bool armored;
 	int spacing;
 
-	int level;
-
 	BlockerType bType;
 	//will have multiple types
 };

@@ -108,6 +108,21 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 	:Enemy(owner, EnemyType::EN_BLOCKERCHAIN, false, 1, false)
 {
 	level = p_level;
+
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		break;
+	case 3:
+		scale = 3.0;
+		break;
+	}
+
 	bType = (BlockerType)p_bType;
 	armored = p_armored;
 	//receivedHit = NULL;
@@ -131,7 +146,7 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 	
 
 	double rad = 32;
-	double minDistance = 60;
+	double minDistance = 60 * scale;
 
 	dead = false;
 	double totalLength = 0;
@@ -418,6 +433,23 @@ V2d BlockerChain::GetCamPoint(int index)
 Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	:Enemy(p_bc->owner, EnemyType::EN_BLOCKER, false, 1, false), bc(p_bc), vaIndex(index)
 {
+	level = bc->level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	minimapCirclePoints = 20;
 	
 	receivedHit = NULL;
@@ -426,30 +458,7 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 
 	frame = 0;
 
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBox.globalPosition = position;
-	hurtBody = new CollisionBody(1);
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.globalPosition = position;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody = new CollisionBody(1);
-	hitBody->AddCollisionBox(0, hitBox);
-
+	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
@@ -458,7 +467,17 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 10;
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
+
+	hitBody->GetCollisionBoxes(0)->front().globalPosition = position;
+	hurtBody->GetCollisionBoxes(0)->front().globalPosition = position;
+
 	hitBody->hitboxInfo = hitboxInfo;
+
+
+	
 
 	//SetHurtboxes(hurtBody, 0);
 
@@ -593,7 +612,7 @@ void Blocker::ResetEnemy()
 {
 	Vector2f p(position.x, position.y);
 
-	Vector2f spriteSize(bc->ts->tileWidth, bc->ts->tileHeight);
+	Vector2f spriteSize(bc->ts->tileWidth * scale, bc->ts->tileHeight * scale);
 	SetRectCenter(bc->va + vaIndex * 4, spriteSize.x, spriteSize.y, p);
 
 	action = WAIT;

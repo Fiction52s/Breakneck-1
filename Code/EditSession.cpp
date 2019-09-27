@@ -587,7 +587,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
 	AddWorldEnemy("blocker", 1, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, true, false, 1,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
 
 	AddBasicAerialWorldEnemy("patroller", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
@@ -625,7 +625,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		GetTileset("Goal/goal_w02_a_288x256.png", 288, 256));
 
 	AddWorldEnemy("greenblocker", 2, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
 
 	AddBasicAerialWorldEnemy("bat", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
@@ -638,7 +638,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		GetTileset("Enemies/frog_80x80.png", 80, 80));
 
 	AddBasicGroundWorldEnemy("stagbeetle", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/stag_idle_192x144.png", 192, 144));
+		GetTileset("Enemies/stag_idle_256x176.png", 256, 176));
 
 	AddBasicGroundWorldEnemy("gravityfaller", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/gravity_faller_128x128.png", 128, 128));
@@ -14712,7 +14712,8 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("armored", Vector2i(120, 155));
 		p->AddTextBox("btype", Vector2i(20, 200), 200, 20, "0");
 		p->AddTextBox("spacing", Vector2i(20, 250), 200, 20, "0");
-		p->AddButton("createpath", Vector2i(20, 300), Vector2f(100, 50), "Create Chain");
+		p->AddTextBox("level", Vector2i(20, 300), 200, 20, "1");
+		p->AddButton("createpath", Vector2i(20, 340), Vector2f(100, 50), "Create Chain");
 
 
 		/*GridSelector *gs = p->AddGridSelector("blockerSelector", Vector2i(0, 0), 8, 1, 64, 64, true, true);
