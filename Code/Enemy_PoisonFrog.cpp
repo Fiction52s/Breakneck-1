@@ -123,6 +123,12 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	ResetEnemy();
 }
 
+void PoisonFrog::HandleNoHealth()
+{
+	cutObject->SetFlipHoriz(!facingRight);
+	cutObject->rotateAngle = sprite.getRotation();
+}
+
 void PoisonFrog::ResetEnemy()
 {
 	invincibleFrames = 0;

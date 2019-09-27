@@ -17,6 +17,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 
 	StagBeetle(GameSession *owner, bool hasMonitor,
 		Edge *ground, double q, int level );
+	void HandleNoHealth();
 	void ActionEnded();
 	void ProcessState();
 	void UpdateEnemyPhysics();
@@ -37,13 +38,18 @@ struct StagBeetle : Enemy, GroundMoverHandler
 
 	sf::Sprite sprite;
 
-	Tileset *ts;
 	Tileset *ts_death;
 	Tileset *ts_hop;
 	Tileset *ts_idle;
 	Tileset *ts_run;
 	Tileset *ts_sweep;
 	Tileset *ts_walk;
+
+	Tileset *ts_hopAura;
+	Tileset *ts_idleAura;
+	Tileset *ts_runAura;
+	Tileset *ts_sweepAura;
+	Tileset *ts_walkAura;
 
 	Action action;
 	bool facingRight;
@@ -77,6 +83,8 @@ struct StagBeetle : Enemy, GroundMoverHandler
 
 	double maxGroundSpeed;
 	double maxFallSpeed;
+
+	sf::Sprite auraSprite;
 };
 
 #endif

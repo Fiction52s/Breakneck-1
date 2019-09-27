@@ -63,6 +63,7 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	void ReachCliff();
 	void HitOtherAerial(Edge *e);
 	void Land();
+	void HandleNoHealth();
 
 	sf::Sprite sprite;
 	Tileset *ts_walk;
