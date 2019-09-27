@@ -22,17 +22,45 @@ using namespace sf;
 GravityModifier::GravityModifier(GameSession *owner, Vector2i &pos, int p_level, bool increaser )
 	:Enemy(owner, EnemyType::EN_GRAVITYMODIFIER, false, 1, false), gravFactor(1.0), duration( 300 )
 {
-	if (increaser) //expand more on this later
+	level = p_level;
+
+	if (increaser)
 	{
-		gravFactor = 2.0;
+		switch (level)
+		{
+		case 1:
+			gravFactor = 1.5;
+			break;
+		case 2:
+			gravFactor = 2.0;
+			//maxHealth += 2;
+			break;
+		case 3:
+			gravFactor = 4.0;
+			//maxHealth += 5;
+			break;
+		}
 	}
 	else
 	{
-		gravFactor = .5;
+		switch (level)
+		{
+		case 1:
+			gravFactor = .5;
+			break;
+		case 2:
+			gravFactor = .3;
+			//maxHealth += 2;
+			break;
+		case 3:
+			gravFactor = .1;
+			//maxHealth += 5;
+			break;
+		}
 	}
+	
 
-
-	level = p_level;
+	
 	action = NEUTRAL;
 	frame = 0;
 

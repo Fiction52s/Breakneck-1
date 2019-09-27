@@ -125,7 +125,7 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 
 void PoisonFrog::HandleNoHealth()
 {
-	cutObject->SetFlipHoriz(!facingRight);
+	cutObject->SetFlipHoriz(facingRight);
 	cutObject->rotateAngle = sprite.getRotation();
 }
 

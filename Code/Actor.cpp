@@ -7543,20 +7543,22 @@ void Actor::UpdatePrePhysics()
 					if( extraAirDashY > 0 )
 						extraAirDashY = 0;
 
-					if (extraGravityModifier == 1.0)
+					double mod = 1.0;
+
+					if( extraGravityModifier < 1.0 )
 					{
-						velocity.y = -aSpeed + extraAirDashY;
-					}
-					else if( extraGravityModifier < 1.0 )
-					{
-						velocity.y = -aSpeed / (extraGravityModifier * 1.5) + extraAirDashY;
+						mod = extraGravityModifier * 1.5;
+						mod = min(1.0, mod);
+						mod = max(.5, mod);
 					}
 					else
 					{
-						velocity.y = -aSpeed / (extraGravityModifier * .75) + extraAirDashY;
+						mod = extraGravityModifier * .75;
+						mod = max(1.0, mod);
+						mod = min(2.0, mod);
 					}
 					//extragravitymodifier must not be 0
-					
+					velocity.y = -aSpeed / mod + extraAirDashY;
 
 					if( extraAirDashY < 0 )
 					{
