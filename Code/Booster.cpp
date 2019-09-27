@@ -23,6 +23,22 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_level)
 	:Enemy(owner, EnemyType::EN_BOOSTER, false, 1, false), strength( 20 )
 {
 	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	action = NEUTRAL;
 	frame = 0;
 	receivedHit = NULL;
@@ -42,33 +58,13 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_level)
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setScale(scale, scale);
 	sprite.setPosition(pos.x, pos.y);
 
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 90;
-	hitBox.rh = 90;
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(90);
+	AddBasicHitCircle(90);
 
-
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hit;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 90;
-	hurtBox.rh = 90;
-	//need hitbox info?
-
-	
-	hitBody->AddCollisionBox(0, hitBox);
-	hurtBody->AddCollisionBox(0, hurtBox );
 
 	dead = false;
 

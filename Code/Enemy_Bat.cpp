@@ -24,6 +24,22 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	:Enemy( owner, EnemyType::EN_BAT, p_hasMonitor, 2 )
 {
 	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	loop = p_loop;
 	//loop = false; //no looping on bat for now
 
@@ -40,11 +56,11 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 120 );
+	launchers[0] = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 120, false );
 	launchers[0]->SetBulletSpeed( bulletSpeed );	
 	launchers[0]->hitboxInfo->damage = 18;
 
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
+	spawnRect = sf::Rect<double>( pos.x - 16 * scale, pos.y - 16 * scale, 16 * 2 * scale, 16 * 2 * scale);
 	
 	pathLength = pathParam.size() + 1;
 	if( loop )
@@ -125,10 +141,12 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	//ts = owner->GetTileset( "Bat.png", 80, 80 );
 	ts = owner->GetTileset( "Enemies/bat_208x272.png", 208, 272 );
 	ts_aura = owner->GetTileset("Enemies/bat_aura_208x272.png", 208, 272);
+	auraSprite.setTexture(*ts_aura->texture);
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
+	sprite.setScale(scale, scale);
 	//position.x = 0;
 	//position.y = 0;
 
@@ -140,28 +158,10 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 16;
-	hurtBox.rh = 16;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 16;
-	hitBox.rh = 16;
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(16);
+	AddBasicHitCircle(16);
 	hitBody->hitboxInfo = hitboxInfo;
-	hitBody->AddCollisionBox(0, hitBox);
 
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
@@ -178,6 +178,7 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(53);
 	cutObject->SetSubRectBack(52);
+	cutObject->SetScale(scale);
 
 
 	visualLength[FLAP] = 23;

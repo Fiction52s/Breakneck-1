@@ -61,7 +61,8 @@ struct ShroomJelly : Enemy
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 
-	ShroomJelly(GameSession *owner, V2d &pos );
+	ShroomJelly(GameSession *owner, V2d &pos,
+		int level );
 	~ShroomJelly();
 	void EnemyDraw(sf::RenderTarget *target);
 	

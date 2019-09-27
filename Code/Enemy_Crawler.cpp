@@ -79,7 +79,8 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 	
 	double angle = atan2( gNorm.x, -gNorm.y );
 	sprite.setRotation( angle / PI * 180.f );
-	position = gPoint + gNorm * height / 2.0;
+	//position = gPoint + gNorm * height / 2.0;
+	position = mover->physBody.globalPosition;
 
 	double size = max( width, height );
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size/ 2, size, size );
@@ -100,30 +101,10 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32 * scale;
-	hurtBox.rh = 32 * scale;
-	hurtBody->AddCollisionBox( 0, hurtBox);
-	
-	
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32 * scale;
-	hitBox.rh = 32 * scale;
-	hitBody->AddCollisionBox(0, hitBox);
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = hitboxInfo;
-
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);

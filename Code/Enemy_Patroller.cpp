@@ -18,7 +18,23 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	:Enemy( owner, EnemyType::EN_PATROLLER, p_hasMonitor, 1 )
 {
 	level = p_level;
-	eye = new PatrollerEye(owner);
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
+	eye = new PatrollerEye(owner, this);
 	
 	action = S_FLAP;
 	//receivedHit = NULL;
@@ -58,10 +74,11 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	//ts = owner->GetTileset( "patroller.png", 80, 80 );
 	ts = owner->GetTileset( "Enemies/patroller_256x256.png", 256, 256 );
 	ts_aura = owner->GetTileset("Enemies/patroller_aura_256x256.png", 256, 256);
-	sprite.setTexture( *ts->texture );
+	/*sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
+	sprite.setScale(scale, scale);
+	sprite.setPosition( pos.x, pos.y );*/
 	//position.x = 0;
 	//position.y = 0;
 	CollisionBox hurtBox;
@@ -69,9 +86,9 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	hurtBox.isCircle = true;
 	hurtBox.globalAngle = 0;
 	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 30;
-	hurtBox.rw = 32;
-	hurtBox.rh = 72;
+	hurtBox.offset.y = 30 * scale;
+	hurtBox.rw = 32 * scale;
+	hurtBox.rh = 72 * scale;
 	hurtBody = new CollisionBody(1);
 	hurtBody->AddCollisionBox(0, hurtBox);
 
@@ -80,9 +97,9 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	hitBox.isCircle = false;
 	hitBox.globalAngle = 0;
 	hitBox.offset.x = 0;
-	hitBox.offset.y = 30;
-	hitBox.rw = 32;
-	hitBox.rh = 72;
+	hitBox.offset.y = 30 * scale;
+	hitBox.rw = 32 * scale;
+	hitBox.rh = 72 * scale;
 	hitBody = new CollisionBody(1);
 	hitBody->AddCollisionBox(0, hitBox);
 	
@@ -113,6 +130,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(38);
 	cutObject->SetSubRectBack(37);
+	cutObject->SetScale(scale);
 
 	facingRight = true;
 	
@@ -445,8 +463,8 @@ void Patroller::UpdateSprite()
 	eye->SetPosition(Vector2f(position));
 	eye->UpdateSprite();
 
-	SetRectCenter(bodyVA, ts->tileWidth, ts->tileHeight, Vector2f( position ) );
-	SetRectCenter(bodyVA + 4, ts->tileWidth, ts->tileHeight, Vector2f(position));
+	SetRectCenter(bodyVA, ts->tileWidth * scale, ts->tileHeight * scale, Vector2f( position ) );
+	SetRectCenter(bodyVA + 4, ts->tileWidth * scale, ts->tileHeight * scale, Vector2f(position));
 	
 	bool turnedLeft;
 	if (turnFrame == 0)
@@ -457,25 +475,25 @@ void Patroller::UpdateSprite()
 
 	if (action == S_FLAP)
 	{
-		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth, ts->tileHeight,
+		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
 			Vector2f(position));
 		SetRectSubRect(bodyVA, ts->GetSubRect(frame / animFactor[S_FLAP]));
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(27 + turnFrame / turnAnimFactor));
 	}
 	else if (action == S_BEAKOPEN)
 	{
-		SetRectRotation(bodyVA, 0, ts->tileWidth, ts->tileHeight,
+		SetRectRotation(bodyVA, 0, ts->tileWidth * scale, ts->tileHeight * scale,
 			Vector2f(position), !turnedLeft);
-		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth, ts->tileHeight,
+		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
 			Vector2f(position), !turnedLeft);
 		SetRectSubRect(bodyVA, ts->GetSubRect(24 + frame / animFactor[S_BEAKOPEN]));
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(34 + frame / animFactor[S_BEAKOPEN]));
 	}
 	else if (action == S_BEAKCLOSE)
 	{
-		SetRectRotation(bodyVA, 0, ts->tileWidth, ts->tileHeight,
+		SetRectRotation(bodyVA, 0, ts->tileWidth * scale, ts->tileHeight * scale,
 			Vector2f(position), !turnedLeft);
-		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth, ts->tileHeight,
+		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
 			Vector2f(position), !turnedLeft);
 		SetRectSubRect(bodyVA, ts->GetSubRect(24 + ( (actionLength[S_BEAKCLOSE]-1)
 			- frame / animFactor[S_BEAKOPEN]) ) );
@@ -484,9 +502,9 @@ void Patroller::UpdateSprite()
 	}
 	else if (action == S_BEAKHOLDOPEN)
 	{
-		SetRectRotation(bodyVA, 0, ts->tileWidth, ts->tileHeight,
+		SetRectRotation(bodyVA, 0, ts->tileWidth * scale, ts->tileHeight * scale,
 			Vector2f(position), !turnedLeft);
-		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth, ts->tileHeight,
+		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
 			Vector2f(position), !turnedLeft);
 		SetRectSubRect(bodyVA, ts->GetSubRect(26));
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(36));

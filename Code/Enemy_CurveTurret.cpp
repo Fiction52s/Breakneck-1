@@ -24,10 +24,24 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 		edgeQuantity( q )
 {	
 	level = p_level;
-	shield = new Shield(Shield::ShieldType::T_BLOCK, 80, 3, this);
-	currShield = shield;
-	shield->Reset();
-	shield->SetPosition(position);
+
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
+	
 
 	framesWait = 60;
 	bulletSpeed = 10;
@@ -42,17 +56,29 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	//ts = owner->GetTileset( "basicturret_112x64.png", width, height );
 	ts = owner->GetTileset( "Enemies/curveturret_144x96.png", width, height );
-	sprite.setTexture( *ts->texture );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
-	V2d gPoint = g->GetPoint( edgeQuantity );
-	sprite.setPosition( gPoint.x, gPoint.y );
 
+	V2d gPoint = g->GetPoint(edgeQuantity);
 	gn = g->Normal();
 
-	V2d gAlong = normalize( g->v1 - g->v0 );
+	V2d gAlong = normalize(g->v1 - g->v0);
 
-	gravity = V2d( 0,0 );
+	gravity = V2d(0, 0);
+	width *= scale;
+	height *= scale;
+	position = gPoint + gn * height / 2.0;
+	angle = atan2(gn.x, -gn.y);
 
+	sprite.setTexture( *ts->texture );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
+	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	sprite.setScale(scale, scale);
+	sprite.setPosition(gPoint.x, gPoint.y);
+	sprite.setRotation(angle / PI * 180);
+	//sprite.setPosition( gPoint.x, gPoint.y );
+
+	
+	
 	/*if( relative )
 	{
 		gravity += gAlong * ( gravFactor.x / 256.0);
@@ -64,38 +90,13 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	}*/
 	
 
-	position = gPoint + gn * height / 2.0;
+	
 
-	angle = atan2( gn.x, -gn.y );
+	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
+	currShield = shield;
+	shield->Reset();
+	shield->SetPosition(position);
 
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
-	//V2d gPoint = ground->GetPoint( edgeQuantity );
-	sprite.setPosition( gPoint.x, gPoint.y );
-	sprite.setRotation( angle / PI * 180 );
-	cutObject->rotateAngle = sprite.getRotation();
-
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody->AddCollisionBox(0, hitBox);
 	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -103,8 +104,11 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 10; 
+	hitboxInfo->knockback = 10;
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = hitboxInfo;
 
 	frame = 0;
@@ -132,6 +136,8 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(12);
 	cutObject->SetSubRectBack(11);
+	cutObject->SetScale(scale);
+	cutObject->rotateAngle = sprite.getRotation();
 
 	turnFactor = 500;
 

@@ -24,6 +24,22 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	:Enemy(p_owner, EnemyType::EN_GRAVITYFALLER, p_hasMonitor, 2)
 {
 	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	maxFallSpeed = 25;
 	actionLength[IDLE] = 10;
 	actionLength[DOWNCHARGE] = 10;
@@ -47,7 +63,7 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	ts = owner->GetTileset("Enemies/gravity_faller_128x128.png", width, height);
 
 	
-	mover = new SurfaceMover(p_owner, g, q, 30);
+	mover = new SurfaceMover(p_owner, g, q, 30 * scale);
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
 
@@ -65,34 +81,14 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	V2d gPoint = g->GetPoint(q);
 
 	sprite.setTexture(*ts->texture);
+	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+	sprite.setScale(scale, scale);
 	sprite.setPosition(gPoint.x, gPoint.y);
 
 
 	double size = max(width * 5, height * 5);
 	spawnRect = sf::Rect<double>(gPoint.x - size / 2, gPoint.y - size / 2, size, size);
-
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = false;
-	hurtBox.globalAngle = PI / 4.0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 40;
-	hurtBox.rh = 40;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = false;
-	hitBox.globalAngle = PI / 4.0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 40;
-	hitBox.rh = 40;
-	hitBody->AddCollisionBox(0, hitBox);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -102,7 +98,11 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(40);
+	AddBasicHitCircle(40);
 	hitBody->hitboxInfo = hitboxInfo;
+
 
 	startGround = g;
 	startQuant = q;
@@ -112,6 +112,7 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(6);
 	cutObject->SetSubRectBack(5);
+	cutObject->SetScale(scale);
 
 	ResetEnemy();
 

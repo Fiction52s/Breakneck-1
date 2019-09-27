@@ -590,29 +590,29 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 32), false, false, true, false, 1,
 		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
 
-	AddBasicAerialWorldEnemy("patroller", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 1,
+	AddBasicAerialWorldEnemy("patroller", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));
 
-	AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 1,
+	AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
-	AddBasicGroundWorldEnemy("crawler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 4,
+	AddBasicGroundWorldEnemy("crawler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
 
 	AddBasicGroundWorldEnemy("shroom", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/shroom_192x192.png", 192, 192));
 
-	AddBasicGroundWorldEnemy("basicturret", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
+	AddBasicGroundWorldEnemy("basicturret", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/basicturret_128x80.png", 128, 80));
 
-	AddBasicAerialWorldEnemy("airdasher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
+	AddBasicAerialWorldEnemy("airdasher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/dasher_208x144.png", 208, 144));
 
 	AddWorldEnemy("bosscrawler", 1, LoadParams<BossCrawlerParams>, MakeParamsGrounded<BossCrawlerParams>, NULL,
 		Vector2i(0, 0), Vector2i(128, 144), false, false, false, false, 1,
 		GetTileset("Bosses/Crawler/crawler_queen_256x256.png", 256, 256));
 
-	AddBasicAerialWorldEnemy("booster", 1, Vector2i(0, 0), Vector2i(32, 32), false,true, false, false, 1,
+	AddBasicAerialWorldEnemy("booster", 1, Vector2i(0, 0), Vector2i(32, 32), false,true, false, false, 3,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 
 	AddWorldEnemy("spring", 1, LoadParams<SpringParams>, NULL, MakeParamsAerial<SpringParams>,
@@ -628,25 +628,25 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
 
-	AddBasicAerialWorldEnemy("bat", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 1,
+	AddBasicAerialWorldEnemy("bat", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/bat_144x176.png", 144, 176));
 
-	AddBasicGroundWorldEnemy("curveturret", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
+	AddBasicGroundWorldEnemy("curveturret", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/curveturret_144x96.png", 144, 96));
 
-	AddBasicGroundWorldEnemy("poisonfrog", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
+	AddBasicGroundWorldEnemy("poisonfrog", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/frog_80x80.png", 80, 80));
 
-	AddBasicGroundWorldEnemy("stagbeetle", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
+	AddBasicGroundWorldEnemy("stagbeetle", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/stag_idle_192x144.png", 192, 144));
 
-	AddBasicGroundWorldEnemy("gravityfaller", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 1,
+	AddBasicGroundWorldEnemy("gravityfaller", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/gravity_faller_128x128.png", 128, 128));
 
-	AddBasicAerialWorldEnemy("gravityincreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
+	AddBasicAerialWorldEnemy("gravityincreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/grav_increase_256x256.png", 256, 256));
 
-	AddBasicAerialWorldEnemy("gravitydecreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
+	AddBasicAerialWorldEnemy("gravitydecreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/grav_decrease_256x256.png", 256, 256));
 
 	AddWorldEnemy("gravityspring", 2, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,

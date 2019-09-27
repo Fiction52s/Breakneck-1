@@ -23,8 +23,24 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	:Enemy( owner, EnemyType::EN_STAGBEETLE, p_hasMonitor, 2 ),
 	moveBezTest( .22,.85,.3,.91 )
 {
-	facingRight = true;
 	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
+	facingRight = true;
 	gravity = V2d( 0, .6 );
 	maxGroundSpeed = 10;
 	action = IDLE;
@@ -35,14 +51,14 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	attackFrame = -1;
 	attackMult = 3;
 
-	double height = 128;
-	double width = 128;
+	//double height = 128 * scale;
+	//double width = 128 * scale;
 
 	startGround = g;
 	startQuant = q;
 	frame = 0;
 
-	testMover = new GroundMover( owner, g, q, 40, true, this );
+	testMover = new GroundMover( owner, g, q, 40 * scale, true, this );
 	testMover->AddAirForce(V2d(0, .5));
 	//testMover-> = V2d( 0, .5 );
 	testMover->SetSpeed( 0 );
@@ -77,35 +93,14 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	sprite.setPosition( gPoint.x, gPoint.y );
 	double angle = atan2( gNorm.x, -gNorm.y );
 	sprite.setRotation( angle / PI * 180.f );
+	sprite.setScale(scale, scale);
 	position = testMover->physBody.globalPosition;
 
 
 	receivedHit = NULL;
 
-	double size = max( width, height );
+	double size = max( 192 * scale, 144 * scale);
 	spawnRect = sf::Rect<double>( gPoint.x - size, gPoint.y - size, size * 2, size * 2 );
-
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody->AddCollisionBox(0, hitBox);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -114,7 +109,13 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
+
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = hitboxInfo;
+
+
 
 	crawlAnimationFactor = 5;
 	rollAnimationFactor = 5;
@@ -127,8 +128,9 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	cutObject->SetTileset(ts_death);
 	cutObject->SetSubRectFront(0);
 	cutObject->SetSubRectBack(1);
+	cutObject->SetScale(scale);
 
-	shield = new Shield(Shield::ShieldType::T_BLOCK, 80, 3, this);
+	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 	shield->SetPosition(position);
 
 	ResetEnemy();

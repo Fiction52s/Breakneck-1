@@ -23,12 +23,27 @@ using namespace sf;
 PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double q, int p_level )
 	:Enemy( p_owner, EnemyType::EN_POISONFROG, p_hasMonitor, 2 )
 {
+	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	gravityFactor = 30;
 	jumpFramesWait = 60;
 	jumpStrength = V2d(5, 12);
 
-
-	level = p_level;
 	maxFallSpeed = 25;
 	actionLength[STAND] = 10;
 	actionLength[JUMPSQUAT] = 2;
@@ -74,33 +89,12 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 
 
 	sprite.setPosition( gPoint.x, gPoint.y );
+	sprite.setScale(scale, scale);
 
 
 	double size = max( width * 5, height * 5 );
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size);
 	//spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
-
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 30;
-	hurtBox.rh = 30;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 30;
-	hitBox.rh = 30;
-	hitBody->AddCollisionBox(0, hitBox);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -110,6 +104,10 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
+
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(30);
+	AddBasicHitCircle(30);
 	hitBody->hitboxInfo = hitboxInfo;
 
 	startGround = g;
@@ -120,6 +118,7 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	cutObject->SetTileset(ts_test);
 	cutObject->SetSubRectFront(10);
 	cutObject->SetSubRectBack(9);
+	cutObject->SetScale(scale);
 
 	ResetEnemy();
 }

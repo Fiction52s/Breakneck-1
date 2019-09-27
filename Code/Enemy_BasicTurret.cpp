@@ -24,12 +24,26 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 		edgeQuantity( q )
 {
 	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	framesWait = 60;
 	bulletSpeed = 10;
 	receivedHit = NULL;
 
-	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80, 3, this);
-	testShield->SetPosition(position);
 
 	double width = 208;
 	double height = 176;
@@ -39,26 +53,44 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	ts = owner->GetTileset("Enemies/turret_208x176.png", width, height);//"basicturret_128x80.png", width, height );
 	ts_aura = owner->GetTileset("Enemies/turret_aura_208x176.png", width, height);
 
+	width *= scale;
+	height *= scale;
+
+	V2d gPoint = g->GetPoint(edgeQuantity);
+	gn = g->Normal();
+	angle = atan2(gn.x, -gn.y);
+
+	position = gPoint + gn * (height / 2.f - 30 * scale);
+	
+	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
+	testShield->SetPosition(position);
+
 	auraSprite.setTexture(*ts_aura->texture);
+
+
+	/*sprite.setTexture(*ts->texture);
+	sprite.setTextureRect(ts->GetSubRect(frame));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(pos.x, pos.y);
+	sprite.setScale(scale, scale);*/
+
 	sprite.setTexture( *ts->texture );
+	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setScale(scale, scale);
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
-	V2d gPoint = g->GetPoint( edgeQuantity );
-	sprite.setPosition( gPoint.x, gPoint.y );
+	sprite.setPosition(position.x, position.y);
+	sprite.setRotation(angle / PI * 180);
+
+	
+	//sprite.setPosition( gPoint.x, gPoint.y );
 	
 	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode1_64x64.png", 64, 64 );
 
-	gn = g->Normal();
-
-	position = gPoint + gn * (height/2.f - 30);
-
-	angle = atan2( gn.x, -gn.y );
-
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2 );
+	
+	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2 );
 	//V2d gPoint = ground->GetPoint( edgeQuantity );
-	sprite.setPosition( position.x, position.y );
-	sprite.setRotation( angle / PI * 180 );
-	cutObject->rotateAngle = sprite.getRotation();
+	
+	
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -68,29 +100,10 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 64;
-	hurtBox.rh = 64;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 64;
-	hitBox.rh = 64;
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(64);
+	AddBasicHitCircle(64);
 	hitBody->hitboxInfo = hitboxInfo;
-	hitBody->AddCollisionBox(0, hitBox);
-
 
 	SetHurtboxes(hurtBody, 0);
 	SetHitboxes(hitBody, 0);
@@ -104,7 +117,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	V2d along = normalize(ground->v1 - ground->v0);
 
-	V2d launchPos = gPoint + ground->Normal() * 20.0;
+	V2d launchPos = gPoint + ground->Normal() * 20.0 * (double)scale;
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
 	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos + ground->Normal() * 60.0, gn, 0, 300 );
@@ -127,6 +140,8 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(12);
 	cutObject->SetSubRectBack(11);
+	cutObject->rotateAngle = sprite.getRotation();
+	cutObject->SetScale(scale);
 
 	testShield->SetPosition(position);
 

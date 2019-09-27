@@ -1,7 +1,9 @@
 #include "Eye.h"
 #include "GameSession.h"
+#include "Enemy_Patroller.h"
 
-PatrollerEye::PatrollerEye( GameSession *owner )
+PatrollerEye::PatrollerEye(GameSession *owner, Patroller *p)
+	:parent(p)
 {
 	highlight = (eye + 4);
 	ts_eye = owner->GetTileset("Enemies/patroller_eye_48x48.png", 48, 48);
@@ -235,8 +237,8 @@ void PatrollerEye::UpdateSprite()
 void PatrollerEye::SetPosition(sf::Vector2f &p_pos)
 {
 	pos = p_pos;
-	SetRectRotation(eye, angle, ts_eye->tileWidth, ts_eye->tileHeight, pos);
-	SetRectCenter(highlight, ts_eye->tileWidth, ts_eye->tileHeight, p_pos);
+	SetRectRotation(eye, angle, ts_eye->tileWidth * parent->scale, ts_eye->tileHeight * parent->scale, pos);
+	SetRectCenter(highlight, ts_eye->tileWidth * parent->scale, ts_eye->tileHeight * parent->scale, p_pos);
 	//SetRectRotation(highlight, 0, ts_eye->tileWidth, ts_eye->tileHeight, pos);
 	//SetRectCenter(eye, ts_eye->tileWidth, ts_eye->tileHeight, p_pos);
 }

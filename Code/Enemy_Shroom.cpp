@@ -21,6 +21,22 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_l
 	:Enemy(owner, EnemyType::EN_SHROOM, p_hasMonitor, 1), ground(g), edgeQuantity(q)
 {
 	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	action = LATENT;
 
 	double height = 192;
@@ -38,23 +54,13 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_l
 	gn = g->Normal();
 	angle = atan2(gn.x, -gn.y);
 
-	position = gPoint + gn * ( 40.0 );
+	position = gPoint + gn * ( 40.0 * scale );
 
 	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setScale(scale, scale);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(gPoint.x, gPoint.y);
 	sprite.setRotation(angle / PI * 180);
-
-	hurtBody = new CollisionBody(1); //this wille ventually match animation
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBody->AddCollisionBox(0, hurtBox);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -64,23 +70,16 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_l
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody->AddCollisionBox(0, hitBox);
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = hitboxInfo;
 
 
 
 	frame = 0;
 
-	jelly = new ShroomJelly(owner, position);
+	jelly = new ShroomJelly(owner, position, level);
 	jelly->Reset();
 
 	spawnRect = sf::Rect<double>(gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2);
@@ -97,6 +96,7 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_l
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(29);
 	cutObject->SetSubRectBack(30);
+	cutObject->SetScale(scale);
 	//cutObject->SetFlipHoriz(false);
 	cutObject->rotateAngle = sprite.getRotation();
 	//cutObject->SetCutRootPos( Vector2f( position ) );
@@ -198,17 +198,35 @@ void Shroom::HandleNoHealth()
 
 void Shroom::UpdateHitboxes()
 {
+	double ds = scale;
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
 	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position - gn * 10.0;
+	hurtBox.globalPosition = position - gn * 10.0 * ds;
 	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position - gn * 10.0;
+	hitBox.globalPosition = position - gn * 10.0 * ds;
 	hitBox.globalAngle = 0;
 }
 
-ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
+ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos, int p_level )
 	:Enemy(owner, EnemyType::EN_SHROOMJELLY, 0, 1, false )
 {
+	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	position = pos;
 	orig = position;
 	action = RISING;
@@ -228,21 +246,9 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	angle = 0;
 
 	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setScale(scale, scale);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(position.x, position.y);	
-
-	hurtBody = new CollisionBody(1); //this wille ventually match animation
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-
-	
-	hurtBody->AddCollisionBox(0, hurtBox);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -252,21 +258,10 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
-	
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody->AddCollisionBox(0, hitBox);
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = hitboxInfo;
-
-	
 
 	comboObj = new ComboObject(this);
 
@@ -283,7 +278,7 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 
 	comboObj->enemyHitBody = new CollisionBody(2);
 
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBox);
+	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front() );
 
 	CollisionBox exBox;
 	exBox.type = CollisionBox::Hit;
@@ -291,8 +286,8 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos )
 	exBox.globalAngle = 0;
 	exBox.offset.x = 0;
 	exBox.offset.y = 0;
-	exBox.rw = 128;
-	exBox.rh = 128;
+	exBox.rw = 128 * scale;
+	exBox.rh = 128 * scale;
 
 	comboObj->enemyHitBody->AddCollisionBox(1, exBox);
 

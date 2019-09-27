@@ -26,6 +26,7 @@ struct Detector
 
 struct GameSession;
 struct Tileset;
+struct Patroller;
 struct PatrollerEye
 {
 	enum State
@@ -43,7 +44,8 @@ struct PatrollerEye
 	sf::Vertex *highlight;
 	Tileset *ts_eye;
 	void Reset();
-	PatrollerEye::PatrollerEye(GameSession *owner);
+	PatrollerEye::PatrollerEye(GameSession *owner,
+		Patroller *p);
 	State state;
 	void UpdateSprite();
 	bool IsEyeActivated();
@@ -61,6 +63,8 @@ struct PatrollerEye
 	float trackRange;
 	float deactivateTrackRange;
 	float deactivateRange;
+
+	Patroller *parent;
 };
 
 #endif

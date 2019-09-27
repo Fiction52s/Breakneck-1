@@ -1929,6 +1929,40 @@ void Enemy::ConfirmKill()
 	
 }
 
+void Enemy::SetupBodies(int numHurtboxes,
+	int numHitboxes)
+{
+	hurtBody = new CollisionBody(numHurtboxes);
+	hitBody = new CollisionBody(numHitboxes);
+}
+
+void Enemy::AddBasicHurtCircle(double rad, int index)
+{
+	CollisionBox hurtBox;
+	hurtBox.type = CollisionBox::Hurt;
+	hurtBox.isCircle = true;
+	hurtBox.globalAngle = 0;
+	hurtBox.offset.x = 0;
+	hurtBox.offset.y = 0;
+	hurtBox.rw = rad * scale;
+	hurtBox.rh = rad * scale;
+	hurtBody->AddCollisionBox(index, hurtBox);
+}
+
+
+void Enemy::AddBasicHitCircle(double rad, int index)
+{
+	CollisionBox hitBox;
+	hitBox.type = CollisionBox::Hit;
+	hitBox.isCircle = true;
+	hitBox.globalAngle = 0;
+	hitBox.offset.x = 0;
+	hitBox.offset.y = 0;
+	hitBox.rw = rad * scale;
+	hitBox.rh = rad * scale;
+	hitBody->AddCollisionBox(index, hitBox);
+}
+
 void Enemy::ComboHit()
 {
 	//empty default
@@ -1985,6 +2019,8 @@ void Enemy::ZoneDraw(sf::RenderTarget *target)
 {
 	target->draw(zonedSprite);
 }
+
+
 
 void Enemy::DrawMinimap(sf::RenderTarget *target)
 {

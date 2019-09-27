@@ -611,6 +611,11 @@ public:
 	Tileset *ts_zoned;
 	virtual void ZoneDraw(sf::RenderTarget *target);
 
+	void SetupBodies(int numHurtboxes,
+		int numHitboxes);
+	void AddBasicHurtCircle(double rad, int index = 0);
+	void AddBasicHitCircle(double rad, int index = 0);
+
 	void Reset();
 	
 	Shield *currShield;

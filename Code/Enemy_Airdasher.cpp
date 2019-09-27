@@ -18,6 +18,22 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 	:Enemy(owner, EnemyType::EN_AIRDASHER, p_hasMonitor, 1)
 {
 	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	hitLimit = 5;
 	action = S_FLOAT;
 	//receivedHit = NULL;
@@ -38,29 +54,8 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setScale(scale, scale);
 	sprite.setPosition(pos.x, pos.y);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 48;
-	hurtBox.rh = 48;
-	hurtBody = new CollisionBody(1);
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 48;
-	hitBox.rh = 48;
-	hitBody = new CollisionBody(1);
-	hitBody->AddCollisionBox(0, hitBox);
-
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
@@ -70,6 +65,9 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(48);
+	AddBasicHitCircle(48);
 	hitBody->hitboxInfo = hitboxInfo;
 
 	SetHitboxes(hitBody, 0);
@@ -90,7 +88,7 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 
 	comboObj->enemyHitBody = new CollisionBody(2);
 
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBox);
+	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
 
 	CollisionBox exBox;
 	exBox.type = CollisionBox::Hit;
@@ -98,8 +96,8 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 	exBox.globalAngle = 0;
 	exBox.offset.x = 0;
 	exBox.offset.y = 0;
-	exBox.rw = 48;
-	exBox.rh = 48;
+	exBox.rw = 48 * scale;
+	exBox.rh = 48 * scale;
 
 	comboObj->enemyHitBody->AddCollisionBox(1, exBox);
 
@@ -136,6 +134,7 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(15);
 	cutObject->SetSubRectBack(14);
+	cutObject->SetScale(scale);
 }
 
 Airdasher::~Airdasher()

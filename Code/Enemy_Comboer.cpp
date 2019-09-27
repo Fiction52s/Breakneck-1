@@ -20,6 +20,22 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	:Enemy(owner, EnemyType::EN_COMBOER, p_hasMonitor, 1, false), cType( t )
 {
 	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	cType = T_STRAIGHT;
 	switch (cType)
 	{
@@ -33,7 +49,7 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 		break;
 	case T_BOUNCE:
 		sprite.setColor(Color::Yellow);
-		mover = new SurfaceMover(owner, NULL, 0, 64);
+		mover = new SurfaceMover(owner, NULL, 0, 64 * scale);
 		mover->surfaceHandler = this;
 		break;
 	}
@@ -73,30 +89,8 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setScale(scale, scale);
 	sprite.setPosition(pos.x, pos.y);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 48;
-	hurtBox.rh = 48;
-	hurtBody = new CollisionBody(1);
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 48;
-	hitBox.rh = 48;
-	hitBody = new CollisionBody(1);
-	hitBody->AddCollisionBox(0, hitBox);
-
-	
 
 
 	hitboxInfo = new HitboxInfo;
@@ -106,6 +100,11 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(48);
+	AddBasicHitCircle(48);
+	hitBody->hitboxInfo = hitboxInfo;
 
 
 	comboObj = new ComboObject(this);
@@ -122,7 +121,7 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
 	comboObj->enemyHitBody = new CollisionBody(1);
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBox);
+	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
 
 	comboObj->enemyHitboxFrame = 0;
 
