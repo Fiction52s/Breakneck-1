@@ -961,7 +961,15 @@ GravitySpringParams::GravitySpringParams(ActorType *at, sf::Vector2i &pos)
 void GravitySpringParams::WriteParamFile(std::ofstream &of)
 {
 	of << speed << "\n";
-	of << localPath.front().x << " " << localPath.front().y << endl;
+	if (localPath.size() == 0)
+	{
+		of << 0 << " " << 0 << endl;
+	}
+	else
+	{
+		of << localPath.front().x << " " << localPath.front().y << endl;
+	}
+	
 }
 
 void GravitySpringParams::SetPath(std::list<sf::Vector2i> &globalPath)

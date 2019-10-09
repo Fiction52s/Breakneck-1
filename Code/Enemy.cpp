@@ -25,8 +25,6 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-EnemyParams * Enemy::enemyTypeHitParams[] = { 0 };
-
 Bullet * CreateBullet( BulletType::Type type, int vaIndex, Launcher *launcher )
 {
 	using namespace BulletType;
@@ -2226,6 +2224,12 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 40, 400);
 			break;
 		case EnemyType::EN_BAT:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
+			break;
+		case EnemyType::EN_AIRDASHJUGGLER:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
+			break;
+		case EnemyType::EN_JUGGLER:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_POISONFROG:

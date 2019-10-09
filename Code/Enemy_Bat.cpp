@@ -364,7 +364,7 @@ void Bat::ProcessState()
 	{
 		int f = fireCounter % 60;
 
-		if (f % 5 == 0 && f < 25)
+		if (f % 5 == 0 && f >= 25 && f < 50)
 		{
 			launchers[0]->position = position;
 			launchers[0]->facingDir = pDir;

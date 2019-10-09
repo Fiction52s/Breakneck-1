@@ -333,6 +333,8 @@ enum EnemyType
 	EN_FOOTTRAP,
 	EN_CRAWLERQUEEN,
 	EN_FLOATINGBOMB,
+	EN_AIRDASHJUGGLER,
+	EN_JUGGLER,
 	EN_BAT,
 	EN_STAGBEETLE,
 	EN_POISONFROG,
@@ -510,8 +512,6 @@ struct Shield;
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
-private:
-	static EnemyParams * enemyTypeHitParams[Count];
 public:
 
 	static bool ReadBool(std::ifstream &is,

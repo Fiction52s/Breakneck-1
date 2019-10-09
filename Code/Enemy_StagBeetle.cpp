@@ -127,8 +127,8 @@ StagBeetle::StagBeetle( GameSession *owner, bool p_hasMonitor, Edge *g, double q
 	testMover->SetSpeed( 0 );
 
 	cutObject->SetTileset(ts_death);
-	cutObject->SetSubRectFront(1);
-	cutObject->SetSubRectBack(0);
+	cutObject->SetSubRectFront(0);
+	cutObject->SetSubRectBack(1);
 	cutObject->SetScale(scale);
 
 	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);

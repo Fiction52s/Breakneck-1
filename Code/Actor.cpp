@@ -19019,6 +19019,8 @@ double Actor::CalcRailLandingSpeed(V2d &testVel,
 
 void Actor::ApplyHit( HitboxInfo *info )
 {
+	if (info == NULL)
+		return;
 	//use the first hit you got. no stacking hits for now
 	if( invincibleFrames == 0 )
 	{

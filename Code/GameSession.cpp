@@ -104,6 +104,8 @@
 #include "ShaderTester.h"
 #include "ControlSettingsMenu.h"
 #include "TouchGrass.h"
+#include "Enemy_AirdashJuggler.h"
+#include "Enemy_Juggler.h"
 
 #include "ParticleEffects.h"
 
@@ -832,7 +834,7 @@ void GameSession::UpdateEnemiesPhysics()
 	}
 
 
-	for( int substep = 0; substep < NUM_MAX_STEPS; ++substep )
+	for( substep = 0; substep < NUM_MAX_STEPS; ++substep )
 	{
 		/*for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
 		{
@@ -2346,6 +2348,33 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 
 			Bat *enemy = new Bat(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "airdashjuggler")
+		{
+
+			int xPos, yPos;
+
+			//always air
+
+
+			is >> xPos;
+			is >> yPos;
+
+			int hasMonitor;
+			is >> hasMonitor;
+
+			int level;
+			is >> level;
+
+			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
+			AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
+			//Juggler *enemy = new Juggler(this, hasMonitor, Vector2i(xPos, yPos), level);
+
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
@@ -5140,7 +5169,8 @@ bool GameSession::OpenFile( string fileName )
 
 				ss << "Borders/bor_" << matWorld + 1 << "_";
 
-				ss << "01_512x704";
+				//ss << "01_512x704";
+				ss << "01_512x512";
 				/*if (matVariation < 10)
 				{
 					ss << "0" << matVariation + 1;
