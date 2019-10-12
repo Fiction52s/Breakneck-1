@@ -1,7 +1,10 @@
 #include "Enemy.h"
-#include <iostream>
-#include "GameSession.h"
 #include "Enemy_HealthFly.h"
+#include "GameSession.h"
+#include <iostream>
+#include "VectorMath.h"
+#include <assert.h>
+
 
 using namespace std;
 using namespace sf;
@@ -16,292 +19,200 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-HealthFly::HealthFly( GameSession *owner, Vector2i &pos, FlyType fType )
-	:Enemy( owner, Enemy::HEALTHFLY, false, 0 ), flyType( fType )
+HealthFly::HealthFly(GameSession *owner, Vector2i &pos, int p_level, int index)
+	:Enemy(owner, EnemyType::EN_HEALTHFLY, false, 1, false), flyIndex( index )
 {
+	level = p_level;
+	va = NULL;
 
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		healAmount = 20;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		healAmount = 40;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		healAmount = 80;
+		break;
+	}
+
+	action = NEUTRAL;
 	frame = 0;
-	animationFactor = 4;
-	ts = owner->GetTileset( "healthfly_64x64.png", 64, 64 );
-
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	
+	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
-	sprite.setPosition( position.x, position.y );
 
-	initHealth = 60;
-	health = initHealth;
+	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 
-	//frame = 0;
-	//dead = false;
+	frame = 0;
 
-	//animationFactor = 3;
+	//animationFactor = 10;
 
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
+	//ts = owner->GetTileset( "HealthFly.png", 80, 80 );
+	ts = owner->GetTileset("Enemies/healthfly_64x64.png", 64, 64);
+	//sprite.setTexture(*ts->texture);
+	//sprite.setTextureRect(ts->GetSubRect(frame));
+	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	//sprite.setScale(scale, scale);
+	//sprite.setPosition(pos.x, pos.y);
 
-	double radius = 20;
-	position = V2d( pos.x, pos.y );
-	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
-	hurtBody.globalAngle = 0;
-	hurtBody.offset.x = 0;
-	hurtBody.offset.y = 0;
-	hurtBody.rw = radius;
-	hurtBody.rh = radius;
-	
-	caught = false;
-	
-	hitBody.type = CollisionBox::Hit;
-	hitBody.isCircle = true;
-	hitBody.globalAngle = 0;
-	hitBody.offset.x = 0;
-	hitBody.offset.y = 0;
-	hitBody.rw = radius;
-	hitBody.rh = radius;
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(40);
+	AddBasicHitCircle(40);
 
-	hurtBody.globalPosition = position;
-	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position;
-	hitBody.globalAngle = 0;
+
+	dead = false;
+
+	spawnRect = sf::Rect<double>(position.x - 100, position.y - 100,
+		200, 200);
+
+	SetHitboxes(hitBody, 0);
+	SetHitboxes(hurtBody, 0);
+
+	actionLength[NEUTRAL] = 5;
+	actionLength[DEATH] = 8;
+
+	animFactor[NEUTRAL] = 3;
+	animFactor[DEATH] = 3;
+
+	ResetEnemy();
 }
-
-void HealthFly::HandleEntrant( QuadTreeEntrant *qte )
+//making it not heal when its dead!
+void HealthFly::HandleQuery(QuadTreeCollider * qtc)
 {
-	//empty
-}
-
-void HealthFly::UpdatePrePhysics()
-{
-	
-
-	if( frame == 5 * animationFactor ) //5 frames of animation
+	if (!dead)
 	{
+		qtc->HandleEntrant(this);
+	}
+}
+
+bool HealthFly::Collect()
+{
+	if (action == NEUTRAL)
+	{
+		action = DEATH;
 		frame = 0;
-	}
-	//empty
-}
-
-void HealthFly::UpdatePhysics()
-{
-	UpdateHitboxes();
-	pair<bool,bool> hitMe = PlayerHitMe();
-	bool ihit = IHitPlayer();
-	if( ihit || hitMe.first )
-	{
-		if( !caught )
-		{
-			caught = true;
-			//give player health right here!
-			int rows = 10;
-			int rowCap = 2 * 5;
-			//owner->powerBar.Charge( rowCap * rows ); 
-			//owner->GetPlayer( 0 )->desperationMode = false;
-		}
-		//owner->RemoveEnemy( this );
-		//get rid of me
-	}
-
-	
-	//empty
-}
-
-void HealthFly::UpdatePostPhysics()
-{
-	if( caught )
-	{
-		//should the one in patroller be in post or pre physics?
-		if( hasMonitor && !suppressMonitor )
-				owner->keyMarker->CollectKey();
-		owner->RemoveEnemy( this );
-	}
-
-	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
-
-
-	if( slowCounter == slowMultiple )
-	{
-		
-		++frame;
-		slowCounter = 1;
-	
-		//if( dead )
-		//{
-		//	deathFrame++;
-		//}
-
-	}
-	else
-	{
-		slowCounter++;
-	}
-
-	
-	//empty
-}
-
-void HealthFly::Draw( sf::RenderTarget *target)
-{
-	if( hasMonitor && !suppressMonitor )
-	{
-		//owner->AddEnemy( monitor );
-		CircleShape cs;
-		cs.setRadius( 40 );
-		cs.setFillColor( COLOR_BLUE );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( position.x, position.y );
-		target->draw( cs );
-	}
-	//cout << "drawing health fly" << endl;
-	target->draw( sprite );
-	/*sf::CircleShape cs;
-	cs.setRadius( 20 );
-	cs.setFillColor( Color( 0, 255, 0, 100 ) );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	target->draw( cs );*/
-}
-
-void HealthFly::DrawMinimap( sf::RenderTarget *target )
-{
-	CircleShape cs;
-	cs.setFillColor( COLOR_TEAL );
-	cs.setRadius( 50 );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	target->draw( cs );
-
-	/*if( hasMonitor && !suppressMonitor )
-	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
-	}*/
-}
-
-bool HealthFly::IHitPlayer( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	
-	if( hitBody.Intersects( player->hurtBody ) )
-	{
-		//player->ApplyHit( hitboxInfo );
 		return true;
 	}
 	return false;
 }
 
-void HealthFly::UpdateHitboxes()
+bool HealthFly::CanCollect()
 {
-	hurtBody.globalPosition = position;
-	hitBody.globalPosition = position;
-}
-
-std::pair<bool,bool> HealthFly::PlayerHitMe( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	if( player->currHitboxes != NULL )
-	{
-		bool hit = false;
-
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
-		{
-			if( hurtBody.Intersects( (*it) ) )
-			{
-				hit = true;
-				break;
-			}
-		}
-		
-
-		if( hit )
-		{
-			sf::Rect<double> qRect( position.x - hurtBody.rw,
-			position.y - hurtBody.rw, hurtBody.rw * 2, 
-			hurtBody.rw * 2 );
-			owner->specterTree->Query( this, qRect );
-
-			if( !specterProtected )
-			{
-				receivedHit = player->currHitboxInfo;
-				return pair<bool, bool>(true,false);
-			}
-			else
-			{
-				return pair<bool, bool>(false,false);
-			}
-			
-		}
-		
-	}
-
-	for( int i = 0; i < player->recordedGhosts; ++i )
-	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
-		{
-			if( player->ghosts[i]->currHitboxes != NULL )
-			{
-				bool hit = false;
-				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
-				{
-					if( hurtBody.Intersects( (*it) ) )
-					{
-						hit = true;
-						break;
-					}
-				}
-		
-
-				if( hit )
-				{
-					receivedHit = player->currHitboxInfo;
-					return pair<bool, bool>(true,true);
-				}
-			}
-			//player->ghosts[i]->curhi
-		}
-	}
-
-	return pair<bool, bool>(false,false);
-}
-
-bool HealthFly::PlayerSlowingMe()
-{
-	Actor *player = owner->GetPlayer( 0 );
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-void HealthFly::DebugDraw(sf::RenderTarget *target)
-{
-	hurtBody.DebugDraw( target );
-	hitBody.DebugDraw( target );
-}
-
-void HealthFly::SaveEnemyState()
-{
-}
-
-void HealthFly::LoadEnemyState()
-{
+	return true;
 }
 
 void HealthFly::ResetEnemy()
 {
-	caught = false;
+	action = NEUTRAL;
+	dead = false;
+
 	frame = 0;
-	//owner->
-	//cout << "resetting monitor" << endl;
+	receivedHit = NULL;
+
+	SetHitboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
+
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	hitBox.globalPosition = position;
+	hitBox.globalAngle = 0;
+
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	hitBox.globalPosition = position;
+	hitBox.globalAngle = 0;
+
+	//UpdateHitboxes();
+
+	//sprite.setTexture(*ts->texture);
+
+	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	//sprite.setPosition(position.x, position.y);
+
+	UpdateSprite();
 }
+
+void HealthFly::ProcessState()
+{
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		switch (action)
+		{
+		case NEUTRAL:
+		{
+			frame = 0;
+			break;
+		}
+		case DEATH:
+		{
+			numHealth = 0;
+			ClearSprite();
+			dead = true;
+			break;
+		}
+		}
+	}
+}
+
+void HealthFly::ClearSprite()
+{
+	ClearRect(va + flyIndex * 4);
+}
+
+void HealthFly::UpdateSprite()
+{
+	int tile = 0;
+	IntRect ir;
+	switch (action)
+	{
+	case NEUTRAL:
+		tile = frame / animFactor[NEUTRAL];
+		break;
+	case DEATH:
+		tile = 0;
+		break;
+	}
+
+	ir = ts->GetSubRect(tile);
+
+	if (va != NULL)
+	{
+		SetRectSubRect(va + flyIndex * 4, ir);
+		SetRectCenter(va + flyIndex * 4, 64 * scale, 64 * scale, Vector2f(position.x, position.y));
+	}
+	
+	//sprite.setTextureRect(ir);
+
+	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	//sprite.setPosition(position.x, position.y);
+}
+
+void HealthFly::EnemyDraw(sf::RenderTarget *target)
+{
+	//target->draw(sprite);
+}
+
+void HealthFly::DrawMinimap(sf::RenderTarget *target)
+{
+	if (!dead)
+	{
+		CircleShape enemyCircle;
+		enemyCircle.setFillColor(COLOR_BLUE);
+		enemyCircle.setRadius(50);
+		enemyCircle.setOrigin(enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2);
+		enemyCircle.setPosition(position.x, position.y);
+		target->draw(enemyCircle);
+	}
+}
+
+void HealthFly::UpdateHitboxes()
+{
+}
+

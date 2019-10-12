@@ -35,7 +35,7 @@ Juggler::Juggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_leve
 		break;
 	}
 
-	juggleReps = 3;
+	juggleReps = 100;
 
 	action = S_FLOAT;
 	position.x = pos.x;
@@ -54,6 +54,7 @@ Juggler::Juggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_leve
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
 	sprite.setPosition(pos.x, pos.y);
+	sprite.setColor(Color::Red);
 
 
 	hitboxInfo = new HitboxInfo;
@@ -108,9 +109,10 @@ Juggler::Juggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_leve
 	animFactor[S_RETURN] = 6;
 	animFactor[S_EXPLODE] = 1;
 
-	vertStrength = 30;
-	horizStrength = 5;
-	gravFactor = .2;
+	gravFactor = 1.0;
+	maxFallSpeed = 15;
+
+	reversed = true;
 
 	ResetEnemy();
 }
@@ -156,7 +158,21 @@ void Juggler::ResetEnemy()
 	position = origPos;
 	UpdateHitboxes();
 
+	currJuggle = 0;
+
 	UpdateSprite();
+}
+
+void Juggler::Throw(double a, double strength)
+{
+	V2d vel(strength, 0);
+	RotateCCW(vel, a);
+	velocity = vel;
+}
+
+void Juggler::Throw(V2d vel)
+{
+	velocity = vel;
 }
 
 void Juggler::ProcessHit()
@@ -166,8 +182,10 @@ void Juggler::ProcessHit()
 		if (action == S_POP)
 			return;
 
+		
 		numHealth -= 1;
 
+		Actor *player = owner->GetPlayer(0);
 		if (numHealth <= 0)
 		{
 			if (currJuggle == juggleReps)
@@ -177,12 +195,12 @@ void Juggler::ProcessHit()
 					owner->keyMarker->CollectKey();
 				}
 
-				owner->GetPlayer(0)->ConfirmEnemyKill(this);
+				player->ConfirmEnemyKill(this);
 				ConfirmKill();
 			}
 			else
 			{
-				owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+				player->ConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				numHealth = maxHealth;
@@ -191,17 +209,39 @@ void Juggler::ProcessHit()
 				frame = 0;
 
 				SetHitboxes(NULL, 0);
-				//SetHurtboxes(NULL, 0);
 
 
 
-				V2d dir;
+				V2d dir = receivedHit->hDir;
 
 				comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
+				
+				V2d hit(0, -20);
 
-				//dir = normalize(V2d(horizStrength, -vertStrength));//normalize(receivedHit->hDir);
+				double extraX = 8;
 
-				velocity = V2d(horizStrength, -vertStrength);
+				if (dir.x != 0)
+				{
+					hit.x += dir.x * extraX;
+				}
+				if (dir.y == 1 && dir.x == 0 )
+				{
+					hit.y += 3;
+					if (player->facingRight)
+					{
+						hit.x -= extraX / 2.0;
+					}
+					else
+					{
+						hit.x += extraX / 2.0;
+					}
+					
+				}
+
+				
+				//Throw(GetVectorAngleCCW(dir), 15);
+				Throw(hit);
+				
 
 				//IntRect ir;
 
@@ -256,8 +296,6 @@ void Juggler::ProcessHit()
 			owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
-
-
 	}
 }
 
@@ -275,6 +313,14 @@ void Juggler::ProcessState()
 			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
 			break;
 		}
+	}
+
+	
+
+	if (action == S_POP && velocity.y >= 0)
+	{
+		action = S_JUGGLE;
+		frame = 0;
 	}
 
 	V2d playerPos = owner->GetPlayer(0)->position;
@@ -297,16 +343,27 @@ void Juggler::UpdateEnemyPhysics()
 	case S_JUGGLE:
 	{
 		double f;
-
+		double numStep = numPhysSteps;
 		V2d movementVec = velocity;
-		movementVec /= slowMultiple * (double)numPhysSteps;
+		movementVec /= slowMultiple * numStep;
 
 		position += movementVec;
 
-		velocity.y += gravFactor;
-		if (velocity.y > 10)
+		//cout << "movementVec: " << movementVec.y << " velocity: " << velocity.y << "\n";
+
+		V2d gDir(0, 1);//normalize(owner->GetPlayer(0)->position - position);
+
+		velocity +=  gDir * (gravFactor / numStep / slowMultiple);
+
+		//if (length(velocity) > 40.0)
+		//{
+		//	velocity = normalize(velocity) * 40.0;
+		//}
+		//velocity.y += gravFactor / numStep;
+
+		if (velocity.y > maxFallSpeed)
 		{
-			velocity.y = 10;
+			velocity.y = maxFallSpeed;
 		}
 
 		break;

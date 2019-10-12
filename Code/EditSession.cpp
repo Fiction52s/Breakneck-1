@@ -559,8 +559,12 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		GetTileset("Ship/shipleave_128x128.png", 128, 128));
 
 	AddExtraEnemy("shard", LoadParams<ShardParams>, NULL, MakeParamsAerial<ShardParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 3,
 		GetTileset("Shard/shards_w1_192x192.png", 192, 192));
+	
+	AddExtraEnemy("healthfly", LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
+		GetTileset("Enemies/healthfly_64x64.png", 64, 64));
 
 	AddExtraEnemy("racefighttarget", LoadParams<RaceFightTargetParams>, NULL, MakeParamsAerial<RaceFightTargetParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -14727,6 +14731,14 @@ Panel *ActorType::CreatePanel()
 		gs->Set(0, 0, sqSpr, "");*/
 
 		//p->
+	}
+	else if (name == "healthfly" )
+	{
+		p = new Panel("healthfly_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddTextBox("level", Vector2i(20, 300), 200, 20, "1");
 	}
 	else if (name == "shard")
 	{

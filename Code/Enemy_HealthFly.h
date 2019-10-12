@@ -5,45 +5,38 @@
 
 struct HealthFly : Enemy
 {
-	enum FlyType
+	enum Action
 	{
-		BLUE,
-		GREEN,
-		YELLOW,
-		ORANGE,
-		RED,
-		MAGENTA,
-		WHITE,
+		NEUTRAL,
+		DEATH,
 		Count
 	};
 
+	Action action;
 	HealthFly(GameSession *owner,
-		sf::Vector2i &pos,
-		FlyType fType);
-	void HandleEntrant(QuadTreeEntrant *qte);
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void UpdatePostPhysics();
-	void Draw(sf::RenderTarget *target);
-	void DrawMinimap(sf::RenderTarget *target);
-	bool IHitPlayer(int index = 0);
-	void UpdateHitboxes();
-	std::pair<bool, bool> PlayerHitMe(int index = 0);
-	bool PlayerSlowingMe();
-	void DebugDraw(sf::RenderTarget *target);
-	void SaveEnemyState();
-	void LoadEnemyState();
-	void ResetEnemy();
+		sf::Vector2i &pos, int level, int index);
+	void HandleQuery(QuadTreeCollider * qtc);
 
-	CollisionBox hurtBody;
-	CollisionBox hitBody;
-	Enemy *host;
-	FlyType flyType;
-	sf::Sprite sprite;
+	void ProcessState();
+	void EnemyDraw(sf::RenderTarget *target);
+	void DrawMinimap(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ClearSprite();
+	void UpdateHitboxes();
+	void ResetEnemy();
+	bool CanCollect(); //depending on type of fly
+	bool Collect();
+
+	//sf::Sprite sprite;
 	Tileset *ts;
-	int frame;
-	int animationFactor;
-	bool caught;
+
+	int flyIndex;
+	sf::Vertex *va;
+
+	int healAmount;
+
+	int actionLength[Count];
+	int animFactor[Count];
 };
 
 #endif

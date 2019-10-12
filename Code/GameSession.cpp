@@ -62,6 +62,7 @@
 #include "Nexus.h"
 #include "MusicPlayer.h"
 #include "Enemy_GravityModifier.h"
+#include "Enemy_HealthFly.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -732,13 +733,22 @@ void GameSession::Cleanup()
 		activeItemTree = NULL;
 	}
 
+	if (activeEnemyItemTree != NULL)
+	{
+		delete activeEnemyItemTree;
+		activeEnemyItemTree = NULL;
+	}
+
 	if (airTriggerTree != NULL)
 	{
 		delete airTriggerTree;
 		airTriggerTree = NULL;
 	}
 
-	
+	if (numTotalFlies > 0 && healthFlyVA != NULL )
+	{
+		delete[] healthFlyVA;
+	}
 
 
 	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
@@ -979,6 +989,8 @@ void GameSession::UpdateEnemiesDraw()
 	{
 		(*it)->CheckedZoneDraw(preScreenTex, FloatRect(screenRect));
 	}
+
+	DrawHealthFlies(preScreenTex);
 }
 
 void GameSession::UpdateEnemiesSprites()
@@ -1719,6 +1731,10 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 	totalNumberBullets = 0;
 	int shardsLoadedCounter = 0;
 
+	numTotalFlies = 0;
+	ts_healthFly = NULL;
+	healthFlyVA = NULL;
+
 	int numGroups;
 	is >> numGroups;
 	for( int i = 0; i < numGroups; ++i )
@@ -1731,6 +1747,18 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 		for( int j = 0; j < numActors; ++j )
 		{
 			LoadEnemy(is, polyIndex);
+		}
+	}
+
+	if (numTotalFlies > 0)
+	{
+		ts_healthFly = GetTileset("Enemies/healthfly_64x64.png", 64, 64);
+		healthFlyVA = new Vertex[numTotalFlies * 4];
+
+		for (auto it = allFlies.begin(); it != allFlies.end(); ++it)
+		{
+			(*it)->va = healthFlyVA;
+			(*it)->ResetEnemy();
 		}
 	}
 
@@ -1963,6 +1991,28 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			Shard *enemy = new Shard(this, Vector2i(xPos, yPos), w, localIndex);
 
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "healthfly")
+		{
+			int xPos, yPos;
+
+			//always air
+
+			is >> xPos;
+			is >> yPos;
+
+			int level;
+			is >> level;
+
+			HealthFly *enemy = new HealthFly(this, Vector2i(xPos, yPos), level, numTotalFlies);
+
+			allFlies.push_back(enemy);
+			numTotalFlies++;
+			activeItemTree->Insert(enemy);
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
 
@@ -2372,10 +2422,31 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			is >> level;
 
 			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-			AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
-			//Juggler *enemy = new Juggler(this, hasMonitor, Vector2i(xPos, yPos), level);
+			//AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
+			Juggler *enemy = new Juggler(this, hasMonitor, Vector2i(xPos, yPos), level);
 
 
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "jugglercatcher")
+		{
+			int xPos, yPos;
+
+			//always air
+
+			is >> xPos;
+			is >> yPos;
+
+			int level;
+			is >> level;
+
+			Booster *enemy = new Booster(this, Vector2i(xPos, yPos), level);
+			//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
+
+			activeItemTree->Insert(enemy);
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
 
@@ -3204,7 +3275,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 		}
 		else
 		{
-			assert(false && "not a valid type name");
+			assert(false && "not a valid type name: ");
 		}
 	}
 }
@@ -5285,6 +5356,7 @@ bool GameSession::OpenFile( string fileName )
 		}
 		
 
+
 		LoadMovingPlats( is, polyIndex );
 
 		LoadBGPlats( is, polyIndex );
@@ -6807,7 +6879,10 @@ void GameSession::KeyboardUpdate( int index )
 }
 
 
-
+void GameSession::DrawHealthFlies(sf::RenderTarget *target)
+{
+	target->draw(healthFlyVA, numTotalFlies * 4, sf::Quads, ts_healthFly->texture);
+}
 
 bool GameSession::sLoad( GameSession *gs )
 {
@@ -7000,6 +7075,8 @@ bool GameSession::Load()
 	specterTree = new QuadTree(1000000, 1000000);
 
 	activeItemTree = new QuadTree(1000000, 1000000);
+
+	activeEnemyItemTree = new QuadTree(1000000, 1000000);
 
 	airTriggerTree = new QuadTree(1000000, 1000000);
 

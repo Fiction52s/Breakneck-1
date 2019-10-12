@@ -32,6 +32,7 @@
 #include "TouchGrass.h"
 #include "Enemy_GravityModifier.h"
 #include "ParticleEffects.h"
+#include "Enemy_HealthFly.h"
 
 using namespace sf;
 using namespace std;
@@ -1189,7 +1190,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
 			assert( 0 && "sword shader not loaded" );
 		}
-		swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 145, 255 )) );
+		swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 146, 255 )) );
 		swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
 
 		cout << "Start aura" << endl;
@@ -18878,6 +18879,16 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			{
 				//some replacement formula later
 			}
+		}
+		else if (en->type == EnemyType::EN_HEALTHFLY)
+		{
+			HealthFly *hf = (HealthFly*)qte;
+			if (hf->CanCollect() && hf->hitBody->Intersects(hf->currHitboxFrame, &hurtBody))
+			{
+				kinRing->powerRing->Fill(hf->healAmount);
+				hf->Collect();
+			}
+			
 		}
 	}
 	else if (queryMode == "airtrigger")

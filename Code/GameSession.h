@@ -296,6 +296,8 @@ struct DecorExpression;
 struct DecorLayer;
 struct TouchGrassCollection;
 
+struct HealthFly;
+
 struct TerrainPiece : QuadTreeEntrant
 {
 	TerrainPiece(GameSession *owner);
@@ -404,7 +406,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//can make later children of this
 	//that implement more complex behaviors
 	
-
+	void DrawHealthFlies(sf::RenderTarget *target);
+	sf::Vertex *healthFlyVA;
+	Tileset *ts_healthFly;
+	int numTotalFlies;
+	std::list<HealthFly*> allFlies;
 
 
 	ShapeEmitter *testEmit;
@@ -1063,7 +1069,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree *staticItemTree;
 	QuadTree *railEdgeTree;
 	QuadTree *railDrawTree;
-	QuadTree *activeItemTree; 
+	QuadTree *activeItemTree;
+	QuadTree *activeEnemyItemTree;
 	QuadTree *airTriggerTree;
 	std::list<AirTrigger*> fullAirTriggerList;
 	

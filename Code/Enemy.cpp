@@ -2230,7 +2230,7 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_JUGGLER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
 			break;
 		case EnemyType::EN_POISONFROG:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);

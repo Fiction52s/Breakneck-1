@@ -39,9 +39,11 @@ struct Juggler : Enemy
 
 	V2d velocity;
 
-	double vertStrength;
-	double horizStrength;
 	double gravFactor;
+	double maxFallSpeed;
+
+	void Throw(double a, double strength);
+	void Throw(V2d vel);
 
 	int hitLimit;
 	int currHits;
@@ -52,6 +54,8 @@ struct Juggler : Enemy
 
 	sf::Sprite sprite;
 	Tileset *ts;
+
+	bool reversed;
 
 	int juggleReps;
 	int currJuggle;
