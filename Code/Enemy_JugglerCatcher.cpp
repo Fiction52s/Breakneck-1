@@ -19,8 +19,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-JugglerCatcher::JugglerCatcher(GameSession *owner, Vector2i &pos, int p_level)
-	:Enemy(owner, EnemyType::EN_JUGGLERCATCHER, false, 1, false)
+JugglerCatcher::JugglerCatcher(GameSession *owner,bool p_hasMonitor, Vector2i &pos, int p_level)
+	:Enemy(owner, EnemyType::EN_JUGGLERCATCHER, p_hasMonitor, 1, false)
 {
 	level = p_level;
 
@@ -61,8 +61,8 @@ JugglerCatcher::JugglerCatcher(GameSession *owner, Vector2i &pos, int p_level)
 	sprite.setPosition(pos.x, pos.y);
 
 	SetupBodies(1, 1);
-	AddBasicHurtCircle(90);
-	AddBasicHitCircle(90);
+	AddBasicHurtCircle(40);
+	AddBasicHitCircle(40);
 
 
 	dead = false;
@@ -86,20 +86,46 @@ JugglerCatcher::JugglerCatcher(GameSession *owner, Vector2i &pos, int p_level)
 	ResetEnemy();
 }
 
-bool JugglerCatcher::Catch()
+
+void JugglerCatcher::ProcessHit()
+{
+	return;
+	//if (!dead && ReceivedHit() && numHealth > 0)
+	//{
+	//	numHealth -= 1;
+
+	//	if (numHealth <= 0)
+	//	{
+	//		if (hasMonitor && !suppressMonitor)
+	//		{
+	//			owner->keyMarker->CollectKey();
+	//		}
+
+	//		owner->GetPlayer(0)->ConfirmEnemyKill(this);
+	//		ConfirmKill();
+	//	}
+	//	else
+	//	{
+	//		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+	//		ConfirmHitNoKill();
+	//	}
+
+	//	//receivedHit = NULL;
+	//}
+}
+
+void JugglerCatcher::Catch()
 {
 	if (action == NEUTRAL)
 	{
 		action = CATCH;
 		frame = 0;
-		return true;
 	}
-	return false;
 }
 
 bool JugglerCatcher::CanCatch()
 {
-	return action == CATCH;
+	return action == NEUTRAL;
 }
 
 void JugglerCatcher::ResetEnemy()
@@ -111,6 +137,7 @@ void JugglerCatcher::ResetEnemy()
 	receivedHit = NULL;
 
 	SetHitboxes(hitBody, 0);
+	SetHurtboxes(hurtBody, 0);
 	UpdateHitboxes();
 
 	sprite.setTexture(*ts->texture);
@@ -141,6 +168,7 @@ void JugglerCatcher::ProcessState()
 		case DEATH:
 		{
 			dead = true;
+			numHealth = 0;
 			break;
 		}
 		}
@@ -198,5 +226,9 @@ void JugglerCatcher::UpdateHitboxes()
 	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
 	hitBox.globalPosition = position;
 	hitBox.globalAngle = 0;
+
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	hurtBox.globalPosition = position;
+	hurtBox.globalAngle = 0;
 }
 

@@ -337,6 +337,11 @@ void Launcher::Fire()
 			b->Reset( position, dir * bulletSpeed );
 		}
 
+		if (handler != NULL)
+		{
+			handler->FireResponse(b);
+		}
+
 		dirAngle += angleSpread / (perShot);
 		//dir = V2d( cos( dirAngle - PI / 2.0 ), sin( dirAngle - PI / 2.0 ) );
 	}
@@ -1017,9 +1022,10 @@ void SinBullet::UpdatePrePhysics()
 	//dir = normalize( velocity );
 
 	double d = dot( dir, other );
-	tempadd = d * launcher->amplitude * other;//d * other * launcher->amplitude;
+	tempadd = sin(t) * launcher->amplitude * other;//d * other * launcher->amplitude;
 
-	position += tempadd;
+	position += tempadd;//other * sin(t) * launcher->amplitude;//tempadd;
+	//cout << "tempadd: " << tempadd.x << ", " << tempadd.y << endl;
 
 	//tempadd = dir * 100.0;
 }

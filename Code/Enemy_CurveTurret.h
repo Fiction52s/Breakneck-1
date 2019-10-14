@@ -27,6 +27,7 @@ struct CurveTurret : Enemy, LauncherEnemy
 	void BulletHitPlayer(BasicBullet *b);
 	void UpdateBullet(BasicBullet *b);
 	void ResetEnemy();
+	void FireResponse(BasicBullet *b);
 
 	sf::Sprite sprite;
 	Tileset *ts;
@@ -38,6 +39,9 @@ struct CurveTurret : Enemy, LauncherEnemy
 	int realWait;
 	Edge *ground;
 	double edgeQuantity;
+
+	double spins[16];
+	int startBulletIndex;
 
 	Shield *shield;
 

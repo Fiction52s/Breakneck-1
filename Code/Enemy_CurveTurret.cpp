@@ -115,7 +115,7 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 
 	dead = false;
 
-	bulletSpeed = 10;
+	bulletSpeed = 7;
 
 	double size = 400;//max( width, height );
 
@@ -127,7 +127,9 @@ CurveTurret::CurveTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	V2d turretDir = gn;
 	//RotateCCW(gn, PI / 3);
 	V2d launchPos = gPoint + gn * 20.0;
-	launchers[0] = new Launcher( this, BasicBullet::CURVE_TURRET, owner, 16, 1, position, gn, 0, 90 );
+	startBulletIndex = owner->totalNumberBullets;
+	launchers[0] = new Launcher( this, BasicBullet::CURVE_TURRET, owner, 32, 1, position, gn, 
+		0, 90, false, 30, 50 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	//launchers[0]->SetGravity( gravity );
 	launchers[0]->hitboxInfo->damage = 18;
@@ -149,16 +151,67 @@ void CurveTurret::Setup()
 	//TurretSetup();
 }
 
+void CurveTurret::FireResponse(BasicBullet *b)
+{
+	double turn = turnFactor / 90.0;
+	turn = turn / 180.0 * PI;
+	/*if (rand() % 2 == 0)
+	{
+		b->spin = turn;
+	}
+	else
+	{
+		b->spin = -turn;
+	}*/
+	
+}
+
 void CurveTurret::UpdateBullet(BasicBullet *b)
 {
 	//V2d vel = b->velocity;
 	int diff = b->launcher->maxFramesToLive - b->framesToLive;
-	if ( diff > 30 )
+
+	
+	
+	/*int ind = b->index - startBulletIndex;
+	double turn = 0;
+	if (diff == 1)
 	{
-		double rad = turnFactor / 60.0;
-		rad = rad / 180.0 * PI;
-		RotateCW(b->velocity, rad);
+		turn = turnFactor / 90.0;
+		turn = turn / 180.0 * PI;
+		if (ind % 2 == 0)
+		{
+			turn = -turn;
+		}
+
+		spins[ind] = turn;
 	}
+	else
+	{
+		turn = spins[ind];
+	}*/
+
+	//RotateCW(b->velocity, b->spin);
+	//V2d playerPos = owner->GetPlayer(0)->position;
+
+	//cross( normalize( playerPos - position ) )
+
+	if ( diff < 30 )
+	{
+		//double rad = turnFactor / 60.0;
+		//rad = rad / 180.0 * PI;
+		//RotateCW(b->velocity, rad);
+	}
+	else if (diff < 60)
+	{
+		//b->velocity = V2d(0, 0);
+	}
+	else
+	{
+		//b->launcher->SetGravity(normalize(owner->GetPlayer(0)->position - b->position) * .6);
+		//b->velocity = normalize(owner->GetPlayer(0)->position - b->position);// * b->launcher->bulletSpeed;
+	}
+
 }
 
 void CurveTurret::BulletHitTerrain(BasicBullet *b, 
@@ -221,9 +274,9 @@ void CurveTurret::ProcessState()
 				frame = 0;
 			}
 		}
-		else if (frame == 4 * animationFactor && slowCounter == 1)
+		else if (frame >= 4 * animationFactor && frame <= 4 * animationFactor + 10 && slowCounter == 1 )
 		{
-			launchers[0]->facingDir = normalize(playerPos - position);
+			launchers[0]->facingDir = gn;//normalize(playerPos - position);
 			launchers[0]->Fire();
 		}
 		break;

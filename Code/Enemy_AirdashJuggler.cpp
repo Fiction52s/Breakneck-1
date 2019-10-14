@@ -15,10 +15,37 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-AirdashJuggler::AirdashJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level )
+AirdashJuggler::AirdashJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, 
+	list<Vector2i> &path, int p_level )
 	:Enemy(owner, EnemyType::EN_AIRDASHJUGGLER, p_hasMonitor, 1, false)
 {
 	level = p_level;
+
+	dashReps = path.size();
+
+	dashDir = NULL;
+	if (dashReps > 0)
+	{
+		Vector2i prev(0, 0);
+		dashDir = new V2d[dashReps];
+		int ind = 0;
+		for (auto it = path.begin(); it != path.end(); ++it)
+		{
+			if (it != path.begin())
+			{
+				it--;
+				prev = (*it);
+				it++;
+			}
+
+			dashDir[ind] = normalize(V2d((*it) - prev));
+			
+			++ind;
+		}
+	}
+
+	if (dashDir == NULL)
+		dashReps = 3;
 
 	switch (level)
 	{
@@ -35,7 +62,7 @@ AirdashJuggler::AirdashJuggler(GameSession *owner, bool p_hasMonitor, Vector2i p
 		break;
 	}
 
-	dashReps = 3;
+	//dashReps = 3;
 
 	action = S_FLOAT;
 	position.x = pos.x;
@@ -115,6 +142,13 @@ AirdashJuggler::AirdashJuggler(GameSession *owner, bool p_hasMonitor, Vector2i p
 	ResetEnemy();
 }
 
+
+AirdashJuggler::~AirdashJuggler()
+{
+	if (dashDir != NULL)
+		delete[] dashDir;
+}
+
 //AirdashJuggler::AirdashJuggler(GameSession *owner, std::ifstream &is)
 //{
 //	int xPos, yPos;
@@ -188,7 +222,7 @@ void AirdashJuggler::ProcessHit()
 					ConfirmHitNoKill();
 
 					numHealth = maxHealth;
-					++currDash;
+					
 					dashStep = 0;
 					action = S_DASH;
 					frame = 0;
@@ -202,7 +236,17 @@ void AirdashJuggler::ProcessHit()
 
 					comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
 
-					dir = normalize(receivedHit->hDir);
+
+					if (dashDir == NULL)
+					{
+						dir = normalize(receivedHit->hDir);
+					}
+					else
+					{
+						dir = dashDir[currDash];
+					}
+
+					
 
 
 					startDashPos = position;
@@ -253,6 +297,8 @@ void AirdashJuggler::ProcessHit()
 					}
 
 					sprite.setTextureRect(ir);
+
+					++currDash;
 
 					//owner->GetPlayer(0)->AddActiveComboObj(comboObj);
 				}

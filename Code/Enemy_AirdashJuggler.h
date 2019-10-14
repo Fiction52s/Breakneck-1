@@ -17,7 +17,9 @@ struct AirdashJuggler : Enemy
 	};
 
 	AirdashJuggler(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos, int p_level );
+		sf::Vector2i pos, std::list<sf::Vector2i> &path,
+		int p_level );
+	~AirdashJuggler();
 	//Comboer(GameSession *owner, std::ifstream &is);
 
 	void ProcessState();
@@ -52,6 +54,8 @@ struct AirdashJuggler : Enemy
 	Action action;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
+
+	V2d *dashDir;
 
 	int dashStep;
 	int maxDashSteps;

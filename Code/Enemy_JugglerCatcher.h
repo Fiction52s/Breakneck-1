@@ -14,7 +14,7 @@ struct JugglerCatcher : Enemy
 	};
 
 	Action action;
-	JugglerCatcher(GameSession *owner,
+	JugglerCatcher(GameSession *owner, bool hasMon,
 		sf::Vector2i &pos, int level);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
@@ -22,11 +22,12 @@ struct JugglerCatcher : Enemy
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();
+	void ProcessHit();
+	bool CanCatch();
+	void Catch();
 
 	sf::Sprite sprite;
 	Tileset *ts;
-	bool CanCatch();
-	bool Catch();
 
 	int actionLength[Count];
 	int animFactor[Count];

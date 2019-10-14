@@ -20,7 +20,7 @@ struct Juggler : Enemy
 	Juggler(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos, int p_level);
 	//Comboer(GameSession *owner, std::ifstream &is);
-
+	void HandleEntrant(QuadTreeEntrant *qte);
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();

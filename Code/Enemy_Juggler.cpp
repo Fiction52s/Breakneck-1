@@ -6,6 +6,7 @@
 #include "Enemy_Juggler.h"
 #include "Eye.h"
 #include "KeyMarker.h"
+#include "Enemy_JugglerCatcher.h"
 
 using namespace std;
 using namespace sf;
@@ -315,6 +316,11 @@ void Juggler::ProcessState()
 		}
 	}
 
+	if (action != S_FLOAT && action != S_EXPLODE && action != S_RETURN)
+	{
+		sf::Rect<double> r(position.x - 50, position.y - 50, 100, 100);
+		owner->activeEnemyItemTree->Query(this, r);
+	}
 	
 
 	if (action == S_POP && velocity.y >= 0)
@@ -406,6 +412,23 @@ void Juggler::FrameIncrement()
 	//		//++shootFrames;
 	//	}
 	//}
+}
+
+void Juggler::HandleEntrant(QuadTreeEntrant *qte)
+{
+	Enemy *en = (Enemy*)qte;
+	if (en->type == EnemyType::EN_JUGGLERCATCHER)
+	{
+		JugglerCatcher *catcher = (JugglerCatcher*)qte;
+
+		CollisionBox &hitB = hurtBody->GetCollisionBoxes(0)->front();
+		if (catcher->CanCatch() && catcher->hurtBody->Intersects(catcher->currHurtboxFrame, &hitB))
+		{
+			catcher->Catch();
+			action = S_EXPLODE;
+			frame = 0;
+		}
+	}
 }
 
 void Juggler::ComboHit()

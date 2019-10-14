@@ -109,6 +109,7 @@
 #include "Enemy_Juggler.h"
 
 #include "ParticleEffects.h"
+#include "Enemy_JugglerCatcher.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -2418,6 +2419,36 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
+
+			int pathLength;
+			list<Vector2i> localPath;
+
+			Enemy::ReadPath(is, pathLength, localPath);
+
+			int level;
+			is >> level;
+
+			AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath, level);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "juggler")
+		{
+
+			int xPos, yPos;
+
+			//always air
+
+
+			is >> xPos;
+			is >> yPos;
+
+			int hasMonitor;
+			is >> hasMonitor;
+
 			int level;
 			is >> level;
 
@@ -2440,13 +2471,16 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			is >> xPos;
 			is >> yPos;
 
+			int hasMonitor;
+			is >> hasMonitor;
+
 			int level;
 			is >> level;
 
-			Booster *enemy = new Booster(this, Vector2i(xPos, yPos), level);
+			JugglerCatcher *enemy = new JugglerCatcher(this, hasMonitor, Vector2i(xPos, yPos), level);
 			//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
 
-			activeItemTree->Insert(enemy);
+			activeEnemyItemTree->Insert(enemy);
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
 
@@ -6881,7 +6915,10 @@ void GameSession::KeyboardUpdate( int index )
 
 void GameSession::DrawHealthFlies(sf::RenderTarget *target)
 {
-	target->draw(healthFlyVA, numTotalFlies * 4, sf::Quads, ts_healthFly->texture);
+	if (numTotalFlies > 0)
+	{
+		target->draw(healthFlyVA, numTotalFlies * 4, sf::Quads, ts_healthFly->texture);
+	}
 }
 
 bool GameSession::sLoad( GameSession *gs )

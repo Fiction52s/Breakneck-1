@@ -600,8 +600,15 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
-	AddBasicAerialWorldEnemy("airdashjuggler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+	AddBasicAerialWorldEnemy("airdashjuggler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, false, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
+	AddBasicAerialWorldEnemy("juggler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
+
+	AddBasicAerialWorldEnemy("jugglercatcher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));
+	
 
 	AddBasicGroundWorldEnemy("crawler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
@@ -8260,6 +8267,44 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		// temp;
 		//V2d temp1;
 		//double tempQuant;
+
+
+		if (mode == CREATE_PATROL_PATH || mode == SET_DIRECTION)
+		{
+			if (showPanel != NULL)
+			{
+
+			}
+			else
+			{
+				V2d pathBack(patrolPath.back());
+				V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
+
+				if (Keyboard::isKeyPressed(Keyboard::Key::LShift))
+				{
+					double angle = atan2(-temp.y, temp.x);
+					if (angle < 0)
+					{
+						angle += PI * 2.0;
+					}
+					double len = length(temp);
+					double mult = angle / (PI / 4.0);
+					double dec = mult - floor(mult);
+					int iMult = mult;
+					if (dec >= .5)
+					{
+						iMult++;
+					}
+
+					angle = iMult * PI / 4.0;
+					V2d testVec(len, 0);
+					RotateCCW(testVec, angle);
+					testPoint = Vector2f(pathBack + testVec);
+					temp = testVec;
+				}
+			}
+		}
+
 		switch( mode )
 		{
 		case CREATE_TERRAIN:
@@ -9532,13 +9577,37 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				if( showPanel != NULL )
 					break;
 
+				V2d pathBack(patrolPath.back());
+				V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
+
+				/*if ( Keyboard::isKeyPressed(Keyboard::Key::LShift))
+				{
+					double angle = atan2(-temp.y, temp.x);
+					if (angle < 0)
+					{
+						angle += PI * 2.0;
+					}
+					double len = length(temp);
+					double mult = angle / (PI / 4.0);
+					double dec = mult - floor(mult);
+					int iMult = mult;
+					if (dec >= .5)
+					{
+						iMult++;
+					}
+
+					angle = iMult * PI / 4.0;
+					V2d testVec(len, 0);
+					RotateCCW(testVec, angle);
+					testPoint = Vector2f(pathBack + testVec);
+					temp = testVec;
+				}*/
 
 				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
 				{
 					//double test = 100;
 					//worldPos before testPoint
-					V2d temp = V2d( testPoint.x, testPoint.y ) - Vector2<double>(patrolPath.back().x, 
-						patrolPath.back().y );
+					
 					double tempQuant = length( temp );
 					if( tempQuant >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) 
 						&& tempQuant > patrolPathLengthSize / 2 )
@@ -14783,6 +14852,25 @@ Panel *ActorType::CreatePanel()
 	else if (name == "airdashjuggler")
 	{
 		p = new Panel("airdashjuggler_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
+	}
+	else if (name == "juggler")
+	{
+		p = new Panel("juggler_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+	}
+	else if (name == "jugglercatcher")
+	{
+		p = new Panel("jugglercatcher_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");

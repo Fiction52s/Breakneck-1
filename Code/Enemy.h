@@ -26,6 +26,7 @@ struct LauncherEnemy
 	virtual void BulletTTLDeath(BasicBullet *b) {};
 	virtual int GetAttackIndex(){return -1;};
 	virtual void UpdateBullet( BasicBullet *b) {};
+	virtual void FireResponse(BasicBullet *b) {};
 };
 //a step is the amount of time in a substep
 //which is a tenth of a step right now i think
