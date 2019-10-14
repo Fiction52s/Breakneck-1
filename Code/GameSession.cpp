@@ -110,6 +110,7 @@
 
 #include "ParticleEffects.h"
 #include "Enemy_JugglerCatcher.h"
+#include "Enemy_BounceFloater.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -2787,6 +2788,29 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			is >> level;
 
 			Badger *enemy = new Badger(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "bouncefloater")
+		{
+			int xPos, yPos;
+
+			//always air
+
+
+			is >> xPos;
+			is >> yPos;
+
+			int level;
+			is >> level;
+
+			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
+			//AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
+			BounceFloater *enemy = new BounceFloater(this, Vector2i(xPos, yPos), level);
+
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;

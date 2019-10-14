@@ -2259,6 +2259,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_BADGER:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
+		case EnemyType::EN_BOUNCEFLOATER:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
+			break;
 		case EnemyType::EN_OWL:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;

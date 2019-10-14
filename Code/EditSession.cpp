@@ -675,15 +675,14 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	//w3
 
 
+	AddBasicAerialWorldEnemy("bouncefloater", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
+		GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
+
 	AddWorldEnemy("pulser", 3, LoadParams<PulserParams>, NULL, MakeParamsAerial<PulserParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
-	/*AddWorldEnemy("badger", 3, LoadParams<BadgerParams>, MakeParamsGrounded<BadgerParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
-
 	AddBasicGroundWorldEnemy("badger", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/badger_192x128.png", 192, 128));
-
 
 	AddWorldEnemy("owl", 3, LoadParams<OwlParams>, NULL, MakeParamsAerial<OwlParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -15080,6 +15079,10 @@ Panel *ActorType::CreatePanel()
 	else if (name == "badger")
 	{
 		p = CreateDefaultPanel("badger_options", true, true, false, false);
+	}
+	else if (name == "bouncefloater")
+	{
+		p = CreateDefaultPanel("bouncefloater_options", false, true, false, false);
 	}
 	else if (name == "owl")
 	{

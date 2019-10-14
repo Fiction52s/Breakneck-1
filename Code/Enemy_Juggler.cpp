@@ -90,8 +90,6 @@ Juggler::Juggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_leve
 
 	comboObj->enemyHitboxFrame = 0;
 
-	hitBody->hitboxInfo = hitboxInfo;
-
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
 
