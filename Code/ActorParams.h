@@ -816,6 +816,28 @@ struct GravitySpringParams: public ActorParams
 
 
 //w3
+
+struct BounceSpringParams : public ActorParams
+{
+	BounceSpringParams(ActorType *at,
+		sf::Vector2i &pos,
+		std::list<sf::Vector2i> &globalPath);
+	BounceSpringParams(ActorType *at,
+		sf::Vector2i &pos);
+	BounceSpringParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void SetPath(
+		std::list<sf::Vector2i> &globalPath);
+	void Draw(sf::RenderTarget *target);
+
+
+	ActorParams *Copy();
+
+	void SetParams();
+	void SetPanelInfo();
+};
+
 struct PulserParams : public ActorParams
 {
 	PulserParams(ActorType *at,

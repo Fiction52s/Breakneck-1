@@ -17305,9 +17305,57 @@ bool Actor::SpringLaunch()
 		{
 			action = SPRINGSTUNGLIDE;
 		}
+		else if (currSpring->springType == Spring::REDIRECT)
+		{
+			action = SPRINGSTUN;
+			springStunFrames = 10;
+			if (ground != NULL)
+			{
+
+			}
+			else
+			{
+				springVel = currSpring->dir * length(velocity);
+			}
+			
+		}
+		else if (currSpring->springType == Spring::REFLECT)
+		{
+			action = SPRINGSTUN;
+			springStunFrames = 10;
+			if (ground != NULL)
+			{
+
+			}
+			else
+			{
+				double len = length(velocity);
+				if (len < 10)
+				{
+					len = 10;
+					springVel = currSpring->dir * len;
+				}
+				else
+				{
+					V2d v = normalize(velocity);
+					cout << "v: " << v.x << ", " << v.y << endl;
+					v = -v;
+
+					double a = GetVectorAngleDiffCCW(v, currSpring->dir);
+					V2d d = currSpring->dir;
+					RotateCCW(d, a);
+					V2d reflectDir = d;//(cross(v, currSpring->dir), dot(v, currSpring->dir) );
+					//cout << "v: " << v.x << ", " << v.y << endl;
+					//cout << "reflectDir: " << reflectDir.x << ", " << reflectDir.y << endl;
+					springVel = reflectDir * len;
+				}
+			}
+
+		}
 		else
 		{
 			action = SPRINGSTUN;
+			
 		}
 
 		currSpring = NULL;

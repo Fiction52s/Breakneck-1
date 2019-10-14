@@ -17,6 +17,9 @@ struct Spring : Enemy
 	{
 		BLUE,
 		GREEN,
+		BOUNCE,
+		REDIRECT,
+		REFLECT,
 	};
 
 	SpringType springType;

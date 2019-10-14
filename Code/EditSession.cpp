@@ -678,6 +678,23 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddBasicAerialWorldEnemy("bouncefloater", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
 
+
+	AddWorldEnemy("bouncespring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+
+	AddWorldEnemy("redirectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+
+	AddWorldEnemy("reflectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+
+	//AddWorldEnemy("bouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
+	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+
 	AddWorldEnemy("pulser", 3, LoadParams<PulserParams>, NULL, MakeParamsAerial<PulserParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
@@ -5181,6 +5198,43 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		testPoint.x = worldPos.x;
 		testPoint.y = worldPos.y;
+
+		if (mode == CREATE_PATROL_PATH || mode == SET_DIRECTION)
+		{
+			if (showPanel != NULL)
+			{
+
+			}
+			else
+			{
+				V2d pathBack(patrolPath.back());
+				V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
+
+				if (Keyboard::isKeyPressed(Keyboard::Key::LShift))
+				{
+					double angle = atan2(-temp.y, temp.x);
+					if (angle < 0)
+					{
+						angle += PI * 2.0;
+					}
+					double len = length(temp);
+					double mult = angle / (PI / 4.0);
+					double dec = mult - floor(mult);
+					int iMult = mult;
+					if (dec >= .5)
+					{
+						iMult++;
+					}
+
+					angle = iMult * PI / 4.0;
+					V2d testVec(len, 0);
+					RotateCCW(testVec, angle);
+					testPoint = Vector2f(pathBack + testVec);
+					temp = testVec;
+				}
+			}
+		}
+
 		int borderMove = 100;
 		sf::Event ev;
 		while( w->pollEvent( ev ) )
@@ -8272,41 +8326,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		//double tempQuant;
 
 
-		if (mode == CREATE_PATROL_PATH || mode == SET_DIRECTION)
-		{
-			if (showPanel != NULL)
-			{
-
-			}
-			else
-			{
-				V2d pathBack(patrolPath.back());
-				V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
-
-				if (Keyboard::isKeyPressed(Keyboard::Key::LShift))
-				{
-					double angle = atan2(-temp.y, temp.x);
-					if (angle < 0)
-					{
-						angle += PI * 2.0;
-					}
-					double len = length(temp);
-					double mult = angle / (PI / 4.0);
-					double dec = mult - floor(mult);
-					int iMult = mult;
-					if (dec >= .5)
-					{
-						iMult++;
-					}
-
-					angle = iMult * PI / 4.0;
-					V2d testVec(len, 0);
-					RotateCCW(testVec, angle);
-					testPoint = Vector2f(pathBack + testVec);
-					temp = testVec;
-				}
-			}
-		}
+		//--------
 
 		switch( mode )
 		{
@@ -9640,40 +9660,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		{
 			if (showPanel != NULL)
 				break;
-
-
-			//if (!panning && Mouse::isButtonPressed(Mouse::Left))
-			//{
-			//	//double test = 100;
-			//	//worldPos before testPoint
-			//	//V2d temp = V2d(testPoint.x, testPoint.y) - Vector2<double>(patrolPath.back().x,
-			//	//	patrolPath.back().y);
-			//	Vector2i worldi(testPoint.x, testPoint.y);
-			//	patrolPath.push_back(worldi);
-
-			//	/*double tempQuant = length(temp);
-			//	if (tempQuant >= minimumPathEdgeLength * std::max(zoomMultiple, 1.0)
-			//		&& tempQuant > patrolPathLengthSize / 2)
-			//	{
-
-			//		if (patrolPathLengthSize > 0)
-			//		{
-			//			V2d temp1 = V2d(patrolPath.back().x, patrolPath.back().y);
-			//			temp = normalize(V2d(testPoint.x, testPoint.y) - temp1)
-			//				* (double)patrolPathLengthSize + temp1;
-			//			Vector2i worldi(temp.x, temp.y);
-			//			patrolPath.push_back(worldi);
-			//		}
-			//		else
-			//		{
-			//			Vector2i worldi(testPoint.x, testPoint.y);
-			//			patrolPath.push_back(worldi);
-			//		}
-
-
-
-			//	}*/
-			//}
 			break;
 		}
 		case CREATE_TERRAIN_PATH:
@@ -15060,6 +15046,17 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("monitor", Vector2i(20, 400));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		//p->
+	}
+	else if (name == "bouncespring" || name == "reflectspring" || name == "redirectspring")
+	{
+		p = new Panel("bouncespring_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
+
+		//p->AddTextBox("moveframes", Vector2i(20, 200), 200, 3, "");
 	}
 	else if (name == "cactus")
 	{
