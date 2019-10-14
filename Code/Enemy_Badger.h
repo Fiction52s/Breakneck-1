@@ -22,13 +22,12 @@ struct Badger : Enemy, GroundMoverHandler
 		bool hasMonitor,
 		Edge *ground,
 		double quantity,
-		bool clockwise, int speed,
-		int jumpStrength);
+		int level);
 	void ActionEnded();
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	
-	
+	void HandleNoHealth();
 	
 	void EnemyDraw(sf::RenderTarget *target);
 	

@@ -454,6 +454,11 @@ struct ActorType
 	void LoadEnemy(std::ifstream &is,
 		ActorPtr &a);
 	Panel * CreatePanel();
+	Panel *CreateDefaultPanel( const std::string &n, 
+		bool mon,
+		bool level,
+		bool path = false,
+		bool loop = false );
 	bool IsGoalType();
 	sf::Sprite GetSprite(int xSize = 0, int ySize = 0);
 	sf::Sprite GetSprite(bool grounded);

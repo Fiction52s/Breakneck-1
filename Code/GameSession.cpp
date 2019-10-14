@@ -2783,14 +2783,10 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int speed;
-			is >> speed;
+			int level;
+			is >> level;
 
-			int jumpStrength;
-			is >> jumpStrength;
-
-			Badger *enemy = new Badger(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, true,
-				speed, jumpStrength);
+			Badger *enemy = new Badger(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;

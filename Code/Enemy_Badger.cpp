@@ -18,11 +18,29 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw, int speed,
-	int p_jumpStrength )
-	:Enemy( owner, EnemyType::EN_BADGER, hasMonitor, 2 ), facingRight( cw ),
+Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, int p_level )
+	:Enemy( owner, EnemyType::EN_BADGER, hasMonitor, 2 ), facingRight( true ),
 	moveBezTest( .22,.85,.3,.91 )
 {
+	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
+	maxGroundSpeed = 10;
+	jumpStrength = 5;
 
 	originalFacingRight = facingRight;
 	actionLength[RUN] = 7 * 2;
@@ -42,9 +60,9 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw,
 	animFactor[TALLJUMPSQUAT] = 1;
 	animFactor[LAND] = 1;
 
-	jumpStrength = p_jumpStrength;
+	//jumpStrength = p_jumpStrength;
 	gravity = V2d( 0, .6 );
-	maxGroundSpeed = speed;
+	
 	action = RUN;
 
 	dead = false;
@@ -74,6 +92,7 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw,
 
 	ts = owner->GetTileset( "Enemies/badger_192x128.png", width, height );
 	sprite.setTexture( *ts->texture );
+	sprite.setScale(scale, scale);
 	//sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	V2d gPoint = g->GetPoint( q );
@@ -91,29 +110,6 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw,
 	double size = max( width, height );
 	spawnRect = sf::Rect<double>( gPoint.x - size, gPoint.y - size, size * 2, size * 2 );
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody->AddCollisionBox(0, hitBox);
-
-
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
@@ -121,6 +117,10 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw,
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
+
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = hitboxInfo;
 
 	crawlAnimationFactor = 5;
@@ -128,8 +128,13 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, bool cw,
 
 	bezLength = 60 * NUM_STEPS;
 
-
 	ResetEnemy();
+}
+
+void Badger::HandleNoHealth()
+{
+	cutObject->SetFlipHoriz(facingRight);
+	cutObject->rotateAngle = sprite.getRotation();
 }
 
 void Badger::ResetEnemy()
@@ -142,6 +147,10 @@ void Badger::ResetEnemy()
 	testMover->SetSpeed( 0 );
 
 	position = testMover->physBody.globalPosition;
+
+
+	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
 
 	bezFrame = 0;
 	attackFrame = -1;

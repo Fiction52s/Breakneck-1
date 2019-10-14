@@ -678,8 +678,12 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddWorldEnemy("pulser", 3, LoadParams<PulserParams>, NULL, MakeParamsAerial<PulserParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
-	AddWorldEnemy("badger", 3, LoadParams<BadgerParams>, MakeParamsGrounded<BadgerParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	/*AddWorldEnemy("badger", 3, LoadParams<BadgerParams>, MakeParamsGrounded<BadgerParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
+
+	AddBasicGroundWorldEnemy("badger", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/badger_192x128.png", 192, 128));
+
 
 	AddWorldEnemy("owl", 3, LoadParams<OwlParams>, NULL, MakeParamsAerial<OwlParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -14745,6 +14749,40 @@ sf::Sprite ActorType::GetSprite(bool grounded)
 	return s;
 }
 
+
+Panel *ActorType::CreateDefaultPanel( const std::string &n, bool mon, bool level, bool path, bool loop )
+{
+	EditSession *edit = EditSession::GetSession();
+	Panel * p = new Panel(n, 200, 500, edit);
+
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+	p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+	p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+
+	if (loop)
+	{
+		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
+		p->AddCheckBox("loop", Vector2i(120, 155));
+	}
+
+	if (level)
+	{
+		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
+	}
+
+	if (path)
+	{
+		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
+	}
+	
+
+	if (mon)
+	{
+		p->AddCheckBox("monitor", Vector2i(20, 330));
+	}	
+	return p;
+}
+
 Panel *ActorType::CreatePanel()
 {
 	EditSession *edit = EditSession::GetSession();
@@ -14803,11 +14841,7 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "healthfly" )
 	{
-		p = new Panel("healthfly_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		p->AddTextBox("level", Vector2i(20, 300), 200, 20, "1");
+		p = CreateDefaultPanel("healthfly_options", true, false);
 	}
 	else if (name == "shard")
 	{
@@ -14820,34 +14854,15 @@ Panel *ActorType::CreatePanel()
 
 	else if (name == "booster")
 	{
-		p = new Panel("booster_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-
-		p->AddTextBox("level", Vector2i(20, 200), 200, 3, "0");
+		p = CreateDefaultPanel("booster_options", false, true);
 	}
 	else if (name == "gravityincreaser" || name == "gravitydecreaser")
 	{
-		p = new Panel("gravchanger_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-
-		p->AddTextBox("level", Vector2i(20, 200), 200, 3, "0");
+		p = CreateDefaultPanel("gravchanger_options", false, true);
 	}
 	else if (name == "comboer")
 	{
-		p = new Panel("comboer_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
-		p->AddCheckBox("loop", Vector2i(120, 155));
-		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
-		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
-
-		p->AddCheckBox("monitor", Vector2i(20, 330));
+		p = CreateDefaultPanel("comboer_options", true, true, true, true);
 	}
 	else if (name == "airdashjuggler")
 	{
@@ -15064,18 +15079,7 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "badger")
 	{
-		p = new Panel("badger_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
-		p->AddCheckBox("clockwise", Vector2i(120, 155));
-
-		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "3");
-		p->AddTextBox("jumpstrength", Vector2i(20, 200), 250, 20, "3");
-
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		p = CreateDefaultPanel("badger_options", true, true, false, false);
 	}
 	else if (name == "owl")
 	{
