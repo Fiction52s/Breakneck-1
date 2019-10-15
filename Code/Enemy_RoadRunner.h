@@ -22,7 +22,8 @@ struct RoadRunner : Enemy, GroundMoverHandler
 
 	RoadRunner(GameSession *owner, bool hasMonitor,
 		Edge *ground,
-		double quantity);
+		double quantity, int level);
+	~RoadRunner();
 	void ActionEnded();
 	void ProcessState();
 	void UpdateEnemyPhysics();

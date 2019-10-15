@@ -1084,9 +1084,9 @@ void Camera::Update( Actor *player )
 		pos.y = playerPos.y + offset.y;
 	}
 	
-	//ControllerState & con = player->currInput;
-	//ControllerState & prevcon = player->prevInput;
-	//UpdateZoomLevel(con, prevcon);
+	ControllerState & con = player->currInput;
+	ControllerState & prevcon = player->prevInput;
+	UpdateZoomLevel(con, prevcon);
 
 	V2d pVel = GetPlayerVel(player);
 

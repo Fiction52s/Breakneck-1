@@ -1745,6 +1745,7 @@ void Enemy::UpdatePostPhysics()
 	{
 		dead = true;
 		owner->RemoveEnemy(this);
+		HandleRemove();
 		return;
 	}
 

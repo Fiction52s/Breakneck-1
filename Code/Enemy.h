@@ -568,13 +568,14 @@ public:
 	CollisionBox *physicsBox;
 	virtual void UpdatePhysics( int substep );
 	int numLaunchers;
-	bool LaunchersAreDone();
+	virtual bool LaunchersAreDone();
 	virtual bool IsSlowed( int index );
 	virtual HitboxInfo * IsHit(Actor *player);
 	Enemy( GameSession *owner, EnemyType t,
 		bool hasMonitor, int world, bool cuttable = true );
 	virtual ~Enemy();
 	virtual void HandleNoHealth();
+	virtual void HandleRemove() {}
 	virtual void ProcessState() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdateHitboxes() {}
@@ -609,7 +610,7 @@ public:
 	bool LeftWireHitMe( CollisionBox hurtBox );
 
 	virtual void EnemyDraw(sf::RenderTarget *target) {}
-	void Draw(sf::RenderTarget *target);
+	virtual void Draw(sf::RenderTarget *target);
 	virtual void UpdateZoneSprite();
 	sf::Sprite zonedSprite;
 	Tileset *ts_zoned;

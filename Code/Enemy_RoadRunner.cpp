@@ -18,9 +18,26 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
+RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
 	:Enemy(owner, EnemyType::EN_ROADRUNNER, p_hasMonitor, 2), facingRight(true)
 {
+	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	//gravity = V2d(0, .6);
 	maxGroundSpeed = 70;
 	action = IDLE;
@@ -40,7 +57,9 @@ RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	
 	mover->SetSpeed(0);
 
-	ts = owner->GetTileset("Enemies/shroom_192x192.png", 192, 192);
+	ts = owner->GetTileset("Enemies/roadrunner_256x256.png", 256, 256);
+	sprite.setScale(scale, scale);
+	sprite.setTexture(*ts->texture);
 
 	actionLength[IDLE] = 1;
 	actionLength[BURROW] = 10;
@@ -68,28 +87,6 @@ RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	int hurtRad = 40;
 	int hitRad = 40;
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = hurtRad;
-	hurtBox.rh = hurtRad;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = hitRad;
-	hitBox.rh = hitRad;
-	hitBody->AddCollisionBox(0, hitBox);
-
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
@@ -97,6 +94,10 @@ RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
+
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(hurtRad);
+	AddBasicHitCircle(hitRad);
 	hitBody->hitboxInfo = hitboxInfo;
 
 	crawlAnimationFactor = 5;
@@ -107,6 +108,11 @@ RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q)
 	cutObject->SetSubRectBack(1);
 
 	ResetEnemy();
+}
+
+RoadRunner::~RoadRunner()
+{
+	delete mover;
 }
 
 void RoadRunner::DebugDraw(RenderTarget *target)
@@ -305,11 +311,13 @@ void RoadRunner::ProcessState()
 		double accel = .5;
 		if (facingRight)
 		{
-			mover->SetSpeed(mover->groundSpeed + accel);
+			mover->SetSpeed(15);
+			//mover->SetSpeed(mover->groundSpeed + accel);
 		}
 		else
 		{
-			mover->SetSpeed(mover->groundSpeed - accel);
+			mover->SetSpeed(-15);
+			//mover->SetSpeed(mover->groundSpeed - accel);
 		}
 
 		if (mover->groundSpeed > maxGroundSpeed)
@@ -327,12 +335,14 @@ void RoadRunner::ProcessState()
 			{
 				if (player->ground != NULL && player->action != Actor::JUMPSQUAT)
 				{
-					mover->SetSpeed(player->groundSpeed);
+					//mover->SetSpeed(player->groundSpeed);
 				}
 			}
 		}
 		break;
 	}
+
+	cout << "moverspeed: " << mover->groundSpeed << endl;
 }
 
 void RoadRunner::UpdateEnemyPhysics()
@@ -355,12 +365,11 @@ void RoadRunner::UpdateEnemyPhysics()
 
 void RoadRunner::EnemyDraw(sf::RenderTarget *target)
 {
-	//DrawSpriteIfExists(target, sprite);
+	DrawSpriteIfExists(target, sprite);
 }
 
 void RoadRunner::UpdateSprite()
 {
-	return;
 	Edge *ground = mover->ground;
 	double edgeQuantity = mover->edgeQuantity;
 	V2d gn;
@@ -377,6 +386,9 @@ void RoadRunner::UpdateSprite()
 		gPoint = position;
 	}
 
+
+	int originHeight = sprite.getLocalBounds().height / 2;
+
 	IntRect r;
 	r = ts->GetSubRect(0);
 
@@ -386,10 +398,18 @@ void RoadRunner::UpdateSprite()
 	}
 	sprite.setTextureRect(r);
 
-
 	float extraVert = 0;
-	int originHeight = sprite.getLocalBounds().height / 2;
+	
 	double angle;
+
+	angle = 0;
+	V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+	sprite.setRotation(angle / PI * 180);
+	sprite.setPosition(pp.x, pp.y);
+
+	return;
+
 	if (mover->ground != NULL)
 	{
 		if (!mover->roll)
@@ -414,7 +434,8 @@ void RoadRunner::UpdateSprite()
 				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
 				sprite.setPosition(pp.x, pp.y);
 			}
-			else if (mover->groundSpeed < 0)
+			else
+			//else if (mover->groundSpeed < 0)
 			{
 				V2d vec = normalize(position - mover->ground->v0);
 				angle = atan2(vec.y, vec.x);

@@ -17,9 +17,7 @@ struct Owl : Enemy, LauncherEnemy
 	Owl(GameSession *owner,
 		bool hasMonitor,
 		sf::Vector2i &pos,
-		int bulletSpeed,
-		int framesBetween,
-		bool facingRight);
+		int level);
 	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos);

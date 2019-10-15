@@ -27,8 +27,10 @@ struct CactusShotgun : Enemy, LauncherEnemy, PoolMember
 	void ActionEnded();
 	void ClearSprite();
 	void ProcessState();
+	
 	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
+	void HandleRemove();
+	void HandleNoHealth();
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void BulletHitTerrain(BasicBullet *b,
@@ -65,17 +67,21 @@ struct Cactus : Enemy
 
 	Action action;
 	Cactus(GameSession *owner, bool hasMonitor,
-		Edge *ground, double quantity );
+		Edge *ground, double quantity, int level );
 	void ProcessState();
+	bool LaunchersAreDone();
 	void ActionEnded();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
-	void EnemyDraw(sf::RenderTarget *target);
+	//void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void DirectKill();
 	void ResetEnemy();
 	void ThrowShotgun();
+	void Draw(sf::RenderTarget *target);
+
+	Shield *shield;
 
 	sf::Sprite sprite;
 	Tileset *ts;

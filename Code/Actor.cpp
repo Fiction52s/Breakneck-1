@@ -90,6 +90,11 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[RUN] = owner->GetTileset("Kin/run_64x64.png", 64, 64, skin);
 	tileset[SPRINGSTUN] = owner->GetTileset("Kin/launch_96x64.png", 96, 64, skin);
 	tileset[SPRINGSTUNGLIDE] = tileset[SPRINGSTUN];
+
+	tileset[SPRINGSTUNBOUNCE] = tileset[SPRINGSTUN];
+	tileset[SPRINGSTUNREFLECT] = tileset[SPRINGSTUN];
+	tileset[SPRINGSTUNREDIRECT] = tileset[SPRINGSTUN];
+
 	tileset[GLIDE] = tileset[SPRINGSTUN];
 	tileset[SLIDE] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
 	tileset[SPRINT] = owner->GetTileset("Kin/sprint_80x48.png", 80, 48, skin);	
@@ -1089,6 +1094,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SEQ_ENTERCORE1] = 60;
 		actionLength[SPRINGSTUN] = 8;
 		actionLength[SPRINGSTUNGLIDE] = 8;
+
+		actionLength[SPRINGSTUNBOUNCE] = 8;
+		actionLength[SPRINGSTUNREFLECT] = 8;
+		actionLength[SPRINGSTUNREDIRECT] = 8;
+
 		actionLength[GLIDE] = 8;
 		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
 		actionLength[DASHATTACK] = 8 * 2;
@@ -1679,6 +1689,9 @@ void Actor::ActionEnded()
 			
 			//assert(ground == NULL);
 			break;
+		case SPRINGSTUNBOUNCE:
+		case SPRINGSTUNREFLECT:
+		case SPRINGSTUNREDIRECT:
 		case SPRINGSTUNGLIDE:
 			//action = JUMP;
 			frame = 0;
@@ -3834,6 +3847,48 @@ void Actor::UpdatePrePhysics()
 		}
 		break;
 	}
+	case SPRINGSTUNBOUNCE:
+		if (!BasicAirAction())
+		{
+			if (springStunFrames == 0)
+			{
+				SetAction(JUMP);
+				frame = 1;
+			}
+		}
+		else
+		{
+			springStunFrames = 0;
+		}
+		break;
+	case SPRINGSTUNREFLECT:
+		if (!BasicAirAction())
+		{
+			if (springStunFrames == 0)
+			{
+				SetAction(JUMP);
+				frame = 1;
+			}
+		}
+		else
+		{
+			springStunFrames = 0;
+		}
+		break;
+	case SPRINGSTUNREDIRECT:
+		if (!BasicAirAction())
+		{
+			if (springStunFrames == 0)
+			{
+				SetAction(JUMP);
+				frame = 1;
+			}
+		}
+		else
+		{
+			springStunFrames = 0;
+		}
+		break;
 	case SPRINGSTUNGLIDE:
 	{
 		if (!GlideAction())
@@ -7285,6 +7340,9 @@ void Actor::UpdatePrePhysics()
 		break;
 	case GRAVREVERSE:
 		break;
+	case SPRINGSTUNBOUNCE:
+	case SPRINGSTUNREFLECT:
+	case SPRINGSTUNREDIRECT:
 	case SPRINGSTUN:
 	{		
 		velocity = springVel + springExtra;
@@ -7905,7 +7963,8 @@ void Actor::UpdatePrePhysics()
 
 	double maxReal = maxVelocity + scorpAdditionalCap;
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
-		&& action != ENTERNEXUS1 && action != SPRINGSTUN && action != GLIDE && action != SPRINGSTUNGLIDE)
+		&& action != ENTERNEXUS1 && action != SPRINGSTUN && action != GLIDE && action != SPRINGSTUNGLIDE
+		&& action != SPRINGSTUNBOUNCE && action != SPRINGSTUNREFLECT && action != SPRINGSTUNREDIRECT )
 	{
 		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD )
 		{
@@ -17308,7 +17367,7 @@ bool Actor::SpringLaunch()
 		else if (currSpring->springType == Spring::REDIRECT)
 		{
 			action = SPRINGSTUN;
-			springStunFrames = 10;
+			springStunFrames = 15;
 			if (ground != NULL)
 			{
 
@@ -17321,8 +17380,7 @@ bool Actor::SpringLaunch()
 		}
 		else if (currSpring->springType == Spring::REFLECT)
 		{
-			action = SPRINGSTUN;
-			springStunFrames = 10;
+			
 			if (ground != NULL)
 			{
 
@@ -17330,24 +17388,36 @@ bool Actor::SpringLaunch()
 			else
 			{
 				double len = length(velocity);
-				if (len < 10)
+				if (len < 25)
 				{
-					len = 10;
-					springVel = currSpring->dir * len;
+					len = 25;
+					//springVel = currSpring->dir * len;
 				}
-				else
+				//else
 				{
+
+					action = SPRINGSTUN;
+					springStunFrames = 15;
+
 					V2d v = normalize(velocity);
 					cout << "v: " << v.x << ", " << v.y << endl;
 					v = -v;
 
-					double a = GetVectorAngleDiffCCW(v, currSpring->dir);
-					V2d d = currSpring->dir;
-					RotateCCW(d, a);
-					V2d reflectDir = d;//(cross(v, currSpring->dir), dot(v, currSpring->dir) );
+					V2d dir = currSpring->dir;
+
+					if (dot(v, currSpring->dir) > 0 )
+					{
+						dir = -dir;
+					}
+					
+
+					double a = GetVectorAngleDiffCCW(v, dir);
+					//V2d di = currSpring->dir;
+					RotateCCW(dir, a);
+					//V2d reflectDir = d;//(cross(v, currSpring->dir), dot(v, currSpring->dir) );
 					//cout << "v: " << v.x << ", " << v.y << endl;
 					//cout << "reflectDir: " << reflectDir.x << ", " << reflectDir.y << endl;
-					springVel = reflectDir * len;
+					springVel = dir * len;
 				}
 			}
 
@@ -21192,6 +21262,9 @@ void Actor::UpdateSprite()
 			SetAerialScorpSprite();
 		break;
 	}
+	case SPRINGSTUNBOUNCE:
+	case SPRINGSTUNREFLECT:
+	case SPRINGSTUNREDIRECT:
 	case SPRINGSTUNGLIDE:
 	{
 		SetSpriteTexture(action);

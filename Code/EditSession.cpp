@@ -701,11 +701,18 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddBasicGroundWorldEnemy("badger", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/badger_192x128.png", 192, 128));
 
-	AddWorldEnemy("owl", 3, LoadParams<OwlParams>, NULL, MakeParamsAerial<OwlParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicGroundWorldEnemy("roadrunner", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/roadrunner_256x256.png", 256, 256));
 
-	AddWorldEnemy("cactus", 3, LoadParams<CactusParams>, MakeParamsGrounded<CactusParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicAerialWorldEnemy("owl", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
+	/*AddWorldEnemy("owl", 3, LoadParams<OwlParams>, NULL, MakeParamsAerial<OwlParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
+
+	AddBasicGroundWorldEnemy("cactus", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
+	/*AddWorldEnemy("cactus", 3, LoadParams<CactusParams>, MakeParamsGrounded<CactusParams>, NULL,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
 
 	AddWorldEnemy("bosscoyote", 3, LoadParams<BossCoyoteParams>, NULL, MakeParamsAerial<BossCoyoteParams>,
 		Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
@@ -15060,22 +15067,15 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "cactus")
 	{
-		p = new Panel("cactus_options", 200, 550, edit);
-		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-
-		p->AddTextBox("bulletspeed", Vector2i(20, 150), 200, 20, "10");
-		p->AddTextBox("rhythm", Vector2i(20, 200), 200, 20, "60");
-		p->AddTextBox("amplitude", Vector2i(20, 250), 200, 20, "10");
-
-
-		p->AddCheckBox("monitor", Vector2i(20, 400));
-
+		p = CreateDefaultPanel("cactus_options", true, true);
 	}
 	else if (name == "badger")
 	{
 		p = CreateDefaultPanel("badger_options", true, true, false, false);
+	}
+	else if (name == "roadrunner")
+	{
+		p = CreateDefaultPanel("roadrunner_options", true, true, false, false);
 	}
 	else if (name == "bouncefloater")
 	{
@@ -15083,7 +15083,8 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "owl")
 	{
-		p = new Panel("owl_options", 200, 600, edit);
+		p = CreateDefaultPanel("owl_options", true, true, false, false);
+		/*p = new Panel("owl_options", 200, 600, edit);
 		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
@@ -15094,7 +15095,7 @@ Panel *ActorType::CreatePanel()
 
 
 
-		p->AddCheckBox("monitor", Vector2i(20, 400));
+		p->AddCheckBox("monitor", Vector2i(20, 400));*/
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 		//p->
 	}

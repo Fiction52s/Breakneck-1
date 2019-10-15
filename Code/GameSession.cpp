@@ -1081,6 +1081,8 @@ void GameSession::AddEnemy( Enemy *e )
 
 	//^^note remove this later
 	//debugging only
+
+	//debug test
 	Enemy *c = activeEnemyList;
 	while (c != NULL)
 	{
@@ -2735,17 +2737,20 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int bulletSpeed;
+			/*int bulletSpeed;
 			is >> bulletSpeed;
 
 			int rhythm;
 			is >> rhythm;
 
 			int amplitude;
-			is >> amplitude;
+			is >> amplitude;*/
+
+			int level;
+			is >> level;
 
 			Cactus *enemy = new Cactus(this, hasMonitor,
-				edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+				edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level );
 
 
 			fullEnemyList.push_back(enemy);
@@ -2767,18 +2772,19 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int moveSpeed;
-			is >> moveSpeed;
+			//int moveSpeed;
+			//is >> moveSpeed;
 
-			int bulletSpeed;
-			is >> bulletSpeed;
+			//int bulletSpeed;
+			//is >> bulletSpeed;
 
-			int rhythmFrames;
-			is >> rhythmFrames;
+			//int rhythmFrames;
+			//is >> rhythmFrames;
 
+			int level;
+			is >> level;
 
-			Owl *enemy = new Owl(this, hasMonitor, Vector2i(xPos, yPos), moveSpeed,
-				bulletSpeed, rhythmFrames);
+			Owl *enemy = new Owl(this, hasMonitor, Vector2i(xPos, yPos), level);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
@@ -2805,6 +2811,32 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			is >> level;
 
 			Badger *enemy = new Badger(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "roadrunner")
+		{
+			//always grounded
+
+			int terrainIndex;
+			is >> terrainIndex;
+
+			int edgeIndex;
+			is >> edgeIndex;
+
+			double edgeQuantity;
+			is >> edgeQuantity;
+
+			int hasMonitor;
+			is >> hasMonitor;
+
+			int level;
+			is >> level;
+
+			RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;

@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Cactus.h"
+#include "Shield.h"
 
 using namespace std;
 using namespace sf;
@@ -18,24 +19,46 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
+Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
 		:Enemy( owner, EnemyType::EN_CACTUS, p_hasMonitor, 2 ), ground( g ),
 		edgeQuantity( q )
 {
+	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 
 	bulletSpeed = 6;
 	
 	firingCounter = 120;
 
-	double width = 64; //112;
-	double height = 64;
+	double width = 144; //112;
+	double height = 96;
 
 	//ts = owner->GetTileset( "basicturret_112x64.png", width, height );
-	ts = owner->GetTileset( "curveturret_64x64.png", width, height );
+	ts = owner->GetTileset( "Enemies/curveturret_144x96.png", width, height );
 	sprite.setTexture( *ts->texture );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
 	V2d gPoint = g->GetPoint( edgeQuantity );
 	sprite.setPosition( gPoint.x, gPoint.y );
+	sprite.setScale(scale, scale);
+
+	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
+	currShield = shield;
+	shield->Reset();
+	shield->SetPosition(position);
 	
 	int maxShotguns = 10;
 
@@ -75,29 +98,6 @@ Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	animFactor[IDLE] = 1;
 	animFactor[SHOOT] = 1;
 	animFactor[ACTIVE] = 1;
-
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody->AddCollisionBox(0, hitBox);
-
 	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -107,6 +107,9 @@ Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = hitboxInfo;
 
 	double size = max( width, height );
@@ -133,6 +136,10 @@ void Cactus::ResetEnemy()
 	SetHurtboxes(hurtBody, 0);
 	UpdateHitboxes();
 	UpdateSprite();
+
+	currShield = shield;
+	shield->Reset();
+	shield->SetPosition(position);
 }
 
 void Cactus::ActionEnded()
@@ -209,9 +216,32 @@ void Cactus::UpdateEnemyPhysics()
 	
 }
 
-void Cactus::EnemyDraw(sf::RenderTarget *target )
+void Cactus::Draw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	if (cutObject != NULL)
+	{
+		if (dead && cutObject->active)
+		{
+			cutObject->Draw(target);
+		}
+		else if (!dead)
+		{
+			DrawSpriteIfExists(target, sprite);
+			if (currShield != NULL)
+			{
+				currShield->Draw(target);
+			}
+		}
+	}
+	else
+	{
+		EnemyDraw(target);
+		if (currShield != NULL)
+		{
+			currShield->Draw(target);
+		}
+	}
+
 	target->draw(shotgunVA, 10 * 4, sf::Quads, ts_shotgun->texture);
 }
 
@@ -229,6 +259,9 @@ void Cactus::ThrowShotgun()
 
 	CactusShotgun *shot = (CactusShotgun*)shotgunPool->ActivatePoolMember();
 	assert(shot != NULL);
+
+	shot->spawned = false;
+	//shot->Reset();
 
 	Actor *player = owner->GetPlayer(0);
 	V2d playerDir = normalize(player->position - position);
@@ -252,6 +285,18 @@ void Cactus::UpdateHitboxes()
 	hitBox.globalAngle = 0;
 }
 
+bool Cactus::LaunchersAreDone()
+{
+	if (shotgunPool->numActiveMembers == 0)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, int poolIndex )
 	:Enemy(owner, EnemyType::EN_CACTUSSHOTGUN, false, 2), parent( p ), PoolMember( poolIndex )
 {
@@ -262,30 +307,6 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 	double width = 64; //112;
 	double height = 64;
 
-
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 16;
-	hurtBox.rh = 16;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 16;
-	hitBox.rh = 16;
-	hitBody->AddCollisionBox(0, hitBox);
-
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
@@ -294,6 +315,9 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(16);
+	AddBasicHitCircle(16);
 	hitBody->hitboxInfo = hitboxInfo;
 
 	double size = max(width, height);
@@ -320,12 +344,14 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 	actionLength[SHOOTING] = 20;
 	actionLength[PUSHBACK] = 40;
 	actionLength[STASIS] = 180;
+	actionLength[EXPLODING] = 10;
 
 	animFactor[CHASINGPLAYER] = 1;
 	animFactor[BLINKING] = 1;
 	animFactor[SHOOTING] = 1;
 	animFactor[STASIS] = 1;
 	animFactor[PUSHBACK] = 1;
+	animFactor[EXPLODING] = 1;
 	
 
 	ResetEnemy();
@@ -402,16 +428,26 @@ void CactusShotgun::ActionEnded()
 			break;
 		case STASIS:
 			action = EXPLODING;
-			frame = 0;
+			//frame = 0;
 			break;
 		case EXPLODING:
 			dead = true;
 			numHealth = 0;
-			myPool->DeactivatePoolMember(this);
-			ClearSprite();
+			//myPool->DeactivatePoolMember(this);
+			//ClearSprite();
 			break;
 		}
 	}
+}
+
+void CactusShotgun::HandleRemove()
+{
+	myPool->DeactivatePoolMember(this);
+}
+
+void CactusShotgun::HandleNoHealth()
+{
+	ClearSprite();
 }
 
 void CactusShotgun::ClearSprite()
@@ -479,11 +515,6 @@ void CactusShotgun::UpdateEnemyPhysics()
 	position += velocity / ((double)slowMultiple) / numPhysSteps;
 	//cout << "position: " << position.x << ", " << position.y << endl;
 	//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
-}
-
-void CactusShotgun::EnemyDraw(sf::RenderTarget *target)
-{
-	//DrawSpriteIfExists(target, sprite);
 }
 
 void CactusShotgun::DirectKill()

@@ -20,9 +20,26 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpeed, int p_framesBetweenFiring, bool p_facingRight )
+Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level )
 	:Enemy( owner, EnemyType::EN_OWL, p_hasMonitor, 2 ), flyingBez( 0, 0, 1, 1 )
 {
+	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	ts_death = owner->GetTileset( "Enemies/owl_death_160x160.png", 160, 160 );
 	ts_flap = owner->GetTileset( "Enemies/owl_flap_160x160.png", 160, 160 );
 	ts_spin = owner->GetTileset( "Enemies/owl_spin_160x160.png", 160, 160 );
@@ -53,10 +70,10 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 
 	originalPos = pos;
 
-	facingRight = p_facingRight;
+	facingRight = true;
 
-	bulletSpeed = p_bulletSpeed;
-	framesBetween = p_framesBetweenFiring;
+	bulletSpeed = 10;
+	framesBetween = 60;
 	
 	numLaunchers = 2;
 	launchers = new Launcher*[numLaunchers];
@@ -73,29 +90,6 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 16;
-	hurtBox.rh = 16;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 16;
-	hitBox.rh = 16;
-	hitBody->AddCollisionBox(0, hitBox);
-
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
@@ -103,8 +97,12 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
-	hitBody->hitboxInfo = hitboxInfo;
+	
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(16);
+	AddBasicHitCircle(16);
+	hitBody->hitboxInfo = hitboxInfo;
 
 	ts_bulletExplode = owner->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
@@ -120,7 +118,7 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_bulletSpee
 
 	ResetEnemy();
 
-	
+	sprite.setScale(scale, scale);
 }
 
 void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
