@@ -511,11 +511,25 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 	{
 		changed = true;
 		newPos = ground->v1 + e1n * physBody.rw;
+		if (rollNew > rollEnd)
+		{
+			double diff = (rollNew - rollEnd) * physBody.rw;
+			steal = diff;
+		}
+		else if (rollNew < rollStart)
+		{
+			//need to implement this!!!!
+
+			int xxxxx = 6;
+		}
 	}
 	else if( rollEnd < rollStart && ( rollNew > rollEnd && rollNew < rollStart ) )
 	{
 		changed = true;
 		newPos = ground->v1 + e1n * physBody.rw;
+
+		//implement this when it comes up too
+		int xxxxxx = 6;
 	}
 
 	bool hit = ResolvePhysics( newPos - physBody.globalPosition );
@@ -534,6 +548,7 @@ bool SurfaceMover::RollClockwise( double &q, double &m )
 		FinishedRoll();
 		if( surfaceHandler != NULL )
 				surfaceHandler->TransferEdge( ground );
+		//return true;
 	}
 
 	return false;
@@ -574,12 +589,26 @@ bool SurfaceMover::RollCounterClockwise( double &q, double &m )
 		//cout << "first" << endl;
 		changed = true;
 		newPos = ground->v0 + e0n * physBody.rw;
+
+		if (rollNew < rollEnd)
+		{
+			double diff = (rollNew - rollEnd) *  physBody.rw;
+			steal = diff;
+		}
+		else
+		{
+			//implemenet
+			int xxxxx = 6;
+		}
 	}
 	else if( rollEnd > rollStart && ( rollNew < rollEnd && rollNew > rollStart ) )
 	{
 		//cout << "second: " << rollStart << ", end: " << rollEnd << ", new: " << rollNew << endl;
 		changed = true;
 		newPos = ground->v0 + e0n * physBody.rw;
+
+		//implement
+		int xxxx = 6;
 	}
 
 	bool hit = ResolvePhysics( newPos - physBody.globalPosition );
@@ -622,7 +651,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 		while( movement != 0 )
 		{
 			//ground is always some value
-			double steal = 0;
+			steal = 0;
 			if( movement > 0 )
 			{
 				if( movement > maxMovement )
@@ -663,9 +692,11 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 				edgeQuantity = groundLength;
 				q = edgeQuantity;
 				gNormal = ground->Normal();
+				//cout << "Stuff" << endl;
 			}
 			else if( movement < 0 && roll && q == groundLength )
 			{
+				//cout << "A" << endl;
 				ground = ground->edge1;
 				groundLength = length( ground->v1 - ground->v0 );
 				edgeQuantity = 0;
@@ -686,12 +717,13 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 			
 			if( movement > 0 && q == groundLength )
 			{
+				//cout << "transfer right" << endl;
 				double c = cross( e1n, gNormal );
 				double d = dot( e1n, gNormal );
 			
 				if( gNormal == e1n )
 				{
-					cout << "transfer clockwise" << endl;
+					//cout << "transfer clockwise" << endl;
 					//cout << "t1" << endl;
 					q = 0;
 					ground = e1;
@@ -699,21 +731,30 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 					if( surfaceHandler != NULL )
 						surfaceHandler->TransferEdge( ground );
 				}
-				else if( !roll )
-				{
-					bool br = StartRoll();
-					if( br )
-						break;
-					//callback for starting to roll
-				}
+				//else if( !roll )
+				//{
+				//	bool br = StartRoll();
+				//	if( br )
+				//		break;
+				//	//callback for starting to roll
+				//}
 				else
 				{
+					if (!roll)
+					{
+						StartRoll();
+					}
 					//cout << "roll clockwise" << endl;
 					bool br = RollClockwise( q, m );
 					if( br )
 					{
+						cout << "blah" << endl;
 						edgeQuantity = q;
 						break;
+					}
+					else
+					{
+						cout << "keep going" << endl;
 					}
 				}
 			}

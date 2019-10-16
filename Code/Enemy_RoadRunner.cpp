@@ -107,6 +107,8 @@ RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q,
 	cutObject->SetSubRectFront(0);
 	cutObject->SetSubRectBack(1);
 
+	//highResPhysics = true;
+
 	ResetEnemy();
 }
 

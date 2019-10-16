@@ -69,6 +69,7 @@ struct SurfaceMover : QuadTreeCollider
 	V2d force;
 	//std::string queryMode;
 	sf::Vector2<double> tempVel;
+	double steal;
 
 	//sf::Vector2<double> gravity;
 	//double maxSpeed;
