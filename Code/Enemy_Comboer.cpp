@@ -36,7 +36,7 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 		break;
 	}
 
-	cType = T_STRAIGHT;
+	//cType = T_STRAIGHT;
 	switch (cType)
 	{
 	case T_STRAIGHT:

@@ -2065,7 +2065,8 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			enemyTree->Insert(enemy);
 		}
-		else if (typeName == "comboer")
+		else if (typeName == "comboer" || typeName == "gravdowncomboer" || typeName == "gravupcomboer" 
+			|| typeName == "bouncecomboer" )
 		{
 
 			int xPos, yPos;
@@ -2090,8 +2091,31 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int level;
 			is >> level;
 
+
+			Comboer::ComboerType ct;
+			if (typeName == "comboer")
+			{
+				ct = Comboer::ComboerType::T_STRAIGHT;
+			}
+			else if (typeName == "gravdowncomboer")
+			{
+				ct = Comboer::ComboerType::T_GRAVITY;
+			}
+			else if (typeName == "gravupcomboer")
+			{
+				ct = Comboer::ComboerType::T_REVERSEGRAVITY;
+			}
+			else if (typeName == "bouncecomboer")
+			{
+				ct = Comboer::ComboerType::T_BOUNCE;
+			}
+			else
+			{
+				ct = Comboer::ComboerType::T_STRAIGHT;
+				assert(0);
+			}
 			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-			Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level, Comboer::ComboerType::T_STRAIGHT);
+			Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level, ct);
 
 
 			fullEnemyList.push_back(enemy);
@@ -2710,11 +2734,13 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			bool loop;
 			Enemy::ReadBool(is, loop);
 
-			int framesBetweenNodes;
-			is >> framesBetweenNodes;
+			int level;
+			is >> level;
+			//int framesBetweenNodes;
+			//is >> framesBetweenNodes;
 
 			Pulser *enemy = new Pulser(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-				framesBetweenNodes, loop);
+				loop, level );
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;

@@ -5,53 +5,49 @@
 
 struct Pulser : Enemy
 {
-
 	enum Action
 	{
-		IDLE,
-		SHIELDOFF,
-		SHIELDON,
-		NOSHIELD,
+		WAIT,
+		CHARGE,
+		ELECTRIFY,
 		A_COUNT
 	};
 
-	Action action;
 	int actionLength[A_COUNT];
 	int animFactor[A_COUNT];
+	Action action;
 
-	Pulser(GameSession *owner,
-		bool hasMonitor,
-		sf::Vector2i &pos,
-		std::list<sf::Vector2i> &path,
-		int framesBetween,
-		bool loop);
+	Pulser(GameSession *owner, bool hasMonitor,
+		sf::Vector2i pos, std::list<sf::Vector2i> &path,
+		bool loop,
+		int level);
+	~Pulser();
 	void ProcessState();
-	void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target);
+
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();
-	void HandleHitAndSurvive();
-	void FrameIncrement();
-	Shield *shield;
-
-	int framesBetween;
-	MovementSequence testSeq;
-
-	int pulseWait;
+	void UpdateEnemyPhysics();
+	void AdvanceTargetNode();
 
 	sf::Vector2i *path; //global
 	int pathLength;
 	bool loop;
-
+	int targetNode;
+	bool forward;
+	double speed;
 	int nodeWaitFrames;
+
 	sf::Sprite sprite;
 	Tileset *ts;
-	HitboxInfo *shieldHitboxInfo;
 
-	int pulseFrame;
+	Tileset *ts_aura;
+	sf::Sprite auraSprite;
 
 	bool facingRight;
+
+	
 };
 
 #endif

@@ -642,6 +642,12 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
 
+	AddBasicAerialWorldEnemy("gravdowncomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
+	AddBasicAerialWorldEnemy("gravupcomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
 	AddBasicAerialWorldEnemy("bat", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/bat_144x176.png", 144, 176));
 
@@ -678,6 +684,8 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddBasicAerialWorldEnemy("bouncefloater", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
 
+	AddBasicAerialWorldEnemy("bouncecomboer", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
 	AddWorldEnemy("bouncespring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
@@ -695,8 +703,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 
-	AddWorldEnemy("pulser", 3, LoadParams<PulserParams>, NULL, MakeParamsAerial<PulserParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicAerialWorldEnemy("pulser", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3);
 
 	AddBasicGroundWorldEnemy("badger", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/badger_192x128.png", 192, 128));
@@ -14852,7 +14859,8 @@ Panel *ActorType::CreatePanel()
 	{
 		p = CreateDefaultPanel("gravchanger_options", false, true);
 	}
-	else if (name == "comboer")
+	else if (name == "comboer" || name == "gravdowncomboer" || name == "gravupcomboer" 
+		|| name == "bouncecomboer")
 	{
 		p = CreateDefaultPanel("comboer_options", true, true, true, true);
 	}
@@ -15041,18 +15049,7 @@ Panel *ActorType::CreatePanel()
 	//w3
 	else if (name == "pulser")
 	{
-		p = new Panel("pulser_options", 200, 600, edit);
-		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
-		p->AddCheckBox("loop", Vector2i(120, 155));
-		p->AddTextBox("framesbetweennodes", Vector2i(20, 300), 200, 20, "10");
-		p->AddButton("createpath", Vector2i(20, 350), Vector2f(100, 50), "Create Path");
-
-		p->AddCheckBox("monitor", Vector2i(20, 400));
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
-		//p->
+		p = CreateDefaultPanel("pulser_options", true, true, true, true);
 	}
 	else if (name == "bouncespring" || name == "reflectspring" || name == "redirectspring")
 	{

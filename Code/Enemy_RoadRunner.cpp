@@ -313,13 +313,13 @@ void RoadRunner::ProcessState()
 		double accel = .5;
 		if (facingRight)
 		{
-			mover->SetSpeed(15);
-			//mover->SetSpeed(mover->groundSpeed + accel);
+			//mover->SetSpeed(15);
+			mover->SetSpeed(mover->groundSpeed + accel);
 		}
 		else
 		{
-			mover->SetSpeed(-15);
-			//mover->SetSpeed(mover->groundSpeed - accel);
+			//mover->SetSpeed(-15);
+			mover->SetSpeed(mover->groundSpeed - accel);
 		}
 
 		if (mover->groundSpeed > maxGroundSpeed)
@@ -344,7 +344,7 @@ void RoadRunner::ProcessState()
 		break;
 	}
 
-	cout << "moverspeed: " << mover->groundSpeed << endl;
+	//cout << "moverspeed: " << mover->groundSpeed << endl;
 }
 
 void RoadRunner::UpdateEnemyPhysics()

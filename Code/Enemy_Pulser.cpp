@@ -4,7 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Pulser.h"
-#include "Shield.h"
+#include "Eye.h"
 
 using namespace std;
 using namespace sf;
@@ -12,228 +12,137 @@ using namespace sf;
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Pulser::Pulser( GameSession *owner, bool p_hasMonitor, Vector2i &pos, 
-	list<Vector2i> &pathParam, int p_framesBetweenNodes, bool p_loop )
-	:Enemy( owner, EnemyType::EN_PULSER, p_hasMonitor, 2 )
+Pulser::Pulser(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level)
+	:Enemy(owner, EnemyType::EN_PULSER, p_hasMonitor, 1)
 {
-	highResPhysics = true;
+	level = p_level;
 
-	pulseWait = 40;
-	actionLength[IDLE] = 4;
-	actionLength[SHIELDOFF] = 4;
-	actionLength[SHIELDON] = 4;
-	actionLength[NOSHIELD] = 4;
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 
-	animFactor[IDLE] = 5;
-	animFactor[SHIELDOFF] = 5;
-	animFactor[SHIELDON] = 5;
-	animFactor[NOSHIELD] = 5;
-
-	loop = p_loop;
-
-	receivedHit = NULL;
+	action = WAIT;
 	position.x = pos.x;
 	position.y = pos.y;
-	
-	
 
-	framesBetween = p_framesBetweenNodes;
+	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
 
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
-	
 	pathLength = pathParam.size() + 1;
-	if( loop )
-	{
-		pathLength += 1;
-		//cout << "looping bat" << endl;
-		//assert( false );
-		//tough cuz of set node distance from each other. for now don't use it.
-	}
-	else
-	{
-		//the road back
-		//cout << "old: " << pathLength << endl;
-		if( pathParam.size() > 0 )
-		{
-			pathLength += pathParam.size();
-		}
-		//cout << "new: " << pathLength << endl;
-	}
-
+	//cout << "pathLength: " << pathLength << endl;
 	path = new Vector2i[pathLength];
 	path[0] = pos;
-	path[pathLength-1] = pos;
 
 	int index = 1;
-	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
+	for (list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it)
 	{
 		path[index] = (*it) + pos;
 		++index;
-	}
-
-	//make composite beziers
-	if( pathLength == 1 )
-	{
+		//path.push_back( (*it) );
 
 	}
-	else if( !loop )
-	{
-		list<Vector2i>::reverse_iterator rit = pathParam.rbegin();
-		++rit; //start at second item
-		
-		for(  ;rit != pathParam.rend(); ++rit )
-		{
-			path[index] = (*rit) + pos;
-			++index;
-		}
-	}
-	//cout << "path length: " << pathLength << ", " << index << endl;
 
-	//basePos = position;
-	V2d sqTest0 = position;
-	V2d sqTest1 = position + V2d( 0, -150 );
-	V2d sqTest2 = position + V2d( 150, -150 );
-	V2d sqTest3 = position + V2d( 300, -150 );
-	V2d sqTest4 = position + V2d( 300, 0 );
+	loop = loopP;
 
-	for( int i = 0; i < pathLength - 1; ++i )
-	{
-		V2d A( path[i].x, path[i].y );
-		V2d B( path[i+1].x, path[i+1].y );
-		testSeq.AddLineMovement( A, B, CubicBezier( 0,0,1,1 ), framesBetween );
-		testSeq.AddMovement( new WaitMovement( framesBetween ) );
-	}
+	speed = 3;//pspeed;
 
-	if( pathLength == 1 )
-	{
-		V2d A( path[0].x, path[0].y );
-		testSeq.AddLineMovement( A, A, CubicBezier( 0, 0, 1, 1 ), framesBetween );
-		testSeq.AddMovement( new WaitMovement( framesBetween ) );
-	}
 
-	//testSeq.InitMovementDebug();
 
+			  //speed = 2;
 	frame = 0;
 
-	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Enemies/pulser_64x64.png", 64, 64 );
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
+	//ts = owner->GetTileset( "Pulser.png", 80, 80 );
+	ts = owner->GetTileset("Enemies/pulser_64x64.png", 64, 64);
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 26;
-	hurtBox.rh = 26;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(2);
-	CollisionBox smallHitbox;
-	smallHitbox.type = CollisionBox::Hit;
-	smallHitbox.isCircle = true;
-	smallHitbox.globalAngle = 0;
-	smallHitbox.offset.x = 0;
-	smallHitbox.offset.y = 0;
-	smallHitbox.rw = 26;
-	smallHitbox.rh = 26;
-
-	CollisionBox bigHitbox;
-	bigHitbox.type = CollisionBox::Hit;
-	bigHitbox.isCircle = true;
-	bigHitbox.globalAngle = 0;
-	bigHitbox.offset.x = 0;
-	bigHitbox.offset.y = 0;
-	bigHitbox.rw = 128;
-	bigHitbox.rh = 128;
-
-	hitBody->AddCollisionBox(0, smallHitbox);
-	hitBody->AddCollisionBox(1, bigHitbox);
-
+	sprite.setTexture(*ts->texture);
+	sprite.setScale(scale, scale);
 	
+	//ts_aura = owner->GetTileset("Enemies/pulser_64x64.png", 64, 64);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 3 * 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(16);
+	AddBasicHitCircle(16);
 	hitBody->hitboxInfo = hitboxInfo;
 
+	SetHitboxes(hitBody, 0);
+	SetHurtboxes(hurtBody, 0);
+	//hitboxInfo->kbDir;
 
-	shieldHitboxInfo = new HitboxInfo;
-	shieldHitboxInfo->damage = 18;
-	shieldHitboxInfo->drainX = 0;
-	shieldHitboxInfo->drainY = 0;
-	shieldHitboxInfo->hitlagFrames = 0;
-	shieldHitboxInfo->hitstunFrames = 30;
-	shieldHitboxInfo->knockback = 5;
+	targetNode = 1;
+	forward = true;
 
+	dead = false;
 
-	facingRight = true;
+	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
+	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
+	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(5);
 	cutObject->SetSubRectBack(4);
+	cutObject->SetScale(scale);
+
+	facingRight = true;
 
 
-	shield = new Shield(Shield::ShieldType::T_REFLECT, /*128*/150, 100, this, shieldHitboxInfo);
-	//give it a unique hitboxinfo later
-	shield->SetPosition(position);
+	//bloodSprite.setTexture( *ts_testBlood->texture );
+
+	UpdateHitboxes();
+
+	actionLength[WAIT] = 4;
+	actionLength[CHARGE] = 180;
+	actionLength[ELECTRIFY] = 60;
+
+	animFactor[WAIT] = 3;
+	animFactor[CHARGE] = 1;
+	animFactor[ELECTRIFY] = 1;
 
 	ResetEnemy();
-	//cout << "finish init" << endl;
+}
+
+Pulser::~Pulser()
+{
+	delete[]path;
 }
 
 void Pulser::ResetEnemy()
 {
-	testSeq.Reset();
+	SetHitboxes(hitBody, 0);
+	SetHurtboxes(hurtBody, 0);
+
+	targetNode = 1;
+	forward = true;
 	dead = false;
+	action = WAIT;
 	frame = 0;
 	position.x = path[0].x;
 	position.y = path[0].y;
 	receivedHit = NULL;
 
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
-
-	action = IDLE;
 
 	UpdateHitboxes();
+
 	UpdateSprite();
-	testSeq.Reset();
-
-	currShield = NULL;
-	//currShield = shield;
-	shield->Reset();
-	pulseFrame = 0;
-}
-
-void Pulser::FrameIncrement()
-{
-	++pulseFrame;
-}
-
-void Pulser::HandleHitAndSurvive()
-{
-	--pulseFrame;
-	if (pulseFrame < 0)
-		pulseFrame = 0;
 }
 
 void Pulser::ProcessState()
@@ -241,137 +150,131 @@ void Pulser::ProcessState()
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		frame = 0;
-	}
-
-	Actor *player = owner->GetPlayer(0);
-	if( length( player->position - position ) )
-	
-	if (pulseFrame == pulseWait) 
-	{
-		pulseFrame = 0;
-		if (action == SHIELDOFF)
+		switch (action)
 		{
-			action = SHIELDON;
-			frame = 0;
-			currShield = shield;
-			
-			
+		case WAIT:
+			break;
+		case CHARGE:
+		{
+			action = ELECTRIFY;
+			break;
 		}
-		else if (action == SHIELDON)
-		{
-			action = SHIELDOFF;
-			frame = 0;
-			currShield = NULL;
-			SetHitboxes(hitBody, 0);
+		case ELECTRIFY:
+			action = WAIT;
+			break;
 		}
 	}
 
 
-	switch (action)
+	V2d playerPos = owner->GetPlayer(0)->position;
+	if (action == WAIT && length(playerPos - position) < 500)
 	{
-	case SHIELDOFF:
-		break;
-	case SHIELDON:
-		break;
-	case NOSHIELD:
-		break;
+		action = CHARGE;
+		frame = 0;
 	}
-
-	switch (action)
-	{
-	case SHIELDOFF:
-		break;
-	case SHIELDON:
-		break;
-	case NOSHIELD:
-		break;
-	}
-	
 }
 
 void Pulser::UpdateEnemyPhysics()
 {
-	if (numPhysSteps == 1)
+	double movement = speed / numPhysSteps;
+
+	if (pathLength > 1)
 	{
-		for (int i = 0; i < 10; ++i)
-			testSeq.Update(slowMultiple);
+		movement /= (double)slowMultiple;
+
+		while (movement != 0)
+		{
+			//cout << "movement loop? "<< endl;
+			V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
+			V2d diff = targetPoint - position;
+			double len = length(diff);
+			if (len >= abs(movement))
+			{
+				position += normalize(diff) * movement;
+				movement = 0;
+			}
+			else
+			{
+				position += diff;
+				movement -= length(diff);
+				AdvanceTargetNode();
+			}
+		}
+	}
+}
+
+void Pulser::AdvanceTargetNode()
+{
+	if (loop)
+	{
+		++targetNode;
+		if (targetNode == pathLength)
+			targetNode = 0;
 	}
 	else
 	{
-		testSeq.Update(slowMultiple);
+		if (forward)
+		{
+			++targetNode;
+			if (targetNode == pathLength)
+			{
+				targetNode -= 2;
+				forward = false;
+			}
+		}
+		else
+		{
+			--targetNode;
+			if (targetNode < 0)
+			{
+				targetNode = 1;
+				forward = true;
+			}
+		}
 	}
-
-	position = testSeq.position;
 }
 
 void Pulser::UpdateSprite()
 {
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setPosition(position.x, position.y);
+	int tile = 0;
+	switch (action)
+	{
+	case WAIT:
+		tile = frame / animFactor[WAIT];
+		break;
+	case CHARGE:
+		tile = 3;
+		break;
+	case ELECTRIFY:
+		tile = 2;
+		break;
+	}
+
+	sprite.setTextureRect(ts->GetSubRect(tile));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(Vector2f(position));
 }
 
-void Pulser::EnemyDraw( sf::RenderTarget *target )
+void Pulser::EnemyDraw(sf::RenderTarget *target)
 {
-	/*assert(testSeq.currMovement != NULL);
-	if (testSeq.currMovement->moveType == Movement::WAIT)
-	{
-		CircleShape cs;
-		cs.setRadius(128);
-		cs.setFillColor(COLOR_YELLOW);
-		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-		cs.setPosition(position.x, position.y);
-		target->draw(cs);
-	}*/
-
 	DrawSpriteIfExists(target, sprite);
 }
 
 void Pulser::UpdateHitboxes()
 {
-	int hitboxIndex = 0;
-	if (action == SHIELDON && pulseFrame == pulseWait - 1)
-	{
-		SetHitboxes(hitBody, 1);
-		hitboxIndex = 1;
-	}
-	else
-	{
-		SetHitboxes(hitBody, 0);
-	}
-
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(hitboxIndex)->front();
-
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
 	hurtBox.globalPosition = position;
 	hurtBox.globalAngle = 0;
 	hitBox.globalPosition = position;
 	hitBox.globalAngle = 0;
 
-	if( owner->GetPlayer( 0 )->ground != NULL )
+	if (owner->GetPlayer(0)->ground != NULL)
 	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
+		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
+		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
 	}
 }
-
-
-
-//void Pulser::DebugDraw( RenderTarget *target )
-//{
-//	if( !dead )
-//	{
-//		assert( testSeq.currMovement != NULL );
-//		if( testSeq.currMovement != NULL )
-//		{
-//			if( testSeq.currMovement->vertices != NULL )
-//			{
-//				testSeq.currMovement->DebugDraw( target );
-//			}
-//		}
-//		hurtBody.DebugDraw( target );
-//		hitBody.DebugDraw( target );
-//	}
-//}
