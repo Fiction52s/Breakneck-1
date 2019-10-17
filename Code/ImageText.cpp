@@ -377,6 +377,12 @@ void TextDisp::AddLineBreaks( const std::string &m )
 	}
 }
 
+void TextDisp::SetRate(int wait, int letterPer)
+{
+	nextLetterWait = wait;
+	letterPerShow = letterPer;
+}
+
 bool TextDisp::Update()
 {
 	if (sectionWait)

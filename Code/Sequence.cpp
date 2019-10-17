@@ -1305,6 +1305,14 @@ bool TextTestSeq::Update()
 		{
 			textDisp->NextSection();
 		}
+		if (owner->GetCurrInput(0).B)
+		{
+			textDisp->SetRate(1, 5);
+		}
+		else
+		{
+			textDisp->SetRate(1, 1);
+		}
 
 
 		if (!textDisp->Update())

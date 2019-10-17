@@ -60,6 +60,7 @@ struct TextDisp
 	void SetTextSize();
 	void SetString(const std::string &str);
 	void AddLineBreaks( const std::string &msg );
+	void SetRate(int wait, int letterPer);
 	void Reset();
 	bool Update();
 	bool NextSection();
