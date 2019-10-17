@@ -2622,7 +2622,8 @@ void Actor::UpdatePrePhysics()
 		&& ( owner->currentZone == NULL || owner->currentZone->zType != Zone::MOMENTA))
 	{
 		if (owner->drain && !desperationMode 
-			&& !IsIntroAction( action ) && !IsGoalKillAction( action ) && !IsExitAction( action ) && !IsSequenceAction( action ))
+			&& !IsIntroAction( action ) && !IsGoalKillAction( action ) && !IsExitAction( action ) && !IsSequenceAction( action )
+			&& owner->activeSequence == NULL )
 		{
 			drainCounter++;
 			if (drainCounter == drainCounterMax)

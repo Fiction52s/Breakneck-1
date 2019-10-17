@@ -173,20 +173,87 @@ void TimerText::UpdateSprite()
 	activeDigits = maxDigits;
 }
 
-TextDisp::TextDisp( GameSession *owner, int width, int height)
+TextDisp::TextDisp( GameSession *owner, int width, int height, int charSize, int frameLetterWait )
 {
 	show = false;
 	//message = "hello this is a test";
 	bgRect.setFillColor(Color( 0, 0, 0, 100 ));
 	rectSize = Vector2f(width, height);//Vector2f(670, 220);
 	bgRect.setSize(rectSize);
-	nextLetterWait = 3;
+	nextLetterWait = frameLetterWait;
 
-	text.setCharacterSize(30);
+	text.setCharacterSize(charSize);
 	text.setFont(owner->mainMenu->consolas);
 	text.setFillColor(Color::White);
+
+	sectionWait = false;
 	//bgRect.setOrigin(bgRect.getLocalBounds().width / 2, bgRect.getLocalBounds().height / 2);
 	//Reset()
+}
+
+TextDisp::~TextDisp()
+{
+	delete[]sections;
+}
+
+void TextDisp::Load(const std::string &name)
+{
+	string path = "Resources/Text/";
+	string suffix = ".txt";
+
+	ifstream is;
+	is.open(path + name + suffix);
+
+	//assert(is.is_open());
+	string fullMessage = "";
+	if (is.is_open())
+	{
+		list<string> lineList;
+		string line;
+		while (std::getline(is, line))
+		{
+			lineList.push_back(line);
+		}
+
+		for (auto it = lineList.begin(); it != lineList.end(); ++it)
+		{
+			if (!fullMessage.empty() && fullMessage.back() != ' ')
+			{
+				fullMessage += " ";
+			}
+
+			fullMessage += (*it);
+		}
+
+		is.close();
+	}
+	else
+	{
+		assert(0);
+	}
+
+	SetString(fullMessage);
+}
+
+bool TextDisp::NextSection()
+{
+	if (sectionWait )
+	{
+		if (currSection < numSections - 1)
+		{
+			text.setString("");
+		}
+
+		++currSection;
+		sectionWait = false;
+		frame = 0;
+		
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 //have a character limit for each line. you place text on each line as the writer.
@@ -200,8 +267,7 @@ void TextDisp::SetTopLeft(sf::Vector2f &pos)
 
 void TextDisp::SetString(const std::string &str)
 {
-	message = str;
-	AddLineBreaks();
+	AddLineBreaks(str);
 	bool s = show;
 	Reset();
 	show = s;
@@ -222,12 +288,14 @@ void TextDisp::Reset()
 	text.setString("");
 	frame = 0;
 	show = false;
+	currSection = 0;
+	sectionWait = false;
 }
 
-void TextDisp::AddLineBreaks()
+void TextDisp::AddLineBreaks( const std::string &m )
 {
-	int len = message.length();
-	int textLen = text.getString().getSize();
+	string msg = m;
+	int len = msg.length();
 
 	string newStr;
 	list<string> lineList;
@@ -236,8 +304,7 @@ void TextDisp::AddLineBreaks()
 	int lastInd;
 	for (int i = 0; i < len; ++i)
 	{
-		newStr += message.at(i);
-		//string sub = message.substr(0, textLen + 1);
+		newStr += msg.at(i);
 		if (newStr.back() == ' ')
 		{
 			text.setString(newStr);
@@ -254,30 +321,78 @@ void TextDisp::AddLineBreaks()
 		}
 	}
 
-	message = "";
-	int i = 0;
-	int count = lineList.size();
+	if (newStr.size() > 0)
+	{
+		lineList.push_back(newStr);
+	}
 
+	msg = "";
+
+	int lineCount = lineList.size();
+
+
+	unsigned int charSize = text.getCharacterSize();
+	float spacing = text.getFont()->getLineSpacing(charSize);
+	float vert = spacing;//((float)charSize) + spacing;
+	linesShownAtOnce = rectSize.y / vert;
+
+	float fLineCount = lineCount;
+	numSections = ceil(fLineCount / linesShownAtOnce);
+	sections = new string[numSections];
+
+	int secIndex = 0;
+	int i = 0;
 	for (auto it = lineList.begin(); it != lineList.end(); ++it)
 	{
-		message += (*it);
-		if (i < count - 1)
+		msg += (*it);
+		if (i < lineCount - 1)
 		{
-			message += "\n";
+			msg += "\n";
 		}
+		
 		++i;
+
+		if ( (i % linesShownAtOnce == 0) || i == lineCount - 1)
+		{
+			sections[secIndex] = msg;
+			++secIndex;
+			msg = "";
+		}
 	}
 }
 
 bool TextDisp::Update()
 {
+	if (sectionWait)
+	{
+		return true;
+	}
+
+	if (currSection == numSections)
+	{
+		return false;
+	}
+
+	string &message = sections[currSection];
 	int len = message.length();
 	int textLen = text.getString().getSize();
 
 	//text.setString(message);//.substr(0, textLen + 1));
 	if (textLen == len || !show )
 	{
-		return false;
+		sectionWait = true;
+		return true;
+		//if (currSection < numSections - 1)
+		//{
+		//	sectionWait = true;
+		//	//++currSection;
+		//	//text.setString("");
+		//	return true;
+		//}
+		//else
+		//{
+		//	return false;
+		//}
 	}
 	else
 	{
@@ -319,19 +434,43 @@ Script::Script()
 
 void Script::Load(const std::string &name)
 {
-	
-
-	
-
 	string path = "Resources/Text/";
-	string suffix = ".script";
+	string suffix = ".txt";
 
 	ifstream is;
 	is.open(path + name + suffix);
 
 	//assert(is.is_open());
-
+	fullMessage = "";
 	if (is.is_open())
+	{
+		list<string> lineList;
+		string line;
+		while (std::getline(is, line))
+		{
+			lineList.push_back(line);
+		}
+		
+		for (auto it = lineList.begin(); it != lineList.end(); ++it)
+		{
+			if (!fullMessage.empty() && fullMessage.back() != ' ')
+			{
+				fullMessage += " ";	
+			}
+
+			fullMessage += (*it);
+		}
+		
+		is.close();
+	}
+	else
+	{
+		assert(0);
+	}
+
+
+
+	/*if (is.is_open())
 	{
 		list<string> lineList;
 
@@ -371,7 +510,8 @@ void Script::Load(const std::string &name)
 	else
 	{
 		assert(0);
-	}
+	}*/
+
 
 	//int x = 5;
 	//sections[sectionIndex] = fullText;

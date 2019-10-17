@@ -40,6 +40,7 @@ struct Script
 	Script();
 	~Script();
 	void Load(const std::string &name);
+	std::string fullMessage;
 	std::string *sections;
 	int numSections;
 	//int numLinesPerSection;
@@ -50,20 +51,27 @@ struct GameSession;
 struct TextDisp
 {
 	TextDisp( GameSession *owner,
-		int width, int height );
+		int width, int height, int charSize = 30, int frameLetterWait = 3 );
+	~TextDisp();
 	void SetTopLeft(sf::Vector2f &pos);
+	void Load(const std::string &name);
 	//static void LoadScript()
 	void SetTextSize();
 	void SetString(const std::string &str);
-	void AddLineBreaks();
+	void AddLineBreaks( const std::string &msg );
 	void Reset();
 	bool Update();
+	bool NextSection();
+	bool sectionWait;
 	void Show();
 	void Hide();
 	void Draw(sf::RenderTarget *target);
 	sf::Text text;
 	sf::Vector2f rectSize;
-	std::string message;
+	std::string * sections;
+	int numSections;
+	int currSection;
+	int linesShownAtOnce;
 	sf::RectangleShape bgRect;
 	int nextLetterWait;
 	int frame;

@@ -10,6 +10,7 @@
 #include <ctime>
 #include <boost/bind.hpp>
 #include "ImageText.h"
+#include "HUD.h"
 //#include "EditSession.h"
 #include "Zone.h"
 #include "Flow.h"
@@ -1245,20 +1246,9 @@ TextTestSeq::TextTestSeq(GameSession *p_owner)
 	stateLength[TALK] = 10000;
 	stateLength[END] = 30;
 
-	textDisp = new TextDisp(owner, (1920 - 512), 220);
+	textDisp = new TextDisp(owner, (1920 - 512), 220, 30, 1);
 	textDisp->SetTopLeft(Vector2f(512, 1080 - 220));
-	textDisp->SetString("I'm testing this stuff dont hate me. I'm testing this stuff "
-		"dont hate me. I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-	" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
-	);
+	textDisp->Load("testtext");
 
 	Reset();
 }
@@ -1291,6 +1281,11 @@ bool TextTestSeq::Update()
 
 	if (state == END)
 	{
+		player->SetAction(Actor::STAND);
+		player->frame = 0;
+		owner->adventureHUD->Show(60);
+		owner->cam.EaseOutOfManual(60);
+		//player->set
 		return false;
 	}
 
@@ -1303,8 +1298,14 @@ bool TextTestSeq::Update()
 		{
 			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
 			textDisp->Show();
+			owner->adventureHUD->Hide(60);
 		}
-			
+		
+		if (owner->GetCurrInput(0).A && !owner->GetPrevInput(0).A)
+		{
+			textDisp->NextSection();
+		}
+
 
 		if (!textDisp->Update())
 		{
