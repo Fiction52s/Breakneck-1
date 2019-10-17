@@ -319,6 +319,19 @@ void TextDisp::AddLineBreaks( const std::string &m )
 				newStr = "";
 			}
 		}
+		else if (i == len - 1)
+		{
+			text.setString(newStr);
+			if (text.getGlobalBounds().width >= rectSize.x)
+			{
+				lastInd = newStr.find_last_of(' ');
+				i -= newStr.size() - lastInd;
+				++i;
+				newStr = newStr.substr(0, lastInd);
+				lineList.push_back(newStr);
+				newStr = "";
+			}
+		}
 	}
 
 	if (newStr.size() > 0)
@@ -352,7 +365,7 @@ void TextDisp::AddLineBreaks( const std::string &m )
 		
 		++i;
 
-		if ( (i % linesShownAtOnce == 0) || i == lineCount - 1)
+		if ( (i % linesShownAtOnce == 0) || i == lineCount)
 		{
 			sections[secIndex] = msg;
 			++secIndex;
