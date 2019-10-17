@@ -173,7 +173,8 @@ void TimerText::UpdateSprite()
 	activeDigits = maxDigits;
 }
 
-TextDisp::TextDisp( GameSession *owner, int width, int height, int charSize, int frameLetterWait )
+TextDisp::TextDisp( GameSession *owner, int width, int height, int charSize, int frameLetterWait,
+	int p_letterPerShow )
 {
 	show = false;
 	//message = "hello this is a test";
@@ -185,6 +186,8 @@ TextDisp::TextDisp( GameSession *owner, int width, int height, int charSize, int
 	text.setCharacterSize(charSize);
 	text.setFont(owner->mainMenu->consolas);
 	text.setFillColor(Color::White);
+	
+	letterPerShow = p_letterPerShow;
 
 	sectionWait = false;
 	//bgRect.setOrigin(bgRect.getLocalBounds().width / 2, bgRect.getLocalBounds().height / 2);
@@ -413,7 +416,7 @@ bool TextDisp::Update()
 		{
 			frame = 0;
 
-			string sub = message.substr(0, textLen + 1);
+			string sub = message.substr(0, textLen + letterPerShow);
 			if (sub.back() == ' ')
 			{
 			}

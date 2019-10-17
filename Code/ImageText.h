@@ -51,7 +51,8 @@ struct GameSession;
 struct TextDisp
 {
 	TextDisp( GameSession *owner,
-		int width, int height, int charSize = 30, int frameLetterWait = 3 );
+		int width, int height, int charSize = 30, int frameLetterWait = 3,
+		int p_letterPerShow = 1);
 	~TextDisp();
 	void SetTopLeft(sf::Vector2f &pos);
 	void Load(const std::string &name);
@@ -76,6 +77,7 @@ struct TextDisp
 	int nextLetterWait;
 	int frame;
 	bool show;
+	int letterPerShow;
 };
 
 

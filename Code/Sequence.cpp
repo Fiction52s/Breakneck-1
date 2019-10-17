@@ -1246,7 +1246,7 @@ TextTestSeq::TextTestSeq(GameSession *p_owner)
 	stateLength[TALK] = 10000;
 	stateLength[END] = 30;
 
-	textDisp = new TextDisp(owner, (1920 - 512), 220, 30, 1);
+	textDisp = new TextDisp(owner, (1920 - 512), 220, 30, 1 );
 	textDisp->SetTopLeft(Vector2f(512, 1080 - 220));
 	textDisp->Load("testtext");
 
