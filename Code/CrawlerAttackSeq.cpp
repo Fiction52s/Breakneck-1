@@ -172,7 +172,7 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	//queen->Setup();
 	owner->fullEnemyList.push_back(queen);
 	
-	textDisp = new TextDisp(owner);
+	textDisp = new TextDisp(owner, 670, 220);
 	textDisp->SetTopLeft(Vector2f(500, 500));//1920 - textDisp->rectSize.x - 350, 50));
 	textDisp->SetString("#!%!#^#!^#!^!&^()^&^\n#!@^@#^@^@#^");
 

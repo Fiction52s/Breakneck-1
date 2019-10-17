@@ -17196,9 +17196,12 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	switch (trigger->trigType)
 	{
 	case TRIGGER_SHIPPICKUP:
+	{
 		ShipPickupPoint(trigger->edgeQuantity, trigger->facingRight);
 		break;
+	}
 	case TRIGGER_HOUSEFAMILY:
+	{
 		desperationMode = false;
 		SetExpr(Expr_NEUTRAL);
 		assert(ground != NULL);
@@ -17216,9 +17219,11 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		//owner->state = GameSession::SEQUENCE;
 		//physicsOver = true;
 		owner->activeSequence = trigger->gameSequence;
-		
+
 		break;
+	}
 	case TRIGGER_GETAIRDASH:
+	{
 		desperationMode = false;
 		SetExpr(Expr_NEUTRAL);
 		assert(ground != NULL);
@@ -17238,7 +17243,9 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		//owner->currStorySequence = trigger->storySeq;
 		//owner->state = GameSession::STORY;
 		break;
+	}
 	case TRIGGER_DESTROYNEXUS1:
+	{
 		desperationMode = false;
 		//SetExpr(Expr_NEUTRAL);
 		//assert(ground != NULL);
@@ -17261,6 +17268,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		//owner->currStorySequence = trigger->storySeq;
 		//owner->state = GameSession::STORY;
 		break;
+	}
 	case TRIGGER_CRAWLERATTACK:
 	{
 		desperationMode = false;
@@ -17273,6 +17281,24 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		}
 
 		SetAction(SEQ_LOOKUP);
+		frame = 0;
+		physicsOver = true;
+
+		owner->activeSequence = trigger->gameSequence;
+		break;
+	}
+	case TRIGGER_TEXTTEST:
+	{
+		desperationMode = false;
+		edgeQuantity = trigger->edgeQuantity;
+		groundSpeed = 0;
+
+		if (ground->Normal().y == -1)
+		{
+			offsetX = 0;
+		}
+
+		SetAction(SEQ_WAIT);
 		frame = 0;
 		physicsOver = true;
 

@@ -49,11 +49,13 @@ struct Script
 struct GameSession;
 struct TextDisp
 {
-	TextDisp( GameSession *owner );
+	TextDisp( GameSession *owner,
+		int width, int height );
 	void SetTopLeft(sf::Vector2f &pos);
 	//static void LoadScript()
 	void SetTextSize();
 	void SetString(const std::string &str);
+	void AddLineBreaks();
 	void Reset();
 	bool Update();
 	void Show();

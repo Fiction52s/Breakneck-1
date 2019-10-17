@@ -305,7 +305,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	script = new Script;
 	
 
-	textDisp = new TextDisp( p_pod->owner );
+	textDisp = new TextDisp( p_pod->owner, 670, 220 );
 	//textDisp->SetString(
 	//	"hello this is a test hello this\n"
 	//	"hello this is a test hello this\n"

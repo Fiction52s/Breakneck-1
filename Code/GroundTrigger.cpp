@@ -61,6 +61,9 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 	case TRIGGER_CRAWLERATTACK:
 		gameSequence = new CrawlerAttackSeq(owner);
 		break;
+	case TRIGGER_TEXTTEST:
+		gameSequence = new TextTestSeq(owner);
+		break;
 	}
 
 	receivedHit = NULL;
@@ -149,6 +152,10 @@ TriggerType GroundTrigger::GetTriggerType(const std::string &typeStr)
 	else if (testStr == "crawlerattack")
 	{
 		return TRIGGER_CRAWLERATTACK;
+	}
+	else if (testStr == "texttest")
+	{
+		return TRIGGER_TEXTTEST;
 	}
 	else
 	{

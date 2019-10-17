@@ -9,6 +9,7 @@
 #include <sstream>
 #include <ctime>
 #include <boost/bind.hpp>
+#include "ImageText.h"
 //#include "EditSession.h"
 #include "Zone.h"
 #include "Flow.h"
@@ -1235,4 +1236,102 @@ void BasicMovieSeq::Draw(sf::RenderTarget *target,
 	}
 
 	target->draw(mov);
+}
+
+
+TextTestSeq::TextTestSeq(GameSession *p_owner)
+	:owner(p_owner)
+{
+	stateLength[TALK] = 10000;
+	stateLength[END] = 30;
+
+	textDisp = new TextDisp(owner, (1920 - 512), 220);
+	textDisp->SetTopLeft(Vector2f(512, 1080 - 220));
+	textDisp->SetString("I'm testing this stuff dont hate me. I'm testing this stuff "
+		"dont hate me. I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+	" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+		" I'm testing this stuff dont hate me. I'm testing this stuff dont hate me."
+	);
+
+	Reset();
+}
+
+TextTestSeq::~TextTestSeq()
+{
+	delete textDisp;
+}
+
+void TextTestSeq::Init()
+{
+
+}
+
+bool TextTestSeq::Update()
+{
+	Actor *player = owner->GetPlayer(0);
+
+	if (frame == stateLength[state] && state != END)
+	{
+		int s = state;
+		s++;
+		state = (State)s;
+		frame = 0;
+
+		if (state == END)
+		{
+		}
+	}
+
+	if (state == END)
+	{
+		return false;
+	}
+
+
+
+	switch (state)
+	{
+	case TALK:
+		if (frame == 0)
+		{
+			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
+			textDisp->Show();
+		}
+			
+
+		if (!textDisp->Update())
+		{
+			frame = stateLength[TALK] - 1;
+		}
+		break;
+	}
+
+	++frame;
+
+	return true;
+}
+void TextTestSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
+{
+	if (layer != EffectLayer::IN_FRONT)
+	{
+		return;
+	}
+
+	View v = target->getView();
+	target->setView(owner->uiView);
+	textDisp->Draw(target);
+	target->setView(v);
+}
+void TextTestSeq::Reset()
+{
+	state = TALK;
+	frame = 0;
+	textDisp->Reset();
 }

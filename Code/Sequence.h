@@ -348,6 +348,34 @@ struct CrawlerAttackSeq : Sequence
 	GameSession *owner;
 };
 
+struct TextTestSeq : Sequence
+{
+	enum State
+	{
+		TALK,
+		END,
+		Count
+	};
+	~TextTestSeq();
+	State state;
+	int stateLength[Count];
+	void Init();
+	TextTestSeq(GameSession *owner);
+	bool Update();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+	void Reset();
+
+	TextDisp *textDisp;
+	CrawlerQueen *queen;
+
+	int frame;
+
+	
+
+	GameSession *owner;
+};
+
 struct Nexus;
 
 

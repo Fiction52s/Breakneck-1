@@ -173,11 +173,12 @@ void TimerText::UpdateSprite()
 	activeDigits = maxDigits;
 }
 
-TextDisp::TextDisp( GameSession *owner)
+TextDisp::TextDisp( GameSession *owner, int width, int height)
 {
+	show = false;
 	//message = "hello this is a test";
 	bgRect.setFillColor(Color( 0, 0, 0, 100 ));
-	rectSize = Vector2f(670, 220);
+	rectSize = Vector2f(width, height);//Vector2f(670, 220);
 	bgRect.setSize(rectSize);
 	nextLetterWait = 3;
 
@@ -200,6 +201,7 @@ void TextDisp::SetTopLeft(sf::Vector2f &pos)
 void TextDisp::SetString(const std::string &str)
 {
 	message = str;
+	AddLineBreaks();
 	bool s = show;
 	Reset();
 	show = s;
@@ -222,6 +224,51 @@ void TextDisp::Reset()
 	show = false;
 }
 
+void TextDisp::AddLineBreaks()
+{
+	int len = message.length();
+	int textLen = text.getString().getSize();
+
+	string newStr;
+	list<string> lineList;
+
+	newStr == "";
+	int lastInd;
+	for (int i = 0; i < len; ++i)
+	{
+		newStr += message.at(i);
+		//string sub = message.substr(0, textLen + 1);
+		if (newStr.back() == ' ')
+		{
+			text.setString(newStr);
+			if( text.getGlobalBounds().width >= rectSize.x )
+			{ 
+				lastInd = newStr.find_last_of(' ');
+				newStr = newStr.substr(0, lastInd);
+				lastInd = newStr.find_last_of(' ');
+				i -= newStr.size() - lastInd;
+				newStr = newStr.substr(0, lastInd);
+				lineList.push_back(newStr);
+				newStr = "";
+			}
+		}
+	}
+
+	message = "";
+	int i = 0;
+	int count = lineList.size();
+
+	for (auto it = lineList.begin(); it != lineList.end(); ++it)
+	{
+		message += (*it);
+		if (i < count - 1)
+		{
+			message += "\n";
+		}
+		++i;
+	}
+}
+
 bool TextDisp::Update()
 {
 	int len = message.length();
@@ -237,7 +284,18 @@ bool TextDisp::Update()
 		if (frame >= nextLetterWait)
 		{
 			frame = 0;
-			text.setString(message.substr(0, textLen + 1));
+
+			string sub = message.substr(0, textLen + 1);
+			if (sub.back() == ' ')
+			{
+			}
+			else
+			{
+
+			}
+			text.setString(sub);
+
+
 		}
 		++frame;
 	}
