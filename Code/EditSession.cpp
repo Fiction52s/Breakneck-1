@@ -13076,15 +13076,6 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
 		p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
 	}
-	else if (name == "flowerpod")
-	{
-		p = new Panel("flowerpod_options", 200, 500, this);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-
-		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
-	}
 	if( p != NULL )
 		allPopups.push_back(p);
 
@@ -14837,6 +14828,15 @@ Panel *ActorType::CreatePanel()
 		gs->Set(0, 0, sqSpr, "");*/
 
 		//p->
+	}
+	else if (name == "flowerpod")
+	{
+		p = new Panel("flowerpod_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+
+		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
 	else if (name == "healthfly" )
 	{

@@ -46,7 +46,11 @@ MovingGeoGroup::~MovingGeoGroup()
 
 void MovingGeo::SetColor(sf::Color c)
 {
-	assert(points != NULL);
+	if (points == NULL)
+	{
+		assert(points != NULL);
+	}
+	
 	color = c;
 	int numPoints = GetNumPoints();
 	for (int i = 0; i < numPoints; ++i)

@@ -1246,16 +1246,20 @@ TextTestSeq::TextTestSeq(GameSession *p_owner)
 	stateLength[TALK] = 10000;
 	stateLength[END] = 30;
 
-	textDisp = new TextDisp(owner, (1920 - 512), 220, 30, 1 );
-	textDisp->SetTopLeft(Vector2f(512, 1080 - 220));
-	textDisp->Load("testtext");
+	//textDisp = new TextDisp(owner, (1920 - 512), 220, 30, 1 );
+	//textDisp->SetTopLeft(Vector2f(512, 1080 - 220));
+	//textDisp->Load("testtext");
+
+	conv = new Conversation(owner);
+	conv->Load("conv");
 
 	Reset();
 }
 
 TextTestSeq::~TextTestSeq()
 {
-	delete textDisp;
+	delete conv;
+	//delete textDisp;
 }
 
 void TextTestSeq::Init()
@@ -1297,25 +1301,25 @@ bool TextTestSeq::Update()
 		if (frame == 0)
 		{
 			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
-			textDisp->Show();
+			conv->Show();
 			owner->adventureHUD->Hide(60);
 		}
 		
 		if (owner->GetCurrInput(0).A && !owner->GetPrevInput(0).A)
 		{
-			textDisp->NextSection();
+			conv->NextSection();
 		}
 		if (owner->GetCurrInput(0).B)
 		{
-			textDisp->SetRate(1, 5);
+			conv->SetRate(1, 5);
 		}
 		else
 		{
-			textDisp->SetRate(1, 1);
+			conv->SetRate(1, 1);
 		}
 
 
-		if (!textDisp->Update())
+		if (!conv->Update())
 		{
 			frame = stateLength[TALK] - 1;
 		}
@@ -1335,12 +1339,12 @@ void TextTestSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 
 	View v = target->getView();
 	target->setView(owner->uiView);
-	textDisp->Draw(target);
+	conv->Draw(target);
 	target->setView(v);
 }
 void TextTestSeq::Reset()
 {
 	state = TALK;
 	frame = 0;
-	textDisp->Reset();
+	conv->Reset();
 }

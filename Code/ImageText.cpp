@@ -268,6 +268,11 @@ void TextDisp::SetTopLeft(sf::Vector2f &pos)
 	text.setPosition(bgRect.getPosition().x + spacing.x, bgRect.getPosition().y + spacing.y);
 }
 
+sf::Vector2f TextDisp::GetTopLeft()
+{
+	return bgRect.getPosition();
+}
+
 void TextDisp::SetString(const std::string &str)
 {
 	AddLineBreaks(str);
@@ -560,4 +565,230 @@ Script::~Script()
 {
 	if( sections != NULL)
 		delete[] sections;
+}
+
+Speech::Speech( GameSession *p_owner ): owner(p_owner)
+{
+	
+}
+
+
+Speech::~Speech()
+{
+	delete disp;
+}
+
+void Speech::SetupSprite()
+{
+	ts = GetTileset();
+	speakerSpr.setTexture(*ts->texture);
+	speakerSpr.setTextureRect(ts->GetSubRect(speakerTile));
+	speakerSpr.setScale(2.0 / 3.0, 2.0 / 3.0);
+	Vector2f dispPos = disp->GetTopLeft();
+	speakerSpr.setPosition(dispPos.x - 256, dispPos.y);
+	//speakerSpr.setPosition(dispPos.x, dispPos.y);
+
+	//speakerSpr.setPosition( disp->ppo)
+}
+
+void Speech::Draw(sf::RenderTarget *target)
+{
+	disp->Draw(target);
+	target->draw(speakerSpr);
+}
+
+Tileset *Speech::GetTileset()
+{
+	return owner->GetTileset("Bosses/Bird/bird_face_384x384.png", 384, 384 );
+}
+
+Conversation::Conversation(GameSession *p_owner): owner( p_owner )
+{
+	speeches = NULL;
+	numSpeeches = 0;
+}
+
+Conversation::~Conversation()
+{
+	if (speeches != NULL)
+	{
+		delete[] speeches;
+	}
+	
+}
+
+std::string Conversation::GetSpeakerName( const std::string &line, int &tileIndex )
+{
+	if (line.front() == '$')
+	{
+		size_t pos = line.find(' ');
+		string name;
+		
+		if (pos != std::string::npos)
+		{
+			name = line.substr(1, pos - 1);
+			string number = line.substr(pos);
+
+			stringstream ss;
+			ss << number;
+			ss >> tileIndex;
+		}
+		else
+		{
+			name = line.substr(1);
+			tileIndex = 0;
+		}
+
+		return name;
+	}
+	else
+	{
+		assert(0);
+	}
+}
+
+void Conversation::Show()
+{
+	speeches[currSpeech]->disp->Show();
+}
+
+void Conversation::Hide()
+{
+	speeches[currSpeech]->disp->Hide();
+}
+
+void Conversation::NextSection()
+{
+	speeches[currSpeech]->disp->NextSection();
+}
+
+void Conversation::SetRate(int wait, int letterPer)
+{
+	speeches[currSpeech]->disp->SetRate(wait, letterPer);
+}
+
+void Conversation::Load( const std::string &name )
+{
+	string path = "Resources/Text/";
+	string suffix = ".txt";
+
+	ifstream is;
+	is.open(path + name + suffix);
+
+	list<pair<string, list<string>>> parts;
+	list<int> partTile;
+
+	string fullMessage = "";
+	bool getSpeaker = true;
+	list<string> *lineList = NULL;
+	int tileIndex = -1;
+	if (is.is_open())
+	{
+		if (parts.size() > 0)
+		{
+			lineList = &parts.back().second;
+		}
+
+		string line;
+		while (std::getline(is, line))
+		{
+			if (line.at(0) == '$')
+			{
+				parts.push_back(pair<string,list<string>>(GetSpeakerName(line, tileIndex),list<string>()));
+				partTile.push_back(tileIndex);
+				lineList = &parts.back().second;
+			}
+			else
+			{
+				lineList->push_back(line);
+			}
+		}
+		is.close();
+	}
+	else
+	{
+		assert(0);
+	}
+
+	numSpeeches = parts.size();
+	speeches = new Speech*[numSpeeches];
+
+	int i = 0;
+	if (parts.size() > 0)
+	{
+		
+		auto tileIt = partTile.begin();
+		for (auto it = parts.begin(); it != parts.end(); ++it, ++tileIt)
+		{
+			Speech *sp = new Speech(owner);
+			sp->speaker = (*it).first;
+			sp->speakerTile = (*tileIt);
+			lineList = &(*it).second;
+
+			fullMessage = "";
+			for (auto it2 = lineList->begin(); it2 != lineList->end(); ++it2)
+			{
+				if (!fullMessage.empty() && fullMessage.back() != ' ')
+				{
+					fullMessage += " ";
+				}
+
+				fullMessage += (*it2);
+			}
+
+			//TextDisp *textDisp = new TextDisp(owner, (1920 - 512), 220, 30, 1);
+			//textDisp->SetTopLeft(Vector2f(512, 1080 - 220));
+			TextDisp *textDisp = new TextDisp(owner, (1920 - 512), 256, 30, 1);
+			textDisp->SetTopLeft(Vector2f(256, 1080 - 256));
+			textDisp->SetString(fullMessage);
+			sp->disp = textDisp;
+
+			sp->SetupSprite();
+
+			speeches[i] = sp;
+
+			++i;
+		}
+
+	}
+}
+
+bool Conversation::Update()
+{
+	Speech *sp = speeches[currSpeech];
+
+	if (!sp->disp->Update())
+	{
+		sp->disp->Hide();
+		++currSpeech;
+
+		if (currSpeech == numSpeeches)
+		{
+			return false;
+		}
+
+		sp = speeches[currSpeech];
+		sp->disp->Show();
+	}
+
+	return true;
+}
+
+void Conversation::Reset()
+{
+	currSpeech = 0;
+	for (int i = 0; i < numSpeeches; ++i)
+	{
+		speeches[i]->disp->Reset();
+	}
+
+
+}
+
+void Conversation::Draw(sf::RenderTarget *target)
+{
+	if (currSpeech < numSpeeches)
+	{
+		speeches[currSpeech]->Draw(target);
+	}
 }

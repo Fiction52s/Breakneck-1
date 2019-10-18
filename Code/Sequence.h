@@ -303,6 +303,7 @@ struct NexusCore1Seq : Sequence
 
 struct CrawlerQueen;
 struct TextDisp;
+struct Conversation;
 struct CrawlerAttackSeq : Sequence
 {
 	enum State
@@ -366,7 +367,8 @@ struct TextTestSeq : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
-	TextDisp *textDisp;
+	//TextDisp *textDisp;
+	Conversation *conv;
 	CrawlerQueen *queen;
 
 	int frame;

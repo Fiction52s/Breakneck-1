@@ -47,7 +47,47 @@ struct Script
 	const std::string &GetSection(int index);
 };
 
+struct TextDisp;
 struct GameSession;
+struct Speech
+{
+	Speech(GameSession *owner);
+	~Speech();
+	std::string speaker;
+	int speakerTile;
+	TextDisp *disp;
+	void SetupSprite();
+	Tileset *GetTileset();
+	Tileset *ts;
+	sf::Sprite speakerSpr;
+	GameSession *owner;
+	void Draw(sf::RenderTarget *target);
+};
+
+struct Conversation
+{
+	~Conversation();
+	Conversation( GameSession *owner );
+	void Load(const std::string &name);
+	std::string GetSpeakerName( const std::string &line,
+		int &tIndex );
+	void Draw(sf::RenderTarget *target);
+	bool Update();
+	void Reset();
+	void Show();
+	void Hide();
+	void NextSection();
+	void SetRate(int wait, int letterPer);
+
+
+	GameSession *owner;
+	int numSpeeches;
+	Speech **speeches;
+	sf::Sprite speakerSpr;
+	int currSpeech;
+};
+
+
 struct TextDisp
 {
 	TextDisp( GameSession *owner,
@@ -61,6 +101,7 @@ struct TextDisp
 	void SetString(const std::string &str);
 	void AddLineBreaks( const std::string &msg );
 	void SetRate(int wait, int letterPer);
+	sf::Vector2f GetTopLeft();
 	void Reset();
 	bool Update();
 	bool NextSection();

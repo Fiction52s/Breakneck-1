@@ -4,12 +4,14 @@
 #include "Enemy.h"
 
 
+struct Shard;
 struct StorySequence;
 struct FlowerPod;
 struct TextDisp;
 struct Script;
 struct Ring;
-
+struct Shard;
+struct Conversation;
 struct MomentaBroadcast
 {
 	enum BroadcastType
@@ -35,10 +37,13 @@ struct MomentaBroadcast
 	int frame;
 	void Reset();
 	TextDisp *textDisp;
-	Script *script;
+	//TextDisp *textDisp;
+	//Script *script;
 	bool endPadding;
 	int numPadding;
 	void Draw(sf::RenderTarget *target);
+
+	Shard *givenShard;
 };
 
 
@@ -62,6 +67,7 @@ struct FlowerPod : Enemy, RayCastHandler
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 
+	//MovingGeoGroup healRingGroup;
 	Ring *healRing;
 	Actor *healingPlayer;
 	MomentaBroadcast *broadcast;
@@ -98,6 +104,8 @@ struct FlowerPod : Enemy, RayCastHandler
 	double edgeQuantity;
 
 	CollisionBody *hitBody;
+
+	
 };
 
 #endif

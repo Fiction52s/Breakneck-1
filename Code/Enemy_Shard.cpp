@@ -120,36 +120,18 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
 
-
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody->AddCollisionBox(0, hitBox);
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = NULL;
 
 	actionLength[FLOAT] = 120;
 	actionLength[DISSIPATE] = 10;
+	actionLength[LAUNCH] = 60;
 
 	animFactor[FLOAT] = 1;
 	animFactor[DISSIPATE] = 1;
+	animFactor[LAUNCH] = 1;
 
 	ResetEnemy();
 
@@ -294,6 +276,12 @@ void Shard::ResetEnemy()
 	testEmitter->SetOn(false);
 }
 
+void Shard::Launch()
+{
+	action = LAUNCH;
+	frame = 0;
+}
+
 void Shard::ProcessState()
 {
 	if( frame == actionLength[action] * animFactor[action])
@@ -308,11 +296,13 @@ void Shard::ProcessState()
 			dead = true;
 			Capture();
 			break;
+		case LAUNCH:
+			action = FLOAT;
+			frame = 0;
+			break;
 		}
 	}
-	
 
-	//case DISSI
 
 	if (action == FLOAT)
 	{
@@ -325,6 +315,10 @@ void Shard::ProcessState()
 		f -= .5;
 		position = startPos;
 		position.y += f * floatAmount;
+	}
+	else if (action == LAUNCH)
+	{
+		position.y -= 5.0;
 	}
 	
 	//testEmitter->Update();

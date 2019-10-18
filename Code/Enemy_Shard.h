@@ -55,6 +55,7 @@ struct Shard : Enemy
 	{
 		FLOAT,
 		DISSIPATE,
+		LAUNCH,
 		Count
 	};
 	ShapeEmitter *testEmitter;
@@ -63,6 +64,7 @@ struct Shard : Enemy
 	static Tileset *GetShardTileset(int w,
 		TilesetManager *ttm);
 	
+	void Launch();
 	//SpinningTri *triTest[5];
 	//Laser *laser;
 	//MovingRing *mRing;

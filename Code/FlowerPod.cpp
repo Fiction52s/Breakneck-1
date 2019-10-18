@@ -9,6 +9,7 @@
 #include "ImageText.h"
 #include "GoalExplosion.h"
 #include "MovingGeo.h"
+#include "Enemy_Shard.h"
 
 using namespace std;
 using namespace sf;
@@ -17,8 +18,11 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	:Enemy(owner, EnemyType::EN_FLOWERPOD, false, 0, false), ground(g),
 	edgeQuantity(q)
 {
+	//healRingGroup.AddGeo(new Ring(32, 20, 200, 10, 20, Vector2f(pos), Vector2f(pos),
+	//	Color::Cyan, Color(0, 0, 100, 0), 60));
+	//geoGroup.Init();
 	healRing = new Ring(32);
-	
+	healRing->CreatePoints();
 
 	double width = 128; //112;
 	double height = 128;
@@ -50,6 +54,7 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 
 	position = gPoint + gn * (height / 2.0);
 
+	//healRing->Init();
 	healRing->SetColor(Color::Cyan);
 	healRing->Set(Vector2f(position), 100, 110);
 
@@ -297,37 +302,32 @@ void FlowerPod::DirectKill()
 
 MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeStr)
 {
-
-	ts_basicFlower = p_pod->owner->GetTileset("Momenta/momentaflower_320x288.png", 320, 288);
+	pod = p_pod;
+	ts_basicFlower = pod->owner->GetTileset("Momenta/momentaflower_320x288.png", 320, 288);
 	initialFlowerLength = 120;
 	//can currently handle 30 chars per line
-
-	script = new Script;
 	
-
-	textDisp = new TextDisp( p_pod->owner, 670, 220 );
-	//textDisp->SetString(
-	//	"hello this is a test hello this\n"
-	//	"hello this is a test hello this\n"
-	//	"hello this is a test hello this\n"
-	//	"hello this is a test hello this");
+	givenShard = NULL;
+	textDisp = new TextDisp( pod->owner, 670, 220 );
 	
 	textDisp->SetTopLeft(Vector2f(1920 - textDisp->rectSize.x - 350, 50));
 
 	bType = GetType(btypeStr);
-	pod = p_pod;
+	
 	switch (bType)
 	{
 	case SEESHARDS:
 	{
 		ts_broadcast = pod->owner->GetTileset("Momenta/momentabroadcast_w1_1_320x288.png", 320, 288);
-		script->Load("momenta1");
-		numImages = script->numSections;
-		imageLength = new int[numImages];
-		for (int i = 0; i < numImages; ++i)
-		{
-			imageLength[i] = 4000;
-		}
+		textDisp->Load("momenta1");
+			//script->Load("momenta1");
+			//numImages = 5;//script->numSections;
+		//imageLength = new int[numImages];
+		//for (int i = 0; i < numImages; ++i)
+		//{
+		//	imageLength[i] = 4000;
+		//}
+		givenShard = new Shard(pod->owner, Vector2i(pod->position), 0, 0);
 		/*imageLength[0] = 4000;
 		imageLength[1] = 4000;
 		imageLength[2] = 4000;
@@ -343,9 +343,9 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	case DESTROYGOALS:
 	{
 		ts_broadcast = pod->owner->GetTileset("Momenta/momentabroadcast_w1_2_320x288.png", 320, 288);
-		script->Load("momenta2");
-		numImages = script->numSections;
-		imageLength = new int[numImages];
+		//script->Load("momenta2");
+		//numImages = script->numSections;
+		//imageLength = new int[numImages];
 		for (int i = 0; i < numImages; ++i)
 		{
 			imageLength[i] = 4000;
@@ -370,14 +370,14 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 
 MomentaBroadcast::~MomentaBroadcast()
 {
-	delete script;
+	//delete script;
 	delete textDisp;
 
-	if (numImages > 0)
+	/*if (numImages > 0)
 	{
 		assert(imageLength != NULL);
 		delete[] imageLength;
-	}
+	}*/
 }
 
 bool MomentaBroadcast::Update()
@@ -404,47 +404,58 @@ bool MomentaBroadcast::Update()
 	}
 
 
+	bool textContinue = textDisp->Update();
 
-	if (!textDisp->Update() && !endPadding)
+	textDisp->NextSection();
+
+	if (!textContinue && textDisp->show)// && !endPadding)
 	{
-		frame = imageLength[imageIndex] - numPadding;
-		endPadding = true;
+		textDisp->Hide();
+		if (givenShard != NULL)
+		{
+			Shard *s = givenShard;
+			s->Reset();
+			s->Launch();
+			pod->owner->AddEnemy(s);
+		}
+		//frame = //imageLength[imageIndex] - numPadding;
+		//endPadding = true;
 	}
 	
 
 	//need to figure out how to add a delay after the text is done. then the images will auto time
 	//to the text
 
-	++frame;
-	if (frame == imageLength[imageIndex])
-	{
-		++imageIndex;
-		if (imageIndex < script->numSections )
-		{
-			textDisp->SetString(script->GetSection(imageIndex));
-		}
-		
-		frame = 0;
-		endPadding = false;
-		if (imageIndex == numImages)
-		{
-			basicFlower = true;
-			textDisp->Hide();
-			frame = 0;
-			sprite.setTexture(*ts_basicFlower->texture);
-			sprite.setTextureRect(ts_basicFlower->GetSubRect(0));
-			return true;
-			//return false;
-		}
-		sprite.setTextureRect(ts_broadcast->GetSubRect(imageIndex));
-	}
+	//++frame;
+	//if (frame == imageLength[imageIndex])
+	//{
+	//	++imageIndex;
+	//	if (imageIndex < script->numSections )
+	//	{
+	//		textDisp->SetString(script->GetSection(imageIndex));
+	//	}
+	//	
+	//	frame = 0;
+	//	endPadding = false;
+	//	if (imageIndex == numImages)
+	//	{
+	//		basicFlower = true;
+	//		textDisp->Hide();
+	//		frame = 0;
+	//		sprite.setTexture(*ts_basicFlower->texture);
+	//		sprite.setTextureRect(ts_basicFlower->GetSubRect(0));
+	//		return true;
+	//		//return false;
+	//	}
+	//	sprite.setTextureRect(ts_broadcast->GetSubRect(imageIndex));
+	//}
 
 	return true;
 }
 
 void MomentaBroadcast::Draw( RenderTarget *target )
 {
-	target->draw(sprite);
+	//target->draw(sprite);
 	textDisp->Draw(target);
 }
 
@@ -453,7 +464,7 @@ void MomentaBroadcast::Reset()
 	imageIndex = 0;
 	frame = 0;
 	textDisp->Reset();
-	textDisp->SetString(script->GetSection(0));
+	//textDisp->SetString(script->GetSection(0));
 	sprite.setTexture(*ts_basicFlower->texture);
 	sprite.setTextureRect(ts_basicFlower->GetSubRect(0));
 	endPadding = false;
