@@ -464,6 +464,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 
 	StorySequence *currStorySequence;
+	void SetStorySeq(StorySequence *storySeq);
 	MomentaBroadcast *currBroadcast;
 
 	struct DecorInfo

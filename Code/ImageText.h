@@ -64,11 +64,25 @@ struct Speech
 	void Draw(sf::RenderTarget *target);
 };
 
+struct Conversation;
+
+struct ConversationGroup
+{
+	ConversationGroup(GameSession *owner);
+	~ConversationGroup();
+	void Load(const std::string &name);
+	Conversation* GetConv(int index);
+	int numConvs;
+	Conversation **convs;
+	GameSession *owner;
+};
+
 struct Conversation
 {
 	~Conversation();
 	Conversation( GameSession *owner );
 	void Load(const std::string &name);
+	bool Load(std::ifstream &is);
 	std::string GetSpeakerName( const std::string &line,
 		int &tIndex );
 	void Draw(sf::RenderTarget *target);
@@ -79,7 +93,7 @@ struct Conversation
 	void NextSection();
 	void SetRate(int wait, int letterPer);
 
-
+	bool show;
 	GameSession *owner;
 	int numSpeeches;
 	Speech **speeches;

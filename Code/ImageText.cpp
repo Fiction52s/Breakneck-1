@@ -602,10 +602,75 @@ Tileset *Speech::GetTileset()
 	return owner->GetTileset("Bosses/Bird/bird_face_384x384.png", 384, 384 );
 }
 
+ConversationGroup::ConversationGroup(GameSession *p_owner)
+	:owner( p_owner )
+{
+	convs = NULL;
+	numConvs = NULL;
+}
+
+ConversationGroup::~ConversationGroup()
+{
+	if (convs != NULL)
+	{
+		delete[] convs;
+	}
+	
+}
+
+Conversation* ConversationGroup::GetConv(int index)
+{
+	if (index < 0 || index >= numConvs)
+	{
+		return NULL;
+	}
+	else
+	{
+		return convs[index];
+	}
+}
+
+void ConversationGroup::Load(const std::string &name)
+{
+	string path = "Resources/Text/";
+	string suffix = ".txt";
+
+	ifstream is;
+	is.open(path + name + suffix);
+
+	Conversation *c;
+
+	std::list<Conversation*> convList;
+
+	while (true)
+	{
+		c = new Conversation(owner);
+		convList.push_back(c);
+		if (!c->Load(is))
+		{
+			break;
+		}
+	}
+	
+
+	numConvs = convList.size();
+	convs = new Conversation*[numConvs];
+
+	int i = 0;
+	for (auto it = convList.begin(); it != convList.end(); ++it)
+	{
+		convs[i] = (*it);
+		++i;
+	}
+
+	is.close();
+}
+
 Conversation::Conversation(GameSession *p_owner): owner( p_owner )
 {
 	speeches = NULL;
 	numSpeeches = 0;
+	show = false;
 }
 
 Conversation::~Conversation()
@@ -649,11 +714,13 @@ std::string Conversation::GetSpeakerName( const std::string &line, int &tileInde
 
 void Conversation::Show()
 {
+	show = true;
 	speeches[currSpeech]->disp->Show();
 }
 
 void Conversation::Hide()
 {
+	show = false;
 	speeches[currSpeech]->disp->Hide();
 }
 
@@ -667,14 +734,8 @@ void Conversation::SetRate(int wait, int letterPer)
 	speeches[currSpeech]->disp->SetRate(wait, letterPer);
 }
 
-void Conversation::Load( const std::string &name )
+bool Conversation::Load(ifstream &is)
 {
-	string path = "Resources/Text/";
-	string suffix = ".txt";
-
-	ifstream is;
-	is.open(path + name + suffix);
-
 	list<pair<string, list<string>>> parts;
 	list<int> partTile;
 
@@ -682,6 +743,7 @@ void Conversation::Load( const std::string &name )
 	bool getSpeaker = true;
 	list<string> *lineList = NULL;
 	int tileIndex = -1;
+	bool keepLoading = false;
 	if (is.is_open())
 	{
 		if (parts.size() > 0)
@@ -692,18 +754,26 @@ void Conversation::Load( const std::string &name )
 		string line;
 		while (std::getline(is, line))
 		{
+			if (line == "")
+			{
+				continue;
+			}
 			if (line.at(0) == '$')
 			{
-				parts.push_back(pair<string,list<string>>(GetSpeakerName(line, tileIndex),list<string>()));
+				parts.push_back(pair<string, list<string>>(GetSpeakerName(line, tileIndex), list<string>()));
 				partTile.push_back(tileIndex);
 				lineList = &parts.back().second;
+			}
+			else if (line.at(0) == '&' )
+			{
+				keepLoading = true;
+				break;
 			}
 			else
 			{
 				lineList->push_back(line);
 			}
 		}
-		is.close();
 	}
 	else
 	{
@@ -716,7 +786,7 @@ void Conversation::Load( const std::string &name )
 	int i = 0;
 	if (parts.size() > 0)
 	{
-		
+
 		auto tileIt = partTile.begin();
 		for (auto it = parts.begin(); it != parts.end(); ++it, ++tileIt)
 		{
@@ -751,6 +821,19 @@ void Conversation::Load( const std::string &name )
 		}
 
 	}
+
+	return keepLoading;
+}
+
+void Conversation::Load( const std::string &name )
+{
+	string path = "Resources/Text/";
+	string suffix = ".txt";
+
+	ifstream is;
+	is.open(path + name + suffix);
+	bool res = Load(is);
+	is.close();
 }
 
 bool Conversation::Update()
@@ -781,14 +864,16 @@ void Conversation::Reset()
 	{
 		speeches[i]->disp->Reset();
 	}
-
-
+	Hide();
 }
 
 void Conversation::Draw(sf::RenderTarget *target)
 {
-	if (currSpeech < numSpeeches)
+	if (show)
 	{
-		speeches[currSpeech]->Draw(target);
+		if (currSpeech < numSpeeches)
+		{
+			speeches[currSpeech]->Draw(target);
+		}
 	}
 }

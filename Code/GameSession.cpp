@@ -7715,7 +7715,7 @@ int GameSession::Run()
 
 	preScreenTex->setView(view);
 	
-	bool showFrameRate = false;
+	bool showFrameRate = true;
 	bool showRunningTimer = true;
 
 	sf::Text frameRate("00", mainMenu->arial, 30);
@@ -9702,7 +9702,7 @@ int GameSession::Run()
 
 			accumulator += frameTime;
 			Sprite preTexSprite;
-			while (accumulator >= TIMESTEP)
+			if (accumulator >= TIMESTEP)
 			{
 				window->clear();
 				window->setView(v);
@@ -9712,6 +9712,7 @@ int GameSession::Run()
 
 				if (currStorySequence != NULL)
 				{
+					//if( false )
 					if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
 					{
 						state = RUN;
@@ -9746,6 +9747,11 @@ int GameSession::Run()
 			swiper->Draw(preScreenTex);
 
 			mainMenu->DrawEffects(preScreenTex);
+
+			if (showFrameRate)
+			{
+				preScreenTex->draw(frameRate);
+			}
 
 			preTexSprite.setTexture(preScreenTex->getTexture());
 			preTexSprite.setPosition(-960 / 2, -540 / 2);
@@ -10794,6 +10800,13 @@ void GameSession::SetupInversePoly( Tileset *ts_bush, int currentEdgeIndex )
 	{
 		delete outerQuadPoints[i];
 	}
+}
+
+void GameSession::SetStorySeq(StorySequence *storySeq)
+{
+	storySeq->Reset();
+	currStorySequence = storySeq;
+	state = GameSession::STORY;
 }
 
 void GameSession::DebugDrawActors()

@@ -413,7 +413,7 @@ bool MomentaBroadcast::Update()
 		textDisp->Hide();
 		if (givenShard != NULL)
 		{
-			Shard *s = givenShard;
+			Shard *s = givenShard; 
 			s->Reset();
 			s->Launch();
 			pod->owner->AddEnemy(s);

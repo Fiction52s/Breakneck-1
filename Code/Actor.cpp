@@ -33,6 +33,7 @@
 #include "Enemy_GravityModifier.h"
 #include "ParticleEffects.h"
 #include "Enemy_HealthFly.h"
+#include "StorySequence.h"
 
 using namespace sf;
 using namespace std;
@@ -17303,7 +17304,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		frame = 0;
 		physicsOver = true;
 
-		owner->activeSequence = trigger->gameSequence;
+		owner->SetStorySeq(trigger->storySeq);
 		break;
 	}
 	}

@@ -26,6 +26,8 @@ struct StoryText
 	bool done;
 };
 
+struct Conversation;
+struct ConversationGroup;
 struct StorySequence;
 struct StoryPart
 {
@@ -55,8 +57,11 @@ struct StoryPart
 	bool Update(ControllerState &prev, ControllerState &curr);
 	void Draw(sf::RenderTarget *target);
 	std::string imageName;
-	StoryText *text;
+	Conversation *text;
+	//ConversationGroup *textGroup;
+	//StoryText *text;
 	StoryPart *sub;
+	bool musicStarted;
 
 	EffectLayer effectLayer;
 
@@ -85,6 +90,11 @@ struct StorySequence
 	sf::Font &myFont;
 	GameSession *owner;
 	std::string seqName;
+	std::map<std::string, ConversationGroup*> convGroups;
+	Conversation* GetConv(const std::string &name, 
+		int index);
+	void AddConvGroup(const std::string &name);
+	bool HasConvGroup(const std::string &name);
 
 	MusicInfo *oldMusic;
 };
