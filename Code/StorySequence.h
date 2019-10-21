@@ -36,11 +36,16 @@ struct StoryPart
 	Tileset *ts;
 	sf::Sprite spr;
 	sf::Vector2f pos;
-	bool hasIntro;
 	StorySequence *seq;
 
 	bool doingTransOut;
 	bool doingTransIn;
+
+	enum IntroType
+	{
+		I_NONE,
+		I_FADE,
+	};
 
 	enum OutroType
 	{
@@ -49,12 +54,14 @@ struct StoryPart
 		O_BLEND,
 	};
 
+	IntroType introType;
+	int fadeInFrames;
+	sf::Color fadeInColor;
+
 	OutroType outType;
 	sf::Color fadeOutColor;
 	int fadeOutFrames;
 	int startOutroFadeFrame;
-
-	int fadeInFrames;
 
 	int layer;
 	float time;

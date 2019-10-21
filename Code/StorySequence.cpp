@@ -247,11 +247,10 @@ bool StorySequence::Load(const std::string &sequenceName)
 						sp->text = sText;
 					}
 				}
-				else if (typeStr == "trans")
+				else if (typeStr == "outro")
 				{
 					
 					is >> transType;
-
 
 					if (transType == "fade")
 					{
@@ -280,6 +279,29 @@ bool StorySequence::Load(const std::string &sequenceName)
 						sp->outType = StoryPart::OutroType::O_BLEND;
 
 						sp->fadeOutFrames = otime * 60.f;
+					}
+				}
+				else if (typeStr == "intro")
+				{
+					is >> transType;
+
+					if (transType == "fade")
+					{
+						int colorR;
+						int colorG;
+						int colorB;
+
+						is >> colorR;
+						is >> colorG;
+						is >> colorB;
+
+						float otime;
+						is >> otime;
+
+						sp->introType = StoryPart::IntroType::I_FADE;
+
+						sp->fadeInColor = Color(colorR, colorG, colorB);
+						sp->fadeInFrames = otime * 60.f;
 					}
 				}
 				else
@@ -313,7 +335,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 				sp->blank = true;
 			}
 
-			sp->hasIntro = false;//bHasIntro;
+			
 
 			
 
@@ -854,6 +876,7 @@ StoryPart::StoryPart( StorySequence *p_seq)
 	outType = OutroType::O_NONE;
 	musicStarted = false;
 	music = NULL;
+	introType = IntroType::I_NONE;
 }
 
 void StoryPart::Reset()
@@ -871,6 +894,11 @@ void StoryPart::Reset()
 	{
 		text->Reset();
 		text->Show();
+	}
+
+	if (introType != I_NONE)
+	{
+		doingTransIn = true;
 	}
 }
 
@@ -907,6 +935,25 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 {	
 	GameSession *owner = seq->owner;
 
+	if (doingTransIn)
+	{
+		if (frame == fadeInFrames)
+		{
+			doingTransIn = false;
+			frame = 0;
+		}
+		else
+		{
+			if (frame == 0)
+			{
+				owner->Fade(true, fadeInFrames, fadeInColor);
+			}
+			++frame;
+		}
+		return true;
+	}
+
+
 	if (doingTransOut)
 	{
 		if (frame == fadeOutFrames)
@@ -915,11 +962,19 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 		}
 		else
 		{
-			if( ou)
-			float f = frame + 1;
-			float fac = f / fadeOutFrames;
-			int a = 255 - fac * 255;
-			spr.setColor(Color(255, 255, 255, a));
+			if (outType == O_BLEND)
+			{
+				float f = frame + 1;
+				float fac = f / fadeOutFrames;
+				int a = 255 - fac * 255;
+				spr.setColor(Color(255, 255, 255, a));
+
+			}
+			else if (outType == O_FADE)
+			{
+
+			}
+
 			++frame;
 			return true;
 		}
@@ -946,11 +1001,14 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 		if (!text->Update())
 		{
 			text->Hide();
-			//if (outType == O_FADE )// && frame == startOutroFadeFrame)
-			//{
+			if (outType == O_FADE )// && frame == startOutroFadeFrame)
+			{
+				doingTransOut = true;
+				frame = 0;
+				seq->owner->Fade(false, fadeOutFrames, fadeOutColor);
 			//	seq->owner->CrossFade( 60, 60, 60, Color::Black );
-			//}
-			if (outType == O_BLEND)
+			}
+			else if (outType == O_BLEND)
 			{
 				doingTransOut = true;
 				frame = 0;
@@ -982,6 +1040,14 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 		}
 		else
 		{
+			if (outType == O_FADE )//&& frame == startOutroFadeFrame)
+			{
+				doingTransOut = true;
+				frame = 0;
+				seq->owner->Fade(false, fadeOutFrames, fadeOutColor);
+				return true;
+			}
+
 			return false;
 		}
 		
@@ -990,7 +1056,7 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 	{
 		if ( outType == O_FADE && frame == startOutroFadeFrame)
 		{
-			seq->owner->Fade(false, fadeOutFrames, fadeOutColor);
+		//	seq->owner->Fade(false, fadeOutFrames, fadeOutColor);
 		}
 		++frame;
 		return true;
