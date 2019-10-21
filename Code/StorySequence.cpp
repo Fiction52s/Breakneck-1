@@ -132,7 +132,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 		while (true)
 		{
 			layer = 0;
-			time = 3.f;
+			time = .5;//3.f;
 			pos.x = 0;
 			pos.y = 0;
 

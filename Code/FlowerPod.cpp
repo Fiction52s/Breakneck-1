@@ -308,9 +308,11 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	//can currently handle 30 chars per line
 	
 	givenShard = NULL;
-	textDisp = new TextDisp( pod->owner, 670, 220 );
+	conv = new Conversation(pod->owner);
 	
-	textDisp->SetTopLeft(Vector2f(1920 - textDisp->rectSize.x - 350, 50));
+	//textDisp = new TextDisp( pod->owner, 670, 220 );
+	
+	//textDisp->SetTopLeft(Vector2f(1920 - textDisp->rectSize.x - 350, 50));
 
 	bType = GetType(btypeStr);
 	
@@ -319,7 +321,8 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	case SEESHARDS:
 	{
 		ts_broadcast = pod->owner->GetTileset("Momenta/momentabroadcast_w1_1_320x288.png", 320, 288);
-		textDisp->Load("momenta1");
+		conv->Load("momenta1");
+		//textDisp->Load("momenta1");
 			//script->Load("momenta1");
 			//numImages = 5;//script->numSections;
 		//imageLength = new int[numImages];
@@ -343,6 +346,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	case DESTROYGOALS:
 	{
 		ts_broadcast = pod->owner->GetTileset("Momenta/momentabroadcast_w1_2_320x288.png", 320, 288);
+		conv->Load("momenta2");
 		//script->Load("momenta2");
 		//numImages = script->numSections;
 		//imageLength = new int[numImages];
@@ -371,7 +375,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 MomentaBroadcast::~MomentaBroadcast()
 {
 	//delete script;
-	delete textDisp;
+	delete conv;
 
 	/*if (numImages > 0)
 	{
@@ -394,7 +398,7 @@ bool MomentaBroadcast::Update()
 			basicFlower = false;
 			frame = 0;
 			sprite.setTexture(*ts_broadcast->texture);
-			textDisp->Show();
+			conv->Show();
 		}
 		else
 		{
@@ -404,13 +408,13 @@ bool MomentaBroadcast::Update()
 	}
 
 
-	bool textContinue = textDisp->Update();
+	bool textContinue = conv->Update();
 
-	textDisp->NextSection();
+	conv->NextSection();
 
-	if (!textContinue && textDisp->show)// && !endPadding)
+	if (!textContinue && conv->show)// && !endPadding)
 	{
-		textDisp->Hide();
+		conv->Hide();
 		if (givenShard != NULL)
 		{
 			Shard *s = givenShard; 
@@ -418,6 +422,7 @@ bool MomentaBroadcast::Update()
 			s->Launch();
 			pod->owner->AddEnemy(s);
 		}
+		return false;
 		//frame = //imageLength[imageIndex] - numPadding;
 		//endPadding = true;
 	}
@@ -456,14 +461,14 @@ bool MomentaBroadcast::Update()
 void MomentaBroadcast::Draw( RenderTarget *target )
 {
 	//target->draw(sprite);
-	textDisp->Draw(target);
+	conv->Draw(target);
 }
 
 void MomentaBroadcast::Reset()
 {
 	imageIndex = 0;
 	frame = 0;
-	textDisp->Reset();
+	conv->Reset();
 	//textDisp->SetString(script->GetSection(0));
 	sprite.setTexture(*ts_basicFlower->texture);
 	sprite.setTextureRect(ts_basicFlower->GetSubRect(0));

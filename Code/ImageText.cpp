@@ -726,7 +726,10 @@ void Conversation::Hide()
 
 void Conversation::NextSection()
 {
+	//if (currSpeech < numSpeeches)
+	//{
 	speeches[currSpeech]->disp->NextSection();
+	//}
 }
 
 void Conversation::SetRate(int wait, int letterPer)
@@ -843,11 +846,15 @@ bool Conversation::Update()
 	if (!sp->disp->Update())
 	{
 		sp->disp->Hide();
-		++currSpeech;
+		
 
-		if (currSpeech == numSpeeches)
+		if (currSpeech + 1 == numSpeeches)
 		{
 			return false;
+		}
+		else
+		{
+			++currSpeech;
 		}
 
 		sp = speeches[currSpeech];

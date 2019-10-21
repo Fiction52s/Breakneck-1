@@ -36,7 +36,8 @@ struct MomentaBroadcast
 	int imageIndex;
 	int frame;
 	void Reset();
-	TextDisp *textDisp;
+	Conversation *conv;
+	//TextDisp *textDisp;
 	//TextDisp *textDisp;
 	//Script *script;
 	bool endPadding;
