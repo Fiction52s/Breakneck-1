@@ -142,7 +142,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 
 				if (is.fail())
 				{
-					int x = 56;
+					break;
 				}
 			}
 			else
@@ -178,6 +178,11 @@ bool StorySequence::Load(const std::string &sequenceName)
 			while (true)
 			{
 				is >> typeStr;
+
+				if (is.fail())
+				{
+					break;
+				}
 
 				if (typeStr == "position")
 				{
