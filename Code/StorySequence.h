@@ -39,16 +39,22 @@ struct StoryPart
 	bool hasIntro;
 	StorySequence *seq;
 
+	bool doingTransOut;
+	bool doingTransIn;
+
 	enum OutroType
 	{
 		O_NONE,
-		O_FADE
+		O_FADE,
+		O_BLEND,
 	};
 
 	OutroType outType;
 	sf::Color fadeOutColor;
 	int fadeOutFrames;
 	int startOutroFadeFrame;
+
+	int fadeInFrames;
 
 	int layer;
 	float time;

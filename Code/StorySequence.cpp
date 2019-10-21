@@ -122,6 +122,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 		int layer = 0;
 		float fadeTime = 0.f;
 		float time = 0.f;
+		string transType;
 
 		bool bHasSubLayer = false;
 
@@ -159,7 +160,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 			{
 				blankImage = true;
 			}
-			else if (imageName == "text")
+			else if (imageName == "loadtext")
 			{
 				is >> textName;
 				AddConvGroup(textName);
@@ -244,6 +245,41 @@ bool StorySequence::Load(const std::string &sequenceName)
 						Conversation *sText = new Conversation(owner);
 						sText->Load(textName);
 						sp->text = sText;
+					}
+				}
+				else if (typeStr == "trans")
+				{
+					
+					is >> transType;
+
+
+					if (transType == "fade")
+					{
+						int colorR;
+						int colorG;
+						int colorB;
+
+						is >> colorR;
+						is >> colorG;
+						is >> colorB;
+
+						float otime;
+						is >> otime;
+
+						sp->outType = StoryPart::OutroType::O_FADE;
+
+						sp->fadeOutColor = Color(colorR, colorG, colorB);
+						sp->fadeOutFrames = otime * 60.f;
+						sp->startOutroFadeFrame = sp->totalFrames - sp->fadeOutFrames;
+					}
+					else if (transType == "blend")
+					{
+						float otime;
+						is >> otime;
+
+						sp->outType = StoryPart::OutroType::O_BLEND;
+
+						sp->fadeOutFrames = otime * 60.f;
 					}
 				}
 				else
@@ -676,7 +712,22 @@ void StorySequence::Draw(sf::RenderTarget *target)
 	{
 		if( pUpdate[i] )
 		{
-			(*currPartIt[i])->Draw(target);
+			auto cPartIt = currPartIt[i];
+			auto nextPartIt = ++cPartIt;
+			--cPartIt;
+
+
+			if ((*cPartIt)->doingTransOut && (*cPartIt)->outType == StoryPart::O_BLEND)
+			{
+				if (nextPartIt != parts[i].end())
+				{
+					(*nextPartIt)->Draw(target);
+				}
+			}
+
+			(*cPartIt)->Draw(target);
+
+			
 		}
 	}
 }
@@ -813,6 +864,9 @@ void StoryPart::Reset()
 	}
 	frame = 0;
 	musicStarted = false;
+	doingTransOut = false;
+	doingTransIn = false;
+	spr.setColor(Color::White);
 	if (text != NULL)
 	{
 		text->Reset();
@@ -853,6 +907,25 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 {	
 	GameSession *owner = seq->owner;
 
+	if (doingTransOut)
+	{
+		if (frame == fadeOutFrames)
+		{
+			return false;
+		}
+		else
+		{
+			if( ou)
+			float f = frame + 1;
+			float fac = f / fadeOutFrames;
+			int a = 255 - fac * 255;
+			spr.setColor(Color(255, 255, 255, a));
+			++frame;
+			return true;
+		}
+		
+	}
+
 	if (text != NULL)//&& text->Update())
 	{
 		//return true;
@@ -868,20 +941,22 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 		{
 			text->SetRate(1, 1);
 		}
-
-		if (owner->GetCurrInput(0).Y)
-		{
-			text->Hide();
-		}
-		else
-		{
-			text->Show();
-		}
-
 		
 
 		if (!text->Update())
 		{
+			text->Hide();
+			//if (outType == O_FADE )// && frame == startOutroFadeFrame)
+			//{
+			//	seq->owner->CrossFade( 60, 60, 60, Color::Black );
+			//}
+			if (outType == O_BLEND)
+			{
+				doingTransOut = true;
+				frame = 0;
+				return true;
+			}
+
 			return false;
 			//frame = stateLength[TALK] - 1;
 		}
@@ -890,8 +965,7 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 			return true;
 		}
 	}
-
-	if (frame == totalFrames)
+	else if (frame == totalFrames)
 	{
 		//if (text != NULL && !text->done)
 		//{

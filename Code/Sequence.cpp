@@ -11,6 +11,7 @@
 #include <boost/bind.hpp>
 #include "ImageText.h"
 #include "HUD.h"
+#include "StorySequence.h"
 //#include "EditSession.h"
 #include "Zone.h"
 #include "Flow.h"
@@ -58,13 +59,20 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	//shipSprite.setOrigin(960 / 2, 700);
 	shipSprite.setOrigin(421, 425);
 
-	assert(mov.openFromFile("Resources/Movie/kin_ship.ogv"));
-	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
+	storySeq = new StorySequence(owner);
+	storySeq->Load("world1outro");
+	//assert(mov.openFromFile("Resources/Movie/kin_ship.ogv"));
+	//mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 
 	stateLength[SHIP_SWOOP]= 1000000;
 	//stateLength[FADEOUT] = 90;
 
-	stateLength[PLAYMOVIE] = 1000000;
+	stateLength[STORYSEQ] = 1000000;
+}
+
+ShipExitSeq::~ShipExitSeq()
+{
+	delete storySeq;
 }
 
 bool ShipExitSeq::Update()
@@ -80,8 +88,6 @@ bool ShipExitSeq::Update()
 
 		if (state == END)
 		{
-			//owner->goalDestroyed = true;
-			//owner->state = GameSession::RUN;
 			return false;
 		}
 	}
@@ -173,27 +179,22 @@ bool ShipExitSeq::Update()
 	//	}
 	//	break;
 	//}
-	case PLAYMOVIE:
+	case STORYSEQ:
 	{
-		owner->ClearFade();
-		sfe::Status movStatus = mov.getStatus();
 		if (frame == 0)
 		{
-			//owner->Fade(true, 60, Color::Black);
-			mov.setVolume(owner->mainMenu->config->GetData().musicVolume);
-			mov.setPlayingOffset(sf::Time::Zero);
-			mov.play();
+			owner->ClearFade();
+			owner->SetStorySeq(storySeq);
 		}
-		else
+		
+		
+		//if (!storySeq->Update(owner->GetPrevInputUnfiltered(0), owner->GetCurrInputUnfiltered(0)))
+		if( owner->currStorySequence == NULL )
 		{
-			//mov.update();
-			
-			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
-			{
-				frame = stateLength[PLAYMOVIE] - 1;
-				owner->goalDestroyed = true;
-			}
+			frame = stateLength[STORYSEQ] - 1;
+			owner->goalDestroyed = true;
 		}
+
 		break;
 	}
 	}
@@ -213,10 +214,11 @@ void ShipExitSeq::Draw( RenderTarget *target, EffectLayer layer)
 	{
 		target->draw(shipSprite);
 	}
-	else if (state == PLAYMOVIE)
+	else if (state == STORYSEQ)
 	{
-		mov.update();
-		target->draw(mov);
+		//mov.update();
+		//target->draw(mov);
+		storySeq->Draw(target);
 	}
 	
 }
@@ -225,6 +227,7 @@ void ShipExitSeq::Reset()
 {
 	frame = 0;
 	state = SHIP_SWOOP;
+	storySeq->Reset();
 }
 
 

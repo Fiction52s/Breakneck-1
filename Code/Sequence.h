@@ -15,6 +15,7 @@ struct MovementSequence;
 struct PoiInfo;
 struct MusicInfo;
 struct ShapeEmitter;
+struct StorySequence;
 
 struct FlashedImage
 {
@@ -82,19 +83,21 @@ struct ShipExitSeq : Sequence
 	{
 		SHIP_SWOOP,
 		//FADEOUT,
-		PLAYMOVIE,
+		STORYSEQ,
 		END
 	};
 
 	State state;
 	int stateLength[END];
 	ShipExitSeq( GameSession *owner );
+	~ShipExitSeq();
 	bool Update();
 	void Draw( sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
-	sfe::Movie mov;
+	StorySequence *storySeq;
+	//sfe::Movie mov;
 	Tileset *ts_ship;
 	sf::Sprite shipSprite;
 	MovementSequence shipMovement;

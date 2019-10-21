@@ -10264,6 +10264,13 @@ void GameSession::Fade(bool in, int frames, sf::Color c, bool skipKin)
 	fader->Fade(in, frames, c, skipKin);
 }
 
+void GameSession::CrossFade(int fadeOutFrames,
+	int pauseFrames, int fadeInFrames,
+	sf::Color c, bool skipKin)
+{
+	fader->CrossFade(fadeOutFrames, pauseFrames, fadeInFrames, c, skipKin);
+}
+
 void GameSession::ClearFade()
 {
 	fader->Clear();

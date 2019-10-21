@@ -63,7 +63,7 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 		break;
 	case TRIGGER_TEXTTEST:
 		storySeq = new StorySequence(owner);
-		storySeq->Load("kinhouse");
+		storySeq->Load("world1outro");
 		//gameSequence = new TextTestSeq(owner);
 		break;
 	}

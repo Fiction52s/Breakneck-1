@@ -580,12 +580,20 @@ Speech::~Speech()
 
 void Speech::SetupSprite()
 {
-	ts = GetTileset();
-	speakerSpr.setTexture(*ts->texture);
-	speakerSpr.setTextureRect(ts->GetSubRect(speakerTile));
-	speakerSpr.setScale(2.0 / 3.0, 2.0 / 3.0);
-	Vector2f dispPos = disp->GetTopLeft();
-	speakerSpr.setPosition(dispPos.x - 256, dispPos.y);
+	if (speaker == "None")
+	{
+		ts = NULL;
+	}
+	else
+	{
+		ts = GetTileset();
+		speakerSpr.setTexture(*ts->texture);
+		speakerSpr.setTextureRect(ts->GetSubRect(speakerTile));
+		speakerSpr.setScale(2.0 / 3.0, 2.0 / 3.0);
+		Vector2f dispPos = disp->GetTopLeft();
+		speakerSpr.setPosition(dispPos.x - 256, dispPos.y);
+	}
+	
 	//speakerSpr.setPosition(dispPos.x, dispPos.y);
 
 	//speakerSpr.setPosition( disp->ppo)
@@ -594,7 +602,10 @@ void Speech::SetupSprite()
 void Speech::Draw(sf::RenderTarget *target)
 {
 	disp->Draw(target);
-	target->draw(speakerSpr);
+	if (ts != NULL)
+	{
+		target->draw(speakerSpr);
+	}
 }
 
 Tileset *Speech::GetTileset()
@@ -692,11 +703,15 @@ std::string Conversation::GetSpeakerName( const std::string &line, int &tileInde
 		if (pos != std::string::npos)
 		{
 			name = line.substr(1, pos - 1);
-			string number = line.substr(pos);
+			
+			if (name != "None")
+			{
+				string number = line.substr(pos);
 
-			stringstream ss;
-			ss << number;
-			ss >> tileIndex;
+				stringstream ss;
+				ss << number;
+				ss >> tileIndex;
+			}	
 		}
 		else
 		{
