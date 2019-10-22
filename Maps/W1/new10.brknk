@@ -352,20 +352,21 @@ patroller -8597 7287
 0
 0
 0
-10
+0
 patroller -8911 7153
 0
 0
 0
-10
+0
 patroller -5756 5307
 0
 0
 0
-10
+0
 blocker 4960 -368
 1
 4 -508
+0
 0
 0
 0
@@ -377,9 +378,11 @@ blocker 8706 633
 0
 0
 0
+0
 flowerpod 4 44 214
 seeshards
-foottrap -1 39 107.482
+shroom -1 39 107.482
+0
 0
 basicturret -1 72 33.1339
 0
@@ -391,7 +394,8 @@ basicturret -1 156 168.312
 0
 0
 goal -1 153 298.659
-foottrap -1 179 294.827
+shroom -1 179 294.827
+0
 0
 crawler -1 178 115.926
 0

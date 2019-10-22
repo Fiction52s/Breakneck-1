@@ -589,14 +589,14 @@ void Speech::SetupSprite()
 		ts = GetTileset();
 		speakerSpr.setTexture(*ts->texture);
 		speakerSpr.setTextureRect(ts->GetSubRect(speakerTile));
-		speakerSpr.setScale(2.0 / 3.0, 2.0 / 3.0);
+
+		if (ts->tileWidth == 384 && ts->tileHeight == 384)
+		{
+			speakerSpr.setScale(2.0 / 3.0, 2.0 / 3.0);
+		}
 		Vector2f dispPos = disp->GetTopLeft();
 		speakerSpr.setPosition(dispPos.x - 256, dispPos.y);
 	}
-	
-	//speakerSpr.setPosition(dispPos.x, dispPos.y);
-
-	//speakerSpr.setPosition( disp->ppo)
 }
 
 void Speech::Draw(sf::RenderTarget *target)
@@ -610,7 +610,14 @@ void Speech::Draw(sf::RenderTarget *target)
 
 Tileset *Speech::GetTileset()
 {
-	return owner->GetTileset("Bosses/Bird/bird_face_384x384.png", 384, 384 );
+	if (speaker == "Momenta")
+	{
+		return owner->GetTileset("Momenta/momentaportrait_320x288.png", 320, 288);
+	}
+	else
+	{
+		return owner->GetTileset("Bosses/Bird/bird_face_384x384.png", 384, 384);
+	}
 }
 
 ConversationGroup::ConversationGroup(GameSession *p_owner)

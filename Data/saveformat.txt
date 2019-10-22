@@ -1,0 +1,15 @@
+-num worlds
+	-num sectors
+		-sector type
+		-num unlock conditions
+			-condition type needed
+			-num of this type
+		-num levels
+			-name
+			-optionField
+		-num top bonuses
+			-list of indexes with top bonuses
+		-num bottom bonuses
+			-list of indexes with bottom bonuses
+-shard save (5 0s)
+-shard fresh save( 5 0s

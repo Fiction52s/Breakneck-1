@@ -417,9 +417,9 @@ borderpoly
 1
 -- 30
 booster 3557 -2961
-10
+0
 booster 6477 -2717
-10
+0
 key 4011 -3193
 3
 0
@@ -432,8 +432,9 @@ key 4096 3881
 crawler -1 280 79.5917
 0
 0
-foottrap -1 275 163.906
+shroom -1 275 163.906
 1
+0
 crawler -1 278 101.307
 0
 0
@@ -449,8 +450,9 @@ crawler -1 254 365.959
 crawler -1 271 88.9034
 0
 0
-foottrap -1 264 157.718
+shroom -1 264 157.718
 1
+0
 crawler -1 268 191.636
 0
 0
@@ -458,10 +460,12 @@ crawler -1 257 54.8816
 0
 0
 goal -1 234 206.314
-foottrap -1 46 117.903
+shroom -1 46 117.903
 1
-foottrap -1 58 287.886
+0
+shroom -1 58 287.886
 1
+0
 basicturret -1 20 544.006
 0
 0
@@ -474,16 +478,18 @@ basicturret -1 17 115.999
 basicturret -1 17 115.999
 0
 0
-foottrap -1 175 47.709
+shroom -1 175 47.709
 1
+0
 basicturret -1 162 118.212
 1
 0
 crawler -1 156 730.826
 1
 0
-foottrap -1 170 100.206
+shroom -1 170 100.206
 1
+0
 crawler -1 149 338.476
 1
 0

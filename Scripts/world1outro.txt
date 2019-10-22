@@ -1,0 +1,14 @@
+loadtext ship1
+Ship_01
+intro fade 0 0 0 1.0
+text ship1 0
+outro blend 1.0
+Ship_02
+text ship1 1
+outro blend 1.0
+Ship_03
+text ship1 2
+outro blend 1.0
+Ship_04
+time 3.0
+outro fade 0 0 0 1.0

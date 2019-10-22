@@ -1,0 +1,43 @@
+loadtext momenta3
+kinletter_1a_1920x1080 
+time 3
+music w1_14b_memorial start 0 fade 3
+text momenta3 0
+
+kinletter_1b_1920x1080
+text momenta3 1
+
+kinletter_1c_1920x1080
+text momenta3 2
+
+kinletter_2_1920x1080
+text momenta3 3
+
+kinletter_3a_1920x1080
+text momenta3 4
+
+kinletter_3b_1920x1080
+text momenta3 5
+
+kinletter_3c_1920x1080
+text momenta3 6
+
+kinletter_4a_1920x1080
+music w1_21f_plane start 21 fade 4
+text momenta3 7
+
+kinletter_4b_1920x1080
+text momenta3 8
+
+kinletter_4c_1920x1080
+
+kinletter_4d_1920x1080
+
+kinletter_5a_1920x1080
+text momenta3 9
+
+kinletter_5b_1920x1080
+text momenta3 10
+
+kinletter_5c_1920x1080
+text momenta3 11

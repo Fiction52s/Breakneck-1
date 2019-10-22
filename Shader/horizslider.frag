@@ -1,6 +1,5 @@
 uniform sampler2D u_texture;
 uniform float quant;
-//uniform vec4 blendColor;
 
 void main()
 {		
@@ -10,6 +9,6 @@ void main()
 	coord.x = fract(TexCoord.x + quant);
 	
 	vec4 col = texture2D(u_texture, coord );	
-	gl_FragColor = vec4(col.rgb, col.a * .3);//vec4( blendColor.rgb, col.a );
+	gl_FragColor = vec4(col.rgb, col.a);//vec4( blendColor.rgb, col.a );
 }
 
