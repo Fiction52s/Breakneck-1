@@ -2125,7 +2125,7 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 		return player->currHitboxes->hitboxInfo;
 	}
 
-	ComboObject *co = player->IntersectMyComboHitboxes(currHurtboxes, currHurtboxFrame);
+	ComboObject *co = player->IntersectMyComboHitboxes(this, currHurtboxes, currHurtboxFrame);
 	if (co != NULL)
 	{
 		HitboxInfo *hi = co->enemyHitboxInfo;
@@ -2236,7 +2236,10 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_AIRDASHJUGGLER:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
-		case EnemyType::EN_JUGGLER:
+		case EnemyType::EN_GRAVITYJUGGLER:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
+			break;
+		case EnemyType::EN_PRIMAYJUGGLER:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
 			break;
 		case EnemyType::EN_POISONFROG:
@@ -2511,6 +2514,7 @@ void ComboObject::Reset()
 {
 	enemyHitboxFrame = 0;
 	nextComboObj = NULL;
+	active = NULL;
 }
 
 void ComboObject::Draw(RenderTarget *target)

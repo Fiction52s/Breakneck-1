@@ -21,11 +21,25 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	//healRingGroup.AddGeo(new Ring(32, 20, 200, 10, 20, Vector2f(pos), Vector2f(pos),
 	//	Color::Cyan, Color(0, 0, 100, 0), 60));
 	//geoGroup.Init();
+	double width = 128; //112;
+	double height = 128;
+
+	V2d gPoint = g->GetPoint(edgeQuantity);
+	sprite.setPosition(gPoint.x, gPoint.y);
+
+	V2d gn = g->Normal();
+
+	V2d gAlong = normalize(g->v1 - g->v0);
+
+	camPosition = gPoint + gn * (height + 0.0);
+
+	position = gPoint + gn * (height / 2.0);
+
+
 	healRing = new Ring(32);
 	healRing->CreatePoints();
 
-	double width = 128; //112;
-	double height = 128;
+	
 
 	//podType = GetType(typeStr);
 	broadcast = new MomentaBroadcast( this, typeStr);
@@ -43,16 +57,7 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	sprite.setTexture(*ts_bud->texture);
 	sprite.setTextureRect(ts_bud->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height -16);
-	V2d gPoint = g->GetPoint(edgeQuantity);
-	sprite.setPosition(gPoint.x, gPoint.y);
-
-	V2d gn = g->Normal();
-
-	V2d gAlong = normalize(g->v1 - g->v0);
-
-	camPosition = gPoint + gn * ( height + 0.0 );
-
-	position = gPoint + gn * (height / 2.0);
+	
 
 	//healRing->Init();
 	healRing->SetColor(Color::Cyan);
@@ -330,7 +335,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 		//{
 		//	imageLength[i] = 4000;
 		//}
-		givenShard = new Shard(pod->owner, Vector2i(pod->position), 0, 0);
+		givenShard = new Shard(pod->owner, Vector2i(pod->position.x, pod->position.y), 0, 0);
 		/*imageLength[0] = 4000;
 		imageLength[1] = 4000;
 		imageLength[2] = 4000;
@@ -417,10 +422,9 @@ bool MomentaBroadcast::Update()
 		conv->Hide();
 		if (givenShard != NULL)
 		{
-			Shard *s = givenShard; 
-			s->Reset();
-			s->Launch();
+			Shard *s = givenShard;
 			pod->owner->AddEnemy(s);
+			s->Launch();
 		}
 		return false;
 		//frame = //imageLength[imageIndex] - numPadding;
@@ -474,6 +478,11 @@ void MomentaBroadcast::Reset()
 	sprite.setTextureRect(ts_basicFlower->GetSubRect(0));
 	endPadding = false;
 	basicFlower = true;
+
+	if (givenShard != NULL)
+	{
+		givenShard->Reset();
+	}
 }
 
 MomentaBroadcast::BroadcastType MomentaBroadcast::GetType(const std::string &tStr)

@@ -590,6 +590,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	RecordPlayer *recPlayer;
 	ReplayPlayer *repPlayer;
 
+	void TryCreateShardResources();
+
 	Tileset *ts_gravityGrass;
 	Grass *explodingGravityGrass;
 	void UpdateExplodingGravityGrass();

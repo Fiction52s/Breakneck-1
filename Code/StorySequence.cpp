@@ -130,6 +130,8 @@ bool StorySequence::Load(const std::string &sequenceName)
 		bool typeAlreadySet = false;
 		bool blankImage = false;
 
+		string imageFolder = "";
+
 		while (true)
 		{
 			layer = 0;
@@ -164,6 +166,11 @@ bool StorySequence::Load(const std::string &sequenceName)
 			{
 				is >> textName;
 				AddConvGroup(textName);
+				continue;
+			}
+			else if( imageName == "folder" )
+			{
+				is >> imageFolder;
 				continue;
 			}
 			else
@@ -249,9 +256,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 				}
 				else if (typeStr == "outro")
 				{
-					
 					is >> transType;
-
 					if (transType == "fade")
 					{
 						int colorR;
@@ -271,15 +276,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 						sp->fadeOutFrames = otime * 60.f;
 						sp->startOutroFadeFrame = sp->totalFrames - sp->fadeOutFrames;
 					}
-					else if (transType == "blend")
-					{
-						float otime;
-						is >> otime;
-
-						sp->outType = StoryPart::OutroType::O_BLEND;
-
-						sp->fadeOutFrames = otime * 60.f;
-					}
+					
 				}
 				else if (typeStr == "intro")
 				{
@@ -304,6 +301,15 @@ bool StorySequence::Load(const std::string &sequenceName)
 						sp->fadeInFrames = otime * 60.f;
 					}
 				}
+				else if (typeStr == "blend")
+				{
+					float otime;
+					is >> otime;
+
+					sp->outType = StoryPart::OutroType::O_BLEND;
+
+					sp->fadeOutFrames = otime * 60.f;
+				}
 				else
 				{
 					imageAlreadySet = true;
@@ -316,7 +322,17 @@ bool StorySequence::Load(const std::string &sequenceName)
 			sp->totalFrames = time * 60.f;
 			sp->layer = layer;
 
-			string fullImagePath = string("Story/") + imageName + string(".png");
+
+			string fullImagePath;
+			if (imageFolder == "")
+			{
+				fullImagePath = string("Story/") + imageName + string(".png");
+			}
+			else
+			{
+				fullImagePath = string("Story/") + imageFolder + string("/") + imageName + string(".png");
+			}
+			
 			sp->imageName = imageName;
 
 			if (!blankImage)
@@ -1045,6 +1061,12 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 				doingTransOut = true;
 				frame = 0;
 				seq->owner->Fade(false, fadeOutFrames, fadeOutColor);
+				return true;
+			}
+			else if (outType == O_BLEND)
+			{
+				doingTransOut = true;
+				frame = 0;
 				return true;
 			}
 

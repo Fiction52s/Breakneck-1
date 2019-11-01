@@ -98,6 +98,7 @@ struct Shard : Enemy
 	EffectPool *sparklePool;
 	Tileset *ts_explodeCreate;
 	V2d startPos;
+	V2d rootPos;
 	int radius;
 
 	sf::Sprite sprite;

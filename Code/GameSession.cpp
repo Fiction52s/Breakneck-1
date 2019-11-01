@@ -107,6 +107,7 @@
 #include "TouchGrass.h"
 #include "Enemy_AirdashJuggler.h"
 #include "Enemy_Juggler.h"
+#include "Enemy_GravityJuggler.h"
 
 #include "ParticleEffects.h"
 #include "Enemy_JugglerCatcher.h"
@@ -2498,7 +2499,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
 			//AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
-			Juggler *enemy = new Juggler(this, hasMonitor, Vector2i(xPos, yPos), level);
+			GravityJuggler *enemy = new GravityJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
 
 
 			fullEnemyList.push_back(enemy);
@@ -4844,10 +4845,10 @@ bool GameSession::OpenFile( string fileName )
 		mh = MapSelectionMenu::ReadMapHeader(is);
 		assert(mh != NULL);
 
-		if (mh->numShards > 0)
+		/*if (mh->numShards > 0)
 		{
-			getShardSeq = new GetShardSequence(this);
-		}
+			TryCreateShardResources();
+		}*/
 
 		if (mh->gameMode == MapHeader::MapType::T_RACEFIGHT)
 		{
@@ -5634,6 +5635,19 @@ void GameSession::SetGlobalBorders()
 	globalBorderEdges.push_back(bot);
 	//terrainTree->Insert(bot);
 
+}
+
+void GameSession::TryCreateShardResources()
+{
+	if (shardPop == NULL)
+	{
+		shardPop = new ShardPopup(this);
+	}
+
+	if (getShardSeq == NULL)
+	{
+		getShardSeq = new GetShardSequence(this);
+	}
 }
 
 void GameSession::CreateZones()
@@ -7074,8 +7088,6 @@ bool GameSession::Load()
 	//while (true);
 
 	hitboxManager = new HitboxManager;
-
-	shardPop = new ShardPopup(this);
 
 	
 	shardsCapturedField = new BitField(32 * 5);

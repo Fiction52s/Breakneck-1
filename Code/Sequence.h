@@ -307,6 +307,8 @@ struct NexusCore1Seq : Sequence
 struct CrawlerQueen;
 struct TextDisp;
 struct Conversation;
+struct ConversationGroup;
+
 struct CrawlerAttackSeq : Sequence
 {
 	enum State
@@ -360,21 +362,28 @@ struct TextTestSeq : Sequence
 		END,
 		Count
 	};
+
+	TextTestSeq(GameSession *owner);
 	~TextTestSeq();
 	State state;
 	int stateLength[Count];
 	void Init();
-	TextTestSeq(GameSession *owner);
+	
 	bool Update();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
+	void AddGroup(const std::string &name);
 
-	//TextDisp *textDisp;
-	Conversation *conv;
-	CrawlerQueen *queen;
+	std::vector<ConversationGroup*> groups;
+	void UpdateSceneLabel();
+	int gIndex;
+	int cIndex;
+
 
 	int frame;
+
+	sf::Text sceneLabel;
 
 	
 

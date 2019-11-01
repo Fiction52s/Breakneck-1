@@ -614,8 +614,41 @@ Tileset *Speech::GetTileset()
 	{
 		return owner->GetTileset("Momenta/momentaportrait_320x288.png", 320, 288);
 	}
+	else if (speaker == "Kin")
+	{
+		return owner->GetTileset("Story/Portraits/w0_kin_256x256.png", 256, 256);
+	}
+	else if (speaker == "Crawler")
+	{
+		return owner->GetTileset("Story/Portraits/w1_crawler_face_256x256.png", 256, 256);
+	}
+	else if (speaker == "Bird")
+	{
+		return owner->GetTileset("Story/Portraits/w2_bird_face_256x256.png", 256, 256);
+	}
+	else if (speaker == "Coyote")
+	{
+		return owner->GetTileset("Story/Portraits/w3_coyote_face_256x256.png", 256, 256);
+	}
+	else if (speaker == "Tiger")
+	{
+		return owner->GetTileset("Story/Portraits/w4_tiger_face_256x256.png", 256, 256);
+	}
+	else if (speaker == "Gator")
+	{
+		return owner->GetTileset("Story/Portraits/w5_gator_face_256x256.png", 256, 256);
+	}
+	else if (speaker == "Skeleton")
+	{
+		return owner->GetTileset("Story/Portraits/w6_skeleton_face_256x256.png", 256, 256);
+	}
+	else if (speaker == "Bear")
+	{
+		return owner->GetTileset("Story/Portraits/w8_bear_face_256x256.png", 256, 256);
+	}
 	else
 	{
+		//assert(0);
 		return owner->GetTileset("Bosses/Bird/bird_face_384x384.png", 384, 384);
 	}
 }
@@ -650,11 +683,22 @@ Conversation* ConversationGroup::GetConv(int index)
 
 void ConversationGroup::Load(const std::string &name)
 {
+	sceneName = name;
+
 	string path = "Resources/Text/";
 	string suffix = ".txt";
 
+	string fullFileName = path + name + suffix;
+
 	ifstream is;
-	is.open(path + name + suffix);
+	is.open(fullFileName);
+
+	if (!is.is_open())
+	{
+		assert(0);
+	}
+
+
 
 	Conversation *c;
 
@@ -682,6 +726,14 @@ void ConversationGroup::Load(const std::string &name)
 	}
 
 	is.close();
+}
+
+void ConversationGroup::Reset()
+{
+	for (int i = 0; i < numConvs; ++i)
+	{
+		convs[i]->Reset();
+	}
 }
 
 Conversation::Conversation(GameSession *p_owner): owner( p_owner )

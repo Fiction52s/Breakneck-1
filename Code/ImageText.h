@@ -71,10 +71,13 @@ struct ConversationGroup
 	ConversationGroup(GameSession *owner);
 	~ConversationGroup();
 	void Load(const std::string &name);
+	void Reset();
 	Conversation* GetConv(int index);
 	int numConvs;
 	Conversation **convs;
 	GameSession *owner;
+
+	std::string sceneName;
 };
 
 struct Conversation

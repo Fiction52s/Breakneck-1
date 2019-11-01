@@ -171,7 +171,7 @@ HitboxInfo * Shield::IsHit(Actor *player)
 		return player->currHitboxes->hitboxInfo;
 	}
 
-	ComboObject *co = player->IntersectMyComboHitboxes(body, 0);
+	ComboObject *co = player->IntersectMyComboHitboxes(parent, body, 0);
 	if (co != NULL)
 	{
 		HitboxInfo *hi = co->enemyHitboxInfo;

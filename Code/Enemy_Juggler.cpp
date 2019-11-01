@@ -314,11 +314,11 @@ void Juggler::ProcessState()
 		}
 	}
 
-	if (action != S_FLOAT && action != S_EXPLODE && action != S_RETURN)
+	/*if (action != S_FLOAT && action != S_EXPLODE && action != S_RETURN)
 	{
 		sf::Rect<double> r(position.x - 50, position.y - 50, 100, 100);
 		owner->activeEnemyItemTree->Query(this, r);
-	}
+	}*/
 	
 
 	if (action == S_POP && velocity.y >= 0)

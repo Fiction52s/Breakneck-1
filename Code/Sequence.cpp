@@ -1249,19 +1249,71 @@ TextTestSeq::TextTestSeq(GameSession *p_owner)
 	stateLength[TALK] = 10000;
 	stateLength[END] = 30;
 
-	//textDisp = new TextDisp(owner, (1920 - 512), 220, 30, 1 );
-	//textDisp->SetTopLeft(Vector2f(512, 1080 - 220));
-	//textDisp->Load("testtext");
 
-	conv = new Conversation(owner);
-	conv->Load("conv");
+	sceneLabel.setFont(owner->font);
+	sceneLabel.setFillColor(Color::White);
+	sceneLabel.setCharacterSize(100);
+	sceneLabel.setPosition(500, 500);
+
+	AddGroup("W2/w2_bird_fight_pre");
+	AddGroup("W2/w2_bird_fight_post");
+
+	AddGroup("W3/w3_bird_crawler");
+	AddGroup("W3/w3_coy_fight_pre");
+	AddGroup("W3/w3_coy_fight_post");
+	AddGroup("W3/w3_coy_skeleton");
+	AddGroup("W3/w3_skeleton_kin");
+
+	AddGroup("W4/w4_bird_tiger");
+	AddGroup("W4/w4_crawler_kin");
+	AddGroup("W4/w4_tiger_fight_pre");
+	AddGroup("W4/w4_tiger_fight_post");
+
+	AddGroup("W5/w5_bird_tiger_past");
+	AddGroup("W5/w5_bird_kin");
+	AddGroup("W5/w5_gator_fight_pre");
+	AddGroup("W5/w5_gator_fight_post");
+
+	AddGroup("W6/w6_coy_kin_enter");
+	AddGroup("W6/w6_bird_tiger_enter");
+	AddGroup("W6/w6_coy_skele_fight");
+	AddGroup("W6/w6_skeleton_film");
+	AddGroup("W6/w6_coy_skele_kill");
+	AddGroup("W6/w6_skele_nexus");
+	AddGroup("W6/w6_tiger_fight_pre");
+	AddGroup("W6/w6_tiger_kill");
+
+	AddGroup("W7/w7_bird_fight_chase");
+	AddGroup("W7/w7_bird_kill");
+	AddGroup("W7/w7_core_fight");
+	AddGroup("W7/w7_core_skele_kill");
+	AddGroup("W7/w7_game_credits");
+
+	AddGroup("W8/w8_kin_bear_fight");
+	AddGroup("W8/w8_kin_bear_kill");
+	AddGroup("W8/w8_true_credits");
+
+	
+	//conv = new Conversation(owner);
+	//conv->Load("conv");
 
 	Reset();
 }
 
+void TextTestSeq::AddGroup(const std::string &name)
+{
+	ConversationGroup *cg = new ConversationGroup(owner);
+	cg->Load(name);
+	groups.push_back(cg);
+}
+
 TextTestSeq::~TextTestSeq()
 {
-	delete conv;
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		delete (*it);
+	}
+	//delete conv;
 	//delete textDisp;
 }
 
@@ -1296,8 +1348,8 @@ bool TextTestSeq::Update()
 		return false;
 	}
 
-
-
+	ConversationGroup *cg = groups[gIndex];
+	Conversation *conv = cg->GetConv(cIndex);
 	switch (state)
 	{
 	case TALK:
@@ -1324,7 +1376,34 @@ bool TextTestSeq::Update()
 
 		if (!conv->Update())
 		{
-			frame = stateLength[TALK] - 1;
+			if (cIndex < cg->numConvs - 1)
+			{
+				++cIndex;
+
+				Conversation *newconv = cg->GetConv(cIndex);
+
+				newconv->Show();
+			}
+			else
+			{
+				if (gIndex < groups.size() - 1)
+				{
+					++gIndex;
+					UpdateSceneLabel();
+					cIndex = 0;
+					owner->CrossFade(10, 0, 10, Color::Black);
+
+					ConversationGroup *newcg = groups[gIndex];
+					Conversation *newconv = newcg->GetConv(cIndex);
+
+					newconv->Show();
+
+				}
+				else
+				{
+					frame = stateLength[TALK] - 1;
+				}
+			}
 		}
 		break;
 	}
@@ -1342,6 +1421,12 @@ void TextTestSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 
 	View v = target->getView();
 	target->setView(owner->uiView);
+
+	ConversationGroup *cg = groups[gIndex];
+	Conversation *conv = cg->GetConv(cIndex);
+
+	target->draw(sceneLabel);
+
 	conv->Draw(target);
 	target->setView(v);
 }
@@ -1349,5 +1434,19 @@ void TextTestSeq::Reset()
 {
 	state = TALK;
 	frame = 0;
-	conv->Reset();
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		(*it)->Reset();
+	}
+	gIndex = 0;
+	cIndex = 0;
+
+	UpdateSceneLabel();
+	//sceneLabel.setString( )
+}
+
+void TextTestSeq::UpdateSceneLabel()
+{
+	ConversationGroup *cg = groups[gIndex];
+	sceneLabel.setString(cg->sceneName);
 }

@@ -903,7 +903,8 @@ struct Actor : QuadTreeCollider,
 		int cbFrame);
 	bool IntersectMySlowboxes(CollisionBody *cb,
 		int cbFrame );
-	ComboObject * IntersectMyComboHitboxes(CollisionBody *cb,
+	ComboObject * IntersectMyComboHitboxes(
+		Enemy *e, CollisionBody *cb,
 		int cbFrame);
 	bool EnemyIsFar(V2d &enemyPos);
 
@@ -1215,6 +1216,10 @@ struct Actor : QuadTreeCollider,
 	Action pauseBufferedAttack;
 	bool pauseBufferedJump;
 	bool pauseBufferedDash;
+
+	bool stunBufferedJump;
+	bool stunBufferedDash;
+	Action stunBufferedAttack;
 	
 	void ClearPauseBufferedActions();
 	void UpdateInHitlag();

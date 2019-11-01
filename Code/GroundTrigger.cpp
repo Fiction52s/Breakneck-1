@@ -62,8 +62,9 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 		gameSequence = new CrawlerAttackSeq(owner);
 		break;
 	case TRIGGER_TEXTTEST:
-		storySeq = new StorySequence(owner);
-		storySeq->Load("world1outro");
+		gameSequence = new TextTestSeq(owner);
+		//storySeq = new StorySequence(owner);
+		//storySeq->Load("kinhouse");
 		//gameSequence = new TextTestSeq(owner);
 		break;
 	}

@@ -44,6 +44,7 @@ void Shard::SetupShardMaps()
 Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	:Enemy( p_owner, EnemyType::EN_SHARD, false, w+1 )
 {
+	owner->TryCreateShardResources();
 	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
 	testEmitter->CreateParticles();
 	testEmitter->SetPos(Vector2f(pos));
@@ -274,6 +275,9 @@ void Shard::ResetEnemy()
 
 	testEmitter->Reset();
 	testEmitter->SetOn(false);
+
+	position = startPos;
+	rootPos = position;
 }
 
 void Shard::Launch()
@@ -313,12 +317,15 @@ void Shard::ProcessState()
 		tf /= (floatFrames - 1);
 		double f = cos(2 * PI * tf);
 		f -= .5;
-		position = startPos;
+		position = rootPos;
 		position.y += f * floatAmount;
 	}
 	else if (action == LAUNCH)
 	{
 		position.y -= 5.0;
+		rootPos = position;
+
+		cout << "position.y: " << position.y << endl;
 	}
 	
 	//testEmitter->Update();

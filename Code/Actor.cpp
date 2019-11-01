@@ -280,6 +280,11 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+
+	stunBufferedJump = false;
+	stunBufferedDash = false;
+	stunBufferedAttack = Action::Count;
+
 	extraGravityModifier = 1.0;
 	airTrigBehavior = AT_NONE;
 	rpu = new RisingParticleUpdater( this );
@@ -1845,10 +1850,42 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case AIRHITSTUN:
+
+
+			if (stunBufferedAttack == Action::Count)
+			{
+				if (currInput.rightShoulder && !prevInput.rightShoulder)
+				{
+					if (currInput.LUp())
+					{
+						stunBufferedAttack = UAIR;
+					}
+					else if (currInput.LDown())
+					{
+						stunBufferedAttack = DAIR;
+					}
+					else
+					{
+						stunBufferedAttack = FAIR;
+					}
+				}
+			}
+
+			if (!stunBufferedJump && currInput.A && !prevInput.A)
+			{
+				stunBufferedJump = true;
+			}
+
+			if (!stunBufferedDash && currInput.B && !prevInput.B)
+			{
+				stunBufferedDash = true;
+			}
+			
+
 			frame = 0;
 			if (hitstunFrames <= setHitstunFrames / 2)
 			{
-				AirAttack();
+				//AirAttack();
 			}
 			break;
 		case GROUNDHITSTUN:
@@ -2086,6 +2123,13 @@ bool Actor::AirAttack()
 		return true;
 	}
 
+	if (stunBufferedAttack != Action::Count)
+	{
+		SetAction(stunBufferedAttack);
+		frame = 0;
+		return true;
+	}
+
 	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
 	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
 		|| (currInput.RLeft() && !prevInput.RLeft())
@@ -2264,6 +2308,10 @@ void Actor::CreateAttackLightning()
 
 void Actor::AddActiveComboObj(ComboObject *c)
 {
+	if (c->active)
+		return;
+
+	c->active = true;
 	if (activeComboObjList == NULL)
 	{
 		activeComboObjList = c;
@@ -2277,10 +2325,14 @@ void Actor::AddActiveComboObj(ComboObject *c)
 
 void Actor::RemoveActiveComboObj(ComboObject *c)
 {
+	if (!c->active)
+		return;
+
 	if (activeComboObjList == NULL)
 		return;
 	//assert(activeComboObjList != NULL);
 
+	c->active = false;
 	if (c == activeComboObjList)
 	{
 		activeComboObjList = activeComboObjList->nextComboObj;
@@ -2315,6 +2367,9 @@ void Actor::Respawn()
 {
 	//glideEmitter->Reset();
 	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	stunBufferedJump = false;
+	stunBufferedAttack = Action::Count;
+	stunBufferedDash = false;
 
 	kinMask->Reset();
 	SetDirtyAura(false);
@@ -2522,11 +2577,14 @@ void Actor::HandleAirTrigger()
 
 void Actor::UpdatePrePhysics()
 {
-	if (currInput.A)
+	if (prevInput.A)
 	{
-		int x = 5;
+		cout << "A" << endl;
 	}
-
+	else
+	{
+		cout << "not A" << endl;
+	}
 	if (owner->stormCeilingOn)
 	{
 		//if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
@@ -3385,10 +3443,28 @@ void Actor::UpdatePrePhysics()
 	{
 		if( hitstunFrames == 0 )
 		{
-			SetActionExpr( JUMP );
-			frame = 1;
-			holdJump = false;
-			prevInput = ControllerState();
+			if (!TryDoubleJump())
+			{
+				if (!AirAttack())
+				{
+					if (!TryAirDash())
+					{
+						SetActionExpr(JUMP);
+						frame = 1;
+						holdJump = false;
+					}
+					/*if (!pauseBufferedDash && currInput.B && !prevInput.B)
+					{
+						if (ground != NULL || (ground == NULL && hasAirDash))
+							pauseBufferedDash = true;
+					}*/
+					
+				}
+			}
+
+			
+			
+			//prevInput = ControllerState();
 		}
 		
 	}
@@ -3398,7 +3474,7 @@ void Actor::UpdatePrePhysics()
 		{
 			SetActionExpr( LAND );
 			frame = 0;
-			prevInput = ControllerState();
+			//prevInput = ControllerState();
 		}
 		
 	}
@@ -9189,6 +9265,14 @@ void Actor::SetAction( Action a )
 {
 	standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
 
+	if (action == AIRHITSTUN)
+	{
+		stunBufferedJump = false;
+		stunBufferedDash = false;
+		stunBufferedAttack = Action::Count;
+	}
+	
+
 	action = a;
 
 	if (action == LAND2)
@@ -11779,7 +11863,7 @@ bool Actor::EnemyIsFar(V2d &enemyPos)
 	return true;
 }
 
-ComboObject * Actor::IntersectMyComboHitboxes(CollisionBody *cb,
+ComboObject * Actor::IntersectMyComboHitboxes(Enemy *e, CollisionBody *cb,
 	int cbFrame)
 {
 	if (cb == NULL || activeComboObjList == NULL)
@@ -11788,9 +11872,12 @@ ComboObject * Actor::IntersectMyComboHitboxes(CollisionBody *cb,
 	ComboObject *curr = activeComboObjList;
 	while (curr != NULL)
 	{
-		if (curr->enemyHitBody->Intersects(curr->enemyHitboxFrame, cb, cbFrame))
+		if (e != curr->enemy)
 		{
-			return curr;
+			if (curr->enemyHitBody->Intersects(curr->enemyHitboxFrame, cb, cbFrame))
+			{
+				return curr;
+			}
 		}
 		curr = curr->nextComboObj;
 	}
@@ -17304,7 +17391,8 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		frame = 0;
 		physicsOver = true;
 
-		owner->SetStorySeq(trigger->storySeq);
+		owner->activeSequence = trigger->gameSequence;
+		//owner->SetStorySeq(trigger->storySeq);
 		break;
 	}
 	}
@@ -24345,7 +24433,8 @@ Actor::Action Actor::GetDoubleJump()
 
 bool Actor::CanDoubleJump()
 {
-	return ( hasDoubleJump && ((currInput.A && !prevInput.A) || pauseBufferedJump )  && !IsSingleWirePulling() );
+	//cout << "prevInput.A: " << (int)(prevInput.A) << endl;
+	return ( hasDoubleJump && ((currInput.A && !prevInput.A) || pauseBufferedJump || stunBufferedJump )  && !IsSingleWirePulling() );
 }
 
 bool Actor::IsDoubleWirePulling()
@@ -24365,7 +24454,7 @@ bool Actor::TryDoubleJump()
 		dairBoostedDouble = (action == DAIR || action == UAIR || action == DIAGDOWNATTACK || action == DIAGUPATTACK );
 		SetActionExpr( DOUBLE );
 
-		if (currInput.rightShoulder && !pauseBufferedJump)
+		if (currInput.rightShoulder && !pauseBufferedJump && !stunBufferedJump)
 		{
 			if (currInput.LUp())
 			{
@@ -24393,9 +24482,10 @@ bool Actor::TryDoubleJump()
 
 bool Actor::TryAirDash()
 {
-	if( hasPowerAirDash && !IsSingleWirePulling() )
+	if (hasPowerAirDash && !IsSingleWirePulling())
 	{
-		if( ( hasAirDash || inBubble ) && ( ( !prevInput.B && currInput.B) || pauseBufferedDash )  )
+		if ((hasAirDash || inBubble) && ((!prevInput.B && currInput.B) || pauseBufferedDash
+			|| stunBufferedDash ))
 		{
 			hasFairAirDashBoost = (action == FAIR);
 			SetActionExpr( AIRDASH );

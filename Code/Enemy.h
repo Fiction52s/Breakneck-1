@@ -335,7 +335,8 @@ enum EnemyType
 	EN_CRAWLERQUEEN,
 	EN_FLOATINGBOMB,
 	EN_AIRDASHJUGGLER,
-	EN_JUGGLER,
+	EN_GRAVITYJUGGLER,
+	EN_PRIMAYJUGGLER,
 	EN_JUGGLERCATCHER,
 	EN_BAT,
 	EN_STAGBEETLE,
@@ -509,6 +510,7 @@ struct ComboObject
 	void ComboHit();
 	void Draw(sf::RenderTarget *target);
 	Enemy *enemy;
+	bool active;
 };
 
 struct Shield;
