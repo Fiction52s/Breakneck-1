@@ -1212,6 +1212,12 @@ struct Actor : QuadTreeCollider,
 	Action wallJumpBufferedAttack;
 
 	bool SpringLaunch();
+	bool CheckSwing();
+	bool CheckNormalSwing();
+	bool CheckNormalSwingHeld();
+	bool CheckRightStickSwing();
+	bool CheckRightStickSwingHeld();
+	bool CheckSwingHeld();
 
 	Action pauseBufferedAttack;
 	bool pauseBufferedJump;

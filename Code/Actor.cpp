@@ -1889,6 +1889,25 @@ void Actor::ActionEnded()
 			}
 			break;
 		case GROUNDHITSTUN:
+
+			if (stunBufferedAttack == Action::Count)
+			{
+				if (currInput.rightShoulder && !prevInput.rightShoulder)
+				{
+					stunBufferedAttack = STANDN;
+				}
+			}
+
+			if (!stunBufferedJump && currInput.A && !prevInput.A)
+			{
+				stunBufferedJump = true;
+			}
+
+			if (!stunBufferedDash && currInput.B && !prevInput.B)
+			{
+				stunBufferedDash = true;
+			}
+
 			frame = 0;
 			break;
 		case WIREHOLD:
@@ -3453,12 +3472,6 @@ void Actor::UpdatePrePhysics()
 						frame = 1;
 						holdJump = false;
 					}
-					/*if (!pauseBufferedDash && currInput.B && !prevInput.B)
-					{
-						if (ground != NULL || (ground == NULL && hasAirDash))
-							pauseBufferedDash = true;
-					}*/
-					
 				}
 			}
 
@@ -3472,8 +3485,48 @@ void Actor::UpdatePrePhysics()
 	{
 		if( hitstunFrames == 0 )
 		{
-			SetActionExpr( LAND );
-			frame = 0;
+			if (stunBufferedJump)
+			{
+				if (stunBufferedAttack != Action::Count )
+				{	
+					SetActionExpr(JUMPSQUAT);
+					frame = 0;
+
+					if (currInput.LUp())
+					{
+						bufferedAttack = UAIR;
+					}
+					else if (currInput.LDown())
+					{
+						bufferedAttack = DAIR;
+					}
+					else
+					{
+						bufferedAttack = FAIR;
+					}
+				}
+				else
+				{
+					SetActionExpr(JUMPSQUAT);
+					frame = 0;
+				}
+				
+			}
+			else if (!GroundAttack())
+			{
+				if (stunBufferedDash )
+				{
+					SetActionExpr(DASH);
+					frame = 0;
+				}
+				else
+				{
+					SetActionExpr(LAND);
+					frame = 0;
+				}
+				//if( !)
+			}
+			
 			//prevInput = ControllerState();
 		}
 		
@@ -9265,7 +9318,7 @@ void Actor::SetAction( Action a )
 {
 	standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
 
-	if (action == AIRHITSTUN)
+	if (action == AIRHITSTUN || action == GROUNDHITSTUN )
 	{
 		stunBufferedJump = false;
 		stunBufferedDash = false;
@@ -9274,11 +9327,6 @@ void Actor::SetAction( Action a )
 	
 
 	action = a;
-
-	if (action == LAND2)
-	{
-		int f = 56;
-	}
 
 	if (repeatingSound != NULL)
 	{
@@ -15183,15 +15231,48 @@ void Actor::HitEdge( V2d &newVel )
 	//}
 }
 
-bool Actor::GroundAttack()
+bool Actor::CheckSwing()
+{
+	return CheckNormalSwing() || CheckRightStickSwing();
+}
+
+bool Actor::CheckNormalSwingHeld()
+{
+	return currInput.rightShoulder;
+}
+
+bool Actor::CheckSwingHeld()
+{
+	return CheckNormalSwingHeld() || CheckRightStickSwingHeld();
+}
+
+bool Actor::CheckNormalSwing()
 {
 	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
+	return normalSwing;
+}
+
+bool Actor::CheckRightStickSwingHeld()
+{
+	return currInput.RDown() || currInput.RLeft() || currInput.RUp() || currInput.RRight();
+}
+
+bool Actor::CheckRightStickSwing()
+{
 	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
 		|| (currInput.RLeft() && !prevInput.RLeft())
 		|| (currInput.RUp() && !prevInput.RUp())
 		|| (currInput.RRight() && !prevInput.RRight());
+	return rightStickSwing;
+}
 
-	if ( normalSwing || rightStickSwing || pauseBufferedAttack == Action::STANDN )
+bool Actor::GroundAttack()
+{
+	bool normalSwing = CheckNormalSwing();
+	bool rightStickSwing = CheckRightStickSwing();
+
+	if ( normalSwing || rightStickSwing || pauseBufferedAttack == Action::STANDN
+		|| stunBufferedAttack == Action::STANDN )
 	{
 		if (!rightStickSwing)
 		{
