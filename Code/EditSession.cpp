@@ -603,8 +603,11 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddBasicAerialWorldEnemy("airdashjuggler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, false, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
+
 	AddBasicAerialWorldEnemy("juggler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
+
+	
 
 	AddBasicAerialWorldEnemy("jugglercatcher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));
@@ -641,6 +644,14 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddWorldEnemy("greenblocker", 2, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
+
+	AddWorldEnemy("downgravityjuggler", 2, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
+		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
+		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
+
+	AddWorldEnemy("upgravityjuggler", 2, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
+		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
+		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
 
 	AddBasicAerialWorldEnemy("gravdowncomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
@@ -686,6 +697,10 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 	AddBasicAerialWorldEnemy("bouncecomboer", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
+	AddWorldEnemy("bouncejuggler", 3, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
+		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
+		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
 
 	AddWorldEnemy("bouncespring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
@@ -14743,9 +14758,12 @@ sf::Sprite ActorType::GetSprite(bool grounded)
 Panel *ActorType::CreateDefaultPanel( const std::string &n, bool mon, bool level, bool path, bool loop )
 {
 	EditSession *edit = EditSession::GetSession();
-	Panel * p = new Panel(n, 200, 500, edit);
 
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+	int height = 800;
+
+	Panel * p = new Panel(n, 200, height, edit);
+
+	p->AddButton("ok", Vector2i(100, height - 90), Vector2f(100, 50), "OK");
 	p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 	p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
 
@@ -14874,14 +14892,20 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
 	}
-	else if (name == "juggler")
+	else if (name == "downgravityjuggler" || name == "upgravityjuggler" || name == "bouncejuggler")
 	{
-		p = new Panel("juggler_options", 200, 500, edit);
+		p = CreateDefaultPanel("juggler_options", true, true, true, false);
+		p->AddTextBox("numjuggles", Vector2i(20, 600), 200, 20, "0");
+
+
+		/*p = new Panel("juggler_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
 		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
 		p->AddCheckBox("monitor", Vector2i(20, 330));
+
+		numjuggles*/
 	}
 	else if (name == "jugglercatcher")
 	{

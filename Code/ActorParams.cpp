@@ -2063,6 +2063,8 @@ void BasicAirEnemyParams::WriteParamFile(std::ofstream &of)
 	{
 		WriteLevel(of);
 	}
+
+	WriteSpecialParams(of);
 }
 
 void BasicAirEnemyParams::SetPanelInfo()
@@ -2092,6 +2094,8 @@ void BasicAirEnemyParams::SetPanelInfo()
 	{
 		p->checkBoxes["loop"]->checked = loop;
 	}
+
+	SetSpecialPanelInfo();
 }
 
 void BasicAirEnemyParams::SetParams()
@@ -2120,6 +2124,8 @@ void BasicAirEnemyParams::SetParams()
 	{
 		hasMonitor = p->checkBoxes["monitor"]->checked;
 	}
+
+	SetSpecialParams();
 }
 
 ActorParams *BasicAirEnemyParams::Copy()
@@ -2127,53 +2133,6 @@ ActorParams *BasicAirEnemyParams::Copy()
 	BasicAirEnemyParams *copy = new BasicAirEnemyParams(*this);
 	return copy;
 }
-
-//AirPathEnemyParamsLoop::AirPathEnemyParamsLoop(ActorType *at, sf::Vector2i &pos, int level)
-//	:ActorParams(at)
-//{
-//	enemyLevel = level;
-//	PlaceAerial(pos);
-//}
-//
-//AirPathEnemyParamsLoop::AirPathEnemyParamsLoop(ActorType *at, ifstream &is)
-//	: ActorParams(at)
-//{
-//	LoadAerial(is);
-//
-//	LoadMonitor(is);
-//
-//	LoadGlobalPath(is);
-//
-//	LoadBool(is, loop);
-//
-//	LoadEnemyLevel(is);
-//}
-//
-//ActorParams *AirPathEnemyParamsLoop::Copy()
-//{
-//	AirPathEnemyParamsLoop *copy = new AirPathEnemyParamsLoop(*this);
-//	return copy;
-//}
-//
-//void AirPathEnemyParamsLoop::WriteParamFile(std::ofstream &of)
-//{
-//	WriteMonitor(of);
-//	WritePath(of);
-//	WriteLoop(of);
-//	WriteLevel(of);
-//}
-//
-//void AirPathEnemyParamsLoop::SetPanelInfo()
-//{
-//	SetBasicPanelInfo();
-//
-//	Panel *p = type->panel;
-//
-//	EditSession *edit = EditSession::GetSession();
-//	edit->patrolPath = GetGlobalPath();
-//
-//	p->checkBoxes["loop"]->checked = loop;
-//}
 
 void BasicAirEnemyParams::Draw(sf::RenderTarget *target)
 {
@@ -2217,4 +2176,55 @@ void BasicAirEnemyParams::Draw(sf::RenderTarget *target)
 	}
 
 	ActorParams::Draw(target);
+}
+
+JugglerParams::JugglerParams(ActorType *at, sf::Vector2i &pos, int level)
+	:BasicAirEnemyParams(at, pos, level )
+{
+	enemyLevel = level;
+	PlaceAerial(pos);
+
+	numJuggles = 100;
+}
+
+JugglerParams::JugglerParams(ActorType *at, ifstream &is)
+	: BasicAirEnemyParams(at, is)
+{
+	is >> numJuggles;
+}
+
+void JugglerParams::WriteSpecialParams(std::ofstream &of)
+{
+	of << numJuggles << endl;
+}
+
+void JugglerParams::SetSpecialPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["numjuggles"]->text.setString(boost::lexical_cast<string>(numJuggles));
+}
+
+void JugglerParams::SetSpecialParams()
+{
+	Panel *p = type->panel;
+
+	stringstream ss;
+
+	string numJuggleStr = p->textBoxes["numjuggles"]->text.getString().toAnsiString();
+	ss << numJuggleStr;
+	
+	int nJuggles;
+	ss >> nJuggles;
+
+	if (!ss.fail())
+	{
+		numJuggles = nJuggles;
+	}
+}
+
+ActorParams *JugglerParams::Copy()
+{
+	JugglerParams *copy = new JugglerParams(*this);
+	return copy;
 }

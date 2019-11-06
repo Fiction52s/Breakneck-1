@@ -2330,6 +2330,18 @@ void Actor::AddActiveComboObj(ComboObject *c)
 	if (c->active)
 		return;
 
+
+	ComboObject *testCurr = activeComboObjList;
+	while (testCurr != NULL)
+	{
+		if (testCurr == c)
+		{
+			int xxx = 5;
+		}
+
+		testCurr = activeComboObjList->nextComboObj;
+	}
+
 	c->active = true;
 	if (activeComboObjList == NULL)
 	{

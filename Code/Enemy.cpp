@@ -2239,7 +2239,10 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_GRAVITYJUGGLER:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
 			break;
-		case EnemyType::EN_PRIMAYJUGGLER:
+		case EnemyType::EN_PRIMARYJUGGLER:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
+			break;
+		case EnemyType::EN_BOUNCEJUGGLER:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
 			break;
 		case EnemyType::EN_POISONFROG:
@@ -2514,7 +2517,7 @@ void ComboObject::Reset()
 {
 	enemyHitboxFrame = 0;
 	nextComboObj = NULL;
-	active = NULL;
+	active = false;
 }
 
 void ComboObject::Draw(RenderTarget *target)

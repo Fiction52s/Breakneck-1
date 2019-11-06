@@ -1,26 +1,29 @@
-#ifndef __ENEMY_GRAVITYJUGGLER_H__
-#define __ENEMY_GRAVITYJUGGLER_H__
+#ifndef __ENEMY_BOUNCEJUGGLER_H__
+#define __ENEMY_BOUNCEJUGGLER_H__
 
 #include "Enemy.h"
 
 struct ComboObject;
 
-struct GravityJuggler : Enemy
+struct BounceJuggler : Enemy, SurfaceMoverHandler
 {
 	enum Action
 	{
 		S_FLOAT,
-		S_POP,
-		S_JUGGLE,
+		S_FLY,
+		S_BOUNCE,
 		S_RETURN,
 		S_Count
 	};
 
-	GravityJuggler(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos, 
+	BounceJuggler(GameSession *owner, bool hasMonitor,
+		sf::Vector2i pos,
 		std::list<sf::Vector2i> &path, int p_level,
-		int juggleReps, bool reverse );
-	~GravityJuggler();
+		int juggleReps );
+	~BounceJuggler();
+	void HitTerrainAerial(Edge * edge, double quant);
+	//void HitTerrainAerial(Edge *, double);
+
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void ProcessState();
 	void ProcessHit();
@@ -52,19 +55,11 @@ struct GravityJuggler : Enemy
 
 	V2d velocity;
 
-	bool reversedGrav;
-
-	double gravFactor;
-	V2d gDir;
-	double maxFallSpeed;
-
 	int hitLimit;
 	int currHits;
 
 	sf::Sprite sprite;
 	Tileset *ts;
-
-	bool reversed;
 
 	int juggleReps;
 	int currJuggle;
@@ -73,6 +68,8 @@ struct GravityJuggler : Enemy
 
 	int waitFrame;
 	int maxWaitFrames;
+
+	SurfaceMover *mover;
 };
 
 #endif

@@ -108,6 +108,7 @@
 #include "Enemy_AirdashJuggler.h"
 #include "Enemy_Juggler.h"
 #include "Enemy_GravityJuggler.h"
+#include "Enemy_BounceJuggler.h"
 
 #include "ParticleEffects.h"
 #include "Enemy_JugglerCatcher.h"
@@ -2473,6 +2474,8 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int level;
 			is >> level;
 
+			
+
 			AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath, level);
 
 			fullEnemyList.push_back(enemy);
@@ -2480,13 +2483,10 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			enemyTree->Insert(enemy);
 		}
-		else if (typeName == "juggler")
+		else if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler" || typeName == "bouncejuggler" )
 		{
 
 			int xPos, yPos;
-
-			//always air
-
 
 			is >> xPos;
 			is >> yPos;
@@ -2494,13 +2494,36 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
+			int pathLength;
+			list<Vector2i> localPath;
+
+			Enemy::ReadPath(is, pathLength, localPath);
+
 			int level;
 			is >> level;
 
-			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-			//AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
-			GravityJuggler *enemy = new GravityJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
+			int numJuggles;
+			is >> numJuggles;
 
+
+			Enemy *enemy;
+			if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler")
+			{
+				bool reversed = false;
+				if (typeName == "upgravityjuggler")
+				{
+					reversed = true;
+				}
+
+				enemy = new GravityJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+					level, numJuggles, reversed);
+			}
+			else if (typeName == "bouncejuggler")
+			{
+				enemy = new BounceJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+					level, numJuggles);
+			}
+			
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;

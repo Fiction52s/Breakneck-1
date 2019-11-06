@@ -513,11 +513,26 @@ struct BasicAirEnemyParams : public ActorParams
 	void WriteParamFile(std::ofstream &of);
 	void SetPanelInfo();
 	void SetParams();
+	virtual void SetSpecialParams() {}
+	virtual void SetSpecialPanelInfo() {}
+	virtual void WriteSpecialParams(std::ofstream &of) {}
 	ActorParams *Copy();
 	virtual void Draw(sf::RenderTarget *target);
 };
 
+struct JugglerParams : public BasicAirEnemyParams
+{
+	JugglerParams(ActorType *at,
+		sf::Vector2i &pos, int level = 0);
+	JugglerParams(ActorType *at,
+		std::ifstream &is);
+	void SetSpecialParams();
+	void SetSpecialPanelInfo();
+	void WriteSpecialParams( std::ofstream &of);
+	ActorParams *Copy();
 
+	int numJuggles;
+};
 
 //struct AirPathEnemyParamsLoop : public ActorParams
 //{

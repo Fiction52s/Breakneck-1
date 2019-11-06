@@ -3,7 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_GravityJuggler.h"
+#include "Enemy_BounceJuggler.h"
 #include "Eye.h"
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
@@ -15,9 +15,9 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
-GravityJuggler::GravityJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, 
-	list<Vector2i> &path, int p_level, int jReps, bool rev )
-	:Enemy(owner, EnemyType::EN_GRAVITYJUGGLER, p_hasMonitor, 1, false)
+BounceJuggler::BounceJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos,
+	list<Vector2i> &path, int p_level, int jReps)
+	:Enemy(owner, EnemyType::EN_BOUNCEJUGGLER, p_hasMonitor, 1, false)
 {
 	level = p_level;
 
@@ -36,11 +36,12 @@ GravityJuggler::GravityJuggler(GameSession *owner, bool p_hasMonitor, Vector2i p
 		break;
 	}
 
-	reversedGrav = rev;
-
 	maxWaitFrames = 180;
 
 	juggleReps = path.size();
+
+	mover = new SurfaceMover(owner, NULL, 0, 64 * scale);
+	mover->surfaceHandler = this;
 
 	guidedDir = NULL;
 	if (juggleReps > 0)
@@ -75,27 +76,11 @@ GravityJuggler::GravityJuggler(GameSession *owner, bool p_hasMonitor, Vector2i p
 
 	hitLimit = -1;
 
-	
 
-	
+
+
 
 	action = S_FLOAT;
-
-	gravFactor = 1.0;
-
-	gDir = V2d(0, 1);
-	if (reversedGrav)
-	{
-		gDir.y = -gDir.y;
-		sprite.setColor(Color::Green);
-	}
-	else
-	{
-		sprite.setColor(Color::Red);
-	}
-	maxFallSpeed = 15;
-
-	reversed = true;
 
 	ts = owner->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
@@ -104,7 +89,7 @@ GravityJuggler::GravityJuggler(GameSession *owner, bool p_hasMonitor, Vector2i p
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
 	sprite.setPosition(pos.x, pos.y);
-	
+
 
 
 	hitboxInfo = new HitboxInfo;
@@ -139,25 +124,27 @@ GravityJuggler::GravityJuggler(GameSession *owner, bool p_hasMonitor, Vector2i p
 	comboObj->enemyHitboxFrame = 0;
 
 	actionLength[S_FLOAT] = 18;
-	actionLength[S_POP] = 10;
-	actionLength[S_JUGGLE] = 10;
+	actionLength[S_FLY] = 10;
+	actionLength[S_BOUNCE] = 10;
 	actionLength[S_RETURN] = 3;
 
 	animFactor[S_FLOAT] = 2;
-	animFactor[S_POP] = 1;
-	animFactor[S_JUGGLE] = 1;
+	animFactor[S_FLY] = 1;
+	animFactor[S_BOUNCE] = 1;
 	animFactor[S_RETURN] = 6;
 
 	ResetEnemy();
 }
 
-GravityJuggler::~GravityJuggler()
+BounceJuggler::~BounceJuggler()
 {
 	if (guidedDir != NULL)
 		delete[] guidedDir;
+
+	delete mover;
 }
 
-void GravityJuggler::ResetEnemy()
+void BounceJuggler::ResetEnemy()
 {
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
@@ -172,26 +159,33 @@ void GravityJuggler::ResetEnemy()
 	frame = 0;
 	receivedHit = NULL;
 	position = origPos;
+
+	mover->velocity = V2d(0, 0);
+	mover->ground = NULL;
+	mover->physBody.globalPosition = position;
+
 	UpdateHitboxes();
+
+	
 
 	currJuggle = 0;
 
 	UpdateSprite();
 }
 
-void GravityJuggler::Throw(double a, double strength)
+void BounceJuggler::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
 	velocity = vel;
 }
 
-void GravityJuggler::Throw(V2d vel)
+void BounceJuggler::Throw(V2d vel)
 {
 	velocity = vel;
 }
 
-void GravityJuggler::Return()
+void BounceJuggler::Return()
 {
 	owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
 
@@ -203,7 +197,7 @@ void GravityJuggler::Return()
 	numHealth = maxHealth;
 }
 
-void GravityJuggler::Pop()
+void BounceJuggler::Pop()
 {
 	owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
@@ -214,9 +208,9 @@ void GravityJuggler::Pop()
 	waitFrame = 0;
 }
 
-void GravityJuggler::PopThrow()
+void BounceJuggler::PopThrow()
 {
-	V2d dir; 
+	V2d dir;
 
 	if (guidedDir == NULL)
 	{
@@ -228,35 +222,10 @@ void GravityJuggler::PopThrow()
 	}
 
 
-	V2d hit(0, -20);
+	double speed = 20;
 
-	double extraX = 8;
-
-	if (dir.x != 0)
-	{
-		hit.x += dir.x * extraX;
-	}
-
-	if (((dir.y == 1 && !reversedGrav) || (dir.y == -1 && reversedGrav))
-		&& dir.x == 0)
-	{
-		hit.y += 3;
-		if (owner->GetPlayer(0)->facingRight)
-		{
-			hit.x -= extraX / 2.0;
-		}
-		else
-		{
-			hit.x += extraX / 2.0;
-		}
-
-	}
-
-	if (reversedGrav)
-	{
-		hit.y = -hit.y;
-	}
-
+	V2d hit = dir * speed;
+	
 	Pop();
 
 	Throw(hit);
@@ -264,7 +233,7 @@ void GravityJuggler::PopThrow()
 	owner->GetPlayer(0)->AddActiveComboObj(comboObj);
 }
 
-void GravityJuggler::ProcessHit()
+void BounceJuggler::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
@@ -291,7 +260,7 @@ void GravityJuggler::ProcessHit()
 			}
 			else
 			{
-				action = S_POP;
+				action = S_FLY;
 				frame = 0;
 				PopThrow();
 			}
@@ -304,7 +273,7 @@ void GravityJuggler::ProcessHit()
 	}
 }
 
-void GravityJuggler::ProcessState()
+void BounceJuggler::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -314,10 +283,11 @@ void GravityJuggler::ProcessState()
 		{
 		case S_RETURN:
 			position = origPos;
+			mover->physBody.globalPosition = position;
 			SetHitboxes(hitBody, 0);
 			SetHurtboxes(hurtBody, 0);
 			break;
-		/*case S_EXPLODE:
+			/*case S_EXPLODE:
 			numHealth = 0;
 			dead = true;
 			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
@@ -325,6 +295,9 @@ void GravityJuggler::ProcessState()
 		}
 	}
 
+
+
+	
 	/*if (action != S_FLOAT && action != S_EXPLODE && action != S_RETURN)
 	{
 	sf::Rect<double> r(position.x - 50, position.y - 50, 100, 100);
@@ -332,51 +305,32 @@ void GravityJuggler::ProcessState()
 	}*/
 
 
-	if (action == S_POP && ( (velocity.y >= 0 && !reversedGrav) || ( velocity.y <= 0 && reversedGrav ) ) )
+	/*if (action == S_POP && ((velocity.y >= 0 && !reversedGrav) || (velocity.y <= 0 && reversedGrav)))
 	{
 		action = S_JUGGLE;
 		frame = 0;
 		SetHurtboxes(hurtBody, 0);
-	}
+	}*/
 }
 
-void GravityJuggler::HandleNoHealth()
-{	
-	
-}
-
-void GravityJuggler::Move()
+void BounceJuggler::HandleNoHealth()
 {
-	double numStep = numPhysSteps;
-	V2d movementVec = velocity;
-	movementVec /= slowMultiple * numStep;
 
-	position += movementVec;
-
-	velocity += gDir * (gravFactor / numStep / slowMultiple);
-
-	if (reversedGrav)
-	{
-		if (velocity.y < -maxFallSpeed)
-		{
-			velocity.y = -maxFallSpeed;
-		}
-	}
-	else
-	{
-		if (velocity.y > maxFallSpeed)
-		{
-			velocity.y = maxFallSpeed;
-		}
-	}
 }
 
-void GravityJuggler::UpdateEnemyPhysics()
+void BounceJuggler::Move()
+{
+	mover->velocity = velocity;
+	mover->Move(slowMultiple, numPhysSteps);
+	position = mover->physBody.globalPosition;
+}
+
+void BounceJuggler::UpdateEnemyPhysics()
 {
 	switch (action)
 	{
-	case S_POP:
-	case S_JUGGLE:
+	case S_FLY:
+	case S_BOUNCE:
 	{
 		Move();
 		break;
@@ -384,9 +338,9 @@ void GravityJuggler::UpdateEnemyPhysics()
 	}
 }
 
-void GravityJuggler::FrameIncrement()
+void BounceJuggler::FrameIncrement()
 {
-	if (action == S_POP || action == S_JUGGLE)
+	if (action == S_FLY || action == S_BOUNCE)
 	{
 		if (waitFrame == maxWaitFrames)
 		{
@@ -398,12 +352,10 @@ void GravityJuggler::FrameIncrement()
 		{
 			waitFrame++;
 		}
-		
 	}
-	
 }
 
-void GravityJuggler::HandleEntrant(QuadTreeEntrant *qte)
+void BounceJuggler::HandleEntrant(QuadTreeEntrant *qte)
 {
 	Enemy *en = (Enemy*)qte;
 	if (en->type == EnemyType::EN_JUGGLERCATCHER)
@@ -420,11 +372,11 @@ void GravityJuggler::HandleEntrant(QuadTreeEntrant *qte)
 	}
 }
 
-void GravityJuggler::ComboHit()
+void BounceJuggler::ComboHit()
 {
 	pauseFrames = 5;
 	++currHits;
-	if ( hitLimit > 0 && currHits >= hitLimit)
+	if (hitLimit > 0 && currHits >= hitLimit)
 	{
 		action = S_RETURN;
 		frame = 0;
@@ -432,7 +384,7 @@ void GravityJuggler::ComboHit()
 	}
 }
 
-void GravityJuggler::UpdateSprite()
+void BounceJuggler::UpdateSprite()
 {
 	sprite.setPosition(position.x, position.y);
 
@@ -446,18 +398,20 @@ void GravityJuggler::UpdateSprite()
 	}
 }
 
-void GravityJuggler::EnemyDraw(sf::RenderTarget *target)
+void BounceJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSpriteIfExists(target, sprite);
 }
 
-CollisionBox &GravityJuggler::GetEnemyHitbox()
+CollisionBox &BounceJuggler::GetEnemyHitbox()
 {
 	return comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front();
 }
 
-void GravityJuggler::UpdateHitboxes()
+void BounceJuggler::UpdateHitboxes()
 {
+	position = mover->physBody.globalPosition;
+
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
 	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
 	hurtBox.globalPosition = position;
@@ -477,4 +431,35 @@ void GravityJuggler::UpdateHitboxes()
 	}
 
 	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+}
+
+void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
+{
+	V2d pos = edge->GetPoint(quant);
+	/*if (b->bounceCount == 2)
+	{
+	V2d norm = edge->Normal();
+	double angle = atan2(norm.y, -norm.x);
+	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
+	b->launcher->DeactivateBullet(b);
+	}
+	else*/
+	{
+		V2d en = edge->Normal();
+		if (pos == edge->v0)
+		{
+			en = normalize(position - pos);
+		}
+		else if (pos == edge->v1)
+		{
+			en = normalize(position - pos);
+		}
+		double d = dot(velocity, en);
+		V2d ref = velocity - (2.0 * d * en);
+		velocity = ref;
+		mover->ground = NULL;
+	}
+
+	action = S_BOUNCE;
+	frame = 0;
 }

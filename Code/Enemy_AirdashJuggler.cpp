@@ -149,30 +149,6 @@ AirdashJuggler::~AirdashJuggler()
 		delete[] dashDir;
 }
 
-//AirdashJuggler::AirdashJuggler(GameSession *owner, std::ifstream &is)
-//{
-//	int xPos, yPos;
-//
-//	is >> xPos;
-//	is >> yPos;
-//
-//	int hasMonitor;
-//	is >> hasMonitor;
-//
-//	int pathLength;
-//	list<Vector2i> localPath;
-//	ReadPath(is, pathLength, localPath);
-//
-//	bool loop;
-//	ReadBool(is, loop);
-//
-//	int speed;
-//	is >> speed;
-//
-//	//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-//	AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, speed, AirdashJuggler::AirdashJugglerType::T_STRAIGHT);
-//}
-
 void AirdashJuggler::ResetEnemy()
 {
 	sprite.setTextureRect(ts->GetSubRect(0));
