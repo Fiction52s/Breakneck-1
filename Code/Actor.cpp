@@ -2608,14 +2608,16 @@ void Actor::HandleAirTrigger()
 
 void Actor::UpdatePrePhysics()
 {
-	if (prevInput.A)
+	/*if (prevInput.A)
 	{
 		cout << "A" << endl;
 	}
 	else
 	{
 		cout << "not A" << endl;
-	}
+	}*/
+
+
 	if (owner->stormCeilingOn)
 	{
 		//if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
@@ -8976,6 +8978,16 @@ void Actor::UpdatePrePhysics()
 	wallNormal.y = 0;
 
 	currHitboxInfo->hType = HitboxInfo::NORMAL;
+
+	V2d trueNorm;
+	V2d along;
+	if (ground != NULL)
+	{
+		GroundedAngleAttack(trueNorm);
+		along = V2d(-trueNorm.y, trueNorm.x);
+	}
+	
+	
 	//sets directionality of attacks
 	switch (action)
 	{
@@ -8997,16 +9009,12 @@ void Actor::UpdatePrePhysics()
 		break;
 	case STANDN:
 		if ((!reversed && facingRight )|| (reversed && !facingRight ))
-		{
-			V2d trueNorm;
-			GroundedAngleAttack(trueNorm);
-			currHitboxInfo->hDir = V2d(-trueNorm.y, trueNorm.x);//HitboxInfo::HitDirection::RIGHT;
+		{	
+			currHitboxInfo->hDir = along;
 		}
 		else
 		{
-			V2d trueNorm;
-			GroundedAngleAttack(trueNorm);
-			currHitboxInfo->hDir = -V2d(-trueNorm.y, trueNorm.x);
+			currHitboxInfo->hDir = -along;
 		}
 		break;
 	case STEEPCLIMBATTACK:
@@ -9014,22 +9022,22 @@ void Actor::UpdatePrePhysics()
 		{
 			if (facingRight)
 			{
-				currHitboxInfo->hDir = V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
+				currHitboxInfo->hDir = -along;//V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
 			}
 			else
 			{
-				currHitboxInfo->hDir = V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
+				currHitboxInfo->hDir = along;//V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
 			}
 		}
 		else
 		{
 			if (facingRight)
 			{
-				currHitboxInfo->hDir = V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
+				currHitboxInfo->hDir = along;//V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
 			}
 			else
 			{
-				currHitboxInfo->hDir = V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
+				currHitboxInfo->hDir = -along;//V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
 			}
 		}
 		break;
@@ -9038,22 +9046,22 @@ void Actor::UpdatePrePhysics()
 		{
 			if (facingRight)
 			{
-				currHitboxInfo->hDir = V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
+				currHitboxInfo->hDir = -along;//V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
 			}
 			else
 			{
-				currHitboxInfo->hDir = V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
+				currHitboxInfo->hDir = along;//V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
 			}
 		}
 		else
 		{
 			if (facingRight)
 			{
-				currHitboxInfo->hDir = V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
+				currHitboxInfo->hDir = along;//V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
 			}
 			else
 			{
-				currHitboxInfo->hDir = V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
+				currHitboxInfo->hDir = -along;//V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
 			}
 		}
 		break;
@@ -10020,6 +10028,7 @@ V2d Actor::UpdateReversePhysics()
 			if( transferLeft )
 			{
 				//cout << "transfer left" << endl;
+				bool unlockedGateJumpOff = false;
 				if( e0->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e0->info;
@@ -10036,6 +10045,11 @@ V2d Actor::UpdateReversePhysics()
 						{
 							gateTouched = g->edgeA;
 						}
+					}
+
+					if (!g->locked)
+					{
+						unlockedGateJumpOff = true;
 					}
 				}
 
@@ -10059,6 +10073,7 @@ V2d Actor::UpdateReversePhysics()
 				//{
 
 				bool jumpOff = false;
+				
 				if( nextNorm.y >= 0 || abs( e0n.x ) >= wallThresh || e0->edgeType == Edge::BORDER)
 				{
 					jumpOff = true;
@@ -10114,7 +10129,7 @@ V2d Actor::UpdateReversePhysics()
 
 				//}
 				
-				if( jumpOff )
+				if( jumpOff || unlockedGateJumpOff)
 				{	
 					reversed = false;
 					velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
@@ -10347,6 +10362,9 @@ V2d Actor::UpdateReversePhysics()
 			else if( transferRight )
 			{
 				//cout << "transferright" << endl;
+
+				bool jumpOff = false;
+				bool unlockedGateJumpOff = false;
 				if( e1->edgeType == Edge::CLOSED_GATE )
 				{
 					Gate * g = (Gate*)e1->info;
@@ -10363,6 +10381,11 @@ V2d Actor::UpdateReversePhysics()
 							gateTouched = g->edgeA;
 						}
 					}
+
+					if (!g->locked)
+					{
+						unlockedGateJumpOff = true;
+					}
 				}
 
 
@@ -10377,11 +10400,9 @@ V2d Actor::UpdateReversePhysics()
 				bool nextMovingDown = e1n.x > 0;
 				bool nextMovingUp = e1n.x < 0;
 
-				//if( !jumpOff )
-				//{
-
-				bool jumpOff = false;
-				if( nextNorm.y >= 0 || abs( e1n.x ) >= wallThresh || e1->edgeType == Edge::BORDER )
+				
+				
+				if( nextNorm.y >= 0 || abs( e1n.x ) >= wallThresh || e1->edgeType == Edge::BORDER)
 				{
 					jumpOff = true;
 				}
@@ -10434,7 +10455,7 @@ V2d Actor::UpdateReversePhysics()
 					}
 				}
 
-				if( jumpOff )
+				if( jumpOff || unlockedGateJumpOff)
 				{
 					reversed = false;
 						
@@ -12784,9 +12805,10 @@ void Actor::UpdatePhysics()
 			//	cout << "transferRight!" << endl;
 				double yDist = abs( gNormal.x ) * groundSpeed;
 				Edge *next = ground->edge1;
-				if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh 
-					&& !(currInput.LUp() && /*!currInput.LRight() &&*/ gNormal.x < 0 
-					&& yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
+				V2d nextNorm = next->Normal();
+				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh 
+					&& !(currInput.LUp() && gNormal.x < 0 
+					&& yDist > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
 				{
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{

@@ -15,9 +15,8 @@ using namespace sf;
 
 
 Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, 
-	int p_level,
-	ComboerType t)
-	:Enemy(owner, EnemyType::EN_COMBOER, p_hasMonitor, 1, false), cType( t )
+	int p_level)
+	:Enemy(owner, EnemyType::EN_COMBOER, p_hasMonitor, 1, false)
 {
 	level = p_level;
 
@@ -33,24 +32,6 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	case 3:
 		scale = 3.0;
 		maxHealth += 5;
-		break;
-	}
-
-	//cType = T_STRAIGHT;
-	switch (cType)
-	{
-	case T_STRAIGHT:
-		break;
-	case T_GRAVITY:
-		sprite.setColor(Color::Green);
-		break;
-	case T_REVERSEGRAVITY:
-		sprite.setColor(Color::Red);
-		break;
-	case T_BOUNCE:
-		sprite.setColor(Color::Yellow);
-		mover = new SurfaceMover(owner, NULL, 0, 64 * scale);
-		mover->surfaceHandler = this;
 		break;
 	}
 
@@ -152,15 +133,9 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	animFactor[S_SHOT] = 6;
 	animFactor[S_EXPLODE] = 1;
 
-	
 
 	shootLimit = 120;
 	hitLimit = 6;
-
-	if (cType == T_BOUNCE)
-	{
-		hitLimit = 12;
-	}
 
 	ResetEnemy();
 }
@@ -209,12 +184,6 @@ void Comboer::ResetEnemy()
 	position.y = path[0].y;
 	receivedHit = NULL;
 
-	if (cType == T_BOUNCE)
-	{
-		mover->velocity = V2d(0, 0);
-		mover->ground = NULL;
-		mover->physBody.globalPosition = position;
-	}
 
 	UpdateHitboxes();
 
@@ -269,12 +238,24 @@ void Comboer::ProcessHit()
 		
 		}*/
 
-		if (cType == T_GRAVITY)
+
+		if (dir.x != 0 && dir.y != 0 )
 		{
-			//dir.y -= 1.0;
+			double absX = abs(dir.x);
+			double absY = abs(dir.y);
+			if (absX - absY > -.01 )
+			{
+				dir.y = 0;
+			}
+			else
+			{
+				dir.x = 0;
+			}
 		}
 
 		dir = normalize(dir);
+
+
 
 		velocity = dir * speed;
 
@@ -327,16 +308,6 @@ void Comboer::ProcessHit()
 			sprite.setTextureRect(sf::IntRect(ir.left, ir.top, -ir.width, ir.height));
 		}*/
 
-		if (cType == T_GRAVITY)
-		{
-			velocity.y -= speed / 2;
-		}
-		else if (cType == T_REVERSEGRAVITY)
-		{
-			velocity.y += speed / 2;
-		}
-		
-		
 
 		owner->GetPlayer(0)->AddActiveComboObj(comboObj);
 	}
@@ -405,42 +376,7 @@ void Comboer::UpdateEnemyPhysics()
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
-		if (cType == T_BOUNCE)
-		{
-			mover->velocity = velocity;
-			mover->Move(slowMultiple, numPhysSteps);
-			position = mover->physBody.globalPosition;
-		}
-		else
-		{
-			position += movementVec;
-		}
-		
-
-		if (cType == T_GRAVITY)
-		{
-			//double len = length(velocity);
-			velocity += V2d(0, gravFactor / (slowMultiple * (double)numPhysSteps) );
-			//velocity = normalize(velocity) * len;
-
-			if (velocity.y > maxFallSpeed)
-			{
-				velocity.y = maxFallSpeed;
-			}
-		}
-		else if (cType == T_REVERSEGRAVITY)
-		{
-			velocity += V2d(0, -gravFactor / (slowMultiple * (double)numPhysSteps));
-			//velocity = normalize(velocity) * len;
-
-			if (velocity.y < -maxFallSpeed)
-			{
-				velocity.y = -maxFallSpeed;
-			}
-		}
-
-
-		
+		position += movementVec;
 		break;
 	}
 	}
@@ -540,11 +476,6 @@ CollisionBox &Comboer::GetEnemyHitbox()
 
 void Comboer::UpdateHitboxes()
 {
-	if (cType == T_BOUNCE)
-	{
-		position = mover->physBody.globalPosition;
-	}
-
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
 	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
 	hurtBox.globalPosition = position;
@@ -561,35 +492,5 @@ void Comboer::UpdateHitboxes()
 	else
 	{
 		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
-}
-
-void Comboer::HitTerrainAerial(Edge * edge, double quant)
-{
-	V2d pos = edge->GetPoint(quant);
-	/*if (b->bounceCount == 2)
-	{
-		V2d norm = edge->Normal();
-		double angle = atan2(norm.y, -norm.x);
-		owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-		b->launcher->DeactivateBullet(b);
-	}
-	else*/
-	{
-		V2d en = edge->Normal();
-		if (pos == edge->v0)
-		{
-			en = normalize(position - pos);
-		}
-		else if (pos == edge->v1)
-		{
-			en = normalize(position - pos);
-		}
-		double d = dot(velocity, en);
-		V2d ref = velocity - (2.0 * d * en);
-		velocity = ref;
-		mover->ground = NULL;
-		//b->bounceCount++;
-		//b->framesToLive = b->launcher->maxFramesToLive;
 	}
 }

@@ -597,20 +597,16 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddBasicAerialWorldEnemy("patroller", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));
 
+	/*AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
+
 	AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
-	AddBasicAerialWorldEnemy("airdashjuggler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, false, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));
-
-
-	AddBasicAerialWorldEnemy("juggler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
-
 	
 
-	AddBasicAerialWorldEnemy("jugglercatcher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));
+	/*AddBasicAerialWorldEnemy("jugglercatcher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));*/
 	
 
 	AddBasicGroundWorldEnemy("crawler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
@@ -653,11 +649,15 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
 		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
 
-	AddBasicAerialWorldEnemy("gravdowncomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
-	AddBasicAerialWorldEnemy("gravupcomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+	AddBasicAerialWorldEnemy("airdashjuggler", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, false, 3,
+	GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
+	/*AddBasicAerialWorldEnemy("gravdowncomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
+
+	/*AddBasicAerialWorldEnemy("gravupcomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 
 	AddBasicAerialWorldEnemy("bat", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/bat_144x176.png", 144, 176));
@@ -728,8 +728,6 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 	AddBasicAerialWorldEnemy("owl", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	/*AddWorldEnemy("owl", 3, LoadParams<OwlParams>, NULL, MakeParamsAerial<OwlParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
 
 	AddBasicGroundWorldEnemy("cactus", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 

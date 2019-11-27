@@ -215,6 +215,14 @@ void BounceJuggler::PopThrow()
 	if (guidedDir == NULL)
 	{
 		dir = receivedHit->hDir;//normalize(receivedHit->hDir);
+		//cout << "dir: " << dir.x << "," << dir.y << endl;
+		if (dir.x == 0 && dir.y == 0)
+		{
+			dir = -normalize(velocity);
+			assert(dir.x != 0 || dir.y != 0);
+			action = S_BOUNCE;
+			frame = 0;
+		}
 	}
 	else
 	{
@@ -222,7 +230,7 @@ void BounceJuggler::PopThrow()
 	}
 
 
-	double speed = 20;
+	double speed = 14;
 
 	V2d hit = dir * speed;
 	
@@ -462,4 +470,6 @@ void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
 
 	action = S_BOUNCE;
 	frame = 0;
+	//SetHitboxes(hitBody, 0);
+	SetHurtboxes(hurtBody, 0);
 }
