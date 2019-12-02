@@ -525,15 +525,6 @@ void MovingRing::Reset()
 	done = false;
 }
 
-void MovingRing::SetBase(sf::Vector2f &base)
-{
-	basePos = base;
-
-	/*Vector2f diff = endPos - startPos;
-	startPos = basePos;
-	endPos = startPos + diff;*/
-}
-
 void MovingRing::Update()
 {
 	if (done)

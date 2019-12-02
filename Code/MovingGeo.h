@@ -166,7 +166,6 @@ struct MovingRing : Ring
 		int totalFrames);
 	void Reset();
 	void Update();
-	void SetBase(sf::Vector2f &base);
 	//void UpdatePoints();
 	//void SetColor(sf::Color c);
 	//void SetShader(sf::Shader *sh);
