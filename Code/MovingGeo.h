@@ -26,7 +26,7 @@ struct MovingGeo
 	virtual void SetColor(sf::Color c);
 	virtual int GetNumPoints() = 0;
 	virtual void SetPoints(sf::Vertex *p);
-	void SetBase(sf::Vector2f &base);
+	virtual void SetBase(sf::Vector2f &base);
 	sf::Vertex *points;
 	sf::Color color;
 	sf::Vector2f basePos;
@@ -48,6 +48,7 @@ struct MovingGeoGroup
 	std::list<int> waitFrames;
 	sf::Vertex *points;
 	int numTotalPoints;
+	bool running;
 };
 
 struct SpinningTri : MovingGeo
@@ -165,6 +166,7 @@ struct MovingRing : Ring
 		int totalFrames);
 	void Reset();
 	void Update();
+	void SetBase(sf::Vector2f &base);
 	//void UpdatePoints();
 	//void SetColor(sf::Color c);
 	//void SetShader(sf::Shader *sh);

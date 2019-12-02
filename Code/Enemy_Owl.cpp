@@ -62,7 +62,7 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level )
 	//actionLength[CHASE] = 30;
 	actionLength[GUARD] = 120;
 	actionLength[REST] = 60;
-	actionLength[SPIN] = 60;
+	actionLength[SPIN] = 40;
 
 	receivedHit = NULL;
 	position.x = pos.x;

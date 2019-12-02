@@ -81,6 +81,7 @@ void MovingGeoGroup::Reset()
 	{
 		(*it)->Reset();
 	}
+	running = false;
 }
 
 void MovingGeoGroup::SetBase(sf::Vector2f &pos)
@@ -93,7 +94,7 @@ void MovingGeoGroup::SetBase(sf::Vector2f &pos)
 
 bool MovingGeoGroup::Update()
 {
-	bool running = false;
+	bool stillRunning = false;
 
 	auto wit = waitFrames.begin();
 	int wFrames;
@@ -105,18 +106,19 @@ bool MovingGeoGroup::Update()
 			(*it)->Update();
 			if (!(*it)->done)
 			{
-				running = true;
+				stillRunning = true;
 			}
 		}
 		else
 		{
-			running = true;
+			stillRunning = true;
 		}
 	}
 
 	++frame;
 
-	return running;
+	running = stillRunning;
+	return stillRunning;
 }
 
 void MovingGeoGroup::Draw(sf::RenderTarget *target)
@@ -521,6 +523,15 @@ void MovingRing::Reset()
 	Clear();//Set(startPos, startInner, startWidth);
 	frame = 0;
 	done = false;
+}
+
+void MovingRing::SetBase(sf::Vector2f &base)
+{
+	basePos = base;
+
+	/*Vector2f diff = endPos - startPos;
+	startPos = basePos;
+	endPos = startPos + diff;*/
 }
 
 void MovingRing::Update()

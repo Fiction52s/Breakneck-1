@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_Pulser.h"
 #include "Eye.h"
+//#include "MovingGeo.h"
 
 using namespace std;
 using namespace sf;
@@ -33,6 +34,9 @@ Pulser::Pulser(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2
 		maxHealth += 5;
 		break;
 	}
+
+	checkRadius = 300;
+	hitRadius = checkRadius;// -50;
 
 	action = WAIT;
 	position.x = pos.x;
@@ -76,12 +80,13 @@ Pulser::Pulser(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
+	hitboxInfo->hitstunFrames = 20;
+	hitboxInfo->knockback = 12;
 
-	SetupBodies(1, 1);
+	SetupBodies(1, 2);
 	AddBasicHurtCircle(16);
 	AddBasicHitCircle(16);
+	AddBasicHitCircle(hitRadius,1);
 	hitBody->hitboxInfo = hitboxInfo;
 
 	SetHitboxes(hitBody, 0);
@@ -110,12 +115,33 @@ Pulser::Pulser(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2
 	UpdateHitboxes();
 
 	actionLength[WAIT] = 4;
-	actionLength[CHARGE] = 180;
+	actionLength[CHARGE] = 100;
 	actionLength[ELECTRIFY] = 60;
+	actionLength[RECOVER] = 30;
 
 	animFactor[WAIT] = 3;
 	animFactor[CHARGE] = 1;
 	animFactor[ELECTRIFY] = 1;
+	animFactor[RECOVER] = 1;
+	
+	geoGroupWait.AddGeo(new MovingRing(32, 20, checkRadius, 10, 20, Vector2f(), Vector2f(),
+		Color::Yellow, Color(0, 0, 100, 0), 60));
+	geoGroupWait.Init();
+
+	geoGroupCharge.AddGeo(new MovingRing(32, 20, hitRadius, 10, 20, Vector2f(), Vector2f(),
+		Color::Red, Color(0, 0, 100, 0), 20));
+	geoGroupCharge.Init();
+
+	geoGroupExplode.AddGeo(new MovingRing(32, 0, 0, 10, hitRadius, Vector2f(), Vector2f(),
+		Color::Yellow, Color::Yellow, 10));
+	
+	geoGroupExplode.AddGeo(new MovingRing(32, 0, 0, 10, hitRadius, Vector2f(), Vector2f(),
+		Color::White, Color::White, 10), 5);
+
+	geoGroupExplode.AddGeo(new MovingRing(32, 0, 0, 10, hitRadius, Vector2f(), Vector2f(),
+		Color::Yellow, Color::White, 10), 5);
+	geoGroupExplode.Init();
+	
 
 	ResetEnemy();
 }
@@ -127,6 +153,9 @@ Pulser::~Pulser()
 
 void Pulser::ResetEnemy()
 {
+	geoGroupWait.Reset();
+	geoGroupCharge.Reset();
+	geoGroupExplode.Reset();
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
 
@@ -138,6 +167,10 @@ void Pulser::ResetEnemy()
 	position.x = path[0].x;
 	position.y = path[0].y;
 	receivedHit = NULL;
+
+	geoGroupWait.SetBase(Vector2f(position.x, position.y));
+	geoGroupCharge.SetBase(Vector2f(position.x, position.y));
+	geoGroupExplode.SetBase(Vector2f(position.x, position.y));
 
 
 	UpdateHitboxes();
@@ -157,17 +190,76 @@ void Pulser::ProcessState()
 		case CHARGE:
 		{
 			action = ELECTRIFY;
+			SetHitboxes(hitBody, 1);
 			break;
 		}
 		case ELECTRIFY:
-			action = WAIT;
+			//action = WAIT;
 			break;
 		}
 	}
 
+	switch (action)
+	{
+	case WAIT:
+		
+		break;
+	case CHARGE:
+		break;
+	case ELECTRIFY:
+		break;
+	}
+
+	if (action != WAIT)
+	{
+		if (geoGroupWait.running)
+		{
+			if (!geoGroupWait.Update())
+			{
+				geoGroupWait.Reset();
+			}
+		}
+	}
+	else
+	{
+		if (!geoGroupWait.Update())
+		{
+			geoGroupWait.Reset();
+		}
+	}
+
+	if (action != CHARGE)
+	{
+		if (geoGroupCharge.running)
+		{
+			if (!geoGroupCharge.Update())
+			{
+				geoGroupCharge.Reset();
+			}
+		}
+	}
+	else
+	{
+		if (!geoGroupCharge.Update())
+		{
+			geoGroupCharge.Reset();
+		}
+	}
+
+	if (action == ELECTRIFY)
+	{
+		if (!geoGroupExplode.Update())
+		{
+			geoGroupExplode.Reset();
+			action = WAIT;
+			frame = 0;
+			SetHitboxes(hitBody, 0);
+		}
+	}
+	
 
 	V2d playerPos = owner->GetPlayer(0)->position;
-	if (action == WAIT && length(playerPos - position) < 500)
+	if (action == WAIT && length(playerPos - position) < checkRadius)
 	{
 		action = CHARGE;
 		frame = 0;
@@ -236,6 +328,11 @@ void Pulser::AdvanceTargetNode()
 
 void Pulser::UpdateSprite()
 {
+
+	geoGroupWait.SetBase(Vector2f(position.x, position.y));
+	geoGroupCharge.SetBase(Vector2f(position.x, position.y));
+	geoGroupExplode.SetBase(Vector2f(position.x, position.y));
+
 	int tile = 0;
 	switch (action)
 	{
@@ -247,6 +344,8 @@ void Pulser::UpdateSprite()
 		break;
 	case ELECTRIFY:
 		tile = 2;
+	case RECOVER:
+		tile = 0;
 		break;
 	}
 
@@ -257,13 +356,19 @@ void Pulser::UpdateSprite()
 
 void Pulser::EnemyDraw(sf::RenderTarget *target)
 {
+	geoGroupWait.Draw( target );
+
+	geoGroupCharge.Draw(target);
+
+	geoGroupExplode.Draw(target);
+
 	DrawSpriteIfExists(target, sprite);
 }
 
 void Pulser::UpdateHitboxes()
 {
 	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(currHitboxFrame)->front();
 	hurtBox.globalPosition = position;
 	hurtBox.globalAngle = 0;
 	hitBox.globalPosition = position;
@@ -275,6 +380,6 @@ void Pulser::UpdateHitboxes()
 	}
 	else
 	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
+		hitboxInfo->kbDir = normalize(owner->GetPlayer(0)->position - position);//normalize(-owner->GetPlayer(0)->velocity);
 	}
 }

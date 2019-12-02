@@ -2,6 +2,7 @@
 #define __ENEMY_PULSER_H__
 
 #include "Enemy.h"
+#include "MovingGeo.h"
 
 struct Pulser : Enemy
 {
@@ -10,6 +11,7 @@ struct Pulser : Enemy
 		WAIT,
 		CHARGE,
 		ELECTRIFY,
+		RECOVER,
 		A_COUNT
 	};
 
@@ -45,7 +47,15 @@ struct Pulser : Enemy
 	Tileset *ts_aura;
 	sf::Sprite auraSprite;
 
+	double checkRadius;
+	double hitRadius;
+
 	bool facingRight;
+
+	MovingGeoGroup geoGroupWait;
+	MovingGeoGroup geoGroupCharge;
+	MovingGeoGroup geoGroupExplode;
+	//MovingRing *exRing;
 
 	
 };
