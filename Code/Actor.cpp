@@ -34,6 +34,7 @@
 #include "ParticleEffects.h"
 #include "Enemy_HealthFly.h"
 #include "StorySequence.h"
+#include "Enemy_BounceBooster.h"
 
 using namespace sf;
 using namespace std;
@@ -305,8 +306,11 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 	repeatingSound = NULL;
-		currBooster = NULL;
+	currBooster = NULL;
 		oldBooster = NULL;
+
+		currBounceBooster = NULL;
+		oldBounceBooster = NULL;
 
 		gravResetFrames = 0;
 
@@ -420,6 +424,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		currSpring = NULL;
 		currBooster = NULL;
+
+		currBounceBooster = NULL;
+		oldBounceBooster = NULL;
 
 		railTest.setSize(Vector2f(64, 64));
 		railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
@@ -2427,6 +2434,9 @@ void Actor::Respawn()
 	currBooster = NULL;
 	currSpring = NULL;
 	oldBooster = NULL;
+
+	currBounceBooster = NULL;
+	oldBounceBooster = NULL;
 
 	currModifier = NULL;
 	oldModifier = NULL;
@@ -7094,13 +7104,13 @@ void Actor::UpdatePrePhysics()
 			{
 				if( reversed )
 				{
-					double accel = dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+					double accel = dot( V2d( 0, slideGravFactor * GetGravity()), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 					groundSpeed += accel;
 					
 				}
 				else
 				{
-					double accel = dot( V2d( 0, slideGravFactor * gravity), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+					double accel = dot( V2d( 0, slideGravFactor * GetGravity()), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 					groundSpeed += accel;
 					//cout << "accel slide: \n" << accel;
 				}
@@ -7258,11 +7268,11 @@ void Actor::UpdatePrePhysics()
 
 			if( reversed )
 			{
-				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				groundSpeed += dot( V2d( 0, GetGravity() * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 			else
 			{
-				groundSpeed += dot( V2d( 0, gravity * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
+				groundSpeed += dot( V2d( 0, GetGravity() * factor), normalize( ground->v1 - ground->v0 )) / slowMultiple;
 			}
 
 			//AttackMovement();
@@ -7282,12 +7292,12 @@ void Actor::UpdatePrePhysics()
 				currAttackHit = false;
 			}
 
-			double fac = gravity * steepSlideGravFactor;//gravity * 2.0 / 3.0;
+			double fac = GetGravity() * steepSlideGravFactor;//gravity * 2.0 / 3.0;
 
 			if( currInput.LDown() )
 			{
 				//cout << "fast slide" << endl;
-				fac = gravity * steepSlideFastGravFactor;
+				fac = GetGravity() * steepSlideFastGravFactor;
 			}
 
 			if( reversed )
@@ -7417,13 +7427,13 @@ void Actor::UpdatePrePhysics()
 		double accel = 0;
 		if (owner->IsSteepGround(grn) > 0)
 		{
-			double fac = gravity *steepSlideGravFactor;//gravity * 2.0 / 3.0;
+			double fac = GetGravity() *steepSlideGravFactor;//gravity * 2.0 / 3.0;
 			accel = dot(V2d(0, fac), along) / slowMultiple;
 			
 		}
 		else if(grn.x != 0)
 		{
-			accel = dot(V2d(0, slideGravFactor * gravity), along) / slowMultiple;
+			accel = dot(V2d(0, slideGravFactor * GetGravity()), along) / slowMultiple;
 		}
 		if (accel != 0 && abs(grindSpeed + accel) > abs(grindSpeed))
 			grindSpeed += accel;
@@ -7618,12 +7628,12 @@ void Actor::UpdatePrePhysics()
 	case STEEPSLIDE:
 		{
 			//if( groundSpeed > 0 )
-			double fac = gravity * steepSlideGravFactor;//gravity * 2.0 / 3.0;
+			double fac = GetGravity() * steepSlideGravFactor;//gravity * 2.0 / 3.0;
 
 			if( currInput.LDown() )
 			{
 				//cout << "fast slide" << endl;
-				fac = gravity * steepSlideFastGravFactor;
+				fac = GetGravity() * steepSlideFastGravFactor;
 			}
 
 			if( reversed )
@@ -7850,8 +7860,23 @@ void Actor::UpdatePrePhysics()
 
 			if (currBooster != NULL && oldBooster == NULL && currBooster->Boost() )
 			{
+				SetBoostVelocity();
 				
-				velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
+				startAirDashVel.x = velocity.x;
+				extraAirDashY = velocity.y;
+				if (extraAirDashY > aSpeed)
+				{
+					extraAirDashY = extraAirDashY - aSpeed;
+				}
+				else if (extraAirDashY < -aSpeed)
+				{
+					extraAirDashY = extraAirDashY + aSpeed;
+				}
+			}
+			else if (currBounceBooster != NULL && oldBounceBooster == NULL && currBounceBooster->Boost())
+			{
+				SetBounceBoostVelocity();
+
 				startAirDashVel.x = velocity.x;//normalize(velocity).x * ( length( velocity ) + currBooster->strength);
 				extraAirDashY = velocity.y; //- aSpeed;
 				if (extraAirDashY > aSpeed)
@@ -7881,11 +7906,11 @@ void Actor::UpdatePrePhysics()
 
 		if (reversed)
 		{
-			groundSpeed += dot(V2d(0, gravity * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
+			groundSpeed += dot(V2d(0, GetGravity() * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
 		}
 		else
 		{
-			groundSpeed += dot(V2d(0, gravity * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
+			groundSpeed += dot(V2d(0, GetGravity() * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
 		}
 
 		//cout << "groundspeed: " << groundSpeed << endl;
@@ -8065,7 +8090,8 @@ void Actor::UpdatePrePhysics()
 	{	
 		if (ground == NULL && bounceEdge == NULL && grindEdge == NULL  )
 		{
-			velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
+			SetBoostVelocity();
+			//velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
 		}
 		else if (grindEdge != NULL)
 		{
@@ -8096,6 +8122,42 @@ void Actor::UpdatePrePhysics()
 		}
 		//currBooster = NULL;
 		//boostUsed = false;
+	}
+
+	if (currBounceBooster != NULL && oldBounceBooster == NULL && action != AIRDASH && currBounceBooster->Boost())
+	{
+		if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
+		{
+			SetBounceBoostVelocity();
+			//normalize(velocity) * (length(velocity) + currBounceBooster->strength);
+		}
+		else if (grindEdge != NULL)
+		{
+			/*if (grindSpeed > 0)
+			{
+				grindSpeed += currBounceBooster->strength;
+			}
+			else if (grindSpeed < 0)
+			{
+				grindSpeed -= currBounceBooster->strength;
+			}
+
+			if (action == RAILGRIND)
+			{
+				velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+			}*/
+		}
+		else if (ground != NULL)
+		{
+			/*if (groundSpeed > 0)
+			{
+				groundSpeed += currBounceBooster->strength;
+			}
+			else if (groundSpeed < 0)
+			{
+				groundSpeed -= currBounceBooster->strength;
+			}*/
+		}
 	}
 
 	if (currModifier != NULL && oldModifier == NULL && currModifier->Modify())
@@ -8971,6 +9033,7 @@ void Actor::UpdatePrePhysics()
 
 	oldBooster = currBooster;
 	oldModifier = currModifier;
+	oldBounceBooster = currBounceBooster;
 
 	highAccuracyHitboxes = true;
 
@@ -9894,6 +9957,7 @@ bool Actor::ResolvePhysics( V2d vel )
 
 
 	currBooster = NULL;
+	currBounceBooster = NULL;
 	currModifier = NULL;
 	queryMode = "activeitem";
 	owner->activeItemTree->Query(this, r);
@@ -17513,6 +17577,11 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 }
 
+double Actor::GetGravity()
+{
+	return gravity * extraGravityModifier;
+}
+
 sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 {
 	double normalGravity;
@@ -17597,15 +17666,16 @@ bool Actor::SpringLaunch()
 		}
 		else if (currSpring->springType == Spring::REDIRECT)
 		{
-			action = SPRINGSTUN;
-			springStunFrames = 15;
+			//action = SPRINGSTUN;
+			//springStunFrames = 15;
 			if (ground != NULL)
 			{
-
+				//springVel = currSpring->dir * //abs(groundSpeed);
 			}
 			else
 			{
-				springVel = currSpring->dir * length(velocity);
+				//springVel = 
+				//springVel = currSpring->dir * length(velocity);
 			}
 			
 		}
@@ -17692,6 +17762,32 @@ void Actor::SetActivePowers(
 	hasPowerTimeSlow = p_canTimeSlow;
 	hasPowerRightWire = p_canWire;
 	hasPowerLeftWire = p_canWire;
+}
+
+void Actor::SetBoostVelocity()
+{
+	velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
+}
+
+void Actor::SetBounceBoostVelocity()
+{
+	double s = currBounceBooster->strength;
+	//velocity.y = min(s, velocity.y);
+
+	if (currBounceBooster->upOnly)
+	{
+		velocity.y = -s;
+	}
+	else
+	{
+		V2d dir = normalize(position - currBounceBooster->position);
+		velocity = dir * s;
+		velocity.x *= .6;
+
+		if (velocity.y > 0)
+			velocity.y *= .5;
+	}
+	
 }
 
 bool Actor::IsGoalKillAction(Action a)
@@ -19176,15 +19272,33 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	else if (queryMode == "activeitem")
 	{
 		Enemy *en = (Enemy*)qte;
-		if (en->type == EnemyType::EN_BOOSTER)
+		if (en->type == EnemyType::EN_BOOSTER )
 		{
 			Booster *boost = (Booster*)qte;
-
+			
 			if (currBooster == NULL)
 			{
 				if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable() )
 				{
 					currBooster = boost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+			//currBooster = boost;
+			//booster priority later
+		}
+		else if (en->type == EnemyType::EN_BOUNCEBOOSTER)
+		{
+			BounceBooster *boost = (BounceBooster*)qte;
+
+			if (currBounceBooster == NULL)
+			{
+				if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable())
+				{
+					currBounceBooster = boost;
 				}
 			}
 			else

@@ -1019,7 +1019,6 @@ void GravitySpringParams::SetPanelInfo()
 
 	EditSession *edit = EditSession::GetSession();
 	edit->patrolPath = GetGlobalPath();
-	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 ActorParams *GravitySpringParams::Copy()

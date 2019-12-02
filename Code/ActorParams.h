@@ -853,6 +853,27 @@ struct BounceSpringParams : public ActorParams
 	void SetPanelInfo();
 };
 
+//struct BounceBoosterParams : public ActorParams
+//{
+//	BounceBoosterParams(ActorType *at,
+//		sf::Vector2i &pos,
+//		std::list<sf::Vector2i> &globalPath );
+//	BounceBoosterParams(ActorType *at,
+//		sf::Vector2i &pos);
+//	BounceBoosterParams(ActorType *at,
+//		std::ifstream &is);
+//	void WriteParamFile(std::ofstream &of);
+//	void SetPath(
+//		std::list<sf::Vector2i> &globalPath);
+//	void Draw(sf::RenderTarget *target);
+//
+//
+//	ActorParams *Copy();
+//
+//	void SetParams();
+//	void SetPanelInfo();
+//};
+
 struct PulserParams : public ActorParams
 {
 	PulserParams(ActorType *at,

@@ -695,24 +695,29 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddBasicAerialWorldEnemy("bouncefloater", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
 
-	AddBasicAerialWorldEnemy("bouncecomboer", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+	/*AddBasicAerialWorldEnemy("bouncecomboer", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 
 	AddWorldEnemy("bouncejuggler", 3, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
 		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
 
-	AddWorldEnemy("bouncespring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
+	/*AddWorldEnemy("bouncespring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));*/
 
-	AddWorldEnemy("redirectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
+	AddBasicAerialWorldEnemy("upbouncebooster", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
+		GetTileset("Enemies/Booster_512x512.png", 512, 512));
+
+	AddBasicAerialWorldEnemy("omnibouncebooster", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
+		GetTileset("Enemies/Booster_512x512.png", 512, 512));
+	/*AddWorldEnemy("redirectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 
 	AddWorldEnemy("reflectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));*/
 
 	//AddWorldEnemy("bouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
@@ -15072,6 +15077,10 @@ Panel *ActorType::CreatePanel()
 	else if (name == "pulser")
 	{
 		p = CreateDefaultPanel("pulser_options", true, true, true, true);
+	}
+	else if (name == "upbouncebooster" || name == "omnibouncebooster")
+	{
+		p = CreateDefaultPanel("booster_options", false, true);
 	}
 	else if (name == "bouncespring" || name == "reflectspring" || name == "redirectspring")
 	{

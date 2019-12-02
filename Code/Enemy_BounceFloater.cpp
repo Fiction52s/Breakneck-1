@@ -79,7 +79,7 @@ BounceFloater::BounceFloater(GameSession *owner, Vector2i pos, int p_level)
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_BOUNCE] = 1;
-	animFactor[S_RECOVER] = 6;
+	animFactor[S_RECOVER] = 1;
 
 	ResetEnemy();
 }
@@ -119,14 +119,47 @@ void BounceFloater::ProcessHit()
 		{
 			player->groundSpeed = -player->groundSpeed;
 		}
+		else
+		{
+			double minX = 20;
+			bool fr = player->facingRight;
+			if (dir.x != 0 )//&& dir.y == 0)
+			{
+				double velx = player->velocity.x;
+				if ( fr && velx < minX )
+				{
+					velx = minX;
+				}
+				else if (!fr && velx > -minX)
+				{
+					velx = -minX;
+				}
 
-		if (dir.x != 0 && dir.y == 0)
-		{
-			player->velocity.x = -player->velocity.x;
-		}
-		if (dir.y != 0 && dir.x == 0)
-		{
-			player->velocity.y = -60;//player->velocity.y;
+				player->velocity.x = -velx;
+					//= -player->velocity.x;
+			}
+			if (dir.y != 0 )//&& dir.x == 0)
+			{
+				double minUp = -20;
+				double minDown = 40;
+				double vely = player->velocity.y;
+				if ( dir.y > 0 && vely < minDown)
+				{
+					vely = -minDown;
+				}
+				else if( dir.y < 0 && vely > minUp )
+				{
+					vely = -minUp;
+				}
+
+				//player->velocity.x = -velx;
+				//= -player->velocity.x;
+
+
+
+				player->velocity.y = vely;//-60;//player->velocity.y;
+			}
+
 		}
 
 		player->ConfirmEnemyNoKill(this);

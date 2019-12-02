@@ -168,6 +168,7 @@ struct AbsorbParticles
 
 struct GravityModifier;
 struct Booster;
+struct BounceBooster;
 struct Spring;
 struct EffectPool;
 struct EnemyParams;
@@ -745,6 +746,14 @@ struct Actor : QuadTreeCollider,
 	Booster *currBooster;
 	Booster *oldBooster;
 
+	void SetBoostVelocity();
+	void SetBounceBoostVelocity();
+
+	BounceBooster *currBounceBooster;
+	BounceBooster *oldBounceBooster;
+
+
+
 	GravityModifier *currModifier;
 	GravityModifier *oldModifier;
 	int gravResetFrames;
@@ -1024,6 +1033,7 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> startAirDashVel;
 	double extraAirDashY;
 	sf::Vector2<double> AddGravity( sf::Vector2<double> vel );
+	double GetGravity();
 
 	int framesGrinding;
 	int framesNotGrinding;

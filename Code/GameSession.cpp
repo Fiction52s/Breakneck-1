@@ -114,6 +114,8 @@
 #include "Enemy_JugglerCatcher.h"
 #include "Enemy_BounceFloater.h"
 
+#include "Enemy_BounceBooster.h"
+
 #define TIMESTEP 1.0 / 60.0
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
@@ -2096,7 +2098,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			/*Comboer::ComboerType ct ct = Comboer::ComboerType::T_STRAIGHT;
 			if (typeName == "comboer")
 			{
-				
+
 			}
 			else if (typeName == "gravdowncomboer")
 			{
@@ -2116,7 +2118,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 				assert(0);
 			}*/
 			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-			Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level );
+			Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
 
 
 			fullEnemyList.push_back(enemy);
@@ -2160,7 +2162,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
 		}
 		else if (typeName == "spring" || typeName == "gravityspring" || typeName == "bouncespring"
-			|| typeName == "redirectspring" || typeName == "reflectspring")
+			|| typeName == "reflectspring")
 		{
 			int xPos, yPos;
 
@@ -2174,7 +2176,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			{
 				is >> speed;
 			}
-			
+
 
 			Vector2i other;
 			is >> other.x;
@@ -2211,8 +2213,37 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			enemyTree->Insert(enemy);
 		}
+		else if (typeName == "upbouncebooster" || typeName == "omnibouncebooster")
+		{
+			int xPos, yPos;
+			
+			//always air
+
+			is >> xPos;
+			is >> yPos;
+			
+			int level;
+			is >> level;
+
+			bool upOnly = false;
+			if (typeName == "upbouncebooster")
+			{
+				upOnly = true;
+			}
+
+
+			BounceBooster *enemy = new BounceBooster(this, Vector2i(xPos, yPos), upOnly, level);
+
+			activeItemTree->Insert(enemy);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
 		else if (typeName == "rail")
 		{
+			
 			int xPos, yPos;
 
 			//always air
@@ -5672,9 +5703,12 @@ bool GameSession::Load()
 	//return true;
 
 	//testEmit = new BoxEmitter(4, 100, PI, PI / 6, 1, 5, 1000, 1000);
-	testEmit = new LeafEmitter;// (4, 1000);// PI, PI / 6, 0, 0, 1000, 1000);
-	testEmit->SetTileset(GetTileset("Env/leaves_128x128.png", 128, 128));
-	testEmit->CreateParticles();
+
+
+
+	//testEmit = new LeafEmitter;// (4, 1000);// PI, PI / 6, 0, 0, 1000, 1000);
+	//testEmit->SetTileset(GetTileset("Env/leaves_128x128.png", 128, 128));
+	//testEmit->CreateParticles();
 	
 	//testEmit->SetRatePerSecond(120);
 
@@ -10463,8 +10497,8 @@ void GameSession::RestartLevel()
 {
 	
 	ClearEmitters();
-	AddEmitter(testEmit, EffectLayer::IN_FRONT);
-	testEmit->Reset();
+	//AddEmitter(testEmit, EffectLayer::IN_FRONT);
+	//testEmit->Reset();
 
 	for (auto it = allVA.begin(); it != allVA.end(); ++it)
 	{
@@ -10542,7 +10576,7 @@ void GameSession::RestartLevel()
 	}
 
 
-	testEmit->SetPos(Vector2f(GetPlayer(0)->position));
+	//testEmit->SetPos(Vector2f(GetPlayer(0)->position));
 
 //	currentZone = originalZone;
 //	if( currentZone != NULL )
