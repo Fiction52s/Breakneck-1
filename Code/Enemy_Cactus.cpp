@@ -443,6 +443,7 @@ void CactusShotgun::ActionEnded()
 void CactusShotgun::HandleRemove()
 {
 	myPool->DeactivatePoolMember(this);
+	ClearSprite();
 }
 
 void CactusShotgun::HandleNoHealth()

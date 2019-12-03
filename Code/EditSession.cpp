@@ -702,9 +702,9 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
 		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
 
-	/*AddWorldEnemy("bouncespring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
+	AddWorldEnemy("bouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));*/
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 
 	AddBasicAerialWorldEnemy("upbouncebooster", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
@@ -15033,7 +15033,7 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
-	else if (name == "gravityspring")
+	else if (name == "gravityspring" || name == "bouncespring")
 	{
 		p = new Panel("gravityspring_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
@@ -15082,17 +15082,17 @@ Panel *ActorType::CreatePanel()
 	{
 		p = CreateDefaultPanel("booster_options", false, true);
 	}
-	else if (name == "bouncespring" || name == "reflectspring" || name == "redirectspring")
-	{
-		p = new Panel("bouncespring_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+	//else if (name == "bouncespring" )
+	//{
+	//	p = new Panel("bouncespring_options", 200, 500, edit);
+	//	p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+	//	p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+	//	p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
 
-		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
+	//	p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
 
-		//p->AddTextBox("moveframes", Vector2i(20, 200), 200, 3, "");
-	}
+	//	//p->AddTextBox("moveframes", Vector2i(20, 200), 200, 3, "");
+	//}
 	else if (name == "cactus")
 	{
 		p = CreateDefaultPanel("cactus_options", true, true);

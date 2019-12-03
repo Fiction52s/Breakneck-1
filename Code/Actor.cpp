@@ -4005,7 +4005,27 @@ void Actor::UpdatePrePhysics()
 		break;
 	}
 	case SPRINGSTUNBOUNCE:
-		if (!BasicAirAction())
+		if (!GlideAction())
+		{
+			if (springStunFrames == 0)
+			{
+				SetAction(JUMP);
+				frame = 1;
+				if (velocity.x < 0)
+				{
+					facingRight = false;
+				}
+				else if (velocity.x > 0)
+				{
+					facingRight = true;
+				}
+			}
+		}
+		else
+		{
+			springStunFrames = 0;
+		}
+		/*if (!BasicAirAction())
 		{
 			if (springStunFrames == 0)
 			{
@@ -4016,7 +4036,7 @@ void Actor::UpdatePrePhysics()
 		else
 		{
 			springStunFrames = 0;
-		}
+		}*/
 		break;
 	case SPRINGSTUNREFLECT:
 		if (!BasicAirAction())
@@ -7497,12 +7517,63 @@ void Actor::UpdatePrePhysics()
 		break;
 	case GRAVREVERSE:
 		break;
-	case SPRINGSTUNBOUNCE:
+	
 	case SPRINGSTUNREFLECT:
 	case SPRINGSTUNREDIRECT:
 	case SPRINGSTUN:
 	{		
 		velocity = springVel + springExtra;
+		break;
+	}
+	case SPRINGSTUNBOUNCE:
+	{
+		double bounceTurnFactor = .012;
+		if (currInput.LUp())
+		{
+			glideTurnFactor = bounceTurnFactor;
+			/*if (bounceTurnFactor < 0)
+			{
+				bounceTurnFactor = 0;
+			}
+			glideTurnFactor += glideTurnAccel;
+			if (glideTurnFactor > maxGlideTurnFactor)
+			{
+				glideTurnFactor = maxGlideTurnFactor;
+			}*/
+			//RotateCCW(springVel, glideTurnFactor);
+		}
+		else if (currInput.LDown())
+		{
+			/*if (glideTurnFactor > 0)
+			{
+				glideTurnFactor = 0;
+			}
+			glideTurnFactor -= glideTurnAccel;
+			if (glideTurnFactor < -maxGlideTurnFactor)
+			{
+				glideTurnFactor = -maxGlideTurnFactor;
+			}*/
+			glideTurnFactor = -bounceTurnFactor;
+			//RotateCCW(springVel, glideTurnFactor);
+			//grav = AddGravity(V2d(0, 0));
+		}
+		else
+		{
+			glideTurnFactor = 0;
+		}
+
+
+		if (facingRight)
+		{
+			RotateCCW(springVel, glideTurnFactor);
+		}
+		else
+		{
+			RotateCCW(springVel, -glideTurnFactor);
+		}
+
+		velocity = springVel + springExtra;
+
 		break;
 	}
 	case SPRINGSTUNGLIDE:
@@ -14163,6 +14234,20 @@ void Actor::UpdatePhysics()
 					frame = 1;
 				}
 			}
+			else if (tempCollision && action == SPRINGSTUNBOUNCE)
+			{
+				V2d norm = minContact.normal;
+				springVel = norm * length(springVel);
+
+				if (springVel.x > 0)
+				{
+					facingRight = true;
+				}
+				else if( springVel.x < 0 )
+				{
+					facingRight = false;
+				}
+			}
 			else if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision && bounceOkay )
 			{
 				prevRail = NULL;
@@ -17669,7 +17754,22 @@ bool Actor::SpringLaunch()
 	{
 		currSpring->Launch();
 		position = currSpring->position;
-		springVel = currSpring->dir * (double)currSpring->speed;
+		V2d sprDir = currSpring->dir;
+		
+		double s = currSpring->speed;
+
+		if (currSpring->springType == Spring::BOUNCE)
+		{
+			V2d testVel(velocity.x, velocity.y);
+			double along = dot(testVel, sprDir);
+			if (along > s)
+			{
+				s = along;
+			}
+		}
+
+		springVel = currSpring->dir * s;
+
 		springExtra = V2d( 0, 0 );
 		if (springVel.x > .01)
 		{
@@ -17700,6 +17800,10 @@ bool Actor::SpringLaunch()
 				//springVel = currSpring->dir * length(velocity);
 			}
 			
+		}
+		else if (currSpring->springType == Spring::BOUNCE)
+		{
+			action = SPRINGSTUNBOUNCE;
 		}
 		else if (currSpring->springType == Spring::REFLECT)
 		{
