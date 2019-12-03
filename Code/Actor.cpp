@@ -440,6 +440,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 		testGrassCount = 0;
 		gravityGrassCount = 0;
+		bounceGrassCount = 0;
 
 		scorpOn = false;
 		framesSinceRightWireBoost = 0;
@@ -2465,6 +2466,7 @@ void Actor::Respawn()
 
 	testGrassCount = 0;
 	gravityGrassCount = 0;
+	bounceGrassCount = 0;
 	regrindOffCount = 3;
 	scorpAdditionalCap = 0.0;
 	prevRail = NULL;
@@ -9913,6 +9915,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	queryMode = "grass";
 	testGrassCount = 0;
 	gravityGrassCount = 0;
+	bounceGrassCount = 0;
 	owner->grassTree->Query( this, r );
 
 	if( testGrassCount > 0 )
@@ -14140,8 +14143,27 @@ void Actor::UpdatePhysics()
 			}
 
 			
+			if (tempCollision && bounceGrassCount > 0)
+			{
+				if (minContact.normal.y < 0)
+				{
+					velocity.y = -25;
+				}
+				else if( minContact.normal.y > 0 )
+				{
+					velocity.y = 25;
+				}
+				
+				hasDoubleJump = true;
+				hasAirDash = true;
 
-			if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision && bounceOkay )
+				if (action == AIRDASH)
+				{
+					SetAction(JUMP);
+					frame = 1;
+				}
+			}
+			else if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision && bounceOkay )
 			{
 				prevRail = NULL;
 				//this condition might only work when not reversed? does it matter?
@@ -19097,7 +19119,15 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 		if( g->IsTouchingBox( r ) )
 		{
-			++gravityGrassCount; //if gravity type
+			if (g->grassType == Grass::GRAVITY)
+			{
+				++gravityGrassCount; //if gravity type
+			}
+			else if( g->grassType == Grass::BOUNCE )
+			{
+				++bounceGrassCount;
+			}
+			
 		}
 	}
 	else if( queryMode == "item" )

@@ -1172,10 +1172,17 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 struct Grass : QuadTreeEntrant
 {
+	enum GrassType
+	{
+		GRAVITY,
+		BOUNCE
+	};
+
+
 	Grass(GameSession *p_owner, Tileset *p_ts_grass, 
 		int p_tileIndex, 
 		V2d &pos, 
-		TerrainPiece *poly);
+		TerrainPiece *poly, GrassType gType);
 
 	void Reset();
 	V2d pos;
@@ -1184,6 +1191,8 @@ struct Grass : QuadTreeEntrant
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	
+	GrassType grassType;
+
 	void Update();
 	bool exploding;
 	int tileIndex;

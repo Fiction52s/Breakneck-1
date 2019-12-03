@@ -203,10 +203,11 @@ EdgeAngleType GetEdgeAngleType(V2d &normal)
 
 
 Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex, 
-	V2d &p_pos, TerrainPiece *p_poly)
+	V2d &p_pos, TerrainPiece *p_poly, GrassType gType )
 	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),
 	ts_grass(p_ts_grass), owner(p_owner), poly( p_poly ), pos( p_pos ), radius( 128 / 2.0 - 20 )
 {
+	grassType = gType;
 
 	explosion.isCircle = true;
 	explosion.rw = 64;
@@ -3991,6 +3992,8 @@ bool GameSession::OpenFile( string fileName )
 
 			double totalPerimeter = 0;
 
+			tPiece->terrainWorldType = matWorld;
+			tPiece->terrainVariation = matVariation;
 
 			tPiece->SetupGrass(segments);
 
@@ -4101,8 +4104,7 @@ bool GameSession::OpenFile( string fileName )
 			tPiece->triva = triVA;
 			tPiece->plantva = plantVA;
 			tPiece->ts_plant = ts_plant;
-			tPiece->terrainWorldType = matWorld;
-			tPiece->terrainVariation = matVariation;
+			
 
 			//testva->flowva = energyFlowVA;
 			
@@ -5363,6 +5365,16 @@ void TerrainPiece::SetupGrass( std::list<GrassSegment> &segments)
 
 	int totalGrassIndex = 0;
 
+	Grass::GrassType gType;
+	if (terrainWorldType == 1)
+	{
+		gType = Grass::GrassType::GRAVITY;
+	}
+	else if (terrainWorldType == 2)
+	{
+		gType = Grass::GrassType::BOUNCE;
+	}
+
 	if (numGrassTotal > 0)
 	{
 		grassVA = new VertexArray(sf::Quads, numGrassTotal * 4);
@@ -5422,7 +5434,7 @@ void TerrainPiece::SetupGrass( std::list<GrassSegment> &segments)
 				grassVa[(j + totalGrass) * 4 + 3].position = topRight;
 				grassVa[(j + totalGrass) * 4 + 3].texCoords = Vector2f(grassSize, 0);
 
-				Grass * g = new Grass(owner, ts_grass, totalGrassIndex, posd, this);
+				Grass * g = new Grass(owner, ts_grass, totalGrassIndex, posd, this, gType );
 				owner->grassTree->Insert(g);
 
 				++totalGrassIndex;
