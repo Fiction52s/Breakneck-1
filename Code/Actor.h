@@ -259,6 +259,7 @@ struct Actor : QuadTreeCollider,
 		GRAVREVERSE,
 		GRINDBALL,
 		RAILGRIND,
+		RAILSLIDE,
 		RAILDASH,
 		GRINDLUNGE,
 		GRINDSLASH,
@@ -1040,7 +1041,9 @@ struct Actor : QuadTreeCollider,
 
 	int framesSinceGrindAttempt;
 	int maxFramesSinceGrindAttempt;
-	bool canGrabRail;
+	//bool canGrabRail;
+	bool canRailGrind;
+	bool canRailSlide;
 	double minRailGrindSpeed[3];
 	double GetMinRailGrindSpeed();
 
@@ -1242,6 +1245,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateInHitlag();
 	bool IsAttackAction( Action a );
 	bool IsGroundAttackAction(Action a);
+	bool IsSpringAction(Action a);
 
 
 

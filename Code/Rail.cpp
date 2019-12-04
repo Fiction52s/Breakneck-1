@@ -6,9 +6,15 @@ using namespace sf;
 
 
 Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
-	std::list<sf::Vector2i> &path, bool energized)
+	std::list<sf::Vector2i> &path, bool p_powerRequired,
+	bool p_accelerate, int p_level )
 	:owner( p_owner )
 {
+	level = p_level;
+
+	requirePower = p_powerRequired;
+	accelerate = p_accelerate;
+
 	path.push_front(Vector2i(0, 0));
 	for (auto it = path.begin(); it != path.end(); ++it)
 	{
@@ -43,7 +49,7 @@ Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 		double width = 16;
 		double hw = width / 2;
 		int subIndex = 0;
-		if (energized)
+		if (accelerate)
 		{
 			subIndex = 1;
 		}
@@ -113,7 +119,7 @@ void Rail::UpdateSprite()
 {
 	//and different if a player is attached
 	int ind = 0;
-	if (energized)
+	if (accelerate)
 		ind = 1;
 	IntRect sub = ts_rail->GetSubRect(ind);
 

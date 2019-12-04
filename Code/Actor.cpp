@@ -417,7 +417,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		maxFramesSinceGrindAttempt = 30;
 		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-		canGrabRail = false;
+		canRailGrind = false;
+		canRailSlide = false;
 
 		regrindOffMax = 3;
 		regrindOffCount = 3;
@@ -1156,6 +1157,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 		actionLength[SPAWNWAIT] = 120;
 		actionLength[RAILDASH] = 20;
+		actionLength[RAILSLIDE] = 1;
 
 
 		actionLength[GOALKILL] = 72 * 2;
@@ -1818,6 +1820,7 @@ void Actor::ActionEnded()
 			break;
 		case GRINDBALL:
 		case RAILGRIND:
+		case RAILSLIDE:
 			frame = 0;
 			break;
 		case RAILDASH:
@@ -2471,7 +2474,8 @@ void Actor::Respawn()
 	scorpAdditionalCap = 0.0;
 	prevRail = NULL;
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-	canGrabRail = false;
+	canRailSlide = false;
+	canRailGrind = false;
 	scorpOn = false;
 
 	framesSinceRightWireBoost = 0;
@@ -5279,6 +5283,31 @@ void Actor::UpdatePrePhysics()
 		}
 		break;
 	}
+	case RAILSLIDE:
+	{
+		Rail *rail = (Rail*)grindEdge->info;
+		if (currInput.A && !prevInput.A)
+		{
+			if (owner->IsWall(grindEdge->Normal()) < 0) //not wall
+			{
+				SetActionExpr(JUMPSQUAT);
+				//frame = 0;
+			}
+			else
+			{
+				hasDoubleJump = true;
+				TryDoubleJump();
+				grindEdge = NULL;
+			}
+			//if( abs( grindEdge->Normal().y ) )
+
+			frame = 0;
+
+			regrindOffCount = 0;
+			break;
+		}
+		break;
+	}
 	case RAILDASH:
 	{
 		if (!BasicAirAction())
@@ -7353,6 +7382,7 @@ void Actor::UpdatePrePhysics()
 			//framesGrinding++;
 			break;
 		}
+	case RAILSLIDE:
 	case RAILGRIND:
 	{
 		double ffac = 1.0;
@@ -7366,86 +7396,7 @@ void Actor::UpdatePrePhysics()
 			along = -along;
 			grn = -grn;
 		}
-		//if (grn.x > 0)
-		//{
-		//	if (grindSpeed > 0)
-		//	{
-		//		if (currInput.LDown() || currInput.LRight())
-		//		{
-		//			double accel = startAccel + dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
-		//			grindSpeed += accel;
-		//		}
-		//		else if (currInput.LUp() || currInput.LLeft())
-		//		{
-		//			grindSpeed -= startAccel;
-		//		}
-		//	}
-		//	else if (grindSpeed < 0)
-		//	{
-		//		if (currInput.LUp() || currInput.LLeft())
-		//		{
-		//			double accel = -startAccel;// +dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
-		//			grindSpeed += accel;
-		//		}
-		//		else if (currInput.LDown() || currInput.LRight())
-		//		{
-		//			double accel = startAccel + dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
-		//			grindSpeed += accel;
-		//		}
-		//	}
-		//	//if( currInput.LDown() && currInput.)
-		//}
-		//else if (grn.x < 0)
-		//{
-		//	if (grindSpeed > 0)
-		//	{
-		//		if (currInput.LUp() || currInput.LRight())
-		//		{
-		//			grindSpeed += startAccel;
-		//		}
-		//		else if (currInput.LDown() || currInput.LLeft())
-		//		{
-		//			double accel = -startAccel + dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
-		//			grindSpeed += accel;
-		//		}
-		//	}
-		//	else if (grindSpeed < 0)
-		//	{
-		//		if (currInput.LDown() || currInput.LLeft())
-		//		{
-		//			double accel = -startAccel + dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
-		//			grindSpeed += accel;
-		//		}
-		//		else if (currInput.LUp() || currInput.LRight())
-		//		{
-		//			double accel = startAccel;// +dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
-		//			grindSpeed += accel;
-		//		}
-		//	}
-		//	//if( currInput.LDown() && currInput.)
-		//}
-		//else
-		//{
-		//}
-		//if (currInput.LDown())
-		//{
-		//	//double gAngle = GroundedAngle();
-		//	//double fac = gravity * 2.0 / 3;
-		//	//if (gAngle != 0)
-		//	//{
-		//	double accel = dot(V2d(0, ffac * gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
-		//	grindSpeed += accel;
-		//	//}
-		//}
-		//else if (currInput.LUp())
-		//{
-		//	double accel = dot(V2d(0, ffac * -gravity), normalize(grindEdge->v1 - grindEdge->v0)) / slowMultiple;
-		//	grindSpeed += accel;
-		//}
-		//double gAngle = GroundedAngle();
-		//double fac = gravity * 2.0 / 3;
-
-		//if (e0n.x > 0 && e0n.y > -steepThresh)
+		
 		double accel = 0;
 		if (owner->IsSteepGround(grn) > 0)
 		{
@@ -8177,7 +8128,7 @@ void Actor::UpdatePrePhysics()
 				grindSpeed -= currBooster->strength;
 			}
 
-			if (action == RAILGRIND)
+			if (action == RAILGRIND || action == RAILSLIDE)
 			{
 				velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 			}
@@ -9033,23 +8984,41 @@ void Actor::UpdatePrePhysics()
 	//cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;m
 	
-	if (!currInput.Y && prevInput.Y)
+	canRailGrind = false;
+	canRailSlide = false;
+	if (hasPowerGrindBall)
 	{
-		framesSinceGrindAttempt = 0;
-	}
-
-	canGrabRail = false;
-	if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH )
-	{
-		if (currInput.Y || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
+		if (!currInput.Y && prevInput.Y)
 		{
-			canGrabRail = true;
+			framesSinceGrindAttempt = 0;
+		}
+
+		if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH)
+		{
+			if (currInput.Y || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
+			{
+				canRailGrind = true;
+			}
+		}
+		else
+		{
+			framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 		}
 	}
-	else
+	
+	if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH &&
+		action != RAILSLIDE && velocity.y >= 0 && !IsAttackAction( action ))
 	{
-		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+		canRailSlide = true;
 	}
+	
+
+
+	
+
+	
+
+	
 	
 	
 
@@ -10023,7 +9992,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	Rect<double> staticItemRect(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
 	owner->staticItemTree->Query(NULL, staticItemRect);
 
-	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && canGrabRail )
+	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && (canRailGrind || canRailSlide ) )
 	{
 		queryMode = "rail";
 		owner->railEdgeTree->Query(this, r);
@@ -12512,7 +12481,7 @@ void Actor::UpdatePhysics()
 		PhysicsResponse();
 		return;
 	}
-	else if (grindEdge != NULL && action == RAILGRIND)
+	else if (grindEdge != NULL && ( action == RAILGRIND || action == RAILSLIDE ))
 	{
 		Edge *e0 = grindEdge->edge0;
 		Edge *e1 = grindEdge->edge1;
@@ -12626,7 +12595,7 @@ void Actor::UpdatePhysics()
 			}
 		}
 
-		if (action == RAILGRIND)
+		if (action == RAILGRIND || action == RAILSLIDE )
 		{
 			grindQuantity = q;
 
@@ -14228,7 +14197,7 @@ void Actor::UpdatePhysics()
 				hasDoubleJump = true;
 				hasAirDash = true;
 
-				if (action == AIRDASH)
+				if (action == AIRDASH || IsSpringAction(action) )
 				{
 					SetAction(JUMP);
 					frame = 1;
@@ -15529,7 +15498,7 @@ void Actor::PhysicsResponse()
 
 	
 
-	if (action == RAILGRIND && collision )
+	if ((action == RAILGRIND || action == RAILSLIDE ) && collision )
 	{
 		grindEdge = NULL;
 		SetAction(JUMP);
@@ -19317,6 +19286,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Edge *e = (Edge*)qte;
 		Rail *rail = (Rail*)e->info;
+
+		if (rail->requirePower && !canRailGrind)
+		{
+			return;
+		}
+
 		V2d r;
 		V2d eFocus;
 		bool ceiling = false;
@@ -19363,7 +19338,10 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 
 		double alongQuantVel = dot(velocity, along);
-		if ( ( rail != prevRail || regrindOffCount == regrindOffMax ) && (rail->energized || canGrabRail))
+
+		bool canGrabRail = (rail->requirePower && canRailGrind) || (!rail->requirePower && canRailSlide);
+
+		if ( ( rail != prevRail || regrindOffCount == regrindOffMax ) && canGrabRail )
 		{
 			if (q >= 0 && q <= lenR && alongQuantVel != 0)
 			{
@@ -19371,8 +19349,15 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				double preC = cross((position - tempVel) - e->v0, along);
 				if ((c >= 0 && preC <= 0) || (c <= 0 && preC >= 0))
 				{
-					//cout << "HIT IT" << endl;
-					SetAction(RAILGRIND);
+					if (canRailGrind)
+					{
+						SetAction(RAILGRIND);
+					}
+					else
+					{
+						SetAction(RAILSLIDE);
+					}
+					
 					hasAirDash = true;
 					hasDoubleJump = true;
 					frame = 0;
@@ -19692,7 +19677,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( scorpSprite );
 	}
 
-	if (canGrabRail)
+	if (canRailGrind)
 	{
 		railTest.setPosition(position.x, position.y);
 		//target->draw(railTest);
@@ -21912,6 +21897,7 @@ void Actor::UpdateSprite()
 	case GRINDATTACK:
 		{
 		}
+	case RAILSLIDE:
 	case RAILGRIND:
 	case GRINDBALL:
 		{
@@ -22010,41 +21996,6 @@ void Actor::UpdateSprite()
 		}
 	case RAILDASH:
 	{
-		//SetSpriteTexture(GRINDBALL);
-
-		//V2d grindNorm = grindEdge->Normal();
-		//bool r = grindSpeed > 0;
-
-		//if (action == RAILGRIND && grindNorm.y > 0)
-		//{
-		//	grindNorm = -grindNorm;
-		//	r = !r;
-		//}
-
-		//SetSpriteTile(0, r);
-
-		//grindActionCurrent += grindSpeed / 20;
-		//while (grindActionCurrent >= grindActionLength)
-		//{
-		//	grindActionCurrent -= grindActionLength;
-		//}
-		//while (grindActionCurrent < 0)
-		//{
-		//	grindActionCurrent += grindActionLength;
-		//}
-
-		//int grindActionInt = grindActionCurrent;
-
-		//gsdodeca.setTextureRect(tsgsdodeca->GetSubRect((grindActionInt * 5) % grindActionLength));
-		//gstriblue.setTextureRect(tsgstriblue->GetSubRect((grindActionInt * 5) % grindActionLength));
-		//gstricym.setTextureRect(tsgstricym->GetSubRect(grindActionInt % grindActionLength)); //broken?
-		//gstrigreen.setTextureRect(tsgstrigreen->GetSubRect((grindActionInt * 5) % grindActionLength));
-		//gstrioran.setTextureRect(tsgstrioran->GetSubRect(grindActionInt% grindActionLength));
-		//gstripurp.setTextureRect(tsgstripurp->GetSubRect(grindActionInt% grindActionLength));
-		//gstrirgb.setTextureRect(tsgstrirgb->GetSubRect(grindActionInt% grindActionLength));
-
-
-
 		//double angle = 0;
 		//angle = atan2(grindNorm.x, -grindNorm.y);
 		//if (!approxEquals(abs(offsetX), b.rw))
@@ -25043,6 +24994,11 @@ bool Actor::IsAttackAction( Action a )
 bool Actor::IsGroundAttackAction(Action a)
 {
 	return (a == STANDN || a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK);
+}
+
+bool Actor::IsSpringAction(Action a)
+{
+	return a == SPRINGSTUN || a == SPRINGSTUNGLIDE || a == SPRINGSTUNBOUNCE;
 }
 
 void Actor::UpdateInHitlag()

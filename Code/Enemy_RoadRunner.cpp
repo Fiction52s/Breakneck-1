@@ -65,16 +65,18 @@ RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q,
 	actionLength[BURROW] = 10;
 	actionLength[UNBURROW] = 20;
 	actionLength[RUN] = 1;
-	actionLength[STALK] = 30;
-	actionLength[RUSH] = 1;
+	actionLength[HOP] = 1;
+	//actionLength[STALK] = 30;
+	//actionLength[RUSH] = 1;
 
 
 	animFactor[IDLE] = 1;
 	animFactor[BURROW] = 1;
 	animFactor[UNBURROW] = 1;
 	animFactor[RUN] = 1;
-	animFactor[STALK] = 1;
-	animFactor[RUSH] = 1;
+	animFactor[HOP] = 1;
+	//animFactor[STALK] = 1;
+	//animFactor[RUSH] = 1;
 
 	position = mover->physBody.globalPosition;
 	V2d gPoint = g->GetPoint(q);
@@ -106,8 +108,6 @@ RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q,
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(0);
 	cutObject->SetSubRectBack(1);
-
-	//highResPhysics = true;
 
 	ResetEnemy();
 }
@@ -199,12 +199,12 @@ void RoadRunner::ActionEnded()
 			break;
 		case RUN:
 			break;
-		case STALK:
+		/*case STALK:
 			action = RUSH;
 			frame = 0;
 			break;
 		case RUSH:
-			break;
+			break;*/
 		}
 	}
 }
@@ -287,11 +287,9 @@ void RoadRunner::ProcessState()
 		}
 		break;
 	case RUN:
-	case STALK:
-	case RUSH:
 		if (facingRight)
 		{
-			if (player->position.x < position.x - 200 || ( !player->IsMovingRight() && player->action != Actor::JUMPSQUAT ))
+			if (player->position.x < position.x - 200 )//|| ( !player->IsMovingRight() && player->action != Actor::JUMPSQUAT ))
 			{
 				action = BURROW;
 				frame = 0;
@@ -301,7 +299,7 @@ void RoadRunner::ProcessState()
 		}
 		else
 		{
-			if (player->position.x > position.x + 200 || (!player->IsMovingLeft() && player->action != Actor::JUMPSQUAT))
+			if (player->position.x > position.x + 200 )// || (!player->IsMovingLeft() && player->action != Actor::JUMPSQUAT))
 			{
 				action = BURROW;
 				frame = 0;
@@ -310,7 +308,7 @@ void RoadRunner::ProcessState()
 			}
 		}
 
-		double accel = .5;
+		double accel = .5;//.5;
 		if (facingRight)
 		{
 			//mover->SetSpeed(15);
@@ -328,7 +326,7 @@ void RoadRunner::ProcessState()
 			mover->SetSpeed(-maxGroundSpeed);
 
 
-		if (playerDist < 200)
+		/*if (playerDist < 200)
 		{
 			if (action == RUN)
 				action = STALK;
@@ -337,15 +335,126 @@ void RoadRunner::ProcessState()
 			{
 				if (player->ground != NULL && player->action != Actor::JUMPSQUAT)
 				{
-					//mover->SetSpeed(player->groundSpeed);
+					mover->SetSpeed(player->groundSpeed);
 				}
 			}
-		}
+		}*/
 		break;
 	}
 
 	//cout << "moverspeed: " << mover->groundSpeed << endl;
 }
+
+//void RoadRunner::ProcessState()
+//{
+//	Actor *player = owner->GetPlayer(0);
+//
+//	ActionEnded();
+//
+//	double playerDist = length(player->position - position);
+//
+//	switch (action)
+//	{
+//	case IDLE:
+//		if (playerDist < 300)
+//		{
+//			action = BURROW;
+//			frame = 0;
+//			SetHitboxes(hitBody, 0);
+//			SetHurtboxes(hurtBody, 0);
+//		}
+//		break;
+//	case BURROW:
+//		if (frame == 5 && slowCounter == 1)
+//		{
+//			SetHitboxes(NULL, 0);
+//			SetHurtboxes(NULL, 0);
+//		}
+//		break;
+//	case UNDERGROUND:
+//	{
+//		bool uleft = player->position.x < position.x - 300 && player->IsMovingLeft();
+//		bool uright = player->position.x > position.x + 300 && player->IsMovingRight();
+//		if (uleft || uright)
+//		{
+//			if (uleft)
+//				facingRight = false;
+//			else
+//			{
+//				facingRight = true;
+//			}
+//			action = UNBURROW;
+//			frame = 0;
+//		}
+//		break;
+//	}
+//	case UNBURROW:
+//		if (frame == 10 && slowCounter == 1)
+//		{
+//			SetHitboxes(hitBody, 0);
+//			SetHurtboxes(hurtBody, 0);
+//		}
+//		break;
+//	case RUN:
+//	case STALK:
+//	case RUSH:
+//		if (facingRight)
+//		{
+//			if (player->position.x < position.x - 200)//|| ( !player->IsMovingRight() && player->action != Actor::JUMPSQUAT ))
+//			{
+//				action = BURROW;
+//				frame = 0;
+//				mover->SetSpeed(0);
+//				break;
+//			}
+//		}
+//		else
+//		{
+//			if (player->position.x > position.x + 200)// || (!player->IsMovingLeft() && player->action != Actor::JUMPSQUAT))
+//			{
+//				action = BURROW;
+//				frame = 0;
+//				mover->SetSpeed(0);
+//				break;
+//			}
+//		}
+//
+//		double accel = 4;//.5;
+//		if (facingRight)
+//		{
+//			//mover->SetSpeed(15);
+//			mover->SetSpeed(mover->groundSpeed + accel);
+//		}
+//		else
+//		{
+//			//mover->SetSpeed(-15);
+//			mover->SetSpeed(mover->groundSpeed - accel);
+//		}
+//
+//		if (mover->groundSpeed > maxGroundSpeed)
+//			mover->SetSpeed(maxGroundSpeed);
+//		else if (mover->groundSpeed < -maxGroundSpeed)
+//			mover->SetSpeed(-maxGroundSpeed);
+//
+//
+//		if (playerDist < 200)
+//		{
+//			if (action == RUN)
+//				action = STALK;
+//
+//			if (action == STALK)
+//			{
+//				if (player->ground != NULL && player->action != Actor::JUMPSQUAT)
+//				{
+//					mover->SetSpeed(player->groundSpeed);
+//				}
+//			}
+//		}
+//		break;
+//	}
+//
+//	//cout << "moverspeed: " << mover->groundSpeed << endl;
+//}
 
 void RoadRunner::UpdateEnemyPhysics()
 {
@@ -405,10 +514,21 @@ void RoadRunner::UpdateSprite()
 	double angle;
 
 	angle = 0;
-	V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-	sprite.setRotation(angle / PI * 180);
-	sprite.setPosition(pp.x, pp.y);
+
+	if (ground != NULL)
+	{
+		V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+		sprite.setRotation(angle / PI * 180);
+		sprite.setPosition(pp.x, pp.y);
+	}
+	else
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+		sprite.setRotation(0);
+		sprite.setPosition(gPoint.x, gPoint.y);
+	}
+	
 
 	return;
 
@@ -508,6 +628,18 @@ void RoadRunner::HitOther()
 
 void RoadRunner::ReachCliff()
 {
+	if (facingRight)
+	{
+		mover->Jump(V2d(15, -10));
+	}
+	else
+	{
+		mover->Jump(V2d(-15, -10));
+	}
+
+	action = HOP;
+	frame = 0;
+	
 	//if ((facingRight && testMover->groundSpeed < 0)
 	//	|| (!facingRight && testMover->groundSpeed > 0))
 	//{

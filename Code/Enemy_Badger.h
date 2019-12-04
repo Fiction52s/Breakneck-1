@@ -40,7 +40,7 @@ struct Badger : Enemy, GroundMoverHandler
 		double strengthy);
 	void UpdateNextAction();
 
-	void HitTerrain(double &q);
+	//void HitTerrain(double &q);
 	bool StartRoll();
 	void FinishedRoll();
 

@@ -12,11 +12,9 @@ struct RoadRunner : Enemy, GroundMoverHandler
 		UNDERGROUND,
 		UNBURROW,
 		RUN,
-		STALK,
-		RUSH,
-		//flap
-		//fly
-		//glide
+		HOP,
+		//STALK,
+		//RUSH,
 		Count
 	};
 

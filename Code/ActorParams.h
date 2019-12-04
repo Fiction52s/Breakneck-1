@@ -1077,24 +1077,20 @@ struct RailParams : public ActorParams
 	RailParams(ActorType *at,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &globalPath,
-		bool energized);
+		bool p_accelerate, int p_level );
 	RailParams(ActorType *at,
 		sf::Vector2i &pos);
 	RailParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
-
 	
 	ActorParams *Copy();
 
 	void SetParams();
 	void SetPanelInfo();
 
-	//std::list<int> angleList;
-	bool armored;
-
-	bool energized;
+	bool accelerate;
 };
 
 struct BossTigerParams : public ActorParams

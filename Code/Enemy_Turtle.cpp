@@ -19,9 +19,27 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
+Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level )
 	:Enemy( owner, EnemyType::EN_TURTLE, p_hasMonitor, 2 )
 {
+	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
+
 	bulletSpeed = 5;
 
 	action = NEUTRAL;
@@ -55,41 +73,18 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	
 	frame = 0;
 
-	//animationFactor = 5;
 
 	//ts = owner->GetTileset( "Turtle.png", 80, 80 );
-	ts = owner->GetTileset( "turtle_80x64.png", 80, 64 );
+	ts = owner->GetTileset( "Enemies/turtle_80x64.png", 80, 64 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
+	sprite.setScale(scale, scale);
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(36);
 	cutObject->SetSubRectBack(37);
-	//position.x = 0;
-	//position.y = 0;
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 16;
-	hurtBox.rh = 16;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 16;
-	hitBox.rh = 16;
-	hitBody->AddCollisionBox(0, hitBox);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -99,6 +94,10 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(16);
+	AddBasicHitCircle(16);
+
 	hitBody->hitboxInfo = hitboxInfo;
 	
 	dead = false;
@@ -106,9 +105,6 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	ResetEnemy();
 
 	UpdateHitboxes();
-
-	slowCounter = 1;
-	slowMultiple = 1;
 
 	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode3_64x64.png", 64, 64 );
 	//cout << "finish init" << endl;

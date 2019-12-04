@@ -2241,7 +2241,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			enemyTree->Insert(enemy);
 		}
-		else if (typeName == "rail")
+		else if (typeName == "rail" || typeName == "grindrail" )
 		{
 			
 			int xPos, yPos;
@@ -2256,10 +2256,19 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			list<Vector2i> localPath;
 			Enemy::ReadPath(is, pathLength, localPath);
 
-			int energized;
-			is >> energized;
+			int accelerate;
+			is >> accelerate;
 
-			Rail *r = new Rail(this, Vector2i(xPos, yPos), localPath, energized);
+			int level;
+			is >> level;
+
+			bool requirePower = false;
+			if (typeName == "grindrail")
+			{
+				requirePower = true;
+			}
+
+			Rail *r = new Rail(this, Vector2i(xPos, yPos), localPath, requirePower, accelerate, level );
 		}
 
 		//w1
@@ -2976,9 +2985,12 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			Vector2i delta(1000, -1000);
+			int level;
+			is >> level;
+
+			//Vector2i delta(1000, -1000);
 			Vector2i pos(xPos, yPos);
-			Turtle *enemy = new Turtle(this, hasMonitor, Vector2i(xPos, yPos));
+			Turtle *enemy = new Turtle(this, hasMonitor, Vector2i(xPos, yPos), level);
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
 
@@ -3049,11 +3061,11 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int speed;
-			is >> speed;
+			int level;
+			is >> level;
 
 			Spider *enemy = new Spider(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-				speed);
+				level);
 
 
 			fullEnemyList.push_back(enemy);

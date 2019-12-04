@@ -584,7 +584,7 @@ void StagBeetle::HitOther()
 	if( (facingRight && testMover->groundSpeed < 0 )
 		|| ( !facingRight && testMover->groundSpeed > 0 ) )
 	{
-		cout << "here" << endl;
+		//cout << "here" << endl;
 		testMover->SetSpeed( 0 );
 	}
 	else if( facingRight && testMover->groundSpeed > 0 )

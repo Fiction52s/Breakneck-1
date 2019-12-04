@@ -5,7 +5,7 @@
 
 #ifndef __EDGE_H__
 #define __EDGE_H__
-#define NUM_STEPS 1.0
+#define NUM_STEPS 2.0
 #define NUM_MAX_STEPS 10.0
 #define MAX_VELOCITY 100
 

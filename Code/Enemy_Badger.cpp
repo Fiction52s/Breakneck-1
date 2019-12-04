@@ -129,6 +129,8 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, int p_le
 	bezLength = 60 * NUM_STEPS;
 
 	ResetEnemy();
+
+	//highResPhysics = true;
 }
 
 void Badger::HandleNoHealth()
@@ -327,6 +329,8 @@ void Badger::ProcessState()
 
 	if( dead )
 		return;
+
+	cout << "vel: " << testMover->velocity.x << ", " << testMover->velocity.y << endl;
 
 	ActionEnded();
 
@@ -647,11 +651,11 @@ void Badger::UpdateSprite()
 	}
 	sprite.setTextureRect( ir );
 }
-
-void Badger::HitTerrain( double &q )
-{
-	
-}
+//
+//void Badger::HitTerrain( double &q )
+//{
+//	
+//}
 
 bool Badger::StartRoll()
 {

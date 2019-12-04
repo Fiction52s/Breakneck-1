@@ -18,13 +18,30 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int speed )
+Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
 	:Enemy( owner, EnemyType::EN_SPIDER, p_hasMonitor, 1 ), facingRight( true )
 	//moveBezTest( .22,.85,.3,.91 )
 {
+	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	rcEdge = NULL;
 	gravity = V2d( 0, .6 );
-	maxGroundSpeed = speed;
+	maxGroundSpeed = 20;
 	action = MOVE;
 	maxFallSpeed = 25;
 
@@ -34,8 +51,8 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 	attackFrame = -1;
 	attackMult = 10;
 
-	double height = 128;
-	double width = 128;
+	double height = 160;
+	double width = 160;
 
 	startGround = g;
 	startQuant = q;
@@ -57,6 +74,7 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 	V2d gPoint = g->GetPoint( q );
 	sprite.setPosition( mover->physBody.globalPosition.x,
 		mover->physBody.globalPosition.y );
+	sprite.setScale(scale, scale);
 	position = mover->physBody.globalPosition;
 	//roll = false;
 	//position = gPoint + ground->Normal() * height / 2.0;
@@ -67,28 +85,6 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 	double size = max( width, height );
 	spawnRect = sf::Rect<double>( gPoint.x - size, gPoint.y - size, size * 2, size * 2 );
 
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBody = new CollisionBody(1);
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody = new CollisionBody(1);
-	hitBody->AddCollisionBox(0, hitBox);
-
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
@@ -96,6 +92,10 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int sp
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 0;
 	hitboxInfo->knockback = 0;
+
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
 
 	hitBody->hitboxInfo = hitboxInfo;
 
@@ -190,10 +190,6 @@ void Spider::SetClosestLeft()
 	while( movementPossible > 0 )
 	{
 		double len = length( testEdge->v1 - testEdge->v0 );
-		/*V2d along = normalize( testEdge->v1 - testEdge->v0 );
-		
-		double d = dot( playerPos - testEdge->v0, along );
-		double c = cross( playerPos - testEdge->v0, along );*/
 
 		if( movementPossible > testq )
 		{
@@ -223,10 +219,6 @@ void Spider::SetClosestRight()
 	while( movementPossible > 0 )
 	{
 		double len = length( testEdge->v1 - testEdge->v0 );
-		/*V2d along = normalize( testEdge->v1 - testEdge->v0 );
-		
-		double d = dot( playerPos - testEdge->v0, along );
-		double c = cross( playerPos - testEdge->v0, along );*/
 
 		if( testq + movementPossible > len )
 		{

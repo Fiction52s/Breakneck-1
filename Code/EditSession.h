@@ -600,6 +600,15 @@ struct EditSession : GUIHandler, TilesetManager
 		int tileIndex = 0);
 	std::list<ParamsInfo> extraEnemyNames;
 
+	void AddGeneralEnemies();
+	void AddW1Enemies();
+	void AddW2Enemies();
+	void AddW3Enemies();
+	void AddW4Enemies();
+	void AddW5Enemies();
+	void AddW6Enemies();
+	
+
 	void SetupEnemyTypes();
 	void SetupEnemyType(ParamsInfo &pi);
 

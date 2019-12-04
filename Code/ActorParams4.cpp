@@ -395,7 +395,8 @@ ActorParams *BossTigerParams::Copy()
 	return copy;
 }
 
-RailParams::RailParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i> &globalPath, bool p_energized)
+RailParams::RailParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i> &globalPath,
+	bool p_accelerate, int p_level )
 	:ActorParams(at)
 {
 	lines = NULL;
@@ -404,8 +405,9 @@ RailParams::RailParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i> &glob
 
 	SetPath(globalPath);
 
-
-	energized = p_energized;
+	accelerate = p_accelerate;
+	
+	enemyLevel = p_level;
 }
 
 RailParams::RailParams(ActorType *at, ifstream &is)
@@ -415,7 +417,9 @@ RailParams::RailParams(ActorType *at, ifstream &is)
 	LoadAerial(is);
 	LoadGlobalPath(is);
 
-	LoadBool(is, energized);
+	LoadBool(is, accelerate);
+
+	LoadEnemyLevel(is);
 }
 
 RailParams::RailParams(ActorType *at,
@@ -424,14 +428,14 @@ RailParams::RailParams(ActorType *at,
 {
 	lines = NULL;
 	PlaceAerial(pos);
-	energized = false;
+	accelerate = false;
 }
 
 void RailParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	energized = p->checkBoxes["energized"]->checked;
+	accelerate = p->checkBoxes["accelerate"]->checked;
 
 	hasMonitor = false;
 }
@@ -442,7 +446,7 @@ void RailParams::SetPanelInfo()
 	p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 		p->textBoxes["group"]->text.setString(group->name);
-	p->checkBoxes["energized"]->checked = energized;
+	p->checkBoxes["accelerate"]->checked = accelerate;
 
 	EditSession *edit = EditSession::GetSession();
 	edit->patrolPath = GetGlobalPath();
@@ -477,7 +481,8 @@ void RailParams::Draw(sf::RenderTarget *target)
 void RailParams::WriteParamFile(ofstream &of)
 {
 	WritePath(of);
-	WriteBool(of, energized);
+	WriteBool(of, accelerate);
+	WriteLevel(of);
 }
 
 ActorParams *RailParams::Copy()

@@ -16,7 +16,7 @@ struct Turtle : Enemy, LauncherEnemy
 	};
 
 	Turtle(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos);
+		sf::Vector2i pos, int p_level);
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos);
 	void BulletHitPlayer(BasicBullet *b);

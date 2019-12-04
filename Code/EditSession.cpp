@@ -546,9 +546,21 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 	//monitor,level, path, loop, 
 
+	AddGeneralEnemies();
+	AddW1Enemies();
+	AddW2Enemies();
+	AddW3Enemies();
+	AddW4Enemies();
+	AddW5Enemies();
+	AddW6Enemies();
+}
+
+
+void EditSession::AddGeneralEnemies()
+{
 	AddExtraEnemy("poi", LoadParams<PoiParams>, MakeParamsGrounded<PoiParams>, MakeParamsAerial<PoiParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
-		false, false, false, false );
+		false, false, false, false);
 
 	AddExtraEnemy("key", LoadParams<KeyParams>, NULL, MakeParamsAerial<KeyParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
@@ -561,7 +573,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddExtraEnemy("shard", LoadParams<ShardParams>, NULL, MakeParamsAerial<ShardParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 3,
 		GetTileset("Shard/shards_w1_192x192.png", 192, 192));
-	
+
 	AddExtraEnemy("healthfly", LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
 		GetTileset("Enemies/healthfly_64x64.png", 64, 64));
@@ -583,10 +595,10 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 	AddExtraEnemy("nexus", LoadParams<NexusParams>, MakeParamsGrounded<NexusParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+}
 
-
-	//w1
-
+void EditSession::AddW1Enemies()
+{
 	AddBasicGroundWorldEnemy("goal", 1, Vector2i(0, -32), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
@@ -598,16 +610,16 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));
 
 	/*AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
+	GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 
 	AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
-	
+
 
 	/*AddBasicAerialWorldEnemy("jugglercatcher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-		GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));*/
-	
+	GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));*/
+
 
 	AddBasicGroundWorldEnemy("crawler", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
@@ -625,15 +637,16 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(128, 144), false, false, false, false, 1,
 		GetTileset("Bosses/Crawler/crawler_queen_256x256.png", 256, 256));
 
-	AddBasicAerialWorldEnemy("booster", 1, Vector2i(0, 0), Vector2i(32, 32), false,true, false, false, 3,
+	AddBasicAerialWorldEnemy("booster", 1, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 
 	AddWorldEnemy("spring", 1, LoadParams<SpringParams>, NULL, MakeParamsAerial<SpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/spring_idle_256x256.png", 256, 256));
+}
 
-	//w2
-
+void EditSession::AddW2Enemies()
+{
 	AddBasicGroundWorldEnemy("greengoal", 2, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Goal/goal_w02_a_288x256.png", 288, 256));
 
@@ -651,13 +664,13 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 
 	AddBasicAerialWorldEnemy("airdashjuggler", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, false, 3,
-	GetTileset("Enemies/comboer_128x128.png", 128, 128));
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
 	/*AddBasicAerialWorldEnemy("gravdowncomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
+	GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 
 	/*AddBasicAerialWorldEnemy("gravupcomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
+	GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 
 	AddBasicAerialWorldEnemy("bat", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/bat_144x176.png", 144, 176));
@@ -686,17 +699,15 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 	AddWorldEnemy("bossbird", 2, LoadParams<BossBirdParams>, NULL, MakeParamsAerial<BossBirdParams>,
 		Vector2i(0, 0), Vector2i(64, 64), false, false, false, false);
+}
 
-
-
-	//w3
-
-
+void EditSession::AddW3Enemies()
+{
 	AddBasicAerialWorldEnemy("bouncefloater", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
 
 	/*AddBasicAerialWorldEnemy("bouncecomboer", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
+	GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 
 	AddWorldEnemy("bouncejuggler", 3, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
@@ -712,12 +723,12 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddBasicAerialWorldEnemy("omnibouncebooster", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 	/*AddWorldEnemy("redirectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 
 	AddWorldEnemy("reflectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));*/
+	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));*/
 
 	//AddWorldEnemy("bouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
@@ -737,20 +748,30 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddBasicGroundWorldEnemy("cactus", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	/*AddWorldEnemy("cactus", 3, LoadParams<CactusParams>, MakeParamsGrounded<CactusParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
+	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
 
 	AddWorldEnemy("bosscoyote", 3, LoadParams<BossCoyoteParams>, NULL, MakeParamsAerial<BossCoyoteParams>,
 		Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+}
+
+void EditSession::AddW4Enemies()
+{
+	AddWorldEnemy("rail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
+		3, GetTileset("Enemies/rail_64x64.png", 64, 64));
+
+	AddWorldEnemy("grindrail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 
+		3, GetTileset("Enemies/rail_64x64.png", 64, 64));
 
 
-	//w4
+	AddBasicGroundWorldEnemy("spider", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/crawler_160x160.png", 160, 160));
+	//AddWorldEnemy("spider", 4, LoadParams<SpiderParams>, MakeParamsGrounded<SpiderParams>, NULL,
+	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
-
-	AddWorldEnemy("spider", 4, LoadParams<SpiderParams>, MakeParamsGrounded<SpiderParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
-	AddWorldEnemy("turtle", 4, LoadParams<TurtleParams>, NULL, MakeParamsAerial<TurtleParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicAerialWorldEnemy("turtle", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/turtle_80x64.png", 80, 64));
 
 	AddWorldEnemy("cheetah", 4, LoadParams<CheetahParams>, MakeParamsGrounded<CheetahParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -761,12 +782,11 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddWorldEnemy("bosstiger", 4, LoadParams<BossTigerParams>, NULL, MakeParamsAerial<BossTigerParams>,
 		Vector2i(0, 0), Vector2i(64, 64), false, false, false, false);
 
-	AddWorldEnemy("rail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	
+}
 
-	//w5
-
-
+void EditSession::AddW5Enemies()
+{
 	AddWorldEnemy("swarm", 5, LoadParams<SwarmParams>, NULL, MakeParamsAerial<SwarmParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
@@ -783,6 +803,11 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);
 
 
+	
+}
+
+void EditSession::AddW6Enemies()
+{
 	//w6
 
 
@@ -801,7 +826,6 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	AddWorldEnemy("bossskeleton", 6, LoadParams<BossSkeletonParams>, NULL, MakeParamsAerial<BossSkeletonParams>,
 		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);
 }
-
 
 void EditSession::AddBasicGroundWorldEnemy(const std::string &name, int w,
 	Vector2i &off, Vector2i &size, bool w_mon,
@@ -15131,10 +15155,12 @@ Panel *ActorType::CreatePanel()
 	//w4
 	else if (name == "turtle")
 	{
-		p = new Panel("turtle_options", 200, 600, edit);
+
+		p = CreateDefaultPanel("turtle_options", true, true, false, false);
+		/*p = new Panel("turtle_options", 200, 600, edit);
 		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");*/
 
 		//maybe bullet speed later but it might be too hard if it has variation
 		//could have params to have them teleport to offsets around your position
@@ -15146,7 +15172,7 @@ Panel *ActorType::CreatePanel()
 
 
 
-		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddCheckBox("monitor", Vector2i(20, 400));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
 	else if (name == "cheetah")
@@ -15161,19 +15187,20 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "spider")
 	{
-		p = new Panel("spider_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
-		p->AddCheckBox("clockwise", Vector2i(120, 155));
+		p = CreateDefaultPanel("spider_options", true, true, false, false);
+		//p = new Panel("spider_options", 200, 500, edit);
+		//p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		//p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		//p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+		//p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
+		//p->AddCheckBox("clockwise", Vector2i(120, 155));
 
-		//ground speed will probably be the param. not figured out fully yet
+		////ground speed will probably be the param. not figured out fully yet
 
-		p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
-		//p->AddTextBox( "jumpstrength", Vector2i( 20, 200 ), 250, 20, "3" );
+		//p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
+		////p->AddTextBox( "jumpstrength", Vector2i( 20, 200 ), 250, 20, "3" );
 
-		p->AddCheckBox("monitor", Vector2i(20, 330));
+		//p->AddCheckBox("monitor", Vector2i(20, 330));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
 	else if (name == "coral")
@@ -15188,16 +15215,15 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("monitor", Vector2i(20, 400));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
-	else if (name == "rail")
+	else if (name == "rail" || name == "grindrail" )
 	{
 		p = new Panel("rail_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
 
-		p->AddCheckBox("energized", Vector2i(120, 155));
+		p->AddCheckBox("accelerate", Vector2i(120, 250));
 		p->AddButton("createrail", Vector2i(20, 300), Vector2f(100, 50), "Create Rail");
-
 	}
 	//w5
 	else if (name == "shark")

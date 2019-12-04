@@ -13,7 +13,8 @@ struct Tileset;
 struct Rail : QuadTreeEntrant
 {
 	Rail(GameSession *owner, sf::Vector2i &pos, 
-		std::list<sf::Vector2i> &path, bool energized );
+		std::list<sf::Vector2i> &path, bool p_requirePower,
+		bool accelerate, int level );
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
 
@@ -22,7 +23,6 @@ struct Rail : QuadTreeEntrant
 	Edge ** edges;
 	int numEdges;
 	sf::Vertex *va;
-	bool energized;
 	bool playerAttached;
 
 	Tileset *ts_rail;
@@ -31,6 +31,11 @@ struct Rail : QuadTreeEntrant
 	GameSession *owner;
 
 	sf::Rect<double> aabb;
+
+	int level;
+
+	bool requirePower;
+	bool accelerate;
 
 };
 

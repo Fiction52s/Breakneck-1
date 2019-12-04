@@ -650,6 +650,7 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 
 		while( movement != 0 )
 		{
+
 			//ground is always some value
 			steal = 0;
 			if( movement > 0 )
@@ -742,8 +743,11 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 				{
 					if (!roll)
 					{
-						StartRoll();
+						bool br = StartRoll();
+						if (br)
+							break;
 					}
+
 					//cout << "roll clockwise" << endl;
 					bool br = RollClockwise( q, m );
 					if( br )
@@ -834,8 +838,6 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 		{
 			//cout << "landing aerial" << endl;
 			HitTerrainAerial();
-
-			
 		}
 	}
 	
@@ -994,7 +996,7 @@ void GroundMover::HitTerrain( double &q )
 
 void GroundMover::HitTerrainAerial()
 {
-	cout << "hit terrain aerial" << endl;
+	//cout << "hit terrain aerial" << endl;
 	bool corner = false;
 	V2d en = minContact.normal;
 	if( en.x == 0 && en.y == 0 )

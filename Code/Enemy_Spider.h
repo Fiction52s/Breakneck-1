@@ -27,7 +27,7 @@ struct Spider : Enemy, RayCastHandler
 
 	Spider(GameSession *owner, bool hasMonitor,
 		Edge *ground,
-		double quantity, int speed);
+		double quantity, int p_level);
 	void ActionEnded();
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
