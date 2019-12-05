@@ -233,6 +233,28 @@ void RotateCCW(sf::Vector2f &a, float angle)
 	a.y = sa * ax + ca * ay;
 }
 
+V2d Get8Dir(V2d &dir)
+{
+	double angle = atan2(-dir.y, dir.x);
+	double pi2 = PI * 2.0;
+	if (angle < 0)
+	{
+		angle += pi2;
+	}
+	double parts = 8;
+
+	double div = pi2 / parts;
+	double mult = angle / div;
+	double dec = mult - floor(mult);
+	int iMult = mult;
+	if (dec >= .5)
+		iMult++;
+	angle = iMult * div;
+	V2d testVec(1, 0);
+	RotateCCW(testVec, angle);
+	return testVec;
+}
+
 LineIntersection::LineIntersection(const sf::Vector2<double> &pos, bool p )
 {
 	position = pos;

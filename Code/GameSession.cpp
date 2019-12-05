@@ -63,6 +63,7 @@
 #include "MusicPlayer.h"
 #include "Enemy_GravityModifier.h"
 #include "Enemy_HealthFly.h"
+#include "Enemy_GrindJuggler.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -2563,6 +2564,38 @@ void GameSession::LoadEnemy(std::ifstream &is,
 					level, numJuggles);
 			}
 			
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "grindjugglercw" || typeName == "grindjugglerccw" )
+		{
+
+			int xPos, yPos;
+
+			is >> xPos;
+			is >> yPos;
+
+			int hasMonitor;
+			is >> hasMonitor;
+
+			int level;
+			is >> level;
+
+			int numJuggles;
+			is >> numJuggles;
+
+			bool cw = true;
+			if (typeName == "grindjugglerccw")
+			{
+				cw = false;
+			}
+
+			Enemy *enemy = new GrindJuggler(this, hasMonitor, Vector2i(xPos, yPos),
+				level, numJuggles, cw);
+
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;

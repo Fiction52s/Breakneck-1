@@ -1903,6 +1903,7 @@ void Enemy::ConfirmKill()
 	else
 	{
 		pauseFrames = 7;
+		comboHitEnemy->ComboKill(this);
 	}
 
 
@@ -1969,6 +1970,11 @@ void Enemy::AddBasicHitCircle(double rad, int index)
 }
 
 void Enemy::ComboHit()
+{
+	//empty default
+}
+
+void Enemy::ComboKill(Enemy *e)
 {
 	//empty default
 }
@@ -2131,6 +2137,7 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 		HitboxInfo *hi = co->enemyHitboxInfo;
 
 		co->enemy->ComboHit();
+		comboHitEnemy = co->enemy;
 		return hi;
 	}
 	
@@ -2245,6 +2252,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_BOUNCEJUGGLER:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
 			break;
+		case EnemyType::EN_GRINDJUGGLER:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
+			break;
 		case EnemyType::EN_POISONFROG:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
@@ -2305,6 +2315,7 @@ bool HittableObject::CheckHit( Actor *player, EnemyType et )
 {
 	if (receivedHit == NULL)
 	{
+		comboHitEnemy = NULL;
 		receivedHit = IsHit(player);
 		if (receivedHit == NULL)
 			return false;

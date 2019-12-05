@@ -338,6 +338,7 @@ enum EnemyType
 	EN_GRAVITYJUGGLER,
 	EN_PRIMARYJUGGLER,
 	EN_BOUNCEJUGGLER,
+	EN_GRINDJUGGLER,
 	EN_JUGGLERCATCHER,
 	EN_BAT,
 	EN_STAGBEETLE,
@@ -439,6 +440,7 @@ struct SlowableObject
 	}
 };
 
+struct Enemy;
 struct HittableObject
 {
 	HittableObject() :receivedHit(NULL) {}
@@ -447,6 +449,7 @@ struct HittableObject
 	bool CheckHit(Actor *player, EnemyType et);
 	virtual void ProcessHit() = 0;
 	HitboxInfo *receivedHit;
+	Enemy *comboHitEnemy;
 	int numHealth;
 };
 
@@ -538,6 +541,7 @@ public:
 	virtual int GetNumCamPoints() { return 1; }
 	virtual V2d GetCamPoint(int index) { return position; }
 	virtual void ComboHit();
+	virtual void ComboKill( Enemy *e );
 	virtual void SetZone(Zone *p_zone) { zone = p_zone; }
 	CollisionBody *currHitboxes;
 	static void SyncSpriteInfo(sf::Sprite &dest, sf::Sprite &source);

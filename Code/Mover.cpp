@@ -752,13 +752,13 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 					bool br = RollClockwise( q, m );
 					if( br )
 					{
-						cout << "blah" << endl;
+						//cout << "blah" << endl;
 						edgeQuantity = q;
 						break;
 					}
 					else
 					{
-						cout << "keep going" << endl;
+						//cout << "keep going" << endl;
 					}
 				}
 			}

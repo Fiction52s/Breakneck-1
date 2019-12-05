@@ -764,6 +764,14 @@ void EditSession::AddW4Enemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 
 		3, GetTileset("Enemies/rail_64x64.png", 64, 64));
 
+	AddWorldEnemy("grindjugglercw", 4, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
+		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
+	AddWorldEnemy("grindjugglerccw", 4, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
+		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
 
 	AddBasicGroundWorldEnemy("spider", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
@@ -14908,6 +14916,11 @@ Panel *ActorType::CreatePanel()
 		|| name == "bouncecomboer")
 	{
 		p = CreateDefaultPanel("comboer_options", true, true, true, true);
+	}
+	else if (name == "grindjugglercw" || name == "grindjugglerccw")
+	{
+		p = CreateDefaultPanel("grindjuggler_options", true, true, false, false);
+		p->AddTextBox("numjuggles", Vector2i(20, 600), 200, 20, "0");
 	}
 	else if (name == "airdashjuggler")
 	{

@@ -31,6 +31,8 @@ void RotateCW(sf::Vector2<double> &a, double angle);
 void RotateCCW(sf::Vector2f &a, float angle);
 void RotateCW(sf::Vector2f &a, float angle);
 
+V2d Get8Dir( V2d &dir );
+
 struct LineIntersection
 {
 	LineIntersection()

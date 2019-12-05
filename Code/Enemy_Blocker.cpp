@@ -562,6 +562,12 @@ void Blocker::ProcessHit()
 	{
 		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
+
+		if (receivedHit->hType == HitboxInfo::COMBO)
+		{
+			comboHitEnemy->ComboKill(this);
+		}
+
 		if (IsFastDying())
 		{
 			action = EXPLODE;
