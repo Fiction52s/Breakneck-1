@@ -5306,6 +5306,21 @@ void Actor::UpdatePrePhysics()
 			regrindOffCount = 0;
 			break;
 		}
+
+		if (TryAirDash())
+		{
+			grindEdge = NULL;
+			hasDoubleJump = true;
+			break;
+		}
+
+		if (AirAttack())
+		{
+			grindEdge = NULL;
+			hasDoubleJump = true;
+			hasAirDash = true;
+			break;
+		}
 		break;
 	}
 	case RAILDASH:
@@ -9007,7 +9022,7 @@ void Actor::UpdatePrePhysics()
 	}
 	
 	if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH &&
-		action != RAILSLIDE && velocity.y >= 0 && !IsAttackAction( action ))
+		action != RAILSLIDE && velocity.y >= 0 && action != AIRDASH && !IsAttackAction( action ))
 	{
 		canRailSlide = true;
 	}
@@ -11735,7 +11750,7 @@ bool Actor::BasicSteepAction(V2d &gNorm)
 			}
 			else
 			{
-				if (gNorm.x > 0)
+				if (gNorm.x < 0)
 					facingRight = false;
 				else
 					facingRight = true;
@@ -21908,7 +21923,7 @@ void Actor::UpdateSprite()
 			V2d grindNorm = grindEdge->Normal();
 			bool r = grindSpeed > 0;
 
-			if (action == RAILGRIND && grindNorm.y > 0)
+			if ((action == RAILGRIND || action == RAILSLIDE ) && grindNorm.y > 0)
 			{
 				grindNorm = -grindNorm;
 				r = !r;

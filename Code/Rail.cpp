@@ -121,6 +121,28 @@ void Rail::UpdateSprite()
 	int ind = 0;
 	if (accelerate)
 		ind = 1;
+
+	/*Color c = Color::White;
+	if (requirePower)
+	{
+		if (accelerate)
+		{
+			c = Color(100, 100, 100);
+		}
+		else
+		{
+			c = Color(200, 200, 200);
+		}
+	}
+	else
+	{
+		if (accelerate)
+		{
+			c = Color::Red;
+		}
+	}*/
+
+
 	IntRect sub = ts_rail->GetSubRect(ind);
 
 	for (int i = 0; i < numEdges; ++i)
@@ -129,6 +151,8 @@ void Rail::UpdateSprite()
 		va[i * 4 + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
 		va[i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
 		va[i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+
+		//SetRectColor(va + i * 4, c);
 	}
 }
 
