@@ -9621,12 +9621,12 @@ void Actor::RailGrindMovement()
 		{
 			double fac = GetGravity() *steepSlideGravFactor;//gravity * 2.0 / 3.0;
 			accel = dot(V2d(0, fac), along) / slowMultiple;
-			cout << "steep accel: " << accel << endl;
+			//cout << "steep accel: " << accel << endl;
 		}
 		else if (grn.x != 0)
 		{
 			accel = dot(V2d(0, slideGravFactor * GetGravity()), along) / slowMultiple;
-			cout << "normal accel: " << accel << endl;
+			//cout << "normal accel: " << accel << endl;
 		}
 
 		if (ceil)
