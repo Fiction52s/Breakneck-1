@@ -2182,7 +2182,7 @@ JugglerParams::JugglerParams(ActorType *at, sf::Vector2i &pos, int level)
 	:BasicAirEnemyParams(at, pos, level )
 {
 	enemyLevel = level;
-	PlaceAerial(pos);
+	//PlaceAerial(pos);
 
 	numJuggles = 100;
 }
@@ -2226,5 +2226,58 @@ void JugglerParams::SetSpecialParams()
 ActorParams *JugglerParams::Copy()
 {
 	JugglerParams *copy = new JugglerParams(*this);
+	return copy;
+}
+
+GroundedJugglerParams::GroundedJugglerParams(ActorType *at, TerrainPolygon *edgePolygon,
+	int edgeIndex, double edgeQuantity, int level)
+	:BasicGroundEnemyParams(at, edgePolygon, edgeIndex, edgeQuantity, level)
+{
+	enemyLevel = level;
+
+	//PlaceAerial(pos);
+
+	numJuggles = 100;
+}
+
+GroundedJugglerParams::GroundedJugglerParams(ActorType *at, ifstream &is)
+	: BasicGroundEnemyParams(at, is)
+{
+	is >> numJuggles;
+}
+
+void GroundedJugglerParams::WriteSpecialParams(std::ofstream &of)
+{
+	of << numJuggles << endl;
+}
+
+void GroundedJugglerParams::SetSpecialPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["numjuggles"]->text.setString(boost::lexical_cast<string>(numJuggles));
+}
+
+void GroundedJugglerParams::SetSpecialParams()
+{
+	Panel *p = type->panel;
+
+	stringstream ss;
+
+	string numJuggleStr = p->textBoxes["numjuggles"]->text.getString().toAnsiString();
+	ss << numJuggleStr;
+
+	int nJuggles;
+	ss >> nJuggles;
+
+	if (!ss.fail())
+	{
+		numJuggles = nJuggles;
+	}
+}
+
+ActorParams *GroundedJugglerParams::Copy()
+{
+	GroundedJugglerParams *copy = new GroundedJugglerParams(*this);
 	return copy;
 }

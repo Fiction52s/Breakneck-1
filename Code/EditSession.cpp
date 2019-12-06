@@ -772,6 +772,14 @@ void EditSession::AddW4Enemies()
 		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
+	AddWorldEnemy("groundedgrindjugglercw", 4, LoadParams<GroundedJugglerParams>, MakeParamsGrounded<GroundedJugglerParams>, NULL,
+		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);
+
+	AddWorldEnemy("groundedgrindjugglerccw", 4, LoadParams<GroundedJugglerParams>, MakeParamsGrounded<GroundedJugglerParams>, NULL,
+		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);
+
 
 	AddBasicGroundWorldEnemy("spider", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
@@ -14917,7 +14925,8 @@ Panel *ActorType::CreatePanel()
 	{
 		p = CreateDefaultPanel("comboer_options", true, true, true, true);
 	}
-	else if (name == "grindjugglercw" || name == "grindjugglerccw")
+	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
+		|| name == "groundedgrindjugglerccw" )
 	{
 		p = CreateDefaultPanel("grindjuggler_options", true, true, false, false);
 		p->AddTextBox("numjuggles", Vector2i(20, 600), 200, 20, "0");

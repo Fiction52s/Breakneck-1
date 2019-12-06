@@ -156,10 +156,9 @@ void Badger::ResetEnemy()
 
 	bezFrame = 0;
 	attackFrame = -1;
-	V2d gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
+	
 	frame = 0;
 
-	V2d gn = testMover->ground->Normal();
 
 	dead = false;
 

@@ -64,6 +64,7 @@
 #include "Enemy_GravityModifier.h"
 #include "Enemy_HealthFly.h"
 #include "Enemy_GrindJuggler.h"
+#include "Enemy_GroundedGrindJuggler.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -2595,6 +2596,42 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			Enemy *enemy = new GrindJuggler(this, hasMonitor, Vector2i(xPos, yPos),
 				level, numJuggles, cw);
+
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "groundedgrindjugglercw" || typeName == "groundedgrindjugglerccw")
+		{
+
+			int terrainIndex;
+			is >> terrainIndex;
+
+			int edgeIndex;
+			is >> edgeIndex;
+
+			double edgeQuantity;
+			is >> edgeQuantity;
+
+			int hasMonitor;
+			is >> hasMonitor;
+
+			int level;
+			is >> level;
+
+			int numJuggles;
+			is >> numJuggles;
+
+			bool cw = true;
+			if (typeName == "groundedgrindjugglerccw")
+			{
+				cw = false;
+			}
+
+			Enemy *enemy = new GroundedGrindJuggler(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+				edgeQuantity, level, numJuggles, cw);
 
 
 			fullEnemyList.push_back(enemy);

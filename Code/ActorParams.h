@@ -526,6 +526,12 @@ struct JugglerParams : public BasicAirEnemyParams
 		sf::Vector2i &pos, int level = 0);
 	JugglerParams(ActorType *at,
 		std::ifstream &is);
+	JugglerParams(ActorType *at,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
+		double edgeQuantity, int level = 0);
+
+
 	void SetSpecialParams();
 	void SetSpecialPanelInfo();
 	void WriteSpecialParams( std::ofstream &of);
@@ -534,6 +540,23 @@ struct JugglerParams : public BasicAirEnemyParams
 	int numJuggles;
 };
 
+struct GroundedJugglerParams : public BasicGroundEnemyParams
+{
+	GroundedJugglerParams(ActorType *at,
+		std::ifstream &is);
+	GroundedJugglerParams(ActorType *at,
+		TerrainPolygon *edgePolygon,
+		int edgeIndex,
+		double edgeQuantity, int level = 0);
+
+
+	void SetSpecialParams();
+	void SetSpecialPanelInfo();
+	void WriteSpecialParams(std::ofstream &of);
+	ActorParams *Copy();
+
+	int numJuggles;
+};
 //struct AirPathEnemyParamsLoop : public ActorParams
 //{
 //	AirPathEnemyParamsLoop(ActorType *at,
