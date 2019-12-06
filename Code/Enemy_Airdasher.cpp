@@ -51,11 +51,17 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 
 	//ts = owner->GetTileset( "Airdasher.png", 80, 80 );
 	ts = owner->GetTileset("Enemies/dasher_208x144.png", 208, 144);
+	ts_aura = owner->GetTileset("Enemies/dasher_aura_208x144.png", 208, 144);
+
+	auraSprite.setTexture(*ts_aura->texture);
+
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
 	sprite.setPosition(pos.x, pos.y);
+
+	auraSprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
@@ -454,10 +460,13 @@ void Airdasher::UpdateSprite()
 	}
 	sprite.setTextureRect(ir);
 
+	SyncSpriteInfo(auraSprite, sprite);
+
 }
 
 void Airdasher::EnemyDraw(sf::RenderTarget *target)
 {
+	target->draw(auraSprite);
 	DrawSpriteIfExists(target, sprite);
 }
 

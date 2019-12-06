@@ -501,6 +501,7 @@ struct BasicGroundEnemyParams : public ActorParams
 	BasicGroundEnemyParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
+	virtual void WriteSpecialParams(std::ofstream &of) {}
 	ActorParams *Copy();
 };
 

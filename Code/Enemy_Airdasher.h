@@ -71,6 +71,9 @@ struct Airdasher : Enemy
 	sf::Sprite sprite;
 	Tileset *ts;
 	bool facingRight;
+
+	Tileset *ts_aura;
+	sf::Sprite auraSprite;
 };
 
 #endif

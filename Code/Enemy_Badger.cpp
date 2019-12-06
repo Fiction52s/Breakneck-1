@@ -91,8 +91,14 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, int p_le
 	}*/
 
 	ts = owner->GetTileset( "Enemies/badger_192x128.png", width, height );
+	ts_aura = owner->GetTileset("Enemies/badger_aura_192x128.png", width, height);
+
+	auraSprite.setTexture(*ts_aura->texture);
+
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
+
+	auraSprite.setScale(scale, scale);
 	//sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	V2d gPoint = g->GetPoint( q );
@@ -483,6 +489,7 @@ void Badger::UpdateEnemyPhysics()
 
 void Badger::EnemyDraw(sf::RenderTarget *target )
 {
+	target->draw(auraSprite);
 	DrawSpriteIfExists(target, sprite);
 }
 
@@ -649,6 +656,8 @@ void Badger::UpdateSprite()
 		ir = sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
 	}
 	sprite.setTextureRect( ir );
+
+	SyncSpriteInfo(auraSprite, sprite);
 }
 //
 //void Badger::HitTerrain( double &q )

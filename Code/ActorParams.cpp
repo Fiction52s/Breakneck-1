@@ -1999,6 +1999,8 @@ void BasicGroundEnemyParams::WriteParamFile(std::ofstream &of)
 	{
 		WriteLevel(of);
 	}
+
+	WriteSpecialParams(of);
 }
 
 ActorParams *BasicGroundEnemyParams::Copy()

@@ -96,6 +96,9 @@ struct Badger : Enemy, GroundMoverHandler
 	double maxFallSpeed;
 
 	double jumpStrength;
+
+	Tileset *ts_aura;
+	sf::Sprite auraSprite;
 };
 
 
