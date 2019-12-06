@@ -27,7 +27,7 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level
 	switch (level)
 	{
 	case 1:
-		scale = 1.0;
+		scale = 4.0;
 		break;
 	case 2:
 		scale = 2.0;
@@ -85,6 +85,7 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(36);
 	cutObject->SetSubRectBack(37);
+	cutObject->SetScale(scale);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -183,8 +184,8 @@ void Turtle::ActionEnded()
 		frame = 0;
 		break;
 	case INVISIBLE:
-
-		if( owner->GetPlayer( 0 )->position.x < position.x )
+		position = playerTrackPos;
+		if (owner->GetPlayer(0)->position.x < position.x)
 		{
 			facingRight = false;
 		}
@@ -192,13 +193,10 @@ void Turtle::ActionEnded()
 		{
 			facingRight = true;
 		}
-		position = owner->GetPlayer( 0 )->position;
 		action = FADEIN;
-
 		frame = 0;
 		break;
 	case FADEIN:
-		
 		action = FIRE;
 		frame = 0;
 		break;
@@ -207,6 +205,7 @@ void Turtle::ActionEnded()
 		frame = 0;
 		SetHitboxes(NULL, 0);
 		SetHurtboxes(NULL, 0);
+		playerTrackPos = owner->GetPlayer(0)->position;
 		break;
 	}
 	}
@@ -307,7 +306,7 @@ void Turtle::UpdateSprite()
 		ir.width = -ir.width;
 	}
 
-	sprite.setScale( 2, 2 );
+	//sprite.setScale( 2, 2 );
 	sprite.setTextureRect( ir );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2 );

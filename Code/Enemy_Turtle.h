@@ -50,6 +50,7 @@ struct Turtle : Enemy, LauncherEnemy
 	int hitlagFrames;
 	int hitstunFrames;
 
+	V2d playerTrackPos;
 
 	bool facingRight;
 

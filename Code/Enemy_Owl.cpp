@@ -28,7 +28,7 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level )
 	switch (level)
 	{
 	case 1:
-		scale = 1.0;
+		scale = 1.8;
 		break;
 	case 2:
 		scale = 2.0;
@@ -48,6 +48,7 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level )
 	cutObject->SetTileset(ts_death);
 	cutObject->SetSubRectFront(0);
 	cutObject->SetSubRectBack(1);
+	cutObject->SetScale(scale);
 	
 	retreatRadius = 400;
 	chaseRadius = 600;
