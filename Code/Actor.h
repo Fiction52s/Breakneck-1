@@ -501,6 +501,8 @@ struct Actor : QuadTreeCollider,
 
 	void SetupTilesets(KinSkin *kSkin, KinSkin *swordSkin);
 
+	void RailGrindMovement();
+
 	bool AirAttack();
 	Expr expr;
 	sf::Vector2<double> movingPlatExtra;
@@ -777,10 +779,9 @@ struct Actor : QuadTreeCollider,
 
 	double CalcLandingSpeed( sf::Vector2<double> &testVel,
 		sf::Vector2<double> &alongVel, 
-		sf::Vector2<double> &gNorm );
-	double CalcRailLandingSpeed(sf::Vector2<double> &testVel,
-		sf::Vector2<double> &alongDir,
-		sf::Vector2<double> &railNorm); 
+		sf::Vector2<double> &gNorm, bool rail = false );
+	bool CanRailSlide();
+	bool CanRailGrind();
 
 	void SetAerialScorpSprite();
 	int GetJumpFrame();

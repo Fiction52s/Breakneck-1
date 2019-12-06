@@ -7400,43 +7400,7 @@ void Actor::UpdatePrePhysics()
 	case RAILSLIDE:
 	case RAILGRIND:
 	{
-		double ffac = 1.0;
-		double startAccel = .3;
-
-		V2d grn = grindEdge->Normal();
-		
-		V2d along = normalize(grindEdge->v1 - grindEdge->v0);
-		if (grn.y > 0)
-		{
-			along = -along;
-			grn = -grn;
-		}
-		
-		double accel = 0;
-		if (owner->IsSteepGround(grn) > 0)
-		{
-			double fac = GetGravity() *steepSlideGravFactor;//gravity * 2.0 / 3.0;
-			accel = dot(V2d(0, fac), along) / slowMultiple;
-			
-		}
-		else if(grn.x != 0)
-		{
-			accel = dot(V2d(0, slideGravFactor * GetGravity()), along) / slowMultiple;
-		}
-		if (accel != 0 && abs(grindSpeed + accel) > abs(grindSpeed))
-			grindSpeed += accel;
-
-		velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-
-		if (velocity.x > 0)
-		{
-			facingRight = true;
-		}
-		else if (velocity.x < 0)
-		{
-			facingRight = false;
-		}
+		RailGrindMovement();
 		//framesGrinding++;
 		break;
 	}
@@ -8999,9 +8963,8 @@ void Actor::UpdatePrePhysics()
 	//cout << "position: " << position.x << ", " << position.y << endl;
 //	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;m
 	
-	canRailGrind = false;
-	canRailSlide = false;
-	if (hasPowerGrindBall)
+	
+	/*if (hasPowerGrindBall)
 	{
 		if (!currInput.Y && prevInput.Y)
 		{
@@ -9021,11 +8984,15 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 	
-	if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH &&
-		action != RAILSLIDE && velocity.y >= 0 && action != AIRDASH && !IsAttackAction( action ))
+
+	
+	bool aerialRailSlideTest = ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH &&
+		action != RAILSLIDE && velocity.y >= 0 && action != AIRDASH && !IsAttackAction(action);
+
+	if ( aerialRailSlideTest )
 	{
 		canRailSlide = true;
-	}
+	}*/
 	
 
 
@@ -9628,6 +9595,104 @@ float Actor::GetSpeedBarPart()
 	}*/
 }
 
+void Actor::RailGrindMovement()
+{
+	V2d along = normalize(grindEdge->v1 - grindEdge->v0);
+
+	Rail *rail = (Rail*)grindEdge->info;
+
+	if (true )//rail->accelerate)
+	{
+		double ffac = 1.0;
+		double startAccel = .3;
+		V2d grn = grindEdge->Normal();
+
+		bool ceil = false;
+
+		if (grn.y > 0)
+		{
+			along = -along;
+			grn = -grn;
+			ceil = true;
+		}
+
+		double accel = 0;
+		if (owner->IsSteepGround(grn) > 0)
+		{
+			double fac = GetGravity() *steepSlideGravFactor;//gravity * 2.0 / 3.0;
+			accel = dot(V2d(0, fac), along) / slowMultiple;
+			cout << "steep accel: " << accel << endl;
+		}
+		else if (grn.x != 0)
+		{
+			accel = dot(V2d(0, slideGravFactor * GetGravity()), along) / slowMultiple;
+			cout << "normal accel: " << accel << endl;
+		}
+
+		if (ceil)
+			accel = -accel;
+
+		if (accel != 0 && abs(grindSpeed + accel) > abs(grindSpeed))
+			grindSpeed += accel;
+
+	}
+
+	velocity = along * grindSpeed;
+	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+
+	if (velocity.x > 0)
+	{
+		facingRight = true;
+	}
+	else if (velocity.x < 0)
+	{
+		facingRight = false;
+	}
+
+	cout << "grindSpeed: " << grindSpeed << endl;
+}
+
+bool Actor::CanRailSlide()
+{
+	bool isAttack = IsAttackAction(action);
+	bool aerialRailSlideTest = ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH &&
+		action != RAILSLIDE && velocity.y >= 0 && action != AIRDASH && !isAttack;
+
+	bool groundRailSlideTest = ground != NULL && grindEdge == NULL && action != DASH && !isAttack;
+
+	if (aerialRailSlideTest || groundRailSlideTest)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool Actor::CanRailGrind()
+{
+	if (hasPowerGrindBall)
+	{
+		if (!currInput.Y && prevInput.Y)
+		{
+			framesSinceGrindAttempt = 0;
+		}
+
+		if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH)
+		{
+			if (currInput.Y || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
+			{
+				return true;
+			}
+		}
+		else
+		{
+			framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+		}
+	}
+
+	return false;
+}
+
 void Actor::TurnFace()
 {
 	assert(ground != NULL);
@@ -10007,7 +10072,12 @@ bool Actor::ResolvePhysics( V2d vel )
 	Rect<double> staticItemRect(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
 	owner->staticItemTree->Query(NULL, staticItemRect);
 
-	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && (canRailGrind || canRailSlide ) )
+	canRailGrind = CanRailGrind();
+	canRailSlide = CanRailSlide();
+
+
+	//if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && (canRailGrind || canRailSlide ) )
+	if( canRailGrind || canRailSlide )
 	{
 		queryMode = "rail";
 		owner->railEdgeTree->Query(this, r);
@@ -19307,98 +19377,126 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			return;
 		}
 
-		V2d r;
-		V2d eFocus;
-		bool ceiling = false;
-		if (e->Normal().y > 0)
-		{
-			r = e->v0 - e->v1;
-			eFocus = e->v1;
-			ceiling = true;
-		}
-		else
-		{
-			r = e->v1 - e->v0;
-			eFocus = e->v0;
-		}
-		
+		bool canGrabRail = (rail->requirePower && canRailGrind) || (!rail->requirePower && canRailSlide);
 
-		double lenR = length(r);
-		V2d along = normalize(r);
-		V2d rn(along.y, -along.x);
-		double q = dot(position - eFocus, along);
-
-		double landingSpeed = CalcLandingSpeed(velocity, along, rn);
-		double railSpeed;
-		double minRailCurr = GetMinRailGrindSpeed();
-
-		if (landingSpeed == 0)
+		if ((rail != prevRail || regrindOffCount == regrindOffMax) && canGrabRail)
 		{
-			if (facingRight)
+			V2d r;
+			V2d eFocus;
+			bool ceiling = false;
+			V2d en = e->Normal();
+			if (en.y > 0)
 			{
-				railSpeed = minRailCurr;
+				r = e->v0 - e->v1;
+				eFocus = e->v1;
+				ceiling = true;
 			}
 			else
 			{
-				railSpeed = -minRailCurr;
+				r = e->v1 - e->v0;
+				eFocus = e->v0;
 			}
-		}
-		else if( landingSpeed > 0 )
-		{
-			railSpeed = max(landingSpeed, minRailCurr);
-		}
-		else if (landingSpeed < 0)
-		{
-			railSpeed = min(landingSpeed, -minRailCurr);
-		}
+		
+			V2d along = normalize(r);
+			double lenR = length(r);
+			double q = dot(position - eFocus, along);
 
-		double alongQuantVel = dot(velocity, along);
-
-		bool canGrabRail = (rail->requirePower && canRailGrind) || (!rail->requirePower && canRailSlide);
-
-		if ( ( rail != prevRail || regrindOffCount == regrindOffMax ) && canGrabRail )
-		{
-			if (q >= 0 && q <= lenR && alongQuantVel != 0)
+			if (ground != NULL)
 			{
-				double c = cross(position - e->v0, along);
-				double preC = cross((position - tempVel) - e->v0, along);
-				if ((c >= 0 && preC <= 0) || (c <= 0 && preC >= 0))
+				V2d gAlong = normalize(ground->v1 - ground->v0);
+				V2d rAlong = along;
+				double diff = GetVectorAngleDiffCW(rAlong, gAlong);
+				diff -= PI;
+
+				bool groundTransferOkay = (diff < 0 && groundSpeed > 0) || (diff > 0 && groundSpeed < 0);
+				if (!groundTransferOkay)
+					return;
+			}
+
+
+			double c = cross(position - e->v0, along);
+			double preC = cross((position - tempVel) - e->v0, along);
+
+			double alongQuantVel = dot(velocity, along);
+
+			bool cStuff = (c >= 0 && preC <= 0) || (c <= 0 && preC >= 0);
+
+			if ( cStuff && q >= 0 && q <= lenR )//&& alongQuantVel != 0)
+			{
+				V2d rn(along.y, -along.x);
+			
+				
+				double railSpeed;
+				double minRailCurr = GetMinRailGrindSpeed();
+
+				if (ground == NULL)
 				{
-					if (canRailGrind)
-					{
-						SetAction(RAILGRIND);
-					}
-					else
-					{
-						SetAction(RAILSLIDE);
-					}
-					
-					hasAirDash = true;
-					hasDoubleJump = true;
-					frame = 0;
-					framesGrinding = 0;
-					grindEdge = e;
-					prevRail = (Rail*)grindEdge->info;
 
-					LineIntersection li = lineIntersection(position, position - tempVel, grindEdge->v0, grindEdge->v1);
-					if (!li.parallel)
-					{
-						V2d p = li.position;
-						grindQuantity = grindEdge->GetQuantity(p);
-					}
-					else
-					{
-						assert(0);
-					}
 
-					if (ceiling) //ceiling rail
+					double landingSpeed = CalcLandingSpeed(velocity, along, rn, true);
+					if (landingSpeed == 0)
 					{
-						grindSpeed = -railSpeed;
+						if (facingRight)
+						{
+							railSpeed = minRailCurr;
+						}
+						else
+						{
+							railSpeed = -minRailCurr;
+						}
 					}
-					else
+					else if (landingSpeed > 0)
 					{
-						grindSpeed = railSpeed;
+						railSpeed = max(landingSpeed, minRailCurr);
 					}
+					else if (landingSpeed < 0)
+					{
+						railSpeed = min(landingSpeed, -minRailCurr);
+					}
+				}
+				else
+				{
+					railSpeed = groundSpeed;
+				}
+
+			
+
+				if (canRailGrind)
+				{
+					SetAction(RAILGRIND);
+				}
+				else
+				{
+					SetAction(RAILSLIDE);
+				}
+
+				hasAirDash = true;
+				hasDoubleJump = true;
+				frame = 0;
+				framesGrinding = 0;
+				grindEdge = e;
+				prevRail = (Rail*)grindEdge->info;
+				ground = NULL;
+				bounceEdge = NULL;
+
+				LineIntersection li = lineIntersection(position, position - tempVel, grindEdge->v0, grindEdge->v1);
+				if (!li.parallel)
+				{
+					V2d p = li.position;
+					grindQuantity = grindEdge->GetQuantity(p);
+				}
+				else
+				{
+					assert(0);
+				}
+
+				if (ceiling) //ceiling rail
+				{
+					grindSpeed = -railSpeed;
+				}
+				else
+				{
+					grindSpeed = railSpeed;
 				}
 			}
 		}
@@ -19529,7 +19627,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 }
 
 double Actor::CalcLandingSpeed( V2d &testVel,
-		V2d &alongVel, V2d &gNorm )
+		V2d &alongVel, V2d &gNorm, bool rail )
 {
 	//cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
 	double gSpeed = 0; //groundSpeed;
@@ -19537,11 +19635,11 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 
 	double alongSpeed = dot(testVel, alongVel);
 
-	if (currInput.LDown() && noLeftRight)
+	if ((currInput.LDown() || rail ) && noLeftRight)
 	{
 		gSpeed = alongSpeed;
 	}
-	else if (currInput.LUp() && noLeftRight)
+	else if ((currInput.LUp() || rail ) && noLeftRight)
 	{
 		gSpeed = alongSpeed;
 	}
@@ -19585,45 +19683,45 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 	return gSpeed;
 }
 
-double Actor::CalcRailLandingSpeed(V2d &testVel,
-	V2d &alongDir, V2d &railNorm)
-{
-	//cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
-	double rSpeed = 0; //groundSpeed;
-
-	if (currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp())
-	{
-		double res = dot(testVel, alongDir);
-
-		if (railNorm.y <= -steepThresh) //not steep
-		{
-			if (testVel.x > 0 && railNorm.x < 0)
-			{
-				V2d straight(1, 0);
-				res = max(res, dot(testVel, straight));
-			}
-			else if (testVel.x < 0 && railNorm.x > 0)
-			{
-				V2d straight(-1, 0);
-				res = min(res, dot(testVel, straight));
-			}
-		}
-		rSpeed = res;
-	}
-	else
-	{
-		if (railNorm.y > -steepThresh)
-		{
-			rSpeed = dot(testVel, alongDir);
-		}
-		else
-		{
-			rSpeed = 0;
-		}
-	}
-
-	return rSpeed;
-}
+//double Actor::CalcRailLandingSpeed(V2d &testVel,
+//	V2d &alongDir, V2d &railNorm)
+//{
+//	//cout << "vel: " << velocity.x << ", " << velocity.y << " test: " << testVel.x << ", " << testVel.y;
+//	//double rSpeed = 0; //groundSpeed;
+//
+//	//if (currInput.LLeft() || currInput.LRight() || currInput.LDown() || currInput.LUp())
+//	//{
+//	//	double res = dot(testVel, alongDir);
+//
+//	//	if (railNorm.y <= -steepThresh) //not steep
+//	//	{
+//	//		if (testVel.x > 0 && railNorm.x < 0)
+//	//		{
+//	//			V2d straight(1, 0);
+//	//			res = max(res, dot(testVel, straight));
+//	//		}
+//	//		else if (testVel.x < 0 && railNorm.x > 0)
+//	//		{
+//	//			V2d straight(-1, 0);
+//	//			res = min(res, dot(testVel, straight));
+//	//		}
+//	//	}
+//	//	rSpeed = res;
+//	//}
+//	//else
+//	//{
+//	//	if (railNorm.y > -steepThresh)
+//	//	{
+//	//		rSpeed = dot(testVel, alongDir);
+//	//	}
+//	//	else
+//	//	{
+//	//		rSpeed = 0;
+//	//	}
+//	//}
+//
+//	//return rSpeed;
+//}
 
 void Actor::ApplyHit( HitboxInfo *info )
 {
