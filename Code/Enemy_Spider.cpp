@@ -139,6 +139,7 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(0);
 	cutObject->SetSubRectBack(1);
+	cutObject->SetScale(scale);
 
 	ResetEnemy();
 }

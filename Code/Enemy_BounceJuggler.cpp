@@ -36,6 +36,8 @@ BounceJuggler::BounceJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos
 		break;
 	}
 
+	flySpeed = 14;
+
 	maxWaitFrames = 180;
 
 	juggleReps = path.size();
@@ -229,10 +231,7 @@ void BounceJuggler::PopThrow()
 		dir = guidedDir[currJuggle];
 	}
 
-
-	double speed = 14;
-
-	V2d hit = dir * speed;
+	V2d hit = dir * flySpeed;
 	
 	Pop();
 
@@ -389,6 +388,19 @@ void BounceJuggler::ComboHit()
 		action = S_RETURN;
 		frame = 0;
 		Return();
+	}
+}
+
+void BounceJuggler::ComboKill(Enemy *e)
+{
+	if (level == 2)
+	{
+		V2d playerDir = normalize(owner->GetPlayer(0)->position - position);
+		Throw(playerDir * flySpeed);
+
+		action = S_BOUNCE;
+		frame = 0;
+		SetHurtboxes(hurtBody, 0);
 	}
 }
 

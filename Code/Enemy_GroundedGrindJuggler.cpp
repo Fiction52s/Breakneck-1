@@ -36,7 +36,7 @@ GroundedGrindJuggler::GroundedGrindJuggler(GameSession *owner, bool p_hasMonitor
 		break;
 	}
 
-	friction = .1;
+	friction = .4;
 
 	startGround = ground;
 	startQuant = q;

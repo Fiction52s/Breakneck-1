@@ -2291,6 +2291,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_CACTUSSHOTGUN:
 			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
 			break;
+		case EnemyType::EN_CHEETAH:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
+			break;
 		default:
 			return NULL;
 		}

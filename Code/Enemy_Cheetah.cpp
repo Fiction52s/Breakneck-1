@@ -18,81 +18,82 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Cheetah::Cheetah( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
-	:Enemy( owner, EnemyType::CHEETAH, p_hasMonitor, 4 ), facingRight( true ),
-	moveBezTest( .22,.85,.3,.91 )
+Cheetah::Cheetah(GameSession *owner, bool hasMonitor, Edge *g, double q, int p_level)
+	:Enemy(owner, EnemyType::EN_CHEETAH, hasMonitor, 2), facingRight(true),
+	moveBezTest(.22, .85, .3, .91)
 {
+	level = p_level;
 
-	//facingRight = true;
-	origFacingRight = facingRight;
-	gravity = V2d( 0, .6 );
-	action = NEUTRAL;
-	initHealth = 60;
-	health = initHealth;
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
+	maxGroundSpeed = 10;
+	jumpStrength = 5;
+
+	originalFacingRight = facingRight;
+	actionLength[IDLE] = 10;
+	actionLength[CHARGE] = 30;
+	actionLength[BOOST] = 60;
+
+	animFactor[IDLE] = 1;
+	animFactor[CHARGE] = 1;
+	animFactor[BOOST] = 1;
+
+	//jumpStrength = p_jumpStrength;
+	gravity = V2d(0, .6);
+
+	action = IDLE;
+
 	dead = false;
-	deathFrame = 0;
-	
-	actionLength[BURST] = 6;
-	actionLength[NEUTRAL] = 3;
-	actionLength[CHARGEUP] = actionLength[BURST] * 10;
-	
-	actionLength[ARRIVE] = 10;
-	actionLength[TURNAROUND] = 3;
-	actionLength[JUMP] = 2;
-	actionLength[ATTACK] = 0;
-	actionLength[LAND] = 1;
 
 	maxFallSpeed = 25;
-
-	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
-	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
 
 	attackFrame = -1;
 	attackMult = 10;
 
+	double width = 192;
 	double height = 128;
-	double width = 128;
+
 
 	startGround = g;
 	startQuant = q;
 	frame = 0;
 
-	testMover = new GroundMover( owner, g, q, 32, true, this );
-	testMover->SetSpeed( 0 );
+	mover = new GroundMover(owner, g, q, 32, true, this);
+	mover->AddAirForce(V2d(0, .6));
+	mover->SetSpeed(0);
 
-	trueMover = new GroundMover( owner, g, q, 32, true, this );
-	trueMover->SetSpeed( 0 );	
+	ts = owner->GetTileset("Enemies/Badger_192x128.png", width, height);
+	ts_aura = owner->GetTileset("Enemies/Badger_aura_192x128.png", width, height);
 
-	ts = owner->GetTileset( "crawler_128x128.png", width, height );
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = g->GetPoint( q );
-	sprite.setPosition( trueMover->physBody.globalPosition.x,
-		trueMover->physBody.globalPosition.y );
-	position = trueMover->physBody.globalPosition;
-	
+	auraSprite.setTexture(*ts_aura->texture);
+
+	sprite.setTexture(*ts->texture);
+	sprite.setScale(scale, scale);
+
+	auraSprite.setScale(scale, scale);
+
+	V2d gPoint = g->GetPoint(q);
+
+
+	position = mover->physBody.globalPosition;
 
 	receivedHit = NULL;
 
-	double size = max( width, height );
-	spawnRect = sf::Rect<double>( gPoint.x - size, gPoint.y - size, size * 2, size * 2 );
-
-	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
-	hurtBody.globalAngle = 0;
-	hurtBody.offset.x = 0;
-	hurtBody.offset.y = 0;
-	hurtBody.rw = 32;
-	hurtBody.rh = 32;
-
-	hitBody.type = CollisionBox::Hit;
-	hitBody.isCircle = true;
-	hitBody.globalAngle = 0;
-	hitBody.offset.x = 0;
-	hitBody.offset.y = 0;
-	hitBody.rw = 32;
-	hitBody.rh = 32;
+	double size = max(width, height);
+	spawnRect = sf::Rect<double>(gPoint.x - size, gPoint.y - size, size * 2, size * 2);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -102,114 +103,72 @@ Cheetah::Cheetah( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
 
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(32);
+	AddBasicHitCircle(32);
+	hitBody->hitboxInfo = hitboxInfo;
+
 	crawlAnimationFactor = 5;
 	rollAnimationFactor = 5;
 
-	deathPartingSpeed = .4;
-
-	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	//bloodSprite.setTexture( *ts_testBlood->texture );
-
-	bezFrame = 0;
 	bezLength = 60 * NUM_STEPS;
 
-	//testMover->SetSpeed( 0 );
+	ResetEnemy();
+
+	//highResPhysics = true;
+}
+
+void Cheetah::HandleNoHealth()
+{
+	cutObject->SetFlipHoriz(facingRight);
+	cutObject->rotateAngle = sprite.getRotation();
 }
 
 void Cheetah::ResetEnemy()
 {
-	facingRight = origFacingRight;
-	testMover->ground = startGround;
-	testMover->edgeQuantity = startQuant;
-	testMover->roll = false;
-	testMover->UpdateGroundPos();
-	testMover->SetSpeed( 0 );
+	facingRight = originalFacingRight;
+	mover->ground = startGround;
+	mover->edgeQuantity = startQuant;
+	mover->roll = false;
+	mover->UpdateGroundPos();
+	mover->SetSpeed(0);
 
-	trueMover->ground = startGround;
-	trueMover->edgeQuantity = startQuant;
-	trueMover->roll = false;
-	trueMover->UpdateGroundPos();
-	trueMover->SetSpeed( 0 );
+	position = mover->physBody.globalPosition;
 
-	position = trueMover->physBody.globalPosition;
-	//testMover->UpdateGroundPos();
-	
+
+	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(hitBody, 0);
+
 	bezFrame = 0;
-	health = initHealth;
 	attackFrame = -1;
-	//lastReverser = false;
-	//roll = false;
-	//ground = startGround;
-	//edgeQuantity = startQuant;
-	V2d gPoint = trueMover->ground->GetPoint( testMover->edgeQuantity );
-	//sprite.setPosition( testMover->physBody.globalPosition.x,
-	//	testMover->physBody.globalPosition.y );
-	action = NEUTRAL;
+
 	frame = 0;
 
-	V2d gn = trueMover->ground->Normal();
 
-	deathFrame = 0;
 	dead = false;
 
-	//----update the sprite
-	double angle = 0;
-	////position = gPoint + gn * 32.0;
-	angle = atan2( gn.x, -gn.y );
-	//	
-	//sprite.setTexture( *ts_walk->texture );
-	//sprite.setRotation( angle );
-	//sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
-	//sprite.setPosition( 
-	//V2d pp = ground->GetPoint( edgeQuantity );
-	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	//sprite.setRotation( angle / PI * 180 );
-	//sprite.setPosition( gPoint.x, gPoint.y );
-	//----
-	//UpdateSprite()
+	action = IDLE;
+	frame = 0;
+
+	UpdateSprite();
 	UpdateHitboxes();
-}
-
-int Cheetah::NumTotalBullets()
-{
-	return 0;
-}
-
-void Cheetah::HandleEntrant( QuadTreeEntrant *qte )
-{
-	//assert( queryMode != "" );
-	SpecterArea *sa = (SpecterArea*)qte;
-	if( sa->barrier.Intersects( hurtBody ) )
-	{
-		specterProtected = true;
-	}
-	//might need for other queries but def not for physics
 }
 
 void Cheetah::UpdateHitboxes()
 {
-	Edge *ground = trueMover->ground;
-	if( ground != NULL )
+	Edge *ground = mover->ground;
+	if (ground != NULL)
 	{
-		//V2d gn = ground->Normal();
-		//double angle = 0;
-		
-		
-		//angle = atan2( gn.x, -gn.y );
-		
-		//hitBody.globalAngle = angle;
-		//hurtBody.globalAngle = angle;
-
-		V2d knockbackDir( 1, -1 );
-		knockbackDir = normalize( knockbackDir );
-		if( testMover->groundSpeed > 0 )
+		V2d knockbackDir(1, -1);
+		knockbackDir = normalize(knockbackDir);
+		if (mover->groundSpeed > 0)
 		{
 			hitboxInfo->kbDir = knockbackDir;
 			hitboxInfo->knockback = 15;
 		}
 		else
 		{
-			hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
+			hitboxInfo->kbDir = V2d(-knockbackDir.x, knockbackDir.y);
 			hitboxInfo->knockback = 15;
 		}
 	}
@@ -219,762 +178,256 @@ void Cheetah::UpdateHitboxes()
 		//hurtBody.globalAngle = 0;
 	}
 
-	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
-	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	//if( action != CHARGE )
-	{
-		hitBody.globalPosition = trueMover->physBody.globalPosition;
-		hurtBody.globalPosition = trueMover->physBody.globalPosition;
-	}
-	//physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+	CollisionBox &hitbox = hitBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hurtbox = hurtBody->GetCollisionBoxes(0)->front();
+	hitbox.globalPosition = mover->physBody.globalPosition;
+	hurtbox.globalPosition = mover->physBody.globalPosition;
 }
+
+//if (owner->GetPlayer(0)->position.x > position.x)
+//{
+//	//cout << "facing right" << endl;
+//	facingRight = true;
+//}
+//else
+//{
+//	//cout << "facing left" << endl;
+//	facingRight = false;
+//}
 
 void Cheetah::ActionEnded()
 {
-	if( frame == actionLength[action] )
-	switch( action )
+	if (frame == animFactor[action] * actionLength[action])
 	{
-	case NEUTRAL:
 		frame = 0;
-		break;
-	case CHARGEUP:
-		action = BURST;
-		frame = 0;
-		break;
-	case BURST:
-		action = ARRIVE;
-		frame = 0;
-		break;
-	case ARRIVE:
-		action = NEUTRAL;
-		frame = 0;
-		break;
-	case TURNAROUND:
-		action = CHARGEUP;
-		frame = 0;
-		break;
-	case JUMP:
-		frame = 1;
-		break;
-	case ATTACK:
-		//not gonna use this for a bit
-		break;
-	case LAND:
-		action = NEUTRAL;
-		frame = 0;
-		break;
+		switch (action)
+		{
+		case IDLE:
+			break;
+		case CHARGE:
+			action = BOOST;
+			break;
+		case BOOST:
+			action = IDLE;
+			frame = 0;
+			break;
+		}
 	}
 }
 
-void Cheetah::UpdatePrePhysics()
+void Cheetah::Jump(double strengthx, double strengthy)
 {
-	//testLaunch->UpdatePrePhysics();
-	Actor *player = owner->GetPlayer( 0 );
+	V2d jumpVec = V2d(strengthx, -strengthy);
+	mover->Jump(jumpVec);
+}
 
-	if( dead )
+void Cheetah::ProcessState()
+{
+	//cout << "vel: " << mover->velocity.x << ", " << mover->velocity.y << endl;
+	//cout << "action: " << (int)action << endl;
+	//testLaunch->UpdatePrePhysics();
+	Actor *player = owner->GetPlayer(0);
+
+	if (dead)
 		return;
 
+	//cout << "vel: " << mover->velocity.x << ", " << mover->velocity.y << endl;
+
+	double xDiff = player->position.x - position.x;
+	double dist = length(player->position - position);
 	ActionEnded();
 
-	switch( action )
+	switch (action)
 	{
-	case NEUTRAL:
-		//cout << "neutral" << endl;
-		if( length( player->position - position ) < 800 )
+	case IDLE:		
+		if (dist < 500)
 		{
-			if( player->position.x < position.x && facingRight
-				|| player->position.x > position.x && !facingRight )
+			action = CHARGE;
+			frame = 0;
+		}
+		break;
+	case CHARGE:
+		break;
+	case BOOST:
+		if (frame == 0)
+		{
+			if (xDiff >= 0)
 			{
-				facingRight = !facingRight;
-				action = TURNAROUND;
-				frame = 0;
+				mover->SetSpeed(100);
+				facingRight = true;
 			}
 			else
 			{
-				action = CHARGEUP;
-				frame = 0;
+				mover->SetSpeed(-100);
+				facingRight = false;
 			}
-			//action = CH
 		}
-		//cout << "Test: " << testMover->ground << ", " << testMover->edgeQuantity << endl;
-		break;
-	case CHARGEUP:
-		//cout << "charge" << frame << endl;
-		break;
-	case BURST:
-		//cout << "burst" << frame << endl;
-		
-		//cout << "true: " << trueMover->ground << ", " << trueMover->edgeQuantity << endl;
-		break;
-	case ARRIVE:
-	
-		//cout << "arrive" << endl;
-		break;
-	case TURNAROUND:
-		//cout << "turnaround" << endl;
-		break;
-	case JUMP:
-		//cout << "jump" << endl;
-		break;
-	case ATTACK:
-		//not gonna use this for a bit
-		break;
-	case LAND:
-		//cout << "land" << endl;
 		break;
 	}
 
-	switch( action )
+	/*if (mover->ground == NULL)
 	{
-	case NEUTRAL:
-		testMover->SetSpeed( 0 );
-		break;
-	case CHARGEUP:
-		if( facingRight )
+		double airAccel = .5;
+		if (facingRight)
 		{
-			testMover->SetSpeed( 15 );
+			mover->velocity.x += airAccel;
+			if (mover->velocity.x > 10)
+			{
+				mover->velocity.x = 10;
+			}
+
 		}
 		else
 		{
-			testMover->SetSpeed( -15 );
+			mover->velocity.x -= airAccel;
+			if (mover->velocity.x < -10)
+				mover->velocity.x = -10;
+
 		}
-
-		
-		break;
-	case BURST:
-		if( facingRight )
-		{
-			trueMover->SetSpeed( 15 );
-		}
-		else
-		{
-			trueMover->SetSpeed( -15 );
-		}
-		testMover->SetSpeed( 0 );
-		break;
-	case ARRIVE:
-		testMover->SetSpeed( 0 );
-		trueMover->SetSpeed( 0 );
-		break;
-	case TURNAROUND:
-		testMover->SetSpeed( 0 );
-		break;
-	case JUMP:
-		break;
-	case ATTACK:
-		//not gonna use this for a bit
-		break;
-	case LAND:
-		testMover->SetSpeed( 0 );
-		break;
-	}
-
-
-	bool roll = testMover->roll;
-
-	if( !dead && receivedHit != NULL )
-	{	
-		//gotta factor in getting hit by a clone
-		health -= 20;
-
-		//cout << "health now: " << health << endl;
-
-		if( health <= 0 )
-		{
-			if( hasMonitor && !suppressMonitor )
-				owner->keyMarker->CollectKey();
-			dead = true;
-
-			
-		}
-
-		receivedHit = NULL;
-	}
-
-
-	
-	if( attackFrame == 2 * attackMult )
-	{
-		attackFrame = -1;
-	}
-}
-
-void Cheetah::UpdatePhysics()
-{
-	//testLaunch->UpdatePhysics();
-
-
-	if( dead )
-	{
-		return;
-	}
-
-	specterProtected = false;
-
-	double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
-	//testMover->groundSpeed = groundSpeed;// * f;
-	if( !facingRight )
-	{
-	//	testMover->groundSpeed = groundSpeed;// * f;
-	}
-	bezFrame++;
-
-	if( bezFrame == bezLength )
-	{
-		bezFrame = 0;
-		
-
-	}
-
-	if( trueMover->ground != NULL )
-	{
-	}
-	else
-	{
-		trueMover->velocity += gravity / (NUM_STEPS * slowMultiple);
-
-		if( trueMover->velocity.y >= maxFallSpeed )
-		{
-			trueMover->velocity.y = maxFallSpeed;
-		}
-	}
-
-	if( testMover->ground == NULL )
-	{
-		testMover->velocity = V2d( 0, 0 );
-	}
-
-	
-	//testMover->groundSpeed = 5;
-	testMover->Move( slowMultiple );
-	for( int i = 0; i < 10; ++i )
-	{
-		trueMover->Move( slowMultiple );
-	}
-
-	//if( action != CHARGE )
-	{
-	//	cout << "moving" << endl;
-		position = trueMover->physBody.globalPosition;
-	}
-	
-	PhysicsResponse();
-}
-
-void Cheetah::PhysicsResponse()
-{
-	if( !dead  )
-	{
-		bool roll = trueMover->roll;
-		double angle = 0;
-		Edge *ground = trueMover->ground;
-		double edgeQuantity = trueMover->edgeQuantity;
-
-		if( ground != NULL )
-		{
-			//if( action != CHARGE )
-			//{
-		//cout << "response" << endl;
-			double spaceNeeded = 0;
-			V2d gn = ground->Normal();
-			V2d gPoint = ground->GetPoint( edgeQuantity );
-	
-
-		
-	
-		if( !roll )
-		{
-			//position = gPoint + gn * 32.0;
-			angle = atan2( gn.x, -gn.y );
-		
-//			sprite.setTexture( *ts_walk->texture );
-			IntRect r = ts->GetSubRect( frame / crawlAnimationFactor );
-			if( !facingRight )
-			{
-				sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-			}
-			else
-			{
-				sprite.setTextureRect( r );
-			}
-			
-			//V2d pp = ground->GetPoint( testMover->edgeQuantity );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( gPoint.x, gPoint.y );
-		}
-		else
-		{
-			
-			if( facingRight )
-			{
-				V2d vec = normalize( position - ground->v1 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}
-			else
-			{
-				//angle = 
-				/*V2d e0n = ground->edge0->Normal();
-				double rollStart = atan2( gn.y, gn.x );
-				double rollEnd = atan2( e0n.y, e0n.x );
-				double adjRollStart = rollStart;
-				double adjRollEnd = rollEnd;
-
-				if( rollStart < 0 )
-					adjRollStart += 2 * PI;
-				if( rollEnd < 0 )
-					adjRollEnd += 2 * PI;
-		
-				if( adjRollEnd > adjRollStart )
-				{
-					angle  = adjRollStart * ( 1.0 - rollFactor ) + adjRollEnd  * rollFactor ;
-				}
-				else
-				{
-			
-					angle = rollStart * ( 1.0 - rollFactor ) + rollEnd  * rollFactor;
-
-					if( rollStart < 0 )
-						rollStart += 2 * PI;
-					if( rollEnd < 0 )
-						rollEnd += 2 * PI;
-				}
-
-				if( angle < 0 )
-					angle += PI * 2;*/
-
-			
-
-			//	V2d angleVec = V2d( cos( angle ), sin( angle ) );
-			//	angleVec = normalize( angleVec );
-
-			//	position = gPoint + angleVec * 16.0;
-				V2d vec = normalize( position - ground->v0 );
-				angle = atan2( vec.y, vec.x );
-				angle += PI / 2.0;
-	
-
-				//sprite.setTexture( *ts->texture );
-				IntRect r = ts->GetSubRect( frame / rollAnimationFactor + 17 );
-				if( facingRight )
-				{
-					sprite.setTextureRect( r );
-				}
-				else
-				{
-					sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-				}
-			
-				sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-				sprite.setRotation( angle / PI * 180 );
-				sprite.setPosition( gPoint.x, gPoint.y );
-			}
-			
-		}
-		}
-		else
-		{
-			V2d p = testMover->physBody.globalPosition;
-
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height * 3.0/4.0);
-			sprite.setPosition( p.x, p.y );
-			sprite.setRotation( 0 );
-		}
-
-		//sprite.setPosition( position.x, position.y );
-
-		UpdateHitboxes();
-
-		if( PlayerSlowingMe() )
-		{
-			if( slowMultiple == 1 )
-			{
-				slowCounter = 1;
-				slowMultiple = 5;
-			//	cout << "yes slow" << endl;
-			}
-		}
-		else
-		{
-			slowCounter = 1;
-			slowMultiple = 1;
-		//	cout << "no slow" << endl;
-		}
-
-		if( receivedHit == NULL )
-		{
-			pair<bool, bool> result = PlayerHitMe();
-			if( result.first )
-			{
-				//cout << "hit here!" << endl;
-				//triggers multiple times per frame? bad?
-				owner->GetPlayer( 0 )->ConfirmHit( 4, 5, .8, 6 );
-
-				if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
-				{
-					owner->GetPlayer( 0 )->velocity.y = 4;//.5;
-				}
-
-															//cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
-
-			//owner->GetPlayer( 0 )->frame--;
-			//owner->ActivateEffect( ts_testBlood, position, true, 0, 6, 3, facingRight );
-		//	cout << "patroller received damage of: " << receivedHit->damage << endl;
-			
-			/*if( !result.second )
-			{
-				owner->Pause( 6 );
-			}*/
-			
-			//dead = true;
-			//receivedHit = NULL;
-			}
-		}
-
-		if( IHitPlayer() )
-		{
-		//	cout << "patroller just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-
-		//gotta get the correct angle upon death
-		Transform t;
-		t.rotate( angle / PI * 180 );
-		Vector2f newPoint = t.transformPoint( Vector2f( 1, -1 ) );
-		deathVector = V2d( newPoint.x, newPoint.y );
-
-		//queryMode = "reverse";
-
-		//physbody is a circle
-		//Rect<double> r( position.x - physBody.rw, position.y - physBody.rw, physBody.rw * 2, physBody.rw * 2 );
-		//owner->crawlerReverserTree->Query( this, r );
-	}
-}
-
-void Cheetah::UpdatePostPhysics()
-{
-	if( deathFrame == 30 )
-	{
-		owner->RemoveEnemy( this );
-		return;
-	}
-
-	if( receivedHit != NULL )
-	{
-		owner->Pause( 5 );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_hitSpack, ( owner->GetPlayer( 0 )->position + position ) / 2.0, true, 0, 10, 2, true );
-	}
-
-	if( deathFrame == 0 && dead )
-	{
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_blood, position, true, 0, 15, 2, true );
-	}
-
-	UpdateSprite();
-	//testLaunch->UpdateSprites();
-
-	if( slowCounter == slowMultiple )
-	{
-		++frame;
-		slowCounter = 1;
-		
-		if( dead )
-		{
-			deathFrame++;
-		}
-		else
-		{
-			if( attackFrame >= 0 )
-				++attackFrame;
-		}
-	}
-	else
-	{
-		slowCounter++;
-	}
-
-	//cout << "position: " << position.x << ", " << position.y << endl;
-	//need to calculate frames in here!!!!
-
-	//sprite.setPosition( position );
-	//UpdateHitboxes();
-}
-
-bool Cheetah::PlayerSlowingMe()
-{
-	Actor *player = owner->GetPlayer( 0 );
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-void Cheetah::Draw(sf::RenderTarget *target )
-{
-	if( !dead )
-	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 55 );
-			cs.setFillColor( Color::Black );
-			
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
-		target->draw( sprite );
-
-		if( action == CHARGEUP )
-		{
-			CircleShape c;
-			c.setRadius( 20 );
-			c.setFillColor( Color::Red );
-			c.setOrigin( c.getLocalBounds().width/2, c.getLocalBounds().height/2 );
-			c.setPosition( testMover->physBody.globalPosition.x,
-				testMover->physBody.globalPosition.y );
-			target->draw( c );
-		}
-	}
-	else
-	{
-		target->draw( botDeathSprite );
-
-		/*if( deathFrame / 3 < 6 )
-		{
-			
-			bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );
-		}*/
-		
-		target->draw( topDeathSprite );
-	}
-}
-
-void Cheetah::DrawMinimap( sf::RenderTarget *target )
-{
-	if( !dead )
-	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			CircleShape cs;
-			cs.setRadius( 50 );
-			cs.setFillColor( Color::White );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
-		else
-		{
-			CircleShape cs;
-			cs.setRadius( 40 );
-			cs.setFillColor( Color::Red );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
-	}
-
-	/*if( hasMonitor && !suppressMonitor )
-	{
-		monitor->miniSprite.setPosition( position.x, position.y );
-		target->draw( monitor->miniSprite );
 	}*/
+
+	switch (action)
+	{
+	case IDLE:
+		break;
+	case CHARGE:
+
+		break;
+	case BOOST:
+		if (mover->groundSpeed > 0)
+		{
+			if (xDiff < -300)
+			{
+				mover->SetSpeed(0);
+				facingRight = false;
+				action = IDLE;
+				frame = 0;
+			}
+		}
+		else if (mover->groundSpeed < 0)
+		{
+			if (xDiff > 300)
+			{
+				mover->SetSpeed(0);
+				facingRight = true;
+				action = IDLE;
+				frame = 0;
+			}
+		}
+		break;
+	}
 }
 
-bool Cheetah::IHitPlayer( int index )
+void Cheetah::UpdateEnemyPhysics()
 {
-	Actor *player = owner->GetPlayer( 0 );
-	
-	if( player->invincibleFrames == 0 && hitBody.Intersects( player->hurtBody ) )
+	mover->Move(slowMultiple, numPhysSteps);
+
+	if (mover->ground == NULL)
 	{
-		if( player->position.x < position.x )
+		if (mover->velocity.y > maxFallSpeed)
 		{
-			hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
-			//cout << "left" << endl;
+			mover->velocity.y = maxFallSpeed;
 		}
-		else if( player->position.x > position.x )
-		{
-			//cout << "right" << endl;
-			hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
-		}
-		else
-		{
-			//dont change it
-		}
-		attackFrame = 0;
-		player->ApplyHit( hitboxInfo );
-		return true;
 	}
-	
-	return false;
+
+	position = mover->physBody.globalPosition;
 }
 
- pair<bool, bool> Cheetah::PlayerHitMe( int index )
+void Cheetah::EnemyDraw(sf::RenderTarget *target)
 {
-	Actor *player = owner->GetPlayer( 0 );
-
-	if( player->currHitboxes != NULL )
-	{
-		bool hit = false;
-
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
-		{
-			if( hurtBody.Intersects( (*it) ) )
-			{
-				hit = true;
-				break;
-			}
-		}
-		
-
-		if( hit )
-		{
-			sf::Rect<double> qRect( position.x - hurtBody.rw,
-			position.y - hurtBody.rw, hurtBody.rw * 2, 
-			hurtBody.rw * 2 );
-			owner->specterTree->Query( this, qRect );
-
-			if( !specterProtected )
-			{
-				receivedHit = player->currHitboxInfo;
-				return pair<bool, bool>(true,false);
-			}
-			else
-			{
-				return pair<bool, bool>(false,false);
-			}
-			
-		}
-		
-	}
-
-	for( int i = 0; i < player->recordedGhosts; ++i )
-	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
-		{
-			if( player->ghosts[i]->currHitboxes != NULL )
-			{
-				bool hit = false;
-				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
-				{
-					if( hurtBody.Intersects( (*it) ) )
-					{
-						hit = true;
-						break;
-					}
-				}
-		
-
-				if( hit )
-				{
-					receivedHit = player->currHitboxInfo;
-					return pair<bool, bool>(true,true);
-				}
-			}
-			//player->ghosts[i]->curhi
-		}
-	}
-	return pair<bool, bool>(false,false);
+	target->draw(auraSprite);
+	DrawSpriteIfExists(target, sprite);
 }
+
 
 void Cheetah::UpdateSprite()
 {
-	if( dead )
-	{
-		//cout << "deathVector: " << deathVector.x << ", " << deathVector.y << endl;
-		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 31 ) );
-		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2);
-		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + deathVector.y * deathPartingSpeed * deathFrame );
-		botDeathSprite.setRotation( sprite.getRotation() );
+	double angle = 0;
 
-		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 30 ) );
-		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-		topDeathSprite.setRotation( sprite.getRotation() );
+	V2d p = mover->physBody.globalPosition;
+	V2d vel = mover->velocity;
+
+	double groundSpeed = mover->groundSpeed;
+
+	float extraVert = 0;
+
+	if (mover->ground != NULL)
+	{
+		V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
+		V2d gn = mover->ground->Normal();
+
+		if (!mover->roll)
+		{
+			angle = atan2(gn.x, -gn.y);
+
+		}
+		else
+		{
+			if (facingRight)
+			{
+				V2d vec = normalize(position - mover->ground->v1);
+				angle = atan2(vec.y, vec.x);
+				angle += PI / 2.0;
+
+				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+				sprite.setRotation(angle / PI * 180);
+			}
+			else
+			{
+				V2d vec = normalize(position - mover->ground->v0);
+				angle = atan2(vec.y, vec.x);
+				angle += PI / 2.0;
+
+				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+				sprite.setRotation(angle / PI * 180);
+			}
+		}
+
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+		sprite.setRotation(angle / PI * 180);
+		sprite.setPosition(gPoint.x, gPoint.y);
 	}
 	else
 	{
-		if( attackFrame >= 0 )
-		{
-			IntRect r = ts->GetSubRect( 28 + attackFrame / attackMult );
-			if( !facingRight )
-			{
-				r = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
-			}
-			sprite.setTextureRect( r );
-		}
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setPosition(p.x, p.y);
+		sprite.setRotation(0);
 	}
-}
 
-void Cheetah::DebugDraw( RenderTarget *target )
-{
-	if( !dead )
+
+	int airRange = 3;
+	int fallRange = 15;
+	sf::IntRect ir;
+	int index = 0;
+	switch (action)
 	{
-		//if( ground != NULL )
-		{
-		/*CircleShape cs;
-		cs.setFillColor( Color::Cyan );
-		cs.setRadius( 10 );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		V2d g = ground->GetPoint( edgeQuantity );
-		cs.setPosition( g.x, g.y );*/
-		}
-		//owner->window->draw( cs );
-		//UpdateHitboxes();
-		//physBody.DebugDraw( target );
-		testMover->physBody.DebugDraw( target );
+	case IDLE:
+		index = 0;
+		break;
+	case CHARGE:
+		index = 1;
+		break;
+	case BOOST:
+		index = 2;
+		break;
 	}
-//	hurtBody.DebugDraw( target );
-//	hitBody.DebugDraw( target );
-}
 
-void Cheetah::SaveEnemyState()
-{
-}
+	ir = ts->GetSubRect(index);
 
-void Cheetah::LoadEnemyState()
-{
-}
+	if (!facingRight)
+	{
+		ir = sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height);
+	}
+	sprite.setTextureRect(ir);
 
-void Cheetah::HitTerrain( double &q )
-{
-	
+	SyncSpriteInfo(auraSprite, sprite);
 }
+//
+//void Cheetah::HitTerrain( double &q )
+//{
+//	
+//}
 
-//why is this mostly empty??
 bool Cheetah::StartRoll()
 {
 	return false;
@@ -987,62 +440,60 @@ void Cheetah::FinishedRoll()
 
 void Cheetah::HitOther()
 {
-	return;
-	V2d v;
-	if( facingRight && testMover->groundSpeed > 0 )
+	/*V2d v;
+	if( facingRight && mover->groundSpeed > 0 )
 	{
-		v = V2d( 10, -10 );
-		testMover->Jump( v );
+	v = V2d( 10, -10 );
+	mover->Jump( v );
 	}
-	else if( !facingRight && testMover->groundSpeed < 0 )
+	else if( !facingRight && mover->groundSpeed < 0 )
 	{
-		v = V2d( -10, -10 );
-		testMover->Jump( v );
-	}
+	v = V2d( -10, -10 );
+	mover->Jump( v );
+	}*/
 	//cout << "hit other!" << endl;
-	//testMover->SetSpeed( 0 );
+	//mover->SetSpeed( 0 );
 	//facingRight = !facingRight;
 }
 
 void Cheetah::ReachCliff()
 {
-
-	testMover->SetSpeed( 0 );
 	return;
-
-
-	if( facingRight && testMover->groundSpeed < 0 
-		|| !facingRight && testMover->groundSpeed > 0 )
+	if (facingRight && mover->groundSpeed < 0
+		|| !facingRight && mover->groundSpeed > 0)
 	{
-		testMover->SetSpeed( 0 );
+		mover->SetSpeed(0);
 		return;
 	}
 
 	//cout << "reach cliff!" << endl;
 	//ground = NULL;
 	V2d v;
-	if( facingRight )
+	if (facingRight)
 	{
-		v = V2d( 10, -10 );
+		v = V2d(10, -10);
 	}
 	else
 	{
-		v = V2d( -10, -10 );
+		v = V2d(-10, -10);
 	}
 
-	testMover->Jump( v );
-	//testMover->groundSpeed = -testMover->groundSpeed;
-	//facingRight = !facingRight;
+	//action = LEDGEJUMP;
+	frame = 0;
+
+	Jump(v.x, v.y);
 }
 
-void Cheetah::HitOtherAerial( Edge *e )
+void Cheetah::HitOtherAerial(Edge *e)
 {
 	//cout << "hit edge" << endl;
 }
 
 void Cheetah::Land()
 {
-	action = LAND;
+	return;
+	//action = LAND;
 	frame = 0;
+
 	//cout << "land" << endl;
 }

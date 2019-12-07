@@ -335,8 +335,6 @@ void Badger::ProcessState()
 	if( dead )
 		return;
 
-	cout << "vel: " << testMover->velocity.x << ", " << testMover->velocity.y << endl;
-
 	ActionEnded();
 
 	switch( action )

@@ -30,6 +30,7 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	void ComboHit();
+	void ComboKill(Enemy *e);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void UpdateHitboxes();
@@ -43,6 +44,8 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
+
+	double flySpeed;
 
 
 	Action action;

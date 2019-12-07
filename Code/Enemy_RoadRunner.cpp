@@ -136,10 +136,8 @@ void RoadRunner::ResetEnemy()
 
 	position = mover->physBody.globalPosition;
 
-	V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
 	frame = 0;
 
-	V2d gn = mover->ground->Normal();
 	dead = false;
 
 	receivedHit = NULL;

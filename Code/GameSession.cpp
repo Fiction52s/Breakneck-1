@@ -65,6 +65,7 @@
 #include "Enemy_HealthFly.h"
 #include "Enemy_GrindJuggler.h"
 #include "Enemy_GroundedGrindJuggler.h"
+#include "Enemy_Cheetah.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -3108,12 +3109,16 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			/*Cheetah *enemy = new Cheetah( this, hasMonitor,
-			edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+			int level;
+			is >> level;
+
+			Cheetah *enemy = new Cheetah( this, hasMonitor,
+			edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level );
+
 			fullEnemyList.push_back( enemy );
 			enem = enemy;
 
-			enemyTree->Insert( enemy );*/
+			enemyTree->Insert( enemy );
 		}
 		else if (typeName == "spider")
 		{

@@ -789,8 +789,11 @@ void EditSession::AddW4Enemies()
 	AddBasicAerialWorldEnemy("turtle", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/turtle_80x64.png", 80, 64));
 
-	AddWorldEnemy("cheetah", 4, LoadParams<CheetahParams>, MakeParamsGrounded<CheetahParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicGroundWorldEnemy("cheetah", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/shroom_192x192.png", 192, 192));
+
+	//AddWorldEnemy("cheetah", 4, LoadParams<CheetahParams>, MakeParamsGrounded<CheetahParams>, NULL,
+	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("coral", 4, LoadParams<CoralParams>, NULL, MakeParamsAerial<CoralParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -15199,11 +15202,12 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "cheetah")
 	{
-		p = new Panel("cheetah_options", 200, 550, edit);
+		p = CreateDefaultPanel("cheetah_options", true, true, false, false);
+		/*p = new Panel("cheetah_options", 200, 550, edit);
 		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddCheckBox("monitor", Vector2i(20, 400));
+		p->AddCheckBox("monitor", Vector2i(20, 400));*/
 
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
