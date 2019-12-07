@@ -66,6 +66,7 @@
 #include "Enemy_GrindJuggler.h"
 #include "Enemy_GroundedGrindJuggler.h"
 #include "Enemy_Cheetah.h"
+#include "Enemy_HungryComboer.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -3165,6 +3166,36 @@ void GameSession::LoadEnemy(std::ifstream &is,
 		}
 
 		//w5
+		else if (typeName == "hungrycomboer" || typeName == "hungryattackcomboer")
+		{
+			int xPos, yPos;
+
+			is >> xPos;
+			is >> yPos;
+
+			int hasMonitor;
+			is >> hasMonitor;
+
+			int level;
+			is >> level;
+
+			int numJuggles;
+			is >> numJuggles;
+
+			bool attackEnemies = false;
+			if (typeName == "hungryattackcomboer")
+			{
+				attackEnemies = true;
+			}
+			
+			HungryComboer *enemy = new HungryComboer(this, hasMonitor, Vector2i(xPos, yPos), level, numJuggles,
+				attackEnemies);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
 		else if (typeName == "swarm")
 		{
 

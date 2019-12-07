@@ -407,6 +407,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//that implement more complex behaviors
 	
 	void DrawHealthFlies(sf::RenderTarget *target);
+	
 	sf::Vertex *healthFlyVA;
 	Tileset *ts_healthFly;
 	int numTotalFlies;

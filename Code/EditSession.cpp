@@ -806,6 +806,14 @@ void EditSession::AddW4Enemies()
 
 void EditSession::AddW5Enemies()
 {
+	AddWorldEnemy("hungrycomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
+		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
+	AddWorldEnemy("hungryattackcomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
+		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
 	AddWorldEnemy("swarm", 5, LoadParams<SwarmParams>, NULL, MakeParamsAerial<SwarmParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
@@ -822,7 +830,7 @@ void EditSession::AddW5Enemies()
 		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);
 
 
-	
+	//name == "hungrycomboer" || name == "hungryattackcomboer"
 }
 
 void EditSession::AddW6Enemies()
@@ -14929,7 +14937,7 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel("comboer_options", true, true, true, true);
 	}
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
-		|| name == "groundedgrindjugglerccw" )
+		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryattackcomboer")
 	{
 		p = CreateDefaultPanel("grindjuggler_options", true, true, false, false);
 		p->AddTextBox("numjuggles", Vector2i(20, 600), 200, 20, "0");
@@ -15214,20 +15222,6 @@ Panel *ActorType::CreatePanel()
 	else if (name == "spider")
 	{
 		p = CreateDefaultPanel("spider_options", true, true, false, false);
-		//p = new Panel("spider_options", 200, 500, edit);
-		//p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		//p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		//p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		//p->AddLabel("clockwise_label", Vector2i(20, 150), 20, "clockwise");
-		//p->AddCheckBox("clockwise", Vector2i(120, 155));
-
-		////ground speed will probably be the param. not figured out fully yet
-
-		//p->AddTextBox("speed", Vector2i(20, 200), 200, 20, "10");
-		////p->AddTextBox( "jumpstrength", Vector2i( 20, 200 ), 250, 20, "3" );
-
-		//p->AddCheckBox("monitor", Vector2i(20, 330));
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
 	else if (name == "coral")
 	{

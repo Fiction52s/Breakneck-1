@@ -2294,6 +2294,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_CHEETAH:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
+		case EnemyType::EN_HUNGRYCOMBOER:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
+			break;
 		default:
 			return NULL;
 		}
