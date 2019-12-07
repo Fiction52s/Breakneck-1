@@ -67,6 +67,7 @@
 #include "Enemy_GroundedGrindJuggler.h"
 #include "Enemy_Cheetah.h"
 #include "Enemy_HungryComboer.h"
+#include "Enemy_RelativeComboer.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -3190,6 +3191,41 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			
 			HungryComboer *enemy = new HungryComboer(this, hasMonitor, Vector2i(xPos, yPos), level, numJuggles,
 				attackEnemies);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "relativecomboer" || typeName == "relativecomboerdetach")
+		{
+			int xPos, yPos;
+
+			is >> xPos;
+			is >> yPos;
+
+			int hasMonitor;
+			is >> hasMonitor;
+
+			int pathLength;
+			list<Vector2i> localPath;
+
+			Enemy::ReadPath(is, pathLength, localPath);
+
+			int level;
+			is >> level;
+
+			int numJuggles;
+			is >> numJuggles;
+
+			bool detachOnKill = false;
+			if (typeName == "relativecomboerdetach")
+			{
+				detachOnKill = true;
+			}
+
+			RelativeComboer *enemy = new RelativeComboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, level, numJuggles,
+				detachOnKill);
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
