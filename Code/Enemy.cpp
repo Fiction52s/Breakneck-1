@@ -1641,7 +1641,10 @@ void Enemy::RecordEnemy()
 void Enemy::UpdatePrePhysics()
 {
 	if (pauseFrames > 0)
+	{
 		return;
+	}
+		
 
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -2131,14 +2134,18 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 		return player->currHitboxes->hitboxInfo;
 	}
 
-	ComboObject *co = player->IntersectMyComboHitboxes(this, currHurtboxes, currHurtboxFrame);
-	if (co != NULL)
+	if (CanBeHitByComboer())
 	{
-		HitboxInfo *hi = co->enemyHitboxInfo;
+		ComboObject *co = player->IntersectMyComboHitboxes(this, currHurtboxes, currHurtboxFrame);
+		if (co != NULL)
+		{
+			HitboxInfo *hi = co->enemyHitboxInfo;
 
-		co->enemy->ComboHit();
-		comboHitEnemy = co->enemy;
-		return hi;
+			co->enemy->ComboHit();
+			comboHitEnemy = co->enemy;
+			return hi;
+		}
+
 	}
 	
 	return NULL;

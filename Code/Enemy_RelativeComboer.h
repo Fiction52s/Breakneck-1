@@ -11,6 +11,7 @@ struct RelativeComboer : Enemy
 	{
 		S_FLOAT,
 		S_FLY,
+		S_ATTACHEDWAIT,
 		S_WAIT,
 		S_RETURN,
 		S_Count
@@ -27,6 +28,7 @@ struct RelativeComboer : Enemy
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	void ComboHit();
+	bool CanBeHitByComboer();
 
 	void ComboKill(Enemy *e);
 	void EnemyDraw(sf::RenderTarget *target);
@@ -42,6 +44,11 @@ struct RelativeComboer : Enemy
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
+
+	int latchFrame;
+	int maxLatchFrames;
+
+	int specialPauseFrames;
 
 
 	Action action;

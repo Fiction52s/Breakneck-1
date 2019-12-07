@@ -119,13 +119,17 @@ RelativeComboer::RelativeComboer(GameSession *owner, bool p_hasMonitor, Vector2i
 	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
 	comboObj->enemyHitboxFrame = 0;
 
+	maxLatchFrames = 20 * 60;
+
 	actionLength[S_FLOAT] = 18;
-	actionLength[S_FLY] = 10;
+	actionLength[S_FLY] = 30;
+	actionLength[S_ATTACHEDWAIT] = 10;
 	actionLength[S_WAIT] = 10;
 	actionLength[S_RETURN] = 3;
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_FLY] = 1;
+	animFactor[S_ATTACHEDWAIT] = 1;
 	animFactor[S_WAIT] = 1;
 	animFactor[S_RETURN] = 6;
 
@@ -140,6 +144,10 @@ RelativeComboer::~RelativeComboer()
 
 void RelativeComboer::ResetEnemy()
 {
+	latchFrame = 0;
+	
+	sprite.setColor(Color::White);
+	specialPauseFrames = 0;
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
 	currHits = 0;
@@ -187,7 +195,7 @@ void RelativeComboer::Return()
 
 	numHealth = maxHealth;
 
-	
+	sprite.setColor(Color::White);
 }
 
 void RelativeComboer::Pop()
@@ -221,6 +229,11 @@ void RelativeComboer::PopThrow()
 	owner->GetPlayer(0)->AddActiveComboObj(comboObj);
 }
 
+bool RelativeComboer::CanBeHitByComboer()
+{
+	return false;
+}
+
 void RelativeComboer::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
@@ -251,6 +264,7 @@ void RelativeComboer::ProcessHit()
 				action = S_FLY;
 				frame = 0;
 				latchedOn = true;
+				latchFrame = 0;
 				offsetPos = position - player->position;
 				PopThrow();
 			}
@@ -271,6 +285,10 @@ void RelativeComboer::ProcessState()
 
 		switch (action)
 		{
+		case S_FLY:
+			action = S_ATTACHEDWAIT;
+			sprite.setColor(Color::Red);
+			break;
 		case S_RETURN:
 			position = origPos;
 			SetHitboxes(hitBody, 0);
@@ -308,13 +326,19 @@ void RelativeComboer::UpdateEnemyPhysics()
 
 	}
 
-	switch (action)
+	if (specialPauseFrames == 0)
 	{
-	case S_FLY:
-	{
-		Move();
-		break;
-	}
+
+
+		switch (action)
+		{
+		case S_FLY:
+		{
+			Move();
+			break;
+		}
+		}
+
 	}
 
 	if (latchedOn)
@@ -325,6 +349,10 @@ void RelativeComboer::UpdateEnemyPhysics()
 
 void RelativeComboer::FrameIncrement()
 {
+	if (specialPauseFrames > 0)
+	{
+		--specialPauseFrames;
+	}
 	if (action == S_FLY )
 	{
 		if (waitFrame == maxWaitFrames)
@@ -340,16 +368,30 @@ void RelativeComboer::FrameIncrement()
 
 	}
 
+	if (latchedOn)
+	{
+		latchFrame++;
+		if (latchFrame == maxLatchFrames)
+		{
+			action = S_RETURN;
+			frame = 0;
+			Return();
+			return;
+		}
+	}
+
 }
 
 void RelativeComboer::ComboKill(Enemy *e)
 {
-	assert(action == S_FLY);
-	
+	//assert(action == S_FLY);
 	action = S_WAIT;
 	frame = 0;
 	latchedOn = false;
 	SetHurtboxes(hurtBody, 0);
+	sprite.setColor(Color::Blue);
+	owner->GetPlayer(0)->hasDoubleJump = true;
+	owner->GetPlayer(0)->hasAirDash = true;
 }
 
 void RelativeComboer::HandleEntrant(QuadTreeEntrant *qte)
@@ -371,7 +413,8 @@ void RelativeComboer::HandleEntrant(QuadTreeEntrant *qte)
 
 void RelativeComboer::ComboHit()
 {
-	pauseFrames = 5;
+	//pauseFrames = 5;
+	specialPauseFrames = 5;
 	++currHits;
 	velocity = V2d(0, 0);
 	if (hitLimit > 0 && currHits >= hitLimit)
@@ -398,7 +441,31 @@ void RelativeComboer::UpdateSprite()
 
 void RelativeComboer::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	bool b = (owner->pauseFrames < 2 && ( pauseFrames < 2 && specialPauseFrames < 2 )) || (receivedHit == NULL && ( pauseFrames < 2 && specialPauseFrames < 2));
+	if (hasMonitor && !suppressMonitor)
+	{
+		if (b)
+		{
+			target->draw(sprite, keyShader);
+		}
+		else
+		{
+			target->draw(sprite, hurtShader);
+		}
+		target->draw(*keySprite);
+	}
+	else
+	{
+		cout << "specialPauseFrames: " << specialPauseFrames << ", b: " << (int)b << endl;
+		if (b)
+		{
+			target->draw(sprite);
+		}
+		else
+		{
+			target->draw(sprite, hurtShader);
+		}
+	}
 }
 
 CollisionBox &RelativeComboer::GetEnemyHitbox()

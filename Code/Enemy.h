@@ -603,6 +603,8 @@ public:
 		int slowMult,
 		int numPhysSteps);
 	
+	virtual bool CanBeHitByComboer() { return true; }
+
 	virtual void RecordEnemy();
 	virtual void DirectKill();
 	virtual void HandleEntrant(QuadTreeEntrant *qte) {}
