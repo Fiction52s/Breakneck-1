@@ -52,11 +52,17 @@ Spring::Spring(GameSession *owner, SpringType sp, Vector2i &pos, Vector2i &other
 	case REDIRECT:
 	case REFLECT:
 	case BOUNCE:
+	case AIRBOUNCE:
 		ts_idle = owner->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
 		ts_recover = owner->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
 		ts_springing = owner->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
 		sprite.setColor(Color::Yellow);
 		break;
+	}
+
+	if (springType == AIRBOUNCE)
+	{
+		sprite.setColor(Color::Black);
 	}
 	
 

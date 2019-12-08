@@ -2167,7 +2167,8 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
 		}
-		else if (typeName == "spring" || typeName == "gravityspring" || typeName == "bouncespring" )
+		else if (typeName == "spring" || typeName == "gravityspring" || typeName == "bouncespring" 
+			|| typeName == "airbouncespring" )
 		{
 			int xPos, yPos;
 
@@ -2199,6 +2200,10 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			else if (typeName == "bouncespring")
 			{
 				sp = Spring::BOUNCE;
+			}
+			else if (typeName == "airbouncespring")
+			{
+				sp = Spring::AIRBOUNCE;
 			}
 			else if (typeName == "redirectspring")
 			{

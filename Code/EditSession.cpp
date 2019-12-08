@@ -717,6 +717,10 @@ void EditSession::AddW3Enemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 
+	AddWorldEnemy("airbouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
+
 	AddBasicAerialWorldEnemy("upbouncebooster", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/Booster_512x512.png", 512, 512));
 
@@ -14920,7 +14924,7 @@ Panel *ActorType::CreatePanel()
 
 		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
-	else if (name == "healthfly" )
+	else if (name == "healthfly")
 	{
 		p = CreateDefaultPanel("healthfly_options", true, false);
 	}
@@ -14941,7 +14945,7 @@ Panel *ActorType::CreatePanel()
 	{
 		p = CreateDefaultPanel("gravchanger_options", false, true);
 	}
-	else if (name == "comboer" || name == "gravdowncomboer" || name == "gravupcomboer" 
+	else if (name == "comboer" || name == "gravdowncomboer" || name == "gravupcomboer"
 		|| name == "bouncecomboer")
 	{
 		p = CreateDefaultPanel("comboer_options", true, true, true, true);
@@ -15101,7 +15105,7 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
-	else if (name == "gravityspring" || name == "bouncespring")
+	else if (name == "gravityspring" || name == "bouncespring" || name == "airbouncespring" )
 	{
 		p = new Panel("gravityspring_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");

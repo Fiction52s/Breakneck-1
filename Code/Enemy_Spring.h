@@ -18,6 +18,7 @@ struct Spring : Enemy
 		BLUE,
 		GREEN,
 		BOUNCE,
+		AIRBOUNCE,
 		REDIRECT,
 		REFLECT,
 	};
