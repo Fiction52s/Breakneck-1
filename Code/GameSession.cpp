@@ -5508,7 +5508,7 @@ Edge *GameSession::GetEdge(int index)
 	return edges[index];
 }
 
-void TerrainPiece::SetupGrass( std::list<GrassSegment> &segments)
+void TerrainPiece::SetupGrass(std::list<GrassSegment> &segments)
 {
 	int numGrassTotal = 0;
 
@@ -5531,6 +5531,10 @@ void TerrainPiece::SetupGrass( std::list<GrassSegment> &segments)
 	else if (terrainWorldType == 2)
 	{
 		gType = Grass::GrassType::BOUNCE;
+	}
+	else if (terrainWorldType == 3)
+	{
+		gType = Grass::GrassType::BOOST;
 	}
 
 	if (numGrassTotal > 0)

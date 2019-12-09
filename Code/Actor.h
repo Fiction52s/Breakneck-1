@@ -1106,6 +1106,10 @@ struct Actor : QuadTreeCollider,
 	int testGrassCount;
 	int gravityGrassCount;
 	int bounceGrassCount;
+	int boostGrassCount;
+	bool grassBoosted;
+	double boostGrassAccel;
+
 	Action action;
 	int steepClimbBoostStart;
 	bool TryClimbBoost( V2d &gNorm);

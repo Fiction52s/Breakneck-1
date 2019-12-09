@@ -456,7 +456,7 @@ void RelativeComboer::EnemyDraw(sf::RenderTarget *target)
 	}
 	else
 	{
-		cout << "specialPauseFrames: " << specialPauseFrames << ", b: " << (int)b << endl;
+		//cout << "specialPauseFrames: " << specialPauseFrames << ", b: " << (int)b << endl;
 		if (b)
 		{
 			target->draw(sprite);

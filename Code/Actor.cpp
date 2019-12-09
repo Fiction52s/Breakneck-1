@@ -297,6 +297,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	SetDirtyAura(false);
 	activeComboObjList = NULL;
 
+	boostGrassAccel = .25;
+
 	cout << "Start player" << endl;
 
 
@@ -443,6 +445,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		testGrassCount = 0;
 		gravityGrassCount = 0;
 		bounceGrassCount = 0;
+		boostGrassCount = 0;
 
 		scorpOn = false;
 		framesSinceRightWireBoost = 0;
@@ -2475,6 +2478,7 @@ void Actor::Respawn()
 	testGrassCount = 0;
 	gravityGrassCount = 0;
 	bounceGrassCount = 0;
+	boostGrassCount = 0;
 	regrindOffCount = 3;
 	scorpAdditionalCap = 0.0;
 	prevRail = NULL;
@@ -2756,6 +2760,7 @@ void Actor::UpdatePrePhysics()
 
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
+	
 
 	//cout << "action: " << action << endl;
 	
@@ -8236,6 +8241,18 @@ void Actor::UpdatePrePhysics()
 	}
 
 
+	if (ground != NULL && grassBoosted)
+	{
+		if (groundSpeed > 0)
+		{
+			groundSpeed += boostGrassAccel;
+		}
+		else if (groundSpeed < 0)
+		{
+			groundSpeed -= boostGrassAccel;
+		}
+	}
+
 
 	double maxReal = maxVelocity + scorpAdditionalCap;
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
@@ -9065,12 +9082,11 @@ void Actor::UpdatePrePhysics()
 	
 
 	
-
 	
 	
 	
-
 	
+	grassBoosted = false;
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
 
@@ -10102,6 +10118,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	testGrassCount = 0;
 	gravityGrassCount = 0;
 	bounceGrassCount = 0;
+	boostGrassCount = 0;
 	owner->grassTree->Query( this, r );
 
 	if( testGrassCount > 0 )
@@ -19359,6 +19376,11 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			else if( g->grassType == Grass::BOUNCE )
 			{
 				++bounceGrassCount;
+			}
+			else if (g->grassType == Grass::BOOST)
+			{
+				++boostGrassCount;
+				grassBoosted = true;
 			}
 			
 		}
