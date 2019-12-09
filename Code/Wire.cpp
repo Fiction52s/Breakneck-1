@@ -196,7 +196,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	case IDLE:
 		{
 			
-			if( triggerDown && !prevTriggerDown )
+			if( player->CanShootWire() && triggerDown && !prevTriggerDown )
 			{
 				//cout << "firing" << endl;
 				fireDir = V2d( 0, 0 );

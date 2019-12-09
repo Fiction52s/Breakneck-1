@@ -19,8 +19,7 @@ struct Spring : Enemy
 		GREEN,
 		BOUNCE,
 		AIRBOUNCE,
-		REDIRECT,
-		REFLECT,
+		TELEPORT,
 	};
 
 	SpringType springType;
@@ -57,6 +56,8 @@ struct Spring : Enemy
 
 	sf::Vertex debugLine[2];
 	sf::Text debugSpeed;
+
+	V2d dest;
 };
 
 #endif

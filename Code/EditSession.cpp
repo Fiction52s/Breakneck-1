@@ -768,6 +768,10 @@ void EditSession::AddW4Enemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 
 		3, GetTileset("Enemies/rail_64x64.png", 64, 64));
 
+	AddWorldEnemy("teleportspring", 4, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
+
 	AddWorldEnemy("grindjugglercw", 4, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
@@ -15105,7 +15109,7 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
-	else if (name == "gravityspring" || name == "bouncespring" || name == "airbouncespring" )
+	else if (name == "gravityspring" || name == "bouncespring" || name == "airbouncespring" || name == "teleportspring")
 	{
 		p = new Panel("gravityspring_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");

@@ -2168,7 +2168,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
 		}
 		else if (typeName == "spring" || typeName == "gravityspring" || typeName == "bouncespring" 
-			|| typeName == "airbouncespring" )
+			|| typeName == "airbouncespring" || typeName == "teleportspring" )
 		{
 			int xPos, yPos;
 
@@ -2205,13 +2205,9 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			{
 				sp = Spring::AIRBOUNCE;
 			}
-			else if (typeName == "redirectspring")
+			else if (typeName == "teleportspring")
 			{
-				sp = Spring::REDIRECT;
-			}
-			else if (typeName == "reflectspring")
-			{
-				sp = Spring::REFLECT;
+				sp = Spring::TELEPORT;
 			}
 			//CurveLauncher * enemy = new CurveLauncher(this, Vector2i(xPos, yPos), other, moveFrames);
 			Spring *enemy = new Spring(this, sp, Vector2i(xPos, yPos), other, speed);

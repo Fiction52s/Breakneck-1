@@ -31,6 +31,8 @@ Spring::Spring(GameSession *owner, SpringType sp, Vector2i &pos, Vector2i &other
 	debugSpeed.setFont(owner->mainMenu->arial);
 	debugSpeed.setFillColor(Color::White);
 	debugSpeed.setCharacterSize(30);
+
+	
 	stringstream ss;
 	ss << p_speed;
 	debugSpeed.setString(ss.str());
@@ -49,14 +51,17 @@ Spring::Spring(GameSession *owner, SpringType sp, Vector2i &pos, Vector2i &other
 		ts_recover = owner->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
 		ts_springing = owner->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
 		break;
-	case REDIRECT:
-	case REFLECT:
 	case BOUNCE:
 	case AIRBOUNCE:
 		ts_idle = owner->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
 		ts_recover = owner->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
 		ts_springing = owner->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
 		sprite.setColor(Color::Yellow);
+	case TELEPORT:
+		ts_idle = owner->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
+		ts_recover = owner->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
+		ts_springing = owner->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
+		sprite.setColor(Color::Red);
 		break;
 	}
 
@@ -75,16 +80,32 @@ Spring::Spring(GameSession *owner, SpringType sp, Vector2i &pos, Vector2i &other
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(pos.x, pos.y);
 	
+	dest = V2d(other + pos );
+
 	V2d dOther = V2d(other.x, other.y);
 	V2d springVec = normalize(dOther);
 
 	double angle = atan2(springVec.x, -springVec.y);//atan2(-springVec.x, springVec.y);
 	sprite.setRotation(angle / PI * 180.0 );
 
-	speed = p_speed;//length( dOther ) / (double)p_moveFrames;
-	double dist = length( V2d(other));
-	stunFrames =  ceil(dist / speed);
+	double dist = length(V2d(other));
+
+	if (springType == TELEPORT)
+	{
+		speed = 100;
+		stunFrames = floor(dist / speed);
+	}
+	else
+	{
+		speed = p_speed;
+		stunFrames = ceil(dist / speed);
+	}
+
+	
 	dir = springVec;
+
+	
+	
 	
 	float hurtboxRadius = 64;
 

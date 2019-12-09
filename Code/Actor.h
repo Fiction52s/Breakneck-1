@@ -297,9 +297,8 @@ struct Actor : QuadTreeCollider,
 		SPRINGSTUN,
 		SPRINGSTUNGLIDE,
 		SPRINGSTUNBOUNCE,
-		SPRINGSTUNREFLECT,
-		SPRINGSTUNREDIRECT,
 		SPRINGSTUNAIRBOUNCE,
+		SPRINGSTUNTELEPORT,
 		GLIDE,
 		SEQ_ENTERCORE1,
 		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
@@ -415,6 +414,10 @@ struct Actor : QuadTreeCollider,
 	EffectPool *uairLightningPool[4];
 	EffectPool *dairLightningPool[4];
 	EffectPool *gateBlackFXPool;
+
+
+	bool CanShootWire();
+	bool CanCreateTimeBubble();
 
 	SoundNode *repeatingSound;
 	//int hitCeilingCounter;
@@ -765,6 +768,8 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> springVel;
 	sf::Vector2<double> springExtra;
 	int springStunFrames;
+	V2d teleportSpringDest;
+	V2d teleportSpringVel;
 
 	double glideTurnFactor;
 	double glideTurnAccel;
