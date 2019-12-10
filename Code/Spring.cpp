@@ -92,7 +92,7 @@ Spring::Spring(GameSession *owner, SpringType sp, Vector2i &pos, Vector2i &other
 
 	if (springType == TELEPORT)
 	{
-		speed = 100;
+		speed = 200;
 		stunFrames = floor(dist / speed);
 	}
 	else

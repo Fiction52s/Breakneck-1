@@ -170,6 +170,7 @@ struct GravityModifier;
 struct Booster;
 struct BounceBooster;
 struct Spring;
+struct Teleporter;
 struct EffectPool;
 struct EnemyParams;
 struct SoundNode;
@@ -750,6 +751,7 @@ struct Actor : QuadTreeCollider,
 	bool scorpSet;
 
 	Spring *currSpring;
+	Teleporter *currTeleporter;
 	Booster *currBooster;
 	Booster *oldBooster;
 
@@ -1237,6 +1239,7 @@ struct Actor : QuadTreeCollider,
 	Action wallJumpBufferedAttack;
 
 	bool SpringLaunch();
+	bool TeleporterLaunch();
 	bool CheckSwing();
 	bool CheckNormalSwing();
 	bool CheckNormalSwingHeld();

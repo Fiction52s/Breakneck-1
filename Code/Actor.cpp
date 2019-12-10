@@ -35,6 +35,7 @@
 #include "Enemy_HealthFly.h"
 #include "StorySequence.h"
 #include "Enemy_BounceBooster.h"
+#include "Enemy_Teleporter.h"
 
 using namespace sf;
 using namespace std;
@@ -427,6 +428,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		currSpring = NULL;
 		currBooster = NULL;
+		currTeleporter = NULL;
 
 		currBounceBooster = NULL;
 		oldBounceBooster = NULL;
@@ -2442,6 +2444,7 @@ void Actor::Respawn()
 	repeatingSound = NULL;
 	currBooster = NULL;
 	currSpring = NULL;
+	currTeleporter = NULL;
 	oldBooster = NULL;
 
 	currBounceBooster = NULL;
@@ -15827,6 +15830,8 @@ void Actor::PhysicsResponse()
 	{
 		if (SpringLaunch()) return;
 
+		if (TeleporterLaunch())return;
+
 		//e = ground;
 		bool leaveGround = false;
 		if( ground->edgeType == Edge::CLOSED_GATE )
@@ -16023,6 +16028,8 @@ void Actor::PhysicsResponse()
 	else
 	{
 		if (SpringLaunch()) return;
+
+		if (TeleporterLaunch())return;
 
 		if( action == GROUNDHITSTUN )
 		{
@@ -17885,6 +17892,49 @@ sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 //	}
 //}
 
+bool Actor::TeleporterLaunch()
+{
+	if (currTeleporter != NULL)
+	{
+		currTeleporter->Teleport();
+		position = currTeleporter->position;
+		V2d dir = currTeleporter->dir;
+
+		double s = currTeleporter->speed;
+
+		springVel = currTeleporter->dir * s;
+
+		springExtra = V2d(0, 0);
+
+		springStunFrames = currTeleporter->stunFrames;
+
+		ground = NULL;
+		bounceEdge = NULL;
+		grindEdge = NULL;
+		action = SPRINGSTUNTELEPORT;
+		teleportSpringDest = currTeleporter->dest;
+		teleportSpringVel = velocity;
+
+		currTeleporter = NULL;
+
+		holdJump = false;
+		holdDouble = false;
+		hasDoubleJump = true;
+		hasAirDash = true;
+		rightWire->Reset();
+		leftWire->Reset();
+		frame = 0;
+		UpdateHitboxes();
+		ground = NULL;
+		wallNormal = V2d(0, 0);
+		velocity = V2d(0, 0);
+		currWall = NULL;
+		return true;
+	}
+
+	return false;
+}
+
 bool Actor::SpringLaunch()
 {
 	if (currSpring != NULL)
@@ -17908,14 +17958,19 @@ bool Actor::SpringLaunch()
 		springVel = currSpring->dir * s;
 
 		springExtra = V2d( 0, 0 );
-		if (springVel.x > .01)
+
+		if (currSpring->springType != Spring::TELEPORT)
 		{
-			facingRight = true;
+			if (springVel.x > .01)
+			{
+				facingRight = true;
+			}
+			else if (springVel.x < -.01)
+			{
+				facingRight = false;
+			}
 		}
-		else if (springVel.x < -.01)
-		{
-			facingRight = false;
-		}
+		
 
 		springStunFrames = currSpring->stunFrames;
 
@@ -19680,6 +19735,21 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				//some replacement formula later
 			}
 		}
+		else if (en->type == EnemyType::EN_TELEPORTER)
+		{
+			Teleporter *tele = (Teleporter*)qte;
+			if (currTeleporter == NULL)
+			{
+				if (tele->hitBody->Intersects(tele->currHitboxFrame, &hurtBody) && tele->action == Spring::IDLE)
+				{
+					currTeleporter = tele;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
 		else if (en->type == EnemyType::EN_HEALTHFLY)
 		{
 			HealthFly *hf = (HealthFly*)qte;
@@ -19854,7 +19924,7 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 void Actor::Draw( sf::RenderTarget *target )
 {
 	//dustParticles->Draw(target);
-	if (action == EXITWAIT || action == SPAWNWAIT /*|| (action == INTRO && frame < 11 )*/ || action == SEQ_LOOKUPDISAPPEAR )
+	if (action == EXITWAIT || action == SPAWNWAIT /*|| (action == INTRO && frame < 11 )*/ || action == SEQ_LOOKUPDISAPPEAR || action == SPRINGSTUNTELEPORT )
 	{
 		return;
 	}

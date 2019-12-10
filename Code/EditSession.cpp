@@ -768,7 +768,10 @@ void EditSession::AddW4Enemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 
 		3, GetTileset("Enemies/rail_64x64.png", 64, 64));
 
-	AddWorldEnemy("teleportspring", 4, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
+	//AddBasicAerialWorldEnemy("teleporter", 4, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+
+	AddWorldEnemy("teleporter", 4, LoadParams<TeleporterParams>, NULL, MakeParamsAerial<TeleporterParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
 
@@ -15109,7 +15112,7 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
-	else if (name == "gravityspring" || name == "bouncespring" || name == "airbouncespring" || name == "teleportspring")
+	else if (name == "gravityspring" || name == "bouncespring" || name == "airbouncespring" )
 	{
 		p = new Panel("gravityspring_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
@@ -15119,6 +15122,17 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
 
 		p->AddTextBox("speed", Vector2i(20, 200), 200, 3, "");
+	}
+	else if (name == "teleporter")
+	{
+		p = new Panel("teleporter_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+
+		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
+
+		//p->AddTextBox("speed", Vector2i(20, 200), 200, 3, "");
 	}
 	else if (name == "stagbeetle")
 	{

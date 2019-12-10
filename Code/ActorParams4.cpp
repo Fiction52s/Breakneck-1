@@ -490,3 +490,117 @@ ActorParams *RailParams::Copy()
 	RailParams *rp = new RailParams(*this);
 	return rp;
 }
+
+TeleporterParams::TeleporterParams(ActorType *at, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath )
+	:ActorParams(at)
+{
+	PlaceAerial(pos);
+
+	lines = NULL;
+
+	SetPath(globalPath);
+}
+
+TeleporterParams::TeleporterParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	Vector2i other;
+	is >> other.x;
+	is >> other.y;
+
+	lines = NULL;
+
+	list<Vector2i> globalPath;
+	globalPath.push_back(Vector2i(position.x, position.y));
+	globalPath.push_back(position + other);
+	SetPath(globalPath);
+}
+
+TeleporterParams::TeleporterParams(ActorType *at, sf::Vector2i &pos)
+	:ActorParams(at)
+{
+	PlaceAerial(pos);
+
+	lines = NULL;
+}
+
+void TeleporterParams::WriteParamFile(std::ofstream &of)
+{
+	if (localPath.size() == 0)
+	{
+		of << 0 << " " << 0 << endl;
+	}
+	else
+	{
+		of << localPath.front().x << " " << localPath.front().y << endl;
+	}
+
+}
+
+void TeleporterParams::SetPath(std::list<sf::Vector2i> &globalPath)
+{
+	ActorParams::SetPath(globalPath);
+	if (globalPath.size() > 1)
+	{
+		VertexArray &li = *lines;
+		Vector2f diff = li[1].position - li[0].position;
+		float f = GetVectorAngleCW(diff);
+		float rot = f / PI * 180.f + 90;
+		image.setRotation(rot);
+	}
+}
+
+void TeleporterParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	hasMonitor = false;
+}
+
+void TeleporterParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+	{
+		p->textBoxes["group"]->text.setString(group->name);
+	}
+
+	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath = GetGlobalPath();
+}
+
+ActorParams *TeleporterParams::Copy()
+{
+	TeleporterParams *copy = new TeleporterParams(*this);
+	return copy;
+}
+
+void TeleporterParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += Vector2f(position.x, position.y);
+		}
+
+
+		target->draw(li);
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= Vector2f(position.x, position.y);
+		}
+	}
+
+	ActorParams::Draw(target);
+}

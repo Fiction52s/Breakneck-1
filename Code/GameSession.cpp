@@ -120,6 +120,7 @@
 #include "Enemy_BounceFloater.h"
 
 #include "Enemy_BounceBooster.h"
+#include "Enemy_Teleporter.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -2168,7 +2169,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
 		}
 		else if (typeName == "spring" || typeName == "gravityspring" || typeName == "bouncespring" 
-			|| typeName == "airbouncespring" || typeName == "teleportspring" )
+			|| typeName == "airbouncespring" )//|| typeName == "teleportspring" )
 		{
 			int xPos, yPos;
 
@@ -2218,6 +2219,40 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			enem = enemy;
 
 			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "teleporter" )
+		{
+			int xPos, yPos;
+
+			//always air
+
+			is >> xPos;
+			is >> yPos;
+
+
+			Vector2i other;
+			is >> other.x;
+			is >> other.y;
+
+			Teleporter *enemy = new Teleporter(this, Vector2i(xPos, yPos), other, false);
+
+			activeItemTree->Insert(enemy);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+
+			Teleporter *secondary = enemy->CreateSecondary();
+
+			activeItemTree->Insert(secondary);
+
+			fullEnemyList.push_back(secondary);
+			//enem = enemy;
+
+			enemyTree->Insert(secondary);
+
+
 		}
 		else if (typeName == "upbouncebooster" || typeName == "omnibouncebooster")
 		{
