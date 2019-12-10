@@ -36,6 +36,7 @@
 #include "StorySequence.h"
 #include "Enemy_BounceBooster.h"
 #include "Enemy_Teleporter.h"
+#include "Wire.h"
 
 using namespace sf;
 using namespace std;
@@ -12414,6 +12415,9 @@ void Actor::UpdatePhysics()
 		rightWire->UpdateChargesPhysics();
 	if( leftWire != NULL )
 		leftWire->UpdateChargesPhysics();
+
+	rightWire->UpdateEnemyAnchor();
+	leftWire->UpdateEnemyAnchor();
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
 	V2d temp_velocity = velocity / (double)slowMultiple;

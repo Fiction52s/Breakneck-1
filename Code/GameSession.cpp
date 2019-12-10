@@ -121,6 +121,7 @@
 
 #include "Enemy_BounceBooster.h"
 #include "Enemy_Teleporter.h"
+#include "Wire.h"
 
 #define TIMESTEP 1.0 / 60.0
 

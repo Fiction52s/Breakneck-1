@@ -3,6 +3,7 @@
 #include "GameSession.h"
 #include <iostream>
 #include <assert.h>
+#include "Enemy.h"
 
 using namespace sf;
 using namespace std;
@@ -289,6 +290,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				//cout << "firing from idle" << endl;
 				framesFiring = 0;
 				frame = 0;
+				anchor.enemy = NULL;
 
 				wireTip.setRotation(angle);
 			}
@@ -538,6 +540,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 						//cout << "firing from retracting" << endl;
 						framesFiring = 0;
 						frame = 0;
+						anchor.enemy = NULL;
 
 						wireTip.setRotation( angle );
 					}
@@ -817,6 +820,15 @@ void Wire::SwapPoints( int aIndex, int bIndex )
 	points[bIndex] = temp;
 }
 
+void Wire::UpdateEnemyAnchor()
+{
+	if (anchor.enemy != NULL)
+	{
+		anchor.pos = anchor.enemy->GetCamPoint(anchor.enemyPosIndex);
+		realAnchor = anchor.pos;
+	}
+}
+
 void Wire::UpdateAnchors2( V2d vel )
 {
 	
@@ -829,6 +841,9 @@ void Wire::UpdateAnchors2( V2d vel )
 
 	if( state == HIT || state == PULLING )
 	{
+		//UpdateEnemyAnchor();
+
+
 		if( oldPos.x == storedPlayerPos.x && oldPos.y == storedPlayerPos.y )
 		{
 			//return;
@@ -864,6 +879,8 @@ void Wire::UpdateAnchors2( V2d vel )
 		double left, right, top, bottom;
 		double ex = 1;
 		Rect<double> r;
+
+		
 
 		if( counter > 1 )
 		{
@@ -987,6 +1004,29 @@ void Wire::UpdateAnchors2( V2d vel )
 		quadWirePosC = wirePos;
 		quadPlayerPosD = playerPos;
 
+		Enemy *foundEnemy;
+		int foundIndex;
+		if (GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
+		{
+			storedPlayerPos = playerPos;
+			state = HIT;
+			if (!triggerDown)
+			{
+				canRetractGround = true;
+			}
+			else
+			{
+				canRetractGround = false;
+			}
+			numPoints = 0;
+			anchor.pos = foundEnemy->GetCamPoint(foundIndex); //minSideEdge->v0;
+			anchor.quantity = 0;
+			anchor.e = NULL;//minSideEdge;
+
+			anchor.enemy = foundEnemy;
+			anchor.enemyPosIndex = foundIndex;
+			UpdateAnchors(V2d(0, 0));
+		}
 
 		//for grabbing onto points
 		double top = min( quadOldPosA.y, min( quadOldWirePosB.y, min( quadWirePosC.y, quadPlayerPosD.y ) ) );
@@ -1003,6 +1043,8 @@ void Wire::UpdateAnchors2( V2d vel )
 		}
 		else
 		{
+			
+			//queryType = "terrain";
 			minSideEdge = NULL;
 			player->owner->terrainTree->Query( this, r );
 			if( minSideEdge != NULL )

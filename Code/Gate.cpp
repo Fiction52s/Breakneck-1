@@ -7,6 +7,7 @@
 #include "Minimap.h"
 #include "Enemy_Shard.h"
 #include "SaveFile.h"
+#include "Wire.h"
 
 using namespace std;
 using namespace sf;

@@ -11,6 +11,7 @@
 #include "Shield.h"
 #include "MainMenu.h"
 #include "Enemy_CurveTurret.h"
+#include "Wire.h"
 
 using namespace std;
 using namespace sf;

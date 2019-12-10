@@ -7,10 +7,12 @@
 #include "QuadTree.h"
 #include "Tileset.h"
 #include <SFML/System/Clock.hpp>
+#include "EnemyTracker.h"
 //#include "GameSession.h"
 
 struct Actor;
-struct Wire : RayCastHandler, QuadTreeCollider
+struct Wire : RayCastHandler, QuadTreeCollider,
+	EnemyTracker
 {
 	enum WireState
 	{
@@ -29,6 +31,7 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	void UpdateAnchors( sf::Vector2<double> vel );
 	void UpdateAnchors2( sf::Vector2<double> vel );
 	void SetFireDirection( sf::Vector2<double> dir );
+	void UpdateEnemyAnchor();
 	void Check();
 	void UpdateMinimapQuads( sf::View &uiView );
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
@@ -87,6 +90,11 @@ struct Wire : RayCastHandler, QuadTreeCollider
 
 	struct WirePoint
 	{
+		WirePoint()
+		{
+			e = NULL;
+			enemy = NULL;
+		}
 		Edge *e;
 		double quantity;
 		bool start;
@@ -95,6 +103,9 @@ struct Wire : RayCastHandler, QuadTreeCollider
 		sf::Vector2<double> test;
 		bool clockwise;
 		double angleDiff;
+
+		Enemy *enemy;
+		int enemyPosIndex;
 
 		double sortingAngleDist;
 	};
@@ -181,6 +192,8 @@ struct Wire : RayCastHandler, QuadTreeCollider
 	int framesFiring;
 	double fireRate;
 	Edge *minSideEdge;
+	//Enemy *testEnemy;
+	//std::string queryType;
 	double minSideOther;
 	double minSideAlong;
 	sf::Vector2<double> fireDir;
@@ -222,6 +235,9 @@ struct Wire : RayCastHandler, QuadTreeCollider
 
 
 	std::list<sf::Drawable*> progressDraw;
+
+
+	CollisionBox testHitbox;
 };
 
 #endif

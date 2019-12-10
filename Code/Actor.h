@@ -8,7 +8,7 @@
 #include "Physics.h"
 #include "Input.h"
 #include <SFML/Graphics.hpp>
-#include "Wire.h"
+//#include "Wire.h"
 #include "Light.h"
 #include "AirParticles.h"
 #include "Movement.h"
@@ -182,6 +182,8 @@ struct KinRing;
 struct RisingParticleUpdater;
 struct EffectPool;
 struct ShapeEmitter;
+
+struct Wire;
 
 struct Actor : QuadTreeCollider,
 	RayCastHandler
