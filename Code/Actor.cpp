@@ -8272,579 +8272,7 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
-	Wire *wire = rightWire;
-	
-	double accel = .15;//.2;//.15;//.15;
-	double triggerSpeed = 17;
-	double doubleWirePull = 1.0;//2.0
-
-	doubleWireBoost = false; //just for now temp
-	rightWireBoost = false;
-	leftWireBoost = false;
-
-	if( framesInAir > 1  )
-	if( rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING )
-	{	
-		bool canDoubleWireBoostParticle = false;
-		if( framesSinceDoubleWireBoost >= doubleWireBoostTiming )
-		{
-			canDoubleWireBoostParticle = true;
-			framesSinceDoubleWireBoost = 0;
-		}
-
-		lastWire = 0;
-		V2d rwPos = rightWire->storedPlayerPos;
-		V2d lwPos = rightWire->storedPlayerPos;
-		V2d newVel1, newVel2;
-		V2d wirePoint = wire->anchor.pos;
-		if( wire->numPoints > 0 )
-			wirePoint = wire->points[wire->numPoints-1].pos;
-
-		V2d wireDir1 = normalize( wirePoint - rwPos );
-		V2d tes =  normalize( rwPos - wirePoint );
-		double temp = tes.x;
-		tes.x = tes.y;
-		tes.y = -temp;
-
-		V2d old = velocity;
-		//velocity = dot( velocity, tes ) * tes;
-
-
-		V2d future = rwPos + velocity;
-		
-		V2d seg = wirePoint - rwPos;
-		double segLength = length( seg );
-		V2d diff = wirePoint - future;
-		
-		//wire->segmentLength -= 10;
-		if( length( diff ) > wire->segmentLength )
-		{
-			future += normalize(diff) * ( length( diff ) - ( wire->segmentLength) );
-			newVel1 = future - rwPos;
-		}
-
-		
-		wire = leftWire;
-
-		wirePoint = wire->anchor.pos;
-		if( wire->numPoints > 0 )
-			wirePoint = wire->points[wire->numPoints-1].pos;
-
-		V2d wireDir2 = normalize( wirePoint - lwPos );
-		tes =  normalize( lwPos - wirePoint );
-		temp = tes.x;
-		tes.x = tes.y;
-		tes.y = -temp;
-
-		old = velocity;
-		//velocity = dot( velocity, tes ) * tes;
-
-
-		future = lwPos + velocity;
-		
-		seg = wirePoint - lwPos;
-		segLength = length( seg );
-		diff = wirePoint - future;
-		
-		//wire->segmentLength -= 10;
-		if( length( diff ) > wire->segmentLength )
-		{
-			future += normalize(diff) * ( length( diff ) - ( wire->segmentLength) );
-			newVel2 = future - lwPos;
-		}
-
-		V2d totalVelDir =  normalize( (newVel1 + newVel2 ) );//normalize( wireDir1 + wireDir2 );
-		//velocity = dot( (newVel1 + newVel2)/ 2.0, totalVelDir ) * normalize( totalVelDir );
-
-		totalVelDir = normalize( wireDir1 + wireDir2 );
-
-		double dott = dot( -wireDir1, wireDir2 );
-		bool opposite = (dott > .95);
-
-		V2d otherDir( totalVelDir.y, -totalVelDir.x );
-		double dotvel =dot( velocity, otherDir );
-		//correction for momentum
-
-		
-		
-		V2d wdirs = ( wireDir1 + wireDir2 ) / 2.0;
-
-		
-		if( opposite)
-			wdirs = wireDir1;
-
-
-		
-		
-		V2d owdirs( wdirs.y, -wdirs.x );
-
-		doubleWireBoostDir = -owdirs;
-
-		V2d inputDir;
-		if( currInput.LLeft() )
-		{
-			inputDir.x = -1;
-		}
-		else if( currInput.LRight() )
-		{
-			inputDir.x = 1;
-		}
-		if( currInput.LUp() )
-		{
-			inputDir.y = -1;
-		}
-		else if( currInput.LDown() )
-		{
-			inputDir.y = 1;
-		}
-		
-		dotvel = -dot( inputDir, owdirs );
-		double v = .5;//.73;//.8;//.5;//1.0;
-		if( dotvel > 0 )
-		{
-			//cout << "a" << endl;
-			if( canDoubleWireBoostParticle )
-			{
-				doubleWireBoost = true;
-			}
-			double q = dot( velocity, normalize( -owdirs ) );
-			
-			if( q >= 0 && q < 40 )
-			{
-				velocity += -owdirs * v / (double)slowMultiple;
-			}
-			else
-			{
-				velocity += -owdirs * (v*2) / (double)slowMultiple;
-			}
-			
-			doubleWireBoostDir = -doubleWireBoostDir;
-		}
-		else if( dotvel < 0 )
-		{
-			if( canDoubleWireBoostParticle )
-			{
-				doubleWireBoost = true;
-			}
-			//cout << "b" << endl;
-			double q = dot( velocity, normalize( owdirs ) );
-			if( q >= 0 && q < 40 )
-			{
-				velocity += owdirs * v / (double)slowMultiple;
-			}
-			else
-			{
-				velocity += owdirs * ( v * 2 ) / (double)slowMultiple;
-			}
-			
-		}
-		else
-		{
-		}
-
-		if( !opposite )
-		{
-		V2d totalAcc;
-		totalAcc.x = totalVelDir.x * doubleWirePull / (double)slowMultiple;
-		if( totalVelDir.y < 0 )
-			totalAcc.y = totalVelDir.y * ( doubleWirePull )/ (double)slowMultiple;
-			//totalAcc.y = totalVelDir.y * ( doubleWirePull + 1 )/ (double)slowMultiple;
-		else
-			totalAcc.y = totalVelDir.y * ( doubleWirePull )/ (double)slowMultiple;
-		
-		double beforeAlongAmount = dot( velocity, totalVelDir );
-
-		if( beforeAlongAmount >= 20 )
-		{
-			totalAcc *= .5;
-		}
-		else if( beforeAlongAmount >= 40 )
-		{
-			totalAcc = V2d( 0, 0 );
-		}
-		//if( length( velocity ) > 20.0 )
-		//{
-		//	totalAcc *= .5;
-		//}
-		//totalVel *= dot( totalVelDir, rightWire->
-		velocity += totalAcc;
-		}
-
-		/*if( opposite && !currInput.LLeft() && !currInput.LDown() && !currInput.LUp() && !currInput.LRight() )
-		{
-			double wdirsVel = dot( velocity, wdirs );
-			double owdirsVel = dot( velocity, owdirs );
-		}*/
-
-		if( opposite )
-		{
-			dotvel = dot( inputDir, wireDir1 );
-			double towardsExtra = .5;//.7;//1.0;
-			if( dotvel > 0 )
-			{
-				//cout << "a" << endl;\
-
-				
-
-				velocity += wireDir1 * towardsExtra / (double)slowMultiple;
-			}
-			else if( dotvel < 0 )
-			{
-				//cout << "b" << endl;
-				velocity += wireDir2 * towardsExtra / (double)slowMultiple;
-			}
-			else
-			{
-			}
-		}
-		else
-		{
-			//totalVelDir
-			if( dot( wireDir1, wireDir2 ) > .99 )
-				velocity = (velocity + AddGravity( velocity )) / 2.0;
-		}
-		//removing the max velocity cap now that it doesnt pull you in a straight direction
-		//double afterAlongAmount = dot( velocity, totalVelDir );
-		//double maxAlong = 100;//45.0;
-
-		//if( afterAlongAmount > maxAlong )
-		//{
-		//	velocity -= ( afterAlongAmount - maxAlong ) * totalVelDir;
-		//}
-
-		//if( length( velocity ) > afterAlongAmount )
-		//{
-		//	velocity = normalize( velocity ) * afterAlongAmount;
-		//}
-
-		//velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
-		///velocity += totalVelDir * doubleWirePull / (double)slowMultiple;
-	}
-	else if( rightWire->state == Wire::PULLING )
-	{
-
-		//lastWire = 1;
-		V2d wPos = rightWire->storedPlayerPos;
-		if( position != rightWire->storedPlayerPos )
-		{
-			//cout << "wPos: " << wPos.x << ", " << wPos.y << endl;
-			//cout << "pp: " << position.x << ", " << position.y << endl;
-			//assert( 0 && "what" );
-		}
-		V2d wirePoint = wire->anchor.pos;
-		if( wire->numPoints > 0 )
-			wirePoint = wire->points[wire->numPoints-1].pos;
-
-		V2d tes =  normalize( wPos - wirePoint );
-		double temp = tes.x;
-		tes.x = tes.y;
-		tes.y = -temp;
-
-		double val = dot( velocity, normalize( wirePoint - wPos ) );
-		V2d otherTes;
-		//if( val > 0 )
-		{
-			otherTes = val * normalize( wirePoint - wPos );
-		}
-		
-		//otherTes = V2d( 0, 0 );
-
-		V2d old = velocity;
-		
-		//if( normalize( wirePoint - wPos ).y > 0 )
-		//{
-		//	V2d g = AddGravity( V2d( 0, 0 ) );
-		//	velocity -= g;//V2d( 0, gravity );
-		//}
-		
-		
-		double speed = dot( velocity, tes ); 
-		
-
-		if( speed > triggerSpeed )
-		{
-			//rightWireBoost = true;
-			speed += accel / (double)slowMultiple;
-		}
-		else if( speed < -triggerSpeed )
-		{
-			//rightWireBoost = true;
-			speed -= accel / (double)slowMultiple;
-		}
-		else
-		{
-			
-		
-		}
-
-		V2d wireDir = normalize( wirePoint - wPos );
-		double otherAccel = .5 / (double)slowMultiple;
-
-		V2d vec45( 1, 1 );
-		vec45 = normalize( vec45 );
-		double xLimit = vec45.x;
-		
-		rightWireBoostDir = -V2d( wireDir.y, -wireDir.x );
-
-		if( abs( wireDir.x ) < xLimit )
-		{
-			if( wireDir.y < 0 )
-			{
-				if( currInput.LLeft() )
-				{
-					rightWireBoost = true;
-					speed -= otherAccel;
-					rightWireBoostDir = -rightWireBoostDir;
-				}
-				else if( currInput.LRight() )
-				{
-					rightWireBoost = true;
-					speed += otherAccel;
-				}
-			}
-			else if( wireDir.y > 0 )
-			{
-				if( currInput.LLeft() )
-				{
-					rightWireBoost = true;
-					speed += otherAccel;
-				}
-				else if( currInput.LRight() )
-				{
-					rightWireBoost = true;
-					speed -= otherAccel;
-					rightWireBoostDir = -rightWireBoostDir;
-				}
-			}
-		}
-		else
-		{
-			if( wireDir.x > 0 )
-			{
-				if( currInput.LUp() )
-				{
-					rightWireBoost = true;
-					speed -= otherAccel;
-					rightWireBoostDir = -rightWireBoostDir;
-				}
-				else if( currInput.LDown() )
-				{
-					rightWireBoost = true;
-					speed += otherAccel;
-				}
-			}
-			else if( wireDir.x < 0 )
-			{
-				if( currInput.LUp() )
-				{
-					rightWireBoost = true;
-					speed += otherAccel;
-				}
-				else if( currInput.LDown() )
-				{
-					rightWireBoost = true;
-					speed -= otherAccel;
-					rightWireBoostDir = -rightWireBoostDir;
-				}
-			}
-
-			
-		}
-
-		
-
-		if( rightWireBoost && framesSinceRightWireBoost >= singleWireBoostTiming && slowCounter == 1 )
-		{
-			framesSinceRightWireBoost = 0;
-		}
-		else
-		{
-			rightWireBoost = false;
-		}
-
-		velocity = speed * tes;
-		velocity += otherTes;
-		//velocity += otherTes;
-
-
-		V2d future = wPos + velocity;
-		
-		V2d seg = wirePoint - wPos;
-		double segLength = length( seg );
-		V2d diff = wirePoint - future;
-		
-		
-		//wire->segmentLength -= 10;
-		//cout << "ws: " << wire->segmentLength << ", segg: " << segLength << ", get: " << wire->GetSegmentLength() << endl;
-		if( length( diff ) > wire->segmentLength ) 
-		{
-			double pullVel = length( diff ) - wire->segmentLength;
-			V2d pullDir = normalize(diff);
-			//cout << "lengthdiff: " << length( diff ) << ", : seglength: " << wire->segmentLength << endl;
-			future += pullDir * pullVel;
-			//cout << "fut: " << length( future - wirePoint ) << ", seglength: " << wire->segmentLength << endl;
-			velocity = future - wPos;
-			
-			//cout << "pullVel: " << pullVel << endl;
-			
-		}
-
-		//velocity = V2d( 0, 0 );
-
-		//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
-	}
-	else if( leftWire->state == Wire::PULLING  )
-	{
-		//lastWire = 2;
-		wire = leftWire;
-		V2d wPos = leftWire->storedPlayerPos;
-		V2d wirePoint = wire->anchor.pos;
-		if( wire->numPoints > 0 )
-			wirePoint = wire->points[wire->numPoints-1].pos;
-
-		V2d tes =  normalize( wPos - wirePoint );
-		double temp = tes.x;
-		tes.x = tes.y;
-		tes.y = -temp;
-
-		double val = dot( velocity, normalize( wirePoint - wPos ) );
-		V2d otherTes;
-		//if( val > 0 )
-		{
-			otherTes = val * normalize( wirePoint - wPos );
-		}
-		
-		 
-
-		V2d old = velocity;
-		
-		if( normalize( wirePoint - wPos ).y > 0 )
-		{
-		//	velocity -= V2d( 0, gravity );
-		}
-		
-		//double accel = .3;
-		double speed = dot( velocity, tes ); 
-
-		if( speed > triggerSpeed )
-		{
-
-			speed += accel / (double)slowMultiple;
-		}
-		else if( speed < -triggerSpeed )
-		{
-			speed -= accel / (double)slowMultiple;
-		}
-		else
-		{
-			
-		
-		}
-
-		V2d wireDir = normalize( wirePoint - wPos );
-		double otherAccel = .5 / (double)slowMultiple;
-		V2d vec45( 1, 1 );
-		vec45 = normalize( vec45 );
-		double xLimit = vec45.x;
-		leftWireBoostDir = -V2d( wireDir.y, -wireDir.x );
-		if( abs( wireDir.x ) < xLimit )
-		{
-			if( wireDir.y < 0 )
-			{
-				if( currInput.LLeft() )
-				{
-					leftWireBoost = true;
-					leftWireBoostDir = -leftWireBoostDir;
-					speed -= otherAccel;
-				}
-				else if( currInput.LRight() )
-				{
-					leftWireBoost = true;
-					speed += otherAccel;
-				}
-			}
-			else if( wireDir.y > 0 )
-			{
-				if( currInput.LLeft() )
-				{
-					leftWireBoost = true;
-					speed += otherAccel;
-				}
-				else if( currInput.LRight() )
-				{
-					leftWireBoost = true;
-					speed -= otherAccel;
-					leftWireBoostDir = -leftWireBoostDir;
-				}
-			}
-			}
-		else
-		{
-			if( wireDir.x > 0 )
-			{
-				if( currInput.LUp() )
-				{
-					leftWireBoost = true;
-					speed -= otherAccel;
-					leftWireBoostDir = -leftWireBoostDir;
-				}
-				else if( currInput.LDown() )
-				{
-					leftWireBoost = true;
-					speed += otherAccel;
-				}
-			}
-			else if( wireDir.x < 0 )
-			{
-				if( currInput.LUp() )
-				{
-					leftWireBoost = true;
-					speed += otherAccel;
-				}
-				else if( currInput.LDown() )
-				{
-					leftWireBoost = true;
-					speed -= otherAccel;
-					leftWireBoostDir = -leftWireBoostDir;
-				}
-			}
-
-			
-		}
-
-
-		if( leftWireBoost && framesSinceLeftWireBoost >= singleWireBoostTiming )
-		{
-			framesSinceLeftWireBoost = 0;
-		}
-		else
-		{
-			leftWireBoost = false;
-		}
-
-		velocity = speed * tes;
-		velocity += otherTes;
-		//velocity += otherTes;
-
-
-		V2d future = wPos + velocity;
-		
-		V2d seg = wirePoint - wPos;
-		double segLength = length( seg );
-		V2d diff = wirePoint - future;
-		
-		//wire->segmentLength -= 10;
-		if( length( diff ) > wire->segmentLength )
-		{
-			future += normalize(diff) * ( length( diff ) - ( wire->segmentLength) );
-			velocity = future - wPos;
-		}
-	}
-
-	if( ground != NULL )
-	{
-		lastWire = 0;
-	}
+	WireMovement();
 
 	
 	
@@ -9630,6 +9058,585 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 	}
 
 	return false;
+}
+
+void Actor::WireMovement()
+{
+	Wire *wire = rightWire;
+
+	double accel = .15;//.2;//.15;//.15;
+	double triggerSpeed = 17;
+	double doubleWirePull = 1.0;//2.0
+
+	doubleWireBoost = false; //just for now temp
+	rightWireBoost = false;
+	leftWireBoost = false;
+
+	if (framesInAir > 1)
+	{
+		if (rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING)
+		{
+			bool canDoubleWireBoostParticle = false;
+			if (framesSinceDoubleWireBoost >= doubleWireBoostTiming)
+			{
+				canDoubleWireBoostParticle = true;
+				framesSinceDoubleWireBoost = 0;
+			}
+
+			lastWire = 0;
+			V2d rwPos = rightWire->storedPlayerPos;
+			V2d lwPos = rightWire->storedPlayerPos;
+			V2d newVel1, newVel2;
+			V2d wirePoint = wire->anchor.pos;
+			if (wire->numPoints > 0)
+				wirePoint = wire->points[wire->numPoints - 1].pos;
+
+			V2d wireDir1 = normalize(wirePoint - rwPos);
+			V2d tes = normalize(rwPos - wirePoint);
+			double temp = tes.x;
+			tes.x = tes.y;
+			tes.y = -temp;
+
+			V2d old = velocity;
+			//velocity = dot( velocity, tes ) * tes;
+
+
+			V2d future = rwPos + velocity;
+
+			V2d seg = wirePoint - rwPos;
+			double segLength = length(seg);
+			V2d diff = wirePoint - future;
+
+			//wire->segmentLength -= 10;
+			if (length(diff) > wire->segmentLength)
+			{
+				future += normalize(diff) * (length(diff) - (wire->segmentLength));
+				newVel1 = future - rwPos;
+			}
+
+
+			wire = leftWire;
+
+			wirePoint = wire->anchor.pos;
+			if (wire->numPoints > 0)
+				wirePoint = wire->points[wire->numPoints - 1].pos;
+
+			V2d wireDir2 = normalize(wirePoint - lwPos);
+			tes = normalize(lwPos - wirePoint);
+			temp = tes.x;
+			tes.x = tes.y;
+			tes.y = -temp;
+
+			old = velocity;
+			//velocity = dot( velocity, tes ) * tes;
+
+
+			future = lwPos + velocity;
+
+			seg = wirePoint - lwPos;
+			segLength = length(seg);
+			diff = wirePoint - future;
+
+			//wire->segmentLength -= 10;
+			if (length(diff) > wire->segmentLength)
+			{
+				future += normalize(diff) * (length(diff) - (wire->segmentLength));
+				newVel2 = future - lwPos;
+			}
+
+			V2d totalVelDir = normalize((newVel1 + newVel2));//normalize( wireDir1 + wireDir2 );
+															 //velocity = dot( (newVel1 + newVel2)/ 2.0, totalVelDir ) * normalize( totalVelDir );
+
+			totalVelDir = normalize(wireDir1 + wireDir2);
+
+			double dott = dot(-wireDir1, wireDir2);
+			bool opposite = (dott > .95);
+
+			V2d otherDir(totalVelDir.y, -totalVelDir.x);
+			double dotvel = dot(velocity, otherDir);
+			//correction for momentum
+
+
+
+			V2d wdirs = (wireDir1 + wireDir2) / 2.0;
+
+
+			if (opposite)
+				wdirs = wireDir1;
+
+
+
+
+			V2d owdirs(wdirs.y, -wdirs.x);
+
+			doubleWireBoostDir = -owdirs;
+
+			V2d inputDir;
+			if (currInput.LLeft())
+			{
+				inputDir.x = -1;
+			}
+			else if (currInput.LRight())
+			{
+				inputDir.x = 1;
+			}
+			if (currInput.LUp())
+			{
+				inputDir.y = -1;
+			}
+			else if (currInput.LDown())
+			{
+				inputDir.y = 1;
+			}
+
+			dotvel = -dot(inputDir, owdirs);
+			double v = .5;//.73;//.8;//.5;//1.0;
+			if (dotvel > 0)
+			{
+				//cout << "a" << endl;
+				if (canDoubleWireBoostParticle)
+				{
+					doubleWireBoost = true;
+				}
+				double q = dot(velocity, normalize(-owdirs));
+
+				if (q >= 0 && q < 40)
+				{
+					velocity += -owdirs * v / (double)slowMultiple;
+				}
+				else
+				{
+					velocity += -owdirs * (v * 2) / (double)slowMultiple;
+				}
+
+				doubleWireBoostDir = -doubleWireBoostDir;
+			}
+			else if (dotvel < 0)
+			{
+				if (canDoubleWireBoostParticle)
+				{
+					doubleWireBoost = true;
+				}
+				//cout << "b" << endl;
+				double q = dot(velocity, normalize(owdirs));
+				if (q >= 0 && q < 40)
+				{
+					velocity += owdirs * v / (double)slowMultiple;
+				}
+				else
+				{
+					velocity += owdirs * (v * 2) / (double)slowMultiple;
+				}
+
+			}
+			else
+			{
+			}
+
+			if (!opposite)
+			{
+				V2d totalAcc;
+				totalAcc.x = totalVelDir.x * doubleWirePull / (double)slowMultiple;
+				if (totalVelDir.y < 0)
+					totalAcc.y = totalVelDir.y * (doubleWirePull) / (double)slowMultiple;
+				//totalAcc.y = totalVelDir.y * ( doubleWirePull + 1 )/ (double)slowMultiple;
+				else
+					totalAcc.y = totalVelDir.y * (doubleWirePull) / (double)slowMultiple;
+
+				double beforeAlongAmount = dot(velocity, totalVelDir);
+
+				if (beforeAlongAmount >= 20)
+				{
+					totalAcc *= .5;
+				}
+				else if (beforeAlongAmount >= 40)
+				{
+					totalAcc = V2d(0, 0);
+				}
+				//if( length( velocity ) > 20.0 )
+				//{
+				//	totalAcc *= .5;
+				//}
+				//totalVel *= dot( totalVelDir, rightWire->
+				velocity += totalAcc;
+			}
+
+			/*if( opposite && !currInput.LLeft() && !currInput.LDown() && !currInput.LUp() && !currInput.LRight() )
+			{
+			double wdirsVel = dot( velocity, wdirs );
+			double owdirsVel = dot( velocity, owdirs );
+			}*/
+
+			if (opposite)
+			{
+				dotvel = dot(inputDir, wireDir1);
+				double towardsExtra = .5;//.7;//1.0;
+				if (dotvel > 0)
+				{
+					//cout << "a" << endl;\
+
+
+
+					velocity += wireDir1 * towardsExtra / (double)slowMultiple;
+				}
+				else if (dotvel < 0)
+				{
+					//cout << "b" << endl;
+					velocity += wireDir2 * towardsExtra / (double)slowMultiple;
+				}
+				else
+				{
+				}
+			}
+			else
+			{
+				//totalVelDir
+				if (dot(wireDir1, wireDir2) > .99)
+					velocity = (velocity + AddGravity(velocity)) / 2.0;
+			}
+			//removing the max velocity cap now that it doesnt pull you in a straight direction
+			//double afterAlongAmount = dot( velocity, totalVelDir );
+			//double maxAlong = 100;//45.0;
+
+			//if( afterAlongAmount > maxAlong )
+			//{
+			//	velocity -= ( afterAlongAmount - maxAlong ) * totalVelDir;
+			//}
+
+			//if( length( velocity ) > afterAlongAmount )
+			//{
+			//	velocity = normalize( velocity ) * afterAlongAmount;
+			//}
+
+			//velocity = ( dot( velocity, totalVelDir ) + 4.0 ) * totalVelDir; //+ V2d( 0, gravity / slowMultiple ) ;
+			///velocity += totalVelDir * doubleWirePull / (double)slowMultiple;
+		}
+		else if (rightWire->state == Wire::PULLING)
+		{
+
+			//lastWire = 1;
+			V2d wPos = rightWire->storedPlayerPos;
+			if (position != rightWire->storedPlayerPos)
+			{
+				//cout << "wPos: " << wPos.x << ", " << wPos.y << endl;
+				//cout << "pp: " << position.x << ", " << position.y << endl;
+				//assert( 0 && "what" );
+			}
+			V2d wirePoint = wire->anchor.pos;
+			if (wire->numPoints > 0)
+				wirePoint = wire->points[wire->numPoints - 1].pos;
+
+			V2d tes = normalize(wPos - wirePoint);
+			double temp = tes.x;
+			tes.x = tes.y;
+			tes.y = -temp;
+
+			double val = dot(velocity, normalize(wirePoint - wPos));
+			V2d otherTes;
+			//if( val > 0 )
+			{
+				otherTes = val * normalize(wirePoint - wPos);
+			}
+
+			//otherTes = V2d( 0, 0 );
+
+			V2d old = velocity;
+
+			//if( normalize( wirePoint - wPos ).y > 0 )
+			//{
+			//	V2d g = AddGravity( V2d( 0, 0 ) );
+			//	velocity -= g;//V2d( 0, gravity );
+			//}
+
+
+			double speed = dot(velocity, tes);
+
+
+			if (speed > triggerSpeed)
+			{
+				//rightWireBoost = true;
+				speed += accel / (double)slowMultiple;
+			}
+			else if (speed < -triggerSpeed)
+			{
+				//rightWireBoost = true;
+				speed -= accel / (double)slowMultiple;
+			}
+			else
+			{
+
+
+			}
+
+			V2d wireDir = normalize(wirePoint - wPos);
+			double otherAccel = .5 / (double)slowMultiple;
+
+			V2d vec45(1, 1);
+			vec45 = normalize(vec45);
+			double xLimit = vec45.x;
+
+			rightWireBoostDir = -V2d(wireDir.y, -wireDir.x);
+
+			if (abs(wireDir.x) < xLimit)
+			{
+				if (wireDir.y < 0)
+				{
+					if (currInput.LLeft())
+					{
+						rightWireBoost = true;
+						speed -= otherAccel;
+						rightWireBoostDir = -rightWireBoostDir;
+					}
+					else if (currInput.LRight())
+					{
+						rightWireBoost = true;
+						speed += otherAccel;
+					}
+				}
+				else if (wireDir.y > 0)
+				{
+					if (currInput.LLeft())
+					{
+						rightWireBoost = true;
+						speed += otherAccel;
+					}
+					else if (currInput.LRight())
+					{
+						rightWireBoost = true;
+						speed -= otherAccel;
+						rightWireBoostDir = -rightWireBoostDir;
+					}
+				}
+			}
+			else
+			{
+				if (wireDir.x > 0)
+				{
+					if (currInput.LUp())
+					{
+						rightWireBoost = true;
+						speed -= otherAccel;
+						rightWireBoostDir = -rightWireBoostDir;
+					}
+					else if (currInput.LDown())
+					{
+						rightWireBoost = true;
+						speed += otherAccel;
+					}
+				}
+				else if (wireDir.x < 0)
+				{
+					if (currInput.LUp())
+					{
+						rightWireBoost = true;
+						speed += otherAccel;
+					}
+					else if (currInput.LDown())
+					{
+						rightWireBoost = true;
+						speed -= otherAccel;
+						rightWireBoostDir = -rightWireBoostDir;
+					}
+				}
+
+
+			}
+
+
+
+			if (rightWireBoost && framesSinceRightWireBoost >= singleWireBoostTiming && slowCounter == 1)
+			{
+				framesSinceRightWireBoost = 0;
+			}
+			else
+			{
+				rightWireBoost = false;
+			}
+
+			velocity = speed * tes;
+			velocity += otherTes;
+			//velocity += otherTes;
+
+
+			V2d future = wPos + velocity;
+
+			V2d seg = wirePoint - wPos;
+			double segLength = length(seg);
+			V2d diff = wirePoint - future;
+
+
+			//wire->segmentLength -= 10;
+			//cout << "ws: " << wire->segmentLength << ", segg: " << segLength << ", get: " << wire->GetSegmentLength() << endl;
+			if (length(diff) > wire->segmentLength)
+			{
+				double pullVel = length(diff) - wire->segmentLength;
+				V2d pullDir = normalize(diff);
+				//cout << "lengthdiff: " << length( diff ) << ", : seglength: " << wire->segmentLength << endl;
+				future += pullDir * pullVel;
+				//cout << "fut: " << length( future - wirePoint ) << ", seglength: " << wire->segmentLength << endl;
+				velocity = future - wPos;
+
+				//cout << "pullVel: " << pullVel << endl;
+
+			}
+
+			//velocity = V2d( 0, 0 );
+
+			//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
+		}
+		else if (leftWire->state == Wire::PULLING)
+		{
+			//lastWire = 2;
+			wire = leftWire;
+			V2d wPos = leftWire->storedPlayerPos;
+			V2d wirePoint = wire->anchor.pos;
+			if (wire->numPoints > 0)
+				wirePoint = wire->points[wire->numPoints - 1].pos;
+
+			V2d tes = normalize(wPos - wirePoint);
+			double temp = tes.x;
+			tes.x = tes.y;
+			tes.y = -temp;
+
+			double val = dot(velocity, normalize(wirePoint - wPos));
+			V2d otherTes;
+			//if( val > 0 )
+			{
+				otherTes = val * normalize(wirePoint - wPos);
+			}
+
+
+
+			V2d old = velocity;
+
+			if (normalize(wirePoint - wPos).y > 0)
+			{
+				//	velocity -= V2d( 0, gravity );
+			}
+
+			//double accel = .3;
+			double speed = dot(velocity, tes);
+
+			if (speed > triggerSpeed)
+			{
+
+				speed += accel / (double)slowMultiple;
+			}
+			else if (speed < -triggerSpeed)
+			{
+				speed -= accel / (double)slowMultiple;
+			}
+			else
+			{
+
+
+			}
+
+			V2d wireDir = normalize(wirePoint - wPos);
+			double otherAccel = .5 / (double)slowMultiple;
+			V2d vec45(1, 1);
+			vec45 = normalize(vec45);
+			double xLimit = vec45.x;
+			leftWireBoostDir = -V2d(wireDir.y, -wireDir.x);
+			if (abs(wireDir.x) < xLimit)
+			{
+				if (wireDir.y < 0)
+				{
+					if (currInput.LLeft())
+					{
+						leftWireBoost = true;
+						leftWireBoostDir = -leftWireBoostDir;
+						speed -= otherAccel;
+					}
+					else if (currInput.LRight())
+					{
+						leftWireBoost = true;
+						speed += otherAccel;
+					}
+				}
+				else if (wireDir.y > 0)
+				{
+					if (currInput.LLeft())
+					{
+						leftWireBoost = true;
+						speed += otherAccel;
+					}
+					else if (currInput.LRight())
+					{
+						leftWireBoost = true;
+						speed -= otherAccel;
+						leftWireBoostDir = -leftWireBoostDir;
+					}
+				}
+			}
+			else
+			{
+				if (wireDir.x > 0)
+				{
+					if (currInput.LUp())
+					{
+						leftWireBoost = true;
+						speed -= otherAccel;
+						leftWireBoostDir = -leftWireBoostDir;
+					}
+					else if (currInput.LDown())
+					{
+						leftWireBoost = true;
+						speed += otherAccel;
+					}
+				}
+				else if (wireDir.x < 0)
+				{
+					if (currInput.LUp())
+					{
+						leftWireBoost = true;
+						speed += otherAccel;
+					}
+					else if (currInput.LDown())
+					{
+						leftWireBoost = true;
+						speed -= otherAccel;
+						leftWireBoostDir = -leftWireBoostDir;
+					}
+				}
+
+
+			}
+
+
+			if (leftWireBoost && framesSinceLeftWireBoost >= singleWireBoostTiming)
+			{
+				framesSinceLeftWireBoost = 0;
+			}
+			else
+			{
+				leftWireBoost = false;
+			}
+
+			velocity = speed * tes;
+			velocity += otherTes;
+			//velocity += otherTes;
+
+
+			V2d future = wPos + velocity;
+
+			V2d seg = wirePoint - wPos;
+			double segLength = length(seg);
+			V2d diff = wirePoint - future;
+
+			//wire->segmentLength -= 10;
+			if (length(diff) > wire->segmentLength)
+			{
+				future += normalize(diff) * (length(diff) - (wire->segmentLength));
+				velocity = future - wPos;
+			}
+		}
+	}
+
+	if (ground != NULL)
+	{
+		lastWire = 0;
+	}
 }
 
 float Actor::GetSpeedBarPart()

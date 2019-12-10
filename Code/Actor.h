@@ -455,6 +455,8 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> rightWireBoostDir;
 	sf::Vector2<double> doubleWireBoostDir;
 
+	void WireMovement();
+
 	Action GetDoubleJump();
 	bool CanDoubleJump();
 	void ExecuteDoubleJump();
