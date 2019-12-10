@@ -2220,7 +2220,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			enemyTree->Insert(enemy);
 		}
-		else if (typeName == "teleporter" )
+		else if (typeName == "teleporter" || typeName == "onewayteleporter")
 		{
 			int xPos, yPos;
 
@@ -2234,7 +2234,13 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			is >> other.x;
 			is >> other.y;
 
-			Teleporter *enemy = new Teleporter(this, Vector2i(xPos, yPos), other, false);
+			bool bothWays = true;
+			if (typeName == "onewayteleporter")
+			{
+				bothWays = false;
+			}
+
+			Teleporter *enemy = new Teleporter(this, Vector2i(xPos, yPos), other, bothWays);
 
 			activeItemTree->Insert(enemy);
 

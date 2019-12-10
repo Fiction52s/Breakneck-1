@@ -32,7 +32,8 @@ struct Teleporter : Enemy
 
 	void ResetEnemy();
 	void ActionEnded();
-	void Teleport();
+	bool TryTeleport();
+	void ReceiveRecover();
 	sf::Sprite sprite;
 	Tileset *ts_idle;
 	Tileset *ts_recover;
@@ -49,6 +50,8 @@ struct Teleporter : Enemy
 
 	bool secondary;
 	Teleporter *otherTele;
+
+	bool teleportedPlayer;
 
 	V2d dest;
 };

@@ -4024,6 +4024,7 @@ void Actor::UpdatePrePhysics()
 	{
 		if (springStunFrames == 0)
 		{
+			oldTeleporter->ReceiveRecover();
 			SetAction(JUMP);
 			frame = 1;
 			position = teleportSpringDest;
@@ -17896,7 +17897,13 @@ bool Actor::TeleporterLaunch()
 {
 	if (currTeleporter != NULL)
 	{
-		currTeleporter->Teleport();
+		if (!currTeleporter->TryTeleport())
+		{
+			currTeleporter = NULL;
+			return false;
+		}
+
+		oldTeleporter = currTeleporter;
 		position = currTeleporter->position;
 		V2d dir = currTeleporter->dir;
 

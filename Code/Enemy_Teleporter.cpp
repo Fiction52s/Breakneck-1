@@ -45,6 +45,19 @@ Teleporter::Teleporter(GameSession *owner, Vector2i &pos, Vector2i &other, bool 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(pos.x, pos.y);
 
+	if (secondary)
+	{
+		if (goesBothWays)
+		{
+			sprite.setColor(Color::Red);
+		}
+		else
+		{
+			sprite.setColor(Color::Magenta);
+		}
+		
+	}
+
 	dest = V2d(other + pos);
 
 	V2d dOther = V2d(other.x, other.y);
@@ -100,7 +113,7 @@ Teleporter::Teleporter(GameSession *owner, Vector2i &pos, Vector2i &other, bool 
 	animFactor[TELEPORTING] = 4;
 	animFactor[RECEIVING] = 4;
 	animFactor[RECEIVERECOVERING] = 4;
-	animFactor[RECOVERING] = 4;
+	animFactor[RECOVERING] = 8;
 
 	ResetEnemy();
 }
@@ -112,6 +125,8 @@ Teleporter *Teleporter::CreateSecondary()
 	if (!secondary)
 	{
 		otherTele = new Teleporter(owner, Vector2i(dest), Vector2i(position - dest), goesBothWays, true);
+		otherTele->otherTele = this;
+		return otherTele;
 	}
 	else
 	{
@@ -124,10 +139,23 @@ void Teleporter::DirectKill()
 
 }
 
+void Teleporter::ReceiveRecover()
+{
+	Teleporter *curr = this;
+	if (!teleportedPlayer)
+	{
+		curr = otherTele;
+	}
+
+	curr->action = RECOVERING;
+	curr->frame = 0;
+	
+}
+
 void Teleporter::ResetEnemy()
 {
 	dead = false;
-
+	teleportedPlayer = false;
 
 	receivedHit = NULL;
 	action = IDLE;
@@ -160,17 +188,26 @@ void Teleporter::ActionEnded()
 		case RECOVERING:
 			action = IDLE;
 			sprite.setTexture(*ts_idle->texture);
+			teleportedPlayer = false;
 			break;
 		}
 	}
 }
 
-void Teleporter::Teleport()
+bool Teleporter::TryTeleport()
 {
+	if (otherTele->teleportedPlayer || ( !goesBothWays && secondary ))
+	{
+		return false;
+	}
+
 	assert(action == IDLE);
 	action = TELEPORTING;
 	sprite.setTexture(*ts_springing->texture);
 	frame = 0;
+	teleportedPlayer = true;
+
+	return true;
 	//owner->soundNodeList->ActivateSound(launchSoundBuf);
 }
 

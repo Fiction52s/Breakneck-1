@@ -752,6 +752,7 @@ struct Actor : QuadTreeCollider,
 
 	Spring *currSpring;
 	Teleporter *currTeleporter;
+	Teleporter *oldTeleporter;
 	Booster *currBooster;
 	Booster *oldBooster;
 
