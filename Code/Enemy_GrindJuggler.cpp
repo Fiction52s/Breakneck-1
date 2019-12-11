@@ -39,9 +39,9 @@ GrindJuggler::GrindJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, 
 
 	flySpeed = 10;
 
-	maxWaitFrames = 180;
+	maxWaitFrames = 100000;//180;
 
-	mover = new SurfaceMover(owner, NULL, 0, 10 * scale);
+	mover = new SurfaceRailMover(owner, NULL, 0, 10 * scale);
 	mover->surfaceHandler = this;
 
 	juggleReps = jReps;
@@ -116,6 +116,8 @@ GrindJuggler::~GrindJuggler()
 
 void GrindJuggler::ResetEnemy()
 {
+	mover->collisionOn = true;
+	mover->railCollisionOn = true;
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
 	currRail = NULL;
@@ -148,12 +150,12 @@ void GrindJuggler::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
-	velocity = vel;
+	mover->velocity = vel;
 }
 
 void GrindJuggler::Throw(V2d vel)
 {
-	velocity = vel;
+	mover->velocity = vel;
 }
 
 void GrindJuggler::Return()
@@ -294,15 +296,14 @@ void GrindJuggler::HandleNoHealth()
 void GrindJuggler::ExtraQueries(Rect<double> &r)
 {
 	//Rect<double> r = mover->physBody.GetAABB();//hitBody->GetCollisionBoxes(0)->front().GetAABB();
-	if (action == S_FLY)
+	/*if (action == S_FLY)
 	{
 		owner->railEdgeTree->Query(this, r);
-	}
+	}*/
 }
 
 void GrindJuggler::Move()
 {
-	mover->velocity = velocity;
 	mover->Move(slowMultiple, numPhysSteps);
 	//mover->
 
@@ -422,7 +423,7 @@ void GrindJuggler::HandleEntrant(QuadTreeEntrant *qte)
 		
 		action = S_RAILGRIND;
 		frame = 0;
-		velocity = along * 10.0;//V2d(0, 0);
+		mover->velocity = along * 10.0;//V2d(0, 0);
 	}
 	//Enemy *en = (Enemy*)qte;
 	//if (en->type == EnemyType::EN_JUGGLERCATCHER)
@@ -449,7 +450,7 @@ void GrindJuggler::ComboKill(Enemy *e)
 
 		mover->SetSpeed(0);
 
-		velocity = mover->ground->Normal() * flySpeed;
+		mover->velocity = mover->ground->Normal() * flySpeed;
 		mover->ground = NULL;
 
 

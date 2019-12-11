@@ -1162,12 +1162,14 @@ bool SurfaceRailMover::ResolvePhysics(V2d &vel)
 
 	if (railCollisionOn)
 	{
+		queryMode = "rail";
 		owner->railEdgeTree->Query(this, r);
 	}
 	
 
 	if (collisionOn)
 	{
+		queryMode = "terrain";
 		owner->terrainTree->Query(this, r);
 	}
 
@@ -1181,7 +1183,6 @@ bool SurfaceRailMover::ResolvePhysics(V2d &vel)
 
 void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 {
-
 	if (queryMode == "terrain")
 	{
 		SurfaceMover::HandleEntrant(qte);
@@ -1229,7 +1230,7 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 			//railEdge = e;
 			ground = e;
 
-
+			currRail = rail;
 			//prevRail = (Rail*)grindEdge->info;
 
 
@@ -1258,6 +1259,9 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 			{
 				groundSpeed = 10;
 			}
+
+			collisionOn = false;
+			railCollisionOn = false;
 
 			//physBody.globalPosition = position;
 			//mover->ground = railEdge;
@@ -1364,8 +1368,13 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 
 				if (e1 == NULL)
 				{
+					velocity = ground->Along() * groundSpeed;
+					ground = NULL;
+					currRail = NULL;
+					railCollisionOn = true;
+					collisionOn = true;
 				}
-				else if (gNormal == e1n)
+				else if (gNormal == e1n || currRail != NULL )
 				{
 					//cout << "transfer clockwise" << endl;
 					//cout << "t1" << endl;
@@ -1396,6 +1405,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 					{
 						//cout << "keep going" << endl;
 					}
+					
 				}
 			}
 			else if (movement < 0 && q == 0)

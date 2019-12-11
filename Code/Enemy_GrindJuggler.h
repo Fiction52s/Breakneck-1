@@ -78,7 +78,8 @@ struct GrindJuggler : Enemy, SurfaceMoverHandler
 	int waitFrame;
 	int maxWaitFrames;
 
-	SurfaceMover *mover;
+	SurfaceRailMover *mover;
+	//SurfaceMover *mover;
 
 	bool clockwise;
 };
