@@ -840,10 +840,11 @@ void EditSession::AddW5Enemies()
 		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128),1);
 
-	
+	AddBasicAerialWorldEnemy("swarm", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/swarm_pod_128x128.png", 128, 128));
 
-	AddWorldEnemy("swarm", 5, LoadParams<SwarmParams>, NULL, MakeParamsAerial<SwarmParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	//AddWorldEnemy("swarm", 5, LoadParams<SwarmParams>, NULL, MakeParamsAerial<SwarmParams>,
+	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("shark", 5, LoadParams<SharkParams>, NULL, MakeParamsAerial<SharkParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -15333,16 +15334,7 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "swarm")
 	{
-		p = new Panel("swarm_options", 200, 600, edit);
-		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-
-		p->AddTextBox("liveframes", Vector2i(20, 150), 200, 3, "120");
-		//maybe frames swarm is alive once launched?
-
-		p->AddCheckBox("monitor", Vector2i(20, 400));
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		p = CreateDefaultPanel("swarm_options", true, true, false, false);
 	}
 	else if (name == "specter")
 	{

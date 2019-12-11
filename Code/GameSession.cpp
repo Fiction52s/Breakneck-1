@@ -122,6 +122,7 @@
 
 #include "Enemy_BounceBooster.h"
 #include "Enemy_Teleporter.h"
+#include "Enemy_Swarm.h"
 #include "Wire.h"
 
 #define TIMESTEP 1.0 / 60.0
@@ -3296,14 +3297,14 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int liveFrames;
-			is >> liveFrames;
+			int level;
+			is >> level;
 
-			/*Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), liveFrames );
+			Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), hasMonitor, level );
 			fullEnemyList.push_back( enemy );
 			enem = enemy;
 
-			enemyTree->Insert( enemy );*/
+			enemyTree->Insert( enemy );
 		}
 		else if (typeName == "shark")
 		{
