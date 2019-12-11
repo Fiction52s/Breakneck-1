@@ -14,9 +14,9 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, 
+Comboer::Comboer(GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, 
 	int p_level)
-	:Enemy(owner, EnemyType::EN_COMBOER, p_hasMonitor, 1, false)
+	:Enemy(owner, EnemyType::EN_COMBOER, false, 1, false)
 {
 	level = p_level;
 
@@ -36,8 +36,6 @@ Comboer::Comboer(GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vecto
 	}
 
 	action = S_FLOAT;
-	gravFactor = .8;
-	maxFallSpeed = 30;
 	//receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;

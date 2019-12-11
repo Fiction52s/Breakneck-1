@@ -8272,6 +8272,9 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
+	//rightWire->UpdateEnemyAnchor();
+	//leftWire->UpdateEnemyAnchor();
+
 	WireMovement();
 
 	
@@ -9455,10 +9458,19 @@ void Actor::WireMovement()
 
 			velocity = speed * tes;
 			velocity += otherTes;
+			
+
+			
 			//velocity += otherTes;
 
 
 			V2d future = wPos + velocity;
+
+			//if (rightWire->anchor.enemy != NULL)
+			//{
+			//	future += rightWire->anchorVel;
+				//velocity += rightWire->anchorVel;
+			//}
 
 			V2d seg = wirePoint - wPos;
 			double segLength = length(seg);
@@ -12423,8 +12435,16 @@ void Actor::UpdatePhysics()
 	if( leftWire != NULL )
 		leftWire->UpdateChargesPhysics();
 
-	rightWire->UpdateEnemyAnchor();
-	leftWire->UpdateEnemyAnchor();
+	if (rightWire != NULL)
+	{
+		rightWire->UpdateEnemyAnchor();
+	}
+	
+	if (leftWire != NULL)
+	{
+		leftWire->UpdateEnemyAnchor();
+	}
+	
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
 	V2d temp_velocity = velocity / (double)slowMultiple;

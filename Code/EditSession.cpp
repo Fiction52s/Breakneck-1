@@ -612,8 +612,11 @@ void EditSession::AddW1Enemies()
 	/*AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 	GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 
-	AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
+	AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
+
+	AddBasicAerialWorldEnemy("splitcomboer", 1, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3,
+		GetTileset("Enemies/comboer_128x128.png", 128, 128),1);
 
 
 
@@ -14956,10 +14959,14 @@ Panel *ActorType::CreatePanel()
 	{
 		p = CreateDefaultPanel("gravchanger_options", false, true);
 	}
-	else if (name == "comboer" || name == "gravdowncomboer" || name == "gravupcomboer"
+	else if (name == "comboer" || name == "splitcomboer")
+	{
+		p = CreateDefaultPanel("comboer_options", false, true, true, true);
+	}
+	else if( name == "gravdowncomboer" || name == "gravupcomboer"
 		|| name == "bouncecomboer")
 	{
-		p = CreateDefaultPanel("comboer_options", true, true, true, true);
+		p = CreateDefaultPanel("gravcomboer_options", true, true, true, true);
 	}
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
 		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryattackcomboer"

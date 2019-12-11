@@ -24,7 +24,7 @@ struct Comboer : Enemy
 	//	T_Count
 	//};
 
-	Comboer(GameSession *owner, bool hasMonitor,
+	Comboer(GameSession *owner,
 		sf::Vector2i pos, std::list<sf::Vector2i> &path, 
 		bool loop, int p_level );
 	
@@ -41,9 +41,6 @@ struct Comboer : Enemy
 	void HandleNoHealth();
 	void AdvanceTargetNode();
 	CollisionBox &GetEnemyHitbox();
-
-	double gravFactor;
-	double maxFallSpeed;
 
 	ComboObject *comboObj;
 

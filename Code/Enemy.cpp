@@ -1795,10 +1795,6 @@ void Enemy::UpdatePostPhysics()
 
 void Enemy::CheckedMiniDraw(sf::RenderTarget *target, sf::FloatRect &rect)
 {
-	/*if (rect.intersects(zonedSprite.getGlobalBounds()))
-	{
-		DrawMinimap(target);
-	}*/
 	if ( zone == NULL || ( zone != NULL && zone->active ) )
 	{
 		if (rect.intersects(zonedSprite.getGlobalBounds()))

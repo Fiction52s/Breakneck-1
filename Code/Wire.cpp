@@ -824,8 +824,11 @@ void Wire::UpdateEnemyAnchor()
 {
 	if (anchor.enemy != NULL)
 	{
+		V2d oldPos = anchor.pos;
 		anchor.pos = anchor.enemy->GetCamPoint(anchor.enemyPosIndex);
 		realAnchor = anchor.pos;
+		anchorVel = realAnchor - oldPos;
+
 	}
 }
 
@@ -1024,6 +1027,7 @@ void Wire::UpdateAnchors2( V2d vel )
 			anchor.e = NULL;//minSideEdge;
 
 			anchor.enemy = foundEnemy;
+			anchorVel = V2d(0, 0);
 			anchor.enemyPosIndex = foundIndex;
 			UpdateAnchors(V2d(0, 0));
 		}

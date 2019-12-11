@@ -399,6 +399,7 @@ enum EnemyType
 	EN_TELEPORTER,
 	EN_RAIL,
 	EN_COMBOER,
+	EN_SPLITCOMBOER,
 	EN_FLOWERPOD,
 	EN_HEALTHFLY,
 	EN_Count
@@ -570,11 +571,11 @@ public:
 	int currHurtboxFrame;
 	virtual void UpdateEnemyPhysics() {}
 	virtual void HandleHitAndSurvive() {}
-	void CheckedMiniDraw(sf::RenderTarget *target,
+	virtual void CheckedMiniDraw(sf::RenderTarget *target,
 		sf::FloatRect &rect);
 	void CheckedZoneDraw(sf::RenderTarget *target,
 		sf::FloatRect &rect);
-	void SetZoneSpritePosition();
+	virtual void SetZoneSpritePosition();
 	void CheckedZoneUpdate(sf::FloatRect &rect);
 	virtual void ShieldDestroyed( Shield *shield ) {};
 	//std::list<CollisionBox> *activeHurtboxes;

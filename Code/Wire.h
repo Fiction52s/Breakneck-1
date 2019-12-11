@@ -198,6 +198,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	double minSideAlong;
 	sf::Vector2<double> fireDir;
 	WirePoint anchor;
+	V2d anchorVel;
 
 	void ActivateCharges();
 	void Retract();

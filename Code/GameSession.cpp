@@ -114,6 +114,7 @@
 #include "Enemy_Juggler.h"
 #include "Enemy_GravityJuggler.h"
 #include "Enemy_BounceJuggler.h"
+#include "Enemy_SplitComboer.h"
 
 #include "ParticleEffects.h"
 #include "Enemy_JugglerCatcher.h"
@@ -2083,13 +2084,8 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int xPos, yPos;
 
 			//always air
-
-
 			is >> xPos;
 			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
 
 			int pathLength;
 			list<Vector2i> localPath;
@@ -2102,31 +2098,34 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int level;
 			is >> level;
 
+			Comboer *enemy = new Comboer(this, Vector2i(xPos, yPos), localPath, loop, level);
 
-			/*Comboer::ComboerType ct ct = Comboer::ComboerType::T_STRAIGHT;
-			if (typeName == "comboer")
-			{
 
-			}
-			else if (typeName == "gravdowncomboer")
-			{
-				ct = Comboer::ComboerType::T_GRAVITY;
-			}
-			else if (typeName == "gravupcomboer")
-			{
-				ct = Comboer::ComboerType::T_REVERSEGRAVITY;
-			}
-			else if (typeName == "bouncecomboer")
-			{
-				ct = Comboer::ComboerType::T_BOUNCE;
-			}
-			else
-			{
-				ct = Comboer::ComboerType::T_STRAIGHT;
-				assert(0);
-			}*/
-			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-			Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "splitcomboer")
+		{
+
+			int xPos, yPos;
+
+			is >> xPos;
+			is >> yPos;
+
+			int pathLength;
+			list<Vector2i> localPath;
+
+			Enemy::ReadPath(is, pathLength, localPath);
+
+			bool loop;
+			Enemy::ReadBool(is, loop);
+
+			int level;
+			is >> level;
+
+			SplitComboer *enemy = new SplitComboer(this, Vector2i(xPos, yPos), localPath, loop, level);
 
 
 			fullEnemyList.push_back(enemy);
