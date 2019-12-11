@@ -249,6 +249,13 @@ bool Grass::IsTouchingBox(const Rect<double> &r)
 		pos, radius);
 }
 
+bool Grass::IsTouchingCircle(V2d &otherPos, double otherRad)
+{
+	double distSqr = lengthSqr(pos - otherPos);
+	double radSqr = pow(radius + otherRad, 2);
+	return distSqr <= radSqr;
+}
+
 void Grass::Reset()
 {
 	next = NULL;
@@ -5577,6 +5584,13 @@ void TerrainPiece::SetupGrass(std::list<GrassSegment> &segments)
 	{
 		gType = Grass::GrassType::BOOST;
 	}
+	else if (terrainWorldType == 5)
+	{
+		gType = Grass::GrassType::ANTIWIRE;
+	}
+
+	owner->hasGrass[gType] = true;
+	owner->hasAnyGrass = true;
 
 	if (numGrassTotal > 0)
 	{
@@ -9167,6 +9181,11 @@ void GameSession::Init()
 	level = NULL;
 
 	boostIntro = false;
+
+	for (int i = 0; i < Grass::GrassType::Count; ++i)
+	{
+		hasGrass[i] = false;
+	}
 
 	stormCeilingOn = false;
 	stormCeilingHeight = 0;

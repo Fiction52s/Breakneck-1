@@ -10103,12 +10103,16 @@ bool Actor::ResolvePhysics( V2d vel )
 		}
 	}
 
-	queryMode = "grass";
-	jumpGrassCount = 0;
-	gravityGrassCount = 0;
-	bounceGrassCount = 0;
-	boostGrassCount = 0;
-	owner->grassTree->Query( this, r );
+	if (owner->hasAnyGrass)
+	{
+		queryMode = "grass";
+		jumpGrassCount = 0;
+		gravityGrassCount = 0;
+		bounceGrassCount = 0;
+		boostGrassCount = 0;
+		owner->grassTree->Query(this, r);
+	}
+	
 
 	queryMode = "item";
 	owner->itemTree->Query( this, r );

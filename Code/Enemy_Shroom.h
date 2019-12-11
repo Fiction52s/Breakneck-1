@@ -26,6 +26,11 @@ struct Shroom : Enemy
 	void HandleNoHealth();
 	void ResetEnemy();
 	void ProcessState();
+
+	void CheckedMiniDraw(sf::RenderTarget *target,
+		sf::FloatRect &rect);
+	void SetZoneSpritePosition();
+
 	sf::SoundBuffer *hitSound;
 
 	sf::Sprite sprite;

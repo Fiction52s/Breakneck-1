@@ -413,6 +413,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int numTotalFlies;
 	std::list<HealthFly*> allFlies;
 
+	bool hasGrass[Grass::GrassType::Count];
+	bool hasAnyGrass;
 
 	ShapeEmitter *testEmit;
 
@@ -1179,6 +1181,8 @@ struct Grass : QuadTreeEntrant
 		GRAVITY,
 		BOUNCE,
 		BOOST,
+		ANTIWIRE,
+		Count
 	};
 
 
@@ -1193,8 +1197,10 @@ struct Grass : QuadTreeEntrant
 	void SetVisible(bool p_visible);
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
+	bool IsTouchingCircle(V2d &pos, double rad);
 	
 	GrassType grassType;
+	
 
 	void Update();
 	bool exploding;

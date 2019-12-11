@@ -155,6 +155,8 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	void UpdateChargesPrePhysics();
 	void UpdateChargesPostPhysics();
 
+	void CheckAntiWireGrass();
+
 	void TestPoint2( Edge *e );
 	int newWirePoints;
 	double GetTestPointAngle( Edge *e );
@@ -221,10 +223,17 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	double maxDragStrength;
 	double startDragStrength;
 
+	double grassCheckRadius;
+
 	Actor *player;
 
 	Edge *rcEdge;
 	double rcQuant;
+
+	int antiWireGrassCount;
+
+	sf::Rect<double> grassQueryBox;
+	std::string queryMode;
 
 	bool rayCancel;
 

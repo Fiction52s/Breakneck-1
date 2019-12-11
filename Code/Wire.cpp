@@ -38,7 +38,7 @@ Wire::Wire( Actor *p, bool r)
 
 	ts_wireTip = player->owner->GetTileset( "Kin/wire_tips_16x16.png", 16, 16 );
 
-	
+	grassCheckRadius = 20;
 
 	wireTip.setTexture( *ts_wireTip->texture );
 	wireTip.setTextureRect( ts_wireTip->GetSubRect( tipIndex ) );
@@ -302,16 +302,26 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		//	RayCast( this, player->owner->terrainTree->startNode, anchor.pos, player->position );
 			if( rcEdge != NULL )
 			{
-				state = HIT;
-				if( !triggerDown )
+				CheckAntiWireGrass();
+
+				if (antiWireGrassCount == 0)
 				{
-					canRetractGround = true;
+					state = HIT;
+					if (!triggerDown)
+					{
+						canRetractGround = true;
+					}
+					else
+					{
+						canRetractGround = false;
+					}
+					hitStallCounter = framesFiring;
+
 				}
 				else
 				{
-					canRetractGround = false;
+					Reset();
 				}
-				hitStallCounter = framesFiring;
 			}
 
 			if( framesFiring * fireRate > maxFireLength )
@@ -583,6 +593,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 			if( rcEdge != NULL )
 			{
+				CheckAntiWireGrass();
+
+				if (antiWireGrassCount > 0)
+				{
+					Reset();
+					break;
+				}
+
 				//cout << "hit edge!: " << rcEdge->Normal().x << ", " << rcEdge->Normal().y << ", : " << rcEdge << endl;
 				if( rcQuant < 4 )
 				{
@@ -953,6 +971,7 @@ void Wire::UpdateAnchors2( V2d vel )
 		else
 			clockwise = false;
 
+		queryMode = "terrain";
 		player->owner->terrainTree->Query( this, r );
 
 		if( state == RELEASED )
@@ -1050,6 +1069,7 @@ void Wire::UpdateAnchors2( V2d vel )
 			
 			//queryType = "terrain";
 			minSideEdge = NULL;
+			queryMode = "terrain";
 			player->owner->terrainTree->Query( this, r );
 			if( minSideEdge != NULL )
 			{
@@ -1416,44 +1436,74 @@ void Wire::TestPoint2( Edge *e )
 
 void Wire::HandleEntrant( QuadTreeEntrant *qte )
 {
-	Edge *e = (Edge*)qte;
-
-	if( state == FIRING )
+	if (queryMode == "terrain")
 	{
-		V2d along = normalize( quadOldWirePosB - quadOldPosA );
-		V2d other = normalize( quadOldPosA - quadPlayerPosD);
+		Edge *e = (Edge*)qte;
 
-		double alongQ = dot( e->v0 - quadOldPosA, along );
-		double otherQ = cross( e->v0 - quadOldPosA, along );
-
-		double extra = 0;
-		//cout << "checking: " << e->v0.x << ", " << e->v0.y << ", along/other: " << alongQ << ", " << otherQ 
-		//	<< ", alongLen: " << length( quadOldWirePosB - quadOldPosA ) << ", otherLen: " << length( quadOldPosA - quadPlayerPosD ) << endl;
-		if( -otherQ >= -extra  && -otherQ <= length( quadOldPosA - quadPlayerPosD ) + extra )
+		if (state == FIRING)
 		{
-			if( alongQ >= -extra && alongQ <= length( quadOldWirePosB - quadOldPosA ) + extra )
+			V2d along = normalize(quadOldWirePosB - quadOldPosA);
+			V2d other = normalize(quadOldPosA - quadPlayerPosD);
+
+			double alongQ = dot(e->v0 - quadOldPosA, along);
+			double otherQ = cross(e->v0 - quadOldPosA, along);
+
+			double extra = 0;
+			//cout << "checking: " << e->v0.x << ", " << e->v0.y << ", along/other: " << alongQ << ", " << otherQ 
+			//	<< ", alongLen: " << length( quadOldWirePosB - quadOldPosA ) << ", otherLen: " << length( quadOldPosA - quadPlayerPosD ) << endl;
+			if (-otherQ >= -extra  && -otherQ <= length(quadOldPosA - quadPlayerPosD) + extra)
 			{
-				if( minSideEdge == NULL 
-					|| ( minSideEdge != NULL 
-						&& ( otherQ < minSideOther 
-						|| ( otherQ == minSideOther && alongQ < minSideAlong ) ) ) )
+				if (alongQ >= -extra && alongQ <= length(quadOldWirePosB - quadOldPosA) + extra)
 				{
-					minSideOther = otherQ;
-					minSideAlong = alongQ;
-					minSideEdge = e;
-			//		cout << "setting to: " << e->v0.x << ", " << e->v0.y << endl;
+					if (minSideEdge == NULL
+						|| (minSideEdge != NULL
+							&& (otherQ < minSideOther
+								|| (otherQ == minSideOther && alongQ < minSideAlong))))
+					{
+						minSideOther = otherQ;
+						minSideAlong = alongQ;
+						minSideEdge = e;
+						//		cout << "setting to: " << e->v0.x << ", " << e->v0.y << endl;
+					}
 				}
 			}
-		} 
+		}
+		else
+		{
+			//V2d v0 = e->v0;
+			//V2d v1 = e->v1;
+			TestPoint2(e);
+		}
 	}
-	else
+	else if (queryMode == "grass")
 	{
-		//V2d v0 = e->v0;
-		//V2d v1 = e->v1;
-		TestPoint2( e );	
+		Grass *g = (Grass*)qte;
+		//Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+
+		V2d touchPoint = rcEdge->GetPoint(rcQuant);
+		if (g->grassType == Grass::ANTIWIRE && g->IsTouchingCircle( touchPoint, grassCheckRadius ))
+		{
+			antiWireGrassCount++;
+		}
 	}
 }
 
+
+void Wire::CheckAntiWireGrass()
+{
+	if (player->owner->hasGrass[Grass::ANTIWIRE])
+	{
+		V2d hitPoint = rcEdge->GetPoint(rcQuant);
+		sf::Rect<double> r;
+		r.left = hitPoint.x - grassCheckRadius / 2;
+		r.top = hitPoint.y - grassCheckRadius / 2;
+		r.width = grassCheckRadius;
+		r.height = grassCheckRadius;
+		antiWireGrassCount = 0;
+		queryMode = "grass";
+		player->owner->grassTree->Query(this, r);
+	}
+}
 //make multiples of the quads for each edge later
 void Wire::UpdateQuads()
 {

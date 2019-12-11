@@ -196,6 +196,19 @@ void Shroom::HandleNoHealth()
 		owner->AddEnemy(jelly);
 }
 
+void Shroom::CheckedMiniDraw(sf::RenderTarget *target,
+	sf::FloatRect &rect)
+{
+	jelly->CheckedMiniDraw(target, rect);
+	Enemy::CheckedMiniDraw(target, rect);
+}
+
+void Shroom::SetZoneSpritePosition()
+{
+	jelly->SetZoneSpritePosition();
+	Enemy::SetZoneSpritePosition();
+}
+
 void Shroom::UpdateHitboxes()
 {
 	double ds = scale;
