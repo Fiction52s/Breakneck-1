@@ -1,6 +1,7 @@
 #include "Mover.h"
 #include "GameSession.h"
 #include <iostream>
+#include "Rail.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -22,6 +23,7 @@ SurfaceMover::SurfaceMover( GameSession *p_owner, Edge *startGround,
 	groundSpeed( 0 ), roll( false )
 {
 	surfaceHandler = NULL;
+	collisionOn = true;
 	//maxSpeed = mSpeed;
 	//gravity = V2d( 0, 0 );
 	physBody.isCircle = true;
@@ -134,8 +136,17 @@ bool SurfaceMover::ResolvePhysics( V2d &vel )
 	col = false;
 	minContact.edge = NULL;
 
+	if (surfaceHandler != NULL)
+		surfaceHandler->ExtraQueries(r);
+
 	//queryMode = "resolve";
-	owner->terrainTree->Query( this, r );
+	if (collisionOn)
+	{
+		owner->terrainTree->Query(this, r);
+	}
+	
+
+	
 	//Query( this, owner->testTree, r );
 
 	return col;
@@ -1103,6 +1114,372 @@ bool GroundMover::StartRoll()
 void GroundMover::FinishedRoll()
 {
 }
+
+
+SurfaceRailMover::SurfaceRailMover(GameSession *owner,
+	Edge *startGround,
+	double startQuantity,
+	double radius)
+	:SurfaceMover( owner, startGround, startQuantity, radius )
+{
+	railCollisionOn = true;
+}
+
+bool SurfaceRailMover::ResolvePhysics(V2d &vel)
+{
+	//possibleEdgeCount = 0;
+
+	Rect<double> oldR(physBody.globalPosition.x + physBody.offset.x - physBody.rw,
+		physBody.globalPosition.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh);
+
+	physBody.globalPosition += vel;
+
+	Rect<double> newR(physBody.globalPosition.x + physBody.offset.x - physBody.rw,
+		physBody.globalPosition.y + physBody.offset.y - physBody.rh, 2 * physBody.rw, 2 * physBody.rh);
+	//minContact.collisionPriority = 1000000;
+
+	double oldRight = oldR.left + oldR.width;
+	double right = newR.left + newR.width;
+
+	double oldBottom = oldR.top + oldR.height;
+	double bottom = newR.top + newR.height;
+
+	double maxRight = max(right, oldRight);
+	double maxBottom = max(oldBottom, bottom);
+	double minLeft = min(oldR.left, newR.left);
+	double minTop = min(oldR.top, newR.top);
+	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
+
+	Rect<double> r(minLeft, minTop, maxRight - minLeft, maxBottom - minTop);
+
+
+	minContact.collisionPriority = 1000000;
+
+	tempVel = vel;
+
+	col = false;
+	minContact.edge = NULL;
+
+	if (railCollisionOn)
+	{
+		owner->railEdgeTree->Query(this, r);
+	}
+	
+
+	if (collisionOn)
+	{
+		owner->terrainTree->Query(this, r);
+	}
+
+
+
+	//Query( this, owner->testTree, r );
+
+	return col;
+}
+
+
+void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
+{
+
+	if (queryMode == "terrain")
+	{
+		SurfaceMover::HandleEntrant(qte);
+	}
+	else
+	{
+		Edge *e = (Edge*)qte;
+		Rail *rail = (Rail*)e->info;
+
+		V2d pos = physBody.globalPosition;
+
+		//if (IsEdgeTouchingCircle(e->v0, e->v1, mover->physBody.globalPosition, mover->physBody.rw))
+
+		V2d r;
+		V2d eFocus;
+		bool ceiling = false;
+		V2d en = e->Normal();
+		if (en.y > 0)
+		{
+			r = e->v0 - e->v1;
+			eFocus = e->v1;
+			ceiling = true;
+		}
+		else
+		{
+			r = e->v1 - e->v0;
+			eFocus = e->v0;
+		}
+
+		V2d along = normalize(r);
+		double lenR = length(r);
+		double q = dot(pos - eFocus, along);
+
+		double c = cross(pos - e->v0, along);
+		double preC = cross((pos - tempVel) - e->v0, along);
+
+		double alongQuantVel = dot(velocity, along);
+
+		bool cStuff = (c >= 0 && preC <= 0) || (c <= 0 && preC >= 0);
+
+		if (cStuff && q >= 0 && q <= lenR)//&& alongQuantVel != 0)
+		{
+			V2d rn(along.y, -along.x);
+
+			//railEdge = e;
+			ground = e;
+
+
+			//prevRail = (Rail*)grindEdge->info;
+
+
+			LineIntersection li = lineIntersection(pos, pos - tempVel, ground->v0, ground->v1);
+			if (!li.parallel)
+			{
+				V2d p = li.position;
+				edgeQuantity = ground->GetQuantity(p);
+
+				physBody.globalPosition = p;
+			}
+			else
+			{
+				assert(0);
+
+				//probably just start at the beginning or end of the rail based on which is closer?
+			}
+
+			
+
+			if (ceiling) //ceiling rail
+			{
+				groundSpeed = -10;
+			}
+			else
+			{
+				groundSpeed = 10;
+			}
+
+			//physBody.globalPosition = position;
+			//mover->ground = railEdge;
+			//mover->edgeQuantity = railQuant;
+			//SetSpeed(ground);
+
+			//action = S_RAILGRIND;
+			//frame = 0;
+			//velocity = along * 10.0;//V2d(0, 0);
+		}
+	}
+}
+
+void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
+{
+	if (ground != NULL)
+	{
+		double movement = 0;
+		double maxMovement = min(physBody.rw, physBody.rh); //circle so this might be unnecessary
+		movement = groundSpeed;
+
+		movement /= slowMultiple * numPhysSteps;
+
+		if (abs(movement) < .0001)
+		{
+			movement = 0;
+			return;
+		}
+
+		while (movement != 0)
+		{
+			//ground is always some value
+			steal = 0;
+			if (movement > 0)
+			{
+				if (movement > maxMovement)
+				{
+					steal = movement - maxMovement;
+					movement = maxMovement;
+				}
+			}
+			else
+			{
+				if (movement < -maxMovement)
+				{
+					steal = movement + maxMovement;
+					movement = -maxMovement;
+				}
+			}
+
+			double extra = 0;
+			bool leaveGround = false;
+			double q = edgeQuantity;
+
+			V2d gNormal = ground->Normal();
+
+
+			double m = movement;
+
+			double groundLength = length(ground->v1 - ground->v0);
+
+			if (approxEquals(q, 0))
+				q = 0;
+			else if (approxEquals(q, groundLength))
+				q = groundLength;
+
+			if (movement > 0 && roll && q == 0)
+			{
+				ground = ground->edge0;
+				groundLength = length(ground->v1 - ground->v0);
+				edgeQuantity = groundLength;
+				q = edgeQuantity;
+				gNormal = ground->Normal();
+			}
+			else if (movement < 0 && roll && q == groundLength)
+			{
+				ground = ground->edge1;
+				groundLength = length(ground->v1 - ground->v0);
+				edgeQuantity = 0;
+				q = edgeQuantity;
+				gNormal = ground->Normal();
+			}
+
+
+			Edge *e0 = ground->edge0;
+			Edge *e1 = ground->edge1;
+			V2d e0n;
+			V2d e1n;
+			if( e0 != NULL )
+				e0n = e0->Normal();
+			if( e1 != NULL )
+				e1n = e1->Normal();
+
+			bool transferLeft = false;
+			bool transferRight = false;
+
+
+
+			if (movement > 0 && q == groundLength)
+			{
+				//cout << "transfer right" << endl;
+				double c = cross(e1n, gNormal);
+				double d = dot(e1n, gNormal);
+
+				if (e1 == NULL)
+				{
+				}
+				else if (gNormal == e1n)
+				{
+					//cout << "transfer clockwise" << endl;
+					//cout << "t1" << endl;
+					q = 0;
+					ground = e1;
+
+					if (surfaceHandler != NULL)
+						surfaceHandler->TransferEdge(ground);
+				}
+				else
+				{
+					if (!roll)
+					{
+						bool br = StartRoll();
+						if (br)
+							break;
+					}
+
+					//cout << "roll clockwise" << endl;
+					bool br = RollClockwise(q, m);
+					if (br)
+					{
+						//cout << "blah" << endl;
+						edgeQuantity = q;
+						break;
+					}
+					else
+					{
+						//cout << "keep going" << endl;
+					}
+				}
+			}
+			else if (movement < 0 && q == 0)
+			{
+
+				double d = dot(e1n, gNormal);
+
+				if (gNormal == e0n)
+				{
+					q = length(e0->v1 - e0->v0);
+					ground = e0;
+
+					if (surfaceHandler != NULL)
+						surfaceHandler->TransferEdge(ground);
+				}
+				else if (!roll)
+				{
+					//cout << "what start roll" << endl;
+					bool br = StartRoll();
+					if (br)
+						break;
+				}
+				else
+				{
+					bool br = RollCounterClockwise(q, m);
+					if (br)
+					{
+						edgeQuantity = q;
+						break;
+					}
+				}
+			}
+			else
+			{
+				bool br = MoveAlongEdge(movement, groundLength, q, m);
+				if (br)
+				{
+					edgeQuantity = q;
+					break;
+				}
+			}
+
+			if (movement == extra)
+				movement += steal;
+			else
+				movement = steal;
+
+			edgeQuantity = q;
+
+			if (abs(movement) < .0001)
+			{
+				movement = 0;
+			}
+		}
+
+		if (ground != NULL)
+		{
+			UpdateGroundPos();
+		}
+	}
+	else
+	{
+		double nSteps = numPhysSteps;
+		velocity += force / nSteps / (double)slowMultiple;
+		//cout << "move through the air" << endl;
+
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * (double)numPhysSteps;
+
+		bool hit = ResolvePhysics(movementVec);
+		if (hit)
+		{
+			HitTerrainAerial();
+		}
+	}
+
+
+
+
+	framesInAir++;
+	//PhysicsResponse();
+}
+
+
 
 
 void SpaceMover::Reset()

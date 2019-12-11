@@ -21,9 +21,11 @@ struct SurfaceMoverHandler
 {
 	virtual void HitTerrainAerial(Edge *, double) {};
 	virtual void TransferEdge(Edge *) {};
+	virtual void ExtraQueries(sf::Rect<double> &r) {}
 };
 
 struct GameSession;
+struct Rail;
 //circle for now
 struct SurfaceMover : QuadTreeCollider
 {
@@ -33,19 +35,18 @@ struct SurfaceMover : QuadTreeCollider
 		Edge *startGround,
 		double startQuantity,
 		double radius);
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void Update();
+	virtual void HandleEntrant( QuadTreeEntrant *qte );
 	void AddAirForce(V2d &force);
 	void ClearAirForces();
 	void SetSpeed( double speed );
-	void Move( int slowMultiple, int numPhysSteps );
+	virtual void Move( int slowMultiple, int numPhysSteps );
 	bool RollClockwise( double &q,
 		double &m );
 	bool RollCounterClockwise( double &q,
 		double &m );
 	void UpdateGroundPos();
 
-	bool ResolvePhysics( 
+	virtual bool ResolvePhysics( 
 		sf::Vector2<double> &vel );
 	bool MoveAlongEdge( double &movement, 
 		double &groundLength, double &q,
@@ -69,6 +70,7 @@ struct SurfaceMover : QuadTreeCollider
 	V2d force;
 	//std::string queryMode;
 	sf::Vector2<double> tempVel;
+	bool collisionOn;
 	double steal;
 
 	//sf::Vector2<double> gravity;
@@ -81,6 +83,25 @@ struct SurfaceMover : QuadTreeCollider
 	//move clockwise or counterclockwise
 	//and receive callbacks for stuff happening
 	//
+};
+
+struct SurfaceRailMover : SurfaceMover
+{
+	SurfaceRailMover(GameSession *owner,
+		Edge *startGround,
+		double startQuantity,
+		double radius);
+	bool ResolvePhysics(
+		V2d &vel);
+	void Move(int slowMultiple, int numPhysSteps);
+	void HandleEntrant(QuadTreeEntrant *qte);
+
+	std::string queryMode;
+
+	Rail *currRail;
+
+	bool railCollisionOn;
+
 };
 
 struct GroundMover : SurfaceMover

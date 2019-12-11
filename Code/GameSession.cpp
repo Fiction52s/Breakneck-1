@@ -2323,8 +2323,9 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			}
 
 			Rail *r = new Rail(this, Vector2i(xPos, yPos), localPath, requirePower, accelerate, level );
-		}
 
+			++totalRails;
+		}
 		//w1
 		else if (typeName == "patroller")
 		{
@@ -9182,10 +9183,12 @@ void GameSession::Init()
 
 	boostIntro = false;
 
-	for (int i = 0; i < Grass::GrassType::Count; ++i)
+	for (int i = 0; i < 6; ++i)
 	{
 		hasGrass[i] = false;
 	}
+
+	totalRails = 0;
 
 	stormCeilingOn = false;
 	stormCeilingHeight = 0;

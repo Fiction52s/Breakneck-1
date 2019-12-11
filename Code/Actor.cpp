@@ -10128,7 +10128,7 @@ bool Actor::ResolvePhysics( V2d vel )
 
 
 	//if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && (canRailGrind || canRailSlide ) )
-	if( canRailGrind || canRailSlide )
+	if( owner->totalRails > 0 && (canRailGrind || canRailSlide) )
 	{
 		queryMode = "rail";
 		owner->railEdgeTree->Query(this, r);

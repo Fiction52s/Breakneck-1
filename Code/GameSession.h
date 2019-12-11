@@ -413,7 +413,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	int numTotalFlies;
 	std::list<HealthFly*> allFlies;
 
-	bool hasGrass[Grass::GrassType::Count];
+	bool hasGrass[6];
 	bool hasAnyGrass;
 
 	ShapeEmitter *testEmit;
@@ -1084,6 +1084,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::list<AirTrigger*> fullAirTriggerList;
 	
 	Rail *railDrawList;
+	int totalRails;
 
 	Edge *borderEdge; 
 	//for creating the outside zone

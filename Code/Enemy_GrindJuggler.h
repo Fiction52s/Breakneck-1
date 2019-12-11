@@ -12,6 +12,7 @@ struct GrindJuggler : Enemy, SurfaceMoverHandler
 	{
 		S_FLOAT,
 		S_FLY,
+		S_RAILGRIND,
 		S_GRIND,
 		S_RETURN,
 		S_Count
@@ -43,6 +44,12 @@ struct GrindJuggler : Enemy, SurfaceMoverHandler
 	void Return();
 	void Pop();
 	void PopThrow();
+	void ExtraQueries(sf::Rect<double> &r);
+
+	Rail *currRail;
+	Edge *railEdge;
+	double railQuant;
+	double railSpeed;
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);

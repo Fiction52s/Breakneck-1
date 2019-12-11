@@ -7,6 +7,7 @@
 #include "Eye.h"
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
+#include "Rail.h"
 
 using namespace std;
 using namespace sf;
@@ -117,6 +118,7 @@ void GrindJuggler::ResetEnemy()
 {
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
+	currRail = NULL;
 	currHits = 0;
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
@@ -289,10 +291,21 @@ void GrindJuggler::HandleNoHealth()
 
 }
 
+void GrindJuggler::ExtraQueries(Rect<double> &r)
+{
+	//Rect<double> r = mover->physBody.GetAABB();//hitBody->GetCollisionBoxes(0)->front().GetAABB();
+	if (action == S_FLY)
+	{
+		owner->railEdgeTree->Query(this, r);
+	}
+}
+
 void GrindJuggler::Move()
 {
 	mover->velocity = velocity;
 	mover->Move(slowMultiple, numPhysSteps);
+	//mover->
+
 	position = mover->physBody.globalPosition;
 }
 
@@ -306,6 +319,13 @@ void GrindJuggler::UpdateEnemyPhysics()
 		Move();
 		break;
 	}
+	case S_RAILGRIND:
+	{
+		Move();
+		//currRail->
+		break;
+	}
+		
 	}
 }
 
@@ -328,19 +348,95 @@ void GrindJuggler::FrameIncrement()
 
 void GrindJuggler::HandleEntrant(QuadTreeEntrant *qte)
 {
-	Enemy *en = (Enemy*)qte;
-	if (en->type == EnemyType::EN_JUGGLERCATCHER)
-	{
-		JugglerCatcher *catcher = (JugglerCatcher*)qte;
+	Edge *e = (Edge*)qte;
+	Rail *rail = (Rail*)e->info;
 
-		CollisionBox &hitB = hurtBody->GetCollisionBoxes(0)->front();
-		if (catcher->CanCatch() && catcher->hurtBody->Intersects(catcher->currHurtboxFrame, &hitB))
-		{
-			//catcher->Catch();
-			//action = S_EXPLODE;
-			//frame = 0;
-		}
+	V2d pos = mover->physBody.globalPosition;
+	V2d tempVel = mover->tempVel;
+
+	//if (IsEdgeTouchingCircle(e->v0, e->v1, mover->physBody.globalPosition, mover->physBody.rw))
+	
+	V2d r;
+	V2d eFocus;
+	bool ceiling = false;
+	V2d en = e->Normal();
+	if (en.y > 0)
+	{
+		r = e->v0 - e->v1;
+		eFocus = e->v1;
+		ceiling = true;
 	}
+	else
+	{
+		r = e->v1 - e->v0;
+		eFocus = e->v0;
+	}
+
+	V2d along = normalize(r);
+	double lenR = length(r);
+	double q = dot(pos - eFocus, along);
+
+	double c = cross(pos - e->v0, along);
+	double preC = cross((pos - tempVel) - e->v0, along);
+
+	double alongQuantVel = dot(velocity, along);
+
+	bool cStuff = (c >= 0 && preC <= 0) || (c <= 0 && preC >= 0);
+
+	if (cStuff && q >= 0 && q <= lenR)//&& alongQuantVel != 0)
+	{
+		V2d rn(along.y, -along.x);
+
+		railEdge = e;
+		//prevRail = (Rail*)grindEdge->info;
+
+
+		LineIntersection li = lineIntersection(position, position - tempVel, railEdge->v0, railEdge->v1);
+		if (!li.parallel)
+		{
+			V2d p = li.position;
+			railQuant = railEdge->GetQuantity(p);
+
+			position = p;
+		}
+		else
+		{
+			assert(0);
+
+			//probably just start at the beginning or end of the rail based on which is closer?
+		}
+
+		if (ceiling) //ceiling rail
+		{
+			railSpeed = -10;
+		}
+		else
+		{
+			railSpeed = 10;
+		}
+
+		mover->physBody.globalPosition = position;
+		mover->ground = railEdge;
+		mover->edgeQuantity = railQuant;
+		mover->SetSpeed(10);
+		
+		action = S_RAILGRIND;
+		frame = 0;
+		velocity = along * 10.0;//V2d(0, 0);
+	}
+	//Enemy *en = (Enemy*)qte;
+	//if (en->type == EnemyType::EN_JUGGLERCATCHER)
+	//{
+	//	JugglerCatcher *catcher = (JugglerCatcher*)qte;
+
+	//	CollisionBox &hitB = hurtBody->GetCollisionBoxes(0)->front();
+	//	if (catcher->CanCatch() && catcher->hurtBody->Intersects(catcher->currHurtboxFrame, &hitB))
+	//	{
+	//		//catcher->Catch();
+	//		//action = S_EXPLODE;
+	//		//frame = 0;
+	//	}
+	//}
 }
 
 
