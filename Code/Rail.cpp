@@ -79,7 +79,7 @@ Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 			V2d B = curr->v0 + norm * hw;
 			V2d C = curr->v1 + norm * hw;
 			V2d D = curr->v1 - norm * hw;
-			
+
 			va[i * 4 + 0].position = Vector2f(A.x, A.y);
 			va[i * 4 + 1].position = Vector2f(B.x, B.y);
 			va[i * 4 + 2].position = Vector2f(C.x, C.y);
@@ -92,10 +92,26 @@ Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 		}
 
 		Edge *tEdge = edges[0];
-		left = min( tEdge->v0.x, tEdge->v1.x );
+		left = min(tEdge->v0.x, tEdge->v1.x);
 		right = max(tEdge->v0.x, tEdge->v1.x);
-		top = min( tEdge->v0.y, tEdge->v1.y );
-		bottom = max(tEdge->v0.y, tEdge->v1.y );
+
+		double slightExtra = 1;
+		if (right - left == 0)
+		{
+			right += slightExtra;
+			left -= slightExtra;
+		}
+
+
+
+		top = min(tEdge->v0.y, tEdge->v1.y);
+		bottom = max(tEdge->v0.y, tEdge->v1.y);
+
+		if (bottom - top == 0)
+		{
+			bottom += slightExtra;
+			top -= slightExtra;
+		}
 
 		for (int i = 1; i < numEdges; ++i)
 		{
