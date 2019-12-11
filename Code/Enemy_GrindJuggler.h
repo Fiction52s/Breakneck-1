@@ -46,6 +46,10 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 	void PopThrow();
 	void ExtraQueries(sf::Rect<double> &r);
 
+	void LeaveRail();
+	void BoardRail();
+	bool CanLeaveRail();
+
 	Rail *currRail;
 	Edge *railEdge;
 	double railQuant;

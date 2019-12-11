@@ -115,6 +115,28 @@ GrindJuggler::~GrindJuggler()
 	delete mover;
 }
 
+bool GrindJuggler::CanLeaveRail()
+{
+	return true;
+}
+
+void GrindJuggler::LeaveRail()
+{
+
+}
+
+void GrindJuggler::BoardRail()
+{
+	if (clockwise)
+	{
+		mover->SetRailSpeed(flySpeed);
+	}
+	else
+	{
+		mover->SetRailSpeed(-flySpeed);
+	}
+}
+
 void GrindJuggler::ResetEnemy()
 {
 	mover->collisionOn = true;
@@ -306,7 +328,6 @@ void GrindJuggler::ExtraQueries(Rect<double> &r)
 void GrindJuggler::Move()
 {
 	mover->Move(slowMultiple, numPhysSteps);
-	//mover->
 
 	position = mover->physBody.globalPosition;
 }

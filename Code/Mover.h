@@ -33,8 +33,9 @@ struct SurfaceRailMoverHandler : SurfaceMoverHandler
 	virtual void HitTerrainAerial(Edge *, double) {};
 	virtual void TransferEdge(Edge *) {};
 	virtual void ExtraQueries(sf::Rect<double> &r) {}
-	virtual void LeaveRail(Rail *r) {}
+	virtual void LeaveRail() {}
 	virtual void BoardRail() {}
+	virtual bool CanLeaveRail() {return false;}
 };
 
 
@@ -109,6 +110,7 @@ struct SurfaceRailMover : SurfaceMover
 		V2d &vel);
 	void Move(int slowMultiple, int numPhysSteps);
 	void HandleEntrant(QuadTreeEntrant *qte);
+	void SetRailSpeed(double s);
 
 	std::string queryMode;
 

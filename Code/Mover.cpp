@@ -1123,6 +1123,7 @@ SurfaceRailMover::SurfaceRailMover(GameSession *owner,
 	:SurfaceMover( owner, startGround, startQuantity, radius )
 {
 	railCollisionOn = true;
+	surfaceRailHandler = NULL;
 }
 
 void SurfaceRailMover::SetHandler(SurfaceRailMoverHandler *h)
@@ -1258,18 +1259,24 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 
 			
 
-			if (ceiling) //ceiling rail
-			{
-				groundSpeed = -10;
-			}
-			else
-			{
-				groundSpeed = 10;
-			}
-			groundSpeed = -groundSpeed;
+			//if (ceiling) //ceiling rail
+			//{
+			//	groundSpeed = -10;
+			//}
+			//else
+			//{
+			//	groundSpeed = 10;
+			//}
+			//groundSpeed = -groundSpeed;
+			groundSpeed = 0;
 
 			collisionOn = false;
 			railCollisionOn = false;
+
+			if (surfaceRailHandler != NULL)
+			{
+				surfaceRailHandler->BoardRail();
+			}
 
 			//physBody.globalPosition = position;
 			//mover->ground = railEdge;
@@ -1279,6 +1286,24 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 			//action = S_RAILGRIND;
 			//frame = 0;
 			//velocity = along * 10.0;//V2d(0, 0);
+		}
+	}
+}
+
+void SurfaceRailMover::SetRailSpeed(double s)
+{
+	assert(ground != NULL);
+	V2d gn = ground->Normal();
+	bool ceiling = gn.y > 0 || ( gn.y == 0 && gn.x < 0 );
+	if (currRail != NULL)
+	{
+		if (ceiling)
+		{
+			groundSpeed = -s;
+		}
+		else
+		{
+			groundSpeed = s;
 		}
 	}
 }
@@ -1376,12 +1401,30 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 
 				if (e1 == NULL)
 				{
-					velocity = ground->Along() * groundSpeed;
-					ground = NULL;
-					currRail = NULL;
-					railCollisionOn = true;
-					collisionOn = true;
-					roll = false;
+					assert(currRail != NULL);
+
+					if (surfaceRailHandler == NULL || (surfaceRailHandler->CanLeaveRail()))
+					{
+						if (surfaceRailHandler != NULL)
+						{
+							surfaceRailHandler->LeaveRail();
+						}
+
+						velocity = ground->Along() * groundSpeed;
+						ground = NULL;
+						currRail = NULL;
+						railCollisionOn = true;
+						collisionOn = true;
+						roll = false;
+					}
+					else
+					{
+						SetSpeed(0);
+						movement = 0;
+					}
+
+					
+					
 				}
 				else if (gNormal == e1n || currRail != NULL )
 				{
@@ -1424,12 +1467,24 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 
 				if (e0 == NULL)
 				{
-					velocity = ground->Along() * groundSpeed;
-					ground = NULL;
-					currRail = NULL;
-					railCollisionOn = true;
-					collisionOn = true;
-					roll = false;
+					assert(currRail != NULL);
+
+					if (surfaceRailHandler == NULL || (surfaceRailHandler->CanLeaveRail()))
+					{
+						velocity = ground->Along() * groundSpeed;
+						ground = NULL;
+						currRail = NULL;
+						railCollisionOn = true;
+						collisionOn = true;
+						roll = false;
+					}
+					else
+					{
+						SetSpeed(0);
+						movement = 0;
+					}
+					
+					
 				}
 				else if (gNormal == e0n || currRail != NULL )
 				{
