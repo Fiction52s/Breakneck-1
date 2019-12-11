@@ -1175,6 +1175,7 @@ struct Grass : QuadTreeEntrant
 {
 	enum GrassType
 	{
+		JUMP,
 		GRAVITY,
 		BOUNCE,
 		BOOST,

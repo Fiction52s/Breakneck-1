@@ -283,7 +283,6 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
-
 	stunBufferedJump = false;
 	stunBufferedDash = false;
 	stunBufferedAttack = Action::Count;
@@ -299,6 +298,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 	activeComboObjList = NULL;
 
 	boostGrassAccel = .25;
+	jumpGrassExtra = 15;
 
 	cout << "Start player" << endl;
 
@@ -444,7 +444,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//dirtyAuraSprite.setOrigin( )
 
 		//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-		testGrassCount = 0;
+		jumpGrassCount = 0;
 		gravityGrassCount = 0;
 		bounceGrassCount = 0;
 		boostGrassCount = 0;
@@ -2478,7 +2478,7 @@ void Actor::Respawn()
 
 	gateBlackFXPool->Reset();
 
-	testGrassCount = 0;
+	jumpGrassCount = 0;
 	gravityGrassCount = 0;
 	bounceGrassCount = 0;
 	boostGrassCount = 0;
@@ -6577,24 +6577,10 @@ void Actor::UpdatePrePhysics()
 						if( currInput.LRight() && velocity.x < dSpeed )
 						{
 							velocity.x = dSpeed;
-							//if (!facingRight && !steepJump)
-							//{
-							//	if (gNorm.x < 0)
-							//	{
-							//		velocity.y -= 16 * abs(gNorm.x);// 1.3;
-							//	}
-							//}
 						}
 						else if( currInput.LLeft() && velocity.x > -dSpeed)
 						{							
 							velocity.x = -dSpeed;
-							/*if (facingRight && !steepJump)
-							{
-								if (gNorm.x > 0)
-								{
-									velocity.y -= 16 * abs(gNorm.x);
-								}
-							}*/
 						}
 						else
 						{
@@ -6606,15 +6592,11 @@ void Actor::UpdatePrePhysics()
 						velocity.x = (velocity.x + groundSpeed) / 2.0;
 					}
 
-
-					//if( currInput.B && velocity.y < 0 && ( gNorm.x > 0 && groundSpeed )
-
 					if( velocity.y > 0 )
 					{
 						//min jump velocity for jumping off of edges.
 						if( abs(velocity.x) < dSpeed && length( velocity ) >= dSpeed )
 						{
-					//		cout << "here: " << velocity.x << endl;
 							if( velocity.x > 0 )
 							{
 								velocity.x = dSpeed;
@@ -6667,6 +6649,11 @@ void Actor::UpdatePrePhysics()
 					holdJump = true;
 
 					framesInAir = 0;
+
+					if (touchedJumpGrass)
+					{
+						velocity.y -= jumpGrassExtra;
+					}
 					//steepJump = false;
 				}
 				
@@ -8495,14 +8482,7 @@ void Actor::UpdatePrePhysics()
 	}*/
 	
 
-
-	
-
-	
-	
-	
-	
-	
+	touchedJumpGrass = false;
 	grassBoosted = false;
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
@@ -10124,36 +10104,11 @@ bool Actor::ResolvePhysics( V2d vel )
 	}
 
 	queryMode = "grass";
-	testGrassCount = 0;
+	jumpGrassCount = 0;
 	gravityGrassCount = 0;
 	bounceGrassCount = 0;
 	boostGrassCount = 0;
 	owner->grassTree->Query( this, r );
-
-	if( testGrassCount > 0 )
-	{
-		/*if (ground == NULL && bounceEdge == NULL && grindEdge == NULL )
-		{
-			velocity = velocity * .5;
-		}
-		else if( ground != NULL )
-		{
-			groundSpeed = groundSpeed * .5;
-		}
-		else if (grindEdge != NULL)
-		{
-			grindSpeed = grindSpeed * .5;
-		}*/
-		/*action = DEATH;
-		rightWire->Reset();
-		leftWire->Reset();
-		slowCounter = 1;
-		frame = 0;
-		owner->deathWipe = true;
-
-		owner->powerRing->Drain(1000000);*/
-		//owner->powerWheel->Damage( 1000000 );
-	}
 
 	queryMode = "item";
 	owner->itemTree->Query( this, r );
@@ -19470,7 +19425,12 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 		if( g->IsTouchingBox( r ) )
 		{
-			if (g->grassType == Grass::GRAVITY)
+			if (g->grassType == Grass::JUMP)
+			{
+				++jumpGrassCount;
+				touchedJumpGrass = true;
+			}
+			else if (g->grassType == Grass::GRAVITY)
 			{
 				++gravityGrassCount; //if gravity type
 			}

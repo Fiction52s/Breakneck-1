@@ -842,7 +842,7 @@ void Wire::UpdateAnchors2( V2d vel )
 
 
 
-	if( state == HIT || state == PULLING )
+	if( (state == HIT || state == PULLING) && anchor.enemy == NULL )
 	{
 		//UpdateEnemyAnchor();
 

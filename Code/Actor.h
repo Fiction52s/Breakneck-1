@@ -1115,12 +1115,14 @@ struct Actor : QuadTreeCollider,
 
 	sf::Vector2<double> wallNormal;
 	Edge *currWall;
-	int testGrassCount;
 	int gravityGrassCount;
 	int bounceGrassCount;
 	int boostGrassCount;
 	bool grassBoosted;
 	double boostGrassAccel;
+	int jumpGrassCount;
+	bool touchedJumpGrass;
+	double jumpGrassExtra;
 
 	Action action;
 	int steepClimbBoostStart;

@@ -5561,7 +5561,11 @@ void TerrainPiece::SetupGrass(std::list<GrassSegment> &segments)
 	int totalGrassIndex = 0;
 
 	Grass::GrassType gType;
-	if (terrainWorldType == 1)
+	if (terrainWorldType == 0)
+	{
+		gType = Grass::GrassType::JUMP;
+	}
+	else if (terrainWorldType == 1)
 	{
 		gType = Grass::GrassType::GRAVITY;
 	}
