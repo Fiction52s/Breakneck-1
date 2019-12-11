@@ -5,6 +5,9 @@
 #include "Movement.h"
 //#include "GameSession.h"
 
+struct GameSession;
+struct Rail;
+
 //struct SurfaceMoverHandler
 struct GroundMoverHandler
 {
@@ -24,8 +27,17 @@ struct SurfaceMoverHandler
 	virtual void ExtraQueries(sf::Rect<double> &r) {}
 };
 
-struct GameSession;
-struct Rail;
+
+struct SurfaceRailMoverHandler : SurfaceMoverHandler
+{
+	virtual void HitTerrainAerial(Edge *, double) {};
+	virtual void TransferEdge(Edge *) {};
+	virtual void ExtraQueries(sf::Rect<double> &r) {}
+	virtual void LeaveRail(Rail *r) {}
+	virtual void BoardRail() {}
+};
+
+
 //circle for now
 struct SurfaceMover : QuadTreeCollider
 {
@@ -79,6 +91,8 @@ struct SurfaceMover : QuadTreeCollider
 
 	int framesInAir;
 
+	void SetHandler(SurfaceMoverHandler *h);
+
 	SurfaceMoverHandler *surfaceHandler;
 	//move clockwise or counterclockwise
 	//and receive callbacks for stuff happening
@@ -101,6 +115,11 @@ struct SurfaceRailMover : SurfaceMover
 	Rail *currRail;
 
 	bool railCollisionOn;
+	double tempQuant;
+
+	void SetHandler(SurfaceRailMoverHandler *h);
+
+	SurfaceRailMoverHandler *surfaceRailHandler;
 
 };
 

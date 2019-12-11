@@ -6,7 +6,7 @@
 struct ComboObject;
 struct Rail;
 
-struct GrindJuggler : Enemy, SurfaceMoverHandler
+struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 {
 	enum Action
 	{

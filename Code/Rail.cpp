@@ -102,8 +102,6 @@ Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 			left -= slightExtra;
 		}
 
-
-
 		top = min(tEdge->v0.y, tEdge->v1.y);
 		bottom = max(tEdge->v0.y, tEdge->v1.y);
 

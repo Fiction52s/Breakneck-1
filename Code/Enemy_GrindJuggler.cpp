@@ -42,7 +42,8 @@ GrindJuggler::GrindJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, 
 	maxWaitFrames = 100000;//180;
 
 	mover = new SurfaceRailMover(owner, NULL, 0, 10 * scale);
-	mover->surfaceHandler = this;
+	mover->SetHandler(this);
+	//mover->surfaceHandler = this;
 
 	juggleReps = jReps;
 

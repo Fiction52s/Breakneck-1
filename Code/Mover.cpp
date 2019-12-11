@@ -743,13 +743,6 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 					if( surfaceHandler != NULL )
 						surfaceHandler->TransferEdge( ground );
 				}
-				//else if( !roll )
-				//{
-				//	bool br = StartRoll();
-				//	if( br )
-				//		break;
-				//	//callback for starting to roll
-				//}
 				else
 				{
 					if (!roll)
@@ -786,21 +779,23 @@ void SurfaceMover::Move( int slowMultiple, int numPhysSteps )
 					if( surfaceHandler != NULL )
 						surfaceHandler->TransferEdge( ground );
 				}
-				else if( !roll )
-				{
-					//cout << "what start roll" << endl;
-					bool br = StartRoll();
-					if( br )
-						break;
-				}
 				else
 				{
-					bool br = RollCounterClockwise( q, m );
-					if( br )
+					if (!roll)
+					{
+						//cout << "what start roll" << endl;
+						bool br = StartRoll();
+						if (br)
+							break;
+					}
+					
+					bool br = RollCounterClockwise(q, m);
+					if (br)
 					{
 						edgeQuantity = q;
 						break;
 					}
+					
 				}
 			}
 			else
@@ -956,6 +951,11 @@ bool SurfaceMover::StartRoll()
 void SurfaceMover::FinishedRoll()
 {
 	//nothing in the default
+}
+
+void SurfaceMover::SetHandler(SurfaceMoverHandler *h)
+{
+	surfaceHandler = h;
 }
 
 GroundMover::GroundMover( GameSession *owner, Edge *startGround, double startQuantity, 
@@ -1125,6 +1125,12 @@ SurfaceRailMover::SurfaceRailMover(GameSession *owner,
 	railCollisionOn = true;
 }
 
+void SurfaceRailMover::SetHandler(SurfaceRailMoverHandler *h)
+{
+	surfaceHandler = h;
+	surfaceRailHandler = h;
+}
+
 bool SurfaceRailMover::ResolvePhysics(V2d &vel)
 {
 	//possibleEdgeCount = 0;
@@ -1239,6 +1245,7 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 			{
 				V2d p = li.position;
 				edgeQuantity = ground->GetQuantity(p);
+				tempQuant = edgeQuantity;
 
 				physBody.globalPosition = p;
 			}
@@ -1259,6 +1266,7 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 			{
 				groundSpeed = 10;
 			}
+			groundSpeed = -groundSpeed;
 
 			collisionOn = false;
 			railCollisionOn = false;
@@ -1314,7 +1322,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 
 			double extra = 0;
 			bool leaveGround = false;
-			double q = edgeQuantity;
+			tempQuant = edgeQuantity;
 
 			V2d gNormal = ground->Normal();
 
@@ -1323,25 +1331,25 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 
 			double groundLength = length(ground->v1 - ground->v0);
 
-			if (approxEquals(q, 0))
-				q = 0;
-			else if (approxEquals(q, groundLength))
-				q = groundLength;
+			if (approxEquals(tempQuant, 0))
+				tempQuant = 0;
+			else if (approxEquals(tempQuant, groundLength))
+				tempQuant = groundLength;
 
-			if (movement > 0 && roll && q == 0)
+			if (movement > 0 && roll && tempQuant == 0)
 			{
 				ground = ground->edge0;
 				groundLength = length(ground->v1 - ground->v0);
 				edgeQuantity = groundLength;
-				q = edgeQuantity;
+				tempQuant = edgeQuantity;
 				gNormal = ground->Normal();
 			}
-			else if (movement < 0 && roll && q == groundLength)
+			else if (movement < 0 && roll && tempQuant == groundLength)
 			{
 				ground = ground->edge1;
 				groundLength = length(ground->v1 - ground->v0);
 				edgeQuantity = 0;
-				q = edgeQuantity;
+				tempQuant = edgeQuantity;
 				gNormal = ground->Normal();
 			}
 
@@ -1360,7 +1368,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 
 
 
-			if (movement > 0 && q == groundLength)
+			if (movement > 0 && tempQuant == groundLength)
 			{
 				//cout << "transfer right" << endl;
 				double c = cross(e1n, gNormal);
@@ -1373,12 +1381,13 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 					currRail = NULL;
 					railCollisionOn = true;
 					collisionOn = true;
+					roll = false;
 				}
 				else if (gNormal == e1n || currRail != NULL )
 				{
 					//cout << "transfer clockwise" << endl;
 					//cout << "t1" << endl;
-					q = 0;
+					tempQuant = 0;
 					ground = e1;
 
 					if (surfaceHandler != NULL)
@@ -1394,11 +1403,11 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 					}
 
 					//cout << "roll clockwise" << endl;
-					bool br = RollClockwise(q, m);
+					bool br = RollClockwise(tempQuant, m);
 					if (br)
 					{
 						//cout << "blah" << endl;
-						edgeQuantity = q;
+						edgeQuantity = tempQuant;
 						break;
 					}
 					else
@@ -1408,42 +1417,51 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 					
 				}
 			}
-			else if (movement < 0 && q == 0)
+			else if (movement < 0 && tempQuant == 0)
 			{
 
 				double d = dot(e1n, gNormal);
 
-				if (gNormal == e0n)
+				if (e0 == NULL)
 				{
-					q = length(e0->v1 - e0->v0);
+					velocity = ground->Along() * groundSpeed;
+					ground = NULL;
+					currRail = NULL;
+					railCollisionOn = true;
+					collisionOn = true;
+					roll = false;
+				}
+				else if (gNormal == e0n || currRail != NULL )
+				{
+					tempQuant = length(e0->v1 - e0->v0);
 					ground = e0;
 
 					if (surfaceHandler != NULL)
 						surfaceHandler->TransferEdge(ground);
 				}
-				else if (!roll)
-				{
-					//cout << "what start roll" << endl;
-					bool br = StartRoll();
-					if (br)
-						break;
-				}
 				else
 				{
-					bool br = RollCounterClockwise(q, m);
+					if (!roll)
+					{
+						bool br = StartRoll();
+						if (br)
+							break;
+					}
+					
+					bool br = RollCounterClockwise(tempQuant, m);
 					if (br)
 					{
-						edgeQuantity = q;
+						edgeQuantity = tempQuant;
 						break;
 					}
 				}
 			}
 			else
 			{
-				bool br = MoveAlongEdge(movement, groundLength, q, m);
+				bool br = MoveAlongEdge(movement, groundLength, tempQuant, m);
 				if (br)
 				{
-					edgeQuantity = q;
+					edgeQuantity = tempQuant;
 					break;
 				}
 			}
@@ -1453,7 +1471,7 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 			else
 				movement = steal;
 
-			edgeQuantity = q;
+			edgeQuantity = tempQuant;
 
 			if (abs(movement) < .0001)
 			{
@@ -1482,14 +1500,8 @@ void SurfaceRailMover::Move(int slowMultiple, int numPhysSteps)
 		}
 	}
 
-
-
-
 	framesInAir++;
-	//PhysicsResponse();
 }
-
-
 
 
 void SpaceMover::Reset()
