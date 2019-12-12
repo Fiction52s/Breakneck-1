@@ -102,11 +102,11 @@ GrowingTree::GrowingTree( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	
 	spawnRect = sf::Rect<double>( gPoint.x - pulseRadius, gPoint.y - pulseRadius, pulseRadius * 2, pulseRadius * 2 );
 
-	ts_bulletExplode = owner->GetTileset( "bullet_explode3_64x64.png", 64, 64 );
+	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode3_64x64.png", 64, 64 );
 
 	ResetEnemy();
 
-	//InitRangeMarkerVA();
+	InitRangeMarkerVA();
 }
 
 GrowingTree::~GrowingTree()
@@ -137,7 +137,6 @@ void GrowingTree::ResetEnemy()
 	frame = 0;
 	dead = false;
 	receivedHit = NULL;
-	numEnemiesKilledLastFrame = 0;
 
 	SetHitboxes(hitBody, 0);
 	SetHurtboxes(hurtBody, 0);
@@ -236,6 +235,8 @@ void GrowingTree::ProcessState()
 		}
 	}
 
+	int numEnemiesKilledLastFrame = owner->GetPlayer(0)->enemiesKilledLastFrame;
+
 	if ( numEnemiesKilledLastFrame > 0 && powerLevel < 3)
 	{
 		if (WithinDistance(owner->GetPlayer(0)->position, position, pulseRadius))
@@ -289,11 +290,12 @@ void GrowingTree::Fire()
 void GrowingTree::EnemyDraw(sf::RenderTarget *target )
 {
 	DrawSpriteIfExists(target, sprite);
-	//target->draw(rangeMarkerVA, totalBullets * 4, sf::Quads);
+	target->draw(rangeMarkerVA, totalBullets * 4, sf::Quads);
 }
 
 void GrowingTree::UpdateSprite()
 {
+	
 	int tileIndex = 0;
 	switch( action )
 	{

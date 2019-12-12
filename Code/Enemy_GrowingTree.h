@@ -51,8 +51,6 @@ struct GrowingTree : Enemy, LauncherEnemy
 	int startPowerLevel;
 	Edge *ground;
 
-	int numEnemiesKilledLastFrame;
-
 	sf::Vertex *rangeMarkerVA;
 	//sf::VertexArray rangeMarkerVA;
 	double edgeQuantity;
