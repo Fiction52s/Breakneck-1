@@ -327,6 +327,9 @@ bool IsEdgeTouchingCircle( sf::Vector2<double> & v0,
 	sf::Vector2<double> &v1, 
 	sf::Vector2<double> &pos, double rad );
 
+bool WithinDistance(sf::Vector2<double> &A,
+	sf::Vector2<double> &B, double rad);
+
 
 //struct QuadTree
 //{

@@ -123,6 +123,8 @@
 #include "Enemy_BounceBooster.h"
 #include "Enemy_Teleporter.h"
 #include "Enemy_Swarm.h"
+#include "Enemy_Ghost.h"
+#include "Enemy_GrowingTree.h"
 #include "Wire.h"
 
 #define TIMESTEP 1.0 / 60.0
@@ -3331,11 +3333,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 		}
 		else if (typeName == "ghost")
 		{
-
 			int xPos, yPos;
-
-			//always air
-
 
 			is >> xPos;
 			is >> yPos;
@@ -3343,15 +3341,15 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int speed;
-			is >> speed;
+			int level;
+			is >> level;
 
-			/*Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), speed );
+			Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), level );
 
 			fullEnemyList.push_back( enemy );
 			enem = enemy;
 
-			enemyTree->Insert( enemy );*/
+			enemyTree->Insert( enemy );
 		}
 		else if (typeName == "overgrowth")
 		{
@@ -3378,6 +3376,34 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			//enem = enemy;
 
 			//enemyTree->Insert( enemy );
+		}
+		else if (typeName == "growingtree")
+		{
+			//always grounded
+
+			int terrainIndex;
+			is >> terrainIndex;
+
+			int edgeIndex;
+			is >> edgeIndex;
+
+			double edgeQuantity;
+			is >> edgeQuantity;
+
+			int hasMonitor;
+			is >> hasMonitor;
+
+			int level;
+			is >> level;
+
+			GrowingTree * enemy = new GrowingTree(this, hasMonitor,
+				edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+
+			//
+			fullEnemyList.push_back( enemy );
+			enem = enemy;
+
+			enemyTree->Insert( enemy );
 		}
 		else if (typeName == "bossgator")
 		{

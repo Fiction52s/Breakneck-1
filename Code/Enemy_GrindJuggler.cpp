@@ -79,8 +79,8 @@ GrindJuggler::GrindJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos, 
 	AddBasicHitCircle(48);
 	hitBody->hitboxInfo = hitboxInfo;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	//SetHitboxes(hitBody, 0);
+	//SetHurtboxes(hurtBody, 0);
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;

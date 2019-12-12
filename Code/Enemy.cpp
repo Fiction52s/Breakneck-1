@@ -2310,6 +2310,15 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_SWARMMEMBER:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
 			break;
+		case EnemyType::EN_GHOST:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
+			break;
+		case EnemyType::EN_GROWINGTREE:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
+			break;
+		case EnemyType::EN_SHARK:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
+			break;
 		default:
 			return NULL;
 		}

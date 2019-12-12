@@ -849,11 +849,18 @@ void EditSession::AddW5Enemies()
 	AddWorldEnemy("shark", 5, LoadParams<SharkParams>, NULL, MakeParamsAerial<SharkParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
+
+	AddBasicGroundWorldEnemy("growingtree", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/sprout_160x160.png", 160, 160));
+
 	AddWorldEnemy("overgrowth", 5, LoadParams<OvergrowthParams>, MakeParamsGrounded<OvergrowthParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
-	AddWorldEnemy("ghost", 5, LoadParams<GhostParams>, NULL, MakeParamsAerial<GhostParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicAerialWorldEnemy("ghost", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/plasmid_192x192.png", 192, 192));
+
+	//AddWorldEnemy("ghost", 5, LoadParams<GhostParams>, NULL, MakeParamsAerial<GhostParams>,
+	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddWorldEnemy("bossgator", 5, LoadParams<BossGatorParams>, NULL, MakeParamsAerial<BossGatorParams>,
 		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);
@@ -15320,17 +15327,13 @@ Panel *ActorType::CreatePanel()
 
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
+	else if (name == "growingtree")
+	{
+		p = CreateDefaultPanel("growingtree_options", true, true, false, false);
+	}
 	else if (name == "ghost")
 	{
-		p = new Panel("ghost_options", 200, 600, edit);
-		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-
-		p->AddTextBox("speed", Vector2i(20, 150), 200, 20, "1");
-
-		p->AddCheckBox("monitor", Vector2i(20, 400));
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		p = CreateDefaultPanel("ghost_options", true, true, false, false);
 	}
 	else if (name == "swarm")
 	{

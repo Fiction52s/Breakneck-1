@@ -427,6 +427,12 @@ void RelativeComboer::ComboHit()
 
 void RelativeComboer::UpdateSprite()
 {
+	if (latchedOn)
+	{
+		basePos = owner->GetPlayer(0)->position;
+		position = basePos + offsetPos;
+	}
+
 	sprite.setPosition(position.x, position.y);
 
 	int tile = 0;

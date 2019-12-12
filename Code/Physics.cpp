@@ -2132,6 +2132,16 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 	
 }
 
+bool WithinDistance(sf::Vector2<double> &A,
+	sf::Vector2<double> &B, double rad)
+{
+	double lenSqr = lengthSqr(A - B);
+	if (rad * rad > lenSqr)
+		return true;
+
+	return false;
+}
+
 /*void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint )
 {
 
