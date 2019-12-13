@@ -412,6 +412,12 @@ sf::Vector2<double> CollisionBox::GetQuadVertex(int index)
 	//return (globalPosition + V2d(w * cos(globalAngle) + h * -sin(globalAngle), w * sin(globalAngle) + h * cos(globalAngle)));
 }
 
+void CollisionBox::Scale(double factor)
+{
+	rw *= factor;
+	rh *= factor;
+}
+
 V2d CollisionBox::GetOffset()
 {
 	V2d realOffset = offset;

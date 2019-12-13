@@ -8,6 +8,14 @@ struct ComboObject;
 
 struct HungryComboer : Enemy, EnemyTracker
 {
+	enum Type
+	{
+		T_GOES_FOR_ENEMIES,
+		T_GOES_FOR_PLAYER,
+		T_GOES_FOR_ENEMIES_GROWTH,
+	};
+
+
 	enum Action
 	{
 		S_FLOAT,
@@ -20,10 +28,10 @@ struct HungryComboer : Enemy, EnemyTracker
 
 	HungryComboer(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos, int p_level,
-		int juggleReps, bool goesForEnemies );
+		int juggleReps, Type t );
 	~HungryComboer();
 	void HandleEntrant(QuadTreeEntrant *qte);
-	bool IsValidEnemy(Enemy *e);
+	bool IsValidTrackEnemy(Enemy *e);
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -69,6 +77,15 @@ struct HungryComboer : Enemy, EnemyTracker
 	Tileset *ts;
 
 	bool goesForEnemies;
+	bool growing;
+	int growthLevel;
+	int numGrowthLevels;
+	double origScale;
+	double origSize;
+
+	void UpdateScale();
+
+	double GetFlySpeed();
 
 	double flySpeed;
 

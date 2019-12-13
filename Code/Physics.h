@@ -158,6 +158,7 @@ struct CollisionBox
 	sf::Vector2<double> GetQuadVertex(int index);
 	//double offsetAngle;
 	sf::Vector2<double> globalPosition;
+	void Scale(double factor);
 	double globalAngle;
 	double localAngle;
 	V2d GetOffset();

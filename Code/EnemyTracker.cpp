@@ -18,7 +18,7 @@ bool EnemyTracker::GetClosestEnemyPos(GameSession *owner, V2d &pos,
 	int fIndex = 0;
 	while (curr != NULL)
 	{
-		if ( IsValidEnemy(curr))
+		if (IsValidTrackEnemy(curr))
 		{
 			numPoints = curr->GetNumCamPoints();
 			for (i = 0; i < numPoints; ++i)
@@ -48,7 +48,7 @@ bool EnemyTracker::GetClosestEnemyPos(GameSession *owner, V2d &pos,
 	return foundPoint;
 }
 
-bool EnemyTracker::IsValidEnemy( Enemy *e )
+bool EnemyTracker::IsValidTrackEnemy( Enemy *e )
 {
 	return true;
 }
