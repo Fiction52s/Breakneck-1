@@ -12,6 +12,7 @@
 #include "MainMenu.h"
 #include "Enemy_CurveTurret.h"
 #include "Wire.h"
+#include "Enemy_Specter.h"
 
 using namespace std;
 using namespace sf;
@@ -1167,12 +1168,21 @@ void CopycatBullet::Reset( sf::Vector2<double> &pos0,
 	//tempadd = V2d( 0, 0 );
 }
 
-Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
-	int world, bool cuttable )
-	:owner( own ), prev( NULL ), next( NULL ), spawned( false ),
-	type( t ),zone( NULL ), dead( false ),
-	suppressMonitor( false ), ts_hitSpack( NULL ), keyShader( NULL )
+Enemy::Enemy(GameSession *own, EnemyType t, bool p_hasMonitor,
+	int world, bool cuttable)
+	:owner(own), prev(NULL), next(NULL), spawned(false),
+	type(t), zone(NULL), dead(false),
+	suppressMonitor(false), ts_hitSpack(NULL), keyShader(NULL)
 {
+	if (CanTouchSpecter())
+	{
+		specterTester = new SpecterTester(this);
+	}
+	else
+	{
+		specterTester = NULL;
+	}
+
 	scale = 1.f;
 
 	hurtBody = NULL;
@@ -1357,6 +1367,9 @@ Enemy::Enemy( GameSession *own, EnemyType t, bool p_hasMonitor,
 
 Enemy::~Enemy()
 {
+	if (specterTester != NULL)
+		delete specterTester;
+
 	if (numLaunchers > 0)
 	{
 		for (int i = 0; i < numLaunchers; ++i)
@@ -1502,6 +1515,21 @@ void Enemy::SetHurtboxes(CollisionBody *cb, int frame)
 	currHurtboxFrame = frame;
 }
 
+bool Enemy::IsTouchingSpecterField( SpecterArea *sa )
+{
+	return WithinDistance(sa->position, position, sa->radius);
+}
+
+void Enemy::CheckTouchingSpecterField(SpecterArea *sa)
+{
+	specterProtected = IsTouchingSpecterField(sa);
+}
+
+bool Enemy::CanTouchSpecter()
+{
+	return true;
+}
+
 void Enemy::HandleQuery( QuadTreeCollider * qtc )
 {
 	//if( !spawned )
@@ -1639,6 +1667,24 @@ void Enemy::RecordEnemy()
 	//stub
 }
 
+void Enemy::CheckSpecters()
+{
+	specterProtected = false;
+	if (CanTouchSpecter())
+	{
+		assert(specterTester != NULL);
+
+		double extra = 5;
+		sf::Rect<double> r;
+		r.left = position.x - extra;
+		r.top = position.y - extra;
+		r.width = extra * 2;
+		r.height = extra * 2;
+
+		specterTester->Query(r);
+	}
+}
+
 void Enemy::UpdatePrePhysics()
 {
 	if (pauseFrames > 0)
@@ -1654,6 +1700,9 @@ void Enemy::UpdatePrePhysics()
 
 	if ( dead )
 		return;
+
+
+	CheckSpecters();
 
 	receivedHit = NULL;
 
@@ -2079,7 +2128,7 @@ void Enemy::UpdatePhysics( int substep )
 {
 	if (pauseFrames > 0)
 		return;
-	specterProtected = false;
+	
 	bool validSubstep = (substep < numPhysSteps);
 
 	if (validSubstep)
@@ -2344,7 +2393,7 @@ EnemyParamsManager::~EnemyParamsManager()
 
 bool HittableObject::CheckHit( Actor *player, EnemyType et )
 {
-	if (receivedHit == NULL)
+	if (receivedHit == NULL && !specterProtected )
 	{
 		comboHitEnemy = NULL;
 		receivedHit = IsHit(player);

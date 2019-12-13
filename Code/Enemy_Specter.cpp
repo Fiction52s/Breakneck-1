@@ -18,16 +18,40 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+SpecterTester::SpecterTester(Enemy *en)
+	:enemy(en )
+{
+
+}
+
+void SpecterTester::HandleEntrant(QuadTreeEntrant *qte)
+{
+	if (!enemy->specterProtected)
+	{
+		SpecterArea *sa = (SpecterArea*)qte;
+		enemy->CheckTouchingSpecterField(sa);
+	}
+}
+
+void SpecterTester::Query( Rect<double> &r )
+{
+	enemy->owner->specterTree->Query(this, r);
+}
+
 SpecterArea::SpecterArea( Specter *sp, sf::Vector2i &pos, int rad )
 	:radius( rad ), specter( sp )
 {
-	testRect.left = pos.x - rad;
-	testRect.top = pos.y - rad;
-	testRect.width = rad * 2;
-	testRect.height = rad * 2;
-	barrier.globalPosition = V2d( pos.x, pos.y );
-	barrier.isCircle = true;
-	barrier.rw = rad;
+	double extra = 5;
+	testRect.left = pos.x - rad - extra;
+	testRect.top = pos.y - rad - extra;
+	testRect.width = rad * 2 + extra * 2;
+	testRect.height = rad * 2 + extra * 2;
+
+	position = V2d(pos);
+
+	//barrier.globalPosition = V2d( pos.x, pos.y );
+	//barrier.isCircle = true;
+	//barrier.rw = rad;
 	//barrier.type 
 }
 
@@ -152,6 +176,8 @@ void Specter::EnemyDraw( sf::RenderTarget *target )
 	target->draw(radCircle);
 	DrawSpriteIfExists(target, sprite);
 }
+
+bool Specter::CanTouchSpecter() { return false; }
 
 
 void Specter::UpdateHitboxes()

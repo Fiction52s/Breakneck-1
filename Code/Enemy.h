@@ -459,6 +459,7 @@ struct HittableObject
 	HitboxInfo *receivedHit;
 	Enemy *comboHitEnemy;
 	int numHealth;
+	bool specterProtected;
 };
 
 struct CuttableObject
@@ -527,6 +528,8 @@ struct ComboObject
 };
 
 struct Shield;
+struct SpecterArea;
+struct SpecterTester;
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
@@ -640,7 +643,13 @@ public:
 	void AddBasicHitCircle(double rad, int index = 0);
 
 	void Reset();
+
+	virtual bool CanTouchSpecter();
+	virtual void CheckSpecters();
+	void CheckTouchingSpecterField(SpecterArea *sa);
+	virtual bool IsTouchingSpecterField(SpecterArea *sa);
 	
+	SpecterTester *specterTester;
 	Shield *currShield;
 	int pauseFrames;
 	double numPhysSteps;
@@ -658,7 +667,6 @@ public:
 	bool hasMonitor;
 	bool dead;
 	bool suppressMonitor;
-	bool specterProtected;
 	Tileset *ts_hitSpack;
 	Tileset *ts_killSpack;
 	sf::Shader *keyShader;

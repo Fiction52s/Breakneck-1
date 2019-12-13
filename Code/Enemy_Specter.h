@@ -10,9 +10,18 @@ struct SpecterArea : QuadTreeEntrant
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	int radius;
+	V2d position;
 	sf::Rect<double> testRect;
-	CollisionBox barrier;
+	//CollisionBox barrier;
 	Specter *specter;
+};
+
+struct SpecterTester : QuadTreeCollider
+{
+	SpecterTester(Enemy *en);
+	void HandleEntrant(QuadTreeEntrant *qte);
+	void Query( sf::Rect<double> &r );
+	Enemy *enemy;
 };
 
 struct Specter : Enemy
@@ -25,6 +34,9 @@ struct Specter : Enemy
 	~Specter();
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
+
+	bool CanTouchSpecter();
+	
 
 	void UpdateSprite();
 	void UpdateHitboxes();

@@ -28,6 +28,11 @@ void BasicEffect::HandleNoHealth()
 
 }
 
+bool BasicEffect::CanTouchSpecter()
+{
+	return false;
+}
+
 void BasicEffect::ProcessState()
 {
 	if (frame / animationFactor == frameCount)
