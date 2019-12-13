@@ -846,15 +846,18 @@ void EditSession::AddW5Enemies()
 	//AddWorldEnemy("swarm", 5, LoadParams<SwarmParams>, NULL, MakeParamsAerial<SwarmParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
-	AddWorldEnemy("shark", 5, LoadParams<SharkParams>, NULL, MakeParamsAerial<SharkParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicAerialWorldEnemy("shark", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/shark_circle_256x256.png", 256, 256));
+
+	/*AddWorldEnemy("shark", 5, LoadParams<SharkParams>, NULL, MakeParamsAerial<SharkParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
 
 
 	AddBasicGroundWorldEnemy("growingtree", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/sprout_160x160.png", 160, 160));
 
-	AddWorldEnemy("overgrowth", 5, LoadParams<OvergrowthParams>, MakeParamsGrounded<OvergrowthParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	//AddWorldEnemy("overgrowth", 5, LoadParams<OvergrowthParams>, MakeParamsGrounded<OvergrowthParams>, NULL,
+	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	AddBasicAerialWorldEnemy("ghost", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/plasmid_192x192.png", 192, 192));
@@ -15300,12 +15303,13 @@ Panel *ActorType::CreatePanel()
 	//w5
 	else if (name == "shark")
 	{
-		p = new Panel("shark_options", 200, 600, edit);
+		p = CreateDefaultPanel("shark_options", true, true, false, false);
+		/*p = new Panel("shark_options", 200, 600, edit);
 		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
 
-		p->AddTextBox("circleframes", Vector2i(20, 150), 200, 20, "60");
+		p->AddTextBox("circleframes", Vector2i(20, 150), 200, 20, "60");*/
 
 
 		//p->AddTextBox( "movespeed", Vector2i( 20, 150 ), 200, 1, "1" ); 
@@ -15314,7 +15318,7 @@ Panel *ActorType::CreatePanel()
 
 
 
-		p->AddCheckBox("monitor", Vector2i(20, 400));
+		//p->AddCheckBox("monitor", Vector2i(20, 400));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
 	else if (name == "overgrowth")

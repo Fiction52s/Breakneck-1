@@ -35,6 +35,9 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level 
 	}
 
 	detectionRadius = 600;
+	approachFrames = 180 * 3;
+	speed = 1;
+	awakeCap = 60;
 
 	actionLength[WAKEUP] = 60;
 	actionLength[APPROACH] = 2;
@@ -46,16 +49,10 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level 
 	animFactor[BITE] = 5;
 	animFactor[EXPLODE] = 7;
 
-	action = WAKEUP;
-
-
 	position.x = pos.x;
 	position.y = pos.y;
 
 	origPosition = position;
-
-	approachFrames = 180 * 3;
-	totalFrame = 0;
 
 	V2d playerPos = owner->GetPlayer(0)->position;
 	V2d dirFromPlayer = normalize( playerPos  - position );
@@ -67,14 +64,6 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level 
 
 	spawnRect = sf::Rect<double>( pos.x - 64, pos.y - 64, 64 * 2, 64 * 2 );
 
-	basePos = position;
-	
-	speed = 1;
-
-	//speed = 2;
-	frame = 0;
-
-	//ts = owner->GetTileset( "Ghost.png", 80, 80 );
 	ts = owner->GetTileset( "Enemies/plasmid_192x192.png", 192, 192 );
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
@@ -95,15 +84,7 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level 
 	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = hitboxInfo;
 
-	awakeFrames = 0;
-	awakeCap = 60;
-	
-	latchStartAngle = 0;
-	dead = false;
-
 	facingRight = (playerPos.x - position.x) >= 0;
-
-	UpdateHitboxes();
 
 	origFacingRight = facingRight;
 

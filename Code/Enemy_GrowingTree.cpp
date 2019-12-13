@@ -22,6 +22,24 @@ GrowingTree::GrowingTree( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	:Enemy( owner, EnemyType::EN_GROWINGTREE, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
 	
 {
+
+	level = p_level;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+
 	actionLength[RECOVER0] = 4;
 	actionLength[RECOVER1] = 4;
 	actionLength[RECOVER2] = 6;

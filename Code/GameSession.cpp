@@ -125,6 +125,7 @@
 #include "Enemy_Swarm.h"
 #include "Enemy_Ghost.h"
 #include "Enemy_GrowingTree.h"
+#include "Enemy_Shark.h"
 #include "Wire.h"
 
 #define TIMESTEP 1.0 / 60.0
@@ -3322,14 +3323,14 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int circleFrames;
-			is >> circleFrames;
+			int level;
+			is >> level;
 
-			/*Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), circleFrames );
-			fullEnemyList.push_back( enemy );
+			Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), level );
+			fullEnemyList.push_back(enemy);
 			enem = enemy;
 
-			enemyTree->Insert( enemy );*/
+			enemyTree->Insert( enemy );
 		}
 		else if (typeName == "ghost")
 		{

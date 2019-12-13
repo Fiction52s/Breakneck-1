@@ -105,9 +105,6 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	AddBasicHitCircle(64);
 	hitBody->hitboxInfo = hitboxInfo;
 
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
-
 	frame = 0;
 	animationFactor = 4;
 

@@ -193,7 +193,7 @@ struct MovementSequence
 	int currRotationStartTime;
 	sf::Vector2<double> &GetPosition();
 	double GetRotation();
-	void Update( int slowMultiple = 1 );
+	void Update( int slowMultiple = 1, int stepsAtOnce = 1);
 	void Reset();
 	Projectile *projectileList;
 	Projectile *currProjectile;

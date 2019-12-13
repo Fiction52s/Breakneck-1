@@ -108,7 +108,7 @@ double CubicBezier::GetY( double t )
 }
 
 Movement::Movement( CubicBezier &p_bez, int dur, Types type )
-	:next( NULL ), duration( dur * NUM_STEPS * 5 ), vertices( NULL ), bez( p_bez ), moveType( type )
+	:next( NULL ), duration( dur * NUM_MAX_STEPS * 5 ), vertices( NULL ), bez( p_bez ), moveType( type )
 
 {
 }
@@ -369,7 +369,7 @@ void MovementSequence::Reset()
 	currRotation = rotationList;
 }
 
-void MovementSequence::Update( int slowMultiple )
+void MovementSequence::Update( int slowMultiple, int stepsAtOnce )
 {
 	if( currMovement != NULL )
 	{
@@ -407,7 +407,7 @@ void MovementSequence::Update( int slowMultiple )
 	}
 
 
-	currTime += 5 / slowMultiple;
+	currTime += (5 / slowMultiple) * stepsAtOnce;
 	//currTime++;
 	if( currMovement != NULL )//&& currTime >= currMovement->duration + currMovementStartTime + 1 )
 	{
