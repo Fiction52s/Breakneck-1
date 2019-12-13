@@ -875,7 +875,7 @@ void EditSession::AddW5Enemies()
 void EditSession::AddW6Enemies()
 {
 	//w6
-	AddBasicAerialWorldEnemy("specter", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+	AddBasicAerialWorldEnemy("specter", 6, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/specter_256x256.png", 256, 256));
 
 	AddWorldEnemy("narwhal", 6, LoadParams<NarwhalParams>, NULL, MakeParamsAerial<NarwhalParams>,
@@ -884,8 +884,8 @@ void EditSession::AddW6Enemies()
 	AddWorldEnemy("copycat", 6, LoadParams<CopycatParams>, NULL, MakeParamsAerial<CopycatParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
-	AddWorldEnemy("gorilla", 6, LoadParams<GorillaParams>, NULL, MakeParamsAerial<GorillaParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicAerialWorldEnemy("gorilla", 6, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/gorilla_320x256.png", 320, 256));
 
 	AddWorldEnemy("bossskeleton", 6, LoadParams<BossSkeletonParams>, NULL, MakeParamsAerial<BossSkeletonParams>,
 		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);
@@ -15347,16 +15347,7 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "gorilla")
 	{
-		p = new Panel("gorilla_options", 200, 600, edit);
-		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-
-		p->AddTextBox("wallwidth", Vector2i(20, 150), 200, 20, "1");
-		p->AddTextBox("followframes", Vector2i(20, 200), 200, 20, "1");
-
-		p->AddCheckBox("monitor", Vector2i(20, 400));
-		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
+		p = CreateDefaultPanel("gorilla_options", true, true, false, false);
 	}
 	else if (name == "copycat")
 	{
