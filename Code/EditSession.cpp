@@ -875,6 +875,14 @@ void EditSession::AddW5Enemies()
 void EditSession::AddW6Enemies()
 {
 	//w6
+
+	AddWorldEnemy("swinglaunchercw", 6, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+	AddWorldEnemy("swinglauncherccw", 6, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+
 	AddBasicAerialWorldEnemy("specter", 6, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/specter_256x256.png", 256, 256));
 
@@ -15132,7 +15140,8 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
-	else if (name == "gravityspring" || name == "bouncespring" || name == "airbouncespring" )
+	else if (name == "gravityspring" || name == "bouncespring" 
+		|| name == "airbouncespring" || name == "swinglaunchercw" || name == "swinglauncherccw" )
 	{
 		p = new Panel("gravityspring_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");

@@ -37,6 +37,7 @@
 #include "Enemy_BounceBooster.h"
 #include "Enemy_Teleporter.h"
 #include "Wire.h"
+#include "Enemy_SwingLauncher.h"
 
 using namespace sf;
 using namespace std;
@@ -98,6 +99,8 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[SPRINGSTUNAIRBOUNCE] = tileset[SPRINGSTUN];
 	tileset[SPRINGSTUNBOUNCE] = tileset[SPRINGSTUN];
 	tileset[SPRINGSTUNTELEPORT] = tileset[SPRINGSTUN];
+
+	tileset[SWINGSTUN] = tileset[SPRINGSTUN];
 
 	tileset[GLIDE] = tileset[SPRINGSTUN];
 	tileset[SLIDE] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
@@ -430,6 +433,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		currSpring = NULL;
 		currBooster = NULL;
 		currTeleporter = NULL;
+		currSwingLauncher = NULL;
 
 		currBounceBooster = NULL;
 		oldBounceBooster = NULL;
@@ -1120,6 +1124,8 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		actionLength[SPRINGSTUNBOUNCE] = 8;
 		actionLength[SPRINGSTUNTELEPORT] = 8;
 
+		actionLength[SWINGSTUN] = 8;
+
 		actionLength[GLIDE] = 8;
 		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
 		actionLength[DASHATTACK] = 8 * 2;
@@ -1721,6 +1727,9 @@ void Actor::ActionEnded()
 			frame = 0;
 
 			//assert(ground == NULL);
+			break;
+		case SWINGSTUN:
+			frame = 0;
 			break;
 		case GLIDE:
 			//action = JUMP;
@@ -2446,6 +2455,7 @@ void Actor::Respawn()
 	currBooster = NULL;
 	currSpring = NULL;
 	currTeleporter = NULL;
+	currSwingLauncher = NULL;
 	oldBooster = NULL;
 
 	currBounceBooster = NULL;
@@ -4030,6 +4040,30 @@ void Actor::UpdatePrePhysics()
 			frame = 1;
 			position = teleportSpringDest;
 			velocity = teleportSpringVel;
+		}
+		break;
+	}
+	case SWINGSTUN:
+	{
+		if (!GlideAction())
+		{
+			if (springStunFrames == 0)
+			{
+				SetAction(JUMP);
+				frame = 1;
+				if (velocity.x < 0)
+				{
+					facingRight = false;
+				}
+				else if (velocity.x > 0)
+				{
+					facingRight = true;
+				}
+			}
+		}
+		else
+		{
+			springStunFrames = 0;
 		}
 		break;
 	}
@@ -7448,6 +7482,27 @@ void Actor::UpdatePrePhysics()
 	case SPRINGSTUNTELEPORT:
 	{		
 		velocity = springVel + springExtra;
+		break;
+	}
+	case SWINGSTUN:
+	{
+		double rad = oldSwingLauncher->swingRadius;
+		double speed = oldSwingLauncher->speed;
+
+		V2d anchor = oldSwingLauncher->anchor;
+		V2d future = position + normalize(springVel) * speed;//velocity;
+
+		//V2d seg = wirePoint - rwPos;
+		//double segLength = length(seg);
+		V2d diff = anchor - future;
+
+		if (length(diff) > rad)
+		{
+			future += normalize(diff) * (length(diff) - rad);
+			springVel = future - position;
+		}
+
+		velocity = springVel; //* speed;
 		break;
 	}
 	case SPRINGSTUNAIRBOUNCE:
@@ -15823,6 +15878,8 @@ void Actor::PhysicsResponse()
 
 		if (TeleporterLaunch())return;
 
+		if (SwingLaunch())return;
+
 		//e = ground;
 		bool leaveGround = false;
 		if( ground->edgeType == Edge::CLOSED_GATE )
@@ -16021,6 +16078,8 @@ void Actor::PhysicsResponse()
 		if (SpringLaunch()) return;
 
 		if (TeleporterLaunch())return;
+
+		if (SwingLaunch())return;
 
 		if( action == GROUNDHITSTUN )
 		{
@@ -17883,6 +17942,50 @@ sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 //	}
 //}
 
+bool Actor::SwingLaunch()
+{
+	if (currSwingLauncher != NULL)
+	{
+		currSwingLauncher->Launch();
+
+		oldSwingLauncher = currSwingLauncher;
+
+		position = currSwingLauncher->position;
+		V2d dir = currSwingLauncher->dir;
+
+		double s = currSwingLauncher->speed;
+
+		springVel = currSwingLauncher->dir * s;
+
+		springExtra = V2d(0, 0);
+
+		springStunFrames = currSwingLauncher->stunFrames;
+
+		ground = NULL;
+		bounceEdge = NULL;
+		grindEdge = NULL;
+		action = SWINGSTUN;
+
+		currSwingLauncher = NULL;
+
+		holdJump = false;
+		holdDouble = false;
+		hasDoubleJump = true;
+		hasAirDash = true;
+		rightWire->Reset();
+		leftWire->Reset();
+		frame = 0;
+		UpdateHitboxes();
+		ground = NULL;
+		wallNormal = V2d(0, 0);
+		velocity = V2d(0, 0);
+		currWall = NULL;
+		return true;
+	}
+
+	return false;
+}
+
 bool Actor::TeleporterLaunch()
 {
 	if (currTeleporter != NULL)
@@ -19742,7 +19845,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			Teleporter *tele = (Teleporter*)qte;
 			if (currTeleporter == NULL)
 			{
-				if (tele->hitBody->Intersects(tele->currHitboxFrame, &hurtBody) && tele->action == Spring::IDLE)
+				if (tele->hitBody->Intersects(tele->currHitboxFrame, &hurtBody) && tele->action == Teleporter::IDLE)
 				{
 					currTeleporter = tele;
 				}
@@ -19750,6 +19853,17 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			else
 			{
 				//some replacement formula later
+			}
+		}
+		else if (en->type == EnemyType::EN_SWINGLAUNCHER)
+		{
+			SwingLauncher *sw = (SwingLauncher*)qte;
+			if (currSwingLauncher == NULL)
+			{
+				if (sw->hitBody->Intersects(sw->currHitboxFrame, &hurtBody) && sw->action == SwingLauncher::IDLE)
+				{
+					currSwingLauncher = sw;
+				}
 			}
 		}
 		else if (en->type == EnemyType::EN_HEALTHFLY)
@@ -22028,7 +22142,7 @@ void Actor::UpdateSprite()
 		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 		sprite->setPosition(position.x, position.y);
 
-		V2d sVel = springVel + springExtra;
+		/*V2d sVel = springVel + springExtra;
 		if (facingRight)
 		{
 			double a = GetVectorAngleCW(normalize(sVel)) * 180 / PI;
@@ -22038,10 +22152,20 @@ void Actor::UpdateSprite()
 		{
 			double a = GetVectorAngleCCW(normalize(sVel)) * 180 / PI;
 			sprite->setRotation(-a + 180);
-		}
+		}*/
 
 		if (scorpOn)
 			SetAerialScorpSprite();
+		break;
+	}
+	case SWINGSTUN:
+	{
+		SetSpriteTexture(action);
+
+		SetSpriteTile(0, facingRight);
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+		sprite->setPosition(position.x, position.y);
 		break;
 	}
 	case GLIDE:

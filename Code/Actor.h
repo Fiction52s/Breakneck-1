@@ -171,6 +171,7 @@ struct Booster;
 struct BounceBooster;
 struct Spring;
 struct Teleporter;
+struct SwingLauncher;
 struct EffectPool;
 struct EnemyParams;
 struct SoundNode;
@@ -302,6 +303,7 @@ struct Actor : QuadTreeCollider,
 		SPRINGSTUNBOUNCE,
 		SPRINGSTUNAIRBOUNCE,
 		SPRINGSTUNTELEPORT,
+		SWINGSTUN,
 		GLIDE,
 		SEQ_ENTERCORE1,
 		SEQ_CRAWLERFIGHT_STRAIGHTFALL,
@@ -759,6 +761,11 @@ struct Actor : QuadTreeCollider,
 	Teleporter *oldTeleporter;
 	Booster *currBooster;
 	Booster *oldBooster;
+
+	SwingLauncher *currSwingLauncher;
+	SwingLauncher *oldSwingLauncher;
+
+
 
 	void SetBoostVelocity();
 	void SetBounceBoostVelocity();
@@ -1247,6 +1254,7 @@ struct Actor : QuadTreeCollider,
 
 	bool SpringLaunch();
 	bool TeleporterLaunch();
+	bool SwingLaunch();
 	bool CheckSwing();
 	bool CheckNormalSwing();
 	bool CheckNormalSwingHeld();

@@ -128,6 +128,7 @@
 #include "Enemy_Shark.h"
 #include "Enemy_Specter.h"
 #include "Enemy_Gorilla.h"
+#include "Enemy_SwingLauncher.h"
 #include "Wire.h"
 
 #define TIMESTEP 1.0 / 60.0
@@ -3446,6 +3447,37 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			//enem = enemy;
 
 			enemyTree->Insert( enemy );
+		}
+		else if (typeName == "swinglaunchercw" || typeName == "swinglauncherccw")
+		{
+			int xPos, yPos;
+
+			//always air
+
+			is >> xPos;
+			is >> yPos;
+
+			int speed = 0;
+			is >> speed;
+
+			Vector2i other;
+			is >> other.x;
+			is >> other.y;
+
+			bool cw = true;
+			if (typeName == "swinglauncherccw")
+			{
+				cw = false;
+			}
+
+			SwingLauncher *enemy = new SwingLauncher(this, Vector2i(xPos, yPos), other, speed, cw);
+
+			activeItemTree->Insert(enemy);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
 		}
 		else if (typeName == "narwhal")
 		{
