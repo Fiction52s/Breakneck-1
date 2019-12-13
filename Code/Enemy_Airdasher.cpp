@@ -76,9 +76,6 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 	AddBasicHitCircle(48);
 	hitBody->hitboxInfo = hitboxInfo;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-
 	comboObj = new ComboObject(this);
 
 

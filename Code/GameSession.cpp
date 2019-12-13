@@ -126,6 +126,7 @@
 #include "Enemy_Ghost.h"
 #include "Enemy_GrowingTree.h"
 #include "Enemy_Shark.h"
+#include "Enemy_Specter.h"
 #include "Wire.h"
 
 #define TIMESTEP 1.0 / 60.0
@@ -3429,20 +3430,20 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			int xPos, yPos;
 
-			//always air
-
-
 			is >> xPos;
 			is >> yPos;
 
 			int hasMonitor;
 			is >> hasMonitor;
 
-			//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ) );
-			//fullEnemyList.push_back( enemy );
+			int level;
+			is >> level;
+
+			Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ), level );
+			fullEnemyList.push_back( enemy );
 			//enem = enemy;
 
-			//enemyTree->Insert( enemy );
+			enemyTree->Insert( enemy );
 		}
 		else if (typeName == "narwhal")
 		{

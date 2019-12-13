@@ -874,17 +874,5 @@ void Query( EnemyQuadTreeCollider *qtc, EnemyQNode *node, const sf::Rect<double>
 
 bool IsEnemyTouchingBox( Enemy *e, const sf::Rect<double> & ir );
 
-struct Specter;
-struct SpecterArea : QuadTreeEntrant
-{
-	SpecterArea(Specter *sp, sf::Vector2i &pos, int rad);
-	void HandleQuery(QuadTreeCollider * qtc);
-	bool IsTouchingBox(const sf::Rect<double> &r);
-	int radius;
-	sf::Rect<double> testRect;
-	CollisionBox barrier;
-	Specter *specter;
-};
-
 
 #endif

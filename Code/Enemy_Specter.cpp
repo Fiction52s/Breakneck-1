@@ -49,55 +49,47 @@ bool SpecterArea::IsTouchingBox( const sf::Rect<double> &r )
 }
 
 
-Specter::Specter( GameSession *owner, bool p_hasMonitor, Vector2i pos )
-	:Enemy( owner, EnemyType::SPECTER, p_hasMonitor, 6 ), deathFrame( 0 ), myArea( this, pos, 400 )
+Specter::Specter( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level )
+	:Enemy( owner, EnemyType::EN_SPECTER, p_hasMonitor, 1 )//, myArea( this, pos, 400 )
 {
+	level = p_level;
 
-	initHealth = 60;
-	health = initHealth;
+	radius = 1000;
+
+	myArea = new SpecterArea(this, pos, radius);
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 
 	//hopefully this doesnt cause deletion bugs
-	owner->specterTree->Insert( &myArea );
-	radius = 400;
+	owner->specterTree->Insert( myArea );
 
-	receivedHit = NULL;
 	position.x = pos.x;
 	position.y = pos.y;
 
-	deathFrame = 0;
-
-	initHealth = 40;
-	health = initHealth;
-
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
-	
-	frame = 0;
+	spawnRect = sf::Rect<double>(position.x - 200, position.y - 200,
+		400, 400);
 
 	animationFactor = 10;
 
-	//ts = owner->GetTileset( "Specter.png", 80, 80 );
-	ts = owner->GetTileset( "specter_256x256.png", 256, 256 );
+	ts = owner->GetTileset( "Enemies/specter_256x256.png", 256, 256 );
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
+	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
-	//position.x = 0;
-	//position.y = 0;
-	hurtBody.type = CollisionBox::Hurt;
-	hurtBody.isCircle = true;
-	hurtBody.globalAngle = 0;
-	hurtBody.offset.x = 0;
-	hurtBody.offset.y = 0;
-	hurtBody.rw = 32;
-	hurtBody.rh = 32;
-
-	hitBody.type = CollisionBox::Hit;
-	hitBody.isCircle = true;
-	hitBody.globalAngle = 0;
-	hitBody.offset.x = 0;
-	hitBody.offset.y = 0;
-	hitBody.rw = 16;
-	hitBody.rh = 16;
+	sprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -106,309 +98,70 @@ Specter::Specter( GameSession *owner, bool p_hasMonitor, Vector2i pos )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
-	//hitboxInfo->kbDir;
+
+	SetupBodies(1, 1);
+	AddBasicHurtCircle(48);
+	AddBasicHitCircle(48);
+	hitBody->hitboxInfo = hitboxInfo;
 
 	
+	radCircle.setFillColor(Color(255, 0, 0, 100));
+	radCircle.setRadius(radius);
+	radCircle.setOrigin(radCircle.getLocalBounds().width / 2,
+		radCircle.getLocalBounds().height / 2);
+	radCircle.setPosition(position.x, position.y);
 
-	dead = false;
-
-	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
-	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
-	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
-
-	deathPartingSpeed = .4;
-	deathVector = V2d( 1, -1 );
-
-	//facingRight = true;
-	 
-	//ts_testBlood = owner->GetTileset( "blood1.png", 32, 48 );
-	//bloodSprite.setTexture( *ts_testBlood->texture );
-
-	UpdateHitboxes();
-
-	spawnRect = sf::Rect<double>( position.x - 200, position.y - 200,
-		400, 400 );
-
-	//cout << "finish init" << endl;
+	ResetEnemy();
 }
 
-void Specter::HandleEntrant( QuadTreeEntrant *qte )
+Specter::~Specter()
 {
-	//Specter 
+	delete myArea;
 }
-
 
 void Specter::ResetEnemy()
 {
-//	fireCounter = 0;
-//	testSeq.Reset();
-//	launcher->Reset();
-	//cout << "resetting enemy" << endl;
-	//spawned = false;
-	//targetNode = 1;
-	//forward = true;
+	SetHitboxes(hitBody, 0);
+	SetHurtboxes(hurtBody, 0);
+
 	dead = false;
-//	dying = false;
-	deathFrame = 0;
 	frame = 0;
-//	position.x = path[0].x;
-//	position.y = path[0].y;
 	receivedHit = NULL;
 	
-
 	UpdateHitboxes();
-
 	UpdateSprite();
-	health = initHealth;
 	
 }
 
-void Specter::UpdatePrePhysics()
+void Specter::ProcessState()
 {
 	if( frame == 11 * animationFactor )
 	{
 		frame = 0;
 	}
-
-	if( !dead && receivedHit != NULL )
-	{	
-		//gotta factor in getting hit by a clone
-		health -= 20;
-
-		//cout << "health now: " << health << endl;
-
-		if( health <= 0 )
-		{
-			if( hasMonitor && !suppressMonitor )
-				owner->keyMarker->CollectKey();
-			dead = true;
-		}
-
-		receivedHit = NULL;
-	}
-}
-
-void Specter::UpdatePhysics()
-{	
-	if( PlayerSlowingMe() )
-	{
-		if( slowMultiple == 1 )
-		{
-			slowCounter = 1;
-			slowMultiple = 5;
-		}
-	}
-	else
-	{
-		slowMultiple = 1;
-		slowCounter = 1;
-	}
-
-	PhysicsResponse();
-}
-
-void Specter::PhysicsResponse()
-{
-	if( !dead && receivedHit == NULL )
-	{
-		UpdateHitboxes();
-
-		pair<bool,bool> result = PlayerHitMe();
-		if( result.first )
-		{
-			//cout << "color blue" << endl;
-			//triggers multiple times per frame? bad?
-			owner->GetPlayer( 0 )->ConfirmHit( 6, 5, .8, 6 );
-
-
-			if( owner->GetPlayer( 0 )->ground == NULL && owner->GetPlayer( 0 )->velocity.y > 0 )
-			{
-				owner->GetPlayer( 0 )->velocity.y = 4;//.5;
-			}
-
-		//	cout << "frame: " << owner->GetPlayer( 0 )->frame << endl;
-
-			//owner->GetPlayer( 0 )->frame--;
-			//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_testBlood, position, true, 0, 6, 3, true );
-			
-		//	cout << "Specter received damage of: " << receivedHit->damage << endl;
-			/*if( !result.second )
-			{
-				owner->Pause( 8 );
-			}
-		
-			health -= 20;
-
-			if( health <= 0 )
-				dead = true;
-
-			receivedHit = NULL;*/
-			//dead = true;
-			//receivedHit = NULL;
-		}
-
-		if( IHitPlayer() )
-		{
-		//	cout << "Specter just hit player for " << hitboxInfo->damage << " damage!" << endl;
-		}
-	}
-}
-
-void Specter::UpdatePostPhysics()
-{
-	if( receivedHit != NULL )
-	{
-		owner->Pause( 5 );
-	}
-
-	
-	UpdateSprite();
-
-	if( slowCounter == slowMultiple )
-	{
-		//cout << "fireCounter: " << fireCounter << endl;
-		++frame;
-		slowCounter = 1;
-	
-	
-		if( dead )
-		{
-			//cout << "deathFrame: " << deathFrame << endl;
-			deathFrame++;
-		}
-
-	}
-	else
-	{
-		slowCounter++;
-	}
-
-	
-
-	if( deathFrame == 60 )
-	{
-		//cout << "switching dead" << endl;
-		//dying = false;
-		//dead = true;
-		//cout << "REMOVING" << endl;
-		//testLauncher->Reset();
-		owner->RemoveEnemy( this );
-		//return;
-	}
-
-	
 }
 
 void Specter::UpdateSprite()
 {
-	if( !dead )
-	{
-		sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
-		sprite.setPosition( position.x, position.y );
-	}
-	else
-	{
-
-		botDeathSprite.setTexture( *ts->texture );
-		botDeathSprite.setTextureRect( ts->GetSubRect( 13 ) );
-		botDeathSprite.setOrigin( botDeathSprite.getLocalBounds().width / 2, botDeathSprite.getLocalBounds().height / 2 );
-		botDeathSprite.setPosition( position.x + deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + deathVector.y * deathPartingSpeed * deathFrame );
-
-		topDeathSprite.setTexture( *ts->texture );
-		topDeathSprite.setTextureRect( ts->GetSubRect( 12 ) );
-		topDeathSprite.setOrigin( topDeathSprite.getLocalBounds().width / 2, topDeathSprite.getLocalBounds().height / 2 );
-		topDeathSprite.setPosition( position.x + -deathVector.x * deathPartingSpeed * deathFrame, 
-			position.y + -deathVector.y * deathPartingSpeed * deathFrame );
-	}
+	sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
+	sprite.setPosition(position.x, position.y);
 }
 
-void Specter::Draw( sf::RenderTarget *target )
+void Specter::EnemyDraw( sf::RenderTarget *target )
 {
-	//cout << "draw" << endl;
-	if( !dead )
-	{
-		if( hasMonitor && !suppressMonitor )
-		{
-			//owner->AddEnemy( monitor );
-			CircleShape cs;
-			cs.setRadius( 40 );
-
-			cs.setFillColor( Color::Black );
-
-			//cs.setFillColor( monitor-> );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( position.x, position.y );
-			target->draw( cs );
-		}
-		CircleShape cs;
-		cs.setFillColor( Color( 255, 0, 0, 100 ) );
-		cs.setRadius( 400 );
-		cs.setOrigin( cs.getLocalBounds().width / 2, 
-			cs.getLocalBounds().height / 2 );
-		cs.setPosition( position.x, position.y );
-		target->draw( cs );
-		target->draw( sprite );
-		
-	}
-	else
-	{
-		target->draw( botDeathSprite );
-
-		if( deathFrame / 3 < 6 )
-		{
-			
-			/*bloodSprite.setTextureRect( ts_testBlood->GetSubRect( deathFrame / 3 ) );
-			bloodSprite.setOrigin( bloodSprite.getLocalBounds().width / 2, bloodSprite.getLocalBounds().height / 2 );
-			bloodSprite.setPosition( position.x, position.y );
-			bloodSprite.setScale( 2, 2 );
-			target->draw( bloodSprite );*/
-		}
-		
-		target->draw( topDeathSprite );
-	}
-
-
-
+	target->draw(radCircle);
+	DrawSpriteIfExists(target, sprite);
 }
 
-void Specter::DrawMinimap( sf::RenderTarget *target )
-{
-	if( !dead )
-	{
-		CircleShape enemyCircle;
-		enemyCircle.setFillColor( COLOR_BLUE );
-		enemyCircle.setRadius( 50 );
-		enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
-		enemyCircle.setPosition( position.x, position.y );
-		target->draw( enemyCircle );
-
-		/*if( hasMonitor && !suppressMonitor )
-		{
-			monitor->miniSprite.setPosition( position.x, position.y );
-			target->draw( monitor->miniSprite );
-		}*/
-	}
-}
-
-bool Specter::IHitPlayer( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	
-	if( hitBody.Intersects( player->hurtBody ) )
-	{
-		player->ApplyHit( hitboxInfo );
-		return true;
-	}
-	return false;
-}
 
 void Specter::UpdateHitboxes()
 {
-	hurtBody.globalPosition = position;
-	hurtBody.globalAngle = 0;
-	hitBody.globalPosition = position;
-	hitBody.globalAngle = 0;
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	hurtBox.globalPosition = position;
+	hurtBox.globalAngle = 0;
+	hitBox.globalPosition = position;
+	hitBox.globalAngle = 0;
 
 	if( owner->GetPlayer( 0 )->ground != NULL )
 	{
@@ -418,107 +171,4 @@ void Specter::UpdateHitboxes()
 	{
 		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
 	}
-}
-
-//return pair<bool,bool>( hitme, was it with a clone)
-pair<bool,bool> Specter::PlayerHitMe( int index )
-{
-	Actor *player = owner->GetPlayer( 0 );
-	if( player->currHitboxes != NULL )
-	{
-		bool hit = false;
-
-		for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
-		{
-			if( hurtBody.Intersects( (*it) ) )
-			{
-				hit = true;
-				break;
-			}
-		}
-		
-		
-
-		if( hit )
-		{
-			receivedHit = player->currHitboxInfo;
-			return pair<bool, bool>(true,false);
-		}
-		
-	}
-
-	for( int i = 0; i < player->recordedGhosts; ++i )
-	{
-		if( player->ghostFrame < player->ghosts[i]->totalRecorded )
-		{
-			if( player->ghosts[i]->currHitboxes != NULL )
-			{
-				bool hit = false;
-				
-				for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
-				{
-					if( hurtBody.Intersects( (*it) ) )
-					{
-						hit = true;
-						break;
-					}
-				}
-		
-
-				if( hit )
-				{
-					receivedHit = player->currHitboxInfo;
-					return pair<bool, bool>(true,true);
-				}
-			}
-			//player->ghosts[i]->curhi
-		}
-	}
-
-	return pair<bool, bool>(false,false);
-}
-
-bool Specter::PlayerSlowingMe()
-{
-	Actor *player = owner->GetPlayer( 0 );
-	for( int i = 0; i < player->maxBubbles; ++i )
-	{
-		if( player->bubbleFramesToLive[i] > 0 )
-		{
-			if( length( position - player->bubblePos[i] ) <= player->bubbleRadius )
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-void Specter::DebugDraw( RenderTarget *target )
-{
-	if( !dead )
-	{
-		hurtBody.DebugDraw( target );
-		hitBody.DebugDraw( target );
-	}
-}
-
-void Specter::SaveEnemyState()
-{
-	stored.dead = dead;
-	stored.deathFrame = deathFrame;
-	stored.frame = frame;
-	stored.hitlagFrames = hitlagFrames;
-	stored.hitstunFrames = hitstunFrames;
-	stored.position = position;
-}
-
-void Specter::LoadEnemyState()
-{
-	dead = stored.dead;
-	deathFrame = stored.deathFrame;
-	frame = stored.frame;
-	hitlagFrames = stored.hitlagFrames;
-	hitstunFrames = stored.hitstunFrames;
-	position = stored.position;
 }

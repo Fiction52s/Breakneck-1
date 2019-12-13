@@ -875,10 +875,8 @@ void EditSession::AddW5Enemies()
 void EditSession::AddW6Enemies()
 {
 	//w6
-
-
-	AddWorldEnemy("specter", 6, LoadParams<SpecterParams>, NULL, MakeParamsAerial<SpecterParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicAerialWorldEnemy("specter", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/specter_256x256.png", 256, 256));
 
 	AddWorldEnemy("narwhal", 6, LoadParams<NarwhalParams>, NULL, MakeParamsAerial<NarwhalParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -15345,12 +15343,7 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "specter")
 	{
-		p = new Panel("specter_options", 200, 600, edit);
-		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-
-		p->AddCheckBox("monitor", Vector2i(20, 400));
+		p = CreateDefaultPanel("specter_options", true, true, false, false);
 	}
 	else if (name == "gorilla")
 	{

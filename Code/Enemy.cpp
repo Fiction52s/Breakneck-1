@@ -2319,6 +2319,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_SHARK:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
+		case EnemyType::EN_SPECTER:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 5, 5);
+			break;
 		default:
 			return NULL;
 		}
