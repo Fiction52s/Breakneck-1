@@ -828,13 +828,9 @@ void EditSession::AddW5Enemies()
 		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
-	AddWorldEnemy("hungryattackcomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
+	AddWorldEnemy("hungryreturncomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));
-
-	AddWorldEnemy("growinghungrycomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
-		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128), 2);
+		GetTileset("Enemies/comboer_128x128.png", 128, 128),2);
 
 	AddWorldEnemy("relativecomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 		Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
@@ -14982,8 +14978,7 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel("gravcomboer_options", true, true, true, true);
 	}
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
-		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryattackcomboer"
-		|| name == "growinghungrycomboer"
+		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"
 		|| name == "relativecomboer" || name == "relativecomboerdetach")
 	{
 		p = CreateDefaultPanel("grindjuggler_options", true, true, false, false);

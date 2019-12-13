@@ -16,7 +16,7 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 HungryComboer::HungryComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos,
-	int p_level, int jReps, Type t )
+	int p_level, int jReps, bool p_returns)
 	:Enemy(owner, EnemyType::EN_HUNGRYCOMBOER, p_hasMonitor, 1, false)
 {
 	level = p_level;
@@ -38,22 +38,7 @@ HungryComboer::HungryComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos
 
 	origScale = scale;
 
-
-	switch (t)
-	{
-	case T_GOES_FOR_ENEMIES:
-		growing = false;
-		goesForEnemies = true;
-		break;
-	case T_GOES_FOR_PLAYER:
-		growing = false;
-		goesForEnemies = false;
-		break;
-	case T_GOES_FOR_ENEMIES_GROWTH:
-		growing = true;
-		goesForEnemies = true;
-		break;
-	}
+	returnsToPlayer = p_returns;
 
 	maxWaitFrames = 180;
 
@@ -74,7 +59,7 @@ HungryComboer::HungryComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos
 
 	gravFactor = 1.0;
 
-	if (goesForEnemies)
+	if (returnsToPlayer)
 	{
 		sprite.setColor(Color::Green);
 	}
@@ -128,6 +113,7 @@ HungryComboer::HungryComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos
 
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_FLY] = 20;
+
 	actionLength[S_TRACKPLAYER] = 10;
 	actionLength[S_TRACKENEMY] = 10;
 	actionLength[S_RETURN] = 3;
@@ -147,17 +133,13 @@ HungryComboer::~HungryComboer()
 
 void HungryComboer::ResetEnemy()
 {
-	
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
 
 	growthLevel = 0;
 
-	if (growing)
-	{
-		scale = origScale;
-		UpdateScale();
-	}
+	scale = origScale;
+	UpdateScale();
 
 	currHits = 0;
 	comboObj->Reset();
@@ -197,11 +179,8 @@ void HungryComboer::Return()
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 
-	if (growing)
-	{
-		scale = origScale;
-		UpdateScale();
-	}
+	scale = origScale;
+	UpdateScale();
 
 	currJuggle = 0;
 
@@ -290,11 +269,6 @@ void HungryComboer::ProcessState()
 			SetHitboxes(hitBody, 0);
 			SetHurtboxes(hurtBody, 0);
 			break;
-			/*case S_EXPLODE:
-			numHealth = 0;
-			dead = true;
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
-			break;*/
 		}
 	}
 
@@ -316,19 +290,18 @@ void HungryComboer::ProcessState()
 				chaseIndex = foundIndex;
 			}
 		}
+	}
 
-		
-		if( chaseTarget != NULL )
+	if ((action == S_TRACKENEMY && chaseTarget != NULL) || action == S_TRACKPLAYER)
+	{
+		double accel = 1;// .5;//.5;
+		V2d trackPos = GetTrackPos();
+		V2d trackDir = normalize(trackPos - position);
+		velocity += trackDir * accel;
+		double fSpeed = GetFlySpeed();
+		if (length(velocity) > fSpeed)
 		{
-			double accel = 1;// .5;//.5;
-			V2d trackPos = GetTrackPos();
-			V2d trackDir = normalize(trackPos - position);
-			velocity += trackDir * accel;
-			double fSpeed = GetFlySpeed();
-			if (length(velocity) > fSpeed)
-			{
-				velocity = normalize(velocity) * fSpeed;
-			}
+			velocity = normalize(velocity) * fSpeed;
 		}
 	}
 }
@@ -336,7 +309,7 @@ void HungryComboer::ProcessState()
 double HungryComboer::GetFlySpeed()
 {
 	double fSpeed = flySpeed;
-	fSpeed -= growthLevel * (flySpeed / 6.0);
+	fSpeed -= growthLevel * 1.0;
 	return fSpeed;
 }
 
@@ -363,34 +336,46 @@ void HungryComboer::ComboKill(Enemy *e)
 		chaseTarget = NULL;
 	}
 
-	if (growing)
+	if (returnsToPlayer)
 	{
-		if (growthLevel < numGrowthLevels)
-		{
-			growthLevel++;
-			scale += 1.0;
-			UpdateScale();
-		}
-		else
-		{
-			//scale = origScale;
-			//growthLevel = 0;
-			//UpdateScale();
-		}
+		action = S_TRACKPLAYER;
+		frame = 0;
 	}
+
+	
+	if (growthLevel < numGrowthLevels)
+	{
+		growthLevel++;
+		scale += .2;
+		UpdateScale();
+	}
+	else
+	{
+		//scale = origScale;
+		//growthLevel = 0;
+		//UpdateScale();
+	}
+	
 }
 
 
 V2d HungryComboer::GetTrackPos()
 {
-	if (chaseTarget != NULL)
+	if (action == S_TRACKENEMY)
 	{
-		return chaseTarget->GetCamPoint(chaseIndex);
+		if (chaseTarget != NULL)
+		{
+			return chaseTarget->GetCamPoint(chaseIndex);
+		}
+		else
+		{
+			assert(0);
+			return V2d(0, 0);
+		}
 	}
 	else
 	{
-		assert(0);
-		return V2d(0, 0);
+		return owner->GetPlayer(0)->position;
 	}
 }
 

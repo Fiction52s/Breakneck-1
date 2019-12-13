@@ -3223,7 +3223,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 		}
 
 		//w5
-		else if (typeName == "hungrycomboer" || typeName == "hungryattackcomboer" || typeName == "growinghungrycomboer")
+		else if (typeName == "hungrycomboer" || typeName == "hungryreturncomboer" )
 		{
 			int xPos, yPos;
 
@@ -3239,23 +3239,15 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int numJuggles;
 			is >> numJuggles;
 
-			HungryComboer::Type hType;
-			//bool attackEnemies = false;
-			if (typeName == "hungryattackcomboer")
+			
+			bool returnsToPlayer = false;
+			if (typeName == "hungryreturncomboer")
 			{
-				hType = HungryComboer::T_GOES_FOR_PLAYER;
-			}
-			else if (typeName == "hungrycomboer")
-			{
-				hType = HungryComboer::T_GOES_FOR_ENEMIES;
-			}
-			else if (typeName == "growinghungrycomboer")
-			{
-				hType = HungryComboer::T_GOES_FOR_ENEMIES_GROWTH;
+				returnsToPlayer = true;
 			}
 			
 			HungryComboer *enemy = new HungryComboer(this, hasMonitor, Vector2i(xPos, yPos), level, numJuggles,
-				hType);
+				returnsToPlayer );
 
 			fullEnemyList.push_back(enemy);
 			enem = enemy;
