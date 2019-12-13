@@ -18,12 +18,7 @@ struct Jay : Enemy
 	int redHealth;
 	int blueHealth;
 
-	//bool redDead;
-	//bool blueDead;
 	bool dying;
-
-	//HitboxInfo *receivedHitRed;
-	//HitboxInfo *receivedHitBlue;
 
 	Jay(GameSession *owner, bool hasMonitor,
 		sf::Vector2i &startPos,

@@ -80,8 +80,6 @@ Specter::Specter( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 
 	radius = 1000;
 
-	myArea = new SpecterArea(this, pos, radius);
-
 	switch (level)
 	{
 	case 1:
@@ -96,6 +94,8 @@ Specter::Specter( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 		maxHealth += 5;
 		break;
 	}
+
+	myArea = new SpecterArea(this, pos, radius);
 
 	//hopefully this doesnt cause deletion bugs
 	owner->specterTree->Insert( myArea );
