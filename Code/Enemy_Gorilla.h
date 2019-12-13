@@ -24,6 +24,8 @@ struct Gorilla : Enemy
 
 	Gorilla(GameSession *owner, bool hasMonitor,
 		sf::Vector2i &pos, int level);
+	~Gorilla();
+
 
 	void ProcessState();
 	void UpdateEnemyPhysics();
@@ -31,10 +33,12 @@ struct Gorilla : Enemy
 	void ActionEnded();
 
 	void EnemyDraw(sf::RenderTarget *target);
+	void DebugDraw(sf::RenderTarget *target);
 	
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();
+	bool CheckHitPlayer(int index = 0);
 
 	bool origFacingRight;
 
@@ -50,6 +54,12 @@ struct Gorilla : Enemy
 	int recoveryLoops;
 	int recoveryCounter;
 
+	int physStepIndex;
+
+	CollisionBody *wallHitBody;
+	CollisionBody *currWallHitboxes;
+	HitboxInfo *wallHitboxInfo;
+
 	double wallWidth;
 
 	double acceleration;
@@ -64,10 +74,11 @@ struct Gorilla : Enemy
 	Tileset *ts_wall;
 	sf::Sprite wallSprite;
 
-	CollisionBox wallHitbox;
+	//CollisionBox wallHitbox;
 	int wallHitboxWidth;
 	int wallHitboxHeight;
 	double idealRadius;
+	double wallAmountCloser;
 
 	int hitlagFrames;
 	int hitstunFrames;

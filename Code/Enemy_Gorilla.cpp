@@ -35,18 +35,16 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 		break;
 	}
 
+	SetSlowable(false);
+
 	followFrames = 60;
 
-	idealRadius = 300;
-	
-	recoveryLoops = 1;
-	wallWidth = 400;
-	wallHitboxWidth = wallWidth;
-	wallHitboxHeight = 50; //wallHeight;
+	idealRadius = 500;//300;
+	wallAmountCloser = 200;
 
-	wallHitbox.isCircle = false;
-	wallHitbox.rw = wallHitboxWidth / 2;
-	wallHitbox.rh = wallHitboxHeight / 2;
+	recoveryLoops = 1;
+	wallWidth = 600;//400;
+	
 
 	actionLength[WAKEUP] = 60;
 	actionLength[ALIGN] = 60;
@@ -58,7 +56,7 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 	animFactor[ALIGN] = 1;
 	animFactor[FOLLOW] = 1;
 	animFactor[ATTACK] = 15;
-	animFactor[RECOVER] = 60;
+	animFactor[RECOVER] = 30;
 
 	action = WAKEUP;
 
@@ -85,10 +83,11 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 	ts = owner->GetTileset( "Enemies/gorilla_320x256.png", 320, 256 );
 
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
+	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setScale(scale, scale);
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
+	sprite.setScale(scale, scale);
 	
 	//position.x = 0;
 	//position.y = 0;
@@ -106,10 +105,26 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 	AddBasicHitCircle(48);
 	hitBody->hitboxInfo = hitboxInfo;
 
+	wallHitboxWidth = wallWidth;
+	wallHitboxHeight = 50;
+
+	wallHitboxInfo = new HitboxInfo;
+	wallHitboxInfo->damage = 18;
+	wallHitboxInfo->drainX = 0;
+	wallHitboxInfo->drainY = 0;
+	wallHitboxInfo->hitlagFrames = 0;
+	wallHitboxInfo->hitstunFrames = 10;
+	wallHitboxInfo->knockback = 4;
+
+	wallHitBody = new CollisionBody(1);
+	wallHitBody->hitboxInfo = wallHitboxInfo;
+	AddBasicHitRect(wallHitBody, wallHitboxWidth, wallHitboxHeight);
+	
+
 	ts_wall = owner->GetTileset( "Enemies/gorillawall_400x50.png", 400, 50 );
 	wallSprite.setTexture( *ts_wall->texture );
 	wallSprite.setTextureRect( ts_wall->GetSubRect( 0 ) );
-	wallSprite.setScale(scale, scale);
+	wallSprite.setScale(scale * wallWidth / 400.0, scale);
 	wallSprite.setOrigin( wallSprite.getLocalBounds().width / 2, wallSprite.getLocalBounds().height / 2 );
 
 	facingRight = true;
@@ -117,6 +132,16 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 	origFacingRight = facingRight;
 
 	createWallFrame = 20;
+
+	cutObject->SetTileset(ts);
+	cutObject->SetSubRectBack(9);
+	cutObject->SetSubRectFront(8);
+}
+
+Gorilla::~Gorilla()
+{
+	delete wallHitboxInfo;
+	delete wallHitBody;
 }
 
 void Gorilla::ResetEnemy()
@@ -128,7 +153,11 @@ void Gorilla::ResetEnemy()
 	latchStartAngle = 0;
 	latchedOn = false;
 	totalFrame = 0;
+	currWallHitboxes = NULL;
 	
+	SetHitboxes(hitBody, 0);
+	SetHurtboxes(hurtBody, 0);
+
 	dead = false;
 	frame = 0;
 	basePos = origPosition;
@@ -173,13 +202,14 @@ void Gorilla::ActionEnded()
 				V2d offsetDir = normalize( offsetPlayer );
 
 				basePos = owner->GetPlayer( 0 )->position;
-
+				currWallHitboxes = NULL;
 
 				V2d playerPos = owner->GetPlayer( 0 )->position;
 				action = ALIGN;
 				double currRadius = length( offsetPlayer );
-				alignMoveFrames = 60 * 5 * NUM_STEPS;
+				alignMoveFrames = 60;
 				frame = 0;
+				physStepIndex = 0;
 				alignFrames = 0;
 				recoveryCounter = 0;
 
@@ -216,6 +246,7 @@ void Gorilla::ProcessState()
 					action = ALIGN;
 					alignFrames = 0;
 					frame = 0;
+					physStepIndex = 0;
 					if( playerPos.x < position.x )
 					{
 						facingRight = false;
@@ -233,7 +264,7 @@ void Gorilla::ProcessState()
 					basePos = owner->GetPlayer( 0 )->position;
 
 					double currRadius = length( offsetPlayer );
-					alignMoveFrames = 60 * 5 * NUM_STEPS;
+					alignMoveFrames = 60;// *5 * NUM_STEPS;
 					
 				}
 			}
@@ -252,6 +283,10 @@ void Gorilla::ProcessState()
 				action = FOLLOW;
 				frame = 0;
 			}
+			else
+			{
+				++alignFrames;
+			}
 		}
 		break;
 	case FOLLOW:
@@ -267,12 +302,17 @@ void Gorilla::ProcessState()
 			V2d test = position - playerPos;
 	
 			V2d playerDir = -normalize( origOffset );
-			wallHitbox.globalPosition = position + playerDir * 100.0;
+
+			CollisionBox &wallHitbox = wallHitBody->GetCollisionBoxes(0)->front();
+
+			wallHitbox.globalPosition = position + playerDir * wallAmountCloser;
 			wallHitbox.globalAngle = atan2( playerDir.x, -playerDir.y );
 
 			wallSprite.setPosition( wallHitbox.globalPosition.x, 
 				wallHitbox.globalPosition.y );
 			wallSprite.setRotation( wallHitbox.globalAngle / PI * 180.0 );
+
+			currWallHitboxes = wallHitBody;
 
 			latchedOn = false;
 			basePos = position;
@@ -298,6 +338,8 @@ void Gorilla::UpdateEnemyPhysics()
 
 	V2d offsetDir = normalize( offsetPlayer );
 
+
+
 	switch( action )
 	{
 	case WAKEUP:
@@ -305,11 +347,33 @@ void Gorilla::UpdateEnemyPhysics()
 		break;
 	case ALIGN:
 		{
+		/*double a = (double)physStepIndex / (dashFrames * NUM_MAX_STEPS * 5);
+		if (a > 1.0)
+		{
+			action = S_OUT;
+			frame = 0;
+			physStepIndex = 0;
+			break;
+		}
+		double f = dashBez.GetValue(a);
+		double rf = 1.0 - f;
+
+		position = currOrig * rf + dest * f;
+
+
+		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;*/
+
+			CubicBezier b(0, 0, 1, 1);
+			double f = b.GetValue(physStepIndex / ((double)alignMoveFrames * NUM_MAX_STEPS * 5));
+
 			V2d idealOffset = offsetDir * idealRadius;
-			CubicBezier b( 0, 0, 1, 1 );
-			double f = b.GetValue( (alignFrames + owner->substep) / (double)alignMoveFrames );
+			
+			
 			offsetPlayer = origOffset * (1.0 - f) + idealOffset * f;
-			alignFrames += 5 / slowMultiple;
+			//alignFrames += 5 / slowMultiple;
+			int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
+
+			physStepIndex += steps;
 		}
 		//frame = 0;
 		break;
@@ -338,6 +402,11 @@ void Gorilla::UpdateEnemyPhysics()
 
 void Gorilla::UpdateSprite()
 {
+	if (latchedOn)
+	{
+		position = basePos + offsetPlayer;
+	}
+
 	V2d diff = owner->GetPlayer(0)->position - position;
 	double lenDiff = length(diff);
 	IntRect ir;
@@ -382,6 +451,40 @@ void Gorilla::EnemyDraw( sf::RenderTarget *target )
 
 }
 
+void Gorilla::DebugDraw(sf::RenderTarget *target)
+{
+	Enemy::DebugDraw(target);
+
+	if (currWallHitboxes != NULL)
+		currWallHitboxes->DebugDraw(0, target);
+}
+
+
+bool Gorilla::CheckHitPlayer(int index)
+{
+	Actor *player = owner->GetPlayer(index);
+
+	if (currHitboxes != NULL)
+	{
+		if (player->IntersectMyHurtboxes(currHitboxes, currHitboxFrame))
+		{
+			IHitPlayer(index);
+			player->ApplyHit(currHitboxes->hitboxInfo);
+			return true;
+		}
+	}
+
+	if (currWallHitboxes != NULL)
+	{
+		if (player->IntersectMyHurtboxes(currWallHitboxes, 0))
+		{
+			player->ApplyHit(currWallHitboxes->hitboxInfo);
+			return true;
+		}
+	}
+
+	return false;
+}
 
 void Gorilla::UpdateHitboxes()
 {

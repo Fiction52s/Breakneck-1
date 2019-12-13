@@ -1993,6 +1993,16 @@ void Enemy::SetupBodies(int numHurtboxes,
 
 void Enemy::AddBasicHurtCircle(double rad, int index)
 {
+	AddBasicHurtCircle(hurtBody, rad, index);
+}
+
+void Enemy::AddBasicHitCircle(double rad, int index)
+{
+	AddBasicHitCircle(hitBody, rad, index);
+}
+
+void Enemy::AddBasicHurtCircle( CollisionBody *bod, double rad, int index)
+{
 	CollisionBox hurtBox;
 	hurtBox.type = CollisionBox::Hurt;
 	hurtBox.isCircle = true;
@@ -2001,11 +2011,11 @@ void Enemy::AddBasicHurtCircle(double rad, int index)
 	hurtBox.offset.y = 0;
 	hurtBox.rw = rad * scale;
 	hurtBox.rh = rad * scale;
-	hurtBody->AddCollisionBox(index, hurtBox);
+	bod->AddCollisionBox(index, hurtBox);
 }
 
 
-void Enemy::AddBasicHitCircle(double rad, int index)
+void Enemy::AddBasicHitCircle( CollisionBody *bod, double rad, int index)
 {
 	CollisionBox hitBox;
 	hitBox.type = CollisionBox::Hit;
@@ -2015,7 +2025,33 @@ void Enemy::AddBasicHitCircle(double rad, int index)
 	hitBox.offset.y = 0;
 	hitBox.rw = rad * scale;
 	hitBox.rh = rad * scale;
-	hitBody->AddCollisionBox(index, hitBox);
+	bod->AddCollisionBox(index, hitBox);
+}
+
+void Enemy::AddBasicHitRect(CollisionBody *bod, double w, double h, int index)
+{
+	CollisionBox hitBox;
+	hitBox.type = CollisionBox::Hit;
+	hitBox.isCircle = false;
+	hitBox.globalAngle = 0;
+	hitBox.offset.x = 0;
+	hitBox.offset.y = 0;
+	hitBox.rw = w/2;
+	hitBox.rh = h/2;
+	bod->AddCollisionBox(index, hitBox);
+}
+
+void Enemy::AddBasicHurtRect(CollisionBody *bod, double w, double h, int index)
+{
+	CollisionBox hitBox;
+	hitBox.type = CollisionBox::Hurt;
+	hitBox.isCircle = false;
+	hitBox.globalAngle = 0;
+	hitBox.offset.x = 0;
+	hitBox.offset.y = 0;
+	hitBox.rw = w / 2;
+	hitBox.rh = h / 2;
+	bod->AddCollisionBox(index, hitBox);
 }
 
 void Enemy::ComboHit()
@@ -2207,36 +2243,12 @@ bool Enemy::CheckHitPlayer(int index)
 		if (player->IntersectMyHurtboxes(currHitboxes, currHitboxFrame))
 		{
 			IHitPlayer(index);
-			if( currHitboxes !=NULL )
-				player->ApplyHit(currHitboxes->hitboxInfo);
+			player->ApplyHit(currHitboxes->hitboxInfo);
 			return true;
 		}
 	}
 
 	return false;
-
-	//if (action != UNDERGROUND && player->invincibleFrames == 0 && )
-	//{
-	//	if (player->position.x < position.x)
-	//	{
-	//		hitboxInfo->kbDir.x = -abs(hitboxInfo->kbDir.x);
-	//		//cout << "left" << endl;
-	//	}
-	//	else if (player->position.x > position.x)
-	//	{
-	//		//cout << "right" << endl;
-	//		hitboxInfo->kbDir.x = abs(hitboxInfo->kbDir.x);
-	//	}
-	//	else
-	//	{
-	//		//dont change it
-	//	}
-	//	attackFrame = 0;
-	//	
-	//	return true;
-	//}
-
-	//return false;
 }
 
 EnemyParamsManager::EnemyParamsManager()
@@ -2369,6 +2381,9 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
 			break;
 		case EnemyType::EN_SPECTER:
+			ep = new EnemyParams(2, 5, .8, (3 * 60) / 5, 5);
+			break;
+		case EnemyType::EN_GORILLA:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 5, 5);
 			break;
 		default:

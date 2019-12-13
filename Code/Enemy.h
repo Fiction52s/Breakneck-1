@@ -411,6 +411,18 @@ struct SlowableObject
 {
 	int slowCounter;
 	int slowMultiple;
+	
+	
+	SlowableObject()
+	{
+		isSlowable = true;
+	}
+
+	void SetSlowable(bool slowable)
+	{
+		isSlowable = slowable;
+	}
+
 	virtual bool IsSlowed(int playerIndex) = 0;
 	void ResetSlow()
 	{
@@ -419,6 +431,9 @@ struct SlowableObject
 	}
 	void SlowCheck( int playerIndex )
 	{
+		if (!isSlowable)
+			return;
+
 		if (IsSlowed(playerIndex))
 		{
 			if (slowMultiple == 1)
@@ -446,6 +461,8 @@ struct SlowableObject
 			return false;
 		}
 	}
+private:
+	bool isSlowable;
 };
 
 struct Enemy;
@@ -637,10 +654,14 @@ public:
 	Tileset *ts_zoned;
 	virtual void ZoneDraw(sf::RenderTarget *target);
 
-	void SetupBodies(int numHurtboxes,
-		int numHitboxes);
+	void SetupBodies(int numHurtboxes = 1,
+		int numHitboxes = 1);
 	void AddBasicHurtCircle(double rad, int index = 0);
 	void AddBasicHitCircle(double rad, int index = 0);
+	void AddBasicHitCircle(CollisionBody *bod, double rad, int index = 0);
+	void AddBasicHurtCircle(CollisionBody *bod, double rad, int index = 0);
+	void AddBasicHitRect(CollisionBody *bod, double w, double h, int index = 0);
+	void AddBasicHurtRect(CollisionBody *bod, double w, double h, int index = 0);
 
 	void Reset();
 

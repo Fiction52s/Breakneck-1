@@ -127,6 +127,7 @@
 #include "Enemy_GrowingTree.h"
 #include "Enemy_Shark.h"
 #include "Enemy_Specter.h"
+#include "Enemy_Gorilla.h"
 #include "Wire.h"
 
 #define TIMESTEP 1.0 / 60.0
@@ -3507,20 +3508,22 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			int hasMonitor;
 			is >> hasMonitor;
 
-			int wallWidth;
-			is >> wallWidth;
+			//int wallWidth;
+			//is >> wallWidth;
 
-			int followFrames;
-			is >> followFrames;
+			//int followFrames;
+			//is >> followFrames;
+
+			int level;
+			is >> level;
 
 
-			/*Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ),
-			wallWidth, followFrames );
+			Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ), level );
 
 			fullEnemyList.push_back( enemy );
 			enem = enemy;
 
-			enemyTree->Insert( enemy );*/
+			enemyTree->Insert( enemy );
 		}
 		else if (typeName == "bossskeleton")
 		{
