@@ -18,11 +18,15 @@
 #include "Gate.h"
 #include "ISelectable.h"
 
+#include "EditorGateInfo.h"
+#include "EditorActors.h"
+#include "EditorTerrain.h"
+
 struct ActorParams;
 struct MainMenu;
 //struct ActorParams;
 struct TerrainPolygon;
-struct GateInfo;
+//struct GateInfo;
 struct EditSession;
 struct ActorGroup;
 struct ActorType;
@@ -33,475 +37,6 @@ struct KinSkin;
 struct Background;
 struct ScrollingBackground;
 struct AirTriggerParams;
-
-
-struct ActorType;
-typedef ActorParams* ParamsMaker(ActorType*);
-typedef ActorParams* ParamsLoader(ActorType*,
-	std::ifstream &is);
-
-template<typename X> ActorParams *MakeParamsGrounded(
-	ActorType *);
-template<typename X> ActorParams *MakeParamsAerial(
-	ActorType *);
-template<typename X> ActorParams *LoadParams(
-	ActorType *,std::ifstream &isa);
-
-struct ParamsInfo
-{
-	ParamsInfo(const std::string &n,
-		ParamsLoader *p_pLoader,
-		ParamsMaker *pg, ParamsMaker *pa,
-		sf::Vector2i &off, sf::Vector2i &p_size,
-		bool w_monitor, bool w_level,
-		bool w_path, bool w_loop, int p_numLevels = 1,
-		Tileset *p_ts = NULL, int imageTile = 0)
-		:name(n), pLoader( p_pLoader ),
-		pmGround(pg), pmAir(pa),
-		offset(off), size(p_size),
-		ts(p_ts), imageTileIndex(imageTile),
-		writeMonitor( w_monitor ), writeLevel( w_level ),
-		writePath( w_path ), writeLoop ( w_loop ), 
-		numLevels( p_numLevels )
-
-	{
-
-	}
-	std::string name;
-	ParamsLoader *pLoader;
-	ParamsMaker* pmGround;
-	ParamsMaker* pmAir;
-	sf::Vector2i offset;
-	sf::Vector2i size;
-	Tileset *ts;
-	int imageTileIndex;
-
-	bool writeMonitor;
-	bool writeLevel;
-	bool writePath;
-	bool writeLoop;
-
-	int numLevels;
-};
-
-struct GrassSeg
-{
-	GrassSeg( int edgeI, int grassIndex, int rep )
-		:edgeIndex( edgeI ), index( grassIndex), 
-		reps (rep)
-	{}
-	int edgeIndex;
-	int index;
-	int reps;
-};
-
-struct GatePoint
-{
-	//boost::shared_ptr<TerrainPolygon> poly;
-	int vertexIndex;
-	GateInfo *info;
-};
-
-struct TerrainPoint
-{
-	TerrainPoint( sf::Vector2i &pos, bool selected );
-	~TerrainPoint()
-	{
-		//delete gate;
-	}
-	sf::Vector2i pos;
-	bool selected;
-	std::list<int> grass;
-	boost::shared_ptr<GateInfo> gate;
-	//GateInfo *gate;
-	bool firstPoint; 
-	TerrainPoint *next;
-	TerrainPoint *prev;
-
-	bool ContainsPoint( sf::Vector2f test );
-	bool Intersects( sf::IntRect rect );
-	bool IsPlacementOkay();
-	void Move( boost::shared_ptr<ISelectable> &me,
-		sf::Vector2i delta );
-	void BrushDraw( sf::RenderTarget *target, 
-		bool valid );
-	void Draw( sf::RenderTarget *target );
-	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select );
-	void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	bool CanApply();
-	bool CanAdd();
-	void SetSelected( bool select );
-
-	static const int POINT_RADIUS = 5;
-	//int special;
-};
-
-typedef boost::shared_ptr<TerrainPoint> PointPtr;
-typedef std::pair<sf::Vector2i,sf::Vector2i> PointPair;
-
-struct TerrainBrush
-{
-	TerrainBrush( boost::shared_ptr<TerrainPolygon> poly );
-	TerrainBrush( TerrainBrush &brush );
-	~TerrainBrush();
-	void AddPoint( TerrainPoint* tp);
-	
-	void UpdateLines();
-	void Move( sf::Vector2i delta );
-	void Draw( sf::RenderTarget *target );
-	int numPoints;
-	sf::VertexArray lines;
-	TerrainPoint *pointStart;
-	TerrainPoint *pointEnd;
-	int left;
-	int right;
-	int top;
-	int bot;
-	
-};
-
-struct Inter
-{
-	Inter()
-		:point( NULL )
-	{
-
-	}
-	Inter(TerrainPoint *p_point, sf::Vector2<double> &p_pos)
-		:point( p_point ), position( p_pos )
-	{
-
-	}
-	TerrainPoint *point;
-	sf::Vector2<double> position;
-};
-
-struct DetailedInter
-{
-	DetailedInter()
-		:otherPoint(NULL)
-	{
-		inter.point = NULL;
-	}
-	DetailedInter(TerrainPoint *p_point, sf::Vector2<double> &p_pos, TerrainPoint *p_otherPoint)
-		:inter( p_point, p_pos ), otherPoint( p_otherPoint )
-	{
-
-	}
-	Inter inter;
-	TerrainPoint *otherPoint;
-};
-
-struct TerrainRender;
-struct TerrainPolygon : ISelectable
-{
-	enum TerrainWorldType
-	{
-		MOUNTAIN,
-		GLADE,
-		DESERT,
-		COVE,
-		JUNGLE,
-		FORTRESS,
-		CORE,
-		Count
-	};
-
-	//TerrainRender *tr;
-	int terrainVariation;
-	TerrainWorldType terrainWorldType;
-	int GetNumGrassTotal();
-	int GetNumGrass(TerrainPoint *tp, bool &rem);
-	void SetupGrass(TerrainPoint *tp, int &i);
-	void SetupGrass();
-	sf::Shader *pShader;
-
-	void UpdateLines();
-	TerrainPolygon( sf::Texture *grassTex );
-	TerrainPolygon( TerrainPolygon &poly, bool pointsOnly );
-	~TerrainPolygon();
-	void UpdateLineColor( sf::Vertex *line, TerrainPoint *p, int index );
-	bool SwitchPolygon( bool cw, TerrainPoint *rootPoint,
-		TerrainPoint *switchStart);
-	void CopyPoints( TerrainPoint *&start,
-		TerrainPoint *&end );
-	sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
-		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
-		double minAngle,bool cw);
-	void CopyPoints(TerrainPolygon *poly);
-	TerrainPolygon *Copy();
-	bool PointOnBorder(V2d &point);
-	void MovePoint( sf::Vector2i &delta,
-		TerrainPoint *tp );
-	
-	TerrainPoint *pointStart;
-	TerrainPoint *pointEnd;
-	bool IsPoint(sf::Vector2i &p);
-	TerrainPoint *GetSamePoint(sf::Vector2i &p);
-	int numPoints;
-	void AddPoint( TerrainPoint* tp);
-	void InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint );
-	void RemovePoint( TerrainPoint *tp );
-	void DestroyEnemies();
-	void ClearPoints();
-	TerrainPoint *GetPointAtIndex(int index);
-	int GetPointIndex( TerrainPoint *p);
-	void SetMaterialType(
-		int world, int variation );
-	void RemoveSlivers( double minAngle );
-	int GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, 
-		Inter &inter, TerrainPoint *&outSegStart, bool &outFirstPoint );
-	TerrainPoint *GetMostLeftPoint();
-	bool SharesPoints(TerrainPolygon *poly);
-	TerrainPoint * HasPointPos( sf::Vector2i &pos );
-	LineIntersection GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,
-		TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd,
-		bool ignoreStartPoint = false);
-	//std::string material;
-	void RemoveSelectedPoints();
-	void GetIntersections( TerrainPolygon *poly, std::list<Inter> &outInters);
-	void GetDetailedIntersections(TerrainPolygon *poly, std::list<DetailedInter> &outInters);
-	bool IsRemovePointsOkayTerrain(EditSession *edit);
-	int IsRemovePointsOkayEnemies(EditSession *edit);
-	void Finalize();
-	void FinalizeInverse();
-	void Reset();
-	void SoftReset();
-	void Draw( bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow );
-	void FixWinding();
-	void FixWindingInverse();
-	bool IsClockwise();
-	void AlignExtremes( double primLimit );
-	void UpdateGrass();
-
-	int grassSize;
-	int grassSpacing;
-	
-	
-	void ShowGrass( bool show );
-	void Extend2( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
-	void Cut2( TerrainPoint* startPoint, TerrainPoint*endPoint, boost::shared_ptr<TerrainPolygon> inProgress );
-	
-	void SwitchGrass( sf::Vector2<double> mousePos );
-	//bool ContainsPoint( sf::Vector2f p );
-	void SetSelected( bool select );
-	
-	bool IsMovePointsOkay( 
-		sf::Vector2i delta );
-	bool IsMovePointsOkay( 
-		sf::Vector2i pointGrabDelta,
-		sf::Vector2i *deltas );
-	bool IsMovePolygonOkay(  
-		sf::Vector2i delta );
-	void MoveSelectedPoints(sf::Vector2i move);
-	void UpdateBounds();
-
-	void SetLayer( int p_layer );
-
-	bool ContainsPoint( sf::Vector2f point );
-	bool Intersects( sf::IntRect rect );
-	bool IsPlacementOkay();
-	//void Move( sf::Vector2i delta );
-	void BrushDraw( sf::RenderTarget *target, 
-		bool valid );
-	void Draw( sf::RenderTarget *target );
-	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	
-	bool IsTouching( TerrainPolygon *poly );
-	bool Contains( TerrainPolygon *poly );
-	//bool IsTouching( TerrainPolygon * p );
-	bool BoundsOverlap( TerrainPolygon *poly );
-	bool LinesIntersect( TerrainPolygon *poly );
-	bool PointTooCloseToPoints( sf::Vector2i point,
-		int minDistance );
-	bool PointTooClose( sf::Vector2i point,
-		int minDistance );
-	bool LinesTooClose( TerrainPolygon *poly,
-		int minDistance );
-	bool PointTooCloseToLines( sf::Vector2i point,
-		int minDistance );
-	bool SegmentTooClose( sf::Vector2i a,
-		sf::Vector2i b, int minDistance );
-	bool SegmentWithinDistanceOfPoint(
-		sf::Vector2i startSeg,
-		sf::Vector2i endSeg,
-		sf::Vector2i testPoint,
-		int distance );
-	bool TooClose( TerrainPolygon *poly,
-		bool intersectAllowed,
-		int minDistance );
-	TerrainPoint *GetClosePoint(double radius, V2d &pos);
-
-	sf::Color selectCol;
-	sf::Color fillCol;
-
-	
-	bool CanApply();
-	bool CanAdd();
-
-	
-
-
-	bool movingPointMode;
-	
-	sf::Rect<int> TempAABB();
-
-	void Move( SelectPtr me, sf::Vector2i move );
-
-	sf::Vertex *lines;
-	sf::VertexArray *va;
-	sf::VertexArray *grassVA;
-	int numGrassTotal;
-	sf::Texture *grassTex;
-	int vaSize;
-	//bool selected;
-	int left;
-	int right;
-	int top;
-	int bottom;
-	std::list<sf::Vector2i> path;
-	
-	//enemymap
-	std::map<TerrainPoint*,std::list<
-		boost::shared_ptr<ActorParams>>> enemies;
-	int writeIndex;
-	bool isGrassShowing;
-	bool finalized;
-
-	int layer; //0 is game layer. 1 is bg
-
-	bool inverse;
-};
-
-typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
-
-struct GateInfo : ISelectable
-{
-	GateInfo();
-	void SetType( const std::string &gType );
-	void SetShard(int shardW, int shardI);
-	TerrainPoint *point0;
-	TerrainPoint *point1;
-	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	boost::shared_ptr<TerrainPolygon> poly0;
-	int vertexIndex0;
-	boost::shared_ptr<TerrainPolygon> poly1;
-	int vertexIndex1;
-	sf::VertexArray thickLine;
-	EditSession *edit;
-	void UpdateLine();
-	void WriteFile( std::ofstream &of );
-	void Draw( sf::RenderTarget *target );
-	void DrawPreview(sf::RenderTarget *target);
-	int numKeysRequired;
-	sf::Color color;
-	Gate::GateType type;
-
-	int shardWorld;
-	int shardIndex;
-	sf::Sprite shardSpr;
-	sf::RectangleShape shardBG;
-	
-};
-
-typedef boost::shared_ptr<GateInfo> GateInfoPtr;
-
-struct StaticLight
-{
-	StaticLight( sf::Color c, sf::Vector2i &pos, int radius, int brightness );
-	void Draw( sf::RenderTarget *target );
-	sf::Rect<double> GetAABB();
-	int radius;
-	int brightness;
-	sf::Color color;
-	sf::Vector2i position;
-	void WriteFile( std::ofstream &of );
-};
-
-struct GroundInfo
-{
-	GroundInfo();
-	TerrainPoint *edgeStart;
-	//TerrainPoint *edgeEnd;
-	double groundQuantity;
-	//not sure if this should be smart
-	TerrainPolygon *ground;
-	//boost::shared_ptr<TerrainPolygon> ground;
-	int GetEdgeIndex();
-	V2d GetPosition();
-	//int edgeIndex;
-};
-
-
-
-typedef boost::shared_ptr<ActorParams> ActorPtr;
-typedef std::map<TerrainPoint*,std::list<ActorPtr>> EnemyMap;
-
-struct ActorType
-{
-	ActorType( ParamsInfo &pi);
-	void Init();
-	void PlaceEnemy();
-	void PlaceEnemy(ActorParams *ap);
-	void LoadEnemy(std::ifstream &is,
-		ActorPtr &a);
-	Panel * CreatePanel();
-	Panel *CreateDefaultPanel( const std::string &n, 
-		bool mon,
-		bool level,
-		bool path = false,
-		bool loop = false );
-	bool IsGoalType();
-	sf::Sprite GetSprite(int xSize = 0, int ySize = 0);
-	sf::Sprite GetSprite(bool grounded);
-	bool CanBeGrounded();
-	bool CanBeAerial();
-
-	Panel *panel;
-
-	
-
-	ParamsInfo info;
-};
-
-
-
-//no params for goal and foottrap atm
-struct ActorGroup
-{
-	ActorGroup( const std::string &name );
-	std::string name;
-	std::list<ActorPtr> actors;
-	void Draw( sf::RenderTarget *target );
-	void WriteFile( std::ofstream &of );
-	void DrawPreview( sf::RenderTarget *target );
-};
-
-
-
-struct PointMoveInfo
-{
-	PointMoveInfo( TerrainPoint *poi )
-		:point( poi ),
-		 delta( 0, 0 )
-	{}
-	TerrainPoint *point;
-	//std::list<double> enemyEdgeQuantities;
-	//TerrainPolygon *poly;
-	sf::Vector2i delta;
-};
-
-typedef std::map<TerrainPolygon*,std::list<PointMoveInfo>> PointMap;
-
-
 
 
 struct EditSession : GUIHandler, TilesetManager
@@ -533,6 +68,28 @@ struct EditSession : GUIHandler, TilesetManager
 		int tile;
 		std::list<boost::shared_ptr<DecorInfo>> *myList;
 	};
+
+	enum Emode
+	{
+		CREATE_TERRAIN,
+		EDIT,
+		SELECT_MODE,
+		CREATE_PATROL_PATH,
+		CREATE_RECT,
+		SET_DIRECTION,
+		SELECT_POLYGONS,
+		PASTE,
+		PAUSED,
+		CREATE_ENEMY,
+		DRAW_PATROL_PATH,
+		CREATE_TERRAIN_PATH,
+		CREATE_GATES,
+		CREATE_IMAGES,
+		EDIT_IMAGES,
+		SET_LEVEL,
+	};
+
+	Emode mode;
 
 	enum Tool
 	{
@@ -613,6 +170,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void SetupEnemyType(ParamsInfo &pi);
 
 	bool IsKeyPressed(int k);
+
 	std::list<Panel*> allPopups;
 	static EditSession *GetSession();
 	static EditSession *currSession;
@@ -767,10 +325,6 @@ struct EditSession : GUIHandler, TilesetManager
 	ActorParams *selectedActor;
 	ActorParams *editActor;
 
-	StaticLight *selectedLight;
-	bool selectedLightGrabbed;
-	sf::Vector2i lightGrabPos;
-
 	bool selectedPlayer;
 	bool grabPlayer;
 	int playerHalfWidth;
@@ -828,12 +382,7 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Text scaleText;
 	sf::RectangleShape scaleSpriteBGRect;
 
-	//sf::Text polygonTimeoutText;
-	//int polygonTimeoutTextTimer;
-	//int polygonTimeoutTextLength;
 
-	//static void TestButton();
-	std::list<StaticLight*> lights;
 	sf::Vector2i lightPos;
 	bool lightActive;
 
@@ -1025,27 +574,7 @@ struct EditSession : GUIHandler, TilesetManager
 
 	int setLevelCurrent;
 
-	enum Emode
-	{
-		CREATE_TERRAIN,
-		EDIT,
-		SELECT_MODE,
-		CREATE_PATROL_PATH,
-		CREATE_RECT,
-		SET_DIRECTION,
-		SELECT_POLYGONS,
-		PASTE,
-		PAUSED,
-		CREATE_ENEMY,
-		DRAW_PATROL_PATH,
-		CREATE_TERRAIN_PATH,
-		CREATE_GATES,
-		CREATE_IMAGES,
-		EDIT_IMAGES,
-		SET_LEVEL,
-	};
-
-	Emode mode;
+	
 	
 };
 

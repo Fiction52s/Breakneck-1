@@ -3,6 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <boost/shared_ptr.hpp>
+#include <list>
 
 struct EditSession;
 struct ISelectable

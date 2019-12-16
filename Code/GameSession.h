@@ -702,8 +702,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		std::map<int, int> &polyIndex );
 	bool LoadMovingPlats(std::ifstream &is,
 		std::map<int, int> &polyIndex);
-	bool LoadLights( std::ifstream &is,
-		std::map<int, int> &polyIndex);
 	bool LoadGates( std::ifstream &is,
 		std::map<int, int> &polyIndex);
 	bool LoadEnemies( std::ifstream &is,
@@ -788,10 +786,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		bool right,
 		int startFrame = 0,
 		float depth = 1.f);
-	void AllocateLight();
-	Light * ActivateLight( int radius,  int brightness, const sf::Color color );
-	void DeactivateLight( Light *light );
-
 
 	void RestartLevel();
 	void NextFrameRestartLevel();
@@ -808,7 +802,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void LoadState();
 
 	const static int MAX_EFFECTS = 100;
-	const static int MAX_DYN_LIGHTS = 1;
+
 
 	std::list<MovingTerrain*> movingPlats;
 
@@ -1067,7 +1061,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree *terrainBGTree;
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
-	QuadTree * lightTree;
 	QuadTree * grassTree;
 	QuadTree * gateTree;
 	QuadTree * itemTree;
@@ -1095,17 +1088,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool usePolyShader;
 
 	int pauseFrames;
-
-	const static int MAX_LIGHTS_AT_ONCE = 16;
-	int lightsAtOnce;
-	Light *touchedLights[MAX_LIGHTS_AT_ONCE];
-	int tempLightLimit;
-
-	std::list<Light*> lights;
-	Light *lightList;
-
-	Light *inactiveLights;
-	Light *activeLights;
 
 	int deathWipeLength;
 	int deathWipeFrame;

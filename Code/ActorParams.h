@@ -2,7 +2,13 @@
 #define __ACTORPARAMS_H__
 
 #include <fstream>
-#include "EditSession.h"
+//#include "EditSession.h"
+
+struct TerrainPolygon;
+#include <SFML/Graphics.hpp>
+#include "ISelectable.h"
+#include "EditorActors.h"
+#include "EditorTerrain.h"
 
 struct PositionInfo
 {

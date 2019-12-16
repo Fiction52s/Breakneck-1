@@ -17237,188 +17237,12 @@ void Actor::UpdatePostPhysics()
 	
 	
 
-	Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
+	//Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 
-	owner->lightsAtOnce = 0;
-	owner->tempLightLimit = 3;
-	queryMode = "lights"; 
-	owner->lightTree->Query( this, r );
 
 	Vector2i vi = Mouse::getPosition();
 	Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
-	//owner->preScreenTex->map
 	
-	
-	
-	
-	//vi0 = vi1 = vi2 = vi;
-	
-
-	//glideEmitter->SetPos(Vector2f(position));
-	
-	
-	
-
-	//cout << "lights captured!: " << owner->lightsAtOnce << endl;
-	//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
-	//cout << "pos1: " << pos1.x << ", " << pos1.y << endl;
-	//cout << "pos2: " << pos2.x << ", " << pos2.y << endl;
-
-	//lighting stuff
-	{
-	bool on[9];
-	for( int i = 0; i < 9; ++i )
-	{
-		on[i] = false;
-	}
-
-	char f1 = 1;
-	sh.setUniform( "AmbientColor", ColorGL( Color( f1,f1,f1,f1 ) ) );
-	sh.setUniform( "Resolution", Vector2f( 1920, 1080 ) );//owner->window->getSize().x, owner->window->getSize().y );
-	sh.setUniform( "right", (facingRight && !reversed) || (facingRight && reversed ) );
-	sh.setUniform( "zoom", owner->cam.GetZoom() );
-
-	float windowx = 1920;//owner->window->getSize().x;
-	float windowy = 1080;//owner->window->getSize().y;
-
-	if( owner->lightsAtOnce > 0 )
-	{
-
-		float depth0 = owner->touchedLights[0]->depth;
-		Vector2i vi0 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[0]->pos.x, owner->touchedLights[0]->pos.y ) );
-		Vector3f pos0( vi0.x / windowx, ( windowy - vi0.y) / windowy, depth0 ); 
-		Color c0 = owner->touchedLights[0]->color;
-		
-		//sh.setUniform( "On0", true );
-		on[0] = true;
-		sh.setUniform( "LightPos0", pos0 );//Vector3f( 0, -300, .075 ) );
-		sh.setUniform( "LightColor0", ColorGL( Color( c0.r / 255.0, c0.g / 255.0, c0.b / 255.0, 1 ) ) );
-		sh.setUniform( "Radius0", owner->touchedLights[0]->radius );
-		sh.setUniform( "Brightness0", owner->touchedLights[0]->brightness);
-		
-	}
-	if( owner->lightsAtOnce > 1 )
-	{
-		float depth1 = owner->touchedLights[1]->depth;
-		Vector2i vi1 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[1]->pos.x, owner->touchedLights[1]->pos.y ) );
-		
-		Vector3f pos1( vi1.x / windowx, ( windowy - vi1.y) / windowy, depth1 ); 
-		Color c1 = owner->touchedLights[1]->color;
-		
-		on[1] = true;
-		//sh.setUniform( "On1", true );
-		sh.setUniform( "LightPos1", pos1 );//Vector3f( 0, -300, .075 ) );
-		sh.setUniform( "LightColor1", ColorGL( Color( c1.r / 255.0, c1.g / 255.0, c1.b / 255.0, 1 ) ) );
-		sh.setUniform( "Radius1", owner->touchedLights[1]->radius );
-		sh.setUniform( "Brightness1", owner->touchedLights[1]->brightness);
-	}
-	if( owner->lightsAtOnce > 2 )
-	{
-		float depth2 = owner->touchedLights[2]->depth;
-		Vector2i vi2 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[2]->pos.x, owner->touchedLights[2]->pos.y ) );
-		Vector3f pos2( vi2.x / windowx, ( windowy - vi2.y) / windowy, depth2 ); 
-		Color c2 = owner->touchedLights[2]->color;
-		
-		on[2] = true;
-		//sh.setUniform( "On2", true );
-		sh.setUniform( "LightPos2", pos2 );//Vector3f( 0, -300, .075 ) );
-		sh.setUniform( "LightColor2", ColorGL( Color( c2.r / 255.0, c2.g / 255.0, c2.b / 255.0, 1 ) ) );
-		sh.setUniform( "Radius2", owner->touchedLights[2]->radius );
-		sh.setUniform( "Brightness2", owner->touchedLights[2]->brightness);
-	}
-	if( owner->lightsAtOnce > 3 )
-	{
-		float depth3 = owner->touchedLights[3]->depth;
-		Vector2i vi3 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[3]->pos.x, owner->touchedLights[3]->pos.y ) );
-		Vector3f pos3( vi3.x / windowx, ( windowy - vi3.y) / windowy, depth3 ); 
-		Color c3 = owner->touchedLights[3]->color;
-		
-		on[3] = true;
-		//sh.setUniform( "On3", true );
-		sh.setUniform( "LightPos3", pos3 );
-		sh.setUniform( "LightColor3", ColorGL( Color( c3.r / 255.0, c3.g / 255.0, c3.b / 255.0, 1 ) ) );
-		sh.setUniform( "Radius3", owner->touchedLights[3]->radius );
-		sh.setUniform( "Brightness3", owner->touchedLights[3]->brightness);
-	}
-	if( owner->lightsAtOnce > 4 )
-	{
-		float depth4 = owner->touchedLights[4]->depth;
-		Vector2i vi4 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[4]->pos.x, owner->touchedLights[4]->pos.y ) );
-		Vector3f pos4( vi4.x / windowx, ( windowy - vi4.y) / windowy, depth4 ); 
-		Color c4 = owner->touchedLights[4]->color;
-		
-		
-		on[4] = true;
-		sh.setUniform( "LightPos4", pos4 );
-		sh.setUniform( "LightColor4", ColorGL( Color( c4.r / 255.0, c4.g / 255.0, c4.b / 255.0, 1 ) ) );
-		sh.setUniform( "Radius4", owner->touchedLights[4]->radius );
-		sh.setUniform( "Brightness4", owner->touchedLights[4]->brightness);
-	}
-	if( owner->lightsAtOnce > 5 )
-	{
-		float depth5 = owner->touchedLights[5]->depth;
-		Vector2i vi5 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[5]->pos.x, owner->touchedLights[5]->pos.y ) );
-		Vector3f pos5( vi5.x / windowx, ( windowy - vi5.y) / windowy, depth5 ); 
-		Color c5 = owner->touchedLights[5]->color;
-		
-		
-		on[5] = true;
-		sh.setUniform( "LightPos5", pos5 );
-		sh.setUniform( "LightColor5", ColorGL( Color( c5.r / 255.0, c5.g / 255.0, c5.b / 255.0, 1 ) ) );
-		sh.setUniform( "Radius5", owner->touchedLights[5]->radius );
-		sh.setUniform( "Brightness5", owner->touchedLights[5]->brightness);
-	}
-	if( owner->lightsAtOnce > 6 )
-	{
-		float depth6 = owner->touchedLights[6]->depth;
-		Vector2i vi6 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[6]->pos.x, owner->touchedLights[6]->pos.y ) );
-		Vector3f pos6( vi6.x / windowx, ( windowy - vi6.y) / windowy, depth6 ); 
-		Color c6 = owner->touchedLights[6]->color;
-		
-		on[6] = true;
-		sh.setUniform( "LightPos6", pos6 );
-		sh.setUniform( "LightColor6", ColorGL( Color( c6.r / 255.0, c6.g / 255.0, c6.b / 255.0, 1 ) ) );
-		sh.setUniform( "Radius6", owner->touchedLights[0]->radius );
-		sh.setUniform( "Brightness6", owner->touchedLights[0]->brightness);
-	}
-	if( owner->lightsAtOnce > 7 )
-	{
-		float depth7 = owner->touchedLights[7]->depth;
-		Vector2i vi7 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[7]->pos.x, owner->touchedLights[7]->pos.y ) );
-		Vector3f pos7( vi7.x / windowx, ( windowy - vi7.y) / windowy, depth7 ); 
-		Color c7 = owner->touchedLights[7]->color;
-		
-		on[7] = true;
-		sh.setUniform( "LightPos7", pos7 );
-		sh.setUniform( "LightColor7", ColorGL( Color( c7.r / 255.0, c7.g / 255.0, c7.b / 255.0, 1 ) ) );
-		sh.setUniform( "Radius7", owner->touchedLights[7]->radius );
-		sh.setUniform( "Brightness7", owner->touchedLights[7]->brightness);
-	}
-	if( owner->lightsAtOnce > 8 )
-	{
-		float depth8 = owner->touchedLights[8]->depth;
-		Vector2i vi8 = owner->preScreenTex->mapCoordsToPixel( Vector2f( owner->touchedLights[8]->pos.x, owner->touchedLights[8]->pos.y ) );
-		Vector3f pos8( vi8.x / windowx, ( windowy - vi8.y) / windowy, depth8 ); 
-		Color c8 = owner->touchedLights[8]->color;
-		
-		on[8] = true;
-		sh.setUniform( "LightPos8", pos8 );
-		sh.setUniform( "LightColor8", ColorGL( Color( c8.r / 255.0, c8.g / 255.0, c8.b / 255.0, 1 ) ) );
-		sh.setUniform( "Radius8", owner->touchedLights[8]->radius );
-		sh.setUniform( "Brightness8", owner->touchedLights[8]->brightness);
-	}
-
-	/*sh.setUniform( "On0", on[0] );
-	sh.setUniform( "On1", on[1] );
-	sh.setUniform( "On2", on[2] );
-	sh.setUniform( "On3", on[3] );
-	sh.setUniform( "On4", on[4] );
-	sh.setUniform( "On5", on[5] );
-	sh.setUniform( "On6", on[6] );
-	sh.setUniform( "On7", on[7] );
-	sh.setUniform( "On8", on[8] );*/
-	
-	}
 
 	if( desperationMode )
 	{
@@ -17430,8 +17254,6 @@ void Actor::UpdatePostPhysics()
 		
 		sh.setUniform( "despFrame", (float)-1 );
 	}
-
-
 
 
 	if( record > 0 )
@@ -19499,31 +19321,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					
 				}
 			}
-	}
-	else if( queryMode == "lights" )
-	{
-		Light *light = (Light*)qte;
-
-		//if( light == playerLight )
-		//	return;
-
-		if( owner->lightsAtOnce < owner->tempLightLimit )
-		{
-			owner->touchedLights[owner->lightsAtOnce] = light;
-			owner->lightsAtOnce++;
-		}
-		else
-		{
-			for( int i = 0; i < owner->lightsAtOnce; ++i )
-			{
-				if( length( V2d( owner->touchedLights[i]->pos.x, owner->touchedLights[i]->pos.y ) - position ) > length( V2d( light->pos.x, light->pos.y ) - position ) )//some calculation here
-				{
-					owner->touchedLights[i] = light;
-					break;
-				}
-					
-			}
-		}
 	}
 	else if( queryMode == "grass" )
 	{

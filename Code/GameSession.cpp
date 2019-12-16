@@ -650,12 +650,6 @@ void GameSession::Cleanup()
 		gateTree = NULL;
 	}
 
-	if (lightTree != NULL)
-	{
-		delete lightTree;
-		lightTree = NULL;
-	}
-
 	if (grassTree != NULL)
 	{
 		delete grassTree;
@@ -1303,30 +1297,6 @@ int GameSession::CountActiveEnemies()
 	}
 
 	return counter;
-}
-
-bool GameSession::LoadLights( ifstream &is, map<int, int> &polyIndex )
-{
-	int numLights;
-	is >> numLights;
-	for( int i = 0; i < numLights; ++i )
-	{
-		int x,y,r,g,b;
-		int rad;
-		int bright;
-		is >> x;
-		is >> y;
-		is >> r;
-		is >> g;
-		is >> b;
-		is >> rad;
-		is >> bright;
-
-		Light *light = new Light( this, Vector2i( x,y ), Color( r,g,b ), rad, bright );
-		lightTree->Insert( light );
-	}
-
-	return true;
 }
 
 bool GameSession::LoadMovingPlats( ifstream &is, map<int, int> &polyIndex )
@@ -4397,7 +4367,9 @@ bool GameSession::OpenFile( string fileName )
 
 		LoadBGPlats( is, polyIndex );
 
-		LoadLights( is, polyIndex );
+		//legacy. Remove when possible.
+		int numLights;
+		is >> numLights;
 
 		LoadEnemies( is, polyIndex );
 		
@@ -6142,8 +6114,6 @@ bool GameSession::Load()
 
 	grassTree = new QuadTree(1000000, 1000000);
 
-	lightTree = new QuadTree(1000000, 1000000);
-
 	gateTree = new QuadTree(1000000, 1000000);
 
 	itemTree = new QuadTree(1000000, 1000000);
@@ -6172,11 +6142,6 @@ bool GameSession::Load()
 	{
 		AllocateEffect();
 	}
-
-	/*for (int i = 0; i < MAX_DYN_LIGHTS; ++i)
-	{
-		AllocateLight();
-	}*/
 
 
 	kinMapSpawnIcon.setTexture(*mini->ts_miniIcons->texture);
@@ -7897,23 +7862,7 @@ int GameSession::Run()
 		
 		
 		preScreenTex->setView( view );
-		
-		while( lightList != NULL )
-		{
-			Light *l = lightList->next;
-			lightList->next = NULL;
-			lightList = l;
-		}
-
-		queryMode = "lightdisplay";
-		lightTree->Query( this, screenRect );
-
-		Light *lightListIter = lightList;
-		while( lightListIter != NULL )
-		{
-			lightListIter->Draw( preScreenTex );
-			lightListIter = lightListIter->next;
-		}		
+			
 
 		UpdateEnvShaders();
 		
@@ -9288,8 +9237,6 @@ void GameSession::Init()
 	
 	gateTree = NULL;
 	
-	lightTree = NULL;
-	
 	grassTree = NULL;
 	
 	borderTree = NULL;
@@ -9405,11 +9352,9 @@ void GameSession::Init()
 	deathWipeLength = 17 * 5;
 
 	listVA = NULL;
-	lightList = NULL;
 
 	inactiveEffects = NULL;
 	pauseImmuneEffects = NULL;
-	inactiveLights = NULL;
 
 	drawInversePoly = true;
 	showDebugDraw = false;
@@ -9526,58 +9471,6 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 		
-	}
-	else if( queryMode == "lightdisplay" )
-	{
-		if( lightList == NULL )
-		{
-			lightList = (Light*)qte;
-		}
-		else
-		{
-			
-			Light *tlight = (Light*)qte;
-			Light *temp = lightList;
-			bool okay = true;
-			while( temp != NULL )
-			{
-				if( temp == tlight )
-				{
-					okay = false;
-					break;
-				}	
-				temp = temp->next;
-			}
-
-			if( okay )
-			{
-				tlight->next = lightList;
-				lightList = tlight;
-			}
-		}
-	}
-	else if( queryMode == "lights" )
-	{
-		Light *light = (Light*)qte;
-
-		if( lightsAtOnce < tempLightLimit )
-		{
-			touchedLights[lightsAtOnce] = light;
-			lightsAtOnce++;
-		}
-		else
-		{
-			//for( int i = 0; i < lightsAtOnce; ++i )
-			//{
-			//	if( length( V2d( touchedLights[i]->pos.x, touchedLights[i]->pos.y ) - position ) > length( V2d( light->pos.x, light->pos.y ) - position ) )//some calculation here
-			//	{
-			//		touchedLights[i] = light;
-			//		break;
-			//	}
-					
-			//}
-		}
-	
 	}
 	else if( queryMode == "gate" )
 	{
@@ -13600,23 +13493,6 @@ void GameSession::AllocateEffect()
 	}
 }
 
-void GameSession::AllocateLight()
-{
-	if( inactiveLights == NULL )
-	{
-		inactiveLights = new Light( this, Vector2i( 0, 0 ), Color( 255, 255, 255, 255 ), 1, 1 );
-		inactiveLights->prev = NULL;
-		inactiveLights->next = NULL;
-	}
-	else
-	{
-		Light *light= new Light( this, Vector2i( 0, 0 ), Color( 255, 255, 255, 255 ), 1, 1 );
-		light->next = inactiveLights;
-		inactiveLights->prev = light;
-		inactiveLights = light;
-	}
-}
-
 BasicEffect * GameSession::ActivateEffect( EffectLayer layer, Tileset *ts, V2d pos, bool pauseImmune, double angle, int frameCount,
 	int animationFactor, bool right, int startFrame, float depth )
 {
@@ -13862,93 +13738,6 @@ void GameSession::LevelSpecifics()
 	{
 	//	player->velocity.x = 60;
 	}
-}
-
-Light * GameSession::ActivateLight( int radius,  int brightness, const Color color )
-{
-	if( inactiveLights == NULL )
-	{
-		return NULL;
-	}
-	else
-	{
-		Light *l = inactiveLights;
-
-		if( inactiveEffects->next == NULL )
-		{
-			inactiveEffects = NULL;
-		}
-		else
-		{
-			inactiveLights = (Light*)(inactiveLights->next);
-			inactiveLights->prev = NULL;
-		}
-
-		//assert( ts != NULL );
-		l->next = NULL;
-		
-		if( activeLights != NULL )
-		{
-			activeLights->prev = l;
-			l->next = activeLights;
-			activeLights = l;
-		}
-		else
-		{
-			activeLights = l;
-		}
-
-		l->radius = radius;
-		l->brightness = brightness;
-		l->color = color;
-		//cout << "activating: " << b << " blah: " << b->prev << endl;
-		return l;
-	}
-}
-
-void GameSession::DeactivateLight( Light *light )
-{
-	Light *prev = light->prev;
-	Light *next = light->next;
-
-	if( prev == NULL && next == NULL )
-	{
-		activeLights = NULL;
-	}
-	else
-	{
-		if( light == activeLights )
-		{
-			next->prev = NULL;
-			activeLights = next;
-		}
-		else
-		{
-			if( prev != NULL )
-			{
-				prev->next = next;
-			}
-
-			if( next != NULL )
-			{
-				next->prev = prev;
-			}
-		}
-		
-	}
-
-
-	if( inactiveLights == NULL )
-	{
-		inactiveLights = light;
-		light->next = NULL;
-	}
-	else
-	{
-		light->next = inactiveLights;
-		inactiveLights->prev = light;
-		inactiveLights = light;
-	}	
 }
 
 PowerBar::PowerBar()

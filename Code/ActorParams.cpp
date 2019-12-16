@@ -7,6 +7,7 @@
 #include <boost/lexical_cast.hpp>
 #include "Enemy_Shard.h"
 #include "ActorParams.h"
+#include "EditSession.h"
 
 using namespace std;
 using namespace sf;
