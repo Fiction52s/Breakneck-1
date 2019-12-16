@@ -27,9 +27,16 @@ EditorMode::EditorMode()
 	edit = EditSession::GetSession();
 }
 
+void CreateTerrainMode::ChooseCutPoly(TerrainPolygon *choice)
+{
+
+}
+
 void CreateTerrainMode::HandleEvent(sf::Event ev)
 {
 	Panel *showPanel = edit->showPanel;
+	Vector2f uiMouse = edit->uiMousePos;
+	Vector2f testPoint = edit->testPoint;
 
 	switch (ev.type)
 	{
@@ -92,42 +99,22 @@ void CreateTerrainMode::HandleEvent(sf::Event ev)
 
 		if (ev.key.code == Keyboard::Space)
 		{
-			ExecuteTerrainCompletion();	
+			edit->ExecuteTerrainCompletion();	
 		}
 		else if (ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete)
 		{
-			if (polygonInProgress->numPoints > 0)
-			{
-				polygonInProgress->RemovePoint(polygonInProgress->pointEnd);
-			}
+			edit->RemovePointFromPolygonInProgress();
 		}
 		else if (ev.key.code == sf::Keyboard::E)
 		{
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
-			if (doneActionStack.size() > 0)
-			{
-				Action *action = doneActionStack.back();
-				doneActionStack.pop_back();
-
-				//cout << "undoing an action" << endl;
-				action->Undo();
-
-				undoneActionStack.push_back(action);
-			}
+			edit->UndoMostRecentAction();
 		}
 		else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
 		{
-			if (undoneActionStack.size() > 0)
-			{
-				Action *action = undoneActionStack.back();
-				undoneActionStack.pop_back();
-
-				action->Perform();
-
-				doneActionStack.push_back(action);
-			}
+			edit->RedoMostRecentUndoneAction();
 		}
 
 		break;
@@ -136,14 +123,6 @@ void CreateTerrainMode::HandleEvent(sf::Event ev)
 	{
 		if (ev.key.code == sf::Keyboard::E)
 		{
-			if (false) //only for this build
-			{
-
-				showPoints = false;
-				extendingPolygon = NULL;
-				extendingPoint = NULL;
-				polygonInProgress->ClearPoints();
-			}
 		}
 		break;
 	}
@@ -156,5 +135,4 @@ void CreateTerrainMode::HandleEvent(sf::Event ev)
 		break;
 	}
 	}
-	break;
 }

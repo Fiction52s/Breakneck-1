@@ -164,6 +164,8 @@ struct EditSession : GUIHandler, TilesetManager
 	void SetupEnemyType(ParamsInfo &pi);
 
 	bool IsKeyPressed(int k);
+	bool IsMousePressed(int m);
+
 
 	std::list<Panel*> allPopups;
 
@@ -290,6 +292,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void ChooseCutPoly( TerrainPolygon *choice );
 	bool cutChoose;
 	bool cutChooseUp;
+	void CutPoly();
 
 	sf::View v;
 
@@ -423,6 +426,8 @@ struct EditSession : GUIHandler, TilesetManager
 	void MessagePop( const std::string &message );
 	void ErrorPop( const std::string &error );
 
+	bool PointSelectActor();
+
 	//bool closePopup; //for messsage/error only
 	
 	//new stuff
@@ -432,11 +437,14 @@ struct EditSession : GUIHandler, TilesetManager
 	void ClearUndoneActions();
 
 	void UndoMostRecentAction();
+	void RedoMostRecentUndoneAction();
+
+	void RemovePointFromPolygonInProgress();
 
 	sf::Rect<float> selectRect;
 	sf::Vector2i pointMouseDown;
 
-
+	sf::Vector2f uiMousePos;
 
 
 	//----------------------

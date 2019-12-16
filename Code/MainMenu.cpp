@@ -1093,6 +1093,16 @@ bool MainMenu::IsKeyPressed(int k)
 	return false;
 }
 
+bool MainMenu::IsMousePressed(int m)
+{
+	Mouse::Button but = (Mouse::Button)m;
+
+	if (window->hasFocus())
+	{
+		return Mouse::isButtonPressed(but);
+	}
+}
+
 void MainMenu::DrawEffects( RenderTarget *target )
 {
 	indEffectPool->Draw(target);

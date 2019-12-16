@@ -493,6 +493,7 @@ struct MainMenu
 	bool gccDriverEnabled;
 
 	bool IsKeyPressed(int key);
+	bool IsMousePressed(int m);
 
 	EffectPool *indEffectPool;
 	void DrawEffects( sf::RenderTarget *target );

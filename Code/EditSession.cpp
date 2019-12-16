@@ -666,6 +666,11 @@ bool EditSession::IsKeyPressed(int k)
 	return mainMenu->IsKeyPressed(k);
 }
 
+bool EditSession::IsMousePressed(int m)
+{
+	return mainMenu->IsMousePressed(m);
+}
+
 void EditSession::Draw()
 {
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -1865,7 +1870,28 @@ ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon 
 
 void EditSession::UndoMostRecentAction()
 {
+	if (doneActionStack.size() > 0)
+	{
+		Action *action = doneActionStack.back();
+		doneActionStack.pop_back();
 
+		action->Undo();
+
+		undoneActionStack.push_back(action);
+	}
+}
+
+void EditSession::RedoMostRecentUndoneAction()
+{
+	if (undoneActionStack.size() > 0)
+	{
+		Action *action = undoneActionStack.back();
+		undoneActionStack.pop_back();
+
+		action->Perform();
+
+		doneActionStack.push_back(action);
+	}
 }
 
 void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon *poly )
@@ -4312,7 +4338,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	mainMenu->SetMouseGrabbed(true);
 	mainMenu->SetMouseVisible(true);
-	//w->setMouseCursorVisible(true);
 
 	sf::View oldPreTexView = preScreenTex->getView();//mainMenu->preScreenTexture->
 	sf::View oldWindowView = w->getView();
@@ -4668,7 +4693,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		pixelPos.x *= 1920.f / w->getSize().x;
 		pixelPos.y *= 1080.f / w->getSize().y;
 
-
 		Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(pixelPos);
 		worldPos.x = tempWorldPos.x;
 		worldPos.y = tempWorldPos.y;
@@ -4676,13 +4700,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		preScreenTex->setView( uiView );
 		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
-		//uiMouse.x *= 1920.f / w->getSize().x;
-		//uiMouse.y *= 1080.f / w->getSize().y;
-		//cout << "uiMouse: " << uiMouse.x << ", " << uiMouse.y << endl;
+		uiMousePos = uiMouse;
 		
 		preScreenTex->setView( view );
 		
-
 		testPoint.x = worldPos.x;
 		testPoint.y = worldPos.y;
 
@@ -4697,7 +4718,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				V2d pathBack(patrolPath.back());
 				V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
 
-				if (Keyboard::isKeyPressed(Keyboard::Key::LShift))
+				if (IsKeyPressed(Keyboard::LShift))
 				{
 					double angle = atan2(-temp.y, temp.x);
 					if (angle < 0)
@@ -4750,29 +4771,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									break;
 								}
 
-								if( cutChoose )
-								{
-									bool c0 = cutPoly0->ContainsPoint( testPoint );
-									bool c1 = cutPoly1->ContainsPoint( testPoint );
-									if( cutPoly0->inverse )
-										c0 = !c0;
-									if( cutPoly1->inverse )
-										c1 = !c1;
-
-									//contains point returns the opposite when you're inverse
-									if( c0 )
-									{
-										ChooseCutPoly( cutPoly0 );
-									}
-									else if( c1 )
-									{
-										ChooseCutPoly( cutPoly1 );
-									}
-
-									extendingPolygon = NULL;
-									extendingPoint = NULL;
-								}
-
+								CutPoly();
 							}
 							
 							break;
@@ -4799,86 +4798,28 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 							if( ev.key.code == Keyboard::Space )
 							{
-								//if( !(showPoints && extendingPolygon) )
-								{
-									ExecuteTerrainCompletion();
-								}
+								ExecuteTerrainCompletion();								
 							}
 							else if( ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete )
 							{
-								//cout << "PRESSING V: " << polygonInProgress->points.size() << endl;
-								if( polygonInProgress->numPoints > 0 )
-								{
-									polygonInProgress->RemovePoint( polygonInProgress->pointEnd );
-								}
-								
-								/*else if( mode == SELECT_POLYGONS )
-								{
-									list<PolyPtr>::iterator it = polygons.begin();
-									while( it != polygons.end() )
-									{
-										if( (*it)->selected )
-										{
-											delete (*it);
-											polygons.erase( it++ );
-										}
-										else
-											++it;
-									}
-								}*/
+								RemovePointFromPolygonInProgress();
 							}
 							else if( ev.key.code == sf::Keyboard::E )
 							{
-								//if( !showPoints )
-								// // this is only turned off for the beta build so I don't have to debug this.
-								//{
-								//	showPoints = true;
-								//	extendingPolygon = NULL;
-								//	extendingPoint = NULL;
-								//	polygonInProgress->ClearPoints();
-								//}
 							}
 							else if( ev.key.code == sf::Keyboard::Z && ev.key.control )
 							{
-								if( doneActionStack.size() > 0 )
-								{
-									Action *action = doneActionStack.back();
-									doneActionStack.pop_back();
-
-									//cout << "undoing an action" << endl;
-									action->Undo();
-
-									undoneActionStack.push_back( action );
-								}
+								UndoMostRecentAction();
 							}
 							else if( ev.key.code == sf::Keyboard::Y && ev.key.control )
 							{
-								if( undoneActionStack.size() > 0 )
-								{
-									Action *action = undoneActionStack.back();
-									undoneActionStack.pop_back();
-
-									action->Perform();
-
-									doneActionStack.push_back( action );
-								}
+								RedoMostRecentUndoneAction();
 							}
 							
 							break;
 						}
 					case Event::KeyReleased:
 						{
-							if( ev.key.code == sf::Keyboard::E )
-							{
-								if( false ) //only for this build
-								{
-
-								showPoints = false;
-								extendingPolygon = NULL;
-								extendingPoint = NULL;
-								polygonInProgress->ClearPoints();
-								}
-							}
 							break;
 						}
 					case Event::LostFocus:
@@ -4902,7 +4843,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							{
 								if( showPanel != NULL )
 								{	
-									//cout << "edit mouse update" << endl;
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
 									break;
 								}
@@ -4914,96 +4854,97 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 								if( !( editMouseDownMove || editMouseDownBox ) )
 								{
-									if( emptysp )
-										for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-										{
-											for( list<ActorPtr>::iterator ait = (*it).second->actors.begin();
-												ait != (*it).second->actors.end(); ++ait )
-											{
+									if (PointSelectActor())
+									{
+										emptysp = false;
+										break;
+									}
+									//if( emptysp )
+									//	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+									//	{
+									//		for( list<ActorPtr>::iterator ait = (*it).second->actors.begin();
+									//			ait != (*it).second->actors.end(); ++ait )
+									//		{
 
-												if( (*ait)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
-												{
-													SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*ait) );
+									//			if( (*ait)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
+									//			{
+									//				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*ait) );
 
-													if( sp->selected )
-													{
+									//				if( sp->selected )
+									//				{
 
-													}
-													else
-													{
-														if( !( IsKeyPressed( Keyboard::LShift ) || 
-														IsKeyPressed( Keyboard::RShift ) ) )
-														{
-															selectedBrush->SetSelected( false );
-															selectedBrush->Clear();
-														}
+									//				}
+									//				else
+									//				{
+									//					if( !( IsKeyPressed( Keyboard::LShift ) || 
+									//					IsKeyPressed( Keyboard::RShift ) ) )
+									//					{
+									//						selectedBrush->SetSelected( false );
+									//						selectedBrush->Clear();
+									//					}
 
-														sp->SetSelected( true );
+									//					sp->SetSelected( true );
 
-														grabbedObject = sp;
-														selectedBrush->AddObject( sp );
-														//sp->selected = true;
-												
-													}
+									//					grabbedObject = sp;
+									//					selectedBrush->AddObject( sp );
+									//					//sp->selected = true;
+									//			
+									//				}
 
-													emptysp = false;
-													break;
-												}
-											}
-										}
+									//				emptysp = false;
+									//				break;
+									//			}
+									//		}
+									//	}
 
 
-									bool pointSelectKeyHeld = IsKeyPressed(Keyboard::B);//IsKeyPressed( Keyboard::LAlt ) ||
-											//IsKeyPressed( Keyboard::RAlt );
+									bool pointSelectKeyHeld = IsKeyPressed(Keyboard::B);
+											
 									//concerning selecting a point
 									if(pointSelectKeyHeld)
 									{
 										PointSelectPoint( worldPos, emptysp );
 									}
-
 									else
-									//if( emptysp )
-									//if(  )
-									for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 									{
-										bool pressF1 = IsKeyPressed(Keyboard::F1);
-										if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
-											continue;
-
-										bool sel = (*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y));
-										if ((*it)->inverse)
+										for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 										{
-											sel = !sel;
-										}
+											bool pressF1 = IsKeyPressed(Keyboard::F1);
+											if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
+												continue;
 
-										if( sel )
-										//if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
-										{
-
-											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-
-											if( sp->selected )
+											bool sel = (*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y));
+											if ((*it)->inverse)
 											{
-
+												sel = !sel;
 											}
-											else
+
+											if (sel)
 											{
-												if( !HoldingShift() )
+
+												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+												if (sp->selected)
 												{
-													selectedBrush->SetSelected( false );
-													selectedBrush->Clear();
+
+												}
+												else
+												{
+													if (!HoldingShift())
+													{
+														selectedBrush->SetSelected(false);
+														selectedBrush->Clear();
+													}
+
+													sp->SetSelected(true);
+
+													grabbedObject = sp;
+													selectedBrush->AddObject(sp);
 												}
 
-												sp->SetSelected( true );
-
-												grabbedObject = sp;
-												selectedBrush->AddObject( sp );
-												//sp->selected = true;
-												
+												emptysp = false;
+												break;
 											}
-
-											emptysp = false;
-											break;
 										}
 									}
 
@@ -7728,68 +7669,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		{
 		case CREATE_TERRAIN:
 			{
-				/*if( polygonInProgress->points.size() > 0 && IsKeyPressed( Keyboard::LShift ) ) 
-				{
-
-					Vector2i last = polygonInProgress->points.back();
-					Vector2f diff = testPoint - Vector2f(last.x, last.y);
-
-					double len;
-					double angle = atan2( -diff.y, diff.x );
-					if( angle < 0 )
-						angle += 2 * PI;
-					Vector2f dir;
-			
-					//cout << "angle : " << angle << endl;
-					if( angle + PI / 8 >= 2 * PI || angle < PI / 8 )
-					{
-						len = dot( V2d( diff.x, diff.y ), V2d( 1, 0 ) );
-						dir = Vector2f( 1, 0 );
-					}
-					else if( angle < 3 * PI / 8 )
-					{
-						len = dot( V2d( diff.x, diff.y ), normalize( V2d( 1, -1 ) ) );
-						V2d tt = normalize( V2d( 1, -1 ) );
-						dir = Vector2f( tt.x, tt.y );
-					}
-					else if( angle < 5 * PI / 8 )
-					{
-						len = dot( V2d( diff.x, diff.y ), V2d( 0, -1 ) );
-						dir = Vector2f( 0, -1 );
-					}
-					else if( angle < 7 * PI / 8 )
-					{
-						len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, -1 )) );
-						V2d tt = normalize( V2d( -1, -1 ) );
-						dir = Vector2f( tt.x, tt.y );
-					}
-					else if( angle < 9 * PI / 8 )
-					{
-						len = dot( V2d( diff.x, diff.y ), V2d( -1, 0 ) );
-						dir = Vector2f( -1, 0 );
-					}
-					else if( angle < 11 * PI / 8 )
-					{
-						len = dot( V2d( diff.x, diff.y ), normalize(V2d( -1, 1 )) );
-						V2d tt = normalize( V2d( -1, 1 ) );
-						dir = Vector2f( tt.x, tt.y );
-					}
-					else if( angle < 13 * PI / 8 )
-					{
-						len = dot( V2d( diff.x, diff.y ), V2d( 0, 1 ) );
-						dir = Vector2f( 0, 1 );
-					}
-					else //( angle < 15 * PI / 8 )
-					{
-						len = dot( V2d( diff.x, diff.y ), normalize(V2d( 1, 1 )) );
-						V2d tt = normalize( V2d( 1, 1 ) );
-						dir = Vector2f( tt.x, tt.y );
-					}
-
-					testPoint = Vector2f(last.x, last.y) + dir * (float)len;
-					//angle = asin( dot( ground->Normal(), V2d( 1, 0 ) ) ); 
-				}*/
-
 				if( showPanel != NULL )
 					break;
 
@@ -7808,10 +7687,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					showPoints = false;
 				}
 
-				
 				if( polygonInProgress->numPoints > 0 )
 				{
-							
 					V2d backPoint = V2d( polygonInProgress->pointEnd->pos.x, polygonInProgress->pointEnd->pos.y );
 					V2d tPoint( testPoint.x, testPoint.y );
 					V2d extreme( 0, 0 );
@@ -7827,30 +7704,19 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					else if( normVec.y < -PRIMARY_LIMIT )
 						extreme.y = -1;
 
-					//extreme = normalize( extreme );
-
 					if( !( extreme.x == 0 && extreme.y == 0 ) )
 					{
-						//double test = abs( cross( normalize( V2d( testPoint.x, testPoint.y ) - backPoint ), extreme ) );
-						//cout << "test: " << test << endl;
-						//if( test  < 1 )
-						{
-						//	cout << "ADJUSTING TESTPOINt BLAH STRAIGHT : " << extreme.x  << ", " << extreme.y << endl;
-							testPoint = Vector2f( backPoint + extreme * length( vec ) );
-						}
-					}
-							
+						testPoint = Vector2f( backPoint + extreme * length( vec ) );
+					}	
 				}
 
-				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
+				if( !panning && IsMousePressed( Mouse::Left ) )
 				{
 					bool emptySpace = true;
 					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 					{
 						if((*it)->ContainsPoint( testPoint ) )
 						{
-							//emptySpace = false;
-						
 							break;
 						}
 					}
@@ -8801,7 +8667,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				
 
-				if( showGrass && Mouse::isButtonPressed( Mouse::Button::Left ) )
+				if( showGrass && IsMousePressed( Mouse::Left ) )
 				{
 					/*for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
 					{
@@ -8974,7 +8840,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			break;
 
 
-			if (!panning && Mouse::isButtonPressed(Mouse::Left))
+			if (!panning && IsMousePressed(Mouse::Left))
 			{
 				createRectCurrPoint = Vector2i(worldPos);
 
@@ -9022,7 +8888,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					temp = testVec;
 				}*/
 
-				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
+				if( !panning && IsMousePressed( Mouse::Left ) )
 				{
 					//double test = 100;
 					//worldPos before testPoint
@@ -9066,7 +8932,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 				
 				Vector2i fullRectCenter( fullRect.left + fullRect.width / 2.0, fullRect.top + fullRect.height / 2.0 );
-				if( !panning && Mouse::isButtonPressed( Mouse::Left ) )
+				if( !panning && IsMousePressed( Mouse::Left ) )
 				{
 					if( selectedBrush != NULL && !selectedBrush->objects.empty() )
 					{
@@ -9109,7 +8975,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		}
 		case SET_LEVEL:
 		{
-			if (Mouse::isButtonPressed(Mouse::Button::Left))
+			if (IsMousePressed(Mouse::Button::Left))
 			{
 				for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
 				{
@@ -9762,7 +9628,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		if( mode == EDIT )
 		{
-			if( moveActive )//&& Mouse::isButtonPressed( Mouse::Left ) )
+			if( moveActive )
 			{
 				Vector2i currMouse( worldPos.x, worldPos.y );
 				Vector2i delta = currMouse - pointMouseDown;
@@ -9894,9 +9760,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		Vector2f size = uiView.getSize();
 
-
-		//float scaleDiff = zoomMultiple - 1.f;//1.f / zoomMultiple;
-		//cout << "viewsize: " << view.getSize().x << ", mult: " << zoomMultiple << endl;
 		float sca = view.getSize().x / 960.f / 2.f;
 		scaleSprite.setScale( 1.f / sca, 1.f / sca );
 		scaleTextSS << "scale: x" << scaleSprite.getScale().x;
@@ -10890,10 +10753,81 @@ void EditSession::ClearSelectedPoints()
 	selectedPoints.clear();
 }
 
+void EditSession::RemovePointFromPolygonInProgress()
+{
+	if (polygonInProgress->numPoints > 0)
+	{
+		polygonInProgress->RemovePoint(polygonInProgress->pointEnd);
+	}
+}
+
+void EditSession::CutPoly()
+{
+	if (cutChoose)
+	{
+		bool c0 = cutPoly0->ContainsPoint(testPoint);
+		bool c1 = cutPoly1->ContainsPoint(testPoint);
+		if (cutPoly0->inverse)
+			c0 = !c0;
+		if (cutPoly1->inverse)
+			c1 = !c1;
+
+		//contains point returns the opposite when you're inverse
+		if (c0)
+		{
+			ChooseCutPoly(cutPoly0);
+		}
+		else if (c1)
+		{
+			ChooseCutPoly(cutPoly1);
+		}
+
+		extendingPolygon = NULL;
+		extendingPoint = NULL;
+	}
+}
+
+bool EditSession::PointSelectActor()
+{
+	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (list<ActorPtr>::iterator ait = (*it).second->actors.begin();
+			ait != (*it).second->actors.end(); ++ait)
+		{
+			if ((*ait)->ContainsPoint(Vector2f(worldPos.x, worldPos.y)))
+			{
+				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*ait));
+
+				if (sp->selected)
+				{
+
+				}
+				else
+				{
+					if (!HoldingShift())
+					{
+						selectedBrush->SetSelected(false);
+						selectedBrush->Clear();
+					}
+
+					sp->SetSelected(true);
+					grabbedObject = sp;
+					selectedBrush->AddObject(sp);
+				}
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 void EditSession::SetEnemyGridIndex( GridSelector *gs, int x, int y, const std::string &eName)
 {
 	gs->Set(x, y, types[eName]->GetSprite(gs->tileSizeX, gs->tileSizeY), eName);
 }
+
+
 
 void EditSession::SetActiveEnemyGrid(int index)
 {
