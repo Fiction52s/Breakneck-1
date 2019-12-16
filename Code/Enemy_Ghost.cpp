@@ -66,7 +66,7 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level 
 
 	ts = owner->GetTileset( "Enemies/plasmid_192x192.png", 192, 192 );
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
+	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
 	sprite.setScale(scale, scale);
