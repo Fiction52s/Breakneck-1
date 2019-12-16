@@ -39,36 +39,10 @@ struct ScrollingBackground;
 struct AirTriggerParams;
 
 
+struct EditorBG;
+
 struct EditSession : GUIHandler, TilesetManager
 {
-	struct DecorInfo : ISelectable
-	{
-		DecorInfo(sf::Sprite &s, int lay,
-			const std::string &dName, int p_tile)
-			:ISelectable(ISelectable::ISelectableType::IMAGE),
-			spr(s), layer(lay),
-			decorName(dName), tile(p_tile) {}
-
-		bool ContainsPoint(sf::Vector2f test);
-		bool Intersects(sf::IntRect rect);
-		void Move(boost::shared_ptr<ISelectable> me,
-			sf::Vector2i delta);
-		void BrushDraw(sf::RenderTarget *target,
-			bool valid);
-		void Deactivate(EditSession *edit,
-			boost::shared_ptr<ISelectable> select);
-		void Activate(EditSession *edit,
-			boost::shared_ptr<ISelectable> select);
-		void SetSelected(bool select);
-		void WriteFile(std::ofstream &of);
-		void Draw(sf::RenderTarget *target);
-		sf::Sprite spr;
-		int layer;
-		std::string decorName;
-		int tile;
-		std::list<boost::shared_ptr<DecorInfo>> *myList;
-	};
-
 	enum Emode
 	{
 		CREATE_TERRAIN,
@@ -106,9 +80,29 @@ struct EditSession : GUIHandler, TilesetManager
 		ITOOL_SCALE
 	};
 
+	
+	
+	EditSession(MainMenu *p_mainMenu);
+	~EditSession();
+
+	//singleton
+	static EditSession *GetSession();
+	static EditSession *currSession;
+
+	//file stuff
+	bool OpenFile();
+	void WriteFile(std::string fileName);
+
+	void CreatePreview(sf::Vector2i imageSize);
+	sf::RenderTexture *mapPreviewTex;
+
+
+
+
+	EditorBG *background;
+	
+
 	TerrainPolygon *GetPolygon(int index, int &edgeIndex);
-	
-	
 
 	std::list<ParamsInfo> worldEnemyNames[8];
 	void AddWorldEnemy(const std::string &name, int w,
@@ -172,19 +166,11 @@ struct EditSession : GUIHandler, TilesetManager
 	bool IsKeyPressed(int k);
 
 	std::list<Panel*> allPopups;
-	static EditSession *GetSession();
-	static EditSession *currSession;
-	Background *currBackground;
-	std::list<ScrollingBackground*> scrollingBackgrounds;
 
-	bool showBG;
 	const static int MAX_TERRAINTEX_PER_WORLD = 10;
 	sf::Texture *terrainTextures[9 * MAX_TERRAINTEX_PER_WORLD];
 	sf::Shader polyShaders[9 * MAX_TERRAINTEX_PER_WORLD];
 
-	void DrawBG(sf::RenderTarget *target);
-
-	int bossType;
 
 	Tool currTool;
 	ImageEditTool currImageTool;
@@ -195,8 +181,7 @@ struct EditSession : GUIHandler, TilesetManager
 	int grassSize;
 	int grassSpacing;
 
-	EditSession( MainMenu *p_mainMenu );
-	~EditSession();
+
 	
 	ActorParams * AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly );
 	void AttachActorsToPolygon( std::list<ActorPtr> &actors, TerrainPolygon *poly );
@@ -209,17 +194,16 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Vector2f SnapPosToPoint(sf::Vector2f &p, double radius);
 	static bool PointOnLine(V2d &pos, V2d &p0, V2d &p1, double width = 0);
 	void TryPlaceGatePoint(V2d &pos);
-	bool OpenFile();
-	void WriteFile(std::string fileName);
+	
 	void RegularOKButton();
 	void RegularCreatePathButton();
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
-	bool IsExtendPointOkay( boost::shared_ptr<TerrainPolygon> poly,
+	bool IsExtendPointOkay( PolyPtr poly,
 		sf::Vector2f testPoint );
-	//bool IsPointValid( sf::Vector2i oldPoint, sf::Vector2i point, TerrainPolygon * poly );
+
 	void ExtendAdd();
 	bool IsPolygonExternallyValid( TerrainPolygon &poly,
 		 TerrainPolygon* ignore );
@@ -241,28 +225,33 @@ struct EditSession : GUIHandler, TilesetManager
 		TerrainPoint *point);
 	bool PolyIntersectGate( TerrainPolygon &poly );
 
-
 	void SetInversePoly();
 	sf::Sprite scaleSprite;
 
+	//mapheader stuff. make another mapheader to hold this?
+	std::string envName;
+	int envWorldType;
+	int leftBound;
+	int topBound;
+	int boundWidth;
+	int boundHeight;
 	int drainSeconds;
+	int bossType;
+	
+	sf::VertexArray fullBounds;
+	void UpdateFullBounds();
 
-	static void s_CreatePreview( EditSession *session, 
-		sf::Vector2i imageSize );
-	void CreatePreview( sf::Vector2i imageSize );
-	sf::RenderTexture *mapPreviewTex;
+	
 
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
 	void CreateActor( ActorPtr actor );
 	void CreateDecorImage(
-		boost::shared_ptr<EditSession::DecorInfo> dec);
+		EditorDecorPtr dec);
 	std::list<GateInfoPtr> gates;
 	GateInfo *selectedGate;
 	MainMenu *mainMenu;
 	
-	void MoveSelectedPoints( 
-		//sf::Vector2i delta );
-		sf::Vector2<double> worldPos );
+	void MoveSelectedPoints( V2d worldPos );
 
 	std::list<ActorPtr> tempActors;
 	GroundInfo worldPosGround;
@@ -271,8 +260,7 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Vector2i airPos;
 	MapHeader mapHeader;
 
-	std::string envName;
-	int envWorldType;
+	
 
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;
@@ -283,13 +271,10 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
 	bool polyGrab;
-	//sf::Vector2i polyGrabPos;
-	//sf::Vector2f polyGrabPos;
 	sf::Vector2i polyGrabPos;
 	sf::Vector2i polyGrabDelta;
 	sf::Vector2f polyMove;
 	char numPlayerInfoByte;
-	//char GetDefaultNumPlayerInfo( MapHeader::)
 
 	bool makingRect;
 	sf::Vector2i rectStart;
@@ -306,11 +291,7 @@ struct EditSession : GUIHandler, TilesetManager
 	bool cutChoose;
 	bool cutChooseUp;
 
-	//TerrainPoint *dirExtendingPoint;
-	//TerrainPoint *extendEndTemp;
-
 	sf::View v;
-
 
 	bool showTerrainPath;
 	
@@ -356,7 +337,6 @@ struct EditSession : GUIHandler, TilesetManager
 	void Extend(boost::shared_ptr<TerrainPolygon> extension,
 		boost::shared_ptr<TerrainPolygon> poly );
 	
-	
 	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
 
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
@@ -372,7 +352,6 @@ struct EditSession : GUIHandler, TilesetManager
 	std::list<boost::shared_ptr<TerrainPolygon>> polygons;
 	std::list<boost::shared_ptr<TerrainPolygon>> selectedPolygons;
 	
-	//std::list<boost::shared_ptr<TerrainPolygon>> polygons;
 	boost::shared_ptr<TerrainPolygon> polygonInProgress;
 	boost::shared_ptr<TerrainPolygon> inversePolygon;
 	std::list<sf::VertexArray*> progressDrawList;
@@ -452,6 +431,8 @@ struct EditSession : GUIHandler, TilesetManager
 	std::list<Action*> undoneActionStack;
 	void ClearUndoneActions();
 
+	void UndoMostRecentAction();
+
 	sf::Rect<float> selectRect;
 	sf::Vector2i pointMouseDown;
 
@@ -517,12 +498,7 @@ struct EditSession : GUIHandler, TilesetManager
 
 	int gatePoints;
 
-	sf::VertexArray fullBounds;
-	int leftBound;
-	int topBound;
-	int boundWidth;
-	int boundHeight;
-	void UpdateFullBounds();
+	
 
 	GateInfo testGateInfo;
 	//TerrainPolygon *gatePoly0;
@@ -548,9 +524,9 @@ struct EditSession : GUIHandler, TilesetManager
 	bool HoldingShift();
 	bool HoldingControl();
 
-	std::list<boost::shared_ptr<DecorInfo>> decorImagesBehindTerrain;
-	std::list<boost::shared_ptr<DecorInfo>> decorImagesBetween;
-	std::list<boost::shared_ptr<DecorInfo>> decorImagesFrontTerrain;
+	std::list<boost::shared_ptr<EditorDecorInfo>> decorImagesBehindTerrain;
+	std::list<boost::shared_ptr<EditorDecorInfo>> decorImagesBetween;
+	std::list<boost::shared_ptr<EditorDecorInfo>> decorImagesFrontTerrain;
 	Panel *decorPanel;
 	Panel *editDecorPanel;
 	void InitDecorPanel();
@@ -578,8 +554,6 @@ struct EditSession : GUIHandler, TilesetManager
 	
 };
 
-typedef boost::shared_ptr<EditSession::DecorInfo> DecorPtr;
 
-bool CompareDecorInfo(EditSession::DecorInfo &di0, EditSession::DecorInfo &di1);
 
 #endif

@@ -317,6 +317,39 @@ struct PointMoveInfo
 	sf::Vector2i delta;
 };
 
+struct EditorDecorInfo : ISelectable
+{
+	EditorDecorInfo(sf::Sprite &s, int lay,
+		const std::string &dName, int p_tile)
+		:ISelectable(ISelectable::ISelectableType::IMAGE),
+		spr(s), layer(lay),
+		decorName(dName), tile(p_tile) {}
+
+	bool ContainsPoint(sf::Vector2f test);
+	bool Intersects(sf::IntRect rect);
+	void Move(boost::shared_ptr<ISelectable> me,
+		sf::Vector2i delta);
+	void BrushDraw(sf::RenderTarget *target,
+		bool valid);
+	void Deactivate(EditSession *edit,
+		boost::shared_ptr<ISelectable> select);
+	void Activate(EditSession *edit,
+		boost::shared_ptr<ISelectable> select);
+	void SetSelected(bool select);
+	void WriteFile(std::ofstream &of);
+	void Draw(sf::RenderTarget *target);
+	sf::Sprite spr;
+	int layer;
+	std::string decorName;
+	int tile;
+	std::list<boost::shared_ptr<EditorDecorInfo>> *myList;
+	static bool CompareDecorInfoLayer(EditorDecorInfo &di0, EditorDecorInfo &di1);
+};
+
+typedef boost::shared_ptr<EditorDecorInfo> EditorDecorPtr;
+
+
+
 typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
 typedef boost::shared_ptr<TerrainPoint> PointPtr;
 typedef std::pair<sf::Vector2i, sf::Vector2i> PointPair;

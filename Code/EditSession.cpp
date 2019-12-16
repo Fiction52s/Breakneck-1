@@ -16,6 +16,7 @@
 #include "Parallax.h"
 #include "Enemy_Shard.h"
 #include "ActorParams.h"
+#include "EditorBG.h"
 //#include "TerrainRender.h"
 
 using namespace std;
@@ -108,6 +109,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	
 	mapPreviewTex = MainMenu::mapPreviewTexture;
 
+	background = new EditorBG();
 
 	for( int i = 0; i < 16; ++i )
 	{
@@ -589,6 +591,8 @@ TerrainPolygon *EditSession::GetPolygon(int index, int &edgeIndex )
 
 EditSession::~EditSession()
 {
+	delete background;
+
 	polygonInProgress.reset();
 
 	for (auto it = gates.begin(); it != gates.end(); ++it)
@@ -609,11 +613,6 @@ EditSession::~EditSession()
 		delete (*it);
 	}
 
-	delete currBackground;
-	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
-	{
-		delete (*it);
-	}
 
 	for (auto it = types.begin(); it != types.end(); ++it)
 	{
@@ -787,10 +786,6 @@ bool EditSession::OpenFile()
 	if( is.is_open() )
 	{
 		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
-		//mapHeader.description = mh->description;
-		//mapHeader.collectionName = mh->collectionName;
-		//mapHeader.ver1 = mh->ver1;
-		//mapHeader.ver2 = mh->ver2;
 
 		mapHeader = *mh;
 		
@@ -805,7 +800,7 @@ bool EditSession::OpenFile()
 
 		drainSeconds = mh->drainSeconds;
 
-		Background::SetupFullBG(envName, *this, currBackground, scrollingBackgrounds);
+		Background::SetupFullBG(envName, *this, background->currBackground, background->scrollingBackgrounds);
 
 		int numPoints = mh->numVertices;
 
@@ -854,7 +849,7 @@ bool EditSession::OpenFile()
 			//dSpr.setTexture do this after dinner
 
 
-			DecorPtr dec(new DecorInfo(dSpr, dLayer, dName, dTile));
+			EditorDecorPtr dec(new EditorDecorInfo(dSpr, dLayer, dName, dTile));
 			if (dLayer > 0)
 			{
 				dec->myList = &decorImagesBehindTerrain;
@@ -1866,6 +1861,11 @@ ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon 
 
 	return NULL;
 	//return false;
+}
+
+void EditSession::UndoMostRecentAction()
+{
+
 }
 
 void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon *poly )
@@ -4660,8 +4660,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	selectedPlayer = false;
 	selectedActorGrabbed = false;
 
-	showBG = false;
-
 	while( !quit )
 	{
 		
@@ -4732,7 +4730,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			{
 				if (ev.key.code == Keyboard::F5)
 				{
-					showBG = !showBG;
+					background->FlipShown();
 					continue;
 				}
 			}
@@ -7357,7 +7355,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						}
 						else
 						{
-							DecorPtr dec(new DecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
+							EditorDecorPtr dec(new EditorDecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
 							/*if (currDecorLayer > 0)
 							{
 								
@@ -9176,17 +9174,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		preScreenTex->clear();
 		preScreenTex->setView( view );
 
-
-		if (showBG)
-		{
-			DrawBG(preScreenTex);
-		}
-		/*sf::RectangleShape parTest( Vector2f( 1000, 1000 ) );
-		parTest.setFillColor( Color::Red );
-		parTest.setPosition( 0, 0 );
-		preScreenTex->draw( parTest );*/
-
-
+		background->Draw(preScreenTex);
 
 
 		preScreenTex->draw(border, 8, sf::Lines);
@@ -10667,7 +10655,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 	{
 		if (name != "not set")
 		{
-			if (Background::SetupFullBG(name, *this, currBackground, scrollingBackgrounds))
+			if (Background::SetupFullBG(name, *this, background->currBackground, background->scrollingBackgrounds))
 			{
 				tempGridResult = name;
 				envName = name;
@@ -10969,22 +10957,6 @@ void EditSession::RegularCreatePathButton()
 	patrolPath.clear();
 	patrolPath.push_back(front);
 	patrolPathLengthSize = 0;
-}
-
-void EditSession::DrawBG(sf::RenderTarget *target)
-{
-	currBackground->Draw(target);
-
-	sf::View viewP = view;
-	viewP.setSize(1920, 1080);
-	viewP.setCenter(960, 0);
-	target->setView(viewP);
-	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
-		it != scrollingBackgrounds.end(); ++it)
-	{
-		(*it)->Draw(target);
-	}
-	target->setView(view);
 }
 
 void EditSession::SelectPoint(TerrainPolygon *poly,
@@ -12474,7 +12446,7 @@ void EditSession::SetDecorEditPanel()
 {
 	ISelectable *sp = selectedBrush->objects.front().get();
 	assert(sp->selectableType == ISelectable::IMAGE);
-	DecorInfo *di = (DecorInfo*)sp;
+	EditorDecorInfo *di = (EditorDecorInfo*)sp;
 
 	editDecorPanel->textBoxes["xpos"]->text.setString(boost::lexical_cast<string>(di->spr.getPosition().x));
 	editDecorPanel->textBoxes["ypos"]->text.setString(boost::lexical_cast<string>(di->spr.getPosition().y));
@@ -12490,7 +12462,7 @@ void EditSession::SetDecorParams()
 {
 	ISelectable *sp = selectedBrush->objects.front().get();
 	assert(sp->selectableType == ISelectable::IMAGE);
-	DecorInfo *di = (DecorInfo*)sp;
+	EditorDecorInfo *di = (EditorDecorInfo*)sp;
 	
 	string xposStr = editDecorPanel->textBoxes["xpos"]->text.getString().toAnsiString();
 	string yposStr = editDecorPanel->textBoxes["ypos"]->text.getString().toAnsiString();
@@ -12706,7 +12678,7 @@ void EditSession::CreateActor(ActorPtr actor)
 	doneActionStack.push_back(action);
 }
 
-void EditSession::CreateDecorImage(DecorPtr dec)
+void EditSession::CreateDecorImage(EditorDecorPtr dec)
 {
 	Brush b;
 	SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(dec);
@@ -12718,9 +12690,6 @@ void EditSession::CreateDecorImage(DecorPtr dec)
 
 void EditSession::CreatePreview(Vector2i imageSize)
 {
-	
-
-
 	int extraBound = 0;
 	int left;
 	int top;
@@ -12874,15 +12843,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 
 	}
 
-	//Color inversePolyTypeColor;// = Color::Blue;
-
-	Color purp(109, 82, 190);
-	//inversePolyTypeColor = Color::Blue;
-
 	mapPreviewTex->clear(Color::Black);
-
-	//DrawBG(mapPreviewTex);
-	
 
 	mapPreviewTex->setView( pView );
 
@@ -14036,97 +13997,4 @@ void EditSession::BoxSelectPoints(sf::IntRect r,
 			}
 		}
 	}
-}
-
-
-
-bool CompareDecorInfo(EditSession::DecorInfo &di0, EditSession::DecorInfo &di1)
-{
-	return di0.layer < di1.layer;
-}
-
-bool EditSession::DecorInfo::ContainsPoint(sf::Vector2f test)
-{
-	sf::Transform trans = spr.getTransform();
-	FloatRect fr = spr.getLocalBounds();
-	Vector2f points[4];
-	points[0] = trans * Vector2f(fr.left, fr.top);
-	points[1] = trans * Vector2f(fr.left + fr.width, fr.top);
-	points[2] = trans * Vector2f(fr.left + fr.width, fr.top + fr.height);
-	points[3] = trans * Vector2f(fr.left, fr.top + fr.height);
-
-	bool result = QuadContainsPoint(V2d( points[0] ), 
-		V2d(points[1]), 
-		V2d(points[2]), 
-		V2d(points[3]), V2d(test.x, test.y));
-
-	//cout << "result: " << result << endl;
-	return result;
-}
-
-bool EditSession::DecorInfo::Intersects(sf::IntRect rect)
-{
-	FloatRect fr(rect);
-	return fr.intersects(spr.getGlobalBounds());
-}
-
-void EditSession::DecorInfo::Move(boost::shared_ptr<ISelectable> me,
-	sf::Vector2i delta) 
-{
-	spr.setPosition(spr.getPosition().x + delta.x, spr.getPosition().y + delta.y);
-}
-
-void EditSession::DecorInfo::BrushDraw(sf::RenderTarget *target,
-	bool valid) 
-{
-	target->draw(spr);
-}
-
-void EditSession::DecorInfo::Draw(sf::RenderTarget *target)
-{
-	target->draw(spr);
-	if (selected)
-	{
-		sf::RectangleShape rs;
-		rs.setFillColor(Color::Transparent);
-		rs.setOutlineColor(Color::Green);
-		rs.setOutlineThickness(3 * EditSession::zoomMultiple);
-		rs.setPosition(spr.getGlobalBounds().left, spr.getGlobalBounds().top);
-		rs.setSize(Vector2f(spr.getGlobalBounds().width, spr.getGlobalBounds().height));
-		target->draw(rs);
-		//cout << "selected draw" << endl;
-	}
-}
-
-void EditSession::DecorInfo::Deactivate(EditSession *edit,
-	boost::shared_ptr<ISelectable> select)
-{
-	cout << "deactivating decor" << endl;
-	DecorPtr dec = boost::dynamic_pointer_cast<DecorInfo>(select);
-	
-	myList->remove(dec);
-}
-
-void EditSession::DecorInfo::Activate(EditSession *edit,
-	boost::shared_ptr<ISelectable> select)
-{
-	cout << "adding image" << endl;
-	DecorPtr dec = boost::dynamic_pointer_cast<DecorInfo>(select);
-
-	myList->push_back(dec);
-}
-
-void EditSession::DecorInfo::SetSelected(bool select)
-{
-	selected = select;
-}
-
-void EditSession::DecorInfo::WriteFile(std::ofstream &of )
-{
-	of << decorName << endl;
-	of << layer << endl;
-	of << spr.getPosition().x << " " << spr.getPosition().y << endl;
-	of << spr.getRotation() << endl;
-	of << spr.getScale().x << " " << spr.getScale().y << endl;
-	of << tile << endl;
 }

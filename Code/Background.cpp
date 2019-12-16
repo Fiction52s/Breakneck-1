@@ -327,6 +327,4 @@ void Background::Draw(sf::RenderTarget *target)
 	target->draw(background);
 
 	target->setView(oldView);
-	//target->setView(bgView);
-	//target->
 }
