@@ -189,7 +189,7 @@ struct EditSession : GUIHandler, TilesetManager
 	int Run(const boost::filesystem::path &p_filePath,
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
-	void Draw();
+	
 	sf::Vector2f SnapPointToGraph(sf::Vector2f &p, int gridSize);
 	V2d SnapPointToGraph(V2d &p, int gridSize);
 	sf::Vector2f SnapPosToPoint(sf::Vector2f &p, double radius);
@@ -361,6 +361,9 @@ struct EditSession : GUIHandler, TilesetManager
 	Panel *terrainSelectorPopup;
 	Panel *enemySelectPanel;
 
+	Panel *mapOptionsPanel;
+	Panel *terrainOptionsPanel;
+
 	void CreateShardGridSelector( Panel *p,
 		sf::Vector2i &pos );
 	void GetShardWorldAndIndex(int selX, int selY,
@@ -415,7 +418,7 @@ struct EditSession : GUIHandler, TilesetManager
 
 	void TryAddToPatrolPath();
 
-	void UpdatePan();
+	void UpdatePanning();
 
 	void UpdatePolyShaders();
 
@@ -429,6 +432,7 @@ struct EditSession : GUIHandler, TilesetManager
 	std::list<Action*> undoneActionStack;
 	void ClearUndoneActions();
 	void MovePasteBrushes();
+	void DrawPasteBrushes();
 
 	void TempMoveSelectedBrush();
 	
@@ -440,8 +444,31 @@ struct EditSession : GUIHandler, TilesetManager
 
 	sf::VertexArray *graphLinesVA;
 	int numGraphLines;
-	
 
+	void DrawPolygons();
+	void DrawPolygonInProgress();
+
+	void DrawActors();
+	void DrawGates();
+	void DrawDecorBehind();
+	void DrawDecorBetween();
+	void DrawDecorFront();
+
+	void Draw();
+
+	void DrawBoxSelection();
+	void DrawTrackingEnemy();
+	void DrawPatrolPathInProgress();
+	void DrawGateInProgress();
+
+	void DrawMode();
+	void DrawModeUI();
+
+	void UpdateMode();
+
+	void HandleEvents();
+	
+	sf::Event ev;
 	void UndoMostRecentAction();
 	void RedoMostRecentUndoneAction();
 
@@ -464,6 +491,8 @@ struct EditSession : GUIHandler, TilesetManager
 	Brush *copiedBrush;
 	PointMap selectedPoints;
 
+	sf::Vertex border[8];
+
 	//----------------------
 
 	CompoundAction *moveAction;
@@ -476,6 +505,24 @@ struct EditSession : GUIHandler, TilesetManager
 	SelectPtr grabbedObject;
 	sf::Vector2i editMouseGrabPos;
 	sf::Vector2i editMouseOrigPos;
+
+	V2d circleTopPos;
+	V2d circleUpperRightPos;
+	V2d circleLowerRightPos;
+	V2d circleUpperLeftPos;
+	V2d circleLowerLeftPos;
+	V2d circleBottomPos;
+	double menuCircleRadius;
+	double menuCircleDist;
+	std::string menuSelection;
+
+	sf::Sprite guiMenuSprite;
+
+	sf::Font arial;
+
+	V2d menuDownPos;
+	Emode menuDownStored;
+	Emode stored;
 
 	ActorPtr player;
 	ActorType *playerType;
@@ -507,6 +554,8 @@ struct EditSession : GUIHandler, TilesetManager
 
 	int gatePoints;
 
+	bool quit;
+	int returnVal;
 	
 
 	GateInfo testGateInfo;
