@@ -136,7 +136,6 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	selectedBrush = new Brush();
 	enemyQuad.setFillColor( Color( 0, 255, 0, 100 ) );
 	moveActive = false;
-	extendingPolygon = NULL;
 
 	ActorGroup *playerGroup = new ActorGroup( "player" );
 	groups["player"] = playerGroup;
@@ -674,28 +673,7 @@ void EditSession::Draw()
 {
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		if( extendingPolygon == NULL )
-		{
-			(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, showPoints, extendingPoint );
-		}
-		else
-		{
-			if( (*it) == extendingPolygon )
-			{
-				(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, true, extendingPoint );
-			}
-			else
-			{
-				if( extendingPolygon == NULL )
-				{
-					(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, showPoints, extendingPoint );
-				}
-				else
-				{
-					(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, false, extendingPoint );
-				}
-			}
-		}
+		(*it)->Draw(showTerrainPath, zoomMultiple, preScreenTex, showPoints, NULL );
 	}
 
 	int psize = polygonInProgress->numPoints;
@@ -713,34 +691,6 @@ void EditSession::Draw()
 			preScreenTex->draw( cs );
 		}		
 	}
-
-	//if( inversePolygon != NULL && inversePolygon->finalized )
-	//{
-	//	if( extendingPolygon == NULL )
-	//	{
-	//		inversePolygon->Draw( false, zoomMultiple, preScreenTex, showPoints, NULL );
-	//		//(*it)->Draw( showTerrainPath, zoomMultiple, preScreenTex, showPoints, extendingPoint );
-	//	}
-	//	else
-	//	{
-	//		if( inversePolygon == extendingPolygon )
-	//		{
-	//			inversePolygon->Draw( false, zoomMultiple, preScreenTex, true, extendingPoint );
-	//		}
-	//		else
-	//		{
-	//			if( extendingPolygon == NULL )
-	//			{
-	//				inversePolygon->Draw( false, zoomMultiple, preScreenTex, showPoints, extendingPoint );
-	//			}
-	//			else
-	//			{
-	//				inversePolygon->Draw( false, zoomMultiple, preScreenTex, false, extendingPoint );
-	//			}
-	//		}
-	//	}
-	//	
-	//}
 	
 	if (mode == PASTE)
 	{
@@ -4364,12 +4314,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	confirm = CreatePopupPanel( "confirmation" );
 	validityRadius = 4;
 
-	extendingPolygon = NULL;
-	extendingPoint = NULL;
-
-	radiusOption = false;
-	lightPosDown = false;
-
 	showGrass = false;
 
 	pointGrab = false;
@@ -6480,285 +6424,31 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					showPoints = false;
 				}
 
-				if( polygonInProgress->numPoints > 0 )
-				{
-					V2d backPoint = V2d( polygonInProgress->pointEnd->pos.x, polygonInProgress->pointEnd->pos.y );
-					V2d tPoint( testPoint.x, testPoint.y );
-					V2d extreme( 0, 0 );
-					V2d vec = tPoint - backPoint;
-					V2d normVec = normalize( vec );
-					
-					if( normVec.x > PRIMARY_LIMIT )
-						extreme.x = 1;
-					else if( normVec.x < -PRIMARY_LIMIT )
-						extreme.x = -1;
-					if( normVec.y > PRIMARY_LIMIT )
-						extreme.y = 1;
-					else if( normVec.y < -PRIMARY_LIMIT )
-						extreme.y = -1;
-
-					if( !( extreme.x == 0 && extreme.y == 0 ) )
-					{
-						testPoint = Vector2f( backPoint + extreme * length( vec ) );
-					}	
-				}
+				PreventSlightAnglesOnPolygonInProgress();
 
 				if( !panning && IsMousePressed( Mouse::Left ) )
 				{
-					bool emptySpace = true;
-					for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-					{
-						if((*it)->ContainsPoint( testPoint ) )
-						{
-							break;
-						}
-					}
-
-					
 					if( cutChoose )
 					{
 						break;
 					}
 
-					if( false && showPoints && extendingPolygon == NULL )
+					bool validPoint = true;
+
+					//test validity later
+					if(validPoint)
 					{
+						Vector2i worldi(testPoint.x, testPoint.y);
 
-						bool none = true;
-						if( inversePolygon != NULL )
+						if( polygonInProgress->numPoints == 0 || (polygonInProgress->numPoints > 0 &&
+							length( V2d( testPoint.x, testPoint.y ) 
+								- Vector2<double>(polygonInProgress->pointEnd->pos.x, 
+							polygonInProgress->pointEnd->pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 )) )
 						{
-							for( TerrainPoint *curr = inversePolygon->pointStart; curr != NULL;
-								curr = curr->next )
-							{
-								Vector2i pointPos = curr->pos;
-								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
-								if( dist < 8 * zoomMultiple )
-								{
-									extendingPolygon = inversePolygon;
-									extendingPoint = curr;
-									none = false;
-									break;
-								}
-							}
-						}
-
-						if( none )
-						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-						{
-							for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
-							{
-								Vector2i pointPos = curr->pos;
-								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
-								if( dist < 8 * zoomMultiple )
-								{
-									extendingPolygon = (*it);
-									extendingPoint = curr;
-									none = false;
-									break;
-								}
-							}
-							if( !none )
-								break;
-						}	
-					}
-
-					//if( ( !showPoints || ( false && showPoints && extendingPolygon != NULL )) && emptySpace )
-					if( emptySpace )
-					{
-						
-						Vector2i worldi( testPoint.x, testPoint.y );
-
-						bool okay = true;
-						if( extendingPolygon != NULL && polygonInProgress->numPoints > 0 )
-						{
-							//no error checking for extending polygon yet. ugh T_T you got this
-
-							bool containsPoint = extendingPolygon->ContainsPoint( testPoint );
-							/*if( !extendingPolygon->inverse )
-							{
-								okay = !containsPoint;
-							}*/
-							
-							/*if( polygonInProgress->numPoints > 1 )
-							{
-								okay = IsPointValid( polygonInProgress->pointStart->pos, 
-								Vector2i( testPoint.x, testPoint.y ), polygonInProgress );
-							}*/
-
-							if( okay )
-							{
-								TerrainPoint * okay = extendingPolygon->pointStart;
-								TerrainPoint *okayPrev = extendingPolygon->pointEnd;
-								for( ; okay != NULL; okay = okay->next )
-								{
-								
-									//LineIntersection li = SegmentIntersect( , worldi, (*okayPrev).pos, (*okayIt).pos );
-									Vector2i a = polygonInProgress->pointEnd->pos;
-									Vector2i b = worldi;
-									Vector2i c = okayPrev->pos;
-									Vector2i d = okay->pos;
-
-								
-									LineIntersection li = LimitSegmentIntersect( a,b,c,d );
-									Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-									//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
-									if( !li.parallel )//&& lii != a && lii != b && lii != c && lii != d )
-									{
-										//okay = false;
-										//break;
-									}
-									okayPrev = okay;
-								}
-								
-								
-							}
-							// &&  IsPointValid( polygonInProgress->points.back().pos, worldi, extendingPolygon );
-							//okay = IsPointValid( polygonInProgress->points.back().pos, worldi, extendingPolygon );
-						}
-
-						
-						//okay = true;
-
-						bool done = false;
-						if( extendingPolygon != NULL )
-						{
-							for( TerrainPoint *curr = extendingPolygon->pointStart; curr != NULL; curr = curr->next )
-							{
-								if( curr == extendingPoint || ( polygonInProgress->pointEnd != NULL 
-									&& curr->pos == polygonInProgress->pointEnd->pos ) )
-								{
-									continue;
-								}
-								Vector2i pointPos = curr->pos;
-								double dist = length( V2d( pointPos.x, pointPos.y ) - V2d( testPoint.x, testPoint.y ) );
-								if( dist < 8 * zoomMultiple )
-								{
-									for( TerrainPoint *progCurr = polygonInProgress->pointStart;
-										progCurr != NULL; progCurr = progCurr->next )
-									{
-										//if( !extendingPolygon->PointTooCloseToPoints( progCurr->pos, minimumEdgeLength ) )
-										{
-											bool contains = extendingPolygon->ContainsPoint( 
-												Vector2f( progCurr->pos.x, progCurr->pos.y ) );
-											if( extendingPolygon->inverse )
-												contains = !contains;
-
-											if( polygonInProgress->numPoints == 1 )
-											{
-												contains = true;
-											}
-											//cout << "polygonin projgresaghgg: " << polygonInProgress->numPoints << endl;
-
-											//okay this is buggy fix it in the morning. trying to make small cuts with
-											//no in between points
-
-											if( contains )
-											{
-												extendingPolygon->Cut2( extendingPoint, curr, polygonInProgress );	
-												polygonInProgress->Reset();
-												done = true;
-												break;
-											}
-										}
-									}
-
-									if( !done )
-									{
-										ExtendPolygon( extendingPoint, curr, polygonInProgress );
-										done = true;
-									}
-										//else if( extendEndTemp != NULL )
-										//{
-										//	MessagePop( "you must select a point next to the last point you selected to "
-										//		"determine the winding" );
-										//	//done = true;
-										//	okay = false;
-										//}
-									
-									
-									//if( !done && okay )
-									//{
-									//	extendingPolygon->Extend( extendingPoint, curr, polygonInProgress, NULL );
-
-									//	ExtendAdd();
-
-									//	//polygonInProgress->points.clear();
-									//	//polygonInProgress->Reset();
-									//	//cout << "EXTENDING POLYGON" << endl;
-									//
-
-									//	polygonInProgress->Reset();
-
-									//	extendingPolygon = NULL;
-									//	extendingPoint = NULL;
-									//	extendEndTemp = NULL;
-
-									//	done = true;
-									//	//cout << "done!" << endl;
-									//	
-									//}
-									break;
-									//ExtendPolygon();
-									//polygonInProgress->FixWindingInverse();
-									
-								}
-							}
-						}
-
-						//okay = true;
-						if( !done && okay )
-						{
-							bool validNearPolys = true;
-							if( polygonInProgress->numPoints > 0 )
-							{
-								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-								{
-									if( (*it)->SegmentTooClose( polygonInProgress->pointEnd->pos, worldi, minimumEdgeLength ) )
-									{
-										//validNearPolys = false;
-										//break;
-									}
-								}
-							}
-
-							//cout << "valid: " << validNearPolys << endl;
-
-							//if( validNearPolys )
-							{
-								if( polygonInProgress->numPoints > 0 && length( V2d( testPoint.x, testPoint.y ) 
-									- Vector2<double>(polygonInProgress->pointEnd->pos.x, 
-									polygonInProgress->pointEnd->pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 ) )
-								{
-								//	cout << "check1" << endl;
-									//if( PointValid( polygonInProgress->pointEnd->pos, worldi ) )
-									{
-								//		cout << "blah1" << endl;
-										polygonInProgress->AddPoint( new TerrainPoint( worldi, false ) );
-									}
-								}
-								else if( polygonInProgress->numPoints == 0 )
-								{
-									if( extendingPolygon != NULL )
-									{
-										polygonInProgress->AddPoint( new TerrainPoint( *extendingPoint ) );
-									}
-									else
-									{
-										polygonInProgress->AddPoint( new TerrainPoint( worldi, false ) );
-									}
-									//cout << "showPoints: " << showPoints << ", " << (extendingPolygon == NULL) << endl;
-								
-							
-								}
-							}
+							polygonInProgress->AddPoint( new TerrainPoint(worldi, false ) );
 						}
 					}
-					else
-					{
-						//polygonInProgress->points.clear();
-					}
-
-					
-					
+								
 				}
 				
 
@@ -6766,614 +6456,31 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			}
 		case EDIT:
 			{
-
-				V2d pPoint = worldPos;
-				Vector2i extra( 0, 0 );
-				bool blah = false;
-
-
 				if( !pasteBrushes.empty() )
 				{
-					Vector2i pasteGrabDelta = Vector2i( pPoint.x, pPoint.y ) - pastePos;
-					pastePos = Vector2i( pPoint.x, pPoint.y );
-					for( list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end(); ++it )
-					{
-						(*it)->Move( pasteGrabDelta );
-					}
+					MovePasteBrushes();
 				}
 				else
 				{
-
-				if( //polygonInProgress->points.size() > 0 && 
-					IsKeyPressed( Keyboard::G ) )
-				{
-					pPoint = SnapPointToGraph( worldPos, 32 );
-					showGraph = true;
-
-					int countSelected = CountSelectedPoints();
-					if( countSelected == 1 )
+					if( IsKeyPressed( Keyboard::G ) )
 					{
-						Vector2i pointSelected;
-						bool done = false;
-						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
-							it != selectedPolygons.end() && !done; ++it )
-						{
-							for( TerrainPoint *curr = (*it)->pointStart; curr != NULL && !done; curr = curr->next )
-							{
-								if( curr->selected )
-								{
-									pointSelected = curr->pos;
-									done = true;
-								}
-							}
-						}
-
-						int xrem = pointSelected.x % 32;
-						int yrem = pointSelected.y % 32;
-						if( pointSelected.x > 0 )
-						{
-							if( xrem >= 32 / 2 )
-							{
-								extra.x = 32 - xrem;
-							}
-							else
-							{
-								extra.x = xrem;
-							}
-						}
-						else if( pointSelected.x < 0 )
-						{
-							if( xrem <= -32 / 2 )
-							{
-								extra.x = -32 - xrem;
-							}
-							else
-							{
-								extra.x = xrem;
-							}
-						}
-
-						if( pointSelected.y > 0 )
-						{
-							if( yrem >= 32 / 2 )
-							{
-								extra.y = 32 - yrem;
-							}
-							else
-							{
-								extra.y = yrem;
-							}
-						}
-						else if( pointSelected.y < 0 )
-						{
-							if( yrem <= -32 / 2 )
-							{
-								extra.y = -32 - yrem;
-							}
-							else
-							{
-								extra.y = yrem;
-							}
-						}
-						extra.y = -extra.y;
-						blah = true;
-						pointGrabDelta = Vector2i( pPoint.x, pPoint.y ) - pointSelected;
-						//extra = Vector2i( x );
+						//pPoint = SnapPointToGraph( worldPos, 32 );
+						showGraph = true;
+					}
+				
+					if (IsKeyPressed(Keyboard::B))
+					{
+						showPoints = true;
 					}
 					else
 					{
-						//Vector2i pointSelected;
-						/*int numOkay = 0;
-						bool done = false;
-						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
-							it != selectedPolygons.end(); ++it, !done )
-						{
-							for( PointList::iterator pit = (*it)->points.begin(); pit != (*it)->points.end(); ++pit, !done )
-							{
-								if( (*pit).selected )
-								{
-									if( (*pit).pos.x % 32 == (*pit).pos.y % 32 )
-									{
-									}
-									numOkay++;
-									done = true;
-								}
-							}
-						}*/
-					}
-				}
-				
-				if (IsKeyPressed(Keyboard::B))
-				{
-					showPoints = true;
-
-				}
-				else
-				{
-					ClearSelectedPoints();
-					showPoints = false;
-				}
-
-
-				
-				
-
-				if( ( editMouseDownMove && !editStartMove && length( V2d( editMouseGrabPos.x, editMouseGrabPos.y ) - worldPos ) > editMoveThresh * zoomMultiple ) )
-				{
-					editStartMove = true;
-					Vector2i pos( worldPos.x, worldPos.y );
-					Vector2i delta = pos - editMouseGrabPos;
-
-					for( PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit )
-					{
-						list<PointMoveInfo> &pList = (*mit).second;
-						for( list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it )
-						{
-							(*it).delta = (*it).point->pos;
-						}
+						ClearSelectedPoints();
+						showPoints = false;
 					}
 
-					moveAction = selectedBrush->UnAnchor();
-					if( moveAction != NULL )
-						moveAction->Perform();
+					TryTerrainMove();
 
-					selectedBrush->Move( delta );
-					//MoveSelectedPoints( delta );
-					MoveSelectedPoints( worldPos );
-
-					editMouseGrabPos = pos;
-				}
-				else if( editMouseDownMove && editStartMove )
-				{
-					Vector2i pos( worldPos.x, worldPos.y );
-					Vector2i delta = pos - editMouseGrabPos;
-
-					if( selectedBrush->objects.size() == 1 
-						&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR
-						&& selectedPoints.empty() )
-					{
-						ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( selectedBrush->objects.front() );
-						if( actor->type->CanBeGrounded() )
-						{
-							if( worldPosGround.ground != NULL )
-							{
-								if( actor->groundInfo != NULL )
-								{
-									actor->UnAnchor( actor );
-								}
-
-								actor->AnchorToGround( worldPosGround );
-								worldPosGround.ground->enemies[worldPosGround.edgeStart].push_back( actor );
-								worldPosGround.ground->UpdateBounds();
-
-								//editStartMove = false;
-							}
-							else
-							{
-								if( actor->groundInfo != NULL )
-								{
-									actor->UnAnchor( actor );
-								}
-
-								selectedBrush->Move( delta );
-								//actor->UnAnchor( actor );
-							}
-						}
-						else
-						{
-							selectedBrush->Move( delta );
-						}
-					}
-					else
-					{
-						selectedBrush->Move( delta );
-
-						//MoveSelectedPoints( delta );
-						MoveSelectedPoints( worldPos );
-
-					}
-
-					editMouseGrabPos = pos;
-
-
-				}
-				else if( editMouseDownBox )
-				{
-					//stuff
-				}
-
-
-				if( pointGrab )
-				{
-
-					Vector2i test( pointGrabPos.x % 32, pointGrabPos.y % 32 );
-				//	cout << test.x << ", " << test.y << endl;
-					
-					if( blah )
-					{
-						
-					}
-					else
-					{
-						pointGrabDelta = Vector2i( pPoint.x, pPoint.y ) - pointGrabPos;
-					}
-					//pointGrabDelta += extra;
-					//pointGrabDelta -= test;
-					Vector2i oldPointGrabPos = pointGrabPos;
-					pointGrabPos = Vector2i( pPoint.x, pPoint.y );// - Vector2i( pointGrabDelta.x % 32, pointGrabDelta.y % 32 );
-					bool validMove = true;
-					
-					int numSelectedPolys = selectedPolygons.size();
-					Vector2i** allDeltas = new Vector2i*[numSelectedPolys];
-					int allDeltaIndex = 0;
-					for( list<PolyPtr>::iterator it = selectedPolygons.begin();
-							it != selectedPolygons.end(); ++it )
-					{
-						TerrainPolygon &poly = *(*it);
-
-						int polySize = poly.numPoints;
-						Vector2i *deltas = new Vector2i[polySize];
-						allDeltas[allDeltaIndex] = deltas;
-						int deltaIndex = 0;
-						
-
-						double prim_limit = PRIMARY_LIMIT;
-						if( IsKeyPressed( Keyboard::LShift ) )
-						{
-							prim_limit = .99;
-						}
-
-
-						for( TerrainPoint *curr = poly.pointStart; curr != NULL ; curr = curr->next )
-						{
-							
-							deltas[deltaIndex] = Vector2i( 0, 0 );
-
-							if( !curr->selected )
-							{
-								++deltaIndex;
-								continue;
-							}
-
-							Vector2i diff;
-
-							TerrainPoint *prev, *next;
-							if( curr == poly.pointStart )
-							{
-								prev = poly.pointEnd;
-							}
-							else
-							{
-								prev = curr->prev;
-							}
-
-							TerrainPoint *temp = curr->next;
-							if( temp == NULL )
-							{
-								next = poly.pointStart;
-							}
-							else
-							{
-								next = temp;
-							}
-
-
-							V2d pos(curr->pos.x + pointGrabDelta.x, curr->pos.y + pointGrabDelta.y );
-							V2d prevPos( prev->pos.x, prev->pos.y );
-							V2d nextPos( next->pos.x, next->pos.y );
-
-							V2d extreme( 0, 0 );
-							Vector2i vec = curr->pos - prev->pos;
-							V2d normVec = normalize( V2d( vec.x, vec.y ) );
-
-							V2d newVec = normalize( pos - V2d( prev->pos.x, prev->pos.y ) );
-		
-							if( !prev->selected )
-							{
-								if( normVec.x == 0 || normVec.y == 0 )
-								{
-									if( newVec.x > prim_limit )
-										extreme.x = 1;
-									else if( newVec.x < -prim_limit )
-										extreme.x = -1;
-									if( newVec.y > prim_limit )
-										extreme.y = 1;
-									else if( newVec.y < -prim_limit )
-										extreme.y = -1;
-
-									if( extreme.x != 0 )
-									{
-										pointGrabPos.y = oldPointGrabPos.y;
-										pointGrabDelta.y = 0;
-									}
-									
-									if( extreme.y != 0 )
-									{
-										pointGrabPos.x = oldPointGrabPos.x;
-										pointGrabDelta.x = 0;
-									}
-								}
-								else
-								{
-									
-									if( normVec.x > prim_limit )
-										extreme.x = 1;
-									else if( normVec.x < -prim_limit )
-										extreme.x = -1;
-									if( normVec.y > prim_limit )
-										extreme.y = 1;
-									else if( normVec.y < -prim_limit )
-										extreme.y = -1;
-									//extreme = normalize( extreme );
-
-								
-									if( extreme.x != 0 )
-									{
-										//int diff = ;
-										diff.y = curr->pos.y - prev->pos.y;
-									
-										//(*it2).pos.y = (*prev).pos.y;
-										cout << "lining up x: " << diff.y << endl;
-									}
-
-									if( extreme.y != 0 )
-									{
-										diff.x = curr->pos.x - prev->pos.x;
-
-										cout << "lining up y: " << diff.x << endl;
-									}
-								}
-							}
-							
-							if( !next->selected )
-							{
-								vec = curr->pos - next->pos;
-								normVec = normalize( V2d( vec.x, vec.y ) );
-
-								extreme = V2d( 0, 0 );
-
-								newVec = normalize( pos - V2d( (*next).pos.x, (*next).pos.y ) );
-								
-								if( normVec.x == 0 || normVec.y == 0 )
-								{
-									if( newVec.x > prim_limit )
-										extreme.x = 1;
-									else if( newVec.x < -prim_limit )
-										extreme.x = -1;
-									if( newVec.y > prim_limit )
-										extreme.y = 1;
-									else if( newVec.y < -prim_limit )
-										extreme.y = -1;
-									
-									if( extreme.x != 0 )
-									{
-										pointGrabPos.y = oldPointGrabPos.y;
-										pointGrabDelta.y = 0;
-									}
-									
-									if( extreme.y != 0 )
-									{
-										pointGrabPos.x = oldPointGrabPos.x;
-										pointGrabDelta.x = 0;
-									}
-								}
-								else
-								{
-									if( normVec.x > prim_limit )
-										extreme.x = 1;
-									else if( normVec.x < -prim_limit )
-										extreme.x = -1;
-									if( normVec.y > prim_limit )
-										extreme.y = 1;
-									else if( normVec.y < -prim_limit )
-										extreme.y = -1;
-
-									if( extreme.x != 0 )
-									{
-										//int diff = ;
-										//diff.y = curr->pos.y - next->pos.y;
-									
-										//(*it2).pos.y = (*prev).pos.y;
-										cout << "lining up x222: " << diff.y << endl;
-									}
-
-									if( extreme.y != 0 )
-									{
-										//diff.x = curr->pos.x - next->pos.x;
-
-										cout << "lining up y222: " << diff.x << endl;
-									}
-								}
-							}
-
-							if( !( diff.x == 0 && diff.y == 0 ) )
-							{
-								cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
-								cout << "diff: " << diff.x << ", " << diff.y << endl;
-							}
-							deltas[deltaIndex] = diff;
-							
-
-							++deltaIndex;
-						}
-
-
-						//if( !(*it)->IsMovePointsOkay( this, pointGrabDelta - diff ) )
-						if( validMove && !(*it)->IsMovePointsOkay( pointGrabDelta, deltas ) )
-						{
-							validMove = false;
-						//	cout << "invalid" << endl;
-							break;
-						}
-
-						++allDeltaIndex;
-					}
-
-					if( validMove )
-					{
-						//cout << "moving" << endl;
-						//cout << "valid move" << endl;
-						//int 
-						allDeltaIndex = 0;
-						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
-							it != selectedPolygons.end(); ++it )
-						{
-
-							bool affected = false;
-
-							TerrainPoint *points = (*it)->pointStart;
-							int deltaIndex = 0;
-							for( TerrainPoint *curr = points; curr != NULL; curr = curr->next )
-							{
-								TerrainPoint *prev;
-								if( curr == (*it)->pointStart )
-								{
-									prev = (*it)->pointEnd;
-								}
-								else
-								{
-									prev = curr->prev;
-								}
-
-
-								if( curr->selected ) //selected
-								{					
-									
-									
-									//Vector2i temp = (*pointIt).pos + pointGrabDelta;
-									
-									Vector2i delta = allDeltas[allDeltaIndex][deltaIndex];
-								//	cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
-								//	cout << "moving: " << delta.x << ", " << delta.y << endl;
-									curr->pos += pointGrabDelta - delta; //pointGrabDelta - ;
-
-									if( curr->gate != NULL )
-									{
-										curr->gate->UpdateLine();
-									}
-
-									(*it)->UpdateLineColor((*it)->lines, prev, (*it)->GetPointIndex(prev) * 2);
-									(*it)->UpdateLineColor((*it)->lines, curr, (*it)->GetPointIndex(curr) * 2);
-
-									if( (*it)->enemies.count( curr ) > 0 )
-									{
-										list<ActorPtr> &enemies = (*it)->enemies[curr];
-										for( list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
-										{
-											//(*ait)->UpdateGroundedSprite();
-											
-										}
-										//revquant is the quantity from the edge's v1
-										//double revQuant = 
-									}
-
-									affected = true;
-								}
-
-								++deltaIndex;
-							}
-
-							(*it)->UpdateBounds();
-
-							if( affected )
-							{
-								(*it)->movingPointMode = true;
-
-								for( map<TerrainPoint*,list<ActorPtr>>::iterator mit = (*it)->enemies.begin();
-									mit != (*it)->enemies.end(); ++mit )
-								{
-									list<ActorPtr> &enemies = (*mit).second;//(*it)->enemies[curr];
-									for( list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
-									{
-										(*ait)->UpdateGroundedSprite();
-										(*ait)->SetBoundingQuad();
-									}
-									//revquant is the quantity from the edge's v1
-									//double revQuant = 	
-								}
-
-								/*PointList temp = (*it)->points;
-
-								(*it)->Reset();
-
-								for( PointList::iterator tempIt = temp.begin(); tempIt != temp.end(); 
-									++tempIt )
-								{
-									(*it)->points.push_back( (*tempIt ) );
-								}
-								(*it)->Finalize();
-								(*it)->SetSelected( true );
-								
-								Vector2i newPos0;
-								Vector2i newPos1;*/
-							}
-
-							++allDeltaIndex;
-
-							
-						}
-
-						
-						
-					}
-					else
-					{
-						//cout << "NOT VALID move" << endl;
-					}
-
-					for( int i = 0; i < numSelectedPolys; ++i )
-					{
-						delete [] allDeltas[i];
-					}
-					delete [] allDeltas;
-
-				}
-				else if( polyGrab )
-				{
-					polyGrabDelta = Vector2i( pPoint.x, pPoint.y ) - Vector2i( polyGrabPos.x, polyGrabPos.y );
-					//polyGrabDelta.x = blahDelta.x * 1080.0/1920.0;
-					//polyGrabDelta.y = blahDelta.y;
-					bool moveOkay = true;
-					if( polyGrabDelta.x != 0 || polyGrabDelta.y != 0 )
-					{
-						polyGrabPos = Vector2i( pPoint.x, pPoint.y );//Vector2i( pPoint.x, pPoint.y );
-					
-						//cout << "delta: " << polyGrabDelta.x << ", " << polyGrabDelta.y << endl;
-						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
-						it != selectedPolygons.end(); ++it )
-						{
-							if( !(*it)->IsMovePolygonOkay(polyGrabDelta ) )
-							{
-								moveOkay = false;
-								break;
-							}
-						}
-					}
-					else
-					{
-						moveOkay = false;
-					}
-
-					
-				}
-				
-
-				if( showGrass && IsMousePressed( Mouse::Left ) )
-				{
-					/*for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
-					{
-						(*it)->SwitchGrass( worldPos );
-					}*/
-					for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-					{
-						if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
-						{
-							boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
-							d->SwitchGrass( worldPos );
-						}
-					}
-				}
-				
+					ModifyGrass();
 				}
 
 				break;
@@ -9302,20 +8409,6 @@ int EditSession::CountSelectedPoints()
 		count += (*it).second.size();
 	}
 	return count;
-	//return selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
-	
-	//int count = 0;
-	//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
-	//{
-	//	for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
-	//	{
-	//		if( curr->selected ) //selected
-	//		{
-	//			++count;
-	//		}
-	//	}
-	//}
-	//return count;
 }
 
 void EditSession::ClearSelectedPoints()
@@ -9384,8 +8477,6 @@ void EditSession::CutPoly()
 			ChooseCutPoly(cutPoly1);
 		}
 
-		extendingPolygon = NULL;
-		extendingPoint = NULL;
 	}
 }
 
@@ -9968,125 +9059,11 @@ void EditSession::PerformMovePointsAction()
 	}
 }
 
-void EditSession::ExtendPolygon( TerrainPoint *startPoint,
-		TerrainPoint *endPoint, PolyPtr inProgress )
-{
-	//TerrainPolygon *p 
-	TerrainPoint *newStartPoint = NULL;
-	TerrainPoint *newEndPoint = NULL;
-	PolyPtr newPoly( new TerrainPolygon(*extendingPolygon, true ) ); //this should be false
-	//but i haven't implemented the false stuff yet
-	for( TerrainPoint *curr = newPoly->pointStart; curr != NULL; curr = curr->next )
-	{
-		if( curr->pos == startPoint->pos )
-		{
-			newStartPoint = curr;
-			break;
-		}
-	}
-
-	assert( newStartPoint != NULL );
-
-	for( TerrainPoint *curr = newPoly->pointStart; curr != NULL; curr = curr->next )
-	{
-		if( curr->pos == endPoint->pos )
-		{
-			newEndPoint = curr;
-			break;
-		}
-	}
-
-	assert( newEndPoint != NULL );
-
-	newPoly->Extend2( newStartPoint, newEndPoint, polygonInProgress );
-
-	//PolyPtr chosen( choice );
-	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( newPoly );
-
-	progressBrush->Clear();
-	progressBrush->AddObject( sp );
-
-	Brush orig;
-	
-	SelectPtr spe = boost::dynamic_pointer_cast<ISelectable>( extendingPolygon );
-	orig.AddObject( spe );
-	
-	Action * action = new ReplaceBrushAction( &orig, progressBrush );
-	action->Perform();
-	doneActionStack.push_back( action );
-
-	ClearUndoneActions();
-
-	progressBrush->Clear();
-
-	//ExtendAdd();
-
-	polygonInProgress->Reset();
-
-	extendingPolygon = NULL;
-	extendingPoint = NULL;
-
-	//if( polygonInProgress->numPoints > 1 )
-	//{
-	//	//test final line
-
-	//	list<PolyPtr>::iterator it = polygons.begin();
-	//	bool added = false;
-	//	polygonInProgress->Finalize();
-	//	bool recursionDone = false;
-	//	PolyPtr currentBrush = polygonInProgress;
-
-	//		while( it != polygons.end() )
-	//		{
-	//			PolyPtr temp = (*it);
-	//			if( temp != currentBrush && currentBrush->IsTouching( temp.get() ) )
-	//			{
-	//				//cout << "before addi: " << (*it)->points.size() << endl;
-	//					
-	//				Add( currentBrush, temp );
-
-	//				polygonInProgress->Reset();
-	//					
-	//				//cout << "after adding: " << (*it)->points.size() << endl;
-	//				polygons.erase( it );
-
-	//				currentBrush = temp;
-
-	//				it = polygons.begin();
-
-	//				added = true;
-	//						
-	//				continue;
-	//			}
-	//			else
-	//			{
-	//				//cout << "not" << endl;
-	//			}
-	//			++it;
-	//		}
-	//			
-	//	//add final check for validity here
-	//			
-	//	if( !added )
-	//	{
-	//		//polygonInProgress->Finalize();
-	//		//polygons.push_back( polygonInProgress );
-	//		//polygonInProgress = new TerrainPolygon(&grassTex );
-	//	}
-	//	else
-	//	{
-	//		polygons.push_back( currentBrush );
-	//		//polygonInProgress->Reset();
-	//	}
-	//}
-
-
-	//polygonInProgress->Reset();
-}
-
 void EditSession::ChooseCutPoly( TerrainPolygon *choice )
 {
-	cutChoose = false;
+	//go over this later without it being about extending a polygon
+
+	/*cutChoose = false;
 	cutChooseUp = false;
 
 	if( choice == cutPoly0 )
@@ -10119,48 +9096,8 @@ void EditSession::ChooseCutPoly( TerrainPolygon *choice )
 	ClearUndoneActions();
 
 	polygonInProgress->Reset();
-	//PolyPtr newPoly( new TerrainPolygon(&grassTex) );
-	//polygonInProgress = newPoly;
 
-	progressBrush->Clear();	
-}
-
-bool EditSession::IsExtendPointOkay( PolyPtr poly, sf::Vector2f testPoint )
-{
-	Vector2i worldi( testPoint.x, testPoint.y );
-	assert( extendingPolygon != NULL );
-
-	bool okay = !extendingPolygon->ContainsPoint( testPoint );
-
-	if( okay )
-	{
-		TerrainPoint * okayPoint = extendingPolygon->pointStart;
-		TerrainPoint *okayPrevPoint = extendingPolygon->pointEnd;
-		for( ; okayPoint != NULL; okayPoint = okayPoint->next )
-		{
-								
-			//LineIntersection li = SegmentIntersect( , worldi, (*okayPrev).pos, (*okayIt).pos );
-			Vector2i a = polygonInProgress->pointEnd->pos;
-			Vector2i b = worldi;
-			Vector2i c = okayPrevPoint->pos;
-			Vector2i d = okayPoint->pos;
-
-								
-			LineIntersection li = LimitSegmentIntersect( a,b,c,d );
-			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-			//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
-			if( !li.parallel )//&& lii != a && lii != b && lii != c && lii != d )
-			{
-				okay = false;
-				break;
-			}
-			okayPrevPoint = okayPoint;
-		}
-								
-								
-	}
-
-	return okay;
+	progressBrush->Clear();	*/
 }
 
 bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon *ignore )
@@ -10534,83 +9471,6 @@ bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
 bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
 {
 	return IsPolygonExternallyValid( poly, ignore ) && IsPolygonInternallyValid( poly );
-}
-
-void EditSession::ExtendAdd()
-{
-	list<PolyPtr>::iterator it = polygons.begin();
-	bool added = false;
-	//polygonInProgress->Finalize();
-	bool recursionDone = false;
-	PolyPtr currentBrush = extendingPolygon;
-
-	showPoints = false;
-	extendingPolygon = NULL;
-	extendingPoint = NULL;
-
-	std::list<boost::shared_ptr<GateInfo>> gateInfoList;
-	while( it != polygons.end() )
-	{
-		PolyPtr temp = (*it);
-		if( temp != currentBrush && currentBrush->IsTouching( temp.get() ) )
-		{
-			//cout << "before addi: " << (*it)->points.size() << endl;
-			/*cout << "currisze: " << currentBrush->points.size() << ", tempsize: " << temp->points.size() << endl;	
-			cout << "curr: "<< endl;
-			for( PointList::iterator pit = currentBrush->points.begin(); pit != currentBrush->points.end(); ++pit )
-			{
-				cout << (*pit).pos.x << ", " << (*pit).pos.y << endl;
-			}
-			cout << "temp: "<< endl;
-			for( PointList::iterator pit = temp->points.begin(); pit != temp->points.end(); ++pit )
-			{
-				cout << (*pit).pos.x << ", " << (*pit).pos.y << endl;
-			}*/
-			TerrainPolygon *outPoly = NULL;
-			
-			Add( currentBrush, temp, outPoly, gateInfoList);
-			
-			//currentBrush->Reset();
-			polygons.remove( currentBrush );
-			//delete currentBrush;
-			currentBrush.reset();
-
-			//polygonInProgress->Reset();
-						
-			//cout << "after adding: " << (*it)->points.size() << endl;
-			polygons.erase( it );
-
-			currentBrush = temp;
-
-			it = polygons.begin();
-
-			cout << "number of polygons!: " << polygons.size() << endl;
-
-			added = true;
-							
-			continue;
-		}
-		else
-		{
-			//cout << "not" << endl;
-		}
-		++it;
-	}
-				
-	//add final check for validity here
-				
-	if( !added )
-	{
-		//polygonInProgress->Finalize();
-		//polygons.push_back( polygonInProgress );
-		//polygonInProgress = new TerrainPolygon( &grassTex );
-	}
-	else
-	{
-
-		polygons.push_back( currentBrush );
-		//polygonInProgress->Reset();
-	}
 }
 
 bool EditSession::ConfirmationPop( const std::string &question )
@@ -13024,6 +11884,21 @@ void EditSession::UpdateGrass()
 	}
 }
 
+void EditSession::ModifyGrass()
+{
+	if (showGrass && IsMousePressed(Mouse::Left))
+	{
+		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+		{
+			if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
+			{
+				boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
+				d->SwitchGrass(worldPos);
+			}
+		}
+	}
+}
+
 void EditSession::SetMode(Emode m)
 {
 	Emode oldMode = mode;
@@ -13127,5 +12002,143 @@ void EditSession::TryRemoveSelectedObjects()
 	if (perform)
 	{
 		RemoveSelectedObjects();
+	}
+}
+
+bool EditSession::IsSingleActorSelected()
+{
+	return (selectedBrush->objects.size() == 1
+		&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR);
+}
+
+void EditSession::MoveSelectedActor( Vector2i &delta )
+{
+	//if (IsSingleActorSelected() )
+	{
+		ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>(selectedBrush->objects.front());
+		if (actor->type->CanBeGrounded())
+		{
+			if (worldPosGround.ground != NULL)
+			{
+				if (actor->groundInfo != NULL)
+				{
+					actor->UnAnchor(actor);
+				}
+
+				actor->AnchorToGround(worldPosGround);
+				worldPosGround.ground->enemies[worldPosGround.edgeStart].push_back(actor);
+				worldPosGround.ground->UpdateBounds();
+			}
+			else
+			{
+				if (actor->groundInfo != NULL)
+				{
+					actor->UnAnchor(actor);
+				}
+
+				selectedBrush->Move(delta);
+			}
+		}
+		else
+		{
+			selectedBrush->Move(delta);
+		}
+	}
+}
+
+void EditSession::StartTerrainMove()
+{
+	editStartMove = true;
+	Vector2i pos(worldPos.x, worldPos.y);
+	Vector2i delta = pos - editMouseGrabPos;
+
+	for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
+	{
+		list<PointMoveInfo> &pList = (*mit).second;
+		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
+		{
+			(*it).delta = (*it).point->pos;
+		}
+	}
+
+	moveAction = selectedBrush->UnAnchor();
+	if (moveAction != NULL)
+		moveAction->Perform();
+
+	selectedBrush->Move(delta);
+	MoveSelectedPoints(worldPos);
+
+	editMouseGrabPos = pos;
+}
+
+void EditSession::ContinueTerrainMove()
+{
+	Vector2i pos(worldPos.x, worldPos.y);
+	Vector2i delta = pos - editMouseGrabPos;
+
+	if (IsSingleActorSelected() && selectedPoints.empty())
+	{
+		MoveSelectedActor(delta);
+	}
+	else
+	{
+		selectedBrush->Move(delta);
+		MoveSelectedPoints(worldPos);
+
+	}
+
+	editMouseGrabPos = Vector2i(worldPos);
+}
+
+void EditSession::TryTerrainMove()
+{
+	if ((editMouseDownMove && !editStartMove && length(V2d(editMouseGrabPos.x, editMouseGrabPos.y) - worldPos) > editMoveThresh * zoomMultiple))
+	{
+		StartTerrainMove();
+	}
+	else if (editMouseDownMove && editStartMove)
+	{
+		ContinueTerrainMove();
+	}
+	else if (editMouseDownBox)
+	{
+		//stuff
+	}
+}
+
+void EditSession::MovePasteBrushes()
+{
+	Vector2i pPoint(worldPos);
+	Vector2i pasteGrabDelta = Vector2i(pPoint.x, pPoint.y) - pastePos;
+	pastePos = Vector2i(pPoint.x, pPoint.y);
+	for (list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end(); ++it)
+	{
+		(*it)->Move(pasteGrabDelta);
+	}
+}
+
+void EditSession::PreventSlightAnglesOnPolygonInProgress()
+{
+	if (polygonInProgress->numPoints > 0)
+	{
+		V2d backPoint = V2d(polygonInProgress->pointEnd->pos.x, polygonInProgress->pointEnd->pos.y);
+		V2d tPoint(testPoint.x, testPoint.y);
+		V2d extreme(0, 0);
+		V2d vec = tPoint - backPoint;
+		V2d normVec = normalize(vec);
+
+		if (normVec.x > PRIMARY_LIMIT)
+			extreme.x = 1;
+		else if (normVec.x < -PRIMARY_LIMIT)
+			extreme.x = -1;
+		if (normVec.y > PRIMARY_LIMIT)
+			extreme.y = 1;
+		else if (normVec.y < -PRIMARY_LIMIT)
+			extreme.y = -1;
+
+		if (!(extreme.x == 0 && extreme.y == 0))
+		{
+			testPoint = Vector2f(backPoint + extreme * length(vec));
+		}
 	}
 }

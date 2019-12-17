@@ -203,10 +203,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
-	bool IsExtendPointOkay( PolyPtr poly,
-		sf::Vector2f testPoint );
 
-	void ExtendAdd();
 	bool IsPolygonExternallyValid( TerrainPolygon &poly,
 		 TerrainPolygon* ignore );
 	bool IsPolygonInternallyValid( TerrainPolygon &poly );
@@ -281,11 +278,7 @@ struct EditSession : GUIHandler, TilesetManager
 	bool makingRect;
 	sf::Vector2i rectStart;
 
-	void ExtendPolygon( TerrainPoint *startPoint,
-		TerrainPoint *endPoint, PolyPtr inProgress );
 	bool showPoints;
-	boost::shared_ptr<TerrainPolygon> extendingPolygon;
-	TerrainPoint *extendingPoint;
 
 	TerrainPolygon *cutPoly0;
 	TerrainPolygon *cutPoly1;
@@ -296,6 +289,7 @@ struct EditSession : GUIHandler, TilesetManager
 
 	void TryRemoveSelectedPoints();
 	bool IsOnlyPlayerSelected();
+	bool IsSingleActorSelected();
 
 	void RemoveSelectedObjects();
 	void TryRemoveSelectedObjects();
@@ -361,18 +355,9 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Text scaleText;
 	sf::RectangleShape scaleSpriteBGRect;
 
-
-	sf::Vector2i lightPos;
-	bool lightActive;
-
 	int enemyEdgeIndex;
 	TerrainPolygon *enemyEdgePolygon;
 	double enemyEdgeQuantity;
-
-	bool radiusOption;
-	bool lightPosDown;
-	double lightRadius;
-	int lightBrightness;
 	
 	int patrolPathLengthSize;
 
@@ -423,7 +408,11 @@ struct EditSession : GUIHandler, TilesetManager
 	void MessagePop( const std::string &message );
 	void ErrorPop( const std::string &error );
 
-	
+	void StartTerrainMove();
+	void ContinueTerrainMove();
+	void TryTerrainMove();
+
+	void PreventSlightAnglesOnPolygonInProgress();
 
 	//bool closePopup; //for messsage/error only
 	
@@ -432,6 +421,7 @@ struct EditSession : GUIHandler, TilesetManager
 	std::list<Action*> doneActionStack;
 	std::list<Action*> undoneActionStack;
 	void ClearUndoneActions();
+	void MovePasteBrushes();
 
 	void UndoMostRecentAction();
 	void RedoMostRecentUndoneAction();
@@ -439,6 +429,8 @@ struct EditSession : GUIHandler, TilesetManager
 	void RemovePointFromPolygonInProgress();
 
 	bool AnchorSelectedAerialEnemy();
+
+	void MoveSelectedActor( sf::Vector2i &delta );
 
 	sf::Rect<float> selectRect;
 	sf::Vector2i pointMouseDown;
@@ -525,6 +517,7 @@ struct EditSession : GUIHandler, TilesetManager
 	bool PointSelectPoly(V2d &pos);
 
 	void UpdateGrass();
+	void ModifyGrass();
 
 	bool BoxSelectPoints(sf::IntRect &rect,
 		double radius);
