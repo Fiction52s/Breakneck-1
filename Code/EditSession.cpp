@@ -4854,162 +4854,24 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 								if( !( editMouseDownMove || editMouseDownBox ) )
 								{
-									if (PointSelectActor())
+									if (emptysp && PointSelectActor(worldPos))
 									{
 										emptysp = false;
-										break;
-									}
-									//if( emptysp )
-									//	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-									//	{
-									//		for( list<ActorPtr>::iterator ait = (*it).second->actors.begin();
-									//			ait != (*it).second->actors.end(); ++ait )
-									//		{
-
-									//			if( (*ait)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
-									//			{
-									//				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*ait) );
-
-									//				if( sp->selected )
-									//				{
-
-									//				}
-									//				else
-									//				{
-									//					if( !( IsKeyPressed( Keyboard::LShift ) || 
-									//					IsKeyPressed( Keyboard::RShift ) ) )
-									//					{
-									//						selectedBrush->SetSelected( false );
-									//						selectedBrush->Clear();
-									//					}
-
-									//					sp->SetSelected( true );
-
-									//					grabbedObject = sp;
-									//					selectedBrush->AddObject( sp );
-									//					//sp->selected = true;
-									//			
-									//				}
-
-									//				emptysp = false;
-									//				break;
-									//			}
-									//		}
-									//	}
-
-
-									bool pointSelectKeyHeld = IsKeyPressed(Keyboard::B);
-											
-									//concerning selecting a point
-									if(pointSelectKeyHeld)
-									{
-										PointSelectPoint( worldPos, emptysp );
-									}
-									else
-									{
-										for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
-										{
-											bool pressF1 = IsKeyPressed(Keyboard::F1);
-											if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
-												continue;
-
-											bool sel = (*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y));
-											if ((*it)->inverse)
-											{
-												sel = !sel;
-											}
-
-											if (sel)
-											{
-
-												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
-												if (sp->selected)
-												{
-
-												}
-												else
-												{
-													if (!HoldingShift())
-													{
-														selectedBrush->SetSelected(false);
-														selectedBrush->Clear();
-													}
-
-													sp->SetSelected(true);
-
-													grabbedObject = sp;
-													selectedBrush->AddObject(sp);
-												}
-
-												emptysp = false;
-												break;
-											}
-										}
 									}
 
-									
-									if (emptysp)
+									if (emptysp && PointSelectTerrain(worldPos))
 									{
-										for (auto it = decorImagesBehindTerrain.begin();
-											it != decorImagesBehindTerrain.end(); ++it)
-										{
+										emptysp = false;
+									}
 
-										}
-
-										for (auto it = decorImagesBetween.begin();
-											it != decorImagesBetween.end(); ++it)
-										{
-											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-											if ((*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y)))
-											{
-												emptysp = false;
-												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
-												if (sp->selected)
-												{
-
-												}
-												else
-												{
-													if (!(IsKeyPressed(Keyboard::LShift) ||
-														IsKeyPressed(Keyboard::RShift)))
-													{
-														selectedBrush->SetSelected(false);
-														selectedBrush->Clear();
-													}
-
-													sp->SetSelected(true);
-
-													grabbedObject = sp;
-													selectedBrush->AddObject(sp);
-												}
-
-												emptysp = false;
-												break;
-											}
-											
-		/*									{
-												cout << "contains!" << endl;
-												selectedBrush->AddObject((*it));
-												
-											}*/
-										}
-
-										for (auto it = decorImagesFrontTerrain.begin();
-											it != decorImagesFrontTerrain.end(); ++it)
-										{
-
-										}
+									if (emptysp && PointSelectDecor(worldPos))
+									{
+										emptysp = false;
 									}
 
 									editMouseGrabPos = Vector2i( worldPos.x, worldPos.y );
-
-									//12345
 									pointGrabPos = Vector2i( worldPos.x, worldPos.y );
-
 									editMouseOrigPos = editMouseGrabPos;
-									//editMouseDown = true;
 
 									if( emptysp )
 									{	
@@ -5024,279 +4886,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										editMouseDownBox = false;
 									}
 								}
-								break;
-
-								if( moveActive )//&& !IsKeyPressed( Keyboard::LShift ) )
-								{
-									moveActive = false;
-
-									//cout << "turning moveActive to false" << endl;
-
-									//Action *ac = new ApplyBrushAction( selectedBrush );
-									//ac->Perform();
-									//delete ac;
-
-									//selectedBrush->Clear();
-
-									break;
-								}
-
-								if( false )
-								{
-								/*for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-								{
-									//extended aabb 
-									int range = 8;
-									if( worldPos.x <= (*it)->right + range && worldPos.x >= (*it)->left - range
-										&& worldPos.y <= (*it)->bottom + range && worldPos.y >= (*it)->top - range )
-									{
-										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
-										{
-											if( length( worldPos - V2d( curr->pos.x, curr->pos.y ) ) <= range )
-											{
-												selected
-											}
-										}
-									}
-								}*/
-								}
-								else
-								{
-								for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-								{
-									if( (*it)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
-									{
-										cout << "SELECTING" << endl;
-										SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-										selectedBrush->AddObject( sp );
-
-										emptysp = false;
-										pointMouseDown = Vector2i( worldPos.x, worldPos.y );
-										moveActive = true;
-										break;
-									}
-								}
-								}
-
-								if( emptysp )
-								{
-									for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-									{
-										ActorGroup *ag = (*it).second;
-										for( list<ActorPtr>::iterator it2 = ag->actors.begin(); it2 != ag->actors.end(); ++it2 )
-										{
-											if( (*it2)->ContainsPoint( Vector2f( worldPos.x, worldPos.y ) ) )
-											{
-												cout << "selecting enemy" << endl;
-												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it2) );
-												selectedBrush->AddObject( sp );
-												emptysp = false;
-												pointMouseDown = Vector2i( worldPos.x, worldPos.y );
-												moveActive = true;
-											}
-										}
-
-									}
-								}
-
-
-
-								if( emptysp )
-								{
-									//Vector2i currMouse( worldPos.x, worldPos.y );
-									//Vector2i delta = currMouse - pointMouseDown;
-									//pointMouseDown = currMouse;
-
-									cout << "applying" << endl;
-									//selectedBrush->Move( delta );
-									
-									moveActive = false;
-
-									Action *ac = new ApplyBrushAction( selectedBrush );
-									ac->Perform();
-									delete ac;
-
-									selectedBrush->Clear();
-								}
-
-								break;
-
-								bool emptySpace = true;
-
-								//points
-								for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-									it != selectedPolygons.end(); ++it )
-								{
-									for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
-									{
-										if( length( worldPos - V2d( curr->pos.x, curr->pos.y ) ) < 8 * zoomMultiple )
-										{
-											if( curr->selected ) //selected 
-											{
-												curr->selected = false;
-												emptySpace = false;
-												selectedGate = NULL;
-												break;
-											}
-											else
-											{
-												if( IsKeyPressed( Keyboard::LShift ) )
-												{
-													
-												}
-												else
-												{
-													for( list<PolyPtr>::iterator it2 = selectedPolygons.begin(); it2 != selectedPolygons.end(); ++it2 )
-													{
-														for( TerrainPoint *curr = (*it2)->pointStart; curr != NULL; curr = curr->next )
-														{
-															curr->selected = false;
-														}
-													}
-												}
-
-												curr->selected = true;
-												emptySpace = false;
-												selectedGate = NULL;
-												break;
-
-
-											}
-											
-											
-										}
-									}
-								}
-
-								//polygons
-								if( emptySpace )
-								{
-									for( list<PolyPtr>::iterator it = polygons.begin(); 
-										it != polygons.end(); ++it )
-									{
-											if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
-											{
-												emptySpace = false;
-												//(*it)->SetSelected( !((*it)->selected ) );
-												if( (*it)->selected )
-												{
-													//selectedPolygons.push_back( (*it) );
-													selectedPolygons.remove( (*it ) );
-													(*it)->SetSelected( false );
-												}
-												else
-												{
-													if( IsKeyPressed( Keyboard::LShift ) )
-													{
-														selectedActor = NULL;
-														selectedGate = NULL;
-														selectedPolygons.push_back( (*it) );
-														(*it)->SetSelected( true );
-													}
-													else
-													{
-														for( list<PolyPtr>::iterator selIt = 
-															selectedPolygons.begin(); 
-															selIt != selectedPolygons.end(); ++selIt )
-														{
-															(*selIt)->SetSelected( false );
-														}
-														selectedActor = NULL;
-														selectedGate = NULL;
-														selectedPolygons.clear();
-														selectedPolygons.push_back( (*it) );
-														(*it)->SetSelected( true );
-													}
-													//selectedPolygons.remove( (*it ) );
-												}
-												break;
-											}
-									}
-								}
-
-								
-
-								if( emptySpace )
-								{
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-										it != selectedPolygons.end(); ++it )
-									{
-										(*it)->SetSelected( false );
-
-									}
-									selectedPolygons.clear();
-								}
-								
-								//enemies
-								bool empty = emptySpace;
-								for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && empty; ++it )
-								{
-									list<ActorPtr> &actors = it->second->actors;
-									for( list<ActorPtr>::iterator it2 = actors.begin(); it2 != actors.end() && empty; ++it2 )
-									{
-										sf::FloatRect bounds = (*it2)->image.getGlobalBounds();
-										if( bounds.contains( Vector2f( worldPos.x, worldPos.y ) ) )
-										{
-											//selectedActor = (*it2);
-											/*selectedActorGrabbed = true;
-											grabPos = Vector2i( worldPos.x, worldPos.y );
-
-											empty = false;
-											//cout << "enemy selected" << endl;
-
-											for( list<PolyPtr>::iterator it3 = selectedPolygons.begin(); 
-												it3 != selectedPolygons.end(); ++it3 )
-											{
-												(*it3)->SetSelected( false );
-											}
-											selectedPolygons.clear();*/
-										}
-									}
-								}
-
-								if( empty )
-								{
-									GateInfo *closest = NULL;
-									double closestDist = 50;
-									for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
-									{
-										double extra = 50;
-										double gLeft = std::min( (*it)->point0->pos.x, (*it)->point1->pos.x ) - extra;
-										double gRight = std::max( (*it)->point0->pos.x, (*it)->point1->pos.x ) + extra;
-										double gTop = std::min( (*it)->point0->pos.y, (*it)->point1->pos.y ) - extra;
-										double gBot = std::max( (*it)->point0->pos.y, (*it)->point1->pos.y ) + extra;
-										Rect<double> r( gLeft, gTop, gRight - gLeft, gBot - gTop );
-
-										//aabb collision
-										if( gLeft <= worldPos.x && gRight >= worldPos.x && gTop <= worldPos.y && gBot >= worldPos.y )
-										{
-											V2d v0((*it)->point0->pos.x, (*it)->point0->pos.y );
-
-											double dist = abs(cross( worldPos - v0, normalize( V2d( (*it)->point1->pos.x, (*it)->point1->pos.y ) - v0 ) ));
-											if( dist < closestDist )
-											{
-												//closest = (*it);
-												//closestDist = dist;
-											}
-										}
-									}
-
-
-									if( closest != NULL )
-									{
-										//selectedGate = closest;
-										//empty = false;
-									}
-
-								}
-							//	cout << "made it!!!" << endl;
-								if( empty )
-								{
-									selectedActor = NULL;
-									selectedGate = NULL;
-									selectedActorGrabbed = false;
-								}
-
 							}
 							break;
 						}
@@ -5313,437 +4902,30 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								if( editStartMove )
 								{
 									bool done = false;
-									bool singleActor = selectedBrush->objects.size() == 1 
-										&& selectedPoints.size() == 0
-										&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
-									if(singleActor)
+									if (AnchorSelectedAerialEnemy())
 									{
-										ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( selectedBrush->objects.front() );
-										if( actor->groundInfo != NULL )
-										{
-											Action *gAction = new GroundAction( actor );
-											gAction->performed = true;
-
-											if( moveAction != NULL )
-											{
-												moveAction->subActions.push_back( gAction );
-												doneActionStack.push_back( moveAction );
-											}
-											else
-											{
-												Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
-												Action *action = new MoveBrushAction( selectedBrush, delta, false, PointMap() );
-
-												action->Perform();
-
-												moveAction = new CompoundAction;
-												moveAction->subActions.push_back( action );
-												moveAction->subActions.push_back( gAction );
-												doneActionStack.push_back( moveAction );
-											}
-											
-											done = true;
-										}
+										done = true;
 									}
 
 									if( !done )
 									{
-										//here the delta being subtracted is the points original position
-										for( PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit )
-										{
-											list<PointMoveInfo> &pList = (*mit).second;
-											for( list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it )
-											{
-												(*it).delta = (*it).point->pos - (*it).delta;
-											}
-										}
-
-									//	for( PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit )
-									//	{
-											//(*mit).first->movingPointMode = false;
-										//}
-
-										Vector2i delta = Vector2i( worldPos.x, worldPos.y ) - editMouseOrigPos;
-										Action *action = new MoveBrushAction( selectedBrush, delta, false, selectedPoints );
-
-										
-										action->Perform();
-
-										if( moveAction != NULL )
-										{
-
-											moveAction->subActions.push_back( action );
-											//cout << "moveAction size: " << moveAction->subActions.size() << endl;
-											doneActionStack.push_back( moveAction );
-										}
-										else
-										{
-											doneActionStack.push_back( action );
-										}
+										PerformMovePointsAction();
 									}
-
 									
-									bool validMove = false;
-									
-									
-									//check if valid
-
-									if( selectedBrush->CanApply() )
-									{
-										validMove = true;
-									}
-									//selected
-
-
-									if( validMove )
-									{
-										ClearUndoneActions();
-									}
-									else
-									{
-										Action * action = doneActionStack.back();
-										doneActionStack.pop_back();
-
-										action->Undo();
-
-										delete action;
-									}
+									TryMoveSelectedBrush();
 								}
 								else if( editMouseDownBox )
 								{
-									//selectedBrush->SetSelected( false );
-									//selectedBrush->Clear();
-
-									Vector2i currPos( worldPos.x, worldPos.y );
-
-									int left = std::min( editMouseOrigPos.x, currPos.x );
-									int right = std::max( editMouseOrigPos.x, currPos.x );
-									int top = std::min( editMouseOrigPos.y, currPos.y );
-									int bot = std::max( editMouseOrigPos.y, currPos.y );
-									
-									
-									sf::Rect<int> r( left, top, right - left, bot - top );
-									//check this rectangle for the intersections, but do that next
-
-									bool selectionEmpty = true;
-
-									//bool shift = IsKeyPressed( Keyboard::LShift ) || IsKeyPressed( Keyboard::RShift );
-
-									if( !HoldingShift() )
-									{
-										cout << "clearing everything" << endl;
-										selectedBrush->SetSelected( false );
-										selectedBrush->Clear();
-									}
-
-									//if( selectionEmpty )
-									for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-									{
-										for( list<ActorPtr>::iterator ait = (*it).second->actors.begin();
-											ait != (*it).second->actors.end(); ++ait )
-										{
-											if( (*ait)->Intersects( r ) )
-											{
-												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*ait) );
-
-												if( HoldingShift() )
-												{
-													if( sp->selected )
-													{
-														sp->SetSelected( false );
-														selectedBrush->RemoveObject( sp ); //might be slow?
-													}
-													else
-													{
-														sp->SetSelected( true );
-														selectedBrush->AddObject( sp );
-													}
-												}
-												else
-												{
-													sp->SetSelected( true );
-													selectedBrush->AddObject( sp );
-												}
-
-
-												selectionEmpty = false;
-											}
-										}
-									}
-
-									for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it )
-									{
-										if ((*it)->Intersects(r))
-										{
-											SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
-											if (HoldingShift())
-											{
-												if (sp->selected)
-												{
-													sp->SetSelected(false);
-													selectedBrush->RemoveObject(sp); //might be slow?
-												}
-												else
-												{
-													sp->SetSelected(true);
-													selectedBrush->AddObject(sp);
-												}
-											}
-											else
-											{
-												//cout << "selected blah" << endl;
-												sp->SetSelected(true);
-												selectedBrush->AddObject(sp);
-											}
-
-
-											selectionEmpty = false;
-										}
-									}
-
-									bool pointSelectButtonHeld = IsKeyPressed(Keyboard::B);//alt = IsKeyPressed( Keyboard::LAlt )
-										//|| IsKeyPressed( Keyboard::RAlt );
-									if(pointSelectButtonHeld) //always use point selection for now
-									{
-										if( HoldingShift() )
-										{
-											//ClearSelectedPoints();
-										}
-
-										BoxSelectPoints(r, 8 * zoomMultiple);
-									}
-									else if (!showPoints)//polygon selection. don't use it for a little bit
-									{
-										for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
-										{
-											if ((*it)->Intersects(r))
-											{
-
-												SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
-												if (HoldingShift())
-												{
-													if (sp->selected)
-													{
-														sp->SetSelected(false);
-														selectedBrush->RemoveObject(sp);
-													}
-													else
-													{
-														sp->SetSelected(true);
-														selectedBrush->AddObject(sp);
-													}
-												}
-												else
-												{
-													sp->SetSelected(true);
-													selectedBrush->AddObject(sp);
-												}
-
-												selectionEmpty = false;
-												//break;
-											}
-										}
-									}
-									
-									if( selectionEmpty )
-									{
-										selectedBrush->SetSelected( false );
-										selectedBrush->Clear();
-									}
-
-									//selectedBrush->AddObject( grabbedObject );
+									TryBoxSelect();
 								}
 
 								editMouseDownBox = false;
 								editMouseDownMove = false;
 								editStartMove = false;
 
-								if( !pasteBrushes.empty() )
-								{
-									bool validPaste = true;
-									for( list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
-										tbIt != pasteBrushes.end(); ++tbIt )
-									{										
-										for( list<PolyPtr>::iterator it = polygons.begin(); 
-											it != polygons.end() && validPaste; ++it )
-										{
-											PolyPtr currentBrush( new TerrainPolygon( (*it)->grassTex ) );
-										
-											for( TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
-												curr = curr->next )
-											{
-												currentBrush->AddPoint( new TerrainPoint(*curr) );
-											}
+								TryPaste();
 
-											currentBrush->UpdateBounds();
-
-											for( TerrainPoint *curr = currentBrush->pointStart; curr != NULL && validPaste;
-												curr = curr->next )
-											{
-												TerrainPoint *prev;
-												if( curr == currentBrush->pointStart )
-												{
-													prev = currentBrush->pointEnd;
-												}
-												else
-												{
-													prev = curr->prev;
-												}
-
-												if( (*it)->SegmentTooClose( prev->pos, curr->pos, minimumEdgeLength ) )
-												{
-													validPaste = false;
-												}
-
-
-											}
-
-											//delete currentBrush;
-											currentBrush.reset();
-										}
-									}
-
-									if( validPaste)
-									{
-									for( list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
-										tbIt != pasteBrushes.end(); ++tbIt )
-									{
-										list<PolyPtr>::iterator it = polygons.begin();
-										bool added = false;
-										//polygonInProgress->Finalize(); //i should check if i can remove this
-										bool recursionDone = false;
-
-										cout << "b4" << endl;
-										PolyPtr currentBrush( new TerrainPolygon( (*it)->grassTex ) );
-										
-										//cout << "after: " << (unsigned int)((*tbIt)->pointStart) << endl;
-										for( TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
-											curr = curr->next )
-										{
-											cout << "adding" << endl;
-											currentBrush->AddPoint( new TerrainPoint(*curr) );
-										}
-
-										currentBrush->UpdateBounds();
-
-										
-
-									//	PolyPtr currentBrush = polygonInProgress;
-										std::list<boost::shared_ptr<GateInfo>> gateInfoList;
-										while( it != polygons.end() )
-										{
-											PolyPtr temp = (*it);
-											if( currentBrush->IsTouching( temp.get() ) )
-											{
-												cout << "before addi: " << (*it)->numPoints << endl;
-												
-												TerrainPolygon *outPoly = NULL;
-												
-												Add( currentBrush, temp, outPoly, gateInfoList);
-
-												//currentBrush->Reset();
-												//delete currentBrush;
-												currentBrush.reset();
-												currentBrush = NULL;
-												//polygonInProgress->Reset();
-						
-												cout << "after adding: " << (*it)->numPoints << endl;
-
-												
-
-												polygons.erase( it );
-
-												currentBrush = temp;
-
-												/*for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
-												{
-													if( tp->gate != NULL )
-													{
-														cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
-															<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
-														//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
-													}
-												}*/
-
-												it = polygons.begin();
-
-												added = true;
-							
-												continue;
-											}
-											else
-											{
-												cout << "not" << endl;
-											}
-											++it;
-										}
-				
-									//add final check for validity here
-				
-										if( !added )
-										{
-											cout << "not added" << endl;
-											PolyPtr brushPoly( new TerrainPolygon( polygonInProgress->grassTex ) );
-										
-											for( TerrainPoint *curr = (*tbIt)->pointStart; curr !=  NULL;
-												curr = curr->next )
-											{
-												brushPoly->AddPoint( new TerrainPoint(*curr) );
-											}
-
-											brushPoly->Finalize();
-											polygons.push_back( brushPoly );
-											
-										}
-										else
-										{
-											cout << "was added" << endl;
-											for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
-											{
-												//if( tp->gate != NULL )
-												//{
-												//	cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
-												//		<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
-												//	//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
-												//}
-												
-											}
-
-											polygons.push_back( currentBrush );
-											
-											//polygonInProgress->Reset();
-
-										
-
-										}
-									}
-
-									ClearPasteBrushes();
-									}
-									else
-									{
-										MessagePop( "invalid paste" );
-									}
-								}
-
-								
-
-								if( showGrass )
-								{
-									for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-									{
-										if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
-										{
-											boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
-											d->UpdateGrass();
-										}
-									}
-									//showGrass = false;
-								}
-
-
+								UpdateGrass();
 
 								grabPlayer = false;
 								selectedActorGrabbed = false;
@@ -5756,8 +4938,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						}
 					case Event::MouseMoved:
 						{
-							//delta
-							//cout << "delta mouse: " << ev.mouseMove.x << ", " << ev.mouseMove.y << endl;
 							break;
 						}
 					case Event::KeyPressed:
@@ -5784,45 +4964,17 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							if( ev.key.code == Keyboard::C && ev.key.control )
 							{
 								copiedBrush = selectedBrush->Copy();
-								/*if( selectedPolygons.size() > 0 )
-								{
-									ClearCopyBrushes();
-
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-										it != selectedPolygons.end(); ++it )
-									{
-										TerrainBrush *tb = new TerrainBrush( (*it) );
-										copyBrushes.push_back( tb );
-									}
-								}*/
 							}
 							else if( ev.key.code == sf::Keyboard::Z && ev.key.control )
 							{
-								if( doneActionStack.size() > 0 )
-								{
-									Action *action = doneActionStack.back();
-									doneActionStack.pop_back();
-
-									action->Undo();
-
-									undoneActionStack.push_back( action );
-								}
+								UndoMostRecentAction();
 							}
 							else if( ev.key.code == sf::Keyboard::Y && ev.key.control )
 							{
-								if( undoneActionStack.size() > 0 )
-								{
-									Action *action = undoneActionStack.back();
-									undoneActionStack.pop_back();
-
-									action->Perform();
-
-									doneActionStack.push_back( action );
-								}
+								RedoMostRecentUndoneAction();
 							}
 							else if( ev.key.code == Keyboard::V && ev.key.control )
 							{
-								//ClearPasteBrushes();
 								if (copiedBrush != NULL)
 								{
 									Vector2i pos = Vector2i(worldPos.x, worldPos.y);
@@ -5832,54 +4984,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 									selectedBrush->SetSelected(false);
 									selectedBrush->Clear();
-									
-									/*Action *ac = new ApplyBrushAction(copiedBrush);
-									ac->Perform();
-									doneActionStack.push_back(ac);
-									ClearUndoneActions();
-									copiedBrush = NULL;*/
 								}
-								
-								//copiedBrush->a
-								if( copyBrushes.size() > 0 )
-								{
-
-									//pasteBrushes = copyBrushes;
-									
-									//CopyToPasteBrushes();
-									//
-									//pastePos = Vector2i( worldPos.x, worldPos.y );
-
-									////find the overall bounding box of all the copied polygons
-									//list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
-									//int trueLeft = (*tbIt)->left;
-									//int trueRight = (*tbIt)->right;
-									//int trueTop = (*tbIt)->top;								
-									//int trueBot = (*tbIt)->bot;
-
-									//++tbIt;
-									//for( ; tbIt != pasteBrushes.end(); ++tbIt )
-									//{
-									//	if( (*tbIt)->left < trueLeft )
-									//		trueLeft = (*tbIt)->left;
-									//	if( (*tbIt)->right > trueRight )
-									//		trueRight = (*tbIt)->right;
-									//	if( (*tbIt)->top < trueTop )
-									//		trueTop = (*tbIt)->top;
-									//	if( (*tbIt)->bot > trueBot )
-									//		trueBot = (*tbIt)->bot;
-									//}
-
-									//Vector2i trueCenter( (trueRight + trueLeft) / 2, (trueTop + trueBot)/2 );
-								
-									////move it to the cursors position originally
-									//Vector2i startDiff = pastePos - trueCenter;
-									//for( tbIt = pasteBrushes.begin(); tbIt != pasteBrushes.end(); ++tbIt )
-									//{
-									//	(*tbIt)->Move( startDiff );
-									//}
-								}
-
 							}
 							else if (ev.key.code == Keyboard::D && ev.key.control)
 							{
@@ -5927,49 +5032,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										}
 
 										selectedPoints.clear();
-
-										//go through each polygon and get rid of the actors which are deleted by deleting points
-										//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-										//	it != selectedPolygons.end(); ++it )
-										//{
-										//	for( EnemyMap::iterator mapIt = (*it)->enemies.begin(); mapIt != (*it)->enemies.end(); ++mapIt)
-										//	{
-										//		list<ActorPtr>::iterator et = (*mapIt).second.begin();
-										//		while( et != (*mapIt).second.end() )
-										//		{
-										//			TerrainPoint *edgeEnd = (*et)->groundInfo->edgeStart->next;
-										//			if( edgeEnd == NULL )
-										//				edgeEnd = (*et)->groundInfo->ground->pointStart;
-
-										//			bool deleted = (*(*et)->groundInfo->edgeStart).selected || edgeEnd->selected;
-										//			if (deleted)
-										//			{
-										//				//delete enemy here
-
-
-										//			//	(*et)->group->actors.remove( (*et ) );
-										//			//	delete (*et); //deleting actor
-										//			//	(*it)->enemies[(*et)->groundInfo->edgeStart].erase(et++); 
-										//			}
-										//			else
-										//			{
-										//				++et;
-										//			}
-										//		}
-										//	}
-										//}
-
-
-										/*for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-											it != selectedPolygons.end(); ++it )
-										{
-											(*it)->RemoveSelectedPoints();
-										}*/
 									}
 									else if( removeSuccess == 0 )
 									{
 										MessagePop( "problem removing points" );
-										//messagePopup->labels["message"]->setString( "problem removing points" );
 									}
 								}
 								else if( selectedActor != NULL )
@@ -5993,7 +5059,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								}
 								else
 								{									
-									//cout << "performed removal" << endl;
 									bool perform = true;
 
 									//need to make sure to test for this on turning stuff into brushes
@@ -8993,8 +8058,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			break;
 		}
 		}
-
-		//cout << "here before crash" << endl;
 		
 
 		if( panning )
@@ -9018,24 +8081,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			}
 			
 		}
-
-	/*	if( mode == PLACE_PLAYER )
-		{
-			playerSprite.setPosition( preScreenTex->mapPixelToCoords(sf::Mouse::getPosition( *w )) );
-			//cout << "placing: " << playerSprite.getPosition().x << ", " << playerSprite.getPosition().y << endl;
-		}
-		else
-			playerSprite.setPosition( playerPosition.x, playerPosition.y );*/
-
-
-
-
-	/*	if( mode == PLACE_GOAL )
-		{
-			goalSprite.setPosition( preScreenTex->mapPixelToCoords( sf::Mouse::getPosition( *w )) );
-		}
-		else
-			goalSprite.setPosition( goalPosition.x, goalPosition.y );*/
 		
 		preScreenTex->clear();
 		preScreenTex->setView( view );
@@ -9580,28 +8625,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			
 		}
 		
-
-		//iconSprite.setScale( view.getSize().x / 960.0, view.getSize().y / 540.0 );
-		//iconSprite.setPosition( view.getCenter().x + 200 * iconSprite.getScale().x, view.getCenter().y - 250 * iconSprite.getScale().y );
 		
 		if( mode == EDIT )
 		{
 			if( selectedPlayer && grabPlayer && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
 			{
 				bool okay = true;
-				/*for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-				{
-					Vector2i a( playerPosition.x - playerHalfWidth, playerPosition.y - playerHalfHeight );
-					Vector2i b( playerPosition.x + playerHalfWidth, playerPosition.y - playerHalfHeight );
-					Vector2i c( playerPosition.x + playerHalfWidth, playerPosition.y + playerHalfHeight );
-					Vector2i d( playerPosition.x - playerHalfWidth, playerPosition.y + playerHalfHeight );
-					if( QuadPolygonIntersect( (*it), a,b,c,d ) )
-					{
-						okay = false;
-						break;
-					}
-				}*/
-				
 				if( okay )
 				{
 					player->position = Vector2i( worldPos.x, worldPos.y );
@@ -9614,17 +8643,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			}
 		}
 		
-		
-
-		//playerSprite.setPosition( player->position.x, player->position.y );
-
-		//preScreenTex->draw( playerSprite );
-		
-		//preScreenTex->draw( iconSprite );
-
-		
-
-		//playerSprite.setPosition( player->position.x, player->position.y );
 
 		if( mode == EDIT )
 		{
@@ -10787,14 +9805,14 @@ void EditSession::CutPoly()
 	}
 }
 
-bool EditSession::PointSelectActor()
+bool EditSession::PointSelectActor( V2d &pos )
 {
 	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (list<ActorPtr>::iterator ait = (*it).second->actors.begin();
 			ait != (*it).second->actors.end(); ++ait)
 		{
-			if ((*ait)->ContainsPoint(Vector2f(worldPos.x, worldPos.y)))
+			if ((*ait)->ContainsPoint(Vector2f(pos)))
 			{
 				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*ait));
 
@@ -10822,12 +9840,119 @@ bool EditSession::PointSelectActor()
 	return false;
 }
 
+bool EditSession::PointSelectDecor(V2d &pos)
+{
+	for (auto it = decorImagesBehindTerrain.begin();
+		it != decorImagesBehindTerrain.end(); ++it)
+	{
+
+	}
+
+	for (auto it = decorImagesBetween.begin();
+		it != decorImagesBetween.end(); ++it)
+	{
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+		if ((*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y)))
+		{
+			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+			if (sp->selected)
+			{
+
+			}
+			else
+			{
+				if (!HoldingShift())
+				{
+					selectedBrush->SetSelected(false);
+					selectedBrush->Clear();
+				}
+
+				sp->SetSelected(true);
+
+				grabbedObject = sp;
+				selectedBrush->AddObject(sp);
+			}
+
+			return true;
+		}
+	}
+
+	for (auto it = decorImagesFrontTerrain.begin();
+		it != decorImagesFrontTerrain.end(); ++it)
+	{
+
+	}
+
+	return false;
+}
+
+bool EditSession::AnchorSelectedAerialEnemy()
+{
+	bool singleActor = selectedBrush->objects.size() == 1
+		&& selectedPoints.size() == 0
+		&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
+	if (singleActor)
+	{
+		ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>(selectedBrush->objects.front());
+		if (actor->groundInfo != NULL)
+		{
+			Action *gAction = new GroundAction(actor);
+			gAction->performed = true;
+
+			if (moveAction != NULL)
+			{
+				moveAction->subActions.push_back(gAction);
+				doneActionStack.push_back(moveAction);
+			}
+			else
+			{
+				Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
+				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointMap());
+
+				action->Perform();
+
+				moveAction = new CompoundAction;
+				moveAction->subActions.push_back(action);
+				moveAction->subActions.push_back(gAction);
+				doneActionStack.push_back(moveAction);
+			}
+
+			return true;
+		}
+	}
+	return false;
+}
+
+void EditSession::TryMoveSelectedBrush()
+{
+	bool validMove = false;
+
+	//check if valid
+	if (selectedBrush->CanApply())
+	{
+		validMove = true;
+	}
+
+	if (validMove)
+	{
+		ClearUndoneActions();
+	}
+	else
+	{
+		Action * action = doneActionStack.back();
+		doneActionStack.pop_back();
+
+		action->Undo();
+
+		delete action;
+	}
+}
+
 void EditSession::SetEnemyGridIndex( GridSelector *gs, int x, int y, const std::string &eName)
 {
 	gs->Set(x, y, types[eName]->GetSprite(gs->tileSizeX, gs->tileSizeY), eName);
 }
-
-
 
 void EditSession::SetActiveEnemyGrid(int index)
 {
@@ -11241,6 +10366,36 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	{
 		
 	}*/
+}
+
+void EditSession::PerformMovePointsAction()
+{
+	//here the delta being subtracted is the points original position
+	for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
+	{
+		list<PointMoveInfo> &pList = (*mit).second;
+		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
+		{
+			(*it).delta = (*it).point->pos - (*it).delta;
+		}
+	}
+
+	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
+	Action *action = new MoveBrushAction(selectedBrush, delta, false, selectedPoints);
+
+
+	action->Perform();
+
+	if (moveAction != NULL)
+	{
+
+		moveAction->subActions.push_back(action);
+		doneActionStack.push_back(moveAction);
+	}
+	else
+	{
+		doneActionStack.push_back(action);
+	}
 }
 
 void EditSession::ExtendPolygon( TerrainPoint *startPoint,
@@ -13820,19 +12975,38 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 	return action;
 }
 
-void EditSession::PointSelectPoint( V2d &worldPos,
-	bool &emptysp )
+bool EditSession::PointSelectTerrain(V2d &pos)
+{
+	bool pointSelectKeyHeld = IsKeyPressed(Keyboard::B);
+
+	if (pointSelectKeyHeld)
+	{
+		if (PointSelectPoint(worldPos))
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if (PointSelectPoly(worldPos))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool EditSession::PointSelectPoint( V2d &pos )
 {
 	bool shift = IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift);
 
 	TerrainPoint *foundPoint = NULL;
 	for (auto it = polygons.begin(); it != polygons.end(); ++it)
 	{
-		foundPoint = (*it)->GetClosePoint( 8 * zoomMultiple, worldPos );
+		foundPoint = (*it)->GetClosePoint( 8 * zoomMultiple, pos);
 		if (foundPoint != NULL)
 		{
-			emptysp = false;
-
 			if (shift && foundPoint->selected )
 			{
 				DeselectPoint((*it).get(), foundPoint);
@@ -13847,65 +13021,59 @@ void EditSession::PointSelectPoint( V2d &worldPos,
 					SelectPoint((*it).get(), foundPoint);
 				}			
 			}
-			break;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool EditSession::PointSelectPoly(V2d &pos)
+{
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		bool pressF1 = IsKeyPressed(Keyboard::F1);
+		if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
+			continue;
+
+		bool sel = (*it)->ContainsPoint(Vector2f(pos));
+		if ((*it)->inverse)
+		{
+			sel = !sel;
+		}
+
+		if (sel)
+		{
+			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+			if (sp->selected)
+			{
+
+			}
+			else
+			{
+				if (!HoldingShift())
+				{
+					selectedBrush->SetSelected(false);
+					selectedBrush->Clear();
+				}
+
+				sp->SetSelected(true);
+
+				grabbedObject = sp;
+				selectedBrush->AddObject(sp);
+			}
+
+			return true;
 		}
 	}
 
-	if (foundPoint == NULL)
-	{
-	//	ClearSelectedPoints();
-	}
-
-	
-
-	
-	//double rad = 8 * zoomMultiple;
-	//for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-	//{
-	//	//if its not even close dont check
-	//	if( !(*it)->TempAABB().intersects( Rect<int>( worldPos.x - rad, worldPos.y - rad, rad * 2,
-	//		rad * 2 ) ) )
-	//	{
-	//		continue;
-	//	}
-
-	//	TerrainPoint *tp = (*it)->pointStart;
-	//	while( tp != NULL )
-	//	{
-	//		V2d tpPos( tp->pos.x, tp->pos.y );
-	//		double dist = length( tpPos - worldPos );
-	//		if( dist <= rad )
-	//		{
-	//			bool shift = IsKeyPressed( Keyboard::LShift ) || IsKeyPressed( Keyboard::RShift );
-	//			if( !tp->selected )
-	//			{
-	//				if( !shift )
-	//				{
-	//					//ClearSelectedPoints();
-	//				}
-	//													
-	//				selectedPoints[(*it).get()].push_back( PointMoveInfo( tp ) );
-	//													
-
-	//				tp->selected = true;
-	//				emptysp = false;
-	//			}
-	//			else
-	//			{
-	//				emptysp = false;
-	//			}
-	//												
-	//			//selectedPoints.push_back( tp );
-	//												
-	//		}
-	//		tp = tp->next;
-	//	}
-	//}
+	return false;
 }
 
-void EditSession::BoxSelectPoints(sf::IntRect r,
+bool EditSession::BoxSelectPoints(sf::IntRect &r,
 	double radius)
 {
+	bool found = false;
 	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
 		//double rad = 8 * zoomMultiple;
@@ -13926,9 +13094,376 @@ void EditSession::BoxSelectPoints(sf::IntRect r,
 					|| adjustedR.contains(curr->pos))
 				{
 					SelectPoint((*it).get(), curr);
+					found = true;
 				}
 				curr = curr->next;
 			}
 		}
+	}
+
+	return found;
+}
+
+bool EditSession::BoxSelectActors(sf::IntRect &rect)
+{
+	bool found = false;
+	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (list<ActorPtr>::iterator ait = (*it).second->actors.begin();
+			ait != (*it).second->actors.end(); ++ait)
+		{
+			if ((*ait)->Intersects(rect))
+			{
+				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*ait));
+
+				if (HoldingShift())
+				{
+					if (sp->selected)
+					{
+						sp->SetSelected(false);
+						selectedBrush->RemoveObject(sp); //might be slow?
+					}
+					else
+					{
+						sp->SetSelected(true);
+						selectedBrush->AddObject(sp);
+					}
+				}
+				else
+				{
+					sp->SetSelected(true);
+					selectedBrush->AddObject(sp);
+				}
+
+
+				found = true;
+			}
+		}
+	}
+
+	return found;
+}
+
+bool EditSession::BoxSelectDecor(sf::IntRect &rect)
+{
+	bool found = false;
+	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
+	{
+		if ((*it)->Intersects(rect))
+		{
+			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+			if (HoldingShift())
+			{
+				if (sp->selected)
+				{
+					sp->SetSelected(false);
+					selectedBrush->RemoveObject(sp); //might be slow?
+				}
+				else
+				{
+					sp->SetSelected(true);
+					selectedBrush->AddObject(sp);
+				}
+			}
+			else
+			{
+				sp->SetSelected(true);
+				selectedBrush->AddObject(sp);
+			}
+
+
+			found = true;
+		}
+	}
+
+	return found;
+}
+
+bool EditSession::BoxSelectPolys(sf::IntRect &rect)
+{
+	bool found = false;
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		if ((*it)->Intersects(r))
+		{
+
+			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+			if (HoldingShift())
+			{
+				if (sp->selected)
+				{
+					sp->SetSelected(false);
+					selectedBrush->RemoveObject(sp);
+				}
+				else
+				{
+					sp->SetSelected(true);
+					selectedBrush->AddObject(sp);
+				}
+			}
+			else
+			{
+				sp->SetSelected(true);
+				selectedBrush->AddObject(sp);
+			}
+
+			found = true;
+		}
+	}
+
+	return true;
+}
+
+void EditSession::TryBoxSelect()
+{
+	Vector2i currPos(worldPos.x, worldPos.y);
+
+	int left = std::min(editMouseOrigPos.x, currPos.x);
+	int right = std::max(editMouseOrigPos.x, currPos.x);
+	int top = std::min(editMouseOrigPos.y, currPos.y);
+	int bot = std::max(editMouseOrigPos.y, currPos.y);
+
+
+	sf::Rect<int> r(left, top, right - left, bot - top);
+	//check this rectangle for the intersections, but do that next
+
+	bool selectionEmpty = true;
+
+	if (!HoldingShift())
+	{
+		//clear everything
+		selectedBrush->SetSelected(false);
+		selectedBrush->Clear();
+	}
+
+	if (BoxSelectActors(r))
+	{
+		selectionEmpty = false;
+	}
+
+	if (BoxSelectDecor(r))
+	{
+		selectionEmpty = false;
+	}
+
+	bool pointSelectButtonHeld = IsKeyPressed(Keyboard::B);
+	if (pointSelectButtonHeld) //always use point selection for now
+	{
+		if (HoldingShift())
+		{
+			//ClearSelectedPoints();
+		}
+
+		BoxSelectPoints(r, 8 * zoomMultiple);
+	}
+	else if (!showPoints)//polygon selection. don't use it for a little bit
+	{
+		if (BoxSelectPolys(r))
+		{
+			selectionEmpty = false;
+		}
+	}
+
+	if (selectionEmpty)
+	{
+		selectedBrush->SetSelected(false);
+		selectedBrush->Clear();
+	}
+}
+
+bool EditSession::CheckValidPaste()
+{
+	bool validPaste = true;
+
+	for (list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
+		tbIt != pasteBrushes.end(); ++tbIt)
+	{
+		for (list<PolyPtr>::iterator it = polygons.begin();
+			it != polygons.end() && validPaste; ++it)
+		{
+			PolyPtr currentBrush(new TerrainPolygon((*it)->grassTex));
+
+			for (TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
+				curr = curr->next)
+			{
+				currentBrush->AddPoint(new TerrainPoint(*curr));
+			}
+
+			currentBrush->UpdateBounds();
+
+			for (TerrainPoint *curr = currentBrush->pointStart; curr != NULL && validPaste;
+				curr = curr->next)
+			{
+				TerrainPoint *prev;
+				if (curr == currentBrush->pointStart)
+				{
+					prev = currentBrush->pointEnd;
+				}
+				else
+				{
+					prev = curr->prev;
+				}
+
+				if ((*it)->SegmentTooClose(prev->pos, curr->pos, minimumEdgeLength))
+				{
+					validPaste = false;
+					break;
+				}
+
+
+			}
+			//should I delete currentBrush here?
+			currentBrush.reset();
+
+			if (!validPaste)
+				return false;
+		}
+	}
+
+	return true;
+}
+
+void EditSession::Paste()
+{
+	for (list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
+		tbIt != pasteBrushes.end(); ++tbIt)
+	{
+		list<PolyPtr>::iterator it = polygons.begin();
+		bool added = false;
+		//polygonInProgress->Finalize(); //i should check if i can remove this
+		bool recursionDone = false;
+
+		PolyPtr currentBrush(new TerrainPolygon((*it)->grassTex));
+
+		//cout << "after: " << (unsigned int)((*tbIt)->pointStart) << endl;
+		for (TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
+			curr = curr->next)
+		{
+			//cout << "adding" << endl;
+			currentBrush->AddPoint(new TerrainPoint(*curr));
+		}
+
+		currentBrush->UpdateBounds();
+
+		std::list<boost::shared_ptr<GateInfo>> gateInfoList;
+		while (it != polygons.end())
+		{
+			PolyPtr temp = (*it);
+			if (currentBrush->IsTouching(temp.get()))
+			{
+				TerrainPolygon *outPoly = NULL;
+
+				Add(currentBrush, temp, outPoly, gateInfoList);
+
+				currentBrush.reset();
+				currentBrush = NULL;
+
+				polygons.erase(it);
+
+				currentBrush = temp;
+
+				/*for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
+				{
+				if( tp->gate != NULL )
+				{
+				cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
+				<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
+				//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
+				}
+				}*/
+
+				it = polygons.begin();
+
+				added = true;
+
+				continue;
+			}
+			else
+			{
+				cout << "not" << endl;
+			}
+			++it;
+		}
+
+		//add final check for validity here
+
+		if (!added)
+		{
+			cout << "not added" << endl;
+			PolyPtr brushPoly(new TerrainPolygon(polygonInProgress->grassTex));
+
+			for (TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
+				curr = curr->next)
+			{
+				brushPoly->AddPoint(new TerrainPoint(*curr));
+			}
+
+			brushPoly->Finalize();
+			polygons.push_back(brushPoly);
+
+		}
+		else
+		{
+			cout << "was added" << endl;
+			for (TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next)
+			{
+				//if( tp->gate != NULL )
+				//{
+				//	cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
+				//		<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
+				//	//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
+				//}
+
+			}
+
+			polygons.push_back(currentBrush);
+		}
+	}
+
+	ClearPasteBrushes();
+}
+
+void EditSession::TryPaste()
+{
+	if (!pasteBrushes.empty())
+	{
+		bool validPaste = CheckValidPaste();
+
+		if (validPaste)
+		{
+			Paste();
+		}
+		else
+		{
+			MessagePop("invalid paste");
+		}
+	}
+}
+
+void EditSession::UpdateGrass()
+{
+	if (showGrass)
+	{
+		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+		{
+			if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
+			{
+				boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
+				d->UpdateGrass();
+			}
+		}
+	}
+}
+
+void EditSession::SetMode(Emode m)
+{
+	Emode oldMode = mode;
+	mode = m;
+	
+	switch (mode)
+	{
+
 	}
 }

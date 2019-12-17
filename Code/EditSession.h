@@ -166,7 +166,7 @@ struct EditSession : GUIHandler, TilesetManager
 	bool IsKeyPressed(int k);
 	bool IsMousePressed(int m);
 
-
+	void SetMode(Emode m);
 	std::list<Panel*> allPopups;
 
 	const static int MAX_TERRAINTEX_PER_WORLD = 10;
@@ -254,6 +254,7 @@ struct EditSession : GUIHandler, TilesetManager
 	MainMenu *mainMenu;
 	
 	void MoveSelectedPoints( V2d worldPos );
+	void PerformMovePointsAction();
 
 	std::list<ActorPtr> tempActors;
 	GroundInfo worldPosGround;
@@ -426,7 +427,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void MessagePop( const std::string &message );
 	void ErrorPop( const std::string &error );
 
-	bool PointSelectActor();
+	
 
 	//bool closePopup; //for messsage/error only
 	
@@ -441,10 +442,14 @@ struct EditSession : GUIHandler, TilesetManager
 
 	void RemovePointFromPolygonInProgress();
 
+	bool AnchorSelectedAerialEnemy();
+
 	sf::Rect<float> selectRect;
 	sf::Vector2i pointMouseDown;
 
 	sf::Vector2f uiMousePos;
+
+	void TryMoveSelectedBrush();
 
 
 	//----------------------
@@ -517,11 +522,23 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Vector2i gatePoint1;
 	GateInfoPtr modifyGate;
 	
-	void PointSelectPoint(sf::Vector2<double> &worldPos,
-		bool &emptysp );
-	void BoxSelectPoints(sf::IntRect rect,
+	bool PointSelectDecor(V2d &pos);
+	bool PointSelectActor(  V2d &pos);
+	bool PointSelectTerrain(V2d &pos);
+	bool PointSelectPoint( V2d &pos );
+	bool PointSelectPoly(V2d &pos);
+
+	void UpdateGrass();
+
+	bool BoxSelectPoints(sf::IntRect &rect,
 		double radius);
-	void PointSelectPolygon();
+	bool BoxSelectActors(sf::IntRect &rect);
+	bool BoxSelectDecor(sf::IntRect &rect);
+	bool BoxSelectPolys(sf::IntRect &rect);
+	void TryBoxSelect();
+	void TryPaste();
+	bool CheckValidPaste();
+	void Paste();
 	void ExecuteTerrainCompletion();
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys);
