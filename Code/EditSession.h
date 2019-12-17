@@ -250,7 +250,6 @@ struct EditSession : GUIHandler, TilesetManager
 	void CreateDecorImage(
 		EditorDecorPtr dec);
 	std::list<GateInfoPtr> gates;
-	GateInfo *selectedGate;
 	MainMenu *mainMenu;
 	
 	void MoveSelectedPoints( V2d worldPos );
@@ -295,6 +294,12 @@ struct EditSession : GUIHandler, TilesetManager
 	bool cutChooseUp;
 	void CutPoly();
 
+	void TryRemoveSelectedPoints();
+	bool IsOnlyPlayerSelected();
+
+	void RemoveSelectedObjects();
+	void TryRemoveSelectedObjects();
+
 	sf::View v;
 
 	bool showTerrainPath;
@@ -307,15 +312,6 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Vector2f testPoint;
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
-	ActorParams *selectedActor;
-	ActorParams *editActor;
-
-	bool selectedPlayer;
-	bool grabPlayer;
-	int playerHalfWidth;
-	int playerHalfHeight;
-	sf::Vector2i grabPos;
-	bool selectedActorGrabbed;
 
 	//CREATE_TERRAIN mode
 	enum AddResult

@@ -123,8 +123,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	editMoveThresh = 5;
 	editStartMove = false;
 	//adding 5 for random distance buffer
-	playerHalfWidth = 32;
-	playerHalfHeight = 32;
+
 	preScreenTex = mainMenu->preScreenTexture;
 	showTerrainPath = false;
 	
@@ -4379,8 +4378,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	bool showGraph = false;
 
-	selectedActor = NULL;
-	selectedGate = NULL;
 
 	trackingEnemy = NULL;
 	showPanel = NULL;
@@ -4682,9 +4679,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	string menuSelection = "";
 
-	selectedPlayer = false;
-	selectedActorGrabbed = false;
-
 	while( !quit )
 	{
 		
@@ -4926,9 +4920,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								TryPaste();
 
 								UpdateGrass();
-
-								grabPlayer = false;
-								selectedActorGrabbed = false;
 							}
 							break;
 						}
@@ -4986,33 +4977,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									selectedBrush->Clear();
 								}
 							}
-							else if (ev.key.code == Keyboard::D && ev.key.control)
-							{
-								if (selectedBrush->objects.size() == 1)
-								{
-									SelectPtr sp = selectedBrush->objects.front();
-									if (sp->selectableType == ISelectable::ACTOR)
-									{
-										ActorParams *ap = (ActorParams*)sp.get();
-
-										selectedBrush->SetSelected(false);
-										selectedBrush->Clear();
-
-										ActorPtr aPtr(ap->Copy());
-										aPtr->group = groups["--"];
-
-										if (aPtr->groundInfo != NULL)
-										{
-											aPtr->AnchorToGround(*aPtr->groundInfo);
-										}
-
-										selectedBrush->AddObject(aPtr);
-										selectedBrush->SetSelected(true);
-
-										CreateActor(aPtr);
-									}
-								}
-							}
 							else if( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete )
 							{
 								if( !pasteBrushes.empty() )
@@ -5021,152 +4985,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								}
 								else if( CountSelectedPoints() > 0 )
 								{
-									int removeSuccess = IsRemovePointsOkay();
-
-									if( removeSuccess == 1 )
-									{
-
-										for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
-										{
-											(*it).first->RemoveSelectedPoints();
-										}
-
-										selectedPoints.clear();
-									}
-									else if( removeSuccess == 0 )
-									{
-										MessagePop( "problem removing points" );
-									}
-								}
-								else if( selectedActor != NULL )
-								{
-									/*if( selectedActor->groundInfo != NULL && selectedActor->groundInfo->ground != NULL )
-									{
-										selectedActor->groundInfo->ground->enemies[selectedActor->groundInfo->edgeStart].remove( selectedActor );
-									}
-									selectedActor->group->actors.remove( selectedActor );
-									delete selectedActor;
-									
-									selectedActor = NULL;*/
-								}
-								else if( selectedGate != NULL )
-								{
-									//gates.remove( selectedGate );
-									selectedGate->point0->gate = NULL;
-									selectedGate->point1->gate = NULL;
-									//delete selectedGate;
-									selectedGate = NULL;
+									TryRemoveSelectedPoints();
 								}
 								else
 								{									
-									bool perform = true;
-
-									//need to make sure to test for this on turning stuff into brushes
-									if( selectedBrush->objects.size() == 1 )
-									{
-										SelectPtr test = boost::dynamic_pointer_cast<ISelectable>( player );
-
-										if( test == selectedBrush->objects.front() )
-										{
-											perform = false;
-										}
-									}
-
-									if( perform )
-									{
-
-										//these big loops add the terrain's actors to the
-										//selected brush just on deletion, but not ones 
-										//that are already selected
-										SelectList actorsList;
-										for (auto it = selectedBrush->objects.begin();
-											it != selectedBrush->objects.end(); ++it)
-										{
-											if ((*it)->selectableType == ISelectable::ACTOR)
-											{
-												actorsList.push_back((*it));
-											}
-										}
-										SelectList addedActorsList;
-										for (auto it = selectedBrush->objects.begin();
-											it != selectedBrush->objects.end(); ++it)
-										{
-											if ((*it)->selectableType == ISelectable::TERRAIN)
-											{
-												PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
-
-												for (auto objs = poly->enemies.begin(); objs != poly->enemies.end(); ++objs)
-												{
-													list<ActorPtr> &ap = (*objs).second;
-													for (auto api = ap.begin(); api != ap.end(); ++api)
-													{
-														bool alreadyHere = false;
-														for (auto ita = actorsList.begin();
-															ita != actorsList.end(); ++ita)
-														{
-															if ((*api) == (*ita))
-															{
-																alreadyHere = true;
-															}
-														}
-														if( !alreadyHere )
-														{
-															addedActorsList.push_back((*api));
-														}
-													}
-												}
-
-												
-											}
-										}
-
-										for (auto it = addedActorsList.begin(); it != addedActorsList.end(); ++it)
-										{
-											selectedBrush->AddObject((*it));
-										}
-										Action *remove = new RemoveBrushAction( selectedBrush );
-										remove->Perform();
-
-										doneActionStack.push_back( remove );
-									
-										ClearUndoneActions();
-
-										selectedBrush->SetSelected(false);
-										selectedBrush->Clear();
-									}
-
-									/*int erasedGates = 0;
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin();
-										it != selectedPolygons.end(); ++it )
-									{
-										polygons.remove( (*it) );
-										
-										for( list<GateInfo*>::iterator git = gates.begin(); git != gates.end(); )
-										{
-											if( (*git)->poly0 == (*it) || (*git)->poly1 == (*it) )
-											{
-												delete (*git);
-												git = gates.erase( git );
-												++erasedGates;
-											}
-											else
-											{
-												++git;
-											}
-										}
-										(*it)->DestroyEnemies();
-										//delete (*it);
-										(*it).reset();
-									}
-									if( erasedGates > 0 )
-									{
-										stringstream ss;
-										ss << "destroyed " << erasedGates << " gates";
-										MessagePop( ss.str() );
-									}
-									selectedPolygons.clear();*/
-
-									//cout << "destroying terrain. eney: " << selectedActor << endl;
+									TryRemoveSelectedObjects();
 								}
 							}
 							else if( ev.key.code == Keyboard::W )
@@ -5386,20 +5209,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 									sf::Rect<float> selectRect = sf::Rect<float>( left, top, width, height );
 
-									/*if( playerSprite.getGlobalBounds().contains( worldPos.x, worldPos.y ) )
-									{
-										selectedActor = NULL;
-										selectedPlayer = true;
-										grabPlayer = true;
-										grabPos = Vector2i( worldPos.x, worldPos.y );
-									
-										break;
-									}
-									else
-									{
-										grabPlayer = false;
-										selectedPlayer = false;
-									}*/
 
 									bool emptySpace = true;
 
@@ -5538,40 +5347,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									selectedPolygons.clear();
 								}
 								
-							//	cout << "here before loop" << endl;
-							/*	bool empty = true;
-								for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && empty; ++it )
-								{
-									list<ActorParams*> &actors = it->second->actors;
-									for( list<ActorParams*>::iterator it2 = actors.begin(); it2 != actors.end() && empty; ++it2 )
-									{
-										sf::FloatRect bounds = (*it2)->image.getGlobalBounds();
-										if( bounds.contains( Vector2f( worldPos.x, worldPos.y ) ) )
-										{
-											selectedActor = (*it2);
-											selectedActorGrabbed = true;
-											grabPos = Vector2i( worldPos.x, worldPos.y );
-
-											empty = false;
-											//cout << "enemy selected" << endl;
-
-											for( list<PolyPtr>::iterator it3 = selectedPolygons.begin(); 
-												it3 != selectedPolygons.end(); ++it3 )
-											{
-												(*it3)->SetSelected( false );
-											}
-											selectedPolygons.clear();
-										}
-									}
-								}
-
-
-							//	cout << "made it!!!" << endl;
-								if( empty )
-								{
-									selectedActor = NULL;
-									selectedActorGrabbed = false;
-								}*/
 							}
 							}
 							else if( ev.key.code == Keyboard::R )
@@ -5889,11 +5664,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							}
 
 							if( menuDownStored == EDIT && menuSelection != "none" && menuSelection != "top" )
-							{
-								selectedPlayer = false;
-								selectedActor = NULL;
-								selectedGate = NULL;
-								
+							{	
 								if( menuDownStored == EDIT )
 								{
 									selectedBrush->SetSelected( false );
@@ -5940,11 +5711,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									showPanel = editDecorPanel;
 									SetDecorEditPanel();
 									mode = menuDownStored;
-								}
-								else if( menuDownStored == EDIT && selectedGate != NULL )
-								{
-									//
-									//mode = menuDownStored;
 								}
 								else
 								{
@@ -6125,42 +5891,21 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				case Event::KeyPressed:
 				{
-					//if ((ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete) && patrolPath.size() > 1)
-					//{
-					//	patrolPath.pop_back();
-					//}
 					if (ev.key.code == Keyboard::Space)
 					{
 						if (selectedBrush->objects.size() == 1) //EDIT
 						{
-							//showPanel = trackingEnemy->panel;
 							ISelectable *select = selectedBrush->objects.front().get();
 							AirTriggerParams *actor = (AirTriggerParams*)select;
 							showPanel = actor->type->panel;
-							//actor->SetPath(patrolPath);
-							//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
 							mode = EDIT;
 						}
 						else
 						{
 							showPanel = trackingEnemy->panel;
-							//ISelectable *select = selectedBrush->objects.front().get();
-							//ActorParams *actor = (ActorParams*)select;
-							//tempActor->SetPath(patrolPath);
-							//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
 							mode = CREATE_ENEMY;
 						}
 					}
-					//	else
-					//	{
-					//		showPanel = trackingEnemy->panel;
-					//		//ISelectable *select = selectedBrush->objects.front().get();
-					//		//ActorParams *actor = (ActorParams*)select;
-					//		tempActor->SetPath(patrolPath);
-					//		//((PatrollerParams*)selectedActor)->SetPath( patrolPath );
-					//		mode = CREATE_ENEMY;
-					//	}
-					//}
 					break;
 				}
 				case Event::KeyReleased:
@@ -6300,34 +6045,17 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						}
 					case Event::MouseMoved:
 						{
-							//delta
 							break;
 						}
 					case Event::KeyPressed:
 						{
 							if( ev.key.code == sf::Keyboard::Z && ev.key.control )
 							{
-								if( doneActionStack.size() > 0 )
-								{
-									Action *action = doneActionStack.back();
-									doneActionStack.pop_back();
-
-									action->Undo();
-
-									undoneActionStack.push_back( action );
-								}
+								UndoMostRecentAction();
 							}
 							else if( ev.key.code == sf::Keyboard::Y && ev.key.control )
 							{
-								if( undoneActionStack.size() > 0 )
-								{
-									Action *action = undoneActionStack.back();
-									undoneActionStack.pop_back();
-
-									action->Perform();
-
-									doneActionStack.push_back( action );
-								}
+								RedoMostRecentUndoneAction();
 							}
 							break;
 						}
@@ -7274,57 +7002,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					Vector2i oldPointGrabPos = pointGrabPos;
 					pointGrabPos = Vector2i( pPoint.x, pPoint.y );// - Vector2i( pointGrabDelta.x % 32, pointGrabDelta.y % 32 );
 					bool validMove = true;
-					/*if( true )
-					{
-						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
-							it != selectedPolygons.end(); ++it )
-						{
-							bool affected = false;
-
-							PointList & points = (*it)->points;
-
-							for( PointList::iterator pointIt = points.begin();
-								pointIt != points.end(); ++pointIt )
-							{
-								if( (*pointIt).selected ) //selected
-								{
-									Vector2i prev;
-									if( pointIt == points.begin() )
-									{
-										prev = (*(--points.end())).pos;
-									}
-									else
-									{
-										PointList::iterator tempIt = pointIt;
-										--tempIt;
-										prev = (*tempIt).pos;
-									}
-
-									for( list<PolyPtr>::iterator tit = polygons.begin();
-										tit != polygons.end(); ++tit )
-									{
-										if( (*tit) != (*it) )
-										if( !IsPointValid( prev, (*pointIt).pos, (*tit) ) )
-										{
-											validMove = false;
-											break;
-										}
-									}
-									
-									if( !validMove )
-										break;
-									//(*pointIt).pos += pointGrabDelta;
-									//affected = true;
-								}
-							}
-
-							if( !validMove )
-								break;
-						}
-					}*/
 					
-					
-
 					int numSelectedPolys = selectedPolygons.size();
 					Vector2i** allDeltas = new Vector2i*[numSelectedPolys];
 					int allDeltaIndex = 0;
@@ -7402,21 +7080,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										extreme.y = 1;
 									else if( newVec.y < -prim_limit )
 										extreme.y = -1;
-									/*double ff = dot( normalize( prevPos - pos ), extreme );
-									if( ff > prim_limit )
-									{
-										if( normVec.x == 0 )
-										{
-											pointGrabPos.x = oldPointGrabPos.x;
-										}
-										else
-										{
-											pointGrabPos.y = oldPointGrabPos.y;
-										}
-										
-										validMove = false;
-										break;
-									} */
+
 									if( extreme.x != 0 )
 									{
 										pointGrabPos.y = oldPointGrabPos.y;
@@ -7428,10 +7092,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										pointGrabPos.x = oldPointGrabPos.x;
 										pointGrabDelta.x = 0;
 									}
-
-									
-									//pointGrabPos = oldPointGrabPos;
-								//	pointGrabPos = oldPointGrabPos;
 								}
 								else
 								{
@@ -7496,8 +7156,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										pointGrabPos.x = oldPointGrabPos.x;
 										pointGrabDelta.x = 0;
 									}
-									//pointGrabPos = oldPointGrabPos;
-								//	pointGrabPos = oldPointGrabPos;
 								}
 								else
 								{
@@ -7532,7 +7190,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							{
 								cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
 								cout << "diff: " << diff.x << ", " << diff.y << endl;
-								//pointGrabPos = oldPointGrabPos;
 							}
 							deltas[deltaIndex] = diff;
 							
@@ -7673,8 +7330,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				}
 				else if( polyGrab )
 				{
-					//Vector2i test = (pixelPos - polyGrabPos);
-					//V2d blahDelta( test.x, test.y );
 					polyGrabDelta = Vector2i( pPoint.x, pPoint.y ) - Vector2i( polyGrabPos.x, polyGrabPos.y );
 					//polyGrabDelta.x = blahDelta.x * 1080.0/1920.0;
 					//polyGrabDelta.y = blahDelta.y;
@@ -7699,36 +7354,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						moveOkay = false;
 					}
 
-					if( moveOkay )
-					{
-						for( list<PolyPtr>::iterator it = selectedPolygons.begin();
-							it != selectedPolygons.end(); ++it )
-						{
-							//(*it)->Move( polyGrabDelta );
-
-
-
-							/*PointList & points = (*it)->points;
-
-							for( PointList::iterator pointIt = points.begin();
-								pointIt != points.end(); ++pointIt )
-							{
-								(*pointIt).pos += polyGrabDelta;		
-							}
-
-							PointList temp = (*it)->points;
-
-							(*it)->Reset();
-
-							for( PointList::iterator tempIt = temp.begin(); tempIt != temp.end(); 
-								++tempIt )
-							{
-								(*it)->points.push_back( (*tempIt ) );
-							}
-							(*it)->Finalize();
-							(*it)->SetSelected( true );*/
-						}
-					}
+					
 				}
 				
 
@@ -8624,25 +8250,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			
 			
 		}
-		
-		
-		if( mode == EDIT )
-		{
-			if( selectedPlayer && grabPlayer && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
-			{
-				bool okay = true;
-				if( okay )
-				{
-					player->position = Vector2i( worldPos.x, worldPos.y );
-				}
-			}
-			else if( selectedActorGrabbed && length( V2d( grabPos.x, grabPos.y ) - worldPos ) > 10 )
-			{
 				
-				
-			}
-		}
-		
 
 		if( mode == EDIT )
 		{
@@ -8654,46 +8262,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				
 				selectedBrush->Move( delta );
 				selectedBrush->Draw( preScreenTex );
-			}
-			if( selectedActor != NULL )
-			{
-				
-				sf::FloatRect bounds = selectedActor->image.getGlobalBounds();
-				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
-				
-				rs.setOutlineColor( Color::Cyan );				
-				rs.setFillColor( Color::Transparent );
-				rs.setOutlineThickness( 5 );
-				rs.setPosition( bounds.left, bounds.top );
-				//rs.setFillColor( Color::Magenta );
-				preScreenTex->draw( rs );
-				//cout << "draw rectangle"  << endl;
-			}
-			else if( selectedGate != NULL )
-			{
-				int gLeft = std::min( selectedGate->point0->pos.x, selectedGate->point1->pos.x );
-				int gRight = std::max( selectedGate->point0->pos.x, selectedGate->point1->pos.x );
-				int gTop = std::min( selectedGate->point0->pos.y, selectedGate->point1->pos.y );
-				int gBot = std::max( selectedGate->point0->pos.y, selectedGate->point1->pos.y );
-				sf::RectangleShape rs( sf::Vector2f( gRight - gLeft, gBot - gTop ) );
-				
-				rs.setOutlineColor( Color::Cyan );				
-				rs.setFillColor( Color::Transparent );
-				rs.setOutlineThickness( 5 );
-				rs.setPosition( gLeft, gTop );
-				preScreenTex->draw( rs );
-			}
-			else if( selectedPlayer )
-			{
-//				sf::FloatRect bounds = playerSprite.getGlobalBounds();
-//				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
-
-	//			rs.setOutlineColor( Color::Cyan );				
-	//			rs.setFillColor( Color::Transparent );
-	//			rs.setOutlineThickness( 5 );
-	//			rs.setPosition( bounds.left, bounds.top );				
-
-	//			preScreenTex->draw( rs );
 			}
 		}
 
@@ -8892,17 +8460,13 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						&& selectedBrush->objects.front()->selectableType == ISelectable::IMAGE;
 					bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
 
-					if( menuDownStored == EditSession::EDIT && singleActor )// && selectedActor != NULL )
+					if( menuDownStored == EditSession::EDIT && singleActor )
 					{
 						textmag.setString( "EDIT\nENEMY" );
 					}
-					else if (menuDownStored == EditSession::EDIT && singleImage)// && selectedActor != NULL )
+					else if (menuDownStored == EditSession::EDIT && singleImage)
 					{
 						textmag.setString("EDIT\nIMAGE");
-					}
-					else if( menuDownStored == EditSession::EDIT && selectedGate != NULL )
-					{
-						textmag.setString( "EDIT\nGATE" );
 					}
 					else if( menuDownStored == EditSession::EDIT && onlyPoly )
 					{
@@ -9180,7 +8744,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		}
 		else if (b->name == "createrect")
 		{
-			//PatrollerParams *patroller = (PatrollerParams*)selectedActor;
 			if (mode == EDIT)
 			{
 				ISelectable *select = selectedBrush->objects.front().get();
@@ -9779,6 +9342,27 @@ void EditSession::RemovePointFromPolygonInProgress()
 	}
 }
 
+void EditSession::TryRemoveSelectedPoints()
+{
+	//need to make this into an undoable action soon
+
+	int removeSuccess = IsRemovePointsOkay();
+
+	if (removeSuccess == 1)
+	{
+		for (PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+		{
+			(*it).first->RemoveSelectedPoints();
+		}
+
+		selectedPoints.clear();
+	}
+	else if (removeSuccess == 0)
+	{
+		MessagePop("problem removing points");
+	}
+}
+
 void EditSession::CutPoly()
 {
 	if (cutChoose)
@@ -9989,7 +9573,6 @@ void EditSession::SetupEnemyType(ParamsInfo &pi)
 void EditSession::RegularOKButton()
 {
 	if (mode == EDIT)
-		//if( mode == EDIT && selectedActor != NULL )
 	{
 		ISelectable *select = selectedBrush->objects.front().get();
 		ActorParams *ap = (ActorParams*)select;
@@ -10048,11 +9631,6 @@ void EditSession::DeselectPoint(TerrainPolygon *poly,
 
 void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 {
-	//Vector2i pos( worldPos.x, worldPos.y );
-					//Vector2i delta = pos - editMouseGrabPos;
-	//Vector2i test( pointGrabPos.x % 32, pointGrabPos.y % 32 );
-					
-	//pointGrabDelta = delta;
 	pointGrabDelta = Vector2i( worldPos.x, worldPos.y ) - pointGrabPos;
 	
 	Vector2i oldPointGrabPos = pointGrabPos;
@@ -10213,8 +9791,6 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 						pointGrabPos.x = oldPointGrabPos.x;
 						pointGrabDelta.x = 0;
 					}
-					//pointGrabPos = oldPointGrabPos;
-				//	pointGrabPos = oldPointGrabPos;
 				}
 				else
 				{
@@ -10249,7 +9825,6 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 			{
 				cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
 				cout << "diff: " << diff.x << ", " << diff.y << endl;
-				//pointGrabPos = oldPointGrabPos;
 			}
 			deltas[deltaIndex] = diff;
 							
@@ -10361,11 +9936,6 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 		delete [] allDeltas[i];
 	}
 	delete [] allDeltas;
-
-	/*for( list<TerrainPolygon*>::iterator it = pointPolysList.begin(); it != pointPolysList.end(); ++it )
-	{
-		
-	}*/
 }
 
 void EditSession::PerformMovePointsAction()
@@ -11518,9 +11088,6 @@ void EditSession::SetEnemyEditPanel()
 	assert( sp->selectableType == ISelectable::ACTOR );
 	ActorParams *ap = (ActorParams*)sp;
 	
-	
-	
-	//ActorType *type = selectedActor->type;
 	ActorType *type = ap->type;
 	string name = type->info.name;
 
@@ -13185,7 +12752,7 @@ bool EditSession::BoxSelectPolys(sf::IntRect &rect)
 	bool found = false;
 	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
-		if ((*it)->Intersects(r))
+		if ((*it)->Intersects(rect))
 		{
 
 			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
@@ -13465,5 +13032,100 @@ void EditSession::SetMode(Emode m)
 	switch (mode)
 	{
 
+	}
+}
+
+bool EditSession::IsOnlyPlayerSelected()
+{
+	if (selectedBrush->objects.size() == 1)
+	{
+		SelectPtr test = boost::dynamic_pointer_cast<ISelectable>(player);
+
+		if (test == selectedBrush->objects.front())
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void EditSession::RemoveSelectedObjects()
+{
+	//get list of selected ACTORs only
+	SelectList actorsList;
+	for (auto it = selectedBrush->objects.begin();
+		it != selectedBrush->objects.end(); ++it)
+	{
+		if ((*it)->selectableType == ISelectable::ACTOR)
+		{
+			actorsList.push_back((*it));
+		}
+	}
+
+	//get list of additional ACTORs from selected terrain
+	SelectList addedActorsList;
+	for (auto it = selectedBrush->objects.begin();
+		it != selectedBrush->objects.end(); ++it)
+	{
+		if ((*it)->selectableType == ISelectable::TERRAIN)
+		{
+			PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
+
+			for (auto objs = poly->enemies.begin(); objs != poly->enemies.end(); ++objs)
+			{
+				list<ActorPtr> &ap = (*objs).second;
+				for (auto api = ap.begin(); api != ap.end(); ++api)
+				{
+					bool alreadyHere = false;
+					for (auto ita = actorsList.begin();
+						ita != actorsList.end(); ++ita)
+					{
+						if ((*api) == (*ita))
+						{
+							alreadyHere = true;
+						}
+					}
+					if (!alreadyHere)
+					{
+						addedActorsList.push_back((*api));
+					}
+				}
+			}
+
+
+		}
+	}
+
+	for (auto it = addedActorsList.begin(); it != addedActorsList.end(); ++it)
+	{
+		selectedBrush->AddObject((*it));
+	}
+
+
+
+	Action *remove = new RemoveBrushAction(selectedBrush);
+	remove->Perform();
+
+	doneActionStack.push_back(remove);
+
+	ClearUndoneActions();
+
+	selectedBrush->SetSelected(false);
+	selectedBrush->Clear();
+}
+
+void EditSession::TryRemoveSelectedObjects()
+{
+	bool perform = true;
+
+	if (IsOnlyPlayerSelected())
+	{
+		perform = false;
+	}
+
+	if (perform)
+	{
+		RemoveSelectedObjects();
 	}
 }
