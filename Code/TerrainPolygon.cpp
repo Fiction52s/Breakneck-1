@@ -2547,7 +2547,6 @@ TerrainPoint *TerrainPolygon::GetMostLeftPoint()
 	return leftPoint;
 }
 
-//void TerrainPolygon::MovePoint(
 
 bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
 {

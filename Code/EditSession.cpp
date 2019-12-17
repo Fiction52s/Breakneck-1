@@ -17,6 +17,7 @@
 #include "Enemy_Shard.h"
 #include "ActorParams.h"
 #include "EditorBG.h"
+#include "EditorRail.h"
 //#include "TerrainRender.h"
 
 using namespace std;
@@ -9760,6 +9761,11 @@ void EditSession::DrawMode()
 		DrawPolygonInProgress();
 		break;
 	}
+	case CREATE_RAILS:
+	{
+		DrawRailInProgress();
+		break;
+	}
 	case EDIT:
 	{
 		DrawPasteBrushes();
@@ -10211,6 +10217,89 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::E)
 		{
+		}
+		else if (ev.key.code == sf::Keyboard::R)
+		{
+			mode = CREATE_RAILS;
+			polygonInProgress->ClearPoints();
+		}
+		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
+		{
+			UndoMostRecentAction();
+		}
+		else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
+		{
+			RedoMostRecentUndoneAction();
+		}
+
+		break;
+	}
+	case Event::KeyReleased:
+	{
+		break;
+	}
+	case Event::LostFocus:
+	{
+		break;
+	}
+	case Event::GainedFocus:
+	{
+		break;
+	}
+	}
+}
+
+void EditSession::CreateRailsModeHandleEvent()
+{
+	switch (ev.type)
+	{
+	case Event::MouseButtonPressed:
+	{
+		if (ev.mouseButton.button == Mouse::Left)
+		{
+			if (showPanel != NULL)
+			{
+				showPanel->Update(true, uiMousePos.x, uiMousePos.y);
+				break;
+			}
+		}
+		break;
+	}
+	case Event::MouseButtonReleased:
+	{
+		if (showPanel != NULL)
+		{
+			showPanel->Update(false, uiMousePos.x, uiMousePos.y);
+		}
+		break;
+	}
+	case Event::MouseWheelMoved:
+	{
+		break;
+	}
+	case Event::KeyPressed:
+	{
+		if (showPanel != NULL)
+		{
+			showPanel->SendKey(ev.key.code, ev.key.shift);
+			break;
+		}
+
+		if (ev.key.code == Keyboard::Space)
+		{
+			ExecuteRailCompletion();
+		}
+		else if (ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete)
+		{
+			RemovePointFromRailInProgress();
+		}
+		else if (ev.key.code == sf::Keyboard::E)
+		{
+		}
+		else if (ev.key.code == sf::Keyboard::R)
+		{
+			mode = CREATE_TERRAIN;
+			railInProgress->ClearPoints();
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
@@ -11117,6 +11206,11 @@ void EditSession::UpdateMode()
 		CreateTerrainModeUpdate();
 		break;
 	}
+	case CREATE_RAILS:
+	{
+		CreateRailsModeUpdate();
+		break;
+	}
 	case EDIT:
 	{
 		EditModeUpdate();
@@ -11188,6 +11282,31 @@ void EditSession::CreateTerrainModeUpdate()
 	PreventNearPrimaryAnglesOnPolygonInProgress();
 
 	TryAddPointToPolygonInProgress();
+}
+
+void EditSession::CreateRailsModeUpdate()
+{
+	if (showPanel != NULL)
+		return;
+
+	if (IsKeyPressed(Keyboard::G))
+	{
+		testPoint = SnapPointToGraph(testPoint, 32);
+		showGraph = true;
+	}
+	else if (IsKeyPressed(Keyboard::F))
+	{
+		testPoint = SnapPosToPoint(testPoint, 8 * zoomMultiple);
+		showPoints = true;
+	}
+	else
+	{
+		showPoints = false;
+	}
+
+	PreventNearPrimaryAnglesOnRailInProgress();
+
+	TryAddPointToRailInProgress();
 }
 
 void EditSession::EditModeUpdate()

@@ -38,6 +38,8 @@ struct Background;
 struct ScrollingBackground;
 struct AirTriggerParams;
 
+struct TerrainRail;
+
 
 struct EditorBG;
 
@@ -60,6 +62,7 @@ struct EditSession : GUIHandler, TilesetManager
 		CREATE_IMAGES,
 		EDIT_IMAGES,
 		SET_LEVEL,
+		CREATE_RAILS,
 	};
 
 	Emode mode;
@@ -330,10 +333,13 @@ struct EditSession : GUIHandler, TilesetManager
 	double minimumEdgeLength;
 	//double minAngle;
 	
+	std::list<boost::shared_ptr<TerrainRail>> rails;
+
 	std::list<boost::shared_ptr<TerrainPolygon>> polygons;
 	std::list<boost::shared_ptr<TerrainPolygon>> selectedPolygons;
 	
 	boost::shared_ptr<TerrainPolygon> polygonInProgress;
+	boost::shared_ptr<TerrainRail> railInProgress;
 	boost::shared_ptr<TerrainPolygon> inversePolygon;
 	
 	sf::Font arialFont;
@@ -472,6 +478,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void HandleEvents();
 
 	void CreateTerrainModeHandleEvent();
+	void CreateRailsModeHandleEvent();
 	void EditModeHandleEvent();
 	void PasteModeHandleEvent();
 	void CreateEnemyModeHandleEvent();
@@ -486,6 +493,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void SetLevelModeHandleEvent();
 
 	void CreateTerrainModeUpdate();
+	void CreateRailsModeUpdate();
 	void EditModeUpdate();
 	void PasteModeUpdate();
 	void CreateEnemyModeUpdate();
@@ -504,6 +512,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void RedoMostRecentUndoneAction();
 
 	void RemovePointFromPolygonInProgress();
+	void RemovePointFromRailInProgress();
 
 	bool AnchorSelectedAerialEnemy();
 
@@ -617,6 +626,7 @@ struct EditSession : GUIHandler, TilesetManager
 	bool CheckValidPaste();
 	void Paste();
 	void ExecuteTerrainCompletion();
+	void ExecuteRailCompletion();
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys);
 	void PasteTerrain( Brush *b );

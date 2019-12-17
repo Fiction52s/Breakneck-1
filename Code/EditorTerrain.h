@@ -114,6 +114,8 @@ struct TerrainBrush
 
 };
 
+
+
 struct TerrainPolygon : ISelectable
 {
 	enum TerrainWorldType

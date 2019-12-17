@@ -14,6 +14,7 @@ struct ISelectable
 		ACTOR,
 		GATE,
 		IMAGE,
+		RAIL,
 		Count
 	};
 	//copyable
