@@ -4610,53 +4610,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				preScreenTex->draw(tempDecorSprite);
 		}
 
-		preScreenTex->setView( uiView );
-
-		stringstream cursorPosSS;
-		stringstream scaleTextSS;
-		if( mode == CREATE_PATROL_PATH || mode == SET_DIRECTION )
-		{
-			V2d temp = V2d( testPoint.x, testPoint.y ) - Vector2<double>(patrolPath.back().x, 
-				patrolPath.back().y );
-			cursorPosSS << (int)temp.x << ", " << (int)temp.y;
-		}
-		else
-		{
-			cursorPosSS << (int)worldPos.x << ", " << (int)worldPos.y;
-		}
-		cursorLocationText.setString(cursorPosSS.str());
-
-		Vector2f size = uiView.getSize();
-		float sca = view.getSize().x / 960.f / 2.f;
-		scaleSprite.setScale( 1.f / sca, 1.f / sca );
-		scaleTextSS << "scale: x" << scaleSprite.getScale().x;
-		scaleSpriteBGRect.setSize(Vector2f( scaleSprite.getGlobalBounds().width, 
-			scaleSprite.getGlobalBounds().height ) );
-		scaleText.setString(scaleTextSS.str());
-
-		preScreenTex->draw(scaleSpriteBGRect);
-		preScreenTex->draw(scaleSprite);
-		preScreenTex->draw( cursorLocationText );
-		preScreenTex->draw(scaleText);
-
-		DrawModeUI();
-
-		if( showPanel != NULL )
-		{
-			showPanel->Draw( preScreenTex );
-		}
+		DrawUI();
 
 		preScreenTex->setView( view );
 
-		preScreenTex->display();
-		const Texture &preTex = preScreenTex->getTexture();
-		
-		Sprite preTexSprite( preTex );
-		preTexSprite.setPosition( -960 / 2, -540 / 2 );
-		preTexSprite.setScale( .5, .5 );	
-		w->clear();
-		w->draw( preTexSprite );
-		w->display();
+		Display();
 	}
 	
 	preScreenTex->setView(oldPreTexView);
@@ -11257,4 +11215,55 @@ void EditSession::HandleEvents()
 		}
 
 	}
+}
+
+void EditSession::DrawUI()
+{
+	preScreenTex->setView(uiView);
+	stringstream cursorPosSS;
+	stringstream scaleTextSS;
+	if (mode == CREATE_PATROL_PATH || mode == SET_DIRECTION)
+	{
+		V2d temp = V2d(testPoint.x, testPoint.y) - Vector2<double>(patrolPath.back().x,
+			patrolPath.back().y);
+		cursorPosSS << (int)temp.x << ", " << (int)temp.y;
+	}
+	else
+	{
+		cursorPosSS << (int)worldPos.x << ", " << (int)worldPos.y;
+	}
+	cursorLocationText.setString(cursorPosSS.str());
+
+	Vector2f size = uiView.getSize();
+	float sca = view.getSize().x / 960.f / 2.f;
+	scaleSprite.setScale(1.f / sca, 1.f / sca);
+	scaleTextSS << "scale: x" << scaleSprite.getScale().x;
+	scaleSpriteBGRect.setSize(Vector2f(scaleSprite.getGlobalBounds().width,
+		scaleSprite.getGlobalBounds().height));
+	scaleText.setString(scaleTextSS.str());
+
+	preScreenTex->draw(scaleSpriteBGRect);
+	preScreenTex->draw(scaleSprite);
+	preScreenTex->draw(cursorLocationText);
+	preScreenTex->draw(scaleText);
+
+	DrawModeUI();
+
+	if (showPanel != NULL)
+	{
+		showPanel->Draw(preScreenTex);
+	}
+}
+
+void EditSession::Display()
+{
+	preScreenTex->display();
+	const Texture &preTex = preScreenTex->getTexture();
+
+	Sprite preTexSprite(preTex);
+	preTexSprite.setPosition(-960 / 2, -540 / 2);
+	preTexSprite.setScale(.5, .5);
+	w->clear();
+	w->draw(preTexSprite);
+	w->display();
 }

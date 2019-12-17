@@ -455,6 +455,9 @@ struct EditSession : GUIHandler, TilesetManager
 	void DrawDecorFront();
 
 	void Draw();
+	void DrawUI();
+
+	void Display();
 
 	void DrawBoxSelection();
 	void DrawTrackingEnemy();
