@@ -397,6 +397,14 @@ struct EditSession : GUIHandler, TilesetManager
 	void PreventNearPrimaryAnglesOnPolygonInProgress();
 	void TryAddPointToPolygonInProgress();
 
+	void SetSelectedTerrainLayer(int layer);
+
+	void MoveTopBorder(int amount);
+	void MoveLeftBorder(int amount);
+	void MoveRightBorder(int amount);
+
+	bool panning;
+
 	Brush *progressBrush;
 	std::list<Action*> doneActionStack;
 	std::list<Action*> undoneActionStack;

@@ -4455,7 +4455,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Vector2i pixelPos;
 	Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(sf::Mouse::getPosition( *w ));
 	worldPos = Vector2<double>( tempWorldPos.x, tempWorldPos.y );
-	bool panning = false;
+	panning = false;
 	Vector2<double> panAnchor;
 	minimumEdgeLength = 8;
 
@@ -4854,47 +4854,14 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										d->ShowGrass(true);
 									}
 								}
-								/*for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
-								{
-									(*it)->ShowGrass( true );
-								}*/
-							}
-							else if( ev.key.code == Keyboard::B )
-							{
-								//showPoints = true;
-								//showPoints = true;
 							}
 							else if( ev.key.code == Keyboard::P )
 							{
-								if( selectedBrush != NULL )
-								{
-									SelectList &sl = selectedBrush->objects;
-									for( SelectList::iterator it = sl.begin(); it != sl.end(); ++it )
-									{
-										if( (*it)->selectableType == ISelectable::TERRAIN )
-										{
-											SelectPtr select = (*it);
-											PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
-											poly->SetLayer( 1 );
-										}
-									}
-								}
+								SetSelectedTerrainLayer(1);
 							}
 							else if( ev.key.code == Keyboard::O )
 							{
-								if( selectedBrush != NULL )
-								{
-									SelectList &sl = selectedBrush->objects;
-									for( SelectList::iterator it = sl.begin(); it != sl.end(); ++it )
-									{
-										if( (*it)->selectableType == ISelectable::TERRAIN )
-										{
-											SelectPtr select = (*it);
-											PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
-											poly->SetLayer( 0 );
-										}
-									}
-								}
+								SetSelectedTerrainLayer(0);
 							}
 							else if( ev.key.code == Keyboard::E )
 							{
@@ -4909,41 +4876,34 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							{
 								if (ev.key.shift)
 								{
-									topBound += borderMove;
-									boundHeight -= borderMove;
+									MoveTopBorder(borderMove);
 								}
 								else
 								{
-									topBound -= borderMove;
-									boundHeight += borderMove;
+									MoveTopBorder(-borderMove);
 								}
-								UpdateFullBounds();
 							}
 							else if (ev.key.code == Keyboard::J)
 							{
 								if (ev.key.shift)
 								{
-									leftBound += borderMove;
-									boundWidth -= borderMove;
+									MoveLeftBorder(borderMove);
 								}
 								else
 								{
-									leftBound -= borderMove;
-									boundWidth += borderMove;
+									MoveLeftBorder(-borderMove);
 								}
-								UpdateFullBounds();
 							}
 							else if (ev.key.code == Keyboard::L)
 							{
 								if (ev.key.shift)
 								{
-									boundWidth -= borderMove;
+									MoveRightBorder(-borderMove);
 								}
 								else
 								{
-									boundWidth += borderMove;
+									MoveRightBorder(borderMove);
 								}
-								UpdateFullBounds();
 							}
 							break;
 						}
@@ -4960,16 +4920,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 										d->ShowGrass(false);
 									}
 								}
-
-								//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
-								//{
-								//	
-								//	//showGrass = true;
-								//	for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
-								//	{
-								//		(*it)->ShowGrass( false );
-								//	}
-								//}
 							}
 							break;
 						}
@@ -11498,4 +11448,42 @@ void EditSession::TryAddPointToPolygonInProgress()
 			}
 		}
 	}
+}
+
+void EditSession::SetSelectedTerrainLayer(int layer)
+{
+	assert(layer == 0 || layer == 1);
+
+	if (selectedBrush != NULL)
+	{
+		SelectList &sl = selectedBrush->objects;
+		for (SelectList::iterator it = sl.begin(); it != sl.end(); ++it)
+		{
+			if ((*it)->selectableType == ISelectable::TERRAIN)
+			{
+				SelectPtr select = (*it);
+				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>(select);
+				poly->SetLayer(layer);
+			}
+		}
+	}
+}
+
+void EditSession::MoveTopBorder(int amount)
+{
+	topBound += amount;
+	boundHeight -= amount;
+	UpdateFullBounds();
+}
+
+void EditSession::MoveLeftBorder(int amount)
+{
+	leftBound += amount;
+	boundWidth -= amount;
+	UpdateFullBounds();
+}
+
+void EditSession::MoveRightBorder(int amount)
+{
+	boundWidth += amount;
 }
