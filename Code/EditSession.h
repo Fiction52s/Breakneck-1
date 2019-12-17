@@ -405,8 +405,23 @@ struct EditSession : GUIHandler, TilesetManager
 
 	void ShowGrass(bool s);
 
-	void TryPlaceTrackingEnemy();
+	void ModifyZoom(double factor);
+	double minZoom;
+	double maxZoom;
 
+	void TryPlaceTrackingEnemy();
+	void AnchorTrackingEnemyOnTerrain();
+	void MoveTrackingEnemy();
+
+	void TryAddToPatrolPath();
+
+	void UpdatePan();
+
+	void UpdatePolyShaders();
+
+	void SetEnemyLevel();
+
+	int borderMove;
 	bool panning;
 
 	Brush *progressBrush;
@@ -414,6 +429,18 @@ struct EditSession : GUIHandler, TilesetManager
 	std::list<Action*> undoneActionStack;
 	void ClearUndoneActions();
 	void MovePasteBrushes();
+
+	void TempMoveSelectedBrush();
+	
+	void DrawGraph();
+	void SetupGraph();
+	V2d panAnchor;
+	bool showGraph;
+	sf::Color graphColor;
+
+	sf::VertexArray *graphLinesVA;
+	int numGraphLines;
+	
 
 	void UndoMostRecentAction();
 	void RedoMostRecentUndoneAction();
@@ -426,6 +453,9 @@ struct EditSession : GUIHandler, TilesetManager
 
 	sf::Vector2i pointMouseDown;
 	sf::Vector2f uiMousePos;
+
+	sf::Vector2i pixelPos;
+	sf::Vector2i GetPixelPos();
 
 	void TryMoveSelectedBrush();
 

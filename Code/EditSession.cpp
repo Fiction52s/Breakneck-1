@@ -78,6 +78,9 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		terrainTextures[i] = NULL;
 	}
 
+	minZoom = .25;
+	maxZoom = 65536;
+
 	copiedBrush = NULL;
 	mapHeader.ver1 = 1;
 	mapHeader.ver2 = 5;
@@ -4252,7 +4255,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	showGrass = false;
 
-	bool showGraph = false;
+	showGraph = false;
 
 
 	trackingEnemy = NULL;
@@ -4451,12 +4454,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	preScreenTex->setView(view);
 
 	UpdateFullBounds();
-	Vector2<double> prevWorldPos;
-	Vector2i pixelPos;
-	Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(sf::Mouse::getPosition( *w ));
-	worldPos = Vector2<double>( tempWorldPos.x, tempWorldPos.y );
+	
 	panning = false;
-	Vector2<double> panAnchor;
 	minimumEdgeLength = 8;
 
 	Color borderColor = sf::Color::Green;
@@ -4479,30 +4478,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	guiMenuSprite.setTexture( guiMenuCubeTexture );
 	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
 
-	Color graphColor = Color( 200, 50, 50, 100 );
-	//int max = 1000000;
-	int numLines = 30;
-	sf::VertexArray graphLines( sf::Lines, numLines * 8 );
-	int graphSep = 32;
-	int graphMax = graphSep * numLines;
-	int temp = -graphMax;
-
-	//horiz
-	for( int i = 0; i < numLines * 4; i += 2 )
-	{
-		graphLines[i] = sf::Vertex(sf::Vector2<float>(-graphMax, temp), graphColor );
-		graphLines[i+1] = sf::Vertex(sf::Vector2<float>(graphMax, temp), graphColor );
-		temp += graphSep;
-	}
-
-	//vert
-	temp = -graphMax;
-	for( int i = numLines * 4; i < numLines * 8; i += 2 )
-	{
-		graphLines[i] = sf::Vertex(sf::Vector2<float>(temp, -graphMax), graphColor );
-		graphLines[i+1] = sf::Vertex(sf::Vector2<float>(temp, graphMax), graphColor );
-		temp += graphSep;
-	}
+	graphColor = Color( 200, 50, 50, 100 );
+	numGraphLines = 30;
+	graphLinesVA = new VertexArray(sf::Lines, numGraphLines * 8);
+	SetupGraph();
 	
 
 	bool s = IsKeyPressed( sf::Keyboard::T );
@@ -4510,12 +4489,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	V2d menuDownPos;
 	Emode menuDownStored;
 
-	//mode = CREATE_TERRAIN;
 	mode = EDIT;
 	Emode stored = mode;
 	bool canCreatePoint = true;
-	//gs->active = true;
-
 
 	double circleDist = 100;
 	double circleRadius = 50;
@@ -4531,20 +4507,20 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	string menuSelection = "";
 
+	borderMove = 100;
+
+	sf::Event ev;
+	Vector2f uiMouse;
+
 	while( !quit )
 	{
-		prevWorldPos = worldPos;
-		pixelPos = sf::Mouse::getPosition( *w );
-		pixelPos.x *= 1920.f / w->getSize().x;
-		pixelPos.y *= 1080.f / w->getSize().y;
+		pixelPos = GetPixelPos();
 
-		Vector2f tempWorldPos = preScreenTex->mapPixelToCoords(pixelPos);
-		worldPos.x = tempWorldPos.x;
-		worldPos.y = tempWorldPos.y;
+		worldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
 		worldPosGround = ConvertPointToGround( Vector2i( worldPos.x, worldPos.y ) );
 
 		preScreenTex->setView( uiView );
-		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+		uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
 		uiMousePos = uiMouse;
 		
 		preScreenTex->setView( view );
@@ -4588,8 +4564,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			}
 		}
 
-		int borderMove = 100;
-		sf::Event ev;
+		
 		while( w->pollEvent( ev ) )
 		{
 			if (ev.type == Event::KeyPressed)
@@ -4600,6 +4575,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					continue;
 				}
 			}
+
 			switch( mode )
 			{
 			case CREATE_TERRAIN:
@@ -5571,6 +5547,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						{
 							panning = true;
 							panAnchor = worldPos;
+							cout << "setting panAnchor: " << panAnchor.x << " , " << panAnchor.y << endl;
 						}
 						else if( ev.mouseButton.button == Mouse::Button::Right )
 						{
@@ -5593,40 +5570,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					{
 						if( ev.mouseWheel.delta > 0 )
 						{
-							zoomMultiple /= 2;
-							UpdateFullBounds();
+							ModifyZoom(.5);
 						}
 						else if( ev.mouseWheel.delta < 0 )
 						{
-							zoomMultiple *= 2;
-							UpdateFullBounds();
+							ModifyZoom(2);
 						}
-
-						if( zoomMultiple < .25 )
-						{
-							zoomMultiple = .25;
-							UpdateFullBounds();
-							cout << "min zoom" << endl;
-						}
-						else if( zoomMultiple > 65536 )
-						{
-							zoomMultiple = 65536;
-							UpdateFullBounds();
-						}
-						else if( abs(zoomMultiple - 1.0) < .1 )
-						{
-							zoomMultiple = 1;
-							UpdateFullBounds();
-						}
-				
-						Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
-						view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
-						preScreenTex->setView( view );
-						Vector2f newWorldPosTemp = preScreenTex->mapPixelToCoords(pixelPos);
-						Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
-						Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
-						view.setCenter( tempCenter.x, tempCenter.y );
-						preScreenTex->setView( view );
 						break;
 					}
 				case Event::KeyPressed:
@@ -5643,17 +5592,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						}
 						else if( ev.key.code == Keyboard::Escape )
 						{
-							//if( sf::IsKeyPressed( sf::Keyboard::Escape ) )
-							{
-								quit = true;
-								returnVal = 1;
-							}
+							quit = true;
+							returnVal = 1;
 						}
-						//else if( ev.key.code == sf::Keyboard::Z )
-						//{
-						//	panning = true;
-						//	panAnchor = worldPos;	
-						//}
 						else if( ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash )
 						{
 							if( showPanel != NULL )
@@ -5661,56 +5602,18 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 							if( ev.key.code == sf::Keyboard::Equal )
 							{
-								zoomMultiple /= 2;
-								UpdateFullBounds();
+								ModifyZoom(.5);
 							}
 							else if( ev.key.code == sf::Keyboard::Dash )
 							{
-								//might be too general
-								
-								
-								zoomMultiple *= 2;
-								UpdateFullBounds();
-								
-								
+								ModifyZoom(2);
 							}
-
-							if( zoomMultiple < .25 )
-							{
-								zoomMultiple = .25;
-								UpdateFullBounds();
-								cout << "min zoom" << endl;
-							}
-							else if( zoomMultiple > 65536 )
-							{
-								zoomMultiple = 65536;
-								UpdateFullBounds();
-							}
-							else if( abs(zoomMultiple - 1.0) < .1 )
-							{
-								zoomMultiple = 1;
-								UpdateFullBounds();
-							}
-				
-							Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y );//worldPos - ( - (  .5f * view.getSize() ) );
-							view.setSize( Vector2f( 960 * (zoomMultiple), 540 * ( zoomMultiple ) ) );
-							preScreenTex->setView( view );
-							Vector2f newWorldPosTemp = preScreenTex->mapPixelToCoords(pixelPos);
-							Vector2<double> newWorldPos( newWorldPosTemp.x, newWorldPosTemp.y );
-							Vector2<double> tempCenter = ff + ( worldPos - newWorldPos );
-							view.setCenter( tempCenter.x, tempCenter.y );
-							preScreenTex->setView( view );
-
 							break;
 						}
 						break;
 					}
 				case Event::KeyReleased:
 					{
-						//if( ev.key.code == sf::Keyboard::Z )
-						//{
-						//	panning = false;
-						//}
 						break;
 					}
 				case Event::LostFocus:
@@ -5726,8 +5629,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					}
 				}
 			}
-			
-		
+
 		}
 
 		if( quit )
@@ -5819,137 +5721,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		}
 		case CREATE_ENEMY:
 			{
-				if( trackingEnemy != NULL && showPanel == NULL )
-				{
-					enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2 );
-					enemySprite.setRotation( 0 );
-
-					
-					//Vector2i mouse = sf::Mouse::getPosition( *w );
-					//Vector2f realmouse( mouse.x, mouse.y );
-					
-					Vector2f p = preScreenTex->mapPixelToCoords( pixelPos );
-
-					//p.x *= 
-					//p.y *= 1080.f / w->getSize().y;
-					//cout << "p: " << p.x << ", " << p.y << endl;
-					enemySprite.setPosition( p );
-
-					enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height / 2 );
-					enemyQuad.setRotation( 0 );
-					enemyQuad.setPosition( enemySprite.getPosition() );
-				}
-
-				if( showPanel == NULL && trackingEnemy != NULL  )
-				{
-					string name = trackingEnemy->info.name;
-					
-					if(trackingEnemy->CanBeGrounded())
-					{						
-						enemyEdgePolygon = NULL;
-						
-				
-						double testRadius = 200;
-
-						for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-						{
-							if( testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
-								&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
-							{
-								TerrainPoint *prev = (*it)->pointEnd;
-								TerrainPoint *curr = (*it)->pointStart;
-
-								bool contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
-
-								if( ( contains && !(*it)->inverse ) || ( !contains && (*it)->inverse ) )
-								{
-									//prev is starting at 0. start normally at 1
-									int edgeIndex = 0;
-									double minDistance = 10000000;
-									int storedIndex;
-									double storedQuantity;
-							
-									V2d closestPoint;
-
-									for( ; curr != NULL; curr = curr->next )
-									{
-										double dist = abs(
-											cross( 
-											V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
-											normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) ) );
-										double testQuantity =  dot( 
-												V2d( testPoint.x - prev->pos.x, testPoint.y - prev->pos.y ), 
-												normalize( V2d( curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y ) ) );
-
-										V2d pr( prev->pos.x, prev->pos.y );
-										V2d cu( curr->pos.x, curr->pos.y );
-										V2d te( testPoint.x, testPoint.y );
-									
-										V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-												(testQuantity / length( cu - pr ) ) );
-
-										//int testA = dist < 100;
-										//int testB = testQuantity >= 0 && testQuantity <= length( cu - pr );
-										//int testC = testQuantity >= enemySprite.getLocalBounds().width / 2 && testQuantity <= length( cu - pr ) - enemySprite.getLocalBounds().width / 2;
-										//int testD = length( newPoint - te ) < length( closestPoint - te );
-									
-										//cout << testA << " " << testB << " " << testC << " " << testD << endl;
-
-										int hw = trackingEnemy->info.size.x / 2;
-										int hh = trackingEnemy->info.size.y / 2;
-										if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
-											&& length( newPoint - te ) < length( closestPoint - te ) )
-										{
-											minDistance = dist;
-											storedIndex = edgeIndex;
-											double l = length( cu - pr );
-										
-											storedQuantity = testQuantity;
-											closestPoint = newPoint ;
-											//minDistance = length( closestPoint - te )  
-										
-											if( name != "poi" )
-											{
-												enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
-												enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
-											}
-											/*else
-											{
-												enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height / 2 );
-											}*/
-											
-											enemySprite.setPosition( closestPoint.x, closestPoint.y );
-											enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
-
-											
-											enemyQuad.setRotation( enemySprite.getRotation() );
-											enemyQuad.setPosition( enemySprite.getPosition() );
-										}
-										else
-										{
-										
-											//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
-										}
-
-										prev = curr;
-										++edgeIndex;
-									}
-
-									enemyEdgeIndex = storedIndex;
-
-									enemyEdgeQuantity = storedQuantity;
-								
-									enemyEdgePolygon = (*it).get();
-
-									break;
-								}
-							}
-						}
-
-					}
-				}
-
-				
+				MoveTrackingEnemy();
 				break;
 			}
 		case PAUSED:
@@ -5984,60 +5756,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				if( showPanel != NULL )
 					break;
 
-				V2d pathBack(patrolPath.back());
-				V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
-
-				/*if ( Keyboard::isKeyPressed(Keyboard::Key::LShift))
-				{
-					double angle = atan2(-temp.y, temp.x);
-					if (angle < 0)
-					{
-						angle += PI * 2.0;
-					}
-					double len = length(temp);
-					double mult = angle / (PI / 4.0);
-					double dec = mult - floor(mult);
-					int iMult = mult;
-					if (dec >= .5)
-					{
-						iMult++;
-					}
-
-					angle = iMult * PI / 4.0;
-					V2d testVec(len, 0);
-					RotateCCW(testVec, angle);
-					testPoint = Vector2f(pathBack + testVec);
-					temp = testVec;
-				}*/
-
-				if( !panning && IsMousePressed( Mouse::Left ) )
-				{
-					//double test = 100;
-					//worldPos before testPoint
-					
-					double tempQuant = length( temp );
-					if( tempQuant >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) 
-						&& tempQuant > patrolPathLengthSize / 2 )
-					{
-
-						if( patrolPathLengthSize > 0 )
-						{
-							V2d temp1 = V2d(patrolPath.back().x, patrolPath.back().y );
-							temp = normalize( V2d( testPoint.x, testPoint.y ) -  temp1 ) 
-								* (double)patrolPathLengthSize + temp1;
-							Vector2i worldi( temp.x, temp.y );
-							patrolPath.push_back( worldi );
-						}
-						else
-						{
-							Vector2i worldi( testPoint.x, testPoint.y );
-							patrolPath.push_back( worldi );
-						}
-						
-
-						
-					}					
-				}
+				TryAddToPatrolPath();
 				break;
 			}
 		case SET_DIRECTION:
@@ -6051,10 +5770,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			if (showPanel == NULL)
 			{
 				Vector2f p = preScreenTex->mapPixelToCoords(pixelPos);
-
-				//p.x *= 
-				//p.y *= 1080.f / w->getSize().y;
-				//cout << "p: " << p.x << ", " << p.y << endl;
 				tempDecorSprite.setPosition(p);
 
 				tempDecorSprite.setOrigin(tempDecorSprite.getLocalBounds().width / 2, tempDecorSprite.getLocalBounds().height / 2);
@@ -6064,53 +5779,21 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		}
 		case SET_LEVEL:
 		{
-			if (IsMousePressed(Mouse::Button::Left))
-			{
-				for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
-				{
-					list<ActorPtr> &actors = it->second->actors;
-					for (list<ActorPtr>::iterator it2 = actors.begin(); it2 != actors.end(); ++it2)
-					{
-						sf::FloatRect bounds = (*it2)->image.getGlobalBounds();
-						if (bounds.contains(Vector2f(worldPos.x, worldPos.y)))
-						{
-							(*it2)->SetLevel(setLevelCurrent);
-						}
-					}
-				}
-			}
+			SetEnemyLevel();
 			break;
 		}
 		}
 		
 
-		if( panning )
-		{
-			Vector2<double> temp = panAnchor - worldPos;
-			view.move( Vector2f( temp.x, temp.y ) );
-		}
+		UpdatePan();
 		
 		
-		Vector2f vSize = view.getSize();
-
-		float zoom = vSize.x / 960;
-		Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
-		for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
-		{
-			if (terrainTextures[i] != NULL)
-			{
-				polyShaders[i].setUniform("zoom", zoom);
-				polyShaders[i].setUniform("topLeft", botLeft); 
-				//just need to change the name topleft  to botleft eventually
-			}
-			
-		}
+		UpdatePolyShaders();
 		
 		preScreenTex->clear();
 		preScreenTex->setView( view );
 
 		background->Draw(preScreenTex);
-
 
 		preScreenTex->draw(border, 8, sf::Lines);
 
@@ -6120,7 +5803,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		}
 
 		Draw();
-
 
 		for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
 		{
@@ -6134,7 +5816,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
 		{
-			//cout << "drawing gate" << endl;
 			(*it)->Draw( preScreenTex );
 		}
 
@@ -6520,57 +6201,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		}
 				
 
-		if( mode == EDIT )
-		{
-			if( moveActive )
-			{
-				Vector2i currMouse( worldPos.x, worldPos.y );
-				Vector2i delta = currMouse - pointMouseDown;
-				pointMouseDown = currMouse;
-				
-				selectedBrush->Move( delta );
-				selectedBrush->Draw( preScreenTex );
-			}
-		}
+		TempMoveSelectedBrush();
 
-		//display graph
-		if( showGraph )
-		{
-			Vector2f adjustment;
-			for( int i = 0; i < numLines * 8; ++i )
-			{
-				int adjX, adjY;
-				float x = view.getCenter().x;
-				float y = view.getCenter().y;
-
-				x /= 32;
-				y /= 32;
-
-				if( x > 0 )
-					x += .5f;
-				else if( y < 0 )
-					y -= .5f;
-
-				if( y > 0 )
-					y += .5f;
-				else if( y < 0 )
-					y -= .5f;
-
-				adjX = ((int)x) * 32;
-				adjY = ((int)y) * 32;
-					
-				adjustment = Vector2f( adjX, adjY );
-				
-				graphLines[i].position += adjustment;
-			}
-			
-			preScreenTex->draw( graphLines );
-
-			for( int i = 0; i < numLines * 8; ++i )
-			{
-				graphLines[i].position -= adjustment;
-			}
-		}
+		DrawGraph();
 
 
 		for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
@@ -8597,10 +8230,8 @@ bool EditSession::ConfirmationPop( const std::string &question )
 	sf::Event ev;
 	while( confirmChoice == ConfirmChoices::NONE )
 	{
-		Vector2i pixelPos = sf::Mouse::getPosition( *w );
-		pixelPos.x *= 1920 / w->getSize().x;
-		pixelPos.y *= 1920 / w->getSize().x;
-		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+		Vector2i pPos = GetPixelPos();
+		Vector2f uiMouse = preScreenTex->mapPixelToCoords(pPos);
 		w->clear();
 		while( w->pollEvent( ev ) )
 		{
@@ -8690,10 +8321,8 @@ void EditSession::MessagePop( const std::string &message )
 	sf::Event ev;
 	while( !closePopup )
 	{
-		Vector2i pixelPos = sf::Mouse::getPosition( *w );
-		pixelPos.x *= 1920 / w->getSize().x;
-		pixelPos.y *= 1920 / w->getSize().x;
-		Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+		Vector2i pPos = GetPixelPos();
+		Vector2f uiMouse = preScreenTex->mapPixelToCoords(pPos);
 		w->clear();
 
 		while( w->pollEvent( ev ) )
@@ -8786,10 +8415,8 @@ void EditSession::GridSelectPop( const std::string &type )
 	}
 
 	assert( panel != NULL );
-	//cout << "grid select popupppp" << endl;
 	int selectedIndex = -1;
 	tempGridResult = "nothing";
-	//messagePopup->labels["message"]->setString( message );
 	bool closePopup = false;
 	w->setView( v );
 	
@@ -8802,13 +8429,11 @@ void EditSession::GridSelectPop( const std::string &type )
 
 	preScreenTex->setView( uiView );
 
-	Vector2i pixelPos = Vector2i(960, 540) - Vector2i( panel->size.x / 2, panel->size.y / 2 );//sf::Mouse::getPosition( *w );
-	pixelPos.x *= 1920 / w->getSize().x;
-	pixelPos.y *= 1920 / w->getSize().y;
-	//pixelPos = Vector2i( 960, 540 );
+	Vector2i pPos = Vector2i(960, 540) - Vector2i( panel->size.x / 2, panel->size.y / 2 );//sf::Mouse::getPosition( *w );
+	pPos.x *= 1920 / w->getSize().x;
+	pPos.y *= 1920 / w->getSize().y;
 
-
-	Vector2f uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+	Vector2f uiMouse = preScreenTex->mapPixelToCoords(pPos);
 
 
 
@@ -8818,10 +8443,8 @@ void EditSession::GridSelectPop( const std::string &type )
 	sf::Event ev;
 	while( !closePopup )
 	{
-		pixelPos = sf::Mouse::getPosition( *w );
-		pixelPos.x *= 1920.0 / w->getSize().x;
-		pixelPos.y *= 1080.0 / w->getSize().y;
-		uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+		pPos = GetPixelPos();
+		uiMouse = preScreenTex->mapPixelToCoords(pPos);
 		w->clear();
 
 		bool shardClose = tempGridResult == "shardclose";
@@ -11245,7 +10868,7 @@ void EditSession::TryAddPointToPolygonInProgress()
 	{
 		if (cutChoose)
 		{
-			break;
+			return;
 		}
 
 		bool validPoint = true;
@@ -11380,5 +11003,321 @@ void EditSession::TryPlaceTrackingEnemy()
 		{
 			trackingEnemy->PlaceEnemy();
 		}
+	}
+}
+
+void EditSession::ModifyZoom(double factor)
+{
+	double old = zoomMultiple;
+
+	zoomMultiple *= factor;
+
+	if (zoomMultiple < minZoom)
+		zoomMultiple = minZoom;
+	else if (zoomMultiple > maxZoom)
+		zoomMultiple = maxZoom;
+	else if (abs(zoomMultiple - 1.0) < .1)
+	{
+		zoomMultiple = 1;
+	}
+
+	if (old != zoomMultiple)
+	{
+		UpdateFullBounds();
+
+		Vector2<double> ff = Vector2<double>(view.getCenter().x, view.getCenter().y);//worldPos - ( - (  .5f * view.getSize() ) );
+		view.setSize(Vector2f(960 * (zoomMultiple), 540 * (zoomMultiple)));
+		preScreenTex->setView(view);
+		Vector2f newWorldPosTemp = preScreenTex->mapPixelToCoords(GetPixelPos());
+		Vector2<double> newWorldPos(newWorldPosTemp.x, newWorldPosTemp.y);
+		Vector2<double> tempCenter = ff + (worldPos - newWorldPos);
+		view.setCenter(tempCenter.x, tempCenter.y);
+		preScreenTex->setView(view);
+	}
+}
+
+Vector2i EditSession::GetPixelPos()
+{
+	Vector2i pPos = Mouse::getPosition(*w);
+	pPos.x *= 1920.f / w->getSize().x;
+	pPos.y *= 1080.f / w->getSize().y;
+
+	return pPos;
+}
+
+void EditSession::AnchorTrackingEnemyOnTerrain()
+{
+	if (trackingEnemy != NULL)
+	{
+		string name = trackingEnemy->info.name;
+
+		if (trackingEnemy->CanBeGrounded())
+		{
+			enemyEdgePolygon = NULL;
+
+			double testRadius = 200;
+
+			for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+			{
+				if (testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
+					&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius)
+				{
+					TerrainPoint *prev = (*it)->pointEnd;
+					TerrainPoint *curr = (*it)->pointStart;
+
+					bool contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
+
+					if ((contains && !(*it)->inverse) || (!contains && (*it)->inverse))
+					{
+						//prev is starting at 0. start normally at 1
+						int edgeIndex = 0;
+						double minDistance = 10000000;
+						int storedIndex;
+						double storedQuantity;
+
+						V2d closestPoint;
+
+						for (; curr != NULL; curr = curr->next)
+						{
+							double dist = abs(
+								cross(
+									V2d(testPoint.x - prev->pos.x, testPoint.y - prev->pos.y),
+									normalize(V2d(curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y))));
+							double testQuantity = dot(
+								V2d(testPoint.x - prev->pos.x, testPoint.y - prev->pos.y),
+								normalize(V2d(curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y)));
+
+							V2d pr(prev->pos.x, prev->pos.y);
+							V2d cu(curr->pos.x, curr->pos.y);
+							V2d te(testPoint.x, testPoint.y);
+
+							V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
+								(testQuantity / length(cu - pr)));
+
+
+							int hw = trackingEnemy->info.size.x / 2;
+							int hh = trackingEnemy->info.size.y / 2;
+							if (dist < 100 && testQuantity >= 0 && testQuantity <= length(cu - pr) && testQuantity >= hw && testQuantity <= length(cu - pr) - hw
+								&& length(newPoint - te) < length(closestPoint - te))
+							{
+								minDistance = dist;
+								storedIndex = edgeIndex;
+								double l = length(cu - pr);
+
+								storedQuantity = testQuantity;
+								closestPoint = newPoint;
+
+								if (name != "poi")
+								{
+									enemySprite.setOrigin(enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height);
+									enemyQuad.setOrigin(enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height);
+								}
+
+								enemySprite.setPosition(closestPoint.x, closestPoint.y);
+								enemySprite.setRotation(atan2((cu - pr).y, (cu - pr).x) / PI * 180);
+
+
+								enemyQuad.setRotation(enemySprite.getRotation());
+								enemyQuad.setPosition(enemySprite.getPosition());
+							}
+
+							prev = curr;
+							++edgeIndex;
+						}
+
+						enemyEdgeIndex = storedIndex;
+
+						enemyEdgeQuantity = storedQuantity;
+
+						enemyEdgePolygon = (*it).get();
+
+						break;
+					}
+				}
+			}
+
+		}
+	}
+}
+
+void EditSession::MoveTrackingEnemy()
+{
+	if (trackingEnemy != NULL && showPanel == NULL)
+	{
+		enemySprite.setOrigin(enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2);
+		enemySprite.setRotation(0);
+
+		Vector2f p = preScreenTex->mapPixelToCoords(pixelPos);
+
+		enemySprite.setPosition(p);
+
+		enemyQuad.setOrigin(enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height / 2);
+		enemyQuad.setRotation(0);
+		enemyQuad.setPosition(enemySprite.getPosition());
+
+		AnchorTrackingEnemyOnTerrain();
+	}
+}
+
+void EditSession::TryAddToPatrolPath()
+{
+	V2d pathBack(patrolPath.back());
+	V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
+
+	if (!panning && IsMousePressed(Mouse::Left))
+	{
+		//double test = 100;
+		//worldPos before testPoint
+
+		double tempQuant = length(temp);
+		if (tempQuant >= minimumPathEdgeLength * std::max(zoomMultiple, 1.0)
+			&& tempQuant > patrolPathLengthSize / 2)
+		{
+
+			if (patrolPathLengthSize > 0)
+			{
+				V2d temp1 = V2d(patrolPath.back().x, patrolPath.back().y);
+				temp = normalize(V2d(testPoint.x, testPoint.y) - temp1)
+					* (double)patrolPathLengthSize + temp1;
+				Vector2i worldi(temp.x, temp.y);
+				patrolPath.push_back(worldi);
+			}
+			else
+			{
+				Vector2i worldi(testPoint.x, testPoint.y);
+				patrolPath.push_back(worldi);
+			}
+		}
+	}
+}
+
+void EditSession::SetEnemyLevel()
+{
+	if (IsMousePressed(Mouse::Left))
+	{
+		for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+		{
+			list<ActorPtr> &actors = it->second->actors;
+			for (list<ActorPtr>::iterator it2 = actors.begin(); it2 != actors.end(); ++it2)
+			{
+				sf::FloatRect bounds = (*it2)->image.getGlobalBounds();
+				if (bounds.contains(Vector2f(worldPos.x, worldPos.y)))
+				{
+					(*it2)->SetLevel(setLevelCurrent);
+				}
+			}
+		}
+	}
+}
+
+void EditSession::UpdatePan()
+{
+	if (panning)
+	{
+		Vector2<double> temp = panAnchor - worldPos;
+		view.move(Vector2f(temp.x, temp.y));
+
+		cout << "curr worldPos: " << worldPos.x << ", " << worldPos.y << endl;
+		//cout << "move by: " << temp.x << ", " << temp.y << endl;
+	}
+}
+
+void EditSession::UpdatePolyShaders()
+{
+	Vector2f vSize = view.getSize();
+	float zoom = vSize.x / 960;
+	Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
+	for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
+	{
+		if (terrainTextures[i] != NULL)
+		{
+			polyShaders[i].setUniform("zoom", zoom);
+			polyShaders[i].setUniform("topLeft", botLeft);
+			//just need to change the name topleft  to botleft eventually
+		}
+	}
+}
+
+void EditSession::TempMoveSelectedBrush()
+{
+	if (mode == EDIT)
+	{
+		if (moveActive)
+		{
+			Vector2i currMouse(worldPos.x, worldPos.y);
+			Vector2i delta = currMouse - pointMouseDown;
+			pointMouseDown = currMouse;
+
+			selectedBrush->Move(delta);
+			selectedBrush->Draw(preScreenTex);
+		}
+	}
+}
+
+void EditSession::DrawGraph()
+{
+	if (showGraph)
+	{
+		VertexArray &graphLines = *graphLinesVA;
+		Vector2f adjustment;
+		for (int i = 0; i < numGraphLines * 8; ++i)
+		{
+			int adjX, adjY;
+			float x = view.getCenter().x;
+			float y = view.getCenter().y;
+
+			x /= 32;
+			y /= 32;
+
+			if (x > 0)
+				x += .5f;
+			else if (y < 0)
+				y -= .5f;
+
+			if (y > 0)
+				y += .5f;
+			else if (y < 0)
+				y -= .5f;
+
+			adjX = ((int)x) * 32;
+			adjY = ((int)y) * 32;
+
+			adjustment = Vector2f(adjX, adjY);
+
+			graphLines[i].position += adjustment;
+		}
+
+		preScreenTex->draw(graphLines);
+
+		for (int i = 0; i < numGraphLines * 8; ++i)
+		{
+			graphLines[i].position -= adjustment;
+		}
+	}
+}
+
+void EditSession::SetupGraph()
+{
+	VertexArray &graphLines = *graphLinesVA;
+
+	int graphSep = 32;
+	int graphMax = graphSep * numGraphLines;
+	int temp = -graphMax;
+
+	//horiz
+	for (int i = 0; i < numGraphLines * 4; i += 2)
+	{
+		graphLines[i] = sf::Vertex(sf::Vector2<float>(-graphMax, temp), graphColor);
+		graphLines[i + 1] = sf::Vertex(sf::Vector2<float>(graphMax, temp), graphColor);
+		temp += graphSep;
+	}
+
+	//vert
+	temp = -graphMax;
+	for (int i = numGraphLines * 4; i < numGraphLines * 8; i += 2)
+	{
+		graphLines[i] = sf::Vertex(sf::Vector2<float>(temp, -graphMax), graphColor);
+		graphLines[i + 1] = sf::Vertex(sf::Vector2<float>(temp, graphMax), graphColor);
+		temp += graphSep;
 	}
 }
