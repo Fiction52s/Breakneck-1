@@ -2640,7 +2640,7 @@ bool TerrainPolygon::IsMovePointsOkay( Vector2i pointGrabDelta, Vector2i *deltas
 		if( ( curr->selected || next->selected ) && enemies.count( curr ) > 0 )
 		{
 			//cout << "move not okay" << endl;
-			edit->pointGrab = false;
+			//edit->pointGrab = false;
 			edit->MessagePop( "sorry, in this build you can't yet move points\n that have enemies attached to their edges" );
 			return false;
 		}

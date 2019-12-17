@@ -1301,83 +1301,84 @@ int GameSession::CountActiveEnemies()
 
 bool GameSession::LoadMovingPlats( ifstream &is, map<int, int> &polyIndex )
 {
+	//remove this entirely later
 	int numMovingPlats;
 	is >> numMovingPlats;
-	for( int i = 0; i < numMovingPlats; ++i )
-	{
-		//dont forget this!
-		//int matType;
-		//is >> matType;
+	//for( int i = 0; i < numMovingPlats; ++i )
+	//{
+	//	//dont forget this!
+	//	//int matType;
+	//	//is >> matType;
 
-		//matSet.insert( matType );
-		//string matStr;
-		//is >> matStr;
-
-
-		int polyPoints;
-		is >> polyPoints;
-
-		list<Vector2i> poly;
-
-		for( int i = 0; i < polyPoints; ++i )
-		{
-			int px, py;
-			is >> px;
-			is >> py;
-			
-			poly.push_back( Vector2i( px, py ) );
-		}
+	//	//matSet.insert( matType );
+	//	//string matStr;
+	//	//is >> matStr;
 
 
-			
-		list<Vector2i>::iterator it = poly.begin();
-		int left = (*it).x;
-		int right = (*it).x;
-		int top = (*it).y;
-		int bottom = (*it).y;
-			
-		for( ;it != poly.end(); ++it )
-		{
-			if( (*it).x < left )
-				left = (*it).x;
+	//	int polyPoints;
+	//	is >> polyPoints;
 
-			if( (*it).x > right )
-				right = (*it).x;
+	//	list<Vector2i> poly;
 
-			if( (*it).y < top )
-				top = (*it).y;
-
-			if( (*it).y > bottom )
-				bottom = (*it).y;
-		}
+	//	for( int i = 0; i < polyPoints; ++i )
+	//	{
+	//		int px, py;
+	//		is >> px;
+	//		is >> py;
+	//		
+	//		poly.push_back( Vector2i( px, py ) );
+	//	}
 
 
-		//might need to round for perfect accuracy here
-		Vector2i center( (left + right ) / 2, (top + bottom) / 2 );
+	//		
+	//	list<Vector2i>::iterator it = poly.begin();
+	//	int left = (*it).x;
+	//	int right = (*it).x;
+	//	int top = (*it).y;
+	//	int bottom = (*it).y;
+	//		
+	//	for( ;it != poly.end(); ++it )
+	//	{
+	//		if( (*it).x < left )
+	//			left = (*it).x;
 
-		for( it = poly.begin(); it != poly.end(); ++it )
-		{
-			(*it).x -= center.x;
-			(*it).y -= center.y;
-		}
+	//		if( (*it).x > right )
+	//			right = (*it).x;
 
-		int pathPoints;
-		is >> pathPoints;
+	//		if( (*it).y < top )
+	//			top = (*it).y;
 
-		list<Vector2i> path;
+	//		if( (*it).y > bottom )
+	//			bottom = (*it).y;
+	//	}
 
-		for( int i = 0; i < pathPoints; ++i )
-		{
-			int x,y;
-			is >> x;
-			is >> y;
-			path.push_back( Vector2i( x, y ) );
-		}
 
-			
-		MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 5 );
-		movingPlats.push_back( mt );
-	}
+	//	//might need to round for perfect accuracy here
+	//	Vector2i center( (left + right ) / 2, (top + bottom) / 2 );
+
+	//	for( it = poly.begin(); it != poly.end(); ++it )
+	//	{
+	//		(*it).x -= center.x;
+	//		(*it).y -= center.y;
+	//	}
+
+	//	int pathPoints;
+	//	is >> pathPoints;
+
+	//	list<Vector2i> path;
+
+	//	for( int i = 0; i < pathPoints; ++i )
+	//	{
+	//		int x,y;
+	//		is >> x;
+	//		is >> y;
+	//		path.push_back( Vector2i( x, y ) );
+	//	}
+
+	//		
+	//	MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 5 );
+	//	movingPlats.push_back( mt );
+	//}
 
 	return true;
 }

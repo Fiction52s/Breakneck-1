@@ -56,7 +56,6 @@ struct EditSession : GUIHandler, TilesetManager
 		PAUSED,
 		CREATE_ENEMY,
 		DRAW_PATROL_PATH,
-		CREATE_TERRAIN_PATH,
 		CREATE_GATES,
 		CREATE_IMAGES,
 		EDIT_IMAGES,
@@ -92,7 +91,6 @@ struct EditSession : GUIHandler, TilesetManager
 	//file stuff
 	bool OpenFile();
 	void WriteFile(std::string fileName);
-
 	void CreatePreview(sf::Vector2i imageSize);
 	sf::RenderTexture *mapPreviewTex;
 
@@ -167,6 +165,7 @@ struct EditSession : GUIHandler, TilesetManager
 	bool IsMousePressed(int m);
 
 	void SetMode(Emode m);
+
 	std::list<Panel*> allPopups;
 
 	const static int MAX_TERRAINTEX_PER_WORLD = 10;
@@ -246,38 +245,28 @@ struct EditSession : GUIHandler, TilesetManager
 	void CreateActor( ActorPtr actor );
 	void CreateDecorImage(
 		EditorDecorPtr dec);
+
+
 	std::list<GateInfoPtr> gates;
 	MainMenu *mainMenu;
 	
 	void MoveSelectedPoints( V2d worldPos );
 	void PerformMovePointsAction();
 
-	std::list<ActorPtr> tempActors;
 	GroundInfo worldPosGround;
 	V2d worldPos;
 	ActorParams* tempActor;
-	sf::Vector2i airPos;
 	MapHeader mapHeader;
-
-	
 
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;
 	int validityRadius;
-	bool showGrass;
+	
 	sf::Texture grassTex;
-	bool pointGrab;
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
-	bool polyGrab;
-	sf::Vector2i polyGrabPos;
-	sf::Vector2i polyGrabDelta;
-	sf::Vector2f polyMove;
-	char numPlayerInfoByte;
 
-	bool makingRect;
-	sf::Vector2i rectStart;
-
+	bool showGrass;
 	bool showPoints;
 
 	TerrainPolygon *cutPoly0;
@@ -295,8 +284,6 @@ struct EditSession : GUIHandler, TilesetManager
 	void TryRemoveSelectedObjects();
 
 	sf::View v;
-
-	bool showTerrainPath;
 	
 	sf::RenderWindow *w;
 	//sf::Vector2i goalPosition;
@@ -348,7 +335,6 @@ struct EditSession : GUIHandler, TilesetManager
 	
 	boost::shared_ptr<TerrainPolygon> polygonInProgress;
 	boost::shared_ptr<TerrainPolygon> inversePolygon;
-	std::list<sf::VertexArray*> progressDrawList;
 	
 	sf::Font arialFont;
 	sf::Text cursorLocationText;
@@ -365,23 +351,21 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::RectangleShape enemyQuad;
 	ActorType *trackingEnemy;//bool trackingEnemy;
 	Panel *showPanel;	
-	bool trackingEnemyDown;
 
 	Panel * CreatePopupPanel( const std::string &p );
 	Panel *messagePopup;
 	Panel *errorPopup;
 	Panel *bgPopup;
 	Panel *shardSelectPopup;
+	Panel *gateSelectorPopup;
+	Panel *terrainSelectorPopup;
+	Panel *enemySelectPanel;
 
 	void CreateShardGridSelector( Panel *p,
 		sf::Vector2i &pos );
 	void GetShardWorldAndIndex(int selX, int selY,
 		int &w, int &li );
 
-	Panel *gateSelectorPopup;
-	Panel *terrainSelectorPopup;
-
-	Panel *enemySelectPanel;
 	int enemySelectLevel;
 	GridSelector *enemyGrid[4];
 	void SetEnemyGridIndex( GridSelector *gs,
@@ -392,13 +376,11 @@ struct EditSession : GUIHandler, TilesetManager
 	int IsRemovePointsOkay();
 
 	Panel *CreateOptionsPanel( const std::string &name );
-	void WriteGrass( boost::shared_ptr<TerrainPolygon>  p, std::ofstream &of );
+	void WriteGrass( PolyPtr p, std::ofstream &of );
 	int CountSelectedPoints();
 
 	std::list<sf::Vector2i> patrolPath;
 	double minimumPathEdgeLength;
-
-	sf::IntRect fullRect;
 	
 	bool ConfirmationPop( const std::string &question );
 	void GridSelectPop( const std::string &type );
@@ -412,11 +394,9 @@ struct EditSession : GUIHandler, TilesetManager
 	void ContinueTerrainMove();
 	void TryTerrainMove();
 
-	void PreventSlightAnglesOnPolygonInProgress();
+	void PreventNearPrimaryAnglesOnPolygonInProgress();
+	void TryAddPointToPolygonInProgress();
 
-	//bool closePopup; //for messsage/error only
-	
-	//new stuff
 	Brush *progressBrush;
 	std::list<Action*> doneActionStack;
 	std::list<Action*> undoneActionStack;
@@ -432,26 +412,15 @@ struct EditSession : GUIHandler, TilesetManager
 
 	void MoveSelectedActor( sf::Vector2i &delta );
 
-	sf::Rect<float> selectRect;
 	sf::Vector2i pointMouseDown;
-
 	sf::Vector2f uiMousePos;
 
 	void TryMoveSelectedBrush();
 
 
-	//----------------------
-
-
-
 	Brush *selectedBrush;
 	Brush *copiedBrush;
 	PointMap selectedPoints;
-	//std::list<TerrainPolygon*> pointPolyList;
-	
-
-
-
 
 	//----------------------
 
@@ -485,7 +454,6 @@ struct EditSession : GUIHandler, TilesetManager
 	Panel *confirm;
 	sf::View uiView;
 	sf::View view;
-	//void GoPopup();
 	
 	std::list<TerrainBrush*> copyBrushes;
 	std::list<TerrainBrush*> pasteBrushes;
@@ -493,8 +461,6 @@ struct EditSession : GUIHandler, TilesetManager
 	void ClearPasteBrushes();
 	void CopyToPasteBrushes();
 	sf::Vector2i pastePos;
-	//int CompareAngle(bool cw, V2d &origDir,
-	//	V2d stayDir, V2d otherDir);
 	
 
 	int gatePoints;

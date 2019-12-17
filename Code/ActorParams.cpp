@@ -712,13 +712,6 @@ bool ActorParams::IsPlacementOkay()
 
 void ActorParams::Move( SelectPtr me, sf::Vector2i delta )
 {
-	//assert( groundInfo == NULL );
-
-	//ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( me );
-	//if( groundInfo != NULL )
-	//{
-	//	UnAnchor( actor );
-	//}
 	if( groundInfo == NULL )
 	{
 		position.x += delta.x;
@@ -728,27 +721,6 @@ void ActorParams::Move( SelectPtr me, sf::Vector2i delta )
 
 		image.setPosition( position.x, position.y );
 	}
-	
-	
-	/*if( session->worldPosGround.ground != NULL )
-	{
-		
-		AnchorToGround( session->worldPosGround.ground, session->worldPosGround.GetEdgeIndex(), session->worldPosGround.groundQuantity );
-		
-		SetBoundingQuad();
-		UpdateGroundedSprite();
-		//session->editStartMove = false;
-
-		//p->enemies[groundInfo->edgeStart].push_back( actor );
-		//p->UpdateBounds();
-		//cout << "new end" << endl;
-	}
-	else
-	{
-		SetBoundingQuad();
-
-		image.setPosition( position.x, position.y );
-	}*/
 }
 
 void ActorParams::BrushDraw( sf::RenderTarget *target, 

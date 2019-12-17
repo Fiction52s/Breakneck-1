@@ -125,7 +125,6 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	//adding 5 for random distance buffer
 
 	preScreenTex = mainMenu->preScreenTexture;
-	showTerrainPath = false;
 	
 	//minAngle = .99;
 	showPoints = false;
@@ -673,7 +672,7 @@ void EditSession::Draw()
 {
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		(*it)->Draw(showTerrainPath, zoomMultiple, preScreenTex, showPoints, NULL );
+		(*it)->Draw( false, zoomMultiple, preScreenTex, showPoints, NULL );
 	}
 
 	int psize = polygonInProgress->numPoints;
@@ -993,48 +992,6 @@ bool EditSession::OpenFile()
 
 		int movingPlatformNum;
 		is >> movingPlatformNum;
-		for( int i = 0; i < movingPlatformNum; ++i )
-		{
-			PolyPtr poly( new TerrainPolygon( &grassTex ) );
-			polygons.push_back( poly );
-
-			int matWorld;
-			int matVariation;
-			is >> matWorld;
-			is >> matVariation;
-
-			poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
-			poly->terrainVariation = matVariation;
-
-			int polyPoints;
-			is >> polyPoints;
-			
-			for( int i = 0; i < polyPoints; ++i )
-			{
-				int x,y, special;
-				is >> x;
-				is >> y;
-				//is >> special;
-				poly->AddPoint( new TerrainPoint(  Vector2i(x,y), false ) );
-
-			}
-
-			poly->Finalize();
-
-			int pathPoints;
-			is >> pathPoints;
-
-			if( pathPoints > 0 )
-				poly->path.push_back( Vector2i( 0, 0 ) );
-
-			for( int i = 0; i < pathPoints; ++i )
-			{
-				int x,y;
-				is >> x;
-				is >> y;
-				poly->path.push_back( Vector2i( x, y ) );
-			}
-		}
 
 
 		int bgPlatformNum0;
@@ -1281,15 +1238,7 @@ void EditSession::WriteFile(string fileName)
 	mapHeader.topBounds = topBound;
 	mapHeader.boundsWidth = boundWidth;
 	mapHeader.boundsHeight = boundHeight;
-
 	mapHeader.bossFightType = bossType;
-	/*int totalPoints = 0;
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
-	{
-		totalPoints += (*it)->numPoints;
-	}*/
-	
-
 
 	mapHeader.shardNameList.clear();
 	ShardParams *sp = NULL;
@@ -1321,30 +1270,21 @@ void EditSession::WriteFile(string fileName)
 
 	mapHeader.Save(of);
 
-	
-
 	//need to make an edit popup where you can set the numbers manually or edit with the mouse
 
 	int pointCount = 0;
-	int movingPlatCount = 0;
+	
 	int bgPlatCount0 = 0;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		//if( (*it)->path.size() == 0 )
-		if( (*it)->path.size() < 2 )
+		if ((*it)->layer == 0)
 		{
-			if( (*it)->layer == 0 )
-			{
-				pointCount += (*it)->numPoints;
-			}
-			else if( (*it)->layer == 1 )
-			{
-				bgPlatCount0++;
-			}
-			
+			pointCount += (*it)->numPoints;
 		}
-		else
-			movingPlatCount++;
+		else if ((*it)->layer == 1)
+		{
+			bgPlatCount0++;
+		}
 	}
 	of << pointCount << endl;
 
@@ -1429,12 +1369,9 @@ void EditSession::WriteFile(string fileName)
 			WriteGrass( (*it), of );
 		}
 	}	
-	/*if( inversePolygon != NULL )
-	{
-		polygons.pop_front();
-	}*/
+	
 
-	of << movingPlatCount << endl;
+	of << "0" << endl; //writing the number of moving platforms. remove this when possible
 
 	writeIndex = 0;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -1798,7 +1735,6 @@ ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon 
 
 			//poly->enemies[p].push_back( newActor );
 
-			//tempActors.push_back( newActor );
 
 			return newActor;
 			//b.AddObject( newActor );
@@ -4316,10 +4252,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	showGrass = false;
 
-	pointGrab = false;
-	polyGrab = false;
-	makingRect = false;
-
 	bool showGraph = false;
 
 
@@ -4430,12 +4362,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	Sprite tempSq;
 	tempSq.setTexture( whiteTex );
 
-	/*Sprite reformSq;
-	reformSq.setTexture( whiteTex );
-	reformSq.setColor( Color::Blue );*/
-	
-	
-	
 	tempSq.setColor( Color::Black );
 	gateSel->Set( 0, 0, tempSq, "black" );
 
@@ -4457,23 +4383,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	tempSq.setColor(Color(100, 255, 10));
 	gateSel->Set(6, 0, tempSq, "shard");
 	
-	
-	/*tempSq.setColor( Color::Blue );
-	gateSel->Set( 0, 1, tempSq, "blue" );
-	tempSq.setColor( Color::Green );
-	gateSel->Set( 1, 1, tempSq, "green" );
-	tempSq.setColor( Color::Yellow );
-	gateSel->Set( 2, 1, tempSq, "yellow" );
-	tempSq.setColor( COLOR_ORANGE );
-	gateSel->Set( 3, 1, tempSq, "orange" );
-	tempSq.setColor( Color::Red );
-	gateSel->Set( 4, 1, tempSq, "red" );
-	tempSq.setColor( Color::Magenta );
-	gateSel->Set( 5, 1, tempSq, "magenta" );
-*/
-	
-	//tempSq.setColor( Color::Black );
-	//gateSel->Set( 1, 1, tempSq, "critical" );
 
 	gateSelectorPopup->AddButton( "deletegate", Vector2i( 20, 300 ), Vector2f( 80, 40 ), "delete" );
 
@@ -4481,7 +4390,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	GridSelector *terrainSel = terrainSelectorPopup->AddGridSelector(
 		"terraintypes", Vector2i( 20, 20 ), 9, MAX_TERRAINTEX_PER_WORLD, 64, 64, false, true );
 
-	
 	int numWorlds = 9;//6 plus core plus bear core plus special terrain
 	for( int worldI = 0; worldI < numWorlds; ++worldI )
 	{
@@ -4625,7 +4533,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	while( !quit )
 	{
-		
 		prevWorldPos = worldPos;
 		pixelPos = sf::Mouse::getPosition( *w );
 		pixelPos.x *= 1920.f / w->getSize().x;
@@ -4936,51 +4843,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									TryRemoveSelectedObjects();
 								}
 							}
-							else if( ev.key.code == Keyboard::W )
-							{
-								int countPoints = CountSelectedPoints();
-								if( countPoints > 0 && !pointGrab )
-								{
-									pointGrab = true;
-
-									
-									if( IsKeyPressed( Keyboard::G ) )
-									{
-										V2d graphPos = SnapPointToGraph(worldPos, 32);
-										pointGrabPos = Vector2i( graphPos.x, graphPos.y );
-										//pointGrabPos = Vector2i( worldPos.x, worldPos.y );
-									}
-									else
-									{
-										pointGrabPos = Vector2i( worldPos.x, worldPos.y );
-									}
-								}
-								else if( selectedPolygons.size() > 0 && !polyGrab )
-								{
-									polyGrab = true;
-
-									if( IsKeyPressed( Keyboard::G ) )
-									{
-										V2d graphPos = SnapPointToGraph( worldPos, 32 );
-										polyGrabPos = Vector2i( graphPos.x, graphPos.y );//Vector2i( graphPos.x, graphPos.y );
-									}
-									else
-									{
-										//cout << "grab pos: " << endl;
-										polyGrabPos = Vector2i( worldPos.x, worldPos.y );
-
-										//polyGrabPos = //pixelPos;//Vector2i( worldPos.x, worldPos.y );
-									}
-								}
-							}
-							else if( ev.key.code == Keyboard::Q )
-							{
-								if( !makingRect )
-								{
-									makingRect = true;
-									rectStart = Vector2i( worldPos.x, worldPos.y );
-								}
-							}
 							else if( ev.key.code == Keyboard::R )
 							{
 								showGrass = true;
@@ -5083,217 +4945,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								}
 								UpdateFullBounds();
 							}
-							/*else if (ev.key.code == Keyboard::K)
-							{
-								if (ev.key.shift)
-								{
-									boundHeight -= borderMove;
-								}
-								else
-								{
-									boundHeight += borderMove;
-								}
-								UpdateFullBounds();
-							}*/
 							break;
 						}
 					case Event::KeyReleased:
 						{
-							if( ev.key.code == Keyboard::W )
-							{
-								if( pointGrab )
-								{
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
-									{
-										if( (*it)->movingPointMode )
-										{
-											(*it)->SoftReset();
-											(*it)->Finalize();
-											(*it)->movingPointMode = false;
-										}
-										
-									}
-								}
-
-								pointGrab = false;
-								polyGrab = false;
-
-							}
-							else if( ev.key.code == Keyboard::Q )
-							{
-								makingRect = false;
-
-								int xDiff = ((int)worldPos.x) - rectStart.x;
-								int yDiff = ((int)worldPos.y) - rectStart.y;
-
-								if( abs(xDiff) > 10 && abs( yDiff) > 10 )
-								{
-									int left, top, width, height;
-									if( xDiff > 0 )
-									{
-										left = rectStart.x;
-										width = xDiff;
-									}
-									else
-									{
-										left = (int)worldPos.x;
-										width = -xDiff;
-									}
-
-									if( yDiff > 0 )
-									{
-										top = rectStart.y;
-										height = yDiff;
-									}
-									else
-									{
-										top = (int)worldPos.y;
-										height = -yDiff;
-									}
-
-									sf::Rect<float> selectRect = sf::Rect<float>( left, top, width, height );
-
-
-									bool emptySpace = true;
-
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-										it != selectedPolygons.end(); ++it )
-									{
-										for( TerrainPoint *curr = (*it)->pointStart; curr != NULL; curr = curr->next )
-										{
-											if( selectRect.contains( Vector2f( curr->pos.x, curr->pos.y ) ) )
-											{
-												if( curr->selected ) //selected 
-												{
-													if( IsKeyPressed( Keyboard::LShift ) )
-													{
-														curr->selected = false;
-													}
-													else
-													{
-														emptySpace = false;
-													}
-													
-													//break;
-												}
-												else
-												{
-													if( IsKeyPressed( Keyboard::LShift ) )
-													{
-													
-													}
-													else
-													{
-														//for( PointList::iterator tempIt = (*it)->points.begin();
-														//	tempIt != (*it)->points.end(); ++tempIt )
-														//{
-														//	(*tempIt).second = false;
-														//}
-													}
-
-													curr->selected = true;
-													emptySpace = false;
-												//	break;
-
-
-												}
-											
-											
-											}
-											else
-											{
-												if( IsKeyPressed( Keyboard::LShift ) )
-												{
-
-												}
-												else
-												{
-													curr->selected = false;
-												}
-											}
-										}
-									}
-
-									TerrainPolygon tempRectPoly(&grassTex );
-									tempRectPoly.AddPoint( new TerrainPoint( Vector2i( selectRect.left, selectRect.top ), false ) );
-									tempRectPoly.AddPoint( new TerrainPoint( Vector2i( selectRect.left + selectRect.width, selectRect.top ), false ) );
-									tempRectPoly.AddPoint( new TerrainPoint( Vector2i( selectRect.left + selectRect.width, selectRect.top + selectRect.height ), false ) );
-									tempRectPoly.AddPoint( new TerrainPoint( Vector2i( selectRect.left, selectRect.top + selectRect.height ), false ) );
-									tempRectPoly.Finalize();
-
-									if( emptySpace )
-									{
-										for( list<PolyPtr>::iterator it = polygons.begin(); 
-											it != polygons.end(); ++it )
-										{
-												
-											if( tempRectPoly.IsTouching( (*it).get() )
-													|| (
-													(*it)->left >= tempRectPoly.left
-													&& (*it)->right <= tempRectPoly.right
-													&& (*it)->bottom <= tempRectPoly.bottom
-													&& (*it)->top >= tempRectPoly.top
-													)
-													)
-												//if((*it)->ContainsPoint( Vector2f(worldPos.x, worldPos.y ) ) )
-												{
-													emptySpace = false;
-													
-													if( (*it)->selected )
-													{
-														if( IsKeyPressed( Keyboard::LShift ) )
-														{
-														}
-														else
-														{
-														//	selectedPolygons.remove( (*it ) );
-														//	(*it)->SetSelected( false );
-														}
-														//selectedPolygons.push_back( (*it) );
-														
-													}
-													else
-													{
-														if( IsKeyPressed( Keyboard::LShift ) )
-														{
-															
-														}
-														else
-														{
-														/*	for( list<PolyPtr>::iterator selIt = 
-																selectedPolygons.begin(); 
-																selIt != selectedPolygons.end(); ++selIt )
-															{
-																(*selIt)->SetSelected( false );
-															}
-															selectedPolygons.clear();*/
-															//selectedPolygons.push_back( (*it) );
-															//(*it)->SetSelected( true );
-														}
-
-														selectedPolygons.push_back( (*it) );
-														(*it)->SetSelected( true );
-														//selectedPolygons.remove( (*it ) );
-													}
-													//break;
-												}
-										}
-									}
-
-								if( emptySpace )
-								{
-									for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-										it != selectedPolygons.end(); ++it )
-									{
-										(*it)->SetSelected( false );
-
-									}
-									selectedPolygons.clear();
-								}
-								
-							}
-							}
-							else if( ev.key.code == Keyboard::R )
+							if( ev.key.code == Keyboard::R )
 							{
 								showGrass = false;
 								for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
@@ -5902,71 +5558,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 				break;
 			}
-			case CREATE_TERRAIN_PATH:
-				{
-					minimumPathEdgeLength = 16;
-					switch( ev.type )
-					{
-					case Event::MouseButtonPressed:
-						{
-							break;
-						}
-					case Event::MouseButtonReleased:
-						{
-							break;
-						}
-					case Event::MouseWheelMoved:
-						{
-							break;
-						}
-					case Event::KeyPressed:
-						{
-							if( ( ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete ) ) 
-							{
-								if( selectedBrush != NULL && !selectedBrush->objects.size() > 1 )
-								{
-									for( SelectIter it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it )
-								//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
-									{
-										TerrainPolygon *tp = (TerrainPolygon*)(*it).get();
-										if( tp->path.size() > 1 )
-										{
-											tp->path.pop_back();
-										}
-									}
-								}
-								
-							}
-							else if( ev.key.code == Keyboard::Space )
-							{
-								if( selectedBrush != NULL && !selectedBrush->objects.empty() )
-								{
-									TerrainPolygon *tp = (TerrainPolygon*)selectedBrush->objects.front().get();
-									if( tp->path.size() == 1 )
-									{
-										tp->path.pop_back();
-									}
-								}
-								showPanel = terrainOptionsPanel;
-								mode = EDIT;
-							}
-							break;
-						}
-					case Event::KeyReleased:
-						{
-							break;
-						}
-					case Event::LostFocus:
-						{
-							break;
-						}
-					case Event::GainedFocus:
-						{
-							break;
-						}
-					}
-					break;
-				}
 			case CREATE_GATES:
 				{
 					switch( ev.type )
@@ -6373,14 +5964,10 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 		
 		}
 
-		
-
 		if( quit )
 			break;
 
 		showGraph = false;
-		showTerrainPath = true;
-
 
 		if (IsKeyPressed(Keyboard::Num5))
 		{
@@ -6394,11 +5981,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			scaleSprite.setPosition(0, 80);
 			scaleSpriteBGRect.setPosition(0, 80);
 		}
-
-		// temp;
-		//V2d temp1;
-		//double tempQuant;
-
 
 		//--------
 
@@ -6424,33 +6006,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					showPoints = false;
 				}
 
-				PreventSlightAnglesOnPolygonInProgress();
+				PreventNearPrimaryAnglesOnPolygonInProgress();
 
-				if( !panning && IsMousePressed( Mouse::Left ) )
-				{
-					if( cutChoose )
-					{
-						break;
-					}
-
-					bool validPoint = true;
-
-					//test validity later
-					if(validPoint)
-					{
-						Vector2i worldi(testPoint.x, testPoint.y);
-
-						if( polygonInProgress->numPoints == 0 || (polygonInProgress->numPoints > 0 &&
-							length( V2d( testPoint.x, testPoint.y ) 
-								- Vector2<double>(polygonInProgress->pointEnd->pos.x, 
-							polygonInProgress->pointEnd->pos.y )  ) >= minimumEdgeLength * std::max(zoomMultiple,1.0 )) )
-						{
-							polygonInProgress->AddPoint( new TerrainPoint(worldi, false ) );
-						}
-					}
-								
-				}
-				
+				TryAddPointToPolygonInProgress();
 
 				break;
 			}
@@ -6722,39 +6280,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 				break;
 			break;
 		}
-		case CREATE_TERRAIN_PATH:
-			{
-				showTerrainPath = false;
-				if( showPanel != NULL )
-					break;
-
-				
-				Vector2i fullRectCenter( fullRect.left + fullRect.width / 2.0, fullRect.top + fullRect.height / 2.0 );
-				if( !panning && IsMousePressed( Mouse::Left ) )
-				{
-					if( selectedBrush != NULL && !selectedBrush->objects.empty() )
-					{
-						TerrainPolygon *tp = (TerrainPolygon*)selectedBrush->objects.front().get();
-						if( length( ( worldPos - V2d( fullRectCenter.x, fullRectCenter.y ) ) - Vector2<double>(tp->path.back().x, 
-							tp->path.back().y )  ) >= minimumPathEdgeLength * std::max(zoomMultiple,1.0 ) )
-						{
-							Vector2i worldi( testPoint.x - fullRectCenter.x, testPoint.y - fullRectCenter.y );
-
-							for( SelectIter it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it )
-							{
-								TerrainPolygon *tp1 = (TerrainPolygon*)(*it).get();
-								tp1->path.push_back( worldi );
-							}
-							//for( 
-							//for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
-							//{
-							//	(*it)->path.push_back( worldi );
-							//}
-						}		
-					}
-				}
-				break;
-			}
 		case CREATE_IMAGES:
 		{
 			if (showPanel == NULL)
@@ -6914,49 +6439,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					rs.setFillColor( Color( 200, 200, 200, 80 ) );
 					rs.setPosition( left, top );
 					preScreenTex->draw( rs );
-				}
-
-				if( makingRect )
-				{
-					int xDiff = ((int)worldPos.x) - rectStart.x;
-					int yDiff = ((int)worldPos.y) - rectStart.y;
-
-					if( abs(xDiff) > 10 && abs( yDiff) > 10 )
-					{
-						int left, top, width, height;
-						if( xDiff > 0 )
-						{
-							left = rectStart.x;
-							width = xDiff;
-						}
-						else
-						{
-							left = (int)worldPos.x;
-							width = -xDiff;
-						}
-
-						if( yDiff > 0 )
-						{
-							top = rectStart.y;
-							height = yDiff;
-						}
-						else
-						{
-							top = (int)worldPos.y;
-							height = -yDiff;
-						}
-
-		//				sf::Rect<float> selectRect = sf::Rect<float>( left, top, width, height );
-
-						sf::RectangleShape rs;
-						rs.setSize( Vector2f( width, height ) );
-						rs.setFillColor( Color::Transparent );
-						rs.setOutlineColor( Color::Magenta );
-						rs.setOutlineThickness( 2 );
-						rs.setPosition( left, top );
-
-						preScreenTex->draw( rs );
-					}
 				}
 				break;
 			}
@@ -7133,93 +6615,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 			
 
 				break;
-			}
-		case CREATE_TERRAIN_PATH:
-			{
-				TerrainPolygon *tp = (TerrainPolygon*)selectedBrush->objects.front().get();
-
-				int pathSize = tp->path.size();//selectedPolygons.front()->path.size();
-
-				sf::FloatRect bounds;
-				bounds.left = fullRect.left;
-				bounds.top = fullRect.top;
-				bounds.width = fullRect.width;
-				bounds.height = fullRect.height;
-
-				sf::RectangleShape rs( sf::Vector2f( bounds.width, bounds.height ) );
-				
-				rs.setOutlineColor( Color::Cyan );				
-				rs.setFillColor( Color::Transparent );
-				rs.setOutlineThickness( 5 );
-				rs.setPosition( bounds.left, bounds.top );
-
-				preScreenTex->draw( rs );
-
-				Vector2i fullCenter( fullRect.left + fullRect.width / 2, fullRect.top + fullRect.height / 2 );
-				if( pathSize > 0 )
-				{
-					Vector2i backPoint = tp->path.back();
-					backPoint += fullCenter;
-			
-					Color validColor = Color::Magenta;
-					Color invalidColor = Color::Red;
-					Color colorSelection;
-					if( true )
-					{
-						colorSelection = validColor;
-					}
-					sf::Vertex activePreview[2] =
-					{
-						sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection ),
-						sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
-					};
-					preScreenTex->draw( activePreview, 2, sf::Lines );
-
-					if( pathSize > 1 )
-					{
-						VertexArray v( sf::LinesStrip, pathSize );
-						int i = 0;
-
-						for( list<sf::Vector2i>::iterator it = tp->path.begin(); 
-							it != tp->path.end(); ++it )
-						{
-							v[i] = Vertex( Vector2f( (*it).x + fullCenter.x, (*it).y + fullCenter.y) );
-							++i;
-						}
-						preScreenTex->draw( v );
-					}
-				}
-				
-				if( pathSize >= 0 ) //always
-				{
-					CircleShape cs;
-					cs.setRadius( 5 * zoomMultiple  );
-					cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-					cs.setFillColor( Color::Magenta );
-
-					//Vector2i fullCenter( fullRect.left + fullRect.width / 2, fullRect.top + fullRect.height / 2 );
-
-					//for( list<sf::Vector2i>::iterator it = selectedPolygons.front()->path.begin(); 
-					//		it != selectedPolygons.front()->path.end(); ++it )
-					for( list<Vector2i>::iterator it = tp->path.begin(); it != tp->path.end(); ++it )
-					{
-						//TerrainPolygon *tp1 = (TerrainPolygon*)(*it).get();
-						//cout << "drawing" << endl;
-						cs.setPosition( (*it).x + fullCenter.x, (*it).y + fullCenter.y );
-						preScreenTex->draw( cs );
-					}		
-				}
-
-				break;
-
-/*				CircleShape cs;
-				cs.setRadius( 5 * zoomMultiple  );
-				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-				cs.setFillColor( Color::Magenta );
-				cs.setPosition( fullCenter.x, fullCenter.y );
-				preScreenTex->draw( cs );*/
-				
-
 			}
 		case CREATE_GATES:
 			{
@@ -7940,69 +7335,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if (b->name == "ok")
 		{
-			showPanel = NULL;
-		}
-		else if( b->name == "create_path" )
-		{
-			//cout << "setting mode to create path terrain" << endl;
-			mode = CREATE_TERRAIN_PATH;
-			//patrolPath.clear();
-
-			bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
-
-			
-			//TerrainPolygon *tp = (TerrainPolygon*)selectedBrush->objects.front().get();
-
-			assert( onlyPoly );//singlePoly );
-			//assert( selectedPolygons.size() > 0 );
-
-			int left, right, top, bottom;
-			SelectIter it = selectedBrush->objects.begin();
-
-			TerrainPolygon *tp = (TerrainPolygon*)(*it).get();
-
-			left = tp->left;
-			right = tp->right;
-			top = tp->top;
-			bottom = tp->bottom;
-			tp->path.clear();
-			tp->path.push_back( Vector2i( 0, 0 ) );
-			++it;
-
-			for(  ;it != selectedBrush->objects.end(); ++it )
-			{
-				tp = (TerrainPolygon*)(*it).get();
-
-				tp->path.clear();
-
-				if( tp->left < left )
-					left = tp->left;
-
-				if( tp->right > right )
-					right = tp->right;
-
-				if( tp->top < top )
-					top = tp->top;
-
-				if( tp->bottom > bottom )
-					bottom = tp->bottom;
-
-				tp->path.push_back( Vector2i( 0, 0 ) );
-			}
-
-			fullRect.left = left;
-			fullRect.top = top;
-			fullRect.width = right - left;
-			fullRect.height = bottom - top;
-
-
-			for( list<PolyPtr>::iterator it = selectedPolygons.begin(); it != selectedPolygons.end(); ++it )
-			{
-				//it doesnt need to push this cuz its just storing the locals. draw from the center of the entire bounding box!
-
-			//	(*it)->path.push_back( Vector2i( ((*it)->right + (*it)->left) / 2.0, ((*it)->bottom - (*it)->top) / 2.0 ) );
-			}
-			//patrolPath.push_back( Vector2i( worldPos.x, worldPos.y ) );
 			showPanel = NULL;
 		}
 	}
@@ -10972,7 +10304,6 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {
 	Brush orig;
 	Brush resultBrush;
-	tempActors.clear();
 
 	TerrainPolygon *outPoly = NULL;
 	//Brush orig;
@@ -11238,7 +10569,6 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 {
 	Brush orig;
 	Brush resultBrush;
-	tempActors.clear();
 
 	//Brush orig;
 	map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
@@ -12117,7 +11447,7 @@ void EditSession::MovePasteBrushes()
 	}
 }
 
-void EditSession::PreventSlightAnglesOnPolygonInProgress()
+void EditSession::PreventNearPrimaryAnglesOnPolygonInProgress()
 {
 	if (polygonInProgress->numPoints > 0)
 	{
@@ -12139,6 +11469,33 @@ void EditSession::PreventSlightAnglesOnPolygonInProgress()
 		if (!(extreme.x == 0 && extreme.y == 0))
 		{
 			testPoint = Vector2f(backPoint + extreme * length(vec));
+		}
+	}
+}
+
+void EditSession::TryAddPointToPolygonInProgress()
+{
+	if (!panning && IsMousePressed(Mouse::Left))
+	{
+		if (cutChoose)
+		{
+			break;
+		}
+
+		bool validPoint = true;
+
+		//test validity later
+		if (validPoint)
+		{
+			Vector2i worldi(testPoint.x, testPoint.y);
+
+			if (polygonInProgress->numPoints == 0 || (polygonInProgress->numPoints > 0 &&
+				length(V2d(testPoint.x, testPoint.y)
+					- Vector2<double>(polygonInProgress->pointEnd->pos.x,
+						polygonInProgress->pointEnd->pos.y)) >= minimumEdgeLength * std::max(zoomMultiple, 1.0)))
+			{
+				polygonInProgress->AddPoint(new TerrainPoint(worldi, false));
+			}
 		}
 	}
 }
