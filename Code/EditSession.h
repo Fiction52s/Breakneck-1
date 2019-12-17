@@ -470,6 +470,34 @@ struct EditSession : GUIHandler, TilesetManager
 	void UpdateMode();
 
 	void HandleEvents();
+
+	void CreateTerrainModeHandleEvent();
+	void EditModeHandleEvent();
+	void PasteModeHandleEvent();
+	void CreateEnemyModeHandleEvent();
+	void PausedModeHandleEvent();
+	void SelectModeHandleEvent();
+	void CreatePatrolPathModeHandleEvent();
+	void CreateRectModeHandleEvent();
+	void SetDirectionModeHandleEvent();
+	void CreateGatesModeHandleEvent();
+	void CreateImagesHandleEvent();
+	//void EditImagesModeHandleEvent();
+	void SetLevelModeHandleEvent();
+
+	void CreateTerrainModeUpdate();
+	void EditModeUpdate();
+	void PasteModeUpdate();
+	void CreateEnemyModeUpdate();
+	//void PausedModeUpdate();
+	//void SelectModeUpdate();
+	void CreatePatrolPathModeUpdate();
+	void CreateRectModeUpdate();
+	void SetDirectionModeUpdate();
+	void CreateGatesModeUpdate();
+	void CreateImagesModeUpdate();
+	//void EditImagesModeUpdate();
+	void SetLevelModeUpdate();
 	
 	sf::Event ev;
 	void UndoMostRecentAction();
