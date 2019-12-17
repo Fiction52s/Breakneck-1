@@ -4845,15 +4845,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							}
 							else if( ev.key.code == Keyboard::R )
 							{
-								showGrass = true;
-								for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-								{
-									if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
-									{
-										boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
-										d->ShowGrass(true);
-									}
-								}
+								ShowGrass(true);
 							}
 							else if( ev.key.code == Keyboard::P )
 							{
@@ -4911,15 +4903,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						{
 							if( ev.key.code == Keyboard::R )
 							{
-								showGrass = false;
-								for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-								{
-									if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
-									{
-										boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
-										d->ShowGrass(false);
-									}
-								}
+								ShowGrass(false);
 							}
 							break;
 						}
@@ -4973,10 +4957,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								{	
 									showPanel->Update( true, uiMouse.x, uiMouse.y );
 								}
-								/*else if( gs.active )
-								{
-									gs.Update( true, uiMouse.x, uiMouse.y );
-								}*/
 							}
 							break;
 						}
@@ -4984,86 +4964,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						{
 							if( ev.mouseButton.button == Mouse::Left )
 							{
-
-
-								if( showPanel == NULL && trackingEnemy != NULL )
-								{
-									bool placementOkay = true;
-									//air enemy
-									if( enemyQuad.getLocalBounds().width == 0 ) 
-									{
-										
-									}
-									else
-									{
-									
-
-									sf::Transform tf = enemyQuad.getTransform();
-									
-									Vector2f fa = tf.transformPoint( enemyQuad.getPoint( 0 ) );
-									Vector2f fb = tf.transformPoint( enemyQuad.getPoint( 1 ) );
-									Vector2f fc = tf.transformPoint( enemyQuad.getPoint( 2 ) );
-									Vector2f fd = tf.transformPoint( enemyQuad.getPoint( 3 ) );
-									V2d a( fa.x, fa.y );
-									V2d b( fb.x, fb.y );
-									V2d c( fc.x, fc.y );
-									V2d d( fd.x, fd.y );
-
-									
-									for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && placementOkay; ++it )
-									{
-										ActorGroup *ag = (*it).second;
-										for( list<ActorPtr>::iterator git = ag->actors.begin(); git != ag->actors.end(); ++git )
-										{
-											ActorParams *params = (*git).get();
-											V2d pa( params->boundingQuad[0].position.x, params->boundingQuad[0].position.y );
-											V2d pb( params->boundingQuad[1].position.x, params->boundingQuad[1].position.y );
-											V2d pc( params->boundingQuad[2].position.x, params->boundingQuad[2].position.y );
-											V2d pd( params->boundingQuad[3].position.x, params->boundingQuad[3].position.y );
-											//isQuadTouchingQuad( 
-
-											cout << "a: " << a.x << ", " << a.y << ", b: " << b.x << ", " << b.y <<
-												", " << c.x << ", " << c.y << ", " << d.x << ", " << d.y << endl;
-											cout << "pa: " << pa.x << ", " << pa.y << ", pb: " << pb.x << ", " << pb.y <<
-												", " << pc.x << ", " << pc.y << ", " << pd.x << ", " << pd.y << endl;
-
-											cout << "testing vs: " << params->type->info.size.y << endl;
-											if( isQuadTouchingQuad( pa, pb, pc, pd, a, b, c, d ) )
-											{
-												cout << "IS TOUCHING" << endl;
-												placementOkay = false;
-												break;
-											}
-											
-										}
-										
-									}
-
-									}
-
-									if( !placementOkay )
-									{
-										MessagePop( "can't place on top of another actor" );
-									}
-									else
-									{
-										trackingEnemy->PlaceEnemy();
-									}
-								}
+								TryPlaceTrackingEnemy();
 
 								if( showPanel != NULL )
 								{	
 									showPanel->Update( false, uiMouse.x, uiMouse.y );
 								}
-								/*else if( gs.active )
-								{
-									if( gs.Update( false, uiMouse.x, uiMouse.y ) )
-									{
-										cout << "selected enemy index: " << gs.focusX << ", " << gs.focusY << endl;
-									}
-								}*/
-
-								
 							}
 							break;
 						}
@@ -5080,9 +4986,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									if (ev.key.code == Keyboard::Num1)
 									{
 										SetActiveEnemyGrid(0);
-										//enemySelectPanel->gridSelectors["level1enemies"]->active = true;
-										//enemySelectPanel->gridSelectors["level2enemies"]->active = false;
-										
 									}
 									else if (ev.key.code == Keyboard::Num2)
 									{
@@ -5112,27 +5015,11 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							}
 							else if( ev.key.code == sf::Keyboard::Z && ev.key.control )
 							{
-								if( doneActionStack.size() > 0 )
-								{
-									Action *action = doneActionStack.back();
-									doneActionStack.pop_back();
-
-									action->Undo();
-
-									undoneActionStack.push_back( action );
-								}
+								UndoMostRecentAction();
 							}
 							else if( ev.key.code == sf::Keyboard::Y && ev.key.control )
 							{
-								if( undoneActionStack.size() > 0 )
-								{
-									Action *action = undoneActionStack.back();
-									undoneActionStack.pop_back();
-
-									action->Perform();
-
-									doneActionStack.push_back( action );
-								}
+								RedoMostRecentUndoneAction();
 							}
 							break;
 						}
@@ -5220,20 +5107,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 									selectedBrush->SetSelected( false );
 									selectedBrush->Clear();
 								}
-								
-								/*for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-									it != selectedPolygons.end(); ++it )
-								{
-									(*it)->SetSelected( false );
-								}
-								selectedPolygons.clear();*/
 							}
 							else if( menuDownStored == CREATE_TERRAIN && menuSelection != "none" )
 							{
 								polygonInProgress->ClearPoints();
 							}
 
-							cout << "menu: " << menuSelection << endl;
 							if( menuSelection == "top" )
 							{
 								bool singleActor = selectedBrush->objects.size() == 1 
@@ -5242,10 +5121,13 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								bool singleImage = selectedBrush->objects.size() == 1
 									&& selectedPoints.size() == 0
 									&& selectedBrush->objects.front()->selectableType == ISelectable::IMAGE;
+
 								//bool singlePoly = selectedBrush->objects.size() == 1 
 								//	&& selectedPoints.size() == 0
 								//	&& selectedBrush->objects.front()->selectableType == ISelectable::TERRAIN;
+
 								bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
+
 								if( menuDownStored == EDIT && onlyPoly )
 								{
 									showPanel = terrainOptionsPanel;
@@ -5288,18 +5170,12 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 								gatePoints = 0;
 								showPanel = NULL;
 								showPoints = true;
-								/*for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-								{
-									
-								}*/
 							}
 							else if( menuSelection == "lowerright" )
 							{
-								//showPoints = true;
 								showPanel = mapOptionsPanel;
 								mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
 								mapOptionsPanel->textBoxes["bosstype"]->text.setString(to_string(bossType));
-								//mapOptionsPanel->textBoxes["envtype"]->text.setString(envName);
 								mode = menuDownStored;
 							}
 							else if( menuSelection == "bottom" )
@@ -5359,7 +5235,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							{
 								if( selectedBrush->objects.size() == 1 ) //EDIT
 								{
-									//showPanel = trackingEnemy->panel;
 									ISelectable *select = selectedBrush->objects.front().get();
 									ActorParams *actor = (ActorParams*)select;
 									showPanel = actor->type->panel;
@@ -5575,22 +5450,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 						else
 						{
 							EditorDecorPtr dec(new EditorDecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
-							/*if (currDecorLayer > 0)
-							{
-								
-								decorImagesBehindTerrain.push_back(dec);
-								decorImagesBehindTerrain.sort(CompareDecorInfo);
-							}
-							else if (currDecorLayer < 0)
-							{
-								decorImagesFrontTerrain.push_back(DecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
-								decorImagesFrontTerrain.sort(CompareDecorInfo);
-							}
-							else
-							{
-								decorImagesBetween.push_back(DecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
-								decorImagesBetween.sort(CompareDecorInfo);
-							}*/
 							if (currDecorLayer > 0)
 							{
 								dec->myList = &decorImagesBehindTerrain;
@@ -5605,10 +5464,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 							}
 							CreateDecorImage(dec);
 						}
-						/*else if( gs.active )
-						{
-						gs.Update( true, uiMouse.x, uiMouse.y );
-						}*/
 					}
 					break;
 				}
@@ -5638,48 +5493,18 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
 					{
 						showPanel = decorPanel;
-						/*if (trackingEnemy != NULL)
-						{
-							trackingEnemy = NULL;
-							showPanel = enemySelectPanel;
-						}*/
 					}
 					else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 					{
-						if (doneActionStack.size() > 0)
-						{
-							Action *action = doneActionStack.back();
-							doneActionStack.pop_back();
-
-							action->Undo();
-
-							undoneActionStack.push_back(action);
-						}
+						UndoMostRecentAction();
 					}
 					else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
 					{
-						if (undoneActionStack.size() > 0)
-						{
-							Action *action = undoneActionStack.back();
-							undoneActionStack.pop_back();
-
-							action->Perform();
-
-							doneActionStack.push_back(action);
-						}
+						RedoMostRecentUndoneAction();
 					}
 					break;
 				}
 				}
-				/*switch (ev.type)
-				{
-				case Event::MouseButtonPressed:
-					break;
-				}*/
-
-
-				
-
 				break;
 			}
 			case EDIT_IMAGES:
@@ -5706,15 +5531,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 					if (ev.key.code == sf::Keyboard::Num1 )
 					{
 						setLevelCurrent = 1;
-						/*if (doneActionStack.size() > 0)
-						{
-							Action *action = doneActionStack.back();
-							doneActionStack.pop_back();
-
-							action->Undo();
-
-							undoneActionStack.push_back(action);
-						}*/
 					}
 					else if (ev.key.code == sf::Keyboard::Num2)
 					{
@@ -11486,4 +11302,83 @@ void EditSession::MoveLeftBorder(int amount)
 void EditSession::MoveRightBorder(int amount)
 {
 	boundWidth += amount;
+}
+
+void EditSession::ShowGrass(bool s)
+{
+	showGrass = s;
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	{
+		if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
+		{
+			boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
+			d->ShowGrass(s);
+		}
+	}
+}
+
+void EditSession::TryPlaceTrackingEnemy()
+{
+	if (showPanel == NULL && trackingEnemy != NULL)
+	{
+		bool placementOkay = true;
+
+		//air enemy
+		if (enemyQuad.getLocalBounds().width == 0)
+		{
+
+		}
+		else
+		{
+			sf::Transform tf = enemyQuad.getTransform();
+
+			Vector2f fa = tf.transformPoint(enemyQuad.getPoint(0));
+			Vector2f fb = tf.transformPoint(enemyQuad.getPoint(1));
+			Vector2f fc = tf.transformPoint(enemyQuad.getPoint(2));
+			Vector2f fd = tf.transformPoint(enemyQuad.getPoint(3));
+			V2d a(fa.x, fa.y);
+			V2d b(fb.x, fb.y);
+			V2d c(fc.x, fc.y);
+			V2d d(fd.x, fd.y);
+
+			for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end() && placementOkay; ++it)
+			{
+				ActorGroup *ag = (*it).second;
+				for (list<ActorPtr>::iterator git = ag->actors.begin(); git != ag->actors.end(); ++git)
+				{
+					ActorParams *params = (*git).get();
+					V2d pa(params->boundingQuad[0].position.x, params->boundingQuad[0].position.y);
+					V2d pb(params->boundingQuad[1].position.x, params->boundingQuad[1].position.y);
+					V2d pc(params->boundingQuad[2].position.x, params->boundingQuad[2].position.y);
+					V2d pd(params->boundingQuad[3].position.x, params->boundingQuad[3].position.y);
+					//isQuadTouchingQuad( 
+
+					cout << "a: " << a.x << ", " << a.y << ", b: " << b.x << ", " << b.y <<
+						", " << c.x << ", " << c.y << ", " << d.x << ", " << d.y << endl;
+					cout << "pa: " << pa.x << ", " << pa.y << ", pb: " << pb.x << ", " << pb.y <<
+						", " << pc.x << ", " << pc.y << ", " << pd.x << ", " << pd.y << endl;
+
+					cout << "testing vs: " << params->type->info.size.y << endl;
+					if (isQuadTouchingQuad(pa, pb, pc, pd, a, b, c, d))
+					{
+						cout << "IS TOUCHING" << endl;
+						placementOkay = false;
+						break;
+					}
+
+				}
+
+			}
+
+		}
+
+		if (!placementOkay)
+		{
+			MessagePop("can't place on top of another actor");
+		}
+		else
+		{
+			trackingEnemy->PlaceEnemy();
+		}
+	}
 }

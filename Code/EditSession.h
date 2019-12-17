@@ -403,6 +403,10 @@ struct EditSession : GUIHandler, TilesetManager
 	void MoveLeftBorder(int amount);
 	void MoveRightBorder(int amount);
 
+	void ShowGrass(bool s);
+
+	void TryPlaceTrackingEnemy();
+
 	bool panning;
 
 	Brush *progressBrush;
