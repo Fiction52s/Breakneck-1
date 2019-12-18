@@ -8,6 +8,7 @@
 #include "VectorMath.h"
 
 struct TerrainPoint;
+struct ActorParams;
 
 struct TerrainRail : ISelectable
 {
@@ -74,20 +75,22 @@ struct TerrainRail : ISelectable
 	void AlignExtremes(double primLimit);
 
 	void MoveSelectedPoints(sf::Vector2i move);
+	
 	void UpdateBounds();
 
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 
 	sf::Rect<int> TempAABB();
 
-	void Move(SelectPtr me, sf::Vector2i move);
-
 	bool movingPointMode;
 	int numPoints;
 	TerrainPoint *pointStart;
 	TerrainPoint *pointEnd;
 
+	double railRadius;
+
 	sf::Vertex *lines;
+	int numLineVerts;
 
 	sf::Vertex *quads;
 

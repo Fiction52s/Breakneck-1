@@ -136,13 +136,14 @@ struct MoveBrushAction : Action
 {
 	MoveBrushAction( Brush *brush, sf::Vector2i delta,
 		bool moveOnFirstPerform,
-		PointMap &points);
+		PointMap &points, RailPointMap &railPoints);
 	void Perform();
 	void Undo();
 
 	Brush movingBrush;
 	//std::list<PointMoveInfo> movingPoints;
 	PointMap movingPoints;
+	RailPointMap movingRailPoints;
 	bool moveOnFirstPerform;
 	sf::Vector2i delta;
 };

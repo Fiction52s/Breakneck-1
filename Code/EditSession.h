@@ -222,7 +222,11 @@ struct EditSession : GUIHandler, TilesetManager
 	void ClearSelectedPoints();
 	void SelectPoint(TerrainPolygon *poly,
 		TerrainPoint *point);
+	void SelectPoint(TerrainRail *rail,
+		TerrainPoint *point);
 	void DeselectPoint(TerrainPolygon *poly,
+		TerrainPoint *point);
+	void DeselectPoint(TerrainRail *rail,
 		TerrainPoint *point);
 	bool PolyIntersectGate( TerrainPolygon &poly );
 
@@ -254,6 +258,7 @@ struct EditSession : GUIHandler, TilesetManager
 	MainMenu *mainMenu;
 	
 	void MoveSelectedPoints( V2d worldPos );
+	void MoveSelectedRailPoints(V2d worldPos);
 	void PerformMovePointsAction();
 
 	GroundInfo worldPosGround;
@@ -268,6 +273,7 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Texture grassTex;
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
+	sf::Vector2i oldPointGrabPos;
 
 	bool showGrass;
 	bool showPoints;
@@ -404,7 +410,9 @@ struct EditSession : GUIHandler, TilesetManager
 	void TryTerrainMove();
 
 	void PreventNearPrimaryAnglesOnPolygonInProgress();
+	void PreventNearPrimaryAnglesOnRailInProgress();
 	void TryAddPointToPolygonInProgress();
+	void TryAddPointToRailInProgress();
 
 	void SetSelectedTerrainLayer(int layer);
 
@@ -452,7 +460,9 @@ struct EditSession : GUIHandler, TilesetManager
 	int numGraphLines;
 
 	void DrawPolygons();
+	void DrawRails();
 	void DrawPolygonInProgress();
+	void DrawRailInProgress();
 
 	void DrawActors();
 	void DrawGates();
@@ -530,6 +540,8 @@ struct EditSession : GUIHandler, TilesetManager
 	Brush *selectedBrush;
 	Brush *copiedBrush;
 	PointMap selectedPoints;
+	RailPointMap selectedRailPoints;
+	
 
 	sf::Vertex border[8];
 
@@ -610,8 +622,11 @@ struct EditSession : GUIHandler, TilesetManager
 	bool PointSelectDecor(V2d &pos);
 	bool PointSelectActor(  V2d &pos);
 	bool PointSelectTerrain(V2d &pos);
-	bool PointSelectPoint( V2d &pos );
+	bool PointSelectPolyPoint( V2d &pos );
 	bool PointSelectPoly(V2d &pos);
+	bool PointSelectRailPoint(V2d &pos);
+	bool PointSelectGeneralRail(V2d &pos);
+	bool PointSelectRail(V2d &pos);
 
 	void UpdateGrass();
 	void ModifyGrass();
@@ -621,6 +636,7 @@ struct EditSession : GUIHandler, TilesetManager
 	bool BoxSelectActors(sf::IntRect &rect);
 	bool BoxSelectDecor(sf::IntRect &rect);
 	bool BoxSelectPolys(sf::IntRect &rect);
+	bool BoxSelectRails(sf::IntRect &rect);
 	void TryBoxSelect();
 	void TryPaste();
 	bool CheckValidPaste();

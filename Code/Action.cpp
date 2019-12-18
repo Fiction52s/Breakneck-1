@@ -3,6 +3,7 @@
 #include <iostream>
 #include "EditSession.h"
 #include "ActorParams.h"
+#include "EditorRail.h"
 
 using namespace sf;
 using namespace std;
@@ -519,8 +520,9 @@ void ModifyGateAction::Undo()
 
 //doesn't make a copy of the brush!
 MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform,
-	PointMap &points )
-	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), movingPoints( points )
+	PointMap &points, RailPointMap &railPoints )
+	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), movingPoints( points ),
+	movingRailPoints( railPoints )
 {
 	movingBrush = *p_brush;
 }
@@ -539,6 +541,14 @@ void MoveBrushAction::Perform()
 			(*it).first->Finalize();
 			(*it).first->movingPointMode = false;
 		}
+
+		for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
+		{
+			(*it).first->SoftReset();
+			(*it).first->Finalize();
+			(*it).first->movingPointMode = false;
+		}
+
 		moveOnFirstPerform = true;
 	}
 	else
@@ -549,6 +559,19 @@ void MoveBrushAction::Perform()
 		{
 			list<PointMoveInfo> &pList = (*it).second;
 			for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
+			{
+				(*pit).point->pos += (*pit).delta;
+			}
+
+			(*it).first->SoftReset();
+			(*it).first->Finalize();
+			(*it).first->movingPointMode = false;
+		}
+
+		for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
+		{
+			list<PointMoveInfo> &pList = (*it).second;
+			for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
 			{
 				(*pit).point->pos += (*pit).delta;
 			}
@@ -572,6 +595,19 @@ void MoveBrushAction::Undo()
 	{
 		list<PointMoveInfo> &pList = (*it).second;
 		for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
+		{
+			(*pit).point->pos -= (*pit).delta;
+		}
+
+		(*it).first->SoftReset();
+		(*it).first->Finalize();
+		(*it).first->movingPointMode = false;
+	}
+
+	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
+	{
+		list<PointMoveInfo> &pList = (*it).second;
+		for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
 		{
 			(*pit).point->pos -= (*pit).delta;
 		}

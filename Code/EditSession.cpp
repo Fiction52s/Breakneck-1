@@ -684,6 +684,8 @@ void EditSession::Draw()
 	DrawDecorBehind();
 
 	DrawPolygons();
+
+	DrawRails();
 	//DrawPolygonInProgress();
 
 	DrawDecorBetween();
@@ -4444,6 +4446,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	//mode = "neutral";
 	quit = false;
 	polygonInProgress.reset( new TerrainPolygon(&grassTex ) );
+	railInProgress.reset(new TerrainRail());
 	//inversePolygon.reset( NULL );
 
 	zoomMultiple = 2;
@@ -5349,10 +5352,22 @@ void EditSession::ClearSelectedPoints()
 			pit != pList.end(); ++pit )
 		{
 			(*pit).point->selected = false;
-			//(*pit).point->SetSelected( false );
 		}
 	}
+
+	for (auto pmit = selectedRailPoints.begin();
+		pmit != selectedRailPoints.end(); ++pmit)
+	{
+		list<PointMoveInfo> & pList = (*pmit).second;
+		for (list<PointMoveInfo>::iterator pit = pList.begin();
+			pit != pList.end(); ++pit)
+		{
+			(*pit).point->selected = false;
+		}
+	}
+
 	selectedPoints.clear();
+	selectedRailPoints.clear();
 }
 
 void EditSession::RemovePointFromPolygonInProgress()
@@ -5360,6 +5375,14 @@ void EditSession::RemovePointFromPolygonInProgress()
 	if (polygonInProgress->numPoints > 0)
 	{
 		polygonInProgress->RemovePoint(polygonInProgress->pointEnd);
+	}
+}
+
+void EditSession::RemovePointFromRailInProgress()
+{
+	if (railInProgress->numPoints > 0)
+	{
+		railInProgress->RemovePoint(polygonInProgress->pointEnd);
 	}
 }
 
@@ -5511,7 +5534,7 @@ bool EditSession::AnchorSelectedAerialEnemy()
 			else
 			{
 				Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
-				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointMap());
+				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointMap(), RailPointMap());
 
 				action->Perform();
 
@@ -5648,21 +5671,45 @@ void EditSession::DeselectPoint(TerrainPolygon *poly,
 	}
 }
 
+void EditSession::SelectPoint(TerrainRail *rail,
+	TerrainPoint *point)
+{
+	if (!point->selected)
+	{
+		selectedRailPoints[rail].push_back(PointMoveInfo(point));
+		point->selected = true;
+	}
+}
+
+void EditSession::DeselectPoint(TerrainRail *rail,
+	TerrainPoint *point)
+{
+	if (point->selected)
+	{
+		point->selected = false;
+		auto & infoList = selectedRailPoints[rail];
+		for (auto it = infoList.begin(); it != infoList.end(); ++it)
+		{
+			if ((*it).point == point)
+			{
+				infoList.erase(it);
+				break;
+			}
+		}
+	}
+}
+
 void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 {
-	pointGrabDelta = Vector2i( worldPos.x, worldPos.y ) - pointGrabPos;
 	
-	Vector2i oldPointGrabPos = pointGrabPos;
-	pointGrabPos = Vector2i( worldPos.x, worldPos.y );// - Vector2i( pointGrabDelta.x % 32, pointGrabDelta.y % 32 );
 	bool validMove = true;
 
 	//num polys
+
 	int numSelectedPolys = selectedPoints.size();
 	Vector2i** allDeltas = new Vector2i*[numSelectedPolys];
 	int allDeltaIndex = 0;
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
-	//for( list<TerrainPolygon*>::iterator it = pointPolyList.begin();
-	//		it != pointPolyList.end(); ++it )
 	{
 		TerrainPolygon &poly = *((*it).first);
 
@@ -5850,17 +5897,6 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 
 			++deltaIndex;
 		}
-
-
-		//if( !(*it)->IsMovePointsOkay( this, pointGrabDelta - diff ) )
-		
-		
-		//if( validMove && !(*it)->IsMovePointsOkay( this, pointGrabDelta, deltas ) )
-		//{
-		//	validMove = false;
-		//	break;
-		//}
-
 		++allDeltaIndex;
 	}
 
@@ -5868,8 +5904,6 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	{
 		allDeltaIndex = 0;
 		for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
-		//for( list<TerrainPolygon*>::iterator it = pointPolyList.begin();
-		//	it != pointPolyList.end(); ++it )
 		{
 			TerrainPolygon *poly = (*it).first;
 			bool affected = false;
@@ -5957,9 +5991,272 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	delete [] allDeltas;
 }
 
+void EditSession::MoveSelectedRailPoints(V2d worldPos)
+{
+	/*pointGrabDelta = Vector2i(worldPos.x, worldPos.y) - pointGrabPos;
+
+	Vector2i oldPointGrabPos = pointGrabPos;
+	pointGrabPos = Vector2i(worldPos.x, worldPos.y);*/// - Vector2i( pointGrabDelta.x % 32, pointGrabDelta.y % 32 );
+	bool validMove = true;
+	//num polys
+
+	int numSelectedRails = selectedRailPoints.size();
+	Vector2i** allDeltas = new Vector2i*[numSelectedRails];
+	int allDeltaIndex = 0;
+	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
+	{
+		TerrainRail &rail = *((*it).first);
+
+		int railSize = rail.numPoints;
+		Vector2i *deltas = new Vector2i[railSize];
+		allDeltas[allDeltaIndex] = deltas;
+		int deltaIndex = 0;
+
+		double prim_limit = PRIMARY_LIMIT;
+		if (IsKeyPressed(Keyboard::LShift))
+		{
+			prim_limit = .99;
+		}
+
+
+		for (TerrainPoint *curr = rail.pointStart; curr != NULL; curr = curr->next)
+		{
+			deltas[deltaIndex] = Vector2i(0, 0);
+
+			if (!curr->selected)
+			{
+				++deltaIndex;
+				continue;
+			}
+
+			Vector2i diff;
+
+			TerrainPoint *prev, *next;
+
+			prev = curr->prev;
+			next = curr->next;
+
+			V2d prevPos, nextPos, newVec, normVec;
+			V2d pos(curr->pos.x + pointGrabDelta.x, curr->pos.y + pointGrabDelta.y);
+			V2d extreme(0, 0);
+			Vector2i vec;
+
+			if (prev != NULL)
+			{
+				prevPos = V2d(prev->pos.x, prev->pos.y);
+				vec = curr->pos - prev->pos;
+				normVec = normalize(V2d(vec.x, vec.y));
+				newVec = normalize(pos - V2d(prev->pos.x, prev->pos.y));
+
+				if (!prev->selected)
+				{
+					if (normVec.x == 0 || normVec.y == 0)
+					{
+						if (newVec.x > prim_limit)
+							extreme.x = 1;
+						else if (newVec.x < -prim_limit)
+							extreme.x = -1;
+						if (newVec.y > prim_limit)
+							extreme.y = 1;
+						else if (newVec.y < -prim_limit)
+							extreme.y = -1;
+
+						if (extreme.x != 0)
+						{
+							pointGrabPos.y = oldPointGrabPos.y;
+							pointGrabDelta.y = 0;
+						}
+
+						if (extreme.y != 0)
+						{
+							pointGrabPos.x = oldPointGrabPos.x;
+							pointGrabDelta.x = 0;
+						}
+					}
+					else
+					{
+						if (normVec.x > prim_limit)
+							extreme.x = 1;
+						else if (normVec.x < -prim_limit)
+							extreme.x = -1;
+						if (normVec.y > prim_limit)
+							extreme.y = 1;
+						else if (normVec.y < -prim_limit)
+							extreme.y = -1;
+
+						if (extreme.x != 0)
+						{
+							//int diff = ;
+							diff.y = curr->pos.y - prev->pos.y;
+
+							//(*it2).pos.y = (*prev).pos.y;
+							cout << "lining up x: " << diff.y << endl;
+						}
+
+						if (extreme.y != 0)
+						{
+							diff.x = curr->pos.x - prev->pos.x;
+
+							cout << "lining up y: " << diff.x << endl;
+						}
+					}
+				}
+			}
+			if (next != NULL)
+			{
+				nextPos = V2d(next->pos.x, next->pos.y);
+
+				if (!next->selected)
+				{
+					vec = curr->pos - next->pos;
+					normVec = normalize(V2d(vec.x, vec.y));
+
+					extreme = V2d(0, 0);
+
+					newVec = normalize(pos - V2d((*next).pos.x, (*next).pos.y));
+
+					if (normVec.x == 0 || normVec.y == 0)
+					{
+						if (newVec.x > prim_limit)
+							extreme.x = 1;
+						else if (newVec.x < -prim_limit)
+							extreme.x = -1;
+						if (newVec.y > prim_limit)
+							extreme.y = 1;
+						else if (newVec.y < -prim_limit)
+							extreme.y = -1;
+
+						if (extreme.x != 0)
+						{
+							pointGrabPos.y = oldPointGrabPos.y;
+							pointGrabDelta.y = 0;
+						}
+
+						if (extreme.y != 0)
+						{
+							pointGrabPos.x = oldPointGrabPos.x;
+							pointGrabDelta.x = 0;
+						}
+					}
+					else
+					{
+						if (normVec.x > prim_limit)
+							extreme.x = 1;
+						else if (normVec.x < -prim_limit)
+							extreme.x = -1;
+						if (normVec.y > prim_limit)
+							extreme.y = 1;
+						else if (normVec.y < -prim_limit)
+							extreme.y = -1;
+
+						if (extreme.x != 0)
+						{
+							//int diff = ;
+							//diff.y = curr->pos.y - next->pos.y;
+
+							//(*it2).pos.y = (*prev).pos.y;
+							cout << "lining up x222: " << diff.y << endl;
+						}
+
+						if (extreme.y != 0)
+						{
+							//diff.x = curr->pos.x - next->pos.x;
+
+							cout << "lining up y222: " << diff.x << endl;
+						}
+					}
+				}
+			}
+
+			if (!(diff.x == 0 && diff.y == 0))
+			{
+				cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
+				cout << "diff: " << diff.x << ", " << diff.y << endl;
+			}
+			deltas[deltaIndex] = diff;
+
+			++deltaIndex;
+		}
+		++allDeltaIndex;
+	}
+
+	if (validMove)
+	{
+		allDeltaIndex = 0;
+		for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
+		{
+			TerrainRail *rail = (*it).first;
+			bool affected = false;
+
+			TerrainPoint *points = rail->pointStart;
+			int deltaIndex = 0;
+			for (TerrainPoint *curr = points; curr != NULL; curr = curr->next)
+			{
+				if (curr->selected) //selected
+				{
+					Vector2i delta = allDeltas[allDeltaIndex][deltaIndex];
+					Vector2i testDiff = pointGrabDelta - delta;
+					curr->pos += pointGrabDelta - delta;
+					cout << "moving point: " << testDiff.x << ", " << testDiff.y << endl;
+					//rail->UpdateLineColor(rail->lines, prev, rail->GetPointIndex(prev) * 2);
+					//rail->UpdateLineColor(rail->lines, curr, rail->GetPointIndex(curr) * 2);
+
+					if (rail->enemies.count(curr) > 0)
+					{
+						list<ActorPtr> &enemies = rail->enemies[curr];
+						for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+						{
+							//(*ait)->UpdateGroundedSprite();
+
+						}
+						//revquant is the quantity from the edge's v1
+						//double revQuant = 
+					}
+
+					affected = true;
+				}
+
+				++deltaIndex;
+			}
+
+			rail->UpdateBounds();
+
+			if (affected)
+			{
+				rail->movingPointMode = true;
+
+				for (auto mit = rail->enemies.begin();
+					mit != rail->enemies.end(); ++mit)
+				{
+					list<ActorPtr> &enemies = (*mit).second;
+					for (auto ait = enemies.begin(); ait != enemies.end(); ++ait)
+					{
+						(*ait)->UpdateGroundedSprite();
+						(*ait)->SetBoundingQuad();
+					}
+				}
+			}
+
+			++allDeltaIndex;
+		}
+	}
+	else
+	{
+		//cout << "NOT VALID move" << endl;
+	}
+
+	for (int i = 0; i < numSelectedRails; ++i)
+	{
+		delete[] allDeltas[i];
+	}
+	delete[] allDeltas;
+}
+
 void EditSession::PerformMovePointsAction()
 {
-	//here the delta being subtracted is the points original position
+	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
+	//here the delta being subtracted is the points original positionv
+	
 	for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
 	{
 		list<PointMoveInfo> &pList = (*mit).second;
@@ -5969,8 +6266,17 @@ void EditSession::PerformMovePointsAction()
 		}
 	}
 
-	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
-	Action *action = new MoveBrushAction(selectedBrush, delta, false, selectedPoints);
+	for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
+	{
+		list<PointMoveInfo> &pList = (*mit).second;
+		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
+		{
+			(*it).delta = (*it).point->pos - (*it).delta;
+		}
+	}
+
+		
+	Action *action = new MoveBrushAction(selectedBrush, delta, false, selectedPoints, selectedRailPoints);
 
 
 	action->Perform();
@@ -7038,7 +7344,6 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 }
 
 
-
 void EditSession::ClearCopyBrushes()
 {
 	for (list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
@@ -7469,7 +7774,6 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 	return gi;
 }
 
-
 void EditSession::ExecuteTerrainCompletion()
 {
 	if( polygonInProgress->numPoints > 2 )
@@ -7658,6 +7962,74 @@ void EditSession::ExecuteTerrainCompletion()
 	{
 		cout << "cant finalize. cant make polygon" << endl;
 		polygonInProgress->ClearPoints();
+	}
+}
+
+void EditSession::ExecuteRailCompletion()
+{
+	if (railInProgress->numPoints > 2)
+	{
+		//test final line
+		bool valid = true;
+		if (!valid)
+		{
+			//MessagePop( "unable to complete polygon" );
+			//popupPanel = messagePopup;
+			//return;
+		}
+
+		list<RailPtr>::iterator it = rails.begin();
+		bool added = false;
+
+		bool recursionDone = false;
+		RailPtr currentBrush = railInProgress;
+
+		railInProgress->UpdateBounds();
+		bool applyOkay = true;
+		if (!applyOkay)
+		{
+			MessagePop("polygon is invalid!!! new message");
+		}
+		else
+		{
+			bool empty = true;
+			//eventually be able to combine rails by putting your start/end points at their starts/ends
+			if (empty)
+			{
+				railInProgress->Finalize();
+
+				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(railInProgress);
+
+				progressBrush->Clear();
+
+				progressBrush->AddObject(sp);
+
+				Action *action = new ApplyBrushAction(progressBrush);
+				action->Perform();
+				doneActionStack.push_back(action);
+
+				ClearUndoneActions();
+
+				RailPtr newRail(new TerrainRail());
+				railInProgress = newRail;
+			}
+			else
+			{
+				//eventually combine rails here
+
+				//Action *action = ChooseAddOrSub(intersectingPolys);
+
+				//action->Perform();
+				//doneActionStack.push_back(action);
+
+				//ClearUndoneActions();
+			}
+		}
+	}
+	else if (railInProgress->numPoints <= 2 && railInProgress->numPoints > 0)
+	{
+		cout << "cant finalize. cant make polygon" << endl;
+		railInProgress->ClearPoints();
 	}
 }
 
@@ -8320,7 +8692,7 @@ bool EditSession::PointSelectTerrain(V2d &pos)
 
 	if (pointSelectKeyHeld)
 	{
-		if (PointSelectPoint(worldPos))
+		if (PointSelectPolyPoint(worldPos))
 		{
 			return true;
 		}
@@ -8336,7 +8708,7 @@ bool EditSession::PointSelectTerrain(V2d &pos)
 	return false;
 }
 
-bool EditSession::PointSelectPoint( V2d &pos )
+bool EditSession::PointSelectPolyPoint( V2d &pos )
 {
 	bool shift = IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift);
 
@@ -8359,6 +8731,92 @@ bool EditSession::PointSelectPoint( V2d &pos )
 
 					SelectPoint((*it).get(), foundPoint);
 				}			
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
+bool EditSession::PointSelectRail(V2d &pos)
+{
+	bool pointSelectKeyHeld = IsKeyPressed(Keyboard::B);
+
+	if (pointSelectKeyHeld)
+	{
+		if (PointSelectRailPoint(worldPos))
+		{
+			return true;
+		}
+	}
+	else
+	{
+		if (PointSelectGeneralRail(worldPos))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool EditSession::PointSelectGeneralRail(V2d &pos)
+{
+	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
+	{
+		bool sel = (*it)->ContainsPoint(Vector2f(pos));
+		if (sel)
+		{
+			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+			if (sp->selected)
+			{
+
+			}
+			else
+			{
+				if (!HoldingShift())
+				{
+					selectedBrush->SetSelected(false);
+					selectedBrush->Clear();
+				}
+
+				sp->SetSelected(true);
+
+				grabbedObject = sp;
+				selectedBrush->AddObject(sp);
+			}
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool EditSession::PointSelectRailPoint(V2d &pos)
+{
+	bool shift = HoldingShift();
+
+	TerrainPoint *foundPoint = NULL;
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		foundPoint = (*it)->GetClosePoint(8 * zoomMultiple, pos);
+		if (foundPoint != NULL)
+		{
+			if (shift && foundPoint->selected)
+			{
+				DeselectPoint((*it).get(), foundPoint);
+			}
+			else
+			{
+				if (!foundPoint->selected)
+				{
+					if (!shift)
+						ClearSelectedPoints();
+
+					SelectPoint((*it).get(), foundPoint);
+				}
 			}
 			return true;
 		}
@@ -8415,10 +8873,35 @@ bool EditSession::BoxSelectPoints(sf::IntRect &r,
 	bool found = false;
 	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
-		//double rad = 8 * zoomMultiple;
-		IntRect adjustedR(r.left - radius, r.top, r.width, r.height);
+		IntRect adjustedR(r.left, r.top, r.width, r.height);
+		//IntRect adjustedR(r.left - radius, r.top, r.width, r.height);
+		//why was this here with only the left coordinate changed?
 
 		//aabb w/ polygon
+		if ((*it)->Intersects(adjustedR))
+		{
+			TerrainPoint *curr = (*it)->pointStart;
+			while (curr != NULL)
+			{
+				if (IsQuadTouchingCircle(V2d(r.left, r.top),
+					V2d(r.left + r.width, r.top),
+					V2d(r.left + r.width, r.top + r.height),
+					V2d(r.left, r.top + r.height),
+					V2d(curr->pos.x, curr->pos.y), radius)
+					|| adjustedR.contains(curr->pos))
+				{
+					SelectPoint((*it).get(), curr);
+					found = true;
+				}
+				curr = curr->next;
+			}
+		}
+	}
+
+	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
+	{
+		//IntRect adjustedR(r.left - radius, r.top, r.width, r.height);
+		IntRect adjustedR(r.left, r.top, r.width, r.height);
 
 		if ((*it)->Intersects(adjustedR))
 		{
@@ -8555,6 +9038,41 @@ bool EditSession::BoxSelectPolys(sf::IntRect &rect)
 	return true;
 }
 
+bool EditSession::BoxSelectRails(sf::IntRect &rect)
+{
+	bool found = false;
+	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
+	{
+		if ((*it)->Intersects(rect))
+		{
+			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+
+			if (HoldingShift())
+			{
+				if (sp->selected)
+				{
+					sp->SetSelected(false);
+					selectedBrush->RemoveObject(sp);
+				}
+				else
+				{
+					sp->SetSelected(true);
+					selectedBrush->AddObject(sp);
+				}
+			}
+			else
+			{
+				sp->SetSelected(true);
+				selectedBrush->AddObject(sp);
+			}
+
+			found = true;
+		}
+	}
+
+	return true;
+}
+
 void EditSession::TryBoxSelect()
 {
 	Vector2i currPos(worldPos.x, worldPos.y);
@@ -8600,6 +9118,11 @@ void EditSession::TryBoxSelect()
 	else if (!showPoints)//polygon selection. don't use it for a little bit
 	{
 		if (BoxSelectPolys(r))
+		{
+			selectionEmpty = false;
+		}
+
+		if (BoxSelectRails(r))
 		{
 			selectionEmpty = false;
 		}
@@ -8973,12 +9496,27 @@ void EditSession::StartTerrainMove()
 		}
 	}
 
+	for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
+	{
+		list<PointMoveInfo> &pList = (*mit).second;
+		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
+		{
+			(*it).delta = (*it).point->pos;
+		}
+	}
+
 	moveAction = selectedBrush->UnAnchor();
 	if (moveAction != NULL)
 		moveAction->Perform();
 
 	selectedBrush->Move(delta);
+
+	pointGrabDelta = Vector2i(worldPos.x, worldPos.y) - pointGrabPos;
+	oldPointGrabPos = pointGrabPos;
+	pointGrabPos = Vector2i(worldPos.x, worldPos.y);
+
 	MoveSelectedPoints(worldPos);
+	MoveSelectedRailPoints(worldPos);
 
 	editMouseGrabPos = pos;
 }
@@ -8995,8 +9533,13 @@ void EditSession::ContinueTerrainMove()
 	else
 	{
 		selectedBrush->Move(delta);
-		MoveSelectedPoints(worldPos);
 
+		pointGrabDelta = Vector2i(worldPos.x, worldPos.y) - pointGrabPos;
+		oldPointGrabPos = pointGrabPos;
+		pointGrabPos = Vector2i(worldPos.x, worldPos.y);
+
+		MoveSelectedPoints(worldPos);
+		MoveSelectedRailPoints(worldPos);
 	}
 
 	editMouseGrabPos = Vector2i(worldPos);
@@ -9055,6 +9598,32 @@ void EditSession::PreventNearPrimaryAnglesOnPolygonInProgress()
 	}
 }
 
+void EditSession::PreventNearPrimaryAnglesOnRailInProgress()
+{
+	if (railInProgress->numPoints > 0)
+	{
+		V2d backPoint = V2d(railInProgress->pointEnd->pos.x, railInProgress->pointEnd->pos.y);
+		V2d tPoint(testPoint.x, testPoint.y);
+		V2d extreme(0, 0);
+		V2d vec = tPoint - backPoint;
+		V2d normVec = normalize(vec);
+
+		if (normVec.x > PRIMARY_LIMIT)
+			extreme.x = 1;
+		else if (normVec.x < -PRIMARY_LIMIT)
+			extreme.x = -1;
+		if (normVec.y > PRIMARY_LIMIT)
+			extreme.y = 1;
+		else if (normVec.y < -PRIMARY_LIMIT)
+			extreme.y = -1;
+
+		if (!(extreme.x == 0 && extreme.y == 0))
+		{
+			testPoint = Vector2f(backPoint + extreme * length(vec));
+		}
+	}
+}
+
 void EditSession::TryAddPointToPolygonInProgress()
 {
 	if (!panning && IsMousePressed(Mouse::Left))
@@ -9077,6 +9646,28 @@ void EditSession::TryAddPointToPolygonInProgress()
 						polygonInProgress->pointEnd->pos.y)) >= minimumEdgeLength * std::max(zoomMultiple, 1.0)))
 			{
 				polygonInProgress->AddPoint(new TerrainPoint(worldi, false));
+			}
+		}
+	}
+}
+
+void EditSession::TryAddPointToRailInProgress()
+{
+	if (!panning && IsMousePressed(Mouse::Left))
+	{
+		bool validPoint = true;
+
+		//test validity later
+		if (validPoint)
+		{
+			Vector2i worldi(testPoint.x, testPoint.y);
+
+			if (railInProgress->numPoints == 0 || (railInProgress->numPoints > 0 &&
+				length(V2d(testPoint.x, testPoint.y)
+					- Vector2<double>(railInProgress->pointEnd->pos.x,
+						railInProgress->pointEnd->pos.y)) >= minimumEdgeLength * std::max(zoomMultiple, 1.0)))
+			{
+				railInProgress->AddPoint(new TerrainPoint(worldi, false));
 			}
 		}
 	}
@@ -9520,6 +10111,14 @@ void EditSession::DrawPolygons()
 	}
 }
 
+void EditSession::DrawRails()
+{
+	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
+	{
+		(*it)->Draw(zoomMultiple, showPoints, preScreenTex);
+	}
+}
+
 void EditSession::DrawPolygonInProgress()
 {
 	int progressSize = polygonInProgress->numPoints;
@@ -9565,6 +10164,58 @@ void EditSession::DrawPolygonInProgress()
 
 
 		for (TerrainPoint *progressCurr = polygonInProgress->pointStart; progressCurr != NULL; progressCurr = progressCurr->next)
+		{
+			cs.setPosition(progressCurr->pos.x, progressCurr->pos.y);
+			preScreenTex->draw(cs);
+		}
+	}
+}
+
+void EditSession::DrawRailInProgress()
+{
+	int progressSize = railInProgress->numPoints;
+	if (progressSize > 0)
+	{
+		Vector2i backPoint = railInProgress->pointEnd->pos;
+
+		Color validColor = Color::Yellow;
+		Color invalidColor = Color::Red;
+		Color colorSelection;
+		if (true)
+		{
+			colorSelection = validColor;
+		}
+
+		{
+			sf::Vertex activePreview[2] =
+			{
+				sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection),
+				sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
+			};
+
+
+			preScreenTex->draw(activePreview, 2, sf::Lines);
+		}
+
+		if (progressSize > 1)
+		{
+			VertexArray v(sf::LinesStrip, progressSize);
+			int i = 0;
+			for (TerrainPoint *curr = railInProgress->pointStart; curr != NULL; curr = curr->next)
+			{
+				v[i] = Vertex(Vector2f(curr->pos.x, curr->pos.y));
+				++i;
+			}
+			preScreenTex->draw(v);
+		}
+
+		CircleShape cs;
+		cs.setRadius(5 * zoomMultiple);
+		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+		cs.setFillColor(Color::Red);
+
+
+		for (TerrainPoint *progressCurr = railInProgress->pointStart; progressCurr != NULL; progressCurr = progressCurr->next)
 		{
 			cs.setPosition(progressCurr->pos.x, progressCurr->pos.y);
 			preScreenTex->draw(cs);
@@ -10012,6 +10663,11 @@ void EditSession::HandleEvents()
 			CreateTerrainModeHandleEvent();
 			break;
 		}
+		case CREATE_RAILS:
+		{
+			CreateRailsModeHandleEvent();
+			break;
+		}
 		case EDIT:
 		{
 			EditModeHandleEvent();
@@ -10349,6 +11005,11 @@ void EditSession::EditModeHandleEvent()
 			if (!(editMouseDownMove || editMouseDownBox))
 			{
 				if (emptysp && PointSelectActor(worldPos))
+				{
+					emptysp = false;
+				}
+
+				if (emptysp && PointSelectRail(worldPos))
 				{
 					emptysp = false;
 				}

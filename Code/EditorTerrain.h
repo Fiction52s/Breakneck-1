@@ -13,6 +13,7 @@ struct EditSession;
 struct TerrainPolygon;
 struct ActorParams;
 struct TerrainRender;
+struct TerrainRail;
 
 struct GrassSeg
 {
@@ -356,5 +357,6 @@ typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
 typedef boost::shared_ptr<TerrainPoint> PointPtr;
 typedef std::pair<sf::Vector2i, sf::Vector2i> PointPair;
 typedef std::map<TerrainPolygon*, std::list<PointMoveInfo>> PointMap;
+typedef std::map<TerrainRail*, std::list<PointMoveInfo>> RailPointMap;
 
 #endif

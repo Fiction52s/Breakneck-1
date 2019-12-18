@@ -32,6 +32,7 @@ void TerrainRail::Init()
 	lines = NULL;
 	movingPointMode = false;
 	selected = false;
+	railRadius = 10;
 }
 
 TerrainRail::~TerrainRail()
@@ -403,7 +404,8 @@ void TerrainRail::UpdateBounds()
 void TerrainRail::Finalize()
 {
 	finalized = true;
-	lines = new sf::Vertex[numPoints * 2 + 1];
+	numLineVerts = (numPoints - 1) * 2;
+	lines = new sf::Vertex[numLineVerts];
 
 	UpdateLines();
 
@@ -439,20 +441,17 @@ void TerrainRail::SetSelected(bool select)
 
 	if (selected)
 	{
-		/*for (int i = 0; i < vaSize; ++i)
+		for (int i = 0; i < numLineVerts; ++i)
 		{
-			VertexArray & v = *va;
-			v[i].color = selectCol;
-		}*/
+			lines[i].color = Color::White;
+		}
 	}
 	else
 	{
-		////Color testColor( 0x75, 0x70, 0x90 );
-		//for (int i = 0; i < vaSize; ++i)
-		//{
-		//	VertexArray & v = *va;
-		//	v[i].color = fillCol;
-		//}
+		for (int i = 0; i < numLineVerts; ++i)
+		{
+			lines[i].color = Color::Red;
+		}
 
 		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
 		{
@@ -468,21 +467,21 @@ bool TerrainRail::ContainsPoint(Vector2f test)
 	int i, j;
 	bool c = false;
 
-	TerrainPoint *it = pointStart;
-	TerrainPoint *jt = pointEnd;
+	TerrainPoint *curr = pointStart;
+	TerrainPoint *next;
 
-	for (; it != NULL; )
+	//double zoomMultiple = EditSession::GetSession()->zoomMultiple;
+	while( curr != pointEnd )
 	{
-		/*Vector2f point(it->pos.x, it->pos.y);
-		Vector2f pointJ(jt->pos.x, jt->pos.y);
-		if (((point.y > test.y) != (pointJ.y > test.y)) &&
-			(test.x < (pointJ.x - point.x) * (test.y - point.y) / (pointJ.y - point.y) + point.x))
-			c = !c;*/
-		jt = it;
-		it = it->next;
+		next = curr->next;
+		if (IsEdgeTouchingCircle(V2d(curr->pos), V2d(next->pos), V2d(test), railRadius))
+		{
+			return true;
+		}
+		curr = curr->next;
 	}
 
-	return c;
+	return false;
 }
 
 void TerrainRail::UpdateLineColor(sf::Vertex *li, TerrainPoint *p, int index)
@@ -490,12 +489,12 @@ void TerrainRail::UpdateLineColor(sf::Vertex *li, TerrainPoint *p, int index)
 	TerrainPoint *next = p->next;
 	if (next == NULL)
 	{
-		next = pointStart;
+		assert(false);
 	}
 
-	Vector2f diff = Vector2f(next->pos - p->pos);//p1 - p0;
-	V2d dir = normalize(V2d(diff));
-	V2d norm = V2d(dir.y, -dir.x);
+	//Vector2f diff = Vector2f(next->pos - p->pos);//p1 - p0;
+	//V2d dir = normalize(V2d(diff));
+	//V2d norm = V2d(dir.y, -dir.x);
 
 	Color edgeColor;
 	edgeColor = Color::Red;
@@ -510,17 +509,15 @@ void TerrainRail::UpdateLines()
 	{
 		int i = 0;
 		TerrainPoint *curr = pointStart;
-		lines[0].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-		UpdateLineColor(lines, curr, i);
-		lines[2 * numPoints - 1].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-		curr = curr->next;
-		++i;
-		while (curr != NULL)
+		TerrainPoint *next;
+		while (curr != pointEnd)
 		{
-			UpdateLineColor(lines, curr, i + 1);
+			next = curr->next;
+
+			UpdateLineColor(lines, curr, i);
 			lines[i].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-			lines[++i].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-			++i;
+			lines[i+1].position = sf::Vector2f(next->pos.x, next->pos.y);
+			i += 2;
 			curr = curr->next;
 		}
 	}
@@ -786,8 +783,8 @@ sf::Rect<int> TerrainRail::TempAABB()
 
 bool TerrainRail::Intersects(sf::IntRect rect)
 {
-	TerrainPoint *prev = pointEnd;
 	TerrainPoint *curr = pointStart;
+	TerrainPoint *next;
 
 	LineIntersection li;
 
@@ -798,29 +795,33 @@ bool TerrainRail::Intersects(sf::IntRect rect)
 	rPoints[3] = V2d(rect.left, rect.top + rect.height);
 	
 	int i, j;
-	V2d currPos, prevPos;
+	V2d currPos, nextPos;
 	while (curr != NULL)
 	{
-		currPos = V2d(curr->pos);
-		prevPos = V2d(prev->pos);
 		if (rect.contains(curr->pos))
 		{
 			return true;
 		}
 
+		if (curr == pointEnd)
+			return false;
+
+		next = curr->next;
+		currPos = V2d(curr->pos);
+		nextPos = V2d(next->pos);
+		
 		for (i = 0; i < 4; ++i)
 		{
 			j = i - 1;
 			if (j < 0)
 				j = 3;
 
-			li = SegmentIntersect(currPos, prevPos, rPoints[j], rPoints[i]);
+			li = SegmentIntersect(currPos, nextPos, rPoints[j], rPoints[i]);
 			if (!li.parallel) //error or fail
 			{
 				return true;
 			}
 		}
-		prev = curr;
 		curr = curr->next;
 	}
 
@@ -838,29 +839,27 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 	{
 		int i = 0;
 		TerrainPoint *curr = pointStart;
-		while (curr != NULL)
+		TerrainPoint *next;
+		while (curr != pointEnd)
 		{
+			next = curr->next;
+			/*if (curr->selected)
+			{
+				cout << "currPos: " << curr->pos.x << ", " << curr->pos.y << endl;
+			}*/
+
 			lines[i * 2].position = Vector2f(curr->pos.x, curr->pos.y);
+			lines[i * 2 + 1].position = Vector2f(next->pos.x, next->pos.y);
 
-			TerrainPoint *temp = curr->next;
-			if (temp == NULL)
-			{
-				lines[i * 2 + 1].position = Vector2f(pointStart->pos.x, pointStart->pos.y);
-			}
-			else
-			{
-				lines[i * 2 + 1].position = Vector2f(temp->pos.x, temp->pos.y);
-			}
-
-			curr = temp;
+			curr = next;
 			++i;
 		}
 
-		target->draw(lines, numPoints * 2, sf::Lines);
+		target->draw(lines, numLineVerts, sf::Lines);
 		return;
 	}
 
-	target->draw(lines, numPoints * 2, sf::Lines);
+	target->draw(lines, numLineVerts, sf::Lines);
 
 	if (showPoints)
 	{
