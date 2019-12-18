@@ -827,25 +827,9 @@ bool EditSession::OpenFile()
 
 			CreateDecorImage(dec);
 		}
-		/*of << (*it).decorName << endl;
-		of << (*it).layer << endl;
-		of << (*it).spr.getPosition().x << " " << (*it).spr.getPosition().y << endl;
-		of << (*it).spr.getRotation() << endl;
-		of << (*it).spr.getScale().x << " " << (*it).spr.getScale().y << endl;*/
 
 		is >> player->position.x;
 		is >> player->position.y;
-
-		//mh->topBounds = player->position.y - 1000;
-		//topBound = mh->topBounds;
-		
-		//UpdateFullBounds();
-
-
-		//int goalPosX;
-		//int goalPosY; //discard these
-		//is >> goalPosX;
-		//is >> goalPosY;
 
 		string hasBorderPolyStr;
 		is >> hasBorderPolyStr;
@@ -1018,7 +1002,7 @@ bool EditSession::OpenFile()
 			int polyPoints;
 			is >> polyPoints;
 			
-			for( int i = 0; i < polyPoints; ++i )
+			for( int j = 0; j < polyPoints; ++j )
 			{
 				int x,y, special;
 				is >> x;
@@ -1036,8 +1020,29 @@ bool EditSession::OpenFile()
 
 		//this needs to be left here because its present in all files. Need a system to remove it
 		//before it can be taken out of the files.
-		int numLights;
-		is >> numLights;
+		//int numLights;
+		//is >> numLights;
+
+		int numRails;
+		is >> numRails;
+		for (int i = 0; i < numRails; ++i)
+		{
+			RailPtr rail(new TerrainRail());
+			rails.push_back(rail);
+
+			int numRailPoints;
+			is >> numRailPoints;
+
+			for (int j = 0; j < numRailPoints; ++j)
+			{
+				int x, y;
+				is >> x;
+				is >> y;
+				rail->AddPoint(new TerrainPoint(Vector2i(x, y), false));
+			}
+
+			rail->Finalize();
+		}
 
 
 		//enemies here
@@ -1215,30 +1220,8 @@ bool EditSession::OpenFile()
 	
 }
 
-void EditSession::WriteFile(string fileName)
+void EditSession::WriteMapHeader(ofstream &of)
 {
-	bool hasGoal = false;
-	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-	{
-		ActorGroup *group = (*it).second;
-		for( list<ActorPtr>::iterator it2 = group->actors.begin(); it2 != group->actors.end(); ++it2 )
-		{
-			if( (*it2)->type->IsGoalType() )
-			{
-				hasGoal = true;
-				break;
-			}
-		}
-	}
-
-	if( !hasGoal )
-	{
-		MessagePop( "Map not saved because no goal is in place. \nPlease add it from the CREATE ENEMIES mode." );
-		cout << "you need to place a goal in the map. file not written to!. add a popup to this alert later"
-			<< endl;
-		return;
-	}
-
 	mapHeader.leftBounds = leftBound;
 	mapHeader.topBounds = topBound;
 	mapHeader.boundsWidth = boundWidth;
@@ -1270,29 +1253,11 @@ void EditSession::WriteFile(string fileName)
 
 	mapHeader.envWorldType = envWorldType;
 
-	ofstream of;
-	of.open( fileName );//+ ".brknk" );
-
 	mapHeader.Save(of);
+}
 
-	//need to make an edit popup where you can set the numbers manually or edit with the mouse
-
-	int pointCount = 0;
-	
-	int bgPlatCount0 = 0;
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-	{
-		if ((*it)->layer == 0)
-		{
-			pointCount += (*it)->numPoints;
-		}
-		else if ((*it)->layer == 1)
-		{
-			bgPlatCount0++;
-		}
-	}
-	of << pointCount << endl;
-
+void EditSession::WriteDecor(ofstream &of)
+{
 	int totalDecor = 0;
 	totalDecor += decorImagesBehindTerrain.size() + decorImagesBetween.size() + decorImagesFrontTerrain.size();
 
@@ -1312,23 +1277,14 @@ void EditSession::WriteFile(string fileName)
 	{
 		(*it)->WriteFile(of);
 	}
+}
 
-	of << player->position.x << " " << player->position.y << endl;
-
-	bool quitLoop = false;
-
-
-	int writeIndex = 0;
-	
-	if( inversePolygon != NULL )
+void EditSession::WriteInversePoly(std::ofstream &of)
+{
+	if (inversePolygon != NULL)
 	{
 		of << "borderpoly" << endl;
-		//polygons.remove(inversePolygon);
-		//polygons.push_front( inversePolygon );
-		writeIndex = -1;
-
-		inversePolygon->writeIndex = writeIndex;
-		++writeIndex;
+		inversePolygon->writeIndex = -1;//writeIndex;
 
 		of << inversePolygon->terrainWorldType << " "
 			<< inversePolygon->terrainVariation << endl;
@@ -1338,95 +1294,104 @@ void EditSession::WriteFile(string fileName)
 
 		for (TerrainPoint *pcurr = inversePolygon->pointStart; pcurr != NULL; pcurr = pcurr->next)
 		{
-			of << pcurr->pos.x << " " << pcurr->pos.y << endl; // << " " << (int)(*it2).special << endl;
+			of << pcurr->pos.x << " " << pcurr->pos.y << endl;
 		}
 
 		WriteGrass(inversePolygon, of);
-
 	}
 	else
 	{
 		of << "no_borderpoly" << endl;
 	}
+}
+
+void EditSession::WritePolygons(std::ofstream &of, int bgPlatCount0)
+{
+	int writeIndex = 0;
+
 	cout << "writing to file with : " << polygons.size() << " polygons" << endl;
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
 		if ((*it)->inverse) continue;
 
 		//cout << "layerrr: " << (*it)->layer << ", pathsize: " << (*it)->path.size() << endl;
-		if( (*it)->layer == 0 && (*it)->path.size() < 2 )
+		if ((*it)->layer == 0 && (*it)->path.size() < 2)
 		{
 			cout << "writing polygon of write index: " << writeIndex << endl;
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
 
-			of << (*it)->terrainWorldType << " " 
+			of << (*it)->terrainWorldType << " "
 				<< (*it)->terrainVariation << endl;
 
 			cout << "numpoints: " << (*it)->numPoints << endl;
-			of <<  (*it)->numPoints << endl;
+			of << (*it)->numPoints << endl;
 
-			for( TerrainPoint *pcurr = (*it)->pointStart;  pcurr != NULL; pcurr = pcurr->next )
+			for (TerrainPoint *pcurr = (*it)->pointStart; pcurr != NULL; pcurr = pcurr->next)
 			{
 				of << pcurr->pos.x << " " << pcurr->pos.y << endl; // << " " << (int)(*it2).special << endl;
 			}
 
-			WriteGrass( (*it), of );
+			WriteGrass((*it), of);
 		}
-	}	
-	
+	}
+
+	tempWriteIndex = writeIndex;
+
+
 
 	of << "0" << endl; //writing the number of moving platforms. remove this when possible
 
 	writeIndex = 0;
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
-		if( (*it)->layer == 0 && (*it)->path.size() >= 2 )
+		if ((*it)->layer == 0 && (*it)->path.size() >= 2)
 		{
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
 
-			of << (*it)->terrainWorldType << " " 
+			of << (*it)->terrainWorldType << " "
 				<< (*it)->terrainVariation << endl;
-			
-			of <<  (*it)->numPoints << endl;
 
-			for( TerrainPoint *pcurr = (*it)->pointStart;  pcurr != NULL; pcurr = pcurr->next )
+			of << (*it)->numPoints << endl;
+
+			for (TerrainPoint *pcurr = (*it)->pointStart; pcurr != NULL; pcurr = pcurr->next)
 			{
 				of << pcurr->pos.x << " " << pcurr->pos.y << endl;
 			}
 
 
 			of << (*it)->path.size() - 1 << endl;
-		
+
 			list<Vector2i>::iterator pathit = (*it)->path.begin();
 			++pathit;
 
-			for( ; pathit != (*it)->path.end(); ++pathit )
+			for (; pathit != (*it)->path.end(); ++pathit)
 			{
 				of << (*pathit).x << " " << (*pathit).y << endl;
-			}	
+			}
 		}
 	}
 
 	of << bgPlatCount0 << endl;
+
 	writeIndex = 0;
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
 		if ((*it)->inverse) continue;
 
-		if( (*it)->layer == 1 )// && (*it)->path.size() < 2 )
+		if ((*it)->layer == 1)// && (*it)->path.size() < 2 )
 		{
 			//writeindex doesnt matter much for these for now
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
 
-			of << (*it)->terrainWorldType << " " 
+			of << (*it)->terrainWorldType << " "
 				<< (*it)->terrainVariation << endl;
 
-			of <<  (*it)->numPoints << endl;
+			of << (*it)->numPoints << endl;
 
-			for( TerrainPoint *pcurr = (*it)->pointStart;  pcurr != NULL; pcurr = pcurr->next )
+			for (TerrainPoint *pcurr = (*it)->pointStart; pcurr != NULL; pcurr = pcurr->next)
 			{
 				of << pcurr->pos.x << " " << pcurr->pos.y << endl; // << " " << (int)(*it2).special << endl;
 			}
@@ -1434,54 +1399,142 @@ void EditSession::WriteFile(string fileName)
 			//WriteGrass( (*it), of );
 		}
 	}
+}
 
-	of << "0" << endl; //writing the number of static lights for consistency. Remove this when possible.
-
+void EditSession::WriteActors(ofstream &of)
+{
 	//minus 1 because of the player group
 	of << groups.size() - 1 << endl;
 	//write the stuff for goals and remove them from the enemy stuff
-	
-	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+
+	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
 	{
 		ActorGroup *ag = (*it).second;
-		if( ag->name == "player" )
+		if (ag->name == "player")
 			continue;
 
 		//cout << "group size: " << ag->actors.size() << endl;
 		of << ag->name << " " << ag->actors.size() << endl;
-		for( list<ActorPtr>::iterator it = ag->actors.begin(); it != ag->actors.end(); ++it )
+		for (list<ActorPtr>::iterator it = ag->actors.begin(); it != ag->actors.end(); ++it)
 		{
-			if( (*it)->type == types["poi"] )
+			if ((*it)->type == types["poi"])
 			{
-				(*it)->WriteFile( of );
+				(*it)->WriteFile(of);
 			}
 		}
 	}
 
-	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
 	{
 		ActorGroup *ag = (*it).second;
-		if( ag->name == "player" )
+		if (ag->name == "player")
 			continue;
 
 		//cout << "group size: " << ag->actors.size() << endl;
 		//of << ag->name << " " << ag->actors.size() << endl;
-		for( list<ActorPtr>::iterator it = ag->actors.begin(); it != ag->actors.end(); ++it )
+		for (list<ActorPtr>::iterator it = ag->actors.begin(); it != ag->actors.end(); ++it)
 		{
-			if( (*it)->type != types["poi"] )
+			if ((*it)->type != types["poi"])
 			{
-				(*it)->WriteFile( of );
+				(*it)->WriteFile(of);
 			}
 		}
 		//(*it).second->WriteFile( of );
-		
+
+	}
+}
+
+void EditSession::WriteGates(ofstream &of)
+{
+	of << gates.size() << endl;
+	for (list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it)
+	{
+		(*it)->WriteFile(of);
+	}
+}
+
+void EditSession::WriteRails(ofstream &of)
+{
+	int writeIndexOffset = tempWriteIndex;
+	int writeIndex = writeIndexOffset;
+
+	of << rails.size() << endl;
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		(*it)->writeIndex = writeIndex;
+		++writeIndex;
+
+		of << (*it)->numPoints << endl;
+
+		for (TerrainPoint *pcurr = (*it)->pointStart; pcurr != NULL; pcurr = pcurr->next)
+		{
+			of << pcurr->pos.x << " " << pcurr->pos.y << endl;
+		}
+	}
+}
+
+void EditSession::WriteFile(string fileName)
+{
+	bool hasGoal = false;
+	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
+	{
+		ActorGroup *group = (*it).second;
+		for( list<ActorPtr>::iterator it2 = group->actors.begin(); it2 != group->actors.end(); ++it2 )
+		{
+			if( (*it2)->type->IsGoalType() )
+			{
+				hasGoal = true;
+				break;
+			}
+		}
 	}
 
-	of << gates.size() << endl;
-	for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
+	if( !hasGoal )
 	{
-		(*it)->WriteFile( of );
+		MessagePop( "Map not saved because no goal is in place. \nPlease add it from the CREATE ENEMIES mode." );
+		cout << "you need to place a goal in the map. file not written to!. add a popup to this alert later"
+			<< endl;
+		return;
 	}
+
+	ofstream of;
+	of.open(fileName);
+
+	WriteMapHeader(of);
+
+	int pointCount = 0;
+	int bgPlatCount0 = 0;
+
+	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	{
+		if ((*it)->layer == 0)
+		{
+			pointCount += (*it)->numPoints;
+		}
+		else if ((*it)->layer == 1)
+		{
+			bgPlatCount0++;
+		}
+	}
+	of << pointCount << endl;
+
+	WriteDecor(of);
+
+	of << player->position.x << " " << player->position.y << endl;
+
+	WriteInversePoly(of);
+
+	WritePolygons(of, bgPlatCount0);
+
+	WriteRails(of);
+	//going to use this for number of rails
+	//of << "0" << endl; //writing the number of static lights for consistency. Remove this when possible.
+
+	WriteActors(of);
+
+	WriteGates(of);
+	
 
 	CreatePreview(Vector2i( 1920 / 2 - 48, 1080 / 2 - 48 ));
 	//CreatePreview(Vector2i(960 * 1.25f, 540 * ));
@@ -1490,6 +1543,8 @@ void EditSession::WriteFile(string fileName)
 
 
 }
+
+
 
 void EditSession::WriteGrass( PolyPtr poly, ofstream &of )
 {
@@ -5315,7 +5370,7 @@ void EditSession::InitDecorPanel()
 			gs->Set(x, y, s, (*it).first);
 
 			++ind;
-		}	
+		}
 	}
 
 	editDecorPanel = new Panel("editdecorpanel", 500, 500, this);

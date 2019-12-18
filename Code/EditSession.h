@@ -94,7 +94,18 @@ struct EditSession : GUIHandler, TilesetManager
 	//file stuff
 	bool OpenFile();
 	void WriteFile(std::string fileName);
+	void WritePolygons(std::ofstream &of,
+		int bgPlatCount0 );
+	void WriteRails(std::ofstream &of);
+	void WriteActors(std::ofstream &of);
+	void WriteGates(std::ofstream &of);
+	void WriteDecor(std::ofstream &of);
+	void WriteMapHeader(std::ofstream &of);
 	void CreatePreview(sf::Vector2i imageSize);
+	void WriteInversePoly(std::ofstream &of);
+
+	int tempWriteIndex;
+
 	sf::RenderTexture *mapPreviewTex;
 
 
