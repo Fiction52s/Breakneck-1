@@ -15,11 +15,11 @@ Rail::Rail(GameSession *p_owner, sf::Vector2i &pos,
 	requirePower = p_powerRequired;
 	accelerate = p_accelerate;
 
-	path.push_front(Vector2i(0, 0));
+	/*path.push_front(Vector2i(0, 0));
 	for (auto it = path.begin(); it != path.end(); ++it)
 	{
 		(*it) += pos;
-	}
+	}*/
 	int pathSize = path.size();
 
 	ts_rail = owner->GetTileset("Enemies/rail_32x32.png", 32, 32);

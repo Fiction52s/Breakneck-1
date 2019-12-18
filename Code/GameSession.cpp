@@ -1728,6 +1728,33 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 	return true;
 }
 
+bool GameSession::LoadRails(ifstream &is)
+{
+	list<Vector2i> globalPath;
+
+	int numRails;
+	is >> numRails;
+	for (int i = 0; i < numRails; ++i)
+	{
+		int numRailPoints;
+		is >> numRailPoints;
+
+		for (int j = 0; j < numRailPoints; ++j)
+		{
+			int x, y;
+			is >> x;
+			is >> y;
+			globalPath.push_back(Vector2i(x, y));
+		}
+
+		Rail *r = new Rail(this, globalPath.front(), globalPath, false, false, 1);
+
+		++totalRails;
+	}
+
+	return true;
+}
+
 bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 {
 	totalNumberBullets = 0;
@@ -2300,9 +2327,9 @@ void GameSession::LoadEnemy(std::ifstream &is,
 				requirePower = true;
 			}
 
-			Rail *r = new Rail(this, Vector2i(xPos, yPos), localPath, requirePower, accelerate, level );
+			//Rail *r = new Rail(this, Vector2i(xPos, yPos), localPath, requirePower, accelerate, level );
 
-			++totalRails;
+			//++totalRails;
 		}
 		//w1
 		else if (typeName == "patroller")
@@ -4368,9 +4395,7 @@ bool GameSession::OpenFile( string fileName )
 
 		LoadBGPlats( is, polyIndex );
 
-		//legacy. Remove when possible.
-		int numLights;
-		is >> numLights;
+		LoadRails(is);
 
 		LoadEnemies( is, polyIndex );
 		
