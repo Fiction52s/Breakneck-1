@@ -1748,7 +1748,7 @@ bool GameSession::LoadRails(ifstream &is)
 		}
 
 		Rail *r = new Rail(this, globalPath.front(), globalPath, false, false, 1);
-
+		globalPath.clear();
 		++totalRails;
 	}
 
