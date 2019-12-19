@@ -1210,6 +1210,34 @@ int GameSession::CountActiveEnemies()
 	return counter;
 }
 
+bool GameSession::LoadSpecialPolys(std::ifstream &is)
+{
+	int numSpecialPolys;
+	is >> numSpecialPolys;
+
+	for (int i = 0; i < numSpecialPolys; ++i)
+	{
+		int matWorld;
+		int matVariation;
+		is >> matWorld;
+		is >> matVariation;
+
+		int polyPoints;
+		is >> polyPoints;
+
+		list<Vector2i> specialPoints;
+		for (int j = 0; j < polyPoints; ++j)
+		{
+			int x, y, special;
+			is >> x;
+			is >> y;
+			specialPoints.push_back(Vector2i(x, y));
+		}
+	}
+
+	return true;
+}
+
 bool GameSession::LoadMovingPlats( ifstream &is, map<int, int> &polyIndex )
 {
 	//remove this entirely later
@@ -4283,8 +4311,8 @@ bool GameSession::OpenFile( string fileName )
 		}
 		
 
-
-		LoadMovingPlats( is, polyIndex );
+		LoadSpecialPolys(is);
+		//LoadMovingPlats( is, polyIndex );
 
 		LoadBGPlats( is, polyIndex );
 

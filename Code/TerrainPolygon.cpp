@@ -114,6 +114,112 @@ TerrainPolygon::~TerrainPolygon()
 	ClearPoints();
 }
 
+void TerrainPolygon::WriteFile(std::ofstream & of)
+{
+	of << terrainWorldType << " " << terrainVariation << endl;
+
+	of << numPoints << endl;
+
+	for (TerrainPoint *pcurr = pointStart; pcurr != NULL; pcurr = pcurr->next)
+	{
+		of << pcurr->pos.x << " " << pcurr->pos.y << endl; // << " " << (int)(*it2).special << endl;
+	}
+
+	if (!IsSpecialPoly())
+	{
+		WriteGrass(of);
+	}
+}
+
+void TerrainPolygon::WriteGrass(std::ofstream &of)
+{
+	int edgesWithSegments = 0;
+
+	VertexArray &grassVa = *grassVA;
+
+	int edgeIndex = 0;
+	int i = 0;
+	list<list<GrassSeg>> grassListList;
+	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	{
+		Vector2i next;
+
+		TerrainPoint *temp = curr->next;
+		if (temp == NULL)
+		{
+			next = pointStart->pos;
+		}
+		else
+		{
+			next = temp->pos;
+		}
+
+		V2d v0(curr->pos.x, curr->pos.y);
+		V2d v1(next.x, next.y);
+
+		bool rem;
+		int num = GetNumGrass(curr, rem);//floor( remainder ) + 1;
+
+		grassListList.push_back(list<GrassSeg>());
+
+		list<GrassSeg> &grassList = grassListList.back();
+
+		GrassSeg *gPtr = NULL;
+		bool hasGrass = false;
+		for (int j = 0; j < num; ++j)
+		{
+			//V2d pos = v0 + (v1 - v0) * ((double)(j )/ num);
+
+			if (grassVa[i * 4].color.a == 255 || grassVa[i * 4].color.a == 254)
+			{
+				hasGrass = true;
+				if (gPtr == NULL)//|| (j == num - 1 && rem ))
+				{
+					grassList.push_back(GrassSeg(edgeIndex, j, 0));
+					gPtr = &grassList.back();
+				}
+				else
+				{
+					grassList.back().reps++;
+				}
+			}
+			else
+			{
+				if (gPtr != NULL)
+					gPtr = NULL;
+			}
+
+			++i;
+		}
+
+		if (hasGrass)
+		{
+			++edgesWithSegments;
+		}
+
+		++edgeIndex;
+
+	}
+
+	of << edgesWithSegments << endl;
+
+	for (list<list<GrassSeg>>::iterator it = grassListList.begin(); it != grassListList.end(); ++it)
+	{
+		int numSegments = (*it).size();
+
+		if (numSegments > 0)
+		{
+			int edgeIndex = (*it).front().edgeIndex;
+			of << edgeIndex << " " << numSegments << endl;
+
+			for (list<GrassSeg>::iterator it2 = (*it).begin(); it2 != (*it).end(); ++it2)
+			{
+				of << (*it2).index << " " << (*it2).reps << endl;
+			}
+		}
+	}
+}
+
 bool TerrainPolygon::SwitchPolygon( bool cw, TerrainPoint *rootPoint,
 	TerrainPoint *otherEnd )
 {
@@ -158,7 +264,10 @@ bool TerrainPolygon::CanApply()
 	bool linesNotOkay = true;
 	bool containsNotOkay = true;
 	EditSession *session = EditSession::GetSession();
-	for(list<PolyPtr>::iterator it = session->polygons.begin() ; it != session->polygons.end(); ++it )
+
+	auto & currPolyList = session->GetCorrectPolygonList(this);
+
+	for(list<PolyPtr>::iterator it = currPolyList.begin() ; it != currPolyList.end(); ++it )
 	{
 		if( (*it).get() == this )
 			continue;

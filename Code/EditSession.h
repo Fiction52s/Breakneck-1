@@ -93,9 +93,19 @@ struct EditSession : GUIHandler, TilesetManager
 
 	//file stuff
 	bool OpenFile();
+	bool ReadHeader(std::ifstream &is);
+	bool ReadPlayer(std::ifstream &is);
+	bool ReadDecor(std::ifstream &is);
+	bool ReadTerrain(std::ifstream &is);
+	bool ReadBGTerrain(std::ifstream &is);
+	bool ReadSpecialTerrain(std::ifstream &is);
+	bool ReadActors(std::ifstream &is);
+	bool ReadGates(std::ifstream &is);
+	bool ReadRails(std::ifstream &is);
 	void WriteFile(std::string fileName);
 	void WritePolygons(std::ofstream &of,
 		int bgPlatCount0 );
+	void WriteSpecialPolygons(std::ofstream &of);
 	void WriteRails(std::ofstream &of);
 	void WriteActors(std::ofstream &of);
 	void WriteGates(std::ofstream &of);

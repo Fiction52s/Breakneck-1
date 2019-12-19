@@ -525,6 +525,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		std::map<int, int> &polyIndex );
 	bool LoadMovingPlats(std::ifstream &is,
 		std::map<int, int> &polyIndex);
+	bool LoadSpecialPolys(std::ifstream &is);
 	bool LoadGates( std::ifstream &is,
 		std::map<int, int> &polyIndex);
 	bool LoadEnemies( std::ifstream &is,

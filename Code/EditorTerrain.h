@@ -201,6 +201,9 @@ struct TerrainPolygon : ISelectable
 	void AlignExtremes(double primLimit);
 	void UpdateGrass();
 
+	void WriteFile(std::ofstream & of);
+	void WriteGrass(std::ofstream &of);
+
 	int grassSize;
 	int grassSpacing;
 

@@ -743,6 +743,508 @@ void EditSession::UpdateFullBounds()
 	fullBounds[15].position = Vector2f( leftBound - boundRectWidth, topBound + boundHeight );
 }
 
+bool EditSession::ReadDecor(std::ifstream &is)
+{
+	int numDecorImages;
+	is >> numDecorImages;
+
+	for (int i = 0; i < numDecorImages; ++i)
+	{
+		string dName;
+		is >> dName;
+		int dLayer;
+		is >> dLayer;
+
+		Vector2f dPos;
+		is >> dPos.x;
+		is >> dPos.y;
+
+		float dRot;
+		is >> dRot;
+
+		Vector2f dScale;
+		is >> dScale.x;
+		is >> dScale.y;
+
+		int dTile;
+		is >> dTile;
+
+		Sprite dSpr;
+		dSpr.setScale(dScale);
+		dSpr.setRotation(dRot);
+		dSpr.setPosition(dPos);
+
+		//string fullDName = dName + string(".png");
+		Tileset *ts = decorTSMap[dName];
+		dSpr.setTexture(*ts->texture);
+		dSpr.setTextureRect(ts->GetSubRect(dTile));
+		dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
+		dSpr.setColor(Color(255, 255, 255, 100));
+		//dSpr.setTexture do this after dinner
+
+
+		EditorDecorPtr dec(new EditorDecorInfo(dSpr, dLayer, dName, dTile));
+		if (dLayer > 0)
+		{
+			dec->myList = &decorImagesBehindTerrain;
+			//decorImagesBehindTerrain.sort(CompareDecorInfo);
+			//decorImagesBehindTerrain.push_back(dec);
+		}
+		else if (dLayer < 0)
+		{
+			dec->myList = &decorImagesFrontTerrain;
+			//decorImagesFrontTerrain.push_back(dec);
+		}
+		else if (dLayer == 0)
+		{
+			dec->myList = &decorImagesBetween;
+			//decorImagesBetween.push_back(dec);
+		}
+
+		CreateDecorImage(dec);
+	}
+
+	return true;
+}
+
+bool EditSession::ReadTerrain(ifstream &is )
+{
+	string hasBorderPolyStr;
+	is >> hasBorderPolyStr;
+	bool hasBorderPoly;
+	bool hasReadBorderPoly;
+	if (hasBorderPolyStr == "borderpoly")
+	{
+		hasBorderPoly = true;
+		hasReadBorderPoly = false;
+	}
+	else if (hasBorderPolyStr == "no_borderpoly")
+	{
+		hasBorderPoly = false;
+		hasReadBorderPoly = true;
+	}
+	else
+	{
+		cout << hasBorderPolyStr << endl;
+		assert(0 && "what is this string?");
+	}
+	int numPoints = mapHeader.numVertices;
+
+	while (numPoints > 0)
+	{
+		PolyPtr poly(new TerrainPolygon(&grassTex));
+
+
+		int matWorld;
+		int matVariation;
+		is >> matWorld;
+		is >> matVariation;
+
+		poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
+		poly->terrainVariation = matVariation;
+
+		if (!hasReadBorderPoly)
+		{
+			poly->inverse = true;
+			inversePolygon = poly;
+			hasReadBorderPoly = true;
+		}
+
+		polygons.push_back(poly);
+
+		int polyPoints;
+		is >> polyPoints;
+
+
+		numPoints -= polyPoints;
+		int x, y;
+		for (int i = 0; i < polyPoints; ++i)
+		{
+			is >> x;
+			is >> y;
+			//is >> special;
+			poly->AddPoint(new TerrainPoint(Vector2i(x, y), false));
+		}
+
+
+		int edgesWithSegments;
+		is >> edgesWithSegments;
+
+
+		list<GrassSeg> segments;
+		for (int i = 0; i < edgesWithSegments; ++i)
+		{
+			int edgeIndex;
+			is >> edgeIndex;
+
+			int numSegments;
+			is >> numSegments;
+
+			for (int j = 0; j < numSegments; ++j)
+			{
+				int index;
+				is >> index;
+				int reps;
+				is >> reps;
+				segments.push_back(GrassSeg(edgeIndex, index, reps));
+
+			}
+		}
+
+		poly->Finalize();
+
+		int grassIndex = 0;
+		VertexArray &grassVa = *poly->grassVA;
+		int numEdges = poly->numPoints;
+		int *indexArray = new int[numEdges];
+		int edgeIndex = 0;
+
+		int iai = 0;
+
+		for (TerrainPoint *polyCurr = poly->pointStart; polyCurr != NULL; polyCurr = polyCurr->next)
+		{
+			indexArray[edgeIndex] = grassIndex;
+
+			Vector2i next;
+
+			TerrainPoint *temp = polyCurr->next;
+			if (temp == NULL)
+			{
+				next = poly->pointStart->pos;
+			}
+			else
+			{
+				next = temp->pos;
+			}
+
+			V2d v0(polyCurr->pos.x, polyCurr->pos.y);
+			V2d v1(next.x, next.y);
+
+			//double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
+			bool rem;
+			int num = poly->GetNumGrass(polyCurr, rem);//floor( remainder ) + 1;
+
+			grassIndex += num;
+
+			++edgeIndex;
+		}
+
+		for (list<GrassSeg>::iterator it = segments.begin(); it != segments.end(); ++it)
+		{
+			int vaIndex = indexArray[(*it).edgeIndex];
+
+			for (int extra = 0; extra <= (*it).reps; ++extra)
+			{
+				grassVa[(vaIndex + (*it).index + extra) * 4].color.a = 255;
+				grassVa[(vaIndex + (*it).index + extra) * 4 + 1].color.a = 255;
+				grassVa[(vaIndex + (*it).index + extra) * 4 + 2].color.a = 255;
+				grassVa[(vaIndex + (*it).index + extra) * 4 + 3].color.a = 255;
+			}
+		}
+
+		delete[] indexArray;
+	}
+	return true;
+}
+
+bool EditSession::ReadBGTerrain(std::ifstream &is)
+{
+	int bgPlatformNum0;
+	is >> bgPlatformNum0;
+	for (int i = 0; i < bgPlatformNum0; ++i)
+	{
+		PolyPtr poly(new TerrainPolygon(&grassTex));
+		polygons.push_back(poly);
+
+		int matWorld;
+		int matVariation;
+		is >> matWorld;
+		is >> matVariation;
+
+		poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
+		poly->terrainVariation = matVariation;
+
+		int polyPoints;
+		is >> polyPoints;
+
+		for (int j = 0; j < polyPoints; ++j)
+		{
+			int x, y, special;
+			is >> x;
+			is >> y;
+			poly->AddPoint(new TerrainPoint(Vector2i(x, y), false));
+		}
+
+		poly->Finalize();
+		poly->SetLayer(1);
+		//no grass for now
+	}
+	return true;
+}
+
+bool EditSession::ReadRails(std::ifstream &is)
+{
+	int numRails;
+	is >> numRails;
+	for (int i = 0; i < numRails; ++i)
+	{
+		RailPtr rail(new TerrainRail());
+		rails.push_back(rail);
+
+		int numRailPoints;
+		is >> numRailPoints;
+
+		for (int j = 0; j < numRailPoints; ++j)
+		{
+			int x, y;
+			is >> x;
+			is >> y;
+			rail->AddPoint(new TerrainPoint(Vector2i(x, y), false));
+		}
+
+		rail->Finalize();
+	}
+	return true;
+}
+
+bool EditSession::ReadSpecialTerrain(std::ifstream &is)
+{
+	int specialPolyNum;
+	is >> specialPolyNum;
+
+	for (int i = 0; i < specialPolyNum; ++i)
+	{
+		PolyPtr poly(new TerrainPolygon(&grassTex));
+
+		int matWorld;
+		int matVariation;
+		is >> matWorld;
+		is >> matVariation;
+
+		poly->SetMaterialType(matWorld, matVariation);
+		int polyPoints;
+		is >> polyPoints;
+
+		GetCorrectPolygonList(poly.get()).push_back(poly);
+
+		for (int j = 0; j < polyPoints; ++j)
+		{
+			int x, y, special;
+			is >> x;
+			is >> y;
+			poly->AddPoint(new TerrainPoint(Vector2i(x, y), false));
+		}
+
+		poly->Finalize();
+	}
+
+	return true;
+}
+
+bool EditSession::ReadActors(std::ifstream &is)
+{
+	//enemies here
+	int numGroups;
+	is >> numGroups;
+	cout << "num groups " << numGroups << endl;
+	for (int i = 0; i < numGroups; ++i)
+	{
+		string groupName;
+		is >> groupName;
+
+		int numActors;
+		is >> numActors;
+
+		ActorGroup *gr = new ActorGroup(groupName);
+		groups[groupName] = gr;
+
+		for (int j = 0; j < numActors; ++j)
+		{
+			string typeName;
+			is >> typeName;
+
+			//ActorParams *a; //= new ActorParams;
+			ActorPtr a(NULL);
+
+
+
+			ActorType *at = NULL;
+			cout << "typename: " << typeName << endl;
+			if (types.count(typeName) == 0)
+			{
+				cout << "TYPENAME: " << typeName << endl;
+				assert(false && "bad typename");
+			}
+			else
+			{
+				at = types[typeName];
+			}
+
+			at->LoadEnemy(is, a);
+
+			gr->actors.push_back(a);
+			a->group = gr;
+		}
+	}
+
+	return true;
+}
+
+bool EditSession::ReadGates(std::ifstream &is)
+{
+	int numGates;
+	is >> numGates;
+	cout << "numgates: " << numGates << endl;
+	for (int i = 0; i < numGates; ++i)
+	{
+		int gType;
+		int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+		int numKeysRequired = -1;
+
+		is >> gType;
+		//is >> numKeysRequired;
+		is >> poly0Index;
+		is >> vertexIndex0;
+		is >> poly1Index;
+		is >> vertexIndex1;
+
+		int testIndex = 0;
+		PolyPtr terrain0(NULL);
+		PolyPtr terrain1(NULL);
+		bool first = true;
+
+		if (poly0Index == -1)
+		{
+			terrain0 = inversePolygon;
+		}
+		if (poly1Index == -1)
+		{
+			terrain1 = inversePolygon;
+		}
+		for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+		{
+			if ((*it)->inverse) continue;
+
+			if (terrain0 != NULL && terrain1 != NULL)
+				break;
+
+			if (testIndex == poly0Index && terrain0 == NULL)
+			{
+				terrain0 = (*it);
+
+				if (first)
+					first = false;
+				else
+					break;
+			}
+			if (testIndex == poly1Index && terrain1 == NULL)
+			{
+				terrain1 = (*it);
+
+				if (first)
+					first = false;
+				else
+					break;
+			}
+			testIndex++;
+		}
+		if (terrain0 == NULL || terrain1 == NULL)
+		{
+			int zzzerwr = 56;
+		}
+		//PolyPtr poly(  new TerrainPolygon( &grassTex ) );
+		GateInfoPtr gi(new GateInfo);
+		//GateInfo *gi = new GateInfo;
+		gi->numKeysRequired = numKeysRequired;
+		gi->poly0 = terrain0;
+		gi->poly1 = terrain1;
+		gi->vertexIndex0 = vertexIndex0;
+		gi->vertexIndex1 = vertexIndex1;
+		gi->type = (Gate::GateType)gType;
+		gi->edit = this;
+
+		if (gType == Gate::SHARD)
+		{
+			int sw, si;
+			is >> sw;
+			is >> si;
+			gi->SetShard(sw, si);
+		}
+
+		int index = 0;
+		for (TerrainPoint *curr = gi->poly0->pointStart; curr != NULL; curr = curr->next)
+		{
+			if (index == vertexIndex0)
+			{
+				gi->point0 = curr;
+				curr->gate = gi;
+				break;
+			}
+			++index;
+		}
+
+		index = 0;
+		//cout << "poly1: " << gi->poly1 << endl;
+		for (TerrainPoint *curr = gi->poly1->pointStart; curr != NULL; curr = curr->next)
+		{
+			if (index == vertexIndex1)
+			{
+				gi->point1 = curr;
+				curr->gate = gi;
+				break;
+			}
+			++index;
+		}
+
+		gi->UpdateLine();
+		gates.push_back(gi);
+	}
+	return true;
+}
+
+bool EditSession::ReadPlayer(ifstream &is)
+{
+	is >> player->position.x;
+	is >> player->position.y;
+
+	player->image.setPosition(player->position.x, player->position.y);
+	player->SetBoundingQuad();
+
+	return true;
+}
+
+bool EditSession::ReadHeader(std::ifstream &is)
+{
+	MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
+
+	mapHeader = *mh;
+
+	envName = mh->envName;
+
+	mapHeader.numVertices = mh->numVertices;
+
+	envWorldType = mh->envWorldType;
+
+	leftBound = mh->leftBounds;
+	topBound = mh->topBounds;
+	boundWidth = mh->boundsWidth;
+	boundHeight = mh->boundsHeight;
+
+	drainSeconds = mh->drainSeconds;
+
+	Background::SetupFullBG(envName, *this, background->currBackground, background->scrollingBackgrounds);
+
+
+	bossType = mh->bossFightType;
+
+	delete mh;
+	mh = NULL;
+
+	UpdateFullBounds();
+
+	return true;
+}
+
 bool EditSession::OpenFile()
 {
 	ifstream is;
@@ -750,461 +1252,17 @@ bool EditSession::OpenFile()
 
 	if( is.is_open() )
 	{
-		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
-
-		mapHeader = *mh;
-		
-		envName = mh->envName;
-
-		envWorldType = mh->envWorldType;
-		
-		leftBound = mh->leftBounds;
-		topBound = mh->topBounds;
-		boundWidth = mh->boundsWidth;
-		boundHeight  = mh->boundsHeight;
-
-		drainSeconds = mh->drainSeconds;
-
-		Background::SetupFullBG(envName, *this, background->currBackground, background->scrollingBackgrounds);
-
-		int numPoints = mh->numVertices;
-
-		bossType = mh->bossFightType;
-
-		delete mh;
-		mh = NULL;
-
-		UpdateFullBounds();
-
-		int numDecorImages;
-		is >> numDecorImages;
-
-		for (int i = 0; i < numDecorImages; ++i)
-		{
-			string dName;
-			is >> dName;
-			int dLayer;
-			is >> dLayer;
-
-			Vector2f dPos;
-			is >> dPos.x;
-			is >> dPos.y;
-
-			float dRot;
-			is >> dRot;
-
-			Vector2f dScale;
-			is >> dScale.x;
-			is >> dScale.y;
-
-			int dTile;
-			is >> dTile;
-
-			Sprite dSpr;
-			dSpr.setScale(dScale);
-			dSpr.setRotation(dRot);
-			dSpr.setPosition(dPos);
-
-			//string fullDName = dName + string(".png");
-			Tileset *ts = decorTSMap[dName];
-			dSpr.setTexture(*ts->texture);
-			dSpr.setTextureRect(ts->GetSubRect(dTile));
-			dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
-			dSpr.setColor(Color(255, 255, 255, 100));
-			//dSpr.setTexture do this after dinner
-
-
-			EditorDecorPtr dec(new EditorDecorInfo(dSpr, dLayer, dName, dTile));
-			if (dLayer > 0)
-			{
-				dec->myList = &decorImagesBehindTerrain;
-				//decorImagesBehindTerrain.sort(CompareDecorInfo);
-				//decorImagesBehindTerrain.push_back(dec);
-			}
-			else if (dLayer < 0)
-			{
-				dec->myList = &decorImagesFrontTerrain;
-				//decorImagesFrontTerrain.push_back(dec);
-			}
-			else if (dLayer == 0)
-			{
-				dec->myList = &decorImagesBetween;
-				//decorImagesBetween.push_back(dec);
-			}
-
-			CreateDecorImage(dec);
-		}
-
-		is >> player->position.x;
-		is >> player->position.y;
-
-		string hasBorderPolyStr;
-		is >> hasBorderPolyStr;
-		bool hasBorderPoly;
-		bool hasReadBorderPoly;
-		if( hasBorderPolyStr == "borderpoly" )
-		{
-			hasBorderPoly = true;
-			hasReadBorderPoly = false;
-		}
-		else if( hasBorderPolyStr == "no_borderpoly" )
-		{
-			hasBorderPoly = false;
-			hasReadBorderPoly = true;
-		}
-		else
-		{
-			cout << hasBorderPolyStr << endl;
-			assert( 0 && "what is this string?" );
-		}
-
-		player->image.setPosition( player->position.x, player->position.y );
-		player->SetBoundingQuad();
-
-		
-		while( numPoints > 0 )
-		{
-			PolyPtr poly(  new TerrainPolygon( &grassTex ) );
-			
-
-			int matWorld;
-			int matVariation;
-			is >> matWorld;
-			is >> matVariation;
-			
-			poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
-			poly->terrainVariation = matVariation;
-			
-			if( !hasReadBorderPoly )
-			{
-				poly->inverse = true;
-				inversePolygon = poly;
-				hasReadBorderPoly = true;
-			}
-
-			polygons.push_back(poly);
-
-			int polyPoints;
-			is >> polyPoints;
-
-			
-			numPoints -= polyPoints;
-			int x,y;
-			for( int i = 0; i < polyPoints; ++i )
-			{
-				is >> x;
-				is >> y;
-				//is >> special;
-				poly->AddPoint( new TerrainPoint( Vector2i(x,y), false ) );
-			}
-
-
-			int edgesWithSegments;
-			is >> edgesWithSegments;
-
-
-			list<GrassSeg> segments;
-			for( int i = 0; i < edgesWithSegments; ++i )
-			{
-				int edgeIndex;
-				is >> edgeIndex;
-
-				int numSegments;
-				is >> numSegments;
-
-				for( int j = 0; j < numSegments; ++j )
-				{
-					int index;
-					is >> index;
-					int reps;
-					is >> reps;
-					segments.push_back( GrassSeg( edgeIndex, index, reps ) );
-
-				}
-			}
-
-			poly->Finalize();
-
-			int grassIndex = 0;
-			VertexArray &grassVa = *poly->grassVA;
-			int numEdges = poly->numPoints;
-			int *indexArray = new int[numEdges];
-			int edgeIndex = 0;
-
-			int iai = 0;
-
-			for( TerrainPoint *polyCurr = poly->pointStart; polyCurr != NULL; polyCurr = polyCurr->next )
-			{
-				indexArray[edgeIndex] = grassIndex;
-
-				Vector2i next;
-
-				TerrainPoint *temp = polyCurr->next;
-				if( temp == NULL )
-				{
-					next = poly->pointStart->pos;
-				}
-				else
-				{
-					next = temp->pos;
-				}
-
-				V2d v0( polyCurr->pos.x, polyCurr->pos.y );
-				V2d v1( next.x, next.y );
-
-				//double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-				bool rem;
-				int num = poly->GetNumGrass(polyCurr, rem);//floor( remainder ) + 1;
-
-				grassIndex += num;
-
-				++edgeIndex;
-			}
-
-			for( list<GrassSeg>::iterator it = segments.begin(); it != segments.end(); ++it )
-			{
-				int vaIndex = indexArray[(*it).edgeIndex];
-
-				for( int extra = 0; extra <= (*it).reps; ++extra )
-				{
-					grassVa[( vaIndex + (*it).index + extra ) * 4 ].color.a = 255;
-					grassVa[( vaIndex + (*it).index + extra ) * 4 + 1 ].color.a = 255;
-					grassVa[( vaIndex + (*it).index + extra ) * 4 + 2 ].color.a = 255;
-					grassVa[( vaIndex + (*it).index + extra ) * 4 + 3 ].color.a = 255;
-				}
-			}
-
-			delete [] indexArray;
-			
-
-
-			
-
-			
-		}
-
-		int movingPlatformNum;
-		is >> movingPlatformNum;
-
-
-		int bgPlatformNum0;
-		is >> bgPlatformNum0;
-		for( int i = 0; i < bgPlatformNum0; ++i )
-		{
-			PolyPtr poly( new TerrainPolygon( &grassTex ) );
-			polygons.push_back( poly );
-
-			int matWorld;
-			int matVariation;
-			is >> matWorld;
-			is >> matVariation;
-			
-			poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
-			poly->terrainVariation = matVariation;
-
-			int polyPoints;
-			is >> polyPoints;
-			
-			for( int j = 0; j < polyPoints; ++j )
-			{
-				int x,y, special;
-				is >> x;
-				is >> y;
-				poly->AddPoint( new TerrainPoint(  Vector2i(x,y), false ) );
-			}
-
-			poly->Finalize();
-			poly->SetLayer( 1 );
-			//no grass for now
-		}
-		
-
-		//lights here
-
-		//this needs to be left here because its present in all files. Need a system to remove it
-		//before it can be taken out of the files.
-		//int numLights;
-		//is >> numLights;
-
-		int numRails;
-		is >> numRails;
-		for (int i = 0; i < numRails; ++i)
-		{
-			RailPtr rail(new TerrainRail());
-			rails.push_back(rail);
-
-			int numRailPoints;
-			is >> numRailPoints;
-
-			for (int j = 0; j < numRailPoints; ++j)
-			{
-				int x, y;
-				is >> x;
-				is >> y;
-				rail->AddPoint(new TerrainPoint(Vector2i(x, y), false));
-			}
-
-			rail->Finalize();
-		}
-
-
-		//enemies here
-		int numGroups;
-		is >> numGroups;
-		cout << "num groups " << numGroups << endl;
-		for( int i = 0; i < numGroups; ++i )
-		{
-			string groupName;
-			is >> groupName;
-
-			int numActors;
-			is >> numActors;
-
-			ActorGroup *gr = new ActorGroup( groupName );
-			groups[groupName] = gr;
-
-			for( int j = 0; j < numActors; ++j )
-			{
-				string typeName;
-				is >> typeName;
-
-				//ActorParams *a; //= new ActorParams;
-				ActorPtr a(NULL);
-				
-
-
-				ActorType *at = NULL;
-				cout << "typename: " << typeName << endl;
-				if( types.count( typeName ) == 0 )
-				{
-					cout << "TYPENAME: " << typeName << endl;
-					assert( false && "bad typename" );
-				}
-				else
-				{
-					at = types[typeName];
-				}
-				
-				at->LoadEnemy(is, a);
-				
-				gr->actors.push_back( a );
-				a->group = gr;
-			}
-		}
-
-		int numGates;
-		is >> numGates;
-		cout << "numgates: " << numGates << endl;
-		for (int i = 0; i < numGates; ++i)
-		{
-			int gType;
-			int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
-			int numKeysRequired = -1;
-
-			is >> gType;
-			//is >> numKeysRequired;
-			is >> poly0Index;
-			is >> vertexIndex0;
-			is >> poly1Index;
-			is >> vertexIndex1;
-
-			int testIndex = 0;
-			PolyPtr terrain0(NULL);
-			PolyPtr terrain1(NULL);
-			bool first = true;
-
-			if (poly0Index == -1)
-			{
-				terrain0 = inversePolygon;
-			}
-			if (poly1Index == -1)
-			{
-				terrain1 = inversePolygon;
-			}
-			for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
-			{
-				if ((*it)->inverse) continue;
-
-				if (terrain0 != NULL && terrain1 != NULL)
-					break;
-
-				if (testIndex == poly0Index && terrain0 == NULL)
-				{
-					terrain0 = (*it);
-
-					if (first)
-						first = false;
-					else
-						break;
-				}
-				if (testIndex == poly1Index && terrain1 == NULL)
-				{
-					terrain1 = (*it);
-
-					if (first)
-						first = false;
-					else
-						break;
-				}
-				testIndex++;
-			}
-			if (terrain0 == NULL || terrain1 == NULL)
-			{
-				int zzzerwr = 56;
-			}
-			//PolyPtr poly(  new TerrainPolygon( &grassTex ) );
-			GateInfoPtr gi( new GateInfo );
-			//GateInfo *gi = new GateInfo;
-			gi->numKeysRequired = numKeysRequired;
-			gi->poly0 = terrain0;
-			gi->poly1 = terrain1;
-			gi->vertexIndex0 = vertexIndex0;
-			gi->vertexIndex1 = vertexIndex1;
-			gi->type = (Gate::GateType)gType;
-			gi->edit = this;
-
-			if (gType == Gate::SHARD)
-			{
-				int sw, si;
-				is >> sw;
-				is >> si;
-				gi->SetShard(sw, si);
-			}
-
-			int index = 0;
-			for( TerrainPoint *curr = gi->poly0->pointStart; curr != NULL; curr = curr->next )
-			{
-				if( index == vertexIndex0 )
-				{
-					gi->point0 = curr;
-					curr->gate = gi;				
-					break;
-				}
-				++index;
-			}
-
-			index = 0;
-			//cout << "poly1: " << gi->poly1 << endl;
-			for( TerrainPoint *curr = gi->poly1->pointStart; curr != NULL; curr = curr->next )
-			{
-				if( index == vertexIndex1 )
-				{
-					gi->point1 = curr;
-					curr->gate = gi;
-					break;
-				}
-				++index;
-			}
-
-			gi->UpdateLine();
-			gates.push_back( gi );
-		}
+		ReadHeader(is);
+		ReadDecor(is);
+		ReadPlayer(is);
+		ReadTerrain(is);
+		ReadSpecialTerrain(is);
+		ReadBGTerrain(is);
+		ReadRails(is);
+		ReadActors(is);
+		ReadGates(is);
 
 		is.close();
-
-
-
-
 	}
 	else
 	{
@@ -1289,22 +1347,22 @@ void EditSession::WriteInversePoly(std::ofstream &of)
 		of << "borderpoly" << endl;
 		inversePolygon->writeIndex = -1;//writeIndex;
 
-		of << inversePolygon->terrainWorldType << " "
-			<< inversePolygon->terrainVariation << endl;
-
-		cout << "numpoints: " << inversePolygon->numPoints << endl;
-		of << inversePolygon->numPoints << endl;
-
-		for (TerrainPoint *pcurr = inversePolygon->pointStart; pcurr != NULL; pcurr = pcurr->next)
-		{
-			of << pcurr->pos.x << " " << pcurr->pos.y << endl;
-		}
-
-		WriteGrass(inversePolygon, of);
+		inversePolygon->WriteFile(of);
 	}
 	else
 	{
 		of << "no_borderpoly" << endl;
+	}
+}
+
+void EditSession::WriteSpecialPolygons(std::ofstream &of)
+{
+	int numSpecialPolys = waterPolygons.size();
+	of << numSpecialPolys << endl;
+
+	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
+	{
+		(*it)->WriteFile(of);
 	}
 }
 
@@ -1324,28 +1382,19 @@ void EditSession::WritePolygons(std::ofstream &of, int bgPlatCount0)
 			(*it)->writeIndex = writeIndex;
 			++writeIndex;
 
-			of << (*it)->terrainWorldType << " "
-				<< (*it)->terrainVariation << endl;
-
-			cout << "numpoints: " << (*it)->numPoints << endl;
-			of << (*it)->numPoints << endl;
-
-			for (TerrainPoint *pcurr = (*it)->pointStart; pcurr != NULL; pcurr = pcurr->next)
-			{
-				of << pcurr->pos.x << " " << pcurr->pos.y << endl; // << " " << (int)(*it2).special << endl;
-			}
-
-			WriteGrass((*it), of);
+			(*it)->WriteFile(of);
 		}
 	}
 
 	tempWriteIndex = writeIndex;
 
 
+	WriteSpecialPolygons(of);
+	//of << "0" << endl; //writing the number of moving platforms. remove this when possible
 
-	of << "0" << endl; //writing the number of moving platforms. remove this when possible
 
-	writeIndex = 0;
+	//write moving platorms
+	/*writeIndex = 0;
 	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
 	{
 		if ((*it)->layer == 0 && (*it)->path.size() >= 2)
@@ -1374,7 +1423,7 @@ void EditSession::WritePolygons(std::ofstream &of, int bgPlatCount0)
 				of << (*pathit).x << " " << (*pathit).y << endl;
 			}
 		}
-	}
+	}*/
 
 	of << bgPlatCount0 << endl;
 
@@ -3777,16 +3826,6 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 
 			while (true)
 			{
-				/*if (inverse && !currentPoly->inverse)
-				{
-					nextP = currP->prev;
-					if (nextP == NULL)
-						nextP = currentPoly->pointEnd;
-				}
-				else*/
-
-
-
 				if (currentPoly == (*polyIt) || (*polyIt)->inverse )
 				{
 					nextP = currP->next;
@@ -3801,11 +3840,6 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 						nextP = currentPoly->pointEnd;
 				}
 
-				/*{
-					nextP = currP->next;
-					if (nextP == NULL)
-						nextP = currentPoly->pointStart;
-				}*/
 
 				outSegStart = NULL;
 				outSegEnd = NULL;
@@ -3893,49 +3927,6 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 					//z.AddPoint(tp);
 					newPolyPoints.push_back(tp);
 
-					//deal with enemies and gates
-					//tp->gate = curr->gate;
-					//if (tp->gate != NULL)
-					//{
-					//	//	cout << "other gate not null!" << endl;
-					//	if (curr == tp->gate->point0)
-					//	{
-//		//		cout << "putting a" << endl;
-//		tp->gate->point0 = tp;
-//	}
-//	else if (curr == tp->gate->point1)
-//	{
-//		//		cout << "putting b at: " << tp->pos.x << ", " << tp->pos.y << endl;
-//		tp->gate->point1 = tp;
-
-					//	}
-					//	else
-					//	{
-					//		//cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y << ", "
-					//		//	<< tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << ", " << endl;
-					//		//cout << "tp: " << tp->pos.x << ", " << tp->pos.y << endl;
-					//		assert(false);
-					//		//tp->gate = NULL;
-					//		//tp->gate == NULL;
-					//	}
-					//}
-
-					/*if (inverse && !currentPoly->inverse)
-					{
-						currP = currP->prev;
-						if (currP == NULL)
-						{
-							currP = currentPoly->pointEnd;
-						}
-					}
-					else*/
-					/*{
-						currP = currP->next;
-						if (currP == NULL)
-						{
-							currP = currentPoly->pointStart;
-						}
-					}*/
 
 					if (currentPoly == (*polyIt) || (*polyIt)->inverse )
 					{
@@ -3955,12 +3946,6 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 					}
 
 					startSegPos = currP->pos;
-
-					/*if (currentPoly->enemies.count(curr) > 0)
-					{
-					list<ActorPtr> &en = z.enemies[tp];
-					en = currentPoly->enemies[curr];
-					}*/
 				}
 
 				firstRun = false;
@@ -3983,49 +3968,17 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 
 
 			PolyPtr newPoly(new TerrainPolygon(&grassTex));
-
+			newPoly->SetMaterialType((*polyIt)->terrainWorldType,
+				(*polyIt)->terrainVariation);
 			for (auto pit = newPolyPoints.begin(); pit != newPolyPoints.end(); ++pit)
 			{
 				newPoly->AddPoint((*pit));
-				//TerrainPoint *p = new TerrainPoint((*it).first, false);
-
-				//might need to try and preserve gate
-				//if ((*it).second.poly != NULL)
-				//{
-				//	p->gate = (*it).second.point->gate;
-				//	if (p->gate != NULL)
-				//	{
-				//		if (p->gate->poly0.get() == (*it).second.poly)
-				//		{
-				//			p->gate->poly0 = newPoly;
-				//			p->gate->point0 = p;
-				//		}
-				//		else
-				//		{
-				//			p->gate->poly1 = newPoly;
-				//			p->gate->point1 = p;
-				//		}
-				//		//cout << "preserving gate!" << endl;
-				//	}
-				//}
-				////if( (*it)
-				//newPoly->AddPoint(p);
-				//cout << "point: " << p->pos.x << ", " << p->pos.y << endl;
 			}
 
 			bool sharesPoints = false;
-			/*for (auto rit = results.begin(); rit != results.end(); ++rit )
-			{
-				if (newPoly->SharesPoints( (*rit).get() ) )
-				{
-					sharesPoints = true;
-					break;
-				}
-			}*/
 
 			if (!sharesPoints)
 			{
-				//newPoly->Finalize();
 				if ((*polyIt)->inverse)
 				{
 					potentialInversePolys.push_back(newPoly);
@@ -4069,6 +4022,7 @@ void EditSession::Sub(PolyPtr brushPtr, std::list<PolyPtr> &orig, std::list<Poly
 	//finalize now that we've found our inverse
 	for (auto it = results.begin(); it != results.end(); ++it)
 	{
+		//(*it)->SetMaterialType()
 		(*it)->Finalize();
 	}
 
@@ -8903,6 +8857,8 @@ void EditSession::TryBoxSelect()
 
 	bool selectionEmpty = true;
 
+	bool specialTerrain = IsSpecialTerrainMode();
+
 	if (!HoldingShift())
 	{
 		//clear everything
@@ -8910,12 +8866,12 @@ void EditSession::TryBoxSelect()
 		selectedBrush->Clear();
 	}
 
-	if (BoxSelectActors(r))
+	if ( !specialTerrain && BoxSelectActors(r))
 	{
 		selectionEmpty = false;
 	}
 
-	if (BoxSelectDecor(r))
+	if ( !specialTerrain && BoxSelectDecor(r))
 	{
 		selectionEmpty = false;
 	}
@@ -8937,7 +8893,7 @@ void EditSession::TryBoxSelect()
 			selectionEmpty = false;
 		}
 
-		if (BoxSelectRails(r))
+		if (!specialTerrain && BoxSelectRails(r))
 		{
 			selectionEmpty = false;
 		}
@@ -10842,15 +10798,16 @@ void EditSession::EditModeHandleEvent()
 				break;
 
 			bool emptysp = true;
+			bool specialTerrain = IsSpecialTerrainMode();
 
 			if (!(editMouseDownMove || editMouseDownBox))
 			{
-				if (emptysp && PointSelectActor(worldPos))
+				if (emptysp && !specialTerrain && PointSelectActor(worldPos))
 				{
 					emptysp = false;
 				}
 
-				if (emptysp && PointSelectRail(worldPos))
+				if (emptysp && !specialTerrain && PointSelectRail(worldPos))
 				{
 					emptysp = false;
 				}
@@ -10860,7 +10817,7 @@ void EditSession::EditModeHandleEvent()
 					emptysp = false;
 				}
 
-				if (emptysp && PointSelectDecor(worldPos))
+				if (emptysp && !specialTerrain && PointSelectDecor(worldPos))
 				{
 					emptysp = false;
 				}
