@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;

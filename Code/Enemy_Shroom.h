@@ -22,8 +22,8 @@ struct Shroom : Enemy
 	~Shroom();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void HandleNoHealth();
+	void DirectKill();
 	void ResetEnemy();
 	void ProcessState();
 
@@ -44,6 +44,8 @@ struct Shroom : Enemy
 	double angle;
 
 	sf::Vector2<double> gn;
+
+	bool jellySpawnable;
 
 	ShroomJelly *jelly;
 };
@@ -72,7 +74,6 @@ struct ShroomJelly : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 	
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void ProcessState();
 	void UpdateEnemyPhysics();
@@ -97,7 +98,6 @@ struct ShroomJelly : Enemy
 	int currHits;
 
 	V2d velocity;
-	ComboObject *comboObj;
 
 	CubicBezier risingBez;
 	CubicBezier fallingBez;

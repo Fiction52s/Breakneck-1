@@ -54,7 +54,7 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level 
 
 	origPosition = position;
 
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 	V2d dirFromPlayer = normalize( playerPos  - position );
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 	testSeq.AddRadialMovement( V2d( 0, 0 ), 1, 0, 2 * PI * 3, 
@@ -163,7 +163,7 @@ void Ghost::ProcessState()
 		cout << "offsetDist: " << d << endl;
 	}*/
 
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 	if (action == WAKEUP)
 	{
 		if( WithinDistance( playerPos, position, 600 ))
@@ -184,10 +184,10 @@ void Ghost::ProcessState()
 				}
 
 				latchedOn = true;
-				offsetPlayer = basePos - owner->GetPlayer(0)->position;//owner->GetPlayer( 0 )->position - basePos;
+				offsetPlayer = basePos - playerPos;//owner->GetPlayer( 0 )->position - basePos;
 				origOffset = offsetPlayer;//length( offsetPlayer );
 				V2d offsetDir = normalize(offsetPlayer);
-				basePos = owner->GetPlayer(0)->position;
+				basePos = playerPos;
 			}
 		}
 		else
@@ -203,7 +203,7 @@ void Ghost::UpdateEnemyPhysics()
 {
 	if (latchedOn)
 	{
-		basePos = owner->GetPlayer(0)->position;
+		basePos = owner->GetPlayerPos(0);
 
 		
 		if (action == APPROACH && latchedOn)
@@ -223,7 +223,7 @@ void Ghost::UpdateSprite()
 {
 	if (latchedOn)
 	{
-		V2d playerPos = owner->GetPlayer(0)->position;
+		V2d playerPos = owner->GetPlayerPos(0);
 		basePos = playerPos;
 		position = basePos + offsetPlayer;
 	}
@@ -288,23 +288,4 @@ void Ghost::EnemyDraw( sf::RenderTarget *target )
 
 void Ghost::DrawMinimap( sf::RenderTarget *target )
 {
-}
-
-void Ghost::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if( owner->GetPlayer( 0 )->ground != NULL )
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
-	}
 }

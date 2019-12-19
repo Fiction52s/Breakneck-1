@@ -210,7 +210,7 @@ void Bat::BulletHitPlayer(BasicBullet *b )
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
+	owner->PlayerApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 }
 
@@ -292,7 +292,7 @@ void Bat::ProcessState()
 	double detectRange = 300;
 	double dodgeRange = 250;
 
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 	V2d diff = playerPos - position;
 	V2d pDir = normalize(diff);
 	if (action == FLY)
@@ -390,8 +390,9 @@ void Bat::IHitPlayer(int index)
 {
 	currVisual = KICK;
 	visFrame = 0;
-	Actor *p = owner->GetPlayer(index);
-	if (p->position.x > position.x)
+	//Actor *p = owner->GetPlayer(index);
+	V2d playerPos = owner->GetPlayerPos(index);
+	if (playerPos.x > position.x)
 	{
 		facingRight = true;
 	}
@@ -462,25 +463,6 @@ void Bat::EnemyDraw( sf::RenderTarget *target )
 {
 	target->draw(auraSprite);
 	DrawSpriteIfExists(target, sprite);
-}
-
-void Bat::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if( owner->GetPlayer( 0 )->ground != NULL )
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
-	}
 }
 
 void Bat::HandleHitAndSurvive()

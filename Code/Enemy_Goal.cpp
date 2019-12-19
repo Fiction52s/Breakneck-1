@@ -216,7 +216,7 @@ void Goal::ProcessState()
 
 void Goal::HandleNoHealth()
 {
-	owner->GetPlayer(0)->hitGoal = true;
+	owner->PlayerHitGoal(0);
 	owner->KillAllEnemies();
 	frame = 0;
 	

@@ -36,7 +36,6 @@ struct Gorilla : Enemy
 	void DebugDraw(sf::RenderTarget *target);
 	
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	bool CheckHitPlayer(int index = 0);
 

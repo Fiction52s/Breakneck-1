@@ -10,6 +10,7 @@
 #include "MusicPlayer.h"
 #include "MainMenu.h"
 #include "MapHeader.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -316,8 +317,8 @@ void CrawlerQueen::ResetEnemy()
 
 void CrawlerQueen::UpdateHitboxes()
 {
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	BasicUpdateHitboxes();
+	
 	if (mover->ground != NULL)
 	{
 		V2d gn = mover->ground->Normal();
@@ -325,9 +326,6 @@ void CrawlerQueen::UpdateHitboxes()
 
 
 		angle = atan2(gn.x, -gn.y);
-
-		hitBox.globalAngle = angle;
-		hurtBox.globalAngle = angle;
 
 		V2d knockbackDir(1, -1);
 		knockbackDir = normalize(knockbackDir);
@@ -346,11 +344,7 @@ void CrawlerQueen::UpdateHitboxes()
 	}
 	else
 	{
-		hitBox.globalAngle = 0;
-		hurtBox.globalAngle = 0;
 	}
-	hitBox.globalPosition = mover->physBody.globalPosition;
-	hurtBox.globalPosition = mover->physBody.globalPosition;
 }
 
 HitboxInfo *CrawlerQueen::IsHit(Actor *player)
@@ -1453,16 +1447,6 @@ void FloatingBomb::DebugDraw(sf::RenderTarget *target)
 	Enemy::DebugDraw(target);
 	if (!dead)
 		mover->physBody.DebugDraw(target);
-}
-
-void FloatingBomb::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
 }
 
 void FloatingBomb::HitTerrainAerial(Edge * e, double q )

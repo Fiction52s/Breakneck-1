@@ -189,12 +189,12 @@ void AirdashJuggler::ProcessHit()
 						owner->keyMarker->CollectKey();
 					}
 
-					owner->GetPlayer(0)->ConfirmEnemyKill(this);
+					owner->PlayerConfirmEnemyKill(this);
 					ConfirmKill();
 				}
 				else
 				{
-					owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+					owner->PlayerConfirmEnemyNoKill(this);
 					ConfirmHitNoKill();
 
 					numHealth = maxHealth;
@@ -276,14 +276,14 @@ void AirdashJuggler::ProcessHit()
 
 					++currDash;
 
-					//owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+					owner->PlayerAddActiveComboObj(comboObj);
 				}
 
 			}
 			else
 			{
 				frame = 0;
-				owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+				owner->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 			}
 
@@ -302,7 +302,7 @@ void AirdashJuggler::ProcessState()
 		case S_EXPLODE:
 			numHealth = 0;
 			dead = true;
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+			owner->PlayerRemoveActiveComboer(comboObj);
 			break;
 		case S_FLOAT:
 			if (currDash > 0)
@@ -326,7 +326,7 @@ void AirdashJuggler::ProcessState()
 		}
 	}
 
-	V2d playerPos = owner->GetPlayer(0)->position;
+	//V2d playerPos = owner->GetPlayer(0)->position;
 }
 
 void AirdashJuggler::HandleNoHealth()
@@ -375,7 +375,7 @@ void AirdashJuggler::FrameIncrement()
 		{
 			action = S_FLOAT;
 			frame = 0;
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+			owner->PlayerRemoveActiveComboer(comboObj);
 			SetHitboxes(hitBody, 0);
 			SetHurtboxes(hurtBody, 0);
 			position = endDashPos;
@@ -446,30 +446,4 @@ void AirdashJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	if( action != S_RETURN )
 		DrawSpriteIfExists(target, sprite);
-}
-
-CollisionBox &AirdashJuggler::GetEnemyHitbox()
-{
-	return comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front();
-}
-
-void AirdashJuggler::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	GetEnemyHitbox().globalPosition = position;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
 }

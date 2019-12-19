@@ -5,6 +5,8 @@
 #include "ObjectPool.h"
 #include <sfeMovie/Movie.hpp>
 
+struct Actor;
+struct EffectPool;
 struct StorySequence;
 struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 {
@@ -34,7 +36,6 @@ struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void ProcessHit();

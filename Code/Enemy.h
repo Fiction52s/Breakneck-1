@@ -1,8 +1,6 @@
 #ifndef __ENEMY_H__
 #define __ENEMY_H__
 
-
-//#include "Actor.h"
 #include <list>
 #include "Mover.h"
 #include "Movement.h"
@@ -615,7 +613,9 @@ public:
 	virtual void HandleRemove() {}
 	virtual void ProcessState() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);
-	virtual void UpdateHitboxes() {}
+	virtual void UpdateHitboxes();
+	void BasicUpdateHitboxes();
+	void BasicUpdateHitboxInfo();
 	virtual void ResetEnemy() = 0;
 	virtual V2d TurretSetup();//return finals pos
 	virtual void Init(){};
@@ -671,6 +671,8 @@ public:
 	void CheckTouchingSpecterField(SpecterArea *sa);
 	virtual bool IsTouchingSpecterField(SpecterArea *sa);
 	
+	virtual std::list<CollisionBox> *GetComboHitboxes();
+	ComboObject *comboObj;
 	SpecterTester *specterTester;
 	Shield *currShield;
 	int pauseFrames;

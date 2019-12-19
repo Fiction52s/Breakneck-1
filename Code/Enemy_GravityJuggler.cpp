@@ -193,7 +193,7 @@ void GravityJuggler::Throw(V2d vel)
 
 void GravityJuggler::Return()
 {
-	owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+	owner->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
@@ -205,7 +205,7 @@ void GravityJuggler::Return()
 
 void GravityJuggler::Pop()
 {
-	owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+	owner->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -237,11 +237,13 @@ void GravityJuggler::PopThrow()
 		hit.x += dir.x * extraX;
 	}
 
+	bool pFacingRight = owner->PlayerIsFacingRight(0);
+
 	if (((dir.y == 1 && !reversedGrav) || (dir.y == -1 && reversedGrav))
 		&& dir.x == 0)
 	{
 		hit.y += 3;
-		if (owner->GetPlayer(0)->facingRight)
+		if (pFacingRight)
 		{
 			hit.x -= extraX / 2.0;
 		}
@@ -261,7 +263,7 @@ void GravityJuggler::PopThrow()
 
 	Throw(hit);
 
-	owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+	owner->PlayerAddActiveComboObj(comboObj);
 }
 
 void GravityJuggler::ProcessHit()
@@ -270,7 +272,7 @@ void GravityJuggler::ProcessHit()
 	{
 		numHealth -= 1;
 
-		Actor *player = owner->GetPlayer(0);
+		//Actor *player = owner->GetPlayer(0);
 		if (numHealth <= 0)
 		{
 			if (currJuggle == juggleReps)
@@ -281,7 +283,7 @@ void GravityJuggler::ProcessHit()
 					suppressMonitor = true;
 				}
 
-				player->ConfirmEnemyNoKill(this);
+				owner->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -298,7 +300,7 @@ void GravityJuggler::ProcessHit()
 		}
 		else
 		{
-			owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+			owner->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 	}
@@ -320,7 +322,7 @@ void GravityJuggler::ProcessState()
 		/*case S_EXPLODE:
 			numHealth = 0;
 			dead = true;
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+			owner->PlayerRemoveActiveComboer(comboObj);
 			break;*/
 		}
 	}
@@ -382,6 +384,8 @@ void GravityJuggler::UpdateEnemyPhysics()
 		break;
 	}
 	}
+
+	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }
 
 void GravityJuggler::FrameIncrement()
@@ -449,32 +453,4 @@ void GravityJuggler::UpdateSprite()
 void GravityJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSpriteIfExists(target, sprite);
-}
-
-CollisionBox &GravityJuggler::GetEnemyHitbox()
-{
-	return comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front();
-}
-
-void GravityJuggler::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	GetEnemyHitbox().globalPosition = position;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
-
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }

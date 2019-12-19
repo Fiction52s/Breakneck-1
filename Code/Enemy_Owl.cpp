@@ -158,7 +158,7 @@ void Owl::BulletHitPlayer(BasicBullet *b )
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
+	owner->PlayerApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 }
 
@@ -204,8 +204,8 @@ void Owl::DirectKill()
 void Owl::ActionEnded()
 {
 	double dist = 800;
-	Actor *player = owner->GetPlayer( 0 );
-	double len = length( player->position - position );
+	V2d playerPos = owner->GetPlayerPos(0);
+	double len = length( playerPos - position );
 	if( frame == actionLength[action] )
 	{
 		switch( action )
@@ -219,7 +219,7 @@ void Owl::ActionEnded()
 				//V2d dir = normalize( parent->position - position );
 				//double angle = atan2( dir.x, -dir.y );
 				launchers[0]->position = position + fireDir * 40.0;
-				fireDir = normalize( owner->GetPlayer( 0 )->position - position );
+				fireDir = normalize(playerPos - position );
 				ang = atan2( fireDir.x, -fireDir.y );
 				//cout << "true ang: " << (ang / PI * 180.0) << endl;
 			}
@@ -229,7 +229,7 @@ void Owl::ActionEnded()
 			frame = 0;
 			break;
 		case FIRE:
-			if( length( player->position - position ) >= dist )
+			if( length(playerPos - position ) >= dist )
 			{
 				action = REST;
 				frame = 0;
@@ -302,9 +302,11 @@ void Owl::ProcessState()
 {
 	ActionEnded();
 
-	Actor *player = owner->GetPlayer( 0 );
+	
+	V2d playerPos = owner->GetPlayerPos(0);
+
 	double dist = 600;
-	bool lessThanSize = length( player->position - position ) < dist;
+	bool lessThanSize = length(playerPos - position ) < dist;
 	
 	switch( action )
 	{
@@ -443,24 +445,4 @@ void Owl::UpdateSprite()
 void Owl::EnemyDraw( sf::RenderTarget *target )
 {
 	DrawSpriteIfExists(target, sprite);
-}
-
-void Owl::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if( owner->GetPlayer( 0 )->ground != NULL )
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
-	}
 }

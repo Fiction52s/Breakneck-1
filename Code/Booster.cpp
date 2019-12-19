@@ -195,12 +195,3 @@ void Booster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
-void Booster::UpdateHitboxes()
-{
-	//hurtBody.globalPosition = position;
-	//hurtBody.globalAngle = 0;
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-}
-

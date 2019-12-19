@@ -305,8 +305,8 @@ bool CrawlerFightSeq::Update()
 		player->action = Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED;
 		player->groundSpeed = 0;
 		owner->cam.SetRumble( 3, 3, 40 );
-		owner->b_crawler->action = Boss_Crawler::EMERGE;
-		owner->b_crawler->frame = 0;
+		//owner->b_crawler->action = Boss_Crawler::EMERGE;
+		//owner->b_crawler->frame = 0;
 	}
 	else if( frame == blah + 50 )
 	{
@@ -317,7 +317,10 @@ bool CrawlerFightSeq::Update()
 	else if( frame == blah + 80 )
 	{
 		//in reality this would be calling a function within the crawler
-		owner->b_crawler->StartMeetPlayerSeq();
+
+
+
+		//owner->b_crawler->StartMeetPlayerSeq();
 
 		//owner->b_crawler->portrait.SetSprite( ts_birdFace, 1 );
 	}
@@ -421,8 +424,7 @@ bool CrawlerAfterFightSeq::Update()
 			player->offsetX = player->b.rw;
 			//player->offsetX = 0;
 			player->facingRight = true;
-			owner->b_crawler->StartAfterFightSeq();
-			//player->action = Actor::Seq
+			//owner->b_crawler->StartAfterFightSeq();
 		}
 		break;
 	case 60:

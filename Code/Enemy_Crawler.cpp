@@ -195,7 +195,7 @@ void Crawler::ResetEnemy()
 
 void Crawler::DecideDirection()
 {
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 	V2d gn = mover->ground->Normal();
 	if (gn.y < 0)
 	{
@@ -248,8 +248,8 @@ void Crawler::DecideDirection()
 
 void Crawler::UpdateHitboxes()
 {
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	BasicUpdateHitboxes();
+	
 	if( mover->ground != NULL )
 	{
 		V2d gn = mover->ground->Normal();
@@ -258,8 +258,8 @@ void Crawler::UpdateHitboxes()
 		
 		angle = atan2( gn.x, -gn.y );
 		
-		hitBox.globalAngle = angle;
-		hurtBox.globalAngle = angle;
+		//hitBox.globalAngle = angle;
+		//hurtBox.globalAngle = angle;
 
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
@@ -282,12 +282,10 @@ void Crawler::UpdateHitboxes()
 	}
 	else
 	{
-		hitBox.globalAngle = 0;
-		hurtBox.globalAngle = 0;
+		//hitBox.globalAngle = 0;
+		//hurtBox.globalAngle = 0;
 	}
-	hitBox.globalPosition = mover->physBody.globalPosition;
-	hurtBox.globalPosition = mover->physBody.globalPosition;
-	//mover->ph.globalPosition = mover->physBody.globalPosition;
+	
 }
 
 void Crawler::ProcessState()
@@ -613,6 +611,8 @@ bool Crawler::ShouldAttack()
 		return false;
 	}
 
+	V2d playerPos = owner->GetPlayerPos(0);
+
 	V2d dir;
 	if (clockwise)
 	{
@@ -622,11 +622,11 @@ bool Crawler::ShouldAttack()
 	{
 		dir = normalize(mover->ground->v0 - mover->ground->v1);
 	}
-	double heightOff = cross(owner->GetPlayer(0)->position - mover->physBody.globalPosition, dir);
+	double heightOff = cross(playerPos - mover->physBody.globalPosition, dir);
 	if (abs(heightOff) > 150)
 		return false;
 
-	if (length(owner->GetPlayer(0)->position - position) < 200)
+	if (length(playerPos - position) < 200)
 	{
 		if (PlayerInFront())
 			return true;
@@ -651,6 +651,9 @@ bool Crawler::ShouldDash()
 {
 	if (action != CRAWL && action != ROLL && action != DECIDE )
 		return false;
+
+	V2d playerPos = owner->GetPlayerPos(0);
+
 	V2d dir;
 	if (clockwise)
 	{
@@ -660,11 +663,11 @@ bool Crawler::ShouldDash()
 	{
 		dir = normalize(mover->ground->v0 - mover->ground->v1);
 	}
-	double heightOff = cross(owner->GetPlayer(0)->position - mover->physBody.globalPosition, dir);
+	double heightOff = cross(playerPos - mover->physBody.globalPosition, dir);
 	if (abs(heightOff) > 150 )
 		return false;
 
-	if (length(owner->GetPlayer(0)->position - position) < 320)
+	if (length(playerPos - position) < 320)
 	{
 		if (PlayerInFront())
 			return true;
@@ -674,6 +677,8 @@ bool Crawler::ShouldDash()
 
 bool Crawler::PlayerInFront()
 {
+	V2d playerPos = owner->GetPlayerPos(0);
+
 	V2d dir;
 	if (clockwise )
 	{
@@ -683,7 +688,7 @@ bool Crawler::PlayerInFront()
 	{
 		dir = normalize(mover->ground->v0 - mover->ground->v1);
 	}
-	double alongDist = dot(owner->GetPlayer(0)->position - mover->physBody.globalPosition, dir);
+	double alongDist = dot(playerPos - mover->physBody.globalPosition, dir);
 	if (alongDist > -60)
 		return true;
 	else
@@ -746,7 +751,7 @@ bool Crawler::TryDash()
 bool Crawler::IsPlayerChasingMe()
 {
 	return (!PlayerInFront() &&
-		length(owner->GetPlayer(0)->position - mover->physBody.globalPosition) < 400);
+		length(owner->GetPlayerPos(0) - mover->physBody.globalPosition) < 400);
 }
 
 void Crawler::AttemptRunAwayBoost()

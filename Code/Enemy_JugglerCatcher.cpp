@@ -90,28 +90,6 @@ JugglerCatcher::JugglerCatcher(GameSession *owner,bool p_hasMonitor, Vector2i &p
 void JugglerCatcher::ProcessHit()
 {
 	return;
-	//if (!dead && ReceivedHit() && numHealth > 0)
-	//{
-	//	numHealth -= 1;
-
-	//	if (numHealth <= 0)
-	//	{
-	//		if (hasMonitor && !suppressMonitor)
-	//		{
-	//			owner->keyMarker->CollectKey();
-	//		}
-
-	//		owner->GetPlayer(0)->ConfirmEnemyKill(this);
-	//		ConfirmKill();
-	//	}
-	//	else
-	//	{
-	//		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
-	//		ConfirmHitNoKill();
-	//	}
-
-	//	//receivedHit = NULL;
-	//}
 }
 
 void JugglerCatcher::Catch()
@@ -219,16 +197,5 @@ void JugglerCatcher::DrawMinimap(sf::RenderTarget *target)
 		enemyCircle.setPosition(position.x, position.y);
 		target->draw(enemyCircle);
 	}
-}
-
-void JugglerCatcher::UpdateHitboxes()
-{
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
 }
 

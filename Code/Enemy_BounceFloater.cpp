@@ -6,6 +6,7 @@
 #include "Eye.h"
 #include "KeyMarker.h"
 #include "Enemy_BounceFloater.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -221,23 +222,4 @@ void BounceFloater::UpdateSprite()
 void BounceFloater::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSpriteIfExists(target, sprite);
-}
-
-void BounceFloater::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
 }

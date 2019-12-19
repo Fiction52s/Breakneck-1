@@ -192,7 +192,7 @@ void Comboer::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+		owner->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 		action = S_SHOT;
 		frame = 0;
@@ -307,7 +307,7 @@ void Comboer::ProcessHit()
 		}*/
 
 
-		owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+		owner->PlayerAddActiveComboObj(comboObj);
 	}
 }
 
@@ -322,12 +322,12 @@ void Comboer::ProcessState()
 		case S_EXPLODE:
 			numHealth = 0;
 			dead = true;
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+			owner->PlayerRemoveActiveComboer(comboObj);
 			break;
 		}
 	}
 
-	V2d playerPos = owner->GetPlayer(0)->position;
+	//V2d playerPos = owner->GetPlayer(0)->position;
 }
 
 void Comboer::HandleNoHealth()
@@ -379,7 +379,7 @@ void Comboer::UpdateEnemyPhysics()
 	}
 	}
 
-
+	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }
 
 void Comboer::AdvanceTargetNode()
@@ -465,30 +465,4 @@ void Comboer::UpdateSprite()
 void Comboer::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSpriteIfExists(target, sprite);
-}
-
-CollisionBox &Comboer::GetEnemyHitbox()
-{
-	return comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front();
-}
-
-void Comboer::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	GetEnemyHitbox().globalPosition = position;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
 }

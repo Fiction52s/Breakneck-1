@@ -48,7 +48,6 @@ struct Bat : Enemy, LauncherEnemy
 	void IHitPlayer(int index = 0);
 	//void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	bool PlayerSlowingMe();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();

@@ -10,6 +10,7 @@
 #include "GoalExplosion.h"
 #include "MovingGeo.h"
 #include "Enemy_Shard.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -291,13 +292,6 @@ void FlowerPod::UpdateSprite()
 	}
 
 	//sprite.setTextureRect(ts->GetSubRect(0));//frame / animationFactor ) );
-}
-
-void FlowerPod::UpdateHitboxes()
-{
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hitBox.globalPosition = position;// + gn * 8.0;
-	//hitBox.globalAngle = 0;
 }
 
 void FlowerPod::DirectKill()

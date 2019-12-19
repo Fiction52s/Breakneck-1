@@ -40,7 +40,6 @@ struct GravRing : Enemy, PoolMember
 	void EnemyDraw(sf::RenderTarget *target);
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void ProcessHit();

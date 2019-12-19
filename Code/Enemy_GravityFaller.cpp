@@ -193,12 +193,7 @@ void GravityFaller::UpdateHitboxes()
 		//hitBody.globalAngle = 0;
 		//hurtBody.globalAngle = 0;
 	}
-
-	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
-	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-
-	hurtBody->GetCollisionBoxes(0)->front().globalPosition = position;
-	hitBody->GetCollisionBoxes(0)->front().globalPosition = position;
+	BasicUpdateHitboxes();
 }
 
 void GravityFaller::ActionEnded()
@@ -213,11 +208,12 @@ void GravityFaller::ProcessState()
 {
 	ActionEnded();
 
-	Actor *player = owner->GetPlayer(0);
+	//Actor *player = owner->GetPlayer(0);
 
+	V2d playerPos = owner->GetPlayerPos(0);
 	if (action == IDLE)
 	{
-		if (length(player->position - position) < 500)
+		if (length(playerPos - position) < 500)
 		{
 			if (mover->ground->Normal().y < 0)
 			{

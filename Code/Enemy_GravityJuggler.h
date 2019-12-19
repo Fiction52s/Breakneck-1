@@ -29,10 +29,8 @@ struct GravityJuggler : Enemy
 	void ComboHit();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void HandleNoHealth();
-	CollisionBox &GetEnemyHitbox();
 	void Move();
 	void Return();
 	void Pop();
@@ -45,8 +43,6 @@ struct GravityJuggler : Enemy
 	Action action;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
-
-	ComboObject *comboObj;
 
 	V2d origPos;
 

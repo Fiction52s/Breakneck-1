@@ -2,6 +2,7 @@
 #include "GameSession.h"
 #include "Enemy_Shard.h"
 #include "ParticleEffects.h"
+#include "Actor.h"
 
 using namespace sf;
 using namespace std;

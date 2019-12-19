@@ -138,7 +138,7 @@ void SplitPiece::ProcessState()
 		case S_EXPLODE:
 			numHealth = 0;
 			dead = true;
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+			owner->PlayerRemoveActiveComboer(comboObj);
 			break;
 		}
 	}
@@ -194,29 +194,10 @@ void SplitPiece::EnemyDraw(sf::RenderTarget *target)
 	DrawSpriteIfExists(target, sprite);
 }
 
-CollisionBox &SplitPiece::GetEnemyHitbox()
-{
-	return comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front();
-}
-
-void SplitPiece::UpdateHitboxes()
-{
-	GetEnemyHitbox().globalPosition = position;
-
-	//if (owner->GetPlayer(0)->ground != NULL)
-	//{
-	//	hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	//}
-	//else
-	//{
-	//	hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	//}
-}
-
 void SplitPiece::Shoot(V2d dir)
 {
 	velocity = dir * sc->shootSpeed;
-	owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+	owner->PlayerAddActiveComboObj(comboObj);
 }
 
 SplitComboer::SplitComboer(GameSession *owner, Vector2i pos, list<Vector2i> &pathParam,
@@ -352,7 +333,7 @@ void SplitComboer::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+		owner->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 		action = S_SPLIT;
 		frame = 0;
@@ -497,25 +478,6 @@ void SplitComboer::UpdateSprite()
 void SplitComboer::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSpriteIfExists(target, sprite);
-}
-
-void SplitComboer::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
 }
 
 void SplitComboer::CheckedMiniDraw(sf::RenderTarget *target,

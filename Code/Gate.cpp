@@ -8,6 +8,8 @@
 #include "Enemy_Shard.h"
 #include "SaveFile.h"
 #include "Wire.h"
+#include "Actor.h"
+
 
 using namespace std;
 using namespace sf;

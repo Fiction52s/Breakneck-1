@@ -55,7 +55,7 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level )
 	circleFrames = 120;
 	wakeCap = 45;
 
-	V2d dirFromPlayer = normalize( owner->GetPlayer( 0 )->position - position );
+	V2d dirFromPlayer = normalize( owner->GetPlayerPos( 0 ) - position );
 	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 
 	circleSeq.AddRadialMovement(V2d(0, 0), 1, 0, 2 * PI,
@@ -130,9 +130,11 @@ void Shark::ProcessState()
 		circleSeq.position.x * sn + circleSeq.position.y * cs );
 	truePosOffset *= length( offsetPlayer );
 
+	V2d playerPos = owner->GetPlayerPos(0);
+
 	if( action == WAKEUP )
 	{
-		if( WithinDistance( position, owner->GetPlayer(0)->position, 400))
+		if( WithinDistance( position, playerPos, 400))
 		{
 			wakeCounter++;
 			if( wakeCounter == wakeCap )
@@ -141,8 +143,8 @@ void Shark::ProcessState()
 				action = CIRCLE;
 				frame = 0;
 				latchedOn = true;
-				offsetPlayer = basePos - owner->GetPlayer( 0 )->position;//owner->GetPlayer( 0 )->position - basePos;
-				origOffset = offsetPlayer;//length( offsetPlayer );
+				offsetPlayer = basePos - playerPos;
+				origOffset = offsetPlayer;
 				V2d offsetDir = normalize( offsetPlayer );
 				latchStartAngle = atan2( offsetDir.y, offsetDir.x );
 				
@@ -150,7 +152,7 @@ void Shark::ProcessState()
 				//testing
 
 				circleSeq.Update( slowMultiple );
-				basePos = owner->GetPlayer( 0 )->position;
+				basePos = playerPos;
 			}
 		}
 		else
@@ -162,7 +164,7 @@ void Shark::ProcessState()
 	}
 	else if( action == CIRCLE )
 	{	
-		if( owner->GetPlayer( 0 )->hitstunFrames > 0  )
+		if( owner->GetPlayerHitstunFrames( 0 ) > 0  )
 		{
 			action = FINALCIRCLE;
 			attackOffset = truePosOffset;
@@ -252,7 +254,7 @@ void Shark::UpdateSprite()
 {
 	if (latchedOn)
 	{
-		V2d playerPos = owner->GetPlayer(0)->position;
+		V2d playerPos = owner->GetPlayerPos(0);
 		basePos = playerPos;
 		if ((action == CIRCLE || action == FINALCIRCLE))
 		{
@@ -368,21 +370,4 @@ void Shark::UpdateSprite()
 void Shark::EnemyDraw( sf::RenderTarget *target )
 {
 	DrawSpriteIfExists(target, sprite);
-}
-void Shark::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-
-	hurtBox.globalPosition = position;
-	hitBox.globalPosition = position;
-
-	if( owner->GetPlayer( 0 )->ground != NULL )
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
-	}
 }

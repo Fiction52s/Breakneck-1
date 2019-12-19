@@ -155,14 +155,14 @@ float SaveFile::GetCompletionPercentage()
 	return (totalComplete / totalPossible) * 100.f;
 }
 
-bool SaveFile::HasPowerUnlocked(Actor::PowerType pow)
+bool SaveFile::HasPowerUnlocked(int pow)
 {
-	return powerField.GetBit((int)pow);
+	return powerField.GetBit(pow);
 }
 
-void SaveFile::UnlockPower(Actor::PowerType pType)
+void SaveFile::UnlockPower(int pow)
 {
-	powerField.SetBit((int)pType, true);
+	powerField.SetBit(pow, true);
 }
 
 SaveFile::~SaveFile()

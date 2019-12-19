@@ -152,11 +152,8 @@ void Airdasher::ComboHit()
 	if (currHits >= hitLimit)
 	{
 		dead = true;
-		owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
-		//action = EXPLODING;
-		//comboObj->enemyHitboxFrame = 1;
+		owner->PlayerRemoveActiveComboer(comboObj);
 		velocity = V2d(0, 0);
-		//frame = 0;
 	}
 }
 
@@ -186,7 +183,7 @@ void Airdasher::ProcessHit()
 {
 	if ( action == S_DASH && !dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+		owner->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 		action = S_COMBO;
 		frame = 0;
@@ -201,7 +198,7 @@ void Airdasher::ProcessHit()
 		dir = -playerDir;
 		velocity = dir * speed;
 
-		owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+		owner->PlayerAddActiveComboObj(comboObj);
 	}
 	else
 	{
@@ -213,7 +210,7 @@ void Airdasher::ProcessHit()
 
 void Airdasher::ProcessState()
 {
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos();
 	
 
 	if (frame == actionLength[action] * animFactor[action])
@@ -240,7 +237,7 @@ void Airdasher::ProcessState()
 		}
 		case S_COMBO:
 			dead = true;
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+			owner->PlayerRemoveActiveComboer(comboObj);
 			break;
 		}
 	}
@@ -349,7 +346,7 @@ double Airdasher::SetFacingPlayerAngle()
 
 void Airdasher::UpdateEnemyPhysics()
 {
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos();
 	V2d dest = currOrig + playerDir * dashRadius;
 	switch (action)
 	{
@@ -465,25 +462,4 @@ void Airdasher::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(auraSprite);
 	DrawSpriteIfExists(target, sprite);
-}
-
-void Airdasher::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
-
-	comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front().globalPosition = position;
 }

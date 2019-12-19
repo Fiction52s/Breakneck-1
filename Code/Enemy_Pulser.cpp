@@ -258,7 +258,7 @@ void Pulser::ProcessState()
 	}
 	
 
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 	if (action == WAIT && length(playerPos - position) < checkRadius)
 	{
 		action = CHARGE;
@@ -363,23 +363,4 @@ void Pulser::EnemyDraw(sf::RenderTarget *target)
 	geoGroupExplode.Draw(target);
 
 	DrawSpriteIfExists(target, sprite);
-}
-
-void Pulser::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(currHitboxFrame)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(owner->GetPlayer(0)->position - position);//normalize(-owner->GetPlayer(0)->velocity);
-	}
 }

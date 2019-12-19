@@ -245,7 +245,7 @@ void Nexus::HandleNoHealth()
 {
 	owner->KillAllEnemies();
 	frame = 0;
-	owner->GetPlayer(0)->hitNexus = true;
+	owner->PlayerHitNexus(0);
 	SetHurtboxes(NULL, 0);
 	action = A_KINKILLING;
 

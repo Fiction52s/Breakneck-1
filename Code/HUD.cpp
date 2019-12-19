@@ -6,6 +6,7 @@
 #include "Momentumbar.h"
 #include "PowerOrbs.h"
 #include "SaveFile.h"
+#include "Actor.h"
 
 using namespace sf;
 using namespace std;

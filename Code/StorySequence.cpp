@@ -9,6 +9,7 @@
 #include "MusicPlayer.h"
 #include "MainMenu.h"
 #include "ImageText.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;

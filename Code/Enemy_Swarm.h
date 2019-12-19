@@ -22,7 +22,6 @@ struct SwarmMember : Enemy
 	void UpdateSprite();
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void HandleNoHealth();
 	void FrameIncrement();
@@ -65,7 +64,6 @@ struct Swarm : Enemy
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void HandleNoHealth();
 
 	void Launch();

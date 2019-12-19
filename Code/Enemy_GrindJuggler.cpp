@@ -183,7 +183,7 @@ void GrindJuggler::Throw(V2d vel)
 
 void GrindJuggler::Return()
 {
-	owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+	owner->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
@@ -197,7 +197,7 @@ void GrindJuggler::Return()
 
 void GrindJuggler::Pop()
 {
-	owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+	owner->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -228,7 +228,7 @@ void GrindJuggler::PopThrow()
 
 	Throw(hit);
 
-	owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+	owner->PlayerAddActiveComboObj(comboObj);
 }
 
 void GrindJuggler::ProcessHit()
@@ -237,7 +237,7 @@ void GrindJuggler::ProcessHit()
 	{
 		numHealth -= 1;
 
-		Actor *player = owner->GetPlayer(0);
+		//Actor *player = owner->GetPlayer(0);
 		if (numHealth <= 0)
 		{
 			if (currJuggle == juggleReps)
@@ -248,7 +248,7 @@ void GrindJuggler::ProcessHit()
 					suppressMonitor = true;
 				}
 
-				player->ConfirmEnemyNoKill(this);
+				owner->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -265,7 +265,7 @@ void GrindJuggler::ProcessHit()
 		}
 		else
 		{
-			owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+			owner->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 	}
@@ -288,7 +288,7 @@ void GrindJuggler::ProcessState()
 			/*case S_EXPLODE:
 			numHealth = 0;
 			dead = true;
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+			owner->PlayerRemoveActiveComboer(comboObj);
 			break;*/
 		}
 	}
@@ -350,6 +350,8 @@ void GrindJuggler::UpdateEnemyPhysics()
 	}
 		
 	}
+
+	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }
 
 void GrindJuggler::FrameIncrement()
@@ -478,7 +480,7 @@ void GrindJuggler::ComboKill(Enemy *e)
 
 		SetHurtboxes(hurtBody, 0);
 
-		owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+		owner->PlayerRemoveActiveComboer(comboObj);
 	}
 }
 
@@ -507,7 +509,7 @@ void GrindJuggler::ComboHit()
 
 			SetHurtboxes(hurtBody, 0);
 
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+			owner->PlayerRemoveActiveComboer(comboObj);
 
 		}*/
 	}
@@ -530,36 +532,6 @@ void GrindJuggler::UpdateSprite()
 void GrindJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSpriteIfExists(target, sprite);
-}
-
-CollisionBox &GrindJuggler::GetEnemyHitbox()
-{
-	return comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front();
-}
-
-void GrindJuggler::UpdateHitboxes()
-{
-	position = mover->physBody.globalPosition;
-
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	GetEnemyHitbox().globalPosition = position;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
-
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }
 
 void GrindJuggler::HitTerrainAerial(Edge * edge, double quant)

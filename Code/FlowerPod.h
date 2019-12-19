@@ -91,7 +91,6 @@ struct FlowerPod : Enemy, RayCastHandler
 	void FrameIncrement();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void DirectKill();
 	void ResetEnemy();
 	void IHitPlayer(int index = 0);

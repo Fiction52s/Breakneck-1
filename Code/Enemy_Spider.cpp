@@ -186,7 +186,7 @@ void Spider::SetClosestLeft()
 	V2d testPos;
 	Edge *testEdge = mover->ground;
 
-	V2d playerPos = owner->GetPlayer( 0 )->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 
 	while( movementPossible > 0 )
 	{
@@ -215,7 +215,7 @@ void Spider::SetClosestRight()
 	V2d testPos;
 	Edge *testEdge = mover->ground;
 
-	V2d playerPos = owner->GetPlayer( 0 )->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 
 	while( movementPossible > 0 )
 	{
@@ -356,11 +356,13 @@ void Spider::ProcessState()
 	closestPos.q = mover->edgeQuantity;
 	closestPos.position = mover->physBody.globalPosition;
 
+	V2d playerPos = owner->GetPlayerPos(0);
+
 	SetClosestLeft();
 	SetClosestRight();
-	CheckClosest( mover->ground, player->position, true, mover->edgeQuantity );
+	CheckClosest( mover->ground, playerPos, true, mover->edgeQuantity );
 
-	double len = length( player->position - position );
+	double len = length(playerPos - position );
 	bool outsideRange = len >= 500 && len < 1500;//1200; //bounds
 	if( outsideRange && length( position - closestPos.position ) > 20
 		&& !canSeePlayer )
@@ -443,14 +445,14 @@ void Spider::UpdatePostPhysics()
 		case 0:
 			break;
 		case 1:
-			owner->GetPlayer( 0 )->ApplyHit( laserInfo1 );
+			owner->PlayerApplyHit( laserInfo1 );
 			//owner->GetPlayer( 0 )->app
 			break;
 		case 2:
-			owner->GetPlayer( 0 )->ApplyHit( laserInfo2 );
+			owner->PlayerApplyHit( laserInfo2 );
 			break;
 		case 3:
-			owner->GetPlayer( 0 )->ApplyHit( laserInfo3 );
+			owner->PlayerApplyHit( laserInfo3 );
 			break;
 		};
 		++laserCounter;
@@ -467,20 +469,21 @@ void Spider::UpdatePostPhysics()
 		}
 	}
 
-	if( length( owner->GetPlayer( 0 )->position - mover->physBody.globalPosition ) < 1200 )
+	V2d playerPos = owner->GetPlayerPos(0);
+	if( length( playerPos - mover->physBody.globalPosition ) < 1200 )
 	{
 		rayStart = mover->physBody.globalPosition;
 		V2d laserDir( cos( laserAngle ), sin( laserAngle ) );
 
 		//rayEnd = rayStart + laserDir * 1000.0;//owner->GetPlayer( 0 )->position;
-		rayEnd = owner->GetPlayer( 0 )->position;
+		rayEnd = playerPos;
 		rcEdge = NULL;
 		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
 
 		if( rcEdge != NULL )
 		{
 			V2d rcPoint = rcEdge->GetPoint( rcQuantity );
-			if( length( rcPoint - position ) < length( owner->GetPlayer( 0 )->position - position ) )
+			if( length( rcPoint - position ) < length(playerPos - position ) )
 			{
 				canSeePlayer = false;
 			}

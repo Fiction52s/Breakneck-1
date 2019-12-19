@@ -24,7 +24,6 @@ struct BounceFloater : Enemy
 	void FrameIncrement();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void HandleNoHealth();
 

@@ -276,7 +276,7 @@ void PoisonFrog::ProcessState()
 {
 	ActionEnded();
 
-	Actor *player = owner->GetPlayer( 0 );
+	V2d playerPos = owner->GetPlayerPos(0);
 
 	V2d jumpVel;
 	V2d gAlong;
@@ -292,11 +292,11 @@ void PoisonFrog::ProcessState()
 	case STAND:
 		{
 			//cout << "frame: " << frame << endl;
-			if( player->position.x < position.x )
+			if(playerPos.x < position.x )
 			{
 				facingRight = false;
 			}
-			else if( player->position.x > position.x )
+			else if(playerPos.x > position.x )
 			{
 				facingRight = true;
 			}
@@ -345,7 +345,7 @@ void PoisonFrog::ProcessState()
 				if (hasDoubleJump )
 				{
 					//cout << "vel: " << velocity.y << endl;
-					V2d diff = player->position - position;
+					V2d diff = playerPos - position;
 					if (mover->velocity.y > 3  && length(diff) < 300 && diff.y < 0)
 					{
 						hasDoubleJump = false;
@@ -360,11 +360,11 @@ void PoisonFrog::ProcessState()
 		break;
 	case STEEPJUMP:
 		{
-			if( player->position.x < position.x )
+			if(playerPos.x < position.x )
 			{
 				facingRight = false;
 			}
-			else if( player->position.x > position.x )
+			else if(playerPos.x > position.x )
 			{
 				facingRight = true;
 			}

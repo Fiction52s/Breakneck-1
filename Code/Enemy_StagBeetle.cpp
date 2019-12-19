@@ -237,7 +237,8 @@ void StagBeetle::ActionEnded()
 void StagBeetle::ProcessState()
 {
 	//cout << "vel: " << testMover->velocity.x << ", " << testMover->velocity.y << endl;
-	Actor *player = owner->GetPlayer( 0 );
+	//Actor *player = owner->GetPlayer( 0 );
+	V2d playerPos = owner->GetPlayerPos(0);
 
 	ActionEnded();
 
@@ -250,7 +251,7 @@ void StagBeetle::ProcessState()
 	{
 	case IDLE:
 		{
-			double dist = length( owner->GetPlayer( 0 )->position - position );
+			double dist = length( owner->GetPlayerPos( 0 ) - position );
 			if( dist < 800 )
 			{
 				action = RUN;
@@ -261,7 +262,7 @@ void StagBeetle::ProcessState()
 		break;
 	case RUN:
 		{
-			double dist = length( owner->GetPlayer( 0 )->position - position );
+			double dist = length( owner->GetPlayerPos( 0 ) - position );
 			if( dist >= 900 )
 			{
 				action = IDLE;
@@ -288,14 +289,14 @@ void StagBeetle::ProcessState()
 		//cout << "run: " << frame << endl;
 		if( facingRight )
 		{
-			if( player->position.x < position.x )
+			if(playerPos.x < position.x )
 			{
 				facingRight = false;
 			}
 		}
 		else
 		{
-			if( player->position.x > position.x )
+			if(playerPos.x > position.x )
 			{
 				facingRight = true;
 			}
@@ -362,42 +363,6 @@ void StagBeetle::UpdateEnemyPhysics()
 
 		shield->SetPosition(shieldPos);
 	}
-
-	//double f = moveBezTest.GetValue( bezFrame / (double)bezLength );
-	////testMover->groundSpeed = groundSpeed;// * f;
-	//if( !facingRight )
-	//{
-	////	testMover->groundSpeed = groundSpeed;// * f;
-	//}
-	//bezFrame++;
-
-	//if( bezFrame == bezLength )
-	//{
-	//	bezFrame = 0;
-	//	
-
-	//}
-
-	//if( testMover->ground != NULL )
-	//{
-	//}
-	//else
-	//{
-	//	testMover->velocity += gravity / (NUM_STEPS * slowMultiple);
-
-	//	if( testMover->velocity.y >= maxFallSpeed )
-	//	{
-	//		testMover->velocity.y = maxFallSpeed;
-	//	}
-	//}
-
-	//
-	////testMover->groundSpeed = 5;
-	//testMover->Move( slowMultiple );
-
-	//position = testMover->physBody.globalPosition;
-	//
-	//PhysicsResponse();
 }
 
 

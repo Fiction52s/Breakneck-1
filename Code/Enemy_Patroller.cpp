@@ -208,7 +208,9 @@ void Patroller::ResetEnemy()
 
 void Patroller::ProcessState()
 {
-	eye->ProcessState(Vector2f(owner->GetPlayer(0)->position));
+	V2d playerPos = owner->GetPlayerPos(0);
+
+	eye->ProcessState(Vector2f(playerPos));
 
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -236,7 +238,7 @@ void Patroller::ProcessState()
 			break;
 		}
 	}
-	V2d playerPos = owner->GetPlayer(0)->position;
+	
 
 	
 
@@ -344,39 +346,6 @@ void Patroller::ProcessState()
 			currentAngle = targetAngle;
 		}
 	}
-		//case FLAP:
-	/*		if (eye->IsEyeActivated())
-			{
-				action = TRANSFORM;
-				frame = 0;
-			}
-			break;
-		case TRANSFORM:
-			if (!eye->IsEyeActivated())
-			{
-				action = FLAP;
-				frame = 0;
-			}
-			break;
-		case CHARGEDFLAP:
-			if (!eye->IsEyeActivated())
-			{
-				action = FLAP;
-				frame = 0;
-			}
-			break;*/
-
-	//if (action == CHARGEDFLAP && fireCounter == 60)// frame == 0 && slowCounter == 1 )
-	//{
-	//	launchers[0]->position = position;
-	//	V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
-	//	launchers[0]->facingDir = normalize(owner->GetPlayer(0)->position - position);//normalize(position - targetPoint);//normalize(owner->GetPlayer(0)->position - position);
-	//																			  //cout << "shooting bullet at: " << launcher->facingDir.x <<", " <<
-	//																			  //	launcher->facingDir.y << endl;
-	//	launchers[0]->Fire();
-	//	fireCounter = 0;
-	//	//testLauncher->Fire();
-	//}
 }
 
 void Patroller::HandleHitAndSurvive()
@@ -578,25 +547,6 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 	}	
 }
 
-void Patroller::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = currentAngle;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = currentAngle;
-
-	if( owner->GetPlayer( 0 )->ground != NULL )
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
-	}
-}
-
 void Patroller::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
 {
 	//V2d vel = b->velocity;
@@ -616,6 +566,18 @@ void Patroller::BulletHitPlayer(BasicBullet *b)
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
 	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	owner->GetPlayer(0)->ApplyHit(b->launcher->hitboxInfo);
+	owner->PlayerApplyHit(b->launcher->hitboxInfo);
 	b->launcher->DeactivateBullet(b);
+}
+
+void Patroller::UpdateHitboxes()
+{
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
+	hurtBox.globalPosition = position;
+	hurtBox.globalAngle = currentAngle;
+	hitBox.globalPosition = position;
+	hitBox.globalAngle = currentAngle;
+
+	BasicUpdateHitboxInfo();
 }

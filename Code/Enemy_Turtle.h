@@ -29,7 +29,6 @@ struct Turtle : Enemy, LauncherEnemy
 	
 	
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 
 	int actionLength[A_Count];

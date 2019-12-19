@@ -28,7 +28,6 @@ struct Pulser : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void AdvanceTargetNode();

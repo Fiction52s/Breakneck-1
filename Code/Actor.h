@@ -802,6 +802,7 @@ struct Actor : QuadTreeCollider,
 		sf::Vector2<double> &gNorm, bool rail = false );
 	bool CanRailSlide();
 	bool CanRailGrind();
+	bool IsRailSlideFacingRight();
 
 	void SetAerialScorpSprite();
 	int GetJumpFrame();
@@ -1137,6 +1138,9 @@ struct Actor : QuadTreeCollider,
 	int frame;
 	sf::Vector2<double> position;
 	sf::Vector2<double> velocity;
+	V2d GetTrueVel();
+	void RestoreDoubleJump();
+	void RestoreAirDash();
 	//CollisionBox *physBox;
 
 	int hitlagFrames;
@@ -1198,7 +1202,6 @@ struct Actor : QuadTreeCollider,
 
 	int currBubble;
 
-	
 	bool hasPowerAirDash;
 	bool hasPowerGravReverse;
 	bool hasPowerBounce;
@@ -1206,6 +1209,8 @@ struct Actor : QuadTreeCollider,
 	bool hasPowerTimeSlow;
 	bool hasPowerLeftWire;
 	bool hasPowerRightWire;
+
+	bool HasPower(int index);
 
 	bool startHasPowerAirDash;
 	bool startHasPowerGravReverse;
@@ -1275,6 +1280,10 @@ struct Actor : QuadTreeCollider,
 	bool IsAttackAction( Action a );
 	bool IsGroundAttackAction(Action a);
 	bool IsSpringAction(Action a);
+	bool IsOnRailAction(Action a);
+	bool IsInHistunAction( Action a );
+
+	V2d GetKnockbackDirFromVel();
 
 
 
@@ -1287,106 +1296,6 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> dWireAirDash;
 	sf::Vector2<double> dWireAirDashOld;
 	//end unstored
-
-	void SaveState();
-	void LoadState();
-
-	struct Stored
-	{
-		bool leftGround;
-		double grindActionCurrent;
-		ControllerState prevInput;
-		ControllerState currInput;
-		sf::Vector2<double> oldVelocity;
-		int framesInAir;
-		sf::Vector2<double> startAirDashVel;
-		Edge *ground;
-		Edge *lastGround;
-		bool hasAirDash;
-		bool hasGravReverse;
-
-		Edge *grindEdge;
-		bool bounceGrounded;
-		double grindQuantity;
-		double grindSpeed;
-
-		bool reversed;
-
-		double edgeQuantity;
-	
-		double groundOffsetX;
-
-		double offsetX;
-
-		bool holdJump;
-
-		int wallJumpFrameCounter;
-
-		double groundSpeed;
-
-		bool facingRight;
-	
-		bool hasDoubleJump;
-
-		int slowMultiple;
-		int slowCounter;
-
-		sf::Vector2<double> wallNormal;
-		
-
-		Action action;
-		int frame;
-		sf::Vector2<double> position;
-		sf::Vector2<double> velocity;
-		//CollisionBox *physBox;
-
-		int hitlagFrames;
-		int hitstunFrames;
-		int invincibleFrames;
-		HitboxInfo *receivedHit;
-
-		sf::Vector2<double> storedBounceVel;
-		Wire *wire;
-		Edge *bounceEdge;
-		double bounceQuant;
-
-		Edge *oldBounceEdge;
-		int framesSinceBounce;
-
-		bool touchEdgeWithLeftWire;
-		bool touchEdgeWithRightWire;
-
-		//sf::Vector2<double> bubblePos[maxBubbles];
-		//int bubbleFramesToLive[maxBubbles];
-		int currBubble;
-
-		
-
-		sf::Vector2<double> bounceNorm;
-		sf::Vector2<double> oldBounceNorm;
-		double storedBounceGroundSpeed;
-
-		bool groundedWallBounce;
-
-		int framesGrinding;
-		int framesNotGrinding;
-
-
-
-
-
-
-
-		//not added yet to the functions
-		bool boostBounce;
-		int lastWire;
-	};
-	Stored stored;
-
-
-	//double rotation;
-	
-
 
 
 	//PlayerGhost *testGhost;

@@ -29,7 +29,6 @@ struct Owl : Enemy, LauncherEnemy
 	
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	
 	double ang;

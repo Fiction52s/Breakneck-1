@@ -164,8 +164,9 @@ void Cactus::ProcessState()
 {
 	ActionEnded();
 
-	Actor *player = owner->GetPlayer(0);
-	double dist = length(player->position - position);
+	//Actor *player = owner->GetPlayer(0);
+	V2d playerPos = owner->GetPlayerPos(0);
+	double dist = length(playerPos - position);
 
 	switch (action)
 	{
@@ -263,8 +264,9 @@ void Cactus::ThrowShotgun()
 	shot->spawned = false;
 	//shot->Reset();
 
-	Actor *player = owner->GetPlayer(0);
-	V2d playerDir = normalize(player->position - position);
+	//Actor *player = owner->GetPlayer(0);
+
+	V2d playerDir = normalize(owner->GetPlayerPos(0) - position);
 
 	shot->SetParams(position, playerDir);
 	owner->AddEnemy(shot);
@@ -273,16 +275,6 @@ void Cactus::ThrowShotgun()
 void Cactus::UpdateSprite()
 {
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );//frame / animationFactor ) );
-}
-
-void Cactus::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;// + gn * 8.0;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;// + gn * 8.0;
-	hitBox.globalAngle = 0;
 }
 
 bool Cactus::LaunchersAreDone()
@@ -376,7 +368,7 @@ void CactusShotgun::BulletHitPlayer(BasicBullet *b)
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
 	owner->ActivateEffect(EffectLayer::IN_FRONT, parent->ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	owner->GetPlayer(0)->ApplyHit(b->launcher->hitboxInfo);
+	owner->PlayerApplyHit(b->launcher->hitboxInfo);
 	b->launcher->DeactivateBullet(b);
 	//might have all the bullets explode/dissipate if one of them hits you.
 }
@@ -407,7 +399,7 @@ void CactusShotgun::ActionEnded()
 		{
 			action = SHOOTING;
 
-			Vector2f dir(normalize(owner->GetPlayer(0)->position - position));
+			Vector2f dir(normalize(owner->GetPlayerPos(0) - position));
 			Transform t;
 			for (int i = 0; i < 4; ++i)
 			{
@@ -461,15 +453,17 @@ void CactusShotgun::ClearSprite()
 
 void CactusShotgun::ProcessState()
 {
-	Actor *player = owner->GetPlayer(0);
+	//Actor *player = owner->GetPlayer(0);
 	
 	ActionEnded();
+
+	V2d playerPos = owner->GetPlayerPos(0);
 
 	switch (action)
 	{
 	case CHASINGPLAYER:
 	{
-		double dist = length(player->position - position);
+		double dist = length(playerPos - position);
 		if (dist < 250)
 		{
 			action = BLINKING;
@@ -490,7 +484,7 @@ void CactusShotgun::ProcessState()
 	case CHASINGPLAYER:
 	{
 		V2d dir = normalize(velocity);
-		dir += normalize(player->position - position) / 60.0;
+		dir += normalize(playerPos - position) / 60.0;
 		dir = normalize(dir);
 		velocity = dir * bulletSpeed;
 		break;
@@ -498,7 +492,7 @@ void CactusShotgun::ProcessState()
 	case BLINKING:
 	{
 		V2d dir = normalize(velocity);
-		dir += normalize(player->position - position) / 10.0;
+		dir += normalize(playerPos - position) / 10.0;
 		dir = normalize(dir);
 		velocity = dir * bulletSpeed;
 		break;
@@ -530,14 +524,4 @@ void CactusShotgun::UpdateSprite()
 	SetRectCenter(va, parent->ts_shotgun->tileWidth, parent->ts_shotgun->tileHeight, Vector2f(position));
 	SetRectSubRect(va, parent->ts_shotgun->GetSubRect(1));
 	//sprite.setTextureRect(ts->GetSubRect(0));//frame / animationFactor ) );
-}
-
-void CactusShotgun::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;// + gn * 8.0;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;// + gn * 8.0;
-	hitBox.globalAngle = 0;
 }

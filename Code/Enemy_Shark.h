@@ -37,7 +37,6 @@ struct Shark : Enemy
 	void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 
 	sf::Vector2<double> basePos;

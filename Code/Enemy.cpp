@@ -13,6 +13,7 @@
 #include "Enemy_CurveTurret.h"
 #include "Wire.h"
 #include "Enemy_Specter.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -555,7 +556,7 @@ void BasicBullet::Reset( V2d &pos, V2d &vel )
 	bva[index*4+2].position = Vector2f( 0, 0 );
 	bva[index*4+3].position = Vector2f( 0, 0 );
 
-	double len = length(pos - launcher->owner->GetPlayer(0)->position);
+	double len = length(pos - launcher->owner->GetPlayerPos(0));
 	if (len > MAX_VELOCITY * 2)
 	{
 		numPhysSteps = NUM_STEPS;
@@ -660,7 +661,7 @@ void BasicBullet::UpdatePrePhysics()
 	}
 
 	velocity += gravity / (double)slowMultiple;
-	V2d playerPos = launcher->owner->GetPlayer(0)->position;
+	V2d playerPos = launcher->owner->GetPlayerPos(0);
 
 	if (launcher->handler != NULL)
 	{
@@ -1184,7 +1185,8 @@ Enemy::Enemy(GameSession *own, EnemyType t, bool p_hasMonitor,
 	}
 
 	scale = 1.f;
-
+	
+	comboObj = NULL;
 	hurtBody = NULL;
 	hitBody = NULL;
 	hitboxInfo = NULL;
@@ -1404,7 +1406,13 @@ Enemy::~Enemy()
 	if (hitboxInfo != NULL)
 		delete hitboxInfo;
 
+	if (comboObj != NULL)
+	{
+		delete comboObj;
+	}
 }
+
+
 
 
 bool Enemy::ReadPath(std::ifstream &is,
@@ -1440,6 +1448,21 @@ void Enemy::PlayDeathSound()
 void Enemy::SetZoneSpritePosition()
 {
 	zonedSprite.setPosition(position.x, position.y);
+}
+
+std::list<CollisionBox> * Enemy::GetComboHitboxes()
+{
+	if (comboObj != NULL)
+	{
+		CollisionBody *body = comboObj->enemyHitBody;
+		if (body != NULL)
+		{
+			auto boxes = body->GetCollisionBoxes(comboObj->enemyHitboxFrame);
+			return boxes;
+		}
+	}	
+
+	return NULL;
 }
 
 void Enemy::DrawSpriteIfExists( sf::RenderTarget *target, sf::Sprite &spr )
@@ -1895,12 +1918,12 @@ void Enemy::ProcessHit()
 				owner->keyMarker->CollectKey();
 			}
 
-			owner->GetPlayer(0)->ConfirmEnemyKill(this);
+			owner->PlayerConfirmEnemyKill(this);
 			ConfirmKill();
 		}
 		else
 		{
-			owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+			owner->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 
@@ -2157,6 +2180,56 @@ void Enemy::DebugDraw(sf::RenderTarget *target)
 			currHitboxes->DebugDraw( currHitboxFrame, target);
 		if( currHurtboxes != NULL )
 			currHurtboxes->DebugDraw( currHurtboxFrame, target);
+	}
+}
+
+void Enemy::UpdateHitboxes()
+{
+	BasicUpdateHitboxes();
+	BasicUpdateHitboxInfo();
+}
+
+void Enemy::BasicUpdateHitboxes()
+{
+	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
+
+	if (hurtBody != NULL)
+	{
+		auto boxes = hurtBody->GetCollisionBoxes(0);
+		if (!boxes->empty())
+		{
+			CollisionBox &hurtBox = boxes->front();
+			hurtBox.globalPosition = position;
+			//hurtBox.globalAngle = 0;
+		}
+	}
+
+	if (hitBody != NULL)
+	{
+		auto boxes = hitBody->GetCollisionBoxes(0);
+		if (!boxes->empty())
+		{
+			CollisionBox &hitBox = boxes->front();
+			hitBox.globalPosition = position;
+			//hitBox.globalAngle = 0;
+		}
+	}
+
+	auto comboBoxes = GetComboHitboxes();
+	if (comboBoxes != NULL)
+	{
+		for (auto it = comboBoxes->begin(); it != comboBoxes->end(); ++it)
+		{
+			(*it).globalPosition = position;
+		}
+	}
+}
+
+void Enemy::BasicUpdateHitboxInfo()
+{
+	if (hitboxInfo != NULL)
+	{
+		hitboxInfo->kbDir = owner->GetPlayerKnockbackDirFromVel();
 	}
 }
 

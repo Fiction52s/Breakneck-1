@@ -20,7 +20,6 @@ struct TrapRoot : Enemy
 		Edge *ground, double quantity);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void ProcessState();
 

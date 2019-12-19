@@ -29,12 +29,9 @@ struct AirdashJuggler : Enemy
 	void ComboHit();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void HandleNoHealth();
-	CollisionBox &GetEnemyHitbox();
 
-	ComboObject *comboObj;
 
 	V2d origPos;
 

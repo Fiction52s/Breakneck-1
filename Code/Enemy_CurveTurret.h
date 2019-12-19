@@ -19,7 +19,6 @@ struct CurveTurret : Enemy, LauncherEnemy
 	void Setup();
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
 	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,

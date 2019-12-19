@@ -560,7 +560,7 @@ void Blocker::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+		owner->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 
 		if (receivedHit->hType == HitboxInfo::COMBO)
@@ -638,7 +638,7 @@ void Blocker::ResetEnemy()
 
 void Blocker::IHitPlayer(int index)
 {
-	V2d playerPos = owner->GetPlayer(index)->position;
+	V2d playerPos = owner->GetPlayerPos(index);
 	if (dot(normalize(playerPos - position), hitboxInfo->kbDir) < 0)
 	{
 		hitboxInfo->kbDir = -hitboxInfo->kbDir;

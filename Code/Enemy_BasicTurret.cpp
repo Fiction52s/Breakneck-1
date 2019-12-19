@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_BasicTurret.h"
 #include "Shield.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -182,7 +183,7 @@ void BasicTurret::BulletHitPlayer( BasicBullet *b )
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
+	owner->PlayerApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 }
 
@@ -281,16 +282,6 @@ void BasicTurret::UpdateSprite()
 	}
 	
 	SyncSpriteInfo(auraSprite, sprite);
-}
-
-void BasicTurret::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;// + gn * 8.0;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;// + gn * 8.0;
-	hitBox.globalAngle = 0;
 }
 
 void BasicTurret::SetupPreCollision()

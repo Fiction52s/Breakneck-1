@@ -6,11 +6,11 @@
 #include "ShardTypes.h"
 #include <list>
 #include <string>
-#include "Actor.h"
+//#include "Actor.h"
 
 struct Sector;
 struct World;
-
+struct Actor;
 
 
 
@@ -28,33 +28,6 @@ struct BitField
 	int numOptions;
 	int numFields;
 };
-
-
-
-//struct Shard
-//{
-//	enum ShardType
-//	{
-//		NEW_SHARDS, //the player has not viewed
-//		//new shards
-//		W1_TEACH_JUMP,
-//	};
-//
-//
-//	enum ShardGroupType
-//	{
-//		GT_TRI,
-//		GT_QUAD,
-//		GT_Count
-//	};
-//
-//	Shard();
-//	std::string animName;
-//	ShardGroupType groupType;
-//	int groupIndex;
-//	bool Load(std::ifstream is);
-//
-//};
 
 struct Level
 {
@@ -179,8 +152,8 @@ struct SaveFile
 		int sec, int lev);*/
 
 	BitField powerField;
-	bool HasPowerUnlocked(Actor::PowerType pType);
-	void UnlockPower(Actor::PowerType pType);
+	bool HasPowerUnlocked(int pType);
+	void UnlockPower(int pType);
 
 	BitField momentaField;
 

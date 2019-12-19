@@ -26,7 +26,6 @@ struct Airdasher : Enemy
 	void FrameIncrement();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	double SetFacingPlayerAngle();
 	void SetFacingSide( V2d pDir );
@@ -39,7 +38,6 @@ struct Airdasher : Enemy
 	V2d playerDir;
 	V2d velocity;
 
-	ComboObject *comboObj;
 
 	int hitFrame;
 

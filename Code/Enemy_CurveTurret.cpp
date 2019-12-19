@@ -232,7 +232,7 @@ void CurveTurret::BulletHitPlayer(BasicBullet *b )
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
+	owner->PlayerApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 }
@@ -251,7 +251,7 @@ void CurveTurret::ResetEnemy()
 
 void CurveTurret::ProcessState()
 {
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 	switch (action)
 	{
 	case WAIT:
@@ -268,7 +268,7 @@ void CurveTurret::ProcessState()
 		if (frame == 13 * animationFactor)
 		{
 			frame = 0;
-			if (length(owner->GetPlayer(0)->position - position) >= 500)
+			if (length(playerPos - position) >= 500)
 			{
 				action = WAIT;
 				frame = 0;
@@ -331,14 +331,4 @@ void CurveTurret::UpdateSprite()
 void CurveTurret::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
-}
-
-void CurveTurret::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;// + gn * 8.0;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;// + gn * 8.0;
-	hitBox.globalAngle = 0;
 }

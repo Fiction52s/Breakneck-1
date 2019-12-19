@@ -2,13 +2,11 @@
 #define __WIRE_H__
 
 #include <SFML/Graphics.hpp>
-//#include "Actor.h"
 #include "Physics.h"
 #include "QuadTree.h"
 #include "Tileset.h"
 #include <SFML/System/Clock.hpp>
 #include "EnemyTracker.h"
-//#include "GameSession.h"
 
 struct Actor;
 struct Wire : RayCastHandler, QuadTreeCollider,

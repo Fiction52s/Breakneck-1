@@ -23,7 +23,6 @@ struct SplitPiece : Enemy
 	SplitPiece(SplitComboer *splitComb);
 	~SplitPiece();
 
-	ComboObject *comboObj;
 	void ComboHit();
 
 	void ProcessState();
@@ -31,13 +30,8 @@ struct SplitPiece : Enemy
 
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void Shoot(V2d dir);
-
-	//void HandleNoHealth();
-
-	CollisionBox &GetEnemyHitbox();
 
 	SplitComboer *sc;
 
@@ -78,7 +72,6 @@ struct SplitComboer : Enemy
 	
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void AdvanceTargetNode();
 

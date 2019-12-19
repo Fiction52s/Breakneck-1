@@ -253,11 +253,11 @@ void GrowingTree::ProcessState()
 		}
 	}
 
-	int numEnemiesKilledLastFrame = owner->GetPlayer(0)->enemiesKilledLastFrame;
+	int numEnemiesKilledLastFrame = owner->GetPlayerEnemiesKilledLastFrame(0);
 
 	if ( numEnemiesKilledLastFrame > 0 && powerLevel < 3)
 	{
-		if (WithinDistance(owner->GetPlayer(0)->position, position, pulseRadius))
+		if (WithinDistance(owner->GetPlayerPos(0), position, pulseRadius))
 		{
 			switch (action)
 			{
@@ -406,16 +406,6 @@ void GrowingTree::BulletHitPlayer( BasicBullet *b )
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
+	owner->PlayerApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
-}
-
-void GrowingTree::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position - gn * 10.0;;// + gn * 8.0;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position - gn * 10.0;;// + gn * 8.0;
-	hitBox.globalAngle = 0;
 }

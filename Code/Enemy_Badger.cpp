@@ -180,15 +180,6 @@ void Badger::UpdateHitboxes()
 	Edge *ground = testMover->ground;
 	if( ground != NULL )
 	{
-		//V2d gn = ground->Normal();
-		//double angle = 0;
-		
-		
-		//angle = atan2( gn.x, -gn.y );
-		
-		//hitBody.globalAngle = angle;
-		//hurtBody.globalAngle = angle;
-
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
 		if( testMover->groundSpeed > 0 )
@@ -208,13 +199,7 @@ void Badger::UpdateHitboxes()
 		//hurtBody.globalAngle = 0;
 	}
 
-	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
-	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	CollisionBox &hitbox = hitBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hurtbox = hurtBody->GetCollisionBoxes(0)->front();
-	hitbox.globalPosition = testMover->physBody.globalPosition;
-	hurtbox.globalPosition = testMover->physBody.globalPosition;
-	//physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+	BasicUpdateHitboxes();
 }
 
 void Badger::UpdateNextAction()
@@ -240,7 +225,7 @@ void Badger::UpdateNextAction()
 		break;
 	}
 
-	if( owner->GetPlayer( 0 )->position.x > position.x )
+	if( owner->GetPlayerPos( 0 ).x > position.x )
 	{
 		//cout << "facing right" << endl;
 		facingRight = true;
@@ -457,21 +442,7 @@ void Badger::ProcessState()
 }
 
 void Badger::UpdateEnemyPhysics()
-{
-	//double f = moveBezTest.GetValue(bezFrame / (double)bezLength);
-	////testMover->groundSpeed = groundSpeed;// * f;
-	//if (!facingRight)
-	//{
-	//	//	testMover->groundSpeed = groundSpeed;// * f;
-	//}
-	//bezFrame++;
-
-	//if (bezFrame == bezLength)
-	//{
-	//	bezFrame = 0;
-	//}
-
-	//testMover->groundSpeed = 5;
+{	
 	testMover->Move(slowMultiple, numPhysSteps);
 
 	if (testMover->ground == NULL)

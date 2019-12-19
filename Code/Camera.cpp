@@ -5,6 +5,7 @@
 #include "Movement.h"
 #include "Enemy.h"
 #include "MapHeader.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;

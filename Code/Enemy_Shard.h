@@ -89,7 +89,6 @@ struct Shard : Enemy
 	void UpdateSprite();
 	void IHitPlayer(int index);
 	void ProcessHit();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void DissipateOnTouch();
 	void Capture();

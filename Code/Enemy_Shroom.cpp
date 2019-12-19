@@ -75,7 +75,7 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_l
 	AddBasicHitCircle(32);
 	hitBody->hitboxInfo = hitboxInfo;
 
-
+	
 
 	frame = 0;
 
@@ -117,7 +117,7 @@ void Shroom::ResetEnemy()
 	dead = false;
 	receivedHit = NULL;
 	slowCounter = 1;
-
+	jellySpawnable = true;
 	slowMultiple = 1;
 
 	SetHitboxes(hitBody, 0);
@@ -139,10 +139,12 @@ void Shroom::ProcessState()
 		}
 	}
 
+	V2d playerPos = owner->GetPlayerPos(0);
+
 	switch (action)
 	{
 	case LATENT:
-		if (length(owner->GetPlayer(0)->position - position) < 60)
+		if (length(playerPos - position) < 60)
 		{
 			action = HITTING;
 			owner->ActivateSound( position, hitSound);
@@ -150,7 +152,7 @@ void Shroom::ProcessState()
 		}
 		break;
 	case HITTING:
-		if (length(owner->GetPlayer(0)->position - position) > 120)
+		if (length(playerPos - position) > 120)
 		{
 			action = LATENT;
 			frame = 0;
@@ -158,6 +160,13 @@ void Shroom::ProcessState()
 		break;
 	}
 }
+
+void Shroom::DirectKill()
+{
+	Enemy::DirectKill();
+	jellySpawnable = false;
+}
+
 
 void Shroom::EnemyDraw(sf::RenderTarget *target)
 {
@@ -192,7 +201,7 @@ void Shroom::UpdateSprite()
 
 void Shroom::HandleNoHealth()
 {
-	if( !owner->GetPlayer(0)->hitGoal)
+	if( jellySpawnable )
 		owner->AddEnemy(jelly);
 }
 
@@ -207,17 +216,6 @@ void Shroom::SetZoneSpritePosition()
 {
 	jelly->SetZoneSpritePosition();
 	Enemy::SetZoneSpritePosition();
-}
-
-void Shroom::UpdateHitboxes()
-{
-	double ds = scale;
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position - gn * 10.0 * ds;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position - gn * 10.0 * ds;
-	hitBox.globalAngle = 0;
 }
 
 ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos, int p_level )
@@ -347,7 +345,7 @@ void ShroomJelly::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+		owner->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 		action = SHOT;
 		frame = 0;
@@ -393,7 +391,7 @@ void ShroomJelly::ProcessHit()
 
 		velocity = dir * speed;
 
-		owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+		owner->PlayerAddActiveComboObj(comboObj);
 	}
 }
 
@@ -436,7 +434,7 @@ void ShroomJelly::UpdateEnemyPhysics()
 void ShroomJelly::ProcessState()
 {
 	
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		frame = 0;
@@ -468,7 +466,7 @@ void ShroomJelly::ProcessState()
 		case DISSIPATING:
 			numHealth = 0;
 			dead = true;
-			owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+			owner->PlayerRemoveActiveComboer(comboObj);
 			break;
 		case SHOT:
 			action = EXPLODING;
@@ -576,18 +574,5 @@ void ShroomJelly::UpdateSprite()
 			keySprite->getLocalBounds().height / 2);
 		keySprite->setPosition(position.x, position.y);
 	}
-}
-
-void ShroomJelly::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front().globalPosition = position;
 }
 

@@ -721,8 +721,8 @@ void GlideEmitter::ActivateParticle(int index)
 
 	FeatherPosUpdater * velUpdater = (FeatherPosUpdater*)sp->posUpdater;
 
-	V2d dirD = normalize(owner->GetPlayer(0)->velocity);
-	V2d diffDir = normalize(V2d(sPos) - owner->GetPlayer(0)->position);
+	V2d dirD = normalize(owner->GetPlayerTrueVel(0));
+	V2d diffDir = normalize(V2d(sPos) - owner->GetPlayerPos(0));
 
 	if (cross(diffDir, dirD) < 0)
 	{

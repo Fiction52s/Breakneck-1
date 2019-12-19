@@ -11,6 +11,7 @@
 #include "VisualEffects.h"
 #include "PauseMenu.h"
 #include "ShardMenu.h"
+#include "Actor.h"
 
 #include "ParticleEffects.h"
 
@@ -394,17 +395,6 @@ void Shard::EnemyDraw( sf::RenderTarget *target )
 
 void Shard::DrawMinimap( sf::RenderTarget *target )
 {
-}
-
-void Shard::UpdateHitboxes()
-{
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
 }
 
 ShardPopup::ShardPopup(GameSession *p_owner)

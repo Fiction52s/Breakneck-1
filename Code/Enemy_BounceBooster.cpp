@@ -209,12 +209,3 @@ void BounceBooster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
-void BounceBooster::UpdateHitboxes()
-{
-	//hurtBody.globalPosition = position;
-	//hurtBody.globalAngle = 0;
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-}
-

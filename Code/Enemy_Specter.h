@@ -39,7 +39,6 @@ struct Specter : Enemy
 	
 
 	void UpdateSprite();
-	void UpdateHitboxes();
 
 	void ResetEnemy();
 

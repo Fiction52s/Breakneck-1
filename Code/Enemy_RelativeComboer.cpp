@@ -186,7 +186,7 @@ void RelativeComboer::Throw(V2d vel)
 
 void RelativeComboer::Return()
 {
-	owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+	owner->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
@@ -200,7 +200,7 @@ void RelativeComboer::Return()
 
 void RelativeComboer::Pop()
 {
-	owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+	owner->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -226,7 +226,7 @@ void RelativeComboer::PopThrow()
 
 	Throw(dir * flySpeed);
 
-	owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+	owner->PlayerAddActiveComboObj(comboObj);
 }
 
 bool RelativeComboer::CanBeHitByComboer()
@@ -240,7 +240,6 @@ void RelativeComboer::ProcessHit()
 	{
 		numHealth -= 1;
 
-		Actor *player = owner->GetPlayer(0);
 		if (numHealth <= 0)
 		{
 			if (currJuggle == juggleReps)
@@ -251,7 +250,7 @@ void RelativeComboer::ProcessHit()
 					suppressMonitor = true;
 				}
 
-				player->ConfirmEnemyNoKill(this);
+				owner->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -265,13 +264,13 @@ void RelativeComboer::ProcessHit()
 				frame = 0;
 				latchedOn = true;
 				latchFrame = 0;
-				offsetPos = position - player->position;
+				offsetPos = position - owner->GetPlayerPos(0);
 				PopThrow();
 			}
 		}
 		else
 		{
-			owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+			owner->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 	}
@@ -318,7 +317,7 @@ void RelativeComboer::UpdateEnemyPhysics()
 {
 	if (latchedOn)
 	{
-		basePos = owner->GetPlayer(0)->position;// + offsetPlayer;
+		basePos = owner->GetPlayerPos(0);
 	}
 	else
 	{
@@ -345,6 +344,8 @@ void RelativeComboer::UpdateEnemyPhysics()
 	{
 		position = offsetPos + basePos;
 	}
+
+	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }
 
 void RelativeComboer::FrameIncrement()
@@ -390,8 +391,8 @@ void RelativeComboer::ComboKill(Enemy *e)
 	latchedOn = false;
 	SetHurtboxes(hurtBody, 0);
 	sprite.setColor(Color::Blue);
-	owner->GetPlayer(0)->hasDoubleJump = true;
-	owner->GetPlayer(0)->hasAirDash = true;
+	owner->PlayerRestoreDoubleJump(0);
+	owner->PlayerRestoreAirDash(0);
 }
 
 void RelativeComboer::HandleEntrant(QuadTreeEntrant *qte)
@@ -429,7 +430,7 @@ void RelativeComboer::UpdateSprite()
 {
 	if (latchedOn)
 	{
-		basePos = owner->GetPlayer(0)->position;
+		basePos = owner->GetPlayerPos(0);
 		position = basePos + offsetPos;
 	}
 
@@ -472,32 +473,4 @@ void RelativeComboer::EnemyDraw(sf::RenderTarget *target)
 			target->draw(sprite, hurtShader);
 		}
 	}
-}
-
-CollisionBox &RelativeComboer::GetEnemyHitbox()
-{
-	return comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front();
-}
-
-void RelativeComboer::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	GetEnemyHitbox().globalPosition = position;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
-
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }

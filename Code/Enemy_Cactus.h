@@ -32,7 +32,6 @@ struct CactusShotgun : Enemy, LauncherEnemy, PoolMember
 	void HandleRemove();
 	void HandleNoHealth();
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,
 		sf::Vector2<double> &pos);
@@ -75,7 +74,6 @@ struct Cactus : Enemy
 	void FrameIncrement();
 	//void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void DirectKill();
 	void ResetEnemy();
 	void ThrowShotgun();

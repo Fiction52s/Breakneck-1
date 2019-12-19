@@ -134,11 +134,11 @@ void Shield::ProcessHit()
 			action = S_BREAK;
 			frame = 0;
 			ConfirmHitNoKill();
-			parent->owner->GetPlayer(0)->ConfirmEnemyKill(parent);
+			parent->owner->PlayerConfirmEnemyKill(parent);
 		}
 		else
 		{
-			parent->owner->GetPlayer(0)->ConfirmEnemyNoKill(parent);
+			parent->owner->PlayerConfirmEnemyNoKill(parent);
 			ConfirmHitNoKill();
 			if (sType == T_BLOCK)
 			{
@@ -147,7 +147,7 @@ void Shield::ProcessHit()
 			else if (sType == T_REFLECT && receivedHit->hType != HitboxInfo::HitboxType::COMBO)
 			{
 				action = S_REFLECT;
-				parent->owner->GetPlayer(0)->ApplyHit(hitboxInfo);
+				parent->owner->PlayerApplyHit(hitboxInfo);
 			}
 			frame = 0;
 		}

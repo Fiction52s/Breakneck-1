@@ -29,7 +29,6 @@ struct GrowingTree : Enemy, LauncherEnemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void Fire();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	//void HandleNoHealth();
 	void BulletHitTerrain(BasicBullet *b,

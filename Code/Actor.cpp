@@ -21,6 +21,7 @@
 #include "WorldMap.h"
 #include "SaveFile.h"
 #include "PauseMenu.h"
+#include "KinMenu.h"
 #include "GroundTrigger.h"
 #include "Enemy_Comboer.h"
 #include "Enemy_Spring.h"
@@ -2917,7 +2918,7 @@ void Actor::UpdatePrePhysics()
 	{
 		if( record == 0 )
 		{
-			SaveState();
+			//SaveState();
 			owner->SaveState();
 			recordedGhosts = 1;
 			ghosts[record]->currFrame = 0;
@@ -2935,7 +2936,7 @@ void Actor::UpdatePrePhysics()
 			if( recordedGhosts < MAX_GHOSTS )
 			{
 				cout << "creating ghost: " << recordedGhosts + 1 << ", of " << MAX_GHOSTS << endl;
-				LoadState();
+				//LoadState();
 				owner->LoadState();
 				recordedGhosts++;
 				ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
@@ -2961,7 +2962,7 @@ void Actor::UpdatePrePhysics()
 		//record = false;
 		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
 		record = 0;
-		LoadState();
+		//LoadState();
 		owner->LoadState(); 
 		blah = true;
 		ghostFrame = 1;
@@ -3182,7 +3183,8 @@ void Actor::UpdatePrePhysics()
 
 		if( true )
 		{
-			if( grindEdge != NULL )
+			bool onRail = IsOnRailAction(action);
+			if( grindEdge != NULL && !onRail)
 			{
 				//do something different for grind ball? you don't wanna be hit out at a sensitive moment
 				//owner->powerWheel->Damage( receivedHit->damage ); //double damage for now bleh
@@ -3363,29 +3365,6 @@ void Actor::UpdatePrePhysics()
 							hurtBody.isCircle = false;
 							hurtBody.rw = 7;
 							hurtBody.rh = normalHeight;
-								
-							//if( currInput.LRight() )
-							//{
-							//	if( groundSpeed < 0 )
-							//	{
-							//		//cout << "bleh2" << endl;
-							//		groundSpeed = 0;
-							//	}
-							//	facingRight = true;
-							////	groundSpeed = abs( groundSpeed );
-							//}
-							//else if( currInput.LLeft() )
-							//{
-							//	facingRight = false;
-							//	if( groundSpeed > 0 )
-							//	{
-							//		//cout << "bleh1" << endl;
-							//		groundSpeed = 0;
-							//	}
-							////	groundSpeed = -abs( groundSpeed );
-							//}
-
-							//action = LAND2;
 
 							SetAction(GROUNDHITSTUN);
 							frame = 0;
@@ -3418,8 +3397,11 @@ void Actor::UpdatePrePhysics()
 				}		
 
 			}
-			else if( ground == NULL )
+			else if (ground == NULL || onRail)
 			{
+				ground = NULL;
+				grindEdge = NULL;
+				bounceEdge = NULL;
 				SetAction(AIRHITSTUN);
 				frame = 0;
 				if( receivedHit->knockback > 0 )
@@ -5331,6 +5313,9 @@ void Actor::UpdatePrePhysics()
 		Rail *rail = (Rail*)grindEdge->info;
 		if (currInput.A && !prevInput.A)
 		{
+			
+			facingRight = IsRailSlideFacingRight();
+
 			if (owner->IsWall(grindEdge->Normal()) < 0) //not wall
 			{
 				SetActionExpr(JUMPSQUAT);
@@ -5342,6 +5327,10 @@ void Actor::UpdatePrePhysics()
 				TryDoubleJump();
 				grindEdge = NULL;
 			}
+
+			
+			
+
 			//if( abs( grindEdge->Normal().y ) )
 
 			frame = 0;
@@ -5352,6 +5341,7 @@ void Actor::UpdatePrePhysics()
 
 		if (TryAirDash())
 		{
+			facingRight = IsRailSlideFacingRight();
 			grindEdge = NULL;
 			hasDoubleJump = true;
 			break;
@@ -5362,6 +5352,7 @@ void Actor::UpdatePrePhysics()
 			grindEdge = NULL;
 			hasDoubleJump = true;
 			hasAirDash = true;
+			facingRight = IsRailSlideFacingRight();
 			break;
 		}
 		break;
@@ -9813,6 +9804,41 @@ bool Actor::CanRailGrind()
 	}
 
 	return false;
+}
+
+bool Actor::IsRailSlideFacingRight()
+{
+	assert(grindEdge != NULL);
+
+	V2d grindNorm = grindEdge->Normal();
+	bool r = grindSpeed > 0;
+
+	if ((action == RAILGRIND || action == RAILSLIDE) && grindNorm.y > 0)
+	{
+		grindNorm = -grindNorm;
+		r = !r;
+	}
+
+	return r;
+}
+
+bool Actor::HasPower(int index)
+{
+	switch (index)
+	{
+	case 0:
+		return hasPowerAirDash;
+	case 1:
+		return hasPowerGravReverse;
+	case 2:
+		return hasPowerBounce;
+	case 3:
+		return hasPowerGrindBall;
+	case 4:
+		return hasPowerTimeSlow;
+	case 5:
+		return hasPowerLeftWire || hasPowerRightWire;
+	}
 }
 
 void Actor::TurnFace()
@@ -19434,7 +19460,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Edge *e = (Edge*)qte;
 		Rail *rail = (Rail*)e->info;
 
-		if (rail->requirePower && !canRailGrind)
+		if ((rail->requirePower && !canRailGrind) || IsInHistunAction(action))
 		{
 			return;
 		}
@@ -24148,158 +24174,6 @@ void Actor::SetSpriteTile( sf::Sprite *spr,
 	//}
 }
 
-void Actor::SaveState()
-{
-	stored.leftGround = leftGround;
-	
-	stored.grindActionCurrent = grindActionCurrent;
-	stored.prevInput = prevInput;
-	stored.currInput = currInput;
-	stored.oldVelocity = oldVelocity;
-	stored.framesInAir = framesInAir;
-	stored.startAirDashVel = startAirDashVel;
-	stored.ground = ground;
-	stored.hasAirDash = hasAirDash;
-	stored.hasGravReverse = hasGravReverse;
-
-	stored.grindEdge = grindEdge;
-	stored.grindQuantity = grindQuantity;
-	stored.grindSpeed = grindSpeed;
-
-	stored.reversed = reversed;
-
-	stored.edgeQuantity = edgeQuantity;
-	
-	stored.groundOffsetX = groundOffsetX;
-
-	stored.offsetX = offsetX;
-
-	stored.holdJump = holdJump;
-
-	stored.wallJumpFrameCounter = wallJumpFrameCounter;
-
-	stored.groundSpeed = groundSpeed;
-
-	stored.facingRight = facingRight;
-	
-	stored.hasDoubleJump = hasDoubleJump;
-
-	stored.slowMultiple = slowMultiple;
-	stored.slowCounter = slowCounter;
-
-	stored.wallNormal = wallNormal;
-
-	stored.action = action;
-	stored.frame = frame;
-	stored.position = position;
-	stored.velocity = velocity;
-	//CollisionBox *physBox;
-
-	stored.hitlagFrames = hitlagFrames;
-	stored.hitstunFrames = hitstunFrames;
-	stored.invincibleFrames = invincibleFrames;
-	stored.receivedHit = receivedHit;
-
-	stored.storedBounceVel = storedBounceVel;
-	//stored.leftWire = leftWire;
-	stored.bounceEdge = bounceEdge;
-	stored.bounceQuant = bounceQuant;
-
-	stored.oldBounceEdge = oldBounceEdge;
-	stored.framesSinceBounce = framesSinceBounce;
-
-//	stored.touchEdgeWithWire = touchEdgeWithWire;
-
-	for( int i = 0; i < maxBubbles; ++i )
-	{
-	//	stored.bubblePos[i] = bubblePos[i];
-	//	stored.bubbleFramesToLive[i] = bubbleFramesToLive[i];
-	}
-	stored.currBubble = currBubble;
-
-	stored.bounceNorm = bounceNorm;
-	stored.oldBounceNorm = oldBounceNorm;
-	stored.groundedWallBounce = groundedWallBounce;
-	
-	stored.framesGrinding = framesGrinding;
-}
-
-void Actor::LoadState()
-{
-	stored.leftGround;
-	
-	grindActionCurrent= stored.grindActionCurrent;
-	prevInput = stored.prevInput;
-	currInput = stored.currInput;
-	oldVelocity = stored.oldVelocity;
-	framesInAir = stored.framesInAir;
-	startAirDashVel = stored.startAirDashVel;
-	ground = stored.ground;
-	hasAirDash = stored.hasAirDash;
-	hasGravReverse = stored.hasGravReverse;
-
-	grindEdge = stored.grindEdge;
-	grindQuantity = stored.grindQuantity;
-	grindSpeed = stored.grindSpeed;
-
-	reversed = stored.reversed;
-
-	edgeQuantity = stored.edgeQuantity;
-	
-	groundOffsetX = stored.groundOffsetX;
-
-	offsetX = stored.offsetX;
-
-	holdJump = stored.holdJump;
-
-	wallJumpFrameCounter = stored.wallJumpFrameCounter;
-
-	groundSpeed = stored.groundSpeed;
-
-	facingRight = stored.facingRight;
-	
-	hasDoubleJump = stored.hasDoubleJump;
-
-	slowMultiple = stored.slowMultiple;
-	slowCounter = stored.slowCounter;
-
-	wallNormal = stored.wallNormal;
-
-	action = stored.action;
-	frame = stored.frame;
-	position = stored.position;
-	velocity = stored.velocity;
-	//CollisionBox *physBox;
-
-	hitlagFrames = stored.hitlagFrames;
-	hitstunFrames = stored.hitstunFrames;
-	invincibleFrames = stored.invincibleFrames;
-	receivedHit = stored.receivedHit;
-
-	storedBounceVel = stored.storedBounceVel;
-	//wire = stored.wire;
-	bounceEdge = stored.bounceEdge;
-	bounceQuant = stored.bounceQuant;
-
-	oldBounceEdge = stored.oldBounceEdge;
-	framesSinceBounce = stored.framesSinceBounce;
-
-	//touchEdgeWithWire = stored.touchEdgeWithWire;
-
-	for( int i = 0; i < maxBubbles; ++i )
-	{
-	//	bubblePos[i] = stored.bubblePos[i];
-	//	bubbleFramesToLive[i] = stored.bubbleFramesToLive[i];
-	}
-	currBubble = stored.currBubble;
-
-	bounceNorm = stored.bounceNorm;
-	oldBounceNorm = stored.oldBounceNorm;
-	groundedWallBounce = stored.groundedWallBounce;
-
-	framesGrinding = stored.framesGrinding;
-}
-
 void Actor::SetupAction(Action a)
 {
 	//actionLength[WALLATTACK] = 8 * 2;
@@ -25211,6 +25085,54 @@ bool Actor::IsSpringAction(Action a)
 {
 	return a == SPRINGSTUN || a == SPRINGSTUNGLIDE || a == SPRINGSTUNBOUNCE || a == SPRINGSTUNAIRBOUNCE
 		|| a == SPRINGSTUNTELEPORT || a == SPRINGSTUNAIRBOUNCE;
+}
+
+bool Actor::IsOnRailAction(Action a)
+{
+	return a == RAILGRIND || a == RAILSLIDE;
+}
+
+bool Actor::IsInHistunAction( Action a )
+{
+	return a == GROUNDHITSTUN || a == AIRHITSTUN;
+}
+
+V2d Actor::GetKnockbackDirFromVel()
+{
+	if (owner->GetPlayer(0)->ground != NULL)
+	{
+		return normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
+	}
+	else
+	{
+		return normalize(-owner->GetPlayer(0)->velocity);
+	}
+}
+
+V2d Actor::GetTrueVel()
+{
+	if (grindEdge != NULL)
+	{
+		return grindEdge->Along() * grindSpeed;
+	}
+	else if (ground != NULL)
+	{
+		return ground->Along() * groundSpeed;
+	}
+	else
+	{
+		return velocity;
+	}
+}
+
+void Actor::RestoreDoubleJump()
+{
+	hasDoubleJump = true;
+}
+
+void Actor::RestoreAirDash()
+{
+	hasAirDash = true;
 }
 
 void Actor::UpdateInHitlag()

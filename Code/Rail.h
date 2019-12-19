@@ -1,8 +1,6 @@
 #ifndef __RAIL_H__
 #define __RAIL_H__
 
-
-//#include "Actor.h"
 #include <list>
 #include "Mover.h"
 #include "Movement.h"

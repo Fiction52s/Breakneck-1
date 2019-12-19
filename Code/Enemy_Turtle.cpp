@@ -141,7 +141,7 @@ void Turtle::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 
 void Turtle::BulletHitPlayer(BasicBullet *b )
 {
-	owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
+	owner->PlayerApplyHit(b->launcher->hitboxInfo);
 }
 
 
@@ -172,6 +172,8 @@ void Turtle::ActionEnded()
 {
 	int blah = actionLength[action] * animFactor[action];
 	//cout << "frame: " << frame << ", actionlength: " << blah << endl;
+	V2d playerPos = owner->GetPlayerPos();
+
 	if( frame == actionLength[action] * animFactor[action] )
 	{
 	switch( action )
@@ -185,7 +187,7 @@ void Turtle::ActionEnded()
 		break;
 	case INVISIBLE:
 		position = playerTrackPos;
-		if (owner->GetPlayer(0)->position.x < position.x)
+		if (playerPos.x < position.x)
 		{
 			facingRight = false;
 		}
@@ -205,7 +207,7 @@ void Turtle::ActionEnded()
 		frame = 0;
 		SetHitboxes(NULL, 0);
 		SetHurtboxes(NULL, 0);
-		playerTrackPos = owner->GetPlayer(0)->position;
+		playerTrackPos = playerPos;
 		break;
 	}
 	}
@@ -256,7 +258,7 @@ void Turtle::ProcessState()
 	if (action == FIRE && frame == 1 && slowCounter == 1)// frame == 0 && slowCounter == 1 )
 	{
 		launchers[0]->position = position;
-		launchers[0]->facingDir = normalize(owner->GetPlayer(0)->position - position);
+		launchers[0]->facingDir = normalize(owner->GetPlayerPos() - position);
 		launchers[0]->Reset();
 		launchers[0]->Fire();
 		fireCounter = 0;
@@ -265,10 +267,10 @@ void Turtle::ProcessState()
 
 void Turtle::UpdateEnemyPhysics()
 {	
+	V2d playerPos = owner->GetPlayerPos(0);
 	if (action == NEUTRAL)
 	{
-		Actor *player = owner->GetPlayer(0);
-		if (length(player->position - position) < 600)
+		if (length(playerPos - position) < 600)
 		{
 			action = FIRE;
 			frame = 0;
@@ -317,24 +319,4 @@ void Turtle::EnemyDraw( sf::RenderTarget *target )
 {
 	if( action != INVISIBLE )
 		DrawSpriteIfExists(target, sprite);
-}
-
-void Turtle::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if( owner->GetPlayer( 0 )->ground != NULL )
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
-	}
 }

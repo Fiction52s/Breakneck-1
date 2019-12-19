@@ -20,7 +20,6 @@ struct Booster : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	bool Boost();
 	bool IsBoostable();

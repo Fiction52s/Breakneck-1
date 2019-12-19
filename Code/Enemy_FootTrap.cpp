@@ -146,17 +146,19 @@ void FootTrap::ProcessState()
 		}
 	}
 
+
+	V2d playerPos = owner->GetPlayerPos(0);
 	switch (action)
 	{
 	case LATENT:
-		if (length(owner->GetPlayer(0)->position - position) < 450)
+		if (length(playerPos - position) < 450)
 		{
 			action = CHOMPING;
 			frame = 0;
 		}
 		break;
 	case CHOMPING:
-		if (length(owner->GetPlayer(0)->position - position) > 450)
+		if (length(playerPos - position) > 450)
 		{
 			action = LATENT;
 			frame = 0;
@@ -256,17 +258,5 @@ void FootTrap::UpdateSprite()
 		}
 	//}
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );
-}
-
-
-
-void FootTrap::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position - gn * 10.0;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position - gn * 10.0;
-	hitBox.globalAngle = 0;
 }
 

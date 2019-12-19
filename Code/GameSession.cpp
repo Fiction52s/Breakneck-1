@@ -5395,6 +5395,204 @@ Actor *GameSession::GetPlayer( int index )
 	return players[index];
 }
 
+V2d GameSession::GetPlayerPos(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->position;
+	}
+	else
+	{
+		return V2d();
+	}
+}
+
+V2d GameSession::GetPlayerTrueVel(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->GetTrueVel();
+	}
+	else
+	{
+		return V2d();
+	}
+}
+
+int GameSession::GetPlayerEnemiesKilledLastFrame(int index )
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->enemiesKilledLastFrame;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void GameSession::PlayerRestoreDoubleJump(int index )
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->RestoreDoubleJump();
+	}
+}
+
+void GameSession::PlayerRestoreAirDash(int index )
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->RestoreAirDash();
+	}
+}
+
+int GameSession::GetPlayerHitstunFrames(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->hitstunFrames;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+int GameSession::GetPlayerTeamIndex(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->team;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+bool GameSession::PlayerIsMovingLeft(int index )
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->IsMovingLeft();
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool GameSession::PlayerIsMovingRight(int index )
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->IsMovingRight();
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool GameSession::PlayerIsFacingRight(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->facingRight;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void GameSession::PlayerHitGoal( int index )
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->hitGoal = true;
+	}
+}
+
+V2d GameSession::GetPlayerKnockbackDirFromVel(int index )
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->GetKnockbackDirFromVel();
+	}
+	else
+	{
+		return V2d();
+	}
+}
+
+void GameSession::PlayerAddActiveComboObj(ComboObject *co, int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->AddActiveComboObj(co);
+	}
+}
+
+void GameSession::PlayerRemoveActiveComboer(ComboObject *co, int index )
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->RemoveActiveComboObj(co);
+	}
+}
+
+void GameSession::PlayerConfirmEnemyNoKill(Enemy *en, int index )
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->ConfirmEnemyNoKill(en);
+	}
+}
+
+void GameSession::PlayerConfirmEnemyKill(Enemy *en, int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->ConfirmEnemyKill(en);
+	}
+}
+
+void GameSession::PlayerHitNexus(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->hitNexus = true;
+	}
+}
+
+void GameSession::PlayerApplyHit( HitboxInfo *hi, int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->ApplyHit(hi);
+	}
+}
+
 void GameSession::SetupMinimapBorderQuads( bool *blackBorder, bool topBorderOn )
 {
 	int miniQuadWidth = 4000;
@@ -9344,7 +9542,7 @@ void GameSession::Init()
 
 	currentZone = NULL;
 	Movable::owner = this;
-	b_crawler = NULL;
+	//b_crawler = NULL;
 	b_bird = NULL;
 	b_coyote = NULL;
 	b_tiger = NULL;
@@ -13651,7 +13849,7 @@ void GameSession::ResetEnemies()
 
 	if( b_bird != NULL ) b_bird->Reset();
 
-	if( b_crawler != NULL ) b_crawler->Reset();
+	//if( b_crawler != NULL ) b_crawler->Reset();
 
 	if( b_coyote != NULL ) b_coyote->Reset();
 
@@ -14272,12 +14470,12 @@ void GameSession::TriggerBarrier( Barrier *b )
 	{
 		Fade( false, 60, Color::Black );
 		Pause( 60 );
-		activeSequence = b_crawler->crawlerFightSeq;
+		//activeSequence = b_crawler->crawlerFightSeq;
 		activeSequence->frame = 0;
 
-		assert( b_crawler != NULL );
-		b_crawler->spawned = true;
-		AddEnemy( b_crawler );
+		//assert( b_crawler != NULL );
+		//b_crawler->spawned = true;
+		//AddEnemy( b_crawler );
 
 	}
 	else if( name == "meetcoyotetrigger" )

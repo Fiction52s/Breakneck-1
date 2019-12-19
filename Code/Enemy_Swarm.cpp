@@ -90,7 +90,7 @@ void SwarmMember::ClearSprite()
 void SwarmMember::UpdateSprite()
 {
 	IntRect subRect = parent->ts_swarm->GetSubRect( vaIndex * 3 );//frame / animFactor );
-	if( owner->GetPlayer( 0 )->position.x < position.x )
+	if( owner->GetPlayerPos( 0 ).x < position.x )
 	{
 		subRect.left += subRect.width;
 		subRect.width = -subRect.width;
@@ -123,7 +123,7 @@ void SwarmMember::UpdateEnemyPhysics()
 
 	position += movementVec;
 
-	V2d pPos = owner->GetPlayer(0)->position + targetOffset;
+	V2d pPos = owner->GetPlayerPos(0) + targetOffset;
 	V2d dir(pPos - position);
 	dir = normalize(dir);
 	double gFactor = .5;
@@ -132,25 +132,6 @@ void SwarmMember::UpdateEnemyPhysics()
 	if (length(velocity) > maxSpeed)
 	{
 		velocity = normalize(velocity) * maxSpeed;
-	}
-}
-
-void SwarmMember::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
 	}
 }
 
@@ -367,7 +348,7 @@ void Swarm::ProcessState()
 			}
 			else if (action == NEUTRAL)
 			{
-				double dist = length(owner->GetPlayer(0)->position - position);
+				double dist = length(owner->GetPlayerPos(0) - position);
 				if (dist < 900)
 				{
 					action = FIRE;
@@ -424,25 +405,6 @@ void Swarm::UpdateSprite()
 		nestSprite.setOrigin( nestSprite.getLocalBounds().width / 2, 
 			nestSprite.getLocalBounds().height / 2 );
 		nestSprite.setPosition( position.x, position.y );
-	}
-}
-
-void Swarm::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
 	}
 }
 

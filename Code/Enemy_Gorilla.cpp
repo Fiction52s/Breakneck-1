@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Gorilla.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -484,23 +485,4 @@ bool Gorilla::CheckHitPlayer(int index)
 	}
 
 	return false;
-}
-
-void Gorilla::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	if( owner->GetPlayer( 0 )->ground != NULL )
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->groundSpeed * ( owner->GetPlayer( 0 )->ground->v1 - owner->GetPlayer( 0 )->ground->v0 ) );
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize( -owner->GetPlayer( 0 )->velocity );
-	}
 }

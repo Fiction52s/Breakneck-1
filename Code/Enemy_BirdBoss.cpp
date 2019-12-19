@@ -244,8 +244,8 @@ void BirdBoss::ActionEnded()
 void BirdBoss::ProcessState()
 {
 	ActionEnded();
-	Actor *player = owner->GetPlayer(0);
-	V2d playerPos = player->position;
+	//Actor *player = owner->GetPlayer(0);
+	V2d playerPos = owner->GetPlayerPos(0);
 	V2d punchTarget;
 	if (facingRight)
 	{
@@ -467,7 +467,7 @@ void BirdBoss::ProcessState()
 		}
 	}
 
-	V2d playerVel = player->velocity;
+	V2d playerVel = owner->GetPlayerTrueVel(0);
 	if (length(playerVel) > 10.0)
 	{
 		playerVel = normalize(playerVel) *10.0;
@@ -645,14 +645,14 @@ void BirdBoss::UpdateHitboxes()
 	hitBox.globalPosition = position;
 	hitBox.globalAngle = 0;
 
-	if (owner->GetPlayer(0)->ground != NULL)
+	/*if (owner->GetPlayer(0)->ground != NULL)
 	{
 		bodyHitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
 	}
 	else
 	{
 		bodyHitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
+	}*/
 }
 
 
@@ -715,7 +715,7 @@ void BirdBoss::NextChoice()
 void BirdBoss::BeginMove()
 {
 	startMovePos = position;
-	endMovePos = owner->GetPlayer(0)->position;
+	endMovePos = owner->GetPlayerPos(0);
 	moveSpeed = 0;
 	moveAccel = .1;
 	action = MOVE; //startglide conditionally here too
@@ -742,7 +742,7 @@ void BirdBoss::BeginPunch()
 	sprite.setTexture(*tilesets[MOVE]->texture);
 	sprite.setTextureRect(tilesets[MOVE]->GetSubRect(0));
 	velocity = V2d(0, 0);
-	if (owner->GetPlayer(0)->position.x >= position.x)
+	if (owner->GetPlayerPos(0).x >= position.x)
 	{
 		facingRight = true;
 	}
@@ -776,7 +776,7 @@ void BirdBoss::BeginSuperKick()
 	maxTrackingFrames = 60;
 	//velocity = V2d(0, 0);
 	rcEdge = NULL;
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 	V2d dir = normalize(playerPos - position);
 	velocity = dir * 25.0;
 	rayStart = playerPos;
@@ -939,7 +939,7 @@ void GravRing::Init(V2d pos, V2d vel)
 
 void GravRing::ProcessState()
 {
-	V2d playerPos = owner->GetPlayer(0)->position;
+	V2d playerPos = owner->GetPlayerPos(0);
 	V2d playerDir = normalize(playerPos - position);
 	V2d parentDir = normalize(parent->position - position);
 	V2d parentOther = V2d(parentDir.y, -parentDir.x);
@@ -1136,16 +1136,6 @@ void GravRing::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(Vector2f(position));
-}
-
-void GravRing::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
 }
 
 void GravRing::ResetEnemy()

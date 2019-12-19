@@ -280,16 +280,3 @@ void TrapRoot::UpdateSprite()
 	//}
 	sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
 }
-
-
-
-void TrapRoot::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position - gn * 10.0;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position - gn * 10.0;
-	hitBox.globalAngle = 0;
-}
-

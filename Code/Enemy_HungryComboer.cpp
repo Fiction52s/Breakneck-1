@@ -174,7 +174,7 @@ void HungryComboer::Throw(V2d vel)
 
 void HungryComboer::Return()
 {
-	owner->GetPlayer(0)->RemoveActiveComboObj(comboObj);
+	owner->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
@@ -189,7 +189,7 @@ void HungryComboer::Return()
 
 void HungryComboer::Pop()
 {
-	owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+	owner->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -208,7 +208,7 @@ void HungryComboer::PopThrow()
 
 	Throw(dir * GetFlySpeed());
 
-	owner->GetPlayer(0)->AddActiveComboObj(comboObj);
+	owner->PlayerAddActiveComboObj(comboObj);
 }
 
 void HungryComboer::ProcessHit()
@@ -228,7 +228,7 @@ void HungryComboer::ProcessHit()
 					suppressMonitor = true;
 				}
 
-				player->ConfirmEnemyNoKill(this);
+				owner->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -246,7 +246,7 @@ void HungryComboer::ProcessHit()
 		}
 		else
 		{
-			owner->GetPlayer(0)->ConfirmEnemyNoKill(this);
+			owner->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 	}
@@ -375,7 +375,7 @@ V2d HungryComboer::GetTrackPos()
 	}
 	else
 	{
-		return owner->GetPlayer(0)->position;
+		return owner->GetPlayerPos(0);
 	}
 }
 
@@ -422,6 +422,8 @@ void HungryComboer::UpdateEnemyPhysics()
 		break;
 	}
 	}
+
+	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }
 
 void HungryComboer::UpdateScale()
@@ -499,32 +501,4 @@ void HungryComboer::UpdateSprite()
 void HungryComboer::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSpriteIfExists(target, sprite);
-}
-
-CollisionBox &HungryComboer::GetEnemyHitbox()
-{
-	return comboObj->enemyHitBody->GetCollisionBoxes(comboObj->enemyHitboxFrame)->front();
-}
-
-void HungryComboer::UpdateHitboxes()
-{
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = 0;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	GetEnemyHitbox().globalPosition = position;
-
-	if (owner->GetPlayer(0)->ground != NULL)
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
-	}
-	else
-	{
-		hitboxInfo->kbDir = normalize(-owner->GetPlayer(0)->velocity);
-	}
-
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }

@@ -236,11 +236,11 @@ void RoadRunner::FrameIncrement()
 
 void RoadRunner::ProcessState()
 {
-	Actor *player = owner->GetPlayer(0);
+	V2d playerPos = owner->GetPlayerPos(0);
 
 	ActionEnded();
 
-	double playerDist = length(player->position - position);
+	double playerDist = length(playerPos - position);
 
 	switch (action)
 	{
@@ -262,8 +262,8 @@ void RoadRunner::ProcessState()
 		break;
 	case UNDERGROUND:
 	{
-		bool uleft = player->position.x < position.x - 300 && player->IsMovingLeft();
-		bool uright = player->position.x > position.x + 300 && player->IsMovingRight();
+		bool uleft = playerPos.x < position.x - 300 && owner->PlayerIsMovingLeft();
+		bool uright = playerPos.x > position.x + 300 && owner->PlayerIsMovingRight();
 		if( uleft || uright )
 		{
 			if (uleft)
@@ -287,7 +287,7 @@ void RoadRunner::ProcessState()
 	case RUN:
 		if (facingRight)
 		{
-			if (player->position.x < position.x - 200 )//|| ( !player->IsMovingRight() && player->action != Actor::JUMPSQUAT ))
+			if (playerPos.x < position.x - 200 )//|| ( !player->IsMovingRight() && player->action != Actor::JUMPSQUAT ))
 			{
 				action = BURROW;
 				frame = 0;
@@ -297,7 +297,7 @@ void RoadRunner::ProcessState()
 		}
 		else
 		{
-			if (player->position.x > position.x + 200 )// || (!player->IsMovingLeft() && player->action != Actor::JUMPSQUAT))
+			if (playerPos.x > position.x + 200 )// || (!player->IsMovingLeft() && player->action != Actor::JUMPSQUAT))
 			{
 				action = BURROW;
 				frame = 0;

@@ -244,12 +244,3 @@ void GravityModifier::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
-void GravityModifier::UpdateHitboxes()
-{
-	//hurtBody.globalPosition = position;
-	//hurtBody.globalAngle = 0;
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-}
-

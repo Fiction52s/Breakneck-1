@@ -296,12 +296,12 @@ void ResultsScreen::SetupColumns()
 			currPlace = owner->raceFight->place[i];
 			if (currPlace == 1)
 			{
-				ts_column[i] = GetTeamTileset(owner->GetPlayer(i)->team, true);
+				ts_column[i] = GetTeamTileset(owner->GetPlayerTeamIndex(i), true);
 				maxPlacing = 1;
 			}
 			else if (currPlace > 1)
 			{
-				ts_column[i] = GetTeamTileset(owner->GetPlayer(i)->team, false);
+				ts_column[i] = GetTeamTileset(owner->GetPlayerTeamIndex(i), false);
 				if (currPlace > maxPlacing)
 					maxPlacing = currPlace;
 			}

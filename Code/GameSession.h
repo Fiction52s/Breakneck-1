@@ -4,7 +4,6 @@
 #include "Physics.h"
 #include "Tileset.h"
 #include <list>
-//#include "Actor.h"
 //#include "Enemy.h"
 #include "QuadTree.h"
 #include <SFML/Graphics.hpp>
@@ -19,10 +18,12 @@
 #include "BarrierReactions.h"
 #include "Buf.h"
 #include "EnvEffects.h"
-#include "Actor.h"
 #include "EffectLayer.h"
 #include <boost/filesystem.hpp>"
 #include "DecorTypes.h"
+
+struct Actor;
+struct ComboObject;
 
 struct MapHeader;
 
@@ -655,7 +656,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void Cleanup();
 
 	//Boss_Crawler *b_crawler;
-	Boss_Crawler *b_crawler;
+	//Boss_Crawler *b_crawler;
 	Boss_Bird *b_bird;
 	Boss_Coyote *b_coyote;
 	Boss_Tiger *b_tiger;
@@ -835,6 +836,28 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//Actor *player2;
 	Actor *players[4];
 	Actor *GetPlayer( int index );
+	V2d GetPlayerPos(int index = 0);
+	V2d GetPlayerKnockbackDirFromVel(int index = 0);
+	int GetPlayerTeamIndex(int index = 0);
+	V2d GetPlayerTrueVel(int index = 0);
+	void PlayerHitGoal(int index = 0);
+
+	int GetPlayerEnemiesKilledLastFrame(int index = 0);
+	void PlayerRestoreDoubleJump(int index = 0);
+	void PlayerRestoreAirDash(int index = 0);
+	int GetPlayerHitstunFrames(int index = 0);
+	bool PlayerIsMovingLeft(int index = 0);
+	bool PlayerIsMovingRight(int index = 0);
+	bool PlayerIsFacingRight(int index = 0);
+	//bool PlayerHasPower(int pow);
+	void PlayerAddActiveComboObj(ComboObject *, int index = 0);
+	void PlayerRemoveActiveComboer(ComboObject *, int index = 0);
+	void PlayerConfirmEnemyNoKill(Enemy *, int index = 0);
+	void PlayerConfirmEnemyKill(Enemy *, int index = 0);
+	void PlayerHitNexus(int index = 0);
+	void PlayerApplyHit( HitboxInfo *hi, int index = 0);
+	
+
 	int m_numActivePlayers;
 	int numPolyTypes;
 	sf::Shader *polyShaders;

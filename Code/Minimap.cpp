@@ -55,12 +55,12 @@ void Minimap::Update()
 
 void Minimap::DrawToTex()
 {
-	Actor *p0 = owner->GetPlayer(0);
+	//Actor *p0 = owner->GetPlayer(0);
 
 	double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
-
+	V2d pos0 = owner->GetPlayerPos(0);
 	View vv;
-	vv.setCenter(p0->position.x, p0->position.y);
+	vv.setCenter(pos0.x, pos0.y);
 	vv.setSize(minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom);
 
 	minimapTex->setView(vv);

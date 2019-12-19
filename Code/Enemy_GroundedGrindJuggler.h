@@ -35,10 +35,8 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	void ComboKill(Enemy *e);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void HandleNoHealth();
-	CollisionBox &GetEnemyHitbox();
 	void Move();
 	void Return();
 
@@ -53,8 +51,6 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	Action action;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
-
-	ComboObject *comboObj;
 
 	//V2d origPos;
 	Edge *startGround;

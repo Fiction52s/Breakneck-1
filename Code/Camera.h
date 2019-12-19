@@ -4,7 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include "Movement.h"
 #include "Input.h"
-//#include "Actor.h"
 
 struct MovementSequence;
 struct Actor;

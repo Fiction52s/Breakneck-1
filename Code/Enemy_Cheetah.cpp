@@ -178,10 +178,7 @@ void Cheetah::UpdateHitboxes()
 		//hurtBody.globalAngle = 0;
 	}
 
-	CollisionBox &hitbox = hitBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hurtbox = hurtBody->GetCollisionBoxes(0)->front();
-	hitbox.globalPosition = mover->physBody.globalPosition;
-	hurtbox.globalPosition = mover->physBody.globalPosition;
+	BasicUpdateHitboxes();
 }
 
 //if (owner->GetPlayer(0)->position.x > position.x)
@@ -226,15 +223,17 @@ void Cheetah::ProcessState()
 	//cout << "vel: " << mover->velocity.x << ", " << mover->velocity.y << endl;
 	//cout << "action: " << (int)action << endl;
 	//testLaunch->UpdatePrePhysics();
-	Actor *player = owner->GetPlayer(0);
+	//Actor *player = owner->GetPlayer(0);
+
+	V2d playerPos = owner->GetPlayerPos(0);
 
 	if (dead)
 		return;
 
 	//cout << "vel: " << mover->velocity.x << ", " << mover->velocity.y << endl;
 
-	double xDiff = player->position.x - position.x;
-	double dist = length(player->position - position);
+	double xDiff = playerPos.x - position.x;
+	double dist = length(playerPos - position);
 	ActionEnded();
 
 	switch (action)

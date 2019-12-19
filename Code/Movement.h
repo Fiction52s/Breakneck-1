@@ -1,7 +1,6 @@
 #ifndef __MOVEMENT_H__
 #define __MOVEMENT_H__
 
-//#include "Actor.h"
 #include <SFML\Graphics.hpp>
 
 sf::Vector2<double> GetQuadraticValue( 

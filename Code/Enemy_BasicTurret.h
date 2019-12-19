@@ -20,7 +20,6 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
 	void Setup();
 	Tileset *ts_bulletExplode;
 	int frameTestCounter;

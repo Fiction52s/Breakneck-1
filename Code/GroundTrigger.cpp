@@ -7,6 +7,7 @@
 #include "Sequence.h"
 #include "MainMenu.h"
 #include "SaveFile.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -44,7 +45,7 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 		break;
 	case TRIGGER_GETAIRDASH:
 		owner->drain = false;
-		if (owner->HasPowerUnlocked(Actor::POWER_AIRDASH))
+		if (owner->HasPowerUnlocked(0))
 		{
 		}
 		else
@@ -118,7 +119,7 @@ void GroundTrigger::ResetEnemy()
 	{
 	case TRIGGER_GETAIRDASH:
 	{
-		if (owner->HasPowerUnlocked(Actor::POWER_AIRDASH))
+		if (owner->HasPowerUnlocked(0))
 		{
 			action = DONE;
 		}
