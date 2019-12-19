@@ -134,6 +134,8 @@
 #include "Grass.h"
 #include "EnvPlant.h"
 
+#include "SpecialTerrain.h"
+
 #define TIMESTEP 1.0 / 60.0
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
@@ -583,6 +585,12 @@ void GameSession::Cleanup()
 	{
 		delete terrainTree;
 		terrainTree = NULL;
+	}
+
+	if (specialTerrainTree != NULL)
+	{
+		delete specialTerrainTree;
+		specialTerrainTree = NULL;
 	}
 
 	if (terrainBGTree != NULL)
@@ -1217,22 +1225,10 @@ bool GameSession::LoadSpecialPolys(std::ifstream &is)
 
 	for (int i = 0; i < numSpecialPolys; ++i)
 	{
-		int matWorld;
-		int matVariation;
-		is >> matWorld;
-		is >> matVariation;
+		SpecialTerrainPiece *st = new SpecialTerrainPiece(this);
+		st->Load(is);
 
-		int polyPoints;
-		is >> polyPoints;
-
-		list<Vector2i> specialPoints;
-		for (int j = 0; j < polyPoints; ++j)
-		{
-			int x, y, special;
-			is >> x;
-			is >> y;
-			specialPoints.push_back(Vector2i(x, y));
-		}
+		specialTerrainTree->Insert(st);
 	}
 
 	return true;
@@ -6096,6 +6092,8 @@ bool GameSession::Load()
 	//soon make these the actual size of the bordered level
 	terrainTree = new QuadTree(1000000, 1000000);
 
+	specialTerrainTree = new QuadTree(1000000, 1000000);
+
 	inverseEdgeTree = new QuadTree(1000000, 1000000);
 
 	staticItemTree = new QuadTree(1000000, 1000000);
@@ -7692,10 +7690,16 @@ int GameSession::Run()
 					listVA = t;
 				}
 
+				listVA = NULL;
 				//listVA is null here
 				queryMode = "border";
 				numBorders = 0;
 				borderTree->Query( this, screenRect );
+
+
+				specialPieceList = NULL;
+				queryMode = "specialterrain";
+				specialTerrainTree->Query(this, screenRect);
 
 				drawInversePoly = ScreenIntersectsInversePoly( screenRect );
 
@@ -7772,8 +7776,6 @@ int GameSession::Run()
 		{
 			continue;
 		}
-		//window->display();
-		//continue;
 
 		if( debugScreenRecorder != NULL )
 		if( IsKeyPressed( Keyboard::R ) )
@@ -7874,6 +7876,13 @@ int GameSession::Run()
 		
 		DrawTerrainPieces(listVA);
 		
+		SpecialTerrainPiece *sp = specialPieceList;
+		while (sp != NULL)
+		{
+			sp->Draw(preScreenTex);
+			sp = sp->next;
+		}
+
 		DrawGoal();
 
 		DrawGates();
@@ -9345,6 +9354,7 @@ void GameSession::Init()
 	deathWipeLength = 17 * 5;
 
 	listVA = NULL;
+	specialPieceList = NULL;
 
 	inactiveEffects = NULL;
 	pauseImmuneEffects = NULL;
@@ -9402,7 +9412,6 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		if( listVA == NULL )
 		{
 			listVA = (TerrainPiece*)qte;
-		//	cout << "1" << endl;
 			numBorders++;
 		}
 		else
@@ -9432,6 +9441,39 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 		
+	}
+	else if (queryMode == "specialterrain")
+	{
+		if (specialPieceList == NULL)
+		{
+			specialPieceList = (SpecialTerrainPiece*)qte;
+			specialPieceList->next = NULL;
+			//numBorders++;
+		}
+		else
+		{
+
+			SpecialTerrainPiece *tva = (SpecialTerrainPiece*)qte;
+			SpecialTerrainPiece *temp = specialPieceList;
+			bool okay = true;
+			while (temp != NULL)
+			{
+				if (temp == tva)
+				{
+					okay = false;
+					break;
+				}
+				temp = temp->next;
+			}
+
+			if (okay)
+			{
+				tva->next = specialPieceList;
+				specialPieceList = tva;
+				//numBorders++;
+			}
+		}
+
 	}
 	else if( queryMode == "inverseborder" )
 	{

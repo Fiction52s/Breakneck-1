@@ -123,6 +123,7 @@ struct TouchGrassCollection;
 
 struct HealthFly;
 struct TerrainPiece;
+struct SpecialTerrainPiece;
 
 struct EnvPlant;
 
@@ -244,6 +245,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	ShardPopup *shardPop;
 	TerrainPiece *listVA;
+	SpecialTerrainPiece *specialPieceList;
 
 	struct DecorDraw
 	{
@@ -903,6 +905,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 
 	QuadTree *terrainBGTree;
+	QuadTree *specialTerrainTree;
 	QuadTree * terrainTree;
 	QuadTree * enemyTree;
 	QuadTree * grassTree;

@@ -19,7 +19,7 @@ TerrainPiece::TerrainPiece(GameSession *p_owner)
 	plantva = NULL;
 	decorLayer0va = NULL;
 	bushVA = NULL;
-
+	tr = NULL;
 	terrainVA = NULL;
 	grassVA = NULL;
 

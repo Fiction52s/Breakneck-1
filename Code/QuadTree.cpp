@@ -43,10 +43,10 @@ LeafNode::LeafNode( const V2d &poss, double rww, double rhh )
 }
 
 
-QuadTree::QuadTree( int p_width, int p_height )
-	:startNode( NULL ), width( p_width ), height( p_height )
+QuadTree::QuadTree( int p_width, int p_height, V2d pos )
+	:startNode( NULL ), width( p_width ), height( p_height ), center( pos )
 {
-	startNode = new LeafNode( V2d( 0, 0), width, height);
+	startNode = new LeafNode( center, width, height);
 	startNode->parent = NULL;//testTree->parent = NULL;
 	//testTree->debug = rw;
 
@@ -280,7 +280,7 @@ void QuadTree::Clear()
 	rClear(startNode);
 
 	
-	startNode = new LeafNode(V2d(0, 0), width, height);
+	startNode = new LeafNode(center, width, height);
 	startNode->parent = NULL;//testTree->parent = NULL;
 	
 }
