@@ -733,6 +733,15 @@ void TerrainRail::CopyPoints(TerrainPoint *&start, TerrainPoint *&end)
 	}
 }
 
+void TerrainRail::CopyOtherPoints(TerrainPoint *&start,
+	TerrainPoint *&end)
+{
+	for (TerrainPoint *curr = start; curr != NULL; curr = curr->next)
+	{
+		AddPoint(new TerrainPoint(curr->pos, false));
+	}
+}
+
 TerrainPoint *TerrainRail::GetClosePoint(double radius, V2d &wPos)
 {
 	if (wPos.x <= right + radius && wPos.x >= left - radius

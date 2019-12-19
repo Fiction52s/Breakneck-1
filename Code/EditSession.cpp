@@ -98,6 +98,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	scaleSpriteBGRect.setPosition(0, 80);
 	scaleSpriteBGRect.setFillColor(Color( 255, 255, 255, 200 ));
 	scaleSpriteBGRect.setSize(Vector2f( 80, 100 ));
+
 	
 
 	scaleText.setFont(mainMenu->arial);
@@ -601,10 +602,16 @@ EditSession::~EditSession()
 		(*it).reset();
 	}
 
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	for (int i = 0; i < 2; ++i)
 	{
-		(*it).reset();
+		auto & polyList = GetCorrectPolygonList(i);
+		for (auto it = polyList.begin(); it != polyList.end(); ++it)
+		{
+			(*it).reset();
+		}
 	}
+	
+
 
 	delete progressBrush;
 	delete selectedBrush;
@@ -874,10 +881,7 @@ bool EditSession::OpenFile()
 				inversePolygon = poly;
 				hasReadBorderPoly = true;
 			}
-			/*else
-			{
-				polygons.push_back( poly );
-			}*/
+
 			polygons.push_back(poly);
 
 			int polyPoints;
@@ -988,7 +992,6 @@ bool EditSession::OpenFile()
 		for( int i = 0; i < bgPlatformNum0; ++i )
 		{
 			PolyPtr poly( new TerrainPolygon( &grassTex ) );
-			//poly->layer = 1;
 			polygons.push_back( poly );
 
 			int matWorld;
@@ -2464,7 +2467,6 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 	}
 
 	map<TerrainPoint*, DetailedInter> pointInterMap;
-	//map<TerrainPoint*, Inter> pointInterMapFromPoly;
 	outPoly = NULL;
 	brush->FixWinding();
 	poly->FixWinding();
@@ -2572,8 +2574,6 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 		return AddResult::ADD_SUCCESS;
 	}
 
-	
-	//TerrainPolygon z( &grassTex );
 	//1: choose start point
 
 	Vector2i startPoint;
@@ -3007,47 +3007,8 @@ EditSession::AddResult EditSession::Add( PolyPtr brush, PolyPtr poly, TerrainPol
 		firstRun = false;
 	}
 
-	
-
-	//poly->Reset();
-
-	//for (TerrainPoint *zit = outPoly->pointStart; zit != NULL; zit = zit->next)
-	//{
-	//	TerrainPoint *tp = new TerrainPoint(*zit);
-	//	if (tp->gate != NULL)
-	//	{
-	//		//cout << "new polygon will have gate" << endl;
-	//		if (zit == tp->gate->point0)
-	//		{
-	//			tp->gate->point0 = tp;
-	//			tp->gate->poly0 = poly;
-	//		}
-	//		else
-	//		{
-	//			tp->gate->point1 = tp;
-	//			tp->gate->poly1 = poly;
-	//		}
-	//	}
-	//	poly->AddPoint(tp);
-	//}
-
-
-	//cout << "about to check for enemy stuff" << endl;
-	//for (TerrainPoint *bit = brush->pointStart; bit != NULL; bit = bit->next)
-	//{
-	//	//cout << "z enems: " << z.enemies.count( zit ) << endl;
-	//	//cout << "enems: " << 
-	//	//if( z.enemies.count( zit ) > 0 )
-	//	if (brush->enemies.count(bit) > 0)
-	//	{
-	//		//list<ActorPtr> &en = poly->enemies[tp];
-	//		//en = z.enemies[zit];
-	//		list<ActorPtr> &en = brush->enemies[bit];//z.enemies[zit];
-
-	//		AttachActorsToPolygon(en, poly.get());
-	//	}
-	//}
-
+	outPoly->SetMaterialType(poly->terrainWorldType,
+		poly->terrainVariation);
 	outPoly->RemoveSlivers(PI / 10.0);
 	outPoly->AlignExtremes(PRIMARY_LIMIT);
 
@@ -4440,49 +4401,15 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	tempSq.setColor(Color(100, 255, 10));
 	gateSel->Set(6, 0, tempSq, "shard");
-	
 
 	gateSelectorPopup->AddButton( "deletegate", Vector2i( 20, 300 ), Vector2f( 80, 40 ), "delete" );
 
-	terrainSelectorPopup = CreatePopupPanel( "terrainselector" );
-	GridSelector *terrainSel = terrainSelectorPopup->AddGridSelector(
-		"terraintypes", Vector2i( 20, 20 ), 9, MAX_TERRAINTEX_PER_WORLD, 64, 64, false, true );
+	SetupTerrainTypeSelector();
 
-	int numWorlds = 9;//6 plus core plus bear core plus special terrain
-	for( int worldI = 0; worldI < numWorlds; ++worldI )
-	{
-		int ind;
-		for( int i = 0; i < MAX_TERRAINTEX_PER_WORLD; ++i )
-		{
-			ind = worldI * MAX_TERRAINTEX_PER_WORLD + i;
-			stringstream ss;
-			ss << "Resources/Terrain/" << "terrain_" << (worldI+1) << "_0" << (i+1) << "_512x512.png";
-			terrainTextures[ind] = new Texture;
-			if (!terrainTextures[ind]->loadFromFile(ss.str()))
-			{
-				delete terrainTextures[ind];
-				terrainTextures[ind] = NULL;
-				break;
-			}
-
-			terrainSel->Set(worldI, i, Sprite(*terrainTextures[ind], sf::IntRect(0, 0, 64, 64)),
-				"xx");
-
-			if (!polyShaders[ind].loadFromFile("Resources/Shader/mat_shader2.frag", sf::Shader::Fragment))
-			{
-				cout << "MATERIAL SHADER NOT LOADING CORRECTLY EDITOR" << endl;
-				assert(0 && "polygon shader not loaded editor");
-			}
-
-			polyShaders[ind].setUniform("u_texture", *terrainTextures[ind]);
-			polyShaders[ind].setUniform("Resolution", Vector2f(1920, 1080));
-			polyShaders[ind].setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-			polyShaders[ind].setUniform("skyColor", ColorGL(Color::White));
-
-			
-
-		}
-	}
+	currTerrainWorld = 0;
+	currTerrainVar = 0;
+	currTerrainTypeSpr.setPosition(0, 160);
+	UpdateCurrTerrainType();
 
 	returnVal = 0;
 	Color testColor( 0x75, 0x70, 0x90 );
@@ -4682,199 +4609,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	mainMenu->SetMouseVisible(oldMouseVis);
 
 	return returnVal;
-}
-
-bool EditSession::PointValid( Vector2i prev, Vector2i point)
-{
-	//return true;
-	float eLeft = min( prev.x, point.x );
-	float eRight= max( prev.x, point.x );
-	float eTop = min( prev.y, point.y );
-	float eBottom = max( prev.y, point.y );
-
-	{
-		TerrainPoint *curr = polygonInProgress->pointStart;
-		//polygonInProgress->points.push_back( polygonInProgress->points.back() )
-		Vector2i pre = curr->pos;
-		curr = curr->next;
-		
-		//minimum angle
-		{
-			if( polygonInProgress->numPoints >= 2 )
-			{
-				TerrainPoint *rcurr = polygonInProgress->pointEnd;
-				rcurr = rcurr->prev;
-
-				//for( ; rcurr != NULL; rcurr = rcurr->prev )
-				//{
-					double ff = dot( normalize( V2d( point.x, point.y ) - V2d( polygonInProgress->pointEnd->pos.x, polygonInProgress->pointEnd->pos.y ) )
-					, normalize( V2d(rcurr->pos.x, rcurr->pos.y ) - V2d( polygonInProgress->pointEnd->pos.x, polygonInProgress->pointEnd->pos.y ) ) );
-					if( ff > .99 )
-					{
-						cout << "ff: " << ff << endl;
-						return false;
-					}
-				//}
-			}
-		}
-
-		//return true;
-
-		//make sure I'm not too close to the very first point and that my line isn't too close to the first point either
-		//if( length( V2d( point.x, point.y ) - V2d( polygonInProgress->points.front().pos.x, polygonInProgress->points.front().pos.y ) ) < 8 )
-		{
-			double separation = length( V2d(point.x, point.y) - V2d(pre.x, pre.y) );
-			if( separation < minimumEdgeLength )
-			{
-				cout << "return a" << endl;
-				return false;
-			}
-
-			if( polygonInProgress->numPoints > 2  )
-			{
-				if( abs( cross( V2d( point.x, point.y ) - V2d( prev.x, prev.y), 
-					normalize( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y ) ) ) ) < minimumEdgeLength
-					&& dot( V2d( point.x, point.y ) - V2d( prev.x, prev.y ), normalize( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y )) ) 
-					>= length( V2d( pre.x, pre.y ) - V2d( prev.x, prev.y ) ) )
-				{
-					cout << "return b" << endl;
-					return false;
-				}
-			}
-		}
-
-		//check for distance to point in the polygon and edge distances
-
-		if( point.x == polygonInProgress->pointStart->pos.x && point.y == polygonInProgress->pointStart->pos.y )
-		{
-			pre = curr->pos;
-			curr = curr->next;
-		}
-
-		{
-			for( ; curr != NULL; curr = curr->next )
-		{
-			if( curr->pos == polygonInProgress->pointEnd->pos )
-				continue;
-
-			LineIntersection li = lineIntersection( V2d( prev.x, prev.y ), V2d( point.x, point.y ),
-						V2d( pre.x, pre.y ), V2d( curr->pos.x, curr->pos.y ) );
-			float tempLeft = min( pre.x, curr->pos.x ) - 0;
-			float tempRight = max( pre.x, curr->pos.x ) + 0;
-			float tempTop = min( pre.y, curr->pos.y ) - 0;
-			float tempBottom = max( pre.y, curr->pos.y ) + 0;
-			if( !li.parallel )
-			{
-				
-				double separation = length( V2d(point.x, point.y) - V2d(curr->pos.x,curr->pos.y ) );
-				
-				if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
-				{
-					if( li.position.x <= eRight && li.position.x >= eLeft && li.position.y >= eTop && li.position.y <= eBottom )
-					{
-						CircleShape cs;
-						cs.setRadius( 30  );
-						cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-						cs.setFillColor( Color::Magenta );
-						cs.setPosition( li.position.x, li.position.y );
-						preScreenTex->draw( cs );
-
-						
-						return false;
-					}
-
-				}
-
-				if( separation < minimumEdgeLength )
-				{
-					return false;
-				}
-
-				Vector2i ai = point - pre;
-				Vector2i bi = curr->pos - pre;
-				V2d a(ai.x, ai.y);
-				V2d b(bi.x, bi.y);
-				double res = abs(cross( a, normalize( b )));
-				double des = dot( a, normalize( b ));
-
-				Vector2i ci = curr->pos - prev;
-				Vector2i di = point - prev;
-				V2d c( ci.x, ci.y);
-				V2d d( di.x, di.y );
-
-				double res2 = abs( cross( c, normalize( d ) ) );
-				double des2 = dot( c, normalize( d ) );
-
-				//cout << "minedgelength: " << minimumEdgeLength <<  ", " << res << endl;
-
-				if( point.x == polygonInProgress->pointStart->pos.x && point.y == polygonInProgress->pointStart->pos.y )
-				{
-				}
-				else
-
-				if(( res  < minimumEdgeLength && ( des >= 0 && des <= length( b ) ) )
-					|| ( res2  < minimumEdgeLength && ( des2 >= 0 && des2 <= length( d ) ) ) )
-				{
-					return false;
-				}
-			}
-			else
-			{
-				//cout << "parallel" << endl;
-				//return false;
-			}
-			pre = curr->pos;
-		}
-		}
-	}
-	return true;
-
-	int i = 0;
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-	{
-		//cout << "polygon " << i << " out of " << polygons.size() << " ... " << (*it)->points.size()  << endl;
-		++i;
-		PolyPtr p = (*it);
-		
-		if( eLeft <= p->right && eRight >= p->left && eTop <= p->bottom && eBottom >= p->top )
-		{	
-		
-			//aabbCollision = true;
-		
-		}
-		else
-		{
-			continue;
-		}
-	//	if( point.x <= p->right && point.x >= p->left && point.y >= p->top && point.y <= p->bottom )
-	//	{
-			TerrainPoint *pcurr =  p->pointStart;
-			Vector2i prevPoint = pcurr->pos;
-			pcurr = pcurr->next;
-			for( ; pcurr != NULL; pcurr = pcurr->next )
-			{
-				LineIntersection li = lineIntersection( V2d( prevPoint.x, prevPoint.y ), V2d(pcurr->pos.x, pcurr->pos.y),
-					V2d( prev.x, prev.y ), V2d( point.x, point.y ) );
-				float tempLeft = min( prevPoint.x, pcurr->pos.x );
-				float tempRight = max( prevPoint.x, pcurr->pos.x );
-				float tempTop = min( prevPoint.y, pcurr->pos.y );
-				float tempBottom = max( prevPoint.y, pcurr->pos.y );
-				if( !li.parallel )
-				{
-					if( li.position.x <= tempRight && li.position.x >= tempLeft && li.position.y >= tempTop && li.position.y <= tempBottom )
-					{
-						if( li.position.x <= eRight && li.position.x >= eLeft && li.position.y >= eTop && li.position.y <= eBottom )
-						{
-							return false;
-						}
-
-					}
-				}
-				prevPoint = pcurr->pos;
-				
-			}
-	}
-	return true;
 }
 
 //THIS IS ALSO DEFINED IN ACTORPARAMS NEED TO GET RID OF THE DUPLICATE
@@ -5319,7 +5053,9 @@ void EditSession::ClearUndoneActions()
 
 sf::Vector2f EditSession::SnapPosToPoint(sf::Vector2f &p, double radius)
 {
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	auto & currPolyList = GetCorrectPolygonList();
+
+	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
 		TerrainPoint *closePoint = (*it)->GetClosePoint( radius, V2d(p));
 		if (closePoint != NULL)
@@ -5329,6 +5065,16 @@ sf::Vector2f EditSession::SnapPosToPoint(sf::Vector2f &p, double radius)
 	}
 
 	return p;
+}
+
+bool EditSession::IsSpecialTerrainMode()
+{
+	if (currTerrainWorld >= 8)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 void EditSession::InitDecorPanel()
@@ -5437,7 +5183,7 @@ void EditSession::RemovePointFromRailInProgress()
 {
 	if (railInProgress->numPoints > 0)
 	{
-		railInProgress->RemovePoint(polygonInProgress->pointEnd);
+		railInProgress->RemovePoint(railInProgress->pointEnd);
 	}
 }
 
@@ -5627,6 +5373,45 @@ void EditSession::TryMoveSelectedBrush()
 		action->Undo();
 
 		delete action;
+	}
+}
+
+void EditSession::SetupTerrainTypeSelector()
+{
+	terrainSelectorPopup = CreatePopupPanel("terrainselector");
+	GridSelector *terrainSel = terrainSelectorPopup->AddGridSelector(
+		"terraintypes", Vector2i(20, 20), TERRAIN_WORLDS, MAX_TERRAINTEX_PER_WORLD, 64, 64, false, true);
+
+	for (int worldI = 0; worldI < TERRAIN_WORLDS; ++worldI)
+	{
+		int ind;
+		for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD; ++i)
+		{
+			ind = worldI * MAX_TERRAINTEX_PER_WORLD + i;
+			stringstream ss;
+			ss << "Resources/Terrain/" << "terrain_" << (worldI + 1) << "_0" << (i + 1) << "_512x512.png";
+			terrainTextures[ind] = new Texture;
+			if (!terrainTextures[ind]->loadFromFile(ss.str()))
+			{
+				delete terrainTextures[ind];
+				terrainTextures[ind] = NULL;
+				break;
+			}
+
+			terrainSel->Set(worldI, i, Sprite(*terrainTextures[ind], sf::IntRect(0, 0, 64, 64)),
+				"xx");
+
+			if (!polyShaders[ind].loadFromFile("Resources/Shader/mat_shader2.frag", sf::Shader::Fragment))
+			{
+				cout << "MATERIAL SHADER NOT LOADING CORRECTLY EDITOR" << endl;
+				assert(0 && "polygon shader not loaded editor");
+			}
+
+			polyShaders[ind].setUniform("u_texture", *terrainTextures[ind]);
+			polyShaders[ind].setUniform("Resolution", Vector2f(1920, 1080));
+			polyShaders[ind].setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+			polyShaders[ind].setUniform("skyColor", ColorGL(Color::White));
+		}
 	}
 }
 
@@ -6551,9 +6336,6 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon
 	if( PolyIntersectGate( poly ) )
 		return false;
 
-
-
-	//cout << "true" << endl;
 	return true;
 }
 
@@ -7146,8 +6928,6 @@ int EditSession::IsRemovePointsOkay()
 {
 	bool terrainOkay = true;
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
-		//list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-		//it != selectedPolygons.end(); ++it )
 	{
 		TerrainPolygon *tp = (*it).first;
 		bool res = tp->IsRemovePointsOkayTerrain( this );
@@ -7162,21 +6942,6 @@ int EditSession::IsRemovePointsOkay()
 	{
 		return 0;
 	}
-
-	/*bool enemiesOkay = false;
-	for( list<PolyPtr>::iterator it = selectedPolygons.begin(); 
-		it != selectedPolygons.end(); ++it )
-	{
-		int res = (*it)->IsRemovePointsOkayEnemies( this );
-		if( res == 1 )
-		{
-			return 1;
-		}
-		else if( res == 0 )
-		{
-			return -1;
-		}
-	}*/
 
 	return 1;
 }
@@ -7829,13 +7594,52 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 	return gi;
 }
 
+list<PolyPtr> & EditSession::GetCorrectPolygonList(TerrainPolygon *t)
+{
+	if (t->IsSpecialPoly())
+	{
+		return waterPolygons;
+	}
+	else 
+	{
+		return polygons;
+	}
+}
+
+list<PolyPtr> & EditSession::GetCorrectPolygonList(int ind)
+{
+	switch (ind)
+	{
+	case 0:
+		return polygons;
+	case 1:
+		return waterPolygons;
+	default:
+		assert(0);
+		return polygons;
+	}
+}
+
+list<PolyPtr> & EditSession::GetCorrectPolygonList()
+{
+	if (IsSpecialTerrainMode())
+	{
+		return waterPolygons;
+	}
+	else
+	{
+		return polygons;
+	}
+}
+
 void EditSession::ExecuteTerrainCompletion()
 {
 	if( polygonInProgress->numPoints > 2 )
 	{
+		polygonInProgress->SetMaterialType(currTerrainWorld,
+			currTerrainVar);
 		//test final line
 		bool valid = true;
-
 
 		//test for the last line segment intersecting with the polygon
 		TerrainPoint * test = polygonInProgress->pointStart;
@@ -7858,10 +7662,10 @@ void EditSession::ExecuteTerrainCompletion()
 			prev = test;
 		}
 
+		auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
 
-		for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+		for( list<PolyPtr>::iterator it = testPolygons.begin(); it != testPolygons.end(); ++it )
 		{
-			//if( !PointValid( polygonInProgress->points.back().pos, polygonInProgress->points.front().pos, (*it) ) )
 			if( (*it)->SegmentTooClose( polygonInProgress->pointEnd->pos, polygonInProgress->pointStart->pos, minimumEdgeLength ) )
 			{
 				valid = false;
@@ -7882,7 +7686,7 @@ void EditSession::ExecuteTerrainCompletion()
 		}
 
 									
-		list<PolyPtr>::iterator it = polygons.begin();
+		list<PolyPtr>::iterator it = testPolygons.begin();
 		bool added = false;
 									
 		bool recursionDone = false;
@@ -7893,46 +7697,14 @@ void EditSession::ExecuteTerrainCompletion()
 		polygonInProgress->UpdateBounds();
 
 		bool applyOkay = true;
-		for(; it != polygons.end(); ++it )
+		for(; it != testPolygons.end(); ++it )
 		{
-			//if( polygonInProgress->LinesTooClose( (*it).get(), minimumEdgeLength ) )
-			//{
-			//	//cout << "LINES TOO CLOSE" << endl;
-			//	applyOkay = false;
-			//	break;
-			//}
-			//else 
 			if( polygonInProgress->LinesIntersect( (*it).get() ) )
 			{
 				//not too close and I intersect, so I can add
 				intersectingPolys.push_back( (*it) );
 			}
-			//polygoninprogress is already not in the polygons list
-			//if( (*it).get() == this )
-			//{
-			//	continue;
-			//}
 		}
-
-		
-		//bool intersectInverse = false;
-		//if (inversePolygon != NULL)
-		//{
-		//	if (polygonInProgress->LinesTooClose(inversePolygon.get(), minimumEdgeLength))
-		//	{
-		//		//cout << "LINES TOO CLOSE" << endl;
-		//		applyOkay = false;
-		//	}
-		//	else if (polygonInProgress->LinesIntersect(inversePolygon.get()))
-		//	{
-		//		//not too close and I intersect, so I can add
-		//		intersectingPolys.push_back(inversePolygon);
-		//		intersectInverse = true;
-		//	}
-		//}
-
-		//temporary to make sure it doesnt add on top of stuff
-		
 
 		if( !applyOkay )
 		{
@@ -7947,18 +7719,6 @@ void EditSession::ExecuteTerrainCompletion()
 				polygonInProgress->inverse = true;
 			}
 			
-			/*else if (intersectInverse)
-			{
-				bool oldSelected = inversePolygon->selected;
-				inversePolygon->SetSelected( true );
-				inversePolygon->FixWinding();
-
-				Add( inversePolygon, polygonInProgress );
-				
-				inversePolygon->SetSelected( oldSelected );
-
-				SetInversePoly();
-			}*/
 			if( empty )
 			{
 				if (polygonInProgress->inverse)
@@ -7972,11 +7732,6 @@ void EditSession::ExecuteTerrainCompletion()
 					polygonInProgress->FixWinding();
 					polygonInProgress->RemoveSlivers(PI / 20.0);
 					polygonInProgress->Finalize();
-
-					/*if (polygonInProgress->inverse)
-					{
-						inversePolygon = polygonInProgress;
-					}*/
 
 					SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(polygonInProgress);
 
@@ -8242,8 +7997,6 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys)
 
 void EditSession::PasteTerrain(Brush *b)
 {
-	
-
 	CompoundAction *compoundAction = new CompoundAction;
 	Brush applyBrush;
 	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
@@ -8365,15 +8118,9 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		(*it)->SetSelected( oldSelected ); //should i even store the old one?							
 	}
 
-	
-
-	//assert(orig.objects.size() == 2);
-	//assert(actorList.size() == 1);
 
 	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>(polygonInProgress);
 
-	/*for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
-	{*/
 
 
 	resultBrush.Clear();
@@ -8767,8 +8514,10 @@ bool EditSession::PointSelectPolyPoint( V2d &pos )
 {
 	bool shift = IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift);
 
+	auto & currPolyList = GetCorrectPolygonList();
+
 	TerrainPoint *foundPoint = NULL;
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
 		foundPoint = (*it)->GetClosePoint( 8 * zoomMultiple, pos);
 		if (foundPoint != NULL)
@@ -8881,7 +8630,8 @@ bool EditSession::PointSelectRailPoint(V2d &pos)
 
 bool EditSession::PointSelectPoly(V2d &pos)
 {
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	auto & currPolyList = GetCorrectPolygonList();
+	for (list<PolyPtr>::iterator it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
 		bool pressF1 = IsKeyPressed(Keyboard::F1);
 		if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
@@ -8925,8 +8675,12 @@ bool EditSession::PointSelectPoly(V2d &pos)
 bool EditSession::BoxSelectPoints(sf::IntRect &r,
 	double radius)
 {
+	auto & currPolyList = GetCorrectPolygonList();
+
+	bool specialMode = IsSpecialTerrainMode();
+
 	bool found = false;
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	for (list<PolyPtr>::iterator it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
 		IntRect adjustedR(r.left, r.top, r.width, r.height);
 		//IntRect adjustedR(r.left - radius, r.top, r.width, r.height);
@@ -8953,27 +8707,30 @@ bool EditSession::BoxSelectPoints(sf::IntRect &r,
 		}
 	}
 
-	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
+	if (!specialMode)
 	{
-		//IntRect adjustedR(r.left - radius, r.top, r.width, r.height);
-		IntRect adjustedR(r.left, r.top, r.width, r.height);
-
-		if ((*it)->Intersects(adjustedR))
+		for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
 		{
-			TerrainPoint *curr = (*it)->pointStart;
-			while (curr != NULL)
+			//IntRect adjustedR(r.left - radius, r.top, r.width, r.height);
+			IntRect adjustedR(r.left, r.top, r.width, r.height);
+
+			if ((*it)->Intersects(adjustedR))
 			{
-				if (IsQuadTouchingCircle(V2d(r.left, r.top),
-					V2d(r.left + r.width, r.top),
-					V2d(r.left + r.width, r.top + r.height),
-					V2d(r.left, r.top + r.height),
-					V2d(curr->pos.x, curr->pos.y), radius)
-					|| adjustedR.contains(curr->pos))
+				TerrainPoint *curr = (*it)->pointStart;
+				while (curr != NULL)
 				{
-					SelectPoint((*it).get(), curr);
-					found = true;
+					if (IsQuadTouchingCircle(V2d(r.left, r.top),
+						V2d(r.left + r.width, r.top),
+						V2d(r.left + r.width, r.top + r.height),
+						V2d(r.left, r.top + r.height),
+						V2d(curr->pos.x, curr->pos.y), radius)
+						|| adjustedR.contains(curr->pos))
+					{
+						SelectPoint((*it).get(), curr);
+						found = true;
+					}
+					curr = curr->next;
 				}
-				curr = curr->next;
 			}
 		}
 	}
@@ -9060,7 +8817,10 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 bool EditSession::BoxSelectPolys(sf::IntRect &rect)
 {
 	bool found = false;
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+
+	auto & currPolyList = GetCorrectPolygonList();
+
+	for (list<PolyPtr>::iterator it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
 		if ((*it)->Intersects(rect))
 		{
@@ -9884,6 +9644,13 @@ Vector2i EditSession::GetPixelPos()
 	return pPos;
 }
 
+void EditSession::UpdateCurrTerrainType()
+{
+	int ind = currTerrainWorld * MAX_TERRAINTEX_PER_WORLD + currTerrainVar;
+	currTerrainTypeSpr.setTexture(*terrainTextures[ind]);
+	currTerrainTypeSpr.setTextureRect(IntRect(0, 0, 64, 64));
+}
+
 void EditSession::AnchorTrackingEnemyOnTerrain()
 {
 	if (trackingEnemy != NULL)
@@ -10160,9 +9927,13 @@ void EditSession::SetupGraph()
 
 void EditSession::DrawPolygons()
 {
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	for (int i = 0; i < 2; ++i)
 	{
-		(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
+		auto & currPolyList = GetCorrectPolygonList(i);
+		for (list<PolyPtr>::iterator it = currPolyList.begin(); it != currPolyList.end(); ++it)
+		{
+			(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
+		}
 	}
 }
 
@@ -10672,6 +10443,12 @@ void EditSession::DrawUI()
 		scaleSprite.getGlobalBounds().height));
 	scaleText.setString(scaleTextSS.str());
 
+	if (mode == CREATE_TERRAIN || mode == EDIT || mode == SELECT_MODE)
+	{
+		preScreenTex->draw(currTerrainTypeSpr);
+	}
+	
+
 	preScreenTex->draw(scaleSpriteBGRect);
 	preScreenTex->draw(scaleSprite);
 	preScreenTex->draw(cursorLocationText);
@@ -10928,10 +10705,19 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::E)
 		{
+			GridSelectPop("terraintypeselect");
+			currTerrainWorld = tempGridX;
+			currTerrainVar = tempGridY;
+			UpdateCurrTerrainType();
 		}
 		else if (ev.key.code == sf::Keyboard::R)
 		{
 			mode = CREATE_RAILS;
+			//polygonInProgress->CopyPoints(railInProgress->pointStart,
+			//	railInProgress->pointEnd);
+			railInProgress->CopyOtherPoints(polygonInProgress->pointStart,
+				polygonInProgress->pointEnd);
+			//railInProgress->CopyPoints(polygonInProgress->pointStart, polygonInProgress->pointEnd);
 			polygonInProgress->ClearPoints();
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
@@ -11224,10 +11010,17 @@ void EditSession::EditModeHandleEvent()
 		{
 			GridSelectPop("terraintypeselect");
 
-			Action * action = new ModifyTerrainTypeAction(
-				selectedBrush, tempGridX, tempGridY);
-			action->Perform();
-			doneActionStack.push_back(action);
+			if (selectedBrush->objects.size() > 0)
+			{
+				Action * action = new ModifyTerrainTypeAction(
+					selectedBrush, tempGridX, tempGridY);
+				action->Perform();
+				doneActionStack.push_back(action);
+			}
+
+			currTerrainWorld = tempGridX;
+			currTerrainVar = tempGridY;
+			UpdateCurrTerrainType();
 		}
 		else if (ev.key.code == Keyboard::I)
 		{

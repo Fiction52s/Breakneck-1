@@ -740,17 +740,6 @@ void ModifyTerrainTypeAction::Perform()
 	{
 		(*it).first->SetMaterialType( newTerrainWorld, newVariation );
 	}
-	//for( SelectList::iterator it = terrainBrush.objects.begin(); 
-	//	it != terrainBrush.objects.end(); ++it )
-	//{
-	//	if( (*it)->selectableType == ISelectable::TERRAIN )
-	//	{
-	//		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
-
-	//		poly->SetMaterialType( newTerrainWorld, newVariation );
-	//		//poly->
-	//	}
-	//}
 
 	performed = true;
 }

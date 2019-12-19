@@ -39,6 +39,9 @@
 #include "Enemy_Teleporter.h"
 #include "Wire.h"
 #include "Enemy_SwingLauncher.h"
+#include "TerrainPiece.h"
+#include "Grass.h"
+#include "EnvPlant.h"
 
 using namespace sf;
 using namespace std;
@@ -5349,10 +5352,11 @@ void Actor::UpdatePrePhysics()
 
 		if (AirAttack())
 		{
+			facingRight = IsRailSlideFacingRight();
 			grindEdge = NULL;
 			hasDoubleJump = true;
 			hasAirDash = true;
-			facingRight = IsRailSlideFacingRight();
+			
 			break;
 		}
 		break;
@@ -10195,8 +10199,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	}
 	
 
-	queryMode = "item";
-	owner->itemTree->Query( this, r );
+	//queryMode = "item";
+	//owner->itemTree->Query( this, r );
 
 	queryMode = "envplant";
 	owner->envPlantTree->Query( this, r );
@@ -19375,56 +19379,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 			
 		}
-	}
-	else if( queryMode == "item" )
-	{
-		Critical *c = (Critical*)qte;
-
-		if( c->active )
-		{
-			if( currHitboxes != NULL )
-			{
-				list<CollisionBox> *cList = (currHitboxes->GetCollisionBoxes(currHitboxFrame));
-				if (cList != NULL)
-				for( list<CollisionBox>::iterator it = cList->begin(); it != cList->end(); ++it )
-				{
-					if( (*it).Intersects( c->box ) )
-					{
-						//currentCheckPoint = c;
-						//for( int i = 2; i < Gate::GateType::Count; ++i )
-						//{
-						//	c->hadKey[i] = hasKey[i];
-						//}
-						owner->activatedZoneList = NULL;
-						owner->inactiveEnemyList = NULL;
-						owner->unlockedGateList = NULL;
-						//cout << "destroy critical connection yay" << endl;
-						c->active = false;
-						return;
-						//activate critical connection yay
-					}
-				}
-			}
-
-			if( hurtBody.Intersects( c->box ) )
-			{
-				//currentCheckPoint = c;
-				/*for( int i = 2; i < Gate::GateType::Count; ++i )
-				{
-					c->hadKey[i] = hasKey[i];
-				}*/
-				owner->inactiveEnemyList = NULL;
-				owner->unlockedGateList = NULL;
-				owner->activatedZoneList = NULL;
-
-				c->active = false;
-				
-				return;
-			}
-		}
-	
-
-		//check with my hurtbox also!
 	}
 	else if( queryMode == "envplant" )
 	{

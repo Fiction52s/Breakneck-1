@@ -4,6 +4,7 @@
 #include <iostream>
 #include <assert.h>
 #include "Enemy.h"
+#include "Grass.h"
 
 using namespace sf;
 using namespace std;

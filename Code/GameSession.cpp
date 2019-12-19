@@ -130,6 +130,9 @@
 #include "Enemy_Gorilla.h"
 #include "Enemy_SwingLauncher.h"
 #include "Wire.h"
+#include "TerrainPiece.h"
+#include "Grass.h"
+#include "EnvPlant.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -217,99 +220,7 @@ EdgeAngleType GetEdgeAngleType(V2d &normal)
 }
 
 
-Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex, 
-	V2d &p_pos, TerrainPiece *p_poly, GrassType gType )
-	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),
-	ts_grass(p_ts_grass), owner(p_owner), poly( p_poly ), pos( p_pos ), radius( 128 / 2.0 - 20 )
-{
-	grassType = gType;
 
-	explosion.isCircle = true;
-	explosion.rw = 64;
-	explosion.rh = 64;
-	explosion.type = CollisionBox::BoxType::Hit;
-
-	explosion.globalPosition = pos;//(A + B + C + D) / 4.0;
-
-	explodeFrame = 0;
-	explodeLimit = 20;
-	exploding = false;
-
-	aabb.left = pos.x - radius;
-	aabb.top = pos.y - radius;
-	int right = pos.x + radius;
-	int bot = pos.y + radius;
-
-	aabb.width = right - aabb.left;
-	aabb.height = bot - aabb.top;
-}
-
-void Grass::HandleQuery(QuadTreeCollider *qtc)
-{
-	qtc->HandleEntrant(this);
-}
-
-bool Grass::IsTouchingBox(const Rect<double> &r)
-{
-	return IsQuadTouchingCircle(V2d(r.left, r.top), V2d(r.left + r.width, r.top),
-		V2d(r.left + r.width, r.top + r.height), V2d(r.left, r.top + r.height),
-		pos, radius);
-}
-
-bool Grass::IsTouchingCircle(V2d &otherPos, double otherRad)
-{
-	double distSqr = lengthSqr(pos - otherPos);
-	double radSqr = pow(radius + otherRad, 2);
-	return distSqr <= radSqr;
-}
-
-void Grass::Reset()
-{
-	next = NULL;
-	prev = NULL;
-	exploding = false;
-	visible = true;
-}
-
-void Grass::Update()
-{
-	if (visible && exploding)
-	{
-		if (explodeFrame == 0)
-		{
-			SetVisible(false);
-		}
-		
-		++explodeFrame;
-		if (explodeFrame == explodeLimit)
-		{
-			explodeFrame = 0;
-			owner->RemoveGravityGrassFromExplodeList(this);
-		}
-	}
-}
-
-void Grass::SetVisible(bool p_visible)
-{
-	visible = p_visible;
-	sf::VertexArray &gva = *(poly->grassVA);
-
-	int size = ts_grass->tileWidth;
-	if (visible)
-	{
-		gva[tileIndex * 4 + 0].position = Vector2f( pos.x - size, pos.y - size);
-		gva[tileIndex * 4 + 1].position = Vector2f( pos.x + size, pos.y - size);
-		gva[tileIndex * 4 + 2].position = Vector2f( pos.x + size, pos.y + size);
-		gva[tileIndex * 4 + 3].position = Vector2f( pos.x - size, pos.y + size);
-	}
-	else
-	{
-		gva[tileIndex * 4 + 0].position = Vector2f(0, 0);
-		gva[tileIndex * 4 + 1].position = Vector2f(0, 0);
-		gva[tileIndex * 4 + 2].position = Vector2f(0, 0);
-		gva[tileIndex * 4 + 3].position = Vector2f(0, 0);
-	}
-}
 
 
 
@@ -1643,24 +1554,6 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		V2d point1 = edge1->v0;
 
 		Gate::GateType gateType = (Gate::GateType)gType;
-
-		
-
-		//if( gateType == Gate::CRITICAL )
-		//{
-		//	cout << "MAKING NEW CRITICAL" << endl;
-		//	Critical *crit = new Critical( point0, point1 );
-		//	//wastes space for the gates already made but idk what to change. make it a new system?
-		//	//lets try it for now lol
-
-		//	//the extra pointers just get stuffed at the end
-		//	--numGates;
-		//	--i;
-		//	//will have to differentiate later for more items. but not for now!
-		//	itemTree->Insert( crit );
-		//	
-		//	continue;
-		//}
 
 		Gate * gate = new Gate( this, gateType);
 
@@ -3912,7 +3805,7 @@ bool GameSession::OpenFile( string fileName )
 			bool currentVisible = true;
 			if (matWorld == 8 && matVariation == 0)
 			{
-				currentVisible = false;
+				//currentVisible = false;
 			}
 
 			visibleTerrain[polyCounter] = currentVisible;
@@ -4139,8 +4032,6 @@ bool GameSession::OpenFile( string fileName )
 				tPiece->aabb.width = right - left;
 				tPiece->aabb.height = bottom - top;
 				tPiece->terrainVA = NULL;//va;
-
-				//polygons.push_back(va);
 			}
 
 			if (tPiece->visible)
@@ -4269,7 +4160,9 @@ bool GameSession::OpenFile( string fileName )
 			VertexArray *plantVA = NULL;
 			if (tPiece->visible)
 			{
-
+				int mw = matWorld; //temporary
+				if (matWorld == 8)
+					matWorld = 0;
 
 				stringstream ss;
 
@@ -5814,158 +5707,7 @@ Edge *GameSession::GetEdge(int index)
 	return edges[index];
 }
 
-void TerrainPiece::SetupGrass(std::list<GrassSegment> &segments)
-{
-	int numGrassTotal = 0;
 
-	for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
-	{
-		numGrassTotal += (*it).reps + 1;
-	}
-
-	Tileset *ts_grass = owner->GetTileset("Env/grass_128x128.png", 128, 128);
-
-	//should this even be made on invisible terrain?
-
-	int totalGrassIndex = 0;
-
-	Grass::GrassType gType;
-	if (terrainWorldType == 0)
-	{
-		gType = Grass::GrassType::JUMP;
-	}
-	else if (terrainWorldType == 1)
-	{
-		gType = Grass::GrassType::GRAVITY;
-	}
-	else if (terrainWorldType == 2)
-	{
-		gType = Grass::GrassType::BOUNCE;
-	}
-	else if (terrainWorldType == 3)
-	{
-		gType = Grass::GrassType::BOOST;
-	}
-	else if (terrainWorldType == 5)
-	{
-		gType = Grass::GrassType::ANTIWIRE;
-	}
-
-	owner->hasGrass[gType] = true;
-	owner->hasAnyGrass = true;
-
-	if (numGrassTotal > 0)
-	{
-		grassVA = new VertexArray(sf::Quads, numGrassTotal * 4);
-
-		//cout << "num grass total: " << numGrassTotal << endl;
-		VertexArray &grassVa = *grassVA;//*va;
-
-		int segIndex = 0;
-		int totalGrass = 0;
-		for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
-		{
-			Edge *segEdge = owner->GetEdge(startEdgeIndex + (*it).edgeIndex);
-			V2d v0 = segEdge->v0;
-			V2d v1 = segEdge->v1;
-
-			int start = (*it).index;
-			int end = (*it).index + (*it).reps;
-
-			int grassCount = (*it).reps + 1;
-			bool rem;
-			int num = GetNumGrass(segEdge, rem);
-
-			V2d along = normalize(v1 - v0);
-			V2d realStart = v0 + along * (double)(grassSize + grassSpacing);
-
-			int jj;
-			for (int j = 0; j < grassCount; ++j)
-			{
-				jj = j + start;
-				V2d posd = realStart + along * (double)((grassSize + grassSpacing) * (jj - 1));//v0 + normalize(v1 - v0) * ((grassSize + grassSpacing) * (j-1) + );
-
-				if (jj == 0)
-				{
-					posd = v0;
-				}
-				else if (jj == num - 1 && rem)
-				{
-					posd = v1 + normalize(v0 - v1) * (grassSize / 2.0 + grassSpacing);//(v1 + prev) / 2.0;
-				}
-
-				Vector2f pos(posd.x, posd.y);
-
-				Vector2f topLeft = pos + Vector2f(-grassSize / 2, -grassSize / 2);
-				Vector2f topRight = pos + Vector2f(grassSize / 2, -grassSize / 2);
-				Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
-				Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
-
-				grassVa[(j + totalGrass) * 4].position = topLeft;
-				grassVa[(j + totalGrass) * 4].texCoords = Vector2f(0, 0);
-
-				grassVa[(j + totalGrass) * 4 + 1].position = bottomLeft;
-				grassVa[(j + totalGrass) * 4 + 1].texCoords = Vector2f(0, grassSize);
-
-				grassVa[(j + totalGrass) * 4 + 2].position = bottomRight;
-				grassVa[(j + totalGrass) * 4 + 2].texCoords = Vector2f(grassSize, grassSize);
-
-				grassVa[(j + totalGrass) * 4 + 3].position = topRight;
-				grassVa[(j + totalGrass) * 4 + 3].texCoords = Vector2f(grassSize, 0);
-
-				Grass * g = new Grass(owner, ts_grass, totalGrassIndex, posd, this, gType );
-				owner->grassTree->Insert(g);
-
-				++totalGrassIndex;
-			}
-			totalGrass += grassCount;
-			segIndex++;
-		}
-	}
-	else
-	{
-		grassVA = NULL;
-	}
-
-	//int totalGrassIndex = 0;
-
-	//for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
-	//{
-	//	V2d A, B, C, D;
-	//	Edge * currE = owner->GetEdge(startEdgeIndex + (*it).edgeIndex);
-	//	V2d v0 = currE->v0;
-	//	V2d v1 = currE->v1;
-
-	//	double edgeLength = length(v1 - v0);
-	//	double remainder = edgeLength / (grassSize + grassSpacing);
-
-	//	double num = floor(remainder) + 1;
-
-	//	int reps = (*it).reps;
-
-	//	V2d edgeDir = normalize(v1 - v0);
-
-	//	//V2d ABmin = v0 + (v1-v0) * (double)(*it).index / num - grassSize / 2 );
-	//	V2d ABmin = v0 + edgeDir * (edgeLength * (double)(*it).index / num - grassSize / 2);
-	//	V2d ABmax = v0 + edgeDir * (edgeLength * (double)((*it).index + reps) / num + grassSize / 2);
-	//	double height = grassSize / 2;
-	//	V2d normal = normalize(v1 - v0);
-	//	double temp = -normal.x;
-	//	normal.x = normal.y;
-	//	normal.y = temp;
-
-	//	A = ABmin + normal * height;
-	//	B = ABmax + normal * height;
-	//	C = ABmax;
-	//	D = ABmin;
-
-	//	Grass * g = new Grass(this, ts_grass, totalGrassIndex, A, B, C, D, this);
-
-	//	owner->grassTree->Insert(g);
-
-	//	totalGrassIndex++;
-	//}
-}
 
 void GameSession::LoadDecorImages()
 {
@@ -7940,7 +7682,6 @@ int GameSession::Run()
 				{
 					(*mit).second->Update();
 				}
-				//TerrainPiece::UpdateBushFrame();
 
 				//hacky
 				if( p0->dead )
@@ -9717,22 +9458,6 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 		//cout << "gate" << endl;
 		++testGateCount;
 	}
-	else if( queryMode == "item" )
-	{
-		Critical *c = (Critical*)qte;
-
-		if( drawCritical == NULL )
-		{
-			drawCritical = (Critical*)qte;
-			drawCritical->next = NULL;
-			drawCritical->prev = NULL;
-		}
-		else
-		{
-			c->next = drawCritical;
-			drawCritical = c;
-		}
-	}
 	else if( queryMode == "envplant" )
 	{
 		EnvPlant *ep = (EnvPlant*)qte;
@@ -9864,8 +9589,6 @@ void GameSession::SetupInversePoly( Tileset *ts_bush, int currentEdgeIndex )
 	VertexArray *bushVA = SetupBushes( 0,  edges[currentEdgeIndex], ts_bush );
 
 	inversePoly->bushVA = bushVA;
-
-	//polygons.push_back( va );
 
 	delete cdt;
 	for( int i = 0; i < inversePoly->numPoints; ++i )
@@ -10582,102 +10305,7 @@ void GameSession::DrawAllMapWires(
 	}
 }
 
-void TerrainPiece::UpdateBushFrame()
-{
-	/*bushFrame++;
-	if( bushFrame == bushAnimLength * bushAnimFactor )
-	{
-		bushFrame = 0;
-	}*/
-}
 
-void TerrainPiece::DrawBushes( sf::RenderTarget *target )
-{
-	for( list<DecorExpression*>::iterator it = bushes.begin(); 
-		it != bushes.end(); ++it )
-	{
-		Tileset *ts = (*it)->layer->ts;
-		target->draw( *(*it)->va, ts->texture );
-	}
-	//target->draw( 
-}
-
-void TerrainPiece::UpdateBushes()
-{
-	//int numBushes = bushVA->getVertexCount() / 4;
-
-	//VertexArray &bVA = *bushVA;
-	//IntRect subRect = ts_bush->GetSubRect( bushFrame / bushAnimFactor );
-
-	/*for( int i = 0; i < numBushes; ++i )
-	{
-		bVA[i*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-		bVA[i*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-		bVA[i*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-		bVA[i*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
-	}*/
-	//++bushFrame;
-}
-
-void TerrainPiece::HandleQuery( QuadTreeCollider *qtc )
-{
-	qtc->HandleEntrant( this );
-}
-
-bool TerrainPiece::IsTouchingBox( const sf::Rect<double> &r )
-{
-	return IsBoxTouchingBox( aabb, r );
-}
-
-void TerrainPiece::Draw(sf::RenderTarget *target)
-{
-	if (visible)
-	{
-		if (grassVA != NULL)
-			target->draw(*grassVA, owner->ts_gravityGrass->texture);
-
-		if (owner->usePolyShader)
-		{
-			sf::Rect<double> screenRect = owner->screenRect;
-			sf::Rect<double> polyAndScreen;
-			double rightScreen = screenRect.left + screenRect.width;
-			double bottomScreen = screenRect.top + screenRect.height;
-			double rightPoly = aabb.left + aabb.width;
-			double bottomPoly = aabb.top + aabb.height;
-
-			double left = std::max(screenRect.left, aabb.left);
-
-			double right = std::min(rightPoly, rightScreen);
-
-			double top = std::max(screenRect.top, aabb.top);
-
-			double bottom = std::min(bottomScreen, bottomPoly);
-
-
-			polyAndScreen.left = left;
-			polyAndScreen.top = top;
-			polyAndScreen.width = right - left;
-			polyAndScreen.height = bottom - top;
-
-			assert(pShader != NULL);
-			target->draw(*terrainVA, pShader);
-		}
-		else
-		{
-			target->draw(*terrainVA);
-		}
-
-		if (owner->showTerrainDecor)
-		{
-			tr->Draw(target);
-		}
-
-		for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
-		{
-			(*it)->Draw(target);
-		}
-	}
-}
 
 void GameSession::ResetShipSequence()
 {
@@ -11128,12 +10756,12 @@ void GameSession::UpdateExplodingGravityGrass()
 {
 	Grass *curr = explodingGravityGrass;
 	Grass *next;
-while (curr != NULL)
-{
-	next = curr->next;
-	curr->Update();
-	curr = next;
-}
+	while (curr != NULL)
+	{
+		next = curr->next;
+		curr->Update();
+		curr = next;
+	}
 }
 
 
@@ -11160,274 +10788,7 @@ double GameSession::GetTriangleArea(p2t::Triangle * t)
 	return A;
 }
 
-void TerrainPiece::AddDecorExpression(DecorExpression *exp)
-{
-	bushes.push_back(exp);
-}
 
-TerrainPiece::TerrainPiece(GameSession *p_owner)
-	:owner(p_owner)
-{
-	groundva = NULL;
-	slopeva = NULL;
-	steepva = NULL;
-	wallva = NULL;
-	triva = NULL;
-	flowva = NULL;
-	plantva = NULL;
-	decorLayer0va = NULL;
-	bushVA = NULL;
-
-	terrainVA = NULL;
-	grassVA = NULL;
-
-	grassSize = 128;
-	grassSpacing = -60;
-}
-
-TerrainPiece::~TerrainPiece()
-{
-	if (tr != NULL)
-		delete tr;
-
-	for (auto it = bushes.begin(); it != bushes.end(); ++it)
-	{
-		delete (*it);
-	}
-
-	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
-	{
-		delete (*it);
-	}
-
-	delete groundva;
-	delete slopeva;
-	delete steepva;
-	delete wallva;
-	delete triva;
-	delete flowva;
-	delete plantva;
-	delete decorLayer0va;
-	delete bushVA;
-
-	delete terrainVA;
-	delete grassVA;
-}
-
-void TerrainPiece::Reset()
-{
-	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
-	{
-		(*it)->Reset();
-	}
-}
-
-int TerrainPiece::GetNumGrass(Edge *e, bool &rem)
-{
-	rem = false;
-
-	V2d v0 = e->v0;
-	V2d v1 = e->v1;
-
-	double len = length(v1 - v0);
-	len -= grassSize / 2 + grassSpacing;
-	double reps = len / (grassSize + grassSpacing);
-	double remainder = reps - floor(reps);
-	if (remainder > 0)
-	{
-		reps += 1; //for the last one
-		rem = true;
-	}
-	reps += 1;
-
-	int num = reps;
-
-	return num;
-}
-
-void TerrainPiece::SetupGrass(Edge * e, int &i)
-{
-	VertexArray &grassVa = *grassVA;
-
-	V2d v0 = e->v0;
-	V2d v1 = e->v1;
-
-	bool rem;
-	int num = GetNumGrass(e, rem);
-
-	V2d along = normalize(v1 - v0);
-	V2d realStart = v0 + along * (double)(grassSize + grassSpacing);
-
-	for (int j = 0; j < num; ++j)
-	{
-		V2d posd = realStart + along * (double)((grassSize + grassSpacing) * (j - 1));//v0 + normalize(v1 - v0) * ((grassSize + grassSpacing) * (j-1) + );
-
-		if (j == 0)
-		{
-			posd = v0;
-		}
-		else if (j == num - 1 && rem)
-		{
-			//V2d prev = ;//v0 + (v1 - v0) * ((double)(j-1) / num);
-			posd = v1 + normalize(v0 - v1) * (grassSize / 2.0 + grassSpacing);//(v1 + prev) / 2.0;
-		}
-
-		Vector2f pos(posd.x, posd.y);
-
-
-		Vector2f topLeft = pos + Vector2f(-grassSize / 2, -grassSize / 2);
-		Vector2f topRight = pos + Vector2f(grassSize / 2, -grassSize / 2);
-		Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
-		Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
-
-		//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
-		grassVa[i * 4].color.a = 0;
-		grassVa[i * 4].position = topLeft;
-		grassVa[i * 4].texCoords = Vector2f(0, 0);
-
-		//grassVa[i*4+1].color = Color::Blue;
-		//borderVa[i*4+1].color.a = 10;
-		grassVa[i * 4 + 1].color.a = 0;
-		grassVa[i * 4 + 1].position = bottomLeft;
-		grassVa[i * 4 + 1].texCoords = Vector2f(0, grassSize);
-
-		//grassVa[i*4+2].color = Color::Blue;
-		//borderVa[i*4+2].color.a = 10;
-		grassVa[i * 4 + 2].color.a = 0;
-		grassVa[i * 4 + 2].position = bottomRight;
-		grassVa[i * 4 + 2].texCoords = Vector2f(grassSize, grassSize);
-
-		//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
-		//borderVa[i*4+3].color.a = 10;
-		grassVa[i * 4 + 3].color.a = 0;
-		grassVa[i * 4 + 3].position = topRight;
-		grassVa[i * 4 + 3].texCoords = Vector2f(grassSize, 0);
-		++i;
-	}
-}
-
-struct PlantInfo
-{
-	PlantInfo(Edge*e, double q, double w)
-		:edge(e), quant(q), quadWidth(w)
-	{
-	}
-	Edge *edge;
-	double quant;
-	double quadWidth;
-};
-
-
-void TerrainPiece::AddTouchGrass( int gt )
-{
-	list<PlantInfo> info;
-
-	TouchGrass::TouchGrassType gType = (TouchGrass::TouchGrassType)gt;
-
-	int tw = TouchGrass::GetQuadWidth( gType );
-
-	Edge *startEdge = tr->startEdge;
-
-	Edge *te = startEdge;
-	do
-	{
-		bool valid = true;
-
-		EdgeAngleType eat = GetEdgeAngleType(te->Normal());
-		if (eat == EDGE_FLAT || eat == EDGE_SLOPED)
-		{
-			valid = true;
-		}
-		else
-		{
-			valid = false;
-		}
-		//valid = true;
-
-		if (valid)
-		{
-			double len = length(te->v1 - te->v0);
-			int numQuads = len / tw;
-			bool tooThin = false;
-			double quadWidth = tw;//len / numQuads;
-			if (numQuads == 0)
-			{
-				tooThin = true;
-				numQuads = 1;
-			}
-			if (numQuads > 0)
-			{
-				for (int i = 0; i < numQuads; ++i)
-				{
-					if (TouchGrass::IsPlacementOkay(gType, eat,
-						te, i))
-					{
-						if (tooThin)
-						{
-							info.push_back(PlantInfo(te, te->GetLength() / 2.0, quadWidth));
-						}
-						else
-						{
-							info.push_back(PlantInfo(te, quadWidth * i + quadWidth / 2, quadWidth));
-						}
-						
-					}
-				}
-			}
-		}
-		te = te->edge1;
-	} while (te != startEdge);
-
-	int infoSize = info.size();
-	int vaSize = infoSize * 4;
-
-	if (infoSize == 0)
-	{
-		return;
-	}
-
-	TouchGrassCollection *coll = new TouchGrassCollection;
-	touchGrassCollections.push_back(coll);
-
-	//cout << "number of plants: " << infoSize << endl;
-	coll->touchGrassVA = new Vertex[vaSize];
-
-	coll->ts_grass = TouchGrassCollection::GetTileset( owner, gType);
-	coll->gType = gType;
-	coll->numTouchGrasses = infoSize;
-
-	int vaIndex = 0;
-	for (list<PlantInfo>::iterator it = info.begin(); it != info.end(); ++it)
-	{
-		coll->CreateGrass(vaIndex, (*it).edge, (*it).quant);
-		vaIndex++;
-	}
-}
-
-void TerrainPiece::QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r)
-{
-	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
-	{
-		(*it)->Query(qtc, r);
-	}
-}
-
-void TerrainPiece::UpdateTouchGrass()
-{
-	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
-	{
-		(*it)->UpdateGrass();
-	}
-}
-
-void TerrainPiece::UpdateBushSprites()
-{
-	for (list<DecorExpression*>::iterator it = bushes.begin();
-		it != bushes.end(); ++it)
-	{
-		(*it)->UpdateSprites();
-	}
-}
 
 DecorExpression * GameSession::CreateDecorExpression(  DecorType dType,
 	int bgLayer,
@@ -11475,10 +10836,6 @@ DecorExpression * GameSession::CreateDecorExpression(  DecorType dType,
 	DecorLayer *layer = NULL;
 	if( decorLayerMap.count(dType) == 0 )
 	{
-		//int GameSession::TerrainPiece::bushFrame = 0;
-		//int GameSession::TerrainPiece::bushAnimLength = 20;
-		//int GameSession::TerrainPiece::bushAnimFactor = 8;
-
 		Tileset *ts_d = NULL;
 		switch (dType)
 		{
@@ -13964,339 +13321,7 @@ void GameSession::LevelSpecifics()
 	}
 }
 
-PowerBar::PowerBar()
-{
-	pointsPerDot = 2;
-	dotsPerLine = 6;
-	dotWidth = 9;
-	dotHeight = 9;
-	linesPerBar = 60;
-
-	pointsPerLayer = 2 * 6 * 60;//3 * 6 * 60//240 * 10;
-	maxLayer = 1;//6;
-	points = pointsPerLayer;//pointsPerLayer * ( maxLayer + 1 );
-	layer = maxLayer;//maxLayer;
-	
-	minUse = 1;
-	
-	//panelTex.loadFromFile( "lifebar.png" );
-	panelTex.loadFromFile( "Resources/powerbarmockup.png" );
-	panelSprite.setTexture( panelTex );
-	//panelSprite.setScale( 10, 10 );
-	panelSprite.setPosition( 0, 280 );
-	panelSprite.setColor( Color( 255, 255, 255, 150 ) );
-
-	//powerRect.setPosition( 42, 108 );
-	//powerRect.setSize( sf::Vector2f( 4 * 4, 59 * 4 ) );
-	//powerRect.setFillColor( Color::Green );
-	//powerRect.
-
-	maxRecover = 75;
-	maxRecoverLayer = 0;
-}
-
-void PowerBar::Reset()
-{
-	points = pointsPerLayer;
-	layer = maxLayer;
-}
-
-void PowerBar::Draw( sf::RenderTarget *target )
-{
-	int fullLines = points / pointsPerDot / dotsPerLine;
-	int partial = points % ( dotsPerLine * pointsPerDot );//pointsPerLayer - fullLines * pointsPerDot * dotsPerLine;
-	//cout << "fullLines: " << fullLines << endl;
-	//cout << "partial: " << partial << endl;
-	//Color c;
-	/*switch( layer )
-	{
-	case 0:
-		c = Color( 0, 0xee, 0xff );
-		//c = Color( 0x00eeff );
-		break;
-	case 1:
-		//c = Color( 0x0066cc );
-		c = Color( 0, 0x66, 0xcc );
-		break;
-	case 2:
-		c = Color( 0, 0xcc, 0x44 );
-		break;
-	case 3:
-		c = Color( 0xff, 0xf0, 0 );
-		break;
-	case 4:
-		c = Color( 0xff, 0xbb, 0 );
-		break;
-	case 5:
-		c = Color( 0xff, 0x22, 0 );
-		break;
-	case 6:
-		c = Color( 0xff, 0, 0xff );
-		break;
-	case 7:
-		c = Color( 0xff, 0xff, 0xff );
-		break;
-	}*/
-	//c = Color( 0, 0xee, 0xff );
-
-
-	sf::RectangleShape rs;
-
-
-	//primary portion
-	rs.setPosition( 4, 180 + 600 );
-	rs.setFillColor( COLOR_TEAL );
-	rs.setSize( Vector2f( 60, -fullLines * dotHeight ) );
-	target->draw( rs );
-
-	//secondary portion
-	rs.setPosition( rs.getGlobalBounds().left, rs.getGlobalBounds().top - dotHeight );
-	rs.setSize( Vector2f( (partial / pointsPerDot) * dotWidth, dotHeight ) );
-	target->draw( rs );
-
-	//tertiary portion
-	int singleDot = partial % pointsPerDot;
-	if( singleDot == 1 )
-	{
-		rs.setPosition( rs.getGlobalBounds().left + rs.getLocalBounds().width,
-			rs.getPosition().y );
-		rs.setSize( Vector2f( dotWidth, dotHeight ) );
-		rs.setFillColor( COLOR_BLUE );
-		target->draw( rs );
-	}
-
-	//draw full tanks
-	int tankWidth = 32;
-	int tankHeight = 32;
-	int tankSpacing = 20;
-	rs.setFillColor( COLOR_TEAL );
-	rs.setSize( Vector2f( tankWidth, tankHeight ) );
-	rs.setPosition( 0, 180 + 600 - tankHeight );
-	for( int i = 0; i < layer; ++i )
-	{
-		//target->draw( rs );
-		//rs.setPosition( rs.getPosition().x, rs.getPosition().y - tankHeight - tankSpacing );
-	}
-
-	//only need this until I get a background
-
-	//rs.setFillColor( Color( 100, 100, 100 ) );
-	//target->draw( rs );
-
-	/*rs.setFillColor( COLOR_TEAL );
-	//in progress tank
-	int off = ceil( (points / (double)pointsPerLayer) * 32.0);
-	//cout << "off: " << off << endl;
-	rs.setPosition( rs.getPosition().x, rs.getPosition().y + tankHeight );
-	rs.setSize( Vector2f( tankWidth, -off ) );
-	target->draw( rs );*/
-	
-
-	//0x99a9b9
-	
-	//cout << "points: " << points << endl;
-	double diffz = (double)points / (double)pointsPerLayer;
-	assert( diffz <= 1 );
-	diffz = 1 - diffz;
-	diffz *= 60 * 4;
-
-	
-	//rs.setPosition( 42, 108 + diffz );
-	//rs.setPosition( 0, 108 + diffz );
-	//rs.setSize( sf::Vector2f( 4 * 4, 60 * 4 - diffz ) );
-	//rs.setPosition( 0, 200 );
-	//rs.setSize( Vector2f( 100, 500 ) );
-	
-
-	
-
-	//target->draw( panelSprite );
-	//target->draw( rs );
-}
-
-bool PowerBar::Damage( int power )
-{
-	//cout << "points: " << points << ", power: " << power << endl;
-	
-	//cout << "newpoints: " << points << endl;
-	while( power > 0 )
-	{
-		points -= power;
-		if( points <= 0 )
-		{
-			power = -points;
-			if( layer > 0 )
-			{
-				layer--;
-				points = pointsPerLayer;
-				//cout << "layer switch: " << points << endl;
-			}
-			else
-			{
-				points = 0;
-				//cout << "DONE DEAD: " << points << endl;
-				return false;
-			}
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	return true;
-}
-
-bool PowerBar::Use( int power )
-{
-	if( layer == 0 )
-	{
-		if( points - power <= 0 )
-		{
-			return false;
-		}
-		else
-		{
-			points -= power;
-		}
-	}
-	else
-	{
-		points -= power;
-		if( points <= 0 )
-		{
-			points = pointsPerLayer + points;
-			layer--;
-		}
-	}
-	return true;
-	/*if( layer == 0 )
-	{
-		if( points - power < minUse )
-		{
-			return false;
-		}
-		else
-		{
-			points -= power;
-		}
-	}
-	else
-	{
-		points -= power;
-		if( points <= 0 )
-		{
-			points = pointsPerLayer + points;
-			layer--;
-		}
-	}
-	return true;*/
-}
-
-void PowerBar::Recover( int power )
-{
-	if( layer == maxRecoverLayer )
-	{
-		if( points + power > maxRecover )
-		{
-			points = maxRecover;
-		}
-		else
-		{
-			points += power;
-		}
-	}
-	else
-	{
-		if( points + power > pointsPerLayer )
-		{
-			layer++;
-			points = points + power - pointsPerLayer;
-		}
-		else
-		{
-			points += power;
-		}
-	}
-}
-
-void PowerBar::Charge( int power )
-{
-	if( layer == maxLayer )
-	{
-		if( points + power > pointsPerLayer )
-		{
-			points = pointsPerLayer;
-		}
-		else
-		{
-			points += power;
-		}
-	}
-	else
-	{
-		if( points + power > pointsPerLayer )
-		{
-			layer++;
-			points = points + power - pointsPerLayer;
-		}
-		else
-		{
-			points += power;
-		}
-	}
-}
-
-
- //groundLeft,airLeft,airRight,groundRight
-EnvPlant::EnvPlant(sf::Vector2<double>&a, V2d &b, V2d &c, V2d &d, int vi, VertexArray *v, Tileset *t )
-	:A(a),B(b),C(c),D(d), vaIndex( vi ), va( v ), frame( 0 ), activated( false ), next( NULL ), ts( t ),
-	idleLength( 4 ), idleFactor( 3 )
-{
-	particle = new AirParticleEffect( ( a + d ) / 2.0 );
-	disperseLength = particle->maxDurationToLive + particle->emitDuration;
-	disperseFactor = 1;
-	SetupQuad();
-}
-
-EnvPlant::~EnvPlant()
-{
-	delete particle;
-}
-
-void EnvPlant::SetupQuad()
-{
-	VertexArray &eva = *va;
-	eva[vaIndex+0].position = Vector2f( A.x, A.y );
-	eva[vaIndex+1].position = Vector2f( B.x, B.y );
-	eva[vaIndex+2].position = Vector2f( C.x, C.y );
-	eva[vaIndex+3].position = Vector2f( D.x, D.y );
-}
-
-void EnvPlant::HandleQuery( QuadTreeCollider *qtc )
-{
-	qtc->HandleEntrant( this );
-}
-
-bool EnvPlant::IsTouchingBox( const Rect<double> &r )
-{
-	return isQuadTouchingQuad( V2d( r.left, r.top ), V2d( r.left + r.width, r.top ), 
-		V2d( r.left + r.width, r.top + r.height ), V2d( r.left, r.top + r.height ),
-		A, B, C, D );
-}
-
-void EnvPlant::Reset()
-{
-	
-	//cout << "resetting plant!" << endl;
-	next = NULL;
-	activated = false;
-	frame = 0;
-
-	SetupQuad();
-
-	particle->Reset();
-}
+ 
 
 
 
@@ -14508,94 +13533,6 @@ void GameSession::TriggerBarrier( Barrier *b )
 		assert( b_skeleton != NULL );
 		b_skeleton->spawned = true;
 		AddEnemy( b_skeleton );
-	}
-}
-
-Critical::Critical( V2d &pointA, V2d &pointB )
-	:bar( sf::Quads, 4 )
-{
-	for( int i = 0; i < Gate::GateType::Count; ++i )
-	{
-		hadKey[i] = false;
-	}
-
-
-	anchorA = pointA;
-	anchorB = pointB;
-	
-	V2d dir( anchorB - anchorA );
-	double len = length( dir );
-	dir = normalize( dir );
-	
-	pos = anchorA + dir * len / 2.0; //+ ( anchorB - anchorA ) / 2.0;
-	radius = 100;
-
-	next = NULL;
-	prev = NULL;
-
-	box.rw = radius;
-	box.rh = radius;
-	box.globalPosition = pos;
-	box.isCircle = true;	
-	
-	active = true;
-
-	double width = 5;
-	V2d along = normalize( anchorB - anchorA );
-	V2d other( along.y, -along.x );
-	
-	V2d leftv0 = anchorA - other * width;
-	V2d rightv0 = anchorA + other * width;
-
-	V2d leftv1 = anchorB - other * width;
-	V2d rightv1 = anchorB + other * width;
-
-	
-	Color c = Color::Black;
-	bar[0].color = c;
-	bar[1].color = c;
-	bar[2].color = c;
-	bar[3].color = c;
-
-	bar[0].position = Vector2f( leftv0.x, leftv0.y );
-	bar[1].position = Vector2f( leftv1.x, leftv1.y );
-	bar[2].position = Vector2f( rightv1.x, rightv1.y );
-	bar[3].position = Vector2f( rightv0.x, rightv0.y );
-}
-
-void Critical::HandleQuery( QuadTreeCollider * qtc )
-{
-	qtc->HandleEntrant( this );
-}
-
-bool Critical::IsTouchingBox( const sf::Rect<double> &r )
-{
-	sf::Rect<double> circleBox( pos.x - radius, pos.y - radius, radius * 2, radius * 2 );
-	return circleBox.intersects( r );
-}
-
-void Critical::Draw( RenderTarget *target )
-{
-	if( active )
-	{
-		CircleShape cs( radius );
-		cs.setFillColor( Color::Magenta );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( pos.x, pos.y );
-
-		
-		target->draw( bar );
-		target->draw( cs );
-	}
-	else
-	{
-		CircleShape cs( radius );
-		cs.setFillColor( Color::Black );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setPosition( pos.x, pos.y );
-
-		target->draw( bar );
-		target->draw( cs );
 	}
 }
 

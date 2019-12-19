@@ -21,6 +21,7 @@
 #include "EffectLayer.h"
 #include <boost/filesystem.hpp>"
 #include "DecorTypes.h"
+#include <boost/thread/mutex.hpp>
 
 struct Actor;
 struct ComboObject;
@@ -64,6 +65,67 @@ struct BitField;
 
 struct ShardPopup;
 
+
+struct ScrollingBackground;
+struct Boss_Crawler;
+struct Boss_Bird;
+struct Boss_Coyote;
+struct Boss_Tiger;
+struct Boss_Gator;
+struct Boss_Skeleton;
+struct GameSession;
+struct KeyMarker;
+
+struct PowerOrbs;
+struct FillRing;
+struct DesperationOrb;
+
+struct Grass;
+
+
+struct SaveFile;
+struct Level;
+struct MainMenu;
+
+
+struct DialogueUser;
+struct GoalPulse;
+struct PauseMenu;
+struct Sequence;
+struct CrawlerFightSeq;
+struct CrawlerAfterFightSeq;
+struct EnterNexus1Seq;
+struct ShipExitSeq;
+
+struct VictoryScreen;
+struct VictoryScreen2PlayerVS;
+struct UIWindow;
+struct Parallax;
+struct ScoreDisplay;
+
+
+struct MusicInfo;
+struct GhostEntry;
+struct ResultsScreen;
+struct RaceFightTarget;
+struct BasicEffect;
+struct EnemyParamsManager;
+struct HitboxManager;
+struct Background;
+struct StorySequence;
+struct AirTrigger;
+struct Nexus;
+struct ButtonHolder;
+
+struct DecorExpression;
+struct DecorLayer;
+struct TouchGrassCollection;
+
+struct HealthFly;
+struct TerrainPiece;
+
+struct EnvPlant;
+
 struct PoiInfo
 {
 	PoiInfo( const std::string &name, sf::Vector2i &p );
@@ -95,128 +157,6 @@ struct Barrier
 	bool positiveOpen;
 };
 
-struct PowerBar
-{
-	PowerBar();
-
-	int pointsPerDot;
-	int dotsPerLine;
-	int dotWidth;
-	int dotHeight;
-	int linesPerBar;
-
-	int fullLines;
-	int partialLine;
-	//int 
-
-	int pointsPerLayer;
-	int points;
-	int layer;
-
-	int maxLayer;
-	int minUse;
-	sf::Sprite panelSprite;
-	sf::Texture panelTex;
-
-	int maxRecover;
-	int maxRecoverLayer;
-
-	void Reset();
-	void Draw( sf::RenderTarget *target );
-	bool Damage( int power );
-    bool Use( int power );
-	void Recover( int power );
-	void Charge( int power );
-};
-
-struct PowerOrbs;
-struct FillRing;
-struct DesperationOrb;
-
-struct Critical : QuadTreeEntrant
-{
-	Critical::Critical( 
-		sf::Vector2<double> &pointA, 
-		sf::Vector2<double> &pointB );
-	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
-	void Draw( sf::RenderTarget *target );
-
-	sf::VertexArray bar;
-	sf::Vector2<double> pos;
-	float radius;
-	sf::Vector2<double> anchorA;
-	sf::Vector2<double> anchorB;
-	CollisionBox box;
-	bool active;
-
-	bool hadKey[Gate::GateType::Count];
-
-	Critical *next;
-	Critical *prev;
-};
-
-struct GrassSegment
-{
-	CollisionBox explosion;
-	GrassSegment( int edgeI, int grassIndex, int rep )
-		:edgeIndex( edgeI ), index( grassIndex ), 
-		reps (rep)
-	{
-	}
-	int edgeIndex;
-	int index;
-	int reps;
-	
-};
-
-struct Grass;
-
-struct EnvPlant : QuadTreeEntrant
-{
-	EnvPlant(sf::Vector2<double>&a,
-		sf::Vector2<double>&b,
-		sf::Vector2<double>&c,
-		sf::Vector2<double>&d,
-		int vi, sf::VertexArray *v,
-		Tileset *ts );
-	~EnvPlant();
-	void Reset();
-	void SetupQuad();
-
-	//Tileset *ts;
-	int vaIndex;
-	Tileset *ts;
-	AirParticleEffect *particle;
-	sf::VertexArray *va;
-	sf::Vector2<double> A;
-	sf::Vector2<double> B;
-	sf::Vector2<double> C;
-	sf::Vector2<double> D;
-	void HandleQuery( QuadTreeCollider * qtc );
-	bool IsTouchingBox( const sf::Rect<double> &r );
-	EnvPlant *next;
-	//EnvPlant *prev;
-	bool activated;
-	int frame;
-	int idleLength;
-	int idleFactor;
-	int disperseLength;
-	int disperseFactor;
-	//EnvPlant *prev;
-};
-
-
-struct ScrollingBackground;
-struct Boss_Crawler;
-struct Boss_Bird;
-struct Boss_Coyote;
-struct Boss_Tiger;
-struct Boss_Gator;
-struct Boss_Skeleton;
-struct GameSession;
-struct KeyMarker;
-
 
 enum EdgeAngleType
 {
@@ -231,8 +171,6 @@ enum EdgeAngleType
 
 EdgeAngleType GetEdgeAngleType(V2d &normal);
 
-
-
 struct KeyNumberObj
 {
 	KeyNumberObj(sf::Vector2i &p_pos,
@@ -244,122 +182,6 @@ struct KeyNumberObj
 	sf::Vector2i pos;
 	int numKeys;
 	int zoneType;
-};
-
-
-
-struct PauseMap
-{
-	PauseMap();
-	
-};
-
-
-
-struct SaveFile;
-struct Level;
-struct MainMenu;
-
-
-struct DialogueUser;
-struct GoalPulse;
-struct PauseMenu;
-struct Sequence;
-struct CrawlerFightSeq;
-struct CrawlerAfterFightSeq;
-struct EnterNexus1Seq;
-struct ShipExitSeq;
-
-
-
-
-struct VictoryScreen;
-struct VictoryScreen2PlayerVS;
-struct UIWindow;
-struct Parallax;
-struct ScoreDisplay;
-#include <boost/thread/mutex.hpp>
-
-struct MusicInfo;
-struct GhostEntry;
-struct ResultsScreen;
-struct RaceFightTarget;
-struct BasicEffect;
-struct EnemyParamsManager;
-struct HitboxManager;
-struct Background;
-struct StorySequence;
-struct AirTrigger;
-struct Nexus;
-struct ButtonHolder;
-
-struct DecorExpression;
-struct DecorLayer;
-struct TouchGrassCollection;
-
-struct HealthFly;
-
-struct TerrainPiece : QuadTreeEntrant
-{
-	TerrainPiece(GameSession *owner);
-	~TerrainPiece();
-	void Reset();
-	TerrainRender *tr;
-	void AddDecorExpression(DecorExpression *expr);
-	void AddTouchGrass( int gType );
-	void UpdateBushSprites();
-	void DrawBushes(sf::RenderTarget *target);
-	GameSession *owner;
-	std::list<TouchGrassCollection*> touchGrassCollections;
-	void QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r);
-	void UpdateTouchGrass();
-	
-
-	void SetupGrass(Edge * e, int &i );
-	int GetNumGrass(Edge *e, bool &rem);
-	void SetupGrass(std::list<GrassSegment> &segments);
-	int grassSize;
-	int grassSpacing;
-
-	bool visible;
-	std::list<DecorExpression*> bushes;
-	sf::VertexArray *groundva;
-	Tileset *ts_border;
-	sf::VertexArray *slopeva;
-	sf::VertexArray *steepva;
-	sf::VertexArray *wallva;
-	sf::VertexArray *triva;
-	sf::VertexArray *flowva;
-	sf::VertexArray *plantva;
-	sf::VertexArray *decorLayer0va;
-	sf::VertexArray *bushVA;
-	bool inverse;
-	Tileset *ts_plant;
-	Tileset *ts_terrain;
-	Tileset *ts_bush; //plant = surface
-	int numPoints;
-	//bush = middle area
-
-	sf::Shader *pShader;
-	//TerrainPolygon::TerrainType terrainType;
-	int terrainWorldType;
-	int terrainVariation;
-	//int terrainType;
-	//EditSession
-	//TerrainPolygon::material
-	static void UpdateBushFrame();
-	sf::VertexArray *terrainVA;
-	sf::VertexArray *grassVA;
-	bool show;
-	//TerrainPiece *prev;
-	TerrainPiece *next;
-	sf::Rect<double> aabb;
-	int startEdgeIndex;
-	double polyArea;
-	void UpdateBushes();
-	void Draw(sf::RenderTarget *target);
-	void HandleQuery(QuadTreeCollider * qtc);
-	bool IsTouchingBox(const sf::Rect<double> &r);
 };
 
 struct GameSession : QuadTreeCollider, RayCastHandler
@@ -935,11 +757,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Tileset *cloudTileset;
 
 	std::set<std::pair<int,int>> matSet;
-	
 
-	int xxx;
-
-	Critical *drawCritical;
 	static int IsFlatGround( sf::Vector2<double> &normal );
 	static int IsSlopedGround( sf::Vector2<double> &normal );
 	static int IsSteepGround(  sf::Vector2<double> &normal );
@@ -1181,52 +999,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 };
 
-struct Grass : QuadTreeEntrant
-{
-	enum GrassType
-	{
-		JUMP,
-		GRAVITY,
-		BOUNCE,
-		BOOST,
-		ANTIWIRE,
-		Count
-	};
 
-
-	Grass(GameSession *p_owner, Tileset *p_ts_grass, 
-		int p_tileIndex, 
-		V2d &pos, 
-		TerrainPiece *poly, GrassType gType);
-
-	void Reset();
-	V2d pos;
-	double radius;
-	void SetVisible(bool p_visible);
-	void HandleQuery(QuadTreeCollider * qtc);
-	bool IsTouchingBox(const sf::Rect<double> &r);
-	bool IsTouchingCircle(V2d &pos, double rad);
-	
-	GrassType grassType;
-	
-
-	void Update();
-	bool exploding;
-	int tileIndex;
-	Grass *next;
-	Grass *prev;
-	bool visible;
-	Tileset *ts_grass;
-	CollisionBox explosion;
-	int explodeFrame;
-	int explodeLimit;
-	GameSession *owner;
-	TerrainPiece *poly;
-	sf::IntRect aabb;
-	//bool active;
-
-	//bool prevGrass;
-};
 
 
 

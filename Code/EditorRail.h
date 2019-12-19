@@ -47,6 +47,8 @@ struct TerrainRail : ISelectable
 	void SwitchDirection();
 	void CopyPoints(TerrainPoint *&start,
 		TerrainPoint *&end);
+	void CopyOtherPoints(TerrainPoint *&start,
+		TerrainPoint *&end);
 	void CopyPoints(TerrainRail *rail);
 	TerrainRail *Copy();
 

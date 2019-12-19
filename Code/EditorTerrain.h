@@ -128,6 +128,7 @@ struct TerrainPolygon : ISelectable
 		JUNGLE,
 		FORTRESS,
 		CORE,
+		WATER0,
 		Count
 	};
 
@@ -157,6 +158,7 @@ struct TerrainPolygon : ISelectable
 	bool PointOnBorder(V2d &point);
 	void MovePoint(sf::Vector2i &delta,
 		TerrainPoint *tp);
+	bool IsSpecialPoly();
 
 	TerrainPoint *pointStart;
 	TerrainPoint *pointEnd;
@@ -172,6 +174,7 @@ struct TerrainPolygon : ISelectable
 	int GetPointIndex(TerrainPoint *p);
 	void SetMaterialType(
 		int world, int variation);
+	void UpdateMaterialType();
 	void RemoveSlivers(double minAngle);
 	int GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b,
 		Inter &inter, TerrainPoint *&outSegStart, bool &outFirstPoint);

@@ -17,7 +17,6 @@
 
 struct AirTrigger;
 struct Gate;
-struct Critical;
 struct GameSession;
 struct PlayerGhost;
 struct Monitor;
@@ -1291,7 +1290,6 @@ struct Actor : QuadTreeCollider,
 	int drainCounterMax;
 	int drainAmount;
 
-	//Critical *currentCheckPoint;
 
 	sf::Vector2<double> dWireAirDash;
 	sf::Vector2<double> dWireAirDashOld;

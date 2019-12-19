@@ -182,9 +182,19 @@ struct EditSession : GUIHandler, TilesetManager
 
 	std::list<Panel*> allPopups;
 
+	void SetupTerrainTypeSelector();
+
+	const static int TERRAIN_WORLDS = 9;
 	const static int MAX_TERRAINTEX_PER_WORLD = 10;
-	sf::Texture *terrainTextures[9 * MAX_TERRAINTEX_PER_WORLD];
-	sf::Shader polyShaders[9 * MAX_TERRAINTEX_PER_WORLD];
+	
+	sf::Sprite currTerrainTypeSpr;
+	//int currTerrainInd;
+	int currTerrainWorld;
+	int currTerrainVar;
+	void UpdateCurrTerrainType();
+	//sf::Sprite terrainTypeSprites[TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD];
+	sf::Texture *terrainTextures[TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD];
+	sf::Shader polyShaders[TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD];
 
 
 	Tool currTool;
@@ -337,8 +347,6 @@ struct EditSession : GUIHandler, TilesetManager
 		std::list<PolyPtr> &results );
 	void Extend(boost::shared_ptr<TerrainPolygon> extension,
 		boost::shared_ptr<TerrainPolygon> poly );
-	
-	bool PointValid( sf::Vector2i prev, sf::Vector2i point );
 
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
@@ -347,13 +355,21 @@ struct EditSession : GUIHandler, TilesetManager
 		sf::Vector2i b, sf::Vector2i c, 
 		sf::Vector2i d, bool firstLimitOnly = false );
 
+
 	double minimumEdgeLength;
 	//double minAngle;
 	
 	std::list<boost::shared_ptr<TerrainRail>> rails;
 
-	std::list<boost::shared_ptr<TerrainPolygon>> polygons;
-	std::list<boost::shared_ptr<TerrainPolygon>> selectedPolygons;
+	std::list<PolyPtr> &GetCorrectPolygonList(int ind);
+	std::list<PolyPtr> &GetCorrectPolygonList(TerrainPolygon *t);
+	std::list<PolyPtr> &GetCorrectPolygonList();
+	std::list<PolyPtr> polygons;
+	std::list<PolyPtr> waterPolygons;
+
+	bool IsSpecialTerrainMode();
+
+
 	
 	boost::shared_ptr<TerrainPolygon> polygonInProgress;
 	boost::shared_ptr<TerrainRail> railInProgress;
