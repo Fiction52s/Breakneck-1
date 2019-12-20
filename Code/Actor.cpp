@@ -42,6 +42,7 @@
 #include "TerrainPiece.h"
 #include "Grass.h"
 #include "EnvPlant.h"
+#include "SpecialTerrain.h"
 
 using namespace sf;
 using namespace std;
@@ -290,6 +291,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+	extraDoubleJump = false;
 	stunBufferedJump = false;
 	stunBufferedDash = false;
 	stunBufferedAttack = Action::Count;
@@ -2433,7 +2435,7 @@ void Actor::Respawn()
 	stunBufferedJump = false;
 	stunBufferedAttack = Action::Count;
 	stunBufferedDash = false;
-
+	extraDoubleJump = false;
 	kinMask->Reset();
 	SetDirtyAura(false);
 
@@ -10197,6 +10199,8 @@ bool Actor::ResolvePhysics( V2d vel )
 		boostGrassCount = 0;
 		owner->grassTree->Query(this, r);
 	}
+
+	
 	
 
 	//queryMode = "item";
@@ -16706,6 +16710,78 @@ void Actor::UpdateHitboxes()
 		
 }
 
+void Actor::ClearSpecialTerrainCounts()
+{
+	for (int i = 0; i < SPECIAL_TERRAIN_Count; ++i)
+	{
+		specialTerrainCount[i] = 0;
+	}
+}
+
+void Actor::HandleSpecialTerrain()
+{
+	for (int i = 0; i < SPECIAL_TERRAIN_Count; ++i)
+	{
+		if (specialTerrainCount[i] > 0)
+		{
+			HandleSpecialTerrain(i);
+		}
+	}
+}
+
+void Actor::HandleSpecialTerrain(int stType)
+{
+	switch (stType)
+	{
+	case SPECIAL_TERRAIN_WATER:
+		RestoreAirDash();
+		extraDoubleJump = true;
+		break;
+	case SPECIAL_TERRAIN_GLIDEWATER:
+	{
+		if (action != SPRINGSTUNGLIDE)
+		{
+			V2d vel = GetTrueVel();
+
+			if (ground != NULL)
+			{
+				ground = NULL;
+				framesInAir = 0;
+				vel.y -= 5;
+			}
+
+
+			vel = normalize(vel) * 15.0;
+
+			springVel = vel;
+
+			springExtra = V2d(0, 0);
+
+			if (vel.x < 0)
+				facingRight = false;
+			else if (vel.x > 0)
+				facingRight = true;
+
+			action = SPRINGSTUNGLIDE;
+			holdJump = false;
+			holdDouble = false;
+			hasDoubleJump = true;
+			hasAirDash = true;
+			rightWire->Reset();
+			leftWire->Reset();
+			frame = 0;
+			UpdateHitboxes();
+			ground = NULL;
+			wallNormal = V2d(0, 0);
+			velocity = V2d(0, 0);
+			currWall = NULL;
+		}
+		springStunFrames = 10;///currSwingLauncher->stunFrames;
+		break;
+	}
+	}
+}
+
 void Actor::UpdatePostPhysics()
 {
 
@@ -16772,8 +16848,12 @@ void Actor::UpdatePostPhysics()
 	
 	QueryTouchGrass();
 
+	ClearSpecialTerrainCounts();
+	queryMode = "specialterrain";
+	Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+	owner->specialTerrainTree->Query(this, r);
 
-	//if( wallt)
+	HandleSpecialTerrain();
 	
 	for (int i = 0; i < 7; ++i)
 	{
@@ -19691,6 +19771,19 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			polyList = tPiece;
 		}
 	}
+	else if (queryMode == "specialterrain")
+	{
+		SpecialTerrainPiece *stp = (SpecialTerrainPiece*)qte;
+		Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+		//if (stp->IsTouchingBox(r))
+		{
+			if (stp->IsInsideArea(position))
+			{
+				specialTerrainCount[stp->specialType]++;
+			}
+		}
+
+	}
 	++possibleEdgeCount; //not needed
 }
 
@@ -21919,7 +22012,7 @@ void Actor::UpdateSprite()
 		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 		sprite->setPosition(position.x, position.y);
 
-		/*V2d sVel = springVel + springExtra;
+		V2d sVel = springVel + springExtra;
 		if (facingRight)
 		{
 			double a = GetVectorAngleCW(normalize(sVel)) * 180 / PI;
@@ -21929,7 +22022,7 @@ void Actor::UpdateSprite()
 		{
 			double a = GetVectorAngleCCW(normalize(sVel)) * 180 / PI;
 			sprite->setRotation(-a + 180);
-		}*/
+		}
 
 		if (scorpOn)
 			SetAerialScorpSprite();
@@ -24643,7 +24736,7 @@ void Actor::ExecuteDoubleJump()
 		velocity.y = -doubleJumpStrength;
 	}
 
-
+	extraDoubleJump = false;
 	hasDoubleJump = false;
 
 	if (currInput.LLeft())
@@ -24787,7 +24880,8 @@ Actor::Action Actor::GetDoubleJump()
 bool Actor::CanDoubleJump()
 {
 	//cout << "prevInput.A: " << (int)(prevInput.A) << endl;
-	return ( hasDoubleJump && ((currInput.A && !prevInput.A) || pauseBufferedJump || stunBufferedJump )  && !IsSingleWirePulling() );
+	return ( (hasDoubleJump || extraDoubleJump ) && 
+		((currInput.A && !prevInput.A) || pauseBufferedJump || stunBufferedJump )  && !IsSingleWirePulling() );
 }
 
 bool Actor::IsDoubleWirePulling()
@@ -24799,6 +24893,7 @@ bool Actor::TryDoubleJump()
 {
 	if( CanDoubleJump() )
 	{
+		
 		aerialHitCancelDouble = IsAttackAction(action);
 		if (aerialHitCancelDouble)
 		{

@@ -3,6 +3,7 @@
 
 #include "QuadTree.h"
 #include <fstream>
+#include "SpecialTerrainTypes.h"
 
 struct GameSession;
 struct TerrainRender;
@@ -12,11 +13,6 @@ struct Edge;
 
 struct SpecialTerrainPiece : QuadTreeEntrant, QuadTreeCollider, RayCastHandler
 {
-	enum SpecialTerrainType
-	{
-		T_WATER,
-	};
-
 	SpecialTerrainType specialType;
 
 	SpecialTerrainPiece(GameSession *owner);
@@ -24,6 +20,7 @@ struct SpecialTerrainPiece : QuadTreeEntrant, QuadTreeCollider, RayCastHandler
 
 	bool Load(std::ifstream &is);
 	void Reset();
+	void GenerateCenterMesh();
 	void Draw(sf::RenderTarget *target);
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
@@ -53,6 +50,12 @@ struct SpecialTerrainPiece : QuadTreeEntrant, QuadTreeCollider, RayCastHandler
 
 	QuadTree *edgeTree;
 	
+	Edge *rcEdge;
+	double rcQuant;
+	int numEdgesHit;
+
+	V2d insideQueryPoint;
+
 
 	Tileset *ts_terrain;
 

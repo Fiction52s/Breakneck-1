@@ -692,37 +692,6 @@ void TerrainRender::GenerateDecor()
 	{
 
 	}
-
-	/*for (int i = 0; i < 6; ++i)
-	{
-		DecorExpression *expr = CreateDecorExpression(DecorType(D_W1_VEINS1 + i), 0, startEdge);
-		if (expr != NULL)
-			AddDecorExpression(expr);
-	}
-
-	DecorExpression *rock1 = CreateDecorExpression(D_W1_ROCK_1, 0, startEdge);
-	if (rock1 != NULL)
-		AddDecorExpression(rock1);
-
-	DecorExpression *rock2 = CreateDecorExpression(D_W1_ROCK_2, 0, startEdge);
-	if (rock2 != NULL)
-		AddDecorExpression(rock2);
-
-	DecorExpression *rock3 = CreateDecorExpression(D_W1_ROCK_3, 0, startEdge);
-	if (rock3 != NULL)
-		AddDecorExpression(rock3);
-
-	DecorExpression *grassyRock = CreateDecorExpression(D_W1_GRASSYROCK, 0, startEdge);
-	if (grassyRock != NULL)
-		AddDecorExpression(grassyRock);
-
-	DecorExpression *normalExpr = CreateDecorExpression(D_W1_BUSH_NORMAL, 0, startEdge);
-	if (normalExpr != NULL)
-		AddDecorExpression(normalExpr);
-
-	DecorExpression *exprPlantRock = CreateDecorExpression(D_W1_PLANTROCK, 0, startEdge);
-	if (exprPlantRock != NULL)
-		AddDecorExpression(exprPlantRock);*/
 }
 
 void TerrainRender::AddDecorExpression(DecorExpression *exp)

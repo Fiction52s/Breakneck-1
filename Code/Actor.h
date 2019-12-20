@@ -13,6 +13,7 @@
 #include "AirParticles.h"
 #include "Movement.h"
 #include "Gate.h"
+#include "SpecialTerrainTypes.h"
 
 
 struct AirTrigger;
@@ -1130,6 +1131,12 @@ struct Actor : QuadTreeCollider,
 	int jumpGrassCount;
 	bool touchedJumpGrass;
 	double jumpGrassExtra;
+	bool extraDoubleJump;
+
+	void ClearSpecialTerrainCounts();
+	int specialTerrainCount[SPECIAL_TERRAIN_Count];
+	void HandleSpecialTerrain();
+	void HandleSpecialTerrain(int stType);
 
 	Action action;
 	int steepClimbBoostStart;

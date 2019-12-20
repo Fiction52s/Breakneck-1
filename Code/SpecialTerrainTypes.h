@@ -1,0 +1,12 @@
+#ifndef __SPECIALTERRAINTYPES_H__
+#define __SPECIALTERRAINTYPES_H__
+
+enum SpecialTerrainType
+{
+	SPECIAL_TERRAIN_WATER,
+	SPECIAL_TERRAIN_GLIDEWATER,
+	SPECIAL_TERRAIN_Count,
+};
+
+
+#endif

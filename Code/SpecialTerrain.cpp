@@ -5,8 +5,10 @@
 using namespace std;
 using namespace sf;
 
-SpecialTerrainPiece::SpecialTerrainPiece(GameSession *owner)
+SpecialTerrainPiece::SpecialTerrainPiece(GameSession *p_owner)
+	:owner( p_owner )
 {
+	specialType = SPECIAL_TERRAIN_GLIDEWATER;
 	groundva = NULL;
 	slopeva = NULL;
 	steepva = NULL;
@@ -21,13 +23,7 @@ SpecialTerrainPiece::~SpecialTerrainPiece()
 	if (tr != NULL)
 		delete tr;
 
-	//delete groundva;
-	//delete slopeva;
-	//delete steepva;
-	//delete wallva;
-	//delete triva;
-
-	//delete terrainVA;
+	delete terrainVA;
 
 	for (int i = 0; i < numPoints; ++i)
 	{
@@ -37,6 +33,52 @@ SpecialTerrainPiece::~SpecialTerrainPiece()
 	delete[] edges;
 
 	delete edgeTree;
+}
+
+void SpecialTerrainPiece::GenerateCenterMesh()
+{
+	vector<p2t::Point*> polyline;
+	V2d testP;
+	for (int i = 0; i < numPoints; ++i)
+	{
+		testP = GetEdge(i)->v0;
+		polyline.push_back(new p2t::Point(testP.x, testP.y));
+	}
+
+	p2t::CDT * cdt = new p2t::CDT(polyline);
+
+	cdt->Triangulate();
+	vector<p2t::Triangle*> tris;
+	tris = cdt->GetTriangles();
+
+	terrainVA = new VertexArray(sf::Triangles, tris.size() * 3);
+
+	/*double polygonArea = 0;
+	for (vector<p2t::Triangle*>::iterator it = tris.begin();
+		it != tris.end(); ++it)
+	{
+		polygonArea += GetTriangleArea((*it));
+	}*/
+
+	VertexArray & v = *terrainVA;
+	Color testColor(0x75, 0x70, 0x90);
+	testColor = Color(255, 0, 0, 50);//Color::White;
+
+	for (int i = 0; i < tris.size(); ++i)
+	{
+		p2t::Point *p = tris[i]->GetPoint(0);
+		p2t::Point *p1 = tris[i]->GetPoint(1);
+		p2t::Point *p2 = tris[i]->GetPoint(2);
+		v[i * 3] = Vertex(Vector2f(p->x, p->y), testColor);
+		v[i * 3 + 1] = Vertex(Vector2f(p1->x, p1->y), testColor);
+		v[i * 3 + 2] = Vertex(Vector2f(p2->x, p2->y), testColor);
+	}
+
+	delete cdt;
+	for (int i = 0; i < numPoints; ++i)
+	{
+		delete polyline[i];
+	}
 }
 
 void SpecialTerrainPiece::Reset()
@@ -51,50 +93,22 @@ void SpecialTerrainPiece::HandleEntrant(QuadTreeEntrant *qte)
 
 void SpecialTerrainPiece::Draw(sf::RenderTarget *target)
 {
-	sf::RectangleShape rs;
+	/*sf::RectangleShape rs;
 	rs.setFillColor(Color(255, 0, 0, 50));
 	rs.setSize(Vector2f(aabb.width, aabb.height));
 	rs.setOrigin(rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2);
 	rs.setPosition(center.x, center.y);
-	target->draw(rs);
-
-	return;
-
+	target->draw(rs);*/
 
 	if (owner->usePolyShader)
 	{
-		sf::Rect<double> screenRect = owner->screenRect;
-		sf::Rect<double> polyAndScreen;
-		double rightScreen = screenRect.left + screenRect.width;
-		double bottomScreen = screenRect.top + screenRect.height;
-		double rightPoly = aabb.left + aabb.width;
-		double bottomPoly = aabb.top + aabb.height;
-
-		double left = std::max(screenRect.left, aabb.left);
-
-		double right = std::min(rightPoly, rightScreen);
-
-		double top = std::max(screenRect.top, aabb.top);
-
-		double bottom = std::min(bottomScreen, bottomPoly);
-
-
-		polyAndScreen.left = left;
-		polyAndScreen.top = top;
-		polyAndScreen.width = right - left;
-		polyAndScreen.height = bottom - top;
-
-		assert(pShader != NULL);
-		target->draw(*terrainVA, pShader);
+		target->draw(*terrainVA);
+		//assert(pShader != NULL);
+		//target->draw(*terrainVA, pShader);
 	}
 	else
 	{
 		target->draw(*terrainVA);
-	}
-
-	if (owner->showTerrainDecor)
-	{
-		tr->Draw(target);
 	}
 }
 
@@ -115,8 +129,43 @@ Edge *SpecialTerrainPiece::GetEdge(int index)
 
 bool SpecialTerrainPiece::IsInsideArea(V2d &point)
 {
-	if (aabb.contains(point))
+	if (!aabb.contains(point))
+	{
+		return false;
+	}
+
+	insideQueryPoint = point;
+	
+
+	V2d closest;
+
+	double extra = 10;
+	if (insideQueryPoint.x - aabb.left > aabb.width / 2)
+	{
+		closest.x = aabb.left + aabb.width + extra;
+	}
+	else
+	{
+		closest.x = aabb.left - extra;
+	}
+
+	if (insideQueryPoint.y - aabb.top > aabb.height / 2)
+	{
+		closest.y = aabb.top + aabb.height + extra;
+	}
+	else
+	{
+		closest.y = aabb.top - extra;
+	}
+
+	rcEdge = NULL;
+	numEdgesHit = 0;
+	RayCast(this, edgeTree->startNode, insideQueryPoint, closest);
+
+	if (numEdgesHit % 2 == 1)
+	{
 		return true;
+	}
 
 	return false;
 }
@@ -216,10 +265,20 @@ bool SpecialTerrainPiece::Load( ifstream &is )
 		edgeTree->Insert(GetEdge(i));
 	}
 
+	GenerateCenterMesh();
+
 	return true;
 }
 
 void SpecialTerrainPiece::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
 {
+	if ( rcEdge == NULL 
+		|| ( length(edge->GetPoint(edgeQuantity) - insideQueryPoint) 
+	> length(rcEdge->GetPoint(rcQuant) - insideQueryPoint)))
+	{
+		rcEdge = edge;
+		rcQuant = edgeQuantity;
+	}
 
+	++numEdgesHit;
 }
