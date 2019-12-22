@@ -7,6 +7,7 @@
 #include "ISelectable.h"
 #include "VectorMath.h"
 
+struct Panel;
 struct TerrainPoint;
 struct ActorParams;
 
@@ -45,6 +46,8 @@ struct TerrainRail : ISelectable
 		TerrainPoint *p, int index);
 	void UpdateLines();
 	void SwitchDirection();
+	void SetParams(Panel *p);
+	void UpdatePanel(Panel *p);
 	void CopyPoints(TerrainPoint *&start,
 		TerrainPoint *&end);
 	void CopyOtherPoints(TerrainPoint *&start,
@@ -106,6 +109,12 @@ struct TerrainRail : ISelectable
 
 	int writeIndex;
 	bool finalized;
+
+	bool requirePower;
+	bool accelerate;
+	int level;
+
+	const static int MAX_RAIL_LEVEL = 4;
 };
 
 typedef boost::shared_ptr<TerrainRail> RailPtr;

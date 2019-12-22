@@ -201,6 +201,8 @@ bool SpecialTerrainPiece::Load( ifstream &is )
 	is >> matWorld;
 	is >> matVariation;
 
+	specialType = (SpecialTerrainType)matVariation;
+
 	int polyPoints;
 	is >> polyPoints;
 

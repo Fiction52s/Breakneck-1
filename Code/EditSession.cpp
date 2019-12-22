@@ -4246,6 +4246,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	mapOptionsPanel = CreateOptionsPanel("map");
 	terrainOptionsPanel = CreateOptionsPanel("terrain");
+	railOptionsPanel = CreateOptionsPanel("rail");
 
 	messagePopup = CreatePopupPanel( "message" );
 	errorPopup = CreatePopupPanel( "error" );
@@ -4678,6 +4679,21 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		if (b->name == "ok")
 		{
 			showPanel = NULL;
+		}
+	}
+	else if (p->name == "rail_options")
+	{
+		ISelectable *select = selectedBrush->objects.front().get();
+		TerrainRail *tr = (TerrainRail*)select;
+		if (b->name == "ok")
+		{
+			tr->SetParams(railOptionsPanel);
+			showPanel = NULL;
+		}
+		else if (b->name == "reverse")
+		{
+			tr->SwitchDirection();
+			//reverse single rail
 		}
 	}
 	else if( p->name == "error_popup" )
@@ -6923,6 +6939,17 @@ Panel * EditSession::CreateOptionsPanel( const std::string &name )
 		//p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
 		//p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
 		p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
+	}
+	else if (name == "rail")
+	{
+		p = new Panel("rail_options", 200, 600, this);
+		p->AddButton("ok", Vector2i(100, 500), Vector2f(100, 50), "OK");
+		p->AddLabel( "requirepower", Vector2i( 20, 50), 20, "require power:" );
+		p->AddCheckBox("requirepower", Vector2i(20, 100));
+		p->AddLabel("accelerate", Vector2i(20, 150), 20, "accelerate:");
+		p->AddCheckBox("accelerate", Vector2i(20, 200));
+		p->AddButton("reverse", Vector2i(20, 300), Vector2f(100, 50), "Reverse Dir");
+		p->AddTextBox("level", Vector2i(20, 400), 200, 20, "");
 	}
 	if( p != NULL )
 		allPopups.push_back(p);
@@ -10329,13 +10356,14 @@ void EditSession::DrawModeUI()
 
 		sf::Text textmag;
 
-		bool singleActor = selectedBrush->objects.size() == 1
-			&& selectedPoints.size() == 0
-			&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
-		bool singleImage = selectedBrush->objects.size() == 1
-			&& selectedPoints.size() == 0
-			&& selectedBrush->objects.front()->selectableType == ISelectable::IMAGE;
-		bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
+		bool singleObj, singleActor, singleImage, singleRail, onlyPoly; 
+		
+		singleObj = selectedBrush->objects.size() == 1 && selectedPoints.size() == 0;
+
+		singleActor = singleObj && selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
+		singleImage = singleObj && selectedBrush->objects.front()->selectableType == ISelectable::IMAGE;
+		singleRail = singleObj && selectedBrush->objects.front()->selectableType == ISelectable::RAIL;
+		onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
 
 		if (menuDownStored == EditSession::EDIT && singleActor)
 		{
@@ -10348,6 +10376,10 @@ void EditSession::DrawModeUI()
 		else if (menuDownStored == EditSession::EDIT && onlyPoly)
 		{
 			textmag.setString("TERRAIN\nOPTIONS");
+		}
+		else if(menuDownStored == EditSession::EDIT && singleRail)
+		{
+			textmag.setString("RAIL\nOPTIONS");
 		}
 		else
 		{
@@ -11230,12 +11262,14 @@ void EditSession::SelectModeHandleEvent()
 
 		if (menuSelection == "top")
 		{
-			bool singleActor = selectedBrush->objects.size() == 1
-				&& selectedPoints.size() == 0
+			bool singleObject = selectedBrush->objects.size() == 1
+				&& selectedPoints.size() == 0;
+			bool singleActor = singleObject
 				&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
-			bool singleImage = selectedBrush->objects.size() == 1
-				&& selectedPoints.size() == 0
+			bool singleImage = singleObject
 				&& selectedBrush->objects.front()->selectableType == ISelectable::IMAGE;
+			bool singleRail = singleObject
+				&& selectedBrush->objects.front()->selectableType == ISelectable::RAIL;
 
 			//bool singlePoly = selectedBrush->objects.size() == 1 
 			//	&& selectedPoints.size() == 0
@@ -11257,6 +11291,16 @@ void EditSession::SelectModeHandleEvent()
 			{
 				showPanel = editDecorPanel;
 				SetDecorEditPanel();
+				mode = menuDownStored;
+			}
+			else if (menuDownStored == EDIT && singleRail)
+			{
+				showPanel = railOptionsPanel;
+
+				ISelectable *select = selectedBrush->objects.front().get();
+				TerrainRail *tr = (TerrainRail*)select;
+				tr->UpdatePanel(railOptionsPanel);
+				
 				mode = menuDownStored;
 			}
 			else

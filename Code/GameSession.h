@@ -242,7 +242,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	ShapeEmitter *testEmit;
 
-
+	std::list<SpecialTerrainPiece*> allSpecialTerrain;
 	ShardPopup *shardPop;
 	TerrainPiece *listVA;
 	SpecialTerrainPiece *specialPieceList;

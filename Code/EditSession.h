@@ -412,6 +412,7 @@ struct EditSession : GUIHandler, TilesetManager
 
 	Panel *mapOptionsPanel;
 	Panel *terrainOptionsPanel;
+	Panel *railOptionsPanel;
 
 	void CreateShardGridSelector( Panel *p,
 		sf::Vector2i &pos );

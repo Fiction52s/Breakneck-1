@@ -222,11 +222,6 @@ EdgeAngleType GetEdgeAngleType(V2d &normal)
 }
 
 
-
-
-
-
-
 PoiInfo::PoiInfo( const std::string &pname, Vector2i &p )
 {
 	name = pname;
@@ -381,6 +376,11 @@ void GameSession::Cleanup()
 		delete background;
 	}
 	
+
+	for (auto it = allSpecialTerrain.begin(); it != allSpecialTerrain.end(); ++it)
+	{
+		delete (*it);
+	}
 
 	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
 	{
@@ -1228,6 +1228,7 @@ bool GameSession::LoadSpecialPolys(std::ifstream &is)
 		SpecialTerrainPiece *st = new SpecialTerrainPiece(this);
 		st->Load(is);
 
+		allSpecialTerrain.push_back(st);
 		specialTerrainTree->Insert(st);
 	}
 

@@ -33,6 +33,10 @@ void TerrainRail::Init()
 	movingPointMode = false;
 	selected = false;
 	railRadius = 10;
+
+	requirePower = false;
+	accelerate = false;
+	level = 1;
 }
 
 TerrainRail::~TerrainRail()
@@ -626,6 +630,31 @@ void TerrainRail::ClearPoints()
 	pointStart = NULL;
 	pointEnd = NULL;
 	numPoints = 0;
+}
+
+void TerrainRail::SetParams(Panel *p)
+{
+	requirePower = p->checkBoxes["requirepower"]->checked;
+	accelerate = p->checkBoxes["accelerate"]->checked;
+	string levelStr = p->textBoxes["level"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	ss << levelStr;
+
+	int lev;
+	ss >> lev;
+
+	if (!ss.fail() && lev > 0 && lev <= MAX_RAIL_LEVEL)
+	{
+		level = lev;
+	}
+}
+
+void TerrainRail::UpdatePanel(Panel *p)
+{
+	p->checkBoxes["requirepower"]->checked = requirePower;
+	p->checkBoxes["accelerate"]->checked = accelerate;
+	p->textBoxes["level"]->text.setString(to_string(level));
 }
 
 //0 means a window came up and they canceled. -1 means no enemies were in danger on that polygon, 1 means that you confirmed to delete the enemies
