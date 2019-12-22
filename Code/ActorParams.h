@@ -32,6 +32,7 @@ struct ActorParams : ISelectable
 	void AnchorToRail(TerrainRail *rail,
 		int eIndex, double quantity);
 	void AnchorToGround(GroundInfo &gi);
+	void AnchorToRail(GroundInfo &gi);
 	void UnAnchor(boost::shared_ptr<ActorParams> &me);
 	void UpdateGroundedSprite();
 

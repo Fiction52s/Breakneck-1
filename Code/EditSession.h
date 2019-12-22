@@ -291,6 +291,7 @@ struct EditSession : GUIHandler, TilesetManager
 	
 
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
+	GroundInfo ConvertPointToRail(sf::Vector2i point);
 	void CreateActor( ActorPtr actor );
 	void CreateDecorImage(
 		EditorDecorPtr dec);
@@ -303,6 +304,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void MoveSelectedRailPoints(V2d worldPos);
 	void PerformMovePointsAction();
 
+	GroundInfo worldPosRail;
 	GroundInfo worldPosGround;
 	V2d worldPos;
 	ActorParams* tempActor;

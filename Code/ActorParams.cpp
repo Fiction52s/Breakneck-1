@@ -721,6 +721,17 @@ void ActorParams::AnchorToGround( GroundInfo &gi )
 	SetBoundingQuad();
 }
 
+void ActorParams::AnchorToRail(GroundInfo &gi)
+{
+	groundInfo = new GroundInfo;
+	*groundInfo = gi;
+
+	image = type->GetSprite(false);
+
+	UpdateGroundedSprite();
+	SetBoundingQuad();
+}
+
 void ActorParams::UnAnchor( ActorPtr &actor )
 {
 	assert( groundInfo != NULL );

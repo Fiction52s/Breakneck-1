@@ -4459,6 +4459,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 		worldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
 		worldPosGround = ConvertPointToGround( Vector2i( worldPos.x, worldPos.y ) );
+		worldPosRail = ConvertPointToRail(Vector2i(worldPos));
 
 		preScreenTex->setView( uiView );
 		uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
@@ -7487,6 +7488,7 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 	double testRadius = 200;
 	//PolyPtr poly = NULL;
 	gi.ground = NULL;
+	gi.railGround = NULL;
 
 	bool contains;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
@@ -7499,7 +7501,6 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 			TerrainPoint *curr = (*it)->pointStart;
 
 			double minDistance = 10000000;
-			//int storedIndex;
 			TerrainPoint *storedEdge = NULL;
 			TerrainPolygon *storedPoly = NULL;
 			double storedQuantity = 0;
@@ -7537,15 +7538,6 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 										
 					
 					closestPoint = newPoint;
-					//minDistance = length( closestPoint - te )  
-										
-					/*enemySprite.setOrigin( enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height );
-					enemySprite.setPosition( closestPoint.x, closestPoint.y );
-					enemySprite.setRotation( atan2( (cu - pr).y, (cu - pr).x ) / PI * 180 );
-
-					enemyQuad.setOrigin( enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height );
-					enemyQuad.setRotation( enemySprite.getRotation() );
-					enemyQuad.setPosition( enemySprite.getPosition() );*/
 				}
 				else
 				{
@@ -7567,6 +7559,99 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 			&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius )
 		{
 
+		}
+	}
+
+	return gi;
+}
+
+GroundInfo EditSession::ConvertPointToRail(sf::Vector2i testPoint)
+{
+	GroundInfo gi;
+	gi.railGround = NULL;
+	gi.ground = NULL;
+
+	double testRadius = 200;
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if (testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
+			&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius)
+		{
+			TerrainPoint *curr = (*it)->pointStart;
+			TerrainPoint *next = NULL;
+
+			bool contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y), 32);
+
+			if (contains)
+			{
+				
+
+				V2d closestPoint;
+
+
+				//prev is starting at 0. start normally at 1
+				int edgeIndex = 0;
+				double minDistance = 10000000;
+
+				TerrainPoint *storedEdge = NULL;
+				TerrainRail *storedRail = NULL;
+				double storedQuantity = 0;
+
+				for (; curr != NULL; curr = curr->next)
+				{
+					if (curr == (*it)->pointEnd)
+					{
+						break;
+					}
+					else
+					{
+						next = curr->next;
+					}
+
+					double dist = abs(
+						cross(
+							V2d(testPoint.x - curr->pos.x, testPoint.y - curr->pos.y),
+							normalize(V2d(next->pos.x - curr->pos.x, next->pos.y - curr->pos.y))));
+					double testQuantity = dot(
+						V2d(testPoint.x - curr->pos.x, testPoint.y - curr->pos.y),
+						normalize(V2d(next->pos.x - curr->pos.x, next->pos.y - curr->pos.y)));
+
+					V2d pr(curr->pos.x, curr->pos.y);
+					V2d cu(next->pos.x, next->pos.y);
+					V2d te(testPoint.x, testPoint.y);
+
+					V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
+						(testQuantity / length(cu - pr)));
+					double edgeLength = length(cu - pr);
+					double newDist = length(newPoint - te);
+					double closestDist = length(closestPoint - te);
+
+					//int hw = trackingEnemy->info.size.x / 2;
+					//int hh = trackingEnemy->info.size.y / 2;
+					if (dist < 100 && testQuantity >= 0 && testQuantity <= edgeLength
+						&& newDist < closestDist)
+					{
+						minDistance = dist;
+
+						storedRail = (*it).get();
+						storedEdge = curr;
+						storedQuantity = testQuantity;
+						
+						closestPoint = newPoint;
+					}
+
+					++edgeIndex;
+				}
+
+				if (storedRail != NULL )
+				{
+					gi.railGround = storedRail;
+					gi.edgeStart = storedEdge;
+					gi.groundQuantity = storedQuantity;
+
+					break;
+				}
+			}
 		}
 	}
 
@@ -9253,6 +9338,29 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 				actor->AnchorToGround(worldPosGround);
 				worldPosGround.ground->enemies[worldPosGround.edgeStart].push_back(actor);
 				worldPosGround.ground->UpdateBounds();
+			}
+			else
+			{
+				if (actor->groundInfo != NULL)
+				{
+					actor->UnAnchor(actor);
+				}
+
+				selectedBrush->Move(delta);
+			}
+		}
+		else if (actor->type->CanBeRailGrounded())
+		{
+			if (worldPosRail.railGround != NULL)
+			{
+				if (actor->groundInfo != NULL)
+				{
+					actor->UnAnchor(actor);
+				}
+
+				actor->AnchorToRail(worldPosRail);
+				worldPosRail.railGround->enemies[worldPosGround.edgeStart].push_back(actor);
+				worldPosRail.railGround->UpdateBounds();
 			}
 			else
 			{
