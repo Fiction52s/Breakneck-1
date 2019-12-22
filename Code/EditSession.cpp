@@ -991,6 +991,15 @@ bool EditSession::ReadRails(std::ifstream &is)
 		RailPtr rail(new TerrainRail());
 		rails.push_back(rail);
 
+		int power;
+		is >> power;
+
+		int accel;
+		is >> accel;
+
+		int lev;
+		is >> lev;
+
 		int numRailPoints;
 		is >> numRailPoints;
 
@@ -1001,6 +1010,10 @@ bool EditSession::ReadRails(std::ifstream &is)
 			is >> y;
 			rail->AddPoint(new TerrainPoint(Vector2i(x, y), false));
 		}
+
+		rail->requirePower = power;
+		rail->accelerate = accel;
+		rail->level = lev;
 
 		rail->Finalize();
 	}
@@ -1507,8 +1520,7 @@ void EditSession::WriteGates(ofstream &of)
 
 void EditSession::WriteRails(ofstream &of)
 {
-	int writeIndexOffset = tempWriteIndex;
-	int writeIndex = writeIndexOffset;
+	int writeIndex = tempWriteIndex;
 
 	of << rails.size() << endl;
 
@@ -1517,12 +1529,8 @@ void EditSession::WriteRails(ofstream &of)
 		(*it)->writeIndex = writeIndex;
 		++writeIndex;
 
-		of << (*it)->numPoints << endl;
-
-		for (TerrainPoint *pcurr = (*it)->pointStart; pcurr != NULL; pcurr = pcurr->next)
-		{
-			of << pcurr->pos.x << " " << pcurr->pos.y << endl;
-		}
+		(*it)->WriteFile(of);
+		
 	}
 }
 
@@ -9507,6 +9515,7 @@ void EditSession::MoveLeftBorder(int amount)
 void EditSession::MoveRightBorder(int amount)
 {
 	boundWidth += amount;
+	UpdateFullBounds();
 }
 
 void EditSession::ShowGrass(bool s)

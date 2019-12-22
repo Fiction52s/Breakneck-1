@@ -83,6 +83,8 @@ struct TerrainRail : ISelectable
 	
 	void UpdateBounds();
 
+	void WriteFile(std::ofstream &of);
+
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 
 	sf::Rect<int> TempAABB();
@@ -114,7 +116,7 @@ struct TerrainRail : ISelectable
 	bool accelerate;
 	int level;
 
-	const static int MAX_RAIL_LEVEL = 4;
+	const static int MAX_RAIL_LEVEL = 12;
 };
 
 typedef boost::shared_ptr<TerrainRail> RailPtr;

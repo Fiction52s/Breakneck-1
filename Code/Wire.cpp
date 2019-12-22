@@ -583,7 +583,9 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			//rcQuantity = 0;
 			
 			rayCancel = false;
-			RayCast( this, player->owner->terrainTree->startNode, playerPos, playerPos + fireDir * fireRate * (double)(framesFiring + 1 ) );
+			V2d futurePos = playerPos + fireDir * fireRate * (double)(framesFiring + 1);
+			RayCast( this, player->owner->terrainTree->startNode, playerPos, futurePos );
+			RayCast(this, player->owner->railEdgeTree->startNode, playerPos, futurePos);
 			
 			if( rayCancel )
 			{
@@ -921,42 +923,6 @@ void Wire::UpdateAnchors2( V2d vel )
 		right = max( max( realAnchor.x, oldPos.x ), playerPos.x );
 		bottom = max( max( realAnchor.y, oldPos.y ), playerPos.y );
 
-		/*if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x > 0 && dir.y < 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y < 0 ) )
-		{
-			top = realAnchor.y - len;
-		}
-		else
-		{
-			top = min( realAnchor.y, min( oldPos.y, playerPos.y ) );
-		}
-
-		if( ( oldDir.x < 0 && oldDir.y < 0 && dir.x < 0 && dir.y > 0 ) || ( dir.x < 0 && dir.y < 0 && oldDir.x < 0 && oldDir.y > 0 ) )
-		{
-			left = realAnchor.x - len;
-		}
-		else
-		{
-			left = min( realAnchor.x, min( oldPos.x, playerPos.x ) );
-		}
-
-		if( ( oldDir.x > 0 && oldDir.y < 0 && dir.x > 0 && dir.y > 0 ) || ( dir.x > 0 && dir.y < 0 && oldDir.x > 0 && oldDir.y > 0 ) )
-		{
-			right = realAnchor.x + len;
-		}
-		else
-		{
-			right = max( realAnchor.x, max( oldPos.x, playerPos.x ) );
-		}
-
-		if( ( oldDir.x < 0 && oldDir.y > 0 && dir.x > 0 && dir.y > 0 ) || ( dir.x < 0 && dir.y > 0 && oldDir.x > 0 && oldDir.y > 0 ) )
-		{
-			bottom = realAnchor.y + len;
-		}
-		else
-		{
-			bottom = max( realAnchor.y, max( oldPos.y, playerPos.y ) );
-		}*/
-
 		r.left = left - ex;
 		r.top = top - ex;
 		r.width = (right - left) + ex * 2;
@@ -974,7 +940,6 @@ void Wire::UpdateAnchors2( V2d vel )
 
 		queryMode = "terrain";
 		player->owner->terrainTree->Query( this, r );
-
 		if( state == RELEASED )
 		{
 			cout << "went too many points" << endl;
@@ -1072,6 +1037,7 @@ void Wire::UpdateAnchors2( V2d vel )
 			minSideEdge = NULL;
 			queryMode = "terrain";
 			player->owner->terrainTree->Query( this, r );
+			player->owner->railEdgeTree->Query(this, r);
 			if( minSideEdge != NULL )
 			{
 				storedPlayerPos = playerPos;

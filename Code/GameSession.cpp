@@ -1654,6 +1654,15 @@ bool GameSession::LoadRails(ifstream &is)
 	is >> numRails;
 	for (int i = 0; i < numRails; ++i)
 	{
+		int requirePower;
+		is >> requirePower;
+
+		int accel;
+		is >> accel;
+
+		int lev;
+		is >> lev;
+
 		int numRailPoints;
 		is >> numRailPoints;
 
@@ -1665,11 +1674,26 @@ bool GameSession::LoadRails(ifstream &is)
 			globalPath.push_back(Vector2i(x, y));
 		}
 
-		Rail *r = new Rail(this, globalPath.front(), globalPath, false, false, 1);
+		Rail *r = new Rail(this, globalPath.front(), globalPath, requirePower, accel, lev);
 		globalPath.clear();
 		++totalRails;
 	}
 
+
+
+	/*int iRequirePower = (int)requirePower;
+	int iAccelerate = (int)accelerate;
+
+	of << iRequirePower << endl;
+	of << iAccelerate << endl;
+	of << level << endl;
+
+	of << numPoints << endl;
+
+	for (TerrainPoint *pcurr = pointStart; pcurr != NULL; pcurr = pcurr->next)
+	{
+		of << pcurr->pos.x << " " << pcurr->pos.y << endl;
+	}*/
 	return true;
 }
 

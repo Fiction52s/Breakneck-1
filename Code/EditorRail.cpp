@@ -149,6 +149,23 @@ void TerrainRail::Activate(EditSession *edit, SelectPtr select)
 	}
 }
 
+void TerrainRail::WriteFile(std::ofstream &of)
+{
+	int iRequirePower = (int)requirePower;
+	int iAccelerate = (int)accelerate;
+
+	of << iRequirePower << endl;
+	of << iAccelerate << endl;
+	of << level << endl;
+
+	of << numPoints << endl;
+
+	for (TerrainPoint *pcurr = pointStart; pcurr != NULL; pcurr = pcurr->next)
+	{
+		of << pcurr->pos.x << " " << pcurr->pos.y << endl;
+	}
+}
+
 void TerrainRail::AlignExtremes(double primLimit)
 {
 	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
