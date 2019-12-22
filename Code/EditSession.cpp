@@ -53,6 +53,21 @@ template <typename X>ActorParams * MakeParamsGrounded(ActorType *at)
 	}
 }
 
+template <typename X>ActorParams * MakeParamsRailed(ActorType *at)
+{
+	EditSession *edit = EditSession::GetSession();
+	if (edit->enemyEdgeRail != NULL)
+	{
+		return new X(at, edit->enemyEdgeRail,
+			edit->enemyEdgeIndex,
+			edit->enemyEdgeQuantity);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
 template <typename X>ActorParams * MakeParamsAerial(ActorType *at)
 {
 	EditSession *edit = EditSession::GetSession();
@@ -413,6 +428,8 @@ void EditSession::AddW4Enemies()
 		Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);
 
+	AddBasicRailWorldEnemy("railtest", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+		GetTileset("Enemies/shroom_192x192.png", 192, 192));
 
 	AddBasicGroundWorldEnemy("spider", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
@@ -522,6 +539,15 @@ void EditSession::AddBasicGroundWorldEnemy(const std::string &name, int w,
 		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex));
 }
 
+void EditSession::AddBasicRailWorldEnemy(const std::string &name, int w,
+	Vector2i &off, Vector2i &size, bool w_mon,
+	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
+{
+	worldEnemyNames[w - 1].push_back(ParamsInfo(name, LoadParams<BasicRailEnemyParams>, NULL, NULL, off, size,
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex));
+	worldEnemyNames[w - 1].back().pmRail = MakeParamsRailed<BasicRailEnemyParams>;
+}
+
 void EditSession::AddBasicAerialWorldEnemy(const std::string &name, int w,
 	sf::Vector2i &off,
 	sf::Vector2i &size,
@@ -589,6 +615,41 @@ TerrainPolygon *EditSession::GetPolygon(int index, int &edgeIndex )
 		edgeIndex++;
 
 	return terrain;
+}
+
+TerrainRail *EditSession::GetRail(int index, int &edgeIndex)
+{
+	TerrainRail* rail = NULL;
+
+	int pSize = polygons.size();
+	if (inversePolygon != NULL)
+	{
+		pSize--;
+	}
+
+	int realIndex = index - pSize;
+
+	int testIndex = 0;
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if (testIndex == realIndex)
+		{
+			rail = (*it).get();
+			break;
+		}
+		++testIndex;
+	}
+
+	if (rail == NULL)
+		assert(0 && "failure rail indexing");
+
+	return rail;
+	//if (edgeIndex == rails->numPoints - 1)
+	//	edgeIndex = 0;
+	//else
+	//	edgeIndex++;
+
+	//return terrain;
 }
 
 EditSession::~EditSession()
@@ -991,31 +1052,7 @@ bool EditSession::ReadRails(std::ifstream &is)
 		RailPtr rail(new TerrainRail());
 		rails.push_back(rail);
 
-		int power;
-		is >> power;
-
-		int accel;
-		is >> accel;
-
-		int lev;
-		is >> lev;
-
-		int numRailPoints;
-		is >> numRailPoints;
-
-		for (int j = 0; j < numRailPoints; ++j)
-		{
-			int x, y;
-			is >> x;
-			is >> y;
-			rail->AddPoint(new TerrainPoint(Vector2i(x, y), false));
-		}
-
-		rail->requirePower = power;
-		rail->accelerate = accel;
-		rail->level = lev;
-
-		rail->Finalize();
+		rail->Load(is);
 	}
 	return true;
 }
@@ -1834,38 +1871,16 @@ ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon 
 			//might need to make sure it CAN be grounded
 			assert( actor->groundInfo != NULL ); 
 
-
-			//ActorPtr newActor( actor->Copy() );
 			ActorParams *newActor = actor->Copy();
 			newActor->groundInfo = NULL;
-			//newActor->UnAnchor( newActor );
-			//newActor->groundInfo = NULL;
 			newActor->AnchorToGround(gi);
-			//GroundInfo *oldGI = actor->groundInfo;
 
-			//GroundInfo old = *actor->groundInfo;
 			assert(gi.edgeStart != NULL);
 			assert(newActor != NULL);
-			//assert( newActor.get() != NULL );
 
-			//newActor->UnAnchor( newActor );
-			//newActor->groundInfo->edgeStart = gi.edgeStart;
-			//newActor->groundInfo->ground = gi.ground;
-			//newActor->groundInfo->groundQuantity= gi.groundQuantity;
-
-			//poly->enemies[p].push_back( newActor );
 
 
 			return newActor;
-			//b.AddObject( newActor );
-			//actor->UnAnchor( actor );
-			//actor->groundInfo->ground->enemies[actor->groundInfo->edgeStart].remove( actor );
-			//actor->AnchorToGround( gi );
-
-			//old.ground->enemies[old.edgeStart].remove( actor );
-			
-			//return true;
-			//break;
 		}
 	}
 
@@ -1901,20 +1916,6 @@ void EditSession::RedoMostRecentUndoneAction()
 
 void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon *poly )
 {
-	//cout << "attemping to attach actors" << endl;
-	/*bool res;
-	for( list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it )
-	{
-		res = AttachActorToPolygon( (*it), poly );
-		if( res )
-		{
-			cout << "saved an actor!" << endl;
-		}
-		else
-		{
-			cout << "totally didn't save an actor! QQ" << endl;
-		}
-	}*/
 }
 
 void EditSession::Extend(boost::shared_ptr<TerrainPolygon> extension,
@@ -7487,15 +7488,12 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 	//PolyPtr poly = NULL;
 	gi.ground = NULL;
 
-	/*if( inversePolygon != NULL )
-		polygons.push_back( inversePolygon );*/
 	bool contains;
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
 
 		if ((contains && !(*it)->inverse) || (!contains && (*it)->inverse))
-		//if( (*it)->ContainsPoint( Vector2f( testPoint.x, testPoint.y ) ) )
 		{
 			TerrainPoint *prev = (*it)->pointEnd;
 			TerrainPoint *curr = (*it)->pointStart;
@@ -7525,11 +7523,6 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				V2d newPoint( pr.x + (cu.x - pr.x) * (testQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
 						(testQuantity / length( cu - pr ) ) );
 
-				//int hw = trackingEnemy->width / 2;
-				//int hh = trackingEnemy->height / 2;
-				//if( dist < 100 && testQuantity >= 0 && testQuantity <= length( cu - pr ) && testQuantity >= hw && testQuantity <= length( cu - pr ) - hw 
-				//	&& length( newPoint - te ) < length( closestPoint - te ) )
-				//dist < 100 
 				if( dist < testRadius && testQuantity >= 0 && testQuantity <= length( cu - pr ) 
 					&& length( newPoint - te ) < length( closestPoint - te ) )
 				{
@@ -7556,12 +7549,9 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				}
 				else
 				{
-										
-					//cout << "dist: " << dist << ", testquant: " << testQuantity  << endl;
 				}
 
 				prev = curr;
-				//++edgeIndex;
 			}
 
 			
@@ -8162,18 +8152,12 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	
 	for (auto it = actorList.begin(); it != actorList.end(); ++it)
 	{
-		//ActorPtr newActor((*it)->Copy());
-		//newActor->UnAnchor(newActor);
-		//bool res = AttachActorToPolygon(newActor, polygonInProgress.get() );
 		ActorParams * ac = AttachActorToPolygon((*it), polygonInProgress.get());
 		if (ac != NULL)
 		{
 			ActorPtr newActor( ac );
 			resultBrush.AddObject(newActor);
 		}
-		//newActor->AnchorToGround( )
-		//newActor->groundInfo
-		//newActor->groundInfo->edgeStart
 	}
 
 	
@@ -9670,7 +9654,7 @@ void EditSession::AnchorTrackingEnemyOnTerrain()
 						//prev is starting at 0. start normally at 1
 						int edgeIndex = 0;
 						double minDistance = 10000000;
-						int storedIndex;
+						int storedIndex = -1;
 						double storedQuantity;
 
 						V2d closestPoint;
@@ -9723,17 +9707,119 @@ void EditSession::AnchorTrackingEnemyOnTerrain()
 							++edgeIndex;
 						}
 
-						enemyEdgeIndex = storedIndex;
+						if (storedIndex >= 0)
+						{
+							enemyEdgeIndex = storedIndex;
 
-						enemyEdgeQuantity = storedQuantity;
+							enemyEdgeQuantity = storedQuantity;
 
-						enemyEdgePolygon = (*it).get();
+							enemyEdgePolygon = (*it).get();
 
-						break;
+							break;
+						}
 					}
 				}
 			}
 
+		}
+		else if (trackingEnemy->CanBeRailGrounded())
+		{
+			enemyEdgeRail = NULL;
+
+			double testRadius = 200;
+			for (auto it = rails.begin(); it != rails.end(); ++it)
+			{
+				if (testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
+					&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius)
+				{
+					TerrainPoint *curr = (*it)->pointStart;
+					TerrainPoint *next = NULL;
+
+					bool contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y), 32);
+
+					if (contains)
+					{
+						//prev is starting at 0. start normally at 1
+						int edgeIndex = 0;
+						double minDistance = 10000000;
+						int storedIndex = -1;
+						double storedQuantity;
+
+						V2d closestPoint;
+
+						for (; curr != NULL; curr = curr->next)
+						{
+							if (curr == (*it)->pointEnd)
+							{
+								break;
+							}
+							else
+							{
+								next = curr->next;
+							}
+
+							double dist = abs(
+								cross(
+									V2d(testPoint.x - curr->pos.x, testPoint.y - curr->pos.y),
+									normalize(V2d(next->pos.x - curr->pos.x, next->pos.y - curr->pos.y))));
+							double testQuantity = dot(
+								V2d(testPoint.x - curr->pos.x, testPoint.y - curr->pos.y),
+								normalize(V2d(next->pos.x - curr->pos.x, next->pos.y - curr->pos.y)));
+
+							V2d pr(curr->pos.x, curr->pos.y);
+							V2d cu(next->pos.x, next->pos.y);
+							V2d te(testPoint.x, testPoint.y);
+
+							V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
+								(testQuantity / length(cu - pr)));
+
+
+							int hw = trackingEnemy->info.size.x / 2;
+							int hh = trackingEnemy->info.size.y / 2;
+							if (dist < 100 && testQuantity >= 0 && testQuantity <= length(cu - pr) && testQuantity >= hw && testQuantity <= length(cu - pr) - hw
+								&& length(newPoint - te) < length(closestPoint - te))
+							{
+								minDistance = dist;
+								storedIndex = edgeIndex;
+								double l = length(cu - pr);
+
+								storedQuantity = testQuantity;
+								closestPoint = newPoint;
+
+								if (name != "poi")
+								{
+							//		enemySprite.setOrigin(enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height);
+						//			enemyQuad.setOrigin(enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height);
+								}
+
+								enemySprite.setPosition(closestPoint.x, closestPoint.y);
+								//enemySprite.setRotation(atan2((cu - pr).y, (cu - pr).x) / PI * 180);
+
+
+								//enemyQuad.setRotation(enemySprite.getRotation());
+								enemyQuad.setPosition(enemySprite.getPosition());
+							}
+
+							++edgeIndex;
+						}
+
+						if (storedIndex >= 0)
+						{
+							enemyEdgeIndex = storedIndex;
+
+							enemyEdgeQuantity = storedQuantity;
+
+							enemyEdgeRail = (*it).get();
+
+							break;
+						}
+						
+
+						
+					}
+				}
+
+			}
 		}
 	}
 }

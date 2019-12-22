@@ -125,6 +125,7 @@ struct EditSession : GUIHandler, TilesetManager
 	
 
 	TerrainPolygon *GetPolygon(int index, int &edgeIndex);
+	TerrainRail *GetRail(int index, int &edgeIndex);
 
 	std::list<ParamsInfo> worldEnemyNames[8];
 	void AddWorldEnemy(const std::string &name, int w,
@@ -140,6 +141,16 @@ struct EditSession : GUIHandler, TilesetManager
 		Tileset *ts = NULL,
 		int tileIndex = 0);
 	void AddBasicGroundWorldEnemy(const std::string &name, int w,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
+		int p_numLevels = 1,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	void AddBasicRailWorldEnemy(const std::string &name, int w,
 		sf::Vector2i &off,
 		sf::Vector2i &size,
 		bool w_mon,
@@ -392,6 +403,7 @@ struct EditSession : GUIHandler, TilesetManager
 
 	int enemyEdgeIndex;
 	TerrainPolygon *enemyEdgePolygon;
+	TerrainRail *enemyEdgeRail;
 	double enemyEdgeQuantity;
 	
 	int patrolPathLengthSize;

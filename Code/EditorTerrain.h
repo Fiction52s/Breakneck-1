@@ -312,6 +312,7 @@ struct GroundInfo
 	TerrainPoint *edgeStart;
 	double groundQuantity;
 	TerrainPolygon *ground;
+	TerrainRail *railGround;
 	int GetEdgeIndex();
 	V2d GetPosition();
 };

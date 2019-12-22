@@ -7898,15 +7898,16 @@ int GameSession::Run()
 
 		DrawZones();
 
-		
-		DrawTerrainPieces(listVA);
-		
 		SpecialTerrainPiece *sp = specialPieceList;
 		while (sp != NULL)
 		{
 			sp->Draw(preScreenTex);
 			sp = sp->next;
 		}
+
+		DrawTerrainPieces(listVA);
+		
+		
 
 		DrawGoal();
 

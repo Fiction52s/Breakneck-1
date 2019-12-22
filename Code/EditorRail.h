@@ -19,6 +19,8 @@ struct TerrainRail : ISelectable
 
 	void Init();
 	bool ContainsPoint(sf::Vector2f test);
+	bool ContainsPoint(sf::Vector2f test,double rad);
+
 	bool Intersects(sf::IntRect rect);
 	//bool IsPlacementOkay();
 
@@ -84,6 +86,7 @@ struct TerrainRail : ISelectable
 	void UpdateBounds();
 
 	void WriteFile(std::ofstream &of);
+	void Load(std::ifstream &is);
 
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 

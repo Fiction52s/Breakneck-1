@@ -2652,15 +2652,6 @@ void Actor::HandleAirTrigger()
 
 void Actor::UpdatePrePhysics()
 {
-	/*if (prevInput.A)
-	{
-		cout << "A" << endl;
-	}
-	else
-	{
-		cout << "not A" << endl;
-	}*/
-
 
 	if (owner->stormCeilingOn)
 	{
@@ -3188,7 +3179,7 @@ void Actor::UpdatePrePhysics()
 
 		if( true )
 		{
-			bool onRail = IsOnRailAction(action);
+			bool onRail = IsOnRailAction(action) || (grindEdge != NULL && action == JUMPSQUAT);
 			if( grindEdge != NULL && !onRail)
 			{
 				//do something different for grind ball? you don't wanna be hit out at a sensitive moment

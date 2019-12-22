@@ -166,6 +166,35 @@ void TerrainRail::WriteFile(std::ofstream &of)
 	}
 }
 
+void TerrainRail::Load(std::ifstream &is)
+{
+	int power;
+	is >> power;
+
+	int accel;
+	is >> accel;
+
+	int lev;
+	is >> lev;
+
+	int numRailPoints;
+	is >> numRailPoints;
+
+	for (int j = 0; j < numRailPoints; ++j)
+	{
+		int x, y;
+		is >> x;
+		is >> y;
+		AddPoint(new TerrainPoint(Vector2i(x, y), false));
+	}
+
+	requirePower = power;
+	accelerate = accel;
+	level = lev;
+
+	Finalize();
+}
+
 void TerrainRail::AlignExtremes(double primLimit)
 {
 	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
@@ -483,6 +512,11 @@ void TerrainRail::SetSelected(bool select)
 
 bool TerrainRail::ContainsPoint(Vector2f test)
 {
+	return ContainsPoint(test, railRadius);
+}
+
+bool TerrainRail::ContainsPoint(sf::Vector2f test, double rad)
+{
 	int pointCount = numPoints;
 
 	int i, j;
@@ -492,10 +526,10 @@ bool TerrainRail::ContainsPoint(Vector2f test)
 	TerrainPoint *next;
 
 	//double zoomMultiple = EditSession::GetSession()->zoomMultiple;
-	while( curr != pointEnd )
+	while (curr != pointEnd)
 	{
 		next = curr->next;
-		if (IsEdgeTouchingCircle(V2d(curr->pos), V2d(next->pos), V2d(test), railRadius))
+		if (IsEdgeTouchingCircle(V2d(curr->pos), V2d(next->pos), V2d(test), rad))
 		{
 			return true;
 		}

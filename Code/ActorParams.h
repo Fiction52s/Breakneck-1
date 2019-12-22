@@ -10,21 +10,6 @@ struct TerrainPolygon;
 #include "EditorActors.h"
 #include "EditorTerrain.h"
 
-struct PositionInfo
-{
-	PositionInfo(TerrainPolygon *poly,
-		int ei, double q)
-		:tp(poly), edgeIndex(ei),
-		quant(q)
-	{
-
-	}
-	TerrainPolygon *tp;
-	int edgeIndex;
-	double quant;
-	sf::Vector2i pos;
-};
-
 struct ActorParams : ISelectable
 {
 
@@ -44,6 +29,8 @@ struct ActorParams : ISelectable
 	void WriteLoop( std::ofstream &of );
 	void AnchorToGround(TerrainPolygon *poly,
 		int eIndex, double quantity);
+	void AnchorToRail(TerrainRail *rail,
+		int eIndex, double quantity);
 	void AnchorToGround(GroundInfo &gi);
 	void UnAnchor(boost::shared_ptr<ActorParams> &me);
 	void UpdateGroundedSprite();
@@ -55,6 +42,7 @@ struct ActorParams : ISelectable
 	void DrawBoundary(sf::RenderTarget *target);
 	void DrawMonitor(sf::RenderTarget *target);
 	void LoadGrounded(std::ifstream &is);
+	void LoadRailed(std::ifstream &is);
 	void LoadAerial(std::ifstream &is);
 	void LoadGlobalPath(std::ifstream &is );
 	void LoadMonitor(std::ifstream &is);
@@ -66,6 +54,8 @@ struct ActorParams : ISelectable
 	
 	void PlaceAerial(sf::Vector2i &pos);
 	void PlaceGrounded( TerrainPolygon *tp,
+		int edgeIndex, double quant);
+	void PlaceRailed(TerrainRail *rail,
 		int edgeIndex, double quant);
 
 
@@ -505,6 +495,19 @@ struct BasicGroundEnemyParams : public ActorParams
 		int edgeIndex, double edgeQuantity,
 		int level=0);
 	BasicGroundEnemyParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	virtual void WriteSpecialParams(std::ofstream &of) {}
+	ActorParams *Copy();
+};
+
+struct BasicRailEnemyParams : public ActorParams
+{
+	BasicRailEnemyParams(ActorType *at,
+		TerrainRail *rail,
+		int edgeIndex, double edgeQuantity,
+		int level = 0);
+	BasicRailEnemyParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	virtual void WriteSpecialParams(std::ofstream &of) {}

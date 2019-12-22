@@ -17,6 +17,8 @@ struct Panel;
 
 template<typename X> ActorParams *MakeParamsGrounded(
 	ActorType *);
+template<typename X> ActorParams *MakeParamsRailed(
+	ActorType *);
 template<typename X> ActorParams *MakeParamsAerial(
 	ActorType *);
 template<typename X> ActorParams *LoadParams(
@@ -41,15 +43,18 @@ struct ParamsInfo
 		ts(p_ts), imageTileIndex(imageTile),
 		writeMonitor(w_monitor), writeLevel(w_level),
 		writePath(w_path), writeLoop(w_loop),
-		numLevels(p_numLevels)
+		numLevels(p_numLevels),
+		pmRail(NULL)
 
 	{
 
 	}
+	//void SetRailLoader(ParamsM)
 	std::string name;
 	ParamsLoader *pLoader;
 	ParamsMaker* pmGround;
 	ParamsMaker* pmAir;
+	ParamsMaker* pmRail;
 	sf::Vector2i offset;
 	sf::Vector2i size;
 	Tileset *ts;
@@ -85,6 +90,7 @@ struct ActorType
 	sf::Sprite GetSprite(bool grounded);
 	bool CanBeGrounded();
 	bool CanBeAerial();
+	bool CanBeRailGrounded();
 
 	Panel *panel;
 

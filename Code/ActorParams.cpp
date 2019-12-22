@@ -8,6 +8,7 @@
 #include "Enemy_Shard.h"
 #include "ActorParams.h"
 #include "EditSession.h"
+#include "EditorRail.h"
 
 using namespace std;
 using namespace sf;
@@ -181,6 +182,13 @@ void ActorParams::PlaceGrounded(TerrainPolygon *tp,
 	SetBoundingQuad();
 }
 
+void ActorParams::PlaceRailed(TerrainRail *rail,
+	int edgeIndex, double quant)
+{
+	AnchorToRail(rail, edgeIndex, quant);
+	SetBoundingQuad();
+}
+
 void ActorParams::LoadGrounded(std::ifstream &is)
 {
 	int terrainIndex, edgeIndex;
@@ -193,6 +201,22 @@ void ActorParams::LoadGrounded(std::ifstream &is)
 	EditSession *edit = EditSession::GetSession();
 	TerrainPolygon *terrain = edit->GetPolygon(terrainIndex, edgeIndex);
 	PlaceGrounded(terrain, edgeIndex, edgeQuantity);
+}
+
+void ActorParams::LoadRailed(std::ifstream &is)
+{
+	int terrainIndex, edgeIndex;
+	double edgeQuantity;
+
+	is >> terrainIndex;
+	is >> edgeIndex;
+	is >> edgeQuantity;
+
+	EditSession *edit = EditSession::GetSession();
+	TerrainRail *rail = edit->GetRail(terrainIndex, edgeIndex);
+	PlaceRailed(rail, edgeIndex, edgeQuantity);
+	//TerrainPolygon *terrain = edit->GetPolygon(terrainIndex, edgeIndex);
+	//PlaceGrounded(terrain, edgeIndex, edgeQuantity);
 }
 
 void ActorParams::LoadBool(ifstream &is, bool &b)
@@ -273,7 +297,12 @@ bool ActorParams::CanApply()
 {
 	if (type->CanBeGrounded())
 	{
-		if (groundInfo != NULL)
+		if (groundInfo != NULL && groundInfo->ground != NULL )
+			return true;
+	}
+	else if (type->CanBeRailGrounded())
+	{
+		if (groundInfo != NULL && groundInfo->railGround != NULL)
 			return true;
 	}
 	else if (type->CanBeAerial())
@@ -341,23 +370,33 @@ void ActorParams::DrawMonitor( sf::RenderTarget *target )
 	
 }
 
-void ActorParams::WriteFile( ofstream &of )
+void ActorParams::WriteFile(ofstream &of)
 {
 	of << type->info.name << " ";
 
-	bool canGrounded = type->CanBeGrounded();
+	bool canGrounded = type->CanBeGrounded() || type->CanBeRailGrounded();
 	bool canAerial = type->CanBeAerial();
 	
 	int air = 0;
 	int ground = 1;
+
 
 	if( canGrounded && canAerial )
 	{
 		if( groundInfo != NULL )
 		{
 			int edgeIndex = groundInfo->GetEdgeIndex();
-			//of << "-air" << " " << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
-			of << ground << " " << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
+			if (groundInfo->ground != NULL)
+			{
+				of << ground << " " << groundInfo->ground->writeIndex;
+			}
+			else
+			{
+				assert(groundInfo->railGround != NULL);
+				of << ground << " " << groundInfo->railGround->writeIndex;
+				
+			}
+			of << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
 		}
 		else
 		{
@@ -370,7 +409,18 @@ void ActorParams::WriteFile( ofstream &of )
 
 		int edgeIndex = groundInfo->GetEdgeIndex();
 
-		of << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
+		if (groundInfo->ground != NULL)
+		{
+			of << groundInfo->ground->writeIndex;
+		}
+		else
+		{
+			assert(groundInfo->railGround != NULL);
+			of << groundInfo->railGround->writeIndex;
+		}
+
+		of << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
+		//of << groundInfo->ground->writeIndex << " " << edgeIndex << " " << groundInfo->groundQuantity << endl;
 	}
 	else if( canAerial )
 	{
@@ -390,7 +440,7 @@ void ActorParams::DrawQuad( sf::RenderTarget *target )
 }
 
 GroundInfo::GroundInfo()
-	:edgeStart( NULL ), groundQuantity( -1 ), ground( NULL )
+	:edgeStart( NULL ), groundQuantity( -1 ), ground( NULL ), railGround( NULL )
 {
 
 }
@@ -415,7 +465,13 @@ V2d GroundInfo::GetPosition()
 int GroundInfo::GetEdgeIndex()
 {
 	int index = 0;
-	for( TerrainPoint *curr = ground->pointStart; curr != NULL; curr = curr->next )
+	TerrainPoint *start;
+	if (ground != NULL)
+		start = ground->pointStart;
+	else
+		start = railGround->pointStart;
+
+	for( TerrainPoint *curr = start; curr != NULL; curr = curr->next )
 	{
 		if( curr == edgeStart )
 			return index;
@@ -450,14 +506,6 @@ void ActorParams::SetBoundingQuad()
 		V2d leftAir = leftGround + other * (double)(height - 1) ;
 		V2d rightAir = rightGround + other * (double)(height - 1 );
 
-		/*if( type->name == "poi" )
-		{
-			leftGround = startGround - along * ( type->width / 2.0 ) - other * ( type->height / 2.0 );
-			rightGround = startGround + along * ( type->width / 2.0 ) - other * ( type->height / 2.0 );
-			leftAir = leftGround + other * ( type->height / 2.0 );
-			rightAir = rightGround + other * ( type->height / 2.0 );
-		}*/
-
 		boundingQuad[0].position = Vector2f( leftGround.x, leftGround.y );
 		boundingQuad[1].position = Vector2f( leftAir.x, leftAir.y );
 		boundingQuad[2].position = Vector2f( rightAir.x, rightAir.y );
@@ -465,6 +513,24 @@ void ActorParams::SetBoundingQuad()
 
 		V2d pos = (leftGround + leftAir + rightAir + rightGround ) / 4.0;
 		position = Vector2i( pos.x, pos.y );
+	}
+	else if (type->CanBeRailGrounded() && groundInfo != NULL && groundInfo->railGround != NULL)
+	{
+		TerrainPoint *curr = groundInfo->edgeStart;
+		TerrainPoint *next = curr->next;
+		assert(next != NULL);
+
+		V2d currP(curr->pos);
+		V2d nextP(next->pos);
+		V2d dir = normalize(nextP - currP);
+		V2d pos = currP + dir * groundInfo->groundQuantity;
+
+		position = Vector2i(pos);
+
+		boundingQuad[0].position = Vector2f(position.x - width / 2, position.y - height / 2);
+		boundingQuad[1].position = Vector2f(position.x + width / 2, position.y - height / 2);
+		boundingQuad[2].position = Vector2f(position.x + width / 2, position.y + height / 2);
+		boundingQuad[3].position = Vector2f(position.x - width / 2, position.y + height / 2);
 	}
 	else
 	{
@@ -480,12 +546,21 @@ void ActorParams::SetBoundingQuad()
 
 void ActorParams::UpdateGroundedSprite()
 {	
-	assert( groundInfo != NULL && groundInfo->ground != NULL );
+	//assert( groundInfo != NULL && groundInfo->ground != NULL );
 	
+	TerrainPoint *pStart = NULL;
+	if (groundInfo->ground != NULL)
+		pStart = groundInfo->ground->pointStart;
+	else
+	{
+		assert(groundInfo->railGround != NULL);
+		pStart = groundInfo->railGround->pointStart;
+	}
+
 	TerrainPoint *edge = groundInfo->edgeStart;
 	TerrainPoint *next = edge->next;
-	if( next == NULL )
-		next = groundInfo->ground->pointStart;
+	if (groundInfo->ground != NULL && next == NULL)
+		next = pStart;
 
 	
 
@@ -506,12 +581,75 @@ void ActorParams::UpdateGroundedSprite()
 		groundInfo->groundQuantity = width / 2;
 	}
 
-	V2d newPoint( pr.x + (cu.x - pr.x) * (groundInfo->groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
-									(groundInfo->groundQuantity / length( cu - pr ) ) );
+	V2d dir = normalize(cu - pr);
+	V2d newPoint = pr + dir * groundInfo->groundQuantity;
 
-	double angle = atan2( (cu - pr).y, (cu - pr).x ) / PI * 180;
+	//V2d newPoint( pr.x + (cu.x - pr.x) * (groundInfo->groundQuantity / length( cu - pr ) ), pr.y + (cu.y - pr.y ) *
+	//								(groundInfo->groundQuantity / length( cu - pr ) ) );
+
 	image.setPosition( newPoint.x, newPoint.y );
-	image.setRotation( angle );
+
+	if (groundInfo->railGround == NULL)
+	{
+		double angle = atan2((cu - pr).y, (cu - pr).x) / PI * 180;
+		image.setRotation(angle);
+	}
+}
+
+void ActorParams::AnchorToRail(TerrainRail *rail,
+	int edgeIndex, double quantity)
+{
+	assert(groundInfo == NULL);
+
+	groundInfo = new GroundInfo;
+
+	groundInfo->railGround = rail;
+
+	groundInfo->groundQuantity = quantity;
+
+	int testIndex = 0;
+
+	image = type->GetSprite(false);// .setTexture(*type->ts_image->texture);	
+
+	Vector2i point;
+
+	//TerrainPoint *prev = groundInfo->railGround->pointEnd;
+	TerrainPoint *curr = groundInfo->railGround->pointStart;
+	TerrainPoint *next = NULL;
+
+
+	TerrainPoint *end = groundInfo->railGround->pointEnd;
+	for (; curr != NULL; curr = curr->next)
+	{
+		if (curr == end )
+		{
+			break;
+		}
+		else
+		{
+			next = curr->next;
+		}
+
+		if (edgeIndex == testIndex)
+		{
+			V2d pr(curr->pos.x, curr->pos.y);
+			V2d cu(next->pos.x, next->pos.y);
+
+			V2d newPoint(pr.x + (cu.x - pr.x) * (groundInfo->groundQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
+				(groundInfo->groundQuantity / length(cu - pr)));
+
+			double angle = atan2((cu - pr).y, (cu - pr).x) / PI * 180;
+
+			groundInfo->edgeStart = curr;
+
+
+			UpdateGroundedSprite();
+			SetBoundingQuad();
+
+			break;
+		}
+		++testIndex;
+	}
 }
 
 void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double quantity )
@@ -607,8 +745,16 @@ void ActorParams::UnAnchor( ActorPtr &actor )
 		//groundInfo->ground->enemies.clear();
 		
 		//cout << 
-		//SelectPtr select = boost::dynamic_pointer_cast<ISelectable>		
-		groundInfo->ground->enemies[groundInfo->edgeStart].remove( actor );
+		//SelectPtr select = boost::dynamic_pointer_cast<ISelectable>
+		if (groundInfo->ground != NULL)
+		{
+			groundInfo->ground->enemies[groundInfo->edgeStart].remove(actor);
+		}
+		else if (groundInfo->railGround != NULL)
+		{
+			groundInfo->railGround->enemies[groundInfo->edgeStart].remove(actor);
+		}
+		
 		//cout << "After remove" << endl;
 
 		//cout << "use count: " << actor.use_count() << endl;
@@ -619,7 +765,6 @@ void ActorParams::UnAnchor( ActorPtr &actor )
 		//cout << "About to bound" << endl;
 		SetBoundingQuad();
 		//cout << "just bounded" << endl;
-		//image.setPosition( 
 	}
 }
 
@@ -737,11 +882,19 @@ void ActorParams::Deactivate( EditSession *editsession, SelectPtr select )
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.remove( actor );
 
-	
-	if( actor->groundInfo != NULL )
+	GroundInfo *gi = actor->groundInfo;
+	if( gi != NULL )
 	{
-		actor->groundInfo->ground
-			->enemies[actor->groundInfo->edgeStart].remove( actor );
+		if (gi->ground != NULL)
+		{
+			gi->ground->enemies[gi->edgeStart].remove(actor);
+		}
+		else
+		{
+			assert(gi->railGround != NULL);
+
+			gi->railGround->enemies[gi->edgeStart].remove(actor);
+		}
 	}
 }
 
@@ -751,10 +904,20 @@ void ActorParams::Activate(EditSession *editsession, SelectPtr select )
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
 	group->actors.push_back( actor );
 
-	if( actor->groundInfo != NULL )
+	GroundInfo *gi = actor->groundInfo;
+	if( gi != NULL )
 	{
-		actor->groundInfo->ground
-			->enemies[actor->groundInfo->edgeStart].push_back( actor );
+		if (gi->ground != NULL)
+		{
+			gi->ground->enemies[gi->edgeStart].push_back(actor);
+		}
+		else
+		{
+			assert(gi->railGround != NULL);
+
+			gi->railGround->enemies[gi->edgeStart].push_back(actor);
+		}
+		
 	}
 }
 
@@ -1979,6 +2142,55 @@ void BasicGroundEnemyParams::WriteParamFile(std::ofstream &of)
 ActorParams *BasicGroundEnemyParams::Copy()
 {
 	BasicGroundEnemyParams *copy = new BasicGroundEnemyParams(*this);
+	return copy;
+}
+
+BasicRailEnemyParams::BasicRailEnemyParams(ActorType *at, TerrainRail *p_rail, int p_edgeIndex, double p_edgeQuantity,
+	int level)
+	:ActorParams(at)
+{
+	enemyLevel = level;
+	PlaceRailed(p_rail, p_edgeIndex, p_edgeQuantity);
+}
+
+BasicRailEnemyParams::BasicRailEnemyParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadRailed(is);
+
+	ParamsInfo &pi = at->info;
+
+	if (pi.writeMonitor)
+	{
+		LoadMonitor(is);
+	}
+
+	if (pi.writeLevel)
+	{
+		LoadEnemyLevel(is);
+	}
+}
+
+void BasicRailEnemyParams::WriteParamFile(std::ofstream &of)
+{
+	ParamsInfo &pi = type->info;
+
+	if (pi.writeMonitor)
+	{
+		WriteMonitor(of);
+	}
+
+	if (pi.writeLevel)
+	{
+		WriteLevel(of);
+	}
+
+	WriteSpecialParams(of);
+}
+
+ActorParams *BasicRailEnemyParams::Copy()
+{
+	BasicRailEnemyParams *copy = new BasicRailEnemyParams(*this);
 	return copy;
 }
 

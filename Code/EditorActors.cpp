@@ -1,6 +1,7 @@
 #include "EditorActors.h"
 #include "EditSession.h"
 #include "ActorParams.h"
+#include "EditorRail.h"
 
 using namespace std;
 using namespace sf;
@@ -20,6 +21,11 @@ ActorType::ActorType(ParamsInfo &pi)
 bool ActorType::CanBeGrounded()
 {
 	return (info.pmGround != NULL);
+}
+
+bool ActorType::CanBeRailGrounded()
+{
+	return (info.pmRail != NULL);
 }
 
 bool ActorType::CanBeAerial()
@@ -497,6 +503,10 @@ Panel *ActorType::CreatePanel()
 
 		//p->AddLabel( "label1", Vector2i( 20, 200 ), 30, "blah" );
 	}
+	else if (name == "railtest")
+	{
+		p = CreateDefaultPanel("railtest_options", true, true, false, false);
+	}
 	else if (name == "spider")
 	{
 		p = CreateDefaultPanel("spider_options", true, true, false, false);
@@ -641,9 +651,19 @@ void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 	a.reset(info.pLoader(this, is));
 	if (a->groundInfo != NULL)
 	{
-		TerrainPolygon *poly = a->groundInfo->ground;
-		poly->enemies[a->groundInfo->edgeStart].push_back(a);
-		poly->UpdateBounds();
+		if (a->groundInfo->ground != NULL)
+		{
+			TerrainPolygon *poly = a->groundInfo->ground;
+			poly->enemies[a->groundInfo->edgeStart].push_back(a);
+			poly->UpdateBounds();
+		}
+		else
+		{
+			assert(a->groundInfo->railGround != NULL);
+			TerrainRail *rail = a->groundInfo->railGround;
+			rail->enemies[a->groundInfo->edgeStart].push_back(a);
+			rail->UpdateBounds();
+		}
 	}
 }
 
@@ -702,6 +722,14 @@ void ActorType::PlaceEnemy()
 		if (edit->enemyEdgePolygon != NULL)
 		{
 			PlaceEnemy(info.pmGround(this));
+			placed = true;
+		}
+	}
+	if (info.pmRail != NULL)
+	{
+		if (edit->enemyEdgeRail != NULL)
+		{
+			PlaceEnemy(info.pmRail(this));
 			placed = true;
 		}
 	}

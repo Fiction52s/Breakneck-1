@@ -649,8 +649,21 @@ void LeaveGroundAction::Undo()
 	//cout << "applied: " << gi.GetEdgeIndex() << ", " << gi.groundQuantity << endl;
 	actor->AnchorToGround( gi );//gi.ground, gi.GetEdgeIndex(), gi.groundQuantity );
 
-	gi.ground->enemies[gi.edgeStart].push_back( actor );
-	gi.ground->UpdateBounds();
+	if (gi.ground != NULL)
+	{
+		gi.ground->enemies[gi.edgeStart].push_back(actor);
+		gi.ground->UpdateBounds();
+	}
+	else if (gi.railGround != NULL)
+	{
+		gi.railGround->enemies[gi.edgeStart].push_back(actor);
+		gi.railGround->UpdateBounds();
+	}
+	else
+	{
+		assert(0);
+	}
+	
 	//cout << "undoing and adding to ground" << endl;
 }
 
@@ -666,8 +679,16 @@ void GroundAction::Perform()
 
 	actor->AnchorToGround( gi );
 
-	gi.ground->enemies[gi.edgeStart].push_back( actor );
-	gi.ground->UpdateBounds();
+	if (gi.ground != NULL)
+	{
+		gi.ground->enemies[gi.edgeStart].push_back(actor);
+		gi.ground->UpdateBounds();
+	}
+	else if (gi.railGround != NULL)
+	{
+		gi.railGround->enemies[gi.edgeStart].push_back(actor);
+		gi.railGround->UpdateBounds();
+	}
 
 	performed = true;
 }

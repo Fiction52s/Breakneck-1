@@ -1,6 +1,7 @@
 #include "EditorTerrain.h"
 #include "Physics.h"
 #include "EditSession.h"
+#include "EditorRail.h"
 
 using namespace std;
 using namespace sf;
