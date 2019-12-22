@@ -647,15 +647,17 @@ void LeaveGroundAction::Undo()
 	assert( actor->groundInfo == NULL );
 
 	//cout << "applied: " << gi.GetEdgeIndex() << ", " << gi.groundQuantity << endl;
-	actor->AnchorToGround( gi );//gi.ground, gi.GetEdgeIndex(), gi.groundQuantity );
+	//gi.ground, gi.GetEdgeIndex(), gi.groundQuantity );
 
 	if (gi.ground != NULL)
 	{
+		actor->AnchorToGround(gi);
 		gi.ground->enemies[gi.edgeStart].push_back(actor);
 		gi.ground->UpdateBounds();
 	}
 	else if (gi.railGround != NULL)
 	{
+		actor->AnchorToRail(gi);
 		gi.railGround->enemies[gi.edgeStart].push_back(actor);
 		gi.railGround->UpdateBounds();
 	}

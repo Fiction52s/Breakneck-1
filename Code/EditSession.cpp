@@ -7418,6 +7418,11 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
 	}
 
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		(*it)->Draw(1, false, mapPreviewTex);
+	}
+
 	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
 		(*it)->DrawPreview(mapPreviewTex);
