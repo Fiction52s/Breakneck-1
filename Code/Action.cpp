@@ -757,11 +757,29 @@ void ModifyTerrainTypeAction::Perform()
 {
 	assert( !performed );
 
+	EditSession *edit = EditSession::GetSession();
 
-	for( map<TerrainPolygon*, pair<int,int>>::iterator it = terrainTypeMap.begin();
-		it != terrainTypeMap.end(); ++it )
+	int tWorldType;
+	int tVar;
+
+	for (SelectList::iterator it = terrainBrush.objects.begin();
+		it != terrainBrush.objects.end(); ++it)
 	{
-		(*it).first->SetMaterialType( newTerrainWorld, newVariation );
+		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
+		poly->Deactivate(edit, (*it));
+	}
+
+	for (map<TerrainPolygon*, pair<int, int>>::iterator it = terrainTypeMap.begin();
+		it != terrainTypeMap.end(); ++it)
+	{
+		(*it).first->SetMaterialType(newTerrainWorld, newVariation);
+	}
+
+	for (SelectList::iterator it = terrainBrush.objects.begin();
+		it != terrainBrush.objects.end(); ++it)
+	{
+		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
+		poly->Activate(edit, (*it));
 	}
 
 	performed = true;
@@ -771,10 +789,26 @@ void ModifyTerrainTypeAction::Undo()
 {
 	assert( performed );
 
+	EditSession *edit = EditSession::GetSession();
+
+	for (SelectList::iterator it = terrainBrush.objects.begin();
+		it != terrainBrush.objects.end(); ++it)
+	{
+		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
+		poly->Deactivate(edit, (*it));
+	}
+
 	for( map<TerrainPolygon*, pair<int,int>>::iterator it = terrainTypeMap.begin();
 		it != terrainTypeMap.end(); ++it )
 	{
 		(*it).first->SetMaterialType( (*it).second.first, (*it).second.second );
+	}
+
+	for (SelectList::iterator it = terrainBrush.objects.begin();
+		it != terrainBrush.objects.end(); ++it)
+	{
+		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
+		poly->Activate(edit, (*it));
 	}
 
 	performed = false;

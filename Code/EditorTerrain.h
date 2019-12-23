@@ -128,6 +128,7 @@ struct TerrainPolygon : ISelectable
 		JUNGLE,
 		FORTRESS,
 		CORE,
+		SECRETCORE,
 		WATER0,
 		Count
 	};

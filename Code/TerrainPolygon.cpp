@@ -397,8 +397,6 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 			if( curr->gate->edit == NULL )
 			{
 				curr->gate->Activate(edit, curr->gate);
-				//curr->gate->edit = edit;
-				//edit->gates.push_back( curr->gate );
 			}
 		}
 	}

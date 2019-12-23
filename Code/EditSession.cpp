@@ -7406,7 +7406,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	goalCS.setOrigin(cs.getLocalBounds().width / 2,
 		cs.getLocalBounds().height / 2);
 
-	//mapPreviewTex->draw(*tempva);
+	//mapPreviewTex->draw(*tempva);ke
 	//delete tempva;
 
 	for( list<boost::shared_ptr<TerrainPolygon>>::iterator it
