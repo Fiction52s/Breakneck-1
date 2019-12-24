@@ -175,7 +175,7 @@ void WireJuggler::ResetEnemy()
 
 void WireJuggler::HandleWireHit(Wire *w)
 {
-	w->HitEnemy(position);
+	w->Reset();
 	w->player->RestoreAirDash();
 	w->player->RestoreDoubleJump();
 }

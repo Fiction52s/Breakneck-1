@@ -25,7 +25,6 @@ Wire::Wire( Actor *p, bool r)
 	minimapQuads = new Vertex[numMinimapQuads];
 
 	aimingPrimaryAngleRange = 3;
-	hitEnemyFramesTotal = 60;
 
 	int tipIndex = 0;
 	ts_wire = player->owner->GetTileset( "Kin/wires_16x16.png", 16, 16 );
@@ -101,8 +100,6 @@ Wire::Wire( Actor *p, bool r)
 	{
 		CreateWireCharge();
 	}
-
-	
 	
 	//offsetFlagged = false;
 	//lockEdge = NULL;
@@ -168,13 +165,6 @@ sf::Vector2<double> Wire::GetPlayerPos()
 	}
 }
 
-void Wire::HitEnemy( V2d &hitPos )
-{
-	state = HITENEMY;
-	hitEnemyFrame = 0;
-	hitEnemyDelta = hitPos - GetPlayerPos();
-}
-
 void Wire::UpdateState( bool touchEdgeWithWire )
 {
 	
@@ -194,6 +184,17 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		playerPos = GetPlayerPos();//GetOriginPos(true);
 	}
 	storedPlayerPos = playerPos;
+	//cout << "setting stored player pos to: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
+	/*V2d dir;
+	if( player->ground == NULL )
+	{
+		dir = V2d( 0, -1 );
+	}
+	else
+	{
+		dir = player->ground->Normal();
+	}*/
+	//playerPos += V2d( offset.x, offset.y );
 
 	if( right )
 	{
@@ -617,14 +618,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			Reset();
 			break;
 		}
-	case HITENEMY:
-	{
-		if (hitEnemyFrame == hitEnemyFramesTotal)
-		{
-			Retract();
-		}
-		break;
-	}
 	}
 
 	//if( right )
@@ -874,11 +867,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		{
 			break;
 		}
-	case HITENEMY:
-	{
-		++hitEnemyFrame;
-		break;
-	}
 	}
 
 	++frame;
@@ -1581,7 +1569,7 @@ void Wire::UpdateQuads()
 
 	int currNumPoints = numPoints;
 
-	if( state == FIRING || singleRope || (state == HIT || state == PULLING ) || state == RETRACTING || state == HITENEMY)
+	if( state == FIRING || singleRope || (state == HIT || state == PULLING ) || state == RETRACTING )
 	{
 		if( state == RETRACTING )
 		{
@@ -1814,14 +1802,12 @@ void Wire::UpdateQuads()
 		else if( state == FIRING )
 		{
 			alongDir = fireDir;
+			otherDir = alongDir;
+			temp = otherDir.x;
+			otherDir.x = otherDir.y;
+			otherDir.y = -temp;
 			currWirePos = playerPos + fireDir * fireRate * (double)(framesFiring+1);
 			currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
-		}
-		else if (state == HITENEMY)
-		{
-			alongDir = fireDir;
-			currWirePos = playerPos + hitEnemyDelta;//playerPos + fireDir * fireRate * (double)(framesFiring + 1);
-			currWireStart = playerPos + V2d(player->GetWireOffset().x, player->GetWireOffset().y);
 		}
 		
 		
@@ -1921,6 +1907,21 @@ void Wire::UpdateQuads()
 		}
 
 		numVisibleIndexes = startIndex;
+
+		
+		//cout << "clearing: " << startIndex << " and beyond" << endl;
+		/*for( ; startIndex < numQuadVertices / 4; ++startIndex )
+		{
+			quads[startIndex*4].position = Vector2f( 0, 0 );
+			quads[startIndex*4+1].position = Vector2f( 0, 0 );
+			quads[startIndex*4+2].position = Vector2f( 0, 0 );
+			quads[startIndex*4+3].position = Vector2f( 0, 0 );
+
+			minimapQuads[startIndex*4].position = Vector2f( 0, 0 );
+			minimapQuads[startIndex*4+1].position = Vector2f( 0, 0 );
+			minimapQuads[startIndex*4+2].position = Vector2f( 0, 0 );
+			minimapQuads[startIndex*4+3].position = Vector2f( 0, 0 );
+		}*/
 
 		if( state == FIRING )
 			++framesFiring;

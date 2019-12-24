@@ -19,8 +19,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 		HIT,
 		PULLING,
 		RETRACTING,
-		RELEASED,
-		HITENEMY,
+		RELEASED
 	};
 
 	sf::Clock wireTestClock;
@@ -155,12 +154,6 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	void UpdateChargesSprites();
 	void UpdateChargesPrePhysics();
 	void UpdateChargesPostPhysics();
-
-	void HitEnemy( V2d &pos );
-
-	int hitEnemyFrame;
-	int hitEnemyFramesTotal;
-	V2d hitEnemyDelta;
 
 	void CheckAntiWireGrass();
 
