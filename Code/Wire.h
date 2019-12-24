@@ -19,7 +19,8 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 		HIT,
 		PULLING,
 		RETRACTING,
-		RELEASED
+		RELEASED,
+		HITENEMY,
 	};
 
 	sf::Clock wireTestClock;
@@ -50,6 +51,11 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	sf::Vector2<double> currOffset;
 
 	double GetCurrentTotalLength();
+
+	void HitEnemy(V2d &pos);
+	int hitEnemyFrame;
+	int hitEnemyFramesTotal;
+	V2d hitEnemyDelta;
 	
 	int extraBuffer; //when swinging around edges sometimes the wire
 	//stretches some. This is attemping to hole up that problem. if it happens

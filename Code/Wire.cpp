@@ -25,6 +25,7 @@ Wire::Wire( Actor *p, bool r)
 	minimapQuads = new Vertex[numMinimapQuads];
 
 	aimingPrimaryAngleRange = 3;
+	hitEnemyFramesTotal = 60;
 
 	int tipIndex = 0;
 	ts_wire = player->owner->GetTileset( "Kin/wires_16x16.png", 16, 16 );
@@ -184,17 +185,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		playerPos = GetPlayerPos();//GetOriginPos(true);
 	}
 	storedPlayerPos = playerPos;
-	//cout << "setting stored player pos to: " << playerPos.x << ", " << playerPos.y << " using " << player->position.x << ", " << player->position.y << endl;
-	/*V2d dir;
-	if( player->ground == NULL )
-	{
-		dir = V2d( 0, -1 );
-	}
-	else
-	{
-		dir = player->ground->Normal();
-	}*/
-	//playerPos += V2d( offset.x, offset.y );
 
 	if( right )
 	{
@@ -618,10 +608,17 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			Reset();
 			break;
 		}
+	case HITENEMY:
+	{
+		if (hitEnemyFrame == hitEnemyFramesTotal)
+		{
+			Reset();
+			//Retract();
+		}
+		break;
+	}
 	}
 
-	//if( right )
-		//cout << "state: " << state << ", what" << endl;
 	switch( state )
 	{
 	case IDLE:
@@ -867,6 +864,11 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		{
 			break;
 		}
+	case HITENEMY:
+	{
+		++hitEnemyFrame;
+		break;
+	}
 	}
 
 	++frame;
@@ -1569,7 +1571,7 @@ void Wire::UpdateQuads()
 
 	int currNumPoints = numPoints;
 
-	if( state == FIRING || singleRope || (state == HIT || state == PULLING ) || state == RETRACTING )
+	if( state == FIRING || singleRope || (state == HIT || state == PULLING ) || state == RETRACTING || state == HITENEMY )
 	{
 		if( state == RETRACTING )
 		{
@@ -1809,6 +1811,16 @@ void Wire::UpdateQuads()
 			currWirePos = playerPos + fireDir * fireRate * (double)(framesFiring+1);
 			currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
 		}
+		else if (state == HITENEMY)
+		{
+			alongDir = fireDir;
+			otherDir = alongDir;
+			temp = otherDir.x;
+			otherDir.x = otherDir.y;
+			otherDir.y = -temp;
+			currWirePos = playerPos + hitEnemyDelta;//playerPos + fireDir * fireRate * (double)(framesFiring + 1);
+			currWireStart = playerPos;// +V2d(player->GetWireOffset().x, player->GetWireOffset().y);
+		}
 		
 		
 		firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
@@ -1908,21 +1920,6 @@ void Wire::UpdateQuads()
 
 		numVisibleIndexes = startIndex;
 
-		
-		//cout << "clearing: " << startIndex << " and beyond" << endl;
-		/*for( ; startIndex < numQuadVertices / 4; ++startIndex )
-		{
-			quads[startIndex*4].position = Vector2f( 0, 0 );
-			quads[startIndex*4+1].position = Vector2f( 0, 0 );
-			quads[startIndex*4+2].position = Vector2f( 0, 0 );
-			quads[startIndex*4+3].position = Vector2f( 0, 0 );
-
-			minimapQuads[startIndex*4].position = Vector2f( 0, 0 );
-			minimapQuads[startIndex*4+1].position = Vector2f( 0, 0 );
-			minimapQuads[startIndex*4+2].position = Vector2f( 0, 0 );
-			minimapQuads[startIndex*4+3].position = Vector2f( 0, 0 );
-		}*/
-
 		if( state == FIRING )
 			++framesFiring;
 	}
@@ -1953,7 +1950,7 @@ double Wire::GetSegmentLength()
 
 void Wire::Retract()
 {
-	if( state == HIT || state == PULLING )
+	if (state == HIT || state == PULLING)
 	{
 	state = RETRACTING;
 
@@ -1979,6 +1976,11 @@ void Wire::Retract()
 		}
 	}
 	}
+	else if (state == HITENEMY)
+	{
+		//state = RETRACTING;
+		//retractPlayerPos = storedPlayerPos;
+	}
 }
 
 void Wire::Draw( RenderTarget *target )
@@ -1994,7 +1996,7 @@ void Wire::Draw( RenderTarget *target )
 		progressDraw.push_back( cstest );
 	}
 
-	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING )
+	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING || state == HITENEMY )
 	{	
 		target->draw( quads, numVisibleIndexes * 4, sf::Quads, ts_wire->texture );
 		target->draw( wireTip );
@@ -2189,6 +2191,13 @@ V2d Wire::GetOriginPos( bool test )
 
 	playerPos += gNormal * (double)offset.y - other * (double)offset.x;
 	return playerPos;
+}
+
+void Wire::HitEnemy(V2d &pos)
+{
+	state = HITENEMY;
+	hitEnemyFrame = 0;
+	hitEnemyDelta = pos - GetPlayerPos();
 }
 
 void Wire::UpdateFuse()
