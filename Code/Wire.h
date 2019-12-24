@@ -31,6 +31,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	void UpdateAnchors2( sf::Vector2<double> vel );
 	void SetFireDirection( sf::Vector2<double> dir );
 	void UpdateEnemyAnchor();
+	bool TryFire();
 	void Check();
 	void UpdateMinimapQuads( sf::View &uiView );
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );

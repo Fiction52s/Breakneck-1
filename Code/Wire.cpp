@@ -24,8 +24,8 @@ Wire::Wire( Actor *p, bool r)
 	numMinimapQuads = (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
 	minimapQuads = new Vertex[numMinimapQuads];
 
-	aimingPrimaryAngleRange = 3;
-	hitEnemyFramesTotal = 60;
+	aimingPrimaryAngleRange = 2;
+	hitEnemyFramesTotal = 5;
 
 	int tipIndex = 0;
 	ts_wire = player->owner->GetTileset( "Kin/wires_16x16.png", 16, 16 );
@@ -210,133 +210,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	{
 	case IDLE:
 		{
-			
-			if( player->CanShootWire() && triggerDown && !prevTriggerDown )
-			{
-				//cout << "firing" << endl;
-				fireDir = V2d( 0, 0 );
-
-
-				if( false )
-				{
-					if( currInput.LLeft() )
-					{
-						fireDir.x -= 1;
-					}
-					else if( currInput.LRight() )
-					{
-						fireDir.x += 1;
-					}
-			
-					if( currInput.LUp() )
-					{
-						if( player->reversed )
-						{
-							fireDir.y += 1;
-						}
-						else
-						{
-							fireDir.y -= 1;
-						}
-							
-					}
-					else if( currInput.LDown() )
-					{
-						if( player->reversed )
-						{
-							fireDir.y -= 1;
-						}
-						else
-						{
-							fireDir.y += 1;
-						}
-						
-					}
-				}
-				else
-				{
-					if (currInput.leftStickMagnitude > 0)
-					{
-						double angle = currInput.leftStickRadians;
-
-						double degs = angle / PI * 180.0;
-						double sec = 360.0 / 64.0;
-						int mult = floor((degs / sec) + .5);
-
-						if (mult < 0)
-						{
-							mult += 64;
-						}
-
-						int test;
-						int bigger, smaller;
-						for (int i = 0; i < aimingPrimaryAngleRange; ++i)
-						{
-							test = i + 1;
-							for (int j = 0; j < 64; j += 16)
-							{
-								bigger = mult + test;
-								smaller = mult - test;
-								if (smaller < 0)
-									smaller += 64;
-								if (bigger >= 64)
-									bigger -= 64;
-
-								if (bigger == j || smaller == j)
-								{
-									mult = j;
-								}
-							}
-						}
-
-						angle = (PI / 32.0) * mult;
-
-						//cout << "mult: " << mult << endl;
-
-						fireDir.x = cos(angle);
-						fireDir.y = -sin(angle);
-					}
-					else
-					{
-						if (player->facingRight)
-						{
-							fireDir = V2d(1, -1);
-						}
-						else
-						{
-							fireDir = V2d(-1, -1);
-						}
-
-						if (player->reversed)
-						{
-							fireDir.y = 1.0;
-						}
-					}
-					
-				}
-
-
-				if (right)
-				{
-					player->lastWire = 1;
-				}
-				else
-				{
-					player->lastWire = 2;
-				}
-
-				fireDir = normalize(fireDir);
-
-				float angle = atan2(fireDir.y, fireDir.x);
-
-				state = FIRING;
-				//cout << "firing from idle" << endl;
-				framesFiring = 0;
-				frame = 0;
-				anchor.enemy = NULL;
-
-				wireTip.setRotation(angle);
-			}
+			TryFire();
 			break;
 		}
 	case FIRING:
@@ -485,122 +359,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case RETRACTING:
 		{
-			if( triggerDown && !prevTriggerDown )
-			{
-				Reset();
-				//state = RELEASED;
-				//numPoints = 0;
-				//ClearCharges();
-				//ClearCharges();
-				//Reset();
-				fireDir = V2d( 0, 0 );
-				playerPos = GetPlayerPos();//GetOriginPos(true);
-				storedPlayerPos = playerPos;
-
-				if( false )
-				{
-					if( currInput.LLeft() )
-					{
-						fireDir.x -= 1;
-					}
-					else if( currInput.LRight() )
-					{
-						fireDir.x += 1;
-					}
-			
-					if( currInput.LUp() )
-					{
-						if( player->reversed )
-						{
-							fireDir.y += 1;
-						}
-						else
-						{
-							fireDir.y -= 1;
-						}
-							
-					}
-					else if( currInput.LDown() )
-					{
-						if( player->reversed )
-						{
-							fireDir.y -= 1;
-						}
-						else
-						{
-							fireDir.y += 1;
-						}
-						
-					}
-				}
-				else
-				{
-					//double angle = currInput.leftStickRadians;
-
-					//double degs = angle / PI * 180.0;
-					//double sec = 360.0 / 64.0;
-					//int mult = floor( (degs / sec) + .5 );
-					//angle = (PI / 32.0) * mult;
-
-
-					///*angle = angle / ( 360.0  / 64.0 );
-					//int mult = floor( angle );
-					//double remain = angle - ( mult * PI / 32.0 );
-					//if( remain >= PI / 64.0 )
-					//{
-					//	mult++;
-					//}
-
-					//angle = mult * PI / 32.0;*/
-
-
-					///*fireDir.x = cos( currInput.leftStickRadians );
-					//fireDir.y = -sin( currInput.leftStickRadians );*/
-
-					//fireDir.x = cos( angle );
-					//fireDir.y = -sin( angle );
-
-					double angle = currInput.leftStickRadians;
-
-					double degs = angle / PI * 180.0;
-					double sec = 360.0 / 64.0;
-					int mult = floor( (degs / sec) + .5 );
-					angle = (PI / 32.0) * mult;
-
-					fireDir.x = cos( angle );
-					fireDir.y = -sin( angle );
-				}
-
-				if( length( fireDir ) > .1 )
-				{
-					if( true )
-					//if( (right && ( player->lastWire == 0 || player->lastWire == 2 )) 
-					//	|| (!right && ( player->lastWire == 0 || player->lastWire == 1 ) ) )
-					{
-						if( right )
-						{
-							player->lastWire = 1;
-						}
-						else
-						{
-							player->lastWire = 2;
-						}
-
-						fireDir = normalize( fireDir );
-
-						float angle = atan2( fireDir.y, fireDir.x );
-						state = FIRING;
-						//cout << "firing from retracting" << endl;
-						framesFiring = 0;
-						frame = 0;
-						anchor.enemy = NULL;
-
-						wireTip.setRotation( angle );
-					}
-				}
-
-				//fireDir = normalize( V2d( -1, -1 ) );
-			}
+			TryFire();
 			break;
 		}
 	case RELEASED:
@@ -610,6 +369,11 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case HITENEMY:
 	{
+		if (TryFire())
+		{
+			break;
+		}
+
 		if (hitEnemyFrame == hitEnemyFramesTotal)
 		{
 			Reset();
@@ -896,6 +660,141 @@ void Wire::ClearCharges()
 	activeChargeList = NULL;
 }
 
+
+bool Wire::TryFire()
+{
+	ControllerState &currInput = player->currInput;
+	ControllerState &prevInput = player->prevInput;
+	if (player->CanShootWire() && triggerDown && !prevTriggerDown)
+	{
+		//cout << "firing" << endl;
+		fireDir = V2d(0, 0);
+
+		if (false)
+		{
+			if (currInput.LLeft())
+			{
+				fireDir.x -= 1;
+			}
+			else if (currInput.LRight())
+			{
+				fireDir.x += 1;
+			}
+
+			if (currInput.LUp())
+			{
+				if (player->reversed)
+				{
+					fireDir.y += 1;
+				}
+				else
+				{
+					fireDir.y -= 1;
+				}
+
+			}
+			else if (currInput.LDown())
+			{
+				if (player->reversed)
+				{
+					fireDir.y -= 1;
+				}
+				else
+				{
+					fireDir.y += 1;
+				}
+
+			}
+		}
+		else
+		{
+			if (currInput.leftStickMagnitude > 0)
+			{
+				double angle = currInput.leftStickRadians;
+
+				double degs = angle / PI * 180.0;
+				double sec = 360.0 / 64.0;
+				int mult = floor((degs / sec) + .5);
+
+				if (mult < 0)
+				{
+					mult += 64;
+				}
+
+				int test;
+				int bigger, smaller;
+				for (int i = 0; i < aimingPrimaryAngleRange; ++i)
+				{
+					test = i + 1;
+					for (int j = 0; j < 64; j += 16)
+					{
+						bigger = mult + test;
+						smaller = mult - test;
+						if (smaller < 0)
+							smaller += 64;
+						if (bigger >= 64)
+							bigger -= 64;
+
+						if (bigger == j || smaller == j)
+						{
+							mult = j;
+						}
+					}
+				}
+
+				angle = (PI / 32.0) * mult;
+
+				//cout << "mult: " << mult << endl;
+
+				fireDir.x = cos(angle);
+				fireDir.y = -sin(angle);
+			}
+			else
+			{
+				if (player->facingRight)
+				{
+					fireDir = V2d(1, -1);
+				}
+				else
+				{
+					fireDir = V2d(-1, -1);
+				}
+
+				if (player->reversed)
+				{
+					fireDir.y = 1.0;
+				}
+			}
+
+		}
+
+
+		if (right)
+		{
+			player->lastWire = 1;
+		}
+		else
+		{
+			player->lastWire = 2;
+		}
+
+		fireDir = normalize(fireDir);
+
+		float angle = atan2(fireDir.y, fireDir.x);
+
+		state = FIRING;
+		//cout << "firing from idle" << endl;
+		framesFiring = 0;
+		frame = 0;
+		anchor.enemy = NULL;
+
+		wireTip.setRotation(angle);
+
+		return true;
+	}
+
+	return false;
+}
 
 void Wire::SwapPoints( int aIndex, int bIndex )
 {
@@ -1918,7 +1817,7 @@ void Wire::UpdateQuads()
 
 		}
 
-		numVisibleIndexes = startIndex;
+		numVisibleIndexes = startIndex - 1;
 
 		if( state == FIRING )
 			++framesFiring;
