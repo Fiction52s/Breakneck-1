@@ -60,6 +60,7 @@ struct QuadTree
 	~QuadTree();
 	//void Query( QuadTreeCollider *qtc, 
 	void DebugDraw( sf::RenderTarget *target );
+	void Delete(QuadTreeEntrant *qte);
 	void Insert( QuadTreeEntrant *qte );
 	void Query(QuadTreeCollider *qtc, const sf::Rect<double> &r );
 	void Clear();

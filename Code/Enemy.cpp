@@ -1943,14 +1943,19 @@ void Enemy::ConfirmHitNoKill()
 {
 	assert(receivedHit != NULL);
 
-	if (receivedHit->hType != HitboxInfo::COMBO)
+	HitboxInfo::HitboxType hType = receivedHit->hType;
+	if (hType == HitboxInfo::COMBO)
 	{
-		owner->Pause(5);
-		pauseFrames = 0;
+		pauseFrames = 5;
+	}
+	else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
+	{
+		pauseFrames = 5;
 	}
 	else
 	{
-		pauseFrames = 5;
+		owner->Pause(5);
+		pauseFrames = 0;
 	}
 	
 	HandleHitAndSurvive();
@@ -1967,15 +1972,20 @@ void Enemy::ConfirmKill()
 {
 	assert(receivedHit != NULL);
 
-	if (receivedHit->hType != HitboxInfo::COMBO)
-	{
-		owner->Pause(7);
-		pauseFrames = 0;
-	}
-	else
+	HitboxInfo::HitboxType hType = receivedHit->hType;
+	if (hType == HitboxInfo::COMBO )
 	{
 		pauseFrames = 7;
 		comboHitEnemy->ComboKill(this);
+	}
+	else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
+	{
+		pauseFrames = 7;
+	}
+	else
+	{
+		owner->Pause(7);
+		pauseFrames = 0;
 	}
 
 
@@ -2010,8 +2020,15 @@ void Enemy::ConfirmKill()
 void Enemy::SetupBodies(int numHurtboxes,
 	int numHitboxes)
 {
-	hurtBody = new CollisionBody(numHurtboxes);
-	hitBody = new CollisionBody(numHitboxes);
+	if (numHurtboxes > 0)
+	{
+		hurtBody = new CollisionBody(numHurtboxes);
+	}
+	
+	if (numHitboxes > 0)
+	{
+		hitBody = new CollisionBody(numHitboxes);
+	}
 }
 
 void Enemy::AddBasicHurtCircle(double rad, int index)
@@ -2284,9 +2301,15 @@ bool Enemy::IsSlowed( int index )
 
 HitboxInfo * Enemy::IsHit(Actor *player)
 {
-	if (player->IntersectMyHitboxes(currHurtboxes, currHurtboxFrame))
+	if (currHurtboxes == NULL)
+		return NULL;
+
+	if (CanBeHitByPlayer())
 	{
-		return player->currHitboxes->hitboxInfo;
+		if (player->IntersectMyHitboxes(currHurtboxes, currHurtboxFrame))
+		{
+			return player->currHitboxes->hitboxInfo;
+		}
 	}
 
 	if (CanBeHitByComboer())
@@ -2301,6 +2324,16 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 			return hi;
 		}
 
+	}
+
+	if (CanBeHitByWireTip())
+	{
+		Wire *wire = player->IntersectMyWireHitboxes(currHurtboxes, currHurtboxFrame);
+		if( wire != NULL )
+		{
+			HandleWireHit(wire);
+			return wire->tipHitboxInfo;
+		}
 	}
 	
 	return NULL;
@@ -2459,6 +2492,8 @@ EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
 		case EnemyType::EN_GORILLA:
 			ep = new EnemyParams(2, 5, .8, (3 * 60) / 5, 5);
 			break;
+		case EnemyType::EN_WIRETARGET:
+			ep = new EnemyParams(2, 5, 0, 0, 1);
 		default:
 			return NULL;
 		}

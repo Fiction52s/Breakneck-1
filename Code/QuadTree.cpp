@@ -209,6 +209,11 @@ void QuadTree::Insert( QuadTreeEntrant *qte )
 	startNode = rInsert( startNode, qte );
 }
 
+void QuadTree::Delete(QuadTreeEntrant *qte)
+{
+	//fill this in later..
+}
+
 void QuadTree::rDebugDraw( sf::RenderTarget *target, QNode *node )
 {
 	if( node->leaf )

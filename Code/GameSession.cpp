@@ -68,6 +68,7 @@
 #include "Enemy_Cheetah.h"
 #include "Enemy_HungryComboer.h"
 #include "Enemy_RelativeComboer.h"
+#include "Enemy_WireJuggler.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -133,6 +134,7 @@
 #include "TerrainPiece.h"
 #include "Grass.h"
 #include "EnvPlant.h"
+#include "Enemy_WireTarget.h"
 
 #include "SpecialTerrain.h"
 
@@ -2524,7 +2526,8 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			enemyTree->Insert(enemy);
 		}
-		else if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler" || typeName == "bouncejuggler" )
+		else if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler" || typeName == "bouncejuggler" 
+			|| typeName == "wirejuggler" )
 		{
 
 			int xPos, yPos;
@@ -2562,6 +2565,11 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			else if (typeName == "bouncejuggler")
 			{
 				enemy = new BounceJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+					level, numJuggles);
+			}
+			else if (typeName == "wirejuggler")
+			{
+				enemy = new WireJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
 					level, numJuggles);
 			}
 			
@@ -3497,6 +3505,27 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			enem = enemy;
 
 			enemyTree->Insert( enemy );
+		}
+		else if (typeName == "wiretarget")
+		{
+
+			int xPos, yPos;
+
+			is >> xPos;
+			is >> yPos;
+
+			int hasMonitor;
+			is >> hasMonitor;
+
+			int level;
+			is >> level;
+
+			WireTarget *enemy = new WireTarget(this, hasMonitor, Vector2i(xPos, yPos), level);
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);
 		}
 		else if (typeName == "bossskeleton")
 		{

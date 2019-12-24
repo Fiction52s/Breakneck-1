@@ -24,6 +24,8 @@ Wire::Wire( Actor *p, bool r)
 	numMinimapQuads = (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
 	minimapQuads = new Vertex[numMinimapQuads];
 
+	aimingPrimaryAngleRange = 3;
+
 	int tipIndex = 0;
 	ts_wire = player->owner->GetTileset( "Kin/wires_16x16.png", 16, 16 );
 	if( r )
@@ -47,6 +49,25 @@ Wire::Wire( Actor *p, bool r)
 
 
 	ts_wireCharge = player->owner->GetTileset( "Kin/wirecharge_32x32.png", 32, 32 );
+
+
+	tipHitboxInfo = new HitboxInfo();
+	tipHitboxInfo->damage = 20;
+	tipHitboxInfo->drainX = .5;
+	tipHitboxInfo->drainY = .5;
+	tipHitboxInfo->hitlagFrames = 0;
+	tipHitboxInfo->hitstunFrames = 30;
+	tipHitboxInfo->knockback = 0;
+	tipHitboxInfo->freezeDuringStun = true;
+	if (r)
+	{
+		tipHitboxInfo->hType = HitboxInfo::WIREHITRED;
+	}
+	else
+	{
+		tipHitboxInfo->hType = HitboxInfo::WIREHITBLUE;
+	}
+	
 
 	minSideEdge = NULL;
 	minSideOther = -1;
@@ -88,6 +109,8 @@ Wire::~Wire()
 {
 	delete[] quads;
 	delete[] minimapQuads;
+
+	delete tipHitboxInfo;
 
 	ClearCharges();
 	DestroyDeactivatedCharges();
@@ -249,7 +272,36 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 						double degs = angle / PI * 180.0;
 						double sec = 360.0 / 64.0;
 						int mult = floor((degs / sec) + .5);
+
+						if (mult < 0)
+						{
+							mult += 64;
+						}
+
+						int test;
+						int bigger, smaller;
+						for (int i = 0; i < aimingPrimaryAngleRange; ++i)
+						{
+							test = i + 1;
+							for (int j = 0; j < 64; j += 16)
+							{
+								bigger = mult + test;
+								smaller = mult - test;
+								if (smaller < 0)
+									smaller += 64;
+								if (bigger >= 64)
+									bigger -= 64;
+
+								if (bigger == j || smaller == j)
+								{
+									mult = j;
+								}
+							}
+						}
+
 						angle = (PI / 32.0) * mult;
+
+						//cout << "mult: " << mult << endl;
 
 						fireDir.x = cos(angle);
 						fireDir.y = -sin(angle);
@@ -583,10 +635,19 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			//rcQuantity = 0;
 			
 			rayCancel = false;
+			V2d currPos = playerPos + fireDir * fireRate * (double)(framesFiring);
 			V2d futurePos = playerPos + fireDir * fireRate * (double)(framesFiring + 1);
 			RayCast( this, player->owner->terrainTree->startNode, playerPos, futurePos );
 			RayCast(this, player->owner->railEdgeTree->startNode, playerPos, futurePos);
-			
+
+			fireDir = normalize(fireDir);
+			double len = length(futurePos - currPos);
+
+			movingHitbox.SetRectDir(fireDir, len, 30);
+			movingHitbox.globalPosition = (currPos + futurePos) / 2.0;
+
+			tipHitboxInfo->hDir = fireDir;
+
 			if( rayCancel )
 			{
 				Reset();
@@ -853,6 +914,18 @@ void Wire::UpdateEnemyAnchor()
 	}
 }
 
+CollisionBox * Wire::GetTipHitbox()
+{
+	if (state == FIRING)
+	{
+		return &movingHitbox;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
 void Wire::UpdateAnchors2( V2d vel )
 {
 	
@@ -860,8 +933,6 @@ void Wire::UpdateAnchors2( V2d vel )
 
 	wireTestClock.restart();
 	V2d playerPos = GetPlayerPos();//GetOriginPos(true);
-
-
 
 	if( (state == HIT || state == PULLING) && anchor.enemy == NULL )
 	{
@@ -992,9 +1063,9 @@ void Wire::UpdateAnchors2( V2d vel )
 		quadWirePosC = wirePos;
 		quadPlayerPosD = playerPos;
 
-		Enemy *foundEnemy;
+		Enemy *foundEnemy = NULL;
 		int foundIndex;
-		if (GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
+		if (false && GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
 		{
 			storedPlayerPos = playerPos;
 			state = HIT;
@@ -1735,7 +1806,7 @@ void Wire::UpdateQuads()
 			temp = otherDir.x;
 			otherDir.x = otherDir.y;
 			otherDir.y = -temp;
-			currWirePos = playerPos + fireDir * fireRate * (double)framesFiring;
+			currWirePos = playerPos + fireDir * fireRate * (double)(framesFiring+1);
 			currWireStart = playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
 		}
 		
@@ -1967,12 +2038,17 @@ void Wire::DrawMinimap( sf::RenderTarget *target )
 
 void Wire::DebugDraw( RenderTarget *target )
 {
-	for( list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it )
+	/*for( list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it )
 	{
 		target->draw( *(*it) );
 		delete (*it);
 	}
-	progressDraw.clear();
+	progressDraw.clear();*/
+
+	if (state == FIRING)
+	{
+		movingHitbox.DebugDraw(target);
+	}
 }
 
 void Wire::ActivateRetractionCharges()

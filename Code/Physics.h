@@ -160,6 +160,9 @@ struct CollisionBox
 	sf::Vector2<double> globalPosition;
 	void Scale(double factor);
 	double globalAngle;
+
+	void SetRectDir(V2d &dir, double alongSize,
+		double otherSize);
 	double localAngle;
 	V2d GetOffset();
 	V2d GetTrueCenter();

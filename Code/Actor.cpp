@@ -12289,6 +12289,41 @@ ComboObject * Actor::IntersectMyComboHitboxes(Enemy *e, CollisionBody *cb,
 	return NULL;
 }
 
+Wire * Actor::IntersectMyWireHitboxes(CollisionBody *cb,
+	int cbFrame)
+{
+	if (cb == NULL)
+		return NULL;
+
+	CollisionBox *rightBox = NULL;
+	CollisionBox *leftBox = NULL;
+	if (rightWire != NULL)
+	{
+		rightBox = rightWire->GetTipHitbox();
+	}
+	if (leftWire != NULL)
+	{
+		leftBox = leftWire->GetTipHitbox();
+	}
+
+	if (rightBox != NULL)
+	{
+		if (cb->Intersects(cbFrame, rightBox))
+		{
+			return rightWire;
+		}
+	}
+	if (leftBox != NULL)
+	{
+		if (cb->Intersects(cbFrame, leftBox))
+		{
+			return leftWire;
+		}
+	}
+
+	return false;
+}
+
 bool Actor::IntersectMyHurtboxes(CollisionBody *cb, int cbFrame )
 {
 	//just for the demo. more detailed hurtboxes later
@@ -16726,7 +16761,7 @@ void Actor::HandleSpecialTerrain(int stType)
 	{
 	case SPECIAL_TERRAIN_WATER:
 		RestoreAirDash();
-		extraDoubleJump = true;
+		RestoreDoubleJump();
 		break;
 	case SPECIAL_TERRAIN_GLIDEWATER:
 	{
@@ -20564,8 +20599,8 @@ void Actor::DebugDraw( RenderTarget *target )
 		//testGhost->UpdatePrePhysics( ghostFrame );
 	}*/
 
-	//leftWire->DebugDraw( target );
-	//rightWire->DebugDraw( target );
+	leftWire->DebugDraw( target );
+	rightWire->DebugDraw( target );
 
 	DebugDrawComboObj(target);
 
@@ -25167,7 +25202,9 @@ V2d Actor::GetTrueVel()
 
 void Actor::RestoreDoubleJump()
 {
-	hasDoubleJump = true;
+	if( !hasDoubleJump )
+		extraDoubleJump = true;
+	//hasDoubleJump = true;
 }
 
 void Actor::RestoreAirDash()

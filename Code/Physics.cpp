@@ -418,6 +418,19 @@ void CollisionBox::Scale(double factor)
 	rh *= factor;
 }
 
+void CollisionBox::SetRectDir(V2d &dir, double alongSize,
+	double otherSize)
+{
+	isCircle = false;
+
+	double angle = atan2(-dir.y, -dir.x);
+
+	rw = alongSize / 2.0;
+	rh = otherSize / 2.0;
+
+	localAngle = angle;
+}
+
 V2d CollisionBox::GetOffset()
 {
 	V2d realOffset = offset;

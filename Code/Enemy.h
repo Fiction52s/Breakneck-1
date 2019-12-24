@@ -7,6 +7,7 @@
 #include "EffectLayer.h"
 #include <SFML/Audio.hpp>
 
+struct Wire;
 struct Zone;
 struct Monitor;
 struct Tileset;
@@ -372,6 +373,8 @@ enum EnemyType
 	EN_GORILLA,
 	EN_FLYINGHEAD,
 	EN_SPECTER,
+	EN_WIRETARGET,
+	EN_WIREJUGGLER,
 	EN_GOAL,
 	EN_KEY,
 	EN_BOSS_CRAWLER,
@@ -628,7 +631,11 @@ public:
 		int slowMult,
 		int numPhysSteps);
 	
+	virtual void HandleWireHit(Wire *w) {}
+
+	virtual bool CanBeHitByPlayer() { return true; }
 	virtual bool CanBeHitByComboer() { return true; }
+	virtual bool CanBeHitByWireTip() { return false; }
 
 	virtual void RecordEnemy();
 	virtual void DirectKill();

@@ -68,6 +68,8 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	bool clockwise;
 	sf::Vector2<double> storedPlayerPos;
 
+	CollisionBox movingHitbox;
+
 
 	sf::Vector2i offset;
 	int addedPoints;
@@ -178,6 +180,11 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	double quadHalfWidth;
 	int numPoints;
 	const static int MAX_POINTS = 64;
+
+	int aimingPrimaryAngleRange;
+
+	CollisionBox *GetTipHitbox();
+	HitboxInfo *tipHitboxInfo;
 
 	//sf::Vector2<double> points[16];
 	WirePoint points[MAX_POINTS];

@@ -203,7 +203,7 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel("comboer_options", false, true, true, true);
 	}
 	else if (name == "gravdowncomboer" || name == "gravupcomboer"
-		|| name == "bouncecomboer")
+		|| name == "bouncecomboer" )
 	{
 		p = CreateDefaultPanel("gravcomboer_options", true, true, true, true);
 	}
@@ -224,7 +224,8 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("monitor", Vector2i(20, 330));
 		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
 	}
-	else if (name == "downgravityjuggler" || name == "upgravityjuggler" || name == "bouncejuggler")
+	else if (name == "downgravityjuggler" || name == "upgravityjuggler" || name == "bouncejuggler"
+		|| name == "wirejuggler" )
 	{
 		p = CreateDefaultPanel("juggler_options", true, true, true, false);
 		p->AddTextBox("numjuggles", Vector2i(20, 600), 200, 20, "0");
@@ -583,6 +584,10 @@ Panel *ActorType::CreatePanel()
 	else if (name == "gorilla")
 	{
 		p = CreateDefaultPanel("gorilla_options", true, true, false, false);
+	}
+	else if (name == "wiretarget")
+	{
+		p = CreateDefaultPanel("wiretarget_options", true, true, false, false);
 	}
 	else if (name == "copycat")
 	{
