@@ -786,6 +786,11 @@ bool Wire::TryFire()
 		//cout << "firing from idle" << endl;
 		framesFiring = 0;
 		frame = 0;
+
+		if (anchor.enemy != NULL)
+		{
+			anchor.enemy->HandleWireUnanchored(this);
+		}
 		anchor.enemy = NULL;
 
 		wireTip.setRotation(angle);
@@ -966,7 +971,7 @@ void Wire::UpdateAnchors2( V2d vel )
 
 		Enemy *foundEnemy = NULL;
 		int foundIndex;
-		if (false && GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
+		if (GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
 		{
 			storedPlayerPos = playerPos;
 			state = HIT;
@@ -987,6 +992,8 @@ void Wire::UpdateAnchors2( V2d vel )
 			anchorVel = V2d(0, 0);
 			anchor.enemyPosIndex = foundIndex;
 			UpdateAnchors(V2d(0, 0));
+
+			foundEnemy->HandleWireAnchored(this);
 		}
 
 		//for grabbing onto points
@@ -1034,6 +1041,11 @@ void Wire::UpdateAnchors2( V2d vel )
 	storedPlayerPos = playerPos;
 
 	//cout << "wire update milli: " << wireTestClock.getElapsedTime().asMilliseconds() << endl;
+}
+
+bool Wire::IsValidTrackEnemy(Enemy *e)
+{
+	return e->CanBeAnchoredByWire(right);
 }
 
 void Wire::UpdateAnchors( V2d vel )

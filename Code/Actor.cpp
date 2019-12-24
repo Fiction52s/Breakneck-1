@@ -12289,19 +12289,22 @@ ComboObject * Actor::IntersectMyComboHitboxes(Enemy *e, CollisionBody *cb,
 	return NULL;
 }
 
-Wire * Actor::IntersectMyWireHitboxes(CollisionBody *cb,
+Wire * Actor::IntersectMyWireHitboxes(Enemy *e, CollisionBody *cb,
 	int cbFrame)
 {
 	if (cb == NULL)
 		return NULL;
 
+	bool canHitRight = e->CanBeHitByWireTip(true);
+	bool canHitLeft = e->CanBeHitByWireTip(false);
+
 	CollisionBox *rightBox = NULL;
 	CollisionBox *leftBox = NULL;
-	if (rightWire != NULL)
+	if (rightWire != NULL && canHitRight )
 	{
 		rightBox = rightWire->GetTipHitbox();
 	}
-	if (leftWire != NULL)
+	if (leftWire != NULL && canHitLeft)
 	{
 		leftBox = leftWire->GetTipHitbox();
 	}

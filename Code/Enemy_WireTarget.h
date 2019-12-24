@@ -23,8 +23,9 @@ struct WireTarget : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
-	bool CanBeHitByWireTip();
+	bool CanBeHitByWireTip(bool red);
 	bool CanBeHitByComboer();
+	bool CanBeAnchoredByWire(bool red);
 
 	Action action;
 	int actionLength[S_Count];

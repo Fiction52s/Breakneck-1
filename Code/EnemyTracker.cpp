@@ -16,6 +16,8 @@ bool EnemyTracker::GetClosestEnemyPos(GameSession *owner, V2d &pos,
 	double radSqr = radius * radius;
 	Enemy *fEnemy = NULL;
 	int fIndex = 0;
+
+	bool enemyCanBeAnchored;
 	while (curr != NULL)
 	{
 		if (IsValidTrackEnemy(curr))

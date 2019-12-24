@@ -18,9 +18,11 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 WireJuggler::WireJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos,
-	list<Vector2i> &path, int p_level, int jReps)
+	list<Vector2i> &path, int p_level, int jReps, JuggleType juggleType )
 	:Enemy(owner, EnemyType::EN_WIREJUGGLER, p_hasMonitor, 1, false)
 {
+	jType = juggleType;
+
 	level = p_level;
 
 	switch (level)
@@ -80,14 +82,20 @@ WireJuggler::WireJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	gravFactor = 1.0;
 
 	gDir = V2d(0, 1);
-	if (reversedGrav)
+	
+	switch (jType)
 	{
-		gDir.y = -gDir.y;
-		sprite.setColor(Color::Green);
-	}
-	else
-	{
+	case T_WHITE:
+		break;
+	case T_BLUE:
+		sprite.setColor(Color::Blue);
+		break;
+	case T_RED:
 		sprite.setColor(Color::Red);
+		break;
+	case T_MAGENTA:
+		sprite.setColor(Color::Magenta);
+		break;
 	}
 	maxFallSpeed = 15;
 
@@ -173,11 +181,39 @@ void WireJuggler::ResetEnemy()
 	UpdateSprite();
 }
 
+bool WireJuggler::CanBeAnchoredByWire(bool red)
+{
+	switch (jType)
+	{
+	case T_WHITE:
+		return true;
+	case T_BLUE:
+		return red;
+	case T_RED:
+		return !red;
+	case T_MAGENTA:
+		return true;
+	}
+}
+
 void WireJuggler::HandleWireHit(Wire *w)
 {
 	w->HitEnemy(position);
 	w->player->RestoreAirDash();
 	w->player->RestoreDoubleJump();
+}
+
+void WireJuggler::HandleWireUnanchored(Wire *w)
+{
+	action = S_JUGGLE;
+	frame = 0;
+}
+
+void WireJuggler::HandleWireAnchored(Wire *w)
+{
+	action = S_HELD;
+	velocity = V2d(0, 0);
+	frame = 0;
 }
 
 void WireJuggler::Throw(double a, double strength)
@@ -267,9 +303,19 @@ void WireJuggler::PopThrow()
 	owner->PlayerAddActiveComboObj(comboObj);
 }
 
-bool WireJuggler::CanBeHitByWireTip()
+bool WireJuggler::CanBeHitByWireTip(bool red)
 {
-	return true;
+	switch (jType)
+	{
+	case T_WHITE:
+		return true;
+	case T_BLUE:
+		return !red;
+	case T_RED:
+		return red;
+	case T_MAGENTA:
+		return true;
+	}
 }
 
 bool WireJuggler::CanBeHitByComboer()
@@ -412,7 +458,6 @@ void WireJuggler::FrameIncrement()
 		{
 			waitFrame++;
 		}
-
 	}
 
 }

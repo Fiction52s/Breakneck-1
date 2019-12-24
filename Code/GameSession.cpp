@@ -2570,7 +2570,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			else if (typeName == "wirejuggler")
 			{
 				enemy = new WireJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-					level, numJuggles);
+					level, numJuggles, WireJuggler::T_BLUE);
 			}
 			
 

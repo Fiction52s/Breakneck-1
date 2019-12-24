@@ -632,10 +632,13 @@ public:
 		int numPhysSteps);
 	
 	virtual void HandleWireHit(Wire *w) {}
+	virtual void HandleWireAnchored(Wire *w) {}
+	virtual void HandleWireUnanchored(Wire *w) {}
 
 	virtual bool CanBeHitByPlayer() { return true; }
 	virtual bool CanBeHitByComboer() { return true; }
-	virtual bool CanBeHitByWireTip() { return false; }
+	virtual bool CanBeHitByWireTip(bool red) { return false; }
+	virtual bool CanBeAnchoredByWire(bool red) { return true; }
 
 	virtual void RecordEnemy();
 	virtual void DirectKill();

@@ -7,19 +7,28 @@ struct ComboObject;
 
 struct WireJuggler : Enemy
 {
+	enum JuggleType
+	{
+		T_WHITE,
+		T_BLUE,
+		T_RED,
+		T_MAGENTA
+	};
+
 	enum Action
 	{
 		S_FLOAT,
 		S_POP,
 		S_JUGGLE,
 		S_RETURN,
+		S_HELD,
 		S_Count
 	};
 
 	WireJuggler(GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &path, int p_level,
-		int juggleReps );
+		int juggleReps, JuggleType juggleType );
 	~WireJuggler();
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void ProcessState();
@@ -36,16 +45,20 @@ struct WireJuggler : Enemy
 	void Pop();
 	void PopThrow();
 	void HandleWireHit(Wire *w);
+	void HandleWireAnchored(Wire *w);
+	void HandleWireUnanchored(Wire *w);
+	bool CanBeAnchoredByWire(bool red);
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
-	bool CanBeHitByWireTip();
+	bool CanBeHitByWireTip(bool red);
 	bool CanBeHitByComboer();
 
 	Action action;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
 
+	JuggleType jType;
 	V2d origPos;
 
 	V2d velocity;

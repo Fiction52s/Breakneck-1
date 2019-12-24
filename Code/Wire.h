@@ -45,6 +45,8 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	void SwapPoints( int aIndex, int bIndex );
 	void UpdateQuads();
 	void Reset();
+	bool IsValidTrackEnemy(Enemy *e);
+
 	sf::Vector2<double> GetOriginPos( bool test );
 	void UpdateFuse();
 	double GetSegmentLength();

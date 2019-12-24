@@ -938,7 +938,8 @@ struct Actor : QuadTreeCollider,
 	ComboObject * IntersectMyComboHitboxes(
 		Enemy *e, CollisionBody *cb,
 		int cbFrame);
-	Wire * IntersectMyWireHitboxes( CollisionBody *cb,
+	Wire * IntersectMyWireHitboxes( Enemy *e,
+		CollisionBody *cb,
 		int cbFrame);
 	bool EnemyIsFar(V2d &enemyPos);
 

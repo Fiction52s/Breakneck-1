@@ -76,7 +76,7 @@ bool WireTarget::CanBeHitByComboer()
 	return false;
 }
 
-bool WireTarget::CanBeHitByWireTip()
+bool WireTarget::CanBeHitByWireTip(bool red)
 {
 	return true;
 }
@@ -148,6 +148,11 @@ void WireTarget::ProcessState()
 			break;
 		}
 	}
+}
+
+bool WireTarget::CanBeAnchoredByWire(bool red)
+{
+	return false;
 }
 
 void WireTarget::HandleNoHealth()

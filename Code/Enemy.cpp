@@ -2326,14 +2326,12 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 
 	}
 
-	if (CanBeHitByWireTip())
+	
+	Wire *wire = player->IntersectMyWireHitboxes(this, currHurtboxes, currHurtboxFrame);
+	if( wire != NULL )
 	{
-		Wire *wire = player->IntersectMyWireHitboxes(currHurtboxes, currHurtboxFrame);
-		if( wire != NULL )
-		{
-			HandleWireHit(wire);
-			return wire->tipHitboxInfo;
-		}
+		HandleWireHit(wire);
+		return wire->tipHitboxInfo;
 	}
 	
 	return NULL;
