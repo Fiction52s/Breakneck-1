@@ -514,6 +514,12 @@ void GameSession::Cleanup()
 		terrainTree = NULL;
 	}
 
+	if (barrierTree != NULL)
+	{
+		delete barrierTree;
+		barrierTree = NULL;
+	}
+
 	if (specialTerrainTree != NULL)
 	{
 		delete specialTerrainTree;
@@ -4315,6 +4321,10 @@ bool GameSession::OpenFile( string fileName )
 			++polyCounter;
 		}
 		
+		bool blackBorder[2];
+		bool topBorderOn = false;
+		SetupMapBorderQuads(blackBorder, topBorderOn);
+		SetupMinimapBorderQuads(blackBorder, topBorderOn);
 
 		LoadSpecialPolys(is);
 		//LoadMovingPlats( is, polyIndex );
@@ -4329,12 +4339,11 @@ bool GameSession::OpenFile( string fileName )
 
 		is.close();
 
-		bool blackBorder[2];
-		bool topBorderOn = false;
+		
 		
 		SetupStormCeiling();
-		SetupMapBorderQuads(blackBorder, topBorderOn);
-		SetupMinimapBorderQuads(blackBorder, topBorderOn);
+		//SetupMapBorderQuads(blackBorder, topBorderOn);
+		//SetupMinimapBorderQuads(blackBorder, topBorderOn);
 
 		if (topBorderOn)
 		{
@@ -6058,6 +6067,8 @@ bool GameSession::Load()
 	terrainBGTree = new QuadTree(1000000, 1000000);
 	//soon make these the actual size of the bordered level
 	terrainTree = new QuadTree(1000000, 1000000);
+
+	barrierTree = new QuadTree(1000000, 1000000);
 
 	specialTerrainTree = new QuadTree(1000000, 1000000);
 
@@ -10054,12 +10065,20 @@ void GameSession::DebugDraw()
 {
 	if (showDebugDraw)
 	{
+		for (auto it = barriers.begin();
+			it != barriers.end(); ++it)
+		{
+			(*it)->DebugDraw(preScreenTex);
+		}
+
 		DebugDrawActors();
 
 		for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 		{
 			(*it)->DebugDraw(preScreenTex);
 		}
+
+		
 	}
 }
 
@@ -13387,7 +13406,7 @@ void GameSession::LockGate( Gate *g )
 
 void GameSession::TriggerBarrier( Barrier *b )
 {
-	Pause(60);
+	//Pause(60);
 	//PoiInfo *poi = b->poi;
 	//string name = poi->name;
 

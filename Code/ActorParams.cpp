@@ -2549,8 +2549,8 @@ void XBarrierParams::Draw(sf::RenderTarget *target)
 
 	line[0].position.x = position.x;
 	line[1].position.x = position.x;
-	line[0].position.y = position.y - 500;
-	line[1].position.y = position.y + 500;
+	line[0].position.y = position.y - 1000;
+	line[1].position.y = position.y + 1000;
 
 	target->draw(line, 2, sf::Lines);
 

@@ -19,6 +19,7 @@ struct Edge : QuadTreeEntrant
 		OPEN_GATE,
 		CLOSED_GATE,
 		BORDER,
+		BARRIER,
 		Count
 	};
 

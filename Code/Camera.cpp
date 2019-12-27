@@ -874,6 +874,7 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	Barrier *leftb = NULL, *rightb = NULL, *topb = NULL, *botb = NULL;
 	for (list<Barrier*>::iterator it = owner->barriers.begin(); it != owner->barriers.end(); ++it)
 	{
+		//continue;
 		if ((*it)->triggered)
 		{
 			continue;

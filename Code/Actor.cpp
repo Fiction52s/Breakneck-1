@@ -43,6 +43,7 @@
 #include "Grass.h"
 #include "EnvPlant.h"
 #include "SpecialTerrain.h"
+#include "Barrier.h"
 
 using namespace sf;
 using namespace std;
@@ -10128,6 +10129,7 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	//cout << "Start resolve" << endl;
 	owner->terrainTree->Query( this, r );
+	owner->barrierTree->Query(this, r);
 
 
 	//cout << "owner: " << owner << ", tree: " << owner->terrainTree << endl;
@@ -18649,6 +18651,14 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		if (e->edgeType == Edge::OPEN_GATE)
 		{
 			return;
+		}
+		else if (e->edgeType == Edge::BARRIER)
+		{
+			Barrier *b = (Barrier*)(e->info);
+			if (!b->edgeActive)
+			{
+				return;
+			}
 		}
 
 		bool bb = false;
