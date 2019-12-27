@@ -6,6 +6,7 @@
 #include "Enemy.h"
 #include "MapHeader.h"
 #include "Actor.h"
+#include "Barrier.h"
 
 using namespace std;
 using namespace sf;

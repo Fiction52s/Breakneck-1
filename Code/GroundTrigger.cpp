@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "StorySequence.h"
 #include "Sequence.h"
+#include "SequenceW1.h"
 #include "MainMenu.h"
 #include "SaveFile.h"
 #include "Actor.h"
@@ -39,9 +40,9 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 	switch (trigType)
 	{
 	case TRIGGER_HOUSEFAMILY:
-		gameSequence = new MonumentSeq(owner);
-		//storySeq = new StorySequence(owner);
-		//storySeq->Load("kinhouse");
+		//gameSequence = new MonumentSeq(owner);
+		storySeq = new StorySequence(owner);
+		storySeq->Load("kinhouse");
 		break;
 	case TRIGGER_GETAIRDASH:
 		owner->drain = false;

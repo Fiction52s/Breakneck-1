@@ -1,4 +1,4 @@
-#include "Sequence.h"
+#include "SequenceW1.h"
 #include "GameSession.h"
 #include "Actor.h"
 #include "MusicPlayer.h"

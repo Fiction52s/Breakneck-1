@@ -294,6 +294,26 @@ struct PoiParams : public ActorParams
 	//void Draw( sf::RenderTarget *target );
 };
 
+struct XBarrierParams : ActorParams
+{
+	XBarrierParams(ActorType *at,
+		sf::Vector2i &pos, const std::string &name);
+	XBarrierParams(ActorType *at,
+		sf::Vector2i &pos);
+	XBarrierParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void SetParams();
+	void SetPanelInfo();
+	void Init();
+	void Draw(sf::RenderTarget *target);
+	ActorParams *Copy();
+
+	sf::Vertex line[2];
+	std::string name;
+	sf::Text nameText;
+};
+
 struct KeyParams : public ActorParams
 {
 	KeyParams(ActorType *at,

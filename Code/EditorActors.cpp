@@ -127,6 +127,12 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("camprops", Vector2i(20, 240));
 		p->AddTextBox("barrier", Vector2i(20, 330), 50, 1, "-");
 	}
+	if (name == "xbarrier")
+	{
+		p = new Panel("xbarrier_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "-----");
+	}
 	else if (name == "shippickup")
 	{
 		p = new Panel("shippickup_options", 200, 500, edit);
@@ -189,7 +195,10 @@ Panel *ActorType::CreatePanel()
 		edit->CreateShardGridSelector(p, Vector2i(0, 0));
 		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
 	}
-
+	else if (name == "ship")
+	{
+		p = CreateDefaultPanel("ship_options", false, false, false, false);
+	}
 	else if (name == "booster")
 	{
 		p = CreateDefaultPanel("booster_options", false, true);

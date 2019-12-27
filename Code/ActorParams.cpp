@@ -2479,3 +2479,85 @@ ActorParams *GroundedJugglerParams::Copy()
 	GroundedJugglerParams *copy = new GroundedJugglerParams(*this);
 	return copy;
 }
+
+XBarrierParams::XBarrierParams(ActorType *at,
+	Vector2i &pos, const string &p_name)
+	:ActorParams(at)
+{
+	Init();
+	PlaceAerial(pos);
+	name = p_name;
+	
+}
+
+XBarrierParams::XBarrierParams(ActorType *at,
+	Vector2i &pos)
+	:ActorParams(at)
+{
+	Init();
+	PlaceAerial(pos);
+	name = "----";
+}
+
+XBarrierParams::XBarrierParams(ActorType *at,
+	ifstream &is)
+	: ActorParams(at)
+{
+	Init();
+	LoadAerial(is);
+
+	is >> name;
+}
+
+void XBarrierParams::Init()
+{
+	EditSession *session = EditSession::GetSession();
+	nameText.setFont(session->arial);
+	nameText.setCharacterSize(40);
+	nameText.setFillColor(Color::White);
+
+	line[0].color = Color::Red;
+	line[1].color = Color::Red;
+}
+
+void XBarrierParams::WriteParamFile(std::ofstream &of)
+{
+	of << name << endl;
+}
+
+void XBarrierParams::SetParams()
+{
+	Panel *p = type->panel;
+	name = p->textBoxes["name"]->text.getString().toAnsiString();
+}
+
+void XBarrierParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString(name);
+}
+
+ActorParams *XBarrierParams::Copy()
+{
+	XBarrierParams *copy = new XBarrierParams(*this);
+	return copy;
+}
+
+void XBarrierParams::Draw(sf::RenderTarget *target)
+{
+	ActorParams::Draw(target);
+
+	line[0].position.x = position.x;
+	line[1].position.x = position.x;
+	line[0].position.y = position.y - 500;
+	line[1].position.y = position.y + 500;
+
+	target->draw(line, 2, sf::Lines);
+
+	nameText.setString(name);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
+	nameText.setPosition(position.x, position.y - 100);
+
+	target->draw(nameText);
+}

@@ -14,7 +14,7 @@
 #include "Flow.h"
 #include "Boss.h"
 #include "PowerOrbs.h"
-#include "Sequence.h"
+#include "SequenceW1.h"
 #include "SoundManager.h"
 #include "BarrierReactions.h"
 #include "EnvEffects.h"

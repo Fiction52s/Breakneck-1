@@ -6,7 +6,7 @@
 #include "Enemy_CrawlerQueen.h"
 #include "VisualEffects.h"
 //#include "StorySequence.h"
-#include "Sequence.h"
+#include "SequenceW1.h"
 #include "MusicPlayer.h"
 #include "MainMenu.h"
 #include "MapHeader.h"

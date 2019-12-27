@@ -7,11 +7,11 @@
 #include "SaveFile.h"
 #include "MainMenu.h"
 #include "MapHeader.h"
-#include "Sequence.h"
 #include "VisualEffects.h"
 #include "PauseMenu.h"
 #include "ShardMenu.h"
 #include "Actor.h"
+#include "ShardSequence.h"
 
 #include "ParticleEffects.h"
 

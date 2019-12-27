@@ -2525,7 +2525,7 @@ void Actor::Respawn()
 	enemiesKilledThisFrame = 0;
 	gateTouched = NULL;
 
-	if( !owner->poiMap.count( "ship" ) > 0 )
+	if( !owner->hasShipEntrance )
 	{
 		SetAction(INTROBOOST);
 		frame = 0;
@@ -17744,11 +17744,11 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 			offsetX = 0;
 		}
 		TurnFace();
-		//owner->currStorySequence = trigger->storySeq;
+		owner->SetStorySeq(trigger->storySeq);
 		//owner->state = GameSession::STORY;
 		//owner->state = GameSession::SEQUENCE;
 		//physicsOver = true;
-		owner->activeSequence = trigger->gameSequence;
+		//owner->activeSequence = trigger->gameSequence;
 
 		break;
 	}

@@ -4,7 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Nexus.h"
-#include "Sequence.h"
+#include "SequenceW1.h"
 #include "MapHeader.h"
 
 using namespace std;

@@ -92,7 +92,6 @@ struct DialogueUser;
 struct GoalPulse;
 struct PauseMenu;
 struct Sequence;
-struct CrawlerFightSeq;
 struct CrawlerAfterFightSeq;
 struct EnterNexus1Seq;
 struct ShipExitSeq;
@@ -127,6 +126,8 @@ struct SpecialTerrainPiece;
 
 struct EnvPlant;
 
+struct Barrier;
+
 struct PoiInfo
 {
 	PoiInfo( const std::string &name, sf::Vector2i &p );
@@ -140,23 +141,6 @@ struct PoiInfo
 	bool hasCameraProperties;
 };
 
-struct Barrier
-{
-	Barrier( GameSession *owner, PoiInfo *poi, 
-		bool p_x, int pos, bool posOp, 
-		BarrierCallback *cb );
-
-	bool Update( Actor *player );
-	void SetPositive();
-
-	BarrierCallback *callback;
-	GameSession *owner;
-	PoiInfo *poi;
-	int pos;
-	bool x; //false means y
-	bool triggered;
-	bool positiveOpen;
-};
 
 
 enum EdgeAngleType
@@ -447,6 +431,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	bool drain;
 	bool shipSequence;
+	bool hasShipEntrance;
+	V2d shipEntrancePos;
 	sf::Vector2f cloudVel;
 	int shipSeqFrame;
 	sf::Vector2f shipStartPos;
@@ -470,6 +456,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::Font font;
 	//int f;
 	std::map<std::string,PoiInfo*> poiMap;
+	std::map<std::string, Barrier*> barrierMap;
 	std::list<Barrier*> barriers;
 	
 	GameSession( SaveFile *sf,
@@ -989,7 +976,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	GameStartSeq *startSeq;*/
 
 	
-	//CrawlerFightSeq *crawlerFightSeq;
 	//CrawlerAfterFightSeq *crawlerAfterFightSeq;
 	//EnterNexus1Seq * enterNexus1Seq;
 

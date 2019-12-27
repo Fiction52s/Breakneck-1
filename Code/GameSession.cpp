@@ -69,6 +69,8 @@
 #include "Enemy_HungryComboer.h"
 #include "Enemy_RelativeComboer.h"
 #include "Enemy_WireJuggler.h"
+#include "ShardSequence.h"
+#include "Barrier.h"
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -242,89 +244,6 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 	barrier = NULL;
 }
 
-Barrier::Barrier( GameSession *p_owner, PoiInfo *p_poi, bool p_x, int p_pos, bool posOp,
-	BarrierCallback *cb ): poi( p_poi )
-{
-	owner = p_owner;
-	p_poi->barrier = this;
-	callback = cb;
-	x = p_x;
-	pos = p_pos;
-	triggered = false;
-	positiveOpen = posOp;
-}
-
-bool Barrier::Update( Actor *player )
-{
-	if( triggered )
-		return false;
-
-	V2d playerPos = player->position;
-
-	if( x )
-	{
-		if( positiveOpen ) //player starts right
-		{
-			if( playerPos.x < pos )
-			{
-				triggered = true;
-			}
-		}
-		else //starts left
-		{
-			if( playerPos.x > pos )
-			{
-				triggered = true;
-			}
-		}
-	}
-	else
-	{
-		if( positiveOpen ) // player starts below
-		{
-			if( playerPos.y < pos )
-			{
-				triggered = true;
-			}
-		}
-		else //player starts above
-		{
-			if( playerPos.y > pos )
-			{
-				triggered = true;
-			}
-		}
-	}
-
-	return triggered;
-}
-
-void Barrier::SetPositive()
-{
-	//should use a parameter eventually but for now just using this
-	if( x )
-	{
-		if( owner->GetPlayer( 0 )->position.x - pos > 0 )
-		{
-			positiveOpen = true;
-		}
-		else
-			positiveOpen = false;
-	}
-	else
-	{
-		if( owner->GetPlayer( 0 )->position.y - pos > 0 )
-		{
-			positiveOpen = true;
-		}
-		else
-		{
-			positiveOpen = false;
-		}
-	}
-}
-
-
 
 GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu, 
 	const boost::filesystem::path &p_filePath )
@@ -344,6 +263,12 @@ void GameSession::Cleanup()
 	TerrainRender::CleanupLayers();
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = barriers.begin();
+		it != barriers.end(); ++it)
 	{
 		delete (*it);
 	}
@@ -1861,21 +1786,21 @@ void GameSession::LoadEnemy(std::ifstream &is,
 					btop = owner->poiMap["coyfighttop"]->barrier;
 					bbot = owner->poiMap["coyfightbot"]->barrier;*/
 
-					Barrier *b = new Barrier(this, pi, true, pos.x, (GetPlayer(0)->position.x > pos.x), NULL);
-					string na = b->poi->name;
+					//Barrier *b = new Barrier(this, pi, true, pos.x, (GetPlayer(0)->position.x > pos.x), NULL);
+					//string na = b->poi->name;
 					/*if( na == "coyfightleft"
 					|| na == "coyfightright"
 					|| na == "coyfighttop"
 					|| na == "coyfightbot" )
 					b->triggered = true;*/
-					barriers.push_back(b);
+					//barriers.push_back(b);
 
 				}
 				else if (barStr == "y")
 				{
-					Barrier *b = new Barrier(this, pi, false, pos.y, (GetPlayer(0)->position.y > pos.y), NULL);
+					//Barrier *b = new Barrier(this, pi, false, pos.y, (GetPlayer(0)->position.y > pos.y), NULL);
 					//b->triggered = true;
-					barriers.push_back(b);
+					//barriers.push_back(b);
 				}
 				else
 				{
@@ -1894,6 +1819,7 @@ void GameSession::LoadEnemy(std::ifstream &is,
 				//	}
 				//}
 			}
+
 			else if (air == "-air")
 			{
 				int terrainIndex;
@@ -1922,11 +1848,11 @@ void GameSession::LoadEnemy(std::ifstream &is,
 				}
 				else if (barStr == "x")
 				{
-					barriers.push_back(new Barrier(this, pi, true, floor(p.x + .5), (GetPlayer(0)->position.x > p.x), NULL));
+					//barriers.push_back(new Barrier(this, pi, true, floor(p.x + .5), (GetPlayer(0)->position.x > p.x), NULL));
 				}
 				else if (barStr == "y")
 				{
-					barriers.push_back(new Barrier(this, pi, false, floor(p.y + .5), (GetPlayer(0)->position.y > p.y), NULL));
+					//barriers.push_back(new Barrier(this, pi, false, floor(p.y + .5), (GetPlayer(0)->position.y > p.y), NULL));
 				}
 				else
 				{
@@ -1944,6 +1870,21 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			poiMap[pname] = pi;
 			//poiMap
+		}
+		else if (typeName == "xbarrier")
+		{
+			string pname;
+
+			Vector2i pos;
+			is >> pos.x;
+			is >> pos.y;
+
+			is >> pname;
+
+			Barrier *b = new Barrier(this, pname, true, pos.x, NULL);
+
+			barrierMap[pname] = b;
+			barriers.push_back(b);
 		}
 		else if (typeName == "shard")
 		{
@@ -1968,6 +1909,18 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			enem = enemy;
 
 			enemyTree->Insert(enemy);
+		}
+		else if (typeName == "ship")
+		{
+			int xPos, yPos;
+
+			is >> xPos;
+			is >> yPos;
+
+			shipEntrancePos = V2d(xPos, yPos);
+			hasShipEntrance = true;
+
+			ResetShipSequence();
 		}
 		else if (typeName == "healthfly")
 		{
@@ -3709,6 +3662,8 @@ bool GameSession::OpenFile( string fileName )
 	hasGoal = false;
 	numTotalKeys = 0;
 	numKeysCollected = 0;
+	shipSequence = false;
+	hasShipEntrance = false;
 	
 	currentFile = fileName;
 	int insertCount = 0;
@@ -4392,48 +4347,6 @@ bool GameSession::OpenFile( string fileName )
 		for( int i = 0; i < numGates; ++i )
 		{
 			Gate *g = gates[i];
-			//if( g->type == Gate::BIRDFIGHT )
-			//{
-			//	if( g->zoneA != NULL )
-			//		g->zoneA->showShadow = false;
-			//		//ActivateZone( zone
-			//		//g->zoneA->ac
-			//	//g->SetLocked( false );
-			//	//g->SetLocked( true );
-			//}
-		}
-		
-		if( poiMap.count( "ship" ) > 0 )
-		{
-			ResetShipSequence();
-
-
-
-			//cloud0a.setPosition( pi->pos.x - 960, pi->pos.y + 270 );
-			//cloud0b.setPosition( pi->pos.x - 240, pi->pos.y + 270 );
-			//cloud1a.setPosition( pi->pos.x - 960, pi->pos.y + 270 );
-			//cloud1b.setPosition( pi->pos.x - 240, pi->pos.y + 270);// + 540 );
-			//player->position = poiMap.ship
-		}
-		else
-		{
-			
-			shipSequence = false;
-			//normal map
-		}
-
-		if( poiMap.count( "bc_alliance" ) > 0 )
-		{
-			startMapSeq = new BirdCrawlerAllianceSeq( this );
-			activeSequence = startMapSeq;
-			startMapSeq->Reset();
-			//fadeAlpha = 255;
-			//owner->Fade( false, 60, Color::Black );
-			//owner->Pause( 60 );
-			//activeSequence = 
-			
-			//player->action = Actor::Action::Se;
-			//player->frame = 1;
 		}
 
 		return true;
@@ -7549,10 +7462,10 @@ int GameSession::Run()
 				}
 
 
-				for( list<Barrier*>::iterator it = barriers.begin();
+				for( auto it = barriers.begin();
 					it != barriers.end(); ++it )
 				{
-					bool trig = (*it)->Update( GetPlayer( 0 ) );
+					bool trig = (*it)->Update( );
 					if( trig )
 					{
 						TriggerBarrier( (*it) );
@@ -10438,10 +10351,9 @@ void GameSession::ResetShipSequence()
 	drain = false;
 	player->action = Actor::RIDESHIP;
 	player->frame = 0;
-	PoiInfo *pi = poiMap["ship"];
-	player->position = pi->pos;
+	player->position = shipEntrancePos;
 	originalPos = player->position;
-	shipSprite.setPosition( pi->pos.x - 13, pi->pos.y - 124 );
+	shipSprite.setPosition(originalPos.x - 13, originalPos.y - 124 );
 	//cloud0a.setpo
 	shipSequence = true;
 	shipSeqFrame = 0;
@@ -10453,13 +10365,11 @@ void GameSession::ResetShipSequence()
 	int middleHeight = 540 * 4;
 	middleClouds.setSize( Vector2f( 960, middleHeight ) );
 	Vector2f botExtra( 0, middleHeight );
-	//middleClouds.setOrigin( middleClouds.getLocalBounds().width / 2,
-	//	middleClouds.getLocalBounds().height / 2 );
 
 	IntRect sub0 = ts_w1ShipClouds0->GetSubRect( 0 );
 	IntRect sub1 = ts_w1ShipClouds1->GetSubRect( 0 );
 			
-	Vector2f bottomLeft = Vector2f( pi->pos.x, pi->pos.y ) + Vector2f( -480, 270 ); 
+	Vector2f bottomLeft = Vector2f(originalPos.x, originalPos.y ) + Vector2f( -480, 270 );
 	for( int i = 0; i < 3; ++i )
 	{
 		Vector2f xExtra( 480 * i, 0 );
@@ -10504,141 +10414,12 @@ void GameSession::ResetShipSequence()
 		cloudBot1[i*4+3].texCoords = Vector2f( sub1.width, sub1.height );
 	}
 
-	middleClouds.setPosition( pi->pos.x - 480, pi->pos.y + 270 );
+	middleClouds.setPosition(originalPos.x - 480, originalPos.y + 270 );
 }
 
 void GameSession::RespawnPlayer( int index )
 {
-	//Actor *player = GetPlayer( index );
-	//numKeysCollected = 0;
-	//player->framesNotGrinding = 0;
-	//player->runeStep = 0;
-	//player->runeLength = 0;
-	//player->showRune = false;
-	//player->bufferedAttack = Actor::JUMP;
-	//soundNodeList->Reset();
-	//scoreDisplay->Reset();
-	//player->hitGoal = false;
-	//currentZone = originalZone;
-	//if( currentZone != NULL )
-	//	keyMarker->SetStartKeysZone(currentZone);
-	//if( player->currentCheckPoint == NULL )
-	//{
-	//	player->position = originalPos;
-	//	
-	//	//actually keys should be set based on which ones you had at the last checkpoint
-	//	for( int i = 2; i < Gate::GateType::Count; ++i )
-	//	{
-	//		player->numKeys = 0;
-	//		//player->hasKey[i] = 0;
-	//	}
-	//}
-	//else
-	//{
-	//	player->position = player->currentCheckPoint->pos;
-
-	//	//might take out checkpoints so idk how this would work
-	//	//for( int i = 2; i < Gate::GateType::Count; ++i )
-	//	//{
-	//		//player->hasKey[i] = player->currentCheckPoint->hadKey[i];
-	//	//}
-	//}
-
-	////player->seq = Actor::SEQ_NOTHING;
-	//player->followerPos = player->position;
-	//player->followerVel = V2d( 0, 0 );
-	//player->enemiesKilledThisFrame = 0;
-	//player->gateTouched = NULL;
-
-	//if( poiMap.count( "ship" ) > 0 )
-	//{
-	//	ResetShipSequence();
-	//}
-	//else
-	//{
-	//	player->action = player->INTRO;
-	//	player->frame = 0;
-	//}
-	//
-
-
-	//player->velocity.x = 0;
-	//player->velocity.y = 0;
-	//player->reversed = false;
-	//player->b.offset.y = 0;
-	//player->b.rh = player->normalHeight;
-	//player->facingRight = true;
-	//player->offsetX = 0;
-	//player->prevInput = ControllerState();
-	//player->currInput = ControllerState();
-	//player->ground = NULL;
-	//player->grindEdge = NULL;
-	//player->bounceEdge = NULL;
-	//player->dead = false;
-	//player->record = 0;
-	//player->recordedGhosts = 0;
-	//player->blah = false;
-	//player->receivedHit = NULL;
-	//player->speedParticleCounter = 1;
-	//player->speedLevel = 0;
-	//player->speedBarTarget = 0;//60;
-	//player->currentSpeedBar = 0;//60;
-
-	//player->bounceFlameOn = false;
-
-	//if( player->hasPowerLeftWire )
-	//{
-	//	player->leftWire->Reset();
-	//}
-	//if( player->hasPowerRightWire )
-	//{
-	//	player->rightWire->Reset();
-	//}
-	//
-	//player->lastWire = 0;
-	//player->desperationMode = false;
-
-	//player->flashFrames = 0;
-	//
-	//
-	//if( powerRing != NULL )
-	//	powerRing->ResetFull();
-	////currentZone = NULL;
-	//cam.zoomFactor = 1;
-	//cam.pos.x = player->position.x;
-	//cam.pos.y = player->position.y;
-	//cam.offset = Vector2f( 0, 0 );
-	//cam.manual = false;
-	//cam.easing = false;
-	//cam.rumbling = false;
-
-	//player->hasDoubleJump = true;
-	//player->hasAirDash = true;
-	//player->hasGravReverse = true;
-
-	//if( !cam.bossCrawler )
-	//{
-	//	cam.zoomFactor = 1;
-	//	cam.zoomLevel = 0;
-	//	cam.offset = Vector2f( 0, 0 );
-	//}
-	//
-
-	//for( int i = 0; i < player->maxBubbles; ++i )
-	//{
-	//	player->bubbleFramesToLive[i] = 0;
-	//	//if( player->bubbleFramesToLive[i] > 0 )
-	//	//{
-	//		
-	//	//}
-	//}
-
-	//for( int i = 0; i < player->maxMotionGhosts; ++i )
-	//{
-	//	player->motionGhosts[i].setPosition( player->position.x, player->position.y );
-	//}
-
-	//player->SetExpr( Actor::Expr::Expr_NEUTRAL );
+//remove when you get a chance	
 }
 
 void GameSession::ClearFX()
@@ -10754,7 +10535,7 @@ void GameSession::RestartLevel()
 //	if( currentZone != NULL )
 //		keyMarker->SetStartKeysZone(currentZone);
 
-	if( poiMap.count( "ship" ) > 0 )
+	if(hasShipEntrance )
 	{
 		ResetShipSequence();
 	}
@@ -10815,9 +10596,9 @@ void GameSession::RestartLevel()
 
 	inactiveEnemyList = NULL;
 
-	for( list<Barrier*>::iterator it = barriers.begin(); it != barriers.end(); ++it )
+	for( auto it = barriers.begin(); it != barriers.end(); ++it )
 	{
-		(*it)->triggered = false;
+		(*it)->Reset();
 	}
 				
 	pauseImmuneEffects = NULL;
@@ -13606,10 +13387,11 @@ void GameSession::LockGate( Gate *g )
 
 void GameSession::TriggerBarrier( Barrier *b )
 {
-	PoiInfo *poi = b->poi;
-	string name = poi->name;
+	Pause(60);
+	//PoiInfo *poi = b->poi;
+	//string name = poi->name;
 
-	if( name == "birdfighttrigger" )
+	/*if( name == "birdfighttrigger" )
 	{
 		assert( b_bird != NULL );
 		
@@ -13620,45 +13402,8 @@ void GameSession::TriggerBarrier( Barrier *b )
 	{
 		Fade( false, 60, Color::Black );
 		Pause( 60 );
-		//activeSequence = b_crawler->crawlerFightSeq;
 		activeSequence->frame = 0;
-
-		//assert( b_crawler != NULL );
-		//b_crawler->spawned = true;
-		//AddEnemy( b_crawler );
-
-	}
-	else if( name == "meetcoyotetrigger" )
-	{
-		Fade( false, 60, Color::Black );
-		Pause( 60 );
-		//powerWheel->Hide( true, 60 );
-		activeSequence = b_coyote->meetCoyoteSeq;
-		activeSequence->frame = 0;
-
-		assert( b_coyote != NULL );
-		b_coyote->spawned = true;
-		AddEnemy( b_coyote );
-	}
-	else if( name == "coyotefighttrigger" )
-	{
-		Fade( false, 60, Color::Black );
-		Pause( 60 );
-		//powerWheel->Hide( true, 60 );
-		activeSequence = b_coyote->coyoteFightSeq;
-		activeSequence->frame = 0;
-	}
-	else if( name == "skeletonfighttrigger" )
-	{
-		Fade( false, 60, Color::Black );
-		Pause( 60 );
-		activeSequence = b_skeleton->skeletonFightSeq;
-		activeSequence->frame = 0;
-
-		assert( b_skeleton != NULL );
-		b_skeleton->spawned = true;
-		AddEnemy( b_skeleton );
-	}
+	}*/
 }
 
 GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds )

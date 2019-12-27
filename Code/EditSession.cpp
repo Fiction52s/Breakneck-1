@@ -192,6 +192,11 @@ void EditSession::AddGeneralEnemies()
 		Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false);
 
+	AddExtraEnemy("xbarrier", LoadParams<XBarrierParams>, NULL, MakeParamsAerial<XBarrierParams>,
+		Vector2i(0, 0), Vector2i(64, 64),
+		false, false, false, false, 1,
+		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
+
 	AddExtraEnemy("key", LoadParams<KeyParams>, NULL, MakeParamsAerial<KeyParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false);
@@ -203,6 +208,10 @@ void EditSession::AddGeneralEnemies()
 	AddExtraEnemy("shard", LoadParams<ShardParams>, NULL, MakeParamsAerial<ShardParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 3,
 		GetTileset("Shard/shards_w1_192x192.png", 192, 192));
+
+	AddExtraEnemy("ship", LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, 1,
+		GetTileset("Ship/ship_864x400.png", 864, 400));
 
 	AddExtraEnemy("healthfly", LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,

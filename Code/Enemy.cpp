@@ -2208,8 +2208,6 @@ void Enemy::UpdateHitboxes()
 
 void Enemy::BasicUpdateHitboxes()
 {
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-
 	if (hurtBody != NULL)
 	{
 		auto boxes = hurtBody->GetCollisionBoxes(0);
