@@ -400,6 +400,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			V2d futurePos = playerPos + fireDir * fireRate * (double)(framesFiring + 1);
 			RayCast( this, player->owner->terrainTree->startNode, playerPos, futurePos );
 			RayCast(this, player->owner->railEdgeTree->startNode, playerPos, futurePos);
+			RayCast(this, player->owner->barrierTree->startNode, playerPos, futurePos);
 
 			fireDir = normalize(fireDir);
 			double len = length(futurePos - currPos);
@@ -917,6 +918,7 @@ void Wire::UpdateAnchors2( V2d vel )
 
 		queryMode = "terrain";
 		player->owner->terrainTree->Query( this, r );
+		//player->owner->barrierTree->Query(this, r);
 		if( state == RELEASED )
 		{
 			cout << "went too many points" << endl;
@@ -1017,6 +1019,7 @@ void Wire::UpdateAnchors2( V2d vel )
 			queryMode = "terrain";
 			player->owner->terrainTree->Query( this, r );
 			player->owner->railEdgeTree->Query(this, r);
+			player->owner->barrierTree->Query(this, r);
 			if( minSideEdge != NULL )
 			{
 				storedPlayerPos = playerPos;
@@ -1055,7 +1058,7 @@ void Wire::UpdateAnchors( V2d vel )
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
-	if( edge->edgeType == Edge::BORDER )
+	if( edge->IsInvisibleWall())
 	{
 
 		rayCancel = true;

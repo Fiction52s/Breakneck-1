@@ -11594,7 +11594,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 			if( rcEdge != NULL )
 			{
 				cout << "point list size: " << pointList.size() << endl;
-				if( rcEdge->edgeType == Edge::BORDER || rcEdge->edgeType == Edge::CLOSED_GATE )
+				if( rcEdge->IsInvisibleWall() || rcEdge->edgeType == Edge::CLOSED_GATE )
 				{
 				//	cout << "secret break" << endl;
 					break;
@@ -12815,6 +12815,32 @@ int GameSession::IsWall( sf::Vector2<double> &normal )
 	{
 		return -1;
 	}
+}
+
+bool GameSession::IsWithinBounds(V2d &p)
+{
+	return (((p.x >= mh->leftBounds)
+		&& (p.y >= mh->topBounds)
+		&& (p.x <= mh->leftBounds + mh->boundsWidth)
+		&& (p.y <= mh->topBounds + mh->boundsHeight)));
+}
+
+bool GameSession::IsWithinBarrierBounds(V2d &p)
+{
+	for (auto it = barriers.begin(); it != barriers.end(); ++it)
+	{
+		if (!(*it)->IsPointWithinBarrier(p))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool GameSession::IsWithinCurrentBounds(V2d &p)
+{
+	return (IsWithinBounds(p) && IsWithinBarrierBounds(p));
 }
 
 //save state to enter clone world

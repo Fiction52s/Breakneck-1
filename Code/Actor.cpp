@@ -3287,7 +3287,7 @@ void Actor::UpdatePrePhysics()
 					{
 						//abs( e0n.x ) < wallThresh )
 
-						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) || grindEdge->edgeType == Edge::BORDER )
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) || grindEdge->IsInvisibleWall() )
 						{
 							framesNotGrinding = 0;
 							if( reversed )
@@ -5015,7 +5015,7 @@ void Actor::UpdatePrePhysics()
 					}
 					else
 					{
-						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) || j || grindEdge->edgeType == Edge::BORDER )//|| !hasGravReverse ) )
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) || j || grindEdge->IsInvisibleWall() )//|| !hasGravReverse ) )
 						{
 							if( grindSpeed < 0 )
 							{
@@ -5474,7 +5474,7 @@ void Actor::UpdatePrePhysics()
 					{
 						//abs( e0n.x ) < wallThresh )
 
-						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) || grindEdge->edgeType == Edge::BORDER )//|| !hasGravReverse ) )
+						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh ) || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
 						{
 							if( grindSpeed < 0 )
 							{
@@ -9884,6 +9884,7 @@ bool Actor::CheckWall( bool right )
 
 
 	owner->terrainTree->Query( this, r );
+	owner->barrierTree->Query(this, r);
 	
 	/*queryMode = "moving_checkwall";
 	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
@@ -9900,7 +9901,7 @@ bool Actor::CheckWall( bool right )
 	}
 
 	bool wally = false;
-	if( minContact.edge != NULL && minContact.edge->edgeType != Edge::BORDER )
+	if( minContact.edge != NULL && !minContact.edge->IsInvisibleWall() )
 	{
 		V2d oldv0 = minContact.edge->v0;
 		V2d oldv1 = minContact.edge->v1;
@@ -10027,6 +10028,7 @@ bool Actor::CheckStandUp()
 		checkValid = true;
 	//	Query( this, owner->testTree, r );
 		owner->terrainTree->Query( this, r );
+		owner->barrierTree->Query(this, r);
 
 		for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
 		{
@@ -10061,34 +10063,6 @@ bool Actor::ResolvePhysics( V2d vel )
 	possibleEdgeCount = 0;
 	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	
-	//if ( ground == NULL && vel.x < 0 && position.x + vel.x < owner->mh->leftBounds )
-	//{
-	//	LineIntersection li = lineIntersection(position, position + vel,
-	//		V2d(owner->mh->leftBounds, owner->mh->topBounds),
-	//		V2d(owner->mh->leftBounds, owner->mh->topBounds + owner->mh->boundsHeight));
-	//	
-	//	if (!li.parallel)
-	//	{
-	//		V2d newVel = (normalize(vel) * (length(position - li.position) - 1.0));
-	//		if (ground == NULL)
-	//		{
-	//			vel.x = newVel.x;
-	//		}
-	//		else
-	//		{
-	//			vel = newVel;
-	//		}
-	//			
-	//		//else if (ground != NULL)
-	//		//{
-	//		//	groundSpeed = 0;
-	//		//}
-	//		
-	//		//groundSpeed = 0;
-	//		//grindSpeed = 0;
-	//	}
-	//}
-
 	position += vel;
 
 	if (action == SPRINGSTUNTELEPORT)
@@ -10399,7 +10373,7 @@ V2d Actor::UpdateReversePhysics()
 
 				bool jumpOff = false;
 				
-				if( nextNorm.y >= 0 || abs( e0n.x ) >= wallThresh || e0->edgeType == Edge::BORDER)
+				if( nextNorm.y >= 0 || abs( e0n.x ) >= wallThresh || e0->IsInvisibleWall())
 				{
 					jumpOff = true;
 				}
@@ -10727,7 +10701,7 @@ V2d Actor::UpdateReversePhysics()
 
 				
 				
-				if( nextNorm.y >= 0 || abs( e1n.x ) >= wallThresh || e1->edgeType == Edge::BORDER)
+				if( nextNorm.y >= 0 || abs( e1n.x ) >= wallThresh || e1->IsInvisibleWall())
 				{
 					jumpOff = true;
 				}
@@ -11280,7 +11254,7 @@ V2d Actor::UpdateReversePhysics()
 						double yDist = abs( gNormal.x ) * -groundSpeed;
 						Edge *next = ground->edge0;
 						V2d nextNorm = e0n;
-						if( e0->edgeType != Edge::BORDER && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+						if( !e0->IsInvisibleWall() && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -11322,7 +11296,7 @@ V2d Actor::UpdateReversePhysics()
 								cout << "possible bug reversed. solved secret??" << endl;
 							}
 						}
-						else if( abs( e0n.x ) >= wallThresh && e0->edgeType != Edge::BORDER)
+						else if( abs( e0n.x ) >= wallThresh && !e0->IsInvisibleWall())
 						{
 							if( e0->edgeType == Edge::CLOSED_GATE )
 							{
@@ -11376,7 +11350,7 @@ V2d Actor::UpdateReversePhysics()
 						Edge *next = ground->edge1;
 						V2d nextNorm = e1n;
 						double yDist = abs( gNormal.x ) * -groundSpeed;
-						if( e1->edgeType != Edge::BORDER && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+						if( !e1->IsInvisibleWall() && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
 						{
 
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
@@ -11420,7 +11394,7 @@ V2d Actor::UpdateReversePhysics()
 								//q = 0;
 							}
 						}
-						else if(e1->edgeType != Edge::BORDER && abs( e1n.x ) >= wallThresh )
+						else if(!e1->IsInvisibleWall() && abs( e1n.x ) >= wallThresh )
 						{
 							//attemping to fix reverse secret issues on gates
 							if( e1->edgeType == Edge::CLOSED_GATE )
@@ -11494,7 +11468,7 @@ V2d Actor::UpdateReversePhysics()
 					if( hit && (( m > 0 && ( minContact.edge != ground->edge0) ) || ( m < 0 && ( minContact.edge != ground->edge1 ) ) ) )
 					{
 						//honestly no idea why I had this in the first place?
-						if ( minContact.edge->edgeType == Edge::BORDER && 
+						if ( minContact.edge->IsInvisibleWall() &&
 							minContact.edge->Normal().y == 1.0 )
 						{
 							velocity = normalize(ground->v1 - ground->v0) * -groundSpeed;
@@ -11799,7 +11773,7 @@ bool Actor::ExitGrind(bool jump)
 		}
 		else
 		{
-			if (!hasPowerGravReverse || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->edgeType == Edge::BORDER)//|| !hasGravReverse ) )
+			if (!hasPowerGravReverse || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
 			{
 				if (grindSpeed < 0)
 				{
@@ -12602,10 +12576,7 @@ void Actor::UpdatePhysics()
 			{
 				double extra = q + movement - gLen;
 				V2d gPoint = grindEdge->GetPoint(q + movement);
-				if (((gPoint.x < owner->mh->leftBounds)
-					||( gPoint.y < owner->mh->topBounds )
-					||( gPoint.x > owner->mh->leftBounds + owner->mh->boundsWidth)
-					||( gPoint.y > owner->mh->topBounds + owner->mh->boundsHeight ) ) )
+				if (!owner->IsWithinCurrentBounds(gPoint))
 				{
 					grindSpeed = max(-grindSpeed, -hitBorderSpeed);
 					//grindSpeed = -grindSpeed;
@@ -12671,21 +12642,12 @@ void Actor::UpdatePhysics()
 				double extra = q + movement;
 
 				V2d gPoint = grindEdge->GetPoint(q + movement);
-				if (((gPoint.x < owner->mh->leftBounds)
-						|| (gPoint.y < owner->mh->topBounds)
-						|| (gPoint.x > owner->mh->leftBounds + owner->mh->boundsWidth)
-						|| (gPoint.y > owner->mh->topBounds + owner->mh->boundsHeight)))
+				if (!owner->IsWithinCurrentBounds(gPoint))
 				{
 					grindSpeed = min( -grindSpeed, hitBorderSpeed);
 					
 					return;
 				}
-
-			/*	if (extra >= 0 && grindEdge->GetPoint( q ).x < owner->mh->leftBounds )
-				{
-					grindSpeed = -grindSpeed;
-					return;
-				}*/
 
 				if( extra < 0 )
 				{
@@ -12917,15 +12879,6 @@ void Actor::UpdatePhysics()
 
 			V2d gNormal = ground->Normal();
 
-			/*LineIntersection li = SegmentIntersect(ground->v0, ground->v1,
-				V2d(owner->mh->leftBounds, owner->mh->topBounds),
-				V2d(owner->mh->leftBounds, owner->mh->topBounds + owner->mh->boundsHeight));*/
-
-			/*double cantPushPastQuant = -1;
-			if (!li.parallel)
-			{
-				cantPushPastQuant = ground->GetQuantity(li.position);
-			}*/
 
 
 			double m = movement;
@@ -13997,7 +13950,7 @@ void Actor::UpdatePhysics()
 								//if( currInput.LUp() && testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
 
 								//might cause some weird stuff w/ bounce but i can figure it out later
-								if( testVel.y < -offSlopeByWallThresh && eNorm.y == 0 && !bounceFlameOn && minContact.edge->edgeType != Edge::BORDER )
+								if( testVel.y < -offSlopeByWallThresh && eNorm.y == 0 && !bounceFlameOn && !minContact.edge->IsInvisibleWall() )
 								{
 									assert( abs(eNorm.x ) > wallThresh );
 							//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
@@ -14780,7 +14733,7 @@ void Actor::UpdatePhysics()
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
 				&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
-				&& minContact.edge->edgeType != Edge::BORDER )
+				&& !minContact.edge->IsInvisibleWall() )
 			{
 				prevRail = NULL;
 				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
@@ -14929,7 +14882,7 @@ void Actor::UpdatePhysics()
 				owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
 				//}
 			}
-			else if( tempCollision && hasPowerGrindBall /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && minContact.edge->edgeType != Edge::BORDER  )
+			else if( tempCollision && hasPowerGrindBall /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
 			{
 				prevRail = NULL;
 				Edge *e = minContact.edge;
@@ -16174,7 +16127,7 @@ void Actor::PhysicsResponse()
 				//	//cout << "grinding" << endl;
 				//}
 				if( length( wallNormal ) > 0 
-					&& (currWall == NULL || currWall->edgeType != Edge::BORDER) 
+					&& (currWall == NULL || !currWall->IsInvisibleWall())
 					&& oldVelocity.y >= 0 /*&& rightWire->state != Wire::PULLING
 					&& leftWire->state != Wire::PULLING*/ )
 				{

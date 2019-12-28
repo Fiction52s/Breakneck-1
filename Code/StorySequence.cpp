@@ -10,6 +10,7 @@
 #include "MainMenu.h"
 #include "ImageText.h"
 #include "Actor.h"
+#include "Barrier.h"
 
 using namespace std;
 using namespace sf;
@@ -94,6 +95,8 @@ void StorySequence::EndSequence()
 	}
 	else if (seqName == "kinhouse")
 	{
+		owner->barrierMap["test"]->Trigger();
+		owner->GetPlayer(0)->StandInPlace();
 		//owner->Fade(true, 60, Color::White);
 	}
 }
@@ -1022,7 +1025,7 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 			{
 				doingTransOut = true;
 				frame = 0;
-				seq->owner->Fade(false, fadeOutFrames, fadeOutColor);
+				seq->owner->Fade(true, fadeOutFrames, fadeOutColor);
 			//	seq->owner->CrossFade( 60, 60, 60, Color::Black );
 			}
 			else if (outType == O_BLEND)

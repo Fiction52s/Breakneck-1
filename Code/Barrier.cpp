@@ -81,25 +81,56 @@ void Barrier::DebugDraw(sf::RenderTarget *target)
 	target->draw(line, 2, sf::Lines);
 }
 
-bool Barrier::Update()
+bool Barrier::IsPointWithinBarrier(sf::Vector2<double> &p)
 {
 	if (triggered)
+		return true;
+
+	if (x)
+	{
+		if (positiveOpen)
+		{
+			return p.x >= pos;
+		}
+		else
+		{
+			return p.x <= pos;
+		}
+	}
+	else 
+	{
+		if (positiveOpen)
+		{
+			return p.y >= pos;
+		}
+		else
+		{
+			return p.y <= pos;
+		}
+	}
+}
+
+bool Barrier::Update()
+{
+	if (triggered )
 		return false;
 
 	V2d playerPos = owner->GetPlayerPos();
+
+	double extra = 0;
 
 	if (x)
 	{
 		if (positiveOpen) //player starts right
 		{
-			if (playerPos.x < pos)
+			if (playerPos.x < pos - extra)
 			{
 				triggered = true;
 			}
 		}
 		else //starts left
 		{
-			if (playerPos.x > pos)
+			if (playerPos.x > pos + extra)
 			{
 				triggered = true;
 			}
@@ -109,14 +140,14 @@ bool Barrier::Update()
 	{
 		if (positiveOpen) // player starts below
 		{
-			if (playerPos.y < pos)
+			if (playerPos.y < pos - extra)
 			{
 				triggered = true;
 			}
 		}
 		else //player starts above
 		{
-			if (playerPos.y > pos)
+			if (playerPos.y > pos + extra)
 			{
 				triggered = true;
 			}
@@ -150,4 +181,10 @@ void Barrier::SetPositive()
 			positiveOpen = false;
 		}
 	}
+}
+
+void Barrier::Trigger()
+{
+	edgeActive = false;
+	triggered = true;
 }

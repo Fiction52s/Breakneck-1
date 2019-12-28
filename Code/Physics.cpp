@@ -74,6 +74,11 @@ bool Edge::IsTouchingBox( const sf::Rect<double> &r )
 	return IsEdgeTouchingBox( this, r );
 }
 
+bool Edge::IsInvisibleWall()
+{
+	return edgeType == BORDER || edgeType == BARRIER;
+}
+
 //pathparam 12is local. pointsParam is local
 MovingTerrain::MovingTerrain( GameSession *own, Vector2i pos, list<Vector2i> &pathParam, list<Vector2i> &pointsParam,
 	bool loopP, float pspeed )

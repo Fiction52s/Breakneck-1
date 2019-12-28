@@ -885,6 +885,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void DrawEffects( EffectLayer layer );
 	void DrawActiveSequence(EffectLayer layer);
 
+	bool IsWithinBounds(V2d &p);
+	bool IsWithinBarrierBounds(V2d &p);
+	bool IsWithinCurrentBounds(V2d &p);
+
 	sf::Vector2<double> originalPos;
 	Zone *originalZone;
 	sf::Rect<double> screenRect;

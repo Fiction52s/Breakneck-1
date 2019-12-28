@@ -18,7 +18,9 @@ struct Barrier
 	bool Update();
 	void SetPositive();
 	void Reset();
+	void Trigger();
 	void DebugDraw(sf::RenderTarget *target);
+	bool IsPointWithinBarrier(sf::Vector2<double> &p);
 
 	std::string name;
 	BarrierCallback *callback;
