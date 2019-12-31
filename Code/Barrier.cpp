@@ -2,77 +2,118 @@
 #include "GameSession.h"
 #include "BarrierReactions.h"
 #include "MapHeader.h"
+#include "Sequence.h"
+#include "SequenceW1.h"
 
 using namespace std;
 using namespace sf;
 
-Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int p_pos, BarrierCallback *cb)
+Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int p_pos, bool hasEdge, BarrierCallback *cb)
 {
 	owner = p_owner;
 	name = p_name;
 	callback = cb;
 	x = p_x;
 	pos = p_pos;
-	triggered = false;
-	edgeActive = true;
+
+	triggerSeq = NULL;
+	if (name == "test1")
+	{
+		//hasEdge = false;
+		//triggerSeq = owner->
+	}
 
 	double top = owner->mh->topBounds;
 	double bottom = owner->mh->topBounds + owner->mh->boundsHeight;
 
-	barrierEdge = new Edge;
-	barrierEdge->edgeType = Edge::BARRIER;
-	barrierEdge->info = this;
-
 	line[0].color = Color::Red;
 	line[1].color = Color::Red;
-
-	//globalBorderEdges.push_back(left);
-	//globalBorderEdges.push_back(right);
-	//globalBorderEdges.push_back(top);
-	//globalBorderEdges.push_back(bot);
-
-	auto it = owner->globalBorderEdges.begin();
-	++it;
-	++it;
-
 
 	if (x)
 	{
 		positiveOpen = (owner->GetPlayerPos().x > pos);
-
-		if (positiveOpen)
-		{
-			barrierEdge->v0 = V2d(pos, top);
-			barrierEdge->v1 = V2d(pos, bottom);
-		}
-		else
-		{
-			barrierEdge->edge0 = (*it);
-			++it;
-			barrierEdge->edge1 = (*it);
-			barrierEdge->v0 = V2d(pos, bottom);
-			barrierEdge->v1 = V2d(pos, top);
-		}
 	}
 	else
 	{
 		positiveOpen = (owner->GetPlayerPos().y > pos);
 	}
 
-	line[0].position = Vector2f(barrierEdge->v0);
-	line[1].position = Vector2f(barrierEdge->v1);
+	if (hasEdge)
+	{
+		barrierEdge = new Edge;
+		barrierEdge->edgeType = Edge::BARRIER;
+		barrierEdge->info = this;
 
-	owner->barrierTree->Insert(barrierEdge);
+		auto it = owner->globalBorderEdges.begin();
+		++it;
+		++it;
+
+		if (x)
+		{
+			if (positiveOpen)
+			{
+				barrierEdge->v0 = V2d(pos, top);
+				barrierEdge->v1 = V2d(pos, bottom);
+			}
+			else
+			{
+				barrierEdge->edge0 = (*it);
+				++it;
+				barrierEdge->edge1 = (*it);
+				barrierEdge->v0 = V2d(pos, bottom);
+				barrierEdge->v1 = V2d(pos, top);
+			}
+		}
+		else
+		{
+			
+		}
+
+		line[0].position = Vector2f(pos, top);
+		line[1].position = Vector2f(pos, bottom);
+
+		owner->barrierTree->Insert(barrierEdge);
+	}
+	else
+	{
+		barrierEdge = NULL;
+	}
+
+	Reset();
 }
 
 Barrier::~Barrier()
 {
-	delete barrierEdge;
+	if( barrierEdge != NULL )
+		delete barrierEdge;
+
+	if (triggerSeq != NULL)
+	{
+		delete triggerSeq;
+	}
 }
 
 void Barrier::Reset()
 {
 	triggered = false;
+
+	if (barrierEdge != NULL)
+	{
+		edgeActive = true;
+	}
+	else
+	{
+		edgeActive = false;
+	}
+}
+
+void Barrier::DeactivateEdge()
+{
+	edgeActive = false;
+}
+
+void Barrier::ActivateEdge()
+{
 	edgeActive = true;
 }
 

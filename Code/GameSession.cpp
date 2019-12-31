@@ -273,6 +273,11 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 
+	for (auto it = cameraShotMap.begin(); it != cameraShotMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
 	for (auto it = allVA.begin(); it != allVA.end(); ++it)
 	{
 		delete (*it);
@@ -1887,10 +1892,34 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			is >> pname;
 
-			Barrier *b = new Barrier(this, pname, true, pos.x, NULL);
+			int hEdge;
+			is >> hEdge;
+			bool hEdgeB = hEdge;
+
+			Barrier *b = new Barrier(this, pname, true, pos.x, hEdgeB, NULL);
 
 			barrierMap[pname] = b;
 			barriers.push_back(b);
+		}
+		else if (typeName == "camerashot")
+		{
+			Vector2i pos;
+			is >> pos.x;
+			is >> pos.y;
+
+			string pname;
+			is >> pname;
+
+			float z;
+			is >> z;
+
+			CameraShot *shot = new CameraShot(pname, Vector2f(pos), z);
+			if (cameraShotMap.count(pname) > 0 )
+			{
+				assert(false);
+			}
+
+			cameraShotMap[pname] = shot;
 		}
 		else if (typeName == "shard")
 		{
@@ -7423,6 +7452,15 @@ int GameSession::Run()
 				if (rain != NULL)
 					rain->Update();
 
+				for (auto it = barriers.begin();
+					it != barriers.end(); ++it)
+				{
+					bool trig = (*it)->Update();
+					if (trig)
+					{
+						TriggerBarrier((*it));
+					}
+				}
 
 				oldZoom = cam.GetZoom();
 				oldCamBotLeft = view.getCenter();
@@ -7430,12 +7468,6 @@ int GameSession::Run()
 				oldCamBotLeft.y += view.getSize().y / 2;
 
 				oldView = view;
-
-
-				//polyShader.setUniform( "oldZoom", cam.GetZoom() );
-				//polyShader.setUniform( "oldBotLeft", view.getCenter().x - view.getSize().x / 2, 
-				//	view.getCenter().y + view.getSize().y / 2 );
-
 
 				if (raceFight != NULL)
 				{
@@ -7446,41 +7478,11 @@ int GameSession::Run()
 					cam.Update(GetPlayer(0));
 				}
 
-				/*if (mh->bossFightType == 0)
-				{
-					if (raceFight != NULL)
-					{
-						cam.UpdateVS(GetPlayer(0), GetPlayer(1));
-					}
-					else
-					{
-						cam.Update(GetPlayer(0));
-					}
-				}
-				else if( mh->bossFightType > 0 )
-				{
-					cam.UpdateBossFight( mh->bossFightType );
-				}
-				*/
-				
-
 				Vector2f camPos = cam.GetPos();
-				//cout << "in game cam pos: " << camPos.x << ", " << camPos.y << endl;
 
 				if (totalGameFrames % 60 == 0)
 				{
 
-				}
-
-
-				for( auto it = barriers.begin();
-					it != barriers.end(); ++it )
-				{
-					bool trig = (*it)->Update( );
-					if( trig )
-					{
-						TriggerBarrier( (*it) );
-					}
 				}
 
 				fader->Update();
@@ -13432,7 +13434,14 @@ void GameSession::LockGate( Gate *g )
 
 void GameSession::TriggerBarrier( Barrier *b )
 {
+	if (b->name == "testing")
+	{
+		CameraShot *shot = cameraShotMap["testing"];
+		cam.Set(shot->centerPos, shot->zoom, cam.zoomLevel);
+	}
 	//Pause(60);
+	//Fade(false, 60, Color::Black);
+	
 	//PoiInfo *poi = b->poi;
 	//string name = poi->name;
 

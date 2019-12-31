@@ -457,6 +457,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//int f;
 	std::map<std::string,PoiInfo*> poiMap;
 	std::map<std::string, Barrier*> barrierMap;
+	std::map<std::string, CameraShot*> cameraShotMap;
+
 	std::list<Barrier*> barriers;
 	
 	GameSession( SaveFile *sf,

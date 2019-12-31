@@ -191,6 +191,36 @@ struct AirTriggerParams : public ActorParams
 	sf::Text nameText;
 };
 
+struct CameraShotParams : public ActorParams
+{
+	CameraShotParams(ActorType *at, sf::Vector2i &pos, const std::string &typeStr,
+		float z );
+	CameraShotParams(ActorType *at,
+		sf::Vector2i &pos);
+	CameraShotParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+
+	void SetParams();
+	void SetPanelInfo();
+
+	void Init();
+	void SetZoom(float z);
+	void SetZoom(sf::Vector2i &testPoint);
+	ActorParams *Copy();
+	void Draw(sf::RenderTarget *target);
+	std::string camName;
+	float zoom;
+
+	const static float CAMWIDTH;
+	const static float CAMHEIGHT;
+	//int rectWidth;
+
+	sf::RectangleShape camRect;
+	sf::Text nameText;
+	sf::Text zoomText;
+};
+
 struct NexusParams : public ActorParams
 {
 	NexusParams(ActorType *at,
@@ -312,6 +342,7 @@ struct XBarrierParams : ActorParams
 	sf::Vertex line[2];
 	std::string name;
 	sf::Text nameText;
+	bool hasEdge;
 };
 
 struct KeyParams : public ActorParams

@@ -37,6 +37,7 @@ struct KinSkin;
 struct Background;
 struct ScrollingBackground;
 struct AirTriggerParams;
+struct CameraShotParams;
 
 struct TerrainRail;
 
@@ -63,6 +64,7 @@ struct EditSession : GUIHandler, TilesetManager
 		EDIT_IMAGES,
 		SET_LEVEL,
 		CREATE_RAILS,
+		SET_CAM_ZOOM,
 	};
 
 	Emode mode;
@@ -548,6 +550,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void SelectModeHandleEvent();
 	void CreatePatrolPathModeHandleEvent();
 	void CreateRectModeHandleEvent();
+	void SetCamZoomModeHandleEvent();
 	void SetDirectionModeHandleEvent();
 	void CreateGatesModeHandleEvent();
 	void CreateImagesHandleEvent();
@@ -563,6 +566,7 @@ struct EditSession : GUIHandler, TilesetManager
 	//void SelectModeUpdate();
 	void CreatePatrolPathModeUpdate();
 	void CreateRectModeUpdate();
+	void SetCamZoomModeUpdate();
 	void SetDirectionModeUpdate();
 	void CreateGatesModeUpdate();
 	void CreateImagesModeUpdate();
@@ -727,6 +731,7 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Vector2i createRectStartPoint;
 	sf::Vector2i createRectCurrPoint;
 	AirTriggerParams *rectCreatingTrigger;
+	CameraShotParams *currentCameraShot;
 
 	int setLevelCurrent;
 

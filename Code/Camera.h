@@ -8,6 +8,16 @@
 struct MovementSequence;
 struct Actor;
 
+struct CameraShot
+{
+	CameraShot( const std::string &p_name,
+		sf::Vector2f &pos, float z);
+	sf::Vector2f centerPos;
+	float zoom;
+	std::string name;
+};
+
+
 struct Camera
 {
 	Camera();

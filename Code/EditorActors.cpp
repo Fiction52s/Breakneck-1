@@ -132,6 +132,7 @@ Panel *ActorType::CreatePanel()
 		p = new Panel("xbarrier_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "-----");
+		p->AddCheckBox("hasedge", Vector2i(20, 240));
 	}
 	else if (name == "shippickup")
 	{
@@ -647,6 +648,13 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
 		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
 		p->AddButton("createrect", Vector2i(20, 350), Vector2f(100, 50), "Create Rect");
+	}
+	else if (name == "camerashot")
+	{
+		p = new Panel("camerashot_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "----");
+		p->AddButton("setzoom", Vector2i(20, 350), Vector2f(100, 50), "Set Zoom");
 	}
 
 	return p;

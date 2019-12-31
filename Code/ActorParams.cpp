@@ -2487,7 +2487,7 @@ XBarrierParams::XBarrierParams(ActorType *at,
 	Init();
 	PlaceAerial(pos);
 	name = p_name;
-	
+	hasEdge = false;
 }
 
 XBarrierParams::XBarrierParams(ActorType *at,
@@ -2497,6 +2497,7 @@ XBarrierParams::XBarrierParams(ActorType *at,
 	Init();
 	PlaceAerial(pos);
 	name = "----";
+	hasEdge = false;
 }
 
 XBarrierParams::XBarrierParams(ActorType *at,
@@ -2507,6 +2508,8 @@ XBarrierParams::XBarrierParams(ActorType *at,
 	LoadAerial(is);
 
 	is >> name;
+
+	LoadBool(is, hasEdge);
 }
 
 void XBarrierParams::Init()
@@ -2523,18 +2526,24 @@ void XBarrierParams::Init()
 void XBarrierParams::WriteParamFile(std::ofstream &of)
 {
 	of << name << endl;
+
+	WriteBool(of, hasEdge);
 }
 
 void XBarrierParams::SetParams()
 {
 	Panel *p = type->panel;
 	name = p->textBoxes["name"]->text.getString().toAnsiString();
+
+	hasEdge = p->checkBoxes["hasedge"]->checked;
 }
 
 void XBarrierParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	p->textBoxes["name"]->text.setString(name);
+
+	p->checkBoxes["hasedge"]->checked = hasEdge;
 }
 
 ActorParams *XBarrierParams::Copy()
@@ -2560,4 +2569,137 @@ void XBarrierParams::Draw(sf::RenderTarget *target)
 	nameText.setPosition(position.x, position.y - 100);
 
 	target->draw(nameText);
+}
+
+const float CameraShotParams::CAMWIDTH = 960.f;
+const float CameraShotParams::CAMHEIGHT = 540.f;
+
+CameraShotParams::CameraShotParams(ActorType *at, sf::Vector2i &pos)
+	:ActorParams(at)
+{
+	PlaceAerial(pos);
+	Init();
+
+	SetZoom(1);
+
+	camName = "----";
+}
+
+CameraShotParams::CameraShotParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	is >> camName;
+
+	float z;
+	is >> z;
+
+	Init();
+
+	SetZoom(z);
+}
+
+CameraShotParams::CameraShotParams(ActorType *at, sf::Vector2i &pos, const std::string &typeStr, float z)
+	:ActorParams(at)
+{
+	PlaceAerial(pos);
+
+	Init();
+
+	SetZoom(z);
+
+	camName = typeStr;
+}
+
+void CameraShotParams::Init()
+{
+	camRect.setFillColor(Color(200, 0, 0, 150));
+
+	EditSession *session = EditSession::GetSession();
+	nameText.setFont(session->arial);
+	nameText.setCharacterSize(40);
+	nameText.setFillColor(Color::White);
+
+	zoomText.setFont(session->arial);
+	zoomText.setCharacterSize(40);
+	zoomText.setFillColor(Color::White);
+}
+
+void CameraShotParams::SetZoom(float z)
+{
+	zoom = z;
+	int width = CAMWIDTH * zoom;
+	int height = CAMHEIGHT * zoom;
+
+	camRect.setSize(Vector2f(width, height));
+	camRect.setOrigin(camRect.getLocalBounds().width / 2,
+		camRect.getLocalBounds().height / 2);
+	camRect.setPosition(position.x, position.y);
+	image.setPosition(position.x, position.y);
+	SetBoundingQuad();
+
+	zoomText.setString( "x" + to_string(zoom));
+}
+
+void CameraShotParams::SetZoom(sf::Vector2i &testPoint)
+{
+	float xDist = abs(testPoint.x - position.x);
+	float yDist = abs(testPoint.y - position.y);
+	float xProp = xDist / CAMWIDTH;
+	float yProp = yDist / CAMHEIGHT;
+
+	float maxZoom = max(xProp, yProp) * 2;
+	SetZoom(maxZoom);
+}
+
+void CameraShotParams::WriteParamFile(std::ofstream &of)
+{
+	of << camName << endl;
+	of << zoom << endl;
+}
+
+void CameraShotParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	camName = p->textBoxes["name"]->text.getString();
+}
+
+void CameraShotParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->textBoxes["name"]->text.setString(camName);
+	//if (group != NULL)
+	//	p->textBoxes["group"]->text.setString(group->name);
+	//p->textBoxes["name"]->text.setString(camName);
+	//p->textBoxes["zoom"]->text.setString(to_string(zoom));
+}
+
+ActorParams *CameraShotParams::Copy()
+{
+	CameraShotParams *copy = new CameraShotParams(*this);
+	return copy;
+}
+
+void CameraShotParams::Draw(RenderTarget *target)
+{
+	camRect.setPosition(position.x, position.y);
+	target->draw(camRect);
+
+	ActorParams::Draw(target);
+
+	nameText.setString(camName);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
+	nameText.setPosition(position.x, position.y - 100);
+
+	target->draw(nameText);
+
+	zoomText.setOrigin(zoomText.getLocalBounds().left + zoomText.getLocalBounds().width / 2,
+		zoomText.getLocalBounds().top + zoomText.getLocalBounds().height / 2);
+	zoomText.setPosition(position.x, position.y - 200);
+
+	target->draw(zoomText);
 }

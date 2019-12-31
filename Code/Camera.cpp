@@ -11,6 +11,13 @@
 using namespace std;
 using namespace sf;
 
+CameraShot::CameraShot( const string &p_name, Vector2f &pos, float z)
+{
+	name = p_name;
+	centerPos = pos;
+	zoom = z;
+}
+
 
 Camera::Camera()
 {
@@ -540,6 +547,7 @@ sf::FloatRect Camera::GetRect()
 
 void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 {
+	SetManual(true);
 	/*if (!manual)
 	{
 		int x = 5;

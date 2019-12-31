@@ -197,6 +197,10 @@ void EditSession::AddGeneralEnemies()
 		false, false, false, false, 1,
 		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
 
+	AddExtraEnemy("camerashot", LoadParams<CameraShotParams>, NULL, MakeParamsAerial<CameraShotParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
+
 	AddExtraEnemy("key", LoadParams<KeyParams>, NULL, MakeParamsAerial<KeyParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false);
@@ -4630,6 +4634,30 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			
 			mode = CREATE_RECT;
 			drawingCreateRect = false;
+		}
+	}
+	else if (p->name == "camerashot_options")
+	{
+		if (b->name == "ok")
+		{
+			RegularOKButton();
+		}
+		else if (b->name == "setzoom")
+		{
+			if (mode == EDIT)
+			{
+				ISelectable *select = selectedBrush->objects.front().get();
+				CameraShotParams *camShot = (CameraShotParams*)select;
+				currentCameraShot = camShot;
+			}
+			else if (mode == CREATE_ENEMY)
+			{
+				currentCameraShot = (CameraShotParams*)tempActor;
+			}
+
+			showPanel = NULL;
+
+			mode = SET_CAM_ZOOM;
 		}
 	}
 	else if( p->name == "map_options" )
@@ -10467,6 +10495,11 @@ void EditSession::DrawMode()
 		rectCreatingTrigger->Draw(preScreenTex);
 		break;
 	}
+	case SET_CAM_ZOOM:
+	{
+		currentCameraShot->Draw(preScreenTex);
+		break;
+	}
 	case CREATE_PATROL_PATH:
 	{
 		DrawTrackingEnemy();
@@ -10745,6 +10778,11 @@ void EditSession::HandleEvents()
 		case CREATE_RECT:
 		{
 			CreateRectModeHandleEvent();
+			break;
+		}
+		case SET_CAM_ZOOM:
+		{
+			SetCamZoomModeHandleEvent();
 			break;
 		}
 		case SET_DIRECTION:
@@ -11730,6 +11768,38 @@ void EditSession::CreateRectModeHandleEvent()
 	}
 }
 
+void EditSession::SetCamZoomModeHandleEvent()
+{
+	//minimumPathEdgeLength = 16;
+
+	switch (ev.type)
+	{
+	case Event::MouseButtonPressed:
+	{
+		if (ev.mouseButton.button == Mouse::Left)
+		{
+			//Vector2i worldi(testPoint.x, testPoint.y);
+			//patrolPath.push_back(worldi);
+
+			currentCameraShot->SetZoom(Vector2i(testPoint));
+
+			if (tempActor != NULL)
+			{
+				mode = CREATE_ENEMY;
+			}
+			else
+			{
+				mode = EDIT;
+			}
+
+			showPanel = currentCameraShot->type->panel;
+		}
+		break;
+	}
+	}
+
+}
+
 void EditSession::SetDirectionModeHandleEvent()
 {
 	minimumPathEdgeLength = 16;
@@ -11965,6 +12035,11 @@ void EditSession::UpdateMode()
 		CreateRectModeUpdate();
 		break;
 	}
+	case SET_CAM_ZOOM:
+	{
+		SetCamZoomModeUpdate();
+		break;
+	}
 	case CREATE_PATROL_PATH:
 	{
 		CreatePatrolPathModeUpdate();
@@ -12115,6 +12190,29 @@ void EditSession::CreateRectModeUpdate()
 			enemyQuad.setPosition(enemySprite.getPosition());
 		}
 	}
+}
+
+void EditSession::SetCamZoomModeUpdate()
+{
+	if (showPanel != NULL)
+		return;
+
+	currentCameraShot->SetZoom(Vector2i(testPoint));
+	/*if (!panning && IsMousePressed(Mouse::Left))
+	{
+		createRectCurrPoint = Vector2i(worldPos);
+
+		Vector2i rc = (createRectStartPoint + createRectCurrPoint) / 2;
+		float width = abs(createRectCurrPoint.x - createRectStartPoint.x);
+		float height = abs(createRectCurrPoint.y - createRectStartPoint.y);
+		rectCreatingTrigger->SetRect(width, height, rc);
+
+		if (trackingEnemy != NULL)
+		{
+			enemySprite.setPosition(Vector2f(rc));
+			enemyQuad.setPosition(enemySprite.getPosition());
+		}
+	}*/
 }
 
 void EditSession::SetDirectionModeUpdate()

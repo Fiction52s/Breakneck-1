@@ -7,18 +7,21 @@
 struct GameSession;
 struct BarrierCallback;
 struct Edge;
+struct Sequence;
 
 struct Barrier
 {
 	Barrier(GameSession *owner,
 		const std::string &p_name,
-		bool p_x, int pos,
+		bool p_x, int pos, bool hasEdge,
 		BarrierCallback *cb);
 	~Barrier();
 	bool Update();
 	void SetPositive();
 	void Reset();
 	void Trigger();
+	void DeactivateEdge();
+	void ActivateEdge();
 	void DebugDraw(sf::RenderTarget *target);
 	bool IsPointWithinBarrier(sf::Vector2<double> &p);
 
@@ -32,6 +35,8 @@ struct Barrier
 	bool edgeActive;
 	Edge *barrierEdge;
 	sf::Vertex line[2];
+
+	Sequence *triggerSeq;
 };
 
 
