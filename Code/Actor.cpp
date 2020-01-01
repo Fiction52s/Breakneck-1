@@ -16041,13 +16041,13 @@ void Actor::PhysicsResponse()
 				SetAction(GROUNDHITSTUN);
 				frame = 0;
 			}
-			else if (action == SEQ_KINFALL)
+			/*else if (action == SEQ_KINFALL)
 			{
 				SetAction(SEQ_KINSTAND);
 				frame = 0;
 				groundSpeed = 0;
 				physicsOver = true;
-			}
+			}*/
 			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND 
 				&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 				&& action != SEQ_CRAWLERFIGHT_LAND 

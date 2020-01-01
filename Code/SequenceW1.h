@@ -115,56 +115,34 @@ struct TextDisp;
 struct Conversation;
 struct ConversationGroup;
 
-
-struct CrawlerAttackSeq1 : BasicBossScene
+struct CrawlerAttackSeq : BasicBossScene
 {
 	enum State
 	{
 		ENTRANCE,
 		WAIT,
-		TALK,
-		Count
-	};
-
-	CrawlerAttackSeq1(GameSession *owner);
-	void SetupStates();
-	void UpdateState();
-};
-
-struct CrawlerAttackSeq : Sequence
-{
-	enum State
-	{
 		KINSTOP,
 		ROCKSFALL,
 		CRAWLERSWOOP,
 		DIGGINGAROUND,
 		THROWOUT,
+		CRAWLERFACE,
 		CRAWLERTALK,
 		KINTALK,
-		END,
 		Count
 	};
 	~CrawlerAttackSeq();
-	State state;
-	int stateLength[Count];
+	void SetupStates();
+	void ReturnToGame();
+
 	void Init();
 	CrawlerAttackSeq(GameSession *owner);
-	bool Update();
+	void UpdateState();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
-	TextDisp *textDisp;
 	CrawlerQueen *queen;
-
-	int frame;
-
-	PoiInfo *camPoint0;
-	PoiInfo *camPoint1;
-	PoiInfo *roomCenter;
-	PoiInfo *surface;
-	PoiInfo *throwkin;
 
 	Tileset *ts_queenGrab;
 	sf::Sprite queenGrabSprite;
@@ -172,8 +150,6 @@ struct CrawlerAttackSeq : Sequence
 
 	FlashedImage *crawlerFace;
 	FlashedImage *kinFace;
-
-	GameSession *owner;
 };
 
 struct TextTestSeq : Sequence

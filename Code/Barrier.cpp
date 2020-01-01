@@ -16,7 +16,6 @@ Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int 
 	pos = p_pos;
 
 	triggerSeq = NULL;
-	SetScene();
 
 	double top = owner->mh->topBounds;
 	double bottom = owner->mh->topBounds + owner->mh->boundsHeight;
@@ -91,10 +90,12 @@ void Barrier::SetScene()
 {
 	BasicBossScene *seq = BasicBossScene::CreateScene(owner,name);
 
-	assert(seq != NULL);
-
-	seq->barrier = this;
-	triggerSeq = seq;
+	if (seq != NULL)
+	{
+		seq->Reset();
+		seq->barrier = this;
+		triggerSeq = seq;
+	}
 }
 
 Barrier::~Barrier()

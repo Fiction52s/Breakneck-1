@@ -788,14 +788,20 @@ std::string Conversation::GetSpeakerName( const std::string &line, int &tileInde
 
 void Conversation::Show()
 {
-	show = true;
-	speeches[currSpeech]->disp->Show();
+	if (!show)
+	{
+		show = true;
+		speeches[currSpeech]->disp->Show();
+	}
 }
 
 void Conversation::Hide()
 {
-	show = false;
-	speeches[currSpeech]->disp->Hide();
+	if (show)
+	{
+		show = false;
+		speeches[currSpeech]->disp->Hide();
+	}
 }
 
 void Conversation::NextSection()

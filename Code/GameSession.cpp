@@ -1691,6 +1691,13 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 		raceFight->Init();
 	}
 
+	//create sequences for the barriers after all enemies have already been loaded
+	for (auto it = barriers.begin(); it != barriers.end(); ++it)
+	{
+		(*it)->SetScene();
+	}
+	
+
 	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
 		(*it)->SetZoneSpritePosition();

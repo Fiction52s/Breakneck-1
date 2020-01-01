@@ -16,6 +16,7 @@ struct PoiInfo;
 struct MusicInfo;
 struct ShapeEmitter;
 struct StorySequence;
+struct Conversation;
 
 struct FlashedImage
 {
@@ -147,6 +148,9 @@ struct BasicMovieSeq : Sequence
 	sfe::Movie mov;
 };
 
+struct ConversationGroup;
+struct CameraShot;
+struct Barrier;
 struct BasicBossScene : Sequence
 {
 	BasicBossScene(GameSession *owner);
@@ -154,7 +158,7 @@ struct BasicBossScene : Sequence
 	virtual void Init();
 	virtual bool Update();
 	virtual void SetupStates() = 0;
-	void Reset();
+	virtual void Reset();
 	virtual void ConvUpdate();
 	static BasicBossScene *CreateScene(
 		GameSession *owner, const std::string &name);
@@ -172,6 +176,7 @@ struct BasicBossScene : Sequence
 		const std::string &groupName);
 	void AddShot(const std::string &shotName);
 	void AddPoint(const std::string &poiName);
+	Conversation *GetCurrentConv();
 	void StartEntranceRun(bool fr,
 		double maxSpeed, const std::string &n0,
 		const std::string &n1);
