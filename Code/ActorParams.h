@@ -278,18 +278,10 @@ struct GoalParams : public ActorParams
 
 struct PoiParams : public ActorParams
 {
-	enum Barrier
-	{
-		NONE,
-		X,
-		Y
-	};
-
-	Barrier barrier;
 	PoiParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
 		int edgeIndex,
-		double edgeQuantity, Barrier bType,
+		double edgeQuantity,
 		const std::string &name);
 	PoiParams(ActorType *at,
 		TerrainPolygon *edgePolygon,
@@ -297,16 +289,13 @@ struct PoiParams : public ActorParams
 		double edgeQuantity);
 	PoiParams(ActorType *at,
 		sf::Vector2i &pos,
-		Barrier bType,
-		const std::string &name,
-		bool hasCameraProperties, float camZoom);
+		const std::string &name );
 	PoiParams(ActorType *at,
 		sf::Vector2i &pos);
 	PoiParams(ActorType *at,
 		std::ifstream &is);
 
 	void Draw(sf::RenderTarget *target);
-	//PoiParams( EditSession *edit );
 
 	ActorParams *Copy();
 	void WriteParamFile(std::ofstream &of);
@@ -316,12 +305,6 @@ struct PoiParams : public ActorParams
 	std::string name;
 	static sf::Font *font;
 	sf::Text nameText;
-
-	bool hasCamProperties;
-	float camZoom;
-
-	sf::RectangleShape camRect;
-	//void Draw( sf::RenderTarget *target );
 };
 
 struct XBarrierParams : ActorParams

@@ -34,99 +34,57 @@ using namespace std;
 
 #define TIMESTEP 1.0 / 60.0
 
-
-FlashedImage::FlashedImage(Tileset *ts,
-	int tileIndex, int appearFrames,
-	int holdFrames,
-	int disappearFrames,
-	sf::Vector2f &pos)
+CrawlerAttackSeq1::CrawlerAttackSeq1(GameSession *p_owner)
+	:BasicBossScene(p_owner)
 {
-	spr.setTexture(*ts->texture);
-	spr.setTextureRect(ts->GetSubRect(tileIndex));
-	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
-	spr.setPosition(pos);
+	AddShot("scenecam");
+	AddShot("fightcam");
+
+	AddPoint("kinstart");
+	AddPoint("kinstop");
+
+	AddGroup("pre_coy", "W3/w3_coy_fight_pre");
+
+	currConvGroup = groups["pre_coy"];
+
+	SetupStates();
+
+	AddPoint("crawlerdig1");
+	AddPoint("crawlerdig2");
+	AddPoint("crawlersurface");
+	AddPoint("crawlerthrowkin");
+
 
 	Reset();
-
-	aFrames = appearFrames;
-	hFrames = holdFrames;
-	dFrames = disappearFrames;
 }
 
-bool FlashedImage::IsDone()
+void CrawlerAttackSeq1::SetupStates()
 {
-	return (!flashing && frame > 0);
+	numStates = Count;
+	stateLength = new int[numStates];
+
+	stateLength[ENTRANCE] = -1;
+	stateLength[WAIT] = 60;
+	stateLength[TALK] = -1;
 }
 
-int FlashedImage::GetNumFrames()
+void CrawlerAttackSeq1::UpdateState()
 {
-	return aFrames + hFrames + dFrames;
-}
-
-void FlashedImage::Reset()
-{
-	frame = 0;
-	flashing = false;
-}
-
-void FlashedImage::Flash()
-{
-	flashing = true;
-	frame = 0;
-}
-
-bool FlashedImage::IsFadingIn()
-{
-	return (flashing && frame < aFrames);
-}
-
-bool FlashedImage::IsHolding()
-{
-	return (flashing && frame >= aFrames && frame < aFrames + hFrames);
-}
-
-void FlashedImage::StopHolding()
-{
-	frame = aFrames + hFrames;
-}
-
-void FlashedImage::Update()
-{
-	if (!flashing)
-		return;
-
-	int a = 0;
-	if (IsFadingIn())
+	switch (state)
 	{
-		a = (frame / (float)aFrames) * 255.f;
-	}
-	else if (IsHolding())
+	case ENTRANCE:
 	{
-		a = 255;
+		EntranceUpdate();
+		break;
 	}
-	else
-{	
-		int fr = frame - (aFrames + hFrames);
-		a = (1.f - fr / (float)dFrames) * 255.f;
-	}
-	spr.setColor(Color(255, 255, 255, a));
-
-	if (frame == aFrames + hFrames + dFrames)
+	case TALK:
 	{
-		flashing = false;
+		ConvUpdate();
+		break;
 	}
-
-	++frame;
+	}
 }
 
-void FlashedImage::Draw(sf::RenderTarget *target)
-{
-	if (flashing)
-	{
-		target->draw(spr);
-	}
-	
-}
 
 CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	:owner(p_owner)

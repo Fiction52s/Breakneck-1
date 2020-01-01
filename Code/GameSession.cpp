@@ -232,7 +232,6 @@ PoiInfo::PoiInfo( const std::string &pname, Vector2i &p )
 	pos.x = p.x;
 	pos.y = p.y;
 	edge = NULL;
-	barrier = NULL;
 }
 
 PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
@@ -241,7 +240,6 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 	edge = e;
 	edgeQuantity = q;
 	pos = edge->GetPoint( edgeQuantity );
-	barrier = NULL;
 }
 
 
@@ -1753,9 +1751,10 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			string pname;
 			PoiInfo *pi = NULL;
 
-			is >> air;
+			int posType;
+			is >> posType;
 
-			if (air == "+air")
+			if (posType == 0)
 			{
 				Vector2i pos;
 				is >> pos.x;
@@ -1764,74 +1763,10 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 				is >> pname;
 
-				string barStr;
-				is >> barStr;
-
-				int hasCamProperties;
-				is >> hasCamProperties;
-
 				pi = new PoiInfo(pname, pos);
-
-				pi->hasCameraProperties = hasCamProperties;
-
-				if (pi->hasCameraProperties)
-				{
-					float camZoom;
-					is >> camZoom;
-
-					pi->cameraZoom = camZoom;
-				}
-				else
-				{
-				}
-
-
-
-				if (barStr == "-")
-				{
-				}
-				else if (barStr == "x")
-				{
-					/*					bleft = owner->poiMap["coyfightleft"]->barrier;
-					bright = owner->poiMap["coyfightright"]->barrier;
-					btop = owner->poiMap["coyfighttop"]->barrier;
-					bbot = owner->poiMap["coyfightbot"]->barrier;*/
-
-					//Barrier *b = new Barrier(this, pi, true, pos.x, (GetPlayer(0)->position.x > pos.x), NULL);
-					//string na = b->poi->name;
-					/*if( na == "coyfightleft"
-					|| na == "coyfightright"
-					|| na == "coyfighttop"
-					|| na == "coyfightbot" )
-					b->triggered = true;*/
-					//barriers.push_back(b);
-
-				}
-				else if (barStr == "y")
-				{
-					//Barrier *b = new Barrier(this, pi, false, pos.y, (GetPlayer(0)->position.y > pos.y), NULL);
-					//b->triggered = true;
-					//barriers.push_back(b);
-				}
-				else
-				{
-					assert(0);
-				}
-
-				//if( barStr != "-" )
-				//{
-				//	if( fileName == "Resources/Maps/poitest.brknk" )
-				//	{
-				//		if( pname == "birdfighttrigger" )
-				//		{
-				//			/*BirdMeetingCallback *bmc = new BirdMeetingCallback( this );
-				//			barriers.back()->callback = bmc;*/
-				//		}
-				//	}
-				//}
 			}
 
-			else if (air == "-air")
+			else if (posType == 1)
 			{
 				int terrainIndex;
 				is >> terrainIndex;
@@ -1844,34 +1779,12 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 				is >> pname;
 
-				string barStr;
-				is >> barStr;
-
 				Edge *e = edges[polyIndex[terrainIndex] + edgeIndex];
 
 				V2d p = e->GetPoint(edgeQuantity);
 
 				pi = new PoiInfo(pname, e,
-					edgeQuantity);
-
-				if (barStr == "-")
-				{
-				}
-				else if (barStr == "x")
-				{
-					//barriers.push_back(new Barrier(this, pi, true, floor(p.x + .5), (GetPlayer(0)->position.x > p.x), NULL));
-				}
-				else if (barStr == "y")
-				{
-					//barriers.push_back(new Barrier(this, pi, false, floor(p.y + .5), (GetPlayer(0)->position.y > p.y), NULL));
-				}
-				else
-				{
-					assert(0);
-				}
-
-
-				//edges[polyIndex[terrainIndex] + edgeIndex]					
+					edgeQuantity);				
 			}
 			else
 			{
@@ -1880,7 +1793,6 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			}
 
 			poiMap[pname] = pi;
-			//poiMap
 		}
 		else if (typeName == "xbarrier")
 		{
@@ -10196,6 +10108,22 @@ void GameSession::KillAllEnemies()
 	}
 }
 
+void GameSession::RemoveAllEnemies()
+{
+	Enemy *curr = activeEnemyList;
+	while (curr != NULL)
+	{
+		Enemy *next = curr->next;
+
+		if (curr->type != EnemyType::EN_GOAL && curr->type != EnemyType::EN_NEXUS)
+		{
+			RemoveEnemy(curr);
+			//curr->health = 0;
+		}
+		curr = next;
+	}
+}
+
 void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 {
 	for (int i = 0; i < numPolyTypes; ++i)
@@ -10562,6 +10490,8 @@ void GameSession::RestartLevel()
 	}
 	//currentZone = NULL;
 	cam.Reset();
+
+	cutPlayerInput = false;
 
 	/*if( !cam.bossCrawler )
 	{
@@ -13432,13 +13362,37 @@ void GameSession::LockGate( Gate *g )
 	
 }
 
+void GameSession::SetActiveSequence(Sequence *activeSeq)
+{
+	activeSequence = activeSeq;
+
+	activeSequence->Init();
+
+	if( activeSequence->UsesSequenceMode())
+	{
+		state = GameSession::SEQUENCE;
+	}
+}
+
 void GameSession::TriggerBarrier( Barrier *b )
 {
-	if (b->name == "testing")
+	if (b->triggerSeq != NULL)
 	{
-		CameraShot *shot = cameraShotMap["testing"];
-		cam.Set(shot->centerPos, shot->zoom, cam.zoomLevel);
+		SetActiveSequence(b->triggerSeq);
 	}
+	else
+	{
+		b->Trigger();
+	}
+	//if (b->name == "testing")
+	//{
+	//	CameraShot *shot = cameraShotMap["testing"];
+	//	cam.Set(shot->centerPos, shot->zoom, cam.zoomLevel);
+	//	PoiInfo *kinStart = poiMap["kinstart"];
+	//	PoiInfo *kinStop = poiMap["kinstop"];
+	//	GetPlayer(0)->SetStoryRun(true, 10.0, kinStart->edge, kinStart->edgeQuantity, kinStop->edge,
+	//		kinStop->edgeQuantity );
+	//}
 	//Pause(60);
 	//Fade(false, 60, Color::Black);
 	

@@ -223,7 +223,7 @@ void Shard::DissipateOnTouch()
 	GetShardSequence *gss = (GetShardSequence*)owner->getShardSeq;
 	gss->shard = this;
 	owner->getShardSeq->Reset();
-	owner->activeSequence = owner->getShardSeq;
+	owner->SetActiveSequence(owner->getShardSeq);
 
 	owner->GetPlayer(0)->SetAction(Actor::GETSHARD);
 	owner->GetPlayer(0)->frame = 0;

@@ -1028,8 +1028,8 @@ void CrawlerQueen::ConfirmKill()
 
 	Actor *p = owner->GetPlayer(0);
 
-	owner->activeSequence = seq;
-	owner->state = GameSession::SEQUENCE;
+	//needs setup later to tell it to go to sequence mode
+	owner->SetActiveSequence(seq);
 
 	dead = true;
 

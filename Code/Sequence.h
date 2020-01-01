@@ -71,8 +71,10 @@ struct Sequence
 	int frameCount;
 	int frame;
 	virtual ~Sequence() {}
+	virtual void Init() {}
 	virtual bool Update() = 0;
 	virtual void Reset() = 0;
+	virtual bool UsesSequenceMode() { return false; }
 	virtual void Draw( sf::RenderTarget *target, 
 		EffectLayer layer = EffectLayer::IN_FRONT ) = 0;
 };
@@ -145,6 +147,53 @@ struct BasicMovieSeq : Sequence
 	sfe::Movie mov;
 };
 
+struct BasicBossScene : Sequence
+{
+	BasicBossScene(GameSession *owner);
+	virtual ~BasicBossScene();
+	virtual void Init();
+	virtual bool Update();
+	virtual void SetupStates() = 0;
+	void Reset();
+	virtual void ConvUpdate();
+	static BasicBossScene *CreateScene(
+		GameSession *owner, const std::string &name);
+
+	virtual void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+	virtual void EntranceUpdate();
+	virtual bool IsEntering();
+	virtual void ReturnToGame();
+	virtual	void Wait();
+	virtual void SetEntranceRun();
+	virtual void SetEntranceShot();
+	virtual void UpdateState() = 0;
+	void AddGroup(const std::string &fileName,
+		const std::string &groupName);
+	void AddShot(const std::string &shotName);
+	void AddPoint(const std::string &poiName);
+	void StartEntranceRun(bool fr,
+		double maxSpeed, const std::string &n0,
+		const std::string &n1);
+	void SetCameraShot(const std::string &n);
+
+	int fadeFrames;
+	int state;
+	int *stateLength;//[Count];
+	int numStates;
+
+
+	std::map<std::string, ConversationGroup*> groups;
+	std::map<std::string, CameraShot*> shots;
+	std::map<std::string, PoiInfo*> points;
+
+	ConversationGroup *currConvGroup;
+	int cIndex;
+
+	Barrier *barrier;
+
+	GameSession *owner;
+};
 
 
 #endif 

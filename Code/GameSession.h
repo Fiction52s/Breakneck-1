@@ -136,9 +136,6 @@ struct PoiInfo
 	Edge *edge;
 	double edgeQuantity;
 	std::string name;
-	Barrier *barrier;
-	float cameraZoom;
-	bool hasCameraProperties;
 };
 
 
@@ -549,6 +546,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	
 	void KillAllEnemies();
+	void RemoveAllEnemies();
 	void SetParOnTop(sf::RenderTarget *target );
 
 	void UpdateEnemiesPrePhysics();
@@ -961,6 +959,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	float *fBubbleFrame;
 
 	Sequence *activeSequence;
+	void SetActiveSequence(Sequence *activeSeq );
+	
 	Sequence *startMapSeq;
 
 	Sequence *getShardSeq;

@@ -342,3 +342,95 @@ void BasicMovieSeq::Draw(sf::RenderTarget *target,
 }
 
 
+FlashedImage::FlashedImage(Tileset *ts,
+	int tileIndex, int appearFrames,
+	int holdFrames,
+	int disappearFrames,
+	sf::Vector2f &pos)
+{
+	spr.setTexture(*ts->texture);
+	spr.setTextureRect(ts->GetSubRect(tileIndex));
+	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+	spr.setPosition(pos);
+
+	Reset();
+
+	aFrames = appearFrames;
+	hFrames = holdFrames;
+	dFrames = disappearFrames;
+}
+
+bool FlashedImage::IsDone()
+{
+	return (!flashing && frame > 0);
+}
+
+int FlashedImage::GetNumFrames()
+{
+	return aFrames + hFrames + dFrames;
+}
+
+void FlashedImage::Reset()
+{
+	frame = 0;
+	flashing = false;
+}
+
+void FlashedImage::Flash()
+{
+	flashing = true;
+	frame = 0;
+}
+
+bool FlashedImage::IsFadingIn()
+{
+	return (flashing && frame < aFrames);
+}
+
+bool FlashedImage::IsHolding()
+{
+	return (flashing && frame >= aFrames && frame < aFrames + hFrames);
+}
+
+void FlashedImage::StopHolding()
+{
+	frame = aFrames + hFrames;
+}
+
+void FlashedImage::Update()
+{
+	if (!flashing)
+		return;
+
+	int a = 0;
+	if (IsFadingIn())
+	{
+		a = (frame / (float)aFrames) * 255.f;
+	}
+	else if (IsHolding())
+	{
+		a = 255;
+	}
+	else
+	{
+		int fr = frame - (aFrames + hFrames);
+		a = (1.f - fr / (float)dFrames) * 255.f;
+	}
+	spr.setColor(Color(255, 255, 255, a));
+
+	if (frame == aFrames + hFrames + dFrames)
+	{
+		flashing = false;
+	}
+
+	++frame;
+}
+
+void FlashedImage::Draw(sf::RenderTarget *target)
+{
+	if (flashing)
+	{
+		target->draw(spr);
+	}
+
+}

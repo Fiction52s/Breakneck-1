@@ -123,9 +123,6 @@ Panel *ActorType::CreatePanel()
 		p = new Panel("poi_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "NO NAME");
-		p->AddTextBox("camzoom", Vector2i(20, 180), 200, 20, "not test");
-		p->AddCheckBox("camprops", Vector2i(20, 240));
-		p->AddTextBox("barrier", Vector2i(20, 330), 50, 1, "-");
 	}
 	if (name == "xbarrier")
 	{

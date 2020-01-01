@@ -115,6 +115,22 @@ struct TextDisp;
 struct Conversation;
 struct ConversationGroup;
 
+
+struct CrawlerAttackSeq1 : BasicBossScene
+{
+	enum State
+	{
+		ENTRANCE,
+		WAIT,
+		TALK,
+		Count
+	};
+
+	CrawlerAttackSeq1(GameSession *owner);
+	void SetupStates();
+	void UpdateState();
+};
+
 struct CrawlerAttackSeq : Sequence
 {
 	enum State

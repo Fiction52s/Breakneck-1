@@ -3,7 +3,6 @@
 #include "BarrierReactions.h"
 #include "MapHeader.h"
 #include "Sequence.h"
-#include "SequenceW1.h"
 
 using namespace std;
 using namespace sf;
@@ -17,11 +16,7 @@ Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int 
 	pos = p_pos;
 
 	triggerSeq = NULL;
-	if (name == "test1")
-	{
-		//hasEdge = false;
-		//triggerSeq = owner->
-	}
+	SetScene();
 
 	double top = owner->mh->topBounds;
 	double bottom = owner->mh->topBounds + owner->mh->boundsHeight;
@@ -29,14 +24,19 @@ Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int 
 	line[0].color = Color::Red;
 	line[1].color = Color::Red;
 
+	extraDistance = 50;
 	if (x)
 	{
 		positiveOpen = (owner->GetPlayerPos().x > pos);
+		
 	}
 	else
 	{
 		positiveOpen = (owner->GetPlayerPos().y > pos);
 	}
+
+	if (!positiveOpen)
+		extraDistance = -extraDistance;
 
 	if (hasEdge)
 	{
@@ -82,6 +82,21 @@ Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int 
 	Reset();
 }
 
+int Barrier::GetCamPos()
+{
+	return pos + extraDistance;
+}
+
+void Barrier::SetScene()
+{
+	BasicBossScene *seq = BasicBossScene::CreateScene(owner,name);
+
+	assert(seq != NULL);
+
+	seq->barrier = this;
+	triggerSeq = seq;
+}
+
 Barrier::~Barrier()
 {
 	if( barrierEdge != NULL )
@@ -105,6 +120,9 @@ void Barrier::Reset()
 	{
 		edgeActive = false;
 	}
+
+	if (triggerSeq != NULL)
+		triggerSeq->Reset();
 }
 
 void Barrier::DeactivateEdge()
@@ -158,6 +176,8 @@ bool Barrier::Update()
 
 	V2d playerPos = owner->GetPlayerPos();
 
+	bool t = false;
+
 	double extra = 0;
 
 	if (x)
@@ -166,14 +186,14 @@ bool Barrier::Update()
 		{
 			if (playerPos.x < pos - extra)
 			{
-				triggered = true;
+				t = true;
 			}
 		}
 		else //starts left
 		{
 			if (playerPos.x > pos + extra)
 			{
-				triggered = true;
+				t = true;
 			}
 		}
 	}
@@ -183,19 +203,19 @@ bool Barrier::Update()
 		{
 			if (playerPos.y < pos - extra)
 			{
-				triggered = true;
+				t = true;
 			}
 		}
 		else //player starts above
 		{
 			if (playerPos.y > pos + extra)
 			{
-				triggered = true;
+				t = true;
 			}
 		}
 	}
 
-	return triggered;
+	return t;
 }
 
 void Barrier::SetPositive()
@@ -228,4 +248,26 @@ void Barrier::Trigger()
 {
 	edgeActive = false;
 	triggered = true;
+}
+
+double Barrier::GetPlayerDist()
+{
+	V2d playerPos = owner->GetPlayerPos();
+
+	double dist = 0;
+	if (x)
+	{
+		dist = playerPos.x - pos;
+
+		if (!positiveOpen)
+		{
+			dist = -dist;
+		}
+	}
+	else
+	{
+
+	}
+
+	return dist;
 }

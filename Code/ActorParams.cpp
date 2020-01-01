@@ -1019,19 +1019,13 @@ PoiParams::PoiParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, 
 	double p_edgeQuantity )
-	:ActorParams(at),
-	barrier( NONE )
+	:ActorParams(at)
 {
-	
-
-	hasCamProperties = false;
-	camZoom = 1;
-
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
 	nameText.setFillColor( Color::White );
 	
-	name = "-";
+	name = "----";
 
 
 	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
@@ -1042,92 +1036,43 @@ PoiParams::PoiParams(ActorType *at,
 	:ActorParams( at )
 {
 	EditSession *edit = EditSession::GetSession();
-	string air;
-	is >> air;
+
+	int air = 0;
+	int ground = 1;
+
+	int posType;
+	is >> posType;
+
+
+	
 	Vector2i pos;
 
-	if (air == "+air")
+	if (posType == air )
 	{
 		LoadAerial(is);
 
 		string pname;
 		is >> pname;
 
-		string marker;
-		is >> marker;
-
-		PoiParams::Barrier b;
-		if (marker == "-")
-		{
-			b = PoiParams::NONE;
-		}
-		else if (marker == "x")
-		{
-			b = PoiParams::X;
-		}
-		else if (marker == "y")
-		{
-			b = PoiParams::Y;
-		}
-
-		int hasCamProps;
-		is >> hasCamProps;
-
-		float camZoom = 1;
-		if (hasCamProps)
-		{
-			is >> camZoom;
-		}
-
-		camRect.setFillColor(Color::Transparent);
-		camRect.setOutlineColor(Color::Red);
-		camRect.setOutlineThickness(10);
-		camRect.setSize(Vector2f(960, 540));
-		camRect.setOrigin(camRect.getLocalBounds().width / 2,
-			camRect.getLocalBounds().height / 2);
-
 		nameText.setFont(*font);
 		nameText.setCharacterSize(18);
 		nameText.setFillColor(Color::White);
+		
 
-		hasCamProperties = false;
-		camZoom = 1;
-
-		name = "-";
+		name = pname;
 	}
-	else if (air == "-air")
+	else if (posType == ground)
 	{
 		LoadGrounded(is);
 
 		string pname;
 		is >> pname;
 
-		string marker;
-		is >> marker;
-
-		PoiParams::Barrier b;
-		if (marker == "-")
-		{
-			b = PoiParams::NONE;
-		}
-		else if (marker == "x")
-		{
-			b = PoiParams::X;
-		}
-		else if (marker == "y")
-		{
-			b = PoiParams::Y;
-		}
-
-
-		hasCamProperties = false;
-		camZoom = 1;
-
 		nameText.setFont(*font);
 		nameText.setCharacterSize(18);
 		nameText.setFillColor(Color::White);
 
-		name = "-";
+		name = pname;
 	}
 	else
 	{
@@ -1138,13 +1083,9 @@ PoiParams::PoiParams(ActorType *at,
 PoiParams::PoiParams(ActorType *at,
 	TerrainPolygon *p_edgePolygon,
 	int p_edgeIndex, 
-	double p_edgeQuantity, PoiParams::Barrier bType, const std::string &p_name )
-	:ActorParams(at),
-	barrier( bType ), name( p_name )
+	double p_edgeQuantity, const std::string &p_name )
+	:ActorParams(at), name( p_name )
 {
-	hasCamProperties = false;
-	camZoom = 1;
-
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
 	nameText.setFillColor( Color::White );
@@ -1154,42 +1095,21 @@ PoiParams::PoiParams(ActorType *at,
 
 PoiParams::PoiParams(ActorType *at,
 	sf::Vector2i &pos )
-	:ActorParams(at), barrier( NONE )
+	:ActorParams(at)
 {
-	camRect.setFillColor( Color::Transparent );
-	camRect.setOutlineColor( Color::Red );
-	camRect.setOutlineThickness( 10 );
-	camRect.setSize( Vector2f( 960, 540 ) );
-	camRect.setOrigin( camRect.getLocalBounds().width / 2,
-		camRect.getLocalBounds().height / 2 );
-
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
 	nameText.setFillColor( Color::White );
 
-	hasCamProperties = false;
-	camZoom = 1;
-
-	name = "-";
+	name = "----";
 
 	PlaceAerial(pos);
 }
 
 PoiParams::PoiParams(ActorType *at,
-	sf::Vector2i &pos, PoiParams::Barrier bType, const std::string &p_name,
-	bool hasCam, float cZoom )
-	:ActorParams(at), 
-	barrier( bType ), name( p_name ), hasCamProperties( hasCam ),
-	camZoom( cZoom )
+	sf::Vector2i &pos, const std::string &p_name )
+	:ActorParams(at)
 {
-	camRect.setFillColor( Color::Transparent );
-	camRect.setOutlineColor( Color::Red );
-	camRect.setOutlineThickness( 10 );
-	camRect.setSize( Vector2f( 960 * cZoom, 540 * cZoom ) );
-	camRect.setOrigin( camRect.getLocalBounds().width / 2,
-		camRect.getLocalBounds().height / 2 );
-
-
 	nameText.setFont( *font );
 	nameText.setCharacterSize( 18 );
 	nameText.setFillColor( Color::White );
@@ -1205,106 +1125,23 @@ ActorParams *PoiParams::Copy()
 
 void PoiParams::WriteParamFile( std::ofstream &of )
 {
-	of << name << " ";
-
-	switch( barrier )
-	{
-	case NONE:
-		of << "-" << endl;
-		break;
-	case X:
-		of << "x" << endl;
-		break;
-	case Y:
-		of << "y" << endl;
-		break;
-	}
-
-	if( groundInfo == NULL )
-	{
-		WriteBool(of, hasCamProperties);
-		if( hasCamProperties )
-			of << camZoom << endl;
-	}
+	of << name << endl;
 }
 
 void PoiParams::SetParams()
 {
 	Panel *p = type->panel;
-	
-	bool camProps = p->checkBoxes["camprops"]->checked;
-
-	hasCamProperties = camProps;
 
 	name = p->textBoxes["name"]->text.getString().toAnsiString();
 
 	nameText.setString( name );
-
-	stringstream ss;
-	string zoomStr = p->textBoxes["camzoom"]->text.getString().toAnsiString();
-
-	ss << zoomStr;
-
-	float zoom;
-	ss >> zoom;
-
-	if( !ss.fail() )
-	{
-		camZoom = zoom;
-
-		camRect.setSize( Vector2f( 960.f * camZoom, 540.f * camZoom ) );
-		camRect.setOrigin( camRect.getLocalBounds().width / 2, camRect.getLocalBounds().height / 2 );
-	}
-
-	string barStr = p->textBoxes["barrier"]->text.getString().toAnsiString();
-	
-	if( barStr == "-" )
-	{
-		barrier = Barrier::NONE;
-	}
-	else if( barStr == "x" )
-	{
-		barrier = Barrier::X;
-	}
-	else if( barStr == "y" )
-	{
-		barrier = Barrier::Y;
-	}
-	else
-	{
-		//do nothing
-	}
 }
 
 void PoiParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	string s;
-	switch( barrier )
-	{
-	case NONE:
-		s = "-";
-		break;
-	case X:
-		s = "x";
-		break;
-	case Y:
-		s = "y";
-		break;
-	}
-
-	p->checkBoxes["camprops"]->checked = hasCamProperties;
-	
-	p->textBoxes["camzoom"]->text.setString( boost::lexical_cast<string>( camZoom ) );
-
 	p->textBoxes["name"]->text.setString( name );
-	if( group != NULL )
-	{
-		//p->textBoxes["group"]->text.setString( group->name );
-	}
-
-	p->textBoxes["barrier"]->text.setString( s );
 }
 
 void PoiParams::Draw( sf::RenderTarget *target )
@@ -1317,12 +1154,6 @@ void PoiParams::Draw( sf::RenderTarget *target )
 	nameText.setPosition( position.x, position.y - 40 );
 
 	target->draw( nameText );
-
-	if( hasCamProperties )
-	{
-		camRect.setPosition( position.x, position.y );
-		target->draw( camRect );
-	}
 }
 
 KeyParams::KeyParams(ActorType *at, sf::Vector2i &pos )
@@ -2614,7 +2445,9 @@ CameraShotParams::CameraShotParams(ActorType *at, sf::Vector2i &pos, const std::
 
 void CameraShotParams::Init()
 {
-	camRect.setFillColor(Color(200, 0, 0, 150));
+	camRect.setFillColor(Color(255, 255,255, 0));
+	camRect.setOutlineColor(Color(255, 255, 255));
+	camRect.setOutlineThickness(5);
 
 	EditSession *session = EditSession::GetSession();
 	nameText.setFont(session->arial);

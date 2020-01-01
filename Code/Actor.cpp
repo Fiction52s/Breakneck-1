@@ -292,6 +292,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, int p_actorIndex )
 	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
 	{
+	autoRunStopEdge = NULL;
 	extraDoubleJump = false;
 	stunBufferedJump = false;
 	stunBufferedDash = false;
@@ -2043,7 +2044,6 @@ void Actor::ActionEnded()
 			break;
 		case SEQ_ENTERCORE1:
 			frame = actionLength[SEQ_ENTERCORE1] - 1;
-			//owner->activeSequence = storedTrigger->gameSequence;
 			//owner->state = GameSession::SEQUENCE;
 			break;
 		case SEQ_LOOKUP:
@@ -2075,7 +2075,7 @@ void Actor::ActionEnded()
 			break;
 		case SEQ_FADE_INTO_NEXUS:
 			frame = actionLength[SEQ_FADE_INTO_NEXUS] - 1;
-			owner->activeSequence = owner->nexus->insideSeq;
+			owner->SetActiveSequence(owner->nexus->insideSeq);
 			break;
 		case SEQ_TURNFACE:
 			frame = 0;
@@ -2433,6 +2433,7 @@ void Actor::Respawn()
 {
 	//glideEmitter->Reset();
 	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	autoRunStopEdge = NULL;
 	stunBufferedJump = false;
 	stunBufferedAttack = Action::Count;
 	stunBufferedDash = false;
@@ -3017,7 +3018,7 @@ void Actor::UpdatePrePhysics()
 					
 					//owner->scoreDisplay->Reset();
 					owner->scoreDisplay->Deactivate();
-					owner->activeSequence = owner->shipExitSeq;
+					owner->SetActiveSequence(owner->shipExitSeq);
 					owner->shipExitSeq->Reset();
 				}
 				else if (b)
@@ -9839,6 +9840,55 @@ bool Actor::HasPower(int index)
 	}
 }
 
+void Actor::SetGroundedPos(Edge *g, double q)
+{
+	ground = g;
+	edgeQuantity = q;
+
+	hasDoubleJump = true;
+	hasAirDash = true;
+
+	V2d norm = ground->Normal();
+	if (norm.x > 0)
+	{
+		offsetX = b.rw;
+	}
+	else if (norm.x < 0)
+	{
+		offsetX = -b.rw;
+	}
+	else
+	{
+		offsetX = 0;
+	}
+}
+
+void Actor::SetStoryRun(bool fr, double maxAutoRun, Edge * g,
+	double q)
+{
+	SetGroundedPos(g, q);
+	SetAutoRun(fr, maxAutoRun);
+}
+
+void Actor::SetStoryRun(bool fr, double maxAutoRun, Edge * g,
+	double q, Edge *end, double eq )
+{
+	SetGroundedPos(g, q);
+	SetAutoRun(fr, maxAutoRun);
+	SetAutoRunStopper(end, eq);
+}
+
+void Actor::SetAutoRunStopper(Edge *g, double q)
+{
+	autoRunStopEdge = g;
+	autoRunStopQuant = q;
+}
+
+bool Actor::IsAutoRunning()
+{
+	return action == AUTORUN;
+}
+
 void Actor::TurnFace()
 {
 	assert(ground != NULL);
@@ -9850,6 +9900,22 @@ void Actor::StandInPlace()
 {
 	assert(ground != NULL);
 	SetAction(STAND);
+	frame = 0;
+}
+
+void Actor::WaitInPlace()
+{
+	owner->cutPlayerInput = true;
+	SetAction(STAND);
+	//SetAction(SEQ_WAIT);
+	frame = 0;
+	physicsOver = true;
+	groundSpeed = 0;
+}
+
+void Actor::Wait()
+{
+	SetAction(SEQ_WAIT);
 	frame = 0;
 }
 
@@ -10097,6 +10163,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	queryMode = "resolve";
 
 	Edge *oldGround = ground;
+	//double oldQuant = edgeQuantity;
+	//double oldOffsetX = offsetX;
 	double oldGs = groundSpeed;
 	
 //	Query( this, owner->testTree, r );
@@ -13578,6 +13646,28 @@ void Actor::UpdatePhysics()
 					q += m;
 				}
 				
+				if (IsAutoRunning())
+				{
+					if ( autoRunStopEdge != NULL && autoRunStopEdge == ground)
+					{
+						if (facingRight)
+						{
+							if (autoRunStopQuant <= q && autoRunStopQuant >= q - m)
+							{
+								//StandInPlace();
+								WaitInPlace();
+							}
+						}
+						else
+						{
+							if (autoRunStopQuant >= q && autoRunStopQuant <= q - m)
+							{
+								//StandInPlace();
+								WaitInPlace();
+							}
+						}
+					}
+				}
 				/*if( abs( offsetX ) > b.rw + .00001 )
 				{
 					cout << "off: " << offsetX << endl;
@@ -17783,8 +17873,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 			offsetX = 0;
 		}
 
-		SetAction(SEQ_WAIT);
-		frame = 0;
+		WaitInPlace();
 		physicsOver = true;
 
 		owner->activeSequence = trigger->gameSequence;
@@ -24411,6 +24500,7 @@ void Actor::SetAutoRun(bool fr, double maxAutoRun)
 {
 	SetAction(AUTORUN);
 	frame = 0;
+	autoRunStopEdge = NULL;
 
 	maxAutoRunSpeed = maxAutoRun;
 	facingRight = fr;

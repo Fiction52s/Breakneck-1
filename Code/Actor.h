@@ -403,6 +403,8 @@ struct Actor : QuadTreeCollider,
 	
 	void TurnFace();
 	void StandInPlace();
+	void WaitInPlace();
+	void Wait();
 	bool IsGoalKillAction(Action a);
 	bool IsIntroAction(Action a);
 	bool IsExitAction(Action a);
@@ -607,11 +609,22 @@ struct Actor : QuadTreeCollider,
 	void RunMovement();
 	void AutoRunMovement();
 	void SetAutoRun( bool fr, double maxAutoRun );
+	void SetGroundedPos(Edge *g, double q);
+	void SetStoryRun(bool fr, double maxAutoRun, Edge * g,
+		double q, Edge *end, double endQ );
+	void SetStoryRun(bool fr, double maxAutoRun, Edge * g,
+		double q);
+	void SetAutoRunStopper(Edge *g, double q);
+	bool IsAutoRunning();
+	Edge *autoRunStopEdge;
+	double autoRunStopQuant;
 	double maxAutoRunSpeed;
 	void AttackMovement();
 	void DodecaLateDraw(sf::RenderTarget *target);
 	void SetActionGrind();
 	bool CanUnlockGate( Gate *g );
+
+
 
 	void CheckHoldJump();
 	void Respawn();

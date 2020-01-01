@@ -893,7 +893,7 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 		{
 			if ((*it)->positiveOpen)
 			{
-				float diff = (*it)->pos - left;
+				float diff = (*it)->GetCamPos() - left;
 				if (diff > 0)
 				{
 					if (diff > xChangePos)
@@ -908,7 +908,7 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 			}
 			else
 			{
-				float diff = right - (*it)->pos;
+				float diff = right - (*it)->GetCamPos();
 				if (diff > 0)
 				{
 					//cout << "moving left: " << diff << endl;
@@ -927,7 +927,7 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 		{
 			if ((*it)->positiveOpen)
 			{
-				float diff = (*it)->pos - top;
+				float diff = (*it)->GetCamPos() - top;
 				if (diff > 0)
 				{
 					if (diff > yChangePos)
@@ -941,7 +941,7 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 			}
 			else
 			{
-				float diff = bottom - (*it)->pos;
+				float diff = bottom - (*it)->GetCamPos();
 				if (diff > 0)
 				{
 					if (-diff < yChangeNeg)
