@@ -46,9 +46,7 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 
 	AddGroup("pre_coy", "W3/w3_coy_fight_pre");
 
-	currConvGroup = groups["pre_coy"];
-
-	SetupStates();
+	SetConvGroup("pre_coy");
 
 	AddPoint("crawlerdig1");
 	AddPoint("crawlerdig2");
@@ -59,34 +57,27 @@ CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	queenGrabSprite.setTexture(*ts_queenGrab->texture);
 	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
 
-	detailedGrab = new FlashedImage(owner->GetTileset("Story/Crawler_Dig_01_860x830.png", 860, 830),
-		0, 30, 60, 30, Vector2f(1160, 540));//Vector2f( 1500, 500 ));
+	AddFlashedImage( "detailedgrab", owner->GetTileset("Story/Crawler_Dig_01_860x830.png", 860, 830),
+		0, 30, 60, 30, Vector2f(1160, 540));
 
-	crawlerFace = new FlashedImage(owner->GetTileset("Story/Crawler_Dig_02_828x875.png", 828, 875),
-		0, 30, 60, 30, Vector2f(1350, 325));//Vector2f(960, 540));//Vector2f( 1500, 500 ));
+	AddFlashedImage("crawlerface", owner->GetTileset("Story/Crawler_Dig_02_828x875.png", 828, 875),
+		0, 30, 60, 30, Vector2f(1350, 325));
 
-	kinFace = new FlashedImage(owner->GetTileset("Story/Crawler_Dig_03_510x565.png", 510, 565),
-		0, 30, 60, 30, Vector2f(625, 325));//Vector2f( 1500, 500 ));
-	//ts_detailedGrab = owner->GetTileset("Bosses/Crawler/");
-	//detailedGrabSpr.setTexture(*ts_detailedGrab);
-	//detailedGrabSpr.setTextureRect(ts_detailedGrab->GetSubRect(0));
-	//detailedGrabSpr.setOrigin(detailedGrabSpr.getLocalBounds().width / 2,
-	//	detailedGrabSpr.getLocalBounds().height] / 2);
-	//detailedGrabSpr.setPosition(800, 500);
+	AddFlashedImage("kinface", owner->GetTileset("Story/Crawler_Dig_03_510x565.png", 510, 565),
+		0, 30, 60, 30, Vector2f(625, 325));
 
 	PoiInfo *surface = points["crawlersurface"];
-
 	queen = new CrawlerQueen(owner, surface->edge, surface->edgeQuantity, false);
-	//queen->Setup();
-	owner->fullEnemyList.push_back(queen);
+	AddEnemy("queen", queen);
+
+	SetupStates();
 
 	Reset();
 }
 
 void CrawlerAttackSeq::SetupStates()
 {
-	numStates = Count;
-	stateLength = new int[numStates];
+	SetNumStates(Count);
 
 	stateLength[ENTRANCE] = -1;
 	stateLength[WAIT] = 1;
@@ -100,39 +91,21 @@ void CrawlerAttackSeq::SetupStates()
 	stateLength[KINTALK] = 10000;
 }
 
-CrawlerAttackSeq::~CrawlerAttackSeq()
-{
-	delete detailedGrab;
-	delete crawlerFace;
-	delete kinFace;
-}
-
-void CrawlerAttackSeq::Init()
-{
-
-}
-
 void CrawlerAttackSeq::ReturnToGame()
 {
 	Actor *player = owner->GetPlayer(0);
-	//if (queen->action == CrawlerQueen::SEQ_FINISHINITIALUNBURROW)
-	{
-		BasicBossScene::ReturnToGame();
-		queen->StartFight();
+	
+	BasicBossScene::ReturnToGame();
+	queen->StartFight();
 
-		CameraShot *shot = shots["fightcam"];
-		owner->cam.Ease(Vector2f(shot->centerPos), shot->zoom, 60, CubicBezier());
-		//player->StandInPlace();
-		//player->SetAction(Actor::STAND);
-		//player->frame = 0;
-		//owner->adventureHUD->Show(60);
-		//return false;
-	}
-//	else
-	{
-		
-		//return true;
-	}
+	CameraShot *shot = shots["fightcam"];
+	owner->cam.Ease(Vector2f(shot->centerPos), shot->zoom, 60, CubicBezier());
+
+	//player->StandInPlace();
+	//player->SetAction(Actor::STAND);
+	//player->frame = 0;
+	//owner->adventureHUD->Show(60);
+	//return false;
 }
 
 void CrawlerAttackSeq::UpdateState()
@@ -146,18 +119,14 @@ void CrawlerAttackSeq::UpdateState()
 	case KINSTOP:
 		if (frame == 0)
 		{
-			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
-
+			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
 			player->desperationMode = false;
 			player->SetAction(Actor::SEQ_LOOKUP);
 			player->frame = 0;
 		}
 		break;
 	case ROCKSFALL:
-		if (frame == 0)
-		{
-			owner->cam.SetRumble(3, 3, stateLength[ROCKSFALL]);
-		}
+		RumbleDuringState(3,3);
 		break;
 	case CRAWLERSWOOP:
 	{
@@ -166,42 +135,28 @@ void CrawlerAttackSeq::UpdateState()
 			player->SetAction(Actor::SEQ_LOOKUPDISAPPEAR);
 			player->frame = 0;
 		}
-		queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(frame / 3));
-		queenGrabSprite.setOrigin(queenGrabSprite.getLocalBounds().width / 2,
-			queenGrabSprite.getLocalBounds().height);
 
-		Edge *ground = player->ground;
-		V2d gPoint = ground->GetPoint(player->edgeQuantity);
-		V2d gNorm = ground->Normal();
-
-		queenGrabSprite.setPosition(Vector2f(gPoint - gNorm * 30.0));
-
+		UpdateCrawlerSwoop();
 		break;
 	}
 	case DIGGINGAROUND:
+		RumbleDuringState(10, 10);
 		if (frame == 0)
 		{
-			owner->cam.SetRumble(10, 10, stateLength[DIGGINGAROUND]);
-			owner->cam.SetManual(true);
-			//owner->cam.Set(Vector2f(camPoint0->pos), 1, 0);
-			owner->cam.Ease(Vector2f(points["crawlerdig1"]->pos), 1, 60, CubicBezier());
+			EasePoint("crawlerdig1", 1, 60);
 		}
 		else if (frame == 60)
 		{
-
-			//owner->cam.Set(Vector2f(camPoint1->pos), 1, 0);
-			owner->cam.Ease(Vector2f(points["crawlerdig2"]->pos), 1, 60, CubicBezier());
+			EasePoint("crawlerdig2", 1, 60);
 		}
 		else if (frame == 120)
 		{
-			//owner->cam.Set(Vector2f(roomCenter->pos), 1.75, 0);
-			CameraShot *shot = shots["cavecam"];
-			owner->cam.Ease(Vector2f(shot->centerPos),shot->zoom, 60, CubicBezier());
+			EaseShot("cavecam", 60);
 		}
 
 		if (frame == 20)
 		{
-			detailedGrab->Flash();
+			Flash("detailedgrab");
 		}
 		break;
 	case THROWOUT:
@@ -209,7 +164,6 @@ void CrawlerAttackSeq::UpdateState()
 		{	
 			owner->currentZone->ReformAllGates();
 			player->StartSeqKinThrown(points["crawlersurface"]->pos, V2d(-10, -10));
-
 		}
 		else if (frame == 30)
 		{
@@ -219,16 +173,12 @@ void CrawlerAttackSeq::UpdateState()
 		break;
 	case CRAWLERFACE:
 	{
-		//Conversation *conv = GetCurrentConv();
 		if (frame == 0)
 		{
 			queen->StartAngryYelling();
-			crawlerFace->Flash();
 		}
-		else if (crawlerFace->IsDone())
-		{
-			frame = stateLength[CRAWLERFACE] - 1;
-		}
+
+		BasicFlashUpdateState("crawlerface");
 		break;
 	}
 	case CRAWLERTALK:
@@ -238,22 +188,24 @@ void CrawlerAttackSeq::UpdateState()
 	}
 	case KINTALK:
 	{
-		if (frame == 0)
-		{
-			GetCurrentConv()->Hide();
-			kinFace->Flash();
-		}
-		else if (kinFace->IsDone())
-		{
-			frame = stateLength[KINTALK] - 1;
-		}
+		BasicFlashUpdateState("kinface");
 		break;
 	}
 	}
+}
 
-	crawlerFace->Update();
-	kinFace->Update();
-	detailedGrab->Update();
+void CrawlerAttackSeq::UpdateCrawlerSwoop()
+{
+	Actor *player = owner->GetPlayer(0);
+	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(frame / 3));
+	queenGrabSprite.setOrigin(queenGrabSprite.getLocalBounds().width / 2,
+		queenGrabSprite.getLocalBounds().height);
+
+	Edge *ground = player->ground;
+	V2d gPoint = ground->GetPoint(player->edgeQuantity);
+	V2d gNorm = ground->Normal();
+
+	queenGrabSprite.setPosition(Vector2f(gPoint - gNorm * 30.0));
 }
 
 void CrawlerAttackSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
@@ -268,20 +220,5 @@ void CrawlerAttackSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 		target->draw(queenGrabSprite);
 	}
 
-	View v = target->getView();
-	target->setView(owner->uiView);
-	detailedGrab->Draw(target);
-	crawlerFace->Draw(target);
-	kinFace->Draw(target);
-	target->setView(v);
-
 	BasicBossScene::Draw(target, layer);
-}
-void CrawlerAttackSeq::Reset()
-{
-	BasicBossScene::Reset();
-	queen->Reset();
-	detailedGrab->Reset();
-	crawlerFace->Reset();
-	kinFace->Reset();
 }

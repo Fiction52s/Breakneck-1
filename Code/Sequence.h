@@ -17,6 +17,7 @@ struct MusicInfo;
 struct ShapeEmitter;
 struct StorySequence;
 struct Conversation;
+struct Enemy;
 
 struct FlashedImage
 {
@@ -158,6 +159,7 @@ struct BasicBossScene : Sequence
 	virtual void Init();
 	virtual bool Update();
 	virtual void SetupStates() = 0;
+	void SetNumStates(int count);
 	virtual void Reset();
 	virtual void ConvUpdate();
 	static BasicBossScene *CreateScene(
@@ -165,6 +167,7 @@ struct BasicBossScene : Sequence
 
 	virtual void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
+	virtual void DrawFlashes(sf::RenderTarget *target);
 	virtual void EntranceUpdate();
 	virtual bool IsEntering();
 	virtual void ReturnToGame();
@@ -172,10 +175,30 @@ struct BasicBossScene : Sequence
 	virtual void SetEntranceRun();
 	virtual void SetEntranceShot();
 	virtual void UpdateState() = 0;
+	void EaseShot(const std::string &shotName,
+		int frames, CubicBezier bez = CubicBezier());
+	void EasePoint(const std::string &pointName,
+		float targetZoom, int frames,
+		CubicBezier bez = CubicBezier());
+	void Flash(const std::string &flashName);
+	void Rumble(int x, int y, int duration);
+	void RumbleDuringState(int x, int y);
+	void BasicFlashUpdateState(
+	const std::string &flashName );
 	void AddGroup(const std::string &fileName,
 		const std::string &groupName);
 	void AddShot(const std::string &shotName);
 	void AddPoint(const std::string &poiName);
+	void AddFlashedImage(const std::string &imageName,
+		Tileset *ts, int tileIndex,
+		int appearFrames,
+		int holdFrames,
+		int disappearFrames,
+		sf::Vector2f &pos);
+	void UpdateFlashes();
+	void AddEnemy( const std::string &enName,
+		Enemy *e);
+	void SetConvGroup(const std::string &n);
 	Conversation *GetCurrentConv();
 	void StartEntranceRun(bool fr,
 		double maxSpeed, const std::string &n0,
@@ -191,6 +214,9 @@ struct BasicBossScene : Sequence
 	std::map<std::string, ConversationGroup*> groups;
 	std::map<std::string, CameraShot*> shots;
 	std::map<std::string, PoiInfo*> points;
+	std::map<std::string, FlashedImage*> flashes;
+	std::list<FlashedImage*> flashList;
+	std::map<std::string, Enemy *> enemies;
 
 	ConversationGroup *currConvGroup;
 	int cIndex;

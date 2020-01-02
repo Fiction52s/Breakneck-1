@@ -489,7 +489,7 @@ void Camera::StopRumble()
 	rY = 0;
 }
 
-void Camera::Ease( Vector2f &p_pos, float zFactor, int numFrames, CubicBezier &bez)
+void Camera::Ease( Vector2f &p_pos, float zFactor, int numFrames, CubicBezier bez)
 {
 	if (!manual)
 		SetManual(true);

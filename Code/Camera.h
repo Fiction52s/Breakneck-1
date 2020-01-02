@@ -33,7 +33,7 @@ struct Camera
 	void SetMovementSeq( MovementSequence *move,
 		bool relative );
 	void Ease(sf::Vector2f &pos, float zFactor,
-		int numFrames, CubicBezier &bez );
+		int numFrames, CubicBezier bez = CubicBezier());
 	void UpdateEase();
 	sf::Vector2f GetNewOffset( sf::Vector2<double> &pVel);
 	GameSession *owner;

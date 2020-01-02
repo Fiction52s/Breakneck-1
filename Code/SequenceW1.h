@@ -131,25 +131,22 @@ struct CrawlerAttackSeq : BasicBossScene
 		KINTALK,
 		Count
 	};
-	~CrawlerAttackSeq();
+
+	CrawlerAttackSeq(GameSession *owner);
+
 	void SetupStates();
 	void ReturnToGame();
 
-	void Init();
-	CrawlerAttackSeq(GameSession *owner);
+	
+	void UpdateCrawlerSwoop();
 	void UpdateState();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
-	void Reset();
 
 	CrawlerQueen *queen;
 
 	Tileset *ts_queenGrab;
 	sf::Sprite queenGrabSprite;
-	FlashedImage *detailedGrab;
-
-	FlashedImage *crawlerFace;
-	FlashedImage *kinFace;
 };
 
 struct TextTestSeq : Sequence

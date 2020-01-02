@@ -475,10 +475,50 @@ void BasicBossScene::Reset()
 	{
 		(*it).second->Reset();
 	}
+
+	for (auto it = flashes.begin(); it != flashes.end(); ++it)
+	{
+		(*it).second->Reset();
+	}
+
+	for (auto it = enemies.begin(); it != enemies.end(); ++it)
+	{
+		(*it).second->Reset();
+	}
 	cIndex = 0;
 }
 
+void BasicBossScene::UpdateFlashes()
+{
+	for (auto it = flashes.begin(); it != flashes.end(); ++it)
+	{
+		(*it).second->Update();
+	}
+}
 
+void BasicBossScene::AddEnemy(const std::string &enName, Enemy *e)
+{
+	assert(enemies.count(enName) == 0);
+	
+	owner->fullEnemyList.push_back(e);
+	enemies[enName] = e;
+}
+
+void BasicBossScene::SetConvGroup(const std::string &groupName)
+{
+	assert(groups.count(groupName) == 1);
+	currConvGroup = groups[groupName];
+}
+
+void BasicBossScene::AddFlashedImage(const std::string &imageName, Tileset *ts, int tileIndex, 
+	int appearFrames, int holdFrames, int disappearFrames, sf::Vector2f &pos)
+{
+	assert(flashes.count(imageName) == 0);
+
+	FlashedImage *fi = new FlashedImage(ts, tileIndex, appearFrames, holdFrames, disappearFrames, pos);
+	flashes[imageName] = fi;
+	flashList.push_back(fi);
+}
 
 void BasicBossScene::AddGroup(const std::string &groupName, const std::string &fileName)
 {
@@ -541,6 +581,11 @@ void BasicBossScene::ConvUpdate()
 BasicBossScene::~BasicBossScene()
 {
 	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = flashes.begin(); it != flashes.end(); ++it)
 	{
 		delete (*it).second;
 	}
@@ -658,9 +703,53 @@ bool BasicBossScene::Update()
 
 	UpdateState();
 
+	UpdateFlashes();
+
 	++frame;
 
 	return true;
+}
+
+void BasicBossScene::BasicFlashUpdateState( const std::string &flashName )
+{
+	FlashedImage *fi = flashes[flashName];
+	if (frame == 0)
+	{
+		Conversation *c = GetCurrentConv();
+		if (c != NULL)
+			c->Hide();
+
+		fi->Flash();
+	}
+	else if (fi->IsDone())
+	{
+		frame = stateLength[state] - 1;
+	}
+}
+
+void BasicBossScene::EaseShot(const std::string &shotName, int frames,
+	CubicBezier bez )
+{
+	assert(shots.count(shotName) == 1);
+
+	CameraShot *shot = shots[shotName];
+	owner->cam.Ease(Vector2f(shot->centerPos), shot->zoom, frames, bez);
+}
+
+void BasicBossScene::EasePoint(const std::string &pointName, float targetZoom, 
+	int frames, CubicBezier bez)
+{
+	assert(points.count(pointName) == 1);
+
+	PoiInfo *pi = points[pointName];
+	owner->cam.Ease(Vector2f(pi->pos), targetZoom, frames, bez);
+}
+
+void BasicBossScene::Flash(const std::string &flashName)
+{
+	assert(flashes.count(flashName) == 1);
+
+	flashes[flashName]->Flash();
 }
 
 void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
@@ -673,8 +762,37 @@ void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 	View v = target->getView();
 	target->setView(owner->uiView);
 
+	DrawFlashes(target);
+
 	Conversation *conv = currConvGroup->GetConv(cIndex);
 
 	conv->Draw(target);
 	target->setView(v);
+}
+
+void BasicBossScene::DrawFlashes(sf::RenderTarget *target)
+{
+	for (auto it = flashList.begin(); it != flashList.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+}
+
+void BasicBossScene::Rumble(int x, int y, int duration)
+{
+	owner->cam.SetRumble(x, y, duration);
+}
+
+void BasicBossScene::RumbleDuringState(int x, int y)
+{
+	if (frame == 0)
+	{
+		Rumble(x, y, stateLength[state]);
+	}
+}
+
+void BasicBossScene::SetNumStates(int count)
+{
+	numStates = count;
+	stateLength = new int[numStates];
 }
