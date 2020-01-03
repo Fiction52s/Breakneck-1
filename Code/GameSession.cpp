@@ -13373,7 +13373,7 @@ void GameSession::SetActiveSequence(Sequence *activeSeq)
 {
 	activeSequence = activeSeq;
 
-	activeSequence->Init();
+	activeSequence->StartRunning();
 
 	if( activeSequence->UsesSequenceMode())
 	{

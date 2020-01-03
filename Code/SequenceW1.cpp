@@ -71,40 +71,6 @@ bool CrawlerAfterFightSeq::Update()
 		player->groundSpeed = 0;
 	}
 
-
-	//int blah = 30 + 60 + 120 + 60 + 60;
-	//if( frame == blah )//if( owner->cam.currMove == NULL )
-	//{
-	//	player->action = Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
-	//}
-	//else if( frame == blah + 30 )
-	//{
-	//	player->action = Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED;
-	//	player->groundSpeed = 0;
-	//	owner->cam.SetRumble( 3, 3, 40 );
-	//	owner->b_crawler->action = Boss_Crawler::EMERGE;
-	//	owner->b_crawler->frame = 0;
-	//}
-	//else if( frame == blah + 50 )
-	//{
-	//	player->action = Actor::SEQ_CRAWLERFIGHT_DODGEBACK;
-	//	player->frame = 0;
-
-	//}
-	//else if( frame == blah + 80 )
-	//{
-	//	//in reality this would be calling a function within the crawler
-	//	owner->b_crawler->StartMeetPlayerSeq();
-
-	//	//owner->b_crawler->portrait.SetSprite( ts_birdFace, 1 );
-	//}
-
-	//if( startFightMsgFrame >= 0 && frame == startFightMsgFrame + 30 )
-	//{
-	//	player->action = Actor::STAND;
-	//	player->frame = 0;
-	//}
-
 	++frame;
 
 	if (frame == frameCount)
@@ -133,6 +99,11 @@ void CrawlerDefeatedSeq::Reset()
 {
 	state = PLAYMOVIE;
 	frame = 0;
+}
+
+bool CrawlerDefeatedSeq::UsesSequenceMode() 
+{ 
+	return true; 
 }
 
 bool CrawlerDefeatedSeq::Update()
@@ -187,13 +158,6 @@ bool CrawlerDefeatedSeq::Update()
 					MainMenu *mm = owner->mainMenu;
 					mm->musicPlayer->TransitionMusic(owner->originalMusic, 60);
 				}
-
-				//owner->state = GameSession::RUN;
-				//owner->Fade(true, 60, Color::Black, true);
-				/*if (frame == stateLength[MASKOFF] - 1)
-				{
-
-				}*/
 			}
 		}
 	}

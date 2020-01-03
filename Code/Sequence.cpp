@@ -462,9 +462,11 @@ void FlashedImage::Draw(sf::RenderTarget *target)
 
 }
 
-BasicBossScene::BasicBossScene(GameSession *p_owner)
+BasicBossScene::BasicBossScene(GameSession *p_owner,
+	EntranceType et )
 	:owner(p_owner)
 {
+	entranceType = et;
 	barrier = NULL;
 	currConvGroup = NULL;
 	fadeFrames = 60;
@@ -516,6 +518,7 @@ void BasicBossScene::Init()
 {
 	AddShots();
 	AddPoints();
+
 	AddFlashes();
 	AddEnemies();
 	AddGroups();
@@ -626,6 +629,17 @@ void BasicBossScene::StartEntranceRun(bool fr,
 		kinStop->edgeQuantity);
 }
 
+void BasicBossScene::StartEntranceStand(bool fr,
+	const std::string &n)
+{
+	PoiInfo *kinStand = points[n];
+	assert(kinStand->edge != NULL);
+	Actor *player = owner->GetPlayer(0);
+	player->facingRight = fr;
+	player->SetGroundedPos(kinStand->edge, kinStand->edgeQuantity);
+	player->StandInPlace();
+}
+
 void BasicBossScene::SetCameraShot(const std::string &n)
 {
 	CameraShot *shot = shots[n];
@@ -637,6 +651,11 @@ void BasicBossScene::SetEntranceRun()
 	StartEntranceRun(true, 10.0, "kinstart", "kinstop");
 }
 
+void BasicBossScene::SetEntranceStand()
+{
+	StartEntranceStand(true, "kinstand");
+}
+
 void BasicBossScene::SetEntranceShot()
 {
 	SetCameraShot("scenecam");
@@ -645,26 +664,29 @@ void BasicBossScene::SetEntranceShot()
 void BasicBossScene::EntranceUpdate()
 {
 	Actor *player = owner->GetPlayer(0);
-	if (frame == 0)
-	{
-		owner->Fade(false, fadeFrames, Color::Black);
-		owner->adventureHUD->Hide(fadeFrames);
-		player->Wait();
-		owner->cam.SetManual(true);
-	}
-	else if (frame == fadeFrames)
-	{
-		barrier->Trigger();
-		owner->RemoveAllEnemies();
-		owner->Fade(true, fadeFrames, Color::Black);
-		SetEntranceShot();
-		SetEntranceRun();
-	}
 
-	//if (!barrier->triggered && barrier->GetPlayerDist() < -100)
-	//{
-	//	player->Wait();
-	//}
+	if (entranceType == RUN)
+	{
+		if (frame == 0)
+		{
+			owner->Fade(false, fadeFrames, Color::Black);
+			owner->adventureHUD->Hide(fadeFrames);
+			player->Wait();
+			owner->cam.SetManual(true);
+		}
+		else if (frame == fadeFrames)
+		{
+			barrier->Trigger();
+			owner->RemoveAllEnemies();
+			owner->Fade(true, fadeFrames, Color::Black);
+			SetEntranceShot();
+			SetEntranceRun();
+		}
+	}
+	else
+	{
+		owner->adventureHUD->Hide(fadeFrames);
+	}
 }
 
 void BasicBossScene::ReturnToGame()
@@ -812,9 +834,4 @@ void BasicBossScene::SetNumStates(int count)
 {
 	numStates = count;
 	stateLength = new int[numStates];
-}
-
-void BasicBossScene::AddPoints(int *x)
-{
-	
 }

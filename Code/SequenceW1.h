@@ -62,6 +62,7 @@ struct CrawlerDefeatedSeq : Sequence
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
+	bool UsesSequenceMode();
 
 	GameSession *owner;
 

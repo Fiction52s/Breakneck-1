@@ -73,7 +73,7 @@ struct Sequence
 	int frameCount;
 	int frame;
 	virtual ~Sequence() {}
-	virtual void Init() {}
+	virtual void StartRunning(){}
 	virtual bool Update() = 0;
 	virtual void Reset() = 0;
 	virtual bool UsesSequenceMode() { return false; }
@@ -154,9 +154,18 @@ struct CameraShot;
 struct Barrier;
 struct BasicBossScene : Sequence
 {
-	BasicBossScene(GameSession *owner);
+	enum EntranceType
+	{
+		RUN,
+		APPEAR,
+	};
+
+	BasicBossScene(GameSession *owner, 
+		EntranceType et );
+	EntranceType entranceType;
 	virtual ~BasicBossScene();
 	void Init();
+	virtual void StartRunning(){}
 	virtual bool Update();
 	virtual void SetupStates() = 0;
 	void SetNumStates(int count);
@@ -170,7 +179,6 @@ struct BasicBossScene : Sequence
 	virtual void ConvUpdate();
 	static BasicBossScene *CreateScene(
 		GameSession *owner, const std::string &name);
-
 	virtual void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	virtual void DrawFlashes(sf::RenderTarget *target);
@@ -179,6 +187,7 @@ struct BasicBossScene : Sequence
 	virtual void ReturnToGame();
 	virtual	void Wait();
 	virtual void SetEntranceRun();
+	virtual void SetEntranceStand();
 	virtual void SetEntranceShot();
 	virtual void UpdateState() = 0;
 	void EaseShot(const std::string &shotName,
@@ -195,7 +204,6 @@ struct BasicBossScene : Sequence
 		const std::string &groupName);
 	void AddShot(const std::string &shotName);
 	void AddPoint(const std::string &poiName);
-	void AddPoints( int *x );
 	void AddFlashedImage(const std::string &imageName,
 		Tileset *ts, int tileIndex,
 		int appearFrames,
@@ -210,6 +218,8 @@ struct BasicBossScene : Sequence
 	void StartEntranceRun(bool fr,
 		double maxSpeed, const std::string &n0,
 		const std::string &n1);
+	void StartEntranceStand(bool fr,
+		const std::string &n);
 	void SetCameraShot(const std::string &n);
 
 	int fadeFrames;
