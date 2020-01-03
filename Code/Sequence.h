@@ -156,11 +156,17 @@ struct BasicBossScene : Sequence
 {
 	BasicBossScene(GameSession *owner);
 	virtual ~BasicBossScene();
-	virtual void Init();
+	void Init();
 	virtual bool Update();
 	virtual void SetupStates() = 0;
 	void SetNumStates(int count);
 	virtual void Reset();
+	virtual void AddShots(){}
+	virtual void AddPoints(){}
+	virtual void AddFlashes(){}
+	virtual void AddEnemies(){}
+	virtual void AddGroups(){}
+	virtual void SpecialInit(){}
 	virtual void ConvUpdate();
 	static BasicBossScene *CreateScene(
 		GameSession *owner, const std::string &name);
@@ -189,6 +195,7 @@ struct BasicBossScene : Sequence
 		const std::string &groupName);
 	void AddShot(const std::string &shotName);
 	void AddPoint(const std::string &poiName);
+	void AddPoints( int *x );
 	void AddFlashedImage(const std::string &imageName,
 		Tileset *ts, int tileIndex,
 		int appearFrames,

@@ -37,42 +37,6 @@ using namespace std;
 CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
 	:BasicBossScene( p_owner )
 {
-	AddShot("scenecam");
-	AddShot("cavecam");
-	AddShot("fightcam");
-
-	AddPoint("kinstart");
-	AddPoint("kinstop");
-
-	AddGroup("pre_coy", "W3/w3_coy_fight_pre");
-
-	SetConvGroup("pre_coy");
-
-	AddPoint("crawlerdig1");
-	AddPoint("crawlerdig2");
-	AddPoint("crawlersurface");
-	AddPoint("crawlerthrowkin");
-
-	ts_queenGrab = owner->GetTileset("Bosses/Crawler/crawler_queen_grab_320x320.png", 320, 320);
-	queenGrabSprite.setTexture(*ts_queenGrab->texture);
-	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
-
-	AddFlashedImage( "detailedgrab", owner->GetTileset("Story/Crawler_Dig_01_860x830.png", 860, 830),
-		0, 30, 60, 30, Vector2f(1160, 540));
-
-	AddFlashedImage("crawlerface", owner->GetTileset("Story/Crawler_Dig_02_828x875.png", 828, 875),
-		0, 30, 60, 30, Vector2f(1350, 325));
-
-	AddFlashedImage("kinface", owner->GetTileset("Story/Crawler_Dig_03_510x565.png", 510, 565),
-		0, 30, 60, 30, Vector2f(625, 325));
-
-	PoiInfo *surface = points["crawlersurface"];
-	queen = new CrawlerQueen(owner, surface->edge, surface->edgeQuantity, false);
-	AddEnemy("queen", queen);
-
-	SetupStates();
-
-	Reset();
 }
 
 void CrawlerAttackSeq::SetupStates()
@@ -91,6 +55,55 @@ void CrawlerAttackSeq::SetupStates()
 	stateLength[KINTALK] = 10000;
 }
 
+void CrawlerAttackSeq::AddShots()
+{
+	AddShot("scenecam");
+	AddShot("cavecam");
+	AddShot("fightcam");
+}
+
+void CrawlerAttackSeq::AddPoints()
+{
+	AddPoint("kinstart");
+	AddPoint("kinstop");
+	AddPoint("crawlerdig1");
+	AddPoint("crawlerdig2");
+	AddPoint("crawlersurface");
+	AddPoint("crawlerthrowkin");
+}
+
+void CrawlerAttackSeq::AddGroups()
+{
+	AddGroup("pre_coy", "W3/w3_coy_fight_pre");
+	SetConvGroup("pre_coy");
+}
+
+void CrawlerAttackSeq::AddEnemies()
+{
+	PoiInfo *surface = points["crawlersurface"];
+	queen = new CrawlerQueen(owner, surface->edge, surface->edgeQuantity, false);
+	AddEnemy("queen", queen);
+}
+
+void CrawlerAttackSeq::AddFlashes()
+{
+	AddFlashedImage("detailedgrab", owner->GetTileset("Story/Crawler_Dig_01_860x830.png", 860, 830),
+		0, 30, 60, 30, Vector2f(1160, 540));
+
+	AddFlashedImage("crawlerface", owner->GetTileset("Story/Crawler_Dig_02_828x875.png", 828, 875),
+		0, 30, 60, 30, Vector2f(1350, 325));
+
+	AddFlashedImage("kinface", owner->GetTileset("Story/Crawler_Dig_03_510x565.png", 510, 565),
+		0, 30, 60, 30, Vector2f(625, 325));
+}
+
+void CrawlerAttackSeq::SpecialInit()
+{
+	ts_queenGrab = owner->GetTileset("Bosses/Crawler/crawler_queen_grab_320x320.png", 320, 320);
+	queenGrabSprite.setTexture(*ts_queenGrab->texture);
+	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
+}
+
 void CrawlerAttackSeq::ReturnToGame()
 {
 	Actor *player = owner->GetPlayer(0);
@@ -100,12 +113,6 @@ void CrawlerAttackSeq::ReturnToGame()
 
 	CameraShot *shot = shots["fightcam"];
 	owner->cam.Ease(Vector2f(shot->centerPos), shot->zoom, 60, CubicBezier());
-
-	//player->StandInPlace();
-	//player->SetAction(Actor::STAND);
-	//player->frame = 0;
-	//owner->adventureHUD->Show(60);
-	//return false;
 }
 
 void CrawlerAttackSeq::UpdateState()

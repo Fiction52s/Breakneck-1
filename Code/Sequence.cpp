@@ -43,18 +43,24 @@ using namespace std;
 
 BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::string &name)
 {
+	BasicBossScene *bScene = NULL;
 	if (name == "birdscene0")
 	{
-		return new BirdBossScene(owner);
+		bScene = new BirdBossScene(owner);
 	}
 	else if (name == "crawlerscene0")
 	{
-		return new CrawlerAttackSeq(owner);
+		bScene = new CrawlerAttackSeq(owner);
 	}
 	else
 	{
 		assert(0);
 	}
+
+	if (bScene != NULL)
+		bScene->Init();
+
+	return bScene;
 }
 
 
@@ -488,6 +494,38 @@ void BasicBossScene::Reset()
 	cIndex = 0;
 }
 
+
+
+BasicBossScene::~BasicBossScene()
+{
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = flashes.begin(); it != flashes.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	if (stateLength != NULL)
+		delete[] stateLength;
+}
+
+void BasicBossScene::Init()
+{
+	AddShots();
+	AddPoints();
+	AddFlashes();
+	AddEnemies();
+	AddGroups();
+
+	Reset();
+	SetupStates();
+
+	SpecialInit();
+}
+
 void BasicBossScene::UpdateFlashes()
 {
 	for (auto it = flashes.begin(); it != flashes.end(); ++it)
@@ -499,7 +537,7 @@ void BasicBossScene::UpdateFlashes()
 void BasicBossScene::AddEnemy(const std::string &enName, Enemy *e)
 {
 	assert(enemies.count(enName) == 0);
-	
+
 	owner->fullEnemyList.push_back(e);
 	enemies[enName] = e;
 }
@@ -510,7 +548,7 @@ void BasicBossScene::SetConvGroup(const std::string &groupName)
 	currConvGroup = groups[groupName];
 }
 
-void BasicBossScene::AddFlashedImage(const std::string &imageName, Tileset *ts, int tileIndex, 
+void BasicBossScene::AddFlashedImage(const std::string &imageName, Tileset *ts, int tileIndex,
 	int appearFrames, int holdFrames, int disappearFrames, sf::Vector2f &pos)
 {
 	assert(flashes.count(imageName) == 0);
@@ -576,27 +614,6 @@ void BasicBossScene::ConvUpdate()
 			frame = stateLength[state] - 1;
 		}
 	}
-}
-
-BasicBossScene::~BasicBossScene()
-{
-	for (auto it = groups.begin(); it != groups.end(); ++it)
-	{
-		delete (*it).second;
-	}
-
-	for (auto it = flashes.begin(); it != flashes.end(); ++it)
-	{
-		delete (*it).second;
-	}
-
-	if (stateLength != NULL)
-		delete[] stateLength;
-}
-
-void BasicBossScene::Init()
-{
-
 }
 
 void BasicBossScene::StartEntranceRun(bool fr,
@@ -795,4 +812,9 @@ void BasicBossScene::SetNumStates(int count)
 {
 	numStates = count;
 	stateLength = new int[numStates];
+}
+
+void BasicBossScene::AddPoints(int *x)
+{
+	
 }

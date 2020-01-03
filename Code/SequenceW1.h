@@ -136,12 +136,17 @@ struct CrawlerAttackSeq : BasicBossScene
 
 	void SetupStates();
 	void ReturnToGame();
-
-	
-	void UpdateCrawlerSwoop();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void SpecialInit();
 	void UpdateState();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
+
+	void UpdateCrawlerSwoop();
 
 	CrawlerQueen *queen;
 
