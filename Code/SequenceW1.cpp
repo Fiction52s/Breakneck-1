@@ -324,12 +324,18 @@ void AfterCrawlerFightSeq::SetupStates()
 
 void AfterCrawlerFightSeq::ReturnToGame()
 {
-
+	PoiInfo *pi = points["kinaftercrawlerfight"];
+	
+	Actor *player = owner->GetPlayer(0);
+	player->facingRight = true;
+	player->SetGroundedPos(pi->edge, pi->edgeQuantity);
+	player->StandInPlace();
+	owner->CrossFade(30, 0, 30, Color::Black);
 }
 
 void AfterCrawlerFightSeq::AddPoints()
 {
-
+	AddPoint("kinaftercrawlerfight");
 }
 
 void AfterCrawlerFightSeq::StartRunning()
@@ -345,8 +351,8 @@ void AfterCrawlerFightSeq::UpdateState()
 		{
 			MainMenu *mm = owner->mainMenu;
 
-			//owner->Fade(true, 60, Color::White);
-			owner->CrossFade(60, 0, 30, Color::White);
+			owner->Fade(true, 60, Color::White);
+			//owner->CrossFade(60, 0, 30, Color::White);
 
 			mm->musicPlayer->FadeOutCurrentMusic(60);
 
