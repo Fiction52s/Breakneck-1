@@ -9840,6 +9840,14 @@ bool Actor::HasPower(int index)
 	}
 }
 
+void Actor::SetStandInPlacePos(Edge *g, double q,
+	bool fr)
+{
+	facingRight = fr;
+	SetGroundedPos(g, q);
+	StandInPlace();
+}
+
 void Actor::SetGroundedPos(Edge *g, double q)
 {
 	ground = g;

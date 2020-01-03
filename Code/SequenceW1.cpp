@@ -318,24 +318,24 @@ void AfterCrawlerFightSeq::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 60;
+	stateLength[FADE] = 10;
 	stateLength[PLAYMOVIE] = 1000000;
 }
 
 void AfterCrawlerFightSeq::ReturnToGame()
 {
-	PoiInfo *pi = points["kinaftercrawlerfight"];
+	PoiInfo *pi = points["kinstand"];
 	
 	Actor *player = owner->GetPlayer(0);
-	player->facingRight = true;
-	player->SetGroundedPos(pi->edge, pi->edgeQuantity);
-	player->StandInPlace();
-	owner->CrossFade(30, 0, 30, Color::Black);
+	player->SetStandInPlacePos(pi->edge, pi->edgeQuantity, true);
+	owner->Fade(true, 60, Color::Black);
+	owner->cam.EaseOutOfManual(60);
+	//owner->Fade(true, 60 30, Color::Black);
 }
 
 void AfterCrawlerFightSeq::AddPoints()
 {
-	AddPoint("kinaftercrawlerfight");
+	AddPoint("kinstand");
 }
 
 void AfterCrawlerFightSeq::StartRunning()
@@ -351,19 +351,17 @@ void AfterCrawlerFightSeq::UpdateState()
 		{
 			MainMenu *mm = owner->mainMenu;
 
-			owner->Fade(true, 60, Color::White);
-			//owner->CrossFade(60, 0, 30, Color::White);
+			owner->CrossFade(10, 0, 60, Color::White);
+			//owner->Fade(true, 60, Color::White);
 
 			mm->musicPlayer->FadeOutCurrentMusic(60);
-
-			owner->cam.EaseOutOfManual(60);
 		}
 	}
 	if (state == PLAYMOVIE)
 	{
 		if (frame == 0)
 		{
-			SetCurrMovie("crawler_slash");
+			SetCurrMovie("crawler_slash", 60);
 		}
 		
 		UpdateMovie();

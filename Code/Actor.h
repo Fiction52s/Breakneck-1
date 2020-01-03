@@ -610,6 +610,8 @@ struct Actor : QuadTreeCollider,
 	void AutoRunMovement();
 	void SetAutoRun( bool fr, double maxAutoRun );
 	void SetGroundedPos(Edge *g, double q);
+	void SetStandInPlacePos(Edge *g, double q,
+		bool fr);
 	void SetStoryRun(bool fr, double maxAutoRun, Edge * g,
 		double q, Edge *end, double endQ );
 	void SetStoryRun(bool fr, double maxAutoRun, Edge * g,

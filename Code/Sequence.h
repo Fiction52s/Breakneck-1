@@ -220,8 +220,12 @@ struct BasicBossScene : Sequence
 	void SetConvGroup(const std::string &n);
 	Conversation *GetCurrentConv();
 
-	void SetCurrMovie(const std::string &name);
-
+	void SetCurrMovie(const std::string &name,
+		int movFadeFrames = 0,
+		sf::Color movFadeColor = sf::Color::Black );
+	int movieFadeFrames;
+	sf::Color movieFadeColor;
+	int movieStopFrame;
 
 	void StartEntranceRun(bool fr,
 		double maxSpeed, const std::string &n0,

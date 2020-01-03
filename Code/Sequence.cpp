@@ -583,19 +583,33 @@ void BasicBossScene::UpdateMovie()
 	}
 	else
 	{
-		currMovie->update();
-
-		if (owner->GetCurrInput(0).A)
+		if (movieStopFrame == -1 )
 		{
-			currMovie->stop();
+			currMovie->update();
+
+			if (owner->GetCurrInput(0).A)
+			{
+				currMovie->pause();
+			}
 		}
 
-		if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
+		if (movieStopFrame == -1 && (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped
+			|| movStatus == sfe::Status::Paused ))
 		{
-			frame = stateLength[state] - 1;
+			movieStopFrame = frame;
+			if (movieFadeFrames == 0)
+			{
+				frame = stateLength[state] - 1;
+			}
+			else
+			{
+				frame = stateLength[state] - movieFadeFrames;
+				owner->Fade(false, movieFadeFrames, movieFadeColor);
+			}
+		}
 
-			currMovie = NULL;
-
+		if (frame == stateLength[state] - 1)
+		{
 			if (owner->originalMusic != NULL)
 			{
 				MainMenu *mm = owner->mainMenu;
@@ -792,10 +806,13 @@ Conversation *BasicBossScene::GetCurrentConv()
 	}
 }
 
-void BasicBossScene::SetCurrMovie(const std::string &name)
+void BasicBossScene::SetCurrMovie(const std::string &name, int movFadeFrames, Color movFadeColor )
 {
 	assert(movies.count(name) == 1);
 	currMovie = movies[name];
+	movieFadeFrames = movFadeFrames;
+	movieFadeColor = movFadeColor;
+	movieStopFrame = -1;
 }
 
 bool BasicBossScene::Update()
@@ -806,6 +823,9 @@ bool BasicBossScene::Update()
 	{
 		++state;
 		frame = 0;
+
+		if (currMovie != NULL)
+			currMovie = NULL;
 	}
 
 	if (state == numStates)
