@@ -92,7 +92,6 @@ struct DialogueUser;
 struct GoalPulse;
 struct PauseMenu;
 struct Sequence;
-struct CrawlerAfterFightSeq;
 struct EnterNexus1Seq;
 struct ShipExitSeq;
 
@@ -493,6 +492,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//sf::Font arial;
 
 	bool cutPlayerInput;
+	void SetPlayerInputOn(bool on);
 	SoundManager *soundManager;
 	//sf::Music *currMusic;
 	sf::Texture backTex;
@@ -983,7 +983,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	GameStartSeq *startSeq;*/
 
 	
-	//CrawlerAfterFightSeq *crawlerAfterFightSeq;
 	//EnterNexus1Seq * enterNexus1Seq;
 
 	struct Stored

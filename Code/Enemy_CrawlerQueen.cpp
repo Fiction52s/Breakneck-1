@@ -34,8 +34,12 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	//ClearDecisionMarkers();
 
 	//memset(decideVA, 0, MAX_DECISIONS * 4);
-
-	seq = new CrawlerDefeatedSeq(owner);
+	
+	AfterCrawlerFightSeq *acfseq = new AfterCrawlerFightSeq(owner);
+	acfseq->Init();
+	seq = acfseq;
+	
+	//seq = new CrawlerDefeatedSeq(owner);
 
 	progressionLevel = 0;
 	
@@ -1008,25 +1012,20 @@ void CrawlerQueen::SetDecisions()
 }
 void CrawlerQueen::ConfirmKill()
 {
-	owner->Fade(true, 60, Color::White);
+	
 	action = HURT;
 	frame = 0;
 	for (auto it = crawlerGates.begin(); it != crawlerGates.end(); ++it)
 	{
+		//(*it)->SetLocked(false);
 		(*it)->gState = Gate::SOFTEN;
 		(*it)->frame = 0;
 		//(*it)->SetLocked(false);
 	}
 
-	MainMenu *mm = owner->mainMenu;
-	
-	mm->musicPlayer->FadeOutCurrentMusic(60);
-
-	owner->cam.EaseOutOfManual(60);
-
 	mover->groundSpeed = 0;
 
-	Actor *p = owner->GetPlayer(0);
+	//Actor *p = owner->GetPlayer(0);
 
 	//needs setup later to tell it to go to sequence mode
 	owner->SetActiveSequence(seq);

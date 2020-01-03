@@ -122,6 +122,14 @@ bool Gate::CanUnlock()
 			return true;
 			break;
 		}
+		case GateType::CRAWLER_UNLOCK:
+		{
+			if (gState == Gate::SOFT || gState == Gate::SOFTEN)
+			{
+				return true;
+			}
+			break;
+		}
 		}
 
 	}

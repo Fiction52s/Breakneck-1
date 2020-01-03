@@ -3,49 +3,6 @@
 
 #include "Sequence.h"
 
-struct CrawlerAfterFightSeq : Sequence
-{
-	/*enum State
-	{
-	INIT,
-	FIGHTSTARTMSG,
-	Count
-	};
-
-
-	State state;
-	int stateLength[State::Count];*/
-
-	CrawlerAfterFightSeq(GameSession *owner);
-	bool Update();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
-	void Reset();
-	//void StartFightMsg();
-
-	//int startFightMsgFrame;
-	MovementSequence camMove0;
-	//Tileset *ts_fall;
-	//Tileset *ts_land;
-
-	sf::Vector2<double> startFallPos;
-	sf::Vector2<double> nexus1Pos;
-	sf::Vector2<double> cfightCenter;
-	Edge *landGround;
-	double landQuant;
-	int playerStartFrame;
-
-
-
-
-	Tileset *ts_crawlerBoss;
-
-
-	//Tileset *
-
-	GameSession *owner;
-};
-
 struct CrawlerDefeatedSeq : Sequence
 {
 	enum State
@@ -62,13 +19,32 @@ struct CrawlerDefeatedSeq : Sequence
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
-	bool UsesSequenceMode();
 
 	GameSession *owner;
 
 	sfe::Movie mov;
 
 	sf::Vertex darkQuad[4];
+};
+
+struct AfterCrawlerFightSeq : BasicBossScene
+{
+	enum State
+	{
+		FADE,
+		PLAYMOVIE,
+		Count
+	};
+
+	AfterCrawlerFightSeq(GameSession *owner);
+
+	void SetupStates();
+	void ReturnToGame();
+	void StartRunning();
+	void AddMovies();
+	//void AddShots();
+	void AddPoints();
+	void UpdateState();
 };
 
 struct NexusCore1Seq : Sequence

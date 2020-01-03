@@ -32,7 +32,7 @@ using namespace std;
 #define TIMESTEP 1.0 / 60.0
 
 CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
-	:BasicBossScene( p_owner )
+	:BasicBossScene( p_owner, BasicBossScene::RUN )
 {
 }
 

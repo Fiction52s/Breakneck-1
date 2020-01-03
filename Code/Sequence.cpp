@@ -46,7 +46,7 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	BasicBossScene *bScene = NULL;
 	if (name == "birdscene0")
 	{
-		bScene = new BirdBossScene(owner);
+		//bScene = new BirdBossScene(owner);
 	}
 	else if (name == "crawlerscene0")
 	{
@@ -493,8 +493,16 @@ void BasicBossScene::Reset()
 	{
 		(*it).second->Reset();
 	}
+
+	for (auto it = movies.begin(); it != movies.end(); ++it)
+	{
+		(*it).second->stop();
+	}
 	cIndex = 0;
+	currMovie = NULL;
 }
+
+
 
 
 
@@ -506,6 +514,11 @@ BasicBossScene::~BasicBossScene()
 	}
 
 	for (auto it = flashes.begin(); it != flashes.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = movies.begin(); it != movies.end(); ++it)
 	{
 		delete (*it).second;
 	}
@@ -522,6 +535,7 @@ void BasicBossScene::Init()
 	AddFlashes();
 	AddEnemies();
 	AddGroups();
+	AddMovies();
 
 	Reset();
 	SetupStates();
@@ -529,11 +543,65 @@ void BasicBossScene::Init()
 	SpecialInit();
 }
 
+void BasicBossScene::AddMovie(const std::string &movieName)
+{
+	string path = "Resources/Movie/";
+	string fileType = ".ogv";
+	string fullName = path + movieName + fileType;
+
+	assert(movies.count(movieName) == 0);
+
+	sfe::Movie *mov = new sfe::Movie;
+	if (!mov->openFromFile(fullName))
+	{
+		cout << "movie not loaded: " << fullName << endl;
+		assert(false);
+	}
+	mov->fit(sf::FloatRect(0, 0, 1920, 1080));
+
+	movies[movieName] = mov;
+}
+
 void BasicBossScene::UpdateFlashes()
 {
 	for (auto it = flashes.begin(); it != flashes.end(); ++it)
 	{
 		(*it).second->Update();
+	}
+}
+
+void BasicBossScene::UpdateMovie()
+{
+	assert(currMovie != NULL);
+
+	sfe::Status movStatus = currMovie->getStatus();
+	if (frame == 0)
+	{
+		currMovie->setVolume(owner->mainMenu->config->GetData().musicVolume);
+		currMovie->setPlayingOffset(sf::Time::Zero);
+		currMovie->play();
+	}
+	else
+	{
+		currMovie->update();
+
+		if (owner->GetCurrInput(0).A)
+		{
+			currMovie->stop();
+		}
+
+		if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
+		{
+			frame = stateLength[state] - 1;
+
+			currMovie = NULL;
+
+			if (owner->originalMusic != NULL)
+			{
+				MainMenu *mm = owner->mainMenu;
+				mm->musicPlayer->TransitionMusic(owner->originalMusic, 60);
+			}
+		}
 	}
 }
 
@@ -619,6 +687,11 @@ void BasicBossScene::ConvUpdate()
 	}
 }
 
+void BasicBossScene::StartRunning()
+{
+	owner->SetPlayerInputOn(false);
+}
+
 void BasicBossScene::StartEntranceRun(bool fr,
 	double maxSpeed, const std::string &n0,
 	const std::string &n1)
@@ -683,15 +756,15 @@ void BasicBossScene::EntranceUpdate()
 			SetEntranceRun();
 		}
 	}
-	else
+	else if( entranceType == APPEAR)
 	{
-		owner->adventureHUD->Hide(fadeFrames);
+		//owner->adventureHUD->Hide(fadeFrames);
 	}
 }
 
 void BasicBossScene::ReturnToGame()
 {
-	owner->cutPlayerInput = false;
+	owner->SetPlayerInputOn(true);
 	owner->adventureHUD->Show(60);
 	owner->cam.EaseOutOfManual(60);
 }
@@ -717,6 +790,12 @@ Conversation *BasicBossScene::GetCurrentConv()
 	{
 		return NULL;
 	}
+}
+
+void BasicBossScene::SetCurrMovie(const std::string &name)
+{
+	assert(movies.count(name) == 1);
+	currMovie = movies[name];
 }
 
 bool BasicBossScene::Update()
@@ -803,10 +882,18 @@ void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 
 	DrawFlashes(target);
 
-	Conversation *conv = currConvGroup->GetConv(cIndex);
-
-	conv->Draw(target);
+	if (currConvGroup != NULL)
+	{
+		Conversation *conv = currConvGroup->GetConv(cIndex);
+		conv->Draw(target);
+	}
+	
 	target->setView(v);
+
+	if (currMovie != NULL)
+	{
+		target->draw(*currMovie);
+	}
 }
 
 void BasicBossScene::DrawFlashes(sf::RenderTarget *target)

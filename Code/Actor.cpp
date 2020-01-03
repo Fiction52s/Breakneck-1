@@ -9901,11 +9901,12 @@ void Actor::StandInPlace()
 	assert(ground != NULL);
 	SetAction(STAND);
 	frame = 0;
+	groundSpeed = 0;
 }
 
 void Actor::WaitInPlace()
 {
-	owner->cutPlayerInput = true;
+	owner->SetPlayerInputOn(false);
 	SetAction(STAND);
 	//SetAction(SEQ_WAIT);
 	frame = 0;

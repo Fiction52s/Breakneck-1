@@ -76,7 +76,6 @@ struct Sequence
 	virtual void StartRunning(){}
 	virtual bool Update() = 0;
 	virtual void Reset() = 0;
-	virtual bool UsesSequenceMode() { return false; }
 	virtual void Draw( sf::RenderTarget *target, 
 		EffectLayer layer = EffectLayer::IN_FRONT ) = 0;
 };
@@ -165,7 +164,7 @@ struct BasicBossScene : Sequence
 	EntranceType entranceType;
 	virtual ~BasicBossScene();
 	void Init();
-	virtual void StartRunning(){}
+	virtual void StartRunning();
 	virtual bool Update();
 	virtual void SetupStates() = 0;
 	void SetNumStates(int count);
@@ -175,6 +174,7 @@ struct BasicBossScene : Sequence
 	virtual void AddFlashes(){}
 	virtual void AddEnemies(){}
 	virtual void AddGroups(){}
+	virtual void AddMovies() {}
 	virtual void SpecialInit(){}
 	virtual void ConvUpdate();
 	static BasicBossScene *CreateScene(
@@ -210,11 +210,19 @@ struct BasicBossScene : Sequence
 		int holdFrames,
 		int disappearFrames,
 		sf::Vector2f &pos);
-	void UpdateFlashes();
+	void AddMovie(const std::string &movieName);
+	
 	void AddEnemy( const std::string &enName,
 		Enemy *e);
+
+	void UpdateFlashes();
+	void UpdateMovie();
 	void SetConvGroup(const std::string &n);
 	Conversation *GetCurrentConv();
+
+	void SetCurrMovie(const std::string &name);
+
+
 	void StartEntranceRun(bool fr,
 		double maxSpeed, const std::string &n0,
 		const std::string &n1);
@@ -234,7 +242,9 @@ struct BasicBossScene : Sequence
 	std::map<std::string, FlashedImage*> flashes;
 	std::list<FlashedImage*> flashList;
 	std::map<std::string, Enemy *> enemies;
+	std::map<std::string, sfe::Movie*> movies;
 
+	sfe::Movie *currMovie;
 	ConversationGroup *currConvGroup;
 	int cIndex;
 

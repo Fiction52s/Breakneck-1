@@ -813,19 +813,28 @@ void GameSession::RecordReplayEnemies()
 
 void GameSession::UpdateInput()
 {
-	vector<GCC::GCController> controllers;
-	if( mainMenu->gccDriverEnabled ) 
-		controllers = mainMenu->gccDriver->getState();
-	for (int i = 0; i < 4; ++i)
+	if (!cutPlayerInput)
 	{
-		GetPrevInput(i) = GetCurrInput(i);
-		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-		GameController &con = GetController(i);
-		if(mainMenu->gccDriverEnabled )
-			con.gcController = controllers[i];
-		con.UpdateState();
-		GetCurrInput(i) = con.GetState();
-		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+		vector<GCC::GCController> controllers;
+		if (mainMenu->gccDriverEnabled)
+			controllers = mainMenu->gccDriver->getState();
+		for (int i = 0; i < 4; ++i)
+		{
+			GetPrevInput(i) = GetCurrInput(i);
+			GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+			GameController &con = GetController(i);
+			if (mainMenu->gccDriverEnabled)
+				con.gcController = controllers[i];
+			con.UpdateState();
+			GetCurrInput(i) = con.GetState();
+			GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+		}
+	}
+	else
+	{
+		//only for 1 player
+		GetPrevInput(0) = ControllerState();
+		GetCurrInput(0) = ControllerState();
 	}
 }
 
@@ -9579,6 +9588,16 @@ void GameSession::SetStorySeq(StorySequence *storySeq)
 	state = GameSession::STORY;
 }
 
+void GameSession::SetPlayerInputOn(bool on)
+{
+	cutPlayerInput = !on;
+	if (!cutPlayerInput)
+	{
+		GetPrevInput(0) = ControllerState();
+		GetCurrInput(0) = ControllerState();
+	}
+}
+
 void GameSession::DebugDrawActors()
 {
 	Actor *p = NULL;
@@ -10450,7 +10469,6 @@ void GameSession::RestartLevel()
 	}
 
 	//crawlerFightSeq->Reset();
-	//crawlerAfterFightSeq->Reset();
 	//enterNexus1Seq->Reset();
 	activeSequence = NULL;
 
@@ -13374,11 +13392,6 @@ void GameSession::SetActiveSequence(Sequence *activeSeq)
 	activeSequence = activeSeq;
 
 	activeSequence->StartRunning();
-
-	if( activeSequence->UsesSequenceMode())
-	{
-		state = GameSession::SEQUENCE;
-	}
 }
 
 void GameSession::TriggerBarrier( Barrier *b )

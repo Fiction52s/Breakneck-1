@@ -10,80 +10,6 @@
 using namespace std;
 using namespace sf;
 
-CrawlerAfterFightSeq::CrawlerAfterFightSeq(GameSession *p_owner)
-	:owner(p_owner)
-{
-	frame = 0;
-	frameCount = 6000;
-
-	cfightCenter = owner->poiMap["cfightcenter"]->pos;
-}
-
-void CrawlerAfterFightSeq::Reset()
-{
-	frame = 0;
-}
-
-bool CrawlerAfterFightSeq::Update()
-{
-	Actor *player = owner->GetPlayer(0);
-	switch (frame)
-	{
-	case 0:
-	{
-		owner->Fade(false, 60, Color::White);
-		owner->Pause(60);
-		owner->cam.SetManual(true);
-	}
-	break;
-	case 1:
-	{
-		owner->ClearFX();
-		owner->cam.Set(Vector2f(cfightCenter.x, cfightCenter.y), 1, 0);
-		owner->Fade(true, 60, Color::White);
-		owner->Pause(60);
-		player->action = Actor::SEQ_CRAWLERFIGHT_STAND;
-		player->frame = 0;
-		player->groundSpeed = 0;
-		PoiInfo *pi = owner->poiMap["cfightjumpback"];
-		player->ground = pi->edge;
-		player->edgeQuantity = pi->edgeQuantity;
-		player->offsetX = player->b.rw;
-		//player->offsetX = 0;
-		player->facingRight = true;
-	}
-	break;
-	case 60:
-	{
-	}
-	break;
-	}
-
-	if (frame == 80)
-	{
-		player->action = Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY;
-		player->frame = 0;
-	}
-	else if (frame == 120)
-	{
-		player->action = Actor::GETPOWER_AIRDASH_MEDITATE;
-		player->frame = 0;
-		player->groundSpeed = 0;
-	}
-
-	++frame;
-
-	if (frame == frameCount)
-		return false;
-	else
-		return true;
-}
-
-void CrawlerAfterFightSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
-{
-
-}
-
 CrawlerDefeatedSeq::CrawlerDefeatedSeq(GameSession *p_owner)
 	:owner(p_owner)
 {
@@ -99,11 +25,6 @@ void CrawlerDefeatedSeq::Reset()
 {
 	state = PLAYMOVIE;
 	frame = 0;
-}
-
-bool CrawlerDefeatedSeq::UsesSequenceMode() 
-{ 
-	return true; 
 }
 
 bool CrawlerDefeatedSeq::Update()
@@ -384,4 +305,66 @@ void TextTestSeq::UpdateSceneLabel()
 {
 	ConversationGroup *cg = groups[gIndex];
 	sceneLabel.setString(cg->sceneName);
+}
+
+
+AfterCrawlerFightSeq::AfterCrawlerFightSeq(GameSession *p_owner)
+	:BasicBossScene( p_owner, BasicBossScene::APPEAR )
+{
+
+}
+
+void AfterCrawlerFightSeq::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[FADE] = 60;
+	stateLength[PLAYMOVIE] = 1000000;
+}
+
+void AfterCrawlerFightSeq::ReturnToGame()
+{
+
+}
+
+void AfterCrawlerFightSeq::AddPoints()
+{
+
+}
+
+void AfterCrawlerFightSeq::StartRunning()
+{
+	owner->state = GameSession::SEQUENCE;
+}
+
+void AfterCrawlerFightSeq::UpdateState()
+{
+	if (state == FADE)
+	{
+		if (frame == 0)
+		{
+			MainMenu *mm = owner->mainMenu;
+
+			//owner->Fade(true, 60, Color::White);
+			owner->CrossFade(60, 0, 30, Color::White);
+
+			mm->musicPlayer->FadeOutCurrentMusic(60);
+
+			owner->cam.EaseOutOfManual(60);
+		}
+	}
+	if (state == PLAYMOVIE)
+	{
+		if (frame == 0)
+		{
+			SetCurrMovie("crawler_slash");
+		}
+		
+		UpdateMovie();
+	}
+}
+
+void AfterCrawlerFightSeq::AddMovies()
+{
+	AddMovie("crawler_slash");
 }
