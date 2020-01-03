@@ -813,28 +813,19 @@ void GameSession::RecordReplayEnemies()
 
 void GameSession::UpdateInput()
 {
-	if (!cutPlayerInput)
+	vector<GCC::GCController> controllers;
+	if( mainMenu->gccDriverEnabled ) 
+		controllers = mainMenu->gccDriver->getState();
+	for (int i = 0; i < 4; ++i)
 	{
-		vector<GCC::GCController> controllers;
-		if (mainMenu->gccDriverEnabled)
-			controllers = mainMenu->gccDriver->getState();
-		for (int i = 0; i < 4; ++i)
-		{
-			GetPrevInput(i) = GetCurrInput(i);
-			GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-			GameController &con = GetController(i);
-			if (mainMenu->gccDriverEnabled)
-				con.gcController = controllers[i];
-			con.UpdateState();
-			GetCurrInput(i) = con.GetState();
-			GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
-		}
-	}
-	else
-	{
-		//only for 1 player
-		GetPrevInput(0) = ControllerState();
-		GetCurrInput(0) = ControllerState();
+		GetPrevInput(i) = GetCurrInput(i);
+		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+		GameController &con = GetController(i);
+		if(mainMenu->gccDriverEnabled )
+			con.gcController = controllers[i];
+		con.UpdateState();
+		GetCurrInput(i) = con.GetState();
+		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
 	}
 }
 
@@ -5722,42 +5713,53 @@ void GameSession::ApplyToggleUpdates( int index )
 	bool alreadyBounce = pCurr.X;
 	bool alreadyGrind = pCurr.Y;
 	bool alreadyTimeSlow = pCurr.leftShoulder;
-	player->currInput = currInput;
-	if( controller.keySettings.toggleBounce )
+
+	if (cutPlayerInput)
 	{
-		if( currInput.X && !prevInput.X )
+		player->currInput = ControllerState();
+	}
+	else
+	{
+		player->currInput = currInput;
+
+		if (controller.keySettings.toggleBounce)
 		{
-			pCurr.X = !alreadyBounce;
+			if (currInput.X && !prevInput.X)
+			{
+				pCurr.X = !alreadyBounce;
+			}
+			else
+			{
+				pCurr.X = alreadyBounce;
+			}
 		}
-		else
+		if (controller.keySettings.toggleGrind)
 		{
-			pCurr.X = alreadyBounce;
+			if (currInput.Y && !prevInput.Y)
+			{
+				pCurr.Y = !alreadyGrind;
+				//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
+			}
+			else
+			{
+				pCurr.Y = alreadyGrind;
+			}
+		}
+		if (controller.keySettings.toggleTimeSlow)
+		{
+			if (currInput.leftShoulder && !prevInput.leftShoulder)
+			{
+				pCurr.leftShoulder = !alreadyTimeSlow;
+
+			}
+			else
+			{
+				pCurr.leftShoulder = alreadyTimeSlow;
+			}
 		}
 	}
-	if( controller.keySettings.toggleGrind )
-	{
-		if( currInput.Y && !prevInput.Y )
-		{
-			pCurr.Y = !alreadyGrind;
-			//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
-		}
-		else
-		{
-			pCurr.Y = alreadyGrind;
-		}
-	}
-	if( controller.keySettings.toggleTimeSlow )
-	{
-		if( currInput.leftShoulder && !prevInput.leftShoulder )
-		{
-			pCurr.leftShoulder = !alreadyTimeSlow;
-						
-		}
-		else
-		{
-			pCurr.leftShoulder = alreadyTimeSlow;
-		}
-	}
+	
+	
 }
 
 void GameSession::KeyboardUpdate( int index )
@@ -6976,7 +6978,14 @@ int GameSession::Run()
 					pTemp = GetPlayer(i);
 					if (pTemp != NULL)
 					{
-						pTemp->prevInput = GetCurrInput(i);
+						if (cutPlayerInput)
+						{
+							pTemp->prevInput = ControllerState();
+						}
+						else
+						{
+							pTemp->prevInput = GetCurrInput(i);
+						}
 					}		
 				}
 			}
@@ -7023,15 +7032,9 @@ int GameSession::Run()
 			}
 
 			
-
-
-			if( !cutPlayerInput )
+			for (int i = 0; i < 4; ++i)
 			{
-				for( int i = 0; i < 4; ++i )
-				{
-					ApplyToggleUpdates( i );
-				}
-				//else
+				ApplyToggleUpdates(i);
 			}
 
 			}
@@ -9593,8 +9596,8 @@ void GameSession::SetPlayerInputOn(bool on)
 	cutPlayerInput = !on;
 	if (!cutPlayerInput)
 	{
-		GetPrevInput(0) = ControllerState();
-		GetCurrInput(0) = ControllerState();
+		//GetPrevInput(0) = ControllerState();
+		//GetCurrInput(0) = ControllerState()
 	}
 }
 

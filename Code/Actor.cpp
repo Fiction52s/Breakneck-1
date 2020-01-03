@@ -13657,6 +13657,7 @@ void Actor::UpdatePhysics()
 							{
 								//StandInPlace();
 								WaitInPlace();
+								return;
 							}
 						}
 						else
@@ -13665,6 +13666,7 @@ void Actor::UpdatePhysics()
 							{
 								//StandInPlace();
 								WaitInPlace();
+								return;
 							}
 						}
 					}
