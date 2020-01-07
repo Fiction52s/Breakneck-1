@@ -3,30 +3,6 @@
 
 #include "Sequence.h"
 
-struct CrawlerDefeatedSeq : Sequence
-{
-	enum State
-	{
-		PLAYMOVIE,
-		END,
-		Count
-	};
-
-	State state;
-	int stateLength[Count];
-	CrawlerDefeatedSeq(GameSession *owner);
-	bool Update();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
-	void Reset();
-
-	GameSession *owner;
-
-	sfe::Movie mov;
-
-	sf::Vertex darkQuad[4];
-};
-
 struct AfterCrawlerFightSeq : BasicBossScene
 {
 	enum State
@@ -42,7 +18,6 @@ struct AfterCrawlerFightSeq : BasicBossScene
 	void ReturnToGame();
 	void StartRunning();
 	void AddMovies();
-	//void AddShots();
 	void AddPoints();
 	void UpdateState();
 };
@@ -69,18 +44,7 @@ struct NexusCore1Seq : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
-	//sf::Texture tex;
-
-	//std::string imageNames[52];
-
 	GameSession *owner;
-	//static void LoadNextTex(NexusCore1Seq *seq);
-	//boost::thread *loadThread;
-	//sf::Image coreImages[52];
-	//Tileset *ts_core[52];
-	//Tileset *ts_firstCore;
-	//sf::Texture coreTex[2];
-	//sf::Sprite coreSprite;
 
 	sfe::Movie mov;
 

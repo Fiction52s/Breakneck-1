@@ -602,7 +602,7 @@ void Speech::SetupSprite()
 void Speech::Draw(sf::RenderTarget *target)
 {
 	disp->Draw(target);
-	if (ts != NULL)
+	if (ts != NULL && disp->show )
 	{
 		target->draw(speakerSpr);
 	}
@@ -892,7 +892,7 @@ bool Conversation::Load(ifstream &is)
 			//TextDisp *textDisp = new TextDisp(owner, (1920 - 512), 220, 30, 1);
 			//textDisp->SetTopLeft(Vector2f(512, 1080 - 220));
 			TextDisp *textDisp = new TextDisp(owner, (1920 - 512), 256, 30, 1);
-			textDisp->SetTopLeft(Vector2f(256, 1080 - 256));
+			textDisp->SetTopLeft(Vector2f(256 + 128, 80));
 			textDisp->SetString(fullMessage);
 			sp->disp = textDisp;
 

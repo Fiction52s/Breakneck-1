@@ -46,7 +46,7 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	BasicBossScene *bScene = NULL;
 	if (name == "birdscene0")
 	{
-		//bScene = new BirdBossScene(owner);
+		bScene = new BirdPreFightScene(owner);
 	}
 	else if (name == "crawlerscene0")
 	{
@@ -63,6 +63,11 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	return bScene;
 }
 
+Sequence::~Sequence()
+{
+	if (nextSeq != NULL)
+		delete nextSeq;
+}
 
 ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	:owner( p_owner )
@@ -256,119 +261,6 @@ void ShipExitSeq::Reset()
 	storySeq->Reset();
 }
 
-
-BasicMovieSeq::BasicMovieSeq(GameSession *p_owner,
-	const std::string &movieName, int preMovieLength, int postMovieLength)
-	:owner(p_owner)
-{
-
-	startHolder = new ButtonHolder( 60 );
-	Reset();
-
-	stateLength[PREMOVIE] = preMovieLength;
-	stateLength[PLAYMOVIE] = 1000000;
-	stateLength[POSTMOVIE] = postMovieLength;
-
-
-	string path = "Resources/Movie/";
-	string ext = ".ogv";
-	string movieFull = path + movieName + ext;
-
-	assert(mov.openFromFile(movieFull));
-	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
-}
-
-
-BasicMovieSeq::~BasicMovieSeq()
-{
-	delete startHolder;
-}
-void BasicMovieSeq::Reset()
-{
-	state = PREMOVIE;
-	frame = 0;
-	startHolder->Reset();
-}
-
-bool BasicMovieSeq::Update()
-{
-	Actor *player = owner->GetPlayer(0);
-
-	bool start = owner->GetController(0).GetState().A;
-
-	if (frame == stateLength[state] && state != END)
-	{
-		int s = state;
-		s++;
-		state = (State)s;
-		frame = 0;
-
-		if (state == END)
-		{
-		}
-	}
-
-	if (state == END)
-	{
-		owner->state = GameSession::RUN;
-		owner->Fade(true, 60, Color::Black);
-		return false;
-	}
-
-	if (state == PREMOVIE)
-	{
-		PreMovieUpdate();
-	}
-	else if (state == PLAYMOVIE)
-	{
-		startHolder->Update(start);
-		if (startHolder->IsHoldComplete())
-		{
-			frame = stateLength[PLAYMOVIE] - 1;
-			mov.stop();
-		}
-		sfe::Status movStatus = mov.getStatus();
-		if (frame == 0)
-		{
-			owner->ClearFade();
-			owner->state = GameSession::SEQUENCE;
-			mov.setPlayingOffset(sf::Time::Zero);
-			mov.setVolume(owner->mainMenu->config->GetData().musicVolume);
-			mov.play();
-		}
-		else
-		{
-			mov.update();
-
-			//cout << "mov: " << mov.getPlayingOffset().asSeconds() << endl;
-			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped)
-			{
-				frame = stateLength[PLAYMOVIE] - 1;
-			}
-		}
-	}
-	else if (state == POSTMOVIE)
-	{
-		PostMovieUpdate();
-	}
-	++frame;
-
-	return true;
-}
-
-
-void BasicMovieSeq::Draw(sf::RenderTarget *target,
-	EffectLayer layer)
-{
-	if (layer != EffectLayer::IN_FRONT)
-	{
-		return;
-	}
-
-	target->draw(mov);
-}
-
-
 FlashedImage::FlashedImage(Tileset *ts,
 	int tileIndex, int appearFrames,
 	int holdFrames,
@@ -501,10 +393,6 @@ void BasicBossScene::Reset()
 	cIndex = 0;
 	currMovie = NULL;
 }
-
-
-
-
 
 BasicBossScene::~BasicBossScene()
 {
@@ -748,6 +636,7 @@ void BasicBossScene::SetEntranceShot()
 	SetCameraShot("scenecam");
 }
 
+
 void BasicBossScene::EntranceUpdate()
 {
 	Actor *player = owner->GetPlayer(0);
@@ -774,6 +663,16 @@ void BasicBossScene::EntranceUpdate()
 	{
 		//owner->adventureHUD->Hide(fadeFrames);
 	}
+}
+
+void BasicBossScene::SetPlayerStandPoint(const std::string &n,
+	bool fr)
+{
+	assert(points.count(n) == 1);
+
+	PoiInfo *pi = points[n];
+	Actor *player = owner->GetPlayer(0);
+	player->SetStandInPlacePos(pi->edge, pi->edgeQuantity, fr);
 }
 
 void BasicBossScene::ReturnToGame()
@@ -834,9 +733,12 @@ bool BasicBossScene::Update()
 		return false;
 	}
 
-	if (IsEntering() && !player->IsAutoRunning() && frame > 60)
+	if (entranceType == RUN)
 	{
-		Wait();
+		if (IsEntering() && !player->IsAutoRunning() && frame > 60)
+		{
+			Wait();
+		}
 	}
 
 	UpdateState();

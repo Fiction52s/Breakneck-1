@@ -113,6 +113,9 @@ BirdBoss::BirdBoss( GameSession *owner, Vector2i &pos )
 
 void BirdBoss::ResetEnemy()
 {
+	if (zone != NULL)
+		zone->action = Zone::OPEN;
+
 	for (int i = 0; i < numChoices; ++i)
 	{
 		PlanChoice(i);
@@ -243,6 +246,9 @@ void BirdBoss::ActionEnded()
 
 void BirdBoss::ProcessState()
 {
+
+	return;
+
 	ActionEnded();
 	//Actor *player = owner->GetPlayer(0);
 	V2d playerPos = owner->GetPlayerPos(0);
@@ -855,15 +861,6 @@ void BirdBoss::PlanChoice(int ind)
 	}
 }
 
-
-
-
-
-
-
-
-
-
 GravRing::GravRing(GameSession *owner, BirdBoss *p_parent, ObjectPool *p_myPool, int index)
 	:Enemy(owner, EnemyType::EN_GRAVRING, false, 1, false),
 	PoolMember(index), myPool(p_myPool)
@@ -1140,11 +1137,6 @@ void GravRing::UpdateSprite()
 
 void GravRing::ResetEnemy()
 {
-	//mover->ground = NULL;
-	//mover->edgeQuantity = 0;
-	//mover->roll = false;
-	//mover->UpdateGroundPos();
-	//mover->SetSpeed(0);
 	action = HOMING;
 	frame = 0;
 	SetHurtboxes(hurtBody, 0);

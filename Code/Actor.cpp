@@ -8945,6 +8945,12 @@ void Actor::SeqGetAirdash()
 	frame = 0;
 }
 
+void Actor::StartAction(Action a)
+{
+	SetAction(a);
+	frame = 0;
+}
+
 void Actor::SetAction( Action a )
 {
 	standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
@@ -9868,6 +9874,15 @@ void Actor::SetGroundedPos(Edge *g, double q)
 	else
 	{
 		offsetX = 0;
+	}
+
+	if (norm.y <= 0)
+	{
+		reversed = false;
+	}
+	else
+	{
+		reversed = true;
 	}
 }
 
@@ -24741,44 +24756,6 @@ void Actor::SetActionGrind()
 bool Actor::CanUnlockGate( Gate *g )
 {
 	return g->CanUnlock();
-	////if( g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER 
-	////	|| g->gState == Gate::DISSOLVE
-	////	|| g->gState )
-	//if( g->gState == Gate::OPEN )//!g->locked )
-	//{
-	//	cout << "return early" << endl;
-	//	return false;
-	//}
-
-	//bool canUnlock = false;
-
-	//bool enoughKeys = (owner->keyMarker->keysRequired == 0);
-	//if (g->IsAlwaysUnlocked())
-	//{
-	//	enoughKeys = true;
-	//}
-	////cout << "this gate is still locked" << endl;
-
-	///*if( g->type == Gate::GREY && g->gState != Gate::LOCKFOREVER
-	//	&& g->gState != Gate::REFORM )
-	//{
-	//	cout << "gstate: " << (int)g->gState << endl;
-	//	canUnlock = true;
-	//}
-	//else */
-	//if( g->type == Gate::BLACK  )//|| g->type == Gate::CRAWLER_UNLOCK || g->type == Gate::NEXUS1_UNLOCK )
-	//{
-	//	canUnlock = false;
-	//}
-	//else if( g->type == Gate::KEYGATE && g->gState != Gate::LOCKFOREVER
-	//	&& g->gState != Gate::REFORM && g->gState != Gate::HARD )
-	//{
-	//	//cout << "have keys: " << numKeys <<
-	//	//	"need keys: " << g->requiredKeys << endl;
-	//	canUnlock = true;
-	//}
-
-	//return canUnlock;
 }
 
 bool Actor::CaptureMonitor( Monitor * m )

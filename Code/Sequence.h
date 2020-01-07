@@ -66,13 +66,15 @@ struct Sequence
 	//Sequence *next;
 	//Sequence *prev;
 	Sequence()
-		:frameCount(-1),frame(0)
+		:frameCount(-1),frame(0),
+		nextSeq( NULL )
 	{
 
 	}
 	int frameCount;
 	int frame;
-	virtual ~Sequence() {}
+	Sequence *nextSeq;
+	virtual ~Sequence();
 	virtual void StartRunning(){}
 	virtual bool Update() = 0;
 	virtual void Reset() = 0;
@@ -113,40 +115,6 @@ struct ShipExitSeq : Sequence
 };
 
 struct ButtonHolder;
-
-struct BasicMovieSeq : Sequence
-{
-	BasicMovieSeq(GameSession *owner,
-		const std::string &movieName,
-		int preMovieLength,
-		int postMovieLength );
-	~BasicMovieSeq();
-
-	enum State
-	{
-		PREMOVIE,
-		PLAYMOVIE,
-		POSTMOVIE,
-		END,
-		Count
-	};
-
-	ButtonHolder *startHolder;
-	State state;
-	int stateLength[Count];
-	
-	bool Update();
-	void Draw(sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
-	void Reset();
-
-	virtual void PreMovieUpdate() {}
-	virtual void PostMovieUpdate() {}
-
-
-	GameSession *owner;
-	sfe::Movie mov;
-};
 
 struct ConversationGroup;
 struct CameraShot;
@@ -189,6 +157,8 @@ struct BasicBossScene : Sequence
 	virtual void SetEntranceRun();
 	virtual void SetEntranceStand();
 	virtual void SetEntranceShot();
+	void SetPlayerStandPoint(const std::string &n,
+		bool fr);
 	virtual void UpdateState() = 0;
 	void EaseShot(const std::string &shotName,
 		int frames, CubicBezier bez = CubicBezier());
@@ -256,6 +226,5 @@ struct BasicBossScene : Sequence
 
 	GameSession *owner;
 };
-
 
 #endif 

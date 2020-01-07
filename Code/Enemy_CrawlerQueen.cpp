@@ -1015,13 +1015,7 @@ void CrawlerQueen::ConfirmKill()
 	
 	action = HURT;
 	frame = 0;
-	for (auto it = crawlerGates.begin(); it != crawlerGates.end(); ++it)
-	{
-		//(*it)->SetLocked(false);
-		(*it)->gState = Gate::SOFTEN;
-		(*it)->frame = 0;
-		//(*it)->SetLocked(false);
-	}
+	owner->SoftenGates(Gate::CRAWLER_UNLOCK);
 
 	mover->groundSpeed = 0;
 
@@ -1274,18 +1268,7 @@ void CrawlerQueen::Init()
 
 void CrawlerQueen::Setup()
 {
-	InitEdgeInfo();
-
-	for (int i = 0; i < owner->numGates; ++i)
-	{
-		if (owner->gates[i]->type == Gate::CRAWLER_UNLOCK)
-		{
-			crawlerGates.push_back(owner->gates[i]);
-		}
-	}
-
-	//nexusCorePI = owner->poiMap["nexuscore"];
-	
+	InitEdgeInfo();	
 
 	ResetEnemy();
 }

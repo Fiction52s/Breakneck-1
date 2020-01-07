@@ -71,8 +71,8 @@ void CrawlerAttackSeq::AddPoints()
 
 void CrawlerAttackSeq::AddGroups()
 {
-	AddGroup("pre_coy", "W3/w3_coy_fight_pre");
-	SetConvGroup("pre_coy");
+	AddGroup("pre_crawler", "W1/w1_crawler_pre_fight");
+	SetConvGroup("pre_crawler");
 }
 
 void CrawlerAttackSeq::AddEnemies()
@@ -125,8 +125,7 @@ void CrawlerAttackSeq::UpdateState()
 		{
 			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
 			player->desperationMode = false;
-			player->SetAction(Actor::SEQ_LOOKUP);
-			player->frame = 0;
+			player->StartAction(Actor::SEQ_LOOKUP);
 		}
 		break;
 	case ROCKSFALL:
@@ -136,8 +135,7 @@ void CrawlerAttackSeq::UpdateState()
 	{
 		if (frame == 15)
 		{
-			player->SetAction(Actor::SEQ_LOOKUPDISAPPEAR);
-			player->frame = 0;
+			player->StartAction(Actor::SEQ_LOOKUPDISAPPEAR);
 		}
 
 		UpdateCrawlerSwoop();
@@ -167,6 +165,7 @@ void CrawlerAttackSeq::UpdateState()
 		if (frame == 0)
 		{	
 			owner->currentZone->ReformAllGates();
+
 			player->StartSeqKinThrown(points["crawlersurface"]->pos, V2d(-10, -10));
 		}
 		else if (frame == 30)

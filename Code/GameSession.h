@@ -688,6 +688,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Gate **gates;
 	int testGateCount;
 	Gate *gateList;
+	void SoftenGates(Gate::GateType gType);
+	void ReformGates(Gate::GateType gType);
+	void OpenGates(Gate::GateType gType);
+
+
+
 
 	float oldZoom;
 	sf::Vector2f oldCamBotLeft;

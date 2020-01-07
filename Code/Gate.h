@@ -35,11 +35,14 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		OPEN,
 		State_Count
 	};
+
+	int stateLength[State_Count];
 	
 	bool IsTwoWay();
 	bool IsAlwaysUnlocked();
 	bool IsReformingType();
 	bool CanUnlock();
+	bool IsInUnlockableState();
 	V2d GetCenter();
 	//bool keyGate;
 	//int requiredKeys;

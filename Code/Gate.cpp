@@ -42,6 +42,15 @@ Gate::Gate( GameSession *p_owner, GateType p_type )
 	ts_black = owner->GetTileset("Zone/gates_black_32x32.png", 32, 32);
 	ts_lightning = owner->GetTileset("Zone/gates_lightning_1_64x64.png", 64, 64);
 	
+	stateLength[HARD] = ;
+	stateLength[SOFTEN] = ;
+	stateLength[SOFT] = ;
+	stateLength[DISSOLVE] = ;
+	stateLength[TOTALDISSOLVE] = ;
+	stateLength[REFORM] = ;
+	stateLength[LOCKFOREVER] = ;
+	stateLength[OPEN] = ;
+
 	
 	if( type != BLACK )
 	{
@@ -71,6 +80,236 @@ Gate::Gate( GameSession *p_owner, GateType p_type )
 	frame = 0;
 }
 
+void Gate::Update()
+{
+	//gates can be timeslowed? don't worry about it just yet. 
+	if (type != BLACK)
+	{
+		switch (gState)
+		{
+		case HARD:
+		{
+			if (frame == 60)
+			{
+
+				frame = 0;
+			}
+			break;
+		}
+		case TOTALDISSOLVE:
+		{
+			if (frame == 60)
+			{
+				gState = OPEN;
+				frame = 0;
+			}
+			break;
+		}
+		case SOFTEN:
+		{
+			if (frame == 60)
+			{
+				gState = SOFT;
+				frame = 0;
+			}
+			break;
+		}
+		case SOFT:
+		{
+			if (frame == 11 * 3)
+				frame = 0;
+			break;
+		}
+		case DISSOLVE:
+		{
+			//whatever length
+			if (frame == dissolveLength)
+			{
+				if (IsReformingType())
+				{
+					gState = REFORM;
+					frame = 0;
+				}
+				else
+				{
+					gState = OPEN;
+					frame = 0;
+				}
+			}
+			break;
+		}
+
+		case REFORM:
+		{
+			if (frame == 7 * 3)
+			{
+				/*for (int i = 0; i < numBlackQuads; ++i)
+				{
+				SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(6));
+				}*/
+				if (IsTwoWay())
+				{
+					gState = SOFT;
+					frame = 0;
+				}
+				else
+				{
+					gState = LOCKFOREVER;
+				}
+			}
+			break;
+		}
+
+		case LOCKFOREVER:
+		{
+			frame = 0;
+			break;
+		}
+
+		case OPEN:
+		{
+			frame = 0;
+			break;
+		}
+		}
+	}
+	else
+	{
+		frame = 0;
+	}
+
+	if (gState == REFORM)
+	{
+		for (int i = 0; i < numBlackQuads; ++i)
+		{
+			//IntRect
+			SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(frame / 3));
+		}
+	}
+	else if (gState == SOFT)
+	{
+		for (int i = 0; i < numBlackQuads; ++i)
+		{
+			//IntRect
+			SetRectSubRect(blackGate + i * 4, ts_lightning->GetSubRect(frame / 3));
+		}
+	}
+
+	double radius = 300;
+
+	if (flowFrame > 60)
+	{
+		flowFrame = 0;
+	}
+
+	if (type != BLACK && type != CRAWLER_UNLOCK && type != SHARD)
+	{
+		Zone *currZone = owner->currentZone;
+		bool enoughKeys = (owner->keyMarker->keysRequired == 0);
+
+		if (type == SECRET)
+		{
+			enoughKeys = true;
+		}
+
+		if (gState == HARD && enoughKeys &&
+			(currZone == NULL || (currZone == zoneA || currZone == zoneB)))
+		{
+			if (zoneA == zoneB && zoneA == currZone)
+			{
+				gState = TOTALDISSOLVE;
+				SetLocked(false);
+				centerShader.setUniform("breakPosQuant", .5f);
+			}
+			else
+			{
+				gState = SOFTEN; //SOFTEN
+			}
+
+			frame = 0;
+
+			Wire *rw = owner->GetPlayer(0)->rightWire;
+			Wire *lw = owner->GetPlayer(0)->leftWire;
+			if (rw != NULL && rw->anchor.e == edgeA || rw->anchor.e == edgeB)
+			{
+				rw->Reset();
+			}
+			if (lw != NULL && lw->anchor.e == edgeA || lw->anchor.e == edgeB)
+			{
+				lw->Reset();
+			}
+		}
+	}
+	else if (type == SHARD)
+	{
+		double len = length(owner->GetPlayer(0)->position - GetCenter());
+		if (gState == HARD && owner->IsShardCaptured(shardType) && len < 300)
+		{
+			gState = SOFTEN;
+			frame = 0;
+		}
+	}
+
+	int tileWidth = ts->tileWidth;
+	int tileHeight = ts->tileHeight;
+	double gateLength = length(edgeA->v1 - edgeA->v0);
+	double numT = gateLength / tileHeight; //rounded down
+	int numTiles = numT;
+	double remainder = numT - numTiles;
+	if (remainder > 0)
+		numTiles += 1;
+
+	int numVertices = numTiles * 4;
+
+	double width = tileWidth / 2;
+	V2d dv0(edgeA->v0.x, edgeA->v0.y);
+	V2d dv1(edgeA->v1.x, edgeA->v1.y);
+	V2d along = normalize(dv1 - dv0);
+	V2d other(along.y, -along.x);
+
+	V2d leftv0 = dv0 - other * width;
+	V2d rightv0 = dv0 + other * width;
+
+	V2d leftv1 = dv1 - other * width;
+	V2d rightv1 = dv1 + other * width;
+
+	VertexArray & gq = *gQuads;
+
+	Vector2f leftv0f(leftv0.x, leftv0.y);
+	Vector2f leftv1f(leftv1.x, leftv1.y);
+	Vector2f rightv1f(rightv1.x, rightv1.y);
+	Vector2f rightv0f(rightv0.x, rightv0.y);
+	int f = frame / 3;
+
+
+
+	float ff = flowFrame / 60.f;
+	gateShader.setUniform("quant", ff);
+	centerShader.setUniform("quant", ff);
+
+	float dLen = dissolveLength;
+
+	if (gState == DISSOLVE || gState == TOTALDISSOLVE)
+	{
+		centerShader.setUniform("breakQuant", (frame / dLen));
+	}
+	else if (gState == REFORM)
+	{
+		if (frame <= dLen)
+		{
+			centerShader.setUniform("breakQuant", ((float)frame / (7 * 3)));
+		}
+	}
+	if (gState == SOFTEN || gState == TOTALDISSOLVE)
+	{
+		float gg = (frame / 60.f);
+		gateShader.setUniform("fadeQuant", gg);
+		//(frame / 60.f));
+	}
+	++frame;
+	++flowFrame;
+}
+
 bool Gate::IsTwoWay()
 {
 	return type == SECRET || type == SHARD;
@@ -86,6 +325,11 @@ bool Gate::IsReformingType()
 	return true;
 }
 
+bool Gate::IsInUnlockableState()
+{
+	return gState == SOFTEN || gState == SOFT || gState == DISSOLVE || gState == TOTALDISSOLVE;
+}
+
 bool Gate::CanUnlock()
 {
 	if (gState == Gate::OPEN)
@@ -93,7 +337,7 @@ bool Gate::CanUnlock()
 		return false;
 	}
 
-	bool unlockableState = false;
+	bool unlockableState = IsInUnlockableState();
 	if (gState != Gate::LOCKFOREVER && gState != Gate::REFORM && gState != Gate::HARD)
 	{
 		unlockableState = true;
@@ -355,21 +599,6 @@ void Gate::UpdateLine()
 		tileHeight = 128;
 		}
 		break;
-	/*case BIRDFIGHT:
-		c = Color::Green;
-		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
-		tileHeight = 128;
-		break;*/
-	//case CRAWLER_UNLOCK:
-		/*c = Color::Blue;
-		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
-		tileHeight = 128;*/
-	//	break;
-	/*case NEXUS1_UNLOCK:
-		c = Color::Cyan;
-		ts = owner->GetTileset( "gate_blue_128x128.png", 128, 128 );
-		tileHeight = 128;
-		break;*/
 	}
 	/*thickLine[0].color = c;
 	thickLine[1].color = c;
@@ -496,239 +725,7 @@ void Gate::SetNodeSprite(bool active)
 	//SetRectSubRect( nodes, ts)
 }
 
-void Gate::Update()
-{
-	//gates can be timeslowed? don't worry about it just yet. 
-	if( type != BLACK )
-	{
-		switch( gState )
-		{
-		case HARD:
-			{
-			if (frame == 60)
-			{
-				
-				frame = 0;
-			}
-				//frame = 0;
-				break;
-			}
-		case TOTALDISSOLVE:
-		{
-			if (frame == 60)
-			{
-				gState = OPEN;
-				frame = 0;
-			}
-			break;
-		}
-			
-		case SOFTEN:
-			{
-				if( frame == 60 )
-				{
-					gState = SOFT;
-					frame = 0;
-				}
-				break;
-			}
-			
-		case SOFT:
-			{
-			if( frame == 11 * 3)
-				frame = 0;
-				break;
-			}
-			
-		case DISSOLVE:
-			{
-				//whatever length
-				if(frame == dissolveLength)
-				{
-					if(IsReformingType())
-					{
-						gState = REFORM;
-						frame = 0;
-					}
-					else
-					{
-						gState = OPEN;
-						frame = 0;
-					}
-				}
-				break;
-			}
-			
-		case REFORM:
-			{	
-				if( frame == 7 * 3 )
-				{
-					/*for (int i = 0; i < numBlackQuads; ++i)
-					{
-						SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(6));
-					}*/
-					if (IsTwoWay())
-					{
-						gState = SOFT;
-						frame = 0;
-					}
-					else
-					{
-						gState = LOCKFOREVER;
-					}
-				}
-				break;
-			}
-			
-		case LOCKFOREVER:
-			{
-				frame = 0;
-				break;
-			}
-			
-		case OPEN:
-			{
-				frame = 0;
-				break;
-			}
-		}
-	}
-	else
-	{
-		frame = 0;
-	}
 
-	if (gState == REFORM)
-	{
-		for (int i = 0; i < numBlackQuads; ++i)
-		{
-			//IntRect
-			SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(frame / 3));
-		}
-	}
-	else if (gState == SOFT)
-	{
-		for (int i = 0; i < numBlackQuads; ++i)
-		{
-			//IntRect
-			SetRectSubRect(blackGate + i * 4, ts_lightning->GetSubRect(frame / 3));
-		}
-	}
-
-	double radius = 300;
-
-	if (flowFrame > 60)
-	{
-		flowFrame = 0;
-	}
-
-	if( type != BLACK && type != CRAWLER_UNLOCK && type != SHARD)
-	{
-		Zone *currZone = owner->currentZone;
-		bool enoughKeys = (owner->keyMarker->keysRequired == 0);
-
-		if (type == SECRET)
-		{
-			enoughKeys = true;
-		}
-
-		if( gState == HARD && enoughKeys && 
-			( currZone == NULL || ( currZone == zoneA || currZone == zoneB ) ))
-		{
-			if ( zoneA == zoneB && zoneA == currZone )
-			{
-				gState = TOTALDISSOLVE;
-				SetLocked(false);
-				centerShader.setUniform("breakPosQuant", .5f);
-			}
-			else
-			{
-				gState = SOFTEN; //SOFTEN
-			}
-			
-			frame = 0;
-
-			Wire *rw = owner->GetPlayer( 0 )->rightWire;
-			Wire *lw = owner->GetPlayer( 0 )->leftWire;
-			if( rw != NULL && rw->anchor.e == edgeA || rw->anchor.e == edgeB )
-			{
-				rw->Reset();
-			}
-			if( lw != NULL && lw->anchor.e == edgeA || lw->anchor.e == edgeB )
-			{
-				lw->Reset();
-			}
-		}
-	}
-	else if (type == SHARD)
-	{
-		double len = length(owner->GetPlayer(0)->position - GetCenter());
-		if (gState == HARD && owner->IsShardCaptured( shardType ) && len < 300 )
-		{
-			gState = SOFTEN;
-			frame = 0;
-		}
-	}
-
-	int tileWidth = ts->tileWidth;
-	int tileHeight = ts->tileHeight;
-	double gateLength = length(edgeA->v1 - edgeA->v0 );
-	double numT = gateLength / tileHeight; //rounded down
-	int numTiles = numT;
-	double remainder = numT - numTiles;
-	if( remainder > 0 )
-		numTiles += 1;
-
-	int numVertices = numTiles * 4;
-
-	double width = tileWidth / 2;
-	V2d dv0( edgeA->v0.x, edgeA->v0.y );
-	V2d dv1( edgeA->v1.x, edgeA->v1.y );
-	V2d along = normalize( dv1 - dv0 );
-	V2d other( along.y, -along.x );
-	
-	V2d leftv0 = dv0 - other * width;
-	V2d rightv0 = dv0 + other * width;
-
-	V2d leftv1 = dv1 - other * width;
-	V2d rightv1 = dv1 + other * width;
-	
-	VertexArray & gq = *gQuads;
-
-	Vector2f leftv0f( leftv0.x, leftv0.y );
-	Vector2f leftv1f( leftv1.x, leftv1.y );
-	Vector2f rightv1f( rightv1.x, rightv1.y );
-	Vector2f rightv0f( rightv0.x, rightv0.y );
-	int f = frame / 3;
-
-
-	
-	float ff = flowFrame / 60.f;
-	gateShader.setUniform("quant", ff );
-	centerShader.setUniform("quant", ff);
-	
-	float dLen = dissolveLength;
-
-	if (gState == DISSOLVE || gState == TOTALDISSOLVE )
-	{
-		centerShader.setUniform("breakQuant", (frame / dLen));
-	}
-	else if (gState == REFORM)
-	{
-		if (frame <= dLen)
-		{
-			centerShader.setUniform("breakQuant", ((float)frame / (7*3)));
-		}
-	}
-	if (gState == SOFTEN || gState == TOTALDISSOLVE)
-	{
-		float gg = (frame / 60.f);
-		gateShader.setUniform("fadeQuant", gg);
-		//(frame / 60.f));
-	}
-	++frame;
-	++flowFrame;
-}
 
 void Gate::SetLocked( bool on )
 {

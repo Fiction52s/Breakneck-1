@@ -3,15 +3,56 @@
 
 #include "Sequence.h"
 
-//struct TextDisp;
-//struct Conversation;
-struct ConversationGroup;
-struct CameraShot;
-struct Barrier;
+struct BirdBoss;
 
+struct BirdPreFightScene : BasicBossScene
+{
+	enum State
+	{
+		ENTRANCE,
+		WAIT,
+		BIRDWALK,
+		BIRDFALL,
+		BIRDCONV,
+		Count
+	};
 
+	BirdPreFightScene(GameSession *owner);
 
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+	void StartRunning();
 
+	BirdBoss *bird;
+};
+
+struct BirdPostFightScene : BasicBossScene
+{
+	enum State
+	{
+		FADE,
+		WAIT,
+		BIRDCONV,
+		BIRDLEAVE,
+		Count
+	};
+
+	BirdPostFightScene(GameSession *owner);
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+};
 
 
 #endif

@@ -488,21 +488,6 @@ struct Actor : QuadTreeCollider,
 	bool updateAura;
 
 	bool ExitGrind(bool jump);
-
-	/*enum SeqType
-	{
-		SEQ_NOTHING,
-		SEQ_CRAWLER_FIGHT,
-		SEQ_Count
-	};
-	void StartSeq( SeqType s );
-	void UpdateSeq();
-	ControllerState seqInput;
-	bool cutInput;
-
-	
-	SeqType seq;
-	int seqFrame;*/
 	
 	void SetSpriteTexture( Action a );
 	void SetSpriteTile( int tileIndex, bool noFlipX = true, bool noFlipY = true );
@@ -511,6 +496,7 @@ struct Actor : QuadTreeCollider,
 	void SetActionExpr( Action a );
 	void SetExpr( Expr ex );
 	void SetAction( Action a );
+	void StartAction(Action a);
 
 	void SetupTilesets(KinSkin *kSkin, KinSkin *swordSkin);
 

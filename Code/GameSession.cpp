@@ -7192,8 +7192,16 @@ int GameSession::Run()
 				State oldState = state;
 				if (!activeSequence->Update())
 				{
-					state = RUN;
-					activeSequence = NULL;
+					if (activeSequence->nextSeq != NULL)
+					{
+						activeSequence->nextSeq->Reset();
+						SetActiveSequence(activeSequence->nextSeq);
+					}
+					else
+					{
+						state = RUN;
+						activeSequence = NULL;
+					}
 				}
 				else
 				{
@@ -9785,7 +9793,39 @@ void GameSession::DrawActiveEnvPlants()
 	}
 }
 
+void GameSession::SoftenGates(Gate::GateType gType)
+{
+	Gate *g;
+	for (int i = 0; i < numGates; ++i)
+	{
+		g = gates[i];
+		g->gState = Gate::SOFTEN;
+		g->frame = 0;
+	}
+}
 
+void GameSession::ReformGates(Gate::GateType gType)
+{
+	Gate *g;
+	for (int i = 0; i < numGates; ++i)
+	{
+		g = gates[i];
+		g->gState = Gate::REFORM;
+		g->frame = 0;
+		float aa = .5;
+		g->centerShader.setUniform("breakPosQuant", aa);
+	}
+}
+
+void GameSession::OpenGates(Gate::GateType gType)
+{
+	Gate *g;
+	for (int i = 0; i < numGates; ++i)
+	{
+		g = gates[i];
+		UnlockGate(g);
+	}
+}
 
 SoundNode *GameSession::ActivateSound( V2d &pos, SoundBuffer *buffer, bool loop )
 {
@@ -13335,20 +13375,6 @@ void GameSession::UnlockGate( Gate *g )
 		g->activeNext = unlockedGateList;
 		unlockedGateList = g;
 	}
-
-	//if( currentZone != NULL )
-	//{
-	//	list<Edge*> &gList = currentZone->gates;
-	//	for( list<Edge*>::iterator it = gList.begin(); it != gList.end(); ++it )
-	//	{
-	//		Gate *gg = (Gate*)(*it)->info;
-	//		if( gg == g || gg->gState == Gate::OPEN || gg->gState == Gate::DISSOLVE )
-	//			continue;
-
-	//		gg->gState = Gate::LOCKFOREVER;
-	//		//g->SetLocked();
-	//	}
-	//}
 }
 
 void GameSession::LockGate( Gate *g )

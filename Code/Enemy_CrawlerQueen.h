@@ -83,7 +83,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		//might need roll info?
 	};
 	bool DecideShownAction();
-	std::list<Gate*> crawlerGates;
+	//std::list<Gate*> crawlerGates;
 	void ConfirmKill();
 	void Init();
 	void Setup();
