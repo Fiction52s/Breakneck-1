@@ -25,7 +25,6 @@ no_borderpoly
 1
 -- 2
 poi +air 887 -7035
-ship -
-0
+ship
 goal 0 2 109.545
 0

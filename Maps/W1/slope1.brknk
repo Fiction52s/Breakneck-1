@@ -207,8 +207,7 @@ no_borderpoly
 1
 -- 4
 poi +air -4710 -2724
-ship -
-0
+ship
 crawler 0 118 374.569
 0
 0

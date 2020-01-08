@@ -24,7 +24,7 @@ Story/monument_143x139
 0
 1 1
 0
--4062 84
+31952 -4277
 no_borderpoly
 0 0
 17
@@ -643,9 +643,12 @@ no_borderpoly
 0
 0
 1
--- 2
+-- 3
 groundtrigger 12 235 2034
 1
 housefamily
 goal 12 274 165.998
+xbarrier 33630 -4999
+test
+1
 0

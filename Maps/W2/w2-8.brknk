@@ -375,7 +375,7 @@ borderpoly
 0
 0
 1
--- 4
+-- 3
 greengoal 0 0 42.1906
 pulser 3052 3970
 0
@@ -384,11 +384,6 @@ pulser 3052 3970
 448 -166
 624 -39
 625 33
-0
-1
-bouncecomboer 4339 4185
-0
-0
 0
 1
 groundtrigger 7 2 551

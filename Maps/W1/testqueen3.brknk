@@ -7,18 +7,21 @@ w1_18_death
 CollectionTest
 1
 0 w1_06
--3700 -8000 9700 17000
+-5900 -8000 11900 17000
 180
 1
-81
+87
 0
--2562 -5069
+-5619 -5953
 borderpoly
 0 1
-81
-1024 -5344
-640 -5184
--3818 -5184
+87
+-4227 -5556
+-4947 -6164
+-6199 -6688
+-6311 -6268
+-5543 -5720
+-4979 -5320
 -3818 -4960
 416 -4960
 416 -4800
@@ -97,33 +100,42 @@ borderpoly
 1839 -5676
 1637 -5440
 1024 -5440
+1024 -5344
+640 -5184
+-3818 -5184
 0
 0
 0
 0
 1
--- 9
-poi 0 1476 -3936
-crawlercam
+-- 12
 poi 0 -1423 -3190
 crawlerdig1
 poi 0 2238 -3073
 crawlerdig2
-poi 1 -1 20 161.926
-crawlerthrowkin
-poi 1 -1 23 174.001
-kinaftercrawlerfight
-poi 1 -1 24 159.101
+poi 1 -1 27 159.101
 crawlersurface
-airtrigger -2181 -5115
-autorunright
-436
-742
-groundtrigger -1 3 2521
-1
-crawlerattack
-nexus -1 44 416.997
+poi 1 -1 23 161.926
+crawlerthrowkin
+poi 1 -1 26 174.001
+kinstand
+poi 1 -1 6 1298.25
+kinstart
+poi 1 -1 6 2356.25
+kinstop
+camerashot 1475 -3931
+fightcam
+1.64167
+nexus -1 47 416.997
 0
+xbarrier -2385 -5074
+crawlerscene0
+0
+camerashot -1459 -5044
+scenecam
+1.10417
+camerashot 1477 -3975
+cavecam
+1.64583
 2
-1 -1 8 -1 79
-2 -1 18 -1 25
+1 -1 11 -1 82 2 -1 21 -1 28 
