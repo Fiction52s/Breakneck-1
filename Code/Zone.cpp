@@ -147,21 +147,6 @@ void Zone::Init()
 		{
 			Gate *g = (Gate*)(*eit)->info;
 
-			/*if( g->zoneA == g->zoneB )//g->zoneB )
-			{
-				cout << "--------------------------------------------------------------" << endl;
-				//cout << "UNLOCKING BLAH" << endl;
-				//g->SetLocked( false );
-				continue;
-			//	skip = true;
-			//	curr = prev->edge1;
-			}
-			else
-			{
-				cout << "za: " << g->zoneA << ", zb: " << g->zoneB << endl;
-			}*/
-
-
 			if( g->zoneA == this )
 			{
 				relGates.push_back( g->edgeA );
@@ -172,7 +157,6 @@ void Zone::Init()
 			}
 		}
 	}
-	//cout << "relgates: " << relGates.size() << endl;
 
 
 	int emergency = 200;
@@ -214,19 +198,6 @@ void Zone::Init()
 						found = true;
 						//Edge *prev = curr->edge0;
 						Gate *g = (Gate*)curr->info;
-					
-						/*if( g->zoneA == g->zoneB )//g->zoneB )
-						{
-							cout << "--------------------------------------------------------------" << endl;
-							cout << "UNLOCKING BLAH" << endl;
-							g->SetLocked( false );
-							skip = true;
-							curr = prev->edge1;
-						}
-						else
-						{
-							cout << "za: " << g->zoneA << ", zb: " << g->zoneB << endl;
-						}*/
 					
 						it = relGates.erase( it );
 						break;

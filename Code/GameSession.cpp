@@ -4397,10 +4397,24 @@ void GameSession::TryCreateShardResources()
 
 void GameSession::CreateZones()
 {
+	for (int i = 0; i < numGates; ++i)
+	{
+		Gate *g = gates[i];
+		if (g->type == Gate::CRAWLER_UNLOCK)
+		{
+			UnlockGate(g);
+		}
+	}
+	//OpenGates(Gate::CRAWLER_UNLOCK);
 	//no gates, no zones!
 	for( int i = 0; i < numGates; ++i )
 	{
 		Gate *g = gates[i];
+
+		if (!g->IsZoneType())
+		{
+			continue;
+		}
 		//cout << "gate index: " << i << ", a: " << g->edgeA->v0.x << ", " << g->edgeA->v0.y << ", b: "
 		//	<< g->edgeA->v1.x << ", " << g->edgeA->v1.y << endl;
 		
@@ -4790,6 +4804,10 @@ void GameSession::CreateZones()
 
 	for( int i = 0; i < numGates; ++i )
 	{
+		if (!gates[i]->IsZoneType())
+		{
+			continue;
+		}
 		//gates[i]->SetLocked( true );
 	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 	{
@@ -4848,6 +4866,10 @@ void GameSession::CreateZones()
 	for( int i = 0; i < numGates; ++i )
 	{
 		Gate *g = gates[i];
+		if (!g->IsZoneType())
+		{
+			continue;
+		}
 		if (g->zoneA == NULL && g->zoneB == NULL)
 		{
 			for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
@@ -4975,6 +4997,14 @@ void GameSession::CreateZones()
 		
 	}
 
+	for (int i = 0; i < numGates; ++i)
+	{
+		Gate *g = gates[i];
+		if (g->type == Gate::CRAWLER_UNLOCK)
+		{
+			LockGate(g);
+		}
+	}
 	/*cout << "gate testing: " << endl;
 	for( int i = 0; i < numGates; ++i )
 	{
@@ -9810,10 +9840,27 @@ void GameSession::ReformGates(Gate::GateType gType)
 	for (int i = 0; i < numGates; ++i)
 	{
 		g = gates[i];
-		g->gState = Gate::REFORM;
-		g->frame = 0;
-		float aa = .5;
-		g->centerShader.setUniform("breakPosQuant", aa);
+		g->Reform();
+	}
+}
+
+void GameSession::TotalDissolveGates(Gate::GateType gType)
+{
+	Gate *g;
+	for (int i = 0; i < numGates; ++i)
+	{
+		g = gates[i];
+		g->TotalDissolve();
+	}
+}
+
+void GameSession::ReverseDissolveGates(Gate::GateType gType)
+{
+	Gate *g;
+	for (int i = 0; i < numGates; ++i)
+	{
+		g = gates[i];
+		g->ReverseDissolve();
 	}
 }
 
@@ -9823,6 +9870,8 @@ void GameSession::OpenGates(Gate::GateType gType)
 	for (int i = 0; i < numGates; ++i)
 	{
 		g = gates[i];
+		g->gState = Gate::OPEN;
+		g->frame = 0;
 		UnlockGate(g);
 	}
 }
@@ -13363,57 +13412,12 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 void GameSession::UnlockGate( Gate *g )
 {
 	g->SetLocked( false );
-
-	//cout << "adding gate to unlock list: " << g << endl;
-	if( unlockedGateList == NULL )
-	{
-		unlockedGateList = g;
-		g->activeNext = NULL;
-	}
-	else
-	{
-		g->activeNext = unlockedGateList;
-		unlockedGateList = g;
-	}
 }
 
 void GameSession::LockGate( Gate *g )
 {
 	//inefficient but i can adjust it later using prev pointers
-	g->SetLocked( true );
-
-	//Enemy *prev = e->prev;
-	//Enemy *next = e->next;
-	assert( unlockedGateList != NULL );
-	if( unlockedGateList->activeNext == NULL )
-	{
-		unlockedGateList = NULL;
-	}
-	else
-	{
-		Gate *gate = unlockedGateList;
-		if( g == unlockedGateList )
-		{
-			unlockedGateList = unlockedGateList->activeNext;
-			//g->activeNext = unlockedGateList->activeNext;
-			//unlockedGateList = g;
-			//break;
-		} 
-		else
-		while( gate != NULL )
-		{
-			//do i need this? i feel like i need this
-			if( gate->activeNext == g )
-			{
-				Gate *gate2 = gate->activeNext->activeNext;
-				g->activeNext = NULL;
-				gate->activeNext = gate2;
-				break;
-			}
-			gate = gate->activeNext;
-		}
-	}
-	
+	g->SetLocked( true );	
 }
 
 void GameSession::SetActiveSequence(Sequence *activeSeq)

@@ -2249,6 +2249,7 @@ bool Actor::AirAttack()
 				}
 				SetAction(UAIR);
 				frame = 0;
+				owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
 			}
 			else if (currInput.LDown())
 			{
@@ -2262,6 +2263,7 @@ bool Actor::AirAttack()
 				}
 				SetAction(DAIR);
 				frame = 0;
+				owner->OpenGates(Gate::CRAWLER_UNLOCK);
 			}
 			else
 			{
@@ -2275,6 +2277,7 @@ bool Actor::AirAttack()
 				}
 				SetAction(FAIR);
 				frame = 0;
+				owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
 			}
 		}
 		else
@@ -11358,7 +11361,6 @@ V2d Actor::UpdateReversePhysics()
 
 									if( CanUnlockGate( g ) )
 									{
-										//g->SetLocked( false );
 										UnlockGate( g );
 
 										if( e0 == g->edgeA )
@@ -11393,7 +11395,6 @@ V2d Actor::UpdateReversePhysics()
 							if( e0->edgeType == Edge::CLOSED_GATE )
 							{
 								Gate *g = (Gate*)e0->info;
-								//g->SetLocked( false );
 
 								if( CanUnlockGate( g ) )
 								{
@@ -11454,7 +11455,6 @@ V2d Actor::UpdateReversePhysics()
 
 									if( CanUnlockGate( g ) )
 									{
-										//g->SetLocked( false );
 										UnlockGate( g );
 
 										if( e1 == g->edgeA )
@@ -11495,7 +11495,6 @@ V2d Actor::UpdateReversePhysics()
 
 								if( CanUnlockGate( g ) )
 								{
-									//g->SetLocked( false );
 									UnlockGate( g );
 
 									if( e1 == g->edgeA )
@@ -11659,7 +11658,7 @@ V2d Actor::UpdateReversePhysics()
 								}
 								else
 								{
-									cout << "xx" << endl;
+									//cout << "xx" << endl;
 
 
 									V2d oldv0 = ground->v0;
@@ -13719,7 +13718,6 @@ void Actor::UpdatePhysics()
 								{
 									//cout << "similar secret but not reversed B" << endl;
 									Gate *g = (Gate*)e1->info;
-									//g->SetLocked( false );
 									if( CanUnlockGate( g ) )
 									{
 										UnlockGate( g );
@@ -13761,7 +13759,6 @@ void Actor::UpdatePhysics()
 
 								if( CanUnlockGate( g ) )
 								{
-									//g->SetLocked( false );
 									UnlockGate( g );
 
 									if( e1 == g->edgeA )
@@ -16461,32 +16458,37 @@ void Actor::PhysicsResponse()
 
 			//lock all the gates from this zone now that I chose one
 			
-			owner->SuppressEnemyKeys(g);
+			if (g->IsZoneType())
+			{
 
-			Zone *oldZone;
-			Zone *newZone;
-			if( edge == g->edgeA )
-			{
-				oldZone = g->zoneB;
-				newZone = g->zoneA;	
-			}
-			else
-			{
-				oldZone = g->zoneA;
-				newZone = g->zoneB;
-			}
+				owner->SuppressEnemyKeys(g);
 
-			if (!g->IsTwoWay()) //for secret gates
-			{
-				if (oldZone != NULL && oldZone->active)
+				Zone *oldZone;
+				Zone *newZone;
+				if (edge == g->edgeA)
 				{
-					oldZone->ReformAllGates(g);
+					oldZone = g->zoneB;
+					newZone = g->zoneA;
+				}
+				else
+				{
+					oldZone = g->zoneA;
+					newZone = g->zoneB;
 				}
 
-				owner->keyMarker->SetStartKeysZone(newZone);
-			}
+				if (!g->IsTwoWay()) //for secret gates
+				{
+					if (oldZone != NULL && oldZone->active)
+					{
+						oldZone->ReformAllGates(g);
+					}
 
-			owner->ActivateZone(newZone);
+					owner->keyMarker->SetStartKeysZone(newZone);
+				}
+
+				owner->ActivateZone(newZone);
+
+			}
 			
 			if( g->IsReformingType())
 			{

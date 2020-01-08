@@ -691,6 +691,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void SoftenGates(Gate::GateType gType);
 	void ReformGates(Gate::GateType gType);
 	void OpenGates(Gate::GateType gType);
+	void TotalDissolveGates(Gate::GateType gType);
+	void ReverseDissolveGates(Gate::GateType gType);
+
 
 
 

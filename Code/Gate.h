@@ -30,6 +30,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		//for gates that need to unlock 
 		//and dissolve at the same time
 		TOTALDISSOLVE, 
+		REVERSEDISSOLVE,
 		REFORM,
 		LOCKFOREVER,
 		OPEN,
@@ -43,6 +44,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	bool IsReformingType();
 	bool CanUnlock();
 	bool IsInUnlockableState();
+	
 	V2d GetCenter();
 	//bool keyGate;
 	//int requiredKeys;
@@ -73,6 +75,20 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	void SetLocked( bool on );
 	void Update();
 	void SetNodeSprite(bool active);
+	void UpdateSprite();
+	void UpdateShaders();
+	void CheckSoften();
+
+	void TotalDissolve();
+	void ReverseDissolve();
+	void Soften();
+	void Reform();
+
+	bool IsZoneType();
+
+	bool CanSoften();
+	void ResetAttachedWires();
+	void ActionEnded();
 
 	sf::Shader gateShader;
 	sf::Shader centerShader;
@@ -100,7 +116,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	Gate *next;
 	Gate *prev;
 
-	Gate *activeNext;
+	//Gate *activeNext;
 	//
 	sf::Sprite shardSprite;
 	sf::Sprite shardBGSprite;

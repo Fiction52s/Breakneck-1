@@ -130,7 +130,8 @@ void BirdPreFightScene::UpdateState()
 		ConvUpdate();
 		if (frame == stateLength[BIRDCONV] - 1)
 		{
-			owner->ReformGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			//owner->ReformGates(Gate::CRAWLER_UNLOCK);
 			//owner->currentZone->ReformAllGates();
 		}
 		break;
@@ -140,7 +141,7 @@ void BirdPreFightScene::UpdateState()
 void BirdPreFightScene::StartRunning()
 {
 	//if (zone != NULL)
-	bird->zone->action = Zone::OPEN;
+	//bird->zone->action = Zone::OPEN;
 	owner->OpenGates(Gate::CRAWLER_UNLOCK);
 }
 
@@ -215,6 +216,12 @@ void BirdPostFightScene::UpdateState()
 		ConvUpdate();
 		break;
 	case BIRDLEAVE:
+		if (frame == stateLength[BIRDLEAVE] - 1)
+		{
+			owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+			//owner->SoftenGates(Gate::CRAWLER_UNLOCK);
+		}
+		
 		break;
 	}
 }
