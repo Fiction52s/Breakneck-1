@@ -108,8 +108,7 @@ void CrawlerAttackSeq::ReturnToGame()
 	BasicBossScene::ReturnToGame();
 	queen->StartFight();
 
-	CameraShot *shot = shots["fightcam"];
-	owner->cam.Ease(Vector2f(shot->centerPos), shot->zoom, 60, CubicBezier());
+	EaseShot("fightcam", 60);
 }
 
 void CrawlerAttackSeq::UpdateState()
@@ -164,7 +163,7 @@ void CrawlerAttackSeq::UpdateState()
 	case THROWOUT:
 		if (frame == 0)
 		{	
-			owner->currentZone->ReformAllGates();
+			//owner->currentZone->ReformAllGates();
 
 			player->StartSeqKinThrown(points["crawlersurface"]->pos, V2d(-10, -10));
 		}
@@ -172,6 +171,7 @@ void CrawlerAttackSeq::UpdateState()
 		{
 			owner->AddEnemy(queen);
 			queen->StartInitialUnburrow();
+			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
 		}
 		break;
 	case CRAWLERFACE:

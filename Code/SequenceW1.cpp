@@ -238,6 +238,7 @@ void AfterCrawlerFightSeq::ReturnToGame()
 	SetPlayerStandPoint("kinstand", true);
 	owner->Fade(true, 60, Color::Black);
 	owner->cam.EaseOutOfManual(60);
+	owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
 }
 
 void AfterCrawlerFightSeq::AddPoints()

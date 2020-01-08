@@ -143,19 +143,9 @@ void BirdPreFightScene::UpdateState()
 		if (IsLastFrame())
 		{
 			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
-			//owner->ReformGates(Gate::CRAWLER_UNLOCK);
-			//owner->currentZone->ReformAllGates();
 		}
 		break;
 	}
-}
-
-void BirdPreFightScene::StartRunning()
-{
-	int x = 56;
-	//if (zone != NULL)
-	//bird->zone->action = Zone::OPEN;
-	//owner->OpenGates(Gate::CRAWLER_UNLOCK);
 }
 
 BirdPostFightScene::BirdPostFightScene(GameSession *p_owner)
@@ -176,6 +166,7 @@ void BirdPostFightScene::SetupStates()
 void BirdPostFightScene::ReturnToGame()
 {
 	owner->cam.EaseOutOfManual(60);
+	owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
 	BasicBossScene::ReturnToGame();
 }
 
@@ -229,12 +220,6 @@ void BirdPostFightScene::UpdateState()
 		ConvUpdate();
 		break;
 	case BIRDLEAVE:
-		if (frame == stateLength[BIRDLEAVE] - 1)
-		{
-			owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
-			//owner->SoftenGates(Gate::CRAWLER_UNLOCK);
-		}
-		
 		break;
 	}
 }

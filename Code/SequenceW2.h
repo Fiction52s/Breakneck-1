@@ -27,7 +27,6 @@ struct BirdPreFightScene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
-	void StartRunning();
 
 	BirdBoss *bird;
 };
