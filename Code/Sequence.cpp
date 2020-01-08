@@ -584,7 +584,7 @@ void BasicBossScene::ConvUpdate()
 		}
 		else
 		{
-			frame = stateLength[state] - 1;
+			EndCurrState();
 		}
 	}
 }
@@ -790,6 +790,31 @@ void BasicBossScene::Flash(const std::string &flashName)
 	assert(flashes.count(flashName) == 1);
 
 	flashes[flashName]->Flash();
+}
+
+void BasicBossScene::EndCurrState()
+{
+	int sLen = stateLength[state];
+	if (sLen == -1)
+	{
+		frame = -2;
+	}
+	else
+	{
+		frame = stateLength[state] - 1;
+	}
+}
+
+bool BasicBossScene::IsLastFrame()
+{
+	int sLen = stateLength[state];
+
+	return frame == (sLen - 1);
+}
+
+bool BasicBossScene::IsCamMoving()
+{
+	return owner->cam.easing;
 }
 
 void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)

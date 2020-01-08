@@ -145,6 +145,9 @@ struct BasicBossScene : Sequence
 	virtual void AddMovies() {}
 	virtual void SpecialInit(){}
 	virtual void ConvUpdate();
+	void EndCurrState();
+	bool IsCamMoving();
+	bool IsLastFrame();
 	static BasicBossScene *CreateScene(
 		GameSession *owner, const std::string &name);
 	virtual void Draw(sf::RenderTarget *target,

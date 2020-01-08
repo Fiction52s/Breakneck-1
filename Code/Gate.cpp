@@ -29,10 +29,6 @@ Gate::Gate( GameSession *p_owner, GateType p_type )
 {
 	visible = true;
 	blackGate = NULL;
-	//breakFrame = 0;
-	flowFrame = 0;
-	//this could just be temporary
-	int t = (int)p_type;
 
 	edgeA = NULL;
 	edgeB = NULL;
@@ -44,39 +40,27 @@ Gate::Gate( GameSession *p_owner, GateType p_type )
 	stateLength[HARD] = 61;
 	stateLength[SOFTEN] = 61;
 	stateLength[SOFT] = 11 * 3;
-	//stateLength[DISSOLVE] = ;
 	stateLength[TOTALDISSOLVE] = 61;
 	stateLength[REFORM] = 7 * 3;
 	stateLength[LOCKFOREVER] = 1;
 	stateLength[OPEN] = 1;
-
-	
-	if( type != BLACK )
-	{
-		gState = HARD;
-	}
-	else
-	{
-		gState = LOCKFOREVER;
-
-	}
 	
 	if (!gateShader.loadFromFile("Resources/Shader/gate_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "failed to load gate shader" << endl;
 		assert(0);
 	}
-	gateShader.setUniform("fadeQuant", 0.f);
 
 	if (!centerShader.loadFromFile("Resources/Shader/gatecenter_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "failed to load gate center shader" << endl;
 		assert(0);
 	}
-	centerShader.setUniform("breakQuant", 0.f);
 
 	gQuads = NULL;
-	frame = 0;
+	
+
+	//Reset();
 }
 
 Gate::~Gate()
@@ -98,9 +82,20 @@ void Gate::Reset()
 	flowFrame = 0;
 	frame = 0;
 
-	SetLocked(true);
-	if (type != Gate::BLACK)
-		gState = Gate::HARD;
+	if (!IsZoneType())
+	{
+		gState = OPEN;
+		SetLocked(false);
+	}
+	else if (type == BLACK)
+	{
+		gState = LOCKFOREVER;
+	}
+	else
+	{
+		gState = HARD;
+		SetLocked(true);
+	}
 }
 
 void Gate::ActionEnded()
@@ -177,6 +172,16 @@ void Gate::Reform()
 	frame = 0;
 	float aa = .5;
 	centerShader.setUniform("breakPosQuant", aa);
+}
+
+void Gate::Close()
+{
+	gState = Gate::HARD;
+	frame = 0;
+	centerShader.setUniform("breakQuant", 0.f);
+	gateShader.setUniform("fadeQuant", 0.f);
+	flowFrame = 0;
+	SetLocked(true);
 }
 
 void Gate::Update()
@@ -596,7 +601,6 @@ void Gate::UpdateLine()
 		shardSprite.setPosition(Vector2f(center));
 		break;
 	}
-	case CRAWLER_UNLOCK:
 	case SECRET:
 	{
 		c = Color::Transparent;
@@ -612,6 +616,22 @@ void Gate::UpdateLine()
 
 		tileHeight = 128;
 
+		break;
+	}
+	case CRAWLER_UNLOCK:
+	{
+		c = Color::Blue;
+		ts = owner->GetTileset("Zone/gate_blue_128x128.png", 128, 128);
+
+		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
+		gateShader.setUniform("u_texture", *tts->texture);
+		gateShader.setUniform("tile", 1.f);
+		//gateShader.setUniform("fadeQuant", 1.f);
+
+		centerShader.setUniform("u_texture", *tts->texture);
+		frame = 0;
+
+		tileHeight = 128;
 		break;
 	}
 	case KEYGATE:

@@ -41,9 +41,9 @@ void BirdPreFightScene::SetupStates()
 
 	stateLength[ENTRANCE] = -1;
 	stateLength[WAIT] = 1;
-	stateLength[BIRDWALK] = 30;
-	stateLength[BIRDFALL] = 30;
-	stateLength[BIRDCONV] = 1000000;
+	stateLength[BIRDWALK] = 120;
+	stateLength[BIRDFALL] = 60;
+	stateLength[BIRDCONV] = -1;
 
 	BirdPostFightScene *scene = new BirdPostFightScene(owner);
 	scene->Init();
@@ -54,6 +54,9 @@ void BirdPreFightScene::SetupStates()
 
 void BirdPreFightScene::AddShots()
 {
+	AddShot("birdstart");
+	AddShot("birdstop");
+	AddShot("birdland");
 	AddShot("scenecam");
 	AddShot("fightcam");
 }
@@ -67,7 +70,6 @@ void BirdPreFightScene::AddPoints()
 void BirdPreFightScene::AddGroups()
 {
 	AddGroup("pre_fight", "W2/w2_bird_fight_pre");
-	//AddGroup("post_fight", "W2/w2_bird_fight_pre");
 	SetConvGroup("pre_fight");
 }
 
@@ -119,16 +121,26 @@ void BirdPreFightScene::UpdateState()
 	case BIRDWALK:
 		if (frame == 0)
 		{
-			//owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
-			//player->desperationMode = false;
-			//player->StartAction(Actor::SEQ_LOOKUP);
+			EaseShot("birdstart", 60);
+		}
+		else if (frame == 60)
+		{
+			EaseShot("birdstop", 60);
 		}
 		break;
 	case BIRDFALL:
+		if (frame == 0)
+		{
+			EaseShot("birdland", 60);
+		}
+		else if (IsLastFrame())
+		{
+			EaseShot("scenecam", 60);
+		}
 		break;
 	case BIRDCONV:
 		ConvUpdate();
-		if (frame == stateLength[BIRDCONV] - 1)
+		if (IsLastFrame())
 		{
 			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
 			//owner->ReformGates(Gate::CRAWLER_UNLOCK);
@@ -140,9 +152,10 @@ void BirdPreFightScene::UpdateState()
 
 void BirdPreFightScene::StartRunning()
 {
+	int x = 56;
 	//if (zone != NULL)
 	//bird->zone->action = Zone::OPEN;
-	owner->OpenGates(Gate::CRAWLER_UNLOCK);
+	//owner->OpenGates(Gate::CRAWLER_UNLOCK);
 }
 
 BirdPostFightScene::BirdPostFightScene(GameSession *p_owner)

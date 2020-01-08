@@ -83,6 +83,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	void ReverseDissolve();
 	void Soften();
 	void Reform();
+	void Close();
 
 	bool IsZoneType();
 

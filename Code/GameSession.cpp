@@ -1575,6 +1575,8 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		cout << "inserting gate: " << gate->edgeA << endl;
 		gateTree->Insert( gate );
 
+		gate->Reset();
+
 		//gateMap[gate->edgeA] = gate;
 		//gateMap[gate->edgeB] = gate;
 	}
@@ -4301,10 +4303,12 @@ bool GameSession::OpenFile( string fileName )
 		CreateZones();
 		SetupZones();
 
-		for( int i = 0; i < numGates; ++i )
+		/*for( int i = 0; i < numGates; ++i )
 		{
 			Gate *g = gates[i];
-		}
+			
+		}*/
+		//OpenGates(Gate::CRAWLER_UNLOCK);
 
 		return true;
 	}
@@ -4400,9 +4404,9 @@ void GameSession::CreateZones()
 	for (int i = 0; i < numGates; ++i)
 	{
 		Gate *g = gates[i];
-		if (g->type == Gate::CRAWLER_UNLOCK)
+		if (!g->IsZoneType() )
 		{
-			UnlockGate(g);
+			//UnlockGate(g);
 		}
 	}
 	//OpenGates(Gate::CRAWLER_UNLOCK);
@@ -5000,9 +5004,9 @@ void GameSession::CreateZones()
 	for (int i = 0; i < numGates; ++i)
 	{
 		Gate *g = gates[i];
-		if (g->type == Gate::CRAWLER_UNLOCK)
+		if (!g->IsZoneType())
 		{
-			LockGate(g);
+			//LockGate(g);
 		}
 	}
 	/*cout << "gate testing: " << endl;
@@ -8360,9 +8364,6 @@ int GameSession::Run()
 					//cout << "drawing color: " << gateList->c.b << endl;
 					sf::Vertex activePreview[4] =
 					{
-						//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
-						//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
-
 						sf::Vertex(sf::Vector2<float>( leftGround.x, leftGround.y ), gateList->c ),
 						sf::Vertex(sf::Vector2<float>( leftAir.x, leftAir.y ), gateList->c ),
 
@@ -9844,6 +9845,16 @@ void GameSession::ReformGates(Gate::GateType gType)
 	}
 }
 
+void GameSession::CloseGates(Gate::GateType gType)
+{
+	Gate *g;
+	for (int i = 0; i < numGates; ++i)
+	{
+		g = gates[i];
+		g->Close();
+	}
+}
+
 void GameSession::TotalDissolveGates(Gate::GateType gType)
 {
 	Gate *g;
@@ -10516,6 +10527,8 @@ void GameSession::NextFrameRestartLevel()
 void GameSession::RestartLevel()
 {
 	
+	//OpenGates(Gate::CRAWLER_UNLOCK);
+
 	ClearEmitters();
 	//AddEmitter(testEmit, EffectLayer::IN_FRONT);
 	//testEmit->Reset();
@@ -13015,7 +13028,7 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 	}
 	else if( rayMode == "energy_flow" )
 	{
-		if( edge->edgeType == Edge::CLOSED_GATE )
+		if( edge->edgeType == Edge::CLOSED_GATE || edge->edgeType == Edge::OPEN_GATE )
 		{
 			return;
 		}

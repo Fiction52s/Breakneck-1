@@ -49,6 +49,7 @@ QuadTree::QuadTree( int p_width, int p_height, V2d pos )
 	startNode = new LeafNode( center, width, height);
 	startNode->parent = NULL;//testTree->parent = NULL;
 	//testTree->debug = rw;
+	numMembers = 0;
 
 }
 
@@ -206,6 +207,7 @@ QNode *QuadTree::rInsert( QNode *node, QuadTreeEntrant *qte )
 void QuadTree::Insert( QuadTreeEntrant *qte )
 {
 //	cout << "starting insert!" << endl;
+	numMembers++;
 	startNode = rInsert( startNode, qte );
 }
 
@@ -284,7 +286,7 @@ void QuadTree::Clear()
 
 	rClear(startNode);
 
-	
+	numMembers = 0;
 	startNode = new LeafNode(center, width, height);
 	startNode->parent = NULL;//testTree->parent = NULL;
 	
