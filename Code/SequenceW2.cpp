@@ -1,29 +1,11 @@
-#include "GameSession.h"
-#include <fstream>
-#include <iostream>
-#include <assert.h>
-#include "Actor.h"
-#include "poly2tri/poly2tri.h"
-#include "VectorMath.h"
-#include "Camera.h"
-#include <sstream>
-#include <ctime>
-#include <boost/bind.hpp>
-#include "Zone.h"
-#include "PowerOrbs.h"
 #include "SequenceW2.h"
-#include "SoundManager.h"
-#include "BarrierReactions.h"
-#include "EnvEffects.h"
-#include "SaveFile.h"
+#include "Actor.h"
+#include "GameSession.h"
 #include "MainMenu.h"
-#include "GoalExplosion.h"
-#include "PauseMenu.h"
-#include "Parallax.h"
-#include "Movement.h"
-#include "ScoreDisplay.h"
-#include "HUD.h"
+#include "Config.h"
+#include "MusicPlayer.h"
 #include "ImageText.h"
+#include "HUD.h"
 #include "Enemy_BirdBoss.h"
 
 using namespace sf;
@@ -63,8 +45,7 @@ void BirdPreFightScene::AddShots()
 
 void BirdPreFightScene::AddPoints()
 {
-	AddPoint("kinstart");
-	AddPoint("kinstop");
+	AddStartAndStopPoints();
 }
 
 void BirdPreFightScene::AddGroups()

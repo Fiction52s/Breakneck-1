@@ -177,6 +177,12 @@ struct BasicBossScene : Sequence
 		const std::string &groupName);
 	void AddShot(const std::string &shotName);
 	void AddPoint(const std::string &poiName);
+	void SetEntranceIndex(int ind);
+	void AddStartPoint();
+	void AddStopPoint();
+	void AddStandPoint();
+	void AddStartAndStopPoints();
+	void SetPlayerStandDefaultPoint(bool fr);
 	void AddFlashedImage(const std::string &imageName,
 		Tileset *ts, int tileIndex,
 		int appearFrames,
@@ -211,6 +217,7 @@ struct BasicBossScene : Sequence
 	int state;
 	int *stateLength;//[Count];
 	int numStates;
+	int entranceIndex;
 
 
 	std::map<std::string, ConversationGroup*> groups;

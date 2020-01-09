@@ -35,6 +35,7 @@
 
 #include "SequenceW1.h"
 #include "SequenceW2.h"
+#include "SequenceW3.h"
 
 using namespace sf;
 using namespace std;
@@ -51,6 +52,18 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	else if (name == "crawlerscene0")
 	{
 		bScene = new CrawlerAttackSeq(owner);
+	}
+	else if (name == "coyotescene0")
+	{
+		bScene = new CoyoteSleepScene(owner);
+	}
+	else if (name == "coyotescene1")
+	{
+		bScene = new CoyotePreFightScene(owner);
+	}
+	else if (name == "coyotescene2")
+	{
+		bScene = new CoyoteAndSkeletonScene(owner);
 	}
 	else
 	{
@@ -365,6 +378,7 @@ BasicBossScene::BasicBossScene(GameSession *p_owner,
 	state = 0;
 	numStates = 0;
 	stateLength = NULL;
+	entranceIndex = 0;
 }
 
 void BasicBossScene::Reset()
@@ -623,17 +637,59 @@ void BasicBossScene::SetCameraShot(const std::string &n)
 
 void BasicBossScene::SetEntranceRun()
 {
-	StartEntranceRun(true, 10.0, "kinstart", "kinstop");
+	string entranceIndexStr = to_string(entranceIndex);
+	string startStr = "kinstart" + entranceIndexStr;
+	string endStr = "kinstop" + entranceIndexStr;
+
+	StartEntranceRun(true, 10.0, startStr, endStr);
+}
+
+void BasicBossScene::SetEntranceIndex(int ind)
+{
+	entranceIndex = ind;
 }
 
 void BasicBossScene::SetEntranceStand()
 {
-	StartEntranceStand(true, "kinstand");
+	string standString = "kinstand" + to_string(entranceIndex);
+
+	StartEntranceStand(true, standString);
+}
+
+void BasicBossScene::AddStartPoint()
+{
+	string startStr = "kinstart" + to_string(entranceIndex);
+	AddPoint(startStr);
+}
+
+void BasicBossScene::AddStopPoint()
+{
+	string stopStr = "kinstop" + to_string(entranceIndex);
+	AddPoint(stopStr);
+}
+
+void BasicBossScene::AddStandPoint()
+{
+	string standStr = "kinstand" + to_string(entranceIndex);
+	AddPoint(standStr);
+}
+
+void BasicBossScene::AddStartAndStopPoints()
+{
+	AddStartPoint();
+	AddStopPoint();
 }
 
 void BasicBossScene::SetEntranceShot()
 {
-	SetCameraShot("scenecam");
+	//if (shots.count("scenecam") == 1)
+	{
+		SetCameraShot("scenecam");
+	}
+	//else
+	{
+		//assert(0);
+	}
 }
 
 
@@ -673,6 +729,12 @@ void BasicBossScene::SetPlayerStandPoint(const std::string &n,
 	PoiInfo *pi = points[n];
 	Actor *player = owner->GetPlayer(0);
 	player->SetStandInPlacePos(pi->edge, pi->edgeQuantity, fr);
+}
+
+void BasicBossScene::SetPlayerStandDefaultPoint(bool fr)
+{
+	string standStr = "kinstand" + to_string(entranceIndex);
+	SetPlayerStandPoint(standStr, fr);
 }
 
 void BasicBossScene::ReturnToGame()

@@ -209,6 +209,10 @@ void EditSession::AddGeneralEnemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Ship/shipleave_128x128.png", 128, 128));
 
+	//AddExtraEnemy("dudgoal", LoadParams<ShipPickupParams>, MakeParamsGrounded<ShipPickupParams>, NULL,
+	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+	//	GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
+
 	AddExtraEnemy("shard", LoadParams<ShardParams>, NULL, MakeParamsAerial<ShardParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 3,
 		GetTileset("Shard/shards_w1_192x192.png", 192, 192));
@@ -1607,13 +1611,13 @@ void EditSession::WriteFile(string fileName)
 		}
 	}
 
-	if( !hasGoal )
+	/*if( !hasGoal )
 	{
 		MessagePop( "Map not saved because no goal is in place. \nPlease add it from the CREATE ENEMIES mode." );
 		cout << "you need to place a goal in the map. file not written to!. add a popup to this alert later"
 			<< endl;
 		return;
-	}
+	}*/
 
 	ofstream of;
 	of.open(fileName);
