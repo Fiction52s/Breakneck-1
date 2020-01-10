@@ -120,6 +120,7 @@ void CoyotePreFightScene::SetupStates()
 	stateLength[ENTRANCE] = -1;
 	stateLength[WAIT] = 1;
 	stateLength[COYOTECONV] = -1;
+	stateLength[COYOTEFACES] = -1;
 
 	CoyotePostFightScene *scene = new CoyotePostFightScene(owner);
 	scene->Init();
@@ -149,6 +150,19 @@ void CoyotePreFightScene::AddEnemies()
 
 void CoyotePreFightScene::AddFlashes()
 {
+	AddFlashedImage("stare0", owner->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
+		0, 30, 10, 30, Vector2f(960, 540));
+
+	AddFlashedImage("stare1", owner->GetTileset("Bosses/Coyote/Coy_10b.png", 1920, 1080),
+		0, 30, 10, 30, Vector2f(960, 540));
+
+	AddFlashedImage("stare2", owner->GetTileset("Bosses/Coyote/Coy_11b.png", 1920, 1080),
+		0, 30, 10, 30, Vector2f(960, 540));
+
+	FlashGroup * group = AddFlashGroup("staregroup");
+	AddFlashToGroup(group, "stare0");
+	AddFlashToGroup(group, "stare1");
+	AddFlashToGroup(group, "stare2");
 }
 
 void CoyotePreFightScene::ReturnToGame()
@@ -170,6 +184,7 @@ void CoyotePreFightScene::UpdateState()
 		}
 		EntranceUpdate();
 		break;
+	
 	case COYOTECONV:
 		ConvUpdate();
 		if (IsLastFrame())
@@ -177,6 +192,21 @@ void CoyotePreFightScene::UpdateState()
 			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
 		}
 		break;
+	case COYOTEFACES:
+	{
+		if (frame == 0)
+		{
+			SetFlashGroup("staregroup");
+		}
+		else
+		{
+			if (currFlashGroup == NULL)
+			{
+				EndCurrState();
+			}
+		}
+		break;
+	}
 	}
 }
 
@@ -259,10 +289,10 @@ void CoyotePostFightScene::UpdateState()
 	case NEXUSEXPLODE:
 		RumbleDuringState(3, 3);
 		break;
-	//case COYOTECONV1:
-		
-	//	ConvUpdate();
-	//	break;
+		//case COYOTECONV1:
+
+		//	ConvUpdate();
+		//	break;
 	case COYOTELEAVE:
 		break;
 	}
@@ -280,7 +310,7 @@ void CoyoteAndSkeletonScene::SetupStates()
 
 	stateLength[ENTRANCE] = -1;
 	stateLength[WAIT] = 1;
-	stateLength[SHOWIMAGE] = 120;
+	stateLength[SHOWIMAGE] = -1;
 	stateLength[SKELECOYCONV] = -1;
 }
 
@@ -306,6 +336,23 @@ void CoyoteAndSkeletonScene::AddEnemies()
 
 void CoyoteAndSkeletonScene::AddFlashes()
 {
+	float scrollAmount = 1080;
+	float scrollFrames = 4 * 60;
+	float scrollRate = scrollAmount / scrollFrames;
+
+	int fadeOutFrames = 60;
+	int fadeInFrames = 60;
+
+	int holdFrames = scrollFrames + 60;
+
+	AddFlashedImage("screen0", owner->GetTileset("Bosses/Coyote/coyskeleton1.png", 1920, 1080),
+		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540));
+	flashes["screen0"]->AddPanY(scrollRate, fadeInFrames, scrollFrames);
+
+	AddFlashedImage("screen1", owner->GetTileset("Bosses/Coyote/coyskeleton2.png", 1920, 1080),
+		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540 - 1080));
+	flashes["screen1"]->AddPanY(scrollRate, fadeInFrames, scrollFrames);
+	//flashes["screen1"]->SetDetailedPanY(0, scrollRate, 0);
 }
 
 void CoyoteAndSkeletonScene::ReturnToGame()
@@ -328,7 +375,18 @@ void CoyoteAndSkeletonScene::UpdateState()
 		EntranceUpdate();
 		break;
 	case SHOWIMAGE:
+	{
+		if (frame == 0)
+		{
+			Flash("screen0");
+			Flash("screen1");
+		}
+		else if(flashes["screen0"]->IsDone() && flashes["screen1"]->IsDone())
+		{
+			EndCurrState();	
+		}
 		break;
+	}
 	case SKELECOYCONV:
 		ConvUpdate();
 		if (IsLastFrame())

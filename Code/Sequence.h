@@ -19,6 +19,20 @@ struct StorySequence;
 struct Conversation;
 struct Enemy;
 
+struct PanInfo
+{
+	PanInfo(sf::Vector2f &v,
+		int start, int len)
+	{
+		velocity = v;
+		startFrame = start;
+		frameLength = len;
+	}
+	sf::Vector2f velocity;
+	int startFrame;
+	int frameLength;
+};
+
 struct FlashedImage
 {
 	FlashedImage( Tileset *ts,
@@ -26,6 +40,7 @@ struct FlashedImage
 		int holdFrames,
 		int disappearFrames,
 		sf::Vector2f &pos );
+	~FlashedImage();
 	void Reset();
 	void Flash();
 	void Update();
@@ -35,6 +50,20 @@ struct FlashedImage
 	void StopHolding();
 	bool IsHolding();
 	bool IsFadingIn();
+	void AddPan(sf::Vector2f &pVel,
+		int startFrame, int frameLength );
+	void AddPanX(float x,
+		int startFrame, int frameLength);
+	void AddPanY(float y,
+		int startFrame, int frameLength);
+
+	std::list<PanInfo*> panList;
+
+	sf::Vector2f origPos;
+	sf::Vector2f position;
+
+	PanInfo * currPan;
+
 	sf::Sprite spr;
 	int frame;
 	bool flashing;
@@ -177,7 +206,7 @@ struct BasicBossScene : Sequence
 	void AddStandPoint();
 	void AddStartAndStopPoints();
 	void SetPlayerStandDefaultPoint(bool fr);
-	void AddFlashedImage(const std::string &imageName,
+	FlashedImage * AddFlashedImage(const std::string &imageName,
 		Tileset *ts, int tileIndex,
 		int appearFrames,
 		int holdFrames,

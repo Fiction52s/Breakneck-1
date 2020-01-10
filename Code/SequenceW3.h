@@ -33,6 +33,7 @@ struct CoyotePreFightScene : BasicBossScene
 		ENTRANCE,
 		WAIT,
 		COYOTECONV,
+		COYOTEFACES,
 		Count
 	};
 

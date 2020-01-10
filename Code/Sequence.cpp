@@ -297,13 +297,22 @@ FlashedImage::FlashedImage(Tileset *ts,
 	spr.setTexture(*ts->texture);
 	spr.setTextureRect(ts->GetSubRect(tileIndex));
 	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
-	spr.setPosition(pos);
+
+	origPos = pos;
 
 	Reset();
 
 	aFrames = appearFrames;
 	hFrames = holdFrames;
 	dFrames = disappearFrames;
+}
+
+FlashedImage::~FlashedImage()
+{
+	for (auto it = panList.begin(); it != panList.end(); ++it)
+	{
+		delete (*it);
+	}
 }
 
 bool FlashedImage::IsDone()
@@ -320,6 +329,27 @@ void FlashedImage::Reset()
 {
 	frame = 0;
 	flashing = false;
+	position = origPos;
+	spr.setPosition(position);
+	currPan = NULL;
+}
+
+void FlashedImage::AddPan(sf::Vector2f &pVel,
+	int startFrame, int frameLength)
+{
+	panList.push_back(new PanInfo(pVel, startFrame, frameLength));
+}
+
+void FlashedImage::AddPanX(float x,
+	int startFrame, int frameLength)
+{
+	panList.push_back(new PanInfo(Vector2f( x, 0 ), startFrame, frameLength));
+}
+
+void FlashedImage::AddPanY(float y,
+	int startFrame, int frameLength)
+{
+	panList.push_back(new PanInfo(Vector2f( 0, y ), startFrame, frameLength));
 }
 
 void FlashedImage::Flash()
@@ -349,6 +379,14 @@ void FlashedImage::Update()
 	if (!flashing)
 		return;
 
+	for (auto it = panList.begin(); it != panList.end(); ++it)
+	{
+		if ((*it)->startFrame == frame)
+		{
+			currPan = (*it);
+		}
+	}
+
 	int a = 0;
 	if (IsFadingIn())
 	{
@@ -358,7 +396,7 @@ void FlashedImage::Update()
 	{
 		a = 255;
 	}
-	else
+	else //fading out
 	{
 		int fr = frame - (aFrames + hFrames);
 		a = (1.f - fr / (float)dFrames) * 255.f;
@@ -368,6 +406,22 @@ void FlashedImage::Update()
 	if (frame == aFrames + hFrames + dFrames)
 	{
 		flashing = false;
+	}
+
+	float tStep = TIMESTEP;
+
+	if (currPan != NULL)
+	{
+		int fr = frame - currPan->startFrame;
+		if (fr > currPan->frameLength)
+		{
+			currPan = NULL;
+		}
+		else
+		{
+			position += currPan->velocity;
+			spr.setPosition(position);
+		}
 	}
 
 	++frame;
@@ -562,7 +616,7 @@ void BasicBossScene::SetConvGroup(const std::string &groupName)
 	currConvGroup = groups[groupName];
 }
 
-void BasicBossScene::AddFlashedImage(const std::string &imageName, Tileset *ts, int tileIndex,
+FlashedImage * BasicBossScene::AddFlashedImage(const std::string &imageName, Tileset *ts, int tileIndex,
 	int appearFrames, int holdFrames, int disappearFrames, sf::Vector2f &pos)
 {
 	assert(flashes.count(imageName) == 0);
@@ -570,6 +624,8 @@ void BasicBossScene::AddFlashedImage(const std::string &imageName, Tileset *ts, 
 	FlashedImage *fi = new FlashedImage(ts, tileIndex, appearFrames, holdFrames, disappearFrames, pos);
 	flashes[imageName] = fi;
 	flashList.push_back(fi);
+
+	return fi;
 }
 
 void BasicBossScene::AddGroup(const std::string &groupName, const std::string &fileName)

@@ -9823,8 +9823,8 @@ void Actor::HandleWaitingScoreDisplay()
 void Actor::EndLevelWithoutGoal()
 {
 	owner->scoreDisplay->Activate();
-	player->SetAction(Actor::GOALKILLWAIT);
-	player->frame = 0;
+	SetAction(Actor::GOALKILLWAIT);
+	frame = 0;
 }
 
 void Actor::SetStandInPlacePos(Edge *g, double q,
