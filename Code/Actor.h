@@ -612,6 +612,8 @@ struct Actor : QuadTreeCollider,
 	void SetActionGrind();
 	bool CanUnlockGate( Gate *g );
 
+	void HandleWaitingScoreDisplay();
+	void EndLevelWithoutGoal();
 
 
 	void CheckHoldJump();

@@ -1971,10 +1971,6 @@ void Actor::ActionEnded()
 		case EXIT:
 			SetAction(EXITWAIT);
 			frame = 0;
-			//owner->ActivateEffect( EffectLayer::IN_FRONT, owner->GetTileset( ))
-			//owner->goalDestroyed = true;
-			
-			//frame = 0;
 			break;
 		case EXITBOOST:
 			
@@ -3000,41 +2996,12 @@ void Actor::UpdatePrePhysics()
 		}*/
 		if( action == WAITFORSHIP )
 		{ 
-			if (owner->scoreDisplay->waiting)
+			HandleWaitingScoreDisplay();
+
+			if (!owner->scoreDisplay->active)
 			{
-				ControllerState &unfilteredCurr = owner->GetCurrInputUnfiltered(0);
-				ControllerState &unfiltetedPrev = owner->GetPrevInputUnfiltered(0);
-				bool a = unfilteredCurr.A && !unfiltetedPrev.A;
-				bool x = unfilteredCurr.X && !unfiltetedPrev.X;
-				bool b = unfilteredCurr.B && !unfiltetedPrev.B;
-				if ( a || x )
-				{
-					bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
-					if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
-					{
-						owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
-					}
-					else if (x)
-					{
-						owner->resType = GameSession::GameResultType::GR_WIN;
-					}
-					
-					//owner->scoreDisplay->Reset();
-					owner->scoreDisplay->Deactivate();
-					owner->SetActiveSequence(owner->shipExitSeq);
-					owner->shipExitSeq->Reset();
-				}
-				else if (b)
-				{
-					if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-					{
-						SaveFile *currFile = owner->GetCurrentProgress();
-						owner->mainMenu->worldMap->CompleteCurrentMap(currFile, owner->totalFramesBeforeGoal);
-						currFile->Save();
-					}
-					owner->NextFrameRestartLevel();
-					return;
-				}
+				owner->SetActiveSequence(owner->shipExitSeq);
+				owner->shipExitSeq->Reset();
 			}
 		}
 		if( action == INTRO && frame == 0 )
@@ -3068,42 +3035,7 @@ void Actor::UpdatePrePhysics()
 	}
 	else if( action == GOALKILLWAIT )
 	{
-		ControllerState &unfilteredCurr = owner->GetCurrInputUnfiltered(0);
-		ControllerState &unfilteredPrev = owner->GetPrevInputUnfiltered(0);
-		bool a = unfilteredCurr.A && !unfilteredPrev.A;
-		bool x = unfilteredCurr.X && !unfilteredPrev.X;
-		bool b = unfilteredCurr.B && !unfilteredPrev.B;
-
-		if (owner->scoreDisplay->waiting)
-		{
-			if (a || x)
-			{
-				//owner->scoreDisplay->Reset();
-				bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
-				if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE
-					&& levValid)
-				{
-					owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
-				}
-				else
-				{
-					owner->resType = GameSession::GameResultType::GR_WIN;
-				}
-				owner->scoreDisplay->Deactivate();
-				//owner->scoreDisplay->Activate();
-			}
-			else if (b)
-			{
-				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
-				{
-					SaveFile *currFile = owner->GetCurrentProgress();
-					owner->mainMenu->worldMap->CompleteCurrentMap(currFile, owner->totalFramesBeforeGoal);
-					currFile->Save();
-				}
-				owner->NextFrameRestartLevel();
-				return;
-			}
-		}
+		HandleWaitingScoreDisplay();
 		
 		if( !owner->scoreDisplay->active )
 		{
@@ -9847,6 +9779,52 @@ bool Actor::HasPower(int index)
 	case 5:
 		return hasPowerLeftWire || hasPowerRightWire;
 	}
+}
+
+
+void Actor::HandleWaitingScoreDisplay()
+{
+	if (owner->scoreDisplay->waiting)
+	{
+		ControllerState &unfilteredCurr = owner->GetCurrInputUnfiltered(0);
+		ControllerState &unfiltetedPrev = owner->GetPrevInputUnfiltered(0);
+		bool a = unfilteredCurr.A && !unfiltetedPrev.A;
+		bool x = unfilteredCurr.X && !unfiltetedPrev.X;
+		bool b = unfilteredCurr.B && !unfiltetedPrev.B;
+		if (a || x)
+		{
+			bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
+			if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
+			{
+				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+			}
+			else if (x)
+			{
+				owner->resType = GameSession::GameResultType::GR_WIN;
+			}
+
+			//owner->scoreDisplay->Reset();
+			owner->scoreDisplay->Deactivate();
+		}
+		else if (b)
+		{
+			if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+			{
+				SaveFile *currFile = owner->GetCurrentProgress();
+				owner->mainMenu->worldMap->CompleteCurrentMap(currFile, owner->totalFramesBeforeGoal);
+				currFile->Save();
+			}
+			owner->NextFrameRestartLevel();
+			return;
+		}
+	}
+}
+
+void Actor::EndLevelWithoutGoal()
+{
+	owner->scoreDisplay->Activate();
+	player->SetAction(Actor::GOALKILLWAIT);
+	player->frame = 0;
 }
 
 void Actor::SetStandInPlacePos(Edge *g, double q,

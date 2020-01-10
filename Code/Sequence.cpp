@@ -274,6 +274,20 @@ void ShipExitSeq::Reset()
 	storySeq->Reset();
 }
 
+void FlashGroup::Reset()
+{
+	if (fList.size() > 0)
+	{
+		currFlash = fList.begin();
+	}
+	done = false;
+}
+
+bool FlashGroup::IsDone()
+{
+	return done;
+}
+
 FlashedImage::FlashedImage(Tileset *ts,
 	int tileIndex, int appearFrames,
 	int holdFrames,
@@ -312,6 +326,7 @@ void FlashedImage::Flash()
 {
 	flashing = true;
 	frame = 0;
+	spr.setColor(Color(255, 255, 255, 0));
 }
 
 bool FlashedImage::IsFadingIn()
@@ -404,8 +419,15 @@ void BasicBossScene::Reset()
 	{
 		(*it).second->stop();
 	}
+
+	for (auto it = flashGroups.begin(); it != flashGroups.end(); ++it)
+	{
+		(*it).second->Reset();
+	}
 	cIndex = 0;
 	currMovie = NULL;
+
+	currFlashGroup = NULL;
 }
 
 BasicBossScene::~BasicBossScene()
@@ -421,6 +443,11 @@ BasicBossScene::~BasicBossScene()
 	}
 
 	for (auto it = movies.begin(); it != movies.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = flashGroups.begin(); it != flashGroups.end(); ++it)
 	{
 		delete (*it).second;
 	}
@@ -803,9 +830,11 @@ bool BasicBossScene::Update()
 		}
 	}
 
-	UpdateState();
-
 	UpdateFlashes();
+
+	UpdateFlashGroup();
+
+	UpdateState();
 
 	++frame;
 
@@ -854,6 +883,45 @@ void BasicBossScene::Flash(const std::string &flashName)
 	flashes[flashName]->Flash();
 }
 
+void BasicBossScene::SetFlashGroup( const std::string & n )
+{
+	currFlashGroup = flashGroups[n];
+
+	(*currFlashGroup->currFlash)->Flash();
+}
+
+void BasicBossScene::UpdateFlashGroup()
+{
+	//assert(currFlashGroup != NULL);
+
+	if (currFlashGroup == NULL)
+	{
+		return;
+	}
+
+	
+	FlashedImage *fg = (*currFlashGroup->currFlash);
+
+	//cout << "updating" << endl;
+
+	if (fg->IsDone())
+	{
+		currFlashGroup->currFlash++;
+		if (currFlashGroup->currFlash == currFlashGroup->fList.end())
+		{
+			currFlashGroup->done = true;
+			currFlashGroup = NULL;
+			//cout << "end" << endl;
+		}
+		else
+		{
+			(*currFlashGroup->currFlash)->Flash();
+
+			//cout << "next" << endl;
+		}
+	}
+}
+
 void BasicBossScene::EndCurrState()
 {
 	int sLen = stateLength[state];
@@ -877,6 +945,23 @@ bool BasicBossScene::IsLastFrame()
 bool BasicBossScene::IsCamMoving()
 {
 	return owner->cam.easing;
+}
+
+FlashGroup * BasicBossScene::AddFlashGroup(const std::string &n)
+{
+	assert(flashGroups.count(n) == 0);
+
+	FlashGroup *fg = new FlashGroup();
+	flashGroups[n] = fg;
+	return fg;
+}
+
+void BasicBossScene::AddFlashToGroup(FlashGroup *fGroup,
+	const std::string &n)
+{
+	assert(flashes.count(n) == 1);
+
+	fGroup->fList.push_back(flashes[n]);
 }
 
 void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)

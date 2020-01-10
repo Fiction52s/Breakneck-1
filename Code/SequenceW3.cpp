@@ -6,6 +6,7 @@
 #include "MusicPlayer.h"
 #include "ImageText.h"
 #include "HUD.h"
+#include "ScoreDisplay.h"
 
 using namespace sf;
 using namespace std;
@@ -22,7 +23,7 @@ void CoyoteSleepScene::SetupStates()
 
 	stateLength[ENTRANCE] = -1;
 	stateLength[WAIT] = 1;
-	stateLength[COYOTEWAKE] = 120;
+	stateLength[COYOTEWAKE] = -1;
 }
 
 void CoyoteSleepScene::AddShots()
@@ -47,6 +48,23 @@ void CoyoteSleepScene::AddEnemies()
 
 void CoyoteSleepScene::AddFlashes()
 {
+	AddFlashedImage("wake0", owner->GetTileset("Bosses/Coyote/Coy_02b.png", 1920, 1080),
+		0, 30, 30, 30, Vector2f(960, 540));
+
+	AddFlashedImage("wake1", owner->GetTileset("Bosses/Coyote/Coy_03b.png", 1920, 1080),
+		0, 30, 10, 30, Vector2f(960, 540));
+
+	AddFlashedImage("wake2", owner->GetTileset("Bosses/Coyote/Coy_04b.png", 1920, 1080),
+		0, 30, 10, 30, Vector2f(960, 540));
+
+	AddFlashedImage("wake3", owner->GetTileset("Bosses/Coyote/Coy_05b.png", 1920, 1080),
+		0, 30, 10, 30, Vector2f(960, 540));
+
+	FlashGroup * group = AddFlashGroup("wakegroup");
+	AddFlashToGroup(group, "wake0");
+	AddFlashToGroup(group, "wake1");
+	AddFlashToGroup(group, "wake2");
+	AddFlashToGroup(group, "wake3");
 }
 
 void CoyoteSleepScene::ReturnToGame()
@@ -69,6 +87,17 @@ void CoyoteSleepScene::UpdateState()
 		EntranceUpdate();
 		break;
 	case COYOTEWAKE:
+		if (frame == 0)
+		{
+			SetFlashGroup("wakegroup");
+		}
+		else
+		{
+			if (currFlashGroup == NULL)
+			{
+				EndCurrState();
+			}
+		}
 		break;
 	}
 }
@@ -302,6 +331,10 @@ void CoyoteAndSkeletonScene::UpdateState()
 		break;
 	case SKELECOYCONV:
 		ConvUpdate();
+		if (IsLastFrame())
+		{
+			player->EndLevelWithoutGoal();
+		}
 		break;
 	}
 }

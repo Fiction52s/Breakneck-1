@@ -43,24 +43,6 @@ struct FlashedImage
 	int hFrames;
 };
 
-struct Cutscene
-{
-	Cutscene( GameSession *owner,
-		sf::Vector2i & origin );
-	~Cutscene();
-	Tileset **tilesets;
-	bool LoadFromFile( const std::string &path );
-	sf::View & GetView( int frame );
-	void Draw( sf::RenderTarget *target, int frame );
-	GameSession *owner;
-	//CamInfo *cameras;
-	sf::View *cameras;
-	std::list<sf::Sprite> **activeSprites;
-	int totalFrames;
-	bool init;
-	sf::Vector2f origin;
-};
-
 struct Sequence
 {
 	//Sequence *next;
@@ -119,6 +101,18 @@ struct ButtonHolder;
 struct ConversationGroup;
 struct CameraShot;
 struct Barrier;
+
+//typedef std::list<FlashedImage*> FlashGroup;
+
+struct FlashGroup
+{
+	void Reset();
+	std::list<FlashedImage*> fList;
+	std::list<FlashedImage*>::iterator currFlash;
+	bool IsDone();
+	bool done;
+};
+
 struct BasicBossScene : Sequence
 {
 	enum EntranceType
@@ -224,9 +218,17 @@ struct BasicBossScene : Sequence
 	std::map<std::string, CameraShot*> shots;
 	std::map<std::string, PoiInfo*> points;
 	std::map<std::string, FlashedImage*> flashes;
+	std::map <std::string, FlashGroup*> flashGroups;
+	FlashGroup * AddFlashGroup(const std::string &n);
+	void AddFlashToGroup(FlashGroup *,
+		const std::string &n);
+	void UpdateFlashGroup();
+	void SetFlashGroup( const std::string &n);
 	std::list<FlashedImage*> flashList;
 	std::map<std::string, Enemy *> enemies;
 	std::map<std::string, sfe::Movie*> movies;
+
+	FlashGroup *currFlashGroup;
 
 	sfe::Movie *currMovie;
 	ConversationGroup *currConvGroup;
