@@ -218,6 +218,7 @@ void BirdCrawlerAllianceScene::SetupStates()
 	stateLength[WAIT] = 60;
 	stateLength[CRAWLERARRIVE] = 60;
 	stateLength[CONV] = -1;
+	stateLength[FADEOUT] = 60;
 }
 
 void BirdCrawlerAllianceScene::ReturnToGame()
@@ -266,13 +267,11 @@ void BirdCrawlerAllianceScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				//owner->adventureHUD->
-				//owner->adventureHUD->Hide(fadeFrames);
+				owner->adventureHUD->Hide();
 				owner->cam.SetManual(true);
 				MainMenu *mm = owner->mainMenu;
-				owner->CrossFade(10, 30, 10, Color::Black);
-				SetCameraShot("scenecam");
-				//owner->CrossFade(10, 0, 60, Color::White);
+				owner->Fade(true, 60, Color::Black);
+				SetCameraShot("alliancecam");
 			}
 		}
 	case WAIT:
@@ -286,5 +285,19 @@ void BirdCrawlerAllianceScene::UpdateState()
 		ConvUpdate();
 		break;
 	}
+	case FADEOUT:
+	{
+		if (frame == 0)
+		{
+			owner->Fade(false, 60, Color::Black);
+		}
+
+		if (IsLastFrame())
+		{
+			owner->goalDestroyed = true;
+		}
+		break;
+	}
+	
 	}
 }

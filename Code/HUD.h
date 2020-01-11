@@ -111,8 +111,8 @@ struct AdventureHUD
 	};
 
 	AdventureHUD(GameSession *owner);
-	void Hide(int frames);
-	void Show(int frames);
+	void Hide(int frames = 0);
+	void Show(int frames = 0);
 	void Draw(sf::RenderTarget *target);
 	void Update();
 	void Reset();

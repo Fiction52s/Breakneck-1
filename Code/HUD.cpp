@@ -158,7 +158,15 @@ AdventureHUD::AdventureHUD(GameSession *p_owner)
 
 void AdventureHUD::Hide(int frames)
 {
-	//if (state == SHOWN)
+	if (frames == 0)
+	{
+		state = HIDDEN;
+		frame = 0;
+		mini->SetCenter(miniHidePos);
+		keyMarker->SetPosition(keyMarkerHidePos);
+		kinMask->SetTopLeft(kinMaskHidePos);
+	}
+	else
 	{
 		processFrames = frames;
 		state = EXITING;
@@ -168,7 +176,15 @@ void AdventureHUD::Hide(int frames)
 
 void AdventureHUD::Show(int frames)
 {
-	//if (state == HIDDEN)
+	if (frames == 0)
+	{
+		state = SHOWN;
+		frame = 0;
+		mini->SetCenter(miniShowPos);
+		kinMask->SetTopLeft(kinMaskShowPos);
+		keyMarker->SetPosition(keyMarkerShowPos);
+	}
+	else
 	{
 		processFrames = frames;
 		state = ENTERING;
@@ -222,6 +238,8 @@ void AdventureHUD::Update()
 			state = HIDDEN;
 			frame = 0;
 			mini->SetCenter(miniHidePos);
+			keyMarker->SetPosition(keyMarkerHidePos);
+			kinMask->SetTopLeft(kinMaskHidePos);
 		}
 		else
 		{

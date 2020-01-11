@@ -94,6 +94,8 @@ struct Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT ) = 0;
 };
 
+struct BasicBossScene;
+
 struct ShipExitSeq : Sequence
 {
 	enum State
@@ -113,6 +115,7 @@ struct ShipExitSeq : Sequence
 	void Reset();
 
 	StorySequence *storySeq;
+	BasicBossScene *scene;
 	//sfe::Movie mov;
 	Tileset *ts_ship;
 	sf::Sprite shipSprite;

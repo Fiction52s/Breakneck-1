@@ -103,8 +103,16 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	//shipSprite.setOrigin(960 / 2, 700);
 	shipSprite.setOrigin(421, 425);
 
-	storySeq = new StorySequence(owner);
-	storySeq->Load("world1outro");
+	storySeq = NULL;
+	scene = NULL;
+
+	//storySeq = new StorySequence(owner);
+	//storySeq->Load("world1outro");
+
+	scene = new BirdCrawlerAllianceScene(owner);
+	scene->Init();
+	nextSeq = scene;
+
 	//assert(mov.openFromFile("Resources/Movie/kin_ship.ogv"));
 	//mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 
@@ -208,7 +216,7 @@ bool ShipExitSeq::Update()
 		{
 			frame = stateLength[SHIP_SWOOP] - 1;
 			owner->mainMenu->musicPlayer->FadeOutCurrentMusic(30);
-			owner->state = GameSession::SEQUENCE;
+			//owner->state = GameSession::SEQUENCE;
 		}
 
 		if (frame == (enterTime + exitTime) - 60)
@@ -222,20 +230,26 @@ bool ShipExitSeq::Update()
 	}
 	case STORYSEQ:
 	{
-		if (frame == 0)
+		if (storySeq != NULL)
 		{
-			owner->ClearFade();
-			owner->SetStorySeq(storySeq);
+			if (frame == 0)
+			{
+				owner->ClearFade();
+				owner->SetStorySeq(storySeq);
+			}
+
+
+			//if (!storySeq->Update(owner->GetPrevInputUnfiltered(0), owner->GetCurrInputUnfiltered(0)))
+			if (owner->currStorySequence == NULL)
+			{
+				frame = stateLength[STORYSEQ] - 1;
+				owner->goalDestroyed = true;
+			}
 		}
-		
-		
-		//if (!storySeq->Update(owner->GetPrevInputUnfiltered(0), owner->GetCurrInputUnfiltered(0)))
-		if( owner->currStorySequence == NULL )
+		else
 		{
 			frame = stateLength[STORYSEQ] - 1;
-			owner->goalDestroyed = true;
 		}
-
 		break;
 	}
 	}
@@ -257,7 +271,8 @@ void ShipExitSeq::Draw( RenderTarget *target, EffectLayer layer)
 	}
 	else if (state == STORYSEQ)
 	{
-		storySeq->Draw(target);
+		if( storySeq != NULL)
+			storySeq->Draw(target);
 	}
 	
 }
@@ -266,7 +281,11 @@ void ShipExitSeq::Reset()
 {
 	frame = 0;
 	state = SHIP_SWOOP;
-	storySeq->Reset();
+
+	if (storySeq != NULL)
+	{
+		storySeq->Reset();
+	}
 }
 
 

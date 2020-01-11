@@ -61,6 +61,7 @@ struct BirdCrawlerAllianceScene : BasicBossScene
 		WAIT,
 		CRAWLERARRIVE,
 		CONV,
+		FADEOUT,
 		Count
 	};
 
