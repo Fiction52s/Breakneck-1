@@ -2245,7 +2245,7 @@ bool Actor::AirAttack()
 				}
 				SetAction(UAIR);
 				frame = 0;
-				owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+				//owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
 			}
 			else if (currInput.LDown())
 			{
@@ -2259,7 +2259,7 @@ bool Actor::AirAttack()
 				}
 				SetAction(DAIR);
 				frame = 0;
-				owner->OpenGates(Gate::CRAWLER_UNLOCK);
+				//owner->OpenGates(Gate::CRAWLER_UNLOCK);
 			}
 			else
 			{
@@ -2273,7 +2273,7 @@ bool Actor::AirAttack()
 				}
 				SetAction(FAIR);
 				frame = 0;
-				owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+				//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
 			}
 		}
 		else

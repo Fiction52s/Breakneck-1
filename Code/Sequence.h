@@ -21,14 +21,13 @@ struct Enemy;
 
 struct PanInfo
 {
-	PanInfo(sf::Vector2f &v,
-		int start, int len)
-	{
-		velocity = v;
-		startFrame = start;
-		frameLength = len;
-	}
-	sf::Vector2f velocity;
+	PanInfo(sf::Vector2f &pos,
+		sf::Vector2f &diff,
+		int start, int len);
+	sf::Vector2f GetCurrPos(int f);
+	sf::Vector2f totalDelta;
+	CubicBezier bez;
+	sf::Vector2f origPos;
 	int startFrame;
 	int frameLength;
 };
@@ -199,7 +198,7 @@ struct BasicBossScene : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	virtual void DrawFlashes(sf::RenderTarget *target);
 	virtual void EntranceUpdate();
-	virtual bool IsEntering();
+	virtual bool IsAutoRunState();
 	virtual void ReturnToGame();
 	virtual	void Wait();
 	virtual void SetEntranceRun();

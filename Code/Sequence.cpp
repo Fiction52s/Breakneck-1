@@ -36,6 +36,9 @@
 #include "SequenceW1.h"
 #include "SequenceW2.h"
 #include "SequenceW3.h"
+#include "SequenceW4.h"
+#include "SequenceW5.h"
+#include "SequenceW6.h"
 
 using namespace sf;
 using namespace std;
@@ -64,6 +67,14 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	else if (name == "coyotescene2")
 	{
 		bScene = new CoyoteAndSkeletonScene(owner);
+	}
+	else if (name == "crawlerscene2")
+	{
+		bScene = new CrawlerPreFight2Scene(owner);
+	}
+	else if (name == "tigerscene0")
+	{
+		bScene = new TigerPreFightScene(owner);
 	}
 	else
 	{
@@ -318,6 +329,27 @@ FlashGroup::~FlashGroup()
 	}
 }
 
+
+PanInfo::PanInfo(sf::Vector2f &pos,
+	sf::Vector2f &diff,
+	int start, int len)
+{
+	totalDelta = diff;
+	startFrame = start;
+	frameLength = len;
+	origPos = pos;
+}
+
+sf::Vector2f PanInfo::GetCurrPos(int f)
+{
+	Vector2f dest = origPos + totalDelta;
+	double ff = (f - startFrame) + 1;
+	double a = ff / frameLength;
+	float bezVal = bez.GetValue(a);
+	Vector2f final = dest * bezVal + origPos * (1.f - bezVal);
+	return final;
+}
+
 FlashedImage::FlashedImage(Tileset *ts,
 	int tileIndex, int appearFrames,
 	int holdFrames,
@@ -364,22 +396,22 @@ void FlashedImage::Reset()
 	currPan = NULL;
 }
 
-void FlashedImage::AddPan(sf::Vector2f &pVel,
+void FlashedImage::AddPan(sf::Vector2f &diff,
 	int startFrame, int frameLength)
 {
-	panList.push_back(new PanInfo(pVel, startFrame, frameLength));
+	panList.push_back(new PanInfo( position, diff, startFrame, frameLength));
 }
 
-void FlashedImage::AddPanX(float x,
+void FlashedImage::AddPanX(float xDiff,
 	int startFrame, int frameLength)
 {
-	panList.push_back(new PanInfo(Vector2f( x, 0 ), startFrame, frameLength));
+	PanInfo *pi = new PanInfo( position, Vector2f(xDiff, 0), startFrame, frameLength);
 }
 
-void FlashedImage::AddPanY(float y,
+void FlashedImage::AddPanY(float yDiff,
 	int startFrame, int frameLength)
 {
-	panList.push_back(new PanInfo(Vector2f( 0, y ), startFrame, frameLength));
+	panList.push_back(new PanInfo(position, Vector2f( 0, yDiff), startFrame, frameLength));
 }
 
 void FlashedImage::Flash()
@@ -456,13 +488,13 @@ void FlashedImage::Update()
 	if (currPan != NULL)
 	{
 		int fr = frame - currPan->startFrame;
-		if (fr > currPan->frameLength)
+		if (fr == currPan->frameLength)
 		{
 			currPan = NULL;
 		}
 		else
 		{
-			position += currPan->velocity;
+			position = currPan->GetCurrPos(frame);
 			spr.setPosition(position);
 		}
 	}
@@ -657,6 +689,7 @@ void BasicBossScene::SetConvGroup(const std::string &groupName)
 {
 	assert(groups.count(groupName) == 1);
 	currConvGroup = groups[groupName];
+	cIndex = 0;
 }
 
 FlashedImage * BasicBossScene::AddFlashedImage(const std::string &imageName, Tileset *ts, int tileIndex,
@@ -870,7 +903,7 @@ void BasicBossScene::ReturnToGame()
 	owner->cam.EaseOutOfManual(60);
 }
 
-bool BasicBossScene::IsEntering()
+bool BasicBossScene::IsAutoRunState()
 {
 	return state == 0;
 }
@@ -923,9 +956,11 @@ bool BasicBossScene::Update()
 
 	if (entranceType == RUN)
 	{
-		if (IsEntering() && !player->IsAutoRunning() && frame > 60)
+		if (IsAutoRunState() && !player->IsAutoRunning() && frame > 60)
 		{
-			Wait();
+			state++;
+			frame = 0;
+			//Wait();
 		}
 	}
 

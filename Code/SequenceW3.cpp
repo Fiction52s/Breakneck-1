@@ -315,7 +315,7 @@ void CoyoteAndSkeletonScene::SetupStates()
 	SetNumStates(Count);
 
 	stateLength[ENTRANCE] = -1;
-	stateLength[WAIT] = 1;
+	stateLength[WAIT] = 60;
 	stateLength[SHOWIMAGE] = -1;
 	stateLength[SKELECOYCONV] = -1;
 }
@@ -351,13 +351,13 @@ void CoyoteAndSkeletonScene::AddFlashes()
 
 	int holdFrames = scrollFrames + 60;
 
-	AddFlashedImage("screen0", owner->GetTileset("Bosses/Coyote/coyskeleton1.png", 1920, 1080),
+	AddFlashedImage("screen0", owner->GetTileset("Bosses/Coyote/Coy_Pan_02a.png", 1920, 1080),
 		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540))
-		->AddPanY(scrollRate, fadeInFrames, scrollFrames);
+		->AddPanY(scrollAmount, fadeInFrames, scrollFrames);
 
-	AddFlashedImage("screen1", owner->GetTileset("Bosses/Coyote/coyskeleton2.png", 1920, 1080),
+	AddFlashedImage("screen1", owner->GetTileset("Bosses/Coyote/Coy_Pan_02b.png", 1920, 1080),
 		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540 - 1080))
-		->AddPanY(scrollRate, fadeInFrames, scrollFrames);;
+		->AddPanY(scrollAmount, fadeInFrames, scrollFrames);;
 	
 }
 

@@ -75,6 +75,7 @@ void Minimap::DrawToTex()
 	sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
 		vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
 
+
 	DrawTerrain(minimapRect, minimapTex);
 
 	DrawZones( minimapTex );
