@@ -120,9 +120,9 @@ crawlerthrowkin
 poi 1 -1 26 174.001
 kinstand
 poi 1 -1 6 1298.25
-kinstart
+kinstart0
 poi 1 -1 6 2356.25
-kinstop
+kinstop0
 camerashot 1475 -3931
 fightcam
 1.64167

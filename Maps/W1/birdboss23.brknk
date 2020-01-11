@@ -39,9 +39,9 @@ borderpoly
 1
 -- 9
 poi 1 -1 1 202
-kinstop
+kinstop0
 poi 1 -1 0 140.211
-kinstart
+kinstart0
 xbarrier -1322 -5082
 birdscene0
 0
