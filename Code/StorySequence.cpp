@@ -134,6 +134,8 @@ bool StorySequence::Load(const std::string &sequenceName)
 		bool typeAlreadySet = false;
 		bool blankImage = false;
 
+		bool botText = false;
+
 		string imageFolder = "";
 
 		while (true)
@@ -186,6 +188,8 @@ bool StorySequence::Load(const std::string &sequenceName)
 
 			imageAlreadySet = false;
 			typeAlreadySet = false;
+			botText = false;
+
 
 			while (true)
 			{
@@ -208,6 +212,10 @@ bool StorySequence::Load(const std::string &sequenceName)
 				else if (typeStr == "time")
 				{
 					is >> time;
+				}
+				else if (typeStr == "bottomtext")
+				{
+					botText = true;
 				}
 				else if (typeStr == "music")
 				{
@@ -325,6 +333,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 			sp->time = time;
 			sp->totalFrames = time * 60.f;
 			sp->layer = layer;
+			sp->SetModeBottomText(botText);
 
 
 			string fullImagePath;
@@ -380,343 +389,6 @@ bool StorySequence::Load(const std::string &sequenceName)
 			//sp->text = sText;
 			//sp->music = sm;
 			//sp->effectLayer = efL;
-		}
-
-		if( false )
-		{
-			//while (getline(is, line))
-			//{
-			//	std::replace(line.begin(), line.end(), ',', ' '); // replace all 'x' to 'y'
-
-			//	stringstream ss;
-			//	ss << line;
-
-			//	string imageName;
-			//	ss >> imageName;
-
-			//	if (imageName == "")
-			//	{
-			//		continue;
-			//	}
-			//	bool blankImage = false;
-			//	if (imageName == "wait")
-			//	{
-			//		blankImage = true;
-			//		//empty wait on a certain layer
-			//	}
-
-			//	int posx = 0, posy = 0;
-			//	if (!blankImage)
-			//	{
-			//		ss >> typeStr;
-
-			//		
-
-			//		if (typeStr == "position")
-			//		{
-			//			ss >> posx;
-			//			ss >> posy;
-			//		}
-
-			//		
-
-			//	}
-
-			//	
-
-			//	//ss >> waste;
-
-			//	ss >> waste;
-
-			//	int layer;
-			//	ss >> layer;
-
-			//	float time;
-			//	ss >> time;
-
-			//	ss >> waste;
-
-			//	
-			//	StoryPart *sp = new StoryPart( this );
-			//	sp->time = time;
-			//	sp->totalFrames = time * 60.f;
-
-			//	bool bHasIntro = false;
-			//	bool bHasOutro = false;
-			//	bool bhasSubLayer = false;
-			//	bool bHasMusic = false;
-			//	bool bHasText = false;
-			//	EffectLayer efL = IN_FRONT;
-
-			//	while (true)
-			//	{
-			//		string typeStr;
-			//		ss >> typeStr;
-			//		if (ss.fail())
-			//		{
-			//			break;
-			//		}
-			//		if (typeStr == "intro")
-			//		{
-			//			bHasIntro = true;
-			//		}
-			//		else if (typeStr == "outro")
-			//		{
-			//			bHasOutro = true;
-			//		}
-			//		else if (typeStr == "music")
-			//		{
-			//			bHasMusic = true;
-			//		}
-			//		else if (typeStr == "text")
-			//		{
-			//			bHasText = true;
-			//		}
-			//		else if (typeStr == "sublayer")
-			//		{
-			//			bhasSubLayer = true;
-			//		}
-			//		else if (typeStr == "drawlayer")
-			//		{
-			//			string layerStr;
-			//			ss >> layerStr;
-			//			efL = StringToEffectLayer(layerStr);
-			//		}
-			//		//continue;
-			//	}
-
-			//	ss.clear();
-			//	ss.str("");
-
-			//	if (bHasOutro)
-			//	{
-			//		if (!getline(is, line))
-			//		{
-			//			assert(0);
-			//		}
-			//		std::replace(line.begin(), line.end(), ',', ' ');
-
-			//		ss << line;
-
-			//		string outroType;
-			//		ss >> outroType;
-
-			//		ss >> waste;
-
-			//		int colorR;
-			//		int colorG;
-			//		int colorB;
-			//		
-			//		ss >> colorR;
-			//		ss >> colorG;
-			//		ss >> colorB;
-
-			//		float otime;
-			//		ss >> otime;
-
-			//		if (outroType == "fade")
-			//		{
-			//			sp->outType = StoryPart::OutroType::O_FADE;
-			//		}
-
-			//		sp->fadeOutColor = Color(colorR, colorG, colorB);
-			//		sp->fadeOutFrames = otime * 60.f;
-			//		sp->startOutroFadeFrame = sp->totalFrames - sp->fadeOutFrames;
-			//	}
-
-
-			//	StoryMusic *sm = NULL;
-			//	if (bHasMusic)
-			//	{
-			//		if (!getline(is, line))
-			//		{
-			//			assert(0);
-			//		}
-
-			//		std::replace(line.begin(), line.end(), ',', ' ');
-
-			//		ss << line;
-
-			//		ss >> waste;
-
-			//		string musicName;
-			//		ss >> musicName;
-
-			//		ss >> waste;
-
-			//		float startTime;
-			//		ss >> startTime;
-
-			//		ss >> waste;
-
-			//		float fadeTime = 0;
-			//		if (!ss.fail())
-			//		{
-			//			ss >> fadeTime;
-			//		}
-			//		/*ss >> waste;
-
-			//		string transitionType;
-			//		ss >> transitionType;
-
-			//		if (transitionType == "fade")
-			//		{
-
-			//		}
-			//		else
-			//		{
-
-			//		}*/
-
-			//		sm = new StoryMusic;
-			//		sm->musicName = musicName;
-			//		sm->startTime = sf::seconds(startTime);
-			//		sm->transitionSeconds = fadeTime;
-			//	}
-
-			//	ss.clear();
-			//	ss.str("");
-
-			//	Conversation *sText = NULL;
-			//	//StoryText *sText = NULL;
-			//	if (bHasText)
-			//	{
-			//		if (!getline(is, line))
-			//		{
-			//			assert(0);
-			//		}
-
-			//		std::replace(line.begin(), line.end(), ',', ' ');
-
-			//		ss << line;
-
-			//		ss >> waste;
-
-			//		int tposx, tposy;
-
-			//		string convName;
-			//		ss >> convName;
-
-			//		sText = new Conversation(owner);
-			//		sText->Load(convName);
-			//		//ss >> tposx;
-			//		//ss >> tposy;
-
-			//		//ss >> waste;
-
-			//		//string fontStr;
-			//		//ss >> fontStr;
-
-			//		//ss >> waste;
-
-			//		//int fontSize;
-			//		//ss >> fontSize;
-
-			//		//read the actual text
-
-
-			//		/*std::vector<char> readTextVec;
-			//		readTextVec.reserve(2048);
-			//		char c;
-			//		while (true)
-			//		{
-			//			c = is.peek();
-			//			if (c == EOF)
-			//			{
-			//				assert(0);
-			//				return false;
-			//			}
-			//			
-			//			if (c == '{')
-			//			{
-			//			}
-			//			else if (c == '}')
-			//			{
-			//				getline(is, line);
-			//				break;
-			//			}
-			//			else
-			//			{
-			//				readTextVec.push_back(c);
-			//			}
-
-			//			is.get();
-			//		}
-
-			//		std::string textStr(readTextVec.begin(), readTextVec.end());
-
-			//		sText = new StoryText(myFont, textStr, Vector2f(tposx, tposy));*/
-
-			//	}
-
-
-			//	
-
-			//	
-			//	string fullImagePath = string("Story/") + imageName + string(".png");
-			//	sp->imageName = imageName;
-
-			//	if (!blankImage)
-			//	{
-			//		sp->ts = tm->GetTileset(fullImagePath, 0, 0);
-			//		if (sp->ts == NULL)
-			//		{
-			//			assert(false && "tileset not loading for story");
-			//		}
-			//		sp->spr.setTexture(*sp->ts->texture);
-			//		sp->spr.setPosition(posx, posy);
-			//		sp->blank = false;
-			//	}
-			//	else
-			//	{
-			//		sp->blank = true;
-			//	}
-			//	
-			//	sp->hasIntro = bHasIntro;
-			//	sp->layer = layer;
-			//	
-			//	sp->text = sText;
-			//	sp->music = sm;
-			//	sp->effectLayer = efL;
-
-			//	/*if (owner->mainMenu->musicManager->songMap.count() == 0)
-			//	{
-			//		assert(0);
-			//	}*/
-
-			//	if (owner != NULL)
-			//	{
-			//		if (sm != NULL)
-			//		{
-			//			sm->musicInfo = NULL;
-			//			sm->musicInfo = owner->mainMenu->musicManager->songMap[sm->musicName];
-			//			if (sm->musicInfo == NULL)
-			//			{
-			//				assert(0);
-			//			}
-			//			sm->musicInfo->Load();
-			//			owner->musicMap[sm->musicName] = sm->musicInfo;
-			//		}
-			//	}
-
-			//	if (parentPart != NULL)
-			//	{
-			//		parentPart->sub = sp;
-			//	}
-			//	else
-			//	{
-			//		parts[layer].push_back(sp);
-			//	}
-
-			//	if (bhasSubLayer)
-			//	{
-			//		parentPart = sp;
-			//	}
-			//	else
-			//	{
-			//		parentPart = NULL;
-			//	}
-			//}
 		}
 		
 		is.close();
@@ -891,6 +563,7 @@ StoryPart::StoryPart( StorySequence *p_seq)
 	totalFrames = -1;
 	sub = NULL;
 	text = NULL;
+	bottomText = true;
 	effectLayer = EffectLayer::IN_FRONT;
 	blank = true;
 	outType = OutroType::O_NONE;
@@ -1087,6 +760,23 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 		++frame;
 		return true;
 	}
+}
+
+void StoryPart::SetModeBottomText(bool bot)
+{
+	bottomText = bot;
+	if (text != NULL)
+	{
+		if (bottomText)
+		{
+			text->SetTextMode(Speech::BOTTOMTEXT);
+		}
+		else
+		{
+			text->SetTextMode(Speech::TOPTEXT);
+		}
+	}
+		
 }
 
 StoryImage::StoryImage()

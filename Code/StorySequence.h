@@ -63,12 +63,14 @@ struct StoryPart
 	int fadeOutFrames;
 	int startOutroFadeFrame;
 
+	bool bottomText;
 	int layer;
 	float time;
 	int frame;
 	int totalFrames;
 	bool Update(ControllerState &prev, ControllerState &curr);
 	void Draw(sf::RenderTarget *target);
+	void SetModeBottomText(bool bot);
 	std::string imageName;
 	Conversation *text;
 	//ConversationGroup *textGroup;

@@ -578,6 +578,27 @@ Speech::~Speech()
 	delete disp;
 }
 
+void Speech::SetTextMode(TextMode tMode)
+{
+	int left = 256;
+
+	if (speaker != "None")
+	{
+		left += 128;
+	}
+
+
+	switch (tMode)
+	{
+	case TOPTEXT:
+		disp->SetTopLeft(Vector2f(left, 80));
+		break;
+	case BOTTOMTEXT:
+		disp->SetTopLeft(Vector2f(left, 1080 - (220 + 80) ));
+		break;
+	}
+}
+
 void Speech::SetupSprite()
 {
 	if (speaker == "None")
@@ -906,6 +927,14 @@ bool Conversation::Load(ifstream &is)
 	}
 
 	return keepLoading;
+}
+
+void Conversation::SetTextMode(Speech::TextMode tMode)
+{
+	for (int i = 0; i < numSpeeches; ++i)
+	{
+		speeches[i]->SetTextMode(tMode);
+	}
 }
 
 void Conversation::Load( const std::string &name )

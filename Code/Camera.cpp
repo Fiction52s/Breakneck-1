@@ -586,7 +586,7 @@ void Camera::ManualUpdate( Actor *player )
 {
 	if (manual && currMove != NULL)
 	{
-		for (int i = 0; i < NUM_STEPS; ++i)
+		for (int i = 0; i < NUM_MAX_STEPS; ++i)
 		{
 			currMove->Update();
 		}

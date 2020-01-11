@@ -47,10 +47,52 @@ struct Script
 	const std::string &GetSection(int index);
 };
 
-struct TextDisp;
+
 struct GameSession;
+
+struct TextDisp
+{
+
+	TextDisp(GameSession *owner,
+		int width, int height, int charSize = 30, int frameLetterWait = 3,
+		int p_letterPerShow = 1);
+	~TextDisp();
+	void SetTopLeft(sf::Vector2f &pos);
+	void Load(const std::string &name);
+	//static void LoadScript()
+	void SetTextSize();
+	void SetString(const std::string &str);
+	void AddLineBreaks(const std::string &msg);
+	void SetRate(int wait, int letterPer);
+	sf::Vector2f GetTopLeft();
+	void Reset();
+	bool Update();
+	bool NextSection();
+	bool sectionWait;
+	void Show();
+	void Hide();
+	void Draw(sf::RenderTarget *target);
+	sf::Text text;
+	sf::Vector2f rectSize;
+	std::string * sections;
+	int numSections;
+	int currSection;
+	int linesShownAtOnce;
+	sf::RectangleShape bgRect;
+	int nextLetterWait;
+	int frame;
+	bool show;
+	int letterPerShow;
+};
+
 struct Speech
 {
+	enum TextMode
+	{
+		TOPTEXT,
+		BOTTOMTEXT,
+	};
+
 	Speech(GameSession *owner);
 	~Speech();
 	std::string speaker;
@@ -58,6 +100,7 @@ struct Speech
 	TextDisp *disp;
 	void SetupSprite();
 	Tileset *GetTileset();
+	void SetTextMode(TextMode tMode);
 	Tileset *ts;
 	sf::Sprite speakerSpr;
 	GameSession *owner;
@@ -82,6 +125,8 @@ struct ConversationGroup
 
 struct Conversation
 {
+	
+
 	~Conversation();
 	Conversation( GameSession *owner );
 	void Load(const std::string &name);
@@ -96,6 +141,9 @@ struct Conversation
 	void NextSection();
 	void SetRate(int wait, int letterPer);
 
+	
+	void SetTextMode(Speech::TextMode tMode);
+
 	bool show;
 	GameSession *owner;
 	int numSpeeches;
@@ -105,39 +153,7 @@ struct Conversation
 };
 
 
-struct TextDisp
-{
-	TextDisp( GameSession *owner,
-		int width, int height, int charSize = 30, int frameLetterWait = 3,
-		int p_letterPerShow = 1);
-	~TextDisp();
-	void SetTopLeft(sf::Vector2f &pos);
-	void Load(const std::string &name);
-	//static void LoadScript()
-	void SetTextSize();
-	void SetString(const std::string &str);
-	void AddLineBreaks( const std::string &msg );
-	void SetRate(int wait, int letterPer);
-	sf::Vector2f GetTopLeft();
-	void Reset();
-	bool Update();
-	bool NextSection();
-	bool sectionWait;
-	void Show();
-	void Hide();
-	void Draw(sf::RenderTarget *target);
-	sf::Text text;
-	sf::Vector2f rectSize;
-	std::string * sections;
-	int numSections;
-	int currSection;
-	int linesShownAtOnce;
-	sf::RectangleShape bgRect;
-	int nextLetterWait;
-	int frame;
-	bool show;
-	int letterPerShow;
-};
+
 
 
 #endif
