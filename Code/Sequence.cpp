@@ -112,6 +112,11 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	//stateLength[FADEOUT] = 90;
 
 	stateLength[STORYSEQ] = 1000000;
+
+	//BasicBossScene *bb = new BirdCrawlerAllianceScene(owner);
+	//nextSeq = bb;
+	//bb->Init();
+	
 }
 
 ShipExitSeq::~ShipExitSeq()
@@ -175,7 +180,7 @@ bool ShipExitSeq::Update()
 			owner->GetPlayer(0)->GrabShipWire();
 		}
 
-		for (int i = 0; i < NUM_STEPS; ++i)
+		for (int i = 0; i < NUM_MAX_STEPS; ++i)
 		{
 			shipMovement.Update();
 		}
@@ -215,14 +220,6 @@ bool ShipExitSeq::Update()
 			shipMovement.position.y);
 		break;
 	}
-	//case FADEOUT:
-	//{
-	//	if (frame == 30)
-	//	{
-			//owner->Fade(false, 60, Color::Black);
-	//	}
-	//	break;
-	//}
 	case STORYSEQ:
 	{
 		if (frame == 0)
@@ -260,8 +257,6 @@ void ShipExitSeq::Draw( RenderTarget *target, EffectLayer layer)
 	}
 	else if (state == STORYSEQ)
 	{
-		//mov.update();
-		//target->draw(mov);
 		storySeq->Draw(target);
 	}
 	
@@ -273,6 +268,8 @@ void ShipExitSeq::Reset()
 	state = SHIP_SWOOP;
 	storySeq->Reset();
 }
+
+
 
 void FlashGroup::Reset()
 {
@@ -286,6 +283,20 @@ void FlashGroup::Reset()
 bool FlashGroup::IsDone()
 {
 	return done;
+}
+
+void FlashGroup::AddFlash(FlashedImage *fi,
+	int earlyEndFrames)
+{
+	fList.push_back(new FlashInfo(fi, earlyEndFrames));
+}
+
+FlashGroup::~FlashGroup()
+{
+	for (auto it = fList.begin(); it != fList.end(); ++it)
+	{
+		delete (*it);
+	}
 }
 
 FlashedImage::FlashedImage(Tileset *ts,
@@ -367,6 +378,19 @@ bool FlashedImage::IsFadingIn()
 bool FlashedImage::IsHolding()
 {
 	return (flashing && frame >= aFrames && frame < aFrames + hFrames);
+}
+
+int FlashedImage::GetFramesUntilDone()
+{
+	if (!flashing)
+	{
+		return 0;
+	}
+	else
+	{
+		int totalFrames = aFrames + hFrames + dFrames;
+		return (totalFrames - 1) - frame;
+	}
 }
 
 void FlashedImage::StopHolding()
@@ -943,7 +967,7 @@ void BasicBossScene::SetFlashGroup( const std::string & n )
 {
 	currFlashGroup = flashGroups[n];
 
-	(*currFlashGroup->currFlash)->Flash();
+	(*currFlashGroup->currFlash)->image->Flash();
 }
 
 void BasicBossScene::UpdateFlashGroup()
@@ -956,24 +980,28 @@ void BasicBossScene::UpdateFlashGroup()
 	}
 
 	
-	FlashedImage *fg = (*currFlashGroup->currFlash);
+	FlashedImage *fg = (*currFlashGroup->currFlash)->image;
+	int earlyEnd = (*currFlashGroup->currFlash)->earlyEnd;
 
 	//cout << "updating" << endl;
 
-	if (fg->IsDone())
+	bool startNext = false;
+	if (fg->GetFramesUntilDone() <= earlyEnd)
+	{
+		startNext = true;
+	}
+
+	if (startNext)
 	{
 		currFlashGroup->currFlash++;
 		if (currFlashGroup->currFlash == currFlashGroup->fList.end())
 		{
 			currFlashGroup->done = true;
 			currFlashGroup = NULL;
-			//cout << "end" << endl;
 		}
 		else
 		{
-			(*currFlashGroup->currFlash)->Flash();
-
-			//cout << "next" << endl;
+			(*currFlashGroup->currFlash)->image->Flash();
 		}
 	}
 }
@@ -1013,11 +1041,11 @@ FlashGroup * BasicBossScene::AddFlashGroup(const std::string &n)
 }
 
 void BasicBossScene::AddFlashToGroup(FlashGroup *fGroup,
-	const std::string &n)
+	const std::string &n, int earlyEnd )
 {
 	assert(flashes.count(n) == 1);
 
-	fGroup->fList.push_back(flashes[n]);
+	fGroup->AddFlash(flashes[n], earlyEnd);
 }
 
 void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)

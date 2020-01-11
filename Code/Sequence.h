@@ -50,6 +50,7 @@ struct FlashedImage
 	void StopHolding();
 	bool IsHolding();
 	bool IsFadingIn();
+	int GetFramesUntilDone();
 	void AddPan(sf::Vector2f &pVel,
 		int startFrame, int frameLength );
 	void AddPanX(float x,
@@ -133,12 +134,30 @@ struct Barrier;
 
 //typedef std::list<FlashedImage*> FlashGroup;
 
+struct FlashInfo
+{
+	FlashInfo(FlashedImage *fi,
+		int eEnd = 0)
+	{
+		image = fi;
+		earlyEnd = eEnd;
+	}
+	FlashedImage *image;
+	int earlyEnd;
+};
+
 struct FlashGroup
 {
+	~FlashGroup();
 	void Reset();
-	std::list<FlashedImage*> fList;
-	std::list<FlashedImage*>::iterator currFlash;
+	void AddFlash(FlashedImage *fi,
+		int earlyEndFrames = 0);
+	std::list<FlashInfo*> fList;
+	std::list<FlashInfo*>::iterator currFlash;
 	bool IsDone();
+
+
+
 	bool done;
 };
 
@@ -250,7 +269,7 @@ struct BasicBossScene : Sequence
 	std::map <std::string, FlashGroup*> flashGroups;
 	FlashGroup * AddFlashGroup(const std::string &n);
 	void AddFlashToGroup(FlashGroup *,
-		const std::string &n);
+		const std::string &n, int earlyEnd = 0);
 	void UpdateFlashGroup();
 	void SetFlashGroup( const std::string &n);
 	std::list<FlashedImage*> flashList;

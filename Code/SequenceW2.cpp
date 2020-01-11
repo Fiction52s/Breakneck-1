@@ -204,3 +204,87 @@ void BirdPostFightScene::UpdateState()
 		break;
 	}
 }
+
+BirdCrawlerAllianceScene::BirdCrawlerAllianceScene(GameSession *p_owner)
+	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+{
+}
+
+void BirdCrawlerAllianceScene::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[FADE] = 60;
+	stateLength[WAIT] = 60;
+	stateLength[CRAWLERARRIVE] = 60;
+	stateLength[CONV] = -1;
+}
+
+void BirdCrawlerAllianceScene::ReturnToGame()
+{
+	//owner->SetPlayerInputOn(true);
+	//owner->adventureHUD->Show(60);
+	//owner->cam.EaseOutOfManual(60);
+	//owner->cam.EaseOutOfManual(60);
+	//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+	//BasicBossScene::ReturnToGame();
+}
+
+void BirdCrawlerAllianceScene::AddShots()
+{
+	AddShot("alliancecam");
+}
+
+void BirdCrawlerAllianceScene::AddPoints()
+{
+
+}
+
+void BirdCrawlerAllianceScene::AddFlashes()
+{
+
+}
+
+void BirdCrawlerAllianceScene::AddEnemies()
+{
+
+}
+
+void BirdCrawlerAllianceScene::AddGroups()
+{
+	AddGroup("conv", "W2/w2_bird_crawler");
+	SetConvGroup("conv");
+}
+
+void BirdCrawlerAllianceScene::UpdateState()
+{
+	Actor *player = owner->GetPlayer(0);
+	switch (state)
+	{
+	case FADE:
+		if (state == FADE)
+		{
+			if (frame == 0)
+			{
+				//owner->adventureHUD->
+				//owner->adventureHUD->Hide(fadeFrames);
+				owner->cam.SetManual(true);
+				MainMenu *mm = owner->mainMenu;
+				owner->CrossFade(10, 30, 10, Color::Black);
+				SetCameraShot("scenecam");
+				//owner->CrossFade(10, 0, 60, Color::White);
+			}
+		}
+	case WAIT:
+		break;
+	case CRAWLERARRIVE:
+	{
+		break;
+	}
+	case CONV:
+	{
+		ConvUpdate();
+		break;
+	}
+	}
+}

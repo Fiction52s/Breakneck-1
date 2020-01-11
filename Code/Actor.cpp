@@ -2998,7 +2998,7 @@ void Actor::UpdatePrePhysics()
 		{ 
 			HandleWaitingScoreDisplay();
 
-			if (!owner->scoreDisplay->active)
+			if (!owner->scoreDisplay->active && owner->activeSequence == NULL)
 			{
 				owner->SetActiveSequence(owner->shipExitSeq);
 				owner->shipExitSeq->Reset();

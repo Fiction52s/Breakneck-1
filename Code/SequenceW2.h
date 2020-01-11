@@ -53,5 +53,27 @@ struct BirdPostFightScene : BasicBossScene
 	void UpdateState();
 };
 
+struct BirdCrawlerAllianceScene : BasicBossScene
+{
+	enum State
+	{
+		FADE,
+		WAIT,
+		CRAWLERARRIVE,
+		CONV,
+		Count
+	};
+
+	BirdCrawlerAllianceScene(GameSession *owner);
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+};
+
 
 #endif

@@ -2,6 +2,7 @@
 #define __SHIPPICKUP_H__
 
 #include "Enemy.h"
+
 struct ShipPickup : Enemy
 {
 	enum Action
@@ -34,6 +35,7 @@ struct ShipPickup : Enemy
 	Tileset *ts;
 	Edge *ground;
 	double edgeQuantity;
+
 };
 
 #endif

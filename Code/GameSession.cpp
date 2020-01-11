@@ -7889,10 +7889,11 @@ int GameSession::Run()
 		
 		DrawReplayGhosts();
 		
+		DrawEffects(EffectLayer::IN_FRONT);
+		DrawEmitters(EffectLayer::IN_FRONT);
 		DrawStoryLayer(EffectLayer::IN_FRONT);
 		DrawActiveSequence(EffectLayer::IN_FRONT);
-		DrawEffects( EffectLayer::IN_FRONT );
-		DrawEmitters(EffectLayer::IN_FRONT);
+		
 
 		if( ts_basicBullets != NULL )
 		{

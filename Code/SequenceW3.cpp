@@ -61,10 +61,13 @@ void CoyoteSleepScene::AddFlashes()
 		0, 30, 10, 30, Vector2f(960, 540));
 
 	FlashGroup * group = AddFlashGroup("wakegroup");
-	AddFlashToGroup(group, "wake0");
-	AddFlashToGroup(group, "wake1");
-	AddFlashToGroup(group, "wake2");
-	AddFlashToGroup(group, "wake3");
+
+	int togetherFrames = 15;
+
+	AddFlashToGroup(group, "wake0", togetherFrames);
+	AddFlashToGroup(group, "wake1", togetherFrames);
+	AddFlashToGroup(group, "wake2", togetherFrames);
+	AddFlashToGroup(group, "wake3", 0);
 }
 
 void CoyoteSleepScene::ReturnToGame()
@@ -150,19 +153,21 @@ void CoyotePreFightScene::AddEnemies()
 
 void CoyotePreFightScene::AddFlashes()
 {
+	int togetherFrames = 5;
+
 	AddFlashedImage("stare0", owner->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
-		0, 30, 10, 30, Vector2f(960, 540));
+		0, 30, 20, 30, Vector2f(960, 540));
 
 	AddFlashedImage("stare1", owner->GetTileset("Bosses/Coyote/Coy_10b.png", 1920, 1080),
-		0, 30, 10, 30, Vector2f(960, 540));
+		0, 30, 30, 30, Vector2f(960, 540));
 
 	AddFlashedImage("stare2", owner->GetTileset("Bosses/Coyote/Coy_11b.png", 1920, 1080),
-		0, 30, 10, 30, Vector2f(960, 540));
+		0, 30, 20, 30, Vector2f(960, 540));
 
 	FlashGroup * group = AddFlashGroup("staregroup");
-	AddFlashToGroup(group, "stare0");
-	AddFlashToGroup(group, "stare1");
-	AddFlashToGroup(group, "stare2");
+	AddFlashToGroup(group, "stare0", togetherFrames);
+	AddFlashToGroup(group, "stare1", togetherFrames);
+	AddFlashToGroup(group, "stare2", togetherFrames);
 }
 
 void CoyotePreFightScene::ReturnToGame()
@@ -187,10 +192,6 @@ void CoyotePreFightScene::UpdateState()
 	
 	case COYOTECONV:
 		ConvUpdate();
-		if (IsLastFrame())
-		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
-		}
 		break;
 	case COYOTEFACES:
 	{
@@ -204,6 +205,11 @@ void CoyotePreFightScene::UpdateState()
 			{
 				EndCurrState();
 			}
+		}
+
+		if (IsLastFrame())
+		{
+			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
 		}
 		break;
 	}
@@ -346,13 +352,13 @@ void CoyoteAndSkeletonScene::AddFlashes()
 	int holdFrames = scrollFrames + 60;
 
 	AddFlashedImage("screen0", owner->GetTileset("Bosses/Coyote/coyskeleton1.png", 1920, 1080),
-		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540));
-	flashes["screen0"]->AddPanY(scrollRate, fadeInFrames, scrollFrames);
+		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540))
+		->AddPanY(scrollRate, fadeInFrames, scrollFrames);
 
 	AddFlashedImage("screen1", owner->GetTileset("Bosses/Coyote/coyskeleton2.png", 1920, 1080),
-		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540 - 1080));
-	flashes["screen1"]->AddPanY(scrollRate, fadeInFrames, scrollFrames);
-	//flashes["screen1"]->SetDetailedPanY(0, scrollRate, 0);
+		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540 - 1080))
+		->AddPanY(scrollRate, fadeInFrames, scrollFrames);;
+	
 }
 
 void CoyoteAndSkeletonScene::ReturnToGame()
