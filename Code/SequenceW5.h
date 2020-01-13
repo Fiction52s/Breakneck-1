@@ -47,4 +47,75 @@ struct BirdPostFight2Scene : BasicBossScene
 	void UpdateState();
 };
 
+
+struct GatorPreFightScene : BasicBossScene
+{
+	enum State
+	{
+		ENTRANCE,
+		WAIT,
+		GATORCONV,
+		Count
+	};
+
+	GatorPreFightScene(GameSession *owner);
+
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+};
+
+struct GatorPostFightScene : BasicBossScene
+{
+	enum State
+	{
+		FADE,
+		WAIT,
+		GATORANGRY,
+		BIRDATTACKS,
+		TIGERFALL,
+		TIGERLEAVESWITHBIRD,
+		Count
+	};
+
+	GatorPostFightScene(GameSession *owner);
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+};
+
+struct BirdTigerApproachScene : BasicBossScene
+{
+	enum State
+	{
+		FADE,
+		WAIT,
+		CONV,
+		ENTERGATORAREA,
+		FADEOUT,
+		Count
+	};
+
+	BirdTigerApproachScene(GameSession *owner);
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+	void StartRunning();
+};
+
 #endif

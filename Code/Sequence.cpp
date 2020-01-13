@@ -64,6 +64,10 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	{
 		bScene = new BirdCrawlerAllianceScene(owner);
 	}
+	else if (name == "birdtigerapproach")
+	{
+		bScene = new BirdTigerApproachScene(owner);
+	}
 	else if (name == "coyotescene0")
 	{
 		bScene = new CoyoteSleepScene(owner);
@@ -87,6 +91,10 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	else if (name == "birdtigervsscene")
 	{
 		bScene = new BirdVSTigerScene(owner);
+	}
+	else if (name == "gatorscene0")
+	{
+		bScene = new GatorPreFightScene(owner);
 	}
 	else
 	{

@@ -528,9 +528,9 @@ BirdVSTigerScene::BirdVSTigerScene(GameSession *p_owner)
 void BirdVSTigerScene::StartRunning()
 {
 
-	//owner->state = GameSession::SEQUENCE;
-	owner->FreezePlayerAndEnemies(true);
-	owner->SetPlayerInputOn(false);
+	////owner->state = GameSession::SEQUENCE;
+	//owner->FreezePlayerAndEnemies(true);
+	//owner->SetPlayerInputOn(false);
 }
 
 void BirdVSTigerScene::SetupStates()
@@ -617,10 +617,8 @@ void BirdVSTigerScene::UpdateState()
 
 		if (IsLastFrame())
 		{
-			owner->FreezePlayerAndEnemies(false);
 			owner->cam.SetManual(false);
 			owner->adventureHUD->Show();
-			owner->SetPlayerInputOn(true);
 		}
 		break;
 	}

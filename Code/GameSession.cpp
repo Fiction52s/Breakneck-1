@@ -7268,6 +7268,13 @@ int GameSession::Run()
 					}
 					else
 					{
+						if (activeSequence == preLevelScene)
+						{
+							FreezePlayerAndEnemies(false);
+							SetPlayerInputOn(true);
+						}
+
+
 						if (activeSequence == postLevelScene)
 						{
 							goalDestroyed = true;
@@ -9100,6 +9107,7 @@ bool GameSession::IsFading()
 void GameSession::Init()
 {
 	preLevelScene = NULL;
+	postLevelScene = NULL;
 	playerAndEnemiesFrozen = false;
 
 	shardPop = NULL;
@@ -13447,6 +13455,12 @@ void GameSession::LockGate( Gate *g )
 void GameSession::SetActiveSequence(Sequence *activeSeq)
 {
 	activeSequence = activeSeq;
+
+	if (activeSequence == preLevelScene)
+	{
+		FreezePlayerAndEnemies(true);
+		SetPlayerInputOn(false);
+	}
 
 	activeSequence->StartRunning();
 }
