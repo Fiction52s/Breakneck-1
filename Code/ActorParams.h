@@ -328,6 +328,26 @@ struct XBarrierParams : ActorParams
 	bool hasEdge;
 };
 
+struct ExtraSceneParams : ActorParams
+{
+	ExtraSceneParams(ActorType *at,
+		sf::Vector2i &pos, const std::string &name);
+	ExtraSceneParams(ActorType *at,
+		sf::Vector2i &pos);
+	ExtraSceneParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void SetParams();
+	void SetPanelInfo();
+	void Init();
+	void Draw(sf::RenderTarget *target);
+	ActorParams *Copy();
+
+	std::string name;
+	sf::Text nameText;
+	int extraSceneType;
+};
+
 struct KeyParams : public ActorParams
 {
 	KeyParams(ActorType *at,

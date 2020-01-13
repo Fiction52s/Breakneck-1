@@ -131,6 +131,13 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "-----");
 		p->AddCheckBox("hasedge", Vector2i(20, 240));
 	}
+	if (name == "extrascene")
+	{
+		p = new Panel("extrascene_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "-----");
+		p->AddTextBox("scenetype", Vector2i(20, 240), 200, 20, "0");
+	}
 	else if (name == "shippickup")
 	{
 		p = new Panel("shippickup_options", 200, 500, edit);

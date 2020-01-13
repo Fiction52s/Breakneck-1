@@ -81,10 +81,7 @@ void BirdPreFightScene::ReturnToGame()
 
 	BasicBossScene::ReturnToGame();
 
-	CameraShot *shot = shots["fightcam"];
-	owner->cam.Ease(Vector2f(shot->centerPos), shot->zoom, 60, CubicBezier());
-
-	//owner->SetActiveSequence(new BirdPostFightScene(owner));
+	EaseShot("fightcam", 60);
 }
 
 void BirdPreFightScene::UpdateState()
@@ -158,7 +155,7 @@ void BirdPostFightScene::AddShots()
 
 void BirdPostFightScene::AddPoints()
 {
-
+	//AddPoint("kinstand0");
 }
 
 void BirdPostFightScene::AddFlashes()
@@ -294,7 +291,7 @@ void BirdCrawlerAllianceScene::UpdateState()
 
 		if (IsLastFrame())
 		{
-			owner->goalDestroyed = true;
+			//owner->goalDestroyed = true;
 		}
 		break;
 	}

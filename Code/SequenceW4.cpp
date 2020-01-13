@@ -356,9 +356,9 @@ void TigerPostFightScene::SetupStates()
 
 void TigerPostFightScene::ReturnToGame()
 {
-	owner->cam.EaseOutOfManual(60);
-	BasicBossScene::ReturnToGame();
-	owner->adventureHUD->Hide();
+	Actor *player = owner->GetPlayer(0);
+	player->EndLevelWithoutGoal();
+	owner->SetPlayerInputOn(true);
 }
 
 void TigerPostFightScene::AddShots()
@@ -419,10 +419,211 @@ void TigerPostFightScene::UpdateState()
 		ConvUpdate();
 		break;
 	case BIRDRESCUETIGER:
-		if (IsLastFrame()) 
+		break;
+	}
+}
+
+
+
+BirdTigerAllianceScene::BirdTigerAllianceScene(GameSession *p_owner)
+	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+{
+}
+
+void BirdTigerAllianceScene::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[FADE] = 60;
+	stateLength[WAIT] = 60;
+	stateLength[CONV] = -1;
+	stateLength[TIGERSTORY] = 60;
+	stateLength[FADEOUT] = 60;
+}
+
+void BirdTigerAllianceScene::ReturnToGame()
+{
+}
+
+void BirdTigerAllianceScene::AddShots()
+{
+	AddShot("alliancecam");
+}
+
+void BirdTigerAllianceScene::AddPoints()
+{
+
+}
+
+void BirdTigerAllianceScene::AddFlashes()
+{
+
+}
+
+void BirdTigerAllianceScene::AddEnemies()
+{
+
+}
+
+
+void BirdTigerAllianceScene::AddGroups()
+{
+	AddGroup("conv", "W4/w4_bird_tiger");
+	SetConvGroup("conv");
+}
+
+void BirdTigerAllianceScene::UpdateState()
+{
+	Actor *player = owner->GetPlayer(0);
+	switch (state)
+	{
+	case FADE:
+		if (state == FADE)
 		{
-			player->EndLevelWithoutGoal();
+			if (frame == 0)
+			{
+				owner->adventureHUD->Hide();
+				owner->cam.SetManual(true);
+				MainMenu *mm = owner->mainMenu;
+				owner->Fade(true, 60, Color::Black);
+				SetCameraShot("alliancecam");
+			}
+		}
+	case WAIT:
+		break;
+	case CONV:
+	{
+		ConvUpdate();
+		break;
+	}
+	case TIGERSTORY:
+	{
+		break;
+	}
+	case FADEOUT:
+	{
+		if (frame == 0)
+		{
+			owner->Fade(false, 60, Color::Black);
+		}
+
+		if (IsLastFrame())
+		{
+			owner->goalDestroyed = true;
 		}
 		break;
+	}
+
+	}
+}
+
+
+
+
+BirdVSTigerScene::BirdVSTigerScene(GameSession *p_owner)
+	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+{
+}
+
+void BirdVSTigerScene::StartRunning()
+{
+
+	//owner->state = GameSession::SEQUENCE;
+	owner->FreezePlayerAndEnemies(true);
+	owner->SetPlayerInputOn(false);
+}
+
+void BirdVSTigerScene::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[FADE] = 60;
+	stateLength[WAIT] = 60;
+	stateLength[CONV] = -1;
+	stateLength[BIRDRETREAT] = 60;
+	stateLength[TIGERCHASE] = 60;
+	stateLength[FADEOUT] = 60;
+}
+
+void BirdVSTigerScene::ReturnToGame()
+{
+	
+}
+
+void BirdVSTigerScene::AddShots()
+{
+	AddShot("scenecam");
+}
+
+void BirdVSTigerScene::AddPoints()
+{
+
+}
+
+void BirdVSTigerScene::AddFlashes()
+{
+
+}
+
+void BirdVSTigerScene::AddEnemies()
+{
+
+}
+
+void BirdVSTigerScene::AddGroups()
+{
+	AddGroup("conv", "W4/w4_bird_tiger");
+	SetConvGroup("conv");
+}
+
+void BirdVSTigerScene::UpdateState()
+{
+	Actor *player = owner->GetPlayer(0);
+	switch (state)
+	{
+	case FADE:
+		if (state == FADE)
+		{
+			if (frame == 0)
+			{
+				owner->adventureHUD->Hide();
+				owner->cam.SetManual(true);
+				MainMenu *mm = owner->mainMenu;
+				owner->Fade(true, 60, Color::Black);
+				SetCameraShot("scenecam");
+			}
+		}
+	case WAIT:
+		break;
+	case CONV:
+	{
+		ConvUpdate();
+		break;
+	}
+	case BIRDRETREAT:
+	{
+		break;
+	}
+	case TIGERCHASE:
+	{
+		break;
+	}
+	case FADEOUT:
+	{
+		if (frame == 0)
+		{
+			owner->CrossFade( 60, 0, 60, Color::Black);
+		}
+
+		if (IsLastFrame())
+		{
+			owner->FreezePlayerAndEnemies(false);
+			owner->cam.SetManual(false);
+			owner->adventureHUD->Show();
+			owner->SetPlayerInputOn(true);
+		}
+		break;
+	}
+
 	}
 }

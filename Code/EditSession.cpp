@@ -225,6 +225,11 @@ void EditSession::AddGeneralEnemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 1,
 		GetTileset("Enemies/healthfly_64x64.png", 64, 64));
 
+	AddExtraEnemy("extrascene", LoadParams<ExtraSceneParams>, NULL, MakeParamsAerial<ExtraSceneParams>,
+		Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, 1,
+		GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
+
 	AddExtraEnemy("racefighttarget", LoadParams<RaceFightTargetParams>, NULL, MakeParamsAerial<RaceFightTargetParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 

@@ -52,9 +52,17 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	{
 		bScene = new BirdPreFightScene(owner);
 	}
+	if (name == "birdscene1")
+	{
+		bScene = new BirdPreFight2Scene(owner);
+	}
 	else if (name == "crawlerscene0")
 	{
 		bScene = new CrawlerAttackSeq(owner);
+	}
+	else if (name == "birdcrawleralliance")
+	{
+		bScene = new BirdCrawlerAllianceScene(owner);
 	}
 	else if (name == "coyotescene0")
 	{
@@ -75,6 +83,10 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	else if (name == "tigerscene0")
 	{
 		bScene = new TigerPreFightScene(owner);
+	}
+	else if (name == "birdtigervsscene")
+	{
+		bScene = new BirdVSTigerScene(owner);
 	}
 	else
 	{
@@ -115,14 +127,13 @@ ShipExitSeq::ShipExitSeq( GameSession *p_owner )
 	shipSprite.setOrigin(421, 425);
 
 	storySeq = NULL;
-	scene = NULL;
 
 	//storySeq = new StorySequence(owner);
 	//storySeq->Load("world1outro");
 
-	scene = new BirdCrawlerAllianceScene(owner);
-	scene->Init();
-	nextSeq = scene;
+	//scene = new BirdCrawlerAllianceScene(owner);
+	//scene->Init();
+	//nextSeq = scene;
 
 	//assert(mov.openFromFile("Resources/Movie/kin_ship.ogv"));
 	//mov.fit(sf::FloatRect(0, 0, 1920, 1080));
@@ -255,11 +266,15 @@ bool ShipExitSeq::Update()
 			{
 				frame = stateLength[STORYSEQ] - 1;
 				owner->goalDestroyed = true;
+				//owner->EndLevel();
+				//owner->EndLevel()
+				//owner->goalDestroyed = true;
 			}
 		}
 		else
 		{
 			frame = stateLength[STORYSEQ] - 1;
+			owner->EndLevel();
 		}
 		break;
 	}
@@ -899,7 +914,7 @@ void BasicBossScene::SetPlayerStandDefaultPoint(bool fr)
 void BasicBossScene::ReturnToGame()
 {
 	owner->SetPlayerInputOn(true);
-	owner->adventureHUD->Show(60);
+	owner->adventureHUD->Show();
 	owner->cam.EaseOutOfManual(60);
 }
 

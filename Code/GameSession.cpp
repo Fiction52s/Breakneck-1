@@ -71,6 +71,10 @@
 #include "Enemy_WireJuggler.h"
 #include "ShardSequence.h"
 #include "Barrier.h"
+
+
+#include "SequenceW4.h"
+
 //#include "Enemy_Cheetah.h"
 //#include "Enemy_Copycat.h"
 //#include "Enemy_CoralNanobots.h"
@@ -1822,6 +1826,36 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			barrierMap[pname] = b;
 			barriers.push_back(b);
 		}
+		else if (typeName == "extrascene")
+		{
+			string pname;
+
+			Vector2i pos;
+			is >> pos.x;
+			is >> pos.y;
+
+			is >> pname;
+
+			int extraSceneType;
+			is >> extraSceneType;
+
+			BasicBossScene *scene = BasicBossScene::CreateScene(this, pname);
+			if (extraSceneType == 0)//prelevel
+			{
+				preLevelScene = scene;
+			}
+			else if (extraSceneType == 1)//postlevel
+			{
+				postLevelScene = scene;
+			}
+
+			//BirdVSTigerScene *scene = new BirdVSTigerScene(this);
+			//scene->Init();
+			//SetActiveSequence(scene);
+		}
+
+
+		
 		else if (typeName == "camerashot")
 		{
 			Vector2i pos;
@@ -6572,6 +6606,8 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 #include "StorySequence.h"
 int GameSession::Run()
 {
+
+
 	ClearEmitters();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVisible = mainMenu->GetMouseVisible();
@@ -6735,6 +6771,12 @@ int GameSession::Run()
 	{
 		//Fade(true, 60, Color::Black, true);
 	}
+	
+	if (preLevelScene != NULL)
+	{
+		SetActiveSequence(preLevelScene);
+	}
+	
 
 	while( !quit )
 	{
@@ -6787,13 +6829,6 @@ int GameSession::Run()
 			runningTimerText.setString(GetTimeStr(tFrames));
 			
 		}
-		//cout << "frameCounter: " << frameCounter << endl;
-		//for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
-		//{
-			//cout << "testt: " << (*it)->sourceName << ", "
-			//	<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
-			//delete (*it);
-		//}
 
 		if( state == RUN )
 		{
@@ -7233,6 +7268,11 @@ int GameSession::Run()
 					}
 					else
 					{
+						if (activeSequence == postLevelScene)
+						{
+							goalDestroyed = true;
+						}
+
 						state = RUN;
 						activeSequence = NULL;
 					}
@@ -7305,17 +7345,25 @@ int GameSession::Run()
 				if (inputVis != NULL)
 					inputVis->Update(GetPlayer(0)->currInput);
 
-				UpdateEnemiesPrePhysics();
+				if (!playerAndEnemiesFrozen)
+				{
+					UpdateEnemiesPrePhysics();
 
-				UpdateEnemiesPhysics();
+					UpdateEnemiesPhysics();
+				}
+
+				
 
 				RecordReplayEnemies();
 
-				for( int i = 0; i < 4; ++i )
+				if (!playerAndEnemiesFrozen)
 				{
-					p = GetPlayer( i );
-					if( p != NULL )
-						p->UpdatePostPhysics();
+					for (int i = 0; i < 4; ++i)
+					{
+						p = GetPlayer(i);
+						if (p != NULL)
+							p->UpdatePostPhysics();
+					}
 				}
 
 				switch (mh->bossFightType)
@@ -7391,7 +7439,12 @@ int GameSession::Run()
 					}
 				}
 
-				UpdateEnemiesPostPhysics();
+
+				if (!playerAndEnemiesFrozen)
+				{
+					UpdateEnemiesPostPhysics();
+				}
+				
 				
 				for( int i = 0; i < numGates; ++i )
 				{
@@ -7974,92 +8027,6 @@ int GameSession::Run()
 		if( raceFight != NULL )
 		{
 			raceFight->DrawScore( preScreenTex );
-		}
-		
-		if( false )
-		{
-			sf::RectangleShape rectPost( Vector2f( 1920, 1080 ) );
-			rectPost.setPosition( 0, 0 );
-			//Vector2f camVel = cam.pos - oldCamCenter;
-			
-			Vector2f botLeft = Vector2f( view.getCenter().x - view.getSize().x / 2, 
-				view.getCenter().y + view.getSize().y / 2 );
-			
-
-			motionBlurShader.setUniform( "tex", preScreenTex->getTexture() );
-			motionBlurShader.setUniform( "oldBotLeft", oldCamBotLeft );
-			motionBlurShader.setUniform( "botLeft", botLeft );
-			motionBlurShader.setUniform( "oldZoom", oldZoom );
-			motionBlurShader.setUniform( "zoom", cam.GetZoom() );
-
-			motionBlurShader.setUniform( "g_ViewProjectionInverseMatrix", view.getTransform().getInverse().getMatrix() );
-			motionBlurShader.setUniform( "g_previousViewProjectionMatrix", oldView.getTransform().getMatrix());
-
-			
-			postProcessTex->draw( rectPost, &motionBlurShader );
-
-			postProcessTex->display();
-
-			sf::Sprite pptSpr;
-			pptSpr.setTexture( postProcessTex->getTexture() );
-			//pptSpr.setScale( 2, 2 );
-			//RenderStates blahRender;
-			//blahRender.blendMode = sf::BlendAdd;//sf::BlendAdd;
-
-			preScreenTex->draw( pptSpr );
-			//postProcessTex->display();
-			
-		}
-		else if( false )
-		{
-		sf::RectangleShape rectPost( Vector2f( 1920/2, 1080/2 ) );
-		rectPost.setPosition( 0, 0 );
-		glowShader.setUniform( "tex", preScreenTex->getTexture() );
-		//glowShader.setUniform( "old", postProcessTex->getTexture() );
-		postProcessTex->draw( rectPost, &glowShader );
-
-		for( int i = 0; i < 3; ++i )
-		{
-			postProcessTex->display();
-			hBlurShader.setUniform( "tex", postProcessTex->getTexture() );
-			
-			postProcessTex1->draw( rectPost, &hBlurShader );
-
-			postProcessTex1->display();
-			vBlurShader.setUniform( "tex", postProcessTex1->getTexture() );
-			postProcessTex->draw( rectPost, &vBlurShader );
-		}
-		
-
-
-		postProcessTex->display();
-
-		sf::Sprite pptSpr;
-		pptSpr.setTexture( postProcessTex->getTexture() );
-		pptSpr.setScale( 2, 2 );
-		RenderStates blahRender;
-		blahRender.blendMode = sf::BlendAdd;
-
-		preScreenTex->draw( pptSpr, blahRender );
-		}
-		else if( false )
-		{
-			sf::RectangleShape rectPost( Vector2f( 1920/2, 1080/2 ) );
-			rectPost.setPosition( 0, 0 );
-			for( int i = 0; i < 3; ++i )
-			{
-				hBlurShader.setUniform( "tex", preScreenTex->getTexture() );
-				postProcessTex->draw( rectPost, &hBlurShader );
-
-				postProcessTex->display();
-				vBlurShader.setUniform( "tex", postProcessTex->getTexture() );
-				preScreenTex->draw( rectPost, &vBlurShader );
-
-				if( i < 2 )
-				{
-					preScreenTex->display();
-				}
-			}
 		}
 	
 		if (adventureHUD != NULL)
@@ -9132,6 +9099,9 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	preLevelScene = NULL;
+	playerAndEnemiesFrozen = false;
+
 	shardPop = NULL;
 
 	nextFrameRestart = false;
@@ -9758,6 +9728,31 @@ void GameSession::UpdateTimeSlowShader()
 	cloneShader.setUniform("b4Frame", (float)p0->bubbleFramesToLive[4]);
 	//cloneShader.setUniform( "bubble5", pos5 );
 	//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
+}
+
+//void GameSession::EndLevel(GameResultType rType)
+//{
+//	resType = rType;
+//	if (postLevelScene != NULL)
+//	{
+//		SetActiveSequence(postLevelScene);
+//	}
+//	else
+//	{
+//		goalDestroyed = true;
+//	}
+//}
+
+void GameSession::EndLevel()
+{
+	if (postLevelScene != NULL)
+	{
+		SetActiveSequence(postLevelScene);
+	}
+	else
+	{
+		goalDestroyed = true;
+	}
 }
 
 void GameSession::DrawStoryLayer(EffectLayer ef)
@@ -10528,6 +10523,7 @@ void GameSession::NextFrameRestartLevel()
 void GameSession::RestartLevel()
 {
 	
+		
 	//OpenGates(Gate::CRAWLER_UNLOCK);
 
 	ClearEmitters();
@@ -10576,7 +10572,7 @@ void GameSession::RestartLevel()
 
 	//crawlerFightSeq->Reset();
 	//enterNexus1Seq->Reset();
-	activeSequence = NULL;
+	
 
 	soundNodeList->Reset();
 	scoreDisplay->Reset();
@@ -10688,9 +10684,17 @@ void GameSession::RestartLevel()
 
 	cam.SetManual( false );
 
-	
-	
-	//inGameClock.restart();
+	activeSequence = NULL;
+	//later can have a setting for this if needed
+	/*if (preLevelScene != NULL)
+	{
+		preLevelScene->Reset();
+		SetActiveSequence(preLevelScene);
+	}
+	else
+	{
+		activeSequence = NULL;
+	}*/
 }
 
 void GameSession::AddGravityGrassToExplodeList(Grass *g)
@@ -12989,6 +12993,12 @@ void GameSession::Pause( int frames )
 			p->ClearPauseBufferedActions();
 		}
 	}
+}
+
+
+void GameSession::FreezePlayerAndEnemies( bool freeze)
+{
+	playerAndEnemiesFrozen = freeze;
 }
 
 void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )

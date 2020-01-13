@@ -45,6 +45,8 @@ struct InputVisualizer;
 struct MomentaBroadcast;
 struct TerrainDecorInfo;
 
+struct BasicBossScene;
+
 struct LoadingMapProgressDisplay;
 
 
@@ -211,7 +213,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	//that implement more complex behaviors
 	
 	void DrawHealthFlies(sf::RenderTarget *target);
-	
+
 	sf::Vertex *healthFlyVA;
 	Tileset *ts_healthFly;
 	int numTotalFlies;
@@ -221,6 +223,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool hasAnyGrass;
 
 	ShapeEmitter *testEmit;
+
+	BasicBossScene *preLevelScene;
+	BasicBossScene *postLevelScene;
 
 	std::list<SpecialTerrainPiece*> allSpecialTerrain;
 	ShardPopup *shardPop;
@@ -586,6 +591,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void Pause( int frames );
+	void FreezePlayerAndEnemies( bool freeze );
+	bool playerAndEnemiesFrozen;
 
 	void GameStartMovie();
 
@@ -865,6 +872,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::string fileName;
 	boost::filesystem::path filePath;
 	bool goalDestroyed;
+
+	//void EndLevel(GameResultType rType);
+	void EndLevel();
+
 	GameResultType resType;
 	sf::View cloudView;
 

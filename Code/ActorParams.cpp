@@ -2536,3 +2536,95 @@ void CameraShotParams::Draw(RenderTarget *target)
 
 	target->draw(zoomText);
 }
+
+
+
+
+ExtraSceneParams::ExtraSceneParams(ActorType *at,
+	Vector2i &pos, const string &p_name)
+	:ActorParams(at)
+{
+	Init();
+	PlaceAerial(pos);
+	name = p_name;
+	extraSceneType = 0;
+}
+
+ExtraSceneParams::ExtraSceneParams(ActorType *at,
+	Vector2i &pos)
+	:ActorParams(at)
+{
+	Init();
+	PlaceAerial(pos);
+	name = "----";
+	extraSceneType = 0;
+}
+
+ExtraSceneParams::ExtraSceneParams(ActorType *at,
+	ifstream &is)
+	: ActorParams(at)
+{
+	Init();
+	LoadAerial(is);
+
+	is >> name;
+
+	is >> extraSceneType;
+}
+
+void ExtraSceneParams::Init()
+{
+	EditSession *session = EditSession::GetSession();
+	nameText.setFont(session->arial);
+	nameText.setCharacterSize(40);
+	nameText.setFillColor(Color::White);
+}
+
+void ExtraSceneParams::WriteParamFile(std::ofstream &of)
+{
+	of << name << endl;
+	of << extraSceneType << endl;
+}
+
+void ExtraSceneParams::SetParams()
+{
+	Panel *p = type->panel;
+	name = p->textBoxes["name"]->text.getString().toAnsiString();
+
+	stringstream ss;
+	string sceneTypeStr = p->textBoxes["scenetype"]->text.getString().toAnsiString();
+	ss << sceneTypeStr;
+
+	int sType;
+	ss >> sType;
+
+	if (!ss.fail())
+	{
+		extraSceneType = sType;
+	}
+}
+
+void ExtraSceneParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString(name);
+	p->textBoxes["scenetype"]->text.setString(to_string(extraSceneType));
+}
+
+ActorParams *ExtraSceneParams::Copy()
+{
+	ExtraSceneParams *copy = new ExtraSceneParams(*this);
+	return copy;
+}
+
+void ExtraSceneParams::Draw(sf::RenderTarget *target)
+{
+	ActorParams::Draw(target);
+
+	nameText.setString(name);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
+	nameText.setPosition(position.x, position.y - 100);
+
+	target->draw(nameText);
+}

@@ -17675,11 +17675,13 @@ void Actor::UpdatePostPhysics()
 
 	if (action == EXITWAIT && frame == actionLength[EXITWAIT])
 	{
-		owner->goalDestroyed = true;	
+		owner->EndLevel();
+		//owner->goalDestroyed = true;	
 	}
 	else if (action == EXITBOOST && frame == actionLength[EXITBOOST])
 	{
-		owner->goalDestroyed = true;
+		owner->EndLevel();
+		//owner->goalDestroyed = true;
 	}
 	
 

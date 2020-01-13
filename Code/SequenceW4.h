@@ -99,4 +99,53 @@ struct TigerPostFightScene : BasicBossScene
 	void UpdateState();
 };
 
+struct BirdTigerAllianceScene : BasicBossScene
+{
+	enum State
+	{
+		FADE,
+		WAIT,
+		CONV,
+		TIGERSTORY,
+		FADEOUT,
+		Count
+	};
+
+	BirdTigerAllianceScene(GameSession *owner);
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+	
+};
+
+struct BirdVSTigerScene : BasicBossScene
+{
+	enum State
+	{
+		FADE,
+		WAIT,
+		CONV,
+		BIRDRETREAT,
+		TIGERCHASE,
+		FADEOUT,
+		Count
+	};
+
+	BirdVSTigerScene(GameSession *owner);
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+	void StartRunning();
+};
+
 #endif

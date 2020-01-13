@@ -114,7 +114,7 @@ struct ShipExitSeq : Sequence
 	void Reset();
 
 	StorySequence *storySeq;
-	BasicBossScene *scene;
+	//BasicBossScene *scene;
 	//sfe::Movie mov;
 	Tileset *ts_ship;
 	sf::Sprite shipSprite;
