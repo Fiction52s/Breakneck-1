@@ -39,6 +39,7 @@
 #include "SequenceW4.h"
 #include "SequenceW5.h"
 #include "SequenceW6.h"
+#include "SequenceW7.h"
 
 using namespace sf;
 using namespace std;
@@ -95,6 +96,19 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	else if (name == "gatorscene0")
 	{
 		bScene = new GatorPreFightScene(owner);
+	}
+	else if (name == "birdchase")
+	{
+		bScene = new BirdChaseScene(owner);
+	}
+	else if (name == "birdfinalfight")
+	{
+		bScene = new BirdPreFight3Scene(owner);
+		
+	}
+	else if (name == "finalskeletonfight")
+	{
+		bScene = new FinalSkeletonPreFightScene(owner);
 	}
 	else
 	{
@@ -922,7 +936,7 @@ void BasicBossScene::SetPlayerStandDefaultPoint(bool fr)
 void BasicBossScene::ReturnToGame()
 {
 	owner->SetPlayerInputOn(true);
-	owner->adventureHUD->Show();
+	owner->adventureHUD->Show(60);
 	owner->cam.EaseOutOfManual(60);
 }
 
