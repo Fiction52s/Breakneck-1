@@ -548,6 +548,8 @@ sf::FloatRect Camera::GetRect()
 void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
 {
 	SetManual(true);
+
+	easing = false;
 	/*if (!manual)
 	{
 		int x = 5;

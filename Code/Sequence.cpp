@@ -110,6 +110,22 @@ BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::strin
 	{
 		bScene = new FinalSkeletonPreFightScene(owner);
 	}
+	else if (name == "enterfortress")
+	{
+		bScene = new TigerAndBirdTunnelScene(owner);
+	}
+	else if( name == "tigerbirdtunnel")
+	{
+		bScene = new TigerAndBirdTunnelScene(owner);
+	}
+	else if (name == "skeletonfight")
+	{
+		bScene = new SkeletonPreFightScene(owner);
+	}
+	else if (name == "tigerfight2")
+	{
+		bScene = new TigerPreFight2Scene(owner);
+	}
 	else
 	{
 		assert(0);
@@ -942,7 +958,15 @@ void BasicBossScene::ReturnToGame()
 
 bool BasicBossScene::IsAutoRunState()
 {
-	return state == 0;
+	if (entranceType == RUN)
+	{
+		return state == 0;
+	}
+	else
+	{
+		return false;
+	}
+	
 }
 
 void BasicBossScene::Wait()
@@ -991,14 +1015,11 @@ bool BasicBossScene::Update()
 		return false;
 	}
 
-	if (entranceType == RUN)
+	if (IsAutoRunState() && !player->IsAutoRunning() && frame > 60)
 	{
-		if (IsAutoRunState() && !player->IsAutoRunning() && frame > 60)
-		{
-			state++;
-			frame = 0;
-			//Wait();
-		}
+		state++;
+		frame = 0;
+		//Wait();
 	}
 
 	UpdateFlashes();
