@@ -312,6 +312,9 @@ struct EditSession : GUIHandler, TilesetManager
 	ActorParams* tempActor;
 	MapHeader mapHeader;
 
+	const static int POINT_SIZE = 5;
+	double GetZoomedPointSize();
+
 	const static double PRIMARY_LIMIT;
 	sf::RenderTexture *preScreenTex;
 	int validityRadius;
@@ -323,6 +326,8 @@ struct EditSession : GUIHandler, TilesetManager
 
 	bool showGrass;
 	bool showPoints;
+
+	bool justCompletedPolyWithClick;
 
 	TerrainPolygon *cutPoly0;
 	TerrainPolygon *cutPoly1;
@@ -382,6 +387,8 @@ struct EditSession : GUIHandler, TilesetManager
 
 
 	double minimumEdgeLength;
+
+	double GetZoomedMinEdgeLength();
 	//double minAngle;
 	
 	std::list<boost::shared_ptr<TerrainRail>> rails;

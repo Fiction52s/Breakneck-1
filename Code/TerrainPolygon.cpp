@@ -1731,7 +1731,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		for( list<Vector2i>::iterator it = path.begin(); it != path.end(); ++it )
 		{
 			CircleShape cs;
-			cs.setRadius( 5 * zoomMultiple );
+			cs.setRadius( EditSession::POINT_SIZE * zoomMultiple );
 			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
 
 			cs.setFillColor( Color::Magenta );
@@ -1964,18 +1964,61 @@ void TerrainPolygon::AddPoint( TerrainPoint* tp)
 	++numPoints;
 }
 
+bool TerrainPolygon::PointsTooCloseToSegInProgress(sf::Vector2i point,
+	int minDistance)
+{
+	V2d p(point.x, point.y);
+
+	TerrainPoint *pcurr = pointStart;
+	TerrainPoint *pnext = NULL;
+
+	Vector2i endPos = pointEnd->pos;
+
+	while (pcurr != NULL)
+	{
+		pnext = pcurr->next;
+
+		if (pnext == NULL || pnext->next == NULL)
+		{
+			return false;
+		}
+
+		if (SegmentWithinDistanceOfPoint(endPos, point, pcurr->pos, minDistance))
+		{
+			return true;
+		}
+
+		pcurr = pnext;
+	}
+	return false;
+}
+
 bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 {
-	TerrainPoint *curr = pointStart;
-	TerrainPoint *next;
 	EditSession *sess = EditSession::GetSession();
 
-	if (numPoints == 0 || (numPoints > 0 &&
-		length(V2d(point.x, point.y)
-			- Vector2<double>(pointEnd->pos.x,pointEnd->pos.y)) 
-		>= sess->minimumEdgeLength * std::max(sess->zoomMultiple, 1.0)))
+
+	if (numPoints == 0)
+		return true;
+
+	if (numPoints >= 3 && IsCloseToFirstPoint(sess->GetZoomedPointSize(), V2d(point)))
 	{
-		if ( numPoints > 0 && LinesIntersectInProgress(point))
+		return true;
+	}
+
+
+	double minEdge = sess->GetZoomedMinEdgeLength();
+	//if (numPoints == 0 || (numPoints > 0 &&
+		//length(V2d(point.x, point.y) - Vector2<double>(pointEnd->pos.x,pointEnd->pos.y)) >= minEdge))
+	{
+		bool pointTooClose = PointTooClose(point, minEdge, true);
+		bool linesIntersect = LinesIntersectInProgress(point);
+		if (pointTooClose || linesIntersect )
+		{
+			return false;
+		}
+
+		if (PointsTooCloseToSegInProgress(point, minEdge) )
 		{
 			return false;
 		}
@@ -3005,6 +3048,11 @@ bool TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
 	return false;
 }
 
+bool TerrainPolygon::IsCompletionValid( int minDistance)
+{
+	return true;
+}
+
 bool TerrainPolygon::LinesIntersectInProgress(Vector2i p)
 {
 	//my lines vs his lines
@@ -3059,7 +3107,7 @@ bool TerrainPolygon::PointTooCloseToPoints( Vector2i point, int minDistance )
 		if( lengthSqr( diff ) < minDistance * minDistance )
 		{
 			//cout << "blah: " << lengthSqr( diff ) << endl;
-			cout << "diff: " << diff.x << ", " << diff.y << endl;
+			//cout << "diff: " << diff.x << ", " << diff.y << endl;
 			return true;
 		}
 	}
@@ -3081,16 +3129,20 @@ bool TerrainPolygon::Contains( TerrainPolygon *poly )
 	return true;
 }
 
-bool TerrainPolygon::PointTooClose( sf::Vector2i point, int minDistance )
+bool TerrainPolygon::PointTooClose( sf::Vector2i point, int minDistance, bool inProgress )
 {
 	bool a = PointTooCloseToPoints( point, minDistance );
-	bool b = PointTooCloseToLines( point, minDistance );
+	bool b = PointTooCloseToLines( point, minDistance, inProgress );
 	if( a || b )
 	{
-		if( a )
+		/*if (a && b)
+		{
+			cout << "both are too close" << endl;
+		}
+		else if( a )
 			cout << "A point too close" << endl;
 		else
-			cout << "B point too close" << endl;
+			cout << "B point too close" << endl;*/
 
 		return true;
 	}
@@ -3100,7 +3152,7 @@ bool TerrainPolygon::PointTooClose( sf::Vector2i point, int minDistance )
 	}
 }
 
-bool TerrainPolygon::PointTooCloseToLines( sf::Vector2i point, int minDistance )
+bool TerrainPolygon::PointTooCloseToLines( sf::Vector2i point, int minDistance, bool inProgress)
 {
 	V2d p( point.x, point.y );
 
@@ -3109,6 +3161,11 @@ bool TerrainPolygon::PointTooCloseToLines( sf::Vector2i point, int minDistance )
 
 	for( ; pcurr != NULL; pcurr = pcurr->next )
 	{
+		if (inProgress && pcurr == pointStart)
+		{
+			continue;
+		}
+
 		if( pcurr == pointStart )
 		{
 			prev = pointEnd;
@@ -3291,6 +3348,16 @@ TerrainPoint *TerrainPolygon::GetClosePoint(double radius, V2d &wPos)
 		}
 	}
 	return NULL;
+}
+
+bool TerrainPolygon::IsCloseToFirstPoint(double radius, V2d &p)
+{
+	if (length(p - V2d(pointStart->pos.x, pointStart->pos.y)) <= radius)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 bool TerrainPolygon::IsPoint(sf::Vector2i &p)

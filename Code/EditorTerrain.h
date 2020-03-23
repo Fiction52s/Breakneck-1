@@ -246,15 +246,18 @@ struct TerrainPolygon : ISelectable
 	//bool IsTouching( TerrainPolygon * p );
 	bool BoundsOverlap(TerrainPolygon *poly);
 	bool LinesIntersect(TerrainPolygon *poly);
-	bool LinesIntersectInProgress(sf::Vector2i p);
+	bool LinesIntersectInProgress(sf::Vector2i p );
+	bool IsCompletionValid( int minDistance);
 	bool PointTooCloseToPoints(sf::Vector2i point,
 		int minDistance);
 	bool PointTooClose(sf::Vector2i point,
-		int minDistance);
+		int minDistance, bool inProgress = false);
 	bool LinesTooClose(TerrainPolygon *poly,
 		int minDistance);
 	bool PointTooCloseToLines(sf::Vector2i point,
-		int minDistance);
+		int minDistance, bool inProgress = false);
+	bool PointsTooCloseToSegInProgress(sf::Vector2i point,
+		int minDistance );
 	bool SegmentTooClose(sf::Vector2i a,
 		sf::Vector2i b, int minDistance);
 	bool SegmentWithinDistanceOfPoint(
@@ -266,7 +269,7 @@ struct TerrainPolygon : ISelectable
 		bool intersectAllowed,
 		int minDistance);
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
-
+	bool IsCloseToFirstPoint(double radius, V2d &p);
 	sf::Color selectCol;
 	sf::Color fillCol;
 

@@ -4269,6 +4269,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	showGrass = false;
 	showGraph = false;
 
+	justCompletedPolyWithClick = false;
+
 	trackingEnemy = NULL;
 	showPanel = NULL;
 
@@ -9120,6 +9122,11 @@ bool EditSession::CheckValidPaste()
 	return true;
 }
 
+double EditSession::GetZoomedMinEdgeLength()
+{
+	return minimumEdgeLength * std::max(zoomMultiple, 1.0);
+}
+
 void EditSession::Paste()
 {
 	for (list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
@@ -9593,11 +9600,19 @@ void EditSession::TryAddPointToPolygonInProgress()
 
 		bool validPoint = polygonInProgress->IsValidInProgressPoint(worldi);//true;
 
-
 		//test validity later
 		if (validPoint)
 		{
-			polygonInProgress->AddPoint(new TerrainPoint(worldi, false));
+			if ( polygonInProgress->numPoints >= 3 && polygonInProgress->IsCloseToFirstPoint(GetZoomedPointSize(), V2d(worldi)))
+			{
+				ExecuteTerrainCompletion();
+				justCompletedPolyWithClick = true;
+				//complete polygon
+			}
+			else
+			{
+				polygonInProgress->AddPoint(new TerrainPoint(worldi, false));
+			}
 		}
 	}
 }
@@ -10236,7 +10251,7 @@ void EditSession::DrawPolygonInProgress()
 		preScreenTex->draw(v);
 
 		CircleShape cs;
-		cs.setRadius(5 * zoomMultiple);
+		cs.setRadius(POINT_SIZE * zoomMultiple);
 		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
 		cs.setFillColor(Color::Green);
 
@@ -10288,7 +10303,7 @@ void EditSession::DrawRailInProgress()
 		}
 
 		CircleShape cs;
-		cs.setRadius(5 * zoomMultiple);
+		cs.setRadius(POINT_SIZE * zoomMultiple);
 		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
 		cs.setFillColor(Color::Red);
 
@@ -10416,7 +10431,7 @@ void EditSession::DrawPatrolPathInProgress()
 	if (pathSize > 0) //always
 	{
 		CircleShape cs;
-		cs.setRadius(5 * zoomMultiple);
+		cs.setRadius(POINT_SIZE * zoomMultiple);
 		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
 		cs.setFillColor(Color::Green);
 
@@ -10429,11 +10444,16 @@ void EditSession::DrawPatrolPathInProgress()
 	}
 }
 
+double EditSession::GetZoomedPointSize()
+{
+	return POINT_SIZE * zoomMultiple;
+}
+
 void EditSession::DrawGateInProgress()
 {
 	if (gatePoints > 0)
 	{
-		CircleShape cs(5 * zoomMultiple);
+		CircleShape cs(POINT_SIZE * zoomMultiple);
 		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
 		cs.setPosition(testGateInfo.point0->pos.x, testGateInfo.point0->pos.y);
 		cs.setFillColor(COLOR_TEAL);
@@ -10939,6 +10959,8 @@ void EditSession::CreateTerrainModeHandleEvent()
 
 			CutPoly();
 		}
+
+		justCompletedPolyWithClick = false; //just make this always false here.
 
 		break;
 	}
@@ -11598,6 +11620,7 @@ void EditSession::SelectModeHandleEvent()
 		else if (menuSelection == "upperright")
 		{
 			showPoints = false;
+			justCompletedPolyWithClick = false;
 			mode = CREATE_TERRAIN;
 			showPanel = NULL;
 		}
@@ -12107,7 +12130,10 @@ void EditSession::CreateTerrainModeUpdate()
 
 	PreventNearPrimaryAnglesOnPolygonInProgress();
 
-	TryAddPointToPolygonInProgress();
+	if (!justCompletedPolyWithClick)
+	{
+		TryAddPointToPolygonInProgress();
+	}
 }
 
 void EditSession::CreateRailsModeUpdate()
