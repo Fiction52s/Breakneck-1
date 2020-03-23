@@ -42,10 +42,6 @@ ShipPickup::ShipPickup( GameSession *owner, Edge *g, double q, bool p_facingRigh
 	sprite.setRotation( angle / PI * 180 );
 	
 
-	//frame = 0;
-	//slowCounter = 1;
-	//slowMultiple = 1;
-
 	spawnRect = sf::Rect<double>( gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2 );
 
 	actionLength[IDLE] = 20;

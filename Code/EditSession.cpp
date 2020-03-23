@@ -8749,15 +8749,15 @@ bool EditSession::PointSelectPoly(V2d &pos)
 	auto & currPolyList = GetCorrectPolygonList();
 	for (list<PolyPtr>::iterator it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
-		bool pressF1 = IsKeyPressed(Keyboard::F1);
-		if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
-			continue;
+		//bool pressF1 = IsKeyPressed(Keyboard::F1);
+		//if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
+		//	continue;
 
 		bool sel = (*it)->ContainsPoint(Vector2f(pos));
-		if ((*it)->inverse)
+		/*if ((*it)->inverse)
 		{
 			sel = !sel;
-		}
+		}*/
 
 		if (sel)
 		{
@@ -9589,20 +9589,15 @@ void EditSession::TryAddPointToPolygonInProgress()
 			return;
 		}
 
-		bool validPoint = true;
+		Vector2i worldi(testPoint.x, testPoint.y);
+
+		bool validPoint = polygonInProgress->IsValidInProgressPoint(worldi);//true;
+
 
 		//test validity later
 		if (validPoint)
 		{
-			Vector2i worldi(testPoint.x, testPoint.y);
-
-			if (polygonInProgress->numPoints == 0 || (polygonInProgress->numPoints > 0 &&
-				length(V2d(testPoint.x, testPoint.y)
-					- Vector2<double>(polygonInProgress->pointEnd->pos.x,
-						polygonInProgress->pointEnd->pos.y)) >= minimumEdgeLength * std::max(zoomMultiple, 1.0)))
-			{
-				polygonInProgress->AddPoint(new TerrainPoint(worldi, false));
-			}
+			polygonInProgress->AddPoint(new TerrainPoint(worldi, false));
 		}
 	}
 }
@@ -10199,33 +10194,46 @@ void EditSession::DrawPolygonInProgress()
 		Color validColor = Color::Green;
 		Color invalidColor = Color::Red;
 		Color colorSelection;
-		if (true)
+
+		bool valid = polygonInProgress->IsValidInProgressPoint(Vector2i(testPoint));
+		if (valid)
 		{
 			colorSelection = validColor;
 		}
-
+		else
 		{
-			sf::Vertex activePreview[2] =
-			{
-				sf::Vertex(sf::Vector2<float>(backPoint.x, backPoint.y), colorSelection),
-				sf::Vertex(sf::Vector2<float>(testPoint.x, testPoint.y), colorSelection)
-			};
-
-
-			preScreenTex->draw(activePreview, 2, sf::Lines);
+			colorSelection = invalidColor;
 		}
+
+		int pSize = progressSize;
+		if (progressSize == 1)
+		{
+			pSize += 1;
+		}
+		else
+		{
+			pSize += 2;
+		}
+
+		VertexArray v(sf::LinesStrip, pSize);
+
+		int i = 0;
 
 		if (progressSize > 1)
 		{
-			VertexArray v(sf::LinesStrip, progressSize);
-			int i = 0;
 			for (TerrainPoint *curr = polygonInProgress->pointStart; curr != NULL; curr = curr->next)
 			{
-				v[i] = Vertex(Vector2f(curr->pos.x, curr->pos.y));
+				v[i] = Vertex(Vector2f(curr->pos.x, curr->pos.y), validColor);
 				++i;
-			}
-			preScreenTex->draw(v);
+			}	
 		}
+
+
+		v[i] = Vertex(Vector2f(backPoint), colorSelection);
+		v[i + 1] = Vertex(Vector2f(testPoint), colorSelection);
+
+		
+		preScreenTex->draw(v);
 
 		CircleShape cs;
 		cs.setRadius(5 * zoomMultiple);

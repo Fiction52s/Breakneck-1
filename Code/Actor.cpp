@@ -3000,8 +3000,10 @@ void Actor::UpdatePrePhysics()
 
 			if (!owner->scoreDisplay->active && owner->activeSequence == NULL)
 			{
-				owner->SetActiveSequence(owner->shipExitSeq);
-				owner->shipExitSeq->Reset();
+				owner->SetActiveSequence(owner->shipExitScene);
+				owner->shipExitScene->Reset();
+				//owner->SetActiveSequence(owner->shipExitSeq);
+				//owner->shipExitSeq->Reset();
 			}
 		}
 		if( action == INTRO && frame == 0 )

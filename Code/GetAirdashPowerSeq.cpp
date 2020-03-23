@@ -38,10 +38,6 @@ using namespace std;
 GetAirdashPowerSeq::GetAirdashPowerSeq(GameSession *p_owner)
 	:owner(p_owner)
 {
-	//SetRectCenter(darkQuad, 1920, 1080, Vector2f(960, 540));// , Vector2f(pi->pos));
-	//SetRectColor(darkQuad, Color(Color::Red));
-
-	//state = ENTERCORE;
 	assert(mov.openFromFile("Resources/Movie/kin_meditate_01.ogv"));
 	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 
@@ -57,16 +53,11 @@ GetAirdashPowerSeq::GetAirdashPowerSeq(GameSession *p_owner)
 	stateLength[PLAYMOVIE] = 1000000;
 	stateLength[FADE_BACK] = 90;
 
-	//ts_darkAura = owner->GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
-	//darkAuraSprite.setTexture(*ts_darkAura->texture);
-
 	darkRect.setFillColor(Color::Black);
 	darkRect.setSize(Vector2f(1920, 1080));
 	darkRect.setPosition(0, 0);
 
 	Reset();
-
-	//mov.stop();
 }
 
 bool GetAirdashPowerSeq::Update()

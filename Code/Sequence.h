@@ -18,6 +18,11 @@ struct ShapeEmitter;
 struct StorySequence;
 struct Conversation;
 struct Enemy;
+struct BasicBossScene;
+struct ButtonHolder;
+struct ConversationGroup;
+struct CameraShot;
+struct Barrier;
 
 struct PanInfo
 {
@@ -93,46 +98,7 @@ struct Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT ) = 0;
 };
 
-struct BasicBossScene;
 
-struct ShipExitSeq : Sequence
-{
-	enum State
-	{
-		SHIP_SWOOP,
-		STORYSEQ,
-		END
-	};
-
-	State state;
-	int stateLength[END];
-	ShipExitSeq( GameSession *owner );
-	~ShipExitSeq();
-	bool Update();
-	void Draw( sf::RenderTarget *target,
-		EffectLayer layer = EffectLayer::IN_FRONT);
-	void Reset();
-
-	StorySequence *storySeq;
-	//BasicBossScene *scene;
-	//sfe::Movie mov;
-	Tileset *ts_ship;
-	sf::Sprite shipSprite;
-	MovementSequence shipMovement;
-	MovementSequence center;
-	GameSession *owner;
-	int enterTime;
-	int exitTime;
-	sf::Vector2<double> abovePlayer;
-	sf::Vector2<double> origPlayer;
-	sf::Vector2<double> attachPoint;
-};
-
-struct ButtonHolder;
-
-struct ConversationGroup;
-struct CameraShot;
-struct Barrier;
 
 //typedef std::list<FlashedImage*> FlashGroup;
 
@@ -287,6 +253,40 @@ struct BasicBossScene : Sequence
 	Barrier *barrier;
 
 	GameSession *owner;
+};
+
+
+struct ShipExitScene : BasicBossScene
+{
+	enum State
+	{
+		SHIP_SWOOP,
+		Count
+	};
+
+	ShipExitScene(GameSession *owner);
+
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddFlashes();
+	void AddEnemies();
+	void UpdateState();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+
+	int enterTime;
+	int exitTime;
+
+	sf::Vector2<double> abovePlayer;
+	sf::Vector2<double> origPlayer;
+	sf::Vector2<double> attachPoint;
+
+	MovementSequence shipMovement;
+	MovementSequence center;
+
+	Tileset *ts_ship;
+	sf::Sprite shipSprite;
 };
 
 #endif 

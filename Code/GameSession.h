@@ -95,7 +95,7 @@ struct GoalPulse;
 struct PauseMenu;
 struct Sequence;
 struct EnterNexus1Seq;
-struct ShipExitSeq;
+struct ShipExitScene;
 
 struct VictoryScreen;
 struct VictoryScreen2PlayerVS;
@@ -391,6 +391,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void UpdateEnvShaders();
 	void DrawGates();
 	void DrawRails();
+
+	void UnlockPower(int pType);
 	
 	//int playerScore[4];
 
@@ -423,7 +425,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	sf::VertexArray cloudBot0;
 	sf::VertexArray cloudBot1;
 
-	ShipExitSeq *shipExitSeq;
+	ShipExitScene *shipExitScene;
 
 	sf::Vector2f relShipVel;
 	sf::Sprite shipSprite;
@@ -985,35 +987,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	Sequence *startMapSeq;
 
 	Sequence *getShardSeq;
-
-
-
-	/*struct GameStartSeq : Sequence
-	{
-		GameStartSeq(GameSession *owner);
-		bool Update();
-		void Draw( sf::RenderTarget *target );
-		sf::Texture shipTex;
-		sf::Sprite shipSprite;
-		sf::Texture stormTex;
-		sf::Sprite stormSprite;
-		sf::VertexArray stormVA;
-		sf::Vector2f startPos;
-		GameSession *owner;
-	};
-	GameStartSeq *startSeq;*/
-
-	
-	//EnterNexus1Seq * enterNexus1Seq;
-
-	struct Stored
-	{
-		Enemy *activeEnemyList;
-	};
-	Stored stored;
-
-	//sf::Sprite healthSprite;
-
 };
 
 

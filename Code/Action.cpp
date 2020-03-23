@@ -88,17 +88,32 @@ sf::Vector2i &Brush::GetCenter()
 Brush *Brush::Copy()
 {
 	Brush *newBrush = new Brush;
+	EditSession *sess = EditSession::GetSession();
+
 	for (SelectIter it = objects.begin(); it != objects.end(); ++it)
 	{
 		if ((*it)->selectableType == ISelectable::TERRAIN)
 		{
 			TerrainPolygon *tp = (TerrainPolygon*)((*it).get());
+
+			if (tp->inverse)
+			{
+				continue;
+			}
+
 			PolyPtr ptr(tp->Copy());
 			newBrush->AddObject(ptr);
 		}
 		else if ((*it)->selectableType == ISelectable::ACTOR)
 		{
 			ActorParams *ap = (ActorParams*)(*it).get();
+			
+			
+			if (ap->type == sess->types["player"])
+			{
+				continue;
+			}
+
 			ActorPtr aPtr(ap->Copy());
 			if (aPtr->groundInfo != NULL)
 			{
@@ -106,6 +121,12 @@ Brush *Brush::Copy()
 			}
 			newBrush->AddObject(aPtr);
 		}
+	}
+
+	if (newBrush->objects.size() == 0)
+	{
+		delete newBrush;
+		newBrush = NULL;
 	}
 
 

@@ -844,7 +844,7 @@ void TerrainPolygon::FinalizeInverse()
 
 	UpdateBounds();
 
-	int testExtra = 500;
+	int testExtra = inverseExtraBoxDist;
 	vector<p2t::Point*> outerQuadPoints;
 
 	sf::Rect<double> finalRect;
@@ -1811,16 +1811,27 @@ bool TerrainPolygon::ContainsPoint( Vector2f test )
 		it = it->next;
 	}
 
-	return c;
-	//if( !inverse )
-	//{
-	//	
-	//}
-	//else
-	//{
-	//	return !c;
 
-	//}
+	//not sure if this will affect other stuff. i hope it wont. otherwise move this is out to the point
+	//select area for adding to a selected brush instead of here
+	if (inverse)
+	{
+		if (!c)
+		{
+			if (test.x >= left - inverseExtraBoxDist && test.x <= right + inverseExtraBoxDist
+				&& test.y >= top - inverseExtraBoxDist && test.y <= bottom + inverseExtraBoxDist)
+			{
+				c = true;
+			}
+		}
+		else
+		{
+			c = false;
+		}
+	}
+
+
+	return c;
 }
 
 void TerrainPolygon::FixWinding()
@@ -1951,6 +1962,29 @@ void TerrainPolygon::AddPoint( TerrainPoint* tp)
 		pointEnd->next = NULL;
 	}
 	++numPoints;
+}
+
+bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
+{
+	TerrainPoint *curr = pointStart;
+	TerrainPoint *next;
+	EditSession *sess = EditSession::GetSession();
+
+	if (numPoints == 0 || (numPoints > 0 &&
+		length(V2d(point.x, point.y)
+			- Vector2<double>(pointEnd->pos.x,pointEnd->pos.y)) 
+		>= sess->minimumEdgeLength * std::max(sess->zoomMultiple, 1.0)))
+	{
+		if ( numPoints > 0 && LinesIntersectInProgress(point))
+		{
+			return false;
+		}
+
+		return true;
+	}
+	
+
+	return false;
 }
 
 LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,
@@ -2968,6 +3002,47 @@ bool TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
 			}
 		}
 	}
+	return false;
+}
+
+bool TerrainPolygon::LinesIntersectInProgress(Vector2i p)
+{
+	//my lines vs his lines
+	TerrainPoint *curr = pointStart;
+	TerrainPoint *next = NULL;
+	while (curr->next != NULL)
+	{
+		next = curr->next;
+
+		if (next == pointEnd)
+		{
+			V2d a(curr->pos - next->pos);
+			V2d b(p - next->pos);
+
+			double d = dot(normalize(a), normalize(b));
+
+			//cout << "a: " << a.x << ", " << a.y << ", b: " << b.x << ", " << b.y << endl;
+			//cout << "diff: " << d << endl;
+
+			if (d > .999)
+			{
+				return true;
+			}
+
+
+			return false;
+		}
+
+
+		LineIntersection li = EditSession::SegmentIntersect(curr->pos, next->pos, pointEnd->pos, p );
+		if (!li.parallel)
+		{
+			return true;
+		}
+
+		curr = next;
+	}
+
 	return false;
 }
 

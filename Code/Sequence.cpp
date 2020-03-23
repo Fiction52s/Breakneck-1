@@ -143,217 +143,6 @@ Sequence::~Sequence()
 		delete nextSeq;
 }
 
-ShipExitSeq::ShipExitSeq( GameSession *p_owner )
-	:owner( p_owner )
-{
-	enterTime = 60;
-	exitTime = 60 + 60;
-	center.AddLineMovement( V2d( 0, 0 ), V2d( 0, 0 ), 
-		CubicBezier( 0, 0, 1, 1 ), 60 );
-	//shipMovement.AddCubicMovement( 
-	shipMovement.AddLineMovement( V2d( 0, 0 ), 
-		V2d( 0, 0 ), CubicBezier( 0, 0, 1, 1 ), enterTime );
-	shipMovement.AddLineMovement( V2d( 0, 0 ), 
-		V2d( 0, 0 ), CubicBezier( 0, 0, 1, 1 ), exitTime );
-
-	ts_ship = owner->GetTileset("Ship/ship_exit_864x540.png", 864, 540);
-	shipSprite.setTexture( *ts_ship->texture );
-	shipSprite.setTextureRect( ts_ship->GetSubRect( 0 ) );
-	//shipSprite.setOrigin(560, 700);
-	//shipSprite.setOrigin(960, 700);
-	//shipSprite.setOrigin(960 / 2, 700);
-	shipSprite.setOrigin(421, 425);
-
-	storySeq = NULL;
-
-	//storySeq = new StorySequence(owner);
-	//storySeq->Load("world1outro");
-
-	//scene = new BirdCrawlerAllianceScene(owner);
-	//scene->Init();
-	//nextSeq = scene;
-
-	//assert(mov.openFromFile("Resources/Movie/kin_ship.ogv"));
-	//mov.fit(sf::FloatRect(0, 0, 1920, 1080));
-
-	stateLength[SHIP_SWOOP]= 1000000;
-	//stateLength[FADEOUT] = 90;
-
-	stateLength[STORYSEQ] = 1000000;
-
-	//BasicBossScene *bb = new BirdCrawlerAllianceScene(owner);
-	//nextSeq = bb;
-	//bb->Init();
-	
-}
-
-ShipExitSeq::~ShipExitSeq()
-{
-	delete storySeq;
-}
-
-bool ShipExitSeq::Update()
-{
-	Actor *player = owner->GetPlayer( 0 );
-
-	if (frame == stateLength[state] && state != END)
-	{
-		int s = state;
-		s++;
-		state = (State)s;
-		frame = 0;
-
-		if (state == END)
-		{
-			return false;
-		}
-	}
-
-	switch (state)
-	{
-	case SHIP_SWOOP:
-	{
-		int shipOffsetY = -200;
-		int pOffsetY = -170;
-		int sOffsetY = pOffsetY;//shipOffsetY + pOffsetY;
-		int jumpLength = 6 * 5;
-		int startGrabWire = enterTime - jumpLength;
-
-		if (frame == 0)
-		{
-			owner->cam.SetManual(true);
-			center.movementList->start = V2d(owner->cam.pos.x, owner->cam.pos.y);
-			center.movementList->end = V2d(owner->GetPlayer(0)->position.x,
-				owner->GetPlayer(0)->position.y - 200);
-
-			center.Reset();
-			owner->cam.SetMovementSeq(&center, false);
-
-			abovePlayer = V2d(player->position.x, player->position.y - 300);
-
-			shipMovement.movementList->start = abovePlayer + V2d(-1500, -900);//player->position + V2d( -1000, sOffsetY );
-			shipMovement.movementList->end = abovePlayer;//player->position + V2d( 1000, sOffsetY );
-			shipMovement.Reset();
-
-			Movement *m = shipMovement.movementList->next;
-
-			m->start = abovePlayer;
-			m->end = abovePlayer + V2d(1500, -900) + V2d( 1500, -900 );
-
-			origPlayer = owner->GetPlayer(0)->position;
-			attachPoint = abovePlayer;//V2d(player->position.x, player->position.y);//abovePlayer.y + 170 );
-		}
-		else  if (frame == startGrabWire)
-		{
-			owner->GetPlayer(0)->GrabShipWire();
-		}
-
-		for (int i = 0; i < NUM_MAX_STEPS; ++i)
-		{
-			shipMovement.Update();
-		}
-
-		int jumpSquat = startGrabWire + 3 * 5;
-		int startJump = 4 * 5;//60 - jumpSquat;
-
-		if (frame > enterTime)
-		{
-			owner->GetPlayer(0)->position = V2d(shipMovement.position.x, shipMovement.position.y + 48.0);
-		}
-		else if (frame >= jumpSquat && frame <= enterTime)//startJump )
-		{
-			double adjF = frame - jumpSquat;
-			double eTime = enterTime - jumpSquat;
-			double a = adjF / eTime;//(double)(frame - (60 - (startJump + 1))) / (60 - (startJump - 1));
-			//double a = 
-			//cout << "a: " << a << endl;
-			V2d pAttachPoint = attachPoint;
-			pAttachPoint.y += 48.f;
-			owner->GetPlayer(0)->position = origPlayer * (1.0 - a) + pAttachPoint * a;
-		}
-
-		if (shipMovement.currMovement == NULL)
-		{
-			frame = stateLength[SHIP_SWOOP] - 1;
-			owner->mainMenu->musicPlayer->FadeOutCurrentMusic(30);
-			//owner->state = GameSession::SEQUENCE;
-		}
-
-		if (frame == (enterTime + exitTime) - 60)
-		{
-			owner->Fade(false, 60, Color::Black);
-		}
-
-		shipSprite.setPosition(shipMovement.position.x,
-			shipMovement.position.y);
-		break;
-	}
-	case STORYSEQ:
-	{
-		if (storySeq != NULL)
-		{
-			if (frame == 0)
-			{
-				owner->ClearFade();
-				owner->SetStorySeq(storySeq);
-			}
-
-
-			//if (!storySeq->Update(owner->GetPrevInputUnfiltered(0), owner->GetCurrInputUnfiltered(0)))
-			if (owner->currStorySequence == NULL)
-			{
-				frame = stateLength[STORYSEQ] - 1;
-				owner->goalDestroyed = true;
-				//owner->EndLevel();
-				//owner->EndLevel()
-				//owner->goalDestroyed = true;
-			}
-		}
-		else
-		{
-			frame = stateLength[STORYSEQ] - 1;
-			owner->EndLevel();
-		}
-		break;
-	}
-	}
-	++frame;
-
-	return true;
-}
-
-void ShipExitSeq::Draw( RenderTarget *target, EffectLayer layer)
-{
-	if (layer != EffectLayer::IN_FRONT)
-	{
-		return;
-	}
-
-	if (state == SHIP_SWOOP)
-	{
-		target->draw(shipSprite);
-	}
-	else if (state == STORYSEQ)
-	{
-		if( storySeq != NULL)
-			storySeq->Draw(target);
-	}
-	
-}
-
-void ShipExitSeq::Reset()
-{
-	frame = 0;
-	state = SHIP_SWOOP;
-
-	if (storySeq != NULL)
-	{
-		storySeq->Reset();
-	}
-}
-
-
-
 void FlashGroup::Reset()
 {
 	if (fList.size() > 0)
@@ -710,7 +499,7 @@ void BasicBossScene::UpdateMovie()
 			movieStopFrame = frame;
 			if (movieFadeFrames == 0)
 			{
-				frame = stateLength[state] - 1;
+				EndCurrState();
 			}
 			else
 			{
@@ -1121,14 +910,15 @@ void BasicBossScene::UpdateFlashGroup()
 void BasicBossScene::EndCurrState()
 {
 	int sLen = stateLength[state];
-	if (sLen == -1)
+	frame = sLen - 1;
+	/*if (sLen == -1)
 	{
 		frame = -2;
 	}
 	else
 	{
 		frame = stateLength[state] - 1;
-	}
+	}*/
 }
 
 bool BasicBossScene::IsLastFrame()
@@ -1211,4 +1001,146 @@ void BasicBossScene::SetNumStates(int count)
 {
 	numStates = count;
 	stateLength = new int[numStates];
+}
+
+
+ShipExitScene::ShipExitScene(GameSession *p_owner)
+	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+{
+	enterTime = 60;
+	exitTime = 60 + 60;
+	center.AddLineMovement(V2d(0, 0), V2d(0, 0),
+		CubicBezier(0, 0, 1, 1), 60);
+	shipMovement.AddLineMovement(V2d(0, 0),
+		V2d(0, 0), CubicBezier(0, 0, 1, 1), enterTime);
+	shipMovement.AddLineMovement(V2d(0, 0),
+		V2d(0, 0), CubicBezier(0, 0, 1, 1), exitTime);
+
+	ts_ship = owner->GetTileset("Ship/ship_exit_864x540.png", 864, 540);
+	shipSprite.setTexture(*ts_ship->texture);
+	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
+	shipSprite.setOrigin(421, 425);
+}
+
+void ShipExitScene::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[SHIP_SWOOP] = -1;
+}
+
+void ShipExitScene::AddShots()
+{
+}
+
+void ShipExitScene::AddEnemies()
+{
+}
+
+void ShipExitScene::AddFlashes()
+{
+}
+
+void ShipExitScene::ReturnToGame()
+{
+	//Actor *player = owner->GetPlayer(0);
+
+	//BasicBossScene::ReturnToGame();
+}
+
+void ShipExitScene::UpdateState()
+{
+	Actor *player = owner->GetPlayer(0);
+	switch (state)
+	{
+	case SHIP_SWOOP:
+	{
+		int shipOffsetY = -200;
+		int pOffsetY = -170;
+		int sOffsetY = pOffsetY;//shipOffsetY + pOffsetY;
+		int jumpLength = 6 * 5;
+		int startGrabWire = enterTime - jumpLength;
+
+		if (frame == 0)
+		{
+			owner->cam.SetManual(true);
+			center.movementList->start = V2d(owner->cam.pos.x, owner->cam.pos.y);
+			center.movementList->end = V2d(owner->GetPlayer(0)->position.x,
+				owner->GetPlayer(0)->position.y - 200);
+
+			center.Reset();
+			owner->cam.SetMovementSeq(&center, false);
+
+			abovePlayer = V2d(player->position.x, player->position.y - 300);
+
+			shipMovement.movementList->start = abovePlayer + V2d(-1500, -900);//player->position + V2d( -1000, sOffsetY );
+			shipMovement.movementList->end = abovePlayer;//player->position + V2d( 1000, sOffsetY );
+			shipMovement.Reset();
+
+			Movement *m = shipMovement.movementList->next;
+
+			m->start = abovePlayer;
+			m->end = abovePlayer + V2d(1500, -900) + V2d(1500, -900);
+
+			origPlayer = owner->GetPlayer(0)->position;
+			attachPoint = abovePlayer;//V2d(player->position.x, player->position.y);//abovePlayer.y + 170 );
+		}
+		else  if (frame == startGrabWire)
+		{
+			owner->GetPlayer(0)->GrabShipWire();
+		}
+
+		for (int i = 0; i < NUM_MAX_STEPS; ++i)
+		{
+			shipMovement.Update();
+		}
+
+		int jumpSquat = startGrabWire + 3 * 5;
+		int startJump = 4 * 5;//60 - jumpSquat;
+
+		if (frame > enterTime)
+		{
+			owner->GetPlayer(0)->position = V2d(shipMovement.position.x, shipMovement.position.y + 48.0);
+		}
+		else if (frame >= jumpSquat && frame <= enterTime)//startJump )
+		{
+			double adjF = frame - jumpSquat;
+			double eTime = enterTime - jumpSquat;
+			double a = adjF / eTime;//(double)(frame - (60 - (startJump + 1))) / (60 - (startJump - 1));
+									//double a = 
+									//cout << "a: " << a << endl;
+			V2d pAttachPoint = attachPoint;
+			pAttachPoint.y += 48.f;
+			owner->GetPlayer(0)->position = origPlayer * (1.0 - a) + pAttachPoint * a;
+		}
+
+		if (shipMovement.currMovement == NULL)
+		{
+			frame = stateLength[SHIP_SWOOP] - 1;
+			owner->mainMenu->musicPlayer->FadeOutCurrentMusic(30);
+		}
+
+		if (frame == (enterTime + exitTime) - 60)
+		{
+			owner->Fade(false, 60, Color::Black);
+		}
+
+		shipSprite.setPosition(shipMovement.position.x,
+			shipMovement.position.y);
+		break;
+	}
+	}
+}
+
+void ShipExitScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+{
+	if (layer != EffectLayer::IN_FRONT)
+	{
+		return;
+	}
+
+	if (state == SHIP_SWOOP)
+	{
+		target->draw(shipSprite);
+	}
 }

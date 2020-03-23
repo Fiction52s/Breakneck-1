@@ -652,12 +652,11 @@ void GameSession::Cleanup()
 	{
 		delete (*it).second;
 	}
-
-	if (shipExitSeq != NULL)
-	{
-		delete shipExitSeq;
-	}
 	
+	if (shipExitScene != NULL)
+	{
+		delete shipExitScene;
+	}
 }
 
 GameSession::~GameSession()
@@ -813,6 +812,11 @@ void GameSession::RecordReplayEnemies()
 		current = current->next;
 		++index;
 	}
+}
+
+void GameSession::UnlockPower(int pType)
+{
+	mainMenu->GetCurrentProgress()->UnlockPower(pType);
 }
 
 void GameSession::UpdateInput()
@@ -3537,10 +3541,16 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 			enemyTree->Insert(enemy);
 
-			if (shipExitSeq == NULL)
+
+			if (shipExitScene == NULL )
+			{
+				shipExitScene = new ShipExitScene(this);
+				shipExitScene->Init();
+			}
+			/*if (shipExitSeq == NULL)
 			{
 				shipExitSeq = new ShipExitSeq(this);
-			}
+			}*/
 		}
 		else if (typeName == "groundtrigger")
 		{
@@ -9220,7 +9230,8 @@ void GameSession::Init()
 	recGhost = NULL;
 	//repGhost = NULL;
 	showTerrainDecor = true;
-	shipExitSeq = NULL;
+	//shipExitSeq = NULL;
+	shipExitScene = NULL;
 	activeDialogue = NULL;
 
 	keyFrame = 0;

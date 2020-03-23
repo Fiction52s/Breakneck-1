@@ -472,3 +472,206 @@ void AfterCrawlerFightSeq::AddMovies()
 {
 	AddMovie("crawler_slash");
 }
+
+
+GetAirdashPowerScene::GetAirdashPowerScene(GameSession *p_owner)
+	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+{
+	darkRect.setFillColor(Color::Black);
+	darkRect.setSize(Vector2f(1920, 1080));
+	darkRect.setPosition(0, 0);
+}
+
+void GetAirdashPowerScene::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[KIN_KNEELING] = 60;
+	stateLength[START_MEDITATE] = 60;
+	stateLength[FADE_BACKGROUND] = 60;
+	stateLength[EXPEL_ENERGY] = 60;
+	stateLength[WAITAFTEREXPEL] = 60;
+	stateLength[MASKOFF] = 120;
+	stateLength[PLAYMOVIE] = -1;
+	stateLength[FADE_BACK] = 90;
+
+	//sceneMusic = owner->mainMenu->musicManager->songMap["w1_26_Edge"];
+	//sceneMusic->Load();
+}
+
+void GetAirdashPowerScene::AddMovies()
+{
+	AddMovie("kin_meditate_01");
+}
+
+void GetAirdashPowerScene::ReturnToGame()
+{
+	SetPlayerStandDefaultPoint(true);
+	owner->Fade(true, 60, Color::Black);
+	owner->cam.EaseOutOfManual(60);
+	owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+
+	owner->mainMenu->musicPlayer->TransitionMusic(owner->originalMusic, 60);
+}
+
+void GetAirdashPowerScene::AddPoints()
+{
+	//AddStandPoint();
+}
+
+void GetAirdashPowerScene::StartRunning()
+{
+	//owner->state = GameSession::SEQUENCE;
+}
+
+void GetAirdashPowerScene::UpdateState()
+{
+	Actor *player = owner->GetPlayer(0);
+	switch (state)
+	{
+	case KIN_KNEELING:
+		if (frame == 0)
+		{
+			//owner->mainMenu->musicPlayer->TransitionMusic(sceneMusic, 60);
+			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 68), .75, 60, CubicBezier());
+
+			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect(0));
+			player->dirtyAuraSprite.setOrigin(player->dirtyAuraSprite.getLocalBounds().width / 2,
+				player->dirtyAuraSprite.getLocalBounds().height / 2);
+
+			player->SetDirtyAura(true);
+
+			player->SeqKneel();
+		}
+
+		break;
+	case START_MEDITATE:
+		if (frame == 0)
+		{
+			player->SeqMeditateMaskOn();
+		}
+		break;
+	case FADE_BACKGROUND:
+		if (frame == 0)
+		{
+			owner->Fade(false, 60, Color::Black, true);
+		}
+		else if (frame == stateLength[FADE_BACKGROUND] - 1)
+		{
+			owner->state = GameSession::SEQUENCE;
+		}
+		break;
+	case EXPEL_ENERGY:
+	{
+		if (frame == 0)
+		{
+			owner->ClearFade();
+		}
+
+		int f = 60 - 3 * 10;
+		int ff = frame - f;
+		if (ff >= 0 && ff < 10 * 3)
+			//if( frame < 10 * 3 )
+		{
+			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect(ff / 3 + 15));
+		}
+		else
+		{
+			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect((frame % (15 * 3) / 3)));
+		}
+
+
+		break;
+	}
+	case WAITAFTEREXPEL:
+	{
+		if (frame == 0)
+		{
+			player->SetDirtyAura(false);
+		}
+		break;
+	}
+	case MASKOFF:
+		if (frame == 0)
+		{
+			player->SeqMaskOffMeditate();
+		}
+		break;
+
+	case PLAYMOVIE:
+	{
+		if (frame == 0)
+		{
+			SetCurrMovie("kin_meditate_01", 60);
+		}
+
+		UpdateMovie();
+
+		if (IsLastFrame())
+		{
+			owner->state = GameSession::RUN;
+			owner->Fade(true, 60, Color::Black, true);
+			owner->adventureHUD->Show(60);
+			owner->UnlockPower(Actor::PowerType::POWER_AIRDASH);
+		}
+		break;
+	}
+	case FADE_BACK:
+		if (frame == 0)
+		{
+
+		}
+		else if (frame == 60)
+		{
+			player->SeqGetAirdash();
+		}
+		else if (frame == stateLength[FADE_BACK] - 1)
+		{
+			//cout << "set easting out of manual" << endl;
+			owner->cam.EaseOutOfManual(120);
+		}
+		break;
+	}
+
+	if (state != EXPEL_ENERGY)
+	{
+		player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect((frame % (15 * 3) / 3)));
+	}
+
+	player->dirtyAuraSprite.setPosition(Vector2f(player->sprite->getPosition().x,
+		player->sprite->getPosition().y - 32));
+
+	if (owner->state == GameSession::SEQUENCE)
+	{
+		owner->totalGameFrames++;
+		player->UpdatePrePhysics();
+		player->UpdatePostPhysics();
+	}
+}
+
+void GetAirdashPowerScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+{
+	if (layer != EffectLayer::IN_FRONT)
+	{
+		return;
+	}
+
+	if (owner->state == GameSession::SEQUENCE)
+	{
+		target->setView(owner->uiView);
+
+		if (state >= EXPEL_ENERGY)
+		{
+			//darkRect.setPosition(owner->cam.pos);
+			target->draw(darkRect);
+		}
+
+		BasicBossScene::Draw(target, layer);
+
+
+		target->setView(owner->view);
+
+
+		owner->GetPlayer(0)->Draw(target);
+	}
+}

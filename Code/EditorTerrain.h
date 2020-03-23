@@ -141,7 +141,7 @@ struct TerrainPolygon : ISelectable
 	void SetupGrass(TerrainPoint *tp, int &i);
 	void SetupGrass();
 	sf::Shader *pShader;
-
+	bool IsValidInProgressPoint(sf::Vector2i point);
 	void UpdateLines();
 	TerrainPolygon(sf::Texture *grassTex);
 	TerrainPolygon(TerrainPolygon &poly, bool pointsOnly);
@@ -246,6 +246,7 @@ struct TerrainPolygon : ISelectable
 	//bool IsTouching( TerrainPolygon * p );
 	bool BoundsOverlap(TerrainPolygon *poly);
 	bool LinesIntersect(TerrainPolygon *poly);
+	bool LinesIntersectInProgress(sf::Vector2i p);
 	bool PointTooCloseToPoints(sf::Vector2i point,
 		int minDistance);
 	bool PointTooClose(sf::Vector2i point,
@@ -294,6 +295,8 @@ struct TerrainPolygon : ISelectable
 	int top;
 	int bottom;
 	std::list<sf::Vector2i> path;
+
+	const static int inverseExtraBoxDist = 500;
 
 	//enemymap
 	std::map<TerrainPoint*, std::list<

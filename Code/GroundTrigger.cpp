@@ -51,7 +51,7 @@ GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facin
 		}
 		else
 		{
-			gameSequence = new GetAirdashPowerSeq(owner);
+			gameSequence = new GetAirdashPowerScene(owner);//GetAirdashPowerSeq(owner);
 		}
 		
 		//storySeq = new StorySequence(owner);
