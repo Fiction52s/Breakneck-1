@@ -11,7 +11,7 @@ int EditorGraph::TOTAL_VERTICES = NUM_GRAPH_LINES * 4; //2 vert, 2 horiz
 EditorGraph::EditorGraph()
 {
 	graphColor = Color(200, 50, 50, 100);
-	graphSpacing = 128;
+	graphSpacing = 10;
 	graphLines = new Vertex[TOTAL_VERTICES];
 	//SetPosition();
 }
