@@ -1,4 +1,5 @@
 #include "EditorGraph.h"
+#include "EditSession.h"
 
 using namespace std;
 using namespace sf;
@@ -74,4 +75,15 @@ void EditorGraph::SetPosition( Vector2f &pos )
 		graphLines[i + 1] = sf::Vertex(Vector2f(temp, graphMax) + pos, graphColor);
 		temp += graphSpacing;
 	}
+}
+
+
+PolyVis::PolyVis()
+{
+	sess = EditSession::GetSession();
+}
+
+void PolyVis::Draw(sf::RenderTarget *target)
+{
+
 }

@@ -19,6 +19,10 @@
 #include "EditorBG.h"
 #include "EditorRail.h"
 #include "EditorGraph.h"
+
+
+#include "clipper.hpp"
+//using namespace ClipperLib;
 //#include "TerrainRender.h"
 
 using namespace std;
@@ -8204,162 +8208,203 @@ void EditSession::PasteTerrain(Brush *b)
 	copiedBrush = copiedBrush->Copy();
 }
 
+
+
 Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {
+	ClipperLib::Paths inProgress(1), other(intersectingPolys.size()), solution;
+	TerrainPoint *curr = polygonInProgress->pointStart;
+
+	bool inverse = false;
+
+
+	while (curr != NULL)
+	{
+		inProgress[0] << ClipperLib::IntPoint( curr->pos.x, curr->pos.y );
+		curr = curr->next;
+	}
+
+	int otherIndex = 0;
+	for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
+	{
+		if ((*it)->inverse)
+			inverse = true;
+		curr = (*it)->pointStart;
+		while (curr != NULL)
+		{
+			other[otherIndex] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
+			curr = curr->next;
+		}
+		++otherIndex;
+	}
+
+	ClipperLib::Clipper c;
+	c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
+	c.AddPaths(other, ClipperLib::PolyType::ptSubject, true);
+	c.Execute(ClipperLib::ClipType::ctDifference, solution);
+
+	TerrainPolygon *testOutPoly = new TerrainPolygon(&grassTex);
+	for (auto it = solution.begin(); it != solution.end(); ++it)
+	{
+		for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
+		{
+			testOutPoly->AddPoint(new TerrainPoint(Vector2i((*it2).X, (*it2).Y), false));
+		}
+	}
+
+	testOutPoly->SetMaterialType(0, 0);//poly->terrainWorldType,
+		//poly->terrainVariation);
+	testOutPoly->RemoveSlivers(PI / 10.0);
+	testOutPoly->AlignExtremes(PRIMARY_LIMIT);
+
+	testOutPoly->inverse = inverse;
+	testOutPoly->Finalize();
+
 	Brush orig;
 	Brush resultBrush;
 
-	TerrainPolygon *outPoly = NULL;
-	//Brush orig;
-	list<boost::shared_ptr<GateInfo>> gateInfoList;
-	list<ActorPtr> actorList;
-
-	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
-	{
-		for (auto eit = (*it)->enemies.begin(); eit != (*it)->enemies.end(); ++eit)
-		{
-			for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
-			{
-				actorList.push_back((*eit2));
-			}
-		}
-
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-		orig.AddObject( sp );
-		for (auto eit = (*it)->enemies.begin(); eit != (*it)->enemies.end(); ++eit)
-		{
-			for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
-			{
-				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit2));
-				orig.AddObject(sp1);
-			}
-		}
-
-		TerrainPoint *curr = (*it)->pointStart;
-		while (curr != NULL)
-		{
-			if (curr->gate != NULL)
-			{
-				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(curr->gate);
-				if (!orig.Has(sp1))
-				{
-					orig.AddObject(sp1);
-				}
-				else
-				{
-					//no duplicates
-				}
-			}
-			curr = curr->next;
-		}
-
-		bool oldSelected = (*it)->selected;
-		(*it)->SetSelected( true );
-		Add(polygonInProgress, (*it), outPoly, gateInfoList);
- 		polygonInProgress.reset(outPoly);
-		(*it)->SetSelected( oldSelected ); //should i even store the old one?							
-	}
-
+	polygonInProgress.reset(testOutPoly);
 
 	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>(polygonInProgress);
-
-
 
 	resultBrush.Clear();
 	resultBrush.AddObject(sp);
 
-	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+
+	for (list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
 	{
-		TerrainPoint *test = NULL;
-		TerrainPoint * outTest = NULL;
-
-		TerrainPoint *p0 = polygonInProgress->GetSamePoint((*it)->point0->pos);
-		TerrainPoint *p1 = polygonInProgress->GetSamePoint((*it)->point1->pos);
-
-		if (p0 == NULL && p1 == NULL)
-			continue;
-
-		GateInfoPtr gi(new GateInfo( *((*it).get()) ));
-		gi->edit = NULL;
-
-		if( p0 != NULL )
-		{
-			gi->point0 = p0;
-			gi->poly0 = polygonInProgress;
-			p0->gate = gi;
-		}
-		else
-		{
-			gi->point0 = (*it)->point0;
-			gi->poly0 = (*it)->poly0;
-			gi->point0->gate = gi;
-		}
-		if( p1 != NULL )
-		{
-			gi->point1 = p1;
-			gi->poly1 = polygonInProgress;
-			p1->gate = gi;
-			
-		}
-		else
-		{
-			gi->point1 = (*it)->point1;
-			gi->poly1 = (*it)->poly1;
-			gi->point1->gate = gi;
-		}
-
-		SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
-		resultBrush.AddObject(sp1);
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+		orig.AddObject( sp );
 	}
 
-	
-	for (auto it = actorList.begin(); it != actorList.end(); ++it)
-	{
-		ActorParams * ac = AttachActorToPolygon((*it), polygonInProgress.get());
-		if (ac != NULL)
-		{
-			ActorPtr newActor( ac );
-			resultBrush.AddObject(newActor);
-		}
-	}
-
-	
-
-	/*for (auto eit = polygonInProgress->enemies.begin(); 
-		eit != polygonInProgress->enemies.end(); ++eit)
-	{
-		for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
-		{
-			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit2));
-			resultBrush.AddObject(sp1);
-		}
-
-	}*/
-	
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
-
-	/*if (resultBrush.objects.size() == 2 && orig.objects.size() == 2 )
-	{
-
-	}
-	else
-	{
-		cout << "orig: " << orig.objects.size() << " , actors: " << actorList.size() << endl;
-		assert(0);
-	}*/
 
 	PolyPtr newPoly(new TerrainPolygon(&grassTex));
 	polygonInProgress = newPoly;
 
-	/*action->Perform();
-	doneActionStack.push_back(action);
-
-	ClearUndoneActions();*/
-
 	return action;
 
-	//cout << "adding: " << orig.objects.size() << ", " << progressBrush->objects.size() << endl;
-	
+
+	//TerrainPolygon *outPoly = NULL;
+	////Brush orig;
+	//list<boost::shared_ptr<GateInfo>> gateInfoList;
+	//list<ActorPtr> actorList;
+
+	//for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	//{
+	//	for (auto eit = (*it)->enemies.begin(); eit != (*it)->enemies.end(); ++eit)
+	//	{
+	//		for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
+	//		{
+	//			actorList.push_back((*eit2));
+	//		}
+	//	}
+
+	//	SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+	//	orig.AddObject( sp );
+	//	for (auto eit = (*it)->enemies.begin(); eit != (*it)->enemies.end(); ++eit)
+	//	{
+	//		for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
+	//		{
+	//			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit2));
+	//			orig.AddObject(sp1);
+	//		}
+	//	}
+
+	//	TerrainPoint *curr = (*it)->pointStart;
+	//	while (curr != NULL)
+	//	{
+	//		if (curr->gate != NULL)
+	//		{
+	//			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(curr->gate);
+	//			if (!orig.Has(sp1))
+	//			{
+	//				orig.AddObject(sp1);
+	//			}
+	//			else
+	//			{
+	//				//no duplicates
+	//			}
+	//		}
+	//		curr = curr->next;
+	//	}
+
+	//	bool oldSelected = (*it)->selected;
+	//	(*it)->SetSelected( true );
+	//	Add(polygonInProgress, (*it), outPoly, gateInfoList);
+ //		polygonInProgress.reset(outPoly);
+	//	(*it)->SetSelected( oldSelected ); //should i even store the old one?							
+	//}
+
+
+	//SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>(polygonInProgress);
+
+
+
+	//resultBrush.Clear();
+	//resultBrush.AddObject(sp);
+
+	//for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	//{
+	//	TerrainPoint *test = NULL;
+	//	TerrainPoint * outTest = NULL;
+
+	//	TerrainPoint *p0 = polygonInProgress->GetSamePoint((*it)->point0->pos);
+	//	TerrainPoint *p1 = polygonInProgress->GetSamePoint((*it)->point1->pos);
+
+	//	if (p0 == NULL && p1 == NULL)
+	//		continue;
+
+	//	GateInfoPtr gi(new GateInfo( *((*it).get()) ));
+	//	gi->edit = NULL;
+
+	//	if( p0 != NULL )
+	//	{
+	//		gi->point0 = p0;
+	//		gi->poly0 = polygonInProgress;
+	//		p0->gate = gi;
+	//	}
+	//	else
+	//	{
+	//		gi->point0 = (*it)->point0;
+	//		gi->poly0 = (*it)->poly0;
+	//		gi->point0->gate = gi;
+	//	}
+	//	if( p1 != NULL )
+	//	{
+	//		gi->point1 = p1;
+	//		gi->poly1 = polygonInProgress;
+	//		p1->gate = gi;
+	//		
+	//	}
+	//	else
+	//	{
+	//		gi->point1 = (*it)->point1;
+	//		gi->poly1 = (*it)->poly1;
+	//		gi->point1->gate = gi;
+	//	}
+
+	//	SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
+	//	resultBrush.AddObject(sp1);
+	//}
+
+	//
+	//for (auto it = actorList.begin(); it != actorList.end(); ++it)
+	//{
+	//	ActorParams * ac = AttachActorToPolygon((*it), polygonInProgress.get());
+	//	if (ac != NULL)
+	//	{
+	//		ActorPtr newActor( ac );
+	//		resultBrush.AddObject(newActor);
+	//	}
+	//}
+
+	//Action * action = new ReplaceBrushAction(&orig, &resultBrush);
+
+	//PolyPtr newPoly(new TerrainPolygon(&grassTex));
+	//polygonInProgress = newPoly;
+
+	//return action;
 }
 
 list<TerrainPoint*> InsertTemporaryPoints( TerrainPolygon *poly, list<Inter> &inters )
@@ -8550,19 +8595,6 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 			}
 		}
 	}
-
-	/*for (list<PolyPtr>::iterator rit = results.begin();
-		rit != results.end(); ++rit)
-	{
-		for (auto eit = (*rit)->enemies.begin(); eit != (*rit)->enemies.end(); ++eit)
-		{
-			for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
-			{
-				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit2));
-				resultBrush.AddObject(sp1);
-			}
-		}
-	}*/
 
 	for (list<PolyPtr>::iterator rit = results.begin();
 		rit != results.end(); ++rit)

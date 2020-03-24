@@ -19,4 +19,13 @@ struct EditorGraph
 	int graphSpacing;
 };
 
+struct EditSession;
+struct PolyVis
+{
+	PolyVis();
+	sf::CircleShape *circles;
+	EditSession *sess;
+	void Draw(sf::RenderTarget *target);
+};
+
 #endif
