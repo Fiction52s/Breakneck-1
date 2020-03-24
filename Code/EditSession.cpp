@@ -8546,156 +8546,294 @@ void RemoveTemporaryPoints( TerrainPolygon *poly, list<TerrainPoint*> &addedPoin
 
 Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 {
+	bool inverse = false;
+	int otherSize = intersectingPolys.size();
+	for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
+	{
+		if ((*it)->inverse)
+		{
+			inverse = true;
+			break;
+		}
+	}
+
+	if (inverse)
+		otherSize--;
+
+	ClipperLib::Clipper c;
+	TerrainPoint *curr;
+	TerrainPolygon *testOutPoly;
+
+	ClipperLib::Paths inProgress(1), other(otherSize), otherInverse(1), solution, inverseSolution;
+
+	curr = polygonInProgress->pointStart;
+
+	polygonInProgress->CopyPointsToClipperPath(inProgress[0]);
+
 	Brush orig;
 	Brush resultBrush;
 
-	//Brush orig;
-	map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
-	list<boost::shared_ptr<GateInfo>> gateInfoList;
+	resultBrush.Clear();
 
-	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	if (otherSize > 0)
 	{
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-		orig.AddObject( sp );
-
-		TerrainPoint *pCurr = (*it)->pointStart;
-		bool okGate = true;
-		while (pCurr != NULL)
+		//setup intersected polys
+		int otherIndex = 0;
+		for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
 		{
-			okGate = true;
-			if (pCurr->gate != NULL)
+			if ((*it)->inverse)
 			{
-				for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
-				{
-					if ((*it) == pCurr->gate)
-					{
-						okGate = false;
-						break;
-					}
-				}
-				if (okGate)
-				{
-					SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(pCurr->gate);
-					orig.AddObject(sp1);
-					gateInfoList.push_back(pCurr->gate);
-				}
-					
-			}
-			pCurr = pCurr->next;
-		}
-		
-		for (map<TerrainPoint*, std::list<ActorPtr>>::iterator
-			mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit)
-		{
-			for (auto eit = (*mit).second.begin(); eit != (*mit).second.end(); ++eit)
-			{
-				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit));
-				orig.AddObject(sp1);
-			}
-		}
-			
-	}
-
-	list<PolyPtr> results;
-	Sub( polygonInProgress, intersectingPolys, results );
-
-	for( list<PolyPtr>::iterator it = results.begin(); 
-		it != results.end(); ++it )
-	{
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-		resultBrush.AddObject( sp );
-	}
-
-	for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
-	{
-		for( map<TerrainPoint*,std::list<ActorPtr>>::iterator 
-			mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit )
-		{
-			for (auto bit = (*mit).second.begin(); bit != (*mit).second.end(); ++bit)
-			{
-				for (list<PolyPtr>::iterator rit = results.begin();
-					rit != results.end(); ++rit)
-				{
-					ActorParams *ac = AttachActorToPolygon((*bit), (*rit).get());
-					if (ac != NULL)
-					{
-						ActorPtr newActor(ac);
-						resultBrush.AddObject(newActor);
-					}
-					//AttachActorsToPolygon((*mit).second, (*rit).get());
-					
-					/*for (auto eit = polygonInProgress->enemies.begin();
-						eit != polygonInProgress->enemies.end(); ++eit)
-					{
-						for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
-						{
-							
-						}
-
-					}*/
-				}
-			}
-		}
-	}
-
-	for (list<PolyPtr>::iterator rit = results.begin();
-		rit != results.end(); ++rit)
-	{
-		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
-		{
-			TerrainPoint *test = NULL;
-			TerrainPoint * outTest = NULL;
-
-			TerrainPoint *p0 = (*rit)->GetSamePoint((*it)->point0->pos);
-			TerrainPoint *p1 = (*rit)->GetSamePoint((*it)->point1->pos);
-
-			if (p0 == NULL && p1 == NULL)
 				continue;
-
-			GateInfoPtr gi(new GateInfo(*((*it).get())));
-			gi->edit = NULL;
-
-			if (p0 != NULL)
-			{
-				gi->point0 = p0;
-				gi->poly0 = (*rit);
-				p0->gate = gi;
-			}
-			else
-			{
-				gi->point0 = (*it)->point0;
-				gi->poly0 = (*it)->poly0;
-				gi->point0->gate = gi;
-			}
-			if (p1 != NULL)
-			{
-				gi->point1 = p1;
-				gi->poly1 = (*rit);
-				p1->gate = gi;
-
-			}
-			else
-			{
-				gi->point1 = (*it)->point1;
-				gi->poly1 = (*it)->poly1;
-				gi->point1->gate = gi;
 			}
 
-			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
-			resultBrush.AddObject(sp1);
+			(*it)->CopyPointsToClipperPath(other[otherIndex]);
+			++otherIndex;
+		}
+
+		c.AddPaths(other, ClipperLib::PolyType::ptSubject, true);
+
+		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
+
+		c.Execute(ClipperLib::ClipType::ctDifference, solution);
+
+		for (auto it = solution.begin(); it != solution.end(); ++it)
+		{
+			PolyPtr newPoly(new TerrainPolygon(&grassTex));
+
+			newPoly->AddPointsFromClipperPath((*it));
+
+			newPoly->SetMaterialType(0, 0);//poly->terrainWorldType,
+										   //poly->terrainVariation);
+			newPoly->RemoveSlivers(PI / 10.0);
+			newPoly->AlignExtremes(PRIMARY_LIMIT);
+
+			//newPoly->inverse = inverse;
+			newPoly->Finalize();
+
+			resultBrush.AddObject(newPoly);
 		}
 	}
 
-	polygonInProgress->ClearPoints();
+	//clip 
+	if (inverse)
+	{
+		c.Clear();
+		inversePolygon->CopyPointsToClipperPath(otherInverse[0]);
+
+		c.AddPaths(otherInverse, ClipperLib::PolyType::ptSubject, true);
+		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
+
+		c.Execute(ClipperLib::ClipType::ctUnion, inverseSolution);
+
+		list<TerrainPolygon*> results;
+
+		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
+		{
+			TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
+
+			newPoly->AddPointsFromClipperPath((*it));
+
+			newPoly->SetMaterialType(0, 0);//poly->terrainWorldType,
+										   //poly->terrainVariation);
+			newPoly->RemoveSlivers(PI / 10.0);
+			newPoly->AlignExtremes(PRIMARY_LIMIT);
+
+			results.push_back(newPoly);
+		}
+
+		bool isOuter;
+		for (auto it = results.begin(); it != results.end(); ++it)
+		{
+			isOuter = true;
+			for (auto it2 = results.begin(); it2 != results.end(); ++it2)
+			{
+				if ((*it) == (*it2))
+					continue;
+
+				if (!(*it)->Contains((*it2)))
+				{
+					isOuter = false;
+				}
+			}
+
+			if (isOuter)
+			{
+				(*it)->inverse = true;
+				break;
+			}
+		}
+
+		for (auto it = results.begin(); it != results.end(); ++it)
+		{
+			PolyPtr p((*it));
+			p->Finalize();
+
+			resultBrush.AddObject(p);
+		}
+	}
+
+	for (list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
+	{
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+		orig.AddObject(sp);
+	}
 
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
 
-	/*action->Perform();
-	doneActionStack.push_back(action);
-
-	ClearUndoneActions();*/
+	polygonInProgress->ClearPoints();
 
 	return action;
+
+	//Brush orig;
+	//Brush resultBrush;
+
+	////Brush orig;
+	//map<TerrainPolygon*,list<TerrainPoint*>> addedPointsMap;
+	//list<boost::shared_ptr<GateInfo>> gateInfoList;
+
+	//for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	//{
+	//	SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+	//	orig.AddObject( sp );
+
+	//	TerrainPoint *pCurr = (*it)->pointStart;
+	//	bool okGate = true;
+	//	while (pCurr != NULL)
+	//	{
+	//		okGate = true;
+	//		if (pCurr->gate != NULL)
+	//		{
+	//			for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	//			{
+	//				if ((*it) == pCurr->gate)
+	//				{
+	//					okGate = false;
+	//					break;
+	//				}
+	//			}
+	//			if (okGate)
+	//			{
+	//				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(pCurr->gate);
+	//				orig.AddObject(sp1);
+	//				gateInfoList.push_back(pCurr->gate);
+	//			}
+	//				
+	//		}
+	//		pCurr = pCurr->next;
+	//	}
+	//	
+	//	for (map<TerrainPoint*, std::list<ActorPtr>>::iterator
+	//		mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit)
+	//	{
+	//		for (auto eit = (*mit).second.begin(); eit != (*mit).second.end(); ++eit)
+	//		{
+	//			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit));
+	//			orig.AddObject(sp1);
+	//		}
+	//	}
+	//		
+	//}
+
+	//list<PolyPtr> results;
+	//Sub( polygonInProgress, intersectingPolys, results );
+
+	//for( list<PolyPtr>::iterator it = results.begin(); 
+	//	it != results.end(); ++it )
+	//{
+	//	SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
+	//	resultBrush.AddObject( sp );
+	//}
+
+	//for( list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	//{
+	//	for( map<TerrainPoint*,std::list<ActorPtr>>::iterator 
+	//		mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit )
+	//	{
+	//		for (auto bit = (*mit).second.begin(); bit != (*mit).second.end(); ++bit)
+	//		{
+	//			for (list<PolyPtr>::iterator rit = results.begin();
+	//				rit != results.end(); ++rit)
+	//			{
+	//				ActorParams *ac = AttachActorToPolygon((*bit), (*rit).get());
+	//				if (ac != NULL)
+	//				{
+	//					ActorPtr newActor(ac);
+	//					resultBrush.AddObject(newActor);
+	//				}
+	//				//AttachActorsToPolygon((*mit).second, (*rit).get());
+	//				
+	//				/*for (auto eit = polygonInProgress->enemies.begin();
+	//					eit != polygonInProgress->enemies.end(); ++eit)
+	//				{
+	//					for (auto eit2 = (*eit).second.begin(); eit2 != (*eit).second.end(); ++eit2)
+	//					{
+	//						
+	//					}
+
+	//				}*/
+	//			}
+	//		}
+	//	}
+	//}
+
+	//for (list<PolyPtr>::iterator rit = results.begin();
+	//	rit != results.end(); ++rit)
+	//{
+	//	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	//	{
+	//		TerrainPoint *test = NULL;
+	//		TerrainPoint * outTest = NULL;
+
+	//		TerrainPoint *p0 = (*rit)->GetSamePoint((*it)->point0->pos);
+	//		TerrainPoint *p1 = (*rit)->GetSamePoint((*it)->point1->pos);
+
+	//		if (p0 == NULL && p1 == NULL)
+	//			continue;
+
+	//		GateInfoPtr gi(new GateInfo(*((*it).get())));
+	//		gi->edit = NULL;
+
+	//		if (p0 != NULL)
+	//		{
+	//			gi->point0 = p0;
+	//			gi->poly0 = (*rit);
+	//			p0->gate = gi;
+	//		}
+	//		else
+	//		{
+	//			gi->point0 = (*it)->point0;
+	//			gi->poly0 = (*it)->poly0;
+	//			gi->point0->gate = gi;
+	//		}
+	//		if (p1 != NULL)
+	//		{
+	//			gi->point1 = p1;
+	//			gi->poly1 = (*rit);
+	//			p1->gate = gi;
+
+	//		}
+	//		else
+	//		{
+	//			gi->point1 = (*it)->point1;
+	//			gi->poly1 = (*it)->poly1;
+	//			gi->point1->gate = gi;
+	//		}
+
+	//		SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
+	//		resultBrush.AddObject(sp1);
+	//	}
+	//}
+
+	//polygonInProgress->ClearPoints();
+
+	//Action * action = new ReplaceBrushAction(&orig, &resultBrush);
+
+	///*action->Perform();
+	//doneActionStack.push_back(action);
+
+	//ClearUndoneActions();*/
+
+	//return action;
 }
 
 bool EditSession::PointSelectTerrain(V2d &pos)
