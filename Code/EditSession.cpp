@@ -8234,18 +8234,12 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	curr = polygonInProgress->pointStart;
 
-	//setup inProgress poly
-	while (curr != NULL)
-	{
-		inProgress[0] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
-		curr = curr->next;
-	}
+	polygonInProgress->CopyPointsToClipperPath(inProgress[0]);
+
+	testOutPoly = new TerrainPolygon(&grassTex);
 
 	if (otherSize > 0)
 	{
-		
-		
-
 		//setup intersected polys
 		int otherIndex = 0;
 		for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
@@ -8255,81 +8249,45 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 				continue;
 			}
 
-			curr = (*it)->pointStart;
-			while (curr != NULL)
-			{
-				other[otherIndex] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
-				curr = curr->next;
-			}
+			(*it)->CopyPointsToClipperPath(other[otherIndex]);
 			++otherIndex;
 		}
 
-
 		//add
-		
-		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
 		c.AddPaths(other, ClipperLib::PolyType::ptSubject, true);
+
+		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
+
 		c.Execute(ClipperLib::ClipType::ctUnion, solution);
 		
 		if (!inverse)
 		{
-			testOutPoly = new TerrainPolygon(&grassTex);
-			for (auto it = solution.begin(); it != solution.end(); ++it)
-			{
-				for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
-				{
-					testOutPoly->AddPoint(new TerrainPoint(Vector2i((*it2).X, (*it2).Y), false));
-				}
-			}
+			testOutPoly->AddPointsFromClipperPath(solution[0]);
 		}
 		else
 		{
+			inversePolygon->CopyPointsToClipperPath(otherInverse[0]);
+
 			c.Clear();
 
-			curr = inversePolygon->pointStart;
-			while (curr != NULL)
-			{
-				otherInverse[0] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
-				curr = curr->next;
-			}
-
-			c.AddPaths(otherInverse, ClipperLib::PolyType::ptSubject, true);
 			c.AddPaths(solution, ClipperLib::PolyType::ptClip, true);
-			c.Execute(ClipperLib::ClipType::ctDifference, inverseSolution);
-
-			testOutPoly = new TerrainPolygon(&grassTex);
-			for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
-			{
-				for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
-				{
-					testOutPoly->AddPoint(new TerrainPoint(Vector2i((*it2).X, (*it2).Y), false));
-				}
-			}
 		}
 	}
 	else
 	{
-		//c.Clear();
-
-		curr = inversePolygon->pointStart;
-		while (curr != NULL)
-		{
-			otherInverse[0] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
-			curr = curr->next;
-		}
-
-		c.AddPaths(otherInverse, ClipperLib::PolyType::ptSubject, true);
+		inversePolygon->CopyPointsToClipperPath(otherInverse[0]);
 		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
+
+	}
+
+	//clip 
+	if (inverse)
+	{
+		c.AddPaths(otherInverse, ClipperLib::PolyType::ptSubject, true);
+
 		c.Execute(ClipperLib::ClipType::ctDifference, inverseSolution);
 
-		testOutPoly = new TerrainPolygon(&grassTex);
-		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
-		{
-			for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
-			{
-				testOutPoly->AddPoint(new TerrainPoint(Vector2i((*it2).X, (*it2).Y), false));
-			}
-		}
+		testOutPoly->AddPointsFromClipperPath(inverseSolution[0]);
 	}
 
 	testOutPoly->SetMaterialType(0, 0);//poly->terrainWorldType,

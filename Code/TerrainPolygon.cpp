@@ -3583,6 +3583,24 @@ void TerrainPolygon::GetIntersections( TerrainPolygon *poly, std::list<Inter> &o
 	}
 }
 
+void TerrainPolygon::CopyPointsToClipperPath(ClipperLib::Path & p)
+{
+	TerrainPoint *curr = pointStart;
+	while (curr != NULL)
+	{
+		p << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
+		curr = curr->next;
+	}
+}
+
+void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p)
+{
+	for (auto it = p.begin(); it != p.end(); ++it )
+	{
+		AddPoint(new TerrainPoint(Vector2i((*it).X, (*it).Y), false));
+	}
+}
+
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 	:pos( p ), selected( s ), gate( NULL ), prev( NULL ), next( NULL )
 {

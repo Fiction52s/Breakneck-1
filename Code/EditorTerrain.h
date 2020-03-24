@@ -6,7 +6,8 @@
 #include <boost/shared_ptr.hpp>
 #include "ISelectable.h"
 #include "VectorMath.h"
-
+#include "clipper.hpp"
+     
 struct ISelectable;
 struct GateInfo;
 struct EditSession;
@@ -248,6 +249,8 @@ struct TerrainPolygon : ISelectable
 	bool LinesIntersect(TerrainPolygon *poly);
 	bool LinesIntersectInProgress(sf::Vector2i p );
 	bool IsCompletionValid();
+	void CopyPointsToClipperPath(ClipperLib::Path & p);
+	void AddPointsFromClipperPath(ClipperLib::Path &p);
 	bool PointTooCloseToPoints(sf::Vector2i point,
 		int minDistance);
 	bool PointTooClose(sf::Vector2i point,
