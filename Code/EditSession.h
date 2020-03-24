@@ -707,7 +707,7 @@ struct EditSession : GUIHandler, TilesetManager
 	void TryPaste();
 	bool CheckValidPaste();
 	void Paste();
-	void ExecuteTerrainCompletion();
+	bool ExecuteTerrainCompletion();
 	void ExecuteRailCompletion();
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys);

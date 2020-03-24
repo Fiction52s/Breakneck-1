@@ -7763,10 +7763,16 @@ list<PolyPtr> & EditSession::GetCorrectPolygonList()
 	}
 }
 
-void EditSession::ExecuteTerrainCompletion()
+bool EditSession::ExecuteTerrainCompletion()
 {
 	if( polygonInProgress->numPoints > 2 )
 	{
+
+		if (!polygonInProgress->IsCompletionValid())
+		{
+			return false;
+		}
+
 		polygonInProgress->SetMaterialType(currTerrainWorld,
 			currTerrainVar);
 		//test final line
@@ -7897,13 +7903,18 @@ void EditSession::ExecuteTerrainCompletion()
 
 				ClearUndoneActions();
 			}
+
+			return true;
 		}
 	}
 	else if( polygonInProgress->numPoints <= 2 && polygonInProgress->numPoints > 0  )
 	{
 		cout << "cant finalize. cant make polygon" << endl;
 		polygonInProgress->ClearPoints();
+		return false;
 	}
+
+	return false;
 }
 
 void EditSession::ExecuteRailCompletion()
@@ -9612,12 +9623,10 @@ void EditSession::TryAddPointToPolygonInProgress()
 		{
 			if ( polygonInProgress->numPoints >= 3 && polygonInProgress->IsCloseToFirstPoint(GetZoomedPointSize(), V2d(worldi)))
 			{
-				/*if (IsCompletionValid())
+				if (ExecuteTerrainCompletion())
 				{
-
-				}*/
-				ExecuteTerrainCompletion();
-				justCompletedPolyWithClick = true;
+					justCompletedPolyWithClick = true;
+				}
 				//complete polygon
 			}
 			else
@@ -10227,6 +10236,7 @@ void EditSession::DrawPolygonInProgress()
 		Color colorSelection;
 
 		bool valid = polygonInProgress->IsValidInProgressPoint(Vector2i(testPoint));
+
 		if (valid)
 		{
 			colorSelection = validColor;

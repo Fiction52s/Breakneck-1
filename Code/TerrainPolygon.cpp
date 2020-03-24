@@ -1965,7 +1965,7 @@ void TerrainPolygon::AddPoint( TerrainPoint* tp)
 }
 
 bool TerrainPolygon::PointsTooCloseToSegInProgress(sf::Vector2i point,
-	int minDistance)
+	int minDistance, bool finalPoint )
 {
 	V2d p(point.x, point.y);
 
@@ -1973,6 +1973,11 @@ bool TerrainPolygon::PointsTooCloseToSegInProgress(sf::Vector2i point,
 	TerrainPoint *pnext = NULL;
 
 	Vector2i endPos = pointEnd->pos;
+
+	if (finalPoint)
+	{
+		pcurr = pcurr->next;
+	}
 
 	while (pcurr != NULL)
 	{
@@ -2001,7 +2006,8 @@ bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 	if (numPoints == 0)
 		return true;
 
-	if (numPoints >= 3 && IsCloseToFirstPoint(sess->GetZoomedPointSize(), V2d(point)))
+	if (numPoints >= 3 && IsCloseToFirstPoint(sess->GetZoomedPointSize(), V2d(point)) &&
+		IsCompletionValid())
 	{
 		return true;
 	}
@@ -3048,8 +3054,72 @@ bool TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
 	return false;
 }
 
-bool TerrainPolygon::IsCompletionValid( int minDistance)
+bool TerrainPolygon::IsCompletionValid()
 {
+	EditSession *sess = EditSession::GetSession();
+
+
+	if (numPoints < 3)
+		return false;
+
+
+	/*TerrainPoint *start = pointStart;
+	TerrainPoint *second = pointStart->next;
+	TerrainPoint *end = pointEnd;
+	V2d startPos(start->pos);
+	V2d secondPos(second->pos);
+	V2d endPos(end->pos);
+	
+	V2d a(startPos - secondPos);
+	V2d b(startPos - endPos);
+
+	double d = dot(normalize(a), normalize(b));
+
+	if (d > .999)
+	{
+		cout << "angle too similar" << endl;
+		return false;
+	}*/
+
+	bool linesIntersect = LinesIntersectInProgress(pointStart->pos);
+	if (linesIntersect)
+	{
+		//cout << "lines intersect" << endl;
+		return false;
+	}
+
+
+
+	double minEdge = sess->GetZoomedMinEdgeLength();
+
+	if (PointsTooCloseToSegInProgress(pointStart->pos, minEdge, true))
+	{
+		//cout << "points too close" << endl;
+		return false;
+	}
+
+	////if (numPoints == 0 || (numPoints > 0 &&
+	////length(V2d(point.x, point.y) - Vector2<double>(pointEnd->pos.x,pointEnd->pos.y)) >= minEdge))
+	//{
+	//	bool pointTooClose = PointTooClose(point, minEdge, true);
+	//	bool linesIntersect = LinesIntersectInProgress(point);
+	//	if (pointTooClose || linesIntersect)
+	//	{
+	//		return false;
+	//	}
+
+	//	if (PointsTooCloseToSegInProgress(point, minEdge))
+	//	{
+	//		return false;
+	//	}
+
+	//	return true;
+	//}
+
+
+	//return false;
+
+
 	return true;
 }
 
@@ -3082,7 +3152,7 @@ bool TerrainPolygon::LinesIntersectInProgress(Vector2i p)
 		}
 
 
-		LineIntersection li = EditSession::SegmentIntersect(curr->pos, next->pos, pointEnd->pos, p );
+		LineIntersection li = EditSession::LimitSegmentIntersect(curr->pos, next->pos, pointEnd->pos, p );
 		if (!li.parallel)
 		{
 			return true;

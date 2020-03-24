@@ -247,7 +247,7 @@ struct TerrainPolygon : ISelectable
 	bool BoundsOverlap(TerrainPolygon *poly);
 	bool LinesIntersect(TerrainPolygon *poly);
 	bool LinesIntersectInProgress(sf::Vector2i p );
-	bool IsCompletionValid( int minDistance);
+	bool IsCompletionValid();
 	bool PointTooCloseToPoints(sf::Vector2i point,
 		int minDistance);
 	bool PointTooClose(sf::Vector2i point,
@@ -257,7 +257,7 @@ struct TerrainPolygon : ISelectable
 	bool PointTooCloseToLines(sf::Vector2i point,
 		int minDistance, bool inProgress = false);
 	bool PointsTooCloseToSegInProgress(sf::Vector2i point,
-		int minDistance );
+		int minDistance, bool finalPoint = false );
 	bool SegmentTooClose(sf::Vector2i a,
 		sf::Vector2i b, int minDistance);
 	bool SegmentWithinDistanceOfPoint(
