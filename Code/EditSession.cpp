@@ -8212,48 +8212,128 @@ void EditSession::PasteTerrain(Brush *b)
 
 Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {
-	ClipperLib::Paths inProgress(1), other(intersectingPolys.size()), solution;
-	TerrainPoint *curr = polygonInProgress->pointStart;
-
 	bool inverse = false;
-
-
-	while (curr != NULL)
-	{
-		inProgress[0] << ClipperLib::IntPoint( curr->pos.x, curr->pos.y );
-		curr = curr->next;
-	}
-
-	int otherIndex = 0;
+	int otherSize = intersectingPolys.size();
 	for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
 	{
 		if ((*it)->inverse)
-			inverse = true;
-		curr = (*it)->pointStart;
-		while (curr != NULL)
 		{
-			other[otherIndex] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
-			curr = curr->next;
+			inverse = true;
+			break;
 		}
-		++otherIndex;
 	}
 
-	ClipperLib::Clipper c;
-	c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
-	c.AddPaths(other, ClipperLib::PolyType::ptSubject, true);
-	c.Execute(ClipperLib::ClipType::ctDifference, solution);
+	if (inverse)
+		otherSize--;
 
-	TerrainPolygon *testOutPoly = new TerrainPolygon(&grassTex);
-	for (auto it = solution.begin(); it != solution.end(); ++it)
+	ClipperLib::Clipper c;
+	TerrainPoint *curr;
+	TerrainPolygon *testOutPoly;
+
+	ClipperLib::Paths inProgress(1), other(otherSize), otherInverse(1), solution, inverseSolution;
+
+	curr = polygonInProgress->pointStart;
+
+	//setup inProgress poly
+	while (curr != NULL)
 	{
-		for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
+		inProgress[0] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
+		curr = curr->next;
+	}
+
+	if (otherSize > 0)
+	{
+		
+		
+
+		//setup intersected polys
+		int otherIndex = 0;
+		for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
 		{
-			testOutPoly->AddPoint(new TerrainPoint(Vector2i((*it2).X, (*it2).Y), false));
+			if ((*it)->inverse)
+			{
+				continue;
+			}
+
+			curr = (*it)->pointStart;
+			while (curr != NULL)
+			{
+				other[otherIndex] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
+				curr = curr->next;
+			}
+			++otherIndex;
+		}
+
+
+		//add
+		
+		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
+		c.AddPaths(other, ClipperLib::PolyType::ptSubject, true);
+		c.Execute(ClipperLib::ClipType::ctUnion, solution);
+		
+		if (!inverse)
+		{
+			testOutPoly = new TerrainPolygon(&grassTex);
+			for (auto it = solution.begin(); it != solution.end(); ++it)
+			{
+				for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
+				{
+					testOutPoly->AddPoint(new TerrainPoint(Vector2i((*it2).X, (*it2).Y), false));
+				}
+			}
+		}
+		else
+		{
+			c.Clear();
+
+			curr = inversePolygon->pointStart;
+			while (curr != NULL)
+			{
+				otherInverse[0] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
+				curr = curr->next;
+			}
+
+			c.AddPaths(otherInverse, ClipperLib::PolyType::ptSubject, true);
+			c.AddPaths(solution, ClipperLib::PolyType::ptClip, true);
+			c.Execute(ClipperLib::ClipType::ctDifference, inverseSolution);
+
+			testOutPoly = new TerrainPolygon(&grassTex);
+			for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
+			{
+				for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
+				{
+					testOutPoly->AddPoint(new TerrainPoint(Vector2i((*it2).X, (*it2).Y), false));
+				}
+			}
+		}
+	}
+	else
+	{
+		//c.Clear();
+
+		curr = inversePolygon->pointStart;
+		while (curr != NULL)
+		{
+			otherInverse[0] << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
+			curr = curr->next;
+		}
+
+		c.AddPaths(otherInverse, ClipperLib::PolyType::ptSubject, true);
+		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
+		c.Execute(ClipperLib::ClipType::ctDifference, inverseSolution);
+
+		testOutPoly = new TerrainPolygon(&grassTex);
+		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
+		{
+			for (auto it2 = (*it).begin(); it2 != (*it).end(); ++it2)
+			{
+				testOutPoly->AddPoint(new TerrainPoint(Vector2i((*it2).X, (*it2).Y), false));
+			}
 		}
 	}
 
 	testOutPoly->SetMaterialType(0, 0);//poly->terrainWorldType,
-		//poly->terrainVariation);
+									   //poly->terrainVariation);
 	testOutPoly->RemoveSlivers(PI / 10.0);
 	testOutPoly->AlignExtremes(PRIMARY_LIMIT);
 
@@ -8273,8 +8353,8 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	for (list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
 	{
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( (*it) );
-		orig.AddObject( sp );
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+		orig.AddObject(sp);
 	}
 
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
@@ -8283,6 +8363,10 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	polygonInProgress = newPoly;
 
 	return action;
+
+	
+
+
 
 
 	//TerrainPolygon *outPoly = NULL;
