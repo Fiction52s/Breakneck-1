@@ -18,6 +18,7 @@
 #include "ActorParams.h"
 #include "EditorBG.h"
 #include "EditorRail.h"
+#include "EditorGraph.h"
 //#include "TerrainRender.h"
 
 using namespace std;
@@ -683,6 +684,9 @@ TerrainRail *EditSession::GetRail(int index, int &edgeIndex)
 
 EditSession::~EditSession()
 {
+	delete graph;
+
+
 	delete background;
 
 	polygonInProgress.reset();
@@ -4456,6 +4460,9 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	graphColor = Color( 200, 50, 50, 100 );
 	numGraphLines = 30;
 	graphLinesVA = new VertexArray(sf::Lines, numGraphLines * 8);
+
+	graph = new EditorGraph;
+
 	SetupGraph();
 	
 
@@ -9605,6 +9612,10 @@ void EditSession::TryAddPointToPolygonInProgress()
 		{
 			if ( polygonInProgress->numPoints >= 3 && polygonInProgress->IsCloseToFirstPoint(GetZoomedPointSize(), V2d(worldi)))
 			{
+				/*if (IsCompletionValid())
+				{
+
+				}*/
 				ExecuteTerrainCompletion();
 				justCompletedPolyWithClick = true;
 				//complete polygon
@@ -10115,6 +10126,11 @@ void EditSession::DrawGraph()
 {
 	if (showGraph)
 	{
+		graph->SetCenterAbsolute(view.getCenter());
+		graph->Draw(preScreenTex);
+	}
+	/*if (showGraph)
+	{
 		VertexArray &graphLines = *graphLinesVA;
 		Vector2f adjustment;
 		for (int i = 0; i < numGraphLines * 8; ++i)
@@ -10128,8 +10144,8 @@ void EditSession::DrawGraph()
 
 			if (x > 0)
 				x += .5f;
-			else if (y < 0)
-				y -= .5f;
+			else if (x < 0)
+				x -= .5f;
 
 			if (y > 0)
 				y += .5f;
@@ -10150,7 +10166,7 @@ void EditSession::DrawGraph()
 		{
 			graphLines[i].position -= adjustment;
 		}
-	}
+	}*/
 }
 
 void EditSession::SetupGraph()
@@ -12115,7 +12131,7 @@ void EditSession::CreateTerrainModeUpdate()
 
 	if (IsKeyPressed(Keyboard::G))
 	{
-		testPoint = SnapPointToGraph(testPoint, 32);
+		testPoint = SnapPointToGraph(testPoint, graph->graphSpacing);
 		showGraph = true;
 	}
 	else if (IsKeyPressed(Keyboard::F))
@@ -12143,7 +12159,7 @@ void EditSession::CreateRailsModeUpdate()
 
 	if (IsKeyPressed(Keyboard::G))
 	{
-		testPoint = SnapPointToGraph(testPoint, 32);
+		testPoint = SnapPointToGraph(testPoint, graph->graphSpacing);
 		showGraph = true;
 	}
 	else if (IsKeyPressed(Keyboard::F))

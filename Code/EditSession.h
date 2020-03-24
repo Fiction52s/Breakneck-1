@@ -22,6 +22,7 @@
 #include "EditorActors.h"
 #include "EditorTerrain.h"
 
+struct EditorGraph;
 struct ActorParams;
 struct MainMenu;
 //struct ActorParams;
@@ -519,6 +520,8 @@ struct EditSession : GUIHandler, TilesetManager
 
 	sf::VertexArray *graphLinesVA;
 	int numGraphLines;
+
+	EditorGraph *graph;
 
 	void DrawPolygons();
 	void DrawRails();
