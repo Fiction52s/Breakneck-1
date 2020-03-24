@@ -12187,7 +12187,7 @@ void EditSession::EditModeUpdate()
 	{
 		if (IsKeyPressed(Keyboard::G))
 		{
-			//pPoint = SnapPointToGraph( worldPos, 32 );
+			worldPos = SnapPointToGraph( worldPos, graph->graphSpacing );
 			showGraph = true;
 		}
 
