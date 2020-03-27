@@ -8323,6 +8323,22 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	//resultBrush.Clear();
 	resultBrush.AddObject(outPoly);
 
+	for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
+	{
+		for (auto mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit)
+		{
+			for (auto bit = (*mit).second.begin(); bit != (*mit).second.end(); ++bit)
+			{
+				ActorParams *ac = AttachActorToPolygon((*bit), outPoly.get());
+				if (ac != NULL)
+				{
+					ActorPtr newActor(ac);
+					resultBrush.AddObject(newActor);
+				}
+			}
+		}
+	}
+
 	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
 		TerrainPoint *test = NULL;
@@ -8391,8 +8407,6 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
 
 	polygonInProgress->ClearPoints();
-	//PolyPtr newPoly(new TerrainPolygon(&grassTex));
-	//polygonInProgress = newPoly;
 
 	return action;
 
