@@ -264,6 +264,20 @@ struct EditSession : GUIHandler, TilesetManager
 		sf::Vector2i c, sf::Vector2i d );
 	bool CanCreateGate( GateInfo &testGate );
 	void SetPanelDefault( ActorType *type );
+
+	void TryAttachActors(
+		std::list<PolyPtr> & origPolys,
+		std::list<PolyPtr> & newPolys,
+		Brush *b);
+	void TryKeepGates( 
+		std::list<GateInfoPtr> &gateInfoList,
+		std::list<PolyPtr> &newPolys,
+		Brush *b );
+	void AddFullPolysToBrush(
+		std::list<PolyPtr> & polyList,
+		std::list<GateInfoPtr> &gateInfoList,
+		Brush *b);
+
 	void ClearSelectedPoints();
 	void SelectPoint(PolyPtr poly,
 		TerrainPoint *point);

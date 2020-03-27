@@ -3155,6 +3155,111 @@ void EditSession::RemovePointFromRailInProgress()
 	}
 }
 
+void EditSession::TryAttachActors(
+	std::list<PolyPtr> &origPolys,
+	std::list<PolyPtr> &newPolys,
+	Brush *b)
+{
+	for (auto it = origPolys.begin(); it != origPolys.end(); ++it)
+	{
+		for (auto mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit)
+		{
+			for (auto bit = (*mit).second.begin(); bit != (*mit).second.end(); ++bit)
+			{
+				for (auto rit = newPolys.begin();
+					rit != newPolys.end(); ++rit)
+				{
+					ActorParams *ac = AttachActorToPolygon((*bit), (*rit).get());
+					if (ac != NULL)
+					{
+						ActorPtr newActor(ac);
+						b->AddObject(newActor);
+					}
+				}
+			}
+		}
+	}
+}
+
+void EditSession::TryKeepGates( list<GateInfoPtr> &gateInfoList, list<PolyPtr> &newPolys, Brush *b )
+{
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	{
+		TerrainPoint *test = NULL;
+		TerrainPoint * outTest = NULL;
+
+		TerrainPoint *p0 = NULL;
+		TerrainPoint *p1 = NULL;
+		TerrainPoint *testPoint = NULL;
+
+
+		PolyPtr poly0;
+		PolyPtr poly1;
+
+		for (auto rit = newPolys.begin();
+			rit != newPolys.end(); ++rit)
+		{
+			if (p0 != NULL && p1 != NULL)
+				break;
+
+			if (p0 == NULL)
+			{
+				testPoint = (*rit)->GetSamePoint((*it)->point0->pos);
+				if (testPoint != NULL)
+				{
+					p0 = testPoint;
+					poly0 = (*rit);
+				}
+			}
+
+			if (p1 == NULL)
+			{
+				testPoint = (*rit)->GetSamePoint((*it)->point1->pos);
+				if (testPoint != NULL)
+				{
+					p1 = testPoint;
+					poly1 = (*rit);
+				}
+			}
+		}
+
+
+		if (p0 == NULL && p1 == NULL)
+			continue;
+
+		GateInfoPtr gi(new GateInfo(*((*it).get())));
+		gi->edit = NULL;
+
+		if (p0 != NULL)
+		{
+			gi->point0 = p0;
+			gi->poly0 = poly0;
+			p0->gate = gi;
+		}
+		else
+		{
+			gi->point0 = (*it)->point0;
+			gi->poly0 = (*it)->poly0;
+			gi->point0->gate = gi;
+		}
+		if (p1 != NULL)
+		{
+			gi->point1 = p1;
+			gi->poly1 = poly1;
+			p1->gate = gi;
+
+		}
+		else
+		{
+			gi->point1 = (*it)->point1;
+			gi->poly1 = (*it)->poly1;
+			gi->point1->gate = gi;
+		}
+
+		b->AddObject(gi);
+	}
+}
+
 void EditSession::TryRemoveSelectedPoints()
 {
 	//need to make this into an undoable action soon
@@ -3167,22 +3272,29 @@ void EditSession::TryRemoveSelectedPoints()
 		Brush result;
 
 		list<GateInfoPtr> gateInfoList;
+		list<PolyPtr> affectedPolys;
+		list<PolyPtr> newPolys;
 		for (PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
 		{
 			PolyPtr tp = (*it).first;
+			affectedPolys.push_back(tp);
+
 			PolyPtr newPoly(new TerrainPolygon(*tp, true, true));
 			newPoly->RemoveSelectedPoints();
 			newPoly->RemoveSlivers(SLIVER_LIMIT);
 			newPoly->AlignExtremes(PRIMARY_LIMIT);
 			newPoly->Finalize();
 
-			orig.AddObject(tp);
-			tp->AddEnemiesToBrush( &orig );
-			tp->AddGatesToBrush(&orig, gateInfoList);
+			newPolys.push_back(newPoly);
 
 			result.AddObject(newPoly);
 		}
 
+		AddFullPolysToBrush(affectedPolys, gateInfoList, &orig);
+
+		TryAttachActors(affectedPolys, newPolys, &result);
+
+		TryKeepGates(gateInfoList, newPolys, &result);
 		selectedPoints.clear();
 
 		Action * action = new ReplaceBrushAction(&orig, &result);
@@ -6017,7 +6129,18 @@ void EditSession::PasteTerrain(Brush *b)
 	copiedBrush = copiedBrush->Copy();
 }
 
-
+void EditSession::AddFullPolysToBrush(
+	std::list<PolyPtr> & polyList,
+	std::list<GateInfoPtr> &gateInfoList,
+	Brush *b)
+{
+	for (list<PolyPtr>::iterator it = polyList.begin(); it != polyList.end(); ++it)
+	{
+		b->AddObject((*it));
+		(*it)->AddGatesToBrush(b, gateInfoList);
+		(*it)->AddEnemiesToBrush(b);
+	}
+}
 
 Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {
@@ -6025,13 +6148,8 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	Brush resultBrush;
 
 	list<GateInfoPtr> gateInfoList;
-	for (list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
-	{
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-		orig.AddObject(sp);
-		(*it)->AddGatesToBrush(&orig, gateInfoList);
-		(*it)->AddEnemiesToBrush(&orig);
-	}
+
+	AddFullPolysToBrush(intersectingPolys, gateInfoList, &orig);
 
 	bool inverse = false;
 	int otherSize = intersectingPolys.size();
@@ -6123,86 +6241,11 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	
 	resultBrush.AddObject(outPoly);
 
-	for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
-	{
-		for (auto mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit)
-		{
-			for (auto bit = (*mit).second.begin(); bit != (*mit).second.end(); ++bit)
-			{
-				ActorParams *ac = AttachActorToPolygon((*bit), outPoly.get());
-				if (ac != NULL)
-				{
-					ActorPtr newActor(ac);
-					resultBrush.AddObject(newActor);
-				}
-			}
-		}
-	}
+	list<PolyPtr> attachList;
+	attachList.push_back(outPoly);
 
-	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
-	{
-		TerrainPoint *test = NULL;
-		TerrainPoint * outTest = NULL;
-
-		TerrainPoint *p0 = NULL;
-		TerrainPoint *p1 = NULL;
-		TerrainPoint *testPoint = NULL;
-
-		if (p0 == NULL)
-		{
-			testPoint = outPoly->GetSamePoint((*it)->point0->pos);
-			if (testPoint != NULL)
-			{
-				p0 = testPoint;
-			}
-		}
-
-		if (p1 == NULL)
-		{
-			testPoint = outPoly->GetSamePoint((*it)->point1->pos);
-			if (testPoint != NULL)
-			{
-				p1 = testPoint;
-			}
-		}
-		
-
-		if (p0 == NULL && p1 == NULL)
-			continue;
-
-		GateInfoPtr gi(new GateInfo(*((*it).get())));
-		gi->edit = NULL;
-
-		if (p0 != NULL)
-		{
-			gi->point0 = p0;
-			gi->poly0 = outPoly;
-			p0->gate = gi;
-		}
-		else
-		{
-			gi->point0 = (*it)->point0;
-			gi->poly0 = (*it)->poly0;
-			gi->point0->gate = gi;
-		}
-		if (p1 != NULL)
-		{
-			gi->point1 = p1;
-			gi->poly1 = outPoly;
-			p1->gate = gi;
-
-		}
-		else
-		{
-			gi->point1 = (*it)->point1;
-			gi->poly1 = (*it)->poly1;
-			gi->point1->gate = gi;
-		}
-
-		SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
-		resultBrush.AddObject(sp1);
-	}
-
+	TryAttachActors(intersectingPolys, attachList, &resultBrush);
+	TryKeepGates(gateInfoList, attachList, &resultBrush);
 
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
 
@@ -6342,14 +6385,9 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 	//add original stuff to the original brush
 	list<GateInfoPtr> gateInfoList;
-	for (list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
-	{
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-		orig.AddObject(sp);
 
-		(*it)->AddGatesToBrush(&orig, gateInfoList);
-		(*it)->AddEnemiesToBrush(&orig);
-	}
+
+	AddFullPolysToBrush(intersectingPolys, gateInfoList, &orig);
 
 	if (otherSize > 0)
 	{
@@ -6437,103 +6475,8 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 		resultBrush.AddObject(p);
 	}
 
-	for( auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
-	{
-		for( auto mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit )
-		{
-			for (auto bit = (*mit).second.begin(); bit != (*mit).second.end(); ++bit)
-			{
-				for (auto rit = results.begin();
-					rit != results.end(); ++rit)
-				{
-					ActorParams *ac = AttachActorToPolygon((*bit), (*rit));
-					if (ac != NULL)
-					{
-						ActorPtr newActor(ac);
-						resultBrush.AddObject(newActor);
-					}
-				}
-			}
-		}
-	}
-
-	
-	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
-	{
-		TerrainPoint *test = NULL;
-		TerrainPoint * outTest = NULL;
-
-		TerrainPoint *p0 = NULL;
-		TerrainPoint *p1 = NULL;
-		TerrainPoint *testPoint = NULL;
-		list<PolyPtr>::iterator it0;
-		list<PolyPtr>::iterator it1;
-
-		for (auto rit = resultsPtr.begin();
-			rit != resultsPtr.end(); ++rit)
-		{
-			if (p0 != NULL && p1 != NULL)
-				break;
-
-			if (p0 == NULL)
-			{
-				testPoint = (*rit)->GetSamePoint((*it)->point0->pos);
-				if (testPoint != NULL)
-				{
-					p0 = testPoint;
-					it0 = rit;
-				}
-			}
-
-			if (p1 == NULL)
-			{
-				testPoint = (*rit)->GetSamePoint((*it)->point1->pos);
-				if (testPoint != NULL)
-				{
-					p1 = testPoint;
-					it1 = rit;
-				}
-			}
-		}
-
-		
-		//TerrainPoint *p1 = (*rit)->GetSamePoint((*it)->point1->pos);
-
-		if (p0 == NULL && p1 == NULL)
-			continue;
-
-		GateInfoPtr gi(new GateInfo(*((*it).get())));
-		gi->edit = NULL;
-
-		if (p0 != NULL)
-		{
-			gi->point0 = p0;
-			gi->poly0 = (*it0);
-			p0->gate = gi;
-		}
-		else
-		{
-			gi->point0 = (*it)->point0;
-			gi->poly0 = (*it)->poly0;
-			gi->point0->gate = gi;
-		}
-		if (p1 != NULL)
-		{
-			gi->point1 = p1;
-			gi->poly1 = (*it1);
-			p1->gate = gi;
-
-		}
-		else
-		{
-			gi->point1 = (*it)->point1;
-			gi->poly1 = (*it)->poly1;
-			gi->point1->gate = gi;
-		}
-
-		SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
-		resultBrush.AddObject(sp1);
-	}
+	TryAttachActors(intersectingPolys, resultsPtr, &resultBrush);
+	TryKeepGates(gateInfoList, resultsPtr, &resultBrush );
 
 	for (auto it = resultsPtr.begin(); it != resultsPtr.end(); ++it)
 	{
