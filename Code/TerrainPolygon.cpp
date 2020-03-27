@@ -14,6 +14,7 @@
 #include <set>
 #include "GameSession.h"
 #include "ActorParams.h"
+#include "Action.h"
 
 using namespace std;
 using namespace sf;
@@ -3598,6 +3599,76 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p)
 	for (auto it = p.begin(); it != p.end(); ++it )
 	{
 		AddPoint(new TerrainPoint(Vector2i((*it).X, (*it).Y), false));
+	}
+}
+
+void TerrainPolygon::AddGatesToBrush(Brush *b,
+	list<GateInfoPtr> &gateInfoList)
+{
+	TerrainPoint *pCurr = pointStart;
+	bool okGate = true;
+	while (pCurr != NULL)
+	{
+		okGate = true;
+		if (pCurr->gate != NULL)
+		{
+			for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+			{
+				if ((*it) == pCurr->gate)
+				{
+					okGate = false;
+					break;
+				}
+			}
+			if (okGate)
+			{
+				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(pCurr->gate);
+				b->AddObject(sp1);
+				gateInfoList.push_back(pCurr->gate);
+			}
+
+		}
+		pCurr = pCurr->next;
+	}
+}
+
+void TerrainPolygon::AddEnemiesToBrush(Brush *b)
+{
+	for (map<TerrainPoint*, std::list<ActorPtr>>::iterator
+		mit = enemies.begin(); mit != enemies.end(); ++mit)
+	{
+		for (auto eit = (*mit).second.begin(); eit != (*mit).second.end(); ++eit)
+		{
+			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit));
+			b->AddObject(sp1);
+		}
+	}
+}
+
+void TerrainPolygon::AddGatesToList(std::list<GateInfoPtr> &gates)
+{
+	TerrainPoint *curr = pointStart;
+	bool alreadyInList = false;
+	while (curr != NULL)
+	{
+		if (curr->gate != NULL)
+		{
+			alreadyInList = false;
+			for (auto it = gates.begin(); it != gates.end(); ++it)
+			{
+				if ((*it) == curr->gate)
+				{
+					alreadyInList = true;
+					break;
+				}
+			}
+
+			if (!alreadyInList)
+			{
+				gates.push_back(curr->gate);
+			}
+		}
+		curr = curr->next;
 	}
 }
 

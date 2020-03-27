@@ -26,6 +26,9 @@ void GateInfo::Deactivate(EditSession *editSession, SelectPtr select)
 		GateInfoPtr g = boost::dynamic_pointer_cast<GateInfo>(select);
 		edit = NULL;
 		editSession->gates.remove(g);
+
+		g->point0->gate = NULL;
+		g->point1->gate = NULL;
 	}
 }
 
@@ -36,6 +39,9 @@ void GateInfo::Activate(EditSession *editSession, SelectPtr select)
 		GateInfoPtr g = boost::dynamic_pointer_cast<GateInfo>(select);
 		edit = editSession;
 		editSession->gates.push_back(g);
+
+		g->point0->gate = g;
+		g->point1->gate = g;
 	}
 }
 

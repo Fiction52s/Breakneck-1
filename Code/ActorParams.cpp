@@ -9,6 +9,7 @@
 #include "ActorParams.h"
 #include "EditSession.h"
 #include "EditorRail.h"
+#include "Action.h"
 
 using namespace std;
 using namespace sf;
@@ -887,7 +888,7 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 	image.setColor( Color::White );
 }
 
-void ActorParams::Deactivate( EditSession *editsession, SelectPtr select )
+void ActorParams::Deactivate( EditSession *sess, SelectPtr select )
 {
 	cout << "DEACTIVATING ACTOR PARAMS size from: " << group->actors.size() << endl;
 	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );

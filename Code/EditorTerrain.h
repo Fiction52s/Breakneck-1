@@ -15,6 +15,7 @@ struct TerrainPolygon;
 struct ActorParams;
 struct TerrainRender;
 struct TerrainRail;
+struct Brush;
 
 struct GrassSeg
 {
@@ -241,7 +242,7 @@ struct TerrainPolygon : ISelectable
 		boost::shared_ptr<ISelectable> select);
 	void Activate(EditSession *edit,
 		boost::shared_ptr<ISelectable> select);
-
+	void AddGatesToList(std::list<GateInfoPtr> &gates);
 	bool IsTouching(TerrainPolygon *poly);
 	bool Contains(TerrainPolygon *poly);
 	//bool IsTouching( TerrainPolygon * p );
@@ -271,6 +272,9 @@ struct TerrainPolygon : ISelectable
 	bool TooClose(TerrainPolygon *poly,
 		bool intersectAllowed,
 		int minDistance);
+	void AddGatesToBrush(Brush *b,
+		std::list<boost::shared_ptr<GateInfo>> &gateInfoList);
+	void AddEnemiesToBrush(Brush *b);
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 	bool IsCloseToFirstPoint(double radius, V2d &p);
 	sf::Color selectCol;

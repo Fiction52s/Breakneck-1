@@ -1935,6 +1935,10 @@ void EditSession::UndoMostRecentAction()
 		action->Undo();
 
 		undoneActionStack.push_back(action);
+
+		//clearing this so things don't get messing with deleted items being selected etc
+		selectedBrush->SetSelected(false);
+		selectedBrush->Clear();
 	}
 }
 
@@ -1948,6 +1952,9 @@ void EditSession::RedoMostRecentUndoneAction()
 		action->Perform();
 
 		doneActionStack.push_back(action);
+
+		selectedBrush->SetSelected(false);
+		selectedBrush->Clear();
 	}
 }
 
@@ -7566,7 +7573,7 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 	{
 		contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
 
-		if ((contains && !(*it)->inverse) || (!contains && (*it)->inverse))
+		if (contains )//(contains && !(*it)->inverse) || (!contains && (*it)->inverse))
 		{
 			TerrainPoint *prev = (*it)->pointEnd;
 			TerrainPoint *curr = (*it)->pointStart;
@@ -7771,7 +7778,6 @@ bool EditSession::ExecuteTerrainCompletion()
 {
 	if( polygonInProgress->numPoints > 2 )
 	{
-
 		if (!polygonInProgress->IsCompletionValid())
 		{
 			return false;
@@ -7868,10 +7874,8 @@ bool EditSession::ExecuteTerrainCompletion()
 				}
 				else
 				{
-
-
 					polygonInProgress->FixWinding();
-					polygonInProgress->RemoveSlivers(PI / 20.0);
+					polygonInProgress->RemoveSlivers(PI / 10.0);
 					polygonInProgress->Finalize();
 
 					SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(polygonInProgress);
@@ -8212,6 +8216,16 @@ void EditSession::PasteTerrain(Brush *b)
 
 Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {
+	Brush orig;
+	Brush resultBrush;
+
+	for (list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
+	{
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+		orig.AddObject(sp);
+//		(*it)->AddGatesToBrush
+	}
+
 	bool inverse = false;
 	int otherSize = intersectingPolys.size();
 	for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
@@ -8298,8 +8312,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	testOutPoly->inverse = inverse;
 	testOutPoly->Finalize();
 
-	Brush orig;
-	Brush resultBrush;
+	
 
 	polygonInProgress.reset(testOutPoly);
 
@@ -8309,11 +8322,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	resultBrush.AddObject(sp);
 
 
-	for (list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
-	{
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-		orig.AddObject(sp);
-	}
+	
 
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
 
@@ -8575,6 +8584,20 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 	resultBrush.Clear();
 
+	list<TerrainPolygon*> results;
+	list<PolyPtr> resultsPtr;
+
+	//add original stuff to the original brush
+	list<GateInfoPtr> gateInfoList;
+	for (list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
+	{
+		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
+		orig.AddObject(sp);
+
+		(*it)->AddGatesToBrush(&orig, gateInfoList);
+		(*it)->AddEnemiesToBrush(&orig);
+	}
+
 	if (otherSize > 0)
 	{
 		//setup intersected polys
@@ -8598,19 +8621,17 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 		for (auto it = solution.begin(); it != solution.end(); ++it)
 		{
-			PolyPtr newPoly(new TerrainPolygon(&grassTex));
+			TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
+			//PolyPtr newPoly();
 
 			newPoly->AddPointsFromClipperPath((*it));
 
 			newPoly->SetMaterialType(0, 0);//poly->terrainWorldType,
 										   //poly->terrainVariation);
-			newPoly->RemoveSlivers(PI / 10.0);
-			newPoly->AlignExtremes(PRIMARY_LIMIT);
+			//newPoly->RemoveSlivers(PI / 10.0);
+			//newPoly->AlignExtremes(PRIMARY_LIMIT);
 
-			//newPoly->inverse = inverse;
-			newPoly->Finalize();
-
-			resultBrush.AddObject(newPoly);
+			results.push_back(newPoly);
 		}
 	}
 
@@ -8625,8 +8646,6 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 		c.Execute(ClipperLib::ClipType::ctUnion, inverseSolution);
 
-		list<TerrainPolygon*> results;
-
 		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
 		{
 			TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
@@ -8635,12 +8654,13 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 			newPoly->SetMaterialType(0, 0);//poly->terrainWorldType,
 										   //poly->terrainVariation);
-			newPoly->RemoveSlivers(PI / 10.0);
-			newPoly->AlignExtremes(PRIMARY_LIMIT);
+			//newPoly->RemoveSlivers(PI / 10.0);
+			//newPoly->AlignExtremes(PRIMARY_LIMIT);
 
 			results.push_back(newPoly);
 		}
 
+		//figure out which polygon should be the new inverse polygon
 		bool isOuter;
 		for (auto it = results.begin(); it != results.end(); ++it)
 		{
@@ -8662,21 +8682,168 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 				break;
 			}
 		}
+	}
 
-		for (auto it = results.begin(); it != results.end(); ++it)
+	for (auto it = results.begin(); it != results.end(); ++it)
+	{
+		PolyPtr p((*it));
+		resultsPtr.push_back(p);
+		resultBrush.AddObject(p);
+	}
+
+	for( auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it )
+	{
+		for( auto mit = (*it)->enemies.begin(); mit != (*it)->enemies.end(); ++mit )
 		{
-			PolyPtr p((*it));
-			p->Finalize();
-
-			resultBrush.AddObject(p);
+			for (auto bit = (*mit).second.begin(); bit != (*mit).second.end(); ++bit)
+			{
+				for (auto rit = results.begin();
+					rit != results.end(); ++rit)
+				{
+					ActorParams *ac = AttachActorToPolygon((*bit), (*rit));
+					if (ac != NULL)
+					{
+						ActorPtr newActor(ac);
+						resultBrush.AddObject(newActor);
+					}
+				}
+			}
 		}
 	}
 
-	for (list<PolyPtr>::iterator it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
+	
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-		orig.AddObject(sp);
+		TerrainPoint *test = NULL;
+		TerrainPoint * outTest = NULL;
+
+		TerrainPoint *p0 = NULL;
+		TerrainPoint *p1 = NULL;
+		TerrainPoint *testPoint = NULL;
+		list<PolyPtr>::iterator it0;
+		list<PolyPtr>::iterator it1;
+
+		for (auto rit = resultsPtr.begin();
+			rit != resultsPtr.end(); ++rit)
+		{
+			if (p0 != NULL && p1 != NULL)
+				break;
+
+			if (p0 == NULL)
+			{
+				testPoint = (*rit)->GetSamePoint((*it)->point0->pos);
+				if (testPoint != NULL)
+				{
+					p0 = testPoint;
+					it0 = rit;
+				}
+			}
+
+			if (p1 == NULL)
+			{
+				testPoint = (*rit)->GetSamePoint((*it)->point1->pos);
+				if (testPoint != NULL)
+				{
+					p1 = testPoint;
+					it1 = rit;
+				}
+			}
+		}
+
+		
+		//TerrainPoint *p1 = (*rit)->GetSamePoint((*it)->point1->pos);
+
+		if (p0 == NULL && p1 == NULL)
+			continue;
+
+		GateInfoPtr gi(new GateInfo(*((*it).get())));
+		gi->edit = NULL;
+
+		if (p0 != NULL)
+		{
+			gi->point0 = p0;
+			gi->poly0 = (*it0);
+			p0->gate = gi;
+		}
+		else
+		{
+			gi->point0 = (*it)->point0;
+			gi->poly0 = (*it)->poly0;
+			gi->point0->gate = gi;
+		}
+		if (p1 != NULL)
+		{
+			gi->point1 = p1;
+			gi->poly1 = (*it1);
+			p1->gate = gi;
+
+		}
+		else
+		{
+			gi->point1 = (*it)->point1;
+			gi->poly1 = (*it)->poly1;
+			gi->point1->gate = gi;
+		}
+
+		SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
+		resultBrush.AddObject(sp1);
 	}
+
+	/*for (auto rit = resultsPtr.begin();
+		rit != resultsPtr.end(); ++rit)
+	{
+		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+		{
+			TerrainPoint *test = NULL;
+			TerrainPoint * outTest = NULL;
+
+			TerrainPoint *p0 = (*rit)->GetSamePoint((*it)->point0->pos);
+			TerrainPoint *p1 = (*rit)->GetSamePoint((*it)->point1->pos);
+
+			if (p0 == NULL && p1 == NULL)
+				continue;
+
+			GateInfoPtr gi(new GateInfo(*((*it).get())));
+			gi->edit = NULL;
+
+			if (p0 != NULL)
+			{
+				gi->point0 = p0;
+				gi->poly0 = (*rit);
+				p0->gate = gi;
+			}
+			else
+			{
+				gi->point0 = (*it)->point0;
+				gi->poly0 = (*it)->poly0;
+				gi->point0->gate = gi;
+			}
+			if (p1 != NULL)
+			{
+				gi->point1 = p1;
+				gi->poly1 = (*rit);
+				p1->gate = gi;
+
+			}
+			else
+			{
+				gi->point1 = (*it)->point1;
+				gi->poly1 = (*it)->poly1;
+				gi->point1->gate = gi;
+			}
+
+			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(gi);
+			resultBrush.AddObject(sp1);
+		}
+	}*/
+
+	for (auto it = resultsPtr.begin(); it != resultsPtr.end(); ++it)
+	{
+		(*it)->RemoveSlivers(PI / 10.0);
+		(*it)->AlignExtremes(PRIMARY_LIMIT);
+		(*it)->Finalize();
+	}
+
 
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
 
@@ -9545,6 +9712,7 @@ void EditSession::RemoveSelectedObjects()
 
 	//get list of additional ACTORs from selected terrain
 	SelectList addedActorsList;
+	list<GateInfoPtr> tempGateList;
 	for (auto it = selectedBrush->objects.begin();
 		it != selectedBrush->objects.end(); ++it)
 	{
@@ -9573,11 +9741,16 @@ void EditSession::RemoveSelectedObjects()
 				}
 			}
 
-
+			poly->AddGatesToList(tempGateList);
 		}
 	}
 
 	for (auto it = addedActorsList.begin(); it != addedActorsList.end(); ++it)
+	{
+		selectedBrush->AddObject((*it));
+	}
+
+	for (auto it = tempGateList.begin(); it != tempGateList.end(); ++it)
 	{
 		selectedBrush->AddObject((*it));
 	}
@@ -11240,8 +11413,6 @@ void EditSession::CreateTerrainModeHandleEvent()
 		else if (ev.key.code == sf::Keyboard::R)
 		{
 			mode = CREATE_RAILS;
-			//polygonInProgress->CopyPoints(railInProgress->pointStart,
-			//	railInProgress->pointEnd);
 			railInProgress->CopyOtherPoints(polygonInProgress->pointStart,
 				polygonInProgress->pointEnd);
 			//railInProgress->CopyPoints(polygonInProgress->pointStart, polygonInProgress->pointEnd);
