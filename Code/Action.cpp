@@ -582,11 +582,31 @@ void MoveBrushAction::Perform()
 			for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
 			{
 				(*pit).point->pos += (*pit).delta;
+
+				if ((*pit).point->gate != NULL)
+				{
+					(*pit).point->gate->UpdateLine();
+				}
 			}
 
-			(*it).first->SoftReset();
-			(*it).first->Finalize();
-			(*it).first->movingPointMode = false;
+			PolyPtr poly = (*it).first;
+
+			poly->SoftReset();
+			poly->Finalize();
+			poly->movingPointMode = false;
+
+			for (auto pit = poly->enemies.begin();
+				pit != poly->enemies.end(); ++pit)
+			{
+				list<ActorPtr> &enemies = (*pit).second;
+				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+				{
+					(*ait)->UpdateGroundedSprite();
+					(*ait)->SetBoundingQuad();
+				}
+			}
+
+			
 		}
 
 		for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
@@ -615,14 +635,33 @@ void MoveBrushAction::Undo()
 	for( PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
 	{
 		list<PointMoveInfo> &pList = (*it).second;
+
 		for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
 		{
 			(*pit).point->pos -= (*pit).delta;
+
+			if ((*pit).point->gate != NULL)
+			{
+				(*pit).point->gate->UpdateLine();
+			}
 		}
 
-		(*it).first->SoftReset();
-		(*it).first->Finalize();
-		(*it).first->movingPointMode = false;
+		PolyPtr poly = (*it).first;
+
+		poly->SoftReset();
+		poly->Finalize();
+		poly->movingPointMode = false;
+
+		for ( auto pit = poly->enemies.begin();
+			pit != poly->enemies.end(); ++pit)
+		{
+			list<ActorPtr> &enemies = (*pit).second;
+			for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+			{
+				(*ait)->UpdateGroundedSprite();
+				(*ait)->SetBoundingQuad();
+			}
+		}
 	}
 
 	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
