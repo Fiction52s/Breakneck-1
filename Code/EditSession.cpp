@@ -8548,7 +8548,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 	if (otherSize > 0)
 	{
 		//setup intersected polys
-		int otherIndex = 0;
+		ClipperLib::Path otherPath;
 		for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
 		{
 			if ((*it)->inverse)
@@ -8556,30 +8556,25 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 				continue;
 			}
 
-			(*it)->CopyPointsToClipperPath(other[otherIndex]);
-			++otherIndex;
-		}
 
-		c.AddPaths(other, ClipperLib::PolyType::ptSubject, true);
+			
+			c.Clear();
+			solution.clear();
+			otherPath.clear();
 
-		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
+			(*it)->CopyPointsToClipperPath(otherPath);
+			c.AddPath( otherPath, ClipperLib::PolyType::ptSubject, true);
+			c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
+			c.Execute(ClipperLib::ClipType::ctDifference, solution);
 
-		c.Execute(ClipperLib::ClipType::ctDifference, solution);
-
-		for (auto it = solution.begin(); it != solution.end(); ++it)
-		{
-			TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
-			//PolyPtr newPoly();
-
-			newPoly->AddPointsFromClipperPath((*it));
-
-			newPoly->SetMaterialType(0, 0);//poly->terrainWorldType,
-										   //poly->terrainVariation);
-			//newPoly->RemoveSlivers(PI / 10.0);
-			//newPoly->AlignExtremes(PRIMARY_LIMIT);
-
-			results.push_back(newPoly);
-		}
+			for (auto sit = solution.begin(); sit != solution.end(); ++sit)
+			{
+				TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
+				newPoly->AddPointsFromClipperPath((*sit));
+				newPoly->SetMaterialType((*it)->terrainWorldType, (*it)->terrainVariation);
+				results.push_back(newPoly);
+			}
+		}		
 	}
 
 	//clip 
@@ -8599,10 +8594,8 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 			newPoly->AddPointsFromClipperPath((*it));
 
-			newPoly->SetMaterialType(0, 0);//poly->terrainWorldType,
-										   //poly->terrainVariation);
-			//newPoly->RemoveSlivers(PI / 10.0);
-			//newPoly->AlignExtremes(PRIMARY_LIMIT);
+			newPoly->SetMaterialType(inversePolygon->terrainWorldType, 
+				inversePolygon->terrainVariation );
 
 			results.push_back(newPoly);
 		}
