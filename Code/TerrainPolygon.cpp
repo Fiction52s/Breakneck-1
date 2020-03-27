@@ -2121,6 +2121,8 @@ bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
 		}
 	}
 
+	tempPoly.FixWinding();
+
 	bool isPolyValid = edit->IsPolygonValid( tempPoly, this );
 
 	
