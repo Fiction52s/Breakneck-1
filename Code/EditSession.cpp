@@ -8230,6 +8230,8 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	bool inverse = false;
 	int otherSize = intersectingPolys.size();
+
+
 	for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
 	{
 		if ((*it)->inverse)
@@ -8244,7 +8246,6 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	ClipperLib::Clipper c;
 	TerrainPoint *curr;
-	//TerrainPolygon *testOutPoly;
 
 	ClipperLib::Paths inProgress(1), other(otherSize), otherInverse(1), solution, inverseSolution;
 
@@ -8306,7 +8307,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		outPoly->AddPointsFromClipperPath(inverseSolution[0]);
 	}
 
-	outPoly->SetMaterialType(0, 0);//poly->terrainWorldType,
+	outPoly->SetMaterialType(currTerrainWorld, currTerrainVar );//poly->terrainWorldType,
 									   //poly->terrainVariation);
 	outPoly->RemoveSlivers(PI / 10.0);
 	outPoly->AlignExtremes(PRIMARY_LIMIT);
