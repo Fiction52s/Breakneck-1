@@ -3163,12 +3163,34 @@ void EditSession::TryRemoveSelectedPoints()
 
 	if (removeSuccess == 1)
 	{
+		Brush orig;
+		Brush result;
+
+		list<GateInfoPtr> gateInfoList;
 		for (PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
 		{
-			(*it).first->RemoveSelectedPoints();
+			PolyPtr tp = (*it).first;
+			PolyPtr newPoly(new TerrainPolygon(*tp, true, true));
+			newPoly->RemoveSelectedPoints();
+			newPoly->RemoveSlivers(SLIVER_LIMIT);
+			newPoly->AlignExtremes(PRIMARY_LIMIT);
+			newPoly->Finalize();
+
+			orig.AddObject(tp);
+			tp->AddEnemiesToBrush( &orig );
+			tp->AddGatesToBrush(&orig, gateInfoList);
+
+			result.AddObject(newPoly);
 		}
 
 		selectedPoints.clear();
+
+		Action * action = new ReplaceBrushAction(&orig, &result);
+
+		action->Perform();
+		doneActionStack.push_back(action);
+
+		ClearUndoneActions();
 	}
 	else if (removeSuccess == 0)
 	{
@@ -3427,7 +3449,7 @@ void EditSession::RegularCreatePathButton()
 	patrolPathLengthSize = 0;
 }
 
-void EditSession::SelectPoint(TerrainPolygon *poly,
+void EditSession::SelectPoint(PolyPtr poly,
 	TerrainPoint *point)
 {
 	if (!point->selected)
@@ -3437,7 +3459,7 @@ void EditSession::SelectPoint(TerrainPolygon *poly,
 	}
 }
 
-void EditSession::DeselectPoint(TerrainPolygon *poly,
+void EditSession::DeselectPoint(PolyPtr poly,
 	TerrainPoint *point)
 {
 	if (point->selected)
@@ -3689,7 +3711,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 		allDeltaIndex = 0;
 		for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 		{
-			TerrainPolygon *poly = (*it).first;
+			PolyPtr poly = (*it).first;
 			bool affected = false;
 
 			TerrainPoint *points = poly->pointStart;
@@ -4832,7 +4854,7 @@ int EditSession::IsRemovePointsOkay()
 	bool terrainOkay = true;
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
-		TerrainPolygon *tp = (*it).first;
+		PolyPtr tp = (*it).first;
 		bool res = tp->IsRemovePointsOkayTerrain( this );
 		if( !res )
 		{
@@ -6564,7 +6586,7 @@ bool EditSession::PointSelectPolyPoint( V2d &pos )
 		{
 			if (shift && foundPoint->selected )
 			{
-				DeselectPoint((*it).get(), foundPoint);
+				DeselectPoint((*it), foundPoint);
 			}
 			else
 			{	
@@ -6573,7 +6595,7 @@ bool EditSession::PointSelectPolyPoint( V2d &pos )
 					if (!shift)
 						ClearSelectedPoints();
 
-					SelectPoint((*it).get(), foundPoint);
+					SelectPoint((*it), foundPoint);
 				}			
 			}
 			return true;
@@ -6739,7 +6761,7 @@ bool EditSession::BoxSelectPoints(sf::IntRect &r,
 					V2d(curr->pos.x, curr->pos.y), radius)
 					|| adjustedR.contains(curr->pos))
 				{
-					SelectPoint((*it).get(), curr);
+					SelectPoint((*it), curr);
 					found = true;
 				}
 				curr = curr->next;

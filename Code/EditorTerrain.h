@@ -124,17 +124,20 @@ struct TerrainPolygon : ISelectable
 	bool IsValidInProgressPoint(sf::Vector2i point);
 	void UpdateLines();
 	TerrainPolygon(sf::Texture *grassTex);
-	TerrainPolygon(TerrainPolygon &poly, bool pointsOnly);
+	TerrainPolygon(TerrainPolygon &poly, bool pointsOnly,
+		bool storeSelectedPoints = false );
 	~TerrainPolygon();
 	void UpdateLineColor(sf::Vertex *line, TerrainPoint *p, int index);
 	bool SwitchPolygon(bool cw, TerrainPoint *rootPoint,
 		TerrainPoint *switchStart);
 	void CopyPoints(TerrainPoint *&start,
-		TerrainPoint *&end);
+		TerrainPoint *&end, 
+		bool storeSelected = false);
 	sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
 		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
 		double minAngle, bool cw);
-	void CopyPoints(TerrainPolygon *poly);
+	void CopyPoints(TerrainPolygon *poly,
+		bool storeSelected = false );
 	TerrainPolygon *Copy();
 	bool PointOnBorder(V2d &point);
 	void MovePoint(sf::Vector2i &delta,
@@ -353,7 +356,7 @@ typedef boost::shared_ptr<EditorDecorInfo> EditorDecorPtr;
 typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
 typedef boost::shared_ptr<TerrainPoint> PointPtr;
 typedef std::pair<sf::Vector2i, sf::Vector2i> PointPair;
-typedef std::map<TerrainPolygon*, std::list<PointMoveInfo>> PointMap;
+typedef std::map<PolyPtr, std::list<PointMoveInfo>> PointMap;
 typedef std::map<TerrainRail*, std::list<PointMoveInfo>> RailPointMap;
 
 #endif

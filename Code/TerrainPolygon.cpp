@@ -67,7 +67,7 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	pShader = &session->polyShaders[terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation];
 }
 
-TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly)
+TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
 	layer = 0;
@@ -89,7 +89,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly)
 		pointEnd = NULL;
 		movingPointMode = false;
 
-		poly.CopyPoints(pointStart, pointEnd);
+		poly.CopyPoints(pointStart, pointEnd, storeSelectedPoints );
 		numPoints = poly.numPoints;
 	}
 	else
@@ -2458,9 +2458,19 @@ TerrainPolygon *TerrainPolygon::Copy()
 	return newPoly;
 }
 
-void TerrainPolygon::CopyPoints(TerrainPolygon *poly)
+void TerrainPolygon::CopyPoints(TerrainPolygon *poly, bool storeSelected )
 {
-	TerrainPoint *start = new TerrainPoint(poly->pointStart->pos, false );
+	bool sel;
+	if (storeSelected)
+	{
+		sel = poly->pointStart->selected;
+	}
+	else
+	{
+		sel = false;
+	}
+
+	TerrainPoint *start = new TerrainPoint(poly->pointStart->pos, sel );
 	pointStart = start;
 	
 	TerrainPoint *prev = pointStart;
@@ -2469,7 +2479,16 @@ void TerrainPolygon::CopyPoints(TerrainPolygon *poly)
 
 	for (; it != NULL; it = it->next)
 	{
-		newPoint = new TerrainPoint(it->pos, false);
+		if (storeSelected)
+		{
+			sel = it->selected;
+		}
+		else
+		{
+			sel = false;
+		}
+
+		newPoint = new TerrainPoint(it->pos, sel);
 		prev->next = newPoint;
 		newPoint->prev = prev;
 		prev = newPoint;
@@ -2492,33 +2511,34 @@ bool TerrainPolygon::PointOnBorder(V2d &point)
 	return false;
 }
 
-void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
+void TerrainPolygon::CopyPoints(TerrainPoint *&start, TerrainPoint *&end, bool storeSelected )
 {
-	//start.prev = &end;
-	//end.next = &start;
 	TerrainPoint *copyCurr = NULL;
 	TerrainPoint *copyPrev = NULL;
 	TerrainPoint *prev = pointEnd;
 	int numNewPoints = 0;
+	bool sel;
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
-		//cout << "copying " << endl;
-		copyCurr = new TerrainPoint( curr->pos, false );
+		if (storeSelected)
+		{
+			sel = curr->selected;
+		}
+		else
+		{
+			sel = false;
+		}
+		copyCurr = new TerrainPoint( curr->pos, sel );
 
 		numNewPoints++;
 
 		if( curr == pointStart )
 		{
 			start = copyCurr;
-
-			//prev = pointEnd;
 		}
 		else if( curr == pointEnd )
 		{
 			end = copyCurr;
-
-			//end->next = start;
-			//start->prev = end;
 		}
 		
 		if( copyPrev != NULL )
@@ -2528,8 +2548,6 @@ void TerrainPolygon::CopyPoints( TerrainPoint *&start, TerrainPoint *&end )
 		}
 		copyPrev = copyCurr;
 	}
-
-
 }
 
 //returns true if LinesIntersect or 

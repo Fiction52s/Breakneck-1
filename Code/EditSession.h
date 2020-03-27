@@ -265,11 +265,11 @@ struct EditSession : GUIHandler, TilesetManager
 	bool CanCreateGate( GateInfo &testGate );
 	void SetPanelDefault( ActorType *type );
 	void ClearSelectedPoints();
-	void SelectPoint(TerrainPolygon *poly,
+	void SelectPoint(PolyPtr poly,
 		TerrainPoint *point);
 	void SelectPoint(TerrainRail *rail,
 		TerrainPoint *point);
-	void DeselectPoint(TerrainPolygon *poly,
+	void DeselectPoint(PolyPtr poly,
 		TerrainPoint *point);
 	void DeselectPoint(TerrainRail *rail,
 		TerrainPoint *point);
