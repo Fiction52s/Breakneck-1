@@ -7227,37 +7227,6 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 	return true;
 }
 
-
-void EditSession::ClearCopyBrushes()
-{
-	for (list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
-		++it)
-	{
-		delete (*it);
-	}
-	copyBrushes.clear();
-}
-
-void EditSession::ClearPasteBrushes()
-{
-	for (list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end();
-		++it)
-	{
-		delete (*it);
-	}
-	pasteBrushes.clear();
-}
-
-void EditSession::CopyToPasteBrushes()
-{
-	for (list<TerrainBrush*>::iterator it = copyBrushes.begin(); it != copyBrushes.end();
-		++it)
-	{
-		TerrainBrush* tb = new TerrainBrush(*(*it));
-		pasteBrushes.push_back(tb);
-	}
-}
-
 bool EditSession::PolyIntersectGate(TerrainPolygon &poly)
 {
 	//can be optimized with bounding box checks.
@@ -8168,15 +8137,6 @@ void EditSession::PasteTerrain(Brush *b)
 			if (intersectingPolys.empty())
 			{
 				applyBrush.AddObject((*bit));
-				//finalResultBrush.AddObject((*bit));
-				//Action *ac = new ApplyBrushAction(copiedBrush);
-				//ac->Perform();
-				//doneActionStack.push_back(ac);
-				//ClearUndoneActions();
-				//PolyPtr newPoly(new TerrainPolygon(&grassTex));
-				//polygonInProgress = newPoly;
-				//PolyPtr newPoly(new TerrainPolygon(&grassTex));
-				//polygonInProgress = newPoly;
 			}
 			else
 			{
@@ -9209,178 +9169,9 @@ void EditSession::TryBoxSelect()
 	}
 }
 
-bool EditSession::CheckValidPaste()
-{
-	bool validPaste = true;
-
-	for (list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
-		tbIt != pasteBrushes.end(); ++tbIt)
-	{
-		for (list<PolyPtr>::iterator it = polygons.begin();
-			it != polygons.end() && validPaste; ++it)
-		{
-			PolyPtr currentBrush(new TerrainPolygon((*it)->grassTex));
-
-			for (TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
-				curr = curr->next)
-			{
-				currentBrush->AddPoint(new TerrainPoint(*curr));
-			}
-
-			currentBrush->UpdateBounds();
-
-			for (TerrainPoint *curr = currentBrush->pointStart; curr != NULL && validPaste;
-				curr = curr->next)
-			{
-				TerrainPoint *prev;
-				if (curr == currentBrush->pointStart)
-				{
-					prev = currentBrush->pointEnd;
-				}
-				else
-				{
-					prev = curr->prev;
-				}
-
-				if ((*it)->SegmentTooClose(prev->pos, curr->pos, minimumEdgeLength))
-				{
-					validPaste = false;
-					break;
-				}
-
-
-			}
-			//should I delete currentBrush here?
-			currentBrush.reset();
-
-			if (!validPaste)
-				return false;
-		}
-	}
-
-	return true;
-}
-
 double EditSession::GetZoomedMinEdgeLength()
 {
 	return minimumEdgeLength * std::max(zoomMultiple, 1.0);
-}
-
-void EditSession::Paste()
-{
-	for (list<TerrainBrush*>::iterator tbIt = pasteBrushes.begin();
-		tbIt != pasteBrushes.end(); ++tbIt)
-	{
-		list<PolyPtr>::iterator it = polygons.begin();
-		bool added = false;
-		//polygonInProgress->Finalize(); //i should check if i can remove this
-		bool recursionDone = false;
-
-		PolyPtr currentBrush(new TerrainPolygon((*it)->grassTex));
-
-		//cout << "after: " << (unsigned int)((*tbIt)->pointStart) << endl;
-		for (TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
-			curr = curr->next)
-		{
-			//cout << "adding" << endl;
-			currentBrush->AddPoint(new TerrainPoint(*curr));
-		}
-
-		currentBrush->UpdateBounds();
-
-		std::list<boost::shared_ptr<GateInfo>> gateInfoList;
-		while (it != polygons.end())
-		{
-			PolyPtr temp = (*it);
-			if (currentBrush->IsTouching(temp.get()))
-			{
-				TerrainPolygon *outPoly = NULL;
-
-				Add(currentBrush, temp, outPoly, gateInfoList);
-
-				currentBrush.reset();
-				currentBrush = NULL;
-
-				polygons.erase(it);
-
-				currentBrush = temp;
-
-				/*for( TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next )
-				{
-				if( tp->gate != NULL )
-				{
-				cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
-				<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
-				//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
-				}
-				}*/
-
-				it = polygons.begin();
-
-				added = true;
-
-				continue;
-			}
-			else
-			{
-				cout << "not" << endl;
-			}
-			++it;
-		}
-
-		//add final check for validity here
-
-		if (!added)
-		{
-			cout << "not added" << endl;
-			PolyPtr brushPoly(new TerrainPolygon(polygonInProgress->grassTex));
-
-			for (TerrainPoint *curr = (*tbIt)->pointStart; curr != NULL;
-				curr = curr->next)
-			{
-				brushPoly->AddPoint(new TerrainPoint(*curr));
-			}
-
-			brushPoly->Finalize();
-			polygons.push_back(brushPoly);
-
-		}
-		else
-		{
-			cout << "was added" << endl;
-			for (TerrainPoint *tp = currentBrush->pointStart; tp != NULL; tp = tp->next)
-			{
-				//if( tp->gate != NULL )
-				//{
-				//	cout << "gate: " << tp->gate->point0->pos.x << ", " << tp->gate->point0->pos.y
-				//		<< ", " << tp->gate->point1->pos.x << ", " << tp->gate->point1->pos.y << endl;
-				//	//cout << "gate pos: " << tp->pos.x << ", " << tp->pos.y << endl;
-				//}
-
-			}
-
-			polygons.push_back(currentBrush);
-		}
-	}
-
-	ClearPasteBrushes();
-}
-
-void EditSession::TryPaste()
-{
-	if (!pasteBrushes.empty())
-	{
-		bool validPaste = CheckValidPaste();
-
-		if (validPaste)
-		{
-			Paste();
-		}
-		else
-		{
-			MessagePop("invalid paste");
-		}
-	}
 }
 
 void EditSession::UpdateGrass()
@@ -9666,17 +9457,6 @@ void EditSession::TryTerrainMove()
 	else if (editMouseDownBox)
 	{
 		//stuff
-	}
-}
-
-void EditSession::MovePasteBrushes()
-{
-	Vector2i pPoint(worldPos);
-	Vector2i pasteGrabDelta = Vector2i(pPoint.x, pPoint.y) - pastePos;
-	pastePos = Vector2i(pPoint.x, pPoint.y);
-	for (list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end(); ++it)
-	{
-		(*it)->Move(pasteGrabDelta);
 	}
 }
 
@@ -10501,17 +10281,6 @@ void EditSession::DrawDecorBetween()
 	}
 }
 
-void EditSession::DrawPasteBrushes()
-{
-	if (!pasteBrushes.empty())
-	{
-		for (list<TerrainBrush*>::iterator it = pasteBrushes.begin(); it != pasteBrushes.end(); ++it)
-		{
-			(*it)->Draw(preScreenTex);
-		}
-	}
-}
-
 void EditSession::DrawBoxSelection()
 {
 	if (editMouseDownBox)
@@ -10670,7 +10439,6 @@ void EditSession::DrawMode()
 	}
 	case EDIT:
 	{
-		DrawPasteBrushes();
 		DrawBoxSelection();
 
 		break;
@@ -11360,8 +11128,6 @@ void EditSession::EditModeHandleEvent()
 			editMouseDownMove = false;
 			editStartMove = false;
 
-			TryPaste();
-
 			UpdateGrass();
 		}
 		break;
@@ -11422,11 +11188,7 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
 		{
-			if (!pasteBrushes.empty())
-			{
-				ClearPasteBrushes();
-			}
-			else if (CountSelectedPoints() > 0)
+			if (CountSelectedPoints() > 0)
 			{
 				TryRemoveSelectedPoints();
 			}
@@ -12314,32 +12076,25 @@ void EditSession::CreateRailsModeUpdate()
 
 void EditSession::EditModeUpdate()
 {
-	if (!pasteBrushes.empty())
+	if (IsKeyPressed(Keyboard::G))
 	{
-		MovePasteBrushes();
+		worldPos = SnapPointToGraph(worldPos, graph->graphSpacing);
+		showGraph = true;
+	}
+
+	if (IsKeyPressed(Keyboard::B))
+	{
+		showPoints = true;
 	}
 	else
 	{
-		if (IsKeyPressed(Keyboard::G))
-		{
-			worldPos = SnapPointToGraph( worldPos, graph->graphSpacing );
-			showGraph = true;
-		}
-
-		if (IsKeyPressed(Keyboard::B))
-		{
-			showPoints = true;
-		}
-		else
-		{
-			ClearSelectedPoints();
-			showPoints = false;
-		}
-
-		TryTerrainMove();
-
-		ModifyGrass();
+		ClearSelectedPoints();
+		showPoints = false;
 	}
+
+	TryTerrainMove();
+
+	ModifyGrass();
 }
 
 void EditSession::PasteModeUpdate()

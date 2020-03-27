@@ -507,8 +507,6 @@ struct EditSession : GUIHandler, TilesetManager
 	std::list<Action*> doneActionStack;
 	std::list<Action*> undoneActionStack;
 	void ClearUndoneActions();
-	void MovePasteBrushes();
-	void DrawPasteBrushes();
 
 	void TempMoveSelectedBrush();
 	
@@ -662,12 +660,7 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::View uiView;
 	sf::View view;
 	
-	std::list<TerrainBrush*> copyBrushes;
-	std::list<TerrainBrush*> pasteBrushes;
-	void ClearCopyBrushes();
-	void ClearPasteBrushes();
-	void CopyToPasteBrushes();
-	sf::Vector2i pastePos;
+	
 	
 
 	int gatePoints;
@@ -704,9 +697,6 @@ struct EditSession : GUIHandler, TilesetManager
 	bool BoxSelectPolys(sf::IntRect &rect);
 	bool BoxSelectRails(sf::IntRect &rect);
 	void TryBoxSelect();
-	void TryPaste();
-	bool CheckValidPaste();
-	void Paste();
 	bool ExecuteTerrainCompletion();
 	void ExecuteRailCompletion();
 	Action* ExecuteTerrainAdd(

@@ -7,6 +7,7 @@
 #include "ISelectable.h"
 #include "VectorMath.h"
 #include "clipper.hpp"
+#include "EditorGateInfo.h"
      
 struct ISelectable;
 struct GateInfo;
@@ -95,29 +96,6 @@ struct DetailedInter
 	Inter inter;
 	TerrainPoint *otherPoint;
 };
-
-struct TerrainBrush
-{
-	TerrainBrush(boost::shared_ptr<TerrainPolygon> poly);
-	TerrainBrush(TerrainBrush &brush);
-	~TerrainBrush();
-	void AddPoint(TerrainPoint* tp);
-
-	void UpdateLines();
-	void Move(sf::Vector2i delta);
-	void Draw(sf::RenderTarget *target);
-	int numPoints;
-	sf::VertexArray lines;
-	TerrainPoint *pointStart;
-	TerrainPoint *pointEnd;
-	int left;
-	int right;
-	int top;
-	int bot;
-
-};
-
-
 
 struct TerrainPolygon : ISelectable
 {
