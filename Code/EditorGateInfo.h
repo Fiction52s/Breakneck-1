@@ -13,6 +13,7 @@ struct GateInfo : ISelectable
 	GateInfo();
 	void SetType(const std::string &gType);
 	void SetShard(int shardW, int shardI);
+	sf::IntRect GetAABB();
 	TerrainPoint *point0;
 	TerrainPoint *point1;
 	void Deactivate(EditSession *edit,

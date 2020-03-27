@@ -212,6 +212,7 @@ struct TerrainPolygon : ISelectable
 
 	bool ContainsPoint(sf::Vector2f point);
 	bool Intersects(sf::IntRect rect);
+	bool IntersectsGate(GateInfo *gi);
 	bool IsPlacementOkay();
 	//void Move( sf::Vector2i delta );
 	void BrushDraw(sf::RenderTarget *target,

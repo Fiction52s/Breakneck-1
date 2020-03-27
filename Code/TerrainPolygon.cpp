@@ -259,6 +259,38 @@ bool TerrainPolygon::SwitchPolygon( bool cw, TerrainPoint *rootPoint,
 	}
 }
 
+bool TerrainPolygon::IntersectsGate(GateInfo *gi)
+{
+	IntRect tAABB(left, top, right - left, bottom - top);
+	if (tAABB.intersects(gi->GetAABB()))
+	{
+		Vector2i gp0 = gi->point0->pos;
+		Vector2i gp1 = gi->point1->pos;
+
+		//my lines vs his lines
+		for (TerrainPoint *my = pointStart; my != NULL; my = my->next)
+		{
+			TerrainPoint *myPrev;
+			if (my == pointStart)
+			{
+				myPrev = pointEnd;
+			}
+			else
+			{
+				myPrev = my->prev;
+			}
+
+			LineIntersection li = EditSession::SegmentIntersect((*myPrev).pos, my->pos, gp0, gp1);
+			if (!li.parallel)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 bool TerrainPolygon::CanApply()
 {
 	bool applyOkay = true;
@@ -281,6 +313,14 @@ bool TerrainPolygon::CanApply()
 		{
 			applyOkay = false;
 			break;
+		}
+	}
+
+	for (auto it = session->gates.begin(); it != session->gates.end(); ++it)
+	{
+		if (IntersectsGate((*it).get()))
+		{
+			return false;
 		}
 	}
 

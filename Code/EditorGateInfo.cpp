@@ -94,6 +94,17 @@ void GateInfo::SetShard(int shardW, int shardI)
 		shardSpr.getLocalBounds().height / 2);
 }
 
+sf::IntRect GateInfo::GetAABB()
+{
+	int left = min(point0->pos.x, point1->pos.x);
+	int right = max(point0->pos.x, point1->pos.x);
+
+	int top = min(point0->pos.y, point1->pos.y);
+	int bot = max(point0->pos.y, point1->pos.y);
+
+	return IntRect(left, top, right - left, bot - top);
+}
+
 void GateInfo::WriteFile(ofstream &of)
 {
 	int index0 = 0, index1 = 0;
