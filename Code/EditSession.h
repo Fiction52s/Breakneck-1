@@ -317,6 +317,7 @@ struct EditSession : GUIHandler, TilesetManager
 	double GetZoomedPointSize();
 
 	const static double PRIMARY_LIMIT;
+	const static double SLIVER_LIMIT;
 	sf::RenderTexture *preScreenTex;
 	int validityRadius;
 	
@@ -329,13 +330,6 @@ struct EditSession : GUIHandler, TilesetManager
 	bool showPoints;
 
 	bool justCompletedPolyWithClick;
-
-	TerrainPolygon *cutPoly0;
-	TerrainPolygon *cutPoly1;
-	void ChooseCutPoly( TerrainPolygon *choice );
-	bool cutChoose;
-	bool cutChooseUp;
-	void CutPoly();
 
 	void TryRemoveSelectedPoints();
 	bool IsOnlyPlayerSelected();
@@ -354,30 +348,6 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::Vector2f testPoint;
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
-
-	//CREATE_TERRAIN mode
-	enum AddResult
-	{
-		ADD_SUCCESS,
-		ADD_INVALID_RESULT,
-		ADD_NO_CHANGE,
-		ADD_
-	};
-	AddResult Add( boost::shared_ptr<TerrainPolygon> brush,
-		boost::shared_ptr<TerrainPolygon> poly, TerrainPolygon *&outPoly,
-		std::list<boost::shared_ptr<GateInfo>> &gateInfoList );
-	AddResult InverseAdd(boost::shared_ptr<TerrainPolygon> brush,
-		boost::shared_ptr<TerrainPolygon> poly, std::list<TerrainPolygon*> &outPolyList);
-	TerrainPoint * GetNextAddPoint(
-		TerrainPoint *previousPoint,
-		sf::Vector2i &stargSegPos, TerrainPoint *&curr,
-		PolyPtr &currPoly, PolyPtr &otherPoly, bool &skipBorderCase,
-		bool &replaceLastPoint );
-	void Sub(PolyPtr brushPtr,
-		std::list<PolyPtr> &polys,
-		std::list<PolyPtr> &results );
-	void Extend(boost::shared_ptr<TerrainPolygon> extension,
-		boost::shared_ptr<TerrainPolygon> poly );
 
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 
