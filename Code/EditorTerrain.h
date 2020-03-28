@@ -143,6 +143,7 @@ struct TerrainPolygon : ISelectable
 	void MovePoint(sf::Vector2i &delta,
 		TerrainPoint *tp);
 	bool IsSpecialPoly();
+	bool IsTouchingEnemiesFromPoly(TerrainPolygon *p);
 
 	TerrainPoint *pointStart;
 	TerrainPoint *pointEnd;
@@ -198,17 +199,12 @@ struct TerrainPolygon : ISelectable
 	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected(bool select);
 
-	bool IsMovePointsOkay(
-		sf::Vector2i delta);
-	bool IsMovePointsOkay(
-		sf::Vector2i pointGrabDelta,
-		sf::Vector2i *deltas);
-	bool IsMovePolygonOkay(
-		sf::Vector2i delta);
 	void MoveSelectedPoints(sf::Vector2i move);
 	void UpdateBounds();
 
 	void SetLayer(int p_layer);
+	bool IsInternallyValid();
+	sf::IntRect GetAABB();
 
 	bool ContainsPoint(sf::Vector2f point);
 	bool Intersects(sf::IntRect rect);

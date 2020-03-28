@@ -251,15 +251,14 @@ struct EditSession : GUIHandler, TilesetManager
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
-	bool IsPolygonExternallyValid( TerrainPolygon &poly,
+	bool IsPolygonExternallyValid( TerrainPolygon *poly,
 		 TerrainPolygon* ignore );
-	bool IsPolygonInternallyValid( TerrainPolygon &poly );
-	bool IsPolygonValid( TerrainPolygon &poly,
+	bool IsPolygonValid( TerrainPolygon *poly,
 		TerrainPolygon* ignore );
 	void SetEnemyEditPanel();
 	void SetDecorEditPanel();
 	void SetDecorParams();
-	bool QuadPolygonIntersect( TerrainPolygon* poly, 
+	static bool QuadPolygonIntersect( TerrainPolygon* poly, 
 		sf::Vector2i a, sf::Vector2i b, 
 		sf::Vector2i c, sf::Vector2i d );
 	bool CanCreateGate( GateInfo &testGate );
@@ -287,7 +286,7 @@ struct EditSession : GUIHandler, TilesetManager
 		TerrainPoint *point);
 	void DeselectPoint(TerrainRail *rail,
 		TerrainPoint *point);
-	bool PolyIntersectGate( TerrainPolygon &poly );
+	
 
 	void SetInversePoly();
 	sf::Sprite scaleSprite;
@@ -683,6 +682,17 @@ struct EditSession : GUIHandler, TilesetManager
 	void TryBoxSelect();
 	bool ExecuteTerrainCompletion();
 	void ExecuteRailCompletion();
+	void GetIntersectingPolys(
+		TerrainPolygon *p,
+		std::list<PolyPtr> & intersections);
+	bool PolyContainsPolys(TerrainPolygon *p,
+		TerrainPolygon *ignore );
+	bool PolyIsContainedByPolys(TerrainPolygon *p,
+		TerrainPolygon *ignore);
+	bool PolyIsTouchingEnemiesOrBeingTouched(
+		TerrainPolygon *p,
+		TerrainPolygon *ignore);
+	bool PolyIntersectsGates(TerrainPolygon *poly);
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys);
 	void PasteTerrain( Brush *b );

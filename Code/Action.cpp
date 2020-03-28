@@ -393,29 +393,6 @@ void EditObjectAction::Undo()
 	//restore the old parameters
 }
 
-/*MoveBrushAction::MoveBrushAction( Brush *brush, Vector2i p_delta )
-	:delta( p_delta )
-{
-	movingBrush = *brush;
-}
-
-void MoveBrushAction::Perform()
-{
-	assert( session != NULL );
-	assert( !performed );
-	
-	performed = false;
-	movingBrush.Move( delta );
-}
-
-void MoveBrushAction::Undo()
-{
-	assert( session != NULL );
-	assert( performed );
-
-	movingBrush.Move( -delta );
-	//move the object back
-}*/
 
 DeletePointsAction::DeletePointsAction()
 {
@@ -545,7 +522,24 @@ MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_m
 	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), movingPoints( points ),
 	movingRailPoints( railPoints )
 {
+	moveValid = true;
 	movingBrush = *p_brush;
+}
+
+void MoveBrushAction::CheckValidPointMove()
+{
+	EditSession *sess = EditSession::GetSession();
+
+	moveValid = true;
+	for (PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it)
+	{
+		PolyPtr poly = (*it).first;
+		if (!sess->IsPolygonValid(poly.get(), NULL))
+		{
+			moveValid = false;
+			return;
+		}
+	}
 }
 
 void MoveBrushAction::Perform()
@@ -556,18 +550,16 @@ void MoveBrushAction::Perform()
 
 	if( !moveOnFirstPerform )
 	{
-		for( PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
+		CheckValidPointMove();
+		if (moveValid)
 		{
-			(*it).first->SoftReset();
-			(*it).first->Finalize();
-			(*it).first->movingPointMode = false;
-		}
-
-		for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
-		{
-			(*it).first->SoftReset();
-			(*it).first->Finalize();
-			(*it).first->movingPointMode = false;
+			for (PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it)
+			{
+				PolyPtr poly = (*it).first;
+				poly->SoftReset();
+				poly->Finalize();
+				poly->movingPointMode = false;
+			}
 		}
 
 		moveOnFirstPerform = true;
@@ -576,37 +568,44 @@ void MoveBrushAction::Perform()
 	{
 		movingBrush.Move( delta );
 
-		for( PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
+		//CheckValidPointMove();
+
+		if (moveValid)
 		{
-			list<PointMoveInfo> &pList = (*it).second;
-			for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
+
+
+			for (PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it)
 			{
-				(*pit).point->pos += (*pit).delta;
-
-				if ((*pit).point->gate != NULL)
+				list<PointMoveInfo> &pList = (*it).second;
+				for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
 				{
-					(*pit).point->gate->UpdateLine();
+					(*pit).point->pos += (*pit).delta;
+
+					if ((*pit).point->gate != NULL)
+					{
+						(*pit).point->gate->UpdateLine();
+					}
 				}
-			}
 
-			PolyPtr poly = (*it).first;
+				PolyPtr poly = (*it).first;
 
-			poly->SoftReset();
-			poly->Finalize();
-			poly->movingPointMode = false;
+				poly->SoftReset();
+				poly->Finalize();
+				poly->movingPointMode = false;
 
-			for (auto pit = poly->enemies.begin();
-				pit != poly->enemies.end(); ++pit)
-			{
-				list<ActorPtr> &enemies = (*pit).second;
-				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+				for (auto pit = poly->enemies.begin();
+					pit != poly->enemies.end(); ++pit)
 				{
-					(*ait)->UpdateGroundedSprite();
-					(*ait)->SetBoundingQuad();
+					list<ActorPtr> &enemies = (*pit).second;
+					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					{
+						(*ait)->UpdateGroundedSprite();
+						(*ait)->SetBoundingQuad();
+					}
 				}
-			}
 
-			
+
+			}
 		}
 
 		for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)

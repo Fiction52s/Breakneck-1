@@ -3630,6 +3630,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
 		TerrainPolygon &poly = *((*it).first);
+		selectedBrush->RemoveObject((*it).first);
 
 		int polySize = poly.numPoints;
 		Vector2i *deltas = new Vector2i[polySize];
@@ -3643,7 +3644,8 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 			prim_limit = .99;
 		}
 
-
+		
+		//if( false)
 		for( TerrainPoint *curr = poly.pointStart; curr != NULL ; curr = curr->next )
 		{
 							
@@ -4192,393 +4194,134 @@ void EditSession::PerformMovePointsAction()
 			(*it).delta = (*it).point->pos - (*it).delta;
 		}
 	}
-
-		
-	Action *action = new MoveBrushAction(selectedBrush, delta, false, selectedPoints, selectedRailPoints);
-
+	
+	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, selectedPoints, selectedRailPoints);
 
 	action->Perform();
 
-	if (moveAction != NULL)
+	if (action->moveValid)
 	{
+		if (moveAction != NULL)
+		{
 
-		moveAction->subActions.push_back(action);
-		doneActionStack.push_back(moveAction);
+			moveAction->subActions.push_back(action);
+			doneActionStack.push_back(moveAction);
+		}
+		else
+		{
+			doneActionStack.push_back(action);
+		}
 	}
 	else
 	{
-		doneActionStack.push_back(action);
+		action->Undo();
+		delete action;
 	}
 }
 
-bool EditSession::IsPolygonExternallyValid( TerrainPolygon &poly, TerrainPolygon *ignore )
+bool EditSession::PolyContainsPolys(TerrainPolygon *p, TerrainPolygon *ignore)
 {
-	Rect<int> polyAABB( poly.left, poly.top, poly.right - poly.left, poly.bottom - poly.top );
-	polyAABB.left -= minimumEdgeLength;
-	polyAABB.top -= minimumEdgeLength;
-	polyAABB.width += minimumEdgeLength * 2;
-	polyAABB.height += minimumEdgeLength * 2;
-
-	for( list<PolyPtr>::iterator polyIt = polygons.begin(); polyIt != polygons.end(); ++polyIt )
+	auto &testPolygons = GetCorrectPolygonList(p);
+	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
-		if( ignore == (*polyIt ).get() )
-		{
+		if ((*it).get() == ignore)
 			continue;
-		}
-		//eventually do a quad tree for this to speed it up
-		Rect<int> currAABB( (*polyIt)->left, (*polyIt)->top, (*polyIt)->right - (*polyIt)->left,
-			(*polyIt)->bottom - (*polyIt)->top);
-		currAABB.left -= minimumEdgeLength;
-		currAABB.top -= minimumEdgeLength;
-		currAABB.width += minimumEdgeLength * 2;
-		currAABB.height += minimumEdgeLength * 2;
 
-		if( !polyAABB.intersects( currAABB ) )
+		if (p->Contains((*it).get()))
 		{
+			return true;
+		}
+	}
+}
+
+bool EditSession::PolyIsContainedByPolys(TerrainPolygon *p, TerrainPolygon *ignore)
+{
+	auto &testPolygons = GetCorrectPolygonList(p);
+	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
+	{
+		if ((*it).get() == ignore)
 			continue;
-		}
 
-		if (poly.LinesTooClose((*polyIt).get(), minimumEdgeLength))
-			return false;
-
-		if ((*polyIt)->LinesTooClose(&poly, minimumEdgeLength) )
-			return false;
-
-		//this is only if its not touching stuff
+		if ((*it)->Contains(p))
 		{
-			list<Inter> pInters;
-			poly.GetIntersections((*polyIt).get(), pInters);
-			if (!pInters.empty())
-				return false;
+			return true;
 		}
-		
+	}
+}
 
-		//return false if one of the points is inside my poly, change this along with the prev one
-		//externally valid is dependent on what you're trying to do
-		for( TerrainPoint *pcurr = (*polyIt)->pointStart; pcurr != NULL; pcurr = pcurr->next )
+bool EditSession::PolyIsTouchingEnemiesOrBeingTouched( TerrainPolygon *p, TerrainPolygon *ignore)
+{
+	//this also tests for your own enemies to check for validity.
+	auto &testPolygons = GetCorrectPolygonList(p);
+	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
+	{
+		if ((*it).get() == ignore)
+			continue;
+
+		if ((*it)->IsTouchingEnemiesFromPoly(p))
 		{
-			if( poly.ContainsPoint( Vector2f( pcurr->pos.x, pcurr->pos.y ) ) )
-			{
-				//cout << "c" << endl;
-				return false;
-			}
+			return true;
 		}
-	
-		for( TerrainPoint *my = poly.pointStart; my != NULL; my = my->next )
+
+		if (p->IsTouchingEnemiesFromPoly((*it).get()))
 		{
-			if( (*polyIt)->ContainsPoint( Vector2f( my->pos.x, my->pos.y ) ) )
-			{
-				//cout << "d" << endl;
-				return false;
-			}
+			return true;
 		}
-
-		//for( TerrainPoint *my = poly.pointStart; my != NULL; my = my->next )
-		//{
-		//	Vector2i oldPoint, currPoint;
-		//	if( my == poly.pointStart )
-		//	{
-		//		oldPoint = poly.pointEnd->pos;
-		//	}
-		//	else
-		//	{
-		//		oldPoint = my->prev->pos;
-		//	}
-
-		//	currPoint = my->pos;
-		//}
-
-		//for( TerrainPoint *pcurr = (*polyIt)->pointStart; pcurr != NULL; pcurr = pcurr->next )
-		//{
-		//	Vector2i oldPoint, currPoint;
-		//	if( pcurr == (*polyIt)->pointStart )
-		//	{
-		//		oldPoint = (*polyIt)->pointEnd->pos;
-		//	}
-		//	else
-		//	{
-		//		oldPoint = pcurr->prev->pos;
-		//	}
-
-		//	currPoint = pcurr->pos;
-
-		//	/*for( list<GateInfo*>::iterator it = poly.attachedGates.begin(); it != poly.attachedGates.end(); ++it )
-		//	{
-		//		LineIntersection li = LimitSegmentIntersect( oldPoint, currPoint, (*it)->v0, (*it)->v1 );
-		//		if( !li.parallel )
-		//		{
-		//			return false;
-		//		}
-		//	}*/
-		//}
-
-		//me touching his enemies
-		for( EnemyMap::iterator it = (*polyIt)->enemies.begin(); it != (*polyIt)->enemies.end(); ++it )
-		{
-			for( list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
-			{
-				//need to round these floats probably
-				//cout << "calling this" << endl;
-				sf::VertexArray &bva = (*ait)->boundingQuad;
-				//V2d along = (*ait)->groundInfo->
-				if( QuadPolygonIntersect( &poly, Vector2i( bva[0].position.x, bva[0].position.y ), 
-					Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
-						Vector2i( bva[3].position.x, bva[3].position.y ) ) )
-				{
-					
-					//cout << "poly top: " << poly.top << endl;
-					//cout << "other bottom: " << (*polyIt)->bottom << endl;
-
-					//cout << "touched polygon!" << endl;
-					return false;
-				}
-				else
-				{
-					//cout << "no collision" << endl;
-				}
-			}
-		}
-
-		//him touching my enemies
-		for( EnemyMap::iterator it = poly.enemies.begin(); it != poly.enemies.end(); ++it )
-		{
-			for( list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
-			{
-				//need to round these floats probably
-				//cout << "calling this" << endl;
-				sf::VertexArray &bva = (*ait)->boundingQuad;
-				//V2d along = (*ait)->groundInfo->
-				if( QuadPolygonIntersect( (*polyIt).get(), Vector2i( bva[0].position.x, bva[0].position.y ), 
-					Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
-						Vector2i( bva[3].position.x, bva[3].position.y ) ) )
-				{
-					
-					//cout << "poly top: " << poly.top << endl;
-					//cout << "other bottom: " << (*polyIt)->bottom << endl;
-
-					//cout << "touched polygon!" << endl;
-					return false;
-				}
-				else
-				{
-					//cout << "no collision" << endl;
-				}
-			}
-		}
-
-		
-		
 	}
 
-	if( PolyIntersectGate( poly ) )
+
+	return false;
+}
+
+bool EditSession::PolyIntersectsGates(TerrainPolygon *poly)
+{
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		if (poly->IntersectsGate((*it).get()))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool EditSession::IsPolygonExternallyValid( TerrainPolygon *poly, TerrainPolygon *ignore )
+{
+	list<PolyPtr> intersections;
+	GetIntersectingPolys(poly, intersections);
+	if (intersections.size() > 0)
 		return false;
 
-	return true;
-}
-
-
-
-bool EditSession::IsPolygonInternallyValid( TerrainPolygon &poly )
-{
-	poly.AlignExtremes( PRIMARY_LIMIT );
-
-
-	if( !poly.IsClockwise() )
+	if (PolyContainsPolys(poly, ignore ))
 	{
 		return false;
 	}
 
-	//points close to other points on myself
-	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
+	if (PolyIsContainedByPolys(poly, ignore ))
 	{
-		for( TerrainPoint *curr2 = poly.pointStart; curr2 != NULL; curr2 = curr2->next )
-		{
-			if( curr->pos.x == curr2->pos.x && curr->pos.y == curr2->pos.y )
-			{
-				continue;
-			}
-
-			V2d a( curr->pos.x, curr->pos.y );
-			V2d b( curr2->pos.x, curr2->pos.y );
-			if( length( a - b ) < validityRadius )
-			{
-				//cout << "len: " << length( a - b ) << endl;
-				return false;
-			}
-		}
+		return false;
 	}
 
-	//check for slivers that are at too extreme of an angle. tiny triangle type things
-	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
+	if (PolyIsTouchingEnemiesOrBeingTouched(poly, ignore ))
 	{
-		TerrainPoint *prev, *next;
-		if( curr == poly.pointStart )
-		{
-			prev = poly.pointEnd;
-		}
-		else
-		{
-			prev = curr->prev;
-		}
-
-		TerrainPoint *temp = curr->next;
-		if( temp == NULL )
-		{
-			next = poly.pointStart;
-		}
-		else
-		{
-			next = curr->next;
-		}
-
-		//test for minimum angle difference between edges
-		V2d pos(curr->pos.x, curr->pos.y );
-		V2d prevPos( prev->pos.x, prev->pos.y );
-		V2d nextPos( next->pos.x, next->pos.y );
-
-		
-		double ff = dot( normalize( prevPos - pos ), normalize( nextPos - pos ) );
-		if( ff > .99 )
-		{
-			//cout << "ff: " << ff << endl;
-			return false;
-		}
+		return false;
 	}
 
-
-	//line intersection on myself
-	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
+	if (PolyIntersectsGates(poly))
 	{
-		TerrainPoint *prev;
-		if( curr == poly.pointStart )
-		{
-			prev = poly.pointEnd;
-		}
-		else
-		{
-			prev = curr->prev;
-		}
-
-		for( TerrainPoint *curr2 = poly.pointStart; curr2 != NULL; curr2 = curr2->next )
-		{
-			TerrainPoint *prev2;
-			
-			if( curr2 == poly.pointStart )
-			{
-				prev2 = poly.pointEnd;
-			}
-			else
-			{
-				prev2 = curr2->prev;
-			}
-
-			if( prev2 == prev || prev2 == curr || curr2 == prev || curr2 == curr )
-			{
-				continue;
-			}
-
-			LineIntersection li = LimitSegmentIntersect( prev->pos, curr->pos, prev2->pos, curr2->pos );
-
-			if( !li.parallel )
-			{
-				return false;
-			}
-		}
+		return false;
 	}
-
-	/*for( EnemyMap::iterator it = poly.enemies.begin(); it != poly.enemies.end(); ++it )
-	{
-		V2d a,b,c,d;
-		TerrainPoint *curr = (*it).first;
-		TerrainPoint *next;
-		if( curr == poly.pointEnd )
-			next = poly.pointStart;
-		else
-			next = curr->next;
-
-		V2d along = normalize( V2d( next->pos.x, next->pos.y ) - V2d( curr->pos.x, curr->pos.y ) );
-		V2d other( along.y, -along.x );
-
-		for( list<ActorParams*>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
-		{
-			double groundQuant = (*ait)->groundInfo->groundQuantity;
-			double halfWidth = (*ait)->type->width / 2.0;
-			double height = (*ait)->type->height;
-
-			V2d groundPos = V2d( curr->pos.x, curr->pos.y ) + along * groundQuant;
-
-			a = groundPos - along * halfWidth;
-			b = a + other * height;
-			d = groundPos + along * halfWidth;
-			c = d + other * height;
-			
-			bool quadIntersect = QuadPolygonIntersect( &poly,
-				Vector2i( a.x, a.y ), Vector2i( b.x, b.y ), Vector2i( c.x, c.y ), Vector2i( d.x, d.y ) );
-
-			cout << "quadiunter: " << quadIntersect << endl;
-			if( quadIntersect )
-				return false;
-		}
-
-		
-	}*/
-	//for( std::map<std::string, ActorGroup*>::iterator it = edit->groups.begin(); it != edit->groups.end() && res2; ++it )
-	for( EnemyMap::iterator it = poly.enemies.begin(); it != poly.enemies.end(); ++it )
-	{
-		for( list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait )
-		{
-			//need to round these floats probably
-
-			sf::VertexArray &bva = (*ait)->boundingQuad;
-			if( QuadPolygonIntersect( &poly, Vector2i( bva[0].position.x, bva[0].position.y ), 
-				Vector2i( bva[1].position.x, bva[1].position.y ), Vector2i( bva[2].position.x, bva[2].position.y ),
-					Vector2i( bva[3].position.x, bva[3].position.y ) ) )
-			{
-				return false;
-			}
-			else
-			{
-				
-			}
-		}
-	}
-
-
-	TerrainPoint *prev;
-	for( TerrainPoint *curr = poly.pointStart; curr != NULL; curr = curr->next )
-	{
-		if( curr->gate != NULL )
-		{
-			if( curr == poly.pointStart )
-			{
-				prev = poly.pointEnd;
-			}
-			else
-			{
-				prev = curr->prev;
-			}
-
-			Vector2i prevPos = prev->pos;
-			Vector2i pos = curr->pos;
-
-			LineIntersection li = LimitSegmentIntersect( prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos );
-
-			if( !li.parallel )
-			{
-				return false;
-			}
-			
-		}
-	}
-	
-
 
 	return true;
 }
 
-bool EditSession::IsPolygonValid( TerrainPolygon &poly, TerrainPolygon *ignore )
+bool EditSession::IsPolygonValid( TerrainPolygon *poly, TerrainPolygon *ignore )
 {
-	return IsPolygonExternallyValid( poly, ignore ) && IsPolygonInternallyValid( poly );
+	bool a = IsPolygonExternallyValid(poly, ignore);
+	bool b = poly->IsInternallyValid();
+
+	return a && b;
 }
 
 bool EditSession::ConfirmationPop( const std::string &question )
@@ -5211,34 +4954,7 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 	return true;
 }
 
-bool EditSession::PolyIntersectGate(TerrainPolygon &poly)
-{
-	//can be optimized with bounding box checks.
-	for (list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it)
-	{
-		Vector2i point0 = (*it)->point0->pos;
-		Vector2i point1 = (*it)->point1->pos;
 
-		for (TerrainPoint *my = poly.pointStart; my != NULL; my = my->next)
-		{
-			TerrainPoint *prev;
-			if (my == poly.pointStart)
-				prev = poly.pointEnd;
-			else
-			{
-				prev = my->prev;
-			}
-
-			LineIntersection li = LimitSegmentIntersect(point0, point1, prev->pos, my->pos);
-			if (!li.parallel)
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
 
 void EditSession::CreateActor(ActorPtr actor)
 {
@@ -5727,6 +5443,21 @@ list<PolyPtr> & EditSession::GetCorrectPolygonList()
 	}
 }
 
+void EditSession::GetIntersectingPolys(
+	TerrainPolygon *p,
+	std::list<PolyPtr> & intersections)
+{
+	auto &testPolygons = GetCorrectPolygonList( p );
+
+	for( auto it = testPolygons.begin(); it != testPolygons.end(); ++it )
+	{
+		if (p->IsTouching((*it).get()))
+		{
+			intersections.push_back((*it));
+		}
+	}
+}
+
 bool EditSession::ExecuteTerrainCompletion()
 {
 	if( polygonInProgress->numPoints > 2 )
@@ -5738,54 +5469,8 @@ bool EditSession::ExecuteTerrainCompletion()
 
 		polygonInProgress->SetMaterialType(currTerrainWorld,
 			currTerrainVar);
-		//test final line
-		bool valid = true;
-
-		//test for the last line segment intersecting with the polygon
-		TerrainPoint * test = polygonInProgress->pointStart;
-		TerrainPoint * prev = test;
-		test = test->next;
-
-		for( ; test != NULL; test = test->next )
-		{
-			Vector2i a = prev->pos;
-			Vector2i b = test->pos;
-			Vector2i c = polygonInProgress->pointEnd->pos;
-			Vector2i d = polygonInProgress->pointStart->pos;
-			LineIntersection li = LimitSegmentIntersect( a,b,c,d );
-			Vector2i lii( floor(li.position.x + .5), floor(li.position.y + .5) );
-			//if( !li.parallel  && (abs( lii.x - currPoint.x ) >= 1 || abs( lii.y - currPoint.y ) >= 1 ))
-			if( !li.parallel )//(abs( lii.x - currPoint.x ) > 1 || abs( lii.y - currPoint.y ) > 1 ) )//&& lii != a && lii != b && lii != c && lii != d )
-			{
-				valid = false;
-			}
-			prev = test;
-		}
-
+		
 		auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
-
-		for( list<PolyPtr>::iterator it = testPolygons.begin(); it != testPolygons.end(); ++it )
-		{
-			if( (*it)->SegmentTooClose( polygonInProgress->pointEnd->pos, polygonInProgress->pointStart->pos, minimumEdgeLength ) )
-			{
-				valid = false;
-				break;
-			}
-		}
-
-		if( PolyIntersectGate( *polygonInProgress ) )
-		{
-			valid = false;
-		}
-
-		if( !valid )
-		{
-			//MessagePop( "unable to complete polygon" );
-			//popupPanel = messagePopup;
-			//return;
-		}
-
-									
 		list<PolyPtr>::iterator it = testPolygons.begin();
 		bool added = false;
 									

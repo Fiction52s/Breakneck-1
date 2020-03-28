@@ -139,7 +139,9 @@ struct MoveBrushAction : Action
 		PointMap &points, RailPointMap &railPoints);
 	void Perform();
 	void Undo();
+	void CheckValidPointMove();
 
+	bool moveValid;
 	Brush movingBrush;
 	//std::list<PointMoveInfo> movingPoints;
 	PointMap movingPoints;
