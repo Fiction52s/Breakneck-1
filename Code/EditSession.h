@@ -710,6 +710,18 @@ struct EditSession : GUIHandler, TilesetManager
 	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys);
 	Action *ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys);
 	
+	enum GateAdjustOption
+	{
+		GATEADJUST_A,
+		GATEADJUST_B,
+		GATEADJUST_MIDDLE,
+		GATEADJUST_POINT_A,
+		GATEADJUST_POINT_B,
+		GATEADJUST_POINT_MIDDLE
+	};
+	Action *GetGateAdjustAction( GateAdjustOption option,
+		GateInfo *gi, sf::Vector2i &adjust);
+
 	bool HoldingShift();
 	bool HoldingControl();
 

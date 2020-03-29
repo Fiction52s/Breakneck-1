@@ -4203,7 +4203,6 @@ void EditSession::PerformMovePointsAction()
 	{
 		if (moveAction != NULL)
 		{
-
 			moveAction->subActions.push_back(action);
 			doneActionStack.push_back(moveAction);
 		}
@@ -4452,6 +4451,84 @@ bool EditSession::GetPrimaryAdjustment(sf::Vector2i &p0,
 		return true;
 	}
 	return false;
+}
+
+Action *EditSession::GetGateAdjustAction( GateAdjustOption option,
+	GateInfo *gi, Vector2i &adjust)
+{
+	Action *adjustAction = NULL;
+	switch (option)
+	{
+	case GATEADJUST_A:
+		assert(gi->poly0 != gi->poly1);
+		selectedBrush->AddObject(gi->poly0);
+		adjustAction = new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
+		break;
+	case GATEADJUST_B:
+		assert(gi->poly0 != gi->poly1);
+		selectedBrush->AddObject(gi->poly1);
+		adjustAction = new MoveBrushAction(selectedBrush, -adjust, true, PointMap(), RailPointMap());
+		break;
+	case GATEADJUST_MIDDLE:
+		break;
+	case GATEADJUST_POINT_A:
+	{
+		ClearSelectedPoints();
+		SelectPoint(gi->poly0, gi->point0);
+
+		MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
+
+		moveAction->Perform();
+
+		moveAction->CheckValidPointMove();
+
+		if (moveAction->moveValid)
+		{
+			moveAction->moveOnFirstPerform = false;
+			moveAction->performed = false;
+
+			adjustAction = moveAction;
+		}
+		else
+		{
+			moveAction->Undo();
+			delete moveAction;
+		}
+
+		break;
+	}
+	case GATEADJUST_POINT_B:
+	{
+		ClearSelectedPoints();
+		SelectPoint(gi->poly1, gi->point1);
+
+		MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
+
+		moveAction->Perform();
+
+		moveAction->CheckValidPointMove();
+
+		if (moveAction->moveValid)
+		{
+			moveAction->moveOnFirstPerform = false;
+			moveAction->performed = false;
+
+			adjustAction = moveAction;
+		}
+		else
+		{
+			moveAction->Undo();
+			delete moveAction;
+		}
+
+		break;
+	}
+	case GATEADJUST_POINT_MIDDLE:
+		break;
+	}
+	
+
+	return adjustAction;
 }
 
 bool EditSession::IsPolygonExternallyValid( TerrainPolygon *poly, TerrainPolygon *ignore )
@@ -9884,19 +9961,26 @@ void EditSession::CreateGatesModeUpdate()
 				if (GetPrimaryAdjustment(testGateInfo.point0->pos, testGateInfo.point1->pos, adjust))
 				{
 					CompoundAction *testAction = new CompoundAction;
-					
+					testAction->subActions.push_back(action);
+
+
 
 					selectedBrush->Clear();
-					selectedBrush->AddObject(testGateInfo.poly0);
 
-					Action *adjustAction = new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
+					Action *adjustAction = GetGateAdjustAction( GATEADJUST_A, &testGateInfo, adjust);
 
-					testAction->subActions.push_back(action);
-					testAction->subActions.push_back(adjustAction);
-
-					testAction->Perform();
-
-					doneActionStack.push_back(testAction);
+					if (adjustAction == NULL)
+					{
+						int x = 5;
+						//assert(0);
+						//the adjustment failed, the gate creation therefore fails.
+					}
+					else
+					{
+						testAction->subActions.push_back(adjustAction);
+						testAction->Perform();
+						doneActionStack.push_back(testAction);
+					}
 				}
 				else
 				{
