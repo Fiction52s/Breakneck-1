@@ -700,9 +700,13 @@ struct EditSession : GUIHandler, TilesetManager
 	bool IsSliver( TerrainPoint *prev,
 		TerrainPoint *curr, 
 		TerrainPoint *next);
+	bool IsCloseToPrimary(sf::Vector2i &p0,
+		sf::Vector2i &p1, sf::Vector2i &prim);
+	bool GetPrimaryAdjustment(sf::Vector2i &p0,
+		sf::Vector2i &p1, sf::Vector2i &adjust);
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys);
-	void PasteTerrain( Brush *b );
+	void PasteTerrain(Brush *b);
 	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys);
 	Action *ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys);
 	

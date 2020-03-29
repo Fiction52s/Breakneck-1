@@ -4371,6 +4371,7 @@ bool EditSession::GateMakesSliverAngles(GateInfo *gi)
 	return false;
 }
 
+
 bool EditSession::IsSliver( TerrainPoint *prev, TerrainPoint *curr, TerrainPoint *next)
 {
 	V2d pos(curr->pos.x, curr->pos.y);
@@ -4406,6 +4407,50 @@ bool EditSession::PolyGatesMakeSliverAngles(TerrainPolygon *poly)
 		}
 	}
 
+	return false;
+}
+
+bool EditSession::IsCloseToPrimary(sf::Vector2i &p0,
+	sf::Vector2i &p1, sf::Vector2i &prim)
+{
+	Vector2i diff = p1 - p0;
+	V2d diffDir = normalize( V2d(diff) );
+	prim = Vector2i(0, 0);
+
+	if (diffDir.x > PRIMARY_LIMIT)
+		prim.x = 1;
+	else if (diffDir.x < -PRIMARY_LIMIT)
+		prim.x = -1;
+	if (diffDir.y > PRIMARY_LIMIT)
+		prim.y = 1;
+	else if (diffDir.y < -PRIMARY_LIMIT)
+		prim.y = -1;
+
+	if (prim.x != 0 || prim.y != 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool EditSession::GetPrimaryAdjustment(sf::Vector2i &p0,
+	sf::Vector2i &p1, sf::Vector2i &adjust)
+{
+	adjust = Vector2i(0, 0);
+	Vector2i prim;
+	if (IsCloseToPrimary(p0, p1, prim))
+	{
+		if (prim.x != 0 )
+		{
+			adjust.y = p1.y - p0.y;
+		}
+		else if (prim.y != 0)
+		{
+			adjust.x = p1.x - p0.x;
+		}
+		return true;
+	}
 	return false;
 }
 
@@ -9832,13 +9877,32 @@ void EditSession::CreateGatesModeUpdate()
 					testGateInfo.SetShard(sw, si);
 				}
 
-				Action * action = new CreateGateAction(testGateInfo, gateResult);
-				action->Perform();
+				Vector2i adjust(0, 0);
+				
+				Action *action = new CreateGateAction(testGateInfo, gateResult);
 
+				if (GetPrimaryAdjustment(testGateInfo.point0->pos, testGateInfo.point1->pos, adjust))
+				{
+					CompoundAction *testAction = new CompoundAction;
+					
 
+					selectedBrush->Clear();
+					selectedBrush->AddObject(testGateInfo.poly0);
 
+					Action *adjustAction = new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
 
-				doneActionStack.push_back(action);
+					testAction->subActions.push_back(action);
+					testAction->subActions.push_back(adjustAction);
+
+					testAction->Perform();
+
+					doneActionStack.push_back(testAction);
+				}
+				else
+				{
+					action->Perform();
+					doneActionStack.push_back(action);
+				}
 			}
 		}
 		else
