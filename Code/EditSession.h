@@ -693,6 +693,13 @@ struct EditSession : GUIHandler, TilesetManager
 		TerrainPolygon *p,
 		TerrainPolygon *ignore);
 	bool PolyIntersectsGates(TerrainPolygon *poly);
+	bool PolyGatesIntersectOthers(TerrainPolygon *poly);
+	bool PolyGatesMakeSliverAngles(TerrainPolygon *poly);
+	bool IsGateValid(GateInfo *gi );
+	bool GateMakesSliverAngles(GateInfo *gi);
+	bool IsSliver( TerrainPoint *prev,
+		TerrainPoint *curr, 
+		TerrainPoint *next);
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys);
 	void PasteTerrain( Brush *b );

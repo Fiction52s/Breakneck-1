@@ -4286,6 +4286,129 @@ bool EditSession::PolyIntersectsGates(TerrainPolygon *poly)
 	return false;
 }
 
+bool EditSession::PolyGatesIntersectOthers(TerrainPolygon *poly)
+{
+	auto &testPolygons = GetCorrectPolygonList(poly);
+
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		if ((*it)->poly0.get() == poly || (*it)->poly1.get() == poly)
+		{	
+			for (auto pit = testPolygons.begin(); pit != testPolygons.end(); ++pit)
+			{
+				if ((*pit).get() == poly)
+					continue;
+
+				if ((*pit)->IntersectsGate((*it).get()))
+				{
+					return true;
+				}		
+			}
+		}
+	}
+
+	return false;
+}
+
+bool EditSession::IsGateValid(GateInfo *gi)
+{
+	//check slivers
+
+	//check intersections
+
+	//make sure you cant go within a single poly.
+	return true;
+}
+
+bool EditSession::GateMakesSliverAngles(GateInfo *gi)
+{
+	TerrainPolygon *poly0 = gi->poly0.get();
+	TerrainPolygon *poly1 = gi->poly1.get();
+
+	TerrainPoint *p0 = gi->point0;
+	TerrainPoint *p1 = gi->point1;
+
+	TerrainPoint *prev = p0->prev;
+	if (prev == NULL)
+		prev = poly0->pointEnd;
+
+	TerrainPoint *next = p0->next;
+	if (next == NULL)
+		next = poly0->pointStart;
+
+	if (IsSliver(prev, p0, p1))
+	{
+		return true;
+	}
+
+	if (IsSliver(p1, p0, next))
+	{
+		return true;
+	}
+
+	prev = p1->prev;
+	if (prev == NULL)
+	{
+		prev = poly1->pointEnd;
+	}
+
+	next = p1->next;
+	if (next == NULL)
+	{
+		next = poly1->pointStart;
+	}
+
+	if (IsSliver(prev, p1, p0))
+	{
+		return true;
+	}
+
+	if (IsSliver(p0, p1, next))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool EditSession::IsSliver( TerrainPoint *prev, TerrainPoint *curr, TerrainPoint *next)
+{
+	V2d pos(curr->pos.x, curr->pos.y);
+	V2d prevPos(prev->pos.x, prev->pos.y);
+	V2d nextPos(next->pos.x, next->pos.y);
+	V2d dirA = normalize(prevPos - pos);
+	V2d dirB = normalize(nextPos - pos);
+
+	double diff = GetVectorAngleDiffCCW(dirA, dirB);
+	double diffCW = GetVectorAngleDiffCW(dirA, dirB);
+	if (diff < SLIVER_LIMIT)
+	{
+		return true;
+	}
+	else if (diffCW < SLIVER_LIMIT)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool EditSession::PolyGatesMakeSliverAngles(TerrainPolygon *poly)
+{
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		if ((*it)->poly0.get() == poly || (*it)->poly1.get() == poly)
+		{
+			if (GateMakesSliverAngles((*it).get()))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 bool EditSession::IsPolygonExternallyValid( TerrainPolygon *poly, TerrainPolygon *ignore )
 {
 	list<PolyPtr> intersections;
@@ -4309,6 +4432,16 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon *poly, TerrainPolygon
 	}
 
 	if (PolyIntersectsGates(poly))
+	{
+		return false;
+	}
+
+	if (PolyGatesIntersectOthers(poly))
+	{
+		return false;
+	}
+
+	if (PolyGatesMakeSliverAngles(poly))
 	{
 		return false;
 	}
