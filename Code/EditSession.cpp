@@ -789,6 +789,8 @@ void EditSession::Draw()
 
 	DrawDecorBehind();
 
+	DrawGates();
+
 	DrawPolygons();
 
 	DrawRails();
@@ -796,7 +798,7 @@ void EditSession::Draw()
 
 	DrawDecorBetween();
 	DrawActors();
-	DrawGates();
+	
 
 	if (mode == PASTE)
 	{
@@ -3651,168 +3653,169 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 							
 			deltas[deltaIndex] = Vector2i( 0, 0 );
 
-			if( !curr->selected )
-			{
-				++deltaIndex;
-				continue;
-			}
+			//if( !curr->selected )
+			//{
+			//	++deltaIndex;
+			//	continue;
+			//}
 
-			Vector2i diff;
+			//Vector2i diff;
 
-			TerrainPoint *prev, *next;
-			if( curr == poly.pointStart )
-			{
-				prev = poly.pointEnd;
-			}
-			else
-			{
-				prev = curr->prev;
-			}
+			//TerrainPoint *prev, *next;
+			//if( curr == poly.pointStart )
+			//{
+			//	prev = poly.pointEnd;
+			//}
+			//else
+			//{
+			//	prev = curr->prev;
+			//}
 
-			TerrainPoint *temp = curr->next;
-			if( temp == NULL )
-			{
-				next = poly.pointStart;
-			}
-			else
-			{
-				next = temp;
-			}
+			//TerrainPoint *temp = curr->next;
+			//if( temp == NULL )
+			//{
+			//	next = poly.pointStart;
+			//}
+			//else
+			//{
+			//	next = temp;
+			//}
 
 
-			V2d pos(curr->pos.x + pointGrabDelta.x, curr->pos.y + pointGrabDelta.y );
-			V2d prevPos( prev->pos.x, prev->pos.y );
-			V2d nextPos( next->pos.x, next->pos.y );
+			//V2d pos(curr->pos.x + pointGrabDelta.x, curr->pos.y + pointGrabDelta.y );
+			//V2d prevPos( prev->pos.x, prev->pos.y );
+			//V2d nextPos( next->pos.x, next->pos.y );
 
-			V2d extreme( 0, 0 );
-			Vector2i vec = curr->pos - prev->pos;
-			V2d normVec = normalize( V2d( vec.x, vec.y ) );
+			//V2d extreme( 0, 0 );
+			//Vector2i vec = curr->pos - prev->pos;
+			//V2d normVec = normalize( V2d( vec.x, vec.y ) );
 
-			V2d newVec = normalize( pos - V2d( prev->pos.x, prev->pos.y ) );
+			//V2d newVec = normalize( pos - V2d( prev->pos.x, prev->pos.y ) );
 		
-			if( !prev->selected )
-			{
-				if( normVec.x == 0 || normVec.y == 0 )
-				{
-					if( newVec.x > prim_limit )
-						extreme.x = 1;
-					else if( newVec.x < -prim_limit )
-						extreme.x = -1;
-					if( newVec.y > prim_limit )
-						extreme.y = 1;
-					else if( newVec.y < -prim_limit )
-						extreme.y = -1;
+			//if( !prev->selected )
+			//{
+			//	if( normVec.x == 0 || normVec.y == 0 )
+			//	{
+			//		if( newVec.x > prim_limit )
+			//			extreme.x = 1;
+			//		else if( newVec.x < -prim_limit )
+			//			extreme.x = -1;
+			//		if( newVec.y > prim_limit )
+			//			extreme.y = 1;
+			//		else if( newVec.y < -prim_limit )
+			//			extreme.y = -1;
 
-					if( extreme.x != 0 )
-					{
-						pointGrabPos.y = oldPointGrabPos.y;
-						pointGrabDelta.y = 0;
-					}
-									
-					if( extreme.y != 0 )
-					{
-						pointGrabPos.x = oldPointGrabPos.x;
-						pointGrabDelta.x = 0;
-					}
-				}
-				else
-				{	
-					if( normVec.x > prim_limit )
-						extreme.x = 1;
-					else if( normVec.x < -prim_limit )
-						extreme.x = -1;
-					if( normVec.y > prim_limit )
-						extreme.y = 1;
-					else if( normVec.y < -prim_limit )
-						extreme.y = -1;
-					//extreme = normalize( extreme );
+			//		if( extreme.x != 0 )
+			//		{
+			//			pointGrabPos.y = oldPointGrabPos.y;
+			//			pointGrabDelta.y = 0;
+			//		}
+			//						
+			//		if( extreme.y != 0 )
+			//		{
+			//			pointGrabPos.x = oldPointGrabPos.x;
+			//			pointGrabDelta.x = 0;
+			//		}
+			//	}
+			//	else
+			//	{	
+			//		if( normVec.x > prim_limit )
+			//			extreme.x = 1;
+			//		else if( normVec.x < -prim_limit )
+			//			extreme.x = -1;
+			//		if( normVec.y > prim_limit )
+			//			extreme.y = 1;
+			//		else if( normVec.y < -prim_limit )
+			//			extreme.y = -1;
+			//		//extreme = normalize( extreme );
 
-								
-					if( extreme.x != 0 )
-					{
-						//int diff = ;
-						diff.y = curr->pos.y - prev->pos.y;
-									
-						//(*it2).pos.y = (*prev).pos.y;
-						cout << "lining up x: " << diff.y << endl;
-					}
+			//					
+			//		if( extreme.x != 0 )
+			//		{
+			//			//int diff = ;
+			//			diff.y = curr->pos.y - prev->pos.y;
+			//						
+			//			//(*it2).pos.y = (*prev).pos.y;
+			//			cout << "lining up x: " << diff.y << endl;
+			//		}
 
-					if( extreme.y != 0 )
-					{
-						diff.x = curr->pos.x - prev->pos.x;
+			//		if( extreme.y != 0 )
+			//		{
+			//			diff.x = curr->pos.x - prev->pos.x;
 
-						cout << "lining up y: " << diff.x << endl;
-					}
-				}
-			}
-							
-			if( !next->selected )
-			{
-				vec = curr->pos - next->pos;
-				normVec = normalize( V2d( vec.x, vec.y ) );
+			//			cout << "lining up y: " << diff.x << endl;
+			//		}
+			//	}
+			//}
+			//				
+			//if( !next->selected )
+			//{
+			//	vec = curr->pos - next->pos;
+			//	normVec = normalize( V2d( vec.x, vec.y ) );
 
-				extreme = V2d( 0, 0 );
+			//	extreme = V2d( 0, 0 );
 
-				newVec = normalize( pos - V2d( (*next).pos.x, (*next).pos.y ) );
-								
-				if( normVec.x == 0 || normVec.y == 0 )
-				{
-					if( newVec.x > prim_limit )
-						extreme.x = 1;
-					else if( newVec.x < -prim_limit )
-						extreme.x = -1;
-					if( newVec.y > prim_limit )
-						extreme.y = 1;
-					else if( newVec.y < -prim_limit )
-						extreme.y = -1;
-									
-					if( extreme.x != 0 )
-					{
-						pointGrabPos.y = oldPointGrabPos.y;
-						pointGrabDelta.y = 0;
-					}
-									
-					if( extreme.y != 0 )
-					{
-						pointGrabPos.x = oldPointGrabPos.x;
-						pointGrabDelta.x = 0;
-					}
-				}
-				else
-				{
-					if( normVec.x > prim_limit )
-						extreme.x = 1;
-					else if( normVec.x < -prim_limit )
-						extreme.x = -1;
-					if( normVec.y > prim_limit )
-						extreme.y = 1;
-					else if( normVec.y < -prim_limit )
-						extreme.y = -1;
+			//	newVec = normalize( pos - V2d( (*next).pos.x, (*next).pos.y ) );
+			//					
+			//	if( normVec.x == 0 || normVec.y == 0 )
+			//	{
+			//		if( newVec.x > prim_limit )
+			//			extreme.x = 1;
+			//		else if( newVec.x < -prim_limit )
+			//			extreme.x = -1;
+			//		if( newVec.y > prim_limit )
+			//			extreme.y = 1;
+			//		else if( newVec.y < -prim_limit )
+			//			extreme.y = -1;
+			//						
+			//		if( extreme.x != 0 )
+			//		{
+			//			pointGrabPos.y = oldPointGrabPos.y;
+			//			pointGrabDelta.y = 0;
+			//		}
+			//						
+			//		if( extreme.y != 0 )
+			//		{
+			//			pointGrabPos.x = oldPointGrabPos.x;
+			//			pointGrabDelta.x = 0;
+			//		}
+			//	}
+			//	else
+			//	{
+			//		if( normVec.x > prim_limit )
+			//			extreme.x = 1;
+			//		else if( normVec.x < -prim_limit )
+			//			extreme.x = -1;
+			//		if( normVec.y > prim_limit )
+			//			extreme.y = 1;
+			//		else if( normVec.y < -prim_limit )
+			//			extreme.y = -1;
 
-					if( extreme.x != 0 )
-					{
-						//int diff = ;
-						//diff.y = curr->pos.y - next->pos.y;
-									
-						//(*it2).pos.y = (*prev).pos.y;
-						cout << "lining up x222: " << diff.y << endl;
-					}
+			//		if( extreme.x != 0 )
+			//		{
+			//			//int diff = ;
+			//			//diff.y = curr->pos.y - next->pos.y;
+			//						
+			//			//(*it2).pos.y = (*prev).pos.y;
+			//			cout << "lining up x222: " << diff.y << endl;
+			//		}
 
-					if( extreme.y != 0 )
-					{
-						//diff.x = curr->pos.x - next->pos.x;
+			//		if( extreme.y != 0 )
+			//		{
+			//			//diff.x = curr->pos.x - next->pos.x;
 
-						cout << "lining up y222: " << diff.x << endl;
-					}
-				}
-			}
+			//			cout << "lining up y222: " << diff.x << endl;
+			//		}
+			//	}
+			//}
 
-			if( !( diff.x == 0 && diff.y == 0 ) )
-			{
-				cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
-				cout << "diff: " << diff.x << ", " << diff.y << endl;
-			}
-			deltas[deltaIndex] = diff;
+			//if( !( diff.x == 0 && diff.y == 0 ) )
+			//{
+			//	cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
+			//	cout << "diff: " << diff.x << ", " << diff.y << endl;
+			//}
+			
+//deltas[deltaIndex] = diff;
 							
 
 			++deltaIndex;

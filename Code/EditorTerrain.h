@@ -45,6 +45,7 @@ struct TerrainPoint
 	TerrainPoint *next;
 	TerrainPoint *prev;
 
+	bool HasPrimaryGate(sf::Vector2i &gateDir);
 	bool ContainsPoint(sf::Vector2f test);
 	bool Intersects(sf::IntRect rect);
 	bool IsPlacementOkay();

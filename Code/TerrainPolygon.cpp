@@ -626,162 +626,108 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 void TerrainPolygon::AlignExtremes(double primLimit,
 	std::list<TerrainPoint*> lockedPoints)
 {
-	//list<TerrainPoint*> 
-
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	//this can be optimized later using these lists. only check a point again on another loop
+	//if itself, its prev, or next, have been adjusted. Its fine for now just not optimal speed.
+	//list<TerrainPoint*> lastAdjustedPoints;
+	//list<TerrainPoint*> currAdjustedPoints;
+	TerrainPoint *prev;
+	TerrainPoint *next;
+	bool firstLoop = true;
+	bool checkPoint;
+	bool adjusted = true;
+	bool pointCheck = true;
+	while (firstLoop || adjusted)
 	{
-		TerrainPoint *prev;
-		if (curr == pointStart)
+		adjusted = false;
+		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
 		{
-			prev = pointEnd;
-		}
-		else
-		{
+			pointCheck = true;
+			for (auto it = lockedPoints.begin(); it != lockedPoints.end(); ++it)
+			{
+				if ((*it) == curr)
+				{
+					pointCheck = false;
+					break;
+				}
+			}
+
+			if (!pointCheck)
+				continue;
+
+
 			prev = curr->prev;
-		}
+			if (prev == NULL)
+			{
+				prev = pointEnd;
+			}
 
-		TerrainPoint *next;
-		if (curr == pointEnd)
-		{
-			next = pointStart;
-		}
-		else
-		{
 			next = curr->next;
-		}
-
-		V2d prevExtreme(0, 0);
-		V2d nextExtreme(0, 0);
-		Vector2i prevVec = curr->pos - prev->pos;
-		Vector2i nextVec = curr->pos - next->pos;
-		V2d prevNormVec = normalize(V2d(prevVec.x, prevVec.y));
-		V2d nextNormVec = normalize(V2d(nextVec.x, nextVec.y));
-
-		if (prevNormVec.x > primLimit)
-			prevExtreme.x = 1;
-		else if (prevNormVec.x < -primLimit)
-			prevExtreme.x = -1;
-		if (prevNormVec.y > primLimit)
-			prevExtreme.y = 1;
-		else if (prevNormVec.y < -primLimit)
-			prevExtreme.y = -1;
-
-		if (nextNormVec.x > primLimit)
-			nextExtreme.x = 1;
-		else if (nextNormVec.x < -primLimit)
-			nextExtreme.x = -1;
-		if (nextNormVec.y > primLimit)
-			nextExtreme.y = 1;
-		else if (nextNormVec.y < -primLimit)
-			nextExtreme.y = -1;
-
-		//if (!curr->selected)
-		//{
-		//	continue;
-		//}
-
-		bool prevValid = true, nextValid = true;
-		if (nextNormVec.x == 0 || nextNormVec.y == 0)
-		{
-			nextValid = false;
-		}
-
-		if (prevNormVec.x == 0 || prevNormVec.y == 0)
-		{
-			prevValid = false;
-		}
-
-		if (prevValid && nextValid)
-		{
-			if (prevExtreme.x != 0)
+			if (next == NULL)
 			{
-				if (nextExtreme.x != 0)
-				{
-					double sum = curr->pos.y + prev->pos.y + next->pos.y;
-					int avg = round(sum / 3.0);
-					prev->pos.y = avg;
-					curr->pos.y = avg;
-					next->pos.y = avg;
-				}
-				else if (nextExtreme.y != 0)
-				{
-					curr->pos.y = prev->pos.y;
-					curr->pos.x = next->pos.x;
-				}
-				else
-				{
-					curr->pos.y = prev->pos.y;
-				}
+				next = pointStart;
 			}
-			else if (prevExtreme.y != 0)
+
+			/*checkPoint = false;
+			if (firstLoop)
+			checkPoint = true;
+			else
 			{
-				if (nextExtreme.y != 0)
-				{
-					double sum = curr->pos.x + prev->pos.x + next->pos.x;
-					int avg = round(sum / 3.0);
-					prev->pos.x = avg;
-					curr->pos.x = avg;
-					next->pos.x = avg;
-				}
-				else if (nextExtreme.x != 0)
-				{
-					curr->pos.x = prev->pos.x;
-					curr->pos.y = next->pos.y;
-				}
-				else
-				{
-					curr->pos.x = prev->pos.x;
-				}
+			for (auto it = adjustedPoints.begin(); it != adjustedPoints.end(); ++it)
+			{
+			if ((*it) == prev || (*it) == curr || (*it) == next)
+			{
+			checkPoint = true;
 			}
+			}
+			}*/
+
+			Vector2i diff = next->pos - curr->pos;
+
+			if (diff.x == 0 || diff.y == 0)
+				continue;
+
+			V2d diffDir = normalize(V2d(diff));
+			Vector2i extreme;
+			if (diffDir.x > primLimit)
+				extreme.x = 1;
+			else if (diffDir.x < -primLimit)
+				extreme.x = -1;
+			if (diffDir.y > primLimit)
+				extreme.y = 1;
+			else if (diffDir.y < -primLimit)
+				extreme.y = -1;
+
+			if (extreme.x == 0 && extreme.y == 0)
+				continue;
+
+			if (extreme.x != 0)
+				curr->pos.y = next->pos.y;
+			else
+				curr->pos.x = next->pos.x;
+
+			adjusted = true;
+			//adjustedPoints.push_back(curr);
 		}
-		else if (prevValid)
-		{
-			if (prevExtreme.y != 0)
-			{
-				double sum = curr->pos.x + prev->pos.x;
-				int avg = round(sum / 2.0);
-				curr->pos.x = avg;
-				prev->pos.x = avg;
-			}
-			else if (prevExtreme.x != 0)
-			{
-				double sum = curr->pos.y + prev->pos.y;
-				int avg = round(sum / 2.0);
-				curr->pos.y = avg;
-				prev->pos.y = avg;
-			}
-		}
-		else if (nextValid)
-		{
-			if (nextExtreme.y != 0)
-			{
-				double sum = curr->pos.x + next->pos.x;
-				int avg = round(sum / 2.0);
-				curr->pos.x = avg;
-				next->pos.x = avg;
-			}
-			else if (nextExtreme.x != 0)
-			{
-				double sum = curr->pos.y + next->pos.y;
-				int avg = round(sum / 2.0);
-				curr->pos.y = avg;
-				next->pos.y = avg;
-			}
-		}
-		else
-		{
-			continue;
-		}
+
+		firstLoop = false;
 	}
 }
 
 void TerrainPolygon::AlignExtremes( double primLimit )
 {
-	list<TerrainPoint*> adjustedPoints;
+	//this can be optimized later using these lists. only check a point again on another loop
+	//if itself, its prev, or next, have been adjusted. Its fine for now just not optimal speed.
+	//list<TerrainPoint*> lastAdjustedPoints;
+	//list<TerrainPoint*> currAdjustedPoints;
 	TerrainPoint *prev;
 	TerrainPoint *next;
-	//while (true)
+	bool firstLoop = true;
+	bool checkPoint;
+	bool adjusted = true;
+	bool prevLocked = false;
+	while( firstLoop || adjusted)
 	{
+		adjusted = false;
 		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
 		{
 			prev = curr->prev;
@@ -815,13 +761,29 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 			if (extreme.x == 0 && extreme.y == 0)
 				continue;
 
+			Vector2i gateDir;
+			if (curr->HasPrimaryGate(gateDir))
+			{
+				if (extreme.x != 0 && gateDir.x != 0)
+				{
+					continue;
+				}
+				else if( extreme.y != 0 && gateDir.y != 0 )
+				{
+					continue;
+				}
+			}
+
 			if (extreme.x != 0)
 				curr->pos.y = next->pos.y;
 			else
 				curr->pos.x = next->pos.x;
 
+			adjusted = true;
 			//adjustedPoints.push_back(curr);
 		}
+
+		firstLoop = false;
 	}
 	/*for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
@@ -1434,6 +1396,8 @@ void TerrainPolygon::SetupGrass(TerrainPoint *curr, int &i )
 
 void TerrainPolygon::Finalize()
 {
+	AlignExtremes(EditSession::PRIMARY_LIMIT);
+
 	if (inverse)
 	{
 		FinalizeInverse();
@@ -3432,3 +3396,57 @@ bool TerrainPoint::Intersects( IntRect rect )
 	return false;
 }
 
+bool TerrainPoint::HasPrimaryGate(Vector2i &gateDir)
+{
+	gateDir = Vector2i(0, 0);
+	if (gate != NULL)
+	{
+		Vector2i myPoint, otherPoint;
+		if (gate->point0 == this)
+		{
+			myPoint = gate->point0->pos;
+			otherPoint = gate->point1->pos;
+		}
+		else
+		{
+			myPoint = gate->point1->pos;
+			otherPoint = gate->point0->pos;
+		}
+
+		Vector2i diff = otherPoint - myPoint;
+		if (diff.y == 0 )
+		{
+			if (diff.x > 0)
+			{
+				gateDir.x = 1;
+			}
+			else if( diff.x < 0 )
+			{
+				gateDir.x = -1;
+			}
+			else
+			{
+				assert(0);
+			}
+		}
+		else if (diff.x == 0)
+		{
+			if (diff.y > 0)
+			{
+				gateDir.y = 1;
+			}
+			else if( diff.y < 0 )
+			{
+				gateDir.y = -1;
+			}
+			else
+			{
+				assert(0);
+			}
+		}
+
+		return true;
+	}
+
+	return false;
+}
