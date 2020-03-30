@@ -305,7 +305,7 @@ bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 bool TerrainPolygon::IsInternallyValid()
 {
 	//I feel like this shouldn't be here...
-	AlignExtremes(EditSession::PRIMARY_LIMIT);
+	//AlignExtremes(EditSession::PRIMARY_LIMIT);
 
 	EditSession *sess = EditSession::GetSession();
 
@@ -623,12 +623,207 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 	}
 }
 
+void TerrainPolygon::AlignExtremes(double primLimit,
+	std::list<TerrainPoint*> lockedPoints)
+{
+	//list<TerrainPoint*> 
 
+	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	{
+		TerrainPoint *prev;
+		if (curr == pointStart)
+		{
+			prev = pointEnd;
+		}
+		else
+		{
+			prev = curr->prev;
+		}
+
+		TerrainPoint *next;
+		if (curr == pointEnd)
+		{
+			next = pointStart;
+		}
+		else
+		{
+			next = curr->next;
+		}
+
+		V2d prevExtreme(0, 0);
+		V2d nextExtreme(0, 0);
+		Vector2i prevVec = curr->pos - prev->pos;
+		Vector2i nextVec = curr->pos - next->pos;
+		V2d prevNormVec = normalize(V2d(prevVec.x, prevVec.y));
+		V2d nextNormVec = normalize(V2d(nextVec.x, nextVec.y));
+
+		if (prevNormVec.x > primLimit)
+			prevExtreme.x = 1;
+		else if (prevNormVec.x < -primLimit)
+			prevExtreme.x = -1;
+		if (prevNormVec.y > primLimit)
+			prevExtreme.y = 1;
+		else if (prevNormVec.y < -primLimit)
+			prevExtreme.y = -1;
+
+		if (nextNormVec.x > primLimit)
+			nextExtreme.x = 1;
+		else if (nextNormVec.x < -primLimit)
+			nextExtreme.x = -1;
+		if (nextNormVec.y > primLimit)
+			nextExtreme.y = 1;
+		else if (nextNormVec.y < -primLimit)
+			nextExtreme.y = -1;
+
+		//if (!curr->selected)
+		//{
+		//	continue;
+		//}
+
+		bool prevValid = true, nextValid = true;
+		if (nextNormVec.x == 0 || nextNormVec.y == 0)
+		{
+			nextValid = false;
+		}
+
+		if (prevNormVec.x == 0 || prevNormVec.y == 0)
+		{
+			prevValid = false;
+		}
+
+		if (prevValid && nextValid)
+		{
+			if (prevExtreme.x != 0)
+			{
+				if (nextExtreme.x != 0)
+				{
+					double sum = curr->pos.y + prev->pos.y + next->pos.y;
+					int avg = round(sum / 3.0);
+					prev->pos.y = avg;
+					curr->pos.y = avg;
+					next->pos.y = avg;
+				}
+				else if (nextExtreme.y != 0)
+				{
+					curr->pos.y = prev->pos.y;
+					curr->pos.x = next->pos.x;
+				}
+				else
+				{
+					curr->pos.y = prev->pos.y;
+				}
+			}
+			else if (prevExtreme.y != 0)
+			{
+				if (nextExtreme.y != 0)
+				{
+					double sum = curr->pos.x + prev->pos.x + next->pos.x;
+					int avg = round(sum / 3.0);
+					prev->pos.x = avg;
+					curr->pos.x = avg;
+					next->pos.x = avg;
+				}
+				else if (nextExtreme.x != 0)
+				{
+					curr->pos.x = prev->pos.x;
+					curr->pos.y = next->pos.y;
+				}
+				else
+				{
+					curr->pos.x = prev->pos.x;
+				}
+			}
+		}
+		else if (prevValid)
+		{
+			if (prevExtreme.y != 0)
+			{
+				double sum = curr->pos.x + prev->pos.x;
+				int avg = round(sum / 2.0);
+				curr->pos.x = avg;
+				prev->pos.x = avg;
+			}
+			else if (prevExtreme.x != 0)
+			{
+				double sum = curr->pos.y + prev->pos.y;
+				int avg = round(sum / 2.0);
+				curr->pos.y = avg;
+				prev->pos.y = avg;
+			}
+		}
+		else if (nextValid)
+		{
+			if (nextExtreme.y != 0)
+			{
+				double sum = curr->pos.x + next->pos.x;
+				int avg = round(sum / 2.0);
+				curr->pos.x = avg;
+				next->pos.x = avg;
+			}
+			else if (nextExtreme.x != 0)
+			{
+				double sum = curr->pos.y + next->pos.y;
+				int avg = round(sum / 2.0);
+				curr->pos.y = avg;
+				next->pos.y = avg;
+			}
+		}
+		else
+		{
+			continue;
+		}
+	}
+}
 
 void TerrainPolygon::AlignExtremes( double primLimit )
 {
-	return;
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	list<TerrainPoint*> adjustedPoints;
+	TerrainPoint *prev;
+	TerrainPoint *next;
+	//while (true)
+	{
+		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+		{
+			prev = curr->prev;
+			if (prev == NULL)
+			{
+				prev = pointEnd;
+			}
+
+			next = curr->next;
+			if (next == NULL)
+			{
+				next = pointStart;
+			}
+
+			Vector2i diff = next->pos - curr->pos;
+
+			if (diff.x == 0 || diff.y == 0)
+				continue;
+
+			V2d diffDir = normalize(V2d(diff));
+			Vector2i extreme;
+			if (diffDir.x > primLimit)
+				extreme.x = 1;
+			else if (diffDir.x < -primLimit)
+				extreme.x = -1;
+			if (diffDir.y > primLimit)
+				extreme.y = 1;
+			else if (diffDir.y < -primLimit)
+				extreme.y = -1;
+
+			if (extreme.x == 0 && extreme.y == 0)
+				continue;
+
+			if (extreme.x != 0)
+				curr->pos.y = next->pos.y;
+			else
+				curr->pos.x = next->pos.x;
+
+			//adjustedPoints.push_back(curr);
+		}
+	}
+	/*for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
 		TerrainPoint *prev;
 		if( curr == pointStart )
@@ -804,7 +999,7 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 		
 
 
-	}
+	}*/
 }
 
 

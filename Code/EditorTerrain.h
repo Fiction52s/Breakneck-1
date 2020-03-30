@@ -184,6 +184,9 @@ struct TerrainPolygon : ISelectable
 	void FixWindingInverse();
 	bool IsClockwise();
 	void AlignExtremes(double primLimit);
+	void AlignExtremes(double primLimit,
+		std::list<TerrainPoint*> lockedPoints);
+	//= std::list<TerrainPoint*>() );
 	void UpdateGrass();
 
 	void WriteFile(std::ofstream & of);
