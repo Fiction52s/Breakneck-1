@@ -721,6 +721,18 @@ struct EditSession : GUIHandler, TilesetManager
 	};
 	Action *GetGateAdjustAction( GateAdjustOption option,
 		GateInfo *gi, sf::Vector2i &adjust);
+	Action *GetGateAdjustActionPoly(
+		sf::Vector2i &adjust,
+		PolyPtr p);
+	Action *GetGateAdjustActionPoint(
+		GateInfo *gi, sf::Vector2i &adjust,
+		bool a);
+	//Action *GetGateAdjustActionPoint(
+	//	sf::Vector2i &adjust
+	//)
+	void GetNearPrimaryGateList(
+		PointMap &pmap, 
+		std::list<GateInfoPtr> &gList);
 
 	bool HoldingShift();
 	bool HoldingControl();

@@ -627,6 +627,7 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 
 void TerrainPolygon::AlignExtremes( double primLimit )
 {
+	return;
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
 		TerrainPoint *prev;
@@ -704,20 +705,14 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 						prev->pos.y = avg;
 						curr->pos.y = avg;
 						next->pos.y = avg;
-
-						//cout << "a" << endl;
-						//prev->pos.y = curr->pos.y;
-						//next->pos.y = curr->pos.y;
 					}
 					else if( nextExtreme.y != 0 )
 					{
-						//cout << "b" << endl;
 						curr->pos.y = prev->pos.y;
 						curr->pos.x = next->pos.x;
 					}
 					else
 					{
-						//cout << "c" << endl;
 						curr->pos.y = prev->pos.y;
 					}
 				}
@@ -730,28 +725,14 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 						prev->pos.x = avg;
 						curr->pos.x = avg;
 						next->pos.x = avg;
-
-
-
-						//cout << "d" << endl;
-						//prev->pos.x = curr->pos.x;
-						//next->pos.x = curr->pos.x;
 					}
 					else if( nextExtreme.x != 0 )
 					{
-						//double sum = curr->pos.x + prev->pos.x + next->pos.x;
-						//int avg = round(sum / 3.0);
-						//prev->pos.x = avg;
-						//curr->pos.x = avg;
-						//next->pos.x = avg;
-						//cout << "e" << endl;
-
 						curr->pos.x = prev->pos.x;
 						curr->pos.y = next->pos.y;
 					}
 					else
 					{
-						//cout << "f" << endl;
 						curr->pos.x = prev->pos.x;
 					}
 				}
@@ -764,7 +745,6 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 					int avg = round(sum / 2.0);
 					curr->pos.x = avg;
 					prev->pos.x = avg;
-					//curr->pos.x = prev->pos.x;
 				}
 				else if( prevExtreme.x != 0 )
 				{
@@ -772,8 +752,6 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 					int avg = round(sum / 2.0);
 					curr->pos.y = avg;
 					prev->pos.y = avg;
-
-					//curr->pos.y = prev->pos.y;
 				}
 			}
 			else if( nextValid )
@@ -784,8 +762,6 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 					int avg = round(sum / 2.0);
 					curr->pos.x = avg;
 					next->pos.x = avg;
-
-					//curr->pos.x = next->pos.x;
 				}
 				else if( nextExtreme.x != 0 )
 				{
@@ -793,7 +769,6 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 					int avg = round(sum / 2.0);
 					curr->pos.y = avg;
 					next->pos.y = avg;
-					//curr->pos.y = next->pos.y;
 				}
 			}
 			else
@@ -811,14 +786,10 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 
 			if( nextExtreme.x != 0 )
 			{
-
 				double sum = curr->pos.y + next->pos.y;
 				int avg = round(sum / 2.0);
 				curr->pos.y = avg;
 				next->pos.y = avg;
-
-				//curr->pos.y = next->pos.y;
-				//cout << "lining up x" << endl;
 			}
 
 			if( nextExtreme.y != 0 )
@@ -827,9 +798,6 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 				int avg = round(sum / 2.0);
 				curr->pos.x = avg;
 				next->pos.x = avg;
-
-				//curr->pos.x = next->pos.x;
-				//cout << "lining up y" << endl;
 			}
 		}
 

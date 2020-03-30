@@ -531,6 +531,7 @@ void MoveBrushAction::CheckValidPointMove()
 	EditSession *sess = EditSession::GetSession();
 
 	moveValid = true;
+	//list<GateInfoPtr> gList;
 	for (PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it)
 	{
 		PolyPtr poly = (*it).first;
@@ -539,6 +540,14 @@ void MoveBrushAction::CheckValidPointMove()
 			moveValid = false;
 			return;
 		}
+
+		/*gList.clear();
+		sess->GetNearPrimaryGateList(movingPoints, gList);
+		if (gList.size() > 0)
+		{
+			moveValid = false;
+			return;
+		}*/
 	}
 }
 

@@ -4461,66 +4461,22 @@ Action *EditSession::GetGateAdjustAction( GateAdjustOption option,
 	{
 	case GATEADJUST_A:
 		assert(gi->poly0 != gi->poly1);
-		selectedBrush->AddObject(gi->poly0);
-		adjustAction = new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
+		adjustAction = GetGateAdjustActionPoly(adjust, gi->poly0);
 		break;
 	case GATEADJUST_B:
 		assert(gi->poly0 != gi->poly1);
-		selectedBrush->AddObject(gi->poly1);
-		adjustAction = new MoveBrushAction(selectedBrush, -adjust, true, PointMap(), RailPointMap());
+		adjustAction = GetGateAdjustActionPoly(-adjust, gi->poly1);
 		break;
 	case GATEADJUST_MIDDLE:
 		break;
 	case GATEADJUST_POINT_A:
 	{
-		ClearSelectedPoints();
-		SelectPoint(gi->poly0, gi->point0);
-
-		MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
-
-		moveAction->Perform();
-
-		moveAction->CheckValidPointMove();
-
-		if (moveAction->moveValid)
-		{
-			moveAction->moveOnFirstPerform = false;
-			moveAction->performed = false;
-
-			adjustAction = moveAction;
-		}
-		else
-		{
-			moveAction->Undo();
-			delete moveAction;
-		}
-
+		adjustAction = GetGateAdjustActionPoint(gi, adjust, true);
 		break;
 	}
 	case GATEADJUST_POINT_B:
 	{
-		ClearSelectedPoints();
-		SelectPoint(gi->poly1, gi->point1);
-
-		MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
-
-		moveAction->Perform();
-
-		moveAction->CheckValidPointMove();
-
-		if (moveAction->moveValid)
-		{
-			moveAction->moveOnFirstPerform = false;
-			moveAction->performed = false;
-
-			adjustAction = moveAction;
-		}
-		else
-		{
-			moveAction->Undo();
-			delete moveAction;
-		}
-
+		adjustAction = GetGateAdjustActionPoint(gi, -adjust, false);
 		break;
 	}
 	case GATEADJUST_POINT_MIDDLE:
@@ -4530,6 +4486,67 @@ Action *EditSession::GetGateAdjustAction( GateAdjustOption option,
 
 	return adjustAction;
 }
+
+Action *EditSession::GetGateAdjustActionPoly(sf::Vector2i &adjust, PolyPtr p)
+{
+	selectedBrush->AddObject(p);
+	return new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
+}
+
+Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool a)
+{
+	if (a)
+	{
+		SelectPoint(gi->poly0, gi->point0);
+		selectedPoints[gi->poly0].front().delta = adjust;
+	}
+	else
+	{
+		SelectPoint(gi->poly1, gi->point1);
+		selectedPoints[gi->poly1].front().delta = adjust;
+	}
+	
+	MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, Vector2i(), true, selectedPoints, RailPointMap());
+
+	moveAction->Perform();
+
+	moveAction->CheckValidPointMove();
+
+	if (moveAction->moveValid)
+	{
+		moveAction->moveOnFirstPerform = false;
+		moveAction->performed = false;
+
+		return moveAction;
+	}
+	else
+	{
+		moveAction->Undo();
+		delete moveAction;
+		return NULL;
+	}
+}
+
+void EditSession::GetNearPrimaryGateList(PointMap &pmap, list<GateInfoPtr> & gList)
+{
+	//this doesnt work because the gate hasnt been assigned to the points yet.
+	Vector2i prim;
+	for (auto it = pmap.begin(); it != pmap.end(); ++it)
+	{
+		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
+		{
+			GateInfo *gi = (*pit).point->gate.get();
+			if (gi != NULL)
+			{
+				if (IsCloseToPrimary(gi->point0->pos, gi->point1->pos, prim))
+				{
+					gList.push_back((*pit).point->gate);
+				}
+			}
+		}
+	}
+}
+
 
 bool EditSession::IsPolygonExternallyValid( TerrainPolygon *poly, TerrainPolygon *ignore )
 {
@@ -4567,6 +4584,10 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon *poly, TerrainPolygon
 	{
 		return false;
 	}
+
+	//list<GateInfoPtr> gList;
+	//GetNearPrimaryGateList( )
+
 
 	return true;
 }
@@ -7722,9 +7743,10 @@ void EditSession::SetEnemyLevel()
 
 void EditSession::UpdatePanning()
 {
+	V2d tempWorldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
 	if (panning)
 	{
-		Vector2<double> temp = panAnchor - worldPos;
+		Vector2<double> temp = panAnchor - tempWorldPos;
 		view.move(Vector2f(temp.x, temp.y));
 	}
 }
@@ -9957,6 +9979,7 @@ void EditSession::CreateGatesModeUpdate()
 				Vector2i adjust(0, 0);
 				
 				Action *action = new CreateGateAction(testGateInfo, gateResult);
+				action->Perform();
 
 				if (GetPrimaryAdjustment(testGateInfo.point0->pos, testGateInfo.point1->pos, adjust))
 				{
@@ -9966,25 +9989,29 @@ void EditSession::CreateGatesModeUpdate()
 
 
 					selectedBrush->Clear();
-
-					Action *adjustAction = GetGateAdjustAction( GATEADJUST_A, &testGateInfo, adjust);
+					ClearSelectedPoints();
+					Action *adjustAction = GetGateAdjustAction( GATEADJUST_POINT_B, &testGateInfo, adjust);
+					ClearSelectedPoints();
 
 					if (adjustAction == NULL)
 					{
-						int x = 5;
-						//assert(0);
+						MessagePop("gate adjustment couldn't be made");
+						delete action;
+						delete testAction;
 						//the adjustment failed, the gate creation therefore fails.
 					}
 					else
 					{
+						adjustAction->Perform();
 						testAction->subActions.push_back(adjustAction);
-						testAction->Perform();
+						testAction->performed = true;
+						//testAction->Perform();
 						doneActionStack.push_back(testAction);
 					}
 				}
 				else
 				{
-					action->Perform();
+					//action->Perform();
 					doneActionStack.push_back(action);
 				}
 			}
