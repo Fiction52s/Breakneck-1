@@ -98,6 +98,18 @@ struct DetailedInter
 	TerrainPoint *otherPoint;
 };
 
+struct PointMoveInfo
+{
+	PointMoveInfo(TerrainPoint *poi)
+		:point(poi), origPos(poi->pos),
+		delta(0, 0), moveIntent(false)
+	{}
+	TerrainPoint *point;
+	sf::Vector2i delta;
+	sf::Vector2i origPos;
+	bool moveIntent;
+};
+
 struct TerrainPolygon : ISelectable
 {
 	enum TerrainWorldType
@@ -188,7 +200,7 @@ struct TerrainPolygon : ISelectable
 	bool IsClockwise();
 	void AlignExtremes(double primLimit);
 	void AlignExtremes(double primLimit,
-		std::list<TerrainPoint*> &adjustedPoints);
+		std::vector<PointMoveInfo> &lockPoints);
 	//= std::list<TerrainPoint*>() );
 	void UpdateGrass();
 
@@ -313,16 +325,7 @@ struct GroundInfo
 	V2d GetPosition();
 };
 
-struct PointMoveInfo
-{
-	PointMoveInfo(TerrainPoint *poi)
-		:point(poi),origPos(poi->pos),
-		delta(0, 0)
-	{}
-	TerrainPoint *point;
-	sf::Vector2i delta;
-	sf::Vector2i origPos;
-};
+
 
 struct EditorDecorInfo : ISelectable
 {

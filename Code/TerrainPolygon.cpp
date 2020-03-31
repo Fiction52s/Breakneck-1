@@ -648,72 +648,7 @@ Vector2i TerrainPolygon::GetExtreme(TerrainPoint *p0,
 }
 
 void TerrainPolygon::AlignExtremes(double primLimit,
-	std::list<TerrainPoint*> &adjustedPoints)
-{
-	adjustedPoints.clear();
-	TerrainPoint *prev;
-	TerrainPoint *next;
-	bool checkPoint;
-	bool adjusted = true;
-
-	while (adjusted)
-	{
-		adjusted = false;
-
-		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
-		{
-			prev = curr->prev;
-			if (prev == NULL)
-			{
-				prev = pointEnd;
-			}
-
-			next = curr->next;
-			if (next == NULL)
-			{
-				next = pointStart;
-			}
-
-			Vector2i extreme = GetExtreme(curr, next);
-
-			if (extreme.x == 0 && extreme.y == 0)
-				continue;
-
-			Vector2i gateDir;
-			if (curr->HasPrimaryGate(gateDir))
-			{
-				if ((extreme.x != 0 && gateDir.x != 0) || (extreme.y != 0 && gateDir.y != 0))
-				{
-					if (next->HasPrimaryGate(gateDir))
-					{
-						assert(0);
-						//this is a special case that I can cover later
-					}
-					else
-					{
-						if (extreme.x != 0)
-							next->pos.y = curr->pos.y;
-						else
-							next->pos.x = curr->pos.x;
-						adjusted = true;
-
-						adjustedPoints.push_back(next);
-						continue;
-					}
-				}
-			}
-			adjustedPoints.push_back(curr);
-			if (extreme.x != 0)
-				curr->pos.y = next->pos.y;
-			else
-				curr->pos.x = next->pos.x;
-
-			adjusted = true;
-		}
-	}
-}
-
-void TerrainPolygon::AlignExtremes( double primLimit )
+	std::vector<PointMoveInfo> &lockPoints)
 {
 	TerrainPoint *prev;
 	TerrainPoint *next;
@@ -743,27 +678,49 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 			if (extreme.x == 0 && extreme.y == 0)
 				continue;
 
-			Vector2i gateDir;
-			if (curr->HasPrimaryGate(gateDir))
+			for (auto it = lockPoints.begin(); it != lockPoints.end(); ++it)
 			{
-				if ((extreme.x != 0 && gateDir.x != 0) || (extreme.y != 0 && gateDir.y != 0))
+				if ( (*it).moveIntent && (*it).point == curr)
 				{
-					if (next->HasPrimaryGate(gateDir))
-					{
-						assert(0);
-						//this is a special case that I can cover later
-					}
+					adjusted = true;
+					if (extreme.x != 0)
+						next->pos.y = curr->pos.y;
 					else
-					{
-						if (extreme.x != 0)
-							next->pos.y = curr->pos.y;
-						else
-							next->pos.x = curr->pos.x;
-						adjusted = true;
-						continue;
-					}
+						next->pos.x = curr->pos.x;
+					continue;
 				}
 			}
+
+			/*if (curr->selected)
+			{
+				if (extreme.x != 0)
+					next->pos.y = curr->pos.y;
+				else
+					next->pos.x = curr->pos.x;
+				continue;
+			}*/
+
+			//Vector2i gateDir;
+			//if (curr->HasPrimaryGate(gateDir))
+			//{
+			//	if ((extreme.x != 0 && gateDir.x != 0) || (extreme.y != 0 && gateDir.y != 0))
+			//	{
+			//		if (next->HasPrimaryGate(gateDir))
+			//		{
+			//			assert(0);
+			//			//this is a special case that I can cover later
+			//		}
+			//		else
+			//		{
+			//			if (extreme.x != 0)
+			//				next->pos.y = curr->pos.y;
+			//			else
+			//				next->pos.x = curr->pos.x;
+			//			adjusted = true;
+			//			continue;
+			//		}
+			//	}
+			//}
 
 			if (extreme.x != 0)
 				curr->pos.y = next->pos.y;
@@ -773,6 +730,14 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 			adjusted = true;
 		}
 	}
+
+	
+}
+
+void TerrainPolygon::AlignExtremes( double primLimit )
+{
+	vector<PointMoveInfo> emptyLockPoints;
+	AlignExtremes(primLimit, emptyLockPoints);
 }
 
 

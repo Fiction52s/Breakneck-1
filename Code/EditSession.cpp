@@ -4029,6 +4029,7 @@ void EditSession::PerformMovePointsAction()
 			{
 				pi.delta = delta;
 				pi.origPos = pi.point->pos - delta;
+				pi.moveIntent = true;
 			}
 
 			pmVec.push_back(pi);
@@ -4095,13 +4096,19 @@ void EditSession::PerformMovePointsAction()
 				GateInfo *gi = (*it).get();
 				Vector2i adjust;
 				Vector2i pA, pB;
-				/*if ((*it)->poly0 == poly)
-				{
 
-				}*/
+				GateAdjustOption gaOption;
+				if ((*it)->poly0 == poly)
+				{
+					gaOption = GATEADJUST_POINT_B;
+				}
+				else
+				{
+					gaOption = GATEADJUST_POINT_A;
+				}
 				if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
 				{
-					Action *adjustAction = GetGateAdjustAction(GATEADJUST_POINT_A, gi, adjust);
+					Action *adjustAction = GetGateAdjustAction(gaOption, gi, adjust);
 
 					if (adjustAction == NULL)
 					{
@@ -4545,6 +4552,8 @@ Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, b
 		if (curr == point)
 		{
 			pi.delta = adjust;
+			pi.moveIntent = true;
+			//SelectPoint(poly, curr);
 		}
 
 		pVec.push_back(pi);

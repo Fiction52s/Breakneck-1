@@ -553,7 +553,7 @@ void MoveBrushAction::Perform()
 		for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 		{
 			PolyPtr poly = (*it).first;
-			poly->AlignExtremes(EditSession::PRIMARY_LIMIT);
+			poly->AlignExtremes(EditSession::PRIMARY_LIMIT, (*it).second);
 		}
 
 		CheckValidPointMove();
@@ -589,6 +589,12 @@ void MoveBrushAction::Perform()
 					{
 						(*pit).point->gate->UpdateLine();
 					}
+				}
+
+				for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
+				{
+					PolyPtr poly = (*it).first;
+					poly->AlignExtremes(EditSession::PRIMARY_LIMIT, (*it).second);
 				}
 
 				PolyPtr poly = (*it).first;
