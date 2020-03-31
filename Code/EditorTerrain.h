@@ -114,6 +114,8 @@ struct TerrainPolygon : ISelectable
 		Count
 	};
 
+	static sf::Vector2i GetExtreme(TerrainPoint *p0,
+		TerrainPoint *p1);
 	//TerrainRender *tr;
 	int terrainVariation;
 	TerrainWorldType terrainWorldType;

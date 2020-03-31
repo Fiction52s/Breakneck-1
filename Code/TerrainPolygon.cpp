@@ -623,6 +623,30 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 	}
 }
 
+Vector2i TerrainPolygon::GetExtreme(TerrainPoint *p0,
+	TerrainPoint *p1)
+{
+	Vector2i extreme(0, 0);
+
+	Vector2i diff = p1->pos - p0->pos;
+
+	if (diff.x == 0 || diff.y == 0)
+		return extreme;
+
+	double primLimit = EditSession::PRIMARY_LIMIT;
+	V2d diffDir = normalize(V2d(diff));
+	if (diffDir.x > primLimit)
+		extreme.x = 1;
+	else if (diffDir.x < -primLimit)
+		extreme.x = -1;
+	if (diffDir.y > primLimit)
+		extreme.y = 1;
+	else if (diffDir.y < -primLimit)
+		extreme.y = -1;
+
+	return extreme;
+}
+
 void TerrainPolygon::AlignExtremes(double primLimit,
 	std::list<TerrainPoint*> lockedPoints)
 {
@@ -715,19 +739,15 @@ void TerrainPolygon::AlignExtremes(double primLimit,
 
 void TerrainPolygon::AlignExtremes( double primLimit )
 {
-	//this can be optimized later using these lists. only check a point again on another loop
-	//if itself, its prev, or next, have been adjusted. Its fine for now just not optimal speed.
-	//list<TerrainPoint*> lastAdjustedPoints;
-	//list<TerrainPoint*> currAdjustedPoints;
 	TerrainPoint *prev;
 	TerrainPoint *next;
-	bool firstLoop = true;
 	bool checkPoint;
 	bool adjusted = true;
-	bool prevLocked = false;
-	while( firstLoop || adjusted)
+
+	while( adjusted)
 	{
 		adjusted = false;
+
 		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
 		{
 			prev = curr->prev;
@@ -742,21 +762,7 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 				next = pointStart;
 			}
 
-			Vector2i diff = next->pos - curr->pos;
-
-			if (diff.x == 0 || diff.y == 0)
-				continue;
-
-			V2d diffDir = normalize(V2d(diff));
-			Vector2i extreme;
-			if (diffDir.x > primLimit)
-				extreme.x = 1;
-			else if (diffDir.x < -primLimit)
-				extreme.x = -1;
-			if (diffDir.y > primLimit)
-				extreme.y = 1;
-			else if (diffDir.y < -primLimit)
-				extreme.y = -1;
+			Vector2i extreme = GetExtreme(curr, next);
 
 			if (extreme.x == 0 && extreme.y == 0)
 				continue;
@@ -764,13 +770,22 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 			Vector2i gateDir;
 			if (curr->HasPrimaryGate(gateDir))
 			{
-				if (extreme.x != 0 && gateDir.x != 0)
+				if ((extreme.x != 0 && gateDir.x != 0) || (extreme.y != 0 && gateDir.y != 0))
 				{
-					continue;
-				}
-				else if( extreme.y != 0 && gateDir.y != 0 )
-				{
-					continue;
+					if (next->HasPrimaryGate(gateDir))
+					{
+						assert(0);
+						//this is a special case that I can cover later
+					}
+					else
+					{
+						if (extreme.x != 0)
+							next->pos.y = curr->pos.y;
+						else
+							next->pos.x = curr->pos.x;
+						adjusted = true;
+						continue;
+					}
 				}
 			}
 
@@ -780,10 +795,7 @@ void TerrainPolygon::AlignExtremes( double primLimit )
 				curr->pos.x = next->pos.x;
 
 			adjusted = true;
-			//adjustedPoints.push_back(curr);
 		}
-
-		firstLoop = false;
 	}
 	/*for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{

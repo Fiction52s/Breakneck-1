@@ -4199,8 +4199,133 @@ void EditSession::PerformMovePointsAction()
 	}
 	
 	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, selectedPoints, selectedRailPoints);
-
 	action->Perform();
+
+	CompoundAction *testAction = new CompoundAction;
+	testAction->subActions.push_back(action);
+
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		bool gateAttachedToAffectedPoly = false;
+		PolyPtr poly;
+		for (auto pit = selectedPoints.begin(); pit != selectedPoints.end(); ++pit)
+		{
+			poly = (*pit).first;
+			if ((*it)->poly0 == poly || (*it)->poly1 == poly)
+			{
+				gateAttachedToAffectedPoly = true;
+				break;
+			}
+		}
+
+		if (gateAttachedToAffectedPoly)
+		{
+			GateInfo *gi = (*it).get();
+			Vector2i adjust;
+			Vector2i pA, pB;
+			/*if ((*it)->poly0 == poly)
+			{
+
+			}*/
+			if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
+			{
+				Action *adjustAction = GetGateAdjustAction(GATEADJUST_POINT_A, gi, adjust);
+
+				if (adjustAction == NULL)
+				{
+					MessagePop("blah blah blah");
+					assert(0);
+					delete action;
+					delete testAction;
+					//the adjustment failed, the gate creation therefore fails.
+				}
+				else
+				{
+					adjustAction->Perform();
+					testAction->subActions.push_back(adjustAction);
+					
+					//testAction->Perform();
+					
+				}
+			}
+			else
+			{
+				//action->Perform();
+				//doneActionStack.push_back(action);
+			}
+		}
+		
+	}
+
+	if (testAction->subActions.size() > 1)
+	{
+		testAction->performed = true;
+		doneActionStack.push_back(testAction);
+	}
+
+	/*for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
+	{
+		list<PointMoveInfo> &pList = (*mit).second;
+		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
+		{
+			GateInfo *gi = (*it).point->gate.get();
+			if (gi != NULL)
+			{
+				Vector2i adjust;
+				Vector2i pA, pB;
+				if (gi->point0 == (*it).point)
+				{
+					pA = gi->point0->pos;
+					pB = gi->point1->pos;
+				}
+				else
+				{
+					pA = gi->point1->pos;
+					pB = gi->point0->pos;
+				}
+
+				if (GetPrimaryAdjustment(pA, pB, adjust))
+				{
+					(*it).delta += adjust;
+				}
+			}
+		}
+	}*/
+	
+	//if (GetPrimaryAdjustment(testGateInfo.point0->pos, testGateInfo.point1->pos, adjust))
+	//{
+	//	CompoundAction *testAction = new CompoundAction;
+	//	testAction->subActions.push_back(action);
+
+
+
+	//	selectedBrush->Clear();
+	//	ClearSelectedPoints();
+		//Action *adjustAction = GetGateAdjustAction(GATEADJUST_POINT_B, &testGateInfo, adjust);
+	//	ClearSelectedPoints();
+
+	//	if (adjustAction == NULL)
+	//	{
+	//		MessagePop("gate adjustment couldn't be made");
+	//		delete action;
+	//		delete testAction;
+	//		//the adjustment failed, the gate creation therefore fails.
+	//	}
+	//	else
+	//	{
+	//		adjustAction->Perform();
+	//		testAction->subActions.push_back(adjustAction);
+	//		testAction->performed = true;
+	//		//testAction->Perform();
+	//		doneActionStack.push_back(testAction);
+	//	}
+	//}
+	//else
+	//{
+	//	//action->Perform();
+	//	doneActionStack.push_back(action);
+	//}
+
 
 	if (action->moveValid)
 	{
@@ -4492,24 +4617,26 @@ Action *EditSession::GetGateAdjustAction( GateAdjustOption option,
 
 Action *EditSession::GetGateAdjustActionPoly(sf::Vector2i &adjust, PolyPtr p)
 {
-	selectedBrush->AddObject(p);
-	return new MoveBrushAction(selectedBrush, adjust, true, PointMap(), RailPointMap());
+	Brush b;
+	b.AddObject(p);
+	return new MoveBrushAction(&b, adjust, true, PointMap(), RailPointMap());
 }
 
 Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool a)
 {
+	PointMap pmap;
 	if (a)
 	{
-		SelectPoint(gi->poly0, gi->point0);
-		selectedPoints[gi->poly0].front().delta = adjust;
+		pmap[gi->poly0].push_back(PointMoveInfo(gi->point0));
+		pmap[gi->poly0].back().delta = adjust;
 	}
 	else
 	{
-		SelectPoint(gi->poly1, gi->point1);
-		selectedPoints[gi->poly1].front().delta = adjust;
+		pmap[gi->poly1].push_back(PointMoveInfo(gi->point1));
+		pmap[gi->poly1].back().delta = adjust;
 	}
 	
-	MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, Vector2i(), true, selectedPoints, RailPointMap());
+	MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap, RailPointMap());
 
 	moveAction->Perform();
 
@@ -5170,6 +5297,9 @@ void EditSession::SetDecorParams()
 
 bool EditSession::CanCreateGate( GateInfo &testGate )
 {
+
+	//this function can later be moved into IsGateValid and cleaned up
+
 	Vector2i v0 = testGate.point0->pos;
 	Vector2i v1 = testGate.point1->pos;
 
@@ -5229,6 +5359,17 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 			}
 		}
 	}
+
+	//make sure its not within a single polygon and cutting through the middle of it.
+	Vector2f center(Vector2f(v0 + v1) / 2.f);
+	if (testGate.poly0 == testGate.poly1)
+	{
+		if (testGate.poly0->ContainsPoint(center))
+		{
+			return false;
+		}
+	}
+
 
 	return true;
 }
@@ -9990,12 +10131,7 @@ void EditSession::CreateGatesModeUpdate()
 					CompoundAction *testAction = new CompoundAction;
 					testAction->subActions.push_back(action);
 
-
-
-					selectedBrush->Clear();
-					ClearSelectedPoints();
 					Action *adjustAction = GetGateAdjustAction( GATEADJUST_POINT_B, &testGateInfo, adjust);
-					ClearSelectedPoints();
 
 					if (adjustAction == NULL)
 					{
