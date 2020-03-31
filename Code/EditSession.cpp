@@ -3415,7 +3415,7 @@ bool EditSession::AnchorSelectedAerialEnemy()
 			else
 			{
 				Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
-				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointMap(), RailPointMap());
+				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointVectorMap(), RailPointMap());
 
 				action->Perform();
 
@@ -3650,174 +3650,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 		//if( false)
 		for( TerrainPoint *curr = poly.pointStart; curr != NULL ; curr = curr->next )
 		{
-							
 			deltas[deltaIndex] = Vector2i( 0, 0 );
-
-			//if( !curr->selected )
-			//{
-			//	++deltaIndex;
-			//	continue;
-			//}
-
-			//Vector2i diff;
-
-			//TerrainPoint *prev, *next;
-			//if( curr == poly.pointStart )
-			//{
-			//	prev = poly.pointEnd;
-			//}
-			//else
-			//{
-			//	prev = curr->prev;
-			//}
-
-			//TerrainPoint *temp = curr->next;
-			//if( temp == NULL )
-			//{
-			//	next = poly.pointStart;
-			//}
-			//else
-			//{
-			//	next = temp;
-			//}
-
-
-			//V2d pos(curr->pos.x + pointGrabDelta.x, curr->pos.y + pointGrabDelta.y );
-			//V2d prevPos( prev->pos.x, prev->pos.y );
-			//V2d nextPos( next->pos.x, next->pos.y );
-
-			//V2d extreme( 0, 0 );
-			//Vector2i vec = curr->pos - prev->pos;
-			//V2d normVec = normalize( V2d( vec.x, vec.y ) );
-
-			//V2d newVec = normalize( pos - V2d( prev->pos.x, prev->pos.y ) );
-		
-			//if( !prev->selected )
-			//{
-			//	if( normVec.x == 0 || normVec.y == 0 )
-			//	{
-			//		if( newVec.x > prim_limit )
-			//			extreme.x = 1;
-			//		else if( newVec.x < -prim_limit )
-			//			extreme.x = -1;
-			//		if( newVec.y > prim_limit )
-			//			extreme.y = 1;
-			//		else if( newVec.y < -prim_limit )
-			//			extreme.y = -1;
-
-			//		if( extreme.x != 0 )
-			//		{
-			//			pointGrabPos.y = oldPointGrabPos.y;
-			//			pointGrabDelta.y = 0;
-			//		}
-			//						
-			//		if( extreme.y != 0 )
-			//		{
-			//			pointGrabPos.x = oldPointGrabPos.x;
-			//			pointGrabDelta.x = 0;
-			//		}
-			//	}
-			//	else
-			//	{	
-			//		if( normVec.x > prim_limit )
-			//			extreme.x = 1;
-			//		else if( normVec.x < -prim_limit )
-			//			extreme.x = -1;
-			//		if( normVec.y > prim_limit )
-			//			extreme.y = 1;
-			//		else if( normVec.y < -prim_limit )
-			//			extreme.y = -1;
-			//		//extreme = normalize( extreme );
-
-			//					
-			//		if( extreme.x != 0 )
-			//		{
-			//			//int diff = ;
-			//			diff.y = curr->pos.y - prev->pos.y;
-			//						
-			//			//(*it2).pos.y = (*prev).pos.y;
-			//			cout << "lining up x: " << diff.y << endl;
-			//		}
-
-			//		if( extreme.y != 0 )
-			//		{
-			//			diff.x = curr->pos.x - prev->pos.x;
-
-			//			cout << "lining up y: " << diff.x << endl;
-			//		}
-			//	}
-			//}
-			//				
-			//if( !next->selected )
-			//{
-			//	vec = curr->pos - next->pos;
-			//	normVec = normalize( V2d( vec.x, vec.y ) );
-
-			//	extreme = V2d( 0, 0 );
-
-			//	newVec = normalize( pos - V2d( (*next).pos.x, (*next).pos.y ) );
-			//					
-			//	if( normVec.x == 0 || normVec.y == 0 )
-			//	{
-			//		if( newVec.x > prim_limit )
-			//			extreme.x = 1;
-			//		else if( newVec.x < -prim_limit )
-			//			extreme.x = -1;
-			//		if( newVec.y > prim_limit )
-			//			extreme.y = 1;
-			//		else if( newVec.y < -prim_limit )
-			//			extreme.y = -1;
-			//						
-			//		if( extreme.x != 0 )
-			//		{
-			//			pointGrabPos.y = oldPointGrabPos.y;
-			//			pointGrabDelta.y = 0;
-			//		}
-			//						
-			//		if( extreme.y != 0 )
-			//		{
-			//			pointGrabPos.x = oldPointGrabPos.x;
-			//			pointGrabDelta.x = 0;
-			//		}
-			//	}
-			//	else
-			//	{
-			//		if( normVec.x > prim_limit )
-			//			extreme.x = 1;
-			//		else if( normVec.x < -prim_limit )
-			//			extreme.x = -1;
-			//		if( normVec.y > prim_limit )
-			//			extreme.y = 1;
-			//		else if( normVec.y < -prim_limit )
-			//			extreme.y = -1;
-
-			//		if( extreme.x != 0 )
-			//		{
-			//			//int diff = ;
-			//			//diff.y = curr->pos.y - next->pos.y;
-			//						
-			//			//(*it2).pos.y = (*prev).pos.y;
-			//			cout << "lining up x222: " << diff.y << endl;
-			//		}
-
-			//		if( extreme.y != 0 )
-			//		{
-			//			//diff.x = curr->pos.x - next->pos.x;
-
-			//			cout << "lining up y222: " << diff.x << endl;
-			//		}
-			//	}
-			//}
-
-			//if( !( diff.x == 0 && diff.y == 0 ) )
-			//{
-			//	cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
-			//	cout << "diff: " << diff.x << ", " << diff.y << endl;
-			//}
-			
-//deltas[deltaIndex] = diff;
-							
-
 			++deltaIndex;
 		}
 		++allDeltaIndex;
@@ -4180,14 +4013,37 @@ void EditSession::PerformMovePointsAction()
 	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
 	//here the delta being subtracted is the points original positionv
 	
+	PointVectorMap pm;
+	
 	for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
+	{
+		PolyPtr poly = (*mit).first;
+		auto &pmVec = pm[poly];
+		pmVec.reserve(poly->numPoints);
+
+		for (TerrainPoint *curr = poly->pointStart; curr != NULL; curr = curr->next)
+		{
+			PointMoveInfo pi(curr);
+			
+			if (curr->selected)
+			{
+				pi.delta = delta;
+				pi.origPos = pi.point->pos - delta;
+			}
+
+			pmVec.push_back(pi);
+		}
+	}
+
+	/*for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
 	{
 		list<PointMoveInfo> &pList = (*mit).second;
 		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
 		{
+			(*it).origPos = (*it).delta;
 			(*it).delta = (*it).point->pos - (*it).delta;
 		}
-	}
+	}*/
 
 	for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
 	{
@@ -4198,70 +4054,111 @@ void EditSession::PerformMovePointsAction()
 		}
 	}
 	
-	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, selectedPoints, selectedRailPoints);
+	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, pm, selectedRailPoints);
 	action->Perform();
 
-	CompoundAction *testAction = new CompoundAction;
-	testAction->subActions.push_back(action);
 
-	for (auto it = gates.begin(); it != gates.end(); ++it)
+	CompoundAction *testAction = NULL;
+	if (action->moveValid)
 	{
-		bool gateAttachedToAffectedPoly = false;
-		PolyPtr poly;
-		for (auto pit = selectedPoints.begin(); pit != selectedPoints.end(); ++pit)
+		if (moveAction != NULL)
 		{
-			poly = (*pit).first;
-			if ((*it)->poly0 == poly || (*it)->poly1 == poly)
-			{
-				gateAttachedToAffectedPoly = true;
-				break;
-			}
+			testAction = moveAction;
+			//moveAction->subActions.push_back(action);
+			//doneActionStack.push_back(moveAction);
+		}
+		else
+		{
+			testAction = new CompoundAction;
+			//doneActionStack.push_back(action);
 		}
 
-		if (gateAttachedToAffectedPoly)
+		testAction->subActions.push_back(action);
+
+		int gateActionsAdded = 0;
+		for (auto it = gates.begin(); it != gates.end(); ++it)
 		{
-			GateInfo *gi = (*it).get();
-			Vector2i adjust;
-			Vector2i pA, pB;
-			/*if ((*it)->poly0 == poly)
+			bool gateAttachedToAffectedPoly = false;
+			PolyPtr poly;
+			for (auto pit = selectedPoints.begin(); pit != selectedPoints.end(); ++pit)
 			{
-
-			}*/
-			if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
-			{
-				Action *adjustAction = GetGateAdjustAction(GATEADJUST_POINT_A, gi, adjust);
-
-				if (adjustAction == NULL)
+				poly = (*pit).first;
+				if ((*it)->poly0 == poly || (*it)->poly1 == poly)
 				{
-					MessagePop("blah blah blah");
-					assert(0);
-					delete action;
-					delete testAction;
-					//the adjustment failed, the gate creation therefore fails.
+					gateAttachedToAffectedPoly = true;
+					break;
+				}
+			}
+
+			if (gateAttachedToAffectedPoly)
+			{
+				GateInfo *gi = (*it).get();
+				Vector2i adjust;
+				Vector2i pA, pB;
+				/*if ((*it)->poly0 == poly)
+				{
+
+				}*/
+				if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
+				{
+					Action *adjustAction = GetGateAdjustAction(GATEADJUST_POINT_A, gi, adjust);
+
+					if (adjustAction == NULL)
+					{
+						MessagePop("blah blah blah");
+						assert(0);
+						//delete action;
+						//delete testAction;
+						//adjustment failure! cover this case.
+					}
+					else
+					{
+						//this will require the same validity checks as the original move.
+						adjustAction->Perform();
+
+						testAction->subActions.push_back(adjustAction);
+						gateActionsAdded++;
+					}
 				}
 				else
 				{
-					adjustAction->Perform();
-					testAction->subActions.push_back(adjustAction);
-					
-					//testAction->Perform();
-					
+					//action->Perform();
+					//doneActionStack.push_back(action);
 				}
+			}
+
+		}
+
+		testAction->performed = true;
+		doneActionStack.push_back(testAction);
+		/*if (gateActionsAdded > 0)
+		{
+			testAction->performed = true;
+			doneActionStack.push_back(testAction);
+		}
+		else
+		{
+			if (moveAction != NULL)
+			{
+				moveAction->subActions.push_back(action);
+				doneActionStack.push_back(moveAction);
 			}
 			else
 			{
-				//action->Perform();
-				//doneActionStack.push_back(action);
+				doneActionStack.push_back(action);
 			}
-		}
-		
+		}*/
+	}
+	else
+	{
+		action->Undo();
+		delete action;
 	}
 
-	if (testAction->subActions.size() > 1)
-	{
-		testAction->performed = true;
-		doneActionStack.push_back(testAction);
-	}
+	//CompoundAction *testAction = new CompoundAction;
+	//testAction->subActions.push_back(action);
+
+	
 
 	/*for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
 	{
@@ -4327,7 +4224,7 @@ void EditSession::PerformMovePointsAction()
 	//}
 
 
-	if (action->moveValid)
+	/*if (action->moveValid)
 	{
 		if (moveAction != NULL)
 		{
@@ -4343,7 +4240,7 @@ void EditSession::PerformMovePointsAction()
 	{
 		action->Undo();
 		delete action;
-	}
+	}*/
 }
 
 bool EditSession::PolyContainsPolys(TerrainPolygon *p, TerrainPolygon *ignore)
@@ -4619,21 +4516,38 @@ Action *EditSession::GetGateAdjustActionPoly(sf::Vector2i &adjust, PolyPtr p)
 {
 	Brush b;
 	b.AddObject(p);
-	return new MoveBrushAction(&b, adjust, true, PointMap(), RailPointMap());
+	return new MoveBrushAction(&b, adjust, true, PointVectorMap(), RailPointMap());
 }
 
 Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool a)
 {
-	PointMap pmap;
+	PointVectorMap pmap;
+	PolyPtr poly;
+	TerrainPoint *point;
+
 	if (a)
 	{
-		pmap[gi->poly0].push_back(PointMoveInfo(gi->point0));
-		pmap[gi->poly0].back().delta = adjust;
+		poly = gi->poly0;
+		point = gi->point0;
 	}
 	else
 	{
-		pmap[gi->poly1].push_back(PointMoveInfo(gi->point1));
-		pmap[gi->poly1].back().delta = adjust;
+		poly = gi->poly1;
+		point = gi->point1;
+	}
+
+	auto &pVec = pmap[poly];
+
+	pVec.reserve(poly->numPoints);
+	for (TerrainPoint *curr = poly->pointStart; curr != NULL; curr = curr->next)
+	{
+		PointMoveInfo pi(curr);
+		if (curr == point)
+		{
+			pi.delta = adjust;
+		}
+
+		pVec.push_back(pi);
 	}
 	
 	MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap, RailPointMap());

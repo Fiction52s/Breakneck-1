@@ -188,7 +188,7 @@ struct TerrainPolygon : ISelectable
 	bool IsClockwise();
 	void AlignExtremes(double primLimit);
 	void AlignExtremes(double primLimit,
-		std::list<TerrainPoint*> lockedPoints);
+		std::list<TerrainPoint*> &adjustedPoints);
 	//= std::list<TerrainPoint*>() );
 	void UpdateGrass();
 
@@ -316,11 +316,12 @@ struct GroundInfo
 struct PointMoveInfo
 {
 	PointMoveInfo(TerrainPoint *poi)
-		:point(poi),
+		:point(poi),origPos(poi->pos),
 		delta(0, 0)
 	{}
 	TerrainPoint *point;
 	sf::Vector2i delta;
+	sf::Vector2i origPos;
 };
 
 struct EditorDecorInfo : ISelectable
@@ -360,6 +361,7 @@ typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
 typedef boost::shared_ptr<TerrainPoint> PointPtr;
 typedef std::pair<sf::Vector2i, sf::Vector2i> PointPair;
 typedef std::map<PolyPtr, std::list<PointMoveInfo>> PointMap;
+typedef std::map<PolyPtr, std::vector<PointMoveInfo>> PointVectorMap;
 typedef std::map<TerrainRail*, std::list<PointMoveInfo>> RailPointMap;
 
 #endif

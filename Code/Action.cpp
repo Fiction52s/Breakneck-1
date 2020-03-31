@@ -518,7 +518,7 @@ void ModifyGateAction::Undo()
 
 //doesn't make a copy of the brush!
 MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform,
-	PointMap &points, RailPointMap &railPoints )
+	PointVectorMap &points, RailPointMap &railPoints )
 	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), movingPoints( points ),
 	movingRailPoints( railPoints )
 {
@@ -531,8 +531,7 @@ void MoveBrushAction::CheckValidPointMove()
 	EditSession *sess = EditSession::GetSession();
 
 	moveValid = true;
-	//list<GateInfoPtr> gList;
-	for (PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it)
+	for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 	{
 		PolyPtr poly = (*it).first;
 		if (!sess->IsPolygonValid(poly.get(), NULL))
@@ -540,14 +539,6 @@ void MoveBrushAction::CheckValidPointMove()
 			moveValid = false;
 			return;
 		}
-
-		/*gList.clear();
-		sess->GetNearPrimaryGateList(movingPoints, gList);
-		if (gList.size() > 0)
-		{
-			moveValid = false;
-			return;
-		}*/
 	}
 }
 
@@ -559,10 +550,16 @@ void MoveBrushAction::Perform()
 
 	if( !moveOnFirstPerform )
 	{
+		for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
+		{
+			PolyPtr poly = (*it).first;
+			poly->AlignExtremes(EditSession::PRIMARY_LIMIT);
+		}
+
 		CheckValidPointMove();
 		if (moveValid)
 		{
-			for (PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it)
+			for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 			{
 				PolyPtr poly = (*it).first;
 				poly->SoftReset();
@@ -581,12 +578,10 @@ void MoveBrushAction::Perform()
 
 		if (moveValid)
 		{
-
-
-			for (PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it)
+			for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 			{
-				list<PointMoveInfo> &pList = (*it).second;
-				for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
+				vector<PointMoveInfo> &pVec = (*it).second;
+				for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
 				{
 					(*pit).point->pos += (*pit).delta;
 
@@ -640,13 +635,13 @@ void MoveBrushAction::Undo()
 
 	movingBrush.Move( -delta );
 
-	for( PointMap::iterator it = movingPoints.begin(); it != movingPoints.end(); ++it )
+	for( auto it = movingPoints.begin(); it != movingPoints.end(); ++it )
 	{
-		list<PointMoveInfo> &pList = (*it).second;
+		vector<PointMoveInfo> &pList = (*it).second;
 
-		for( list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
+		for( vector<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
 		{
-			(*pit).point->pos -= (*pit).delta;
+			(*pit).point->pos = (*pit).origPos;
 
 			if ((*pit).point->gate != NULL)
 			{
