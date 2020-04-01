@@ -4713,7 +4713,7 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	MoveBrushAction * action = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap, RailPointMap());
 	action->Perform();
 
-	action->CheckValidPointMove();
+	//action->CheckValidPointMove();
 
 	if (action->moveValid)
 	{

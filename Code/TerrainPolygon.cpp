@@ -309,9 +309,15 @@ bool TerrainPolygon::IsInternallyValid()
 
 	EditSession *sess = EditSession::GetSession();
 
-	if (!IsClockwise())
+	if (inverse)
 	{
-		return false;
+		if (IsClockwise())
+			return false;
+	}
+	else
+	{
+		if (!IsClockwise())
+			return false;
 	}
 
 	//points close to other points on myself

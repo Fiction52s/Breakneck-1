@@ -548,15 +548,29 @@ void MoveBrushAction::Perform()
 
 	performed = true;
 
+	EditSession *sess = EditSession::GetSession();
+
 	if( !moveOnFirstPerform )
 	{
 		for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 		{
 			PolyPtr poly = (*it).first;
-			poly->AlignExtremes(EditSession::PRIMARY_LIMIT, (*it).second);
+			if (sess->IsPolygonValid(poly.get(), NULL))
+			{
+				poly->AlignExtremes(EditSession::PRIMARY_LIMIT, (*it).second);
+				if (!sess->IsPolygonValid(poly.get(), NULL))
+				{
+					moveValid = false;
+					break;
+				}
+			}
+			else
+			{
+				moveValid = false;
+				break;
+			}
 		}
 
-		CheckValidPointMove();
 		if (moveValid)
 		{
 			for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
@@ -591,30 +605,50 @@ void MoveBrushAction::Perform()
 					}
 				}
 
-				for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
+				/*for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 				{
 					PolyPtr poly = (*it).first;
 					poly->AlignExtremes(EditSession::PRIMARY_LIMIT, (*it).second);
-				}
+				}*/
 
-				PolyPtr poly = (*it).first;
-
-				poly->SoftReset();
-				poly->Finalize();
-				poly->movingPointMode = false;
-
-				for (auto pit = poly->enemies.begin();
-					pit != poly->enemies.end(); ++pit)
+				for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 				{
-					list<ActorPtr> &enemies = (*pit).second;
-					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					PolyPtr poly = (*it).first;
+					if (sess->IsPolygonValid(poly.get(), NULL))
 					{
-						(*ait)->UpdateGroundedSprite();
-						(*ait)->SetBoundingQuad();
+						poly->AlignExtremes(EditSession::PRIMARY_LIMIT, (*it).second);
+						if (!sess->IsPolygonValid(poly.get(), NULL))
+						{
+							moveValid = false;
+							break;
+						}
+					}
+					else
+					{
+						moveValid = false;
+						break;
 					}
 				}
 
+				if (moveValid)
+				{
+					PolyPtr poly = (*it).first;
 
+					poly->SoftReset();
+					poly->Finalize();
+					poly->movingPointMode = false;
+
+					for (auto pit = poly->enemies.begin();
+						pit != poly->enemies.end(); ++pit)
+					{
+						list<ActorPtr> &enemies = (*pit).second;
+						for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+						{
+							(*ait)->UpdateGroundedSprite();
+							(*ait)->SetBoundingQuad();
+						}
+					}
+				}
 			}
 		}
 
