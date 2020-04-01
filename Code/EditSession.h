@@ -737,7 +737,8 @@ struct EditSession : GUIHandler, TilesetManager
 		GateInfo *gi, sf::Vector2i &adjust,
 		CompoundAction *compound );
 	bool TryGateAdjustActionPoly(
-		sf::Vector2i &adjust,
+		GateInfo *gi,
+		sf::Vector2i &adjust, bool a,
 		PolyPtr p, CompoundAction *compound);
 	bool TryGateAdjustActionPoint(
 		GateInfo *gi, sf::Vector2i &adjust,

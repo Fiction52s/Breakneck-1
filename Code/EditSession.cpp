@@ -4562,11 +4562,11 @@ bool EditSession::TryGateAdjustAction( GateAdjustOption option,
 	{
 	case GATEADJUST_A:
 		assert(gi->poly0 != gi->poly1);
-		success = TryGateAdjustActionPoly(adjust, gi->poly0,compound);
+		success = TryGateAdjustActionPoly( gi, adjust, true, gi->poly0,compound);
 		break;
 	case GATEADJUST_B:
 		assert(gi->poly0 != gi->poly1);
-		success = TryGateAdjustActionPoly(-adjust, gi->poly1,compound);
+		success = TryGateAdjustActionPoly( gi, -adjust, false, gi->poly1,compound);
 		break;
 	case GATEADJUST_MIDDLE:
 		break;
@@ -4588,13 +4588,89 @@ bool EditSession::TryGateAdjustAction( GateAdjustOption option,
 	return success;
 }
 
-bool EditSession::TryGateAdjustActionPoly(sf::Vector2i &adjust, PolyPtr p, CompoundAction *compound)
+bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, bool a, PolyPtr p, CompoundAction *compound)
 {
 	Brush b;
 	b.AddObject(p);
 
 	MoveBrushAction *action = new MoveBrushAction(&b, adjust, true, PointVectorMap(), RailPointMap());
 	action->Perform();
+
+	if (action->moveValid)
+	{
+		compound->subActions.push_back(action);
+
+		Brush attachedPolys;
+		PolyPtr p0, p1;
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			if ((*it).get() == gi)
+				continue;
+
+			p0 = (*it)->poly0;
+			p1 = (*it)->poly1;
+
+			if ( p0 == p && p1 == p )
+			{
+				continue;
+			}
+			else if (p0 == p)
+			{
+				attachedPolys.AddObject(p1);
+			}
+			else if( p1 == p )
+			{
+				attachedPolys.AddObject(p0);
+			}
+		}
+
+
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			if ((*it).get() == gi)
+				continue;
+
+			bool gateAttachedToAffectedPoly = false;
+			PolyPtr poly;
+			bool a = true;
+			if (IsGateAttachedToAffectedPoly((*it),&attachedPolys,a))
+			{
+				GateInfo *gi = (*it).get();
+				Vector2i adjust;
+				Vector2i pA, pB;
+
+				GateAdjustOption gaOption;
+
+				if (a)
+				{
+					gaOption = GATEADJUST_B;
+				}
+				else
+				{
+					gaOption = GATEADJUST_A;
+				}
+
+
+				if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
+				{
+					if (!TryGateAdjustAction(gaOption, gi, adjust, compound))
+					{
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+
+
+		compound->subActions.push_back(action);
+	}
+	else
+	{
+		action->Undo();
+		delete action;
+		return false;
+	}
 
 	//check if its okay!
 
