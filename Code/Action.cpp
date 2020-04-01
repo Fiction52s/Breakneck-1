@@ -635,7 +635,11 @@ void MoveBrushAction::Perform()
 
 void MoveBrushAction::Undo()
 {
-	assert( performed );
+	if (!performed)
+	{
+		assert(performed);
+	}
+	
 
 	performed = false;
 

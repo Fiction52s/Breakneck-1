@@ -320,6 +320,20 @@ struct EditSession : GUIHandler, TilesetManager
 	void MoveSelectedRailPoints(V2d worldPos);
 	void PerformMovePointsAction();
 
+	bool IsGateAttachedToAffectedPoints(
+		GateInfoPtr gi, PointVectorMap &pm,
+		bool &a);
+	bool IsGateAttachedToAffectedPoints(
+		GateInfoPtr gi, PointMap &pm,
+		bool &a);
+	bool IsGateAttachedToAffectedPoly(
+		GateInfoPtr gi, Brush *b,
+		bool &a);
+
+	bool BlahTest( GateInfoPtr gi,
+		bool polyMove, bool a,
+		CompoundAction *testAction);
+
 	GroundInfo worldPosRail;
 	GroundInfo worldPosGround;
 	V2d worldPos;
@@ -719,17 +733,17 @@ struct EditSession : GUIHandler, TilesetManager
 		GATEADJUST_POINT_B,
 		GATEADJUST_POINT_MIDDLE
 	};
-	Action *GetGateAdjustAction( GateAdjustOption option,
-		GateInfo *gi, sf::Vector2i &adjust);
-	Action *GetGateAdjustActionPoly(
-		sf::Vector2i &adjust,
-		PolyPtr p);
-	Action *GetGateAdjustActionPoint(
+	bool TryGateAdjustAction( GateAdjustOption option,
 		GateInfo *gi, sf::Vector2i &adjust,
-		bool a);
-	//Action *GetGateAdjustActionPoint(
-	//	sf::Vector2i &adjust
-	//)
+		CompoundAction *compound );
+	bool TryGateAdjustActionPoly(
+		sf::Vector2i &adjust,
+		PolyPtr p, CompoundAction *compound);
+	bool TryGateAdjustActionPoint(
+		GateInfo *gi, sf::Vector2i &adjust,
+		bool a, CompoundAction *compound);
+
+
 	void GetNearPrimaryGateList(
 		PointMap &pmap, 
 		std::list<GateInfoPtr> &gList);

@@ -4008,6 +4008,91 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 	delete[] allDeltas;
 }
 
+
+bool EditSession::IsGateAttachedToAffectedPoints(
+	GateInfoPtr gi, PointVectorMap &pm,
+	bool &a)
+{
+	PolyPtr poly;
+	for (auto pit = pm.begin(); pit != pm.end(); ++pit)
+	{
+		poly = (*pit).first;
+		if (gi->poly0 == poly || gi->poly1 == poly)
+		{
+			if (gi->poly0 == poly)
+			{
+				a = true;
+			}
+			else
+			{
+				a = false;
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool EditSession::IsGateAttachedToAffectedPoints(
+	GateInfoPtr gi, PointMap &pm,
+	bool &a)
+{
+	PolyPtr poly;
+	for (auto pit = pm.begin(); pit != pm.end(); ++pit)
+	{
+		poly = (*pit).first;
+		if (gi->poly0 == poly || gi->poly1 == poly)
+		{
+			if (gi->poly0 == poly)
+			{
+				a = true;
+			}
+			else
+			{
+				a = false;
+			}
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool EditSession::IsGateAttachedToAffectedPoly(
+	GateInfoPtr gi, Brush *b,
+	bool &a)
+{
+	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
+	{
+		if ((*bit)->selectableType == ISelectable::ISelectableType::TERRAIN)
+		{
+			PolyPtr p = boost::static_pointer_cast<TerrainPolygon>((*bit));
+			if (gi->poly0 == p || gi->poly1 == p)
+			{
+				if (gi->poly0 == p)
+				{
+					a = true;
+				}
+				else
+				{
+					a = false;
+				}
+
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool EditSession::BlahTest( GateInfoPtr gi, bool polyMove, bool a, CompoundAction *testAction)
+{
+	return true;
+
+}
+
 void EditSession::PerformMovePointsAction()
 {
 	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
@@ -4059,24 +4144,20 @@ void EditSession::PerformMovePointsAction()
 	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, pm, selectedRailPoints);
 	action->Perform();
 
-
 	CompoundAction *testAction = NULL;
+	if (moveAction != NULL)
+	{
+		testAction = moveAction;
+	}
+	else
+	{
+		testAction = new CompoundAction;
+	}
+	testAction->subActions.push_back(action);
+
+	
 	if (action->moveValid)
 	{
-		if (moveAction != NULL)
-		{
-			testAction = moveAction;
-			//moveAction->subActions.push_back(action);
-			//doneActionStack.push_back(moveAction);
-		}
-		else
-		{
-			testAction = new CompoundAction;
-			//doneActionStack.push_back(action);
-		}
-
-		testAction->subActions.push_back(action);
-
 		int gateActionsAdded = 0;
 		for (auto it = gates.begin(); it != gates.end(); ++it)
 		{
@@ -4084,7 +4165,20 @@ void EditSession::PerformMovePointsAction()
 			PolyPtr poly;
 			bool a = true;
 			bool polyMove = true;
-			for (auto pit = selectedPoints.begin(); pit != selectedPoints.end(); ++pit)
+
+			if (IsGateAttachedToAffectedPoints((*it), selectedPoints, a))
+			{
+				polyMove = false;
+				gateAttachedToAffectedPoly = true;
+			}
+
+			if (IsGateAttachedToAffectedPoly((*it), selectedBrush, a))
+			{
+				//should this even happen if the points are moving?
+				gateAttachedToAffectedPoly = true;
+			}
+
+			/*for (auto pit = selectedPoints.begin(); pit != selectedPoints.end(); ++pit)
 			{
 				poly = (*pit).first;
 				if ((*it)->poly0 == poly || (*it)->poly1 == poly)
@@ -4101,10 +4195,10 @@ void EditSession::PerformMovePointsAction()
 					gateAttachedToAffectedPoly = true;
 					break;
 				}
-			}
+			}*/
 
 
-			for (auto bit = selectedBrush->objects.begin(); bit != selectedBrush->objects.end(); ++bit)
+			/*for (auto bit = selectedBrush->objects.begin(); bit != selectedBrush->objects.end(); ++bit)
 			{
 				if ((*bit)->selectableType == ISelectable::ISelectableType::TERRAIN)
 				{
@@ -4124,7 +4218,7 @@ void EditSession::PerformMovePointsAction()
 						break;
 					}
 				}
-			}
+			}*/
 
 			if (gateAttachedToAffectedPoly)
 			{
@@ -4158,22 +4252,21 @@ void EditSession::PerformMovePointsAction()
 				
 				if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
 				{
-					Action *adjustAction = GetGateAdjustAction(gaOption, gi, adjust);
 
-					if (adjustAction == NULL)
+					if (!TryGateAdjustAction(gaOption, gi, adjust, testAction))
 					{
-						MessagePop("blah blah blah");
-						assert(0);
-						//delete action;
-						//delete testAction;
-						//adjustment failure! cover this case.
+						testAction->Undo();
+
+						if (testAction == moveAction)
+						{
+							moveAction = NULL;
+						}
+
+						delete testAction;
+						return;
 					}
 					else
 					{
-						//this will require the same validity checks as the original move.
-						adjustAction->Perform();
-
-						testAction->subActions.push_back(adjustAction);
 						gateActionsAdded++;
 					}
 				}
@@ -4210,96 +4303,15 @@ void EditSession::PerformMovePointsAction()
 	}
 	else
 	{
-		action->Undo();
-		delete action;
+		testAction->Undo();
+
+		if (testAction == moveAction)
+		{
+			moveAction = NULL;
+		}
+
+		delete testAction;
 	}
-
-	//CompoundAction *testAction = new CompoundAction;
-	//testAction->subActions.push_back(action);
-
-	
-
-	/*for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
-	{
-		list<PointMoveInfo> &pList = (*mit).second;
-		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
-		{
-			GateInfo *gi = (*it).point->gate.get();
-			if (gi != NULL)
-			{
-				Vector2i adjust;
-				Vector2i pA, pB;
-				if (gi->point0 == (*it).point)
-				{
-					pA = gi->point0->pos;
-					pB = gi->point1->pos;
-				}
-				else
-				{
-					pA = gi->point1->pos;
-					pB = gi->point0->pos;
-				}
-
-				if (GetPrimaryAdjustment(pA, pB, adjust))
-				{
-					(*it).delta += adjust;
-				}
-			}
-		}
-	}*/
-	
-	//if (GetPrimaryAdjustment(testGateInfo.point0->pos, testGateInfo.point1->pos, adjust))
-	//{
-	//	CompoundAction *testAction = new CompoundAction;
-	//	testAction->subActions.push_back(action);
-
-
-
-	//	selectedBrush->Clear();
-	//	ClearSelectedPoints();
-		//Action *adjustAction = GetGateAdjustAction(GATEADJUST_POINT_B, &testGateInfo, adjust);
-	//	ClearSelectedPoints();
-
-	//	if (adjustAction == NULL)
-	//	{
-	//		MessagePop("gate adjustment couldn't be made");
-	//		delete action;
-	//		delete testAction;
-	//		//the adjustment failed, the gate creation therefore fails.
-	//	}
-	//	else
-	//	{
-	//		adjustAction->Perform();
-	//		testAction->subActions.push_back(adjustAction);
-	//		testAction->performed = true;
-	//		//testAction->Perform();
-	//		doneActionStack.push_back(testAction);
-	//	}
-	//}
-	//else
-	//{
-	//	//action->Perform();
-	//	doneActionStack.push_back(action);
-	//}
-
-
-	/*if (action->moveValid)
-	{
-		if (moveAction != NULL)
-		{
-			moveAction->subActions.push_back(action);
-			doneActionStack.push_back(moveAction);
-		}
-		else
-		{
-			doneActionStack.push_back(action);
-		}
-	}
-	else
-	{
-		action->Undo();
-		delete action;
-	}*/
 }
 
 bool EditSession::PolyContainsPolys(TerrainPolygon *p, TerrainPolygon *ignore)
@@ -4541,30 +4553,31 @@ bool EditSession::GetPrimaryAdjustment(sf::Vector2i &p0,
 	return false;
 }
 
-Action *EditSession::GetGateAdjustAction( GateAdjustOption option,
-	GateInfo *gi, Vector2i &adjust)
+bool EditSession::TryGateAdjustAction( GateAdjustOption option,
+	GateInfo *gi, Vector2i &adjust, CompoundAction *compound)
 {
 	Action *adjustAction = NULL;
+	bool success = false;
 	switch (option)
 	{
 	case GATEADJUST_A:
 		assert(gi->poly0 != gi->poly1);
-		adjustAction = GetGateAdjustActionPoly(adjust, gi->poly0);
+		success = TryGateAdjustActionPoly(adjust, gi->poly0,compound);
 		break;
 	case GATEADJUST_B:
 		assert(gi->poly0 != gi->poly1);
-		adjustAction = GetGateAdjustActionPoly(-adjust, gi->poly1);
+		success = TryGateAdjustActionPoly(-adjust, gi->poly1,compound);
 		break;
 	case GATEADJUST_MIDDLE:
 		break;
 	case GATEADJUST_POINT_A:
 	{
-		adjustAction = GetGateAdjustActionPoint(gi, adjust, true);
+		success = TryGateAdjustActionPoint(gi, adjust, true,compound);
 		break;
 	}
 	case GATEADJUST_POINT_B:
 	{
-		adjustAction = GetGateAdjustActionPoint(gi, -adjust, false);
+		success = TryGateAdjustActionPoint(gi, -adjust, false,compound);
 		break;
 	}
 	case GATEADJUST_POINT_MIDDLE:
@@ -4572,17 +4585,23 @@ Action *EditSession::GetGateAdjustAction( GateAdjustOption option,
 	}
 	
 
-	return adjustAction;
+	return success;
 }
 
-Action *EditSession::GetGateAdjustActionPoly(sf::Vector2i &adjust, PolyPtr p)
+bool EditSession::TryGateAdjustActionPoly(sf::Vector2i &adjust, PolyPtr p, CompoundAction *compound)
 {
 	Brush b;
 	b.AddObject(p);
-	return new MoveBrushAction(&b, adjust, true, PointVectorMap(), RailPointMap());
+
+	MoveBrushAction *action = new MoveBrushAction(&b, adjust, true, PointVectorMap(), RailPointMap());
+	action->Perform();
+
+	//check if its okay!
+
+	return true;
 }
 
-Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool a)
+bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool a, CompoundAction *compound)
 {
 	PointVectorMap pmap;
 	PolyPtr poly;
@@ -4615,15 +4634,14 @@ Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, b
 		pVec.push_back(pi);
 	}
 	
-	MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap, RailPointMap());
-	moveAction->Perform();
+	MoveBrushAction * action = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap, RailPointMap());
+	action->Perform();
 
-	moveAction->CheckValidPointMove();
+	action->CheckValidPointMove();
 
-	if (moveAction->moveValid)
+	if (action->moveValid)
 	{
-		moveAction->moveOnFirstPerform = false;
-		moveAction->performed = false;
+		compound->subActions.push_back(action);
 
 		for (auto it = gates.begin(); it != gates.end(); ++it)
 		{
@@ -4633,32 +4651,14 @@ Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, b
 			bool gateAttachedToAffectedPoly = false;
 			PolyPtr poly;
 			bool a = true;
-			for (auto pit = pmap.begin(); pit != pmap.end(); ++pit)
-			{
-				poly = (*pit).first;
-				if ((*it)->poly0 == poly || (*it)->poly1 == poly)
-				{
-					if ((*it)->poly0 == poly)
-					{
-						a = true;
-					}
-					else
-					{
-						a = false;
-					}
-					gateAttachedToAffectedPoly = true;
-					break;
-				}
-			}
-
-			if (gateAttachedToAffectedPoly)
+			if (IsGateAttachedToAffectedPoints((*it), pmap, a))
 			{
 				GateInfo *gi = (*it).get();
 				Vector2i adjust;
 				Vector2i pA, pB;
 
 				GateAdjustOption gaOption;
-				
+
 				if (a)
 				{
 					gaOption = GATEADJUST_POINT_B;
@@ -4667,45 +4667,24 @@ Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, b
 				{
 					gaOption = GATEADJUST_POINT_A;
 				}
-				
+
 
 				if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
 				{
-					Action *adjustAction = GetGateAdjustAction(gaOption, gi, adjust);
-
-					if (adjustAction == NULL)
+					if (!TryGateAdjustAction(gaOption, gi, adjust, compound))
 					{
-						MessagePop("blah blah blah");
-						assert(0);
-						//delete action;
-						//delete testAction;
-						//adjustment failure! cover this case.
+						return false;
 					}
-					else
-					{
-						//this will require the same validity checks as the original move.
-						adjustAction->Perform();
-
-						//testAction->subActions.push_back(adjustAction);
-						//gateActionsAdded++;
-					}
-				}
-				else
-				{
-					//action->Perform();
-					//doneActionStack.push_back(action);
 				}
 			}
 		}
-
-
-		return moveAction;
+		return true;
 	}
 	else
 	{
-		moveAction->Undo();
-		delete moveAction;
-		return NULL;
+		action->Undo();
+		delete action;
+		return false;
 	}
 }
 
@@ -10183,27 +10162,21 @@ void EditSession::CreateGatesModeUpdate()
 					CompoundAction *testAction = new CompoundAction;
 					testAction->subActions.push_back(action);
 
-					Action *adjustAction = GetGateAdjustAction( GATEADJUST_POINT_B, &testGateInfo, adjust);
-
-					if (adjustAction == NULL)
+					if (!TryGateAdjustAction(GATEADJUST_POINT_B, &testGateInfo, adjust, testAction))
 					{
-						MessagePop("gate adjustment couldn't be made");
+						action->Undo();
 						delete action;
-						delete testAction;
-						//the adjustment failed, the gate creation therefore fails.
+						gatePoints = 0;
+						return;
 					}
 					else
 					{
-						adjustAction->Perform();
-						testAction->subActions.push_back(adjustAction);
 						testAction->performed = true;
-						//testAction->Perform();
 						doneActionStack.push_back(testAction);
 					}
 				}
 				else
 				{
-					//action->Perform();
 					doneActionStack.push_back(action);
 				}
 			}
