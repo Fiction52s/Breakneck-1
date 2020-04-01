@@ -4018,6 +4018,7 @@ void EditSession::PerformMovePointsAction()
 	for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
 	{
 		PolyPtr poly = (*mit).first;
+		selectedBrush->RemoveObject(poly);
 		auto &pmVec = pm[poly];
 		pmVec.reserve(poly->numPoints);
 
@@ -4081,13 +4082,47 @@ void EditSession::PerformMovePointsAction()
 		{
 			bool gateAttachedToAffectedPoly = false;
 			PolyPtr poly;
+			bool a = true;
+			bool polyMove = true;
 			for (auto pit = selectedPoints.begin(); pit != selectedPoints.end(); ++pit)
 			{
 				poly = (*pit).first;
 				if ((*it)->poly0 == poly || (*it)->poly1 == poly)
 				{
+					if ((*it)->poly0 == poly)
+					{
+						a = true;
+					}
+					else
+					{
+						a = false;
+					}
+					polyMove = false;
 					gateAttachedToAffectedPoly = true;
 					break;
+				}
+			}
+
+
+			for (auto bit = selectedBrush->objects.begin(); bit != selectedBrush->objects.end(); ++bit)
+			{
+				if ((*bit)->selectableType == ISelectable::ISelectableType::TERRAIN)
+				{
+					PolyPtr p = boost::static_pointer_cast<TerrainPolygon>((*bit));
+					if ((*it)->poly0 == p || (*it)->poly1 == p)
+					{
+						if ((*it)->poly0 == p)
+						{
+							a = true;
+						}
+						else
+						{
+							a = false;
+						}
+
+						gateAttachedToAffectedPoly = true;
+						break;
+					}
 				}
 			}
 
@@ -4098,14 +4133,29 @@ void EditSession::PerformMovePointsAction()
 				Vector2i pA, pB;
 
 				GateAdjustOption gaOption;
-				if ((*it)->poly0 == poly)
+				if (polyMove)
 				{
-					gaOption = GATEADJUST_POINT_B;
+					if (a)
+					{
+						gaOption = GATEADJUST_A;
+					}
+					else
+					{
+						gaOption = GATEADJUST_B;
+					}
 				}
 				else
 				{
-					gaOption = GATEADJUST_POINT_A;
+					if (a)
+					{
+						gaOption = GATEADJUST_POINT_B;
+					}
+					else
+					{
+						gaOption = GATEADJUST_POINT_A;
+					}
 				}
+				
 				if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
 				{
 					Action *adjustAction = GetGateAdjustAction(gaOption, gi, adjust);
@@ -4133,6 +4183,8 @@ void EditSession::PerformMovePointsAction()
 					//doneActionStack.push_back(action);
 				}
 			}
+
+
 
 		}
 
