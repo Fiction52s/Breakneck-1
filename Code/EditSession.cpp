@@ -4497,8 +4497,12 @@ bool EditSession::IsCloseToPrimary(sf::Vector2i &p0,
 	sf::Vector2i &p1, sf::Vector2i &prim)
 {
 	Vector2i diff = p1 - p0;
-	V2d diffDir = normalize( V2d(diff) );
 	prim = Vector2i(0, 0);
+
+	if (diff.x == 0 || diff.y == 0)
+		return false;
+
+	V2d diffDir = normalize(V2d(diff));
 
 	if (diffDir.x > PRIMARY_LIMIT)
 		prim.x = 1;
@@ -4612,7 +4616,6 @@ Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, b
 	}
 	
 	MoveBrushAction * moveAction = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap, RailPointMap());
-
 	moveAction->Perform();
 
 	moveAction->CheckValidPointMove();
@@ -4621,6 +4624,80 @@ Action *EditSession::GetGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, b
 	{
 		moveAction->moveOnFirstPerform = false;
 		moveAction->performed = false;
+
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			if ((*it).get() == gi)
+				continue;
+
+			bool gateAttachedToAffectedPoly = false;
+			PolyPtr poly;
+			bool a = true;
+			for (auto pit = pmap.begin(); pit != pmap.end(); ++pit)
+			{
+				poly = (*pit).first;
+				if ((*it)->poly0 == poly || (*it)->poly1 == poly)
+				{
+					if ((*it)->poly0 == poly)
+					{
+						a = true;
+					}
+					else
+					{
+						a = false;
+					}
+					gateAttachedToAffectedPoly = true;
+					break;
+				}
+			}
+
+			if (gateAttachedToAffectedPoly)
+			{
+				GateInfo *gi = (*it).get();
+				Vector2i adjust;
+				Vector2i pA, pB;
+
+				GateAdjustOption gaOption;
+				
+				if (a)
+				{
+					gaOption = GATEADJUST_POINT_B;
+				}
+				else
+				{
+					gaOption = GATEADJUST_POINT_A;
+				}
+				
+
+				if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
+				{
+					Action *adjustAction = GetGateAdjustAction(gaOption, gi, adjust);
+
+					if (adjustAction == NULL)
+					{
+						MessagePop("blah blah blah");
+						assert(0);
+						//delete action;
+						//delete testAction;
+						//adjustment failure! cover this case.
+					}
+					else
+					{
+						//this will require the same validity checks as the original move.
+						adjustAction->Perform();
+
+						//testAction->subActions.push_back(adjustAction);
+						//gateActionsAdded++;
+					}
+				}
+				else
+				{
+					//action->Perform();
+					//doneActionStack.push_back(action);
+				}
+			}
+		}
+
 
 		return moveAction;
 	}
