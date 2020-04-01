@@ -207,6 +207,9 @@ struct TerrainPolygon : ISelectable
 	void WriteFile(std::ofstream & of);
 	void WriteGrass(std::ofstream &of);
 
+
+
+
 	int grassSize;
 	int grassSpacing;
 
