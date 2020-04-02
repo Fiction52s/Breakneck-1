@@ -48,10 +48,13 @@ void CoyoteSleepScene::AddEnemies()
 
 void CoyoteSleepScene::AddFlashes()
 {
-	//AddFlashedImage("wake0", owner->GetTileset("Bosses/Coyote/Coy_02b.png", 1920, 1080),
-	//	0, 30, 30, 30, Vector2f(960, 540));
+	
+	
 
-	FlashedImage *testIm = AddFlashedImage("wake0", owner->GetTileset("Story/test/Pingpong_Test_01b_1920x1080.png", 1920, 1080),
+
+
+
+	/*FlashedImage *testIm = AddFlashedImage("wake0", owner->GetTileset("Story/test/Pingpong_Test_01b_1920x1080.png", 1920, 1080),
 		0, 30, 240, 30, Vector2f(960, 540));
 	testIm->SetSplit(owner->GetTileset("Story/test/Pingpong_Test_01aa_1920x1080.png", 1920, 1080),0,
 		Vector2f(960, 540));
@@ -61,27 +64,77 @@ void CoyoteSleepScene::AddFlashes()
 		0, 30, 240, 30, Vector2f(960, 540));
 	testIm2->SetSplit(owner->GetTileset("Story/test/Pingpong_Test_02aa_1920x1080.png", 1920, 1080), 0,
 		Vector2f(960, 540));
-	testIm2->AddPanX(-1000, 0, 240);
+	testIm2->AddPanX(-1000, 0, 240);*/
+
+
+	FlashedImage *testIm1 = AddFlashedImage("break_01", owner->GetTileset("Story/test/break_01.png", 1920, 1080),
+	0, 0, 60, 0, Vector2f(960, 540));
+	testIm1->SetSplit(owner->GetTileset("Story/test/break_01_split.png", 1920, 1080),0,Vector2f(960, 540));
+
+	FlashedImage *testIm2 = AddFlashedImage("break_02", owner->GetTileset("Story/test/break_02.png", 1920, 1080),
+		0, 0, 60, 0, Vector2f(960, 540));
+	testIm2->SetSplit(owner->GetTileset("Story/test/break_02_split.png", 1920, 1080), 0, Vector2f(960, 540));
+
+	FlashedImage *testIm3 = AddFlashedImage("break_03", owner->GetTileset("Story/test/break_03.png", 1920, 1080),
+		0, 0, 60, 0, Vector2f(960, 540));
+	testIm3->SetSplit(owner->GetTileset("Story/test/break_03_split.png", 1920, 1080), 0, Vector2f(960, 540));
+
+	FlashedImage *testIm4 = AddFlashedImage("break_04", owner->GetTileset("Story/test/break_04.png", 1920, 1080),
+		0, 0, 60, 0, Vector2f(960, 540));
+	testIm4->SetSplit(owner->GetTileset("Story/test/break_04_split.png", 1920, 1080), 0, Vector2f(960, 540));
+
+	FlashedImage *testIm5 = AddFlashedImage("break_05", owner->GetTileset("Story/test/break_05.png", 1920, 1080),
+		0, 0, 60, 0, Vector2f(960, 540));
+
+
+	
 	
 
-	//AddFlashedImage("wake1", owner->GetTileset("Bosses/Coyote/Coy_03b.png", 1920, 1080),
-	//	0, 30, 10, 30, Vector2f(960, 540));
+	FlashGroup * group = AddFlashGroup("wakegroup");
+
+
+	list<Tileset*> bgTiles;
+	bgTiles.push_back(owner->GetTileset("Story/test/BG_01.png", 1920, 1080));
+	bgTiles.push_back(owner->GetTileset("Story/test/BG_02.png", 1920, 1080));
+	bgTiles.push_back(owner->GetTileset("Story/test/BG_03.png", 1920, 1080));
+	group->AddBG(bgTiles, 4);
+
+
+	AddSeqFlashToGroup(group, "break_01");
+	AddSeqFlashToGroup(group, "break_02");
+	AddSeqFlashToGroup(group, "break_03");
+	AddSeqFlashToGroup(group, "break_04");
+	AddSeqFlashToGroup(group, "break_05");
+
+
+
+	/*AddFlashedImage("wake0", owner->GetTileset("Bosses/Coyote/Coy_02b.png", 1920, 1080),
+		0, 30, 30, 30, Vector2f(960, 540));
+
+	AddFlashedImage("wake1", owner->GetTileset("Bosses/Coyote/Coy_03b.png", 1920, 1080),
+		0, 30, 10, 30, Vector2f(960, 540));
+
 
 	AddFlashedImage("wake2", owner->GetTileset("Bosses/Coyote/Coy_04b.png", 1920, 1080),
 		0, 30, 10, 30, Vector2f(960, 540));
 
 	AddFlashedImage("wake3", owner->GetTileset("Bosses/Coyote/Coy_05b.png", 1920, 1080),
-		0, 30, 10, 30, Vector2f(960, 540));
+		0, 30, 10, 30, Vector2f(960, 540));*/
 
-	FlashGroup * group = AddFlashGroup("wakegroup");
 
 	int togetherFrames = 15;
 
-	//AddFlashToGroup(group, "wake0", togetherFrames);
-	AddFlashToGroup(group, "wake0", 240);
-	AddFlashToGroup(group, "wake1", togetherFrames);
-	AddFlashToGroup(group, "wake2", togetherFrames);
-	AddFlashToGroup(group, "wake3", 0);
+	/*AddSeqFlashToGroup(group, "wake0");
+	AddSeqFlashToGroup(group, "wake1", togetherFrames);
+	AddSeqFlashToGroup(group, "wake2", togetherFrames);
+	AddSeqFlashToGroup(group, "wake3", togetherFrames);*/
+
+
+	/*AddSeqFlashToGroup(group, "wake0" );
+	AddSimulFlashToGroup(group, "wake1", 15);
+	AddSeqFlashToGroup(group, "wake2", 0);
+	AddSeqFlashToGroup(group, "wake3", togetherFrames);*/
+	group->Init();
 }
 
 void CoyoteSleepScene::ReturnToGame()
@@ -179,9 +232,10 @@ void CoyotePreFightScene::AddFlashes()
 		0, 30, 20, 30, Vector2f(960, 540));
 
 	FlashGroup * group = AddFlashGroup("staregroup");
-	AddFlashToGroup(group, "stare0", togetherFrames);
-	AddFlashToGroup(group, "stare1", togetherFrames);
-	AddFlashToGroup(group, "stare2", togetherFrames);
+	AddSeqFlashToGroup(group, "stare0", 0);
+	AddSeqFlashToGroup(group, "stare1", togetherFrames);
+	AddSeqFlashToGroup(group, "stare2", togetherFrames);
+	group->Init();
 }
 
 void CoyotePreFightScene::ReturnToGame()

@@ -66,7 +66,8 @@ void CrawlerPreFight2Scene::AddFlashes()
 	FlashGroup * group = AddFlashGroup("staregroup");
 	AddFlashToGroup(group, "stare0", togetherFrames);
 	AddFlashToGroup(group, "stare1", togetherFrames);
-	AddFlashToGroup(group, "stare2", togetherFrames);*/
+	AddFlashToGroup(group, "stare2", togetherFrames);
+	group->Init();*/
 }
 
 void CrawlerPreFight2Scene::ReturnToGame()
@@ -257,7 +258,8 @@ void TigerPreFightScene::AddFlashes()
 	FlashGroup * group = AddFlashGroup("staregroup");
 	AddFlashToGroup(group, "stare0", togetherFrames);
 	AddFlashToGroup(group, "stare1", togetherFrames);
-	AddFlashToGroup(group, "stare2", togetherFrames);*/
+	AddFlashToGroup(group, "stare2", togetherFrames);
+	group->Init();*/
 }
 
 void TigerPreFightScene::ReturnToGame()

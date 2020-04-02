@@ -143,13 +143,114 @@ Sequence::~Sequence()
 		delete nextSeq;
 }
 
+FlashGroup::FlashGroup()
+{
+	currBGTileset = NULL;
+}
+
 void FlashGroup::Reset()
 {
+	frame = 0;
+	done = false;
+}
+
+void FlashGroup::AddBG(std::list<Tileset*> &anim,
+	int animFactor)
+{
+	bgAnimFactor = animFactor;
+	bgTilesets.resize(anim.size());
+	int i = 0;
+	for (auto it = anim.begin(); it != anim.end(); ++it)
+	{
+		bgTilesets[i] = (*it);
+		++i;
+	}
+	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
+
+	if (bgTilesets.size() == 1)
+	{
+		currBGTileset = bgTilesets[0];
+	}
+}
+
+void FlashGroup::TryCurrFlashes()
+{
+	if (fMap.count(frame) > 0)
+	{
+		auto &listRef = fMap[frame];
+		for (auto it = listRef.begin(); it != listRef.end(); ++it)
+		{
+			(*it)->image->Flash();
+		}
+	}
+}
+
+bool FlashGroup::HasBG()
+{
+	return !bgTilesets.empty();
+}
+
+void FlashGroup::Update()
+{
+	if (frame == numFrames)
+		done = true;
+
+	if (!done)
+	{
+		TryCurrFlashes();
+
+		int numBG = bgTilesets.size();
+		if (numBG > 1 && frame % bgAnimFactor == 0 )
+		{
+			int f = (frame / bgAnimFactor) % numBG;
+
+			currBGTileset = bgTilesets[f];
+			SetRectSubRect(bgQuad, bgTilesets[0]->GetSubRect(0));
+		}
+
+		++frame;
+	}
+	//SetRectSubRect(bgQuad, bgTilesets[0]->)
+	//might want to put the frame == numFrames down here, not sure yet.
+}
+
+void FlashGroup::DrawBG(sf::RenderTarget *target)
+{
+	if (currBGTileset != NULL)
+	{
+		target->draw(bgQuad, 4, sf::Quads, currBGTileset->texture);
+	}
+}
+
+void FlashGroup::Init()
+{
+	numFrames = 0;
+
 	if (fList.size() > 0)
 	{
-		currFlash = fList.begin();
+		int counter = 0;
+		for (auto it = fList.begin(); it != fList.end(); ++it)
+		{
+			counter -= (*it)->earlyStart;
+			if (counter < 0)
+			{
+				assert(0);
+				counter = 0;
+			}
+
+			(*it)->startFrame = counter;
+			fMap[counter].push_back((*it));
+			
+			counter += (*it)->image->GetNumFrames();
+		}
+
+		numFrames = fList.back()->startFrame + fList.back()->image->GetNumFrames();
 	}
-	done = false;
+}
+
+void FlashGroup::AddSimulFlash(FlashedImage *fi, int delayedFrames )
+{
+	fList.push_back(new FlashInfo(fi, fi->GetNumFrames() - delayedFrames ));
 }
 
 bool FlashGroup::IsDone()
@@ -157,10 +258,10 @@ bool FlashGroup::IsDone()
 	return done;
 }
 
-void FlashGroup::AddFlash(FlashedImage *fi,
-	int earlyEndFrames)
+void FlashGroup::AddSeqFlash(FlashedImage *fi,
+	int earlyStartFrames)
 {
-	fList.push_back(new FlashInfo(fi, earlyEndFrames));
+	fList.push_back(new FlashInfo(fi, earlyStartFrames));
 }
 
 FlashGroup::~FlashGroup()
@@ -202,7 +303,7 @@ FlashedImage::FlashedImage(Tileset *ts,
 	ts_split = NULL;
 	splitShader = NULL;
 
-	SetRectSubRectGL(spr, ts->GetSubRect(tileIndex), Vector2f(ts->texture->getSize()));
+	SetRectSubRect(spr, ts->GetSubRect(tileIndex));
 	SetRectColor(spr, Color(Color::White));
 	//spr.setTexture(*ts->texture);
 	//spr.setTextureRect();
@@ -243,11 +344,9 @@ void FlashedImage::SetSplit(Tileset *ts,
 
 	ts_split = ts;
 
+	SetRectSubRectGL(spr, ts->GetSubRect(tileIndex), Vector2f(ts->texture->getSize()));
+
 	splitSize = ts_split->texture->getSize();
-	/*split[0].texCoords = Vector2f(0, 0);
-	split[1].texCoords = Vector2f(1, 0);
-	split[2].texCoords = Vector2f(1, 1);
-	split[3].texCoords = Vector2f(0, 1);*/
 	SetRectSubRect(split, ts->GetSubRect(tileIndex));
 	SetRectCenter(split, ts->tileWidth, ts->tileHeight, pos);
 
@@ -942,43 +1041,47 @@ void BasicBossScene::SetFlashGroup( const std::string & n )
 {
 	currFlashGroup = flashGroups[n];
 
-	(*currFlashGroup->currFlash)->image->Flash();
+
+	//(*currFlashGroup->currFlash)->image->Flash();
 }
 
 void BasicBossScene::UpdateFlashGroup()
 {
-	//assert(currFlashGroup != NULL);
-
 	if (currFlashGroup == NULL)
 	{
 		return;
 	}
 
-	
-	FlashedImage *fg = (*currFlashGroup->currFlash)->image;
-	int earlyEnd = (*currFlashGroup->currFlash)->earlyEnd;
+	(*currFlashGroup).Update();
 
-	//cout << "updating" << endl;
-
-	bool startNext = false;
-	if (fg->GetFramesUntilDone() <= earlyEnd)
+	if ((*currFlashGroup).IsDone())
 	{
-		startNext = true;
+		currFlashGroup = NULL;
 	}
+	//FlashedImage *fg = (*currFlashGroup->currFlash)->image;
+	//int earlyEnd = (*currFlashGroup->currFlash)->earlyEnd;
 
-	if (startNext)
-	{
-		currFlashGroup->currFlash++;
-		if (currFlashGroup->currFlash == currFlashGroup->fList.end())
-		{
-			currFlashGroup->done = true;
-			currFlashGroup = NULL;
-		}
-		else
-		{
-			(*currFlashGroup->currFlash)->image->Flash();
-		}
-	}
+	////cout << "updating" << endl;
+
+	//bool startNext = false;
+	//if (fg->GetFramesUntilDone() <= earlyEnd)
+	//{
+	//	startNext = true;
+	//}
+
+	//if (startNext)
+	//{
+	//	currFlashGroup->currFlash++;
+	//	if (currFlashGroup->currFlash == currFlashGroup->fList.end())
+	//	{
+	//		currFlashGroup->done = true;
+	//		currFlashGroup = NULL;
+	//	}
+	//	else
+	//	{
+	//		(*currFlashGroup->currFlash)->image->Flash();
+	//	}
+	//}
 }
 
 void BasicBossScene::EndCurrState()
@@ -1016,12 +1119,19 @@ FlashGroup * BasicBossScene::AddFlashGroup(const std::string &n)
 	return fg;
 }
 
-void BasicBossScene::AddFlashToGroup(FlashGroup *fGroup,
-	const std::string &n, int earlyEnd )
+void BasicBossScene::AddSeqFlashToGroup(FlashGroup *fGroup,
+	const std::string &n, int earlyStart )
 {
 	assert(flashes.count(n) == 1);
 
-	fGroup->AddFlash(flashes[n], earlyEnd);
+	fGroup->AddSeqFlash(flashes[n], earlyStart);
+}
+
+void BasicBossScene::AddSimulFlashToGroup(FlashGroup *fGroup,
+	const std::string &n, int waitFrames )
+{
+	assert(flashes.count(n) == 1);
+	fGroup->AddSimulFlash(flashes[n], waitFrames);
 }
 
 void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
@@ -1033,6 +1143,14 @@ void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 
 	View v = target->getView();
 	target->setView(owner->uiView);
+
+	//temporarily have this here, eventually move the BGs as another thing you can have a bunch of in a sequence.
+	if (currFlashGroup != NULL)
+	{
+		(*currFlashGroup).DrawBG(target);
+	}
+
+	
 
 	DrawFlashes(target);
 

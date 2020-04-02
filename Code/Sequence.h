@@ -3,6 +3,7 @@
 #include "Tileset.h"
 #include "SFML/Graphics.hpp"
 #include <list>
+#include <vector>
 #include "Movement.h"
 #include <boost/thread.hpp>
 #include <sfeMovie\Movie.hpp>
@@ -116,24 +117,43 @@ struct Sequence
 struct FlashInfo
 {
 	FlashInfo(FlashedImage *fi,
-		int eEnd = 0)
+		int eStart = 0)
 	{
 		image = fi;
-		earlyEnd = eEnd;
+		earlyStart = eStart;
+		startFrame = -1;
 	}
 	FlashedImage *image;
-	int earlyEnd;
+	int earlyStart;
+	int startFrame;
 };
 
 struct FlashGroup
 {
+	FlashGroup();
 	~FlashGroup();
 	void Reset();
-	void AddFlash(FlashedImage *fi,
+	void AddSeqFlash(FlashedImage *fi,
 		int earlyEndFrames = 0);
+	void AddSimulFlash(FlashedImage *fi,
+		int delayedFrames = 0 );
+	void Init();
+	void TryCurrFlashes();
+	void Update();
+	std::map<int, std::list<FlashInfo*>> fMap;
 	std::list<FlashInfo*> fList;
-	std::list<FlashInfo*>::iterator currFlash;
+	//std::list<FlashInfo*>::iterator currFlash;
 	bool IsDone();
+	void AddBG(std::list<Tileset*> &anim,
+		int animFactor);
+	std::vector<Tileset*> bgTilesets;
+	bool HasBG();
+	void DrawBG(sf::RenderTarget *target);
+	Tileset *currBGTileset;
+	sf::Vertex bgQuad[4];
+	int bgAnimFactor;
+	int frame;
+	int numFrames;
 
 
 	bool done;
@@ -246,8 +266,10 @@ struct BasicBossScene : Sequence
 	std::map<std::string, FlashedImage*> flashes;
 	std::map <std::string, FlashGroup*> flashGroups;
 	FlashGroup * AddFlashGroup(const std::string &n);
-	void AddFlashToGroup(FlashGroup *,
-		const std::string &n, int earlyEnd = 0);
+	void AddSeqFlashToGroup(FlashGroup *,
+		const std::string &n, int earlyStart = 0);
+	void AddSimulFlashToGroup(FlashGroup *,
+		const std::string &n, int waitFrames = 0);
 	void UpdateFlashGroup();
 	void SetFlashGroup( const std::string &n);
 	std::list<FlashedImage*> flashList;
