@@ -25,6 +25,8 @@ struct ConversationGroup;
 struct CameraShot;
 struct Barrier;
 
+struct SceneBG;
+
 struct PanInfo
 {
 	PanInfo(sf::Vector2f &pos,
@@ -56,6 +58,8 @@ struct FlashedImage
 	bool IsHolding();
 	bool IsFadingIn();
 	int GetFramesUntilDone();
+
+	void UpdateBG();
 	void AddPan(sf::Vector2f &pVel,
 		int startFrame, int frameLength );
 	void AddPanX(float x,
@@ -65,11 +69,16 @@ struct FlashedImage
 
 	void SetSplit(Tileset *ts, Tileset *borderTS,
 		int tileIndex, sf::Vector2f &pos);
+	void SetBG(SceneBG *p_bg);
 
 	Tileset *ts_image;
 	Tileset *ts_split;
 	Tileset *ts_splitBorder;
 	sf::Shader *splitShader;
+	sf::Shader *bgSplitShader;
+
+	Tileset *currBGTileset;
+	SceneBG *bg;
 
 	sf::Vertex spr[4];
 	sf::Vertex split[4];
@@ -142,27 +151,39 @@ struct FlashGroup
 		int earlyEndFrames = 0);
 	void AddSimulFlash(FlashedImage *fi,
 		int delayedFrames = 0 );
+	void SetBG(SceneBG *bg);
 	void Init();
 	void TryCurrFlashes();
 	void Update();
+	void UpdateBG();
 	std::map<int, std::list<FlashInfo*>> fMap;
 	std::map<int, std::list<FlashInfo*>> infEndMap;
 	std::list<FlashInfo*> fList;
+	void DrawBG(sf::RenderTarget *target);
 	//std::list<FlashInfo*>::iterator currFlash;
 	bool IsDone();
-	void AddBG(std::list<Tileset*> &anim,
-		int animFactor);
-	std::vector<Tileset*> bgTilesets;
-	bool HasBG();
-	void DrawBG(sf::RenderTarget *target);
+	SceneBG *bg;
 	Tileset *currBGTileset;
 	sf::Vertex bgQuad[4];
-	int bgAnimFactor;
 	int frame;
 	int numFrames;
+	
 
 
 	bool done;
+};
+
+struct SceneBG
+{
+	SceneBG(const std::string &p_name,
+		std::list<Tileset*> &p_tilesets,
+		int p_animFactor);
+	std::string name;
+	int animFactor;
+	std::vector<Tileset*> tilesets;
+	//sf::Vertex bgQuad[4];
+	//void Draw(sf::RenderTarget *target);
+	Tileset * GetCurrTileset(int frame);
 };
 
 struct BasicBossScene : Sequence
@@ -172,6 +193,10 @@ struct BasicBossScene : Sequence
 		RUN,
 		APPEAR,
 	};
+
+	SceneBG * AddBG(const std::string &name, std::list<Tileset*> &anim,
+		int animFactor );
+	SceneBG *GetBG(const std::string &name);
 
 	BasicBossScene(GameSession *owner, 
 		EntranceType et );
@@ -265,7 +290,7 @@ struct BasicBossScene : Sequence
 	int numStates;
 	int entranceIndex;
 
-
+	std::map<std::string, SceneBG*> bgs;
 	std::map<std::string, ConversationGroup*> groups;
 	std::map<std::string, CameraShot*> shots;
 	std::map<std::string, PoiInfo*> points;

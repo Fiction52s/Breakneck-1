@@ -146,6 +146,7 @@ Sequence::~Sequence()
 FlashGroup::FlashGroup()
 {
 	currBGTileset = NULL;
+	bg = NULL;
 }
 
 void FlashGroup::Reset()
@@ -154,22 +155,35 @@ void FlashGroup::Reset()
 	done = false;
 }
 
-void FlashGroup::AddBG(std::list<Tileset*> &anim,
-	int animFactor)
+void FlashGroup::SetBG(SceneBG *p_bg)
 {
-	bgAnimFactor = animFactor;
-	bgTilesets.resize(anim.size());
-	int i = 0;
-	for (auto it = anim.begin(); it != anim.end(); ++it)
+	bg = p_bg;
+	if (bg != NULL)
 	{
-		bgTilesets[i] = (*it);
-		++i;
+		UpdateBG();
+		SetRectCenter(bgQuad, currBGTileset->tileWidth, currBGTileset->tileHeight, Vector2f(960, 540));
+		SetRectSubRect(bgQuad, currBGTileset->GetSubRect(0));
 	}
-	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
+}
 
-	if (bgTilesets.size() == 1)
+void FlashGroup::UpdateBG()
+{
+	if (bg != NULL)
 	{
-		currBGTileset = bgTilesets[0];
+		Tileset *bgTS = bg->GetCurrTileset(frame);
+		if (currBGTileset != bgTS)
+		{
+			currBGTileset = bgTS;
+		}
+
+	}
+}
+
+void FlashGroup::DrawBG(RenderTarget *target)
+{
+	if (currBGTileset != NULL)
+	{
+		target->draw(bgQuad, 4, sf::Quads, currBGTileset->texture);
 	}
 }
 
@@ -194,11 +208,6 @@ void FlashGroup::TryCurrFlashes()
 	}
 }
 
-bool FlashGroup::HasBG()
-{
-	return !bgTilesets.empty();
-}
-
 void FlashGroup::Update()
 {
 	if (frame == numFrames)
@@ -210,27 +219,12 @@ void FlashGroup::Update()
 	{
 		TryCurrFlashes();
 
-		int numBG = bgTilesets.size();
-		if (numBG > 1 && frame % bgAnimFactor == 0 )
-		{
-			int f = (frame / bgAnimFactor) % numBG;
-
-			currBGTileset = bgTilesets[f];
-			SetRectSubRect(bgQuad, bgTilesets[0]->GetSubRect(0));
-		}
+		UpdateBG();
 
 		++frame;
 	}
 	//SetRectSubRect(bgQuad, bgTilesets[0]->)
 	//might want to put the frame == numFrames down here, not sure yet.
-}
-
-void FlashGroup::DrawBG(sf::RenderTarget *target)
-{
-	if (currBGTileset != NULL)
-	{
-		target->draw(bgQuad, 4, sf::Quads, currBGTileset->texture);
-	}
 }
 
 void FlashGroup::Init()
@@ -329,6 +323,9 @@ FlashedImage::FlashedImage(Tileset *ts,
 	ts_split = NULL;
 	ts_splitBorder = NULL;
 	splitShader = NULL;
+	bg = NULL;
+	bgSplitShader = NULL;
+	currBGTileset = NULL;
 
 	SetRectSubRect(spr, ts->GetSubRect(tileIndex));
 	SetRectColor(spr, Color(Color::White));
@@ -374,8 +371,38 @@ FlashedImage::~FlashedImage()
 		delete splitShader;
 }
 
-void FlashedImage::SetSplit(Tileset *ts, Tileset *borderTS,
-	int tileIndex, sf::Vector2f &pos)
+void FlashedImage::SetBG(SceneBG * p_bg)
+{
+	bg = p_bg;
+	if (bg != NULL)
+	{
+		if (splitShader != NULL)
+		{
+			bgSplitShader = new Shader;
+
+			if (!bgSplitShader->loadFromFile("Resources/Shader/split_shader.frag", sf::Shader::Fragment))
+			{
+				cout << "couldnt load enemy split shader" << endl;
+				assert(false);
+			}
+
+			bgSplitShader->setUniform("u_splitTexture", *ts_split->texture);
+			bgSplitShader->setUniform("offset", Vector2f(0, 0));
+			bgSplitShader->setUniform("currAlpha", 1.f);
+
+			UpdateBG();
+
+			//tileindex might be different later
+			SetRectSubRectGL(split, currBGTileset->GetSubRect(0), Vector2f(currBGTileset->texture->getSize()));
+		}
+		else
+		{
+
+		}
+	}
+}
+
+void FlashedImage::SetSplit(Tileset *ts, Tileset *borderTS, int tileIndex, sf::Vector2f &pos)
 {
 	assert(splitShader == NULL);
 
@@ -429,6 +456,8 @@ void FlashedImage::Reset()
 	position = origPos;
 	SetRectCenter(spr, ts_image->tileWidth, ts_image->tileHeight, position);
 	currPan = NULL;
+
+	UpdateBG();
 }
 
 void FlashedImage::AddPan(sf::Vector2f &diff,
@@ -553,7 +582,24 @@ void FlashedImage::Update()
 		}
 	}
 
+	UpdateBG();
+	
+
 	++frame;
+}
+
+void FlashedImage::UpdateBG()
+{
+	if (bg != NULL)
+	{
+		Tileset *bgTS = bg->GetCurrTileset(frame);
+		if (currBGTileset != bgTS)
+		{
+			currBGTileset = bgTS;
+			bgSplitShader->setUniform("u_texture", *currBGTileset->texture);
+		}
+
+	}
 }
 
 void FlashedImage::Draw(sf::RenderTarget *target)
@@ -562,7 +608,15 @@ void FlashedImage::Draw(sf::RenderTarget *target)
 	{
 		if (ts_split != NULL )
 		{
-			target->draw(split, 4, sf::Quads, ts_split->texture);
+			if (bg != NULL)
+			{
+				target->draw(split, 4, sf::Quads, bgSplitShader);
+			}
+			else
+			{
+				target->draw(split, 4, sf::Quads, ts_split->texture);
+			}
+			
 			target->draw(spr, 4, sf::Quads, splitShader);
 
 			if (ts_splitBorder != NULL)
@@ -577,6 +631,39 @@ void FlashedImage::Draw(sf::RenderTarget *target)
 	}
 
 }
+
+SceneBG::SceneBG(const std::string &p_name, list<Tileset*> &p_tilesets, int p_animFactor)
+{
+	name = p_name;
+	tilesets.resize(p_tilesets.size());
+	int i = 0;
+	for (auto it = p_tilesets.begin(); it != p_tilesets.end(); ++it)
+	{
+		tilesets[i] = (*it);
+		++i;
+	}
+	animFactor = p_animFactor;
+}
+
+Tileset * SceneBG::GetCurrTileset(int frame)
+{
+	int numBG = tilesets.size();
+	if (numBG > 1 )
+	{
+		int f = (frame / animFactor) % numBG;
+		return tilesets[f];
+		//SetRectSubRect(bgQuad, tilesets[0]->GetSubRect(0));
+	}
+	else
+	{
+		return tilesets[0];
+	}
+}
+
+//void SceneBG::Draw(sf::RenderTarget *target)
+//{
+//
+//}
 
 BasicBossScene::BasicBossScene(GameSession *p_owner,
 	EntranceType et )
@@ -666,6 +753,24 @@ void BasicBossScene::Init()
 	SetupStates();
 
 	SpecialInit();
+}
+
+SceneBG * BasicBossScene::AddBG( const std::string &bgName, std::list<Tileset*> &anim,
+	int animFactor)
+{
+	SceneBG *sbg = new SceneBG(bgName, anim, animFactor);
+	
+	assert(bgs.count(bgName) == 0);
+
+	bgs[bgName] = sbg;
+
+	return sbg;
+}
+
+SceneBG *BasicBossScene::GetBG(const std::string &name)
+{
+	assert(bgs.count(name) > 0);
+	return bgs[name];
 }
 
 void BasicBossScene::AddMovie(const std::string &movieName)
