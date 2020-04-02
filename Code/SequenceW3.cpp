@@ -68,23 +68,27 @@ void CoyoteSleepScene::AddFlashes()
 
 
 	FlashedImage *testIm1 = AddFlashedImage("break_01", owner->GetTileset("Story/test/break_01.png", 1920, 1080),
-	0, 0, 60, 0, Vector2f(960, 540));
-	testIm1->SetSplit(owner->GetTileset("Story/test/break_01_split.png", 1920, 1080),0,Vector2f(960, 540));
+	0, 0, 0, 0, Vector2f(960, 540));
+	testIm1->SetSplit(owner->GetTileset("Story/test/break_01_split.png", 1920, 1080),
+		owner->GetTileset("Story/test/break_01_line.png", 1920, 1080), 0,Vector2f(960, 540));
 
 	FlashedImage *testIm2 = AddFlashedImage("break_02", owner->GetTileset("Story/test/break_02.png", 1920, 1080),
-		0, 0, 60, 0, Vector2f(960, 540));
-	testIm2->SetSplit(owner->GetTileset("Story/test/break_02_split.png", 1920, 1080), 0, Vector2f(960, 540));
+		0, 0, 0, 0, Vector2f(960, 540));
+	testIm2->SetSplit(owner->GetTileset("Story/test/break_02_split.png", 1920, 1080),
+		owner->GetTileset("Story/test/break_02_line.png", 1920, 1080), 0, Vector2f(960, 540));
 
 	FlashedImage *testIm3 = AddFlashedImage("break_03", owner->GetTileset("Story/test/break_03.png", 1920, 1080),
-		0, 0, 60, 0, Vector2f(960, 540));
-	testIm3->SetSplit(owner->GetTileset("Story/test/break_03_split.png", 1920, 1080), 0, Vector2f(960, 540));
+		0, 0, 0, 0, Vector2f(960, 540));
+	testIm3->SetSplit(owner->GetTileset("Story/test/break_03_split.png", 1920, 1080),
+		owner->GetTileset("Story/test/break_03_line.png", 1920, 1080), 0, Vector2f(960, 540));
 
 	FlashedImage *testIm4 = AddFlashedImage("break_04", owner->GetTileset("Story/test/break_04.png", 1920, 1080),
-		0, 0, 60, 0, Vector2f(960, 540));
-	testIm4->SetSplit(owner->GetTileset("Story/test/break_04_split.png", 1920, 1080), 0, Vector2f(960, 540));
+		0, 0, 0, 0, Vector2f(960, 540));
+	testIm4->SetSplit(owner->GetTileset("Story/test/break_04_split.png", 1920, 1080),
+		owner->GetTileset("Story/test/break_04_line.png", 1920, 1080), 0, Vector2f(960, 540));
 
 	FlashedImage *testIm5 = AddFlashedImage("break_05", owner->GetTileset("Story/test/break_05.png", 1920, 1080),
-		0, 0, 60, 0, Vector2f(960, 540));
+		0, 0, 240, 0, Vector2f(960, 540));
 
 
 	
@@ -100,11 +104,11 @@ void CoyoteSleepScene::AddFlashes()
 	group->AddBG(bgTiles, 4);
 
 
-	AddSeqFlashToGroup(group, "break_01");
-	AddSeqFlashToGroup(group, "break_02");
-	AddSeqFlashToGroup(group, "break_03");
-	AddSeqFlashToGroup(group, "break_04");
-	AddSeqFlashToGroup(group, "break_05");
+	AddSimulFlashToGroup(group, "break_01");
+	AddSimulFlashToGroup(group, "break_02", 90);
+	AddSimulFlashToGroup(group, "break_03", 90);
+	AddSimulFlashToGroup(group, "break_04", 90);
+	AddSimulFlashToGroup(group, "break_05", 90);
 
 
 

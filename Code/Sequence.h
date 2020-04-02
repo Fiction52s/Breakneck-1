@@ -63,15 +63,17 @@ struct FlashedImage
 	void AddPanY(float y,
 		int startFrame, int frameLength);
 
-	void SetSplit(Tileset *ts,
+	void SetSplit(Tileset *ts, Tileset *borderTS,
 		int tileIndex, sf::Vector2f &pos);
 
 	Tileset *ts_image;
 	Tileset *ts_split;
+	Tileset *ts_splitBorder;
 	sf::Shader *splitShader;
 
 	sf::Vertex spr[4];
 	sf::Vertex split[4];
+	sf::Vertex splitBorder[4];
 
 	std::list<PanInfo*> panList;
 
@@ -87,6 +89,9 @@ struct FlashedImage
 	int aFrames;
 	int dFrames;
 	int hFrames;
+
+	bool infiniteHold;
+	int infiniteHoldEarlyEnd;
 };
 
 struct Sequence
@@ -117,14 +122,14 @@ struct Sequence
 struct FlashInfo
 {
 	FlashInfo(FlashedImage *fi,
-		int eStart = 0)
+		int dStart = 0)
 	{
 		image = fi;
-		earlyStart = eStart;
+		delayedStart = dStart;
 		startFrame = -1;
 	}
 	FlashedImage *image;
-	int earlyStart;
+	int delayedStart;
 	int startFrame;
 };
 
@@ -141,6 +146,7 @@ struct FlashGroup
 	void TryCurrFlashes();
 	void Update();
 	std::map<int, std::list<FlashInfo*>> fMap;
+	std::map<int, std::list<FlashInfo*>> infEndMap;
 	std::list<FlashInfo*> fList;
 	//std::list<FlashInfo*>::iterator currFlash;
 	bool IsDone();
@@ -269,7 +275,7 @@ struct BasicBossScene : Sequence
 	void AddSeqFlashToGroup(FlashGroup *,
 		const std::string &n, int earlyStart = 0);
 	void AddSimulFlashToGroup(FlashGroup *,
-		const std::string &n, int waitFrames = 0);
+		const std::string &n, int delayedStart = 0);
 	void UpdateFlashGroup();
 	void SetFlashGroup( const std::string &n);
 	std::list<FlashedImage*> flashList;

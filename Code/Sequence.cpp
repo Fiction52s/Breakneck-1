@@ -183,6 +183,15 @@ void FlashGroup::TryCurrFlashes()
 			(*it)->image->Flash();
 		}
 	}
+
+	if (infEndMap.count(frame) > 0)
+	{
+		auto &listRef = infEndMap[frame];
+		for (auto it = listRef.begin(); it != listRef.end(); ++it)
+		{
+			(*it)->image->StopHolding();
+		}
+	}
 }
 
 bool FlashGroup::HasBG()
@@ -193,7 +202,9 @@ bool FlashGroup::HasBG()
 void FlashGroup::Update()
 {
 	if (frame == numFrames)
+	{
 		done = true;
+	}
 
 	if (!done)
 	{
@@ -231,7 +242,7 @@ void FlashGroup::Init()
 		int counter = 0;
 		for (auto it = fList.begin(); it != fList.end(); ++it)
 		{
-			counter -= (*it)->earlyStart;
+			counter += (*it)->delayedStart;
 			if (counter < 0)
 			{
 				assert(0);
@@ -241,16 +252,30 @@ void FlashGroup::Init()
 			(*it)->startFrame = counter;
 			fMap[counter].push_back((*it));
 			
-			counter += (*it)->image->GetNumFrames();
+			if (!(*it)->image->infiniteHold)
+			{
+				counter += (*it)->image->GetNumFrames();
+			}
 		}
 
-		numFrames = fList.back()->startFrame + fList.back()->image->GetNumFrames();
+		FlashInfo *lastFlash = fList.back();
+
+		assert(!lastFlash->image->infiniteHold);
+		numFrames = lastFlash->startFrame + lastFlash->image->GetNumFrames();
+
+		for (auto it = fList.begin(); it != fList.end(); ++it)
+		{
+			if ((*it)->image->infiniteHold)
+			{
+				infEndMap[(numFrames - 1) - (*it)->image->infiniteHoldEarlyEnd].push_back((*it));
+			}
+		}
 	}
 }
 
 void FlashGroup::AddSimulFlash(FlashedImage *fi, int delayedFrames )
 {
-	fList.push_back(new FlashInfo(fi, fi->GetNumFrames() - delayedFrames ));
+	fList.push_back(new FlashInfo(fi, delayedFrames ));
 }
 
 bool FlashGroup::IsDone()
@@ -261,7 +286,8 @@ bool FlashGroup::IsDone()
 void FlashGroup::AddSeqFlash(FlashedImage *fi,
 	int earlyStartFrames)
 {
-	fList.push_back(new FlashInfo(fi, earlyStartFrames));
+	//delayed start by a negative amount
+	fList.push_back(new FlashInfo(fi, -earlyStartFrames));
 }
 
 FlashGroup::~FlashGroup()
@@ -301,6 +327,7 @@ FlashedImage::FlashedImage(Tileset *ts,
 {
 	ts_image = ts;
 	ts_split = NULL;
+	ts_splitBorder = NULL;
 	splitShader = NULL;
 
 	SetRectSubRect(spr, ts->GetSubRect(tileIndex));
@@ -314,6 +341,16 @@ FlashedImage::FlashedImage(Tileset *ts,
 	Reset();
 
 	aFrames = appearFrames;
+	if (holdFrames <= 0)
+	{
+		infiniteHoldEarlyEnd = -holdFrames;
+		infiniteHold = true;
+		holdFrames = 10000000;
+	}
+	else
+	{
+		infiniteHold = false;
+	}
 	hFrames = holdFrames;
 	dFrames = disappearFrames;
 
@@ -337,12 +374,22 @@ FlashedImage::~FlashedImage()
 		delete splitShader;
 }
 
-void FlashedImage::SetSplit(Tileset *ts,
+void FlashedImage::SetSplit(Tileset *ts, Tileset *borderTS,
 	int tileIndex, sf::Vector2f &pos)
 {
 	assert(splitShader == NULL);
 
 	ts_split = ts;
+	ts_splitBorder = borderTS;
+
+	//shares the same tile index and position of the split
+
+	if (ts_splitBorder != NULL)
+	{
+		SetRectSubRect(splitBorder, borderTS->GetSubRect(tileIndex));
+		SetRectCenter(splitBorder, ts->tileWidth, ts->tileHeight, pos);
+	}
+	
 
 	SetRectSubRectGL(spr, ts->GetSubRect(tileIndex), Vector2f(ts->texture->getSize()));
 
@@ -517,6 +564,11 @@ void FlashedImage::Draw(sf::RenderTarget *target)
 		{
 			target->draw(split, 4, sf::Quads, ts_split->texture);
 			target->draw(spr, 4, sf::Quads, splitShader);
+
+			if (ts_splitBorder != NULL)
+			{
+				target->draw(splitBorder, 4, sf::Quads, ts_splitBorder->texture);
+			}
 		}
 		else
 		{
