@@ -48,11 +48,24 @@ void CoyoteSleepScene::AddEnemies()
 
 void CoyoteSleepScene::AddFlashes()
 {
-	AddFlashedImage("wake0", owner->GetTileset("Bosses/Coyote/Coy_02b.png", 1920, 1080),
-		0, 30, 30, 30, Vector2f(960, 540));
+	//AddFlashedImage("wake0", owner->GetTileset("Bosses/Coyote/Coy_02b.png", 1920, 1080),
+	//	0, 30, 30, 30, Vector2f(960, 540));
 
-	AddFlashedImage("wake1", owner->GetTileset("Bosses/Coyote/Coy_03b.png", 1920, 1080),
-		0, 30, 10, 30, Vector2f(960, 540));
+	FlashedImage *testIm = AddFlashedImage("wake0", owner->GetTileset("Story/test/Pingpong_Test_01b_1920x1080.png", 1920, 1080),
+		0, 30, 240, 30, Vector2f(960, 540));
+	testIm->SetSplit(owner->GetTileset("Story/test/Pingpong_Test_01aa_1920x1080.png", 1920, 1080),0,
+		Vector2f(960, 540));
+	testIm->AddPanX(1000, 0, 240);
+
+	FlashedImage *testIm2 = AddFlashedImage("wake1", owner->GetTileset("Story/test/Pingpong_Test_02b_1920x1080.png", 1920, 1080),
+		0, 30, 240, 30, Vector2f(960, 540));
+	testIm2->SetSplit(owner->GetTileset("Story/test/Pingpong_Test_02aa_1920x1080.png", 1920, 1080), 0,
+		Vector2f(960, 540));
+	testIm2->AddPanX(-1000, 0, 240);
+	
+
+	//AddFlashedImage("wake1", owner->GetTileset("Bosses/Coyote/Coy_03b.png", 1920, 1080),
+	//	0, 30, 10, 30, Vector2f(960, 540));
 
 	AddFlashedImage("wake2", owner->GetTileset("Bosses/Coyote/Coy_04b.png", 1920, 1080),
 		0, 30, 10, 30, Vector2f(960, 540));
@@ -64,7 +77,8 @@ void CoyoteSleepScene::AddFlashes()
 
 	int togetherFrames = 15;
 
-	AddFlashToGroup(group, "wake0", togetherFrames);
+	//AddFlashToGroup(group, "wake0", togetherFrames);
+	AddFlashToGroup(group, "wake0", 240);
 	AddFlashToGroup(group, "wake1", togetherFrames);
 	AddFlashToGroup(group, "wake2", togetherFrames);
 	AddFlashToGroup(group, "wake3", 0);

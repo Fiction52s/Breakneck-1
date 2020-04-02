@@ -62,14 +62,25 @@ struct FlashedImage
 	void AddPanY(float y,
 		int startFrame, int frameLength);
 
+	void SetSplit(Tileset *ts,
+		int tileIndex, sf::Vector2f &pos);
+
+	Tileset *ts_image;
+	Tileset *ts_split;
+	sf::Shader *splitShader;
+
+	sf::Vertex spr[4];
+	sf::Vertex split[4];
+
 	std::list<PanInfo*> panList;
 
 	sf::Vector2f origPos;
 	sf::Vector2f position;
+	sf::Vector2u splitSize;
 
 	PanInfo * currPan;
 
-	sf::Sprite spr;
+	//sf::Sprite spr;
 	int frame;
 	bool flashing;
 	int aFrames;
@@ -123,7 +134,6 @@ struct FlashGroup
 	std::list<FlashInfo*> fList;
 	std::list<FlashInfo*>::iterator currFlash;
 	bool IsDone();
-
 
 
 	bool done;

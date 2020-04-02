@@ -198,9 +198,15 @@ FlashedImage::FlashedImage(Tileset *ts,
 	int disappearFrames,
 	sf::Vector2f &pos)
 {
-	spr.setTexture(*ts->texture);
-	spr.setTextureRect(ts->GetSubRect(tileIndex));
-	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+	ts_image = ts;
+	ts_split = NULL;
+	splitShader = NULL;
+
+	SetRectSubRectGL(spr, ts->GetSubRect(tileIndex), Vector2f(ts->texture->getSize()));
+	SetRectColor(spr, Color(Color::White));
+	//spr.setTexture(*ts->texture);
+	//spr.setTextureRect();
+	//spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
 
 	origPos = pos;
 
@@ -209,7 +215,15 @@ FlashedImage::FlashedImage(Tileset *ts,
 	aFrames = appearFrames;
 	hFrames = holdFrames;
 	dFrames = disappearFrames;
+
+	
+	//splitShader.setUniform("texture", *ts_image->texture);
+
+	//splitShader.setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
+	//splitShader.setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
 }
+
+
 
 FlashedImage::~FlashedImage()
 {
@@ -217,6 +231,39 @@ FlashedImage::~FlashedImage()
 	{
 		delete (*it);
 	}
+	
+	if (splitShader != NULL)
+		delete splitShader;
+}
+
+void FlashedImage::SetSplit(Tileset *ts,
+	int tileIndex, sf::Vector2f &pos)
+{
+	assert(splitShader == NULL);
+
+	ts_split = ts;
+
+	splitSize = ts_split->texture->getSize();
+	/*split[0].texCoords = Vector2f(0, 0);
+	split[1].texCoords = Vector2f(1, 0);
+	split[2].texCoords = Vector2f(1, 1);
+	split[3].texCoords = Vector2f(0, 1);*/
+	SetRectSubRect(split, ts->GetSubRect(tileIndex));
+	SetRectCenter(split, ts->tileWidth, ts->tileHeight, pos);
+
+	splitShader = new Shader;
+	
+
+	if (!splitShader->loadFromFile("Resources/Shader/split_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "couldnt load enemy split shader" << endl;
+		assert(false);
+	}
+
+	splitShader->setUniform("u_splitTexture", *ts_split->texture);
+	splitShader->setUniform("u_texture", *ts_image->texture);
+	splitShader->setUniform("offset", Vector2f(0, 0));
+	splitShader->setUniform("currAlpha", 1.f);
 }
 
 bool FlashedImage::IsDone()
@@ -234,7 +281,7 @@ void FlashedImage::Reset()
 	frame = 0;
 	flashing = false;
 	position = origPos;
-	spr.setPosition(position);
+	SetRectCenter(spr, ts_image->tileWidth, ts_image->tileHeight, position);
 	currPan = NULL;
 }
 
@@ -247,7 +294,7 @@ void FlashedImage::AddPan(sf::Vector2f &diff,
 void FlashedImage::AddPanX(float xDiff,
 	int startFrame, int frameLength)
 {
-	PanInfo *pi = new PanInfo( position, Vector2f(xDiff, 0), startFrame, frameLength);
+	panList.push_back(new PanInfo(position, Vector2f(xDiff, 0), startFrame, frameLength));
 }
 
 void FlashedImage::AddPanY(float yDiff,
@@ -260,7 +307,9 @@ void FlashedImage::Flash()
 {
 	flashing = true;
 	frame = 0;
-	spr.setColor(Color(255, 255, 255, 0));
+	SetRectColor(spr, Color(255, 255, 255, 0));
+	if( splitShader != NULL )
+		splitShader->setUniform("currAlpha", 0.f);
 }
 
 bool FlashedImage::IsFadingIn()
@@ -318,7 +367,13 @@ void FlashedImage::Update()
 		int fr = frame - (aFrames + hFrames);
 		a = (1.f - fr / (float)dFrames) * 255.f;
 	}
-	spr.setColor(Color(255, 255, 255, a));
+	SetRectColor(spr, Color(255, 255, 255, a));
+	if (splitShader != NULL)
+	{
+		float aColor = a / 255.f;
+		splitShader->setUniform("currAlpha", aColor);
+	}
+		
 
 	if (frame == aFrames + hFrames + dFrames)
 	{
@@ -337,7 +392,18 @@ void FlashedImage::Update()
 		else
 		{
 			position = currPan->GetCurrPos(frame);
-			spr.setPosition(position);
+			SetRectCenter(spr, ts_image->tileWidth, ts_image->tileHeight, position);
+
+			if (splitShader != NULL)
+			{
+				Vector2f offset = position - origPos;
+
+				
+				offset.x /= splitSize.x;
+				offset.y /= splitSize.y;
+
+				splitShader->setUniform("offset", offset);
+			}
 		}
 	}
 
@@ -348,7 +414,15 @@ void FlashedImage::Draw(sf::RenderTarget *target)
 {
 	if (flashing)
 	{
-		target->draw(spr);
+		if (ts_split != NULL )
+		{
+			target->draw(split, 4, sf::Quads, ts_split->texture);
+			target->draw(spr, 4, sf::Quads, splitShader);
+		}
+		else
+		{
+			target->draw(spr, 4, sf::Quads, ts_image->texture);
+		}
 	}
 
 }

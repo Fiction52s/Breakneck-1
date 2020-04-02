@@ -374,6 +374,18 @@ void SetRectSubRect(sf::Vertex *v, sf::IntRect &sub)
 	v[3].texCoords = Vector2f(sub.left, sub.top + sub.height);
 }
 
+void SetRectSubRectGL(sf::Vertex *v, sf::IntRect &sub, Vector2f texSize )
+{
+	float left = sub.left / texSize.x;
+	float top = sub.top / texSize.y;
+	float right = (sub.left + sub.width) / texSize.x;
+	float bot = (sub.top + sub.height) / texSize.y;
+	v[0].texCoords = Vector2f(left, top);
+	v[1].texCoords = Vector2f(right, top);
+	v[2].texCoords = Vector2f(right, bot);
+	v[3].texCoords = Vector2f(left, bot);
+}
+
 void SetRectSubRect(sf::Vertex *v, sf::FloatRect &sub)
 {
 	v[0].texCoords = Vector2f(sub.left, sub.top);

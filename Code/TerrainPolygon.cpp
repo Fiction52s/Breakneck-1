@@ -668,6 +668,7 @@ void TerrainPolygon::AlignExtremes(double primLimit,
 	while( adjusted)
 	{
 		adjusted = false;
+		lockPointIndex = 0;
 
 		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next, lockPointIndex++)
 		{
