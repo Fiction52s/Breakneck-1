@@ -245,11 +245,15 @@ void FlashGroup::Init()
 
 			(*it)->startFrame = counter;
 			fMap[counter].push_back((*it));
-			
-			if (!(*it)->image->infiniteHold)
+
+			if (!(*it)->simul)
 			{
-				counter += (*it)->image->GetNumFrames();
+				if (!(*it)->image->infiniteHold)
+				{
+					counter += (*it)->image->GetNumFrames();
+				}
 			}
+			
 		}
 
 		FlashInfo *lastFlash = fList.back();
@@ -269,7 +273,7 @@ void FlashGroup::Init()
 
 void FlashGroup::AddSimulFlash(FlashedImage *fi, int delayedFrames )
 {
-	fList.push_back(new FlashInfo(fi, delayedFrames ));
+	fList.push_back(new FlashInfo(fi, delayedFrames, true ));
 }
 
 bool FlashGroup::IsDone()
@@ -278,10 +282,10 @@ bool FlashGroup::IsDone()
 }
 
 void FlashGroup::AddSeqFlash(FlashedImage *fi,
-	int earlyStartFrames)
+	int delayedStart)
 {
 	//delayed start by a negative amount
-	fList.push_back(new FlashInfo(fi, -earlyStartFrames));
+	fList.push_back(new FlashInfo(fi, delayedStart, false));
 }
 
 FlashGroup::~FlashGroup()
@@ -1277,11 +1281,11 @@ FlashGroup * BasicBossScene::AddFlashGroup(const std::string &n)
 }
 
 void BasicBossScene::AddSeqFlashToGroup(FlashGroup *fGroup,
-	const std::string &n, int earlyStart )
+	const std::string &n, int delayedStart )
 {
 	assert(flashes.count(n) == 1);
 
-	fGroup->AddSeqFlash(flashes[n], earlyStart);
+	fGroup->AddSeqFlash(flashes[n], delayedStart);
 }
 
 void BasicBossScene::AddSimulFlashToGroup(FlashGroup *fGroup,

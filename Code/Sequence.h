@@ -131,15 +131,17 @@ struct Sequence
 struct FlashInfo
 {
 	FlashInfo(FlashedImage *fi,
-		int dStart = 0)
+		int dStart = 0, bool p_simul = false)
 	{
 		image = fi;
 		delayedStart = dStart;
 		startFrame = -1;
+		simul = p_simul;
 	}
 	FlashedImage *image;
 	int delayedStart;
 	int startFrame;
+	bool simul;
 };
 
 struct FlashGroup
@@ -298,7 +300,7 @@ struct BasicBossScene : Sequence
 	std::map <std::string, FlashGroup*> flashGroups;
 	FlashGroup * AddFlashGroup(const std::string &n);
 	void AddSeqFlashToGroup(FlashGroup *,
-		const std::string &n, int earlyStart = 0);
+		const std::string &n, int delayedStart = 0);
 	void AddSimulFlashToGroup(FlashGroup *,
 		const std::string &n, int delayedStart = 0);
 	void UpdateFlashGroup();

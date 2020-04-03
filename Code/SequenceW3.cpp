@@ -55,20 +55,22 @@ void CoyoteSleepScene::AddFlashes()
 	bgTiles.push_back(owner->GetTileset("Story/test/BG_03.png", 1920, 1080));
 	AddBG("anim1", bgTiles, 4);
 
-
+	FlashGroup * group = AddFlashGroup("wakegroup");
 
 	/*FlashedImage *testIm = AddFlashedImage("wake0", owner->GetTileset("Story/test/Pingpong_Test_01b_1920x1080.png", 1920, 1080),
 		0, 30, 240, 30, Vector2f(960, 540));
-	testIm->SetSplit(owner->GetTileset("Story/test/Pingpong_Test_01aa_1920x1080.png", 1920, 1080),0,
+	testIm->SetSplit(owner->GetTileset("Story/test/Pingpong_Test_01aa_1920x1080.png", 1920, 1080), NULL,0,
 		Vector2f(960, 540));
-	testIm->AddPanX(1000, 0, 240);
+	testIm->AddPanX(-1000, 0, 240);
 
 	FlashedImage *testIm2 = AddFlashedImage("wake1", owner->GetTileset("Story/test/Pingpong_Test_02b_1920x1080.png", 1920, 1080),
 		0, 30, 240, 30, Vector2f(960, 540));
-	testIm2->SetSplit(owner->GetTileset("Story/test/Pingpong_Test_02aa_1920x1080.png", 1920, 1080), 0,
+	testIm2->SetSplit(owner->GetTileset("Story/test/Pingpong_Test_02aa_1920x1080.png", 1920, 1080), NULL, 0, 
 		Vector2f(960, 540));
-	testIm2->AddPanX(-1000, 0, 240);*/
+	testIm2->AddPanX(1000, 0, 240);
 
+	AddSimulFlashToGroup(group, "wake0");
+	AddSimulFlashToGroup(group, "wake1", 90);*/
 
 	FlashedImage *testIm1 = AddFlashedImage("break_01", owner->GetTileset("Story/test/break_01.png", 1920, 1080),
 	0, 0, 0, 0, Vector2f(960, 540));
@@ -96,13 +98,6 @@ void CoyoteSleepScene::AddFlashes()
 
 	FlashedImage *testIm5 = AddFlashedImage("break_05", owner->GetTileset("Story/test/break_05.png", 1920, 1080),
 		0, 0, 240, 0, Vector2f(960, 540));
-
-
-	
-	
-
-	FlashGroup * group = AddFlashGroup("wakegroup");
-
 
 	group->SetBG(bgs["anim1"]);
 
@@ -239,8 +234,8 @@ void CoyotePreFightScene::AddFlashes()
 
 	FlashGroup * group = AddFlashGroup("staregroup");
 	AddSeqFlashToGroup(group, "stare0", 0);
-	AddSeqFlashToGroup(group, "stare1", togetherFrames);
-	AddSeqFlashToGroup(group, "stare2", togetherFrames);
+	AddSeqFlashToGroup(group, "stare1", -togetherFrames);
+	AddSeqFlashToGroup(group, "stare2", -togetherFrames);
 	group->Init();
 }
 
