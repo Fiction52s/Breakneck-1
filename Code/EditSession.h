@@ -238,9 +238,12 @@ struct EditSession : GUIHandler, TilesetManager
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
 	
-	sf::Vector2f SnapPointToGraph(sf::Vector2f &p, int gridSize);
-	V2d SnapPointToGraph(V2d &p, int gridSize);
-	sf::Vector2f SnapPosToPoint(sf::Vector2f &p, double radius);
+	void SnapPointToGraph(sf::Vector2f &p, int gridSize);
+	void SnapPointToGraph(V2d &p, int gridSize);
+	bool TrySnapPosToPoint(sf::Vector2f &p, double radius,
+		PolyPtr &poly, TerrainPoint *&point );
+	bool TrySnapPosToPoint( V2d &p, double radius,
+		PolyPtr &poly, TerrainPoint *&point);
 	static bool PointOnLine(V2d &pos, V2d &p0, V2d &p1, double width = 0);
 	void TryPlaceGatePoint(V2d &pos);
 	
@@ -589,6 +592,10 @@ struct EditSession : GUIHandler, TilesetManager
 
 	void MoveSelectedActor( sf::Vector2i &delta );
 
+	PolyPtr gateInProgressTestPoly;
+	TerrainPoint *gateInProgressTestPoint;
+
+
 	sf::Vector2i pointMouseDown;
 	sf::Vector2f uiMousePos;
 
@@ -707,9 +714,13 @@ struct EditSession : GUIHandler, TilesetManager
 		TerrainPolygon *p,
 		TerrainPolygon *ignore);
 	bool PolyIntersectsGates(TerrainPolygon *poly);
+	bool GateIntersectsPolys(GateInfo *gi);
+	bool GateIntersectsGates(GateInfo *gi);
 	bool PolyGatesIntersectOthers(TerrainPolygon *poly);
 	bool PolyGatesMakeSliverAngles(TerrainPolygon *poly);
 	bool IsGateValid(GateInfo *gi );
+	bool IsGateInProgressValid(PolyPtr startPoly,
+		TerrainPoint *startPoint);
 	bool GateMakesSliverAngles(GateInfo *gi);
 	bool IsSliver( TerrainPoint *prev,
 		TerrainPoint *curr, 

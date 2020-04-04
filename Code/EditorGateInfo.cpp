@@ -8,6 +8,8 @@
 using namespace sf;
 using namespace std;
 
+double GateInfo::lineWidth = 10;//5;
+
 GateInfo::GateInfo()
 	:ISelectable(ISelectable::GATE), thickLine(sf::Quads, 4)
 {
@@ -94,6 +96,25 @@ void GateInfo::SetShard(int shardW, int shardI)
 		shardSpr.getLocalBounds().height / 2);
 }
 
+bool GateInfo::ContainsPoint( V2d &p )
+{
+	assert(poly0 != NULL && poly1 != NULL);
+
+	V2d start(point0->pos);
+	V2d end(point1->pos);
+	V2d along = normalize(end - start);
+	V2d other(along.y, -along.x);
+
+	double halfThickness = lineWidth / 2.0;
+	
+	V2d a = start + other * halfThickness;
+	V2d b = start - other * halfThickness;
+	V2d c = end - other * halfThickness;
+	V2d d = end + other * halfThickness;
+
+	return QuadContainsPoint(a, b, c, d, p);
+}
+
 sf::IntRect GateInfo::GetAABB()
 {
 	int left = min(point0->pos.x, point1->pos.x);
@@ -143,17 +164,17 @@ void GateInfo::WriteFile(ofstream &of)
 
 void GateInfo::UpdateLine()
 {
-	double width = 5;
+	double halfWidth = lineWidth / 2.0;
 	V2d dv0(point0->pos.x, point0->pos.y);
 	V2d dv1(point1->pos.x, point1->pos.y);
 	V2d along = normalize(dv1 - dv0);
 	V2d other(along.y, -along.x);
 
-	V2d leftv0 = dv0 - other * width;
-	V2d rightv0 = dv0 + other * width;
+	V2d leftv0 = dv0 - other * halfWidth;
+	V2d rightv0 = dv0 + other * halfWidth;
 
-	V2d leftv1 = dv1 - other * width;
-	V2d rightv1 = dv1 + other * width;
+	V2d leftv1 = dv1 - other * halfWidth;
+	V2d rightv1 = dv1 + other * halfWidth;
 
 	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 

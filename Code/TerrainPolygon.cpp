@@ -664,7 +664,7 @@ void TerrainPolygon::AlignExtremes(double primLimit,
 	int lockPointIndex = 0;
 	assert(lockPoints.empty() || lockPoints.size() == numPoints);
 
-
+	bool lockPointsEmpty = lockPoints.empty();
 	while( adjusted)
 	{
 		adjusted = false;
@@ -689,16 +689,20 @@ void TerrainPolygon::AlignExtremes(double primLimit,
 			if (extreme.x == 0 && extreme.y == 0)
 				continue;
 
-			PointMoveInfo &pmi = lockPoints[lockPointIndex];
-			if (pmi.moveIntent )
+			if (!lockPointsEmpty)
 			{
-				adjusted = true;
-				if (extreme.x != 0)
-					next->pos.y = curr->pos.y;
-				else
-					next->pos.x = curr->pos.x;
-				continue;
+				PointMoveInfo &pmi = lockPoints[lockPointIndex];
+				if (pmi.moveIntent)
+				{
+					adjusted = true;
+					if (extreme.x != 0)
+						next->pos.y = curr->pos.y;
+					else
+						next->pos.x = curr->pos.x;
+					continue;
+				}
 			}
+			
 			/*if (curr->selected)
 			{
 				if (extreme.x != 0)

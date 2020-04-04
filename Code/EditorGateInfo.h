@@ -16,6 +16,7 @@ struct GateInfo : ISelectable
 	sf::IntRect GetAABB();
 	TerrainPoint *point0;
 	TerrainPoint *point1;
+	bool ContainsPoint(V2d &p);
 	void Deactivate(EditSession *edit,
 		boost::shared_ptr<ISelectable> select);
 	void Activate(EditSession *edit,
@@ -38,6 +39,8 @@ struct GateInfo : ISelectable
 	int shardIndex;
 	sf::Sprite shardSpr;
 	sf::RectangleShape shardBG;
+
+	static double lineWidth;
 
 };
 

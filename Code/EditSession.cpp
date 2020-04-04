@@ -740,12 +740,14 @@ EditSession::~EditSession()
 	}
 }
 
-sf::Vector2f EditSession::SnapPointToGraph(Vector2f &p, int gridSize )
+void EditSession::SnapPointToGraph(Vector2f &p, int gridSize )
 {
-	return Vector2f(SnapPointToGraph( V2d( p ), gridSize ));
+	V2d pCopy(p);
+	SnapPointToGraph(pCopy, gridSize);
+	p = Vector2f(pCopy);
 }
 
-V2d EditSession::SnapPointToGraph(V2d &p, int gridSize)
+void EditSession::SnapPointToGraph(V2d &p, int gridSize)
 {
 	int adjX, adjY;
 
@@ -765,7 +767,7 @@ V2d EditSession::SnapPointToGraph(V2d &p, int gridSize)
 	adjX = ((int)p.x) * gridSize;
 	adjY = ((int)p.y) * gridSize;
 
-	return V2d(adjX, adjY);
+	p = V2d(adjX, adjY);
 }
 
 bool EditSession::IsKeyPressed(int k)
@@ -1806,9 +1808,6 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 					{
 						GateInfoPtr gi = (*git);
 
-						view.setCenter(closePoint->pos.x, closePoint->pos.y);
-						preScreenTex->setView(view);
-
 						modifyGate = gi;
 
 
@@ -1833,15 +1832,21 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 				testGateInfo.poly1 = (*it);
 				testGateInfo.point1 = closePoint;
 				testGateInfo.vertexIndex1 = (*it)->GetPointIndex(closePoint);
-				view.setCenter(testGateInfo.point1->pos.x, testGateInfo.point1->pos.y);
-				preScreenTex->setView(view);
+				//view.setCenter(testGateInfo.point1->pos.x, testGateInfo.point1->pos.y);
+				//preScreenTex->setView(view);
 			}
 		}
 	}
 
-	if (!found)
+	if (!found && gatePoints == 0 )
 	{
-		gatePoints = 0;
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			if ((*it)->ContainsPoint(pos))
+			{
+				modifyGate = (*it);
+			}
+		}
 	}
 }
 
@@ -3021,20 +3026,42 @@ void EditSession::ClearUndoneActions()
 	undoneActionStack.clear();
 }
 
-sf::Vector2f EditSession::SnapPosToPoint(sf::Vector2f &p, double radius)
+bool EditSession::TrySnapPosToPoint(sf::Vector2f &p, double radius, PolyPtr &poly, TerrainPoint *&point)
 {
 	auto & currPolyList = GetCorrectPolygonList();
 
 	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
-		TerrainPoint *closePoint = (*it)->GetClosePoint( radius, V2d(p));
+		TerrainPoint *closePoint = (*it)->GetClosePoint(radius, V2d(p));
 		if (closePoint != NULL)
 		{
-			return Vector2f(closePoint->pos);
+			p = Vector2f(closePoint->pos);
+			poly = (*it);
+			point = closePoint;
+			return true;
 		}
 	}
 
-	return p;
+	return false;
+}
+
+bool EditSession::TrySnapPosToPoint(V2d &p, double radius, PolyPtr &poly, TerrainPoint *&point)
+{
+	auto & currPolyList = GetCorrectPolygonList();
+
+	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
+	{
+		TerrainPoint *closePoint = (*it)->GetClosePoint(radius, V2d(p));
+		if (closePoint != NULL)
+		{
+			p = V2d(closePoint->pos);
+			poly = (*it);
+			point = closePoint;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool EditSession::IsSpecialTerrainMode()
@@ -4381,6 +4408,46 @@ bool EditSession::PolyIntersectsGates(TerrainPolygon *poly)
 	return false;
 }
 
+bool EditSession::GateIntersectsPolys(GateInfo *gi)
+{
+	auto &testPolygons = GetCorrectPolygonList(0);
+
+	for (auto pit = testPolygons.begin(); pit != testPolygons.end(); ++pit)
+	{
+		if ((*pit)->IntersectsGate(gi))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool EditSession::GateIntersectsGates(GateInfo *gi)
+{
+	Vector2i myPoint0, myPoint1, otherPoint0, otherPoint1;
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		if ((*it).get() == gi)
+		{
+			continue;
+		}
+
+		myPoint0 = gi->point0->pos;
+		myPoint1 = gi->point1->pos;
+
+		otherPoint0 = (*it)->point0->pos;
+		otherPoint1 = (*it)->point1->pos;
+
+		LineIntersection li = EditSession::SegmentIntersect(myPoint0, myPoint1, otherPoint0, otherPoint1);
+		if (!li.parallel)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 bool EditSession::PolyGatesIntersectOthers(TerrainPolygon *poly)
 {
 	auto &testPolygons = GetCorrectPolygonList(poly);
@@ -4405,8 +4472,63 @@ bool EditSession::PolyGatesIntersectOthers(TerrainPolygon *poly)
 	return false;
 }
 
+bool EditSession::IsGateInProgressValid(PolyPtr startPoly,
+	TerrainPoint *startPoint)
+{
+	if (gateInProgressTestPoly == NULL)
+	{
+		return false;
+	}
+	else
+	{
+		GateInfo tempGate;
+		tempGate.poly0 = startPoly;
+		tempGate.point0 = startPoint;
+		tempGate.poly1 = gateInProgressTestPoly;
+		tempGate.point1 = gateInProgressTestPoint;
+		return IsGateValid(&tempGate);
+
+	}
+}
+
 bool EditSession::IsGateValid(GateInfo *gi)
 {
+	if (gi->point0 == gi->point1)
+		return false;
+
+	if (GateMakesSliverAngles(gi))
+	{
+		return false;
+	}
+
+	if (GateIntersectsPolys(gi))
+	{
+		return false;
+	}
+
+	if (GateIntersectsGates(gi))
+	{
+		return false;
+	}
+
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		if ((*it)->point0 == gi->point0 || (*it)->point0 == gi->point1
+			|| (*it)->point1 == gi->point0 || (*it)->point1 == gi->point1)
+		{
+			return false;
+		}
+	}
+
+	Vector2f center(Vector2f(gi->point0->pos + gi->point1->pos) / 2.f);
+	if (gi->poly0 == gi->poly1)
+	{
+		if (gi->poly0->ContainsPoint(center))
+		{
+			return false;
+		}
+	}
+
 	//check slivers
 
 	//check intersections
@@ -5404,7 +5526,8 @@ void EditSession::SetDecorParams()
 
 bool EditSession::CanCreateGate( GateInfo &testGate )
 {
-
+	//if (testGate.poly0 == NULL || testGate.poly1 == NULL)
+	//	return false;
 	//this function can later be moved into IsGateValid and cleaned up
 
 	Vector2i v0 = testGate.point0->pos;
@@ -8400,11 +8523,24 @@ void EditSession::DrawGateInProgress()
 		V2d farA = pointB + other * width;
 		V2d farB = pointB - other * width;
 
+		Color c;
+		if (gatePoints == 1)
+		{
+			if (IsGateInProgressValid(testGateInfo.poly0, testGateInfo.point0))
+			{
+				c = Color::White;
+			}
+			else
+			{
+				c = Color::Red;
+			}
+		}
+
 		sf::Vertex quad[4] = {
-			sf::Vertex(Vector2f(closeA.x, closeA.y), Color::White),
-			sf::Vertex(Vector2f(farA.x, farA.y), Color::White),
-			sf::Vertex(Vector2f(farB.x, farB.y), Color::White),
-			sf::Vertex(Vector2f(closeB.x , closeB.y), Color::White)
+			sf::Vertex(Vector2f(closeA.x, closeA.y), c),
+			sf::Vertex(Vector2f(farA.x, farA.y),c),
+			sf::Vertex(Vector2f(farB.x, farB.y), c),
+			sf::Vertex(Vector2f(closeB.x , closeB.y), c)
 		};
 
 		preScreenTex->draw(quad, 4, sf::Quads);
@@ -10023,12 +10159,14 @@ void EditSession::CreateTerrainModeUpdate()
 
 	if (IsKeyPressed(Keyboard::G))
 	{
-		testPoint = SnapPointToGraph(testPoint, graph->graphSpacing);
+		SnapPointToGraph(testPoint, graph->graphSpacing);
 		showGraph = true;
 	}
 	else if (IsKeyPressed(Keyboard::F))
 	{
-		testPoint = SnapPosToPoint(testPoint, 8 * zoomMultiple);
+		PolyPtr p;
+		TerrainPoint *pPoint;
+		TrySnapPosToPoint(testPoint, 8 * zoomMultiple, p, pPoint );
 		showPoints = true;
 	}
 	else
@@ -10051,12 +10189,14 @@ void EditSession::CreateRailsModeUpdate()
 
 	if (IsKeyPressed(Keyboard::G))
 	{
-		testPoint = SnapPointToGraph(testPoint, graph->graphSpacing);
+		SnapPointToGraph(testPoint, graph->graphSpacing);
 		showGraph = true;
 	}
 	else if (IsKeyPressed(Keyboard::F))
 	{
-		testPoint = SnapPosToPoint(testPoint, 8 * zoomMultiple);
+		PolyPtr p;
+		TerrainPoint *pPoint;
+		TrySnapPosToPoint(testPoint, 8 * zoomMultiple, p, pPoint );
 		showPoints = true;
 	}
 	else
@@ -10073,7 +10213,7 @@ void EditSession::EditModeUpdate()
 {
 	if (IsKeyPressed(Keyboard::G))
 	{
-		worldPos = SnapPointToGraph(worldPos, graph->graphSpacing);
+		SnapPointToGraph(worldPos, graph->graphSpacing);
 		showGraph = true;
 	}
 
@@ -10167,6 +10307,15 @@ void EditSession::SetDirectionModeUpdate()
 
 void EditSession::CreateGatesModeUpdate()
 {
+	PolyPtr p = NULL;
+	TerrainPoint *pPoint = NULL;
+	if (gatePoints == 1)
+	{
+		TrySnapPosToPoint(worldPos, 8 * zoomMultiple, p, pPoint );
+	}
+	gateInProgressTestPoly = p;
+	gateInProgressTestPoint = pPoint;
+
 	if (modifyGate != NULL)
 	{
 		GridSelectPop("gateselect");
@@ -10207,7 +10356,7 @@ void EditSession::CreateGatesModeUpdate()
 
 	if (gatePoints > 1)
 	{
-		bool result = CanCreateGate(testGateInfo);
+		bool result = IsGateValid(&testGateInfo);//CanCreateGate(testGateInfo);
 
 		if (result)
 		{
@@ -10256,13 +10405,17 @@ void EditSession::CreateGatesModeUpdate()
 					doneActionStack.push_back(action);
 				}
 			}
+			gatePoints = 0;
 		}
 		else
 		{
-			MessagePop("gate would intersect some terrain");
+			gatePoints = 1;
+			testGateInfo.poly1 = NULL;
+			testGateInfo.point1 = NULL;
+			//MessagePop("gate would intersect some terrain");
 		}
 
-		gatePoints = 0;
+		
 	}
 }
 
