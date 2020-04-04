@@ -7,6 +7,7 @@
 
 struct TerrainPolygon;
 struct TerrainPoint;
+struct ActorParams;
 
 struct GateInfo : ISelectable
 {
@@ -31,6 +32,7 @@ struct GateInfo : ISelectable
 	void WriteFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
 	void DrawPreview(sf::RenderTarget *target);
+	bool IsTouchingEnemy(ActorParams * a);
 	int numKeysRequired;
 	sf::Color color;
 	Gate::GateType type;

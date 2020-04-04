@@ -333,6 +333,13 @@ bool IsEdgeTouchingCircle( sf::Vector2<double> & v0,
 	sf::Vector2<double> &v1, 
 	sf::Vector2<double> &pos, double rad );
 
+bool IsEdgeTouchingQuad(sf::Vector2<double> &v0,
+	sf::Vector2<double> &v1,
+	sf::Vector2<double> &A,
+	sf::Vector2<double> &B,
+	sf::Vector2<double> &C,
+	sf::Vector2<double> &D);
+
 bool WithinDistance(sf::Vector2<double> &A,
 	sf::Vector2<double> &B, double rad);
 

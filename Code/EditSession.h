@@ -713,6 +713,7 @@ struct EditSession : GUIHandler, TilesetManager
 	bool PolyIsTouchingEnemiesOrBeingTouched(
 		TerrainPolygon *p,
 		TerrainPolygon *ignore);
+	bool GateIsTouchingEnemies(GateInfo *gi);
 	bool PolyIntersectsGates(TerrainPolygon *poly);
 	bool GateIntersectsPolys(GateInfo *gi);
 	bool GateIntersectsGates(GateInfo *gi);

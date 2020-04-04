@@ -4395,6 +4395,22 @@ bool EditSession::PolyIsTouchingEnemiesOrBeingTouched( TerrainPolygon *p, Terrai
 	return false;
 }
 
+bool EditSession::GateIsTouchingEnemies(GateInfo *gi)
+{
+	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+	{
+		auto actorList = (*it).second->actors;
+		for (auto ait = actorList.begin(); ait != actorList.end(); ++ait)
+		{
+			if (gi->IsTouchingEnemy((*ait).get()))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 bool EditSession::PolyIntersectsGates(TerrainPolygon *poly)
 {
 	for (auto it = gates.begin(); it != gates.end(); ++it)
@@ -4518,6 +4534,11 @@ bool EditSession::IsGateValid(GateInfo *gi)
 		{
 			return false;
 		}
+	}
+
+	if (GateIsTouchingEnemies(gi))
+	{
+		return false;
 	}
 
 	Vector2f center(Vector2f(gi->point0->pos + gi->point1->pos) / 2.f);

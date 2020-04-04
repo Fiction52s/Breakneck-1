@@ -3,6 +3,7 @@
 #include <fstream>
 #include <SFML/Graphics.hpp>
 #include "Enemy_Shard.h"
+#include "ActorParams.h"
 
 
 using namespace sf;
@@ -94,6 +95,23 @@ void GateInfo::SetShard(int shardW, int shardI)
 	shardSpr.setTextureRect(ts_shard->GetSubRect(shardIndex));
 	shardSpr.setOrigin(shardSpr.getLocalBounds().width / 2,
 		shardSpr.getLocalBounds().height / 2);
+}
+
+bool GateInfo::IsTouchingEnemy(ActorParams * a)
+{
+	assert(poly0 != NULL && poly1 != NULL);
+	sf::VertexArray &bva = a->boundingQuad;
+	
+	V2d p0(point0->pos);
+	V2d p1(point1->pos);
+	if( IsEdgeTouchingQuad( p0, p1, V2d(bva[0].position.x, bva[0].position.y),
+		V2d(bva[1].position.x, bva[1].position.y), V2d(bva[2].position.x, bva[2].position.y),
+		V2d(bva[3].position.x, bva[3].position.y)))
+	{
+		return true;
+	}
+
+	return false;
 }
 
 bool GateInfo::ContainsPoint( V2d &p )

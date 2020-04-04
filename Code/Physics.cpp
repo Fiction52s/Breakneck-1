@@ -1965,6 +1965,37 @@ bool QuadContainsPoint( V2d &A, V2d &B, V2d&C, V2d&D, V2d&point )
 	return false;
 }
 
+bool IsEdgeTouchingQuad(sf::Vector2<double> &v0,
+	sf::Vector2<double> &v1,
+	sf::Vector2<double> &A,
+	sf::Vector2<double> &B,
+	sf::Vector2<double> &C,
+	sf::Vector2<double> &D)
+{
+	LineIntersection li = SegmentIntersect(v0, v1, A, B);
+	if (!li.parallel)
+	{
+		return true;
+	}
+	li = SegmentIntersect(v0, v1, B, C);
+	if (!li.parallel)
+	{
+		return true;
+	}
+	li = SegmentIntersect(v0, v1, C, D);
+	if (!li.parallel)
+	{
+		return true;
+	}
+	li = SegmentIntersect(v0, v1, D, A);
+	if (!li.parallel)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 EdgeQNode *Insert( EdgeQNode *node, Edge* e )
 {
 	if( node->leaf )
