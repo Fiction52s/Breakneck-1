@@ -9974,6 +9974,11 @@ void EditSession::CreateGatesModeHandleEvent()
 		{
 			RedoMostRecentUndoneAction();
 		}
+		else if (ev.key.code == sf::Keyboard::X)
+		{
+			gatePoints = 0;
+			modifyGate = NULL;
+		}
 		break;
 	}
 	case Event::KeyReleased:
