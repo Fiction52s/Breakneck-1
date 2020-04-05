@@ -9977,7 +9977,7 @@ void EditSession::CreateGatesModeHandleEvent()
 		else if (ev.key.code == sf::Keyboard::X)
 		{
 			gatePoints = 0;
-			modifyGate = NULL;
+			//modifyGate = NULL;
 		}
 		break;
 	}

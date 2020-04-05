@@ -485,32 +485,6 @@ bool TerrainPolygon::CanApply()
 	}
 
 	return false;
-
-	//for(list<PolyPtr>::iterator it = currPolyList.begin() ; it != currPolyList.end(); ++it )
-	//{
-	//	if( (*it).get() == this )
-	//		continue;
-	//	
-	//	linesNotOkay = this->LinesTooClose((*it).get(), session->minimumEdgeLength) || this->LinesIntersect((*it).get());
-	//	containsNotOkay = this->Contains((*it).get()) || (*it)->Contains(this);
-
-	//	//fail if intersecting others. ignore containment when dealing w/ inverses for now
-	//	if( linesNotOkay || ( containsNotOkay && !((*it)->inverse || this->inverse )) )
-	//	{
-	//		applyOkay = false;
-	//		break;
-	//	}
-	//}
-
-	//for (auto it = session->gates.begin(); it != session->gates.end(); ++it)
-	//{
-	//	if (IntersectsGate((*it).get()))
-	//	{
-	//		return false;
-	//	}
-	//}
-
-	//return applyOkay;
 }
 
 int TerrainPolygon::GetPointIndex(TerrainPoint *p)
@@ -653,9 +627,10 @@ Vector2i TerrainPolygon::GetExtreme(TerrainPoint *p0,
 	return extreme;
 }
 
-void TerrainPolygon::AlignExtremes(double primLimit,
+bool TerrainPolygon::AlignExtremes(double primLimit,
 	std::vector<PointMoveInfo> &lockPoints)
 {
+	bool adjustedAtAll = false;
 	TerrainPoint *prev;
 	TerrainPoint *next;
 	bool checkPoint;
@@ -664,9 +639,13 @@ void TerrainPolygon::AlignExtremes(double primLimit,
 	int lockPointIndex = 0;
 	assert(lockPoints.empty() || lockPoints.size() == numPoints);
 
+	EditSession *sess = EditSession::GetSession();
+
 	bool lockPointsEmpty = lockPoints.empty();
 	while( adjusted)
 	{
+		RemoveClusters(sess->validityRadius);
+
 		adjusted = false;
 		lockPointIndex = 0;
 
@@ -695,6 +674,7 @@ void TerrainPolygon::AlignExtremes(double primLimit,
 				if (pmi.moveIntent)
 				{
 					adjusted = true;
+					adjustedAtAll = true;
 					if (extreme.x != 0)
 						next->pos.y = curr->pos.y;
 					else
@@ -740,16 +720,60 @@ void TerrainPolygon::AlignExtremes(double primLimit,
 				curr->pos.x = next->pos.x;
 
 			adjusted = true;
+			adjustedAtAll = true;
 		}
 	}
 
-	
+	return adjustedAtAll;
 }
 
-void TerrainPolygon::AlignExtremes( double primLimit )
+bool TerrainPolygon::AlignExtremes( double primLimit )
 {
 	vector<PointMoveInfo> emptyLockPoints;
-	AlignExtremes(primLimit, emptyLockPoints);
+	return AlignExtremes(primLimit, emptyLockPoints);
+}
+
+bool TerrainPolygon::RemoveClusters(double minDist)
+{
+	bool adjusted = false;
+
+	TerrainPoint *curr = pointStart;
+	TerrainPoint *next;
+	TerrainPoint *tempNext;
+
+	double dist;
+	V2d dir;
+	V2d c, n;
+	while (curr != NULL)
+	{
+		next = curr->next;
+		tempNext = curr->next;
+		if (next == NULL)
+		{
+			next = pointStart;
+		}
+
+		c = V2d(curr->pos);
+		n = V2d(next->pos);
+		dir = n - c;
+		dist = length(dir);
+		
+		if (dist < minDist)
+		{
+			normalize(dir);
+			n += dir * (minDist + .5);
+			next->pos = Vector2i(n.x, n.y);
+			//delete point method
+			//RemovePoint(curr);
+
+			cout << "point too close!!!!!" << endl;
+		}
+
+
+		curr = tempNext;
+	}
+
+	return adjusted;
 }
 
 

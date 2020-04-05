@@ -198,9 +198,10 @@ struct TerrainPolygon : ISelectable
 	void FixWinding();
 	void FixWindingInverse();
 	bool IsClockwise();
-	void AlignExtremes(double primLimit);
-	void AlignExtremes(double primLimit,
+	bool AlignExtremes(double primLimit);
+	bool AlignExtremes(double primLimit,
 		std::vector<PointMoveInfo> &lockPoints);
+	bool RemoveClusters(double minDist);
 	//= std::list<TerrainPoint*>() );
 	void UpdateGrass();
 
