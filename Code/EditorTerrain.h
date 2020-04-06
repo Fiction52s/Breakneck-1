@@ -126,6 +126,10 @@ struct TerrainPolygon : ISelectable
 		Count
 	};
 
+
+	TerrainPoint *GetLoopedNext(TerrainPoint *);
+	TerrainPoint *GetLoopedPrev(TerrainPoint *);
+
 	static sf::Vector2i GetExtreme(TerrainPoint *p0,
 		TerrainPoint *p1);
 	//TerrainRender *tr;
@@ -175,7 +179,18 @@ struct TerrainPolygon : ISelectable
 	void SetMaterialType(
 		int world, int variation);
 	void UpdateMaterialType();
-	void RemoveSlivers(double minAngle);
+	void RemoveSlivers();
+
+
+
+	bool TryToMakeInternallyValid();
+	bool IsSliver(TerrainPoint*);
+	bool FixSliver(TerrainPoint *);
+	int FixNearPrimary(TerrainPoint*,bool currLocked = false);
+
+
+
+
 	int GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b,
 		Inter &inter, TerrainPoint *&outSegStart, bool &outFirstPoint);
 	TerrainPoint *GetMostLeftPoint();
@@ -254,22 +269,15 @@ struct TerrainPolygon : ISelectable
 		int minDistance);
 	bool PointTooClose(sf::Vector2i point,
 		int minDistance, bool inProgress = false);
-	bool LinesTooClose(TerrainPolygon *poly,
-		int minDistance);
 	bool PointTooCloseToLines(sf::Vector2i point,
 		int minDistance, bool inProgress = false);
 	bool PointsTooCloseToSegInProgress(sf::Vector2i point,
 		int minDistance, bool finalPoint = false );
-	bool SegmentTooClose(sf::Vector2i a,
-		sf::Vector2i b, int minDistance);
 	bool SegmentWithinDistanceOfPoint(
 		sf::Vector2i startSeg,
 		sf::Vector2i endSeg,
 		sf::Vector2i testPoint,
 		int distance);
-	bool TooClose(TerrainPolygon *poly,
-		bool intersectAllowed,
-		int minDistance);
 	void AddGatesToBrush(Brush *b,
 		std::list<boost::shared_ptr<GateInfo>> &gateInfoList);
 	void AddEnemiesToBrush(Brush *b);

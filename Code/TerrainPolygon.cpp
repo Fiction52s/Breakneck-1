@@ -115,6 +115,24 @@ TerrainPolygon::~TerrainPolygon()
 	ClearPoints();
 }
 
+TerrainPoint * TerrainPolygon::GetLoopedPrev(TerrainPoint *p)
+{
+	TerrainPoint *prev = p->prev;;
+	if (prev == NULL)
+		prev = pointEnd;
+
+	return prev;
+}
+
+TerrainPoint * TerrainPolygon::GetLoopedNext(TerrainPoint *p)
+{
+	TerrainPoint *next = p->next;;
+	if (next == NULL)
+		next = pointStart;
+
+	return next;
+}
+
 void TerrainPolygon::WriteFile(std::ofstream & of)
 {
 	of << terrainWorldType << " " << terrainVariation << endl;
@@ -603,6 +621,34 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 	}
 }
 
+//return 0 on no fix, 1 on moved current point, and 2 on moved next point
+int TerrainPolygon::FixNearPrimary(TerrainPoint* curr, bool currLocked)
+{
+	TerrainPoint *next = GetLoopedNext(curr);
+
+	Vector2i extreme = GetExtreme(curr, next);
+
+	if (extreme.x == 0 && extreme.y == 0)
+		return 0;
+
+	if (currLocked)
+	{
+		if (extreme.x != 0)
+			next->pos.y = curr->pos.y;
+		else
+			next->pos.x = curr->pos.x;
+
+		return 2;
+	}
+
+	if (extreme.x != 0)
+		curr->pos.y = next->pos.y;
+	else
+		curr->pos.x = next->pos.x;
+
+	return 1;
+}
+
 Vector2i TerrainPolygon::GetExtreme(TerrainPoint *p0,
 	TerrainPoint *p1)
 {
@@ -644,43 +690,21 @@ bool TerrainPolygon::AlignExtremes(double primLimit,
 	bool lockPointsEmpty = lockPoints.empty();
 	while( adjusted)
 	{
-		RemoveClusters(sess->validityRadius);
+		//RemoveClusters(sess->validityRadius);
 
 		adjusted = false;
 		lockPointIndex = 0;
-
+		int result;
+		bool isPointLocked;
 		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next, lockPointIndex++)
 		{
-			prev = curr->prev;
-			if (prev == NULL)
+			isPointLocked = !lockPointsEmpty && lockPoints[lockPointIndex].moveIntent;
+			result = FixNearPrimary(curr, isPointLocked);
+
+			if (result > 0)
 			{
-				prev = pointEnd;
-			}
-
-			next = curr->next;
-			if (next == NULL)
-			{
-				next = pointStart;
-			}
-
-			Vector2i extreme = GetExtreme(curr, next);
-
-			if (extreme.x == 0 && extreme.y == 0)
-				continue;
-
-			if (!lockPointsEmpty)
-			{
-				PointMoveInfo &pmi = lockPoints[lockPointIndex];
-				if (pmi.moveIntent)
-				{
-					adjusted = true;
-					adjustedAtAll = true;
-					if (extreme.x != 0)
-						next->pos.y = curr->pos.y;
-					else
-						next->pos.x = curr->pos.x;
-					continue;
-				}
+				adjusted = true;
+				adjustedAtAll = true;
 			}
 			
 			/*if (curr->selected)
@@ -713,14 +737,6 @@ bool TerrainPolygon::AlignExtremes(double primLimit,
 			//		}
 			//	}
 			//}
-
-			if (extreme.x != 0)
-				curr->pos.y = next->pos.y;
-			else
-				curr->pos.x = next->pos.x;
-
-			adjusted = true;
-			adjustedAtAll = true;
 		}
 	}
 
@@ -737,40 +753,65 @@ bool TerrainPolygon::RemoveClusters(double minDist)
 {
 	bool adjusted = false;
 
-	TerrainPoint *curr = pointStart;
-	TerrainPoint *next;
-	TerrainPoint *tempNext;
-
+	TerrainPoint *curr, *next, *tempNext;
 	double dist;
 	V2d dir;
 	V2d c, n;
-	while (curr != NULL)
+	while (adjusted)
 	{
-		next = curr->next;
-		tempNext = curr->next;
-		if (next == NULL)
+		curr = pointStart;
+		while (curr != NULL)
 		{
-			next = pointStart;
+			next = curr->next;
+			tempNext = curr->next;
+			if (next == NULL)
+			{
+				next = pointStart;
+			}
+
+			c = V2d(curr->pos);
+			n = V2d(next->pos);
+			dir = n - c;
+			dist = length(dir);
+
+			if (dist < minDist)
+			{
+				//normalize(dir);
+
+				//choose old points
+
+
+				//choose new points
+				adjusted = true;
+				//merge points
+				RemovePoint(curr);
+				next->pos = Vector2i((c + n) / 2.0);
+
+
+
+				//move old points
+
+				//move new points
+
+
+
+				//move next further away
+				//n += dir * ((minDist - dist) + .5);
+				//next->pos = Vector2i(n.x, n.y);
+
+				//merge points
+
+
+
+				//delete point method
+				//RemovePoint(curr);
+
+				cout << "point too close!!!!!" << endl;
+			}
+
+
+			curr = tempNext;
 		}
-
-		c = V2d(curr->pos);
-		n = V2d(next->pos);
-		dir = n - c;
-		dist = length(dir);
-		
-		if (dist < minDist)
-		{
-			normalize(dir);
-			n += dir * (minDist + .5);
-			next->pos = Vector2i(n.x, n.y);
-			//delete point method
-			//RemovePoint(curr);
-
-			cout << "point too close!!!!!" << endl;
-		}
-
-
-		curr = tempNext;
 	}
 
 	return adjusted;
@@ -1801,10 +1842,7 @@ bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 		return true;
 	}
 
-
 	double minEdge = sess->GetZoomedMinEdgeLength();
-	//if (numPoints == 0 || (numPoints > 0 &&
-		//length(V2d(point.x, point.y) - Vector2<double>(pointEnd->pos.x,pointEnd->pos.y)) >= minEdge))
 	{
 		bool pointTooClose = PointTooClose(point, minEdge, true);
 		bool linesIntersect = LinesIntersectInProgress(point);
@@ -1820,7 +1858,6 @@ bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 
 		return true;
 	}
-	
 
 	return false;
 }
@@ -2073,54 +2110,90 @@ sf::Vector2i TerrainPolygon::TrimSliverPos(sf::Vector2<double> &prevPos,
 	}
 }
 
-//angle in radians
-void TerrainPolygon::RemoveSlivers( double minAngle )
-{	
-	//check for slivers that are at too extreme of an angle. tiny triangle type things
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
-	{
-		TerrainPoint *prev, *next;
-		if (curr == pointStart)
-		{
-			prev = pointEnd;
-		}
-		else
-		{
-			prev = curr->prev;
-		}
-
-		TerrainPoint *temp = curr->next;
-		if (temp == NULL)
-		{
-			next = pointStart;
-		}
-		else
-		{
-			next = curr->next;
-		}
-
-		//test for minimum angle difference between edges
-		V2d pos(curr->pos.x, curr->pos.y);
-		V2d prevPos(prev->pos.x, prev->pos.y);
-		V2d nextPos(next->pos.x, next->pos.y);
-		V2d dirA = normalize(prevPos - pos);
-		V2d dirB = normalize(nextPos - pos);
-
-		double diff = GetVectorAngleDiffCCW(dirA, dirB);
-		double diffCW = GetVectorAngleDiffCW(dirA, dirB);
-		if ( diff < minAngle )
-		{
-			Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, true);
-			curr->pos = trimPos;
-		}
-		else if( diffCW < minAngle )
-		{
-			Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, false);
-			curr->pos = trimPos;
-		}
-	}
+bool TerrainPolygon::TryToMakeInternallyValid()
+{
+	return false;
+	//remove slivers
+	//align extremes
+	//fix clusters
 }
 
+bool TerrainPolygon::FixSliver(TerrainPoint *curr)
+{
+	double minAngle = EditSession::SLIVER_LIMIT;
+	TerrainPoint *prev, *next;
+	prev = GetLoopedPrev(curr);
+	next = GetLoopedNext(curr);
+
+	V2d pos(curr->pos.x, curr->pos.y);
+	V2d prevPos(prev->pos.x, prev->pos.y);
+	V2d nextPos(next->pos.x, next->pos.y);
+	V2d dirA = normalize(prevPos - pos);
+	V2d dirB = normalize(nextPos - pos);
+
+	double diff = GetVectorAngleDiffCCW(dirA, dirB);
+	double diffCW = GetVectorAngleDiffCW(dirA, dirB);
+	if (diff < minAngle)
+	{
+		Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, true);
+		curr->pos = trimPos;
+		return true;
+	}
+	else if (diffCW < minAngle)
+	{
+		Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, false);
+		curr->pos = trimPos;
+		return true;
+	}
+
+	return false;
+}
+
+bool TerrainPolygon::IsSliver(TerrainPoint*curr)
+{
+	double minAngle = EditSession::SLIVER_LIMIT;
+	TerrainPoint *prev, *next;
+	prev = GetLoopedPrev(curr);
+	next = GetLoopedNext(curr);
+
+	V2d pos(curr->pos.x, curr->pos.y);
+	V2d prevPos(prev->pos.x, prev->pos.y);
+	V2d nextPos(next->pos.x, next->pos.y);
+	V2d dirA = normalize(prevPos - pos);
+	V2d dirB = normalize(nextPos - pos);
+
+	double diff = GetVectorAngleDiffCCW(dirA, dirB);
+	double diffCW = GetVectorAngleDiffCW(dirA, dirB);
+	if (diff < minAngle)
+	{
+		return true;
+		//Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, true);
+		//curr->pos = trimPos;
+
+		//affectedPoints.push_back(curr);
+	}
+	else if (diffCW < minAngle)
+	{
+		return true;
+		//Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, false);
+		//curr->pos = trimPos;
+
+		//affectedPoints.push_back(curr);
+	}
+
+	return false;
+}
+
+//angle in radians
+void TerrainPolygon::RemoveSlivers()
+{	
+	//check for slivers that are at too extreme of an angle. tiny triangle type things
+
+	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	{
+		FixSliver(curr);
+	}
+}
 
 void TerrainPolygon::InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint )
 {
@@ -2801,130 +2874,6 @@ bool TerrainPolygon::SegmentWithinDistanceOfPoint( sf::Vector2i startSeg, sf::Ve
 	return false;
 }
 
-//doesn't check for line intersections. just point/line distances for validity
-bool TerrainPolygon::SegmentTooClose( Vector2i a, Vector2i b, int minDistance )
-{
-	//if points are too close to points, or too close to lines
-	//if my points are too close to his lines
-	if( PointTooClose( a, minDistance ) || PointTooClose( b, minDistance ) )
-	{
-		cout << "pointtoo close" << endl;
-		return true;
-	}
-	else
-	{
-		for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-		{
-			TerrainPoint *prev;
-			if( curr == pointStart )
-			{
-				prev = pointEnd;
-			}
-			else
-			{
-				prev = curr->prev;
-			}
-
-			if( SegmentWithinDistanceOfPoint( a,b, curr->pos, minDistance ) )
-			{
-				cout << "line stuff" << endl;
-				return true;
-			}
-		}
-		return false;
-	}
-}
-
-bool TerrainPolygon::LinesTooClose( TerrainPolygon *poly, int minDistance )
-{
-	//my lines with his points
-	for( TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next )
-	{
-		Vector2i oldPoint, currPoint;
-		if( pcurr == poly->pointStart )
-		{
-			oldPoint = poly->pointEnd->pos;
-		}
-		else
-		{
-			oldPoint = pcurr->prev->pos;
-		}
-
-		currPoint = pcurr->pos;
-
-		if( SegmentTooClose( oldPoint, currPoint, minDistance ) )
-		{
-			cout << "lines 1" << endl;
-			return true;
-		}
-	}
-
-	//his lines with my points
-	for( TerrainPoint *pcurr = pointStart; pcurr != NULL; pcurr = pcurr->next )
-	{
-		Vector2i oldPoint, currPoint;
-		if( pcurr == pointStart )
-		{
-			oldPoint = pointEnd->pos;
-		}
-		else
-		{
-			oldPoint = pcurr->prev->pos;
-		}
-
-		currPoint = pcurr->pos;
-
-		if( poly->SegmentTooClose( oldPoint, currPoint, minDistance ) )
-		{
-			cout << "lines 2" << endl;
-			return true;
-		}
-	}
-
-	/*for( list<GateInfo*>::iterator git = poly->attachedGates.begin(); git != poly->attachedGates.end(); ++git )
-	{
-		LineIntersection li = LimitSegmentIntersect( (*git)->v0, (*git)->v1, oldPoint, point );
-		if( !li.parallel )
-		{
-		//	return false;
-		}
-	}*/
-
-
-	return false;
-
-		//if( !IsPointValid( oldPoint, currPoint, this ) )
-		//{
-		//	cout << "b: old: " << oldPoint.x << ", " << oldPoint.y << ", curr: " << currPoint.x << ", " << currPoint.y << endl;
-		//	return false;
-		//}
-		//IsPointValid(
-}
-
-bool TerrainPolygon::TooClose( TerrainPolygon *poly, bool intersectAllowed, int minDistance )
-{
-	if( LinesTooClose( poly, minDistance ) )
-	{
-		cout << "reason 1" << endl;
-		return true;
-	}
-
-	if( intersectAllowed )
-	{
-		return false;
-	}
-	else
-	{
-		if( LinesIntersect( poly ) )
-		{
-			cout << "reason 2" << endl;
-			return true;
-		}
-	}
-
-	return false;
-}
-
 TerrainPoint *TerrainPolygon::GetClosePoint(double radius, V2d &wPos)
 {
 	if (wPos.x <= right + radius && wPos.x >= left - radius
@@ -3202,6 +3151,8 @@ bool TerrainPoint::ContainsPoint( Vector2f test )
 	bool contains = length( V2d( test.x, test.y ) - V2d( pos.x, pos.y ) ) <= POINT_RADIUS;
 	return contains;
 }
+
+
 
 bool TerrainPoint::Intersects( IntRect rect )
 {

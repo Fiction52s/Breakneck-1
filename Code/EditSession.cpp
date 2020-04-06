@@ -2197,7 +2197,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	shardSelectPopup = CreatePopupPanel("shardselector");
 
 	confirm = CreatePopupPanel( "confirmation" );
-	validityRadius = 4;
+	validityRadius = 1;
 
 
 	modifyGate = NULL;
@@ -3310,7 +3310,7 @@ void EditSession::TryRemoveSelectedPoints()
 
 			PolyPtr newPoly(new TerrainPolygon(*tp, true, true));
 			newPoly->RemoveSelectedPoints();
-			newPoly->RemoveSlivers(SLIVER_LIMIT);
+			newPoly->RemoveSlivers();
 			newPoly->AlignExtremes(PRIMARY_LIMIT);
 			newPoly->Finalize();
 
@@ -6184,7 +6184,7 @@ bool EditSession::ExecuteTerrainCompletion()
 				else
 				{
 					polygonInProgress->FixWinding();
-					polygonInProgress->RemoveSlivers(SLIVER_LIMIT);
+					polygonInProgress->RemoveSlivers();
 					polygonInProgress->AlignExtremes(PRIMARY_LIMIT);
 					polygonInProgress->Finalize();
 
@@ -6588,7 +6588,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	outPoly->SetMaterialType(currTerrainWorld, currTerrainVar );//poly->terrainWorldType,
 									   //poly->terrainVariation);
-	outPoly->RemoveSlivers(SLIVER_LIMIT);
+	outPoly->RemoveSlivers();
 	outPoly->AlignExtremes(PRIMARY_LIMIT);
 
 	outPoly->inverse = inverse;
@@ -6836,7 +6836,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 	for (auto it = resultsPtr.begin(); it != resultsPtr.end(); ++it)
 	{
-		(*it)->RemoveSlivers(SLIVER_LIMIT);
+		(*it)->RemoveSlivers();
 		(*it)->AlignExtremes(PRIMARY_LIMIT);
 		(*it)->Finalize();
 	}
