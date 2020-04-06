@@ -218,8 +218,8 @@ struct TerrainPolygon : ISelectable
 	void FixWinding();
 	void FixWindingInverse();
 	bool IsClockwise();
-	bool AlignExtremes(double primLimit);
-	bool AlignExtremes(double primLimit,
+	bool AlignExtremes();
+	bool AlignExtremes(
 		std::vector<PointMoveInfo> &lockPoints);
 	bool RemoveClusters(double minDist);
 	bool RemoveClusters(std::list<TerrainPoint*> &checkPoints);
@@ -271,6 +271,9 @@ struct TerrainPolygon : ISelectable
 	bool IsCompletionValid();
 	void CopyPointsToClipperPath(ClipperLib::Path & p);
 	void AddPointsFromClipperPath(ClipperLib::Path &p);
+	void AddPointsFromClipperPath(ClipperLib::Path &p,
+		ClipperLib::Path &clipperIntersections,
+		std::list<TerrainPoint*> &intersections );
 	bool PointTooCloseToPoints(sf::Vector2i point,
 		int minDistance);
 	bool PointTooClose(sf::Vector2i point,

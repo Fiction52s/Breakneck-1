@@ -1472,9 +1472,9 @@ bool ClipperBase::LocalMinimaPending()
 // TClipper methods ...
 //------------------------------------------------------------------------------
 
-std::list<IntPoint> &Clipper::GetTestIntersections()
+Path &Clipper::GetIntersectPath()
 {
-	return m_testIntersectList;
+	return m_intersectPath;
 }
 
 Clipper::Clipper(int initOptions) : ClipperBase() //constructor
@@ -1514,7 +1514,7 @@ bool Clipper::Execute(ClipType clipType, PolyTree &polytree, PolyFillType fillTy
 bool Clipper::Execute(ClipType clipType, Paths &solution,
     PolyFillType subjFillType, PolyFillType clipFillType)
 {
-	m_testIntersectList.clear();
+	m_intersectPath.clear();
   if( m_ExecuteLocked ) return false;
   if (m_HasOpenPaths)
     throw clipperException("Error: PolyTree struct is needed for open path clipping.");
@@ -2755,14 +2755,14 @@ void Clipper::ProcessHorizontal(TEdge *horzEdge)
         {
           IntPoint Pt = IntPoint(e->Curr.X, horzEdge->Curr.Y);
           IntersectEdges(horzEdge, e, Pt);
-		  m_testIntersectList.push_back(Pt);
+		  m_intersectPath.push_back(Pt);
 		 // std::cout << "intersectionA: " << Pt.X << ", " << Pt.Y << std::endl;
         }
         else
         {
           IntPoint Pt = IntPoint(e->Curr.X, horzEdge->Curr.Y);
           IntersectEdges( e, horzEdge, Pt);
-		  m_testIntersectList.push_back(Pt);
+		  m_intersectPath.push_back(Pt);
 		//  std::cout << "intersectionB: " << Pt.X << ", " << Pt.Y << std::endl;
         }
         TEdge* eNext = GetNextInAEL(e, dir);
@@ -2920,7 +2920,7 @@ void Clipper::ProcessIntersectList()
   {
     IntersectNode* iNode = m_IntersectList[i];
     {
-		m_testIntersectList.push_back(iNode->Pt);
+		m_intersectPath.push_back(iNode->Pt);
 		//std::cout << "inverse intersect?" << iNode->Pt.X << ", " << iNode->Pt.Y << std::endl;
       IntersectEdges( iNode->Edge1, iNode->Edge2, iNode->Pt);
       SwapPositionsInAEL( iNode->Edge1 , iNode->Edge2 );

@@ -322,9 +322,6 @@ bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 
 bool TerrainPolygon::IsInternallyValid()
 {
-	//I feel like this shouldn't be here...
-	//AlignExtremes(EditSession::PRIMARY_LIMIT);
-
 	EditSession *sess = EditSession::GetSession();
 
 	if (inverse)
@@ -673,9 +670,9 @@ Vector2i TerrainPolygon::GetExtreme(TerrainPoint *p0,
 	return extreme;
 }
 
-bool TerrainPolygon::AlignExtremes(double primLimit,
-	std::vector<PointMoveInfo> &lockPoints)
+bool TerrainPolygon::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 {
+	double primLimit = EditSession::PRIMARY_LIMIT;
 	bool adjustedAtAll = false;
 	TerrainPoint *prev;
 	TerrainPoint *next;
@@ -743,10 +740,10 @@ bool TerrainPolygon::AlignExtremes(double primLimit,
 	return adjustedAtAll;
 }
 
-bool TerrainPolygon::AlignExtremes( double primLimit )
+bool TerrainPolygon::AlignExtremes()
 {
 	vector<PointMoveInfo> emptyLockPoints;
-	return AlignExtremes(primLimit, emptyLockPoints);
+	return AlignExtremes(emptyLockPoints);
 }
 
 bool TerrainPolygon::RemoveClusters(double minDist)
@@ -1249,7 +1246,7 @@ void TerrainPolygon::SetupGrass(TerrainPoint *curr, int &i )
 
 void TerrainPolygon::Finalize()
 {
-	AlignExtremes(EditSession::PRIMARY_LIMIT);
+	AlignExtremes();
 
 	if (inverse)
 	{
@@ -3104,6 +3101,26 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p)
 	for (auto it = p.begin(); it != p.end(); ++it )
 	{
 		AddPoint(new TerrainPoint(Vector2i((*it).X, (*it).Y), false));
+	}
+}
+
+void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p, ClipperLib::Path &clipperIntersections,
+	list<TerrainPoint*> &intersections)
+{
+	TerrainPoint *t;
+	for (auto it = p.begin(); it != p.end(); ++it)
+	{
+		t = new TerrainPoint(Vector2i((*it).X, (*it).Y), false);
+		for (auto intersectIt = clipperIntersections.begin(); intersectIt != clipperIntersections.end(); ++intersectIt)
+		{
+			if ((*intersectIt).X == (*it).X && (*intersectIt).Y == (*it).Y)
+			{
+				intersections.push_back(t);
+				break;
+			}
+		}
+
+		AddPoint(t);
 	}
 }
 

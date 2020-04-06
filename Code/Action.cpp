@@ -557,7 +557,7 @@ void MoveBrushAction::Perform()
 			PolyPtr poly = (*it).first;
 			if (sess->IsPolygonValid(poly.get(), NULL))
 			{
-				poly->AlignExtremes(EditSession::PRIMARY_LIMIT, (*it).second);
+				poly->AlignExtremes((*it).second);
 				if (!sess->IsPolygonValid(poly.get(), NULL))
 				{
 					moveValid = false;
@@ -608,7 +608,7 @@ void MoveBrushAction::Perform()
 				/*for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 				{
 					PolyPtr poly = (*it).first;
-					poly->AlignExtremes(EditSession::PRIMARY_LIMIT, (*it).second);
+					poly->AlignExtremes((*it).second);
 				}*/
 
 				for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
@@ -616,7 +616,7 @@ void MoveBrushAction::Perform()
 					PolyPtr poly = (*it).first;
 					if (sess->IsPolygonValid(poly.get(), NULL))
 					{
-						poly->AlignExtremes(EditSession::PRIMARY_LIMIT, (*it).second);
+						poly->AlignExtremes((*it).second);
 						if (!sess->IsPolygonValid(poly.get(), NULL))
 						{
 							moveValid = false;

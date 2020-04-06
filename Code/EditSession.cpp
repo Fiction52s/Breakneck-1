@@ -3311,7 +3311,7 @@ void EditSession::TryRemoveSelectedPoints()
 			PolyPtr newPoly(new TerrainPolygon(*tp, true, true));
 			newPoly->RemoveSelectedPoints();
 			newPoly->RemoveSlivers();
-			newPoly->AlignExtremes(PRIMARY_LIMIT);
+			newPoly->AlignExtremes();
 			newPoly->Finalize();
 
 			newPolys.push_back(newPoly);
@@ -6185,7 +6185,7 @@ bool EditSession::ExecuteTerrainCompletion()
 				{
 					polygonInProgress->FixWinding();
 					polygonInProgress->RemoveSlivers();
-					polygonInProgress->AlignExtremes(PRIMARY_LIMIT);
+					polygonInProgress->AlignExtremes();
 					polygonInProgress->Finalize();
 
 					SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(polygonInProgress);
@@ -6534,9 +6534,10 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	PolyPtr outPoly(new TerrainPolygon(&grassTex));
 
-	list<ClipperLib::IntPoint> allIntersections;
+	ClipperLib::Path clipperIntersections;
+	polygonInProgress->CopyPointsToClipperPath(clipperIntersections);
 
-	list<TerrainPoint*> terrainIntersections;
+	list<TerrainPoint*> newPoints;
 
 	if (otherSize > 0)
 	{
@@ -6559,33 +6560,16 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
 		c.Execute(ClipperLib::ClipType::ctUnion, solution);
 		
-		list<ClipperLib::IntPoint> &testList = c.GetTestIntersections();
-		for (auto it = testList.begin(); it != testList.end(); ++it)
-		{
-			allIntersections.push_back((*it));
-			//cout << "intersection1: " << (*it).X << ", " << (*it).Y << endl;
-		}
+		ClipperLib::Path &intersectPath = c.GetIntersectPath();
+
+
+		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
+		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
 
 		if (!inverse)
 		{
-			TerrainPoint *t;
-			ClipperLib::Path &p = solution[0];
-			for (auto it = p.begin(); it != p.end(); ++it)
-			{
-				t = new TerrainPoint(Vector2i((*it).X, (*it).Y), false);
-				for (auto intersectIt = allIntersections.begin(); intersectIt != allIntersections.end(); ++intersectIt)
-				{
-					if ((*intersectIt).X == (*it).X && (*intersectIt).Y == (*it).Y)
-					{
-						terrainIntersections.push_back(t);
-					}
-				}
-				
-				outPoly->AddPoint(t);
-			}
-
-			outPoly->RemoveClusters(terrainIntersections);
-			//outPoly->AddPointsFromClipperPath(solution[0]);
+			outPoly->AddPointsFromClipperPath(solution[0], clipperIntersections, newPoints);
+			outPoly->RemoveClusters(newPoints);
 		}
 		else
 		{
@@ -6610,18 +6594,17 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 		c.Execute(ClipperLib::ClipType::ctDifference, inverseSolution);
 
-		list<ClipperLib::IntPoint> &testList = c.GetTestIntersections();
-		for (auto it = testList.begin(); it != testList.end(); ++it)
-		{
-			allIntersections.push_back((*it));
-			//cout << "intersection2: " << (*it).X << ", " << (*it).Y << endl;
-		}
+		ClipperLib::Path &intersectPath = c.GetIntersectPath();
 
-		outPoly->AddPointsFromClipperPath(inverseSolution[0]);
+		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
+		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
+
+		outPoly->AddPointsFromClipperPath(inverseSolution[0], clipperIntersections, newPoints);
+		outPoly->RemoveClusters(newPoints);
 	}
 
 
-	for (auto it = allIntersections.begin(); it != allIntersections.end(); ++it)
+	for (auto it = clipperIntersections.begin(); it != clipperIntersections.end(); ++it)
 	{
 		cout << "intersection1: " << (*it).X << ", " << (*it).Y << endl;
 	}
@@ -6631,7 +6614,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	outPoly->SetMaterialType(currTerrainWorld, currTerrainVar );//poly->terrainWorldType,
 									   //poly->terrainVariation);
 	outPoly->RemoveSlivers();
-	outPoly->AlignExtremes(PRIMARY_LIMIT);
+	outPoly->AlignExtremes();
 
 	outPoly->inverse = inverse;
 	outPoly->Finalize();
@@ -6811,12 +6794,12 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 			c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
 			c.Execute(ClipperLib::ClipType::ctDifference, solution);
 
-			list<ClipperLib::IntPoint> &testList = c.GetTestIntersections();
-			for (auto it = testList.begin(); it != testList.end(); ++it)
-			{
-				allIntersections.push_back((*it));
-				//cout << "intersection3: " << (*it).X << ", " << (*it).Y << endl;
-			}
+			ClipperLib::Path &intersectPath = c.GetIntersectPath();
+			//for (auto it = testList.begin(); it != testList.end(); ++it)
+			//{
+			//	allIntersections.push_back((*it));
+			//	//cout << "intersection3: " << (*it).X << ", " << (*it).Y << endl;
+			//}
 
 			for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 			{
@@ -6839,12 +6822,12 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 		c.Execute(ClipperLib::ClipType::ctUnion, inverseSolution);
 
-		list<ClipperLib::IntPoint> &testList = c.GetTestIntersections();
-		for (auto it = testList.begin(); it != testList.end(); ++it)
-		{
-			allIntersections.push_back((*it));
-			//cout << "intersection4: " << (*it).X << ", " << (*it).Y << endl;
-		}
+		ClipperLib::Path &intersectPath = c.GetIntersectPath();
+		//for (auto it = testList.begin(); it != testList.end(); ++it)
+		//{
+		//	allIntersections.push_back((*it));
+		//	//cout << "intersection4: " << (*it).X << ", " << (*it).Y << endl;
+		//}
 
 		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
 		{
@@ -6901,7 +6884,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 	for (auto it = resultsPtr.begin(); it != resultsPtr.end(); ++it)
 	{
 		(*it)->RemoveSlivers();
-		(*it)->AlignExtremes(PRIMARY_LIMIT);
+		(*it)->AlignExtremes();
 		(*it)->Finalize();
 	}
 
