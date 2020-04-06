@@ -2121,13 +2121,15 @@ bool TerrainPolygon::TryToMakeInternallyValid()
 bool TerrainPolygon::IsClustered(TerrainPoint*curr)
 {
 	bool adjusted = false;
-
+	
+	TerrainPoint *prev = GetLoopedPrev(curr);
 	TerrainPoint *next = GetLoopedNext(curr);
 	V2d c(curr->pos);
 	V2d n(next->pos);
+	V2d p(prev->pos);
 
 	double minDist = EditSession::POINT_SIZE;
-	if (length(n - c) < minDist)
+	if (length(n - c) < minDist || length( c - p ) < minDist )
 	{
 		return true;
 	}

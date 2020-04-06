@@ -6534,6 +6534,10 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	PolyPtr outPoly(new TerrainPolygon(&grassTex));
 
+	list<ClipperLib::IntPoint> allIntersections;
+
+	list<TerrainPoint*> terrainIntersections;
+
 	if (otherSize > 0)
 	{
 		//setup intersected polys
@@ -6555,9 +6559,33 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
 		c.Execute(ClipperLib::ClipType::ctUnion, solution);
 		
+		list<ClipperLib::IntPoint> &testList = c.GetTestIntersections();
+		for (auto it = testList.begin(); it != testList.end(); ++it)
+		{
+			allIntersections.push_back((*it));
+			//cout << "intersection1: " << (*it).X << ", " << (*it).Y << endl;
+		}
+
 		if (!inverse)
 		{
-			outPoly->AddPointsFromClipperPath(solution[0]);
+			TerrainPoint *t;
+			ClipperLib::Path &p = solution[0];
+			for (auto it = p.begin(); it != p.end(); ++it)
+			{
+				t = new TerrainPoint(Vector2i((*it).X, (*it).Y), false);
+				for (auto intersectIt = allIntersections.begin(); intersectIt != allIntersections.end(); ++intersectIt)
+				{
+					if ((*intersectIt).X == (*it).X && (*intersectIt).Y == (*it).Y)
+					{
+						terrainIntersections.push_back(t);
+					}
+				}
+				
+				outPoly->AddPoint(t);
+			}
+
+			outPoly->RemoveClusters(terrainIntersections);
+			//outPoly->AddPointsFromClipperPath(solution[0]);
 		}
 		else
 		{
@@ -6582,8 +6610,23 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 		c.Execute(ClipperLib::ClipType::ctDifference, inverseSolution);
 
+		list<ClipperLib::IntPoint> &testList = c.GetTestIntersections();
+		for (auto it = testList.begin(); it != testList.end(); ++it)
+		{
+			allIntersections.push_back((*it));
+			//cout << "intersection2: " << (*it).X << ", " << (*it).Y << endl;
+		}
+
 		outPoly->AddPointsFromClipperPath(inverseSolution[0]);
 	}
+
+
+	for (auto it = allIntersections.begin(); it != allIntersections.end(); ++it)
+	{
+		cout << "intersection1: " << (*it).X << ", " << (*it).Y << endl;
+	}
+
+	//outPoly->RemoveClusters(allIntersections);
 
 	outPoly->SetMaterialType(currTerrainWorld, currTerrainVar );//poly->terrainWorldType,
 									   //poly->terrainVariation);
@@ -6741,6 +6784,8 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 	//add original stuff to the original brush
 	list<GateInfoPtr> gateInfoList;
 
+	list<ClipperLib::IntPoint> allIntersections;
+
 
 	AddFullPolysToBrush(intersectingPolys, gateInfoList, &orig);
 
@@ -6766,6 +6811,13 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 			c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
 			c.Execute(ClipperLib::ClipType::ctDifference, solution);
 
+			list<ClipperLib::IntPoint> &testList = c.GetTestIntersections();
+			for (auto it = testList.begin(); it != testList.end(); ++it)
+			{
+				allIntersections.push_back((*it));
+				//cout << "intersection3: " << (*it).X << ", " << (*it).Y << endl;
+			}
+
 			for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 			{
 				TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
@@ -6786,6 +6838,13 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
 
 		c.Execute(ClipperLib::ClipType::ctUnion, inverseSolution);
+
+		list<ClipperLib::IntPoint> &testList = c.GetTestIntersections();
+		for (auto it = testList.begin(); it != testList.end(); ++it)
+		{
+			allIntersections.push_back((*it));
+			//cout << "intersection4: " << (*it).X << ", " << (*it).Y << endl;
+		}
 
 		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
 		{
@@ -6821,6 +6880,12 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 				break;
 			}
 		}
+	}
+
+
+	for (auto it = allIntersections.begin(); it != allIntersections.end(); ++it)
+	{
+		cout << "intersection2: " << (*it).X << ", " << (*it).Y << endl;
 	}
 
 	for (auto it = results.begin(); it != results.end(); ++it)

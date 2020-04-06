@@ -18,6 +18,8 @@ struct TerrainRender;
 struct TerrainRail;
 struct Brush;
 
+struct QuadTree;
+
 struct GrassSeg
 {
 	GrassSeg(int edgeI, int grassIndex, int rep)
@@ -125,7 +127,7 @@ struct TerrainPolygon : ISelectable
 		WATER0,
 		Count
 	};
-
+	QuadTree *edgeTree;
 
 	TerrainPoint *GetLoopedNext(TerrainPoint *);
 	TerrainPoint *GetLoopedPrev(TerrainPoint *);

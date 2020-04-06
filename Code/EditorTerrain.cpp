@@ -2,6 +2,7 @@
 #include "Physics.h"
 #include "EditSession.h"
 #include "EditorRail.h"
+#include "QuadTree.h"
 
 using namespace std;
 using namespace sf;
