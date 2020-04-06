@@ -393,12 +393,14 @@ void TerrainPiece::Draw(sf::RenderTarget *target)
 		if (owner->showTerrainDecor)
 		{
 			tr->Draw(target);
+
+			for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+			{
+				(*it)->Draw(target);
+			}
 		}
 
-		for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
-		{
-			(*it)->Draw(target);
-		}
+		
 	}
 }
 

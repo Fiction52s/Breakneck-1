@@ -2197,7 +2197,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	shardSelectPopup = CreatePopupPanel("shardselector");
 
 	confirm = CreatePopupPanel( "confirmation" );
-	validityRadius = 1;
+	validityRadius = 4;
 
 
 	modifyGate = NULL;
@@ -2371,7 +2371,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	UpdateFullBounds();
 	
 	panning = false;
-	minimumEdgeLength = 8;
+	minimumEdgeLength = 8;//8;
 
 	Color borderColor = sf::Color::Green;
 	int max = 1000000;
@@ -6553,7 +6553,6 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		c.AddPaths(other, ClipperLib::PolyType::ptSubject, true);
 
 		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
-
 		c.Execute(ClipperLib::ClipType::ctUnion, solution);
 		
 		if (!inverse)

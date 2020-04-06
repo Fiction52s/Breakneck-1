@@ -2118,6 +2118,40 @@ bool TerrainPolygon::TryToMakeInternallyValid()
 	//fix clusters
 }
 
+bool TerrainPolygon::IsClustered(TerrainPoint*curr)
+{
+	bool adjusted = false;
+
+	TerrainPoint *next = GetLoopedNext(curr);
+	V2d c(curr->pos);
+	V2d n(next->pos);
+
+	double minDist = EditSession::POINT_SIZE;
+	if (length(n - c) < minDist)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool TerrainPolygon::RemoveClusters(std::list<TerrainPoint*> &checkPoints)
+{
+	bool adjusted = false;
+	TerrainPoint *p;
+	for (auto it = checkPoints.begin(); it != checkPoints.end(); ++it)
+	{
+		p = (*it);
+		if (IsClustered(p))
+		{
+			RemovePoint(p);
+			adjusted = true;
+		}
+	}
+
+	return adjusted;
+}
+
 bool TerrainPolygon::FixSliver(TerrainPoint *curr)
 {
 	double minAngle = EditSession::SLIVER_LIMIT;

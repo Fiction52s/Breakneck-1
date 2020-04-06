@@ -343,7 +343,7 @@ struct EditSession : GUIHandler, TilesetManager
 	ActorParams* tempActor;
 	MapHeader mapHeader;
 
-	const static int POINT_SIZE = 5;
+	const static int POINT_SIZE = 4;
 	double GetZoomedPointSize();
 
 	const static double PRIMARY_LIMIT;
