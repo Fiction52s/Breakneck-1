@@ -6535,6 +6535,8 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	PolyPtr outPoly(new TerrainPolygon(&grassTex));
 
 	ClipperLib::Path clipperIntersections;
+	//if I want to speed this up later, only care about these points when they are on the OUTSIDE of the target polys
+	//for add and on the INSIDE for subtract
 	polygonInProgress->CopyPointsToClipperPath(clipperIntersections);
 
 	list<TerrainPoint*> newPoints;
@@ -6561,8 +6563,6 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		c.Execute(ClipperLib::ClipType::ctUnion, solution);
 		
 		ClipperLib::Path &intersectPath = c.GetIntersectPath();
-
-
 		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
 		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
 
@@ -6601,12 +6601,6 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 		outPoly->AddPointsFromClipperPath(inverseSolution[0], clipperIntersections, newPoints);
 		outPoly->RemoveClusters(newPoints);
-	}
-
-
-	for (auto it = clipperIntersections.begin(); it != clipperIntersections.end(); ++it)
-	{
-		cout << "intersection1: " << (*it).X << ", " << (*it).Y << endl;
 	}
 
 	//outPoly->RemoveClusters(allIntersections);
@@ -6767,8 +6761,9 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 	//add original stuff to the original brush
 	list<GateInfoPtr> gateInfoList;
 
-	list<ClipperLib::IntPoint> allIntersections;
+	ClipperLib::Path clipperIntersections;
 
+	list<TerrainPoint*> newPoints;
 
 	AddFullPolysToBrush(intersectingPolys, gateInfoList, &orig);
 
@@ -6783,7 +6778,6 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 				continue;
 			}
 
-
 			
 			c.Clear();
 			solution.clear();
@@ -6795,16 +6789,19 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 			c.Execute(ClipperLib::ClipType::ctDifference, solution);
 
 			ClipperLib::Path &intersectPath = c.GetIntersectPath();
-			//for (auto it = testList.begin(); it != testList.end(); ++it)
-			//{
-			//	allIntersections.push_back((*it));
-			//	//cout << "intersection3: " << (*it).X << ", " << (*it).Y << endl;
-			//}
+
+			clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
+			clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
+
+			/*if (!inverse)
+			{
+				outPoly->AddPointsFromClipperPath(solution[0], clipperIntersections, newPoints);*/
 
 			for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 			{
 				TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
-				newPoly->AddPointsFromClipperPath((*sit));
+				newPoly->AddPointsFromClipperPath((*sit), clipperIntersections, newPoints );
+				newPoly->RemoveClusters(newPoints);
 				newPoly->SetMaterialType((*it)->terrainWorldType, (*it)->terrainVariation);
 				results.push_back(newPoly);
 			}
@@ -6823,6 +6820,9 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 		c.Execute(ClipperLib::ClipType::ctUnion, inverseSolution);
 
 		ClipperLib::Path &intersectPath = c.GetIntersectPath();
+
+		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
+		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
 		//for (auto it = testList.begin(); it != testList.end(); ++it)
 		//{
 		//	allIntersections.push_back((*it));
@@ -6833,8 +6833,8 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 		{
 			TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
 
-			newPoly->AddPointsFromClipperPath((*it));
-
+			newPoly->AddPointsFromClipperPath((*it), clipperIntersections, newPoints);
+			newPoly->RemoveClusters(newPoints);
 			newPoly->SetMaterialType(inversePolygon->terrainWorldType, 
 				inversePolygon->terrainVariation );
 
@@ -6866,10 +6866,10 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 	}
 
 
-	for (auto it = allIntersections.begin(); it != allIntersections.end(); ++it)
+	/*for (auto it = allIntersections.begin(); it != allIntersections.end(); ++it)
 	{
 		cout << "intersection2: " << (*it).X << ", " << (*it).Y << endl;
-	}
+	}*/
 
 	for (auto it = results.begin(); it != results.end(); ++it)
 	{

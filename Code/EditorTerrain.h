@@ -189,7 +189,7 @@ struct TerrainPolygon : ISelectable
 	bool IsSliver(TerrainPoint*);
 	bool FixSliver(TerrainPoint *);
 
-	bool IsClustered(TerrainPoint*);
+	TerrainPoint * IsClustered(TerrainPoint*);
 	//bool IsClustered(TerrainPoint *);
 	int FixNearPrimary(TerrainPoint*,bool currLocked = false);
 
@@ -222,7 +222,8 @@ struct TerrainPolygon : ISelectable
 	bool AlignExtremes(
 		std::vector<PointMoveInfo> &lockPoints);
 	bool RemoveClusters(double minDist);
-	bool RemoveClusters(std::list<TerrainPoint*> &checkPoints);
+	bool RemoveClusters(
+		std::list<TerrainPoint*> &checkPoints);
 	//= std::list<TerrainPoint*>() );
 	void UpdateGrass();
 

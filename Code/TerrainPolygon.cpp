@@ -685,7 +685,7 @@ bool TerrainPolygon::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 	EditSession *sess = EditSession::GetSession();
 
 	bool lockPointsEmpty = lockPoints.empty();
-	while( adjusted)
+	while (adjusted)
 	{
 		//RemoveClusters(sess->validityRadius);
 
@@ -703,7 +703,7 @@ bool TerrainPolygon::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 				adjusted = true;
 				adjustedAtAll = true;
 			}
-			
+
 			/*if (curr->selected)
 			{
 				if (extreme.x != 0)
@@ -2115,7 +2115,7 @@ bool TerrainPolygon::TryToMakeInternallyValid()
 	//fix clusters
 }
 
-bool TerrainPolygon::IsClustered(TerrainPoint*curr)
+TerrainPoint * TerrainPolygon::IsClustered(TerrainPoint*curr)
 {
 	bool adjusted = false;
 	
@@ -2126,27 +2126,44 @@ bool TerrainPolygon::IsClustered(TerrainPoint*curr)
 	V2d p(prev->pos);
 
 	double minDist = EditSession::POINT_SIZE;
-	if (length(n - c) < minDist || length( c - p ) < minDist )
+	if (length(n - c) < minDist )
 	{
-		return true;
+		return next;
 	}
-
-	return false;
+	else if (length(c - p) < minDist)
+	{
+		return prev;
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 bool TerrainPolygon::RemoveClusters(std::list<TerrainPoint*> &checkPoints)
 {
 	bool adjusted = false;
 	TerrainPoint *p;
-	for (auto it = checkPoints.begin(); it != checkPoints.end(); ++it)
+	TerrainPoint *clusterP;
+	list<TerrainPoint*> oldPoints;
+	for (auto it = checkPoints.begin(); it != checkPoints.end();)
 	{
 		p = (*it);
-		if (IsClustered(p))
+		clusterP = IsClustered(p);
+		if (clusterP != NULL )
 		{
 			RemovePoint(p);
 			adjusted = true;
+			checkPoints.erase(it++);
+			oldPoints.push_back(clusterP);
+		}
+		else
+		{
+			++it;
 		}
 	}
+
+	checkPoints.insert(checkPoints.end(), oldPoints.begin(), oldPoints.end());
 
 	return adjusted;
 }
