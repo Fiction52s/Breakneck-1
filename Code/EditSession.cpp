@@ -6825,7 +6825,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
 		//for (auto it = testList.begin(); it != testList.end(); ++it)
 		//{
-		//	allIntersections.push_back((*it));
+		//	allIntersections.push_back((*it));$
 		//	//cout << "intersection4: " << (*it).X << ", " << (*it).Y << endl;
 		//}
 
@@ -7708,7 +7708,7 @@ void EditSession::TryAddPointToPolygonInProgress()
 {
 	if (!panning && IsMousePressed(Mouse::Left))
 	{
-		Vector2i worldi(testPoint.x, testPoint.y);
+		Vector2i worldi(round(testPoint.x), round(testPoint.y));
 
 		bool validPoint = polygonInProgress->IsValidInProgressPoint(worldi);//true;
 
@@ -8325,13 +8325,15 @@ void EditSession::DrawPolygonInProgress()
 	if (progressSize > 0)
 	{
 		Vector2i backPoint = polygonInProgress->pointEnd->pos;
+		Vector2i worldi = Vector2i(round(testPoint.x), round(testPoint.y));
+
 
 		Color validColor = Color::Green;
 		Color invalidColor = Color::Red;
 		Color colorSelection;
 
-		bool valid = polygonInProgress->IsValidInProgressPoint(Vector2i(testPoint));
-
+		bool valid = polygonInProgress->IsValidInProgressPoint(worldi);
+		//cout << "draw testpoint: " << testPoint.x << ", " << testPoint.y << endl;
 		if (valid)
 		{
 			colorSelection = validColor;
@@ -8361,12 +8363,11 @@ void EditSession::DrawPolygonInProgress()
 			{
 				v[i] = Vertex(Vector2f(curr->pos.x, curr->pos.y), validColor);
 				++i;
-			}	
+			}
 		}
 
-
 		v[i] = Vertex(Vector2f(backPoint), colorSelection);
-		v[i + 1] = Vertex(Vector2f(testPoint), colorSelection);
+		v[i + 1] = Vertex(Vector2f(worldi), colorSelection);
 
 		
 		preScreenTex->draw(v);
