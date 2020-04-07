@@ -6152,9 +6152,18 @@ bool EditSession::ExecuteTerrainCompletion()
 
 		polygonInProgress->UpdateBounds();
 
+
+
 		bool applyOkay = true;
 		for(; it != testPolygons.end(); ++it )
 		{
+			if ((*it)->Contains(polygonInProgress.get()))
+			{
+				applyOkay = false;
+				polygonInProgress->ClearPoints();
+				break;
+			}
+
 			if( polygonInProgress->LinesIntersect( (*it).get() ) )
 			{
 				//not too close and I intersect, so I can add
@@ -6164,7 +6173,7 @@ bool EditSession::ExecuteTerrainCompletion()
 
 		if( !applyOkay )
 		{
-			MessagePop( "polygon is invalid!!! new message" );
+			//MessagePop( "polygon is invalid!!! new message" );
 		}
 		else
 		{
