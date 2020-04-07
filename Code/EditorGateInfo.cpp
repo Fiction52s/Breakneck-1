@@ -146,32 +146,10 @@ sf::IntRect GateInfo::GetAABB()
 
 void GateInfo::WriteFile(ofstream &of)
 {
-	int index0 = 0, index1 = 0;
-	int numP0 = poly0->GetNumPoints();
-	int numP1 = poly1->GetNumPoints();
-	TerrainPoint *curr;//poly0->pointStart;
-	for (int i = 0; i < numP0; ++i)
-	{
-		curr = poly0->GetPoint(i);
-		if (curr == point0)
-			break;
-
-		++index0;
-	}
-
-	for (int i = 0; i < numP1; ++i)
-	{
-		curr = poly1->GetPoint(i);
-		if (curr == point1)
-			break;
-
-		++index1;
-	}
-
 	//will eventually spit out the gate value
 	//but for now its just a constant to resave all the files
 	of << (int)type << " " << poly0->writeIndex << " "
-		<< index0 << " " << poly1->writeIndex << " " << index1 << " ";
+		<< point0->GetIndex() << " " << poly1->writeIndex << " " << point1->GetIndex() << " ";
 
 	if (type == Gate::SHARD)
 	{

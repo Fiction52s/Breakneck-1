@@ -194,6 +194,7 @@ struct TerrainPolygon : ISelectable
 	TerrainPoint * AddPoint(sf::Vector2i &p, bool sel);
 	int GetNumPoints();
 	void RemovePoint(TerrainPoint *tp);
+	void RemoveLastPoint();
 	void ClearPoints();
 	void SetMaterialType(
 		int world, int variation);
@@ -290,6 +291,8 @@ struct TerrainPolygon : ISelectable
 	void AddEnemiesToBrush(Brush *b);
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 	bool IsCloseToFirstPoint(double radius, V2d &p);
+	int GetNumSelectedPoints();
+	TerrainPolygon *CreateCopyWithSelectedPointsRemoved();
 	sf::Color selectCol;
 	sf::Color fillCol;
 

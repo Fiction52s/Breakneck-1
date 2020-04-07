@@ -3139,10 +3139,7 @@ void EditSession::ClearSelectedPoints()
 
 void EditSession::RemovePointFromPolygonInProgress()
 {
-	if (polygonInProgress->GetNumPoints() > 0)
-	{
-		polygonInProgress->RemovePoint(polygonInProgress->GetEndPoint());
-	}
+	polygonInProgress->RemoveLastPoint();
 }
 
 void EditSession::RemovePointFromRailInProgress()
@@ -3262,9 +3259,9 @@ void EditSession::TryRemoveSelectedPoints()
 {
 	//need to make this into an undoable action soon
 
-	int removeSuccess = IsRemovePointsOkay();
+	//int removeSuccess = IsRemovePointsOkay();
 
-	if (removeSuccess == 1)
+	//if (removeSuccess == 1)
 	{
 		Brush orig;
 		Brush result;
@@ -3272,21 +3269,53 @@ void EditSession::TryRemoveSelectedPoints()
 		list<GateInfoPtr> gateInfoList;
 		list<PolyPtr> affectedPolys;
 		list<PolyPtr> newPolys;
+		bool valid = true;
 		for (PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
 		{
 			PolyPtr tp = (*it).first;
 			affectedPolys.push_back(tp);
 
-			PolyPtr newPoly(new TerrainPolygon(*tp, true, true));
-			newPoly->RemoveSelectedPoints();
-			newPoly->RemoveSlivers();
-			newPoly->AlignExtremes();
-			newPoly->Finalize();
+			PolyPtr newPoly(tp->CreateCopyWithSelectedPointsRemoved());
 
+			if (newPoly != NULL)
+			{
+				newPoly->RemoveSlivers();
+				newPoly->AlignExtremes();
+			}
+			else
+			{
+				valid = false;
+			}
+			
+			if (valid)
+			{
+				if (!IsPolygonValid(newPoly.get(), tp.get()))
+				{
+					valid = false;
+				}
+			}
+
+			if (!valid)
+			{
+				newPoly.reset();
+				for (auto pit = newPolys.begin(); pit != newPolys.end(); ++pit)
+				{
+					(*pit).reset();
+				}
+				MessagePop("problem removing points");
+				return;
+			}
+			
 			newPolys.push_back(newPoly);
-
-			result.AddObject(newPoly);
 		}
+
+		for (auto it = newPolys.begin(); it != newPolys.end(); ++it)
+		{
+			(*it)->Finalize();
+			result.AddObject((*it));
+		}
+
+		ClearSelectedPoints();
 
 		AddFullPolysToBrush(affectedPolys, gateInfoList, &orig);
 
@@ -3302,10 +3331,10 @@ void EditSession::TryRemoveSelectedPoints()
 
 		ClearUndoneActions();
 	}
-	else if (removeSuccess == 0)
+	/*else if (removeSuccess == 0)
 	{
 		MessagePop("problem removing points");
-	}
+	}*/
 }
 
 bool EditSession::PointSelectActor( V2d &pos )

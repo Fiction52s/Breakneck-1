@@ -44,8 +44,6 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
-
-
 	
 	//tr = NULL;
 	EditSession *session = EditSession::GetSession();
@@ -101,8 +99,6 @@ TerrainPolygon::~TerrainPolygon()
 
 	if (grassVA != NULL)
 		delete grassVA;
-
-	//DestroyEnemies();
 
 	ClearPoints();
 }
@@ -1345,21 +1341,19 @@ bool TerrainPolygon::ContainsPoint( Vector2f test )
 
 	int i = 0;
 
-	TerrainPoint *it;
-	TerrainPoint *jt = GetPoint(GetNumPoints()-1);
+	TerrainPoint *it, *jt;
 
 	int numP = GetNumPoints();
 	for (int i = 0; i < numP; ++i)
 	{
 		it = GetPoint(i);
+		jt = GetPrevPoint(i);
 
 		Vector2f point(it->pos.x, it->pos.y);
 		Vector2f pointJ(jt->pos.x, jt->pos.y);
 		if (((point.y > test.y) != (pointJ.y > test.y)) &&
 			(test.x < (pointJ.x - point.x) * (test.y - point.y) / (pointJ.y - point.y) + point.x))
 			c = !c;
-
-		jt = it;
 	}
 
 
@@ -1753,6 +1747,9 @@ void TerrainPolygon::RemoveSlivers()
 
 void TerrainPolygon::RemovePoint( TerrainPoint *tp )
 {
+	//this can only be used when there are no gates or enemies in use on a polygon
+
+
 	/*assert( pointStart != NULL );
 
 	if (tp->prev != NULL)
@@ -1783,6 +1780,23 @@ void TerrainPolygon::RemovePoint( TerrainPoint *tp )
 
 
 	--numPoints;*/
+}
+
+void TerrainPolygon::RemoveLastPoint()
+{
+	if (pointVector.empty())
+		return;
+
+	TerrainPoint *end = GetEndPoint();
+
+	if (finalized || end->gate != NULL || enemies[end].size() != 0)
+	{
+		assert(0); //cant remove points when things are attached!
+	}
+	else
+	{
+		pointVector.pop_back();
+	}
 }
 
 void TerrainPolygon::Reset()
@@ -1822,40 +1836,96 @@ void TerrainPolygon::ClearPoints()
 }
 
 
-bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
+int TerrainPolygon::GetNumSelectedPoints()
 {
-	return false;
-	/*TerrainPolygon tempPoly( grassTex );
-
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	int numP = GetNumPoints();
+	int numSelected = 0;
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
-		if( !curr->selected )
+		curr = GetPoint(i);
+		if (curr->selected)
 		{
-			tempPoly.AddPoint( new TerrainPoint(*curr) );
+			++numSelected;
 		}
 	}
 
-	tempPoly.FixWinding();
+	return numSelected;
+}
+
+TerrainPolygon *TerrainPolygon::CreateCopyWithSelectedPointsRemoved()
+{
+	int numP = GetNumPoints();
+	int numDeletePoints = GetNumSelectedPoints();
+	int newPolyPoints = numP - numDeletePoints;
+
+	if (newPolyPoints < 3)
+	{
+		return NULL;
+	}
+
+
+	TerrainPolygon *newPoly = new TerrainPolygon(grassTex);
+	newPoly->Reserve(newPolyPoints);
+
+	newPoly->layer = 0;
+	newPoly->inverse = inverse;
+	newPoly->terrainWorldType = terrainWorldType;
+	newPoly->terrainVariation = terrainVariation;
+
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		if (!curr->selected)
+		{
+			newPoly->AddPoint(curr->pos, false);
+		}
+	}
+
+	return newPoly;
+}
+
+bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
+{
+	TerrainPolygon tempPoly( grassTex );
+
+	int numP = GetNumPoints();
+	int numDeletePoints = GetNumSelectedPoints();
+
+	tempPoly.Reserve(numP - numDeletePoints);
+
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		if (!curr->selected)
+		{
+			tempPoly.AddPoint(curr->pos, false);
+		}
+	}
+
+	tempPoly.inverse = inverse;
+	//tempPoly.FixWinding();
 
 	bool isPolyValid = edit->IsPolygonValid( &tempPoly, this );
 
 	
-	return isPolyValid;*/
+	return isPolyValid;
 }
 
 //0 means a window came up and they canceled. -1 means no enemies were in danger on that polygon, 1 means that you confirmed to delete the enemies
 int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 {
-	/*for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
+	TerrainPoint *next;
+	for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
 	{
 		for( list<ActorPtr>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
 		{
-			TerrainPoint *edgeEnd = (*it)->groundInfo->edgeStart->next;
-			if( edgeEnd == NULL )
-				edgeEnd = (*it)->groundInfo->ground->pointStart;
+			next = (*it)->groundInfo->ground->GetNextPoint((*it)->groundInfo->edgeStart->index);
 
 			if( (*it)->type->CanBeGrounded() && 
-				( (*(*it)->groundInfo->edgeStart).selected || edgeEnd->selected ) )
+				( (*(*it)->groundInfo->edgeStart).selected || next->selected ) )
 			{
 				bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");
 
@@ -1869,7 +1939,7 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 				}
 			}
 		}
-	}*/
+	}
 
 	return -1;	
 }
@@ -1916,42 +1986,25 @@ TerrainPolygon *TerrainPolygon::Copy()
 
 void TerrainPolygon::CopyPoints(TerrainPolygon *poly, bool storeSelected )
 {
-	/*bool sel;
-	if (storeSelected)
-	{
-		sel = poly->pointStart->selected;
-	}
-	else
-	{
-		sel = false;
-	}
+	bool sel;
+	int polyNumP = poly->GetNumPoints();
+	Reserve(polyNumP);
 
-	TerrainPoint *start = new TerrainPoint(poly->pointStart->pos, sel );
-	pointStart = start;
-	
-	TerrainPoint *prev = pointStart;
-	TerrainPoint *it = poly->pointStart->next;
-	TerrainPoint *newPoint;
-
-	for (; it != NULL; it = it->next)
+	TerrainPoint *polyCurr;
+	for (int i = 0; i < polyNumP; ++i)
 	{
+		polyCurr = poly->GetPoint(i);
 		if (storeSelected)
 		{
-			sel = it->selected;
+			sel = polyCurr->selected;
 		}
 		else
 		{
 			sel = false;
 		}
 
-		newPoint = new TerrainPoint(it->pos, sel);
-		prev->next = newPoint;
-		newPoint->prev = prev;
-		prev = newPoint;
+		AddPoint(polyCurr->pos, sel);
 	}
-
-	pointEnd = prev;
-	numPoints = poly->numPoints;*/
 }
 
 bool TerrainPolygon::IsTouchingEnemiesFromPoly(TerrainPolygon *p)
