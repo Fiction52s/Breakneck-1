@@ -471,14 +471,7 @@ void PoisonFrogParams::UpdatePath()
 
 	V2d fireDir;
 	TerrainPoint *curr = groundInfo->edgeStart;
-	TerrainPoint *next;
-
-	if( curr->next == NULL )
-		next = groundInfo->ground->pointStart;
-	else
-	{
-		next = curr->next;
-	}
+	TerrainPoint *next = groundInfo->ground->GetNextPoint(groundInfo->edgeStart->index);
 
 	V2d e( next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
 	e = normalize( e );
@@ -631,14 +624,10 @@ void CurveTurretParams::UpdateBulletCurve()
 	int squareRad = 4;// * EditSession::zoomMultiple;
 	Vector2f pos( position.x, position.y );
 	V2d fireDir;
+
+	
 	TerrainPoint *curr = groundInfo->edgeStart;
-	TerrainPoint *next;
-	if( curr->next == NULL )
-		next = groundInfo->ground->pointStart;
-	else
-	{
-		next = curr->next;
-	}
+	TerrainPoint *next = groundInfo->ground->GetNextPoint(groundInfo->edgeStart->index);
 
 	V2d e( next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
 	V2d groundDir = normalize( e );

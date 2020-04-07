@@ -685,10 +685,10 @@ void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 		}
 		else
 		{
-			assert(a->groundInfo->railGround != NULL);
+			/*assert(a->groundInfo->railGround != NULL);
 			TerrainRail *rail = a->groundInfo->railGround;
 			rail->enemies[a->groundInfo->edgeStart].push_back(a);
-			rail->UpdateBounds();
+			rail->UpdateBounds();*/
 		}
 	}
 }

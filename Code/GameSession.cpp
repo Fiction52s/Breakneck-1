@@ -4455,398 +4455,400 @@ void GameSession::CreateZones()
 	}
 	//OpenGates(Gate::CRAWLER_UNLOCK);
 	//no gates, no zones!
-	for( int i = 0; i < numGates; ++i )
-	{
-		Gate *g = gates[i];
-
-		if (!g->IsZoneType())
-		{
-			continue;
-		}
-		//cout << "gate index: " << i << ", a: " << g->edgeA->v0.x << ", " << g->edgeA->v0.y << ", b: "
-		//	<< g->edgeA->v1.x << ", " << g->edgeA->v1.y << endl;
-		
-		Edge *curr = g->edgeA;
-
-		TerrainPolygon tp( NULL );
-		V2d v0 = curr->v0;
-		V2d v1 = curr->v1;
-		list<Edge*> currGates;
-		list<Gate*> ignoreGates;
-		
-		currGates.push_back( curr );
-		
-
-		tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
-
-		curr = curr->edge1;
-		while( true )
-		{
-			if( curr->v0 == g->edgeA->v0 )//curr == g->edgeA )
-			{
-				//we found a zone!
-
-				if( !tp.IsClockwise() )
-				{
-					//cout << "found a zone aaa!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
-					bool okayZone = true;
 
 
-					for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit )
-					{
-						for( list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit )
-						{
-							for( list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git )
-							{
-								if( (*cit) == (*git) )
-								{
-									okayZone = false;
-								}
-							}
-							//for( list<Gate*>::iterator git =
-							
-						}
-					}
+	//for( int i = 0; i < numGates; ++i )
+	//{
+	//	Gate *g = gates[i];
 
-					if( okayZone )
-					{
-						Zone *z = new Zone( this, tp );
-						z->gates = currGates;
-						zones.push_back( z );
-					//	cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
-					//	cout << "actually creating a new zone   1! with " << z->gates.size() << endl;
-					}
-					
+	//	if (!g->IsZoneType())
+	//	{
+	//		continue;
+	//	}
+	//	//cout << "gate index: " << i << ", a: " << g->edgeA->v0.x << ", " << g->edgeA->v0.y << ", b: "
+	//	//	<< g->edgeA->v1.x << ", " << g->edgeA->v1.y << endl;
+	//	
+	//	Edge *curr = g->edgeA;
 
-				}
-				else
-				{
-					//cout << "woulda been a zone" << endl;
-				}
+	//	TerrainPolygon tp( NULL );
+	//	V2d v0 = curr->v0;
+	//	V2d v1 = curr->v1;
+	//	list<Edge*> currGates;
+	//	list<Gate*> ignoreGates;
+	//	
+	//	currGates.push_back( curr );
+	//	
 
-				break;
-			}
-			else if( curr == g->edgeB )
-			{
-				//currGates.push_back( curr );
-				//cout << "not a zone even" << endl;
-				break;
-			}
+	//	tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+	//	curr = curr->edge1;
+	//	while( true )
+	//	{
+	//		if( curr->v0 == g->edgeA->v0 )//curr == g->edgeA )
+	//		{
+	//			//we found a zone!
+
+	//			if( !tp.IsClockwise() )
+	//			{
+	//				//cout << "found a zone aaa!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
+	//				bool okayZone = true;
 
 
-			tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+	//				for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit )
+	//				{
+	//					for( list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit )
+	//					{
+	//						for( list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git )
+	//						{
+	//							if( (*cit) == (*git) )
+	//							{
+	//								okayZone = false;
+	//							}
+	//						}
+	//						//for( list<Gate*>::iterator git =
+	//						
+	//					}
+	//				}
 
-			if( curr->edgeType == Edge::CLOSED_GATE )
-			{
-				Gate *thisGate = (Gate*)curr->info;
-				//this loop is so both sides of a gate can't be hit in the same zone
-				bool okayGate = true;
-				bool quitLoop = false;
-				for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
-				{
-					Gate *otherGate = (Gate*)(*it)->info;
-					
+	//				if( okayZone )
+	//				{
+	//					Zone *z = new Zone( this, tp );
+	//					z->gates = currGates;
+	//					zones.push_back( z );
+	//				//	cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
+	//				//	cout << "actually creating a new zone   1! with " << z->gates.size() << endl;
+	//				}
+	//				
 
-					if( otherGate == thisGate )
-					{
-						//currGates.erase( it );
-						okayGate = false;
-						break;
-					}
-				}
+	//			}
+	//			else
+	//			{
+	//				//cout << "woulda been a zone" << endl;
+	//			}
 
-				if( !okayGate )
-				{
-					currGates.push_back( curr );
-					Edge *cc = curr->edge0;
-					//TerrainPoint *tempPoint = NULL;
-					TerrainPoint *tempPoint = tp.pointEnd;
-					tp.RemovePoint( tempPoint );
-					delete tempPoint;
-					//cout << "removing from a( " << g << " ) start: " << tp.numPoints << endl;
-					
-					while( true )
-					{
-						if( cc->edgeType == Edge::CLOSED_GATE )
-						{
-							Gate *ccGate = (Gate*)cc->info;
-							if( ccGate == thisGate )
-								break;
-							else
-							{
-								bool foundIgnore = false;
-								for( list<Gate*>::iterator it = ignoreGates.begin(); it != ignoreGates.end(); ++it )
-								{
-									if( (*it) == ccGate )
-									{
-										foundIgnore = true;
-										break;
-									}
-								}
-
-								if( foundIgnore )
-								{
-									Edge *temp = cc->edge1;
-									ccGate->SetLocked( false );
-									cc = temp->edge0;
-									ccGate->SetLocked( true );
-									continue;
-								}
-							}
-						}
+	//			break;
+	//		}
+	//		else if( curr == g->edgeB )
+	//		{
+	//			//currGates.push_back( curr );
+	//			//cout << "not a zone even" << endl;
+	//			break;
+	//		}
 
 
-						if( true )
-						//if( tp.pointStart != NULL )
-						{
-							tempPoint = tp.pointEnd;
-							tp.RemovePoint( tempPoint );
-							delete tempPoint;
-							//cout << "removing from a: " << tp.numPoints << endl;
+	//		tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
 
-							if( tp.pointStart == tp.pointEnd )
-							{
-								quitLoop = true;
-								break;
-							}
-						}
-						else
-						{
-							quitLoop = true;
-							break;
-						}
+	//		if( curr->edgeType == Edge::CLOSED_GATE )
+	//		{
+	//			Gate *thisGate = (Gate*)curr->info;
+	//			//this loop is so both sides of a gate can't be hit in the same zone
+	//			bool okayGate = true;
+	//			bool quitLoop = false;
+	//			for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
+	//			{
+	//				Gate *otherGate = (Gate*)(*it)->info;
+	//				
 
-						cc = cc->edge0;
-					}
+	//				if( otherGate == thisGate )
+	//				{
+	//					//currGates.erase( it );
+	//					okayGate = false;
+	//					break;
+	//				}
+	//			}
 
-					if( quitLoop )
-					{
-						//cout << "quitloop a" << endl;
-						break;
-					}
+	//			if( !okayGate )
+	//			{
+	//				currGates.push_back( curr );
+	//				Edge *cc = curr->edge0;
+	//				//TerrainPoint *tempPoint = NULL;
+	//				TerrainPoint *tempPoint = tp.pointEnd;
+	//				tp.RemovePoint( tempPoint );
+	//				delete tempPoint;
+	//				//cout << "removing from a( " << g << " ) start: " << tp.numPoints << endl;
+	//				
+	//				while( true )
+	//				{
+	//					if( cc->edgeType == Edge::CLOSED_GATE )
+	//					{
+	//						Gate *ccGate = (Gate*)cc->info;
+	//						if( ccGate == thisGate )
+	//							break;
+	//						else
+	//						{
+	//							bool foundIgnore = false;
+	//							for( list<Gate*>::iterator it = ignoreGates.begin(); it != ignoreGates.end(); ++it )
+	//							{
+	//								if( (*it) == ccGate )
+	//								{
+	//									foundIgnore = true;
+	//									break;
+	//								}
+	//							}
 
-					Edge *pr = cc->edge0;
-					thisGate->SetLocked( false );
-					curr = pr->edge1->edge1;
-					//tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
-					ignoreGates.push_back( thisGate );
-					thisGate->SetLocked( true );
-
-					//cout << "GATE IS NOT OKAY A: " << tp.numPoints << endl;
-					//break;
-					continue;
-				}
-				else
-				{
-					//cout << "found another gate AA: " <<  << endl;
-				}
-
-				//cout << "found another gate AA" << endl;
-				currGates.push_back( curr );
-			}
-			else
-			{
-
-			}
-			curr = curr->edge1;
-		}
-
-		
-		currGates.clear();
-		ignoreGates.clear();
-
-		curr = g->edgeB;
-
-		
-		currGates.push_back( curr );
-		
-
-		TerrainPolygon tpb( NULL );
-
-		tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
-
-		curr = curr->edge1;
-		while( true )
-		{
-			if( curr->v0 == g->edgeB->v0 )//curr == g->edgeB )
-			{
-				//we found a zone!
-
-				if( !tpb.IsClockwise() )
-				{
-					//cout << "found a zone bbb!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
-					bool okayZone = true;
-					for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit )
-					{
-						for( list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit )
-						{
-							for( list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git )
-							{
-								if( (*cit) == (*git) )
-								{
-									okayZone = false;
-								}
-							}
-							//for( list<Gate*>::iterator git =
-							
-						}
-					}
-
-					if( okayZone )
-					{
-						Zone *z = new Zone( this, tpb );
-						//cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
-						z->gates = currGates;
-						zones.push_back( z );
-						//cout << "actually creating a new zone   2! with " << z->gates.size() << endl;
-					}
-					
-
-				}
-				else
-				{
-					//cout << "woulda been a zone" << endl;
-				}
-
-				break;
-			}
-			else if( curr == g->edgeA )
-			{
-				//currGates.push_back( curr );
-				//cout << "not a zone even b" << endl;
-				break;
-			}
+	//							if( foundIgnore )
+	//							{
+	//								Edge *temp = cc->edge1;
+	//								ccGate->SetLocked( false );
+	//								cc = temp->edge0;
+	//								ccGate->SetLocked( true );
+	//								continue;
+	//							}
+	//						}
+	//					}
 
 
-			tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+	//					if( true )
+	//					//if( tp.pointStart != NULL )
+	//					{
+	//						tempPoint = tp.pointEnd;
+	//						tp.RemovePoint( tempPoint );
+	//						delete tempPoint;
+	//						//cout << "removing from a: " << tp.numPoints << endl;
 
-			if( curr->edgeType == Edge::CLOSED_GATE )
-			{
-				bool quitLoop = false;
-				bool okayGate = true;
-				Gate *thisGate = (Gate*)curr->info;
-				for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
-				{
-					Gate *otherGate = (Gate*)(*it)->info;
-					
+	//						if( tp.pointStart == tp.pointEnd )
+	//						{
+	//							quitLoop = true;
+	//							break;
+	//						}
+	//					}
+	//					else
+	//					{
+	//						quitLoop = true;
+	//						break;
+	//					}
 
-					if( otherGate == thisGate )
-					{
-						okayGate = false;
-						break;
-					}
-				}
+	//					cc = cc->edge0;
+	//				}
 
-				if( !okayGate )
-				{
-					currGates.push_back( curr );
-					//TerrainPoint *tempPoint = NULL;
-					TerrainPoint *tempPoint = tpb.pointEnd;
-					tpb.RemovePoint( tempPoint );
-					delete tempPoint;
-					//cout << "removing from b( " << g << " ) start: " << tpb.numPoints << endl;
+	//				if( quitLoop )
+	//				{
+	//					//cout << "quitloop a" << endl;
+	//					break;
+	//				}
 
-					Edge *cc = curr->edge0;
-					
-					
-					while( true )
-					{
-						if( cc->edgeType == Edge::CLOSED_GATE )
-						{
-							
-							Gate *ccGate = (Gate*)cc->info;
-							if( ccGate == thisGate )
-								break;
-							else
-							{
-								bool foundIgnore = false;
-								for( list<Gate*>::iterator it = ignoreGates.begin(); it != ignoreGates.end(); ++it )
-								{
-									if( (*it) == ccGate )
-									{
-										foundIgnore = true;
-										break;
-									}
-								}
+	//				Edge *pr = cc->edge0;
+	//				thisGate->SetLocked( false );
+	//				curr = pr->edge1->edge1;
+	//				//tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+	//				ignoreGates.push_back( thisGate );
+	//				thisGate->SetLocked( true );
 
-								if( foundIgnore )
-								{
-									Edge *temp = cc->edge1;
-									ccGate->SetLocked( false );
-									cc = temp->edge0;
-									ccGate->SetLocked( true );
-									continue;
-								}
-								//for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
-								//{
-								//	//Gate *otherGate = (Gate*)(*it)->info;
-					
-								//	if( 
-								//	//if( otherGate == thisGate )
-								//	//{
-								//	//	okayGate = false;
-								//	//	break;
-								//	//}
-								//}
-							}
-						}
+	//				//cout << "GATE IS NOT OKAY A: " << tp.numPoints << endl;
+	//				//break;
+	//				continue;
+	//			}
+	//			else
+	//			{
+	//				//cout << "found another gate AA: " <<  << endl;
+	//			}
 
-						if( true )
-						//if( tpb.pointStart != NULL )
-						{
-							tempPoint = tpb.pointEnd;
-							tpb.RemovePoint( tempPoint );
-							delete tempPoint;
-							//cout << "removing from b: " << tpb.numPoints << endl;
-							if( tpb.pointStart == tpb.pointEnd )
-							{
-								quitLoop = true;
-								break;
-							}
-								
-						}
-						else
-						{
-							quitLoop = true;
-							break;
-						}
-						
-						
-						cc = cc->edge0;
+	//			//cout << "found another gate AA" << endl;
+	//			currGates.push_back( curr );
+	//		}
+	//		else
+	//		{
 
-						
-						
-					}
+	//		}
+	//		curr = curr->edge1;
+	//	}
 
-					if( quitLoop )
-					{
-						//cout << "quitloop b" << endl;
-						break;
-					}
+	//	
+	//	currGates.clear();
+	//	ignoreGates.clear();
 
-					Edge *pr = cc->edge0;
-					thisGate->SetLocked( false );
-					curr = pr->edge1->edge1;
-					//tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
-					ignoreGates.push_back( thisGate );
-					thisGate->SetLocked( true );
-					//cout << "GATE IS NOT OKAY B: " << tpb.numPoints << endl;
-					continue;
-				}
-				else
-				{
-				//	cout << "found another gate BB: " << curr-> << endl;
-				}
+	//	curr = g->edgeB;
 
-				
-				currGates.push_back( curr );
-			}
+	//	
+	//	currGates.push_back( curr );
+	//	
 
-			curr = curr->edge1;
-		}
-		
-		//tp.AddPoint( new TerrainPoint( 
-	}
+	//	TerrainPolygon tpb( NULL );
+
+	//	tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+	//	curr = curr->edge1;
+	//	while( true )
+	//	{
+	//		if( curr->v0 == g->edgeB->v0 )//curr == g->edgeB )
+	//		{
+	//			//we found a zone!
+
+	//			if( !tpb.IsClockwise() )
+	//			{
+	//				//cout << "found a zone bbb!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
+	//				bool okayZone = true;
+	//				for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit )
+	//				{
+	//					for( list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit )
+	//					{
+	//						for( list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git )
+	//						{
+	//							if( (*cit) == (*git) )
+	//							{
+	//								okayZone = false;
+	//							}
+	//						}
+	//						//for( list<Gate*>::iterator git =
+	//						
+	//					}
+	//				}
+
+	//				if( okayZone )
+	//				{
+	//					Zone *z = new Zone( this, tpb );
+	//					//cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
+	//					z->gates = currGates;
+	//					zones.push_back( z );
+	//					//cout << "actually creating a new zone   2! with " << z->gates.size() << endl;
+	//				}
+	//				
+
+	//			}
+	//			else
+	//			{
+	//				//cout << "woulda been a zone" << endl;
+	//			}
+
+	//			break;
+	//		}
+	//		else if( curr == g->edgeA )
+	//		{
+	//			//currGates.push_back( curr );
+	//			//cout << "not a zone even b" << endl;
+	//			break;
+	//		}
+
+
+	//		tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+
+	//		if( curr->edgeType == Edge::CLOSED_GATE )
+	//		{
+	//			bool quitLoop = false;
+	//			bool okayGate = true;
+	//			Gate *thisGate = (Gate*)curr->info;
+	//			for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
+	//			{
+	//				Gate *otherGate = (Gate*)(*it)->info;
+	//				
+
+	//				if( otherGate == thisGate )
+	//				{
+	//					okayGate = false;
+	//					break;
+	//				}
+	//			}
+
+	//			if( !okayGate )
+	//			{
+	//				currGates.push_back( curr );
+	//				//TerrainPoint *tempPoint = NULL;
+	//				TerrainPoint *tempPoint = tpb.pointEnd;
+	//				tpb.RemovePoint( tempPoint );
+	//				delete tempPoint;
+	//				//cout << "removing from b( " << g << " ) start: " << tpb.numPoints << endl;
+
+	//				Edge *cc = curr->edge0;
+	//				
+	//				
+	//				while( true )
+	//				{
+	//					if( cc->edgeType == Edge::CLOSED_GATE )
+	//					{
+	//						
+	//						Gate *ccGate = (Gate*)cc->info;
+	//						if( ccGate == thisGate )
+	//							break;
+	//						else
+	//						{
+	//							bool foundIgnore = false;
+	//							for( list<Gate*>::iterator it = ignoreGates.begin(); it != ignoreGates.end(); ++it )
+	//							{
+	//								if( (*it) == ccGate )
+	//								{
+	//									foundIgnore = true;
+	//									break;
+	//								}
+	//							}
+
+	//							if( foundIgnore )
+	//							{
+	//								Edge *temp = cc->edge1;
+	//								ccGate->SetLocked( false );
+	//								cc = temp->edge0;
+	//								ccGate->SetLocked( true );
+	//								continue;
+	//							}
+	//							//for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
+	//							//{
+	//							//	//Gate *otherGate = (Gate*)(*it)->info;
+	//				
+	//							//	if( 
+	//							//	//if( otherGate == thisGate )
+	//							//	//{
+	//							//	//	okayGate = false;
+	//							//	//	break;
+	//							//	//}
+	//							//}
+	//						}
+	//					}
+
+	//					if( true )
+	//					//if( tpb.pointStart != NULL )
+	//					{
+	//						tempPoint = tpb.pointEnd;
+	//						tpb.RemovePoint( tempPoint );
+	//						delete tempPoint;
+	//						//cout << "removing from b: " << tpb.numPoints << endl;
+	//						if( tpb.pointStart == tpb.pointEnd )
+	//						{
+	//							quitLoop = true;
+	//							break;
+	//						}
+	//							
+	//					}
+	//					else
+	//					{
+	//						quitLoop = true;
+	//						break;
+	//					}
+	//					
+	//					
+	//					cc = cc->edge0;
+
+	//					
+	//					
+	//				}
+
+	//				if( quitLoop )
+	//				{
+	//					//cout << "quitloop b" << endl;
+	//					break;
+	//				}
+
+	//				Edge *pr = cc->edge0;
+	//				thisGate->SetLocked( false );
+	//				curr = pr->edge1->edge1;
+	//				//tpb.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+	//				ignoreGates.push_back( thisGate );
+	//				thisGate->SetLocked( true );
+	//				//cout << "GATE IS NOT OKAY B: " << tpb.numPoints << endl;
+	//				continue;
+	//			}
+	//			else
+	//			{
+	//			//	cout << "found another gate BB: " << curr-> << endl;
+	//			}
+
+	//			
+	//			currGates.push_back( curr );
+	//		}
+
+	//		curr = curr->edge1;
+	//	}
+	//	
+	//	//tp.AddPoint( new TerrainPoint( 
+	//}
 
 
 
@@ -4957,24 +4959,7 @@ void GameSession::CreateZones()
 		}
 	}
 
-	/*for (auto it = outsideGates.begin(); it != outsideGates.end();)
-	{
-		for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
-		{
-			if ((*zit)->ContainsPoint((*it)->edge0->v0))
-			{
-				(*it)->zoneA = (*zit);
-				(*it)->zoneB = (*zit);
-				outsideGates.erase(it++);
-			}
-			else
-			{
-				++it;
-			}
-		}
-	}*/
-
-	//cout << "numoutside gates!!: " << numOutsideGates << endl;
+	
 	//wish i knew what this was supposed to do. you turned this off because
 	//borderEdge is always null now.
 	if( numOutsideGates > 0 )//&& borderEdge != NULL )
@@ -4985,13 +4970,13 @@ void GameSession::CreateZones()
 		Edge *startEdge = edges[0];
 		Edge *curr = startEdge;
 		
-		tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+		tp.AddPoint( Vector2i( curr->v0.x, curr->v0.y ), false );
 
 		curr = curr->edge1;
 
 		while( curr != startEdge)
 		{
-			tp.AddPoint( new TerrainPoint( Vector2i( curr->v0.x, curr->v0.y ), false ) );
+			tp.AddPoint( Vector2i( curr->v0.x, curr->v0.y ), false );
 
 			curr = curr->edge1;
 		}

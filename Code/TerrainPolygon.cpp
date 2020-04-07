@@ -41,9 +41,6 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	grassVA = NULL;
 	isGrassShowing = false;
 	finalized = false;
-	numPoints = 0;
-	pointStart = NULL;
-	pointEnd = NULL;
 	movingPointMode = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
@@ -84,13 +81,8 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 		grassVA = NULL;
 		isGrassShowing = false;
 		finalized = false;
-		numPoints = 0;
-		pointStart = NULL;
-		pointEnd = NULL;
 		movingPointMode = false;
-
-		poly.CopyPoints(pointStart, pointEnd, storeSelectedPoints );
-		numPoints = poly.numPoints;
+		CopyPoints(&poly, storeSelectedPoints);
 	}
 	else
 	{
@@ -115,38 +107,64 @@ TerrainPolygon::~TerrainPolygon()
 	ClearPoints();
 }
 
-TerrainPoint * TerrainPolygon::GetLoopedPrev(TerrainPoint *p)
-{
-	TerrainPoint *prev = p->prev;;
-	if (prev == NULL)
-		prev = pointEnd;
-
-	return prev;
-}
-
-TerrainPoint * TerrainPolygon::GetLoopedNext(TerrainPoint *p)
-{
-	TerrainPoint *next = p->next;;
-	if (next == NULL)
-		next = pointStart;
-
-	return next;
-}
-
 void TerrainPolygon::WriteFile(std::ofstream & of)
 {
 	of << terrainWorldType << " " << terrainVariation << endl;
 
-	of << numPoints << endl;
+	int numP = GetNumPoints();
 
-	for (TerrainPoint *pcurr = pointStart; pcurr != NULL; pcurr = pcurr->next)
+	of << numP << endl;
+
+	for (int i = 0; i < numP; ++i)
 	{
-		of << pcurr->pos.x << " " << pcurr->pos.y << endl; // << " " << (int)(*it2).special << endl;
+		of << pointVector[i].pos.x << " " << pointVector[i].pos.y << endl;
 	}
 
 	if (!IsSpecialPoly())
 	{
 		WriteGrass(of);
+	}
+}
+
+TerrainPoint *TerrainPolygon::GetPoint(int index)
+{
+	assert(index >= 0 && index < pointVector.size());
+	return &pointVector[index];
+}
+
+TerrainPoint *TerrainPolygon::GetEndPoint()
+{
+	return &pointVector.back();
+}
+
+TerrainPoint *TerrainPolygon::GetStartPoint()
+{
+	return &pointVector.front();
+}
+
+TerrainPoint *TerrainPolygon::GetNextPoint(int index)
+{
+	assert(index >= 0 && index < pointVector.size());
+	if (index == GetNumPoints() - 1)
+	{
+		return &pointVector[0];
+	}
+	else
+	{
+		return &pointVector[index + 1];
+	}
+}
+
+TerrainPoint *TerrainPolygon::GetPrevPoint(int index)
+{
+	assert(index >= 0 && index < pointVector.size());
+	if (index == 0)
+	{
+		return &pointVector[GetNumPoints() - 1];
+	}
+	else
+	{
+		return &pointVector[index - 1];
 	}
 }
 
@@ -159,25 +177,19 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 	int edgeIndex = 0;
 	int i = 0;
 	list<list<GrassSeg>> grassListList;
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	int numP = GetNumPoints();
+	TerrainPoint *curr, *prev, *next;
+	for (int i = 0; i < numP; ++i)
 	{
-		Vector2i next;
-
-		TerrainPoint *temp = curr->next;
-		if (temp == NULL)
-		{
-			next = pointStart->pos;
-		}
-		else
-		{
-			next = temp->pos;
-		}
+		curr = GetPoint(i);
+		prev = GetPrevPoint(i);
+		next = GetNextPoint(i);
 
 		V2d v0(curr->pos.x, curr->pos.y);
-		V2d v1(next.x, next.y);
+		V2d v1(next->pos.x, next->pos.y);
 
 		bool rem;
-		int num = GetNumGrass(curr, rem);//floor( remainder ) + 1;
+		int num = GetNumGrass(i, rem);
 
 		grassListList.push_back(list<GrassSeg>());
 
@@ -187,12 +199,10 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 		bool hasGrass = false;
 		for (int j = 0; j < num; ++j)
 		{
-			//V2d pos = v0 + (v1 - v0) * ((double)(j )/ num);
-
 			if (grassVa[i * 4].color.a == 255 || grassVa[i * 4].color.a == 254)
 			{
 				hasGrass = true;
-				if (gPtr == NULL)//|| (j == num - 1 && rem ))
+				if (gPtr == NULL)
 				{
 					grassList.push_back(GrassSeg(edgeIndex, j, 0));
 					gPtr = &grassList.back();
@@ -239,44 +249,6 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 	}
 }
 
-bool TerrainPolygon::SwitchPolygon( bool cw, TerrainPoint *rootPoint,
-	TerrainPoint *otherEnd )
-{
-	if (cw)
-	{
-		TerrainPoint *prev = rootPoint->prev;
-		if (prev == NULL)
-			prev = pointEnd;
-
-		TerrainPoint *next = rootPoint->next;
-		if (next == NULL)
-			next = pointStart;
-
-		V2d rp(rootPoint->pos);
-
-		V2d origDir = normalize( rp - V2d( prev->pos ) );
-		V2d stayDir = normalize( rp - V2d( next->pos ) );
-		V2d otherDir = normalize( rp - V2d( otherEnd->pos ) );
-
-		double stay = GetVectorAngleDiffCW(origDir, stayDir);//GetClockwiseAngleDifference(origDir, stayDir);
-		double other = GetVectorAngleDiffCW(origDir, otherDir);
-
-		if (stay < other)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		assert(0);
-		return false;
-	}
-}
-
 bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 {
 	IntRect tAABB(left, top, right - left, bottom - top);
@@ -288,20 +260,15 @@ bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 		Vector2i myPos;
 		Vector2i myPrevPos;
 
-		for (TerrainPoint *my = pointStart; my != NULL; my = my->next)
+		int numP = GetNumPoints();
+		TerrainPoint *curr, *prev;
+		for (int i = 0; i < numP; ++i)
 		{
-			TerrainPoint *myPrev;
-			if (my == pointStart)
-			{
-				myPrev = pointEnd;
-			}
-			else
-			{
-				myPrev = my->prev;
-			}
+			curr = GetPoint(i);
+			prev = GetPrevPoint(i);
 
-			myPos = my->pos;
-			myPrevPos = myPrev->pos;
+			myPos = curr->pos;
+			myPrevPos = prev->pos;
 
 			if (gp0 == myPrevPos || gp1 == myPrevPos
 				|| gp0 == myPos || gp1 == myPos)
@@ -320,6 +287,132 @@ bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 	return false;
 }
 
+bool TerrainPolygon::PointsTooCloseToEachOther()
+{
+	EditSession *sess = EditSession::GetSession();
+
+	int numP = GetNumPoints();
+	TerrainPoint *currI, *currJ;
+	for (int i = 0; i < numP; ++i)
+	{
+		currI = GetPoint(i);
+		for (int j = 0; j < numP; ++j)
+		{
+			if (i == j)
+				continue;
+
+			currJ = GetPoint(j);
+			V2d a(currI->pos.x, currI->pos.y);
+			V2d b(currJ->pos.x, currJ->pos.y);
+			if (length(a - b) < sess->validityRadius)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool TerrainPolygon::LinesIntersectMyself()
+{
+	//line intersection on myself
+	int numP = GetNumPoints();
+	TerrainPoint *currI, *prevI, *currJ, *prevJ;
+
+	for (int i = 0; i < numP; ++i)
+	{
+		currI = GetPoint(i);
+		prevI = GetPrevPoint(i);
+
+		for (int j = 0; j < numP; ++j)
+		{
+			if (i == j)
+				continue;
+
+			currJ = GetPoint(j);
+			prevJ = GetPrevPoint(j);
+
+			LineIntersection li = EditSession::LimitSegmentIntersect(prevI->pos, currI->pos, prevJ->pos, currJ->pos);
+
+			if (!li.parallel)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+
+bool TerrainPolygon::HasSlivers()
+{
+	int numP = GetNumPoints();
+	TerrainPoint *curr, *prev, *next;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		prev = GetPrevPoint(i);
+		next = GetNextPoint(i);
+
+		V2d pos(curr->pos.x, curr->pos.y);
+		V2d prevPos(prev->pos.x, prev->pos.y);
+		V2d nextPos(next->pos.x, next->pos.y);
+
+
+		//this is wrong and needs fixing to the other standards anyway
+		double ff = dot(normalize(prevPos - pos), normalize(nextPos - pos));
+		if (ff > .99)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool TerrainPolygon::IntersectsMyOwnEnemies()
+{
+	EditSession *sess = EditSession::GetSession();
+	for (EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it)
+	{
+		for (list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait)
+		{
+			sf::VertexArray &bva = (*ait)->boundingQuad;
+			if (sess->QuadPolygonIntersect(this, Vector2i(bva[0].position.x, bva[0].position.y),
+				Vector2i(bva[1].position.x, bva[1].position.y), Vector2i(bva[2].position.x, bva[2].position.y),
+				Vector2i(bva[3].position.x, bva[3].position.y)))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool TerrainPolygon::IntersectsMyOwnGates()
+{
+	int numP = GetNumPoints();
+	TerrainPoint *curr, *prev;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		prev = GetPrevPoint(i);
+
+		Vector2i prevPos = prev->pos;
+		Vector2i pos = curr->pos;
+
+		LineIntersection li = EditSession::LimitSegmentIntersect(prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos);
+
+		if (!li.parallel)
+		{
+			return false;
+		}
+	}
+}
+
 bool TerrainPolygon::IsInternallyValid()
 {
 	EditSession *sess = EditSession::GetSession();
@@ -335,157 +428,19 @@ bool TerrainPolygon::IsInternallyValid()
 			return false;
 	}
 
-	//points close to other points on myself
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
-	{
-		for (TerrainPoint *curr2 = pointStart; curr2 != NULL; curr2 = curr2->next)
-		{
-			if (curr->pos.x == curr2->pos.x && curr->pos.y == curr2->pos.y)
-			{
-				continue;
-			}
+	if (PointsTooCloseToEachOther())
+		return false;
 
-			V2d a(curr->pos.x, curr->pos.y);
-			V2d b(curr2->pos.x, curr2->pos.y);
-			if (length(a - b) < sess->validityRadius)
-			{
-				//cout << "len: " << length( a - b ) << endl;
-				return false;
-			}
-		}
-	}
+	if (HasSlivers())
+		return false;
 
-	//check for slivers that are at too extreme of an angle. tiny triangle type things
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
-	{
-		TerrainPoint *prev, *next;
-		if (curr == pointStart)
-		{
-			prev = pointEnd;
-		}
-		else
-		{
-			prev = curr->prev;
-		}
+	if (LinesIntersectMyself())
+		return false;
 
-		TerrainPoint *temp = curr->next;
-		if (temp == NULL)
-		{
-			next = pointStart;
-		}
-		else
-		{
-			next = curr->next;
-		}
+	if (IntersectsMyOwnEnemies())
+		return false;
 
-		//test for minimum angle difference between edges
-		V2d pos(curr->pos.x, curr->pos.y);
-		V2d prevPos(prev->pos.x, prev->pos.y);
-		V2d nextPos(next->pos.x, next->pos.y);
-
-
-		double ff = dot(normalize(prevPos - pos), normalize(nextPos - pos));
-		if (ff > .99)
-		{
-			//cout << "ff: " << ff << endl;
-			return false;
-		}
-	}
-
-
-	//line intersection on myself
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
-	{
-		TerrainPoint *prev;
-		if (curr == pointStart)
-		{
-			prev = pointEnd;
-		}
-		else
-		{
-			prev = curr->prev;
-		}
-
-		for (TerrainPoint *curr2 = pointStart; curr2 != NULL; curr2 = curr2->next)
-		{
-			TerrainPoint *prev2;
-
-			if (curr2 == pointStart)
-			{
-				prev2 = pointEnd;
-			}
-			else
-			{
-				prev2 = curr2->prev;
-			}
-
-			if (prev2 == prev || prev2 == curr || curr2 == prev || curr2 == curr)
-			{
-				continue;
-			}
-
-			LineIntersection li = EditSession::LimitSegmentIntersect(prev->pos, curr->pos, prev2->pos, curr2->pos);
-
-			if (!li.parallel)
-			{
-				return false;
-			}
-		}
-	}
-
-	//for( std::map<std::string, ActorGroup*>::iterator it = edit->groups.begin(); it != edit->groups.end() && res2; ++it )
-	for (EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it)
-	{
-		for (list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait)
-		{
-			//need to round these floats probably
-
-			sf::VertexArray &bva = (*ait)->boundingQuad;
-			if (sess->QuadPolygonIntersect(this, Vector2i(bva[0].position.x, bva[0].position.y),
-				Vector2i(bva[1].position.x, bva[1].position.y), Vector2i(bva[2].position.x, bva[2].position.y),
-				Vector2i(bva[3].position.x, bva[3].position.y)))
-			{
-				return false;
-			}
-			else
-			{
-
-			}
-		}
-	}
-
-
-	TerrainPoint *prev;
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
-	{
-		if (curr->gate != NULL)
-		{
-			if (curr == pointStart)
-			{
-				prev = pointEnd;
-			}
-			else
-			{
-				prev = curr->prev;
-			}
-
-			Vector2i prevPos = prev->pos;
-			Vector2i pos = curr->pos;
-
-			LineIntersection li = EditSession::LimitSegmentIntersect(prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos);
-
-			if (!li.parallel)
-			{
-				return false;
-			}
-
-		}
-	}
-
-
-
-	return true;
-	
+	return true;	
 }
 
 bool TerrainPolygon::CanApply()
@@ -502,46 +457,45 @@ bool TerrainPolygon::CanApply()
 	return false;
 }
 
-int TerrainPolygon::GetPointIndex(TerrainPoint *p)
-{
-	int i = 0;
-	TerrainPoint *curr = pointStart;
-	while (curr != NULL)
-	{
-		if (curr == p)
-		{
-			return i;
-		}
-		curr = curr->next;
-		++i;
-	}
-
-	assert(0);
-
-	return -1;
-}
-
-TerrainPoint *TerrainPolygon::GetPointAtIndex(int index)
-{
-	int i = 0;
-	TerrainPoint *curr = pointStart;
-	while (curr != NULL)
-	{
-		if (i == index)
-			return curr;
-
-		curr = curr->next;
-		++i;
-	}
-
-	assert(0);
-
-	return NULL;
-}
-
 bool TerrainPolygon::CanAdd()
 {
 	return false;
+}
+
+void TerrainPolygon::DeactivateGates()
+{
+	EditSession *sess = EditSession::GetSession();
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		if (curr->gate != NULL)
+		{
+			if (curr->gate->edit != NULL)
+			{
+				curr->gate->Deactivate(sess, curr->gate);
+			}
+		}
+	}
+}
+
+void TerrainPolygon::ActivateGates()
+{
+	EditSession *sess = EditSession::GetSession();
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		if (curr->gate != NULL)
+		{
+			if (curr->gate->edit == NULL)
+			{
+				curr->gate->Activate(sess, curr->gate);
+			}
+		}
+	}
 }
 
 void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr select )
@@ -555,31 +509,9 @@ void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr select )
 	{
 		edit->inversePolygon.reset();
 	}
-	
-	//remove enemies
-	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
-	{
-		list<ActorPtr> params = (*it).second;
-		for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
-		{
-			SelectPtr ptr = boost::dynamic_pointer_cast<ISelectable>( (*pit ) );
-			//(*pit)->Deactivate( edit, ptr );
-		}
-	}
 
 	//remove gates
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-	{
-		if( curr->gate != NULL )
-		{
-			if( curr->gate->edit != NULL )
-			{
-				curr->gate->Deactivate( edit, curr->gate );
-				//curr->gate->edit = NULL;
-				//edit->gates.remove( curr->gate );
-			}
-		}
-	}
+	DeactivateGates();
 }
 
 void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
@@ -593,35 +525,15 @@ void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
 		edit->inversePolygon = poly;
 	}
 	
-	
-	//add in enemies
-	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
-	{
-		list<ActorPtr> params = (*it).second;
-		for( list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit )
-		{
-			SelectPtr ptr = boost::dynamic_pointer_cast<ISelectable>( (*pit ) );
-			//(*pit)->Activate( edit, ptr );
-		}
-	}
-
-	//add in gates
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-	{
-		if( curr->gate != NULL )
-		{
-			if( curr->gate->edit == NULL )
-			{
-				curr->gate->Activate(edit, curr->gate);
-			}
-		}
-	}
+	ActivateGates();
 }
 
 //return 0 on no fix, 1 on moved current point, and 2 on moved next point
-int TerrainPolygon::FixNearPrimary(TerrainPoint* curr, bool currLocked)
+int TerrainPolygon::FixNearPrimary(int i, bool currLocked)
 {
-	TerrainPoint *next = GetLoopedNext(curr);
+	TerrainPoint *curr, *next;
+	curr = GetPoint(i);
+	next = GetNextPoint(i);
 
 	Vector2i extreme = GetExtreme(curr, next);
 
@@ -674,66 +586,37 @@ bool TerrainPolygon::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 {
 	double primLimit = EditSession::PRIMARY_LIMIT;
 	bool adjustedAtAll = false;
-	TerrainPoint *prev;
-	TerrainPoint *next;
+
 	bool checkPoint;
 	bool adjusted = true;
 
 	int lockPointIndex = 0;
-	assert(lockPoints.empty() || lockPoints.size() == numPoints);
+	assert(lockPoints.empty() || lockPoints.size() == GetNumPoints());
 
 	EditSession *sess = EditSession::GetSession();
 
 	bool lockPointsEmpty = lockPoints.empty();
+
+
+	int numP = GetNumPoints();
+
 	while (adjusted)
 	{
-		//RemoveClusters(sess->validityRadius);
-
 		adjusted = false;
 		lockPointIndex = 0;
 		int result;
 		bool isPointLocked;
-		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next, lockPointIndex++)
+
+		for (int i = 0; i < numP; ++i, lockPointIndex++)
 		{
 			isPointLocked = !lockPointsEmpty && lockPoints[lockPointIndex].moveIntent;
-			result = FixNearPrimary(curr, isPointLocked);
+			result = FixNearPrimary(i, isPointLocked);
 
 			if (result > 0)
 			{
 				adjusted = true;
 				adjustedAtAll = true;
 			}
-
-			/*if (curr->selected)
-			{
-				if (extreme.x != 0)
-					next->pos.y = curr->pos.y;
-				else
-					next->pos.x = curr->pos.x;
-				continue;
-			}*/
-
-			//Vector2i gateDir;
-			//if (curr->HasPrimaryGate(gateDir))
-			//{
-			//	if ((extreme.x != 0 && gateDir.x != 0) || (extreme.y != 0 && gateDir.y != 0))
-			//	{
-			//		if (next->HasPrimaryGate(gateDir))
-			//		{
-			//			assert(0);
-			//			//this is a special case that I can cover later
-			//		}
-			//		else
-			//		{
-			//			if (extreme.x != 0)
-			//				next->pos.y = curr->pos.y;
-			//			else
-			//				next->pos.x = curr->pos.x;
-			//			adjusted = true;
-			//			continue;
-			//		}
-			//	}
-			//}
 		}
 	}
 
@@ -746,107 +629,24 @@ bool TerrainPolygon::AlignExtremes()
 	return AlignExtremes(emptyLockPoints);
 }
 
-bool TerrainPolygon::RemoveClusters(double minDist)
-{
-	bool adjusted = false;
-
-	TerrainPoint *curr, *next, *tempNext;
-	double dist;
-	V2d dir;
-	V2d c, n;
-	while (adjusted)
-	{
-		curr = pointStart;
-		while (curr != NULL)
-		{
-			next = curr->next;
-			tempNext = curr->next;
-			if (next == NULL)
-			{
-				next = pointStart;
-			}
-
-			c = V2d(curr->pos);
-			n = V2d(next->pos);
-			dir = n - c;
-			dist = length(dir);
-
-			if (dist < minDist)
-			{
-				//normalize(dir);
-
-				//choose old points
-
-
-				//choose new points
-				adjusted = true;
-				//merge points
-				RemovePoint(curr);
-				next->pos = Vector2i((c + n) / 2.0);
-
-
-
-				//move old points
-
-				//move new points
-
-
-
-				//move next further away
-				//n += dir * ((minDist - dist) + .5);
-				//next->pos = Vector2i(n.x, n.y);
-
-				//merge points
-
-
-
-				//delete point method
-				//RemovePoint(curr);
-
-				cout << "point too close!!!!!" << endl;
-			}
-
-
-			curr = tempNext;
-		}
-	}
-
-	return adjusted;
-}
-
-
-
-void TerrainPolygon::DestroyEnemies()
-{
-	/*for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
-	{
-		for( list<ActorPtr>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
-		{
-			(*it)->group->actors.remove( (*it ) );
-			delete (*it);
-		}
-	}
-	enemies.clear();*/
-}
-
 void TerrainPolygon::Move( SelectPtr me, Vector2i move )
 {
 	assert( finalized );
 	
-	TerrainPoint *curr = pointStart;
-	while( curr != NULL )
+
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
-		TerrainPoint *temp = curr->next;
+		curr = GetPoint(i);
 		curr->pos += move;
-		if( curr->gate != NULL )
+		if (curr->gate != NULL)
 		{
 			curr->gate->UpdateLine();
-			//cout << "updating line" << endl;
 		}
-		curr = temp;
 	}
 
-	for( int i = 0; i < numPoints; ++i )
+	for( int i = 0; i < numP; ++i )
 	{
 		//lines
 		lines[i*2].position += Vector2f( move.x, move.y );
@@ -859,8 +659,6 @@ void TerrainPolygon::Move( SelectPtr me, Vector2i move )
 
 		//triangles
 		vaa[i].position += Vector2f( move.x, move.y );
-		//vaa[i*3+1].position += Vector2f( move.x, move.y );
-		//vaa[i*3+2].position += Vector2f( move.x, move.y );
 	}
 
 	for( int i = 0; i < numGrassTotal; ++i )
@@ -913,23 +711,24 @@ void TerrainPolygon::SetLayer( int newLayer )
 	}
 }
 
-
 void TerrainPolygon::UpdateBounds()
 {
-	TerrainPoint *curr = pointStart;
-	//PointList::iterator it = points.begin();
+	int numP = GetNumPoints();
+
+	TerrainPoint *curr = GetPoint(0);
+
 	left = curr->pos.x;
 	right = curr->pos.x;
 	top = curr->pos.y;
 	bottom = curr->pos.y;
-	curr = curr->next;
-	while( curr != NULL )
+
+	for (int i = 1; i < numP; ++i)
 	{
-		left = min( curr->pos.x, left );
-		right = max( curr->pos.x, right );
-		top = min( curr->pos.y, top );
-		bottom = max( curr->pos.y, bottom );
-		curr = curr->next;
+		curr = GetPoint(i);
+		left = min(curr->pos.x, left);
+		right = max(curr->pos.x, right);
+		top = min(curr->pos.y, top);
+		bottom = max(curr->pos.y, bottom);
 	}
 
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
@@ -1034,7 +833,6 @@ void TerrainPolygon::FinalizeInverse()
 	inverse = true;
 	finalized = true;
 	isGrassShowing = false;
-	//material = "mat";
 
 	FixWindingInverse();
 
@@ -1056,18 +854,18 @@ void TerrainPolygon::FinalizeInverse()
 
 	p2t::CDT * cdt = new p2t::CDT(outerQuadPoints);
 
-	lines = new sf::Vertex[numPoints*2+1];
-	
-	
-	//cout << "points size: " << points.size() << endl;
+	int numP = GetNumPoints();
+
+	lines = new sf::Vertex[numP *2+1];
 
 	vector<p2t::Point*> polyline;
-	TerrainPoint *curr = pointStart;
-	while( curr != NULL )
+
+	
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
-		TerrainPoint *temp = curr->next;
-		polyline.push_back( new p2t::Point(curr->pos.x, curr->pos.y ) );
-		curr = temp;
+		curr = GetPoint(i);
+		polyline.push_back(new p2t::Point(curr->pos.x, curr->pos.y));
 	}
 
 	cdt->AddHole(polyline);
@@ -1099,7 +897,6 @@ void TerrainPolygon::FinalizeInverse()
 
 	SetMaterialType(terrainWorldType, terrainVariation);
 
-	//assert( tris.size() * 3 == points.size() );
 	delete cdt;
 
 	for (auto it = outerQuadPoints.begin(); it != outerQuadPoints.end(); ++it)
@@ -1107,10 +904,9 @@ void TerrainPolygon::FinalizeInverse()
 		delete (*it);
 	}
 
-	for (int i = 0; i < numPoints; ++i)
+	for (int i = 0; i < numP; ++i)
 	{
 		delete polyline[i];
-		//	delete tris[i];
 	}
 
 	UpdateLines();
@@ -1122,24 +918,15 @@ void TerrainPolygon::FinalizeInverse()
 	SetupGrass();	
 }
 
-int TerrainPolygon::GetNumGrass(TerrainPoint *curr, bool &rem)
+int TerrainPolygon::GetNumGrass(int i, bool &rem)
 {
-	Vector2i next;
 	rem = false;
-	TerrainPoint *temp = curr->next;
-	if (temp == NULL)
-	{
-		next = pointStart->pos;
-	}
-	else
-	{
-		//++temp;
-		next = temp->pos;
-		//--temp;
-	}
+	TerrainPoint *curr, *next;
+	curr = GetPoint(i);
+	next = GetNextPoint(i);
 
 	V2d v0(curr->pos.x, curr->pos.y);
-	V2d v1(next.x, next.y);
+	V2d v1(next->pos.x, next->pos.y);
 
 	double len = length(v1 - v0);
 	len -= grassSize / 2 + grassSpacing;
@@ -1161,37 +948,32 @@ int TerrainPolygon::GetNumGrassTotal()
 {
 	int total = 0;
 	int inds = 0;
-	TerrainPoint *curr = pointStart;
 	bool rem;
-	for (curr = pointStart; curr != NULL; curr = curr->next)
+
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
-		total += GetNumGrass(curr, rem);
+		total += GetNumGrass(i, rem);
 	}
 
 	return total;
 }
 
-void TerrainPolygon::SetupGrass(TerrainPoint *curr, int &i )
+void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 {
 	VertexArray &grassVa = *grassVA;
-	
-	Vector2i next;
 
-	TerrainPoint *temp = curr->next;
-	if (temp == NULL)
-	{
-		next = pointStart->pos;
-	}
-	else
-	{
-		next = temp->pos;
-	}
+	TerrainPoint *curr, *next;
+
+	curr = GetPoint(i);
+	next = GetNextPoint(i);
 
 	V2d v0(curr->pos.x, curr->pos.y);
-	V2d v1(next.x, next.y);
+	V2d v1(next->pos.x, next->pos.y);
 
 	bool rem;
-	int num = GetNumGrass(curr, rem);
+	int num = GetNumGrass(i, rem);
 
 	V2d along = normalize(v1 - v0);
 	V2d realStart = v0 + along * (double)(grassSize + grassSpacing);
@@ -1219,28 +1001,28 @@ void TerrainPolygon::SetupGrass(TerrainPoint *curr, int &i )
 		Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
 
 		//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
-		grassVa[i * 4].color.a = 0;
-		grassVa[i * 4].position = topLeft;
-		grassVa[i * 4].texCoords = Vector2f(0, 0);
+		grassVa[grassIndex * 4].color.a = 0;
+		grassVa[grassIndex * 4].position = topLeft;
+		grassVa[grassIndex * 4].texCoords = Vector2f(0, 0);
 
 		//grassVa[i*4+1].color = Color::Blue;
 		//borderVa[i*4+1].color.a = 10;
-		grassVa[i * 4 + 1].color.a = 0;
-		grassVa[i * 4 + 1].position = bottomLeft;
-		grassVa[i * 4 + 1].texCoords = Vector2f(0, grassSize);
+		grassVa[grassIndex * 4 + 1].color.a = 0;
+		grassVa[grassIndex * 4 + 1].position = bottomLeft;
+		grassVa[grassIndex * 4 + 1].texCoords = Vector2f(0, grassSize);
 
 		//grassVa[i*4+2].color = Color::Blue;
 		//borderVa[i*4+2].color.a = 10;
-		grassVa[i * 4 + 2].color.a = 0;
-		grassVa[i * 4 + 2].position = bottomRight;
-		grassVa[i * 4 + 2].texCoords = Vector2f(grassSize, grassSize);
+		grassVa[grassIndex * 4 + 2].color.a = 0;
+		grassVa[grassIndex * 4 + 2].position = bottomRight;
+		grassVa[grassIndex * 4 + 2].texCoords = Vector2f(grassSize, grassSize);
 
 		//grassVa[i*4+3].color = Color( 0x0d, 0, 0x80 );
 		//borderVa[i*4+3].color.a = 10;
-		grassVa[i * 4 + 3].color.a = 0;
-		grassVa[i * 4 + 3].position = topRight;
-		grassVa[i * 4 + 3].texCoords = Vector2f(grassSize, 0);
-		++i;
+		grassVa[grassIndex * 4 + 3].color.a = 0;
+		grassVa[grassIndex * 4 + 3].position = topRight;
+		grassVa[grassIndex * 4 + 3].texCoords = Vector2f(grassSize, 0);
+		++grassIndex;
 	}
 }
 
@@ -1258,19 +1040,20 @@ void TerrainPolygon::Finalize()
 	//material = "mat";
 
 	
-
-	lines = new sf::Vertex[numPoints*2+1];
+	int numP = GetNumPoints();
+	lines = new sf::Vertex[numP *2+1];
 	
 	FixWinding();
 	//cout << "points size: " << points.size() << endl;
 
 	vector<p2t::Point*> polyline;
-	TerrainPoint *curr = pointStart;
-	while( curr != NULL )
+
+	
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
-		TerrainPoint *temp = curr->next;
-		polyline.push_back( new p2t::Point(curr->pos.x, curr->pos.y ) );
-		curr = temp;
+		curr = GetPoint(i);
+		polyline.push_back(new p2t::Point(curr->pos.x, curr->pos.y));
 	}
 
 	if (polyline.size() == 1)
@@ -1309,7 +1092,7 @@ void TerrainPolygon::Finalize()
 
 	//assert( tris.size() * 3 == points.size() );
 	delete cdt;
-	for( int i = 0; i < numPoints; ++i )
+	for( int i = 0; i < numP; ++i )
 	{
 		delete polyline[i];
 	//	delete tris[i];
@@ -1330,16 +1113,18 @@ void TerrainPolygon::SetupGrass()
 
 	VertexArray &grassVa = *gva;
 
-	int i = 0;
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	int grassIndex = 0;
+	for (int i = 0; i < numP; ++i)
 	{
-		SetupGrass(curr, i);
+		SetupGrass(i, grassIndex);
 	}
 }
 
 void TerrainPolygon::RemoveSelectedPoints()
 {	
-	SoftReset();
+	/*SoftReset();
 	for( TerrainPoint *curr = pointStart; curr != NULL; )
 	{
 		if( curr->selected )
@@ -1353,11 +1138,9 @@ void TerrainPolygon::RemoveSelectedPoints()
 			curr = curr->next;
 		}
 	}
-	//Reset();
-
 
 	Finalize();
-	SetSelected( false );
+	SetSelected( false );*/
 }
 
 void TerrainPolygon::SwitchGrass( V2d mousePos )
@@ -1365,7 +1148,6 @@ void TerrainPolygon::SwitchGrass( V2d mousePos )
 	
 	VertexArray &grassVa = *grassVA;
 	double radius = grassSize / 2 - 20;//+ grassSpacing / 2;
-	int i = 0;
 
 	V2d center;
 	for (int i = 0; i < numGrassTotal; ++i)
@@ -1395,38 +1177,6 @@ void TerrainPolygon::SwitchGrass( V2d mousePos )
 			//break;
 		}
 	}
-
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-	{
-		Vector2i next;
-
-		TerrainPoint *temp = curr->next;
-		if( temp == NULL )
-		{
-			next = pointStart->pos;
-		}
-		else
-		{
-			next = temp->pos;
-		}
-
-		V2d v0( curr->pos.x, curr->pos.y );
-		V2d v1( next.x, next.y );
-
-		bool rem;
-		int num = GetNumGrass(curr, rem);
-
-		for( int j = 0; j < num; ++j )
-		{
-			V2d pos = v0 + (v1- v0) * ((double)(j )/ num);
-				
-			if( length( pos - mousePos ) <= radius )
-			{
-				
-			}
-			++i;
-		}
-	}
 }
 
 void TerrainPolygon::UpdateGrass()
@@ -1453,35 +1203,24 @@ void TerrainPolygon::UpdateGrass()
 
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
+	int numP = GetNumPoints();
 	if( movingPointMode )
 	{
-
-			int i = 0;
-			TerrainPoint *curr = pointStart;
-			while( curr != NULL )
-			{
-				lines[i*2].position = Vector2f( curr->pos.x, curr->pos.y );
-
-				TerrainPoint *temp = curr->next;
-				if( temp == NULL )
-				{
-					lines[i*2+1].position = Vector2f( pointStart->pos.x, pointStart->pos.y );
-				}
-				else
-				{
-					lines[i*2+1].position = Vector2f( temp->pos.x, temp->pos.y );
-				}
-				
-				curr = temp;
-				++i;
-			}
-
-			rt->draw( lines, numPoints * 2, sf::Lines );
-
-
-			//lines
-			
 		
+		TerrainPoint *curr, *start, *next;
+		int lineIndex = 0;
+
+		for (int i = 0; i < numP; ++i)
+		{
+			curr = GetPoint(i);
+			next = GetNextPoint(i);
+
+			lines[lineIndex * 2].position = Vector2f(curr->pos.x, curr->pos.y);
+			lines[lineIndex * 2 + 1].position = Vector2f(next->pos.x, next->pos.y);
+
+			++lineIndex;
+		}
+		rt->draw( lines, numP * 2, sf::Lines );
 		return;
 	}
 
@@ -1492,30 +1231,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	if( va != NULL )
 		rt->draw( *va, pShader );
 
-	//always do this now for awhile
-	if( false )
-	{
-		if( !isGrassShowing )
-		{
-			for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-			{
-				CircleShape cs;
-				cs.setRadius( 8 * zoomMultiple );
-				cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-
-				if( curr->selected )
-					cs.setFillColor( Color::Red );
-				else
-					cs.setFillColor( Color::Green );
-
-				cs.setPosition( curr->pos.x, curr->pos.y );
-				rt->draw( cs );
-			}
-		}
-		rt->draw( lines, numPoints * 2, sf::Lines );
-	}
-
-	rt->draw( lines, numPoints * 2, sf::Lines );
+	rt->draw( lines, numP * 2, sf::Lines );
 
 	if( showPoints )
 	{
@@ -1529,13 +1245,17 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		csSel.setOrigin(csSel.getLocalBounds().width / 2, csSel.getLocalBounds().height / 2);
 		csSel.setFillColor(Color::Green);
 
-		for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+		int numP = GetNumPoints();
+		TerrainPoint *curr;
+		for (int i = 0; i < numP; ++i)
 		{
-			if( curr == dontShow )
+			curr = GetPoint(i);
+
+			if (curr == dontShow)
 			{
 				continue;
 			}
-			
+
 			if (curr->selected)
 			{
 				csSel.setPosition(curr->pos.x, curr->pos.y);
@@ -1546,8 +1266,6 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 				cs.setPosition(curr->pos.x, curr->pos.y);
 				rt->draw(cs);
 			}
-			
-			
 		}
 	}
 
@@ -1611,8 +1329,11 @@ void TerrainPolygon::SetSelected( bool select )
 			v[i].color = fillCol;
 		}
 
-		for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+		int numP = GetNumPoints();
+		TerrainPoint *curr;
+		for (int i = 0; i < numP; ++i)
 		{
+			curr = GetPoint(i);
 			curr->selected = false;
 		}
 	}
@@ -1620,22 +1341,25 @@ void TerrainPolygon::SetSelected( bool select )
 
 bool TerrainPolygon::ContainsPoint( Vector2f test )
 {
-	int pointCount = numPoints;
+	bool c = false;
 
-	int i, j, c = 0;
+	int i = 0;
 
-	TerrainPoint *it = pointStart;
-	TerrainPoint *jt = pointEnd;
+	TerrainPoint *it;
+	TerrainPoint *jt = GetPoint(GetNumPoints()-1);
 
-	for( ; it != NULL; )
+	int numP = GetNumPoints();
+	for (int i = 0; i < numP; ++i)
 	{
-		Vector2f point(it->pos.x, it->pos.y );
-		Vector2f pointJ(jt->pos.x, jt->pos.y );
-		if ( ((point.y > test.y ) != ( pointJ.y > test.y ) ) &&
-			(test.x < (pointJ.x-point.x) * (test.y-point.y) / (pointJ.y-point.y) + point.x) )
-				c = !c;
+		it = GetPoint(i);
+
+		Vector2f point(it->pos.x, it->pos.y);
+		Vector2f pointJ(jt->pos.x, jt->pos.y);
+		if (((point.y > test.y) != (pointJ.y > test.y)) &&
+			(test.x < (pointJ.x - point.x) * (test.y - point.y) / (pointJ.y - point.y) + point.x))
+			c = !c;
+
 		jt = it;
-		it = it->next;
 	}
 
 
@@ -1669,30 +1393,18 @@ void TerrainPolygon::FixWinding()
     }
     else
     {
-		for( TerrainPoint *curr = pointStart; curr != NULL; )
-		{
-			TerrainPoint *tt = curr->next;
-			TerrainPoint *oldPrev = curr->prev;
-			curr->prev = curr->next;
-			curr->next = oldPrev;
-			curr = tt;
-		}
-		TerrainPoint *tt = pointStart;
-		pointStart = pointEnd;
-		pointEnd = tt;
-
+		std::reverse(pointVector.begin(), pointVector.end());
     }
 }
 
-void TerrainPolygon::UpdateLineColor( sf::Vertex *li, TerrainPoint *p, int index )
+void TerrainPolygon::UpdateLineColor( sf::Vertex *li, int i, int index )
 {
-	TerrainPoint *next = p->next;
-	if (next == NULL)
-	{
-		next = pointStart;
-	}
+	TerrainPoint *curr, *next;
 
-	Vector2f diff = Vector2f( next->pos - p->pos );//p1 - p0;
+	curr = GetPoint(i);
+	next = GetNextPoint(i);
+
+	Vector2f diff = Vector2f( next->pos - curr->pos );//p1 - p0;
 	V2d dir = normalize(V2d(diff));
 	V2d norm = V2d(dir.y, -dir.x);
 
@@ -1736,59 +1448,47 @@ void TerrainPolygon::FixWindingInverse()
     }
     else
     {
-		for( TerrainPoint *curr = pointStart; curr != NULL; )
-		{
-			TerrainPoint *tt = curr->next;
-			TerrainPoint *oldPrev = curr->prev;
-			curr->prev = curr->next;
-			curr->next = oldPrev;
-			curr = tt;
-		}
-		TerrainPoint *tt = pointStart;
-		pointStart = pointEnd;
-		pointEnd = tt;
+		std::reverse(pointVector.begin(), pointVector.end());
     }
 }
 
 void TerrainPolygon::UpdateLines()
 {
-	if (numPoints > 0)
+	int numP = GetNumPoints();
+	if (numP > 0)
 	{
-		int i = 0;
-		TerrainPoint *curr = pointStart;
+		int index = 0;
+
+
+		TerrainPoint *curr = GetPoint(0);
 		lines[0].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-		UpdateLineColor(lines, curr, i);
-		lines[2 * numPoints - 1].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-		curr = curr->next;
-		++i;
-		while (curr != NULL)
+		UpdateLineColor(lines, 0, index);
+		lines[2 * numP - 1].position = sf::Vector2f(curr->pos.x, curr->pos.y);
+		++index;
+
+		for (int i = 1; i < numP; ++i)
 		{
-			UpdateLineColor(lines, curr, i + 1);
-			lines[i].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-			lines[++i].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-			++i;
-			curr = curr->next;
+			curr = GetPoint(i);
+
+			UpdateLineColor(lines, i, index + 1);
+			lines[index].position = sf::Vector2f(curr->pos.x, curr->pos.y);
+			lines[++index].position = sf::Vector2f(curr->pos.x, curr->pos.y);
+			++index;
 		}
 	}
 }
 
-void TerrainPolygon::AddPoint( TerrainPoint* tp)
+int TerrainPolygon::GetNumPoints()
 {
-	if( pointStart == NULL )
-	{
-		pointStart = tp;
-		pointEnd = tp;
-		tp->prev = NULL;
-		tp->next = NULL;
-	}
-	else
-	{
-		pointEnd->next = tp;
-		tp->prev = pointEnd;
-		pointEnd = tp;
-		pointEnd->next = NULL;
-	}
-	++numPoints;
+	return pointVector.size();
+}
+
+TerrainPoint * TerrainPolygon::AddPoint(sf::Vector2i &p, bool sel)
+{
+	pointVector.push_back(TerrainPoint(p, sel));
+	TerrainPoint *end = GetEndPoint();
+	end->index = GetNumPoints() - 1;
+	return end;
 }
 
 bool TerrainPolygon::PointsTooCloseToSegInProgress(sf::Vector2i point,
@@ -1796,32 +1496,32 @@ bool TerrainPolygon::PointsTooCloseToSegInProgress(sf::Vector2i point,
 {
 	V2d p(point.x, point.y);
 
-	TerrainPoint *pcurr = pointStart;
-	TerrainPoint *pnext = NULL;
+	
+	TerrainPoint *curr, *next = NULL;// = GetPoint(i);
 
-	Vector2i endPos = pointEnd->pos;
+	Vector2i endPos = GetEndPoint()->pos;
 
+	int i = 0;
 	if (finalPoint)
 	{
-		pcurr = pcurr->next;
+		i = 1;
 	}
 
-	while (pcurr != NULL)
+	int numP = GetNumPoints();
+	for (; i < numP; ++i)
 	{
-		pnext = pcurr->next;
-
-		if (pnext == NULL || pnext->next == NULL)
+		if (i >= numP - 2)
 		{
 			return false;
 		}
 
-		if (SegmentWithinDistanceOfPoint(endPos, point, pcurr->pos, minDistance))
+		curr = GetPoint(i);
+		if (SegmentWithinDistanceOfPoint(endPos, point, curr->pos, minDistance))
 		{
 			return true;
 		}
-
-		pcurr = pnext;
 	}
+
 	return false;
 }
 
@@ -1829,11 +1529,11 @@ bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 {
 	EditSession *sess = EditSession::GetSession();
 
-
-	if (numPoints == 0)
+	int numP = GetNumPoints();
+	if (numP == 0)
 		return true;
 
-	if (numPoints >= 3 && IsCloseToFirstPoint(sess->GetZoomedPointSize(), V2d(point)) &&
+	if (numP >= 3 && IsCloseToFirstPoint(sess->GetZoomedPointSize(), V2d(point)) &&
 		IsCompletionValid())
 	{
 		return true;
@@ -1859,182 +1559,20 @@ bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 	return false;
 }
 
-LineIntersection TerrainPolygon::GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,
-	TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd, bool ignoreStartPoint )
-{
-	LineIntersection li;
-
-	V2d A(a.x, a.y);
-
-	outSegStart = NULL;
-	outSegEnd = NULL;
-
-	TerrainPoint *prevP = NULL;
-	TerrainPoint *other = NULL;
-	TerrainPoint *otherPrev = NULL;
-
-	TerrainPoint *min = NULL;
-	Vector2i minIntersection;
-	bool emptyInter = true;
-
-	TerrainPoint *realStartPoint = NULL;
-	TerrainPoint *currP = pointStart;
-	TerrainPoint *nextP = NULL;
-
-	V2d storedPos;
-
-	for (; currP != NULL; currP = currP->next)
-	{
-		nextP = currP->next;
-		if (nextP == NULL)
-			nextP = pointStart;
-
-		V2d A(a);
-		V2d B(b);
-		V2d dir = normalize(B - A);
-		V2d CurrP = V2d(currP->pos);
-		V2d NextP = V2d(nextP->pos);
-		V2d otherDir = normalize( NextP - CurrP );
-
-		//if it dives into a poly as soon as you hit it, ignore
-		double c = cross(otherDir, dir);
-		double c0 = cross(normalize(CurrP - A), dir );
-		double c1 = cross(normalize(NextP - A), dir );
-
-
-		if (c < 0 || ( c0 < 0 && c1 < 0 ) )
-		{
-			int ff = 0;
-			//continue;
-		}
-
-		//if ( dir == otherDir || dir == -otherDir )
-		//{
-		//	//possible rounding error gonna happen
-		//	continue;
-		//}
-		if (ignoreStartPoint)
-		{
-			li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos, true);
-		}
-		else
-		{
-			li = EditSession::SegmentIntersect(a, b, currP->pos, nextP->pos);
-		}
-		//li = EditSession::LimitSegmentIntersect(a, b, currP->pos, nextP->pos, true );
-		
-		//Vector2i lii(round(li.position.x), round(li.position.y));
-
-		if (!li.parallel)
-		{
-			if (emptyInter)
-			{
-				emptyInter = false;
-				storedPos = li.position;
-				outSegStart = currP;
-				outSegEnd = nextP;
-			}
-			else if (length(li.position - A) < length(storedPos - A))
-			{
-				storedPos = li.position;
-				outSegStart = currP;
-				outSegEnd = nextP;
-			}
-		}
-	}
-
-	if (!emptyInter)
-	{
-		li.position = storedPos;
-		li.parallel = false;
-	}
-
-	return li;
-}
-
 TerrainPoint *TerrainPolygon::GetSamePoint(sf::Vector2i &p)
 {
-	for (TerrainPoint *tp = pointStart; tp != NULL; tp = tp->next)
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
-		if (tp->pos == p)
+		curr = GetPoint(i);
+		if (curr->pos == p)
 		{
-			return tp;
+			return curr;
 		}
 	}
+
 	return NULL;
-}
-
-bool compareInter(DetailedInter &inter0, DetailedInter &inter1)
-{
-	TerrainPoint *start = inter0.inter.point;
-	V2d startD = V2d(start->pos.x, start->pos.y);
-	return length(inter0.inter.position - startD) < length(inter1.inter.position- startD);
-}
-
-int TerrainPolygon::GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b, Inter &inter,
-	TerrainPoint *&outSegStart, bool &outFirstPoint )
-{
-	outFirstPoint = false;
-	outSegStart = NULL;
-
-	TerrainPoint dummy(a, false);
-
-	LineIntersection li;
-
-	//V2d A(a.x, a.y);
-
-	TerrainPoint *prevP = NULL;
-	TerrainPoint *other = NULL;
-	TerrainPoint *otherPrev = NULL;
-
-	TerrainPoint *min = NULL;
-	Vector2i minIntersection;
-	bool emptyInter = true;
-
-	TerrainPoint *realStartPoint = NULL;
-	TerrainPoint *currP = pointStart;
-	TerrainPoint *nextP = NULL;
-
-	V2d storedPos;
-
-	list<DetailedInter> inters;
-	list<DetailedInter> sortedInters;
-
-	for (; currP != NULL; currP = currP->next)
-	{
-		nextP = currP->next;
-		if (nextP == NULL)
-			nextP = pointStart;
-
-		li = EditSession::SegmentIntersect(a, b, currP->pos, nextP->pos);
-		//Vector2i lii(round(li.position.x), round(li.position.y));
-
-		
-
-		if (!li.parallel)
-		{
-			if (length(li.position - V2d(a)) == 0.0)
-			{
-				outFirstPoint = true;
-			}
-			inters.push_back(DetailedInter(&dummy, li.position, currP));
-		}
-	}
-
-	inters.sort(compareInter);
-
-	int interIndex = 0;
-	for (auto it = inters.begin(); it != inters.end(); ++it )
-	{
-		if ((*it).inter.position == inter.position)
-		{
-			outSegStart = (*it).otherPoint;
-			return interIndex;
-		}
-		++interIndex;
-	}
-
-	return -1;
 }
 
 sf::Vector2i TerrainPolygon::TrimSliverPos(sf::Vector2<double> &prevPos,
@@ -2117,7 +1655,8 @@ bool TerrainPolygon::TryToMakeInternallyValid()
 
 TerrainPoint * TerrainPolygon::IsClustered(TerrainPoint*curr)
 {
-	bool adjusted = false;
+	return NULL;
+	/*bool adjusted = false;
 	
 	TerrainPoint *prev = GetLoopedPrev(curr);
 	TerrainPoint *next = GetLoopedNext(curr);
@@ -2137,12 +1676,13 @@ TerrainPoint * TerrainPolygon::IsClustered(TerrainPoint*curr)
 	else
 	{
 		return NULL;
-	}
+	}*/
 }
 
 bool TerrainPolygon::RemoveClusters(std::list<TerrainPoint*> &checkPoints)
 {
-	bool adjusted = false;
+	return false;
+	/*bool adjusted = false;
 	TerrainPoint *p;
 	TerrainPoint *clusterP;
 	list<TerrainPoint*> oldPoints;
@@ -2165,15 +1705,16 @@ bool TerrainPolygon::RemoveClusters(std::list<TerrainPoint*> &checkPoints)
 
 	checkPoints.insert(checkPoints.end(), oldPoints.begin(), oldPoints.end());
 
-	return adjusted;
+	return adjusted;*/
 }
 
-bool TerrainPolygon::FixSliver(TerrainPoint *curr)
+bool TerrainPolygon::FixSliver(int i)
 {
 	double minAngle = EditSession::SLIVER_LIMIT;
-	TerrainPoint *prev, *next;
-	prev = GetLoopedPrev(curr);
-	next = GetLoopedNext(curr);
+	TerrainPoint *curr, *prev, *next;
+	curr = GetPoint(i);
+	prev = GetPrevPoint(i);
+	next = GetNextPoint(i);
 
 	V2d pos(curr->pos.x, curr->pos.y);
 	V2d prevPos(prev->pos.x, prev->pos.y);
@@ -2199,120 +1740,49 @@ bool TerrainPolygon::FixSliver(TerrainPoint *curr)
 	return false;
 }
 
-bool TerrainPolygon::IsSliver(TerrainPoint*curr)
-{
-	double minAngle = EditSession::SLIVER_LIMIT;
-	TerrainPoint *prev, *next;
-	prev = GetLoopedPrev(curr);
-	next = GetLoopedNext(curr);
-
-	V2d pos(curr->pos.x, curr->pos.y);
-	V2d prevPos(prev->pos.x, prev->pos.y);
-	V2d nextPos(next->pos.x, next->pos.y);
-	V2d dirA = normalize(prevPos - pos);
-	V2d dirB = normalize(nextPos - pos);
-
-	double diff = GetVectorAngleDiffCCW(dirA, dirB);
-	double diffCW = GetVectorAngleDiffCW(dirA, dirB);
-	if (diff < minAngle)
-	{
-		return true;
-		//Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, true);
-		//curr->pos = trimPos;
-
-		//affectedPoints.push_back(curr);
-	}
-	else if (diffCW < minAngle)
-	{
-		return true;
-		//Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, false);
-		//curr->pos = trimPos;
-
-		//affectedPoints.push_back(curr);
-	}
-
-	return false;
-}
-
-//angle in radians
 void TerrainPolygon::RemoveSlivers()
 {	
 	//check for slivers that are at too extreme of an angle. tiny triangle type things
-
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
-		FixSliver(curr);
+		FixSliver(i);
 	}
-}
-
-void TerrainPolygon::InsertPoint( TerrainPoint *tp, TerrainPoint *prevPoint )
-{
-	tp->next = prevPoint->next;
-	if( tp->next != NULL )
-	{
-		tp->next->prev = tp;
-	}
-	else
-	{
-		pointEnd = tp;
-	}
-
-	prevPoint->next = tp;
-	tp->prev = prevPoint;
-	++numPoints;
 }
 
 void TerrainPolygon::RemovePoint( TerrainPoint *tp )
 {
-	assert( pointStart != NULL );
+	/*assert( pointStart != NULL );
 
-if (tp->prev != NULL)
-{
-	tp->prev->next = tp->next;
-}
-if (tp->next != NULL)
-{
-	tp->next->prev = tp->prev;
-}
-
-if (tp == pointStart)
-{
-	pointStart = tp->next;
-}
-if (tp == pointEnd)
-{
-	pointEnd = tp->prev;
-}
-
-GateInfoPtr gi = tp->gate;
-if (gi != NULL)
-{
-	gi->point0->gate = NULL;
-	gi->point1->gate = NULL;
-	gi->edit->gates.remove(gi);
-	//delete gi;
-
-	//was deleting just fine before, but now it needs to be adjusted for undo/redo
-}
-//delete tp;
-
-
---numPoints;
-}
-
-TerrainPoint * TerrainPolygon::HasPointPos(Vector2i &pos)
-{
-	TerrainPoint *curr = pointStart;
-	while (curr != NULL)
+	if (tp->prev != NULL)
 	{
-		if (curr->pos == pos)
-		{
-			return curr;
-		}
-		curr = curr->next;
+		tp->prev->next = tp->next;
+	}
+	if (tp->next != NULL)
+	{
+		tp->next->prev = tp->prev;
 	}
 
-	return NULL;
+	if (tp == pointStart)
+	{
+		pointStart = tp->next;
+	}
+	if (tp == pointEnd)
+	{
+		pointEnd = tp->prev;
+	}
+
+	GateInfoPtr gi = tp->gate;
+	if (gi != NULL)
+	{
+		gi->point0->gate = NULL;
+		gi->point1->gate = NULL;
+		gi->edit->gates.remove(gi);
+	}
+
+
+	--numPoints;*/
 }
 
 void TerrainPolygon::Reset()
@@ -2348,52 +1818,14 @@ void TerrainPolygon::SoftReset()
 
 void TerrainPolygon::ClearPoints()
 {
-	TerrainPoint *curr = pointStart;
-	while (curr != NULL)
-	{
-		TerrainPoint *temp = curr->next;
-		delete curr;
-		curr = temp;
-	}
-
-	pointStart = NULL;
-	pointEnd = NULL;
-	numPoints = 0;
-}
-
-bool TerrainPolygon::SharesPoints(TerrainPolygon *poly)
-{
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
-	{
-		for (TerrainPoint *other = poly->pointStart; other != NULL; other = other->next)
-		{
-			if (curr->pos == other->pos)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-TerrainPoint *TerrainPolygon::GetMostLeftPoint()
-{
-	TerrainPoint *leftPoint = pointStart;
-	
-	for (TerrainPoint *currP = pointStart; currP != NULL; currP = currP->next)
-	{
-		if (currP->pos.x < leftPoint->pos.x)
-		{
-			leftPoint = currP;
-		}
-	}
-	return leftPoint;
+	pointVector.clear();
 }
 
 
 bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
 {
-	TerrainPolygon tempPoly( grassTex );
+	return false;
+	/*TerrainPolygon tempPoly( grassTex );
 
 	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
 	{
@@ -2408,13 +1840,13 @@ bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
 	bool isPolyValid = edit->IsPolygonValid( &tempPoly, this );
 
 	
-	return isPolyValid;
+	return isPolyValid;*/
 }
 
 //0 means a window came up and they canceled. -1 means no enemies were in danger on that polygon, 1 means that you confirmed to delete the enemies
 int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 {
-	for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
+	/*for( EnemyMap::iterator mapIt = enemies.begin(); mapIt != enemies.end(); ++mapIt )
 	{
 		for( list<ActorPtr>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
 		{
@@ -2437,29 +1869,9 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 				}
 			}
 		}
-	}
+	}*/
 
 	return -1;	
-}
-
-void TerrainPolygon::MoveSelectedPoints( Vector2i move )
-{
-	movingPointMode = true;
-
-	int ind = 0;
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-	{
-		if( curr->selected )
-		{
-			curr->pos += move;
-			if( curr->gate != NULL )
-			{
-				curr->gate->UpdateLine();
-			}
-		}
-		UpdateLineColor(lines, curr, ind);
-		ind += 2;
-	}
 }
 
 sf::IntRect TerrainPolygon::GetAABB()
@@ -2469,43 +1881,30 @@ sf::IntRect TerrainPolygon::GetAABB()
 
 bool TerrainPolygon::IsClockwise()
 {
-	assert( numPoints > 0 );
+	int numP = GetNumPoints();
 
-	int pointCount = numPoints;
-    Vector2i *pointArray = new Vector2i[pointCount];
+	assert(numP > 0);
 
-	int i = 0;
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
+	TerrainPoint *curr, *prev;
+
+	long long int sum = 0;
+	Vector2<long long int> first, second;
+
+	for (int i = 0; i < numP; ++i)
 	{
-		pointArray[i] = curr->pos;
-		++i;
+		curr = GetPoint(i);
+		prev = GetPrevPoint(i);
+
+		first.x = prev->pos.x;
+		first.y = prev->pos.y;
+
+		second.x = curr->pos.x;
+		second.y = curr->pos.y;
+
+		sum += (second.x - first.x) * (second.y + first.y);
 	}
 
-    long long int sum = 0;
-	for (int i = 0; i < pointCount; ++i)
-    {
-        Vector2<long long int> first, second;
-		
-        if (i == 0)
-        {
-			first.x = pointArray[pointCount - 1].x;
-			first.y = pointArray[pointCount - 1].y;
-        }
-        else
-        {
-            first.x = pointArray[i - 1].x;
-			first.y = pointArray[i - 1].y;
-
-        }
-        second.x = pointArray[i].x;
-		second.y = pointArray[i].y;
-
-        sum += (second.x - first.x) * (second.y + first.y);
-    }
-
-	delete [] pointArray;
-
-    return sum < 0;
+	return sum < 0;
 }
 
 TerrainPolygon *TerrainPolygon::Copy()
@@ -2517,7 +1916,7 @@ TerrainPolygon *TerrainPolygon::Copy()
 
 void TerrainPolygon::CopyPoints(TerrainPolygon *poly, bool storeSelected )
 {
-	bool sel;
+	/*bool sel;
 	if (storeSelected)
 	{
 		sel = poly->pointStart->selected;
@@ -2552,59 +1951,7 @@ void TerrainPolygon::CopyPoints(TerrainPolygon *poly, bool storeSelected )
 	}
 
 	pointEnd = prev;
-	numPoints = poly->numPoints;
-}
-
-bool TerrainPolygon::PointOnBorder(V2d &point)
-{
-	TerrainPoint *prev = pointEnd;
-	for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
-	{
-		if (EditSession::PointOnLine(V2d(prev->pos), V2d(curr->pos), point))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-void TerrainPolygon::CopyPoints(TerrainPoint *&start, TerrainPoint *&end, bool storeSelected )
-{
-	TerrainPoint *copyCurr = NULL;
-	TerrainPoint *copyPrev = NULL;
-	TerrainPoint *prev = pointEnd;
-	int numNewPoints = 0;
-	bool sel;
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-	{
-		if (storeSelected)
-		{
-			sel = curr->selected;
-		}
-		else
-		{
-			sel = false;
-		}
-		copyCurr = new TerrainPoint( curr->pos, sel );
-
-		numNewPoints++;
-
-		if( curr == pointStart )
-		{
-			start = copyCurr;
-		}
-		else if( curr == pointEnd )
-		{
-			end = copyCurr;
-		}
-		
-		if( copyPrev != NULL )
-		{
-			copyCurr->prev = copyPrev;
-			copyPrev->next = copyCurr;
-		}
-		copyPrev = copyCurr;
-	}
+	numPoints = poly->numPoints;*/
 }
 
 bool TerrainPolygon::IsTouchingEnemiesFromPoly(TerrainPolygon *p)
@@ -2667,64 +2014,38 @@ void TerrainPolygon::ShowGrass( bool show )
 			}
 			isGrassShowing = false;
 		}
-		/*(else if( grassVa[i*4].color.a == 255 )
-		{
-			grassVa[i*4].color.a = 255;
-			grassVa[i*4+1].color.a = 255;
-			grassVa[i*4+2].color.a = 255;
-			grassVa[i*4+3].color.a = 255;
-		}*/
-	}
-}
-
-
-
-bool TerrainPolygon::BoundsOverlap( TerrainPolygon *poly )
-{
-	if( left <= poly->right && right >= poly->left && top <= poly->bottom && bottom >= poly->top )
-	{
-		return true;
-	}
-	else
-	{
-		return false;
 	}
 }
 
 bool TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
 {
 	//my lines vs his lines
-	for( TerrainPoint *my = pointStart; my != NULL; my = my->next )
+
+	int numP = GetNumPoints();
+	int polyNumP = poly->GetNumPoints();
+
+	TerrainPoint *curr, *prev;
+	TerrainPoint *polyCurr, *polyPrev;
+
+	for (int i = 0; i < numP; ++i)
 	{
-		TerrainPoint *myPrev;
-		if( my == pointStart )
-		{
-			myPrev = pointEnd;
-		}
-		else
-		{
-			myPrev = my->prev;
-		}
+		curr = GetPoint(i);
+		prev = GetPrevPoint(i);
 
-		for( TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next )
+		for (int j = 0; j < polyNumP; ++j)
 		{
-			TerrainPoint *prev;
-			if( pcurr == poly->pointStart )
-			{
-				prev = poly->pointEnd;
-			}
-			else
-			{
-				prev = pcurr->prev;
-			}
+			polyCurr = poly->GetPoint(j);
+			polyPrev = poly->GetPrevPoint(j);
 
-			LineIntersection li = EditSession::SegmentIntersect( (*myPrev).pos, my->pos, (*prev).pos, pcurr->pos );
-			if( !li.parallel )
+			LineIntersection li = EditSession::SegmentIntersect(prev->pos, curr->pos, polyPrev->pos, polyCurr->pos);
+			if (!li.parallel)
 			{
 				return true;
 			}
+
 		}
 	}
+
 	return false;
 }
 
@@ -2732,10 +2053,10 @@ bool TerrainPolygon::IsCompletionValid()
 {
 	EditSession *sess = EditSession::GetSession();
 
-	if (numPoints < 3)
+	if (GetNumPoints() < 3)
 		return false;
 
-	bool linesIntersect = LinesIntersectInProgress(pointStart->pos);
+	bool linesIntersect = LinesIntersectInProgress(GetPoint(0)->pos);
 	if (linesIntersect)
 	{
 		//cout << "lines intersect" << endl;
@@ -2744,7 +2065,7 @@ bool TerrainPolygon::IsCompletionValid()
 
 	double minEdge = sess->GetZoomedMinEdgeLength();
 
-	if (PointsTooCloseToSegInProgress(pointStart->pos, minEdge, true))
+	if (PointsTooCloseToSegInProgress(GetPoint(0)->pos, minEdge, true))
 	{
 		return false;
 	}
@@ -2761,61 +2082,64 @@ bool TerrainPolygon::IsCompletionValid()
 bool TerrainPolygon::LinesIntersectInProgress(Vector2i p)
 {
 	//my lines vs his lines
-	TerrainPoint *curr = pointStart;
-	TerrainPoint *next = NULL;
-	while (curr->next != NULL)
-	{
-		next = curr->next;
 
-		if (next == pointEnd)
+	int numP = GetNumPoints();
+	TerrainPoint *curr, *next, *end;
+	end = GetEndPoint();
+
+	for (int i = 0; i < numP-1; ++i)
+	{
+		curr = GetPoint(i);
+		next = GetNextPoint(i);
+
+		if (i == numP - 2)
 		{
 			V2d a(curr->pos - next->pos);
 			V2d b(p - next->pos);
 
 			double d = dot(normalize(a), normalize(b));
 
-			//cout << "a: " << a.x << ", " << a.y << ", b: " << b.x << ", " << b.y << endl;
-			//cout << "diff: " << d << endl;
-
 			if (d > .999)
 			{
 				return true;
 			}
 
-
 			return false;
 		}
 
-
-		LineIntersection li = EditSession::LimitSegmentIntersect(curr->pos, next->pos, pointEnd->pos, p );
+		LineIntersection li = EditSession::LimitSegmentIntersect(curr->pos, next->pos, end->pos, p);
 		if (!li.parallel)
 		{
 			return true;
 		}
-
-		curr = next;
 	}
+
 
 	return false;
 }
 
-//buggy?
 bool TerrainPolygon::PointTooCloseToPoints( Vector2i point, int minDistance )
 {
 	V2d p( point.x, point.y );
-	for( TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next )
-	{
-		V2d currP( curr->pos.x, curr->pos.y );
-		V2d diff = p - currP;
-		
 
-		if( lengthSqr( diff ) < minDistance * minDistance )
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+
+	V2d currP, diff;
+
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+
+		currP = V2d(curr->pos.x, curr->pos.y);
+		diff = p - currP;
+
+		if (lengthSqr(diff) < minDistance * minDistance)
 		{
-			//cout << "blah: " << lengthSqr( diff ) << endl;
-			//cout << "diff: " << diff.x << ", " << diff.y << endl;
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -2831,10 +2155,12 @@ bool TerrainPolygon::Contains( TerrainPolygon *poly )
 	}
 
 
-	for( TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next )
+	int polyNumP = poly->GetNumPoints();
+	TerrainPoint *polyCurr;
+	for (int i = 0; i < polyNumP; ++i)
 	{
-		//if all points are inside me
-		if( !ContainsPoint( Vector2f( pcurr->pos.x, pcurr->pos.y ) ) )
+		polyCurr = GetPoint(i);
+		if (!ContainsPoint(Vector2f(polyCurr->pos.x, polyCurr->pos.y)))
 		{
 			return false;
 		}
@@ -2849,15 +2175,6 @@ bool TerrainPolygon::PointTooClose( sf::Vector2i point, int minDistance, bool in
 	bool b = PointTooCloseToLines( point, minDistance, inProgress );
 	if( a || b )
 	{
-		/*if (a && b)
-		{
-			cout << "both are too close" << endl;
-		}
-		else if( a )
-			cout << "A point too close" << endl;
-		else
-			cout << "B point too close" << endl;*/
-
 		return true;
 	}
 	else
@@ -2870,30 +2187,24 @@ bool TerrainPolygon::PointTooCloseToLines( sf::Vector2i point, int minDistance, 
 {
 	V2d p( point.x, point.y );
 
-	TerrainPoint *pcurr = pointStart;
-	TerrainPoint *prev = pointEnd;
-
-	for( ; pcurr != NULL; pcurr = pcurr->next )
+	int numP = GetNumPoints();
+	TerrainPoint *curr, *prev;
+	for (int i = 0; i < numP; ++i)
 	{
-		if (inProgress && pcurr == pointStart)
+		if (inProgress && i == 0)
 		{
 			continue;
 		}
 
-		if( pcurr == pointStart )
-		{
-			prev = pointEnd;
-		}
-		else
-		{
-			prev = pcurr->prev;
-		}
+		curr = GetPoint(i);
+		prev = GetPrevPoint(i);
 		
-		if( SegmentWithinDistanceOfPoint( prev->pos, pcurr->pos, point, minDistance ) )
+		if (SegmentWithinDistanceOfPoint(prev->pos, curr->pos, point, minDistance))
 		{
 			return true;
 		}
 	}
+
 	return false;
 }
 
@@ -2929,8 +2240,11 @@ TerrainPoint *TerrainPolygon::GetClosePoint(double radius, V2d &wPos)
 	if (wPos.x <= right + radius && wPos.x >= left - radius
 		&& wPos.y <= bottom + radius && wPos.y >= top - radius)
 	{
-		for (TerrainPoint *curr = pointStart; curr != NULL; curr = curr->next)
+		int numP = GetNumPoints();
+		TerrainPoint *curr;
+		for (int i = 0; i < numP; ++i)
 		{
+			curr = GetPoint(i);
 			if (length(wPos - V2d(curr->pos.x, curr->pos.y)) <= radius)
 			{
 				return curr;
@@ -2942,7 +2256,8 @@ TerrainPoint *TerrainPolygon::GetClosePoint(double radius, V2d &wPos)
 
 bool TerrainPolygon::IsCloseToFirstPoint(double radius, V2d &p)
 {
-	if (length(p - V2d(pointStart->pos.x, pointStart->pos.y)) <= radius)
+	TerrainPoint *start = GetPoint(0);
+	if (length(p - V2d(start->pos.x, start->pos.y)) <= radius)
 	{
 		return true;
 	}
@@ -2950,47 +2265,22 @@ bool TerrainPolygon::IsCloseToFirstPoint(double radius, V2d &p)
 	return false;
 }
 
-bool TerrainPolygon::IsPoint(sf::Vector2i &p)
+void TerrainPolygon::Reserve( int nPoints )
 {
-	for (TerrainPoint *tp = pointStart; tp != NULL; tp = tp->next)
-	{
-		if (tp->pos == p)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-sf::Rect<int> TerrainPolygon::TempAABB()
-{
-	assert( numPoints > 1 );
-	TerrainPoint *curr = pointStart;
-	int l = curr->pos.x;
-	int r = curr->pos.x;
-	int t = curr->pos.y;
-	int b = curr->pos.y;
-	curr = curr->next;
-	for( ; curr != NULL; curr = curr->next )
-	{
-		l = min( curr->pos.x, l);
-		r = max( curr->pos.x, r);
-		t = min( curr->pos.y, t);
-		b = max( curr->pos.y, b );
-	}
-
-	return Rect<int>( l, t, r- l, b - t );
+	pointVector.reserve(nPoints);
 }
 
 //ISELECTABLE FUNCTIONS
 
+
+
 bool TerrainPolygon::Intersects( sf::IntRect rect )
 {
 	TerrainPolygon poly( grassTex );
-	poly.AddPoint( new TerrainPoint( Vector2i( rect.left, rect.top ), false ) );
-	poly.AddPoint( new TerrainPoint( Vector2i( rect.left + rect.width, rect.top ), false ) );
-	poly.AddPoint( new TerrainPoint( Vector2i( rect.left + rect.width, rect.top + rect.height ), false ) );
-	poly.AddPoint( new TerrainPoint( Vector2i( rect.left, rect.top + rect.height ), false ) );
+	poly.AddPoint( Vector2i( rect.left, rect.top ), false );
+	poly.AddPoint( Vector2i( rect.left + rect.width, rect.top ), false);
+	poly.AddPoint( Vector2i( rect.left + rect.width, rect.top + rect.height ), false);
+	poly.AddPoint( Vector2i( rect.left, rect.top + rect.height ), false);
 
 	poly.UpdateBounds();
 
@@ -3006,110 +2296,24 @@ bool TerrainPolygon::IsPlacementOkay()
 {
 	return false;
 }
-	//void Move( sf::Vector2i delta );
+
 void TerrainPolygon::BrushDraw( sf::RenderTarget *target, bool valid )
 {
-	target->draw(lines, numPoints * 2, sf::Lines);
-	//cout << "brush draw polygon" << endl;
+	target->draw(lines, GetNumPoints() * 2, sf::Lines);
 }
 
 void TerrainPolygon::Draw( sf::RenderTarget *target )
 {
 }
 
-void TerrainPolygon::GetDetailedIntersections(TerrainPolygon *poly, std::list<DetailedInter> &outInters)
-{
-	outInters.clear();
-		//list<DetailedInter> inters;
-		//my lines vs his lines
-	for (TerrainPoint *my = pointStart; my != NULL; my = my->next)
-	{
-		TerrainPoint *myPrev;
-		if (my == pointStart)
-		{
-			myPrev = pointEnd;
-		}
-		else
-		{
-			myPrev = my->prev;
-		}
-
-		for (TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next)
-		{
-			TerrainPoint *prev;
-			if (pcurr == poly->pointStart)
-			{
-				prev = poly->pointEnd;
-			}
-			else
-			{
-				prev = pcurr->prev;
-			}
-
-			LineIntersection li = EditSession::SegmentIntersect((*myPrev).pos, my->pos, (*prev).pos, pcurr->pos);
-			if (!li.parallel)
-			{
-
-				//Vector2i pos( li.position.x + .5, li.position.y + .5 ); //rounding
-				outInters.push_back(DetailedInter(myPrev, li.position, prev));
-				//return true;
-			}
-		}
-	}
-}
-//returns the intersections w/ the terrain point values of THIS polygon, NOT poly
-void TerrainPolygon::GetIntersections( TerrainPolygon *poly, std::list<Inter> &outInters)
-{
-	//my lines vs his lines
-	for( TerrainPoint *my = pointStart; my != NULL; my = my->next )
-	{
-		TerrainPoint *myPrev;
-		if( my == pointStart )
-		{
-			myPrev = pointEnd;
-		}
-		else
-		{
-			myPrev = my->prev;
-		}
-
-		for( TerrainPoint *pcurr = poly->pointStart; pcurr != NULL; pcurr = pcurr->next )
-		{
-			TerrainPoint *prev;
-			if( pcurr == poly->pointStart )
-			{
-				prev = poly->pointEnd;
-			}
-			else
-			{
-				prev = pcurr->prev;
-			}
-
-			LineIntersection li = EditSession::SegmentIntersect( (*myPrev).pos, my->pos, (*prev).pos, pcurr->pos );
-
-			if (length(li.position - V2d(my->pos)) == 0)
-			{
-				continue;
-			}
-
-			if( !li.parallel )
-			{
-				
-				//Vector2i pos( li.position.x + .5, li.position.y + .5 ); //rounding
-				outInters.push_back( Inter( myPrev, li.position ) );
-				//return true;
-			}
-		}
-	}
-}
-
 void TerrainPolygon::CopyPointsToClipperPath(ClipperLib::Path & p)
 {
-	TerrainPoint *curr = pointStart;
-	while (curr != NULL)
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
+		curr = GetPoint(i);
 		p << ClipperLib::IntPoint(curr->pos.x, curr->pos.y);
-		curr = curr->next;
 	}
 }
 
@@ -3117,7 +2321,8 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p)
 {
 	for (auto it = p.begin(); it != p.end(); ++it )
 	{
-		AddPoint(new TerrainPoint(Vector2i((*it).X, (*it).Y), false));
+		//AddPoint(new TerrainPoint(Vector2i((*it).X, (*it).Y), false));
+		AddPoint(Vector2i((*it).X, (*it).Y), false);
 	}
 }
 
@@ -3127,7 +2332,7 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p, ClipperLib::P
 	TerrainPoint *t;
 	for (auto it = p.begin(); it != p.end(); ++it)
 	{
-		t = new TerrainPoint(Vector2i((*it).X, (*it).Y), false);
+		t = AddPoint(Vector2i((*it).X, (*it).Y), false);
 		for (auto intersectIt = clipperIntersections.begin(); intersectIt != clipperIntersections.end(); ++intersectIt)
 		{
 			if ((*intersectIt).X == (*it).X && (*intersectIt).Y == (*it).Y)
@@ -3136,24 +2341,25 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p, ClipperLib::P
 				break;
 			}
 		}
-
-		AddPoint(t);
 	}
 }
 
 void TerrainPolygon::AddGatesToBrush(Brush *b,
 	list<GateInfoPtr> &gateInfoList)
 {
-	TerrainPoint *pCurr = pointStart;
 	bool okGate = true;
-	while (pCurr != NULL)
+
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
+		curr = GetPoint(i);
 		okGate = true;
-		if (pCurr->gate != NULL)
+		if (curr->gate != NULL)
 		{
 			for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 			{
-				if ((*it) == pCurr->gate)
+				if ((*it) == curr->gate)
 				{
 					okGate = false;
 					break;
@@ -3161,13 +2367,12 @@ void TerrainPolygon::AddGatesToBrush(Brush *b,
 			}
 			if (okGate)
 			{
-				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(pCurr->gate);
+				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(curr->gate);
 				b->AddObject(sp1);
-				gateInfoList.push_back(pCurr->gate);
+				gateInfoList.push_back(curr->gate);
 			}
 
 		}
-		pCurr = pCurr->next;
 	}
 }
 
@@ -3186,10 +2391,13 @@ void TerrainPolygon::AddEnemiesToBrush(Brush *b)
 
 void TerrainPolygon::AddGatesToList(std::list<GateInfoPtr> &gates)
 {
-	TerrainPoint *curr = pointStart;
 	bool alreadyInList = false;
-	while (curr != NULL)
+
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
 	{
+		curr = GetPoint(i);
 		if (curr->gate != NULL)
 		{
 			alreadyInList = false;
@@ -3207,21 +2415,95 @@ void TerrainPolygon::AddGatesToList(std::list<GateInfoPtr> &gates)
 				gates.push_back(curr->gate);
 			}
 		}
-		curr = curr->next;
 	}
 }
 
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
-	:pos( p ), selected( s ), gate( NULL ), prev( NULL ), next( NULL )
+	:pos( p ), selected( s ), gate( NULL )
 {
 }
+
+TerrainPoint::TerrainPoint( TerrainPolygon *p_poly, sf::Vector2i &p, bool s,
+	int i)
+	:pos( p ), selected( s ), index( i ), gate( NULL ), poly( p_poly )
+{
+
+}
+
+int TerrainPoint::GetIndex()
+{
+	return index;
+}
+
+TerrainPoint & TerrainPoint::GetLoopedNext()
+{
+	return poly->pointVector[GetLoopedNextIndex()];
+}
+
+TerrainPoint & TerrainPoint::GetLoopedPrev()
+{
+	return poly->pointVector[GetLoopedPrevIndex()];
+}
+
+int TerrainPoint::GetNextIndex()
+{
+	if (index == poly->GetNumPoints() - 1)
+		return -1;
+	else
+		return index + 1;
+}
+
+int TerrainPoint::GetPrevIndex()
+{
+	if (index == 0)
+		return -1;
+	else
+		return index - 1;
+}
+int TerrainPoint::GetLoopedNextIndex()
+{
+	if (index == poly->GetNumPoints() - 1)
+	{
+		return 0;
+	}
+	else
+		return index + 1;
+}
+
+int TerrainPoint::GetLoopedPrevIndex()
+{
+	if (index == 0)
+	{
+		return poly->GetNumPoints() - 1;
+	}
+	else
+		return index - 1;
+}
+
+//TerrainPoint  TerrainPoint::GetNext()
+//{
+//}
+//
+//int TerrainPoint::GetPrev()
+//{
+//
+//}
+//
+//int TerrainPoint::GetLoopedNext()
+//{
+//
+//}
+//
+//int TerrainPoint::GetLoopedPrev()
+//{
+//
+//}
 
 bool TerrainPoint::ContainsPoint( Vector2f test )
 {
 	bool contains = length( V2d( test.x, test.y ) - V2d( pos.x, pos.y ) ) <= POINT_RADIUS;
 	return contains;
 }
-
 
 
 bool TerrainPoint::Intersects( IntRect rect )

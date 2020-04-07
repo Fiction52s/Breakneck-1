@@ -652,7 +652,7 @@ void MoveBrushAction::Perform()
 			}
 		}
 
-		for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
+		/*for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
 		{
 			list<PointMoveInfo> &pList = (*it).second;
 			for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
@@ -663,7 +663,7 @@ void MoveBrushAction::Perform()
 			(*it).first->SoftReset();
 			(*it).first->Finalize();
 			(*it).first->movingPointMode = false;
-		}
+		}*/
 	}
 }
 
@@ -711,7 +711,7 @@ void MoveBrushAction::Undo()
 		}
 	}
 
-	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
+	/*for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
 	{
 		list<PointMoveInfo> &pList = (*it).second;
 		for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
@@ -722,7 +722,7 @@ void MoveBrushAction::Undo()
 		(*it).first->SoftReset();
 		(*it).first->Finalize();
 		(*it).first->movingPointMode = false;
-	}
+	}*/
 }
 
 LeaveGroundAction::LeaveGroundAction( ActorPtr &p_actor )
@@ -764,9 +764,9 @@ void LeaveGroundAction::Undo()
 	}
 	else if (gi.railGround != NULL)
 	{
-		actor->AnchorToRail(gi);
-		gi.railGround->enemies[gi.edgeStart].push_back(actor);
-		gi.railGround->UpdateBounds();
+		//actor->AnchorToRail(gi);
+		//gi.railGround->enemies[gi.edgeStart].push_back(actor);
+		//gi.railGround->UpdateBounds();
 	}
 	else
 	{
@@ -795,8 +795,8 @@ void GroundAction::Perform()
 	}
 	else if (gi.railGround != NULL)
 	{
-		gi.railGround->enemies[gi.edgeStart].push_back(actor);
-		gi.railGround->UpdateBounds();
+		//gi.railGround->enemies[gi.edgeStart].push_back(actor);
+		//gi.railGround->UpdateBounds();
 	}
 
 	performed = true;

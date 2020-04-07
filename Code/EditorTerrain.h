@@ -34,6 +34,8 @@ struct GrassSeg
 struct TerrainPoint
 {
 	TerrainPoint(sf::Vector2i &pos, bool selected);
+	TerrainPoint(TerrainPolygon *poly, sf::Vector2i &pos, bool selected,
+		int index);
 	~TerrainPoint()
 	{
 		//delete gate;
@@ -44,8 +46,9 @@ struct TerrainPoint
 	boost::shared_ptr<GateInfo> gate;
 	//GateInfo *gate;
 	bool firstPoint;
-	TerrainPoint *next;
-	TerrainPoint *prev;
+	int GetIndex();
+	//TerrainPoint *next;
+	//TerrainPoint *prev;
 
 	bool HasPrimaryGate(sf::Vector2i &gateDir);
 	bool ContainsPoint(sf::Vector2f test);
@@ -63,7 +66,19 @@ struct TerrainPoint
 	bool CanApply();
 	bool CanAdd();
 	void SetSelected(bool select);
+	int GetNextIndex();
+	int GetPrevIndex();
+	int GetLoopedNextIndex();
+	int GetLoopedPrevIndex();
+	/*TerrainPoint * GetNext();
+	TerrainPoint * GetPrev();
+	TerrainPoint * GetLoopedNext();
+	TerrainPoint * GetLoopedPrev();*/
+	TerrainPoint & GetLoopedNext();
+	TerrainPoint & GetLoopedPrev();
 
+	TerrainPolygon *poly;
+	int index;
 	static const int POINT_RADIUS = 5;
 	//int special;
 };
@@ -127,19 +142,29 @@ struct TerrainPolygon : ISelectable
 		WATER0,
 		Count
 	};
-	QuadTree *edgeTree;
-
-	TerrainPoint *GetLoopedNext(TerrainPoint *);
-	TerrainPoint *GetLoopedPrev(TerrainPoint *);
-
+	//QuadTree *edgeTree;
+	
 	static sf::Vector2i GetExtreme(TerrainPoint *p0,
 		TerrainPoint *p1);
+	TerrainPoint *GetPoint(int index);
+	TerrainPoint *GetEndPoint();
+	TerrainPoint *GetStartPoint();
+	TerrainPoint *GetNextPoint(int index);
+	TerrainPoint *GetPrevPoint(int index);
+	void DeactivateGates();
+	void ActivateGates();
+
+	bool PointsTooCloseToEachOther();
+	bool LinesIntersectMyself();
+	bool HasSlivers();
+	bool IntersectsMyOwnEnemies();
+	bool IntersectsMyOwnGates();
 	//TerrainRender *tr;
 	int terrainVariation;
 	TerrainWorldType terrainWorldType;
 	int GetNumGrassTotal();
-	int GetNumGrass(TerrainPoint *tp, bool &rem);
-	void SetupGrass(TerrainPoint *tp, int &i);
+	int GetNumGrass(int i, bool &rem);
+	void SetupGrass(int i, int &grassIndex);
 	void SetupGrass();
 	sf::Shader *pShader;
 	bool IsValidInProgressPoint(sf::Vector2i point);
@@ -148,36 +173,28 @@ struct TerrainPolygon : ISelectable
 	TerrainPolygon(TerrainPolygon &poly, bool pointsOnly,
 		bool storeSelectedPoints = false );
 	~TerrainPolygon();
-	void UpdateLineColor(sf::Vertex *line, TerrainPoint *p, int index);
-	bool SwitchPolygon(bool cw, TerrainPoint *rootPoint,
-		TerrainPoint *switchStart);
-	void CopyPoints(TerrainPoint *&start,
-		TerrainPoint *&end, 
-		bool storeSelected = false);
+	void UpdateLineColor(sf::Vertex *line, int i, int index);
 	sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
 		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
 		double minAngle, bool cw);
 	void CopyPoints(TerrainPolygon *poly,
 		bool storeSelected = false );
 	TerrainPolygon *Copy();
-	bool PointOnBorder(V2d &point);
 	void MovePoint(sf::Vector2i &delta,
 		TerrainPoint *tp);
 	bool IsSpecialPoly();
 	bool IsTouchingEnemiesFromPoly(TerrainPolygon *p);
 
-	TerrainPoint *pointStart;
-	TerrainPoint *pointEnd;
-	bool IsPoint(sf::Vector2i &p);
+	//TerrainPoint *pointStart;
+	//TerrainPoint *pointEnd;
+	std::vector<TerrainPoint> pointVector;
+	void Reserve(int nPoints);
+
 	TerrainPoint *GetSamePoint(sf::Vector2i &p);
-	int numPoints;
-	void AddPoint(TerrainPoint* tp);
-	void InsertPoint(TerrainPoint *tp, TerrainPoint *prevPoint);
+	TerrainPoint * AddPoint(sf::Vector2i &p, bool sel);
+	int GetNumPoints();
 	void RemovePoint(TerrainPoint *tp);
-	void DestroyEnemies();
 	void ClearPoints();
-	TerrainPoint *GetPointAtIndex(int index);
-	int GetPointIndex(TerrainPoint *p);
 	void SetMaterialType(
 		int world, int variation);
 	void UpdateMaterialType();
@@ -186,28 +203,14 @@ struct TerrainPolygon : ISelectable
 
 
 	bool TryToMakeInternallyValid();
-	bool IsSliver(TerrainPoint*);
-	bool FixSliver(TerrainPoint *);
+	bool FixSliver(int i);
 
 	TerrainPoint * IsClustered(TerrainPoint*);
 	//bool IsClustered(TerrainPoint *);
-	int FixNearPrimary(TerrainPoint*,bool currLocked = false);
+	int FixNearPrimary(int i,bool currLocked = false);
 
-
-
-
-	int GetIntersectionNumber(sf::Vector2i &a, sf::Vector2i &b,
-		Inter &inter, TerrainPoint *&outSegStart, bool &outFirstPoint);
-	TerrainPoint *GetMostLeftPoint();
-	bool SharesPoints(TerrainPolygon *poly);
-	TerrainPoint * HasPointPos(sf::Vector2i &pos);
-	LineIntersection GetSegmentFirstIntersection(sf::Vector2i &a, sf::Vector2i &b,
-		TerrainPoint *&outSegStart, TerrainPoint *&outSegEnd,
-		bool ignoreStartPoint = false);
 	//std::string material;
 	void RemoveSelectedPoints();
-	void GetIntersections(TerrainPolygon *poly, std::list<Inter> &outInters);
-	void GetDetailedIntersections(TerrainPolygon *poly, std::list<DetailedInter> &outInters);
 	bool IsRemovePointsOkayTerrain(EditSession *edit);
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
@@ -221,7 +224,6 @@ struct TerrainPolygon : ISelectable
 	bool AlignExtremes();
 	bool AlignExtremes(
 		std::vector<PointMoveInfo> &lockPoints);
-	bool RemoveClusters(double minDist);
 	bool RemoveClusters(
 		std::list<TerrainPoint*> &checkPoints);
 	//= std::list<TerrainPoint*>() );
@@ -240,7 +242,6 @@ struct TerrainPolygon : ISelectable
 	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected(bool select);
 
-	void MoveSelectedPoints(sf::Vector2i move);
 	void UpdateBounds();
 
 	void SetLayer(int p_layer);
@@ -263,7 +264,6 @@ struct TerrainPolygon : ISelectable
 	bool IsTouching(TerrainPolygon *poly);
 	bool Contains(TerrainPolygon *poly);
 	//bool IsTouching( TerrainPolygon * p );
-	bool BoundsOverlap(TerrainPolygon *poly);
 	bool LinesIntersect(TerrainPolygon *poly);
 	bool LinesIntersectInProgress(sf::Vector2i p );
 	bool IsCompletionValid();
@@ -301,8 +301,6 @@ struct TerrainPolygon : ISelectable
 
 
 	bool movingPointMode;
-
-	sf::Rect<int> TempAABB();
 
 	void Move(SelectPtr me, sf::Vector2i move);
 

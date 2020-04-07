@@ -147,26 +147,25 @@ sf::IntRect GateInfo::GetAABB()
 void GateInfo::WriteFile(ofstream &of)
 {
 	int index0 = 0, index1 = 0;
-	TerrainPoint *curr = poly0->pointStart;
-	while (curr != NULL)
+	int numP0 = poly0->GetNumPoints();
+	int numP1 = poly1->GetNumPoints();
+	TerrainPoint *curr;//poly0->pointStart;
+	for (int i = 0; i < numP0; ++i)
 	{
+		curr = poly0->GetPoint(i);
 		if (curr == point0)
-		{
 			break;
-		}
+
 		++index0;
-		curr = curr->next;
 	}
 
-	curr = poly1->pointStart;
-	while (curr != NULL)
+	for (int i = 0; i < numP1; ++i)
 	{
+		curr = poly1->GetPoint(i);
 		if (curr == point1)
-		{
 			break;
-		}
+
 		++index1;
-		curr = curr->next;
 	}
 
 	//will eventually spit out the gate value
