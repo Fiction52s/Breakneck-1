@@ -284,6 +284,10 @@ struct EditSession : GUIHandler, TilesetManager
 		std::set<PolyPtr> & polyList,
 		std::list<GateInfoPtr> &gateInfoList,
 		Brush *b);
+	void AddFullPolytoBrush(
+		PolyPtr p, 
+		std::list<GateInfoPtr> &gateInfoList,
+		Brush *b);
 
 	void ClearSelectedPoints();
 	void SelectPoint(PolyPtr poly,
