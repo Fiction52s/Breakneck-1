@@ -2183,7 +2183,7 @@ bool TerrainPolygon::Contains( TerrainPolygon *poly )
 	TerrainPoint *polyCurr;
 	for (int i = 0; i < polyNumP; ++i)
 	{
-		polyCurr = GetPoint(i);
+		polyCurr = poly->GetPoint(i);
 		if (!ContainsPoint(Vector2f(polyCurr->pos.x, polyCurr->pos.y)))
 		{
 			return false;

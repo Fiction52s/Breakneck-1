@@ -6629,8 +6629,6 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	//for add and on the INSIDE for subtract
 	polygonInProgress->CopyPointsToClipperPath(clipperIntersections);
 
-	list<TerrainPoint*> newPoints;
-
 	ClipperIntPointSet fusedPoints;
 
 	if (otherSize > 0)
@@ -6758,7 +6756,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 	ClipperLib::Path clipperIntersections;
 
-	list<TerrainPoint*> newPoints;
+	ClipperIntPointSet fusedPoints;
 
 	AddFullPolysToBrush(intersectingPolys, gateInfoList, &orig);
 
@@ -6791,8 +6789,12 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 			for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 			{
 				TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
-				newPoly->AddPointsFromClipperPath((*sit), clipperIntersections, newPoints );
-				newPoly->RemoveClusters(newPoints);
+
+				FusePathClusters((*sit), clipperIntersections, fusedPoints);
+				newPoly->AddPointsFromClipperPath((*sit), fusedPoints); 
+
+				//newPoly->AddPointsFromClipperPath((*sit), clipperIntersections, newPoints );
+				//newPoly->RemoveClusters(newPoints);
 				newPoly->SetMaterialType((*it)->terrainWorldType, (*it)->terrainVariation);
 				results.push_back(newPoly);
 			}
@@ -6814,18 +6816,17 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
 		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
-		//for (auto it = testList.begin(); it != testList.end(); ++it)
-		//{
-		//	allIntersections.push_back((*it));$
-		//	//cout << "intersection4: " << (*it).X << ", " << (*it).Y << endl;
-		//}
 
 		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
 		{
 			TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
 
-			newPoly->AddPointsFromClipperPath((*it), clipperIntersections, newPoints);
-			newPoly->RemoveClusters(newPoints);
+
+			FusePathClusters((*it), clipperIntersections, fusedPoints);
+			newPoly->AddPointsFromClipperPath((*it), fusedPoints);
+
+			//newPoly->AddPointsFromClipperPath((*it), clipperIntersections, newPoints);
+			//newPoly->RemoveClusters(newPoints);
 			newPoly->SetMaterialType(inversePolygon->terrainWorldType, 
 				inversePolygon->terrainVariation );
 
