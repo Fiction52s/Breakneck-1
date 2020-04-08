@@ -6145,6 +6145,7 @@ bool EditSession::ExecuteTerrainCompletion()
 		PolyPtr currentBrush = polygonInProgress;
 
 		list<PolyPtr> intersectingPolys;
+		list<PolyPtr> containedPolys;
 
 		polygonInProgress->UpdateBounds();
 
@@ -6160,6 +6161,11 @@ bool EditSession::ExecuteTerrainCompletion()
 				break;
 			}
 
+			if (polygonInProgress->Contains((*it).get()))
+			{
+				containedPolys.push_back((*it));
+			}
+
 			if( polygonInProgress->LinesIntersect( (*it).get() ) )
 			{
 				//not too close and I intersect, so I can add
@@ -6173,7 +6179,18 @@ bool EditSession::ExecuteTerrainCompletion()
 		}
 		else
 		{
-			bool empty = intersectingPolys.empty();
+			Action *action = ChooseAddOrSub(intersectingPolys, containedPolys);
+
+			if (action != NULL)
+			{
+				action->Perform();
+				doneActionStack.push_back(action);
+
+				ClearUndoneActions();
+			}
+			
+
+			/*bool empty = intersectingPolys.empty();
 
 			if( empty && IsKeyPressed(Keyboard::LAlt))
 			{
@@ -6196,13 +6213,25 @@ bool EditSession::ExecuteTerrainCompletion()
 					SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(polygonInProgress);
 
 					progressBrush->Clear();
-
-
 					progressBrush->AddObject(sp);
 
-					Action *action = new ApplyBrushAction(progressBrush);
-					action->Perform();
-					doneActionStack.push_back(action);
+					if (containedPolys.empty())
+					{
+						Action *action = new ApplyBrushAction(progressBrush);
+						action->Perform();
+						doneActionStack.push_back(action);
+					}
+					else
+					{
+						Brush containedBrush;
+						for (auto it = containedPolys.begin(); it != containedPolys.end(); ++it)
+						{
+							containedBrush.AddObject((*it));
+						}
+						Action *action = new ReplaceBrushAction(&containedBrush, progressBrush);
+						action->Perform();
+						doneActionStack.push_back(action);
+					}
 
 					ClearUndoneActions();
 
@@ -6212,20 +6241,13 @@ bool EditSession::ExecuteTerrainCompletion()
 			}
 			else
 			{
-				//add each of the intersecting polygons onto the polygonInProgress,
-				//then do a replacebrushaction
-
-				//polygonInProgress->Finalize();
-				//polygonInProgress->FixWinding();
-
-				//hold shift ATM to activate subtraction
-				Action *action = ChooseAddOrSub(intersectingPolys);
+				Action *action = ChooseAddOrSub(intersectingPolys, containedPolys);
 
 				action->Perform();
 				doneActionStack.push_back(action);
 
 				ClearUndoneActions();
-			}
+			}*/
 
 			return true;
 		}
@@ -6419,16 +6441,87 @@ void EditSession::GetShardWorldAndIndex(int selX, int selY,
 	li = realX + realY * 11;
 }
 
-Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys)
+Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<PolyPtr> &containedPolys )
 {
-	if (!(IsKeyPressed(Keyboard::LShift) ||
-		IsKeyPressed(Keyboard::RShift)))
+	bool add = !(IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift));
+	if (intersectingPolys.empty())
 	{
-		return ExecuteTerrainAdd( intersectingPolys);
+		if (IsKeyPressed(Keyboard::LAlt))
+		{
+			polygonInProgress->inverse = true;
+		}
+
+		if (polygonInProgress->inverse)
+		{
+			SetInversePoly();
+		}
+		else
+		{
+
+			Action * action = NULL;
+
+			Brush containedBrush;
+			for (auto it = containedPolys.begin(); it != containedPolys.end(); ++it)
+			{
+				containedBrush.AddObject((*it));
+			}
+
+			if (add)
+			{
+				polygonInProgress->FixWinding();
+				polygonInProgress->RemoveSlivers();
+				polygonInProgress->AlignExtremes();
+				polygonInProgress->Finalize();
+
+				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(polygonInProgress);
+
+				progressBrush->Clear();
+				progressBrush->AddObject(sp);
+
+				if (containedPolys.empty())
+				{
+					action = new ApplyBrushAction(progressBrush);
+				}
+				else
+				{
+					action = new ReplaceBrushAction(&containedBrush, progressBrush);
+				}
+
+				PolyPtr newPoly(new TerrainPolygon(&grassTex));
+				polygonInProgress = newPoly;
+			}
+			else
+			{
+				
+				if (containedPolys.empty())
+				{
+					//no intersections and no contained polys
+					action = NULL;
+					
+				}
+				else
+				{
+					//no intersections but has contained polys
+					action = new RemoveBrushAction(&containedBrush);
+				}
+
+				polygonInProgress->ClearPoints();
+			}
+			
+
+			return action;
+		}
 	}
 	else
 	{
-		return ExecuteTerrainSubtract(intersectingPolys);
+		if (add)
+		{
+			return ExecuteTerrainAdd(intersectingPolys, containedPolys);
+		}
+		else
+		{
+			return ExecuteTerrainSubtract(intersectingPolys, containedPolys );
+		}
 	}
 }
 
@@ -6442,9 +6535,16 @@ void EditSession::PasteTerrain(Brush *b)
 		{
 			TerrainPolygon *tp = (TerrainPolygon*)((*bit).get());
 			polygonInProgress.reset(tp->Copy());
+
+			list<PolyPtr> containedPolys;
 			list<PolyPtr> intersectingPolys;
 			for (auto it = polygons.begin(); it != polygons.end(); ++it)
 			{
+				if (polygonInProgress->Contains((*it).get()))
+				{
+					containedPolys.push_back((*it));
+				}
+
 				if (polygonInProgress->LinesIntersect((*it).get()))
 				{
 					//not too close and I intersect, so I can add
@@ -6452,15 +6552,17 @@ void EditSession::PasteTerrain(Brush *b)
 				}
 			}
 
-			if (intersectingPolys.empty())
+			Action * a = ChooseAddOrSub(intersectingPolys, containedPolys);
+			if( a != NULL )
+				compoundAction->subActions.push_back(a);
+			/*if (intersectingPolys.empty())
 			{
 				applyBrush.AddObject((*bit));
 			}
 			else
 			{
-				Action * a = ChooseAddOrSub(intersectingPolys);
-				compoundAction->subActions.push_back(a);
-			}
+				
+			}*/
 		}
 		else if ((*bit)->selectableType == ISelectable::ACTOR)
 		{
@@ -6593,13 +6695,14 @@ void EditSession::FusePathClusters(ClipperLib::Path &p, ClipperLib::Path &clippe
 
 }
 
-Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
+Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys, list<PolyPtr> &containedPolys)
 {
 	Brush orig;
 	Brush resultBrush;
 
 	list<GateInfoPtr> gateInfoList;
 
+	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 	AddFullPolysToBrush(intersectingPolys, gateInfoList, &orig);
 
 	bool inverse = false;
@@ -6724,7 +6827,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 	return action;
 }
 
-Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
+Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys, list<PolyPtr> &containedPolys)
 {
 	bool inverse = false;
 	int otherSize = intersectingPolys.size();
@@ -6762,6 +6865,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 	ClipperIntPointSet fusedPoints;
 
+	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 	AddFullPolysToBrush(intersectingPolys, gateInfoList, &orig);
 
 	if (otherSize > 0)

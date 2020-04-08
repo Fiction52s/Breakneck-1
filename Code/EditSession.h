@@ -734,11 +734,14 @@ struct EditSession : GUIHandler, TilesetManager
 		sf::Vector2i &p1, sf::Vector2i &prim);
 	bool GetPrimaryAdjustment(sf::Vector2i &p0,
 		sf::Vector2i &p1, sf::Vector2i &adjust);
-	Action* ExecuteTerrainAdd(
-		std::list<PolyPtr> &intersectingPolys);
 	void PasteTerrain(Brush *b);
-	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys);
-	Action *ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys);
+	Action* ExecuteTerrainAdd(
+		std::list<PolyPtr> &intersectingPolys,
+		std::list<PolyPtr> &containedPolys);
+	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys,
+		std::list<PolyPtr> &containedPolys );
+	Action *ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys,
+		std::list<PolyPtr> &containedPolys );
 	
 	enum GateAdjustOption
 	{

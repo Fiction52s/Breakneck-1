@@ -496,7 +496,7 @@ void TerrainPolygon::ActivateGates()
 
 void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr select )
 {
-	cout << "deactivating polygon" << endl;
+	//cout << "deactivating polygon" << endl;
 	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
 
 	edit->GetCorrectPolygonList(this).remove(poly);
