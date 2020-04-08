@@ -580,6 +580,13 @@ void MoveBrushAction::Perform()
 				poly->Finalize();
 				poly->movingPointMode = false;
 			}
+
+			for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
+			{
+				(*it).first->SoftReset();
+				(*it).first->Finalize();
+				(*it).first->movingPointMode = false;
+			}
 		}
 
 		moveOnFirstPerform = true;

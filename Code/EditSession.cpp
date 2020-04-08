@@ -3651,377 +3651,135 @@ void EditSession::DeselectPoint(TerrainRail *rail,
 
 void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 {
-	
-	bool validMove = true;
+	selectedBrush->Clear();
+	/*for (PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+	{
+		selectedBrush->RemoveObject((*it).first);
+	}*/
 
-	//num polys
+	bool affected;
+	int polyNumP;
+	TerrainPoint *curr, *prev;
+	PolyPtr poly;
 
-	int numSelectedPolys = selectedPoints.size();
-	Vector2i** allDeltas = new Vector2i*[numSelectedPolys];
-	int allDeltaIndex = 0;
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
-		TerrainPolygon &poly = *((*it).first);
-		selectedBrush->RemoveObject((*it).first);
+		poly = (*it).first;
+		affected = false;
 
-		int polySize = poly.GetNumPoints();
-		Vector2i *deltas = new Vector2i[polySize];
-		allDeltas[allDeltaIndex] = deltas;
-						
-
-		double prim_limit = PRIMARY_LIMIT;
-		if( IsKeyPressed( Keyboard::LShift ) )
-		{
-			prim_limit = .99;
-		}
-
+		polyNumP = poly->GetNumPoints();
 		
-		int polyNumP = poly.GetNumPoints();
-		TerrainPoint *polyCurr;
+
 		for (int i = 0; i < polyNumP; ++i)
 		{
-			polyCurr = poly.GetPoint(i);
-			deltas[i] = Vector2i(0, 0);
+			curr = poly->GetPoint(i);
+			prev = poly->GetPrevPoint(i);
+
+			if (curr->selected) //selected
+			{
+				curr->pos += pointGrabDelta;
+
+				if (curr->gate != NULL)
+				{
+					curr->gate->UpdateLine();
+				}
+
+				poly->UpdateLineColor(poly->lines, prev->index, prev->index * 2);
+				poly->UpdateLineColor(poly->lines, i, i * 2);
+
+				if (poly->enemies.count(curr) > 0)
+				{
+					list<ActorPtr> &enemies = poly->enemies[curr];
+					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					{
+						//(*ait)->UpdateGroundedSprite();
+					}
+				}
+
+				affected = true;
+			}
+
 		}
 
-		++allDeltaIndex;
-	}
+		poly->UpdateBounds();
 
-	if( validMove )
-	{
-		allDeltaIndex = 0;
-		for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
+		if (affected)
 		{
-			PolyPtr poly = (*it).first;
-			bool affected = false;
+			poly->movingPointMode = true;
 
-			int polyNumP = poly->GetNumPoints();
-			TerrainPoint *curr, *prev;
-
-			for (int i = 0; i < polyNumP; ++i)
+			for (map<TerrainPoint*, list<ActorPtr>>::iterator mit = poly->enemies.begin();
+				mit != poly->enemies.end(); ++mit)
 			{
-				curr = poly->GetPoint(i);
-				prev = poly->GetPrevPoint(i);
-
-				if (curr->selected) //selected
+				list<ActorPtr> &enemies = (*mit).second;//(*it)->enemies[curr];
+				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
 				{
-
-					Vector2i delta = allDeltas[allDeltaIndex][i];
-
-					curr->pos += pointGrabDelta - delta;
-
-					if (curr->gate != NULL)
-					{
-						curr->gate->UpdateLine();
-					}
-
-					poly->UpdateLineColor(poly->lines, prev->index, prev->index * 2);
-					poly->UpdateLineColor(poly->lines, i, i * 2);
-
-					if (poly->enemies.count(curr) > 0)
-					{
-						list<ActorPtr> &enemies = poly->enemies[curr];
-						for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-						{
-							//(*ait)->UpdateGroundedSprite();
-
-						}
-						//revquant is the quantity from the edge's v1
-						//double revQuant = 
-					}
-
-					affected = true;
-				}
-
-			}
-
-			poly->UpdateBounds();
-
-			if( affected )
-			{
-				poly->movingPointMode = true;
-
-				for( map<TerrainPoint*,list<ActorPtr>>::iterator mit = poly->enemies.begin();
-					mit != poly->enemies.end(); ++mit )
-				{
-					list<ActorPtr> &enemies = (*mit).second;//(*it)->enemies[curr];
-					for( list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait )
-					{
-						(*ait)->UpdateGroundedSprite();
-						(*ait)->SetBoundingQuad();
-					}
-					//revquant is the quantity from the edge's v1
-					//double revQuant = 	
+					(*ait)->UpdateGroundedSprite();
+					(*ait)->SetBoundingQuad();
 				}
 			}
-
-			++allDeltaIndex;			
-		}	
+		}
 	}
-	else
-	{
-		//cout << "NOT VALID move" << endl;
-	}
-
-	for( int i = 0; i < numSelectedPolys; ++i )
-	{
-		delete [] allDeltas[i];
-	}
-	delete [] allDeltas;
 }
 
 void EditSession::MoveSelectedRailPoints(V2d worldPos)
 {
-	//bool validMove = true;
-	////num polys
+	selectedBrush->Clear();
 
-	//int numSelectedRails = selectedRailPoints.size();
-	//Vector2i** allDeltas = new Vector2i*[numSelectedRails];
-	//int allDeltaIndex = 0;
-	//for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
-	//{
-	//	TerrainRail &rail = *((*it).first);
+	bool affected;
+	int rNumP;
+	TerrainPoint *curr, *prev;
+	TerrainRail *rail;
+	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
+	{
 
-	//	int railSize = rail.numPoints;
-	//	Vector2i *deltas = new Vector2i[railSize];
-	//	allDeltas[allDeltaIndex] = deltas;
-	//	int deltaIndex = 0;
+		affected = false;
+		rail = ((*it).first);
+		rNumP = rail->GetNumPoints();
 
-	//	double prim_limit = PRIMARY_LIMIT;
-	//	if (IsKeyPressed(Keyboard::LShift))
-	//	{
-	//		prim_limit = .99;
-	//	}
+		for (int i = 0; i < rNumP; ++i)
+		{
+			curr = rail->GetPoint(i);
+			prev = rail->GetPrevPoint(i);
 
+			if (curr->selected) //selected
+			{
+				curr->pos += pointGrabDelta;
 
-	//	for (TerrainPoint *curr = rail.pointStart; curr != NULL; curr = curr->next)
-	//	{
-	//		deltas[deltaIndex] = Vector2i(0, 0);
+				rail->UpdateLineColor(rail->lines, prev->index, prev->index * 2);
+				rail->UpdateLineColor(rail->lines, i, i * 2);
 
-	//		if (!curr->selected)
-	//		{
-	//			++deltaIndex;
-	//			continue;
-	//		}
+				if (rail->enemies.count(curr) > 0)
+				{
+					list<ActorPtr> &enemies = rail->enemies[curr];
+					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					{
+						//(*ait)->UpdateGroundedSprite();
+					}
+				}
 
-	//		Vector2i diff;
+				affected = true;
+			}
 
-	//		TerrainPoint *prev, *next;
+		}
 
-	//		prev = curr->prev;
-	//		next = curr->next;
+		rail->UpdateBounds();
 
-	//		V2d prevPos, nextPos, newVec, normVec;
-	//		V2d pos(curr->pos.x + pointGrabDelta.x, curr->pos.y + pointGrabDelta.y);
-	//		V2d extreme(0, 0);
-	//		Vector2i vec;
+		if (affected)
+		{
+			rail->movingPointMode = true;
 
-	//		if (prev != NULL)
-	//		{
-	//			prevPos = V2d(prev->pos.x, prev->pos.y);
-	//			vec = curr->pos - prev->pos;
-	//			normVec = normalize(V2d(vec.x, vec.y));
-	//			newVec = normalize(pos - V2d(prev->pos.x, prev->pos.y));
-
-	//			if (!prev->selected)
-	//			{
-	//				if (normVec.x == 0 || normVec.y == 0)
-	//				{
-	//					if (newVec.x > prim_limit)
-	//						extreme.x = 1;
-	//					else if (newVec.x < -prim_limit)
-	//						extreme.x = -1;
-	//					if (newVec.y > prim_limit)
-	//						extreme.y = 1;
-	//					else if (newVec.y < -prim_limit)
-	//						extreme.y = -1;
-
-	//					if (extreme.x != 0)
-	//					{
-	//						pointGrabPos.y = oldPointGrabPos.y;
-	//						pointGrabDelta.y = 0;
-	//					}
-
-	//					if (extreme.y != 0)
-	//					{
-	//						pointGrabPos.x = oldPointGrabPos.x;
-	//						pointGrabDelta.x = 0;
-	//					}
-	//				}
-	//				else
-	//				{
-	//					if (normVec.x > prim_limit)
-	//						extreme.x = 1;
-	//					else if (normVec.x < -prim_limit)
-	//						extreme.x = -1;
-	//					if (normVec.y > prim_limit)
-	//						extreme.y = 1;
-	//					else if (normVec.y < -prim_limit)
-	//						extreme.y = -1;
-
-	//					if (extreme.x != 0)
-	//					{
-	//						//int diff = ;
-	//						diff.y = curr->pos.y - prev->pos.y;
-
-	//						//(*it2).pos.y = (*prev).pos.y;
-	//						cout << "lining up x: " << diff.y << endl;
-	//					}
-
-	//					if (extreme.y != 0)
-	//					{
-	//						diff.x = curr->pos.x - prev->pos.x;
-
-	//						cout << "lining up y: " << diff.x << endl;
-	//					}
-	//				}
-	//			}
-	//		}
-	//		if (next != NULL)
-	//		{
-	//			nextPos = V2d(next->pos.x, next->pos.y);
-
-	//			if (!next->selected)
-	//			{
-	//				vec = curr->pos - next->pos;
-	//				normVec = normalize(V2d(vec.x, vec.y));
-
-	//				extreme = V2d(0, 0);
-
-	//				newVec = normalize(pos - V2d((*next).pos.x, (*next).pos.y));
-
-	//				if (normVec.x == 0 || normVec.y == 0)
-	//				{
-	//					if (newVec.x > prim_limit)
-	//						extreme.x = 1;
-	//					else if (newVec.x < -prim_limit)
-	//						extreme.x = -1;
-	//					if (newVec.y > prim_limit)
-	//						extreme.y = 1;
-	//					else if (newVec.y < -prim_limit)
-	//						extreme.y = -1;
-
-	//					if (extreme.x != 0)
-	//					{
-	//						pointGrabPos.y = oldPointGrabPos.y;
-	//						pointGrabDelta.y = 0;
-	//					}
-
-	//					if (extreme.y != 0)
-	//					{
-	//						pointGrabPos.x = oldPointGrabPos.x;
-	//						pointGrabDelta.x = 0;
-	//					}
-	//				}
-	//				else
-	//				{
-	//					if (normVec.x > prim_limit)
-	//						extreme.x = 1;
-	//					else if (normVec.x < -prim_limit)
-	//						extreme.x = -1;
-	//					if (normVec.y > prim_limit)
-	//						extreme.y = 1;
-	//					else if (normVec.y < -prim_limit)
-	//						extreme.y = -1;
-
-	//					if (extreme.x != 0)
-	//					{
-	//						//int diff = ;
-	//						//diff.y = curr->pos.y - next->pos.y;
-
-	//						//(*it2).pos.y = (*prev).pos.y;
-	//						cout << "lining up x222: " << diff.y << endl;
-	//					}
-
-	//					if (extreme.y != 0)
-	//					{
-	//						//diff.x = curr->pos.x - next->pos.x;
-
-	//						cout << "lining up y222: " << diff.x << endl;
-	//					}
-	//				}
-	//			}
-	//		}
-
-	//		if (!(diff.x == 0 && diff.y == 0))
-	//		{
-	//			cout << "allindex: " << allDeltaIndex << ", deltaIndex: " << deltaIndex << endl;
-	//			cout << "diff: " << diff.x << ", " << diff.y << endl;
-	//		}
-	//		deltas[deltaIndex] = diff;
-
-	//		++deltaIndex;
-	//	}
-	//	++allDeltaIndex;
-	//}
-
-	//if (validMove)
-	//{
-	//	allDeltaIndex = 0;
-	//	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
-	//	{
-	//		TerrainRail *rail = (*it).first;
-	//		bool affected = false;
-
-	//		TerrainPoint *points = rail->pointStart;
-	//		int deltaIndex = 0;
-	//		for (TerrainPoint *curr = points; curr != NULL; curr = curr->next)
-	//		{
-	//			if (curr->selected) //selected
-	//			{
-	//				Vector2i delta = allDeltas[allDeltaIndex][deltaIndex];
-	//				Vector2i testDiff = pointGrabDelta - delta;
-	//				curr->pos += pointGrabDelta - delta;
-	//				cout << "moving point: " << testDiff.x << ", " << testDiff.y << endl;
-	//				if (rail->enemies.count(curr) > 0)
-	//				{
-	//					list<ActorPtr> &enemies = rail->enemies[curr];
-	//					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-	//					{
-	//						//(*ait)->UpdateGroundedSprite();
-
-	//					}
-	//					//revquant is the quantity from the edge's v1
-	//					//double revQuant = 
-	//				}
-
-	//				affected = true;
-	//			}
-
-	//			++deltaIndex;
-	//		}
-
-	//		rail->UpdateBounds();
-
-	//		if (affected)
-	//		{
-	//			rail->movingPointMode = true;
-
-	//			for (auto mit = rail->enemies.begin();
-	//				mit != rail->enemies.end(); ++mit)
-	//			{
-	//				list<ActorPtr> &enemies = (*mit).second;
-	//				for (auto ait = enemies.begin(); ait != enemies.end(); ++ait)
-	//				{
-	//					(*ait)->UpdateGroundedSprite();
-	//					(*ait)->SetBoundingQuad();
-	//				}
-	//			}
-	//		}
-
-	//		++allDeltaIndex;
-	//	}
-	//}
-	//else
-	//{
-	//	//cout << "NOT VALID move" << endl;
-	//}
-
-	//for (int i = 0; i < numSelectedRails; ++i)
-	//{
-	//	delete[] allDeltas[i];
-	//}
-	//delete[] allDeltas;
+			for (auto mit = rail->enemies.begin();
+				mit != rail->enemies.end(); ++mit)
+			{
+				list<ActorPtr> &enemies = (*mit).second;
+				for (auto ait = enemies.begin(); ait != enemies.end(); ++ait)
+				{
+					(*ait)->UpdateGroundedSprite();
+					(*ait)->SetBoundingQuad();
+				}
+			}
+		}
+	}
 }
 
 
