@@ -1118,27 +1118,6 @@ void TerrainPolygon::SetupGrass()
 	}
 }
 
-void TerrainPolygon::RemoveSelectedPoints()
-{	
-	/*SoftReset();
-	for( TerrainPoint *curr = pointStart; curr != NULL; )
-	{
-		if( curr->selected )
-		{
-			TerrainPoint *temp = curr->next;
-			RemovePoint( curr );
-			curr = temp;
-		}
-		else
-		{
-			curr = curr->next;
-		}
-	}
-
-	Finalize();
-	SetSelected( false );*/
-}
-
 void TerrainPolygon::SwitchGrass( V2d mousePos )
 {
 	
@@ -1647,61 +1626,6 @@ bool TerrainPolygon::TryToMakeInternallyValid()
 	//fix clusters
 }
 
-TerrainPoint * TerrainPolygon::IsClustered(TerrainPoint*curr)
-{
-	return NULL;
-	/*bool adjusted = false;
-	
-	TerrainPoint *prev = GetLoopedPrev(curr);
-	TerrainPoint *next = GetLoopedNext(curr);
-	V2d c(curr->pos);
-	V2d n(next->pos);
-	V2d p(prev->pos);
-
-	double minDist = EditSession::POINT_SIZE;
-	if (length(n - c) < minDist )
-	{
-		return next;
-	}
-	else if (length(c - p) < minDist)
-	{
-		return prev;
-	}
-	else
-	{
-		return NULL;
-	}*/
-}
-
-bool TerrainPolygon::RemoveClusters(std::list<TerrainPoint*> &checkPoints)
-{
-	return false;
-	/*bool adjusted = false;
-	TerrainPoint *p;
-	TerrainPoint *clusterP;
-	list<TerrainPoint*> oldPoints;
-	for (auto it = checkPoints.begin(); it != checkPoints.end();)
-	{
-		p = (*it);
-		clusterP = IsClustered(p);
-		if (clusterP != NULL )
-		{
-			RemovePoint(p);
-			adjusted = true;
-			checkPoints.erase(it++);
-			oldPoints.push_back(clusterP);
-		}
-		else
-		{
-			++it;
-		}
-	}
-
-	checkPoints.insert(checkPoints.end(), oldPoints.begin(), oldPoints.end());
-
-	return adjusted;*/
-}
-
 bool TerrainPolygon::FixSliver(int i)
 {
 	double minAngle = EditSession::SLIVER_LIMIT;
@@ -1743,43 +1667,6 @@ void TerrainPolygon::RemoveSlivers()
 	{
 		FixSliver(i);
 	}
-}
-
-void TerrainPolygon::RemovePoint( TerrainPoint *tp )
-{
-	//this can only be used when there are no gates or enemies in use on a polygon
-
-
-	/*assert( pointStart != NULL );
-
-	if (tp->prev != NULL)
-	{
-		tp->prev->next = tp->next;
-	}
-	if (tp->next != NULL)
-	{
-		tp->next->prev = tp->prev;
-	}
-
-	if (tp == pointStart)
-	{
-		pointStart = tp->next;
-	}
-	if (tp == pointEnd)
-	{
-		pointEnd = tp->prev;
-	}
-
-	GateInfoPtr gi = tp->gate;
-	if (gi != NULL)
-	{
-		gi->point0->gate = NULL;
-		gi->point1->gate = NULL;
-		gi->edit->gates.remove(gi);
-	}
-
-
-	--numPoints;*/
 }
 
 void TerrainPolygon::RemoveLastPoint()

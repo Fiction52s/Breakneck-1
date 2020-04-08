@@ -195,7 +195,6 @@ struct TerrainPolygon : ISelectable
 	TerrainPoint *GetSamePoint(sf::Vector2i &p);
 	TerrainPoint * AddPoint(sf::Vector2i &p, bool sel);
 	int GetNumPoints();
-	void RemovePoint(TerrainPoint *tp);
 	void RemoveLastPoint();
 	void ClearPoints();
 	void SetMaterialType(
@@ -208,12 +207,9 @@ struct TerrainPolygon : ISelectable
 	bool TryToMakeInternallyValid();
 	bool FixSliver(int i);
 
-	TerrainPoint * IsClustered(TerrainPoint*);
-	//bool IsClustered(TerrainPoint *);
 	int FixNearPrimary(int i,bool currLocked = false);
 
 	//std::string material;
-	void RemoveSelectedPoints();
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
 	void FinalizeInverse();
@@ -226,9 +222,6 @@ struct TerrainPolygon : ISelectable
 	bool AlignExtremes();
 	bool AlignExtremes(
 		std::vector<PointMoveInfo> &lockPoints);
-	bool RemoveClusters(
-		std::list<TerrainPoint*> &checkPoints);
-	//= std::list<TerrainPoint*>() );
 	void UpdateGrass();
 
 	void WriteFile(std::ofstream & of);
