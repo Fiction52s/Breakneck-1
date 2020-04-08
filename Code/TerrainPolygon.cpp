@@ -1864,7 +1864,6 @@ TerrainPolygon *TerrainPolygon::CreateCopyWithSelectedPointsRemoved()
 		return NULL;
 	}
 
-
 	TerrainPolygon *newPoly = new TerrainPolygon(grassTex);
 	newPoly->Reserve(newPolyPoints);
 
@@ -1884,34 +1883,6 @@ TerrainPolygon *TerrainPolygon::CreateCopyWithSelectedPointsRemoved()
 	}
 
 	return newPoly;
-}
-
-bool TerrainPolygon::IsRemovePointsOkayTerrain( EditSession *edit )
-{
-	TerrainPolygon tempPoly( grassTex );
-
-	int numP = GetNumPoints();
-	int numDeletePoints = GetNumSelectedPoints();
-
-	tempPoly.Reserve(numP - numDeletePoints);
-
-	TerrainPoint *curr;
-	for (int i = 0; i < numP; ++i)
-	{
-		curr = GetPoint(i);
-		if (!curr->selected)
-		{
-			tempPoly.AddPoint(curr->pos, false);
-		}
-	}
-
-	tempPoly.inverse = inverse;
-	//tempPoly.FixWinding();
-
-	bool isPolyValid = edit->IsPolygonValid( &tempPoly, this );
-
-	
-	return isPolyValid;
 }
 
 //0 means a window came up and they canceled. -1 means no enemies were in danger on that polygon, 1 means that you confirmed to delete the enemies
@@ -2372,10 +2343,42 @@ void TerrainPolygon::CopyPointsToClipperPath(ClipperLib::Path & p)
 
 void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p)
 {
-	for (auto it = p.begin(); it != p.end(); ++it )
+	//disallow duplicates
+	int pSize = p.size();
+	ClipperLib::IntPoint *prev, *curr;
+	for (int i = 0; i < pSize; ++i)
 	{
-		//AddPoint(new TerrainPoint(Vector2i((*it).X, (*it).Y), false));
-		AddPoint(Vector2i((*it).X, (*it).Y), false);
+		curr = &p[i];
+
+		if (i == 0)
+			prev = &p[pSize - 1];
+		else
+			prev = &p[i - 1];
+
+		if (prev->X == curr->X && prev->Y == curr->Y)
+		{
+			continue;
+		}
+
+		AddPoint(Vector2i(curr->X, curr->Y), false);
+	}
+}
+
+void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p,
+	ClipperIntPointSet &fusedPoints)
+{
+	//disallow duplicates
+	int pSize = p.size();
+	ClipperLib::IntPoint *curr;
+	for (int i = 0; i < pSize; ++i)
+	{
+		curr = &p[i];
+		if (fusedPoints.find(make_pair(curr->X, curr->Y)) != fusedPoints.end())
+		{
+			continue;
+		}
+		
+		AddPoint(Vector2i(curr->X, curr->Y), false);
 	}
 }
 
@@ -2396,6 +2399,8 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p, ClipperLib::P
 		}
 	}
 }
+
+
 
 void TerrainPolygon::AddGatesToBrush(Brush *b,
 	list<GateInfoPtr> &gateInfoList)

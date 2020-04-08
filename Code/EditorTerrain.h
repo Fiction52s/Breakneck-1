@@ -20,6 +20,8 @@ struct Brush;
 
 struct QuadTree;
 
+typedef std::set<std::pair<__int64,__int64>> ClipperIntPointSet;
+
 struct GrassSeg
 {
 	GrassSeg(int edgeI, int grassIndex, int rep)
@@ -212,7 +214,6 @@ struct TerrainPolygon : ISelectable
 
 	//std::string material;
 	void RemoveSelectedPoints();
-	bool IsRemovePointsOkayTerrain(EditSession *edit);
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
 	void FinalizeInverse();
@@ -270,6 +271,8 @@ struct TerrainPolygon : ISelectable
 	bool IsCompletionValid();
 	void CopyPointsToClipperPath(ClipperLib::Path & p);
 	void AddPointsFromClipperPath(ClipperLib::Path &p);
+	void AddPointsFromClipperPath(ClipperLib::Path &p,
+		ClipperIntPointSet &fusedPoints );
 	void AddPointsFromClipperPath(ClipperLib::Path &p,
 		ClipperLib::Path &clipperIntersections,
 		std::list<TerrainPoint*> &intersections );

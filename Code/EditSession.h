@@ -315,10 +315,14 @@ struct EditSession : GUIHandler, TilesetManager
 	void CreateDecorImage(
 		EditorDecorPtr dec);
 
-
 	std::list<GateInfoPtr> gates;
 	MainMenu *mainMenu;
 	
+	void FusePathClusters(ClipperLib::Path &p,
+		ClipperLib::Path &clipperIntersections,
+		ClipperIntPointSet &fusedPoints );
+
+
 	void MoveSelectedPoints( V2d worldPos );
 	void MoveSelectedRailPoints(V2d worldPos);
 	void PerformMovePointsAction();

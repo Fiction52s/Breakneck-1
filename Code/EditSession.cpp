@@ -44,6 +44,9 @@ const double EditSession::SLIVER_LIMIT = PI / 10.0;
 double EditSession::zoomMultiple = 1;
 EditSession * EditSession::currSession = NULL;
 
+
+
+
 template <typename X>ActorParams * MakeParamsGrounded(ActorType *at)
 {
 	EditSession *edit = EditSession::GetSession();
@@ -5349,7 +5352,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 //-1 means you denied it, 0 means it didnt work, and 1 means it will work
 int EditSession::IsRemovePointsOkay()
 {
-	bool terrainOkay = true;
+	/*bool terrainOkay = true;
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
 		PolyPtr tp = (*it).first;
@@ -5364,9 +5367,10 @@ int EditSession::IsRemovePointsOkay()
 	if( !terrainOkay )
 	{
 		return 0;
-	}
+	}*/
 
-	return 1;
+	//return 1;
+	return 0;
 }
 
 Panel * EditSession::CreateOptionsPanel( const std::string &name )
@@ -6497,6 +6501,96 @@ void EditSession::AddFullPolysToBrush(
 	}
 }
 
+void EditSession::FusePathClusters(ClipperLib::Path &p, ClipperLib::Path &clipperIntersections,
+	ClipperIntPointSet &fusedPoints)
+{
+	//std::list<ClipperLib::IntPoint> newPoints;
+
+	bool isNewPoint;
+	int pathSize = p.size();
+
+	ClipperLib::IntPoint *curr, *prev, *next, *temp;
+	int tempI;
+	V2d cPos, nPos, pPos;
+	for (int i = 0; i < pathSize; ++i )
+	{
+		curr = &p[i];
+		isNewPoint = false;
+		//t = AddPoint(Vector2i((*it).X, (*it).Y), false);
+		for (auto intersectIt = clipperIntersections.begin(); intersectIt != clipperIntersections.end(); ++intersectIt)
+		{
+			if ((*intersectIt).X == curr->X && (*intersectIt).Y == curr->Y)
+			{
+				//newPoints.push_back((*it));
+				isNewPoint = true;
+				break;
+			}
+		}
+
+		prev = NULL;
+		next = NULL;
+
+		if (isNewPoint)
+		{
+			tempI = i;
+			do
+			{	
+				tempI = tempI - 1;
+				if (tempI < 0)
+					tempI = pathSize - 1;
+
+				prev = &p[tempI];
+			} 
+			while (fusedPoints.find(make_pair(prev->X,prev->Y)) != fusedPoints.end());
+
+			
+
+			tempI = i;
+			do
+			{
+				tempI = tempI + 1;
+				if (tempI == pathSize)
+					tempI = 0;
+
+				next = &p[tempI];
+			} 
+			while (fusedPoints.find(make_pair(next->X,next->Y)) != fusedPoints.end());
+
+			
+
+
+			/*if (i == 0)
+				prev = &p[pathSize - 1];
+			else
+				prev = &p[i - 1];
+
+			if (i == pathSize - 1)
+				next = &p[0];
+			else
+				next = &p[i + 1];*/
+
+			cPos = V2d(curr->X, curr->Y);
+			nPos = V2d(next->X, next->Y);
+			pPos = V2d(prev->X, prev->Y);
+
+			double minDist = EditSession::POINT_SIZE;
+			if (length(nPos - cPos) < minDist)
+			{
+				fusedPoints.insert(make_pair(curr->X, curr->Y));
+			}
+			else if (length(cPos - pPos) < minDist)
+			{
+				fusedPoints.insert(make_pair(curr->X, curr->Y));
+			}
+			else
+			{
+				
+			}
+		}
+	}
+
+}
+
 Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 {
 	Brush orig;
@@ -6537,6 +6631,8 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 	list<TerrainPoint*> newPoints;
 
+	ClipperIntPointSet fusedPoints;
+
 	if (otherSize > 0)
 	{
 		//setup intersected polys
@@ -6564,8 +6660,9 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 
 		if (!inverse)
 		{
-			outPoly->AddPointsFromClipperPath(solution[0], clipperIntersections, newPoints);
-			outPoly->RemoveClusters(newPoints);
+			FusePathClusters(solution[0], clipperIntersections, fusedPoints);
+			outPoly->AddPointsFromClipperPath(solution[0], fusedPoints);// , clipperIntersections, newPoints);
+			//outPoly->RemoveClusters(newPoints);
 		}
 		else
 		{
@@ -6595,8 +6692,10 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
 		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
 
-		outPoly->AddPointsFromClipperPath(inverseSolution[0], clipperIntersections, newPoints);
-		outPoly->RemoveClusters(newPoints);
+		FusePathClusters(inverseSolution[0], clipperIntersections, fusedPoints);
+		outPoly->AddPointsFromClipperPath(inverseSolution[0], fusedPoints);
+		//outPoly->AddPointsFromClipperPath(inverseSolution[0], clipperIntersections, newPoints);
+		//outPoly->RemoveClusters(newPoints);
 	}
 
 	outPoly->SetMaterialType(currTerrainWorld, currTerrainVar );//poly->terrainWorldType,
@@ -6688,10 +6787,6 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 			clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
 			clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
-
-			/*if (!inverse)
-			{
-				outPoly->AddPointsFromClipperPath(solution[0], clipperIntersections, newPoints);*/
 
 			for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 			{
