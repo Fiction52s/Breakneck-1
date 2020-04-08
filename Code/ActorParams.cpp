@@ -845,7 +845,6 @@ void ActorParams::Move( SelectPtr me, sf::Vector2i delta )
 	{
 		position.x += delta.x;
 		position.y += delta.y;
-
 		SetBoundingQuad();
 
 		image.setPosition( position.x, position.y );
@@ -880,7 +879,10 @@ void ActorParams::Activate(EditSession *editsession, SelectPtr select )
 	group->actors.push_back( actor );
 
 	GroundInfo *gi = actor->groundInfo;
-	gi->AddActor(actor);
+	if (gi != NULL)
+	{
+		gi->AddActor(actor);
+	}
 }
 
 GoalParams::GoalParams(ActorType *at, std::ifstream &is)

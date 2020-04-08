@@ -3621,7 +3621,7 @@ void EditSession::DeselectPoint(PolyPtr poly,
 	}
 }
 
-void EditSession::SelectPoint(TerrainRail *rail,
+void EditSession::SelectPoint(RailPtr rail,
 	TerrainPoint *point)
 {
 	if (!point->selected)
@@ -3631,7 +3631,7 @@ void EditSession::SelectPoint(TerrainRail *rail,
 	}
 }
 
-void EditSession::DeselectPoint(TerrainRail *rail,
+void EditSession::DeselectPoint( RailPtr rail,
 	TerrainPoint *point)
 {
 	if (point->selected)
@@ -3651,12 +3651,6 @@ void EditSession::DeselectPoint(TerrainRail *rail,
 
 void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 {
-	selectedBrush->Clear();
-	/*for (PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
-	{
-		selectedBrush->RemoveObject((*it).first);
-	}*/
-
 	bool affected;
 	int polyNumP;
 	TerrainPoint *curr, *prev;
@@ -3665,6 +3659,10 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
 		poly = (*it).first;
+		if (poly->selected)
+		{
+			selectedBrush->RemoveObject(poly);
+		}
 		affected = false;
 
 		polyNumP = poly->GetNumPoints();
@@ -3723,17 +3721,21 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 
 void EditSession::MoveSelectedRailPoints(V2d worldPos)
 {
-	selectedBrush->Clear();
-
 	bool affected;
 	int rNumP;
 	TerrainPoint *curr, *prev;
-	TerrainRail *rail;
+	RailPtr rail;
 	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
 	{
 
 		affected = false;
 		rail = ((*it).first);
+
+		if (rail->selected)
+		{
+			selectedBrush->RemoveObject(rail);
+		}
+
 		rNumP = rail->GetNumPoints();
 
 		for (int i = 0; i < rNumP; ++i)
@@ -6545,11 +6547,20 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys, list<P
 		FusePathClusters(inverseSolution[0], clipperIntersections, fusedPoints);
 		outPoly->Reserve(inverseSolution[0].size());
 		outPoly->AddPointsFromClipperPath(inverseSolution[0], fusedPoints);
-		//outPoly->AddPointsFromClipperPath(inverseSolution[0], clipperIntersections, newPoints);
-		//outPoly->RemoveClusters(newPoints);
 	}
 
-	outPoly->SetMaterialType(currTerrainWorld, currTerrainVar );//poly->terrainWorldType,
+	int tWorld, tVar;
+	if (intersectingPolys.size() == 1)
+	{
+		tWorld = intersectingPolys.front()->terrainWorldType;
+		tVar = intersectingPolys.front()->terrainVariation;
+	}
+	else
+	{
+		tWorld = currTerrainWorld;
+		tVar = currTerrainVar;
+	}
+	outPoly->SetMaterialType(tWorld, tVar);//poly->terrainWorldType,
 									   //poly->terrainVariation);
 	outPoly->RemoveSlivers();
 	outPoly->AlignExtremes();
@@ -6860,7 +6871,7 @@ bool EditSession::PointSelectRailPoint(V2d &pos)
 		{
 			if (shift && foundPoint->selected)
 			{
-				DeselectPoint((*it).get(), foundPoint);
+				DeselectPoint((*it), foundPoint);
 			}
 			else
 			{
@@ -6869,7 +6880,7 @@ bool EditSession::PointSelectRailPoint(V2d &pos)
 					if (!shift)
 						ClearSelectedPoints();
 
-					SelectPoint((*it).get(), foundPoint);
+					SelectPoint((*it), foundPoint);
 				}
 			}
 			return true;
@@ -6982,7 +6993,7 @@ bool EditSession::BoxSelectPoints(sf::IntRect &r,
 						V2d(curr->pos.x, curr->pos.y), radius)
 						|| adjustedR.contains(curr->pos))
 					{
-						SelectPoint((*it).get(), curr);
+						SelectPoint((*it), curr);
 						found = true;
 					}
 				}

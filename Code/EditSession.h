@@ -21,6 +21,7 @@
 #include "EditorGateInfo.h"
 #include "EditorActors.h"
 #include "EditorTerrain.h"
+//#include "EditorRail.h"
 
 struct EditorGraph;
 struct ActorParams;
@@ -283,11 +284,11 @@ struct EditSession : GUIHandler, TilesetManager
 	void ClearSelectedPoints();
 	void SelectPoint(PolyPtr poly,
 		TerrainPoint *point);
-	void SelectPoint(TerrainRail *rail,
+	void SelectPoint(boost::shared_ptr<TerrainRail> rail,
 		TerrainPoint *point);
 	void DeselectPoint(PolyPtr poly,
 		TerrainPoint *point);
-	void DeselectPoint(TerrainRail *rail,
+	void DeselectPoint(boost::shared_ptr<TerrainRail> rail,
 		TerrainPoint *point);
 	
 

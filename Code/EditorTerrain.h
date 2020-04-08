@@ -325,8 +325,8 @@ struct GroundInfo
 	TerrainPolygon *ground;
 	TerrainRail *railGround;
 	TerrainPoint *GetNextPoint();
-	void AddActor(ActorPtr a);
-	void RemoveActor(ActorPtr a);
+	void AddActor(boost::shared_ptr<ActorParams> a);
+	void RemoveActor(boost::shared_ptr<ActorParams> a);
 	int GetEdgeIndex();
 	V2d GetPosition();
 };
@@ -371,6 +371,6 @@ typedef boost::shared_ptr<TerrainPoint> PointPtr;
 typedef std::pair<sf::Vector2i, sf::Vector2i> PointPair;
 typedef std::map<PolyPtr, std::list<PointMoveInfo>> PointMap;
 typedef std::map<PolyPtr, std::vector<PointMoveInfo>> PointVectorMap;
-typedef std::map<TerrainRail*, std::list<PointMoveInfo>> RailPointMap;
+typedef std::map<boost::shared_ptr<TerrainRail>, std::list<PointMoveInfo>> RailPointMap;
 
 #endif
