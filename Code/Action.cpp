@@ -652,7 +652,7 @@ void MoveBrushAction::Perform()
 			}
 		}
 
-		/*for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
+		for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
 		{
 			list<PointMoveInfo> &pList = (*it).second;
 			for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
@@ -663,7 +663,7 @@ void MoveBrushAction::Perform()
 			(*it).first->SoftReset();
 			(*it).first->Finalize();
 			(*it).first->movingPointMode = false;
-		}*/
+		}
 	}
 }
 
@@ -711,7 +711,7 @@ void MoveBrushAction::Undo()
 		}
 	}
 
-	/*for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
+	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
 	{
 		list<PointMoveInfo> &pList = (*it).second;
 		for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
@@ -722,7 +722,7 @@ void MoveBrushAction::Undo()
 		(*it).first->SoftReset();
 		(*it).first->Finalize();
 		(*it).first->movingPointMode = false;
-	}*/
+	}
 }
 
 LeaveGroundAction::LeaveGroundAction( ActorPtr &p_actor )
@@ -731,8 +731,6 @@ LeaveGroundAction::LeaveGroundAction( ActorPtr &p_actor )
 	assert( actor->groundInfo != NULL );
 
 	gi = *actor->groundInfo;
-
-	//cout << "stored: " << gi.GetEdgeIndex() << ", " << gi.groundQuantity << endl;
 
 }
 
@@ -753,25 +751,8 @@ void LeaveGroundAction::Undo()
 
 	assert( actor->groundInfo == NULL );
 
-	//cout << "applied: " << gi.GetEdgeIndex() << ", " << gi.groundQuantity << endl;
-	//gi.ground, gi.GetEdgeIndex(), gi.groundQuantity );
-
-	if (gi.ground != NULL)
-	{
-		actor->AnchorToGround(gi);
-		gi.ground->enemies[gi.edgeStart].push_back(actor);
-		gi.ground->UpdateBounds();
-	}
-	else if (gi.railGround != NULL)
-	{
-		//actor->AnchorToRail(gi);
-		//gi.railGround->enemies[gi.edgeStart].push_back(actor);
-		//gi.railGround->UpdateBounds();
-	}
-	else
-	{
-		assert(0);
-	}
+	actor->AnchorToGround(gi);
+	gi.AddActor(actor);
 	
 	//cout << "undoing and adding to ground" << endl;
 }
@@ -787,17 +768,7 @@ void GroundAction::Perform()
 	assert( !performed );
 
 	actor->AnchorToGround( gi );
-
-	if (gi.ground != NULL)
-	{
-		gi.ground->enemies[gi.edgeStart].push_back(actor);
-		gi.ground->UpdateBounds();
-	}
-	else if (gi.railGround != NULL)
-	{
-		//gi.railGround->enemies[gi.edgeStart].push_back(actor);
-		//gi.railGround->UpdateBounds();
-	}
+	gi.AddActor(actor);
 
 	performed = true;
 }

@@ -6,120 +6,116 @@
 #include <boost/shared_ptr.hpp>
 #include "ISelectable.h"
 #include "VectorMath.h"
+#include "EditorTerrain.h"
 
 struct Panel;
 struct TerrainPoint;
 struct ActorParams;
+struct TerrainPolygon;
 
-struct TerrainRail //: ISelectable
+struct TerrainRail : ISelectable
 {
-	//TerrainRail();
-	//TerrainRail(TerrainRail &r);
-	//~TerrainRail();
+	TerrainRail();
+	TerrainRail(TerrainRail &r);
+	~TerrainRail();
 
-	//void Init();
-	//bool ContainsPoint(sf::Vector2f test);
-	//bool ContainsPoint(sf::Vector2f test,double rad);
+	void Init();
+	bool ContainsPoint(sf::Vector2f test);
+	bool ContainsPoint(sf::Vector2f test,double rad);
 
-	//bool Intersects(sf::IntRect rect);
-	////bool IsPlacementOkay();
+	bool Intersects(sf::IntRect rect);
+	//bool IsPlacementOkay();
 
-	//void Move(SelectPtr me,
-	//	sf::Vector2i delta);
-	//void BrushDraw(sf::RenderTarget *target,
-	//	bool valid);
+	void Move(SelectPtr me,
+		sf::Vector2i delta);
+	void BrushDraw(sf::RenderTarget *target,
+		bool valid);
 
-	//void Draw(double zoomMultiple, bool showPoints, 
-	//	sf::RenderTarget *target);
+	void Draw(double zoomMultiple, bool showPoints, 
+		sf::RenderTarget *target);
 
-	////void Draw(sf::RenderTarget *target);
-	//void Deactivate(EditSession *edit,
-	//	SelectPtr select);
-	//void Activate(EditSession *edit,
-	//	SelectPtr select);
-	//bool CanApply();
-	//bool CanAdd();
-
-
-	//void SetSelected(bool select);
+	//void Draw(sf::RenderTarget *target);
+	void Deactivate(EditSession *edit,
+		SelectPtr select);
+	void Activate(EditSession *edit,
+		SelectPtr select);
+	bool CanApply();
+	bool CanAdd();
 
 
-	//void UpdateLineColor(sf::Vertex *li, 
-	//	TerrainPoint *p, int index);
-	//void UpdateLines();
-	//void SwitchDirection();
-	//void SetParams(Panel *p);
-	//void UpdatePanel(Panel *p);
-	//void CopyPoints(TerrainPoint *&start,
-	//	TerrainPoint *&end);
-	//void CopyOtherPoints(TerrainPoint *&start,
-	//	TerrainPoint *&end);
-	//void CopyPoints(TerrainRail *rail);
-	//TerrainRail *Copy();
+	void SetSelected(bool select);
+
+
+	void UpdateLineColor(sf::Vertex *li, 
+		int i, int index);
+	void UpdateLines();
+	void SwitchDirection();
+	void SetParams(Panel *p);
+	void UpdatePanel(Panel *p);
+	void CopyPointsFromPoly(TerrainPolygon *tp);
+	void CopyPointsFromRail(TerrainRail *rail);
+	TerrainRail *Copy();
 
 	//bool IsPoint(sf::Vector2i &p);
 
-	//void AddPoint(TerrainPoint* tp);
-	//void InsertPoint(TerrainPoint *tp, TerrainPoint *prevPoint);
-	//void RemovePoint(TerrainPoint *tp);
+	TerrainPoint * AddPoint(sf::Vector2i &p, bool sel);	
+	void RemoveLastPoint();
+	void ClearPoints();
 
-	//void ClearPoints();
+	TerrainPoint *GetPoint(int i);
+	TerrainPoint *GetPrevPoint(int i);
+	TerrainPoint *GetNextPoint(int i);
+	TerrainPoint *GetEndPoint();
 
-	//int GetPointIndex(TerrainPoint *p);
-	//TerrainPoint *GetPointAtIndex(int index);
+	void Reserve(int numP);
+	void RemoveSelectedPoints();
 
-	//TerrainPoint * HasPointPos(sf::Vector2i &pos);
+	int IsRemovePointsOkayEnemies(EditSession *edit);
 
-	//void RemoveSelectedPoints();
+	void Finalize();
 
-	//int IsRemovePointsOkayEnemies(EditSession *edit);
+	void Reset();
+	void SoftReset();
 
-	//void Finalize();
+	bool AlignExtremes(std::vector<PointMoveInfo> &lockPoints);
+	bool AlignExtremes();
 
-	//void Reset();
-	//void SoftReset();
+	void UpdateBounds();
 
-	//void AlignExtremes(double primLimit);
+	void WriteFile(std::ofstream &of);
+	void Load(std::ifstream &is);
 
-	//void MoveSelectedPoints(sf::Vector2i move);
-	//
-	//void UpdateBounds();
+	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 
-	//void WriteFile(std::ofstream &of);
-	//void Load(std::ifstream &is);
+	bool movingPointMode;
 
-	//TerrainPoint *GetClosePoint(double radius, V2d &pos);
+	std::vector<TerrainPoint> pointVector;
 
-	//sf::Rect<int> TempAABB();
+	int GetNumPoints();
 
-	//bool movingPointMode;
-	//int numPoints;
-	//TerrainPoint *pointStart;
-	//TerrainPoint *pointEnd;
+	double railRadius;
 
-	//double railRadius;
+	sf::Vertex *lines;
+	int numLineVerts;
 
-	//sf::Vertex *lines;
-	//int numLineVerts;
+	sf::Vertex *quads;
 
-	//sf::Vertex *quads;
+	int left;
+	int right;
+	int top;
+	int bottom;
 
-	//int left;
-	//int right;
-	//int top;
-	//int bottom;
+	std::map<TerrainPoint*, std::list<
+		boost::shared_ptr<ActorParams>>> enemies;
 
-	//std::map<TerrainPoint*, std::list<
-	//	boost::shared_ptr<ActorParams>>> enemies;
+	int writeIndex;
+	bool finalized;
 
-	//int writeIndex;
-	//bool finalized;
+	bool requirePower;
+	bool accelerate;
+	int level;
 
-	//bool requirePower;
-	//bool accelerate;
-	//int level;
-
-	//const static int MAX_RAIL_LEVEL = 12;
+	const static int MAX_RAIL_LEVEL = 12;
 };
 
 typedef boost::shared_ptr<TerrainRail> RailPtr;

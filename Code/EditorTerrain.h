@@ -324,6 +324,9 @@ struct GroundInfo
 	double groundQuantity;
 	TerrainPolygon *ground;
 	TerrainRail *railGround;
+	TerrainPoint *GetNextPoint();
+	void AddActor(ActorPtr a);
+	void RemoveActor(ActorPtr a);
 	int GetEdgeIndex();
 	V2d GetPosition();
 };

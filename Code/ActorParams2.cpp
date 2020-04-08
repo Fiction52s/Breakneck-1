@@ -471,7 +471,7 @@ void PoisonFrogParams::UpdatePath()
 
 	V2d fireDir;
 	TerrainPoint *curr = groundInfo->edgeStart;
-	TerrainPoint *next = groundInfo->ground->GetNextPoint(groundInfo->edgeStart->index);
+	TerrainPoint *next = groundInfo->GetNextPoint();
 
 	V2d e( next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
 	e = normalize( e );
@@ -627,7 +627,7 @@ void CurveTurretParams::UpdateBulletCurve()
 
 	
 	TerrainPoint *curr = groundInfo->edgeStart;
-	TerrainPoint *next = groundInfo->ground->GetNextPoint(groundInfo->edgeStart->index);
+	TerrainPoint *next = groundInfo->GetNextPoint();
 
 	V2d e( next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
 	V2d groundDir = normalize( e );

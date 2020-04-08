@@ -1779,7 +1779,7 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 	{
 		for( list<ActorPtr>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
 		{
-			next = (*it)->groundInfo->ground->GetNextPoint((*it)->groundInfo->edgeStart->index);
+			next = (*it)->groundInfo->GetNextPoint();
 
 			if( (*it)->type->CanBeGrounded() && 
 				( (*(*it)->groundInfo->edgeStart).selected || next->selected ) )
