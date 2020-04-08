@@ -247,7 +247,7 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 
 bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 {
-	IntRect tAABB(left, top, right - left, bottom - top);
+	IntRect tAABB = GetAABB();
 	if (tAABB.intersects(gi->GetAABB()))
 	{
 		Vector2i gp0 = gi->point0->pos;
@@ -1313,6 +1313,62 @@ void TerrainPolygon::SetSelected( bool select )
 	}
 }
 
+bool TerrainPolygon::AABBIntersection(TerrainPolygon *poly)
+{
+	IntRect myAABB = GetAABB();
+	if (inverse)
+	{
+		myAABB.left -= inverseExtraBoxDist;
+		myAABB.top -= inverseExtraBoxDist;
+		myAABB.width += 2 * inverseExtraBoxDist;
+		myAABB.height += 2 * inverseExtraBoxDist;
+	}
+
+	IntRect polyAABB = poly->GetAABB();
+	if (poly->inverse)
+	{
+		polyAABB.left -= inverseExtraBoxDist;
+		polyAABB.top -= inverseExtraBoxDist;
+		polyAABB.width += 2 * inverseExtraBoxDist;
+		polyAABB.height += 2 * inverseExtraBoxDist;
+	}
+
+	return IsBoxTouchingBox(myAABB, polyAABB);
+	//return myAABB.contains( polyAABB ) || myAABB.intersects(polyAABB);
+	/*if (inverse)
+	{
+
+	}
+	else
+	{
+		
+		IntRect myAABB
+		if (poly->left < left || poly->top < top || poly->right > right || poly->bottom > bottom)
+		{
+			return false;
+		}
+	}*/
+}
+
+//bool TerrainPolygon::IsPolyWithinAABB(TerrainPolygon *poly)
+//{
+//	if (inverse)
+//	{
+//		if (test.x >= left - inverseExtraBoxDist && test.x <= right + inverseExtraBoxDist
+//			&& test.y >= top - inverseExtraBoxDist && test.y <= bottom + inverseExtraBoxDist)
+//		{
+//			return true;
+//		}
+//	}
+//	else
+//	{
+//		if (poly->left < left || poly->top < top || poly->right > right || poly->bottom > bottom)
+//		{
+//			return false;
+//		}
+//	}
+//}
+
 bool TerrainPolygon::ContainsPoint( Vector2f test )
 {
 	bool c = false;
@@ -2059,10 +2115,15 @@ bool TerrainPolygon::Contains( TerrainPolygon *poly )
 		return false;
 
 	//hes inside me w/ no intersection
-	if (poly->left < left || poly->top < top || poly->right > right || poly->bottom > bottom)
+	if (!AABBIntersection(poly))
 	{
 		return false;
 	}
+
+	/*if (poly->left < left || poly->top < top || poly->right > right || poly->bottom > bottom)
+	{
+		return false;
+	}*/
 
 
 	int polyNumP = poly->GetNumPoints();

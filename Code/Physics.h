@@ -306,6 +306,7 @@ void RayCast( RayCastHandler *handler, QNode *node,
 	sf::Vector2<double> endPoint );
 
 bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 );
+bool IsBoxTouchingBox( const sf::Rect<int> & r0, const sf::Rect<int> & r1 );
 
 bool isQuadTouchingQuad(  sf::Vector2<double> & A0, 
 						 sf::Vector2<double> & B0, 

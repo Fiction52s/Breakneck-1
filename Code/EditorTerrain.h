@@ -143,6 +143,7 @@ struct TerrainPolygon : ISelectable
 	void DeactivateGates();
 	void ActivateGates();
 
+	bool AABBIntersection(TerrainPolygon *poly);
 	bool PointsTooCloseToEachOther();
 	bool LinesIntersectMyself();
 	bool HasSlivers();

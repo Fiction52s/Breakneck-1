@@ -6472,8 +6472,13 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 {
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
 	
+	list<PolyPtr> nonInverseBrushes;
+	list<PolyPtr> inverseBrushes;
+	list<PolyPtr> inverseOnlyBrushes;
+
 	set<PolyPtr> nonInverseInters;
-	list<PolyPtr> inverseInters;
+	set<PolyPtr> inverseInters;
+	set<PolyPtr> inverseOnlyInters;
 
 	TerrainPolygon *currBrush;
 
@@ -6486,6 +6491,11 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		currBrush = (*brushIt).get();
 		containedByPoly = false;
 
+		/*if (inversePolygon != NULL && inversePolygon->Contains((*brushIt).get()))
+		{
+			containedByPoly = true;
+		}*/
+
 		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
 			if ((*it)->Contains(currBrush))
@@ -6494,6 +6504,7 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 				break;
 			}
 		}
+		
 
 		if (containedByPoly)
 		{
@@ -6506,9 +6517,7 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	}
 
 
-	list<PolyPtr> nonInverseBrushes;
-	list<PolyPtr> inverseBrushes;
-	list<PolyPtr> inverseOnlyBrushes;
+	
 
 	//get our noninversebrushes and a temporary collection of inverseonlybrushes which might become inversebrushes
 	for (auto brushIt = brushPolys.begin(); brushIt != brushPolys.end(); ++brushIt)
@@ -6523,21 +6532,36 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		}
 	}
 
+	//testPolygons NEVER HAVE INVERSE ANYWAY
+	//separate inverseonly and inversetouching brushes
 	bool inverseOnly;
 	for (auto brushIt = inverseOnlyBrushes.begin(); brushIt != inverseOnlyBrushes.end();)
 	{
 		inverseOnly = true;
 		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
-			if ((*it)->Contains(currBrush))
+			if ((*it)->inverse)
+				continue;
+
+			if ((*brushIt)->LinesIntersect((*it).get()))
 			{
 				inverseOnly = false;
 				break;
 			}
 		}
+
+		if (inverseOnly)
+		{
+			++brushIt;
+		}
+		else
+		{
+			inverseBrushes.push_back((*brushIt));
+			brushIt = inverseOnlyBrushes.erase(brushIt);
+		}
 	}
 
-	
+	//get noninverse intersections
 	for (auto brushIt = nonInverseBrushes.begin(); brushIt != nonInverseBrushes.end(); ++brushIt)
 	{
 		currBrush = (*brushIt).get();
