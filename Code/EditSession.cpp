@@ -6685,8 +6685,6 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 
 	if (inverseBrushes.size() > 0)
 	{
-
-
 		i = 0;
 		ClipperLib::Paths inverseBrushPath(inverseBrushes.size());
 		for (auto it = inverseBrushes.begin(); it != inverseBrushes.end(); ++it)
@@ -6716,16 +6714,31 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		{
 			FusePathClusters((*sit), clipperIntersections, fusedPoints);
 		}
+	}
 
+	if( inverseBrushes.size() > 0 || inverseOnlyBrushes.size() > 0 )
+	{
 		c.Clear();
 
 		ClipperLib::Paths inverseSolution;
 		ClipperLib::Path inversePath;
+		ClipperLib::Paths inverseOnlyBrushPaths(inverseOnlyBrushes.size());
+
+		i = 0;
+		for (auto it = inverseOnlyBrushes.begin(); it != inverseOnlyBrushes.end(); ++it)
+		{
+			(*it)->CopyPointsToClipperPath(inverseOnlyBrushPaths[i]);
+			++i;
+		}
 
 		inversePolygon->CopyPointsToClipperPath(inversePath);
 
 		c.AddPath(inversePath, ClipperLib::PolyType::ptSubject, true);
-		c.AddPaths(solution, ClipperLib::PolyType::ptClip, true);
+		c.AddPaths( inverseOnlyBrushPaths, ClipperLib::PolyType::ptClip, true);
+
+		if( !solution.empty() )
+			c.AddPaths(solution, ClipperLib::PolyType::ptClip, true);
+
 		c.Execute(ClipperLib::ClipType::ctDifference, inverseSolution);
 
 
