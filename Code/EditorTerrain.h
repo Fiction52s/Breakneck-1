@@ -36,8 +36,6 @@ struct GrassSeg
 struct TerrainPoint
 {
 	TerrainPoint(sf::Vector2i &pos, bool selected);
-	TerrainPoint(TerrainPolygon *poly, sf::Vector2i &pos, bool selected,
-		int index);
 	~TerrainPoint()
 	{
 		//delete gate;
@@ -55,31 +53,20 @@ struct TerrainPoint
 	bool HasPrimaryGate(sf::Vector2i &gateDir);
 	bool ContainsPoint(sf::Vector2f test);
 	bool Intersects(sf::IntRect rect);
-	bool IsPlacementOkay();
-	void Move(boost::shared_ptr<ISelectable> &me,
-		sf::Vector2i delta);
-	void BrushDraw(sf::RenderTarget *target,
-		bool valid);
-	void Draw(sf::RenderTarget *target);
-	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	bool CanApply();
-	bool CanAdd();
-	void SetSelected(bool select);
-	int GetNextIndex();
-	int GetPrevIndex();
-	int GetLoopedNextIndex();
-	int GetLoopedPrevIndex();
-	/*TerrainPoint * GetNext();
-	TerrainPoint * GetPrev();
-	TerrainPoint * GetLoopedNext();
-	TerrainPoint * GetLoopedPrev();*/
-	TerrainPoint & GetLoopedNext();
-	TerrainPoint & GetLoopedPrev();
+	//bool IsPlacementOkay();
+	//void Move(boost::shared_ptr<ISelectable> &me,
+	//	sf::Vector2i delta);
+	//void BrushDraw(sf::RenderTarget *target,
+	//	bool valid);
+	//void Draw(sf::RenderTarget *target);
+	//void Deactivate(EditSession *edit,
+	//	boost::shared_ptr<ISelectable> select);
+	//void Activate(EditSession *edit,
+	//	boost::shared_ptr<ISelectable> select);
+	//bool CanApply();
+	//bool CanAdd();
+	//void SetSelected(bool select);
 
-	TerrainPolygon *poly;
 	int index;
 	static const int POINT_RADIUS = 5;
 	//int special;

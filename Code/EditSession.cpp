@@ -6659,6 +6659,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		if (!inverse)
 		{
 			FusePathClusters(solution[0], clipperIntersections, fusedPoints);
+			outPoly->Reserve(solution[0].size());
 			outPoly->AddPointsFromClipperPath(solution[0], fusedPoints);// , clipperIntersections, newPoints);
 			//outPoly->RemoveClusters(newPoints);
 		}
@@ -6691,6 +6692,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys)
 		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
 
 		FusePathClusters(inverseSolution[0], clipperIntersections, fusedPoints);
+		outPoly->Reserve(inverseSolution[0].size());
 		outPoly->AddPointsFromClipperPath(inverseSolution[0], fusedPoints);
 		//outPoly->AddPointsFromClipperPath(inverseSolution[0], clipperIntersections, newPoints);
 		//outPoly->RemoveClusters(newPoints);

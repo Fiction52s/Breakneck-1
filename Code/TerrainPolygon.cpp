@@ -1181,7 +1181,6 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	int numP = GetNumPoints();
 	if( movingPointMode )
 	{
-		
 		TerrainPoint *curr, *start, *next;
 		int lineIndex = 0;
 
@@ -2288,7 +2287,6 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p, ClipperLib::P
 }
 
 
-
 void TerrainPolygon::AddGatesToBrush(Brush *b,
 	list<GateInfoPtr> &gateInfoList)
 {
@@ -2368,81 +2366,10 @@ TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 {
 }
 
-TerrainPoint::TerrainPoint( TerrainPolygon *p_poly, sf::Vector2i &p, bool s,
-	int i)
-	:pos( p ), selected( s ), index( i ), gate( NULL ), poly( p_poly )
-{
-
-}
-
 int TerrainPoint::GetIndex()
 {
 	return index;
 }
-
-TerrainPoint & TerrainPoint::GetLoopedNext()
-{
-	return poly->pointVector[GetLoopedNextIndex()];
-}
-
-TerrainPoint & TerrainPoint::GetLoopedPrev()
-{
-	return poly->pointVector[GetLoopedPrevIndex()];
-}
-
-int TerrainPoint::GetNextIndex()
-{
-	if (index == poly->GetNumPoints() - 1)
-		return -1;
-	else
-		return index + 1;
-}
-
-int TerrainPoint::GetPrevIndex()
-{
-	if (index == 0)
-		return -1;
-	else
-		return index - 1;
-}
-int TerrainPoint::GetLoopedNextIndex()
-{
-	if (index == poly->GetNumPoints() - 1)
-	{
-		return 0;
-	}
-	else
-		return index + 1;
-}
-
-int TerrainPoint::GetLoopedPrevIndex()
-{
-	if (index == 0)
-	{
-		return poly->GetNumPoints() - 1;
-	}
-	else
-		return index - 1;
-}
-
-//TerrainPoint  TerrainPoint::GetNext()
-//{
-//}
-//
-//int TerrainPoint::GetPrev()
-//{
-//
-//}
-//
-//int TerrainPoint::GetLoopedNext()
-//{
-//
-//}
-//
-//int TerrainPoint::GetLoopedPrev()
-//{
-//
-//}
 
 bool TerrainPoint::ContainsPoint( Vector2f test )
 {
