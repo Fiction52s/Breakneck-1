@@ -954,6 +954,8 @@ bool EditSession::ReadTerrain(ifstream &is )
 
 		numPoints -= polyPoints;
 		int x, y;
+
+		poly->Reserve(polyPoints);
 		for (int i = 0; i < polyPoints; ++i)
 		{
 			is >> x;
@@ -6793,6 +6795,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 				TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
 
 				FusePathClusters((*sit), clipperIntersections, fusedPoints);
+				newPoly->Reserve((*sit).size());
 				newPoly->AddPointsFromClipperPath((*sit), fusedPoints); 
 
 				//newPoly->AddPointsFromClipperPath((*sit), clipperIntersections, newPoints );
@@ -6825,6 +6828,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 
 
 			FusePathClusters((*it), clipperIntersections, fusedPoints);
+			newPoly->Reserve((*it).size());
 			newPoly->AddPointsFromClipperPath((*it), fusedPoints);
 
 			//newPoly->AddPointsFromClipperPath((*it), clipperIntersections, newPoints);
@@ -6858,12 +6862,6 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys)
 			}
 		}
 	}
-
-
-	/*for (auto it = allIntersections.begin(); it != allIntersections.end(); ++it)
-	{
-		cout << "intersection2: " << (*it).X << ", " << (*it).Y << endl;
-	}*/
 
 	for (auto it = results.begin(); it != results.end(); ++it)
 	{

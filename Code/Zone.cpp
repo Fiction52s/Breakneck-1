@@ -33,18 +33,14 @@ Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
 	openFrames = 60;
 	closeFrames = 60;
 
-	TerrainPoint * curr = tp.GetPoint(0);//tp.pointStart;
-
+	TerrainPoint * curr;
 	int tpNumP = tp.GetNumPoints();
+
 	for (int i = 0; i < tpNumP; ++i)
 	{
+		curr = tp.GetPoint(i);
 		points.push_back(curr->pos);
 	}
-	/*while( curr != NULL )
-	{
-		points.push_back( curr->pos );
-		curr = curr->next;
-	}*/
 
 	activeNext = NULL;
 
