@@ -280,6 +280,10 @@ struct EditSession : GUIHandler, TilesetManager
 		std::list<PolyPtr> & polyList,
 		std::list<GateInfoPtr> &gateInfoList,
 		Brush *b);
+	void AddFullPolysToBrush(
+		std::set<PolyPtr> & polyList,
+		std::list<GateInfoPtr> &gateInfoList,
+		Brush *b);
 
 	void ClearSelectedPoints();
 	void SelectPoint(PolyPtr poly,
@@ -739,6 +743,10 @@ struct EditSession : GUIHandler, TilesetManager
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys,
 		std::list<PolyPtr> &containedPolys);
+	Action* ExecuteTerrainMultiAdd(
+		std::list<PolyPtr> &brushPolys );
+	//	std::list<PolyPtr> &intersectingPolys,
+	//	std::list<PolyPtr> &containedPolys);
 	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys,
 		std::list<PolyPtr> &containedPolys );
 	Action *ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys,

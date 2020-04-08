@@ -1024,7 +1024,7 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 
 void TerrainPolygon::Finalize()
 {
-	AlignExtremes();
+	//AlignExtremes();
 
 	if (inverse)
 	{
