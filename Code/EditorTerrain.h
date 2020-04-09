@@ -132,6 +132,7 @@ struct TerrainPolygon : ISelectable
 		Count
 	};
 	//QuadTree *edgeTree;
+	bool isBrushTest;
 	
 	static sf::Vector2i GetExtreme(TerrainPoint *p0,
 		TerrainPoint *p1);

@@ -2324,6 +2324,7 @@ void TerrainPolygon::CopyPointsToClipperPath(ClipperLib::Path & p)
 {
 	int numP = GetNumPoints();
 	TerrainPoint *curr;
+	p.reserve(numP);
 	for (int i = 0; i < numP; ++i)
 	{
 		curr = GetPoint(i);
