@@ -247,7 +247,9 @@ struct TerrainPolygon : ISelectable
 	bool IsTouching(TerrainPolygon *poly);
 	bool Contains(TerrainPolygon *poly);
 	//bool IsTouching( TerrainPolygon * p );
-	bool LinesIntersect(TerrainPolygon *poly);
+
+	int LinesIntersect(TerrainPolygon *poly);
+
 	bool LinesIntersectInProgress(sf::Vector2i p );
 	bool IsCompletionValid();
 	void CopyPointsToClipperPath(ClipperLib::Path & p);

@@ -5899,6 +5899,7 @@ bool EditSession::ExecuteTerrainCompletion()
 
 		bool applyOkay = true;
 
+		int liRes;
 		auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
 		for(auto it = testPolygons.begin(); it != testPolygons.end(); ++it )
 		{
@@ -5914,10 +5915,17 @@ bool EditSession::ExecuteTerrainCompletion()
 				containedPolys.push_back((*it));
 			}
 
-			if( polygonInProgress->LinesIntersect( (*it).get() ) )
+			liRes = polygonInProgress->LinesIntersect((*it).get());
+			if( liRes == 2 )
 			{
 				//not too close and I intersect, so I can add
 				intersectingPolys.push_back( (*it) );
+			}
+			else if (liRes == 1)
+			{
+				applyOkay = false;
+				polygonInProgress->ClearPoints();
+				break;
 			}
 		}
 
@@ -6496,23 +6504,37 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 
 	list<PolyPtr> containedPolys;
 
+	//std::vector < pair<PolyPtr, std::vector<int>> brushPolyInfo;
+
 	//get rid of any brushes that are contained by some other polygon. they are not used.
-	bool containedByPoly;
+	bool removeBrush;
+
+	
+
+	int liRes;
+
+	//get rid of brush polys that are contained by existent polys
 	for (auto brushIt = brushPolys.begin(); brushIt != brushPolys.end();)
 	{
 		currBrush = (*brushIt).get();
-		containedByPoly = false;
+		removeBrush = false;
 
 		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
 			if ((*it)->Contains(currBrush))
 			{
-				containedByPoly = true;
+				removeBrush = true;
+				break;
+			}
+
+			liRes = (*brushIt)->LinesIntersect((*it).get());
+			if (liRes == 1)
+			{
+				removeBrush = true;
 				break;
 			}
 		}
-
-		if (containedByPoly)
+		if (removeBrush)
 		{
 			brushIt = brushPolys.erase(brushIt);
 		}
@@ -6522,12 +6544,96 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		}
 	}
 
+	/*for (auto brushIt = brushPolys.begin(); brushIt != brushPolys.end();)
+	{
+		currBrush = (*brushIt).get();
+		removeBrush = false;
+
+		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
+		{
+			liRes = (*brushIt)->LinesIntersect((*it).get());
+			if (liRes == 1)
+			{
+				removeBrush = true;
+				break;
+			}
+		}
+		if (removeBrush)
+		{
+			brushIt = brushPolys.erase(brushIt);
+		}
+		else
+		{
+			++brushIt;
+		}
+	}*/
+
+	//bool removeBrush;
+	//list<PolyPtr> testIntersectPolys;
+	//for (auto brushIt = brushPolys.begin(); brushIt != brushPolys.end();)
+	//{
+	//	currBrush = (*brushIt).get();
+	//	removeBrush = false;
+	//	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
+	//	{
+	//		liRes = (*brushIt)->LinesIntersect((*it).get());
+	//		if (liRes == 2)
+	//		{
+	//			if ((*it)->inverse)
+	//			{
+	//				inverseOnlyBrushes.push_back((*brushIt));
+	//			}
+	//			else
+	//			{
+	//				//testIntersectPolys.push_back((*it));
+	//			}
+	//		}
+	//		else if (liRes == 1)
+	//		{
+	//			removeBrush = true;
+	//			break;
+	//			//touched 1 point, ignore it
+	//			//brushIt = brushPolys.erase(brushIt);
+	//		}
+	//		else
+	//		{
+	//			if ((*it)->inverse)
+	//			{
+	//				nonInverseBrushes.push_back((*brushIt));
+	//			}
+	//		}
+	//	}
+
+	//	if (removeBrush)
+	//	{
+	//		brushIt = brushPolys.erase(brushIt);
+	//	}
+	//	else
+	//	{
+	//		++brushIt;
+	//	}
+	//}
+	
+
+	
 	//get our noninversebrushes and a temporary collection of inverseonlybrushes which might become inversebrushes
 	for (auto brushIt = brushPolys.begin(); brushIt != brushPolys.end(); ++brushIt)
 	{
-		if (inversePolygon != NULL && (*brushIt)->LinesIntersect(inversePolygon.get()))
+		if (inversePolygon != NULL)
 		{
-			inverseOnlyBrushes.push_back((*brushIt));
+			liRes = (*brushIt)->LinesIntersect(inversePolygon.get());
+			if (liRes == 2)
+			{
+				inverseOnlyBrushes.push_back((*brushIt));
+			}
+			else if( liRes == 1 )
+			{
+				//touched 1 point, ignore it
+			}
+			else
+			{
+				nonInverseBrushes.push_back((*brushIt));
+			}
 		}
 		else
 		{
@@ -6542,7 +6648,6 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	for (auto brushIt = nonInverseBrushes.begin(); brushIt != nonInverseBrushes.end(); ++brushIt)
 	{
 		currBrush = (*brushIt).get();
-		containedByPoly = false;
 		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
 			if ((*it)->inverse)
@@ -6660,7 +6765,6 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	for (auto brushIt = inverseBrushes.begin(); brushIt != inverseBrushes.end(); ++brushIt)
 	{
 		currBrush = (*brushIt).get();
-		containedByPoly = false;
 		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
 			if ((*it)->inverse)

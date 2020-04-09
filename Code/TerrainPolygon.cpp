@@ -1983,7 +1983,8 @@ void TerrainPolygon::ShowGrass( bool show )
 	}
 }
 
-bool TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
+//returns 2 is lines intersect, 1 is only 1 point intersects, and 0 if no intersection
+int TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
 {
 	//my lines vs his lines
 
@@ -1992,6 +1993,18 @@ bool TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
 
 	TerrainPoint *curr, *prev;
 	TerrainPoint *polyCurr, *polyPrev;
+
+	int pointTouchCount = 0;
+
+	bool pointIsTouched  = false;
+	Vector2i touchedPoint;
+
+	//set<pair<int,int>> touchedPoints;
+
+	Vector2i lii;
+	double xi, yi;
+	double xd, yd;
+	double lid;
 
 	for (int i = 0; i < numP; ++i)
 	{
@@ -2006,13 +2019,43 @@ bool TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
 			LineIntersection li = EditSession::SegmentIntersect(prev->pos, curr->pos, polyPrev->pos, polyCurr->pos);
 			if (!li.parallel)
 			{
-				return true;
+				xi, yi;
+				xd, yd;
+				lid = li.position.x;
+				xd = std::modf(li.position.x, &xi);
+				yd = std::modf(li.position.y, &yi);
+
+				if (xd == 0.0 && yd == 0.0)
+				{
+					lii = Vector2i(xi, yi);
+					if (lii == prev->pos || lii == curr->pos || lii == polyPrev->pos || lii == polyCurr->pos)
+					{
+						if (!pointIsTouched)
+						{
+							pointIsTouched = true;
+							touchedPoint = lii;
+							continue;
+						}
+						else if( lii == touchedPoint )
+						{
+							continue;
+						}
+					}
+				}
+				return 2;
 			}
 
 		}
 	}
 
-	return false;
+	if (pointIsTouched)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 bool TerrainPolygon::IsCompletionValid()
