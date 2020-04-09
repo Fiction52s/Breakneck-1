@@ -6532,11 +6532,6 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
 			(*it)->isBrushTest = false;
-			if ((*it)->Contains(currBrush))
-			{
-				removeBrush = true;
-				break;
-			}
 
 			liRes = (*brushIt)->LinesIntersect((*it).get());
 			if (liRes == 2)
@@ -6558,6 +6553,13 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 			}
 			else
 			{
+				//only check contains when there are no line intersections
+				if ((*it)->Contains(currBrush))
+				{
+					removeBrush = true;
+					break;
+				}
+
 				if (currBrush->Contains((*it).get()))
 				{
 					tempContained.push_back((*it));
@@ -6790,6 +6792,8 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 				if (i == j || finalCheckVec[j].second )
 					continue;
 
+				//dont need to check for line intersection here,
+				//because these are all polygons that just got created
 				if (finalCheckVec[i].first->Contains(finalCheckVec[j].first.get()))
 				{
 					finalCheckVec[j].second = true;
@@ -6805,6 +6809,30 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 			}
 			else
 			{
+				//finalCheckVec[i].first->UpdateBounds();
+				
+			
+				
+				if (!finalCheckVec[i].first->IsClockwise())
+				{
+					int xxxx = 5;
+				}
+				
+
+				/*if (PointsTooCloseToEachOther())
+				{
+
+				}*/
+
+				/*if (HasSlivers())
+					return false;*/
+
+				if (finalCheckVec[i].first->LinesIntersectMyself())
+				{
+					int yyyyy = 5;
+				}
+
+				//if(finalCheckVec[i].first->isva
 				finalCheckVec[i].first->Finalize();
 				resultBrush.AddObject(finalCheckVec[i].first);
 				attachList.push_back(finalCheckVec[i].first);
@@ -10042,6 +10070,14 @@ void EditSession::PasteModeHandleEvent()
 		if (ev.key.code == Keyboard::X)
 		{
 			mode = EDIT;
+		}
+		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
+		{
+			UndoMostRecentAction();
+		}
+		else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
+		{
+			RedoMostRecentUndoneAction();
 		}
 		break;
 	}
