@@ -6493,7 +6493,7 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
 	
 	list<PolyPtr> nonIntersectingBrushes;
-	list<PolyPtr> intersectingBrushes;
+	list<PolyPtr> nonInverseBrushes;
 	list<PolyPtr> inverseOnlyBrushes;
 
 	set<PolyPtr> nonInverseInters;
@@ -6514,7 +6514,6 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	int numIntersections;
 	bool intersectsInverse;
 
-	int numBrushesIntersectInverse = 0;
 	list<PolyPtr> tempIntersections;
 	list<PolyPtr> tempContained;
 
@@ -6582,10 +6581,10 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 			}
 			else
 			{
-				for (auto tempIt = tempIntersections.begin(); tempIt != tempIntersections.end(); ++tempIt)
-				{
-					//nonInverseInters.insert((*tempIt));
-				}
+				//for (auto tempIt = tempIntersections.begin(); tempIt != tempIntersections.end(); ++tempIt)
+				//{
+				//	//nonInverseInters.insert((*tempIt));
+				//}
 
 				for (auto tempIt = tempContained.begin(); tempIt != tempContained.end(); ++tempIt)
 				{
@@ -6596,7 +6595,7 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 				list<PolyPtr> *tempTestList;
 				if (intersectsInverse)
 				{
-					numBrushesIntersectInverse++;
+					//numBrushesIntersectInverse++;
 					testList.push_front(list<PolyPtr>());
 					tempTestList = &testList.front();
 					tempTestList->push_back(inversePolygon);
@@ -6625,28 +6624,49 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	inverseConnectedPolys.insert(inversePolygon);
 
 	bool found;
+	//testlist is only things that are intersecting
 	for (auto it = testList.begin(); it != testList.end(); ++it)
 	{
 		list<PolyPtr> &temp = (*it);
 		found = false;
 		for (auto it2 = temp.begin(); it2 != temp.end(); ++it2)
 		{
-			if (inverseConnectedPolys.find((*it2)) != inverseConnectedPolys.end() )
+			if (inverseConnectedPolys.find((*it2)) != inverseConnectedPolys.end())
 			{
 				found = true;
 				break;
 			}
 		}
 
-		if( found )
-		for (auto it2 = temp.begin(); it2 != temp.end(); ++it2)
-		{
-			inverseConnectedPolys.insert((*it2));
-		}
+		if (found)
+			for (auto it2 = temp.begin(); it2 != temp.end(); ++it2)
+			{
+				inverseConnectedPolys.insert((*it2));
+			}
 	}
 	inverseConnectedPolys.erase(inverseConnectedPolys.find(inversePolygon));
 
-	
+	for (auto it = testList.begin(); it != testList.end(); ++it)
+	{
+		list<PolyPtr> &temp = (*it);
+		for (auto it2 = temp.begin(); it2 != temp.end(); ++it2)
+		{
+			if ((*it2)->inverse)
+				continue;
+
+			if (inverseConnectedPolys.find((*it2)) == inverseConnectedPolys.end())
+			{
+				if ((*it2)->isBrushTest)
+				{
+					nonInverseBrushes.push_back((*it2));
+				}
+				else
+				{
+					nonInverseInters.insert((*it2));
+				}
+			}
+		}
+	}
 
 	//get our noninversebrushes and a temporary collection of inverseonlybrushes which might become inversebrushes
 	//for (auto brushIt = brushPolys.begin(); brushIt != brushPolys.end(); ++brushIt)
@@ -6714,6 +6734,98 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	
 	//list<PolyPtr> nonInverseConnectedPoly
 
+	if (nonInverseInters.size() > 0)
+	{
+		i = 0;
+		ClipperLib::Paths nonInverseInterPaths(nonInverseInters.size());
+		for (auto it = nonInverseInters.begin(); it != nonInverseInters.end(); ++it)
+		{
+			(*it)->CopyPointsToClipperPath(nonInverseInterPaths[i]);
+			++i;
+		}
+		c.AddPaths(nonInverseInterPaths, ClipperLib::PolyType::ptSubject, true);
+
+		i = 0;
+		ClipperLib::Paths nonInverseBrushPaths(nonInverseBrushes.size());
+		for (auto it = nonInverseBrushes.begin(); it != nonInverseBrushes.end(); ++it)
+		{
+			(*it)->CopyPointsToClipperPath(nonInverseBrushPaths[i]);
+			(*it)->CopyPointsToClipperPath(clipperIntersections);
+			++i;
+		}
+		c.AddPaths(nonInverseBrushPaths, ClipperLib::PolyType::ptClip, true);
+
+		c.Execute(ClipperLib::ClipType::ctUnion, solution);// , ClipperLib::PolyFillType::pftNonZero);
+
+		vector<pair<PolyPtr,bool>> finalCheckVec;
+		finalCheckVec.reserve(solution.size());
+
+		for (auto sit = solution.begin(); sit != solution.end(); ++sit)
+		{
+			PolyPtr newPoly(new TerrainPolygon(&grassTex));
+
+			FusePathClusters((*sit), clipperIntersections, fusedPoints);
+			newPoly->Reserve((*sit).size());
+			newPoly->AddPointsFromClipperPath((*sit), fusedPoints);
+
+			newPoly->RemoveSlivers();
+			newPoly->AlignExtremes();
+			//newPoly->Finalize();
+			//newPoly->SetMaterialType((*it)->terrainWorldType, (*it)->terrainVariation);
+
+			finalCheckVec.push_back(make_pair(newPoly,false));
+		}
+
+		int checkVecSize = finalCheckVec.size();
+		///TerrainPolygon *tempCheck;
+		for (i = 0; i < checkVecSize; ++i)
+		{
+			if (finalCheckVec[i].second) //has already been contained
+			{
+				continue;
+			}
+
+			for (int j = 0; j < checkVecSize; ++j)
+			{	
+				if (i == j || finalCheckVec[j].second )
+					continue;
+
+				if (finalCheckVec[i].first->Contains(finalCheckVec[j].first.get()))
+				{
+					finalCheckVec[j].second = true;
+				}
+			}
+		}
+
+		for (i = 0; i < checkVecSize; ++i)
+		{
+			if (finalCheckVec[i].second)
+			{
+				finalCheckVec[i].first.reset(); //delete pointer
+			}
+			else
+			{
+				finalCheckVec[i].first->Finalize();
+				resultBrush.AddObject(finalCheckVec[i].first);
+				attachList.push_back(finalCheckVec[i].first);
+			}
+		}
+	}
+
+	if (nonIntersectingBrushes.size() > 0)
+	{
+		for (auto it = nonIntersectingBrushes.begin(); it != nonIntersectingBrushes.end(); ++it)
+		{
+			PolyPtr newPoly((*it)->Copy());
+			resultBrush.AddObject(newPoly);
+			attachList.push_back(newPoly);
+		}
+	}
+
+	c.Clear();
+	solution.clear();
+	assert(inverseConnectedPolys.size() != 1);
+
 	if (inverseConnectedPolys.size() > 1)
 	{
 		i = 0;
@@ -6739,8 +6851,10 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		ClipperLib::Path &intersectPath = c.GetIntersectPath();
 		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
 		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
+	}
 
-
+	if (inverseConnectedPolys.size() > 1 || inverseOnlyBrushes.size() > 0)
+	{
 		//to be very clear, everything after this point is just for testing. need to actually figure out
 		//what to do from here on out.
 
@@ -6750,33 +6864,65 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		c.Clear();
 		inversePolygon->CopyPointsToClipperPath(inversePath);
 
-		
-
 		c.AddPath(inversePath, ClipperLib::PolyType::ptSubject, true);
-		c.AddPaths( solution, ClipperLib::PolyType::ptClip, true);
 
-		/*if( !solution.empty() )
-			c.AddPaths(solution, ClipperLib::PolyType::ptClip, true);*/
+		if (!solution.empty())
+		{
+			c.AddPaths(solution, ClipperLib::PolyType::ptClip, true);
+		}
+
+		if (inverseOnlyBrushes.size() > 0)
+		{
+			i = 0;
+			ClipperLib::Paths inverseBrushPaths(inverseOnlyBrushes.size());
+			for (auto it = inverseOnlyBrushes.begin(); it != inverseOnlyBrushes.end(); ++it)
+			{
+				(*it)->CopyPointsToClipperPath(inverseBrushPaths[i]);
+				(*it)->CopyPointsToClipperPath(clipperIntersections);
+				++i;
+			}
+			c.AddPaths(inverseBrushPaths, ClipperLib::PolyType::ptClip, true);
+		}
+
 
 		c.Execute(ClipperLib::ClipType::ctDifference, inverseSolution);
 
-		PolyPtr newInverse(new TerrainPolygon(&grassTex));
 		
-		assert(inverseSolution.size() == 1);
+		int playerInsideIndex = 0;
+		int numInverseSolutions = inverseSolution.size();
+		if ( numInverseSolutions > 1)
+		{
+			//this is to handle when more than 1 inverse is created and its ambiguous
+			//go with the one the player is inside. if the player isn't in any of them, ignore the operation
+			playerInsideIndex = -1;
+			for (i = 0; i < numInverseSolutions; ++i)
+			{
+				if (ClipperLib::PointInPolygon(ClipperLib::IntPoint(player->position.x, player->position.y),
+					inverseSolution[i]))
+				{
+					playerInsideIndex = i;
+					break;
+				}
+			}
+		}
+		
+		if (playerInsideIndex >= 0)
+		{
+			PolyPtr newInverse(new TerrainPolygon(&grassTex));
+			newInverse->Reserve(inverseSolution[playerInsideIndex].size());
+			newInverse->AddPointsFromClipperPath(inverseSolution[playerInsideIndex], fusedPoints);
 
-		newInverse->Reserve(inverseSolution[0].size());
-		newInverse->AddPointsFromClipperPath(inverseSolution[0], fusedPoints);
+			newInverse->inverse = true;
 
-		newInverse->inverse = true;
+			newInverse->RemoveSlivers();
+			newInverse->AlignExtremes();
+			newInverse->Finalize();
+			//newPoly->SetMaterialType((*it)->terrainWorldType, (*it)->terrainVariation);
 
-		newInverse->RemoveSlivers();
-		newInverse->AlignExtremes();
-		newInverse->Finalize();
-		//newPoly->SetMaterialType((*it)->terrainWorldType, (*it)->terrainVariation);
-
-		AddFullPolytoBrush(inversePolygon, gateInfoList, &orig);
-		resultBrush.AddObject(newInverse);
-		attachList.push_back(newInverse);
+			AddFullPolytoBrush(inversePolygon, gateInfoList, &orig);
+			resultBrush.AddObject(newInverse);
+			attachList.push_back(newInverse);
+		}
 	}
 
 
@@ -6973,7 +7119,7 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	//TryAttachActors(nonInverseInters, attachList, &resultBrush);
 	//TryKeepGates(gateInfoList, attachList, &resultBrush);
 
-	//AddFullPolysToBrush(nonInverseInters, gateInfoList, &orig);
+	AddFullPolysToBrush(nonInverseInters, gateInfoList, &orig);
 	//AddFullPolysToBrush(inverseInters, gateInfoList, &orig);
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 

@@ -1313,6 +1313,31 @@ void TerrainPolygon::SetSelected( bool select )
 	}
 }
 
+bool TerrainPolygon::IsOtherAABBWithinMine(TerrainPolygon *poly)
+{
+	IntRect myAABB = GetAABB();
+	if (inverse)
+	{
+		myAABB.left -= inverseExtraBoxDist;
+		myAABB.top -= inverseExtraBoxDist;
+		myAABB.width += 2 * inverseExtraBoxDist;
+		myAABB.height += 2 * inverseExtraBoxDist;
+	}
+
+	IntRect polyAABB = poly->GetAABB();
+	if (poly->inverse)
+	{
+		polyAABB.left -= inverseExtraBoxDist;
+		polyAABB.top -= inverseExtraBoxDist;
+		polyAABB.width += 2 * inverseExtraBoxDist;
+		polyAABB.height += 2 * inverseExtraBoxDist;
+	}
+
+	return (polyAABB.left >= myAABB.left && polyAABB.top >= myAABB.top
+		&& polyAABB.left + polyAABB.width <= myAABB.left + myAABB.width
+		&& polyAABB.top + polyAABB.height <= myAABB.top + myAABB.height);
+}
+
 bool TerrainPolygon::AABBIntersection(TerrainPolygon *poly)
 {
 	IntRect myAABB = GetAABB();
@@ -2158,7 +2183,7 @@ bool TerrainPolygon::Contains( TerrainPolygon *poly )
 		return false;
 
 	//hes inside me w/ no intersection
-	if (!AABBIntersection(poly))
+	if (!IsOtherAABBWithinMine(poly))
 	{
 		return false;
 	}

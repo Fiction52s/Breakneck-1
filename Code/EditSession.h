@@ -525,6 +525,10 @@ struct EditSession : GUIHandler, TilesetManager
 	
 	void DrawGraph();
 	void SetupGraph();
+
+	bool IsPathWithinPath(
+		ClipperLib::Path &pInner,
+		ClipperLib::Path &pOuter);
 	V2d panAnchor;
 	bool showGraph;
 	sf::Color graphColor;
