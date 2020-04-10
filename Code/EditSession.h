@@ -268,8 +268,16 @@ struct EditSession : GUIHandler, TilesetManager
 	bool CanCreateGate( GateInfo &testGate );
 	void SetPanelDefault( ActorType *type );
 
-	void TryAttachActors(
+	void TryAttachActorsToPolys(
 		std::list<PolyPtr> & origPolys,
+		std::list<PolyPtr> & newPolys,
+		Brush *b);
+	void TryAttachActorsToPolys(
+		std::set<PolyPtr> & origPolys,
+		std::list<PolyPtr> & newPolys,
+		Brush *b);
+	void TryAttachActorsToPoly(
+		PolyPtr orig,
 		std::list<PolyPtr> & newPolys,
 		Brush *b);
 	void TryKeepGates( 
