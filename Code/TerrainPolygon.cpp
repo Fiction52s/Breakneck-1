@@ -329,7 +329,13 @@ bool TerrainPolygon::LinesIntersectMyself()
 			currJ = GetPoint(j);
 			prevJ = GetPrevPoint(j);
 
+			if (currI == currJ || currI == prevJ || prevI == currJ || prevI == prevJ)
+			{
+				continue;
+			}
+
 			LineIntersection li = EditSession::LimitSegmentIntersect(prevI->pos, currI->pos, prevJ->pos, currJ->pos);
+			//LineIntersection li = EditSession::LimitSegmentIntersect(prevI->pos, currI->pos, prevJ->pos, currJ->pos);
 
 			if (!li.parallel)
 			{
@@ -1088,7 +1094,12 @@ void TerrainPolygon::TryFixPointsTouchingLines()
 					{
 						diff = li.position - V2d(GetPoint(testIndex)->pos.x, GetPoint(testIndex)->pos.y);
 						if (diff.x == 0 && diff.y == 0)
+						{
+							//point is directly on line. figure out solution soon
+							int x = 5;
 							continue;
+						}
+							
 						
 						if (diff.x > 0)
 							diff.x = 1;
@@ -1955,7 +1966,7 @@ bool TerrainPolygon::FixSliver(int i, std::set<int> &brokenSlivers, bool &error)
 
 	double diff = GetVectorAngleDiffCCW(dirA, dirB);
 	double diffCW = GetVectorAngleDiffCW(dirA, dirB);
-	if (dirA == -dirB)
+	if (approxEquals(dirA.x, -dirB.x) && approxEquals(dirA.y, -dirB.y))
 	{
 		brokenSlivers.insert(i);
 		return true;

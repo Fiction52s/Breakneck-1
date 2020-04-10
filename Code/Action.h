@@ -17,6 +17,7 @@ struct Brush
 	void Draw( sf::RenderTarget *target );
 	Brush *Copy();
 	sf::Vector2i &GetCenter();
+	void CenterOnPoint(sf::Vector2i &point );
 	sf::Vector2i center;
 	CompoundAction * UnAnchor(); //only works with grounded actors
 	void Deactivate();//multiple calls covered?
@@ -64,6 +65,7 @@ struct CompoundAction : Action
 	~CompoundAction();
 	std::list<Action*> subActions;
 	void Perform();
+	void AddSubAction(Action *);
 	void Undo();
 };
 

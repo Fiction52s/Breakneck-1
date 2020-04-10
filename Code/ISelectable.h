@@ -6,6 +6,7 @@
 #include <list>
 
 struct EditSession;
+struct TerrainPolygon;
 struct ISelectable
 {
 	enum ISelectableType
@@ -23,6 +24,8 @@ struct ISelectable
 	//is a move valid
 	//execute move
 	ISelectable(ISelectableType type);
+	static boost::shared_ptr<TerrainPolygon> GetAsTerrain(
+		boost::shared_ptr<ISelectable> select );
 	virtual bool ContainsPoint(sf::Vector2f test)
 	{
 		return false;

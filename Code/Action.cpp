@@ -15,6 +15,18 @@ ISelectable::ISelectable( ISelectable::ISelectableType p_selectableType )
 {
 }
 
+boost::shared_ptr<TerrainPolygon> ISelectable::GetAsTerrain(
+	boost::shared_ptr<ISelectable> select)
+{
+	if (select->selectableType == ISelectableType::TERRAIN)
+	{
+		return boost::dynamic_pointer_cast<TerrainPolygon>(select);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
 
 Brush::Brush()
 	:terrainOnly( true )
@@ -30,6 +42,11 @@ bool Brush::Has(SelectPtr sp)
 	}
 
 	return false;
+}
+
+void Brush::CenterOnPoint(sf::Vector2i &point )
+{
+	Move(point - GetCenter());
 }
 
 sf::Vector2i &Brush::GetCenter()
@@ -793,6 +810,11 @@ CompoundAction::CompoundAction()
 	//:actionType( COMPOUND )
 {
 
+}
+
+void CompoundAction::AddSubAction(Action *a)
+{
+	subActions.push_back(a);
 }
 
 CompoundAction::~CompoundAction()

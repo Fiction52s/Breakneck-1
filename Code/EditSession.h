@@ -621,6 +621,11 @@ struct EditSession : GUIHandler, TilesetManager
 	bool FixPathSlivers(ClipperLib::Path &p,
 		ClipperIntPointSet &fusedPoints );
 
+	CompoundAction *complexPasteAction;
+	double brushRepeatDist;
+	V2d lastBrushPastePos;
+	int pasteAxis;
+
 	PolyPtr gateInProgressTestPoly;
 	TerrainPoint *gateInProgressTestPoint;
 
@@ -759,7 +764,7 @@ struct EditSession : GUIHandler, TilesetManager
 		sf::Vector2i &p1, sf::Vector2i &prim);
 	bool GetPrimaryAdjustment(sf::Vector2i &p0,
 		sf::Vector2i &p1, sf::Vector2i &adjust);
-	void PasteTerrain(Brush *b);
+	Action * PasteTerrain(Brush *b);
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys,
 		std::list<PolyPtr> &containedPolys);

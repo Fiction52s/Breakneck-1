@@ -2144,6 +2144,8 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
+	complexPasteAction = NULL;
+
 	testGateInfo.edit = EditSession::GetSession();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVis = mainMenu->GetMouseVisible();
@@ -6298,7 +6300,7 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 	}
 }
 
-void EditSession::PasteTerrain(Brush *b)
+Action * EditSession::PasteTerrain(Brush *b)
 {
 	//CompoundAction *compoundAction = new CompoundAction;
 	Brush applyBrush;
@@ -6318,8 +6320,9 @@ void EditSession::PasteTerrain(Brush *b)
 	Action *a = ExecuteTerrainMultiSubtract(brushPolys);
 	a->Perform();
 
-	doneActionStack.push_back(a);
-	ClearUndoneActions();
+	return a;
+
+	
 
 
 	//for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
@@ -6818,7 +6821,7 @@ Action* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys)
 		for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 		{
 			PolyPtr newPoly(new TerrainPolygon(&grassTex));
-			FusePathClusters((*sit), clipperIntersections, fusedPoints);
+			//FusePathClusters((*sit), clipperIntersections, fusedPoints);
 			//sliverResult = FixPathSlivers((*sit), fusedPoints);
 			
 			/*if (!sliverResult)
@@ -6844,12 +6847,23 @@ Action* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys)
 				continue;
 			}
 
+			//just for debugging
+			/*for (int ti = 0; ti < newPoly->GetNumPoints(); ++ti)
+			{
+				for (int ti2 = 0; ti2 < newPoly->GetNumPoints(); ++ti2)
+				{
+
+				}
+			}*/
+
 			if (newPoly->GetNumPoints() < 3)
 			{
 				newPoly.reset();
 				continue;
 			}
 			//newPoly->RemoveSlivers();
+
+			//commented out for paste testing
 			newPoly->AlignExtremes();
 
 			if (!newPoly->IsClockwise())
@@ -9721,10 +9735,13 @@ void EditSession::HandleEvents()
 				}
 				else if (ev.mouseButton.button == Mouse::Button::Right)
 				{
-					menuDownStored = mode;
-					mode = SELECT_MODE;
-					menuDownPos = V2d(uiMousePos.x, uiMousePos.y);
-					guiMenuSprite.setPosition(uiMousePos.x, uiMousePos.y);
+					if (mode != PASTE)
+					{
+						menuDownStored = mode;
+						mode = SELECT_MODE;
+						menuDownPos = V2d(uiMousePos.x, uiMousePos.y);
+						guiMenuSprite.setPosition(uiMousePos.x, uiMousePos.y);
+					}
 				}
 				break;
 			}
@@ -10113,9 +10130,16 @@ void EditSession::EditModeHandleEvent()
 			if (copiedBrush != NULL)
 			{
 				Vector2i pos = Vector2i(worldPos.x, worldPos.y);
-				copiedBrush->Move(pos - copiedBrush->GetCenter());
+				copiedBrush->CenterOnPoint(pos);// (pos - copiedBrush->GetCenter());
 				editMouseGrabPos = pos;
+				editMouseOrigPos = pos;
 				mode = PASTE;
+				if (complexPasteAction != NULL)
+				{
+					delete complexPasteAction;
+				}
+				complexPasteAction = NULL;//->AddSubAction(pasteAction);
+				pasteAxis = -1;
 
 				selectedBrush->SetSelected(false);
 				selectedBrush->Clear();
@@ -10193,6 +10217,17 @@ void EditSession::EditModeHandleEvent()
 				MoveRightBorder(borderMove);
 			}
 		}
+		/*else if (ev.key.code == Keyboard::K && ev.key.control)
+		{
+			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+			{
+				PolyPtr temp = ISelectable::GetAsTerrain((*it));
+				if (temp != nullptr)
+				{
+
+				}
+			}
+		}*/
 		break;
 	}
 	case Event::KeyReleased:
@@ -10222,10 +10257,47 @@ void EditSession::PasteModeHandleEvent()
 	{
 		if (ev.mouseButton.button == sf::Mouse::Button::Left)
 		{
-			PasteTerrain(copiedBrush);
+			Action *pasteAction = PasteTerrain(copiedBrush);
 			if (!HoldingControl())
 			{
 				mode = EDIT;
+				doneActionStack.push_back(pasteAction);
+				ClearUndoneActions();
+				if (complexPasteAction != NULL)
+				{
+					delete complexPasteAction;
+					complexPasteAction = NULL;
+				}
+			}
+			else
+			{
+				assert(complexPasteAction == NULL);
+
+				//cout << "creating new complex paste" << endl;
+				complexPasteAction = new CompoundAction();
+				complexPasteAction->performed = true;
+				lastBrushPastePos = worldPos;
+				brushRepeatDist = 20.0;
+				//cout << "adding new sub-paste" << endl;
+				complexPasteAction->AddSubAction(pasteAction);
+				//complexPasteAction->subActions.push_back()
+				//doneActionStack.push_back(pasteAction);
+				//ClearUndoneActions();
+			}
+		}
+		break;
+		
+	}
+	case Event::MouseButtonReleased:
+	{
+		if (ev.mouseButton.button == sf::Mouse::Button::Left)
+		{
+			if (complexPasteAction != NULL)
+			{
+				cout << "completing complex paste" << endl;
+				doneActionStack.push_back(complexPasteAction);
+				ClearUndoneActions();
+				complexPasteAction = NULL;
 			}
 		}
 		break;
@@ -10235,6 +10307,11 @@ void EditSession::PasteModeHandleEvent()
 		if (ev.key.code == Keyboard::X)
 		{
 			mode = EDIT;
+			if (complexPasteAction != NULL)
+			{
+				delete complexPasteAction;
+				complexPasteAction = NULL;
+			}
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
@@ -11053,8 +11130,64 @@ void EditSession::PasteModeUpdate()
 {
 	Vector2i pos(worldPos.x, worldPos.y);
 	Vector2i delta = pos - editMouseGrabPos;
-	copiedBrush->Move(delta);
+
+	if (HoldingShift())
+	{
+		if (pasteAxis < 0)
+		{
+			editMouseOrigPos = pos;
+			pasteAxis = 0;
+		}
+		else// if (pasteAxis == 0)
+		{
+			Vector2i test = pos - editMouseOrigPos;
+			if (test.x != 0 && test.y != 0)
+			{
+				if (abs(test.x) >= abs(test.y))
+				{
+					pasteAxis = 1;
+				}
+				else if (abs(test.y) > abs(test.x))
+				{
+					pasteAxis = 2;
+				}
+			}
+		}
+	}
+	else
+	{
+		pasteAxis = -1;
+	}
+
+	//if (pasteAxis == 1)
+	//	delta.y = 0;
+	//else if (pasteAxis == 2)
+	//	delta.x = 0;
+
+	//copiedBrush->Move(delta);
+	if (pasteAxis <= 0)
+	{
+		copiedBrush->CenterOnPoint(pos);
+	}
+	else if (pasteAxis == 1)
+	{
+		copiedBrush->CenterOnPoint(Vector2i(pos.x, editMouseOrigPos.y));
+	}
+	else if (pasteAxis == 2)
+	{
+		copiedBrush->CenterOnPoint(Vector2i(editMouseOrigPos.x, pos.y));
+	}
 	editMouseGrabPos = pos;
+	
+	
+	//PasteTerrain(copiedBrush);
+	if (HoldingControl() && !panning && IsMousePressed(Mouse::Left) && (delta.x != 0 || delta.y != 0) && complexPasteAction != NULL
+		&& length(lastBrushPastePos - worldPos ) >= brushRepeatDist )
+	{
+		Action *pasteAction = PasteTerrain(copiedBrush);
+		complexPasteAction->AddSubAction(pasteAction);
+		lastBrushPastePos = worldPos;
+	}
 }
 
 void EditSession::CreateEnemyModeUpdate()
