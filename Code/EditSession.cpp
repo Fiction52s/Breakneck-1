@@ -103,7 +103,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 		terrainTextures[i] = NULL;
 	}
 
-	minZoom = .25;
+	minZoom = .25 / 16.0;//.25;
 	maxZoom = 65536;
 
 	copiedBrush = NULL;
@@ -6314,7 +6314,8 @@ void EditSession::PasteTerrain(Brush *b)
 		}
 	}
 
-	Action *a = ExecuteTerrainMultiAdd(brushPolys);
+	//Action *a = ExecuteTerrainMultiAdd(brushPolys);
+	Action *a = ExecuteTerrainMultiSubtract(brushPolys);
 	a->Perform();
 
 	doneActionStack.push_back(a);
@@ -6384,9 +6385,6 @@ void EditSession::AddFullPolysToBrush(
 	for (list<PolyPtr>::iterator it = polyList.begin(); it != polyList.end(); ++it)
 	{
 		AddFullPolytoBrush((*it), gateInfoList, b);
-		//b->AddObject((*it));
-		//(*it)->AddGatesToBrush(b, gateInfoList);
-		//(*it)->AddEnemiesToBrush(b);
 	}
 }
 
@@ -6398,9 +6396,6 @@ void EditSession::AddFullPolysToBrush(
 	for (auto it = polySet.begin(); it != polySet.end(); ++it)
 	{
 		AddFullPolytoBrush((*it), gateInfoList, b);
-		//b->AddObject((*it));
-		//(*it)->AddGatesToBrush(b, gateInfoList);
-		//(*it)->AddEnemiesToBrush(b);
 	}
 }
 
@@ -6558,9 +6553,339 @@ void EditSession::FixPathSlivers(ClipperLib::Path &p)
 	}
 }
 
+//returns true is success. returns false if poly is invalid
+bool EditSession::FixPathSlivers(ClipperLib::Path &p,
+	ClipperIntPointSet &fusedPoints)
+{
+	double minAngle = EditSession::SLIVER_LIMIT;
+	ClipperLib::IntPoint *curr, *prev, *next;
+	//TerrainPoint *curr, *prev, *next;
+	int pSize = p.size();
+	int temp;
+	for (int i = 0; i < pSize; ++i)
+	{
+		curr = &p[i];
+		if (fusedPoints.find(make_pair(curr->X, curr->Y)) != fusedPoints.end())
+		{
+			continue;
+		}
+
+		prev = NULL;
+		for (int j = 1; j < pSize; ++j)
+		{
+			temp = i - j;
+			if (temp < 0)
+			{
+				temp += pSize;
+			}
+			prev = &p[temp];
+			if (fusedPoints.find(make_pair(prev->X, prev->Y)) != fusedPoints.end())
+			{
+				prev = NULL;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (prev == NULL)
+		{
+			return false;
+			//assert(prev != NULL);
+		}
+		
+
+		next = NULL;
+		for (int j = 1; j < pSize; ++j)
+		{
+			temp = i + j;
+			if (temp >= pSize)
+			{
+				temp -= pSize;
+			}
+			next = &p[temp];
+
+			if (fusedPoints.find(make_pair(next->X, next->Y)) != fusedPoints.end())
+			{
+				next = NULL;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (next == NULL)
+		{
+			return false;
+			//assert(next != NULL);
+		}
+		
+
+
+		V2d pos(curr->X, curr->Y);
+		V2d prevPos(prev->X, prev->Y);
+		V2d nextPos(next->X, next->Y);
+		V2d dirA = normalize(prevPos - pos);
+		V2d dirB = normalize(nextPos - pos);
+
+		double diff = GetVectorAngleDiffCCW(dirA, dirB);
+		double diffCW = GetVectorAngleDiffCW(dirA, dirB);
+
+		if (dirA == -dirB) //works if going opposite directions or the same point. haven't tested with add, only sub
+		{
+			//int xxx = 5;
+			fusedPoints.insert(make_pair(curr->X, curr->Y));
+		}
+		else if (diff < minAngle)
+		{
+			Vector2i trimPos = TerrainPolygon::TrimSliverPos(prevPos, pos, nextPos, minAngle, true);
+			curr->X = trimPos.x;
+			curr->Y = trimPos.y;
+
+			/*if (curr->pos == prev->pos || curr->pos == next->pos)
+			{
+			int b = 6;
+			assert(0);
+			}*/
+		}
+		else if (diffCW < minAngle)
+		{
+			Vector2i trimPos = TerrainPolygon::TrimSliverPos(prevPos, pos, nextPos, minAngle, false);
+			curr->X = trimPos.x;
+			curr->Y = trimPos.y;
+
+			/*if (curr->pos == prev->pos || curr->pos == next->pos)
+			{
+			int b = 6;
+			assert(0);
+			}*/
+		}
+	}
+
+	return true;
+}
+
+Action* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys)
+{
+	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
+	auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
+	bool removeBrush;
+	int liRes;
+
+	list<PolyPtr> inverseBrushes;
+	map<PolyPtr, list<PolyPtr>> nonInverseIntersections;
+	list<PolyPtr> tempContained;
+	list<PolyPtr> containedPolys;
+	int i;
+
+
+	Brush orig;
+	Brush resultBrush;
+	list<GateInfoPtr> gateInfoList;
+
+	ClipperIntPointSet fusedPoints;
+	list<PolyPtr> attachList;
+	ClipperLib::Clipper c;
+
+	ClipperLib::Paths solution;
+	ClipperLib::Path clipperIntersections;
+
+	bool sliverResult;
+
+	for (auto brushIt = brushPolys.begin(); brushIt != brushPolys.end();)
+	{
+		removeBrush = false;
+		//intersectsInverse = false;
+		//numIntersections = 0;
+		//tempIntersections.clear();
+		tempContained.clear();
+		//(*brushIt)->isBrushTest = true;
+
+		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
+		{
+			liRes = (*brushIt)->LinesIntersect((*it).get());
+			if (liRes == 2)
+			{
+				if ((*it)->inverse)
+				{
+					inverseBrushes.push_back((*brushIt));
+					//intersectsInverse = true;
+				}
+				else
+				{
+					nonInverseIntersections[(*it)].push_back((*brushIt));
+				}
+			}
+			/*else if (liRes == 1)
+			{
+				removeBrush = true;
+				break;
+			}*/
+			else if( liRes == 0 )
+			{
+				//only check contains when there are no line intersections
+				if ((*it)->Contains((*brushIt).get()))
+				{
+					removeBrush = true;
+					break;
+				}
+
+				if ((*brushIt)->Contains((*it).get()))
+				{
+					tempContained.push_back((*it));
+				}
+			}
+		}
+
+		if (removeBrush)
+		{
+			brushIt = brushPolys.erase(brushIt);
+		}
+		else
+		{
+			for (auto tempIt = tempContained.begin(); tempIt != tempContained.end(); ++tempIt)
+			{
+				//cant be a duplicate only because brushes won't be on top of one another.
+				containedPolys.push_back((*tempIt));
+			}
+
+			//if (intersectsInverse && numIntersections == 1)
+			//{
+			//	inverseOnlyBrushes.push_back((*brushIt));
+			//}
+			//else if (numIntersections == 0)
+			//{
+			//	nonIntersectingBrushes.push_back((*brushIt));
+			//}
+			//else
+			//{
+				
+
+			//	list<PolyPtr> *tempTestList;
+			//	if (intersectsInverse)
+			//	{
+			//		allIntersectsList.push_front(list<PolyPtr>());
+			//		tempTestList = &allIntersectsList.front();
+			//		tempTestList->push_back(inversePolygon);
+			//	}
+			//	else
+			//	{
+			//		allIntersectsList.push_back(list<PolyPtr>());
+			//		tempTestList = &allIntersectsList.back();
+			//	}
+
+			//	tempTestList->push_back((*brushIt));
+			//	for (auto tempIt = tempIntersections.begin(); tempIt != tempIntersections.end(); ++tempIt)
+			//	{
+			//		tempTestList->push_back((*tempIt));
+			//	}
+			//}
+			++brushIt;
+		}
+	}
+
+	for (auto it = nonInverseIntersections.begin(); it != nonInverseIntersections.end(); ++it)
+	{
+		c.Clear();
+		solution.clear();
+		clipperIntersections.clear();
+		fusedPoints.clear();
+
+		ClipperLib::Path p;
+
+		(*it).first->CopyPointsToClipperPath(p);
+		c.AddPath(p, ClipperLib::PolyType::ptSubject, true);
+
+		i = 0;
+		ClipperLib::Paths pBrushes((*it).second.size());
+		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
+		{
+			(*pit)->CopyPointsToClipperPath(pBrushes[i]);
+			(*pit)->CopyPointsToClipperPath(clipperIntersections);
+			++i;
+		}
+		c.AddPaths(pBrushes, ClipperLib::PolyType::ptClip, true);
+
+
+		c.Execute(ClipperLib::ClipType::ctDifference, solution, ClipperLib::PolyFillType::pftEvenOdd);
+
+		ClipperLib::Path &intersectPath = c.GetIntersectPath();
+		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
+		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
+
+		for (auto sit = solution.begin(); sit != solution.end(); ++sit)
+		{
+			PolyPtr newPoly(new TerrainPolygon(&grassTex));
+			FusePathClusters((*sit), clipperIntersections, fusedPoints);
+			//sliverResult = FixPathSlivers((*sit), fusedPoints);
+			
+			/*if (!sliverResult)
+			{
+				newPoly.reset();
+				continue;
+			}*/
+
+			//FusePathClusters((*sit), clipperIntersections, fusedPoints);
+
+			newPoly->Reserve((*sit).size());
+			newPoly->AddPointsFromClipperPath((*sit), fusedPoints);
+
+			if (newPoly->GetNumPoints() < 3)
+			{
+				newPoly.reset();
+				continue;
+			}
+
+			if (!newPoly->TryFixAllSlivers())
+			{
+				newPoly.reset();
+				continue;
+			}
+
+			if (newPoly->GetNumPoints() < 3)
+			{
+				newPoly.reset();
+				continue;
+			}
+			//newPoly->RemoveSlivers();
+			newPoly->AlignExtremes();
+
+			if (!newPoly->IsClockwise())
+			{
+				//assert(0);
+				newPoly.reset();
+				continue;
+			}
+
+			if (newPoly->LinesIntersectMyself())
+			{
+				newPoly->TryFixPointsTouchingLines();
+				//assert(0);
+			}
+
+			newPoly->SetMaterialType((*it).first->terrainWorldType, (*it).first->terrainVariation);
+			newPoly->Finalize();
+
+			resultBrush.AddObject(newPoly);
+			attachList.push_back(newPoly);
+		}
+		
+
+		AddFullPolytoBrush((*it).first, gateInfoList, &orig);
+	}
+
+	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
+	
+
+	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
+	return action;
+}
 
 Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 {
+	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
 	
 	list<PolyPtr> nonIntersectingBrushes;
@@ -6593,7 +6918,6 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	int i;
 	ClipperIntPointSet fusedPoints;
 	list<PolyPtr> attachList;
-
 	bool found;
 
 	//===PREPARATION STEP===//
@@ -6771,7 +7095,10 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		{
 			PolyPtr newPoly(new TerrainPolygon(&grassTex));
 			FusePathClusters((*sit), clipperIntersections, fusedPoints);
-			FixPathSlivers((*sit));
+			//FixPathSlivers((*sit));
+
+			//haven't tested this with add yet but it makes sense. taken from new multi subtract
+			FixPathSlivers((*sit), fusedPoints);
 
 			newPoly->Reserve((*sit).size());
 			newPoly->AddPointsFromClipperPath((*sit), fusedPoints);
@@ -9264,8 +9591,8 @@ void EditSession::DrawUI()
 	}
 	
 
-	preScreenTex->draw(scaleSpriteBGRect);
-	preScreenTex->draw(scaleSprite);
+	//preScreenTex->draw(scaleSpriteBGRect);
+	//preScreenTex->draw(scaleSprite);
 	preScreenTex->draw(cursorLocationText);
 	preScreenTex->draw(scaleText);
 

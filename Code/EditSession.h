@@ -618,6 +618,8 @@ struct EditSession : GUIHandler, TilesetManager
 	void MoveSelectedActor( sf::Vector2i &delta );
 
 	void FixPathSlivers(ClipperLib::Path &p);
+	bool FixPathSlivers(ClipperLib::Path &p,
+		ClipperIntPointSet &fusedPoints );
 
 	PolyPtr gateInProgressTestPoly;
 	TerrainPoint *gateInProgressTestPoint;
@@ -763,8 +765,8 @@ struct EditSession : GUIHandler, TilesetManager
 		std::list<PolyPtr> &containedPolys);
 	Action* ExecuteTerrainMultiAdd(
 		std::list<PolyPtr> &brushPolys );
-	//	std::list<PolyPtr> &intersectingPolys,
-	//	std::list<PolyPtr> &containedPolys);
+	Action* ExecuteTerrainMultiSubtract(
+		std::list<PolyPtr> &brushPolys);
 	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys,
 		std::list<PolyPtr> &containedPolys );
 	Action *ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys,

@@ -424,8 +424,8 @@ bool TerrainPolygon::IsInternallyValid()
 			return false;
 	}
 
-	if (PointsTooCloseToEachOther())
-		return false;
+	//if (PointsTooCloseToEachOther())
+	//	return false;
 
 	if (HasSlivers())
 		return false;
@@ -1647,6 +1647,14 @@ TerrainPoint * TerrainPolygon::AddPoint(sf::Vector2i &p, bool sel)
 		}
 	}*/
 
+	if (!pointVector.empty())
+	{
+		if (p == GetEndPoint()->pos)
+		{
+			return NULL;
+		}
+	}
+
 
 	pointVector.push_back(TerrainPoint(p, sel));
 	TerrainPoint *end = GetEndPoint();
@@ -1814,6 +1822,168 @@ bool TerrainPolygon::TryToMakeInternallyValid()
 	//remove slivers
 	//align extremes
 	//fix clusters
+}
+
+bool TerrainPolygon::TryFixAllSlivers()
+{
+	set<int> brokenSlivers;
+	int sliverAttempts = 5;
+	int numP = GetNumPoints();
+	bool done = false;
+	bool error;
+	int s;
+	for (s = 0; s < sliverAttempts; ++s)
+	{
+		done = true;
+		for (int i = 0; i < numP; ++i)
+		{
+			error = false;
+			if (FixSliver( i, brokenSlivers, error))
+			{
+				done = false;
+				if (error)
+					return false;
+			}
+		}
+		
+		if (s > 0)
+		{
+			int xxxxx = 5;
+		}
+
+		if (done)
+			break;
+	}
+
+	if (s == sliverAttempts)
+	{
+		int xxx = 5;
+	}
+
+	int brokenSize = brokenSlivers.size();
+	if (brokenSize > 0)
+	{
+		if (numP - brokenSize < 3)
+		{
+			//resulting poly would be too small anyway
+			return false;
+		}
+
+		std::vector<TerrainPoint> copyVec = pointVector;
+		ClearPoints();
+		for (int i = 0; i < numP; ++i)
+		{
+			if (brokenSlivers.find(i) != brokenSlivers.end())
+			{
+				continue;
+			}
+
+			AddPoint(copyVec[i].pos, false);
+		}
+	}
+
+	return true;
+}
+
+bool TerrainPolygon::FixSliver(int i, std::set<int> &brokenSlivers, bool &error)
+{
+	double minAngle = EditSession::SLIVER_LIMIT;
+	TerrainPoint *curr, *prev, *next;
+	curr = GetPoint(i);
+	//prev = GetPrevPoint(i);
+	//next = GetNextPoint(i);
+	int pSize = GetNumPoints();
+
+	if (brokenSlivers.find(i) != brokenSlivers.end())
+		return false;
+
+	int temp;
+
+	prev = NULL;
+	for (int j = 1; j < pSize; ++j)
+	{
+		temp = i - j;
+		if (temp < 0)
+		{
+			temp += pSize;
+		}
+		prev = GetPoint(temp);
+		if (brokenSlivers.find(temp) != brokenSlivers.end())
+		{
+			prev = NULL;
+		}
+		else
+		{
+			break;
+		}
+	}
+	if (prev == NULL)
+	{
+		error = true;
+		return false;
+	}
+
+	next = NULL;
+	for (int j = 1; j < pSize; ++j)
+	{
+		temp = i + j;
+		if (temp >=  pSize )
+		{
+			temp -= pSize;
+		}
+		next = GetPoint(temp);
+		if (brokenSlivers.find(temp) != brokenSlivers.end())
+		{
+			next = NULL;
+		}
+		else
+		{
+			break;
+		}
+	}
+	if (next == NULL)
+	{
+		error = true;
+		return false;
+	}
+
+	V2d pos(curr->pos.x, curr->pos.y);
+	V2d prevPos(prev->pos.x, prev->pos.y);
+	V2d nextPos(next->pos.x, next->pos.y);
+	V2d dirA = normalize(prevPos - pos);
+	V2d dirB = normalize(nextPos - pos);
+
+	double diff = GetVectorAngleDiffCCW(dirA, dirB);
+	double diffCW = GetVectorAngleDiffCW(dirA, dirB);
+	if (dirA == -dirB)
+	{
+		brokenSlivers.insert(i);
+		return true;
+	}
+	else if (diff < minAngle)
+	{
+		Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, true);
+		curr->pos = trimPos;
+
+		if (curr->pos == prev->pos || curr->pos == next->pos)
+		{
+			brokenSlivers.insert(i);
+			return true;
+		}
+	}
+	else if (diffCW < minAngle)
+	{
+		Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, false);
+		curr->pos = trimPos;
+
+		if (curr->pos == prev->pos || curr->pos == next->pos)
+		{
+			brokenSlivers.insert(i);
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool TerrainPolygon::FixSliver(int i)
@@ -2513,6 +2683,7 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p,
 	//disallow duplicates
 	int pSize = p.size();
 	ClipperLib::IntPoint *prev, *curr;
+	TerrainPoint *end;
 	for (int i = 0; i < pSize; ++i)
 	{
 		curr = &p[i];
@@ -2522,16 +2693,17 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p,
 		else
 			prev = &p[i - 1];
 
-		if (prev->X == curr->X && prev->Y == curr->Y)
+		//this is handled in AddPoint
+		/*if (prev->X == curr->X && prev->Y == curr->Y)
 		{
 			continue;
-		}
+		}*/
 
 		if (fusedPoints.find(make_pair(curr->X, curr->Y)) != fusedPoints.end())
 		{
 			continue;
 		}
-		
+
 		AddPoint(Vector2i(curr->X, curr->Y), false);
 	}
 }

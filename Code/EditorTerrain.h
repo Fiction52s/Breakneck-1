@@ -191,11 +191,14 @@ struct TerrainPolygon : ISelectable
 		int world, int variation);
 	void UpdateMaterialType();
 	void RemoveSlivers();
+	
 
-
+	bool TryFixAllSlivers();
 
 	bool TryToMakeInternallyValid();
 	bool FixSliver(int i);
+	bool FixSliver(int i, std::set<int> &brokenSlivers,
+		bool &error );
 
 	int FixNearPrimary(int i,bool currLocked = false);
 
