@@ -166,7 +166,7 @@ struct TerrainPolygon : ISelectable
 		bool storeSelectedPoints = false );
 	~TerrainPolygon();
 	void UpdateLineColor(sf::Vertex *line, int i, int index);
-	sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
+	static sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
 		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
 		double minAngle, bool cw);
 	void CopyPoints(TerrainPolygon *poly,
@@ -251,7 +251,7 @@ struct TerrainPolygon : ISelectable
 	//bool IsTouching( TerrainPolygon * p );
 
 	int LinesIntersect(TerrainPolygon *poly);
-
+	void TryFixPointsTouchingLines();
 	bool LinesIntersectInProgress(sf::Vector2i p );
 	bool IsCompletionValid();
 	void CopyPointsToClipperPath(ClipperLib::Path & p);

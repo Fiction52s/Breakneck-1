@@ -543,6 +543,12 @@ int TerrainPolygon::FixNearPrimary(int i, bool currLocked)
 		else
 			next->pos.x = curr->pos.x;
 
+		if (curr->pos == next->pos)
+		{
+			int b = 6;
+			assert(0);
+		}
+
 		return 2;
 	}
 
@@ -550,6 +556,12 @@ int TerrainPolygon::FixNearPrimary(int i, bool currLocked)
 		curr->pos.y = next->pos.y;
 	else
 		curr->pos.x = next->pos.x;
+
+	if (curr->pos == next->pos)
+	{
+		int b = 6;
+		assert(0);
+	}
 
 	return 1;
 }
@@ -1022,6 +1034,80 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 	}
 }
 
+void TerrainPolygon::TryFixPointsTouchingLines()
+{
+	int numP = GetNumPoints();
+
+	TerrainPoint *curr, *prev;
+	TerrainPoint *polyCurr, *polyPrev;
+
+	int pointTouchCount = 0;
+
+	Vector2i lii;
+	V2d diff;
+	Vector2i testDiff;
+
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		prev = GetPrevPoint(i);
+
+		for (int j = 0; j < numP; ++j)
+		{
+			if (j == i || j == i - 1 || j == i + 1 || (i == numP - 1 && j == 0 ) || (j == numP - 1 && i == 0 ))
+				continue;
+
+			polyCurr = GetPoint(j);
+			polyPrev = GetPrevPoint(j);
+
+			LineIntersection li = EditSession::SegmentIntersect(prev->pos, curr->pos, polyPrev->pos, polyCurr->pos);
+			if (!li.parallel)
+			{
+				{
+					lii = Vector2i(round(li.position.x), round(li.position.y));
+					//lii = Vector2i(xi, yi);
+					int testIndex = -1;
+					if (lii == prev->pos)
+					{
+						testIndex = prev->GetIndex();
+					}
+					else if (lii == curr->pos)
+					{
+						testIndex = curr->GetIndex();
+					}
+					else if (lii == polyPrev->pos)
+					{
+						testIndex = polyPrev->GetIndex();
+					}
+					else if(lii == polyCurr->pos)
+					{
+						testIndex = polyCurr->GetIndex();
+					}
+
+					if (testIndex >= 0)
+					{
+						diff = li.position - V2d(GetPoint(testIndex)->pos.x, GetPoint(testIndex)->pos.y);
+						if (diff.x == 0 && diff.y == 0)
+							continue;
+						
+						if (diff.x > 0)
+							diff.x = 1;
+						else if (diff.x < 0)
+							diff.x = -1;
+						if (diff.y > 0)
+							diff.y = 1;
+						else if (diff.y < 0)
+							diff.y = -1;
+						
+						GetPoint(testIndex)->pos += Vector2i(diff);
+					}
+				}
+			}
+
+		}
+	}
+}
+
 void TerrainPolygon::Finalize()
 {
 	//AlignExtremes();
@@ -1046,11 +1132,22 @@ void TerrainPolygon::Finalize()
 
 	
 	TerrainPoint *curr;
+	//set<int> testPoints;
+	
 	for (int i = 0; i < numP; ++i)
 	{
 		curr = GetPoint(i);
 		polyline.push_back(new p2t::Point(curr->pos.x, curr->pos.y));
+		/*if (testPoints.find(i) != testPoints.end())
+		{
+			polyline.push_back(new p2t::Point(curr->pos.x + .01, curr->pos.y + .01));
+		}
+		else
+		{
+			
+		}*/
 	}
+	//GetPointsTouchingLines(testPoints, polyline);
 
 	if (polyline.size() == 1)
 	{
@@ -1538,6 +1635,19 @@ int TerrainPolygon::GetNumPoints()
 
 TerrainPoint * TerrainPolygon::AddPoint(sf::Vector2i &p, bool sel)
 {
+	//just testing something
+	/*if (GetNumPoints() > 0)
+	{
+		TerrainPoint *testEnd = GetEndPoint();
+		if (p == testEnd->pos)
+		{
+			SetMaterialType(7, 1);
+			int x = 5;
+			return testEnd;
+		}
+	}*/
+
+
 	pointVector.push_back(TerrainPoint(p, sel));
 	TerrainPoint *end = GetEndPoint();
 	end->index = GetNumPoints() - 1;
@@ -1726,12 +1836,24 @@ bool TerrainPolygon::FixSliver(int i)
 	{
 		Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, true);
 		curr->pos = trimPos;
+
+		if (curr->pos == prev->pos || curr->pos == next->pos)
+		{
+			int b = 6;
+			assert(0);
+		}
 		return true;
 	}
 	else if (diffCW < minAngle)
 	{
 		Vector2i trimPos = TrimSliverPos(prevPos, pos, nextPos, minAngle, false);
 		curr->pos = trimPos;
+
+		if (curr->pos == prev->pos || curr->pos == next->pos)
+		{
+			int b = 6;
+			assert(0);
+		}
 		return true;
 	}
 
@@ -2315,6 +2437,9 @@ void TerrainPolygon::Reserve( int nPoints )
 
 bool TerrainPolygon::Intersects( sf::IntRect rect )
 {
+	if (rect.width == 0 || rect.height == 0)
+		return false;
+
 	TerrainPolygon poly( grassTex );
 	poly.AddPoint( Vector2i( rect.left, rect.top ), false );
 	poly.AddPoint( Vector2i( rect.left + rect.width, rect.top ), false);
@@ -2361,6 +2486,32 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p)
 {
 	//disallow duplicates
 	int pSize = p.size();
+	//Reserve(p.size());
+	ClipperLib::IntPoint *prev, *curr;
+	for (int i = 0; i < pSize; ++i)
+	{
+		curr = &p[i];
+
+		if (i == 0)
+			prev = &p[pSize - 1];
+		else
+			prev = &p[i - 1];
+
+		//if removing slivers has given me the same point twice
+		if (prev->X == curr->X && prev->Y == curr->Y)
+		{
+			continue;
+		}
+
+		AddPoint(Vector2i(curr->X, curr->Y), false);
+	}
+}
+
+void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p,
+	ClipperIntPointSet &fusedPoints)
+{
+	//disallow duplicates
+	int pSize = p.size();
 	ClipperLib::IntPoint *prev, *curr;
 	for (int i = 0; i < pSize; ++i)
 	{
@@ -2376,19 +2527,6 @@ void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p)
 			continue;
 		}
 
-		AddPoint(Vector2i(curr->X, curr->Y), false);
-	}
-}
-
-void TerrainPolygon::AddPointsFromClipperPath(ClipperLib::Path &p,
-	ClipperIntPointSet &fusedPoints)
-{
-	//disallow duplicates
-	int pSize = p.size();
-	ClipperLib::IntPoint *curr;
-	for (int i = 0; i < pSize; ++i)
-	{
-		curr = &p[i];
 		if (fusedPoints.find(make_pair(curr->X, curr->Y)) != fusedPoints.end())
 		{
 			continue;

@@ -609,6 +609,8 @@ struct EditSession : GUIHandler, TilesetManager
 
 	void MoveSelectedActor( sf::Vector2i &delta );
 
+	void FixPathSlivers(ClipperLib::Path &p);
+
 	PolyPtr gateInProgressTestPoly;
 	TerrainPoint *gateInProgressTestPoint;
 
