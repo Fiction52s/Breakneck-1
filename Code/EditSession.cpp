@@ -6318,7 +6318,8 @@ Action * EditSession::PasteTerrain(Brush *b)
 
 	//Action *a = ExecuteTerrainMultiAdd(brushPolys);
 	Action *a = ExecuteTerrainMultiSubtract(brushPolys);
-	a->Perform();
+	if( a != NULL )
+		a->Perform();
 
 	return a;
 
@@ -6892,6 +6893,10 @@ Action* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys)
 
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 	
+	if (resultBrush.objects.size() == 0)
+	{
+		return NULL;
+	}
 
 	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
 	return action;
@@ -10261,28 +10266,28 @@ void EditSession::PasteModeHandleEvent()
 			if (!HoldingControl())
 			{
 				mode = EDIT;
-				doneActionStack.push_back(pasteAction);
-				ClearUndoneActions();
-				if (complexPasteAction != NULL)
+				if (pasteAction != NULL)
 				{
-					delete complexPasteAction;
-					complexPasteAction = NULL;
+					doneActionStack.push_back(pasteAction);
+					ClearUndoneActions();
+					if (complexPasteAction != NULL)
+					{
+						delete complexPasteAction;
+						complexPasteAction = NULL;
+					}
 				}
 			}
 			else
 			{
-				assert(complexPasteAction == NULL);
-
-				//cout << "creating new complex paste" << endl;
-				complexPasteAction = new CompoundAction();
-				complexPasteAction->performed = true;
-				lastBrushPastePos = worldPos;
-				brushRepeatDist = 20.0;
-				//cout << "adding new sub-paste" << endl;
-				complexPasteAction->AddSubAction(pasteAction);
-				//complexPasteAction->subActions.push_back()
-				//doneActionStack.push_back(pasteAction);
-				//ClearUndoneActions();
+				if (pasteAction != NULL)
+				{
+					assert(complexPasteAction == NULL);
+					complexPasteAction = new CompoundAction();
+					complexPasteAction->performed = true;
+					lastBrushPastePos = worldPos;
+					brushRepeatDist = 20.0;
+					complexPasteAction->AddSubAction(pasteAction);
+				}
 			}
 		}
 		break;
@@ -11181,12 +11186,23 @@ void EditSession::PasteModeUpdate()
 	
 	
 	//PasteTerrain(copiedBrush);
-	if (HoldingControl() && !panning && IsMousePressed(Mouse::Left) && (delta.x != 0 || delta.y != 0) && complexPasteAction != NULL
+	if (HoldingControl() && !panning && IsMousePressed(Mouse::Left) && (delta.x != 0 || delta.y != 0)
 		&& length(lastBrushPastePos - worldPos ) >= brushRepeatDist )
 	{
 		Action *pasteAction = PasteTerrain(copiedBrush);
-		complexPasteAction->AddSubAction(pasteAction);
-		lastBrushPastePos = worldPos;
+		if (pasteAction != NULL)
+		{
+			if (complexPasteAction == NULL)
+			{
+				complexPasteAction = new CompoundAction();
+				complexPasteAction->performed = true;
+				lastBrushPastePos = worldPos;
+				brushRepeatDist = 20.0;
+			}
+
+			complexPasteAction->AddSubAction(pasteAction);
+			lastBrushPastePos = worldPos;
+		}
 	}
 }
 
