@@ -95,6 +95,18 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	terrainWorldType = poly.terrainWorldType;
 	terrainVariation = poly.terrainVariation;
 
+	EditSession *session = EditSession::GetSession();
+	if (session != NULL)
+	{
+		grassSize = session->grassSize;//64;//64;//22;
+		grassSpacing = session->grassSpacing;//-20;//-5;
+	}
+	else
+	{
+		grassSize = 0;
+		grassSpacing = 0;
+	}
+
 	pointVector.push_back(vector<TerrainPoint>() );
 	//SetMaterialType( poly.terrainWorldType, poly.terrainVariation );
 	if (pointsOnly)
@@ -198,63 +210,66 @@ TerrainPoint *TerrainPolygon::GetPrevPoint(int index)
 void TerrainPolygon::WriteGrass(std::ofstream &of)
 {
 	int edgesWithSegments = 0;
-
-	VertexArray &grassVa = *grassVA;
-
-	int edgeIndex = 0;
-	int i = 0;
 	list<list<GrassSeg>> grassListList;
-	int numP = GetNumPoints();
-	TerrainPoint *curr, *prev, *next;
-	for (int i = 0; i < numP; ++i)
+
+	if (grassVA != NULL)
 	{
-		curr = GetPoint(i);
-		prev = GetPrevPoint(i);
-		next = GetNextPoint(i);
+		VertexArray &grassVa = *grassVA;
 
-		V2d v0(curr->pos.x, curr->pos.y);
-		V2d v1(next->pos.x, next->pos.y);
-
-		bool rem;
-		int num = GetNumGrass(i, rem);
-
-		grassListList.push_back(list<GrassSeg>());
-
-		list<GrassSeg> &grassList = grassListList.back();
-
-		GrassSeg *gPtr = NULL;
-		bool hasGrass = false;
-		for (int j = 0; j < num; ++j)
+		int edgeIndex = 0;
+		int i = 0;
+		int numP = GetNumPoints();
+		TerrainPoint *curr, *prev, *next;
+		for (int i = 0; i < numP; ++i)
 		{
-			if (grassVa[i * 4].color.a == 255 || grassVa[i * 4].color.a == 254)
+			curr = GetPoint(i);
+			prev = GetPrevPoint(i);
+			next = GetNextPoint(i);
+
+			V2d v0(curr->pos.x, curr->pos.y);
+			V2d v1(next->pos.x, next->pos.y);
+
+			bool rem;
+			int num = GetNumGrass(i, rem);
+
+			grassListList.push_back(list<GrassSeg>());
+
+			list<GrassSeg> &grassList = grassListList.back();
+
+			GrassSeg *gPtr = NULL;
+			bool hasGrass = false;
+			for (int j = 0; j < num; ++j)
 			{
-				hasGrass = true;
-				if (gPtr == NULL)
+				if (grassVa[i * 4].color.a == 255 || grassVa[i * 4].color.a == 254)
 				{
-					grassList.push_back(GrassSeg(edgeIndex, j, 0));
-					gPtr = &grassList.back();
+					hasGrass = true;
+					if (gPtr == NULL)
+					{
+						grassList.push_back(GrassSeg(edgeIndex, j, 0));
+						gPtr = &grassList.back();
+					}
+					else
+					{
+						grassList.back().reps++;
+					}
 				}
 				else
 				{
-					grassList.back().reps++;
+					if (gPtr != NULL)
+						gPtr = NULL;
 				}
+
+				++i;
 			}
-			else
+
+			if (hasGrass)
 			{
-				if (gPtr != NULL)
-					gPtr = NULL;
+				++edgesWithSegments;
 			}
 
-			++i;
+			++edgeIndex;
+
 		}
-
-		if (hasGrass)
-		{
-			++edgesWithSegments;
-		}
-
-		++edgeIndex;
-
 	}
 
 	of << edgesWithSegments << endl;
@@ -703,14 +718,17 @@ void TerrainPolygon::Move(Vector2i move )
 		vaa[i].position += Vector2f( move.x, move.y );
 	}
 
-	for( int i = 0; i < numGrassTotal; ++i )
+	if (grassVA != NULL)
 	{
-		//quads
-		VertexArray &gva = *grassVA;
-		gva[i*4].position += Vector2f( move.x, move.y );
-		gva[i*4+1].position += Vector2f( move.x, move.y );
-		gva[i*4+2].position += Vector2f( move.x, move.y );
-		gva[i*4+3].position += Vector2f( move.x, move.y );
+		for (int i = 0; i < numGrassTotal; ++i)
+		{
+			//quads
+			VertexArray &gva = *grassVA;
+			gva[i * 4].position += Vector2f(move.x, move.y);
+			gva[i * 4 + 1].position += Vector2f(move.x, move.y);
+			gva[i * 4 + 2].position += Vector2f(move.x, move.y);
+			gva[i * 4 + 3].position += Vector2f(move.x, move.y);
+		}
 	}
 
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
@@ -972,6 +990,12 @@ int TerrainPolygon::GetNumGrass(int i, bool &rem)
 
 	double len = length(v1 - v0);
 	len -= grassSize / 2 + grassSpacing;
+
+	if (grassSize + grassSpacing == 0)
+	{
+		//should never happen
+		assert(0);
+	}
 	double reps = len / (grassSize + grassSpacing);
 	double remainder = reps - floor(reps);
 	if (remainder > 0)
@@ -993,7 +1017,6 @@ int TerrainPolygon::GetNumGrassTotal()
 	bool rem;
 
 	int numP = GetNumPoints();
-	TerrainPoint *curr;
 	for (int i = 0; i < numP; ++i)
 	{
 		total += GetNumGrass(i, rem);
@@ -1004,6 +1027,9 @@ int TerrainPolygon::GetNumGrassTotal()
 
 void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 {
+	if (grassVA == NULL)
+		return;
+
 	VertexArray &grassVa = *grassVA;
 
 	TerrainPoint *curr, *next;
@@ -1239,6 +1265,13 @@ void TerrainPolygon::Finalize()
 void TerrainPolygon::SetupGrass()
 {
 	numGrassTotal = GetNumGrassTotal();
+
+	if (numGrassTotal == 0)
+	{
+		grassVA = NULL;
+		return;
+	}
+
 	VertexArray *gva = new VertexArray(sf::Quads, numGrassTotal * 4);
 	grassVA = gva;
 
@@ -1255,7 +1288,9 @@ void TerrainPolygon::SetupGrass()
 
 void TerrainPolygon::SwitchGrass( V2d mousePos )
 {
-	
+	if (grassVA == NULL)
+		return;
+
 	VertexArray &grassVa = *grassVA;
 	double radius = grassSize / 2 - 20;//+ grassSpacing / 2;
 
@@ -1291,6 +1326,9 @@ void TerrainPolygon::SwitchGrass( V2d mousePos )
 
 void TerrainPolygon::UpdateGrass()
 {
+	if (grassVA == NULL)
+		return;
+
 	VertexArray & grassVa = *grassVA;
 	for( int i = 0; i < numGrassTotal; ++i )
 	{
@@ -2292,7 +2330,9 @@ bool TerrainPolygon::IsTouching( PolyPtr p  )
 
 void TerrainPolygon::ShowGrass( bool show )
 {
-	
+	if (grassVA == NULL)
+		return;
+
 	VertexArray & grassVa = *grassVA;
 	for( int i = 0; i < numGrassTotal; ++i )
 	{
