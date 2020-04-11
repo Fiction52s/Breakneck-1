@@ -15,6 +15,7 @@
 #include "GameSession.h"
 #include "ActorParams.h"
 #include "Action.h"
+#include "earcut.hpp"
 
 using namespace std;
 using namespace sf;
@@ -27,6 +28,28 @@ using namespace sf;
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
+
+namespace mapbox
+{
+	namespace util
+	{
+		template<>
+		struct nth<0, TerrainPoint> {
+			inline static auto get(const TerrainPoint &t) {
+				return t.pos.x;
+			}
+		};
+
+		template<>
+		struct nth<1, TerrainPoint> {
+			inline static auto get(const TerrainPoint &t)
+			{
+				return t.pos.y;
+			}
+		};
+	}
+}
 
 #define cout std::cout
 
@@ -44,6 +67,7 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
+	pointVector.push_back(vector<TerrainPoint>());
 	
 	//tr = NULL;
 	EditSession *session = EditSession::GetSession();
@@ -70,6 +94,8 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	grassTex = poly.grassTex;
 	terrainWorldType = poly.terrainWorldType;
 	terrainVariation = poly.terrainVariation;
+
+	pointVector.push_back(vector<TerrainPoint>() );
 	//SetMaterialType( poly.terrainWorldType, poly.terrainVariation );
 	if (pointsOnly)
 	{
@@ -103,6 +129,11 @@ TerrainPolygon::~TerrainPolygon()
 	ClearPoints();
 }
 
+vector<TerrainPoint> &TerrainPolygon::PointVector()
+{
+	return pointVector[0];
+}
+
 void TerrainPolygon::WriteFile(std::ofstream & of)
 {
 	of << terrainWorldType << " " << terrainVariation << endl;
@@ -113,7 +144,7 @@ void TerrainPolygon::WriteFile(std::ofstream & of)
 
 	for (int i = 0; i < numP; ++i)
 	{
-		of << pointVector[i].pos.x << " " << pointVector[i].pos.y << endl;
+		of << PointVector()[i].pos.x << " " << PointVector()[i].pos.y << endl;
 	}
 
 	if (!IsSpecialPoly())
@@ -124,43 +155,43 @@ void TerrainPolygon::WriteFile(std::ofstream & of)
 
 TerrainPoint *TerrainPolygon::GetPoint(int index)
 {
-	assert(index >= 0 && index < pointVector.size());
-	return &pointVector[index];
+	assert(index >= 0 && index < PointVector().size());
+	return &PointVector()[index];
 }
 
 TerrainPoint *TerrainPolygon::GetEndPoint()
 {
-	return &pointVector.back();
+	return &PointVector().back();
 }
 
 TerrainPoint *TerrainPolygon::GetStartPoint()
 {
-	return &pointVector.front();
+	return &PointVector().front();
 }
 
 TerrainPoint *TerrainPolygon::GetNextPoint(int index)
 {
-	assert(index >= 0 && index < pointVector.size());
+	assert(index >= 0 && index < PointVector().size());
 	if (index == GetNumPoints() - 1)
 	{
-		return &pointVector[0];
+		return &PointVector()[0];
 	}
 	else
 	{
-		return &pointVector[index + 1];
+		return &PointVector()[index + 1];
 	}
 }
 
 TerrainPoint *TerrainPolygon::GetPrevPoint(int index)
 {
-	assert(index >= 0 && index < pointVector.size());
+	assert(index >= 0 && index < PointVector().size());
 	if (index == 0)
 	{
-		return &pointVector[GetNumPoints() - 1];
+		return &PointVector()[GetNumPoints() - 1];
 	}
 	else
 	{
-		return &pointVector[index - 1];
+		return &PointVector()[index - 1];
 	}
 }
 
@@ -1130,48 +1161,43 @@ void TerrainPolygon::Finalize()
 	}
 	finalized = true;
 	isGrassShowing = false;
-	//material = "mat";
-
 	
 	int numP = GetNumPoints();
-	lines = new sf::Vertex[numP *2+1];
+	
 	
 	FixWinding();
-	//cout << "points size: " << points.size() << endl;
-
-	vector<p2t::Point*> polyline;
 
 	
-	TerrainPoint *curr;
-	//set<int> testPoints;
 	
+
+	/*vector<p2t::Point*> polyline;
+	polyline.resize(numP);
 	for (int i = 0; i < numP; ++i)
 	{
-		curr = GetPoint(i);
-		polyline.push_back(new p2t::Point(curr->pos.x, curr->pos.y));
-		/*if (testPoints.find(i) != testPoints.end())
-		{
-			polyline.push_back(new p2t::Point(curr->pos.x + .01, curr->pos.y + .01));
-		}
-		else
-		{
-			
-		}*/
+		polyline[i] = GetPoint(i)->GetP2TPoint();
 	}
-	//GetPointsTouchingLines(testPoints, polyline);
 
-	if (polyline.size() == 1)
-	{
-		assert(0);
-	}
+	vector<p2t::Triangle*> tris;
 
 	p2t::CDT * cdt = new p2t::CDT( polyline );
-	
 	cdt->Triangulate();
-	vector<p2t::Triangle*> tris;
-	tris = cdt->GetTriangles();
+	tris = cdt->GetTriangles();*/
+	//using BlahPoint = std::array<int, 2>;
+	//vector<vector<TerrainPoint>> polygons;
+	//polygons.push_back(vector<TerrainPoint>());
+	//vector<TerrainPoint> &myPoly = polygons[0];
+	//myPoly.resize(numP);
+	/*for (int i = 0; i < numP; ++i)
+	{
+		Vector2i testPos = GetPoint(i)->pos;
+		myPoly[i][0] = testPos.x;
+		myPoly[i][1] = testPos.y;
+	}*/
 	
-	vaSize = tris.size() * 3;
+	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
+	vaSize = indices.size();// *3;
+
+	lines = new sf::Vertex[numP * 2 + 1];
 	va = new VertexArray( sf::Triangles , vaSize );
 	
 	VertexArray & v = *va;
@@ -1182,25 +1208,29 @@ void TerrainPolygon::Finalize()
 	{
 		testColor = selectCol;
 	}
-	for( int i = 0; i < tris.size(); ++i )
+
+	int numTris = vaSize / 3;
+	for( int i = 0; i < numTris; ++i )
 	{	
-		p2t::Point *p = tris[i]->GetPoint( 0 );	
-		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-		p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-		v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+		//BlahPoint &t = myPoly[indices[i*3]];
+		//BlahPoint &t1 = myPoly[indices[i * 3+1]];
+		//BlahPoint &t2 = myPoly[indices[i * 3+2]];
+		//p2t::Point *p = tris[i]->GetPoint( 0 );	
+		//p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+		//p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+		/*v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
 		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );*/
+		v[i * 3] = Vertex(Vector2f(GetPoint(indices[i*3])->pos), testColor);
+		v[i * 3 + 1] = Vertex(Vector2f(GetPoint(indices[i * 3 + 1])->pos), testColor);
+		v[i * 3 + 2] = Vertex(Vector2f(GetPoint(indices[i * 3 + 2])->pos), testColor);
 	}
 
 	SetMaterialType( terrainWorldType, terrainVariation );
 
-	//assert( tris.size() * 3 == points.size() );
-	delete cdt;
-	for( int i = 0; i < numP; ++i )
-	{
-		delete polyline[i];
-	//	delete tris[i];
-	}
+
+	//delete cdt;
+	
 
 	UpdateLines();
 
@@ -1554,7 +1584,7 @@ void TerrainPolygon::FixWinding()
     }
     else
     {
-		std::reverse(pointVector.begin(), pointVector.end());
+		std::reverse(PointVector().begin(), PointVector().end());
     }
 }
 
@@ -1609,7 +1639,7 @@ void TerrainPolygon::FixWindingInverse()
     }
     else
     {
-		std::reverse(pointVector.begin(), pointVector.end());
+		std::reverse(PointVector().begin(), PointVector().end());
     }
 }
 
@@ -1641,7 +1671,7 @@ void TerrainPolygon::UpdateLines()
 
 int TerrainPolygon::GetNumPoints()
 {
-	return pointVector.size();
+	return PointVector().size();
 }
 
 TerrainPoint * TerrainPolygon::AddPoint(sf::Vector2i &p, bool sel)
@@ -1658,7 +1688,7 @@ TerrainPoint * TerrainPolygon::AddPoint(sf::Vector2i &p, bool sel)
 		}
 	}*/
 
-	if (!pointVector.empty())
+	if (!PointVector().empty())
 	{
 		if (p == GetEndPoint()->pos)
 		{
@@ -1667,7 +1697,7 @@ TerrainPoint * TerrainPolygon::AddPoint(sf::Vector2i &p, bool sel)
 	}
 
 
-	pointVector.push_back(TerrainPoint(p, sel));
+	PointVector().push_back(TerrainPoint(p, sel));
 	TerrainPoint *end = GetEndPoint();
 	end->index = GetNumPoints() - 1;
 	return end;
@@ -1868,7 +1898,9 @@ bool TerrainPolygon::TryFixAllSlivers()
 
 	if (s == sliverAttempts)
 	{
-		int xxx = 5;
+		//error, too hard to fix slivers
+		int xxx = 56;
+		return false;
 	}
 
 	int brokenSize = brokenSlivers.size();
@@ -1880,7 +1912,7 @@ bool TerrainPolygon::TryFixAllSlivers()
 			return false;
 		}
 
-		std::vector<TerrainPoint> copyVec = pointVector;
+		std::vector<TerrainPoint> copyVec = PointVector();
 		ClearPoints();
 		for (int i = 0; i < numP; ++i)
 		{
@@ -2054,7 +2086,7 @@ void TerrainPolygon::RemoveSlivers()
 
 void TerrainPolygon::RemoveLastPoint()
 {
-	if (pointVector.empty())
+	if (PointVector().empty())
 		return;
 
 	TerrainPoint *end = GetEndPoint();
@@ -2065,7 +2097,7 @@ void TerrainPolygon::RemoveLastPoint()
 	}
 	else
 	{
-		pointVector.pop_back();
+		PointVector().pop_back();
 	}
 }
 
@@ -2551,9 +2583,9 @@ bool TerrainPolygon::PointTooCloseToLines( sf::Vector2i point, int minDistance, 
 }
 
 //points are circles, and the lines are bars, and you're testing to see if a point is within that or not.
-bool TerrainPolygon::SegmentWithinDistanceOfPoint( sf::Vector2i startSeg, sf::Vector2i endSeg, sf::Vector2i testPoint, int distance )
+bool TerrainPolygon::SegmentWithinDistanceOfPoint( sf::Vector2i startSeg, sf::Vector2i endSeg, sf::Vector2i BlahPoint, int distance )
 {
-	V2d p( testPoint.x, testPoint.y );
+	V2d p( BlahPoint.x, BlahPoint.y );
 
 	V2d v0 = V2d( startSeg.x, startSeg.y );
 	V2d v1 = V2d( endSeg.x, endSeg.y );
@@ -2609,7 +2641,7 @@ bool TerrainPolygon::IsCloseToFirstPoint(double radius, V2d &p)
 
 void TerrainPolygon::Reserve( int nPoints )
 {
-	pointVector.reserve(nPoints);
+	PointVector().reserve(nPoints);
 }
 
 //ISELECTABLE FUNCTIONS
@@ -2815,6 +2847,13 @@ void TerrainPolygon::AddGatesToList(std::list<GateInfoPtr> &gates)
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 	:pos( p ), selected( s ), gate( NULL )
 {
+}
+
+p2t::Point *TerrainPoint::GetP2TPoint()
+{
+	p2tPoint.x = pos.x;
+	p2tPoint.y = pos.y;
+	return &p2tPoint;
 }
 
 int TerrainPoint::GetIndex()

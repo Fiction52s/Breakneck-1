@@ -179,7 +179,8 @@ struct TerrainPolygon : ISelectable
 
 	//TerrainPoint *pointStart;
 	//TerrainPoint *pointEnd;
-	std::vector<TerrainPoint> pointVector;
+	std::vector<std::vector<TerrainPoint>> pointVector;
+	std::vector<TerrainPoint> &PointVector();
 	void Reserve(int nPoints);
 
 	TerrainPoint *GetSamePoint(sf::Vector2i &p);

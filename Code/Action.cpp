@@ -891,6 +891,8 @@ void ComplexPasteAction::Undo()
 
 	applied.Deactivate();
 	orig.Activate();
+
+	performed = false;
 }
 
 void ComplexPasteAction::Perform()
@@ -899,6 +901,8 @@ void ComplexPasteAction::Perform()
 
 	orig.Deactivate();
 	applied.Activate();
+
+	performed = true;
 }
 
 ModifyTerrainTypeAction::ModifyTerrainTypeAction( Brush *brush,
