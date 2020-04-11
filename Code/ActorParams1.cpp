@@ -182,7 +182,7 @@ ActorParams *PatrollerParams::Copy()
 	return copy;
 }
 
-CrawlerParams::CrawlerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+CrawlerParams::CrawlerParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int level )
 	:ActorParams(at)
 {
@@ -201,7 +201,7 @@ CrawlerParams::CrawlerParams(ActorType *at, ifstream &is)
 }
 
 CrawlerParams::CrawlerParams(ActorType *at,
-		TerrainPolygon *p_edgePolygon,
+		PolyPtr p_edgePolygon,
 		int p_edgeIndex, double p_edgeQuantity )
 		:ActorParams( at)
 {
@@ -218,7 +218,7 @@ ActorParams *CrawlerParams::Copy()
 
 
 
-BossCrawlerParams::BossCrawlerParams(ActorType *at, TerrainPolygon *p_edgePolygon,
+BossCrawlerParams::BossCrawlerParams(ActorType *at, PolyPtr p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( at)
 {
@@ -240,7 +240,7 @@ ActorParams *BossCrawlerParams::Copy()
 
 
 
-BasicTurretParams::BasicTurretParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+BasicTurretParams::BasicTurretParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at )
 {
 	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
@@ -299,7 +299,7 @@ ActorParams *BasicTurretParams::Copy()
 
 
 
-FootTrapParams::FootTrapParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+FootTrapParams::FootTrapParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams( at)	
 {
 	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );

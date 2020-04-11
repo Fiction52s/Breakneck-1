@@ -141,7 +141,7 @@ ActorParams *TurtleParams::Copy()
 }
 
 CheetahParams::CheetahParams(ActorType *at,
-	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at )
 {
 	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
@@ -185,7 +185,7 @@ ActorParams *CheetahParams::Copy()
 
 
 
-SpiderParams::SpiderParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed )
+SpiderParams::SpiderParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed )
 	:ActorParams(at )
 {
 	speed = p_speed;
@@ -202,7 +202,7 @@ SpiderParams::SpiderParams(ActorType *at, ifstream &is)
 }
 
 SpiderParams::SpiderParams(ActorType *at,
-	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at )
 {
 	speed = 10;

@@ -37,8 +37,7 @@ bool EditorDecorInfo::Intersects(sf::IntRect rect)
 	return fr.intersects(spr.getGlobalBounds());
 }
 
-void EditorDecorInfo::Move(boost::shared_ptr<ISelectable> me,
-	sf::Vector2i delta)
+void EditorDecorInfo::Move(sf::Vector2i delta)
 {
 	spr.setPosition(spr.getPosition().x + delta.x, spr.getPosition().y + delta.y);
 }
@@ -64,22 +63,18 @@ void EditorDecorInfo::Draw(sf::RenderTarget *target)
 	}
 }
 
-void EditorDecorInfo::Deactivate(EditSession *edit,
-	boost::shared_ptr<ISelectable> select)
+void EditorDecorInfo::Deactivate()
 {
 	cout << "deactivating decor" << endl;
-	EditorDecorPtr dec = boost::dynamic_pointer_cast<EditorDecorInfo>(select);
 
-	myList->remove(dec);
+	myList->remove(this);
 }
 
-void EditorDecorInfo::Activate(EditSession *edit,
-	boost::shared_ptr<ISelectable> select)
+void EditorDecorInfo::Activate()
 {
 	cout << "adding image" << endl;
-	EditorDecorPtr dec = boost::dynamic_pointer_cast<EditorDecorInfo>(select);
 
-	myList->push_back(dec);
+	myList->push_back(this);
 }
 
 void EditorDecorInfo::SetSelected(bool select)

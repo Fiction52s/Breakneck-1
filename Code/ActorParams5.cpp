@@ -244,7 +244,7 @@ ActorParams *GhostParams::Copy()
 
 
 OvergrowthParams::OvergrowthParams(ActorType *at,
-	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at )
 {
 

@@ -85,15 +85,9 @@ struct ComplexPasteAction : Action
 struct ApplyBrushAction : Action
 {
 	ApplyBrushAction( Brush *brush );
-	//TerrainPoint *pointStart;
-	//TerrainPoint *pointEnd;
-	//int numPoints;
 	
 	void Perform();
 	void Undo();
-	//void ApplyTerrain( PolyPtr &poly );
-	//void ApplyActor( ActorPtr &actor );
-	//void ApplyGate( GatePtr &gate );
 
 
 	//Brush *brush; //action doesn't own this
@@ -165,17 +159,9 @@ struct MoveBrushAction : Action
 	sf::Vector2i delta;
 };
 
-struct SwitchGroundAction : Action
-{
-	SwitchGroundAction( ActorPtr &actor,
-		GroundInfo &oldGround, GroundInfo &newGround );
-	void Perform();
-	void Undo();
-};
-
 struct LeaveGroundAction : Action
 {
-	LeaveGroundAction( ActorPtr &actor );
+	LeaveGroundAction( ActorPtr actor );
 		//sf::Vector2i newPos );
 
 	ActorPtr actor;
@@ -186,7 +172,7 @@ struct LeaveGroundAction : Action
 
 struct GroundAction : Action
 {
-	GroundAction( ActorPtr &actor );
+	GroundAction( ActorPtr actor );
 	void Perform();
 	void Undo();
 
@@ -244,12 +230,12 @@ struct CreateGateAction : Action
 	void Perform();
 	void Undo();
 
-	GateInfoPtr gate;	
+	GateInfoPtr gate;
 };
 
 struct DeleteGateAction : Action
 {
-	DeleteGateAction( GateInfoPtr &ptr );
+	DeleteGateAction( GateInfoPtr ptr );
 	void Perform();
 	void Undo();
 
@@ -258,7 +244,7 @@ struct DeleteGateAction : Action
 
 struct ModifyGateAction : Action
 {
-	ModifyGateAction( GateInfoPtr &ptr, const
+	ModifyGateAction( GateInfoPtr ptr, const
 		std::string &type );
 	void Perform();
 	void Undo();
@@ -279,8 +265,7 @@ struct ModifyTerrainTypeAction : Action
 	int newTerrainWorld;
 	int newVariation;
 
-	std::map<TerrainPolygon*, 
-		std::pair<int,int>> 
+	std::map<PolyPtr,std::pair<int,int>> 
 		terrainTypeMap;
 	Brush terrainBrush; 
 	//also has other stuff

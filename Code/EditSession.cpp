@@ -175,7 +175,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	playerType = new ActorType(playerPI);
 	types["player"] = playerType;
 
-	player.reset( new PlayerParams( playerType, Vector2i( 0, 0 ) ) );
+	player = new PlayerParams( playerType, Vector2i( 0, 0 ) ) ;
 	groups["player"]->actors.push_back( player );
 	
 
@@ -619,17 +619,18 @@ void EditSession::AddExtraEnemy(const std::string &name, ParamsLoader *pLoader,
 		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex));
 }
 
-TerrainPolygon *EditSession::GetPolygon(int index, int &edgeIndex )
+PolyPtr EditSession::GetPolygon(int index, int &edgeIndex )
 {
-	TerrainPolygon* terrain = NULL;
+	PolyPtr terrain = NULL;
 	if (index == -1)
 	{
-		terrain = inversePolygon.get();
+		terrain = inversePolygon;
 	}
 	else
 	{
 		int testIndex = 0;
-		list<PolyPtr>::iterator it = polygons.begin();
+
+		auto it = polygons.begin();
 		if (inversePolygon != NULL)
 			++it;
 
@@ -637,7 +638,7 @@ TerrainPolygon *EditSession::GetPolygon(int index, int &edgeIndex )
 		{
 			if (testIndex == index)
 			{
-				terrain = (*it).get();
+				terrain = (*it);
 				break;
 			}
 			testIndex++;
@@ -672,7 +673,7 @@ TerrainRail *EditSession::GetRail(int index, int &edgeIndex)
 	{
 		if (testIndex == realIndex)
 		{
-			rail = (*it).get();
+			rail = (*it);
 			break;
 		}
 		++testIndex;
@@ -682,12 +683,6 @@ TerrainRail *EditSession::GetRail(int index, int &edgeIndex)
 		assert(0 && "failure rail indexing");
 
 	return rail;
-	//if (edgeIndex == rails->numPoints - 1)
-	//	edgeIndex = 0;
-	//else
-	//	edgeIndex++;
-
-	//return terrain;
 }
 
 EditSession::~EditSession()
@@ -697,11 +692,11 @@ EditSession::~EditSession()
 
 	delete background;
 
-	polygonInProgress.reset();
+	delete polygonInProgress;
 
 	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
-		(*it).reset();
+		delete (*it);
 	}
 
 	for (int i = 0; i < 2; ++i)
@@ -709,11 +704,9 @@ EditSession::~EditSession()
 		auto & polyList = GetCorrectPolygonList(i);
 		for (auto it = polyList.begin(); it != polyList.end(); ++it)
 		{
-			(*it).reset();
+			delete (*it);
 		}
 	}
-	
-
 
 	delete progressBrush;
 	delete selectedBrush;
@@ -879,7 +872,7 @@ bool EditSession::ReadDecor(std::ifstream &is)
 		//dSpr.setTexture do this after dinner
 
 
-		EditorDecorPtr dec(new EditorDecorInfo(dSpr, dLayer, dName, dTile));
+		DecorPtr dec = new EditorDecorInfo(dSpr, dLayer, dName, dTile);
 		if (dLayer > 0)
 		{
 			dec->myList = &decorImagesBehindTerrain;
@@ -1106,7 +1099,7 @@ bool EditSession::ReadSpecialTerrain(std::ifstream &is)
 		int polyPoints;
 		is >> polyPoints;
 
-		GetCorrectPolygonList(poly.get()).push_back(poly);
+		GetCorrectPolygonList(poly).push_back(poly);
 
 		for (int j = 0; j < polyPoints; ++j)
 		{
@@ -1364,7 +1357,7 @@ void EditSession::WriteMapHeader(ofstream &of)
 			if ((*ait)->type->info.name == "shard")
 			{
 				numShards++;
-				sp = (ShardParams*)(ait->get());
+				sp = (ShardParams*)(*ait);
 				mapHeader.shardNameList.push_back(sp->shardStr);
 			}
 		}
@@ -1829,7 +1822,7 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 }
 
 //returns true if attach is successful
-ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly )
+ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, PolyPtr poly )
 {
 	TerrainPoint *next;
 	V2d currPos, nextPos;
@@ -1929,7 +1922,7 @@ void EditSession::RedoMostRecentUndoneAction()
 	}
 }
 
-void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, TerrainPolygon *poly )
+void EditSession::AttachActorsToPolygon( list<ActorPtr> &actors, PolyPtr poly )
 {
 }
 
@@ -2039,11 +2032,8 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 	return li;
 }
 
-bool EditSession::QuadPolygonIntersect( TerrainPolygon* poly, Vector2i a, Vector2i b, Vector2i c, Vector2i d )
+bool EditSession::QuadPolygonIntersect( PolyPtr poly, Vector2i a, Vector2i b, Vector2i c, Vector2i d )
 {
-
-	//TerrainPolygon *quadPoly = new TerrainPolygon( poly->grassTex );
-	//PolyPtr quadPoly( new TerrainPolygon( poly->grassTex ) );
 	TerrainPolygon quadPoly( poly->grassTex );
 	quadPoly.Reserve(4);
 	quadPoly.AddPoint( a, false );
@@ -2051,15 +2041,8 @@ bool EditSession::QuadPolygonIntersect( TerrainPolygon* poly, Vector2i a, Vector
 	quadPoly.AddPoint( c, false );
 	quadPoly.AddPoint( d, false  );
 	quadPoly.UpdateBounds();
-
-	//PolyPtr blah( &quadPoly );
-
-	//cout << "quad bottom: " << quadPoly.bottom << endl;
-	//cout << "poly top: " << poly->top << endl;
 	
 	bool touching = poly->IsTouching( &quadPoly );
-
-	//delete quadPoly;
 
 	return touching;
 
@@ -2335,8 +2318,8 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	//mode = "neutral";
 	quit = false;
-	polygonInProgress.reset( new TerrainPolygon(&grassTex ) );
-	railInProgress.reset(new TerrainRail());
+	polygonInProgress = new TerrainPolygon(&grassTex );
+	railInProgress = new TerrainRail();
 	//inversePolygon.reset( NULL );
 
 	zoomMultiple = 2;
@@ -2548,7 +2531,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		{
 			if (mode == EDIT)
 			{
-				ISelectable *select = selectedBrush->objects.front().get();
+				SelectPtr select = selectedBrush->objects.front();
 				AirTriggerParams *airTrigger = (AirTriggerParams*)select;
 				rectCreatingTrigger = airTrigger;
 			}
@@ -2573,7 +2556,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		{
 			if (mode == EDIT)
 			{
-				ISelectable *select = selectedBrush->objects.front().get();
+				SelectPtr select = selectedBrush->objects.front();
 				CameraShotParams *camShot = (CameraShotParams*)select;
 				currentCameraShot = camShot;
 			}
@@ -2664,7 +2647,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	}
 	else if (p->name == "rail_options")
 	{
-		ISelectable *select = selectedBrush->objects.front().get();
+		SelectPtr select = selectedBrush->objects.front();
 		TerrainRail *tr = (TerrainRail*)select;
 		if (b->name == "ok")
 		{
@@ -2735,7 +2718,7 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 		{
 			if( mode == EDIT )
 			{
-				ISelectable *select = selectedBrush->objects.front().get();				
+				SelectPtr select = selectedBrush->objects.front();
 				CurveTurretParams *curveTurret = (CurveTurretParams*)select;
 				curveTurret->SetParams();
 				//curveTurret->monitorType = GetMonitorType( p );
@@ -2754,7 +2737,7 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 		{
 			if( mode == EDIT )
 			{
-				ISelectable *select = selectedBrush->objects.front().get();				
+				SelectPtr select = selectedBrush->objects.front();
 				PoisonFrogParams *poisonFrog = (PoisonFrogParams*)select;
 				poisonFrog->SetParams();
 				//curveTurret->monitorType = GetMonitorType( p );
@@ -2772,7 +2755,7 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 		{
 			if( mode == EDIT )
 			{
-				ISelectable *select = selectedBrush->objects.front().get();				
+				SelectPtr select = selectedBrush->objects.front();
 				PoiParams *poi = (PoiParams*)select;
 				poi->SetParams();
 				//curveTurret->monitorType = GetMonitorType( p );
@@ -2893,7 +2876,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 		ShardParams *shard = NULL;
 		if (mode == EDIT)
 		{
-			ISelectable *select = selectedBrush->objects.front().get();
+			SelectPtr select = selectedBrush->objects.front();
 			shard = (ShardParams*)select;
 		}
 		else if (mode == CREATE_ENEMY)
@@ -2961,7 +2944,7 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 			//cout << "BLAHBADIOHFWEIHEGHWEAOHGEAWHGEWAHG" << endl;
 			if( mode == EDIT )
 			{
-				ISelectable *select = selectedBrush->objects.front().get();				
+				SelectPtr select = selectedBrush->objects.front();
 				CurveTurretParams *curveTurret = (CurveTurretParams*)select;
 				curveTurret->SetParams();
 				//curveTurret->monitorType = GetMonitorType( p );
@@ -2979,7 +2962,7 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 		{
 			if( mode == EDIT )
 			{
-				ISelectable *select = selectedBrush->objects.front().get();				
+				SelectPtr select = selectedBrush->objects.front();
 				PoiParams *poi = (PoiParams*)select;
 				poi->SetParams();
 				//curveTurret->monitorType = GetMonitorType( p );
@@ -3188,11 +3171,10 @@ void EditSession::TryAttachActorsToPoly( PolyPtr orig, std::list<PolyPtr> & newP
 			for (auto rit = newPolys.begin();
 				rit != newPolys.end(); ++rit)
 			{
-				ActorParams *ac = AttachActorToPolygon((*bit), (*rit).get());
+				ActorParams *ac = AttachActorToPolygon((*bit), (*rit));
 				if (ac != NULL)
 				{
-					ActorPtr newActor(ac);
-					b->AddObject(newActor);
+					b->AddObject(ac);
 				}
 			}
 		}
@@ -3211,8 +3193,8 @@ void EditSession::TryKeepGates( list<GateInfoPtr> &gateInfoList, list<PolyPtr> &
 		TerrainPoint *testPoint = NULL;
 
 
-		PolyPtr poly0;
-		PolyPtr poly1;
+		PolyPtr poly0 = NULL;
+		PolyPtr poly1 = NULL;
 
 		for (auto rit = newPolys.begin();
 			rit != newPolys.end(); ++rit)
@@ -3245,7 +3227,7 @@ void EditSession::TryKeepGates( list<GateInfoPtr> &gateInfoList, list<PolyPtr> &
 		if (p0 == NULL && p1 == NULL)
 			continue;
 
-		GateInfoPtr gi(new GateInfo(*((*it).get())));
+		GateInfoPtr gi = new GateInfo(*(*it));
 		gi->edit = NULL;
 
 		if (p0 != NULL)
@@ -3312,7 +3294,7 @@ void EditSession::TryRemoveSelectedPoints()
 			
 			if (valid)
 			{
-				if (!IsPolygonValid(newPoly.get(), tp.get()))
+				if (!IsPolygonValid(newPoly, tp))
 				{
 					valid = false;
 				}
@@ -3320,10 +3302,10 @@ void EditSession::TryRemoveSelectedPoints()
 
 			if (!valid)
 			{
-				newPoly.reset();
+				delete newPoly;
 				for (auto pit = newPolys.begin(); pit != newPolys.end(); ++pit)
 				{
-					(*pit).reset();
+					delete (*pit);
 				}
 				MessagePop("problem removing points");
 				return;
@@ -3362,16 +3344,14 @@ void EditSession::TryRemoveSelectedPoints()
 
 bool EditSession::PointSelectActor( V2d &pos )
 {
-	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
-		for (list<ActorPtr>::iterator ait = (*it).second->actors.begin();
+		for (auto ait = (*it).second->actors.begin();
 			ait != (*it).second->actors.end(); ++ait)
 		{
 			if ((*ait)->ContainsPoint(Vector2f(pos)))
 			{
-				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*ait));
-
-				if (sp->selected)
+				if ((*ait)->selected)
 				{
 
 				}
@@ -3383,9 +3363,9 @@ bool EditSession::PointSelectActor( V2d &pos )
 						selectedBrush->Clear();
 					}
 
-					sp->SetSelected(true);
-					grabbedObject = sp;
-					selectedBrush->AddObject(sp);
+					(*ait)->SetSelected(true);
+					grabbedObject = (*ait);
+					selectedBrush->AddObject((*ait));
 				}
 				return true;
 			}
@@ -3406,12 +3386,10 @@ bool EditSession::PointSelectDecor(V2d &pos)
 	for (auto it = decorImagesBetween.begin();
 		it != decorImagesBetween.end(); ++it)
 	{
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
 		if ((*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y)))
 		{
-			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
-			if (sp->selected)
+		
+			if ((*it)->selected)
 			{
 
 			}
@@ -3423,10 +3401,10 @@ bool EditSession::PointSelectDecor(V2d &pos)
 					selectedBrush->Clear();
 				}
 
-				sp->SetSelected(true);
+				(*it)->SetSelected(true);
 
-				grabbedObject = sp;
-				selectedBrush->AddObject(sp);
+				grabbedObject = (*it);
+				selectedBrush->AddObject((*it));
 			}
 
 			return true;
@@ -3449,7 +3427,7 @@ bool EditSession::AnchorSelectedAerialEnemy()
 		&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
 	if (singleActor)
 	{
-		ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>(selectedBrush->objects.front());
+		ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
 		if (actor->groundInfo != NULL)
 		{
 			Action *gAction = new GroundAction(actor);
@@ -3584,7 +3562,7 @@ void EditSession::RegularOKButton()
 {
 	if (mode == EDIT)
 	{
-		ISelectable *select = selectedBrush->objects.front().get();
+		ISelectable *select = selectedBrush->objects.front();
 		ActorParams *ap = (ActorParams*)select;
 		ap->SetParams();
 	}
@@ -3857,11 +3835,12 @@ bool EditSession::IsGateAttachedToAffectedPoly(
 	GateInfoPtr gi, Brush *b,
 	bool &a)
 {
+	PolyPtr p;
 	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
 	{
-		if ((*bit)->selectableType == ISelectable::ISelectableType::TERRAIN)
+		p = (*bit)->GetAsTerrain();
+		if (p != NULL)
 		{
-			PolyPtr p = boost::static_pointer_cast<TerrainPolygon>((*bit));
 			if (gi->poly0 == p || gi->poly1 == p)
 			{
 				if (gi->poly0 == p)
@@ -3879,12 +3858,6 @@ bool EditSession::IsGateAttachedToAffectedPoly(
 	}
 
 	return false;
-}
-
-bool EditSession::BlahTest( GateInfoPtr gi, bool polyMove, bool a, CompoundAction *testAction)
-{
-	return true;
-
 }
 
 void EditSession::PerformMovePointsAction()
@@ -3981,51 +3954,10 @@ void EditSession::PerformMovePointsAction()
 				gateAttachedToAffectedPoly = true;
 			}
 
-			/*for (auto pit = selectedPoints.begin(); pit != selectedPoints.end(); ++pit)
-			{
-				poly = (*pit).first;
-				if ((*it)->poly0 == poly || (*it)->poly1 == poly)
-				{
-					if ((*it)->poly0 == poly)
-					{
-						a = true;
-					}
-					else
-					{
-						a = false;
-					}
-					polyMove = false;
-					gateAttachedToAffectedPoly = true;
-					break;
-				}
-			}*/
-
-
-			/*for (auto bit = selectedBrush->objects.begin(); bit != selectedBrush->objects.end(); ++bit)
-			{
-				if ((*bit)->selectableType == ISelectable::ISelectableType::TERRAIN)
-				{
-					PolyPtr p = boost::static_pointer_cast<TerrainPolygon>((*bit));
-					if ((*it)->poly0 == p || (*it)->poly1 == p)
-					{
-						if ((*it)->poly0 == p)
-						{
-							a = true;
-						}
-						else
-						{
-							a = false;
-						}
-
-						gateAttachedToAffectedPoly = true;
-						break;
-					}
-				}
-			}*/
 
 			if (gateAttachedToAffectedPoly)
 			{
-				GateInfo *gi = (*it).get();
+				GateInfo *gi = (*it);
 				Vector2i adjust;
 				Vector2i pA, pB;
 
@@ -4117,27 +4049,27 @@ void EditSession::PerformMovePointsAction()
 	}
 }
 
-bool EditSession::PolyContainsPolys(TerrainPolygon *p, TerrainPolygon *ignore)
+bool EditSession::PolyContainsPolys(PolyPtr p, PolyPtr ignore)
 {
 	auto &testPolygons = GetCorrectPolygonList(p);
 	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
-		if ((*it).get() == ignore)
+		if ((*it) == ignore)
 			continue;
 
-		if (p->Contains((*it).get()))
+		if (p->Contains((*it)))
 		{
 			return true;
 		}
 	}
 }
 
-bool EditSession::PolyIsContainedByPolys(TerrainPolygon *p, TerrainPolygon *ignore)
+bool EditSession::PolyIsContainedByPolys(PolyPtr p, PolyPtr ignore)
 {
 	auto &testPolygons = GetCorrectPolygonList(p);
 	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
-		if ((*it).get() == ignore)
+		if ((*it) == ignore)
 			continue;
 
 		if ((*it)->Contains(p))
@@ -4147,13 +4079,13 @@ bool EditSession::PolyIsContainedByPolys(TerrainPolygon *p, TerrainPolygon *igno
 	}
 }
 
-bool EditSession::PolyIsTouchingEnemiesOrBeingTouched( TerrainPolygon *p, TerrainPolygon *ignore)
+bool EditSession::PolyIsTouchingEnemiesOrBeingTouched( PolyPtr p, PolyPtr ignore)
 {
 	//this also tests for your own enemies to check for validity.
 	auto &testPolygons = GetCorrectPolygonList(p);
 	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
-		if ((*it).get() == ignore)
+		if ((*it) == ignore)
 			continue;
 
 		if ((*it)->IsTouchingEnemiesFromPoly(p))
@@ -4161,7 +4093,7 @@ bool EditSession::PolyIsTouchingEnemiesOrBeingTouched( TerrainPolygon *p, Terrai
 			return true;
 		}
 
-		if (p->IsTouchingEnemiesFromPoly((*it).get()))
+		if (p->IsTouchingEnemiesFromPoly((*it)))
 		{
 			return true;
 		}
@@ -4178,7 +4110,7 @@ bool EditSession::GateIsTouchingEnemies(GateInfo *gi)
 		auto actorList = (*it).second->actors;
 		for (auto ait = actorList.begin(); ait != actorList.end(); ++ait)
 		{
-			if (gi->IsTouchingEnemy((*ait).get()))
+			if (gi->IsTouchingEnemy((*ait)))
 			{
 				return true;
 			}
@@ -4187,11 +4119,11 @@ bool EditSession::GateIsTouchingEnemies(GateInfo *gi)
 	return false;
 }
 
-bool EditSession::PolyIntersectsGates(TerrainPolygon *poly)
+bool EditSession::PolyIntersectsGates(PolyPtr poly)
 {
 	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
-		if (poly->IntersectsGate((*it).get()))
+		if (poly->IntersectsGate((*it)))
 		{
 			return true;
 		}
@@ -4220,7 +4152,7 @@ bool EditSession::GateIntersectsGates(GateInfo *gi)
 	Vector2i myPoint0, myPoint1, otherPoint0, otherPoint1;
 	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
-		if ((*it).get() == gi)
+		if ((*it) == gi)
 		{
 			continue;
 		}
@@ -4240,20 +4172,20 @@ bool EditSession::GateIntersectsGates(GateInfo *gi)
 	return false;
 }
 
-bool EditSession::PolyGatesIntersectOthers(TerrainPolygon *poly)
+bool EditSession::PolyGatesIntersectOthers(PolyPtr poly)
 {
 	auto &testPolygons = GetCorrectPolygonList(poly);
 
 	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
-		if ((*it)->poly0.get() == poly || (*it)->poly1.get() == poly)
+		if ((*it)->poly0 == poly || (*it)->poly1 == poly)
 		{	
 			for (auto pit = testPolygons.begin(); pit != testPolygons.end(); ++pit)
 			{
-				if ((*pit).get() == poly)
+				if ((*pit) == poly)
 					continue;
 
-				if ((*pit)->IntersectsGate((*it).get()))
+				if ((*pit)->IntersectsGate((*it)))
 				{
 					return true;
 				}		
@@ -4336,8 +4268,8 @@ bool EditSession::IsGateValid(GateInfo *gi)
 
 bool EditSession::GateMakesSliverAngles(GateInfo *gi)
 {
-	TerrainPolygon *poly0 = gi->poly0.get();
-	TerrainPolygon *poly1 = gi->poly1.get();
+	PolyPtr poly0 = gi->poly0;
+	PolyPtr poly1 = gi->poly1;
 
 	TerrainPoint *p0 = gi->point0;
 	TerrainPoint *p1 = gi->point1;
@@ -4397,13 +4329,13 @@ bool EditSession::IsSliver( TerrainPoint *prev, TerrainPoint *curr, TerrainPoint
 	return false;
 }
 
-bool EditSession::PolyGatesMakeSliverAngles(TerrainPolygon *poly)
+bool EditSession::PolyGatesMakeSliverAngles(PolyPtr poly)
 {
 	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
-		if ((*it)->poly0.get() == poly || (*it)->poly1.get() == poly)
+		if ((*it)->poly0 == poly || (*it)->poly1 == poly)
 		{
-			if (GateMakesSliverAngles((*it).get()))
+			if (GateMakesSliverAngles((*it)))
 			{
 				return true;
 			}
@@ -4512,7 +4444,7 @@ bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, b
 		PolyPtr p0, p1;
 		for (auto it = gates.begin(); it != gates.end(); ++it)
 		{
-			if ((*it).get() == gi)
+			if ((*it) == gi)
 				continue;
 
 			p0 = (*it)->poly0;
@@ -4535,7 +4467,7 @@ bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, b
 
 		for (auto it = gates.begin(); it != gates.end(); ++it)
 		{
-			if ((*it).get() == gi)
+			if ((*it) == gi)
 				continue;
 
 			bool gateAttachedToAffectedPoly = false;
@@ -4543,7 +4475,7 @@ bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, b
 			bool a = true;
 			if (IsGateAttachedToAffectedPoly((*it),&attachedPolys,a))
 			{
-				GateInfo *gi = (*it).get();
+				GateInfo *gi = (*it);
 				Vector2i adjust;
 				Vector2i pA, pB;
 
@@ -4634,7 +4566,7 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 
 		for (auto it = gates.begin(); it != gates.end(); ++it)
 		{
-			if ((*it).get() == gi)
+			if ((*it) == gi)
 				continue;
 
 			bool gateAttachedToAffectedPoly = false;
@@ -4642,7 +4574,7 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 			bool a = true;
 			if (IsGateAttachedToAffectedPoints((*it), pmap, a))
 			{
-				GateInfo *gi = (*it).get();
+				GateInfo *gi = (*it);
 				Vector2i adjust;
 				Vector2i pA, pB;
 
@@ -4685,7 +4617,7 @@ void EditSession::GetNearPrimaryGateList(PointMap &pmap, list<GateInfoPtr> & gLi
 	{
 		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
 		{
-			GateInfo *gi = (*pit).point->gate.get();
+			GateInfo *gi = (*pit).point->gate;
 			if (gi != NULL)
 			{
 				if (IsCloseToPrimary(gi->point0->pos, gi->point1->pos, prim))
@@ -4698,7 +4630,7 @@ void EditSession::GetNearPrimaryGateList(PointMap &pmap, list<GateInfoPtr> & gLi
 }
 
 
-bool EditSession::IsPolygonExternallyValid( TerrainPolygon *poly, TerrainPolygon *ignore )
+bool EditSession::IsPolygonExternallyValid( PolyPtr poly, PolyPtr ignore )
 {
 	list<PolyPtr> intersections;
 	GetIntersectingPolys(poly, intersections);
@@ -4742,7 +4674,7 @@ bool EditSession::IsPolygonExternallyValid( TerrainPolygon *poly, TerrainPolygon
 	return true;
 }
 
-bool EditSession::IsPolygonValid( TerrainPolygon *poly, TerrainPolygon *ignore )
+bool EditSession::IsPolygonValid( PolyPtr poly, PolyPtr ignore )
 {
 	bool a = IsPolygonExternallyValid(poly, ignore);
 	bool b = poly->IsInternallyValid();
@@ -5202,7 +5134,7 @@ void EditSession::SetEnemyEditPanel()
 {
 	//eventually set this up so that I can give the same parameters to multiple copies of the same enemy?
 	//need to be able to apply paths simultaneously to multiples also
-	ISelectable *sp = selectedBrush->objects.front().get();
+	SelectPtr sp = selectedBrush->objects.front();
 	assert( sp->selectableType == ISelectable::ACTOR );
 	ActorParams *ap = (ActorParams*)sp;
 	
@@ -5218,7 +5150,7 @@ void EditSession::SetEnemyEditPanel()
 
 void EditSession::SetDecorEditPanel()
 {
-	ISelectable *sp = selectedBrush->objects.front().get();
+	SelectPtr sp = selectedBrush->objects.front();
 	assert(sp->selectableType == ISelectable::IMAGE);
 	EditorDecorInfo *di = (EditorDecorInfo*)sp;
 
@@ -5234,7 +5166,7 @@ void EditSession::SetDecorEditPanel()
 
 void EditSession::SetDecorParams()
 {
-	ISelectable *sp = selectedBrush->objects.front().get();
+	SelectPtr sp = selectedBrush->objects.front();
 	assert(sp->selectableType == ISelectable::IMAGE);
 	EditorDecorInfo *di = (EditorDecorInfo*)sp;
 	
@@ -5397,18 +5329,16 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 void EditSession::CreateActor(ActorPtr actor)
 {
 	Brush b;
-	SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(actor);
-	b.AddObject(select);
+	b.AddObject(actor);
 	Action * action = new ApplyBrushAction(&b);
 	action->Perform();
 	doneActionStack.push_back(action);
 }
 
-void EditSession::CreateDecorImage(EditorDecorPtr dec)
+void EditSession::CreateDecorImage(DecorPtr dec)
 {
 	Brush b;
-	SelectPtr select = boost::dynamic_pointer_cast<ISelectable>(dec);
-	b.AddObject(select);
+	b.AddObject(dec);
 	Action * action = new ApplyBrushAction(&b);
 	action->Perform();
 	doneActionStack.push_back(action);
@@ -5438,8 +5368,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		int pTop;
 		int pRight;
 		int pBot;
-		for (list<boost::shared_ptr<TerrainPolygon>>::iterator it
-			= polygons.begin(); it != polygons.end(); ++it)
+		for (auto it = polygons.begin(); it != polygons.end(); ++it)
 		{
 			if (polygons.front() == (*it))
 			{
@@ -5469,7 +5398,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		{
 			if ((*it2)->type->info.name == "poi" )
 			{
-				boost::shared_ptr<PoiParams> pp = boost::static_pointer_cast<PoiParams>((*it2));
+				PoiParams *pp = (PoiParams*)((*it2));
 				if (pp->name == "stormceiling")
 				{
 					top = pp->position.y;
@@ -5589,12 +5518,8 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	//mapPreviewTex->draw(*tempva);ke
 	//delete tempva;
 
-	for( list<boost::shared_ptr<TerrainPolygon>>::iterator it
-		= polygons.begin(); it != polygons.end(); ++it )
+	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		//if( (*it)->IsTouching( inversePolygon.get() ) )
-		//	continue;
-
 		(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
 	}
 
@@ -5679,7 +5604,7 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 	TerrainPoint *curr, *prev;
 	int numP;
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
+	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
 
@@ -5690,7 +5615,7 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 			double minDistance = 10000000;
 			TerrainPoint *storedEdge = NULL;
-			TerrainPolygon *storedPoly = NULL;
+			PolyPtr storedPoly = NULL;
 			double storedQuantity = 0;
 							
 			V2d closestPoint;
@@ -5722,7 +5647,7 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				{
 					minDistance = dist;
 
-					storedPoly = (*it).get();
+					storedPoly = (*it);
 					storedEdge = prev;
 					storedQuantity = testQuantity;
 
@@ -5813,7 +5738,7 @@ GroundInfo EditSession::ConvertPointToRail(sf::Vector2i testPoint)
 						&& newDist < closestDist)
 					{
 						minDistance = dist;
-						storedRail = (*it).get();
+						storedRail = (*it);
 						storedEdge = curr;
 						storedQuantity = testQuantity;
 
@@ -5836,7 +5761,7 @@ GroundInfo EditSession::ConvertPointToRail(sf::Vector2i testPoint)
 	return gi;
 }
 
-list<PolyPtr> & EditSession::GetCorrectPolygonList(TerrainPolygon *t)
+list<PolyPtr> & EditSession::GetCorrectPolygonList(PolyPtr t)
 {
 	if (t->IsSpecialPoly())
 	{
@@ -5875,14 +5800,14 @@ list<PolyPtr> & EditSession::GetCorrectPolygonList()
 }
 
 void EditSession::GetIntersectingPolys(
-	TerrainPolygon *p,
+	PolyPtr p,
 	std::list<PolyPtr> & intersections)
 {
 	auto &testPolygons = GetCorrectPolygonList( p );
 
 	for( auto it = testPolygons.begin(); it != testPolygons.end(); ++it )
 	{
-		if (p->IsTouching((*it).get()))
+		if (p->IsTouching((*it)))
 		{
 			intersections.push_back((*it));
 		}
@@ -5918,22 +5843,22 @@ bool EditSession::ExecuteTerrainCompletion()
 		bool applyOkay = true;
 
 		int liRes;
-		auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
+		auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
 		for(auto it = testPolygons.begin(); it != testPolygons.end(); ++it )
 		{
-			if ((*it)->Contains(polygonInProgress.get()))
+			if ((*it)->Contains(polygonInProgress))
 			{
 				applyOkay = false;
 				polygonInProgress->ClearPoints();
 				break;
 			}
 
-			if (polygonInProgress->Contains((*it).get()))
+			if (polygonInProgress->Contains((*it)))
 			{
 				containedPolys.push_back((*it));
 			}
 
-			liRes = polygonInProgress->LinesIntersect((*it).get());
+			liRes = polygonInProgress->LinesIntersect((*it));
 			if( liRes == 2 )
 			{
 				//not too close and I intersect, so I can add
@@ -5962,67 +5887,6 @@ bool EditSession::ExecuteTerrainCompletion()
 
 				ClearUndoneActions();
 			}
-			
-
-			/*bool empty = intersectingPolys.empty();
-
-			if( empty && IsKeyPressed(Keyboard::LAlt))
-			{
-				polygonInProgress->inverse = true;
-			}
-			
-			if( empty )
-			{
-				if (polygonInProgress->inverse)
-				{
-					SetInversePoly();
-				}
-				else
-				{
-					polygonInProgress->FixWinding();
-					polygonInProgress->RemoveSlivers();
-					polygonInProgress->AlignExtremes();
-					polygonInProgress->Finalize();
-
-					SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(polygonInProgress);
-
-					progressBrush->Clear();
-					progressBrush->AddObject(sp);
-
-					if (containedPolys.empty())
-					{
-						Action *action = new ApplyBrushAction(progressBrush);
-						action->Perform();
-						doneActionStack.push_back(action);
-					}
-					else
-					{
-						Brush containedBrush;
-						for (auto it = containedPolys.begin(); it != containedPolys.end(); ++it)
-						{
-							containedBrush.AddObject((*it));
-						}
-						Action *action = new ReplaceBrushAction(&containedBrush, progressBrush);
-						action->Perform();
-						doneActionStack.push_back(action);
-					}
-
-					ClearUndoneActions();
-
-					PolyPtr newPoly(new TerrainPolygon(&grassTex));
-					polygonInProgress = newPoly;
-				}
-			}
-			else
-			{
-				Action *action = ChooseAddOrSub(intersectingPolys, containedPolys);
-
-				action->Perform();
-				doneActionStack.push_back(action);
-
-				ClearUndoneActions();
-			}*/
-
 			return true;
 		}
 	}
@@ -6070,11 +5934,9 @@ void EditSession::ExecuteRailCompletion()
 			{
 				railInProgress->Finalize();
 
-				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(railInProgress);
-
 				progressBrush->Clear();
 
-				progressBrush->AddObject(sp);
+				progressBrush->AddObject(railInProgress);
 
 				Action *action = new ApplyBrushAction(progressBrush);
 				action->Perform();
@@ -6116,14 +5978,11 @@ void EditSession::SetInversePoly()
 	Brush orig;
 	if( inversePolygon != NULL )
 	{
-		SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>( inversePolygon );
-		orig.AddObject( sp );
+		orig.AddObject(inversePolygon);
 	}
 
-	SelectPtr sp = boost::dynamic_pointer_cast< ISelectable>( polygonInProgress );
-
 	progressBrush->Clear();
-	progressBrush->AddObject( sp );
+	progressBrush->AddObject(polygonInProgress);
 
 	Action * action = new ReplaceBrushAction( &orig, progressBrush );
 	action->Perform();
@@ -6135,16 +5994,6 @@ void EditSession::SetInversePoly()
 	polygonInProgress = newPoly;
 
 	progressBrush->Clear();
-	//progressBrush->AddObject( sp );
-									
-	//Action *action = new ApplyBrushAction( progressBrush );
-	//action->Perform();
-	//doneActionStack.push_back( action );
-
-	//ClearUndoneActions();
-
-	//PolyPtr newPoly( new TerrainPolygon(&grassTex) );
-	//polygonInProgress = newPoly;
 }
 
 bool EditSession::HoldingShift()
@@ -6248,10 +6097,8 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 				polygonInProgress->AlignExtremes();
 				polygonInProgress->Finalize();
 
-				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>(polygonInProgress);
-
 				progressBrush->Clear();
-				progressBrush->AddObject(sp);
+				progressBrush->AddObject(polygonInProgress);
 
 				if (containedPolys.empty())
 				{
@@ -6303,12 +6150,12 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 void EditSession::PasteTerrain(Brush *b)
 {
 	list<PolyPtr> brushPolys;
-
+	PolyPtr poly;
 	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
 	{
-		if ((*bit)->selectableType == ISelectable::TERRAIN)
+		poly = (*bit)->GetAsTerrain();
+		if (poly != NULL)
 		{
-			PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*bit));
 			brushPolys.push_back(poly);
 		}
 	}
@@ -6341,63 +6188,6 @@ void EditSession::PasteTerrain(Brush *b)
 			lastBrushPastePos = worldPos;
 		}
 	}
-
-	
-
-
-	//for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
-	//{
-	//	if ((*bit)->selectableType == ISelectable::TERRAIN)
-	//	{
-	//		TerrainPolygon *tp = (TerrainPolygon*)((*bit).get());
-	//		polygonInProgress.reset(tp->Copy());
-
-	//		list<PolyPtr> containedPolys;
-	//		list<PolyPtr> intersectingPolys;
-	//		for (auto it = polygons.begin(); it != polygons.end(); ++it)
-	//		{
-	//			if (polygonInProgress->Contains((*it).get()))
-	//			{
-	//				containedPolys.push_back((*it));
-	//			}
-
-	//			if (polygonInProgress->LinesIntersect((*it).get()))
-	//			{
-	//				//not too close and I intersect, so I can add
-	//				intersectingPolys.push_back((*it));
-	//			}
-	//		}
-
-	//		Action * a = ChooseAddOrSub(intersectingPolys, containedPolys);
-	//		if( a != NULL )
-	//			compoundAction->subActions.push_back(a);
-	//	}
-	//	else if ((*bit)->selectableType == ISelectable::ACTOR)
-	//	{
-	//		ActorPtr a = boost::dynamic_pointer_cast<ActorParams>((*bit));
-	//		ActorPtr ap(a->Copy());
-	//		if (ap->groundInfo != NULL)
-	//		{
-	//			ap->AnchorToGround(*ap->groundInfo);
-	//		}
-	//		applyBrush.AddObject(ap);
-	//	}
-	//}
-
-	//if (applyBrush.objects.size() > 0)
-	//{
-	//	Action *ac = new ApplyBrushAction(&applyBrush);
-	//	compoundAction->subActions.push_back(ac);
-
-	//	PolyPtr newPoly(new TerrainPolygon(&grassTex));
-	//	polygonInProgress = newPoly;
-	//}
-
-	//compoundAction->Perform();
-	//doneActionStack.push_back(compoundAction);
-	//ClearUndoneActions();
-
-	//copiedBrush = copiedBrush->Copy();
 }
 
 void EditSession::AddFullPolysToBrush(
@@ -6693,7 +6483,7 @@ bool EditSession::FixPathSlivers(ClipperLib::Path &p,
 ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys)
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
-	auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
+	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
 	bool removeBrush;
 	int liRes;
 
@@ -6728,7 +6518,7 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brus
 
 		for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 		{
-			liRes = (*brushIt)->LinesIntersect((*it).get());
+			liRes = (*brushIt)->LinesIntersect((*it));
 			if (liRes == 2)
 			{
 				if ((*it)->inverse)
@@ -6749,13 +6539,13 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brus
 			else if( liRes == 0 )
 			{
 				//only check contains when there are no line intersections
-				if ((*it)->Contains((*brushIt).get()))
+				if ((*it)->Contains((*brushIt)))
 				{
 					removeBrush = true;
 					break;
 				}
 
-				if ((*brushIt)->Contains((*it).get()))
+				if ((*brushIt)->Contains((*it)))
 				{
 					tempContained.push_back((*it));
 				}
@@ -6857,13 +6647,13 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brus
 
 			if (newPoly->GetNumPoints() < 3)
 			{
-				newPoly.reset();
+				delete newPoly;
 				continue;
 			}
 
 			if (!newPoly->TryFixAllSlivers())
 			{
-				newPoly.reset();
+				delete newPoly;
 				continue;
 			}
 
@@ -6878,7 +6668,7 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brus
 
 			if (newPoly->GetNumPoints() < 3)
 			{
-				newPoly.reset();
+				delete newPoly;
 				continue;
 			}
 			//newPoly->RemoveSlivers();
@@ -6889,7 +6679,7 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brus
 			if (!newPoly->IsClockwise())
 			{
 				//assert(0);
-				newPoly.reset();
+				delete newPoly;
 				continue;
 			}
 
@@ -6924,7 +6714,7 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brus
 ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
-	auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
+	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
 	
 	list<PolyPtr> nonIntersectingBrushes;
 	list<PolyPtr> nonInverseBrushes;
@@ -6973,7 +6763,7 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPoly
 		{
 			(*it)->isBrushTest = false;
 
-			liRes = (*brushIt)->LinesIntersect((*it).get());
+			liRes = (*brushIt)->LinesIntersect((*it));
 			if (liRes == 2)
 			{
 				if ((*it)->inverse)
@@ -6994,13 +6784,13 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPoly
 			else
 			{
 				//only check contains when there are no line intersections
-				if ((*it)->Contains((*brushIt).get()))
+				if ((*it)->Contains((*brushIt)))
 				{
 					removeBrush = true;
 					break;
 				}
 
-				if ((*brushIt)->Contains((*it).get()))
+				if ((*brushIt)->Contains((*it)))
 				{
 					tempContained.push_back((*it));
 				}
@@ -7143,13 +6933,13 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPoly
 
 			if (newPoly->GetNumPoints() < 3)
 			{
-				newPoly.reset();
+				delete newPoly;
 				continue;
 			}
 
 			if (!newPoly->TryFixAllSlivers())
 			{
-				newPoly.reset();
+				delete newPoly;
 				continue;
 			}
 
@@ -7158,7 +6948,7 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPoly
 
 			if (!newPoly->IsClockwise())
 			{
-				newPoly.reset();
+				delete newPoly;
 				continue;
 			}
 
@@ -7190,7 +6980,7 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPoly
 
 				//dont need to check for line intersection here,
 				//because these are all polygons that just got created
-				if (finalCheckVec[i].first->Contains(finalCheckVec[j].first.get()))
+				if (finalCheckVec[i].first->Contains(finalCheckVec[j].first))
 				{
 					finalCheckVec[j].second = true;
 				}
@@ -7201,7 +6991,7 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPoly
 		{
 			if (finalCheckVec[i].second)
 			{
-				finalCheckVec[i].first.reset(); //delete polygon
+				delete finalCheckVec[i].first;
 			}
 			else
 			{
@@ -7321,12 +7111,12 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPoly
 
 			if (!newInverse->TryFixAllSlivers())
 			{
-				newInverse.reset();
+				delete newInverse;
 			}
 			else if (newInverse->GetNumPoints() < 3)
 			{
 				//should never happen
-				newInverse.reset();
+				delete newInverse;
 				assert(0);
 			}
 			else
@@ -7530,7 +7320,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys, l
 		otherSize--;
 
 	ClipperLib::Clipper c;
-	TerrainPolygon *testOutPoly;
+	PolyPtr testOutPoly;
 
 	ClipperLib::Paths inProgress(1), other(otherSize), otherInverse(1), solution, inverseSolution;
 
@@ -7541,7 +7331,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys, l
 
 	resultBrush.Clear();
 
-	list<TerrainPolygon*> results;
+	list<PolyPtr> results;
 	list<PolyPtr> resultsPtr;
 
 	//add original stuff to the original brush
@@ -7582,7 +7372,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys, l
 
 			for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 			{
-				TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
+				PolyPtr newPoly = new TerrainPolygon(&grassTex);
 
 				FusePathClusters((*sit), clipperIntersections, fusedPoints);
 				newPoly->Reserve((*sit).size());
@@ -7614,7 +7404,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys, l
 
 		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
 		{
-			TerrainPolygon *newPoly = new TerrainPolygon(&grassTex);
+			PolyPtr newPoly = new TerrainPolygon(&grassTex);
 
 
 			FusePathClusters((*it), clipperIntersections, fusedPoints);
@@ -7761,9 +7551,7 @@ bool EditSession::PointSelectGeneralRail(V2d &pos)
 		bool sel = (*it)->ContainsPoint(Vector2f(pos));
 		if (sel)
 		{
-			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
-			if (sp->selected)
+			if ((*it)->selected)
 			{
 
 			}
@@ -7775,10 +7563,10 @@ bool EditSession::PointSelectGeneralRail(V2d &pos)
 					selectedBrush->Clear();
 				}
 
-				sp->SetSelected(true);
+				(*it)->SetSelected(true);
 
-				grabbedObject = sp;
-				selectedBrush->AddObject(sp);
+				grabbedObject = (*it);
+				selectedBrush->AddObject((*it));
 			}
 
 			return true;
@@ -7821,7 +7609,7 @@ bool EditSession::PointSelectRailPoint(V2d &pos)
 bool EditSession::PointSelectPoly(V2d &pos)
 {
 	auto & currPolyList = GetCorrectPolygonList();
-	for (list<PolyPtr>::iterator it = currPolyList.begin(); it != currPolyList.end(); ++it)
+	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
 		//bool pressF1 = IsKeyPressed(Keyboard::F1);
 		//if ((pressF1 && !(*it)->inverse) || !pressF1 && (*it)->inverse)
@@ -7835,9 +7623,7 @@ bool EditSession::PointSelectPoly(V2d &pos)
 
 		if (sel)
 		{
-			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
-			if (sp->selected)
+			if ((*it)->selected)
 			{
 
 			}
@@ -7849,10 +7635,10 @@ bool EditSession::PointSelectPoly(V2d &pos)
 					selectedBrush->Clear();
 				}
 
-				sp->SetSelected(true);
+				(*it)->SetSelected(true);
 
-				grabbedObject = sp;
-				selectedBrush->AddObject(sp);
+				grabbedObject = (*it);
+				selectedBrush->AddObject((*it));
 			}
 
 			return true;
@@ -7936,32 +7722,30 @@ bool EditSession::BoxSelectPoints(sf::IntRect &r,
 bool EditSession::BoxSelectActors(sf::IntRect &rect)
 {
 	bool found = false;
-	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
-		for (list<ActorPtr>::iterator ait = (*it).second->actors.begin();
+		for (auto ait = (*it).second->actors.begin();
 			ait != (*it).second->actors.end(); ++ait)
 		{
 			if ((*ait)->Intersects(rect))
 			{
-				SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*ait));
-
 				if (HoldingShift())
 				{
-					if (sp->selected)
+					if ((*ait)->selected)
 					{
-						sp->SetSelected(false);
-						selectedBrush->RemoveObject(sp); //might be slow?
+						(*ait)->SetSelected(false);
+						selectedBrush->RemoveObject((*ait)); //might be slow?
 					}
 					else
 					{
-						sp->SetSelected(true);
-						selectedBrush->AddObject(sp);
+						(*ait)->SetSelected(true);
+						selectedBrush->AddObject((*ait));
 					}
 				}
 				else
 				{
-					sp->SetSelected(true);
-					selectedBrush->AddObject(sp);
+					(*ait)->SetSelected(true);
+					selectedBrush->AddObject((*ait));
 				}
 
 
@@ -7980,25 +7764,23 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 	{
 		if ((*it)->Intersects(rect))
 		{
-			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
 			if (HoldingShift())
 			{
-				if (sp->selected)
+				if ((*it)->selected)
 				{
-					sp->SetSelected(false);
-					selectedBrush->RemoveObject(sp); //might be slow?
+					(*it)->SetSelected(false);
+					selectedBrush->RemoveObject((*it)); //might be slow?
 				}
 				else
 				{
-					sp->SetSelected(true);
-					selectedBrush->AddObject(sp);
+					(*it)->SetSelected(true);
+					selectedBrush->AddObject((*it));
 				}
 			}
 			else
 			{
-				sp->SetSelected(true);
-				selectedBrush->AddObject(sp);
+				(*it)->SetSelected(true);
+				selectedBrush->AddObject((*it));
 			}
 
 
@@ -8015,30 +7797,27 @@ bool EditSession::BoxSelectPolys(sf::IntRect &rect)
 
 	auto & currPolyList = GetCorrectPolygonList();
 
-	for (list<PolyPtr>::iterator it = currPolyList.begin(); it != currPolyList.end(); ++it)
+	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
 		if ((*it)->Intersects(rect))
 		{
-
-			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
 			if (HoldingShift())
 			{
-				if (sp->selected)
+				if ((*it)->selected)
 				{
-					sp->SetSelected(false);
-					selectedBrush->RemoveObject(sp);
+					(*it)->SetSelected(false);
+					selectedBrush->RemoveObject((*it));
 				}
 				else
 				{
-					sp->SetSelected(true);
-					selectedBrush->AddObject(sp);
+					(*it)->SetSelected(true);
+					selectedBrush->AddObject((*it));
 				}
 			}
 			else
 			{
-				sp->SetSelected(true);
-				selectedBrush->AddObject(sp);
+				(*it)->SetSelected(true);
+				selectedBrush->AddObject((*it));
 			}
 
 			found = true;
@@ -8051,29 +7830,27 @@ bool EditSession::BoxSelectPolys(sf::IntRect &rect)
 bool EditSession::BoxSelectRails(sf::IntRect &rect)
 {
 	bool found = false;
-	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
+	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
 		if ((*it)->Intersects(rect))
 		{
-			SelectPtr sp = boost::dynamic_pointer_cast<ISelectable>((*it));
-
 			if (HoldingShift())
 			{
-				if (sp->selected)
+				if ((*it)->selected)
 				{
-					sp->SetSelected(false);
-					selectedBrush->RemoveObject(sp);
+					(*it)->SetSelected(false);
+					selectedBrush->RemoveObject((*it));
 				}
 				else
 				{
-					sp->SetSelected(true);
-					selectedBrush->AddObject(sp);
+					(*it)->SetSelected(true);
+					selectedBrush->AddObject((*it));
 				}
 			}
 			else
 			{
-				sp->SetSelected(true);
-				selectedBrush->AddObject(sp);
+				(*it)->SetSelected(true);
+				selectedBrush->AddObject((*it));
 			}
 
 			found = true;
@@ -8156,13 +7933,12 @@ void EditSession::UpdateGrass()
 {
 	if (showGrass)
 	{
+		PolyPtr tp;
 		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 		{
-			if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
-			{
-				boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
-				d->UpdateGrass();
-			}
+			tp = (*it)->GetAsTerrain();
+			if (tp != NULL)
+				tp->UpdateGrass();
 		}
 	}
 }
@@ -8171,13 +7947,12 @@ void EditSession::ModifyGrass()
 {
 	if (showGrass && IsMousePressed(Mouse::Left))
 	{
+		PolyPtr tp;
 		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 		{
-			if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
-			{
-				boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
-				d->SwitchGrass(worldPos);
-			}
+			tp = (*it)->GetAsTerrain();
+			if (tp != NULL)
+				tp->SwitchGrass(worldPos);
 		}
 	}
 }
@@ -8197,9 +7972,7 @@ bool EditSession::IsOnlyPlayerSelected()
 {
 	if (selectedBrush->objects.size() == 1)
 	{
-		SelectPtr test = boost::dynamic_pointer_cast<ISelectable>(player);
-
-		if (test == selectedBrush->objects.front())
+		if (player == selectedBrush->objects.front())
 		{
 			return true;
 		}
@@ -8224,13 +7997,14 @@ void EditSession::RemoveSelectedObjects()
 	//get list of additional ACTORs from selected terrain
 	SelectList addedActorsList;
 	list<GateInfoPtr> tempGateList;
+
+	PolyPtr poly;
 	for (auto it = selectedBrush->objects.begin();
 		it != selectedBrush->objects.end(); ++it)
 	{
-		if ((*it)->selectableType == ISelectable::TERRAIN)
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
 		{
-			PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
-
 			for (auto objs = poly->enemies.begin(); objs != poly->enemies.end(); ++objs)
 			{
 				list<ActorPtr> &ap = (*objs).second;
@@ -8304,14 +8078,14 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 {
 	//if (IsSingleActorSelected() )
 	{
-		ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>(selectedBrush->objects.front());
+		ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
 		if (actor->type->CanBeGrounded())
 		{
 			if (worldPosGround.ground != NULL)
 			{
 				if (actor->groundInfo != NULL)
 				{
-					actor->UnAnchor(actor);
+					actor->UnAnchor();
 				}
 
 				actor->AnchorToGround(worldPosGround);
@@ -8322,7 +8096,7 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 			{
 				if (actor->groundInfo != NULL)
 				{
-					actor->UnAnchor(actor);
+					actor->UnAnchor();
 				}
 
 				selectedBrush->Move(delta);
@@ -8334,7 +8108,7 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 			{
 				if (actor->groundInfo != NULL)
 				{
-					actor->UnAnchor(actor);
+					actor->UnAnchor();
 				}
 
 				actor->AnchorToRail(worldPosRail);
@@ -8345,7 +8119,7 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 			{
 				if (actor->groundInfo != NULL)
 				{
-					actor->UnAnchor(actor);
+					actor->UnAnchor();
 				}
 
 				selectedBrush->Move(delta);
@@ -8364,10 +8138,10 @@ void EditSession::StartTerrainMove()
 	Vector2i pos(worldPos.x, worldPos.y);
 	Vector2i delta = pos - editMouseGrabPos;
 
-	for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
+	for (auto mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
 	{
 		list<PointMoveInfo> &pList = (*mit).second;
-		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
+		for (auto it = pList.begin(); it != pList.end(); ++it)
 		{
 			(*it).delta = (*it).point->pos;
 		}
@@ -8376,7 +8150,7 @@ void EditSession::StartTerrainMove()
 	for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
 	{
 		list<PointMoveInfo> &pList = (*mit).second;
-		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
+		for (auto it = pList.begin(); it != pList.end(); ++it)
 		{
 			(*it).delta = (*it).point->pos;
 		}
@@ -8551,15 +8325,13 @@ void EditSession::SetSelectedTerrainLayer(int layer)
 
 	if (selectedBrush != NULL)
 	{
+		PolyPtr poly;
 		SelectList &sl = selectedBrush->objects;
-		for (SelectList::iterator it = sl.begin(); it != sl.end(); ++it)
+		for (auto it = sl.begin(); it != sl.end(); ++it)
 		{
-			if ((*it)->selectableType == ISelectable::TERRAIN)
-			{
-				SelectPtr select = (*it);
-				PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>(select);
+			poly = (*it)->GetAsTerrain();
+			if (poly != NULL)
 				poly->SetLayer(layer);
-			}
 		}
 	}
 }
@@ -8587,13 +8359,13 @@ void EditSession::MoveRightBorder(int amount)
 void EditSession::ShowGrass(bool s)
 {
 	showGrass = s;
+
+	PolyPtr tp;
 	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 	{
-		if ((*it)->selectableType == ISelectable::ISelectableType::TERRAIN)
-		{
-			boost::shared_ptr<TerrainPolygon> d = boost::static_pointer_cast<TerrainPolygon>((*it));
-			d->ShowGrass(s);
-		}
+		tp = (*it)->GetAsTerrain();
+		if (tp != NULL)
+			tp->ShowGrass(s);
 	}
 }
 
@@ -8626,7 +8398,7 @@ void EditSession::TryPlaceTrackingEnemy()
 				ActorGroup *ag = (*it).second;
 				for (list<ActorPtr>::iterator git = ag->actors.begin(); git != ag->actors.end(); ++git)
 				{
-					ActorParams *params = (*git).get();
+					ActorParams *params = (*git);
 					V2d pa(params->boundingQuad[0].position.x, params->boundingQuad[0].position.y);
 					V2d pb(params->boundingQuad[1].position.x, params->boundingQuad[1].position.y);
 					V2d pc(params->boundingQuad[2].position.x, params->boundingQuad[2].position.y);
@@ -8724,7 +8496,7 @@ void EditSession::AnchorTrackingEnemyOnTerrain()
 
 			TerrainPoint *curr, *prev;
 			int numP;
-			for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+			for (auto it = polygons.begin(); it != polygons.end(); ++it)
 			{
 				if (testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
 					&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius)
@@ -8799,7 +8571,7 @@ void EditSession::AnchorTrackingEnemyOnTerrain()
 
 							enemyEdgeQuantity = storedQuantity;
 
-							enemyEdgePolygon = (*it).get();
+							enemyEdgePolygon = (*it);
 
 							break;
 						}
@@ -8885,7 +8657,7 @@ void EditSession::AnchorTrackingEnemyOnTerrain()
 
 							enemyEdgeQuantity = storedQuantity;
 
-							enemyEdgeRail = (*it).get();
+							enemyEdgeRail = (*it);
 
 							break;
 						}
@@ -9087,7 +8859,7 @@ void EditSession::DrawPolygons()
 	for (int i = 0; i < 2; ++i)
 	{
 		auto & currPolyList = GetCorrectPolygonList(i);
-		for (list<PolyPtr>::iterator it = currPolyList.begin(); it != currPolyList.end(); ++it)
+		for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 		{
 			(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
 		}
@@ -9914,7 +9686,7 @@ void EditSession::CreateTerrainModeHandleEvent()
 		else if (ev.key.code == sf::Keyboard::R)
 		{
 			mode = CREATE_RAILS;
-			railInProgress->CopyPointsFromPoly(polygonInProgress.get());
+			railInProgress->CopyPointsFromPoly(polygonInProgress);
 			polygonInProgress->ClearPoints();
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
@@ -10254,17 +10026,6 @@ void EditSession::EditModeHandleEvent()
 				MoveRightBorder(borderMove);
 			}
 		}
-		/*else if (ev.key.code == Keyboard::K && ev.key.control)
-		{
-			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-			{
-				PolyPtr temp = ISelectable::GetAsTerrain((*it));
-				if (temp != nullptr)
-				{
-
-				}
-			}
-		}*/
 		break;
 	}
 	case Event::KeyReleased:
@@ -10557,7 +10318,7 @@ void EditSession::SelectModeHandleEvent()
 			{
 				showPanel = railOptionsPanel;
 
-				ISelectable *select = selectedBrush->objects.front().get();
+				SelectPtr select = selectedBrush->objects.front();
 				TerrainRail *tr = (TerrainRail*)select;
 				tr->UpdatePanel(railOptionsPanel);
 				
@@ -10654,7 +10415,7 @@ void EditSession::CreatePatrolPathModeHandleEvent()
 		{
 			if (selectedBrush->objects.size() == 1) //EDIT
 			{
-				ISelectable *select = selectedBrush->objects.front().get();
+				SelectPtr select = selectedBrush->objects.front();
 				ActorParams *actor = (ActorParams*)select;
 				showPanel = actor->type->panel;
 				actor->SetPath(patrolPath);
@@ -10739,7 +10500,7 @@ void EditSession::CreateRectModeHandleEvent()
 		{
 			if (selectedBrush->objects.size() == 1) //EDIT
 			{
-				ISelectable *select = selectedBrush->objects.front().get();
+				SelectPtr select = selectedBrush->objects.front();
 				AirTriggerParams *actor = (AirTriggerParams*)select;
 				showPanel = actor->type->panel;
 				mode = EDIT;
@@ -10820,7 +10581,7 @@ void EditSession::SetDirectionModeHandleEvent()
 			}
 			else
 			{
-				ISelectable *select = selectedBrush->objects.front().get();
+				SelectPtr select = selectedBrush->objects.front();
 				actor = (ActorParams*)select;
 				mode = EDIT;
 			}
@@ -10905,7 +10666,7 @@ void EditSession::CreateImagesHandleEvent()
 			}
 			else
 			{
-				EditorDecorPtr dec(new EditorDecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile));
+				DecorPtr dec = new EditorDecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile);
 				if (currDecorLayer > 0)
 				{
 					dec->myList = &decorImagesBehindTerrain;
@@ -11084,7 +10845,7 @@ void EditSession::CreateTerrainModeUpdate()
 	}
 	else if (IsKeyPressed(Keyboard::F))
 	{
-		PolyPtr p;
+		PolyPtr p = NULL;
 		TerrainPoint *pPoint;
 		TrySnapPosToPoint(testPoint, 8 * zoomMultiple, p, pPoint );
 		showPoints = true;

@@ -15,12 +15,47 @@ ISelectable::ISelectable( ISelectable::ISelectableType p_selectableType )
 {
 }
 
-boost::shared_ptr<TerrainPolygon> ISelectable::GetAsTerrain(
-	boost::shared_ptr<ISelectable> select)
+PolyPtr ISelectable::GetAsTerrain()
 {
-	if (select->selectableType == ISelectableType::TERRAIN)
+	if (selectableType == ISelectableType::TERRAIN)
 	{
-		return boost::dynamic_pointer_cast<TerrainPolygon>(select);
+		return (PolyPtr)this;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+ActorPtr ISelectable::GetAsActor()
+{
+	if (selectableType == ISelectableType::ACTOR)
+	{
+		return (ActorPtr)this;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+GateInfoPtr ISelectable::GetAsGateInfo()
+{
+	if (selectableType == ISelectableType::GATE)
+	{
+		return (GateInfoPtr)this;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+RailPtr ISelectable::GetAsRail()
+{
+	if (selectableType == ISelectableType::RAIL)
+	{
+		return (RailPtr)this;
 	}
 	else
 	{
@@ -35,7 +70,7 @@ Brush::Brush()
 
 bool Brush::Has(SelectPtr sp)
 {
-	for (SelectIter it = objects.begin(); it != objects.end(); ++it)
+	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		if (sp == (*it))
 			return true;
@@ -56,23 +91,28 @@ sf::Vector2i &Brush::GetCenter()
 	int top;
 	int bottom;
 
+	PolyPtr tp;
+	ActorPtr ap;
 	if (objects.size() > 0)
 	{
 		SelectPtr sp = objects.front();
-		if (sp->selectableType == ISelectable::TERRAIN)
+		tp = sp->GetAsTerrain();
+		if (tp != NULL)
 		{
-			PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>(objects.front());
-			left = poly->left;
-			right = poly->right;
-			top = poly->top;
-			bottom = poly->bottom;
+			left = tp->left;
+			right = tp->right;
+			top = tp->top;
+			bottom = tp->bottom;
 		}
-		else if (sp->selectableType == ISelectable::ACTOR)
+		else
 		{
-			ActorPtr a = boost::dynamic_pointer_cast<ActorParams>(objects.front());
-			return a->position;
+			ap = sp->GetAsActor();
+			if( ap != NULL )
+			{
+				ap = sp->GetAsActor();
+				return ap->position;
+			}
 		}
-		
 	}
 	else
 	{
@@ -86,13 +126,13 @@ sf::Vector2i &Brush::GetCenter()
 
 	for ( ; it != objects.end(); ++it)
 	{
-		if ((*it)->selectableType == ISelectable::TERRAIN)
+		tp = (*it)->GetAsTerrain();
+		if (tp != NULL)
 		{
-			PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
-			left = min(left, poly->left);
-			right = max(right, poly->right);
-			top = min(top, poly->top);
-			bottom = max(bottom, poly->bottom);
+			left = min(left, tp->left);
+			right = max(right, tp->right);
+			top = min(top, tp->top);
+			bottom = max(bottom, tp->bottom);
 		}
 	}
 
@@ -107,36 +147,38 @@ Brush *Brush::Copy()
 	Brush *newBrush = new Brush;
 	EditSession *sess = EditSession::GetSession();
 
-	for (SelectIter it = objects.begin(); it != objects.end(); ++it)
+	PolyPtr tp;
+	ActorPtr ap;
+	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
-		if ((*it)->selectableType == ISelectable::TERRAIN)
+		tp = (*it)->GetAsTerrain();
+		if (tp != NULL)
 		{
-			TerrainPolygon *tp = (TerrainPolygon*)((*it).get());
-
 			if (tp->inverse)
 			{
 				continue;
 			}
 
-			PolyPtr ptr(tp->Copy());
+			PolyPtr ptr = tp->Copy();
 			newBrush->AddObject(ptr);
 		}
-		else if ((*it)->selectableType == ISelectable::ACTOR)
+		else
 		{
-			ActorParams *ap = (ActorParams*)(*it).get();
-			
-			
-			if (ap->type == sess->types["player"])
+			ap = (*it)->GetAsActor();
+			if (ap != NULL)
 			{
-				continue;
-			}
+				if (ap->type == sess->types["player"])
+				{
+					continue;
+				}
 
-			ActorPtr aPtr(ap->Copy());
-			if (aPtr->groundInfo != NULL)
-			{
-				aPtr->AnchorToGround(*aPtr->groundInfo);
+				ActorPtr aPtr = ap->Copy();
+				if (aPtr->groundInfo != NULL)
+				{
+					aPtr->AnchorToGround(*aPtr->groundInfo);
+				}
+				newBrush->AddObject(aPtr);
 			}
-			newBrush->AddObject(aPtr);
 		}
 	}
 
@@ -146,13 +188,12 @@ Brush *Brush::Copy()
 		newBrush = NULL;
 	}
 
-
 	return newBrush;
 }
 
 void Brush::SetSelected( bool select )
 {
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{	
 		(*it)->SetSelected( select );
 	}
@@ -173,7 +214,7 @@ void Brush::RemoveObject( SelectPtr obj )
 	objects.remove( obj );
 
 	terrainOnly = true;
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{
 		if( (*it)->selectableType != ISelectable::TERRAIN )
 		{
@@ -194,7 +235,7 @@ void Brush::Destroy()
 	//automatically delete on clear now if there are no other
 	//references
 
-	//for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	//for( auto it = objects.begin(); it != objects.end(); ++it )
 	//{
 		//delete (*(*it));
 	//}
@@ -204,13 +245,9 @@ void Brush::Destroy()
 
 void Brush::Move( Vector2i delta )
 {
-	//if( objects.size() == 1 && objects.front()->selectableType == ISelectable::ACTOR )
-	//{
-
-	//}
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{
-		(*it)->Move( (*it), delta );
+		(*it)->Move( delta );
 	}
 }
 
@@ -218,25 +255,25 @@ void Brush::Move( Vector2i delta )
 CompoundAction * Brush::UnAnchor() //only works with grounded actors
 {
 	CompoundAction * action = NULL;
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	ActorPtr ap;
+	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{
-		if( (*it)->selectableType == ISelectable::ACTOR )
+		ap = (*it)->GetAsActor();
+		if (ap != NULL)
 		{
-			ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( (*it) );
-
-			if( actor->groundInfo != NULL )
+			if (ap->groundInfo != NULL)
 			{
-				if( objects.size() == 1 || actor->type->CanBeAerial() )
+				if (objects.size() == 1 || ap->type->CanBeAerial())
 				{
 
-					Action *newAction = new LeaveGroundAction( actor );
+					Action *newAction = new LeaveGroundAction(ap);
 
-					if( action == NULL )
+					if (action == NULL)
 					{
 						action = new CompoundAction;
 					}
-			
-					action->subActions.push_back( newAction );
+
+					action->subActions.push_back(newAction);
 				}
 			}
 		}
@@ -248,33 +285,31 @@ CompoundAction * Brush::UnAnchor() //only works with grounded actors
 
 void Brush::Draw( RenderTarget *target )
 {
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{
 		(*it)->BrushDraw( target, true );
 	}
 }
 
 void Brush::Deactivate()
-{
-	EditSession *session = EditSession::GetSession();
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+{	
+	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{
-		(*it)->Deactivate( session, (*it) );
+		(*it)->Deactivate();
 	}
 }
 
 void Brush::Activate()
 {
-	EditSession *session = EditSession::GetSession();
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{
-		(*it)->Activate( session, (*it) );
+		(*it)->Activate();
 	}
 }
 
 bool Brush::CanApply()
 {
-	for( SelectIter it = objects.begin(); it != objects.end(); ++it )
+	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{
 		if( !(*it)->CanApply() )
 		{
@@ -430,7 +465,7 @@ void DeletePointsAction::Undo()
 CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
 {
 	//EditSession *session = EditSession::GetSession();
-	gate.reset( new GateInfo );
+	gate = new GateInfo;
 	//GateInfo *gi = new GateInfo;
 
 	gate->SetType( type );
@@ -479,7 +514,7 @@ void CreateGateAction::Undo()
 	//destroy the gate
 }
 
-DeleteGateAction::DeleteGateAction( GateInfoPtr &ptr )
+DeleteGateAction::DeleteGateAction( GateInfoPtr ptr )
 {
 	gate = ptr;
 }
@@ -504,7 +539,7 @@ void DeleteGateAction::Undo()
 	//destroy the gate
 }
 
-ModifyGateAction::ModifyGateAction( GateInfoPtr &ptr, const std::string &type )
+ModifyGateAction::ModifyGateAction( GateInfoPtr ptr, const std::string &type )
 	:newType( type )
 {
 	gate = ptr;
@@ -551,7 +586,7 @@ void MoveBrushAction::CheckValidPointMove()
 	for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 	{
 		PolyPtr poly = (*it).first;
-		if (!sess->IsPolygonValid(poly.get(), NULL))
+		if (!sess->IsPolygonValid(poly, NULL))
 		{
 			moveValid = false;
 			return;
@@ -572,10 +607,10 @@ void MoveBrushAction::Perform()
 		for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 		{
 			PolyPtr poly = (*it).first;
-			if (sess->IsPolygonValid(poly.get(), NULL))
+			if (sess->IsPolygonValid(poly, NULL))
 			{
 				poly->AlignExtremes((*it).second);
-				if (!sess->IsPolygonValid(poly.get(), NULL))
+				if (!sess->IsPolygonValid(poly, NULL))
 				{
 					moveValid = false;
 					break;
@@ -638,10 +673,10 @@ void MoveBrushAction::Perform()
 				for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 				{
 					PolyPtr poly = (*it).first;
-					if (sess->IsPolygonValid(poly.get(), NULL))
+					if (sess->IsPolygonValid(poly, NULL))
 					{
 						poly->AlignExtremes((*it).second);
-						if (!sess->IsPolygonValid(poly.get(), NULL))
+						if (!sess->IsPolygonValid(poly, NULL))
 						{
 							moveValid = false;
 							break;
@@ -749,13 +784,12 @@ void MoveBrushAction::Undo()
 	}
 }
 
-LeaveGroundAction::LeaveGroundAction( ActorPtr &p_actor )
+LeaveGroundAction::LeaveGroundAction( ActorPtr p_actor )
 	:actor( p_actor )
 {
 	assert( actor->groundInfo != NULL );
 
 	gi = *actor->groundInfo;
-
 }
 
 void LeaveGroundAction::Perform()
@@ -764,7 +798,7 @@ void LeaveGroundAction::Perform()
 
 	performed = true;
 
-	actor->UnAnchor( actor );
+	actor->UnAnchor( );
 }
 
 void LeaveGroundAction::Undo()
@@ -781,7 +815,7 @@ void LeaveGroundAction::Undo()
 	//cout << "undoing and adding to ground" << endl;
 }
 
-GroundAction::GroundAction( ActorPtr &p_actor )
+GroundAction::GroundAction( ActorPtr p_actor )
 	:actor( p_actor )
 {
 	gi = *actor->groundInfo;
@@ -803,7 +837,7 @@ void GroundAction::Undo()
 
 	performed = false;
 
-	actor->UnAnchor( actor );
+	actor->UnAnchor( );
 }
 
 CompoundAction::CompoundAction()
@@ -911,15 +945,15 @@ ModifyTerrainTypeAction::ModifyTerrainTypeAction( Brush *brush,
 {
 	terrainBrush = *brush;
 
+	PolyPtr tp;
 	for( SelectList::iterator it = terrainBrush.objects.begin(); 
 		it != terrainBrush.objects.end(); ++it )
 	{
-		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( (*it) );
-
-		if( (*it)->selectableType == ISelectable::TERRAIN )
+		tp = (*it)->GetAsTerrain();
+		if (tp != NULL)
 		{
-			terrainTypeMap[poly.get()] = pair<int,int>( (int)poly->terrainWorldType,
-				poly->terrainVariation );
+			terrainTypeMap[tp] = pair<int, int>((int)tp->terrainWorldType,
+				tp->terrainVariation);
 		}
 	}
 }
@@ -933,24 +967,27 @@ void ModifyTerrainTypeAction::Perform()
 	int tWorldType;
 	int tVar;
 
-	for (SelectList::iterator it = terrainBrush.objects.begin();
+	PolyPtr poly;
+	for (auto it = terrainBrush.objects.begin();
 		it != terrainBrush.objects.end(); ++it)
 	{
-		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
-		poly->Deactivate(edit, (*it));
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+			poly->Deactivate();
 	}
 
-	for (map<TerrainPolygon*, pair<int, int>>::iterator it = terrainTypeMap.begin();
+	for (auto it = terrainTypeMap.begin();
 		it != terrainTypeMap.end(); ++it)
 	{
 		(*it).first->SetMaterialType(newTerrainWorld, newVariation);
 	}
 
-	for (SelectList::iterator it = terrainBrush.objects.begin();
+	for (auto it = terrainBrush.objects.begin();
 		it != terrainBrush.objects.end(); ++it)
 	{
-		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
-		poly->Activate(edit, (*it));
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+			poly->Activate();
 	}
 
 	performed = true;
@@ -962,24 +999,27 @@ void ModifyTerrainTypeAction::Undo()
 
 	EditSession *edit = EditSession::GetSession();
 
-	for (SelectList::iterator it = terrainBrush.objects.begin();
+	PolyPtr poly;
+	for (auto it = terrainBrush.objects.begin();
 		it != terrainBrush.objects.end(); ++it)
 	{
-		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
-		poly->Deactivate(edit, (*it));
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+			poly->Deactivate();
 	}
 
-	for( map<TerrainPolygon*, pair<int,int>>::iterator it = terrainTypeMap.begin();
+	for( auto it = terrainTypeMap.begin();
 		it != terrainTypeMap.end(); ++it )
 	{
 		(*it).first->SetMaterialType( (*it).second.first, (*it).second.second );
 	}
 
-	for (SelectList::iterator it = terrainBrush.objects.begin();
+	for (auto it = terrainBrush.objects.begin();
 		it != terrainBrush.objects.end(); ++it)
 	{
-		PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>((*it));
-		poly->Activate(edit, (*it));
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+			poly->Activate();
 	}
 
 	performed = false;

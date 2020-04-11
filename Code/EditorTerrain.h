@@ -38,38 +38,20 @@ struct TerrainPoint
 	TerrainPoint(sf::Vector2i &pos, bool selected);
 	~TerrainPoint()
 	{
-		//delete gate;
 	}
 	sf::Vector2i pos;
 	bool selected;
 	std::list<int> grass;
-	boost::shared_ptr<GateInfo> gate;
-	//GateInfo *gate;
+	GateInfoPtr gate;
 	bool firstPoint;
 	int GetIndex();
-	//TerrainPoint *next;
-	//TerrainPoint *prev;
 
 	bool HasPrimaryGate(sf::Vector2i &gateDir);
 	bool ContainsPoint(sf::Vector2f test);
 	bool Intersects(sf::IntRect rect);
-	//bool IsPlacementOkay();
-	//void Move(boost::shared_ptr<ISelectable> &me,
-	//	sf::Vector2i delta);
-	//void BrushDraw(sf::RenderTarget *target,
-	//	bool valid);
-	//void Draw(sf::RenderTarget *target);
-	//void Deactivate(EditSession *edit,
-	//	boost::shared_ptr<ISelectable> select);
-	//void Activate(EditSession *edit,
-	//	boost::shared_ptr<ISelectable> select);
-	//bool CanApply();
-	//bool CanAdd();
-	//void SetSelected(bool select);
 
 	int index;
 	static const int POINT_RADIUS = 5;
-	//int special;
 };
 
 struct Inter
@@ -144,8 +126,8 @@ struct TerrainPolygon : ISelectable
 	void DeactivateGates();
 	void ActivateGates();
 
-	bool AABBIntersection(TerrainPolygon *poly);
-	bool IsOtherAABBWithinMine(TerrainPolygon *poly);
+	bool AABBIntersection(PolyPtr poly);
+	bool IsOtherAABBWithinMine(PolyPtr poly);
 	bool PointsTooCloseToEachOther();
 	bool LinesIntersectMyself();
 	bool HasSlivers();
@@ -169,13 +151,13 @@ struct TerrainPolygon : ISelectable
 	static sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
 		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
 		double minAngle, bool cw);
-	void CopyPoints(TerrainPolygon *poly,
+	void CopyPoints(PolyPtr poly,
 		bool storeSelected = false );
-	TerrainPolygon *Copy();
+	PolyPtr Copy();
 	void MovePoint(sf::Vector2i &delta,
 		TerrainPoint *tp);
 	bool IsSpecialPoly();
-	bool IsTouchingEnemiesFromPoly(TerrainPolygon *p);
+	bool IsTouchingEnemiesFromPoly(PolyPtr p);
 
 	//TerrainPoint *pointStart;
 	//TerrainPoint *pointEnd;
@@ -245,16 +227,13 @@ struct TerrainPolygon : ISelectable
 	void BrushDraw(sf::RenderTarget *target,
 		bool valid);
 	void Draw(sf::RenderTarget *target);
-	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
+	void Deactivate();
+	void Activate();
 	void AddGatesToList(std::list<GateInfoPtr> &gates);
-	bool IsTouching(TerrainPolygon *poly);
-	bool Contains(TerrainPolygon *poly);
-	//bool IsTouching( TerrainPolygon * p );
+	bool IsTouching(PolyPtr poly);
+	bool Contains(PolyPtr poly);
 
-	int LinesIntersect(TerrainPolygon *poly);
+	int LinesIntersect(PolyPtr poly);
 	void TryFixPointsTouchingLines();
 	bool LinesIntersectInProgress(sf::Vector2i p );
 	bool IsCompletionValid();
@@ -279,12 +258,12 @@ struct TerrainPolygon : ISelectable
 		sf::Vector2i testPoint,
 		int distance);
 	void AddGatesToBrush(Brush *b,
-		std::list<boost::shared_ptr<GateInfo>> &gateInfoList);
+		std::list<GateInfoPtr> &gateInfoList);
 	void AddEnemiesToBrush(Brush *b);
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 	bool IsCloseToFirstPoint(double radius, V2d &p);
 	int GetNumSelectedPoints();
-	TerrainPolygon *CreateCopyWithSelectedPointsRemoved();
+	PolyPtr CreateCopyWithSelectedPointsRemoved();
 	sf::Color selectCol;
 	sf::Color fillCol;
 
@@ -297,7 +276,7 @@ struct TerrainPolygon : ISelectable
 
 	bool movingPointMode;
 
-	void Move(SelectPtr me, sf::Vector2i move);
+	void Move(sf::Vector2i move);
 
 	sf::Vertex *lines;
 	sf::VertexArray *va;
@@ -315,8 +294,7 @@ struct TerrainPolygon : ISelectable
 	const static int inverseExtraBoxDist = 500;
 
 	//enemymap
-	std::map<TerrainPoint*, std::list<
-		boost::shared_ptr<ActorParams>>> enemies;
+	std::map<TerrainPoint*, std::list<ActorPtr>> enemies;
 	int writeIndex;
 	bool isGrassShowing;
 	bool finalized;
@@ -331,11 +309,11 @@ struct GroundInfo
 	GroundInfo();
 	TerrainPoint *edgeStart;
 	double groundQuantity;
-	TerrainPolygon *ground;
+	PolyPtr ground;
 	TerrainRail *railGround;
 	TerrainPoint *GetNextPoint();
-	void AddActor(boost::shared_ptr<ActorParams> a);
-	void RemoveActor(boost::shared_ptr<ActorParams> a);
+	void AddActor(ActorPtr a);
+	void RemoveActor(ActorPtr a);
 	int GetEdgeIndex();
 	V2d GetPosition();
 };
@@ -352,14 +330,11 @@ struct EditorDecorInfo : ISelectable
 
 	bool ContainsPoint(sf::Vector2f test);
 	bool Intersects(sf::IntRect rect);
-	void Move(boost::shared_ptr<ISelectable> me,
-		sf::Vector2i delta);
+	void Move(sf::Vector2i delta);
 	void BrushDraw(sf::RenderTarget *target,
 		bool valid);
-	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
+	void Deactivate();
+	void Activate();
 	void SetSelected(bool select);
 	void WriteFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
@@ -367,19 +342,12 @@ struct EditorDecorInfo : ISelectable
 	int layer;
 	std::string decorName;
 	int tile;
-	std::list<boost::shared_ptr<EditorDecorInfo>> *myList;
+	std::list<DecorPtr> *myList;
 	static bool CompareDecorInfoLayer(EditorDecorInfo &di0, EditorDecorInfo &di1);
 };
 
-typedef boost::shared_ptr<EditorDecorInfo> EditorDecorPtr;
-
-
-
-typedef boost::shared_ptr<TerrainPolygon> PolyPtr;
-typedef boost::shared_ptr<TerrainPoint> PointPtr;
-typedef std::pair<sf::Vector2i, sf::Vector2i> PointPair;
 typedef std::map<PolyPtr, std::list<PointMoveInfo>> PointMap;
 typedef std::map<PolyPtr, std::vector<PointMoveInfo>> PointVectorMap;
-typedef std::map<boost::shared_ptr<TerrainRail>, std::list<PointMoveInfo>> RailPointMap;
+typedef std::map<RailPtr, std::list<PointMoveInfo>> RailPointMap;
 
 #endif

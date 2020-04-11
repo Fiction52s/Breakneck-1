@@ -296,7 +296,7 @@ ActorParams *OwlParams::Copy()
 
 
 
-BadgerParams::BadgerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed,
+BadgerParams::BadgerParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity, int p_speed,
 	int p_jumpStrength )
 	:ActorParams(at )
 {
@@ -319,7 +319,7 @@ BadgerParams::BadgerParams(ActorType *at, ifstream &is)
 }
 
 BadgerParams::BadgerParams(ActorType *at,
-	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at )
 {
 	
@@ -390,7 +390,7 @@ ActorParams *BadgerParams::Copy()
 
 
 
-CactusParams::CactusParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+CactusParams::CactusParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int p_bulletSpeed, int p_rhythm, int p_amplitude )
 	:ActorParams( at)
 {
@@ -413,7 +413,7 @@ CactusParams::CactusParams(ActorType *at, ifstream &is)
 }
 
 CactusParams::CactusParams(ActorType *at,
-	TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+	PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams( at)
 {
 	bulletSpeed = 5;

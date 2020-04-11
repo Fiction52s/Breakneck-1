@@ -497,7 +497,6 @@ bool TerrainPolygon::CanAdd()
 
 void TerrainPolygon::DeactivateGates()
 {
-	EditSession *sess = EditSession::GetSession();
 	int numP = GetNumPoints();
 	TerrainPoint *curr;
 	for (int i = 0; i < numP; ++i)
@@ -507,7 +506,7 @@ void TerrainPolygon::DeactivateGates()
 		{
 			if (curr->gate->edit != NULL)
 			{
-				curr->gate->Deactivate(sess, curr->gate);
+				curr->gate->Deactivate();
 			}
 		}
 	}
@@ -515,7 +514,6 @@ void TerrainPolygon::DeactivateGates()
 
 void TerrainPolygon::ActivateGates()
 {
-	EditSession *sess = EditSession::GetSession();
 	int numP = GetNumPoints();
 	TerrainPoint *curr;
 	for (int i = 0; i < numP; ++i)
@@ -525,37 +523,37 @@ void TerrainPolygon::ActivateGates()
 		{
 			if (curr->gate->edit == NULL)
 			{
-				curr->gate->Activate(sess, curr->gate);
+				curr->gate->Activate();
 			}
 		}
 	}
 }
 
-void TerrainPolygon::Deactivate(EditSession *edit, SelectPtr select )
+void TerrainPolygon::Deactivate()
 {
-	//cout << "deactivating polygon" << endl;
-	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
+	EditSession *sess = EditSession::GetSession();
 
-	edit->GetCorrectPolygonList(this).remove(poly);
+	sess->GetCorrectPolygonList(this).remove(this);
 
 	if (inverse)
 	{
-		edit->inversePolygon.reset();
+		//delete sess->inversePolygon;
+		sess->inversePolygon = NULL;
 	}
 
 	//remove gates
 	DeactivateGates();
 }
 
-void TerrainPolygon::Activate( EditSession *edit, SelectPtr select )
+void TerrainPolygon::Activate()
 {
-	PolyPtr poly = boost::dynamic_pointer_cast<TerrainPolygon>( select );
+	EditSession *sess = EditSession::GetSession();
 
-	edit->GetCorrectPolygonList(this).push_back(poly);
+	sess->GetCorrectPolygonList(this).push_back(this);
 	
 	if (inverse)
 	{
-		edit->inversePolygon = poly;
+		sess->inversePolygon = this;
 	}
 	
 	ActivateGates();
@@ -674,11 +672,10 @@ bool TerrainPolygon::AlignExtremes()
 	return AlignExtremes(emptyLockPoints);
 }
 
-void TerrainPolygon::Move( SelectPtr me, Vector2i move )
+void TerrainPolygon::Move(Vector2i move )
 {
 	assert( finalized );
 	
-
 	int numP = GetNumPoints();
 	TerrainPoint *curr;
 	for (int i = 0; i < numP; ++i)
@@ -1451,7 +1448,7 @@ void TerrainPolygon::SetSelected( bool select )
 	}
 }
 
-bool TerrainPolygon::IsOtherAABBWithinMine(TerrainPolygon *poly)
+bool TerrainPolygon::IsOtherAABBWithinMine(PolyPtr poly)
 {
 	IntRect myAABB = GetAABB();
 	if (inverse)
@@ -1476,7 +1473,7 @@ bool TerrainPolygon::IsOtherAABBWithinMine(TerrainPolygon *poly)
 		&& polyAABB.top + polyAABB.height <= myAABB.top + myAABB.height);
 }
 
-bool TerrainPolygon::AABBIntersection(TerrainPolygon *poly)
+bool TerrainPolygon::AABBIntersection(PolyPtr poly)
 {
 	IntRect myAABB = GetAABB();
 	if (inverse)
@@ -1512,25 +1509,6 @@ bool TerrainPolygon::AABBIntersection(TerrainPolygon *poly)
 		}
 	}*/
 }
-
-//bool TerrainPolygon::IsPolyWithinAABB(TerrainPolygon *poly)
-//{
-//	if (inverse)
-//	{
-//		if (test.x >= left - inverseExtraBoxDist && test.x <= right + inverseExtraBoxDist
-//			&& test.y >= top - inverseExtraBoxDist && test.y <= bottom + inverseExtraBoxDist)
-//		{
-//			return true;
-//		}
-//	}
-//	else
-//	{
-//		if (poly->left < left || poly->top < top || poly->right > right || poly->bottom > bottom)
-//		{
-//			return false;
-//		}
-//	}
-//}
 
 bool TerrainPolygon::ContainsPoint( Vector2f test )
 {
@@ -2155,7 +2133,7 @@ int TerrainPolygon::GetNumSelectedPoints()
 	return numSelected;
 }
 
-TerrainPolygon *TerrainPolygon::CreateCopyWithSelectedPointsRemoved()
+PolyPtr TerrainPolygon::CreateCopyWithSelectedPointsRemoved()
 {
 	int numP = GetNumPoints();
 	int numDeletePoints = GetNumSelectedPoints();
@@ -2166,7 +2144,7 @@ TerrainPolygon *TerrainPolygon::CreateCopyWithSelectedPointsRemoved()
 		return NULL;
 	}
 
-	TerrainPolygon *newPoly = new TerrainPolygon(grassTex);
+	PolyPtr newPoly = new TerrainPolygon(grassTex);
 	newPoly->Reserve(newPolyPoints);
 
 	newPoly->layer = 0;
@@ -2250,14 +2228,14 @@ bool TerrainPolygon::IsClockwise()
 	return sum < 0;
 }
 
-TerrainPolygon *TerrainPolygon::Copy()
+PolyPtr TerrainPolygon::Copy()
 {
-	TerrainPolygon *newPoly = new TerrainPolygon(*this, true);
+	PolyPtr newPoly = new TerrainPolygon(*this, true);
 	newPoly->Finalize();
 	return newPoly;
 }
 
-void TerrainPolygon::CopyPoints(TerrainPolygon *poly, bool storeSelected )
+void TerrainPolygon::CopyPoints(PolyPtr poly, bool storeSelected )
 {
 	bool sel;
 	int polyNumP = poly->GetNumPoints();
@@ -2280,7 +2258,7 @@ void TerrainPolygon::CopyPoints(TerrainPolygon *poly, bool storeSelected )
 	}
 }
 
-bool TerrainPolygon::IsTouchingEnemiesFromPoly(TerrainPolygon *p)
+bool TerrainPolygon::IsTouchingEnemiesFromPoly(PolyPtr p)
 {
 	for (EnemyMap::iterator it = p->enemies.begin(); it != p->enemies.end(); ++it)
 	{
@@ -2301,7 +2279,7 @@ bool TerrainPolygon::IsTouchingEnemiesFromPoly(TerrainPolygon *p)
 }
 
 //returns true if LinesIntersect or 
-bool TerrainPolygon::IsTouching( TerrainPolygon *p  )
+bool TerrainPolygon::IsTouching( PolyPtr p  )
 {
 	if (p == this)
 		return false;
@@ -2344,7 +2322,7 @@ void TerrainPolygon::ShowGrass( bool show )
 }
 
 //returns 2 is lines intersect, 1 is only 1 point intersects, and 0 if no intersection
-int TerrainPolygon::LinesIntersect( TerrainPolygon *poly )
+int TerrainPolygon::LinesIntersect( PolyPtr poly )
 {
 	//my lines vs his lines
 
@@ -2512,7 +2490,7 @@ bool TerrainPolygon::PointTooCloseToPoints( Vector2i point, int minDistance )
 	return false;
 }
 
-bool TerrainPolygon::Contains( TerrainPolygon *poly )
+bool TerrainPolygon::Contains( PolyPtr poly )
 {
 	if (poly == this)
 		return false;
@@ -2793,8 +2771,7 @@ void TerrainPolygon::AddGatesToBrush(Brush *b,
 			}
 			if (okGate)
 			{
-				SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>(curr->gate);
-				b->AddObject(sp1);
+				b->AddObject(curr->gate);
 				gateInfoList.push_back(curr->gate);
 			}
 
@@ -2804,13 +2781,11 @@ void TerrainPolygon::AddGatesToBrush(Brush *b,
 
 void TerrainPolygon::AddEnemiesToBrush(Brush *b)
 {
-	for (map<TerrainPoint*, std::list<ActorPtr>>::iterator
-		mit = enemies.begin(); mit != enemies.end(); ++mit)
+	for (auto mit = enemies.begin(); mit != enemies.end(); ++mit)
 	{
 		for (auto eit = (*mit).second.begin(); eit != (*mit).second.end(); ++eit)
 		{
-			SelectPtr sp1 = boost::dynamic_pointer_cast<ISelectable>((*eit));
-			b->AddObject(sp1);
+			b->AddObject((*eit));
 		}
 	}
 }
@@ -2847,13 +2822,6 @@ void TerrainPolygon::AddGatesToList(std::list<GateInfoPtr> &gates)
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 	:pos( p ), selected( s ), gate( NULL )
 {
-}
-
-p2t::Point *TerrainPoint::GetP2TPoint()
-{
-	p2tPoint.x = pos.x;
-	p2tPoint.y = pos.y;
-	return &p2tPoint;
 }
 
 int TerrainPoint::GetIndex()

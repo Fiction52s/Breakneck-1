@@ -4,7 +4,6 @@
 #include <fstream>
 #include <SFML/Graphics.hpp>
 #include <list>
-#include <boost/shared_ptr.hpp>
 //#include "ActorParams.h"
 
 struct ActorType;
@@ -68,7 +67,7 @@ struct ParamsInfo
 	int numLevels;
 };
 
-typedef boost::shared_ptr<ActorParams> ActorPtr;
+typedef ActorParams* ActorPtr;
 typedef std::map<TerrainPoint*, std::list<ActorPtr>> EnemyMap;
 
 struct ActorType

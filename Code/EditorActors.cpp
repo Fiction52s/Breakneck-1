@@ -674,12 +674,12 @@ void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 	int hasMonitor;
 	string &name = info.name;
 
-	a.reset(info.pLoader(this, is));
+	a = info.pLoader(this, is);
 	if (a->groundInfo != NULL)
 	{
 		if (a->groundInfo->ground != NULL)
 		{
-			TerrainPolygon *poly = a->groundInfo->ground;
+			PolyPtr poly = a->groundInfo->ground;
 			poly->enemies[a->groundInfo->edgeStart].push_back(a);
 			poly->UpdateBounds();
 		}

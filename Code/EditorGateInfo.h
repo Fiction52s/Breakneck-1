@@ -3,7 +3,6 @@
 
 #include "ISelectable.h"
 #include "Gate.h"
-#include <boost/shared_ptr.hpp>
 
 struct TerrainPolygon;
 struct TerrainPoint;
@@ -18,13 +17,11 @@ struct GateInfo : ISelectable
 	TerrainPoint *point0;
 	TerrainPoint *point1;
 	bool ContainsPoint(V2d &p);
-	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	boost::shared_ptr<TerrainPolygon> poly0;
+	void Deactivate();
+	void Activate();
+	PolyPtr poly0;
 	int vertexIndex0;
-	boost::shared_ptr<TerrainPolygon> poly1;
+	PolyPtr poly1;
 	int vertexIndex1;
 	sf::VertexArray thickLine;
 	EditSession *edit;
@@ -44,14 +41,6 @@ struct GateInfo : ISelectable
 
 	static double lineWidth;
 
-};
-
-typedef boost::shared_ptr<GateInfo> GateInfoPtr;
-
-struct GatePoint
-{
-	int vertexIndex;
-	GateInfo *info;
 };
 
 #endif

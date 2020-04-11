@@ -130,7 +130,7 @@ struct EditSession : GUIHandler, TilesetManager
 	EditorBG *background;
 	
 
-	TerrainPolygon *GetPolygon(int index, int &edgeIndex);
+	PolyPtr GetPolygon(int index, int &edgeIndex);
 	TerrainRail *GetRail(int index, int &edgeIndex);
 
 	std::list<ParamsInfo> worldEnemyNames[8];
@@ -235,8 +235,8 @@ struct EditSession : GUIHandler, TilesetManager
 
 
 	
-	ActorParams * AttachActorToPolygon( ActorPtr actor, TerrainPolygon *poly );
-	void AttachActorsToPolygon( std::list<ActorPtr> &actors, TerrainPolygon *poly );
+	ActorParams * AttachActorToPolygon( ActorPtr actor, PolyPtr poly );
+	void AttachActorsToPolygon( std::list<ActorPtr> &actors, PolyPtr poly );
 	int Run(const boost::filesystem::path &p_filePath,
 		sf::Vector2f cameraPos, 
 		sf::Vector2f cameraSize );
@@ -257,14 +257,14 @@ struct EditSession : GUIHandler, TilesetManager
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
 
-	bool IsPolygonExternallyValid( TerrainPolygon *poly,
-		 TerrainPolygon* ignore );
-	bool IsPolygonValid( TerrainPolygon *poly,
-		TerrainPolygon* ignore );
+	bool IsPolygonExternallyValid( PolyPtr poly,
+		 PolyPtr ignore );
+	bool IsPolygonValid( PolyPtr poly,
+		PolyPtr ignore );
 	void SetEnemyEditPanel();
 	void SetDecorEditPanel();
 	void SetDecorParams();
-	static bool QuadPolygonIntersect( TerrainPolygon* poly, 
+	static bool QuadPolygonIntersect(PolyPtr poly,
 		sf::Vector2i a, sf::Vector2i b, 
 		sf::Vector2i c, sf::Vector2i d );
 	bool CanCreateGate( GateInfo &testGate );
@@ -302,11 +302,11 @@ struct EditSession : GUIHandler, TilesetManager
 	void ClearSelectedPoints();
 	void SelectPoint(PolyPtr poly,
 		TerrainPoint *point);
-	void SelectPoint(boost::shared_ptr<TerrainRail> rail,
+	void SelectPoint(RailPtr rail,
 		TerrainPoint *point);
 	void DeselectPoint(PolyPtr poly,
 		TerrainPoint *point);
-	void DeselectPoint(boost::shared_ptr<TerrainRail> rail,
+	void DeselectPoint(RailPtr rail,
 		TerrainPoint *point);
 	
 
@@ -331,8 +331,7 @@ struct EditSession : GUIHandler, TilesetManager
 	GroundInfo ConvertPointToGround( sf::Vector2i point );
 	GroundInfo ConvertPointToRail(sf::Vector2i point);
 	void CreateActor( ActorPtr actor );
-	void CreateDecorImage(
-		EditorDecorPtr dec);
+	void CreateDecorImage(DecorPtr dec);
 
 	std::list<GateInfoPtr> gates;
 	MainMenu *mainMenu;
@@ -355,10 +354,6 @@ struct EditSession : GUIHandler, TilesetManager
 	bool IsGateAttachedToAffectedPoly(
 		GateInfoPtr gi, Brush *b,
 		bool &a);
-
-	bool BlahTest( GateInfoPtr gi,
-		bool polyMove, bool a,
-		CompoundAction *testAction);
 
 	GroundInfo worldPosRail;
 	GroundInfo worldPosGround;
@@ -415,21 +410,19 @@ struct EditSession : GUIHandler, TilesetManager
 	double GetZoomedMinEdgeLength();
 	//double minAngle;
 	
-	std::list<boost::shared_ptr<TerrainRail>> rails;
+	std::list<RailPtr> rails;
 
 	std::list<PolyPtr> &GetCorrectPolygonList(int ind);
-	std::list<PolyPtr> &GetCorrectPolygonList(TerrainPolygon *t);
+	std::list<PolyPtr> &GetCorrectPolygonList(PolyPtr t);
 	std::list<PolyPtr> &GetCorrectPolygonList();
 	std::list<PolyPtr> polygons;
 	std::list<PolyPtr> waterPolygons;
 
 	bool IsSpecialTerrainMode();
 
-
-	
-	boost::shared_ptr<TerrainPolygon> polygonInProgress;
-	boost::shared_ptr<TerrainRail> railInProgress;
-	boost::shared_ptr<TerrainPolygon> inversePolygon;
+	PolyPtr polygonInProgress;
+	RailPtr railInProgress;
+	PolyPtr inversePolygon;
 	
 	sf::Font arialFont;
 	sf::Text cursorLocationText;
@@ -437,7 +430,7 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::RectangleShape scaleSpriteBGRect;
 
 	int enemyEdgeIndex;
-	TerrainPolygon *enemyEdgePolygon;
+	PolyPtr enemyEdgePolygon;
 	TerrainRail *enemyEdgeRail;
 	double enemyEdgeQuantity;
 	
@@ -710,10 +703,6 @@ struct EditSession : GUIHandler, TilesetManager
 	
 
 	GateInfo testGateInfo;
-	//TerrainPolygon *gatePoly0;
-	//TerrainPolygon *gatePoly1;
-	//TerrainPoint *gatePoint0;
-	//TerrainPoint *gatePoint1;
 	sf::Vector2i gatePoint0;
 	sf::Vector2i gatePoint1;
 	GateInfoPtr modifyGate;
@@ -740,21 +729,21 @@ struct EditSession : GUIHandler, TilesetManager
 	bool ExecuteTerrainCompletion();
 	void ExecuteRailCompletion();
 	void GetIntersectingPolys(
-		TerrainPolygon *p,
+		PolyPtr p,
 		std::list<PolyPtr> & intersections);
-	bool PolyContainsPolys(TerrainPolygon *p,
-		TerrainPolygon *ignore );
-	bool PolyIsContainedByPolys(TerrainPolygon *p,
-		TerrainPolygon *ignore);
+	bool PolyContainsPolys(PolyPtr p,
+		PolyPtr ignore );
+	bool PolyIsContainedByPolys(PolyPtr p,
+		PolyPtr ignore);
 	bool PolyIsTouchingEnemiesOrBeingTouched(
-		TerrainPolygon *p,
-		TerrainPolygon *ignore);
+		PolyPtr p,
+		PolyPtr ignore);
 	bool GateIsTouchingEnemies(GateInfo *gi);
-	bool PolyIntersectsGates(TerrainPolygon *poly);
+	bool PolyIntersectsGates(PolyPtr poly);
 	bool GateIntersectsPolys(GateInfo *gi);
 	bool GateIntersectsGates(GateInfo *gi);
-	bool PolyGatesIntersectOthers(TerrainPolygon *poly);
-	bool PolyGatesMakeSliverAngles(TerrainPolygon *poly);
+	bool PolyGatesIntersectOthers(PolyPtr poly);
+	bool PolyGatesMakeSliverAngles(PolyPtr poly);
 	bool IsGateValid(GateInfo *gi );
 	bool IsGateInProgressValid(PolyPtr startPoly,
 		TerrainPoint *startPoint);
@@ -807,9 +796,9 @@ struct EditSession : GUIHandler, TilesetManager
 	bool HoldingShift();
 	bool HoldingControl();
 
-	std::list<boost::shared_ptr<EditorDecorInfo>> decorImagesBehindTerrain;
-	std::list<boost::shared_ptr<EditorDecorInfo>> decorImagesBetween;
-	std::list<boost::shared_ptr<EditorDecorInfo>> decorImagesFrontTerrain;
+	std::list<DecorPtr> decorImagesBehindTerrain;
+	std::list<DecorPtr> decorImagesBetween;
+	std::list<DecorPtr> decorImagesFrontTerrain;
 	Panel *decorPanel;
 	Panel *editDecorPanel;
 	void InitDecorPanel();

@@ -96,41 +96,19 @@ bool TerrainRail::CanAdd()
 	return false;
 }
 
-void TerrainRail::Deactivate(EditSession *edit, SelectPtr select)
+void TerrainRail::Deactivate()
 {
+	EditSession *sess = EditSession::GetSession();
 	cout << "deactivating rail" << endl;
-	RailPtr rail = boost::dynamic_pointer_cast<TerrainRail>(select);
 
-	edit->rails.remove(rail);
-
-	//remove enemies
-	for (EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it)
-	{
-		list<ActorPtr> params = (*it).second;
-		for (list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit)
-		{
-			SelectPtr ptr = boost::dynamic_pointer_cast<ISelectable>((*pit));
-			//(*pit)->Deactivate( edit, ptr );
-		}
-	}
+	sess->rails.remove(this);
 }
 
-void TerrainRail::Activate(EditSession *edit, SelectPtr select)
+void TerrainRail::Activate()
 {
-	RailPtr rail = boost::dynamic_pointer_cast<TerrainRail>(select);
+	EditSession *sess = EditSession::GetSession();
 
-	edit->rails.push_back(rail);
-
-	//add in enemies
-	for (EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it)
-	{
-		list<ActorPtr> params = (*it).second;
-		for (list<ActorPtr>::iterator pit = params.begin(); pit != params.end(); ++pit)
-		{
-			SelectPtr ptr = boost::dynamic_pointer_cast<ISelectable>((*pit));
-			//(*pit)->Activate( edit, ptr );
-		}
-	}
+	sess->rails.push_back(this);
 }
 
 void TerrainRail::WriteFile(std::ofstream &of)
@@ -236,7 +214,7 @@ bool TerrainRail::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 	return adjustedAtAll;*/
 }
 
-void TerrainRail::Move(SelectPtr me, Vector2i move)
+void TerrainRail::Move(Vector2i move)
 {
 	assert(finalized);
 
@@ -253,10 +231,10 @@ void TerrainRail::Move(SelectPtr me, Vector2i move)
 		lines[i * 2 + 1].position += Vector2f(move.x, move.y);
 	}
 
-	for (EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it)
+	for (auto it = enemies.begin(); it != enemies.end(); ++it)
 	{
 		list<ActorPtr> &actorList = (*it).second;
-		for (list<ActorPtr>::iterator ait = actorList.begin(); ait != actorList.end(); ++ait)
+		for (auto ait = actorList.begin(); ait != actorList.end(); ++ait)
 		{
 			(*ait)->UpdateGroundedSprite();
 			(*ait)->SetBoundingQuad();
@@ -568,7 +546,7 @@ void TerrainRail::CopyPointsFromRail(TerrainRail *rail)
 	}
 }
 
-void TerrainRail::CopyPointsFromPoly(TerrainPolygon *tp)
+void TerrainRail::CopyPointsFromPoly(PolyPtr tp)
 {
 	int numP = tp->GetNumPoints();
 	Reserve(numP);

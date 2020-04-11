@@ -2,13 +2,12 @@
 #define __ACTORPARAMS_H__
 
 #include <fstream>
-//#include "EditSession.h"
-
-struct TerrainPolygon;
 #include <SFML/Graphics.hpp>
 #include "ISelectable.h"
 #include "EditorActors.h"
 #include "EditorTerrain.h"
+
+struct TerrainPolygon;
 
 struct ActorParams : ISelectable
 {
@@ -27,13 +26,13 @@ struct ActorParams : ISelectable
 	void WriteLevel(std::ofstream &of);
 	void WritePath( std::ofstream &of );
 	void WriteLoop( std::ofstream &of );
-	void AnchorToGround(TerrainPolygon *poly,
+	void AnchorToGround(PolyPtr poly,
 		int eIndex, double quantity);
 	void AnchorToRail(TerrainRail *rail,
 		int eIndex, double quantity);
 	void AnchorToGround(GroundInfo &gi);
 	void AnchorToRail(GroundInfo &gi);
-	void UnAnchor(boost::shared_ptr<ActorParams> &me);
+	void UnAnchor();
 	void UpdateGroundedSprite();
 
 	virtual std::list<sf::Vector2i> GetGlobalPath();
@@ -54,7 +53,7 @@ struct ActorParams : ISelectable
 	virtual void SetPanelInfo();
 	
 	void PlaceAerial(sf::Vector2i &pos);
-	void PlaceGrounded( TerrainPolygon *tp,
+	void PlaceGrounded( PolyPtr tp,
 		int edgeIndex, double quant);
 	void PlaceRailed(TerrainRail *rail,
 		int edgeIndex, double quant);
@@ -68,15 +67,13 @@ struct ActorParams : ISelectable
 	virtual bool ContainsPoint(sf::Vector2f test);
 	virtual bool Intersects(sf::IntRect rect);
 	virtual bool IsPlacementOkay();
-	virtual void Move(SelectPtr me, sf::Vector2i delta);
+	virtual void Move(sf::Vector2i delta);
 	virtual void BrushDraw(sf::RenderTarget *target,
 		bool valid);
 	virtual void Draw(sf::RenderTarget *target);
 	virtual void DrawPreview(sf::RenderTarget *target);
-	virtual void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
-	virtual void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
+	virtual void Deactivate();
+	virtual void Activate();
 
 	virtual void DrawQuad(sf::RenderTarget *target);
 
@@ -115,23 +112,21 @@ struct PlayerParams : public ActorParams
 		std::ifstream &is );
 
 	bool CanApply();
-	void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable>  select);
+	void Deactivate();
 	ActorParams *Copy();
-	void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select);
+	void Activate();
 };
 
 //extra
 
 struct GroundTriggerParams : public ActorParams
 {
-	GroundTriggerParams(ActorType *at, TerrainPolygon *edgePolygon,
+	GroundTriggerParams(ActorType *at, PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		bool facingRight,
 		const std::string &typeStr);
-	GroundTriggerParams(ActorType *at, TerrainPolygon *edgePolygon,
+	GroundTriggerParams(ActorType *at, PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	GroundTriggerParams(ActorType *at,
@@ -147,12 +142,12 @@ struct GroundTriggerParams : public ActorParams
 struct FlowerPodParams : public ActorParams
 {
 	FlowerPodParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		const std::string &typeStr);
 	FlowerPodParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	FlowerPodParams(ActorType *at,
@@ -224,12 +219,12 @@ struct CameraShotParams : public ActorParams
 struct NexusParams : public ActorParams
 {
 	NexusParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		int nexusIndex);
 	NexusParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	NexusParams(ActorType *at,
@@ -244,12 +239,12 @@ struct NexusParams : public ActorParams
 struct ShipPickupParams : public ActorParams
 {
 	ShipPickupParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		bool facingRight);
 	ShipPickupParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	ShipPickupParams(ActorType *at,
@@ -265,7 +260,7 @@ struct ShipPickupParams : public ActorParams
 struct GoalParams : public ActorParams
 {
 	GoalParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	GoalParams(ActorType *at,
@@ -279,12 +274,12 @@ struct GoalParams : public ActorParams
 struct PoiParams : public ActorParams
 {
 	PoiParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		const std::string &name);
 	PoiParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	PoiParams(ActorType *at,
@@ -546,7 +541,7 @@ struct PatrollerParams : public ActorParams
 struct BasicGroundEnemyParams : public ActorParams
 {
 	BasicGroundEnemyParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		int level=0);
 	BasicGroundEnemyParams(ActorType *at,
@@ -592,7 +587,7 @@ struct JugglerParams : public BasicAirEnemyParams
 	JugglerParams(ActorType *at,
 		std::ifstream &is);
 	JugglerParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity, int level = 0);
 
@@ -610,7 +605,7 @@ struct GroundedJugglerParams : public BasicGroundEnemyParams
 	GroundedJugglerParams(ActorType *at,
 		std::ifstream &is);
 	GroundedJugglerParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity, int level = 0);
 
@@ -637,11 +632,11 @@ struct GroundedJugglerParams : public BasicGroundEnemyParams
 struct CrawlerParams : public ActorParams
 {
 	CrawlerParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		int level );
 	CrawlerParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity);
 	CrawlerParams(ActorType *at,
 		std::ifstream &is);
@@ -653,7 +648,7 @@ struct BasicTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
 	BasicTurretParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	BasicTurretParams(ActorType *at,
@@ -668,7 +663,7 @@ struct BasicTurretParams : public ActorParams
 struct FootTrapParams : public ActorParams
 {
 	FootTrapParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	FootTrapParams(ActorType *at, EditSession *edit);
@@ -701,7 +696,7 @@ struct BossCrawlerParams : public ActorParams
 {
 	BossCrawlerParams(ActorType *at,
 
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity);
 	BossCrawlerParams(ActorType *at,
 		std::ifstream &is);
@@ -742,12 +737,12 @@ struct BatParams : public ActorParams
 struct GravityFallerParams : public ActorParams
 {
 	GravityFallerParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		int variation);
 	GravityFallerParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	GravityFallerParams(ActorType *at,
@@ -765,14 +760,14 @@ struct GravityFallerParams : public ActorParams
 struct StagBeetleParams : public ActorParams
 {
 	StagBeetleParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		bool clockwise, float speed);
 	//StagBeetleParams( 
 	//	sf::Vector2i &pos, bool facingRight,
 	//	float speed );
 	StagBeetleParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity);
 	StagBeetleParams(ActorType *at,
 		std::ifstream &is);
@@ -791,14 +786,14 @@ struct StagBeetleParams : public ActorParams
 struct PoisonFrogParams : public ActorParams
 {
 	PoisonFrogParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		int gravFactor,
 		sf::Vector2i &jumpStrength,
 		int jumpWaitFrames);
 	PoisonFrogParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity);
 	PoisonFrogParams(EditSession *edit);
@@ -826,7 +821,7 @@ struct CurveTurretParams : public ActorParams
 {
 	//std::string SetAsBasicTurret( ActorType *t, ); 
 	CurveTurretParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex,
 		double edgeQuantity,
 		double bulletSpeed,
@@ -835,7 +830,7 @@ struct CurveTurretParams : public ActorParams
 		bool relativeGrav);
 	ActorParams *Copy();
 	CurveTurretParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity);
 	CurveTurretParams(ActorType *at,
 		std::ifstream &is);
@@ -1013,12 +1008,12 @@ struct OwlParams : public ActorParams
 struct BadgerParams : public ActorParams
 {
 	BadgerParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		int speed, int jumpStrength);
 
 	BadgerParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity);
 	BadgerParams(ActorType *at,
 		std::ifstream &is);
@@ -1036,13 +1031,13 @@ struct BadgerParams : public ActorParams
 struct CactusParams : public ActorParams
 {
 	CactusParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		int bulletSpeed, int rhythm,
 		int amplitude);
 
 	CactusParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity);
 
 	CactusParams(ActorType *at,
@@ -1142,13 +1137,13 @@ struct CoralParams : public ActorParams
 struct CheetahParams : public ActorParams
 {
 	/*CactusParams(
-	TerrainPolygon *edgePolygon,
+	PolyPtr edgePolygon,
 	int edgeIndex, double edgeQuantity,
 	int bulletSpeed, int rhythm,
 	int amplitude );*/
 
 	CheetahParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity);
 	CheetahParams(ActorType *at,
 		std::ifstream &is);
@@ -1163,12 +1158,12 @@ struct CheetahParams : public ActorParams
 struct SpiderParams : public ActorParams
 {
 	SpiderParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity,
 		int speed);
 
 	SpiderParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity);
 	SpiderParams(ActorType *at,
 		std::ifstream &is);
@@ -1285,12 +1280,12 @@ struct GhostParams : public ActorParams
 struct OvergrowthParams : public ActorParams
 {
 	OvergrowthParams(ActorType *at,
-		TerrainPolygon *edgePolygon,
+		PolyPtr edgePolygon,
 		int edgeIndex, double edgeQuantity);
 	OvergrowthParams(ActorType *at,
 		std::ifstream &is);
 	/*OvergrowthParams(
-	TerrainPolygon *edgePolygon,
+	PolyPtr edgePolygon,
 	int edgeIndex, double edgeQuantity );*/
 
 

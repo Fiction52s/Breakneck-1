@@ -22,29 +22,26 @@ GateInfo::GateInfo()
 	thickLine[3].color = Color(255, 0, 0, 255);
 }
 
-void GateInfo::Deactivate(EditSession *editSession, SelectPtr select)
+void GateInfo::Deactivate()
 {
 	if (edit != NULL)
 	{
-		GateInfoPtr g = boost::dynamic_pointer_cast<GateInfo>(select);
+		edit->gates.remove(this);
 		edit = NULL;
-		editSession->gates.remove(g);
-
-		g->point0->gate = NULL;
-		g->point1->gate = NULL;
+		point0->gate = NULL;
+		point1->gate = NULL;
 	}
 }
 
-void GateInfo::Activate(EditSession *editSession, SelectPtr select)
+void GateInfo::Activate()
 {
 	if (edit == NULL)
 	{
-		GateInfoPtr g = boost::dynamic_pointer_cast<GateInfo>(select);
-		edit = editSession;
-		editSession->gates.push_back(g);
+		edit = EditSession::GetSession();
+		edit->gates.push_back(this);
 
-		g->point0->gate = g;
-		g->point1->gate = g;
+		point0->gate = this;
+		point1->gate = this;
 	}
 }
 

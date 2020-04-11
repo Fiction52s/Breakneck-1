@@ -176,7 +176,7 @@ void ActorParams::PlaceAerial(sf::Vector2i &pos)
 	SetBoundingQuad();
 }
 
-void ActorParams::PlaceGrounded(TerrainPolygon *tp,
+void ActorParams::PlaceGrounded(PolyPtr tp,
 	int edgeIndex, double quant)
 {
 	AnchorToGround(tp, edgeIndex, quant);
@@ -200,7 +200,7 @@ void ActorParams::LoadGrounded(std::ifstream &is)
 	is >> edgeQuantity;
 
 	EditSession *edit = EditSession::GetSession();
-	TerrainPolygon *terrain = edit->GetPolygon(terrainIndex, edgeIndex);
+	PolyPtr terrain = edit->GetPolygon(terrainIndex, edgeIndex);
 	PlaceGrounded(terrain, edgeIndex, edgeQuantity);
 }
 
@@ -216,7 +216,6 @@ void ActorParams::LoadRailed(std::ifstream &is)
 	EditSession *edit = EditSession::GetSession();
 	TerrainRail *rail = edit->GetRail(terrainIndex, edgeIndex);
 	PlaceRailed(rail, edgeIndex, edgeQuantity);
-	//TerrainPolygon *terrain = edit->GetPolygon(terrainIndex, edgeIndex);
 	//PlaceGrounded(terrain, edgeIndex, edgeQuantity);
 }
 
@@ -654,7 +653,7 @@ void ActorParams::AnchorToRail(TerrainRail *rail,
 	}
 }
 
-void ActorParams::AnchorToGround( TerrainPolygon *poly, int edgeIndex, double quantity )
+void ActorParams::AnchorToGround( PolyPtr poly, int edgeIndex, double quantity )
 {
 	assert( groundInfo == NULL );
 	/*if( groundInfo != NULL )
@@ -725,7 +724,7 @@ void ActorParams::AnchorToRail(GroundInfo &gi)
 	SetBoundingQuad();
 }
 
-void ActorParams::UnAnchor( ActorPtr &actor )
+void ActorParams::UnAnchor()
 {
 	assert( groundInfo != NULL );
 
@@ -738,11 +737,11 @@ void ActorParams::UnAnchor( ActorPtr &actor )
 
 		if (groundInfo->ground != NULL)
 		{
-			groundInfo->ground->enemies[groundInfo->edgeStart].remove(actor);
+			groundInfo->ground->enemies[groundInfo->edgeStart].remove(this);
 		}
 		else if (groundInfo->railGround != NULL)
 		{
-			groundInfo->railGround->enemies[groundInfo->edgeStart].remove(actor);
+			groundInfo->railGround->enemies[groundInfo->edgeStart].remove(this);
 		}
 		
 		delete groundInfo;
@@ -839,7 +838,7 @@ bool ActorParams::IsPlacementOkay()
 	return false;
 }
 
-void ActorParams::Move( SelectPtr me, sf::Vector2i delta )
+void ActorParams::Move( sf::Vector2i delta )
 {
 	if( groundInfo == NULL )
 	{
@@ -859,29 +858,25 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 	image.setColor( Color::White );
 }
 
-void ActorParams::Deactivate( EditSession *sess, SelectPtr select )
+void ActorParams::Deactivate()
 {
 	cout << "DEACTIVATING ACTOR PARAMS size from: " << group->actors.size() << endl;
-	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
-	group->actors.remove( actor );
+	group->actors.remove( this );
 
-	GroundInfo *gi = actor->groundInfo;
-	if( gi != NULL )
+	if(groundInfo != NULL )
 	{
-		gi->RemoveActor(actor);
+		groundInfo->RemoveActor(this);
 	}
 }
 
-void ActorParams::Activate(EditSession *editsession, SelectPtr select )
+void ActorParams::Activate()
 {
 	cout << "addding to group of size: " << group->actors.size() << endl;
-	ActorPtr actor = boost::dynamic_pointer_cast<ActorParams>( select );
-	group->actors.push_back( actor );
+	group->actors.push_back( this );
 
-	GroundInfo *gi = actor->groundInfo;
-	if (gi != NULL)
+	if (groundInfo != NULL)
 	{
-		gi->AddActor(actor);
+		groundInfo->AddActor(this);
 	}
 }
 
@@ -891,7 +886,7 @@ GoalParams::GoalParams(ActorType *at, std::ifstream &is)
 	LoadGrounded(is);
 }
 
-GoalParams::GoalParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+GoalParams::GoalParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at)
 {
 	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
@@ -951,12 +946,12 @@ bool PlayerParams::CanApply()
 	return true;
 }
 
-void PlayerParams::Deactivate(EditSession *editsession, boost::shared_ptr<ISelectable> select)
+void PlayerParams::Deactivate()
 {
 	//nothing
 }
 
-void PlayerParams::Activate(EditSession *editsession, boost::shared_ptr<ISelectable> select )
+void PlayerParams::Activate()
 {
 	//nothing
 }
@@ -969,7 +964,7 @@ ActorParams *PlayerParams::Copy()
 
 
 PoiParams::PoiParams(ActorType *at,
-	TerrainPolygon *p_edgePolygon,
+	PolyPtr p_edgePolygon,
 	int p_edgeIndex, 
 	double p_edgeQuantity )
 	:ActorParams(at)
@@ -1034,7 +1029,7 @@ PoiParams::PoiParams(ActorType *at,
 }
 
 PoiParams::PoiParams(ActorType *at,
-	TerrainPolygon *p_edgePolygon,
+	PolyPtr p_edgePolygon,
 	int p_edgeIndex, 
 	double p_edgeQuantity, const std::string &p_name )
 	:ActorParams(at), name( p_name )
@@ -1197,14 +1192,14 @@ ActorParams *KeyParams::Copy()
 	return copy;
 }
 
-NexusParams::NexusParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+NexusParams::NexusParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int p_nexusIndex )
 	:ActorParams(at), nexusIndex( p_nexusIndex )
 {
 	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
-NexusParams::NexusParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+NexusParams::NexusParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams(at)
 {
 	nexusIndex = 0;
@@ -1260,7 +1255,7 @@ ActorParams *NexusParams::Copy()
 	return copy;
 }
 
-GroundTriggerParams::GroundTriggerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+GroundTriggerParams::GroundTriggerParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	bool fr, const std::string &p_typeStr)
 	:ActorParams(at), facingRight( fr ), typeStr( p_typeStr )
 {
@@ -1277,7 +1272,7 @@ GroundTriggerParams::GroundTriggerParams(ActorType *at, ifstream &is)
 	is >> typeStr;
 }
 
-GroundTriggerParams::GroundTriggerParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+GroundTriggerParams::GroundTriggerParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at)
 {
 	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
@@ -1322,7 +1317,7 @@ ActorParams *GroundTriggerParams::Copy()
 	return copy;
 }
 
-ShipPickupParams::ShipPickupParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+ShipPickupParams::ShipPickupParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	bool p_facingRight )
 	:ActorParams(at), facingRight( p_facingRight )
 {
@@ -1336,7 +1331,7 @@ ShipPickupParams::ShipPickupParams(ActorType *at, ifstream &is )
 	LoadBool(is, facingRight);
 }
 
-ShipPickupParams::ShipPickupParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
+ShipPickupParams::ShipPickupParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
 	:ActorParams(at)
 {
 	facingRight = true;
@@ -1811,7 +1806,7 @@ void AirTriggerParams::Draw(RenderTarget *target)
 	
 }
 
-FlowerPodParams::FlowerPodParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+FlowerPodParams::FlowerPodParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	const std::string &p_typeStr)
 	:ActorParams(at), facingRight(true), typeStr(p_typeStr)
 {
@@ -1826,7 +1821,7 @@ FlowerPodParams::FlowerPodParams(ActorType *at, ifstream &is)
 	is >> typeStr;
 }
 
-FlowerPodParams::FlowerPodParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+FlowerPodParams::FlowerPodParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
 	:ActorParams(at)
 {
 	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
@@ -1870,7 +1865,7 @@ ActorParams *FlowerPodParams::Copy()
 
 template<typename X> ActorParams *MakeParams(
 	ActorType *type)
-//TerrainPolygon *tp, int edgeIndex,
+//PolyPtrtp, int edgeIndex,
 //double quant, sf::Vector2i worldPos)
 {
 	EditSession *edit = EditSession::GetSession();
@@ -1891,7 +1886,7 @@ template<typename X> ActorParams *MakeParams(
 	return NULL;
 }
 
-BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, TerrainPolygon *p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
+BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
 	int level)
 	:ActorParams(at)
 {
@@ -2211,7 +2206,7 @@ ActorParams *JugglerParams::Copy()
 	return copy;
 }
 
-GroundedJugglerParams::GroundedJugglerParams(ActorType *at, TerrainPolygon *edgePolygon,
+GroundedJugglerParams::GroundedJugglerParams(ActorType *at, PolyPtr edgePolygon,
 	int edgeIndex, double edgeQuantity, int level)
 	:BasicGroundEnemyParams(at, edgePolygon, edgeIndex, edgeQuantity, level)
 {

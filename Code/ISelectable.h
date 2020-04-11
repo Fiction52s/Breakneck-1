@@ -7,6 +7,17 @@
 
 struct EditSession;
 struct TerrainPolygon;
+struct ActorParams;
+struct GateInfo;
+struct TerrainRail;
+struct EditorDecorInfo;
+
+typedef TerrainPolygon* PolyPtr;
+typedef ActorParams* ActorPtr;
+typedef GateInfo* GateInfoPtr;
+typedef TerrainRail* RailPtr;
+typedef EditorDecorInfo* DecorPtr;
+
 struct ISelectable
 {
 	enum ISelectableType
@@ -24,8 +35,11 @@ struct ISelectable
 	//is a move valid
 	//execute move
 	ISelectable(ISelectableType type);
-	static boost::shared_ptr<TerrainPolygon> GetAsTerrain(
-		boost::shared_ptr<ISelectable> select );
+	PolyPtr GetAsTerrain();
+	ActorPtr GetAsActor();
+	GateInfoPtr GetAsGateInfo();
+	RailPtr GetAsRail();
+
 	virtual bool ContainsPoint(sf::Vector2f test)
 	{
 		return false;
@@ -38,27 +52,22 @@ struct ISelectable
 	{
 		return true;
 	}
-	virtual void Move(boost::shared_ptr<ISelectable> me,
-		sf::Vector2i delta) {}
+	virtual void Move(sf::Vector2i delta) {}
 	virtual void BrushDraw(sf::RenderTarget *target,
 		bool valid) {}
 	virtual void Draw(sf::RenderTarget *target) {}
-	virtual void Deactivate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select) = 0;
-	virtual void Activate(EditSession *edit,
-		boost::shared_ptr<ISelectable> select) = 0;
+	virtual void Deactivate() = 0;
+	virtual void Activate() = 0;
 	virtual bool CanApply() { return true; }
 	virtual bool CanAdd() { return true; }
 	virtual void SetSelected(bool select) {}
-	//virtual bool CanSubtract() = 0;
 
 	ISelectableType selectableType;
 	bool active;
 	bool selected;
 };
 
-typedef boost::shared_ptr<ISelectable> SelectPtr;
+typedef ISelectable* SelectPtr;
 typedef std::list<SelectPtr> SelectList;
-typedef SelectList::iterator SelectIter;
 
 #endif

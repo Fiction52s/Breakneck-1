@@ -26,8 +26,7 @@ struct TerrainRail : ISelectable
 	bool Intersects(sf::IntRect rect);
 	//bool IsPlacementOkay();
 
-	void Move(SelectPtr me,
-		sf::Vector2i delta);
+	void Move(sf::Vector2i delta);
 	void BrushDraw(sf::RenderTarget *target,
 		bool valid);
 
@@ -35,10 +34,8 @@ struct TerrainRail : ISelectable
 		sf::RenderTarget *target);
 
 	//void Draw(sf::RenderTarget *target);
-	void Deactivate(EditSession *edit,
-		SelectPtr select);
-	void Activate(EditSession *edit,
-		SelectPtr select);
+	void Deactivate();
+	void Activate();
 	bool CanApply();
 	bool CanAdd();
 
@@ -52,7 +49,7 @@ struct TerrainRail : ISelectable
 	void SwitchDirection();
 	void SetParams(Panel *p);
 	void UpdatePanel(Panel *p);
-	void CopyPointsFromPoly(TerrainPolygon *tp);
+	void CopyPointsFromPoly(PolyPtr tp);
 	void CopyPointsFromRail(TerrainRail *rail);
 	TerrainRail *Copy();
 
@@ -105,8 +102,7 @@ struct TerrainRail : ISelectable
 	int top;
 	int bottom;
 
-	std::map<TerrainPoint*, std::list<
-		boost::shared_ptr<ActorParams>>> enemies;
+	std::map<TerrainPoint*, std::list<ActorPtr>> enemies;
 
 	int writeIndex;
 	bool finalized;
@@ -117,7 +113,5 @@ struct TerrainRail : ISelectable
 
 	const static int MAX_RAIL_LEVEL = 12;
 };
-
-typedef boost::shared_ptr<TerrainRail> RailPtr;
 
 #endif
