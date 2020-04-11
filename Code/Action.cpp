@@ -209,6 +209,11 @@ void Brush::AddObject( SelectPtr obj )
 	objects.push_back( obj );
 }
 
+bool Brush::IsEmpty()
+{
+	return objects.empty();
+}
+
 void Brush::RemoveObject( SelectPtr obj )
 {
 	objects.remove( obj );
@@ -232,13 +237,10 @@ void Brush::Clear()
 
 void Brush::Destroy()
 {
-	//automatically delete on clear now if there are no other
-	//references
-
-	//for( auto it = objects.begin(); it != objects.end(); ++it )
-	//{
-		//delete (*(*it));
-	//}
+	for( auto it = objects.begin(); it != objects.end(); ++it )
+	{
+		delete (*it);
+	}
 	
 	Clear();
 }
@@ -346,6 +348,11 @@ ApplyBrushAction::ApplyBrushAction( Brush *brush )
 	appliedBrush = *brush;
 }
 
+ApplyBrushAction::~ApplyBrushAction()
+{
+	appliedBrush.Destroy();
+}
+
 void ApplyBrushAction::Perform()
 {
 	//cout << "performing!" << endl;
@@ -403,6 +410,11 @@ ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement )
 	//this is the same way i have to do the checks to see if i can add in the first place
 }
 
+ReplaceBrushAction::~ReplaceBrushAction()
+{
+	replacement.Destroy();
+}
+
 void ReplaceBrushAction::Perform()
 {
 	assert( !performed );
@@ -443,23 +455,6 @@ void EditObjectAction::Perform()
 void EditObjectAction::Undo()
 {
 	//restore the old parameters
-}
-
-
-DeletePointsAction::DeletePointsAction()
-{
-}
-
-void DeletePointsAction::Perform()
-{
-	
-	//delete the points
-}
-
-void DeletePointsAction::Undo()
-{
-
-	//delete the polygon which resulted from the deletion and replace it with a copy of the old polygon
 }
 
 CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
@@ -885,14 +880,15 @@ ComplexPasteAction::~ComplexPasteAction()
 
 }
 
-void ComplexPasteAction::SetNewest( ReplaceBrushAction *a)
+void ComplexPasteAction::SetNewest(
+	Brush &newOrig, Brush &newResult)
 {
-	auto removedEnd = a->original.objects.end();
+	auto removedEnd = newOrig.objects.end();
 	auto appEnd = applied.objects.end();
-	auto addsEnd = a->replacement.objects.end();
+	auto addsEnd = newResult.objects.end();
 
 	bool found;
-	for (auto removedIt = a->original.objects.begin(); removedIt != removedEnd; ++removedIt)
+	for (auto removedIt = newOrig.objects.begin(); removedIt != removedEnd; ++removedIt)
 	{
 		found = false;
 		for( auto appIt = applied.objects.begin(); appIt != appEnd; ++appIt)
@@ -911,12 +907,10 @@ void ComplexPasteAction::SetNewest( ReplaceBrushAction *a)
 		}
 	}
 
-	for (auto addIt = a->replacement.objects.begin(); addIt != addsEnd; ++addIt)
+	for (auto addIt = newResult.objects.begin(); addIt != addsEnd; ++addIt)
 	{
 		applied.objects.push_back((*addIt));
 	}
-
-	delete a;
 }
 
 void ComplexPasteAction::Undo()

@@ -73,6 +73,7 @@ typedef std::map<TerrainPoint*, std::list<ActorPtr>> EnemyMap;
 struct ActorType
 {
 	ActorType(ParamsInfo &pi);
+	~ActorType();
 	void Init();
 	void PlaceEnemy();
 	void PlaceEnemy(ActorParams *ap);
@@ -100,6 +101,7 @@ struct ActorType
 struct ActorGroup
 {
 	ActorGroup(const std::string &name);
+	~ActorGroup();
 	std::string name;
 	std::list<ActorPtr> actors;
 	void Draw(sf::RenderTarget *target);

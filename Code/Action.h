@@ -27,6 +27,7 @@ struct Brush
 	bool CanAdd();
 	bool Has(SelectPtr sp);
 	bool terrainOnly;
+	bool IsEmpty();
 	//bool activated;
 };
 
@@ -69,12 +70,11 @@ struct CompoundAction : Action
 	void Undo();
 };
 
-struct ReplaceBrushAction;
 struct ComplexPasteAction : Action
 {
 	ComplexPasteAction();
 	~ComplexPasteAction();
-	void SetNewest(ReplaceBrushAction *a);
+	void SetNewest(Brush &orig, Brush &result );
 	void Undo();
 	void Perform();
 
@@ -85,7 +85,8 @@ struct ComplexPasteAction : Action
 struct ApplyBrushAction : Action
 {
 	ApplyBrushAction( Brush *brush );
-	
+	~ApplyBrushAction();
+
 	void Perform();
 	void Undo();
 
@@ -108,7 +109,7 @@ struct ReplaceBrushAction : Action
 {
 	ReplaceBrushAction( Brush *original,
 		Brush *replacement );
-
+	~ReplaceBrushAction();
 	void Perform();
 	void Undo();
 
@@ -116,31 +117,9 @@ struct ReplaceBrushAction : Action
 	Brush replacement;
 };
 
-struct AddBrushAction : Action
-{
-	AddBrushAction(Brush *brush, Brush *intersectingPolys );
-	void Perform();
-	void Undo();
-
-
-	Brush *oldPolys;
-	Brush *brush;
-	Brush *intersectingPolys;
-	Brush newPolys;
-};
-
-struct AddToPolygonAction : Action
-{
-	AddToPolygonAction();
-	void Perform();
-	void Undo();
-};
 
 //--NOTE: DOESNT ACTUALLY MOVE BRUSH
 //IF PARAMETER IS SET
-
-
-
 struct MoveBrushAction : Action
 {
 	MoveBrushAction( Brush *brush, sf::Vector2i delta,
@@ -181,15 +160,6 @@ struct GroundAction : Action
 	//sf::Vector2i oldPos;
 };
 
-struct DeleteActorAction : Action
-{
-	DeleteActorAction();
-	void Perform();
-	void Undo();
-	
-	ActorParams *actor;
-};
-
 struct EditObjectAction : Action
 {
 	EditObjectAction();
@@ -197,30 +167,6 @@ struct EditObjectAction : Action
 	void Undo();
 
 	ActorParams *actor;
-};
-
-
-
-//should this be split up or should the others
-//be in lists
-struct MovePointsAction : Action
-{
-	MovePointsAction();
-	void Perform();
-	void Undo();
-
-	std::list<TerrainPoint*> points;
-	sf::Vector2i delta;
-};
-
-struct DeletePointsAction : Action
-{
-	DeletePointsAction();
-	void Perform();
-	void Undo();
-
-	PolyPtr oldPolygon; //copy
-	std::list<TerrainPoint*> points;
 };
 
 struct CreateGateAction : Action

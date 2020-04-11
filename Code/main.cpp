@@ -24,7 +24,7 @@
 #include "MainMenu.h"
 //#include <crtdbg.h>
 #include "Enemy.h"
-//#include <vld.h>
+#include <vld.h>
 
 
 

@@ -18,6 +18,12 @@ ActorType::ActorType(ParamsInfo &pi)
 	}
 }
 
+ActorType::~ActorType()
+{
+	if( panel != NULL)
+		delete panel;
+}
+
 bool ActorType::CanBeGrounded()
 {
 	return (info.pmGround != NULL);
@@ -775,6 +781,21 @@ void ActorType::PlaceEnemy()
 
 }
 
+
+ActorGroup::ActorGroup(const std::string &n)
+	:name(n)
+{
+
+}
+
+ActorGroup::~ActorGroup()
+{
+	for (auto it = actors.begin(); it != actors.end(); ++it)
+	{
+		delete (*it);
+	}
+}
+
 void ActorGroup::Draw(sf::RenderTarget *target)
 {
 	for (list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it)
@@ -794,12 +815,6 @@ void ActorGroup::DrawPreview(sf::RenderTarget *target)
 
 		//(*it)->DrawPreview( target );
 	}
-}
-
-ActorGroup::ActorGroup(const std::string &n)
-	:name(n)
-{
-
 }
 
 void ActorGroup::WriteFile(std::ofstream &of)

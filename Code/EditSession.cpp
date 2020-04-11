@@ -693,6 +693,7 @@ EditSession::~EditSession()
 	delete background;
 
 	delete polygonInProgress;
+	delete railInProgress;
 
 	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
@@ -707,6 +708,10 @@ EditSession::~EditSession()
 			delete (*it);
 		}
 	}
+
+	//delete mapOptionsPanel;
+	//delete terrainOptionsPanel;
+	//delete railOptionsPanel;
 
 	delete progressBrush;
 	delete selectedBrush;
@@ -2350,13 +2355,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	guiMenuSprite.setTexture( guiMenuCubeTexture );
 	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
 
-	graphColor = Color( 200, 50, 50, 100 );
-	numGraphLines = 30;
-	graphLinesVA = new VertexArray(sf::Lines, numGraphLines * 8);
-
 	graph = new EditorGraph;
-
-	SetupGraph();
 	
 
 	bool s = IsKeyPressed( sf::Keyboard::T );
@@ -6161,31 +6160,34 @@ void EditSession::PasteTerrain(Brush *b)
 		}
 	}
 
-	ReplaceBrushAction *a;
+	Brush orig;
+	Brush result;
 	if (HoldingControl())
 	{
-		a = ExecuteTerrainMultiSubtract(brushPolys);
+		ExecuteTerrainMultiSubtract(brushPolys, orig, result);
 	}
 	else
 	{
-		a = ExecuteTerrainMultiAdd(brushPolys);
+		ExecuteTerrainMultiAdd(brushPolys, orig, result);
 	}
-	
-	if (a != NULL)
+
+	if( !orig.IsEmpty() || !result.IsEmpty() )
 	{
-		a->Perform();
+		orig.Deactivate();
+		result.Activate();
+
 		if( complexPaste == NULL )
 		{
 			//assert(complexPaste == NULL);
 			complexPaste = new ComplexPasteAction();			
 			lastBrushPastePos = worldPos;
 			brushRepeatDist = 20.0;
-			complexPaste->SetNewest(a);
+			complexPaste->SetNewest(orig, result);
 			lastBrushPastePos = worldPos;
 		}
 		else
 		{
-			complexPaste->SetNewest(a);
+			complexPaste->SetNewest(orig, result);
 			lastBrushPastePos = worldPos;
 		}
 	}
@@ -6481,7 +6483,8 @@ bool EditSession::FixPathSlivers(ClipperLib::Path &p,
 	return true;
 }
 
-ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys)
+bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
+	Brush &orig, Brush &resultBrush)
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
@@ -6495,8 +6498,8 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brus
 	int i;
 
 
-	Brush orig;
-	Brush resultBrush;
+	//Brush orig;
+	//Brush resultBrush;
 	list<GateInfoPtr> gateInfoList;
 
 	ClipperIntPointSet fusedPoints;
@@ -6703,16 +6706,18 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brus
 
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 	
-	if (resultBrush.objects.size() == 0)
+	return true;
+	/*if (resultBrush.objects.size() == 0)
 	{
 		return NULL;
-	}
+	}*/
 
-	ReplaceBrushAction * action = new ReplaceBrushAction(&orig, &resultBrush);
-	return action;
+	//ReplaceBrushAction * action = new ReplaceBrushAction(&orig, &resultBrush);
+	//return action;
 }
 
-ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
+bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
+	Brush &orig, Brush &resultBrush)
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
@@ -6736,8 +6741,8 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPoly
 
 	list<list<PolyPtr>> allIntersectsList;
 
-	Brush orig;
-	Brush resultBrush;
+	//Brush orig;
+	//Brush resultBrush;
 
 	list<GateInfoPtr> gateInfoList;
 
@@ -7155,11 +7160,12 @@ ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPoly
 	AddFullPolysToBrush(inverseConnectedInters, gateInfoList, &orig);
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 
-	if (resultBrush.objects.size() == 0)
-		return NULL;
+	//if (resultBrush.objects.size() == 0)
+	//	return NULL;
 
-	ReplaceBrushAction * action = new ReplaceBrushAction(&orig, &resultBrush);
-	return action;
+	//ReplaceBrushAction * action = new ReplaceBrushAction(&orig, &resultBrush);
+	//return action;
+	return true;
 }
 
 
@@ -8807,70 +8813,6 @@ void EditSession::DrawGraph()
 	{
 		graph->SetCenterAbsolute(view.getCenter());
 		graph->Draw(preScreenTex);
-	}
-	/*if (showGraph)
-	{
-		VertexArray &graphLines = *graphLinesVA;
-		Vector2f adjustment;
-		for (int i = 0; i < numGraphLines * 8; ++i)
-		{
-			int adjX, adjY;
-			float x = view.getCenter().x;
-			float y = view.getCenter().y;
-
-			x /= 32;
-			y /= 32;
-
-			if (x > 0)
-				x += .5f;
-			else if (x < 0)
-				x -= .5f;
-
-			if (y > 0)
-				y += .5f;
-			else if (y < 0)
-				y -= .5f;
-
-			adjX = ((int)x) * 32;
-			adjY = ((int)y) * 32;
-
-			adjustment = Vector2f(adjX, adjY);
-
-			graphLines[i].position += adjustment;
-		}
-
-		preScreenTex->draw(graphLines);
-
-		for (int i = 0; i < numGraphLines * 8; ++i)
-		{
-			graphLines[i].position -= adjustment;
-		}
-	}*/
-}
-
-void EditSession::SetupGraph()
-{
-	VertexArray &graphLines = *graphLinesVA;
-
-	int graphSep = 32;
-	int graphMax = graphSep * numGraphLines;
-	int temp = -graphMax;
-
-	//horiz
-	for (int i = 0; i < numGraphLines * 4; i += 2)
-	{
-		graphLines[i] = sf::Vertex(sf::Vector2<float>(-graphMax, temp), graphColor);
-		graphLines[i + 1] = sf::Vertex(sf::Vector2<float>(graphMax, temp), graphColor);
-		temp += graphSep;
-	}
-
-	//vert
-	temp = -graphMax;
-	for (int i = numGraphLines * 4; i < numGraphLines * 8; i += 2)
-	{
-		graphLines[i] = sf::Vertex(sf::Vector2<float>(temp, -graphMax), graphColor);
-		graphLines[i + 1] = sf::Vertex(sf::Vector2<float>(temp, graphMax), graphColor);
-		temp += graphSep;
 	}
 }
 

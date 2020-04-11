@@ -537,10 +537,6 @@ struct EditSession : GUIHandler, TilesetManager
 		ClipperLib::Path &pOuter);
 	V2d panAnchor;
 	bool showGraph;
-	sf::Color graphColor;
-
-	sf::VertexArray *graphLinesVA;
-	int numGraphLines;
 
 	EditorGraph *graph;
 
@@ -762,10 +758,14 @@ struct EditSession : GUIHandler, TilesetManager
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys,
 		std::list<PolyPtr> &containedPolys);
-	ReplaceBrushAction* ExecuteTerrainMultiAdd(
-		std::list<PolyPtr> &brushPolys );
-	ReplaceBrushAction* ExecuteTerrainMultiSubtract(
-		std::list<PolyPtr> &brushPolys);
+	bool ExecuteTerrainMultiAdd(
+		std::list<PolyPtr> &brushPolys,
+		Brush &orig,
+		Brush &result );
+	bool ExecuteTerrainMultiSubtract(
+		std::list<PolyPtr> &brushPolys,
+		Brush &orig,
+		Brush &result);
 	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys,
 		std::list<PolyPtr> &containedPolys );
 	Action *ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys,
