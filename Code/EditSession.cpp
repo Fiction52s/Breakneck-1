@@ -2144,7 +2144,7 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
-	complexPasteAction = NULL;
+	complexPaste = NULL;
 
 	testGateInfo.edit = EditSession::GetSession();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
@@ -6300,11 +6300,8 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 	}
 }
 
-Action * EditSession::PasteTerrain(Brush *b)
+void EditSession::PasteTerrain(Brush *b)
 {
-	//CompoundAction *compoundAction = new CompoundAction;
-	Brush applyBrush;
-
 	list<PolyPtr> brushPolys;
 
 	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
@@ -6316,12 +6313,34 @@ Action * EditSession::PasteTerrain(Brush *b)
 		}
 	}
 
-	//Action *a = ExecuteTerrainMultiAdd(brushPolys);
-	Action *a = ExecuteTerrainMultiSubtract(brushPolys);
-	if( a != NULL )
+	ReplaceBrushAction *a;
+	if (HoldingControl())
+	{
+		a = ExecuteTerrainMultiSubtract(brushPolys);
+	}
+	else
+	{
+		a = ExecuteTerrainMultiAdd(brushPolys);
+	}
+	
+	if (a != NULL)
+	{
 		a->Perform();
-
-	return a;
+		if( complexPaste == NULL )
+		{
+			//assert(complexPaste == NULL);
+			complexPaste = new ComplexPasteAction();			
+			lastBrushPastePos = worldPos;
+			brushRepeatDist = 20.0;
+			complexPaste->SetNewest(a);
+			lastBrushPastePos = worldPos;
+		}
+		else
+		{
+			complexPaste->SetNewest(a);
+			lastBrushPastePos = worldPos;
+		}
+	}
 
 	
 
@@ -6671,7 +6690,7 @@ bool EditSession::FixPathSlivers(ClipperLib::Path &p,
 	return true;
 }
 
-Action* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys)
+ReplaceBrushAction* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys)
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
@@ -6898,11 +6917,11 @@ Action* EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys)
 		return NULL;
 	}
 
-	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
+	ReplaceBrushAction * action = new ReplaceBrushAction(&orig, &resultBrush);
 	return action;
 }
 
-Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
+ReplaceBrushAction* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress.get());
@@ -7113,16 +7132,22 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 		{
 			PolyPtr newPoly(new TerrainPolygon(&grassTex));
-			FusePathClusters((*sit), clipperIntersections, fusedPoints);
+			//FusePathClusters((*sit), clipperIntersections, fusedPoints);
 			//FixPathSlivers((*sit));
 
 			//haven't tested this with add yet but it makes sense. taken from new multi subtract
-			FixPathSlivers((*sit), fusedPoints);
+			//FixPathSlivers((*sit), fusedPoints);
 
 			newPoly->Reserve((*sit).size());
 			newPoly->AddPointsFromClipperPath((*sit), fusedPoints);
 
 			if (newPoly->GetNumPoints() < 3)
+			{
+				newPoly.reset();
+				continue;
+			}
+
+			if (!newPoly->TryFixAllSlivers())
 			{
 				newPoly.reset();
 				continue;
@@ -7227,11 +7252,11 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 			clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
 			clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
 
-			for (auto it = solution.begin(); it != solution.end(); ++it)
-			{
-				FusePathClusters((*it), clipperIntersections, fusedPoints);
-				//FixPathSlivers((*it));
-			}
+			//for (auto it = solution.begin(); it != solution.end(); ++it)
+			//{
+			//	FusePathClusters((*it), clipperIntersections, fusedPoints);
+			//	//FixPathSlivers((*it));
+			//}
 		}
 
 		ClipperLib::Paths inverseSolution;
@@ -7290,11 +7315,15 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 		{
 			PolyPtr newInverse(new TerrainPolygon(&grassTex));
 			newInverse->Reserve(inverseSolution[playerInsideIndex].size());
-			FusePathClusters(inverseSolution[playerInsideIndex], clipperIntersections, fusedPoints);
-			FixPathSlivers(inverseSolution[playerInsideIndex]);
+			//FusePathClusters(inverseSolution[playerInsideIndex], clipperIntersections, fusedPoints);
+			//FixPathSlivers(inverseSolution[playerInsideIndex]);
 			newInverse->AddPointsFromClipperPath(inverseSolution[playerInsideIndex], fusedPoints);
 
-			if (newInverse->GetNumPoints() < 3)
+			if (!newInverse->TryFixAllSlivers())
+			{
+				newInverse.reset();
+			}
+			else if (newInverse->GetNumPoints() < 3)
 			{
 				//should never happen
 				newInverse.reset();
@@ -7335,7 +7364,10 @@ Action* EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys)
 	AddFullPolysToBrush(inverseConnectedInters, gateInfoList, &orig);
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 
-	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
+	if (resultBrush.objects.size() == 0)
+		return NULL;
+
+	ReplaceBrushAction * action = new ReplaceBrushAction(&orig, &resultBrush);
 	return action;
 }
 
@@ -10139,13 +10171,13 @@ void EditSession::EditModeHandleEvent()
 				editMouseGrabPos = pos;
 				editMouseOrigPos = pos;
 				mode = PASTE;
-				if (complexPasteAction != NULL)
+				if (complexPaste != NULL)
 				{
-					delete complexPasteAction;
+					delete complexPaste;
+					complexPaste = NULL;
 				}
-				complexPasteAction = NULL;//->AddSubAction(pasteAction);
+				
 				pasteAxis = -1;
-
 				selectedBrush->SetSelected(false);
 				selectedBrush->Clear();
 			}
@@ -10262,8 +10294,8 @@ void EditSession::PasteModeHandleEvent()
 	{
 		if (ev.mouseButton.button == sf::Mouse::Button::Left)
 		{
-			Action *pasteAction = PasteTerrain(copiedBrush);
-			if (!HoldingControl())
+			PasteTerrain(copiedBrush);
+			/*if (!HoldingControl())
 			{
 				mode = EDIT;
 				if (pasteAction != NULL)
@@ -10277,18 +10309,7 @@ void EditSession::PasteModeHandleEvent()
 					}
 				}
 			}
-			else
-			{
-				if (pasteAction != NULL)
-				{
-					assert(complexPasteAction == NULL);
-					complexPasteAction = new CompoundAction();
-					complexPasteAction->performed = true;
-					lastBrushPastePos = worldPos;
-					brushRepeatDist = 20.0;
-					complexPasteAction->AddSubAction(pasteAction);
-				}
-			}
+			else*/
 		}
 		break;
 		
@@ -10297,12 +10318,12 @@ void EditSession::PasteModeHandleEvent()
 	{
 		if (ev.mouseButton.button == sf::Mouse::Button::Left)
 		{
-			if (complexPasteAction != NULL)
+			if (complexPaste != NULL)
 			{
-				cout << "completing complex paste" << endl;
-				doneActionStack.push_back(complexPasteAction);
+				//cout << "completing complex paste" << endl;
+				doneActionStack.push_back(complexPaste);
 				ClearUndoneActions();
-				complexPasteAction = NULL;
+				complexPaste = NULL;
 			}
 		}
 		break;
@@ -10312,10 +10333,10 @@ void EditSession::PasteModeHandleEvent()
 		if (ev.key.code == Keyboard::X)
 		{
 			mode = EDIT;
-			if (complexPasteAction != NULL)
+			if (complexPaste != NULL)
 			{
-				delete complexPasteAction;
-				complexPasteAction = NULL;
+				delete complexPaste;
+				complexPaste = NULL;
 			}
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
@@ -11184,25 +11205,10 @@ void EditSession::PasteModeUpdate()
 	}
 	editMouseGrabPos = pos;
 	
-	
-	//PasteTerrain(copiedBrush);
-	if (HoldingControl() && !panning && IsMousePressed(Mouse::Left) && (delta.x != 0 || delta.y != 0)
+	if (!panning && IsMousePressed(Mouse::Left) && (delta.x != 0 || delta.y != 0)
 		&& length(lastBrushPastePos - worldPos ) >= brushRepeatDist )
 	{
-		Action *pasteAction = PasteTerrain(copiedBrush);
-		if (pasteAction != NULL)
-		{
-			if (complexPasteAction == NULL)
-			{
-				complexPasteAction = new CompoundAction();
-				complexPasteAction->performed = true;
-				lastBrushPastePos = worldPos;
-				brushRepeatDist = 20.0;
-			}
-
-			complexPasteAction->AddSubAction(pasteAction);
-			lastBrushPastePos = worldPos;
-		}
+		PasteTerrain(copiedBrush);
 	}
 }
 

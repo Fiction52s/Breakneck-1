@@ -40,6 +40,8 @@ struct Background;
 struct ScrollingBackground;
 struct AirTriggerParams;
 struct CameraShotParams;
+struct ComplexPasteAction;
+struct ReplaceBrushAction;
 
 struct TerrainRail;
 
@@ -621,7 +623,7 @@ struct EditSession : GUIHandler, TilesetManager
 	bool FixPathSlivers(ClipperLib::Path &p,
 		ClipperIntPointSet &fusedPoints );
 
-	CompoundAction *complexPasteAction;
+	ComplexPasteAction *complexPaste;
 	double brushRepeatDist;
 	V2d lastBrushPastePos;
 	int pasteAxis;
@@ -764,13 +766,13 @@ struct EditSession : GUIHandler, TilesetManager
 		sf::Vector2i &p1, sf::Vector2i &prim);
 	bool GetPrimaryAdjustment(sf::Vector2i &p0,
 		sf::Vector2i &p1, sf::Vector2i &adjust);
-	Action * PasteTerrain(Brush *b);
+	void PasteTerrain(Brush *b);
 	Action* ExecuteTerrainAdd(
 		std::list<PolyPtr> &intersectingPolys,
 		std::list<PolyPtr> &containedPolys);
-	Action* ExecuteTerrainMultiAdd(
+	ReplaceBrushAction* ExecuteTerrainMultiAdd(
 		std::list<PolyPtr> &brushPolys );
-	Action* ExecuteTerrainMultiSubtract(
+	ReplaceBrushAction* ExecuteTerrainMultiSubtract(
 		std::list<PolyPtr> &brushPolys);
 	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys,
 		std::list<PolyPtr> &containedPolys );

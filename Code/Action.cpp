@@ -841,6 +841,66 @@ void CompoundAction::Undo()
 	}
 }
 
+ComplexPasteAction::ComplexPasteAction()
+{
+	performed = true;
+}
+
+ComplexPasteAction::~ComplexPasteAction()
+{
+
+}
+
+void ComplexPasteAction::SetNewest( ReplaceBrushAction *a)
+{
+	auto removedEnd = a->original.objects.end();
+	auto appEnd = applied.objects.end();
+	auto addsEnd = a->replacement.objects.end();
+
+	bool found;
+	for (auto removedIt = a->original.objects.begin(); removedIt != removedEnd; ++removedIt)
+	{
+		found = false;
+		for( auto appIt = applied.objects.begin(); appIt != appEnd; ++appIt)
+		{
+			if ((*appIt) == (*removedIt))
+			{
+				applied.objects.erase(appIt);
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			orig.objects.push_back((*removedIt));
+		}
+	}
+
+	for (auto addIt = a->replacement.objects.begin(); addIt != addsEnd; ++addIt)
+	{
+		applied.objects.push_back((*addIt));
+	}
+
+	delete a;
+}
+
+void ComplexPasteAction::Undo()
+{
+	assert(performed);
+
+	applied.Deactivate();
+	orig.Activate();
+}
+
+void ComplexPasteAction::Perform()
+{
+	assert(!performed);
+
+	orig.Deactivate();
+	applied.Activate();
+}
+
 ModifyTerrainTypeAction::ModifyTerrainTypeAction( Brush *brush,
 	int p_newTerrainWorld, int p_newVariation )
 	:newTerrainWorld( p_newTerrainWorld ), newVariation( p_newVariation )

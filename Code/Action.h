@@ -69,6 +69,19 @@ struct CompoundAction : Action
 	void Undo();
 };
 
+struct ReplaceBrushAction;
+struct ComplexPasteAction : Action
+{
+	ComplexPasteAction();
+	~ComplexPasteAction();
+	void SetNewest(ReplaceBrushAction *a);
+	void Undo();
+	void Perform();
+
+	Brush orig;
+	Brush applied;
+};
+
 struct ApplyBrushAction : Action
 {
 	ApplyBrushAction( Brush *brush );
