@@ -2127,6 +2127,7 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
+	oldShaderZoom = -1;
 	complexPaste = NULL;
 
 	testGateInfo.edit = EditSession::GetSession();
@@ -8754,15 +8755,34 @@ void EditSession::UpdatePolyShaders()
 	Vector2f vSize = view.getSize();
 	float zoom = vSize.x / 960;
 	Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
-	for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
+	bool first = oldShaderZoom < 0;
+
+
+	if (first || oldShaderZoom != zoom ) //first run
 	{
-		if (terrainTextures[i] != NULL)
+		oldShaderZoom = zoom;
+		for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
 		{
-			polyShaders[i].setUniform("zoom", zoom);
-			polyShaders[i].setUniform("topLeft", botLeft);
-			//just need to change the name topleft  to botleft eventually
+			if (terrainTextures[i] != NULL)
+			{
+				polyShaders[i].setUniform("zoom", zoom);
+			}
 		}
 	}
+
+	if (first || oldShaderBotLeft != botLeft)
+	{
+		oldShaderBotLeft = botLeft;
+		for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
+		{
+			if (terrainTextures[i] != NULL)
+			{
+				//just need to change the name topleft to botleft in the shader
+				polyShaders[i].setUniform("topLeft", botLeft);
+			}
+		}
+	}
+	
 }
 
 void EditSession::TempMoveSelectedBrush()

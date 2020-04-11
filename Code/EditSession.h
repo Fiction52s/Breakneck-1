@@ -504,6 +504,9 @@ struct EditSession : GUIHandler, TilesetManager
 	double minZoom;
 	double maxZoom;
 
+	float oldShaderZoom;
+	sf::Vector2f oldShaderBotLeft;
+
 	void TryPlaceTrackingEnemy();
 	void AnchorTrackingEnemyOnTerrain();
 	void MoveTrackingEnemy();
