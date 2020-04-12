@@ -4,7 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include "Gate.h"
 #include <list>
-#include "poly2tri\poly2tri.h"
 
 //typedef std::pair <Gate*,bool> GateBool;
 struct Enemy;

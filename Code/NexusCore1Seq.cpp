@@ -3,7 +3,6 @@
 #include <iostream>
 #include <assert.h>
 #include "Actor.h"
-#include "poly2tri/poly2tri.h"
 #include "VectorMath.h"
 #include "Camera.h"
 #include <sstream>

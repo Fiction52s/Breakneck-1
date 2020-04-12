@@ -10,7 +10,6 @@
 //#include "EditSession.h"
 #include "VectorMath.h"
 #include "Input.h"
-#include "poly2tri/poly2tri.h"
 #include "Physics.h"
 #include "Actor.h"
 #include "Tileset.h"

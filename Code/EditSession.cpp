@@ -5,7 +5,6 @@
 #include <fstream>
 #include <assert.h>
 #include <iostream>
-#include "poly2tri/poly2tri.h"
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 #include "Physics.h"

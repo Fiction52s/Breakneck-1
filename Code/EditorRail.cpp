@@ -2,7 +2,6 @@
 #include "Physics.h"
 #include "EditSession.h"
 #include "ActorParams.h"
-#include "poly2tri/poly2tri.h"
 
 using namespace std;
 using namespace sf;

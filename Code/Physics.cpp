@@ -3,7 +3,6 @@
 #include <iostream>
 #include <assert.h>
 #include "GameSession.h"
-#include "poly2tri/poly2tri.h"
 
 using namespace sf;
 using namespace std;

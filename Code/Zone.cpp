@@ -1,5 +1,4 @@
 #include "Zone.h"
-#include "poly2tri/poly2tri.h"
 #include <iostream>
 #include "Enemy.h"
 #include "GameSession.h"
