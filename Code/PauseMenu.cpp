@@ -441,6 +441,11 @@ ControlProfile * PauseMenu::GetCurrSelectedProfile()
 	return controlSettingsMenu->pSel->currProfile;
 }
 
+bool PauseMenu::SetCurrProfileByName(const std::string &name)
+{
+	return controlSettingsMenu->pSel->SetCurrProfileByName(name);
+}
+
 void PauseMenu::TabLeft()
 {
 	int index = (int)currentTab;

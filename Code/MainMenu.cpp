@@ -3197,6 +3197,11 @@ ControlProfile *MainMenu::GetCurrSelectedProfile()
 	return pauseMenu->GetCurrSelectedProfile();
 }
 
+bool MainMenu::SetCurrProfileByName(const std::string &name)
+{
+	return pauseMenu->SetCurrProfileByName(name);
+}
+
 CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
 		:menu( p_menu ), optionChosen( false ), showNamePopup( false )
 {

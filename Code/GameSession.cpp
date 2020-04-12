@@ -6192,7 +6192,7 @@ bool GameSession::Load()
 	{
 		//temporary
 		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
-		currProfile = pauseMenu->controlSettingsMenu->pSel->currProfile;
+		currProfile = pauseMenu->GetCurrSelectedProfile();
 		GameController &con = GetController(i);
 		currProfile->tempCType = con.GetCType();
 		con.SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );

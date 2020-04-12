@@ -20,6 +20,7 @@
 #include "EditorGraph.h"
 #include "Actor.h"
 #include "ControlProfile.h"
+#include "SaveFile.h"
 
 #include "clipper.hpp"
 //using namespace ClipperLib;
@@ -48,7 +49,14 @@ EditSession * EditSession::currSession = NULL;
 
 V2d EditSession::GetPlayerSpawnPos()
 {
-	return V2d(player->position);
+	if (HoldingControl())
+	{
+		return worldPos;
+	}
+	else
+	{
+		return V2d(player->position);
+	}
 }
 
 void EditSession::TestPlayerModeUpdate()
@@ -146,6 +154,7 @@ void EditSession::TestPlayerMode()
 	accumulator = TIMESTEP + .1;
 	mode = TEST_PLAYER;
 	totalGameFrames = 0;
+	gameClock.restart();
 
 	if (terrainTree != NULL)
 	{
@@ -421,6 +430,17 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	terrainTree = NULL;
 	specialTerrainTree = NULL;
 
+	SaveFile *currFile = mainMenu->GetCurrentProgress();
+	if (currFile != NULL)
+	{
+		bool set = mainMenu->SetCurrProfileByName(currFile->controlProfileName);
+		if (!set)
+		{
+			//error. profile does not exist
+			currFile->controlProfileName = "KIN Default";
+			currFile->Save();
+		}
+	}
 	//update this later
 	for (int i = 0; i < 1; ++i)
 	{

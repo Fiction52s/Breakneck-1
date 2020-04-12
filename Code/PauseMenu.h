@@ -140,6 +140,7 @@ struct PauseMenu
 	MainMenu *mainMenu;
 
 	ControlProfile *GetCurrSelectedProfile();
+	bool SetCurrProfileByName(const std::string &name);
 	ControlSettingsMenu *controlSettingsMenu;
 	OptionsMenu *optionsMenu;
 	

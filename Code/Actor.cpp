@@ -1327,11 +1327,22 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 		grindActionLength = 32;
 		//SetActionExpr( SPAWNWAIT );
-		SetActionExpr(INTROBOOST);//INTRO
+
+		if (owner != NULL)
+		{
+			SetActionExpr(INTROBOOST);//INTRO
+			frame = 0;
+		}
+		else
+		{
+			SetActionExpr(JUMP);
+			frame = 1;
+		}
+		
 		
 		
 
-		frame = 0;
+		
 		
 		timeSlowStrength = 5;
 		slowMultiple = 1;
@@ -2579,11 +2590,17 @@ void Actor::Respawn()
 	enemiesKilledThisFrame = 0;
 	gateTouched = NULL;
 
+
 	if( owner != NULL && !owner->hasShipEntrance )
 	{
 		SetAction(INTROBOOST);
 		frame = 0;
 		//ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
+	}
+	else if (owner == NULL && editOwner != NULL)
+	{
+		SetAction(JUMP);
+		frame = 1;
 	}
 
 	velocity.x = 0;

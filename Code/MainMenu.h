@@ -626,6 +626,7 @@ struct MainMenu
 	ControllerState &GetCurrInputUnfiltered(int index);
 
 	ControlProfile *GetCurrSelectedProfile();
+	bool SetCurrProfileByName(const std::string &name);
 	
 
 	ControllerState menuPrevInput;

@@ -725,6 +725,8 @@ void TerrainPolygon::Move(Vector2i move )
 {
 	assert( finalized );
 	
+	V2d dMove(move);
+
 	int numP = GetNumPoints();
 	TerrainPoint *curr;
 	for (int i = 0; i < numP; ++i)
@@ -735,6 +737,9 @@ void TerrainPolygon::Move(Vector2i move )
 		{
 			curr->gate->UpdateLine();
 		}
+
+		edges[i].v0 += dMove;
+		edges[i].v1 += dMove;
 	}
 
 	for( int i = 0; i < numP; ++i )
