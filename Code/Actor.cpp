@@ -1293,7 +1293,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 
 		ground = NULL;
-		movingGround = NULL;
+
 		groundSpeed = 0;
 		maxNormalRun = 60; //adjust up w/ more power?
 	
@@ -1345,7 +1345,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		groundOffsetX = 0;
 
 		grindEdge = NULL;
-		grindMovingTerrain = NULL;
 		grindQuantity = 0;
 		grindSpeed = 0;
 
@@ -1427,7 +1426,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		rightWire = new Wire( this, true );
 
 		bounceEdge = NULL;
-		bounceMovingTerrain = NULL;
 		bounceGrounded = false;
 
 		
@@ -2713,7 +2711,6 @@ void Actor::UpdatePrePhysics()
 		velocity = abs(groundSpeed) * trueNormal;
 
 		ground = NULL;
-		movingGround = NULL;
 		frame = 1; //so it doesnt use the jump frame when just dropping
 		reversed = false;
 		framesInAir = 0;
@@ -3167,7 +3164,6 @@ void Actor::UpdatePrePhysics()
 						hasDoubleJump = true;
 						lastWire = 0;
 						ground = grindEdge;
-						movingGround = grindMovingTerrain;
 						edgeQuantity = grindQuantity;
 						groundSpeed = grindSpeed;
 
@@ -3262,9 +3258,7 @@ void Actor::UpdatePrePhysics()
 
 						//	frame = 0;
 							ground = NULL;
-							movingGround = NULL;
 							grindEdge = NULL;
-							grindMovingTerrain = NULL;
 							reversed = false;
 						}
 						else
@@ -3290,7 +3284,6 @@ void Actor::UpdatePrePhysics()
 
 
 							ground = grindEdge;
-							movingGround = grindMovingTerrain;
 							groundSpeed = -grindSpeed;
 							edgeQuantity = grindQuantity;
 							grindEdge = NULL;
@@ -3626,7 +3619,6 @@ void Actor::UpdatePrePhysics()
 				//bounceGrounded = true;
 				BounceFlameOn();
 				oldBounceEdge = NULL;
-				bounceMovingTerrain = NULL;
 				//break;
 			}
 			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
@@ -4894,7 +4886,6 @@ void Actor::UpdatePrePhysics()
 						if( !j )
 						{
 							ground = grindEdge;
-							movingGround = grindMovingTerrain;
 							edgeQuantity = grindQuantity;
 							SetAction(LAND);
 							frame = 0;
@@ -4920,7 +4911,6 @@ void Actor::UpdatePrePhysics()
 						else
 						{
 							ground = grindEdge;
-							movingGround = grindMovingTerrain;
 							edgeQuantity = grindQuantity;
 							groundSpeed = grindSpeed;
 							SetActionExpr(JUMPSQUAT);
@@ -4978,9 +4968,7 @@ void Actor::UpdatePrePhysics()
 							SetActionExpr( JUMP );
 							frame = 1;
 							ground = NULL;
-							movingGround = NULL;
 							grindEdge = NULL;
-							grindMovingTerrain = NULL;
 							reversed = false;
 						}
 						else
@@ -5013,7 +5001,6 @@ void Actor::UpdatePrePhysics()
 							lastWire = 0;
 
 							ground = grindEdge;
-							movingGround = grindMovingTerrain;
 							groundSpeed = -grindSpeed;
 							edgeQuantity = grindQuantity;
 							reversed = true;
@@ -5199,8 +5186,7 @@ void Actor::UpdatePrePhysics()
 				hurtBody.isCircle = false;
 				hurtBody.rw = 7;
 				hurtBody.rh = normalHeight;
-			}	
-				//movingGround = NULL;
+			}
 				
 			break;
 		}
@@ -5357,7 +5343,6 @@ void Actor::UpdatePrePhysics()
 						hasDoubleJump = true;
 						lastWire = 0;
 						ground = grindEdge;
-						movingGround = grindMovingTerrain;
 						edgeQuantity = grindQuantity;
 						SetAction(LAND);
 						frame = 0;
@@ -5438,9 +5423,7 @@ void Actor::UpdatePrePhysics()
 							SetActionExpr( JUMP );
 							frame = 0;
 							ground = NULL;
-							movingGround = NULL;
 							grindEdge = NULL;
-							grindMovingTerrain = NULL;
 							reversed = false;
 						}
 						else
@@ -5475,7 +5458,6 @@ void Actor::UpdatePrePhysics()
 
 
 							ground = grindEdge;
-							movingGround = grindMovingTerrain;
 							groundSpeed = -grindSpeed;
 							edgeQuantity = grindQuantity;
 							grindEdge = NULL;
@@ -5658,7 +5640,6 @@ void Actor::UpdatePrePhysics()
 				SetAction(GRINDBALL);
 				frame = 0;
 			}
-				//movingGround = NULL;
 			
 			if( action != GRINDBALL && action != GRINDATTACK )
 			{
@@ -6288,7 +6269,6 @@ void Actor::UpdatePrePhysics()
 				//velocity = length( storedBounceVel ) * bounceEdge->Normal();
 				//ground = NULL;
 				bounceEdge = NULL;
-				bounceMovingTerrain = NULL;
 
 				//if( ground != NULL )
 				//	ground = NULL;
@@ -6301,7 +6281,6 @@ void Actor::UpdatePrePhysics()
 					ground = bounceEdge;
 					edgeQuantity = bounceQuant;
 					bounceEdge = NULL;
-					bounceMovingTerrain = NULL;
 
 					if( bn.y > -steepThresh )
 					{
@@ -6379,46 +6358,8 @@ void Actor::UpdatePrePhysics()
 					frame = 1;
 					velocity = storedBounceVel;
 					bounceEdge = NULL;
-					bounceMovingTerrain = NULL;
 				}
 			}
-			//V2d( storedBounceVel.x, storedBounceVel.x ) ;
-			
-			
-			/*if( reversed )
-			{
-				if( -bn.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-				{
-					/*if( groundSpeed > 0 && bn.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
-					{
-						//climbing
-					}
-					else
-					{
-						//falling
-					}
-				}
-			}
-			else
-			{
-				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-				{
-					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
-					{
-						//climbing
-						break;
-					}
-					else
-					{
-						//falling
-						break;
-					}
-				}
-			}*/
-
-
-			
-			
 			break;
 		}
 	case BOUNCEGROUNDEDWALL:
@@ -6509,7 +6450,6 @@ void Actor::UpdatePrePhysics()
 					velocity = abs(groundSpeed) * trueNormal;
 
 					ground = NULL;
-					movingGround = NULL;
 					frame = 1; //so it doesnt use the jump frame when just dropping
 					reversed = false;
 					framesInAir = 0;
@@ -6606,7 +6546,6 @@ void Actor::UpdatePrePhysics()
 					//owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 6, 4, facingRight );
 
 					ground = NULL;
-					movingGround = NULL;
 					holdJump = true;
 
 					framesInAir = 0;
@@ -6687,21 +6626,6 @@ void Actor::UpdatePrePhysics()
 				{
 					velocity.y -= jumpStrength;
 				}
-
-				/*V2d pp = ground->GetPoint(edgeQuantity);
-				double ang = GroundedAngle();
-				V2d fxPos;
-				if ((approxEquals(ang, 0) && !reversed) || (approxEquals(ang, PI) && reversed))
-					fxPos = V2d(pp.x + offsetX, pp.y);
-				else
-					fxPos = pp;
-
-				fxPos += gNorm * 16.0;*/
-
-				//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_jump, fxPos, false, ang, 6, 4, facingRight);
-
-				//ground = NULL;
-				//movingGround = NULL;
 				holdJump = true;
 
 				framesInAir = 0;
@@ -9947,7 +9871,6 @@ bool Actor::CheckWall( bool right )
 	minContact.collisionPriority = 10000;
 	minContact.edge = NULL;
 	minContact.resolution = V2d( 0, 0 );
-	minContact.movingPlat = NULL;
 	col = false;
 	queryMode = "checkwall";
 	tempVel = vel;
@@ -9959,13 +9882,6 @@ bool Actor::CheckWall( bool right )
 	owner->terrainTree->Query( this, r );
 	owner->barrierTree->Query(this, r);
 	
-	/*queryMode = "moving_checkwall";
-	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
-	{
-		currMovingTerrain = (*it);
-		(*it)->Query( this, r );
-	}*/
-	
 
 
 	if( !col )
@@ -9976,23 +9892,7 @@ bool Actor::CheckWall( bool right )
 	bool wally = false;
 	if( minContact.edge != NULL && !minContact.edge->IsInvisibleWall() )
 	{
-		V2d oldv0 = minContact.edge->v0;
-		V2d oldv1 = minContact.edge->v1;
-
-		if( minContact.movingPlat != NULL )
-		{
-			cout << "moving plat blah" << endl;
-			minContact.edge->v0 += minContact.movingPlat->position;
-			minContact.edge->v1 += minContact.movingPlat->position;
-		}
-
 		double quant = minContact.edge->GetQuantity( test.position );
-
-		if( minContact.movingPlat!= NULL )
-		{
-			minContact.edge->v0 = oldv0;
-			minContact.edge->v1 = oldv1;
-		}
 
 		bool zero = false;
 		bool one = false;
@@ -10102,11 +10002,6 @@ bool Actor::CheckStandUp()
 	//	Query( this, owner->testTree, r );
 		owner->terrainTree->Query( this, r );
 		owner->barrierTree->Query(this, r);
-
-		for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
-		{
-			(*it)->Query( this, r );
-		}
 		possibleEdgeCount = 0;
 
 		/*if( checkValid )
@@ -10181,14 +10076,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	owner->barrierTree->Query(this, r);
 
 
-	//cout << "owner: " << owner << ", tree: " << owner->terrainTree << endl;
 	testr = false;
-	queryMode = "moving_resolve";
-	for( list<MovingTerrain*>::iterator it = owner->movingPlats.begin(); it != owner->movingPlats.end(); ++it )
-	{
-		currMovingTerrain = (*it);
-		(*it)->Query( this, r );
-	}
 
 	if( col )
 	{
@@ -10515,20 +10403,12 @@ V2d Actor::UpdateReversePhysics()
 						movementVec.x = .1;
 					}
 
-					if( movingGround != NULL )
-					{
-						movementVec += currMovingTerrain->vel / (double)slowMultiple;
-						cout << "6 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-					}				
-
 					//cout << "airborne 2" << endl;
 					leftGround = true;
 					SetActionExpr( JUMP );
 					frame = 1;
 					
 					ground = NULL;
-					movingGround = NULL;
 
 					leftGroundExtra = movementVec;
 					return leftGroundExtra;
@@ -10587,14 +10467,6 @@ V2d Actor::UpdateReversePhysics()
 						{
 							movementVec.x = -.1;
 						}
-
-						if( movingGround != NULL )
-					{
-						movementVec += currMovingTerrain->vel / (double)slowMultiple;
-						cout << "6 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-					}
-						
 						//leftGroundExtra.y = .01;
 						//leftGroundExtra.x = .01;
 
@@ -10605,7 +10477,6 @@ V2d Actor::UpdateReversePhysics()
 						//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 						//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
-						movingGround = NULL;
 
 						leftGroundExtra = movementVec;
 						return leftGroundExtra;
@@ -10629,13 +10500,6 @@ V2d Actor::UpdateReversePhysics()
 										movementVec.x = .1;
 									}	
 
-									if( movingGround != NULL )
-									{
-										movementVec += currMovingTerrain->vel / (double)slowMultiple / GetNumSteps();
-										cout << "7 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-											", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-									}
-
 									cout << "airborne 1" << endl;
 									leftGroundExtra.y = .01;
 									leftGroundExtra.x = .01;
@@ -10647,7 +10511,6 @@ V2d Actor::UpdateReversePhysics()
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
 									holdJump = false;
-									movingGround = NULL;
 
 									return leftGroundExtra;
 								}
@@ -10704,29 +10567,11 @@ V2d Actor::UpdateReversePhysics()
 						movementVec.x = .1;
 					}
 
-					
-					if( movingGround != NULL )
-					{
-						movementVec += currMovingTerrain->vel / (double)slowMultiple;
-						cout << "2 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-					}
-					
-
-					//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-					//cout << "move: " << movementVec.x << ", " << movementVec.y << endl;
-
 					leftGround = true;
 					SetActionExpr( JUMP );
 					frame = 1;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
-					movingGround = NULL;
 					holdJump = false;
-
-					//leftGroundExtra.y = .01;
-					//leftGroundExtra.x = .1;
 					leftGroundExtra = movementVec;
 					return leftGroundExtra;
 
@@ -10842,20 +10687,12 @@ V2d Actor::UpdateReversePhysics()
 						movementVec.x = -.1;
 					}
 
-					if( movingGround != NULL )
-					{
-						movementVec += currMovingTerrain->vel / (double)slowMultiple;
-						cout << "3 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-					}
-
 					leftGround = true;
 					SetActionExpr( JUMP );
 					frame = 1;
 					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
-					movingGround = NULL;
 					holdJump = false;
 					leftGroundExtra = movementVec;
 					//leftGroundExtra.y = .01;
@@ -10918,20 +10755,12 @@ V2d Actor::UpdateReversePhysics()
 							movementVec.x = .1;
 						}
 
-						if( movingGround != NULL )
-						{
-							movementVec += currMovingTerrain->vel / (double)slowMultiple;
-							cout << "3 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-								", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-						}
-
 						leftGround = true;
 						SetActionExpr( JUMP );
 						frame = 1;
 						//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 						//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 						ground = NULL;
-						movingGround = NULL;
 						holdJump = false;
 						leftGroundExtra = movementVec;
 						//leftGroundExtra.y = .01;
@@ -10958,12 +10787,6 @@ V2d Actor::UpdateReversePhysics()
 										movementVec.x = -.1;
 									}
 
-									if( movingGround != NULL )
-									{
-										movementVec += currMovingTerrain->vel / (double)slowMultiple;
-										cout << "4 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-											", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-									}
 									cout << "airborne 3" << endl;
 									leftGround = true;
 									SetActionExpr( JUMP );
@@ -10971,7 +10794,6 @@ V2d Actor::UpdateReversePhysics()
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
-									movingGround = NULL;
 
 									holdJump = false;
 
@@ -11035,13 +10857,6 @@ V2d Actor::UpdateReversePhysics()
 					{
 						movementVec.x = -.1;
 					}
-
-					if( movingGround != NULL )
-					{
-						movementVec += currMovingTerrain->vel / (double)slowMultiple;
-						cout << "5 movementvec is now: " << movementVec.x << ", " << movementVec.y <<
-							", because of: " << currMovingTerrain->vel.x << ", " << currMovingTerrain->vel.y << endl;
-					}
 					cout << "airborne 4: " << velocity.x << ", " << velocity.y << endl;
 					SetActionExpr( JUMP );
 					frame = 1;
@@ -11050,7 +10865,6 @@ V2d Actor::UpdateReversePhysics()
 					leftGround = true;
 					reversed = false;
 					ground = NULL;
-					movingGround = NULL;
 					holdJump = false;
 
 					//leftGroundExtra.y = .01;
@@ -11192,24 +11006,8 @@ V2d Actor::UpdateReversePhysics()
 								{
 									//cout << "a" << endl;
 									ground = minContact.edge;
-									movingGround = minContact.movingPlat;
-
-									V2d oldv0 = ground->v0;
-									V2d oldv1 = ground->v1;
-
-									if( movingGround != NULL )
-									{
-										ground->v0 += movingGround->position;
-										ground->v1 += movingGround->position;
-									}
 
 									q = ground->GetQuantity( minContact.position );
-
-									if( movingGround != NULL )
-									{
-										ground->v0 = oldv0;
-										ground->v1 = oldv1;
-									}
 
 									edgeQuantity = q;
 									offsetX = -b.rw;
@@ -11219,24 +11017,8 @@ V2d Actor::UpdateReversePhysics()
 								{
 									//cout << "b" << endl;
 									ground = minContact.edge;
-									movingGround = minContact.movingPlat;
-
-									V2d oldv0 = ground->v0;
-									V2d oldv1 = ground->v1;
-
-									if( movingGround != NULL )
-									{
-										ground->v0 += movingGround->position;
-										ground->v1 += movingGround->position;
-									}
 
 									q = ground->GetQuantity( minContact.position );
-
-									if( movingGround != NULL )
-									{
-										ground->v0 = oldv0;
-										ground->v1 = oldv1;
-									}
 
 									edgeQuantity = q;
 									offsetX = b.rw;
@@ -11414,7 +11196,6 @@ V2d Actor::UpdateReversePhysics()
 							leftGround = true;
 
 							ground = NULL;
-							movingGround = NULL;
 						}
 					}
 					else if( groundSpeed < 0 )
@@ -11511,8 +11292,6 @@ V2d Actor::UpdateReversePhysics()
 							leftGround = true;
 							reversed = false;
 							ground = NULL;
-							movingGround = NULL;
-							//cout << "leaving ground RIGHT!!!!!!!!" << endl;
 						}
 
 					}
@@ -11549,7 +11328,6 @@ V2d Actor::UpdateReversePhysics()
 							leftGround = true;
 							reversed = false;
 							ground = NULL;
-							movingGround = NULL;
 							break;
 							//return V2d( 0, 0 );
 						}
@@ -11577,23 +11355,8 @@ V2d Actor::UpdateReversePhysics()
 									{
 										//this is for corner border cases
 										cout << "REVERSED CORNER BORDER CASE: " << test << endl;
-										V2d oldv0 = ground->v0;
-										V2d oldv1 = ground->v1;
-
-										if (movingGround != NULL)
-										{
-											ground->v0 += movingGround->position;
-											ground->v1 += movingGround->position;
-										}
 
 										q = ground->GetQuantity(ground->GetPoint(q) + minContact.resolution);
-
-										if (movingGround != NULL)
-										{
-											ground->v0 = oldv0;
-											ground->v1 = oldv1;
-										}
-
 
 										groundSpeed = 0;
 										edgeQuantity = q;
@@ -11605,60 +11368,17 @@ V2d Actor::UpdateReversePhysics()
 										//cout << "c" << endl;   
 										//cout << "eNorm: " << eNorm.x << ", " << eNorm.y << endl;
 										ground = minContact.edge;
-										movingGround = minContact.movingPlat;
-
-										V2d oldv0 = ground->v0;
-										V2d oldv1 = ground->v1;
-
-										if (movingGround != NULL)
-										{
-											ground->v0 += movingGround->position;
-											ground->v1 += movingGround->position;
-										}
 
 										q = ground->GetQuantity(minContact.position);
-
-										if (movingGround != NULL)
-										{
-											ground->v0 = oldv0;
-											ground->v1 = oldv1;
-										}
 
 										V2d eNorm = minContact.edge->Normal();
 										offsetX = position.x + minContact.resolution.x - minContact.position.x;
 										offsetX = -offsetX;
-
-
-										//wtf is this doing?
-										//edgeQuantity = 0;
-										//groundSpeed = 0;
-										//break;
-
 									}
 								}
 								else
 								{
-									//cout << "xx" << endl;
-
-
-									V2d oldv0 = ground->v0;
-									V2d oldv1 = ground->v1;
-
-									if (movingGround != NULL)
-									{
-										ground->v0 += movingGround->position;
-										ground->v1 += movingGround->position;
-									}
-
 									q = ground->GetQuantity(ground->GetPoint(q) + minContact.resolution);
-
-									if (movingGround != NULL)
-									{
-										ground->v0 = oldv0;
-										ground->v1 = oldv1;
-									}
-
-
 									groundSpeed = 0;
 									edgeQuantity = q;
 									offsetX = -offsetX;
@@ -11672,27 +11392,7 @@ V2d Actor::UpdateReversePhysics()
 									storedBounceGroundSpeed = groundSpeed * slowMultiple;
 									groundedWallBounce = true;
 								}
-
-
-								//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
-
-								V2d oldv0 = ground->v0;
-								V2d oldv1 = ground->v1;
-
-								if (movingGround != NULL)
-								{
-									ground->v0 += movingGround->position;
-									ground->v1 += movingGround->position;
-								}
-
 								q = ground->GetQuantity(ground->GetPoint(q) + minContact.resolution);
-
-								if (movingGround != NULL)
-								{
-									ground->v0 = oldv0;
-									ground->v1 = oldv1;
-								}
-
 								groundSpeed = 0;
 								offsetX = -offsetX;
 								edgeQuantity = q;
@@ -11785,7 +11485,6 @@ bool Actor::ExitGrind(bool jump)
 			if (!jump)
 			{
 				ground = grindEdge;
-				movingGround = grindMovingTerrain;
 				edgeQuantity = grindQuantity;
 				SetAction(LAND);
 				frame = 0;
@@ -11811,7 +11510,6 @@ bool Actor::ExitGrind(bool jump)
 			else
 			{
 				ground = grindEdge;
-				movingGround = grindMovingTerrain;
 				edgeQuantity = grindQuantity;
 				groundSpeed = grindSpeed;
 				SetActionExpr(JUMPSQUAT);
@@ -11869,9 +11567,7 @@ bool Actor::ExitGrind(bool jump)
 				SetActionExpr(JUMP);
 				frame = 1;
 				ground = NULL;
-				movingGround = NULL;
 				grindEdge = NULL;
-				grindMovingTerrain = NULL;
 				reversed = false;
 			}
 			else
@@ -11904,7 +11600,6 @@ bool Actor::ExitGrind(bool jump)
 				lastWire = 0;
 
 				ground = grindEdge;
-				movingGround = grindMovingTerrain;
 				groundSpeed = -grindSpeed;
 				edgeQuantity = grindQuantity;
 				reversed = true;
@@ -12247,7 +11942,6 @@ void Actor::CheckBounceFlame()
 		{
 			BounceFlameOn();
 			oldBounceEdge = NULL;
-			bounceMovingTerrain = NULL;
 		}
 		else if (!currInput.X && bounceFlameOn)
 		{
@@ -12504,47 +12198,7 @@ void Actor::UpdatePhysics()
 	if( IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST)
-		return;
-
-	/*if (ground != NULL && groundSpeed != 0)
-	{
-		EffectInstance params;
-		params.SetParams(Vector2f(ground->GetPoint(edgeQuantity)),
-			Transform(Transform::Identity), 1, 60, 0);
-
-		Vector2f v(0, -.1f);
-		Transform tr;
-
-		int r = (rand() % 20) - 10;
-		tr.rotate(r);
-
-		params.SetVelocityParams(tr.transformPoint(v), Vector2f(0, 0), 6);
-		dustParticles->ActivateEffect(&params);
-
-	}*/
-
-	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
-	/*if( blah == 0 )
-	{
-		blah = 1;
-		cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
-	}
-	else
-	{
-		blah = 0;
-	}
-	*/
-	//cout << "before position: " << position.x << ", " << position.y << endl;
-	
-	//cout << "position: " << position.x << ", " << position.y << endl;
-	if( movingGround != NULL )
-	{
-		position += movingGround->vel;// + normalize( movingGround->vel ) * .01;
-	}
-	else
-	{
-		//UpdateFullPhysics();
-	}
+		return;	
 
 	if( action == DEATH )
 	{
@@ -13066,26 +12720,6 @@ void Actor::UpdatePhysics()
 					{
 						ground = next;
 						q = length( ground->v1 - ground->v0 );	
-						//cout << "airborne 5" << endl;
-					/*cout << "airborne 5" << endl;
-						velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-						movementVec.y -= .01;
-						if( movementVec.x >= -.01 )
-						{
-							movementVec.x = -.01;
-						}
-
-						leftGround = true;
-						action = JUMP;
-						frame = 1;
-						rightWire->UpdateAnchors( V2d( 0, 0 ) );
-						leftWire->UpdateAnchors( V2d( 0, 0 ) );
-						ground = NULL;
-						movingGround = NULL;*/
-						//bounceEdge = NULL;
-						//grindEdge = NULL;
 					}
 					else
 					{
@@ -13114,7 +12748,6 @@ void Actor::UpdatePhysics()
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
 									holdJump = false;
-									movingGround = NULL;
 								}
 								else
 								{
@@ -13176,7 +12809,6 @@ void Actor::UpdatePhysics()
 					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
-					movingGround = NULL;
 				}
 			}
 			else if( transferRight )
@@ -13226,26 +12858,6 @@ void Actor::UpdatePhysics()
 					{
 						ground = next;
 						q = 0;
-					//	cout << "airborne 13" << endl;
-						//cout << "leave right 1" << endl;
-						/*velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-						movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-						movementVec.y -= .01;
-						if( movementVec.x <= .01 )
-						{
-							movementVec.x = .01;
-						}
-						cout << "airborne 8" << endl;
-						leftGround = true;
-						action = JUMP;
-						frame = 1;
-						rightWire->UpdateAnchors( V2d( 0, 0 ) );
-						leftWire->UpdateAnchors( V2d( 0, 0 ) );
-						ground = NULL;
-						movingGround = NULL;*/
-						
-						//break;
 					}
 					else
 					{
@@ -13273,8 +12885,6 @@ void Actor::UpdatePhysics()
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
-									movingGround = NULL;
-
 								}
 								else
 								{
@@ -13337,15 +12947,9 @@ void Actor::UpdatePhysics()
 
 					leftGround = true;
 					ground = NULL;
-					movingGround = NULL;
-					//cout << "airborne 10" << endl;
 					SetActionExpr( JUMP );
 					frame = 1;
 					holdJump = false;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-					//break;
-					//cout << "leaving ground RIGHT!!!!!!!!" << endl;
 				}
 
 			}
@@ -13415,25 +13019,9 @@ void Actor::UpdatePhysics()
 								if( m > 0 && eNorm.x < 0 )
 								{
 									ground = minContact.edge;
-									movingGround = minContact.movingPlat;
-
-									V2d oldv0 = ground->v0;
-									V2d oldv1 = ground->v1;
-
-									if( movingGround != NULL )
-									{
-										ground->v0 += movingGround->position;
-										ground->v1 += movingGround->position;
-									}
 
 									q = ground->GetQuantity( minContact.position );
 
-									if( movingGround != NULL )
-									{
-										ground->v0 = oldv0;
-										ground->v1 = oldv1;
-									}
-									
 									edgeQuantity = q;
 									offsetX = -b.rw;
 									continue;
@@ -13441,24 +13029,8 @@ void Actor::UpdatePhysics()
 								else if( m < 0 && eNorm.x > 0 )
 								{
 									ground = minContact.edge;
-									movingGround = minContact.movingPlat;
-
-									V2d oldv0 = ground->v0;
-									V2d oldv1 = ground->v1;
-
-									if( movingGround != NULL )
-									{
-										ground->v0 += movingGround->position;
-										ground->v1 += movingGround->position;
-									}
 
 									q = ground->GetQuantity( minContact.position );
-
-									if( movingGround != NULL )
-									{
-										ground->v0 = oldv0;
-										ground->v1 = oldv1;
-									}
 
 									edgeQuantity = q;
 									offsetX = b.rw;
@@ -13535,11 +13107,7 @@ void Actor::UpdatePhysics()
 							SetActionExpr( JUMP );
 							holdJump = false;
 							frame = 1;
-							//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-							//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 							ground = NULL;
-							movingGround = NULL;
-
 							break;
 						}
 						else
@@ -13564,7 +13132,6 @@ void Actor::UpdatePhysics()
 								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = NULL;
-								movingGround = NULL;
 								break;
 							}
 							else
@@ -13602,7 +13169,6 @@ void Actor::UpdatePhysics()
 							//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 							//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 							ground = NULL;
-							movingGround = NULL;
 							break;
 						}
 						else
@@ -13626,7 +13192,6 @@ void Actor::UpdatePhysics()
 								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = NULL;
-								movingGround = NULL;
 								break;
 							}
 							else
@@ -13773,7 +13338,6 @@ void Actor::UpdatePhysics()
 						
 							leftGround = true;
 							ground = NULL;
-							movingGround = NULL;
 						//	cout << "leaving ground RIGHT!!!!!!!!" << endl;
 						}
 					}
@@ -13860,8 +13424,6 @@ void Actor::UpdatePhysics()
 							leftGround = true;
 
 							ground = NULL;
-						//	cout << "not sure leaving ground left" << endl;
-							movingGround = NULL;
 						}
 					}
 					else
@@ -13949,50 +13511,16 @@ void Actor::UpdatePhysics()
 									{
 										//corner border case. hope it doesn't cause problems
 										cout << "CORNER BORDER CASE: " << test << endl;
-										V2d oldv0 = ground->v0;
-										V2d oldv1 = ground->v1;
-
-										if( movingGround != NULL )
-										{
-											ground->v0 += movingGround->position;
-											ground->v1 += movingGround->position;
-										}
-
 										q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
-
-										if( movingGround != NULL )
-										{
-											ground->v0 = oldv0;
-											ground->v1 = oldv1;
-										}
-									
 										groundSpeed = 0;
 										edgeQuantity = q;
 										break;
 									}
 									else
 									{	
-										
-										///cout << "cxxxx" << endl;
 										ground = minContact.edge;
-										movingGround = minContact.movingPlat;
-
-										V2d oldv0 = ground->v0;
-										V2d oldv1 = ground->v1;
-
-										if( movingGround != NULL )
-										{
-											ground->v0 += movingGround->position;
-											ground->v1 += movingGround->position;
-										}
-
 										q = ground->GetQuantity( minContact.position );
 
-										if( movingGround != NULL )
-										{
-											ground->v0 = oldv0;
-											ground->v1 = oldv1;
-										}
 										V2d eNorm = minContact.normal;//minContact.edge->Normal();		
 
 										//hopefully this doesn't cause any bugs. if it does i know exactly where to find it
@@ -14012,25 +13540,7 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
-									//cout << "xx" << endl;
-
-									V2d oldv0 = ground->v0;
-									V2d oldv1 = ground->v1;
-
-									if( movingGround != NULL )
-									{
-										ground->v0 += movingGround->position;
-										ground->v1 += movingGround->position;
-									}
-
 									q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
-
-									if( movingGround != NULL )
-									{
-										ground->v0 = oldv0;
-										ground->v1 = oldv1;
-									}
-									
 									groundSpeed = 0;
 									edgeQuantity = q;
 									break;
@@ -14053,8 +13563,6 @@ void Actor::UpdatePhysics()
 						
 									leftGround = true;
 									ground = NULL;
-									movingGround = NULL;
-									//cout << "airborne 11" << endl;
 									SetActionExpr( JUMP );
 									holdJump = false;
 									frame = 1;
@@ -14076,109 +13584,17 @@ void Actor::UpdatePhysics()
 										
 									}
 
-									//cout << "zzz: " << q << ", " << eNorm.x << ", " << eNorm.y << endl;
-									//if( action != STEEPCLIMB )
-									//if( minContact.position == minContact.edge->v0 )
-									//if( action != STEEPCLIMB || minContact.position == minContact.edge->v0 )
-									if( true )
-									{
-									
 
-									V2d oldv0 = ground->v0;
-									V2d oldv1 = ground->v1;
+									q = ground->GetQuantity(ground->GetPoint(q) + minContact.resolution);
 
-									if( movingGround != NULL )
-									{
-										ground->v0 += movingGround->position;
-										ground->v1 += movingGround->position;
-									}
-
-									q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
-
-									if( movingGround != NULL )
-									{
-										ground->v0 = oldv0;
-										ground->v1 = oldv1;
-									}
-
-								//	cout << "this case?: " << eNorm.x << ", " << eNorm.y << endl;
-								
 									groundSpeed = 0;
 									edgeQuantity = q;
-									}
-									else //if( false )//STEEPCLIMB
-									{
-
-										//if (length(testVel) < 15)
-										//{
-										//	testVel = normalize(testVel) * 15.0;
-										//}
-										//velocity = testVel;
-
-
-										//
-										////groundSpeed *= .7;
-										////velocity 
-										
-						
-										////leftGround = true;
-										////ground = NULL;
-										////cout << "airborne 12" << endl;
-										////SetActionExpr( JUMPSQUAT );
-										////physicsOver = true;
-										////frame = 0;
-
-										//leftGround = true;
-										//SetActionExpr(JUMP);
-										//holdJump = false;
-										//frame = 1;
-										////rightWire->UpdateAnchors( V2d( 0, 0 ) );
-										////leftWire->UpdateAnchors( V2d( 0, 0 ) );
-										//ground = NULL;
-										//movingGround = NULL;
-
-										movementVec = normalize(ground->v1 - ground->v0) * extra;
-										velocity = testVel;
-										leftGround = true;
-										ground = NULL;
-										movingGround = NULL;
-										SetActionExpr(JUMP);
-										holdJump = false;
-										frame = 1;
-										
-										//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-										//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-										//break;
-
-									}
 								}
-
-								//took this out because of the situation with steep ceiling and wall letting you
-								//push through. hopefully didnt break anything else
-								//break;
 							}
 						}
 						else
 						{
-					//		cout << "Sdfsdfd" << endl;
-
-						V2d oldv0 = ground->v0;
-							V2d oldv1 = ground->v1;
-
-							if( movingGround != NULL )
-							{
-								ground->v0 += movingGround->position;
-								ground->v1 += movingGround->position;
-							}
-
 							q = ground->GetQuantity( ground->GetPoint( q ) + minContact.resolution);
-
-							if( movingGround != NULL )
-							{
-								ground->v0 = oldv0;
-								ground->v1 = oldv1;
-							}
-
 							groundSpeed = 0;
 							edgeQuantity = q;
 							break;
@@ -14537,7 +13953,6 @@ void Actor::UpdatePhysics()
 				if( bounceEdge == NULL )//|| ( bounceEdge != NULL && minContact.edge->Normal().y < 0 && bounceEdge->Normal().y >= 0 ) )
 				{
 					bounceEdge = minContact.edge;
-					bounceMovingTerrain = minContact.movingPlat;
 					bounceNorm = minContact.normal;
 					framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
 				
@@ -14545,20 +13960,7 @@ void Actor::UpdatePhysics()
 					V2d oldv0 = bounceEdge->v0;
 					V2d oldv1 = bounceEdge->v1;
 
-					if( bounceMovingTerrain != NULL )
-					{
-						bounceEdge->v0 += bounceMovingTerrain->position;
-						bounceEdge->v1 += bounceMovingTerrain->position;
-					}
-
 					bounceQuant = bounceEdge->GetQuantity( minContact.position );
-				
-
-					if( bounceMovingTerrain != NULL )
-					{
-						bounceEdge->v0 = oldv0;
-						bounceEdge->v1 = oldv1;
-					}
 
 					offsetX = ( position.x + b.offset.x ) - minContact.position.x;
 					
@@ -14625,10 +14027,6 @@ void Actor::UpdatePhysics()
 						break;
 					}
 					
-					/*oldBounceEdge = bounceEdge;
-					bounceEdge = minContact.edge;
-					bounceNorm = minContact.normal;
-					bounceMovingTerrain = minContact.movingPlat;*/
 				}
 				
 				
@@ -14639,11 +14037,6 @@ void Actor::UpdatePhysics()
 			//else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			else if( ((action == JUMP && /*!holdJump*/false) || ( framesInAir > maxJumpHeightFrame || velocity.y > -8 || !holdJump ) || action == WALLCLING || action == WALLATTACK ) && tempCollision && minContact.normal.y < 0 && abs( minContact.normal.x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
 			{
-				if( minContact.movingPlat != NULL )
-				{
-					//minContact.position += minContact.movingPlat->vel * minContact.collisionPriority;//(1 -minContact.collisionPriority );
-					minContact.position -= minContact.movingPlat->vel;
-				}
 				//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
 				prevRail = NULL;
 
@@ -14714,33 +14107,8 @@ void Actor::UpdatePhysics()
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
-				movingGround = minContact.movingPlat;
-
-				V2d oldv0 = ground->v0;
-				V2d oldv1 = ground->v1;
-
-				if( movingGround != NULL )
-				{
-					ground->v0 += movingGround->position;
-					ground->v1 += movingGround->position;
-
-					//minContact.position += minContafct
-				}
-
 				
-
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
-				
-				//edgeQuantity -= .01;
-				//cout << "landing edge quantity is: " << edgeQuantity << ", edge length is: " << length( ground->v1 - ground->v0 ) << endl;
-
-				if( movingGround != NULL )
-				{
-
-					//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
-					ground->v0 = oldv0;
-					ground->v1 = oldv1;
-				}
 
 				V2d alongVel = V2d( -minContact.normal.y, minContact.normal.x );
 				
@@ -14885,24 +14253,8 @@ void Actor::UpdatePhysics()
 				//b.offset.y = -b.offset.y;
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
-				movingGround = minContact.movingPlat;
-
-				V2d oldv0 = ground->v0;
-				V2d oldv1 = ground->v1;
-
-				if( movingGround != NULL )
-				{
-					ground->v0 += movingGround->position;
-					ground->v1 += movingGround->position;
-				}
 
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
-
-				if( movingGround != NULL )
-				{
-					ground->v0 = oldv0;
-					ground->v1 = oldv1;
-				}
 
 				double groundLength = length( ground->v1 - ground->v0 );
 				groundSpeed = 0;
@@ -15009,21 +14361,7 @@ void Actor::UpdatePhysics()
 			}
 			else if( tempCollision )
 			{
-				if( minContact.movingPlat != NULL )
-				{
-					//velocity = newVel + minContact.movingPlat->vel;
-				//	minContact.position -= minContact.movingPlat->vel;
-				}
-				//else
-				{
-					
-					velocity = newVel;
-					
-				}
-				
-				
-				
-
+				velocity = newVel;
 			}
 			else
 			{
@@ -15080,642 +14418,6 @@ void Actor::UpdatePhysics()
 		//queryMode = "gravitygrass";
 		//owner->grassTree->Query( this, )
 	}
-}
-
-void Actor::HitEdge( V2d &newVel )
-{
-	//V2d extraVel(0, 0);
-	//	
-	//collision = true;
-	//position += minContact.resolution;
-
-	//Edge *e = minContact.edge;
-	//V2d en = e->Normal();
-	//Edge *e0 = e->edge0;
-	//Edge *e1 = e->edge1;
-	//V2d e0n = e0->Normal();
-	//V2d e1n = e1->Normal();
-
-	//if (minContact.position.y > position.y + b.offset.y + b.rh - 5 && minContact.edge->Normal().y >= 0)
-	//{
-	//	if (minContact.position == minContact.edge->v0)
-	//	{
-	//		if (minContact.edge->edge0->Normal().y <= 0)
-	//		{
-	//			minContact.edge = minContact.edge->edge0;
-	//		}
-	//	}
-	//}
-
-	//if (abs(minContact.edge->Normal().x) > wallThresh)
-	//{
-	//	wallNormal = minContact.edge->Normal();
-	//}
-
-
-	//V2d extraDir = normalize(minContact.edge->v1 - minContact.edge->v0);
-
-	//if ((minContact.position == e->v0 && en.x < 0 && en.y < 0))
-	//{
-	//	V2d te = e0->v0 - e0->v1;
-	//	if (te.x > 0)
-	//	{
-	//		extraDir = V2d(0, -1);
-	//		wallNormal = extraDir;
-	//	}
-	//}
-	//else if ((minContact.position == e->v1 && en.x < 0 && en.y > 0))
-	//{
-	//	V2d te = e1->v1 - e1->v0;
-	//	if (te.x > 0)
-	//	{
-	//		extraDir = V2d(0, -1);
-	//		wallNormal = extraDir;
-	//	}
-	//}
-
-	//else if ((minContact.position == e->v1 && en.x < 0 && en.y < 0))
-	//{
-	//	V2d te = e1->v1 - e1->v0;
-	//	if (te.x < 0)
-	//	{
-	//		extraDir = V2d(0, 1);
-	//		wallNormal = extraDir;
-	//	}
-	//}
-	//else if ((minContact.position == e->v0 && en.x > 0 && en.y < 0))
-	//{
-	//	V2d te = e0->v0 - e0->v1;
-	//	if (te.x > 0)
-	//	{
-	//		extraDir = V2d(0, -1);
-	//		wallNormal = extraDir;
-	//	}
-	//}
-	//else if ((minContact.position == e->v1 && en.x > 0 && en.y < 0))
-	//{
-	//	V2d te = e1->v1 - e1->v0;
-	//	if (te.x < 0)
-	//	{
-	//		extraDir = V2d(0, 1);
-	//		wallNormal = V2d(1, 0);//extraDir;
-	//	}
-	//}
-	//else if ((minContact.position == e->v0 && en.x > 0 && en.y > 0))
-	//{
-	//	V2d te = e0->v0 - e0->v1;
-	//	if (te.x < 0)
-	//	{
-	//		extraDir = V2d(0, 1);
-	//		wallNormal = V2d(1, 0);
-	//	}
-	//}
-
-	//if ((minContact.position == e->v1 && en.x > 0 && en.y > 0))
-	//{
-	//	V2d te = e1->v1 - e1->v0;
-	//	if (te.y < 0)
-	//	{
-	//		extraDir = V2d(-1, 0);
-	//	}
-	//}
-	//else if ((minContact.position == e->v0 && en.x < 0 && en.y > 0))
-	//{
-	//	V2d te = e0->v0 - e0->v1;
-	//	if (te.y < 0)
-	//	{
-	//		extraDir = V2d(-1, 0);
-	//	}
-	//}
-
-	//if (minContact.normal.x != 0 || minContact.normal.y != 0)
-	//{
-	//	if (abs(minContact.normal.x) > wallThresh || (minContact.normal.y > 0 && abs(minContact.normal.x) > .9))
-	//	{
-	//		wallNormal = minContact.normal;
-	//	}
-	//	extraDir = V2d(minContact.normal.y, -minContact.normal.x);
-	//}
-
-	//double blah = length(velocity) - length(minContact.resolution);
-	////cout << "blah: " << blah << endl;
-	////wish i knew what this one meant
-	////extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
-	////extraVel = (length( velocity ) - length( minContact.resolution )) * extraDir;
-	//if (dot(velocity, extraDir) < 0)
-	//{
-	//	//extraVel = -extraVel;
-	//}
-
-	////might still need some more work
-	//extraVel = dot(normalize(velocity), extraDir) * length(minContact.resolution) * extraDir;
-
-	//if (length(extraVel) < .01)
-	//	extraVel = V2d(0, 0);
-
-	////extraVel = V2d( 0, 0 );
-	//newVel = dot(normalize(velocity), extraDir) * extraDir * length(velocity);
-
-	//V2d wVel = position - oldPos;
-
-	//leftWire->UpdateAnchors(wVel);
-	//rightWire->UpdateAnchors(wVel);
-
-
-	//int maxJumpHeightFrame = 10;
-
-	//if (leftWire->state == Wire::PULLING || leftWire->state == Wire::HIT)
-	//{
-	//	touchEdgeWithLeftWire = true;
-	//	if (action == WALLCLING)
-	//	{
-	//		touchEdgeWithLeftWire = true;
-	//	}
-	//}
-
-
-	//if (rightWire->state == Wire::PULLING || rightWire->state == Wire::HIT)
-	//{
-	//	touchEdgeWithRightWire = tempCollision;
-	//	if (action == WALLCLING)
-	//	{
-	//		touchEdgeWithRightWire = true;
-	//	}
-	//}
-
-	//bool bounceOkay = true;
-
-	//trueFramesInAir = framesInAir;
-
-	////note: when reversed you won't cancel on a jump onto a small ceiling. i hope this mechanic is okay
-	////also theres a jump && false condition that would need to be changed back
-
-	//if (tempCollision && minContact.normal.y >= 0)
-	//{
-	//	framesInAir = maxJumpHeightFrame + 1;
-	//}
-
-	//if (tempCollision)
-	//{
-	//	if (bounceEdge != NULL)
-	//	{
-	//		bounceOkay = false;
-	//		bounceEdge = NULL;
-	//		oldBounceEdge = NULL;
-	//		SetActionExpr(JUMP);
-	//		holdJump = false;
-	//		frame = 1;
-	//		break;
-	//	}
-	//	V2d en = minContact.normal;
-
-	//	if (en.y <= 0 && en.y > -steepThresh)
-	//	{
-	//		if (en.x < 0 && velocity.x < 0
-	//			|| en.x > 0 && velocity.x > 0)
-	//			bounceOkay = false;
-	//	}
-	//	else if (en.y >= 0 && -en.y > -steepThresh)
-	//	{
-	//		if (en.x < 0 && velocity.x < 0
-	//			|| en.x > 0 && velocity.x > 0)
-	//			bounceOkay = false;
-	//	}
-	//	else if (en.y == 0)
-	//	{
-	//		if (en.x < 0 && velocity.x < 0
-	//			|| en.x > 0 && velocity.x > 0)
-	//			bounceOkay = false;
-	//	}
-	//	else if (en.y < 0)
-	//	{
-	//		if (velocity.y < 0)
-	//			bounceOkay = false;
-	//	}
-	//	else if (en.y > 0)
-	//	{
-	//		if (velocity.y > 0)
-	//			bounceOkay = false;
-	//	}
-	//}
-
-	//if ((action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn) && bounceOkay)
-	//{
-	//	prevRail = NULL;
-	//	//this condition might only work when not reversed? does it matter?
-	//	if (bounceEdge == NULL)//|| ( bounceEdge != NULL && minContact.edge->Normal().y < 0 && bounceEdge->Normal().y >= 0 ) )
-	//	{
-	//		bounceEdge = minContact.edge;
-	//		bounceMovingTerrain = minContact.movingPlat;
-	//		bounceNorm = minContact.normal;
-	//		framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
-
-
-	//		V2d oldv0 = bounceEdge->v0;
-	//		V2d oldv1 = bounceEdge->v1;
-
-	//		if (bounceMovingTerrain != NULL)
-	//		{
-	//			bounceEdge->v0 += bounceMovingTerrain->position;
-	//			bounceEdge->v1 += bounceMovingTerrain->position;
-	//		}
-
-	//		bounceQuant = bounceEdge->GetQuantity(minContact.position);
-
-
-	//		if (bounceMovingTerrain != NULL)
-	//		{
-	//			bounceEdge->v0 = oldv0;
-	//			bounceEdge->v1 = oldv1;
-	//		}
-
-	//		offsetX = (position.x + b.offset.x) - minContact.position.x;
-
-	//		/*if( b.rh == doubleJumpHeight )
-	//		{
-	//		b.offset.y = (normalHeight - doubleJumpHeight);
-	//		}*/
-
-	//		if (b.rh < normalHeight)
-	//		{
-	//			if (minContact.normal.y > 0)
-	//				b.offset.y = -(normalHeight - b.rh);
-	//			else if (minContact.normal.y < 0)
-	//				b.offset.y = (normalHeight - b.rh);
-	//		}
-	//		else
-	//		{
-	//			b.offset.y = 0;
-	//		}
-
-	//		movement = 0;
-
-	//		V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
-
-	//		//double groundLength = length(ground->v1 - ground->v0);
-
-	//		V2d bn = bounceEdge->Normal();
-
-	//		V2d testVel = velocity;
-
-
-	//		/*if (testVel.y > 20)
-	//		{
-	//		testVel.y *= .7;
-	//		}
-	//		else if (testVel.y < -30)
-	//		{
-	//		testVel.y *= .5;
-	//		}*/
-
-	//		groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
-	//		break;
-	//		//cout << "bouncing: " << bounceQuant << endl;
-	//	}
-	//	else
-	//	{
-	//		//if( oldBounceEdge != NULL && minContact.edge != oldBounceEdge && action == BOUNCEAIR && framesInAir < 11 )
-	//		//if( bounceEdge != NULL && minContact.edge != bounceEdge )
-	//		{
-	//			if (action == BOUNCEAIR)
-	//			{
-	//				cout << "bounce air" << endl;
-	//			}
-	//			else
-	//			{
-	//				cout << "bounce ground" << endl;
-	//			}
-	//			cout << "stopped it here! framesinair: " << trueFramesInAir << endl;
-	//			bounceEdge = NULL;
-	//			oldBounceEdge = NULL;
-	//			SetActionExpr(JUMP);
-	//			holdJump = false;
-	//			frame = 1;
-	//			break;
-	//		}
-
-	//		/*oldBounceEdge = bounceEdge;
-	//		bounceEdge = minContact.edge;
-	//		bounceNorm = minContact.normal;
-	//		bounceMovingTerrain = minContact.movingPlat;*/
-	//	}
-
-
-	//	//	cout << "offset now!: " << offsetX << endl;
-	//	//groundSpeed = 0;
-	//	//	cout << "bouncing" << endl;
-	//}
-	////else if( ((action == JUMP && !holdJump) || framesInAir > maxJumpHeightFrame ) && tempCollision && minContact.edge->Normal().y < 0 && abs( minContact.edge->Normal().x ) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1  )
-	//else if (((action == JUMP && /*!holdJump*/false) || (framesInAir > maxJumpHeightFrame || velocity.y > -8 || !holdJump) || action == WALLCLING || action == WALLATTACK) && minContact.normal.y < 0 && abs(minContact.normal.x) < wallThresh  && minContact.position.y >= position.y + b.rh + b.offset.y - 1)
-	//{
-	//	if (minContact.movingPlat != NULL)
-	//	{
-	//		//minContact.position += minContact.movingPlat->vel * minContact.collisionPriority;//(1 -minContact.collisionPriority );
-	//		minContact.position -= minContact.movingPlat->vel;
-	//	}
-	//	//	minContact.position += minContact.movingPlat->vel;//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
-	//	prevRail = NULL;
-
-	//	//b.rh = dashHeight;
-	//	//cout << "edge: " << minContact.edge->v0.x << ", " << minContact.edge->v0.y << ", v1: " << minContact.edge->v1.x << ", " << minContact.edge->v1.y << endl;
-	//	//cout << "pos: " << position.x << ", " << position.y << ", minpos: " << minContact.position.x << ", " << minContact.position.y << endl;
-	//	offsetX = (position.x + b.offset.x) - minContact.position.x;
-
-	//	//cout << "offsetX: " << offsetX << endl;
-
-	//	//if( offsetX > b.rw + .00001 || offsetX < -b.rw - .00001 ) //to prevent glitchy stuff
-	//	////if( false )
-	//	//{
-	//	//	cout << "prevented glitchy offset: " << offsetX << endl;
-	//	//	assert( 0 );
-	//	if (false)
-	//	{
-	//	}
-	//	else
-	//	{
-	//		if (offsetX > b.rw + .00001 || offsetX < -b.rw - .00001) //stops glitchyness with _\ weird offsets
-	//		{
-	//			//assert( minContact.edge->Normal().y == -1 );
-	//			cout << "normal that offset is glitchy on: " << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << ", offset: " << offsetX
-	//				<< ", truenormal: " << minContact.normal.x << ", " << minContact.normal.y << endl;
-	//			cout << "position.x: " << position.x << ", minx " << minContact.position.x << endl;
-	//			if (offsetX > 0)
-	//			{
-	//				offsetX = b.rw;
-	//				minContact.position.x = position.x - b.rw;
-	//			}
-	//			else
-	//			{
-	//				offsetX = -b.rw;
-	//				minContact.position.x = position.x + b.rw;
-	//			}
-	//		}
-
-	//		if (b.rh < normalHeight)
-	//		{
-	//			if (minContact.normal.y > 0)
-	//				b.offset.y = -(normalHeight - b.rh);
-	//			else if (minContact.normal.y < 0)
-	//				b.offset.y = (normalHeight - b.rh);
-	//		}
-	//		else
-	//		{
-	//			b.offset.y = 0;
-	//		}
-
-	//		assert(!(minContact.normal.x == 0 && minContact.normal.y == 0));
-	//		groundOffsetX = ((position.x + b.offset.x) - minContact.position.x) / 2; //halfway?
-	//		ground = minContact.edge;
-	//		framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
-	//		movingGround = minContact.movingPlat;
-
-	//		V2d oldv0 = ground->v0;
-	//		V2d oldv1 = ground->v1;
-
-	//		if (movingGround != NULL)
-	//		{
-	//			ground->v0 += movingGround->position;
-	//			ground->v1 += movingGround->position;
-
-	//			//minContact.position += minContafct
-	//		}
-
-	//		edgeQuantity = minContact.edge->GetQuantity(minContact.position);
-
-	//		//edgeQuantity -= .01;
-	//		//cout << "landing edge quantity is: " << edgeQuantity << ", edge length is: " << length( ground->v1 - ground->v0 ) << endl;
-
-	//		if (movingGround != NULL)
-	//		{
-
-	//			//normalize( minContact.edge->v1 - minContact.edge->v0 ) * dot( minContact.movingPlat->vel, normalize( minContact.edge->v1 - minContact.edge->v0 ) );
-	//			ground->v0 = oldv0;
-	//			ground->v1 = oldv1;
-	//		}
-
-	//		V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
-
-	//		double groundLength = length(ground->v1 - ground->v0);
-
-	//		V2d gNorm = ground->Normal();
-
-	//		V2d testVel = velocity;
-
-	//		//testVel.y *= .7;
-	//		if (testVel.y > 20)
-	//		{
-	//			testVel.y *= .7;
-	//		}
-	//		else if (testVel.y < -30)
-	//		{
-	//			//testVel.y = -30;
-	//			testVel.y *= .5;
-	//		}
-	//		//testVel.y /= 2.0
-	//		//cout << "groundspeed: " << groundSpeed << endl;
-
-	//		gNorm = ground->Normal();
-
-	//		groundSpeed = CalcLandingSpeed(testVel, alongVel, gNorm);
-
-
-	//		//if( gNorm.y <= -steepThresh )
-	//		{
-	//			hasGravReverse = true;
-	//			hasAirDash = true;
-	//			hasDoubleJump = true;
-	//			lastWire = 0;
-	//		}
-
-	//		if (velocity.x < 0 && gNorm.y <= -steepThresh)
-	//		{
-	//			groundSpeed = min(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
-	//			//cout << "left boost: " << groundSpeed << endl;
-	//		}
-	//		else if (velocity.x > 0 && gNorm.y <= -steepThresh)
-	//		{
-	//			groundSpeed = max(velocity.x, dot(velocity, normalize(ground->v1 - ground->v0)) * .7);
-	//			//cout << "right boost: " << groundSpeed << endl;
-	//		}
-
-	//		movement = 0;
-
-	//	}
-	//}
-	//else if ((hasPowerGravReverse || gravityGrassCount > 0)/*&& hasGravReverse */ && currInput.B && currInput.LUp() && minContact.normal.y > 0 && abs(minContact.normal.x) < wallThresh && minContact.position.y <= position.y - b.rh + b.offset.y + 1)
-	//{
-	//	prevRail = NULL;
-
-	//	if (b.rh < normalHeight)
-	//	{
-	//		b.offset.y = -(normalHeight - b.rh);
-	//	}
-
-	//	if (minContact.edge->Normal().y <= 0)
-	//	{
-	//		if (minContact.position == minContact.edge->v0)
-	//		{
-	//			if (minContact.edge->edge0->Normal().y >= 0)
-	//			{
-	//				minContact.edge = minContact.edge->edge0;
-	//			}
-	//		}
-	//	}
-
-
-	//	hasGravReverse = false;
-	//	hasAirDash = true;
-	//	hasDoubleJump = true;
-	//	reversed = true;
-	//	lastWire = 0;
-
-	//	//b.offset.y = -b.offset.y;
-	//	groundOffsetX = ((position.x + b.offset.x) - minContact.position.x) / 2; //halfway?
-	//	ground = minContact.edge;
-	//	movingGround = minContact.movingPlat;
-
-	//	V2d oldv0 = ground->v0;
-	//	V2d oldv1 = ground->v1;
-
-	//	if (movingGround != NULL)
-	//	{
-	//		ground->v0 += movingGround->position;
-	//		ground->v1 += movingGround->position;
-	//	}
-
-	//	edgeQuantity = minContact.edge->GetQuantity(minContact.position);
-
-	//	if (movingGround != NULL)
-	//	{
-	//		ground->v0 = oldv0;
-	//		ground->v1 = oldv1;
-	//	}
-
-	//	double groundLength = length(ground->v1 - ground->v0);
-	//	groundSpeed = 0;
-	//	//groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
-	//	V2d gno = ground->Normal();
-
-
-	//	double angle = atan2(gno.x, -gno.y);
-
-
-	//	//cout << "frames in air: " << framesInAir << ", holdJump: " << (int)holdJump << endl;
-	//	if (trueFramesInAir < 10 && holdJump && -gno.y > -steepThresh)
-	//	{
-	//		//cout << "adjusted y vel from: " << velocity.y;
-	//		//velocity.y *= .7;
-	//		//cout << ", new: " << velocity.y << endl;
-
-	//	}
-
-
-	//	//cout << "gno: " << gno.x << ", " << gno.y << endl;
-	//	if (-gno.y > -steepThresh)
-	//	{
-	//		//	cout << "a" << endl;
-	//		groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
-	//		if (velocity.x < 0)
-	//		{
-	//			//	groundSpeed = -min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
-	//		}
-	//		else if (velocity.x > 0)
-	//		{
-	//			//	groundSpeed = -max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
-	//		}
-	//		//groundSpeed = 0;
-	//	}
-	//	else
-	//	{
-	//		//	cout << "b" << endl;
-	//		groundSpeed = -dot(velocity, normalize(ground->v1 - ground->v0));
-	//		if (velocity.x < 0)
-	//		{
-	//			//groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
-	//		}
-	//		else if (velocity.x > 0)
-	//		{
-	//			//groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
-	//		}
-	//	}
-
-	//	//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
-
-	//	//movement = 0; just commented this out now
-
-	//	offsetX = (position.x + b.offset.x) - minContact.position.x;
-
-	//	if (ground->Normal().x > 0 && offsetX < b.rw && !approxEquals(offsetX, b.rw))
-	//	{
-	//		//	cout << "super secret fix offsetx122: " << offsetX << endl;
-	//		//	offsetX = b.rw;
-	//	}
-	//	if (ground->Normal().x < 0 && offsetX > -b.rw && !approxEquals(offsetX, -b.rw))
-	//	{
-	//		//	cout << "super secret fix offsetx222: " << offsetX << endl;
-	//		//	offsetX = -b.rw;
-	//	}
-
-	//	//if( reversed )
-	//	//{
-	//	owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
-	//	owner->soundNodeList->ActivateSound(soundBuffers[S_GRAVREVERSE]);
-	//	//}
-	//}
-	//else if ( hasPowerGrindBall && action == AIRDASH && currInput.Y && velocity.y != 0 && abs(minContact.normal.x) >= wallThresh)
-	//{
-	//	prevRail = NULL;
-	//	Edge *e = minContact.edge;
-	//	V2d mp = minContact.position;
-	//	double q = e->GetQuantity(mp);
-	//	ground = e;
-	//	edgeQuantity = q;
-
-	//	if (e->Normal().x > 0)
-	//	{
-	//		groundSpeed = velocity.y;
-	//	}
-	//	else
-	//	{
-	//		groundSpeed = -velocity.y;
-	//	}
-
-	//	SetActionGrind();
-	//	//if( hasPowerGrindBall && currInput.Y //&& !prevInput.Y
-	//	//	&& action == AIRDASH && length( wallNormal ) > 0 )
-	//	//{
-	//	//	//assert( minContact.edge != NULL );
-	//	//	Edge *e = storedContact.edge;
-	//	//	V2d mp = storedContact.position;
-	//	//	double q = e->GetQuantity( mp );
-
-	//	//	
-
-	//	//	//cout << "grinding" << endl;
-	//	//}
-	//}
-	//else 
-	//{
-	//	if (minContact.movingPlat != NULL)
-	//	{
-	//		//velocity = newVel + minContact.movingPlat->vel;
-	//		//	minContact.position -= minContact.movingPlat->vel;
-	//	}
-	//	//else
-	//	{
-
-	//		velocity = newVel;
-
-	//	}
-
-
-
-
-	//}
-	//else
-	//{
-	//	//cout << "no temp collision" << endl;
-	//}
 }
 
 bool Actor::CheckSwing()
@@ -15837,20 +14539,7 @@ void Actor::PhysicsResponse()
 		V2d oldv1 = grindEdge->v1;
 
 
-		if( grindMovingTerrain != NULL )
-		{
-			grindEdge->v0 += grindMovingTerrain->position;
-			grindEdge->v1 += grindMovingTerrain->position;
-		}
-
-
 		V2d grindPoint = grindEdge->GetPoint( grindQuantity );
-
-		if( grindMovingTerrain != NULL )
-		{
-			grindEdge->v0 = oldv0;
-			grindEdge->v1 = oldv1;
-		}
 
 		position = grindPoint;
 	}
@@ -15930,38 +14619,17 @@ void Actor::PhysicsResponse()
 					V2d oldv0 = bounceEdge->v0;
 					V2d oldv1 = bounceEdge->v1;
 
-					if( bounceMovingTerrain != NULL )
-					{
-						bounceEdge->v0 += bounceMovingTerrain->position;
-						bounceEdge->v1 += bounceMovingTerrain->position;
-					}
-
+					
 					position = bounceEdge->GetPoint( bounceQuant );
 
-					if( bounceMovingTerrain != NULL )
-					{
-						bounceEdge->v0 = oldv0;
-						bounceEdge->v1 = oldv1;
-					}
 				}
 				else
 				{
 					V2d oldv0 = ground->v0;
 					V2d oldv1 = ground->v1;
 
-					if( movingGround != NULL )
-					{
-						ground->v0 += movingGround->position;
-						ground->v1 += movingGround->position;
-					}
 
 					position = ground->GetPoint( bounceQuant );
-
-					if( movingGround != NULL )
-					{
-						ground->v0 = oldv0;
-						ground->v1 = oldv1;
-					}
 				}
 		
 				position.x += offsetX + b.offset.x;
@@ -16121,23 +14789,7 @@ void Actor::PhysicsResponse()
 		}
 		framesInAir = 0;
 		
-
-		V2d oldv0 = ground->v0;
-		V2d oldv1 = ground->v1;
-
-		if( movingGround != NULL )
-		{
-			ground->v0 += movingGround->position;
-			ground->v1 += movingGround->position;
-		}
-
 		Vector2<double> groundPoint = ground->GetPoint( edgeQuantity );
-
-		if( movingGround != NULL )
-		{
-			ground->v0 = oldv0;
-			ground->v1 = oldv1;
-		}
 		
 		position = groundPoint;
 		
@@ -18310,392 +16962,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	
 
 	assert( queryMode != "" );
-
-	if( queryMode == "moving_resolve" )
-	{
-		Edge *e = (Edge*)qte;
-
-		if (e->edgeType == Edge::OPEN_GATE)
-		{
-			return;
-		}
-
-		bool bb = false;
-		
-		if( ground != NULL && groundSpeed != 0 )
-		{
-			V2d gn = ground->Normal();
-			//bb fixes the fact that its easier to hit corners now, so it doesnt happen while you're running
-			
-			V2d nextn = ground->edge1->Normal();
-			V2d prevn = ground->edge0->Normal();
-			bool sup = ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 );
-			//cout << "sup: " << sup << endl;
-			bool a = false;
-			bool b = false;
-			if( !reversed )
-			{
-				if( groundSpeed > 0 )
-				{
-					if( ( ground->edge1 == e 
-							&& (( gn.x > 0 && nextn.x > 0 && nextn.y < 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y < 0 )) )
-						|| ground->edge0 == e )
-					{
-						a = true;
-					}
-				}
-				else if( groundSpeed < 0 )
-				{
-					if( ( ground->edge0 == e 
-							&& ( ( gn.x < 0 && prevn.x < 0 && prevn.y < 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y < 0 ) ) ) 
-						|| ground->edge1 == e )
-					{
-						a = true;
-					}
-				}
-			}
-			else
-			{
-				if( groundSpeed > 0 )
-				{
-					if( ( ground->edge0 == e 
-						&& ( ( gn.x < 0 && prevn.x < 0 && prevn.y > 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y > 0 ) ) ) 
-						|| ground->edge1 == e )
-					{
-						//cout << "one" << endl;
-						b = true;
-					}
-				}
-				else if( groundSpeed < 0 )
-				{
-					bool c = ground->edge1 == e;
-					bool h = ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 );
-					bool g = ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 );
-					bool d = h || g;
-					bool f = ground->edge0 == e;
-					if( (c && d) || f )
-					{
-						b = true;
-					}
-				}
-			}
-		//	a = false;
-		//	b = false;
-			
-			
-			//a = !reversed && ((groundSpeed > 0 && gn.x < 0 && nextn.x < 0 && nextn.y < 0) || ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 )
-			//	|| ( groundSpeed > 0 && gn.x > 0 && nextn.x > 0 && prevn.y < 0 ) || ( groundSpeed < 0 && gn.x < 0 && prevn.x < 0 && prevn.y < 0 ));
-			//bool b = reversed && (( gn.x < 0 && nextn.x < 0 || ( gn.x > 0 && prevn.x > 0 )));
-			bb = ( a || b );
-		}
-
-		
-		if( e == ground || bb )
-		{
-			return;
-		}
-
-		V2d temp0 = e->v0;
-		V2d temp1 = e->v1;
-		
-		V2d temp0prev = e->edge0->v0;
-		V2d temp1prev = e->edge0->v1;
-
-		V2d temp0next = e->edge1->v0;
-		V2d temp1next = e->edge1->v1;
-
-		//e->v0 += currMovingTerrain->oldPosition;
-		//e->v1 += currMovingTerrain->oldPosition;
-
-		V2d oldv0 = e->v0 + currMovingTerrain->oldPosition;
-		V2d oldv1 = e->v1 + currMovingTerrain->oldPosition;
-
-		e->v0 += currMovingTerrain->position;
-		e->v1 += currMovingTerrain->position;
-
-		e->edge0->v0 += currMovingTerrain->position;
-		e->edge0->v1 += currMovingTerrain->position;
-
-		e->edge1->v0 += currMovingTerrain->position;
-		e->edge1->v1 += currMovingTerrain->position;
-
-		//e->v0 += currMovingTerrain->position;
-		//e->v1 += currMovingTerrain->position;
-
-		if( e->Normal().y == -1 )
-		{
-			//cout << "testing the ground!: " << e->v0.x << ", " << e->v0.y << " and " <<
-			//	e->v1.x << ", " << e->v1.y << endl;
-		
-		}
-		V2d blah( tempVel - currMovingTerrain->vel );
-		//cout << "tempnew: " << blah.x << ", " << blah.y << endl;
-		//Contact *c = owner->coll.collideEdge( position + b.offset - currMovingTerrain->vel / NUM_STEPS, b, e, tempVel - currMovingTerrain->vel/ NUM_STEPS, V2d( 0, 0 ) );//currMovingTerrain->vel );
-		//Contact *c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS /*+ normalize( currMovingTerrain->vel ) * 1.0*/, b, e, tempVel - currMovingTerrain->vel/ NUM_STEPS - normalize( currMovingTerrain->vel ) * 1.0, V2d( 0, 0 ) );//currMovingTerrain->vel );
-		Contact *c = NULL;
-		//if( true )
-		double oldLen = length( position - oldv0 );
-		double newLen = length( position - e->v0 );
-
-		double oldLen1 = length( position - oldv1 );
-		double newLen1 = length( position - e->v1 );
-
-		V2d en = e->Normal();
-		//cout << "oldLen: " << oldLen << ", newLen: " << newLen << endl;
-		//if( ground != NULL )
-		//{
-		//	c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel - currMovingTerrain->vel / NUM_STEPS- normalize( currMovingTerrain->vel ) * 1.0, V2d( 0, 0 ) );
-		//}
-		double d = dot( normalize( currMovingTerrain->vel ), en );
-
-		if( !testr )
-		if( ground != NULL )
-		{
-			//return;
-			c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );
-		}
-		else
-		{
-			if( d >= 0 )
-			{
-				c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel + normalize( currMovingTerrain->vel ) * .2, 
-					b, e, tempVel - currMovingTerrain->vel - normalize( currMovingTerrain->vel ) * .5 , V2d( 0, 0 ) );
-			}
-			else
-			{
-				c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );	
-			}
-
-			/*c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel, 
-				b, e, tempVel - currMovingTerrain->vel, V2d( 0, 0 ) );*/
-
-
-
-			//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel + normalize( currMovingTerrain->vel ) * .2, 
-			//	b, e, tempVel - currMovingTerrain->vel - normalize( currMovingTerrain->vel ) * .5 , V2d( 0, 0 ) );
-		}
-
-		if( testr  )
-		{
-		
-		if( d >= 0 )//oldLen >= newLen || oldLen1 >= newLen1 )
-		{
-			c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel + normalize( currMovingTerrain->vel ) * .2, 
-				b, e, tempVel - currMovingTerrain->vel - normalize( currMovingTerrain->vel ) * .5 , V2d( 0, 0 ) );//currMovingTerrain->vel );	
-			//if( ground != NULL )
-			//{
-			//	cout << "a: " << d << endl;
-			//	//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
-			//	//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS + normalize( currMovingTerrain->vel ) * 1.0, b, e, tempVel, V2d( 0, 0 ) );
-			//	c = owner->coll.collideEdge( position + b.offset, b, e, tempVel + currMovingTerrain->vel, V2d( 0, 0 ) );//currMovingTerrain->vel );	
-			//}
-			//else
-			//{
-			//	cout << "b: " << d << endl;
-			//	
-			//}
-			
-			
-		}
-		//else if( ground != NULL )
-		//{
-		//	//cout << "b" << endl;
-		//	//c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS /*- normalize( currMovingTerrain->vel ) * .1*/, b, e, tempVel - currMovingTerrain->vel/ NUM_STEPS - normalize( currMovingTerrain->vel ) * 1.0, V2d( 0, 0 ) );//currMovingTerrain->vel );
-		//	c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );
-		//}
-		else
-		{
-			//cout << "c: " << d << endl;
-			c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
-			//if( ground != NULL )
-			//{
-			//	c = owner->coll.collideEdge( position + b.offset + currMovingTerrain->vel / NUM_STEPS, b, e, tempVel, V2d( 0, 0 ) );//currMovingTerrain->vel );
-			//}
-			//else
-			//{
-			//	
-			//}
-			
-		}
-		}
-
-		 
-		//Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel - currMovingTerrain->vel / NUM_STEPS, V2d( 0, 0 ) );//currMovingTerrain->vel );
-
-		e->v0 = temp0;
-		e->v1 = temp1;
-
-		e->edge0->v0 = temp0prev;
-		e->edge0->v1 = temp1prev;
-		e->edge1->v0 = temp0next;
-		e->edge1->v1 = temp1next;
-
-		//if( c != NULL )
-		//{
-		//	cout << "moving resolve!: " << e->Normal().x << ", " << e->Normal().y << endl;
-		//}
-
-		if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
-		{	
-			//cout << "col" << endl;
-			/*if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
-			{	
-				if( c->collisionPriority == minContact.collisionPriority )
-				{
-					if( length(c->resolution) > length(minContact.resolution) )
-					{
-						minContact.collisionPriority = c->collisionPriority;
-						minContact.edge = e;
-						minContact.resolution = c->resolution;
-						minContact.position = c->position;
-						minContact.movingPlat = currMovingTerrain;
-						col = true;
-
-					}
-				}
-				else
-				{
-					minContact.collisionPriority = c->collisionPriority;
-					minContact.edge = e;
-					minContact.resolution = c->resolution;
-					minContact.position = c->position;
-					minContact.movingPlat = currMovingTerrain;
-					col = true;
-				}
-			}*/
-
-
-
-			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
-			{
-				//if( testr )
-				//{
-				//	if( e->Normal().y >= 0 ) //not ground
-				//	{
-				//		return;
-				//	}
-				//}
-				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
-			}
-			else //point
-			{
-			//	cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
-			}
-
-			if( c->weirdPoint )
-			{
-		//		cout << "weird point " << endl;
-				
-				Edge *edge = e;
-				Edge *prev = edge->edge0;
-				Edge *next = edge->edge1;
-
-				V2d v0 = edge->v0;
-				V2d v1 = edge->v1;				
-
-				if( approxEquals( c->position.x, e->v0.x ) && approxEquals( c->position.y, e->v0.y ) )
-				{
-					V2d pv0 = prev->v0;
-					V2d pv1 = prev->v1;
-
-					V2d pn = prev->Normal();
-					V2d en = e->Normal();
-					
-
-					if( ground == NULL && pn.y >= 0 && en.y < 0 )
-					{
-						//cout << "bhaehfdf" << endl; //falling off and you dont want to keep hitting the ground
-						assert( !reversed );
-						return;
-					}
-
-					//ground != NULL
-					if( pn.y < en.y )
-					{
-						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
-						//cout << "sfdfdsfsdfdsfds" << endl;
-						c->edge = prev;
-						return;
-
-						//c->normal = V2d( 0, -1 );
-					}
-				}
-				else if( approxEquals( c->position.x, e->v1.x ) && approxEquals( c->position.y, e->v1.y ) )
-				{
-					V2d nn = next->Normal();
-					V2d en = e->Normal();
-					if( ground == NULL && en.y < 0 && nn.y >= 0 )
-					{
-						//cout << "bhaehfdf" << endl;
-						//falling off and you dont want to keep hitting the ground
-						assert( !reversed );
-						return;
-					}
-
-					//ground != NULL
-					if( nn.y < en.y )
-					{
-						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
-						//cout << "herererere" << endl;
-					//	return;
-						c->edge = next;
-						return;
-						//c->normal = V2d( 0, -1 );
-					}
-				}
-			}
-
-
-			//position += c->movingPlat->vel;
-			//position += c->resolution;
-			if( !col || (minContact.collisionPriority < 0 ) 
-				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) ) //(c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
-			{	
-				
-				//position += minContact.resolution;
-				if( c->collisionPriority == minContact.collisionPriority )
-				{
-					if(( c->normal.x == 0 && c->normal.y == 0 ) )//|| minContact.normal.y  0 )
-					//if( length(c->resolution) > length(minContact.resolution) )
-					{
-					//	cout << "now the min" << endl;
-						minContact.collisionPriority = c->collisionPriority;
-						minContact.edge = e;
-						minContact.resolution = c->resolution;
-						minContact.position = c->position;
-						minContact.normal = c->normal;
-						minContact.movingPlat = currMovingTerrain;
-						col = true;
-					}
-					else
-					{
-						//cout << "happens here!!!!" << endl;
-					}
-				}
-				else
-				{
-					//cout << "now the min" << endl;
-					//if( minContact.edge != NULL )
-					//cout << minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << "... " 
-					//	<< e->Normal().x << ", " << e->Normal().y << endl;
-					minContact.collisionPriority = c->collisionPriority;
-					//cout << "pri: " << c->collisionPriority << endl;
-					minContact.edge = e;
-					minContact.resolution = c->resolution;
-					minContact.position = c->position;
-					minContact.normal = c->normal;
-					minContact.movingPlat = currMovingTerrain;
-					col = true;
-					
-				}
-			}
-			else
-			{
-				//position += minContact.resolution;
-				//position += minContact.resolution;
-			}
-		}
-	}
 	if( queryMode == "resolve" )
 	{
 		Edge *e = (Edge*)qte;
@@ -19206,7 +17472,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						minContact.resolution = c->resolution;
 						minContact.position = c->position;
 						minContact.normal = c->normal;
-						minContact.movingPlat = NULL;
 						col = true;
 					}
 					else
@@ -19226,7 +17491,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					minContact.resolution = c->resolution;
 					minContact.position = c->position;
 					minContact.normal = c->normal;
-					minContact.movingPlat = NULL;
 					col = true;
 					
 				}
@@ -19412,24 +17676,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		//}
 	}
-	else if( queryMode == "moving_check" )
-	{
-		Edge *e = (Edge*)qte;
-
-		if (e->edgeType == Edge::OPEN_GATE)
-		{
-			return;
-		}
-		if ( action != GRINDBALL && action != GRINDATTACK )
-		{
-			if( ( e->Normal().y <= 0 && !reversed && ground != NULL ) || ( e->Normal().y >= 0 && reversed && ground != NULL ) )
-			{
-				return;
-			}
-		}
-		
-		checkValid = false;
-	}
 	else if( queryMode == "checkwall" )
 	{
 		Edge *e = (Edge*)qte;
@@ -19454,7 +17700,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						minContact.edge = e;
 						minContact.resolution = c->resolution;
 						minContact.position = c->position;
-						minContact.movingPlat = NULL;
 						col = true;
 					}
 				}
@@ -19464,60 +17709,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					minContact.edge = e;
 					minContact.resolution = c->resolution;
 					minContact.position = c->position;
-					minContact.movingPlat = NULL;
-					col = true;
-					
-				}
-			}
-	}
-	else if( queryMode == "moving_checkwall" )
-	{
-		Edge *e = (Edge*)qte;
-		if( e == ground )
-			return;
-
-		V2d temp0 = e->v0;
-		V2d temp1 = e->v1;
-
-		e->v0 += currMovingTerrain->position;
-		e->v1 += currMovingTerrain->position;
-
-		//e->v0 += currMovingTerrain->position;
-		//e->v1 += currMovingTerrain->position;
-
-		if( e->Normal().y == -1 )
-		{
-			cout << "testing the ground!: " << e->v0.x << ", " << e->v0.y << " and " <<
-				e->v1.x << ", " << e->v1.y << endl;
-		}
-
-		Contact *c = owner->coll.collideEdge( position + b.offset, b, e, tempVel, V2d( 0, 0 ) );
-
-		e->v0 = temp0;
-		e->v1 = temp1;
-		
-		if( c != NULL )
-			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
-			{	
-				if( c->collisionPriority == minContact.collisionPriority )
-				{
-					if( length(c->resolution) > length(minContact.resolution) )
-					{
-						minContact.collisionPriority = c->collisionPriority;
-						minContact.edge = e;
-						minContact.resolution = c->resolution;
-						minContact.position = c->position;
-						minContact.movingPlat = currMovingTerrain;
-						col = true;
-					}
-				}
-				else
-				{
-					minContact.collisionPriority = c->collisionPriority;
-					minContact.edge = e;
-					minContact.resolution = c->resolution;
-					minContact.position = c->position;
-					minContact.movingPlat = currMovingTerrain;
 					col = true;
 					
 				}
@@ -20876,23 +19067,8 @@ void Actor::UpdateSprite()
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
 
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-			
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
@@ -20919,23 +19095,8 @@ void Actor::UpdateSprite()
 	case AUTORUN:
 	case RUN:
 		{	
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}			
-
 			V2d pp = ground->GetPoint( edgeQuantity );
 
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-			
 			double angle = GroundedAngle();
 
 
@@ -21061,22 +19222,7 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			V2d along;
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
@@ -21189,14 +19335,6 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			
-			//V2d oldv0 = ground->v0;
-			//V2d oldv1 = ground->v1;
-
-			/*if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}*/
 
 			V2d pp;
 			if (ground != NULL)
@@ -21207,12 +19345,6 @@ void Actor::UpdateSprite()
 			{
 				assert(0);
 			}
-
-			/*if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}*/
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -21236,22 +19368,7 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 		
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-		{
-			ground->v0 += movingGround->position;
-			ground->v1 += movingGround->position;
-		}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -21301,22 +19418,7 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 		
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -21368,22 +19470,7 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 		
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 					sprite->setPosition( pp.x + offsetX, pp.y );
@@ -21455,23 +19542,8 @@ void Actor::UpdateSprite()
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
 
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -21545,22 +19617,7 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -21641,23 +19698,8 @@ void Actor::UpdateSprite()
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
 
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -22205,15 +20247,6 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
 			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
 
 			V2d along = normalize( ground->v1 - ground->v0 );
@@ -22224,13 +20257,6 @@ void Actor::UpdateSprite()
 			{
 				xExtraRepeat = -xExtraRepeat;
 				xExtraStart = -xExtraStart;
-			}
-			
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
 			}
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
@@ -22332,20 +20358,7 @@ void Actor::UpdateSprite()
 			V2d oldv0 = grindEdge->v0;
 			V2d oldv1 = grindEdge->v1;
 
-
-			if( grindMovingTerrain != NULL )
-			{
-				grindEdge->v0 += grindMovingTerrain->position;
-				grindEdge->v1 += grindMovingTerrain->position;
-			}
-
 			V2d pp = grindEdge->GetPoint( grindQuantity );
-
-			if( grindMovingTerrain != NULL )
-			{
-				grindEdge->v0 = oldv0;
-				grindEdge->v1 = oldv1;
-			}
 			
 			sprite->setPosition( pp.x, pp.y );
 
@@ -22496,22 +20509,7 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
 			sprite->setRotation( angle / PI * 180 );
 			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			sprite->setPosition( pp.x, pp.y );
 			//if( angle == 0 )
@@ -22602,23 +20600,8 @@ void Actor::UpdateSprite()
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 			sprite->setRotation( angle / PI * 180 );
-		
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
 
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
-			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
+			V2d pp = ground->GetPoint(edgeQuantity);
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -22650,22 +20633,7 @@ void Actor::UpdateSprite()
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height );
 			sprite->setRotation( angle / PI * 180 );
 			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			sprite->setPosition( pp.x, pp.y );
 
@@ -22740,22 +20708,7 @@ void Actor::UpdateSprite()
 
 			sprite->setRotation( angle / PI * 180 );
 			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -22976,30 +20929,7 @@ void Actor::UpdateSprite()
 			}
 
 			
-			sprite->setPosition( position.x, position.y );
-		//		sprite->setRotation( angle / PI * 180 );
-
-			V2d oldv0 = bounceEdge->v0;
-			V2d oldv1 = bounceEdge->v1;
-
-			if( bounceMovingTerrain != NULL )
-			{
-				bounceEdge->v0 += bounceMovingTerrain->position;
-				bounceEdge->v1 += bounceMovingTerrain->position;
-			}
-
-			V2d pp = bounceEdge->GetPoint( bounceQuant );
-
-			if( bounceMovingTerrain != NULL )
-			{
-				bounceEdge->v0 = oldv0;
-				bounceEdge->v1 = oldv1;
-			}
-				
-				//if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
-				//	sprite->setPosition( pp.x + offsetX, pp.y );
-				//else
-				//	sprite->setPosition( pp.x, pp.y );
+			sprite->setPosition( position.x, position.y );	
 
 			scorpSet = true;
 			break;
@@ -23059,24 +20989,7 @@ void Actor::UpdateSprite()
 			//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 			
 			sprite->setRotation( angle / PI * 180 );
-			
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-
 
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -23348,22 +21261,7 @@ void Actor::UpdateSprite()
 
 				sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 
-				V2d oldv0 = ground->v0;
-				V2d oldv1 = ground->v1;
-
-				if( movingGround != NULL )
-				{
-					ground->v0 += movingGround->position;
-					ground->v1 += movingGround->position;
-				}
-
 				V2d pp = ground->GetPoint( edgeQuantity );
-
-				if( movingGround != NULL )
-				{
-					ground->v0 = oldv0;
-					ground->v1 = oldv1;
-				}
 			
 				if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 					sprite->setPosition( pp.x + offsetX, pp.y );
@@ -23409,23 +21307,8 @@ void Actor::UpdateSprite()
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
 
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
-			
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
 			else
@@ -23452,22 +21335,7 @@ void Actor::UpdateSprite()
 
 			sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - 16);
 
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if( movingGround != NULL )
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
 			V2d pp = ground->GetPoint( edgeQuantity );
-
-			if( movingGround != NULL )
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 			
 			if( (angle == 0 && !reversed ) || (approxEquals(angle, PI) && reversed ))
 				sprite->setPosition( pp.x + offsetX, pp.y );
@@ -23530,22 +21398,7 @@ void Actor::UpdateSprite()
 
 		sprite->setRotation(angle / PI * 180);
 
-		V2d oldv0 = ground->v0;
-		V2d oldv1 = ground->v1;
-
-		if (movingGround != NULL)
-		{
-			ground->v0 += movingGround->position;
-			ground->v1 += movingGround->position;
-		}
-
 		V2d pp = ground->GetPoint(edgeQuantity);
-
-		if (movingGround != NULL)
-		{
-			ground->v0 = oldv0;
-			ground->v1 = oldv1;
-		}
 
 		if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
 			sprite->setPosition(pp.x + offsetX, pp.y);
@@ -23729,23 +21582,8 @@ void Actor::UpdateSprite()
 			double angle = GroundedAngle();
 
 			sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-
-			V2d oldv0 = ground->v0;
-			V2d oldv1 = ground->v1;
-
-			if (movingGround != NULL)
-			{
-				ground->v0 += movingGround->position;
-				ground->v1 += movingGround->position;
-			}
-
+			
 			V2d pp = ground->GetPoint(edgeQuantity);
-
-			if (movingGround != NULL)
-			{
-				ground->v0 = oldv0;
-				ground->v1 = oldv1;
-			}
 
 			if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
 				sprite->setPosition(pp.x + offsetX, pp.y);
@@ -24712,7 +22550,6 @@ void Actor::SetActionGrind()
 	//leftWire->Reset();
 	SetAction(GRINDBALL);
 	grindEdge = ground;
-	grindMovingTerrain = movingGround;
 	frame = 0;
 	grindQuantity = edgeQuantity;
 

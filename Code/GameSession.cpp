@@ -726,10 +726,6 @@ void GameSession::UpdateEnemiesPhysics()
 
 	for( substep = 0; substep < NUM_MAX_STEPS; ++substep )
 	{
-		/*for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
-		{
-			(*it)->UpdatePhysics();
-		}*/
 		for( int i = 0; i < 4; ++i )
 		{
 			p = GetPlayer( i );
@@ -1178,93 +1174,11 @@ bool GameSession::LoadSpecialPolys(std::ifstream &is)
 	return true;
 }
 
-bool GameSession::LoadMovingPlats( ifstream &is, map<int, int> &polyIndex )
-{
-	//remove this entirely later
-	int numMovingPlats;
-	is >> numMovingPlats;
-	//for( int i = 0; i < numMovingPlats; ++i )
-	//{
-	//	//dont forget this!
-	//	//int matType;
-	//	//is >> matType;
-
-	//	//matSet.insert( matType );
-	//	//string matStr;
-	//	//is >> matStr;
-
-
-	//	int polyPoints;
-	//	is >> polyPoints;
-
-	//	list<Vector2i> poly;
-
-	//	for( int i = 0; i < polyPoints; ++i )
-	//	{
-	//		int px, py;
-	//		is >> px;
-	//		is >> py;
-	//		
-	//		poly.push_back( Vector2i( px, py ) );
-	//	}
-
-
-	//		
-	//	list<Vector2i>::iterator it = poly.begin();
-	//	int left = (*it).x;
-	//	int right = (*it).x;
-	//	int top = (*it).y;
-	//	int bottom = (*it).y;
-	//		
-	//	for( ;it != poly.end(); ++it )
-	//	{
-	//		if( (*it).x < left )
-	//			left = (*it).x;
-
-	//		if( (*it).x > right )
-	//			right = (*it).x;
-
-	//		if( (*it).y < top )
-	//			top = (*it).y;
-
-	//		if( (*it).y > bottom )
-	//			bottom = (*it).y;
-	//	}
-
-
-	//	//might need to round for perfect accuracy here
-	//	Vector2i center( (left + right ) / 2, (top + bottom) / 2 );
-
-	//	for( it = poly.begin(); it != poly.end(); ++it )
-	//	{
-	//		(*it).x -= center.x;
-	//		(*it).y -= center.y;
-	//	}
-
-	//	int pathPoints;
-	//	is >> pathPoints;
-
-	//	list<Vector2i> path;
-
-	//	for( int i = 0; i < pathPoints; ++i )
-	//	{
-	//		int x,y;
-	//		is >> x;
-	//		is >> y;
-	//		path.push_back( Vector2i( x, y ) );
-	//	}
-
-	//		
-	//	MovingTerrain *mt = new MovingTerrain( this, center, path, poly, false, 5 );
-	//	movingPlats.push_back( mt );
-	//}
-
-	return true;
-}
 
 bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 {
-	
+	//this doesn't work right now because I need to get all the earcut code
+	//working together instead of pointlessly rewriting it
 	int bgPlatformNum0;
 	is >> bgPlatformNum0;
 	for( int i = 0; i < bgPlatformNum0; ++i )
@@ -1371,55 +1285,51 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		}
 
 
-		vector<p2t::Point*> polyline;
-		//for( int i = 0; i < polyPoints; ++i )
-		for( list<Vector2i>::iterator pit = poly.begin(); pit != poly.end(); ++pit )
-		{
-			polyline.push_back( new p2t::Point( (*pit).x, (*pit).y ) );
-		}
+		//vector<p2t::Point*> polyline;
+		////for( int i = 0; i < polyPoints; ++i )
+		//for( list<Vector2i>::iterator pit = poly.begin(); pit != poly.end(); ++pit )
+		//{
+		//	polyline.push_back( new p2t::Point( (*pit).x, (*pit).y ) );
+		//}
 
-		p2t::CDT * cdt = new p2t::CDT( polyline );
+		//p2t::CDT * cdt = new p2t::CDT( polyline );
 	
-		cdt->Triangulate();
-		vector<p2t::Triangle*> tris;
-		tris = cdt->GetTriangles();
-			
-		va = new VertexArray( sf::Triangles , tris.size() * 3 );
-		VertexArray & v = *va;
-		Color testColor( 0x75, 0x70, 0x90 );
-		testColor = Color::White;
-		Vector2f topLeft( left, top );
-		cout << "topLeft: " << topLeft.x << ", " << topLeft.y << endl;
-		for( int i = 0; i < tris.size(); ++i )
-		{	
-			p2t::Point *p = tris[i]->GetPoint( 0 );	
-			p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-			p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-			v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
-			v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-			v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+		//cdt->Triangulate();
+		//vector<p2t::Triangle*> tris;
+		//tris = cdt->GetTriangles();
+		//	
+		//va = new VertexArray( sf::Triangles , tris.size() * 3 );
+		//VertexArray & v = *va;
+		//Color testColor( 0x75, 0x70, 0x90 );
+		//testColor = Color::White;
+		//Vector2f topLeft( left, top );
+		//cout << "topLeft: " << topLeft.x << ", " << topLeft.y << endl;
+		//for( int i = 0; i < tris.size(); ++i )
+		//{	
+		//	p2t::Point *p = tris[i]->GetPoint( 0 );	
+		//	p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+		//	p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+		//	v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+		//	v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+		//	v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
 
-			Vector2f pp0 = (v[i*3].position - topLeft);
-			Vector2f pp1 = (v[i*3+1].position - topLeft);
-			Vector2f pp2 = (v[i*3+2].position - topLeft);
-			if( i == 0 )
-			{
-				cout << "pos0: " << pp0.x << ", " << pp0.y << endl;
-				cout << "pos1: " << pp1.x << ", " << pp1.y << endl;
-				cout << "pos2: " << pp2.x << ", " << pp2.y << endl;
-			}
-			v[i*3].texCoords = pp0;
-			v[i*3+1].texCoords = pp1;
-			v[i*3+2].texCoords = pp2;
-		}
+		//	Vector2f pp0 = (v[i*3].position - topLeft);
+		//	Vector2f pp1 = (v[i*3+1].position - topLeft);
+		//	Vector2f pp2 = (v[i*3+2].position - topLeft);
+		//	if( i == 0 )
+		//	{
+		//		cout << "pos0: " << pp0.x << ", " << pp0.y << endl;
+		//		cout << "pos1: " << pp1.x << ", " << pp1.y << endl;
+		//		cout << "pos2: " << pp2.x << ", " << pp2.y << endl;
+		//	}
+		//	v[i*3].texCoords = pp0;
+		//	v[i*3+1].texCoords = pp1;
+		//	v[i*3+2].texCoords = pp2;
+		//}
 
-		polygons.push_back( va );
+		//polygons.push_back( va );
 
-		VertexArray *polygonVA = va;
-
-		//ground, slope, steep, wall
-
-		//ground
+		//VertexArray *polygonVA = va;
 
 		stringstream ss;
 
@@ -1455,7 +1365,7 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		tPiece->aabb.top = top;
 		tPiece->aabb.width = right - left;
 		tPiece->aabb.height = bottom - top;
-		tPiece->terrainVA = polygonVA;
+		//tPiece->terrainVA = polygonVA;
 		tPiece->grassVA = NULL;//grassVA;
 
 		tPiece->numPoints = polyPoints;
@@ -1467,26 +1377,8 @@ bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
 		tPiece->wallva = wallVA;
 
 		
-		
-			
-		//cout << "before insert border: " << insertCount << endl;
-		//if( !inverse )
-		//{
-			borderTree->Insert(tPiece);
-			allVA.push_back(tPiece);
-	//	}
-
-		//cout << "after insert border: " << insertCount << endl;
-		//insertCount++;
-			
-
-		
-		delete cdt;
-		for( int i = 0; i < polyPoints; ++i )
-		{
-			delete polyline[i];
-		//	delete tris[i];
-		}
+		borderTree->Insert(tPiece);
+		allVA.push_back(tPiece);
 		
 		//no grass for now
 	}
@@ -3957,72 +3849,38 @@ bool GameSession::OpenFile( string fileName )
 				}
 			}
 
-			
-			
 			Tileset *ts_bush = GetTileset( "Env/bush_01_64x64.png", 64, 64 );
 
 			if( !inverse && currentVisible )
 			{
-				vector<p2t::Point*> polyline;
+				std::vector<std::vector<Vector2i>> pointVector;
+				pointVector.push_back(vector<Vector2i>());
+				vector<Vector2i> &currVector = pointVector[0];
+				
+
+				//vector<p2t::Point*> polyline;
+				currVector.resize(polyPoints);
 				for( int i = 0; i < polyPoints; ++i )
 				{
-					polyline.push_back( new p2t::Point( points[currentEdgeIndex +i].x, points[currentEdgeIndex +i].y ) );
+					currVector[i] = Vector2i(points[currentEdgeIndex + i]);
 				}
 
-				p2t::CDT * cdt = new p2t::CDT( polyline );
+				std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
 
-
-				//cdt->add
-			
-				vector<p2t::Triangle*> tris;
-
-				cdt->Triangulate();
-				
-				tris = cdt->GetTriangles();
-																																						
-			
-				va = new VertexArray( sf::Triangles , tris.size() * 3 );
+				int vaSize = indices.size();
+				int numTris = vaSize / 3;
+				va = new VertexArray( sf::Triangles , vaSize);
 				VertexArray & v = *va;
 				Color testColor( 0x75, 0x70, 0x90 );
 				testColor = Color::White;
 				Vector2f topLeft( left, top );
-				//cout << "topleft: " << topLeft.x << ", " << topLeft.y << endl;
-				for( int i = 0; i < tris.size(); ++i )
+				for( int i = 0; i < numTris; ++i )
 				{	
-					p2t::Point *p = tris[i]->GetPoint( 0 );	
-					p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-					p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-					v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
-					v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-					v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
-																			/*Vector2f pp0 = (v[i*3].position - topLeft);
-				Vector2f pp1 = (v[i*3+1].position - topLeft);
-				Vector2f pp2 = (v[i*3+2].position - topLeft);
-				pp0 = Vector2f( (int)pp0.x % 1024, (int)pp0.y % 1024 );
-				pp1 = Vector2f( (int)pp1.x % 1024, (int)pp1.y % 1024 );
-				pp2 = Vector2f( (int)pp2.x % 1024, (int)pp2.y % 1024 );
-
-				if( i == 0 )
-				{
-					cout << "pos0: " << pp0.x << ", " << pp0.y << endl;
-					cout << "pos1: " << pp1.x << ", " << pp1.y << endl;
-					cout << "pos2: " << pp2.x << ", " << pp2.y << endl;
-				}
-				v[i*3].texCoords = pp0;
-				v[i*3+1].texCoords = pp1;
-				v[i*3+2].texCoords = pp2;*/
+					v[i*3] = Vertex( Vector2f( currVector[indices[i*3]] ), testColor );
+					v[i*3 + 1] = Vertex( Vector2f(currVector[indices[i * 3+1]]), testColor );
+					v[i*3 + 2] = Vertex( Vector2f(currVector[indices[i * 3+2]]), testColor );
 				}
 
-				double polygonArea = 0;
-				for( vector<p2t::Triangle*>::iterator it = tris.begin();
-					it != tris.end(); ++it )
-				{
-					polygonArea += GetTriangleArea( (*it) );
-				}
-
-				//VertexArray *bushVA = SetupBushes( 0,  edges[currentEdgeIndex], ts_bush );
-
-				tPiece->polyArea = polygonArea;
 				tPiece->aabb.left = left;
 				tPiece->aabb.top = top;
 				tPiece->aabb.width = right - left;
@@ -4030,34 +3888,23 @@ bool GameSession::OpenFile( string fileName )
 				tPiece->terrainVA = va;
 				tPiece->visible = true;
 				polygons.push_back( va );
-
-				delete cdt;
-				for( int i = 0; i < polyPoints; ++i )
-				{
-					delete polyline[i];
-				}
-
 			}
 			else if( inverse )
 			{
 				inversePoly = tPiece;
 				inversePoly->numPoints = polyPoints;
-				//testva->va = va;
 				inversePoly->visible = true;
 				inversePoly->aabb.left = left;
 				inversePoly->aabb.top = top;
 				inversePoly->aabb.width = right - left;
 				inversePoly->aabb.height = bottom - top;
-				//testva->ts_bush = ts_bush;
 				SetupInversePoly( ts_bush, currentEdgeIndex );
 				tPiece = inversePoly;
 				tPiece->ts_bush = ts_bush;
-				//va = NULL;
 			}
 			else
 			{
 				tPiece = tPiece;
-				tPiece->polyArea = 0;//polygonArea;
 				tPiece->visible = false;
 				tPiece->aabb.left = left;
 				tPiece->aabb.top = top;
@@ -4068,8 +3915,6 @@ bool GameSession::OpenFile( string fileName )
 
 			if (tPiece->visible)
 			{
-
-
 				switch (matWorld)
 				{
 				case 0:
@@ -4320,7 +4165,6 @@ bool GameSession::OpenFile( string fileName )
 		SetupMinimapBorderQuads(blackBorder, topBorderOn);
 
 		LoadSpecialPolys(is);
-		//LoadMovingPlats( is, polyIndex );
 
 		LoadBGPlats( is, polyIndex );
 
@@ -5201,8 +5045,6 @@ void GameSession::SetupZones()
 		//originalZone->active = true;
 		ActivateZone(originalZone, true);
 		keyMarker->SetStartKeysZone(originalZone);
-		//currentZone = originalZone;
-		//keyMarker->SetStartKeysZone(currentZone);
 	}
 	
 	//cout << "3: numgates: " << numGates << endl;
@@ -7949,11 +7791,6 @@ int GameSession::Run()
 			rain->Draw(preScreenTex);
 
 		preScreenTex->setView( view );
-		
-		for( list<MovingTerrain*>::iterator it = movingPlats.begin(); it != movingPlats.end(); ++it )
-		{
-			(*it)->Draw( preScreenTex );
-		}
 
 		//DrawActiveEnvPlants();
 
@@ -9515,73 +9352,58 @@ void GameSession::SetupInversePoly( Tileset *ts_bush, int currentEdgeIndex )
 	finalRect.width += testExtra * 2;
 	finalRect.height += testExtra * 2;
 
-	vector<p2t::Point*> outerQuadPoints;
-	outerQuadPoints.push_back( new p2t::Point( finalRect.left, finalRect.top ) );
-	outerQuadPoints.push_back( new p2t::Point( finalRect.left + finalRect.width, finalRect.top ) );
-	outerQuadPoints.push_back( new p2t::Point( finalRect.left + finalRect.width, finalRect.top + finalRect.height ) );
-	outerQuadPoints.push_back( new p2t::Point( finalRect.left, finalRect.top + finalRect.height ) );
+	std::vector<std::vector<Vector2i>> pointVector;
+	pointVector.resize(2);
+	vector<Vector2i> &outerVector = pointVector[0];
+	vector<Vector2i> &currVector = pointVector[1];
 
-	p2t::CDT * cdt = new p2t::CDT( outerQuadPoints );
+	outerVector.resize(4);
+	outerVector[0] = Vector2i(finalRect.left, finalRect.top);
+	outerVector[1] = Vector2i(finalRect.left + finalRect.width, finalRect.top);
+	outerVector[2] = Vector2i(finalRect.left + finalRect.width, finalRect.top + finalRect.height);
+	outerVector[3] = Vector2i(finalRect.left, finalRect.top + finalRect.height);
 
-	vector<p2t::Point*> polyline;
-	for( int i = 0; i < inversePoly->numPoints; ++i )
+	//p2t::CDT * cdt = new p2t::CDT( outerQuadPoints );
+
+	int inversePoints = inversePoly->numPoints;
+	currVector.resize(inversePoints);
+	for (int i = 0; i < inversePoints; ++i)
 	{
-		
-		//inverse polygon will always be the first set of points in the list
-		polyline.push_back( new p2t::Point( points[i].x, points[i].y ) );
-		//cout << "polyline: " << polyline.back()->x << ", " << polyline.back()->y << endl;
+		currVector[i] = Vector2i(points[i]);
 	}
 
-	//cut a hole in the polygon
-	cdt->AddHole( polyline );
-			
-	vector<p2t::Triangle*> tris;
-
-	cdt->Triangulate();
-				
-	tris = cdt->GetTriangles();
-
-	va = new VertexArray( sf::Triangles , tris.size() * 3 );
+	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
+	int vaSize = indices.size();
+	int numTris = vaSize / 3;
+	va = new VertexArray( sf::Triangles , vaSize );
 	VertexArray & v = *va;
 	Color testColor( 0x75, 0x70, 0x90 );
 	testColor = Color::White;
-	//Vector2f topLeft( left, top );
-	//cout << "topleft: " << topLeft.x << ", " << topLeft.y << endl;
-	for( int i = 0; i < tris.size(); ++i )
+	int trueIndex;
+	int polyIndex;
+	for( int i = 0; i < vaSize; ++i )
 	{	
-		p2t::Point *p = tris[i]->GetPoint( 0 );	
-		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-		p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-		v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
-		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+		trueIndex = indices[i];
+		if (trueIndex < 4)
+		{
+			polyIndex = 0;
+		}
+		else
+		{
+			polyIndex = 1;
+			trueIndex -= 4;
+		}
+		v[i] = Vertex(Vector2f(pointVector[polyIndex][trueIndex]), testColor);
+		/*v[i*3] = Vertex( Vector2f( currVector[trueIndex*3] ), testColor );
+		v[i*3 + 1] = Vertex( Vector2f(currVector[trueIndex * 3+1]), testColor );
+		v[i*3 + 2] = Vertex( Vector2f(currVector[trueIndex * 3+2]), testColor );*/
 	}
 
 	inversePoly->terrainVA = va;
 
-	double polygonArea = 0;
-	for( vector<p2t::Triangle*>::iterator it = tris.begin();
-		it != tris.end(); ++it )
-	{
-		polygonArea += GetTriangleArea( (*it) );
-	}
-
-	inversePoly->polyArea = polygonArea;
-
 	VertexArray *bushVA = SetupBushes( 0,  edges[currentEdgeIndex], ts_bush );
 
 	inversePoly->bushVA = bushVA;
-
-	delete cdt;
-	for( int i = 0; i < inversePoly->numPoints; ++i )
-	{
-		delete polyline[i];
-	}
-	
-	for( int i = 0; i < 4; ++i )
-	{
-		delete outerQuadPoints[i];
-	}
 }
 
 void GameSession::SetStorySeq(StorySequence *storySeq)
@@ -10597,15 +10419,10 @@ void GameSession::RestartLevel()
 
 	//testEmit->SetPos(Vector2f(GetPlayer(0)->position));
 
-//	currentZone = originalZone;
-//	if( currentZone != NULL )
-//		keyMarker->SetStartKeysZone(currentZone);
-
 	if(hasShipEntrance )
 	{
 		ResetShipSequence();
 	}
-	//currentZone = NULL;
 	cam.Reset();
 
 	cutPlayerInput = false;
@@ -10747,28 +10564,28 @@ void GameSession::UpdateExplodingGravityGrass()
 }
 
 
-double GameSession::GetTriangleArea(p2t::Triangle * t)
-{
-	p2t::Point *p_0 = t->GetPoint(0);
-	p2t::Point *p_1 = t->GetPoint(0);
-	p2t::Point *p_2 = t->GetPoint(0);
-
-	V2d p0(p_0->x, p_0->y);
-	V2d p1(p_1->x, p_1->y);
-	V2d p2(p_2->x, p_2->y);
-
-	double len0 = length(p1 - p0);
-	double len1 = length(p2 - p1);
-	double len2 = length(p0 - p2);
-
-	//s = .5 * (a + b + c)
-	//A = sqrt( s(s - a)(s - b)(s - c) )
-
-	double s = .5 * (len0 + len1 + len2);
-	double A = sqrt(s * (s - len0) * (s - len1) * (s - len2));
-
-	return A;
-}
+//double GameSession::GetTriangleArea(p2t::Triangle * t)
+//{
+//	p2t::Point *p_0 = t->GetPoint(0);
+//	p2t::Point *p_1 = t->GetPoint(0);
+//	p2t::Point *p_2 = t->GetPoint(0);
+//
+//	V2d p0(p_0->x, p_0->y);
+//	V2d p1(p_1->x, p_1->y);
+//	V2d p2(p_2->x, p_2->y);
+//
+//	double len0 = length(p1 - p0);
+//	double len1 = length(p2 - p1);
+//	double len2 = length(p0 - p2);
+//
+//	//s = .5 * (a + b + c)
+//	//A = sqrt( s(s - a)(s - b)(s - c) )
+//
+//	double s = .5 * (len0 + len1 + len2);
+//	double A = sqrt(s * (s - len0) * (s - len1) * (s - len2));
+//
+//	return A;
+//}
 
 
 
@@ -12619,16 +12436,6 @@ sf::VertexArray * GameSession::SetupTransitions( int bgLayer, Edge *startEdge, T
 	while( te != startEdge );
 
 	return currVA;
-}
-
-sf::VertexArray * GameSession::SetupDecor0( std::vector<p2t::Triangle*> &tris, Tileset *ts )
-{
-	for( vector<p2t::Triangle*>::iterator it = tris.begin(); it != tris.end(); ++it )
-	{
-		//random point stuff. do this after you get the enemies working
-	}
-
-	return NULL;
 }
 
 sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset *ts )

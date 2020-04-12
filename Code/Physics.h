@@ -48,43 +48,6 @@ struct Edge : QuadTreeEntrant
 };
 
 struct GameSession;
-struct MovingTerrain
-{
-	MovingTerrain( GameSession *owner, sf::Vector2i pos, 
-		std::list<sf::Vector2i> &pathParam, 
-		std::list<sf::Vector2i> &pointsParam,
-		bool loop, float speed );
-	~MovingTerrain();
-	void AddPoint(sf::Vector2i p);
-	void Finalize();
-	void Query( QuadTreeCollider *qtc, const sf::Rect<double> &r );
-	void DebugDraw( sf::RenderTarget *target );
-	void Draw( sf::RenderTarget *target );
-	void UpdatePhysics();
-	void AdvanceTargetNode();
-	//std::list<Vector2i> tempPoints;
-	QuadTree *quadTree;
-	Edge **edgeArray;
-	sf::VertexArray *polygonVA;
-	int numEdges;
-	int left;
-	int right;
-	int top;
-	int bottom;
-	sf::Vector2<double> position;
-	sf::Vector2<double> oldPosition;
-	sf::Vector2i *path; //global coords
-	int pathLength;
-	bool loop;
-	sf::Vector2<double> vel;
-	int slowMultiple;
-	int slowCounter;
-	int targetNode;
-	bool forward;
-	double speed;
-	GameSession *owner;
-	int numTris;
-};
 
 struct HitboxInfo
 {
@@ -226,7 +189,6 @@ struct Contact
 	sf::Vector2<double> resolution;
 	Edge *edge;
 	sf::Vector2<double> normal;
-	MovingTerrain *movingPlat;
 	bool weirdPoint;
 
 };

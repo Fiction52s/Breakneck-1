@@ -19,6 +19,9 @@
 using namespace sf;
 using namespace std;
 
+
+
+
 Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
 	:active( false ), owner( p_owner )
 {
@@ -35,10 +38,15 @@ Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
 	TerrainPoint * curr;
 	int tpNumP = tp.GetNumPoints();
 
+	
+	pointVector.push_back(vector<Vector2i>());
+	vector<Vector2i> &mainPoly = pointVector[0];
+	mainPoly.resize(tpNumP);
 	for (int i = 0; i < tpNumP; ++i)
 	{
 		curr = tp.GetPoint(i);
-		points.push_back(curr->pos);
+		mainPoly[i] = curr->pos;
+		//points.push_back(curr->pos);
 	}
 
 	activeNext = NULL;
@@ -96,21 +104,6 @@ void Zone::ReformAllGates( Gate *ignoreGate)
 
 void Zone::Init()
 {
-	p2t::Point *testP = new p2t::Point(0, 0);
-	delete testP;
-
-	vector<p2t::Point*> polyline;
-
-	//int numPoints = 0;
-
-	for (list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it)
-	{
-		polyline.push_back(new p2t::Point((*it).x, (*it).y));
-	}
-
-	p2t::CDT cdt(polyline);
-
-	//cout << "adding holes for my: " << subZones.size() << " subzones" << endl;
 	list<Zone*> possibleSubs = subZones;
 
 	list<list<Zone*>> groupedZones;
@@ -136,7 +129,6 @@ void Zone::Init()
 	{
 		action = OPEN;
 	}
-	
 
 	list<Edge*> relGates;
 	
@@ -161,20 +153,17 @@ void Zone::Init()
 
 	int emergency = 200;
 	int ecounter = 0;
-	list<p2t::Point*> allHolePoints;
 	while( !relGates.empty() )
 	{
-		
-		vector<p2t::Point*> holePolyline;
+		pointVector.push_back(vector<Vector2i>());
+		vector<Vector2i> &currHoleVector = pointVector.back();
 
 		Edge *start = relGates.front();
 
 		relGates.pop_front();
 
 		Edge *curr = start;
-		p2t::Point *p = new p2t::Point(curr->v0.x, curr->v0.y );
-		holePolyline.push_back( p );
-		allHolePoints.push_back( p );
+		currHoleVector.push_back(Vector2i(curr->v0));
 
 		curr = curr->edge1;
 
@@ -184,10 +173,10 @@ void Zone::Init()
 			{
 				assert( 0 && "gates go on forever" );
 			}
-			//ecounter++;
 
 			bool skip = false;
 			bool found = false;
+
 			//if edge is gate type
 			if( curr->edgeType == Edge::CLOSED_GATE || curr->edgeType == Edge::OPEN_GATE )
 			{
@@ -223,44 +212,30 @@ void Zone::Init()
 					//it = relGates.erase( it );
 					//cout << "gza: " << g->zoneA << ", gzb: " << g->zoneB << endl;
 					//break;
-					
 				}
 			}
 			
 
 			if( !skip )
 			{
-				p2t::Point *p = new p2t::Point(curr->v0.x, curr->v0.y );
-				holePolyline.push_back( p );
-				allHolePoints.push_back( p );
-
+				currHoleVector.push_back(Vector2i(curr->v0));
 				curr = curr->edge1;
 			}
 		}
-
-		cdt.AddHole( holePolyline );
 	}
+
+	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
 	
-	
-	cdt.Triangulate();
-	vector<p2t::Triangle*> tris;
-	tris = cdt.GetTriangles();
-	
-	int vaSize = tris.size() * 3;
+	int vaSize = indices.size();
 	definedArea = new VertexArray( sf::Triangles , vaSize );
 	VertexArray & v = *definedArea;
-	
-	//Color testColor( 0x75, 0x70, 0x90 );
-	//Color selectCol( 0x77, 0xBB, 0xDD );
 
-	for( int i = 0; i < tris.size(); ++i )
+	int numTris = vaSize / 3;
+	for( int i = 0; i < numTris; ++i )
 	{	
-		p2t::Point *p = tris[i]->GetPoint( 0 );	
-		p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-		p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-		v[i * 3] = Vertex(Vector2f(p->x, p->y));// , shadowColor );
-		v[i * 3 + 1] = Vertex(Vector2f(p1->x, p1->y));// , shadowColor );
-		v[i * 3 + 2] = Vertex(Vector2f(p2->x, p2->y));// , shadowColor );
+		v[i * 3] = Vertex(Vector2f(GetPolyPoint(indices[i*3])));
+		v[i * 3 + 1] = Vertex(Vector2f(GetPolyPoint(indices[i * 3+1])));
+		v[i * 3 + 2] = Vertex(Vector2f(GetPolyPoint(indices[i * 3+2])));
 	}
 
 	switch (zType)
@@ -357,20 +332,6 @@ void Zone::Init()
 		miniShader->setUniform("alpha", 1.f);
 	}
 
-	//assert( tris.size() * 3 == points.size() );
-	//delete cdt;
-	//for( int i = 0; i < numPoints; ++i )
-	for( auto it = polyline.begin(); it != polyline.end(); ++it )
-	{
-		delete (*it);
-	//	delete tris[i];
-	}
-	
-	for( list<p2t::Point*>::iterator it = allHolePoints.begin(); it != allHolePoints.end(); ++it )
-	{
-		delete (*it);
-	}
-
 	for( list<Enemy*>::iterator it = allEnemies.begin(); it != allEnemies.end(); ++it )
 	{
 		if ((*it)->type == EN_CRAWLERQUEEN)
@@ -388,6 +349,23 @@ void Zone::Init()
 	
 }
 
+Vector2i &Zone::GetPolyPoint(int index)
+{
+	int currVecIndex = 0;
+	while (index >= pointVector[currVecIndex].size())
+	{
+		index -= pointVector[currVecIndex].size();
+		++currVecIndex;
+	}
+
+	return pointVector[currVecIndex][index];
+}
+
+vector<sf::Vector2i> &Zone::PointVector()
+{
+	return pointVector[0];
+}
+
 void Zone::SetShadowColor( sf::Color c )
 {
 	int vCount = definedArea->getVertexCount();
@@ -395,23 +373,6 @@ void Zone::SetShadowColor( sf::Color c )
 	for( int i = 0; i < vCount; ++i )
 	{
 		da[i].color = c;
-	}
-}
-
-void Zone::AddHoles( p2t::CDT *cdt )
-{
-	//vector<p2t::Point*> polyline;
-
-	for( list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it )
-	{
-	//	polyline.push_back( new p2t::Point((*it).x, (*it).y ) );
-	}
-	//cout << "adding hole!" << endl;
-	//cdt->AddHole( polyline );
-
-	for( list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it )
-	{
-		(*it)->AddHoles( cdt );
 	}
 }
 
@@ -563,18 +524,24 @@ void Zone::Draw(RenderTarget *target)
 
 bool Zone::ContainsPoint(V2d test)
 {
-	int pointCount = points.size();
-
 	bool c = false;
 
-	Vector2i prev = points.back();
-	for (list<Vector2i>::iterator it = points.begin(); it != points.end(); ++it)
-	{
-		if ((((*it).y > test.y) != (prev.y > test.y)) &&
-			(test.x < (prev.x - (*it).x) * (test.y - (*it).y) / (prev.y - (*it).y) + (*it).x))
-			c = !c;
+	vector<Vector2i> &pVec = PointVector();
 
-		prev = (*it);
+	int pCount = pVec.size();
+	
+	V2d curr,prev;
+	for (int i = 0; i < pCount; ++i)
+	{
+		curr = V2d(pVec[i]);
+		if (i == 0)
+			prev = V2d(pVec[pCount - 1]);
+		else
+			prev = V2d(pVec[i - 1]);
+
+		if (((curr.y > test.y) != (prev.y > test.y)) &&
+			(test.x < (prev.x - curr.x) * (test.y - curr.y) / (prev.y - curr.y) + curr.x))
+			c = !c;
 	}
 
 	return c;
@@ -583,31 +550,17 @@ bool Zone::ContainsPoint(V2d test)
 bool Zone::ContainsZone(Zone *z)
 {
 	//midpoint on the gate
-	for (list<Vector2i>::iterator it = z->points.begin(); it != z->points.end(); ++it)
+
+	vector<Vector2i> &pVec = z->PointVector();
+	for (auto it = pVec.begin(); it != pVec.end(); ++it)
 	{
-		if (!ContainsPoint(V2d((*it).x, (*it).y)))
+		if (!ContainsPoint(V2d((*it))))
 		{
 			return false;
 		}
 	}
 	return true;
-
-	/*for( list<Edge*>::iterator it = z->gates.begin(); it != z->gates.end(); ++it )
-	{
-	}
-
-
-	z->
-	V2d p(
-		( z->gates.front()->edge0->v0.x + z->gates.front()->edge1->v1.x ) / 2,
-		( z->gates.front()->edge0->v0.y + z->gates.front()->edge0->v1.y ) / 2);
-	return ContainsPoint( p );*/
 }
-
-//bool Zone::ContainsPlayer()
-//{
-//
-//}
 
 bool Zone::ContainsZoneMostSpecific(Zone *z)
 {

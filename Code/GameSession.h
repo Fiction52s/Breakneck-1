@@ -22,6 +22,7 @@
 #include <boost/filesystem.hpp>"
 #include "DecorTypes.h"
 #include <boost/thread/mutex.hpp>
+#include "earcut.hpp"
 
 struct Actor;
 struct ComboObject;
@@ -128,6 +129,28 @@ struct SpecialTerrainPiece;
 struct EnvPlant;
 
 struct Barrier;
+
+
+namespace mapbox
+{
+	namespace util
+	{
+		template<>
+		struct nth<0, sf::Vector2i> {
+			inline static auto get(const sf::Vector2i &t) {
+				return t.x;
+			}
+		};
+
+		template<>
+		struct nth<1, sf::Vector2i> {
+			inline static auto get(const sf::Vector2i &t)
+			{
+				return t.y;
+			}
+		};
+	}
+}
 
 struct PoiInfo
 {
@@ -518,8 +541,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		std::map<int, int> &polyIndex);
 	bool LoadBGPlats( std::ifstream &is,
 		std::map<int, int> &polyIndex );
-	bool LoadMovingPlats(std::ifstream &is,
-		std::map<int, int> &polyIndex);
 	bool LoadSpecialPolys(std::ifstream &is);
 	bool LoadGates( std::ifstream &is,
 		std::map<int, int> &polyIndex);
@@ -563,7 +584,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void UpdateEffects();
 	void UpdateEnemiesSprites();
 	void UpdateEnemiesDraw();
-	double GetTriangleArea( p2t::Triangle * t );
 	void RespawnPlayer(int index);
 	void ResetEnemies();
 	void ResetPlants();
@@ -626,9 +646,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	void LoadState();
 
 	const static int MAX_EFFECTS = 100;
-
-
-	std::list<MovingTerrain*> movingPlats;
 
 	sf::Shader flowShader;
 	float flowRadius;
@@ -830,11 +847,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 		int bgLayer,
 		Edge *start,
 		Tileset *ts);
-
-
-	sf::VertexArray *SetupDecor0(
-		std::vector<p2t::Triangle*> &tris,
-		Tileset *ts );
 
 	sf::VertexArray *SetupBushes( int bgLayer,
 		Edge *startEdge, Tileset *ts );

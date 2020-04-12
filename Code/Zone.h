@@ -17,7 +17,6 @@ struct Zone
 	void Init();
 	void Draw( sf::RenderTarget *target );
 	void DrawMinimap(sf::RenderTarget *target);
-	void AddHoles( p2t::CDT *cdt );
 
 	bool ContainsPoint( sf::Vector2<double> point );
 	bool ContainsZone( Zone *z );
@@ -64,7 +63,9 @@ struct Zone
 
 	sf::VertexArray *definedArea;
 	std::list<Edge*> gates;
-	std::list<sf::Vector2i> points;
+	std::vector<std::vector<sf::Vector2i>> pointVector;
+	std::vector<sf::Vector2i> &PointVector();
+	sf::Vector2i &GetPolyPoint(int index);
 	std::list<Zone*> subZones;
 	std::list<Enemy*> spawnEnemies;
 	std::list<Enemy*> allEnemies;

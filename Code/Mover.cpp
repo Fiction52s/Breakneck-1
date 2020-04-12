@@ -459,7 +459,6 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 						minContact.resolution = c->resolution;
 						minContact.position = c->position;
 						minContact.normal = c->normal;
-						minContact.movingPlat = NULL;
 						//cout << "replacing res: " << c->resolution.x << ", " << c->resolution.y << endl;
 						col = true;
 					}
@@ -478,7 +477,6 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 					minContact.resolution = c->resolution;
 					minContact.position = c->position;
 					minContact.normal = c->normal;
-					minContact.movingPlat = NULL;
 					col = true;
 					
 				}

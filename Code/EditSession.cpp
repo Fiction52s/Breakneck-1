@@ -6113,6 +6113,7 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 		if (polygonInProgress->inverse)
 		{
 			SetInversePoly();
+			return NULL;
 		}
 		else
 		{

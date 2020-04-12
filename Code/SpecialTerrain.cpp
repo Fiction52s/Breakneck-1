@@ -37,47 +37,34 @@ SpecialTerrainPiece::~SpecialTerrainPiece()
 
 void SpecialTerrainPiece::GenerateCenterMesh()
 {
-	vector<p2t::Point*> polyline;
-	V2d testP;
+	//vector<p2t::Point*> polyline;
+	//V2d testP;
+	vector<vector<Vector2i>> pointVector;
+	pointVector.resize(1);
+	vector<Vector2i> &currVector = pointVector[0];
+
+	currVector.resize(numPoints);
 	for (int i = 0; i < numPoints; ++i)
 	{
-		testP = GetEdge(i)->v0;
-		polyline.push_back(new p2t::Point(testP.x, testP.y));
+		currVector[i] = Vector2i(GetEdge(i)->v0);
 	}
 
-	p2t::CDT * cdt = new p2t::CDT(polyline);
+	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
 
-	cdt->Triangulate();
-	vector<p2t::Triangle*> tris;
-	tris = cdt->GetTriangles();
+	int vaSize = indices.size();
+	int numTris = vaSize / 3;
 
-	terrainVA = new VertexArray(sf::Triangles, tris.size() * 3);
-
-	/*double polygonArea = 0;
-	for (vector<p2t::Triangle*>::iterator it = tris.begin();
-		it != tris.end(); ++it)
-	{
-		polygonArea += GetTriangleArea((*it));
-	}*/
+	terrainVA = new VertexArray(sf::Triangles, vaSize);
 
 	VertexArray & v = *terrainVA;
 	Color testColor(0x75, 0x70, 0x90);
 	testColor = Color(255, 0, 0, 50);//Color::White;
 
-	for (int i = 0; i < tris.size(); ++i)
+	for (int i = 0; i < numTris; ++i)
 	{
-		p2t::Point *p = tris[i]->GetPoint(0);
-		p2t::Point *p1 = tris[i]->GetPoint(1);
-		p2t::Point *p2 = tris[i]->GetPoint(2);
-		v[i * 3] = Vertex(Vector2f(p->x, p->y), testColor);
-		v[i * 3 + 1] = Vertex(Vector2f(p1->x, p1->y), testColor);
-		v[i * 3 + 2] = Vertex(Vector2f(p2->x, p2->y), testColor);
-	}
-
-	delete cdt;
-	for (int i = 0; i < numPoints; ++i)
-	{
-		delete polyline[i];
+		v[i * 3] = Vertex(Vector2f(currVector[indices[i*3]]), testColor);
+		v[i * 3 + 1] = Vertex(Vector2f(currVector[indices[i * 3+1]]), testColor);
+		v[i * 3 + 2] = Vertex(Vector2f(currVector[indices[i * 3+2]]), testColor);
 	}
 }
 

@@ -1036,12 +1036,10 @@ struct Actor : QuadTreeCollider,
 	bool col;
 	sf::Vector2<double> tempVel;
 	std::string queryMode;
-	MovingTerrain *currMovingTerrain;
 
 	int maxDespFrames;
 	int despCounter;
 	bool desperationMode;
-	//MovingTerrain *minContactTerrain;
 
 	bool checkValid;
 
@@ -1078,7 +1076,6 @@ struct Actor : QuadTreeCollider,
 	sf::RectangleShape railTest;
 
 	Edge *ground;
-	MovingTerrain *movingGround;
 
 	Rail *prevRail;
 
@@ -1094,15 +1091,10 @@ struct Actor : QuadTreeCollider,
 	double grindLungeSpeed0;
 	double grindLungeSpeed1;
 	double grindLungeSpeed2;
-	//double grindLungeExtraMax;
-	MovingTerrain *grindMovingTerrain;
 	double grindQuantity;
 	double grindSpeed;
 
 	double slopeTooSteepLaunchLimitX;
-
-	void HitEdge(
-		sf::Vector2<double> &newVel );
 
 	bool reversed;
 
@@ -1175,7 +1167,6 @@ struct Actor : QuadTreeCollider,
 	bool touchEdgeWithRightWire;
 
 	Edge *bounceEdge;
-	MovingTerrain *bounceMovingTerrain; //not used
 	double bounceQuant;
 	Edge *oldBounceEdge;
 	int framesSinceBounce;

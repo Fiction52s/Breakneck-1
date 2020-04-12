@@ -64,7 +64,7 @@ struct SpecialTerrainPiece : QuadTreeEntrant, QuadTreeCollider, RayCastHandler
 	bool show;
 	SpecialTerrainPiece *next;
 	sf::Rect<double> aabb;
-	double polyArea;
+	//double polyArea;
 	
 };
 

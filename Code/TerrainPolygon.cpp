@@ -923,7 +923,6 @@ void TerrainPolygon::FinalizeInverse()
 	UpdateBounds();
 
 	int testExtra = inverseExtraBoxDist;
-	vector<p2t::Point*> outerQuadPoints;
 
 	Vector2i outerRectPositions[4];
 	outerRectPositions[0] = Vector2i(left - inverseExtraBoxDist, top - inverseExtraBoxDist);

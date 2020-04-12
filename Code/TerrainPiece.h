@@ -113,7 +113,7 @@ struct TerrainPiece : QuadTreeEntrant
 	TerrainPiece *next;
 	sf::Rect<double> aabb;
 	int startEdgeIndex;
-	double polyArea;
+	//double polyArea;
 	void UpdateBushes();
 	void Draw(sf::RenderTarget *target);
 	void HandleQuery(QuadTreeCollider * qtc);
