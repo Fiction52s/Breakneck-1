@@ -154,7 +154,7 @@ int Actor::GetTotalGameFrames()
 	if (owner != NULL)
 		return owner->totalGameFrames;
 	else
-		return 0;
+		return editOwner->totalGameFrames;
 }
 
 void Actor::SetToOriginalPos()
@@ -242,6 +242,19 @@ void Actor::SetCurrHitboxes(CollisionBody *cBody,
 		currHitboxes = cBody;
 		currHitboxFrame = p_frame;
 	}
+}
+
+Collider &Actor::GetCollider()
+{
+	if (owner != NULL)
+	{
+		return owner->coll;
+	}
+	else if (editOwner != NULL)
+	{
+		return editOwner->coll;
+	}
+
 }
 
 void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
@@ -17232,7 +17245,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 
-		Contact *c = owner->coll.collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
+		Contact *c = GetCollider().collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
 
 		if( c != NULL )
 		{
@@ -17776,7 +17789,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			return;
 		}
 
-		Contact *c = owner->coll.collideEdge( position + tempVel , b, e, tempVel, V2d( 0, 0 ) );
+		Contact *c = GetCollider().collideEdge( position + tempVel , b, e, tempVel, V2d( 0, 0 ) );
 		
 		if( c != NULL )
 			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )

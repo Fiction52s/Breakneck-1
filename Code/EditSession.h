@@ -106,9 +106,11 @@ struct EditSession : GUIHandler, TilesetManager
 	double currentTime;
 	double accumulator;
 	sf::Clock gameClock;
+	Collider coll;
 	//double currentTime;
 	void TestPlayerModeUpdate();
 	void TestPlayerMode();
+	int totalGameFrames;
 
 	QuadTree * terrainTree;
 	QuadTree *specialTerrainTree;

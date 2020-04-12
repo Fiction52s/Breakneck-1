@@ -76,9 +76,6 @@ void EditSession::TestPlayerModeUpdate()
 			GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 		}
 
-	
-
-
 		Actor *pTemp = NULL;
 		for (int i = 0; i < 4; ++i)
 		{
@@ -120,7 +117,7 @@ void EditSession::TestPlayerModeUpdate()
 			ApplyToggleUpdates(i);
 		}
 
-		//totalGameFrames++;
+		
 		UpdatePrePhysics();
 		UpdatePhysics();
 		UpdatePostPhysics();
@@ -139,6 +136,7 @@ void EditSession::TestPlayerModeUpdate()
 		}*/
 
 		accumulator -= TIMESTEP;
+		totalGameFrames++;
 	}
 }
 
@@ -147,11 +145,27 @@ void EditSession::TestPlayerMode()
 	currentTime = 0;
 	accumulator = TIMESTEP + .1;
 	mode = TEST_PLAYER;
+	totalGameFrames = 0;
 
-	if (terrainTree == NULL)
+	if (terrainTree != NULL)
+	{
+		terrainTree->Clear();
+		specialTerrainTree->Clear();
+
+		testPlayer->Respawn();
+	}
+	else
 	{
 		terrainTree = new QuadTree(1000000, 1000000);
 		specialTerrainTree = new QuadTree(1000000, 1000000);
+
+		testPlayer->SetToOriginalPos();
+
+	}
+
+	if (inversePolygon != NULL)
+	{
+		inversePolygon->AddEdgesToQuadTree(terrainTree);
 	}
 
 
@@ -2501,7 +2515,6 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 {
 	testPlayer = new Actor(NULL, this, 0);
 	testPlayer->InitAfterEnemies();
-	testPlayer->SetToOriginalPos();
 
 	oldShaderZoom = -1;
 	complexPaste = NULL;

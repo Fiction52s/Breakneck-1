@@ -8,6 +8,7 @@
 #include "VectorMath.h"
 #include "clipper.hpp"
 #include "EditorGateInfo.h"
+#include "Physics.h"
      
 struct ISelectable;
 struct GateInfo;
@@ -113,6 +114,10 @@ struct TerrainPolygon : ISelectable
 		WATER0,
 		Count
 	};
+
+	std::vector<Edge> edges;
+	void AddEdgesToQuadTree(QuadTree *tree);
+
 	//QuadTree *edgeTree;
 	bool isBrushTest;
 	

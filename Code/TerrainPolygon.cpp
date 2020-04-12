@@ -142,6 +142,15 @@ TerrainPolygon::~TerrainPolygon()
 	ClearPoints();
 }
 
+void TerrainPolygon::AddEdgesToQuadTree(QuadTree *tree)
+{
+	int numP = GetNumPoints();
+	for (int i = 0; i < numP; ++i)
+	{
+		tree->Insert(&edges[i]);
+	}
+}
+
 vector<TerrainPoint> &TerrainPolygon::PointVector()
 {
 	int i = (int)inverse;
@@ -938,10 +947,42 @@ void TerrainPolygon::FinalizeInverse()
 		AddInverseBorderPoint(outerRectPositions[i], false);
 	}
 
+	
+
 	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
 	vaSize = indices.size();
 
 	int numP = GetNumPoints();
+
+	edges.resize(numP);
+	TerrainPoint *curr, *next;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		next = GetNextPoint(i);
+
+		edges[i].v0 = V2d(curr->pos);
+		edges[i].v1 = V2d(next->pos);
+	}
+
+	int prevIndex, nextIndex;
+	for (int i = 0; i < numP; ++i)
+	{
+		if (i == 0)
+			prevIndex = numP - 1;
+		else
+			prevIndex = i - 1;
+
+		if (i == numP - 1)
+			nextIndex = 0;
+		else
+			nextIndex = i + 1;
+
+		edges[i].edge0 = &edges[prevIndex];
+		edges[i].edge1 = &edges[nextIndex];
+	}
+
+
 
 	lines = new sf::Vertex[numP * 2 + 1];
 	va = new VertexArray(sf::Triangles, vaSize);
