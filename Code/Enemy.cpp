@@ -14,6 +14,7 @@
 #include "Wire.h"
 #include "Enemy_Specter.h"
 #include "Actor.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;

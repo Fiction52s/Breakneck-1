@@ -15,6 +15,8 @@
 #include "Gate.h"
 #include "SpecialTerrainTypes.h"
 
+struct EditSession;
+
 
 struct AirTrigger;
 struct Gate;
@@ -104,68 +106,8 @@ struct MotionGhostEffect
 };
 
 //eventually make this an objectpool but don't need to for now
-struct AbsorbParticles
-{
-	enum AbsorbType
-	{
-		ENERGY,
-		DARK,
-		SHARD,
-	};
-	
-	struct SingleEnergyParticle
-	{
-		
-		SingleEnergyParticle(AbsorbParticles *parent,
-			int tileIndex );
-		void UpdateSprite();
-		bool Update();
-		void Activate(sf::Vector2f &pos, sf::Vector2f &vel);
-		void Clear();
-		sf::Vector2f pos;
-		int frame;
-		int tileIndex;
-		sf::Vector2f velocity;
-		AbsorbParticles *parent;
-		int lockFrame;
-		float lockDist;
 
-		SingleEnergyParticle *next;
-		SingleEnergyParticle *prev;
-		
-		//Vector2f accel;
-	};
-
-	AbsorbType abType;
-	sf::Vector2f GetTargetPos(AbsorbType ab);
-	AbsorbParticles( GameSession *owner,
-		AbsorbType p_abType );
-	~AbsorbParticles();	
-	void Reset();
-	sf::Vertex *va;
-	int maxNumParticles;
-	void Activate( Actor *playerTarget, int storedHits, V2d &pos,
-		float startAngle = 0 );
-	void Update();
-	void Draw(sf::RenderTarget *rt);
-	float startAngle;
-	GameSession *owner;
-	Tileset *ts;
-	//Tileset *ts_explodeCreate;
-	Tileset *ts_explodeDestroy;
-	int animFactor;
-	sf::Vector2f pos;
-	sf::Vector2f *particlePos;
-	int numActivatedParticles;
-	Actor *playerTarget;
-	double maxSpeed;
-	SingleEnergyParticle *GetInactiveParticle();
-	void DeactivateParticle(SingleEnergyParticle *sp);
-	SingleEnergyParticle *activeList;
-	SingleEnergyParticle *inactiveList;
-	void AllocateParticle(int tileIndex );
-};
-
+struct AbsorbParticles;
 struct GravityModifier;
 struct Booster;
 struct BounceBooster;
@@ -200,43 +142,6 @@ struct Actor : QuadTreeCollider,
 		POWER_LWIRE
 	};
 
-	//ShapeEmitter *glideEmitter;
-
-	//EffectPool *testPool;
-	KinMask *kinMask;
-
-	EffectPool *smallLightningPool[7];
-	EffectPool *risingAuraPool;
-	MotionGhostEffect *motionGhostsEffects[3];
-
-	KinRing *kinRing;
-
-	EffectPool *dustParticles;
-	RisingParticleUpdater *rpu;
-	void HandleGroundTrigger(GroundTrigger *trigger);
-	GroundTrigger *storedTrigger;
-
-	AirTrigger *currAirTrigger;
-	void HandleAirTrigger();
-
-	sf::Sprite exitAuraSprite;
-	Tileset *ts_exitAura;
-	bool showExitAura;
-
-	//for when you're absorbing a power
-	sf::Sprite dirtyAuraSprite;
-	Tileset *ts_dirtyAura;
-	//void UpdateDirtyAura();
-	void SetDirtyAura(bool on);
-	bool showDirtyAura;
-
-	enum AirTriggerBehavior
-	{
-		AT_NONE,
-		AT_AUTORUNRIGHT,
-	};
-	AirTriggerBehavior airTrigBehavior;
-	
 	enum Action
 	{
 		DAIR,
@@ -313,7 +218,7 @@ struct Actor : QuadTreeCollider,
 		SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED,
 		SEQ_CRAWLERFIGHT_DODGEBACK,
 		SEQ_WAIT,
-		GETPOWER_AIRDASH_MEDITATE,		
+		GETPOWER_AIRDASH_MEDITATE,
 		GETPOWER_AIRDASH_FLIP,
 		ENTERNEXUS1,
 		AUTORUN,
@@ -380,6 +285,60 @@ struct Actor : QuadTreeCollider,
 		S_Count
 	};
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
+	//ShapeEmitter *glideEmitter;
+	SoundNode * ActivateSound(SoundType st, bool loop = false);
+	void DeactivateSound(SoundNode *sn);
+	void SetToOriginalPos();
+	void UpdatePowers();
+
+	sf::SoundBuffer * GetSound(const std::string &name);
+	std::map<int, std::list<CollisionBox>> & GetHitboxList(
+		const std::string & str);
+
+
+	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex = 0);
+	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
+		sf::Color *startColorBuf, sf::Color *endColorBuf);
+	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, KinSkin *skin);
+
+	GameController &GetController(int index);
+
+	//EffectPool *testPool;
+	KinMask *kinMask;
+
+	EffectPool *smallLightningPool[7];
+	EffectPool *risingAuraPool;
+	MotionGhostEffect *motionGhostsEffects[3];
+
+	KinRing *kinRing;
+
+	EffectPool *dustParticles;
+	RisingParticleUpdater *rpu;
+	void HandleGroundTrigger(GroundTrigger *trigger);
+	GroundTrigger *storedTrigger;
+
+	AirTrigger *currAirTrigger;
+	void HandleAirTrigger();
+
+	sf::Sprite exitAuraSprite;
+	Tileset *ts_exitAura;
+	bool showExitAura;
+
+	//for when you're absorbing a power
+	sf::Sprite dirtyAuraSprite;
+	Tileset *ts_dirtyAura;
+	//void UpdateDirtyAura();
+	void SetDirtyAura(bool on);
+	bool showDirtyAura;
+
+	enum AirTriggerBehavior
+	{
+		AT_NONE,
+		AT_AUTORUNRIGHT,
+	};
+	AirTriggerBehavior airTrigBehavior;
+	
+	
 
 	enum Expr
 	{
@@ -542,7 +501,8 @@ struct Actor : QuadTreeCollider,
 	int enemiesKilledThisFrame;
 	int enemiesKilledLastFrame;
 
-	Actor( GameSession *owner, int actorIndex );
+	Actor( GameSession *owner, 
+		EditSession *editOwner, int actorIndex );
 	~Actor();
 	float totalHealth;
 	int actorIndex;
@@ -658,6 +618,8 @@ struct Actor : QuadTreeCollider,
 	//unsaved vars
 	int possibleEdgeCount;
 	GameSession *owner;
+	EditSession *editOwner;
+
 	double steepClimbSpeedThresh;
 	Contact minContact;
 	Contact storedContact;
@@ -916,11 +878,7 @@ struct Actor : QuadTreeCollider,
 	CollisionBody *currHitboxes;
 	int currHitboxFrame;
 	void SetCurrHitboxes(CollisionBody *cBody,
-		int p_frame)
-	{
-		currHitboxes = cBody;
-		currHitboxFrame = p_frame;
-	}
+		int p_frame);
 	ComboObject *activeComboObjList;
 	void AddActiveComboObj(ComboObject *c);
 	void RemoveActiveComboObj(ComboObject *c);

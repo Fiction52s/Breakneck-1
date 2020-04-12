@@ -16,7 +16,7 @@ Aura::Aura( Actor *p_player, int numSets, int p_maxParticlesPerSet, int type )
 	testType = type;
 	inactiveSets = NULL;
 	ParticleSet *temp;
-	ts = player->owner->GetTileset("FX/aura_16x16.png", 16, 16);
+	ts = player->GetTileset("FX/aura_16x16.png", 16, 16);
 	totalParticles = numSets * maxParticlesPerSet;
 	va = new Vertex[totalParticles * 4];
 	memset(va, 0, sizeof(va));

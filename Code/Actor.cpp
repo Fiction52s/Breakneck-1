@@ -44,6 +44,8 @@
 #include "EnvPlant.h"
 #include "SpecialTerrain.h"
 #include "Barrier.h"
+#include "AbsorbParticles.h"
+#include "EditSession.h"
 
 using namespace sf;
 using namespace std;
@@ -58,48 +60,176 @@ using namespace std;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex)
+{
+	if (owner != NULL)
+	{
+		owner->GetTileset(s, tileWidth, tileHeight, altColorIndex);
+	}
+	else if (editOwner != NULL)
+	{
+		editOwner->GetTileset(s, tileWidth, tileHeight, altColorIndex);
+	}
+	else
+		return NULL;
+}
+
+
+Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
+	sf::Color *startColorBuf, sf::Color *endColorBuf)
+{
+	if (owner != NULL)
+	{
+		return owner->GetTileset(s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf);
+	}
+	else if (editOwner != NULL)
+	{
+		editOwner->GetTileset(s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf);
+	}
+	else
+		return NULL;
+}
+
+Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, KinSkin *skin)
+{
+	if (owner != NULL)
+	{
+		return owner->GetTileset(s, tileWidth, tileHeight, skin);
+	}
+	else if (editOwner != NULL)
+	{
+		editOwner->GetTileset(s, tileWidth, tileHeight);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+sf::SoundBuffer * Actor::GetSound(const std::string &name)
+{
+	if (owner != NULL)
+	{
+		owner->soundManager->GetSound(name);
+	}
+	else
+		return NULL;
+}
+
+map<int, list<CollisionBox>> & Actor::GetHitboxList(const string & str)
+{
+	return owner->hitboxManager->GetHitboxList(str);
+}
+
+void Actor::UpdatePowers()
+{
+	if (owner != NULL)
+	{
+		owner->mainMenu->pauseMenu->kinMenu->UpdatePowers(this);
+	}
+}
+
+void Actor::SetToOriginalPos()
+{
+	if (owner != NULL)
+	{
+		position = owner->originalPos;
+	}
+}
+
+SoundNode * Actor::ActivateSound(SoundType st, bool loop )
+{
+	SoundBuffer *sb = soundBuffers[S_ENTER];
+
+	if (sb == NULL)
+		return NULL;
+
+	if (owner != NULL)
+	{
+		return owner->soundNodeList->ActivateSound(sb, loop);
+	}
+	else
+	{
+
+	}
+
+	return NULL;
+}
+
+void Actor::DeactivateSound(SoundNode *sn)
+{
+	if( owner != NULL )
+		owner->soundNodeList->DeactivateSound(sn);
+}
+
+GameController &Actor::GetController(int index)
+{
+	if (owner != NULL)
+	{
+		return owner->GetController(actorIndex);
+	}
+	else if (editOwner != NULL)
+	{
+		return editOwner->mainMenu->GetController(actorIndex);
+	}
+	else
+	{
+		assert(0);
+		return owner->GetController(actorIndex);
+	}
+}
+
+void Actor::SetCurrHitboxes(CollisionBody *cBody,
+	int p_frame)
+{
+	if (cBody != NULL)
+	{
+		currHitboxes = cBody;
+		currHitboxFrame = p_frame;
+	}
+}
 
 void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 {
-	ts_scorpRun = owner->GetTileset("Kin/scorp_run_192x128.png", 192, 128);
-	ts_scorpSlide = owner->GetTileset("Kin/scorp_slide_160x96.png", 160, 96);
-	ts_scorpSteepSlide = owner->GetTileset("Kin/scorp_steep_slide_224x128.png", 224, 128);
-	ts_scorpStart = owner->GetTileset("Kin/scorp_start_256x256.png", 256, 256);
-	ts_scorpStand = owner->GetTileset("Kin/scorp_stand_224x128.png", 224, 128);
-	ts_scorpJump = owner->GetTileset("Kin/scorp_jump_192x144.png", 192, 144);
-	ts_scorpDash = owner->GetTileset("Kin/scorp_dash_192x80.png", 192, 80);
-	ts_scorpSprint = owner->GetTileset("Kin/scorp_sprint_192x96.png", 192, 96);
-	ts_scorpClimb = owner->GetTileset("Kin/scorp_climb_256x128.png", 256, 128);
-	ts_bubble = owner->GetTileset("Kin/time_bubble_128x128.png", 128, 128);
+	ts_scorpRun = GetTileset("Kin/scorp_run_192x128.png", 192, 128);
+	ts_scorpSlide = GetTileset("Kin/scorp_slide_160x96.png", 160, 96);
+	ts_scorpSteepSlide = GetTileset("Kin/scorp_steep_slide_224x128.png", 224, 128);
+	ts_scorpStart = GetTileset("Kin/scorp_start_256x256.png", 256, 256);
+	ts_scorpStand = GetTileset("Kin/scorp_stand_224x128.png", 224, 128);
+	ts_scorpJump = GetTileset("Kin/scorp_jump_192x144.png", 192, 144);
+	ts_scorpDash = GetTileset("Kin/scorp_dash_192x80.png", 192, 80);
+	ts_scorpSprint = GetTileset("Kin/scorp_sprint_192x96.png", 192, 96);
+	ts_scorpClimb = GetTileset("Kin/scorp_climb_256x128.png", 256, 128);
+	ts_bubble = GetTileset("Kin/time_bubble_128x128.png", 128, 128);
 
-	ts_airBounceFlame = owner->GetTileset("Kin/bouncejumpflame.png", 128, 128, skin);
-	ts_runBounceFlame = owner->GetTileset("Kin/bouncerunflame.png", 128, 96, skin);
-	ts_bounceBoost = owner->GetTileset("FX/bounceboost_256x192.png", 256, 192, skin);
+	ts_airBounceFlame = GetTileset("Kin/bouncejumpflame.png", 128, 128, skin);
+	ts_runBounceFlame = GetTileset("Kin/bouncerunflame.png", 128, 96, skin);
+	ts_bounceBoost = GetTileset("FX/bounceboost_256x192.png", 256, 192, skin);
 
-	ts_dodecaSmall = owner->GetTileset("Kin/dodecasmall.png", 180, 180, skin);
-	ts_dodecaBig = owner->GetTileset("Kin/dodecabig.png", 360, 360, skin);
-	tsgsdodeca = owner->GetTileset("Kin/dodeca_64x64.png", 64, 64);
-	tsgstriblue = owner->GetTileset("Kin/triblue.png", 64, 64);
-	tsgstricym = owner->GetTileset("Kin/tricym_128x128.png", 128, 128);
-	tsgstrigreen = owner->GetTileset("Kin/trigreen.png", 64, 64);
-	tsgstrioran = owner->GetTileset("Kin/trioran_128x128.png", 128, 128);
-	tsgstripurp = owner->GetTileset("Kin/tripurp_128x128.png", 128, 128);
-	tsgstrirgb = owner->GetTileset("Kin/trirgb_128x128.png", 128, 128);
+	ts_dodecaSmall = GetTileset("Kin/dodecasmall.png", 180, 180, skin);
+	ts_dodecaBig = GetTileset("Kin/dodecabig.png", 360, 360, skin);
+	tsgsdodeca = GetTileset("Kin/dodeca_64x64.png", 64, 64);
+	tsgstriblue = GetTileset("Kin/triblue.png", 64, 64);
+	tsgstricym = GetTileset("Kin/tricym_128x128.png", 128, 128);
+	tsgstrigreen = GetTileset("Kin/trigreen.png", 64, 64);
+	tsgstrioran = GetTileset("Kin/trioran_128x128.png", 128, 128);
+	tsgstripurp = GetTileset("Kin/tripurp_128x128.png", 128, 128);
+	tsgstrirgb = GetTileset("Kin/trirgb_128x128.png", 128, 128);
 
-	tileset[STAND] = owner->GetTileset("Kin/stand_64x64.png", 64, 64, skin);
-	tileset[WALLATTACK] = owner->GetTileset("Kin/wall_att_64x128.png", 64, 128, skin);
-	tileset[DAIR] = owner->GetTileset("Kin/dair_80x80.png", 80, 80, skin);
-	tileset[DASH] = owner->GetTileset("Kin/dash_96x48.png", 96, 48, skin);
-	tileset[DOUBLE] = owner->GetTileset("Kin/double_64x64.png", 64, 64, skin);
-	tileset[BACKWARDSDOUBLE] = owner->GetTileset("Kin/double_back_96x96.png", 96, 96, skin);
-	tileset[FAIR] = owner->GetTileset("Kin/fair_80x80.png", 80, 80, skin);
-	tileset[DIAGUPATTACK] = owner->GetTileset("Kin/airdash_attack_up_96x80.png", 96, 80, skin);
-	tileset[DIAGDOWNATTACK] = owner->GetTileset("Kin/airdash_attack_down_64x64.png", 64, 64, skin);
-	tileset[JUMP] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[LAND] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
-	tileset[LAND2] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
-	tileset[RUN] = owner->GetTileset("Kin/run_64x64.png", 64, 64, skin);
-	tileset[SPRINGSTUN] = owner->GetTileset("Kin/launch_96x64.png", 96, 64, skin);
+	tileset[STAND] = GetTileset("Kin/stand_64x64.png", 64, 64, skin);
+	tileset[WALLATTACK] = GetTileset("Kin/wall_att_64x128.png", 64, 128, skin);
+	tileset[DAIR] = GetTileset("Kin/dair_80x80.png", 80, 80, skin);
+	tileset[DASH] = GetTileset("Kin/dash_96x48.png", 96, 48, skin);
+	tileset[DOUBLE] = GetTileset("Kin/double_64x64.png", 64, 64, skin);
+	tileset[BACKWARDSDOUBLE] = GetTileset("Kin/double_back_96x96.png", 96, 96, skin);
+	tileset[FAIR] = GetTileset("Kin/fair_80x80.png", 80, 80, skin);
+	tileset[DIAGUPATTACK] = GetTileset("Kin/airdash_attack_up_96x80.png", 96, 80, skin);
+	tileset[DIAGDOWNATTACK] = GetTileset("Kin/airdash_attack_down_64x64.png", 64, 64, skin);
+	tileset[JUMP] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[LAND] = GetTileset("Kin/land_64x64.png", 64, 64, skin);
+	tileset[LAND2] = GetTileset("Kin/land_64x64.png", 64, 64, skin);
+	tileset[RUN] = GetTileset("Kin/run_64x64.png", 64, 64, skin);
+	tileset[SPRINGSTUN] = GetTileset("Kin/launch_96x64.png", 96, 64, skin);
 	tileset[SPRINGSTUNGLIDE] = tileset[SPRINGSTUN];
 
 	tileset[SPRINGSTUNAIRBOUNCE] = tileset[SPRINGSTUN];
@@ -109,189 +239,196 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[SWINGSTUN] = tileset[SPRINGSTUN];
 
 	tileset[GLIDE] = tileset[SPRINGSTUN];
-	tileset[SLIDE] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
-	tileset[SPRINT] = owner->GetTileset("Kin/sprint_80x48.png", 80, 48, skin);	
-	//tileset[DASHATTACK] = owner->GetTileset("dash_attack_128x96.png", 128, 96);
-	tileset[STANDN] = owner->GetTileset("Kin/standn_96x64.png", 96, 64, skin);
-	tileset[UAIR] = owner->GetTileset("Kin/uair_96x96.png", 96, 96, skin);
-	tileset[WALLCLING] = owner->GetTileset("Kin/wallcling_64x64.png", 64, 64, skin);
-	tileset[WALLJUMP] = owner->GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
-	tileset[GRINDBALL] = owner->GetTileset("Kin/grindball_64x64.png", 64, 64, skin);
-	tileset[GRINDLUNGE] = owner->GetTileset("Kin/airdash_80x80.png", 80, 80, skin);
-	tileset[GRINDSLASH] = owner->GetTileset("Kin/grind_lunge_96x128.png", 96, 128, skin);
-	tileset[GRINDATTACK] = owner->GetTileset("Kin/grindball_64x64.png", 64, 64, skin);
-	tileset[STEEPSLIDE] = owner->GetTileset("Kin/steepslide_64x64.png", 64, 64, skin);
-	tileset[STEEPCLIMBATTACK] = owner->GetTileset("Kin/climb_att_128x64.png", 128, 64, skin);
-	tileset[STEEPSLIDEATTACK] = owner->GetTileset("Kin/steep_att_128x64.png", 128, 64, skin);
-	tileset[AIRDASH] = owner->GetTileset("Kin/airdash_80x80.png", 80, 80, skin);
-	tileset[STEEPCLIMB] = owner->GetTileset("Kin/steepclimb_96x32.png", 96, 32, skin);
-	tileset[AIRHITSTUN] = owner->GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
-	tileset[GROUNDHITSTUN] = owner->GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
-	tileset[WIREHOLD] = owner->GetTileset("Kin/steepslide_80x48.png", 80, 48, skin);
-	tileset[BOUNCEAIR] = owner->GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
-	tileset[BOUNCEGROUND] = owner->GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
-	tileset[BOUNCEGROUNDEDWALL] = owner->GetTileset("Kin/bounce_wall_224x224.png", 224, 224, skin);
-	tileset[DEATH] = owner->GetTileset("Kin/death_128x96.png", 128, 96, skin);
-	tileset[JUMPSQUAT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[INTRO] = owner->GetTileset("Kin/enter_64x64.png", 64, 64, skin);
+	tileset[SLIDE] = GetTileset("Kin/slide_64x64.png", 64, 64, skin);
+	tileset[SPRINT] = GetTileset("Kin/sprint_80x48.png", 80, 48, skin);	
+	//tileset[DASHATTACK] = GetTileset("dash_attack_128x96.png", 128, 96);
+	tileset[STANDN] = GetTileset("Kin/standn_96x64.png", 96, 64, skin);
+	tileset[UAIR] = GetTileset("Kin/uair_96x96.png", 96, 96, skin);
+	tileset[WALLCLING] = GetTileset("Kin/wallcling_64x64.png", 64, 64, skin);
+	tileset[WALLJUMP] = GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
+	tileset[GRINDBALL] = GetTileset("Kin/grindball_64x64.png", 64, 64, skin);
+	tileset[GRINDLUNGE] = GetTileset("Kin/airdash_80x80.png", 80, 80, skin);
+	tileset[GRINDSLASH] = GetTileset("Kin/grind_lunge_96x128.png", 96, 128, skin);
+	tileset[GRINDATTACK] = GetTileset("Kin/grindball_64x64.png", 64, 64, skin);
+	tileset[STEEPSLIDE] = GetTileset("Kin/steepslide_64x64.png", 64, 64, skin);
+	tileset[STEEPCLIMBATTACK] = GetTileset("Kin/climb_att_128x64.png", 128, 64, skin);
+	tileset[STEEPSLIDEATTACK] = GetTileset("Kin/steep_att_128x64.png", 128, 64, skin);
+	tileset[AIRDASH] = GetTileset("Kin/airdash_80x80.png", 80, 80, skin);
+	tileset[STEEPCLIMB] = GetTileset("Kin/steepclimb_96x32.png", 96, 32, skin);
+	tileset[AIRHITSTUN] = GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
+	tileset[GROUNDHITSTUN] = GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
+	tileset[WIREHOLD] = GetTileset("Kin/steepslide_80x48.png", 80, 48, skin);
+	tileset[BOUNCEAIR] = GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
+	tileset[BOUNCEGROUND] = GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
+	tileset[BOUNCEGROUNDEDWALL] = GetTileset("Kin/bounce_wall_224x224.png", 224, 224, skin);
+	tileset[DEATH] = GetTileset("Kin/death_128x96.png", 128, 96, skin);
+	tileset[JUMPSQUAT] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[INTRO] = GetTileset("Kin/enter_64x64.png", 64, 64, skin);
 	
-	ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
-	exitAuraSprite.setTexture(*ts_exitAura->texture);
+	if (owner != NULL)
+	{
+		ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
+		exitAuraSprite.setTexture(*ts_exitAura->texture);
+	}
 
-
-	tileset[EXIT] = owner->GetTileset("Kin/exit_64x128.png", 64, 128, skin);
-	tileset[EXITBOOST] = owner->GetTileset("Kin/exit_96x128.png", 96, 128, skin);// kin_exit_128x128.png", 128, 128, skin);
+	tileset[EXIT] = GetTileset("Kin/exit_64x128.png", 64, 128, skin);
+	tileset[EXITBOOST] = GetTileset("Kin/exit_96x128.png", 96, 128, skin);// kin_exit_128x128.png", 128, 128, skin);
 	tileset[INTROBOOST] = tileset[EXITBOOST];
 	tileset[EXITWAIT] = NULL;
-	tileset[GRAVREVERSE] = owner->GetTileset("Kin/grav_64x64.png", 64, 64, skin);
-	tileset[RIDESHIP] = owner->GetTileset("Kin/dive_64x64.png", 64, 64, skin);
-	tileset[SKYDIVE] = owner->GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
-	tileset[SKYDIVETOFALL] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
-	tileset[WAITFORSHIP] = owner->GetTileset("Kin/shipjump_160x96.png", 160, 96, skin);
-	tileset[GRABSHIP] = owner->GetTileset("Kin/shipjump_160x96.png", 160,96, skin);
-	tileset[ENTERNEXUS1] = owner->GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
+	tileset[GRAVREVERSE] = GetTileset("Kin/grav_64x64.png", 64, 64, skin);
+	tileset[RIDESHIP] = GetTileset("Kin/dive_64x64.png", 64, 64, skin);
+	tileset[SKYDIVE] = GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
+	tileset[SKYDIVETOFALL] = GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
+	tileset[WAITFORSHIP] = GetTileset("Kin/shipjump_160x96.png", 160, 96, skin);
+	tileset[GRABSHIP] = GetTileset("Kin/shipjump_160x96.png", 160,96, skin);
+	tileset[ENTERNEXUS1] = GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
 
-	tileset[GETPOWER_AIRDASH_MEDITATE] = owner->GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
-	tileset[GETPOWER_AIRDASH_FLIP] = owner->GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
+	tileset[GETPOWER_AIRDASH_MEDITATE] = GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
+	tileset[GETPOWER_AIRDASH_FLIP] = GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
 
-	tileset[SEQ_LOOKUP] = owner->GetTileset("Kin/kin_cover_64x64.png", 64, 64, skin);
+	tileset[SEQ_LOOKUP] = GetTileset("Kin/kin_cover_64x64.png", 64, 64, skin);
 
 	tileset[SEQ_KINTHROWN] = tileset[AIRHITSTUN];
 
-	tileset[SEQ_KNEEL] = owner->GetTileset("Kin/kin_meditate_64x96.png", 64, 96, skin);
+	tileset[SEQ_KNEEL] = GetTileset("Kin/kin_meditate_64x96.png", 64, 96, skin);
 	tileset[SEQ_KNEEL_TO_MEDITATE] = tileset[SEQ_KNEEL];
 	tileset[SEQ_MEDITATE_MASKON] = tileset[SEQ_KNEEL];
 	tileset[SEQ_MASKOFF] = tileset[SEQ_KNEEL];
 	tileset[SEQ_MEDITATE] = tileset[SEQ_KNEEL];
 
-	tileset[SEQ_FLOAT_TO_NEXUS_OPENING] = owner->GetTileset("Kin/nexus_enter_384x256.png", 384, 256, skin);
+	tileset[SEQ_FLOAT_TO_NEXUS_OPENING] = GetTileset("Kin/nexus_enter_384x256.png", 384, 256, skin);
 	tileset[SEQ_FADE_INTO_NEXUS] = tileset[SEQ_FLOAT_TO_NEXUS_OPENING];//tileset[AIRDASH];
 
-	tileset[SEQ_CRAWLERFIGHT_STAND] = owner->GetTileset("Kin/stand_64x64.png", 64, 64, skin);
-	tileset[SEQ_WAIT] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = owner->GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_LAND] = owner->GetTileset("Kin/land_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = owner->GetTileset("Kin/run_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = owner->GetTileset("Kin/slide_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_STAND] = GetTileset("Kin/stand_64x64.png", 64, 64, skin);
+	tileset[SEQ_WAIT] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_LAND] = GetTileset("Kin/land_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = GetTileset("Kin/run_64x64.png", 64, 64, skin);
+	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = GetTileset("Kin/slide_64x64.png", 64, 64, skin);
 
-	tileset[SEQ_TURNFACE] = owner->GetTileset("Kin/shipjump_160x96.png", 160, 96, skin);
+	tileset[SEQ_TURNFACE] = GetTileset("Kin/shipjump_160x96.png", 160, 96, skin);
 
 	tileset[GETSHARD] = tileset[DEATH];
 
-	ts_fairSword[0] = owner->GetTileset("Sword/fair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[1] = owner->GetTileset("Sword/fair_swordb_288x288.png", 288, 288, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[2] = owner->GetTileset("Sword/fair_swordc_384x384.png", 384, 384, swordSkin);//ts_fairSword[0];//owner->GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
+	ts_fairSword[0] = GetTileset("Sword/fair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_fairSword[1] = GetTileset("Sword/fair_swordb_288x288.png", 288, 288, swordSkin);//ts_fairSword[0];//GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
+	ts_fairSword[2] = GetTileset("Sword/fair_swordc_384x384.png", 384, 384, swordSkin);//ts_fairSword[0];//GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
 
-	ts_fairSwordLightning[0] = owner->GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_fairSwordLightning[1] = owner->GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_fairSwordLightning[2] = owner->GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_fairSwordLightning[0] = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_fairSwordLightning[1] = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_fairSwordLightning[2] = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
-	ts_dairSword[0] = owner->GetTileset("Sword/dair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_dairSword[1] = owner->GetTileset("Sword/dair_swordb_288x288.png", 288, 288, swordSkin);
-	ts_dairSword[2] = owner->GetTileset("Sword/dair_swordc_384x384.png", 384, 384, swordSkin);
+	ts_dairSword[0] = GetTileset("Sword/dair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_dairSword[1] = GetTileset("Sword/dair_swordb_288x288.png", 288, 288, swordSkin);
+	ts_dairSword[2] = GetTileset("Sword/dair_swordc_384x384.png", 384, 384, swordSkin);
 
-	ts_dairSwordLightning[0] = owner->GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_dairSwordLightning[1] = owner->GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_dairSwordLightning[2] = owner->GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_dairSwordLightning[0] = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_dairSwordLightning[1] = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_dairSwordLightning[2] = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
-	ts_uairSword[0] = owner->GetTileset("Sword/uair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_uairSword[1] = owner->GetTileset("Sword/uair_swordb_288x288.png", 288, 288, swordSkin);
-	ts_uairSword[2] = owner->GetTileset("Sword/uair_swordc_320x320.png", 320, 320, swordSkin);
+	ts_uairSword[0] = GetTileset("Sword/uair_sworda_256x256.png", 256, 256, swordSkin);
+	ts_uairSword[1] = GetTileset("Sword/uair_swordb_288x288.png", 288, 288, swordSkin);
+	ts_uairSword[2] = GetTileset("Sword/uair_swordc_320x320.png", 320, 320, swordSkin);
 
-	ts_uairSwordLightning[0] = owner->GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_uairSwordLightning[1] = owner->GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_uairSwordLightning[2] = owner->GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_uairSwordLightning[0] = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_uairSwordLightning[1] = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
+	ts_uairSwordLightning[2] = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
 
-	ts_grindLungeSword[0] = owner->GetTileset("Sword/grind_lunge_sworda_160x160.png", 160, 160, swordSkin);
-	ts_grindLungeSword[1] = owner->GetTileset("Sword/grind_lunge_swordb_192x192.png", 192, 192, swordSkin);
-	ts_grindLungeSword[2] = owner->GetTileset("Sword/grind_lunge_swordc_224x208.png", 224, 208, swordSkin);
+	ts_grindLungeSword[0] = GetTileset("Sword/grind_lunge_sworda_160x160.png", 160, 160, swordSkin);
+	ts_grindLungeSword[1] = GetTileset("Sword/grind_lunge_swordb_192x192.png", 192, 192, swordSkin);
+	ts_grindLungeSword[2] = GetTileset("Sword/grind_lunge_swordc_224x208.png", 224, 208, swordSkin);
 
-	ts_standingNSword[0] = owner->GetTileset("Sword/stand_sworda_208x208.png", 208, 208, swordSkin);
-	ts_standingNSword[1] = owner->GetTileset("Sword/stand_swordb_304x176.png", 304, 176, swordSkin);
-	ts_standingNSword[2] = owner->GetTileset("Sword/stand_swordc_304x192.png", 304, 192, swordSkin);
+	ts_standingNSword[0] = GetTileset("Sword/stand_sworda_208x208.png", 208, 208, swordSkin);
+	ts_standingNSword[1] = GetTileset("Sword/stand_swordb_304x176.png", 304, 176, swordSkin);
+	ts_standingNSword[2] = GetTileset("Sword/stand_swordc_304x192.png", 304, 192, swordSkin);
 
-	/*ts_dashAttackSword[0] = owner->GetTileset("dash_sworda_256x256.png", 256, 256, swordSkin);
-	ts_dashAttackSword[1] = owner->GetTileset("dash_swordb_256x256.png", 256, 256, swordSkin);
-	ts_dashAttackSword[2] = owner->GetTileset("dash_swordc_256x304.png", 256, 304, swordSkin);*/
+	/*ts_dashAttackSword[0] = GetTileset("dash_sworda_256x256.png", 256, 256, swordSkin);
+	ts_dashAttackSword[1] = GetTileset("dash_swordb_256x256.png", 256, 256, swordSkin);
+	ts_dashAttackSword[2] = GetTileset("dash_swordc_256x304.png", 256, 304, swordSkin);*/
 
-	ts_wallAttackSword[0] = owner->GetTileset("Sword/wall_sworda_144x256.png", 144, 256, swordSkin);
-	ts_wallAttackSword[1] = owner->GetTileset("Sword/wall_swordb_240x352.png", 240, 352, swordSkin);
-	ts_wallAttackSword[2] = owner->GetTileset("Sword/wall_swordc_298x400.png", 298, 400, swordSkin);
+	ts_wallAttackSword[0] = GetTileset("Sword/wall_sworda_144x256.png", 144, 256, swordSkin);
+	ts_wallAttackSword[1] = GetTileset("Sword/wall_swordb_240x352.png", 240, 352, swordSkin);
+	ts_wallAttackSword[2] = GetTileset("Sword/wall_swordc_298x400.png", 298, 400, swordSkin);
 
-	ts_steepSlideAttackSword[0] = owner->GetTileset("Sword/steep_att_sworda_480x176.png", 480, 176, swordSkin);
-	ts_steepSlideAttackSword[1] = owner->GetTileset("Sword/steep_att_swordb_352x192.png", 352, 192, swordSkin);
-	ts_steepSlideAttackSword[2] = owner->GetTileset("Sword/steep_att_swordc_560x256.png", 560, 256, swordSkin);
+	ts_steepSlideAttackSword[0] = GetTileset("Sword/steep_att_sworda_480x176.png", 480, 176, swordSkin);
+	ts_steepSlideAttackSword[1] = GetTileset("Sword/steep_att_swordb_352x192.png", 352, 192, swordSkin);
+	ts_steepSlideAttackSword[2] = GetTileset("Sword/steep_att_swordc_560x256.png", 560, 256, swordSkin);
 
-	ts_steepClimbAttackSword[0] = owner->GetTileset("Sword/climb_att_sworda_352x128.png", 352, 128, swordSkin);
-	ts_steepClimbAttackSword[1] = owner->GetTileset("Sword/climb_att_swordb_416x320.png", 416, 320, swordSkin);
-	ts_steepClimbAttackSword[2] = owner->GetTileset("Sword/climb_att_swordc_496x208.png", 496, 208, swordSkin);
+	ts_steepClimbAttackSword[0] = GetTileset("Sword/climb_att_sworda_352x128.png", 352, 128, swordSkin);
+	ts_steepClimbAttackSword[1] = GetTileset("Sword/climb_att_swordb_416x320.png", 416, 320, swordSkin);
+	ts_steepClimbAttackSword[2] = GetTileset("Sword/climb_att_swordc_496x208.png", 496, 208, swordSkin);
 
-	ts_diagUpSword[0] = owner->GetTileset("Sword/airdash_u_sword_144x208.png", 144, 208, swordSkin);
-	ts_diagUpSword[1] = owner->GetTileset("Sword/airdash_u_sword_b_224x240.png", 224, 240, swordSkin);
-	ts_diagUpSword[2] = owner->GetTileset("Sword/airdash_u_sword_p_320x384.png", 320, 384, swordSkin);
+	ts_diagUpSword[0] = GetTileset("Sword/airdash_u_sword_144x208.png", 144, 208, swordSkin);
+	ts_diagUpSword[1] = GetTileset("Sword/airdash_u_sword_b_224x240.png", 224, 240, swordSkin);
+	ts_diagUpSword[2] = GetTileset("Sword/airdash_u_sword_p_320x384.png", 320, 384, swordSkin);
 
-	ts_diagDownSword[0] = owner->GetTileset("Sword/airdash_sword_128x208.png", 128, 208, swordSkin);
-	ts_diagDownSword[1] = owner->GetTileset("Sword/airdash_sword_b_224x240.png", 224, 240, swordSkin);
-	ts_diagDownSword[2] = owner->GetTileset("Sword/airdash_sword_p_320x384.png", 320, 384, swordSkin);
+	ts_diagDownSword[0] = GetTileset("Sword/airdash_sword_128x208.png", 128, 208, swordSkin);
+	ts_diagDownSword[1] = GetTileset("Sword/airdash_sword_b_224x240.png", 224, 240, swordSkin);
+	ts_diagDownSword[2] = GetTileset("Sword/airdash_sword_p_320x384.png", 320, 384, swordSkin);
 
-	ts_fx_hurtSpack = owner->GetTileset("FX/hurt_spack_128x160.png", 128, 160);
+	ts_fx_hurtSpack = GetTileset("FX/hurt_spack_128x160.png", 128, 160);
 
-	ts_fx_dashStart = owner->GetTileset("FX/fx_dashstart_160x160.png", 160, 160);
-	ts_fx_dashRepeat = owner->GetTileset("FX/fx_dashrepeat_192x128.png", 192, 128);
+	ts_fx_dashStart = GetTileset("FX/fx_dashstart_160x160.png", 160, 160);
+	ts_fx_dashRepeat = GetTileset("FX/fx_dashrepeat_192x128.png", 192, 128);
 
-	ts_fx_land[0] = owner->GetTileset("FX/land_a_128x128.png", 128, 128);
-	ts_fx_land[1] = owner->GetTileset("FX/land_b_192x208.png", 192, 208);
-	ts_fx_land[2] = owner->GetTileset("FX/land_c_256x256.png", 256, 256);
-	ts_fx_runStart[0] = owner->GetTileset("FX/runstart_a_128x128.png", 128, 128);
-	ts_fx_runStart[1] = owner->GetTileset("FX/runstart_b_224x224.png", 224, 224);
-	ts_fx_runStart[2] = owner->GetTileset("FX/runstart_c_224x224.png", 224, 224);
+	ts_fx_land[0] = GetTileset("FX/land_a_128x128.png", 128, 128);
+	ts_fx_land[1] = GetTileset("FX/land_b_192x208.png", 192, 208);
+	ts_fx_land[2] = GetTileset("FX/land_c_256x256.png", 256, 256);
+	ts_fx_runStart[0] = GetTileset("FX/runstart_a_128x128.png", 128, 128);
+	ts_fx_runStart[1] = GetTileset("FX/runstart_b_224x224.png", 224, 224);
+	ts_fx_runStart[2] = GetTileset("FX/runstart_c_224x224.png", 224, 224);
 
-	ts_fx_sprint = owner->GetTileset("FX/fx_sprint_176x176.png", 176, 176);
-	ts_fx_run = owner->GetTileset("FX/fx_run_144x128.png", 144, 128);
-	ts_fx_bigRunRepeat = owner->GetTileset("FX/fx_bigrunrepeat.png", 176, 112);
+	ts_fx_sprint = GetTileset("FX/fx_sprint_176x176.png", 176, 176);
+	ts_fx_run = GetTileset("FX/fx_run_144x128.png", 144, 128);
+	ts_fx_bigRunRepeat = GetTileset("FX/fx_bigrunrepeat.png", 176, 112);
 
-	ts_fx_jump[0] = owner->GetTileset("FX/jump_a_128x80.png", 128, 80);
-	ts_fx_jump[1] = owner->GetTileset("FX/jump_b_160x192.png", 160, 192);
-	ts_fx_jump[2] = owner->GetTileset("FX/jump_c_160x192.png", 160, 192);
+	ts_fx_jump[0] = GetTileset("FX/jump_a_128x80.png", 128, 80);
+	ts_fx_jump[1] = GetTileset("FX/jump_b_160x192.png", 160, 192);
+	ts_fx_jump[2] = GetTileset("FX/jump_c_160x192.png", 160, 192);
 
-	ts_fx_wallJump[0] = owner->GetTileset("FX/walljump_a_160x160.png", 160, 160);
-	ts_fx_wallJump[1] = owner->GetTileset("FX/walljump_b_224x224.png", 224, 224);
-	ts_fx_wallJump[2] = owner->GetTileset("FX/walljump_c_224x224.png", 224, 224);
-	ts_fx_double = owner->GetTileset("FX/fx_doublejump_196x160.png", 196, 160);
-	ts_fx_gravReverse = owner->GetTileset("FX/fx_grav_reverse_128x128.png", 128, 128);
+	ts_fx_wallJump[0] = GetTileset("FX/walljump_a_160x160.png", 160, 160);
+	ts_fx_wallJump[1] = GetTileset("FX/walljump_b_224x224.png", 224, 224);
+	ts_fx_wallJump[2] = GetTileset("FX/walljump_c_224x224.png", 224, 224);
+	ts_fx_double = GetTileset("FX/fx_doublejump_196x160.png", 196, 160);
+	ts_fx_gravReverse = GetTileset("FX/fx_grav_reverse_128x128.png", 128, 128);
 
-	ts_fx_chargeBlue0 = owner->GetTileset("FX/elec_01_128x128.png", 128, 128);
-	ts_fx_chargeBlue1 = owner->GetTileset("FX/elec_03_128x128.png", 128, 128);
-	ts_fx_chargeBlue2 = owner->GetTileset("FX/elec_04_128x128.png", 128, 128);
-	ts_fx_chargePurple = owner->GetTileset("FX/elec_02_128x128.png", 128, 128);
+	ts_fx_chargeBlue0 = GetTileset("FX/elec_01_128x128.png", 128, 128);
+	ts_fx_chargeBlue1 = GetTileset("FX/elec_03_128x128.png", 128, 128);
+	ts_fx_chargeBlue2 = GetTileset("FX/elec_04_128x128.png", 128, 128);
+	ts_fx_chargePurple = GetTileset("FX/elec_02_128x128.png", 128, 128);
 
 
-	ts_fx_rightWire = owner->GetTileset("FX/wire_boost_r_64x64.png", 64, 64);
-	ts_fx_leftWire = owner->GetTileset("FX/wire_boost_b_64x64.png", 64, 64);
-	ts_fx_doubleWire = owner->GetTileset("FX/wire_boost_m_64x64.png", 64, 64);
+	ts_fx_rightWire = GetTileset("FX/wire_boost_r_64x64.png", 64, 64);
+	ts_fx_leftWire = GetTileset("FX/wire_boost_b_64x64.png", 64, 64);
+	ts_fx_doubleWire = GetTileset("FX/wire_boost_m_64x64.png", 64, 64);
 
-	ts_fx_airdashDiagonal = owner->GetTileset("FX/fx_airdash_diagonal_1_128x128.png", 128, 128);
-	ts_fx_airdashUp = owner->GetTileset("FX/fx_airdash_128x128.png", 128, 128);
-	ts_fx_airdashHover = owner->GetTileset("FX/fx_airdash_hold_1_96x80.png", 96, 80);
+	ts_fx_airdashDiagonal = GetTileset("FX/fx_airdash_diagonal_1_128x128.png", 128, 128);
+	ts_fx_airdashUp = GetTileset("FX/fx_airdash_128x128.png", 128, 128);
+	ts_fx_airdashHover = GetTileset("FX/fx_airdash_hold_1_96x80.png", 96, 80);
 
-	ts_fx_death_1a = owner->GetTileset("FX/death_fx_1a_256x256.png", 256, 256);
-	ts_fx_death_1b = owner->GetTileset("FX/death_fx_1b_128x80.png", 128, 80);
-	ts_fx_death_1c = owner->GetTileset("FX/death_fx_1c_128x128.png", 128, 128);
-	ts_fx_death_1d = owner->GetTileset("FX/death_fx_1d_48x48.png", 48, 48);
-	ts_fx_death_1e = owner->GetTileset("FX/death_fx_1e_160x160.png", 160, 160);
-	ts_fx_death_1f = owner->GetTileset("FX/death_fx_1f_160x160.png", 160, 160);
+	ts_fx_death_1a = GetTileset("FX/death_fx_1a_256x256.png", 256, 256);
+	ts_fx_death_1b = GetTileset("FX/death_fx_1b_128x80.png", 128, 80);
+	ts_fx_death_1c = GetTileset("FX/death_fx_1c_128x128.png", 128, 128);
+	ts_fx_death_1d = GetTileset("FX/death_fx_1d_48x48.png", 48, 48);
+	ts_fx_death_1e = GetTileset("FX/death_fx_1e_160x160.png", 160, 160);
+	ts_fx_death_1f = GetTileset("FX/death_fx_1f_160x160.png", 160, 160);
 
-	tileset[GOALKILL] = owner->GetTileset("Kin/goal_w01_killa_384x256.png", 384, 256);
-	tileset[GOALKILL1] = owner->GetTileset("Kin/goal_w01_killb_384x256.png", 384, 256);
-	tileset[GOALKILL2] = owner->GetTileset("Kin/goal_w01_killc_384x256.png", 384, 256);
-	tileset[GOALKILL3] = owner->GetTileset("Kin/goal_w01_killd_384x256.png", 384, 256);
-	tileset[GOALKILL4] = owner->GetTileset("Kin/goal_w01_kille_384x256.png", 384, 256);
+	tileset[GOALKILL] = GetTileset("Kin/goal_w01_killa_384x256.png", 384, 256);
+	tileset[GOALKILL1] = GetTileset("Kin/goal_w01_killb_384x256.png", 384, 256);
+	tileset[GOALKILL2] = GetTileset("Kin/goal_w01_killc_384x256.png", 384, 256);
+	tileset[GOALKILL3] = GetTileset("Kin/goal_w01_killd_384x256.png", 384, 256);
+	tileset[GOALKILL4] = GetTileset("Kin/goal_w01_kille_384x256.png", 384, 256);
 }
 
-Actor::Actor( GameSession *gs, int p_actorIndex )
-	:owner( gs ), dead( false ), actorIndex( p_actorIndex )
+Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
+	:owner( gs ), editOwner(es), dead( false ), actorIndex( p_actorIndex )
 	{
+	fBubblePos = NULL;
+	fBubbleRadiusSize = NULL;
+	fBubbleFrame = NULL;
+
+
 	autoRunStopEdge = NULL;
 	extraDoubleJump = false;
 	stunBufferedJump = false;
@@ -347,9 +484,9 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		}
 		
 		//preload them
-		owner->GetTileset("Kin/exitenergy_0_512x512.png", 512, 512);
-		owner->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512);
-		owner->GetTileset("Kin/exitenergy_1_512x512.png", 512, 512);
+		GetTileset("Kin/exitenergy_0_512x512.png", 512, 512);
+		GetTileset("Kin/exitenergy_2_512x512.png", 512, 512);
+		GetTileset("Kin/exitenergy_1_512x512.png", 512, 512);
 		
 			
 		currLockedFairFX = NULL;
@@ -362,13 +499,13 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			smallLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 4, 1.f);
 		}
 
-		smallLightningPool[0]->ts = owner->GetTileset("FX/elec_01_96x96.png", 96, 96);
-		smallLightningPool[1]->ts = owner->GetTileset("FX/elec_02_96x96.png", 96, 96);
-		smallLightningPool[2]->ts = owner->GetTileset("FX/elec_03_96x96.png", 96, 96);
-		smallLightningPool[3]->ts = owner->GetTileset("FX/elec_04_96x96.png", 96, 96);
-		smallLightningPool[4]->ts = owner->GetTileset("FX/elec_05_96x96.png", 96, 96);
-		smallLightningPool[5]->ts = owner->GetTileset("FX/elec_06_96x96.png", 96, 96);
-		smallLightningPool[6]->ts = owner->GetTileset("FX/elec_07_96x96.png", 96, 96);
+		smallLightningPool[0]->ts = GetTileset("FX/elec_01_96x96.png", 96, 96);
+		smallLightningPool[1]->ts = GetTileset("FX/elec_02_96x96.png", 96, 96);
+		smallLightningPool[2]->ts = GetTileset("FX/elec_03_96x96.png", 96, 96);
+		smallLightningPool[3]->ts = GetTileset("FX/elec_04_96x96.png", 96, 96);
+		smallLightningPool[4]->ts = GetTileset("FX/elec_05_96x96.png", 96, 96);
+		smallLightningPool[5]->ts = GetTileset("FX/elec_06_96x96.png", 96, 96);
+		smallLightningPool[6]->ts = GetTileset("FX/elec_07_96x96.png", 96, 96);
 
 		motionGhostBuffer = new VertexBuf(80, sf::Quads);
 		motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
@@ -378,21 +515,30 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		for (int i = 0; i < 3; ++i)
 		{
 			fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-			fairLightningPool[i]->ts = owner->GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256);
+			fairLightningPool[i]->ts = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256);
 			dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-			dairLightningPool[i]->ts = owner->GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256);
+			dairLightningPool[i]->ts = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256);
 			uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-			uairLightningPool[i]->ts = owner->GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256);
+			uairLightningPool[i]->ts = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256);
 		}
 
 		gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
-		gateBlackFXPool->ts = owner->GetTileset("FX/keydrain_160x160.png", 160, 160);
+		gateBlackFXPool->ts = GetTileset("FX/keydrain_160x160.png", 160, 160);
 
-		kinRing = new KinRing(this);
-		kinMask = new KinMask(this);
+		if (owner != NULL)
+		{
+			kinRing = new KinRing(this);
+			kinMask = new KinMask(this);
+		}
+		else
+		{
+			kinRing = NULL;
+			kinMask = NULL;
+		}
+		
 
 		//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
-		//risingAuraPool->ts = owner->GetTileset("Kin/rising_8x8.png", 8, 8);
+		//risingAuraPool->ts = GetTileset("Kin/rising_8x8.png", 8, 8);
 
 		maxMotionGhosts = 80;
 		memset(tileset, 0, sizeof(tileset));
@@ -450,7 +596,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
 		railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
 
-		ts_dirtyAura = owner->GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
+		ts_dirtyAura = GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
 		dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
 		//dirtyAuraSprite.setpo
 		//dirtyAuraSprite.setOrigin( )
@@ -485,7 +631,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		//seq = SEQ_NOTHING;
 		enemiesKilledThisFrame = 0;
 		enemiesKilledLastFrame = 0;
-		GameController &cont = gs->GetController( actorIndex );
+		GameController &cont = GetController(actorIndex);
 		toggleBounceInput = cont.keySettings.toggleBounce;
 		toggleTimeSlowInput = cont.keySettings.toggleTimeSlow;
 		toggleGrindInput = cont.keySettings.toggleGrind;
@@ -536,11 +682,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 
 		gateTouched = NULL;
-
-		
-		//testLight = owner->ActivateLight( 200, 15, COLOR_TEAL );
-		//testLight->pos = Vector2i( 0, 0 );
-		//testLight = new Light( owner, Vector2i( 0, 0 ), COLOR_TEAL , 200, 15 ); 
 
 		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 		//numActiveEdges = 0;
@@ -593,47 +734,47 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		int sizeofsoundbuf = sizeof(soundBuffers);
 		memset(soundBuffers, 0, sizeofsoundbuf );
 		
-		soundBuffers[S_HITCEILING] = owner->soundManager->GetSound("Kin/ceiling");
-		soundBuffers[S_CLIMB_STEP1] = owner->soundManager->GetSound("Kin/climb_01a");
-		soundBuffers[S_CLIMB_STEP2] = owner->soundManager->GetSound("Kin/climb_02a");
-		soundBuffers[S_DAIR] = owner->soundManager->GetSound("Kin/dair");
-		soundBuffers[S_DOUBLE] = owner->soundManager->GetSound("Kin/doublejump");
-		soundBuffers[S_DOUBLEBACK] = owner->soundManager->GetSound("Kin/doublejump_back");
-		soundBuffers[S_FAIR1] = owner->soundManager->GetSound("Kin/fair");
-		soundBuffers[S_JUMP] = owner->soundManager->GetSound("Kin/jump");
-		soundBuffers[S_LAND] = owner->soundManager->GetSound("Kin/land");
-		soundBuffers[S_RUN_STEP1] = owner->soundManager->GetSound( "Kin/run_01a" );
-		soundBuffers[S_RUN_STEP2] = owner->soundManager->GetSound( "Kin/run_01b" );
-		soundBuffers[S_SLIDE] = owner->soundManager->GetSound("Kin/slide");
-		soundBuffers[S_SPRINT_STEP1] = owner->soundManager->GetSound( "Kin/sprint_01a" );
-		soundBuffers[S_SPRINT_STEP2] = owner->soundManager->GetSound( "Kin/sprint_01b" );
-		soundBuffers[S_STANDATTACK] = owner->soundManager->GetSound("Kin/stand");
-		soundBuffers[S_STEEPSLIDE] = owner->soundManager->GetSound("Kin/steep");
-		soundBuffers[S_STEEPSLIDEATTACK] = owner->soundManager->GetSound("Kin/steep_att");
-		soundBuffers[S_UAIR] = owner->soundManager->GetSound("Kin/uair");
-		soundBuffers[S_WALLATTACK] = owner->soundManager->GetSound("Kin/wall_att");
-		soundBuffers[S_WALLJUMP] = owner->soundManager->GetSound("Kin/walljump");
-		soundBuffers[S_WALLSLIDE] = owner->soundManager->GetSound("Kin/wallslide");
+		soundBuffers[S_HITCEILING] = GetSound("Kin/ceiling");
+		soundBuffers[S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
+		soundBuffers[S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
+		soundBuffers[S_DAIR] = GetSound("Kin/dair");
+		soundBuffers[S_DOUBLE] = GetSound("Kin/doublejump");
+		soundBuffers[S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
+		soundBuffers[S_FAIR1] = GetSound("Kin/fair");
+		soundBuffers[S_JUMP] = GetSound("Kin/jump");
+		soundBuffers[S_LAND] = GetSound("Kin/land");
+		soundBuffers[S_RUN_STEP1] = GetSound( "Kin/run_01a" );
+		soundBuffers[S_RUN_STEP2] = GetSound( "Kin/run_01b" );
+		soundBuffers[S_SLIDE] = GetSound("Kin/slide");
+		soundBuffers[S_SPRINT_STEP1] = GetSound( "Kin/sprint_01a" );
+		soundBuffers[S_SPRINT_STEP2] = GetSound( "Kin/sprint_01b" );
+		soundBuffers[S_STANDATTACK] = GetSound("Kin/stand");
+		soundBuffers[S_STEEPSLIDE] = GetSound("Kin/steep");
+		soundBuffers[S_STEEPSLIDEATTACK] = GetSound("Kin/steep_att");
+		soundBuffers[S_UAIR] = GetSound("Kin/uair");
+		soundBuffers[S_WALLATTACK] = GetSound("Kin/wall_att");
+		soundBuffers[S_WALLJUMP] = GetSound("Kin/walljump");
+		soundBuffers[S_WALLSLIDE] = GetSound("Kin/wallslide");
 
-		soundBuffers[S_GOALKILLSLASH1] = owner->soundManager->GetSound("Kin/goal_kill_01");
-		soundBuffers[S_GOALKILLSLASH2] = owner->soundManager->GetSound("Kin/goal_kill_02");
-		soundBuffers[S_GOALKILLSLASH3] = owner->soundManager->GetSound("Kin/goal_kill_03");
-		soundBuffers[S_GOALKILLSLASH4] = owner->soundManager->GetSound("Kin/goal_kill_04");
+		soundBuffers[S_GOALKILLSLASH1] = GetSound("Kin/goal_kill_01");
+		soundBuffers[S_GOALKILLSLASH2] = GetSound("Kin/goal_kill_02");
+		soundBuffers[S_GOALKILLSLASH3] = GetSound("Kin/goal_kill_03");
+		soundBuffers[S_GOALKILLSLASH4] = GetSound("Kin/goal_kill_04");
 
 
-		/*soundBuffers[S_DASH_START] = owner->soundManager->GetSound( "Kin/dash_02" );
-		soundBuffers[S_HIT] = owner->soundManager->GetSound( "kin_hitspack_short" );
-		soundBuffers[S_HURT] = owner->soundManager->GetSound( "Kin/hit_1b" );
-		soundBuffers[S_HIT_AND_KILL] = owner->soundManager->GetSound( "Kin/kin_hitspack" );
-		soundBuffers[S_HIT_AND_KILL_KEY] = owner->soundManager->GetSound( "Kin/key_kill" );
+		/*soundBuffers[S_DASH_START] = GetSound( "Kin/dash_02" );
+		soundBuffers[S_HIT] = GetSound( "kin_hitspack_short" );
+		soundBuffers[S_HURT] = GetSound( "Kin/hit_1b" );
+		soundBuffers[S_HIT_AND_KILL] = GetSound( "Kin/kin_hitspack" );
+		soundBuffers[S_HIT_AND_KILL_KEY] = GetSound( "Kin/key_kill" );
 		
 		
-		soundBuffers[S_GRAVREVERSE] = owner->soundManager->GetSound( "Kin/gravreverse" );
-		soundBuffers[S_BOUNCEJUMP] = owner->soundManager->GetSound( "Kin/bounce" );
+		soundBuffers[S_GRAVREVERSE] = GetSound( "Kin/gravreverse" );
+		soundBuffers[S_BOUNCEJUMP] = GetSound( "Kin/bounce" );
 		
-		soundBuffers[S_TIMESLOW] = owner->soundManager->GetSound( "Kin/time_slow_1" );
-		soundBuffers[S_ENTER] = owner->soundManager->GetSound( "Kin/enter" );
-		soundBuffers[S_EXIT] = owner->soundManager->GetSound( "Kin/exit" );
+		soundBuffers[S_TIMESLOW] = GetSound( "Kin/time_slow_1" );
+		soundBuffers[S_ENTER] = GetSound( "Kin/enter" );
+		soundBuffers[S_EXIT] = GetSound( "Kin/exit" );
 
 		soundBuffers[S_DIAGUPATTACK] = soundBuffers[S_FAIR1];
 		soundBuffers[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];*/
@@ -727,359 +868,226 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		slideAttackOffset[1] = Vector2f(0, -64);
 		slideAttackOffset[2] = Vector2f(0, -96);
 
-		std::map<int, std::list<CollisionBox>> & fairAList = 
-			owner->hitboxManager->GetHitboxList("fairahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & fairBList =
-			owner->hitboxManager->GetHitboxList("fairbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & fairCList =
-			owner->hitboxManager->GetHitboxList("fairchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & dairAList =
-			owner->hitboxManager->GetHitboxList("dairahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & dairBList =
-			owner->hitboxManager->GetHitboxList("dairbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & dairCList =
-			owner->hitboxManager->GetHitboxList("dairchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & uairAList =
-			owner->hitboxManager->GetHitboxList("uairahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & uairBList =
-			owner->hitboxManager->GetHitboxList("uairbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & uairCList =
-			owner->hitboxManager->GetHitboxList("uairchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adUpAList =
-			owner->hitboxManager->GetHitboxList("airdashupahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adUpBList =
-			owner->hitboxManager->GetHitboxList("airdashupbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adUpCList =
-			owner->hitboxManager->GetHitboxList("airdashupchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adDownAList =
-			owner->hitboxManager->GetHitboxList("airdashdownahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adDownBList =
-			owner->hitboxManager->GetHitboxList("airdashdownbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adDownCList =
-			owner->hitboxManager->GetHitboxList("airdashdownchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & standAList =
-			owner->hitboxManager->GetHitboxList("standahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & standBList =
-			owner->hitboxManager->GetHitboxList("standbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & standCList =
-			owner->hitboxManager->GetHitboxList("standchitboxes");
-
-		
-
-		std::map<int, std::list<CollisionBox>> & wallAList =
-			owner->hitboxManager->GetHitboxList("wallahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & wallBList =
-			owner->hitboxManager->GetHitboxList("wallbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & wallCList =
-			owner->hitboxManager->GetHitboxList("wallchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & climbAList =
-			owner->hitboxManager->GetHitboxList("climbahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & climbBList =
-			owner->hitboxManager->GetHitboxList("climbbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & climbCList =
-			owner->hitboxManager->GetHitboxList("climbchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & slideAList =
-			owner->hitboxManager->GetHitboxList("slideahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & slideBList =
-			owner->hitboxManager->GetHitboxList("slidebhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & slideCList =
-			owner->hitboxManager->GetHitboxList("slidechitboxes");
-
-		
-
-		fairHitboxes[0] = new CollisionBody(16, fairAList, currHitboxInfo );
-		uairHitboxes[0] = new CollisionBody(16, uairAList, currHitboxInfo);
-		dairHitboxes[0] = new CollisionBody(16, dairAList, currHitboxInfo);
-
-		fairHitboxes[1] = new CollisionBody(16, fairBList, currHitboxInfo);
-		uairHitboxes[1] = new CollisionBody(16, uairBList, currHitboxInfo);
-		dairHitboxes[1] = new CollisionBody(16, dairBList, currHitboxInfo);
-
-		fairHitboxes[2] = new CollisionBody(16, fairCList, currHitboxInfo);
-		uairHitboxes[2] = new CollisionBody(16, uairCList, currHitboxInfo);
-		dairHitboxes[2] = new CollisionBody(16, dairCList, currHitboxInfo);
-
-
-		standHitboxes[0] = new CollisionBody(8, standAList, currHitboxInfo);
-		standHitboxes[1] = new CollisionBody(8, standBList, currHitboxInfo);
-		standHitboxes[2] = new CollisionBody(8, standCList, currHitboxInfo);
-
-		////dashHitboxes[0] = NULL;
-		wallHitboxes[0] = new CollisionBody(8, wallAList, currHitboxInfo);
-
-		wallHitboxes[1] = new CollisionBody(8, wallBList, currHitboxInfo);
-
-		wallHitboxes[2] = new CollisionBody(8, wallCList, currHitboxInfo);
-
-
-		steepClimbHitboxes[0] = new CollisionBody(8, climbAList, currHitboxInfo);
-		steepClimbHitboxes[1] = new CollisionBody(8, climbBList, currHitboxInfo);
-		steepClimbHitboxes[2] = new CollisionBody(8, climbCList, currHitboxInfo);
-
-		steepSlideHitboxes[0] = new CollisionBody(8, slideAList, currHitboxInfo);
-		steepSlideHitboxes[1] = new CollisionBody(8, slideBList, currHitboxInfo);
-		steepSlideHitboxes[2] = new CollisionBody(8, slideCList, currHitboxInfo);
-
-		diagUpHitboxes[0] = new CollisionBody(12, adUpAList, currHitboxInfo);
-		diagDownHitboxes[0] = new CollisionBody(12, adDownAList, currHitboxInfo);
-
-		diagUpHitboxes[1] = new CollisionBody(12, adUpBList, currHitboxInfo);
-		diagDownHitboxes[1] = new CollisionBody(12, adDownBList, currHitboxInfo);
-
-		diagUpHitboxes[2] = new CollisionBody(12, adUpCList, currHitboxInfo);
-		diagDownHitboxes[2] = new CollisionBody(12, adDownCList, currHitboxInfo);
-
-		
-
-		for (int i = 0; i < 3; ++i)
+		if (owner != NULL)
 		{
-			diagDownHitboxes[i]->OffsetAllFrames(diagDownSwordOffset[i]);
-			diagUpHitboxes[i]->OffsetAllFrames(diagUpSwordOffset[i]);
-		}
-		
-		for (int i = 0; i < 3; ++i)
-		{
-			Vector2f testOffset = standSwordOffset[i];
-			testOffset.y -= ts_standingNSword[i]->tileHeight / 2.0;
-			//standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
-			standHitboxes[i]->OffsetAllFrames(testOffset);
-		}
-
-		for (int i = 0; i < 3; ++i)
-		{	
-			Vector2f testOffset = -slideAttackOffset[i];
-			testOffset.y -= ts_steepSlideAttackSword[i]->tileHeight / 2.0;
-			steepSlideHitboxes[i]->OffsetAllFrames(testOffset);
-		}
-
-		for (int i = 0; i < 3; ++i)
-		{
-			Vector2f testOffset = -climbAttackOffset[i];
-			testOffset.y -= ts_steepClimbAttackSword[i]->tileHeight / 2.0;
-			steepClimbHitboxes[i]->OffsetAllFrames(testOffset);
-		}
-
-		//up
-		
-
-		shockwaveHitboxes = NULL;
-		grindHitboxes[0] = NULL;
 
 
-		/*for( int j = 0; j < 16; ++j )
-		{
-			if (fairAList.count(j) == 0)
+			std::map<int, std::list<CollisionBox>> & fairAList =
+				GetHitboxList("fairahitboxes");
+
+			std::map<int, std::list<CollisionBox>> & fairBList =
+				GetHitboxList("fairbhitboxes");
+
+			std::map<int, std::list<CollisionBox>> & fairCList =
+				GetHitboxList("fairchitboxes");
+
+			std::map<int, std::list<CollisionBox>> & dairAList =
+				GetHitboxList("dairahitboxes");
+
+			std::map<int, std::list<CollisionBox>> & dairBList =
+				GetHitboxList("dairbhitboxes");
+
+			std::map<int, std::list<CollisionBox>> & dairCList =
+				GetHitboxList("dairchitboxes");
+
+			std::map<int, std::list<CollisionBox>> & uairAList =
+				GetHitboxList("uairahitboxes");
+
+			std::map<int, std::list<CollisionBox>> & uairBList =
+				GetHitboxList("uairbhitboxes");
+
+			std::map<int, std::list<CollisionBox>> & uairCList =
+				GetHitboxList("uairchitboxes");
+
+			std::map<int, std::list<CollisionBox>> & adUpAList =
+				GetHitboxList("airdashupahitboxes");
+
+			std::map<int, std::list<CollisionBox>> & adUpBList =
+				GetHitboxList("airdashupbhitboxes");
+
+			std::map<int, std::list<CollisionBox>> & adUpCList =
+				GetHitboxList("airdashupchitboxes");
+
+			std::map<int, std::list<CollisionBox>> & adDownAList =
+				GetHitboxList("airdashdownahitboxes");
+
+			std::map<int, std::list<CollisionBox>> & adDownBList =
+				GetHitboxList("airdashdownbhitboxes");
+
+			std::map<int, std::list<CollisionBox>> & adDownCList =
+				GetHitboxList("airdashdownchitboxes");
+
+			std::map<int, std::list<CollisionBox>> & standAList =
+				GetHitboxList("standahitboxes");
+
+			std::map<int, std::list<CollisionBox>> & standBList =
+				GetHitboxList("standbhitboxes");
+
+			std::map<int, std::list<CollisionBox>> & standCList =
+				GetHitboxList("standchitboxes");
+
+
+
+			std::map<int, std::list<CollisionBox>> & wallAList =
+				GetHitboxList("wallahitboxes");
+
+			std::map<int, std::list<CollisionBox>> & wallBList =
+				GetHitboxList("wallbhitboxes");
+
+			std::map<int, std::list<CollisionBox>> & wallCList =
+				GetHitboxList("wallchitboxes");
+
+			std::map<int, std::list<CollisionBox>> & climbAList =
+				GetHitboxList("climbahitboxes");
+
+			std::map<int, std::list<CollisionBox>> & climbBList =
+				GetHitboxList("climbbhitboxes");
+
+			std::map<int, std::list<CollisionBox>> & climbCList =
+				GetHitboxList("climbchitboxes");
+
+			std::map<int, std::list<CollisionBox>> & slideAList =
+				GetHitboxList("slideahitboxes");
+
+			std::map<int, std::list<CollisionBox>> & slideBList =
+				GetHitboxList("slidebhitboxes");
+
+			std::map<int, std::list<CollisionBox>> & slideCList =
+				GetHitboxList("slidechitboxes");
+
+
+
+			fairHitboxes[0] = new CollisionBody(16, fairAList, currHitboxInfo);
+			uairHitboxes[0] = new CollisionBody(16, uairAList, currHitboxInfo);
+			dairHitboxes[0] = new CollisionBody(16, dairAList, currHitboxInfo);
+
+			fairHitboxes[1] = new CollisionBody(16, fairBList, currHitboxInfo);
+			uairHitboxes[1] = new CollisionBody(16, uairBList, currHitboxInfo);
+			dairHitboxes[1] = new CollisionBody(16, dairBList, currHitboxInfo);
+
+			fairHitboxes[2] = new CollisionBody(16, fairCList, currHitboxInfo);
+			uairHitboxes[2] = new CollisionBody(16, uairCList, currHitboxInfo);
+			dairHitboxes[2] = new CollisionBody(16, dairCList, currHitboxInfo);
+
+
+			standHitboxes[0] = new CollisionBody(8, standAList, currHitboxInfo);
+			standHitboxes[1] = new CollisionBody(8, standBList, currHitboxInfo);
+			standHitboxes[2] = new CollisionBody(8, standCList, currHitboxInfo);
+
+			////dashHitboxes[0] = NULL;
+			wallHitboxes[0] = new CollisionBody(8, wallAList, currHitboxInfo);
+
+			wallHitboxes[1] = new CollisionBody(8, wallBList, currHitboxInfo);
+
+			wallHitboxes[2] = new CollisionBody(8, wallCList, currHitboxInfo);
+
+
+			steepClimbHitboxes[0] = new CollisionBody(8, climbAList, currHitboxInfo);
+			steepClimbHitboxes[1] = new CollisionBody(8, climbBList, currHitboxInfo);
+			steepClimbHitboxes[2] = new CollisionBody(8, climbCList, currHitboxInfo);
+
+			steepSlideHitboxes[0] = new CollisionBody(8, slideAList, currHitboxInfo);
+			steepSlideHitboxes[1] = new CollisionBody(8, slideBList, currHitboxInfo);
+			steepSlideHitboxes[2] = new CollisionBody(8, slideCList, currHitboxInfo);
+
+			diagUpHitboxes[0] = new CollisionBody(12, adUpAList, currHitboxInfo);
+			diagDownHitboxes[0] = new CollisionBody(12, adDownAList, currHitboxInfo);
+
+			diagUpHitboxes[1] = new CollisionBody(12, adUpBList, currHitboxInfo);
+			diagDownHitboxes[1] = new CollisionBody(12, adDownBList, currHitboxInfo);
+
+			diagUpHitboxes[2] = new CollisionBody(12, adUpCList, currHitboxInfo);
+			diagDownHitboxes[2] = new CollisionBody(12, adDownCList, currHitboxInfo);
+
+
+
+			for (int i = 0; i < 3; ++i)
 			{
-				continue;
+				diagDownHitboxes[i]->OffsetAllFrames(diagDownSwordOffset[i]);
+				diagUpHitboxes[i]->OffsetAllFrames(diagUpSwordOffset[i]);
 			}
-			else
+
+			for (int i = 0; i < 3; ++i)
 			{
-				list<CollisionBox> &bList = fairAList[j];
+				Vector2f testOffset = standSwordOffset[i];
+				testOffset.y -= ts_standingNSword[i]->tileHeight / 2.0;
+				//standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
+				standHitboxes[i]->OffsetAllFrames(testOffset);
+			}
 
-				fairHitboxes[j] = new list<CollisionBox>;
-				for (auto it = bList.begin(); it != bList.end(); ++it )
-				{
-					CollisionBox tBox((*it));
-					tBox.hitboxInfo = currHitboxInfo;
-					fairHitboxes[j]->push_back(tBox);
-				}
-			}	
-		}*/
+			for (int i = 0; i < 3; ++i)
+			{
+				Vector2f testOffset = -slideAttackOffset[i];
+				testOffset.y -= ts_steepSlideAttackSword[i]->tileHeight / 2.0;
+				steepSlideHitboxes[i]->OffsetAllFrames(testOffset);
+			}
 
+			for (int i = 0; i < 3; ++i)
+			{
+				Vector2f testOffset = -climbAttackOffset[i];
+				testOffset.y -= ts_steepClimbAttackSword[i]->tileHeight / 2.0;
+				steepClimbHitboxes[i]->OffsetAllFrames(testOffset);
+			}
 
-		//cb.offset.x = 0;
-		//cb.offset.y = -14;
+			shockwaveHitboxes = NULL;
+			grindHitboxes[0] = NULL;
 
-		//for( int j = 0; j <= 12; ++j )
-		//{
-		//	uairHitboxes[j] = new list<CollisionBox>;
-		//	uairHitboxes[j]->push_back( cb );
+			cb.rw = 90;
+			cb.rh = 90;
+			cb.offset.x = 0;
+			cb.offset.y = 0;
+			grindHitboxes[0] = new CollisionBody(1);
+			grindHitboxes[0]->AddCollisionBox(0, cb);
+			//up
+		}
+		else
+		{
+			fairHitboxes[0] = NULL;
+			uairHitboxes[0] = NULL;
+			dairHitboxes[0] = NULL;
 
-		//	for( int i = 0; i < MAX_GHOSTS; ++i )
-		//	{
-		//		//ghosts[i] = new PlayerGhost;
-		//		ghosts[i]->uairHitboxes[j] = new list<CollisionBox>;
-		//		ghosts[i]->uairHitboxes[j]->push_back( cb );			
-		//	}
-		//}
+			fairHitboxes[1] = NULL;
+			uairHitboxes[1] = NULL;
+			dairHitboxes[1] = NULL;
 
-
-		//cb.rw = 64;
-		//cb.rh = 64;
-		//cb.offset.x = 0;
-		//cb.offset.y = 32;
-		//for( int j = 2; j <= 9; ++j )
-		//{
-		//	dairHitboxes[j] = new list<CollisionBox>;
-		//	dairHitboxes[j]->push_back( cb );
-
-		//	for( int i = 0; i < MAX_GHOSTS; ++i )
-		//	{
-		//		//ghosts[i] = new PlayerGhost;
-		//		ghosts[i]->dairHitboxes[j] = new list<CollisionBox>;
-		//		ghosts[i]->dairHitboxes[j]->push_back( cb );			
-		//	}
-		//}
-
-		//
-		//cb.rw = 64;
-		//cb.rh = 64;
-		//cb.offset.x = 36;
-		//cb.offset.y = -6;
-		////for( int j = 1; j <= 4; ++j )
-		//for( int j = 0; j < 6 * 4; ++j )
-		//{
-		//	standHitboxes[j] = new list<CollisionBox>;
-		//	standHitboxes[j]->push_back( cb );
-
-		//	for( int i = 0; i < MAX_GHOSTS; ++i )
-		//	{
-		//		//ghosts[i] = new PlayerGhost;
-		//		ghosts[i]->standHitboxes[j] = new list<CollisionBox>;
-		//		ghosts[i]->standHitboxes[j]->push_back( cb );			
-		//	}
-		//}
-
-		//cb.rw = 64;
-		//cb.rh = 64;
-		//cb.offset.x = 0;
-		//cb.offset.y = 0;
-		////for( int j = 1; j <= 4; ++j )
-		//for( int j = 0; j < 8; ++j )
-		//{
-		//	shockwaveHitboxes[j] = new list<CollisionBox>;
-		//	shockwaveHitboxes[j]->push_back( cb );
-
-		//	for( int i = 0; i < MAX_GHOSTS; ++i )
-		//	{
-		//		//ghosts[i] = new PlayerGhost;
-		//		//ghosts[i]->shockwaveHitboxes[j] = new list<CollisionBox>;
-		//		//ghosts[i]->shockwaveHitboxes[j]->push_back( cb );			
-		//	}
-		//}
-
-		//cb.rw = 64;
-		//cb.rh = 64;
-		//cb.offset.x = 36;
-		//cb.offset.y = -6;
-		////for( int j = 1; j <= 4; ++j )
-		//for( int j = 0; j < 8; ++j )
-		//{
-		//	dashHitboxes[j] = new list<CollisionBox>;
-		//	dashHitboxes[j]->push_back( cb );
-
-		//	for( int i = 0; i < MAX_GHOSTS; ++i )
-		//	{
-		//		//ghosts[i] = new PlayerGhost;
-		//		ghosts[i]->dashHitboxes[j] = new list<CollisionBox>;
-		//		ghosts[i]->dashHitboxes[j]->push_back( cb );			
-		//	}
-		//}
-
-		//cb.rw = 64;
-		//cb.rh = 64;
-		//cb.offset.x = 36;
-		//cb.offset.y = -6;
-		////for( int j = 1; j <= 4; ++j )
-		//for( int j = 0; j < 4 * 4; ++j )
-		//{
-		//	steepClimbHitboxes[j] = new list<CollisionBox>;
-		//	steepClimbHitboxes[j]->push_back( cb );
-
-		//	for( int i = 0; i < MAX_GHOSTS; ++i )
-		//	{
-		//		//ghosts[i] = new PlayerGhost;
-		//		ghosts[i]->steepClimbHitboxes[j] = new list<CollisionBox>;
-		//		ghosts[i]->steepClimbHitboxes[j]->push_back( cb );			
-		//	}
-		//}
-
-		//cb.rw = 64;
-		//cb.rh = 64;
-		//cb.offset.x = 36;
-		//cb.offset.y = -6;
-		////for( int j = 1; j <= 4; ++j )
-		//for( int j = 0; j < 6 * 3; ++j )
-		//{
-		//	steepSlideHitboxes[j] = new list<CollisionBox>;
-		//	steepSlideHitboxes[j]->push_back( cb );
-
-		//	for( int i = 0; i < MAX_GHOSTS; ++i )
-		//	{
-		//		//ghosts[i] = new PlayerGhost;
-		//		ghosts[i]->steepSlideHitboxes[j] = new list<CollisionBox>;
-		//		ghosts[i]->steepSlideHitboxes[j]->push_back( cb );			
-		//	}
-		//}
-
-		//cb.rw = 64;
-		//cb.rh = 64;
-		//cb.offset.x = 14;
-		//cb.offset.y = -14;
-
-		//for( int j = 0; j < 11 * 2; ++j )
-		//{
-		//	diagUpHitboxes[j] = new list<CollisionBox>;
-		//	diagUpHitboxes[j]->push_back( cb );
-
-		//	for( int i = 0; i < MAX_GHOSTS; ++i )
-		//	{
-		//		//ghosts[i] = new PlayerGhost;
-		//		//ghosts[i]->diagUpHitboxes[j] = new list<CollisionBox>;
-		//		//ghosts[i]->diagUpHitboxes[j]->push_back( cb );			
-		//	}
-		//}
-
-		//cb.rw = 64;
-		//cb.rh = 64;
-		//cb.offset.x = 14;
-		//cb.offset.y = 14;
-
-		//for( int j = 0; j < 11 * 2; ++j )
-		//{
-		//	diagDownHitboxes[j] = new list<CollisionBox>;
-		//	diagDownHitboxes[j]->push_back( cb );
-
-		//	for( int i = 0; i < MAX_GHOSTS; ++i )
-		//	{
-		//		//ghosts[i] = new PlayerGhost;
-		//		//ghosts[i]->diagUpHitboxes[j] = new list<CollisionBox>;
-		//		//ghosts[i]->diagUpHitboxes[j]->push_back( cb );			
-		//	}
-		//}
+			fairHitboxes[2] = NULL;
+			uairHitboxes[2] = NULL;
+			dairHitboxes[2] = NULL;
 
 
-		cb.rw = 90;
-		cb.rh = 90;
-		cb.offset.x = 0;
-		cb.offset.y = 0;
-		grindHitboxes[0] = new CollisionBody(1);
-		grindHitboxes[0]->AddCollisionBox(0, cb);
+			standHitboxes[0] = NULL;
+			standHitboxes[1] = NULL;
+			standHitboxes[2] = NULL;
+
+			wallHitboxes[0] = NULL;
+
+			wallHitboxes[1] = NULL;
+
+			wallHitboxes[2] = NULL;
+
+
+			steepClimbHitboxes[0] = NULL;
+			steepClimbHitboxes[1] = NULL;
+			steepClimbHitboxes[2] = NULL;
+
+			steepSlideHitboxes[0] = NULL;
+			steepSlideHitboxes[1] = NULL;
+			steepSlideHitboxes[2] = NULL;
+
+			diagUpHitboxes[0] = NULL;
+			diagDownHitboxes[0] = NULL;
+
+			diagUpHitboxes[1] = NULL;
+			diagDownHitboxes[1] = NULL;
+
+			diagUpHitboxes[2] = NULL;
+			diagDownHitboxes[2] = NULL;
+
+			shockwaveHitboxes = NULL;
+			grindHitboxes[0] = NULL;
+		}
+
+		
 		//grindHitboxes[0] = new list<CollisionBox>;
 		//grindHitboxes[0]->push_back( cb );
 		
@@ -1443,7 +1451,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 
 		recordedGhosts = 0;
 
-		
 		bubbleSprite.setTexture( *ts_bubble->texture );
 
 		currBubble = 0;
@@ -1455,17 +1462,12 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		
 
 		bubbleLifeSpan = 240;
-
 		
 		int maxAura = 128 * 128;//64 * 64;//1000 * 1000;//300 * 300;//64 * 64;
 		testAura = new Aura(this, 1, maxAura, 0);
 		testAura1 = new Aura(this, 1, maxAura, 1);
 		testAura2 = new Aura(this, 1, maxAura, 2);
 		testAura3 = new Aura(this, 1, maxAura, 3);
-
-		//int runLen = actionLength[RUN];
-		//runPoints = new std::list<Vector2f>[runLen];
-		//standPoints = new std::list<Vector2f>[20];
 
 		hasPowerAirDash = true;//false;//true;
 		hasPowerGravReverse = false;
@@ -1475,12 +1477,6 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		hasPowerLeftWire = false;
 		hasPowerRightWire = false;
 		hasPowerClones = 0;
-
-		SaveFile *currProgress = owner->GetCurrentProgress();
-		//if (currProgress == NULL )
-		//{
-
-
 
 		if (true)
 		{
@@ -1493,22 +1489,14 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 			hasPowerRightWire = true;
 		}
 
-
-
-
-		//	//hasPowerClones = MAX_GHOSTS;
-		//	hasPowerClones = 0;
-		//}
-
-		//bool noPowers = false;
-		
-		if (currProgress != NULL && currProgress->HasPowerUnlocked(POWER_AIRDASH))//currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
+		if (owner != NULL)
 		{
-			hasPowerAirDash = true;
+			SaveFile *currProgress = owner->GetCurrentProgress();
+			if (currProgress != NULL && currProgress->HasPowerUnlocked(POWER_AIRDASH))//currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
+			{
+				hasPowerAirDash = true;
+			}
 		}
-		
-		
-		
 
 		startHasPowerAirDash = hasPowerAirDash;
 		startHasPowerGravReverse =	hasPowerGravReverse;
@@ -1519,7 +1507,7 @@ Actor::Actor( GameSession *gs, int p_actorIndex )
 		startHasPowerRightWire = hasPowerRightWire;
 
 		//do this a little later.
-		owner->mainMenu->pauseMenu->kinMenu->UpdatePowers(this);
+		UpdatePowers();
 
 
 		//only set these parameters again if u get a power or lose one.
@@ -1591,7 +1579,8 @@ Actor::~Actor()
 		}
 	}
 
-	delete kinMask;
+	if( kinMask != NULL)
+		delete kinMask;
 	for (int i = 0; i < 7; ++i)
 	{
 		delete smallLightningPool[i];
@@ -1628,24 +1617,28 @@ Actor::~Actor()
 
 	delete currHitboxInfo;
 
-	for (int i = 0; i < 3; ++i)
+	if (owner != NULL)
 	{
-		delete fairHitboxes[i];
-		delete uairHitboxes[i];
-		delete dairHitboxes[i];
-		delete standHitboxes[i];
-		delete wallHitboxes[i];
-//		delete dashHitboxes[i];
+		for (int i = 0; i < 3; ++i)
+		{
+			delete fairHitboxes[i];
+			delete uairHitboxes[i];
+			delete dairHitboxes[i];
+			delete standHitboxes[i];
+			delete wallHitboxes[i];
+			//		delete dashHitboxes[i];
 
-	//	delete wallHitboxes[i];
-		delete steepClimbHitboxes[i];
-		delete steepSlideHitboxes[i];
-		delete diagUpHitboxes[i];
-		delete diagDownHitboxes[i];
-		//delete grindHitboxes[i];
+				//	delete wallHitboxes[i];
+			delete steepClimbHitboxes[i];
+			delete steepSlideHitboxes[i];
+			delete diagUpHitboxes[i];
+			delete diagDownHitboxes[i];
+			//delete grindHitboxes[i];
+		}
+
+		delete grindHitboxes[0];
+
 	}
-
-	delete grindHitboxes[0];
 
 	
 	//delete shockwaveHitboxes;
@@ -1656,11 +1649,10 @@ Actor::~Actor()
 		delete leftWire;
 
 	delete[] bubblePos;
-	delete[] fBubblePos;
+	
 	delete[] bubbleFramesToLive;
 	delete[] bubbleRadiusSize;
-	delete [] fBubbleRadiusSize;
-	delete[] fBubbleFrame;
+	
 
 	for (int i = 0; i < maxBubbles; ++i)
 	{
@@ -1990,7 +1982,6 @@ void Actor::ActionEnded()
 		case NEXUSKILL:
 			SetAction(SEQ_FLOAT_TO_NEXUS_OPENING);
 			frame = 0;
-			//owner->scoreDisplay->Activate();
 			//grab the nexus and start its sequence.
 			break;
 		case DEATH:
@@ -2029,16 +2020,12 @@ void Actor::ActionEnded()
 			hasPowerAirDash = true;
 			SetAction(STAND);
 			frame = 0;
-
-			//owner->cam.SetManual( false );
-			//owner->cam.EaseOutOfManual( 60 );
 			break;
 		case SEQ_WAIT:
 			frame = 0;
 			break;
 		case SEQ_ENTERCORE1:
 			frame = actionLength[SEQ_ENTERCORE1] - 1;
-			//owner->state = GameSession::SEQUENCE;
 			break;
 		case SEQ_LOOKUP:
 			frame = 0;
@@ -2243,7 +2230,6 @@ bool Actor::AirAttack()
 				}
 				SetAction(UAIR);
 				frame = 0;
-				//owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
 			}
 			else if (currInput.LDown())
 			{
@@ -2257,7 +2243,6 @@ bool Actor::AirAttack()
 				}
 				SetAction(DAIR);
 				frame = 0;
-				//owner->OpenGates(Gate::CRAWLER_UNLOCK);
 			}
 			else
 			{
@@ -2271,7 +2256,6 @@ bool Actor::AirAttack()
 				}
 				SetAction(FAIR);
 				frame = 0;
-				//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
 			}
 		}
 		else
@@ -2435,7 +2419,9 @@ void Actor::Respawn()
 	stunBufferedAttack = Action::Count;
 	stunBufferedDash = false;
 	extraDoubleJump = false;
-	kinMask->Reset();
+
+	if( kinMask != NULL )
+		kinMask->Reset();
 	SetDirtyAura(false);
 
 	glideTurnFactor = 0;
@@ -2517,18 +2503,19 @@ void Actor::Respawn()
 
 	hitGoal = false;
 	hitNexus = false;
-	position = owner->originalPos;
+
+	SetToOriginalPos();
 
 	followerPos = position;
 	followerVel = V2d( 0, 0 );
 	enemiesKilledThisFrame = 0;
 	gateTouched = NULL;
 
-	if( !owner->hasShipEntrance )
+	if( owner != NULL && !owner->hasShipEntrance )
 	{
 		SetAction(INTROBOOST);
 		frame = 0;
-		//owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
+		//owner->ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
 	}
 
 	velocity.x = 0;
@@ -2581,10 +2568,14 @@ void Actor::Respawn()
 		
 	}
 
-	for (int i = 0; i < 5; ++i)
+	if (fBubblePos != NULL)
 	{
-		fBubbleFrame[i] = 0;
+		for (int i = 0; i < 5; ++i)
+		{
+			fBubbleFrame[i] = 0;
+		}
 	}
+	
 
 	//for( int i = 0; i < maxMotionGhosts; ++i )
 	//{
@@ -2601,7 +2592,7 @@ void Actor::Respawn()
 	//kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
 	//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
 
-	if( kinRing->powerRing != NULL )
+	if( kinRing != NULL && kinRing->powerRing != NULL )
 		kinRing->powerRing->ResetFull(); //only means anything for single player
 }
 
@@ -2743,7 +2734,7 @@ void Actor::UpdatePrePhysics()
 	}
 	//cout << "JFRAME BEHI: " << frame << endl;
 
-	if (kinRing->powerRing != NULL && action != DEATH && owner->adventureHUD->IsShown() 
+	if ( kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && owner->adventureHUD->IsShown() 
 		&& ( owner->currentZone == NULL || owner->currentZone->zType != Zone::MOMENTA))
 	{
 		if (owner->drain && !desperationMode 
@@ -2866,7 +2857,7 @@ void Actor::UpdatePrePhysics()
 
 		//cout << "desperation: " << despCounter << endl;
 		despCounter++;
-		if( despCounter == maxDespFrames )
+		if( kinRing != NULL && despCounter == maxDespFrames )
 		{
 			desperationMode = false;
 			if (kinRing->powerRing->IsEmpty())
@@ -2908,7 +2899,7 @@ void Actor::UpdatePrePhysics()
 		}
 	}
 
-	if( hasPowerClones &&  ( (currInput.RUp() && !prevInput.RUp()) || ( currInput.rightPress && !prevInput.rightPress ) ) )
+	if( kinRing != NULL && hasPowerClones &&  ( (currInput.RUp() && !prevInput.RUp()) || ( currInput.rightPress && !prevInput.rightPress ) ) )
 	{
 		if( record == 0 )
 		{
@@ -2951,7 +2942,7 @@ void Actor::UpdatePrePhysics()
 		
 
 		
-	if( record > 0 && ( ( currInput.RDown() && !prevInput.RDown() ) || ghosts[record-1]->currFrame == PlayerGhost::MAX_FRAMES - 1 ) )
+	if( kinRing != NULL && record > 0 && ( ( currInput.RDown() && !prevInput.RDown() ) || ghosts[record-1]->currFrame == PlayerGhost::MAX_FRAMES - 1 ) )
 	{
 		//record = false;
 		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
@@ -2989,7 +2980,7 @@ void Actor::UpdatePrePhysics()
 	{
 		/*if (action == SPAWNWAIT && frame == actionLength[SPAWNWAIT] - 6)
 		{
-			owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), spriteCenter, false, 0, 6, 2, true);
+			owner->ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/enter_fx_320x320.png", 320, 320), spriteCenter, false, 0, 6, 2, true);
 		}*/
 		if( action == WAITFORSHIP )
 		{ 
@@ -3005,25 +2996,25 @@ void Actor::UpdatePrePhysics()
 		}
 		if( action == INTRO && frame == 0 )
 		{
-			owner->soundNodeList->ActivateSound( soundBuffers[S_ENTER] );
+			ActivateSound( S_ENTER );
 		}
 		else if( action == EXIT && frame == 30 )
 		{
-			owner->soundNodeList->ActivateSound( soundBuffers[S_EXIT] );
+			ActivateSound( S_EXIT );
 		}
 		else if (action == EXITWAIT)
 		{
 			if (frame == 0)
 			{
-				owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/exitenergy_0_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				owner->ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/exitenergy_0_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}
 			else if (frame == 6 * 2)
 			{
-				owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/exitenergy_1_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				owner->ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/exitenergy_1_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}
 			else if (frame == 6 * 4)
 			{
-				owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				owner->ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}	
 		}
 		else if (action == SEQ_KINFALL)
@@ -3091,7 +3082,7 @@ void Actor::UpdatePrePhysics()
 		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
 		owner->Pause( hitlagFrames );
 
-		owner->soundNodeList->ActivateSound( soundBuffers[S_HURT] );
+		ActivateSound( S_HURT );
 
 		kinRing->powerRing->Drain(receivedHit->damage);
 
@@ -3151,8 +3142,9 @@ void Actor::UpdatePrePhysics()
 					if( !CheckStandUp() )
 					{
 						position = op;
-						//owner->powerWheel->Damage( receivedHit->damage );
-						kinRing->powerRing->Drain(receivedHit->damage);
+						
+						if( kinRing != NULL )
+							kinRing->powerRing->Drain(receivedHit->damage);
 						
 						//apply extra damage since you cant stand up
 					}
@@ -3213,7 +3205,8 @@ void Actor::UpdatePrePhysics()
 						position = op;
 
 						//owner->powerWheel->Damage( receivedHit->damage );
-						kinRing->powerRing->Drain(receivedHit->damage);
+						if( kinRing != NULL )
+							kinRing->powerRing->Drain(receivedHit->damage);
 						
 						//apply extra damage since you cant stand up
 					}
@@ -3319,7 +3312,7 @@ void Actor::UpdatePrePhysics()
 
 
 							owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
-							owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
+							ActivateSound( S_GRAVREVERSE );
 						}
 					}
 				}		
@@ -5014,7 +5007,7 @@ void Actor::UpdatePrePhysics()
 							double angle = GroundedAngle();
 
 							owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
-							owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
+							ActivateSound( S_GRAVREVERSE );
 						}
 					}
 				}	
@@ -5493,7 +5486,7 @@ void Actor::UpdatePrePhysics()
 							double angle = GroundedAngle();
 
 							owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
-							owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
+							ActivateSound( S_GRAVREVERSE );
 						}
 					}
 				}		
@@ -5985,7 +5978,7 @@ void Actor::UpdatePrePhysics()
 			bool framesDone = frame == actionLength[BOUNCEGROUND] - 1;
 			if( boostBounce || (framesDone && bn.y >= 0 ) )
 			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_BOUNCEJUMP] );
+				ActivateSound( S_BOUNCEJUMP );
 				framesInAir = 0;
 				SetAction(BOUNCEAIR);
 				oldBounceEdge = bounceEdge;
@@ -6760,7 +6753,7 @@ void Actor::UpdatePrePhysics()
 		{
 			if( frame == 0 && slowCounter == 1 )
 			{
-				owner->soundNodeList->ActivateSound(soundBuffers[S_JUMP]);
+				ActivateSound(S_JUMP);
 				storedGroundSpeed = groundSpeed;
 				/*if( reversed )
 					storedGroundSpeed = -storedGroundSpeed;*/
@@ -6805,7 +6798,7 @@ void Actor::UpdatePrePhysics()
 			if( frame == 0 )
 			{
 				currAttackHit = false;
-				owner->soundNodeList->ActivateSound( soundBuffers[S_WALLATTACK] );
+				ActivateSound( S_WALLATTACK);
 			//	fairSound.play();
 			}
 
@@ -6844,7 +6837,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 && slowCounter == 1)
 			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_FAIR1] );
+				ActivateSound( S_FAIR1 );
 				currAttackHit = false;
 				//fairSound.play();
 			}
@@ -6866,14 +6859,14 @@ void Actor::UpdatePrePhysics()
 			if( frame == 0 && slowCounter == 1 )
 			{
 
-				owner->soundNodeList->ActivateSound(soundBuffers[S_DAIR]);
+				ActivateSound(S_DAIR);
 				if( speedLevel == 0 ) 
 				{
 					
 				}
 				/*else if (speedLevel == 1)
 				{
-					owner->soundNodeList->ActivateSound(soundBuffers[S_DAIR_B]);
+					ActivateSound(soundBuffers[S_DAIR_B]);
 				}*/
 				
 				currAttackHit = false;
@@ -6894,7 +6887,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 && slowCounter == 1)
 			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_UAIR] );
+				ActivateSound( S_UAIR );
 				currAttackHit = false;
 			}
 
@@ -6910,7 +6903,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 && slowCounter == 1)
 			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_DIAGUPATTACK] );
+				ActivateSound( S_DIAGUPATTACK );
 				currAttackHit = false;
 				//fairSound.play();
 			}
@@ -6929,7 +6922,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 && slowCounter == 1)
 			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_DIAGDOWNATTACK] );
+				ActivateSound( S_DIAGDOWNATTACK );
 				currAttackHit = false;
 				//fairSound.play();
 			}
@@ -7186,7 +7179,7 @@ void Actor::UpdatePrePhysics()
 
 			if( frame == 0 && slowCounter == 1 )
 			{
-				owner->soundNodeList->ActivateSound( soundBuffers[S_STANDATTACK] );
+				ActivateSound( S_STANDATTACK);
 				currAttackHit = false;
 			}
 
@@ -7917,7 +7910,7 @@ void Actor::UpdatePrePhysics()
 
 			if( !boostBounce && currInput.A && !prevInput.A )
 			{
-				//owner->soundNodeList->ActivateSound( soundBuffers[S_BOUNCEJUMP] );
+				//ActivateSound( soundBuffers[S_BOUNCEJUMP] );
 				boostBounce = true;
 
 				
@@ -8178,7 +8171,10 @@ void Actor::UpdatePrePhysics()
 		if( bubbleFramesToLive[i] > 0 )
 		{
 			bubbleFramesToLive[i]--;
-			fBubbleFrame[i] = bubbleFramesToLive[i];
+			if (fBubblePos != NULL)
+			{
+				fBubbleFrame[i] = bubbleFramesToLive[i];
+			}
 		}
 	}
 
@@ -8269,9 +8265,15 @@ void Actor::UpdatePrePhysics()
 				inBubble = true;
 				//bubbleFramesToLive[currBubble] = bubbleLifeSpan;
 				bubbleFramesToLive[currBubble] = bubbleLifeSpan;
-				fBubbleFrame[currBubble] = bubbleLifeSpan;
+				
 				bubbleRadiusSize[currBubble] = GetBubbleRadius();
-				fBubbleRadiusSize[currBubble] = bubbleRadiusSize[currBubble];
+
+				if (fBubblePos != NULL)
+				{
+					fBubbleFrame[currBubble] = bubbleLifeSpan;
+					fBubbleRadiusSize[currBubble] = bubbleRadiusSize[currBubble];
+				}
+				
 
 				if( !cloneBubbleCreated )
 				{
@@ -8281,14 +8283,21 @@ void Actor::UpdatePrePhysics()
 					bHitbox.globalPosition = position;
 					bHitbox.rw = bubbleRadiusSize[currBubble];
 					bHitbox.rh = bHitbox.rw;
-					fBubblePos[currBubble].x = position.x;
-					fBubblePos[currBubble].y = position.y;
+
+					if (fBubblePos != NULL)
+					{
+						fBubblePos[currBubble].x = position.x;
+						fBubblePos[currBubble].y = position.y;
+					}
 				}
 				else
 				{
 					bubblePos[currBubble] = cloneBubbleCreatedPos;
-					fBubblePos[currBubble].x = cloneBubbleCreatedPos.x;
-					fBubblePos[currBubble].y = cloneBubbleCreatedPos.y;
+					if (fBubblePos != NULL)
+					{
+						fBubblePos[currBubble].x = cloneBubbleCreatedPos.x;
+						fBubblePos[currBubble].y = cloneBubbleCreatedPos.y;
+					}
 				}
 				
 
@@ -8299,7 +8308,7 @@ void Actor::UpdatePrePhysics()
 				}
 
 				bubbleCreated = true;
-				owner->soundNodeList->ActivateSound( soundBuffers[S_TIMESLOW] );
+				ActivateSound( S_TIMESLOW );
 			}			
 		}
 
@@ -8736,7 +8745,7 @@ void Actor::LoadAllAuras()
 
 void Actor::InitAfterEnemies()
 {
-	if( owner->raceFight != NULL )
+	if( owner != NULL && owner->raceFight != NULL )
 	{
 		maxBubbles = 2;
 	}
@@ -8762,11 +8771,14 @@ void Actor::InitAfterEnemies()
 	for( int i = 0; i < maxBubbles; ++i )
 	{
 		bubbleFramesToLive[i] = 0;
-		fBubbleFrame[i] = 0;
-		//bubblePos[i]
+
+		if (fBubblePos != NULL)
+		{
+			fBubbleFrame[i] = 0;
+		}
 	}
 
-	if( owner->raceFight != NULL )
+	if( owner != NULL && owner->raceFight != NULL )
 	{
 		invincibleFrames = 180;
 	}
@@ -8828,7 +8840,7 @@ void Actor::SetAction( Action a )
 
 	if (repeatingSound != NULL)
 	{
-		owner->soundNodeList->DeactivateSound(repeatingSound);
+		DeactivateSound(repeatingSound);
 		repeatingSound = NULL;
 	}
 
@@ -8864,12 +8876,12 @@ void Actor::SetAction( Action a )
 	{
 	case STEEPSLIDE:
 	{
-		repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_STEEPSLIDE], true);
+		repeatingSound = ActivateSound(S_STEEPSLIDE, true);
 		break;
 	}
 	case SLIDE:
 	{
-		repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_SLIDE], true);
+		repeatingSound = ActivateSound(S_SLIDE, true);
 		break;
 	}
 	/*case UAIR:
@@ -9729,12 +9741,11 @@ void Actor::HandleWaitingScoreDisplay()
 				owner->resType = GameSession::GameResultType::GR_WIN;
 			}
 
-			//owner->scoreDisplay->Reset();
 			owner->scoreDisplay->Deactivate();
 		}
 		else if (b)
 		{
-			if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+			if ( owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 			{
 				SaveFile *currFile = owner->GetCurrentProgress();
 				owner->mainMenu->worldMap->CompleteCurrentMap(currFile, owner->totalFramesBeforeGoal);
@@ -11613,7 +11624,7 @@ bool Actor::ExitGrind(bool jump)
 				double angle = GroundedAngle();
 
 				owner->ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
-				owner->soundNodeList->ActivateSound(soundBuffers[S_GRAVREVERSE]);
+				ActivateSound(S_GRAVREVERSE);
 			}
 		}
 	}
@@ -14324,7 +14335,7 @@ void Actor::UpdatePhysics()
 				//if( reversed )
 				//{
 				owner->ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
-				owner->soundNodeList->ActivateSound( soundBuffers[S_GRAVREVERSE] );
+				ActivateSound( S_GRAVREVERSE );
 				//}
 			}
 			else if( tempCollision && hasPowerGrindBall /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
@@ -14729,7 +14740,7 @@ void Actor::PhysicsResponse()
 				if( currInput.LLeft() || currInput.LRight() )
 				{
 					SetAction(LAND2);
-					owner->soundNodeList->ActivateSound(soundBuffers[S_LAND]);
+					ActivateSound(S_LAND);
 					//rightWire->UpdateAnchors(V2d( 0, 0 ));
 					//leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
@@ -14764,7 +14775,7 @@ void Actor::PhysicsResponse()
 					else
 					{
 						SetAction(LAND);
-						owner->soundNodeList->ActivateSound(soundBuffers[S_LAND]);
+						ActivateSound(S_LAND);
 					}
 					//rightWire->UpdateAnchors(V2d( 0, 0 ));
 					//leftWire->UpdateAnchors(V2d( 0, 0 ));
@@ -14883,7 +14894,7 @@ void Actor::PhysicsResponse()
 							//cout << "setting to wallcling" << endl;
 							facingRight = true;
 							SetAction(WALLCLING);
-							repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_WALLSLIDE], true);
+							repeatingSound = ActivateSound(S_WALLSLIDE, true);
 							frame = 0;
 						}
 					}
@@ -14894,7 +14905,7 @@ void Actor::PhysicsResponse()
 							//cout << "setting to wallcling" << endl;
 							facingRight = false;
 							SetAction(WALLCLING);
-							repeatingSound = owner->soundNodeList->ActivateSound(soundBuffers[S_WALLSLIDE], true);
+							repeatingSound = ActivateSound(S_WALLSLIDE, true);
 							
 							frame = 0;
 						}
@@ -14963,7 +14974,7 @@ void Actor::PhysicsResponse()
 			//&& hitCeilingCounter == 0 )
 		{
 			//hitCeilingCounter = hitCeilingLockoutFrames;
-			owner->soundNodeList->ActivateSound(soundBuffers[S_HITCEILING]);
+			ActivateSound(S_HITCEILING);
 
 			if (action == SEQ_KINTHROWN)
 			{
@@ -15140,7 +15151,7 @@ void Actor::PhysicsResponse()
 			}
 
 			V2d gEnterPos = alongPos + nEdge;// *32.0;
-			Tileset *ts_gateEnter = owner->GetTileset("FX/gateenter_256x320.png",256, 320);
+			Tileset *ts_gateEnter = GetTileset("FX/gateenter_256x320.png",256, 320);
 			owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				ts_gateEnter, gEnterPos, false, ang, 8, 3, true);
 
@@ -15705,7 +15716,8 @@ void Actor::UpdatePostPhysics()
 		////cout << "death: " << expr + 11 << endl;
 		//kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 11 ) );
 		//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(5));
-		kinMask->Update( speedLevel, desperationMode );
+		if( kinMask != NULL)
+			kinMask->Update( speedLevel, desperationMode );
 
 
 		++frame;
@@ -16282,7 +16294,8 @@ void Actor::UpdatePostPhysics()
 	cs.setPosition( position.x, position.y );
 	speedCircle = cs;
 
-	kinMask->Update(speedLevel, desperationMode);
+	if( kinMask != NULL)
+		kinMask->Update(speedLevel, desperationMode);
 
 	//if( expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2 )
 	//{
@@ -18010,7 +18023,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			HealthFly *hf = (HealthFly*)qte;
 			if (hf->CanCollect() && hf->hitBody->Intersects(hf->currHitboxFrame, &hurtBody))
 			{
-				kinRing->powerRing->Fill(hf->healAmount);
+				if( kinRing != NULL)
+					kinRing->powerRing->Fill(hf->healAmount);
 				hf->Collect();
 			}
 			
@@ -18456,11 +18470,11 @@ void Actor::Draw( sf::RenderTarget *target )
 		//if( action != DEATH && action != SPAWNWAIT && action != GOALKILL && action != GOALKILLWAIT )
 		////if( action == RUN )
 		//{
-		//	//sh.setUniform( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//	//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+		//	//sh.setUniform( "u_texture",( *GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//	//sh.setUniform( "u_normals", *GetTileset( "run_normal.png", 128, 64 )->texture );
 		//	/*Sprite spr;
 		//	
-		//	spr.setTexture( *owner->GetTileset( "testrocks.png", 300, 225)->texture );
+		//	spr.setTexture( *GetTileset( "testrocks.png", 300, 225)->texture );
 		//	spr.setOrigin( spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2 );
 		//	if( !facingRight )
 		//	{
@@ -18472,8 +18486,8 @@ void Actor::Draw( sf::RenderTarget *target )
 		//	// global positions first. then zooming
 
 		//	
-		//	sh.setUniform( "u_texture",( *owner->GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//	sh.setUniform( "u_normals", *owner->GetTileset( "testrocksnormal.png", 300, 225 )->texture );
+		//	sh.setUniform( "u_texture",( *GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//	sh.setUniform( "u_normals", *GetTileset( "testrocksnormal.png", 300, 225 )->texture );
 		//	sh.setUniform( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
 		//	//sh.setUniform( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
 		//	//sh.setUniform( "LightColor", 1, .8, .6, 1 );
@@ -18497,12 +18511,12 @@ void Actor::Draw( sf::RenderTarget *target )
 
 
 
-		//	//sh.setUniform( "u_texture",( *owner->GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//	//sh.setUniform( "u_normals", *owner->GetTileset( "run_NORMALS.png", 80, 48 )->texture );
+		//	//sh.setUniform( "u_texture",( *GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//	//sh.setUniform( "u_normals", *GetTileset( "run_NORMALS.png", 80, 48 )->texture );
 
 
-		//	//sh.setUniform( "u_texture",( *owner->GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//	//sh.setUniform( "u_normals", *owner->GetTileset( "run_normal.png", 128, 64 )->texture );
+		//	//sh.setUniform( "u_texture",( *GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
+		//	//sh.setUniform( "u_normals", *GetTileset( "run_normal.png", 128, 64 )->texture );
 		//	//cout << "action: " << action << endl;
 		//	//sh.setUniform( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
 		//	//sh.setUniform( "u_normals", *normal[action]->texture );
@@ -19175,13 +19189,13 @@ void Actor::UpdateSprite()
 			{
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
 					pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr );
-				owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP1] );
+				ActivateSound( S_RUN_STEP1 );
 			}
 			else if( frame == 8 * 4 && slowCounter == 1 )
 			{
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
 					pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr );
-				owner->soundNodeList->ActivateSound( soundBuffers[S_RUN_STEP2] );
+				ActivateSound( S_RUN_STEP2 );
 			}
 
 
@@ -19256,13 +19270,13 @@ void Actor::UpdateSprite()
 			{
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_sprint,
 					pp + gn * 48.0 + along * xExtraStart, false, angle, 10, 2, facingRight );
-				owner->soundNodeList->ActivateSound( soundBuffers[S_SPRINT_STEP1] );
+				ActivateSound( S_SPRINT_STEP1 );
 			}
 			else if( frame == 6 * 4 && slowCounter == 1 )
 			{
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_sprint,
 					pp + gn * 48.0 + along * xExtraStart, false, angle, 10, 2, facingRight );
-				owner->soundNodeList->ActivateSound( soundBuffers[S_SPRINT_STEP2] );
+				ActivateSound( S_SPRINT_STEP2 );
 			}
 
 			if( scorpOn )
@@ -20272,7 +20286,7 @@ void Actor::UpdateSprite()
 				
 				owner->ActivateEffect( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart, 
 					pp + gn * 64.0 + along * xExtraStart , false, angle, 9, 3, fr );
-				owner->soundNodeList->ActivateSound( soundBuffers[S_DASH_START] );
+				ActivateSound( S_DASH_START );
 			}
 			else if( frame % 5 == 0 )
 			{
@@ -20640,11 +20654,11 @@ void Actor::UpdateSprite()
 
 			if (frame == 0 * 4 && slowCounter == 1)
 			{
-				owner->soundNodeList->ActivateSound(soundBuffers[S_CLIMB_STEP1]);
+				ActivateSound(S_CLIMB_STEP1);
 			}
 			else if (frame == 4 * 4 && slowCounter == 1)
 			{
-				owner->soundNodeList->ActivateSound(soundBuffers[S_CLIMB_STEP1]);
+				ActivateSound(S_CLIMB_STEP1);
 			}
 
 			if (scorpOn)
@@ -21004,7 +21018,7 @@ void Actor::UpdateSprite()
 		{
 			if (frame == 0 && slowCounter == 1)
 			{
-				owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 22, 2, true);
+				owner->ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 22, 2, true);
 			}
 			else if (frame/2 >= 5)
 			{
@@ -21023,7 +21037,7 @@ void Actor::UpdateSprite()
 		if (frame == 0 && slowCounter == 1)
 		{
 			owner->ActivateEffect(EffectLayer::IN_FRONT, ts_exitAura, position, false, 0, 8, 2, true, 55);
-			owner->ActivateEffect(EffectLayer::IN_FRONT, owner->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 19, 2, true);
+			owner->ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 19, 2, true);
 			//owner->cam.SetManual(true);
 		}
 		else if (frame == 20)
@@ -21085,7 +21099,7 @@ void Actor::UpdateSprite()
 		/*else if (frame == 6 * 4 + 55 * 2)
 		{
 			owner->mainMenu->ActivateIndEffect(EffectLayer::IN_FRONT,
-				owner->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 		}*/
 		break;
 	}
@@ -21097,19 +21111,19 @@ void Actor::UpdateSprite()
 			{
 				if (frame == 20)
 				{
-					owner->soundNodeList->ActivateSound(soundBuffers[S_GOALKILLSLASH1]);
+					ActivateSound(S_GOALKILLSLASH1);
 				}
 				else if (frame == 36)
 				{
-					owner->soundNodeList->ActivateSound(soundBuffers[S_GOALKILLSLASH2]);
+					ActivateSound(S_GOALKILLSLASH2);
 				}
 				else if (frame == 60)
 				{
-					owner->soundNodeList->ActivateSound(soundBuffers[S_GOALKILLSLASH3]);
+					ActivateSound(S_GOALKILLSLASH3);
 				}
 				else if (frame == 84)
 				{
-					owner->soundNodeList->ActivateSound(soundBuffers[S_GOALKILLSLASH4]);
+					ActivateSound(S_GOALKILLSLASH4);
 				}
 			}
 
@@ -21722,11 +21736,11 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 {
 	/*if( e->hasMonitor && !e->suppressMonitor )
 	{
-		owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL_KEY] );
+		ActivateSound( soundBuffers[S_HIT_AND_KILL_KEY] );
 	}
 	else
 	{
-		owner->soundNodeList->ActivateSound( soundBuffers[S_HIT_AND_KILL] );
+		ActivateSound( soundBuffers[S_HIT_AND_KILL] );
 	}*/
 	enemiesKilledThisFrame++;
 
@@ -21738,7 +21752,7 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 void Actor::ConfirmEnemyNoKill( Enemy *e )
 {
 	//cout << "hit sound" << endl;
-	owner->soundNodeList->ActivateSound( soundBuffers[S_HIT] );
+	ActivateSound( S_HIT );
 }
 
 void Actor::ConfirmHit( EnemyParams *hitParams )
@@ -22690,11 +22704,11 @@ void Actor::ExecuteDoubleJump()
 
 	if( action == DOUBLE)
 	{
-		owner->soundNodeList->ActivateSound(soundBuffers[S_DOUBLE]);
+		ActivateSound(S_DOUBLE);
 	}
 	else if( action == BACKWARDSDOUBLE)
 	{
-		owner->soundNodeList->ActivateSound(soundBuffers[S_DOUBLEBACK]);
+		ActivateSound(S_DOUBLEBACK);
 	}
 }
 
@@ -22723,7 +22737,7 @@ void Actor::ExecuteWallJump()
 	}
 
 
-	owner->soundNodeList->ActivateSound(soundBuffers[S_WALLJUMP]);
+	ActivateSound(S_WALLJUMP);
 
 	V2d fxPos = position;
 	if (facingRight)
@@ -23345,442 +23359,7 @@ int Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
 	return numTiles;
 }
 
-AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
-	:va(NULL), particlePos(NULL), maxSpeed(100), playerTarget( NULL ),
-	activeList( NULL ), inactiveList( NULL ), abType( p_abType ), owner( p_owner )
-{
-	switch (p_abType)
-	{
-	case ENERGY:
-		maxNumParticles = 256;
-		break;
-	case DARK:
-		maxNumParticles = 64;
-		break;
-	case SHARD:
-		maxNumParticles = 64;
-		break;
-	}
 
-	va = new Vertex[maxNumParticles * 4];
-
-	for (int i = 0; i < maxNumParticles; ++i)
-	{
-		AllocateParticle( i );
-	}
-
-	//ts_explodeCreate = NULL;
-	ts_explodeDestroy = NULL;
-
-	switch (p_abType)
-	{
-	case DARK:
-		ts = owner->GetTileset("FX/key_128x128.png", 128, 128);
-		animFactor = 2;
-		break;
-	case SHARD:
-		ts = owner->GetTileset("HUD/shard_get_128x128.png", 128, 128);
-		animFactor = 2;
-		//ts_explodeCreate = owner->GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
-		ts_explodeDestroy = owner->GetTileset("FX/shard_explode_02_256x256.png", 256, 256);
-		break;
-	default:
-		ts = owner->GetTileset("FX/absorb_64x64.png", 64, 64);
-		animFactor = 3;
-		break;
-	}
-
-	//particlePos = new Vector2f[maxNumParticles];
-}
-
-sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
-{
-	switch (abType)
-	{
-	case ENERGY:
-	{
-		V2d playerPos = playerTarget->position;
-		return Vector2f(playerPos);
-		break;
-	}
-	case DARK:
-		return Vector2f(1920 - 100, 100);//owner->keyMarker->keyNumberNeededHUD->center;
-		break;
-	case SHARD:
-	{
-		V2d playerPos = playerTarget->position;
-		return Vector2f(playerPos);//Vector2f(286, 202);
-		break;
-	}
-	}
-}
-
-void AbsorbParticles::AllocateParticle( int tileIndex )
-{
-	SingleEnergyParticle *sp = new SingleEnergyParticle(this, tileIndex );
-	if (inactiveList == NULL)
-		inactiveList = sp;
-	else
-	{
-		sp->next = inactiveList;
-		inactiveList->prev = sp;
-		inactiveList = sp;
-	}
-}
-
-AbsorbParticles::~AbsorbParticles()
-{
-	delete[] va;
-
-	SingleEnergyParticle *sp = activeList;
-	SingleEnergyParticle *tNext;
-	while (sp != NULL)
-	{
-		tNext = sp->next;
-		delete sp;
-		sp = tNext;
-	}
-
-	sp = inactiveList;
-	while (sp != NULL)
-	{
-		tNext = sp->next;
-		delete sp;
-		sp = tNext;
-	}
-}
-
-void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos,
-	float p_startAngle )
-{
-	playerTarget = p_playerTarget;
-	float startSpeed = 4;
-
-	int numProjectiles = storedHits;
-	
-	startAngle = p_startAngle;
-
-	Transform t;
-	t.rotate(p_startAngle / PI * 180.f );
-
-	Vector2f vel(0, -startSpeed);
-	Vector2f startPos;
-	Vector2f targetPos;
-	V2d startVel;
-
-	switch( abType )
-	{
-	case ENERGY:
-	{
-		startPos = Vector2f(p_pos);//Vector2f(round(p_pos.x), round(p_pos.y));
-		//targetPos = Vector2f(playerTarget->position);
-		break;
-	}
-	case DARK:
-	{
-		startPos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
-		targetPos = GetTargetPos(DARK);
-		t = Transform::Identity;
-		vel = normalize(Vector2f(startPos) - targetPos ) * startSpeed;
-		break;
-	}
-	case SHARD:
-	{
-		//owner->ActivateEffect()
-
-		startPos = Vector2f(p_pos);//Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
-		targetPos = GetTargetPos(SHARD);
-		//pos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
-		//startPos = Vector2f(400, 200);
-		t = Transform::Identity;
-		vel = normalize(Vector2f(startPos) - targetPos) * startSpeed;
-		//vel = normalize(Vector2f(targetPos) - pos) * startSpeed;
-		break;
-	}
-	}
-
-	switch (abType)
-	{
-	case ENERGY:
-		break;
-	case DARK:
-		break;
-	case SHARD:
-		break;
-	}
-
-	SingleEnergyParticle *sp = NULL;
-	for (int i = 0; i < numProjectiles; ++i)
-	{
-		sp = GetInactiveParticle();
-		assert(sp != NULL);
-
-		sp->Activate(startPos, t.transformPoint(vel));
-
-		if (activeList == NULL)
-		{
-			activeList = sp;
-		}
-		else
-		{
-			sp->next = activeList;
-			activeList->prev = sp;
-			activeList = sp;
-		}
-		
-		t.rotate(360.f / numProjectiles);
-	}
-
-	
-}
-
-AbsorbParticles::SingleEnergyParticle::SingleEnergyParticle(AbsorbParticles *p_parent,
-	int p_tileIndex )
-	:parent( p_parent ), next( NULL ), prev( NULL ), tileIndex( p_tileIndex )
-{
-	Clear();
-}
-
-void AbsorbParticles::SingleEnergyParticle::Clear()
-{
-	sf::Vertex *va = parent->va;
-	va[tileIndex * 4].position = Vector2f(0, 0);
-	va[tileIndex * 4 + 1].position = Vector2f(0, 0);
-	va[tileIndex * 4 + 2].position = Vector2f(0, 0);
-	va[tileIndex * 4 + 3].position = Vector2f(0, 0);
-}
-
-void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
-{
-	IntRect sub;
-	
-
-	sf::Vertex *va = parent->va;
-	
-	switch (parent->abType)
-	{
-	case ENERGY:
-	{
-		sub.width = 64;//12;
-		sub.height = 64;// 12;
-		/*va[tileIndex * 4].color = Color::Red;
-		va[tileIndex * 4 + 1].color = Color::Blue;
-		va[tileIndex * 4 + 2].color = Color::Green;
-		va[tileIndex * 4 + 3].color = Color::Cyan;*/
-		SetRectSubRect(va + tileIndex * 4, parent->ts->GetSubRect(
-			(frame % (9 * parent->animFactor)) / parent->animFactor));
-		break;
-	}
-	case DARK:
-	{
-		sub.width = 128;
-		sub.height = 128;
-		//SetRectColor(va + tileIndex * 4, Color(Color::White));
-		SetRectSubRect(va + tileIndex * 4, parent->ts->GetSubRect(
-			(frame % (16 * parent->animFactor)) / parent->animFactor));
-		/*va[tileIndex * 4 + 0].color = Color::Black;
-		va[tileIndex * 4 + 1].color = Color::Black;
-		va[tileIndex * 4 + 2].color = Color::Black;
-		va[tileIndex * 4 + 3].color = Color::Black;*/
-		break;
-	}	
-	case SHARD:
-	{
-		sub.width = 128;
-		sub.height = 128;
-		SetRectSubRect(va + tileIndex * 4, parent->ts->GetSubRect(0));
-		break;
-	}
-	
-	}
-
-	//cout << "pos: " << pos.x << ", " << pos.y << "   targetPos" << targetPos.x << ", " << targetPos.y << endl;
-	SetRectCenter(va + tileIndex * 4, sub.width, sub.height, pos);
-}
-
-void AbsorbParticles::SingleEnergyParticle::Activate( Vector2f &p_pos, Vector2f &vel )
-{
-	frame = 0;
-	velocity = vel;
-	pos = p_pos;
-	
-	next = NULL;
-	prev = NULL;
-	lockFrame = -1;
-}
-
-bool AbsorbParticles::SingleEnergyParticle::Update()
-{
-	assert(parent->playerTarget != NULL);
-
-	float accel = 1;
-	Vector2f targetPos = parent->GetTargetPos(parent->abType);
-	
-
-	float len = length(targetPos - pos);
-	if ( lockFrame != -1 || (len < 60 && frame > 30) )
-	{
-		if (lockFrame == -1)
-		{
-			lockFrame = frame;
-			lockDist = len;
-		}
-		int diffFrame = frame - lockFrame;
-		float distPortion = (float)diffFrame / 10;
-		pos = targetPos + normalize(pos - targetPos ) * lockDist * ( 1.f - distPortion );
-	}
-	else
-	{
-		pos += velocity;
-	}
-
-	float blahFactor = 0;
-
-	if (frame < 20)
-	{
-		accel = .01;
-	}
-	else 
-	{
-		accel = 1.f;
-	}
-	velocity += normalize(targetPos - pos) * accel;
-
-	if (frame > 30)
-	{
-		velocity = (length(velocity) * normalize(targetPos - pos));
-	}
-
-
-	if (length(velocity) > parent->maxSpeed)
-	{
-		velocity = normalize(velocity) * (float)parent->maxSpeed;
-	}
-
-	if ( length(targetPos - pos) < 1.f && frame > 30 )
-	{
-		switch (parent->abType)
-		{
-		case ENERGY:
-		{
-			PowerRing *powerRing = parent->owner->GetPlayer(0)->kinRing->powerRing;
-			if (powerRing != NULL)
-			{
-				powerRing->Fill(20);
-			}
-			break;
-		}
-		case DARK:
-		{
-			Tileset *tss = parent->owner->GetTileset("FX/keyexplode_128x128.png", 128, 128);
-			parent->owner->ActivateEffect(EffectLayer::UI_FRONT,
-				tss, V2d(targetPos), true, 0, 6, 3, true);
-			parent->owner->keyMarker->VibrateNumbers();
-			break;
-		}
-		case SHARD:
-		{
-			parent->owner->ActivateEffect(EffectLayer::IN_FRONT,
-				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 9, 3, true);
-		}
-		}
-		return false;
-	}
-
-
-	++frame;
-	return true;
-}
-
-AbsorbParticles::SingleEnergyParticle *AbsorbParticles::GetInactiveParticle()
-{
-	if (inactiveList == NULL)
-		return NULL;
-	
-	SingleEnergyParticle *sp = inactiveList;
-
-	if (inactiveList->next != NULL)
-		inactiveList->next->prev = NULL;
-
-	inactiveList = inactiveList->next;
-
-	return sp;
-}
-
-void AbsorbParticles::DeactivateParticle(AbsorbParticles::SingleEnergyParticle *sp)
-{
-	sp->Clear();
-
-	if (activeList == NULL)
-		assert(0);
-
-	if (sp->prev == NULL)
-	{
-		if (sp->next != NULL)
-			sp->next->prev = NULL;
-		activeList = sp->next;
-	}
-	else
-	{
-		sp->prev->next = sp->next;
-		if (sp->next != NULL)
-			sp->next->prev = sp->prev;
-	}
-
-	sp->prev = NULL;
-	sp->next = NULL;
-
-	if (inactiveList != NULL)
-	{
-		sp->next = inactiveList;
-		inactiveList->prev = sp;
-	}
-	inactiveList = sp;
-}
-
-void AbsorbParticles::Update()
-{
-	SingleEnergyParticle *sp = activeList;
-	SingleEnergyParticle *tNext = NULL;
-	while (sp != NULL)
-	{
-		tNext = sp->next;
-		if (sp->Update())
-		{
-			sp->UpdateSprite();
-		}
-		else
-		{
-			sp->Clear();
-			DeactivateParticle(sp);
-		}
-		sp = tNext;
-	}
-}
-
-void AbsorbParticles::Draw(sf::RenderTarget *target)
-{
-	//target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
-	switch (abType)
-	{
-	case ENERGY:
-	case DARK:
-		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
-		break;
-	case SHARD:
-		target->draw(va, maxNumParticles * 4, sf::Quads, ts->texture);
-		break;
-	}
-	
-}
-
-void AbsorbParticles::Reset()
-{
-	while (activeList != NULL)
-	{
-		DeactivateParticle(activeList);
-	}
-}
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )
 	:shader( NULL ), ts( NULL )

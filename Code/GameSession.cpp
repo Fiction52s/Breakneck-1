@@ -143,6 +143,8 @@
 
 #include "SpecialTerrain.h"
 
+#include "AbsorbParticles.h"
+
 #define TIMESTEP 1.0 / 60.0
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
@@ -261,6 +263,13 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 
 void GameSession::Cleanup()
 {
+	if (fBubblePos != NULL)
+	{
+		delete[] fBubblePos;
+		delete[] fBubbleRadiusSize;
+		delete[] fBubbleFrame;
+	}
+
 	TerrainRender::CleanupLayers();
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
@@ -6057,7 +6066,7 @@ bool GameSession::Load()
 		return false;
 	}
 	cout << "weird timing 4" << endl;
-	players[0] = new Actor( this, 0 );
+	players[0] = new Actor( this, NULL, 0 );
 
 	
 	cout << "about to open file" << endl;
@@ -6077,7 +6086,7 @@ bool GameSession::Load()
 
 	if( raceFight != NULL )
 	{
-		players[1] = new Actor( this, 1 );
+		players[1] = new Actor( this, NULL, 1 );
 		maxBubbles = 2;
 	}
 	else
@@ -8924,6 +8933,11 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	fBubblePos = NULL;
+	fBubbleRadiusSize = NULL;
+	fBubbleFrame = NULL;
+
+
 	preLevelScene = NULL;
 	postLevelScene = NULL;
 	playerAndEnemiesFrozen = false;

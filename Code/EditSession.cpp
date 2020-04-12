@@ -18,6 +18,7 @@
 #include "EditorBG.h"
 #include "EditorRail.h"
 #include "EditorGraph.h"
+#include "Actor.h"
 
 
 #include "clipper.hpp"
@@ -2164,6 +2165,9 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
+	Actor testPlayer(NULL, this, 0);
+	testPlayer.InitAfterEnemies();
+
 	oldShaderZoom = -1;
 	complexPaste = NULL;
 
