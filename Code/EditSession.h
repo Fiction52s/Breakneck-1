@@ -71,6 +71,7 @@ struct EditSession : GUIHandler, TilesetManager
 		SET_LEVEL,
 		CREATE_RAILS,
 		SET_CAM_ZOOM,
+		TEST_PLAYER,
 	};
 
 	Emode mode;
@@ -104,7 +105,8 @@ struct EditSession : GUIHandler, TilesetManager
 	double currentTime;
 	double accumulator;
 	sf::Clock gameClock;
-	void UpdateTestPlayerMode();
+	//double currentTime;
+	void TestPlayerModeUpdate();
 	void TestPlayerMode();
 	
 	EditSession(MainMenu *p_mainMenu);

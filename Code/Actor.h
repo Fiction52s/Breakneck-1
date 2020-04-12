@@ -14,6 +14,7 @@
 #include "Movement.h"
 #include "Gate.h"
 #include "SpecialTerrainTypes.h"
+#include "EffectLayer.h"
 
 struct EditSession;
 
@@ -125,6 +126,8 @@ struct KinRing;
 struct RisingParticleUpdater;
 struct EffectPool;
 struct ShapeEmitter;
+
+struct BasicEffect;
 
 struct Wire;
 
@@ -287,6 +290,17 @@ struct Actor : QuadTreeCollider,
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
 	//ShapeEmitter *glideEmitter;
 	SoundNode * ActivateSound(SoundType st, bool loop = false);
+	BasicEffect * ActivateEffect(
+		EffectLayer layer,
+		Tileset *ts,
+		sf::Vector2<double> pos,
+		bool pauseImmune,
+		double angle,
+		int frameCount,
+		int animationFactor,
+		bool right,
+		int startFrame = 0,
+		float depth = 1.f);
 	void DeactivateSound(SoundNode *sn);
 	void SetToOriginalPos();
 	void UpdatePowers();

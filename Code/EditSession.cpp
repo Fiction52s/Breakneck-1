@@ -51,41 +51,29 @@ V2d EditSession::GetPlayerSpawnPos()
 	return V2d(player->position);
 }
 
-void EditSession::UpdateTestPlayerMode()
+void EditSession::TestPlayerModeUpdate()
 {
-	
-}
+	double newTime = gameClock.getElapsedTime().asSeconds();
+	double frameTime = newTime - currentTime;
 
-void EditSession::TestPlayerMode()
-{
-	double currentTime = 0;
-	accumulator = TIMESTEP + .1;
-	bool quit = false;
-
-	while (!quit)
+	if (frameTime > 0.25)
 	{
-		double newTime = gameClock.getElapsedTime().asSeconds();
-		double frameTime = newTime - currentTime;
+		frameTime = 0.25;
+	}
+	currentTime = newTime;
 
-		if (frameTime > 0.25)
+
+	accumulator += frameTime;
+
+	//w->clear(Color::Red);
+	//preScreenTex->clear(Color::Red);
+
+	while (accumulator >= TIMESTEP)
+	{
+		for (int i = 0; i < 4; ++i)
 		{
-			frameTime = 0.25;
-		}
-		currentTime = newTime;
-
-
-		accumulator += frameTime;
-
-		w->clear(Color::Red);
-		preScreenTex->clear(Color::Red);
-
-		while (accumulator >= TIMESTEP)
-		{
-			for (int i = 0; i < 4; ++i)
-			{
-				GetPrevInput(i) = GetCurrInput(i);
-				GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-			}
+			GetPrevInput(i) = GetCurrInput(i);
+			GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 		}
 
 		Actor *pTemp = NULL;
@@ -123,7 +111,7 @@ void EditSession::TestPlayerMode()
 				GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
 			}
 		}
-		
+
 		//totalGameFrames++;
 		UpdatePrePhysics();
 		UpdatePhysics();
@@ -131,32 +119,26 @@ void EditSession::TestPlayerMode()
 
 		/*for (int i = 0; i < 4; ++i)
 		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				if (p->hasPowerLeftWire)
-					p->leftWire->UpdateQuads();
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+		if (p->hasPowerLeftWire)
+		p->leftWire->UpdateQuads();
 
-				if (p->hasPowerRightWire)
-					p->rightWire->UpdateQuads();
-			}
+		if (p->hasPowerRightWire)
+		p->rightWire->UpdateQuads();
+		}
 		}*/
 
 		accumulator -= TIMESTEP;
 	}
+}
 
-	//update window events
-
-
-	Actor *p = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			p->Draw(preScreenTex);
-		}
-	}
+void EditSession::TestPlayerMode()
+{
+	currentTime = 0;
+	accumulator = TIMESTEP + .1;
+	mode = TEST_PLAYER;
 }
 
 ControllerState &EditSession::GetPrevInput(int index)
@@ -248,6 +230,7 @@ void EditSession::UpdatePostPhysics()
 		return;
 	}
 
+	Actor *p;
 	for (int i = 0; i < 4; ++i)
 	{
 		p = GetPlayer(i);
@@ -1046,6 +1029,19 @@ void EditSession::Draw()
 	if (mode == PASTE)
 	{
 		copiedBrush->Draw(preScreenTex);
+	}
+
+	if (mode == TEST_PLAYER)
+	{
+		Actor *p = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->Draw(preScreenTex);
+			}
+		}
 	}
 }
 
@@ -2610,7 +2606,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	graph = new EditorGraph;
 	
 
-	bool s = IsKeyPressed( sf::Keyboard::T );
+	//bool s = IsKeyPressed( sf::Keyboard::T );
 
 	mode = EDIT;
 	stored = mode;
@@ -9789,7 +9785,16 @@ void EditSession::HandleEvents()
 				}
 				else if (ev.key.code == Keyboard::T && showPanel == NULL)
 				{
-					quit = true;
+					if (mode != TEST_PLAYER)
+					{
+						//GetPlayer(0)->Respawn();
+						TestPlayerMode();
+					}
+					else
+					{
+						GetPlayer(0)->Respawn();
+					}
+					//quit = true;
 				}
 				else if (ev.key.code == Keyboard::Escape)
 				{
@@ -11033,6 +11038,11 @@ void EditSession::UpdateMode()
 	case SET_LEVEL:
 	{
 		SetLevelModeUpdate();
+		break;
+	}
+	case TEST_PLAYER:
+	{
+		TestPlayerModeUpdate();
 		break;
 	}
 	}
