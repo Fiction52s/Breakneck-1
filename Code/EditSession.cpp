@@ -76,6 +76,9 @@ void EditSession::TestPlayerModeUpdate()
 			GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 		}
 
+	
+
+
 		Actor *pTemp = NULL;
 		for (int i = 0; i < 4; ++i)
 		{
@@ -110,6 +113,11 @@ void EditSession::TestPlayerModeUpdate()
 				currInput = conState;
 				GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
 			}
+		}
+
+		for (int i = 0; i < 4; ++i)
+		{
+			ApplyToggleUpdates(i);
 		}
 
 		//totalGameFrames++;
@@ -280,7 +288,68 @@ void EditSession::UpdatePostPhysics()
 	}
 }
 
+void EditSession::ApplyToggleUpdates( int index )
+{
+	Actor *player = GetPlayer(index);
+	if (player == NULL)
+		return;
 
+	ControllerState &pCurr = player->currInput;
+	GameController &controller = GetController(index);
+	ControllerState &currInput = GetCurrInput(index);
+	ControllerState &prevInput = GetPrevInput(index);
+
+	//ControllerState &pPrev = player->prevInput;
+	bool alreadyBounce = pCurr.X;
+	bool alreadyGrind = pCurr.Y;
+	bool alreadyTimeSlow = pCurr.leftShoulder;
+
+	//if (cutPlayerInput)
+	if( false )
+	{
+		player->currInput = ControllerState();
+	}
+	else
+	{
+		player->currInput = currInput;
+
+		if (controller.keySettings.toggleBounce)
+		{
+			if (currInput.X && !prevInput.X)
+			{
+				pCurr.X = !alreadyBounce;
+			}
+			else
+			{
+				pCurr.X = alreadyBounce;
+			}
+		}
+		if (controller.keySettings.toggleGrind)
+		{
+			if (currInput.Y && !prevInput.Y)
+			{
+				pCurr.Y = !alreadyGrind;
+				//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
+			}
+			else
+			{
+				pCurr.Y = alreadyGrind;
+			}
+		}
+		if (controller.keySettings.toggleTimeSlow)
+		{
+			if (currInput.leftShoulder && !prevInput.leftShoulder)
+			{
+				pCurr.leftShoulder = !alreadyTimeSlow;
+
+			}
+			else
+			{
+				pCurr.leftShoulder = alreadyTimeSlow;
+			}
+		}
+	}
+}
 
 
 

@@ -101,6 +101,7 @@ struct EditSession : GUIHandler, TilesetManager
 	ControllerState &GetPrevInputUnfiltered(int index);
 	ControllerState &GetCurrInputUnfiltered(int index);
 	GameController &GetController(int index);
+	void ApplyToggleUpdates( int index );
 	int substep;
 	double currentTime;
 	double accumulator;
