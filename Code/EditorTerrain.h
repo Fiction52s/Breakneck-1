@@ -116,9 +116,12 @@ struct TerrainPolygon : ISelectable
 	//QuadTree *edgeTree;
 	bool isBrushTest;
 	
+	void MakeInverse();
 	static sf::Vector2i GetExtreme(TerrainPoint *p0,
 		TerrainPoint *p1);
 	TerrainPoint *GetPoint(int index);
+	TerrainPoint *GetInverseOuterRectPoint(int index);
+	TerrainPoint *GetFinalizeInversePoint(int index);
 	TerrainPoint *GetEndPoint();
 	TerrainPoint *GetStartPoint();
 	TerrainPoint *GetNextPoint(int index);
@@ -167,6 +170,7 @@ struct TerrainPolygon : ISelectable
 
 	TerrainPoint *GetSamePoint(sf::Vector2i &p);
 	TerrainPoint * AddPoint(sf::Vector2i &p, bool sel);
+	TerrainPoint * AddInverseBorderPoint(sf::Vector2i &p, bool sel);
 	int GetNumPoints();
 	void RemoveLastPoint();
 	void ClearPoints();

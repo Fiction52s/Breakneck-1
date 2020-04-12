@@ -990,10 +990,8 @@ bool EditSession::ReadTerrain(ifstream &is )
 			poly->AddPoint(Vector2i(x, y), false);
 		}
 
-
 		int edgesWithSegments;
 		is >> edgesWithSegments;
-
 
 		list<GrassSeg> segments;
 		for (int i = 0; i < edgesWithSegments; ++i)
@@ -1264,11 +1262,7 @@ bool EditSession::ReadGates(std::ifstream &is)
 			}
 			testIndex++;
 		}
-		if (terrain0 == NULL || terrain1 == NULL)
-		{
-			int zzzerwr = 56;
-		}
-		//PolyPtr poly(  new TerrainPolygon( &grassTex ) );
+
 		GateInfoPtr gi(new GateInfo);
 		//GateInfo *gi = new GateInfo;
 		gi->numKeysRequired = numKeysRequired;
@@ -6113,7 +6107,8 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 	{
 		if (IsKeyPressed(Keyboard::LAlt))
 		{
-			polygonInProgress->inverse = true;
+			//polygonInProgress->inverse = true;
+			polygonInProgress->MakeInverse();
 		}
 
 		if (polygonInProgress->inverse)
@@ -6569,7 +6564,6 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 				if ((*it)->inverse)
 				{
 					inverseBrushes.push_back((*brushIt));
-					//intersectsInverse = true;
 				}
 				else
 				{
@@ -7144,9 +7138,14 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 		if (playerInsideIndex >= 0)
 		{
 			PolyPtr newInverse(new TerrainPolygon(&grassTex));
+			newInverse->inverse = true;
+
 			newInverse->Reserve(inverseSolution[playerInsideIndex].size());
 			//FusePathClusters(inverseSolution[playerInsideIndex], clipperIntersections, fusedPoints);
 			//FixPathSlivers(inverseSolution[playerInsideIndex]);
+
+			
+
 			newInverse->AddPointsFromClipperPath(inverseSolution[playerInsideIndex], fusedPoints);
 
 			if (!newInverse->TryFixAllSlivers())
@@ -7161,8 +7160,6 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			}
 			else
 			{
-				newInverse->inverse = true;
-
 				//newInverse->RemoveSlivers();
 				newInverse->AlignExtremes();
 				newInverse->Finalize();

@@ -67,7 +67,8 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	movingPointMode = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
-	pointVector.push_back(vector<TerrainPoint>());
+	pointVector.resize(2);
+	//pointVector.push_back(vector<TerrainPoint>());
 	
 	//tr = NULL;
 	EditSession *session = EditSession::GetSession();
@@ -107,7 +108,8 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 		grassSpacing = 0;
 	}
 
-	pointVector.push_back(vector<TerrainPoint>() );
+	pointVector.resize(2);
+	//pointVector.push_back(vector<TerrainPoint>() );
 	//SetMaterialType( poly.terrainWorldType, poly.terrainVariation );
 	if (pointsOnly)
 	{
@@ -143,7 +145,8 @@ TerrainPolygon::~TerrainPolygon()
 
 vector<TerrainPoint> &TerrainPolygon::PointVector()
 {
-	return pointVector[0];
+	int i = (int)inverse;
+	return pointVector[i];
 }
 
 void TerrainPolygon::WriteFile(std::ofstream & of)
@@ -165,10 +168,33 @@ void TerrainPolygon::WriteFile(std::ofstream & of)
 	}
 }
 
+void TerrainPolygon::MakeInverse()
+{
+	pointVector[1] = pointVector[0];
+	pointVector[0].clear();
+	inverse = true;
+}
+
 TerrainPoint *TerrainPolygon::GetPoint(int index)
 {
 	assert(index >= 0 && index < PointVector().size());
 	return &PointVector()[index];
+}
+
+TerrainPoint *TerrainPolygon::GetInverseOuterRectPoint(int index)
+{
+	assert(inverse && finalized && index >= 0 && index < 4);
+	return &pointVector[0][index];
+}
+
+TerrainPoint *TerrainPolygon::GetFinalizeInversePoint(int index)
+{
+	if (index < 4)
+		return GetInverseOuterRectPoint(index);
+	else
+	{
+		return GetPoint(index - 4);
+	}
 }
 
 TerrainPoint *TerrainPolygon::GetEndPoint()
@@ -890,7 +916,6 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 
 void TerrainPolygon::FinalizeInverse()
 {
-	inverse = true;
 	finalized = true;
 	isGrassShowing = false;
 
@@ -901,40 +926,26 @@ void TerrainPolygon::FinalizeInverse()
 	int testExtra = inverseExtraBoxDist;
 	vector<p2t::Point*> outerQuadPoints;
 
-	sf::Rect<double> finalRect;
-	finalRect.left = left - testExtra;
-	finalRect.top = top - testExtra;
-	finalRect.width = (right-left) +  testExtra * 2;
-	finalRect.height = (bottom-top) + testExtra * 2;
+	Vector2i outerRectPositions[4];
+	outerRectPositions[0] = Vector2i(left - inverseExtraBoxDist, top - inverseExtraBoxDist);
+	outerRectPositions[1] = Vector2i(right + inverseExtraBoxDist, top - inverseExtraBoxDist);
+	outerRectPositions[2] = Vector2i(right + inverseExtraBoxDist, bottom + inverseExtraBoxDist);
+	outerRectPositions[3] = Vector2i(left - inverseExtraBoxDist, bottom + inverseExtraBoxDist);
 
-	outerQuadPoints.push_back(new p2t::Point(finalRect.left, finalRect.top));
-	outerQuadPoints.push_back(new p2t::Point(finalRect.left + finalRect.width, finalRect.top));
-	outerQuadPoints.push_back(new p2t::Point(finalRect.left + finalRect.width, finalRect.top + finalRect.height));
-	outerQuadPoints.push_back(new p2t::Point(finalRect.left, finalRect.top + finalRect.height));
+	vector<TerrainPoint> &outerRectTerrainPoints = pointVector[0];
+	outerRectTerrainPoints.clear();
+	outerRectTerrainPoints.reserve(4);
+	for (int i = 0; i < 4; ++i)
+	{
+		AddInverseBorderPoint(outerRectPositions[i], false);
+	}
 
-	p2t::CDT * cdt = new p2t::CDT(outerQuadPoints);
+	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
+	vaSize = indices.size();
 
 	int numP = GetNumPoints();
 
-	lines = new sf::Vertex[numP *2+1];
-
-	vector<p2t::Point*> polyline;
-
-	
-	TerrainPoint *curr;
-	for (int i = 0; i < numP; ++i)
-	{
-		curr = GetPoint(i);
-		polyline.push_back(new p2t::Point(curr->pos.x, curr->pos.y));
-	}
-
-	cdt->AddHole(polyline);
-
-	cdt->Triangulate();
-	vector<p2t::Triangle*> tris;
-	tris = cdt->GetTriangles();
-
-	vaSize = tris.size() * 3;
+	lines = new sf::Vertex[numP * 2 + 1];
 	va = new VertexArray(sf::Triangles, vaSize);
 
 	VertexArray & v = *va;
@@ -945,37 +956,22 @@ void TerrainPolygon::FinalizeInverse()
 	{
 		testColor = selectCol;
 	}
-	for (int i = 0; i < tris.size(); ++i)
+
+	int numTris = vaSize / 3;
+	for (int i = 0; i < numTris; ++i)
 	{
-		p2t::Point *p = tris[i]->GetPoint(0);
-		p2t::Point *p1 = tris[i]->GetPoint(1);
-		p2t::Point *p2 = tris[i]->GetPoint(2);
-		v[i * 3] = Vertex(Vector2f(p->x, p->y), testColor);
-		v[i * 3 + 1] = Vertex(Vector2f(p1->x, p1->y), testColor);
-		v[i * 3 + 2] = Vertex(Vector2f(p2->x, p2->y), testColor);
+		v[i * 3] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3])->pos), testColor);
+		v[i * 3 + 1] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3 + 1])->pos), testColor);
+		v[i * 3 + 2] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3 + 2])->pos), testColor);
 	}
 
 	SetMaterialType(terrainWorldType, terrainVariation);
 
-	delete cdt;
-
-	for (auto it = outerQuadPoints.begin(); it != outerQuadPoints.end(); ++it)
-	{
-		delete (*it);
-	}
-
-	for (int i = 0; i < numP; ++i)
-	{
-		delete polyline[i];
-	}
-
 	UpdateLines();
 	
-
 	UpdateBounds();
 	
-
-	SetupGrass();	
+	SetupGrass();
 }
 
 int TerrainPolygon::GetNumGrass(int i, bool &rem)
@@ -1175,50 +1171,20 @@ void TerrainPolygon::TryFixPointsTouchingLines()
 
 void TerrainPolygon::Finalize()
 {
-	//AlignExtremes();
-
 	if (inverse)
 	{
 		FinalizeInverse();
 		return;
 	}
+
 	finalized = true;
 	isGrassShowing = false;
 	
-	int numP = GetNumPoints();
-	
-	
 	FixWinding();
-
 	
-	
-
-	/*vector<p2t::Point*> polyline;
-	polyline.resize(numP);
-	for (int i = 0; i < numP; ++i)
-	{
-		polyline[i] = GetPoint(i)->GetP2TPoint();
-	}
-
-	vector<p2t::Triangle*> tris;
-
-	p2t::CDT * cdt = new p2t::CDT( polyline );
-	cdt->Triangulate();
-	tris = cdt->GetTriangles();*/
-	//using BlahPoint = std::array<int, 2>;
-	//vector<vector<TerrainPoint>> polygons;
-	//polygons.push_back(vector<TerrainPoint>());
-	//vector<TerrainPoint> &myPoly = polygons[0];
-	//myPoly.resize(numP);
-	/*for (int i = 0; i < numP; ++i)
-	{
-		Vector2i testPos = GetPoint(i)->pos;
-		myPoly[i][0] = testPos.x;
-		myPoly[i][1] = testPos.y;
-	}*/
-	
+	int numP = GetNumPoints();
 	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
-	vaSize = indices.size();// *3;
+	vaSize = indices.size();
 
 	lines = new sf::Vertex[numP * 2 + 1];
 	va = new VertexArray( sf::Triangles , vaSize );
@@ -1235,25 +1201,12 @@ void TerrainPolygon::Finalize()
 	int numTris = vaSize / 3;
 	for( int i = 0; i < numTris; ++i )
 	{	
-		//BlahPoint &t = myPoly[indices[i*3]];
-		//BlahPoint &t1 = myPoly[indices[i * 3+1]];
-		//BlahPoint &t2 = myPoly[indices[i * 3+2]];
-		//p2t::Point *p = tris[i]->GetPoint( 0 );	
-		//p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-		//p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-		/*v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
-		v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-		v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );*/
 		v[i * 3] = Vertex(Vector2f(GetPoint(indices[i*3])->pos), testColor);
 		v[i * 3 + 1] = Vertex(Vector2f(GetPoint(indices[i * 3 + 1])->pos), testColor);
 		v[i * 3 + 2] = Vertex(Vector2f(GetPoint(indices[i * 3 + 2])->pos), testColor);
 	}
 
 	SetMaterialType( terrainWorldType, terrainVariation );
-
-
-	//delete cdt;
-	
 
 	UpdateLines();
 
@@ -1601,6 +1554,11 @@ void TerrainPolygon::FixWinding()
     else
     {
 		std::reverse(PointVector().begin(), PointVector().end());
+		int numP = GetNumPoints();
+		for (int i = 0; i < numP; ++i)
+		{
+			GetPoint(i)->index = i;
+		}
     }
 }
 
@@ -1656,6 +1614,11 @@ void TerrainPolygon::FixWindingInverse()
     else
     {
 		std::reverse(PointVector().begin(), PointVector().end());
+		int numP = GetNumPoints();
+		for (int i = 0; i < numP; ++i)
+		{
+			GetPoint(i)->index = i;
+		}
     }
 }
 
@@ -1716,6 +1679,14 @@ TerrainPoint * TerrainPolygon::AddPoint(sf::Vector2i &p, bool sel)
 	PointVector().push_back(TerrainPoint(p, sel));
 	TerrainPoint *end = GetEndPoint();
 	end->index = GetNumPoints() - 1;
+	return end;
+}
+
+TerrainPoint * TerrainPolygon::AddInverseBorderPoint(sf::Vector2i &p, bool sel)
+{
+	pointVector[0].push_back(TerrainPoint(p, sel));
+	TerrainPoint *end = &pointVector[0].back();
+	end->index = pointVector[0].size() - 1;
 	return end;
 }
 
