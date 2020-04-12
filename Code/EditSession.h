@@ -21,6 +21,7 @@
 #include "EditorGateInfo.h"
 #include "EditorActors.h"
 #include "EditorTerrain.h"
+#include "Session.h"
 //#include "EditorRail.h"
 
 struct EditorGraph;
@@ -50,7 +51,8 @@ struct TerrainRail;
 
 struct EditorBG;
 
-struct EditSession : GUIHandler, TilesetManager
+
+struct EditSession : GUIHandler, Session
 {
 	enum Emode
 	{
@@ -91,6 +93,12 @@ struct EditSession : GUIHandler, TilesetManager
 		ITOOL_SCALE
 	};
 
+	void SetInitialView(sf::Vector2f &center,
+		sf::Vector2f &size);
+	bool initialViewSet;
+
+
+
 	Actor *testPlayer;
 	Actor *GetPlayer(int i);
 	void UpdatePrePhysics();
@@ -101,7 +109,7 @@ struct EditSession : GUIHandler, TilesetManager
 	ControllerState &GetPrevInputUnfiltered(int index);
 	ControllerState &GetCurrInputUnfiltered(int index);
 	GameController &GetController(int index);
-	void ApplyToggleUpdates( int index );
+	void UpdatePlayerInput( int index );
 	int substep;
 	double currentTime;
 	double accumulator;
@@ -133,7 +141,11 @@ struct EditSession : GUIHandler, TilesetManager
 	QuadTree *activeEnemyItemTree;
 	QuadTree *airTriggerTree;*/
 	
-	EditSession(MainMenu *p_mainMenu);
+	boost::filesystem::path filePath;
+
+	EditSession(MainMenu *p_mainMenu,
+		const boost::filesystem::path &p_filePath );
+	
 	~EditSession();
 
 	//singleton
@@ -280,9 +292,7 @@ struct EditSession : GUIHandler, TilesetManager
 	
 	ActorParams * AttachActorToPolygon( ActorPtr actor, PolyPtr poly );
 	void AttachActorsToPolygon( std::list<ActorPtr> &actors, PolyPtr poly );
-	int Run(const boost::filesystem::path &p_filePath,
-		sf::Vector2f cameraPos, 
-		sf::Vector2f cameraSize );
+	int Run();
 	
 	void SnapPointToGraph(sf::Vector2f &p, int gridSize);
 	void SnapPointToGraph(V2d &p, int gridSize);
@@ -434,7 +444,6 @@ struct EditSession : GUIHandler, TilesetManager
 	sf::RenderWindow *w;
 	//sf::Vector2i goalPosition;
 	std::string currentFile;
-	boost::filesystem::path currentPath;
 	static double zoomMultiple;
 	sf::Vector2f testPoint;
 	std::map<std::string, ActorGroup*> groups;

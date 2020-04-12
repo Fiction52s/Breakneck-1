@@ -716,7 +716,7 @@ bool Button::Update( bool mouseDown, int posx, int posy )
 			owner->SendEvent( this, "pressed" );
 			return true;
 		}
-		else
+		else 
 		{
 			clickedDown = false;
 		}

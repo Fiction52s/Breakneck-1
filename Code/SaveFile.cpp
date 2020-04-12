@@ -672,7 +672,7 @@ void Level::UpdateFromMapHeader()
 		int capCount = 0;
 		float percent = 0;
 
-		MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
+		MapHeader *mh = MainMenu::ReadMapHeader(is);
 
 		shardNameList.clear();
 		for (auto it = mh->shardNameList.begin(); it != mh->shardNameList.end(); ++it)

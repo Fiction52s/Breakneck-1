@@ -3571,7 +3571,7 @@ bool GameSession::OpenFile( string fileName )
 	is.open( fileName );//+ ".brknk" );
 	if( is.is_open() )
 	{
-		mh = MapSelectionMenu::ReadMapHeader(is);
+		mh = MainMenu::ReadMapHeader(is);
 		assert(mh != NULL);
 
 		/*if (mh->numShards > 0)
@@ -5598,7 +5598,7 @@ GameController &GameSession::GetController( int index )
 	return mainMenu->GetController( index );
 }
 
-void GameSession::ApplyToggleUpdates( int index )
+void GameSession::UpdatePlayerInput( int index )
 {
 	Actor *player = GetPlayer( index );
 	if( player == NULL )
@@ -6935,7 +6935,7 @@ int GameSession::Run()
 			
 			for (int i = 0; i < 4; ++i)
 			{
-				ApplyToggleUpdates(i);
+				UpdateInput(i);
 			}
 
 			}
@@ -6983,7 +6983,7 @@ int GameSession::Run()
 				{
 					for (int i = 0; i < 4; ++i)
 					{
-						ApplyToggleUpdates(i);
+						UpdatePlayerInput(i);
 					}
 					//else
 				}

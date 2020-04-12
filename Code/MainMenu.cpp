@@ -57,6 +57,8 @@ sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
 sf::RenderTexture *MainMenu::extraScreenTexture = NULL;
 sf::RenderTexture *MainMenu::auraCheckTexture = NULL;
 
+MainMenu * MainMenu::currInstance = NULL;
+
 const int MapSelectionMenu::BOX_WIDTH = 580;
 const int MapSelectionMenu::BOX_HEIGHT = 40;
 const int MapSelectionMenu::BOX_SPACING = 0;
@@ -594,6 +596,10 @@ void MainMenu::UpdateMenuOptionText()
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight(1080)
 {
+	assert(currInstance != NULL);
+	currInstance = this;
+
+
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
 
@@ -972,6 +978,9 @@ SaveFile *MainMenu::GetCurrentProgress()
 
 MainMenu::~MainMenu()
 {
+	assert(currInstance == this);
+	currInstance = NULL;
+
 	window->close();
 
 	delete cpm;
@@ -1027,6 +1036,12 @@ MainMenu::~MainMenu()
 
 	if( gccDriver != NULL )
 		delete gccDriver;
+}
+
+//singleton
+MainMenu *MainMenu::GetInstance()
+{
+	return currInstance;
 }
 
 void MainMenu::Init()
@@ -1138,9 +1153,9 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 	Vector2f lastViewCenter( 0, 0 );
 	while( result == 0 )
 	{
-		EditSession *es = new EditSession(this);
-		//boost::filesystem::path( p_path );
-		result = es->Run( p_path, lastViewCenter, lastViewSize );
+		EditSession *es = new EditSession(this, p_path );
+		es->SetInitialView(lastViewCenter, lastViewSize);
+		result = es->Run();
 		delete es;
 		if( result > 0 )
 			break;
@@ -3202,6 +3217,146 @@ bool MainMenu::SetCurrProfileByName(const std::string &name)
 	return pauseMenu->SetCurrProfileByName(name);
 }
 
+MapHeader * MainMenu::ReadMapHeader(std::ifstream &is)
+{
+	MapHeader *mh = new MapHeader;
+
+	assert(is.is_open());
+
+	int part1Num = -1;
+	int part2Num = -1;
+
+	string versionString;
+	is >> versionString;
+	int sepIndex = versionString.find('.');
+	string part1 = versionString.substr(0, sepIndex);
+	string part2 = versionString.substr(sepIndex + 1);
+	try
+	{
+		part1Num = stoi(part1);
+	}
+	catch (std::exception & e)
+	{
+		assert(0);
+	}
+
+	try
+	{
+		part2Num = stoi(part2);
+	}
+	catch (std::exception & e)
+	{
+		assert(0);
+	}
+
+	//get description
+	char last = 0;
+	char curr = 0;
+	stringstream ss;
+	string tempStr;
+	if (!is.get()) //get newline char out of the way
+	{
+		assert(0);
+	}
+	while (true)
+	{
+		last = curr;
+		if (!is.get(curr))
+		{
+			assert(0);
+		}
+
+		if (last == '<' && curr == '>')
+		{
+			break;
+		}
+		else
+		{
+			if (last != 0)
+			{
+				ss << last;
+			}
+		}
+	}
+
+	int numShards;
+	is >> numShards;
+
+	mh->numShards = numShards;
+	string temp;
+	for (int i = 0; i < numShards; ++i)
+	{
+		is >> temp;
+		mh->shardNameList.push_back(temp);
+	}
+
+
+	int numSongValues;
+	is >> numSongValues;
+
+	int oftenLevel;
+	string tempSongStr;
+	is.get();
+	for (int i = 0; i < numSongValues; ++i)
+	{
+		getline(is, tempSongStr); //this allows spaces in names
+		is >> oftenLevel;
+
+		mh->songLevels[tempSongStr] = oftenLevel;
+		is.get();
+	}
+
+
+	string collectionName;
+	is >> collectionName;
+
+	if (collectionName == "")
+	{
+		string test;
+		is >> test;
+		int bb = 65;
+		assert(0);
+	}
+
+
+
+	//string gameTypeName;
+	int gameMode;
+	is >> gameMode;
+
+	is >> mh->envWorldType;
+
+	//is >> mh->envType;
+	is >> mh->envName;
+	//is >> mh->envLevel;
+
+	is >> mh->leftBounds;
+	is >> mh->topBounds;
+	is >> mh->boundsWidth;
+	is >> mh->boundsHeight;
+
+	int dSecs; //drain time in seconds
+	is >> dSecs;
+
+	is >> mh->bossFightType;
+
+
+
+	is >> mh->numVertices;
+
+
+
+	mh->collectionName = collectionName;
+	mh->ver1 = part1Num;
+	mh->ver2 = part2Num;
+	mh->description = ss.str();
+
+	mh->gameMode = (MapHeader::MapType)gameMode;
+	mh->drainSeconds = dSecs;
+
+	return mh;
+}
+
 CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
 		:menu( p_menu ), optionChosen( false ), showNamePopup( false )
 {
@@ -3493,145 +3648,7 @@ bool MapSelectionMenu::AllPlayersReady()
 	return true;
 }
 
-MapHeader * MapSelectionMenu::ReadMapHeader(std::ifstream &is)
-{
-	MapHeader *mh = new MapHeader;
 
-	assert(is.is_open());
-
-	int part1Num = -1;
-	int part2Num = -1;
-
-	string versionString;
-	is >> versionString;
-	int sepIndex = versionString.find('.');
-	string part1 = versionString.substr(0, sepIndex);
-	string part2 = versionString.substr(sepIndex + 1);
-	try
-	{
-		part1Num = stoi(part1);
-	}
-	catch (std::exception & e)
-	{
-		assert(0);
-	}
-
-	try
-	{
-		part2Num = stoi(part2);
-	}
-	catch (std::exception & e)
-	{
-		assert(0);
-	}
-
-	//get description
-	char last = 0;
-	char curr = 0;
-	stringstream ss;
-	string tempStr;
-	if (!is.get()) //get newline char out of the way
-	{
-		assert(0);
-	}
-	while (true)
-	{
-		last = curr;
-		if (!is.get(curr))
-		{
-			assert(0);
-		}
-
-		if (last == '<' && curr == '>')
-		{
-			break;
-		}
-		else
-		{
-			if (last != 0)
-			{
-				ss << last;
-			}
-		}
-	}
-
-	int numShards;
-	is >> numShards;
-
-	mh->numShards = numShards;
-	string temp;
-	for (int i = 0; i < numShards; ++i)
-	{
-		is >> temp;
-		mh->shardNameList.push_back(temp);
-	}
-
-
-	int numSongValues;
-	is >> numSongValues;
-
-	int oftenLevel;
-	string tempSongStr;
-	is.get();
-	for (int i = 0; i < numSongValues; ++i)
-	{
-		getline(is, tempSongStr); //this allows spaces in names
-		is >> oftenLevel;
-
-		mh->songLevels[tempSongStr] = oftenLevel;
-		is.get();
-	}
-	
-
-	string collectionName;
-	is >> collectionName;
-
-	if (collectionName == "")
-	{
-		string test;
-		is >> test;
-		int bb = 65;
-		assert(0);
-	}
-	
-	
-
-	//string gameTypeName;
-	int gameMode;
-	is >> gameMode;
-
-	is >> mh->envWorldType;
-
-	//is >> mh->envType;
-	is >> mh->envName;
-	//is >> mh->envLevel;
-
-	is >> mh->leftBounds;
-	is >> mh->topBounds;
-	is >> mh->boundsWidth;
-	is >> mh->boundsHeight;
-
-	int dSecs; //drain time in seconds
-	is >> dSecs;
-
-	is >> mh->bossFightType;
-
-
-
-	is >> mh->numVertices;
-
-	
-
-	mh->collectionName = collectionName;
-	mh->ver1 = part1Num;
-	mh->ver2 = part2Num;
-	mh->description = ss.str();
-
-	mh->gameMode = (MapHeader::MapType)gameMode;
-	mh->drainSeconds = dSecs;
-
-	return mh;
-}
 
 void MapSelectionMenu::LoadItems()
 {

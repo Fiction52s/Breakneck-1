@@ -302,7 +302,6 @@ struct MapSelectionMenu
 	void UpdateItemText();
 	void UpdateBoxesDebug();
 	void Draw(sf::RenderTarget *target);
-	static MapHeader * ReadMapHeader(std::ifstream &is);
 	static bool WriteMapHeader(std::ofstream &of, MapHeader *mh);
 	static bool ReplaceHeader(boost::filesystem::path &p,
 		MapHeader *mh);
@@ -628,6 +627,11 @@ struct MainMenu
 	ControlProfile *GetCurrSelectedProfile();
 	bool SetCurrProfileByName(const std::string &name);
 	
+	static MapHeader * ReadMapHeader(std::ifstream &is);
+
+	//singleton
+	static MainMenu *GetInstance();
+	static MainMenu *currInstance;
 
 	ControllerState menuPrevInput;
 	ControllerState menuCurrInput;

@@ -753,9 +753,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	GameController &GetController( int index );
 	void UpdateInput();
 	void KeyboardUpdate( int index );
-	void ApplyToggleUpdates( int index );
-	//GameController &controller;
-	//GameController *controller2;
+	void UpdatePlayerInput( int index );
 
 	MapHeader *mh;
 	

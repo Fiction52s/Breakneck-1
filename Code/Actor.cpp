@@ -64,11 +64,11 @@ Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight
 {
 	if (owner != NULL)
 	{
-		owner->GetTileset(s, tileWidth, tileHeight, altColorIndex);
+		return owner->GetTileset(s, tileWidth, tileHeight, altColorIndex);
 	}
 	else if (editOwner != NULL)
 	{
-		editOwner->GetTileset(s, tileWidth, tileHeight, altColorIndex);
+		return editOwner->GetTileset(s, tileWidth, tileHeight, altColorIndex);
 	}
 	else
 		return NULL;
@@ -84,7 +84,7 @@ Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight
 	}
 	else if (editOwner != NULL)
 	{
-		editOwner->GetTileset(s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf);
+		return editOwner->GetTileset(s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf);
 	}
 	else
 		return NULL;
@@ -98,7 +98,7 @@ Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight
 	}
 	else if (editOwner != NULL)
 	{
-		editOwner->GetTileset(s, tileWidth, tileHeight);
+		return editOwner->GetTileset(s, tileWidth, tileHeight);
 	}
 	else
 	{
@@ -110,7 +110,7 @@ sf::SoundBuffer * Actor::GetSound(const std::string &name)
 {
 	if (owner != NULL)
 	{
-		owner->soundManager->GetSound(name);
+		return owner->soundManager->GetSound(name);
 	}
 	else
 		return NULL;

@@ -102,9 +102,7 @@ void EditSession::TestPlayerModeUpdate()
 		{
 			GameController &con = GetController(i);
 
-			if (mainMenu->gccDriverEnabled)
-				con.gcController = controllers[i];
-
+			con.gcController = controllers[i];
 
 			bool canControllerUpdate = con.UpdateState();
 			if (!canControllerUpdate)
@@ -122,7 +120,7 @@ void EditSession::TestPlayerModeUpdate()
 
 		for (int i = 0; i < 4; ++i)
 		{
-			ApplyToggleUpdates(i);
+			UpdatePlayerInput(i);
 		}
 
 		
@@ -312,7 +310,7 @@ void EditSession::UpdatePostPhysics()
 	}
 }
 
-void EditSession::ApplyToggleUpdates( int index )
+void EditSession::UpdatePlayerInput( int index )
 {
 	Actor *player = GetPlayer(index);
 	if (player == NULL)
@@ -323,7 +321,6 @@ void EditSession::ApplyToggleUpdates( int index )
 	ControllerState &currInput = GetCurrInput(index);
 	ControllerState &prevInput = GetPrevInput(index);
 
-	//ControllerState &pPrev = player->prevInput;
 	bool alreadyBounce = pCurr.X;
 	bool alreadyGrind = pCurr.Y;
 	bool alreadyTimeSlow = pCurr.leftShoulder;
@@ -424,9 +421,11 @@ EditSession *EditSession::GetSession()
 	return currSession;
 }
 
-EditSession::EditSession( MainMenu *p_mainMenu )
-	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
+EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
+	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
+	filePath(p_filePath)
 {
+	initialViewSet = false;
 	terrainTree = NULL;
 	specialTerrainTree = NULL;
 
@@ -1690,7 +1689,7 @@ bool EditSession::ReadPlayer(ifstream &is)
 
 bool EditSession::ReadHeader(std::ifstream &is)
 {
-	MapHeader *mh = MapSelectionMenu::ReadMapHeader(is);
+	MapHeader *mh = MainMenu::ReadMapHeader(is);
 
 	mapHeader = *mh;
 
@@ -2543,7 +2542,15 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 	return li;
 }
 
-int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
+void EditSession::SetInitialView(sf::Vector2f &center,
+	sf::Vector2f &size)
+{
+	view.setCenter(center);
+	view.setSize(size);
+	initialViewSet = true;
+}
+
+int EditSession::Run()
 {
 	testPlayer = new Actor(NULL, this, 0);
 	testPlayer->InitAfterEnemies();
@@ -2562,9 +2569,7 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 	sf::View oldWindowView = w->getView();
 
 	currTool = TOOL_ADD;
-	//bosstype = 0;
-	currentFile = p_filePath.string();
-	currentPath = p_filePath;
+	currentFile = filePath.string();
 
 
 	tempActor = NULL;
@@ -2726,19 +2731,23 @@ int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f camera
 
 	returnVal = 0;
 	Color testColor( 0x75, 0x70, 0x90 );
-	view = View( cameraPos, cameraSize );
-	if( cameraSize.x == 0 && cameraSize.y == 0 )
-		view.setSize( 1920, 1080 );
+
+
+
+	//view = View( cameraPos, cameraSize );
+	//if( cameraSize.x == 0 && cameraSize.y == 0 )
+	//	view.setSize( 1920, 1080 );
 
 	preScreenTex->setView( view );
 
 	OpenFile();
 
-	//Vector2f vs(  );
-	if( cameraSize.x == 0 && cameraSize.y == 0 )
-		view.setCenter( (float)player->position.x, (float)player->position.y );
+	if (!initialViewSet)
+	{
+		view.setSize(1920, 1080);
+		view.setCenter(player->position.x, player->position.y);
+	}
 
-	//mode = "neutral";
 	quit = false;
 	polygonInProgress = new TerrainPolygon(&grassTex );
 	railInProgress = new TerrainRail();
@@ -6004,7 +6013,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	Image img = mapPreviewTex->getTexture().copyToImage();
 		
 	std::stringstream ssPrev;
-	ssPrev << currentPath.parent_path().relative_path().string() << "/Previews/" << currentPath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
+	ssPrev << filePath.parent_path().relative_path().string() << "/Previews/" << filePath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
 	std::string previewFile = ssPrev.str();
 	img.saveToFile( previewFile );
 	//currentFile
