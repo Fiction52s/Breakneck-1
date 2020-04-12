@@ -436,8 +436,10 @@ PauseMenu::~PauseMenu()
 }
 
 
-
-
+ControlProfile * PauseMenu::GetCurrSelectedProfile()
+{
+	return controlSettingsMenu->pSel->currProfile;
+}
 
 void PauseMenu::TabLeft()
 {

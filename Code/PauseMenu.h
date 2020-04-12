@@ -10,6 +10,7 @@ struct GameSession;
 struct ShardMenu;
 struct ControlSettingsMenu;
 struct ColorShifter;
+struct ControlProfile;
 struct OptionSelector
 {
 	static sf::Font *font;	
@@ -138,7 +139,7 @@ struct PauseMenu
 	sf::Sprite selectSprite;
 	MainMenu *mainMenu;
 
-
+	ControlProfile *GetCurrSelectedProfile();
 	ControlSettingsMenu *controlSettingsMenu;
 	OptionsMenu *optionsMenu;
 	

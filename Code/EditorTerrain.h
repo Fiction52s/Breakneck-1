@@ -115,6 +115,7 @@ struct TerrainPolygon : ISelectable
 		Count
 	};
 
+	void SetupEdges();
 	std::vector<Edge> edges;
 	void AddEdgesToQuadTree(QuadTree *tree);
 

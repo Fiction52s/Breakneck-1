@@ -19,7 +19,7 @@
 #include "EditorRail.h"
 #include "EditorGraph.h"
 #include "Actor.h"
-
+#include "ControlProfile.h"
 
 #include "clipper.hpp"
 //using namespace ClipperLib;
@@ -163,9 +163,10 @@ void EditSession::TestPlayerMode()
 
 	}
 
-	if (inversePolygon != NULL)
+	auto testPolys = GetCorrectPolygonList(0);
+	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 	{
-		inversePolygon->AddEdgesToQuadTree(terrainTree);
+		(*it)->AddEdgesToQuadTree(terrainTree);
 	}
 
 
@@ -419,6 +420,17 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 {
 	terrainTree = NULL;
 	specialTerrainTree = NULL;
+
+	//update this later
+	for (int i = 0; i < 1; ++i)
+	{
+		ControlProfile *currProfile = mainMenu->GetCurrSelectedProfile();
+		GameController &con = GetController(i);
+		//SetFilterDefaultGCC(GetController(i).filter);
+		currProfile->tempCType = con.GetCType();
+		con.SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
+		
+	}
 
 	inversePolygon = NULL;
 	currSession = this;

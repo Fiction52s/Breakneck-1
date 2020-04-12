@@ -22660,11 +22660,13 @@ void Actor::SetActionGrind()
 	grindQuantity = edgeQuantity;
 
 
-	double grindHitRadius[] = { 90, 100, 110 };
-	CollisionBox &gh = grindHitboxes[0]->GetCollisionBoxes(0)->front();
-	gh.rw = gh.rh = grindHitRadius[speedLevel];
+	if (grindHitboxes[0] != NULL)
+	{
+		double grindHitRadius[] = { 90, 100, 110 };
+		CollisionBox &gh = grindHitboxes[0]->GetCollisionBoxes(0)->front();
+		gh.rw = gh.rh = grindHitRadius[speedLevel];
+	}
 	
-
 	hurtBody.isCircle = true;
 	double grindHurtRadius = 40;
 	hurtBody.rw = grindHurtRadius;

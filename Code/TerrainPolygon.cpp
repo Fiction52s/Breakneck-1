@@ -954,33 +954,7 @@ void TerrainPolygon::FinalizeInverse()
 
 	int numP = GetNumPoints();
 
-	edges.resize(numP);
-	TerrainPoint *curr, *next;
-	for (int i = 0; i < numP; ++i)
-	{
-		curr = GetPoint(i);
-		next = GetNextPoint(i);
-
-		edges[i].v0 = V2d(curr->pos);
-		edges[i].v1 = V2d(next->pos);
-	}
-
-	int prevIndex, nextIndex;
-	for (int i = 0; i < numP; ++i)
-	{
-		if (i == 0)
-			prevIndex = numP - 1;
-		else
-			prevIndex = i - 1;
-
-		if (i == numP - 1)
-			nextIndex = 0;
-		else
-			nextIndex = i + 1;
-
-		edges[i].edge0 = &edges[prevIndex];
-		edges[i].edge1 = &edges[nextIndex];
-	}
+	SetupEdges();
 
 
 
@@ -1228,6 +1202,8 @@ void TerrainPolygon::Finalize()
 	lines = new sf::Vertex[numP * 2 + 1];
 	va = new VertexArray( sf::Triangles , vaSize );
 	
+	SetupEdges();
+
 	VertexArray & v = *va;
 	Color testColor( 0x75, 0x70, 0x90 );
 	Color selectCol( 0x77, 0xBB, 0xDD );
@@ -1538,6 +1514,38 @@ bool TerrainPolygon::AABBIntersection(PolyPtr poly)
 			return false;
 		}
 	}*/
+}
+
+void TerrainPolygon::SetupEdges()
+{
+	int numP = GetNumPoints();
+	edges.resize(numP);
+	TerrainPoint *curr, *next;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		next = GetNextPoint(i);
+
+		edges[i].v0 = V2d(curr->pos);
+		edges[i].v1 = V2d(next->pos);
+	}
+
+	int prevIndex, nextIndex;
+	for (int i = 0; i < numP; ++i)
+	{
+		if (i == 0)
+			prevIndex = numP - 1;
+		else
+			prevIndex = i - 1;
+
+		if (i == numP - 1)
+			nextIndex = 0;
+		else
+			nextIndex = i + 1;
+
+		edges[i].edge0 = &edges[prevIndex];
+		edges[i].edge1 = &edges[nextIndex];
+	}
 }
 
 bool TerrainPolygon::ContainsPoint( Vector2f test )

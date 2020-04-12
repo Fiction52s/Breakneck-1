@@ -624,6 +624,8 @@ struct MainMenu
 	ControllerState &GetCurrInput( int index );
 	ControllerState &GetPrevInputUnfiltered(int index);
 	ControllerState &GetCurrInputUnfiltered(int index);
+
+	ControlProfile *GetCurrSelectedProfile();
 	
 
 	ControllerState menuPrevInput;

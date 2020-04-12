@@ -3192,6 +3192,11 @@ void MainMenu::HandleMenuMode()
 	++modeFrame;
 }
 
+ControlProfile *MainMenu::GetCurrSelectedProfile()
+{
+	return pauseMenu->GetCurrSelectedProfile();
+}
+
 CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
 		:menu( p_menu ), optionChosen( false ), showNamePopup( false )
 {
