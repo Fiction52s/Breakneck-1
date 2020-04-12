@@ -632,7 +632,7 @@ struct EditSession : GUIHandler, TilesetManager
 
 	void TryMoveSelectedBrush();
 
-
+	Brush *mapStartBrush;
 	Brush *selectedBrush;
 	Brush *copiedBrush;
 	PointMap selectedPoints;

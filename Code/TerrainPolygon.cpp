@@ -2150,7 +2150,7 @@ void TerrainPolygon::SoftReset()
 
 void TerrainPolygon::ClearPoints()
 {
-	pointVector.clear();
+	PointVector().clear();
 }
 
 

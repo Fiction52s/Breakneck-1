@@ -79,6 +79,36 @@ bool Brush::Has(SelectPtr sp)
 	return false;
 }
 
+void Brush::TransferMyDuplicates(Brush *compare, Brush *dest)
+{
+	bool found;
+
+	auto myEnd = objects.end();
+	auto compareEnd = compare->objects.end();
+	for (auto myIt = objects.begin(); myIt != myEnd;)
+	{
+		found = false;
+		for (auto compIt = compare->objects.begin(); compIt != compareEnd; ++compIt)
+		{
+			if ((*compIt) == (*myIt))
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (found)
+		{
+			dest->AddObject((*myIt));
+			myIt = objects.erase(myIt);
+		}
+		else
+		{
+			++myIt;
+		}
+	}
+}
+
 void Brush::CenterOnPoint(sf::Vector2i &point )
 {
 	Move(point - GetCenter());
@@ -372,9 +402,16 @@ void ApplyBrushAction::Undo()
 	appliedBrush.Deactivate();
 }
 
-RemoveBrushAction::RemoveBrushAction( Brush *brush )
+RemoveBrushAction::RemoveBrushAction( Brush *brush, Brush *mapStartBrush )
 {
 	storedBrush = *brush;
+
+	mapStartBrush->TransferMyDuplicates(&storedBrush, &mapStartOwned);
+}
+
+RemoveBrushAction::~RemoveBrushAction()
+{
+	mapStartOwned.Destroy();
 }
 
 void RemoveBrushAction::Perform()
@@ -398,12 +435,16 @@ void RemoveBrushAction::Undo()
 }
 
 //use for add and subtract
-ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement )
+ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement, Brush *mapStartBrush )
 {
 	original = *p_orig;
-
 	replacement = *p_replacement;
-	//assert( brush->terrainOnly );
+
+	auto startEnd = mapStartBrush->objects.end();
+	auto origEnd = original.objects.end();
+
+	//if something you're deactivating is part of the original map, you now own it.
+	mapStartBrush->TransferMyDuplicates(&original, &mapStartOwned);
 	
 	//intersectingPolys->
 	//adding multiple polygons is actually adding them one at a time and doing the checks each time.
@@ -413,6 +454,7 @@ ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement )
 ReplaceBrushAction::~ReplaceBrushAction()
 {
 	replacement.Destroy();
+	mapStartOwned.Destroy();
 }
 
 void ReplaceBrushAction::Perform()
@@ -483,6 +525,12 @@ CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
 
 
 	gate->UpdateLine();
+}
+
+CreateGateAction::~CreateGateAction()
+{
+	assert(gate->point0 == NULL && gate->point1 == NULL);
+	delete gate;
 }
 
 void CreateGateAction::Perform()
@@ -870,14 +918,17 @@ void CompoundAction::Undo()
 	}
 }
 
-ComplexPasteAction::ComplexPasteAction()
+ComplexPasteAction::ComplexPasteAction( Brush *p_mapStartBrush )
 {
 	performed = true;
+	mapStartBrush = p_mapStartBrush;
 }
 
 ComplexPasteAction::~ComplexPasteAction()
 {
+	applied.Destroy();
 
+	mapStartOwned.Destroy();
 }
 
 void ComplexPasteAction::SetNewest(
@@ -887,6 +938,9 @@ void ComplexPasteAction::SetNewest(
 	auto appEnd = applied.objects.end();
 	auto addsEnd = newResult.objects.end();
 
+
+	mapStartBrush->TransferMyDuplicates(&newOrig, &mapStartOwned);
+
 	bool found;
 	for (auto removedIt = newOrig.objects.begin(); removedIt != removedEnd; ++removedIt)
 	{
@@ -895,6 +949,7 @@ void ComplexPasteAction::SetNewest(
 		{
 			if ((*appIt) == (*removedIt))
 			{
+				delete (*appIt);
 				applied.objects.erase(appIt);
 				found = true;
 				break;

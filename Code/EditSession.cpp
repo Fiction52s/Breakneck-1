@@ -97,6 +97,7 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu )
 	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	inversePolygon = NULL;
 	currSession = this;
 	for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD * 9; ++i)
 	{
@@ -162,6 +163,7 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 	confirm = NULL;
 	progressBrush = new Brush();
 	selectedBrush = new Brush();
+	mapStartBrush = new Brush();
 	enemyQuad.setFillColor( Color( 0, 255, 0, 100 ) );
 	moveActive = false;
 
@@ -177,6 +179,8 @@ EditSession::EditSession( MainMenu *p_mainMenu )
 
 	player = new PlayerParams( playerType, Vector2i( 0, 0 ) ) ;
 	groups["player"]->actors.push_back( player );
+
+	mapStartBrush->AddObject(player);
 	
 
 	grassSize = 128;//64;
@@ -695,26 +699,44 @@ EditSession::~EditSession()
 	delete polygonInProgress;
 	delete railInProgress;
 
-	for (auto it = gates.begin(); it != gates.end(); ++it)
+	/*for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
 		delete (*it);
-	}
+	}*/
 
-	for (int i = 0; i < 2; ++i)
+	/*for (int i = 0; i < 2; ++i)
 	{
 		auto & polyList = GetCorrectPolygonList(i);
 		for (auto it = polyList.begin(); it != polyList.end(); ++it)
 		{
 			delete (*it);
 		}
+	}*/
+
+
+	for (auto it = doneActionStack.begin(); it != doneActionStack.end(); ++it)
+	{
+		delete (*it);
 	}
 
-	//delete mapOptionsPanel;
-	//delete terrainOptionsPanel;
-	//delete railOptionsPanel;
+	for (auto it = undoneActionStack.begin(); it != undoneActionStack.end(); ++it)
+	{
+		delete (*it);
+	}
+
 
 	delete progressBrush;
 	delete selectedBrush;
+	if (copiedBrush != NULL)
+	{
+		copiedBrush->Destroy();
+		delete copiedBrush;
+	}
+		
+
+	mapStartBrush->Destroy();
+
+	delete mapStartBrush;
 
 	for (auto it = allPopups.begin(); it != allPopups.end(); ++it)
 	{
@@ -727,6 +749,7 @@ EditSession::~EditSession()
 		delete (*it).second;
 	}
 
+	//delete groups, but not actors
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		delete(*it).second;
@@ -739,6 +762,8 @@ EditSession::~EditSession()
 		if (terrainTextures[i] != NULL)
 			delete terrainTextures[i];
 	}
+
+	
 }
 
 void EditSession::SnapPointToGraph(Vector2f &p, int gridSize )
@@ -896,6 +921,8 @@ bool EditSession::ReadDecor(std::ifstream &is)
 		}
 
 		CreateDecorImage(dec);
+
+		mapStartBrush->AddObject(dec);
 	}
 
 	return true;
@@ -928,6 +955,7 @@ bool EditSession::ReadTerrain(ifstream &is )
 	{
 		PolyPtr poly(new TerrainPolygon(&grassTex));
 
+		mapStartBrush->AddObject(poly);
 
 		int matWorld;
 		int matVariation;
@@ -1046,6 +1074,8 @@ bool EditSession::ReadBGTerrain(std::ifstream &is)
 		PolyPtr poly(new TerrainPolygon(&grassTex));
 		polygons.push_back(poly);
 
+		mapStartBrush->AddObject(poly);
+
 		int matWorld;
 		int matVariation;
 		is >> matWorld;
@@ -1082,6 +1112,8 @@ bool EditSession::ReadRails(std::ifstream &is)
 		rails.push_back(rail);
 
 		rail->Load(is);
+
+		mapStartBrush->AddObject(rail);
 	}
 	return true;
 }
@@ -1094,6 +1126,8 @@ bool EditSession::ReadSpecialTerrain(std::ifstream &is)
 	for (int i = 0; i < specialPolyNum; ++i)
 	{
 		PolyPtr poly(new TerrainPolygon(&grassTex));
+
+		mapStartBrush->AddObject(poly);
 
 		int matWorld;
 		int matVariation;
@@ -1160,9 +1194,12 @@ bool EditSession::ReadActors(std::ifstream &is)
 			}
 
 			at->LoadEnemy(is, a);
-
+			
 			gr->actors.push_back(a);
 			a->group = gr;
+
+
+			mapStartBrush->AddObject(a);
 		}
 	}
 
@@ -1260,6 +1297,8 @@ bool EditSession::ReadGates(std::ifstream &is)
 
 		gi->UpdateLine();
 		gates.push_back(gi);
+
+		mapStartBrush->AddObject(gi);
 	}
 	return true;
 }
@@ -3329,7 +3368,7 @@ void EditSession::TryRemoveSelectedPoints()
 		TryKeepGates(gateInfoList, newPolys, &result);
 		selectedPoints.clear();
 
-		Action * action = new ReplaceBrushAction(&orig, &result);
+		Action * action = new ReplaceBrushAction(&orig, &result, mapStartBrush);
 
 		action->Perform();
 		doneActionStack.push_back(action);
@@ -5498,6 +5537,8 @@ void EditSession::CreatePreview(Vector2i imageSize)
 
 	}
 
+	oldShaderZoom = -1; //updates the shader back to normal after this is over
+
 	mapPreviewTex->clear(Color::Black);
 
 	mapPreviewTex->setView( pView );
@@ -5984,7 +6025,7 @@ void EditSession::SetInversePoly()
 	progressBrush->Clear();
 	progressBrush->AddObject(polygonInProgress);
 
-	Action * action = new ReplaceBrushAction( &orig, progressBrush );
+	Action * action = new ReplaceBrushAction( &orig, progressBrush, mapStartBrush);
 	action->Perform();
 	doneActionStack.push_back( action );
 
@@ -6106,7 +6147,7 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 				}
 				else
 				{
-					action = new ReplaceBrushAction(&containedBrush, progressBrush);
+					action = new ReplaceBrushAction(&containedBrush, progressBrush, mapStartBrush);
 				}
 
 				PolyPtr newPoly(new TerrainPolygon(&grassTex));
@@ -6124,7 +6165,7 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 				else
 				{
 					//no intersections but has contained polys
-					action = new RemoveBrushAction(&containedBrush);
+					action = new RemoveBrushAction(&containedBrush, mapStartBrush);
 				}
 
 				polygonInProgress->ClearPoints();
@@ -6179,7 +6220,7 @@ void EditSession::PasteTerrain(Brush *b)
 		if( complexPaste == NULL )
 		{
 			//assert(complexPaste == NULL);
-			complexPaste = new ComplexPasteAction();			
+			complexPaste = new ComplexPasteAction(mapStartBrush);			
 			lastBrushPastePos = worldPos;
 			brushRepeatDist = 20.0;
 			complexPaste->SetNewest(orig, result);
@@ -6707,13 +6748,6 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 	
 	return true;
-	/*if (resultBrush.objects.size() == 0)
-	{
-		return NULL;
-	}*/
-
-	//ReplaceBrushAction * action = new ReplaceBrushAction(&orig, &resultBrush);
-	//return action;
 }
 
 bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
@@ -7159,12 +7193,6 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 	AddFullPolysToBrush(nonInverseInters, gateInfoList, &orig);
 	AddFullPolysToBrush(inverseConnectedInters, gateInfoList, &orig);
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
-
-	//if (resultBrush.objects.size() == 0)
-	//	return NULL;
-
-	//ReplaceBrushAction * action = new ReplaceBrushAction(&orig, &resultBrush);
-	//return action;
 	return true;
 }
 
@@ -7303,7 +7331,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys, list<P
 	TryAttachActorsToPolys(intersectingPolys, attachList, &resultBrush);
 	TryKeepGates(gateInfoList, attachList, &resultBrush);
 
-	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
+	Action * action = new ReplaceBrushAction(&orig, &resultBrush, mapStartBrush);
 
 	polygonInProgress->ClearPoints();
 
@@ -7468,7 +7496,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys, l
 	}
 
 
-	Action * action = new ReplaceBrushAction(&orig, &resultBrush);
+	Action * action = new ReplaceBrushAction(&orig, &resultBrush, mapStartBrush);
 
 	polygonInProgress->ClearPoints();
 
@@ -8047,9 +8075,7 @@ void EditSession::RemoveSelectedObjects()
 		selectedBrush->AddObject((*it));
 	}
 
-
-
-	Action *remove = new RemoveBrushAction(selectedBrush);
+	Action *remove = new RemoveBrushAction(selectedBrush, mapStartBrush );
 	remove->Perform();
 
 	doneActionStack.push_back(remove);

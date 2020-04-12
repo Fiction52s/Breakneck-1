@@ -790,10 +790,10 @@ ActorGroup::ActorGroup(const std::string &n)
 
 ActorGroup::~ActorGroup()
 {
-	for (auto it = actors.begin(); it != actors.end(); ++it)
+	/*for (auto it = actors.begin(); it != actors.end(); ++it)
 	{
 		delete (*it);
-	}
+	}*/
 }
 
 void ActorGroup::Draw(sf::RenderTarget *target)

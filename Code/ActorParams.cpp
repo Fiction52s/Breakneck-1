@@ -24,7 +24,6 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-
 sf::Font *PoiParams::font = NULL;
 
 ActorParams::ActorParams( ActorType *at)
@@ -43,6 +42,11 @@ ActorParams::~ActorParams()
 {
 	if (lines != NULL)
 		delete lines;
+
+	if (groundInfo != NULL)
+	{
+		delete groundInfo;
+	}
 }
 
 void ActorParams::WriteLevel(std::ofstream &of)

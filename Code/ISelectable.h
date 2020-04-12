@@ -35,6 +35,7 @@ struct ISelectable
 	//is a move valid
 	//execute move
 	ISelectable(ISelectableType type);
+	virtual ~ISelectable() {}
 	PolyPtr GetAsTerrain();
 	ActorPtr GetAsActor();
 	GateInfoPtr GetAsGateInfo();

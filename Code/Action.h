@@ -26,6 +26,7 @@ struct Brush
 	bool CanApply();
 	bool CanAdd();
 	bool Has(SelectPtr sp);
+	void TransferMyDuplicates(Brush *compare, Brush *dest);
 	bool terrainOnly;
 	bool IsEmpty();
 	//bool activated;
@@ -72,14 +73,18 @@ struct CompoundAction : Action
 
 struct ComplexPasteAction : Action
 {
-	ComplexPasteAction();
+	ComplexPasteAction( Brush *mapStartBrush );
 	~ComplexPasteAction();
 	void SetNewest(Brush &orig, Brush &result );
 	void Undo();
 	void Perform();
 
+	Brush *mapStartBrush;
+
 	Brush orig;
 	Brush applied;
+
+	Brush mapStartOwned;
 };
 
 struct ApplyBrushAction : Action
@@ -97,24 +102,26 @@ struct ApplyBrushAction : Action
 
 struct RemoveBrushAction : Action
 {
-	RemoveBrushAction( Brush *brush );
-
+	RemoveBrushAction( Brush *brush, Brush *mapStartBrush );
+	~RemoveBrushAction();
 	void Perform();
 	void Undo();
 
 	Brush storedBrush;
+	Brush mapStartOwned;
 };
 
 struct ReplaceBrushAction : Action
 {
 	ReplaceBrushAction( Brush *original,
-		Brush *replacement );
+		Brush *replacement, Brush *mapStartBrush );
 	~ReplaceBrushAction();
 	void Perform();
 	void Undo();
 
 	Brush original;
 	Brush replacement;
+	Brush mapStartOwned;
 };
 
 
@@ -173,6 +180,7 @@ struct CreateGateAction : Action
 {
 	CreateGateAction( GateInfo &info, 
 		const std::string &type);
+	~CreateGateAction();
 	void Perform();
 	void Undo();
 
