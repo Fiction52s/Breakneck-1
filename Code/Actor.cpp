@@ -135,6 +135,10 @@ void Actor::SetToOriginalPos()
 	{
 		position = owner->originalPos;
 	}
+	else if (editOwner != NULL)
+	{
+		position = editOwner->GetPlayerSpawnPos();
+	}
 }
 
 SoundNode * Actor::ActivateSound(SoundType st, bool loop )

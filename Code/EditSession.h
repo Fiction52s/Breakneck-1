@@ -43,6 +43,8 @@ struct CameraShotParams;
 struct ComplexPasteAction;
 struct ReplaceBrushAction;
 
+struct Actor;
+
 struct TerrainRail;
 
 
@@ -88,7 +90,22 @@ struct EditSession : GUIHandler, TilesetManager
 		ITOOL_SCALE
 	};
 
-	
+	Actor *testPlayer;
+	Actor *GetPlayer(int i);
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	ControllerState &GetPrevInput(int index);
+	ControllerState &GetCurrInput(int index);
+	ControllerState &GetPrevInputUnfiltered(int index);
+	ControllerState &GetCurrInputUnfiltered(int index);
+	GameController &GetController(int index);
+	int substep;
+	double currentTime;
+	double accumulator;
+	sf::Clock gameClock;
+	void UpdateTestPlayerMode();
+	void TestPlayerMode();
 	
 	EditSession(MainMenu *p_mainMenu);
 	~EditSession();
@@ -673,6 +690,7 @@ struct EditSession : GUIHandler, TilesetManager
 	Emode stored;
 
 	ActorPtr player;
+	V2d GetPlayerSpawnPos();
 	ActorType *playerType;
 	//std::list<Action*>::iterator currAction;
 

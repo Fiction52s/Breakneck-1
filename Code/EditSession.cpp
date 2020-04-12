@@ -44,6 +44,219 @@ const double EditSession::SLIVER_LIMIT = PI / 10.0;
 double EditSession::zoomMultiple = 1;
 EditSession * EditSession::currSession = NULL;
 
+#define TIMESTEP 1.0 / 60.0
+
+V2d EditSession::GetPlayerSpawnPos()
+{
+	return V2d(player->position);
+}
+
+void EditSession::UpdateTestPlayerMode()
+{
+	
+}
+
+void EditSession::TestPlayerMode()
+{
+	double currentTime = 0;
+	accumulator = TIMESTEP + .1;
+	bool quit = false;
+
+	while (!quit)
+	{
+		double newTime = gameClock.getElapsedTime().asSeconds();
+		double frameTime = newTime - currentTime;
+
+		if (frameTime > 0.25)
+		{
+			frameTime = 0.25;
+		}
+		currentTime = newTime;
+
+
+		accumulator += frameTime;
+
+		w->clear(Color::Red);
+		preScreenTex->clear(Color::Red);
+
+		while (accumulator >= TIMESTEP)
+		{
+			for (int i = 0; i < 4; ++i)
+			{
+				GetPrevInput(i) = GetCurrInput(i);
+				GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+			}
+		}
+
+		Actor *pTemp = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			pTemp = GetPlayer(i);
+			if (pTemp != NULL)
+			{
+				pTemp->prevInput = GetCurrInput(i);
+			}
+		}
+
+		vector<GCC::GCController> controllers;
+		if (mainMenu->gccDriverEnabled)
+			controllers = mainMenu->gccDriver->getState();
+
+		for (int i = 0; i < 1; ++i)
+		{
+			GameController &con = GetController(i);
+
+			if (mainMenu->gccDriverEnabled)
+				con.gcController = controllers[i];
+
+
+			bool canControllerUpdate = con.UpdateState();
+			if (!canControllerUpdate)
+			{
+				//KeyboardUpdate( 0 );
+			}
+			else
+			{
+				ControllerState &currInput = GetCurrInput(i);
+				ControllerState &conState = con.GetState();
+				currInput = conState;
+				GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+			}
+		}
+		
+		//totalGameFrames++;
+		UpdatePrePhysics();
+		UpdatePhysics();
+		UpdatePostPhysics();
+
+		/*for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				if (p->hasPowerLeftWire)
+					p->leftWire->UpdateQuads();
+
+				if (p->hasPowerRightWire)
+					p->rightWire->UpdateQuads();
+			}
+		}*/
+
+		accumulator -= TIMESTEP;
+	}
+
+	//update window events
+
+
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->Draw(preScreenTex);
+		}
+	}
+}
+
+ControllerState &EditSession::GetPrevInput(int index)
+{
+	return mainMenu->GetPrevInput(index);
+}
+
+ControllerState &EditSession::GetCurrInput(int index)
+{
+	return mainMenu->GetCurrInput(index);
+}
+
+ControllerState &EditSession::GetPrevInputUnfiltered(int index)
+{
+	return mainMenu->GetPrevInputUnfiltered(index);
+}
+
+ControllerState &EditSession::GetCurrInputUnfiltered(int index)
+{
+	return mainMenu->GetCurrInputUnfiltered(index);
+}
+
+GameController &EditSession::GetController(int index)
+{
+	return mainMenu->GetController(index);
+}
+
+Actor *EditSession::GetPlayer(int i)
+{
+	if (i == 0)
+		return testPlayer;
+	else
+		return NULL;
+}
+
+void EditSession::UpdatePrePhysics()
+{
+	Actor *player = GetPlayer(0);
+	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
+	{
+		return;
+	}
+
+	Actor *p;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+			p->UpdatePrePhysics();
+	}
+}
+
+void EditSession::UpdatePhysics()
+{
+	Actor *p = NULL;
+	Actor *player = GetPlayer(0);
+	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
+	{
+		return;
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+			p->physicsOver = false;
+	}
+
+
+	for (substep = 0; substep < NUM_MAX_STEPS; ++substep)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				if (substep == 0 || p->highAccuracyHitboxes)
+					p->UpdatePhysics();
+			}
+		}
+	}
+}
+
+void EditSession::UpdatePostPhysics()
+{
+	Actor *player = GetPlayer(0);
+	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
+	{
+		return;
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+			p->UpdatePostPhysics();
+	}
+}
+
+
 
 
 
@@ -691,6 +904,8 @@ TerrainRail *EditSession::GetRail(int index, int &edgeIndex)
 
 EditSession::~EditSession()
 {
+	delete testPlayer;
+
 	delete graph;
 
 
@@ -2165,8 +2380,9 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 
 int EditSession::Run( const boost::filesystem::path &p_filePath, Vector2f cameraPos, Vector2f cameraSize )
 {
-	Actor testPlayer(NULL, this, 0);
-	testPlayer.InitAfterEnemies();
+	testPlayer = new Actor(NULL, this, 0);
+	testPlayer->InitAfterEnemies();
+	testPlayer->SetToOriginalPos();
 
 	oldShaderZoom = -1;
 	complexPaste = NULL;
