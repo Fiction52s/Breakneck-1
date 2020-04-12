@@ -305,6 +305,10 @@ struct Actor : QuadTreeCollider,
 	void SetToOriginalPos();
 	void UpdatePowers();
 
+	QuadTree *GetTerrainTree();
+	QuadTree *GetSpecialTerrainTree();
+	int GetTotalGameFrames();
+
 	sf::SoundBuffer * GetSound(const std::string &name);
 	std::map<int, std::list<CollisionBox>> & GetHitboxList(
 		const std::string & str);

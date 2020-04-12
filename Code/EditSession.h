@@ -108,6 +108,27 @@ struct EditSession : GUIHandler, TilesetManager
 	//double currentTime;
 	void TestPlayerModeUpdate();
 	void TestPlayerMode();
+
+	QuadTree * terrainTree;
+	QuadTree *specialTerrainTree;
+
+	/*QuadTree *terrainBGTree;
+	QuadTree *specialTerrainTree;
+	QuadTree *barrierTree;
+	QuadTree * terrainTree;
+	QuadTree * enemyTree;
+	QuadTree * grassTree;
+	QuadTree * gateTree;
+	QuadTree * itemTree;
+	QuadTree *envPlantTree;
+	QuadTree *specterTree;
+	QuadTree *inverseEdgeTree;
+	QuadTree *staticItemTree;
+	QuadTree *railEdgeTree;
+	QuadTree *railDrawTree;
+	QuadTree *activeItemTree;
+	QuadTree *activeEnemyItemTree;
+	QuadTree *airTriggerTree;*/
 	
 	EditSession(MainMenu *p_mainMenu);
 	~EditSession();

@@ -129,6 +129,34 @@ void Actor::UpdatePowers()
 	}
 }
 
+QuadTree *Actor::GetTerrainTree()
+{
+	if (owner != NULL)
+		return owner->terrainTree;
+	else if( editOwner != NULL )
+	{
+		return editOwner->terrainTree;
+	}
+}
+
+QuadTree *Actor::GetSpecialTerrainTree()
+{
+	if (owner != NULL)
+		return owner->specialTerrainTree;
+	else if (editOwner != NULL)
+	{
+		return editOwner->specialTerrainTree;
+	}
+}
+
+int Actor::GetTotalGameFrames()
+{
+	if (owner != NULL)
+		return owner->totalGameFrames;
+	else
+		return 0;
+}
+
 void Actor::SetToOriginalPos()
 {
 	if (owner != NULL)
@@ -2609,7 +2637,7 @@ void Actor::Respawn()
 	//	motionGhosts[i].setPosition( position.x, position.y );
 	//}
 
-	if( owner->raceFight != NULL )
+	if( owner != NULL && owner->raceFight != NULL )
 	{
 		invincibleFrames = 180;
 	}
@@ -9920,8 +9948,10 @@ bool Actor::CheckWall( bool right )
 	Rect<double> r( position.x + tempVel.x + b.offset.x - b.rw, position.y + tempVel.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 
 
-	owner->terrainTree->Query( this, r );
-	owner->barrierTree->Query(this, r);
+	GetTerrainTree()->Query( this, r );
+	
+	if( owner != NULL )
+		owner->barrierTree->Query(this, r);
 	
 
 
@@ -10041,8 +10071,11 @@ bool Actor::CheckStandUp()
 		queryMode = "check";
 		checkValid = true;
 	//	Query( this, owner->testTree, r );
-		owner->terrainTree->Query( this, r );
-		owner->barrierTree->Query(this, r);
+		GetTerrainTree()->Query( this, r );
+
+		if( owner != NULL )
+			owner->barrierTree->Query(this, r);
+
 		possibleEdgeCount = 0;
 
 		/*if( checkValid )
@@ -10113,8 +10146,10 @@ bool Actor::ResolvePhysics( V2d vel )
 //	Query( this, owner->testTree, r );
 
 	//cout << "Start resolve" << endl;
-	owner->terrainTree->Query( this, r );
-	owner->barrierTree->Query(this, r);
+	GetTerrainTree()->Query( this, r );
+
+	if( owner != NULL )
+		owner->barrierTree->Query(this, r);
 
 
 	testr = false;
@@ -10161,7 +10196,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		}
 	}
 
-	if (owner->hasAnyGrass)
+	if ( owner != NULL && owner->hasAnyGrass)
 	{
 		queryMode = "grass";
 		jumpGrassCount = 0;
@@ -10176,19 +10211,22 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	//queryMode = "item";
 	//owner->itemTree->Query( this, r );
+	
+	if (owner != NULL)
+	{
+		queryMode = "envplant";
+		owner->envPlantTree->Query(this, r);
 
-	queryMode = "envplant";
-	owner->envPlantTree->Query( this, r );
-
-	Rect<double> staticItemRect(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
-	owner->staticItemTree->Query(NULL, staticItemRect);
+		Rect<double> staticItemRect(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
+		owner->staticItemTree->Query(NULL, staticItemRect);
+	}
 
 	canRailGrind = CanRailGrind();
 	canRailSlide = CanRailSlide();
 
 
 	//if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && (canRailGrind || canRailSlide ) )
-	if( owner->totalRails > 0 && (canRailGrind || canRailSlide) )
+	if( owner != NULL && owner->totalRails > 0 && (canRailGrind || canRailSlide) )
 	{
 		queryMode = "rail";
 		owner->railEdgeTree->Query(this, r);
@@ -10198,8 +10236,13 @@ bool Actor::ResolvePhysics( V2d vel )
 	currBooster = NULL;
 	currBounceBooster = NULL;
 	currModifier = NULL;
-	queryMode = "activeitem";
-	owner->activeItemTree->Query(this, r);
+
+	if (owner != NULL)
+	{
+		queryMode = "activeitem";
+		owner->activeItemTree->Query(this, r);
+	}
+	
 
 	//queryMode = "gate";
 	//owner->testGateCount = 0;
@@ -15205,7 +15248,7 @@ void Actor::PhysicsResponse()
 	//only for motion ghosts
 	//UpdateSprite();
 	
-	if( owner->raceFight != NULL )
+	if( owner != NULL && owner->raceFight != NULL )
 	{
 		Actor *pTarget = NULL;
 		int target = 0;
@@ -15577,7 +15620,7 @@ void Actor::UpdatePostPhysics()
 	bool dontActivateLightningAction = action == SEQ_MEDITATE_MASKON || 
 		action == SEQ_MASKOFF || action == SEQ_MEDITATE;
 
-	if (!IsIntroAction(action) && owner->totalGameFrames % smallLightningCounter == 0 && !dontActivateLightningAction)
+	if (!IsIntroAction(action) && GetTotalGameFrames() % smallLightningCounter == 0 && !dontActivateLightningAction)
 	{
 		RelEffectInstance params;
 		//EffectInstance params;
@@ -15592,7 +15635,7 @@ void Actor::UpdatePostPhysics()
 		smallLightningPool[r]->ActivateEffect(&params);
 	}
 
-	if (!IsIntroAction(action) && owner->totalGameFrames % 30 == 0)
+	if (!IsIntroAction(action) && GetTotalGameFrames() % 30 == 0)
 	{
 		RelEffectInstance params;
 		//EffectInstance params;
@@ -15626,7 +15669,7 @@ void Actor::UpdatePostPhysics()
 	ClearSpecialTerrainCounts();
 	queryMode = "specialterrain";
 	Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
-	owner->specialTerrainTree->Query(this, r);
+	GetSpecialTerrainTree()->Query(this, r);
 
 	HandleSpecialTerrain();
 	
@@ -16428,7 +16471,7 @@ void Actor::BounceFlameOff()
 
 bool Actor::IsBeingSlowed()
 {
-	if( owner->raceFight != NULL )
+	if( owner != NULL && owner->raceFight != NULL )
 	{
 		Actor *other;
 		if( actorIndex == 0 )
@@ -16943,6 +16986,9 @@ bool Actor::IsGoalKillAction(Action a)
 
 void Actor::QueryTouchGrass()
 {
+	if (owner == NULL)
+		return;
+
 	Rect<double> queryR = hurtBody.GetAABB();//(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
 	Rect<double> queryRExtended;
 	if (currHitboxes != NULL)
@@ -18574,7 +18620,10 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 	else
 	{
-		flashFrames = owner->pauseFrames;
+		if (owner != NULL)
+			flashFrames = owner->pauseFrames;
+		else
+			flashFrames = 0;
 		if (desperationMode && action != DEATH)
 		{
 			target->draw(*sprite, &playerDespShader);

@@ -139,6 +139,47 @@ void EditSession::TestPlayerMode()
 	currentTime = 0;
 	accumulator = TIMESTEP + .1;
 	mode = TEST_PLAYER;
+
+	if (terrainTree == NULL)
+	{
+		terrainTree = new QuadTree(1000000, 1000000);
+		specialTerrainTree = new QuadTree(1000000, 1000000);
+	}
+
+
+	//terrainBGTree = new QuadTree(1000000, 1000000);
+	////soon make these the actual size of the bordered level
+	//terrainTree = new QuadTree(1000000, 1000000);
+
+	//barrierTree = new QuadTree(1000000, 1000000);
+
+	//specialTerrainTree = new QuadTree(1000000, 1000000);
+
+	//inverseEdgeTree = new QuadTree(1000000, 1000000);
+
+	//staticItemTree = new QuadTree(1000000, 1000000);
+	//railDrawTree = new QuadTree(1000000, 1000000);
+	//railEdgeTree = new QuadTree(1000000, 1000000);
+
+	//enemyTree = new QuadTree(1000000, 1000000);
+
+	//borderTree = new QuadTree(1000000, 1000000);
+
+	//grassTree = new QuadTree(1000000, 1000000);
+
+	//gateTree = new QuadTree(1000000, 1000000);
+
+	//itemTree = new QuadTree(1000000, 1000000);
+
+	//envPlantTree = new QuadTree(1000000, 1000000);
+
+	//specterTree = new QuadTree(1000000, 1000000);
+
+	//activeItemTree = new QuadTree(1000000, 1000000);
+
+	//activeEnemyItemTree = new QuadTree(1000000, 1000000);
+
+	//airTriggerTree = new QuadTree(1000000, 1000000);
 }
 
 ControllerState &EditSession::GetPrevInput(int index)
@@ -293,6 +334,9 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu )
 	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	terrainTree = NULL;
+	specialTerrainTree = NULL;
+
 	inversePolygon = NULL;
 	currSession = this;
 	for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD * 9; ++i)
@@ -889,7 +933,17 @@ EditSession::~EditSession()
 {
 	delete testPlayer;
 
+	if (terrainTree != NULL)
+	{
+		delete terrainTree;
+		delete specialTerrainTree;
+	}
+
+
+
 	delete graph;
+
+
 
 
 	delete background;
