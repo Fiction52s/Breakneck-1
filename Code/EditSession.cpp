@@ -11045,7 +11045,7 @@ void EditSession::CreateGatesModeUpdate()
 
 		if (gateResult == "delete")
 		{
-			Action * action = new DeleteGateAction(modifyGate);
+			Action * action = new DeleteGateAction(modifyGate, mapStartBrush);
 			action->Perform();
 			doneActionStack.push_back(action);
 

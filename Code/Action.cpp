@@ -529,7 +529,7 @@ CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
 
 CreateGateAction::~CreateGateAction()
 {
-	assert(gate->point0 == NULL && gate->point1 == NULL);
+	//assert(gate->point0 == NULL && gate->point1 == NULL);
 	delete gate;
 }
 
@@ -557,9 +557,27 @@ void CreateGateAction::Undo()
 	//destroy the gate
 }
 
-DeleteGateAction::DeleteGateAction( GateInfoPtr ptr )
+DeleteGateAction::DeleteGateAction( GateInfoPtr ptr, Brush *mapStartBrush )
 {
+	owned = false;
 	gate = ptr;
+
+	auto mapEnd = mapStartBrush->objects.end();
+	for (auto it = mapStartBrush->objects.begin(); it != mapEnd; ++it)
+	{
+		if ((*it) == gate)
+		{
+			owned = true;
+			it = mapStartBrush->objects.erase(it);
+			break;
+		}
+	}
+}
+
+DeleteGateAction::~DeleteGateAction()
+{
+	if (owned)
+		delete gate;
 }
 
 void DeleteGateAction::Perform()

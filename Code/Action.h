@@ -189,11 +189,13 @@ struct CreateGateAction : Action
 
 struct DeleteGateAction : Action
 {
-	DeleteGateAction( GateInfoPtr ptr );
+	DeleteGateAction( GateInfoPtr ptr, Brush *mapStartBrush );
+	~DeleteGateAction();
 	void Perform();
 	void Undo();
 
 	GateInfoPtr gate;
+	bool owned;
 };
 
 struct ModifyGateAction : Action
