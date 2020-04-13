@@ -70,11 +70,7 @@ void EditSession::TestPlayerModeUpdate()
 	}
 	currentTime = newTime;
 
-
 	accumulator += frameTime;
-
-	//w->clear(Color::Red);
-	//preScreenTex->clear(Color::Red);
 
 	while (accumulator >= TIMESTEP)
 	{
@@ -94,35 +90,9 @@ void EditSession::TestPlayerModeUpdate()
 			}
 		}
 
-		vector<GCC::GCController> controllers;
-		if (mainMenu->gccDriverEnabled)
-			controllers = mainMenu->gccDriver->getState();
+		UpdateControllers();
 
-		for (int i = 0; i < 1; ++i)
-		{
-			GameController &con = GetController(i);
-
-			con.gcController = controllers[i];
-
-			bool canControllerUpdate = con.UpdateState();
-			if (!canControllerUpdate)
-			{
-				//KeyboardUpdate( 0 );
-			}
-			else
-			{
-				ControllerState &currInput = GetCurrInput(i);
-				ControllerState &conState = con.GetState();
-				currInput = conState;
-				GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
-			}
-		}
-
-		for (int i = 0; i < 4; ++i)
-		{
-			UpdatePlayerInput(i);
-		}
-
+		UpdateAllPlayersInput();
 		
 		UpdatePrePhysics();
 		UpdatePhysics();
@@ -2286,8 +2256,8 @@ void EditSession::SetInitialView(sf::Vector2f &center,
 
 int EditSession::Run()
 {
-	//players[0] = new Actor(NULL, this, 0);
-	//players[0]->InitAfterEnemies();
+	players[0] = new Actor(NULL, this, 0);
+	players[0]->InitAfterEnemies();
 
 	oldShaderZoom = -1;
 	complexPaste = NULL;

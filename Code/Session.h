@@ -24,6 +24,7 @@ struct Session : TilesetManager
 	ControllerState &GetCurrInputUnfiltered(int index);
 	GameController &GetController(int index);
 	void UpdatePlayerInput(int index);
+	void UpdateAllPlayersInput();
 	void UpdateControllers();
 	bool IsKeyPressed(int k);
 	bool IsMousePressed(int m);

@@ -11,6 +11,7 @@ using namespace std;
 
 Session::Session(const boost::filesystem::path &p_filePath)
 {
+	cutPlayerInput = false;
 	mainMenu = MainMenu::GetInstance();
 	assert(mainMenu != NULL);
 
@@ -526,6 +527,14 @@ void Session::UpdatePlayerInput(int index)
 				pCurr.leftShoulder = alreadyTimeSlow;
 			}
 		}
+	}
+}
+
+void Session::UpdateAllPlayersInput()
+{
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		UpdatePlayerInput(i);
 	}
 }
 
