@@ -97,6 +97,7 @@ bool TerrainRail::CanAdd()
 
 void TerrainRail::Deactivate()
 {
+	active = false;
 	EditSession *sess = EditSession::GetSession();
 	cout << "deactivating rail" << endl;
 
@@ -105,6 +106,7 @@ void TerrainRail::Deactivate()
 
 void TerrainRail::Activate()
 {
+	active = true;
 	EditSession *sess = EditSession::GetSession();
 
 	sess->rails.push_back(this);

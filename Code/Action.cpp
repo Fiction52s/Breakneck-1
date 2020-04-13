@@ -109,6 +109,21 @@ void Brush::TransferMyDuplicates(Brush *compare, Brush *dest)
 	}
 }
 
+void Brush::TransferMyActiveMembers(Brush *dest)
+{
+	auto end = objects.end();
+	for (auto it = objects.begin(); it != end;)
+	{
+		if ((*it)->active)
+		{
+			dest->AddObject((*it));
+			it = objects.erase(it);
+		}
+		else
+			++it;
+	}
+}
+
 void Brush::CenterOnPoint(sf::Vector2i &point )
 {
 	Move(point - GetCenter());
@@ -269,6 +284,7 @@ void Brush::Destroy()
 {
 	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{
+		//cout << "destroying: " << (*it) << endl;
 		delete (*it);
 	}
 	
@@ -402,7 +418,8 @@ void ApplyBrushAction::Undo()
 	appliedBrush.Deactivate();
 }
 
-RemoveBrushAction::RemoveBrushAction( Brush *brush, Brush *mapStartBrush )
+RemoveBrushAction::RemoveBrushAction( Brush *brush, Brush *p_mapStartBrush )
+	:mapStartBrush( p_mapStartBrush )
 {
 	storedBrush = *brush;
 
@@ -411,6 +428,7 @@ RemoveBrushAction::RemoveBrushAction( Brush *brush, Brush *mapStartBrush )
 
 RemoveBrushAction::~RemoveBrushAction()
 {
+	mapStartOwned.TransferMyActiveMembers(mapStartBrush);
 	mapStartOwned.Destroy();
 }
 
@@ -435,7 +453,8 @@ void RemoveBrushAction::Undo()
 }
 
 //use for add and subtract
-ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement, Brush *mapStartBrush )
+ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement, Brush *p_mapStartBrush )
+	:mapStartBrush( p_mapStartBrush )
 {
 	original = *p_orig;
 	replacement = *p_replacement;
@@ -454,6 +473,8 @@ ReplaceBrushAction::ReplaceBrushAction( Brush *p_orig, Brush *p_replacement, Bru
 ReplaceBrushAction::~ReplaceBrushAction()
 {
 	replacement.Destroy();
+
+	mapStartOwned.TransferMyActiveMembers(mapStartBrush);
 	mapStartOwned.Destroy();
 }
 
@@ -946,6 +967,7 @@ ComplexPasteAction::~ComplexPasteAction()
 {
 	applied.Destroy();
 
+	mapStartOwned.TransferMyActiveMembers(mapStartBrush);
 	mapStartOwned.Destroy();
 }
 

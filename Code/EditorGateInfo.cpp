@@ -25,6 +25,7 @@ void GateInfo::Deactivate()
 {
 	if (edit != NULL)
 	{
+		active = false;
 		edit->gates.remove(this);
 		edit = NULL;
 		point0->gate = NULL;
@@ -36,6 +37,7 @@ void GateInfo::Activate()
 {
 	if (edit == NULL)
 	{
+		active = true;
 		edit = EditSession::GetSession();
 		edit->gates.push_back(this);
 

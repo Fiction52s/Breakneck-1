@@ -67,6 +67,7 @@ void EditorDecorInfo::Deactivate()
 {
 	cout << "deactivating decor" << endl;
 
+	active = false;
 	myList->remove(this);
 }
 
@@ -74,6 +75,7 @@ void EditorDecorInfo::Activate()
 {
 	cout << "adding image" << endl;
 
+	active = true;
 	myList->push_back(this);
 }
 

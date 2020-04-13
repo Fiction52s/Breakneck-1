@@ -3442,12 +3442,12 @@ void EditSession::TryRemoveSelectedPoints()
 		TryKeepGates(gateInfoList, newPolys, &result);
 		selectedPoints.clear();
 
+		ClearUndoneActions();
+
 		Action * action = new ReplaceBrushAction(&orig, &result, mapStartBrush);
 
 		action->Perform();
 		doneActionStack.push_back(action);
-
-		ClearUndoneActions();
 	}
 	/*else if (removeSuccess == 0)
 	{
@@ -5993,14 +5993,16 @@ bool EditSession::ExecuteTerrainCompletion()
 		}
 		else
 		{
+			
 			Action *action = ChooseAddOrSub(intersectingPolys, containedPolys);
 
 			if (action != NULL)
 			{
-				action->Perform();
-				doneActionStack.push_back(action);
+				ClearUndoneActions();//need to get rid of chooseaddorsub
 
-				ClearUndoneActions();
+				doneActionStack.push_back(action);
+				action->Perform();
+				
 			}
 			return true;
 		}
@@ -6053,11 +6055,13 @@ void EditSession::ExecuteRailCompletion()
 
 				progressBrush->AddObject(railInProgress);
 
+				ClearUndoneActions();
+
 				Action *action = new ApplyBrushAction(progressBrush);
+
 				action->Perform();
 				doneActionStack.push_back(action);
-
-				ClearUndoneActions();
+				
 
 				RailPtr newRail(new TerrainRail());
 				railInProgress = newRail;
@@ -6071,7 +6075,6 @@ void EditSession::ExecuteRailCompletion()
 				//action->Perform();
 				//doneActionStack.push_back(action);
 
-				//ClearUndoneActions();
 			}
 		}
 	}
@@ -6099,11 +6102,12 @@ void EditSession::SetInversePoly()
 	progressBrush->Clear();
 	progressBrush->AddObject(polygonInProgress);
 
-	Action * action = new ReplaceBrushAction( &orig, progressBrush, mapStartBrush);
-	action->Perform();
-	doneActionStack.push_back( action );
-
 	ClearUndoneActions();
+
+	Action * action = new ReplaceBrushAction( &orig, progressBrush, mapStartBrush);
+
+	action->Perform();
+	doneActionStack.push_back(action);
 
 	PolyPtr newPoly( new TerrainPolygon() );
 	polygonInProgress = newPoly;
@@ -6290,13 +6294,17 @@ void EditSession::PasteTerrain(Brush *b)
 
 	if( !orig.IsEmpty() || !result.IsEmpty() )
 	{
+		ClearUndoneActions(); //critical to have this before the deactivation
+
 		orig.Deactivate();
 		result.Activate();
 
 		if( complexPaste == NULL )
 		{
 			//assert(complexPaste == NULL);
-			complexPaste = new ComplexPasteAction(mapStartBrush);			
+			complexPaste = new ComplexPasteAction(mapStartBrush);	
+			doneActionStack.push_back(complexPaste);
+
 			lastBrushPastePos = worldPos;
 			brushRepeatDist = 20.0;
 			complexPaste->SetNewest(orig, result);
@@ -6631,9 +6639,6 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 	for (auto brushIt = brushPolys.begin(); brushIt != brushPolys.end();)
 	{
 		removeBrush = false;
-		//intersectsInverse = false;
-		//numIntersections = 0;
-		//tempIntersections.clear();
 		tempContained.clear();
 		//(*brushIt)->isBrushTest = true;
 
@@ -6683,44 +6688,15 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 				//cant be a duplicate only because brushes won't be on top of one another.
 				containedPolys.push_back((*tempIt));
 			}
-
-			//if (intersectsInverse && numIntersections == 1)
-			//{
-			//	inverseOnlyBrushes.push_back((*brushIt));
-			//}
-			//else if (numIntersections == 0)
-			//{
-			//	nonIntersectingBrushes.push_back((*brushIt));
-			//}
-			//else
-			//{
-				
-
-			//	list<PolyPtr> *tempTestList;
-			//	if (intersectsInverse)
-			//	{
-			//		allIntersectsList.push_front(list<PolyPtr>());
-			//		tempTestList = &allIntersectsList.front();
-			//		tempTestList->push_back(inversePolygon);
-			//	}
-			//	else
-			//	{
-			//		allIntersectsList.push_back(list<PolyPtr>());
-			//		tempTestList = &allIntersectsList.back();
-			//	}
-
-			//	tempTestList->push_back((*brushIt));
-			//	for (auto tempIt = tempIntersections.begin(); tempIt != tempIntersections.end(); ++tempIt)
-			//	{
-			//		tempTestList->push_back((*tempIt));
-			//	}
-			//}
 			++brushIt;
 		}
 	}
 
+	list<PolyPtr> nonInverseIntersList;
 	for (auto it = nonInverseIntersections.begin(); it != nonInverseIntersections.end(); ++it)
 	{
+		nonInverseIntersList.push_back((*it).first);
+
 		c.Clear();
 		solution.clear();
 		clipperIntersections.clear();
@@ -6740,7 +6716,6 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 			++i;
 		}
 		c.AddPaths(pBrushes, ClipperLib::PolyType::ptClip, true);
-
 
 		c.Execute(ClipperLib::ClipType::ctDifference, solution, ClipperLib::PolyFillType::pftEvenOdd);
 
@@ -6778,13 +6753,6 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 			}
 
 			//just for debugging
-			/*for (int ti = 0; ti < newPoly->GetNumPoints(); ++ti)
-			{
-				for (int ti2 = 0; ti2 < newPoly->GetNumPoints(); ++ti2)
-				{
-
-				}
-			}*/
 
 			if (newPoly->GetNumPoints() < 3)
 			{
@@ -6821,6 +6789,12 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 	}
 
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
+	//AddFullPolysToBrush(nonInverseIntersList, gateInfoList, &orig);
+	
+	TryAttachActorsToPolys(nonInverseIntersList, attachList, &resultBrush);
+	//TryAttachActorsToPolys(inverseConnectedInters, attachList, &resultBrush);
+
+	TryKeepGates(gateInfoList, attachList, &resultBrush);
 	
 	return true;
 }
@@ -7264,13 +7238,13 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 		}
 	}
 
-	TryAttachActorsToPolys(nonInverseInters, attachList, &resultBrush);
-	TryAttachActorsToPolys(inverseConnectedInters, attachList, &resultBrush);
-	TryKeepGates(gateInfoList, attachList, &resultBrush);
-
 	AddFullPolysToBrush(nonInverseInters, gateInfoList, &orig);
 	AddFullPolysToBrush(inverseConnectedInters, gateInfoList, &orig);
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
+
+	TryAttachActorsToPolys(nonInverseInters, attachList, &resultBrush);
+	TryAttachActorsToPolys(inverseConnectedInters, attachList, &resultBrush);
+	TryKeepGates(gateInfoList, attachList, &resultBrush);
 	return true;
 }
 
@@ -8153,12 +8127,13 @@ void EditSession::RemoveSelectedObjects()
 		selectedBrush->AddObject((*it));
 	}
 
-	Action *remove = new RemoveBrushAction(selectedBrush, mapStartBrush );
-	remove->Perform();
-
-	doneActionStack.push_back(remove);
-
 	ClearUndoneActions();
+
+	Action *remove = new RemoveBrushAction(selectedBrush, mapStartBrush );
+
+	remove->Perform();
+	doneActionStack.push_back(remove);
+	
 
 	selectedBrush->SetSelected(false);
 	selectedBrush->Clear();
@@ -10137,21 +10112,6 @@ void EditSession::PasteModeHandleEvent()
 		if (ev.mouseButton.button == sf::Mouse::Button::Left)
 		{
 			PasteTerrain(copiedBrush);
-			/*if (!HoldingControl())
-			{
-				mode = EDIT;
-				if (pasteAction != NULL)
-				{
-					doneActionStack.push_back(pasteAction);
-					ClearUndoneActions();
-					if (complexPasteAction != NULL)
-					{
-						delete complexPasteAction;
-						complexPasteAction = NULL;
-					}
-				}
-			}
-			else*/
 		}
 		break;
 		
@@ -10163,8 +10123,7 @@ void EditSession::PasteModeHandleEvent()
 			if (complexPaste != NULL)
 			{
 				//cout << "completing complex paste" << endl;
-				doneActionStack.push_back(complexPaste);
-				ClearUndoneActions();
+				//ClearUndoneActions();
 				complexPaste = NULL;
 			}
 		}

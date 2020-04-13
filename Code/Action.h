@@ -27,6 +27,7 @@ struct Brush
 	bool CanAdd();
 	bool Has(SelectPtr sp);
 	void TransferMyDuplicates(Brush *compare, Brush *dest);
+	void TransferMyActiveMembers(Brush *dest);
 	bool terrainOnly;
 	bool IsEmpty();
 	//bool activated;
@@ -109,6 +110,8 @@ struct RemoveBrushAction : Action
 
 	Brush storedBrush;
 	Brush mapStartOwned;
+
+	Brush *mapStartBrush;
 };
 
 struct ReplaceBrushAction : Action
@@ -122,6 +125,8 @@ struct ReplaceBrushAction : Action
 	Brush original;
 	Brush replacement;
 	Brush mapStartOwned;
+
+	Brush *mapStartBrush;
 };
 
 

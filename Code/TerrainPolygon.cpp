@@ -152,6 +152,8 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 
 TerrainPolygon::~TerrainPolygon()
 {
+	cout << "destroying poly: " << this << endl;
+
 	if (lines != NULL)
 		delete[] lines;
 
@@ -1258,8 +1260,9 @@ void TerrainPolygon::ActivateGates()
 
 void TerrainPolygon::Deactivate()
 {
+	cout << "deactivating poly: " << this << endl;
 	EditSession *sess = EditSession::GetSession();
-
+	active = false;
 	sess->GetCorrectPolygonList(this).remove(this);
 
 	if (inverse)
@@ -1274,7 +1277,9 @@ void TerrainPolygon::Deactivate()
 
 void TerrainPolygon::Activate()
 {
+	cout << "activating poly: " << this << endl;
 	EditSession *sess = EditSession::GetSession();
+	active = true;
 
 	sess->GetCorrectPolygonList(this).push_back(this);
 	

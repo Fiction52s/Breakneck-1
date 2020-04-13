@@ -2525,6 +2525,12 @@ void MainMenu::HandleMenuMode()
 		}
 		else
 		{
+			if (IsKeyPressed(Keyboard::Tilde))
+			{
+				quit = true;
+				break;
+			}
+
 			int oldIndex = saSelector->currIndex;
 			int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
 

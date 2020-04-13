@@ -864,6 +864,7 @@ void ActorParams::BrushDraw( sf::RenderTarget *target,
 
 void ActorParams::Deactivate()
 {
+	active = false;
 	cout << "DEACTIVATING ACTOR PARAMS size from: " << group->actors.size() << endl;
 	group->actors.remove( this );
 
@@ -875,6 +876,7 @@ void ActorParams::Deactivate()
 
 void ActorParams::Activate()
 {
+	active = true;
 	cout << "addding to group of size: " << group->actors.size() << endl;
 	group->actors.push_back( this );
 
