@@ -2,6 +2,7 @@
 #include "Actor.h"
 #include "MainMenu.h"
 #include "MapHeader.h"
+#include "EditorTerrain.h"
 
 using namespace sf;
 using namespace std;
@@ -11,6 +12,8 @@ Session::Session(const boost::filesystem::path &p_filePath)
 	mainMenu = MainMenu::GetInstance();
 	assert(mainMenu != NULL);
 
+	window = mainMenu->window;
+
 	filePath = p_filePath;
 	filePathStr = filePath.string();
 
@@ -19,6 +22,23 @@ Session::Session(const boost::filesystem::path &p_filePath)
 	{
 		players[i] = nullptr;
 	}
+
+	terrainTree = NULL;
+	specialTerrainTree = NULL;
+}
+
+Session::~Session()
+{
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		delete players[i];
+	}
+
+	if (terrainTree != NULL)
+		delete terrainTree;
+
+	if (specialTerrainTree != NULL)
+		delete specialTerrainTree;
 }
 
 bool Session::ReadDecorImagesFile()
@@ -45,8 +65,7 @@ bool Session::ReadDecorImagesFile()
 			assert(ts != NULL);
 			decorTSMap[name] = ts;
 
-			//this is only in the editor version atm
-			//decorTileIndexMap[name].push_back(tile);
+			ProcessDecorFromFile(name, tile);
 		}
 
 		is.close();
@@ -101,55 +120,160 @@ bool Session::ReadDecor(std::ifstream &is)
 		dSpr.setRotation(dRot);
 		dSpr.setPosition(dPos);
 
-		Tileset *ts = decorTSMap[dName];
-		dSpr.setTexture(*ts->texture);
-		dSpr.setTextureRect(ts->GetSubRect(dTile));
-		dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);		
+		Tileset *d_ts = decorTSMap[dName];
+		dSpr.setTexture(*d_ts->texture);
+		dSpr.setTextureRect(d_ts->GetSubRect(dTile));
+		dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
 
-		DecorPtr dec = new EditorDecorInfo(dSpr, dLayer, dName, dTile);
-		if (dLayer > 0)
-		{
-			dec->myList = &decorImagesBehindTerrain;
-			//decorImagesBehindTerrain.sort(CompareDecorInfo);
-			//decorImagesBehindTerrain.push_back(dec);
-		}
-		else if (dLayer < 0)
-		{
-			dec->myList = &decorImagesFrontTerrain;
-			//decorImagesFrontTerrain.push_back(dec);
-		}
-		else if (dLayer == 0)
-		{
-			dec->myList = &decorImagesBetween;
-			//decorImagesBetween.push_back(dec);
-		}
-
-		CreateDecorImage(dec);
-
-		mapStartBrush->AddObject(dec);
+		ProcessDecorSpr( dName, dSpr, dLayer, d_ts, dTile );
 	}
 
 	return true;
 }
 
-bool Session::ReadPlayer(std::ifstream &is)
+bool Session::ReadPlayerStartPos(std::ifstream &is)
 {
+	is >> playerOrigPos.x;
+	is >> playerOrigPos.y;
 
+	ProcessPlayerStartPos();
+
+	return true;
+}
+
+bool Session::ReadTerrainGrass(std::ifstream &is, PolyPtr poly)
+{
+	int edgesWithSegments;
+	is >> edgesWithSegments;
+
+	list<GrassSeg> segments;
+	for (int i = 0; i < edgesWithSegments; ++i)
+	{
+		int edgeIndex;
+		is >> edgeIndex;
+
+		int numSegments;
+		is >> numSegments;
+
+		for (int j = 0; j < numSegments; ++j)
+		{
+			int index;
+			is >> index;
+			int reps;
+			is >> reps;
+			segments.push_back(GrassSeg(edgeIndex, index, reps));
+
+		}
+	}
+
+	int grassIndex = 0;
+	VertexArray &grassVa = *poly->grassVA;
+	int polyNumP = poly->GetNumPoints();
+	bool rem;
+
+	int itReps;
+
+	int *indexArray = new int[polyNumP];
+	for (int i = 0; i < polyNumP; ++i)
+	{
+		indexArray[i] = grassIndex;
+		grassIndex += poly->GetNumGrass(i, rem);;
+	}
+
+	for (list<GrassSeg>::iterator it = segments.begin(); it != segments.end(); ++it)
+	{
+		int vaIndex = indexArray[(*it).edgeIndex];
+		itReps = (*it).reps;
+		for (int extra = 0; extra <= itReps; ++extra)
+		{
+			grassVa[(vaIndex + (*it).index + extra) * 4].color.a = 255;
+			grassVa[(vaIndex + (*it).index + extra) * 4 + 1].color.a = 255;
+			grassVa[(vaIndex + (*it).index + extra) * 4 + 2].color.a = 255;
+			grassVa[(vaIndex + (*it).index + extra) * 4 + 3].color.a = 255;
+		}
+	}
+
+	delete[] indexArray;
 }
 
 bool Session::ReadTerrain(std::ifstream &is)
 {
+	string hasBorderPolyStr;
+	is >> hasBorderPolyStr;
 
+	bool hasBorderPoly;
+	bool hasReadBorderPoly;
+	if (hasBorderPolyStr == "borderpoly")
+	{
+		hasBorderPoly = true;
+		hasReadBorderPoly = false;
+	}
+	else if (hasBorderPolyStr == "no_borderpoly")
+	{
+		hasBorderPoly = false;
+		hasReadBorderPoly = true;
+	}
+	else
+	{
+		cout << hasBorderPolyStr << endl;
+		assert(0 && "what is this string?");
+	}
+
+	int numPoints = mapHeader->numVertices;
+
+	while (numPoints > 0)
+	{
+		PolyPtr poly(new TerrainPolygon());
+
+		if (!hasReadBorderPoly)
+		{
+			poly->inverse = true;
+			hasReadBorderPoly = true;
+		}
+
+		poly->Load(is);
+		numPoints -= poly->GetNumPoints();
+		poly->Finalize(); //doesn't get affected by reading grass
+
+		ReadTerrainGrass(is, poly);
+
+		ProcessTerrain(poly);
+	}
+	return true;
 }
 
 bool Session::ReadSpecialTerrain(std::ifstream &is)
 {
+	int specialPolyNum;
+	is >> specialPolyNum;
 
+	for (int i = 0; i < specialPolyNum; ++i)
+	{
+		PolyPtr poly(new TerrainPolygon());
+
+		poly->Load(is);
+
+		poly->Finalize();
+
+		ProcessSpecialTerrain(poly);
+	}
+
+	return true;
 }
 
 bool Session::ReadBGTerrain(std::ifstream &is)
 {
-
+	int bgPlatformNum0;
+	is >> bgPlatformNum0;
+	for (int i = 0; i < bgPlatformNum0; ++i)
+	{
+		PolyPtr poly(new TerrainPolygon());
+		poly->Load(is);
+		poly->Finalize();
+		poly->SetLayer(1);
+		//no grass for now
+	}
+	return true;
 }
 
 bool Session::ReadRails(std::ifstream &is)
@@ -177,7 +301,7 @@ bool Session::ReadFile()
 	{
 		ReadHeader(is);
 		ReadDecor(is);
-		ReadPlayer(is);
+		ReadPlayerStartPos(is);
 		ReadTerrain(is);
 		ReadSpecialTerrain(is);
 		ReadBGTerrain(is);
@@ -196,7 +320,7 @@ bool Session::ReadFile()
 	}
 
 
-	grassTex.loadFromFile("Resources/Env/grass_128x128.png");
+	//grassTex.loadFromFile("Resources/Env/grass_128x128.png");
 
 	return true;
 }

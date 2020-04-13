@@ -6935,7 +6935,7 @@ int GameSession::Run()
 			
 			for (int i = 0; i < 4; ++i)
 			{
-				UpdateInput(i);
+				UpdatePlayerInput(i);
 			}
 
 			}

@@ -159,14 +159,14 @@ void EditSession::TestPlayerMode()
 		terrainTree->Clear();
 		specialTerrainTree->Clear();
 
-		testPlayer->Respawn();
+		GetPlayer(0)->Respawn();
 	}
 	else
 	{
 		terrainTree = new QuadTree(1000000, 1000000);
 		specialTerrainTree = new QuadTree(1000000, 1000000);
 
-		testPlayer->SetToOriginalPos();
+		GetPlayer(0)->SetToOriginalPos();
 
 	}
 
@@ -212,39 +212,6 @@ void EditSession::TestPlayerMode()
 	//airTriggerTree = new QuadTree(1000000, 1000000);
 }
 
-ControllerState &EditSession::GetPrevInput(int index)
-{
-	return mainMenu->GetPrevInput(index);
-}
-
-ControllerState &EditSession::GetCurrInput(int index)
-{
-	return mainMenu->GetCurrInput(index);
-}
-
-ControllerState &EditSession::GetPrevInputUnfiltered(int index)
-{
-	return mainMenu->GetPrevInputUnfiltered(index);
-}
-
-ControllerState &EditSession::GetCurrInputUnfiltered(int index)
-{
-	return mainMenu->GetCurrInputUnfiltered(index);
-}
-
-GameController &EditSession::GetController(int index)
-{
-	return mainMenu->GetController(index);
-}
-
-Actor *EditSession::GetPlayer(int i)
-{
-	if (i == 0)
-		return testPlayer;
-	else
-		return NULL;
-}
-
 void EditSession::UpdatePrePhysics()
 {
 	Actor *player = GetPlayer(0);
@@ -260,6 +227,12 @@ void EditSession::UpdatePrePhysics()
 		if (p != NULL)
 			p->UpdatePrePhysics();
 	}
+}
+
+void EditSession::ProcessDecorFromFile(const std::string &name,
+	int tile)
+{
+	decorTileIndexMap[name].push_back(tile);
 }
 
 void EditSession::UpdatePhysics()
@@ -310,69 +283,6 @@ void EditSession::UpdatePostPhysics()
 	}
 }
 
-void EditSession::UpdatePlayerInput( int index )
-{
-	Actor *player = GetPlayer(index);
-	if (player == NULL)
-		return;
-
-	ControllerState &pCurr = player->currInput;
-	GameController &controller = GetController(index);
-	ControllerState &currInput = GetCurrInput(index);
-	ControllerState &prevInput = GetPrevInput(index);
-
-	bool alreadyBounce = pCurr.X;
-	bool alreadyGrind = pCurr.Y;
-	bool alreadyTimeSlow = pCurr.leftShoulder;
-
-	//if (cutPlayerInput)
-	if( false )
-	{
-		player->currInput = ControllerState();
-	}
-	else
-	{
-		player->currInput = currInput;
-
-		if (controller.keySettings.toggleBounce)
-		{
-			if (currInput.X && !prevInput.X)
-			{
-				pCurr.X = !alreadyBounce;
-			}
-			else
-			{
-				pCurr.X = alreadyBounce;
-			}
-		}
-		if (controller.keySettings.toggleGrind)
-		{
-			if (currInput.Y && !prevInput.Y)
-			{
-				pCurr.Y = !alreadyGrind;
-				//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
-			}
-			else
-			{
-				pCurr.Y = alreadyGrind;
-			}
-		}
-		if (controller.keySettings.toggleTimeSlow)
-		{
-			if (currInput.leftShoulder && !prevInput.leftShoulder)
-			{
-				pCurr.leftShoulder = !alreadyTimeSlow;
-
-			}
-			else
-			{
-				pCurr.leftShoulder = alreadyTimeSlow;
-			}
-		}
-	}
-}
-
-
 
 template <typename X>ActorParams * MakeParamsGrounded(ActorType *at)
 {
@@ -422,12 +332,9 @@ EditSession *EditSession::GetSession()
 }
 
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
-	:w( p_mainMenu->window ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
-	filePath(p_filePath)
+	:Session( p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
 	initialViewSet = false;
-	terrainTree = NULL;
-	specialTerrainTree = NULL;
 
 	SaveFile *currFile = mainMenu->GetCurrentProgress();
 	if (currFile != NULL)
@@ -462,11 +369,11 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	maxZoom = 65536;
 
 	copiedBrush = NULL;
-	mapHeader.ver1 = 1;
-	mapHeader.ver2 = 5;
-	mapHeader.description = "no description";
-	mapHeader.collectionName = "default";
-	mapHeader.gameMode = MapHeader::T_STANDARD;//"default";
+	newMapHeader.ver1 = 1;
+	newMapHeader.ver2 = 5;
+	newMapHeader.description = "no description";
+	newMapHeader.collectionName = "default";
+	newMapHeader.gameMode = MapHeader::T_STANDARD;//"default";
 	//arialFont.loadFromFile( "Breakneck_Font_01.ttf" );
 	cursorLocationText.setFont( mainMenu->arial );
 	cursorLocationText.setCharacterSize( 16 );
@@ -1045,15 +952,6 @@ TerrainRail *EditSession::GetRail(int index, int &edgeIndex)
 
 EditSession::~EditSession()
 {
-	delete testPlayer;
-
-	if (terrainTree != NULL)
-	{
-		delete terrainTree;
-		delete specialTerrainTree;
-	}
-
-
 
 	delete graph;
 
@@ -1281,165 +1179,46 @@ bool EditSession::ReadDecor(std::ifstream &is)
 		//dSpr.setTexture do this after dinner
 
 
-		DecorPtr dec = new EditorDecorInfo(dSpr, dLayer, dName, dTile);
-		if (dLayer > 0)
-		{
-			dec->myList = &decorImagesBehindTerrain;
-			//decorImagesBehindTerrain.sort(CompareDecorInfo);
-			//decorImagesBehindTerrain.push_back(dec);
-		}
-		else if (dLayer < 0)
-		{
-			dec->myList = &decorImagesFrontTerrain;
-			//decorImagesFrontTerrain.push_back(dec);
-		}
-		else if (dLayer == 0)
-		{
-			dec->myList = &decorImagesBetween;
-			//decorImagesBetween.push_back(dec);
-		}
-
-		CreateDecorImage(dec);
-
-		mapStartBrush->AddObject(dec);
+		
 	}
 
 	return true;
 }
 
-bool EditSession::ReadTerrain(ifstream &is )
+void EditSession::ProcessDecorSpr( const std::string &dName, sf::Sprite &dSpr,
+	int dLayer, Tileset *d_ts, int dTile)
 {
-	string hasBorderPolyStr;
-	is >> hasBorderPolyStr;
-	bool hasBorderPoly;
-	bool hasReadBorderPoly;
-	if (hasBorderPolyStr == "borderpoly")
+	DecorPtr dec = new EditorDecorInfo(dSpr, dLayer, dName, dTile);
+	if (dLayer > 0)
 	{
-		hasBorderPoly = true;
-		hasReadBorderPoly = false;
+		dec->myList = &decorImagesBehindTerrain;
+		//decorImagesBehindTerrain.sort(CompareDecorInfo);
+		//decorImagesBehindTerrain.push_back(dec);
 	}
-	else if (hasBorderPolyStr == "no_borderpoly")
+	else if (dLayer < 0)
 	{
-		hasBorderPoly = false;
-		hasReadBorderPoly = true;
+		dec->myList = &decorImagesFrontTerrain;
+		//decorImagesFrontTerrain.push_back(dec);
 	}
-	else
+	else if (dLayer == 0)
 	{
-		cout << hasBorderPolyStr << endl;
-		assert(0 && "what is this string?");
+		dec->myList = &decorImagesBetween;
+		//decorImagesBetween.push_back(dec);
 	}
-	int numPoints = mapHeader.numVertices;
 
-	while (numPoints > 0)
+	CreateDecorImage(dec);
+
+	mapStartBrush->AddObject(dec);
+}
+
+void EditSession::ProcessTerrain(PolyPtr poly)
+{
+	mapStartBrush->AddObject(poly);
+	if (poly->inverse)
 	{
-		PolyPtr poly(new TerrainPolygon(&grassTex));
-
-		mapStartBrush->AddObject(poly);
-
-		int matWorld;
-		int matVariation;
-		is >> matWorld;
-		is >> matVariation;
-
-		poly->terrainWorldType = (TerrainPolygon::TerrainWorldType)matWorld;
-		poly->terrainVariation = matVariation;
-
-		if (!hasReadBorderPoly)
-		{
-			poly->inverse = true;
-			inversePolygon = poly;
-			hasReadBorderPoly = true;
-		}
-
-		polygons.push_back(poly);
-
-		int polyPoints;
-		is >> polyPoints;
-
-
-		numPoints -= polyPoints;
-		int x, y;
-
-		poly->Reserve(polyPoints);
-		for (int i = 0; i < polyPoints; ++i)
-		{
-			is >> x;
-			is >> y;
-			//is >> special;
-			poly->AddPoint(Vector2i(x, y), false);
-		}
-
-		int edgesWithSegments;
-		is >> edgesWithSegments;
-
-		list<GrassSeg> segments;
-		for (int i = 0; i < edgesWithSegments; ++i)
-		{
-			int edgeIndex;
-			is >> edgeIndex;
-
-			int numSegments;
-			is >> numSegments;
-
-			for (int j = 0; j < numSegments; ++j)
-			{
-				int index;
-				is >> index;
-				int reps;
-				is >> reps;
-				segments.push_back(GrassSeg(edgeIndex, index, reps));
-
-			}
-		}
-
-		poly->Finalize();
-
-		int grassIndex = 0;
-		VertexArray &grassVa = *poly->grassVA;
-		int numEdges = poly->GetNumPoints();
-		int *indexArray = new int[numEdges];
-		int edgeIndex = 0;
-
-		int iai = 0;
-
-		int polyNumP = poly->GetNumPoints();
-		TerrainPoint *polyCurr, *polyNext;
-		for (int i = 0; i < polyNumP; ++i)
-		{
-			polyCurr = poly->GetPoint(i);
-			polyNext = poly->GetNextPoint(i);
-
-			indexArray[edgeIndex] = grassIndex;
-
-			V2d v0(polyCurr->pos.x, polyCurr->pos.y);
-			V2d v1(polyNext->pos.x, polyNext->pos.y);
-
-			//double remainder = length( v1 - v0 ) / ( grassSize + grassSpacing );
-			bool rem;
-			int num = poly->GetNumGrass(i, rem);//floor( remainder ) + 1;
-
-			grassIndex += num;
-
-			++edgeIndex;
-
-		}
-
-		for (list<GrassSeg>::iterator it = segments.begin(); it != segments.end(); ++it)
-		{
-			int vaIndex = indexArray[(*it).edgeIndex];
-
-			for (int extra = 0; extra <= (*it).reps; ++extra)
-			{
-				grassVa[(vaIndex + (*it).index + extra) * 4].color.a = 255;
-				grassVa[(vaIndex + (*it).index + extra) * 4 + 1].color.a = 255;
-				grassVa[(vaIndex + (*it).index + extra) * 4 + 2].color.a = 255;
-				grassVa[(vaIndex + (*it).index + extra) * 4 + 3].color.a = 255;
-			}
-		}
-
-		delete[] indexArray;
+		inversePolygon = poly;
 	}
-	return true;
+	polygons.push_back(poly);
 }
 
 bool EditSession::ReadBGTerrain(std::ifstream &is)
@@ -1448,7 +1227,7 @@ bool EditSession::ReadBGTerrain(std::ifstream &is)
 	is >> bgPlatformNum0;
 	for (int i = 0; i < bgPlatformNum0; ++i)
 	{
-		PolyPtr poly(new TerrainPolygon(&grassTex));
+		PolyPtr poly(new TerrainPolygon());
 		polygons.push_back(poly);
 
 		mapStartBrush->AddObject(poly);
@@ -1479,6 +1258,13 @@ bool EditSession::ReadBGTerrain(std::ifstream &is)
 	return true;
 }
 
+void EditSession::ProcessBGTerrain(PolyPtr poly)
+{
+	polygons.push_back(poly);
+	mapStartBrush->AddObject(poly);
+	
+}
+
 bool EditSession::ReadRails(std::ifstream &is)
 {
 	int numRails;
@@ -1502,7 +1288,7 @@ bool EditSession::ReadSpecialTerrain(std::ifstream &is)
 
 	for (int i = 0; i < specialPolyNum; ++i)
 	{
-		PolyPtr poly(new TerrainPolygon(&grassTex));
+		PolyPtr poly(new TerrainPolygon());
 
 		mapStartBrush->AddObject(poly);
 
@@ -1529,6 +1315,12 @@ bool EditSession::ReadSpecialTerrain(std::ifstream &is)
 	}
 
 	return true;
+}
+
+void EditSession::ProcessSpecialTerrain(PolyPtr poly)
+{
+	GetCorrectPolygonList(poly).push_back(poly);
+	mapStartBrush->AddObject(poly);
 }
 
 bool EditSession::ReadActors(std::ifstream &is)
@@ -1676,47 +1468,34 @@ bool EditSession::ReadGates(std::ifstream &is)
 	return true;
 }
 
-bool EditSession::ReadPlayer(ifstream &is)
+void EditSession::ProcessPlayerStartPos()
 {
-	is >> player->position.x;
-	is >> player->position.y;
-
 	player->image.setPosition(player->position.x, player->position.y);
 	player->SetBoundingQuad();
-
-	return true;
 }
 
-bool EditSession::ReadHeader(std::ifstream &is)
+void EditSession::ProcessHeader()
 {
-	MapHeader *mh = MainMenu::ReadMapHeader(is);
+	newMapHeader = *mapHeader;
 
-	mapHeader = *mh;
+	envName = mapHeader->envName;
 
-	envName = mh->envName;
+	//newMapHeader.numVertices = mh->numVertices;
 
-	mapHeader.numVertices = mh->numVertices;
+	envWorldType = mapHeader->envWorldType;
 
-	envWorldType = mh->envWorldType;
+	leftBound = mapHeader->leftBounds;
+	topBound = mapHeader->topBounds;
+	boundWidth = mapHeader->boundsWidth;
+	boundHeight = mapHeader->boundsHeight;
 
-	leftBound = mh->leftBounds;
-	topBound = mh->topBounds;
-	boundWidth = mh->boundsWidth;
-	boundHeight = mh->boundsHeight;
-
-	drainSeconds = mh->drainSeconds;
+	drainSeconds = mapHeader->drainSeconds;
 
 	Background::SetupFullBG(envName, *this, background->currBackground, background->scrollingBackgrounds);
 
-
-	bossType = mh->bossFightType;
-
-	delete mh;
-	mh = NULL;
+	bossType = mapHeader->bossFightType;
 
 	UpdateFullBounds();
-
-	return true;
 }
 
 bool EditSession::OpenFile()
@@ -1726,10 +1505,10 @@ bool EditSession::OpenFile()
 
 	if( is.is_open() )
 	{
-		ReadHeader(is);
-		ReadDecor(is);
-		ReadPlayer(is);
-		ReadTerrain(is);
+		//ReadHeader(is);
+		//ReadDecor(is);
+		//ReadPlayer(is);
+		//ReadTerrain(is);
 		ReadSpecialTerrain(is);
 		ReadBGTerrain(is);
 		ReadRails(is);
@@ -1748,22 +1527,19 @@ bool EditSession::OpenFile()
 		return false;
 	}
 
-	//grassTex.loadFromFile( "Resources/Env/placeholdergrass_22x22.png" );
-	grassTex.loadFromFile("Resources/Env/grass_128x128.png");
-
 	return true;
 	
 }
 
 void EditSession::WriteMapHeader(ofstream &of)
 {
-	mapHeader.leftBounds = leftBound;
-	mapHeader.topBounds = topBound;
-	mapHeader.boundsWidth = boundWidth;
-	mapHeader.boundsHeight = boundHeight;
-	mapHeader.bossFightType = bossType;
+	newMapHeader.leftBounds = leftBound;
+	newMapHeader.topBounds = topBound;
+	newMapHeader.boundsWidth = boundWidth;
+	newMapHeader.boundsHeight = boundHeight;
+	newMapHeader.bossFightType = bossType;
 
-	mapHeader.shardNameList.clear();
+	newMapHeader.shardNameList.clear();
 	ShardParams *sp = NULL;
 	int numShards = 0;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
@@ -1775,20 +1551,20 @@ void EditSession::WriteMapHeader(ofstream &of)
 			{
 				numShards++;
 				sp = (ShardParams*)(*ait);
-				mapHeader.shardNameList.push_back(sp->shardStr);
+				newMapHeader.shardNameList.push_back(sp->shardStr);
 			}
 		}
 	}
 
-	mapHeader.numShards = numShards;
+	newMapHeader.numShards = numShards;
 
-	mapHeader.drainSeconds = drainSeconds;
+	newMapHeader.drainSeconds = drainSeconds;
 
-	mapHeader.envName = envName;
+	newMapHeader.envName = envName;
 
-	mapHeader.envWorldType = envWorldType;
+	newMapHeader.envWorldType = envWorldType;
 
-	mapHeader.Save(of);
+	newMapHeader.Save(of);
 }
 
 void EditSession::WriteDecor(ofstream &of)
@@ -2451,7 +2227,7 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 
 bool EditSession::QuadPolygonIntersect( PolyPtr poly, Vector2i a, Vector2i b, Vector2i c, Vector2i d )
 {
-	TerrainPolygon quadPoly( poly->grassTex );
+	TerrainPolygon quadPoly();
 	quadPoly.Reserve(4);
 	quadPoly.AddPoint( a, false );
 	quadPoly.AddPoint( b, false  );
@@ -2552,8 +2328,8 @@ void EditSession::SetInitialView(sf::Vector2f &center,
 
 int EditSession::Run()
 {
-	testPlayer = new Actor(NULL, this, 0);
-	testPlayer->InitAfterEnemies();
+	players[0] = new Actor(NULL, this, 0);
+	players[0]->InitAfterEnemies();
 
 	oldShaderZoom = -1;
 	complexPaste = NULL;
@@ -2566,7 +2342,7 @@ int EditSession::Run()
 	mainMenu->SetMouseVisible(true);
 
 	sf::View oldPreTexView = preScreenTex->getView();//mainMenu->preScreenTexture->
-	sf::View oldWindowView = w->getView();
+	sf::View oldWindowView = window->getView();
 
 	currTool = TOOL_ADD;
 	currentFile = filePath.string();
@@ -2578,7 +2354,7 @@ int EditSession::Run()
 	uiView = View( sf::Vector2f( width / 2, height / 2), sf::Vector2f( width, height ) );
 	v.setCenter( 0, 0 );
 	v.setSize( 1920/ 2, 1080 / 2 );
-	w->setView( v );
+	window->setView( v );
 
 	shardSelectPopup = CreatePopupPanel("shardselector");
 
@@ -2749,7 +2525,7 @@ int EditSession::Run()
 	}
 
 	quit = false;
-	polygonInProgress = new TerrainPolygon(&grassTex );
+	polygonInProgress = new TerrainPolygon();
 	railInProgress = new TerrainRail();
 	//inversePolygon.reset( NULL );
 
@@ -2923,7 +2699,7 @@ int EditSession::Run()
 	}
 	
 	preScreenTex->setView(oldPreTexView);
-	w->setView(oldWindowView);
+	window->setView(oldWindowView);
 
 	mainMenu->SetMouseGrabbed(oldMouseGrabbed);
 	mainMenu->SetMouseVisible(oldMouseVis);
@@ -3325,39 +3101,6 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 	}
 }
 
-void EditSession::LoadDecorImages()
-{
-	ifstream is;
-	is.open("Resources/decor.txt");
-	if (is.is_open())
-	{
-		string name;
-		int width;
-		int height;
-		int tile;
-		while (!is.eof())
-		{
-			is >> name;
-
-			is >> width;
-			is >> height;
-
-			is >> tile;
-
-			string fullName = name + string(".png");
-			
-			Tileset *ts = GetTileset(fullName, width, height);
-			assert(ts != NULL);
-			decorTSMap[name] = ts;
-			decorTileIndexMap[name].push_back(tile);
-		}
-	}
-	else
-	{
-		assert(0);
-	}
-}
-
 void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 {
 	//cout << cb->name << " was " << e << endl;
@@ -3464,7 +3207,7 @@ void EditSession::InitDecorPanel()
 	int h = 5;
 	int sw = 128;
 	int sh = 128;
-	LoadDecorImages();
+	ReadDecorImagesFile();
 	decorPanel = new Panel("decorpanel", 650, 800, this);
 	allPopups.push_back(decorPanel);
 	GridSelector *gs = decorPanel->AddGridSelector("decorselector", Vector2i(0, 0), w, h, sw, sh, false, true );
@@ -5114,7 +4857,7 @@ bool EditSession::ConfirmationPop( const std::string &question )
 
 	confirmChoice = ConfirmChoices::NONE;
 
-	w->setView( v );
+	window->setView( v );
 	
 	//preScreenTex->setView( uiView );	
 	
@@ -5131,8 +4874,8 @@ bool EditSession::ConfirmationPop( const std::string &question )
 	{
 		Vector2i pPos = GetPixelPos();
 		Vector2f uiMouse = preScreenTex->mapPixelToCoords(pPos);
-		w->clear();
-		while( w->pollEvent( ev ) )
+		window->clear();
+		while( window->pollEvent( ev ) )
 		{
 			switch( ev.type )
 			{
@@ -5175,22 +4918,22 @@ bool EditSession::ConfirmationPop( const std::string &question )
 		}
 		//cout << "drawing confirm" << endl;
 
-		w->setView( v );
+		window->setView( v );
 
-		w->draw( preTexSprite );
+		window->draw( preTexSprite );
 
-		w->setView( uiView );
+		window->setView( uiView );
 
-		confirm->Draw( w );
+		confirm->Draw(window);
 
-		w->setView( v );
+		window->setView( v );
 
-		w->display();
+		window->display();
 		//preScreenTex->display();
 	}
 
 	preScreenTex->setView( view );
-	w->setView( v );
+	window->setView( v );
 	//preScreenTex->setView( view );
 
 	if( confirmChoice == ConfirmChoices::CONFIRM )
@@ -5207,7 +4950,7 @@ void EditSession::MessagePop( const std::string &message )
 {
 	messagePopup->labels["message"]->setString( message );
 	bool closePopup = false;
-	w->setView( v );
+	window->setView( v );
 	
 	preScreenTex->display();
 	const Texture &preTex = preScreenTex->getTexture();
@@ -5222,9 +4965,9 @@ void EditSession::MessagePop( const std::string &message )
 	{
 		Vector2i pPos = GetPixelPos();
 		Vector2f uiMouse = preScreenTex->mapPixelToCoords(pPos);
-		w->clear();
+		window->clear();
 
-		while( w->pollEvent( ev ) )
+		while(window->pollEvent( ev ) )
 		{
 			switch( ev.type )
 			{
@@ -5269,21 +5012,21 @@ void EditSession::MessagePop( const std::string &message )
 			break;	
 		}
 
-		w->setView( v );
+		window->setView( v );
 
-		w->draw( preTexSprite );
+		window->draw( preTexSprite );
 
-		w->setView( uiView );
+		window->setView( uiView );
 
-		messagePopup->Draw( w );
+		messagePopup->Draw(window);
 
-		w->setView( v );
+		window->setView( v );
 
-		w->display();
+		window->display();
 	}
 
 	preScreenTex->setView( view );
-	w->setView( v );
+	window->setView( v );
 	//preScreenTex->setView( view );
 }
 
@@ -5317,7 +5060,7 @@ void EditSession::GridSelectPop( const std::string &type )
 	int selectedIndex = -1;
 	tempGridResult = "nothing";
 	bool closePopup = false;
-	w->setView( v );
+	window->setView( v );
 	
 	preScreenTex->display();
 	const Texture &preTex = preScreenTex->getTexture();
@@ -5328,9 +5071,9 @@ void EditSession::GridSelectPop( const std::string &type )
 
 	preScreenTex->setView( uiView );
 
-	Vector2i pPos = Vector2i(960, 540) - Vector2i( panel->size.x / 2, panel->size.y / 2 );//sf::Mouse::getPosition( *w );
-	pPos.x *= 1920 / w->getSize().x;
-	pPos.y *= 1920 / w->getSize().y;
+	Vector2i pPos = Vector2i(960, 540) - Vector2i( panel->size.x / 2, panel->size.y / 2 );
+	pPos.x *= 1920 / window->getSize().x;
+	pPos.y *= 1920 / window->getSize().y;
 
 	Vector2f uiMouse = preScreenTex->mapPixelToCoords(pPos);
 
@@ -5344,7 +5087,7 @@ void EditSession::GridSelectPop( const std::string &type )
 	{
 		pPos = GetPixelPos();
 		uiMouse = preScreenTex->mapPixelToCoords(pPos);
-		w->clear();
+		window->clear();
 
 		bool shardClose = tempGridResult == "shardclose";
 		if (panel != shardSelectPopup)
@@ -5362,7 +5105,7 @@ void EditSession::GridSelectPop( const std::string &type )
 			}
 		}
 
-		while( w->pollEvent( ev ) )
+		while(window->pollEvent( ev ) )
 		{
 			switch( ev.type )
 			{
@@ -5415,22 +5158,22 @@ void EditSession::GridSelectPop( const std::string &type )
 			break;	
 		}
 
-		w->setView( v );
+		window->setView( v );
 
-		w->draw( preTexSprite );
+		window->draw( preTexSprite );
 
-		w->setView( uiView );
+		window->setView( uiView );
 
 		//messagePopup->Draw( w );
-		panel->Draw( w );
+		panel->Draw(window);
 
-		w->setView( v );
+		window->setView( v );
 
-		w->display();
+		window->display();
 	}
 
 	preScreenTex->setView( view );
-	w->setView( v );
+	window->setView( v );
 }
 Panel * EditSession::CreatePopupPanel( const std::string &type )
 {
@@ -6417,7 +6160,7 @@ void EditSession::SetInversePoly()
 
 	ClearUndoneActions();
 
-	PolyPtr newPoly( new TerrainPolygon(&grassTex) );
+	PolyPtr newPoly( new TerrainPolygon() );
 	polygonInProgress = newPoly;
 
 	progressBrush->Clear();
@@ -6538,7 +6281,7 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 					action = new ReplaceBrushAction(&containedBrush, progressBrush, mapStartBrush);
 				}
 
-				PolyPtr newPoly(new TerrainPolygon(&grassTex));
+				PolyPtr newPoly(new TerrainPolygon();
 				polygonInProgress = newPoly;
 			}
 			else
@@ -7062,7 +6805,7 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 
 		for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 		{
-			PolyPtr newPoly(new TerrainPolygon(&grassTex));
+			PolyPtr newPoly(new TerrainPolygon();
 			//FusePathClusters((*sit), clipperIntersections, fusedPoints);
 			//sliverResult = FixPathSlivers((*sit), fusedPoints);
 			
@@ -7348,7 +7091,7 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 
 		for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 		{
-			PolyPtr newPoly(new TerrainPolygon(&grassTex));
+			PolyPtr newPoly(new TerrainPolygon());
 			//FusePathClusters((*sit), clipperIntersections, fusedPoints);
 			//FixPathSlivers((*sit));
 
@@ -7530,7 +7273,7 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 		
 		if (playerInsideIndex >= 0)
 		{
-			PolyPtr newInverse(new TerrainPolygon(&grassTex));
+			PolyPtr newInverse(new TerrainPolygon());
 			newInverse->inverse = true;
 
 			newInverse->Reserve(inverseSolution[playerInsideIndex].size());
@@ -7619,7 +7362,7 @@ Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys, list<P
 
 	polygonInProgress->CopyPointsToClipperPath(inProgress[0]);
 
-	PolyPtr outPoly(new TerrainPolygon(&grassTex));
+	PolyPtr outPoly(new TerrainPolygon());
 
 	ClipperLib::Path clipperIntersections;
 	//if I want to speed this up later, only care about these points when they are on the OUTSIDE of the target polys
@@ -7797,7 +7540,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys, l
 
 			for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 			{
-				PolyPtr newPoly = new TerrainPolygon(&grassTex);
+				PolyPtr newPoly = new TerrainPolygon();
 
 				FusePathClusters((*sit), clipperIntersections, fusedPoints);
 				newPoly->Reserve((*sit).size());
@@ -7829,7 +7572,7 @@ Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys, l
 
 		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
 		{
-			PolyPtr newPoly = new TerrainPolygon(&grassTex);
+			PolyPtr newPoly = new TerrainPolygon();
 
 
 			FusePathClusters((*it), clipperIntersections, fusedPoints);
@@ -8890,9 +8633,9 @@ void EditSession::ModifyZoom(double factor)
 
 Vector2i EditSession::GetPixelPos()
 {
-	Vector2i pPos = Mouse::getPosition(*w);
-	pPos.x *= 1920.f / w->getSize().x;
-	pPos.y *= 1080.f / w->getSize().y;
+	Vector2i pPos = Mouse::getPosition(*window);
+	pPos.x *= 1920.f / window->getSize().x;
+	pPos.y *= 1080.f / window->getSize().y;
 
 	return pPos;
 }
@@ -9813,14 +9556,14 @@ void EditSession::Display()
 	Sprite preTexSprite(preTex);
 	preTexSprite.setPosition(-960 / 2, -540 / 2);
 	preTexSprite.setScale(.5, .5);
-	w->clear();
-	w->draw(preTexSprite);
-	w->display();
+	window->clear();
+	window->draw(preTexSprite);
+	window->display();
 }
 
 void EditSession::HandleEvents()
 {
-	while (w->pollEvent(ev))
+	while (window->pollEvent(ev))
 	{
 		if (ev.type == Event::KeyPressed)
 		{

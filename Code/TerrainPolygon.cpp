@@ -52,8 +52,8 @@ namespace mapbox
 
 #define cout std::cout
 
-TerrainPolygon::TerrainPolygon( sf::Texture *gt)
-	:ISelectable( ISelectable::TERRAIN ), grassTex( gt )
+TerrainPolygon::TerrainPolygon()
+	:ISelectable( ISelectable::TERRAIN )
 {
 	inverse = false;
 	layer = 0;
@@ -67,10 +67,11 @@ TerrainPolygon::TerrainPolygon( sf::Texture *gt)
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
 	pointVector.resize(2);
-	//pointVector.push_back(vector<TerrainPoint>());
 	
-	//tr = NULL;
 	EditSession *session = EditSession::GetSession();
+	//GET GRASS TILESET HERE
+	ts_grass = session->GetTileset("Resources/Env/grass_128x128.png", 128, 128);
+	
 	if (session != NULL)
 	{
 		grassSize = session->grassSize;//64;//64;//22;
@@ -91,9 +92,9 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 {
 	layer = 0;
 	inverse = poly.inverse;
-	grassTex = poly.grassTex;
 	terrainWorldType = poly.terrainWorldType;
 	terrainVariation = poly.terrainVariation;
+	ts_grass = poly.ts_grass;
 
 	EditSession *session = EditSession::GetSession();
 	if (session != NULL)
@@ -1346,7 +1347,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 
 	if( grassVA != NULL )
-		rt->draw(*grassVA, grassTex );
+		rt->draw(*grassVA, ts_grass->texture);
 
 	if( va != NULL )
 		rt->draw( *va, pShader );
@@ -2205,7 +2206,7 @@ PolyPtr TerrainPolygon::CreateCopyWithSelectedPointsRemoved()
 		return NULL;
 	}
 
-	PolyPtr newPoly = new TerrainPolygon(grassTex);
+	PolyPtr newPoly = new TerrainPolygon();
 	newPoly->Reserve(newPolyPoints);
 
 	newPoly->layer = 0;
@@ -2685,7 +2686,33 @@ void TerrainPolygon::Reserve( int nPoints )
 	PointVector().reserve(nPoints);
 }
 
+
+bool TerrainPolygon::Load(std::ifstream &is)
+{
+	int matWorld;
+	int matVariation;
+	is >> matWorld;
+	is >> matVariation;
+
+	SetMaterialType(matWorld, matVariation);
+
+	int polyPoints;
+	is >> polyPoints;
+
+	Reserve(polyPoints);
+	for (int j = 0; j < polyPoints; ++j)
+	{
+		int x, y;
+		is >> x;
+		is >> y;
+		AddPoint(Vector2i(x, y), false);
+	}
+
+	return true;
+}
+
 //ISELECTABLE FUNCTIONS
+
 
 
 
@@ -2694,7 +2721,7 @@ bool TerrainPolygon::Intersects( sf::IntRect rect )
 	if (rect.width == 0 || rect.height == 0)
 		return false;
 
-	TerrainPolygon poly( grassTex );
+	TerrainPolygon poly();
 	poly.AddPoint( Vector2i( rect.left, rect.top ), false );
 	poly.AddPoint( Vector2i( rect.left + rect.width, rect.top ), false);
 	poly.AddPoint( Vector2i( rect.left + rect.width, rect.top + rect.height ), false);

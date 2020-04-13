@@ -252,7 +252,7 @@ Collider &Actor::GetCollider()
 	}
 	else if (editOwner != NULL)
 	{
-		return editOwner->coll;
+		return editOwner->collider;
 	}
 
 }

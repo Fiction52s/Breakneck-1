@@ -115,12 +115,14 @@ struct TerrainPolygon : ISelectable
 		Count
 	};
 
+	Tileset *ts_grass;
 	void SetupEdges();
 	std::vector<Edge> edges;
 	void AddEdgesToQuadTree(QuadTree *tree);
 
 	//QuadTree *edgeTree;
 	bool isBrushTest;
+	bool Load(std::ifstream &is);
 	
 	void MakeInverse();
 	static sf::Vector2i GetExtreme(TerrainPoint *p0,
@@ -152,7 +154,7 @@ struct TerrainPolygon : ISelectable
 	sf::Shader *pShader;
 	bool IsValidInProgressPoint(sf::Vector2i point);
 	void UpdateLines();
-	TerrainPolygon(sf::Texture *grassTex);
+	TerrainPolygon();
 	TerrainPolygon(TerrainPolygon &poly, bool pointsOnly,
 		bool storeSelectedPoints = false );
 	~TerrainPolygon();
@@ -292,7 +294,6 @@ struct TerrainPolygon : ISelectable
 	sf::VertexArray *va;
 	sf::VertexArray *grassVA;
 	int numGrassTotal;
-	sf::Texture *grassTex;
 	int vaSize;
 	//bool selected;
 	int left;

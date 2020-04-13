@@ -97,31 +97,11 @@ struct EditSession : GUIHandler, Session
 		sf::Vector2f &size);
 	bool initialViewSet;
 
-
-
-	Actor *testPlayer;
-	Actor *GetPlayer(int i);
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void UpdatePostPhysics();
-	ControllerState &GetPrevInput(int index);
-	ControllerState &GetCurrInput(int index);
-	ControllerState &GetPrevInputUnfiltered(int index);
-	ControllerState &GetCurrInputUnfiltered(int index);
-	GameController &GetController(int index);
-	void UpdatePlayerInput( int index );
-	int substep;
-	double currentTime;
-	double accumulator;
-	sf::Clock gameClock;
-	Collider coll;
-	//double currentTime;
 	void TestPlayerModeUpdate();
 	void TestPlayerMode();
-	int totalGameFrames;
-
-	QuadTree * terrainTree;
-	QuadTree *specialTerrainTree;
 
 	/*QuadTree *terrainBGTree;
 	QuadTree *specialTerrainTree;
@@ -140,8 +120,6 @@ struct EditSession : GUIHandler, Session
 	QuadTree *activeItemTree;
 	QuadTree *activeEnemyItemTree;
 	QuadTree *airTriggerTree;*/
-	
-	boost::filesystem::path filePath;
 
 	EditSession(MainMenu *p_mainMenu,
 		const boost::filesystem::path &p_filePath );
@@ -152,12 +130,22 @@ struct EditSession : GUIHandler, Session
 	static EditSession *GetSession();
 	static EditSession *currSession;
 
+	//process stuff read from file
+	void ProcessDecorFromFile(const std::string &name,
+		int tile);
+	void ProcessHeader();
+	void ProcessDecorSpr( const std::string &dName,
+		sf::Sprite &dSpr, int dLayer, Tileset *d_ts, int dTile);
+	void ProcessPlayerStartPos();
+	void ProcessTerrain( PolyPtr poly );
+	void ProcessSpecialTerrain(PolyPtr poly);
+	void ProcessBGTerrain(PolyPtr poly);
 	//file stuff
 	bool OpenFile();
-	bool ReadHeader(std::ifstream &is);
+	//bool ReadHeader(std::ifstream &is);
 	bool ReadPlayer(std::ifstream &is);
 	bool ReadDecor(std::ifstream &is);
-	bool ReadTerrain(std::ifstream &is);
+	//bool ReadTerrain(std::ifstream &is);
 	bool ReadBGTerrain(std::ifstream &is);
 	bool ReadSpecialTerrain(std::ifstream &is);
 	bool ReadActors(std::ifstream &is);
@@ -412,7 +400,7 @@ struct EditSession : GUIHandler, Session
 	GroundInfo worldPosGround;
 	V2d worldPos;
 	ActorParams* tempActor;
-	MapHeader mapHeader;
+	MapHeader newMapHeader;
 
 	const static int POINT_SIZE = 4;
 	double GetZoomedPointSize();
@@ -422,7 +410,6 @@ struct EditSession : GUIHandler, Session
 	sf::RenderTexture *preScreenTex;
 	int validityRadius;
 	
-	sf::Texture grassTex;
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
 	sf::Vector2i oldPointGrabPos;
@@ -441,7 +428,6 @@ struct EditSession : GUIHandler, Session
 
 	sf::View v;
 	
-	sf::RenderWindow *w;
 	//sf::Vector2i goalPosition;
 	std::string currentFile;
 	static double zoomMultiple;
@@ -549,6 +535,8 @@ struct EditSession : GUIHandler, Session
 	void MoveTopBorder(int amount);
 	void MoveLeftBorder(int amount);
 	void MoveRightBorder(int amount);
+
+	
 
 	void ShowGrass(bool s);
 
@@ -865,8 +853,6 @@ struct EditSession : GUIHandler, Session
 	int currDecorTile;
 
 	bool decorTracking;
-	void LoadDecorImages();
-	std::map<std::string, Tileset*> decorTSMap;
 	int *decorTileIndexes;
 	std::map<std::string, std::list<int>> decorTileIndexMap;
 

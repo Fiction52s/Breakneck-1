@@ -596,9 +596,8 @@ void MainMenu::UpdateMenuOptionText()
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight(1080)
 {
-	assert(currInstance != NULL);
+	assert(currInstance == NULL);
 	currInstance = this;
-
 
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
@@ -1195,8 +1194,9 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 		if( result > 0 )
 			break;
 
-		EditSession *es = new EditSession(this );
-		result = es->Run( p_path, lastViewCenter, lastViewSize );
+		EditSession *es = new EditSession(this, p_path );
+		es->SetInitialView(lastViewCenter, lastViewSize);
+		result = es->Run();
 		delete es;
 	}
 }
@@ -3662,7 +3662,7 @@ void MapSelectionMenu::LoadItems()
 		is.open((*it).string());
 		if (is.is_open())
 		{
-			MapHeader *mh = ReadMapHeader(is);
+			MapHeader *mh = MainMenu::ReadMapHeader(is);
 			string pFile = string( "Maps/Previews/") + (*it).relative_path().stem().string() + string("_preview_912x492.png");//string("Maps/") + (*it).filename().stem().string() + string("_preview_960x540.png");
 			//string defaultFile = "Menu/nopreview_960x540.png";
 
@@ -3836,7 +3836,7 @@ bool MapSelectionMenu::ReplaceHeader(boost::filesystem::path &p, MapHeader *mh )
 
 	if (is.is_open())
 	{
-		MapHeader *oldHeader = ReadMapHeader(is);
+		MapHeader *oldHeader = MainMenu::ReadMapHeader(is);
 
 		is.get(); //gets rid of the extra newline char
 
