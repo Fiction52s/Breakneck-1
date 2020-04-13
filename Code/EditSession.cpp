@@ -21,6 +21,7 @@
 #include "Actor.h"
 #include "ControlProfile.h"
 #include "SaveFile.h"
+#include "Wire.h"
 
 #include "clipper.hpp"
 //using namespace ClipperLib;
@@ -98,18 +99,8 @@ void EditSession::TestPlayerModeUpdate()
 		UpdatePhysics();
 		UpdatePostPhysics();
 
-		/*for (int i = 0; i < 4; ++i)
-		{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-		if (p->hasPowerLeftWire)
-		p->leftWire->UpdateQuads();
-
-		if (p->hasPowerRightWire)
-		p->rightWire->UpdateQuads();
-		}
-		}*/
+		
+		UpdatePlayerWireQuads();
 
 		accumulator -= TIMESTEP;
 		totalGameFrames++;
@@ -129,15 +120,29 @@ void EditSession::TestPlayerMode()
 		terrainTree->Clear();
 		specialTerrainTree->Clear();
 
-		GetPlayer(0)->Respawn();
+		Actor *p;
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+				p->Respawn();
+		}
 	}
 	else
 	{
 		terrainTree = new QuadTree(1000000, 1000000);
 		specialTerrainTree = new QuadTree(1000000, 1000000);
 
-		GetPlayer(0)->SetToOriginalPos();
+		railEdgeTree = new QuadTree(1000000, 1000000);
+		barrierTree = new QuadTree(1000000, 1000000);
 
+		Actor *p;
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+				p->SetToOriginalPos();
+		}
 	}
 
 	auto testPolys = GetCorrectPolygonList(0);
@@ -318,14 +323,17 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 		}
 	}
 	//update this later
-	for (int i = 0; i < 1; ++i)
+
+	ControlProfile *currProfile = mainMenu->GetCurrSelectedProfile();
+	for (int i = 0; i < 4; ++i)
 	{
-		ControlProfile *currProfile = mainMenu->GetCurrSelectedProfile();
-		GameController &con = GetController(i);
-		//SetFilterDefaultGCC(GetController(i).filter);
-		currProfile->tempCType = con.GetCType();
-		con.SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
 		
+		GameController &con = GetController(i);
+		if (con.IsConnected())
+		{
+			currProfile->tempCType = con.GetCType();
+			con.SetFilter(currProfile->GetCurrFilter());
+		}
 	}
 
 	inversePolygon = NULL;
@@ -1069,6 +1077,8 @@ void EditSession::Draw()
 
 	if (mode == TEST_PLAYER)
 	{
+		DrawPlayerWires(preScreenTex);
+
 		Actor *p = NULL;
 		for (int i = 0; i < 4; ++i)
 		{
@@ -2258,6 +2268,15 @@ int EditSession::Run()
 {
 	players[0] = new Actor(NULL, this, 0);
 	players[0]->InitAfterEnemies();
+	for (int i = 1; i < MAX_PLAYERS; ++i)
+	{
+		if (GetController(i).IsConnected())
+		{
+			players[i] = new Actor(NULL, this, i);
+			players[i]->InitAfterEnemies();
+		}
+	}
+	
 
 	oldShaderZoom = -1;
 	complexPaste = NULL;
@@ -9638,7 +9657,13 @@ void EditSession::HandleEvents()
 					}
 					else
 					{
-						GetPlayer(0)->Respawn();
+						Actor *p;
+						for (int i = 0; i < MAX_PLAYERS; ++i)
+						{
+							p = GetPlayer(i);
+							if (p != NULL)
+								p->Respawn();
+						}
 					}
 					//quit = true;
 				}

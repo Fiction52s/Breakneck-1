@@ -149,6 +149,26 @@ QuadTree *Actor::GetSpecialTerrainTree()
 	}
 }
 
+QuadTree *Actor::GetRailEdgeTree()
+{
+	if (owner != NULL)
+		return owner->railEdgeTree;
+	else if (editOwner != NULL)
+	{
+		return editOwner->railEdgeTree;
+	}
+}
+
+QuadTree *Actor::GetBarrierTree()
+{
+	if (owner != NULL)
+		return owner->barrierTree;
+	else if (editOwner != NULL)
+	{
+		return editOwner->barrierTree;
+	}
+}
+
 int Actor::GetTotalGameFrames()
 {
 	if (owner != NULL)
@@ -325,7 +345,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 	tileset[STEEPCLIMB] = GetTileset("Kin/steepclimb_96x32.png", 96, 32, skin);
 	tileset[AIRHITSTUN] = GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
 	tileset[GROUNDHITSTUN] = GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
-	tileset[WIREHOLD] = GetTileset("Kin/steepslide_80x48.png", 80, 48, skin);
+	tileset[WIREHOLD] = tileset[STEEPSLIDE];//GetTileset("Kin/steepslide_80x48.png", 80, 48, skin);
 	tileset[BOUNCEAIR] = GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
 	tileset[BOUNCEGROUND] = GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
 	tileset[BOUNCEGROUNDEDWALL] = GetTileset("Kin/bounce_wall_224x224.png", 224, 224, skin);
@@ -492,6 +512,7 @@ void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:owner( gs ), editOwner(es), dead( false ), actorIndex( p_actorIndex )
 	{
+	usingAura = false;
 	fBubblePos = NULL;
 	fBubbleRadiusSize = NULL;
 	fBubbleFrame = NULL;
@@ -1174,14 +1195,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		airBounceFlameFrames = 20 * 3;
 		runBounceFlameFrames = 21 * 3;
 		actionLength[WALLATTACK] = 8 * 2;
-		//CreateAura(auraPoints[WALLATTACK], tileset[WALLATTACK]);
 		actionLength[DAIR] = 16;
-		//CreateAura(auraPoints[DAIR], tileset[DAIR]);
 		actionLength[DASH] = 45 + 10;
 		maxBBoostCount = actionLength[DASH];
-		//CreateAura(auraPoints[DASH], tileset[DASH] );
 		actionLength[DOUBLE] = 28 + 10;
-		//CreateAura(auraPoints[DOUBLE], tileset[DOUBLE]);
 		actionLength[BACKWARDSDOUBLE] = 40;//28 + 10;
 		actionLength[FAIR] = 8 * 2;
 		actionLength[DIAGUPATTACK] = 11 * 2;
@@ -1318,7 +1335,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		cout << "Start aura" << endl;
 		//sh.setUniform( "u_texture", *tileset[action]->texture ); 
 
-		LoadAllAuras();
+		//LoadAllAuras();
 		
 		cout << "end aura" << endl;
 
@@ -1645,15 +1662,18 @@ Actor::~Actor()
 
 	delete rpu;
 
-	list<Vector2f> *currP = NULL;
-	for (int i = 0; i < 3; ++i)
+	if (usingAura)
 	{
-		for (int j = 0; j < Action::Count; ++j)
+		list<Vector2f> *currP = NULL;
+		for (int i = 0; i < 3; ++i)
 		{
-			currP = auraPoints[i][j];
-			if (currP != NULL)
+			for (int j = 0; j < Action::Count; ++j)
 			{
-				delete [] currP;
+				currP = auraPoints[i][j];
+				if (currP != NULL)
+				{
+					delete[] currP;
+				}
 			}
 		}
 	}
@@ -8688,6 +8708,8 @@ double Actor::GetNumSteps()
 
 void Actor::LoadAllAuras()
 {
+	usingAura = true;
+
 	ifstream is;
 	is.open("Resources/Kin/kinaura", ios::in|ios::binary );
 
@@ -15920,6 +15942,7 @@ void Actor::UpdatePostPhysics()
 	
 	gateBlackFXPool->Update();
 	//if (updateAura)
+	if( usingAura )
 	{
 		testAura->Update();
 		testAura1->Update();
@@ -18539,16 +18562,19 @@ void Actor::Draw( sf::RenderTarget *target )
 
 	if (action != DEATH)
 	{
-		if (speedLevel > 1)
+		if (usingAura)
 		{
-			testAura2->Draw(target);
-		}
-		if (speedLevel > 0)
-		{
-			testAura1->Draw(target);
-		}
+			if (speedLevel > 1)
+			{
+				testAura2->Draw(target);
+			}
+			if (speedLevel > 0)
+			{
+				testAura1->Draw(target);
+			}
 
-		testAura->Draw(target);
+			testAura->Draw(target);
+		}
 	}
 	
 	if (showExitAura)
@@ -21770,26 +21796,28 @@ void Actor::UpdateSprite()
 	np.centerPos = sprite->getPosition() + diff;//sprite->getPosition() + center;//Vector2f(gn.x, gn.y) * (sprite->getLocalBounds().height / 2);
 	//sprite->setOrigin(oldOrigin);
 	
-	if (auraPoints[0][spriteAction] != NULL)
+	if (usingAura)
 	{
-		testAura->ActivateParticles(auraPoints[0][spriteAction][currTileIndex], tr, Vector2f( spriteCenter ), &np, 0);
-		//testAura1->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr1, Vector2f( spriteCenter ) + extraParticle0, &np);
-		//testAura2->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin() + extraParticle2, &np);
-		//testAura3->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin(), &np);
-	}
+		if (auraPoints[0][spriteAction] != NULL)
+		{
+			testAura->ActivateParticles(auraPoints[0][spriteAction][currTileIndex], tr, Vector2f(spriteCenter), &np, 0);
+			//testAura1->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr1, Vector2f( spriteCenter ) + extraParticle0, &np);
+			//testAura2->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin() + extraParticle2, &np);
+			//testAura3->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin(), &np);
+		}
 
-	if (auraPoints[1][spriteAction] != NULL)
-	{
-		testAura1->ActivateParticles(auraPoints[1][spriteAction][currTileIndex], tr, Vector2f(spriteCenter) + extraParticle1, &np, 3);
-	}
+		if (auraPoints[1][spriteAction] != NULL)
+		{
+			testAura1->ActivateParticles(auraPoints[1][spriteAction][currTileIndex], tr, Vector2f(spriteCenter) + extraParticle1, &np, 3);
+		}
 
-	if (auraPoints[2][spriteAction] != NULL)
-	{
-		//np.thickness = 10.f;
-		//tr.scale(2, 2);
-		testAura2->ActivateParticles(auraPoints[2][spriteAction][currTileIndex], tr, Vector2f(spriteCenter) + extraParticle2, &np, 1);
+		if (auraPoints[2][spriteAction] != NULL)
+		{
+			//np.thickness = 10.f;
+			//tr.scale(2, 2);
+			testAura2->ActivateParticles(auraPoints[2][spriteAction][currTileIndex], tr, Vector2f(spriteCenter) + extraParticle2, &np, 1);
+		}
 	}
-
 	if( scorpOn && !scorpSet )
 	{
 		if( ground != NULL )
@@ -22418,6 +22446,31 @@ void Actor::AirMovement()
 			}
 		}
 	}
+}
+
+void Actor::DrawWires(sf::RenderTarget *target)
+{
+	if (hasPowerLeftWire &&
+		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
+			|| leftWire->state == Wire::RETRACTING))
+	{
+		leftWire->Draw(target);
+	}
+	if (hasPowerRightWire &&
+		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
+			|| rightWire->state == Wire::RETRACTING))
+	{
+		rightWire->Draw(target);
+	}
+}
+
+void Actor::UpdateWireQuads()
+{
+	if (hasPowerLeftWire)
+		leftWire->UpdateQuads();
+
+	if (hasPowerRightWire)
+		rightWire->UpdateQuads();
 }
 
 Vector2i Actor::GetWireOffset()

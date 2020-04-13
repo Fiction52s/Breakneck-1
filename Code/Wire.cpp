@@ -398,9 +398,9 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			rayCancel = false;
 			V2d currPos = playerPos + fireDir * fireRate * (double)(framesFiring);
 			V2d futurePos = playerPos + fireDir * fireRate * (double)(framesFiring + 1);
-			RayCast( this, player->owner->terrainTree->startNode, playerPos, futurePos );
-			RayCast(this, player->owner->railEdgeTree->startNode, playerPos, futurePos);
-			RayCast(this, player->owner->barrierTree->startNode, playerPos, futurePos);
+			RayCast( this, player->GetTerrainTree()->startNode, playerPos, futurePos );
+			RayCast(this, player->GetRailEdgeTree()->startNode, playerPos, futurePos);
+			RayCast(this, player->GetBarrierTree()->startNode, playerPos, futurePos);
 
 			fireDir = normalize(fireDir);
 			double len = length(futurePos - currPos);
@@ -917,7 +917,7 @@ void Wire::UpdateAnchors2( V2d vel )
 			clockwise = false;
 
 		queryMode = "terrain";
-		player->owner->terrainTree->Query( this, r );
+		player->GetTerrainTree()->Query( this, r );
 		//player->owner->barrierTree->Query(this, r);
 		if( state == RELEASED )
 		{
@@ -926,7 +926,7 @@ void Wire::UpdateAnchors2( V2d vel )
 			return;
 		}
 
-		if( player->owner->showDebugDraw )
+		if( player->owner != NULL && player->owner->showDebugDraw )
 		{
 			sf::RectangleShape queryDebug;
 			queryDebug.setPosition( Vector2f( r.left, r.top ) );
@@ -973,7 +973,7 @@ void Wire::UpdateAnchors2( V2d vel )
 
 		Enemy *foundEnemy = NULL;
 		int foundIndex;
-		if (GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
+		if ( player->owner != NULL && GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
 		{
 			storedPlayerPos = playerPos;
 			state = HIT;
@@ -1017,9 +1017,9 @@ void Wire::UpdateAnchors2( V2d vel )
 			//queryType = "terrain";
 			minSideEdge = NULL;
 			queryMode = "terrain";
-			player->owner->terrainTree->Query( this, r );
-			player->owner->railEdgeTree->Query(this, r);
-			player->owner->barrierTree->Query(this, r);
+			player->GetTerrainTree()->Query( this, r );
+			player->GetRailEdgeTree()->Query(this, r);
+			player->GetBarrierTree()->Query(this, r);
 			if( minSideEdge != NULL )
 			{
 				storedPlayerPos = playerPos;
@@ -1445,7 +1445,7 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 
 void Wire::CheckAntiWireGrass()
 {
-	if (player->owner->hasGrass[Grass::ANTIWIRE])
+	if ( player->owner != NULL && player->owner->hasGrass[Grass::ANTIWIRE])
 	{
 		V2d hitPoint = rcEdge->GetPoint(rcQuant);
 		sf::Rect<double> r;
@@ -1900,7 +1900,7 @@ void Wire::Retract()
 void Wire::Draw( RenderTarget *target )
 {
 	//return;
-	if( player->owner->showDebugDraw )
+	if( player->owner != NULL && player->owner->showDebugDraw )
 	{
 		CircleShape *cstest = new CircleShape;
 		cstest->setRadius( 10 );

@@ -305,8 +305,13 @@ struct Actor : QuadTreeCollider,
 	void SetToOriginalPos();
 	void UpdatePowers();
 
+	void UpdateWireQuads();
+	void DrawWires(sf::RenderTarget *target);
+
 	QuadTree *GetTerrainTree();
 	QuadTree *GetSpecialTerrainTree();
+	QuadTree *GetRailEdgeTree();
+	QuadTree *GetBarrierTree();
 	int GetTotalGameFrames();
 	Collider &GetCollider();
 
@@ -954,6 +959,7 @@ struct Actor : QuadTreeCollider,
 
 	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
 	std::list<sf::Vector2f> *auraPoints[3][Action::Count];
+	bool usingAura;
 	int CreateAura( std::list<sf::Vector2f> *&outPointList,
 		Tileset *ts, int startTile = 0, int numTiles= 0, int layer = 0);
 	//std::list<sf::Vector2f> *runPoints;

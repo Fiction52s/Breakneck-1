@@ -28,8 +28,16 @@ struct Session : TilesetManager
 	void UpdateControllers();
 	bool IsKeyPressed(int k);
 	bool IsMousePressed(int m);
+
+
+	void DrawPlayerWires(sf::RenderTarget *target);
+	void UpdatePlayerWireQuads();
+
 	bool ReadFile();
 	bool ReadDecorImagesFile();
+
+
+
 	virtual void ProcessDecorFromFile(const std::string &name,
 		int tile) {}
 	bool ReadHeader( std::ifstream &is );
@@ -62,6 +70,7 @@ struct Session : TilesetManager
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,
 		int shardIndex ) {}
+
 		
 	//virtual void ProcessActor( const std::string &groupName, int numActors,
 	//	const std::string &actorType ) {}
@@ -82,6 +91,8 @@ struct Session : TilesetManager
 
 	QuadTree * terrainTree;
 	QuadTree *specialTerrainTree;
+	QuadTree *railEdgeTree;
+	QuadTree *barrierTree;
 
 	int substep;
 	double currentTime;

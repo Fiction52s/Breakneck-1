@@ -28,6 +28,8 @@ Session::Session(const boost::filesystem::path &p_filePath)
 
 	terrainTree = NULL;
 	specialTerrainTree = NULL;
+	railEdgeTree = NULL;
+	barrierTree = NULL;
 }
 
 Session::~Session()
@@ -43,8 +45,40 @@ Session::~Session()
 	if (specialTerrainTree != NULL)
 		delete specialTerrainTree;
 
+	if (railEdgeTree != NULL)
+		delete railEdgeTree;
+
+	if (barrierTree != NULL)
+		delete barrierTree;
+
 	if (mapHeader != NULL)
 		delete mapHeader;
+}
+
+void Session::DrawPlayerWires( RenderTarget *target )
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DrawWires(target);
+		}
+	}
+}
+
+void Session::UpdatePlayerWireQuads()
+{
+	Actor *p;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->UpdateWireQuads();
+		}
+	}
 }
 
 bool Session::ReadDecorImagesFile()
