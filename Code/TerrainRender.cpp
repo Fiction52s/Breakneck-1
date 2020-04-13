@@ -96,12 +96,6 @@ struct EdgeInfo
 
 void TerrainRender::GenerateBorderMesh()
 {
-	/*bool useEdges = true;
-	if (startEdge == NULL && startPoint != NULL)
-	{
-		useEdges = false;
-	}*/
-
 	Triple totalQuads;
 	Edge *te = startEdge;//edges[currentEdgeIndex];
 
@@ -1461,7 +1455,6 @@ V2d TerrainRender::GetBisector(Edge *e)
 	V2d curr = normalize(e->v1 - e->v0);
 	V2d prev = normalize(e->edge0->v0 - e->v0);
 	return normalize(curr + prev);
-	
 }
 
 DecorType TerrainRender::GetDecorType(const std::string &dStr)

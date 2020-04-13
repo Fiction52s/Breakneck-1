@@ -3671,7 +3671,8 @@ void MapSelectionMenu::LoadItems()
 
 				MapSelectionItem *item = new MapSelectionItem((*it), mh);
 				
-				item->ts_preview = mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
+				//load textures in one at a time. loading all textures like this is insane.
+				item->ts_preview = NULL; //mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
 				if (item->ts_preview == NULL)
 				{
 					//item->ts_preview = mainMenu->tilesetManager.GetTileset(defaultFile, 960, 540);

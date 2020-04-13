@@ -19,8 +19,7 @@ Edge::Edge()
 
 V2d Edge::Normal()
 {
-	V2d v = v1 - v0;
-	V2d temp = normalize( v );
+	V2d temp = Along();
 	return V2d( temp.y, -temp.x );
 }
 
@@ -66,6 +65,11 @@ double Edge::GetQuantityGivenX( double x )
 double Edge::GetLength()
 {
 	return length(v1 - v0);
+}
+
+double Edge::GetLengthSqr()
+{
+	return lengthSqr(v1 - v0);
 }
 
 bool Edge::IsTouchingBox( const sf::Rect<double> &r )
@@ -2015,6 +2019,16 @@ void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint
 void Edge::HandleQuery(QuadTreeCollider * qtc)
 {
 	qtc->HandleEntrant(this);
+}
+
+Edge * Edge::GetPrevEdge()
+{
+	return edge0;
+}
+
+Edge * Edge::GetNextEdge()
+{
+	return edge1;
 }
 
 sf::Rect<double> CollisionBox::GetAABB()

@@ -2286,8 +2286,8 @@ void EditSession::SetInitialView(sf::Vector2f &center,
 
 int EditSession::Run()
 {
-	players[0] = new Actor(NULL, this, 0);
-	players[0]->InitAfterEnemies();
+	//players[0] = new Actor(NULL, this, 0);
+	//players[0]->InitAfterEnemies();
 
 	oldShaderZoom = -1;
 	complexPaste = NULL;

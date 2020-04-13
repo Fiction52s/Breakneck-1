@@ -41,6 +41,9 @@ Session::~Session()
 
 	if (specialTerrainTree != NULL)
 		delete specialTerrainTree;
+
+	if (mapHeader != NULL)
+		delete mapHeader;
 }
 
 bool Session::ReadDecorImagesFile()

@@ -159,6 +159,8 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 		return NULL;
 	}
 
+	cout << "created texture for: " << s2 << endl;
+
 	Tileset *t = new Tileset();
 	t->texture = tex;
 

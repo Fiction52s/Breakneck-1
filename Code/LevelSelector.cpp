@@ -152,8 +152,6 @@ void LevelSelector::MouseUpdate( sf::Vector2f mousePos )
 
 void LevelSelector::GetPreview( const std::string &pName, const std::string &mName, bool update)
 {
-	//string fileName = string("Maps/Previews/") + mName + string("_preview_912x492.png");
-	//string fileName = fName + string("_preview_912x492.png");
 	string fileName;
 	if (pName == "Maps")
 	{
@@ -213,7 +211,7 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 					selectedIndex = testIndex;
 					//cout << "selected index: " << selectedIndex << endl;
 					string indexText = text[selectedIndex].getString().toAnsiString();
-					Tileset *currTS = previewTS[indexText];
+					Tileset *&currTS = previewTS[indexText];
 
 					if (text[selectedIndex].getFillColor() == Color::Red)
 					{
@@ -228,8 +226,12 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 
 						UpdateSelectedPreview();
 					}
+					else if( currTS == NULL )
+					{
+						UpdateSelectedPreview();
+					}
 					
-
+					//needs cleanup later
 					if( currTS != NULL )
 						previewSpr.setTexture(*currTS->texture);
 					else
@@ -241,7 +243,7 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 			}
 			else
 			{
-				cout << "negative!" << endl;
+				//cout << "negative!" << endl;
 				//selectedIndex = -1;
 			}
 
@@ -260,16 +262,20 @@ void LevelSelector::UpdateSelectedPreview()
 {
 	string indexText = text[selectedIndex].getString().toAnsiString();
 	string test = localPaths[selectedIndex];
-	/*if (text[selectedIndex].getFillColor() == Color::White)
-	{
-		indexText = 
-	}*/
 
-	Tileset *currTS = NULL;
-	if (text[selectedIndex].getFillColor() != Color::Red)
+	Tileset *&currTS = previewTS[indexText];
+
+	if ( text[selectedIndex].getFillColor() != Color::Red)
 	{
-		GetPreview(localPaths[selectedIndex], indexText, true);
-		currTS = previewTS[indexText];
+		if (currTS == NULL)
+		{
+			GetPreview(localPaths[selectedIndex], indexText, false);
+		}
+		else
+		{
+			GetPreview(localPaths[selectedIndex], indexText, true);
+		}
+		//currTS = previewTS[indexText];
 	}
 	
 
@@ -277,6 +283,7 @@ void LevelSelector::UpdateSelectedPreview()
 		previewSpr.setTexture(*currTS->texture);
 	else
 	{
+		currTS = ts_previewNotFound;
 		previewSpr.setTexture(*ts_previewNotFound->texture);
 	}
 }
@@ -426,7 +433,8 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 					string pathFolder = p.parent_path().stem().string();
 					string relPath = p.relative_path().string();
 					string mapName = pathFolder + "/" + p.relative_path().stem().string();
-					GetPreview( pathFolder, p.relative_path().stem().string(), false);
+					previewTS[p.relative_path().stem().string()] = NULL;
+					//GetPreview( pathFolder, p.relative_path().stem().string(), false);
 				}
 			}
 			else if (is_directory(p))      // is p a directory?
@@ -466,7 +474,8 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 				for (vector<path>::const_iterator it (v.begin()); it != v.end(); ++it)
 				{
 					UpdateMapList( newDir, relativePath + "/" + (*it).filename().string() );
-					cout << "   " << *it << '\n';
+					//this writes out the name of every map
+					//cout << "   " << *it << '\n';
 				}
 			}
 			else

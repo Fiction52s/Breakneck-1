@@ -23,6 +23,8 @@ struct QuadTree;
 
 typedef std::set<std::pair<__int64,__int64>> ClipperIntPointSet;
 
+
+
 struct GrassSeg
 {
 	GrassSeg(int edgeI, int grassIndex, int rep)
@@ -99,6 +101,82 @@ struct PointMoveInfo
 	bool moveIntent;
 };
 
+struct BorderInfo
+{
+	const static int NUM_BORDER_SIZES = 2;
+	const static int NUM_BORDER_VARIATIONS = 4;
+	int numQuads[NUM_BORDER_SIZES];
+
+	BorderInfo()
+	{
+		Clear();
+	}
+	void Add(BorderInfo &bi)
+	{
+		for (int i = 0; i < NUM_BORDER_SIZES; ++i)
+		{
+			numQuads[i] += bi.numQuads[i];
+		}
+	}
+
+	int GetNumSizesWithCountAboveZero()
+	{
+		int total = 0;
+		for (int i = 0; i < NUM_BORDER_SIZES; ++i)
+		{
+			if (numQuads[i] > 0)
+				++total;
+		}
+		return total;
+	}
+
+	int DecrementSizeWithCountAboveZero(int index)
+	{
+		int aboveZeroCounter = 0;
+		for (int i = 0; i < NUM_BORDER_SIZES; ++i)
+		{
+			if (numQuads[i] > 0)
+			{
+				if (aboveZeroCounter == index)
+				{
+					--(numQuads[i]);
+					return i;
+				}
+				else
+					aboveZeroCounter++;
+			}
+		}
+	}
+
+	int GetTotal()
+	{
+		int total = 0;
+		for (int i = 0; i < NUM_BORDER_SIZES; ++i)
+		{
+			total += numQuads[i];
+		}
+		return total;
+	}
+	void Clear()
+	{
+		for (int i = 0; i < NUM_BORDER_SIZES; ++i)
+		{
+			numQuads[i] = 0;
+		}
+	}
+};
+
+struct BorderSizeInfo
+{
+	void SetWidth(int w);
+	int width;
+	int startInter;
+	int inter;
+	int len;
+	int edgeLen;
+	int startLen;
+};
+
 struct TerrainPolygon : ISelectable
 {
 	enum TerrainWorldType
@@ -115,6 +193,49 @@ struct TerrainPolygon : ISelectable
 		Count
 	};
 
+	enum EdgeAngleType : int
+	{
+		EDGE_FLAT,
+		EDGE_FLATCEILING,
+		EDGE_SLOPED,
+		EDGE_STEEPSLOPE,
+		EDGE_SLOPEDCEILING,
+		EDGE_STEEPCEILING,
+		EDGE_WALL,
+	};
+
+	static double GetSteepThresh() { return .4; }
+
+	EdgeAngleType GetEdgeAngleType(int index);
+	static EdgeAngleType GetEdgeAngleType(Edge * e);
+	static EdgeAngleType GetEdgeAngleType(V2d &normal);
+
+	static bool IsFlatGround(sf::Vector2<double> &normal);
+	static bool IsSlopedGround(sf::Vector2<double> &normal);
+	static bool IsSteepGround(sf::Vector2<double> &normal);
+	static bool IsWall(sf::Vector2<double> &normal);
+
+	void DrawBorderQuads(sf::RenderTarget *target);
+
+	void SetBorderTileset();
+	static sf::IntRect GetBorderSubRect(int tileWidth, EdgeAngleType et, int var);
+
+	sf::Vertex *borderQuads;
+	int totalNumBorderQuads;
+	void GenerateBorderMesh();
+	Tileset *ts_border;
+
+	static int GetBorderQuadIntersect(int tileWidth);
+
+	static double GetExtraForInward(Edge *e);
+	static double GetSubForOutward(Edge *e);
+
+	static bool IsAcute(Edge *e0);
+	static V2d GetBisector(Edge *e);
+
+	
+
+
 	Tileset *ts_grass;
 	void SetupEdges();
 	std::vector<Edge> edges;
@@ -127,6 +248,7 @@ struct TerrainPolygon : ISelectable
 	void MakeInverse();
 	static sf::Vector2i GetExtreme(TerrainPoint *p0,
 		TerrainPoint *p1);
+	Edge *GetEdge(int index);
 	TerrainPoint *GetPoint(int index);
 	TerrainPoint *GetInverseOuterRectPoint(int index);
 	TerrainPoint *GetFinalizeInversePoint(int index);

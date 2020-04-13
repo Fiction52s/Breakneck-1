@@ -81,8 +81,8 @@ struct TerrainPiece : QuadTreeEntrant
 
 	bool visible;
 	std::list<DecorExpression*> bushes;
-	sf::VertexArray *groundva;
 	Tileset *ts_border;
+	sf::VertexArray *groundva;
 	sf::VertexArray *slopeva;
 	sf::VertexArray *steepva;
 	sf::VertexArray *wallva;
