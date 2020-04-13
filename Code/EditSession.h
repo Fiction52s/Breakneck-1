@@ -140,15 +140,27 @@ struct EditSession : GUIHandler, Session
 	void ProcessTerrain( PolyPtr poly );
 	void ProcessSpecialTerrain(PolyPtr poly);
 	void ProcessBGTerrain(PolyPtr poly);
+	void ProcessRail(RailPtr rail);
+
+	bool ReadActors(std::ifstream &is);
+
+	void ProcessGate(int gType,
+		int poly0Index, int vertexIndex0, int poly1Index,
+		int vertexIndex1, int shardWorld,
+		int shardIndex);
+
+	//void ProcessActorGroup(ActorGroup *group);
+	//void ProcessActor(const std::string &groupName, int numActors,
+	//	const std::string &actorType);
 	//file stuff
-	bool OpenFile();
+	//bool OpenFile();
 	//bool ReadHeader(std::ifstream &is);
 	bool ReadPlayer(std::ifstream &is);
 	bool ReadDecor(std::ifstream &is);
 	//bool ReadTerrain(std::ifstream &is);
 	bool ReadBGTerrain(std::ifstream &is);
 	bool ReadSpecialTerrain(std::ifstream &is);
-	bool ReadActors(std::ifstream &is);
+	
 	bool ReadGates(std::ifstream &is);
 	bool ReadRails(std::ifstream &is);
 	void WriteFile(std::string fileName);

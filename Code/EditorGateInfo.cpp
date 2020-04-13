@@ -15,7 +15,6 @@ GateInfo::GateInfo()
 	:ISelectable(ISelectable::GATE), thickLine(sf::Quads, 4)
 {
 	edit = EditSession::GetSession();
-	numKeysRequired = -1;
 	thickLine[0].color = Color(255, 0, 0, 255);
 	thickLine[1].color = Color(255, 0, 0, 255);
 	thickLine[2].color = Color(255, 0, 0, 255);

@@ -3,6 +3,8 @@
 #include "MainMenu.h"
 #include "MapHeader.h"
 #include "EditorTerrain.h"
+#include "EditorRail.h"
+#include "EditorActors.h"
 
 using namespace sf;
 using namespace std;
@@ -84,7 +86,7 @@ bool Session::ReadHeader(std::ifstream &is)
 	if (mapHeader == NULL)
 		return false;
 
-	//ProcessHeader
+	ProcessHeader();
 
 	return true;
 }
@@ -194,6 +196,8 @@ bool Session::ReadTerrainGrass(std::ifstream &is, PolyPtr poly)
 	}
 
 	delete[] indexArray;
+
+	return true;
 }
 
 bool Session::ReadTerrain(std::ifstream &is)
@@ -271,6 +275,8 @@ bool Session::ReadBGTerrain(std::ifstream &is)
 		poly->Load(is);
 		poly->Finalize();
 		poly->SetLayer(1);
+
+		ProcessBGTerrain(poly);
 		//no grass for now
 	}
 	return true;
@@ -278,17 +284,102 @@ bool Session::ReadBGTerrain(std::ifstream &is)
 
 bool Session::ReadRails(std::ifstream &is)
 {
+	int numRails;
+	is >> numRails;
 
+	for (int i = 0; i < numRails; ++i)
+	{
+		RailPtr rail(new TerrainRail());
+		rail->Load(is);
+		ProcessRail(rail);
+	}
+	return true;
 }
 
-bool Session::ReadActors(std::ifstream &is)
-{
-
-}
+//bool Session::ReadActors(std::ifstream &is)
+//{
+//	//enemies here
+//	int numGroups;
+//	is >> numGroups;
+//	cout << "num groups " << numGroups << endl;
+//
+//	for (int i = 0; i < numGroups; ++i)
+//	{
+//		string groupName;
+//		is >> groupName;
+//
+//		int numActors;
+//		is >> numActors;
+//
+//		ActorGroup *gr = new ActorGroup(groupName);
+//		groups[groupName] = gr;
+//
+//		for (int j = 0; j < numActors; ++j)
+//		{
+//			string typeName;
+//			is >> typeName;
+//
+//			//ActorParams *a; //= new ActorParams;
+//			ActorPtr a(NULL);
+//
+//
+//
+//			ActorType *at = NULL;
+//			cout << "typename: " << typeName << endl;
+//			if (types.count(typeName) == 0)
+//			{
+//				cout << "TYPENAME: " << typeName << endl;
+//				assert(false && "bad typename");
+//			}
+//			else
+//			{
+//				at = types[typeName];
+//			}
+//
+//			at->LoadEnemy(is, a);
+//
+//			gr->actors.push_back(a);
+//			a->group = gr;
+//
+//
+//			mapStartBrush->AddObject(a);
+//		}
+//	}
+//
+//	return true;
+//}
 
 bool Session::ReadGates(std::ifstream &is)
 {
+	int numGates;
+	is >> numGates;
 
+	int gType;
+	int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
+	int shardWorld = -1;
+	int shardIndex = -1;
+	for (int i = 0; i < numGates; ++i)
+	{
+		shardWorld = -1;
+		shardIndex = -1;
+
+		is >> gType;
+		is >> poly0Index;
+		is >> vertexIndex0;
+		is >> poly1Index;
+		is >> vertexIndex1;
+
+		if (gType == Gate::SHARD)
+		{
+			is >> shardWorld;
+			is >> shardIndex;
+		}
+
+		ProcessGate(gType, poly0Index, vertexIndex0, poly1Index, vertexIndex1, shardWorld,
+			shardIndex);
+	
+	}
+	return true;
 }
 
 
@@ -308,7 +399,6 @@ bool Session::ReadFile()
 		ReadRails(is);
 		ReadActors(is);
 		ReadGates(is);
-
 		is.close();
 	}
 	else
@@ -318,9 +408,6 @@ bool Session::ReadFile()
 
 		return false;
 	}
-
-
-	//grassTex.loadFromFile("Resources/Env/grass_128x128.png");
 
 	return true;
 }

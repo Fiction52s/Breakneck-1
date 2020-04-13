@@ -1406,11 +1406,9 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 	{
 		int gType;
 		int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
-		int numKeysRequired;
 		string behindyouStr;
 
 		is >> gType;
-		//is >> numKeysRequired; 
 		is >> poly0Index;
 		is >> vertexIndex0;
 		is >> poly1Index;
@@ -4322,7 +4320,7 @@ void GameSession::CreateZones()
 		
 		Edge *curr = g->edgeA;
 
-		TerrainPolygon tp( NULL );
+		TerrainPolygon tp;
 		V2d v0 = curr->v0;
 		V2d v1 = curr->v1;
 		list<Edge*> currGates;
@@ -4514,7 +4512,7 @@ void GameSession::CreateZones()
 		currGates.push_back( curr );
 		
 
-		TerrainPolygon tpb( NULL );
+		TerrainPolygon tpb;
 
 		tpb.AddPoint( Vector2i( curr->v0.x, curr->v0.y ), false );
 
@@ -4805,7 +4803,7 @@ void GameSession::CreateZones()
 	{
 		assert( inverseEdgeTree != NULL );
 
-		TerrainPolygon tp( NULL );
+		TerrainPolygon tp;
 		Edge *startEdge = edges[0];
 		Edge *curr = startEdge;
 		

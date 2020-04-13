@@ -30,7 +30,6 @@ struct GateInfo : ISelectable
 	void Draw(sf::RenderTarget *target);
 	void DrawPreview(sf::RenderTarget *target);
 	bool IsTouchingEnemy(ActorParams * a);
-	int numKeysRequired;
 	sf::Color color;
 	Gate::GateType type;
 

@@ -70,7 +70,7 @@ TerrainPolygon::TerrainPolygon()
 	
 	EditSession *session = EditSession::GetSession();
 	//GET GRASS TILESET HERE
-	ts_grass = session->GetTileset("Resources/Env/grass_128x128.png", 128, 128);
+	ts_grass = session->GetTileset("Env/grass_128x128.png", 128, 128);
 	
 	if (session != NULL)
 	{
@@ -2721,7 +2721,7 @@ bool TerrainPolygon::Intersects( sf::IntRect rect )
 	if (rect.width == 0 || rect.height == 0)
 		return false;
 
-	TerrainPolygon poly();
+	TerrainPolygon poly;
 	poly.AddPoint( Vector2i( rect.left, rect.top ), false );
 	poly.AddPoint( Vector2i( rect.left + rect.width, rect.top ), false);
 	poly.AddPoint( Vector2i( rect.left + rect.width, rect.top + rect.height ), false);

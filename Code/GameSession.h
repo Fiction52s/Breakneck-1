@@ -535,6 +535,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	std::map<int, bool> visibleTerrain;
 	Parallax *testPar;
 
+	//std::map<std::string, 
+	//	std::function<Enemy*(std::ifstream &)>> enemyCreationMap;
+
 	virtual int Run();
 	bool OpenFile( std::string fileName );
 	bool LoadEdges(std::ifstream &is,

@@ -1281,6 +1281,12 @@ bool EditSession::ReadRails(std::ifstream &is)
 	return true;
 }
 
+void EditSession::ProcessRail(RailPtr rail)
+{
+	rails.push_back(rail);
+	mapStartBrush->AddObject(rail);
+}
+
 bool EditSession::ReadSpecialTerrain(std::ifstream &is)
 {
 	int specialPolyNum;
@@ -1375,101 +1381,82 @@ bool EditSession::ReadActors(std::ifstream &is)
 	return true;
 }
 
-bool EditSession::ReadGates(std::ifstream &is)
+void EditSession::ProcessGate(int gType,
+	int poly0Index, int vertexIndex0, int poly1Index,
+	int vertexIndex1, int shardWorld, int shardIndex)
 {
-	int numGates;
-	is >> numGates;
-	cout << "numgates: " << numGates << endl;
-	for (int i = 0; i < numGates; ++i)
+	int testIndex = 0;
+	PolyPtr terrain0(NULL);
+	PolyPtr terrain1(NULL);
+	bool first = true;
+
+	if (poly0Index == -1)
 	{
-		int gType;
-		int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
-		int numKeysRequired = -1;
-
-		is >> gType;
-		//is >> numKeysRequired;
-		is >> poly0Index;
-		is >> vertexIndex0;
-		is >> poly1Index;
-		is >> vertexIndex1;
-
-		int testIndex = 0;
-		PolyPtr terrain0(NULL);
-		PolyPtr terrain1(NULL);
-		bool first = true;
-
-		if (poly0Index == -1)
-		{
-			terrain0 = inversePolygon;
-		}
-		if (poly1Index == -1)
-		{
-			terrain1 = inversePolygon;
-		}
-		for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
-		{
-			if ((*it)->inverse) continue;
-
-			if (terrain0 != NULL && terrain1 != NULL)
-				break;
-
-			if (testIndex == poly0Index && terrain0 == NULL)
-			{
-				terrain0 = (*it);
-
-				if (first)
-					first = false;
-				else
-					break;
-			}
-			if (testIndex == poly1Index && terrain1 == NULL)
-			{
-				terrain1 = (*it);
-
-				if (first)
-					first = false;
-				else
-					break;
-			}
-			testIndex++;
-		}
-
-		GateInfoPtr gi(new GateInfo);
-		//GateInfo *gi = new GateInfo;
-		gi->numKeysRequired = numKeysRequired;
-		gi->poly0 = terrain0;
-		gi->poly1 = terrain1;
-		gi->vertexIndex0 = vertexIndex0;
-		gi->vertexIndex1 = vertexIndex1;
-		gi->type = (Gate::GateType)gType;
-		gi->edit = this;
-
-		if (gType == Gate::SHARD)
-		{
-			int sw, si;
-			is >> sw;
-			is >> si;
-			gi->SetShard(sw, si);
-		}
-
-		TerrainPoint *giPoint0 = gi->poly0->GetPoint(vertexIndex0);
-		giPoint0->gate = gi;
-		gi->point0 = giPoint0;
-
-		TerrainPoint *giPoint1 = gi->poly1->GetPoint(vertexIndex1);
-		giPoint1->gate = gi;
-		gi->point1 = giPoint1;
-
-		gi->UpdateLine();
-		gates.push_back(gi);
-
-		mapStartBrush->AddObject(gi);
+		terrain0 = inversePolygon;
 	}
-	return true;
+	if (poly1Index == -1)
+	{
+		terrain1 = inversePolygon;
+	}
+
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		if ((*it)->inverse) continue;
+
+		if (terrain0 != NULL && terrain1 != NULL)
+			break;
+
+		if (testIndex == poly0Index && terrain0 == NULL)
+		{
+			terrain0 = (*it);
+
+			if (first)
+				first = false;
+			else
+				break;
+		}
+		if (testIndex == poly1Index && terrain1 == NULL)
+		{
+			terrain1 = (*it);
+
+			if (first)
+				first = false;
+			else
+				break;
+		}
+		testIndex++;
+	}
+
+	GateInfoPtr gi(new GateInfo);
+	gi->poly0 = terrain0;
+	gi->poly1 = terrain1;
+	gi->vertexIndex0 = vertexIndex0;
+	gi->vertexIndex1 = vertexIndex1;
+	gi->type = (Gate::GateType)gType;
+	gi->edit = this;
+
+	if (gType == Gate::SHARD)
+	{
+		gi->SetShard(shardWorld, shardIndex);
+	}
+
+	TerrainPoint *giPoint0 = gi->poly0->GetPoint(vertexIndex0);
+	giPoint0->gate = gi;
+	gi->point0 = giPoint0;
+
+	TerrainPoint *giPoint1 = gi->poly1->GetPoint(vertexIndex1);
+	giPoint1->gate = gi;
+	gi->point1 = giPoint1;
+
+	gi->UpdateLine();
+	gates.push_back(gi);
+
+	mapStartBrush->AddObject(gi);
 }
 
 void EditSession::ProcessPlayerStartPos()
 {
+	player->position = playerOrigPos;
 	player->image.setPosition(player->position.x, player->position.y);
 	player->SetBoundingQuad();
 }
@@ -1496,39 +1483,6 @@ void EditSession::ProcessHeader()
 	bossType = mapHeader->bossFightType;
 
 	UpdateFullBounds();
-}
-
-bool EditSession::OpenFile()
-{
-	ifstream is;
-	is.open( currentFile );
-
-	if( is.is_open() )
-	{
-		//ReadHeader(is);
-		//ReadDecor(is);
-		//ReadPlayer(is);
-		//ReadTerrain(is);
-		ReadSpecialTerrain(is);
-		ReadBGTerrain(is);
-		ReadRails(is);
-		ReadActors(is);
-		ReadGates(is);
-
-		is.close();
-	}
-	else
-	{
-
-		//new file
-		cout << "filename: " << currentFile << endl;
-		assert( false && "error getting file to edit " );
-
-		return false;
-	}
-
-	return true;
-	
 }
 
 void EditSession::WriteMapHeader(ofstream &of)
@@ -2227,7 +2181,7 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 
 bool EditSession::QuadPolygonIntersect( PolyPtr poly, Vector2i a, Vector2i b, Vector2i c, Vector2i d )
 {
-	TerrainPolygon quadPoly();
+	TerrainPolygon quadPoly;
 	quadPoly.Reserve(4);
 	quadPoly.AddPoint( a, false );
 	quadPoly.AddPoint( b, false  );
@@ -2321,6 +2275,10 @@ LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vec
 void EditSession::SetInitialView(sf::Vector2f &center,
 	sf::Vector2f &size)
 {
+	if (size.x == 0 && size.y == 0)
+	{
+		return;
+	}
 	view.setCenter(center);
 	view.setSize(size);
 	initialViewSet = true;
@@ -2508,15 +2466,13 @@ int EditSession::Run()
 	returnVal = 0;
 	Color testColor( 0x75, 0x70, 0x90 );
 
-
-
 	//view = View( cameraPos, cameraSize );
 	//if( cameraSize.x == 0 && cameraSize.y == 0 )
 	//	view.setSize( 1920, 1080 );
 
 	preScreenTex->setView( view );
 
-	OpenFile();
+	ReadFile();
 
 	if (!initialViewSet)
 	{
@@ -6281,7 +6237,7 @@ Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<Pol
 					action = new ReplaceBrushAction(&containedBrush, progressBrush, mapStartBrush);
 				}
 
-				PolyPtr newPoly(new TerrainPolygon();
+				PolyPtr newPoly(new TerrainPolygon);
 				polygonInProgress = newPoly;
 			}
 			else
@@ -6805,7 +6761,7 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 
 		for (auto sit = solution.begin(); sit != solution.end(); ++sit)
 		{
-			PolyPtr newPoly(new TerrainPolygon();
+			PolyPtr newPoly(new TerrainPolygon);
 			//FusePathClusters((*sit), clipperIntersections, fusedPoints);
 			//sliverResult = FixPathSlivers((*sit), fusedPoints);
 			

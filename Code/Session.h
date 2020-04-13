@@ -52,9 +52,21 @@ struct Session : TilesetManager
 	virtual void ProcessBGTerrain(PolyPtr poly) {}
 
 	bool ReadRails(std::ifstream &is);
-	virtual void ProcessRails(RailPtr rail) {}
-	bool ReadActors(std::ifstream &is);
+	virtual void ProcessRail(RailPtr rail) {}
+
+	virtual bool ReadActors(std::ifstream &is) = 0;
+
 	bool ReadGates(std::ifstream &is);
+	virtual void ProcessGate(int gType,
+		int poly0Index, int vertexIndex0, int poly1Index,
+		int vertexIndex1, int shardWorld,
+		int shardIndex ) {}
+		
+	//virtual void ProcessActor( const std::string &groupName, int numActors,
+	//	const std::string &actorType ) {}
+//	virtual void ProcessActor(ActorPtr actor);
+//	virtual void ProcessActorGroup(const std::string &groupName, int numActors);
+	
 
 	virtual int Run() = 0;
 
