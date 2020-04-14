@@ -66,24 +66,24 @@ void TransformTools::Reset(Vector2f &p_center, Vector2f &p_size)
 {
 	mode = NONE;
 
-	center = p_center;
+	origCenter = p_center;
+
+	rotationAnchor = origCenter;
 	size = p_size;
 
-	origCenter = center;
 	origSize = size;
 
 	originOffset = Vector2f(0, 0);
 
 	tRect.setSize(size);
 	tRect.setOrigin(size.x / 2.f, size.y / 2.f);
-	tRect.setPosition(center);
+	tRect.setPosition(origCenter);
 
 	rotation = 0.f;
 	scale = Vector2f(1.f, 1.f);
 	UpdateGrabPoints();
-
-	originOffset = Vector2f(100, 0);
 }
+
 
 void TransformTools::Draw(sf::RenderTarget *target)
 {
@@ -214,11 +214,11 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 				mode = ROTATE;
 				rotationStart = rotation;
 
-				UpdateCenter();
+				UpdateRotationAnchor();
 
 				Vector2f scaledOffset = GetScaledOffset();
 				tRect.setOrigin(size.x / 2 + scaledOffset.x, size.y / 2 + scaledOffset.y);
-				tRect.setPosition(center);
+				tRect.setPosition(rotationAnchor);
 			}
 			else
 			{
@@ -278,8 +278,8 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 	}
 	case ROTATE:
 	{
-		Vector2f startDir = normalize(startClick - center);
-		Vector2f currDir = normalize(worldPos - center);
+		Vector2f startDir = normalize(startClick - rotationAnchor);
+		Vector2f currDir = normalize(worldPos - rotationAnchor);
 		
 		float diffRad = GetVectorAngleDiffCW(startDir, currDir);
 		float diffDeg = diffRad / PI * 180;
@@ -295,12 +295,14 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 	
 }
 
-void TransformTools::UpdateCenter()
+sf::Vector2f TransformTools::GetCenter()
 {
-	center = (GetRectPoint(0) + GetRectPoint(1) + GetRectPoint(2) + GetRectPoint(3)) / 4.f;
-	center += GetTransformedOffset();
-	//center = (circleGroup->GetPosition(0) + circleGroup->GetPosition(2) +
-	//	circleGroup->GetPosition(4) + circleGroup->GetPosition(6)) / 4.f;
+	return Vector2f(GetRectPoint(0) + GetRectPoint(1) + GetRectPoint(2) + GetRectPoint(3)) / 4.f;
+}
+
+void TransformTools::UpdateRotationAnchor()
+{
+	rotationAnchor = GetCenter() + GetTransformedOffset();
 }
 
 void TransformTools::UpdateScaleOrigin()
@@ -315,17 +317,12 @@ void TransformTools::UpdateScaleOrigin()
 	}
 }
 
-sf::Vector2f TransformTools::GetRotationAnchor()
-{
-	return center + GetTransformedOffset();
-}
-
 sf::Vector2f TransformTools::GetTransformedOffset()
 {
 	Transform t;
 	t.rotate(rotation);
 	t.scale(scale);
-	return t.transformPoint(originOffset);//Vector2f(originOffset.x * scale.x, originOffset.y * scale.y);
+	return t.transformPoint(originOffset);
 }
 
 sf::Vector2f TransformTools::GetScaledOffset()

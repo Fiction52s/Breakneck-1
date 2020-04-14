@@ -23,7 +23,6 @@ struct TransformTools
 	void Draw(sf::RenderTarget *target);
 	void Update( sf::Vector2f &worldPos, bool mouseDown );
 
-	sf::Vector2f GetRotationAnchor();
 	sf::Vector2f GetTransformedOffset();
 	sf::Vector2f GetScaledOffset();
 
@@ -34,11 +33,12 @@ struct TransformTools
 
 	void UpdateScaleOrigin();
 
-	void UpdateCenter();
+	sf::Vector2f GetCenter();
+	void UpdateRotationAnchor();
 
 	CircleGroup *circleGroup;
 
-	sf::Vector2f center;
+	sf::Vector2f rotationAnchor;
 	sf::Vector2f originOffset;
 	sf::Vector2f size;
 
