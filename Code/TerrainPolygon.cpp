@@ -65,6 +65,7 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
+	renderMode = RENDERMODE_NORMAL;
 	totalNumBorderQuads = 0;
 	ts_border = NULL;
 	borderQuads = NULL;
@@ -78,7 +79,6 @@ TerrainPolygon::TerrainPolygon()
 	
 	isGrassShowing = false;
 	finalized = false;
-	movingPointMode = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
 
@@ -112,6 +112,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	terrainVariation = poly.terrainVariation;
 	ts_grass = poly.ts_grass;
 	ts_border = poly.ts_border;
+	renderMode = poly.renderMode;
 
 	EditSession *session = EditSession::GetSession();
 	if (session != NULL)
@@ -140,7 +141,6 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 		grassVA = NULL;
 		isGrassShowing = false;
 		finalized = false;
-		movingPointMode = false;
 		CopyPoints(&poly, storeSelectedPoints);
 	}
 	else
@@ -1404,6 +1404,90 @@ bool TerrainPolygon::AlignExtremes()
 	return AlignExtremes(emptyLockPoints);
 }
 
+
+
+void TerrainPolygon::Scale(float f)
+{
+	SetRenderMode(RENDERMODE_TRANSFORM);
+
+	Vector2i center((right + left) / 2, (bottom + top) / 2);
+	Vector2f fCenter((right + left) / 2.f, (bottom + top) / 2.f);
+
+	int numP = GetNumPoints();
+	Vector2i diff;
+	Vector2f fDiff;
+	Vector2f fCurr;
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
+	{
+		//curr = GetPoint(i);
+		fCurr = lines[i].position;
+		//fCurr = Vector2f(curr->pos);
+
+		//diff = curr->pos - center;
+		//diff /= 2;
+		//curr->pos = center + diff;
+
+		fDiff = fCurr - fCenter;
+		fDiff *= f;
+
+		fCurr = fCenter + fDiff;
+		lines[i].position = fCurr;
+
+
+		//curr->pos = Vector2i(round(fCurr.x), round(fCurr.y));
+		
+	}
+}
+
+void TerrainPolygon::Rotate( Vector2f &fCenter, float f)
+{
+	SetRenderMode(RENDERMODE_TRANSFORM);
+	//Vector2i center((right + left) / 2, (bottom + top) / 2);
+	//Vector2f fCenter((right + left) / 2.f, (bottom + top) / 2.f);
+
+	int numP = GetNumPoints();
+	Vector2f fDiff;
+	Vector2f fCurr;
+	TerrainPoint *curr;
+
+	Transform t;
+	t.rotate(f);
+
+	int prevIndex;
+
+	for (int i = 0; i < numP; ++i)
+	{
+		//curr = GetPoint(i);
+		fCurr = lines[i*2].position;//Vector2f(curr->pos);
+
+		//diff = curr->pos - center;
+		//diff /= 2;
+		//curr->pos = center + diff;
+
+		fDiff = fCurr - fCenter;
+		fDiff = t.transformPoint(fDiff);
+
+		fCurr = fCenter + fDiff;
+
+		//curr->pos = Vector2i(round(fCurr.x), round(fCurr.y));
+		lines[i*2].position = fCurr;
+
+		if (i == 0)
+		{
+			lines[numP * 2 - 1].position = fCurr;
+		}
+		else
+		{
+			lines[i * 2 - 1].position = fCurr;
+		}
+		UpdateLineColor(lines, i, i*2);
+		
+	}
+
+	//AlignExtremes(); happens after rotation is totally done
+}
+
 void TerrainPolygon::Move(Vector2i move )
 {
 	assert( finalized );
@@ -2022,6 +2106,11 @@ void TerrainPolygon::UpdateGrass()
 	}
 }
 
+void TerrainPolygon::SetRenderMode(RenderMode rm)
+{
+	renderMode = rm;
+}
+
 void TerrainPolygon::DrawBorderQuads(RenderTarget *target)
 {
 	if (totalNumBorderQuads > 0)
@@ -2034,7 +2123,7 @@ void TerrainPolygon::DrawBorderQuads(RenderTarget *target)
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
 	int numP = GetNumPoints();
-	if( movingPointMode )
+	if( renderMode == RENDERMODE_MOVING_POINTS )
 	{
 		TerrainPoint *curr, *start, *next;
 		int lineIndex = 0;
@@ -2050,6 +2139,11 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 			++lineIndex;
 		}
 		rt->draw( lines, numP * 2, sf::Lines );
+		return;
+	}
+	else if (renderMode == RENDERMODE_TRANSFORM)
+	{
+		rt->draw(lines, numP * 2, sf::Lines);
 		return;
 	}
 
@@ -2329,10 +2423,25 @@ void TerrainPolygon::UpdateLineColor( sf::Vertex *li, int i, int index )
 {
 	TerrainPoint *curr, *next;
 
-	curr = GetPoint(i);
-	next = GetNextPoint(i);
+	Vector2f diff;
+	
+	if (renderMode == RENDERMODE_TRANSFORM)
+	{
+		int nextIndex = i + 1;
+		if (i == GetNumPoints() - 1)
+		{
+			nextIndex = 0;
+		}
+		diff = Vector2f(lines[nextIndex * 2].position - lines[i * 2].position);
+	}
+	else
+	{
+		curr = GetPoint(i);
+		next = GetNextPoint(i);
 
-	Vector2f diff = Vector2f( next->pos - curr->pos );//p1 - p0;
+		diff = Vector2f(next->pos - curr->pos);
+	}
+	
 	V2d dir = normalize(V2d(diff));
 	V2d norm = V2d(dir.y, -dir.x);
 
@@ -2875,6 +2984,9 @@ void TerrainPolygon::SoftReset()
 		delete va;
 	if (grassVA != NULL)
 		delete grassVA;
+
+	if (borderQuads != NULL)
+		delete[] borderQuads;
 
 	lines = NULL;
 	va = NULL;

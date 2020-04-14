@@ -3812,7 +3812,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 
 		if (affected)
 		{
-			poly->movingPointMode = true;
+			poly->SetRenderMode(TerrainPolygon::RENDERMODE_MOVING_POINTS);
 
 			for (map<TerrainPoint*, list<ActorPtr>>::iterator mit = poly->enemies.begin();
 				mit != poly->enemies.end(); ++mit)
@@ -10134,6 +10134,40 @@ void EditSession::EditModeHandleEvent()
 			{
 				TryRemoveSelectedObjects();
 			}
+		}
+		else if (ev.key.code == Keyboard::N)
+		{
+			selectedBrush->Rotate(10.f);
+			//PolyPtr p;
+			//for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+			//{
+			//	p = (*it)->GetAsTerrain();
+			//	if (p != NULL)
+			//	{
+			//		p->SoftReset();
+			//		p->Rotate(1.f);
+			//		//p->Scale(1.1f);
+			//		p->Finalize();
+			//	}
+			//		
+			//}
+		}
+		else if (ev.key.code == Keyboard::M)
+		{
+			selectedBrush->Rotate(-10.f);
+			//PolyPtr p;
+			//for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+			//{
+			//	p = (*it)->GetAsTerrain();
+			//	if (p != NULL)
+			//	{
+			//		p->SoftReset();
+			//		p->Rotate(-1.f);
+			//		//p->Scale(.9f);
+			//		p->Finalize();
+			//	}
+
+			//}
 		}
 		else if (ev.key.code == Keyboard::R)
 		{

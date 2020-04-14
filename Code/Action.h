@@ -17,8 +17,11 @@ struct Brush
 	void Draw( sf::RenderTarget *target );
 	Brush *Copy();
 	sf::Vector2i &GetCenter();
+	sf::Vector2f &GetCenterF();
+	void Rotate(float fDegrees );
 	void CenterOnPoint(sf::Vector2i &point );
 	sf::Vector2i center;
+	sf::Vector2f centerF;
 	CompoundAction * UnAnchor(); //only works with grounded actors
 	void Deactivate();//multiple calls covered?
 	void Activate();//multiple calls covered?

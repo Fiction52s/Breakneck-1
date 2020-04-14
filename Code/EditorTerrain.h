@@ -179,6 +179,13 @@ struct BorderSizeInfo
 
 struct TerrainPolygon : ISelectable
 {
+	enum RenderMode
+	{
+		RENDERMODE_NORMAL,
+		RENDERMODE_MOVING_POINTS,
+		RENDERMODE_TRANSFORM,
+	};
+
 	enum TerrainWorldType
 	{
 		MOUNTAIN,
@@ -204,6 +211,9 @@ struct TerrainPolygon : ISelectable
 		EDGE_WALL,
 	};
 
+	RenderMode renderMode;
+	void SetRenderMode(RenderMode rm);
+
 	static double GetSteepThresh() { return .4; }
 
 	EdgeAngleType GetEdgeAngleType(int index);
@@ -216,6 +226,9 @@ struct TerrainPolygon : ISelectable
 	static bool IsWall(sf::Vector2<double> &normal);
 
 	void DrawBorderQuads(sf::RenderTarget *target);
+
+	void Scale(float f);
+	void Rotate( sf::Vector2f &center, float degrees);
 
 	void SetBorderTileset();
 	static sf::IntRect GetBorderSubRect(int tileWidth, EdgeAngleType et, int var);
@@ -408,7 +421,7 @@ struct TerrainPolygon : ISelectable
 
 
 
-	bool movingPointMode;
+	//bool movingPointMode;
 
 	void Move(sf::Vector2i move);
 

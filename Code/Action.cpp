@@ -129,6 +129,8 @@ void Brush::CenterOnPoint(sf::Vector2i &point )
 	Move(point - GetCenter());
 }
 
+
+
 sf::Vector2i &Brush::GetCenter()
 {
 	int left;
@@ -185,6 +187,81 @@ sf::Vector2i &Brush::GetCenter()
 	center.y = (top + bottom) / 2;
 
 	return center;
+}
+
+sf::Vector2f &Brush::GetCenterF()
+{
+	int left;
+	int right;
+	int top;
+	int bottom;
+
+	PolyPtr tp;
+	ActorPtr ap;
+	if (objects.size() > 0)
+	{
+		SelectPtr sp = objects.front();
+		tp = sp->GetAsTerrain();
+		if (tp != NULL)
+		{
+			left = tp->left;
+			right = tp->right;
+			top = tp->top;
+			bottom = tp->bottom;
+		}
+		else
+		{
+			//ap = sp->GetAsActor();
+			//if (ap != NULL)
+			{
+				//ap = sp->GetAsActor();
+				//return ap->position;
+			}
+		}
+	}
+	else
+	{
+		centerF = Vector2f(0, 0);
+		assert(0);
+		return centerF;
+	}
+
+	auto it = objects.begin();
+	++it;
+
+	for (; it != objects.end(); ++it)
+	{
+		tp = (*it)->GetAsTerrain();
+		if (tp != NULL)
+		{
+			left = min(left, tp->left);
+			right = max(right, tp->right);
+			top = min(top, tp->top);
+			bottom = max(bottom, tp->bottom);
+		}
+	}
+
+	centerF.x = (left + right) / 2.f;
+	centerF.y = (top + bottom) / 2.f;
+
+	return centerF;
+}
+
+void Brush::Rotate(float fDegrees)
+{
+	PolyPtr p;
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		p = (*it)->GetAsTerrain();
+		if (p != NULL)
+		{
+			//get center needs to be a float later for this
+			//p->SoftReset();
+			p->Rotate(GetCenterF(), fDegrees);
+			//p->Finalize();
+		}
+			
+	}
 }
 
 Brush *Brush::Copy()
@@ -712,7 +789,7 @@ void MoveBrushAction::Perform()
 				PolyPtr poly = (*it).first;
 				poly->SoftReset();
 				poly->Finalize();
-				poly->movingPointMode = false;
+				poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
 			}
 
 			for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
@@ -777,7 +854,7 @@ void MoveBrushAction::Perform()
 
 					poly->SoftReset();
 					poly->Finalize();
-					poly->movingPointMode = false;
+					poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
 
 					for (auto pit = poly->enemies.begin();
 						pit != poly->enemies.end(); ++pit)
@@ -838,7 +915,7 @@ void MoveBrushAction::Undo()
 
 		poly->SoftReset();
 		poly->Finalize();
-		poly->movingPointMode = false;
+		poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
 
 		for ( auto pit = poly->enemies.begin();
 			pit != poly->enemies.end(); ++pit)
