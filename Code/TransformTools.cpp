@@ -9,7 +9,7 @@ TransformTools::TransformTools()
 {
 	tRect.setFillColor(Color::Transparent);
 	tRect.setOutlineColor(Color::Red);
-	tRect.setOutlineThickness(4);
+	tRect.setOutlineThickness(-4);
 
 	scalePointRadius = 20;
 	rotatePointRadius = 40;
@@ -75,13 +75,14 @@ void TransformTools::Reset(Vector2f &p_center, Vector2f &p_size)
 	originOffset = Vector2f(0, 0);
 
 	tRect.setSize(size);
-	tRect.setOrigin(tRect.getLocalBounds().width / 2,
-		tRect.getLocalBounds().height / 2);
+	tRect.setOrigin(size.x / 2.f, size.y / 2.f);
 	tRect.setPosition(center);
 
 	rotation = 0.f;
-	scale = 1.f;
+	scale = Vector2f(1.f, 1.f);
 	UpdateGrabPoints();
+
+	originOffset = Vector2f(100, 0);
 }
 
 void TransformTools::Draw(sf::RenderTarget *target)
@@ -157,11 +158,33 @@ int TransformTools::GetClickedScalePoint(sf::Vector2f &pos)
 
 void TransformTools::SetScaleAnchor()
 {
-	int opposite = scalePoint - 4;
-	if (opposite < 0)
-		opposite += 8;
+	scaleAnchorIndex = scalePoint - 4;
+	if (scaleAnchorIndex < 0)
+		scaleAnchorIndex += 8;
 
-	scaleAnchor = circleGroup->GetPosition(opposite);
+	scaleAnchor = circleGroup->GetPosition(scaleAnchorIndex);
+
+	if (scaleAnchorIndex % 2 == 0)
+	{
+		int anchorNext = scaleAnchorIndex + 1;
+		if (anchorNext == 8)
+			anchorNext = 0;
+		int anchorPrev = scaleAnchorIndex - 1;
+		if (anchorPrev == -1)
+			anchorPrev = 7;
+
+		scaleAlong = normalize(circleGroup->GetPosition(anchorNext) - scaleAnchor);
+		scaleOther = normalize(circleGroup->GetPosition(anchorPrev) - scaleAnchor);
+	}
+	else
+	{
+		scaleAlong = normalize(circleGroup->GetPosition(scalePoint) - scaleAnchor);
+		scaleOther = Vector2f(0, 0);
+	}
+
+	UpdateScaleOrigin();
+
+	tRect.setPosition(scaleAnchor);
 }
 
 void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
@@ -190,6 +213,12 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 				startClick = worldPos;
 				mode = ROTATE;
 				rotationStart = rotation;
+
+				UpdateCenter();
+
+				Vector2f scaledOffset = GetScaledOffset();
+				tRect.setOrigin(size.x / 2 + scaledOffset.x, size.y / 2 + scaledOffset.y);
+				tRect.setPosition(center);
 			}
 			else
 			{
@@ -205,27 +234,52 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 	}
 	case SCALE:
 	{
-		Vector2f diff = worldPos - center;
+		Vector2f diff = worldPos - scaleAnchor;
 
-		scale = diff.x / (origSize.x / 2.f);
+		float along, other;
+		//Vector2f currDiff = normalize(worldPos - center);
 
-		if (scale < .1)
-			scale = .1;
+		along = dot(diff, scaleAlong);
+		if (scalePoint % 2 == 0)
+		{
+			other = dot(diff, scaleOther);
 
-		size = Vector2f(origSize.x * scale, origSize.y * scale);
+			if (scalePoint == 0 || scalePoint == 4)
+			{
+				scale.x = along / origSize.x;
+				scale.y = other / origSize.y;
+			}
+			else
+			{
+				scale.x = other / origSize.x;
+				scale.y = along / origSize.y;
+			}
+		}
+		else
+		{
+			if (scalePoint == 3 || scalePoint == 7)
+			{
+				scale.x = along / origSize.x;
+			}
+			else
+			{
+				scale.y = along / origSize.y;
+			}
+		}
+
+		size = Vector2f(origSize.x * scale.x, origSize.y * scale.y);
 
 		tRect.setSize(size);
-		tRect.setOrigin(tRect.getLocalBounds().width / 2,
-			tRect.getLocalBounds().height / 2);
-		tRect.setPosition(center);
+
+		UpdateScaleOrigin();
 
 		UpdateGrabPoints();
 		break;
 	}
 	case ROTATE:
 	{
-		Vector2f startDir = normalize(startClick - GetRotationAnchor());
-		Vector2f currDir = normalize(worldPos - GetRotationAnchor());
+		Vector2f startDir = normalize(startClick - center);
+		Vector2f currDir = normalize(worldPos - center);
 		
 		float diffRad = GetVectorAngleDiffCW(startDir, currDir);
 		float diffDeg = diffRad / PI * 180;
@@ -241,9 +295,42 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 	
 }
 
+void TransformTools::UpdateCenter()
+{
+	center = (GetRectPoint(0) + GetRectPoint(1) + GetRectPoint(2) + GetRectPoint(3)) / 4.f;
+	center += GetTransformedOffset();
+	//center = (circleGroup->GetPosition(0) + circleGroup->GetPosition(2) +
+	//	circleGroup->GetPosition(4) + circleGroup->GetPosition(6)) / 4.f;
+}
+
+void TransformTools::UpdateScaleOrigin()
+{
+	if (scaleAnchorIndex % 2 == 0)
+	{
+		tRect.setOrigin(tRect.getPoint(scaleAnchorIndex / 2));
+	}
+	else
+	{
+		tRect.setOrigin((tRect.getPoint(scaleAnchorIndex / 2) + tRect.getPoint(scaleAnchorIndex / 2 + 1)) / 2.f);
+	}
+}
+
 sf::Vector2f TransformTools::GetRotationAnchor()
 {
-	return center + originOffset;
+	return center + GetTransformedOffset();
+}
+
+sf::Vector2f TransformTools::GetTransformedOffset()
+{
+	Transform t;
+	t.rotate(rotation);
+	t.scale(scale);
+	return t.transformPoint(originOffset);//Vector2f(originOffset.x * scale.x, originOffset.y * scale.y);
+}
+
+sf::Vector2f TransformTools::GetScaledOffset()
+{
+	return Vector2f(originOffset.x * scale.x, originOffset.y * scale.y);
 }
 
 void TransformTools::UpdateGrabPoints()

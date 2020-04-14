@@ -24,11 +24,17 @@ struct TransformTools
 	void Update( sf::Vector2f &worldPos, bool mouseDown );
 
 	sf::Vector2f GetRotationAnchor();
+	sf::Vector2f GetTransformedOffset();
+	sf::Vector2f GetScaledOffset();
 
 	void UpdateGrabPoints();
 
 	bool RectContainsPoint(sf::Vector2f &pos);
 	sf::Vector2f GetRectPoint(int i);
+
+	void UpdateScaleOrigin();
+
+	void UpdateCenter();
 
 	CircleGroup *circleGroup;
 
@@ -43,7 +49,10 @@ struct TransformTools
 
 	int scalePoint;
 	sf::Vector2f scaleAnchor;
+	int scaleAnchorIndex;
 	void SetScaleAnchor();
+	sf::Vector2f scaleAlong;
+	sf::Vector2f scaleOther;
 
 	int GetClickedScalePoint(sf::Vector2f &pos);
 	bool ClickedRotatePoint(sf::Vector2f &pos);
@@ -55,7 +64,7 @@ struct TransformTools
 
 	float rotationStart;
 
-	float scale;
+	sf::Vector2f scale;
 	float rotation; //degrees
 	sf::RectangleShape tRect;
 };
