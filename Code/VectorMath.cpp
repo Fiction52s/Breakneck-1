@@ -21,10 +21,17 @@ float length(sf::Vector2f v)
 	return sqrt(vx * vx + vy * vy);
 }
 
-double lengthSqr( sf::Vector2<double> v )
+double lengthSqr( sf::Vector2<double> &v )
 {
 	double vx = v.x;
 	double vy = v.y;
+	return vx * vx + vy * vy;
+}
+
+float lengthSqr(sf::Vector2<float> &v)
+{
+	float vx = v.x;
+	float vy = v.y;
 	return vx * vx + vy * vy;
 }
 
@@ -55,6 +62,11 @@ double dot( sf::Vector2<double> a, sf::Vector2<double> b )
 	return ax * bx + ay * by;
 }
 
+float dot(sf::Vector2<float> &a, sf::Vector2<float> &b)
+{
+	return a.x * b.x + a.y * b.y;
+}
+
 double cross( sf::Vector2<double> a, sf::Vector2<double> b )
 {
 	double ax = a.x;
@@ -63,6 +75,11 @@ double cross( sf::Vector2<double> a, sf::Vector2<double> b )
 	double by = b.y;
 	return ax * by - ay * bx;
 	//return a.x * b.y - a.y * b.x;
+}
+
+float cross(sf::Vector2<float> &a, sf::Vector2<float> &b)
+{
+	return a.x * b.y - a.y * b.x;
 }
 
 bool approxEquals( double a, double b )

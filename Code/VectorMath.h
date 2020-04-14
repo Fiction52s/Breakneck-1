@@ -5,16 +5,19 @@
 
 #define V2d sf::Vector2<double>
 double cross( sf::Vector2<double> a, sf::Vector2<double> b );
+float cross(sf::Vector2<float> &a, sf::Vector2<float> &b);
 
 #define PI 3.14159265359
 double length( sf::Vector2<double> v);
 float length(sf::Vector2f v);
-double lengthSqr( sf::Vector2<double> v);
+double lengthSqr( sf::Vector2<double> &v);
+float lengthSqr(sf::Vector2<float> &v);
 
 sf::Vector2<double> normalize( sf::Vector2<double> v );
 sf::Vector2f normalize(sf::Vector2f v);
 
 double dot( sf::Vector2<double> a, sf::Vector2<double> b );
+float dot(sf::Vector2<float> &a, sf::Vector2<float> &b);
 
 double GetVectorAngleCW(sf::Vector2<double> &a);
 double GetVectorAngleCCW(sf::Vector2<double> &a);
