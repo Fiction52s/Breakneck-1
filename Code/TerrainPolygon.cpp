@@ -1409,6 +1409,7 @@ void TerrainPolygon::Move(Vector2i move )
 	assert( finalized );
 	
 	V2d dMove(move);
+	Vector2f fMove(move);
 
 	int numP = GetNumPoints();
 	TerrainPoint *curr;
@@ -1425,11 +1426,19 @@ void TerrainPolygon::Move(Vector2i move )
 		edges[i].v1 += dMove;
 	}
 
+	if (borderQuads != NULL)
+	{
+		for (int i = 0; i < totalNumBorderQuads * 4; ++i)
+		{
+			borderQuads[i].position += fMove;
+		}
+	}
+
 	for( int i = 0; i < numP; ++i )
 	{
 		//lines
-		lines[i*2].position += Vector2f( move.x, move.y );
-		lines[i*2+1].position += Vector2f( move.x, move.y );
+		lines[i * 2].position += fMove;
+		lines[i * 2 + 1].position += fMove;
 	}
 
 	for( int i = 0; i < vaSize; ++i )

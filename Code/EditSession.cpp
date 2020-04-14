@@ -6764,6 +6764,7 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 			//commented out for paste testing
 			newPoly->AlignExtremes();
 
+			//pretty sure this will never happen ever with subtract..breakpoint to check.
 			if (!newPoly->IsClockwise())
 			{
 				//assert(0);
