@@ -11,11 +11,8 @@ TransformTools::TransformTools()
 	tRect.setOutlineColor(Color::Red);
 	tRect.setOutlineThickness(4);
 
-	int scaleRectWidth = 20;
-	int rotateRectWidth = 40;
-
-	Vector2f scaleRectSize(scaleRectWidth, scaleRectWidth);
-	Vector2f rotateRectSize(rotateRectWidth, rotateRectWidth);
+	scalePointRadius = 20;
+	rotatePointRadius = 40;
 
 	circleGroup = new CircleGroup(8, 20, Color::Magenta, 10);
 	circleGroup->ShowAll();
@@ -137,6 +134,8 @@ bool TransformTools::RectContainsPoint(Vector2f &pos)
 			return true;
 		}
 	}
+
+	return false;
 }
 
 int TransformTools::GetClickedScalePoint(sf::Vector2f &pos)
@@ -160,7 +159,7 @@ void TransformTools::SetScaleAnchor()
 {
 	int opposite = scalePoint - 4;
 	if (opposite < 0)
-		opposite + 8;
+		opposite += 8;
 
 	scaleAnchor = circleGroup->GetPosition(opposite);
 }
