@@ -21,6 +21,8 @@ struct Brush;
 
 struct QuadTree;
 
+struct TransformTools;
+
 typedef std::set<std::pair<__int64,__int64>> ClipperIntPointSet;
 
 
@@ -214,7 +216,9 @@ struct TerrainPolygon : ISelectable
 	RenderMode renderMode;
 	void SetRenderMode(RenderMode rm);
 
+	void CancelTransformation();
 	bool CompleteTransformation();
+	void UpdateTransformation( TransformTools *tr);
 
 	static double GetSteepThresh() { return .4; }
 
@@ -247,6 +251,7 @@ struct TerrainPolygon : ISelectable
 
 	static bool IsAcute(Edge *e0);
 	static V2d GetBisector(Edge *e);
+
 
 	
 
@@ -290,12 +295,13 @@ struct TerrainPolygon : ISelectable
 	void SetupGrass();
 	sf::Shader *pShader;
 	bool IsValidInProgressPoint(sf::Vector2i point);
-	void UpdateLines();
+	void UpdateLinePositions();
 	TerrainPolygon();
 	TerrainPolygon(TerrainPolygon &poly, bool pointsOnly,
 		bool storeSelectedPoints = false );
 	~TerrainPolygon();
-	void UpdateLineColor(sf::Vertex *line, int i);
+	void UpdateLineColor(int i);
+	void UpdateLineColors();
 	static sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
 		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
 		double minAngle, bool cw);
@@ -309,6 +315,8 @@ struct TerrainPolygon : ISelectable
 
 	//TerrainPoint *pointStart;
 	//TerrainPoint *pointEnd;
+	std::vector<sf::Vector2f> triBackups;//for transforms
+
 	std::vector<std::vector<TerrainPoint>> pointVector;
 	std::vector<TerrainPoint> &PointVector();
 	void Reserve(int nPoints);

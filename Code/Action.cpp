@@ -129,7 +129,45 @@ void Brush::CenterOnPoint(sf::Vector2i &point )
 	Move(point - GetCenter());
 }
 
+sf::Vector2f Brush::GetTerrainSize()
+{
+	int left = 0;
+	int right = 0;
+	int top = 0;
+	int bottom = 0;
 
+	PolyPtr tp;
+	ActorPtr ap;
+	if (objects.size() > 0)
+	{
+		SelectPtr sp = objects.front();
+		tp = sp->GetAsTerrain();
+		if (tp != NULL)
+		{
+			left = tp->left;
+			right = tp->right;
+			top = tp->top;
+			bottom = tp->bottom;
+		}
+	}
+
+	auto it = objects.begin();
+	++it;
+
+	for (; it != objects.end(); ++it)
+	{
+		tp = (*it)->GetAsTerrain();
+		if (tp != NULL)
+		{
+			left = min(left, tp->left);
+			right = max(right, tp->right);
+			top = min(top, tp->top);
+			bottom = max(bottom, tp->bottom);
+		}
+	}
+
+	return Vector2f(right - left, bottom - top);
+}
 
 sf::Vector2i &Brush::GetCenter()
 {
@@ -211,12 +249,12 @@ sf::Vector2f &Brush::GetCenterF()
 		}
 		else
 		{
-			//ap = sp->GetAsActor();
-			//if (ap != NULL)
+			/*ap = sp->GetAsActor();
+			if (ap != NULL)
 			{
-				//ap = sp->GetAsActor();
-				//return ap->position;
-			}
+				ap = sp->GetAsActor();
+				return ap->position;
+			}*/
 		}
 	}
 	else

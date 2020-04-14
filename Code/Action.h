@@ -33,7 +33,8 @@ struct Brush
 	void TransferMyActiveMembers(Brush *dest);
 	bool terrainOnly;
 	bool IsEmpty();
-	//bool activated;
+
+	sf::Vector2f GetTerrainSize();
 };
 
 struct Action

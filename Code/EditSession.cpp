@@ -3802,8 +3802,8 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 					curr->gate->UpdateLine();
 				}
 
-				poly->UpdateLineColor(poly->lines, prev->index);
-				poly->UpdateLineColor(poly->lines, i);
+				poly->UpdateLineColor(prev->index);
+				poly->UpdateLineColor(i);
 
 				if (poly->enemies.count(curr) > 0)
 				{
@@ -10152,23 +10152,28 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::N)
 		{
+			if (selectedBrush->IsEmpty())
+				break;
+
 			mode = TRANSFORM;
+			
 			transformTools->Reset(selectedBrush->GetCenterF(),
-				Vector2f(300, 400));
+				selectedBrush->GetTerrainSize());
 			//selectedBrush->Scale(1.05f);
-			//PolyPtr p;
-			//for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-			//{
-			//	p = (*it)->GetAsTerrain();
-			//	if (p != NULL)
-			//	{
-			//		//p->SoftReset();
-			//		p->Scale(1.05f);
-			//		//p->Scale(1.1f);
-			//		//p->Finalize();
-			//	}
-			//		
-			//}
+			PolyPtr p;
+			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+			{
+				p = (*it)->GetAsTerrain();
+				if (p != NULL)
+				{
+					p->SetRenderMode(TerrainPolygon::RENDERMODE_TRANSFORM);
+					//p->SoftReset();
+					//p->Scale(1.05f);
+					//p->Scale(1.1f);
+					//p->Finalize();
+				}
+					
+			}
 		}
 		else if (ev.key.code == Keyboard::M)
 		{
@@ -10255,7 +10260,7 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::N)
 		{
-			PolyPtr p;
+			/*PolyPtr p;
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
 				p = (*it)->GetAsTerrain();
@@ -10263,11 +10268,11 @@ void EditSession::EditModeHandleEvent()
 				{
 					p->CompleteTransformation();
 				}		
-			}
+			}*/
 		}
 		else if (ev.key.code == Keyboard::M)
 		{
-			PolyPtr p;
+			/*PolyPtr p;
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
 				p = (*it)->GetAsTerrain();
@@ -10275,7 +10280,7 @@ void EditSession::EditModeHandleEvent()
 				{
 					p->CompleteTransformation();
 				}
-			}
+			}*/
 		}
 		break;
 	}
@@ -11010,6 +11015,34 @@ void EditSession::TransformModeHandleEvent()
 	}
 	case Event::KeyPressed:
 	{
+		if (ev.key.code == sf::Keyboard::Space)
+		{
+			mode = EDIT;
+			PolyPtr p;
+			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+			{
+				p = (*it)->GetAsTerrain();
+				if (p != NULL)
+				{
+					p->CompleteTransformation();
+				}
+			}
+			selectedBrush->Clear();
+		}
+		else if (ev.key.code == sf::Keyboard::BackSpace)
+		{
+			mode = EDIT;
+			PolyPtr p;
+			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+			{
+				p = (*it)->GetAsTerrain();
+				if (p != NULL)
+				{
+					p->CancelTransformation();
+				}
+			}
+			//selectedBrush->Clear();
+		}
 		break;
 	}
 	case Event::KeyReleased:
@@ -11437,4 +11470,14 @@ void EditSession::TransformModeUpdate()
 {
 	Vector2f fWorldPos(worldPos);
 	transformTools->Update(fWorldPos, IsMousePressed( Mouse::Left));
+
+	PolyPtr p;
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	{
+		p = (*it)->GetAsTerrain();
+		if (p != NULL)
+		{
+			p->UpdateTransformation(transformTools);
+		}
+	}
 }

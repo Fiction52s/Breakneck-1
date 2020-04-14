@@ -15,7 +15,7 @@ struct TransformTools
 		ROTATE
 	};
 
-	Mode mode;
+	
 
 	TransformTools();
 	~TransformTools();
@@ -35,6 +35,8 @@ struct TransformTools
 
 	sf::Vector2f GetCenter();
 	void UpdateRotationAnchor();
+
+	Mode mode;
 
 	CircleGroup *circleGroup;
 

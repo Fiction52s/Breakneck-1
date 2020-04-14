@@ -15,6 +15,7 @@
 #include "ActorParams.h"
 #include "Action.h"
 #include "earcut.hpp"
+#include "TransformTools.h"
 
 using namespace std;
 using namespace sf;
@@ -1468,16 +1469,11 @@ void TerrainPolygon::Rotate( Vector2f &fCenter, float f)
 		//curr = GetPoint(i);
 		fCurr = lines[i*2].position;//Vector2f(curr->pos);
 
-		//diff = curr->pos - center;
-		//diff /= 2;
-		//curr->pos = center + diff;
-
 		fDiff = fCurr - fCenter;
 		fDiff = t.transformPoint(fDiff);
 
 		fCurr = fCenter + fDiff;
 
-		//curr->pos = Vector2i(round(fCurr.x), round(fCurr.y));
 		lines[i*2].position = fCurr;
 
 		if (i == 0)
@@ -1488,8 +1484,6 @@ void TerrainPolygon::Rotate( Vector2f &fCenter, float f)
 		{
 			lines[i * 2 - 1].position = fCurr;
 		}
-		UpdateLineColor(lines, i);
-		
 	}
 
 	//AlignExtremes(); happens after rotation is totally done
@@ -1742,7 +1736,6 @@ void TerrainPolygon::FinalizeInverse()
 	}
 
 	
-
 	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
 	vaSize = indices.size();
 
@@ -1774,7 +1767,8 @@ void TerrainPolygon::FinalizeInverse()
 
 	GenerateBorderMesh();
 
-	UpdateLines();
+	UpdateLinePositions();
+	UpdateLineColors();
 	
 	UpdateBounds();
 	
@@ -2019,7 +2013,8 @@ void TerrainPolygon::Finalize()
 
 	GenerateBorderMesh();
 
-	UpdateLines();
+	UpdateLinePositions();
+	UpdateLineColors();
 
 	UpdateBounds();
 
@@ -2115,7 +2110,38 @@ void TerrainPolygon::UpdateGrass()
 
 void TerrainPolygon::SetRenderMode(RenderMode rm)
 {
+	if (renderMode != RENDERMODE_TRANSFORM && rm == RENDERMODE_TRANSFORM)
+	{
+		VertexArray & v = *va;
+		triBackups.resize(vaSize);
+		for (int i = 0; i < vaSize; ++i)
+		{
+			triBackups[i] = v[i].position;
+		}
+	}
+	else if (rm != RENDERMODE_TRANSFORM && renderMode == RENDERMODE_TRANSFORM)
+	{
+		VertexArray &v = *va;
+		for (int i = 0; i < vaSize; ++i)
+		{
+			v[i].position = triBackups[i];
+		}
+		triBackups.clear();
+	}
+
 	renderMode = rm;
+	
+}
+
+void TerrainPolygon::CancelTransformation()
+{
+	UpdateLinePositions();
+	UpdateLineColors();
+	SetRenderMode(RENDERMODE_NORMAL);
+
+	
+
+	//triBackups.clear();
 }
 
 bool TerrainPolygon::CompleteTransformation()
@@ -2123,6 +2149,8 @@ bool TerrainPolygon::CompleteTransformation()
 	if (renderMode == RENDERMODE_TRANSFORM)
 	{
 		SetRenderMode(RENDERMODE_NORMAL);
+
+		triBackups.clear();
 
 		int numP = GetNumPoints();
 		TerrainPoint *curr;
@@ -2134,6 +2162,11 @@ bool TerrainPolygon::CompleteTransformation()
 		}
 
 		AlignExtremes();
+		
+		//not even going to use the same polygon here, this is just for testing. 
+		//what will really happen is that I create a copy, adding in the rounded points from my lines.
+		//that way I can adjust and test for correctness just like i usually would, and then just
+		//do a replacebrush action
 		//maybe test for correctness?
 
 		SoftReset();
@@ -2143,6 +2176,56 @@ bool TerrainPolygon::CompleteTransformation()
 	}
 
 	return false;
+}
+
+void TerrainPolygon::UpdateTransformation(TransformTools *tr)
+{
+	UpdateLinePositions();
+
+	int numP = GetNumPoints();
+	Vector2f fDiff;
+	Vector2f fCurr;
+
+	Transform t;
+	t.rotate(tr->rotation);
+	t.scale(tr->scale);
+
+	int prevIndex;
+
+	Vector2f center = tr->origCenter;
+	Vector2f trCenter = tr->GetCenter();
+
+	for (int i = 0; i < numP; ++i)
+	{
+		fCurr = lines[i * 2].position;
+
+		fDiff = fCurr - center;
+		fDiff = t.transformPoint(fDiff);
+
+		fCurr = fDiff + trCenter;
+
+		lines[i * 2].position = fCurr;
+
+		if (i == 0)
+		{
+			lines[numP * 2 - 1].position = fCurr;
+		}
+		else
+		{
+			lines[i * 2 - 1].position = fCurr;
+		}
+	}
+
+	VertexArray & v = *va;
+	for (int i = 0; i < vaSize; ++i)
+	{
+		fCurr = triBackups[i];
+		fDiff = fCurr - center;
+		fDiff = t.transformPoint(fDiff);
+		fCurr = fDiff + trCenter;
+
+		v[i].position = fCurr;
+	}
 }
 
 void TerrainPolygon::DrawBorderQuads(RenderTarget *target)
@@ -2177,6 +2260,9 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	}
 	else if (renderMode == RENDERMODE_TRANSFORM)
 	{
+		if (va != NULL)
+			rt->draw(*va, pShader);
+
 		rt->draw(lines, numP * 2, sf::Lines);
 		return;
 	}
@@ -2453,7 +2539,7 @@ void TerrainPolygon::FixWinding()
     }
 }
 
-void TerrainPolygon::UpdateLineColor( sf::Vertex *li, int i)
+void TerrainPolygon::UpdateLineColor( int i)
 {
 	TerrainPoint *curr, *next;
 
@@ -2517,6 +2603,15 @@ void TerrainPolygon::UpdateLineColor( sf::Vertex *li, int i)
 	lines[nextIndex].color = edgeColor;
 }
 
+void TerrainPolygon::UpdateLineColors()
+{
+	int numP = GetNumPoints();
+	for (int i = 0; i < numP; ++i)
+	{
+		UpdateLineColor(i);
+	}
+}
+
 void TerrainPolygon::FixWindingInverse()
 {
 	if( !IsClockwise() )
@@ -2534,7 +2629,7 @@ void TerrainPolygon::FixWindingInverse()
     }
 }
 
-void TerrainPolygon::UpdateLines()
+void TerrainPolygon::UpdateLinePositions()
 {
 	int numP = GetNumPoints();
 	if (numP > 0)
@@ -2544,15 +2639,12 @@ void TerrainPolygon::UpdateLines()
 
 		TerrainPoint *curr = GetPoint(0);
 		lines[0].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-		UpdateLineColor(lines, 0);
 		lines[2 * numP - 1].position = sf::Vector2f(curr->pos.x, curr->pos.y);
 		++index;
 
 		for (int i = 1; i < numP; ++i)
 		{
 			curr = GetPoint(i);
-
-			UpdateLineColor(lines, i);
 			lines[index].position = sf::Vector2f(curr->pos.x, curr->pos.y);
 			lines[++index].position = sf::Vector2f(curr->pos.x, curr->pos.y);
 			++index;

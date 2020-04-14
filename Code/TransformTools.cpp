@@ -12,7 +12,7 @@ TransformTools::TransformTools()
 	tRect.setOutlineThickness(-4);
 
 	scalePointRadius = 20;
-	rotatePointRadius = 40;
+	rotatePointRadius = 60;
 
 	circleGroup = new CircleGroup(8, 20, Color::Magenta, 10);
 	circleGroup->ShowAll();
@@ -69,18 +69,24 @@ void TransformTools::Reset(Vector2f &p_center, Vector2f &p_size)
 	origCenter = p_center;
 
 	rotationAnchor = origCenter;
-	size = p_size;
+	
+	float extra = 50;//create extra space surrounding polys
+	origSize = p_size + Vector2f(extra, extra);
 
-	origSize = size;
+	size = origSize;
 
 	originOffset = Vector2f(0, 0);
 
 	tRect.setSize(size);
 	tRect.setOrigin(size.x / 2.f, size.y / 2.f);
+	tRect.setRotation(0);
 	tRect.setPosition(origCenter);
 
 	rotation = 0.f;
 	scale = Vector2f(1.f, 1.f);
+	UpdateGrabPoints();
+
+	clickedNothing = false;
 	UpdateGrabPoints();
 }
 
@@ -274,6 +280,8 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 		UpdateScaleOrigin();
 
 		UpdateGrabPoints();
+
+		UpdateRotationAnchor();
 		break;
 	}
 	case ROTATE:
