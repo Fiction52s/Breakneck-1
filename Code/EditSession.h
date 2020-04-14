@@ -347,7 +347,7 @@ struct EditSession : GUIHandler, Session
 		std::set<PolyPtr> & polyList,
 		std::list<GateInfoPtr> &gateInfoList,
 		Brush *b);
-	void AddFullPolytoBrush(
+	void AddFullPolyToBrush(
 		PolyPtr p, 
 		std::list<GateInfoPtr> &gateInfoList,
 		Brush *b);
