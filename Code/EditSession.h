@@ -24,6 +24,7 @@
 #include "Session.h"
 //#include "EditorRail.h"
 
+struct TransformTools;
 struct EditorGraph;
 struct ActorParams;
 struct MainMenu;
@@ -74,6 +75,7 @@ struct EditSession : GUIHandler, Session
 		CREATE_RAILS,
 		SET_CAM_ZOOM,
 		TEST_PLAYER,
+		TRANSFORM,
 	};
 
 	Emode mode;
@@ -93,6 +95,9 @@ struct EditSession : GUIHandler, Session
 		ITOOL_SCALE
 	};
 
+
+	TransformTools *transformTools;
+
 	void SetInitialView(sf::Vector2f &center,
 		sf::Vector2f &size);
 	bool initialViewSet;
@@ -102,6 +107,8 @@ struct EditSession : GUIHandler, Session
 	void UpdatePostPhysics();
 	void TestPlayerModeUpdate();
 	void TestPlayerMode();
+
+	
 
 	/*QuadTree *terrainBGTree;
 	QuadTree *specialTerrainTree;
@@ -635,6 +642,7 @@ struct EditSession : GUIHandler, Session
 	void CreateImagesHandleEvent();
 	//void EditImagesModeHandleEvent();
 	void SetLevelModeHandleEvent();
+	void TransformModeHandleEvent();
 
 	void CreateTerrainModeUpdate();
 	void CreateRailsModeUpdate();
@@ -651,6 +659,8 @@ struct EditSession : GUIHandler, Session
 	void CreateImagesModeUpdate();
 	//void EditImagesModeUpdate();
 	void SetLevelModeUpdate();
+	void TransformModeUpdate();
+	
 	
 	sf::Event ev;
 	void UndoMostRecentAction();

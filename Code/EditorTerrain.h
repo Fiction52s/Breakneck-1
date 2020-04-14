@@ -214,6 +214,8 @@ struct TerrainPolygon : ISelectable
 	RenderMode renderMode;
 	void SetRenderMode(RenderMode rm);
 
+	bool CompleteTransformation();
+
 	static double GetSteepThresh() { return .4; }
 
 	EdgeAngleType GetEdgeAngleType(int index);
@@ -293,7 +295,7 @@ struct TerrainPolygon : ISelectable
 	TerrainPolygon(TerrainPolygon &poly, bool pointsOnly,
 		bool storeSelectedPoints = false );
 	~TerrainPolygon();
-	void UpdateLineColor(sf::Vertex *line, int i, int index);
+	void UpdateLineColor(sf::Vertex *line, int i);
 	static sf::Vector2i TrimSliverPos(sf::Vector2<double> &prevPos,
 		sf::Vector2<double> &pos, sf::Vector2<double> &nextPos,
 		double minAngle, bool cw);

@@ -1418,10 +1418,18 @@ void TerrainPolygon::Scale(float f)
 	Vector2f fDiff;
 	Vector2f fCurr;
 	TerrainPoint *curr;
+
+	int prevIndex;
+
 	for (int i = 0; i < numP; ++i)
 	{
+		prevIndex = i * 2 - 1;
+		if (i == 0)
+		{
+			prevIndex = numP * 2 - 1;
+		}
 		//curr = GetPoint(i);
-		fCurr = lines[i].position;
+		fCurr = lines[i*2].position;
 		//fCurr = Vector2f(curr->pos);
 
 		//diff = curr->pos - center;
@@ -1432,9 +1440,8 @@ void TerrainPolygon::Scale(float f)
 		fDiff *= f;
 
 		fCurr = fCenter + fDiff;
-		lines[i].position = fCurr;
-
-
+		lines[i*2].position = fCurr;
+		lines[prevIndex].position = fCurr;
 		//curr->pos = Vector2i(round(fCurr.x), round(fCurr.y));
 		
 	}
@@ -1481,7 +1488,7 @@ void TerrainPolygon::Rotate( Vector2f &fCenter, float f)
 		{
 			lines[i * 2 - 1].position = fCurr;
 		}
-		UpdateLineColor(lines, i, i*2);
+		UpdateLineColor(lines, i);
 		
 	}
 
@@ -2111,6 +2118,33 @@ void TerrainPolygon::SetRenderMode(RenderMode rm)
 	renderMode = rm;
 }
 
+bool TerrainPolygon::CompleteTransformation()
+{
+	if (renderMode == RENDERMODE_TRANSFORM)
+	{
+		SetRenderMode(RENDERMODE_NORMAL);
+
+		int numP = GetNumPoints();
+		TerrainPoint *curr;
+		for (int i = 0; i < numP; ++i)
+		{
+			curr = GetPoint(i);
+			curr->pos.x = round(lines[i * 2].position.x);
+			curr->pos.y = round(lines[i * 2].position.y);
+		}
+
+		AlignExtremes();
+		//maybe test for correctness?
+
+		SoftReset();
+		Finalize();
+
+		return true;
+	}
+
+	return false;
+}
+
 void TerrainPolygon::DrawBorderQuads(RenderTarget *target)
 {
 	if (totalNumBorderQuads > 0)
@@ -2419,20 +2453,26 @@ void TerrainPolygon::FixWinding()
     }
 }
 
-void TerrainPolygon::UpdateLineColor( sf::Vertex *li, int i, int index )
+void TerrainPolygon::UpdateLineColor( sf::Vertex *li, int i)
 {
 	TerrainPoint *curr, *next;
 
 	Vector2f diff;
 	
+	int index = i * 2;
+	int nextIndex = index + 1;
+	/*if (i == GetNumPoints() - 1)
+	{
+		nextIndex = 0;
+	}*/
+
 	if (renderMode == RENDERMODE_TRANSFORM)
 	{
-		int nextIndex = i + 1;
-		if (i == GetNumPoints() - 1)
-		{
-			nextIndex = 0;
-		}
-		diff = Vector2f(lines[nextIndex * 2].position - lines[i * 2].position);
+		Vector2f roundedNextPos(round(lines[nextIndex].position.x), round(lines[nextIndex].position.y));
+		Vector2f roundedPos(round(lines[index].position.x), round(lines[index].position.y));
+
+		diff = roundedNextPos - roundedPos;
+		
 	}
 	else
 	{
@@ -2474,7 +2514,7 @@ void TerrainPolygon::UpdateLineColor( sf::Vertex *li, int i, int index )
 	}
 
 	lines[index].color = edgeColor;
-	lines[index + 1].color = edgeColor;
+	lines[nextIndex].color = edgeColor;
 }
 
 void TerrainPolygon::FixWindingInverse()
@@ -2504,7 +2544,7 @@ void TerrainPolygon::UpdateLines()
 
 		TerrainPoint *curr = GetPoint(0);
 		lines[0].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-		UpdateLineColor(lines, 0, index);
+		UpdateLineColor(lines, 0);
 		lines[2 * numP - 1].position = sf::Vector2f(curr->pos.x, curr->pos.y);
 		++index;
 
@@ -2512,7 +2552,7 @@ void TerrainPolygon::UpdateLines()
 		{
 			curr = GetPoint(i);
 
-			UpdateLineColor(lines, i, index + 1);
+			UpdateLineColor(lines, i);
 			lines[index].position = sf::Vector2f(curr->pos.x, curr->pos.y);
 			lines[++index].position = sf::Vector2f(curr->pos.x, curr->pos.y);
 			++index;

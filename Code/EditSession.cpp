@@ -24,6 +24,8 @@
 #include "Wire.h"
 
 #include "clipper.hpp"
+
+#include "TransformTools.h"
 //using namespace ClipperLib;
 //#include "TerrainRender.h"
 
@@ -309,6 +311,8 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	transformTools = new TransformTools();
+
 	initialViewSet = false;
 
 	SaveFile *currFile = mainMenu->GetCurrentProgress();
@@ -931,6 +935,8 @@ TerrainRail *EditSession::GetRail(int index, int &edgeIndex)
 EditSession::~EditSession()
 {
 
+	delete transformTools;
+
 	delete graph;
 
 
@@ -1088,6 +1094,11 @@ void EditSession::Draw()
 				p->Draw(preScreenTex);
 			}
 		}
+	}
+
+	if (mode == TRANSFORM)
+	{
+		transformTools->Draw(preScreenTex);
 	}
 }
 
@@ -3791,8 +3802,8 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 					curr->gate->UpdateLine();
 				}
 
-				poly->UpdateLineColor(poly->lines, prev->index, prev->index * 2);
-				poly->UpdateLineColor(poly->lines, i, i * 2);
+				poly->UpdateLineColor(poly->lines, prev->index);
+				poly->UpdateLineColor(poly->lines, i);
 
 				if (poly->enemies.count(curr) > 0)
 				{
@@ -9680,7 +9691,11 @@ void EditSession::HandleEvents()
 			SetLevelModeHandleEvent();
 			break;
 		}
-
+		case TRANSFORM:
+		{
+			TransformModeHandleEvent();
+			break;
+		}
 
 		}
 		//ones that aren't specific to mode
@@ -10137,37 +10152,37 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::N)
 		{
-			selectedBrush->Rotate(10.f);
+			mode = TRANSFORM;
+			transformTools->Reset(selectedBrush->GetCenterF(),
+				Vector2f(300, 400));
+			//selectedBrush->Scale(1.05f);
 			//PolyPtr p;
 			//for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			//{
 			//	p = (*it)->GetAsTerrain();
 			//	if (p != NULL)
 			//	{
-			//		p->SoftReset();
-			//		p->Rotate(1.f);
+			//		//p->SoftReset();
+			//		p->Scale(1.05f);
 			//		//p->Scale(1.1f);
-			//		p->Finalize();
+			//		//p->Finalize();
 			//	}
 			//		
 			//}
 		}
 		else if (ev.key.code == Keyboard::M)
 		{
-			selectedBrush->Rotate(-10.f);
-			//PolyPtr p;
-			//for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-			//{
-			//	p = (*it)->GetAsTerrain();
-			//	if (p != NULL)
-			//	{
-			//		p->SoftReset();
-			//		p->Rotate(-1.f);
-			//		//p->Scale(.9f);
-			//		p->Finalize();
-			//	}
+			//selectedBrush->Rotate(-1.f);
+			/*PolyPtr p;
+			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+			{
+				p = (*it)->GetAsTerrain();
+				if (p != NULL)
+				{
+					p->Scale(.95f);
+				}
 
-			//}
+			}*/
 		}
 		else if (ev.key.code == Keyboard::R)
 		{
@@ -10237,6 +10252,30 @@ void EditSession::EditModeHandleEvent()
 		if (ev.key.code == Keyboard::R)
 		{
 			ShowGrass(false);
+		}
+		else if (ev.key.code == Keyboard::N)
+		{
+			PolyPtr p;
+			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+			{
+				p = (*it)->GetAsTerrain();
+				if (p != NULL)
+				{
+					p->CompleteTransformation();
+				}		
+			}
+		}
+		else if (ev.key.code == Keyboard::M)
+		{
+			PolyPtr p;
+			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+			{
+				p = (*it)->GetAsTerrain();
+				if (p != NULL)
+				{
+					p->CompleteTransformation();
+				}
+			}
 		}
 		break;
 	}
@@ -10954,6 +10993,32 @@ void EditSession::SetLevelModeHandleEvent()
 	}
 }
 
+void EditSession::TransformModeHandleEvent()
+{
+	switch (ev.type)
+	{
+	case Event::MouseButtonPressed:
+	{
+	}
+	case Event::MouseButtonReleased:
+	{
+		break;
+	}
+	case Event::MouseWheelMoved:
+	{
+		break;
+	}
+	case Event::KeyPressed:
+	{
+		break;
+	}
+	case Event::KeyReleased:
+	{
+		break;
+	}
+	}
+}
+
 void EditSession::UpdateMode()
 {
 	switch (mode)
@@ -11023,6 +11088,12 @@ void EditSession::UpdateMode()
 		TestPlayerModeUpdate();
 		break;
 	}
+	case TRANSFORM:
+	{
+		TransformModeUpdate();
+		break;
+	}
+		
 	}
 }
 
@@ -11360,4 +11431,10 @@ void EditSession::CreateImagesModeUpdate()
 void EditSession::SetLevelModeUpdate()
 {
 	SetEnemyLevel();
+}
+
+void EditSession::TransformModeUpdate()
+{
+	Vector2f fWorldPos(worldPos);
+	transformTools->Update(fWorldPos, IsMousePressed( Mouse::Left));
 }
