@@ -252,10 +252,6 @@ struct TerrainPolygon : ISelectable
 	static bool IsAcute(Edge *e0);
 	static V2d GetBisector(Edge *e);
 
-
-	
-
-
 	Tileset *ts_grass;
 	void SetupEdges();
 	std::vector<Edge> edges;

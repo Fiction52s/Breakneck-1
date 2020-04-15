@@ -87,7 +87,10 @@ TerrainPolygon::TerrainPolygon()
 	
 	EditSession *session = EditSession::GetSession();
 	//GET GRASS TILESET HERE
-	ts_grass = session->GetTileset("Env/grass_128x128.png", 128, 128);
+	if (session != NULL)
+	{
+		ts_grass = session->GetTileset("Env/grass_128x128.png", 128, 128);
+	}
 	
 	if (session != NULL)
 	{

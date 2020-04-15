@@ -1011,7 +1011,7 @@ EditSession::~EditSession()
 			delete terrainTextures[i];
 	}
 
-	
+	currSession = NULL;
 }
 
 void EditSession::SnapPointToGraph(Vector2f &p, int gridSize )

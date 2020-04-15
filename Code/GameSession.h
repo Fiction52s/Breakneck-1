@@ -835,38 +835,14 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 
 	sf::VertexArray *SetupEnergyFlow();
 
-	sf::VertexArray *SetupBorderTris(
-		int bgLayer,
-		Edge *start,
-		Tileset *ts );
-
-	sf::VertexArray *SetupTransitions(
-		int bgLayer,
-		Edge *start,
-		Tileset *ts );
-	sf::VertexArray *SetupTransitionQuads(
-		int bgLayer,
-		Edge *start,
-		Tileset *ts);
-
 	sf::VertexArray *SetupBushes( int bgLayer,
 		Edge *startEdge, Tileset *ts );
 
-	
-	
-	
 	std::map<DecorType,DecorLayer*> decorLayerMap;
-
-
-
-	DecorExpression * CreateDecorExpression( DecorType dType,
-		int bgLayer,
-		Edge *startEdge );
 
 	std::list<DecorLayer*> DecorLayers;
 
 	std::list<ScrollingBackground*> scrollingBackgrounds;
-	//ScrollingBackground *scrollingTest;
 
 	
 	std::string queryMode;
