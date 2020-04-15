@@ -6425,27 +6425,14 @@ int GameSession::Run()
 		
 		while ( accumulator >= TIMESTEP )
         {
-		//	cout << "currInputleft: " << currInput.leftShoulder << endl;
 			bool skipInput = IsKeyPressed( sf::Keyboard::PageUp );
 			if( oneFrameMode )
 			{
-				//controller.UpdateState();
-				
-
-				ControllerState con;
-
-				ControllerState con2;
-				//con = controller.GetState();
-				
-				
 				bool tookScreenShot = false;
 				bool screenShot = false;
 				
 				while( true )
 				{
-					//prevInput = currInput;
-					//player->prevInput = currInput;
-
 					vector<GCC::GCController> controllers;
 					if (mainMenu->gccDriverEnabled)
 						controllers = mainMenu->gccDriver->getState();
@@ -6541,13 +6528,8 @@ int GameSession::Run()
 			bool k = IsKeyPressed( sf::Keyboard::K );
 			bool levelReset = IsKeyPressed( sf::Keyboard::L );
 			Enemy *monitorList = NULL;
-			//if( player->action != Actor::GOALKILLWAIT && player->action != Actor::GOALKILL && player->action != Actor::EXIT && ( k || levelReset || player->dead /*|| (currInput.start && !prevInput.start )*/ ) )
-			{
-				//levelReset = true;
-				//RestartLevel();
-			}
-
-			if( IsKeyPressed( sf::Keyboard::Y ) )// || currInput.start )
+			
+			if( IsKeyPressed( sf::Keyboard::Y ) )
 			{
 				quit = true;
 				break;
@@ -6575,8 +6557,6 @@ int GameSession::Run()
 			if( goalDestroyed )
 			{
 				quit = true;
-				
-				//returnVal = GR_WIN;
 				returnVal = resType;
 				break;
 			}
@@ -6590,11 +6570,6 @@ int GameSession::Run()
 				accumulator = TIMESTEP + .1;
 				frameCounter = 0;
 			}
-			
-			
-			
-			//lastFrameTex->display();
-			
 
 			if( pauseFrames == 0 )
 			{
@@ -6606,73 +6581,73 @@ int GameSession::Run()
 			
 			
 
-			if( !cutPlayerInput )
-			{
-
-				Actor *pTemp = NULL;
-				for( int i = 0; i < 4; ++i )
+				if( !cutPlayerInput )
 				{
-					pTemp = GetPlayer(i);
-					if (pTemp != NULL)
+
+					Actor *pTemp = NULL;
+					for( int i = 0; i < 4; ++i )
 					{
-						if (cutPlayerInput)
+						pTemp = GetPlayer(i);
+						if (pTemp != NULL)
 						{
-							pTemp->prevInput = ControllerState();
-						}
-						else
-						{
-							pTemp->prevInput = GetCurrInput(i);
-						}
-					}		
+							if (cutPlayerInput)
+							{
+								pTemp->prevInput = ControllerState();
+							}
+							else
+							{
+								pTemp->prevInput = GetCurrInput(i);
+							}
+						}		
+					}
 				}
-			}
 
-			vector<GCC::GCController> controllers;
-			if (mainMenu->gccDriverEnabled)
-				controllers = mainMenu->gccDriver->getState();
-
-			for( int i = 0; i < 1; ++i )
-			{
-				GameController &con = GetController( i );
-
+				vector<GCC::GCController> controllers;
 				if (mainMenu->gccDriverEnabled)
-					con.gcController = controllers[i];
+					controllers = mainMenu->gccDriver->getState();
 
-
-				bool canControllerUpdate = con.UpdateState();
-				if( !canControllerUpdate )
+				for( int i = 0; i < 1; ++i )
 				{
-					//KeyboardUpdate( 0 );
+					GameController &con = GetController( i );
+
+					if (mainMenu->gccDriverEnabled)
+						con.gcController = controllers[i];
+
+
+					bool canControllerUpdate = con.UpdateState();
+					if( !canControllerUpdate )
+					{
+						//KeyboardUpdate( 0 );
+					}
+					else
+					{
+						ControllerState &currInput = GetCurrInput(i);
+						ControllerState &conState = con.GetState();
+						currInput = conState;
+						GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+					}
 				}
-				else
+
+
+				//currently only records 1 player replays. fix this later
+				if( repPlayer != NULL )//repPlayer->init )
 				{
-					ControllerState &currInput = GetCurrInput(i);
-					ControllerState &conState = con.GetState();
-					currInput = conState;
-					GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+					//cout << "replay input" << repPlayer->frame << endl;
+					repPlayer->UpdateInput( GetCurrInput( 0 ) );
+					//repPlayer->up
 				}
-			}
 
-
-			//currently only records 1 player replays. fix this later
-			if( repPlayer != NULL )//repPlayer->init )
-			{
-				//cout << "replay input" << repPlayer->frame << endl;
-				repPlayer->UpdateInput( GetCurrInput( 0 ) );
-				//repPlayer->up
-			}
-
-			if( recPlayer != NULL )
-			{
-				//cout << "record player " << recPlayer->frame << endl;
-				recPlayer->RecordFrame();
-			}
+				if( recPlayer != NULL )
+				{
+					//cout << "record player " << recPlayer->frame << endl;
+					recPlayer->RecordFrame();
+				}
 
 			
-			for (int i = 0; i < 4; ++i)
-			{
-				UpdatePlayerInput(i);
-			}
+				for (int i = 0; i < 4; ++i)
+				{
+					UpdatePlayerInput(i);
+				}
 
 			}
 			else if( pauseFrames > 0 )
