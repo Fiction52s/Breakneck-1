@@ -1083,16 +1083,6 @@ void MainMenu::Init()
 	
 
 	cout << "init finished" << endl;
-
-	//parBack = new Parallax();
-	//parFront = new Parallax();
-	//parBack->AddRepeatingSprite( ts_asteroid1, 0, Vector2f( -1920, 0 ), 1920 * 3, 50 );
-	//parBack->AddRepeatingSprite( ts_asteroid1, 0, Vector2f( 1920, 0 ), 1920 * 2, 50 );
-	//parFront->AddRepeatingSprite( ts_asteroid0, 0, Vector2f( 0, 0 ), 1920, 50 );
-	//parFront->AddRepeatingSprite( ts_asteroid2, 0, Vector2f( 0, 0 ), 1920, 50 );
-
-	//asteroidFrame = 0;
-	
 }
 
 bool MainMenu::IsKeyPressed(int k)

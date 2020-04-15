@@ -117,6 +117,29 @@ void Session::DrawPlayerWires( RenderTarget *target )
 	}
 }
 
+void Session::SetPlayerInputOn(bool on )
+{
+	cutPlayerInput = !on;
+	//if (!cutPlayerInput)
+	//{
+	//	//GetPrevInput(0) = ControllerState();
+	//	//GetCurrInput(0) = ControllerState()
+	//}
+}
+
+void Session::DrawPlayers(sf::RenderTarget *target)
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->Draw(target);
+		}
+	}
+}
+
 void Session::UpdatePlayerWireQuads()
 {
 	Actor *p;
@@ -213,6 +236,8 @@ bool Session::ReadDecorInfoFile(int tWorld, int tVar)
 		//not found, thats fine.
 	}
 }
+
+
 
 bool Session::ReadHeader(std::ifstream &is)
 {

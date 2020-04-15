@@ -2976,7 +2976,6 @@ void Actor::UpdatePrePhysics()
 				leftWire->Reset();
 				slowCounter = 1;
 				frame = 0;
-				owner->deathWipe = true;
 
 				for (int i = 0; i < 3; ++i)
 				{
@@ -2989,21 +2988,7 @@ void Actor::UpdatePrePhysics()
 			{
 				kinRing->powerRing->mode == PowerRing::NORMAL;
 			}
-			//	||  owner->powerWheel->activeSection > 0 )
-			//{
-			//	owner->powerWheel->mode = PowerWheel::NORMAL;
-			//	//you gathered health in desp mode!
-			//}
-			//else
-			//{
-			//	action = DEATH;
-			//	rightWire->Reset();
-			//	leftWire->Reset();
-			//	slowCounter = 1;
-			//	frame = 0;
-			//	owner->deathWipe = true;
-			//}
-			
+
 		}
 	}
 
@@ -10295,29 +10280,6 @@ bool Actor::ResolvePhysics( V2d vel )
 		owner->activeItemTree->Query(this, r);
 	}
 	
-
-	//queryMode = "gate";
-	//owner->testGateCount = 0;
-	//owner->gateTree->Query( this, r );
-
-	/*if( owner->testGateCount > 0 )
-	{
-		cout << "ON" << endl;
-		action = DEATH;
-		rightWire->Reset();
-		leftWire->Reset();
-		slowCounter = 1;
-		frame = 0;
-		owner->deathWipe = true;
-
-		owner->powerBar.Damage( 1000000 );
-	}*/
-
-	//need to fix the quad tree but this works!
-	//cout << "test grass count: " << testGrassCount << endl;
-	//if( minContact.edge != NULL )
-	//	cout << "blah: " <<  minContact.edge->Normal().x << ", " << minContact.edge->Normal().y << endl;
-
 	return col;
 }
 

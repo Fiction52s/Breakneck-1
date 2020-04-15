@@ -252,9 +252,12 @@ GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu,
 	const boost::filesystem::path &p_filePath )
 	:saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
-	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), fileName( p_filePath.string() ),
-	filePath( p_filePath ), eHitParamsMan( NULL ), drain(true )
+	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), 
+	eHitParamsMan( NULL ), drain(true )
 {	
+	filePath = p_filePath;
+	filePathStr = filePath.string();
+
 	mainMenu = p_mainMenu;
 	cam.owner = this;
 
@@ -401,12 +404,6 @@ void GameSession::Cleanup()
 	{
 		delete absorbShardParticles;
 		absorbShardParticles = NULL;
-	}
-
-	if (testPar != NULL)
-	{
-		delete testPar;
-		testPar = NULL;
 	}
 
 	if (ts_polyShaders != NULL)
@@ -917,11 +914,6 @@ void GameSession::DrawEffects( EffectLayer layer )
 	{
 		preScreenTex->setView(oldView);
 	}
-}
-
-void GameSession::Test( Edge *e )
-{
-	cout << "testing" << endl;
 }
 
 void GameSession::AddEffect( EffectLayer layer, Enemy *e )
@@ -2687,13 +2679,6 @@ void GameSession::LoadEnemy(std::ifstream &is,
 			enem = enemy;
 
 			enemyTree->Insert(enemy);
-			/*Boss_Bird *enemy = new Boss_Bird( this, Vector2i ( xPos, yPos ) );
-
-			fullEnemyList.push_back( enemy );
-
-			b_bird = enemy;
-
-			enemyTree->Insert( enemy );*/
 		}
 
 		//w3
@@ -3554,19 +3539,11 @@ void GameSession::LoadEnemy(std::ifstream &is,
 
 
 
-bool GameSession::OpenFile( string fileName )
+bool GameSession::OpenFile( )
 {
-	drain = true;
-	hasGoal = false;
-	numTotalKeys = 0;
-	numKeysCollected = 0;
-	shipSequence = false;
-	hasShipEntrance = false;
-	
-	currentFile = fileName;
 	int insertCount = 0;
 	ifstream is;
-	is.open( fileName );//+ ".brknk" );
+	is.open(filePathStr);//+ ".brknk" );
 	if( is.is_open() )
 	{
 		mh = MainMenu::ReadMapHeader(is);
@@ -4146,8 +4123,6 @@ bool GameSession::OpenFile( string fileName )
 		
 		
 		SetupStormCeiling();
-		//SetupMapBorderQuads(blackBorder, topBorderOn);
-		//SetupMinimapBorderQuads(blackBorder, topBorderOn);
 
 		if (topBorderOn)
 		{
@@ -4188,7 +4163,6 @@ bool cmpPairsDesc( pair<double,int> & a, pair<double,int> & b)
 
 void GameSession::SetGlobalBorders()
 {
-	borderEdge = NULL;
 	//borders not allowed to intersect w/ gates
 	V2d topLeft( mh->leftBounds, mh->topBounds );
 	V2d topRight(mh->leftBounds + mh->boundsWidth, mh->topBounds );
@@ -4756,10 +4730,7 @@ void GameSession::CreateZones()
 		}
 	}
 
-	
-	//wish i knew what this was supposed to do. you turned this off because
-	//borderEdge is always null now.
-	if( numOutsideGates > 0 )//&& borderEdge != NULL )
+	if( numOutsideGates > 0 )
 	{
 		assert( inverseEdgeTree != NULL );
 
@@ -5515,7 +5486,7 @@ Edge *GameSession::GetEdge(int index)
 
 
 
-void GameSession::LoadDecorImages()
+void GameSession::ReadDecorImagesFile()
 {
 	ifstream is;
 	is.open("Resources/decor.txt");
@@ -6031,7 +6002,7 @@ bool GameSession::Load()
 	
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("opening map file!", 1);
-	OpenFile( fileName );
+	OpenFile( );
 
 	//background = new Background(this, mh->envLevel, mh->envType);
 	Background::SetupFullBG(mh->envName, tm, background, scrollingBackgrounds);
@@ -6345,28 +6316,6 @@ bool GameSession::Load()
 		(*it)->tr->tdInfo = terrainDecorInfos[realIndex];
 		(*it)->tr->GenerateDecor();
 	}
-
-	LevelSpecifics();
-	
-	
-
-
-	//this is outdated!
-	testPar = new Parallax();
-
-	//Tileset *ts1a = GetTileset( "Parallax/w1_01a.png", 1920, 1080 );
-	//Tileset *ts1b = GetTileset( "Parallax/w1_01b.png", 1920, 1080 );
-	//Tileset *ts1c = GetTileset( "Parallax/w1_01c.png", 1920, 1080 );
-
-	//testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 0, 0 ), 1920 * 2, 80 );
-	//testPar->AddRepeatingSprite( ts1a, 0, Vector2f( 1920, 0 ), 1920 * 2, 80 );
-
-	//testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 0, 0 ), 1920 * 2, 150 );
-	//testPar->AddRepeatingSprite( ts1b, 0, Vector2f( 1920, 0 ), 1920 * 2, 150 );
-
-	//testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 0, 0 ), 1920 * 2, 250 );
-	//testPar->AddRepeatingSprite( ts1c, 0, Vector2f( 1920, 0 ), 1920 * 2, 250 );
-
 	
 	cout << "last one" << endl;
 	for( auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
@@ -7039,16 +6988,6 @@ int GameSession::Run()
 				//break;
 				continue;
 			}
- 
-			if( deathWipe )
-			{
-				deathWipeFrame++;
-				if( deathWipeFrame == deathWipeLength )
-				{
-					deathWipe = false;
-					deathWipeFrame = 0;
-				}
-			}
 
 			if( activeSequence != NULL )// && activeSequence == startSeq )
 			{
@@ -7320,8 +7259,6 @@ int GameSession::Run()
 				//rain.Update();
 
 				mainMenu->UpdateEffects();
-
-				testPar->Update( camPos );
 
 				if( raceFight != NULL )
 				{
@@ -7737,7 +7674,7 @@ int GameSession::Run()
 		absorbParticles->Draw(preScreenTex);
 
 
-		DrawPlayers();
+		DrawPlayers(preScreenTex);
 		
 		absorbShardParticles->Draw(preScreenTex);
 		
@@ -7852,45 +7789,6 @@ int GameSession::Run()
 		DrawDyingPlayers();
 		
 		UpdateTimeSlowShader();
-		
-		//this is so inefficient LOL
-		if (false)
-		{
-			preScreenTex->display();
-			const Texture &preTex = preScreenTex->getTexture();
-
-			Sprite preTexSprite(preTex);
-			preTexSprite.setPosition(-960 / 2, -540 / 2);
-			preTexSprite.setScale(.5, .5);
-
-			preScreenTex->setView(v);
-			preScreenTex->draw(preTexSprite, &cloneShader);
-
-			preScreenTex->setView(view);
-
-			//draws the player again on top of everything
-			/*if( player->action != Actor::DEATH )
-				player->Draw( preScreenTex );*/
-
-			for (int i = 0; i < 4; ++i)
-			{
-				p = GetPlayer(i);
-				if (p != NULL)
-				{
-					p->DodecaLateDraw(preScreenTex);
-				}
-			}
-
-			//enemyTree->DebugDraw( preScreenTex );
-
-			preScreenTex->draw(*debugBorders);
-
-			preScreenTex->setView(uiView);
-			fader->Draw(preScreenTex);
-			swiper->Draw(preScreenTex);
-
-			mainMenu->DrawEffects(preScreenTex);
-		}
 
 		if (currBroadcast != NULL)
 		{
@@ -8895,6 +8793,13 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	drain = true;
+	hasGoal = false;
+	numTotalKeys = 0;
+	numKeysCollected = 0;
+	shipSequence = false;
+	hasShipEntrance = false;
+
 	fBubblePos = NULL;
 	fBubbleRadiusSize = NULL;
 	fBubbleFrame = NULL;
@@ -8908,7 +8813,7 @@ void GameSession::Init()
 
 	nextFrameRestart = false;
 
-	LoadDecorImages();
+	ReadDecorImagesFile();
 
 	getShardSeq = NULL;
 
@@ -9000,7 +8905,6 @@ void GameSession::Init()
 	polyShaders = NULL;
 	ts_polyShaders = NULL;
 	terrainDecorInfos = NULL;
-	testPar = NULL;
 	va = NULL;
 	edges = NULL;
 	activeEnemyList = NULL;
@@ -9045,12 +8949,6 @@ void GameSession::Init()
 
 	currentZone = NULL;
 	Movable::owner = this;
-	//b_crawler = NULL;
-	b_bird = NULL;
-	b_coyote = NULL;
-	b_tiger = NULL;
-	b_gator = NULL;
-	b_skeleton = NULL;
 
 	cutPlayerInput = false;
 
@@ -9073,10 +8971,6 @@ void GameSession::Init()
 	radDiff = 100;
 	flowSpacing = 600;
 	maxFlowRings = 40;
-
-	deathWipe = false;
-	deathWipeFrame = 0;
-	deathWipeLength = 17 * 5;
 
 	listVA = NULL;
 	specialPieceList = NULL;
@@ -9933,11 +9827,6 @@ void GameSession::DrawTerrainPieces(TerrainPiece *tPiece)
 	}
 }
 
-void GameSession::UpdateActiveEnvPlants()
-{
-
-}
-
 void GameSession::UpdateDecorSprites()
 {
 	TerrainPiece *te = listVA;
@@ -9984,7 +9873,7 @@ void GameSession::DrawHitEnemies()
 	}
 }
 
-void GameSession::DrawPlayers()
+void GameSession::DrawPlayers( RenderTarget *target)
 {
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
@@ -9992,7 +9881,7 @@ void GameSession::DrawPlayers()
 		p = GetPlayer(i);
 		if (p != NULL)
 		{
-			p->Draw(preScreenTex);
+			p->Draw(target);
 		}
 	}
 }
@@ -10039,6 +9928,7 @@ void GameSession::RemoveAllEnemies()
 
 void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 {
+	//inefficient. should only update these when they are changed.
 	for (int i = 0; i < numPolyTypes; ++i)
 	{
 		polyShaders[i].setUniform("zoom", cam.GetZoom());
@@ -10277,11 +10167,6 @@ void GameSession::ResetShipSequence()
 	}
 
 	middleClouds.setPosition(originalPos.x - 480, originalPos.y + 270 );
-}
-
-void GameSession::RespawnPlayer( int index )
-{
-//remove when you get a chance	
 }
 
 void GameSession::ClearFX()
@@ -11634,78 +11519,6 @@ bool GameSession::IsWithinCurrentBounds(V2d &p)
 	return (IsWithinBounds(p) && IsWithinBarrierBounds(p));
 }
 
-//save state to enter clone world
-void GameSession::SaveState()
-{
-	/*stored.activeEnemyList = activeEnemyList;
-	cloneInactiveEnemyList = NULL;
-
-	Enemy *currEnemy = activeEnemyList;
-	while( currEnemy != NULL )
-	{
-		currEnemy->SaveState();
-		currEnemy = currEnemy->next;
-	}*/
-}
-
-//reset from clone world
-void GameSession::LoadState()
-{
-	//Enemy *test = cloneInactiveEnemyList;
-	//int listSize = 0;
-	//while( test != NULL )
-	//{
-	//	listSize++;
-	//	test = test->next;
-	//}
-
-	//cout << "there are " << listSize << " enemies killed during the last clone process" << endl;
-
-
-	////enemies killed while in the clone world
-	//Enemy *deadEnemy = cloneInactiveEnemyList;
-	//while( deadEnemy != NULL )
-	//{
-	//	
-	//	Enemy *next = deadEnemy->next;
-	//	if( deadEnemy->spawnedByClone )
-	//	{
-	//		deadEnemy->Reset();
-	//		//cout << "resetting dead enemy: " << deadEnemy << endl;
-	//	}
-	//	else
-	//	{
-	//		deadEnemy->LoadState();
-	//		//cout << "loading dead enemy: " << deadEnemy << endl;
-	//	}
-	//	deadEnemy = next;
-	//}
-
-	////enemies that are still alive
-	//Enemy *currEnemy = activeEnemyList;
-	//while( currEnemy != NULL )
-	//{		
-	//	Enemy *next = currEnemy->next;
-	//	if( currEnemy->spawnedByClone )
-	//	{
-	//		//cout << "resetting enemy: " << currEnemy << endl;
-	//		currEnemy->Reset();
-	//	}
-	//	else
-	//	{
-	//		currEnemy->LoadState();
-	//		//cout << "loading enemy: " << currEnemy << endl;
-	//	}
-
-	//	currEnemy = next;
-	//}
-
-	////restore them all to their original state and then reset the list pointer
-
-	////cloneInactiveEnemyList = NULL;
-	//activeEnemyList = stored.activeEnemyList;
-}
-
 void GameSession::Pause( int frames )
 {
 	pauseFrames = frames;
@@ -11950,15 +11763,6 @@ void GameSession::ResetEnemies()
 		effectLists[i] = NULL;
 		
 	}
-
-
-	if( b_bird != NULL ) b_bird->Reset();
-
-	//if( b_crawler != NULL ) b_crawler->Reset();
-
-	if( b_coyote != NULL ) b_coyote->Reset();
-
-	if( b_skeleton != NULL ) b_skeleton->Reset();
 }
 
 void GameSession::ResetPlants()
@@ -12051,21 +11855,6 @@ void GameSession::rResetEnemies( QNode *node )
 			e->Reset();
 		}
 		
-	}
-}
-
-void GameSession::LevelSpecifics()
-{
-	if( fileName == "test3" )
-	{
-		//startSeq = new GameStartSeq( this );
-		//activeSequence = startSeq;
-		//GameStartMovie();
-		//cout << "doing stuff here" << endl;
-	}
-	else
-	{
-	//	player->velocity.x = 60;
 	}
 }
 
@@ -12191,34 +11980,6 @@ void GameSession::TriggerBarrier( Barrier *b )
 	{
 		b->Trigger();
 	}
-	//if (b->name == "testing")
-	//{
-	//	CameraShot *shot = cameraShotMap["testing"];
-	//	cam.Set(shot->centerPos, shot->zoom, cam.zoomLevel);
-	//	PoiInfo *kinStart = poiMap["kinstart"];
-	//	PoiInfo *kinStop = poiMap["kinstop"];
-	//	GetPlayer(0)->SetStoryRun(true, 10.0, kinStart->edge, kinStart->edgeQuantity, kinStop->edge,
-	//		kinStop->edgeQuantity );
-	//}
-	//Pause(60);
-	//Fade(false, 60, Color::Black);
-	
-	//PoiInfo *poi = b->poi;
-	//string name = poi->name;
-
-	/*if( name == "birdfighttrigger" )
-	{
-		assert( b_bird != NULL );
-		
-		b_bird->spawned = true;
-		AddEnemy( b_bird );
-	}
-	else if( name == "crawlerfighttrigger" )
-	{
-		Fade( false, 60, Color::Black );
-		Pause( 60 );
-		activeSequence->frame = 0;
-	}*/
 }
 
 GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds )

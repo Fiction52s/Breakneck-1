@@ -33,7 +33,7 @@ struct Session : TilesetManager
 	bool IsKeyPressed(int k);
 	bool IsMousePressed(int m);
 
-
+	void DrawPlayers(sf::RenderTarget *target );
 	void DrawPlayerWires(sf::RenderTarget *target);
 	void UpdatePlayerWireQuads();
 
@@ -124,6 +124,8 @@ struct Session : TilesetManager
 	std::map<std::pair<int,int>,TerrainDecorInfo*> terrainDecorInfoMap;
 	std::map<DecorType, DecorLayer*> decorLayerMap;
 
+
+	void SetPlayerInputOn(bool on);
 	void UpdateDecorLayers();
 	void UpdateDecorSprites();
 };

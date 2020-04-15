@@ -9,6 +9,28 @@ struct MainMenu;
 struct ScrollingBackground;
 
 
+struct ScrollingBackground
+{
+	ScrollingBackground(Tileset *ts, int index,
+		int depthLevel, float p_scrollSpeedX = 0.f);
+	Tileset *ts;
+	int tsIndex;
+	sf::Vector2f relPos;
+	sf::VertexArray va;
+	float xPos;
+	int depthLevel;
+	sf::View oldView;
+	sf::View newView;
+	float depth;
+	float scrollSpeedX;
+	float scrollOffset;
+	void Update(sf::Vector2f &camPos);
+	void SetTileIndex(int index);
+	void Draw(sf::RenderTarget *target);
+	void SetLeftPos(sf::Vector2f &pos);
+};
+
+
 struct Background
 {
 	Background( GameSession *owner, int envLevel, int envType);
@@ -34,5 +56,6 @@ struct Background
 	int transFrames;
 	int frame;
 };
+
 
 #endif
