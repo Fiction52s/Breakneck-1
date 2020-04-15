@@ -2144,24 +2144,31 @@ void TerrainPolygon::CancelTransformation()
 	//triBackups.clear();
 }
 
-bool TerrainPolygon::CompleteTransformation()
+PolyPtr TerrainPolygon::CompleteTransformation()
 {
 	if (renderMode == RENDERMODE_TRANSFORM)
 	{
 		SetRenderMode(RENDERMODE_NORMAL);
 
-		triBackups.clear();
+		PolyPtr newPoly(new TerrainPolygon);
 
 		int numP = GetNumPoints();
 		TerrainPoint *curr;
+		Vector2i temp;
+
+		newPoly->Reserve(numP);
 		for (int i = 0; i < numP; ++i)
 		{
-			curr = GetPoint(i);
-			curr->pos.x = round(lines[i * 2].position.x);
-			curr->pos.y = round(lines[i * 2].position.y);
+			temp.x = round(lines[i * 2].position.x);
+			temp.y = round(lines[i * 2].position.y);
+			newPoly->AddPoint(temp, false);
 		}
 
-		AlignExtremes();
+		UpdateLinePositions();
+
+		newPoly->Finalize();
+
+		//check for validity here
 		
 		//not even going to use the same polygon here, this is just for testing. 
 		//what will really happen is that I create a copy, adding in the rounded points from my lines.
@@ -2169,13 +2176,13 @@ bool TerrainPolygon::CompleteTransformation()
 		//do a replacebrush action
 		//maybe test for correctness?
 
-		SoftReset();
-		Finalize();
+		//SoftReset();
+		//Finalize();
 
-		return true;
+		return newPoly;
 	}
 
-	return false;
+	return NULL;
 }
 
 void TerrainPolygon::UpdateTransformation(TransformTools *tr)

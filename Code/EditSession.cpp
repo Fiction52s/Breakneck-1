@@ -11019,15 +11019,31 @@ void EditSession::TransformModeHandleEvent()
 		{
 			mode = EDIT;
 			PolyPtr p;
+			Brush origBrush;
+			Brush resultBrush;
+			PolyPtr temp;
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
 				p = (*it)->GetAsTerrain();
 				if (p != NULL)
 				{
-					p->CompleteTransformation();
+					temp = p->CompleteTransformation();
+					if (temp != NULL)
+					{
+						resultBrush.AddObject(temp);
+					}
+					origBrush.AddObject((*it));
 				}
 			}
 			selectedBrush->Clear();
+
+			ClearUndoneActions();
+
+			Action *replaceAction = new ReplaceBrushAction(&origBrush, &resultBrush, mapStartBrush);
+			replaceAction->Perform();
+
+			doneActionStack.push_back(replaceAction);
+
 		}
 		else if (ev.key.code == sf::Keyboard::BackSpace)
 		{

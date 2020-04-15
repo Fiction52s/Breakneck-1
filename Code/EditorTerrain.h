@@ -217,7 +217,7 @@ struct TerrainPolygon : ISelectable
 	void SetRenderMode(RenderMode rm);
 
 	void CancelTransformation();
-	bool CompleteTransformation();
+	PolyPtr CompleteTransformation();
 	void UpdateTransformation( TransformTools *tr);
 
 	static double GetSteepThresh() { return .4; }
