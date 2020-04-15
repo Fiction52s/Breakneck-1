@@ -26,6 +26,7 @@ struct TouchGrass : QuadTreeEntrant
 	static int GetQuadWidth(TouchGrassType gt);
 	TouchGrass( TouchGrassCollection *coll, int index,
 		Edge *e, double quant);
+	~TouchGrass();
 	void CommonInit(double yOff, double angle, double hitboxYOff,
 		double hitboxXSize, double hitboxYSize);
 	virtual void Reset() = 0;
@@ -40,7 +41,7 @@ struct TouchGrass : QuadTreeEntrant
 	bool visible;
 
 	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
+	//CollisionBody *hitBody;
 
 
 	V2d center;

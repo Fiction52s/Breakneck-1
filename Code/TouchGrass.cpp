@@ -69,9 +69,15 @@ void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant)
 
 TouchGrass::TouchGrass(TouchGrassCollection *p_coll, int index,
 	Edge *e, double q )
-	:coll( p_coll ), edge( e ), gIndex( index ), quant( q )
+	:coll( p_coll ), edge( e ), gIndex( index ), quant( q ), hurtBody(NULL)
 {
 	myQuad = coll->touchGrassVA + gIndex * 4;
+}
+
+TouchGrass::~TouchGrass()
+{
+	if (hurtBody != NULL)
+		delete hurtBody;
 }
 
 Tileset *TouchGrassCollection::GetTileset( GameSession *owner,

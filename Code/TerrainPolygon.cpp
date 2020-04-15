@@ -16,6 +16,7 @@
 #include "Action.h"
 #include "earcut.hpp"
 #include "TransformTools.h"
+#include "TerrainDecor.h"
 
 using namespace std;
 using namespace sf;
@@ -53,6 +54,642 @@ namespace mapbox
 
 #define cout std::cout
 
+std::map<DecorType, DecorLayer*> TerrainPolygon::s_decorLayerMap;
+
+void TerrainPolygon::AddDecorExpression(DecorExpression *exp)
+{
+	decorExprList.push_back(exp);
+}
+
+bool TerrainPolygon::IsEmptyRect(sf::Rect<double> &rect)
+{
+	emptyResult = true;
+	decorTree->Query(this, rect);
+	myTerrainTree->Query(this, rect);
+	return emptyResult;
+}
+
+void TerrainPolygon::DrawDecor(sf::RenderTarget *target)
+{
+	for (list<DecorExpression*>::iterator it = decorExprList.begin();
+		it != decorExprList.end(); ++it)
+	{
+		Tileset *ts = (*it)->layer->ts;
+		target->draw(*(*it)->va, ts->texture);
+	}
+}
+
+DecorType TerrainPolygon::GetDecorType(const std::string &dStr)
+{
+	if (dStr == "D_W1_BUSH_NORMAL")
+	{
+		return D_W1_BUSH_NORMAL;
+	}
+	else if (dStr == "D_W1_ROCK_1")
+	{
+		return D_W1_ROCK_1;
+	}
+	else if (dStr == "D_W1_ROCK_2")
+	{
+		return D_W1_ROCK_2;
+	}
+	else if (dStr == "D_W1_ROCK_3")
+	{
+		return D_W1_ROCK_3;
+	}
+	else if (dStr == "D_W1_PLANTROCK")
+	{
+		return D_W1_PLANTROCK;
+	}
+	else if (dStr == "D_W1_VEINS1")
+	{
+		return D_W1_VEINS1;
+	}
+	else if (dStr == "D_W1_VEINS2")
+	{
+		return D_W1_VEINS2;
+	}
+	else if (dStr == "D_W1_VEINS3")
+	{
+		return D_W1_VEINS3;
+	}
+	else if (dStr == "D_W1_VEINS4")
+	{
+		return D_W1_VEINS4;
+	}
+	else if (dStr == "D_W1_VEINS5")
+	{
+		return D_W1_VEINS5;
+	}
+	else if (dStr == "D_W1_VEINS6")
+	{
+		return D_W1_VEINS6;
+	}
+	else if (dStr == "D_W1_GRASSYROCK")
+	{
+		return D_W1_GRASSYROCK;
+	}
+	else if (dStr == "D_W2_VEINS1")
+	{
+		return D_W2_VEINS1;
+	}
+	else if (dStr == "D_W2_VEINS2")
+	{
+		return D_W2_VEINS2;
+	}
+	else if (dStr == "D_W2_VEINS3")
+	{
+		return D_W2_VEINS3;
+	}
+	else if (dStr == "D_W2_VEINS4")
+	{
+		return D_W2_VEINS4;
+	}
+	else if (dStr == "D_W2_VEINS5")
+	{
+		return D_W2_VEINS5;
+	}
+	else if (dStr == "D_W2_VEINS6")
+	{
+		return D_W2_VEINS6;
+	}
+	else if (dStr == "D_W2_BUSH0")
+	{
+		return D_W2_BUSH0;
+	}
+	else if (dStr == "D_W2_BUSH1")
+	{
+		return D_W2_BUSH1;
+	}
+	else if (dStr == "D_W2_BUSH2")
+	{
+		return D_W2_BUSH2;
+	}
+	else if (dStr == "D_W2_BUSH3")
+	{
+		return D_W2_BUSH3;
+	}
+	else if (dStr == "D_W2_BUSH4")
+	{
+		return D_W2_BUSH4;
+	}
+	else if (dStr == "D_W2_BUSH5")
+	{
+		return D_W2_BUSH5;
+	}
+	else if (dStr == "D_W2_BUSH6")
+	{
+		return D_W2_BUSH6;
+	}
+	else if (dStr == "D_W2_BUSH7")
+	{
+		return D_W2_BUSH7;
+	}
+	else if (dStr == "D_W2_BUSH8")
+	{
+		return D_W2_BUSH8;
+	}
+	else if (dStr == "D_W2_BUSH9")
+	{
+		return D_W2_BUSH9;
+	}
+	else if (dStr == "D_W2_BUSH10")
+	{
+		return D_W2_BUSH10;
+	}
+	else if (dStr == "D_W2_BUSH11")
+	{
+		return D_W2_BUSH11;
+	}
+	else if (dStr == "D_W2_BUSH12")
+	{
+		return D_W2_BUSH12;
+	}
+	else if (dStr == "D_W2_BUSH13")
+	{
+		return D_W2_BUSH13;
+	}
+	else if (dStr == "D_W2_BUSH14")
+	{
+		return D_W2_BUSH14;
+	}
+	else if (dStr == "D_W2_BUSH15")
+	{
+		return D_W2_BUSH15;
+	}
+	else if (dStr == "D_W2_BUSH_1_0")
+	{
+		return D_W2_BUSH_1_0;
+	}
+	else if (dStr == "D_W2_BUSH_1_1")
+	{
+		return D_W2_BUSH_1_1;
+	}
+	else if (dStr == "D_W2_BUSH_1_2")
+	{
+		return D_W2_BUSH_1_2;
+	}
+	else if (dStr == "D_W2_BUSH_1_3")
+	{
+		return D_W2_BUSH_1_3;
+	}
+	else if (dStr == "D_W2_BUSH_1_4")
+	{
+		return D_W2_BUSH_1_4;
+	}
+	else if (dStr == "D_W2_BUSH_1_5")
+	{
+		return D_W2_BUSH_1_5;
+	}
+	else if (dStr == "D_W2_BUSH_1_6")
+	{
+		return D_W2_BUSH_1_6;
+	}
+	else
+	{
+		assert(0);
+		return D_W1_BUSH_NORMAL;
+	}
+}
+
+void TerrainPolygon::GenerateDecor()
+{
+	if (tdInfo != NULL)
+	{
+		/*assert(tdInfo != NULL);
+		int numDecors = tdInfo->numDecors;
+		DecorExpression *expr;
+		for (int i = 0; i < numDecors; ++i)
+		{
+			expr = CreateDecorExpression(tdInfo->decors[i], 0, startEdge);
+			if (expr != NULL)
+				AddDecorExpression(expr);
+		}*/
+	}
+	else
+	{
+
+	}
+}
+
+void TerrainPolygon::UpdateDecorSprites()
+{
+	for (list<DecorExpression*>::iterator it = decorExprList.begin();
+		it != decorExprList.end(); ++it)
+	{
+		(*it)->UpdateSprites();
+	}
+}
+
+void TerrainPolygon::UpdateDecorLayers()
+{
+	for (map<DecorType, DecorLayer*>::iterator mit =
+		s_decorLayerMap.begin(); mit != s_decorLayerMap.end();
+		++mit)
+	{
+		(*mit).second->Update();
+	}
+}
+
+DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
+	int bgLayer,
+	Edge *startEdge)
+{
+	int minApart;
+	int maxApart;
+	CubicBezier apartBezier;
+	int minPen;
+	int maxPen;
+	CubicBezier penBez;
+	int animFactor = 1;
+
+	switch (dType)
+	{
+	case D_W1_BUSH_NORMAL:
+		minApart = 20;
+		maxApart = 300;
+		apartBezier = CubicBezier(0, 0, 1, 1);
+		minPen = 20;
+		maxPen = 1000;
+		penBez = CubicBezier(0, 0, 1, 1);
+		animFactor = 8;
+		break;
+	case D_W1_ROCK_1:
+	case D_W1_ROCK_2:
+	case D_W1_ROCK_3:
+	case D_W1_PLANTROCK:
+	case D_W1_GRASSYROCK:
+	default:
+		minApart = 500;
+		maxApart = 700;
+		apartBezier = CubicBezier(0, 0, 1, 1);
+		minPen = 200;
+		maxPen = 1200;
+		penBez = CubicBezier(0, 0, 1, 1);
+		animFactor = 1;
+		break;
+	}
+
+	//assert( positions.empty() );
+
+	int veinLoopWait = 30;
+
+	DecorLayer *layer = NULL;
+	Tileset *ts_d = NULL;
+	if (s_decorLayerMap.count(dType) == 0)
+	{
+		//int GameSession::TerrainPiece::bushFrame = 0;
+		//int GameSession::TerrainPiece::bushAnimLength = 20;
+		//int GameSession::TerrainPiece::bushAnimFactor = 8;
+
+
+		switch (dType)
+		{
+		case D_W1_BUSH_NORMAL:
+			ts_d = sess->GetTileset("Env/bush_01_64x64.png", 64, 64);
+			layer = new DecorLayer(ts_d, 20, 8);
+			break;
+		case D_W1_ROCK_1:
+			ts_d = sess->GetTileset("Env/rock_1_01_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_ROCK_2:
+			ts_d = sess->GetTileset("Env/rock_1_02_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_ROCK_3:
+			ts_d = sess->GetTileset("Env/rock_1_03_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_PLANTROCK:
+			ts_d = sess->GetTileset("Env/bush_1_01_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_GRASSYROCK:
+			ts_d = sess->GetTileset("Env/bush_1_02_256x256.png", 256, 256);
+			layer = new DecorLayer(ts_d, 1, 1);
+			break;
+		case D_W1_VEINS1:
+			ts_d = sess->GetTileset("Env/veins_w1_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS2:
+			ts_d = sess->GetTileset("Env/veins_w1_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS3:
+			ts_d = sess->GetTileset("Env/veins_w1_3_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS4:
+			ts_d = sess->GetTileset("Env/veins_w1_4_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS5:
+			ts_d = sess->GetTileset("Env/veins_w1_5_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W1_VEINS6:
+			ts_d = sess->GetTileset("Env/veins_w1_6_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS1:
+			ts_d = sess->GetTileset("Env/veins_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS2:
+			ts_d = sess->GetTileset("Env/veins_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS3:
+			ts_d = sess->GetTileset("Env/veins_w2_3_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS4:
+			ts_d = sess->GetTileset("Env/veins_w2_4_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS5:
+			ts_d = sess->GetTileset("Env/veins_w2_5_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_VEINS6:
+			ts_d = sess->GetTileset("Env/veins_w2_6_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 12, 5, 0, veinLoopWait);
+			break;
+		case D_W2_BUSH0:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 0);
+			break;
+		case D_W2_BUSH1:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 1);
+			break;
+		case D_W2_BUSH2:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 2);
+			break;
+		case D_W2_BUSH3:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 3);
+			break;
+		case D_W2_BUSH4:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 4);
+			break;
+		case D_W2_BUSH5:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 5);
+			break;
+		case D_W2_BUSH6:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 6);
+			break;
+		case D_W2_BUSH7:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 7);
+			break;
+		case D_W2_BUSH8:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 8);
+			break;
+		case D_W2_BUSH9:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 9);
+			break;
+		case D_W2_BUSH10:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 10);
+			break;
+		case D_W2_BUSH11:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 11);
+			break;
+		case D_W2_BUSH12:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 12);
+			break;
+		case D_W2_BUSH13:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 13);
+			break;
+		case D_W2_BUSH14:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 14);
+			break;
+		case D_W2_BUSH15:
+			ts_d = sess->GetTileset("Env/bushes_w2_1_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 15);
+			break;
+		case D_W2_BUSH_1_0:
+			ts_d = sess->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 0);
+			break;
+		case D_W2_BUSH_1_1:
+			ts_d = sess->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 1);
+			break;
+		case D_W2_BUSH_1_2:
+			ts_d = sess->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 2);
+			break;
+		case D_W2_BUSH_1_3:
+			ts_d = sess->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 3);
+			break;
+		case D_W2_BUSH_1_4:
+			ts_d = sess->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 4);
+			break;
+		case D_W2_BUSH_1_5:
+			ts_d = sess->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 5);
+			break;
+		case D_W2_BUSH_1_6:
+			ts_d = sess->GetTileset("Env/bushes_w2_2_512x512.png", 512, 512);
+			layer = new DecorLayer(ts_d, 1, 1, 6);
+			break;
+		}
+
+		s_decorLayerMap[dType] = layer;
+	}
+	else
+	{
+		layer = s_decorLayerMap[dType];
+		ts_d = layer->ts;
+	}
+
+
+
+	assert(layer != NULL);
+	list<Vector2f> positions;
+	//int minDistanceApart = 10;
+	//int maxDistanceApart = 300;
+	//int minPen = 20;
+	//int maxPen = 200;
+	double penLimit;
+
+	Edge *curr = startEdge;
+	double quant = 0;
+	double lenCurr = length(startEdge->v1 - startEdge->v0);
+
+	double travelDistance;
+	double penDistance;
+	int diffApartMax = maxApart - minApart;
+	int diffPenMax = maxPen - minPen;
+	int r;
+	int rPen;
+	double momentum;
+	V2d pos;
+
+	bool loopOver = false;
+	V2d cn;
+
+	rayMode = "decor";
+	QuadTree *qt = myTerrainTree;
+
+	assert(qt != NULL);
+
+	while (true)
+	{
+		//cout << "running loop" << endl;
+		r = rand() % diffApartMax;
+		travelDistance = minApart + r;
+
+		momentum = travelDistance;
+
+		while (!approxEquals(momentum, 0))
+		{
+			if ((lenCurr - quant) > momentum)
+			{
+				quant += momentum;
+				momentum = 0;
+			}
+			else
+			{
+				curr = curr->edge1;
+
+				if (curr == startEdge)
+				{
+					loopOver = true;
+					break;
+				}
+				else
+				{
+					momentum = momentum - (lenCurr - quant);
+					quant = 0;
+					lenCurr = length(curr->v1 - curr->v0);
+				}
+			}
+		}
+
+		if (loopOver)
+			break;
+
+		cn = curr->Normal();
+		rcEdge = NULL;
+		rayStart = curr->GetPoint(quant);
+
+		rPen = rand() % diffPenMax;
+		penDistance = minPen + rPen; //minpen times 2 cuz gotta account for the other side too
+
+		rayEnd = rayStart - cn * (penDistance + minPen);
+		ignoreEdge = curr;
+
+		rcPortion = 9999999;
+		RayCast(this, qt->startNode, rayStart, rayEnd);
+
+		if (rcEdge != NULL)
+		{
+			V2d rcPos = rcEdge->GetPoint(rcQuant);
+			continue;
+
+			//continue;
+			/*if (length(rcPos - rayStart) < minPen || length( rcPos - rayEnd ) < minPen)
+			{
+			continue;
+			}*/
+			//penLimit = length(rcEdge->GetPoint(rcQuantity) - rayStart);
+
+		}
+		/*diffPenMax = maxPen;
+		if( rcEdge != NULL )
+		{
+		penLimit = length( rcEdge->GetPoint( rcQuantity ) - rayStart );
+		diffPenMax = (int)penLimit - minApart;
+		if( diffPenMax == 0 || penLimit < 100 )
+		continue;
+		}*/
+
+		/*rPen = rand() % diffPenMax;
+		penDistance = minPen + rPen;*/
+
+		pos = curr->GetPoint(quant) - curr->Normal() * penDistance;
+
+
+		sf::Rect<double> testRect;
+		testRect.left = pos.x - ts_d->tileWidth / 2;
+		testRect.top = pos.y - ts_d->tileHeight / 2;
+		testRect.width = ts_d->tileWidth;
+		testRect.height = ts_d->tileHeight;
+
+		if (IsEmptyRect(testRect))
+		{
+			positions.push_back(Vector2f(pos.x, pos.y));
+			DecorRect *dr = new DecorRect(testRect);
+			currDecorRects.push_back(dr);
+			decorTree->Insert(dr);
+		}
+		//will have to do a raycast soon. ignore for now
+		//curr = curr->edge1;
+	}
+
+	if (positions.size() == 0)
+		return NULL;
+
+	DecorExpression *expr = new DecorExpression(positions, layer);
+
+	decorTree->Clear();
+
+	return expr;
+}
+
+void TerrainPolygon::HandleEntrant(QuadTreeEntrant *qte)
+{
+	emptyResult = false;
+}
+
+void TerrainPolygon::HandleRayCollision(Edge *edge,
+	double edgeQuantity, double rayPortion)
+{
+	if (edge == ignoreEdge)
+	{
+		return;
+	}
+
+	double len = length(edge->GetPoint(edgeQuantity) - rayStart);
+	if (rcEdge == NULL || len < rcPortion)
+	{
+		rcEdge = edge;
+		rcPortion = len;
+		rcQuant = edgeQuantity;
+	}
+
+	/*if (edge == ignoreEdge || edge->edge1 == ignoreEdge )
+	return;
+
+	if (rayPortion < rcPortion)
+	{
+	rcEdge = edge;
+	rcPortion = rayPortion;
+	rcQuant = edgeQuantity;
+	}*/
+}
+
+
+
+
+
 void BorderSizeInfo::SetWidth(int w)
 {
 	width = w;
@@ -66,6 +703,8 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
+	sess = Session::GetSession();
+
 	renderMode = RENDERMODE_NORMAL;
 	totalNumBorderQuads = 0;
 	ts_border = NULL;
@@ -82,29 +721,19 @@ TerrainPolygon::TerrainPolygon()
 	finalized = false;
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
-
+	ts_grass = NULL;
 	pointVector.resize(2);
-	
-	EditSession *session = EditSession::GetSession();
-	//GET GRASS TILESET HERE
-	if (session != NULL)
-	{
-		ts_grass = session->GetTileset("Env/grass_128x128.png", 128, 128);
-	}
-	
-	if (session != NULL)
-	{
-		grassSize = session->grassSize;//64;//64;//22;
-		grassSpacing = session->grassSpacing;//-20;//-5;
-	}
-	else
-	{
-		grassSize = 0;
-		grassSpacing = 0;
-	}
-	
 
-	pShader = &session->polyShaders[terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation];
+	if (sess != NULL)
+	{
+		ts_grass = sess->GetTileset("Env/grass_128x128.png", 128, 128);
+
+		//might need this we'll see
+		//pShader = &sess->polyShaders[terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation];
+	}
+	
+	grassSize = 128;
+	grassSpacing = -60;
 }
 
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
@@ -118,21 +747,11 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	ts_border = poly.ts_border;
 	renderMode = poly.renderMode;
 
-	EditSession *session = EditSession::GetSession();
-	if (session != NULL)
-	{
-		grassSize = session->grassSize;//64;//64;//22;
-		grassSpacing = session->grassSpacing;//-20;//-5;
-	}
-	else
-	{
-		grassSize = 0;
-		grassSpacing = 0;
-	}
+	grassSize = 128;
+	grassSpacing = -60;
 
 	pointVector.resize(2);
-	//pointVector.push_back(vector<TerrainPoint>() );
-	//SetMaterialType( poly.terrainWorldType, poly.terrainVariation );
+
 	if (pointsOnly)
 	{
 		totalNumBorderQuads = 0;
@@ -1655,7 +2274,6 @@ void TerrainPolygon::UpdateMaterialType()
 	EditSession *session = EditSession::GetSession();
 	int texInd = terrainWorldType * session->MAX_TERRAINTEX_PER_WORLD + terrainVariation;
 	pShader = &session->polyShaders[texInd];
-	//pShader->setUniform("u_texture", session->terrainTextures[texInd]);
 
 	Color sCol( 0x77, 0xBB, 0xDD );
 	//factor in variation later

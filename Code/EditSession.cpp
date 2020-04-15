@@ -311,6 +311,8 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	AllocatePolyShaders(TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD);
+
 	transformTools = new TransformTools();
 
 	initialViewSet = false;
@@ -342,10 +344,6 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	inversePolygon = NULL;
 	currSession = this;
-	for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD * 9; ++i)
-	{
-		terrainTextures[i] = NULL;
-	}
 
 	minZoom = .25 / 16.0;//.25;
 	maxZoom = 65536;
@@ -1004,12 +1002,6 @@ EditSession::~EditSession()
 	}
 
 	delete[] decorTileIndexes;
-
-	for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
-	{
-		if (terrainTextures[i] != NULL)
-			delete terrainTextures[i];
-	}
 
 	currSession = NULL;
 }
@@ -3619,16 +3611,15 @@ void EditSession::SetupTerrainTypeSelector()
 		{
 			ind = worldI * MAX_TERRAINTEX_PER_WORLD + i;
 			stringstream ss;
-			ss << "Resources/Terrain/" << "terrain_" << (worldI + 1) << "_0" << (i + 1) << "_512x512.png";
-			terrainTextures[ind] = new Texture;
-			if (!terrainTextures[ind]->loadFromFile(ss.str()))
+			ss << "Terrain/" << "terrain_" << (worldI + 1) << "_0" << (i + 1) << "_512x512.png";
+			ts_polyShaders[ind] = GetTileset(ss.str(), 512, 512);
+
+			if (ts_polyShaders[ind] == NULL)
 			{
-				delete terrainTextures[ind];
-				terrainTextures[ind] = NULL;
 				break;
 			}
 
-			terrainSel->Set(worldI, i, Sprite(*terrainTextures[ind], sf::IntRect(0, 0, 64, 64)),
+			terrainSel->Set(worldI, i, Sprite(*ts_polyShaders[ind]->texture, sf::IntRect(0, 0, 64, 64)),
 				"xx");
 
 			if (!polyShaders[ind].loadFromFile("Resources/Shader/mat_shader2.frag", sf::Shader::Fragment))
@@ -3637,7 +3628,7 @@ void EditSession::SetupTerrainTypeSelector()
 				assert(0 && "polygon shader not loaded editor");
 			}
 
-			polyShaders[ind].setUniform("u_texture", *terrainTextures[ind]);
+			polyShaders[ind].setUniform("u_texture", *ts_polyShaders[ind]->texture);
 			polyShaders[ind].setUniform("Resolution", Vector2f(1920, 1080));
 			polyShaders[ind].setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
 			polyShaders[ind].setUniform("skyColor", ColorGL(Color::White));
@@ -5613,7 +5604,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	Vector2f botLeft(pView.getCenter().x - vSize.x / 2, pView.getCenter().y + vSize.y / 2);
 	for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
 	{
-		if (terrainTextures[i] != NULL)
+		if (ts_polyShaders[i] != NULL)
 		{
 			polyShaders[i].setUniform("zoom", zoom);
 			polyShaders[i].setUniform("topLeft", botLeft);
@@ -8298,7 +8289,7 @@ Vector2i EditSession::GetPixelPos()
 void EditSession::UpdateCurrTerrainType()
 {
 	int ind = currTerrainWorld * MAX_TERRAINTEX_PER_WORLD + currTerrainVar;
-	currTerrainTypeSpr.setTexture(*terrainTextures[ind]);
+	currTerrainTypeSpr.setTexture(*ts_polyShaders[ind]->texture);
 	currTerrainTypeSpr.setTextureRect(IntRect(0, 0, 64, 64));
 }
 
@@ -8583,7 +8574,7 @@ void EditSession::UpdatePolyShaders()
 		oldShaderZoom = zoom;
 		for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
 		{
-			if (terrainTextures[i] != NULL)
+			if (ts_polyShaders[i] != NULL)
 			{
 				polyShaders[i].setUniform("zoom", zoom);
 			}
@@ -8595,7 +8586,7 @@ void EditSession::UpdatePolyShaders()
 		oldShaderBotLeft = botLeft;
 		for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
 		{
-			if (terrainTextures[i] != NULL)
+			if (ts_polyShaders[i] != NULL)
 			{
 				//just need to change the name topleft to botleft in the shader
 				polyShaders[i].setUniform("topLeft", botLeft);

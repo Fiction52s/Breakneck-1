@@ -5,6 +5,7 @@
 #include "Physics.h"
 #include "QuadTree.h"
 #include "DecorTypes.h"
+#include "TerrainDecor.h"
 
 struct TilesetManager;
 struct Tileset;
@@ -12,44 +13,56 @@ struct Edge;
 
 #define STEEP_THRESH .4
 
-struct DecorLayer
-{
-	DecorLayer(Tileset *ts, int animLength,
-		int animFactor, int tileStart = 0,
-		int loopWait = 0);
-	~DecorLayer();
-	
-	void Update();
-	Tileset *ts;
-	int frame;
-	int animLength;
-	int animFactor;
-	int startTile;
-	int loopWait;
-};
-struct DecorExpression
-{
-	DecorExpression(
-		std::list<sf::Vector2f> &pointList,
-		DecorLayer *layer);
-	~DecorExpression();
-
-	sf::VertexArray *va;
-	DecorLayer *layer;
-
-	void UpdateSprites();
-};
-
-
-
-struct TerrainDecorInfo
-{
-	TerrainDecorInfo(int numDecors);
-	~TerrainDecorInfo();
-	DecorType *decors;
-	int *percents;
-	int numDecors;
-};
+//struct DecorLayer
+//{
+//	DecorLayer(Tileset *ts, int animLength,
+//		int animFactor, int tileStart = 0,
+//		int loopWait = 0);
+//	~DecorLayer();
+//	
+//	void Update();
+//	Tileset *ts;
+//	int frame;
+//	int animLength;
+//	int animFactor;
+//	int startTile;
+//	int loopWait;
+//};
+//struct DecorExpression
+//{
+//	DecorExpression(
+//		std::list<sf::Vector2f> &pointList,
+//		DecorLayer *layer);
+//	~DecorExpression();
+//
+//	sf::VertexArray *va;
+//	DecorLayer *layer;
+//
+//	void UpdateSprites();
+//};
+//
+//
+//
+//struct TerrainDecorInfo
+//{
+//	TerrainDecorInfo(int numDecors);
+//	~TerrainDecorInfo();
+//	DecorType *decors;
+//	int *percents;
+//	int numDecors;
+//};
+//
+//struct DecorRect : QuadTreeEntrant
+//{
+//	DecorRect(sf::Rect<double> &r)
+//		:rect(r)
+//	{
+//
+//	}
+//	void HandleQuery(QuadTreeCollider * qtc);
+//	bool IsTouchingBox(const sf::Rect<double> &r);
+//	sf::Rect<double> rect;
+//};
 
 
 
@@ -98,17 +111,7 @@ enum TerrainWorldType
 struct Edge;
 struct TerrainPoint;
 
-struct DecorRect : QuadTreeEntrant
-{
-	DecorRect(sf::Rect<double> &r)
-		:rect( r )
-	{
-		
-	}
-	void HandleQuery(QuadTreeCollider * qtc);
-	bool IsTouchingBox(const sf::Rect<double> &r);
-	sf::Rect<double> rect;
-};
+
 
 
 
@@ -171,14 +174,14 @@ struct TerrainRender : QuadTreeCollider, RayCastHandler
 	Edge *ignoreEdge;
 	double rcPortion;
 
-	std::list<DecorExpression*> decorExprList;
+
 	
 	TilesetManager *tMan;
 	V2d rayStart;
 	V2d rayEnd;
 
 
-
+	std::list<DecorExpression*> decorExprList;
 	std::list<DecorLayer*> DecorLayers;
 	QuadTree *decorTree;
 

@@ -5,9 +5,21 @@
 #include "EditorTerrain.h"
 #include "EditorRail.h"
 #include "EditorActors.h"
+#include "EditSession.h"
 
 using namespace sf;
 using namespace std;
+
+Session *Session::GetSession()
+{
+	EditSession *edit = EditSession::GetSession();
+	if (edit != NULL)
+		return edit;
+
+	//add GameSession in here eventually
+
+	return NULL;
+}
 
 Session::Session(const boost::filesystem::path &p_filePath)
 {
@@ -30,6 +42,8 @@ Session::Session(const boost::filesystem::path &p_filePath)
 	specialTerrainTree = NULL;
 	railEdgeTree = NULL;
 	barrierTree = NULL;
+
+	polyShaders = NULL;
 }
 
 Session::~Session()
@@ -53,6 +67,17 @@ Session::~Session()
 
 	if (mapHeader != NULL)
 		delete mapHeader;
+
+	if( polyShaders != NULL)
+		delete[] polyShaders;
+}
+
+void Session::AllocatePolyShaders(int numPolyTypes)
+{
+	numPolyShaders = numPolyTypes;
+	polyShaders = new Shader[numPolyShaders];
+	//polyShaders.resize(numPolyTypes);
+	ts_polyShaders.resize(numPolyTypes);
 }
 
 void Session::DrawPlayerWires( RenderTarget *target )

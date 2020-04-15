@@ -281,10 +281,6 @@ struct EditSession : GUIHandler, Session
 	int currTerrainWorld;
 	int currTerrainVar;
 	void UpdateCurrTerrainType();
-	//sf::Sprite terrainTypeSprites[TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD];
-	sf::Texture *terrainTextures[TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD];
-	sf::Shader polyShaders[TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD];
-
 
 	Tool currTool;
 	ImageEditTool currImageTool;

@@ -9,7 +9,11 @@
 #include "clipper.hpp"
 #include "EditorGateInfo.h"
 #include "Physics.h"
-     
+#include "TerrainDecor.h"
+
+
+struct Session;
+
 struct ISelectable;
 struct GateInfo;
 struct EditSession;
@@ -179,7 +183,7 @@ struct BorderSizeInfo
 	int startLen;
 };
 
-struct TerrainPolygon : ISelectable
+struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler
 {
 	enum RenderMode
 	{
@@ -212,6 +216,45 @@ struct TerrainPolygon : ISelectable
 		EDGE_STEEPCEILING,
 		EDGE_WALL,
 	};
+
+	Session *sess;
+
+	//trying to get decor working
+
+	static DecorType GetDecorType(const std::string &dStr);
+	void DrawDecor(sf::RenderTarget *target);
+	void GenerateDecor();
+	void UpdateDecorSprites();
+	static void UpdateDecorLayers();
+	DecorExpression * CreateDecorExpression(DecorType dType,
+		int bgLayer,
+		Edge *startEdge);
+	void AddDecorExpression(DecorExpression *expr);
+	bool IsEmptyRect(sf::Rect<double> &rect);
+	void HandleEntrant(QuadTreeEntrant *qte);
+	void HandleRayCollision(Edge *edge,
+		double edgeQuantity, double rayPortion);
+	Edge * rcEdge;
+	double rcQuant;
+	Edge *ignoreEdge;
+	double rcPortion;
+	V2d rayStart;
+	V2d rayEnd;
+	std::string rayMode;
+
+	TerrainDecorInfo *tdInfo;
+
+	bool emptyResult;
+
+	std::list<DecorExpression*> decorExprList;
+	std::list<DecorLayer*> DecorLayers;
+	QuadTree *decorTree;
+	QuadTree *myTerrainTree;
+
+	std::list<DecorRect*> currDecorRects;
+	static std::map<DecorType, DecorLayer*> s_decorLayerMap;
+
+	//normal stuff
 
 	RenderMode renderMode;
 	void SetRenderMode(RenderMode rm);

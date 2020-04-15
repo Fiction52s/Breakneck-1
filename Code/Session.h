@@ -36,7 +36,7 @@ struct Session : TilesetManager
 	bool ReadFile();
 	bool ReadDecorImagesFile();
 
-
+	static Session *GetSession();
 
 	virtual void ProcessDecorFromFile(const std::string &name,
 		int tile) {}
@@ -71,7 +71,7 @@ struct Session : TilesetManager
 		int vertexIndex1, int shardWorld,
 		int shardIndex ) {}
 
-		
+	void AllocatePolyShaders(int numPolyTypes );
 	//virtual void ProcessActor( const std::string &groupName, int numActors,
 	//	const std::string &actorType ) {}
 //	virtual void ProcessActor(ActorPtr actor);
@@ -111,6 +111,10 @@ struct Session : TilesetManager
 	sf::RenderWindow *window;
 
 	sf::Vector2i playerOrigPos;
+
+	int numPolyShaders;
+	sf::Shader *polyShaders;
+	std::vector<Tileset*> ts_polyShaders;
 };
 
 #endif

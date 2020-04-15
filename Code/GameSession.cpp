@@ -6231,14 +6231,18 @@ bool GameSession::Load()
 		return false;
 	}
 
+
 	numPolyTypes = matSet.size();
 	polyShaders = new Shader[numPolyTypes];
+	ts_polyShaders = new Tileset*[numPolyTypes];
+
+
 	terrainDecorInfos = new TerrainDecorInfo*[numPolyTypes];
 	for (int i = 0; i < numPolyTypes; ++i)
 	{
 		terrainDecorInfos[i] = NULL;
 	}
-	ts_polyShaders = new Tileset*[numPolyTypes];
+	
 
 	cout << "progress more" << endl;
 
