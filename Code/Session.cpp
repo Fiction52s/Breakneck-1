@@ -70,6 +70,30 @@ Session::~Session()
 
 	if( polyShaders != NULL)
 		delete[] polyShaders;
+
+	for (auto it = terrainDecorInfoMap.begin(); it != terrainDecorInfoMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = decorLayerMap.begin(); it != decorLayerMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+}
+
+void Session::UpdateDecorLayers()
+{
+	for (auto mit = decorLayerMap.begin(); mit != decorLayerMap.end();
+		++mit)
+	{
+		(*mit).second->Update();
+	}
+}
+
+void Session::UpdateDecorSprites()
+{
+	//update relevant terrain pieces, need to do a check for camera etc.
 }
 
 void Session::AllocatePolyShaders(int numPolyTypes)
@@ -141,6 +165,53 @@ bool Session::ReadDecorImagesFile()
 	}
 
 	return true;
+}
+
+bool Session::ReadDecorInfoFile(int tWorld, int tVar)
+{
+	stringstream ss;
+	ifstream is;
+
+	ss << "Resources/Terrain/Decor/" << "terraindecor_"
+		<< (tWorld + 1) << "_0" << (tVar + 1) << ".txt";
+	is.open(ss.str());
+
+	if (is.is_open())
+	{
+		list<pair<string, int>> loadedDecorList;
+		while (!is.eof())
+		{
+			string dStr;
+			is >> dStr;
+
+			if (dStr == "")
+			{
+				break;
+			}
+
+			int frequencyPercent;
+			is >> frequencyPercent;
+
+			loadedDecorList.push_back(pair<string, int>(dStr, frequencyPercent));
+		}
+		is.close();
+
+		TerrainDecorInfo *tdInfo = new TerrainDecorInfo(loadedDecorList.size());
+		terrainDecorInfoMap[make_pair(tWorld, tVar)] = tdInfo;
+
+		int dI = 0;
+		for (auto it = loadedDecorList.begin(); it != loadedDecorList.end(); ++it)
+		{
+			tdInfo->decors[dI] = TerrainPolygon::GetDecorType((*it).first);
+			tdInfo->percents[dI] = (*it).second;
+			++dI;
+		}
+	}
+	else
+	{
+		return false;
+		//not found, thats fine.
+	}
 }
 
 bool Session::ReadHeader(std::ifstream &is)

@@ -7,11 +7,15 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
 #include "ISelectable.h"
+#include "DecorTypes.h"
 
 struct Actor;
 struct MainMenu;
 struct QuadTree;
 struct MapHeader;
+struct DecorLayer;
+
+struct TerrainDecorInfo;
 
 struct Session : TilesetManager
 {
@@ -35,6 +39,7 @@ struct Session : TilesetManager
 
 	bool ReadFile();
 	bool ReadDecorImagesFile();
+	bool ReadDecorInfoFile( int tWorld, int tVar );
 
 	static Session *GetSession();
 
@@ -115,6 +120,12 @@ struct Session : TilesetManager
 	int numPolyShaders;
 	sf::Shader *polyShaders;
 	std::vector<Tileset*> ts_polyShaders;
+
+	std::map<std::pair<int,int>,TerrainDecorInfo*> terrainDecorInfoMap;
+	std::map<DecorType, DecorLayer*> decorLayerMap;
+
+	void UpdateDecorLayers();
+	void UpdateDecorSprites();
 };
 
 #endif

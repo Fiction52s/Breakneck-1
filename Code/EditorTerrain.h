@@ -194,7 +194,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler
 		RENDERMODE_TRANSFORM,
 	};
 
-	enum TerrainWorldType
+	enum TerrainWorldType : int
 	{
 		MOUNTAIN,
 		GLADE,
@@ -240,8 +240,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler
 	void UpdateDecorSprites();
 	static void UpdateDecorLayers();
 	DecorExpression * CreateDecorExpression(DecorType dType,
-		int bgLayer,
-		Edge *startEdge);
+		int bgLayer);
 	void AddDecorExpression(DecorExpression *expr);
 	bool IsEmptyRect(sf::Rect<double> &rect);
 	void HandleEntrant(QuadTreeEntrant *qte);
@@ -264,8 +263,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler
 	QuadTree *decorTree;
 	QuadTree *myTerrainTree;
 
-	std::list<DecorRect*> currDecorRects;
-	static std::map<DecorType, DecorLayer*> s_decorLayerMap;
 
 	//normal stuff
 

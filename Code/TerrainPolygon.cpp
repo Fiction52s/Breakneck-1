@@ -54,8 +54,6 @@ namespace mapbox
 }
 
 #define cout std::cout
-std::map<DecorType, DecorLayer*> TerrainPolygon::s_decorLayerMap;
-
 
 void TerrainPolygon::AddTouchGrass(int gt)
 {
@@ -388,17 +386,21 @@ DecorType TerrainPolygon::GetDecorType(const std::string &dStr)
 
 void TerrainPolygon::GenerateDecor()
 {
+	/*if (tdInfo != NULL)
+	{
+
+	}*/
+
 	if (tdInfo != NULL)
 	{
-		/*assert(tdInfo != NULL);
 		int numDecors = tdInfo->numDecors;
 		DecorExpression *expr;
 		for (int i = 0; i < numDecors; ++i)
 		{
-			expr = CreateDecorExpression(tdInfo->decors[i], 0, startEdge);
+			expr = CreateDecorExpression(tdInfo->decors[i], 0);
 			if (expr != NULL)
 				AddDecorExpression(expr);
-		}*/
+		}
 	}
 	else
 	{
@@ -415,19 +417,10 @@ void TerrainPolygon::UpdateDecorSprites()
 	}
 }
 
-void TerrainPolygon::UpdateDecorLayers()
-{
-	for (map<DecorType, DecorLayer*>::iterator mit =
-		s_decorLayerMap.begin(); mit != s_decorLayerMap.end();
-		++mit)
-	{
-		(*mit).second->Update();
-	}
-}
+
 
 DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
-	int bgLayer,
-	Edge *startEdge)
+	int bgLayer)
 {
 	int minApart;
 	int maxApart;
@@ -470,7 +463,7 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 
 	DecorLayer *layer = NULL;
 	Tileset *ts_d = NULL;
-	if (s_decorLayerMap.count(dType) == 0)
+	if (sess->decorLayerMap.count(dType) == 0)
 	{
 		//int GameSession::TerrainPiece::bushFrame = 0;
 		//int GameSession::TerrainPiece::bushAnimLength = 20;
@@ -645,11 +638,11 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 			break;
 		}
 
-		s_decorLayerMap[dType] = layer;
+		sess->decorLayerMap[dType] = layer;
 	}
 	else
 	{
-		layer = s_decorLayerMap[dType];
+		layer = sess->decorLayerMap[dType];
 		ts_d = layer->ts;
 	}
 
@@ -663,9 +656,9 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 	//int maxPen = 200;
 	double penLimit;
 
-	Edge *curr = startEdge;
+	
 	double quant = 0;
-	double lenCurr = length(startEdge->v1 - startEdge->v0);
+	
 
 	double travelDistance;
 	double penDistance;
@@ -684,9 +677,19 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 
 	assert(qt != NULL);
 
+	Edge *curr = GetEdge(0);
+
+	int numP = GetNumPoints();
+	int i = 0;
+
+	double lenCurr = curr->GetLength();
+
+	std::list<DecorRect*> currDecorRects;
+
 	while (true)
 	{
-		//cout << "running loop" << endl;
+		curr = GetEdge(i);
+
 		r = rand() % diffApartMax;
 		travelDistance = minApart + r;
 
@@ -701,9 +704,10 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 			}
 			else
 			{
-				curr = curr->edge1;
+				++i;
+				
 
-				if (curr == startEdge)
+				if (i == numP)
 				{
 					loopOver = true;
 					break;
@@ -712,7 +716,9 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 				{
 					momentum = momentum - (lenCurr - quant);
 					quant = 0;
-					lenCurr = length(curr->v1 - curr->v0);
+
+					curr = GetEdge(i);
+					lenCurr = curr->GetLength();
 				}
 			}
 		}
@@ -737,26 +743,7 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 		{
 			V2d rcPos = rcEdge->GetPoint(rcQuant);
 			continue;
-
-			//continue;
-			/*if (length(rcPos - rayStart) < minPen || length( rcPos - rayEnd ) < minPen)
-			{
-			continue;
-			}*/
-			//penLimit = length(rcEdge->GetPoint(rcQuantity) - rayStart);
-
 		}
-		/*diffPenMax = maxPen;
-		if( rcEdge != NULL )
-		{
-		penLimit = length( rcEdge->GetPoint( rcQuantity ) - rayStart );
-		diffPenMax = (int)penLimit - minApart;
-		if( diffPenMax == 0 || penLimit < 100 )
-		continue;
-		}*/
-
-		/*rPen = rand() % diffPenMax;
-		penDistance = minPen + rPen;*/
 
 		pos = curr->GetPoint(quant) - curr->Normal() * penDistance;
 
@@ -774,8 +761,6 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 			currDecorRects.push_back(dr);
 			decorTree->Insert(dr);
 		}
-		//will have to do a raycast soon. ignore for now
-		//curr = curr->edge1;
 	}
 
 	if (positions.size() == 0)
@@ -784,6 +769,11 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 	DecorExpression *expr = new DecorExpression(positions, layer);
 
 	decorTree->Clear();
+
+	for (auto it = currDecorRects.begin(); it != currDecorRects.end(); ++it)
+	{
+		delete (*it);
+	}
 
 	return expr;
 }
@@ -834,6 +824,9 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
+	decorTree = new QuadTree(1000000, 1000000);
+	myTerrainTree = new QuadTree(1000000, 1000000);
+	tdInfo = NULL;
 	sess = Session::GetSession();
 
 	renderMode = RENDERMODE_NORMAL;
@@ -867,6 +860,9 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	decorTree = new QuadTree(1000000, 1000000);
+	myTerrainTree = new QuadTree(1000000, 1000000);
+	tdInfo = NULL;
 	sess = poly.sess;
 	layer = 0;
 	inverse = poly.inverse;
@@ -918,7 +914,16 @@ TerrainPolygon::~TerrainPolygon()
 	if (borderQuads != NULL)
 		delete[] borderQuads;
 
+	delete decorTree;
+	delete myTerrainTree;
+
 	DestroyTouchGrass();
+
+	for (auto it = decorExprList.begin(); it != decorExprList.end(); ++it)
+	{
+		delete (*it);
+	}
+
 
 	ClearPoints();
 }
@@ -2407,9 +2412,12 @@ bool TerrainPolygon::IsSpecialPoly()
 
 void TerrainPolygon::UpdateMaterialType()
 {
-	EditSession *session = EditSession::GetSession();
-	int texInd = terrainWorldType * session->MAX_TERRAINTEX_PER_WORLD + terrainVariation;
-	pShader = &session->polyShaders[texInd];
+	//EditSession *session = EditSession::GetSession();
+	int texInd = terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
+	pShader = &sess->polyShaders[texInd];
+
+	tdInfo = sess->terrainDecorInfoMap[make_pair(terrainWorldType, terrainVariation)];
+	//assert(tdInfo != NULL);
 
 	Color sCol( 0x77, 0xBB, 0xDD );
 	//factor in variation later
@@ -2465,78 +2473,6 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 		//optimize this later
 		UpdateMaterialType();
 	}
-}
-
-void TerrainPolygon::FinalizeInverse()
-{
-	finalized = true;
-	isGrassShowing = false;
-
-	FixWindingInverse();
-
-	UpdateBounds();
-
-	int testExtra = inverseExtraBoxDist;
-
-	Vector2i outerRectPositions[4];
-	outerRectPositions[0] = Vector2i(left - inverseExtraBoxDist, top - inverseExtraBoxDist);
-	outerRectPositions[1] = Vector2i(right + inverseExtraBoxDist, top - inverseExtraBoxDist);
-	outerRectPositions[2] = Vector2i(right + inverseExtraBoxDist, bottom + inverseExtraBoxDist);
-	outerRectPositions[3] = Vector2i(left - inverseExtraBoxDist, bottom + inverseExtraBoxDist);
-
-	vector<TerrainPoint> &outerRectTerrainPoints = pointVector[0];
-	outerRectTerrainPoints.clear();
-	outerRectTerrainPoints.reserve(4);
-	for (int i = 0; i < 4; ++i)
-	{
-		AddInverseBorderPoint(outerRectPositions[i], false);
-	}
-
-	
-	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
-	vaSize = indices.size();
-
-	int numP = GetNumPoints();
-
-	SetupEdges();
-
-	lines = new sf::Vertex[numP * 2 + 1];
-	va = new VertexArray(sf::Triangles, vaSize);
-
-	VertexArray & v = *va;
-	Color testColor(0x75, 0x70, 0x90);
-	Color selectCol(0x77, 0xBB, 0xDD);
-
-	if (selected)
-	{
-		testColor = selectCol;
-	}
-
-	int numTris = vaSize / 3;
-	for (int i = 0; i < numTris; ++i)
-	{
-		v[i * 3] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3])->pos), testColor);
-		v[i * 3 + 1] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3 + 1])->pos), testColor);
-		v[i * 3 + 2] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3 + 2])->pos), testColor);
-	}
-
-	SetMaterialType(terrainWorldType, terrainVariation);
-
-	GenerateBorderMesh();
-
-	UpdateLinePositions();
-	UpdateLineColors();
-	
-	UpdateBounds();
-	
-	SetupGrass();
-
-	AddTouchGrass(TouchGrass::TYPE_NORMAL);
-	AddTouchGrass(TouchGrass::TYPE_TEST);
-
-	ResetTouchGrass();
-
-	UpdateTouchGrass();
 }
 
 int TerrainPolygon::GetNumGrass(int i, bool &rem)
@@ -2790,6 +2726,88 @@ void TerrainPolygon::Finalize()
 	ResetTouchGrass();
 
 	UpdateTouchGrass();
+
+	myTerrainTree->Clear();
+	AddEdgesToQuadTree(myTerrainTree);
+
+	GenerateDecor();
+}
+
+void TerrainPolygon::FinalizeInverse()
+{
+	finalized = true;
+	isGrassShowing = false;
+
+	FixWindingInverse();
+
+	UpdateBounds();
+
+	int testExtra = inverseExtraBoxDist;
+
+	Vector2i outerRectPositions[4];
+	outerRectPositions[0] = Vector2i(left - inverseExtraBoxDist, top - inverseExtraBoxDist);
+	outerRectPositions[1] = Vector2i(right + inverseExtraBoxDist, top - inverseExtraBoxDist);
+	outerRectPositions[2] = Vector2i(right + inverseExtraBoxDist, bottom + inverseExtraBoxDist);
+	outerRectPositions[3] = Vector2i(left - inverseExtraBoxDist, bottom + inverseExtraBoxDist);
+
+	vector<TerrainPoint> &outerRectTerrainPoints = pointVector[0];
+	outerRectTerrainPoints.clear();
+	outerRectTerrainPoints.reserve(4);
+	for (int i = 0; i < 4; ++i)
+	{
+		AddInverseBorderPoint(outerRectPositions[i], false);
+	}
+
+
+	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
+	vaSize = indices.size();
+
+	int numP = GetNumPoints();
+
+	SetupEdges();
+
+	lines = new sf::Vertex[numP * 2 + 1];
+	va = new VertexArray(sf::Triangles, vaSize);
+
+	VertexArray & v = *va;
+	Color testColor(0x75, 0x70, 0x90);
+	Color selectCol(0x77, 0xBB, 0xDD);
+
+	if (selected)
+	{
+		testColor = selectCol;
+	}
+
+	int numTris = vaSize / 3;
+	for (int i = 0; i < numTris; ++i)
+	{
+		v[i * 3] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3])->pos), testColor);
+		v[i * 3 + 1] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3 + 1])->pos), testColor);
+		v[i * 3 + 2] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3 + 2])->pos), testColor);
+	}
+
+	SetMaterialType(terrainWorldType, terrainVariation);
+
+	GenerateBorderMesh();
+
+	UpdateLinePositions();
+	UpdateLineColors();
+
+	UpdateBounds();
+
+	SetupGrass();
+
+	AddTouchGrass(TouchGrass::TYPE_NORMAL);
+	AddTouchGrass(TouchGrass::TYPE_TEST);
+
+	ResetTouchGrass();
+
+	UpdateTouchGrass();
+
+	myTerrainTree->Clear();
+	AddEdgesToQuadTree(myTerrainTree);
+	GenerateDecor();
+	UpdateDecorSprites();
 }
 
 void TerrainPolygon::SetupGrass()
@@ -3053,6 +3071,8 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		rt->draw( *va, pShader );
 
 	DrawBorderQuads(rt);
+
+	DrawDecor(rt);
 
 	DrawTouchGrass(rt);
 
@@ -3874,8 +3894,9 @@ void TerrainPolygon::RemoveLastPoint()
 
 void TerrainPolygon::Reset()
 {
+	SoftReset();
 	ClearPoints();
-	if (lines != NULL)
+	/*if (lines != NULL)
 		delete[] lines;
 	if (va != NULL)
 		delete va;
@@ -3890,7 +3911,10 @@ void TerrainPolygon::Reset()
 	grassVA = NULL;
 	finalized = false;
 
-	DestroyTouchGrass();
+
+	myTerrainTree->Clear();
+
+	DestroyTouchGrass();*/
 }
 
 void TerrainPolygon::SoftReset()
@@ -3909,13 +3933,20 @@ void TerrainPolygon::SoftReset()
 	va = NULL;
 	grassVA = NULL;
 	finalized = false;
+	//myTerrainTree->Clear();
 
 	DestroyTouchGrass();
+
+	for (auto it = decorExprList.begin(); it != decorExprList.end(); ++it)
+	{
+		delete (*it);
+	}
 }
 
 void TerrainPolygon::ClearPoints()
 {
 	PointVector().clear();
+	edges.clear();
 }
 
 
