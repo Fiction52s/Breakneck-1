@@ -90,7 +90,7 @@ Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight
 		return NULL;
 }
 
-Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, KinSkin *skin)
+Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, Skin *skin)
 {
 	if (owner != NULL)
 	{
@@ -277,7 +277,7 @@ Collider &Actor::GetCollider()
 
 }
 
-void Actor::SetupTilesets( KinSkin *skin, KinSkin *swordSkin )
+void Actor::SetupTilesets( Skin *skin, Skin *swordSkin )
 {
 	ts_scorpRun = GetTileset("Kin/scorp_run_192x128.png", 192, 128);
 	ts_scorpSlide = GetTileset("Kin/scorp_slide_160x96.png", 160, 96);
@@ -654,8 +654,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 			sf::Color(0x53, 0xf9, 0xf9)
 		};
 
-		//KinSkin *swordSkin = new KinSkin(startChanges, endChanges, 9, 1);
-		//KinSkin *skin = new KinSkin(startChanges, endChanges, 9, 1);
+		//Skin *swordSkin = new Skin(startChanges, endChanges, 9, 1);
+		//Skin *skin = new Skin(startChanges, endChanges, 9, 1);
 		
 		team = (Team)actorIndex; //debug
 		//SetupTilesets(skin, swordSkin);
@@ -2997,7 +2997,7 @@ void Actor::UpdatePrePhysics()
 		if( record == 0 )
 		{
 			//SaveState();
-			owner->SaveState();
+			//owner->SaveState();
 			recordedGhosts = 1;
 			ghosts[record]->currFrame = 0;
 			ghostFrame = 0;
@@ -3015,7 +3015,7 @@ void Actor::UpdatePrePhysics()
 			{
 				cout << "creating ghost: " << recordedGhosts + 1 << ", of " << MAX_GHOSTS << endl;
 				//LoadState();
-				owner->LoadState();
+				//owner->LoadState();
 				recordedGhosts++;
 				ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
 				ghosts[record]->currFrame = 0;
@@ -3041,7 +3041,7 @@ void Actor::UpdatePrePhysics()
 		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
 		record = 0;
 		//LoadState();
-		owner->LoadState(); 
+		//owner->LoadState(); 
 		blah = true;
 		ghostFrame = 1;
 		//cout << "recordedGhosts: " << recordedGhosts << endl;

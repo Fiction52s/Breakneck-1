@@ -1,6 +1,5 @@
 #include "EditorBG.h"
 #include "Background.h"
-#include "Parallax.h"
 
 using namespace sf;
 using namespace std;

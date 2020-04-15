@@ -21,7 +21,6 @@
 #include "MainMenu.h"
 #include "GoalExplosion.h"
 #include "PauseMenu.h"
-#include "Parallax.h"
 #include "Movement.h"
 #include "ScoreDisplay.h"
 #include "Enemy_CrawlerQueen.h"

@@ -5,7 +5,6 @@
 #include "SaveFile.h"
 #include <iostream>
 #include <sstream>
-#include "Parallax.h"
 #include "Config.h"
 #include "ControlProfile.h"
 #include "UIWindow.h"
@@ -408,7 +407,7 @@ void MultiLoadingScreen::Reset( boost::filesystem::path p_path )
 		delete loadThread;
 	}
 
-	gs = new GameSession( NULL, mainMenu, p_path.string() );
+	gs = new GameSession( NULL, p_path.string() );
 
 	gs->progressDisplay = progressDisplay;
 
@@ -1151,7 +1150,7 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 
 		//v.setSize( 1920, 1080 );
 		window->setView( v );
-		GameSession *gs = new GameSession( NULL, this, p_path );
+		GameSession *gs = new GameSession( NULL, p_path );
 		GameSession::sLoad(gs);
 		
 		gameRunType = GRT_FREEPLAY;
@@ -1174,7 +1173,7 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 	{
 		gameRunType = MainMenu::GRT_FREEPLAY;
 		window->setView( v );
-		GameSession *gs = new GameSession( NULL, this, p_path );
+		GameSession *gs = new GameSession( NULL, p_path );
 		GameSession::sLoad(gs);
 		
 		result = gs->Run();
@@ -2144,7 +2143,7 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 
 	//sf::sleep(sf::milliseconds(5000));
 
-	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
+	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], levelPath);
 	currLevel->level = lev;
 
 
@@ -2220,7 +2219,7 @@ void MainMenu::PlayIntroMovie()
 	gameRunType = GameRunType::GRT_ADVENTURE;
 	//SetModeLoadingMap(wIndex);
 
-	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], this, levelPath);
+	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], levelPath);
 	currLevel->level = lev;
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
@@ -2254,7 +2253,7 @@ void MainMenu::sGoToNextLevel(MainMenu *m, Level *lev )//const std::string &levN
 
 	delete old;
 
-	m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], m, levName);
+	m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], levName);
 	m->currLevel->level = lev;
 	//
 	
@@ -2290,7 +2289,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		GameSession *gs = new GameSession(NULL, this, "Resources/Maps/W1/arena04.brknk");
+		GameSession *gs = new GameSession(NULL, "Resources/Maps/W1/arena04.brknk");
 		GameSession::sLoad(gs);
 		gs->Run();
 
@@ -3367,7 +3366,7 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		{
 			menu->gameRunType = MainMenu::GRT_FREEPLAY;
 			optionChosen = true;
-			GameSession *gs = new GameSession( NULL, menu, ls.GetSelectedPath() );
+			GameSession *gs = new GameSession( NULL, ls.GetSelectedPath() );
 			GameSession::sLoad( gs );
 			gs->Run();
 			menu->window->setView( menu->uiView );
@@ -3776,7 +3775,7 @@ void MapSelectionMenu::LoadMap()
 
 
 
-	gs = new GameSession(NULL, mainMenu, allItems[pIndex].second.item->path.string() );
+	gs = new GameSession(NULL, allItems[pIndex].second.item->path.string() );
 
 	gs->progressDisplay = progressDisplay;
 

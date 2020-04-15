@@ -6,7 +6,6 @@
 
 struct GameSession;
 struct MainMenu;
-struct ScrollingBackground;
 
 
 struct ScrollingBackground

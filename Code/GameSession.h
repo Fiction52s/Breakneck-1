@@ -24,6 +24,8 @@
 #include <boost/thread/mutex.hpp>
 #include "earcut.hpp"
 
+#include "Session.h"
+
 struct Actor;
 struct ComboObject;
 
@@ -55,7 +57,6 @@ struct ImageText;
 struct TimerText;
 
 struct AbsorbParticles;
-struct KinSkin;
 struct Tileset;
 
 struct AdventureHUD;
@@ -184,7 +185,7 @@ struct KeyNumberObj
 	int zoneType;
 };
 
-struct GameSession : QuadTreeCollider, RayCastHandler
+struct GameSession : QuadTreeCollider, RayCastHandler, Session
 {
 	enum GameResultType
 	{
@@ -228,7 +229,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 
 	GameSession(SaveFile *sf,
-		MainMenu *mainMenu,
 		const boost::filesystem::path &p_filePath);
 	~GameSession();
 
@@ -257,6 +257,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool LoadRails(std::ifstream &is);
 	void LoadEnemy(std::ifstream &is,
 		std::map<int, int> &polyIndex);
+	bool ReadActors(std::ifstream &is);
 	bool OpenFile();
 
 	TilesetManager tm;
@@ -269,40 +270,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool usePolyShader;
 
 	//anything that I already share with Session
-
-
-	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex = 0);
-	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
-		sf::Color *startColorBuf, sf::Color *endColorBuf);
-	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, KinSkin *skin);
-
-	Actor *GetPlayer(int index);
-	ControllerState &GetPrevInput(int index);
-	ControllerState &GetCurrInput(int index);
-	ControllerState &GetPrevInputUnfiltered(int index);
-	ControllerState &GetCurrInputUnfiltered(int index);
-	GameController &GetController(int index);
-	void UpdatePlayerInput(int index);
-
-	sf::RenderWindow *window;
-
-	std::string filePathStr;
-	boost::filesystem::path filePath;
-
-	bool cutPlayerInput;
-	void SetPlayerInputOn(bool on);
-
-	bool IsKeyPressed(int key);
-
-	void DrawPlayers(sf::RenderTarget *target);
-	void DrawPlayerWires();
-
-	void ReadDecorImagesFile();
-	std::map<std::string, Tileset*> decorTSMap;
-
-	double accumulator;
-	int substep;
-	MainMenu *mainMenu;
 
 	//anything that has to do with original terrain processing
 	bool hasGrass[6];
@@ -579,13 +546,16 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	float maxFlowRings;
 	void DrawGoal();
 
-	std::list<Zone*> zones;
-	Zone *currentZone;
+	
 	void DrawZones();
 	void CreateZones();
 	void SetupZones();
 	void ActivateZone(Zone * z, bool instant = false);
+
 	Zone *activatedZoneList;
+	std::list<Zone*> zones;
+	Zone *currentZone;
+	Zone *originalZone;
 
 	void DrawActiveEnvPlants();
 	void DrawHitEnemies();
@@ -722,9 +692,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	
 
 	int m_numActivePlayers;
-	int numPolyTypes;
-	sf::Shader *polyShaders;
-	Tileset **ts_polyShaders;
 
 	
 	sf::Shader cloneShader; //actually time slow shader
@@ -911,15 +878,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	bool IsWithinCurrentBounds(V2d &p);
 
 	sf::Vector2<double> originalPos;
-	Zone *originalZone;
+	
 	sf::Rect<double> screenRect;
 	sf::Rect<double> tempSpawnRect;
 	
-
 	QuadTree *terrainBGTree;
-	QuadTree *specialTerrainTree;
-	QuadTree *barrierTree;
-	QuadTree * terrainTree;
 	QuadTree * enemyTree;
 	QuadTree * grassTree;
 	QuadTree * gateTree;
@@ -928,7 +891,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler
 	QuadTree *specterTree;
 	QuadTree *inverseEdgeTree;
 	QuadTree *staticItemTree;
-	QuadTree *railEdgeTree;
+	
 	QuadTree *railDrawTree;
 	QuadTree *activeItemTree;
 	QuadTree *activeEnemyItemTree;

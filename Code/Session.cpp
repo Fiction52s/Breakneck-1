@@ -33,10 +33,10 @@ Session::Session(const boost::filesystem::path &p_filePath)
 	filePathStr = filePath.string();
 
 	players.resize(MAX_PLAYERS);
-	for (int i = 0; i < MAX_PLAYERS; ++i)
+	/*for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		players[i] = nullptr;
-	}
+	}*/
 
 	terrainTree = NULL;
 	specialTerrainTree = NULL;

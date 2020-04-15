@@ -2,7 +2,6 @@
 #include "GameSession.h"
 #include <sstream>
 #include <assert.h>
-#include "Parallax.h"
 #include <random>
 #include "MainMenu.h"
 

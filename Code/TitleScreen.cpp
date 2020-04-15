@@ -2,7 +2,6 @@
 #include "Tileset.h"
 #include "MainMenu.h"
 #include "Background.h"
-#include "Parallax.h"
 #include "MusicPlayer.h"
 #include "MusicSelector.h"
 #include "Fader.h"

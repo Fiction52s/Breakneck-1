@@ -37,7 +37,6 @@ struct ActorType;
 struct Brush;
 struct Action;
 struct CompoundAction;
-struct KinSkin;
 struct Background;
 struct ScrollingBackground;
 struct AirTriggerParams;

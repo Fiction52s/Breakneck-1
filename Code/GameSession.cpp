@@ -24,7 +24,6 @@
 #include "GoalExplosion.h"
 #include "Minimap.h"
 #include "PauseMenu.h"
-#include "Parallax.h"
 #include <boost/thread.hpp>
 #include <iostream>
 #include "ImageText.h"
@@ -248,17 +247,12 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 }
 
 
-GameSession::GameSession(SaveFile *sf, MainMenu *p_mainMenu, 
-	const boost::filesystem::path &p_filePath )
-	:saveFile( sf ),
+GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
+	:Session(p_filePath), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), 
 	eHitParamsMan( NULL ), drain(true )
-{	
-	filePath = p_filePath;
-	filePathStr = filePath.string();
-
-	mainMenu = p_mainMenu;
+{
 	cam.owner = this;
 
 	Init();
@@ -406,21 +400,9 @@ void GameSession::Cleanup()
 		absorbShardParticles = NULL;
 	}
 
-	if (ts_polyShaders != NULL)
-	{
-		delete [] ts_polyShaders;
-		ts_polyShaders = NULL;
-	}
-
-	if (polyShaders != NULL)
-	{
-		delete [] polyShaders;
-		polyShaders = NULL;
-	}
-
 	if (terrainDecorInfos != NULL)
 	{
-		for (int i = 0; i < numPolyTypes; ++i)
+		for (int i = 0; i < numPolyShaders; ++i)
 		{
 			if (terrainDecorInfos[i] != NULL)
 			{
@@ -669,30 +651,10 @@ GameSession::~GameSession()
 	Cleanup();
 }
 
-//should only be used to assign a variable. don't use at runtime
-Tileset * GameSession::GetTileset( const std::string & s, int tileWidth, int tileHeight,  int altColorIndex )
+bool GameSession::ReadActors(std::ifstream &is)
 {
-	return tm.GetTileset( s, tileWidth, tileHeight, altColorIndex );
-	//make sure to set up tileset here
-}
-
-
-Tileset * GameSession::GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
-	sf::Color *startColorBuf, sf::Color *endColorBuf)
-{
-	return tm.GetTileset( s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf );
-}
-
-Tileset * GameSession::GetTileset(const std::string & s, int tileWidth, int tileHeight, KinSkin *skin )
-{
-	if (skin != NULL)
-	{
-		return tm.GetTileset(s, tileWidth, tileHeight, skin->index, skin->numChanges, skin->startColors, skin->endColors);
-	}
-	else
-	{
-		return tm.GetTileset(s, tileWidth, tileHeight );
-	}
+	//fill this in soon
+	return false;
 }
 
 void GameSession::UpdateEnemiesPrePhysics()
@@ -709,8 +671,6 @@ void GameSession::UpdateEnemiesPrePhysics()
 		current->UpdatePrePhysics();
 		current = current->next;
 	}
-
-	
 }
 
 void GameSession::UpdateEnemiesPhysics()
@@ -5040,31 +5000,6 @@ void GameSession::SetupZones()
 	}*/
 }
 
-ControllerState &GameSession::GetPrevInput( int index )
-{
-	return mainMenu->GetPrevInput( index );
-}
-
-ControllerState &GameSession::GetCurrInput( int index )
-{
-	return mainMenu->GetCurrInput( index );
-}
-
-ControllerState &GameSession::GetPrevInputUnfiltered(int index)
-{
-	return mainMenu->GetPrevInputUnfiltered(index);
-}
-
-ControllerState &GameSession::GetCurrInputUnfiltered(int index)
-{
-	return mainMenu->GetCurrInputUnfiltered(index);
-}
-
-Actor *GameSession::GetPlayer( int index )
-{
-	return players[index];
-}
-
 V2d GameSession::GetPlayerPos(int index)
 {
 	Actor *p = players[index];
@@ -5482,113 +5417,6 @@ void GameSession::SetupStormCeiling()
 Edge *GameSession::GetEdge(int index)
 {
 	return edges[index];
-}
-
-
-
-void GameSession::ReadDecorImagesFile()
-{
-	ifstream is;
-	is.open("Resources/decor.txt");
-	if (is.is_open())
-	{
-		string name;
-		int width;
-		int height;
-		int tile;
-		while (!is.eof())
-		{
-			
-			is >> name;
-			is >> width;
-			is >> height;
-
-			is >> tile;
-
-			string fullName = name + string(".png");
-			//fullName.split
-
-			Tileset *ts = tm.GetTileset(fullName, width, height);
-			assert(ts != NULL);
-			decorTSMap[name] = ts;
-			//decorTileIndexes[name].push_back(tile);
-		}
-
-		is.close();
-	}
-	else
-	{
-		assert(0);
-	}
-}
-
-GameController &GameSession::GetController( int index )
-{
-	return mainMenu->GetController( index );
-}
-
-void GameSession::UpdatePlayerInput( int index )
-{
-	Actor *player = GetPlayer( index );
-	if( player == NULL )
-		return;
-
-	ControllerState &pCurr = player->currInput;
-	GameController &controller = GetController( index );
-	ControllerState &currInput = GetCurrInput( index );
-	ControllerState &prevInput = GetPrevInput( index );
-
-				//ControllerState &pPrev = player->prevInput;
-	bool alreadyBounce = pCurr.X;
-	bool alreadyGrind = pCurr.Y;
-	bool alreadyTimeSlow = pCurr.leftShoulder;
-
-	if (cutPlayerInput)
-	{
-		player->currInput = ControllerState();
-	}
-	else
-	{
-		player->currInput = currInput;
-
-		if (controller.keySettings.toggleBounce)
-		{
-			if (currInput.X && !prevInput.X)
-			{
-				pCurr.X = !alreadyBounce;
-			}
-			else
-			{
-				pCurr.X = alreadyBounce;
-			}
-		}
-		if (controller.keySettings.toggleGrind)
-		{
-			if (currInput.Y && !prevInput.Y)
-			{
-				pCurr.Y = !alreadyGrind;
-				//cout << "pCurr.y is now: " << (int)pCurr.Y << endl;
-			}
-			else
-			{
-				pCurr.Y = alreadyGrind;
-			}
-		}
-		if (controller.keySettings.toggleTimeSlow)
-		{
-			if (currInput.leftShoulder && !prevInput.leftShoulder)
-			{
-				pCurr.leftShoulder = !alreadyTimeSlow;
-
-			}
-			else
-			{
-				pCurr.leftShoulder = alreadyTimeSlow;
-			}
-		}
-	}
-	
-	
 }
 
 void GameSession::KeyboardUpdate( int index )
@@ -6202,14 +6030,11 @@ bool GameSession::Load()
 		return false;
 	}
 
-
-	numPolyTypes = matSet.size();
-	polyShaders = new Shader[numPolyTypes];
-	ts_polyShaders = new Tileset*[numPolyTypes];
+	AllocatePolyShaders(matSet.size());
 
 
-	terrainDecorInfos = new TerrainDecorInfo*[numPolyTypes];
-	for (int i = 0; i < numPolyTypes; ++i)
+	terrainDecorInfos = new TerrainDecorInfo*[numPolyShaders];
+	for (int i = 0; i < numPolyShaders; ++i)
 	{
 		terrainDecorInfos[i] = NULL;
 	}
@@ -7656,7 +7481,7 @@ int GameSession::Run()
 
 		goalPulse->Draw( preScreenTex );
 
-		DrawPlayerWires();
+		DrawPlayerWires(preScreenTex);
 		
 
 		if( shipSequence )
@@ -8764,11 +8589,6 @@ int GameSession::Run()
 	return returnVal;
 }
 
-bool GameSession::IsKeyPressed(int key)
-{
-	return mainMenu->IsKeyPressed(key);
-}
-
 void GameSession::Fade(bool in, int frames, sf::Color c, bool skipKin)
 {
 	fader->Fade(in, frames, c, skipKin);
@@ -8870,15 +8690,9 @@ void GameSession::Init()
 	
 	grassTree = NULL;
 	
-	borderTree = NULL;
-	
 	enemyTree = NULL;
-	
-	terrainTree = NULL;
 
 	staticItemTree = NULL;
-
-	railEdgeTree = NULL;
 
 	railDrawTree = NULL;
 	
@@ -8901,9 +8715,7 @@ void GameSession::Init()
 		delete (*it);
 	}
 	polygons.clear();
-	
-	polyShaders = NULL;
-	ts_polyShaders = NULL;
+
 	terrainDecorInfos = NULL;
 	va = NULL;
 	edges = NULL;
@@ -8936,8 +8748,7 @@ void GameSession::Init()
 	stormCeilingInfo->hitstunFrames = 30;
 	stormCeilingInfo->knockback = 0;
 	stormCeilingInfo->freezeDuringStun = true;*/
-	
-	window = mainMenu->window;
+
 	preScreenTex = mainMenu->preScreenTexture;
 	lastFrameTex = mainMenu->lastFrameTexture;
 	postProcessTex = mainMenu->postProcessTexture;
@@ -9281,16 +9092,6 @@ void GameSession::SetStorySeq(StorySequence *storySeq)
 	storySeq->Reset();
 	currStorySequence = storySeq;
 	state = GameSession::STORY;
-}
-
-void GameSession::SetPlayerInputOn(bool on)
-{
-	cutPlayerInput = !on;
-	if (!cutPlayerInput)
-	{
-		//GetPrevInput(0) = ControllerState();
-		//GetCurrInput(0) = ControllerState()
-	}
 }
 
 void GameSession::DebugDrawActors()
@@ -9840,26 +9641,6 @@ void GameSession::UpdateDecorSprites()
 	}
 }
 
-void GameSession::DrawPlayerWires()
-{
-	Actor *p = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			if ((p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK) || p->leftWire->state == Wire::RETRACTING)
-			{
-				p->leftWire->Draw(preScreenTex);
-			}
-			if ((p->action != Actor::GRINDBALL && p->action != Actor::GRINDATTACK) || p->rightWire->state == Wire::RETRACTING)
-			{
-				p->rightWire->Draw(preScreenTex);
-			}
-		}
-	}
-}
-
 void GameSession::DrawHitEnemies()
 {
 	Enemy *current = activeEnemyList;
@@ -9870,19 +9651,6 @@ void GameSession::DrawHitEnemies()
 			current->Draw(preScreenTex);
 		}
 		current = current->next;
-	}
-}
-
-void GameSession::DrawPlayers( RenderTarget *target)
-{
-	Actor *p = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			p->Draw(target);
-		}
 	}
 }
 
@@ -9929,7 +9697,7 @@ void GameSession::RemoveAllEnemies()
 void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 {
 	//inefficient. should only update these when they are changed.
-	for (int i = 0; i < numPolyTypes; ++i)
+	for (int i = 0; i < numPolyShaders; ++i)
 	{
 		polyShaders[i].setUniform("zoom", cam.GetZoom());
 		polyShaders[i].setUniform("topLeft", botLeft); //just need to change the name topleft eventually
@@ -10014,7 +9782,6 @@ void GameSession::QueryBorderTree(sf::Rect<double> &rect)
 {
 	queryMode = "border";
 	numBorders = 0;
-
 	borderTree->Query(this, rect);
 }
 

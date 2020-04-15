@@ -12,7 +12,6 @@
 #include <set>
 #include "MainMenu.h"
 #include "Background.h"
-#include "Parallax.h"
 #include "Enemy_Shard.h"
 #include "ActorParams.h"
 #include "EditorBG.h"

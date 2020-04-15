@@ -1,6 +1,7 @@
 #include "Tileset.h"	
 #include <iostream>
 #include <assert.h>
+//#include "Kin"
 //#include "globals.h"
 
 using namespace std;
@@ -184,6 +185,19 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 
 	return t;
 }
+
+Tileset * TilesetManager::GetTileset(const std::string & s, int tileWidth, int tileHeight, Skin *skin)
+{
+	if (skin != NULL)
+	{
+		return GetTileset(s, tileWidth, tileHeight, skin->index, skin->numChanges, skin->startColors, skin->endColors);
+	}
+	else
+	{
+		return GetTileset(s, tileWidth, tileHeight);
+	}
+}
+
 
 Tileset *TilesetManager::GetUpdatedTileset(
 	const std::string & s, int tileWidth, int tileHeight, int altColorIndex)

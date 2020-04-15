@@ -32,23 +32,7 @@ struct Actor;
 struct ObjectPool;
 struct RelEffectInstance;
 struct VertexBuf;
-
-
-
-struct KinSkin
-{
-	KinSkin(sf::Color *startCols, sf::Color *endCols,
-		int p_numChanges, int p_index)
-		:startColors(startCols), endColors( endCols ),
-		numChanges( p_numChanges ), index( p_index )
-	{
-
-	}
-	sf::Color *startColors;
-	sf::Color *endColors;
-	int numChanges;
-	int index;
-};
+struct Kin;
 
 struct MotionGhostEffect
 {
@@ -323,7 +307,7 @@ struct Actor : QuadTreeCollider,
 	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex = 0);
 	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
 		sf::Color *startColorBuf, sf::Color *endColorBuf);
-	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, KinSkin *skin);
+	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, Skin *skin);
 
 	GameController &GetController(int index);
 
@@ -481,7 +465,7 @@ struct Actor : QuadTreeCollider,
 	void SetAction( Action a );
 	void StartAction(Action a);
 
-	void SetupTilesets(KinSkin *kSkin, KinSkin *swordSkin);
+	void SetupTilesets(Skin *kSkin, Skin*swordSkin);
 
 	void RailGrindMovement();
 
