@@ -18,6 +18,8 @@
 #include "TransformTools.h"
 #include "TerrainDecor.h"
 
+#include "TouchGrass.h"
+
 using namespace std;
 using namespace sf;
 
@@ -29,7 +31,6 @@ using namespace sf;
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
 
 namespace mapbox
 {
@@ -53,8 +54,141 @@ namespace mapbox
 }
 
 #define cout std::cout
-
 std::map<DecorType, DecorLayer*> TerrainPolygon::s_decorLayerMap;
+
+
+void TerrainPolygon::AddTouchGrass(int gt)
+{
+	list<PlantInfo> info;
+
+	TouchGrass::TouchGrassType gType = (TouchGrass::TouchGrassType)gt;
+
+	int tw = TouchGrass::GetQuadWidth(gType);
+
+	//Edge *startEdge = tr->startEdge;
+
+	int numP = GetNumPoints();
+
+	Edge *currEdge;
+	for (int i = 0; i < numP; ++i)
+	{
+		currEdge = GetEdge(i);
+		bool valid = true;
+
+		EdgeAngleType eat = GetEdgeAngleType(currEdge);
+		if (eat == EDGE_FLAT || eat == EDGE_SLOPED)
+		{
+			valid = true;
+		}
+		else
+		{
+			valid = false;
+		}
+		//valid = true;
+
+		if (valid)
+		{
+			double len = currEdge->GetLength();
+			int numQuads = len / tw;
+			bool tooThin = false;
+			double quadWidth = tw;//len / numQuads;
+			if (numQuads == 0)
+			{
+				tooThin = true;
+				numQuads = 1;
+			}
+			if (numQuads > 0)
+			{
+				for (int i = 0; i < numQuads; ++i)
+				{
+					if (TouchGrass::IsPlacementOkay(gType, eat,
+						currEdge, i))
+					{
+						if (tooThin)
+						{
+							info.push_back(PlantInfo(currEdge, len / 2.0, quadWidth));
+						}
+						else
+						{
+							info.push_back(PlantInfo(currEdge, quadWidth * i + quadWidth / 2, quadWidth));
+						}
+
+					}
+				}
+			}
+		}
+	}
+
+	int infoSize = info.size();
+	int vaSize = infoSize * 4;
+
+	if (infoSize == 0)
+	{
+		return;
+	}
+
+	TouchGrassCollection *coll = new TouchGrassCollection(this);
+	touchGrassCollections.push_back(coll);
+
+	//cout << "number of plants: " << infoSize << endl;
+	coll->touchGrassVA = new Vertex[vaSize];
+
+	coll->ts_grass = TouchGrassCollection::GetTileset(sess, gType);
+	coll->gType = gType;
+	coll->numTouchGrasses = infoSize;
+
+	int vaIndex = 0;
+	for (list<PlantInfo>::iterator it = info.begin(); it != info.end(); ++it)
+	{
+		coll->CreateGrass(vaIndex, (*it).edge, (*it).quant);
+		vaIndex++;
+	}
+}
+
+void TerrainPolygon::QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r)
+{
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		(*it)->Query(qtc, r);
+	}
+}
+
+void TerrainPolygon::UpdateTouchGrass()
+{
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		(*it)->UpdateGrass();
+	}
+}
+
+void TerrainPolygon::DrawTouchGrass(sf::RenderTarget *target)
+{
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+}
+
+void TerrainPolygon::DestroyTouchGrass()
+{
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		delete (*it);
+	}
+	touchGrassCollections.clear();
+}
+
+void TerrainPolygon::ResetTouchGrass()
+{
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		(*it)->Reset();
+	}
+}
+
+
+
+
 
 void TerrainPolygon::AddDecorExpression(DecorExpression *exp)
 {
@@ -687,9 +821,6 @@ void TerrainPolygon::HandleRayCollision(Edge *edge,
 }
 
 
-
-
-
 void BorderSizeInfo::SetWidth(int w)
 {
 	width = w;
@@ -727,9 +858,6 @@ TerrainPolygon::TerrainPolygon()
 	if (sess != NULL)
 	{
 		ts_grass = sess->GetTileset("Env/grass_128x128.png", 128, 128);
-
-		//might need this we'll see
-		//pShader = &sess->polyShaders[terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation];
 	}
 	
 	grassSize = 128;
@@ -739,6 +867,7 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	sess = poly.sess;
 	layer = 0;
 	inverse = poly.inverse;
 	terrainWorldType = poly.terrainWorldType;
@@ -788,6 +917,8 @@ TerrainPolygon::~TerrainPolygon()
 
 	if (borderQuads != NULL)
 		delete[] borderQuads;
+
+	DestroyTouchGrass();
 
 	ClearPoints();
 }
@@ -2179,6 +2310,11 @@ void TerrainPolygon::Move(Vector2i move )
 		}
 	}
 
+	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
+	{
+		(*it)->Move(dMove);
+	}
+
 	UpdateBounds();
 	return;
 }
@@ -2394,6 +2530,13 @@ void TerrainPolygon::FinalizeInverse()
 	UpdateBounds();
 	
 	SetupGrass();
+
+	AddTouchGrass(TouchGrass::TYPE_NORMAL);
+	AddTouchGrass(TouchGrass::TYPE_TEST);
+
+	ResetTouchGrass();
+
+	UpdateTouchGrass();
 }
 
 int TerrainPolygon::GetNumGrass(int i, bool &rem)
@@ -2640,6 +2783,13 @@ void TerrainPolygon::Finalize()
 	UpdateBounds();
 
 	SetupGrass();
+
+	AddTouchGrass(TouchGrass::TYPE_NORMAL);
+	AddTouchGrass(TouchGrass::TYPE_TEST);
+
+	ResetTouchGrass();
+
+	UpdateTouchGrass();
 }
 
 void TerrainPolygon::SetupGrass()
@@ -2903,6 +3053,8 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		rt->draw( *va, pShader );
 
 	DrawBorderQuads(rt);
+
+	DrawTouchGrass(rt);
 
 	rt->draw( lines, numP * 2, sf::Lines );
 
@@ -3730,10 +3882,15 @@ void TerrainPolygon::Reset()
 	if (grassVA != NULL)
 		delete grassVA;
 
+	if (borderQuads != NULL)
+		delete[] borderQuads;
+
 	lines = NULL;
 	va = NULL;
 	grassVA = NULL;
 	finalized = false;
+
+	DestroyTouchGrass();
 }
 
 void TerrainPolygon::SoftReset()
@@ -3752,6 +3909,8 @@ void TerrainPolygon::SoftReset()
 	va = NULL;
 	grassVA = NULL;
 	finalized = false;
+
+	DestroyTouchGrass();
 }
 
 void TerrainPolygon::ClearPoints()
@@ -3842,6 +4001,12 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 sf::IntRect TerrainPolygon::GetAABB()
 {
 	return IntRect(left, top, right - left, bottom - top);
+}
+
+V2d TerrainPolygon::GetDCenter()
+{
+	return V2d((left + right) / 2.0,
+		(top + bottom) / 2.0);
 }
 
 bool TerrainPolygon::IsClockwise()

@@ -32,16 +32,16 @@ struct TouchGrassCollection;
 struct Edge;
 struct Tileset;
 
-struct PlantInfo
-{
-	PlantInfo(Edge*e, double q, double w)
-		:edge(e), quant(q), quadWidth(w)
-	{
-	}
-	Edge *edge;
-	double quant;
-	double quadWidth;
-};
+//struct PlantInfo
+//{
+//	PlantInfo(Edge*e, double q, double w)
+//		:edge(e), quant(q), quadWidth(w)
+//	{
+//	}
+//	Edge *edge;
+//	double quant;
+//	double quadWidth;
+//};
 
 struct GrassSegment
 {

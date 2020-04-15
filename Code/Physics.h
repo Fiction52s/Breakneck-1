@@ -126,6 +126,7 @@ struct CollisionBox
 	//double offsetAngle;
 	sf::Vector2<double> globalPosition;
 	void Scale(double factor);
+	void Move(V2d &move);
 	double globalAngle;
 
 	void SetRectDir(V2d &dir, double alongSize,
@@ -152,6 +153,8 @@ struct CollisionBody
 	CollisionBody(int p_numFrames, std::map<int, std::list<CollisionBox>> & hList,
 		HitboxInfo *hInfo );
 	~CollisionBody();
+
+	void Move(V2d &move);
 
 	void DebugDraw( int frame, sf::RenderTarget *target);
 	

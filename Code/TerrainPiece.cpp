@@ -477,13 +477,15 @@ void TerrainPiece::AddTouchGrass(int gt)
 		return;
 	}
 
-	TouchGrassCollection *coll = new TouchGrassCollection;
+	//this will crash gamesession atm
+	TouchGrassCollection *coll = NULL;// new TouchGrassCollection;
 	touchGrassCollections.push_back(coll);
 
 	//cout << "number of plants: " << infoSize << endl;
 	coll->touchGrassVA = new Vertex[vaSize];
 
-	coll->ts_grass = TouchGrassCollection::GetTileset(owner, gType);
+	//this will crash too
+	coll->ts_grass = NULL;//TouchGrassCollection::GetTileset(owner, gType);
 	coll->gType = gType;
 	coll->numTouchGrasses = infoSize;
 

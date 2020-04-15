@@ -13,59 +13,6 @@ struct Edge;
 
 #define STEEP_THRESH .4
 
-//struct DecorLayer
-//{
-//	DecorLayer(Tileset *ts, int animLength,
-//		int animFactor, int tileStart = 0,
-//		int loopWait = 0);
-//	~DecorLayer();
-//	
-//	void Update();
-//	Tileset *ts;
-//	int frame;
-//	int animLength;
-//	int animFactor;
-//	int startTile;
-//	int loopWait;
-//};
-//struct DecorExpression
-//{
-//	DecorExpression(
-//		std::list<sf::Vector2f> &pointList,
-//		DecorLayer *layer);
-//	~DecorExpression();
-//
-//	sf::VertexArray *va;
-//	DecorLayer *layer;
-//
-//	void UpdateSprites();
-//};
-//
-//
-//
-//struct TerrainDecorInfo
-//{
-//	TerrainDecorInfo(int numDecors);
-//	~TerrainDecorInfo();
-//	DecorType *decors;
-//	int *percents;
-//	int numDecors;
-//};
-//
-//struct DecorRect : QuadTreeEntrant
-//{
-//	DecorRect(sf::Rect<double> &r)
-//		:rect(r)
-//	{
-//
-//	}
-//	void HandleQuery(QuadTreeCollider * qtc);
-//	bool IsTouchingBox(const sf::Rect<double> &r);
-//	sf::Rect<double> rect;
-//};
-
-
-
 enum EdgeType : int
 {
 	E_FLAT_GROUND,
@@ -185,11 +132,7 @@ struct TerrainRender : QuadTreeCollider, RayCastHandler
 	std::list<DecorLayer*> DecorLayers;
 	QuadTree *decorTree;
 
-	std::string rayMode;
-
-	sf::Vertex *movingGrass;
-
-	
+	std::string rayMode;	
 };
 
 #endif

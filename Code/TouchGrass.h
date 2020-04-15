@@ -10,6 +10,8 @@ struct Tileset;
 struct Actor;
 struct QuadTree;
 struct TouchGrassCollection;
+struct TilesetManager;
+struct TerrainPolygon;
 
 struct TouchGrass : QuadTreeEntrant
 {
@@ -27,6 +29,8 @@ struct TouchGrass : QuadTreeEntrant
 	TouchGrass( TouchGrassCollection *coll, int index,
 		Edge *e, double quant);
 	~TouchGrass();
+
+	void Move(V2d &move);
 	void CommonInit(double yOff, double angle, double hitboxYOff,
 		double hitboxXSize, double hitboxYSize);
 	virtual void Reset() = 0;
@@ -62,22 +66,27 @@ struct TouchGrass : QuadTreeEntrant
 
 struct TouchGrassCollection
 {
-	TouchGrassCollection();
+	TouchGrassCollection(TerrainPolygon *tp);
 	void Reset();
 	~TouchGrassCollection();
 	QuadTree * touchGrassTree;
 	sf::Vertex *touchGrassVA;
+
+	void Move(V2d &move);
 	int numTouchGrasses;
 	void Draw(sf::RenderTarget *target);
 	void Query(QuadTreeCollider *qtc, sf::Rect<double> &r);
 	void UpdateGrass();
 	void CreateGrass(int index, Edge *edge, double quant);
-	static Tileset *GetTileset(GameSession *owner, TouchGrass::TouchGrassType gt);
+	//static Tileset *GetTileset(GameSession *owner, TouchGrass::TouchGrassType gt);
+	static Tileset *GetTileset(TilesetManager *tm, TouchGrass::TouchGrassType gt);
 	std::list<TouchGrass*> myGrass;
 	Tileset *ts_grass;
 	TouchGrass::TouchGrassType gType;
 	TerrainPiece *poly;
 	HitboxInfo *hitboxInfo;
+
+	TerrainPolygon *myTerrain;
 };
 
 
@@ -121,6 +130,17 @@ struct TestTouchGrass : TouchGrass
 	void Touch(Actor *a);
 	void Destroy(Actor *a);
 	void UpdateSprite();
+};
+
+struct PlantInfo
+{
+	PlantInfo(Edge*e, double q, double w)
+		:edge(e), quant(q), quadWidth(w)
+	{
+	}
+	Edge *edge;
+	double quant;
+	double quadWidth;
 };
 
 #endif

@@ -148,6 +148,11 @@ void CollisionBox::Scale(double factor)
 	rh *= factor;
 }
 
+void CollisionBox::Move(V2d &move)
+{
+	globalPosition += move;
+}
+
 void CollisionBox::SetRectDir(V2d &dir, double alongSize,
 	double otherSize)
 {
@@ -2229,6 +2234,24 @@ void CollisionBody::DebugDraw( int frame, sf::RenderTarget *target)
 	for (auto it = cbList->begin(); it != cbList->end(); ++it)
 	{
 		(*it).DebugDraw(target);
+	}
+}
+
+void CollisionBody::Move(V2d &move)
+{
+	list<CollisionBox> *myList;
+
+	for (int i = 0; i < numFrames; ++i)
+	{
+		myList = GetCollisionBoxes(i);
+		auto endList = myList->end();
+		if (myList != NULL)
+		{
+			for (auto it = myList->begin(); it != endList; ++it)
+			{
+				(*it).Move(move);
+			}
+		}
 	}
 }
 

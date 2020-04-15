@@ -1,11 +1,13 @@
 #include "TouchGrass.h"
 #include "GameSession.h"
 #include "Actor.h"
+#include "EditorTerrain.h"
 
 using namespace sf;
 using namespace std;
 
-TouchGrassCollection::TouchGrassCollection()
+TouchGrassCollection::TouchGrassCollection( TerrainPolygon *tp )
+	:myTerrain(tp)
 {
 	touchGrassTree = new QuadTree(1000000, 1000000);
 	touchGrassVA = NULL;
@@ -28,6 +30,14 @@ void TouchGrassCollection::Reset()
 	for (auto it = myGrass.begin(); it != myGrass.end(); ++it)
 	{
 		(*it)->Reset();
+	}
+}
+
+void TouchGrassCollection::Move(V2d &move)
+{
+	for (auto it = myGrass.begin(); it != myGrass.end(); ++it)
+	{
+		(*it)->Move(move);
 	}
 }
 
@@ -80,17 +90,35 @@ TouchGrass::~TouchGrass()
 		delete hurtBody;
 }
 
-Tileset *TouchGrassCollection::GetTileset( GameSession *owner,
+//remove this later after gamesession is a tilesetmanager
+//Tileset *TouchGrassCollection::GetTileset( GameSession *owner,
+//	TouchGrass::TouchGrassType gt)
+//{
+//	Tileset *t = NULL;
+//	switch (gt)
+//	{
+//	case TouchGrass::TYPE_NORMAL:
+//		t = owner->GetTileset("Env/bushtouch_1_01_64x64.png", 64, 64);
+//		break;
+//	case TouchGrass::TYPE_TEST:
+//		t = owner->GetTileset("Env/bushtouch_1_02_128x128.png", 128, 128);
+//		break;
+//	}
+//	return t;
+//}
+
+
+Tileset *TouchGrassCollection::GetTileset(TilesetManager *tm,
 	TouchGrass::TouchGrassType gt)
 {
 	Tileset *t = NULL;
 	switch (gt)
 	{
 	case TouchGrass::TYPE_NORMAL:
-		t = owner->GetTileset("Env/bushtouch_1_01_64x64.png", 64, 64);
+		t = tm->GetTileset("Env/bushtouch_1_01_64x64.png", 64, 64);
 		break;
 	case TouchGrass::TYPE_TEST:
-		t = owner->GetTileset("Env/bushtouch_1_02_128x128.png", 128, 128);
+		t = tm->GetTileset("Env/bushtouch_1_02_128x128.png", 128, 128);
 		break;
 	}
 	return t;
@@ -109,6 +137,20 @@ int TouchGrass::GetQuadWidth(TouchGrassType gt)
 		break;
 	}
 	return width;
+}
+
+void TouchGrass::Move(V2d &move)
+{
+	hurtBody->Move(move);
+	center += move;
+
+	Vector2f fMove(move);
+	for (int i = 0; i < 4; ++i)
+	{
+		myQuad[i].position += fMove;
+	}
+
+	//points dont move because they are relatively spaced to the poly center
 }
 
 void TouchGrass::CommonInit( double yOff, double p_angle, double hitboxYOff, double hitboxXSize, double hitboxYSize)
@@ -139,9 +181,12 @@ void TouchGrass::CommonInit( double yOff, double p_angle, double hitboxYOff, dou
 
 	SetRectRotation(myQuad, angle, coll->ts_grass->tileWidth, 
 		coll->ts_grass->tileHeight, Vector2f(center));
+
+	V2d polyCenter = coll->myTerrain->GetDCenter();
+
 	for (int i = 0; i < 4; ++i)
 	{
-		points[i] = V2d(myQuad[i].position);
+		points[i] = V2d(myQuad[i].position) - polyCenter;
 	}
 
 	Reset();
@@ -163,6 +208,15 @@ bool TouchGrass::IsTouchingBox(const sf::Rect<double> &r)
 	V2d B(r.left + r.width, r.top);
 	V2d C(r.left + r.width, r.top + r.height);
 	V2d D(r.left, r.top + r.height);
+
+	V2d polyCenter = coll->myTerrain->GetDCenter();
+	A -= polyCenter;
+	B -= polyCenter;
+	C -= polyCenter;
+	D -= polyCenter;
+
+	//A -= coll->myTerrain->
+
 	bool touching = isQuadTouchingQuad(points[0], points[1], points[2], points[3],
 		A, B, C, D);
 

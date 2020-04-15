@@ -12,6 +12,8 @@
 #include "TerrainDecor.h"
 
 
+struct TouchGrassCollection;
+
 struct Session;
 
 struct ISelectable;
@@ -219,6 +221,17 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler
 
 	Session *sess;
 
+	//touchgrass
+
+	void QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r);
+	void UpdateTouchGrass();
+	void DrawTouchGrass(sf::RenderTarget *target);
+	void AddTouchGrass(int gt);
+	void DestroyTouchGrass();
+	void ResetTouchGrass();
+	std::list<TouchGrassCollection*> touchGrassCollections;
+
+
 	//trying to get decor working
 
 	static DecorType GetDecorType(const std::string &dStr);
@@ -414,6 +427,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler
 	void SetLayer(int p_layer);
 	bool IsInternallyValid();
 	sf::IntRect GetAABB();
+	V2d GetDCenter();
 
 	bool ContainsPoint(sf::Vector2f point);
 	bool Intersects(sf::IntRect rect);
