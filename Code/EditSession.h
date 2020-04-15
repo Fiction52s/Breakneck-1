@@ -818,9 +818,6 @@ struct EditSession : GUIHandler, Session
 	bool GetPrimaryAdjustment(sf::Vector2i &p0,
 		sf::Vector2i &p1, sf::Vector2i &adjust);
 	void PasteTerrain(Brush *b);
-	Action* ExecuteTerrainAdd(
-		std::list<PolyPtr> &intersectingPolys,
-		std::list<PolyPtr> &containedPolys);
 	bool ExecuteTerrainMultiAdd(
 		std::list<PolyPtr> &brushPolys,
 		Brush &orig,
@@ -829,10 +826,6 @@ struct EditSession : GUIHandler, Session
 		std::list<PolyPtr> &brushPolys,
 		Brush &orig,
 		Brush &result);
-	Action* ExecuteTerrainSubtract( std::list<PolyPtr> &intersectingPolys,
-		std::list<PolyPtr> &containedPolys );
-	Action *ChooseAddOrSub(std::list<PolyPtr> &intersectingPolys,
-		std::list<PolyPtr> &containedPolys );
 	
 	enum GateAdjustOption
 	{

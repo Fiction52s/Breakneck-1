@@ -5941,88 +5941,89 @@ void EditSession::GetIntersectingPolys(
 }
 
 bool EditSession::ExecuteTerrainCompletion()
-{
-	int numP = polygonInProgress->GetNumPoints();
-	if( numP > 2 )
+{	
+	if (!polygonInProgress->IsCompletionValid())
 	{
-		if (!polygonInProgress->IsCompletionValid())
+		return false;
+	}
+
+	polygonInProgress->SetMaterialType(currTerrainWorld,
+		currTerrainVar);
+
+	polygonInProgress->UpdateBounds();
+
+	bool applyOkay = true;
+
+	int liRes;
+
+	list<PolyPtr> intersectingPolys;
+	//list<PolyPtr> containedPolys;
+
+	bool tryMakeInverse = IsKeyPressed(Keyboard::LAlt);
+
+	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
+	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
+	{
+		if (!(*it)->inverse && (*it)->Contains(polygonInProgress))
 		{
-			return false;
+			applyOkay = false;
+			polygonInProgress->ClearPoints();
+			break;
 		}
 
-		polygonInProgress->SetMaterialType(currTerrainWorld,
-			currTerrainVar);
-		
-		
-		bool added = false;
-									
-		bool recursionDone = false;
-		PolyPtr currentBrush = polygonInProgress;
-
-		list<PolyPtr> intersectingPolys;
-		list<PolyPtr> containedPolys;
-
-		polygonInProgress->UpdateBounds();
-
-		
-
-		bool applyOkay = true;
-
-		int liRes;
-		auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
-		for(auto it = testPolygons.begin(); it != testPolygons.end(); ++it )
+		if (tryMakeInverse)
 		{
-			if ((*it)->Contains(polygonInProgress))
-			{
-				applyOkay = false;
-				polygonInProgress->ClearPoints();
-				break;
-			}
-
-			if (polygonInProgress->Contains((*it)))
-			{
-				containedPolys.push_back((*it));
-			}
-
 			liRes = polygonInProgress->LinesIntersect((*it));
-			if( liRes == 2 )
-			{
-				//not too close and I intersect, so I can add
-				intersectingPolys.push_back( (*it) );
-			}
-			else if (liRes == 1)
+			if (liRes > 0)
 			{
 				applyOkay = false;
-				polygonInProgress->ClearPoints();
 				break;
 			}
 		}
+	}
 
-		if( !applyOkay )
+	if (!applyOkay)
+	{
+		//MessagePop( "polygon is invalid!!! new message" );
+	}
+	else
+	{
+		if (tryMakeInverse)
 		{
-			//MessagePop( "polygon is invalid!!! new message" );
+			polygonInProgress->MakeInverse();
+			SetInversePoly();
 		}
 		else
 		{
-			
-			Action *action = ChooseAddOrSub(intersectingPolys, containedPolys);
+			Brush orig;
+			Brush result;
 
-			if (action != NULL)
+			list<PolyPtr> inProgress;
+			inProgress.push_back(polygonInProgress);
+
+			bool add = !(IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift));
+			if (add)
 			{
-				ClearUndoneActions();//need to get rid of chooseaddorsub
-
-				doneActionStack.push_back(action);
-				action->Perform();
-				
+				ExecuteTerrainMultiAdd(inProgress, orig, result);
 			}
-			return true;
+			else
+			{
+				ExecuteTerrainMultiSubtract(inProgress, orig, result);
+			}
+
+			if (!orig.IsEmpty() || !result.IsEmpty())
+			{
+				ClearUndoneActions(); //critical to have this before the deactivation
+
+				Action *replaceAction = new ReplaceBrushAction(&orig, &result, mapStartBrush);
+				replaceAction->Perform();
+
+				doneActionStack.push_back(replaceAction);
+
+				polygonInProgress->ClearPoints();
+			}
 		}
-	}
-	else if( numP <= 2 && numP > 0  )
-	{
-		cout << "cant finalize. cant make polygon" << endl;
-		polygonInProgress->ClearPoints();
-		return false;
+		return true;
 	}
 
 	return false;
@@ -6193,90 +6194,6 @@ void EditSession::GetShardWorldAndIndex(int selX, int selY,
 
 	w = world;
 	li = realX + realY * 11;
-}
-
-Action * EditSession::ChooseAddOrSub( list<PolyPtr> &intersectingPolys, list<PolyPtr> &containedPolys )
-{
-	bool add = !(IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift));
-	if (intersectingPolys.empty())
-	{
-		if (IsKeyPressed(Keyboard::LAlt))
-		{
-			//polygonInProgress->inverse = true;
-			polygonInProgress->MakeInverse();
-		}
-
-		if (polygonInProgress->inverse)
-		{
-			SetInversePoly();
-			return NULL;
-		}
-		else
-		{
-
-			Action * action = NULL;
-
-			Brush containedBrush;
-			for (auto it = containedPolys.begin(); it != containedPolys.end(); ++it)
-			{
-				containedBrush.AddObject((*it));
-			}
-
-			if (add)
-			{
-				polygonInProgress->FixWinding();
-				polygonInProgress->RemoveSlivers();
-				polygonInProgress->AlignExtremes();
-				polygonInProgress->Finalize();
-
-				progressBrush->Clear();
-				progressBrush->AddObject(polygonInProgress);
-
-				if (containedPolys.empty())
-				{
-					action = new ApplyBrushAction(progressBrush);
-				}
-				else
-				{
-					action = new ReplaceBrushAction(&containedBrush, progressBrush, mapStartBrush);
-				}
-
-				PolyPtr newPoly(new TerrainPolygon);
-				polygonInProgress = newPoly;
-			}
-			else
-			{
-				
-				if (containedPolys.empty())
-				{
-					//no intersections and no contained polys
-					action = NULL;
-					
-				}
-				else
-				{
-					//no intersections but has contained polys
-					action = new RemoveBrushAction(&containedBrush, mapStartBrush);
-				}
-
-				polygonInProgress->ClearPoints();
-			}
-			
-
-			return action;
-		}
-	}
-	else
-	{
-		if (add)
-		{
-			return ExecuteTerrainAdd(intersectingPolys, containedPolys);
-		}
-		else
-		{
-			return ExecuteTerrainSubtract(intersectingPolys, containedPolys );
-		}
-	}
 }
 
 void EditSession::PasteTerrain(Brush *b)
@@ -7371,313 +7288,6 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 	TryAttachActorsToPolys(inverseConnectedInters, attachList, &resultBrush);
 	TryKeepGates(gateInfoList, attachList, &resultBrush);
 	return true;
-}
-
-
-Action* EditSession::ExecuteTerrainAdd( list<PolyPtr> &intersectingPolys, list<PolyPtr> &containedPolys)
-{
-	Brush orig;
-	Brush resultBrush;
-
-	list<GateInfoPtr> gateInfoList;
-
-	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
-	AddFullPolysToBrush(intersectingPolys, gateInfoList, &orig);
-
-	bool inverse = false;
-	int otherSize = intersectingPolys.size();
-
-
-	for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
-	{
-		if ((*it)->inverse)
-		{
-			inverse = true;
-			break;
-		}
-	}
-
-	if (inverse)
-		otherSize--;
-
-	ClipperLib::Clipper c;
-
-	ClipperLib::Paths inProgress(1), other(otherSize), otherInverse(1), solution, inverseSolution;
-
-	polygonInProgress->CopyPointsToClipperPath(inProgress[0]);
-
-	PolyPtr outPoly(new TerrainPolygon());
-
-	ClipperLib::Path clipperIntersections;
-	//if I want to speed this up later, only care about these points when they are on the OUTSIDE of the target polys
-	//for add and on the INSIDE for subtract
-	polygonInProgress->CopyPointsToClipperPath(clipperIntersections);
-
-	ClipperIntPointSet fusedPoints;
-
-	if (otherSize > 0)
-	{
-		//setup intersected polys
-		int otherIndex = 0;
-		for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
-		{
-			if ((*it)->inverse)
-			{
-				continue;
-			}
-
-			(*it)->CopyPointsToClipperPath(other[otherIndex]);
-			++otherIndex;
-		}
-
-		//add
-		c.AddPaths(other, ClipperLib::PolyType::ptSubject, true);
-
-		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
-		c.Execute(ClipperLib::ClipType::ctUnion, solution);
-		
-		ClipperLib::Path &intersectPath = c.GetIntersectPath();
-		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
-		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
-
-		if (!inverse)
-		{
-			FusePathClusters(solution[0], clipperIntersections, fusedPoints);
-			outPoly->Reserve(solution[0].size());
-			outPoly->AddPointsFromClipperPath(solution[0], fusedPoints);// , clipperIntersections, newPoints);
-			//outPoly->RemoveClusters(newPoints);
-		}
-		else
-		{
-			inversePolygon->CopyPointsToClipperPath(otherInverse[0]);
-
-			c.Clear();
-
-			c.AddPaths(solution, ClipperLib::PolyType::ptClip, true);
-		}
-	}
-	else
-	{
-		inversePolygon->CopyPointsToClipperPath(otherInverse[0]);
-		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
-
-	}
-
-	//clip 
-	if (inverse)
-	{
-		c.AddPaths(otherInverse, ClipperLib::PolyType::ptSubject, true);
-
-		c.Execute(ClipperLib::ClipType::ctDifference, inverseSolution);
-
-		ClipperLib::Path &intersectPath = c.GetIntersectPath();
-
-		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
-		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
-
-		FusePathClusters(inverseSolution[0], clipperIntersections, fusedPoints);
-		outPoly->Reserve(inverseSolution[0].size());
-		outPoly->AddPointsFromClipperPath(inverseSolution[0], fusedPoints);
-	}
-
-	int tWorld, tVar;
-	if (intersectingPolys.size() == 1)
-	{
-		tWorld = intersectingPolys.front()->terrainWorldType;
-		tVar = intersectingPolys.front()->terrainVariation;
-	}
-	else
-	{
-		tWorld = currTerrainWorld;
-		tVar = currTerrainVar;
-	}
-	outPoly->SetMaterialType(tWorld, tVar);//poly->terrainWorldType,
-									   //poly->terrainVariation);
-	outPoly->RemoveSlivers();
-	outPoly->AlignExtremes();
-
-	outPoly->inverse = inverse;
-	outPoly->Finalize();
-
-	
-	resultBrush.AddObject(outPoly);
-
-	list<PolyPtr> attachList;
-	attachList.push_back(outPoly);
-
-	TryAttachActorsToPolys(intersectingPolys, attachList, &resultBrush);
-	TryKeepGates(gateInfoList, attachList, &resultBrush);
-
-	Action * action = new ReplaceBrushAction(&orig, &resultBrush, mapStartBrush);
-
-	polygonInProgress->ClearPoints();
-
-	return action;
-}
-
-Action* EditSession::ExecuteTerrainSubtract( list<PolyPtr> &intersectingPolys, list<PolyPtr> &containedPolys)
-{
-	bool inverse = false;
-	int otherSize = intersectingPolys.size();
-	for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
-	{
-		if ((*it)->inverse)
-		{
-			inverse = true;
-			break;
-		}
-	}
-
-	if (inverse)
-		otherSize--;
-
-	ClipperLib::Clipper c;
-	PolyPtr testOutPoly;
-
-	ClipperLib::Paths inProgress(1), other(otherSize), otherInverse(1), solution, inverseSolution;
-
-	polygonInProgress->CopyPointsToClipperPath(inProgress[0]);
-
-	Brush orig;
-	Brush resultBrush;
-
-	resultBrush.Clear();
-
-	list<PolyPtr> results;
-	list<PolyPtr> resultsPtr;
-
-	//add original stuff to the original brush
-	list<GateInfoPtr> gateInfoList;
-
-	ClipperLib::Path clipperIntersections;
-
-	ClipperIntPointSet fusedPoints;
-
-	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
-	AddFullPolysToBrush(intersectingPolys, gateInfoList, &orig);
-
-	if (otherSize > 0)
-	{
-		//setup intersected polys
-		ClipperLib::Path otherPath;
-		for (auto it = intersectingPolys.begin(); it != intersectingPolys.end(); ++it)
-		{
-			if ((*it)->inverse)
-			{
-				continue;
-			}
-
-			
-			c.Clear();
-			solution.clear();
-			otherPath.clear();
-
-			(*it)->CopyPointsToClipperPath(otherPath);
-			c.AddPath( otherPath, ClipperLib::PolyType::ptSubject, true);
-			c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
-			c.Execute(ClipperLib::ClipType::ctDifference, solution);
-
-			ClipperLib::Path &intersectPath = c.GetIntersectPath();
-
-			clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
-			clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
-
-			for (auto sit = solution.begin(); sit != solution.end(); ++sit)
-			{
-				PolyPtr newPoly = new TerrainPolygon();
-
-				FusePathClusters((*sit), clipperIntersections, fusedPoints);
-				newPoly->Reserve((*sit).size());
-				newPoly->AddPointsFromClipperPath((*sit), fusedPoints); 
-
-				//newPoly->AddPointsFromClipperPath((*sit), clipperIntersections, newPoints );
-				//newPoly->RemoveClusters(newPoints);
-				newPoly->SetMaterialType((*it)->terrainWorldType, (*it)->terrainVariation);
-				results.push_back(newPoly);
-			}
-		}		
-	}
-
-	//clip 
-	if (inverse)
-	{
-		c.Clear();
-		inversePolygon->CopyPointsToClipperPath(otherInverse[0]);
-
-		c.AddPaths(otherInverse, ClipperLib::PolyType::ptSubject, true);
-		c.AddPaths(inProgress, ClipperLib::PolyType::ptClip, true);
-
-		c.Execute(ClipperLib::ClipType::ctUnion, inverseSolution);
-
-		ClipperLib::Path &intersectPath = c.GetIntersectPath();
-
-		clipperIntersections.reserve(clipperIntersections.size() + intersectPath.size());
-		clipperIntersections.insert(clipperIntersections.end(), intersectPath.begin(), intersectPath.end());
-
-		for (auto it = inverseSolution.begin(); it != inverseSolution.end(); ++it)
-		{
-			PolyPtr newPoly = new TerrainPolygon();
-
-
-			FusePathClusters((*it), clipperIntersections, fusedPoints);
-			newPoly->Reserve((*it).size());
-			newPoly->AddPointsFromClipperPath((*it), fusedPoints);
-
-			//newPoly->AddPointsFromClipperPath((*it), clipperIntersections, newPoints);
-			//newPoly->RemoveClusters(newPoints);
-			newPoly->SetMaterialType(inversePolygon->terrainWorldType, 
-				inversePolygon->terrainVariation );
-
-			results.push_back(newPoly);
-		}
-
-		//figure out which polygon should be the new inverse polygon
-		bool isOuter;
-		for (auto it = results.begin(); it != results.end(); ++it)
-		{
-			isOuter = true;
-			for (auto it2 = results.begin(); it2 != results.end(); ++it2)
-			{
-				if ((*it) == (*it2))
-					continue;
-
-				if (!(*it)->Contains((*it2)))
-				{
-					isOuter = false;
-				}
-			}
-
-			if (isOuter)
-			{
-				(*it)->inverse = true;
-				break;
-			}
-		}
-	}
-
-	for (auto it = results.begin(); it != results.end(); ++it)
-	{
-		PolyPtr p((*it));
-		resultsPtr.push_back(p);
-		resultBrush.AddObject(p);
-	}
-
-	TryAttachActorsToPolys(intersectingPolys, resultsPtr, &resultBrush);
-	TryKeepGates(gateInfoList, resultsPtr, &resultBrush );
-
-	for (auto it = resultsPtr.begin(); it != resultsPtr.end(); ++it)
-	{
-		(*it)->RemoveSlivers();
-		(*it)->AlignExtremes();
-		(*it)->Finalize();
-	}
-
-
-	Action * action = new ReplaceBrushAction(&orig, &resultBrush, mapStartBrush);
-
-	polygonInProgress->ClearPoints();
-
-	return action;
 }
 
 bool EditSession::PointSelectTerrain(V2d &pos)
@@ -9022,11 +8632,19 @@ void EditSession::DrawGraph()
 
 void EditSession::DrawPolygons()
 {
+	if (inversePolygon != NULL)
+	{
+		inversePolygon->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
+	}
+
 	for (int i = 0; i < 2; ++i)
 	{
 		auto & currPolyList = GetCorrectPolygonList(i);
 		for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 		{
+			if ((*it)->inverse)
+				continue;
+
 			(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
 		}
 	}
