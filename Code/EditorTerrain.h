@@ -35,6 +35,7 @@ typedef std::set<std::pair<__int64,__int64>> ClipperIntPointSet;
 
 struct GrassSeg
 {
+	//CollisionBox explosion; this might have some use in gamesession
 	GrassSeg(int edgeI, int grassIndex, int rep)
 		:edgeIndex(edgeI), index(grassIndex),
 		reps(rep)
@@ -185,7 +186,8 @@ struct BorderSizeInfo
 	int startLen;
 };
 
-struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler
+struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
+	QuadTreeEntrant
 {
 	enum RenderMode
 	{
@@ -220,6 +222,9 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler
 	};
 
 	Session *sess;
+
+	void HandleQuery(QuadTreeCollider * qtc);
+	bool IsTouchingBox(const sf::Rect<double> &r);
 
 	//touchgrass
 

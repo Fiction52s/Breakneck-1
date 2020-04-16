@@ -125,7 +125,6 @@ struct EnvPlant;
 
 struct Barrier;
 
-
 namespace mapbox
 {
 	namespace util
@@ -187,6 +186,21 @@ struct KeyNumberObj
 
 struct GameSession : QuadTreeCollider, RayCastHandler, Session
 {
+	//maybe move this out eventually
+	struct DecorInfo
+	{
+		DecorInfo(sf::Sprite &sp,
+			int lay, Tileset *t, int p_tile)
+			:spr(sp), layer(lay), ts(t), tile(p_tile)
+		{
+
+		}
+		sf::Sprite spr;
+		int layer;
+		Tileset *ts;
+		int tile;
+	};
+
 	enum GameResultType
 	{
 		GR_WIN,
@@ -228,6 +242,21 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	};
 	
 
+	//new stuff from session
+
+	void ProcessHeader();
+	void ProcessDecorSpr(const std::string &name,
+		sf::Sprite &dSpr, int dLayer, Tileset *d_ts, int dTile);
+	void ProcessAllDecorSpr();
+	void ProcessPlayerStartPos();
+	void ProcessTerrain(PolyPtr poly);
+
+	PolyPtr inversePoly;
+	std::list<PolyPtr> allPolygonsList;
+	std::vector<PolyPtr> allPolysVec;
+	std::map<std::string, std::list<DecorInfo>> decorListMap;
+	//---------------------
+
 	GameSession(SaveFile *sf,
 		const boost::filesystem::path &p_filePath);
 	~GameSession();
@@ -247,17 +276,14 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	//needs to be adjusted
 	bool LoadEdges(std::ifstream &is,
 		std::map<int, int> &polyIndex);
-	bool LoadBGPlats(std::ifstream &is,
-		std::map<int, int> &polyIndex);
+	bool LoadBGPlats(std::ifstream &is );
 	bool LoadSpecialPolys(std::ifstream &is);
-	bool LoadGates(std::ifstream &is,
-		std::map<int, int> &polyIndex);
-	bool LoadEnemies(std::ifstream &is,
-		std::map<int, int> &polyIndex);
+	bool LoadGates(std::ifstream &is);
+	bool LoadEnemies(std::ifstream &is);
 	bool LoadRails(std::ifstream &is);
-	void LoadEnemy(std::ifstream &is,
-		std::map<int, int> &polyIndex);
+	void LoadEnemy(std::ifstream &is);
 	bool ReadActors(std::ifstream &is);
+	Edge *LoadEdgeIndex(std::ifstream &is);
 	bool OpenFile();
 
 	TilesetManager tm;
@@ -387,19 +413,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::list<DecorDraw*> decorBetween;
 	void DrawDecorBetween();
 
-	struct DecorInfo
-	{
-		DecorInfo(sf::Sprite &sp,
-			int lay, Tileset *t, int p_tile)
-			:spr(sp), layer(lay), ts(t), tile(p_tile)
-		{
-
-		}
-		sf::Sprite spr;
-		int layer;
-		Tileset *ts;
-		int tile;
-	};
+	
 
 	Minimap *mini;
 	void EnemiesCheckedMiniDraw(
@@ -617,8 +631,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::map<std::string, Barrier*> barrierMap;
 	std::list<Barrier*> barriers;
 	void TriggerBarrier( Barrier *b );
-
-	std::map<int, bool> visibleTerrain;
 	
 	std::list<Enemy*> fullEnemyList;
 	void AddEnemy( Enemy * e );
@@ -695,10 +707,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	
 	sf::Shader cloneShader; //actually time slow shader
-	Edge **edges;
-	Edge *GetEdge(int index);
+	//Edge **edges;
+	//Edge *GetEdge(int index);
 	std::list<Edge*> globalBorderEdges;
-	sf::Vector2<double> *points;
+	//sf::Vector2<double> *points;
 
 	void DrawGates();
 	int numGates;
@@ -741,11 +753,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void KeyboardUpdate( int index );
 	
 
-	MapHeader *mh;
-	
-
 	Collider coll;
-	std::list<sf::VertexArray*> polygons;
+	
+	//std::list<sf::VertexArray*> polygons;
 	std::list<sf::VertexArray*> polygonBorders;
 
 	sf::RenderTexture *lastFrameTex;
@@ -827,14 +837,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	
 	std::string queryMode;
 
-	TerrainPiece *inversePoly;
-	void SetupInversePoly( Tileset *ts_bush,
-		int currentEdgeIndex );
+
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
 	bool drawInversePoly;
 	QuadTree *borderTree;
 	Edge *inverseEdgeList;
-	std::list<TerrainPiece*> allVA;
 	int numBorders;
 
 	sf::Vector2f lastViewSize;
@@ -877,7 +884,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
 
-	sf::Vector2<double> originalPos;
+	//sf::Vector2<double> originalPos;
 	
 	sf::Rect<double> screenRect;
 	sf::Rect<double> tempSpawnRect;

@@ -285,11 +285,6 @@ void GameSession::Cleanup()
 		delete (*it).second;
 	}
 
-	for (auto it = allVA.begin(); it != allVA.end(); ++it)
-	{
-		delete (*it);
-	}
-
 	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
 		delete (*it);
@@ -324,11 +319,6 @@ void GameSession::Cleanup()
 	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
 	{
 		delete (*it);
-	}
-
-	if (points != NULL)
-	{
-		delete[] points;
 	}
 
 	for (auto it = allEffectList.begin(); it != allEffectList.end(); ++it)
@@ -573,29 +563,6 @@ void GameSession::Cleanup()
 		gates = NULL;
 	}
 
-	if (edges != NULL)
-	{
-		for (int i = 0; i < mh->numVertices; ++i)
-		{
-			delete edges[i];
-		}
-		delete [] edges;
-
-		edges = NULL;
-	}
-
-	/*for (list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it)
-	{
-		delete (*it);
-	}
-	polygons.clear();*/
-
-	if (mh != NULL)
-	{
-		delete mh;
-		mh = NULL;
-	}
-
 	if (activeItemTree != NULL)
 	{
 		delete activeItemTree;
@@ -655,6 +622,17 @@ bool GameSession::ReadActors(std::ifstream &is)
 {
 	//fill this in soon
 	return false;
+}
+
+Edge *GameSession::LoadEdgeIndex(std::ifstream &is)
+{
+	int terrainIndex;
+	is >> terrainIndex;
+
+	int edgeIndex;
+	is >> edgeIndex;
+
+	if( inversePoly !-= )
 }
 
 void GameSession::UpdateEnemiesPrePhysics()
@@ -1136,223 +1114,220 @@ bool GameSession::LoadSpecialPolys(std::ifstream &is)
 }
 
 
-bool GameSession::LoadBGPlats( ifstream &is, map<int, int> &polyIndex )
+bool GameSession::LoadBGPlats( ifstream &is)
 {
 	//this doesn't work right now because I need to get all the earcut code
 	//working together instead of pointlessly rewriting it
 	int bgPlatformNum0;
 	is >> bgPlatformNum0;
-	for( int i = 0; i < bgPlatformNum0; ++i )
-	{
-		//layer is 1
+	//for( int i = 0; i < bgPlatformNum0; ++i )
+	//{
+	//	//layer is 1
 
-		int matWorld;
-		int matVariation;
-		
-		is >> matWorld;
-		is >> matVariation;
+	//	int matWorld;
+	//	int matVariation;
+	//	
+	//	is >> matWorld;
+	//	is >> matVariation;
 
-		matSet.insert( pair<int,int>(matWorld,matVariation) );
+	//	matSet.insert( pair<int,int>(matWorld,matVariation) );
 
-		int polyPoints;
-		is >> polyPoints;
-		
-		list<Vector2i> poly;
-		for( int i = 0; i < polyPoints; ++i )
-		{
-			int x,y, special;
-			is >> x;
-			is >> y;
-			poly.push_back( Vector2i( x, y ) );
-		}
+	//	int polyPoints;
+	//	is >> polyPoints;
+	//	
+	//	list<Vector2i> poly;
+	//	for( int i = 0; i < polyPoints; ++i )
+	//	{
+	//		int x,y, special;
+	//		is >> x;
+	//		is >> y;
+	//		poly.push_back( Vector2i( x, y ) );
+	//	}
 
-		TerrainPiece * tPiece = new TerrainPiece( this );
+	//	TerrainPiece * tPiece = new TerrainPiece( this );
 
-		list<Vector2i>::iterator it = poly.begin();
-		list<Edge*> realEdges;
-		double left, right, top, bottom;
-		for( ; it != poly.end(); ++it )
-		{
-			Edge *ee = new Edge();
-			ee->poly = tPiece;
-  			//edges[currentEdgeIndex + i] = ee;
-			ee->v0 = V2d( (*it).x, (*it).y );
-			list<Vector2i>::iterator temp = it;
-			++temp;
-			if( temp == poly.end() )
-			{
-				ee->v1 = V2d( poly.front().x, poly.front().y );
-			}
-			else
-			{
-				ee->v1 = V2d( (*temp).x, (*temp).y );
-			}
-			
-			realEdges.push_back( ee );
-			terrainBGTree->Insert( ee );
+	//	list<Vector2i>::iterator it = poly.begin();
+	//	list<Edge*> realEdges;
+	//	double left, right, top, bottom;
+	//	for( ; it != poly.end(); ++it )
+	//	{
+	//		Edge *ee = new Edge();
+	//		ee->poly = tPiece;
+	//		ee->v0 = V2d( (*it).x, (*it).y );
+	//		list<Vector2i>::iterator temp = it;
+	//		++temp;
+	//		if( temp == poly.end() )
+	//		{
+	//			ee->v1 = V2d( poly.front().x, poly.front().y );
+	//		}
+	//		else
+	//		{
+	//			ee->v1 = V2d( (*temp).x, (*temp).y );
+	//		}
+	//		
+	//		realEdges.push_back( ee );
+	//		terrainBGTree->Insert( ee );
 
-			double localLeft = min( ee->v0.x, ee->v1.x );
-			double localRight = max( ee->v0.x, ee->v1.x );
-			double localTop = min( ee->v0.y, ee->v1.y );
-			double localBottom = max( ee->v0.y, ee->v1.y ); 
-			if( i == 0 )
-			{
-				left = localLeft;
-				right = localRight;
-				top = localTop;
-				bottom = localBottom;
-			}
-			else
-			{
-				left = min( left, localLeft );
-				right = max( right, localRight );
-				top = min( top, localTop);
-				bottom = max( bottom, localBottom);
-			}
-		}
-
-
-		for( list<Edge*>::iterator eit = realEdges.begin(); eit != realEdges.end(); ++eit )
-		{
-			Edge * ee = (*eit);//edges[i + currentEdgeIndex];
-
-			Edge *prev;
-			if( eit == realEdges.begin() )
-			{
-				prev = realEdges.back();
-			}
-			else
-			{
-				eit--;
-				prev = (*eit);
-				eit++;
-			}
-
-			Edge *next;
-			eit++;
-			if( eit == realEdges.end() )
-			{
-				next = realEdges.front();
-				eit--;
-			}
-			else
-			{
-				next = (*eit);
-				eit--;
-			}
-
-			ee->edge0 = prev;
-			ee->edge1 = next;
-		}
+	//		double localLeft = min( ee->v0.x, ee->v1.x );
+	//		double localRight = max( ee->v0.x, ee->v1.x );
+	//		double localTop = min( ee->v0.y, ee->v1.y );
+	//		double localBottom = max( ee->v0.y, ee->v1.y ); 
+	//		if( i == 0 )
+	//		{
+	//			left = localLeft;
+	//			right = localRight;
+	//			top = localTop;
+	//			bottom = localBottom;
+	//		}
+	//		else
+	//		{
+	//			left = min( left, localLeft );
+	//			right = max( right, localRight );
+	//			top = min( top, localTop);
+	//			bottom = max( bottom, localBottom);
+	//		}
+	//	}
 
 
-		//vector<p2t::Point*> polyline;
-		////for( int i = 0; i < polyPoints; ++i )
-		//for( list<Vector2i>::iterator pit = poly.begin(); pit != poly.end(); ++pit )
-		//{
-		//	polyline.push_back( new p2t::Point( (*pit).x, (*pit).y ) );
-		//}
+	//	for( list<Edge*>::iterator eit = realEdges.begin(); eit != realEdges.end(); ++eit )
+	//	{
+	//		Edge * ee = (*eit);//edges[i + currentEdgeIndex];
 
-		//p2t::CDT * cdt = new p2t::CDT( polyline );
-	
-		//cdt->Triangulate();
-		//vector<p2t::Triangle*> tris;
-		//tris = cdt->GetTriangles();
-		//	
-		//va = new VertexArray( sf::Triangles , tris.size() * 3 );
-		//VertexArray & v = *va;
-		//Color testColor( 0x75, 0x70, 0x90 );
-		//testColor = Color::White;
-		//Vector2f topLeft( left, top );
-		//cout << "topLeft: " << topLeft.x << ", " << topLeft.y << endl;
-		//for( int i = 0; i < tris.size(); ++i )
-		//{	
-		//	p2t::Point *p = tris[i]->GetPoint( 0 );	
-		//	p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-		//	p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-		//	v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
-		//	v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-		//	v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
+	//		Edge *prev;
+	//		if( eit == realEdges.begin() )
+	//		{
+	//			prev = realEdges.back();
+	//		}
+	//		else
+	//		{
+	//			eit--;
+	//			prev = (*eit);
+	//			eit++;
+	//		}
 
-		//	Vector2f pp0 = (v[i*3].position - topLeft);
-		//	Vector2f pp1 = (v[i*3+1].position - topLeft);
-		//	Vector2f pp2 = (v[i*3+2].position - topLeft);
-		//	if( i == 0 )
-		//	{
-		//		cout << "pos0: " << pp0.x << ", " << pp0.y << endl;
-		//		cout << "pos1: " << pp1.x << ", " << pp1.y << endl;
-		//		cout << "pos2: " << pp2.x << ", " << pp2.y << endl;
-		//	}
-		//	v[i*3].texCoords = pp0;
-		//	v[i*3+1].texCoords = pp1;
-		//	v[i*3+2].texCoords = pp2;
-		//}
+	//		Edge *next;
+	//		eit++;
+	//		if( eit == realEdges.end() )
+	//		{
+	//			next = realEdges.front();
+	//			eit--;
+	//		}
+	//		else
+	//		{
+	//			next = (*eit);
+	//			eit--;
+	//		}
 
-		//polygons.push_back( va );
+	//		ee->edge0 = prev;
+	//		ee->edge1 = next;
+	//	}
 
-		//VertexArray *polygonVA = va;
 
-		stringstream ss;
+	//	//vector<p2t::Point*> polyline;
+	//	////for( int i = 0; i < polyPoints; ++i )
+	//	//for( list<Vector2i>::iterator pit = poly.begin(); pit != poly.end(); ++pit )
+	//	//{
+	//	//	polyline.push_back( new p2t::Point( (*pit).x, (*pit).y ) );
+	//	//}
 
-		ss << "Borders/bor_" << matWorld + 1 << "_";
+	//	//p2t::CDT * cdt = new p2t::CDT( polyline );
+	//
+	//	//cdt->Triangulate();
+	//	//vector<p2t::Triangle*> tris;
+	//	//tris = cdt->GetTriangles();
+	//	//	
+	//	//va = new VertexArray( sf::Triangles , tris.size() * 3 );
+	//	//VertexArray & v = *va;
+	//	//Color testColor( 0x75, 0x70, 0x90 );
+	//	//testColor = Color::White;
+	//	//Vector2f topLeft( left, top );
+	//	//cout << "topLeft: " << topLeft.x << ", " << topLeft.y << endl;
+	//	//for( int i = 0; i < tris.size(); ++i )
+	//	//{	
+	//	//	p2t::Point *p = tris[i]->GetPoint( 0 );	
+	//	//	p2t::Point *p1 = tris[i]->GetPoint( 1 );	
+	//	//	p2t::Point *p2 = tris[i]->GetPoint( 2 );	
+	//	//	v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
+	//	//	v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
+	//	//	v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
 
-		if( matVariation < 10 )
-		{
-			ss << "0" << matVariation + 1;
-		}
-		else
-		{
-			ss << matVariation + 1;
-		}
+	//	//	Vector2f pp0 = (v[i*3].position - topLeft);
+	//	//	Vector2f pp1 = (v[i*3+1].position - topLeft);
+	//	//	Vector2f pp2 = (v[i*3+2].position - topLeft);
+	//	//	if( i == 0 )
+	//	//	{
+	//	//		cout << "pos0: " << pp0.x << ", " << pp0.y << endl;
+	//	//		cout << "pos1: " << pp1.x << ", " << pp1.y << endl;
+	//	//		cout << "pos2: " << pp2.x << ", " << pp2.y << endl;
+	//	//	}
+	//	//	v[i*3].texCoords = pp0;
+	//	//	v[i*3+1].texCoords = pp1;
+	//	//	v[i*3+2].texCoords = pp2;
+	//	//}
 
-		ss << ".png";
-		
-		Tileset *ts_border = GetTileset( ss.str(), 8, 64 );//128 );
-		VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
-			&GameSession::IsFlatGround );
-		VertexArray *slopeVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
-			&GameSession::IsSlopedGround );
-		VertexArray *steepVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
-			&GameSession::IsSteepGround );
-		VertexArray *wallVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
-			&GameSession::IsWall );
+	//	//polygons.push_back( va );
 
-		bool first = true;
+	//	//VertexArray *polygonVA = va;
 
-		
-		tPiece->next = NULL;
-		//testva->va = va;
-		tPiece->aabb.left = left;
-		tPiece->aabb.top = top;
-		tPiece->aabb.width = right - left;
-		tPiece->aabb.height = bottom - top;
-		//tPiece->terrainVA = polygonVA;
-		tPiece->grassVA = NULL;//grassVA;
+	//	stringstream ss;
 
-		tPiece->numPoints = polyPoints;
+	//	ss << "Borders/bor_" << matWorld + 1 << "_";
 
-		tPiece->ts_border = ts_border;
-		tPiece->groundva = groundVA;
-		tPiece->slopeva = slopeVA;
-		tPiece->steepva = steepVA;
-		tPiece->wallva = wallVA;
+	//	if( matVariation < 10 )
+	//	{
+	//		ss << "0" << matVariation + 1;
+	//	}
+	//	else
+	//	{
+	//		ss << matVariation + 1;
+	//	}
 
-		
-		borderTree->Insert(tPiece);
-		allVA.push_back(tPiece);
-		
-		//no grass for now
-	}
+	//	ss << ".png";
+	//	
+	//	Tileset *ts_border = GetTileset( ss.str(), 8, 64 );//128 );
+	//	VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
+	//		&GameSession::IsFlatGround );
+	//	VertexArray *slopeVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
+	//		&GameSession::IsSlopedGround );
+	//	VertexArray *steepVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
+	//		&GameSession::IsSteepGround );
+	//	VertexArray *wallVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
+	//		&GameSession::IsWall );
+
+	//	bool first = true;
+
+	//	
+	//	tPiece->next = NULL;
+	//	//testva->va = va;
+	//	tPiece->aabb.left = left;
+	//	tPiece->aabb.top = top;
+	//	tPiece->aabb.width = right - left;
+	//	tPiece->aabb.height = bottom - top;
+	//	//tPiece->terrainVA = polygonVA;
+	//	tPiece->grassVA = NULL;//grassVA;
+
+	//	tPiece->numPoints = polyPoints;
+
+	//	tPiece->ts_border = ts_border;
+	//	tPiece->groundva = groundVA;
+	//	tPiece->slopeva = slopeVA;
+	//	tPiece->steepva = steepVA;
+	//	tPiece->wallva = wallVA;
+
+	//	
+	//	borderTree->Insert(tPiece);
+	//	//allVA.push_back(tPiece);
+	//	
+	//	//no grass for now
+	//}
 
 	return true;
 }
 
-bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
+bool GameSession::LoadGates( ifstream &is )
 {
 	is >> numGates;
 	gates = new Gate*[numGates];
-
-	
 
 	for( int i = 0; i < numGates; ++i )
 	{
@@ -1366,8 +1341,14 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		is >> poly1Index;
 		is >> vertexIndex1;
 
-		Edge *edge0 = edges[polyIndex[poly0Index] + vertexIndex0];
-		Edge *edge1 = edges[polyIndex[poly1Index] + vertexIndex1];
+		if (inversePoly != NULL)
+		{
+			poly0Index++;
+			poly1Index++;
+		}
+
+		Edge *edge0 = allPolysVec[poly0Index]->GetEdge(vertexIndex0);//edges[polyIndex[poly0Index] + vertexIndex0];
+		Edge *edge1 = allPolysVec[poly1Index]->GetEdge(vertexIndex1);//edges[polyIndex[poly1Index] + vertexIndex1];
 
 		V2d point0 = edge0->v0;
 		V2d point1 = edge1->v0;
@@ -1384,18 +1365,15 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 			gate->SetShard(sw, si);
 		}
 
-		if (!visibleTerrain[poly0Index] || !visibleTerrain[poly1Index])
+		/*if (!visibleTerrain[poly0Index] || !visibleTerrain[poly1Index])
 		{
 			gate->visible = false;
-		}
+		}*/
 
 		gate->temp0prev = edge0->edge0;
 		gate->temp0next = edge0;
 		gate->temp1prev = edge1->edge0;
 		gate->temp1next = edge1;
-
-			
-		
 
 		gate->edgeA = new Edge;
 		gate->edgeA->edgeType = Edge::CLOSED_GATE;
@@ -1403,8 +1381,6 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		gate->edgeB = new Edge;
 		gate->edgeB->edgeType = Edge::CLOSED_GATE;
 		gate->edgeB->info = gate;
-
-		
 
 		gate->edgeA->v0 = point0;
 		gate->edgeA->v1 = point1;
@@ -1417,10 +1393,6 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 
 		gate->CalcAABB();
 
-		//gate->v0 = point0;
-		//gate->v1 = point1;
-			
-			
 		gates[i] = gate;
 
 		gate->SetLocked( true );
@@ -1434,9 +1406,6 @@ bool GameSession::LoadGates( ifstream &is, map<int, int> &polyIndex )
 		gateTree->Insert( gate );
 
 		gate->Reset();
-
-		//gateMap[gate->edgeA] = gate;
-		//gateMap[gate->edgeB] = gate;
 	}
 
 	return true;
@@ -1493,7 +1462,7 @@ bool GameSession::LoadRails(ifstream &is)
 	return true;
 }
 
-bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
+bool GameSession::LoadEnemies( ifstream &is )
 {
 	totalNumberBullets = 0;
 	int shardsLoadedCounter = 0;
@@ -1513,7 +1482,7 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 
 		for( int j = 0; j < numActors; ++j )
 		{
-			LoadEnemy(is, polyIndex);
+			LoadEnemy(is);
 		}
 	}
 
@@ -1566,1938 +1535,2008 @@ bool GameSession::LoadEnemies( ifstream &is, map<int, int> &polyIndex )
 	return true;
 }
 
-void GameSession::LoadEnemy(std::ifstream &is,
-	map<int, int>&polyIndex)
+void GameSession::LoadEnemy(std::ifstream &is )
 {
+	string typeName;
+	is >> typeName;
+
+	Enemy *enem = NULL;
+
+	if (typeName == "goal" || typeName == "greengoal")
 	{
-		string typeName;
-		is >> typeName;
+		//always grounded
 
-		Enemy *enem = NULL;
+		int terrainIndex;
+		is >> terrainIndex;
 
-		if (typeName == "goal" || typeName == "greengoal")
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int w = 0;
+		if (typeName == "greengoal")
 		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int w = 0;
-			if (typeName == "greengoal")
-			{
-				w = 1;
-			}
-
-			//cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
-			Goal *enemy = new Goal(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, w);
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-
-			hasGoal = true;
-			goalPos = enemy->position;
-
-			V2d gPos = enemy->ground->GetPoint(enemy->edgeQuantity);
-			V2d norm = enemy->ground->Normal();
-			double nodeHeight = 104;
-			goalNodePos = gPos + norm * nodeHeight;
-			float space = 78.f;
-			goalNodePosFinal = V2d(goalNodePos.x, goalNodePos.y - space);
-			cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
+			w = 1;
 		}
-		else if (typeName == "poi")
+
+		//cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
+		Goal *enemy = new Goal(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, w);
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+
+		hasGoal = true;
+		goalPos = enemy->position;
+
+		V2d gPos = enemy->ground->GetPoint(enemy->edgeQuantity);
+		V2d norm = enemy->ground->Normal();
+		double nodeHeight = 104;
+		goalNodePos = gPos + norm * nodeHeight;
+		float space = 78.f;
+		goalNodePosFinal = V2d(goalNodePos.x, goalNodePos.y - space);
+		cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
+	}
+	else if (typeName == "poi")
+	{
+		string air;
+		string pname;
+		PoiInfo *pi = NULL;
+
+		int posType;
+		is >> posType;
+
+		if (posType == 0)
 		{
-			string air;
-			string pname;
-			PoiInfo *pi = NULL;
-
-			int posType;
-			is >> posType;
-
-			if (posType == 0)
-			{
-				Vector2i pos;
-				is >> pos.x;
-				is >> pos.y;
-
-
-				is >> pname;
-
-				pi = new PoiInfo(pname, pos);
-			}
-
-			else if (posType == 1)
-			{
-				int terrainIndex;
-				is >> terrainIndex;
-
-				int edgeIndex;
-				is >> edgeIndex;
-
-				double edgeQuantity;
-				is >> edgeQuantity;
-
-				is >> pname;
-
-				Edge *e = edges[polyIndex[terrainIndex] + edgeIndex];
-
-				V2d p = e->GetPoint(edgeQuantity);
-
-				pi = new PoiInfo(pname, e,
-					edgeQuantity);				
-			}
-			else
-			{
-				cout << "air failure: " << air << endl;
-				assert(0);
-			}
-
-			poiMap[pname] = pi;
-		}
-		else if (typeName == "xbarrier")
-		{
-			string pname;
-
 			Vector2i pos;
 			is >> pos.x;
 			is >> pos.y;
+
 
 			is >> pname;
 
-			int hEdge;
-			is >> hEdge;
-			bool hEdgeB = hEdge;
-
-			Barrier *b = new Barrier(this, pname, true, pos.x, hEdgeB, NULL);
-
-			barrierMap[pname] = b;
-			barriers.push_back(b);
+			pi = new PoiInfo(pname, pos);
 		}
-		else if (typeName == "extrascene")
-		{
-			string pname;
 
-			Vector2i pos;
-			is >> pos.x;
-			is >> pos.y;
+		else if (posType == 1)
+		{
+			int terrainIndex;
+			is >> terrainIndex;
+
+			int edgeIndex;
+			is >> edgeIndex;
+
+			double edgeQuantity;
+			is >> edgeQuantity;
 
 			is >> pname;
 
-			int extraSceneType;
-			is >> extraSceneType;
+			Edge *e = edges[polyIndex[terrainIndex] + edgeIndex];
 
-			BasicBossScene *scene = BasicBossScene::CreateScene(this, pname);
-			if (extraSceneType == 0)//prelevel
-			{
-				preLevelScene = scene;
-			}
-			else if (extraSceneType == 1)//postlevel
-			{
-				postLevelScene = scene;
-			}
+			V2d p = e->GetPoint(edgeQuantity);
 
-			//BirdVSTigerScene *scene = new BirdVSTigerScene(this);
-			//scene->Init();
-			//SetActiveSequence(scene);
-		}
-
-
-		
-		else if (typeName == "camerashot")
-		{
-			Vector2i pos;
-			is >> pos.x;
-			is >> pos.y;
-
-			string pname;
-			is >> pname;
-
-			float z;
-			is >> z;
-
-			CameraShot *shot = new CameraShot(pname, Vector2f(pos), z);
-			if (cameraShotMap.count(pname) > 0 )
-			{
-				assert(false);
-			}
-
-			cameraShotMap[pname] = shot;
-		}
-		else if (typeName == "shard")
-		{
-			int xPos, yPos;
-
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-
-			int w;
-			is >> w;
-
-			int localIndex;
-			is >> localIndex;
-			//string shardStr;
-			//is >> shardStr;
-
-			Shard *enemy = new Shard(this, Vector2i(xPos, yPos), w, localIndex);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "ship")
-		{
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			shipEntrancePos = V2d(xPos, yPos);
-			hasShipEntrance = true;
-
-			ResetShipSequence();
-		}
-		else if (typeName == "healthfly")
-		{
-			int xPos, yPos;
-
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-
-			int level;
-			is >> level;
-
-			HealthFly *enemy = new HealthFly(this, Vector2i(xPos, yPos), level, numTotalFlies);
-
-			allFlies.push_back(enemy);
-			numTotalFlies++;
-			activeItemTree->Insert(enemy);
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "blocker" || typeName == "greenblocker")
-		{
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int pathLength;
-			list<Vector2i> localPath;
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			int bType;
-			is >> bType;
-
-			if (typeName == "blocker")
-			{
-				bType = BlockerChain::BLUE;
-			}
-			else if (typeName == "greenblocker")
-			{
-				bType = BlockerChain::GREEN;
-			}
-
-			int armored;
-			is >> armored;
-
-			int spacing;
-			is >> spacing;
-
-			int level;
-			is >> level;
-
-			BlockerChain *enemy = new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing, level);
-
-			fullEnemyList.push_back(enemy);
-
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "comboer")
-		{
-
-			int xPos, yPos;
-
-			//always air
-			is >> xPos;
-			is >> yPos;
-
-			int pathLength;
-			list<Vector2i> localPath;
-
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			bool loop;
-			Enemy::ReadBool(is, loop);
-
-			int level;
-			is >> level;
-
-			Comboer *enemy = new Comboer(this, Vector2i(xPos, yPos), localPath, loop, level);
-
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "splitcomboer")
-		{
-
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			int pathLength;
-			list<Vector2i> localPath;
-
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			bool loop;
-			Enemy::ReadBool(is, loop);
-
-			int level;
-			is >> level;
-
-			SplitComboer *enemy = new SplitComboer(this, Vector2i(xPos, yPos), localPath, loop, level);
-
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "booster")
-		{
-			int xPos, yPos;
-
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-
-			int level;
-			is >> level;
-
-			Booster *enemy = new Booster(this, Vector2i(xPos, yPos), level);
-			//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
-
-			activeItemTree->Insert(enemy);
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "key")
-		{
-			int xPos, yPos;
-			is >> xPos;
-			is >> yPos;
-
-			int numKeys;
-			is >> numKeys;
-
-			int zType;
-			is >> zType;
-
-			keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
-		}
-		else if (typeName == "spring" || typeName == "gravityspring" || typeName == "bouncespring" 
-			|| typeName == "airbouncespring" )//|| typeName == "teleportspring" )
-		{
-			int xPos, yPos;
-
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-
-			int speed = 0;
-			//if (typeName == "spring" || typeName == "gravityspring" || ty)
-			{
-				is >> speed;
-			}
-
-
-			Vector2i other;
-			is >> other.x;
-			is >> other.y;
-
-			Spring::SpringType sp;
-			if (typeName == "spring")
-			{
-				sp = Spring::BLUE;
-			}
-			else if (typeName == "gravityspring")
-			{
-				sp = Spring::GREEN;
-			}
-			else if (typeName == "bouncespring")
-			{
-				sp = Spring::BOUNCE;
-			}
-			else if (typeName == "airbouncespring")
-			{
-				sp = Spring::AIRBOUNCE;
-			}
-			else if (typeName == "teleportspring")
-			{
-				sp = Spring::TELEPORT;
-			}
-			//CurveLauncher * enemy = new CurveLauncher(this, Vector2i(xPos, yPos), other, moveFrames);
-			Spring *enemy = new Spring(this, sp, Vector2i(xPos, yPos), other, speed);
-
-			activeItemTree->Insert(enemy);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "teleporter" || typeName == "onewayteleporter")
-		{
-			int xPos, yPos;
-
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-
-
-			Vector2i other;
-			is >> other.x;
-			is >> other.y;
-
-			bool bothWays = true;
-			if (typeName == "onewayteleporter")
-			{
-				bothWays = false;
-			}
-
-			Teleporter *enemy = new Teleporter(this, Vector2i(xPos, yPos), other, bothWays);
-
-			activeItemTree->Insert(enemy);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-
-			Teleporter *secondary = enemy->CreateSecondary();
-
-			activeItemTree->Insert(secondary);
-
-			fullEnemyList.push_back(secondary);
-			//enem = enemy;
-
-			enemyTree->Insert(secondary);
-
-
-		}
-		else if (typeName == "upbouncebooster" || typeName == "omnibouncebooster")
-		{
-			int xPos, yPos;
-			
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-			
-			int level;
-			is >> level;
-
-			bool upOnly = false;
-			if (typeName == "upbouncebooster")
-			{
-				upOnly = true;
-			}
-
-
-			BounceBooster *enemy = new BounceBooster(this, Vector2i(xPos, yPos), upOnly, level);
-
-			activeItemTree->Insert(enemy);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "rail" || typeName == "grindrail" )
-		{
-			
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int pathLength;
-			list<Vector2i> localPath;
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			int accelerate;
-			is >> accelerate;
-
-			int level;
-			is >> level;
-
-			bool requirePower = false;
-			if (typeName == "grindrail")
-			{
-				requirePower = true;
-			}
-
-			//Rail *r = new Rail(this, Vector2i(xPos, yPos), localPath, requirePower, accelerate, level );
-
-			//++totalRails;
-		}
-		//w1
-		else if (typeName == "patroller")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int pathLength;
-			list<Vector2i> localPath;
-
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			bool loop;
-			Enemy::ReadBool(is, loop);
-
-			int level;
-			is >> level;
-			Patroller *enemy = new Patroller(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "bosscrawler")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			CrawlerQueen *enemy = new CrawlerQueen(this, edges[polyIndex[terrainIndex] + edgeIndex],
-				edgeQuantity, false);
-
-			fullEnemyList.push_back(enemy);
-
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-			/*Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
-			edgeQuantity );
-
-			fullEnemyList.push_back( enemy );
-
-			b_crawler = enemy;*/
-		}
-		else if (typeName == "basicturret")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-			/*double bulletSpeed;
-			is >> bulletSpeed;
-
-			int framesWait;
-			is >> framesWait;*/
-
-			BasicTurret *enemy = new BasicTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,level);
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "crawler")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-			Crawler *enemy = new Crawler(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-				edgeQuantity, level);
-			//RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-			//	edgeQuantity);
-
-
-			/*if( enemy->hasMonitor )
-			cout << "crawler with monitor!" << endl;
-			else
-			cout << "no monitor here" << endl;*/
-
-			//enemyTree = Insert( enemyTree, enemy );
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "shroom")
-		{
-			//cout << "loading foottrap" << endl;
-			//always grounded
-
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			//FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-			Shroom *enemy = new Shroom(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
-			//Cactus *enemy = new Cactus( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "airdasher")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-
-			Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos), level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-
-		//w2
-		else if (typeName == "bat")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-
-			int pathLength;
-			list<Vector2i> localPath;
-
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			bool loop;
-			Enemy::ReadBool(is, loop);
-
-			int level;
-			is >> level;
-
-
-
-			Bat *enemy = new Bat(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "airdashjuggler")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-
-			int pathLength;
-			list<Vector2i> localPath;
-
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			int level;
-			is >> level;
-
-			
-
-			AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath, level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler" || typeName == "bouncejuggler" 
-			|| typeName == "wirejuggler" )
-		{
-
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int pathLength;
-			list<Vector2i> localPath;
-
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			int level;
-			is >> level;
-
-			int numJuggles;
-			is >> numJuggles;
-
-
-			Enemy *enemy;
-			if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler")
-			{
-				bool reversed = false;
-				if (typeName == "upgravityjuggler")
-				{
-					reversed = true;
-				}
-
-				enemy = new GravityJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-					level, numJuggles, reversed);
-			}
-			else if (typeName == "bouncejuggler")
-			{
-				enemy = new BounceJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-					level, numJuggles);
-			}
-			else if (typeName == "wirejuggler")
-			{
-				enemy = new WireJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-					level, numJuggles, WireJuggler::T_BLUE);
-			}
-			
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "grindjugglercw" || typeName == "grindjugglerccw" )
-		{
-
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			int numJuggles;
-			is >> numJuggles;
-
-			bool cw = true;
-			if (typeName == "grindjugglerccw")
-			{
-				cw = false;
-			}
-
-			Enemy *enemy = new GrindJuggler(this, hasMonitor, Vector2i(xPos, yPos),
-				level, numJuggles, cw);
-
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "groundedgrindjugglercw" || typeName == "groundedgrindjugglerccw")
-		{
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			int numJuggles;
-			is >> numJuggles;
-
-			bool cw = true;
-			if (typeName == "groundedgrindjugglerccw")
-			{
-				cw = false;
-			}
-
-			Enemy *enemy = new GroundedGrindJuggler(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-				edgeQuantity, level, numJuggles, cw);
-
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "jugglercatcher")
-		{
-			int xPos, yPos;
-
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			JugglerCatcher *enemy = new JugglerCatcher(this, hasMonitor, Vector2i(xPos, yPos), level);
-			//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
-
-			activeEnemyItemTree->Insert(enemy);
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "poisonfrog")
-		{
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-			/*int gravFactor;
-			is >> gravFactor;
-
-			int jumpStrengthX;
-			is >> jumpStrengthX;
-
-			int jumpStrengthY;
-			is >> jumpStrengthY;
-
-			int jumpFramesWait;
-			is >> jumpFramesWait;*/
-
-			PoisonFrog *enemy = new PoisonFrog(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-				edgeQuantity, level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "gravityfaller")
-		{
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			GravityFaller *enemy = new GravityFaller(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-				edgeQuantity, level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "stagbeetle")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-
-			StagBeetle *enemy = new StagBeetle(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
-				edgeQuantity, level );
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "curveturret")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			/*double bulletSpeed;
-			is >> bulletSpeed;
-
-			int framesWait;
-			is >> framesWait;
-
-			int xGravFactor;
-			is >> xGravFactor;
-
-			int yGravFactor;
-			is >> yGravFactor;
-
-			bool relative = false;
-			string relativeGravStr;
-			is >> relativeGravStr;
-			if (relativeGravStr == "+relative")
-			{
-				relative = true;
-			}*/
-
-			int level;
-			is >> level;
-
-			CurveTurret *enemy = new CurveTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "gravityincreaser" || typeName == "gravitydecreaser" )
-		{
-			bool increaser = (typeName == "gravityincreaser");
-
-			int xPos, yPos;
-
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-
-			int level;
-			is >> level;
-
-			GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), level, increaser);
-
-			activeItemTree->Insert(enemy);
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-
-		else if (typeName == "bossbird")
-		{
-
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			BirdBoss *enemy = new BirdBoss(this, Vector2i(xPos, yPos));
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-
-		//w3
-		else if (typeName == "pulser")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-
-			int pathLength;
-			list<Vector2i> localPath;
-
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			bool loop;
-			Enemy::ReadBool(is, loop);
-
-			int level;
-			is >> level;
-			//int framesBetweenNodes;
-			//is >> framesBetweenNodes;
-
-			Pulser *enemy = new Pulser(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-				loop, level );
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "cactus")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			/*int bulletSpeed;
-			is >> bulletSpeed;
-
-			int rhythm;
-			is >> rhythm;
-
-			int amplitude;
-			is >> amplitude;*/
-
-			int level;
-			is >> level;
-
-			Cactus *enemy = new Cactus(this, hasMonitor,
-				edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level );
-
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "owl")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			//int moveSpeed;
-			//is >> moveSpeed;
-
-			//int bulletSpeed;
-			//is >> bulletSpeed;
-
-			//int rhythmFrames;
-			//is >> rhythmFrames;
-
-			int level;
-			is >> level;
-
-			Owl *enemy = new Owl(this, hasMonitor, Vector2i(xPos, yPos), level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "badger")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			Badger *enemy = new Badger(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "roadrunner")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "bouncefloater")
-		{
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int level;
-			is >> level;
-
-			//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-			//AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
-			BounceFloater *enemy = new BounceFloater(this, Vector2i(xPos, yPos), level);
-
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "bosscoyote")
-		{
-			//always grounded
-
-			Vector2i pos;
-
-			is >> pos.x;
-			is >> pos.y;
-
-			/*Boss_Coyote *enemy = new Boss_Coyote( this, pos );
-			b_coyote = enemy;
-
-			fullEnemyList.push_back( enemy );*/
-		}
-
-		//w4
-		else if (typeName == "turtle")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			//Vector2i delta(1000, -1000);
-			Vector2i pos(xPos, yPos);
-			Turtle *enemy = new Turtle(this, hasMonitor, Vector2i(xPos, yPos), level);
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "coral")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int moveFrames;
-			is >> moveFrames;
-
-			/*SecurityWeb * enemy = new SecurityWeb( this,
-			hasMonitor, Vector2i( xPos, yPos ), 8, 0, 10 );
-
-
-			fullEnemyList.push_back( enemy );
-			enem = enemy;
-
-			enemyTree->Insert( enemy );*/
-		}
-		else if (typeName == "cheetah")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			Cheetah *enemy = new Cheetah( this, hasMonitor,
-			edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level );
-
-			fullEnemyList.push_back( enemy );
-			enem = enemy;
-
-			enemyTree->Insert( enemy );
-		}
-		else if (typeName == "spider")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			Spider *enemy = new Spider(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-				level);
-
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "bosstiger")
-		{
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			/*Boss_Tiger *enemy = new Boss_Tiger( this, Vector2i ( xPos, yPos ) );
-
-			fullEnemyList.push_back( enemy );
-
-			b_tiger = enemy;
-
-			enemyTree->Insert( enemy );*/
-		}
-
-		//w5
-		else if (typeName == "hungrycomboer" || typeName == "hungryreturncomboer" )
-		{
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			int numJuggles;
-			is >> numJuggles;
-
-			
-			bool returnsToPlayer = false;
-			if (typeName == "hungryreturncomboer")
-			{
-				returnsToPlayer = true;
-			}
-			
-			HungryComboer *enemy = new HungryComboer(this, hasMonitor, Vector2i(xPos, yPos), level, numJuggles,
-				returnsToPlayer );
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "relativecomboer" || typeName == "relativecomboerdetach")
-		{
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int pathLength;
-			list<Vector2i> localPath;
-
-			Enemy::ReadPath(is, pathLength, localPath);
-
-			int level;
-			is >> level;
-
-			int numJuggles;
-			is >> numJuggles;
-
-			bool detachOnKill = false;
-			if (typeName == "relativecomboerdetach")
-			{
-				detachOnKill = true;
-			}
-
-			RelativeComboer *enemy = new RelativeComboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, level, numJuggles,
-				detachOnKill);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "swarm")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), hasMonitor, level );
-			fullEnemyList.push_back( enemy );
-			enem = enemy;
-
-			enemyTree->Insert( enemy );
-		}
-		else if (typeName == "shark")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), level );
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert( enemy );
-		}
-		else if (typeName == "ghost")
-		{
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), level );
-
-			fullEnemyList.push_back( enemy );
-			enem = enemy;
-
-			enemyTree->Insert( enemy );
-		}
-		else if (typeName == "overgrowth")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			//GrowingTree * enemy = new GrowingTree( this, hasMonitor,
-			//	edges[polyIndex[terrainIndex] + edgeIndex], 
-			//	edgeQuantity, 32, 0, 1000 );
-
-			//
-			//fullEnemyList.push_back( enemy );
-			//enem = enemy;
-
-			//enemyTree->Insert( enemy );
-		}
-		else if (typeName == "growingtree")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			GrowingTree * enemy = new GrowingTree(this, hasMonitor,
-				edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
-
-			//
-			fullEnemyList.push_back( enemy );
-			enem = enemy;
-
-			enemyTree->Insert( enemy );
-		}
-		else if (typeName == "bossgator")
-		{
-
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			/*Boss_Gator *enemy = new Boss_Gator( this, Vector2i ( xPos, yPos ) );
-
-			fullEnemyList.push_back( enemy );
-
-			b_gator = enemy;
-
-			enemyTree->Insert( enemy );*/
-		}
-
-		//w6
-		else if (typeName == "specter")
-		{
-
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ), level );
-			fullEnemyList.push_back( enemy );
-			//enem = enemy;
-
-			enemyTree->Insert( enemy );
-		}
-		else if (typeName == "swinglaunchercw" || typeName == "swinglauncherccw")
-		{
-			int xPos, yPos;
-
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-
-			int speed = 0;
-			is >> speed;
-
-			Vector2i other;
-			is >> other.x;
-			is >> other.y;
-
-			bool cw = true;
-			if (typeName == "swinglauncherccw")
-			{
-				cw = false;
-			}
-
-			SwingLauncher *enemy = new SwingLauncher(this, Vector2i(xPos, yPos), other, speed, cw);
-
-			activeItemTree->Insert(enemy);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "narwhal")
-		{
-
-			int xPos, yPos;
-
-			//always air
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			Vector2i dest;
-			is >> dest.x;
-			is >> dest.y;
-
-			int moveFrames;
-			is >> moveFrames;
-
-
-			/*Jay *enemy = new Jay( this, hasMonitor, Vector2i( xPos, yPos ), dest );
-			fullEnemyList.push_back( enemy );
-			enem = enemy;
-
-			enemyTree->Insert( enemy );*/
-		}
-		else if (typeName == "copycat")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			/*Copycat *enemy = new Copycat( this, hasMonitor, Vector2i( xPos, yPos ) );
-
-
-			fullEnemyList.push_back( enemy );
-			enem = enemy;
-
-			enemyTree->Insert( enemy );*/
-		}
-		else if (typeName == "gorilla")
-		{
-
-			int xPos, yPos;
-
-			//always air
-
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			//int wallWidth;
-			//is >> wallWidth;
-
-			//int followFrames;
-			//is >> followFrames;
-
-			int level;
-			is >> level;
-
-
-			Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ), level );
-
-			fullEnemyList.push_back( enemy );
-			enem = enemy;
-
-			enemyTree->Insert( enemy );
-		}
-		else if (typeName == "wiretarget")
-		{
-
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			int hasMonitor;
-			is >> hasMonitor;
-
-			int level;
-			is >> level;
-
-			WireTarget *enemy = new WireTarget(this, hasMonitor, Vector2i(xPos, yPos), level);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "bossskeleton")
-		{
-			int xPos, yPos;
-
-			is >> xPos;
-			is >> yPos;
-
-			/*Boss_Skeleton *enemy = new Boss_Skeleton( this, Vector2i ( xPos, yPos ) );
-
-			fullEnemyList.push_back( enemy );
-
-			b_skeleton = enemy;*/
-		}
-
-
-		else if (typeName == "nexus")
-		{
-			//always grounded
-
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int nexusIndex;
-			is >> nexusIndex;
-
-			Nexus *enemy = new Nexus(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
-
-			goalNodePos = enemy->GetKillPos();
-			float space = 78.f;
-			V2d end(goalNodePos.x, goalNodePos.y - space);
-			hasGoal = true;
-			nexus = enemy;
-			//nexusPos = enemy->GetKillPos();//enemy->position;
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "shippickup")
-		{
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int facingRight;
-			is >> facingRight;
-
-			ShipPickup *enemy = new ShipPickup(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-				facingRight);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-
-
-			if (shipExitScene == NULL )
-			{
-				shipExitScene = new ShipExitScene(this);
-				shipExitScene->Init();
-			}
-			/*if (shipExitSeq == NULL)
-			{
-				shipExitSeq = new ShipExitSeq(this);
-			}*/
-		}
-		else if (typeName == "groundtrigger")
-		{
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			int facingRight;
-			is >> facingRight;
-
-			string tType;
-			is >> tType;
-
-			GroundTrigger *enemy = new GroundTrigger(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
-				facingRight, tType);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		else if (typeName == "airtrigger")
-		{
-			Vector2i pos;
-
-			//always air
-			is >> pos.x;
-			is >> pos.y;
-
-			string typeStr;
-			is >> typeStr;
-
-			int rectWidth;
-			is >> rectWidth;
-
-			int rectHeight;
-			is >> rectHeight;
-			//int hasMonitor;
-			//is >> hasMonitor;
-			AirTrigger *at = new AirTrigger(this, V2d(pos), rectWidth, rectHeight, typeStr);
-			airTriggerTree->Insert(at);
-			fullAirTriggerList.push_back(at);
-		}
-		else if (typeName == "flowerpod")
-		{
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
-
-			string tType;
-			is >> tType;
-
-			FlowerPod *enemy = new FlowerPod(this, tType,
-				edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
-
-			fullEnemyList.push_back(enemy);
-			enem = enemy;
-
-			enemyTree->Insert(enemy);
-		}
-		//w6
-		else if (typeName == "racefighttarget")
-		{
-			int xPos, yPos;
-
-			//always air
-
-			is >> xPos;
-			is >> yPos;
-
-			if (raceFight != NULL)
-			{
-				raceFight->numTargets++;
-
-				/*RaceFightTarget *enemy = new RaceFightTarget(this, Vector2i(xPos, yPos));
-
-				fullEnemyList.push_back(enemy);
-				enem = enemy;
-
-				enemyTree->Insert(enemy);*/
-			}
-			else
-			{
-				//ignore
-			}
+			pi = new PoiInfo(pname, e,
+				edgeQuantity);				
 		}
 		else
 		{
-			assert(false && "not a valid type name: ");
+			cout << "air failure: " << air << endl;
+			assert(0);
 		}
+
+		poiMap[pname] = pi;
+	}
+	else if (typeName == "xbarrier")
+	{
+		string pname;
+
+		Vector2i pos;
+		is >> pos.x;
+		is >> pos.y;
+
+		is >> pname;
+
+		int hEdge;
+		is >> hEdge;
+		bool hEdgeB = hEdge;
+
+		Barrier *b = new Barrier(this, pname, true, pos.x, hEdgeB, NULL);
+
+		barrierMap[pname] = b;
+		barriers.push_back(b);
+	}
+	else if (typeName == "extrascene")
+	{
+		string pname;
+
+		Vector2i pos;
+		is >> pos.x;
+		is >> pos.y;
+
+		is >> pname;
+
+		int extraSceneType;
+		is >> extraSceneType;
+
+		BasicBossScene *scene = BasicBossScene::CreateScene(this, pname);
+		if (extraSceneType == 0)//prelevel
+		{
+			preLevelScene = scene;
+		}
+		else if (extraSceneType == 1)//postlevel
+		{
+			postLevelScene = scene;
+		}
+
+		//BirdVSTigerScene *scene = new BirdVSTigerScene(this);
+		//scene->Init();
+		//SetActiveSequence(scene);
+	}
+
+
+		
+	else if (typeName == "camerashot")
+	{
+		Vector2i pos;
+		is >> pos.x;
+		is >> pos.y;
+
+		string pname;
+		is >> pname;
+
+		float z;
+		is >> z;
+
+		CameraShot *shot = new CameraShot(pname, Vector2f(pos), z);
+		if (cameraShotMap.count(pname) > 0 )
+		{
+			assert(false);
+		}
+
+		cameraShotMap[pname] = shot;
+	}
+	else if (typeName == "shard")
+	{
+		int xPos, yPos;
+
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+
+		int w;
+		is >> w;
+
+		int localIndex;
+		is >> localIndex;
+		//string shardStr;
+		//is >> shardStr;
+
+		Shard *enemy = new Shard(this, Vector2i(xPos, yPos), w, localIndex);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "ship")
+	{
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		shipEntrancePos = V2d(xPos, yPos);
+		hasShipEntrance = true;
+
+		ResetShipSequence();
+	}
+	else if (typeName == "healthfly")
+	{
+		int xPos, yPos;
+
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+
+		int level;
+		is >> level;
+
+		HealthFly *enemy = new HealthFly(this, Vector2i(xPos, yPos), level, numTotalFlies);
+
+		allFlies.push_back(enemy);
+		numTotalFlies++;
+		activeItemTree->Insert(enemy);
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "blocker" || typeName == "greenblocker")
+	{
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int pathLength;
+		list<Vector2i> localPath;
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		int bType;
+		is >> bType;
+
+		if (typeName == "blocker")
+		{
+			bType = BlockerChain::BLUE;
+		}
+		else if (typeName == "greenblocker")
+		{
+			bType = BlockerChain::GREEN;
+		}
+
+		int armored;
+		is >> armored;
+
+		int spacing;
+		is >> spacing;
+
+		int level;
+		is >> level;
+
+		BlockerChain *enemy = new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing, level);
+
+		fullEnemyList.push_back(enemy);
+
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "comboer")
+	{
+
+		int xPos, yPos;
+
+		//always air
+		is >> xPos;
+		is >> yPos;
+
+		int pathLength;
+		list<Vector2i> localPath;
+
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		bool loop;
+		Enemy::ReadBool(is, loop);
+
+		int level;
+		is >> level;
+
+		Comboer *enemy = new Comboer(this, Vector2i(xPos, yPos), localPath, loop, level);
+
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "splitcomboer")
+	{
+
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		int pathLength;
+		list<Vector2i> localPath;
+
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		bool loop;
+		Enemy::ReadBool(is, loop);
+
+		int level;
+		is >> level;
+
+		SplitComboer *enemy = new SplitComboer(this, Vector2i(xPos, yPos), localPath, loop, level);
+
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "booster")
+	{
+		int xPos, yPos;
+
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+
+		int level;
+		is >> level;
+
+		Booster *enemy = new Booster(this, Vector2i(xPos, yPos), level);
+		//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
+
+		activeItemTree->Insert(enemy);
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "key")
+	{
+		int xPos, yPos;
+		is >> xPos;
+		is >> yPos;
+
+		int numKeys;
+		is >> numKeys;
+
+		int zType;
+		is >> zType;
+
+		keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
+	}
+	else if (typeName == "spring" || typeName == "gravityspring" || typeName == "bouncespring" 
+		|| typeName == "airbouncespring" )//|| typeName == "teleportspring" )
+	{
+		int xPos, yPos;
+
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+
+		int speed = 0;
+		//if (typeName == "spring" || typeName == "gravityspring" || ty)
+		{
+			is >> speed;
+		}
+
+
+		Vector2i other;
+		is >> other.x;
+		is >> other.y;
+
+		Spring::SpringType sp;
+		if (typeName == "spring")
+		{
+			sp = Spring::BLUE;
+		}
+		else if (typeName == "gravityspring")
+		{
+			sp = Spring::GREEN;
+		}
+		else if (typeName == "bouncespring")
+		{
+			sp = Spring::BOUNCE;
+		}
+		else if (typeName == "airbouncespring")
+		{
+			sp = Spring::AIRBOUNCE;
+		}
+		else if (typeName == "teleportspring")
+		{
+			sp = Spring::TELEPORT;
+		}
+		//CurveLauncher * enemy = new CurveLauncher(this, Vector2i(xPos, yPos), other, moveFrames);
+		Spring *enemy = new Spring(this, sp, Vector2i(xPos, yPos), other, speed);
+
+		activeItemTree->Insert(enemy);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "teleporter" || typeName == "onewayteleporter")
+	{
+		int xPos, yPos;
+
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+
+
+		Vector2i other;
+		is >> other.x;
+		is >> other.y;
+
+		bool bothWays = true;
+		if (typeName == "onewayteleporter")
+		{
+			bothWays = false;
+		}
+
+		Teleporter *enemy = new Teleporter(this, Vector2i(xPos, yPos), other, bothWays);
+
+		activeItemTree->Insert(enemy);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+
+		Teleporter *secondary = enemy->CreateSecondary();
+
+		activeItemTree->Insert(secondary);
+
+		fullEnemyList.push_back(secondary);
+		//enem = enemy;
+
+		enemyTree->Insert(secondary);
+
+
+	}
+	else if (typeName == "upbouncebooster" || typeName == "omnibouncebooster")
+	{
+		int xPos, yPos;
+			
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+			
+		int level;
+		is >> level;
+
+		bool upOnly = false;
+		if (typeName == "upbouncebooster")
+		{
+			upOnly = true;
+		}
+
+
+		BounceBooster *enemy = new BounceBooster(this, Vector2i(xPos, yPos), upOnly, level);
+
+		activeItemTree->Insert(enemy);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "rail" || typeName == "grindrail" )
+	{
+			
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int pathLength;
+		list<Vector2i> localPath;
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		int accelerate;
+		is >> accelerate;
+
+		int level;
+		is >> level;
+
+		bool requirePower = false;
+		if (typeName == "grindrail")
+		{
+			requirePower = true;
+		}
+
+		//Rail *r = new Rail(this, Vector2i(xPos, yPos), localPath, requirePower, accelerate, level );
+
+		//++totalRails;
+	}
+	//w1
+	else if (typeName == "patroller")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int pathLength;
+		list<Vector2i> localPath;
+
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		bool loop;
+		Enemy::ReadBool(is, loop);
+
+		int level;
+		is >> level;
+		Patroller *enemy = new Patroller(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "bosscrawler")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		CrawlerQueen *enemy = new CrawlerQueen(this, edges[polyIndex[terrainIndex] + edgeIndex],
+			edgeQuantity, false);
+
+		fullEnemyList.push_back(enemy);
+
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+		/*Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
+		edgeQuantity );
+
+		fullEnemyList.push_back( enemy );
+
+		b_crawler = enemy;*/
+	}
+	else if (typeName == "basicturret")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+		/*double bulletSpeed;
+		is >> bulletSpeed;
+
+		int framesWait;
+		is >> framesWait;*/
+
+		BasicTurret *enemy = new BasicTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,level);
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "crawler")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+		Crawler *enemy = new Crawler(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+			edgeQuantity, level);
+		//RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+		//	edgeQuantity);
+
+
+		/*if( enemy->hasMonitor )
+		cout << "crawler with monitor!" << endl;
+		else
+		cout << "no monitor here" << endl;*/
+
+		//enemyTree = Insert( enemyTree, enemy );
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "shroom")
+	{
+		//cout << "loading foottrap" << endl;
+		//always grounded
+
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		//FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
+		Shroom *enemy = new Shroom(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+		//Cactus *enemy = new Cactus( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "airdasher")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+
+		Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos), level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+
+	//w2
+	else if (typeName == "bat")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+
+		int pathLength;
+		list<Vector2i> localPath;
+
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		bool loop;
+		Enemy::ReadBool(is, loop);
+
+		int level;
+		is >> level;
+
+
+
+		Bat *enemy = new Bat(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "airdashjuggler")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+
+		int pathLength;
+		list<Vector2i> localPath;
+
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		int level;
+		is >> level;
+
+			
+
+		AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath, level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler" || typeName == "bouncejuggler" 
+		|| typeName == "wirejuggler" )
+	{
+
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int pathLength;
+		list<Vector2i> localPath;
+
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		int level;
+		is >> level;
+
+		int numJuggles;
+		is >> numJuggles;
+
+
+		Enemy *enemy;
+		if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler")
+		{
+			bool reversed = false;
+			if (typeName == "upgravityjuggler")
+			{
+				reversed = true;
+			}
+
+			enemy = new GravityJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+				level, numJuggles, reversed);
+		}
+		else if (typeName == "bouncejuggler")
+		{
+			enemy = new BounceJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+				level, numJuggles);
+		}
+		else if (typeName == "wirejuggler")
+		{
+			enemy = new WireJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+				level, numJuggles, WireJuggler::T_BLUE);
+		}
+			
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "grindjugglercw" || typeName == "grindjugglerccw" )
+	{
+
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		int numJuggles;
+		is >> numJuggles;
+
+		bool cw = true;
+		if (typeName == "grindjugglerccw")
+		{
+			cw = false;
+		}
+
+		Enemy *enemy = new GrindJuggler(this, hasMonitor, Vector2i(xPos, yPos),
+			level, numJuggles, cw);
+
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "groundedgrindjugglercw" || typeName == "groundedgrindjugglerccw")
+	{
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		int numJuggles;
+		is >> numJuggles;
+
+		bool cw = true;
+		if (typeName == "groundedgrindjugglerccw")
+		{
+			cw = false;
+		}
+
+		Enemy *enemy = new GroundedGrindJuggler(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+			edgeQuantity, level, numJuggles, cw);
+
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "jugglercatcher")
+	{
+		int xPos, yPos;
+
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		JugglerCatcher *enemy = new JugglerCatcher(this, hasMonitor, Vector2i(xPos, yPos), level);
+		//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
+
+		activeEnemyItemTree->Insert(enemy);
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "poisonfrog")
+	{
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+		/*int gravFactor;
+		is >> gravFactor;
+
+		int jumpStrengthX;
+		is >> jumpStrengthX;
+
+		int jumpStrengthY;
+		is >> jumpStrengthY;
+
+		int jumpFramesWait;
+		is >> jumpFramesWait;*/
+
+		PoisonFrog *enemy = new PoisonFrog(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+			edgeQuantity, level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "gravityfaller")
+	{
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		GravityFaller *enemy = new GravityFaller(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+			edgeQuantity, level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "stagbeetle")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+
+		StagBeetle *enemy = new StagBeetle(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+			edgeQuantity, level );
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "curveturret")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		/*double bulletSpeed;
+		is >> bulletSpeed;
+
+		int framesWait;
+		is >> framesWait;
+
+		int xGravFactor;
+		is >> xGravFactor;
+
+		int yGravFactor;
+		is >> yGravFactor;
+
+		bool relative = false;
+		string relativeGravStr;
+		is >> relativeGravStr;
+		if (relativeGravStr == "+relative")
+		{
+			relative = true;
+		}*/
+
+		int level;
+		is >> level;
+
+		CurveTurret *enemy = new CurveTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "gravityincreaser" || typeName == "gravitydecreaser" )
+	{
+		bool increaser = (typeName == "gravityincreaser");
+
+		int xPos, yPos;
+
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+
+		int level;
+		is >> level;
+
+		GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), level, increaser);
+
+		activeItemTree->Insert(enemy);
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+
+	else if (typeName == "bossbird")
+	{
+
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		BirdBoss *enemy = new BirdBoss(this, Vector2i(xPos, yPos));
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+
+	//w3
+	else if (typeName == "pulser")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+
+		int pathLength;
+		list<Vector2i> localPath;
+
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		bool loop;
+		Enemy::ReadBool(is, loop);
+
+		int level;
+		is >> level;
+		//int framesBetweenNodes;
+		//is >> framesBetweenNodes;
+
+		Pulser *enemy = new Pulser(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+			loop, level );
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "cactus")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		/*int bulletSpeed;
+		is >> bulletSpeed;
+
+		int rhythm;
+		is >> rhythm;
+
+		int amplitude;
+		is >> amplitude;*/
+
+		int level;
+		is >> level;
+
+		Cactus *enemy = new Cactus(this, hasMonitor,
+			edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level );
+
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "owl")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		//int moveSpeed;
+		//is >> moveSpeed;
+
+		//int bulletSpeed;
+		//is >> bulletSpeed;
+
+		//int rhythmFrames;
+		//is >> rhythmFrames;
+
+		int level;
+		is >> level;
+
+		Owl *enemy = new Owl(this, hasMonitor, Vector2i(xPos, yPos), level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "badger")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		Badger *enemy = new Badger(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "roadrunner")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "bouncefloater")
+	{
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int level;
+		is >> level;
+
+		//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
+		//AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
+		BounceFloater *enemy = new BounceFloater(this, Vector2i(xPos, yPos), level);
+
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "bosscoyote")
+	{
+		//always grounded
+
+		Vector2i pos;
+
+		is >> pos.x;
+		is >> pos.y;
+
+		/*Boss_Coyote *enemy = new Boss_Coyote( this, pos );
+		b_coyote = enemy;
+
+		fullEnemyList.push_back( enemy );*/
+	}
+
+	//w4
+	else if (typeName == "turtle")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		//Vector2i delta(1000, -1000);
+		Vector2i pos(xPos, yPos);
+		Turtle *enemy = new Turtle(this, hasMonitor, Vector2i(xPos, yPos), level);
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "coral")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int moveFrames;
+		is >> moveFrames;
+
+		/*SecurityWeb * enemy = new SecurityWeb( this,
+		hasMonitor, Vector2i( xPos, yPos ), 8, 0, 10 );
+
+
+		fullEnemyList.push_back( enemy );
+		enem = enemy;
+
+		enemyTree->Insert( enemy );*/
+	}
+	else if (typeName == "cheetah")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		Cheetah *enemy = new Cheetah( this, hasMonitor,
+		edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level );
+
+		fullEnemyList.push_back( enemy );
+		enem = enemy;
+
+		enemyTree->Insert( enemy );
+	}
+	else if (typeName == "spider")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		Spider *enemy = new Spider(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+			level);
+
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "bosstiger")
+	{
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		/*Boss_Tiger *enemy = new Boss_Tiger( this, Vector2i ( xPos, yPos ) );
+
+		fullEnemyList.push_back( enemy );
+
+		b_tiger = enemy;
+
+		enemyTree->Insert( enemy );*/
+	}
+
+	//w5
+	else if (typeName == "hungrycomboer" || typeName == "hungryreturncomboer" )
+	{
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		int numJuggles;
+		is >> numJuggles;
+
+			
+		bool returnsToPlayer = false;
+		if (typeName == "hungryreturncomboer")
+		{
+			returnsToPlayer = true;
+		}
+			
+		HungryComboer *enemy = new HungryComboer(this, hasMonitor, Vector2i(xPos, yPos), level, numJuggles,
+			returnsToPlayer );
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "relativecomboer" || typeName == "relativecomboerdetach")
+	{
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int pathLength;
+		list<Vector2i> localPath;
+
+		Enemy::ReadPath(is, pathLength, localPath);
+
+		int level;
+		is >> level;
+
+		int numJuggles;
+		is >> numJuggles;
+
+		bool detachOnKill = false;
+		if (typeName == "relativecomboerdetach")
+		{
+			detachOnKill = true;
+		}
+
+		RelativeComboer *enemy = new RelativeComboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, level, numJuggles,
+			detachOnKill);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "swarm")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), hasMonitor, level );
+		fullEnemyList.push_back( enemy );
+		enem = enemy;
+
+		enemyTree->Insert( enemy );
+	}
+	else if (typeName == "shark")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), level );
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert( enemy );
+	}
+	else if (typeName == "ghost")
+	{
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), level );
+
+		fullEnemyList.push_back( enemy );
+		enem = enemy;
+
+		enemyTree->Insert( enemy );
+	}
+	else if (typeName == "overgrowth")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		//GrowingTree * enemy = new GrowingTree( this, hasMonitor,
+		//	edges[polyIndex[terrainIndex] + edgeIndex], 
+		//	edgeQuantity, 32, 0, 1000 );
+
+		//
+		//fullEnemyList.push_back( enemy );
+		//enem = enemy;
+
+		//enemyTree->Insert( enemy );
+	}
+	else if (typeName == "growingtree")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		GrowingTree * enemy = new GrowingTree(this, hasMonitor,
+			edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+
+		//
+		fullEnemyList.push_back( enemy );
+		enem = enemy;
+
+		enemyTree->Insert( enemy );
+	}
+	else if (typeName == "bossgator")
+	{
+
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		/*Boss_Gator *enemy = new Boss_Gator( this, Vector2i ( xPos, yPos ) );
+
+		fullEnemyList.push_back( enemy );
+
+		b_gator = enemy;
+
+		enemyTree->Insert( enemy );*/
+	}
+
+	//w6
+	else if (typeName == "specter")
+	{
+
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ), level );
+		fullEnemyList.push_back( enemy );
+		//enem = enemy;
+
+		enemyTree->Insert( enemy );
+	}
+	else if (typeName == "swinglaunchercw" || typeName == "swinglauncherccw")
+	{
+		int xPos, yPos;
+
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+
+		int speed = 0;
+		is >> speed;
+
+		Vector2i other;
+		is >> other.x;
+		is >> other.y;
+
+		bool cw = true;
+		if (typeName == "swinglauncherccw")
+		{
+			cw = false;
+		}
+
+		SwingLauncher *enemy = new SwingLauncher(this, Vector2i(xPos, yPos), other, speed, cw);
+
+		activeItemTree->Insert(enemy);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "narwhal")
+	{
+
+		int xPos, yPos;
+
+		//always air
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		Vector2i dest;
+		is >> dest.x;
+		is >> dest.y;
+
+		int moveFrames;
+		is >> moveFrames;
+
+
+		/*Jay *enemy = new Jay( this, hasMonitor, Vector2i( xPos, yPos ), dest );
+		fullEnemyList.push_back( enemy );
+		enem = enemy;
+
+		enemyTree->Insert( enemy );*/
+	}
+	else if (typeName == "copycat")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		/*Copycat *enemy = new Copycat( this, hasMonitor, Vector2i( xPos, yPos ) );
+
+
+		fullEnemyList.push_back( enemy );
+		enem = enemy;
+
+		enemyTree->Insert( enemy );*/
+	}
+	else if (typeName == "gorilla")
+	{
+
+		int xPos, yPos;
+
+		//always air
+
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		//int wallWidth;
+		//is >> wallWidth;
+
+		//int followFrames;
+		//is >> followFrames;
+
+		int level;
+		is >> level;
+
+
+		Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ), level );
+
+		fullEnemyList.push_back( enemy );
+		enem = enemy;
+
+		enemyTree->Insert( enemy );
+	}
+	else if (typeName == "wiretarget")
+	{
+
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		int hasMonitor;
+		is >> hasMonitor;
+
+		int level;
+		is >> level;
+
+		WireTarget *enemy = new WireTarget(this, hasMonitor, Vector2i(xPos, yPos), level);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "bossskeleton")
+	{
+		int xPos, yPos;
+
+		is >> xPos;
+		is >> yPos;
+
+		/*Boss_Skeleton *enemy = new Boss_Skeleton( this, Vector2i ( xPos, yPos ) );
+
+		fullEnemyList.push_back( enemy );
+
+		b_skeleton = enemy;*/
+	}
+
+
+	else if (typeName == "nexus")
+	{
+		//always grounded
+
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int nexusIndex;
+		is >> nexusIndex;
+
+		Nexus *enemy = new Nexus(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+
+		goalNodePos = enemy->GetKillPos();
+		float space = 78.f;
+		V2d end(goalNodePos.x, goalNodePos.y - space);
+		hasGoal = true;
+		nexus = enemy;
+		//nexusPos = enemy->GetKillPos();//enemy->position;
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "shippickup")
+	{
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int facingRight;
+		is >> facingRight;
+
+		ShipPickup *enemy = new ShipPickup(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+			facingRight);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+
+
+		if (shipExitScene == NULL )
+		{
+			shipExitScene = new ShipExitScene(this);
+			shipExitScene->Init();
+		}
+		/*if (shipExitSeq == NULL)
+		{
+			shipExitSeq = new ShipExitSeq(this);
+		}*/
+	}
+	else if (typeName == "groundtrigger")
+	{
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		int facingRight;
+		is >> facingRight;
+
+		string tType;
+		is >> tType;
+
+		GroundTrigger *enemy = new GroundTrigger(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+			facingRight, tType);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	else if (typeName == "airtrigger")
+	{
+		Vector2i pos;
+
+		//always air
+		is >> pos.x;
+		is >> pos.y;
+
+		string typeStr;
+		is >> typeStr;
+
+		int rectWidth;
+		is >> rectWidth;
+
+		int rectHeight;
+		is >> rectHeight;
+		//int hasMonitor;
+		//is >> hasMonitor;
+		AirTrigger *at = new AirTrigger(this, V2d(pos), rectWidth, rectHeight, typeStr);
+		airTriggerTree->Insert(at);
+		fullAirTriggerList.push_back(at);
+	}
+	else if (typeName == "flowerpod")
+	{
+		int terrainIndex;
+		is >> terrainIndex;
+
+		int edgeIndex;
+		is >> edgeIndex;
+
+		double edgeQuantity;
+		is >> edgeQuantity;
+
+		string tType;
+		is >> tType;
+
+		FlowerPod *enemy = new FlowerPod(this, tType,
+			edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+
+		fullEnemyList.push_back(enemy);
+		enem = enemy;
+
+		enemyTree->Insert(enemy);
+	}
+	//w6
+	else if (typeName == "racefighttarget")
+	{
+		int xPos, yPos;
+
+		//always air
+
+		is >> xPos;
+		is >> yPos;
+
+		if (raceFight != NULL)
+		{
+			raceFight->numTargets++;
+
+			/*RaceFightTarget *enemy = new RaceFightTarget(this, Vector2i(xPos, yPos));
+
+			fullEnemyList.push_back(enemy);
+			enem = enemy;
+
+			enemyTree->Insert(enemy);*/
+		}
+		else
+		{
+			//ignore
+		}
+	}
+	else
+	{
+		assert(false && "not a valid type name: ");
 	}
 }
 
 
+void GameSession::ProcessHeader()
+{
+	if (mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
+	{
+		assert(raceFight == NULL);
+		raceFight = new RaceFight(this, 180);
+	}
+}
+
+void GameSession::ProcessDecorSpr(const std::string &dName,
+	sf::Sprite &dSpr, int dLayer, Tileset *d_ts, int dTile)
+{
+	decorListMap[dName].push_back(DecorInfo(dSpr, dLayer, d_ts, dTile));
+}
+
+void GameSession::ProcessAllDecorSpr()
+{
+	for (auto it = decorListMap.begin(); it != decorListMap.end(); ++it)
+	{
+		int numBetweenLayer = 0;
+		list<DecorInfo> betweenList;
+		for (auto it2 = (*it).second.begin(); it2 != (*it).second.end(); ++it2)
+		{
+			if ((*it2).layer == 0)
+			{
+				numBetweenLayer++;
+				betweenList.push_back((*it2));
+			}
+		}
+
+		if (numBetweenLayer > 0)
+		{
+			Vertex *betweenVerts = new Vertex[numBetweenLayer * 4];
+			int vi = 0;
+			for (auto itb = betweenList.begin(); itb != betweenList.end(); ++itb)
+			{
+				Sprite &s = (*itb).spr;
+				double rot = s.getRotation() / 180.f * PI;
+				float xSize = s.getTextureRect().width * s.getScale().x;
+				float ySize = s.getTextureRect().height * s.getScale().y;
+				Vector2f pos = s.getPosition();
+				FloatRect sub = FloatRect(s.getTextureRect());
+				SetRectRotation(betweenVerts + vi * 4, rot, xSize, ySize, pos);
+				SetRectSubRect(betweenVerts + vi * 4, sub);
+				vi++;
+			}
+
+			decorBetween.push_back(new DecorDraw(betweenVerts,
+				numBetweenLayer * 4, betweenList.front().ts));
+		}
+	}
+
+	decorListMap.clear();
+}
+
+void GameSession::ProcessPlayerStartPos()
+{
+	Actor *p0 = GetPlayer(0);
+	p0->position = V2d(playerOrigPos);
+}
+
+void GameSession::ProcessTerrain(PolyPtr poly)
+{
+	poly->AddEdgesToQuadTree(terrainTree);
+	if (poly->inverse)
+	{
+		poly->AddEdgesToQuadTree(inverseEdgeTree);
+		inversePoly = poly;
+	}
+
+	borderTree->Insert(poly);
+	allPolygonsList.push_back(poly);
+}
 
 bool GameSession::OpenFile( )
 {
@@ -3506,563 +3545,22 @@ bool GameSession::OpenFile( )
 	is.open(filePathStr);//+ ".brknk" );
 	if( is.is_open() )
 	{
-		mh = MainMenu::ReadMapHeader(is);
-		assert(mh != NULL);
+		ReadHeader(is);
+		ReadDecor(is);
 
-		/*if (mh->numShards > 0)
-		{
-			TryCreateShardResources();
-		}*/
+		ProcessAllDecorSpr();
 
-		if (mh->gameMode == MapHeader::MapType::T_RACEFIGHT)
-		{
-			assert(raceFight == NULL);
-			raceFight = new RaceFight(this, 180);
-		}
-
+		ReadPlayerStartPos(is);
 		
-		points = new Vector2<double>[mh->numVertices];
+		ReadTerrain(is);
 		
-		int numDecorImages;
-		is >> numDecorImages;
-
-
-		map<string, list<DecorInfo>> decorListMap;
-		for (int i = 0; i < numDecorImages; ++i)
+		allPolysVec.reserve(allPolygonsList.size());
+		for (auto it = allPolygonsList.begin(); it != allPolygonsList.end(); ++it)
 		{
-			string dName;
-			is >> dName;
-			int dLayer;
-			is >> dLayer;
-
-			Vector2f dPos;
-			is >> dPos.x;
-			is >> dPos.y;
-
-			float dRot;
-			is >> dRot;
-
-			Vector2f dScale;
-			is >> dScale.x;
-			is >> dScale.y;
-
-			int dTile;
-			is >> dTile;
-
-			Sprite dSpr;
-			dSpr.setScale(dScale);
-			dSpr.setRotation(dRot);
-			dSpr.setPosition(dPos);
-
-			//string fullDName = dName + string(".png");
-			Tileset *ts = decorTSMap[dName];
-			dSpr.setTexture(*ts->texture);
-			dSpr.setTextureRect(ts->GetSubRect(dTile));
-			dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
-			//dSpr.setTexture do this after dinner
-
-			decorListMap[dName].push_back(DecorInfo( dSpr, dLayer, ts, dTile ));
-
-			/*if (dLayer > 0)
-			{
-				decorImagesBehindTerrain.push_back(DecorInfo(dSpr, dLayer, dName));
-			}
-			else if (dLayer < 0)
-			{
-				decorImagesFrontTerrain.push_back(DecorInfo(dSpr, dLayer, dName));
-			}
-			else if (dLayer == 0)
-			{
-				decorImagesBetween.push_back(DecorInfo(dSpr, dLayer, dName));
-			}*/
+			allPolysVec.push_back((*it));
 		}
+		allPolygonsList.clear();
 
-		for (auto it = decorListMap.begin(); it != decorListMap.end(); ++it)
-		{
-			int numBetweenLayer = 0;
-			list<DecorInfo> betweenList;
-			for (auto it2 = (*it).second.begin(); it2 != (*it).second.end(); ++it2)
-			{
-				if ((*it2).layer == 0)
-				{
-					numBetweenLayer++;
-					betweenList.push_back((*it2));
-				}
-			}
-
-			if (numBetweenLayer > 0)
-			{
-				Vertex *betweenVerts = new Vertex[numBetweenLayer * 4];
-				int vi = 0;
-				for (auto itb = betweenList.begin(); itb != betweenList.end(); ++itb)
-				{
-					Sprite &s = (*itb).spr;
-					double rot = s.getRotation() / 180.f * PI;
-					float xSize = s.getTextureRect().width * s.getScale().x;
-					float ySize = s.getTextureRect().height * s.getScale().y;
-					Vector2f pos = s.getPosition();
-					FloatRect sub = FloatRect(s.getTextureRect());
-					SetRectRotation(betweenVerts + vi * 4, rot, xSize, ySize , pos);
-					SetRectSubRect(betweenVerts + vi * 4, sub);
-					vi++;
-				}
-
-				decorBetween.push_back(new DecorDraw(betweenVerts, 
-					numBetweenLayer * 4, betweenList.front().ts));
-			}
-		}
-		//decorBetween
-
-		is >> originalPos.x;
-		is >> originalPos.y;
-
-		Actor *p0 = GetPlayer(0);
-		p0->position = originalPos;
-
-		/*is >> goalPos.x;
-		is >> goalPos.y;*/
-
-		string hasBorderPolyStr;
-		is >> hasBorderPolyStr;
-		bool hasBorderPoly;
-		bool hasReadBorderPoly;
-		if( hasBorderPolyStr == "borderpoly" )
-		{
-			hasBorderPoly = true;
-			hasReadBorderPoly = false;
-		}
-		else if( hasBorderPolyStr == "no_borderpoly" )
-		{
-			hasBorderPoly = false;
-			hasReadBorderPoly = true;
-		}
-		else
-		{
-			assert( 0 && "error reading borderpoly info" );
-		}
-
-		int pointsLeft = mh->numVertices;
-
-		int pointCounter = 0;
-
-		edges = new Edge*[mh->numVertices];
-
-		int polyCounter = 0;
-		//could use an array later if i wanted to
-		map<int, int> polyIndex;
-	
-		inversePoly = NULL;
-
-		while( pointCounter < mh->numVertices)
-		{
-			bool inverse = false;
-			if( !hasReadBorderPoly )
-			{
-				hasReadBorderPoly = true;
-				inverse = true;
-				polyCounter = -1;
-			}
-			
-
-			int matWorld;
-			is >> matWorld;
-
-			int matVariation;
-			is >> matVariation;
-			
-			bool currentVisible = true;
-			if (matWorld == 8 && matVariation == 0)
-			{
-				//currentVisible = false;
-			}
-
-			visibleTerrain[polyCounter] = currentVisible;
-
-			//matWorld = 6;
-			//matWorld = 2;
-			matSet.insert( pair<int,int>( matWorld, matVariation ) );
-
-			int polyPoints;
-			is >> polyPoints;
-
-			TerrainPiece * tPiece = new TerrainPiece(this);
-			
-			polyIndex[polyCounter] = pointCounter;
-			cout << "setting poly index at : " << polyCounter << " to " << pointCounter << endl;
-
-			int currentEdgeIndex = pointCounter;
-
-			tPiece->startEdgeIndex = currentEdgeIndex;
-
-			for( int i = 0; i < polyPoints; ++i )
-			{
-				int px, py;
-				is >> px;
-				is >> py;
-				//is >> spec;
-			
-				points[pointCounter].x = px;
-				points[pointCounter].y = py;
-				++pointCounter;
-			}
-
-			double left, right, top, bottom;
-			for( int i = 0; i < polyPoints; ++i )
-			{
-				Edge *ee = new Edge();
-				ee->poly = tPiece;
-
-  				edges[currentEdgeIndex + i] = ee;
-				ee->v0 = points[i+currentEdgeIndex];
-				if( i < polyPoints - 1 )
-					ee->v1 = points[i+1 + currentEdgeIndex];
-				else
-					ee->v1 = points[currentEdgeIndex];
-
-				assert(ee->v0.x != ee->v1.x || ee->v0.y != ee->v1.y );
-
-				terrainTree->Insert( ee );
-
-				if( inverse )
-				{
-					inverseEdgeTree->Insert( ee );
-				}
-
-				double localLeft = min( ee->v0.x, ee->v1.x );
-				double localRight = max( ee->v0.x, ee->v1.x );
-				double localTop = min( ee->v0.y, ee->v1.y );
-				double localBottom = max( ee->v0.y, ee->v1.y ); 
-				if( i == 0 )
-				{
-					left = localLeft;
-					right = localRight;
-					top = localTop;
-					bottom = localBottom;
-				}
-				else
-				{
-					left = min( left, localLeft );
-					right = max( right, localRight );
-					top = min( top, localTop);
-					bottom = max( bottom, localBottom);
-				}
-
-			}
-
-
-			for( int i = 0; i < polyPoints; ++i )
-			{
-				Edge * ee = edges[i + currentEdgeIndex];
-				if( i == 0 )
-				{
-					ee->edge0 = edges[currentEdgeIndex + polyPoints - 1];
-					ee->edge1 = edges[currentEdgeIndex + 1];
-				}
-				else if( i == polyPoints - 1 )
-				{
-					ee->edge0 = edges[currentEdgeIndex + i - 1];
-					ee->edge1 = edges[currentEdgeIndex];
-				
-				}
-				else
-				{
-					ee->edge0 = edges[currentEdgeIndex + i - 1];
-					ee->edge1 = edges[currentEdgeIndex + i + 1];
-				}
-			}
-
-			int edgesWithSegments;
-			is >> edgesWithSegments;
-
-			
-			list<GrassSegment> segments;
-			for( int i = 0; i < edgesWithSegments; ++i )
-			{
-				int edgeIndex;
-				is >> edgeIndex;
-				int numSegments;
-				is >> numSegments;
-				for( int j = 0; j < numSegments; ++j )
-				{
-					int index;
-					is >> index;
-					int reps;
-					is >> reps;
-
-					segments.push_back( GrassSegment( edgeIndex, index, reps ) );
-				}
-			}
-
-			Tileset *ts_bush = GetTileset( "Env/bush_01_64x64.png", 64, 64 );
-
-			if( !inverse && currentVisible )
-			{
-				std::vector<std::vector<Vector2i>> pointVector;
-				pointVector.push_back(vector<Vector2i>());
-				vector<Vector2i> &currVector = pointVector[0];
-				
-
-				//vector<p2t::Point*> polyline;
-				currVector.resize(polyPoints);
-				for( int i = 0; i < polyPoints; ++i )
-				{
-					currVector[i] = Vector2i(points[currentEdgeIndex + i]);
-				}
-
-				std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
-
-				int vaSize = indices.size();
-				int numTris = vaSize / 3;
-				va = new VertexArray( sf::Triangles , vaSize);
-				VertexArray & v = *va;
-				Color testColor( 0x75, 0x70, 0x90 );
-				testColor = Color::White;
-				Vector2f topLeft( left, top );
-				for( int i = 0; i < numTris; ++i )
-				{	
-					v[i*3] = Vertex( Vector2f( currVector[indices[i*3]] ), testColor );
-					v[i*3 + 1] = Vertex( Vector2f(currVector[indices[i * 3+1]]), testColor );
-					v[i*3 + 2] = Vertex( Vector2f(currVector[indices[i * 3+2]]), testColor );
-				}
-
-				tPiece->aabb.left = left;
-				tPiece->aabb.top = top;
-				tPiece->aabb.width = right - left;
-				tPiece->aabb.height = bottom - top;
-				tPiece->terrainVA = va;
-				tPiece->visible = true;
-				polygons.push_back( va );
-			}
-			else if( inverse )
-			{
-				inversePoly = tPiece;
-				inversePoly->numPoints = polyPoints;
-				inversePoly->visible = true;
-				inversePoly->aabb.left = left;
-				inversePoly->aabb.top = top;
-				inversePoly->aabb.width = right - left;
-				inversePoly->aabb.height = bottom - top;
-				SetupInversePoly( ts_bush, currentEdgeIndex );
-				tPiece = inversePoly;
-				tPiece->ts_bush = ts_bush;
-			}
-			else
-			{
-				tPiece = tPiece;
-				tPiece->visible = false;
-				tPiece->aabb.left = left;
-				tPiece->aabb.top = top;
-				tPiece->aabb.width = right - left;
-				tPiece->aabb.height = bottom - top;
-				tPiece->terrainVA = NULL;//va;
-			}
-
-			if (tPiece->visible)
-			{
-				switch (matWorld)
-				{
-				case 0:
-				{
-					switch (matVariation)
-					{
-					case 0:
-						//testva->AddDecorExpression( 
-						//testva->bushes.push_back( 
-						break;
-					}
-					break;
-				}
-				case 1:
-				{
-					switch (matVariation)
-					{
-					case 0:
-						break;
-					}
-					break;
-				}
-				case 2:
-				{
-					switch (matVariation)
-					{
-					case 0:
-						break;
-					}
-					break;
-				}
-				case 3:
-				{
-					switch (matVariation)
-					{
-					case 0:
-						break;
-					}
-					break;
-				}
-				case 4:
-				{
-					switch (matVariation)
-					{
-					case 0:
-						break;
-					}
-					break;
-				}
-				case 5:
-				{
-					switch (matVariation)
-					{
-					case 0:
-						break;
-					}
-					break;
-				}
-				case 6:
-				{
-					switch (matVariation)
-					{
-					case 0:
-						break;
-					}
-					break;
-				}
-				}
-			}
-
-
-			VertexArray *polygonVA = va;
-
-			double totalPerimeter = 0;
-
-			tPiece->terrainWorldType = matWorld;
-			tPiece->terrainVariation = matVariation;
-
-			tPiece->SetupGrass(segments);
-
-
-			Tileset *ts_border = NULL;
-			Tileset *ts_plant = NULL;
-			VertexArray *plantVA = NULL;
-			if (tPiece->visible)
-			{
-				int mw = matWorld; //temporary
-				if (matWorld == 8)
-					matWorld = 0;
-
-				stringstream ss;
-
-				ss << "Borders/bor_" << matWorld + 1 << "_";
-
-				//ss << "01_512x704";
-				ss << "01_512x512";
-				/*if (matVariation < 10)
-				{
-					ss << "0" << matVariation + 1;
-				}
-				else
-				{
-					ss << matVariation + 1;
-				}*/
-
-				//ss << "_128x64.png";
-				ss << ".png";
-
-				ts_border = GetTileset(ss.str(), 128, 64);
-
-				assert(ts_border != NULL);
-				/*VertexArray *groundVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
-					&GameSession::IsFlatGround );
-				VertexArray *slopeVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
-					&GameSession::IsSlopedGround );
-				VertexArray *steepVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
-					&GameSession::IsSteepGround );
-				VertexArray *wallVA = SetupBorderQuads( 0, edges[currentEdgeIndex], ts_border,
-					&GameSession::IsWall );*/
-
-				ts_plant = GetTileset("Env/testgrass.png", 32, 32);
-
-
-				plantVA = SetupPlants(edges[currentEdgeIndex], ts_plant);
-
-				tPiece->tr = new TerrainRender(&tm, terrainTree);// (terrainTree);
-				tPiece->tr->startEdge = edges[currentEdgeIndex];
-				tPiece->tr->GenerateBorderMesh();
-				//tPiece->tr->GenerateDecor();
-				tPiece->tr->ts_border = ts_border;
-
-				tPiece->AddTouchGrass( TouchGrass::TYPE_NORMAL);
-				tPiece->AddTouchGrass(TouchGrass::TYPE_TEST);
-				//tPiece->tr->plan
-
-			}
-			else
-			{
-				tPiece->tr = NULL;
-			}
-
-			/*double polygonArea = 0;
-			for( vector<p2t::Triangle*>::iterator it = tris.begin();
-				it != tris.end(); ++it )
-			{
-				polygonArea += GetTriangleArea( (*it) );
-			}*/
-
-			
-			//testva->polyArea = polygonArea;
-
-			
-
-			//now that I have the area, get a number of random points
-			//around the polygon based on how much area there is. 
-			//then put plants in those areas
-
-			//VertexArray *decorLayer0VA = SetupDecor0( tris, ts_decor0 );
-
-
-			//VertexArray *triVA = NULL;
-			Tileset *ts_energyFlow = NULL;//GetTileset( "energyFlow.png", 0, 0 );
-			//VertexArray *energyFlowVA = //SetupEnergyFlow( 0, edges[currentEdgeIndex], ts_energyFlow );
-
-
-			bool first = true;
-			
-		
-
-			
-			tPiece->plantva = NULL; //temporary
-			tPiece->next = NULL;
-			
-			
-			//tPiece->grassVA = grassVA;
-			tPiece->ts_bush = ts_bush;
-			
-
-			tPiece->ts_border = ts_border;
-			/*testva->groundva = groundVA;
-			testva->slopeva = slopeVA;
-			testva->steepva = steepVA;
-			testva->wallva = wallVA;*/
-			tPiece->plantva = plantVA;
-			tPiece->ts_plant = ts_plant;
-			
-
-			//testva->flowva = energyFlowVA;
-			
-			//cout << "before insert border: " << insertCount << endl;
-			borderTree->Insert(tPiece);
-			allVA.push_back(tPiece);
-
-			//cout << "after insert border: " << insertCount << endl;
-			insertCount++;
-			
-
-			
-
-			//cout << "loaded to here" << endl;
-			
-			++polyCounter;
-		}
-		
 		bool blackBorder[2];
 		bool topBorderOn = false;
 		SetupMapBorderQuads(blackBorder, topBorderOn);
@@ -4070,13 +3568,13 @@ bool GameSession::OpenFile( )
 
 		LoadSpecialPolys(is);
 
-		LoadBGPlats( is, polyIndex );
+		LoadBGPlats( is );
 
 		LoadRails(is);
 
-		LoadEnemies( is, polyIndex );
+		LoadEnemies( is );
 		
-		LoadGates( is, polyIndex );
+		LoadGates( is );
 
 		is.close();
 
@@ -4091,14 +3589,6 @@ bool GameSession::OpenFile( )
 
 		CreateZones();
 		SetupZones();
-
-		/*for( int i = 0; i < numGates; ++i )
-		{
-			Gate *g = gates[i];
-			
-		}*/
-		//OpenGates(Gate::CRAWLER_UNLOCK);
-
 		return true;
 	}
 	else
@@ -4124,10 +3614,10 @@ bool cmpPairsDesc( pair<double,int> & a, pair<double,int> & b)
 void GameSession::SetGlobalBorders()
 {
 	//borders not allowed to intersect w/ gates
-	V2d topLeft( mh->leftBounds, mh->topBounds );
-	V2d topRight(mh->leftBounds + mh->boundsWidth, mh->topBounds );
-	V2d bottomRight(mh->leftBounds + mh->boundsWidth, mh->topBounds + mh->boundsHeight );
-	V2d bottomLeft(mh->leftBounds, mh->topBounds + mh->boundsHeight );
+	V2d topLeft(mapHeader->leftBounds, mapHeader->topBounds );
+	V2d topRight(mapHeader->leftBounds + mapHeader->boundsWidth, mapHeader->topBounds );
+	V2d bottomRight(mapHeader->leftBounds + mapHeader->boundsWidth, mapHeader->topBounds + mapHeader->boundsHeight );
+	V2d bottomLeft(mapHeader->leftBounds, mapHeader->topBounds + mapHeader->boundsHeight );
 	
 	Edge *left = new Edge;
 	left->v0 = topLeft;
@@ -5202,18 +4692,18 @@ void GameSession::SetupMinimapBorderQuads( bool *blackBorder, bool topBorderOn )
 {
 	int miniQuadWidth = 4000;
 	int inverseTerrainBorder = 4000;
-	int blackMiniTop = mh->topBounds - inverseTerrainBorder;
-	int blackMiniBot = mh->topBounds + mh->boundsHeight + inverseTerrainBorder;
-	int blackMiniLeft = mh->leftBounds - miniQuadWidth;
-	int rightBounds = mh->leftBounds + mh->boundsWidth;
+	int blackMiniTop = mapHeader->topBounds - inverseTerrainBorder;
+	int blackMiniBot = mapHeader->topBounds + mapHeader->boundsHeight + inverseTerrainBorder;
+	int blackMiniLeft = mapHeader->leftBounds - miniQuadWidth;
+	int rightBounds = mapHeader->leftBounds + mapHeader->boundsWidth;
 	int blackMiniRight = rightBounds + miniQuadWidth;
 
 	sf::Vertex *blackBorderQuadsMini = mini->blackBorderQuadsMini;
 
-	blackBorderQuadsMini[1].position.x = mh->leftBounds;
-	blackBorderQuadsMini[2].position.x = mh->leftBounds;
-	blackBorderQuadsMini[0].position.x = mh->leftBounds - miniQuadWidth;
-	blackBorderQuadsMini[3].position.x = mh->leftBounds - miniQuadWidth;
+	blackBorderQuadsMini[1].position.x = mapHeader->leftBounds;
+	blackBorderQuadsMini[2].position.x = mapHeader->leftBounds;
+	blackBorderQuadsMini[0].position.x = mapHeader->leftBounds - miniQuadWidth;
+	blackBorderQuadsMini[3].position.x = mapHeader->leftBounds - miniQuadWidth;
 
 	blackBorderQuadsMini[0].position.y = blackMiniTop;
 	blackBorderQuadsMini[1].position.y = blackMiniTop;
@@ -5255,8 +4745,8 @@ void GameSession::SetupMinimapBorderQuads( bool *blackBorder, bool topBorderOn )
 
 		topBorderQuadMini[0].position.y = blackMiniTop;
 		topBorderQuadMini[1].position.y = blackMiniTop;
-		topBorderQuadMini[2].position.y = mh->topBounds;
-		topBorderQuadMini[3].position.y = mh->topBounds;
+		topBorderQuadMini[2].position.y = mapHeader->topBounds;
+		topBorderQuadMini[3].position.y = mapHeader->topBounds;
 	}
 	
 }
@@ -5267,36 +4757,38 @@ void GameSession::SetupMapBorderQuads(bool *blackBorder,
 	double extraBorder = 100;
 	if (inversePoly != NULL)
 	{
-		int trueTop = mh->topBounds;
-		int possibleTop = inversePoly->aabb.top; //- extraBorder;
+		IntRect inverseAABB = inversePoly->GetAABB();
+
+		int trueTop = mapHeader->topBounds;
+		int possibleTop = inverseAABB.top; //- extraBorder;
 		if (possibleTop > trueTop)
 			trueTop = possibleTop;
 		else
 		{
 			topBorderOn = true;
 		}
-		mh->topBounds = trueTop - extraBorder / 2;
-		int inversePolyBottom = inversePoly->aabb.top + inversePoly->aabb.height;
-		mh->boundsHeight = (inversePolyBottom + extraBorder) - trueTop;
+		mapHeader->topBounds = trueTop - extraBorder / 2;
+		int inversePolyBottom = inverseAABB.top + inverseAABB.height;
+		mapHeader->boundsHeight = (inversePolyBottom + extraBorder) - trueTop;
 
-		int inversePolyRight = (inversePoly->aabb.left + inversePoly->aabb.width);
-		blackBorder[0] = inversePoly->aabb.left < mh->leftBounds; //inverse is further left than border
-		blackBorder[1] = inversePolyRight >(mh->leftBounds + mh->boundsWidth); //inverse is further right than border
+		int inversePolyRight = (inverseAABB.left + inverseAABB.width);
+		blackBorder[0] = inverseAABB.left < mapHeader->leftBounds; //inverse is further left than border
+		blackBorder[1] = inversePolyRight >(mapHeader->leftBounds + mapHeader->boundsWidth); //inverse is further right than border
 
-		int leftB = mh->leftBounds;
-		int rightB = mh->leftBounds + mh->boundsWidth;
+		int leftB = mapHeader->leftBounds;
+		int rightB = mapHeader->leftBounds + mapHeader->boundsWidth;
 		if (!blackBorder[0])
 		{
-			mh->leftBounds = inversePoly->aabb.left - extraBorder;
-			mh->boundsWidth = rightB - mh->leftBounds;
+			mapHeader->leftBounds = inverseAABB.left - extraBorder;
+			mapHeader->boundsWidth = rightB - mapHeader->leftBounds;
 		}
 		if (!blackBorder[1])
 		{
-			mh->boundsWidth = (inversePolyRight + extraBorder) - mh->leftBounds;
+			mapHeader->boundsWidth = (inversePolyRight + extraBorder) - mapHeader->leftBounds;
 		}
 		else
 		{
-			cout << "creating black border at " << (mh->leftBounds + mh->boundsWidth) << endl;
+			cout << "creating black border at " << (mapHeader->leftBounds + mapHeader->boundsWidth) << endl;
 		}
 	}
 	else
@@ -5305,61 +4797,57 @@ void GameSession::SetupMapBorderQuads(bool *blackBorder,
 		blackBorder[1] = true;
 
 
-		auto it = allVA.begin();
-		int maxY = (*it)->aabb.top + (*it)->aabb.height;
-		int minX = (*it)->aabb.left;
-		int maxX = (*it)->aabb.left + (*it)->aabb.width;
+		auto it = allPolysVec.begin();
+
+		IntRect polyAABB = (*it)->GetAABB();
+		int maxY = polyAABB.top + polyAABB.height;
+		int minX = polyAABB.left;
+		int maxX = polyAABB.left + polyAABB.width;
 
 		++it;
 		int temp;
-		for (; it != allVA.end(); ++it)
+		for (; it != allPolysVec.end(); ++it)
 		{
-			temp = (*it)->aabb.top + (*it)->aabb.height;
+			polyAABB = (*it)->GetAABB();
+			temp = polyAABB.top + polyAABB.height;
 			if (temp > maxY)
 			{
 				maxY = temp;
 			}
-			temp = (*it)->aabb.left;
+			temp = polyAABB.left;
 			if (temp < minX)
 			{
 				minX = temp;
 			}
-			temp = (*it)->aabb.left + (*it)->aabb.width;
+			temp = polyAABB.left + polyAABB.width;
 			if (temp > maxX)
 			{
 				maxX = temp;
 			}
 		}
 		
-		mh->boundsHeight = maxY - mh->topBounds - extraBorder;
-		int oldRight = mh->leftBounds + mh->boundsWidth;
-		int oldLeft = mh->leftBounds;
+		mapHeader->boundsHeight = maxY - mapHeader->topBounds - extraBorder;
+		int oldRight = mapHeader->leftBounds + mapHeader->boundsWidth;
+		int oldLeft = mapHeader->leftBounds;
 		if (minX > oldLeft)
 		{
-			mh->leftBounds = minX;
+			mapHeader->leftBounds = minX;
 		}
 		if (maxX <= oldRight)
 		{
-			mh->boundsWidth = maxX - mh->leftBounds;
+			mapHeader->boundsWidth = maxX - mapHeader->leftBounds;
 		}
 	}
 
-	
-	
-
-	
-
 	SetGlobalBorders();
-
-	
 
 	int quadWidth = 200;
 	int extra = 1000;
 
-	int top = mh->topBounds;
-	int lBound = mh->leftBounds;
-	int rBound = mh->leftBounds + mh->boundsWidth;
-	int height = mh->boundsHeight;
+	int top = mapHeader->topBounds;
+	int lBound = mapHeader->leftBounds;
+	int rBound = mapHeader->leftBounds + mapHeader->boundsWidth;
+	int height = mapHeader->boundsHeight;
 	
 	SetRectCenter(blackBorderQuads, quadWidth, height, Vector2f(lBound + quadWidth / 2,
 		top + height / 2));
@@ -5398,10 +4886,10 @@ void GameSession::SetupMapBorderQuads(bool *blackBorder,
 
 	if (stormCeilingOn)
 	{
-		int oldBottom = mh->topBounds + mh->boundsHeight - extraBorder;
-		mh->topBounds = stormCeilingHeight;
-		mh->boundsHeight = oldBottom - stormCeilingHeight;
-		assert(mh->boundsHeight > 0);
+		int oldBottom = mapHeader->topBounds + mapHeader->boundsHeight - extraBorder;
+		mapHeader->topBounds = stormCeilingHeight;
+		mapHeader->boundsHeight = oldBottom - stormCeilingHeight;
+		assert(mapHeader->boundsHeight > 0);
 	}
 }
 
@@ -5412,11 +4900,6 @@ void GameSession::SetupStormCeiling()
 		stormCeilingOn = true;
 		stormCeilingHeight = poiMap["stormceiling"]->pos.y;
 	}
-}
-
-Edge *GameSession::GetEdge(int index)
-{
-	return edges[index];
 }
 
 void GameSession::KeyboardUpdate( int index )
@@ -5833,7 +5316,7 @@ bool GameSession::Load()
 	OpenFile( );
 
 	//background = new Background(this, mh->envLevel, mh->envType);
-	Background::SetupFullBG(mh->envName, tm, background, scrollingBackgrounds);
+	Background::SetupFullBG(mapHeader->envName, tm, background, scrollingBackgrounds);
 
 	//still too far
 
@@ -5921,7 +5404,7 @@ bool GameSession::Load()
 	//too far
 	
 
-	if( mh->gameMode == MapHeader::MapType::T_STANDARD )
+	if(mapHeader->gameMode == MapHeader::MapType::T_STANDARD )
 	{ 
 		recGhost = new RecordGhost(GetPlayer(0));
 
@@ -5959,7 +5442,7 @@ bool GameSession::Load()
 
 	int goalTile = -1;
 	
-	switch(mh->envWorldType)//mh->envType )
+	switch(mapHeader->envWorldType)//mh->envType )
 	{
 	case 0:
 		goalTile = 5;
@@ -5986,7 +5469,7 @@ bool GameSession::Load()
 	assert( goalTile >= 0 );
 	goalMapIcon.setTextureRect(mini->ts_miniIcons->GetSubRect( goalTile ) );
 
-	float numSecondsToDrain = mh->drainSeconds;
+	float numSecondsToDrain = mapHeader->drainSeconds;
 	float drainPerSecond = GetPlayer(0)->totalHealth / numSecondsToDrain;
 	float drainPerFrame = drainPerSecond / 60.f;
 	float drainFrames = 1.f;
@@ -6131,16 +5614,16 @@ bool GameSession::Load()
 		++index;
 	}
 
-	for( list<TerrainPiece*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
-	{
-		int realIndex = indexConvert[pair<int,int>((*it)->terrainWorldType,
-		(*it)->terrainVariation)];
-		//cout << "real index: " << realIndex << endl;
-		(*it)->pShader = &polyShaders[realIndex];
-		(*it)->ts_terrain = ts_polyShaders[realIndex];
-		(*it)->tr->tdInfo = terrainDecorInfos[realIndex];
-		(*it)->tr->GenerateDecor();
-	}
+	//for( list<TerrainPiece*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
+	//{
+	//	int realIndex = indexConvert[pair<int,int>((*it)->terrainWorldType,
+	//	(*it)->terrainVariation)];
+	//	//cout << "real index: " << realIndex << endl;
+	//	(*it)->pShader = &polyShaders[realIndex];
+	//	(*it)->ts_terrain = ts_polyShaders[realIndex];
+	//	(*it)->tr->tdInfo = terrainDecorInfos[realIndex];
+	//	(*it)->tr->GenerateDecor();
+	//}
 	
 	cout << "last one" << endl;
 	for( auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
@@ -6413,7 +5896,7 @@ int GameSession::Run()
 		postProcessTex1->clear(Color::Red);
 		postProcessTex2->clear(Color::Red);
 		
-		switch (mh->bossFightType)
+		switch (mapHeader->bossFightType)
 		{
 		case 0:
 			break;
@@ -6906,7 +6389,7 @@ int GameSession::Run()
 					}
 				}
 
-				switch (mh->bossFightType)
+				switch (mapHeader->bossFightType)
 				{
 				case 0:
 					break;
@@ -8588,6 +8071,8 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	inversePoly = NULL;
+
 	drain = true;
 	hasGoal = false;
 	numTotalKeys = 0;
@@ -8685,15 +8170,14 @@ void GameSession::Init()
 	//stormCeilingInfo = NULL;
 	
 
-	for (list<VertexArray*>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
 	{
 		delete (*it);
 	}
-	polygons.clear();
+	allPolysVec.clear();
 
 	terrainDecorInfos = NULL;
 	va = NULL;
-	edges = NULL;
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
 	pauseFrames = 0;
@@ -8771,7 +8255,6 @@ void GameSession::Init()
 
 
 	gates = NULL;
-	edges = NULL;
 
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
@@ -8992,74 +8475,6 @@ bool GameSession::ScreenIntersectsInversePoly( sf::Rect<double> &screenRect )
 	return false;
 
 	//IsEdgeTouchingBox
-}
-
-void GameSession::SetupInversePoly( Tileset *ts_bush, int currentEdgeIndex )
-{
-	assert( inversePoly != NULL );
-
-	sf::Rect<double> aabb = inversePoly->aabb;
-
-	double testExtra = 500;
-
-	sf::Rect<double> finalRect = aabb;
-	finalRect.left -= testExtra;
-	finalRect.top -= testExtra;
-	finalRect.width += testExtra * 2;
-	finalRect.height += testExtra * 2;
-
-	std::vector<std::vector<Vector2i>> pointVector;
-	pointVector.resize(2);
-	vector<Vector2i> &outerVector = pointVector[0];
-	vector<Vector2i> &currVector = pointVector[1];
-
-	outerVector.resize(4);
-	outerVector[0] = Vector2i(finalRect.left, finalRect.top);
-	outerVector[1] = Vector2i(finalRect.left + finalRect.width, finalRect.top);
-	outerVector[2] = Vector2i(finalRect.left + finalRect.width, finalRect.top + finalRect.height);
-	outerVector[3] = Vector2i(finalRect.left, finalRect.top + finalRect.height);
-
-	//p2t::CDT * cdt = new p2t::CDT( outerQuadPoints );
-
-	int inversePoints = inversePoly->numPoints;
-	currVector.resize(inversePoints);
-	for (int i = 0; i < inversePoints; ++i)
-	{
-		currVector[i] = Vector2i(points[i]);
-	}
-
-	std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(pointVector);
-	int vaSize = indices.size();
-	int numTris = vaSize / 3;
-	va = new VertexArray( sf::Triangles , vaSize );
-	VertexArray & v = *va;
-	Color testColor( 0x75, 0x70, 0x90 );
-	testColor = Color::White;
-	int trueIndex;
-	int polyIndex;
-	for( int i = 0; i < vaSize; ++i )
-	{	
-		trueIndex = indices[i];
-		if (trueIndex < 4)
-		{
-			polyIndex = 0;
-		}
-		else
-		{
-			polyIndex = 1;
-			trueIndex -= 4;
-		}
-		v[i] = Vertex(Vector2f(pointVector[polyIndex][trueIndex]), testColor);
-		/*v[i*3] = Vertex( Vector2f( currVector[trueIndex*3] ), testColor );
-		v[i*3 + 1] = Vertex( Vector2f(currVector[trueIndex * 3+1]), testColor );
-		v[i*3 + 2] = Vertex( Vector2f(currVector[trueIndex * 3+2]), testColor );*/
-	}
-
-	inversePoly->terrainVA = va;
-
-	VertexArray *bushVA = SetupBushes( 0,  edges[currentEdgeIndex], ts_bush );
-
-	inversePoly->bushVA = bushVA;
 }
 
 void GameSession::SetStorySeq(StorySequence *storySeq)
@@ -9370,7 +8785,7 @@ void GameSession::DrawZones()
 
 void GameSession::DrawBlackBorderQuads()
 {
-	bool narrowMap = mh->boundsWidth < 1920 * 2;
+	bool narrowMap = mapHeader->boundsWidth < 1920 * 2;
 
 	if (cam.manual || narrowMap)
 	{
@@ -9684,9 +9099,9 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 void GameSession::SetOriginalMusic()
 {
 	int pointsTotal = 0;
-	if (mh->songLevels.size() > 0)
+	if (mapHeader->songLevels.size() > 0)
 	{
-		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+		for (auto it = mapHeader->songLevels.begin(); it != mapHeader->songLevels.end(); ++it)
 		{
 			if (mainMenu->musicManager->songMap.count((*it).first) == 0)
 			{
@@ -9704,7 +9119,7 @@ void GameSession::SetOriginalMusic()
 	{
 		int r = rand() % (pointsTotal);
 
-		for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+		for (auto it = mapHeader->songLevels.begin(); it != mapHeader->songLevels.end(); ++it)
 		{
 			if (mainMenu->musicManager->songMap.count((*it).first) == 0)
 			{
@@ -9945,9 +9360,9 @@ void GameSession::RestartLevel()
 	//AddEmitter(testEmit, EffectLayer::IN_FRONT);
 	//testEmit->Reset();
 
-	for (auto it = allVA.begin(); it != allVA.end(); ++it)
+	for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
 	{
-		(*it)->Reset();
+		(*it)->ResetTouchGrass();
 	}
 
 	shardsCapturedField->Reset();
@@ -10814,8 +10229,9 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 		rayEnd = rayStart + rayDir * rayLen;
 		//rayIgnoreEdge->
 		//while( rcEdge 
-		bool rayOkay = rayEnd.x >= mh->leftBounds && rayEnd.y >= mh->topBounds && rayEnd.x <= mh->leftBounds + mh->boundsWidth
-			&& rayEnd.y <= mh->topBounds + mh->boundsHeight;
+		bool rayOkay = rayEnd.x >= mapHeader->leftBounds && rayEnd.y >= mapHeader->topBounds 
+			&& rayEnd.x <= mapHeader->leftBounds + mapHeader->boundsWidth
+			&& rayEnd.y <= mapHeader->topBounds + mapHeader->boundsHeight;
 		
 		
 		Edge *cEdge = NULL;
@@ -11237,10 +10653,10 @@ int GameSession::IsWall( sf::Vector2<double> &normal )
 
 bool GameSession::IsWithinBounds(V2d &p)
 {
-	return (((p.x >= mh->leftBounds)
-		&& (p.y >= mh->topBounds)
-		&& (p.x <= mh->leftBounds + mh->boundsWidth)
-		&& (p.y <= mh->topBounds + mh->boundsHeight)));
+	return (((p.x >= mapHeader->leftBounds)
+		&& (p.y >= mapHeader->topBounds)
+		&& (p.x <= mapHeader->leftBounds + mapHeader->boundsWidth)
+		&& (p.y <= mapHeader->topBounds + mapHeader->boundsHeight)));
 }
 
 bool GameSession::IsWithinBarrierBounds(V2d &p)

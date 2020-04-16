@@ -4687,6 +4687,17 @@ void TerrainPolygon::AddGatesToList(std::list<GateInfoPtr> &gates)
 	}
 }
 
+void TerrainPolygon::HandleQuery(QuadTreeCollider *qtc)
+{
+	qtc->HandleEntrant(this);
+}
+
+bool TerrainPolygon::IsTouchingBox(const sf::Rect<double> &r)
+{
+	Rect<double> aabb(GetAABB());
+	return IsBoxTouchingBox(aabb, r);
+}
+
 TerrainPoint::TerrainPoint( sf::Vector2i &p, bool s )
 	:pos( p ), selected( s ), gate( NULL )
 {
