@@ -186,6 +186,9 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
+
+GameSession * GameSession::currSession = NULL;
+
 EdgeAngleType GetEdgeAngleType(V2d &normal)
 {
 	if (GameSession::IsFlatGround(normal) == 0)
@@ -254,12 +257,20 @@ GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath
 	eHitParamsMan( NULL ), drain(true )
 {
 	cam.owner = this;
+	currSession = this;
 
 	Init();
 }
 
 void GameSession::Cleanup()
 {
+	//for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
+	for( int i = 0; i < allPolysVec.size(); ++i)
+	{
+		delete allPolysVec[i];
+	}
+	allPolysVec.clear();
+
 	if (fBubblePos != NULL)
 	{
 		delete[] fBubblePos;
@@ -616,6 +627,13 @@ void GameSession::Cleanup()
 GameSession::~GameSession()
 {
 	Cleanup();
+
+	currSession = NULL;
+}
+
+GameSession *GameSession::GetSession()
+{
+	return currSession;
 }
 
 bool GameSession::ReadActors(std::ifstream &is)
@@ -632,7 +650,28 @@ Edge *GameSession::LoadEdgeIndex(std::ifstream &is)
 	int edgeIndex;
 	is >> edgeIndex;
 
-	if( inversePoly !-= )
+	if (inversePoly != NULL)
+	{
+		terrainIndex++;
+	}
+
+	return allPolysVec[terrainIndex]->GetEdge(edgeIndex);
+}
+
+void GameSession::LoadEdgeInfo( ifstream &is, Edge *&edge, double &edgeQuant)
+{
+	edge = LoadEdgeIndex(is);
+	is >> edgeQuant;
+}
+
+void GameSession::LoadStandardGroundedEnemy(std::ifstream &is,
+	Edge *&edge, double &edgeQuant,
+	int &hasMonitor, int &level)
+{
+	LoadEdgeInfo(is, edge, edgeQuant);
+
+	is >> hasMonitor;
+	is >> level;
 }
 
 void GameSession::UpdateEnemiesPrePhysics()
@@ -1542,18 +1581,18 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 	Enemy *enem = NULL;
 
+	Edge *loadedEdge;
+	double edgeQuantity;
+	int hasMonitor;
+	int level;
+
+	//LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+
 	if (typeName == "goal" || typeName == "greengoal")
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
+		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
 
 		int w = 0;
 		if (typeName == "greengoal")
@@ -1562,7 +1601,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		}
 
 		//cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
-		Goal *enemy = new Goal(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, w);
+		Goal *enemy = new Goal(this, loadedEdge, edgeQuantity, w);
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
@@ -1602,18 +1641,11 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		else if (posType == 1)
 		{
-			int terrainIndex;
-			is >> terrainIndex;
-
-			int edgeIndex;
-			is >> edgeIndex;
-
-			double edgeQuantity;
-			is >> edgeQuantity;
+			LoadEdgeInfo(is, loadedEdge, edgeQuantity);
 
 			is >> pname;
 
-			Edge *e = edges[polyIndex[terrainIndex] + edgeIndex];
+			Edge *e = loadedEdge;
 
 			V2d p = e->GetPoint(edgeQuantity);
 
@@ -2075,16 +2107,9 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
+		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
 
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		CrawlerQueen *enemy = new CrawlerQueen(this, edges[polyIndex[terrainIndex] + edgeIndex],
+		CrawlerQueen *enemy = new CrawlerQueen(this, loadedEdge,
 			edgeQuantity, false);
 
 		fullEnemyList.push_back(enemy);
@@ -2092,7 +2117,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		enem = enemy;
 
 		enemyTree->Insert(enemy);
-		/*Boss_Crawler *enemy = new Boss_Crawler( this, edges[polyIndex[terrainIndex] + edgeIndex],
+		/*Boss_Crawler *enemy = new Boss_Crawler( this, loadedEdge,
 		edgeQuantity );
 
 		fullEnemyList.push_back( enemy );
@@ -2103,27 +2128,9 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
 
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
-		/*double bulletSpeed;
-		is >> bulletSpeed;
-
-		int framesWait;
-		is >> framesWait;*/
-
-		BasicTurret *enemy = new BasicTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,level);
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+		BasicTurret *enemy = new BasicTurret(this, hasMonitor, loadedEdge, edgeQuantity,level);
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
@@ -2133,25 +2140,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
-
-		//BossCrawler *enemy = new BossCrawler( this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-		Crawler *enemy = new Crawler(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+		//BossCrawler *enemy = new BossCrawler( this, loadedEdge, edgeQuantity );
+		Crawler *enemy = new Crawler(this, hasMonitor, loadedEdge,
 			edgeQuantity, level);
-		//RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+		//RoadRunner *enemy = new RoadRunner(this, hasMonitor, loadedEdge,
 		//	edgeQuantity);
 
 
@@ -2172,24 +2166,11 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		//always grounded
 
 
-		int terrainIndex;
-		is >> terrainIndex;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
-
-		//FootTrap *enemy = new FootTrap( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity );
-		Shroom *enemy = new Shroom(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
-		//Cactus *enemy = new Cactus( this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+		//FootTrap *enemy = new FootTrap( this, hasMonitor, loadedEdge, edgeQuantity );
+		Shroom *enemy = new Shroom(this, hasMonitor, loadedEdge, edgeQuantity, level);
+		//Cactus *enemy = new Cactus( this, hasMonitor, loadedEdge, edgeQuantity);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -2378,20 +2359,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	else if (typeName == "groundedgrindjugglercw" || typeName == "groundedgrindjugglerccw")
 	{
 
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
 		int numJuggles;
 		is >> numJuggles;
@@ -2402,7 +2370,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 			cw = false;
 		}
 
-		Enemy *enemy = new GroundedGrindJuggler(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+		Enemy *enemy = new GroundedGrindJuggler(this, hasMonitor, loadedEdge,
 			edgeQuantity, level, numJuggles, cw);
 
 
@@ -2437,20 +2405,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	}
 	else if (typeName == "poisonfrog")
 	{
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 		/*int gravFactor;
 		is >> gravFactor;
 
@@ -2463,7 +2418,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int jumpFramesWait;
 		is >> jumpFramesWait;*/
 
-		PoisonFrog *enemy = new PoisonFrog(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+		PoisonFrog *enemy = new PoisonFrog(this, hasMonitor, loadedEdge,
 			edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
@@ -2473,22 +2428,9 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	}
 	else if (typeName == "gravityfaller")
 	{
-		int terrainIndex;
-		is >> terrainIndex;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
-
-		GravityFaller *enemy = new GravityFaller(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+		GravityFaller *enemy = new GravityFaller(this, hasMonitor, loadedEdge,
 			edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
@@ -2500,23 +2442,10 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
 
-		StagBeetle *enemy = new StagBeetle(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex],
+		StagBeetle *enemy = new StagBeetle(this, hasMonitor, loadedEdge,
 			edgeQuantity, level );
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -2527,42 +2456,9 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		/*double bulletSpeed;
-		is >> bulletSpeed;
-
-		int framesWait;
-		is >> framesWait;
-
-		int xGravFactor;
-		is >> xGravFactor;
-
-		int yGravFactor;
-		is >> yGravFactor;
-
-		bool relative = false;
-		string relativeGravStr;
-		is >> relativeGravStr;
-		if (relativeGravStr == "+relative")
-		{
-			relative = true;
-		}*/
-
-		int level;
-		is >> level;
-
-		CurveTurret *enemy = new CurveTurret(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+		CurveTurret *enemy = new CurveTurret(this, hasMonitor, loadedEdge, edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -2649,32 +2545,10 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		/*int bulletSpeed;
-		is >> bulletSpeed;
-
-		int rhythm;
-		is >> rhythm;
-
-		int amplitude;
-		is >> amplitude;*/
-
-		int level;
-		is >> level;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
 		Cactus *enemy = new Cactus(this, hasMonitor,
-			edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level );
+			loadedEdge, edgeQuantity, level );
 
 
 		fullEnemyList.push_back(enemy);
@@ -2719,22 +2593,9 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
-
-		Badger *enemy = new Badger(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+		Badger *enemy = new Badger(this, hasMonitor, loadedEdge, edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -2745,22 +2606,9 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
-
-		RoadRunner *enemy = new RoadRunner(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+		RoadRunner *enemy = new RoadRunner(this, hasMonitor, loadedEdge, edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -2861,23 +2709,10 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
 		Cheetah *enemy = new Cheetah( this, hasMonitor,
-		edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level );
+		loadedEdge, edgeQuantity, level );
 
 		fullEnemyList.push_back( enemy );
 		enem = enemy;
@@ -2888,22 +2723,9 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
-
-		Spider *enemy = new Spider(this, hasMonitor, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+		Spider *enemy = new Spider(this, hasMonitor, loadedEdge, edgeQuantity,
 			level);
 
 
@@ -3065,7 +2887,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
+		/*int terrainIndex;
 		is >> terrainIndex;
 
 		int edgeIndex;
@@ -3075,10 +2897,10 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		is >> edgeQuantity;
 
 		int hasMonitor;
-		is >> hasMonitor;
+		is >> hasMonitor;*/
 
 		//GrowingTree * enemy = new GrowingTree( this, hasMonitor,
-		//	edges[polyIndex[terrainIndex] + edgeIndex], 
+		//	loadedEdge, 
 		//	edgeQuantity, 32, 0, 1000 );
 
 		//
@@ -3091,23 +2913,10 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
-		int hasMonitor;
-		is >> hasMonitor;
-
-		int level;
-		is >> level;
+		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
 		GrowingTree * enemy = new GrowingTree(this, hasMonitor,
-			edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity, level);
+			loadedEdge, edgeQuantity, level);
 
 		//
 		fullEnemyList.push_back( enemy );
@@ -3303,19 +3112,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	{
 		//always grounded
 
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
+		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
 
 		int nexusIndex;
 		is >> nexusIndex;
 
-		Nexus *enemy = new Nexus(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+		Nexus *enemy = new Nexus(this, loadedEdge, edgeQuantity);
 
 		goalNodePos = enemy->GetKillPos();
 		float space = 78.f;
@@ -3331,19 +3133,11 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	}
 	else if (typeName == "shippickup")
 	{
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
-
+		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
 		int facingRight;
 		is >> facingRight;
 
-		ShipPickup *enemy = new ShipPickup(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+		ShipPickup *enemy = new ShipPickup(this, loadedEdge, edgeQuantity,
 			facingRight);
 
 		fullEnemyList.push_back(enemy);
@@ -3364,14 +3158,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	}
 	else if (typeName == "groundtrigger")
 	{
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
+		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
 
 		int facingRight;
 		is >> facingRight;
@@ -3379,7 +3166,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		string tType;
 		is >> tType;
 
-		GroundTrigger *enemy = new GroundTrigger(this, edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity,
+		GroundTrigger *enemy = new GroundTrigger(this, loadedEdge, edgeQuantity,
 			facingRight, tType);
 
 		fullEnemyList.push_back(enemy);
@@ -3411,20 +3198,13 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	}
 	else if (typeName == "flowerpod")
 	{
-		int terrainIndex;
-		is >> terrainIndex;
-
-		int edgeIndex;
-		is >> edgeIndex;
-
-		double edgeQuantity;
-		is >> edgeQuantity;
+		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
 
 		string tType;
 		is >> tType;
 
 		FlowerPod *enemy = new FlowerPod(this, tType,
-			edges[polyIndex[terrainIndex] + edgeIndex], edgeQuantity);
+			loadedEdge, edgeQuantity);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -3533,6 +3313,8 @@ void GameSession::ProcessTerrain(PolyPtr poly)
 		poly->AddEdgesToQuadTree(inverseEdgeTree);
 		inversePoly = poly;
 	}
+
+	matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
 
 	borderTree->Insert(poly);
 	allPolygonsList.push_back(poly);
@@ -4185,7 +3967,7 @@ void GameSession::CreateZones()
 		assert( inverseEdgeTree != NULL );
 
 		TerrainPolygon tp;
-		Edge *startEdge = edges[0];
+		Edge *startEdge = allPolysVec[0]->GetEdge(0);
 		Edge *curr = startEdge;
 		
 		tp.AddPoint( Vector2i( curr->v0.x, curr->v0.y ), false );
@@ -5525,6 +5307,9 @@ bool GameSession::Load()
 
 	cout << "progress more" << endl;
 
+
+	
+
 	map<pair<int,int>, int> indexConvert;
 	int index = 0;
 	for( set<pair<int,int>>::iterator it = matSet.begin(); it != matSet.end(); ++it )
@@ -5614,6 +5399,7 @@ bool GameSession::Load()
 		++index;
 	}
 
+
 	//for( list<TerrainPiece*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
 	//{
 	//	int realIndex = indexConvert[pair<int,int>((*it)->terrainWorldType,
@@ -5657,8 +5443,6 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 #include "StorySequence.h"
 int GameSession::Run()
 {
-
-
 	ClearEmitters();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVisible = mainMenu->GetMouseVisible();
@@ -6717,12 +6501,17 @@ int GameSession::Run()
 					listVA = t;
 				}
 
+
+				//works up to here!
+				
+
 				listVA = NULL;
 				//listVA is null here
 				queryMode = "border";
 				numBorders = 0;
 				borderTree->Query( this, screenRect );
 
+			
 
 				specialPieceList = NULL;
 				queryMode = "specialterrain";
@@ -6734,6 +6523,8 @@ int GameSession::Run()
 				
 
 				TerrainRender::UpdateDecorLayers();
+
+				
 
 				for( map<DecorType,DecorLayer*>::iterator mit =
 					decorLayerMap.begin(); mit != decorLayerMap.end();
@@ -6782,7 +6573,7 @@ int GameSession::Run()
 				}
 				
 				
-
+				
 				/*if( player->record > 0 )
 				{
 					player->ghosts[player->record-1]->states[player->ghosts[player->record-1]->currFrame].screenRect =
@@ -6907,7 +6698,17 @@ int GameSession::Run()
 			sp = sp->next;
 		}
 
-		DrawTerrainPieces(listVA);
+		
+		//JUST FOR TESTING
+		int numPolys = allPolysVec.size();
+		for (int i = 0; i < numPolys; ++i)
+		{
+			//void TerrainPolygon::Draw(bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow)
+			allPolysVec[i]->Draw(preScreenTex);
+		}
+
+		
+		//DrawTerrainPieces(listVA);
 		
 		
 
@@ -7368,7 +7169,7 @@ int GameSession::Run()
 
 			mapTex->setView( vv );			
 
-			Vector2i b1 = mapTex->mapCoordsToPixel( Vector2f( originalPos.x, originalPos.y ) );
+			Vector2i b1 = mapTex->mapCoordsToPixel( Vector2f(playerOrigPos.x, playerOrigPos.y ) );
 
 			mapTex->setView( vuiView );
 
@@ -7891,7 +7692,7 @@ int GameSession::Run()
 
 				mapTex->setView(vv);
 
-				Vector2i b1 = mapTex->mapCoordsToPixel(Vector2f(originalPos.x, originalPos.y));
+				Vector2i b1 = mapTex->mapCoordsToPixel(Vector2f(playerOrigPos.x, playerOrigPos.y));
 
 				mapTex->setView(vuiView);
 
@@ -8122,7 +7923,6 @@ void GameSession::Init()
 
 	adventureHUD = NULL;
 
-	mh = NULL;
 	goalPulse = NULL;
 	pauseMenu = NULL;
 	progressDisplay = NULL;
@@ -8168,13 +7968,6 @@ void GameSession::Init()
 
 	rain = NULL;//new Rain(this);//NULL;
 	//stormCeilingInfo = NULL;
-	
-
-	for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
-	{
-		delete (*it);
-	}
-	allPolysVec.clear();
 
 	terrainDecorInfos = NULL;
 	va = NULL;
@@ -8297,37 +8090,37 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "border" )
 	{
-		if( listVA == NULL )
-		{
-			listVA = (TerrainPiece*)qte;
-			numBorders++;
-		}
-		else
-		{
-			
-			TerrainPiece *tva = (TerrainPiece*)qte;
-			TerrainPiece *temp = listVA;
-			bool okay = true;
-			while( temp != NULL )
-			{
-				if( temp == tva )
-				{
-					okay = false;
-					break;
-				}	
-				temp = temp->next;
-			}
+		//if( listVA == NULL )
+		//{
+		//	listVA = (TerrainPiece*)qte;
+		//	numBorders++;
+		//}
+		//else
+		//{
+		//	
+		//	TerrainPiece *tva = (TerrainPiece*)qte;
+		//	TerrainPiece *temp = listVA;
+		//	bool okay = true;
+		//	while( temp != NULL )
+		//	{
+		//		if( temp == tva )
+		//		{
+		//			okay = false;
+		//			break;
+		//		}	
+		//		temp = temp->next;
+		//	}
 
-			if( okay )
-			{
-			
-			//cout << "blah: " << (unsigned)tva << endl;
-				tva->next = listVA;
-				listVA = tva;
-				numBorders++;
-				//cout << numBorders + 1 << endl;
-			}
-		}
+		//	if( okay )
+		//	{
+		//	
+		//	//cout << "blah: " << (unsigned)tva << endl;
+		//		tva->next = listVA;
+		//		listVA = tva;
+		//		numBorders++;
+		//		//cout << numBorders + 1 << endl;
+		//	}
+		//}
 		
 	}
 	else if (queryMode == "specialterrain")
@@ -8994,30 +8787,6 @@ void GameSession::DebugDraw()
 	}
 }
 
-void GameSession::DrawTerrainPieces(TerrainPiece *tPiece)
-{
-	if (drawInversePoly)
-	{
-		if (tPiece == NULL)
-		{
-			tPiece = inversePoly;
-			inversePoly->next = NULL;
-		}
-		else
-		{
-			tPiece->next = inversePoly;
-			inversePoly->next = NULL;
-		}
-	}
-
-	//draw terrain
-	while (tPiece != NULL)
-	{
-		tPiece->Draw(preScreenTex);
-		tPiece = tPiece->next;
-	}
-}
-
 void GameSession::UpdateDecorSprites()
 {
 	TerrainPiece *te = listVA;
@@ -9261,8 +9030,8 @@ void GameSession::ResetShipSequence()
 	player->action = Actor::RIDESHIP;
 	player->frame = 0;
 	player->position = shipEntrancePos;
-	originalPos = player->position;
-	shipSprite.setPosition(originalPos.x - 13, originalPos.y - 124 );
+	playerOrigPos = Vector2i(player->position);
+	shipSprite.setPosition(playerOrigPos.x - 13, playerOrigPos.y - 124 );
 	//cloud0a.setpo
 	shipSequence = true;
 	shipSeqFrame = 0;
@@ -9278,7 +9047,7 @@ void GameSession::ResetShipSequence()
 	IntRect sub0 = ts_w1ShipClouds0->GetSubRect( 0 );
 	IntRect sub1 = ts_w1ShipClouds1->GetSubRect( 0 );
 			
-	Vector2f bottomLeft = Vector2f(originalPos.x, originalPos.y ) + Vector2f( -480, 270 );
+	Vector2f bottomLeft = Vector2f(playerOrigPos.x, playerOrigPos.y ) + Vector2f( -480, 270 );
 	for( int i = 0; i < 3; ++i )
 	{
 		Vector2f xExtra( 480 * i, 0 );
@@ -9323,7 +9092,7 @@ void GameSession::ResetShipSequence()
 		cloudBot1[i*4+3].texCoords = Vector2f( sub1.width, sub1.height );
 	}
 
-	middleClouds.setPosition(originalPos.x - 480, originalPos.y + 270 );
+	middleClouds.setPosition(playerOrigPos.x - 480, playerOrigPos.y + 270 );
 }
 
 void GameSession::ClearFX()

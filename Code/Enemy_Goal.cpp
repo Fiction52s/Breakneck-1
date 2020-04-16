@@ -56,7 +56,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q, int world )
 	miniSprite.setTextureRect( ts_mini->GetSubRect( 2 ) );
 	miniSprite.setScale( 16, 16 );
 	
-	switch( owner->mh->envWorldType)
+	switch( owner->mapHeader->envWorldType)
 	{
 	case 0:
 		miniSprite.setTextureRect( ts_mini->GetSubRect( 5 ) );

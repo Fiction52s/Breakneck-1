@@ -636,7 +636,7 @@ void Gate::UpdateLine()
 	}
 	case KEYGATE:
 		{
-		switch( owner->mh->envWorldType ) 
+		switch( owner->mapHeader->envWorldType )
 		{
 		case 0:
 			c = COLOR_BLUE;

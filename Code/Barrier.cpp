@@ -17,8 +17,8 @@ Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int 
 
 	triggerSeq = NULL;
 
-	double top = owner->mh->topBounds;
-	double bottom = owner->mh->topBounds + owner->mh->boundsHeight;
+	double top = owner->mapHeader->topBounds;
+	double bottom = owner->mapHeader->topBounds + owner->mapHeader->boundsHeight;
 
 	line[0].color = Color::Red;
 	line[1].color = Color::Red;

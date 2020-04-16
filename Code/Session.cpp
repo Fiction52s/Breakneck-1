@@ -6,6 +6,7 @@
 #include "EditorRail.h"
 #include "EditorActors.h"
 #include "EditSession.h"
+#include "GameSession.h"
 
 using namespace sf;
 using namespace std;
@@ -16,6 +17,9 @@ Session *Session::GetSession()
 	if (edit != NULL)
 		return edit;
 
+	GameSession *game = GameSession::GetSession();
+	if (game != NULL)
+		return game;
 	//add GameSession in here eventually
 
 	return NULL;

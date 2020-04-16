@@ -848,21 +848,21 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	yChangeNeg = 0;
 
 	int topBoundsCamExtra = 50;
-	int topBounds = owner->mh->topBounds + topBoundsCamExtra;
+	int topBounds = owner->mapHeader->topBounds + topBoundsCamExtra;
 
 	float halfw = 960 / 2;
 	float halfh = 540 / 2;
 
 	float left = truePos.x - halfw * GetZoom();
 
-	float tdiff = owner->mh->leftBounds - left;
+	float tdiff = owner->mapHeader->leftBounds - left;
 	if (tdiff > 0)
 	{
 		xChangePos = tdiff;
 	}
 	float right = truePos.x + halfw * GetZoom();
 
-	tdiff = right - (owner->mh->leftBounds + owner->mh->boundsWidth);
+	tdiff = right - (owner->mapHeader->leftBounds + owner->mapHeader->boundsWidth);
 	if (tdiff > 0)
 	{
 		xChangeNeg = -tdiff;
@@ -875,7 +875,7 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	}
 
 	float bot = truePos.y + halfh * GetZoom();
-	tdiff = bot - (owner->mh->topBounds + owner->mh->boundsHeight);
+	tdiff = bot - (owner->mapHeader->topBounds + owner->mapHeader->boundsHeight);
 	if (tdiff > 0)
 	{
 		yChangeNeg = -tdiff;

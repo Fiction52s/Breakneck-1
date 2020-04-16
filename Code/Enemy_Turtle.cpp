@@ -147,7 +147,7 @@ void Turtle::BulletHitPlayer(BasicBullet *b )
 
 void Turtle::ResetEnemy()
 {
-	if( position.x < owner->originalPos.x )
+	if( position.x < owner->playerOrigPos.x )
 		facingRight = false;
 	else
 		facingRight = true;

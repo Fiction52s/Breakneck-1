@@ -862,22 +862,22 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				mapCenter.y += move;
 			}
 
-			if( mapCenter.x < owner->mh->leftBounds )
+			if( mapCenter.x < owner->mapHeader->leftBounds )
 			{
-				mapCenter.x = owner->mh->leftBounds;
+				mapCenter.x = owner->mapHeader->leftBounds;
 			}
-			else if( mapCenter.x > owner->mh->leftBounds + owner->mh->boundsWidth )
+			else if( mapCenter.x > owner->mapHeader->leftBounds + owner->mapHeader->boundsWidth )
 			{
-				mapCenter.x = owner->mh->leftBounds + owner->mh->boundsWidth;
+				mapCenter.x = owner->mapHeader->leftBounds + owner->mapHeader->boundsWidth;
 			}
 
-			if( mapCenter.y < owner->mh->topBounds )
+			if( mapCenter.y < owner->mapHeader->topBounds )
 			{
-				mapCenter.y = owner->mh->topBounds;
+				mapCenter.y = owner->mapHeader->topBounds;
 			}
-			else if( mapCenter.y > owner->mh->topBounds + owner->mh->boundsHeight )
+			else if( mapCenter.y > owner->mapHeader->topBounds + owner->mapHeader->boundsHeight )
 			{
-				mapCenter.y = owner->mh->topBounds + owner->mh->boundsHeight;
+				mapCenter.y = owner->mapHeader->topBounds + owner->mapHeader->boundsHeight;
 			}
 			break;
 		}

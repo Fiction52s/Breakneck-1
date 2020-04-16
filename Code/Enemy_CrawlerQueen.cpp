@@ -1257,7 +1257,7 @@ bool CrawlerQueen::GetClockwise(int index)
 void CrawlerQueen::Init()
 {
 	
-	if (owner->mh->bossFightType == 1)
+	if (owner->mapHeader->bossFightType == 1)
 	{
 		//PoiInfo *pi = owner->poiMap["crawlercam"];
 		//assert(pi != NULL);

@@ -9,10 +9,10 @@ TopClouds::TopClouds( GameSession *p_owner )
 	:owner( p_owner )
 {
 	ts = owner->GetTileset("FX/cloud_ceiling_256x256.png", 256, 256);
-	assert(owner->mh != NULL);
-	int boundsWidth = owner->mh->boundsWidth;
-	int left = owner->mh->leftBounds;
-	int top = owner->mh->topBounds;
+	assert(owner->mapHeader != NULL);
+	int boundsWidth = owner->mapHeader->boundsWidth;
+	int left = owner->mapHeader->leftBounds;
+	int top = owner->mapHeader->topBounds;
 
 	numClouds = boundsWidth / ts->tileWidth;
 
@@ -49,7 +49,7 @@ void TopClouds::Update()
 
 	FloatRect camRect = owner->cam.GetRect();
 
-	startIndex = (camRect.left - owner->mh->leftBounds) / ts->tileWidth;
+	startIndex = (camRect.left - owner->mapHeader->leftBounds) / ts->tileWidth;
 	endIndex = startIndex + camRect.width / ts->tileWidth;
 
 	//fix efficiency later

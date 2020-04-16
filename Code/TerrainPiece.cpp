@@ -203,7 +203,7 @@ void TerrainPiece::SetupGrass(std::list<GrassSegment> &segments)
 		int totalGrass = 0;
 		for (list<GrassSegment>::iterator it = segments.begin(); it != segments.end(); ++it)
 		{
-			Edge *segEdge = owner->GetEdge(startEdgeIndex + (*it).edgeIndex);
+			Edge *segEdge = NULL;//owner->GetEdge(startEdgeIndex + (*it).edgeIndex);
 			V2d v0 = segEdge->v0;
 			V2d v1 = segEdge->v1;
 

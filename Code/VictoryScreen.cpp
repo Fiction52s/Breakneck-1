@@ -287,7 +287,7 @@ void ResultsScreen::SetupColumns()
 	}
 
 	int currPlace;
-	switch (owner->mh->gameMode)
+	switch (owner->mapHeader->gameMode)
 	{
 	case MapHeader::T_RACEFIGHT:
 	{
@@ -329,7 +329,7 @@ void ResultsScreen::Update()
 		{
 			for (int i = 0; i < 4; ++i)
 			{
-				if (owner->mh->gameMode == MapHeader::MapType::T_RACEFIGHT)
+				if (owner->mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
 				{
 					if (owner->raceFight->place[i] == 1 && frame <= slideInFrames[0])
 					{
@@ -403,7 +403,7 @@ void ResultsScreen::Update()
 		{
 			for (int i = 0; i < 4; ++i)
 			{
-				if (owner->mh->gameMode == MapHeader::MapType::T_RACEFIGHT)
+				if (owner->mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
 				{
 					double f = (double)frame / slideOutFrames;
 					double a = slideOutBez.GetValue(f);
@@ -477,7 +477,7 @@ void ResultsScreen::Reset()
 
 void ResultsScreen::Draw(RenderTarget *target)
 {
-	switch (owner->mh->gameMode)
+	switch (owner->mapHeader->gameMode)
 	{
 	case MapHeader::T_RACEFIGHT:
 	{

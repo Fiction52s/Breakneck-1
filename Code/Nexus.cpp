@@ -17,7 +17,7 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 {
 	double width;
 	double height;
-	int world = owner->mh->envWorldType;
+	int world = owner->mapHeader->envWorldType;
 	switch (world)
 	{
 	case 0:
@@ -61,7 +61,7 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 	miniSprite.setTextureRect(ts_mini->GetSubRect(2));
 	miniSprite.setScale(16, 16);
 
-	switch (owner->mh->envWorldType)
+	switch (owner->mapHeader->envWorldType)
 	{
 	case 0:
 		miniSprite.setTextureRect(ts_mini->GetSubRect(5));

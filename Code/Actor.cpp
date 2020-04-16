@@ -181,7 +181,7 @@ void Actor::SetToOriginalPos()
 {
 	if (owner != NULL)
 	{
-		position = owner->originalPos;
+		position = V2d(owner->playerOrigPos);
 	}
 	else if (editOwner != NULL)
 	{
@@ -17024,13 +17024,13 @@ void Actor::QueryTouchGrass()
 	queryMode = "touchgrasspoly";
 	owner->borderTree->Query(this, queryRExtended);
 
-	queryMode = "touchgrass";
-	TerrainPiece *tempT = polyList;
+	/*queryMode = "touchgrass";
+	PolyPtr *tempT = polyList;
 	while (tempT != NULL)
 	{
 		tempT->QueryTouchGrass(this, queryR);
 		tempT = tempT->next;
-	}
+	}*/
 }
 
 bool Actor::IsIntroAction(Action a)
@@ -18146,7 +18146,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if (queryMode == "touchgrasspoly")
 	{
-		TerrainPiece *tPiece = (TerrainPiece*)qte;
+		/*TerrainPiece *tPiece = (TerrainPiece*)qte;
 		tPiece->next = NULL;
 		if (polyList == NULL)
 		{
@@ -18156,7 +18156,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			tPiece->next = polyList;
 			polyList = tPiece;
-		}
+		}*/
 	}
 	else if (queryMode == "specialterrain")
 	{

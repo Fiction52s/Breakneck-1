@@ -284,13 +284,21 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void LoadEnemy(std::ifstream &is);
 	bool ReadActors(std::ifstream &is);
 	Edge *LoadEdgeIndex(std::ifstream &is);
+	void LoadEdgeInfo(std::ifstream &is,
+		Edge *&edge, double &edgeQuant);
+	void LoadStandardGroundedEnemy(std::ifstream &is,
+		Edge *&edge, double &edgeQuant,
+		int &hasMonitor, int &level);
 	bool OpenFile();
 
 	TilesetManager tm;
 
 	TerrainDecorInfo **terrainDecorInfos;
 
-	Actor *players[4]; //shared but change to vector
+	static GameSession *GetSession();
+	static GameSession *currSession;
+
+	//Actor *players[4]; //shared but change to vector
 
 	std::set<std::pair<int, int>> matSet;
 	bool usePolyShader;
@@ -301,7 +309,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool hasGrass[6];
 	bool hasAnyGrass;
 	TerrainPiece *listVA;
-	void DrawTerrainPieces(TerrainPiece *tPiece);
 	void UpdateDecorSprites();
 
 	void HandleRayCollision(Edge *edge,

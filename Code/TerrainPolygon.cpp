@@ -924,7 +924,6 @@ TerrainPolygon::~TerrainPolygon()
 		delete (*it);
 	}
 
-
 	ClearPoints();
 }
 
@@ -1096,8 +1095,6 @@ void TerrainPolygon::SetBorderTileset()
 	ss << terrainVariation + 1;
 	}*/
 	ss << ".png";
-
-	EditSession *sess = EditSession::GetSession();
 
 	ts_border = sess->GetTileset(ss.str(), 128, 64);
 }
@@ -1804,8 +1801,7 @@ bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 
 bool TerrainPolygon::PointsTooCloseToEachOther()
 {
-	EditSession *sess = EditSession::GetSession();
-
+	EditSession *session = EditSession::GetSession();
 	int numP = GetNumPoints();
 	TerrainPoint *currI, *currJ;
 	for (int i = 0; i < numP; ++i)
@@ -1819,7 +1815,7 @@ bool TerrainPolygon::PointsTooCloseToEachOther()
 			currJ = GetPoint(j);
 			V2d a(currI->pos.x, currI->pos.y);
 			V2d b(currJ->pos.x, currJ->pos.y);
-			if (length(a - b) < sess->validityRadius)
+			if (length(a - b) < session->validityRadius)
 			{
 				return true;
 			}
@@ -1895,13 +1891,13 @@ bool TerrainPolygon::HasSlivers()
 
 bool TerrainPolygon::IntersectsMyOwnEnemies()
 {
-	EditSession *sess = EditSession::GetSession();
+	EditSession *session = EditSession::GetSession();
 	for (EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it)
 	{
 		for (list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait)
 		{
 			sf::VertexArray &bva = (*ait)->boundingQuad;
-			if (sess->QuadPolygonIntersect(this, Vector2i(bva[0].position.x, bva[0].position.y),
+			if (session->QuadPolygonIntersect(this, Vector2i(bva[0].position.x, bva[0].position.y),
 				Vector2i(bva[1].position.x, bva[1].position.y), Vector2i(bva[2].position.x, bva[2].position.y),
 				Vector2i(bva[3].position.x, bva[3].position.y)))
 			{
@@ -1936,8 +1932,6 @@ bool TerrainPolygon::IntersectsMyOwnGates()
 
 bool TerrainPolygon::IsInternallyValid()
 {
-	EditSession *sess = EditSession::GetSession();
-
 	if (inverse)
 	{
 		if (IsClockwise())
@@ -1967,7 +1961,6 @@ bool TerrainPolygon::IsInternallyValid()
 bool TerrainPolygon::CanApply()
 {
 	EditSession *session = EditSession::GetSession();
-
 	auto & currPolyList = session->GetCorrectPolygonList(this);
 
 	if (session->IsPolygonValid(this, NULL))
@@ -2020,14 +2013,14 @@ void TerrainPolygon::ActivateGates()
 void TerrainPolygon::Deactivate()
 {
 	cout << "deactivating poly: " << this << endl;
-	EditSession *sess = EditSession::GetSession();
+	EditSession *session = EditSession::GetSession();
 	active = false;
-	sess->GetCorrectPolygonList(this).remove(this);
+	session->GetCorrectPolygonList(this).remove(this);
 
 	if (inverse)
 	{
 		//delete sess->inversePolygon;
-		sess->inversePolygon = NULL;
+		session->inversePolygon = NULL;
 	}
 
 	//remove gates
@@ -2037,14 +2030,14 @@ void TerrainPolygon::Deactivate()
 void TerrainPolygon::Activate()
 {
 	cout << "activating poly: " << this << endl;
-	EditSession *sess = EditSession::GetSession();
+	EditSession *session = EditSession::GetSession();
 	active = true;
 
-	sess->GetCorrectPolygonList(this).push_back(this);
+	session->GetCorrectPolygonList(this).push_back(this);
 	
 	if (inverse)
 	{
-		sess->inversePolygon = this;
+		session->inversePolygon = this;
 	}
 	
 	ActivateGates();
@@ -2126,8 +2119,6 @@ bool TerrainPolygon::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 
 	int lockPointIndex = 0;
 	assert(lockPoints.empty() || lockPoints.size() == GetNumPoints());
-
-	EditSession *sess = EditSession::GetSession();
 
 	bool lockPointsEmpty = lockPoints.empty();
 
@@ -2412,7 +2403,6 @@ bool TerrainPolygon::IsSpecialPoly()
 
 void TerrainPolygon::UpdateMaterialType()
 {
-	//EditSession *session = EditSession::GetSession();
 	int texInd = terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
 	pShader = &sess->polyShaders[texInd];
 
@@ -3530,19 +3520,18 @@ bool TerrainPolygon::PointsTooCloseToSegInProgress(sf::Vector2i point,
 
 bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 {
-	EditSession *sess = EditSession::GetSession();
-
+	EditSession *session = EditSession::GetSession();
 	int numP = GetNumPoints();
 	if (numP == 0)
 		return true;
 
-	if (numP >= 3 && IsCloseToFirstPoint(sess->GetZoomedPointSize(), V2d(point)) &&
+	if (numP >= 3 && IsCloseToFirstPoint(session->GetZoomedPointSize(), V2d(point)) &&
 		IsCompletionValid())
 	{
 		return true;
 	}
 
-	double minEdge = sess->GetZoomedMinEdgeLength();
+	double minEdge = session->GetZoomedMinEdgeLength();
 	{
 		bool pointTooClose = PointTooClose(point, minEdge, true);
 		bool linesIntersect = LinesIntersectInProgress(point);
@@ -4240,7 +4229,7 @@ int TerrainPolygon::LinesIntersect( PolyPtr poly )
 
 bool TerrainPolygon::IsCompletionValid()
 {
-	EditSession *sess = EditSession::GetSession();
+	EditSession *session = EditSession::GetSession();
 
 	if (GetNumPoints() < 3)
 		return false;
@@ -4252,14 +4241,14 @@ bool TerrainPolygon::IsCompletionValid()
 		return false;
 	}
 
-	double minEdge = sess->GetZoomedMinEdgeLength();
+	double minEdge = session->GetZoomedMinEdgeLength();
 
 	if (PointsTooCloseToSegInProgress(GetPoint(0)->pos, minEdge, true))
 	{
 		return false;
 	}
 
-	if (sess->PolyIntersectsGates(this))
+	if (session->PolyIntersectsGates(this))
 	{
 		return false;
 	}
@@ -4527,6 +4516,7 @@ void TerrainPolygon::BrushDraw( sf::RenderTarget *target, bool valid )
 
 void TerrainPolygon::Draw( sf::RenderTarget *target )
 {
+	Draw(false, 1.0, target, false, NULL);
 }
 
 void TerrainPolygon::CopyPointsToClipperPath(ClipperLib::Path & p)
