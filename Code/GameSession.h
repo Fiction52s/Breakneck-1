@@ -250,6 +250,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void ProcessAllDecorSpr();
 	void ProcessPlayerStartPos();
 	void ProcessTerrain(PolyPtr poly);
+	void ProcessAllTerrain();
 
 	PolyPtr inversePoly;
 	std::list<PolyPtr> allPolygonsList;
@@ -306,7 +307,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	//anything that has to do with original terrain processing
 	bool hasGrass[6];
 	bool hasAnyGrass;
-	TerrainPiece *listVA;
+	PolyPtr polyQueryList;
 	void UpdateDecorSprites();
 
 	void HandleRayCollision(Edge *edge,

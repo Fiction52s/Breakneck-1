@@ -17020,17 +17020,17 @@ void Actor::QueryTouchGrass()
 
 	possibleEdgeCount = 0;
 
-	polyList = NULL;
+	polyQueryList = NULL;
 	queryMode = "touchgrasspoly";
 	owner->borderTree->Query(this, queryRExtended);
 
-	/*queryMode = "touchgrass";
-	PolyPtr *tempT = polyList;
+	queryMode = "touchgrass";
+	PolyPtr tempT = polyQueryList;
 	while (tempT != NULL)
 	{
 		tempT->QueryTouchGrass(this, queryR);
-		tempT = tempT->next;
-	}*/
+		tempT = tempT->queryNext;
+	}
 }
 
 bool Actor::IsIntroAction(Action a)
@@ -18146,16 +18146,27 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if (queryMode == "touchgrasspoly")
 	{
+		PolyPtr poly = (PolyPtr)qte;
+		poly->queryNext = NULL;
+		if (polyQueryList == NULL)
+			polyQueryList = poly;
+		else
+		{
+			poly->queryNext = polyQueryList;
+			polyQueryList = poly;
+		}
+			
+
 		/*TerrainPiece *tPiece = (TerrainPiece*)qte;
 		tPiece->next = NULL;
-		if (polyList == NULL)
+		if (polyQueryList == NULL)
 		{
-			polyList = tPiece;
+			polyQueryList = tPiece;
 		}
 		else
 		{
-			tPiece->next = polyList;
-			polyList = tPiece;
+			tPiece->next = polyQueryList;
+			polyQueryList = tPiece;
 		}*/
 	}
 	else if (queryMode == "specialterrain")

@@ -3298,6 +3298,40 @@ void GameSession::ProcessTerrain(PolyPtr poly)
 	allPolygonsList.push_back(poly);
 }
 
+void GameSession::ProcessAllTerrain()
+{
+	AllocatePolyShaders(matSet.size());
+
+	int index = 0;
+	for (set<pair<int, int>>::iterator it = matSet.begin(); it != matSet.end(); ++it)
+	{
+		if (!LoadPolyShader(index, (*it).first, (*it).second))
+		{
+			assert(0);
+		}
+		++index;
+	}
+
+	PolyPtr poly;
+	allPolysVec.reserve(allPolygonsList.size());
+	for (auto it = allPolygonsList.begin(); it != allPolygonsList.end(); ++it)
+	{
+		poly = (*it);
+		poly->Finalize();
+		poly->AddEdgesToQuadTree(terrainTree);
+
+		if (poly->inverse)
+		{
+			poly->AddEdgesToQuadTree(inverseEdgeTree);
+			inversePoly = poly;
+		}
+		borderTree->Insert(poly);
+
+		allPolysVec.push_back((*it));
+	}
+	allPolygonsList.clear();
+}
+
 bool GameSession::OpenFile( )
 {
 	int insertCount = 0;
@@ -3313,52 +3347,14 @@ bool GameSession::OpenFile( )
 		ReadPlayerStartPos(is);
 		
 		ReadTerrain(is);
+
+		ProcessAllTerrain();
 		
-
-		/*poly->AddEdgesToQuadTree(terrainTree);
-		if (poly->inverse)
-		{
-			poly->AddEdgesToQuadTree(inverseEdgeTree);
-			inversePoly = poly;
-		}
-		borderTree->Insert(poly);*/
-
-		AllocatePolyShaders(matSet.size());
-
-		int index = 0;
-		for (set<pair<int, int>>::iterator it = matSet.begin(); it != matSet.end(); ++it)
-		{
-			if (!LoadPolyShader(index, (*it).first, (*it).second))
-			{
-				assert(0);
-			}
-			++index;
-		}
-
-		PolyPtr poly;
-		allPolysVec.reserve(allPolygonsList.size());
-		for (auto it = allPolygonsList.begin(); it != allPolygonsList.end(); ++it)
-		{
-			poly = (*it);
-			poly->Finalize();
-			poly->AddEdgesToQuadTree(terrainTree);
-
-			if (poly->inverse)
-			{
-				poly->AddEdgesToQuadTree(inverseEdgeTree);
-				inversePoly = poly;
-			}
-			borderTree->Insert(poly);
-
-			allPolysVec.push_back((*it));
-		}
-		allPolygonsList.clear();
-
 		bool blackBorder[2];
 		bool topBorderOn = false;
 		SetupMapBorderQuads(blackBorder, topBorderOn);
 		SetupMinimapBorderQuads(blackBorder, topBorderOn);
-
+		
 		LoadSpecialPolys(is);
 
 		LoadBGPlats( is );
@@ -3371,8 +3367,6 @@ bool GameSession::OpenFile( )
 
 		is.close();
 
-		
-		
 		SetupStormCeiling();
 
 		if (topBorderOn)
@@ -6406,18 +6400,19 @@ int GameSession::Run()
 				queryMode = "envplant";
 				envPlantTree->Query( this, screenRect );
 
-				while( listVA != NULL )
+				/*while( listVA != NULL )
 				{
 					TerrainPiece *t = listVA->next;
 					listVA->next = NULL;
 					listVA = t;
-				}
+				}*/
 
 
 				//works up to here!
 				
 
-				listVA = NULL;
+				polyQueryList = NULL;
+				//listVA = NULL;
 				//listVA is null here
 				queryMode = "border";
 				numBorders = 0;
@@ -6434,16 +6429,17 @@ int GameSession::Run()
 				UpdateDecorSprites();
 				
 
-				TerrainRender::UpdateDecorLayers();
+				UpdateDecorLayers();
+				//TerrainRender::UpdateDecorLayers();
 
 				
 
-				for( map<DecorType,DecorLayer*>::iterator mit =
+				/*for( map<DecorType,DecorLayer*>::iterator mit =
 					decorLayerMap.begin(); mit != decorLayerMap.end();
 					++mit )
 				{
 					(*mit).second->Update();
-				}
+				}*/
 
 				//hacky
 				if( p0->dead )
@@ -6974,12 +6970,15 @@ int GameSession::Run()
 
 			queryMode = "border";
 			numBorders = 0;
+			polyQueryList = NULL;
 			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
 				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
 
 			borderTree->Query( this, mapRect );
 
-			Color testColor( 0x75, 0x70, 0x90, 191 );
+			DrawColoredMapTerrain(mapTex, Color(Color::Green));
+
+			/*Color testColor( 0x75, 0x70, 0x90, 191 );
 			testColor = Color::Green;
 			TerrainPiece * listVAIter = listVA;
 			while( listVAIter != NULL )
@@ -6996,7 +6995,7 @@ int GameSession::Run()
 				}
 
 				listVAIter = listVAIter->next;
-			}
+			}*/
 
 			testGateCount = 0;
 			queryMode = "gate";
@@ -7522,7 +7521,10 @@ int GameSession::Run()
 
 				borderTree->Query(this, mapRect);
 
-				Color testColor(0x75, 0x70, 0x90, 191);
+				
+				DrawColoredMapTerrain(mapTex, Color(Color::Green));
+
+				/*Color testColor(0x75, 0x70, 0x90, 191);
 				testColor = Color::Green;
 				TerrainPiece * listVAIter = listVA;
 				while (listVAIter != NULL)
@@ -7542,7 +7544,7 @@ int GameSession::Run()
 					}
 
 					listVAIter = listVAIter->next;
-				}
+				}*/
 
 				testGateCount = 0;
 				queryMode = "gate";
@@ -7946,7 +7948,7 @@ void GameSession::Init()
 	flowSpacing = 600;
 	maxFlowRings = 40;
 
-	listVA = NULL;
+	polyQueryList = NULL;
 	specialPieceList = NULL;
 
 	inactiveEffects = NULL;
@@ -8001,37 +8003,34 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if( queryMode == "border" )
 	{
-		//if( listVA == NULL )
-		//{
-		//	listVA = (TerrainPiece*)qte;
-		//	numBorders++;
-		//}
-		//else
-		//{
-		//	
-		//	TerrainPiece *tva = (TerrainPiece*)qte;
-		//	TerrainPiece *temp = listVA;
-		//	bool okay = true;
-		//	while( temp != NULL )
-		//	{
-		//		if( temp == tva )
-		//		{
-		//			okay = false;
-		//			break;
-		//		}	
-		//		temp = temp->next;
-		//	}
+		if(polyQueryList == NULL )
+		{
+			polyQueryList = (PolyPtr)qte;
+			polyQueryList->queryNext = NULL;
+			numBorders++;
+		}
+		else
+		{
+			PolyPtr poly = (PolyPtr)qte;
+			PolyPtr temp = polyQueryList;
+			bool okay = true;
+			while( temp != NULL )
+			{
+				if( temp == poly)
+				{
+					okay = false;
+					break;
+				}	
+				temp = temp->queryNext;
+			}
 
-		//	if( okay )
-		//	{
-		//	
-		//	//cout << "blah: " << (unsigned)tva << endl;
-		//		tva->next = listVA;
-		//		listVA = tva;
-		//		numBorders++;
-		//		//cout << numBorders + 1 << endl;
-		//	}
-		//}
+			if( okay )
+			{
+				poly->queryNext = polyQueryList;
+				polyQueryList = poly;
+				numBorders++;
+			}
+		}
 		
 	}
 	else if (queryMode == "specialterrain")
@@ -8700,14 +8699,11 @@ void GameSession::DebugDraw()
 
 void GameSession::UpdateDecorSprites()
 {
-	TerrainPiece *te = listVA;
-	while (te != NULL)
+	PolyPtr poly = polyQueryList;
+	while (poly != NULL)
 	{
-
-		te->UpdateTouchGrass(); //put this in its own spot soon
-		if (te->tr != NULL)
-			te->tr->UpdateDecorSprites();
-		te = te->next;
+		poly->UpdateTouchGrass(); //put this in its own spot soon
+		poly = poly->queryNext;
 	}
 }
 
@@ -8889,23 +8885,22 @@ bool GameSession::HasPowerUnlocked( int pIndex )
 void GameSession::DrawColoredMapTerrain(sf::RenderTarget *target, sf::Color &c)
 {
 	//must be already filled from a query
-	TerrainPiece * listVAIter = listVA;
-	while (listVAIter != NULL)
+	PolyPtr poly = polyQueryList;
+	while (poly != NULL)
 	{
-		if (listVAIter->visible)
+		poly->Draw(target);
+		/*int vertexCount = poly->terrainVA->getVertexCount();
+		for (int i = 0; i < vertexCount; ++i)
 		{
-			int vertexCount = listVAIter->terrainVA->getVertexCount();
-			for (int i = 0; i < vertexCount; ++i)
-			{
-				(*listVAIter->terrainVA)[i].color = c;
-			}
-			target->draw(*listVAIter->terrainVA);
-			for (int i = 0; i < vertexCount; ++i)
-			{
-				(*listVAIter->terrainVA)[i].color = Color::White;
-			}
+			(*listVAIter->terrainVA)[i].color = c;
 		}
-		listVAIter = listVAIter->next;
+		target->draw(*listVAIter->terrainVA);
+		for (int i = 0; i < vertexCount; ++i)
+		{
+			(*listVAIter->terrainVA)[i].color = Color::White;
+		}*/
+		
+		poly = poly->queryNext;
 	}
 }
 

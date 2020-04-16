@@ -223,6 +223,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	Session *sess;
 
+	TerrainPolygon *queryNext; //for quadtree setuff
+
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
 

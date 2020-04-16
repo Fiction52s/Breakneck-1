@@ -18,6 +18,7 @@
 
 struct EditSession;
 
+struct TerrainPolygon;
 
 struct AirTrigger;
 struct Gate;
@@ -783,7 +784,7 @@ struct Actor : QuadTreeCollider,
 
 	int framesExtendingAirdash;
 
-	TerrainPiece *polyList;
+	TerrainPolygon *polyQueryList;
 	
 	Tileset *ts_scorpRun;
 	Tileset *ts_scorpSlide;
