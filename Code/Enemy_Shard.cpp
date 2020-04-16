@@ -439,7 +439,7 @@ void ShardPopup::SetShard(int p_w, int p_li)
 	w = p_w;
 	li = p_li;
 
-	Tileset *ts_shard = Shard::GetShardTileset(w, &owner->tm);
+	Tileset *ts_shard = Shard::GetShardTileset(w, owner);
 	shardSpr.setTexture(*ts_shard->texture);
 	shardSpr.setTextureRect(ts_shard->GetSubRect(li));
 

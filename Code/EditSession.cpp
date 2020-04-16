@@ -14,7 +14,6 @@
 #include "Background.h"
 #include "Enemy_Shard.h"
 #include "ActorParams.h"
-#include "EditorBG.h"
 #include "EditorRail.h"
 #include "EditorGraph.h"
 #include "Actor.h"
@@ -393,7 +392,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	
 	mapPreviewTex = MainMenu::mapPreviewTexture;
 
-	background = new EditorBG();
+
 
 	for( int i = 0; i < 16; ++i )
 	{
@@ -950,11 +949,6 @@ EditSession::~EditSession()
 
 	delete graph;
 
-
-
-
-	delete background;
-
 	delete polygonInProgress;
 	delete railInProgress;
 
@@ -1477,7 +1471,8 @@ void EditSession::ProcessHeader()
 
 	drainSeconds = mapHeader->drainSeconds;
 
-	Background::SetupFullBG(envName, *this, background->currBackground, background->scrollingBackgrounds);
+	background = Background::SetupFullBG(envName, this);
+	background->Hide();
 
 	bossType = mapHeader->bossFightType;
 
@@ -2625,9 +2620,12 @@ int EditSession::Run()
 
 		UpdateMode();
 		
+		
 
 		UpdatePanning();
 		
+		background->Update(view.getCenter());
+
 		UpdatePolyShaders();
 		
 		Draw();
@@ -3023,12 +3021,24 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 	}
 	else if (panel == bgPopup)
 	{
-		if (name != "not set")
+		if (name != "not set" )
 		{
-			if (Background::SetupFullBG(name, *this, background->currBackground, background->scrollingBackgrounds))
+			if (background == NULL || name != background->name)
 			{
-				tempGridResult = name;
-				envName = name;
+				Background *newBG = Background::SetupFullBG(name, this);
+
+				if (newBG != NULL)
+				{
+					if (background != NULL)
+					{
+						background->DestroyTilesets();
+						delete background;
+					}
+
+					tempGridResult = name;
+					envName = name;
+				}
+				
 			}
 		}
 	}

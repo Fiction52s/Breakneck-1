@@ -92,7 +92,8 @@ void TitleScreen::Update()
 		mainMenu->musicPlayer->PlayMusic(titleMusic);
 	}
 
-	background->Update();
+	Vector2f empty(0, 0);
+	background->Update(empty);
 
 	for (int i = 0; i < 4; ++i)
 	{

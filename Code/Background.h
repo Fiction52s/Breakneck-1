@@ -23,7 +23,7 @@ struct ScrollingBackground
 	float depth;
 	float scrollSpeedX;
 	float scrollOffset;
-	void Update(sf::Vector2f &camPos);
+	void Update(const sf::Vector2f &camPos);
 	void SetTileIndex(int index);
 	void Draw(sf::RenderTarget *target);
 	void SetLeftPos(sf::Vector2f &pos);
@@ -33,14 +33,15 @@ struct ScrollingBackground
 struct Background
 {
 	Background( GameSession *owner, int envLevel, int envType);
-	Background(TilesetManager &tm, const std::string &bgName);
+	Background(TilesetManager *tm, const std::string &bgName);
 	Background(MainMenu *mm);
+	~Background();
 	static std::string GetBGNameFromBGInfo(const std::string &fileName);
-	static bool SetupFullBG(const std::string &fName,
-		TilesetManager &tm,
-		Background *& bg,
-		std::list<ScrollingBackground*> &sBG);
-	void Update();
+	static Background *SetupFullBG(const std::string &fName,
+		TilesetManager *tm);
+
+	void DestroyTilesets();
+	void Update( const sf::Vector2f &camPos );
 	void Reset();
 	void Draw(sf::RenderTarget *target);
 	void UpdateSky();
@@ -50,10 +51,25 @@ struct Background
 	sf::Color GetSkyColor();
 	sf::Color GetShapeColor();
 	sf::Vertex backgroundSky[4];
-	sf::Image palette;
+	
 	sf::View bgView;
 	int transFrames;
 	int frame;
+
+	bool show;
+	void Show();
+	void Hide();
+	void FlipShown();
+
+	sf::Image palette;
+	Tileset *ts_bg;
+	Tileset *ts_shape;
+	TilesetManager *tm;
+
+	std::string name;
+
+
+	std::list<ScrollingBackground*> scrollingBackgrounds;
 };
 
 

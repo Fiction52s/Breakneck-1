@@ -70,7 +70,6 @@ struct BitField;
 struct ShardPopup;
 
 
-struct ScrollingBackground;
 struct GameSession;
 struct KeyMarker;
 
@@ -107,7 +106,6 @@ struct RaceFightTarget;
 struct BasicEffect;
 struct EnemyParamsManager;
 struct HitboxManager;
-struct Background;
 struct StorySequence;
 struct AirTrigger;
 struct Nexus;
@@ -265,7 +263,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	//need to be added to session
 	sf::View view;
 	sf::View uiView;
-	Background *background;
 
 	float *fBubbleRadiusSize;
 	sf::Vector2f *fBubblePos;
@@ -292,7 +289,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		int &hasMonitor, int &level);
 	bool OpenFile();
 
-	TilesetManager tm;
+	//TilesetManager tm;
 
 	static GameSession *GetSession();
 	static GameSession *currSession;
@@ -837,9 +834,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::map<DecorType,DecorLayer*> decorLayerMap;
 
 	std::list<DecorLayer*> DecorLayers;
-
-	std::list<ScrollingBackground*> scrollingBackgrounds;
-
 	
 	std::string queryMode;
 

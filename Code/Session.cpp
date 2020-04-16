@@ -7,6 +7,7 @@
 #include "EditorActors.h"
 #include "EditSession.h"
 #include "GameSession.h"
+#include "Background.h"
 
 using namespace sf;
 using namespace std;
@@ -49,6 +50,7 @@ Session::Session(const boost::filesystem::path &p_filePath)
 	borderTree = NULL;
 
 	polyShaders = NULL;
+	background = NULL;
 }
 
 Session::~Session()
@@ -88,6 +90,13 @@ Session::~Session()
 	{
 		delete (*it).second;
 	}
+
+	if (background != NULL)
+		delete background;
+	/*for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
+	{
+		delete (*it);
+	}*/
 }
 
 void Session::UpdateDecorLayers()

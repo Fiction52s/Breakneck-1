@@ -556,7 +556,7 @@ void Gate::SetShard(int w, int li)
 	
 	shardWorld = w;
 	shardIndex = li;
-	ts_shard = Shard::GetShardTileset(shardWorld, &owner->tm);
+	ts_shard = Shard::GetShardTileset(shardWorld, owner);
 	//shardSprite.setColor(Color::Black);
 	shardSprite.setTexture(*ts_shard->texture);
 	shardSprite.setTextureRect(ts_shard->GetSubRect(shardIndex));

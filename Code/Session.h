@@ -14,6 +14,7 @@ struct MainMenu;
 struct QuadTree;
 struct MapHeader;
 struct DecorLayer;
+struct Background;
 
 struct TerrainDecorInfo;
 
@@ -93,6 +94,9 @@ struct Session : TilesetManager
 	std::vector<Actor*> players;
 
 	const static int MAX_PLAYERS = 4;
+
+	Background *background;
+	//std::list<ScrollingBackground*> scrollingBackgrounds;
 
 	QuadTree * terrainTree;
 	QuadTree *specialTerrainTree;

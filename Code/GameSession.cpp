@@ -316,18 +316,7 @@ void GameSession::Cleanup()
 		delete (*it).second;
 	}
 
-	if (background != NULL)
-	{
-		delete background;
-	}
-	
-
 	for (auto it = allSpecialTerrain.begin(); it != allSpecialTerrain.end(); ++it)
-	{
-		delete (*it);
-	}
-
-	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
 	{
 		delete (*it);
 	}
@@ -5102,8 +5091,7 @@ bool GameSession::Load()
 		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( );
 
-	//background = new Background(this, mh->envLevel, mh->envType);
-	Background::SetupFullBG(mapHeader->envName, tm, background, scrollingBackgrounds);
+	background = Background::SetupFullBG(mapHeader->envName, this);
 
 	//still too far
 
@@ -6226,7 +6214,7 @@ int GameSession::Run()
 
 				fader->Update();
 				swiper->Update();
-				background->Update();
+				background->Update(camPos);
 				if( topClouds != NULL )
 					topClouds->Update();
 				//rain.Update();
@@ -6236,12 +6224,6 @@ int GameSession::Run()
 				if( raceFight != NULL )
 				{
 					raceFight->UpdateScore();
-				}
-
-				for( list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
-					it != scrollingBackgrounds.end(); ++it )
-				{
-					(*it)->Update( camPos );
 				}
 
 				if( shipSequence )
@@ -6566,16 +6548,10 @@ int GameSession::Run()
 				view.getCenter().y + view.getSize().y / 2));
 		}
 		
-
+		preScreenTex->setView(view);
 		background->Draw(preScreenTex);
 		
-		preScreenTex->setView( view );
-
-		for( list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
-			it != scrollingBackgrounds.end(); ++it )
-		{
-			(*it)->Draw( preScreenTex );
-		}
+		//preScreenTex->setView( view );
 		
 		cloudView.setCenter( 960, 540 );
 		cloudView.setCenter( 960, 540 );	
@@ -7965,8 +7941,6 @@ void GameSession::Init()
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
 	absorbShardParticles = NULL;
-
-	background = NULL;
 }
 
 void GameSession::HandleEntrant( QuadTreeEntrant *qte )
@@ -8702,6 +8676,7 @@ void GameSession::UpdateDecorSprites()
 	PolyPtr poly = polyQueryList;
 	while (poly != NULL)
 	{
+		poly->UpdateDecorSprites();
 		poly->UpdateTouchGrass(); //put this in its own spot soon
 		poly = poly->queryNext;
 	}

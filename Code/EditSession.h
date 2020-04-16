@@ -49,9 +49,6 @@ struct Actor;
 struct TerrainRail;
 
 
-struct EditorBG;
-
-
 struct EditSession : GUIHandler, Session
 {
 	enum Emode
@@ -187,12 +184,6 @@ struct EditSession : GUIHandler, Session
 	int tempWriteIndex;
 
 	sf::RenderTexture *mapPreviewTex;
-
-
-
-
-	EditorBG *background;
-	
 
 	PolyPtr GetPolygon(int index, int &edgeIndex);
 	TerrainRail *GetRail(int index, int &edgeIndex);

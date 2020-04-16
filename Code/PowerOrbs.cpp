@@ -359,7 +359,7 @@ void DesperationOrb::Draw(sf::RenderTarget *target)
 KinRing::KinRing( Actor *actor )
 {
 
-	TilesetManager &tm = actor->owner->tm;
+	TilesetManager &tm = *actor->owner;
 	float totalHealth = actor->totalHealth;
 	FillRingSection *blah[] = {
 		//new FillRingSection(tm, Color::Black, sf::Color::Black, sf::Color::Black,0, 300, 0),

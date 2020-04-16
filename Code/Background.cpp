@@ -19,7 +19,7 @@ ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	scrollOffset = 0;
 }
 
-void ScrollingBackground::Update(Vector2f &camPos)
+void ScrollingBackground::Update(const Vector2f &camPos)
 {
 	Vector2f cPos = camPos;
 	cPos.x -= scrollOffset;
@@ -187,24 +187,10 @@ string Background::GetBGNameFromBGInfo(const std::string &fileName)
 		//background = new Background(this, mh->envLevel, mh->envType);
 }
 
-bool Background::SetupFullBG(const std::string &fName, TilesetManager &tm,
-	Background *& bg, std::list<ScrollingBackground*> &sBG)
+
+Background *Background::SetupFullBG(const std::string &fName,
+	TilesetManager *tm)
 {
-	//assert(sBG.empty());
-	if (!sBG.empty())
-	{
-		for (auto it = sBG.begin(); it != sBG.end(); ++it)
-		{
-			delete (*it);
-		}
-		sBG.clear();
-
-		assert(bg != NULL);
-		delete bg;
-		bg = NULL;
-	}
-
-
 	ifstream is;
 	stringstream fss;
 	fss << "Resources/BGInfo/" << fName << ".bg";
@@ -221,13 +207,13 @@ bool Background::SetupFullBG(const std::string &fName, TilesetManager &tm,
 		assert(0);
 	}
 
+	Background *newBG = NULL;
 	if (is.is_open())
 	{
 		string bgStr;
 		is >> bgStr;
 
-		bg = new Background(tm, bgStr);
-		//background = new Background(this, mh->envLevel, mh->envType);
+		newBG = new Background(tm, bgStr);
 
 		int numPar;
 		is >> numPar;
@@ -246,30 +232,25 @@ bool Background::SetupFullBG(const std::string &fName, TilesetManager &tm,
 
 			is >> scrollSpeed;
 
-			sBG.push_back(
+			newBG->scrollingBackgrounds.push_back(
 				new ScrollingBackground(
-					tm.GetTileset(parDirStr + pStr + eStr, 1920, 1080), tsIndex, depthLevel, scrollSpeed));
+					tm->GetTileset(parDirStr + pStr + eStr, 1920, 1080), tsIndex, depthLevel, scrollSpeed));
 		}
 
 		is.close();
-
-		return true;
 	}
-	else
-	{
-	//	strerror_s()
-	//	cout << "file opening error: " << strerror_s(errno);
-		//assert(0 && "problem loading bg info file");
-		return false;
-	}
+	
+	return newBG;
 }
 
-
-Background::Background(TilesetManager &tm, const string &bgName)
+Background::Background(TilesetManager *p_tm, const string &bgName)
+	:tm(p_tm)
 {
 	stringstream ss;
 
 	string folder = "Backgrounds/";
+
+	name = bgName;
 
 	//int eType = envLevel + 1; //adjust for alex naming -_-
 	//ss << folder << "w" << envType + 1 << "_BG";
@@ -283,8 +264,9 @@ Background::Background(TilesetManager &tm, const string &bgName)
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
 	string shapeFile = bgStr + "_shape.png";
 
-	Tileset *ts_bg = tm.GetTileset(bgFile, 1920, 1080);
-	Tileset *ts_shape = tm.GetTileset(shapeFile, 1920, 1080);
+	ts_bg = tm->GetTileset(bgFile, 1920, 1080);
+	ts_shape = tm->GetTileset(shapeFile, 1920, 1080);
+
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);
@@ -316,6 +298,7 @@ Background::Background(MainMenu *mm)
 	//int eType = envLevel + 1; //adjust for alex naming -_-
 	//ss << folder << "w" << envType + 1 << "_BG";
 
+	show = true;
 	//ss << eType;
 
 	string bgStr = "Resources/Backgrounds/w1_BG1";// = ss.str();
@@ -347,6 +330,25 @@ Background::Background(MainMenu *mm)
 	bgView.setSize(1920, 1080);
 
 	Reset();
+}
+
+Background::~Background()
+{
+	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
+	{
+		delete (*it);
+	}
+}
+
+void Background::DestroyTilesets()
+{
+	tm->DestroyTileset(ts_bg);
+	tm->DestroyTileset(ts_shape);
+
+	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
+	{
+		tm->DestroyTileset((*it)->ts);
+	}
 }
 
 void Background::UpdateSky()
@@ -405,7 +407,7 @@ void Background::UpdateShape()
 	shape.setColor(GetShapeColor());
 }
 
-void Background::Update()
+void Background::Update( const Vector2f &camPos )
 {
 	UpdateSky();
 	UpdateShape();
@@ -415,6 +417,12 @@ void Background::Update()
 	if (frame == transFrames * 4)
 	{
 		frame = 0;
+	}
+
+	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
+		it != scrollingBackgrounds.end(); ++it)
+	{
+		(*it)->Update(camPos);
 	}
 }
 
@@ -435,4 +443,26 @@ void Background::Draw(sf::RenderTarget *target)
 	target->draw(background);
 
 	target->setView(oldView);
+
+	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
+		it != scrollingBackgrounds.end(); ++it)
+	{
+		//might not need to mess w/ views here anymore
+		(*it)->Draw(target);
+	}
+}
+
+void Background::Show()
+{
+	show = true;
+}
+
+void Background::Hide()
+{
+	show = false;
+}
+
+void Background::FlipShown()
+{
+	show = !show;
 }

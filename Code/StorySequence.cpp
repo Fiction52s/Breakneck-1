@@ -78,7 +78,7 @@ StorySequence::StorySequence(sf::Font &font, TilesetManager *p_tm)
 }
 
 StorySequence::StorySequence(GameSession *p_owner)
-	:owner( p_owner ), tm( &p_owner->tm ), myFont( p_owner->mainMenu->arial)
+	:owner( p_owner ), tm( p_owner ), myFont( p_owner->mainMenu->arial)
 
 {
 
