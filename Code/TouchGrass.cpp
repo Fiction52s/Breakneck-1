@@ -43,6 +43,10 @@ void TouchGrassCollection::Move(V2d &move)
 
 void TouchGrassCollection::Draw(sf::RenderTarget *target)
 {
+	/*for (auto it = myGrass.begin(); it != myGrass.end(); ++it)
+	{
+		(*it)->hurtBody->DebugDraw( 0, target);
+	}*/
 	target->draw(touchGrassVA, numTouchGrasses * 4, sf::Quads, ts_grass->texture);
 }
 
@@ -168,7 +172,6 @@ void TouchGrass::CommonInit( double yOff, double p_angle, double hitboxYOff, dou
 	angle = p_angle;
 
 	V2d polyCenter = coll->myTerrain->GetDCenter();
-
 	CollisionBox hurtBox;
 	hurtBox.type = CollisionBox::Hurt;
 	hurtBox.isCircle = true;
@@ -211,14 +214,6 @@ bool TouchGrass::IsTouchingBox(const sf::Rect<double> &r)
 	V2d C(r.left + r.width, r.top + r.height);
 	V2d D(r.left, r.top + r.height);
 
-	V2d polyCenter = coll->myTerrain->GetDCenter();
-	A -= polyCenter;
-	B -= polyCenter;
-	C -= polyCenter;
-	D -= polyCenter;
-
-	//A -= coll->myTerrain->
-
 	bool touching = isQuadTouchingQuad(points[0], points[1], points[2], points[3],
 		A, B, C, D);
 
@@ -240,7 +235,7 @@ bool TouchGrass::IsPlacementOkay( TouchGrassType grassType, int p_eat,
 	case TYPE_TEST:
 	{
 		int r = rand() % 100;
-		return (r < 10);
+		return (r < 15);
 		break;
 	}
 		
@@ -350,8 +345,7 @@ void BasicTouchGrass::Destroy(Actor *a)
 {
 	if (visible)
 	{
-		GameSession *owner = a->owner;
-		owner->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 8,
+		a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 8,
 			6, true, 4);
 		ClearRect(myQuad);
 		visible = false;
@@ -450,8 +444,7 @@ void TestTouchGrass::Destroy(Actor *a)
 {
 	if (visible)
 	{
-		GameSession *owner = a->owner;
-		owner->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
+		a->ActivateEffect(EffectLayer::BEHIND_ENEMIES, coll->ts_grass, center, false, angle, 26,
 			6, true, 4);
 
 		ClearRect(myQuad);

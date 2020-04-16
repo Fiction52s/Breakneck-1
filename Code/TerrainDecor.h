@@ -32,9 +32,11 @@ struct DecorExpression
 		std::list<sf::Vector2f> &pointList,
 		DecorLayer *layer);
 	~DecorExpression();
+	void Move(sf::Vector2f &move);
 
 	sf::VertexArray *va;
 	DecorLayer *layer;
+	int vaSize;
 
 	void UpdateSprites();
 };

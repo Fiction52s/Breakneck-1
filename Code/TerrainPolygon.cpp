@@ -145,6 +145,9 @@ void TerrainPolygon::AddTouchGrass(int gt)
 
 void TerrainPolygon::QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r)
 {
+	V2d center = GetDCenter();
+	r.left -= center.x;
+	r.top -= center.y;
 	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
 	{
 		(*it)->Query(qtc, r);
@@ -2241,6 +2244,12 @@ void TerrainPolygon::Rotate( Vector2f &fCenter, float f)
 void TerrainPolygon::Move(Vector2i move )
 {
 	assert( finalized );
+
+	left += move.x;
+	right += move.x;
+	bottom += move.y;
+	top += move.y;
+
 	
 	V2d dMove(move);
 	Vector2f fMove(move);
@@ -2311,7 +2320,12 @@ void TerrainPolygon::Move(Vector2i move )
 		(*it)->Move(dMove);
 	}
 
-	UpdateBounds();
+	for (auto it = decorExprList.begin(); it != decorExprList.end(); ++it)
+	{
+		(*it)->Move(fMove);
+	}
+
+	//UpdateBounds();
 	return;
 }
 

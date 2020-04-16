@@ -91,6 +91,7 @@ struct EditSession : GUIHandler, Session
 		ITOOL_SCALE
 	};
 
+	V2d oldWorldPosTest;
 
 	TransformTools *transformTools;
 

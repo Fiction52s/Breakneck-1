@@ -105,7 +105,6 @@ struct ResultsScreen;
 struct RaceFightTarget;
 struct BasicEffect;
 struct EnemyParamsManager;
-struct HitboxManager;
 struct StorySequence;
 struct AirTrigger;
 struct Nexus;
@@ -342,9 +341,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void SetupMinimapBorderQuads(
 		bool *blackBorder,
 		bool topBorderOn);
-	
 
-	HitboxManager *hitboxManager;
 
 	static bool sLoad(GameSession *gs);
 	bool Load();

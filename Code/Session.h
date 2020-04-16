@@ -15,6 +15,7 @@ struct QuadTree;
 struct MapHeader;
 struct DecorLayer;
 struct Background;
+struct HitboxManager;
 
 struct TerrainDecorInfo;
 
@@ -91,9 +92,13 @@ struct Session : TilesetManager
 
 	std::vector<GCC::GCController> gcControllers;
 
+	void TestLoad(); //change this to Load once Load has been changed to work for both sessions
+
 	std::vector<Actor*> players;
 
 	const static int MAX_PLAYERS = 4;
+
+	HitboxManager *hitboxManager;
 
 	Background *background;
 	//std::list<ScrollingBackground*> scrollingBackgrounds;

@@ -8,6 +8,7 @@
 #include "EditSession.h"
 #include "GameSession.h"
 #include "Background.h"
+#include "HitboxManager.h"
 
 using namespace sf;
 using namespace std;
@@ -51,6 +52,7 @@ Session::Session(const boost::filesystem::path &p_filePath)
 
 	polyShaders = NULL;
 	background = NULL;
+	hitboxManager = NULL;
 }
 
 Session::~Session()
@@ -93,10 +95,9 @@ Session::~Session()
 
 	if (background != NULL)
 		delete background;
-	/*for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
-	{
-		delete (*it);
-	}*/
+
+	if (hitboxManager != NULL)
+		delete hitboxManager;
 }
 
 void Session::UpdateDecorLayers()
@@ -168,6 +169,11 @@ void Session::UpdatePlayerWireQuads()
 			p->UpdateWireQuads();
 		}
 	}
+}
+
+void Session::TestLoad()
+{
+	hitboxManager = new HitboxManager;
 }
 
 bool Session::ReadDecorImagesFile()

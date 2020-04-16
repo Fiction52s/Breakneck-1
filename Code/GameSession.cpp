@@ -111,7 +111,6 @@
 #include "Enemy_CurveLauncher.h"
 //#include "Enemy_Swarm.h"
 #include "Enemy_Turtle.h"
-#include "HitboxManager.h"
 #include "ShaderTester.h"
 #include "ControlSettingsMenu.h"
 #include "TouchGrass.h"
@@ -330,12 +329,6 @@ void GameSession::Cleanup()
 	{
 		delete (*it);
 	}
-
-	if (hitboxManager != NULL)
-	{
-		delete hitboxManager;
-	}
-
 	/*if (inversePoly != NULL)
 	{
 		delete inversePoly;
@@ -4834,7 +4827,7 @@ bool GameSession::Load()
 
 	//while (true);
 
-	hitboxManager = new HitboxManager;
+	TestLoad();
 
 	
 	shardsCapturedField = new BitField(32 * 5);

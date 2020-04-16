@@ -118,7 +118,15 @@ sf::SoundBuffer * Actor::GetSound(const std::string &name)
 
 map<int, list<CollisionBox>> & Actor::GetHitboxList(const string & str)
 {
-	return owner->hitboxManager->GetHitboxList(str);
+	if (owner != NULL)
+	{
+		return owner->hitboxManager->GetHitboxList(str);
+	}
+	else
+	{
+		return editOwner->hitboxManager->GetHitboxList(str);
+	}
+	
 }
 
 void Actor::UpdatePowers()
@@ -967,7 +975,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		slideAttackOffset[1] = Vector2f(0, -64);
 		slideAttackOffset[2] = Vector2f(0, -96);
 
-		if (owner != NULL)
+		if (true)
 		{
 
 
@@ -1726,7 +1734,7 @@ Actor::~Actor()
 
 	delete currHitboxInfo;
 
-	if (owner != NULL)
+	/*if (owner != NULL)*/
 	{
 		for (int i = 0; i < 3; ++i)
 		{

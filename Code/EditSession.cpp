@@ -120,6 +120,29 @@ void EditSession::TestPlayerModeUpdate()
 
 void EditSession::TestPlayerMode()
 {
+	if (mode == TEST_PLAYER)
+	{
+		//GetPlayer(0)->Respawn();
+		Actor *p;
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->Respawn();
+				p->velocity = worldPos - oldWorldPosTest;
+			}
+			
+		}
+
+		auto testPolys = GetCorrectPolygonList(0);
+		for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
+		{
+			(*it)->ResetTouchGrass();
+		}
+		return;
+	}
+
 	currentTime = 0;
 	accumulator = TIMESTEP + .1;
 	mode = TEST_PLAYER;
@@ -2280,6 +2303,8 @@ void EditSession::SetInitialView(sf::Vector2f &center,
 
 int EditSession::Run()
 {
+	TestLoad();
+
 	players[0] = new Actor(NULL, this, 0);
 	players[0]->InitAfterEnemies();
 	for (int i = 1; i < MAX_PLAYERS; ++i)
@@ -2547,6 +2572,7 @@ int EditSession::Run()
 	{
 		pixelPos = GetPixelPos();
 
+		oldWorldPosTest = worldPos;
 		worldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
 		worldPosGround = ConvertPointToGround( Vector2i( worldPos.x, worldPos.y ) );
 		worldPosRail = ConvertPointToRail(Vector2i(worldPos));
@@ -9373,21 +9399,7 @@ void EditSession::HandleEvents()
 				}
 				else if (ev.key.code == Keyboard::T && showPanel == NULL)
 				{
-					if (mode != TEST_PLAYER)
-					{
-						//GetPlayer(0)->Respawn();
-						TestPlayerMode();
-					}
-					else
-					{
-						Actor *p;
-						for (int i = 0; i < MAX_PLAYERS; ++i)
-						{
-							p = GetPlayer(i);
-							if (p != NULL)
-								p->Respawn();
-						}
-					}
+					TestPlayerMode();
 					//quit = true;
 				}
 				else if (ev.key.code == Keyboard::Escape)

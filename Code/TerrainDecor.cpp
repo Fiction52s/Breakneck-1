@@ -35,7 +35,9 @@ DecorExpression::DecorExpression(std::list<sf::Vector2f> &pointList,
 	//cout << "numBushes: " << numBushes << endl;
 	Tileset *ts = layer->ts;
 
-	va = new VertexArray(sf::Quads, numBushes * 4);
+	vaSize = numBushes * 4;
+
+	va = new VertexArray(sf::Quads, vaSize);
 	VertexArray &VA = *va;
 
 	IntRect subRect = ts->GetSubRect(0);
@@ -67,6 +69,15 @@ DecorExpression::DecorExpression(std::list<sf::Vector2f> &pointList,
 	}
 }
 
+void DecorExpression::Move(sf::Vector2f &move)
+{
+	VertexArray &v = *va;
+	for (int i = 0; i < vaSize; ++i)
+	{
+		v[i].position += move;
+	}
+}
+
 DecorExpression::~DecorExpression()
 {
 	delete va;
@@ -74,7 +85,7 @@ DecorExpression::~DecorExpression()
 
 void DecorExpression::UpdateSprites()
 {
-	int numBushes = va->getVertexCount() / 4;
+	int numBushes = vaSize / 4;
 
 	Tileset *ts_bush = layer->ts;
 	int frame = max(layer->frame - layer->loopWait, 0);
