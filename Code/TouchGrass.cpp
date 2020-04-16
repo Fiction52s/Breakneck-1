@@ -167,11 +167,13 @@ void TouchGrass::CommonInit( double yOff, double p_angle, double hitboxYOff, dou
 
 	angle = p_angle;
 
+	V2d polyCenter = coll->myTerrain->GetDCenter();
+
 	CollisionBox hurtBox;
 	hurtBox.type = CollisionBox::Hurt;
 	hurtBox.isCircle = true;
 	hurtBox.globalAngle = angle;
-	hurtBox.globalPosition = hitboxCenter;
+	hurtBox.globalPosition = hitboxCenter;// -polyCenter;
 	hurtBox.offset.x = 0;
 	hurtBox.offset.y = 0;
 	hurtBox.rw = hitboxXSize;
@@ -182,7 +184,7 @@ void TouchGrass::CommonInit( double yOff, double p_angle, double hitboxYOff, dou
 	SetRectRotation(myQuad, angle, coll->ts_grass->tileWidth, 
 		coll->ts_grass->tileHeight, Vector2f(center));
 
-	V2d polyCenter = coll->myTerrain->GetDCenter();
+	
 
 	for (int i = 0; i < 4; ++i)
 	{

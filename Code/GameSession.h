@@ -846,7 +846,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
 	bool drawInversePoly;
-	QuadTree *borderTree;
 	Edge *inverseEdgeList;
 	int numBorders;
 

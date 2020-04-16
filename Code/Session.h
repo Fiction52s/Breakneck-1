@@ -98,6 +98,7 @@ struct Session : TilesetManager
 	QuadTree *specialTerrainTree;
 	QuadTree *railEdgeTree;
 	QuadTree *barrierTree;
+	QuadTree *borderTree;
 
 	int substep;
 	double currentTime;
@@ -127,7 +128,7 @@ struct Session : TilesetManager
 
 	void SetPlayerInputOn(bool on);
 	void UpdateDecorLayers();
-	void UpdateDecorSprites();
+	virtual void UpdateDecorSprites();
 };
 
 #endif

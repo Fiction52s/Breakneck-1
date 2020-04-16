@@ -297,6 +297,7 @@ struct Actor : QuadTreeCollider,
 	QuadTree *GetSpecialTerrainTree();
 	QuadTree *GetRailEdgeTree();
 	QuadTree *GetBarrierTree();
+	QuadTree *GetBorderTree();
 	int GetTotalGameFrames();
 	Collider &GetCollider();
 

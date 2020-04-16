@@ -49,6 +49,15 @@ EditSession * EditSession::currSession = NULL;
 
 #define TIMESTEP 1.0 / 60.0
 
+void EditSession::UpdateDecorSprites()
+{
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		(*it)->UpdateDecorSprites();
+		(*it)->UpdateTouchGrass();
+	}
+}
+
 V2d EditSession::GetPlayerSpawnPos()
 {
 	if (HoldingControl())
@@ -100,6 +109,8 @@ void EditSession::TestPlayerModeUpdate()
 		UpdatePhysics();
 		UpdatePostPhysics();
 
+		UpdateDecorSprites();
+		UpdateDecorLayers();
 		
 		UpdatePlayerWireQuads();
 
@@ -120,6 +131,7 @@ void EditSession::TestPlayerMode()
 	{
 		terrainTree->Clear();
 		specialTerrainTree->Clear();
+		borderTree->Clear();
 
 		Actor *p;
 		for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -133,6 +145,7 @@ void EditSession::TestPlayerMode()
 	{
 		terrainTree = new QuadTree(1000000, 1000000);
 		specialTerrainTree = new QuadTree(1000000, 1000000);
+		borderTree = new QuadTree(1000000, 1000000);
 
 		railEdgeTree = new QuadTree(1000000, 1000000);
 		barrierTree = new QuadTree(1000000, 1000000);
@@ -149,6 +162,7 @@ void EditSession::TestPlayerMode()
 	auto testPolys = GetCorrectPolygonList(0);
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 	{
+		borderTree->Insert((*it));
 		(*it)->AddEdgesToQuadTree(terrainTree);
 	}
 

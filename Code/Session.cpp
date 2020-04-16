@@ -46,6 +46,7 @@ Session::Session(const boost::filesystem::path &p_filePath)
 	specialTerrainTree = NULL;
 	railEdgeTree = NULL;
 	barrierTree = NULL;
+	borderTree = NULL;
 
 	polyShaders = NULL;
 }
@@ -65,6 +66,9 @@ Session::~Session()
 
 	if (railEdgeTree != NULL)
 		delete railEdgeTree;
+
+	if (borderTree != NULL)
+		delete borderTree;
 
 	if (barrierTree != NULL)
 		delete barrierTree;

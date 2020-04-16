@@ -169,6 +169,16 @@ QuadTree *Actor::GetBarrierTree()
 	}
 }
 
+QuadTree *Actor::GetBorderTree()
+{
+	if (owner != NULL)
+		return owner->borderTree;
+	else if (editOwner != NULL)
+	{
+		return editOwner->borderTree;
+	}
+}
+
 int Actor::GetTotalGameFrames()
 {
 	if (owner != NULL)
@@ -17001,9 +17011,6 @@ bool Actor::IsGoalKillAction(Action a)
 
 void Actor::QueryTouchGrass()
 {
-	if (owner == NULL)
-		return;
-
 	Rect<double> queryR = hurtBody.GetAABB();//(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
 	Rect<double> queryRExtended;
 	if (currHitboxes != NULL)
@@ -17022,7 +17029,7 @@ void Actor::QueryTouchGrass()
 
 	polyQueryList = NULL;
 	queryMode = "touchgrasspoly";
-	owner->borderTree->Query(this, queryRExtended);
+	GetBorderTree()->Query(this, queryRExtended);
 
 	queryMode = "touchgrass";
 	PolyPtr tempT = polyQueryList;

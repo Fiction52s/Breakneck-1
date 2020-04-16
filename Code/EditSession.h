@@ -97,6 +97,9 @@ struct EditSession : GUIHandler, Session
 
 	TransformTools *transformTools;
 
+	void UpdateDecorSprites();
+
+
 	void SetInitialView(sf::Vector2f &center,
 		sf::Vector2f &size);
 	bool initialViewSet;
