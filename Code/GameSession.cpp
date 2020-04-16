@@ -401,19 +401,6 @@ void GameSession::Cleanup()
 		absorbShardParticles = NULL;
 	}
 
-	if (terrainDecorInfos != NULL)
-	{
-		for (int i = 0; i < numPolyShaders; ++i)
-		{
-			if (terrainDecorInfos[i] != NULL)
-			{
-				delete terrainDecorInfos[i];
-			}
-		}
-		delete[] terrainDecorInfos;
-		terrainDecorInfos = NULL;
-	}
-
 	if (goalPulse != NULL)
 	{
 		delete goalPulse;
@@ -3307,16 +3294,7 @@ void GameSession::ProcessPlayerStartPos()
 
 void GameSession::ProcessTerrain(PolyPtr poly)
 {
-	poly->AddEdgesToQuadTree(terrainTree);
-	if (poly->inverse)
-	{
-		poly->AddEdgesToQuadTree(inverseEdgeTree);
-		inversePoly = poly;
-	}
-
-	matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
-
-	borderTree->Insert(poly);
+	matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));	
 	allPolygonsList.push_back(poly);
 }
 
@@ -3336,9 +3314,42 @@ bool GameSession::OpenFile( )
 		
 		ReadTerrain(is);
 		
+
+		/*poly->AddEdgesToQuadTree(terrainTree);
+		if (poly->inverse)
+		{
+			poly->AddEdgesToQuadTree(inverseEdgeTree);
+			inversePoly = poly;
+		}
+		borderTree->Insert(poly);*/
+
+		AllocatePolyShaders(matSet.size());
+
+		int index = 0;
+		for (set<pair<int, int>>::iterator it = matSet.begin(); it != matSet.end(); ++it)
+		{
+			if (!LoadPolyShader(index, (*it).first, (*it).second))
+			{
+				assert(0);
+			}
+			++index;
+		}
+
+		PolyPtr poly;
 		allPolysVec.reserve(allPolygonsList.size());
 		for (auto it = allPolygonsList.begin(); it != allPolygonsList.end(); ++it)
 		{
+			poly = (*it);
+			poly->Finalize();
+			poly->AddEdgesToQuadTree(terrainTree);
+
+			if (poly->inverse)
+			{
+				poly->AddEdgesToQuadTree(inverseEdgeTree);
+				inversePoly = poly;
+			}
+			borderTree->Insert(poly);
+
 			allPolysVec.push_back((*it));
 		}
 		allPolygonsList.clear();
@@ -5295,109 +5306,10 @@ bool GameSession::Load()
 		return false;
 	}
 
-	AllocatePolyShaders(matSet.size());
 
-
-	terrainDecorInfos = new TerrainDecorInfo*[numPolyShaders];
-	for (int i = 0; i < numPolyShaders; ++i)
-	{
-		terrainDecorInfos[i] = NULL;
-	}
-	
-
-	cout << "progress more" << endl;
-
-
-	
-
-	map<pair<int,int>, int> indexConvert;
+	//map<pair<int,int>, int> indexConvert;
 	int index = 0;
-	for( set<pair<int,int>>::iterator it = matSet.begin(); it != matSet.end(); ++it )
-	{
-		if (!polyShaders[index].loadFromFile("Resources/Shader/mat_shader2.frag", sf::Shader::Fragment ) )
-		{
-			cout << "MATERIAL SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "polygon shader not loaded" );
-			usePolyShader = false;
-		}
-
-		int matWorld = (*it).first;
-		int matVariation = (*it).second;
-
-		cout << "matWorld: " << matWorld << ", matvar: " << matVariation << endl;
-
-		indexConvert[pair<int,int>(matWorld,matVariation)] = index;
-
-		stringstream ss1;
-		ss1 << "Terrain/terrain_";
-		
-		ss1 << matWorld + 1 << "_";
-		if( matVariation < 10 )
-		{
-			ss1 << "0" << matVariation + 1;
-		}
-		else
-		{
-			ss1 << matVariation + 1;
-		}
 	
-		ss1 << "_512x512.png";
-		ts_polyShaders[index] = GetTileset( ss1.str(), 512, 512 ); //1024, 1024 );
-		cout << "loading: " << ss1.str() << endl;
-		polyShaders[index].setUniform( "u_texture", 
-			//*GetTileset( ss1.str(), 1024, 1024 )->texture );
-			*GetTileset( ss1.str(), 512, 512 )->texture );
-		//polyShaders[tType]->setUniform( "u_texture", *(ts_poly->texture) );
-		polyShaders[index].setUniform( "Resolution", Vector2f( 1920, 1080 ) );
-		polyShaders[index].setUniform( "AmbientColor", Glsl::Vec4( 1, 1, 1, 1 ) );
-		
-
-		ifstream is;
-		ss1.clear();
-		ss1.str("");
-
-		ss1 << "Resources/Terrain/Decor/" << "terraindecor_" 
-			<< (matWorld + 1) << "_0" << (matVariation + 1) << ".txt";
-		is.open(ss1.str());
-
-		if (is.is_open())
-		{
-			list<pair<string, int>> loadedDecorList;
-			while (!is.eof())
-			{
-				string dStr;
-				is >> dStr;
-
-				if (dStr == "")
-				{
-					break;
-				}
-
-				int frequencyPercent;
-				is >> frequencyPercent;
-
-				loadedDecorList.push_back(pair<string, int>(dStr, frequencyPercent));
-			}
-			is.close();
-
-
-			TerrainDecorInfo *tdInfo = new TerrainDecorInfo(loadedDecorList.size());
-			terrainDecorInfos[index] = tdInfo;
-			int dI = 0;
-			for (auto it = loadedDecorList.begin(); it != loadedDecorList.end(); ++it)
-			{
-				tdInfo->decors[dI] = TerrainRender::GetDecorType((*it).first);
-				tdInfo->percents[dI] = (*it).second;
-				++dI;
-			}
-		}
-		else
-		{
-			//not found, thats fine.
-		}
-
-		++index;
-	}
 
 
 	//for( list<TerrainPiece*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
@@ -7969,7 +7881,6 @@ void GameSession::Init()
 	rain = NULL;//new Rain(this);//NULL;
 	//stormCeilingInfo = NULL;
 
-	terrainDecorInfos = NULL;
 	va = NULL;
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;

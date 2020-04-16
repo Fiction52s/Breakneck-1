@@ -293,8 +293,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	TilesetManager tm;
 
-	TerrainDecorInfo **terrainDecorInfos;
-
 	static GameSession *GetSession();
 	static GameSession *currSession;
 

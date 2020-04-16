@@ -81,7 +81,7 @@ struct Session : TilesetManager
 	//	const std::string &actorType ) {}
 //	virtual void ProcessActor(ActorPtr actor);
 //	virtual void ProcessActorGroup(const std::string &groupName, int numActors);
-	
+	bool LoadPolyShader(int index, int matWorld, int matVariation);
 
 	virtual int Run() = 0;
 

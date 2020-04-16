@@ -1201,6 +1201,8 @@ void EditSession::ProcessTerrain(PolyPtr poly)
 		inversePolygon = poly;
 	}
 	polygons.push_back(poly);
+
+	poly->Finalize();
 }
 
 bool EditSession::ReadBGTerrain(std::ifstream &is)
@@ -3609,30 +3611,12 @@ void EditSession::SetupTerrainTypeSelector()
 		for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD; ++i)
 		{
 			ind = worldI * MAX_TERRAINTEX_PER_WORLD + i;
-			stringstream ss;
-			ss << "Terrain/" << "terrain_" << (worldI + 1) << "_0" << (i + 1) << "_512x512.png";
-			ts_polyShaders[ind] = GetTileset(ss.str(), 512, 512);
-
-			if (ts_polyShaders[ind] == NULL)
+			
+			if (LoadPolyShader(ind, worldI, i))
 			{
-				break;
+				terrainSel->Set(worldI, i, Sprite(*ts_polyShaders[ind]->texture, sf::IntRect(0, 0, 64, 64)),
+					"xx");
 			}
-
-			terrainSel->Set(worldI, i, Sprite(*ts_polyShaders[ind]->texture, sf::IntRect(0, 0, 64, 64)),
-				"xx");
-
-			if (!polyShaders[ind].loadFromFile("Resources/Shader/mat_shader2.frag", sf::Shader::Fragment))
-			{
-				cout << "MATERIAL SHADER NOT LOADING CORRECTLY EDITOR" << endl;
-				assert(0 && "polygon shader not loaded editor");
-			}
-
-			polyShaders[ind].setUniform("u_texture", *ts_polyShaders[ind]->texture);
-			polyShaders[ind].setUniform("Resolution", Vector2f(1920, 1080));
-			polyShaders[ind].setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-			polyShaders[ind].setUniform("skyColor", ColorGL(Color::White));
-
-			ReadDecorInfoFile(worldI, i);
 		}
 	}
 }

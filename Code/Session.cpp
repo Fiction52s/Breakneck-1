@@ -194,6 +194,46 @@ bool Session::ReadDecorImagesFile()
 	return true;
 }
 
+bool Session::LoadPolyShader(int index, int matWorld, int matVariation)
+{
+	stringstream ss;
+	ss << "Terrain/terrain_";
+
+	ss << matWorld + 1 << "_";
+	if (matVariation < 10)
+	{
+		ss << "0" << matVariation + 1;
+	}
+	else
+	{
+		ss << matVariation + 1;
+	}
+
+	ss << "_512x512.png";
+
+	string matFile = ss.str();
+
+	Tileset *ts_mat = GetTileset(matFile, 512, 512);
+
+	if (ts_mat == NULL)
+		return false;
+
+	if (!polyShaders[index].loadFromFile("Resources/Shader/mat_shader2.frag", sf::Shader::Fragment))
+	{
+		cout << "MATERIAL SHADER NOT LOADING CORRECTLY:" << matFile << endl;
+		return false;
+	}
+
+	ts_polyShaders[index] = ts_mat;
+	polyShaders[index].setUniform("u_texture", *ts_mat->texture);
+	polyShaders[index].setUniform("Resolution", Vector2f(1920, 1080));
+	polyShaders[index].setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+	polyShaders[index].setUniform("skyColor", ColorGL(Color::White));
+
+	ReadDecorInfoFile(matWorld, matVariation);
+	return true;
+}
+
 bool Session::ReadDecorInfoFile(int tWorld, int tVar)
 {
 	stringstream ss;
@@ -400,7 +440,6 @@ bool Session::ReadTerrain(std::ifstream &is)
 
 		poly->Load(is);
 		numPoints -= poly->GetNumPoints();
-		poly->Finalize(); //doesn't get affected by reading grass
 
 		ReadTerrainGrass(is, poly);
 
