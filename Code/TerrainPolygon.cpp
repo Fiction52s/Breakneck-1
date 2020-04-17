@@ -146,11 +146,12 @@ void TerrainPolygon::AddTouchGrass(int gt)
 void TerrainPolygon::QueryTouchGrass(QuadTreeCollider *qtc, sf::Rect<double> &r)
 {
 	V2d center = GetDCenter();
-	r.left -= center.x;
-	r.top -= center.y;
+	sf::Rect<double> rAdjusted = r;
+	rAdjusted.left -= center.x;
+	rAdjusted.top -= center.y;
 	for (auto it = touchGrassCollections.begin(); it != touchGrassCollections.end(); ++it)
 	{
-		(*it)->Query(qtc, r);
+		(*it)->Query(qtc, rAdjusted);
 	}
 }
 
@@ -2725,7 +2726,7 @@ void TerrainPolygon::Finalize()
 	SetupGrass();
 
 	AddTouchGrass(TouchGrass::TYPE_NORMAL);
-	AddTouchGrass(TouchGrass::TYPE_TEST);
+	//AddTouchGrass(TouchGrass::TYPE_TEST);
 
 	ResetTouchGrass();
 
@@ -2802,7 +2803,7 @@ void TerrainPolygon::FinalizeInverse()
 	SetupGrass();
 
 	AddTouchGrass(TouchGrass::TYPE_NORMAL);
-	AddTouchGrass(TouchGrass::TYPE_TEST);
+	//AddTouchGrass(TouchGrass::TYPE_TEST);
 
 	ResetTouchGrass();
 

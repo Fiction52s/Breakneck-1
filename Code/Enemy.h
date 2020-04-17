@@ -550,6 +550,12 @@ struct Shield;
 struct SpecterArea;
 struct SpecterTester;
 
+
+template<typename X> Enemy* MakeEnemy(std::ifstream &is)
+{
+	return new X(is);
+}
+
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
@@ -559,7 +565,6 @@ public:
 		bool &b);
 	static bool ReadPath(std::ifstream &is,
 		int &pLen, std::list<sf::Vector2i> &localPath);
-
 	virtual void UpdatePreLauncherPhysics() {}
 	CuttableObject *cutObject;
 	Launcher **launchers;

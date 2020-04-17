@@ -249,12 +249,29 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 }
 
 
+std::string & tolowerinplace(std::string &s)
+{
+	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
+	return s;
+}
+
+#define REGISTER_ENEMY(X) enemyCreateMap[tolowerinplace(string(#X))] = X::Create
+
 GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
 	:Session(p_filePath), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), 
 	eHitParamsMan( NULL ), drain(true )
 {
+	//REGISTER_ENEMY(Airdasher);
+	//REGISTER_ENEMY(AirdashJuggler);
+	REGISTER_ENEMY(Goal);
+
+	//enemyCreateMap["goal"] = Goal::Create;
+
+	ifstream isTest;
+	//enemyCreateMap["goal"](isTest);
+
 	cam.owner = this;
 	currSession = this;
 
@@ -611,37 +628,7 @@ bool GameSession::ReadActors(std::ifstream &is)
 	return false;
 }
 
-Edge *GameSession::LoadEdgeIndex(std::ifstream &is)
-{
-	int terrainIndex;
-	is >> terrainIndex;
 
-	int edgeIndex;
-	is >> edgeIndex;
-
-	if (inversePoly != NULL)
-	{
-		terrainIndex++;
-	}
-
-	return allPolysVec[terrainIndex]->GetEdge(edgeIndex);
-}
-
-void GameSession::LoadEdgeInfo( ifstream &is, Edge *&edge, double &edgeQuant)
-{
-	edge = LoadEdgeIndex(is);
-	is >> edgeQuant;
-}
-
-void GameSession::LoadStandardGroundedEnemy(std::ifstream &is,
-	Edge *&edge, double &edgeQuant,
-	int &hasMonitor, int &level)
-{
-	LoadEdgeInfo(is, edge, edgeQuant);
-
-	is >> hasMonitor;
-	is >> level;
-}
 
 void GameSession::UpdateEnemiesPrePhysics()
 {
@@ -1543,6 +1530,53 @@ bool GameSession::LoadEnemies( ifstream &is )
 	return true;
 }
 
+Edge *GameSession::LoadEdgeIndex(std::ifstream &is)
+{
+	int terrainIndex;
+	is >> terrainIndex;
+
+	int edgeIndex;
+	is >> edgeIndex;
+
+	if (inversePoly != NULL)
+	{
+		terrainIndex++;
+	}
+
+	return allPolysVec[terrainIndex]->GetEdge(edgeIndex);
+}
+
+void GameSession::LoadEdgeInfo(ifstream &is, Edge *&edge, double &edgeQuant)
+{
+	edge = LoadEdgeIndex(is);
+	is >> edgeQuant;
+}
+
+void GameSession::LoadStandardGroundedEnemy(std::ifstream &is,
+	Edge *&edge, double &edgeQuant,
+	int &hasMonitor, int &level)
+{
+	LoadEdgeInfo(is, edge, edgeQuant);
+
+	is >> hasMonitor;
+	is >> level;
+}
+
+void GameSession::LoadAirInfo(std::ifstream &is,
+	sf::Vector2i &pos)
+{
+	is >> pos.x;
+	is >> pos.y;
+}
+
+void GameSession::LoadNamedAirInfo(std::ifstream &is,
+	sf::Vector2i &pos, std::string &str)
+{
+	LoadAirInfo(is, pos);
+
+	is >> str;
+}
+
 void GameSession::LoadEnemy(std::ifstream &is )
 {
 	string typeName;
@@ -1554,6 +1588,8 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	double edgeQuantity;
 	int hasMonitor;
 	int level;
+	Vector2i pos;
+	std::string pName;
 
 	//LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
@@ -1585,12 +1621,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		goalNodePos = gPos + norm * nodeHeight;
 		float space = 78.f;
 		goalNodePosFinal = V2d(goalNodePos.x, goalNodePos.y - space);
-		cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
+		//cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
 	}
 	else if (typeName == "poi")
 	{
 		string air;
-		string pname;
+		//string pname;
 		PoiInfo *pi = NULL;
 
 		int posType;
@@ -1598,27 +1634,16 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		if (posType == 0)
 		{
-			Vector2i pos;
-			is >> pos.x;
-			is >> pos.y;
-
-
-			is >> pname;
-
-			pi = new PoiInfo(pname, pos);
+			LoadNamedAirInfo(is, pos, pName);
+			pi = new PoiInfo(pName, pos);
 		}
 
 		else if (posType == 1)
 		{
 			LoadEdgeInfo(is, loadedEdge, edgeQuantity);
+			is >> pName;
 
-			is >> pname;
-
-			Edge *e = loadedEdge;
-
-			V2d p = e->GetPoint(edgeQuantity);
-
-			pi = new PoiInfo(pname, e,
+			pi = new PoiInfo(pName, loadedEdge,
 				edgeQuantity);				
 		}
 		else
@@ -1627,41 +1652,29 @@ void GameSession::LoadEnemy(std::ifstream &is )
 			assert(0);
 		}
 
-		poiMap[pname] = pi;
+		poiMap[pName] = pi;
 	}
 	else if (typeName == "xbarrier")
 	{
-		string pname;
-
-		Vector2i pos;
-		is >> pos.x;
-		is >> pos.y;
-
-		is >> pname;
+		LoadNamedAirInfo(is, pos, pName);
 
 		int hEdge;
 		is >> hEdge;
 		bool hEdgeB = hEdge;
 
-		Barrier *b = new Barrier(this, pname, true, pos.x, hEdgeB, NULL);
+		Barrier *b = new Barrier(this, pName, true, pos.x, hEdgeB, NULL);
 
-		barrierMap[pname] = b;
+		barrierMap[pName] = b;
 		barriers.push_back(b);
 	}
 	else if (typeName == "extrascene")
 	{
-		string pname;
-
-		Vector2i pos;
-		is >> pos.x;
-		is >> pos.y;
-
-		is >> pname;
+		LoadNamedAirInfo(is, pos, pName);
 
 		int extraSceneType;
 		is >> extraSceneType;
 
-		BasicBossScene *scene = BasicBossScene::CreateScene(this, pname);
+		BasicBossScene *scene = BasicBossScene::CreateScene(this, pName);
 		if (extraSceneType == 0)//prelevel
 		{
 			preLevelScene = scene;
@@ -1670,33 +1683,21 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		{
 			postLevelScene = scene;
 		}
-
-		//BirdVSTigerScene *scene = new BirdVSTigerScene(this);
-		//scene->Init();
-		//SetActiveSequence(scene);
-	}
-
-
-		
+	}	
 	else if (typeName == "camerashot")
 	{
-		Vector2i pos;
-		is >> pos.x;
-		is >> pos.y;
-
-		string pname;
-		is >> pname;
+		LoadNamedAirInfo(is, pos, pName);
 
 		float z;
 		is >> z;
 
-		CameraShot *shot = new CameraShot(pname, Vector2f(pos), z);
-		if (cameraShotMap.count(pname) > 0 )
+		CameraShot *shot = new CameraShot(pName, Vector2f(pos), z);
+		if (cameraShotMap.count(pName) > 0 )
 		{
 			assert(false);
 		}
 
-		cameraShotMap[pname] = shot;
+		cameraShotMap[pName] = shot;
 	}
 	else if (typeName == "shard")
 	{
@@ -1712,8 +1713,6 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		int localIndex;
 		is >> localIndex;
-		//string shardStr;
-		//is >> shardStr;
 
 		Shard *enemy = new Shard(this, Vector2i(xPos, yPos), w, localIndex);
 
@@ -1724,12 +1723,9 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	}
 	else if (typeName == "ship")
 	{
-		int xPos, yPos;
+		LoadAirInfo(is, pos);
 
-		is >> xPos;
-		is >> yPos;
-
-		shipEntrancePos = V2d(xPos, yPos);
+		shipEntrancePos = V2d(pos);
 		hasShipEntrance = true;
 
 		ResetShipSequence();
@@ -1759,9 +1755,6 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	else if (typeName == "blocker" || typeName == "greenblocker")
 	{
 		int xPos, yPos;
-
-		//always air
-
 
 		is >> xPos;
 		is >> yPos;

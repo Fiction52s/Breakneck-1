@@ -16,6 +16,7 @@ struct Goal : Enemy
 	Goal(GameSession *owner, Edge *ground, double quantity,
 		int world);
 	~Goal();
+	static Enemy *Create(std::ifstream &is);
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

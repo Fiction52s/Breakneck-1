@@ -10,6 +10,13 @@
 using namespace std;
 using namespace sf;
 
+Enemy *Goal::Create(std::ifstream &is)
+{
+	cout << "here i ammmmm" << endl;
+	int x = 5;
+
+	return NULL;
+}
 
 Goal::Goal( GameSession *owner, Edge *g, double q, int world )
 		:Enemy( owner, EnemyType::EN_GOAL, false, 0, false ), 

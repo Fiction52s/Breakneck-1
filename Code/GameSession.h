@@ -183,6 +183,8 @@ struct KeyNumberObj
 
 struct GameSession : QuadTreeCollider, RayCastHandler, Session
 {
+	std::map<std::string, std::function<Enemy*(std::ifstream &)>> enemyCreateMap;
+
 	//maybe move this out eventually
 	struct DecorInfo
 	{
@@ -283,6 +285,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	Edge *LoadEdgeIndex(std::ifstream &is);
 	void LoadEdgeInfo(std::ifstream &is,
 		Edge *&edge, double &edgeQuant);
+	void LoadAirInfo(std::ifstream &is,
+		sf::Vector2i &pos);
+	void LoadNamedAirInfo(std::ifstream &is,
+		sf::Vector2i &pos, std::string &str);
 	void LoadStandardGroundedEnemy(std::ifstream &is,
 		Edge *&edge, double &edgeQuant,
 		int &hasMonitor, int &level);
