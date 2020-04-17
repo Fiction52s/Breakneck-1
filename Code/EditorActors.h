@@ -74,7 +74,6 @@ struct ActorType
 {
 	ActorType(ParamsInfo &pi);
 	~ActorType();
-	void Init();
 	void PlaceEnemy();
 	void PlaceEnemy(ActorParams *ap);
 	void LoadEnemy(std::ifstream &is,

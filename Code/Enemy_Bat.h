@@ -2,6 +2,7 @@
 #define __ENEMY_BAT_H__
 
 #include "Enemy.h"
+#include "Bullet.h"
 
 struct Bat : Enemy, LauncherEnemy
 {

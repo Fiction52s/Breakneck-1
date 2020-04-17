@@ -3,6 +3,7 @@
 
 #include "Enemy.h"
 #include "ObjectPool.h"
+#include "Bullet.h"
 
 struct Cactus;
 struct CactusShotgun : Enemy, LauncherEnemy, PoolMember

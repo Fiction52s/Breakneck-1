@@ -2,6 +2,7 @@
 #define __ENEMY_BASICTURRET_H__
 
 #include "Enemy.h"
+#include "Bullet.h"
 
 struct Shield;
 

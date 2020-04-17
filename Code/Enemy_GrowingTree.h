@@ -2,6 +2,7 @@
 #define __ENEMY_GROWINGTREE_H__
 
 #include "Enemy.h"
+#include "Bullet.h"
 
 struct GrowingTree : Enemy, LauncherEnemy
 {

@@ -2,6 +2,7 @@
 #define __ENEMY_OWL_H__
 
 #include "Enemy.h"
+#include "Bullet.h"
 
 struct Owl : Enemy, LauncherEnemy
 {

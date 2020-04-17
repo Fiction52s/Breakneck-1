@@ -692,6 +692,7 @@ struct AirdasherParams : public ActorParams
 	ActorParams *Copy();
 };
 
+//still used for crawlerQueen
 struct BossCrawlerParams : public ActorParams
 {
 	BossCrawlerParams(ActorType *at,

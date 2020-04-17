@@ -7,6 +7,7 @@
 #include "Movement.h"
 #include "Enemy.h"
 #include "BarrierReactions.h"
+#include "Bullet.h"
 
 
 struct DialogueUser

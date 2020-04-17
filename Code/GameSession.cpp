@@ -249,13 +249,13 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 }
 
 
-std::string & tolowerinplace(std::string &s)
-{
-	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
-	return s;
-}
+//std::string & tolowerinplace(std::string &s)
+//{
+//	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
+//	return s;
+//}
 
-#define REGISTER_ENEMY(X) enemyCreateMap[tolowerinplace(string(#X))] = X::Create
+//#define REGISTER_ENEMY(X) enemyCreateMap[tolowerinplace(string(#X))] = X::Create
 
 GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
 	:Session(p_filePath), saveFile( sf ),
@@ -263,13 +263,11 @@ GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), 
 	eHitParamsMan( NULL ), drain(true )
 {
-	//REGISTER_ENEMY(Airdasher);
-	//REGISTER_ENEMY(AirdashJuggler);
-	REGISTER_ENEMY(Goal);
+	//REGISTER_ENEMY(Goal);
 
 	//enemyCreateMap["goal"] = Goal::Create;
 
-	ifstream isTest;
+	//ifstream isTest;
 	//enemyCreateMap["goal"](isTest);
 
 	cam.owner = this;
@@ -2104,7 +2102,6 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		//BossCrawler *enemy = new BossCrawler( this, loadedEdge, edgeQuantity );
 		Crawler *enemy = new Crawler(this, hasMonitor, loadedEdge,
 			edgeQuantity, level);
 		//RoadRunner *enemy = new RoadRunner(this, hasMonitor, loadedEdge,
@@ -9080,13 +9077,6 @@ void GameSession::RestartLevel()
 	cam.Reset();
 
 	cutPlayerInput = false;
-
-	/*if( !cam.bossCrawler )
-	{
-		cam.zoomFactor = 1;
-		cam.zoomLevel = 0;
-		cam.offset = Vector2f( 0, 0 );
-	}*/
 
 	for (int i = 0; i < 4; ++i)
 	{

@@ -2,6 +2,7 @@
 #define __ENEMY_CURVETURRET_H__
 
 #include "Enemy.h"
+#include "Bullet.h"
 
 struct CurveTurret : Enemy, LauncherEnemy
 {

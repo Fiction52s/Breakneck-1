@@ -708,12 +708,6 @@ bool ActorType::IsGoalType()
 		|| name == "nexus";
 }
 
-void ActorType::Init()
-{
-}
-
-
-
 void ActorType::PlaceEnemy(ActorParams *ap)
 {
 	if (ap == NULL)

@@ -2,6 +2,7 @@
 #define __ENEMY_PATROLLER_H__
 
 #include "Enemy.h"
+#include "Bullet.h"
 
 struct PatrollerEye;
 struct Patroller : Enemy, LauncherEnemy

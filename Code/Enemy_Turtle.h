@@ -2,6 +2,7 @@
 #define __ENEMY_TURTLE_H__
 
 #include "Enemy.h"
+#include "Bullet.h"
 
 struct Turtle : Enemy, LauncherEnemy
 {
