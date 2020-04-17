@@ -10,18 +10,20 @@
 using namespace std;
 using namespace sf;
 
-Enemy *Goal::Create(std::ifstream &is)
-{
-	cout << "here i ammmmm" << endl;
-	int x = 5;
+//Enemy *Goal::Create(std::ifstream &is)
+//{
+//	cout << "here i ammmmm" << endl;
+//	int x = 5;
+//
+//	return NULL;
+//}
 
-	return NULL;
-}
-
-Goal::Goal( GameSession *owner, Edge *g, double q, int world )
-		:Enemy( owner, EnemyType::EN_GOAL, false, 0, false ), 
+Goal::Goal( Edge *g, double q, int world )
+		:Enemy( EnemyType::EN_GOAL, false, 0, false ), 
 	ground( g ), edgeQuantity( q ), dead( false )
-{	
+{
+
+
 	double width;
 	double height;
 
@@ -31,10 +33,10 @@ Goal::Goal( GameSession *owner, Edge *g, double q, int world )
 	case 0:
 		width = 288;
 		height = 320;
-		ts = owner->GetTileset("Goal/goal_w01_a_288x320.png", width, height);
-		ts_mini = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
-		ts_explosion = owner->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
-		ts_explosion1 = owner->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
+		ts = sess->GetTileset("Goal/goal_w01_a_288x320.png", width, height);
+		ts_mini = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+		ts_explosion = sess->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
+		ts_explosion1 = sess->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
 		explosionLength = 18;
 		explosionAnimFactor = 3;
 		explosionYOffset = 80;
@@ -44,10 +46,10 @@ Goal::Goal( GameSession *owner, Edge *g, double q, int world )
 	default:
 		width = 288;
 		height = 256;
-		ts = owner->GetTileset("Goal/goal_w02_a_288x256.png", width, height);
-		ts_mini = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+		ts = sess->GetTileset("Goal/goal_w02_a_288x256.png", width, height);
+		ts_mini = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 		
-		ts_explosion = owner->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
+		ts_explosion = sess->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
 		ts_explosion1 = NULL;
 		explosionLength = 15;
 		explosionAnimFactor = 3;
@@ -63,7 +65,7 @@ Goal::Goal( GameSession *owner, Edge *g, double q, int world )
 	miniSprite.setTextureRect( ts_mini->GetSubRect( 2 ) );
 	miniSprite.setScale( 16, 16 );
 	
-	switch( owner->mapHeader->envWorldType)
+	switch(sess->mapHeader->envWorldType)
 	{
 	case 0:
 		miniSprite.setTextureRect( ts_mini->GetSubRect( 5 ) );
@@ -223,14 +225,18 @@ void Goal::ProcessState()
 
 void Goal::HandleNoHealth()
 {
-	owner->PlayerHitGoal(0);
-	owner->KillAllEnemies();
+	sess->PlayerHitGoal(0);
+	sess->KillAllEnemies();
 	frame = 0;
 	
 	SetHurtboxes(NULL, 0);
 	action = A_KINKILLING;
 
-	owner->goalPulse->show = true;
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		game->goalPulse->show = true;
+	}
 }
 
 void Goal::EnemyDraw(sf::RenderTarget *target )

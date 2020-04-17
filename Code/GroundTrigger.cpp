@@ -23,53 +23,68 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-GroundTrigger::GroundTrigger(GameSession *owner, Edge *g, double q, bool p_facingRight,const std::string &trigTypeStr)
-	:Enemy(owner, EnemyType::EN_GROUNDTRIGGER, false, 1), ground(g), edgeQuantity(q),
+GroundTrigger::GroundTrigger(Edge *g, double q, bool p_facingRight,const std::string &trigTypeStr)
+	:Enemy(EnemyType::EN_GROUNDTRIGGER, false, 1), ground(g), edgeQuantity(q),
 	facingRight( p_facingRight )//, trigType( tType )
 {
 	trigType = GetTriggerType(trigTypeStr);
 
 	double height = 128;
-	ts = owner->GetTileset("Ship/shipleave_128x128.png", 128, height);
+	ts = sess->GetTileset("Ship/shipleave_128x128.png", 128, height);
 	sprite.setTexture(*ts->texture);
 
 	V2d gPoint = g->GetPoint(edgeQuantity);
 	storySeq = NULL;
 	gameSequence = NULL;
+	game = NULL;
 
-	switch (trigType)
+	if (sess->IsSessTypeGame())
 	{
-	case TRIGGER_HOUSEFAMILY:
-		//gameSequence = new MonumentSeq(owner);
-		storySeq = new StorySequence(owner);
-		storySeq->Load("kinhouse");
-		break;
-	case TRIGGER_GETAIRDASH:
-		owner->drain = false;
-		if (owner->HasPowerUnlocked(0))
-		{
-		}
-		else
-		{
-			gameSequence = new GetAirdashPowerScene(owner);//GetAirdashPowerSeq(owner);
-		}
-		
-		//storySeq = new StorySequence(owner);
-		//storySeq->Load("getairdash");
-		break;
-	case TRIGGER_DESTROYNEXUS1:
-		gameSequence = new NexusCore1Seq(owner);
-		break;
-	case TRIGGER_CRAWLERATTACK:
-		gameSequence = new CrawlerAttackSeq(owner);
-		break;
-	case TRIGGER_TEXTTEST:
-		gameSequence = new TextTestSeq(owner);
-		//storySeq = new StorySequence(owner);
-		//storySeq->Load("kinhouse");
-		//gameSequence = new TextTestSeq(owner);
-		break;
+		game = GameSession::GetSession();
 	}
+	else
+	{
+		game = NULL;
+	}
+
+	if( game != NULL )
+	{
+		switch (trigType)
+		{
+		case TRIGGER_HOUSEFAMILY:
+			//gameSequence = new MonumentSeq(game);
+			storySeq = new StorySequence(game);
+			storySeq->Load("kinhouse");
+			break;
+		case TRIGGER_GETAIRDASH:
+			game->drain = false;
+			if (game->HasPowerUnlocked(0))
+			{
+			}
+			else
+			{
+				gameSequence = new GetAirdashPowerScene(game);//GetAirdashPowerSeq(game);
+			}
+
+			//storySeq = new StorySequence(game);
+			//storySeq->Load("getairdash");
+			break;
+		case TRIGGER_DESTROYNEXUS1:
+			gameSequence = new NexusCore1Seq(game);
+			break;
+		case TRIGGER_CRAWLERATTACK:
+			gameSequence = new CrawlerAttackSeq(game);
+			break;
+		case TRIGGER_TEXTTEST:
+			gameSequence = new TextTestSeq(game);
+			//storySeq = new StorySequence(game);
+			//storySeq->Load("kinhouse");
+			//gameSequence = new TextTestSeq(game);
+			break;
+		}
+	}
+
+	
 
 	receivedHit = NULL;
 
@@ -120,7 +135,7 @@ void GroundTrigger::ResetEnemy()
 	{
 	case TRIGGER_GETAIRDASH:
 	{
-		if (owner->HasPowerUnlocked(0))
+		if (game != NULL && game->HasPowerUnlocked(0))
 		{
 			action = DONE;
 		}
@@ -194,7 +209,7 @@ void GroundTrigger::ProcessState()
 
 void GroundTrigger::UpdateEnemyPhysics()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	if (player->ground == ground && action == IDLE)
 	{

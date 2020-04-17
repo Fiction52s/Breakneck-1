@@ -14,8 +14,8 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level )
-	:Enemy(owner, EnemyType::EN_AIRDASHER, p_hasMonitor, 1)
+Airdasher::Airdasher(bool p_hasMonitor, Vector2i pos, int p_level )
+	:Enemy(EnemyType::EN_AIRDASHER, p_hasMonitor, 1)
 {
 	level = p_level;
 
@@ -49,9 +49,8 @@ Airdasher::Airdasher(GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_
 
 	frame = 0;
 
-	//ts = owner->GetTileset( "Airdasher.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/dasher_208x144.png", 208, 144);
-	ts_aura = owner->GetTileset("Enemies/dasher_aura_208x144.png", 208, 144);
+	ts = sess->GetTileset("Enemies/dasher_208x144.png", 208, 144);
+	ts_aura = sess->GetTileset("Enemies/dasher_aura_208x144.png", 208, 144);
 
 	auraSprite.setTexture(*ts_aura->texture);
 
@@ -152,7 +151,7 @@ void Airdasher::ComboHit()
 	if (currHits >= hitLimit)
 	{
 		dead = true;
-		owner->PlayerRemoveActiveComboer(comboObj);
+		sess->PlayerRemoveActiveComboer(comboObj);
 		velocity = V2d(0, 0);
 	}
 }
@@ -183,7 +182,7 @@ void Airdasher::ProcessHit()
 {
 	if ( action == S_DASH && !dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 		action = S_COMBO;
 		frame = 0;
@@ -198,7 +197,7 @@ void Airdasher::ProcessHit()
 		dir = -playerDir;
 		velocity = dir * speed;
 
-		owner->PlayerAddActiveComboObj(comboObj);
+		sess->PlayerAddActiveComboObj(comboObj);
 	}
 	else
 	{
@@ -210,7 +209,7 @@ void Airdasher::ProcessHit()
 
 void Airdasher::ProcessState()
 {
-	V2d playerPos = owner->GetPlayerPos();
+	V2d playerPos = sess->GetPlayerPos();
 	
 
 	if (frame == actionLength[action] * animFactor[action])
@@ -237,7 +236,7 @@ void Airdasher::ProcessState()
 		}
 		case S_COMBO:
 			dead = true;
-			owner->PlayerRemoveActiveComboer(comboObj);
+			sess->PlayerRemoveActiveComboer(comboObj);
 			break;
 		}
 	}
@@ -346,7 +345,7 @@ double Airdasher::SetFacingPlayerAngle()
 
 void Airdasher::UpdateEnemyPhysics()
 {
-	V2d playerPos = owner->GetPlayerPos();
+	V2d playerPos = sess->GetPlayerPos();
 	V2d dest = currOrig + playerDir * dashRadius;
 	switch (action)
 	{

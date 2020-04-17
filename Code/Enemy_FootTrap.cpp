@@ -18,13 +18,13 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-FootTrap::FootTrap( GameSession *owner, bool p_hasMonitor, Edge *g, double q )
-		:Enemy( owner, EnemyType::EN_FOOTTRAP, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
+FootTrap::FootTrap( bool p_hasMonitor, Edge *g, double q )
+		:Enemy( EnemyType::EN_FOOTTRAP, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
 {
 	action = LATENT;
 
 	double height = 128;
-	ts = owner->GetTileset( "Enemies/foottrap_160x128.png", 160, height );
+	ts = sess->GetTileset( "Enemies/foottrap_160x128.png", 160, height );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint( edgeQuantity );
@@ -147,7 +147,7 @@ void FootTrap::ProcessState()
 	}
 
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 	switch (action)
 	{
 	case LATENT:
@@ -251,7 +251,7 @@ void FootTrap::UpdateSprite()
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
+			keySprite->setTextureRect( ts_key->GetSubRect( sess->keyFrame / 5 ) );
 			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
 				keySprite->getLocalBounds().height / 2 );
 			keySprite->setPosition( position.x, position.y );

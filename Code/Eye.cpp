@@ -2,11 +2,11 @@
 #include "GameSession.h"
 #include "Enemy_Patroller.h"
 
-PatrollerEye::PatrollerEye(GameSession *owner, Patroller *p)
+PatrollerEye::PatrollerEye(Patroller *p)
 	:parent(p)
 {
 	highlight = (eye + 4);
-	ts_eye = owner->GetTileset("Enemies/patroller_eye_48x48.png", 48, 48);
+	ts_eye = p->sess->GetTileset("Enemies/patroller_eye_48x48.png", 48, 48);
 	SetRectSubRect(eye, ts_eye->GetSubRect(0));
 	SetRectSubRect(highlight, ts_eye->GetSubRect(8));
 	Reset();

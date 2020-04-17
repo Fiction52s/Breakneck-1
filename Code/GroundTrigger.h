@@ -35,10 +35,9 @@ struct GroundTrigger : Enemy
 	StorySequence *storySeq;
 	Sequence *gameSequence;
 
-	
+	GameSession *game;
 
-	GroundTrigger(GameSession *owner,
-		Edge *ground, double quantity, 
+	GroundTrigger(Edge *ground, double quantity, 
 		bool facingRight,
 		const std::string &trigTypeStr );
 	~GroundTrigger();

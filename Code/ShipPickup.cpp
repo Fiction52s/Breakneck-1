@@ -18,12 +18,12 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-ShipPickup::ShipPickup( GameSession *owner, Edge *g, double q, bool p_facingRight )
-		:Enemy( owner, EnemyType::EN_SHIPPICKUP, false, 1 ), ground( g ), edgeQuantity( q ),
+ShipPickup::ShipPickup(Edge *g, double q, bool p_facingRight )
+		:Enemy( EnemyType::EN_SHIPPICKUP, false, 1 ), ground( g ), edgeQuantity( q ),
 	facingRight( p_facingRight )
 {
 	double height = 128;
-	ts = owner->GetTileset( "Ship/shipleave_128x128.png", 128, height );
+	ts = sess->GetTileset( "Ship/shipleave_128x128.png", 128, height );
 	sprite.setTexture( *ts->texture );
 	
 	V2d gPoint = g->GetPoint(edgeQuantity);
@@ -91,7 +91,7 @@ void ShipPickup::ProcessState()
 
 void ShipPickup::UpdateEnemyPhysics()
 {
-	Actor *player = owner->GetPlayer( 0 );
+	Actor *player = sess->GetPlayer( 0 );
 
 	if( player->ground == ground && action == IDLE)
 	{

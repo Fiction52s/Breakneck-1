@@ -88,7 +88,7 @@ void Shield::ConfirmHitNoKill()
 
 	if (receivedHit->hType != HitboxInfo::COMBO)
 	{
-		parent->owner->Pause(5);
+		parent->sess->Pause(5);
 		pauseFrames = 0;
 	}
 	else
@@ -97,7 +97,7 @@ void Shield::ConfirmHitNoKill()
 		pauseFrames = 5;
 	}
 
-	parent->owner->cam.SetRumble(.5, .5, 5);
+	parent->sess->cam.SetRumble(.5, .5, 5);
 }
 
 V2d Shield::GetPosition()
@@ -111,7 +111,7 @@ void Shield::ConfirmKill()
 
 	if (receivedHit->hType != HitboxInfo::COMBO)
 	{
-		parent->owner->Pause(7);
+		parent->sess->Pause(7);
 		pauseFrames = 0;
 	}
 	else
@@ -120,8 +120,8 @@ void Shield::ConfirmKill()
 		//cout << "set pause frames 7" << endl;
 	}
 
-	parent->owner->ActivateEffect(EffectLayer::BEHIND_ENEMIES, parent->ts_killSpack, GetPosition(), true, 0, 10, 5, true);
-	parent->owner->cam.SetRumble(1, 1, 7);
+	parent->sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, parent->ts_killSpack, GetPosition(), true, 0, 10, 5, true);
+	parent->sess->cam.SetRumble(1, 1, 7);
 }
 
 void Shield::ProcessHit()
@@ -134,11 +134,11 @@ void Shield::ProcessHit()
 			action = S_BREAK;
 			frame = 0;
 			ConfirmHitNoKill();
-			parent->owner->PlayerConfirmEnemyKill(parent);
+			parent->sess->PlayerConfirmEnemyKill(parent);
 		}
 		else
 		{
-			parent->owner->PlayerConfirmEnemyNoKill(parent);
+			parent->sess->PlayerConfirmEnemyNoKill(parent);
 			ConfirmHitNoKill();
 			if (sType == T_BLOCK)
 			{
@@ -147,7 +147,7 @@ void Shield::ProcessHit()
 			else if (sType == T_REFLECT && receivedHit->hType != HitboxInfo::HitboxType::COMBO)
 			{
 				action = S_REFLECT;
-				parent->owner->PlayerApplyHit(hitboxInfo);
+				parent->sess->PlayerApplyHit(hitboxInfo);
 			}
 			frame = 0;
 		}

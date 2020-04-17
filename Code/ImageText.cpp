@@ -173,7 +173,7 @@ void TimerText::UpdateSprite()
 	activeDigits = maxDigits;
 }
 
-TextDisp::TextDisp( GameSession *owner, int width, int height, int charSize, int frameLetterWait,
+TextDisp::TextDisp( int width, int height, int charSize, int frameLetterWait,
 	int p_letterPerShow )
 {
 	show = false;
@@ -184,7 +184,7 @@ TextDisp::TextDisp( GameSession *owner, int width, int height, int charSize, int
 	nextLetterWait = frameLetterWait;
 
 	text.setCharacterSize(charSize);
-	text.setFont(owner->mainMenu->consolas);
+	text.setFont(Session::GetSession()->mainMenu->consolas);
 	text.setFillColor(Color::White);
 	
 	letterPerShow = p_letterPerShow;
@@ -567,9 +567,9 @@ Script::~Script()
 		delete[] sections;
 }
 
-Speech::Speech( GameSession *p_owner ): owner(p_owner)
+Speech::Speech()
 {
-	
+	sess = Session::GetSession();
 }
 
 
@@ -633,49 +633,48 @@ Tileset *Speech::GetTileset()
 {
 	if (speaker == "Momenta")
 	{
-		return owner->GetTileset("Momenta/momentaportrait_320x288.png", 320, 288);
+		return sess->GetTileset("Momenta/momentaportrait_320x288.png", 320, 288);
 	}
 	else if (speaker == "Kin")
 	{
-		return owner->GetTileset("Story/Portraits/w0_kin_256x256.png", 256, 256);
+		return sess->GetTileset("Story/Portraits/w0_kin_256x256.png", 256, 256);
 	}
 	else if (speaker == "Crawler")
 	{
-		return owner->GetTileset("Story/Portraits/w1_crawler_face_256x256.png", 256, 256);
+		return sess->GetTileset("Story/Portraits/w1_crawler_face_256x256.png", 256, 256);
 	}
 	else if (speaker == "Bird")
 	{
-		return owner->GetTileset("Story/Portraits/w2_bird_face_256x256.png", 256, 256);
+		return sess->GetTileset("Story/Portraits/w2_bird_face_256x256.png", 256, 256);
 	}
 	else if (speaker == "Coyote")
 	{
-		return owner->GetTileset("Story/Portraits/w3_coyote_face_256x256.png", 256, 256);
+		return sess->GetTileset("Story/Portraits/w3_coyote_face_256x256.png", 256, 256);
 	}
 	else if (speaker == "Tiger")
 	{
-		return owner->GetTileset("Story/Portraits/w4_tiger_face_256x256.png", 256, 256);
+		return sess->GetTileset("Story/Portraits/w4_tiger_face_256x256.png", 256, 256);
 	}
 	else if (speaker == "Gator")
 	{
-		return owner->GetTileset("Story/Portraits/w5_gator_face_256x256.png", 256, 256);
+		return sess->GetTileset("Story/Portraits/w5_gator_face_256x256.png", 256, 256);
 	}
 	else if (speaker == "Skeleton")
 	{
-		return owner->GetTileset("Story/Portraits/w6_skeleton_face_256x256.png", 256, 256);
+		return sess->GetTileset("Story/Portraits/w6_skeleton_face_256x256.png", 256, 256);
 	}
 	else if (speaker == "Bear")
 	{
-		return owner->GetTileset("Story/Portraits/w8_bear_face_256x256.png", 256, 256);
+		return sess->GetTileset("Story/Portraits/w8_bear_face_256x256.png", 256, 256);
 	}
 	else
 	{
 		//assert(0);
-		return owner->GetTileset("Bosses/Bird/bird_face_384x384.png", 384, 384);
+		return sess->GetTileset("Bosses/Bird/bird_face_384x384.png", 384, 384);
 	}
 }
 
-ConversationGroup::ConversationGroup(GameSession *p_owner)
-	:owner( p_owner )
+ConversationGroup::ConversationGroup()
 {
 	convs = NULL;
 	numConvs = NULL;
@@ -727,7 +726,7 @@ void ConversationGroup::Load(const std::string &name)
 
 	while (true)
 	{
-		c = new Conversation(owner);
+		c = new Conversation;
 		convList.push_back(c);
 		if (!c->Load(is))
 		{
@@ -757,7 +756,7 @@ void ConversationGroup::Reset()
 	}
 }
 
-Conversation::Conversation(GameSession *p_owner): owner( p_owner )
+Conversation::Conversation()
 {
 	speeches = NULL;
 	numSpeeches = 0;
@@ -894,7 +893,7 @@ bool Conversation::Load(ifstream &is)
 		auto tileIt = partTile.begin();
 		for (auto it = parts.begin(); it != parts.end(); ++it, ++tileIt)
 		{
-			Speech *sp = new Speech(owner);
+			Speech *sp = new Speech;
 			sp->speaker = (*it).first;
 			sp->speakerTile = (*tileIt);
 			lineList = &(*it).second;
@@ -910,9 +909,9 @@ bool Conversation::Load(ifstream &is)
 				fullMessage += (*it2);
 			}
 
-			//TextDisp *textDisp = new TextDisp(owner, (1920 - 512), 220, 30, 1);
+			//TextDisp *textDisp = new TextDisp((1920 - 512), 220, 30, 1);
 			//textDisp->SetTopLeft(Vector2f(512, 1080 - 220));
-			TextDisp *textDisp = new TextDisp(owner, (1920 - 512), 256, 30, 1);
+			TextDisp *textDisp = new TextDisp((1920 - 512), 256, 30, 1);
 			textDisp->SetTopLeft(Vector2f(256 + 128, 80));
 			textDisp->SetString(fullMessage);
 			sp->disp = textDisp;

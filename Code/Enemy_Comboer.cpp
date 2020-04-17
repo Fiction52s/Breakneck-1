@@ -14,9 +14,9 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Comboer::Comboer(GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bool loopP, 
+Comboer::Comboer(Vector2i pos, list<Vector2i> &pathParam, bool loopP, 
 	int p_level)
-	:Enemy(owner, EnemyType::EN_COMBOER, false, 1, false)
+	:Enemy(EnemyType::EN_COMBOER, false, 1, false)
 {
 	level = p_level;
 
@@ -64,7 +64,7 @@ Comboer::Comboer(GameSession *owner, Vector2i pos, list<Vector2i> &pathParam, bo
 	frame = 0;
 	
 	//ts = owner->GetTileset( "Comboer.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/comboer_128x128.png", 128, 128);
+	ts = sess->GetTileset("Enemies/comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -192,7 +192,7 @@ void Comboer::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 		action = S_SHOT;
 		frame = 0;
@@ -307,7 +307,7 @@ void Comboer::ProcessHit()
 		}*/
 
 
-		owner->PlayerAddActiveComboObj(comboObj);
+		sess->PlayerAddActiveComboObj(comboObj);
 	}
 }
 
@@ -322,7 +322,7 @@ void Comboer::ProcessState()
 		case S_EXPLODE:
 			numHealth = 0;
 			dead = true;
-			owner->PlayerRemoveActiveComboer(comboObj);
+			sess->PlayerRemoveActiveComboer(comboObj);
 			break;
 		}
 	}

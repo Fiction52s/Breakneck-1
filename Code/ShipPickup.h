@@ -17,8 +17,7 @@ struct ShipPickup : Enemy
 	int actionLength[Count];
 	int animFactor[Count];
 
-	ShipPickup( GameSession *owner,
-		Edge *ground, double quantity,
+	ShipPickup(Edge *ground, double quantity,
 		bool facingRight );
 	void ProcessState();
 	void UpdateEnemyPhysics();

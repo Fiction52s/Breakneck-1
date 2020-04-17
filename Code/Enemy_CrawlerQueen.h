@@ -19,7 +19,7 @@ struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 	};
 
 	Action action;
-	FloatingBomb(GameSession *owner, ObjectPool *myPool, int index );
+	FloatingBomb(ObjectPool *myPool, int index );
 	~FloatingBomb();
 	int actionLength[Count];
 	int animFactor[Count];
@@ -101,6 +101,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 
 	Tileset *ts[Count];
 	void SetLevel();
+	CrawlerQueen(Edge *ground, double quantity, bool clockwise);
 	~CrawlerQueen();
 	void HitTerrainAerial(Edge *e, double q);
 	void Boost();
@@ -116,7 +117,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	double bombSpeed;
 	int animFactor[Count];
 	int actionLength[Count];
-	CrawlerQueen(GameSession *owner, Edge *ground, double quantity, bool clockwise );
+	
 	void ProcessState();
 	void HandleNoHealth();
 	void FrameIncrement();
@@ -167,6 +168,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	sf::Sprite sprite;
 	
 	bool origCW;
+
+	GameSession *game;
 
 	double groundSpeed;
 

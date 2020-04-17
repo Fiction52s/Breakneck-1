@@ -19,8 +19,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Booster::Booster(GameSession *owner, Vector2i &pos, int p_level)
-	:Enemy(owner, EnemyType::EN_BOOSTER, false, 1, false), strength( 20 )
+Booster::Booster( Vector2i &pos, int p_level)
+	:Enemy(EnemyType::EN_BOOSTER, false, 1, false), strength( 20 )
 {
 	level = p_level;
 
@@ -53,8 +53,8 @@ Booster::Booster(GameSession *owner, Vector2i &pos, int p_level)
 	//animationFactor = 10;
 
 	//ts = owner->GetTileset( "Booster.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/booster_512x512.png", 512, 512);
-	ts_refresh = owner->GetTileset("Enemies/booster_on_256x256.png", 256, 256);
+	ts = sess->GetTileset("Enemies/booster_512x512.png", 512, 512);
+	ts_refresh = sess->GetTileset("Enemies/booster_on_256x256.png", 256, 256);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);

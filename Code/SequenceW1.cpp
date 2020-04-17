@@ -70,7 +70,7 @@ TextTestSeq::TextTestSeq(GameSession *p_owner)
 
 void TextTestSeq::AddGroup(const std::string &name)
 {
-	ConversationGroup *cg = new ConversationGroup(owner);
+	ConversationGroup *cg = new ConversationGroup;
 	cg->Load(name);
 	groups.push_back(cg);
 }
@@ -265,7 +265,7 @@ void CrawlerAttackSeq::AddGroups()
 void CrawlerAttackSeq::AddEnemies()
 {
 	PoiInfo *surface = points["crawlersurface"];
-	queen = new CrawlerQueen(owner, surface->edge, surface->edgeQuantity, false);
+	queen = new CrawlerQueen(surface->edge, surface->edgeQuantity, false);
 	AddEnemy("queen", queen);
 }
 

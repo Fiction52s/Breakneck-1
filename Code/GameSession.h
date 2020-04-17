@@ -4,7 +4,6 @@
 #include "Physics.h"
 #include "Tileset.h"
 #include <list>
-//#include "Enemy.h"
 #include "QuadTree.h"
 #include <SFML/Graphics.hpp>
 #include "Light.h"
@@ -104,7 +103,6 @@ struct GhostEntry;
 struct ResultsScreen;
 struct RaceFightTarget;
 struct BasicEffect;
-struct EnemyParamsManager;
 struct StorySequence;
 struct AirTrigger;
 struct Nexus;
@@ -263,7 +261,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	//need to be added to session
 	sf::View view;
-	sf::View uiView;
 
 	float *fBubbleRadiusSize;
 	sf::Vector2f *fBubblePos;
@@ -340,7 +337,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	Fader *fader;
 	Swiper *swiper;
 
-	SoundNode *ActivateSound(V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
+	
 
 	sf::Vertex blackBorderQuads[4 * 4];
 	void DrawBlackBorderQuads();
@@ -352,10 +349,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	static bool sLoad(GameSession *gs);
 	bool Load();
 
+	void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
+		V2d &pos, float startAngle = 0);
 	AbsorbParticles *absorbParticles;
 	AbsorbParticles *absorbDarkParticles;
 	AbsorbParticles *absorbShardParticles;
-	EnemyParamsManager *eHitParamsMan;
 
 	bool continueLoading;
 	void SetContinueLoading(bool cont);
@@ -368,31 +366,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void Init();
 	void Cleanup();
 
-	void AllocateEffect();
-	BasicEffect * ActivateEffect(
-		EffectLayer layer,
-		Tileset *ts,
-		V2d pos,
-		bool pauseImmune,
-		double angle,
-		int frameCount,
-		int animationFactor,
-		bool right,
-		int startFrame = 0,
-		float depth = 1.f);
-	void AddEffect(EffectLayer layer, Enemy *e);
-	void RemoveEffect(EffectLayer layer, Enemy *e);
-	void DeactivateEffect(BasicEffect *be);
-	BasicEffect *inactiveEffects;
-	std::list<BasicEffect*> allEffectList;
-	const static int MAX_EFFECTS = 100;
-
 
 	void RestartLevel();
 	void NextFrameRestartLevel();
 	bool nextFrameRestart;
-
-	Camera cam;
 
 	//---------------------------------
 	void DrawHealthFlies(sf::RenderTarget *target);
@@ -518,11 +495,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		int raceWinnerIndex;
 	};
 
+	void CollectKey();
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;
-	int numTotalKeys;
 	int numKeysCollected;
-	int keyFrame;
 	void SuppressEnemyKeys(Gate *g);
 	
 	bool IsShardCaptured(ShardType sType);
@@ -537,10 +513,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	MusicInfo *originalMusic;
 	std::map<std::string, MusicInfo*> musicMap;
 
-	SoundManager *soundManager;
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
-	SoundNodeList * soundNodeList;
-	SoundNodeList * pauseSoundNodeList;
 
 	void UpdateTimeSlowShader();
 	void UpdateEnvShaders();
@@ -549,7 +522,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	sf::VertexArray * goalEnergyFlowVA;
 	void UpdateGoalFlow();
 	GoalPulse *goalPulse;
-	void PlayerHitGoal(int index = 0);
+	
 	bool hasGoal;
 	sf::Vector2<double> goalPos;
 	sf::Vector2<double> goalNodePos;
@@ -639,9 +612,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void TriggerBarrier( Barrier *b );
 	
 	std::list<Enemy*> fullEnemyList;
-	void AddEnemy( Enemy * e );
-	void RemoveEnemy( Enemy * e );
-	void KillAllEnemies();
 	void RemoveAllEnemies();
 	void UpdateEnemiesPrePhysics();
 	void UpdateEnemiesPhysics();
@@ -652,7 +622,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void ResetEnemies();
 
 	void SetGlobalBorders();
-	void UpdateEffects();
 	
 	void ResetPlants();
 	void ResetInactiveEnemies();
@@ -663,17 +632,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	SaveFile *GetCurrentProgress();
 	bool HasPowerUnlocked( int pIndex );
 
-	
-	
-	int totalNumberBullets;
-	sf::VertexArray *bigBulletVA;
-	Tileset *ts_basicBullets;
-
 	InputVisualizer *inputVis;
 	Level *level;
 
 	void HandleEntrant( QuadTreeEntrant *qte );
-	void Pause( int frames );
 	void FreezePlayerAndEnemies( bool freeze );
 	bool playerAndEnemiesFrozen;
 
@@ -687,10 +649,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	
 	
 	
-	V2d GetPlayerPos(int index = 0);
-	V2d GetPlayerKnockbackDirFromVel(int index = 0);
+	
 	int GetPlayerTeamIndex(int index = 0);
-	V2d GetPlayerTrueVel(int index = 0);
 	
 
 	int GetPlayerEnemiesKilledLastFrame(int index = 0);
@@ -700,13 +660,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool PlayerIsMovingLeft(int index = 0);
 	bool PlayerIsMovingRight(int index = 0);
 	bool PlayerIsFacingRight(int index = 0);
-	//bool PlayerHasPower(int pow);
-	void PlayerAddActiveComboObj(ComboObject *, int index = 0);
-	void PlayerRemoveActiveComboer(ComboObject *, int index = 0);
-	void PlayerConfirmEnemyNoKill(Enemy *, int index = 0);
-	void PlayerConfirmEnemyKill(Enemy *, int index = 0);
-	void PlayerHitNexus(int index = 0);
-	void PlayerApplyHit( HitboxInfo *hi, int index = 0);
+	
+	
+	
 	
 
 	int m_numActivePlayers;
@@ -817,7 +773,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		Tileset *ts);//,
 		//int (*ValidEdge)(sf::Vector2<double> &));
 
-	void ClearFX();
 
 	
 	
@@ -866,20 +821,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	Tileset *ts_mapIcons;
 	sf::Sprite goalMapIcon;
 
-
-	Enemy *activeEnemyList;
-	Enemy *activeEnemyListTail;
-	Enemy *inactiveEnemyList;
-	Enemy *pauseImmuneEffects;
-	Enemy *cloneInactiveEnemyList;
-	Enemy *effectLists[EffectLayer::Count];
 	ShapeEmitter *emitterLists[EffectLayer::Count];
 	void AddEmitter(ShapeEmitter *emit,
 		EffectLayer layer);
 	void UpdateEmitters();
 	void ClearEmitters();
 	void DrawEmitters(EffectLayer layer);
-	void DrawEffects( EffectLayer layer );
 	void DrawActiveSequence(EffectLayer layer);
 
 	bool IsWithinBounds(V2d &p);
@@ -887,8 +834,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool IsWithinCurrentBounds(V2d &p);
 
 	//sf::Vector2<double> originalPos;
-	
-	sf::Rect<double> screenRect;
 	sf::Rect<double> tempSpawnRect;
 	
 	QuadTree *terrainBGTree;
@@ -913,8 +858,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	void QueryBorderTree(sf::Rect<double>&rect);
 	void QueryGateTree(sf::Rect<double>&rect);
-
-	int pauseFrames;
 };
 
 

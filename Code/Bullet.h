@@ -9,6 +9,7 @@
 struct BasicBullet;
 struct Edge;
 struct Tileset;
+struct Session;
 
 struct LauncherEnemy
 {
@@ -139,7 +140,6 @@ struct Launcher
 	BasicBullet::BType bulletType;
 	Launcher(LauncherEnemy *handler,
 		BasicBullet::BType bulletType,
-		GameSession *owner,
 		int numTotalBullets,
 		int bulletsPerShot,
 		sf::Vector2<double> position,
@@ -150,7 +150,6 @@ struct Launcher
 		int wavelength = 0,
 		double amplitude = 0.0);
 	Launcher(LauncherEnemy *handler,
-		GameSession *owner,
 		int maxFramesToLive);
 	~Launcher();
 	static double GetRadius(BasicBullet::BType bt);
@@ -181,7 +180,7 @@ struct Launcher
 	void SetBulletSpeed(double speed);
 	LauncherEnemy *handler;
 
-	GameSession *owner;
+	Session *sess;
 	int totalBullets;
 	int perShot;
 	HitboxInfo *hitboxInfo;
@@ -193,6 +192,8 @@ struct Launcher
 	int wavelength;
 	int maxFramesToLive;
 	double maxBulletSpeed;
+
+
 
 	void DebugDraw(sf::RenderTarget *target);
 

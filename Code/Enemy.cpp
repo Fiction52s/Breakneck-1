@@ -31,10 +31,148 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
+bool Enemy::SetHitParams()
+{
+	switch (type)
+	{
+	case EnemyType::EN_CRAWLER:
+		hitParams.Set(1, 5, .8, (3 * 60) / 4, 4);
+		break;
+	case EnemyType::EN_GOAL:
+		hitParams.Set(1, 5, .8, 6, 3);
+		break;
+	case EnemyType::EN_PATROLLER:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_FOOTTRAP:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_COMBOER:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_AIRDASHER:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_BASICTURRET:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_SHROOM:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_SHROOMJELLY:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_CRAWLERQUEEN:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);//40);//40);// 120);
+		break;
+	case EnemyType::EN_FLOATINGBOMB:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_BLOCKER:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_BOSS_BIRD:
+		hitParams.Set(2, 5, .8, (3 * 60) / 40, 400);
+		break;
+	case EnemyType::EN_BAT:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_AIRDASHJUGGLER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		break;
+	case EnemyType::EN_GRAVITYJUGGLER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		break;
+	case EnemyType::EN_PRIMARYJUGGLER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		break;
+	case EnemyType::EN_BOUNCEJUGGLER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		break;
+	case EnemyType::EN_GRINDJUGGLER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		break;
+	case EnemyType::EN_POISONFROG:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_CURVETURRET:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_STAGBEETLE:
+		hitParams.Set(2, 5, .8, (3 * 60) / 4, 4);
+		break;
+	case EnemyType::EN_GRAVITYFALLER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 4, 4);
+		break;
+	case EnemyType::EN_SPIDER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_PULSER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_BADGER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_BOUNCEFLOATER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_OWL:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_ROADRUNNER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_CACTUS:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_CACTUSSHOTGUN:
+		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_CHEETAH:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_HUNGRYCOMBOER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		break;
+	case EnemyType::EN_RELATIVECOMBOER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		break;
+	case EnemyType::EN_SWARM:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_SWARMMEMBER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		break;
+	case EnemyType::EN_GHOST:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		break;
+	case EnemyType::EN_GROWINGTREE:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_SHARK:
+		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_SPECTER:
+		hitParams.Set(2, 5, .8, (3 * 60) / 5, 5);
+		break;
+	case EnemyType::EN_GORILLA:
+		hitParams.Set(2, 5, .8, (3 * 60) / 5, 5);
+		break;
+	case EnemyType::EN_WIRETARGET:
+		hitParams.Set(2, 5, 0, 0, 1);
+		break;
+	default:
+		return false;
+	}
 
-Enemy::Enemy(GameSession *own, EnemyType t, bool p_hasMonitor,
+	return true;
+}
+
+
+
+Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 	int world, bool cuttable)
-	:owner(own), prev(NULL), next(NULL), spawned(false),
+	:prev(NULL), next(NULL), spawned(false),
 	type(t), zone(NULL), dead(false),
 	suppressMonitor(false), ts_hitSpack(NULL), keyShader(NULL)
 {
@@ -42,7 +180,8 @@ Enemy::Enemy(GameSession *own, EnemyType t, bool p_hasMonitor,
 
 	if (CanTouchSpecter())
 	{
-		specterTester = new SpecterTester(this);
+		specterTester = NULL;
+		//specterTester = new SpecterTester(this);
 	}
 	else
 	{
@@ -58,14 +197,14 @@ Enemy::Enemy(GameSession *own, EnemyType t, bool p_hasMonitor,
 
 	if (p_hasMonitor)
 	{
-		owner->numTotalKeys++;
+		sess->numTotalKeys++;
 	}
 
 	pauseFrames = 0;
-	ts_zoned = owner->GetTileset("Enemies/enemy_zone_icon_128x128.png", 128, 128);
+	ts_zoned = sess->GetTileset("Enemies/enemy_zone_icon_128x128.png", 128, 128);
 	zonedSprite.setTexture(*ts_zoned->texture);
 	
-	genericDeathSound = owner->soundManager->GetSound("Enemies/kill");
+	genericDeathSound = sess->GetSound("Enemies/kill");
 
 	highResPhysics = false;
 	numLaunchers = 0;
@@ -75,17 +214,15 @@ Enemy::Enemy(GameSession *own, EnemyType t, bool p_hasMonitor,
 	currShield = NULL;
 	hurtShader = NULL;
 	keyShader = NULL;
-	EnemyParams *ep = own->eHitParamsMan->GetHitParams(t);
 	ResetSlow();
-	if (ep == NULL)
+
+	if (SetHitParams())
 	{
-		maxHealth = 1;
-		//numHealth = 1;
+		maxHealth = hitParams.maxHealth;
 	}
 	else
 	{
-		maxHealth = ep->maxHealth;
-		//numHealth = ep->maxHealth;
+		maxHealth = maxHealth;
 	}
 
 	numHealth = maxHealth;
@@ -184,11 +321,9 @@ Enemy::Enemy(GameSession *own, EnemyType t, bool p_hasMonitor,
 		keyShader->setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
 		keyShader->setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
 
-	//	keyFrame = 0;
-	//ts_key = owner->GetTileset( "key_w02_1_128x128.png", 128, 128 );
 		stringstream ss;
 		ss << "FX/key_w0" << world << "_1_128x128.png";
-		ts_key = owner->GetTileset( ss.str(), 128, 128 );
+		ts_key = sess->GetTileset( ss.str(), 128, 128 );
 
 		keySprite = new Sprite;
 		keySprite->setTexture( *ts_key->texture );
@@ -205,21 +340,21 @@ Enemy::Enemy(GameSession *own, EnemyType t, bool p_hasMonitor,
 	stringstream ss;
 	ss << "FX/hit_spack_" << world << "_128x128.png";
 
-	ts_hitSpack = owner->GetTileset( ss.str(), 128, 128 );
+	ts_hitSpack = sess->GetTileset( ss.str(), 128, 128 );
 
 	ss.clear();
 	ss.str("");
 
 	ss << "FX/w" << world << "_kill_fx_512x512.png";
 
-	ts_killSpack = owner->GetTileset(ss.str(), 512, 512);
+	ts_killSpack = sess->GetTileset(ss.str(), 512, 512);
 	assert(ts_killSpack != NULL);
 	ss.clear();
 	ss.str("");
 
 	ss << "FX/fx_blood_" << world << "_256x256.png";
 
-	ts_blood = owner->GetTileset( ss.str(), 256, 256 );
+	ts_blood = sess->GetTileset( ss.str(), 256, 256 );
 
 
 	hurtShader = new Shader();
@@ -277,9 +412,6 @@ Enemy::~Enemy()
 	}
 }
 
-
-
-
 bool Enemy::ReadPath(std::ifstream &is,
 	int &pLen, std::list<Vector2i> &localPath)
 {
@@ -307,7 +439,7 @@ bool Enemy::ReadBool(std::ifstream &is,
 
 void Enemy::PlayDeathSound()
 {
-	owner->ActivateSound( position, genericDeathSound);
+	sess->ActivateSoundAtPos( position, genericDeathSound);
 }
 
 void Enemy::SetZoneSpritePosition()
@@ -332,7 +464,7 @@ std::list<CollisionBox> * Enemy::GetComboHitboxes()
 
 void Enemy::DrawSpriteIfExists( sf::RenderTarget *target, sf::Sprite &spr )
 {
-	bool b = (owner->pauseFrames < 2 && pauseFrames < 2) || ( receivedHit == NULL && pauseFrames < 2 );
+	bool b = (sess->GetPauseFrames() < 2 && pauseFrames < 2) || ( receivedHit == NULL && pauseFrames < 2 );
 	if (hasMonitor && !suppressMonitor)
 	{
 		if ( b )
@@ -431,7 +563,7 @@ bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 	
 void Enemy::DirectKill()
 {
-	owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, position, true, 0, 10, 4, true);
+	sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, position, true, 0, 10, 4, true);
 
 	dead = true;
 
@@ -485,14 +617,15 @@ V2d Enemy::TurretSetup()
 
 bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 {
-	if( owner->GetPlayer( 0 )->hasPowerRightWire )
+	Actor *player = sess->GetPlayer(0);
+	if( player->hasPowerRightWire )
 	{
-		Wire::WireCharge *charge = owner->GetPlayer( 0 )->rightWire->activeChargeList;
+		Wire::WireCharge *charge = player->rightWire->activeChargeList;
 		while( charge != NULL )
 		{
 			if( charge->hitbox.Intersects( p_hurtBox ) )
 			{
-				receivedHit = owner->GetPlayer( 0 )->wireChargeInfo;
+				receivedHit = player->wireChargeInfo;
 				charge->HitEnemy();
 				return true;
 			}
@@ -505,14 +638,15 @@ bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 
 bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 {
-	if( owner->GetPlayer( 0 )->hasPowerLeftWire )
+	Actor *player = sess->GetPlayer(0);
+	if(player->hasPowerLeftWire )
 	{
-		Wire::WireCharge *charge = owner->GetPlayer( 0 )->leftWire->activeChargeList;
+		Wire::WireCharge *charge = player->leftWire->activeChargeList;
 		while( charge != NULL )
 		{
 			if( charge->hitbox.Intersects( p_hurtBox ) )
 			{
-				receivedHit = owner->GetPlayer( 0 )->wireChargeInfo;
+				receivedHit = player->wireChargeInfo;
 				charge->HitEnemy();
 				return true;
 			}
@@ -534,9 +668,17 @@ void Enemy::SyncSpriteInfo(sf::Sprite &dest, sf::Sprite &source)
 
 void Enemy::Record( int enemyIndex )
 {
-	Buf & b = owner->testBuf;
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
 
-	b.Send( enemyIndex );
+		Buf & b = game->testBuf;
+
+		b.Send(enemyIndex);
+
+	}
+
+	
 
 	//note: in order for this to work I can't send any pointers to the buf
 	//and expect it to work on the next run. just doesnt work
@@ -558,7 +700,7 @@ void Enemy::RecordEnemy()
 void Enemy::CheckSpecters()
 {
 	specterProtected = false;
-	if (CanTouchSpecter())
+	/*if (CanTouchSpecter())
 	{
 		assert(specterTester != NULL);
 
@@ -570,7 +712,7 @@ void Enemy::CheckSpecters()
 		r.height = extra * 2;
 
 		specterTester->Query(r);
-	}
+	}*/
 }
 
 void Enemy::UpdatePrePhysics()
@@ -580,7 +722,6 @@ void Enemy::UpdatePrePhysics()
 		return;
 	}
 		
-
 	for (int i = 0; i < numLaunchers; ++i)
 	{
 		launchers[i]->UpdatePrePhysics();
@@ -588,7 +729,6 @@ void Enemy::UpdatePrePhysics()
 
 	if ( dead )
 		return;
-
 
 	CheckSpecters();
 
@@ -604,8 +744,10 @@ void Enemy::UpdatePrePhysics()
 		}
 	}
 
-	double len = length(position - owner->GetPlayer( 0 )->position );
-	bool isFar = owner->GetPlayer(0)->EnemyIsFar(position);
+
+	Actor *player = sess->GetPlayer(0);
+	double len = length(position - player->position );
+	bool isFar = player->EnemyIsFar(position);
 	if (isFar)
 	{
 		numPhysSteps = NUM_STEPS;
@@ -613,7 +755,7 @@ void Enemy::UpdatePrePhysics()
 	else
 	{
 		numPhysSteps = NUM_MAX_STEPS;
-		owner->GetPlayer(0)->highAccuracyHitboxes = true;
+		player->highAccuracyHitboxes = true;
 	}
 
 	if (highResPhysics)
@@ -685,7 +827,7 @@ void Enemy::UpdatePostPhysics()
 			|| cutObject == NULL && dead ) )
 	{
 		dead = true;
-		owner->RemoveEnemy(this);
+		sess->RemoveEnemy(this);
 		HandleRemove();
 		return;
 	}
@@ -696,7 +838,7 @@ void Enemy::UpdatePostPhysics()
 		{
 			//keySprite.setTexture( *ts_key->texture );
 			int fac = 5;
-			int kFrame = owner->totalGameFrames % (16 * fac);
+			int kFrame = sess->totalGameFrames % (16 * fac);
 			keySprite->setTextureRect(ts_key->GetSubRect(kFrame / fac));
 			keySprite->setOrigin(keySprite->getLocalBounds().width / 2,
 				keySprite->getLocalBounds().height / 2);
@@ -780,15 +922,15 @@ void Enemy::ProcessHit()
 		{
 			if (hasMonitor && !suppressMonitor )
 			{
-				owner->keyMarker->CollectKey();
+				sess->CollectKey();
 			}
 
-			owner->PlayerConfirmEnemyKill(this);
+			sess->PlayerConfirmEnemyKill(this);
 			ConfirmKill();
 		}
 		else
 		{
-			owner->PlayerConfirmEnemyNoKill(this);
+			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 
@@ -819,13 +961,12 @@ void Enemy::ConfirmHitNoKill()
 	}
 	else
 	{
-		owner->Pause(5);
+		sess->Pause(5);
 		pauseFrames = 0;
 	}
 	
 	HandleHitAndSurvive();
-	owner->cam.SetRumble(.5, .5, 5);
-	//owner->cam.SetRumble(3, 3, 5);
+	sess->cam.SetRumble(.5, .5, 5);
 }
 
 void Enemy::HandleNoHealth()
@@ -849,22 +990,24 @@ void Enemy::ConfirmKill()
 	}
 	else
 	{
-		owner->Pause(7);
+		sess->Pause(7);
 		pauseFrames = 0;
 	}
 
 
-	owner->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, position, true, 0, 10, 5, true);
-	//owner->cam.SetRumble(1, 1, 7 );
-	owner->cam.SetRumble(1, 1, 7);
+	sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, position, true, 0, 10, 5, true);
+	sess->cam.SetRumble(1, 1, 7);
 	
 	if (hasMonitor && !suppressMonitor)
 	{
-		owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position);
+		sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::ENERGY,
+			sess->GetPlayer(0), 1, position);
+		
 	}
 	else
 	{
-		owner->absorbParticles->Activate(owner->GetPlayer(0), 6, position);
+		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
+			sess->GetPlayer(0), 6, position);
 	}
 	
 
@@ -1008,7 +1151,7 @@ void Enemy::UpdateZoneSprite()
 		zonedSprite.setColor(Color::White);
 	}
 
-	int fr = (owner->totalGameFrames % (12 * 4 )) / 4;
+	int fr = (sess->totalGameFrames % (12 * 4 )) / 4;
 
 	zonedSprite.setTextureRect(ts_zoned->GetSubRect(fr));
 	zonedSprite.setOrigin(zonedSprite.getLocalBounds().width / 2,
@@ -1109,7 +1252,7 @@ void Enemy::BasicUpdateHitboxInfo()
 {
 	if (hitboxInfo != NULL)
 	{
-		hitboxInfo->kbDir = owner->GetPlayerKnockbackDirFromVel();
+		hitboxInfo->kbDir = sess->GetPlayerKnockbackDirFromVel();
 	}
 }
 
@@ -1144,11 +1287,11 @@ void Enemy::UpdatePhysics( int substep )
 	if (currShield != NULL)
 	{
 		if( currShield->pauseFrames == 0 )
-			currShield->CheckHit(owner->GetPlayer(0), type);
+			currShield->CheckHit(sess->GetPlayer(0), this);
 	}
 	else
 	{
-		CheckHit(owner->GetPlayer(0), type);
+		CheckHit(sess->GetPlayer(0), this);
 	}
 
 	if (CheckHitPlayer(0))
@@ -1158,7 +1301,7 @@ void Enemy::UpdatePhysics( int substep )
 
 bool Enemy::IsSlowed( int index )
 {
-	Actor *player = owner->GetPlayer(index);
+	Actor *player = sess->GetPlayer(index);
 	return (player->IntersectMySlowboxes(currHurtboxes, currHurtboxFrame));
 }
 
@@ -1202,7 +1345,7 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 
 bool Enemy::CheckHitPlayer(int index)
 {
-	Actor *player = owner->GetPlayer(index);
+	Actor *player = sess->GetPlayer(index);
 
 	if (currHitboxes != NULL)
 	{
@@ -1218,164 +1361,7 @@ bool Enemy::CheckHitPlayer(int index)
 	return false;
 }
 
-EnemyParamsManager::EnemyParamsManager()
-{
-	memset(params, 0, sizeof(params));
-}
-
-EnemyParams *EnemyParamsManager::GetHitParams(EnemyType et)
-{
-	EnemyParams *& ep = params[et];
-	if ( ep == NULL)
-	{
-		switch (et)
-		{
-		case EnemyType::EN_CRAWLER:
-			ep = new EnemyParams(1, 5, .8, (3 * 60)/4, 4);
-			break;
-		case EnemyType::EN_GOAL:
-			ep = new EnemyParams(1, 5, .8, 6, 3);
-			break;
-		case EnemyType::EN_PATROLLER:
-			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
-			break;
-		case EnemyType::EN_FOOTTRAP:
-			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
-			break;
-		case EnemyType::EN_COMBOER:
-			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_AIRDASHER:
-			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_BASICTURRET:
-			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
-			break;
-		case EnemyType::EN_SHROOM:
-			ep = new EnemyParams(1, 5, .8, (3*60)/3, 3);
-			break;
-		case EnemyType::EN_SHROOMJELLY:
-			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_CRAWLERQUEEN:
-			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);//40);//40);// 120);
-			break;
-		case EnemyType::EN_FLOATINGBOMB:
-			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_BLOCKER:
-			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_BOSS_BIRD:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 40, 400);
-			break;
-		case EnemyType::EN_BAT:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_AIRDASHJUGGLER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
-			break;
-		case EnemyType::EN_GRAVITYJUGGLER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
-			break;
-		case EnemyType::EN_PRIMARYJUGGLER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
-			break;
-		case EnemyType::EN_BOUNCEJUGGLER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
-			break;
-		case EnemyType::EN_GRINDJUGGLER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
-			break;
-		case EnemyType::EN_POISONFROG:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_CURVETURRET:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_STAGBEETLE:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 4, 4);
-			break;
-		case EnemyType::EN_GRAVITYFALLER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 4, 4);
-			break;
-		case EnemyType::EN_SPIDER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_PULSER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_BADGER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_BOUNCEFLOATER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_OWL:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_ROADRUNNER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_CACTUS:
-			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_CACTUSSHOTGUN:
-			ep = new EnemyParams(1, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_CHEETAH:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_HUNGRYCOMBOER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
-			break;
-		case EnemyType::EN_RELATIVECOMBOER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
-			break;
-		case EnemyType::EN_SWARM:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_SWARMMEMBER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
-			break;
-		case EnemyType::EN_GHOST:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 1);
-			break;
-		case EnemyType::EN_GROWINGTREE:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_SHARK:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 3, 3);
-			break;
-		case EnemyType::EN_SPECTER:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 5, 5);
-			break;
-		case EnemyType::EN_GORILLA:
-			ep = new EnemyParams(2, 5, .8, (3 * 60) / 5, 5);
-			break;
-		case EnemyType::EN_WIRETARGET:
-			ep = new EnemyParams(2, 5, 0, 0, 1);
-		default:
-			return NULL;
-		}
-	}
-
-	return ep;
-}
-
-EnemyParamsManager::~EnemyParamsManager()
-{
-	for (int i = 0; i < EN_Count; ++i)
-	{
-		if (params[i] != NULL)
-		{
-			delete params[i];
-			params[i] = NULL;
-		}
-	}
-}
-
-bool HittableObject::CheckHit( Actor *player, EnemyType et )
+bool HittableObject::CheckHit( Actor *player, Enemy *e )
 {
 	if (receivedHit == NULL && !specterProtected )
 	{
@@ -1386,7 +1372,7 @@ bool HittableObject::CheckHit( Actor *player, EnemyType et )
 
 		if (receivedHit->hType < HitboxInfo::HitboxType::WIREHITRED)
 		{
-			player->ConfirmHit(player->owner->eHitParamsMan->GetHitParams(et));
+			player->ConfirmHit(&e->hitParams);
 		}
 		else
 		{

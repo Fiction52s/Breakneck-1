@@ -5,7 +5,7 @@
 #include "Movement.h"
 //#include "GameSession.h"
 
-struct GameSession;
+struct Session;
 struct Rail;
 
 //struct SurfaceMoverHandler
@@ -44,8 +44,7 @@ struct SurfaceMover : QuadTreeCollider
 {
 	//some virtual functions
 
-	SurfaceMover( GameSession *owner,
-		Edge *startGround,
+	SurfaceMover(Edge *startGround,
 		double startQuantity,
 		double radius);
 	virtual void HandleEntrant( QuadTreeEntrant *qte );
@@ -73,7 +72,7 @@ struct SurfaceMover : QuadTreeCollider
 	void Jump( sf::Vector2<double> &vel );
 
 	Edge *ground;
-	GameSession *owner;
+	Session *sess;
 	double edgeQuantity;
 	bool roll;
 	CollisionBox physBody;
@@ -102,8 +101,7 @@ struct SurfaceMover : QuadTreeCollider
 
 struct SurfaceRailMover : SurfaceMover
 {
-	SurfaceRailMover(GameSession *owner,
-		Edge *startGround,
+	SurfaceRailMover(Edge *startGround,
 		double startQuantity,
 		double radius);
 	bool ResolvePhysics(
@@ -127,8 +125,7 @@ struct SurfaceRailMover : SurfaceMover
 
 struct GroundMover : SurfaceMover
 {
-	GroundMover( GameSession *owner,
-		Edge *startGround,
+	GroundMover(Edge *startGround,
 		double startQuantity,
 		double radius,
 		bool steeps,

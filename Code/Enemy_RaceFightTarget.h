@@ -17,8 +17,7 @@ struct RaceFightTarget : Enemy
 
 	
 	
-	RaceFightTarget(GameSession *owner,
-		sf::Vector2i &pos);
+	RaceFightTarget(sf::Vector2i &pos);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);

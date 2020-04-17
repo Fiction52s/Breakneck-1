@@ -2,6 +2,7 @@
 #include "GameSession.h"
 #include <iostream>
 #include "Rail.h"
+#include "EditorTerrain.h"
 
 #define TIMESTEP 1.0 / 60.0
 
@@ -17,11 +18,13 @@
 using namespace std;
 using namespace sf;
 
-SurfaceMover::SurfaceMover( GameSession *p_owner, Edge *startGround, 
+SurfaceMover::SurfaceMover(Edge *startGround, 
 	double startQuantity, double radius )// double mSpeed )
-	:ground( startGround ), edgeQuantity( startQuantity ), owner( p_owner ),
+	:ground( startGround ), edgeQuantity( startQuantity ),
 	groundSpeed( 0 ), roll( false )
 {
+	sess = Session::GetSession();
+
 	surfaceHandler = NULL;
 	collisionOn = true;
 	//maxSpeed = mSpeed;
@@ -142,7 +145,7 @@ bool SurfaceMover::ResolvePhysics( V2d &vel )
 	//queryMode = "resolve";
 	if (collisionOn)
 	{
-		owner->terrainTree->Query(this, r);
+		sess->terrainTree->Query(this, r);
 	}
 	
 
@@ -329,7 +332,7 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 
-		Contact *c = owner->coll.collideEdge( physBody.globalPosition + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
+		Contact *c = sess->collider.collideEdge( physBody.globalPosition + physBody.offset, physBody, e, tempVel, V2d( 0, 0 ) );
 
 
 		if( c != NULL )
@@ -956,9 +959,9 @@ void SurfaceMover::SetHandler(SurfaceMoverHandler *h)
 	surfaceHandler = h;
 }
 
-GroundMover::GroundMover( GameSession *owner, Edge *startGround, double startQuantity, 
+GroundMover::GroundMover( Edge *startGround, double startQuantity, 
 	double radius, bool p_steeps, GroundMoverHandler *p_handler )
-	:SurfaceMover( owner, startGround, startQuantity, radius ), steeps( p_steeps )
+	:SurfaceMover( startGround, startQuantity, radius ), steeps( p_steeps )
 	,handler( p_handler )
 {
 
@@ -974,9 +977,8 @@ void GroundMover::HitTerrain( double &q )
 		en = normalize( physBody.globalPosition - minContact.position );
 	}
 
-
-	if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
-		|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
+	if( en.y < 0 && (TerrainPolygon::IsFlatGround( en ) >= 0 || TerrainPolygon::IsSlopedGround( en ) >= 0
+		|| ( steeps && TerrainPolygon::IsSteepGround( en ) >= 0 ) ) )
 	{
 		ground = minContact.edge;
 		if( corner )
@@ -1015,9 +1017,11 @@ void GroundMover::HitTerrainAerial()
 		en = normalize( physBody.globalPosition - minContact.position );
 	}
 
+	
 	//I had this as framesInAir > 100 before. why?
-	if( framesInAir > 10 && en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
-		|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
+	if( framesInAir > 10 && en.y < 0 && (TerrainPolygon::IsFlatGround( en ) >= 0 || 
+		TerrainPolygon::IsSlopedGround( en ) >= 0
+		|| ( steeps && TerrainPolygon::IsSteepGround( en ) >= 0 ) ) )
 	{
 		ground = minContact.edge;
 		if( corner )
@@ -1093,8 +1097,8 @@ bool GroundMover::StartRoll()
 		en = ground->edge0->Normal();
 	}
 
-	if( en.y < 0 && (owner->IsFlatGround( en ) >= 0 || owner->IsSlopedGround( en ) >= 0 
-		|| ( steeps && owner->IsSteepGround( en ) >= 0 ) ) )
+	if( en.y < 0 && (TerrainPolygon::IsFlatGround( en ) >= 0 || TerrainPolygon::IsSlopedGround( en ) >= 0
+		|| ( steeps && TerrainPolygon::IsSteepGround( en ) >= 0 ) ) )
 	{
 		roll = true;
 		return false;
@@ -1114,11 +1118,10 @@ void GroundMover::FinishedRoll()
 }
 
 
-SurfaceRailMover::SurfaceRailMover(GameSession *owner,
-	Edge *startGround,
+SurfaceRailMover::SurfaceRailMover(Edge *startGround,
 	double startQuantity,
 	double radius)
-	:SurfaceMover( owner, startGround, startQuantity, radius )
+	:SurfaceMover( startGround, startQuantity, radius )
 {
 	railCollisionOn = true;
 	surfaceRailHandler = NULL;
@@ -1168,14 +1171,14 @@ bool SurfaceRailMover::ResolvePhysics(V2d &vel)
 	if (railCollisionOn)
 	{
 		queryMode = "rail";
-		owner->railEdgeTree->Query(this, r);
+		sess->railEdgeTree->Query(this, r);
 	}
 	
 
 	if (collisionOn)
 	{
 		queryMode = "terrain";
-		owner->terrainTree->Query(this, r);
+		sess->terrainTree->Query(this, r);
 	}
 
 

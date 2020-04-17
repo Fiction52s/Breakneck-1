@@ -14,8 +14,8 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
-	:Enemy( owner, EnemyType::EN_PATROLLER, p_hasMonitor, 1 )
+Patroller::Patroller(bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
+	:Enemy( EnemyType::EN_PATROLLER, p_hasMonitor, 1 )
 {
 	level = p_level;
 
@@ -34,7 +34,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 		break;
 	}
 
-	eye = new PatrollerEye(owner, this);
+	eye = new PatrollerEye(this);
 	
 	action = S_FLAP;
 	//receivedHit = NULL;
@@ -44,7 +44,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 
 	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
-	shootSound = owner->soundManager->GetSound("Enemies/patroller_shoot");
+	shootSound = sess->GetSound("Enemies/patroller_shoot");
 
 	pathLength = pathParam.size() + 1;
 	//cout << "pathLength: " << pathLength << endl;
@@ -72,8 +72,8 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	frame = 0;
 	beakTurnSpeed = .13;
 	//ts = owner->GetTileset( "patroller.png", 80, 80 );
-	ts = owner->GetTileset( "Enemies/patroller_256x256.png", 256, 256 );
-	ts_aura = owner->GetTileset("Enemies/patroller_aura_256x256.png", 256, 256);
+	ts = sess->GetTileset( "Enemies/patroller_256x256.png", 256, 256 );
+	ts_aura = sess->GetTileset("Enemies/patroller_aura_256x256.png", 256, 256);
 	/*sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
@@ -123,10 +123,6 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 
 	dead = false;
 
-	//ts_bottom = owner->GetTileset( "patroldeathbot.png", 32, 32 );
-	//ts_top = owner->GetTileset( "patroldeathtop.png", 32, 32 );
-	//ts_death = owner->GetTileset( "patroldeath.png", 80, 80 );
-
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(38);
 	cutObject->SetSubRectBack(37);
@@ -153,7 +149,7 @@ Patroller::Patroller( GameSession *owner, bool p_hasMonitor, Vector2i pos, list<
 	turnAnimFactor = 4;
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, owner, 16, 1, position, V2d(1, 0), 0, 200, false);
+	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, 16, 1, position, V2d(1, 0), 0, 200, false);
 	launchers[0]->SetBulletSpeed(5);//70);
 	launchers[0]->hitboxInfo->damage = 18;
 	maxAimingFrames = 35;
@@ -208,7 +204,7 @@ void Patroller::ResetEnemy()
 
 void Patroller::ProcessState()
 {
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	eye->ProcessState(Vector2f(playerPos));
 
@@ -226,7 +222,7 @@ void Patroller::ProcessState()
 			V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
 			launchers[0]->facingDir = normalize(targetPos - position);
 			launchers[0]->Fire();
-			owner->ActivateSound( position, shootSound);
+			sess->ActivateSoundAtPos( position, shootSound);
 			break;
 		}
 		case S_BEAKHOLDOPEN:
@@ -496,7 +492,7 @@ void Patroller::UpdateSprite()
 
 void Patroller::EnemyDraw( sf::RenderTarget *target )
 {
-	bool b = (owner->pauseFrames < 2 && pauseFrames < 2) || (receivedHit == NULL && pauseFrames < 2);
+	bool b = (sess->GetPauseFrames() < 2 && pauseFrames < 2) || (receivedHit == NULL && pauseFrames < 2);
 
 	RenderStates rs;
 	rs.texture = ts->texture;
@@ -566,7 +562,7 @@ void Patroller::BulletHitPlayer(BasicBullet *b)
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
 	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	owner->PlayerApplyHit(b->launcher->hitboxInfo);
+	sess->PlayerApplyHit(b->launcher->hitboxInfo);
 	b->launcher->DeactivateBullet(b);
 }
 

@@ -880,7 +880,7 @@ FlashedImage * BasicBossScene::AddFlashedImage(const std::string &imageName, Til
 
 void BasicBossScene::AddGroup(const std::string &groupName, const std::string &fileName)
 {
-	ConversationGroup *cg = new ConversationGroup(owner);
+	ConversationGroup *cg = new ConversationGroup;
 	cg->Load(fileName);
 
 	assert(groups.count(groupName) == 0);

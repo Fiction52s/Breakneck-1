@@ -63,8 +63,8 @@ struct BlockerChain : Enemy
 
 	sf::Vertex *va;
 	CircleGroup *circleGroup;
-	BlockerChain(GameSession *owner,
-		sf::Vector2i &pos, std::list<sf::Vector2i> &path,
+	BlockerChain(sf::Vector2i &pos, 
+		std::list<sf::Vector2i> &path,
 		int bType, bool armored, int spacing,
 		int level );
 	~BlockerChain();

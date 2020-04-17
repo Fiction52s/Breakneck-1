@@ -44,8 +44,7 @@ struct PatrollerEye
 	sf::Vertex *highlight;
 	Tileset *ts_eye;
 	void Reset();
-	PatrollerEye::PatrollerEye(GameSession *owner,
-		Patroller *p);
+	PatrollerEye::PatrollerEye(Patroller *p);
 	State state;
 	void UpdateSprite();
 	bool IsEyeActivated();

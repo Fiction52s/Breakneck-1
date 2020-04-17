@@ -172,6 +172,8 @@ void EditSession::TestPlayerMode()
 		railEdgeTree = new QuadTree(1000000, 1000000);
 		barrierTree = new QuadTree(1000000, 1000000);
 
+		staticItemTree = new QuadTree(1000000, 1000000);
+
 		Actor *p;
 		for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
@@ -344,7 +346,7 @@ EditSession *EditSession::GetSession()
 }
 
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
-	:Session( p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
+	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
 	AllocatePolyShaders(TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD);
 
@@ -2335,9 +2337,9 @@ int EditSession::Run()
 
 
 	tempActor = NULL;
-	int width = 1920;
-	int height = 1080;
-	uiView = View( sf::Vector2f( width / 2, height / 2), sf::Vector2f( width, height ) );
+	//int width = 1920;
+	//int height = 1080;
+	//uiView = View( sf::Vector2f( width / 2, height / 2), sf::Vector2f( width, height ) );
 	v.setCenter( 0, 0 );
 	v.setSize( 1920/ 2, 1080 / 2 );
 	window->setView( v );

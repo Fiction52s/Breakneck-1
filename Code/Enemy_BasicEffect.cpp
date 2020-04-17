@@ -10,14 +10,13 @@ using namespace sf;
 
 
 
-BasicEffect::BasicEffect ( GameSession *owner )
-	:Enemy( owner, EnemyType::EN_BASICEFFECT, false, 0, false )
+BasicEffect::BasicEffect ()
+	:Enemy( EnemyType::EN_BASICEFFECT, false, 0, false )
 {
 	spawned = true;
 	pauseImmune = false;
 	frame = 0;
 	ts = NULL;
-	//ts = //owner->GetTileset( "double.png", 64, 64 ); //what
 	activated = false;
 	animationFactor = 1;
 	stored_frame = 0;
@@ -37,7 +36,7 @@ void BasicEffect::ProcessState()
 {
 	if (frame / animationFactor == frameCount)
 	{
-		owner->DeactivateEffect(this);
+		sess->DeactivateEffect(this);
 		dead = true;
 	}
 }
@@ -46,7 +45,6 @@ void BasicEffect::ResetEnemy()
 {
 	frame = 0;
 	activated = false;
-	//owner->DeactivateEffect( this );
 }
 
 void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af, bool right, float p_depth )

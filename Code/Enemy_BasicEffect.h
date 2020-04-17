@@ -5,7 +5,7 @@
 
 struct BasicEffect : Enemy
 {
-	BasicEffect(GameSession *owner);
+	BasicEffect();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);

@@ -109,7 +109,7 @@ struct HittableObject
 	HittableObject() :receivedHit(NULL) {}
 	virtual HitboxInfo * IsHit(Actor *player) = 0;
 	const bool ReceivedHit() { return receivedHit; }
-	bool CheckHit(Actor *player, EnemyType et);
+	bool CheckHit(Actor *player, Enemy* e);
 	virtual void ProcessHit() = 0;
 	HitboxInfo *receivedHit;
 	Enemy *comboHitEnemy;

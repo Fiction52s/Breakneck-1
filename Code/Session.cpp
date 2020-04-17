@@ -9,9 +9,484 @@
 #include "GameSession.h"
 #include "Background.h"
 #include "HitboxManager.h"
+#include "Enemy_BasicEffect.h"
+
+#include "Enemy_Shard.h"
+
+//enemy stuff:
+#include "SoundManager.h"
 
 using namespace sf;
 using namespace std;
+
+int Session::GetPauseFrames()
+{
+	return pauseFrames;
+}
+
+BasicEffect * Session::ActivateEffect(EffectLayer layer, Tileset *ts, V2d pos, bool pauseImmune,
+	double angle, int frameCount, int animationFactor, bool right, int startFrame, float depth)
+{
+	if (inactiveEffects == NULL)
+	{
+		return NULL;
+	}
+	else
+	{
+		BasicEffect *b = inactiveEffects;
+
+		if (inactiveEffects->next == NULL)
+		{
+			inactiveEffects = NULL;
+		}
+		else
+		{
+			inactiveEffects = (BasicEffect*)(inactiveEffects->next);
+			inactiveEffects->prev = NULL;
+		}
+
+		//assert( ts != NULL );
+		b->startFrame = startFrame;
+		b->Init(ts, pos, angle, frameCount, animationFactor, right, depth);
+		b->prev = NULL;
+		b->next = NULL;
+		b->pauseImmune = pauseImmune;
+		b->layer = layer;
+
+
+		Enemy *& fxList = effectListVec[layer];
+		if (fxList != NULL)
+		{
+			fxList->prev = b;
+			b->next = fxList;
+			fxList = b;
+		}
+		else
+		{
+			fxList = b;
+		}
+		return b;
+	}
+}
+
+void Session::DeactivateEffect(BasicEffect *b)
+{
+	Enemy *& fxList = effectListVec[b->layer];
+	assert(fxList != NULL);
+	Enemy *prev = b->prev;
+	Enemy *next = b->next;
+
+	if (prev == NULL && next == NULL)
+	{
+		fxList = NULL;
+	}
+	else
+	{
+		if (b == fxList)
+		{
+			assert(next != NULL);
+
+			next->prev = NULL;
+
+			fxList = next;
+		}
+		else
+		{
+			if (prev != NULL)
+			{
+				prev->next = next;
+			}
+
+			if (next != NULL)
+			{
+				next->prev = prev;
+			}
+		}
+
+	}
+
+	if (inactiveEffects == NULL)
+	{
+		inactiveEffects = b;
+		b->next = NULL;
+		b->prev = NULL;
+	}
+	else
+	{
+		b->next = inactiveEffects;
+		inactiveEffects->prev = b;
+		inactiveEffects = b;
+	}
+}
+
+void Session::DrawEffects(EffectLayer layer, sf::RenderTarget *target)
+{
+	sf::View oldView = target->getView();
+	if (layer == UI_FRONT)
+	{
+		target->setView(uiView);
+	}
+	Enemy *currentEffect = effectListVec[layer];
+	while (currentEffect != NULL)
+	{
+		currentEffect->Draw(target);
+		currentEffect = currentEffect->next;
+	}
+
+	if (layer == UI_FRONT)
+	{
+		target->setView(oldView);
+	}
+}
+
+
+sf::SoundBuffer *Session::GetSound(const std::string &name)
+{
+	return soundManager->GetSound(name);
+}
+
+SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundBuffer *buffer, bool loop)
+{
+	sf::Rect<double> soundRect = screenRect;
+	double soundExtra = 300;
+	soundRect.left -= soundExtra;
+	soundRect.width += 2 * soundExtra;
+	soundRect.top -= soundExtra;
+	soundRect.height += 2 * soundExtra;
+
+	if (soundRect.contains(pos))
+	{
+		return soundNodeList->ActivateSound(buffer, loop);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+SoundNode *Session::ActivateSound(sf::SoundBuffer *buffer, bool loop)
+{
+	return soundNodeList->ActivateSound(buffer, loop);
+}
+
+SoundNode *Session::ActivatePauseSound(sf::SoundBuffer *buffer, bool loop)
+{
+	return pauseSoundNodeList->ActivateSound(buffer, loop);
+}
+
+void Session::AllocateEffects()
+{
+	effectListVec.resize(EffectLayer::Count);
+
+	allEffectVec.resize(MAX_EFFECTS);
+	BasicEffect *b;
+	for (int i = 0; i < MAX_EFFECTS; ++i)
+	{
+		b = &allEffectVec[i];
+		if (i == 0)
+		{
+			inactiveEffects = b;
+		}
+		else
+		{
+			b->next = inactiveEffects;
+			inactiveEffects->prev = b;
+			inactiveEffects = b;
+		}
+	}
+}
+
+void Session::ClearEffects()
+{
+	for (int i = 0; i < EffectLayer::Count; ++i)
+	{
+		Enemy *curr = effectListVec[i];
+		while (curr != NULL)
+		{
+			Enemy *next = curr->next;
+			assert(curr->type == EnemyType::EN_BASICEFFECT);
+			DeactivateEffect((BasicEffect*)curr);
+
+			curr = next;
+		}
+		effectListVec[i] = NULL;
+	}
+}
+
+void Session::UpdateEffects( bool pauseImmuneOnly )
+{
+	Enemy *curr;
+	Enemy *next;
+
+	BasicEffect *currEffect;
+	for (int i = 0; i < EffectLayer::Count; ++i)
+	{
+		curr = effectListVec[i];
+
+		while (curr != NULL)
+		{
+			next = curr->next;
+
+			if (pauseImmuneOnly)
+			{
+				currEffect = (BasicEffect*)curr;
+				if (currEffect->pauseImmune)
+				{
+					curr->UpdatePrePhysics();
+					if (!curr->dead)
+						curr->UpdatePostPhysics();
+				}
+			}
+			else
+			{
+				curr->UpdatePrePhysics();
+				if (!curr->dead)
+					curr->UpdatePostPhysics();
+			}
+
+			curr = next;
+		}
+	}
+}
+
+
+bool Session::IsSessTypeGame()
+{
+	return sessType == SESS_GAME;
+}
+
+bool Session::IsSessTypeEdit()
+{
+	return sessType == SESS_EDIT;
+}
+
+void Session::Pause(int frames)
+{
+	pauseFrames = frames;
+	Actor *p;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = players[i];
+		if (p != NULL)
+		{
+			p->ClearPauseBufferedActions();
+		}
+	}
+}
+
+void Session::PlayerConfirmEnemyNoKill(Enemy *en, int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		p->ConfirmEnemyNoKill(en);
+	}
+}
+
+void Session::PlayerConfirmEnemyKill(Enemy *en, int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		p->ConfirmEnemyKill(en);
+	}
+}
+
+V2d Session::GetPlayerKnockbackDirFromVel(int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		return p->GetKnockbackDirFromVel();
+	}
+	else
+	{
+		return V2d();
+	}
+}
+
+V2d Session::GetPlayerTrueVel(int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		return p->GetTrueVel();
+	}
+	else
+	{
+		return V2d();
+	}
+}
+
+V2d Session::GetPlayerPos(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->position;
+	}
+	else
+	{
+		return V2d();
+	}
+}
+
+void Session::PlayerApplyHit(HitboxInfo *hi, int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		p->ApplyHit(hi);
+	}
+}
+
+void Session::PlayerAddActiveComboObj(ComboObject *co, int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		p->AddActiveComboObj(co);
+	}
+}
+
+void Session::PlayerRemoveActiveComboer(ComboObject *co, int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		p->RemoveActiveComboObj(co);
+	}
+}
+
+void Session::AddEnemy(Enemy *e)
+{
+	//do not spawn shards that are already captured in the file.
+	if (e->type == EnemyType::EN_SHARD)
+	{
+		if (IsSessTypeGame())
+		{
+			GameSession *game = GameSession::GetSession();
+			Shard *sh = (Shard*)e;
+			if (game->IsShardCaptured(sh->shardType))
+				return;
+		}
+	}
+
+	//cout << "spawning enemy! of type: " << e->type << endl;
+	if (e->spawned)
+	{
+		assert(e->spawned == false);
+	}
+
+	e->Reset();
+	e->spawned = true;
+	e->Init();
+
+	//^^note remove this later
+	//debugging only
+
+	//debug test
+	Enemy *c = activeEnemyList;
+	while (c != NULL)
+	{
+		assert(c != e);
+		c = c->next;
+	}
+
+	if (activeEnemyList == NULL)
+	{
+		activeEnemyList = e;
+		activeEnemyListTail = e;
+	}
+	else
+	{
+		activeEnemyListTail->next = e;
+		e->prev = activeEnemyListTail;
+		activeEnemyListTail = e;
+	}
+}
+
+void Session::RemoveEnemy(Enemy *e)
+{
+	if (activeEnemyList == NULL)
+	{
+		return;
+	}
+
+	Enemy *prev = e->prev;
+	Enemy *next = e->next;
+
+	if (prev == NULL && next == NULL)
+	{
+		activeEnemyList = NULL;
+		activeEnemyListTail = NULL;
+	}
+	else
+	{
+		if (e == activeEnemyListTail)
+		{
+			assert(prev != NULL);
+
+			prev->next = NULL;
+
+			activeEnemyListTail = prev;
+		}
+		else if (e == activeEnemyList)
+		{
+			assert(next != NULL);
+
+			next->prev = NULL;
+			activeEnemyList = next;
+		}
+		else
+		{
+			if (next != NULL)
+			{
+				next->prev = prev;
+			}
+
+			if (prev != NULL)
+			{
+				prev->next = next;
+			}
+		}
+	}
+}
+
+//-------------------
+void Session::KillAllEnemies()
+{
+	Enemy *curr = activeEnemyList;
+	while (curr != NULL)
+	{
+		Enemy *next = curr->next;
+
+		if (curr->type != EnemyType::EN_GOAL && curr->type != EnemyType::EN_NEXUS)
+		{
+			curr->DirectKill();
+			//curr->health = 0;
+		}
+		curr = next;
+	}
+}
+
+void Session::PlayerHitNexus(int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		p->hitNexus = true;
+	}
+}
+
+void Session::PlayerHitGoal(int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		p->hitGoal = true;
+	}
+}
 
 Session *Session::GetSession()
 {
@@ -27,8 +502,45 @@ Session *Session::GetSession()
 	return NULL;
 }
 
-Session::Session(const boost::filesystem::path &p_filePath)
+//bool Session::IsSessionTypeEdit()
+//{
+//}
+//
+//bool Session::IsSessionTypeGame()
+//{
+//	GameSession *gs = GameSession::GetSession();
+//	return gs != NULL;
+//}
+
+void Session::CreateBulletQuads()
 {
+	if (totalNumberBullets > 0)
+	{
+		bigBulletVA = new VertexArray(sf::Quads, totalNumberBullets * 4);
+		VertexArray &bva = *bigBulletVA;
+		for (int i = 0; i < totalNumberBullets * 4; ++i)
+		{
+			bva[i].position = Vector2f(0, 0);
+		}
+		ts_basicBullets = GetTileset("Enemies/bullet_64x64.png", 64, 64);
+	}
+	else
+	{
+		
+	}
+}
+
+void Session::DrawBullets(sf::RenderTarget *target)
+{
+	if (ts_basicBullets != NULL)
+	{
+		target->draw(*bigBulletVA, ts_basicBullets->texture);
+	}
+}
+
+Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
+{
+	sessType = p_sessType;
 	cutPlayerInput = false;
 	mainMenu = MainMenu::GetInstance();
 	assert(mainMenu != NULL);
@@ -39,24 +551,67 @@ Session::Session(const boost::filesystem::path &p_filePath)
 	filePathStr = filePath.string();
 
 	players.resize(MAX_PLAYERS);
-	/*for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		players[i] = nullptr;
-	}*/
 
+	soundManager = NULL;
+	soundNodeList = NULL;
+	pauseSoundNodeList = NULL;
+	
 	terrainTree = NULL;
 	specialTerrainTree = NULL;
 	railEdgeTree = NULL;
 	barrierTree = NULL;
 	borderTree = NULL;
 
+	staticItemTree = NULL;
+
 	polyShaders = NULL;
 	background = NULL;
 	hitboxManager = NULL;
+	inactiveEffects = NULL;
+
+	activeEnemyList = NULL;
+	activeEnemyListTail = NULL;
+	inactiveEnemyList = NULL;
+
+	ts_basicBullets = NULL;
+	bigBulletVA = NULL;
+
+	uiView = View(sf::Vector2f(960, 540), sf::Vector2f(1920, 1080));
+
+	totalNumberBullets = 0;
+	keyFrame = 0;
 }
+
+
 
 Session::~Session()
 {
+	//new stuff
+	if (soundManager != NULL)
+	{
+		delete soundManager;
+		soundManager = NULL;
+	}
+
+	if (soundNodeList != NULL)
+	{
+		delete soundNodeList;
+		soundNodeList = NULL;
+	}
+
+	if (pauseSoundNodeList != NULL)
+	{
+		delete pauseSoundNodeList;
+		pauseSoundNodeList = NULL;
+	}
+
+	if (bigBulletVA != NULL)
+	{
+		delete bigBulletVA;
+	}
+
+	//---------------
+
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		delete players[i];
@@ -76,6 +631,10 @@ Session::~Session()
 
 	if (barrierTree != NULL)
 		delete barrierTree;
+
+	if (staticItemTree != NULL)
+		delete staticItemTree;
+
 
 	if (mapHeader != NULL)
 		delete mapHeader;
@@ -98,6 +657,8 @@ Session::~Session()
 
 	if (hitboxManager != NULL)
 		delete hitboxManager;
+
+	
 }
 
 void Session::UpdateDecorLayers()
@@ -174,6 +735,9 @@ void Session::UpdatePlayerWireQuads()
 void Session::TestLoad()
 {
 	hitboxManager = new HitboxManager;
+	soundManager = new SoundManager;
+	soundNodeList = new SoundNodeList(10);
+	pauseSoundNodeList = new SoundNodeList(10);
 }
 
 bool Session::ReadDecorImagesFile()

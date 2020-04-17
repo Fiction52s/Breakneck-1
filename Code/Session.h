@@ -1,6 +1,7 @@
 #ifndef __SESSION_H__
 #define __SESSION_H__
 
+#include <SFML/Audio.hpp>
 #include "Input.h"
 #include "Tileset.h"
 #include "Physics.h"
@@ -8,6 +9,12 @@
 #include <fstream>
 #include "ISelectable.h"
 #include "DecorTypes.h"
+#include "EffectLayer.h"
+#include "Camera.h"
+
+struct SoundManager;
+struct SoundNode;
+
 
 struct Actor;
 struct MainMenu;
@@ -18,10 +25,105 @@ struct Background;
 struct HitboxManager;
 
 struct TerrainDecorInfo;
+struct BasicEffect;
+
+struct SoundNodeList;
+struct ComboObject;
+
+struct Enemy;
 
 struct Session : TilesetManager
 {
-	Session(const boost::filesystem::path &p_filePath);
+	enum SessionType
+	{
+		SESS_GAME,
+		SESS_EDIT,
+	};
+
+	SessionType sessType;
+	bool IsSessTypeGame();
+	bool IsSessTypeEdit();
+
+	//stuff I have to add in for enemies. Might have to adjust
+
+	int keyFrame;
+	int numTotalKeys;
+	SoundManager *soundManager;
+	sf::SoundBuffer *GetSound(const std::string &name);
+	SoundNode *ActivateSoundAtPos(V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
+	SoundNode *ActivateSound(sf::SoundBuffer *buffer, bool loop = false);
+	SoundNode *ActivatePauseSound(sf::SoundBuffer *buffer, bool loop = false);
+	SoundNodeList * soundNodeList;
+	SoundNodeList * pauseSoundNodeList;
+	int GetPauseFrames();
+	int pauseFrames;
+	sf::Rect<double> screenRect;
+
+	BasicEffect * ActivateEffect(
+		EffectLayer layer,
+		Tileset *ts,
+		V2d pos,
+		bool pauseImmune,
+		double angle,
+		int frameCount,
+		int animationFactor,
+		bool right,
+		int startFrame = 0,
+		float depth = 1.f);
+	void DeactivateEffect(BasicEffect *be);
+	void DrawEffects(EffectLayer layer, sf::RenderTarget *target);
+	void ClearEffects();
+	void UpdateEffects(bool pauseImmuneOnly = false);
+	const static int MAX_EFFECTS = 100;
+	std::vector<Enemy*> effectListVec;
+	//Enemy *effectLists[EffectLayer::Count];
+	BasicEffect *inactiveEffects;
+	std::vector<BasicEffect> allEffectVec;
+	void AllocateEffects();
+
+	sf::View uiView;
+
+	void Pause(int frames);
+
+	virtual void CollectKey() {}
+	void PlayerConfirmEnemyNoKill(Enemy *, int index = 0);
+	void PlayerConfirmEnemyKill(Enemy *, int index = 0);
+	void PlayerApplyHit(HitboxInfo *hi, int index = 0);
+	void PlayerHitNexus(int index = 0);
+	void PlayerHitGoal(int index = 0);
+
+	void KillAllEnemies();
+
+	
+	virtual void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
+		V2d &pos, float startAngle = 0) {}
+
+	Camera cam;
+
+	V2d GetPlayerKnockbackDirFromVel(int index = 0);
+	V2d GetPlayerPos(int index = 0);
+	V2d GetPlayerTrueVel(int index = 0);
+	void PlayerAddActiveComboObj(ComboObject *, int index = 0);
+	void PlayerRemoveActiveComboer(ComboObject *, int index = 0);
+
+	Enemy *activeEnemyList;
+	Enemy *activeEnemyListTail;
+	Enemy *inactiveEnemyList;
+
+	void AddEnemy(Enemy *e);
+	void RemoveEnemy(Enemy *e);
+
+	int totalNumberBullets;
+	sf::VertexArray *bigBulletVA;
+	Tileset *ts_basicBullets;
+
+	void CreateBulletQuads();
+	void DrawBullets(sf::RenderTarget *target);
+	//-------------------------
+
+
+
+	Session( SessionType p_sessType, const boost::filesystem::path &p_filePath);
 	virtual ~Session();
 	Actor *GetPlayer(int i);
 	ControllerState &GetPrevInput(int index);
@@ -44,6 +146,8 @@ struct Session : TilesetManager
 	bool ReadDecorInfoFile( int tWorld, int tVar );
 
 	static Session *GetSession();
+	//static bool IsSessionTypeEdit();
+	//static bool IsSessionTypeGame();
 
 	virtual void ProcessDecorFromFile(const std::string &name,
 		int tile) {}
@@ -108,6 +212,10 @@ struct Session : TilesetManager
 	QuadTree *railEdgeTree;
 	QuadTree *barrierTree;
 	QuadTree *borderTree;
+
+
+
+	QuadTree *staticItemTree;
 
 	int substep;
 	double currentTime;

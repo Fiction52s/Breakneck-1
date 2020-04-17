@@ -12,6 +12,7 @@ struct Script;
 struct Ring;
 struct Shard;
 struct Conversation;
+
 struct MomentaBroadcast
 {
 	enum BroadcastType
@@ -82,7 +83,7 @@ struct FlowerPod : Enemy, RayCastHandler
 	V2d camPosition;
 	PodType podType;
 	Action action;
-	FlowerPod(GameSession *owner, const std::string &podType,
+	FlowerPod( const std::string &podType,
 		Edge *ground, double quantity);
 	~FlowerPod();
 	void ProcessState();
@@ -104,6 +105,8 @@ struct FlowerPod : Enemy, RayCastHandler
 	double edgeQuantity;
 
 	CollisionBody *hitBody;
+
+	GameSession *game;
 
 	
 };

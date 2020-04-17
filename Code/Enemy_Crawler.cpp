@@ -18,8 +18,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
-	:Enemy( owner, EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), clockwise( true ), groundSpeed( 5 )
+Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
+	:Enemy( EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), clockwise( true ), groundSpeed( 5 )
 {
 	level = p_level;
 
@@ -46,18 +46,18 @@ Crawler::Crawler( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int 
 
 	dashAccel = .1;
 	currDistTravelled = 0;
-	mover = new SurfaceMover(owner, g, q, 32 * scale );
+	mover = new SurfaceMover(g, q, 32 * scale );
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
 
 	dead = false;
 
-	deathSound = owner->soundManager->GetSound("Enemies/crawler_death");
+	deathSound = sess->GetSound("Enemies/crawler_death");
 
 	double height = 160;
 	double width = 160;
-	ts = owner->GetTileset( "Enemies/crawler_160x160.png", width, height );
-	ts_aura = owner->GetTileset("Enemies/crawler_aura_160x160.png", width, height);
+	ts = sess->GetTileset( "Enemies/crawler_160x160.png", width, height );
+	ts_aura = sess->GetTileset("Enemies/crawler_aura_160x160.png", width, height);
 
 	height *= scale;
 	width *= scale;
@@ -140,7 +140,7 @@ Crawler::~Crawler()
 void Crawler::PlayDeathSound()
 {
 	Enemy::PlayDeathSound();
-	owner->ActivateSound( position, deathSound);
+	sess->ActivateSoundAtPos( position, deathSound);
 }
 
 
@@ -195,7 +195,7 @@ void Crawler::ResetEnemy()
 
 void Crawler::DecideDirection()
 {
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 	V2d gn = mover->ground->Normal();
 	if (gn.y < 0)
 	{
@@ -611,7 +611,7 @@ bool Crawler::ShouldAttack()
 		return false;
 	}
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	V2d dir;
 	if (clockwise)
@@ -652,7 +652,7 @@ bool Crawler::ShouldDash()
 	if (action != CRAWL && action != ROLL && action != DECIDE )
 		return false;
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	V2d dir;
 	if (clockwise)
@@ -677,7 +677,7 @@ bool Crawler::ShouldDash()
 
 bool Crawler::PlayerInFront()
 {
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	V2d dir;
 	if (clockwise )
@@ -751,7 +751,7 @@ bool Crawler::TryDash()
 bool Crawler::IsPlayerChasingMe()
 {
 	return (!PlayerInFront() &&
-		length(owner->GetPlayerPos(0) - mover->physBody.globalPosition) < 400);
+		length(sess->GetPlayerPos(0) - mover->physBody.globalPosition) < 400);
 }
 
 void Crawler::AttemptRunAwayBoost()

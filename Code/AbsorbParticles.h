@@ -10,7 +10,7 @@ struct Tileset;
 
 struct AbsorbParticles
 {
-	enum AbsorbType
+	enum AbsorbType : int
 	{
 		ENERGY,
 		DARK,

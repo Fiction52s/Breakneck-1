@@ -24,8 +24,7 @@ struct Comboer : Enemy
 	//	T_Count
 	//};
 
-	Comboer(GameSession *owner,
-		sf::Vector2i pos, std::list<sf::Vector2i> &path, 
+	Comboer(sf::Vector2i pos, std::list<sf::Vector2i> &path, 
 		bool loop, int p_level );
 	
 

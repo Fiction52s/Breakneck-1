@@ -16,7 +16,6 @@
 #include "Boss.h"
 #include "PowerOrbs.h"
 #include "Sequence.h"
-#include "SoundManager.h"
 #include "BarrierReactions.h"
 #include "EnvEffects.h"
 #include "SaveFile.h"
@@ -223,10 +222,9 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 //#define REGISTER_ENEMY(X) enemyCreateMap[tolowerinplace(string(#X))] = X::Create
 
 GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
-	:Session(p_filePath), saveFile( sf ),
+	:Session( Session::SESS_GAME, p_filePath), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
-	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), 
-	eHitParamsMan( NULL ), drain(true )
+	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), drain(true )
 {
 	//REGISTER_ENEMY(Goal);
 
@@ -300,11 +298,6 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 
-	for (auto it = allEffectList.begin(); it != allEffectList.end(); ++it)
-	{
-		delete (*it);
-	}
-
 	for (auto it = allEnvPlants.begin(); it != allEnvPlants.end(); ++it)
 	{
 		delete (*it);
@@ -337,12 +330,6 @@ void GameSession::Cleanup()
 	if (adventureHUD != NULL)
 	{
 		delete adventureHUD;
-	}
-
-	if (eHitParamsMan != NULL)
-	{
-		delete eHitParamsMan;
-		eHitParamsMan = NULL;
 	}
 
 	if (absorbParticles != NULL)
@@ -378,11 +365,7 @@ void GameSession::Cleanup()
 		}
 	}
 
-	if (soundManager != NULL)
-	{
-		delete soundManager;
-		soundManager = NULL;
-	}
+	
 
 	if (topClouds != NULL)
 	{
@@ -500,18 +483,6 @@ void GameSession::Cleanup()
 		scoreDisplay = NULL;
 	}
 
-	if (soundNodeList != NULL)
-	{
-		delete soundNodeList;
-		soundNodeList = NULL;
-	}
-
-	if (pauseSoundNodeList != NULL)
-	{
-		delete pauseSoundNodeList;
-		pauseSoundNodeList = NULL;
-	}
-
 	if (gates != NULL)
 	{
 		for (int i = 0; i < numGates; ++i)
@@ -555,11 +526,6 @@ void GameSession::Cleanup()
 	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 	{
 		delete (*it);
-	}
-
-	if (bigBulletVA != NULL)
-	{
-		delete bigBulletVA;
 	}
 
 	for (auto it = poiMap.begin(); it != poiMap.end(); ++it)
@@ -734,26 +700,6 @@ void GameSession::UpdateInput()
 	}
 }
 
-void GameSession::UpdateEffects()
-{
-	Enemy *curr;
-	Enemy *next;
-	for( int i = 0; i < EffectLayer::Count; ++i )
-	{
-		curr = effectLists[i];
-
-		while( curr != NULL )
-		{
-			next = curr->next;
-
-			curr->UpdatePrePhysics();
-			if( !curr->dead )
-				curr->UpdatePostPhysics();
-			curr = next;
-		}
-	}
-}
-
 void GameSession::UpdateEnemiesDraw()
 {
 
@@ -792,251 +738,9 @@ void GameSession::UpdateEnemiesSprites()
 	}
 }
 
-void GameSession::DrawEffects( EffectLayer layer )
-{
-	sf::View oldView = preScreenTex->getView();
-	if (layer == UI_FRONT)
-	{
-		preScreenTex->setView(uiView);
-	}
-	Enemy *currentEnem = effectLists[layer];
-	while( currentEnem != NULL )
-	{
-		currentEnem->Draw( preScreenTex );	
-		currentEnem = currentEnem->next;
-	}
-
-	if (layer == UI_FRONT)
-	{
-		preScreenTex->setView(oldView);
-	}
-}
-
-void GameSession::AddEffect( EffectLayer layer, Enemy *e )
-{
-	Enemy *& fxList = effectLists[layer];
-	if( fxList != NULL )
-	{
-		fxList->prev = e;
-		e->next = fxList;
-		fxList = e;
-	}
-	else
-	{
-		fxList = e;
-	}
-
-	/*if( player->record > 0 )
-	{
-		e->spawnedByClone = true;
-	}*/
-}
-
-void GameSession::AddEnemy( Enemy *e )
-{
-	//do not spawn shards that are already captured in the file.
-	if (e->type == EnemyType::EN_SHARD)
-	{
-		Shard *sh = (Shard*)e;
-		if ( saveFile != NULL && saveFile->ShardIsCaptured(sh->shardType))
-		{
-			return;
-		}
-		//see if the shard is spawnable!
-	}
-	
-	//cout << "spawning enemy! of type: " << e->type << endl;
-	if (e->spawned)
-	{
-		assert(e->spawned == false);
-	}
-	
-	e->Reset();
-	e->spawned = true;
-	e->Init();
-
-	//^^note remove this later
-	//debugging only
-
-	//debug test
-	Enemy *c = activeEnemyList;
-	while (c != NULL)
-	{
-		assert(c != e);
-		c = c->next;
-	}
-
-	//assert( e->spawned );
-//	cout << "ADD ENEMY:" << (int)e << ", type: " << (int)e->type << endl;
-	if( e->type == EnemyType::EN_BOSS_BIRD )
-	{
-		//probably will not actually use this and will use a separate spacial trigger or a gate
-
-		//cutPlayerInput = true;
-	}
-	//if( e->type == Enemy::BASICTURRET )
-	//{
-	//	cout << "ADDING BASIC TURRET NOW: " << endl;
-//	}
-	//cout << "adding enemy: " << e->type << endl;
-
-	if (activeEnemyList == NULL)
-	{
-		activeEnemyList = e;
-		activeEnemyListTail = e;
-	}
-	else
-	{
-		activeEnemyListTail->next = e;
-		e->prev = activeEnemyListTail;
-		activeEnemyListTail = e;
-	}
-}
-
-void GameSession::RemoveEnemy( Enemy *e )
-{
-	if (activeEnemyList == NULL)
-	{
-		return;
-	}
-	//cout << "removing enemy: " << e << endl;
-	//assert( activeEnemyList != NULL );
-	Enemy *prev = e->prev;
-	Enemy *next = e->next;
-
-	if( prev == NULL && next == NULL )
-	{
-		//cout << "etype: " << (int)e->type << ", activelist: " << (int)activeEnemyList->type << endl;
-		activeEnemyList = NULL;
-		activeEnemyListTail = NULL;
-		
-	}
-	else
-	{
-		if (e == activeEnemyListTail)
-		{
-			assert(prev != NULL);
-
-			prev->next = NULL;
-
-			activeEnemyListTail = prev;
-		}
-		else if (e == activeEnemyList)
-		{
-			assert(next != NULL);
-
-			next->prev = NULL;
-			activeEnemyList = next;
-		}
-		else
-		{
-			if (next != NULL)
-			{
-				next->prev = prev;
-			}
-
-			if (prev != NULL)
-			{
-				prev->next = next;
-			}
-		}
 
 
 
-		/*if( e == activeEnemyList )
-		{
-			assert( next != NULL );
-			
-			next->prev = NULL;
-			
-			activeEnemyList = next;
-		}
-		else
-		{
-			if( prev != NULL )
-			{
-				prev->next = next;
-			}
-
-			if( next != NULL )
-			{
-				next->prev = prev;
-			}
-		}*/
-		
-	}
-
-	//if( e->type != e->BASICEFFECT )
-	//{
-	//	/*if( e->hasMonitor )
-	//	{
-	//		cout << "adding monitor!" << endl;
-	//		e->monitor->position = e->position;
-	//		AddEnemy( e->monitor );
-	//	}*/
-
-	//	cout << "adding an inactive enemy!" << endl;
-	//	//cout << "secret count: " << CountActiveEnemies() << endl;
-	//	if( inactiveEnemyList == NULL )
-	//	{
-	//		inactiveEnemyList = e;
-	//		e->next = NULL;
-	//		e->prev = NULL;
-	//	}
-	//	else
-	//	{
-	//		//cout << "creating more dead clone enemies" << endl;
-	//		e->next = inactiveEnemyList;
-	//		inactiveEnemyList->prev = e;
-	//		inactiveEnemyList = e;
-	//	}
-	//}
-
-	//might need to give enemies a second next/prev pair for clone power?
-	//totally does >.> CLONE POWER
-	//if( player->record > 0 )
-	//{
-	//	if( cloneInactiveEnemyList == NULL )
-	//	{
-	//		cloneInactiveEnemyList = e;
-	//		e->next = NULL;
-	//		e->prev = NULL;
-	//		//cout << "creating first dead clone enemy" << endl;
-
-	//		/*int listSize = 0;
-	//		Enemy *ba = cloneInactiveEnemyList;
-	//		while( ba != NULL )
-	//		{
-	//			listSize++;
-	//			ba = ba->next;
-	//		}
-
-	//		cout << "size of dead list after first add: " << listSize << endl;*/
-	//	}
-	//	else
-	//	{
-	//		//cout << "creating more dead clone enemies" << endl;
-	//		e->next = cloneInactiveEnemyList;
-	//		cloneInactiveEnemyList->prev = e;
-	//		cloneInactiveEnemyList = e;
-	//	}
-	//}
-	
-
-//	cout << "number of enemies is now: " << CountActiveEnemies() << endl;
-
-
-	/*if( inactiveEnemyList != NULL )
-	{
-		inactiveEnemyList->next = e;
-	}
-	else
-	{
-		inactiveEnemyList = e;
-	}*/
-	
-	
-}
 
 int GameSession::CountActiveEnemies()
 {
@@ -1422,7 +1126,6 @@ bool GameSession::LoadRails(ifstream &is)
 
 bool GameSession::LoadEnemies( ifstream &is )
 {
-	totalNumberBullets = 0;
 	int shardsLoadedCounter = 0;
 
 	numTotalFlies = 0;
@@ -1444,7 +1147,7 @@ bool GameSession::LoadEnemies( ifstream &is )
 		}
 	}
 
-	if (numTotalFlies > 0)
+	/*if (numTotalFlies > 0)
 	{
 		ts_healthFly = GetTileset("Enemies/healthfly_64x64.png", 64, 64);
 		healthFlyVA = new Vertex[numTotalFlies * 4];
@@ -1454,24 +1157,10 @@ bool GameSession::LoadEnemies( ifstream &is )
 			(*it)->va = healthFlyVA;
 			(*it)->ResetEnemy();
 		}
-	}
+	}*/
 
-
-	if( totalNumberBullets > 0 )
-	{
-		bigBulletVA = new VertexArray( sf::Quads, totalNumberBullets * 4 );
-		VertexArray &bva = *bigBulletVA;
-		for( int i = 0; i < totalNumberBullets * 4; ++i )
-		{
-			bva[i].position = Vector2f( 0, 0 );
-		}
-		ts_basicBullets = GetTileset( "Enemies/bullet_64x64.png", 64, 64 );
-	}
-	else
-	{
-		ts_basicBullets = NULL;
-		bigBulletVA = NULL;
-	}
+	CreateBulletQuads();
+	
 
 	if( raceFight != NULL )
 	{
@@ -1569,7 +1258,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		}
 
 		//cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
-		Goal *enemy = new Goal(this, loadedEdge, edgeQuantity, w);
+		Goal *enemy = new Goal(loadedEdge, edgeQuantity, w);
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
@@ -1677,7 +1366,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int localIndex;
 		is >> localIndex;
 
-		Shard *enemy = new Shard(this, Vector2i(xPos, yPos), w, localIndex);
+		Shard *enemy = new Shard(Vector2i(xPos, yPos), w, localIndex);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -1705,7 +1394,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		HealthFly *enemy = new HealthFly(this, Vector2i(xPos, yPos), level, numTotalFlies);
+		/*HealthFly *enemy = new HealthFly(this, Vector2i(xPos, yPos), level, numTotalFlies);
 
 		allFlies.push_back(enemy);
 		numTotalFlies++;
@@ -1713,7 +1402,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "blocker" || typeName == "greenblocker")
 	{
@@ -1747,7 +1436,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		BlockerChain *enemy = new BlockerChain(this, Vector2i(xPos, yPos), localPath, bType, armored, spacing, level);
+		BlockerChain *enemy = new BlockerChain(Vector2i(xPos, yPos), localPath, bType, armored, spacing, level);
 
 		fullEnemyList.push_back(enemy);
 
@@ -1775,7 +1464,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		Comboer *enemy = new Comboer(this, Vector2i(xPos, yPos), localPath, loop, level);
+		Comboer *enemy = new Comboer(Vector2i(xPos, yPos), localPath, loop, level);
 
 
 		fullEnemyList.push_back(enemy);
@@ -1802,7 +1491,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		SplitComboer *enemy = new SplitComboer(this, Vector2i(xPos, yPos), localPath, loop, level);
+		SplitComboer *enemy = new SplitComboer(Vector2i(xPos, yPos), localPath, loop, level);
 
 
 		fullEnemyList.push_back(enemy);
@@ -1822,7 +1511,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		Booster *enemy = new Booster(this, Vector2i(xPos, yPos), level);
+		Booster *enemy = new Booster(Vector2i(xPos, yPos), level);
 		//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
 
 		activeItemTree->Insert(enemy);
@@ -1888,7 +1577,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 			sp = Spring::TELEPORT;
 		}
 		//CurveLauncher * enemy = new CurveLauncher(this, Vector2i(xPos, yPos), other, moveFrames);
-		Spring *enemy = new Spring(this, sp, Vector2i(xPos, yPos), other, speed);
+		Spring *enemy = new Spring( sp, Vector2i(xPos, yPos), other, speed);
 
 		activeItemTree->Insert(enemy);
 
@@ -1917,7 +1606,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 			bothWays = false;
 		}
 
-		Teleporter *enemy = new Teleporter(this, Vector2i(xPos, yPos), other, bothWays);
+		/*Teleporter *enemy = new Teleporter(this, Vector2i(xPos, yPos), other, bothWays);
 
 		activeItemTree->Insert(enemy);
 
@@ -1931,9 +1620,8 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		activeItemTree->Insert(secondary);
 
 		fullEnemyList.push_back(secondary);
-		//enem = enemy;
 
-		enemyTree->Insert(secondary);
+		enemyTree->Insert(secondary);*/
 
 
 	}
@@ -1956,14 +1644,14 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		}
 
 
-		BounceBooster *enemy = new BounceBooster(this, Vector2i(xPos, yPos), upOnly, level);
+		/*BounceBooster *enemy = new BounceBooster(this, Vector2i(xPos, yPos), upOnly, level);
 
 		activeItemTree->Insert(enemy);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "rail" || typeName == "grindrail" )
 	{
@@ -2021,7 +1709,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		int level;
 		is >> level;
-		Patroller *enemy = new Patroller(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
+		Patroller *enemy = new Patroller(hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -2034,7 +1722,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
 
-		CrawlerQueen *enemy = new CrawlerQueen(this, loadedEdge,
+		CrawlerQueen *enemy = new CrawlerQueen(loadedEdge,
 			edgeQuantity, false);
 
 		fullEnemyList.push_back(enemy);
@@ -2042,12 +1730,6 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		enem = enemy;
 
 		enemyTree->Insert(enemy);
-		/*Boss_Crawler *enemy = new Boss_Crawler( this, loadedEdge,
-		edgeQuantity );
-
-		fullEnemyList.push_back( enemy );
-
-		b_crawler = enemy;*/
 	}
 	else if (typeName == "basicturret")
 	{
@@ -2055,7 +1737,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-		BasicTurret *enemy = new BasicTurret(this, hasMonitor, loadedEdge, edgeQuantity,level);
+		BasicTurret *enemy = new BasicTurret(hasMonitor, loadedEdge, edgeQuantity,level);
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
@@ -2067,18 +1749,8 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		Crawler *enemy = new Crawler(this, hasMonitor, loadedEdge,
+		Crawler *enemy = new Crawler(hasMonitor, loadedEdge,
 			edgeQuantity, level);
-		//RoadRunner *enemy = new RoadRunner(this, hasMonitor, loadedEdge,
-		//	edgeQuantity);
-
-
-		/*if( enemy->hasMonitor )
-		cout << "crawler with monitor!" << endl;
-		else
-		cout << "no monitor here" << endl;*/
-
-		//enemyTree = Insert( enemyTree, enemy );
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
@@ -2086,15 +1758,9 @@ void GameSession::LoadEnemy(std::ifstream &is )
 	}
 	else if (typeName == "shroom")
 	{
-		//cout << "loading foottrap" << endl;
-		//always grounded
-
-
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		//FootTrap *enemy = new FootTrap( this, hasMonitor, loadedEdge, edgeQuantity );
-		Shroom *enemy = new Shroom(this, hasMonitor, loadedEdge, edgeQuantity, level);
-		//Cactus *enemy = new Cactus( this, hasMonitor, loadedEdge, edgeQuantity);
+		Shroom *enemy = new Shroom(hasMonitor, loadedEdge, edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -2119,7 +1785,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		is >> level;
 
 
-		Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos), level);
+		Airdasher *enemy = new Airdasher(hasMonitor, Vector2i(xPos, yPos), level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
@@ -2156,12 +1822,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 
 
-		Bat *enemy = new Bat(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
+		/*Bat *enemy = new Bat(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "airdashjuggler")
 	{
@@ -2188,12 +1854,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 			
 
-		AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath, level);
+		/*AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler" || typeName == "bouncejuggler" 
 		|| typeName == "wirejuggler" )
@@ -2219,7 +1885,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		is >> numJuggles;
 
 
-		Enemy *enemy;
+		/*Enemy *enemy;
 		if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler")
 		{
 			bool reversed = false;
@@ -2246,7 +1912,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "grindjugglercw" || typeName == "grindjugglerccw" )
 	{
@@ -2271,14 +1937,14 @@ void GameSession::LoadEnemy(std::ifstream &is )
 			cw = false;
 		}
 
-		Enemy *enemy = new GrindJuggler(this, hasMonitor, Vector2i(xPos, yPos),
+		/*Enemy *enemy = new GrindJuggler(this, hasMonitor, Vector2i(xPos, yPos),
 			level, numJuggles, cw);
 
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "groundedgrindjugglercw" || typeName == "groundedgrindjugglerccw")
 	{
@@ -2294,14 +1960,14 @@ void GameSession::LoadEnemy(std::ifstream &is )
 			cw = false;
 		}
 
-		Enemy *enemy = new GroundedGrindJuggler(this, hasMonitor, loadedEdge,
+	/*	Enemy *enemy = new GroundedGrindJuggler(this, hasMonitor, loadedEdge,
 			edgeQuantity, level, numJuggles, cw);
 
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "jugglercatcher")
 	{
@@ -2318,14 +1984,14 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		JugglerCatcher *enemy = new JugglerCatcher(this, hasMonitor, Vector2i(xPos, yPos), level);
-		//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
+		//JugglerCatcher *enemy = new JugglerCatcher(this, hasMonitor, Vector2i(xPos, yPos), level);
+		////GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
 
-		activeEnemyItemTree->Insert(enemy);
-		fullEnemyList.push_back(enemy);
-		enem = enemy;
+		//activeEnemyItemTree->Insert(enemy);
+		//fullEnemyList.push_back(enemy);
+		//enem = enemy;
 
-		enemyTree->Insert(enemy);
+		//enemyTree->Insert(enemy);
 	}
 	else if (typeName == "poisonfrog")
 	{
@@ -2342,25 +2008,25 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int jumpFramesWait;
 		is >> jumpFramesWait;*/
 
-		PoisonFrog *enemy = new PoisonFrog(this, hasMonitor, loadedEdge,
+		/*PoisonFrog *enemy = new PoisonFrog(this, hasMonitor, loadedEdge,
 			edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "gravityfaller")
 	{
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		GravityFaller *enemy = new GravityFaller(this, hasMonitor, loadedEdge,
+		/*GravityFaller *enemy = new GravityFaller(this, hasMonitor, loadedEdge,
 			edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "stagbeetle")
 	{
@@ -2369,12 +2035,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
 
-		StagBeetle *enemy = new StagBeetle(this, hasMonitor, loadedEdge,
+		/*StagBeetle *enemy = new StagBeetle(this, hasMonitor, loadedEdge,
 			edgeQuantity, level );
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "curveturret")
 	{
@@ -2382,12 +2048,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		CurveTurret *enemy = new CurveTurret(this, hasMonitor, loadedEdge, edgeQuantity, level);
+		/*CurveTurret *enemy = new CurveTurret(this, hasMonitor, loadedEdge, edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "gravityincreaser" || typeName == "gravitydecreaser" )
 	{
@@ -2403,13 +2069,13 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), level, increaser);
+	/*	GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), level, increaser);
 
 		activeItemTree->Insert(enemy);
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 
 	else if (typeName == "bossbird")
@@ -2420,12 +2086,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		is >> xPos;
 		is >> yPos;
 
-		BirdBoss *enemy = new BirdBoss(this, Vector2i(xPos, yPos));
+		//BirdBoss *enemy = new BirdBoss(this, Vector2i(xPos, yPos));
 
-		fullEnemyList.push_back(enemy);
-		enem = enemy;
+		//fullEnemyList.push_back(enemy);
+		//enem = enemy;
 
-		enemyTree->Insert(enemy);
+		//enemyTree->Insert(enemy);
 	}
 
 	//w3
@@ -2454,16 +2120,14 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		int level;
 		is >> level;
-		//int framesBetweenNodes;
-		//is >> framesBetweenNodes;
 
-		Pulser *enemy = new Pulser(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+		/*Pulser *enemy = new Pulser(this, hasMonitor, Vector2i(xPos, yPos), localPath,
 			loop, level );
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "cactus")
 	{
@@ -2471,14 +2135,14 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		Cactus *enemy = new Cactus(this, hasMonitor,
+		/*Cactus *enemy = new Cactus(this, hasMonitor,
 			loadedEdge, edgeQuantity, level );
 
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "owl")
 	{
@@ -2494,24 +2158,15 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int hasMonitor;
 		is >> hasMonitor;
 
-		//int moveSpeed;
-		//is >> moveSpeed;
-
-		//int bulletSpeed;
-		//is >> bulletSpeed;
-
-		//int rhythmFrames;
-		//is >> rhythmFrames;
-
 		int level;
 		is >> level;
 
-		Owl *enemy = new Owl(this, hasMonitor, Vector2i(xPos, yPos), level);
+		/*Owl *enemy = new Owl(this, hasMonitor, Vector2i(xPos, yPos), level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "badger")
 	{
@@ -2519,12 +2174,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		Badger *enemy = new Badger(this, hasMonitor, loadedEdge, edgeQuantity, level);
+		/*Badger *enemy = new Badger(this, hasMonitor, loadedEdge, edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "roadrunner")
 	{
@@ -2532,12 +2187,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		RoadRunner *enemy = new RoadRunner(this, hasMonitor, loadedEdge, edgeQuantity, level);
+		/*RoadRunner *enemy = new RoadRunner(this, hasMonitor, loadedEdge, edgeQuantity, level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "bouncefloater")
 	{
@@ -2552,15 +2207,13 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-		//AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), level);
-		BounceFloater *enemy = new BounceFloater(this, Vector2i(xPos, yPos), level);
+		/*BounceFloater *enemy = new BounceFloater(this, Vector2i(xPos, yPos), level);
 
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "bosscoyote")
 	{
@@ -2595,13 +2248,13 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		//Vector2i delta(1000, -1000);
-		Vector2i pos(xPos, yPos);
+		
+		/*Vector2i pos(xPos, yPos);
 		Turtle *enemy = new Turtle(this, hasMonitor, Vector2i(xPos, yPos), level);
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "coral")
 	{
@@ -2635,13 +2288,13 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		Cheetah *enemy = new Cheetah( this, hasMonitor,
+		/*Cheetah *enemy = new Cheetah( this, hasMonitor,
 		loadedEdge, edgeQuantity, level );
 
 		fullEnemyList.push_back( enemy );
 		enem = enemy;
 
-		enemyTree->Insert( enemy );
+		enemyTree->Insert( enemy );*/
 	}
 	else if (typeName == "spider")
 	{
@@ -2649,14 +2302,14 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		Spider *enemy = new Spider(this, hasMonitor, loadedEdge, edgeQuantity,
+		/*Spider *enemy = new Spider(this, hasMonitor, loadedEdge, edgeQuantity,
 			level);
 
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "bosstiger")
 	{
@@ -2698,13 +2351,13 @@ void GameSession::LoadEnemy(std::ifstream &is )
 			returnsToPlayer = true;
 		}
 			
-		HungryComboer *enemy = new HungryComboer(this, hasMonitor, Vector2i(xPos, yPos), level, numJuggles,
+		/*HungryComboer *enemy = new HungryComboer(this, hasMonitor, Vector2i(xPos, yPos), level, numJuggles,
 			returnsToPlayer );
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "relativecomboer" || typeName == "relativecomboerdetach")
 	{
@@ -2733,13 +2386,13 @@ void GameSession::LoadEnemy(std::ifstream &is )
 			detachOnKill = true;
 		}
 
-		RelativeComboer *enemy = new RelativeComboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, level, numJuggles,
+		/*RelativeComboer *enemy = new RelativeComboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, level, numJuggles,
 			detachOnKill);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "swarm")
 	{
@@ -2758,11 +2411,11 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), hasMonitor, level );
+		/*Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), hasMonitor, level );
 		fullEnemyList.push_back( enemy );
 		enem = enemy;
 
-		enemyTree->Insert( enemy );
+		enemyTree->Insert( enemy );*/
 	}
 	else if (typeName == "shark")
 	{
@@ -2781,11 +2434,11 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), level );
+		/*Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), level );
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert( enemy );
+		enemyTree->Insert( enemy );*/
 	}
 	else if (typeName == "ghost")
 	{
@@ -2800,12 +2453,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), level );
+		/*Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), level );
 
 		fullEnemyList.push_back( enemy );
 		enem = enemy;
 
-		enemyTree->Insert( enemy );
+		enemyTree->Insert( enemy );*/
 	}
 	else if (typeName == "overgrowth")
 	{
@@ -2839,14 +2492,14 @@ void GameSession::LoadEnemy(std::ifstream &is )
 
 		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
 
-		GrowingTree * enemy = new GrowingTree(this, hasMonitor,
-			loadedEdge, edgeQuantity, level);
+		//GrowingTree * enemy = new GrowingTree(this, hasMonitor,
+		//	loadedEdge, edgeQuantity, level);
 
-		//
-		fullEnemyList.push_back( enemy );
-		enem = enemy;
+		////
+		//fullEnemyList.push_back( enemy );
+		//enem = enemy;
 
-		enemyTree->Insert( enemy );
+		//enemyTree->Insert( enemy );
 	}
 	else if (typeName == "bossgator")
 	{
@@ -2880,11 +2533,11 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ), level );
-		fullEnemyList.push_back( enemy );
-		//enem = enemy;
+		//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ), level );
+		//fullEnemyList.push_back( enemy );
+		////enem = enemy;
 
-		enemyTree->Insert( enemy );
+		//enemyTree->Insert( enemy );
 	}
 	else if (typeName == "swinglaunchercw" || typeName == "swinglauncherccw")
 	{
@@ -2908,14 +2561,14 @@ void GameSession::LoadEnemy(std::ifstream &is )
 			cw = false;
 		}
 
-		SwingLauncher *enemy = new SwingLauncher(this, Vector2i(xPos, yPos), other, speed, cw);
+		/*SwingLauncher *enemy = new SwingLauncher(this, Vector2i(xPos, yPos), other, speed, cw);
 
 		activeItemTree->Insert(enemy);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "narwhal")
 	{
@@ -2989,12 +2642,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		is >> level;
 
 
-		Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ), level );
+		/*Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ), level );
 
 		fullEnemyList.push_back( enemy );
 		enem = enemy;
 
-		enemyTree->Insert( enemy );
+		enemyTree->Insert( enemy );*/
 	}
 	else if (typeName == "wiretarget")
 	{
@@ -3010,12 +2663,12 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int level;
 		is >> level;
 
-		WireTarget *enemy = new WireTarget(this, hasMonitor, Vector2i(xPos, yPos), level);
+		/*WireTarget *enemy = new WireTarget(this, hasMonitor, Vector2i(xPos, yPos), level);
 
 		fullEnemyList.push_back(enemy);
 		enem = enemy;
 
-		enemyTree->Insert(enemy);
+		enemyTree->Insert(enemy);*/
 	}
 	else if (typeName == "bossskeleton")
 	{
@@ -3041,7 +2694,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int nexusIndex;
 		is >> nexusIndex;
 
-		Nexus *enemy = new Nexus(this, loadedEdge, edgeQuantity);
+		Nexus *enemy = new Nexus(loadedEdge, edgeQuantity);
 
 		goalNodePos = enemy->GetKillPos();
 		float space = 78.f;
@@ -3061,7 +2714,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		int facingRight;
 		is >> facingRight;
 
-		ShipPickup *enemy = new ShipPickup(this, loadedEdge, edgeQuantity,
+		ShipPickup *enemy = new ShipPickup(loadedEdge, edgeQuantity,
 			facingRight);
 
 		fullEnemyList.push_back(enemy);
@@ -3090,7 +2743,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		string tType;
 		is >> tType;
 
-		GroundTrigger *enemy = new GroundTrigger(this, loadedEdge, edgeQuantity,
+		GroundTrigger *enemy = new GroundTrigger(loadedEdge, edgeQuantity,
 			facingRight, tType);
 
 		fullEnemyList.push_back(enemy);
@@ -3116,7 +2769,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		is >> rectHeight;
 		//int hasMonitor;
 		//is >> hasMonitor;
-		AirTrigger *at = new AirTrigger(this, V2d(pos), rectWidth, rectHeight, typeStr);
+		AirTrigger *at = new AirTrigger( this, V2d(pos), rectWidth, rectHeight, typeStr);
 		airTriggerTree->Insert(at);
 		fullAirTriggerList.push_back(at);
 	}
@@ -3127,7 +2780,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		string tType;
 		is >> tType;
 
-		FlowerPod *enemy = new FlowerPod(this, tType,
+		FlowerPod *enemy = new FlowerPod(tType,
 			loadedEdge, edgeQuantity);
 
 		fullEnemyList.push_back(enemy);
@@ -4214,32 +3867,6 @@ void GameSession::SetupZones()
 	}*/
 }
 
-V2d GameSession::GetPlayerPos(int index)
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		return p->position;
-	}
-	else
-	{
-		return V2d();
-	}
-}
-
-V2d GameSession::GetPlayerTrueVel(int index)
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		return p->GetTrueVel();
-	}
-	else
-	{
-		return V2d();
-	}
-}
-
 int GameSession::GetPlayerEnemiesKilledLastFrame(int index )
 {
 	Actor *p = players[index];
@@ -4336,81 +3963,27 @@ bool GameSession::PlayerIsFacingRight(int index)
 	}
 }
 
-void GameSession::PlayerHitGoal( int index )
+
+
+
+void GameSession::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
+	V2d &pos, float startAngle)
 {
-	Actor *p = players[index];
-	if (p != NULL)
+	switch (absorbType)
 	{
-		p->hitGoal = true;
+	case AbsorbParticles::ENERGY:
+		absorbParticles->Activate( p, storedHits, pos, startAngle);
+		break;
+	case AbsorbParticles::DARK:
+		absorbDarkParticles->Activate(p, storedHits, pos, startAngle);
+		break;
+	case AbsorbParticles::SHARD:
+		absorbShardParticles->Activate(p, storedHits, pos, startAngle);
+		break;
 	}
 }
 
-V2d GameSession::GetPlayerKnockbackDirFromVel(int index )
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		return p->GetKnockbackDirFromVel();
-	}
-	else
-	{
-		return V2d();
-	}
-}
 
-void GameSession::PlayerAddActiveComboObj(ComboObject *co, int index)
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		p->AddActiveComboObj(co);
-	}
-}
-
-void GameSession::PlayerRemoveActiveComboer(ComboObject *co, int index )
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		p->RemoveActiveComboObj(co);
-	}
-}
-
-void GameSession::PlayerConfirmEnemyNoKill(Enemy *en, int index )
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		p->ConfirmEnemyNoKill(en);
-	}
-}
-
-void GameSession::PlayerConfirmEnemyKill(Enemy *en, int index)
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		p->ConfirmEnemyKill(en);
-	}
-}
-
-void GameSession::PlayerHitNexus(int index)
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		p->hitNexus = true;
-	}
-}
-
-void GameSession::PlayerApplyHit( HitboxInfo *hi, int index)
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		p->ApplyHit(hi);
-	}
-}
 
 void GameSession::SetupMinimapBorderQuads( bool *blackBorder, bool topBorderOn )
 {
@@ -4807,9 +4380,6 @@ bool GameSession::Load()
 	
 	//inputVis = new InputVisualizer;
 	mini = new Minimap(this);
-	
-
-	eHitParamsMan = new EnemyParamsManager;
 
 	absorbParticles = new AbsorbParticles( this, AbsorbParticles::ENERGY );
 	absorbDarkParticles = new AbsorbParticles( this, AbsorbParticles::DARK);
@@ -4818,13 +4388,9 @@ bool GameSession::Load()
 
 
 	const ConfigData &cd = mainMenu->config->GetData();
-
-	soundNodeList = new SoundNodeList(10);
 	soundNodeList->SetSoundVolume(cd.soundVolume);
-
-	pauseSoundNodeList = new SoundNodeList(10);
 	pauseSoundNodeList->SetSoundVolume(cd.soundVolume);
-	//pauseSoundNodeList->SetGlobalVolume(mainMenu->config->GetData().soundVolume);
+
 	scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
 
 
@@ -4921,20 +4487,12 @@ bool GameSession::Load()
 
 	airTriggerTree = new QuadTree(1000000, 1000000);
 
-
-	soundManager = new SoundManager;
-
 	cout << "weird timing 1" << endl;
 
 	//sleep(5000);
 	//return;
-	
 
-	//sets up fx so that they can be used
-	for (int i = 0; i < MAX_EFFECTS; ++i)
-	{
-		AllocateEffect();
-	}
+	AllocateEffects();
 
 
 	kinMapSpawnIcon.setTexture(*mini->ts_miniIcons->texture);
@@ -4976,19 +4534,19 @@ bool GameSession::Load()
 
 	//blah 2
 
-	gameSoundBuffers[S_KEY_COMPLETE_W1] = soundManager->GetSound( "key_complete_w1.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W2] = soundManager->GetSound( "key_complete_w2.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W3] = soundManager->GetSound( "key_complete_w2.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W4] = soundManager->GetSound( "key_complete_w2.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W5] = soundManager->GetSound( "key_complete_w2.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W6] = soundManager->GetSound( "key_complete_w6.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_0] = soundManager->GetSound( "key_enter_1.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_1] = soundManager->GetSound( "key_enter_1.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_2] = soundManager->GetSound( "key_enter_2.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_3] = soundManager->GetSound( "key_enter_3.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_4] = soundManager->GetSound( "key_enter_4.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_5] = soundManager->GetSound( "key_enter_5.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_6] = soundManager->GetSound( "key_enter_6.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W1] = GetSound( "key_complete_w1.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W2] = GetSound( "key_complete_w2.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W3] = GetSound( "key_complete_w2.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W4] = GetSound( "key_complete_w2.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W5] = GetSound( "key_complete_w2.ogg" );
+	gameSoundBuffers[S_KEY_COMPLETE_W6] = GetSound( "key_complete_w6.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_0] = GetSound( "key_enter_1.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_1] = GetSound( "key_enter_1.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_2] = GetSound( "key_enter_2.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_3] = GetSound( "key_enter_3.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_4] = GetSound( "key_enter_4.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_5] = GetSound( "key_enter_5.ogg" );
+	gameSoundBuffers[S_KEY_ENTER_6] = GetSound( "key_enter_6.ogg" );
 
 	//blah 3
 
@@ -4998,8 +4556,6 @@ bool GameSession::Load()
 	totalFramesBeforeGoal = -1;
 	originalZone = NULL;
 	
-	inactiveEnemyList = NULL;
-	cloneInactiveEnemyList = NULL;
 	unlockedGateList = NULL;
 	activatedZoneList = NULL;
 
@@ -5012,11 +4568,7 @@ bool GameSession::Load()
 	//window->setMouseCursorVisible( true );
 
 	view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
-	//cout << "weird timing 3" << endl;
 
-	uiView = View( sf::Vector2f( 960, 540 ), sf::Vector2f( 1920, 1080 ) );
-
-	
 	//repGhost = new ReplayGhost( player );
 
 	//recPlayer = new RecordPlayer( player );
@@ -5841,41 +5393,9 @@ int GameSession::Run()
 						p->flashFrames--;
 				}
 				
-				for (int i = 0; i < EffectLayer::Count; ++i)
-				{
-					Enemy *& fxList = effectLists[i];
-					BasicEffect *c = (BasicEffect*)fxList;
-					BasicEffect *tNext;
-					while (c != NULL)
-					{
-						tNext = (BasicEffect*)c->next;
-						if (c->pauseImmune)
-						{
-							c->UpdatePrePhysics();
-							c->UpdatePostPhysics();
-						}
-						c = tNext;
-					}
-				}
+				UpdateEffects(true);
 
 				cam.UpdateRumble();
-				
-
-				////view fx that are outside of hitlag pausing
-				//Enemy *currFX = activeEnemyList;
-				//while( currFX != NULL )
-				//{
-				//	if( currFX->type == EnemyType::EN_BASICEFFECT )
-				//	{
-				//		BasicEffect * be = (BasicEffect*)currFX;
-				//		if( be->pauseImmune )
-				//		{
-				//			currFX->UpdatePostPhysics();
-				//		}
-				//	}
-				//	
-				//	currFX = currFX->next;
-				//}
 
 				fader->Update();
 				swiper->Update();
@@ -5883,14 +5403,12 @@ int GameSession::Run()
 				
 
 				pauseFrames--;
-				//accumulator = 0;
 				
 				accumulator -= TIMESTEP;
 
 				//if( recGhost != NULL)
 				//recGhost->RecordFrame();
 				
-
 				//repGhost->UpdateReplaySprite();
 
 				//currentTime = gameClock.getElapsedTime().asSeconds();
@@ -6395,17 +5913,15 @@ int GameSession::Run()
 					if( currInput.start && !prevInput.start )
 					{
 						state = PAUSE;
-						pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_on"));
+						ActivatePauseSound(GetSound("pause_on"));
 						pauseMenu->SetTab( PauseMenu::PAUSE );
 						soundNodeList->Pause( true );
-
-
 					}
 					else if( ( currInput.back && !prevInput.back ) || IsKeyPressed( Keyboard::G ) )
 					{
 						state = PAUSE;
 						pauseMenu->SetTab( PauseMenu::MAP );
-						pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_on"));
+						ActivatePauseSound(GetSound("pause_on"));
 						soundNodeList->Pause( true );
 					}
 				}
@@ -6517,7 +6033,7 @@ int GameSession::Run()
 		
 		DrawStoryLayer(EffectLayer::BEHIND_TERRAIN);
 		DrawActiveSequence(EffectLayer::BEHIND_TERRAIN);
-		DrawEffects( EffectLayer::BEHIND_TERRAIN );
+		DrawEffects( EffectLayer::BEHIND_TERRAIN, preScreenTex );
 		DrawEmitters(EffectLayer::BEHIND_TERRAIN);
 		
 
@@ -6555,7 +6071,7 @@ int GameSession::Run()
 
 		DrawStoryLayer(EffectLayer::BEHIND_ENEMIES);
 		DrawActiveSequence(EffectLayer::BEHIND_ENEMIES);
-		DrawEffects( EffectLayer::BEHIND_ENEMIES );
+		DrawEffects( EffectLayer::BEHIND_ENEMIES, preScreenTex);
 		DrawEmitters(EffectLayer::BEHIND_ENEMIES);
 
 		UpdateEnemiesDraw();
@@ -6567,7 +6083,7 @@ int GameSession::Run()
 
 		DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 		DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
-		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES );
+		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, preScreenTex);
 		DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 		goalPulse->Draw( preScreenTex );
@@ -6596,16 +6112,12 @@ int GameSession::Run()
 		
 		DrawReplayGhosts();
 		
-		DrawEffects(EffectLayer::IN_FRONT);
+		DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
 		DrawEmitters(EffectLayer::IN_FRONT);
 		DrawStoryLayer(EffectLayer::IN_FRONT);
 		DrawActiveSequence(EffectLayer::IN_FRONT);
 		
-
-		if( ts_basicBullets != NULL )
-		{
-			preScreenTex->draw( *bigBulletVA, ts_basicBullets->texture );
-		}
+		DrawBullets(preScreenTex);
 
 		rainView.setCenter( (int)view.getCenter().x % 64, (int)view.getCenter().y % 64 );
 		rainView.setSize( view.getSize() );
@@ -6713,7 +6225,7 @@ int GameSession::Run()
 		}
 
 		DrawActiveSequence(EffectLayer::UI_FRONT);
-		DrawEffects(EffectLayer::UI_FRONT);
+		DrawEffects(EffectLayer::UI_FRONT, preScreenTex);
 		DrawEmitters(EffectLayer::UI_FRONT);
 
 		preScreenTex->setView(uiView);
@@ -6730,7 +6242,7 @@ int GameSession::Run()
 		preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
 		if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()) )//IsFading()) //adjust later?
 		{
-			DrawEffects(EffectLayer::IN_FRONT);
+			DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
 			for (int i = 0; i < 4; ++i)
 			{
 				p = GetPlayer(i);
@@ -6869,7 +6381,7 @@ int GameSession::Run()
 				{
 					state = RUN;
 					soundNodeList->Pause( false );
-					pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_off"));
+					ActivatePauseSound(GetSound("pause_off"));
 				}
 
 				accumulator -= TIMESTEP;
@@ -6960,22 +6472,6 @@ int GameSession::Run()
 				Gate *next = gateList->next;//edgeA->edge1;
 				gateList = next;
 			}
-
-			//queryMode = "enemyminimap";
-			//enemyTree->Query( this, mapRect );
-
-			//Enemy *currEnemy = activeEnemyList;
-			//int counter = 0;
-		
-			/*while( currEnemy != NULL )
-			{
-				if( currEnemy->hasMonitor )
-				{
-					currEnemy->DrawMinimap( mapTex );
-					
-				}
-				currEnemy = currEnemy->next;
-			}*/
 
 			if( currentZone != NULL )
 			{
@@ -7341,7 +6837,7 @@ int GameSession::Run()
 				case PauseMenu::R_P_RESUME:
 				{
 					state = GameSession::RUN;
-					pauseSoundNodeList->ActivateSound(soundManager->GetSound("pause_off"));
+					ActivatePauseSound(GetSound("pause_off"));
 					soundNodeList->Pause(false);
 					pauseMenu->shardMenu->StopMusic();
 					break;
@@ -7772,8 +7268,6 @@ void GameSession::Init()
 
 	topClouds = NULL;
 
-	soundManager = NULL;
-	
 	keyMarker = NULL;
 	
 	specterTree = NULL;
@@ -7798,10 +7292,6 @@ void GameSession::Init()
 	
 	scoreDisplay = NULL;
 	
-	soundNodeList = NULL;
-
-	pauseSoundNodeList = NULL;
-	
 	originalMusic = NULL;
 
 	rain = NULL;//new Rain(this);//NULL;
@@ -7823,11 +7313,7 @@ void GameSession::Init()
 	shipExitScene = NULL;
 	activeDialogue = NULL;
 
-	keyFrame = 0;
-	for (int i = 0; i < EffectLayer::Count; ++i)
-	{
-		effectLists[i] = NULL;
-	}
+	
 
 	/*stormCeilingInfo = new HitboxInfo;
 	stormCeilingInfo->damage = 20;
@@ -7852,8 +7338,6 @@ void GameSession::Init()
 
 	cutPlayerInput = false;
 
-	bigBulletVA = NULL;
-
 	preScreenTex->setSmooth(false);
 	postProcessTex->setSmooth(false);
 	postProcessTex1->setSmooth(false);
@@ -7874,9 +7358,6 @@ void GameSession::Init()
 
 	polyQueryList = NULL;
 	specialPieceList = NULL;
-
-	inactiveEffects = NULL;
-	pauseImmuneEffects = NULL;
 
 	drawInversePoly = true;
 	showDebugDraw = false;
@@ -8381,25 +7862,6 @@ void GameSession::OpenGates(Gate::GateType gType)
 	}
 }
 
-SoundNode *GameSession::ActivateSound( V2d &pos, SoundBuffer *buffer, bool loop )
-{
-	sf::Rect<double> soundRect = screenRect;
-	double soundExtra = 300;//800
-	soundRect.left -= soundExtra;
-	soundRect.width += 2 * soundExtra;
-	soundRect.top -= soundExtra;
-	soundRect.height += 2 * soundExtra;
-
-	if (soundRect.contains(pos))
-	{
-		return soundNodeList->ActivateSound(buffer, loop);
-	}
-	else
-	{
-		return NULL;
-	}
-}
-
 void GameSession::DrawZones()
 {
 	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
@@ -8648,22 +8110,6 @@ void GameSession::DrawReplayGhosts()
 	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
 	{
 		(*it)->Draw(preScreenTex);
-	}
-}
-
-void GameSession::KillAllEnemies()
-{
-	Enemy *curr = activeEnemyList;
-	while( curr != NULL )
-	{
-		Enemy *next = curr->next;
-
-		if( curr->type != EnemyType::EN_GOAL && curr->type != EnemyType::EN_NEXUS )
-		{
-			curr->DirectKill();
-			//curr->health = 0;
-		}
-		curr = next;	
 	}
 }
 
@@ -8924,23 +8370,6 @@ void GameSession::ResetShipSequence()
 	middleClouds.setPosition(playerOrigPos.x - 480, playerOrigPos.y + 270 );
 }
 
-void GameSession::ClearFX()
-{
-	for( int i = 0; i < EffectLayer::Count; ++i )
-	{
-		Enemy *curr = effectLists[i];
-		while( curr != NULL )
-		{
-			Enemy *next = curr->next;
-			assert( curr->type == EnemyType::EN_BASICEFFECT );
-			DeactivateEffect( (BasicEffect*)curr );
-
-			curr = next;
-		}
-		effectLists[i] = NULL;
-	}
-}
-
 
 void GameSession::NextFrameRestartLevel()
 {
@@ -9094,9 +8523,6 @@ void GameSession::RestartLevel()
 	{
 		(*it)->Reset();
 	}
-				
-	pauseImmuneEffects = NULL;
-	cloneInactiveEnemyList = NULL;
 
 	cam.SetManual( false );
 
@@ -10268,19 +9694,10 @@ bool GameSession::IsWithinCurrentBounds(V2d &p)
 	return (IsWithinBounds(p) && IsWithinBarrierBounds(p));
 }
 
-void GameSession::Pause( int frames )
+void GameSession::CollectKey()
 {
-	pauseFrames = frames;
-	for (int i = 0; i < 4; ++i)
-	{
-		Actor *p = players[i];
-		if (p != NULL)
-		{
-			p->ClearPauseBufferedActions();
-		}
-	}
+	keyMarker->CollectKey();
 }
-
 
 void GameSession::FreezePlayerAndEnemies( bool freeze)
 {
@@ -10365,153 +9782,14 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 //	}
 }
 
-void GameSession::AllocateEffect()
-{
-	if( inactiveEffects == NULL )
-	{
-		inactiveEffects = new BasicEffect( this );
-		allEffectList.push_back(inactiveEffects);
-		inactiveEffects->prev = NULL;
-		inactiveEffects->next = NULL;
-	}
-	else
-	{
-		BasicEffect *b = new BasicEffect( this ) ;
-		allEffectList.push_back(b);
-		b->next = inactiveEffects;
-		inactiveEffects->prev = b;
-		inactiveEffects = b;
-	}
-}
-
-BasicEffect * GameSession::ActivateEffect( EffectLayer layer, Tileset *ts, V2d pos, bool pauseImmune, double angle, int frameCount,
-	int animationFactor, bool right, int startFrame, float depth )
-{
-	if( inactiveEffects == NULL )
-	{
-		return NULL;
-	}
-	else
-	{
-		//return NULL;
-
-		BasicEffect *b = inactiveEffects;
-
-		if( inactiveEffects->next == NULL )
-		{
-			inactiveEffects = NULL;
-		}
-		else
-		{
-			inactiveEffects = (BasicEffect*)(inactiveEffects->next);
-			inactiveEffects->prev = NULL;
-		}
-
-		//assert( ts != NULL );
-		b->startFrame = startFrame;
-		b->Init( ts, pos, angle, frameCount, animationFactor, right, depth );
-		b->prev = NULL;
-		b->next = NULL;
-		b->pauseImmune = pauseImmune;
-		b->layer = layer;
-		
-
-		AddEffect( layer, b );
-		//AddEnemy( b );
-		
-		//cout << "activating: " << b << " blah: " << b->prev << endl;
-		return b;
-	}
-}
-
-void GameSession::RemoveEffect( EffectLayer layer, Enemy *e )
-{
-	Enemy *& fxList = effectLists[layer];
-	assert( fxList != NULL );
-	Enemy *prev = e->prev;
-	Enemy *next = e->next;
-
-	if( prev == NULL && next == NULL )
-	{
-		fxList = NULL;
-	}
-	else
-	{
-		if( e == fxList )
-		{
-			assert( next != NULL );
-			
-			next->prev = NULL;
-			
-			fxList = next;
-		}
-		else
-		{
-			if( prev != NULL )
-			{
-				prev->next = next;
-			}
-
-			if( next != NULL )
-			{
-				next->prev = prev;
-			}
-		}
-		
-	}
-}
-
-void GameSession::DeactivateEffect( BasicEffect *b )
-{
-	//cout << "deactivate " << b << endl;
-	RemoveEffect( b->layer, b );
-	//RemoveEnemy( b );
-
-	if( inactiveEffects == NULL )
-	{
-		inactiveEffects = b;
-		b->next = NULL;
-		b->prev = NULL;
-	}
-	else
-	{
-		b->next = inactiveEffects;
-		inactiveEffects->prev = b;
-		inactiveEffects = b;
-	}
-}
-
 void GameSession::ResetEnemies()
 {
 	rResetEnemies( enemyTree->startNode );
 
-	/*Enemy *curr = activeEnemyList;
-	while( curr != NULL )
-	{
-		Enemy *next = curr->next;
-		if( curr->type == Enemy::BASICEFFECT )
-		{
-			DeactivateEffect( (BasicEffect*)curr );
-		}
-		curr = next;
-	}
-	activeEnemyList = NULL;*/
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
-	for( int i = 0; i < EffectLayer::Count; ++i )
-	{
-		Enemy *curr = effectLists[i];
-		while( curr != NULL )
-		{
-			Enemy *next = curr->next;
-			assert( curr->type == EnemyType::EN_BASICEFFECT );
-			DeactivateEffect( (BasicEffect*)curr );
 
-			curr = next;
-		}
-		effectLists[i] = NULL;
-		
-	}
+	ClearEffects();
 }
 
 void GameSession::ResetPlants()
@@ -10691,7 +9969,7 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 	if (!instant)
 	{
 		int soundIndex = SoundType::S_KEY_ENTER_0 + (currentZone->requiredKeys);
-		soundNodeList->ActivateSound(gameSoundBuffers[soundIndex]);
+		ActivateSound(gameSoundBuffers[soundIndex]);
 	}
 }
 

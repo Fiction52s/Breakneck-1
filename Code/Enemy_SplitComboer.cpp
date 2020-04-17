@@ -16,7 +16,7 @@ using namespace sf;
 
 
 SplitPiece::SplitPiece(SplitComboer *splitComb )
-	:Enemy(splitComb->owner, EnemyType::EN_SPLITCOMBOER, false, 1, false)
+	:Enemy( EnemyType::EN_SPLITCOMBOER, false, 1, false)
 {
 	level = splitComb->level;;
 	sc = splitComb;
@@ -138,7 +138,7 @@ void SplitPiece::ProcessState()
 		case S_EXPLODE:
 			numHealth = 0;
 			dead = true;
-			owner->PlayerRemoveActiveComboer(comboObj);
+			sess->PlayerRemoveActiveComboer(comboObj);
 			break;
 		}
 	}
@@ -197,13 +197,13 @@ void SplitPiece::EnemyDraw(sf::RenderTarget *target)
 void SplitPiece::Shoot(V2d dir)
 {
 	velocity = dir * sc->shootSpeed;
-	owner->PlayerAddActiveComboObj(comboObj);
+	sess->PlayerAddActiveComboObj(comboObj);
 }
 
-SplitComboer::SplitComboer(GameSession *owner, Vector2i pos, list<Vector2i> &pathParam,
+SplitComboer::SplitComboer(Vector2i pos, list<Vector2i> &pathParam,
 	bool p_loop,
 	int p_level)
-	:Enemy(owner, EnemyType::EN_SPLITCOMBOER, false, 1, false)
+	:Enemy(EnemyType::EN_SPLITCOMBOER, false, 1, false)
 {
 	level = p_level;
 
@@ -252,7 +252,7 @@ SplitComboer::SplitComboer(GameSession *owner, Vector2i pos, list<Vector2i> &pat
 	frame = 0;
 
 	//ts = owner->GetTileset( "SplitComboer.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -333,7 +333,7 @@ void SplitComboer::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 		action = S_SPLIT;
 		frame = 0;
@@ -364,8 +364,8 @@ void SplitComboer::ProcessHit()
 		RotateCW(dir0, PI / 5);
 		RotateCCW(dir1, PI / 5);
 
-		owner->AddEnemy(pieces[0]);
-		owner->AddEnemy(pieces[1]);
+		sess->AddEnemy(pieces[0]);
+		sess->AddEnemy(pieces[1]);
 
 		pieces[0]->Shoot(dir0);
 		pieces[1]->Shoot(dir1);

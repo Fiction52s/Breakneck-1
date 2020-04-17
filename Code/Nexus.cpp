@@ -11,25 +11,26 @@ using namespace std;
 using namespace sf;
 
 
-Nexus::Nexus(GameSession *owner, Edge *g, double q)
-	:Enemy(owner, EnemyType::EN_NEXUS, false, 0, false),
+Nexus::Nexus(Edge *g, double q)
+	:Enemy(EnemyType::EN_NEXUS, false, 0, false),
 	ground(g), edgeQuantity(q), dead(false)
 {
 	double width;
 	double height;
-	int world = owner->mapHeader->envWorldType;
+
+	int world = sess->mapHeader->envWorldType;
 	switch (world)
 	{
 	case 0:
 		width = 288;
 		height = 320;
-		ts_nexusOpen = owner->GetTileset("Nexus/nexus_open_1296x904.png", 1296, 904);
-		ts_nexusDestroyed = owner->GetTileset("Nexus/nexus_destroyed_1296x904.png", 1296, 904);
-		ts_mini = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
-		ts_explosion = owner->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
-		ts_explosion1 = owner->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
-		ts_node1 = owner->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
-		ts_node2 = owner->GetTileset("Goal/nexus_node_2_512x512.png", 512, 512);
+		ts_nexusOpen = sess->GetTileset("Nexus/nexus_open_1296x904.png", 1296, 904);
+		ts_nexusDestroyed = sess->GetTileset("Nexus/nexus_destroyed_1296x904.png", 1296, 904);
+		ts_mini = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+		ts_explosion = sess->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
+		ts_explosion1 = sess->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
+		ts_node1 = sess->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
+		ts_node2 = sess->GetTileset("Goal/nexus_node_2_512x512.png", 512, 512);
 		explosionLength = 24;
 		explosionAnimFactor = 3;
 		explosionYOffset = 80;
@@ -39,10 +40,10 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 	default:
 		width = 288;
 		height = 256;
-		ts_mini = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
-		ts_node1 = owner->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
-		ts_node2 = owner->GetTileset("Goal/nexus_node_2_512x512.png", 512, 512);
-		ts_explosion = owner->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
+		ts_mini = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+		ts_node1 = sess->GetTileset("Goal/nexus_node_1_512x512.png", 512, 512);
+		ts_node2 = sess->GetTileset("Goal/nexus_node_2_512x512.png", 512, 512);
+		ts_explosion = sess->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
 		ts_explosion1 = NULL;
 		explosionLength = 15;
 		explosionAnimFactor = 2;
@@ -61,7 +62,7 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 	miniSprite.setTextureRect(ts_mini->GetSubRect(2));
 	miniSprite.setScale(16, 16);
 
-	switch (owner->mapHeader->envWorldType)
+	switch (world)
 	{
 	case 0:
 		miniSprite.setTextureRect(ts_mini->GetSubRect(5));
@@ -143,7 +144,16 @@ Nexus::Nexus(GameSession *owner, Edge *g, double q)
 	//health = 1;
 	//numHealth = 1;
 
-	insideSeq = new NexusCore1Seq(owner);
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		insideSeq = new NexusCore1Seq(game);
+	}
+	else
+	{
+		insideSeq = NULL;
+	}
+	
 
 	action = A_SITTING;
 }
@@ -157,7 +167,6 @@ Nexus::~Nexus()
 void Nexus::ConfirmKill()
 {
 	dead = true;
-	//owner->absorbParticles->Activate(owner->GetPlayer(0), 64, position);
 	HandleNoHealth();
 }
 
@@ -186,39 +195,9 @@ void Nexus::ProcessState()
 	{
 		if (frame == 1)
 		{
-			owner->cam.manual = true;
-			owner->cam.Ease(Vector2f(position), 1, 60, CubicBezier());
+			sess->cam.manual = true;
+			sess->cam.Ease(Vector2f(position), 1, 60, CubicBezier());
 		}
-
-		//if (frame == 1)
-		//{
-		//	//owner->cam.manual = true;
-		//	NexusKillStartZoom = owner->cam.zoomFactor;
-		//	NexusKillStartPos = owner->cam.pos;
-		//	//
-		//}
-		//if (frame <= 31 && frame > 1)
-		//{
-		//	CubicBezier bez(0, 0, 1, 1);
-		//	float z = bez.GetValue((double)(frame - 1) / 30);
-
-		//	Vector2f po = NexusKillStartPos * (1.f - z) + Vector2f(owner->NexusNodePos.x,
-		//		owner->NexusNodePos.y) * z;
-
-		//	CubicBezier bez1(0, 0, 1, 1);
-		//	float z1 = bez1.GetValue((double)(frame - 1) / 30);
-
-		//	float zoom = NexusKillStartZoom * (1.f - z) + 1.f * z;
-
-		//	owner->cam.manual = true;
-		//	
-		//	//owner->cam.manual = true;
-		//	//owner->cam.Set(po, zoom, 0);
-		//	///Vector2f trueSpot = dropSpot + extra0;
-		//	//owner->cam.Set( ( //trueSpot * 1.f/60.f + owner->cam.pos * 59.f/60.f ),
-		//	//	1, 0 );
-
-		//}
 		if (frame == 46 * 2)
 		{
 			action = A_EXPLODING;
@@ -243,13 +222,11 @@ V2d Nexus::GetKillPos()
 
 void Nexus::HandleNoHealth()
 {
-	owner->KillAllEnemies();
+	sess->KillAllEnemies();
 	frame = 0;
-	owner->PlayerHitNexus(0);
+	sess->PlayerHitNexus(0);
 	SetHurtboxes(NULL, 0);
 	action = A_KINKILLING;
-
-	//owner->NexusPulse->show = true;
 }
 
 void Nexus::EnemyDraw(sf::RenderTarget *target)

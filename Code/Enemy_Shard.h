@@ -10,7 +10,7 @@
 
 struct EffectPool;
 struct TilesetManager;
-struct GameSesssion;
+struct GameSession;
 
 struct ShardPopup
 {
@@ -80,7 +80,7 @@ struct Shard : Enemy
 
 	Action action;
 	//MovementSequence testSeq;
-	Shard(GameSession *owner, sf::Vector2i pos, 
+	Shard(sf::Vector2i pos, 
 		int w, int li);
 	~Shard();
 	void ProcessState();
@@ -108,6 +108,7 @@ struct Shard : Enemy
 	bool caught;
 	int totalFrame;
 
+	GameSession *game;
 	int world;
 	int localIndex;
 

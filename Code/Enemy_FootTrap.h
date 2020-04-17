@@ -14,7 +14,7 @@ struct FootTrap : Enemy
 	Action action;
 	int actionLength[CHOMPING + 1];
 
-	FootTrap(GameSession *owner, bool hasMonitor,
+	FootTrap(bool hasMonitor,
 		Edge *ground, double quantity);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

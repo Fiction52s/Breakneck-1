@@ -42,10 +42,23 @@ void Shard::SetupShardMaps()
 	}
 }
 
-Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
-	:Enemy( p_owner, EnemyType::EN_SHARD, false, w+1 )
+Shard::Shard(Vector2i pos, int w, int li )
+	:Enemy( EnemyType::EN_SHARD, false, w+1 )
 {
-	owner->TryCreateShardResources();
+	if (sess->IsSessTypeGame())
+	{
+		game = GameSession::GetSession();
+	}
+	else
+	{
+		game = NULL;
+	}
+
+	if (game != NULL)
+	{
+		game->TryCreateShardResources();
+	}
+	
 	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
 	testEmitter->CreateParticles();
 	testEmitter->SetPos(Vector2f(pos));
@@ -73,9 +86,9 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	
 	frame = 0;
 
-	ts_sparkle = owner->GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
+	ts_sparkle = sess->GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
 
-	ts_explodeCreate = owner->GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
+	ts_explodeCreate = sess->GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
 
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;
@@ -84,7 +97,7 @@ Shard::Shard( GameSession *p_owner, Vector2i pos, int w, int li )
 	{
 	case 0://ShardType::SHARD_W1_TEACH_JUMP:
 	default:
-		ts = owner->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
+		ts = sess->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
 		sprite.setTexture(*ts->texture);
 		sprite.setTextureRect(ts->GetSubRect(localIndex));
 		break;
@@ -214,35 +227,44 @@ void Shard::DissipateOnTouch()
 	action = DISSIPATE;
 	frame = 0;
 
-	owner->ActivateEffect(EffectLayer::IN_FRONT,
+	sess->ActivateEffect(EffectLayer::IN_FRONT,
 		ts_explodeCreate, position, true, 0, 12, 3, true);
 
 	SetHitboxes(NULL, 0);
 	SetHurtboxes(NULL, 0);
 
-	GetShardSequence *gss = (GetShardSequence*)owner->getShardSeq;
-	gss->shard = this;
-	owner->getShardSeq->Reset();
-	owner->SetActiveSequence(owner->getShardSeq);
-
-	owner->GetPlayer(0)->SetAction(Actor::GETSHARD);
-	owner->GetPlayer(0)->frame = 0;
-	owner->GetPlayer(0)->velocity = V2d(0, 0);
+	if (game != NULL)
+	{
+		GetShardSequence *gss = (GetShardSequence*)game->getShardSeq;
+		gss->shard = this;
+		game->getShardSeq->Reset();
+		game->SetActiveSequence(game->getShardSeq);
+	}
+	
+	Actor *player = sess->GetPlayer(0);
+	player->SetAction(Actor::GETSHARD);
+	player->frame = 0;
+	player->velocity = V2d(0, 0);
 	//Capture();
 }
 
 void Shard::Capture()
 {
 	//owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
-	owner->shardsCapturedField->SetBit(shardType, true);
-	if (owner->saveFile != NULL)
-	{
-		assert(!owner->saveFile->shardField.GetBit(shardType));
 
-		//both give you the shard and mark it as a new shard
-		owner->saveFile->shardField.SetBit(shardType, true);
-		owner->saveFile->newShardField.SetBit(shardType, true);
-		owner->saveFile->Save();
+	if (game != NULL)
+	{
+		game->shardsCapturedField->SetBit(shardType, true);
+		if (game->saveFile != NULL)
+		{
+			assert(!game->saveFile->shardField.GetBit(shardType));
+
+			//both give you the shard and mark it as a new shard
+			game->saveFile->shardField.SetBit(shardType, true);
+			game->saveFile->newShardField.SetBit(shardType, true);
+			game->saveFile->Save();
+		}
+
 	}
 
 	

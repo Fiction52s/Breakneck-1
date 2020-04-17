@@ -25,28 +25,42 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
-	:Enemy(owner, EnemyType::EN_CRAWLERQUEEN, false, 1, false), clockwise(cw)
+CrawlerQueen::CrawlerQueen(Edge *g, double q, bool cw )
+	:Enemy(EnemyType::EN_CRAWLERQUEEN, false, 1, false), clockwise(cw)
 {
-	ts_decideMarker = owner->GetTileset("Bosses/Crawler/crawler_queen_marker_64x64.png", 64, 64);
+	if (sess->IsSessTypeGame())
+	{
+		game = GameSession::GetSession();
+	}
+	else
+	{
+		game = NULL;
+	}
+
+	ts_decideMarker = sess->GetTileset("Bosses/Crawler/crawler_queen_marker_64x64.png", 64, 64);
 
 	decideVA = new Vertex[MAX_DECISIONS * 4 * 3];
 	//ClearDecisionMarkers();
 
 	//memset(decideVA, 0, MAX_DECISIONS * 4);
 	
-	AfterCrawlerFightSeq *acfseq = new AfterCrawlerFightSeq(owner);
-	acfseq->Init();
-	seq = acfseq;
-	
-	//seq = new CrawlerDefeatedSeq(owner);
+	if (game != NULL)
+	{
+		AfterCrawlerFightSeq *acfseq = new AfterCrawlerFightSeq(game);
+		acfseq->Init();
+		seq = acfseq;
+	}
+	else
+	{
+		seq = NULL;
+	}
 
 	progressionLevel = 0;
 	
 	highResPhysics = true;
 	redecide = false;
 	origCW = cw;
-	mover = new SurfaceMover(owner, g, q, 80);
+	mover = new SurfaceMover(g, q, 80);
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
 	
@@ -103,16 +117,16 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	double width = 320;
 	double height = 320;
 
-	ts[WAIT] = owner->GetTileset("Bosses/Crawler/crawler_queen_stand_320x320.png", 320, 320);
-	ts[DECIDE] = owner->GetTileset("Bosses/Crawler/crawler_queen_stand_320x320.png", 320, 320);
-	ts[BOOST] = owner->GetTileset("Bosses/Crawler/crawler_queen_dash_320x320.png", 320, 320);
-	ts[TURNAROUNDBOOST] = owner->GetTileset("Bosses/Crawler/crawler_queen_dash_320x320.png", 320, 320);
-	ts[STOPBOOST] = owner->GetTileset("Bosses/Crawler/crawler_queen_dash_320x320.png", 320, 320);
-	ts[JUMP] = owner->GetTileset("Bosses/Crawler/crawler_queen_jump_320x320.png", 320, 320);
-	ts[BURROW] = owner->GetTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png", 320, 320);
+	ts[WAIT] = sess->GetTileset("Bosses/Crawler/crawler_queen_stand_320x320.png", 320, 320);
+	ts[DECIDE] = sess->GetTileset("Bosses/Crawler/crawler_queen_stand_320x320.png", 320, 320);
+	ts[BOOST] = sess->GetTileset("Bosses/Crawler/crawler_queen_dash_320x320.png", 320, 320);
+	ts[TURNAROUNDBOOST] = sess->GetTileset("Bosses/Crawler/crawler_queen_dash_320x320.png", 320, 320);
+	ts[STOPBOOST] = sess->GetTileset("Bosses/Crawler/crawler_queen_dash_320x320.png", 320, 320);
+	ts[JUMP] = sess->GetTileset("Bosses/Crawler/crawler_queen_jump_320x320.png", 320, 320);
+	ts[BURROW] = sess->GetTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png", 320, 320);
 	ts[RUMBLE] = NULL;//owner->GetTileset("Bosses/crawler_queen_dash_320x320.png", 320, 320);
-	ts[POPOUT] = owner->GetTileset("Bosses/Crawler/crawler_queen_slash_320x320.png", 320, 320);
-	ts[UNBURROW] = owner->GetTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png", 320, 320);
+	ts[POPOUT] = sess->GetTileset("Bosses/Crawler/crawler_queen_slash_320x320.png", 320, 320);
+	ts[UNBURROW] = sess->GetTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png", 320, 320);
 	ts[INITIALUNBURROW] = ts[UNBURROW];
 	ts[INITIALIDLE] = ts[UNBURROW];
 	ts[SEQ_ANGRY0] = ts[UNBURROW];
@@ -182,7 +196,7 @@ CrawlerQueen::CrawlerQueen(GameSession *owner, Edge *g, double q, bool cw )
 	
 	for (int i = 0; i < 100; ++i)
 	{
-		FloatingBomb *fb = new FloatingBomb(owner, bombPool, i );
+		FloatingBomb *fb = new FloatingBomb(bombPool, i );
 		bombPool->AddToInactiveList(fb);
 	}
 
@@ -558,7 +572,7 @@ void CrawlerQueen::ProcessState()
 			FloatingBomb *fb = (FloatingBomb*)bombPool->ActivatePoolMember();
 			assert(fb != NULL);
 			fb->Init(mover->ground->GetPoint(mover->edgeQuantity), mover->ground->Normal() * bombSpeed);
-			owner->AddEnemy(fb);
+			sess->AddEnemy(fb);
 			cout << "spawning bomb: " << fb << ": " << fb->position.x << ", " << fb->position.y << endl;
 		}
 		break;
@@ -687,7 +701,7 @@ void CrawlerQueen::EnemyDraw(sf::RenderTarget *target)
 	}
 		
 
-	if (owner->pauseFrames < 2 || receivedHit == NULL)
+	if (sess->GetPauseFrames() < 2 || receivedHit == NULL)
 	{
 		target->draw(sprite);
 	}
@@ -716,7 +730,7 @@ void CrawlerQueen::DeactivateAllBombs()
 	{
 		FloatingBomb *fbNext = (FloatingBomb*)fb->pmnext;
 		fb->Reset();
-		owner->RemoveEnemy(fb);
+		sess->RemoveEnemy(fb);
 		fb = fbNext;
 	}
 
@@ -960,7 +974,7 @@ bool CrawlerQueen::PlayerInFront()
 	{
 		dir = normalize(mover->ground->v0 - mover->ground->v1);
 	}
-	double alongDist = dot(owner->GetPlayer(0)->position - mover->physBody.globalPosition, dir);
+	double alongDist = dot(sess->GetPlayer(0)->position - mover->physBody.globalPosition, dir);
 	if (alongDist > -60)
 		return true;
 	else
@@ -1012,17 +1026,16 @@ void CrawlerQueen::SetDecisions()
 }
 void CrawlerQueen::ConfirmKill()
 {
-	
 	action = HURT;
 	frame = 0;
-	owner->SoftenGates(Gate::CRAWLER_UNLOCK);
 
+	if (game != NULL)
+	{
+		game->SoftenGates(Gate::CRAWLER_UNLOCK);
+		game->SetActiveSequence(seq);
+	}
+	
 	mover->groundSpeed = 0;
-
-	//Actor *p = owner->GetPlayer(0);
-
-	//needs setup later to tell it to go to sequence mode
-	owner->SetActiveSequence(seq);
 
 	dead = true;
 
@@ -1257,7 +1270,7 @@ bool CrawlerQueen::GetClockwise(int index)
 void CrawlerQueen::Init()
 {
 	
-	if (owner->mapHeader->bossFightType == 1)
+	if (sess->mapHeader->bossFightType == 1)
 	{
 		//PoiInfo *pi = owner->poiMap["crawlercam"];
 		//assert(pi != NULL);
@@ -1273,18 +1286,18 @@ void CrawlerQueen::Setup()
 	ResetEnemy();
 }
 
-FloatingBomb::FloatingBomb(GameSession *owner, ObjectPool *p_myPool, int index )
-	:Enemy( owner, EnemyType::EN_FLOATINGBOMB, false, 1, false ),
+FloatingBomb::FloatingBomb(ObjectPool *p_myPool, int index )
+	:Enemy( EnemyType::EN_FLOATINGBOMB, false, 1, false ),
 	PoolMember( index ), myPool( p_myPool )
 {
 	//preload
-	owner->GetTileset("Enemies/bombexplode_512x512.png", 512, 512);
+	sess->GetTileset("Enemies/bombexplode_512x512.png", 512, 512);
 
-	mover = new SurfaceMover(owner, NULL, 0, 32);
+	mover = new SurfaceMover(NULL, 0, 32);
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
 
-	ts = owner->GetTileset("Enemies/bomb_128x160.png", 128, 160);
+	ts = sess->GetTileset("Enemies/bomb_128x160.png", 128, 160);
 	sprite.setTexture(*ts->texture);
 
 	action = FLOATING;
@@ -1358,8 +1371,8 @@ void FloatingBomb::ProcessState()
 		case EXPLODING:
 			numHealth = 0;
 			dead = true;
-			owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, 
-				owner->GetTileset("Enemies/bombexplode_512x512.png", 512, 512), 
+			sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+				sess->GetTileset("Enemies/bombexplode_512x512.png", 512, 512),
 				position, false, 0, 10, 3, true);
 			//cout << "deactivating " << this << " . currently : " << myPool->numActiveMembers << endl;
 			//myPool->DeactivatePoolMember(this);

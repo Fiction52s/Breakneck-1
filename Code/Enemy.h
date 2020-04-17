@@ -20,18 +20,29 @@ struct Session;
 
 struct EnemyParams
 {
-	EnemyParams(int p_worldIndex,
-		int p_flashFrames, double p_speedBar,
-		int p_charge, int p_maxHealth)
-		:worldIndex(p_worldIndex),
-		flashFrames(p_flashFrames),
-		speedBar(p_speedBar),
-		charge(p_charge),
-		maxHealth( p_maxHealth )
+	EnemyParams()
 	{
-
+		canBeHit = false;
+		worldIndex = 0;
+		flashFrames = 0;
+		speedBar = 0;
+		charge = 0;
+		maxHealth = 0;
 	}
 
+	void Set(int p_worldIndex,
+		int p_flashFrames, double p_speedBar,
+		int p_charge, int p_maxHealth)
+	{
+		canBeHit = true;
+		worldIndex = p_worldIndex;
+		flashFrames = p_flashFrames;
+		speedBar = p_speedBar;
+		charge = p_charge;
+		maxHealth = p_maxHealth;
+	}
+
+	bool canBeHit;
 	int worldIndex;
 	int flashFrames;
 	double speedBar;
@@ -43,11 +54,18 @@ struct EnemyParams
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
-	Enemy(GameSession *owner, EnemyType t,
+
+	//new vars
+	EnemyParams hitParams;
+	Session *sess;
+	bool SetHitParams();
+
+	//------------
+
+	Enemy(EnemyType t,
 		bool hasMonitor, int world, bool cuttable = true);
 	virtual ~Enemy();
-
-	Session *sess;
+	
 
 	static bool ReadBool(std::ifstream &is,
 		bool &b);
@@ -180,7 +198,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	double numPhysSteps;
 	Enemy *prev;
 	Enemy *next;
-	GameSession *owner;
 	bool spawned;
 	sf::Color auraColor;
 	sf::Rect<double> spawnRect;
@@ -215,14 +232,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 struct PathFollower
 {
 
-};
-
-struct EnemyParamsManager
-{
-	EnemyParamsManager();
-	~EnemyParamsManager();
-	EnemyParams *GetHitParams(EnemyType et);
-	EnemyParams *params[EN_Count];
 };
 
 #endif

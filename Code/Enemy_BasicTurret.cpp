@@ -20,8 +20,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
-		:Enemy( owner, EnemyType::EN_BASICTURRET, p_hasMonitor, 1 ), firingCounter( 0 ), ground( g ),
+BasicTurret::BasicTurret(bool p_hasMonitor, Edge *g, double q, int p_level )
+		:Enemy( EnemyType::EN_BASICTURRET, p_hasMonitor, 1 ), firingCounter( 0 ), ground( g ),
 		edgeQuantity( q )
 {
 	level = p_level;
@@ -49,10 +49,10 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	double width = 208;
 	double height = 176;
 
-	fireSound = owner->soundManager->GetSound("Enemies/turret_shoot");
+	fireSound = sess->GetSound("Enemies/turret_shoot");
 
-	ts = owner->GetTileset("Enemies/turret_208x176.png", width, height);//"basicturret_128x80.png", width, height );
-	ts_aura = owner->GetTileset("Enemies/turret_aura_208x176.png", width, height);
+	ts = sess->GetTileset("Enemies/turret_208x176.png", width, height);//"basicturret_128x80.png", width, height );
+	ts_aura = sess->GetTileset("Enemies/turret_aura_208x176.png", width, height);
 
 	width *= scale;
 	height *= scale;
@@ -85,7 +85,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	
 	//sprite.setPosition( gPoint.x, gPoint.y );
 	
-	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode1_64x64.png", 64, 64 );
+	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode1_64x64.png", 64, 64 );
 
 	
 	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2 );
@@ -118,7 +118,7 @@ BasicTurret::BasicTurret( GameSession *owner, bool p_hasMonitor, Edge *g, double
 	V2d launchPos = gPoint + ground->Normal() * 20.0 * (double)scale;
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos + ground->Normal() * 60.0, gn, 0, 300 );
+	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, 16, 1, launchPos + ground->Normal() * 60.0, gn, 0, 300 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->hitboxInfo->damage = 18;
 
@@ -168,7 +168,7 @@ void BasicTurret::BulletHitTerrain( BasicBullet *b,
 	V2d norm = edge->Normal();
 	double angle = atan2( norm.y, -norm.x );
 
-	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, -angle, 6, 2, true );
+	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
 
 	if( b->launcher->def_e == NULL )
@@ -182,18 +182,19 @@ void BasicTurret::BulletHitPlayer( BasicBullet *b )
 	//cout << "hit player??" << endl;
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
-	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->PlayerApplyHit( b->launcher->hitboxInfo );
+	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+	sess->PlayerApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 }
 
 void BasicTurret::ProcessState()
 {
+	V2d playerPos = sess->GetPlayerPos(0);
 	switch (action)
 	{
 		case WAIT:
 		{
-			if (length(owner->GetPlayer(0)->position - position) < 700)
+			if (length(playerPos - position) < 700)
 			{
 				action = ATTACK;
 				frame = 0;
@@ -205,7 +206,7 @@ void BasicTurret::ProcessState()
 			if (frame == 11 * animationFactor)
 			{
 				frame = 0;
-				if (length(owner->GetPlayer(0)->position - position) >= 700)
+				if (length(playerPos - position) >= 700)
 				{
 					action = WAIT;
 					frame = 0;
@@ -214,7 +215,7 @@ void BasicTurret::ProcessState()
 			else if (frame == 3 * animationFactor && slowCounter == 1)
 			{
 				launchers[0]->Fire();
-				owner->ActivateSound( position, fireSound);
+				sess->ActivateSoundAtPos( position, fireSound);
 				//launchers[1]->Fire();
 				//launchers[2]->Fire();
 			}
@@ -227,7 +228,7 @@ void BasicTurret::UpdatePreLauncherPhysics()
 {
 	for (int i = 0; i < 1; ++i)
 	{
-		if (!prelimBox[i].Intersects(owner->players[0]->hurtBody))
+		if (!prelimBox[i].Intersects(sess->GetPlayer(i)->hurtBody))
 		{
 			launchers[i]->skipPlayerCollideForSubstep = true;
 		}
@@ -242,8 +243,6 @@ void BasicTurret::DebugDraw(sf::RenderTarget *target)
 	{
 		prelimBox[i].DebugDraw(target);
 	}
-	//
-	//prelimBody->DebugDraw( 0, target);
 }
 
 void BasicTurret::DirectKill()
@@ -255,7 +254,7 @@ void BasicTurret::DirectKill()
 		{
 			BasicBullet *next = b->next;
 			double angle = atan2(b->velocity.y, -b->velocity.x);
-			owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
 			b->launcher->DeactivateBullet(b);
 
 			b = next;

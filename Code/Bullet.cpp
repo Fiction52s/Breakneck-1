@@ -24,7 +24,6 @@ using namespace sf;
 //}
 
 Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
-	GameSession *p_owner,
 	int numTotalBullets,
 	int bulletsPerShot,
 	sf::Vector2<double> p_position,
@@ -36,9 +35,12 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	double p_amplitude)
 	:totalBullets(numTotalBullets), perShot(bulletsPerShot),
 	facingDir(direction), angleSpread(p_angleSpread),
-	position(p_position), owner(p_owner), handler(p_handler),
+	position(p_position), handler(p_handler),
 	def_e(NULL)
 {
+
+	sess = Session::GetSession();
+
 	skipPlayerCollideForSubstep = false;
 	bulletType = p_bulletType;
 	maxBulletSpeed = 100;
@@ -49,7 +51,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	amplitude = p_amplitude;
 	//increment the global counter
 	//+= numTotalBullets;
-	int startIndex = owner->totalNumberBullets;
+	int startIndex = sess->totalNumberBullets;
 
 	activeBullets = NULL;
 
@@ -134,7 +136,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		inactiveBullets = temp;
 	}
 
-	owner->totalNumberBullets = startIndex;
+	sess->totalNumberBullets = startIndex;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -153,7 +155,6 @@ void Launcher::DebugDraw(sf::RenderTarget *target)
 		curr->DebugDraw(target);
 		curr = curr->next;
 	}
-	//target->draw( )
 }
 
 double Launcher::GetRadius(BasicBullet::BType bt)
@@ -184,9 +185,11 @@ Vector2f Launcher::GetOffset(BasicBullet::BType bt)
 
 }
 
-Launcher::Launcher(LauncherEnemy *handler, GameSession *owner,
+Launcher::Launcher(LauncherEnemy *handler,
 	int p_maxFramesToLive)
 {
+	sess = Session::GetSession();
+
 	maxBulletSpeed = 100;
 	skipPlayerCollideForSubstep = false;
 }
@@ -529,13 +532,13 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	slowCounter = 1;
 	bounceCount = 0;
 
-	VertexArray &bva = *(launcher->owner->bigBulletVA);
+	VertexArray &bva = *(launcher->sess->bigBulletVA);
 	bva[index * 4 + 0].position = Vector2f(0, 0);
 	bva[index * 4 + 1].position = Vector2f(0, 0);
 	bva[index * 4 + 2].position = Vector2f(0, 0);
 	bva[index * 4 + 3].position = Vector2f(0, 0);
 
-	double len = length(pos - launcher->owner->GetPlayerPos(0));
+	double len = length(pos - launcher->sess->GetPlayerPos(0));
 	if (len > MAX_VELOCITY * 2)
 	{
 		numPhysSteps = NUM_STEPS;
@@ -543,7 +546,7 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	else
 	{
 		numPhysSteps = NUM_MAX_STEPS;
-		launcher->owner->GetPlayer(0)->highAccuracyHitboxes = true;
+		launcher->sess->GetPlayer(0)->highAccuracyHitboxes = true;
 	}
 	//transform.
 }
@@ -600,7 +603,7 @@ void BasicBullet::DebugDraw(sf::RenderTarget *target)
 void BasicBullet::ResetSprite()
 {
 	frame = 0;
-	VertexArray &bva = *(launcher->owner->bigBulletVA);
+	VertexArray &bva = *(launcher->sess->bigBulletVA);
 	bva[index * 4 + 0].position = Vector2f(0, 0);
 	bva[index * 4 + 1].position = Vector2f(0, 0);
 	bva[index * 4 + 2].position = Vector2f(0, 0);
@@ -609,7 +612,7 @@ void BasicBullet::ResetSprite()
 
 bool BasicBullet::PlayerSlowingMe()
 {
-	Actor *player = launcher->owner->GetPlayer(0);
+	Actor *player = launcher->sess->GetPlayer(0);
 	for (int i = 0; i < player->maxBubbles; ++i)
 	{
 		if (player->bubbleFramesToLive[i] > 0)
@@ -640,7 +643,7 @@ void BasicBullet::UpdatePrePhysics()
 	}
 
 	velocity += gravity / (double)slowMultiple;
-	V2d playerPos = launcher->owner->GetPlayerPos(0);
+	V2d playerPos = launcher->sess->GetPlayerPos(0);
 
 	if (launcher->handler != NULL)
 	{
@@ -678,7 +681,7 @@ void BasicBullet::UpdatePrePhysics()
 	else
 	{
 		numPhysSteps = NUM_MAX_STEPS;
-		launcher->owner->GetPlayer(0)->highAccuracyHitboxes = true;
+		launcher->sess->GetPlayer(0)->highAccuracyHitboxes = true;
 	}
 }
 
@@ -767,7 +770,7 @@ void BasicBullet::UpdatePhysics()
 
 		if (!launcher->skipPlayerCollideForSubstep)
 		{
-			Actor *player = launcher->owner->GetPlayer(0);
+			Actor *player = launcher->sess->GetPlayer(0);
 			if (player->hurtBody.Intersects(hitBody) && player->invincibleFrames == 0)
 			{
 				//cout << "hit??" << endl;
@@ -844,7 +847,7 @@ bool BasicBullet::ResolvePhysics(V2d vel)
 
 
 
-		launcher->owner->terrainTree->Query(this, r);
+		launcher->sess->terrainTree->Query(this, r);
 	}
 	else
 	{
@@ -859,7 +862,7 @@ void BasicBullet::HandleEntrant(QuadTreeEntrant *qte)
 {
 	Edge *e = (Edge*)qte;
 
-	Contact *c = launcher->owner->coll.collideEdge(position + tempVel, physBody, e, tempVel, V2d(0, 0));
+	Contact *c = launcher->sess->collider.collideEdge(position + tempVel, physBody, e, tempVel, V2d(0, 0));
 
 	if (c != NULL)
 	{
@@ -878,7 +881,7 @@ void BasicBullet::HandleEntrant(QuadTreeEntrant *qte)
 
 void BasicBullet::UpdateSprite()
 {
-	VertexArray &VA = *(launcher->owner->bigBulletVA);
+	VertexArray &VA = *(launcher->sess->bigBulletVA);
 	//IntRect ir = ts->GetSubRect( (maxFramesToLive - framesToLive) % 5 );
 	Vector2f dims(32, 32);
 
@@ -945,7 +948,7 @@ void BasicBullet::UpdateSprite()
 
 	int ind = 6 * launcher->bulletTilesetIndex + ((frame / animFactor) % 6);
 	//cout << "index: " << ind << ", frame: " << frame << endl;
-	IntRect sub = launcher->owner->ts_basicBullets->GetSubRect(ind);
+	IntRect sub = launcher->sess->ts_basicBullets->GetSubRect(ind);
 	/*VA[index*4+0].color = Color::Red;
 	VA[index*4+1].color = Color::Red;
 	VA[index*4+2].color = Color::Red;
@@ -1043,7 +1046,7 @@ void SinBullet::UpdatePhysics()
 		hitBody.globalPosition = position;
 		hurtBody.globalPosition = position;
 
-		Actor *player = launcher->owner->GetPlayer(0);
+		Actor *player = launcher->sess->GetPlayer(0);
 		if (player->hurtBody.Intersects(hitBody))
 		{
 			HitPlayer();

@@ -55,8 +55,7 @@ struct SplitComboer : Enemy
 		S_Count
 	};
 
-	SplitComboer(GameSession *owner,
-		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop,
+	SplitComboer(sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop,
 		int p_level);
 	~SplitComboer();
 

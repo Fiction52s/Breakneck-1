@@ -17,8 +17,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level)
-	:Enemy(owner, EnemyType::EN_SHROOM, p_hasMonitor, 1), ground(g), edgeQuantity(q)
+Shroom::Shroom(bool p_hasMonitor, Edge *g, double q, int p_level)
+	:Enemy(EnemyType::EN_SHROOM, p_hasMonitor, 1), ground(g), edgeQuantity(q)
 {
 	level = p_level;
 
@@ -40,8 +40,8 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_l
 	action = LATENT;
 
 	double height = 192;
-	ts = owner->GetTileset("Enemies/shroom_192x192.png", 192, 192);
-	ts_aura = owner->GetTileset("Enemies/shroom_aura_192x192.png", 192, 192);
+	ts = sess->GetTileset("Enemies/shroom_192x192.png", 192, 192);
+	ts_aura = sess->GetTileset("Enemies/shroom_aura_192x192.png", 192, 192);
 	sprite.setTexture(*ts->texture);
 	auraSprite.setTexture(*ts_aura->texture);
 
@@ -49,7 +49,7 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_l
 
 	receivedHit = NULL;
 
-	hitSound = owner->soundManager->GetSound("Enemies/shroom_spark");
+	hitSound = sess->GetSound("Enemies/shroom_spark");
 
 	gn = g->Normal();
 	angle = atan2(gn.x, -gn.y);
@@ -79,7 +79,7 @@ Shroom::Shroom(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_l
 
 	frame = 0;
 
-	jelly = new ShroomJelly(owner, position, level);
+	jelly = new ShroomJelly( position, level);
 	jelly->Reset();
 
 	spawnRect = sf::Rect<double>(gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2);
@@ -139,7 +139,7 @@ void Shroom::ProcessState()
 		}
 	}
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	switch (action)
 	{
@@ -147,7 +147,7 @@ void Shroom::ProcessState()
 		if (length(playerPos - position) < 60)
 		{
 			action = HITTING;
-			owner->ActivateSound( position, hitSound);
+			sess->ActivateSoundAtPos( position, hitSound);
 			frame = 0;
 		}
 		break;
@@ -190,19 +190,19 @@ void Shroom::UpdateSprite()
 
 	SyncSpriteInfo(auraSprite, sprite);
 
-	if (hasMonitor && !suppressMonitor)
+	/*if (hasMonitor && !suppressMonitor)
 	{
 		keySprite->setTextureRect(ts_key->GetSubRect(owner->keyFrame / 5));
 		keySprite->setOrigin(keySprite->getLocalBounds().width / 2,
 			keySprite->getLocalBounds().height / 2);
 		keySprite->setPosition(position.x, position.y);
-	}
+	}*/
 }
 
 void Shroom::HandleNoHealth()
 {
 	if( jellySpawnable )
-		owner->AddEnemy(jelly);
+		sess->AddEnemy(jelly);
 }
 
 void Shroom::CheckedMiniDraw(sf::RenderTarget *target,
@@ -218,8 +218,8 @@ void Shroom::SetZoneSpritePosition()
 	Enemy::SetZoneSpritePosition();
 }
 
-ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos, int p_level )
-	:Enemy(owner, EnemyType::EN_SHROOMJELLY, 0, 1, false )
+ShroomJelly::ShroomJelly(V2d &pos, int p_level )
+	:Enemy(EnemyType::EN_SHROOMJELLY, 0, 1, false )
 {
 	level = p_level;
 
@@ -245,14 +245,14 @@ ShroomJelly::ShroomJelly(GameSession *owner, V2d &pos, int p_level )
 	hitLimit = 1;
 
 	double height = 160;
-	ts = owner->GetTileset("Enemies/shroom_jelly_160x160.png", 160, 160);
-	ts_aura = owner->GetTileset("Enemies/shroom_jelly_aura_160x160.png", 160, 160);
+	ts = sess->GetTileset("Enemies/shroom_jelly_160x160.png", 160, 160);
+	ts_aura = sess->GetTileset("Enemies/shroom_jelly_aura_160x160.png", 160, 160);
 	sprite.setTexture(*ts->texture);
 	auraSprite.setTexture(*ts_aura->texture);
 
 	receivedHit = NULL;
 
-	floatSound = owner->soundManager->GetSound("Enemies/shroom_float");
+	floatSound = sess->GetSound("Enemies/shroom_float");
 
 	angle = 0;
 
@@ -345,7 +345,7 @@ void ShroomJelly::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 		action = SHOT;
 		frame = 0;
@@ -391,7 +391,7 @@ void ShroomJelly::ProcessHit()
 
 		velocity = dir * speed;
 
-		owner->PlayerAddActiveComboObj(comboObj);
+		sess->PlayerAddActiveComboObj(comboObj);
 	}
 }
 
@@ -434,7 +434,7 @@ void ShroomJelly::UpdateEnemyPhysics()
 void ShroomJelly::ProcessState()
 {
 	
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		frame = 0;
@@ -447,14 +447,14 @@ void ShroomJelly::ProcessState()
 			break;
 		case APPEARING:
 			action = RISING;
-			owner->ActivateSound( position, floatSound);
+			sess->ActivateSoundAtPos( position, floatSound);
 			break;
 		case RISING:
 			action = DROOPING;
 			break;
 		case DROOPING:
 			action = RISING;
-			owner->ActivateSound( position, floatSound);
+			sess->ActivateSoundAtPos( position, floatSound);
 			currentCycle++;
 			if (currentCycle == cycleLimit)
 			{
@@ -466,7 +466,7 @@ void ShroomJelly::ProcessState()
 		case DISSIPATING:
 			numHealth = 0;
 			dead = true;
-			owner->PlayerRemoveActiveComboer(comboObj);
+			sess->PlayerRemoveActiveComboer(comboObj);
 			break;
 		case SHOT:
 			action = EXPLODING;
@@ -569,7 +569,7 @@ void ShroomJelly::UpdateSprite()
 
 	if (hasMonitor && !suppressMonitor)
 	{
-		keySprite->setTextureRect(ts_key->GetSubRect(owner->keyFrame / 5));
+		keySprite->setTextureRect(ts_key->GetSubRect(sess->keyFrame / 5));
 		keySprite->setOrigin(keySprite->getLocalBounds().width / 2,
 			keySprite->getLocalBounds().height / 2);
 		keySprite->setPosition(position.x, position.y);

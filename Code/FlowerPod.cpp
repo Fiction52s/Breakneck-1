@@ -15,10 +15,19 @@
 using namespace std;
 using namespace sf;
 
-FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, double q)
-	:Enemy(owner, EnemyType::EN_FLOWERPOD, false, 0, false), ground(g),
+FlowerPod::FlowerPod(const std::string &typeStr, Edge *g, double q)
+	:Enemy(EnemyType::EN_FLOWERPOD, false, 0, false), ground(g),
 	edgeQuantity(q)
 {
+	if (sess->IsSessTypeGame())
+	{
+		game = GameSession::GetSession();
+	}
+	else
+	{
+		game = NULL;
+	}
+
 	//healRingGroup.AddGeo(new Ring(32, 20, 200, 10, 20, Vector2f(pos), Vector2f(pos),
 	//	Color::Cyan, Color(0, 0, 100, 0), 60));
 	//geoGroup.Init();
@@ -52,9 +61,9 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 		break;
 	}*/
 
-	ts_flower = owner->GetTileset("Momenta/momentaflower_128x128.png", width, height);
-	ts_bud = owner->GetTileset("Momenta/momentabud_128x128.png", width, height);
-	ts_rise = owner->GetTileset("Momenta/momentaflower_rise_128x128.png", width, height);
+	ts_flower = sess->GetTileset("Momenta/momentaflower_128x128.png", width, height);
+	ts_bud = sess->GetTileset("Momenta/momentabud_128x128.png", width, height);
+	ts_rise = sess->GetTileset("Momenta/momentaflower_rise_128x128.png", width, height);
 	sprite.setTexture(*ts_bud->texture);
 	sprite.setTextureRect(ts_bud->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height -16);
@@ -89,7 +98,7 @@ FlowerPod::FlowerPod(GameSession *owner, const std::string &typeStr, Edge *g, do
 	rayStart = position;
 	rayEnd = position + gn * 2000.0;
 	rcEdge = NULL;
-	RayCast(this, owner->terrainTree->startNode, rayStart, rayEnd);
+	RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
 
 	double boxHeight = 1000;
 	if (rcEdge != NULL)
@@ -175,13 +184,14 @@ void FlowerPod::ActionEnded()
 			sprite.setTexture(*ts_flower->texture);
 			action = BROADCAST;
 			frame = 0;
-			owner->currBroadcast = broadcast;
+			if( game != NULL )
+				game->currBroadcast = broadcast;
 			//owner->currStorySequence = storySeq;
 			break;
 		case BROADCAST:
 			
 			frame = 0;
-			if (owner->currBroadcast == NULL)
+			if (game != NULL && game->currBroadcast == NULL)
 			{
 				action = HIDE;
 				sprite.setTexture(*ts_rise->texture);
@@ -204,22 +214,22 @@ void FlowerPod::ProcessState()
 	//cout << "update" << endl;
 	ActionEnded();
 
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	double dist = length(player->position - position);
 	float rad = healRing->innerRadius;
 	
 	if ( action == BROADCAST && dist <= rad && healingPlayer == NULL)
 	{
-		if (!owner->cam.manual)
-			owner->cam.Ease(Vector2f(camPosition), .8, 300, CubicBezier());
+		if (!sess->cam.manual)
+			sess->cam.Ease(Vector2f(camPosition), .8, 300, CubicBezier());
 		healingPlayer = player;
 		//enter
 	}
 	else if (  (dist > rad || action != BROADCAST ) && healingPlayer != NULL )
 	{
-		if (owner->cam.manual)
+		if (sess->cam.manual)
 		{
-			owner->cam.EaseOutOfManual(60);
+			sess->cam.EaseOutOfManual(60);
 		}
 		healingPlayer = NULL;
 		//exit
@@ -227,7 +237,7 @@ void FlowerPod::ProcessState()
 
 	if (healingPlayer != NULL && healingPlayer->drainCounter == 0)
 	{
-		owner->GetPlayer(0)->kinRing->powerRing->Fill( player->drainAmount + 1 );//powerWheel->Use( 1 );	
+		sess->GetPlayer(0)->kinRing->powerRing->Fill( player->drainAmount + 1 );//powerWheel->Use( 1 );	
 		//cout << "fill by 2" << endl;
 	}
 
@@ -302,12 +312,12 @@ void FlowerPod::DirectKill()
 MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeStr)
 {
 	pod = p_pod;
-	ts_basicFlower = pod->owner->GetTileset("Momenta/momentaflower_320x288.png", 320, 288);
+	ts_basicFlower = pod->sess->GetTileset("Momenta/momentaflower_320x288.png", 320, 288);
 	initialFlowerLength = 120;
 	//can currently handle 30 chars per line
 	
 	givenShard = NULL;
-	conv = new Conversation(pod->owner);
+	conv = new Conversation;
 	
 	//textDisp = new TextDisp( pod->owner, 670, 220 );
 	
@@ -319,7 +329,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	{
 	case SEESHARDS:
 	{
-		ts_broadcast = pod->owner->GetTileset("Momenta/momentabroadcast_w1_1_320x288.png", 320, 288);
+		ts_broadcast = pod->sess->GetTileset("Momenta/momentabroadcast_w1_1_320x288.png", 320, 288);
 		conv->Load("momenta1");
 		//textDisp->Load("momenta1");
 			//script->Load("momenta1");
@@ -329,7 +339,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 		//{
 		//	imageLength[i] = 4000;
 		//}
-		givenShard = new Shard(pod->owner, Vector2i(pod->position.x, pod->position.y), 0, 0);
+		givenShard = new Shard(Vector2i(pod->position.x, pod->position.y), 0, 0);
 		/*imageLength[0] = 4000;
 		imageLength[1] = 4000;
 		imageLength[2] = 4000;
@@ -344,7 +354,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	}	
 	case DESTROYGOALS:
 	{
-		ts_broadcast = pod->owner->GetTileset("Momenta/momentabroadcast_w1_2_320x288.png", 320, 288);
+		ts_broadcast = pod->sess->GetTileset("Momenta/momentabroadcast_w1_2_320x288.png", 320, 288);
 		conv->Load("momenta2");
 		//script->Load("momenta2");
 		//numImages = script->numSections;
@@ -417,7 +427,7 @@ bool MomentaBroadcast::Update()
 		if (givenShard != NULL)
 		{
 			Shard *s = givenShard;
-			pod->owner->AddEnemy(s);
+			pod->sess->AddEnemy(s);
 			s->Launch();
 		}
 		return false;

@@ -16,7 +16,7 @@ struct Nexus : Enemy
 		A_NEXUSDESTROYED,
 	};
 
-	Nexus(GameSession *owner, Edge *ground, double quantity);
+	Nexus(Edge *ground, double quantity);
 	~Nexus();
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);

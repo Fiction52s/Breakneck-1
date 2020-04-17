@@ -56,8 +56,13 @@ void BirdPreFightScene::AddGroups()
 
 void BirdPreFightScene::AddEnemies()
 {
-	bird = new BirdBoss(owner, Vector2i(shots["fightcam"]->centerPos));
-	AddEnemy("bird", bird);
+	/*bird = new BirdBoss(owner, Vector2i(shots["fightcam"]->centerPos));
+	AddEnemy("bird", bird);*/
+
+
+
+
+
 	//PoiInfo *surface = points["crawlersurface"];
 	//queen = new CrawlerQueen(owner, surface->edge, surface->edgeQuantity, false);
 	//AddEnemy("queen", queen);

@@ -261,7 +261,7 @@ bool StorySequence::Load(const std::string &sequenceName)
 					}
 					else
 					{
-						Conversation *sText = new Conversation(owner);
+						Conversation *sText = new Conversation;
 						sText->Load(textName);
 						sp->text = sText;
 					}
@@ -543,7 +543,7 @@ void StorySequence::AddConvGroup(const std::string &name)
 {
 	assert(!HasConvGroup(name));
 
-	ConversationGroup *sTextGroup = new ConversationGroup(owner);
+	ConversationGroup *sTextGroup = new ConversationGroup;
 	sTextGroup->Load(name);
 	convGroups[name] = sTextGroup;
 }

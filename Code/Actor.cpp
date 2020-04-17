@@ -4048,7 +4048,7 @@ void Actor::UpdatePrePhysics()
 	{
 		if (springStunFrames == 0)
 		{
-			oldTeleporter->ReceiveRecover();
+			//oldTeleporter->ReceiveRecover();
 			SetAction(JUMP);
 			frame = 1;
 			position = teleportSpringDest;
@@ -7930,21 +7930,21 @@ void Actor::UpdatePrePhysics()
 					extraAirDashY = extraAirDashY + aSpeed;
 				}
 			}
-			else if (currBounceBooster != NULL && oldBounceBooster == NULL && currBounceBooster->Boost())
-			{
-				SetBounceBoostVelocity();
+			//else if (currBounceBooster != NULL && oldBounceBooster == NULL && currBounceBooster->Boost())
+			//{
+			//	SetBounceBoostVelocity();
 
-				startAirDashVel.x = velocity.x;//normalize(velocity).x * ( length( velocity ) + currBooster->strength);
-				extraAirDashY = velocity.y; //- aSpeed;
-				if (extraAirDashY > aSpeed)
-				{
-					extraAirDashY = extraAirDashY - aSpeed;
-				}
-				else if (extraAirDashY < -aSpeed)
-				{
-					extraAirDashY = extraAirDashY + aSpeed;
-				}
-			}
+			//	startAirDashVel.x = velocity.x;//normalize(velocity).x * ( length( velocity ) + currBooster->strength);
+			//	extraAirDashY = velocity.y; //- aSpeed;
+			//	if (extraAirDashY > aSpeed)
+			//	{
+			//		extraAirDashY = extraAirDashY - aSpeed;
+			//	}
+			//	else if (extraAirDashY < -aSpeed)
+			//	{
+			//		extraAirDashY = extraAirDashY + aSpeed;
+			//	}
+			//}
 			break;
 		}
 	case STEEPCLIMB:
@@ -8181,47 +8181,46 @@ void Actor::UpdatePrePhysics()
 		//boostUsed = false;
 	}
 
-	if (currBounceBooster != NULL && oldBounceBooster == NULL && action != AIRDASH && currBounceBooster->Boost())
-	{
-		if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
-		{
-			SetBounceBoostVelocity();
-			//normalize(velocity) * (length(velocity) + currBounceBooster->strength);
-		}
-		else if (grindEdge != NULL)
-		{
-			/*if (grindSpeed > 0)
-			{
-				grindSpeed += currBounceBooster->strength;
-			}
-			else if (grindSpeed < 0)
-			{
-				grindSpeed -= currBounceBooster->strength;
-			}
+	//if (currBounceBooster != NULL && oldBounceBooster == NULL && action != AIRDASH && currBounceBooster->Boost())
+	//{
+	//	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
+	//	{
+	//		SetBounceBoostVelocity();
+	//	}
+	//	else if (grindEdge != NULL)
+	//	{
+	//		/*if (grindSpeed > 0)
+	//		{
+	//			grindSpeed += currBounceBooster->strength;
+	//		}
+	//		else if (grindSpeed < 0)
+	//		{
+	//			grindSpeed -= currBounceBooster->strength;
+	//		}
 
-			if (action == RAILGRIND)
-			{
-				velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-			}*/
-		}
-		else if (ground != NULL)
-		{
-			/*if (groundSpeed > 0)
-			{
-				groundSpeed += currBounceBooster->strength;
-			}
-			else if (groundSpeed < 0)
-			{
-				groundSpeed -= currBounceBooster->strength;
-			}*/
-		}
-	}
+	//		if (action == RAILGRIND)
+	//		{
+	//			velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+	//		}*/
+	//	}
+	//	else if (ground != NULL)
+	//	{
+	//		/*if (groundSpeed > 0)
+	//		{
+	//			groundSpeed += currBounceBooster->strength;
+	//		}
+	//		else if (groundSpeed < 0)
+	//		{
+	//			groundSpeed -= currBounceBooster->strength;
+	//		}*/
+	//	}
+	//}
 
-	if (currModifier != NULL && oldModifier == NULL && currModifier->Modify())
+	/*if (currModifier != NULL && oldModifier == NULL && currModifier->Modify())
 	{
 		extraGravityModifier = currModifier->gravFactor;
 		gravResetFrames = currModifier->duration;
-	}
+	}*/
 
 
 	if (ground != NULL && grassBoosted)
@@ -16730,7 +16729,7 @@ sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 
 bool Actor::SwingLaunch()
 {
-	if (currSwingLauncher != NULL)
+	/*if (currSwingLauncher != NULL)
 	{
 		currSwingLauncher->Launch();
 
@@ -16767,14 +16766,14 @@ bool Actor::SwingLaunch()
 		velocity = V2d(0, 0);
 		currWall = NULL;
 		return true;
-	}
+	}*/
 
 	return false;
 }
 
 bool Actor::TeleporterLaunch()
 {
-	if (currTeleporter != NULL)
+	/*if (currTeleporter != NULL)
 	{
 		if (!currTeleporter->TryTeleport())
 		{
@@ -16816,7 +16815,7 @@ bool Actor::TeleporterLaunch()
 		velocity = V2d(0, 0);
 		currWall = NULL;
 		return true;
-	}
+	}*/
 
 	return false;
 }
@@ -18029,55 +18028,51 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Enemy *en = (Enemy*)qte;
 		if (en->type == EnemyType::EN_BOOSTER )
 		{
-			Booster *boost = (Booster*)qte;
-			
-			if (currBooster == NULL)
-			{
-				if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable() )
-				{
-					currBooster = boost;
-				}
-			}
-			else
-			{
-				//some replacement formula later
-			}
-			//currBooster = boost;
-			//booster priority later
+			//Booster *boost = (Booster*)qte;
+			//
+			//if (currBooster == NULL)
+			//{
+			//	if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable() )
+			//	{
+			//		currBooster = boost;
+			//	}
+			//}
+			//else
+			//{
+			//	//some replacement formula later
+			//}
 		}
 		else if (en->type == EnemyType::EN_BOUNCEBOOSTER)
 		{
-			BounceBooster *boost = (BounceBooster*)qte;
+			//BounceBooster *boost = (BounceBooster*)qte;
 
-			if (currBounceBooster == NULL)
-			{
-				if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable())
-				{
-					currBounceBooster = boost;
-				}
-			}
-			else
-			{
-				//some replacement formula later
-			}
-			//currBooster = boost;
-			//booster priority later
+			//if (currBounceBooster == NULL)
+			//{
+			//	if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable())
+			//	{
+			//		currBounceBooster = boost;
+			//	}
+			//}
+			//else
+			//{
+			//	//some replacement formula later
+			//}
 		}
 		else if (en->type == EnemyType::EN_GRAVITYMODIFIER)
 		{
-			GravityModifier *mod = (GravityModifier*)qte;
+			//GravityModifier *mod = (GravityModifier*)qte;
 
-			if (currModifier == NULL)
-			{
-				if (mod->hitBody->Intersects(mod->currHitboxFrame, &hurtBody) && mod->IsModifiable())
-				{
-					currModifier = mod;
-				}
-			}
-			else
-			{
-				//some replacement formula later
-			}
+			//if (currModifier == NULL)
+			//{
+			//	if (mod->hitBody->Intersects(mod->currHitboxFrame, &hurtBody) && mod->IsModifiable())
+			//	{
+			//		currModifier = mod;
+			//	}
+			//}
+			//else
+			//{
+			//	//some replacement formula later
+			//}
 		}
 		else if (en->type == EnemyType::EN_GRAVITYGRASS)
 		{
@@ -18115,24 +18110,24 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else if (en->type == EnemyType::EN_SWINGLAUNCHER)
 		{
-			SwingLauncher *sw = (SwingLauncher*)qte;
+			/*SwingLauncher *sw = (SwingLauncher*)qte;
 			if (currSwingLauncher == NULL)
 			{
 				if (sw->hitBody->Intersects(sw->currHitboxFrame, &hurtBody) && sw->action == SwingLauncher::IDLE)
 				{
 					currSwingLauncher = sw;
 				}
-			}
+			}*/
 		}
 		else if (en->type == EnemyType::EN_HEALTHFLY)
 		{
-			HealthFly *hf = (HealthFly*)qte;
+			/*HealthFly *hf = (HealthFly*)qte;
 			if (hf->CanCollect() && hf->hitBody->Intersects(hf->currHitboxFrame, &hurtBody))
 			{
 				if( kinRing != NULL)
 					kinRing->powerRing->Fill(hf->healAmount);
 				hf->Collect();
-			}
+			}*/
 			
 		}
 	}
@@ -21884,7 +21879,7 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 {
 	//owner->cam.SetRumble(3, 3, 5);
 
-	if (hitParams == NULL)
+	if (!hitParams->canBeHit)
 		return;
 
 	if (ground == NULL && velocity.y > 0 && action == DAIR )

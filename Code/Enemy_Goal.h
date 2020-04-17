@@ -13,10 +13,10 @@ struct Goal : Enemy
 		A_DESTROYED
 	};
 
-	Goal(GameSession *owner, Edge *ground, double quantity,
+	Goal(Edge *ground, double quantity,
 		int world);
 	~Goal();
-	static Enemy *Create(std::ifstream &is);
+	//static Enemy *Create(std::ifstream &is);
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

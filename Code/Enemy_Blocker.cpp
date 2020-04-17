@@ -16,9 +16,9 @@ using namespace sf;
 
 
 
-BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pathParam, int p_bType, bool p_armored,
+BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType, bool p_armored,
 	int spacing, int p_level )
-	:Enemy(owner, EnemyType::EN_BLOCKERCHAIN, false, 1, false)
+	:Enemy(EnemyType::EN_BLOCKERCHAIN, false, 1, false)
 {
 	level = p_level;
 
@@ -50,10 +50,10 @@ BlockerChain::BlockerChain(GameSession *owner, Vector2i &pos, list<Vector2i> &pa
 	switch (bType)
 	{
 	case BLUE:
-		ts = owner->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
+		ts = sess->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
 		break;
 	case GREEN:
-		ts = owner->GetTileset("Enemies/blocker_w2_192x192.png", 192, 192);
+		ts = sess->GetTileset("Enemies/blocker_w2_192x192.png", 192, 192);
 		break;
 	}
 	
@@ -310,7 +310,7 @@ void BlockerChain::UpdatePostPhysics()
 
 	if (activeNum == 0)
 	{
-		owner->RemoveEnemy(this);
+		sess->RemoveEnemy(this);
 	}
 }
 
@@ -344,7 +344,7 @@ V2d BlockerChain::GetCamPoint(int index)
 }
 
 Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
-	:Enemy(p_bc->owner, EnemyType::EN_BLOCKER, false, 1, false), bc(p_bc), vaIndex(index)
+	:Enemy( EnemyType::EN_BLOCKER, false, 1, false), bc(p_bc), vaIndex(index)
 {
 	level = bc->level;
 
@@ -397,7 +397,7 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
 		64, 64);
 
-	owner->staticItemTree->Insert(this);
+	sess->staticItemTree->Insert(this);
 
 	actionLength[WAIT] = 15;
 	actionLength[MALFUNCTION] = 13;
@@ -473,7 +473,7 @@ void Blocker::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		owner->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this);
 		ConfirmHitNoKill();
 
 		if (receivedHit->hType == HitboxInfo::COMBO)
@@ -551,7 +551,7 @@ void Blocker::ResetEnemy()
 
 void Blocker::IHitPlayer(int index)
 {
-	V2d playerPos = owner->GetPlayerPos(index);
+	V2d playerPos = sess->GetPlayerPos(index);
 	if (dot(normalize(playerPos - position), hitboxInfo->kbDir) < 0)
 	{
 		hitboxInfo->kbDir = -hitboxInfo->kbDir;

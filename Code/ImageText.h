@@ -4,6 +4,8 @@
 #include <SFML/Graphics.hpp>
 #include "Tileset.h"
 
+struct Session;
+
 struct ImageText
 {
 	ImageText( int maxDigits, 
@@ -53,9 +55,8 @@ struct GameSession;
 struct TextDisp
 {
 
-	TextDisp(GameSession *owner,
-		int width, int height, int charSize = 30, int frameLetterWait = 3,
-		int p_letterPerShow = 1);
+	TextDisp(int width, int height, int charSize = 30, 
+		int frameLetterWait = 3, int p_letterPerShow = 1);
 	~TextDisp();
 	void SetTopLeft(sf::Vector2f &pos);
 	void Load(const std::string &name);
@@ -85,6 +86,7 @@ struct TextDisp
 	int letterPerShow;
 };
 
+
 struct Speech
 {
 	enum TextMode
@@ -93,7 +95,7 @@ struct Speech
 		BOTTOMTEXT,
 	};
 
-	Speech(GameSession *owner);
+	Speech();
 	~Speech();
 	std::string speaker;
 	int speakerTile;
@@ -103,7 +105,7 @@ struct Speech
 	void SetTextMode(TextMode tMode);
 	Tileset *ts;
 	sf::Sprite speakerSpr;
-	GameSession *owner;
+	Session *sess;
 	void Draw(sf::RenderTarget *target);
 };
 
@@ -111,14 +113,13 @@ struct Conversation;
 
 struct ConversationGroup
 {
-	ConversationGroup(GameSession *owner);
+	ConversationGroup();
 	~ConversationGroup();
 	void Load(const std::string &name);
 	void Reset();
 	Conversation* GetConv(int index);
 	int numConvs;
 	Conversation **convs;
-	GameSession *owner;
 
 	std::string sceneName;
 };
@@ -128,7 +129,7 @@ struct Conversation
 	
 
 	~Conversation();
-	Conversation( GameSession *owner );
+	Conversation();
 	void Load(const std::string &name);
 	bool Load(std::ifstream &is);
 	std::string GetSpeakerName( const std::string &line,
@@ -145,7 +146,6 @@ struct Conversation
 	void SetTextMode(Speech::TextMode tMode);
 
 	bool show;
-	GameSession *owner;
 	int numSpeeches;
 	Speech **speeches;
 	sf::Sprite speakerSpr;

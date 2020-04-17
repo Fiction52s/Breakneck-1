@@ -18,7 +18,7 @@ struct Patroller : Enemy, LauncherEnemy
 
 	PatrollerEye *eye;
 
-	Patroller(GameSession *owner, bool hasMonitor,
+	Patroller(bool hasMonitor,
 		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
 	~Patroller();
 	void BulletHitTerrain(BasicBullet *b,
