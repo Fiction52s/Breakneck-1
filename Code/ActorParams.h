@@ -11,7 +11,6 @@ struct TerrainPolygon;
 
 struct ActorParams : ISelectable
 {
-
 	virtual ActorParams *Copy() = 0;
 	~ActorParams();
 	ActorParams(ActorType *at);
@@ -91,15 +90,13 @@ struct ActorParams : ISelectable
 	//if groundInfo is not null
 	//then you can handle ground, even 
 	//if you arent on it
-
-
 	GroundInfo *groundInfo;
 	bool hasMonitor;
 	sf::VertexArray boundingQuad;
 
 	std::list<sf::Vector2i> localPath;
 	bool loop;
-	sf::VertexArray *lines; //local pos
+	sf::VertexArray *lines;
 
 	int enemyLevel;
 };
