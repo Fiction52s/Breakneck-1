@@ -138,6 +138,11 @@ Comboer::Comboer(Vector2i pos, list<Vector2i> &pathParam, bool loopP,
 	ResetEnemy();
 }
 
+
+Comboer::~Comboer()
+{
+	delete[] path;
+}
 //Comboer::Comboer(GameSession *owner, std::ifstream &is)
 //{
 //	int xPos, yPos;

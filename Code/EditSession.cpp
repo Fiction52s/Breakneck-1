@@ -2335,11 +2335,7 @@ int EditSession::Run()
 	currTool = TOOL_ADD;
 	currentFile = filePath.string();
 
-
 	tempActor = NULL;
-	//int width = 1920;
-	//int height = 1080;
-	//uiView = View( sf::Vector2f( width / 2, height / 2), sf::Vector2f( width, height ) );
 	v.setCenter( 0, 0 );
 	v.setSize( 1920/ 2, 1080 / 2 );
 	window->setView( v );

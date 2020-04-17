@@ -241,6 +241,10 @@ BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType
 BlockerChain::~BlockerChain()
 {
 	delete circleGroup;
+	for (int i = 0; i < numBlockers; ++i)
+	{
+		delete blockers[i];
+	}
 	delete[] blockers;
 	delete[] va;
 }

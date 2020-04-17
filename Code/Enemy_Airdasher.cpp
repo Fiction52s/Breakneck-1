@@ -141,7 +141,6 @@ Airdasher::Airdasher(bool p_hasMonitor, Vector2i pos, int p_level )
 
 Airdasher::~Airdasher()
 {
-	delete comboObj;
 }
 
 void Airdasher::ComboHit()

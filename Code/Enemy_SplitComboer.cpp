@@ -100,7 +100,7 @@ SplitPiece::SplitPiece(SplitComboer *splitComb )
 
 SplitPiece::~SplitPiece()
 {
-	delete comboObj;
+	//delete comboObj;
 }
 
 void SplitPiece::ResetEnemy()
@@ -303,6 +303,8 @@ SplitComboer::~SplitComboer()
 {
 	delete pieces[0];
 	delete pieces[1];
+
+	delete[] path;
 }
 
 

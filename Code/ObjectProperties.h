@@ -165,6 +165,7 @@ struct ComboObject
 		:enemyHitboxFrame(-1),
 		enemyHitBody(NULL),
 		nextComboObj(NULL),
+		enemyHitboxInfo(NULL),
 		enemy(en)
 	{
 	}

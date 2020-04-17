@@ -26,6 +26,7 @@ struct Comboer : Enemy
 
 	Comboer(sf::Vector2i pos, std::list<sf::Vector2i> &path, 
 		bool loop, int p_level );
+	~Comboer();
 	
 
 	void ProcessState();

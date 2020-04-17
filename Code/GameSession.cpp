@@ -423,34 +423,10 @@ void GameSession::Cleanup()
 		grassTree = NULL;
 	}
 
-	if (borderTree != NULL)
-	{
-		delete borderTree;
-		borderTree = NULL;
-	}
-
 	if (enemyTree != NULL)
 	{
 		delete enemyTree;
 		enemyTree = NULL;
-	}
-
-	if (terrainTree != NULL)
-	{
-		delete terrainTree;
-		terrainTree = NULL;
-	}
-
-	if (barrierTree != NULL)
-	{
-		delete barrierTree;
-		barrierTree = NULL;
-	}
-
-	if (specialTerrainTree != NULL)
-	{
-		delete specialTerrainTree;
-		specialTerrainTree = NULL;
 	}
 
 	if (terrainBGTree != NULL)
@@ -459,22 +435,10 @@ void GameSession::Cleanup()
 		terrainBGTree = NULL;
 	}
 
-	if (staticItemTree!= NULL)
-	{
-		delete staticItemTree;
-		staticItemTree = NULL;
-	}
-
 	if (railDrawTree != NULL)
 	{
 		delete railDrawTree;
 		railDrawTree = NULL;
-	}
-
-	if (railEdgeTree != NULL)
-	{
-		delete railEdgeTree;
-		railEdgeTree = NULL;
 	}
 
 	if (scoreDisplay != NULL)

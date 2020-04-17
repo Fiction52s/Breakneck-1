@@ -338,7 +338,7 @@ ShroomJelly::ShroomJelly(V2d &pos, int p_level )
 
 ShroomJelly::~ShroomJelly()
 {
-	delete comboObj;
+	//delete comboObj;
 }
 
 void ShroomJelly::ProcessHit()

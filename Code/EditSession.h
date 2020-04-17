@@ -742,7 +742,6 @@ struct EditSession : GUIHandler, Session
 	//2 for cancel
 
 	Panel *confirm;
-	sf::View uiView;
 	sf::View view;
 	
 	
