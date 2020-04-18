@@ -173,9 +173,29 @@ void EditSession::TestPlayerMode()
 		for (auto it = allCurrEnemies.begin(); it != allCurrEnemies.end(); ++it)
 		{
 			RemoveEnemy((*it));
+			delete (*it);
+		}
+		allCurrEnemies.clear();
+
+		for (auto it = groups.begin(); it != groups.end(); ++it)
+		{
+			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+			{
+				Enemy *e = (*enit)->GenerateEnemy();
+				if (e != NULL)
+				{
+					allCurrEnemies.push_back(e);
+					AddEnemy(e); //leaks but we'll get it in a sec on cleanup
+				}
+			}
+		}
+
+		/*for (auto it = allCurrEnemies.begin(); it != allCurrEnemies.end(); ++it)
+		{
+			RemoveEnemy((*it));
 			(*it)->Reset();
 			AddEnemy((*it));
-		}
+		}*/
 		
 		//reset enemies
 	}
@@ -197,6 +217,9 @@ void EditSession::TestPlayerMode()
 			if (p != NULL)
 				p->SetToOriginalPos();
 		}
+
+		
+		
 
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -7802,15 +7825,15 @@ void EditSession::TryPlaceTrackingEnemy()
 					V2d pd(params->boundingQuad[3].position.x, params->boundingQuad[3].position.y);
 					//isQuadTouchingQuad( 
 
-					cout << "a: " << a.x << ", " << a.y << ", b: " << b.x << ", " << b.y <<
-						", " << c.x << ", " << c.y << ", " << d.x << ", " << d.y << endl;
-					cout << "pa: " << pa.x << ", " << pa.y << ", pb: " << pb.x << ", " << pb.y <<
-						", " << pc.x << ", " << pc.y << ", " << pd.x << ", " << pd.y << endl;
+					//cout << "a: " << a.x << ", " << a.y << ", b: " << b.x << ", " << b.y <<
+					//	", " << c.x << ", " << c.y << ", " << d.x << ", " << d.y << endl;
+					//cout << "pa: " << pa.x << ", " << pa.y << ", pb: " << pb.x << ", " << pb.y <<
+					//	", " << pc.x << ", " << pc.y << ", " << pd.x << ", " << pd.y << endl;
 
-					cout << "testing vs: " << params->type->info.size.y << endl;
+					//cout << "testing vs: " << params->type->info.size.y << endl;
 					if (isQuadTouchingQuad(pa, pb, pc, pd, a, b, c, d))
 					{
-						cout << "IS TOUCHING" << endl;
+					//	cout << "IS TOUCHING" << endl;
 						placementOkay = false;
 						break;
 					}

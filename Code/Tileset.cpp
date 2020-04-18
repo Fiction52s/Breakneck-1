@@ -7,8 +7,53 @@
 using namespace std;
 using namespace sf;
 
+
+void Tileset::SetSpriteTexture(sf::Sprite &spr)
+{
+	spr.setTexture(*texture);
+}
+
+void Tileset::SetSubRect(sf::Sprite &spr, int index, bool flipX, bool flipY )
+{
+	IntRect sub = GetSubRect(index);
+	if (flipX)
+	{
+		sub.left += sub.width;
+		sub.width = -sub.width;
+	}
+	if (flipY)
+	{
+		sub.top += sub.height;
+		sub.height = -sub.height;
+	}
+
+		
+	spr.setTextureRect(sub);
+}
+
+void Tileset::SetQuadSubRect(sf::Vertex *v, int index, bool flipX, bool flipY)
+{
+	IntRect sub = GetSubRect(index);
+	if (flipX)
+	{
+		sub.left += sub.width;
+		sub.width = -sub.width;
+	}
+	if (flipY)
+	{
+		sub.top += sub.height;
+		sub.height = -sub.height;
+	}
+
+	v[0].texCoords = Vector2f(sub.left, sub.top);
+	v[1].texCoords = Vector2f(sub.left + sub.width, sub.top);
+	v[2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
+	v[3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+}
+
 Tileset::~Tileset()
 {
+	//ideally make this not a pointer soon as possible to avoid allocation
 	delete texture;
 }
 
@@ -37,6 +82,78 @@ int Tileset::GetNumTiles()
 	int sy = (texture->getSize().y / tileHeight );
 
 	return sx * sy;
+}
+
+Tileset *TilesetManager::Find(const std::string &s, int altColorIndex)
+{
+	Tileset *currTS;
+	auto it = tilesetMap.find(s);
+	if (it != tilesetMap.end())
+	{
+		std::list<Tileset*> &currList = (*it).second;
+		for (auto listIt = currList.begin(); listIt != currList.end(); ++listIt)
+		{
+			if ((*listIt)->altColorIndex == altColorIndex)
+			{
+				return (*listIt);
+			}
+		}
+	}
+
+	return NULL;
+}
+
+void TilesetManager::Add(const std::string &s, Tileset *ts)
+{
+	tilesetMap[s].push_back(ts);
+}
+
+Tileset *TilesetManager::Create(const std::string &s, int tileWidth, int tileHeight,
+	int altColorIndex )
+{
+	string s2 = string("Resources/") + s;
+	//not found
+
+	//if (!boost::filesystem::exists(s2))
+	//{
+	//	//take this out later. its not always an error to get this
+	//	cout << "NO FILE EXISTS: " << s << endl; 
+	//	return NULL;
+	//}
+
+	Texture *tex = new Texture();
+	if (!tex->loadFromFile(s2))
+	{
+		delete tex;
+		cout << "failed to load: " << s << endl;
+		//assert( false );
+
+		return NULL;
+	}
+
+	cout << "created texture for: " << s2 << endl;
+
+	Tileset *t = new Tileset();
+	t->texture = tex;
+
+	if (tileWidth == 0)
+	{
+		tileWidth = tex->getSize().x;
+	}
+	if (tileHeight == 0)
+	{
+		tileHeight = tex->getSize().y;
+	}
+
+
+	t->altColorIndex = altColorIndex;
+	t->tileWidth = tileWidth;
+	t->tileHeight = tileHeight;
+	t->sourceName = s;
+
+	Add(s, t);
+
+	return t;
 }
 
 Texture *TilesetManager::CreateAltColorTex( sf::Image &im,
@@ -83,20 +200,21 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	sf::Color *startColorBuf, sf::Color *endColorBuf)
 {
 	//cout << "checking for string: " << s << endl;
-	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
+
+
+	Tileset *alreadyExistsTS = Find(s, altColorIndex);
+	//if (alreadyExistsTS != NULL)
+	//	return alreadyExistsTS;
+	if (alreadyExistsTS->sourceName == s && alreadyExistsTS->altColorIndex == altColorIndex)
 	{
-		if( (*it)->sourceName == s && (*it)->altColorIndex == altColorIndex )
-		{
+		sf::Image img = alreadyExistsTS->texture->copyToImage();
+		Texture *tNew = CreateAltColorTex(img, numAltColors, startColorBuf,
+			endColorBuf);
 
-			sf::Image img = (*it)->texture->copyToImage();
-			Texture *tNew = CreateAltColorTex( img, numAltColors, startColorBuf, 
-				endColorBuf );
+		delete alreadyExistsTS->texture;
+		alreadyExistsTS->texture = tNew;
 
-			delete (*it)->texture;
-			(*it)->texture = tNew;
-
-			return (*it);
-		}
+		return alreadyExistsTS;
 	}
 
 	//not already here. need to create it
@@ -122,7 +240,9 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	t->tileWidth = tileWidth;
 	t->tileHeight = tileHeight;
 	t->sourceName = s;
-	tilesetList.push_back( t );
+
+	Add(s, t);
+	//tilesetList.push_back( t );
 
 	return t;
 }
@@ -131,59 +251,11 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 #include <boost/filesystem.hpp>
 Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex )
 {
-	//cout << "checking for string: " << s << endl;
-	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
-	{
-		if( (*it)->sourceName == s && (*it)->altColorIndex == altColorIndex )
-		{
-			return (*it);
-		}
-	}
+	Tileset *alreadyExistsTS = Find(s, altColorIndex);
+	if (alreadyExistsTS != NULL)
+		return alreadyExistsTS;
 
-	string s2 = string("Resources/") + s;
-	//not found
-
-	//if (!boost::filesystem::exists(s2))
-	//{
-	//	//take this out later. its not always an error to get this
-	//	cout << "NO FILE EXISTS: " << s << endl; 
-	//	return NULL;
-	//}
-
-	Texture *tex = new Texture();
-	if( !tex->loadFromFile( s2 ) )
-	{
-		delete tex;
-		cout << "failed to load: " << s << endl;
-		//assert( false );
-
-		return NULL;
-	}
-
-	cout << "created texture for: " << s2 << endl;
-
-	Tileset *t = new Tileset();
-	t->texture = tex;
-
-	if (tileWidth == 0 )
-	{
-		tileWidth = tex->getSize().x;
-		
-	}
-	if (tileHeight == 0)
-	{
-		tileHeight = tex->getSize().y;
-	}
-	
-
-	t->altColorIndex = altColorIndex;
-	t->tileWidth = tileWidth;
-	t->tileHeight = tileHeight;
-	t->sourceName = s;
-	tilesetList.push_back( t );
-	
-
-	return t;
+	return Create(s, tileWidth, tileHeight, altColorIndex);
 }
 
 Tileset * TilesetManager::GetTileset(const std::string & s, int tileWidth, int tileHeight, Skin *skin)
@@ -202,76 +274,66 @@ Tileset * TilesetManager::GetTileset(const std::string & s, int tileWidth, int t
 Tileset *TilesetManager::GetUpdatedTileset(
 	const std::string & s, int tileWidth, int tileHeight, int altColorIndex)
 {
-	for (list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it)
+	Tileset *alreadyExistsTS = Find(s, altColorIndex);
+	if (alreadyExistsTS != NULL)
 	{
-		if ((*it)->sourceName == s && (*it)->altColorIndex == altColorIndex)
-		{
-			DestroyTileset((*it));
-			break;
-		}
+		DestroyTileset(alreadyExistsTS);
 	}
 
-	string s2 = string("Resources/") + s;
-
-	Texture *tex = new Texture();
-	if (!tex->loadFromFile(s2))
-	{
-		delete tex;
-		return NULL;
-	}
-
-	Tileset *t = new Tileset();
-	t->texture = tex;
-
-	if (tileWidth == 0)
-	{
-		tileWidth = tex->getSize().x;
-
-	}
-	if (tileHeight == 0)
-	{
-		tileHeight = tex->getSize().y;
-	}
-
-	t->altColorIndex = altColorIndex;
-	t->tileWidth = tileWidth;
-	t->tileHeight = tileHeight;
-	t->sourceName = s;
-	tilesetList.push_back(t);
-
-	return t;
+	return Create(s, tileWidth, tileHeight, altColorIndex);
 }
 
 void TilesetManager::ClearTilesets()
 {
-	for( list<Tileset*>::iterator it = tilesetList.begin(); it != tilesetList.end(); ++it )
+	list<Tileset*>::iterator listIt;
+	list<Tileset*>::iterator listItEnd;
+	for (auto it = tilesetMap.begin(); it != tilesetMap.end(); ++it)
 	{
-		if( (*it) == NULL )
+		listIt = (*it).second.begin();
+		listItEnd = (*it).second.end();
+		for (; listIt != listItEnd; ++listIt)
 		{
-			cout <<"WHAT FAIL" << endl;
-			//assert( false );
-			continue;
+			delete (*listIt);
 
+			/*if ((*listIt) == NULL)
+			{
+				cout << "should never have a NULL tileset here" << endl;
+				assert( false );
+				continue;
+
+			}
+
+			cout << "About to delete: " << (*listIt)->sourceName << ", "
+				<< (*listIt)->tileWidth << ", " << (*listIt)->tileWidth << endl;*/
+			
 		}
 
-		cout << "About to delete: " << (*it)->sourceName << ", "
-			<< (*it)->tileWidth << ", " << (*it)->tileWidth << endl;
-		delete (*it);
 	}
+
+	tilesetMap.clear();
 }
 
 void TilesetManager::DestroyTileset(Tileset * t)
 {
-	for (auto it = tilesetList.begin(); it != tilesetList.end(); ++it)
+	auto it = tilesetMap.find(t->sourceName);
+	if (it != tilesetMap.end())
 	{
-		if (t == (*it))
+		list<Tileset*> &currList = (*it).second;
+		for (auto lit = currList.begin(); lit != currList.end(); ++lit)
 		{
-			tilesetList.remove((*it));
-			break;
+			if ((*lit) == t)
+			{
+				currList.erase(lit);
+				delete t;
+
+				if (currList.empty())
+				{
+					tilesetMap.erase(it);
+				}
+				return;
+			}
 		}
 	}
-
-	delete t;
 }
 
 TilesetManager::~TilesetManager()

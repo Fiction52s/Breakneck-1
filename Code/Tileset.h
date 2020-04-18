@@ -23,6 +23,11 @@ struct Tileset
 {
 	~Tileset();
 	sf::IntRect GetSubRect( int localID );
+	void SetSpriteTexture(sf::Sprite &spr);
+	void SetSubRect(sf::Sprite &spr, int index,
+		bool flipX = false, bool flipY = false );
+	void SetQuadSubRect(sf::Vertex *v, int index,
+		bool flipX = false, bool flipY = false);
 	int GetNumTiles();
 	sf::Texture * texture;
 	int tileWidth;
@@ -49,7 +54,12 @@ struct TilesetManager
 		sf::Color *endColorBuf );
 
 private:
-	std::list<Tileset*> tilesetList;
+	Tileset *Create(const std::string &s, int tw, int th,
+		int altColorIndex );
+	void Add(const std::string &s, Tileset *ts);
+	Tileset *Find(const std::string &s, int altColorIndex);
+	//std::list<Tileset*> tilesetList;
+	std::map<std::string, std::list<Tileset*>> tilesetMap;
 };
 
 #endif
