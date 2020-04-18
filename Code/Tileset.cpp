@@ -203,9 +203,11 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 
 
 	Tileset *alreadyExistsTS = Find(s, altColorIndex);
+	if (alreadyExistsTS != NULL)
+		return alreadyExistsTS;
 	//if (alreadyExistsTS != NULL)
 	//	return alreadyExistsTS;
-	if (alreadyExistsTS->sourceName == s && alreadyExistsTS->altColorIndex == altColorIndex)
+	/*if ( alreadyExistsTS != NULL && alreadyExistsTS->sourceName == s && alreadyExistsTS->altColorIndex == altColorIndex)
 	{
 		sf::Image img = alreadyExistsTS->texture->copyToImage();
 		Texture *tNew = CreateAltColorTex(img, numAltColors, startColorBuf,
@@ -215,17 +217,18 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 		alreadyExistsTS->texture = tNew;
 
 		return alreadyExistsTS;
-	}
+	}*/
 
 	//not already here. need to create it
 
-	Tileset *t = new Tileset();
+	
 	//t->texture = new Texture();
 
-	sf::Image im;
+	
 	
 	string s2 = string("Resources/") + s;
 
+	sf::Image im;
 	if( !im.loadFromFile( s2 ) )
 	{
 		cout << "failed to load IM: " << s << endl;
@@ -233,6 +236,8 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 
 		return NULL;
 	}
+
+	Tileset *t = new Tileset();
 
 	t->altColorIndex = altColorIndex;
 	t->texture = CreateAltColorTex( im, numAltColors, startColorBuf, endColorBuf );

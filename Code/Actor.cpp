@@ -92,18 +92,7 @@ Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight
 
 Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, Skin *skin)
 {
-	if (owner != NULL)
-	{
-		return owner->GetTileset(s, tileWidth, tileHeight, skin);
-	}
-	else if (editOwner != NULL)
-	{
-		return editOwner->GetTileset(s, tileWidth, tileHeight);
-	}
-	else
-	{
-		return NULL;
-	}
+	return sess->GetTileset(s, tileWidth, tileHeight, skin);
 }
 
 sf::SoundBuffer * Actor::GetSound(const std::string &name)
@@ -675,12 +664,26 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 			sf::Color(0x53, 0xf9, 0xf9)
 		};
 
-		//Skin *swordSkin = new Skin(startChanges, endChanges, 9, 1);
-		//Skin *skin = new Skin(startChanges, endChanges, 9, 1);
+		
 		
 		team = (Team)actorIndex; //debug
-		//SetupTilesets(skin, swordSkin);
-		SetupTilesets(NULL,NULL);
+
+		SetupTilesets(NULL, NULL);
+
+		/*if (actorIndex == 0)
+		{
+			SetupTilesets(NULL, NULL);
+		}
+		else if (actorIndex == 1)
+		{
+			Skin *swordSkin = new Skin(startChanges, endChanges, 9, 1);
+			Skin *skin = new Skin(startChanges, endChanges, 9, 1);
+			SetupTilesets(skin, swordSkin);
+			delete skin;
+			delete swordSkin;
+		}*/
+		
+		//SetupTilesets(NULL,NULL);
 
 		
 
