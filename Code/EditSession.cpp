@@ -111,7 +111,7 @@ void EditSession::TestPlayerModeUpdate()
 		UpdateDecorSprites();
 		UpdateDecorLayers();
 		
-		UpdatePlayerWireQuads();
+		//UpdatePlayerWireQuads();
 
 		accumulator -= TIMESTEP;
 		totalGameFrames++;
@@ -140,6 +140,13 @@ void EditSession::TestPlayerMode()
 		{
 			(*it)->ResetTouchGrass();
 		}
+
+		for (auto it = allCurrEnemies.begin(); it != allCurrEnemies.end(); ++it)
+		{
+			RemoveEnemy((*it));
+			(*it)->Reset();
+			AddEnemy((*it));
+		}
 		return;
 	}
 
@@ -162,6 +169,15 @@ void EditSession::TestPlayerMode()
 			if (p != NULL)
 				p->Respawn();
 		}
+
+		for (auto it = allCurrEnemies.begin(); it != allCurrEnemies.end(); ++it)
+		{
+			RemoveEnemy((*it));
+			(*it)->Reset();
+			AddEnemy((*it));
+		}
+		
+		//reset enemies
 	}
 	else
 	{
@@ -180,6 +196,19 @@ void EditSession::TestPlayerMode()
 			p = GetPlayer(i);
 			if (p != NULL)
 				p->SetToOriginalPos();
+		}
+
+		for (auto it = groups.begin(); it != groups.end(); ++it)
+		{
+			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+			{
+				Enemy *e = (*enit)->GenerateEnemy();
+				if (e != NULL)
+				{
+					allCurrEnemies.push_back(e);
+					AddEnemy(e); //leaks but we'll get it in a sec on cleanup
+				}
+			}
 		}
 	}
 
@@ -226,6 +255,11 @@ void EditSession::TestPlayerMode()
 	//airTriggerTree = new QuadTree(1000000, 1000000);
 }
 
+void EditSession::EndTestMode()
+{
+	mode = EDIT;
+}
+
 void EditSession::UpdatePrePhysics()
 {
 	Actor *player = GetPlayer(0);
@@ -240,6 +274,13 @@ void EditSession::UpdatePrePhysics()
 		p = GetPlayer(i);
 		if (p != NULL)
 			p->UpdatePrePhysics();
+	}
+
+	Enemy *current = activeEnemyList;
+	while (current != NULL)
+	{
+		current->UpdatePrePhysics();
+		current = current->next;
 	}
 }
 
@@ -277,6 +318,13 @@ void EditSession::UpdatePhysics()
 					p->UpdatePhysics();
 			}
 		}
+
+		Enemy *current = activeEnemyList;
+		while (current != NULL)
+		{
+			current->UpdatePhysics(substep);
+			current = current->next;
+		}
 	}
 }
 
@@ -294,6 +342,38 @@ void EditSession::UpdatePostPhysics()
 		p = GetPlayer(i);
 		if (p != NULL)
 			p->UpdatePostPhysics();
+	}
+
+	UpdatePlayerWireQuads();
+
+	int keyLength = 30;//16 * 5;
+	keyFrame = totalGameFrames % keyLength;
+
+
+	Enemy *current = activeEnemyList;
+	while (current != NULL)
+	{
+		Enemy *temp = current->next; //need this in case enemy is removed during its update
+
+		current->UpdatePostPhysics();
+
+		if (current->keyShader != NULL)
+		{
+			float halftot = keyLength / 2;
+			float fac;
+			if (keyFrame < keyLength / 2)
+			{
+				fac = keyFrame / (halftot - 1);
+			}
+			else
+			{
+				fac = 1.f - (keyFrame - halftot) / (halftot - 1);
+			}
+			//cout << "fac: " << fac << endl;
+			current->keyShader->setUniform("prop", fac);
+		}
+
+		current = temp;
 	}
 }
 
@@ -507,7 +587,6 @@ RailPtr EditSession::GetRail(int index)
 
 EditSession::~EditSession()
 {
-
 	delete transformTools;
 
 	delete graph;
@@ -639,6 +718,13 @@ void EditSession::Draw()
 
 	if (mode == TEST_PLAYER)
 	{
+		Enemy *current = activeEnemyList;
+		while (current != NULL)
+		{
+			current->Draw(preScreenTex);
+			current = current->next;
+		}
+
 		DrawPlayerWires(preScreenTex);
 
 		Actor *p = NULL;
@@ -7804,6 +7890,7 @@ void EditSession::AnchorTrackingEnemyOnTerrain()
 
 			double testRadius = 200;
 
+			V2d dTestPoint(testPoint);
 
 			TerrainPoint *curr, *prev;
 			int numP;
@@ -7815,7 +7902,7 @@ void EditSession::AnchorTrackingEnemyOnTerrain()
 					//TerrainPoint *prev = (*it)->pointEnd;
 					//TerrainPoint *curr = (*it)->pointStart;
 
-					bool contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
+					bool contains = (*it)->ContainsPoint(testPoint);
 
 					//if ((contains && !(*it)->inverse) || (!contains && (*it)->inverse))
 					{
@@ -7824,60 +7911,55 @@ void EditSession::AnchorTrackingEnemyOnTerrain()
 						int storedIndex = -1;
 						double storedQuantity;
 
+						double edgeLen;
 						V2d closestPoint;
 
 						numP = (*it)->GetNumPoints();
 
+						Edge *currEdge;
+
 						for (int i = 0; i < numP; ++i)
 						{
-							curr = (*it)->GetPoint(i);
-							prev = (*it)->GetPrevPoint(i);
+							currEdge = (*it)->GetEdge(i);
+							double dist = abs(currEdge->GetDistAlongNormal(dTestPoint));
+							double testQuantity = currEdge->GetQuantity(dTestPoint);
 
-							double dist = abs(
-								cross(
-									V2d(testPoint.x - prev->pos.x, testPoint.y - prev->pos.y),
-									normalize(V2d(curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y))));
-							double testQuantity = dot(
-								V2d(testPoint.x - prev->pos.x, testPoint.y - prev->pos.y),
-								normalize(V2d(curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y)));
+							V2d newPoint = currEdge->GetPoint(testQuantity);
 
-							V2d pr(prev->pos.x, prev->pos.y);
-							V2d cu(curr->pos.x, curr->pos.y);
-							V2d te(testPoint.x, testPoint.y);
-
-							V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
-								(testQuantity / length(cu - pr)));
+							edgeLen = currEdge->GetLength();
+							/*V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
+								(testQuantity / length(cu - pr)));*/
 
 
 							int hw = trackingEnemy->info.size.x / 2;
 							int hh = trackingEnemy->info.size.y / 2;
-							if (dist < 100 && testQuantity >= 0 && testQuantity <= length(cu - pr) && testQuantity >= hw && testQuantity <= length(cu - pr) - hw
-								&& length(newPoint - te) < length(closestPoint - te))
+							if (dist < 100 && testQuantity >= 0 && testQuantity <= edgeLen && testQuantity >= hw && testQuantity <= edgeLen - hw
+								&& length(newPoint - dTestPoint) < length(closestPoint - dTestPoint))
 							{
 								minDistance = dist;
 								storedIndex = i;
-								double l = length(cu - pr);
 
 								storedQuantity = testQuantity;
 								closestPoint = newPoint;
-
-								if (name != "poi")
-								{
-									enemySprite.setOrigin(enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height);
-									enemyQuad.setOrigin(enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height);
-								}
-
-								enemySprite.setPosition(closestPoint.x, closestPoint.y);
-								enemySprite.setRotation(atan2((cu - pr).y, (cu - pr).x) / PI * 180);
-
-
-								enemyQuad.setRotation(enemySprite.getRotation());
-								enemyQuad.setPosition(enemySprite.getPosition());
 							}
 						}
 
 						if (storedIndex >= 0)
 						{
+							currEdge = (*it)->GetEdge(storedIndex);
+
+							if (name != "poi")
+							{
+								enemySprite.setOrigin(enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height);
+								enemyQuad.setOrigin(enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height);
+							}
+
+							enemySprite.setPosition(closestPoint.x, closestPoint.y);
+							enemySprite.setRotation(currEdge->GetNormalAngleDegrees());
+
+							enemyQuad.setRotation(enemySprite.getRotation());
+							enemyQuad.setPosition(enemySprite.getPosition());
+
 							enemyEdgeIndex = storedIndex;
 
 							enemyEdgeQuantity = storedQuantity;

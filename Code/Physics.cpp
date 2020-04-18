@@ -3,6 +3,7 @@
 #include <iostream>
 #include <assert.h>
 #include "GameSession.h"
+#include <cmath>
 
 using namespace sf;
 using namespace std;
@@ -36,7 +37,7 @@ V2d Edge::GetPoint( double quantity )
 	return v0 + quantity * e;
 }
 
-double Edge::GetQuantity( V2d p )
+double Edge::GetQuantity(Vector2<double> &p)
 {
 	//projects the origin of the line to p onto the edge. if the point is on the edge it will just be 
 	//normal to use dot product to get cos(0) =1
@@ -52,6 +53,23 @@ double Edge::GetQuantity( V2d p )
 		return result;
 }
 
+double Edge::GetRawQuantity(sf::Vector2<double> &p)
+{
+	return dot(p - v0, Along());
+}
+
+double Edge::GetNormalAngleRadians()
+{
+	V2d diff = v1 - v0;
+	//atan2(testDiff.y, testDiff.x) / PI * 180;
+	return atan2(diff.y, diff.x);
+}
+
+double Edge::GetNormalAngleDegrees()
+{
+	return GetNormalAngleRadians() / PI * 180.0;
+}
+
 double Edge::GetQuantityGivenX( double x )
 {
 
@@ -60,6 +78,11 @@ double Edge::GetQuantityGivenX( double x )
 	double factor = deltax / e.y;
 
 	return 0;
+}
+
+double Edge::GetDistAlongNormal(sf::Vector2<double> &p)
+{
+	return (cross(p - v0, Along()));
 }
 
 double Edge::GetLength()

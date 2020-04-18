@@ -530,6 +530,9 @@ void Actor::SetupTilesets( Skin *skin, Skin *swordSkin )
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:owner( gs ), editOwner(es), dead( false ), actorIndex( p_actorIndex )
 	{
+
+	sess = Session::GetSession();
+
 	usingAura = false;
 	fBubblePos = NULL;
 	fBubbleRadiusSize = NULL;
@@ -3024,7 +3027,7 @@ void Actor::UpdatePrePhysics()
 			record++;
 			changingClone = true;
 			percentCloneChanged = 0;
-			owner->Pause( 60 );
+			sess->Pause( 60 );
 			//percentCloneRate = .01;
 		}
 		else
@@ -3040,7 +3043,7 @@ void Actor::UpdatePrePhysics()
 				ghostFrame = 1;
 				record++;
 				changingClone = true;
-				owner->Pause( 60 );
+				sess->Pause( 60 );
 				percentCloneChanged = 0;
 			}
 			
@@ -3191,11 +3194,12 @@ void Actor::UpdatePrePhysics()
 		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
 		
 		ActivateEffect( EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
-		owner->Pause( hitlagFrames );
+		sess->Pause( hitlagFrames );
 
 		ActivateSound( S_HURT );
 
-		kinRing->powerRing->Drain(receivedHit->damage);
+		if( kinRing != NULL )
+			kinRing->powerRing->Drain(receivedHit->damage);
 
 		//kinMask->SetExpr( KinMask::Expr::Expr_HURT );
 		//expr = Expr::Expr_HURT;
@@ -15856,29 +15860,39 @@ void Actor::UpdatePostPhysics()
 
 	if( hitGoal )// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
-		owner->totalFramesBeforeGoal = owner->totalGameFrames;
-		SetActionExpr( GOALKILL );
-		desperationMode = false;
-		hitGoal = false;
-		if( owner->recPlayer != NULL )
+		
+		if (owner != NULL)
 		{
-			owner->recPlayer->RecordFrame();
-			owner->recPlayer->StopRecording();
-			owner->recPlayer->WriteToFile( "testreplay.brep" );
-		}
 
-		if( owner->recGhost != NULL )
+
+			owner->totalFramesBeforeGoal = owner->totalGameFrames;
+			SetActionExpr(GOALKILL);
+			desperationMode = false;
+			hitGoal = false;
+			if (owner->recPlayer != NULL)
+			{
+				owner->recPlayer->RecordFrame();
+				owner->recPlayer->StopRecording();
+				owner->recPlayer->WriteToFile("testreplay.brep");
+			}
+
+			if (owner->recGhost != NULL)
+			{
+				owner->recGhost->StopRecording();
+				owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
+			}
+
+			frame = 0;
+			position = owner->goalNodePos;
+			owner->cam.Ease(Vector2f(owner->goalNodePosFinal), 1, 60, CubicBezier());
+			rightWire->Reset();
+			leftWire->Reset();
+			desperationMode = false;
+		}
+		else if (editOwner != NULL )
 		{
-			owner->recGhost->StopRecording();
-			owner->recGhost->WriteToFile( "Recordings/Ghost/testghost.bghst" );
+			editOwner->EndTestMode();
 		}
-
-		frame = 0;
-		position = owner->goalNodePos;
-		owner->cam.Ease(Vector2f(owner->goalNodePosFinal), 1, 60, CubicBezier());
-		rightWire->Reset();
-		leftWire->Reset();
-		desperationMode = false;
 	}
 	else if (hitNexus)
 	{

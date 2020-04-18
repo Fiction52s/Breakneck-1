@@ -256,8 +256,8 @@ struct EditSession : GUIHandler, Session
 	void AddW5Enemies();
 	void AddW6Enemies();*/
 	
-
-	
+	std::list<Enemy*> allCurrEnemies;
+	void EndTestMode();
 
 	bool IsKeyPressed(int k);
 	bool IsMousePressed(int m);

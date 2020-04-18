@@ -18,6 +18,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+Enemy *Crawler::Create(ActorParams *ap)
+{
+	return new Crawler(ap->hasMonitor, ap->GetGroundEdge(), ap->groundInfo->groundQuantity, ap->enemyLevel);
+}
+
 Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
 	:Enemy( EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), clockwise( true ), groundSpeed( 5 )
 {

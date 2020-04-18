@@ -15,10 +15,6 @@ Goal::Goal( Edge *g, double q, int world )
 		:Enemy( EnemyType::EN_GOAL, false, 0, false ), 
 	ground( g ), edgeQuantity( q ), dead( false )
 {
-	
-	
-
-
 	double width;
 	double height;
 
@@ -121,10 +117,6 @@ Goal::Goal( Edge *g, double q, int world )
 	double angle = 0;
 		
 	angle = atan2( gn.x, -gn.y );
-		
-	
-		//V2d( hitBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
-		//hitBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
 
 	frame = 0;
 	animationFactor = 7;

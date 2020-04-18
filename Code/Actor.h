@@ -18,6 +18,7 @@
 
 struct EditSession;
 
+struct Session;
 struct TerrainPolygon;
 
 struct AirTrigger;
@@ -748,7 +749,7 @@ struct Actor : QuadTreeCollider,
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
 
-
+	Session *sess;
 
 	GravityModifier *currModifier;
 	GravityModifier *oldModifier;

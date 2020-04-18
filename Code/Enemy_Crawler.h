@@ -17,6 +17,8 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		UNDERGROUND
 	};
 
+	static Enemy *Create(ActorParams *ap);
+
 	int animFactor[UNDERGROUND + 1];
 	int actionLength[UNDERGROUND +1];
 	Crawler(bool hasMonitor, Edge *ground, double quantity, int level);

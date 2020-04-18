@@ -13,6 +13,11 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
+//static Enemy *Patroller::Create(ActorParams *ap)
+//{
+//
+//}
+
 
 Patroller::Patroller(bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
 	:Enemy( EnemyType::EN_PATROLLER, p_hasMonitor, 1 )

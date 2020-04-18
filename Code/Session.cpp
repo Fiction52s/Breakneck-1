@@ -189,7 +189,7 @@ void Session::AddW1Enemies()
 	GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));*/
 
 
-	AddBasicGroundWorldEnemy("crawler", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+	AddBasicGroundWorldEnemy("crawler", 1, CreateEnemy<Crawler>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
 
 	AddBasicGroundWorldEnemy("shroom", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
