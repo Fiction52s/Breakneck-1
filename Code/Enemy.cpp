@@ -31,6 +31,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
+
 bool Enemy::SetHitParams()
 {
 	switch (type)

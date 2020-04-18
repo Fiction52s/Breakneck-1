@@ -67,6 +67,9 @@
 #include "Enemy.h"
 #include "EnemiesW1.h"
 
+#include "ActorParamsBase.h"
+
+
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#include "Enemy_StagBeetle.h"
@@ -151,6 +154,46 @@ using namespace sf;
 
 
 GameSession * GameSession::currSession = NULL;
+
+
+//new stuff
+
+PolyPtr GameSession::GetPolygon(int index)
+{
+	PolyPtr terrain = NULL;
+	if (index == -1)
+	{
+		terrain = inversePoly;
+	}
+	else
+	{
+		if (inversePoly != NULL)
+			index++;
+		terrain = allPolysVec[index];
+	}
+
+	if (terrain == NULL)
+		assert(0 && "failure terrain indexing goal");
+
+	return terrain;
+}
+
+
+
+
+
+
+
+
+//----------------------
+
+
+
+
+
+
+
+
 
 EdgeAngleType GetEdgeAngleType(V2d &normal)
 {
@@ -513,12 +556,6 @@ GameSession::~GameSession()
 GameSession *GameSession::GetSession()
 {
 	return currSession;
-}
-
-bool GameSession::ReadActors(std::ifstream &is)
-{
-	//fill this in soon
-	return false;
 }
 
 
@@ -1123,25 +1160,7 @@ bool GameSession::LoadEnemies( ifstream &is )
 		}
 	}*/
 
-	CreateBulletQuads();
 	
-
-	if( raceFight != NULL )
-	{
-		raceFight->Init();
-	}
-
-	//create sequences for the barriers after all enemies have already been loaded
-	for (auto it = barriers.begin(); it != barriers.end(); ++it)
-	{
-		(*it)->SetScene();
-	}
-	
-
-	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
-	{
-		(*it)->SetZoneSpritePosition();
-	}
 
 	return true;
 }
@@ -2886,6 +2905,42 @@ void GameSession::ProcessAllTerrain()
 	allPolygonsList.clear();
 }
 
+void GameSession::ProcessActor(ActorPtr a)
+{
+	Enemy *enemy = a->GenerateEnemy();
+
+	if (enemy != NULL)
+	{
+		fullEnemyList.push_back(enemy);
+		enemyTree->Insert(enemy);
+	}
+
+	delete a; //eventually probably delete these all at once or something
+}
+
+void GameSession::ProcessAllActors()
+{
+	CreateBulletQuads();
+
+
+	if (raceFight != NULL)
+	{
+		raceFight->Init();
+	}
+
+	//create sequences for the barriers after all enemies have already been loaded
+	for (auto it = barriers.begin(); it != barriers.end(); ++it)
+	{
+		(*it)->SetScene();
+	}
+
+
+	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->SetZoneSpritePosition();
+	}
+}
+
 bool GameSession::OpenFile( )
 {
 	int insertCount = 0;
@@ -2915,7 +2970,10 @@ bool GameSession::OpenFile( )
 
 		LoadRails(is);
 
-		LoadEnemies( is );
+		ReadActors(is);
+		//LoadEnemies( is );
+
+		ProcessAllActors();
 		
 		LoadGates( is );
 
@@ -4319,6 +4377,10 @@ bool GameSession::Load()
 
 	//while (true);
 
+	AddGeneralEnemies();
+	AddW1Enemies();
+	SetupEnemyTypes();
+
 	TestLoad();
 
 	
@@ -4801,6 +4863,10 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 #include "StorySequence.h"
 int GameSession::Run()
 {
+	//test
+	
+
+
 	ClearEmitters();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVisible = mainMenu->GetMouseVisible();
@@ -10457,3 +10523,5 @@ void GameSession::DecorDraw::Draw(sf::RenderTarget *target)
 {
 	target->draw(quads,	numVertices, sf::Quads, ts->texture);
 }
+
+

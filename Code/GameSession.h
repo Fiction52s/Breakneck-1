@@ -181,7 +181,12 @@ struct KeyNumberObj
 
 struct GameSession : QuadTreeCollider, RayCastHandler, Session
 {
+	//just testing. not used yet..
 	std::map<std::string, std::function<Enemy*(std::ifstream &)>> enemyCreateMap;
+
+	//new stuff
+	PolyPtr GetPolygon(int index);
+
 
 	//maybe move this out eventually
 	struct DecorInfo
@@ -248,6 +253,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void ProcessPlayerStartPos();
 	void ProcessTerrain(PolyPtr poly);
 	void ProcessAllTerrain();
+	void ProcessActor(ActorPtr a);
+	void ProcessAllActors();
 
 	PolyPtr inversePoly;
 	std::list<PolyPtr> allPolygonsList;
@@ -278,7 +285,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool LoadEnemies(std::ifstream &is);
 	bool LoadRails(std::ifstream &is);
 	void LoadEnemy(std::ifstream &is);
-	bool ReadActors(std::ifstream &is);
 	Edge *LoadEdgeIndex(std::ifstream &is);
 	void LoadEdgeInfo(std::ifstream &is,
 		Edge *&edge, double &edgeQuant);

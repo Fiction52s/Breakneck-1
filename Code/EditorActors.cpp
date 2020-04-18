@@ -6,15 +6,18 @@
 using namespace std;
 using namespace sf;
 
+
+
+
 ActorType::ActorType(ParamsInfo &pi)
 	:info(pi)
 {
 	panel = CreatePanel();
-	EditSession *session = EditSession::GetSession();
+	Session *sess = Session::GetSession();
 
 	if (info.ts == NULL)
 	{
-		info.ts = session->GetTileset(string("Editor/") + info.name + string("_editor.png"));
+		info.ts = sess->GetTileset(string("Editor/") + info.name + string("_editor.png"));
 	}
 }
 
@@ -85,6 +88,8 @@ sf::Sprite ActorType::GetSprite(bool grounded)
 Panel *ActorType::CreateDefaultPanel(const std::string &n, bool mon, bool level, bool path, bool loop)
 {
 	EditSession *edit = EditSession::GetSession();
+	if (edit == NULL)
+		return NULL;
 
 	int height = 800;
 
@@ -121,6 +126,10 @@ Panel *ActorType::CreateDefaultPanel(const std::string &n, bool mon, bool level,
 Panel *ActorType::CreatePanel()
 {
 	EditSession *edit = EditSession::GetSession();
+
+	if (edit == NULL)
+		return NULL;
+
 	Panel *p = NULL;
 	string &name = info.name;
 	//extra
@@ -672,7 +681,6 @@ Panel *ActorType::CreatePanel()
 
 void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 {
-	EditSession *edit = EditSession::GetSession();
 	int terrainIndex;
 	int edgeIndex;
 	Vector2i pos;
@@ -716,6 +724,10 @@ void ActorType::PlaceEnemy(ActorParams *ap)
 
 
 	EditSession *edit = EditSession::GetSession();
+
+	if (edit == NULL)
+		return;
+
 	ap->enemyLevel = edit->enemySelectLevel;
 
 	bool hasPanel = (ap->type->panel != NULL);
@@ -740,6 +752,10 @@ void ActorType::PlaceEnemy(ActorParams *ap)
 void ActorType::PlaceEnemy()
 {
 	EditSession *edit = EditSession::GetSession();
+
+	if (edit == NULL)
+		return;
+
 
 	Vector2i worldPos(edit->worldPos);
 	bool placed = false;

@@ -6,99 +6,50 @@
 #include "ISelectable.h"
 #include "EditorActors.h"
 #include "EditorTerrain.h"
+#include "ActorParamsBase.h"
 
 struct TerrainPolygon;
 
-struct ActorParams : ISelectable
+struct BasicGroundEnemyParams : public ActorParams
 {
-	virtual ActorParams *Copy() = 0;
-	~ActorParams();
-	ActorParams(ActorType *at);
-	bool SetLevel(int lev);
-	virtual void Init() {};
-	virtual void WriteParamFile(std::ofstream &of);
-	void WriteBasicParamFile(std::ofstream &of);
-	void WriteFile(std::ofstream &of);
-	void WriteMonitor(std::ofstream &of);
-	void LoadBool(std::ifstream &is, bool &b);
-	void WriteBool(std::ofstream &of, bool b);
-	void WriteLevel(std::ofstream &of);
-	void WritePath( std::ofstream &of );
-	void WriteLoop( std::ofstream &of );
-	void AnchorToGround(PolyPtr poly,
-		int eIndex, double quantity);
-	void AnchorToRail(TerrainRail *rail,
-		int eIndex, double quantity);
-	void AnchorToGround(GroundInfo &gi);
-	void AnchorToRail(GroundInfo &gi);
-	void UnAnchor();
-	void UpdateGroundedSprite();
+	BasicGroundEnemyParams(ActorType *at,
+		PolyPtr edgePolygon,
+		int edgeIndex, double edgeQuantity,
+		int level = 0);
+	BasicGroundEnemyParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	virtual void WriteSpecialParams(std::ofstream &of) {}
+	ActorParams *Copy();
+};
 
-	virtual std::list<sf::Vector2i> GetGlobalPath();
-	virtual void SetPath(std::list<sf::Vector2i> &globalPath);
+struct BasicRailEnemyParams : public ActorParams
+{
+	BasicRailEnemyParams(ActorType *at,
+		TerrainRail *rail,
+		int edgeIndex, double edgeQuantity,
+		int level = 0);
+	BasicRailEnemyParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	virtual void WriteSpecialParams(std::ofstream &of) {}
+	ActorParams *Copy();
+};
 
-	void DrawLevel(sf::RenderTarget *target);
-	void DrawBoundary(sf::RenderTarget *target);
-	void DrawMonitor(sf::RenderTarget *target);
-	void LoadGrounded(std::ifstream &is);
-	void LoadRailed(std::ifstream &is);
-	void LoadAerial(std::ifstream &is);
-	void LoadGlobalPath(std::ifstream &is );
-	void LoadMonitor(std::ifstream &is);
-	void LoadEnemyLevel(std::ifstream &is);
-	virtual void SetParams();
-	void SetBasicParams();
-	void SetBasicPanelInfo();
-	virtual void SetPanelInfo();
-	
-	void PlaceAerial(sf::Vector2i &pos);
-	void PlaceGrounded( PolyPtr tp,
-		int edgeIndex, double quant);
-	void PlaceRailed(TerrainRail *rail,
-		int edgeIndex, double quant);
-
-
-	virtual void SetBoundingQuad();
-	virtual void UpdateExtraVisuals()
-	{}
-
-	//ISelectable( ISelectableType type );
-	virtual bool ContainsPoint(sf::Vector2f test);
-	virtual bool Intersects(sf::IntRect rect);
-	virtual bool IsPlacementOkay();
-	virtual void Move(sf::Vector2i delta);
-	virtual void BrushDraw(sf::RenderTarget *target,
-		bool valid);
+struct BasicAirEnemyParams : public ActorParams
+{
+	BasicAirEnemyParams(ActorType *at,
+		sf::Vector2i &pos, int level = 0);
+	BasicAirEnemyParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void SetPanelInfo();
+	void SetParams();
+	virtual void SetSpecialParams() {}
+	virtual void SetSpecialPanelInfo() {}
+	virtual void WriteSpecialParams(std::ofstream &of) {}
+	ActorParams *Copy();
 	virtual void Draw(sf::RenderTarget *target);
-	virtual void DrawPreview(sf::RenderTarget *target);
-	virtual void Deactivate();
-	virtual void Activate();
-
-	virtual void DrawQuad(sf::RenderTarget *target);
-
-	virtual void SetSelected(bool select);
-
-	virtual bool CanApply();
-	bool CanAdd();
-
-	//sf::Sprite icon;
-	sf::Sprite image;
-	ActorGroup *group;
-	ActorType *type;
-	sf::Vector2i position;
-
-	//if groundInfo is not null
-	//then you can handle ground, even 
-	//if you arent on it
-	GroundInfo *groundInfo;
-	bool hasMonitor;
-	sf::VertexArray boundingQuad;
-
-	std::list<sf::Vector2i> localPath;
-	bool loop;
-	sf::VertexArray *lines;
-
-	int enemyLevel;
 };
 
 struct PlayerParams : public ActorParams
@@ -252,20 +203,6 @@ struct ShipPickupParams : public ActorParams
 	void SetPanelInfo();
 	void WriteParamFile(std::ofstream &of);
 	bool facingRight;
-};
-
-struct GoalParams : public ActorParams
-{
-	GoalParams(ActorType *at,
-		PolyPtr edgePolygon,
-		int edgeIndex,
-		double edgeQuantity);
-	GoalParams(ActorType *at,
-		std::ifstream &is);
-	ActorParams *Copy();
-	void SetParams();
-	void SetPanelInfo();
-	void WriteParamFile(std::ofstream &of);
 };
 
 struct PoiParams : public ActorParams
@@ -535,47 +472,7 @@ struct PatrollerParams : public ActorParams
 };
 
 
-struct BasicGroundEnemyParams : public ActorParams
-{
-	BasicGroundEnemyParams(ActorType *at,
-		PolyPtr edgePolygon,
-		int edgeIndex, double edgeQuantity,
-		int level=0);
-	BasicGroundEnemyParams(ActorType *at,
-		std::ifstream &is);
-	void WriteParamFile(std::ofstream &of);
-	virtual void WriteSpecialParams(std::ofstream &of) {}
-	ActorParams *Copy();
-};
 
-struct BasicRailEnemyParams : public ActorParams
-{
-	BasicRailEnemyParams(ActorType *at,
-		TerrainRail *rail,
-		int edgeIndex, double edgeQuantity,
-		int level = 0);
-	BasicRailEnemyParams(ActorType *at,
-		std::ifstream &is);
-	void WriteParamFile(std::ofstream &of);
-	virtual void WriteSpecialParams(std::ofstream &of) {}
-	ActorParams *Copy();
-};
-
-struct BasicAirEnemyParams : public ActorParams
-{
-	BasicAirEnemyParams(ActorType *at,
-		sf::Vector2i &pos, int level =0);
-	BasicAirEnemyParams(ActorType *at,
-		std::ifstream &is);
-	void WriteParamFile(std::ofstream &of);
-	void SetPanelInfo();
-	void SetParams();
-	virtual void SetSpecialParams() {}
-	virtual void SetSpecialPanelInfo() {}
-	virtual void WriteSpecialParams(std::ofstream &of) {}
-	ActorParams *Copy();
-	virtual void Draw(sf::RenderTarget *target);
-};
 
 struct JugglerParams : public BasicAirEnemyParams
 {

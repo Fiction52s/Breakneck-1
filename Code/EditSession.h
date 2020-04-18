@@ -22,6 +22,7 @@
 #include "EditorActors.h"
 #include "EditorTerrain.h"
 #include "Session.h"
+#include "ActorParamsBase.h"
 //#include "EditorRail.h"
 
 struct TransformTools;
@@ -149,7 +150,7 @@ struct EditSession : GUIHandler, Session
 	void ProcessBGTerrain(PolyPtr poly);
 	void ProcessRail(RailPtr rail);
 
-	bool ReadActors(std::ifstream &is);
+	void ProcessActor(ActorPtr a);
 
 	void ProcessGate(int gType,
 		int poly0Index, int vertexIndex0, int poly1Index,
@@ -186,10 +187,11 @@ struct EditSession : GUIHandler, Session
 
 	sf::RenderTexture *mapPreviewTex;
 
-	PolyPtr GetPolygon(int index, int &edgeIndex);
-	TerrainRail *GetRail(int index, int &edgeIndex);
+	PolyPtr GetPolygon(int index );
+	RailPtr GetRail(int index);
 
-	std::list<ParamsInfo> worldEnemyNames[8];
+
+	/*std::list<ParamsInfo> worldEnemyNames[8];
 	void AddWorldEnemy(const std::string &name, int w,
 		ParamsLoader *pLoader,
 		ParamsMaker* pmGround, ParamsMaker *pmAir,
@@ -252,11 +254,10 @@ struct EditSession : GUIHandler, Session
 	void AddW3Enemies();
 	void AddW4Enemies();
 	void AddW5Enemies();
-	void AddW6Enemies();
+	void AddW6Enemies();*/
 	
 
-	void SetupEnemyTypes();
-	void SetupEnemyType(ParamsInfo &pi);
+	
 
 	bool IsKeyPressed(int k);
 	bool IsMousePressed(int m);
@@ -441,8 +442,7 @@ struct EditSession : GUIHandler, Session
 	std::string currentFile;
 	static double zoomMultiple;
 	sf::Vector2f testPoint;
-	std::map<std::string, ActorGroup*> groups;
-	std::map<std::string, ActorType*> types;
+	
 
 	static LineIntersection SegmentIntersect( sf::Vector2i a, 
 		sf::Vector2i b, sf::Vector2i c, 

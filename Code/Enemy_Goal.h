@@ -3,6 +3,8 @@
 
 #include "Enemy.h"
 
+struct ActorParams;
+
 struct Goal : Enemy
 {
 	enum Action
@@ -13,8 +15,10 @@ struct Goal : Enemy
 		A_DESTROYED
 	};
 
+
 	Goal(Edge *ground, double quantity,
 		int world);
+	static Enemy *Create(ActorParams *ap);
 	~Goal();
 	//static Enemy *Create(std::ifstream &is);
 	void DrawMinimap(sf::RenderTarget *target);

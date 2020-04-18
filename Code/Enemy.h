@@ -18,6 +18,8 @@ struct SpecterArea;
 struct SpecterTester;
 struct Session;
 
+struct ActorParams;
+
 struct EnemyParams
 {
 	EnemyParams()
@@ -49,6 +51,9 @@ struct EnemyParams
 	int charge;
 	int maxHealth;
 };
+
+
+
 
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
@@ -228,6 +233,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	float scale;
 	int maxHealth;
 };
+
+
 
 struct PathFollower
 {

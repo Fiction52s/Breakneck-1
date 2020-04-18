@@ -517,19 +517,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	bool inverse;
 };
 
-struct GroundInfo
-{
-	GroundInfo();
-	TerrainPoint *edgeStart;
-	double groundQuantity;
-	PolyPtr ground;
-	TerrainRail *railGround;
-	TerrainPoint *GetNextPoint();
-	void AddActor(ActorPtr a);
-	void RemoveActor(ActorPtr a);
-	int GetEdgeIndex();
-	V2d GetPosition();
-};
+
 
 
 

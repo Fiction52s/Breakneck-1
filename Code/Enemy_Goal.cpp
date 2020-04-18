@@ -6,22 +6,17 @@
 #include "GoalExplosion.h"
 #include "Enemy_Goal.h"
 #include "MapHeader.h"
+#include "ActorParamsBase.h"
 
 using namespace std;
 using namespace sf;
-
-//Enemy *Goal::Create(std::ifstream &is)
-//{
-//	cout << "here i ammmmm" << endl;
-//	int x = 5;
-//
-//	return NULL;
-//}
 
 Goal::Goal( Edge *g, double q, int world )
 		:Enemy( EnemyType::EN_GOAL, false, 0, false ), 
 	ground( g ), edgeQuantity( q ), dead( false )
 {
+	
+	
 
 
 	double width;
@@ -142,7 +137,28 @@ Goal::Goal( Edge *g, double q, int world )
 	//numHealth = 1;
 
 	action = A_SITTING;
+
+	//clean this up 
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		game->hasGoal = true;
+		game->goalPos = position;
+
+		V2d gPos = ground->GetPoint(edgeQuantity);
+		V2d norm = ground->Normal();
+		double nodeHeight = 104;
+		game->goalNodePos = gPos + norm * nodeHeight;
+		float space = 78.f;
+		game->goalNodePosFinal = V2d(game->goalNodePos.x, game->goalNodePos.y - space);
+	}
 	//kinKillFrame = 0;
+}
+
+
+Enemy *Goal::Create(ActorParams *ap)
+{
+	return new Goal(ap->GetGroundEdge(), ap->groundInfo->groundQuantity, ap->GetWorld());
 }
 
 Goal::~Goal()

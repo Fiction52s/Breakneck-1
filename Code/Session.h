@@ -12,6 +12,11 @@
 #include "EffectLayer.h"
 #include "Camera.h"
 
+#include "ActorParamsBase.h"
+#include "EditorActors.h"
+
+
+
 struct SoundManager;
 struct SoundNode;
 
@@ -32,6 +37,7 @@ struct ComboObject;
 
 struct Enemy;
 
+
 struct Session : TilesetManager
 {
 	enum SessionType
@@ -43,6 +49,96 @@ struct Session : TilesetManager
 	SessionType sessType;
 	bool IsSessTypeGame();
 	bool IsSessTypeEdit();
+
+	//stuff to test editor enemy loading in game
+
+	void SetupEnemyTypes();
+	void SetupEnemyType(ParamsInfo &pi);
+	std::map<std::string, ActorGroup*> groups;
+	std::map<std::string, ActorType*> types;
+
+	std::list<ParamsInfo> worldEnemyNames[8];
+	void AddWorldEnemy(const std::string &name, 
+		int w,
+		EnemyCreator *pCreator,
+		ParamsLoader *pLoader,
+		ParamsMaker* pmGround, ParamsMaker *pmAir,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
+		int p_numLevels = 1,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	void AddBasicGroundWorldEnemy(const std::string &name, int w,
+		EnemyCreator *pCreator,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
+		int p_numLevels = 1,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	void AddBasicRailWorldEnemy(const std::string &name, int w,
+		EnemyCreator *pCreator,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
+		int p_numLevels = 1,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	void AddBasicAerialWorldEnemy(const std::string &name, int w,
+		EnemyCreator *pCreator,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
+		int p_numLevels = 1,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	void AddExtraEnemy(const std::string &name,
+		EnemyCreator *pCreator,
+		ParamsLoader *pLoader,
+		ParamsMaker *pmGround, ParamsMaker *pmAir,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
+		int p_numLevels = 1,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
+	std::list<ParamsInfo> extraEnemyNames;
+
+	void AddGeneralEnemies();
+	void AddW1Enemies();
+	void AddW2Enemies();
+	void AddW3Enemies();
+	void AddW4Enemies();
+	void AddW5Enemies();
+	void AddW6Enemies();
+
+	virtual PolyPtr GetPolygon(int index) = 0;
+	virtual RailPtr GetRail(int index) //change this to abstract later when gamesession has rails again
+	{
+		return NULL;
+	}
+
+
+
+	//--------------------------------------
+
+
 
 	//stuff I have to add in for enemies. Might have to adjust
 
@@ -174,7 +270,8 @@ struct Session : TilesetManager
 	bool ReadRails(std::ifstream &is);
 	virtual void ProcessRail(RailPtr rail) {}
 
-	virtual bool ReadActors(std::ifstream &is) = 0;
+	virtual bool ReadActors(std::ifstream &is);
+	virtual void ProcessActor(ActorPtr a) {}
 
 	bool ReadGates(std::ifstream &is);
 	virtual void ProcessGate(int gType,
