@@ -81,7 +81,7 @@ Goal::Goal( Edge *g, double q, int world )
 	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height );
 	
 
-	V2d gPoint = g->GetPoint( edgeQuantity );
+	V2d gPoint = g->GetPosition( edgeQuantity );
 
 
 	gn = g->Normal();
@@ -123,7 +123,7 @@ Goal::Goal( Edge *g, double q, int world )
 		game->hasGoal = true;
 		game->goalPos = position;
 
-		V2d gPos = ground->GetPoint(edgeQuantity);
+		V2d gPos = ground->GetPosition(edgeQuantity);
 		V2d norm = ground->Normal();
 		double nodeHeight = 104;
 		game->goalNodePos = gPos + norm * nodeHeight;
@@ -138,7 +138,7 @@ Goal::Goal( Edge *g, double q, int world )
 
 Enemy *Goal::Create(ActorParams *ap)
 {
-	return new Goal(ap->GetGroundEdge(), ap->groundInfo->groundQuantity, ap->GetWorld());
+	return new Goal(ap->GetGroundEdge(), ap->posInfo.groundQuantity, ap->GetWorld());
 }
 
 Goal::~Goal()

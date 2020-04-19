@@ -161,7 +161,7 @@ void TouchGrass::CommonInit( double yOff, double p_angle, double hitboxYOff, dou
 
 	V2d normal = edge->Normal();
 
-	V2d p = edge->GetPoint(quant);
+	V2d p = edge->GetPosition(quant);
 	center = p;
 	center += normal * yOffset;
 

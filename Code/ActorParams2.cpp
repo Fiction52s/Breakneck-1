@@ -450,7 +450,7 @@ void PoisonFrogParams::UpdatePath()
 {
 	int totalQuads = 50;
 
-	if( groundInfo == NULL )
+	if( posInfo.IsAerial() )
 	{
 		for( int i = 0; i < totalQuads; ++i )
 		{
@@ -471,7 +471,7 @@ void PoisonFrogParams::UpdatePath()
 
 	V2d fireDir;
 
-	V2d e(groundInfo->GetEdge()->FullAlong());//next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
+	V2d e(posInfo.GetEdge()->FullAlong());//next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
 	e = normalize( e );
 	e = V2d( e.y, -e.x );
 
@@ -604,7 +604,7 @@ void CurveTurretParams::UpdateBulletCurve()
 
 	double factorGrav = 256;
 
-	if( groundInfo == NULL )
+	if( posInfo.IsAerial() )
 	{
 		for( int i = 0; i < totalQuads; ++i )
 		{
@@ -621,15 +621,12 @@ void CurveTurretParams::UpdateBulletCurve()
 	Vector2f pos( position.x, position.y );
 	V2d fireDir;
 
-	
-	TerrainPoint *curr = groundInfo->edgeStart;
-	TerrainPoint *next = groundInfo->GetNextPoint();
+	Edge *edge = posInfo.GetEdge();
 
-	V2d e( next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
-	V2d groundDir = normalize( e );
-	e = V2d( groundDir.y, -groundDir.x );
+	V2d along = edge->Along();
+	V2d norm = edge->Normal();//V2d( groundDir.y, -groundDir.x );
 
-	Vector2f bulletVel = Vector2f( e.x, e.y ) * bulletSpeed;
+	Vector2f bulletVel = Vector2f( norm.x, norm.y ) * bulletSpeed;
 	
 	for( int i = 0; i < totalQuads; ++i )
 	{
@@ -654,8 +651,8 @@ void CurveTurretParams::UpdateBulletCurve()
 
 		if( relativeGrav )
 		{
-			trueGrav += groundDir * ( gravFactor.x / factorGrav );
-			trueGrav += e * (-gravFactor.y / factorGrav );
+			trueGrav += along * ( gravFactor.x / factorGrav );
+			trueGrav += norm * (-gravFactor.y / factorGrav );
 		}
 		else
 		{

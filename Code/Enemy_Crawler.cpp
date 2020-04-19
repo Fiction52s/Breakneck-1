@@ -20,7 +20,7 @@ using namespace sf;
 
 Enemy *Crawler::Create(ActorParams *ap)
 {
-	return new Crawler(ap->hasMonitor, ap->GetGroundEdge(), ap->groundInfo->groundQuantity, ap->enemyLevel);
+	return new Crawler(ap->hasMonitor, ap->GetGroundEdge(), ap->posInfo.groundQuantity, ap->enemyLevel);
 }
 
 Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
@@ -71,7 +71,7 @@ Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = mover->ground->GetPoint( q );
+	V2d gPoint = mover->ground->GetPosition( q );
 	sprite.setPosition( gPoint.x, gPoint.y );
 
 	sprite.setScale(scale, scale);
@@ -165,7 +165,7 @@ void Crawler::ResetEnemy()
 	currDistTravelled = 0;
 
 	frame = 0;
-	V2d gPoint = mover->ground->GetPoint( startQuant );
+	V2d gPoint = mover->ground->GetPosition( startQuant );
 	//sprite.setPosition( gPoint.x, gPoint.y );
 	
 	//position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
@@ -512,7 +512,7 @@ void Crawler::HandleNoHealth()
 void Crawler::UpdateSprite()
 {
 	V2d gn = mover->ground->Normal();
-	V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
+	V2d gPoint = mover->ground->GetPosition(mover->edgeQuantity);
 
 	//return;
 	float extraVert = 34;
@@ -555,7 +555,7 @@ void Crawler::UpdateSprite()
 	{
 		angle = atan2(gn.x, -gn.y);
 
-		V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
+		V2d pp = mover->ground->GetPosition(mover->edgeQuantity);//ground->GetPosition( edgeQuantity );
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 		sprite.setRotation(angle / PI * 180);
 		sprite.setPosition(pp.x, pp.y);
@@ -570,7 +570,7 @@ void Crawler::UpdateSprite()
 
 			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 			sprite.setRotation(angle / PI * 180);
-			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
+			V2d pp = mover->ground->GetPosition(mover->edgeQuantity);//ground->GetPosition( edgeQuantity );
 			sprite.setPosition(pp.x, pp.y);
 		}
 		else
@@ -581,7 +581,7 @@ void Crawler::UpdateSprite()
 
 			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 			sprite.setRotation(angle / PI * 180);
-			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
+			V2d pp = mover->ground->GetPosition(mover->edgeQuantity);
 			sprite.setPosition(pp.x, pp.y);
 		}
 	}

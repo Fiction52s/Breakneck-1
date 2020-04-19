@@ -6,7 +6,7 @@
 
 struct Tileset;
 struct GameSession;
-struct TerrainPiece;
+struct TerrainPolygon;
 struct Grass : QuadTreeEntrant
 {
 	enum GrassType
@@ -20,10 +20,10 @@ struct Grass : QuadTreeEntrant
 	};
 
 
-	Grass(GameSession *p_owner, Tileset *p_ts_grass,
+	Grass(Tileset *p_ts_grass,
 		int p_tileIndex,
 		V2d &pos,
-		TerrainPiece *poly, GrassType gType);
+		TerrainPolygon *poly, GrassType gType);
 
 	void Reset();
 	V2d pos;
@@ -46,8 +46,7 @@ struct Grass : QuadTreeEntrant
 	CollisionBox explosion;
 	int explodeFrame;
 	int explodeLimit;
-	GameSession *owner;
-	TerrainPiece *poly;
+	TerrainPolygon *poly;
 	sf::IntRect aabb;
 };
 

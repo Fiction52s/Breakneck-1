@@ -9,7 +9,6 @@
 #include <boost/lexical_cast.hpp>
 #include "Physics.h"
 #include "Action.h"
-//#include "TerrainRender.h"
 #include <set>
 #include "GameSession.h"
 #include "ActorParams.h"
@@ -732,7 +731,7 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 
 		cn = curr->Normal();
 		rcEdge = NULL;
-		rayStart = curr->GetPoint(quant);
+		rayStart = curr->GetPosition(quant);
 
 		rPen = rand() % diffPenMax;
 		penDistance = minPen + rPen; //minpen times 2 cuz gotta account for the other side too
@@ -745,11 +744,11 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 
 		if (rcEdge != NULL)
 		{
-			V2d rcPos = rcEdge->GetPoint(rcQuant);
+			V2d rcPos = rcEdge->GetPosition(rcQuant);
 			continue;
 		}
 
-		pos = curr->GetPoint(quant) - curr->Normal() * penDistance;
+		pos = curr->GetPosition(quant) - curr->Normal() * penDistance;
 
 
 		sf::Rect<double> testRect;
@@ -795,7 +794,7 @@ void TerrainPolygon::HandleRayCollision(Edge *edge,
 		return;
 	}
 
-	double len = length(edge->GetPoint(edgeQuantity) - rayStart);
+	double len = length(edge->GetPosition(edgeQuantity) - rayStart);
 	if (rcEdge == NULL || len < rcPortion)
 	{
 		rcEdge = edge;
@@ -4011,10 +4010,10 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 	{
 		for( list<ActorPtr>::iterator it = (*mapIt).second.begin(); it != (*mapIt).second.end(); ++it )
 		{
-			next = (*it)->groundInfo->GetNextPoint();
+			next = (*it)->posInfo.GetNextPoint();
 
 			if( (*it)->type->CanBeGrounded() && 
-				( (*(*it)->groundInfo->edgeStart).selected || next->selected ) )
+				( (*(*it)->posInfo.GetPoint()).selected || next->selected ) )
 			{
 				bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");
 

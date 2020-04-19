@@ -582,7 +582,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				currentContact->resolution = newPosition - position;
 				currentContact->edge = e;
 				currentContact->normal= edgeNormal;
-				currentContact->position = e->GetPoint( lineQuantity );
+				currentContact->position = e->GetPosition( lineQuantity );
 				currentContact->collisionPriority = length( intersect - ( oldPosition + radius * -edgeNormal ) );
 
 				/*CircleShape *cs = new CircleShape;

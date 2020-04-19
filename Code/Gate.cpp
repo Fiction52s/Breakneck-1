@@ -775,14 +775,14 @@ void Gate::UpdateLine()
 
 		if (i == numTiles - 1 && remainder > 0)
 		{
-			V2d start = edgeA->GetPoint(64 * i);
+			V2d start = edgeA->GetPosition(64 * i);
 			V2d end = edgeA->v1;
 			double h = length(end - start);
-			SetRectRotation(blackGate + i * 4, angle, 64, h, Vector2f(edgeA->GetPoint(64 * i + (32 - (64 - h) / 2))));
+			SetRectRotation(blackGate + i * 4, angle, 64, h, Vector2f(edgeA->GetPosition(64 * i + (32 - (64 - h) / 2))));
 		}
 		else
 		{
-			SetRectRotation(blackGate + i * 4, angle, 64, 64, Vector2f(edgeA->GetPoint(64 * i + 32 )));
+			SetRectRotation(blackGate + i * 4, angle, 64, 64, Vector2f(edgeA->GetPosition(64 * i + 32 )));
 		}
 		//SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(6));
 		

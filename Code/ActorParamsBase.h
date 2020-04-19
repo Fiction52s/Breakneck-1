@@ -24,8 +24,13 @@ struct PositionInfo
 	RailPtr railGround;
 	Edge *GetEdge();
 	TerrainPoint *GetPoint();
+	TerrainPoint *GetNextPoint();
+	bool IsAerial();
 	void AddActor(ActorPtr a);
 	void RemoveActor(ActorPtr a);
+	void SetAerial( V2d &pos );
+	void SetGround(PolyPtr p_ground, int p_edgeIndex, double quant);
+	void SetRail(RailPtr p_rail, int p_edgeIndex, double quant);
 	int GetEdgeIndex();
 	V2d GetPosition();
 	V2d position;

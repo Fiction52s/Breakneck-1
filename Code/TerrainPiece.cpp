@@ -2,7 +2,6 @@
 #include "GameSession.h"
 #include "TouchGrass.h"
 #include "Grass.h"
-#include "TerrainRender.h"
 
 using namespace sf;
 using namespace std;

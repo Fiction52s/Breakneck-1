@@ -27,7 +27,7 @@ FootTrap::FootTrap( bool p_hasMonitor, Edge *g, double q )
 	ts = sess->GetTileset( "Enemies/foottrap_160x128.png", 160, height );
 	sprite.setTexture( *ts->texture );
 	
-	V2d gPoint = g->GetPoint( edgeQuantity );
+	V2d gPoint = g->GetPosition( edgeQuantity );
 
 	receivedHit = NULL;
 

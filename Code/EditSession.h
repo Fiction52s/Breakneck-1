@@ -379,8 +379,8 @@ struct EditSession : GUIHandler, Session
 
 	
 
-	GroundInfo ConvertPointToGround( sf::Vector2i point );
-	GroundInfo ConvertPointToRail(sf::Vector2i point);
+	PositionInfo ConvertPointToGround( sf::Vector2i point );
+	PositionInfo ConvertPointToRail(sf::Vector2i point);
 	void CreateActor( ActorPtr actor );
 	void CreateDecorImage(DecorPtr dec);
 
@@ -406,8 +406,8 @@ struct EditSession : GUIHandler, Session
 		GateInfoPtr gi, Brush *b,
 		bool &a);
 
-	GroundInfo worldPosRail;
-	GroundInfo worldPosGround;
+	PositionInfo worldPosRail;
+	PositionInfo worldPosGround;
 	V2d worldPos;
 	ActorParams* tempActor;
 	MapHeader newMapHeader;

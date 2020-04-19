@@ -392,7 +392,7 @@ void CrawlerAttackSeq::UpdateCrawlerSwoop()
 		queenGrabSprite.getLocalBounds().height);
 
 	Edge *ground = player->ground;
-	V2d gPoint = ground->GetPoint(player->edgeQuantity);
+	V2d gPoint = ground->GetPosition(player->edgeQuantity);
 	V2d gNorm = ground->Normal();
 
 	queenGrabSprite.setPosition(Vector2f(gPoint - gNorm * 30.0));

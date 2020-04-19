@@ -1,6 +1,5 @@
 #include "GameSession.h"
 #include "SpecialTerrain.h"
-#include "TerrainRender.h"
 
 using namespace std;
 using namespace sf;
@@ -262,8 +261,8 @@ bool SpecialTerrainPiece::Load( ifstream &is )
 void SpecialTerrainPiece::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
 {
 	if ( rcEdge == NULL 
-		|| ( length(edge->GetPoint(edgeQuantity) - insideQueryPoint) 
-	> length(rcEdge->GetPoint(rcQuant) - insideQueryPoint)))
+		|| ( length(edge->GetPosition(edgeQuantity) - insideQueryPoint) 
+	> length(rcEdge->GetPosition(rcQuant) - insideQueryPoint)))
 	{
 		rcEdge = edge;
 		rcQuant = edgeQuantity;

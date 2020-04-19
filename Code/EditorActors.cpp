@@ -689,10 +689,8 @@ void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 	string &name = info.name;
 
 	a = info.pLoader(this, is);
-	if (a->groundInfo != NULL)
-	{
-		a->groundInfo->AddActor(a);
-	}
+
+	a->posInfo.AddActor(a);
 }
 
 bool ActorType::IsGoalType()

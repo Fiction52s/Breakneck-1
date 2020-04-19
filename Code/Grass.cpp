@@ -1,14 +1,14 @@
 #include "Grass.h"
 #include "GameSession.h"
-#include "TerrainPiece.h"
+#include "EditorTerrain.h"
 
 using namespace std;
 using namespace sf;
 
-Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
-	V2d &p_pos, TerrainPiece *p_poly, GrassType gType)
+Grass::Grass(Tileset *p_ts_grass, int p_tileIndex,
+	V2d &p_pos, TerrainPolygon *p_poly, GrassType gType)
 	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),
-	ts_grass(p_ts_grass), owner(p_owner), poly(p_poly), pos(p_pos), radius(128 / 2.0 - 20)
+	ts_grass(p_ts_grass), poly(p_poly), pos(p_pos), radius(128 / 2.0 - 20)
 {
 	grassType = gType;
 
@@ -71,7 +71,13 @@ void Grass::Update()
 		if (explodeFrame == explodeLimit)
 		{
 			explodeFrame = 0;
-			owner->RemoveGravityGrassFromExplodeList(this);
+
+			GameSession *game = GameSession::GetSession();
+			if (game != NULL)
+			{
+				game->RemoveGravityGrassFromExplodeList(this);
+			}
+			
 		}
 	}
 }

@@ -60,7 +60,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	//new vars
 
 	//void SetStartGroundInfo
-	GroundInfo startGroundInfo;
+	PositionInfo startGroundInfo;
 	HitParams hitParams;
 	Session *sess;
 	bool SetHitParams();

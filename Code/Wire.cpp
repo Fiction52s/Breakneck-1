@@ -443,7 +443,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				else
 				{
 					//cout << "Cw" << endl;
-					anchor.pos = rcEdge->GetPoint( rcQuant );
+					anchor.pos = rcEdge->GetPosition( rcQuant );
 				}
 				
 				anchor.e = rcEdge;
@@ -1082,7 +1082,8 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	//playerPos += V2d( offset.x, offset.y );	
 	V2d playerPos = GetPlayerPos();//GetOriginPos(true);
 
-	if( rayPortion > .1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - playerPos ) < length( rcEdge->GetPoint( rcQuant ) - playerPos ) ) )
+	if( rayPortion > .1 && ( rcEdge == NULL || length( edge->GetPosition( edgeQuantity ) - playerPos ) 
+		< length( rcEdge->GetPosition( rcQuant ) - playerPos ) ) )
 	{
 		rcEdge = edge;
 		rcQuant = edgeQuantity;
@@ -1434,7 +1435,7 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 		Grass *g = (Grass*)qte;
 		//Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
 
-		V2d touchPoint = rcEdge->GetPoint(rcQuant);
+		V2d touchPoint = rcEdge->GetPosition(rcQuant);
 		if (g->grassType == Grass::ANTIWIRE && g->IsTouchingCircle( touchPoint, grassCheckRadius ))
 		{
 			antiWireGrassCount++;
@@ -1447,7 +1448,7 @@ void Wire::CheckAntiWireGrass()
 {
 	if ( player->owner != NULL && player->owner->hasGrass[Grass::ANTIWIRE])
 	{
-		V2d hitPoint = rcEdge->GetPoint(rcQuant);
+		V2d hitPoint = rcEdge->GetPosition(rcQuant);
 		sf::Rect<double> r;
 		r.left = hitPoint.x - grassCheckRadius / 2;
 		r.top = hitPoint.y - grassCheckRadius / 2;
@@ -2084,7 +2085,7 @@ V2d Wire::GetOriginPos( bool test )
 	if( player->ground != NULL )
 	{
 		V2d norm = player->ground->Normal();
-		V2d pp = player->ground->GetPoint( player->edgeQuantity );
+		V2d pp = player->ground->GetPosition( player->edgeQuantity );
 		playerPos = pp + gNormal * player->normalHeight;
 		if( norm.y == -1 )
 		{

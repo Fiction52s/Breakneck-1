@@ -113,7 +113,6 @@ struct DecorLayer;
 struct TouchGrassCollection;
 
 struct HealthFly;
-struct TerrainPiece;
 struct SpecialTerrainPiece;
 
 struct EnvPlant;

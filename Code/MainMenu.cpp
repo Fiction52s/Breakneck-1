@@ -20,7 +20,6 @@
 #include "WorldMap.h"
 #include "LevelSelector.h"
 #include "KinBoostScreen.h"
-#include "TerrainRender.h"
 #include "MusicPlayer.h"
 #include "Fader.h"
 #include "VisualEffects.h"

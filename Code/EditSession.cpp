@@ -25,7 +25,6 @@
 
 #include "TransformTools.h"
 //using namespace ClipperLib;
-//#include "TerrainRender.h"
 
 using namespace std;
 using namespace sf;
@@ -1616,16 +1615,9 @@ ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, PolyPtr poly )
 		nextPos.x = polyNext->pos.x;
 		nextPos.y = polyNext->pos.y;
 
-		assert(actor->groundInfo != NULL);
-		double actorQuant = actor->groundInfo->groundQuantity;
-		aCurr.x = actor->groundInfo->edgeStart->pos.x;
-		aCurr.y = actor->groundInfo->edgeStart->pos.y;
+		assert(actor->posInfo.ground != NULL);
 
-		nextActorPoint = actor->groundInfo->GetNextPoint();
-		aNext.x = nextActorPoint->pos.x;
-		aNext.y = nextActorPoint->pos.y;
-
-		actorPos = aCurr + normalize(aNext - aCurr) * actorQuant;//V2d( actor->image.getPosition() );//
+		actorPos = actor->posInfo.GetPosition();//aCurr + normalize(aNext - aCurr) * actorQuant;//V2d( actor->image.getPosition() );//
 		bool onLine = PointOnLine(actorPos, currPos, nextPos);
 
 		double finalQuant = dot(actorPos - currPos, normalize(nextPos - currPos));
@@ -1635,24 +1627,15 @@ ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, PolyPtr poly )
 		{
 			cout << "actorPos: " << actorPos.x << ", " << actorPos.y << ", currPos: "
 				<< currPos.x << ", " << currPos.y << endl;
-			GroundInfo gi;
-			gi.edgeStart = polyCurr;
-			gi.ground = poly;
-			cout << "finalQuant: " << finalQuant << endl;
-			gi.groundQuantity = finalQuant;
+			PositionInfo gi;
 
+			gi.SetGround(poly, i, finalQuant);
 			//might need to make sure it CAN be grounded
-			assert(actor->groundInfo != NULL);
 
 			ActorParams *newActor = actor->Copy();
-			newActor->groundInfo = NULL;
-			newActor->AnchorToGround(gi);
+			newActor->AnchorToGround(gi); //might be unnecessary
 
-			assert(gi.edgeStart != NULL);
 			assert(newActor != NULL);
-
-
-
 			return newActor;
 		}
 
@@ -3201,7 +3184,7 @@ bool EditSession::AnchorSelectedAerialEnemy()
 	if (singleActor)
 	{
 		ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
-		if (actor->groundInfo != NULL)
+		if (actor->posInfo.ground != NULL) //might need a thing here for rails too
 		{
 			Action *gAction = new GroundAction(actor);
 			gAction->performed = true;
@@ -5330,9 +5313,10 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	//currentFile
 }
 
-GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
+//needs cleanup badly
+PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 {
-	GroundInfo gi;
+	PositionInfo gi;
 	double testRadius = 200;
 	//PolyPtr poly = NULL;
 	gi.ground = NULL;
@@ -5400,10 +5384,8 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				}
 			}
 
-			
-			gi.edgeStart = storedEdge;
-			gi.groundQuantity = storedQuantity;
-			gi.ground = storedPoly;
+			//this function is ugly af and should fix later ^^^^
+			gi.SetGround(storedPoly, storedEdge->index, storedQuantity);
 
 			break;
 		}
@@ -5419,9 +5401,10 @@ GroundInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 	return gi;
 }
 
-GroundInfo EditSession::ConvertPointToRail(sf::Vector2i testPoint)
+//needs cleanup badly
+PositionInfo EditSession::ConvertPointToRail(sf::Vector2i testPoint)
 {
-	GroundInfo gi;
+	PositionInfo gi;
 	gi.railGround = NULL;
 	gi.ground = NULL;
 
@@ -5486,10 +5469,7 @@ GroundInfo EditSession::ConvertPointToRail(sf::Vector2i testPoint)
 
 				if (storedRail != NULL )
 				{
-					gi.railGround = storedRail;
-					gi.edgeStart = storedEdge;
-					gi.groundQuantity = storedQuantity;
-
+					gi.SetRail(storedRail, storedEdge->index, storedQuantity);
 					break;
 				}
 			}
@@ -7510,51 +7490,41 @@ bool EditSession::IsSingleActorSelected()
 void EditSession::MoveSelectedActor( Vector2i &delta )
 {
 	//if (IsSingleActorSelected() )
+
+	//feels like this could really be simplified later
 	{
 		ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
 		if (actor->type->CanBeGrounded())
 		{
+			if( !actor->posInfo.IsAerial() )
+			{
+				actor->UnAnchor();
+			}
+
 			if (worldPosGround.ground != NULL)
 			{
-				if (actor->groundInfo != NULL)
-				{
-					actor->UnAnchor();
-				}
-
 				actor->AnchorToGround(worldPosGround);
-				worldPosGround.ground->enemies[worldPosGround.edgeStart].push_back(actor);
-				worldPosGround.ground->UpdateBounds();
+				worldPosGround.AddActor(actor);
 			}
 			else
 			{
-				if (actor->groundInfo != NULL)
-				{
-					actor->UnAnchor();
-				}
-
 				selectedBrush->Move(delta);
 			}
 		}
 		else if (actor->type->CanBeRailGrounded())
 		{
+			if (!actor->posInfo.IsAerial())
+			{
+				actor->UnAnchor();
+			}
+
 			if (worldPosRail.railGround != NULL)
 			{
-				if (actor->groundInfo != NULL)
-				{
-					actor->UnAnchor();
-				}
-
 				actor->AnchorToRail(worldPosRail);
-				worldPosRail.railGround->enemies[worldPosGround.edgeStart].push_back(actor);
-				worldPosRail.railGround->UpdateBounds();
+				worldPosRail.AddActor(actor);
 			}
 			else
 			{
-				if (actor->groundInfo != NULL)
-				{
-					actor->UnAnchor();
-				}
-
 				selectedBrush->Move(delta);
 			}
 		}
@@ -7960,7 +7930,7 @@ void EditSession::AnchorTrackingEnemyOnTerrain()
 							double dist = abs(currEdge->GetDistAlongNormal(dTestPoint));
 							double testQuantity = currEdge->GetQuantity(dTestPoint);
 
-							V2d newPoint = currEdge->GetPoint(testQuantity);
+							V2d newPoint = currEdge->GetPosition(testQuantity);
 
 							edgeLen = currEdge->GetLength();
 							/*V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *

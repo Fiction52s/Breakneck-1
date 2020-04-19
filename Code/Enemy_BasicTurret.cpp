@@ -57,7 +57,7 @@ BasicTurret::BasicTurret(bool p_hasMonitor, Edge *g, double q, int p_level )
 	width *= scale;
 	height *= scale;
 
-	V2d gPoint = g->GetPoint(edgeQuantity);
+	V2d gPoint = g->GetPosition(edgeQuantity);
 	gn = g->Normal();
 	angle = atan2(gn.x, -gn.y);
 

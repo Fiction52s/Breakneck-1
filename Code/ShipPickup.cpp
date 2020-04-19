@@ -26,7 +26,7 @@ ShipPickup::ShipPickup(Edge *g, double q, bool p_facingRight )
 	ts = sess->GetTileset( "Ship/shipleave_128x128.png", 128, height );
 	sprite.setTexture( *ts->texture );
 	
-	V2d gPoint = g->GetPoint(edgeQuantity);
+	V2d gPoint = g->GetPosition(edgeQuantity);
 	
 
 	receivedHit = NULL;

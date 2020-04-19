@@ -72,7 +72,7 @@ void SurfaceMover::UpdateGroundPos()
 	else
 	{
 		V2d gn = ground->Normal();
-		physBody.globalPosition = ground->GetPoint( edgeQuantity )
+		physBody.globalPosition = ground->GetPosition( edgeQuantity )
 			+ gn * physBody.rw;
 		physBody.globalAngle = atan2( gn.x, -gn.y );
 		//cout << "setting grounded position to: " << physBody.globalPosition.x 

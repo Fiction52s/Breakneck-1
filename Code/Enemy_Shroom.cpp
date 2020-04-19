@@ -45,7 +45,7 @@ Shroom::Shroom(bool p_hasMonitor, Edge *g, double q, int p_level)
 	sprite.setTexture(*ts->texture);
 	auraSprite.setTexture(*ts_aura->texture);
 
-	V2d gPoint = g->GetPoint(edgeQuantity);
+	V2d gPoint = g->GetPosition(edgeQuantity);
 
 	receivedHit = NULL;
 

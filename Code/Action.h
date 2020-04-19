@@ -160,7 +160,7 @@ struct LeaveGroundAction : Action
 		//sf::Vector2i newPos );
 
 	ActorPtr actor;
-	GroundInfo gi;
+	PositionInfo gi;
 	void Perform();
 	void Undo();
 };
@@ -172,7 +172,7 @@ struct GroundAction : Action
 	void Undo();
 
 	ActorPtr actor;
-	GroundInfo gi;
+	PositionInfo gi;
 	//sf::Vector2i oldPos;
 };
 

@@ -333,9 +333,9 @@ Brush *Brush::Copy()
 				}
 
 				ActorPtr aPtr = ap->Copy();
-				if (aPtr->groundInfo != NULL)
+				if (aPtr->posInfo.ground != NULL)
 				{
-					aPtr->AnchorToGround(*aPtr->groundInfo);
+					aPtr->AnchorToGround(aPtr->posInfo);
 				}
 				newBrush->AddObject(aPtr);
 			}
@@ -424,7 +424,7 @@ CompoundAction * Brush::UnAnchor() //only works with grounded actors
 		ap = (*it)->GetAsActor();
 		if (ap != NULL)
 		{
-			if (ap->groundInfo != NULL)
+			if (ap->posInfo.ground != NULL)
 			{
 				if (objects.size() == 1 || ap->type->CanBeAerial())
 				{
@@ -984,9 +984,9 @@ void MoveBrushAction::Undo()
 LeaveGroundAction::LeaveGroundAction( ActorPtr p_actor )
 	:actor( p_actor )
 {
-	assert( actor->groundInfo != NULL );
+	assert( actor->posInfo.ground!= NULL );
 
-	gi = *actor->groundInfo;
+	gi = actor->posInfo;
 }
 
 void LeaveGroundAction::Perform()
@@ -1004,7 +1004,7 @@ void LeaveGroundAction::Undo()
 
 	performed = false;
 
-	assert( actor->groundInfo == NULL );
+	assert( actor->posInfo.ground == NULL );
 
 	actor->AnchorToGround(gi);
 	gi.AddActor(actor);
@@ -1015,7 +1015,7 @@ void LeaveGroundAction::Undo()
 GroundAction::GroundAction( ActorPtr p_actor )
 	:actor( p_actor )
 {
-	gi = *actor->groundInfo;
+	gi = actor->posInfo;
 }
 
 void GroundAction::Perform()

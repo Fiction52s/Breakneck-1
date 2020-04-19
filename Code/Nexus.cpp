@@ -87,7 +87,7 @@ Nexus::Nexus(Edge *g, double q)
 	miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height);
 
 
-	V2d gPoint = g->GetPoint(edgeQuantity);
+	V2d gPoint = g->GetPosition(edgeQuantity);
 
 	nexSprite.setPosition(Vector2f(gPoint));
 

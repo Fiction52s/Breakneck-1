@@ -135,7 +135,7 @@ CrawlerQueen::CrawlerQueen(Edge *g, double q, bool cw )
 	sprite.setTexture(*ts[WAIT]->texture);
 	sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = mover->ground->GetPoint(q);
+	V2d gPoint = mover->ground->GetPosition(q);
 	sprite.setPosition(gPoint.x, gPoint.y);
 	V2d gNorm = mover->ground->Normal();
 
@@ -285,7 +285,7 @@ void CrawlerQueen::ResetEnemy()
 	position = mover->physBody.globalPosition;
 
 	frame = 0;
-	V2d gPoint = mover->ground->GetPoint(startQuant);
+	V2d gPoint = mover->ground->GetPosition(startQuant);
 	sprite.setPosition(gPoint.x, gPoint.y);
 
 	//position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
@@ -553,7 +553,7 @@ void CrawlerQueen::ProcessState()
 		{
 			FloatingBomb *fb = (FloatingBomb*)bombPool->ActivatePoolMember();
 			assert(fb != NULL);
-			fb->Init(mover->ground->GetPoint(mover->edgeQuantity), mover->ground->Normal() * bombSpeed);
+			fb->Init(mover->ground->GetPosition(mover->edgeQuantity), mover->ground->Normal() * bombSpeed);
 			sess->AddEnemy(fb);
 			cout << "spawning bomb: " << fb << ": " << fb->position.x << ", " << fb->position.y << endl;
 		}
@@ -827,7 +827,7 @@ void CrawlerQueen::UpdateSprite()
 		{
 			angle = atan2(gn.x, -gn.y);
 
-			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
+			V2d pp = mover->ground->GetPosition(mover->edgeQuantity);//ground->GetPosition( edgeQuantity );
 			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 
 			sprite.setRotation(angle / PI * 180);
@@ -843,7 +843,7 @@ void CrawlerQueen::UpdateSprite()
 
 				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 				sprite.setRotation(angle / PI * 180);
-				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
+				V2d pp = mover->ground->GetPosition(mover->edgeQuantity);//ground->GetPosition( edgeQuantity );
 				sprite.setPosition(pp.x, pp.y);
 			}
 			else
@@ -854,7 +854,7 @@ void CrawlerQueen::UpdateSprite()
 
 				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 				sprite.setRotation(angle / PI * 180);
-				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
+				V2d pp = mover->ground->GetPosition(mover->edgeQuantity);
 				sprite.setPosition(pp.x, pp.y);
 			}
 		}
@@ -883,7 +883,7 @@ void CrawlerQueen::UpdateSprite()
 			decDebugDraw[i].setOrigin(Vector2f(decDebugDraw[i].getLocalBounds().width / 2,
 				decDebugDraw[i].getLocalBounds().height / 2));
 			decDebugDraw[i].setPosition(
-				Vector2f(decidePoints[i].edge->GetPoint(decidePoints[i].quantity))
+				Vector2f(decidePoints[i].edge->GetPosition(decidePoints[i].quantity))
 				+ Vector2f(decidePoints[i].edge->Normal() * mover->physBody.rw));
 		}
 	}
@@ -1072,7 +1072,7 @@ void CrawlerQueen::DecidePoints()
 
 		Edge *e = decidePoints[i].edge;
 
-		V2d pos = e->GetPoint(decidePoints[i].quantity) + e->Normal() * 32.0;
+		V2d pos = e->GetPosition(decidePoints[i].quantity) + e->Normal() * 32.0;
 
 		PoolMember *pm = decisionPool->ActivatePoolMember();
 		DecisionMarker *dm = (DecisionMarker*)pm;

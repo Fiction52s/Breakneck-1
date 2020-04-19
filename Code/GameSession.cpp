@@ -37,7 +37,6 @@
 #include "Buf.h"
 #include "HUD.h"
 #include "Rail.h"
-#include "TerrainRender.h"
 #include "InputVisualizer.h"
 #include "TopClouds.h"
 #include "ScreenRecorder.h"
@@ -57,7 +56,6 @@
 #include "SequenceW4.h"
 #include "ParticleEffects.h"
 #include "Wire.h"
-#include "TerrainPiece.h"
 #include "Grass.h"
 #include "EnvPlant.h"
 #include "SpecialTerrain.h"
@@ -252,7 +250,7 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 	name = pname;
 	edge = e;
 	edgeQuantity = q;
-	pos = edge->GetPoint( edgeQuantity );
+	pos = edge->GetPosition( edgeQuantity );
 }
 
 
@@ -298,7 +296,7 @@ void GameSession::Cleanup()
 		delete[] fBubbleFrame;
 	}
 
-	TerrainRender::CleanupLayers();
+	//TerrainRender::CleanupLayers();
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
@@ -1250,7 +1248,7 @@ void GameSession::LoadEnemy(std::ifstream &is )
 		hasGoal = true;
 		goalPos = enemy->position;
 
-		V2d gPos = enemy->ground->GetPoint(enemy->edgeQuantity);
+		V2d gPos = enemy->ground->GetPosition(enemy->edgeQuantity);
 		V2d norm = enemy->ground->Normal();
 		double nodeHeight = 104;
 		goalNodePos = gPos + norm * nodeHeight;
@@ -8700,7 +8698,7 @@ sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, in
 	int vaIndex = 0;
 	for( list<PlantInfo>::iterator it = info.begin(); it != info.end(); ++it )
 	{
-		V2d groundPoint = (*it).edge->GetPoint( (*it).quant );
+		V2d groundPoint = (*it).edge->GetPosition( (*it).quant );
 		V2d norm = (*it).edge->Normal();
 		double w = (*it).quadWidth;
 		V2d along = normalize( (*it).edge->v1 - (*it).edge->v0 );
@@ -9116,7 +9114,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow1( int bgLayer, Edge *start, Tiles
 				//start ray
 				if( rcEdge != NULL )
 				{
-					rayPoint = rcEdge->GetPoint( rcQuantity );
+					rayPoint = rcEdge->GetPosition( rcQuantity );
 					
 					rays.push_back( pair<V2d,V2d>(rayStart, rayPoint) );
 					
@@ -9312,7 +9310,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 
 				V2d rn = rcEdge->Normal();
 				double d = dot( rn, rayDir );
-				V2d hitPoint = rcEdge->GetPoint( rcQuantity );
+				V2d hitPoint = rcEdge->GetPosition( rcQuantity );
 				if( d > 0 )
 				{
 					if( pointList.size() > 0 && pointList.back().second == false )
@@ -9532,7 +9530,7 @@ sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset
 
 		cn = curr->Normal();
 		rcEdge = NULL;
-		rayStart = curr->GetPoint( quant );
+		rayStart = curr->GetPosition( quant );
 		rayEnd = rayStart - cn * (double)maxPen;
 		rayIgnoreEdge = curr;
 
@@ -9540,7 +9538,7 @@ sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset
 
 		if( rcEdge != NULL )
 		{
-			penLimit = length( rcEdge->GetPoint( rcQuantity ) - rayStart );
+			penLimit = length( rcEdge->GetPosition( rcQuantity ) - rayStart );
 			diffPenMax = (int)penLimit - minDistanceApart;
 		}
 		if (diffPenMax == 0)
@@ -9552,7 +9550,7 @@ sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset
 		
 		penDistance = minPen + rPen;
 		
-		pos = curr->GetPoint( quant ) - curr->Normal() * penDistance;
+		pos = curr->GetPosition( quant ) - curr->Normal() * penDistance;
 
 		positions.push_back( Vector2f( pos.x, pos.y ) );
 		//will have to do a raycast soon. ignore for now
@@ -9757,8 +9755,8 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 			return;
 		}
 
-		if( edge != rayIgnoreEdge && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
-			length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
+		if( edge != rayIgnoreEdge && ( rcEdge == NULL || length( edge->GetPosition( edgeQuantity ) - rayStart ) <
+			length( rcEdge->GetPosition( rcQuantity ) - rayStart ) ) )
 		{
 			rcEdge = edge;
 			rcQuantity = edgeQuantity;
@@ -9777,8 +9775,9 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 			return;
 		}
 
-		if( edge != rayIgnoreEdge && edge != rayIgnoreEdge1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - rayStart ) < 
-			length( rcEdge->GetPoint( rcQuantity ) - rayStart ) ) )
+		if( edge != rayIgnoreEdge && edge != rayIgnoreEdge1 
+			&& ( rcEdge == NULL || length( edge->GetPosition( edgeQuantity ) - rayStart ) < 
+			length( rcEdge->GetPosition( rcQuantity ) - rayStart ) ) )
 		{
 			rcEdge = edge;
 			rcQuantity = edgeQuantity;
@@ -9796,15 +9795,15 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 		}
 		else
 		{
-			V2d rc = rcEdge->GetPoint( rcQuantity );
-			if( length( rayStart - edge->GetPoint( edgeQuantity ) ) < length( rayStart - rc ) )
+			V2d rc = rcEdge->GetPosition( rcQuantity );
+			if( length( rayStart - edge->GetPosition( edgeQuantity ) ) < length( rayStart - rc ) )
 			{
 				rcEdge = edge;
 				rcQuantity = edgeQuantity;
 			}
 		}
 	}
-	//if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - position ) < length( rcEdge->GetPoint( rcQuantity ) - position ) ) )
+	//if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPosition( edgeQuantity ) - position ) < length( rcEdge->GetPoint( rcQuantity ) - position ) ) )
 	
 //	{
 //		rcEdge = edge;

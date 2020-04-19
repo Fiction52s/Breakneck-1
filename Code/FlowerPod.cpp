@@ -34,7 +34,7 @@ FlowerPod::FlowerPod(const std::string &typeStr, Edge *g, double q)
 	double width = 128; //112;
 	double height = 128;
 
-	V2d gPoint = g->GetPoint(edgeQuantity);
+	V2d gPoint = g->GetPosition(edgeQuantity);
 	sprite.setPosition(gPoint.x, gPoint.y);
 
 	V2d gn = g->Normal();
@@ -103,7 +103,7 @@ FlowerPod::FlowerPod(const std::string &typeStr, Edge *g, double q)
 	double boxHeight = 1000;
 	if (rcEdge != NULL)
 	{
-		boxHeight = length(rcEdge->GetPoint(rcQuantity) - gPoint);
+		boxHeight = length(rcEdge->GetPosition(rcQuantity) - gPoint);
 	}
 
 	BasicRectHitBodySetup(100, boxHeight / 2.0, atan2(-gAlong.y, -gAlong.x),
@@ -153,10 +153,10 @@ void FlowerPod::IHitPlayer(int index)
 void FlowerPod::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
 {
 	V2d dir = normalize(rayEnd - rayStart);
-	V2d pos = edge->GetPoint(edgeQuantity);
+	V2d pos = edge->GetPosition(edgeQuantity);
 	double along = dot(dir, edge->Normal());
-	if (along < 0 && (rcEdge == NULL || length(edge->GetPoint(edgeQuantity) - rayStart) <
-		length(rcEdge->GetPoint(rcQuantity) - rayStart)))
+	if (along < 0 && (rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayStart) <
+		length(rcEdge->GetPosition(rcQuantity) - rayStart)))
 	{
 		rcEdge = edge;
 		rcQuantity = edgeQuantity;
