@@ -16,9 +16,7 @@ struct Goal : Enemy
 	};
 
 
-	Goal(Edge *ground, double quantity,
-		int world);
-	static Enemy *Create(ActorParams *ap);
+	Goal(ActorParams *ap);
 	~Goal();
 	//static Enemy *Create(std::ifstream &is);
 	void DrawMinimap(sf::RenderTarget *target);

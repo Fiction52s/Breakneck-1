@@ -579,6 +579,11 @@ void PositionInfo::SetAerial( V2d &pos )
 	railGround = NULL;
 }
 
+double PositionInfo::GetQuant()
+{
+	return groundQuantity;
+}
+
 bool PositionInfo::IsAerial()
 {
 	return (ground == NULL && railGround == NULL);
@@ -646,6 +651,13 @@ V2d ActorParams::GetPosition()
 {
 	return posInfo.GetPosition();
 }
+
+Vector2i ActorParams::GetGlobalPathPos(int index)
+{
+	assert(index >= 0 && index < localPath.size());
+	return localPath[index] + GetIntPos();
+}
+Vector2i ActorParams::GetLocalPathPos(int index);
 
 void ActorParams::SetBoundingQuad()
 {

@@ -27,8 +27,8 @@ struct Spring : Enemy
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 	//MovementSequence testSeq;
-	Spring(SpringType springType,
-		sf::Vector2i &pos, sf::Vector2i &other, int speed);
+	Spring(ActorParams *ap);//SpringType springType,
+		//sf::Vector2i &pos, sf::Vector2i &other, int speed);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	sf::SoundBuffer *launchSoundBuf;

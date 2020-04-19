@@ -7,7 +7,7 @@
 #include "EffectLayer.h"
 #include <SFML/Audio.hpp>
 #include "ObjectProperties.h"
-#include "ActorParamsBase.h"
+#include "ActorParams.h"
 
 struct Wire;
 struct Zone;
@@ -30,16 +30,18 @@ struct HitParams
 		speedBar = 0;
 		charge = 0;
 		maxHealth = 0;
+		cuttable = false;
 	}
 
 	void Set(int p_flashFrames, double p_speedBar,
-		int p_charge, int p_maxHealth)
+		int p_charge, int p_maxHealth, bool p_cuttable = true)
 	{
 		canBeHit = true;
 		flashFrames = p_flashFrames;
 		speedBar = p_speedBar;
 		charge = p_charge;
 		maxHealth = p_maxHealth;
+		cuttable = p_cuttable;
 	}
 
 	bool canBeHit;
@@ -47,6 +49,7 @@ struct HitParams
 	double speedBar;
 	int charge;
 	int maxHealth;
+	bool cuttable;
 };
 
 
@@ -60,15 +63,14 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	//new vars
 
 	//void SetStartGroundInfo
-	PositionInfo startGroundInfo;
+	PositionInfo startPosInfo;
 	HitParams hitParams;
 	Session *sess;
 	bool SetHitParams();
 
 	//------------
 
-	Enemy(EnemyType t,
-		bool hasMonitor, int world, bool cuttable = true);
+	Enemy(EnemyType t, ActorParams *ap);
 	virtual ~Enemy();
 	
 	virtual void SetupResources() {}
@@ -78,7 +80,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	static bool ReadPath(std::ifstream &is,
 		int &pLen, std::list<sf::Vector2i> &localPath);
 	virtual void UpdatePreLauncherPhysics() {}
-	bool cuttable;
 	CuttableObject *cutObject;
 	Launcher **launchers;
 	CollisionBody hurtBody;

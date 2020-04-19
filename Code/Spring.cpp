@@ -19,12 +19,15 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Spring::Spring(SpringType sp, Vector2i &pos, Vector2i &other, int p_speed )
-	:Enemy(EnemyType::EN_SPRING, false, 2, false ), springType( sp )
+Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, int p_speed )
+	:Enemy(EnemyType::EN_SPRING, ap )//false, 2, false ), springType( sp )
 {
+	SpringParams *sParams = (SpringParams*)ap;
+
+	//Vector2i other = sParams->localPath[1] + sParams->
+
 	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+	position = startPosInfo.GetPosition();
 
 	debugSpeed.setFont(sess->mainMenu->arial);
 	debugSpeed.setFillColor(Color::White);

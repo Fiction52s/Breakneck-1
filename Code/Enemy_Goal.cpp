@@ -11,10 +11,10 @@
 using namespace std;
 using namespace sf;
 
-Goal::Goal( Edge *g, double q, int world )
-		:Enemy( EnemyType::EN_GOAL, false, 0, false ), 
-	ground( g ), edgeQuantity( q ), dead( false )
+Goal::Goal( ActorParams *ap )
+	:Enemy( EnemyType::EN_GOAL, ap )
 {
+
 	double width;
 	double height;
 
@@ -50,8 +50,7 @@ Goal::Goal( Edge *g, double q, int world )
 	}
 
 
-	sprite.setTexture( *ts->texture );
-	
+	sprite.setTexture(*ts->texture);
 	miniSprite.setTexture( *ts_mini->texture );
 	miniSprite.setTextureRect( ts_mini->GetSubRect( 2 ) );
 	miniSprite.setScale( 16, 16 );
@@ -81,10 +80,10 @@ Goal::Goal( Edge *g, double q, int world )
 	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height );
 	
 
-	V2d gPoint = g->GetPosition( edgeQuantity );
+	V2d gPoint = startPosInfo.GetPosition();//startInfoPos.GetPosition( edgeQuantity );
 
 
-	gn = g->Normal();
+	gn = startPosInfo.GetEdge()->Normal();
 	angle = atan2( gn.x, -gn.y );
 
 	position = gPoint + gn * height / 2.0;
@@ -132,13 +131,6 @@ Goal::Goal( Edge *g, double q, int world )
 	}
 
 	ResetEnemy();
-	//kinKillFrame = 0;
-}
-
-
-Enemy *Goal::Create(ActorParams *ap)
-{
-	return new Goal(ap->GetGroundEdge(), ap->posInfo.groundQuantity, ap->GetWorld());
 }
 
 Goal::~Goal()
@@ -154,6 +146,8 @@ void Goal::ConfirmKill()
 
 void Goal::ResetEnemy()
 {
+	ground = startPosInfo.GetEdge();
+	edgeQuantity = startPosInfo.groundQuantity;
 	frame = 0;
 	action = A_SITTING;
 	SetHurtboxes(&hurtBody, 0);

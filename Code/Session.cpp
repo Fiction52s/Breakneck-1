@@ -75,7 +75,7 @@ template<typename X> ActorParams *LoadParams(
 
 template<typename X> Enemy *CreateEnemy(ActorParams* ap)
 {
-	return X::Create(ap);
+	return new X(ap);
 }
 
 

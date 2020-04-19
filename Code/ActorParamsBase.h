@@ -23,6 +23,7 @@ struct PositionInfo
 	PolyPtr ground;
 	RailPtr railGround;
 	Edge *GetEdge();
+	double GetQuant();
 	TerrainPoint *GetPoint();
 	TerrainPoint *GetNextPoint();
 	bool IsAerial();
@@ -45,6 +46,9 @@ struct ActorParams : ISelectable
 	Enemy *GenerateEnemy();
 	Enemy *myEnemy;
 	void CreateMyEnemy();
+
+	sf::Vector2i GetGlobalPathPos(int index);
+	sf::Vector2i GetLocalPathPos(int index);
 
 	virtual ActorParams *Copy() = 0;
 	~ActorParams();

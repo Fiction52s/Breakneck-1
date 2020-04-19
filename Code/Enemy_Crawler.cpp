@@ -18,15 +18,10 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Enemy *Crawler::Create(ActorParams *ap)
+Crawler::Crawler(ActorParams *ap )
+	:Enemy( EnemyType::EN_CRAWLER, ap ), clockwise( true ), groundSpeed( 5 )
 {
-	return new Crawler(ap->hasMonitor, ap->GetGroundEdge(), ap->posInfo.groundQuantity, ap->enemyLevel);
-}
-
-Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
-	:Enemy( EnemyType::EN_CRAWLER, p_hasMonitor, 1 ), clockwise( true ), groundSpeed( 5 )
-{
-	level = p_level;
+	level = ap->enemyLevel;
 
 	switch (level)
 	{
@@ -51,7 +46,7 @@ Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
 
 	dashAccel = .1;
 	currDistTravelled = 0;
-	mover = new SurfaceMover(g, q, 32 * scale );
+	mover = new SurfaceMover(startPosInfo.GetEdge(), startPosInfo.GetQuant(), 32 * scale );
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
 
@@ -71,7 +66,7 @@ Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = mover->ground->GetPosition( q );
+	V2d gPoint = mover->ground->GetPosition( startPosInfo.GetQuant() );
 	sprite.setPosition( gPoint.x, gPoint.y );
 
 	sprite.setScale(scale, scale);
@@ -114,8 +109,6 @@ Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 5;
 
-	startGround = g;
-	startQuant = q;
 	frame = 0;
 
 
@@ -154,8 +147,8 @@ void Crawler::ResetEnemy()
 	SetHitboxes(NULL, 0);
 	framesUntilBurrow = maxFramesUntilBurrow;
 	
-	mover->ground = startGround;
-	mover->edgeQuantity = startQuant;
+	mover->ground = startPosInfo.GetEdge();
+	mover->edgeQuantity = startPosInfo.GetQuant();
 	mover->roll = false;
 	mover->UpdateGroundPos();
 	mover->SetSpeed(0);
@@ -165,10 +158,7 @@ void Crawler::ResetEnemy()
 	currDistTravelled = 0;
 
 	frame = 0;
-	V2d gPoint = mover->ground->GetPosition( startQuant );
-	//sprite.setPosition( gPoint.x, gPoint.y );
-	
-	//position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
+
 	V2d gn = mover->ground->Normal();
 	dead = false;
 
@@ -338,8 +328,8 @@ void Crawler::ProcessState()
 			SetHurtboxes(NULL, 0);
 			action = UNDERGROUND;
 			frame = 0;
-			mover->ground = startGround;
-			mover->edgeQuantity = startQuant;
+			mover->ground = startPosInfo.GetEdge();
+			mover->edgeQuantity = startPosInfo.GetQuant();
 			mover->roll = false;
 			mover->UpdateGroundPos();
 			break;

@@ -40,7 +40,7 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
 	case EnemyType::EN_GOAL:
-		hitParams.Set(5, .8, 6, 3);
+		hitParams.Set(5, .8, 6, 3, false);
 		break;
 	case EnemyType::EN_PATROLLER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
@@ -49,7 +49,7 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_COMBOER:
-		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
 		break;
 	case EnemyType::EN_AIRDASHER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
@@ -169,13 +169,15 @@ bool Enemy::SetHitParams()
 	return true;
 }
 
-Enemy::Enemy(EnemyType t, bool p_hasMonitor,
-	int world, bool cuttable)
+Enemy::Enemy(EnemyType t, ActorParams *ap)
 	:prev(NULL), next(NULL), spawned(false),
 	type(t), zone(NULL), dead(false),
 	suppressMonitor(false), ts_hitSpack(NULL),
 	hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
+	hasMonitor = ap->hasMonitor;
+	world = ap->GetWorld();
+
 	sess = Session::GetSession();
 
 	if (CanTouchSpecter())
@@ -193,7 +195,7 @@ Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 	comboObj = NULL;
 	hitboxInfo = NULL;
 
-	if (p_hasMonitor)
+	if (hasMonitor)
 	{
 		sess->numTotalKeys++;
 	}
@@ -223,7 +225,7 @@ Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 
 	numHealth = maxHealth;
 	
-	if (cuttable)
+	if (hitParams.cuttable )
 	{
 		cutObject = new CuttableObject;
 	}
@@ -231,14 +233,13 @@ Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 	{
 		cutObject = NULL;
 	}
-	hasMonitor = p_hasMonitor;
+
 	if( world == 0 )
 	{
 		ts_hitSpack = NULL;
 		ts_blood = NULL;
 		return;
 	}
-
 
 	auraColor = Color( 0, 0, 0, 0 );
 	switch( t )
