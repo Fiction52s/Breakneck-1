@@ -306,10 +306,11 @@ BossGatorParams::BossGatorParams(ActorType *at, Vector2i &pos )
 
 	Transform t;
 	Vector2f offset( 0, -radius );
+	Vector2f fPos = GetFloatPos();
 	for( int i = 0; i < 5; ++i )
 	{
 		CircleShape &cs = circles[i];
-		Vector2f truePos = t.transformPoint( offset ) + Vector2f( position.x, position.y );
+		Vector2f truePos = t.transformPoint(offset) + fPos;
 		cs.setPosition( truePos );
 		t.rotate( 360.f / 5.f );
 	}
@@ -337,10 +338,11 @@ BossGatorParams::BossGatorParams(ActorType *at, ifstream &is)
 
 	Transform t;
 	Vector2f offset(0, -radius);
+	Vector2f fPos = GetFloatPos();
 	for (int i = 0; i < 5; ++i)
 	{
 		CircleShape &cs = circles[i];
-		Vector2f truePos = t.transformPoint(offset) + Vector2f(position.x, position.y);
+		Vector2f truePos = t.transformPoint(offset) + fPos;
 		cs.setPosition(truePos);
 		t.rotate(360.f / 5.f);
 	}

@@ -76,10 +76,10 @@ void BatParams::Draw( sf::RenderTarget *target )
 		
 		VertexArray &li = *lines;
 	
-	
+		Vector2f fPos = GetFloatPos();
 		for( int i = 0; i < localPathSize+1; ++i )
 		{
-			li[i].position += Vector2f( position.x, position.y );
+			li[i].position += fPos;
 		}
 	
 	
@@ -103,7 +103,7 @@ void BatParams::Draw( sf::RenderTarget *target )
 	
 		for( int i = 0; i < localPathSize+1; ++i )
 		{
-			li[i].position -= Vector2f( position.x, position.y );
+			li[i].position -= fPos;
 		}
 	}
 
@@ -465,7 +465,7 @@ void PoisonFrogParams::UpdatePath()
 	Color pathColor( 0, 255, 0 );
 	
 	int squareRad = 4;// * EditSession::zoomMultiple;
-	Vector2f pos( position.x, position.y );
+	Vector2f fPos = GetFloatPos();
 
 	Vector2f gravity( 0, gravFactor / 64.f );
 
@@ -487,21 +487,21 @@ void PoisonFrogParams::UpdatePath()
 	for( int i = 0; i < totalQuads; ++i )
 	{
 		//cout << "i: " << i << endl;
-		pathQuads[i*4+0].position = Vector2f( pos.x - squareRad,
-			pos.y - squareRad );
-		pathQuads[i*4+1].position = Vector2f( pos.x + squareRad,
-			pos.y - squareRad );
-		pathQuads[i*4+2].position = Vector2f( pos.x + squareRad,
-			pos.y + squareRad );
-		pathQuads[i*4+3].position = Vector2f( pos.x - squareRad,
-			pos.y + squareRad );
+		pathQuads[i*4+0].position = Vector2f(fPos.x - squareRad,
+			fPos.y - squareRad );
+		pathQuads[i*4+1].position = Vector2f(fPos.x + squareRad,
+			fPos.y - squareRad );
+		pathQuads[i*4+2].position = Vector2f(fPos.x + squareRad,
+			fPos.y + squareRad );
+		pathQuads[i*4+3].position = Vector2f(fPos.x - squareRad,
+			fPos.y + squareRad );
 
 		pathQuads[i*4+0].color = pathColor;
 		pathQuads[i*4+1].color = pathColor;
 		pathQuads[i*4+2].color = pathColor;
 		pathQuads[i*4+3].color = pathColor;
 
-		pos += vel;
+		fPos += vel;
 		vel += gravity;
 	}
 }
@@ -618,7 +618,7 @@ void CurveTurretParams::UpdateBulletCurve()
 
 	Color pathColor( 255, 0, 0 );
 	int squareRad = 4;// * EditSession::zoomMultiple;
-	Vector2f pos( position.x, position.y );
+	Vector2f fPos = GetFloatPos();
 	V2d fireDir;
 
 	Edge *edge = posInfo.GetEdge();
@@ -631,21 +631,21 @@ void CurveTurretParams::UpdateBulletCurve()
 	for( int i = 0; i < totalQuads; ++i )
 	{
 		//cout << "i: " << i << endl;
-		bulletPathQuads[i*4+0].position = Vector2f( pos.x - squareRad,
-			pos.y - squareRad );
-		bulletPathQuads[i*4+1].position = Vector2f( pos.x + squareRad,
-			pos.y - squareRad );
-		bulletPathQuads[i*4+2].position = Vector2f( pos.x + squareRad,
-			pos.y + squareRad );
-		bulletPathQuads[i*4+3].position = Vector2f( pos.x - squareRad,
-			pos.y + squareRad );
+		bulletPathQuads[i*4+0].position = Vector2f(fPos.x - squareRad,
+			fPos.y - squareRad );
+		bulletPathQuads[i*4+1].position = Vector2f(fPos.x + squareRad,
+			fPos.y - squareRad );
+		bulletPathQuads[i*4+2].position = Vector2f(fPos.x + squareRad,
+			fPos.y + squareRad );
+		bulletPathQuads[i*4+3].position = Vector2f(fPos.x - squareRad,
+			fPos.y + squareRad );
 
 		bulletPathQuads[i*4+0].color = pathColor;
 		bulletPathQuads[i*4+1].color = pathColor;
 		bulletPathQuads[i*4+2].color = pathColor;
 		bulletPathQuads[i*4+3].color = pathColor;
 
-		pos += bulletVel;
+		fPos += bulletVel;
 
 		V2d trueGrav( 0, 0 );//( gravFactor.x, gravFactor.y );
 
@@ -794,7 +794,7 @@ void BossBirdParams::Draw( sf::RenderTarget *target )
 void BossBirdParams::CreateFormation()
 {
 	//depreciated
-	sf::Vector2f center( position.x, position.y );
+	sf::Vector2f center = GetFloatPos();
 	sf::Vector2f origin( center.x - width / 2.f, center.y - height / 2.f );
 
 	debugLines[0].position = origin;
@@ -925,8 +925,9 @@ GravitySpringParams::GravitySpringParams(ActorType *at, ifstream &is)
 	lines = NULL;
 
 	list<Vector2i> globalPath;
-	globalPath.push_back(Vector2i(position.x, position.y));
-	globalPath.push_back(position + other);
+	Vector2i intPos = GetIntPos();
+	globalPath.push_back(intPos);
+	globalPath.push_back(intPos + other);
 	SetPath(globalPath);
 }
 
@@ -1017,10 +1018,10 @@ void GravitySpringParams::Draw(sf::RenderTarget *target)
 	{
 		VertexArray &li = *lines;
 
-
+		Vector2f fPos = GetFloatPos();
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position += Vector2f(position.x, position.y);
+			li[i].position += fPos;
 		}
 
 
@@ -1028,7 +1029,7 @@ void GravitySpringParams::Draw(sf::RenderTarget *target)
 
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position -= Vector2f(position.x, position.y);
+			li[i].position -= fPos;
 		}
 	}
 

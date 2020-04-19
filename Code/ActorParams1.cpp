@@ -115,11 +115,11 @@ void PatrollerParams::Draw( sf::RenderTarget *target )
 	{
 		VertexArray &li = *lines;
 	
-	
-			for( int i = 0; i < localPathSize+1; ++i )
-			{
-				li[i].position += Vector2f( position.x, position.y );
-			}
+		Vector2f fPos = GetFloatPos();
+		for( int i = 0; i < localPathSize+1; ++i )
+		{
+			li[i].position += fPos;
+		}
 	
 	
 		target->draw( li );
@@ -142,7 +142,7 @@ void PatrollerParams::Draw( sf::RenderTarget *target )
 	
 		for( int i = 0; i < localPathSize+1; ++i )
 		{
-			li[i].position -= Vector2f( position.x, position.y );
+			li[i].position -= fPos;
 		}
 	}
 
@@ -474,8 +474,10 @@ SpringParams::SpringParams(ActorType *at, ifstream &is)
 	is >> other.y;
 
 	list<Vector2i> globalPath;
-	globalPath.push_back(Vector2i(position.x, position.y));
-	globalPath.push_back(position + other);
+
+	Vector2i intPos = GetIntPos();
+	globalPath.push_back(intPos);
+	globalPath.push_back(intPos + other);
 	SetPath(globalPath);
 
 	
@@ -564,10 +566,10 @@ void SpringParams::Draw(sf::RenderTarget *target)
 	{
 		VertexArray &li = *lines;
 
-
+		Vector2f fPos = GetFloatPos();
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position += Vector2f(position.x, position.y);
+			li[i].position += fPos;
 		}
 
 
@@ -575,7 +577,7 @@ void SpringParams::Draw(sf::RenderTarget *target)
 
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position -= Vector2f(position.x, position.y);
+			li[i].position -= fPos;
 		}
 	}
 
@@ -676,10 +678,10 @@ void ComboerParams::Draw(sf::RenderTarget *target)
 	{
 		VertexArray &li = *lines;
 
-
+		Vector2f fPos = GetFloatPos();
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position += Vector2f(position.x, position.y);
+			li[i].position += fPos;
 		}
 
 
@@ -703,7 +705,7 @@ void ComboerParams::Draw(sf::RenderTarget *target)
 
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position -= Vector2f(position.x, position.y);
+			li[i].position -= fPos;
 		}
 	}
 

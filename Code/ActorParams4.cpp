@@ -288,13 +288,13 @@ void BossTigerParams::CreateFormation()
 {
 	sf::Vector2f nodePos[13];
 	//allNodes[0]->position = V2d( originalPos.x, originalPos.y );
-	Vector2f op( position.x, position.y );
+	Vector2f fPos = GetFloatPos();
 
 	Transform t;
 	Vector2f offset( 0, -radius1 );
 	for( int i = 0; i < 6; ++i )
 	{
-		Vector2f newP = t.transformPoint( offset ) + op;
+		Vector2f newP = t.transformPoint( offset ) + fPos;
 		nodePos[i+1] = newP;
 		t.rotate( -360.f / 6.f );
 	}
@@ -304,7 +304,7 @@ void BossTigerParams::CreateFormation()
 	t2.rotate( 360.f / 12.f );
 	for( int i = 0; i < 6; ++i )
 	{
-		Vector2f newP = t2.transformPoint( offset2 ) + op;
+		Vector2f newP = t2.transformPoint( offset2 ) + fPos;
 		nodePos[i+7] = newP;
 		t2.rotate( -360.f / 6.f );
 	}
@@ -312,9 +312,8 @@ void BossTigerParams::CreateFormation()
 	for( int i = 0; i < 6; ++i )
 	{
 		Vector2f nextPos = nodePos[i+1];
-		Vector2f thisPos = op;
 		
-		debugLines[i*2 + 0].position = Vector2f( thisPos.x, thisPos.y );
+		debugLines[i * 2 + 0].position = fPos;
 		debugLines[i*2 + 1].position = Vector2f( nextPos.x, nextPos.y );
 	}
 
@@ -460,10 +459,10 @@ void RailParams::Draw(sf::RenderTarget *target)
 	{
 		VertexArray &li = *lines;
 
-
+		Vector2f fPos = GetFloatPos();
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position += Vector2f(position.x, position.y);
+			li[i].position += fPos;
 		}
 
 
@@ -471,7 +470,7 @@ void RailParams::Draw(sf::RenderTarget *target)
 
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position -= Vector2f(position.x, position.y);
+			li[i].position -= fPos;
 		}
 	}
 
@@ -513,8 +512,11 @@ TeleporterParams::TeleporterParams(ActorType *at, ifstream &is)
 	lines = NULL;
 
 	list<Vector2i> globalPath;
-	globalPath.push_back(Vector2i(position.x, position.y));
-	globalPath.push_back(position + other);
+
+	Vector2i intPos = GetIntPos();
+
+	globalPath.push_back(intPos);
+	globalPath.push_back(intPos + other);
 	SetPath(globalPath);
 }
 
@@ -587,10 +589,10 @@ void TeleporterParams::Draw(sf::RenderTarget *target)
 	{
 		VertexArray &li = *lines;
 
-
+		Vector2f fPos = GetFloatPos();
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position += Vector2f(position.x, position.y);
+			li[i].position += fPos;
 		}
 
 
@@ -598,7 +600,7 @@ void TeleporterParams::Draw(sf::RenderTarget *target)
 
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position -= Vector2f(position.x, position.y);
+			li[i].position -= fPos;
 		}
 	}
 

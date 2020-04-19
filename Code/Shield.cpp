@@ -95,6 +95,7 @@ V2d Shield::GetPosition()
 	return body.GetBasicPos();
 }
 
+
 void Shield::ConfirmKill()
 {
 	assert(receivedHit != NULL);

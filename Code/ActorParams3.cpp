@@ -83,10 +83,10 @@ void PulserParams::Draw( sf::RenderTarget *target )
 		
 		VertexArray &li = *lines;
 	
-	
+		Vector2f fPos = GetFloatPos();
 		for( int i = 0; i < localPathSize+1; ++i )
 		{
-			li[i].position += Vector2f( position.x, position.y );
+			li[i].position += fPos;
 		}
 	
 	
@@ -110,7 +110,7 @@ void PulserParams::Draw( sf::RenderTarget *target )
 	
 		for( int i = 0; i < localPathSize+1; ++i )
 		{
-			li[i].position -= Vector2f( position.x, position.y );
+			li[i].position -= fPos;
 		}
 	}
 
@@ -529,16 +529,16 @@ ActorParams *BossCoyoteParams::Copy()
 
 void BossCoyoteParams::CreateFormation()
 {
-	Vector2f op( position.x, position.y );
+	Vector2f fPos = GetFloatPos();
 
 	Transform t;
 	Vector2f offset( radius, 0 );
 
-	debugLines[0].position = op + offset;
+	debugLines[0].position = fPos + offset;
 	t.rotate( -360.f / 6.f );
 	for( int i = 1; i < 6; ++i )
 	{
-		Vector2f newP = t.transformPoint( offset ) + op;
+		Vector2f newP = t.transformPoint( offset ) + fPos;
 		//Vector2f lastPos;
 		debugLines[(i-1)*2 + 1].position = newP;
 		debugLines[i*2 + 0].position = newP;
@@ -583,8 +583,10 @@ BounceSpringParams::BounceSpringParams(ActorType *at, ifstream &is)
 	lines = NULL;
 
 	list<Vector2i> globalPath;
-	globalPath.push_back(Vector2i(position.x, position.y));
-	globalPath.push_back(position + other);
+
+	Vector2i intPos = GetIntPos();
+	globalPath.push_back(intPos);
+	globalPath.push_back(intPos + other);
 	SetPath(globalPath);
 }
 
@@ -673,10 +675,10 @@ void BounceSpringParams::Draw(sf::RenderTarget *target)
 	{
 		VertexArray &li = *lines;
 
-
+		Vector2f fPos = GetFloatPos();
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position += Vector2f(position.x, position.y);
+			li[i].position += fPos;
 		}
 
 
@@ -684,7 +686,7 @@ void BounceSpringParams::Draw(sf::RenderTarget *target)
 
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position -= Vector2f(position.x, position.y);
+			li[i].position -= fPos;
 		}
 	}
 

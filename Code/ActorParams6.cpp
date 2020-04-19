@@ -239,7 +239,7 @@ void NarwhalParams::Draw( RenderTarget *target )
 	//if( position != dest )
 	//{
 	sf::Vertex line[] = { 
-		sf::Vertex( Vector2f( position.x, position.y ), Color::Green ),
+		sf::Vertex( GetFloatPos(), Color::Green ),
 		sf::Vertex( Vector2f( dest.x, dest.y ), Color::Green ) };
 	target->draw( line, 2, sf::Lines );
 	//}
@@ -292,7 +292,7 @@ void NarwhalParams::SetPanelInfo()
 
 	EditSession *edit = EditSession::GetSession();
 	edit->patrolPath.clear();
-	edit->patrolPath.push_back(position);
+	edit->patrolPath.push_back(GetIntPos());
 	edit->patrolPath.push_back(dest);
 }
 

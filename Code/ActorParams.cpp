@@ -46,7 +46,8 @@ PlayerParams::PlayerParams(ActorType *at, ifstream &is )
 bool PlayerParams::CanApply()
 {
 	EditSession *session = EditSession::GetSession();
-	sf::IntRect me( position.x - image.getLocalBounds().width / 2, position.y - image.getLocalBounds().height / 2, 
+	Vector2i intPos = GetIntPos();
+	sf::IntRect me(intPos.x - image.getLocalBounds().width / 2, intPos.y - image.getLocalBounds().height / 2,
 		image.getLocalBounds().width, image.getLocalBounds().height );
 	for( list<PolyPtr>::iterator it = session->polygons.begin(); it != session->polygons.end(); ++it )
 	{
@@ -212,7 +213,8 @@ void PoiParams::Draw( sf::RenderTarget *target )
 	nameText.setString( name );
 	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2, 
 		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2 );
-	nameText.setPosition( position.x, position.y - 40 );
+	Vector2f fPos = GetFloatPos();
+	nameText.setPosition(fPos.x, fPos.y - 40 );
 
 	target->draw( nameText );
 }
@@ -756,10 +758,10 @@ void BlockerParams::Draw(sf::RenderTarget *target)
 	{
 		VertexArray &li = *lines;
 
-
+		Vector2f fPos = GetFloatPos();
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position += Vector2f(position.x, position.y);
+			li[i].position += fPos;
 		}
 
 
@@ -783,7 +785,7 @@ void BlockerParams::Draw(sf::RenderTarget *target)
 
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
-			li[i].position -= Vector2f(position.x, position.y);
+			li[i].position -= fPos;
 		}
 	}
 
@@ -838,7 +840,7 @@ AirTriggerParams::AirTriggerParams(ActorType *at, ifstream &is)
 
 	triggerRect.setFillColor(Color(200, 200, 200, 150));
 
-	SetRect(rectWidth, rectHeight, position);
+	SetRect(rectWidth, rectHeight, GetIntPos());
 }
 
 AirTriggerParams::AirTriggerParams(ActorType *at, sf::Vector2i &pos, const std::string &typeStr, int w,int h)
@@ -863,9 +865,10 @@ void AirTriggerParams::SetRect(int width, int height, Vector2i &center)
 	triggerRect.setSize(Vector2f(width, height));
 	triggerRect.setOrigin(triggerRect.getLocalBounds().width / 2,
 		triggerRect.getLocalBounds().height / 2);
-	position = center;
-	triggerRect.setPosition(position.x, position.y);
-	image.setPosition(position.x, position.y);
+	SetPosition(center);
+	Vector2f fPos = GetFloatPos();
+	triggerRect.setPosition(fPos);
+	image.setPosition(fPos);
 	SetBoundingQuad();
 
 	rectWidth = width;
@@ -910,11 +913,13 @@ void AirTriggerParams::Draw(RenderTarget *target)
 	nameText.setString(trigType);
 	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
 		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
-	nameText.setPosition(position.x, position.y - 40);
+
+	Vector2f fPos = GetFloatPos();
+	nameText.setPosition(fPos.x, fPos.y - 40);
 
 	target->draw(nameText);
 
-	triggerRect.setPosition(position.x, position.y);
+	triggerRect.setPosition(fPos);
 	target->draw(triggerRect);
 	
 }
@@ -1235,10 +1240,10 @@ void BasicAirEnemyParams::Draw(sf::RenderTarget *target)
 
 			VertexArray &li = *lines;
 
-
+			Vector2f fPos = GetFloatPos();
 			for (int i = 0; i < localPathSize + 1; ++i)
 			{
-				li[i].position += Vector2f(position.x, position.y);
+				li[i].position += fPos;
 			}
 
 
@@ -1260,7 +1265,7 @@ void BasicAirEnemyParams::Draw(sf::RenderTarget *target)
 
 			for (int i = 0; i < localPathSize + 1; ++i)
 			{
-				li[i].position -= Vector2f(position.x, position.y);
+				li[i].position -= fPos;
 			}
 		}
 	}
@@ -1448,17 +1453,19 @@ void XBarrierParams::Draw(sf::RenderTarget *target)
 {
 	ActorParams::Draw(target);
 
-	line[0].position.x = position.x;
-	line[1].position.x = position.x;
-	line[0].position.y = position.y - 1000;
-	line[1].position.y = position.y + 1000;
+	Vector2f fPos = GetFloatPos();
+
+	line[0].position.x = fPos.x;
+	line[1].position.x = fPos.x;
+	line[0].position.y = fPos.y - 1000;
+	line[1].position.y = fPos.y + 1000;
 
 	target->draw(line, 2, sf::Lines);
 
 	nameText.setString(name);
 	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
 		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
-	nameText.setPosition(position.x, position.y - 100);
+	nameText.setPosition(fPos.x, fPos.y - 100);
 
 	target->draw(nameText);
 }
@@ -1529,8 +1536,10 @@ void CameraShotParams::SetZoom(float z)
 	camRect.setSize(Vector2f(width, height));
 	camRect.setOrigin(camRect.getLocalBounds().width / 2,
 		camRect.getLocalBounds().height / 2);
-	camRect.setPosition(position.x, position.y);
-	image.setPosition(position.x, position.y);
+
+	Vector2f fPos = GetFloatPos();
+	camRect.setPosition(fPos);
+	image.setPosition(fPos);
 	SetBoundingQuad();
 
 	zoomText.setString( "x" + to_string(zoom));
@@ -1538,8 +1547,10 @@ void CameraShotParams::SetZoom(float z)
 
 void CameraShotParams::SetZoom(sf::Vector2i &testPoint)
 {
-	float xDist = abs(testPoint.x - position.x);
-	float yDist = abs(testPoint.y - position.y);
+
+	Vector2f fPos = GetFloatPos();
+	float xDist = abs(testPoint.x - fPos.x);
+	float yDist = abs(testPoint.y - fPos.y);
 	float xProp = xDist / CAMWIDTH;
 	float yProp = yDist / CAMHEIGHT;
 
@@ -1579,7 +1590,8 @@ ActorParams *CameraShotParams::Copy()
 
 void CameraShotParams::Draw(RenderTarget *target)
 {
-	camRect.setPosition(position.x, position.y);
+	Vector2f fPos = GetFloatPos();
+	camRect.setPosition(fPos);
 	target->draw(camRect);
 
 	ActorParams::Draw(target);
@@ -1587,13 +1599,13 @@ void CameraShotParams::Draw(RenderTarget *target)
 	nameText.setString(camName);
 	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
 		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
-	nameText.setPosition(position.x, position.y - 100);
+	nameText.setPosition(fPos.x, fPos.y - 100);
 
 	target->draw(nameText);
 
 	zoomText.setOrigin(zoomText.getLocalBounds().left + zoomText.getLocalBounds().width / 2,
 		zoomText.getLocalBounds().top + zoomText.getLocalBounds().height / 2);
-	zoomText.setPosition(position.x, position.y - 200);
+	zoomText.setPosition(fPos.x, fPos.y - 200);
 
 	target->draw(zoomText);
 }
@@ -1685,7 +1697,9 @@ void ExtraSceneParams::Draw(sf::RenderTarget *target)
 	nameText.setString(name);
 	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
 		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
-	nameText.setPosition(position.x, position.y - 100);
+
+	Vector2f fPos = GetFloatPos();
+	nameText.setPosition(fPos.x, fPos.y - 100);
 
 	target->draw(nameText);
 }

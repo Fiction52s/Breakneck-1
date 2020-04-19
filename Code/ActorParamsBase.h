@@ -33,6 +33,7 @@ struct PositionInfo
 	void SetRail(RailPtr p_rail, int p_edgeIndex, double quant);
 	int GetEdgeIndex();
 	V2d GetPosition();
+	void SetPosition(V2d &pos);
 	V2d position;
 };
 
@@ -115,11 +116,17 @@ struct ActorParams : ISelectable
 	virtual bool CanApply();
 	bool CanAdd();
 
+	V2d GetPosition();
+	void SetPosition(V2d &pos);
+	void SetPosition(sf::Vector2i &pos);
+	void SetPosition(const sf::Vector2f &pos);
+	sf::Vector2i GetIntPos();
+	sf::Vector2f GetFloatPos();
+
 	//sf::Sprite icon;
 	sf::Sprite image;
 	ActorGroup *group;
 	ActorType *type;
-	sf::Vector2i position;
 
 	//if groundInfo is not null
 	//then you can handle ground, even 

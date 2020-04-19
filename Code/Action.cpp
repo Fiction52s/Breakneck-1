@@ -195,7 +195,7 @@ sf::Vector2i &Brush::GetCenter()
 			if( ap != NULL )
 			{
 				ap = sp->GetAsActor();
-				return ap->position;
+				return ap->GetIntPos();
 			}
 		}
 	}

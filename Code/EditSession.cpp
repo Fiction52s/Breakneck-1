@@ -64,7 +64,7 @@ V2d EditSession::GetPlayerSpawnPos()
 	}
 	else
 	{
-		return V2d(player->position);
+		return player->GetPosition();
 	}
 }
 
@@ -1080,8 +1080,8 @@ void EditSession::ProcessGate(int gType,
 
 void EditSession::ProcessPlayerStartPos()
 {
-	player->position = playerOrigPos;
-	player->image.setPosition(player->position.x, player->position.y);
+	player->SetPosition(playerOrigPos);
+	player->image.setPosition(player->GetFloatPos());
 	player->SetBoundingQuad();
 }
 
@@ -1400,7 +1400,8 @@ void EditSession::WriteFile(string fileName)
 
 	WriteDecor(of);
 
-	of << player->position.x << " " << player->position.y << endl;
+	Vector2i playerIntPos(player->GetIntPos());
+	of << playerIntPos.x << " " << playerIntPos.y << endl;
 
 	WriteInversePoly(of);
 
@@ -2093,7 +2094,7 @@ int EditSession::Run()
 	if (!initialViewSet)
 	{
 		view.setSize(1920, 1080);
-		view.setCenter(player->position.x, player->position.y);
+		view.setCenter(player->GetFloatPos());
 	}
 
 	quit = false;
@@ -2254,7 +2255,7 @@ int EditSession::Run()
 
 		if( zoomMultiple > 7 )
 		{
-			playerZoomIcon.setPosition( player->position.x, player->position.y );
+			playerZoomIcon.setPosition( player->GetFloatPos() );
 			playerZoomIcon.setScale( zoomMultiple * 1.8, zoomMultiple * 1.8 );
 			preScreenTex->draw( playerZoomIcon );
 		}
@@ -5120,7 +5121,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 				PoiParams *pp = (PoiParams*)((*it2));
 				if (pp->name == "stormceiling")
 				{
-					top = pp->position.y;
+					top = pp->GetPosition().y;
 				}
 			}
 		}
@@ -5276,12 +5277,12 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		{
 			if ((*it2)->type->IsGoalType())
 			{
-				goalCS.setPosition((*it2)->position.x, (*it2)->position.y);
+				goalCS.setPosition((*it2)->GetFloatPos());
 				mapPreviewTex->draw(goalCS);
 			}
 			else
 			{
-				cs.setPosition((*it2)->position.x, (*it2)->position.y);
+				cs.setPosition((*it2)->GetFloatPos());
 				mapPreviewTex->draw(cs);
 			}
 				
@@ -5291,7 +5292,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		//(*it).second->DrawPreview( mapPreviewTex );
 	}
 
-	cs.setPosition(player->position.x, player->position.y );
+	cs.setPosition(player->GetFloatPos());
 	cs.setFillColor(Color::Green);
 	mapPreviewTex->draw(cs);
 
@@ -6813,9 +6814,11 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			//this is to handle when more than 1 inverse is created and its ambiguous
 			//go with the one the player is inside. if the player isn't in any of them, ignore the operation
 			playerInsideIndex = -1;
+			Vector2i playerIntPos(player->GetIntPos());
+			ClipperLib::IntPoint clipperPlayerIntPos(playerIntPos.x, playerIntPos.y);
 			for (i = 0; i < numInverseSolutions; ++i)
 			{
-				if (ClipperLib::PointInPolygon(ClipperLib::IntPoint(player->position.x, player->position.y),
+				if (ClipperLib::PointInPolygon(clipperPlayerIntPos,
 					inverseSolution[i]))
 				{
 					playerInsideIndex = i;

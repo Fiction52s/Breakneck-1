@@ -168,10 +168,11 @@ void ActorParams::SetPath(std::list<sf::Vector2i> &globalPath)
 		int index = 1;
 		list<Vector2i>::iterator it = globalPath.begin();
 		++it;
+
+		Vector2i myIntPos = GetIntPos();
 		for (; it != globalPath.end(); ++it)
 		{
-
-			Vector2i temp((*it).x - position.x, (*it).y - position.y);
+			Vector2i temp((*it).x - myIntPos.x, (*it).y - myIntPos.y);
 			localPath.push_back(temp);
 			li[index].position = Vector2f(temp.x, temp.y);
 			li[index].color = Color::Magenta;
@@ -183,19 +184,20 @@ void ActorParams::SetPath(std::list<sf::Vector2i> &globalPath)
 std::list<sf::Vector2i> ActorParams::GetGlobalPath()
 {
 	list<Vector2i> globalPath;
-	globalPath.push_back(position);
+	Vector2i myIntPos = GetIntPos();
+	globalPath.push_back(myIntPos);
 	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
 	{
-		globalPath.push_back(position + (*it));
+		globalPath.push_back(myIntPos + (*it));
 	}
 	return globalPath;
 }
 
 void ActorParams::PlaceAerial(sf::Vector2i &pos)
 {
-	position = pos;
+	SetPosition(pos);
 	image = type->GetSprite(false);
-	image.setPosition(position.x, position.y);
+	image.setPosition(GetFloatPos());
 
 	SetBoundingQuad();
 }
@@ -258,10 +260,11 @@ void ActorParams::WriteBool(ofstream &of, bool b)
 
 void ActorParams::LoadAerial(std::ifstream &is)
 {
-	is >> position.x;
-	is >> position.y;
+	Vector2i pos;
+	is >> pos.x;
+	is >> pos.y;
 
-	PlaceAerial(position);
+	PlaceAerial(pos);
 }
 
 void ActorParams::LoadGlobalPath(ifstream &is)
@@ -270,14 +273,15 @@ void ActorParams::LoadGlobalPath(ifstream &is)
 	int pathLength;
 	is >> pathLength;
 
-	globalPath.push_back(Vector2i(position.x, position.y));
+	Vector2i myIntPos = GetIntPos();
+	globalPath.push_back(myIntPos);
 
 	for (int i = 0; i < pathLength; ++i)
 	{
 		int localX, localY;
 		is >> localX;
 		is >> localY;
-		globalPath.push_back(Vector2i(position.x + localX, position.y + localY));
+		globalPath.push_back(Vector2i(myIntPos.x + localX, myIntPos.y + localY));
 	}
 
 	SetPath(globalPath);
@@ -392,7 +396,7 @@ void ActorParams::DrawMonitor(sf::RenderTarget *target)
 
 		cs.setOrigin(cs.getLocalBounds().width / 2,
 			cs.getLocalBounds().height / 2);
-		cs.setPosition(position.x, position.y);
+		cs.setPosition(GetFloatPos());
 
 		target->draw(cs);
 	}
@@ -431,7 +435,8 @@ void ActorParams::WriteFile(ofstream &of)
 		}
 		else
 		{
-			of << air << " " << position.x << " " << position.y << endl;
+			Vector2i intPos = GetIntPos();
+			of << air << " " << intPos.x << " " << intPos.y << endl;
 		}
 	}
 	else if (canGrounded)
@@ -454,7 +459,8 @@ void ActorParams::WriteFile(ofstream &of)
 	}
 	else if (canAerial)
 	{
-		of << position.x << " " << position.y << endl;
+		Vector2i intPos = GetIntPos();
+		of << intPos.x << " " << intPos.y << endl;
 	}
 	else
 	{
@@ -486,6 +492,11 @@ V2d PositionInfo::GetPosition()
 	{
 		return position;
 	}
+}
+
+void PositionInfo::SetPosition(V2d &pos)
+{
+	position = pos;
 }
 
 int PositionInfo::GetEdgeIndex()
@@ -605,6 +616,37 @@ TerrainPoint *PositionInfo::GetNextPoint()
 	}
 }
 
+void ActorParams::SetPosition(V2d &pos)
+{
+	posInfo.SetPosition(pos);
+}
+
+Vector2i ActorParams::GetIntPos()
+{
+	V2d posD = GetPosition();
+	return Vector2i(round(posD.x), round(posD.y));
+}
+
+Vector2f ActorParams::GetFloatPos()
+{
+	return Vector2f(GetPosition());
+}
+
+void ActorParams::SetPosition(Vector2i &pos)
+{
+	posInfo.SetPosition(V2d(pos));
+}
+
+void ActorParams::SetPosition(const sf::Vector2f &pos)
+{
+	posInfo.SetPosition(V2d(pos));
+}
+
+V2d ActorParams::GetPosition()
+{
+	return posInfo.GetPosition();
+}
+
 void ActorParams::SetBoundingQuad()
 {
 	//float note
@@ -629,26 +671,28 @@ void ActorParams::SetBoundingQuad()
 		boundingQuad[3].position = Vector2f(rightGround.x, rightGround.y);
 
 		V2d pos = (leftGround + leftAir + rightAir + rightGround) / 4.0;
-		position = Vector2i(pos.x, pos.y);
+		SetPosition(pos);
 	}
 	else if (type->CanBeRailGrounded() && posInfo.railGround != NULL)
 	{
 		V2d pos = posInfo.GetPosition();
 
-		position = Vector2i(pos);
+		SetPosition(pos);
 
-		boundingQuad[0].position = Vector2f(position.x - width / 2, position.y - height / 2);
-		boundingQuad[1].position = Vector2f(position.x + width / 2, position.y - height / 2);
-		boundingQuad[2].position = Vector2f(position.x + width / 2, position.y + height / 2);
-		boundingQuad[3].position = Vector2f(position.x - width / 2, position.y + height / 2);
+		Vector2f fPos = GetFloatPos();
+		boundingQuad[0].position = Vector2f(fPos.x - width / 2, fPos.y - height / 2);
+		boundingQuad[1].position = Vector2f(fPos.x + width / 2, fPos.y - height / 2);
+		boundingQuad[2].position = Vector2f(fPos.x + width / 2, fPos.y + height / 2);
+		boundingQuad[3].position = Vector2f(fPos.x - width / 2, fPos.y + height / 2);
 	}
 	else
 	{
+		Vector2f fPos = GetFloatPos();
 		//patroller doesnt need a box because its not physical with the environment
-		boundingQuad[0].position = Vector2f(position.x - width / 2, position.y - height / 2);
-		boundingQuad[1].position = Vector2f(position.x + width / 2, position.y - height / 2);
-		boundingQuad[2].position = Vector2f(position.x + width / 2, position.y + height / 2);
-		boundingQuad[3].position = Vector2f(position.x - width / 2, position.y + height / 2);
+		boundingQuad[0].position = Vector2f(fPos.x - width / 2, fPos.y - height / 2);
+		boundingQuad[1].position = Vector2f(fPos.x + width / 2, fPos.y - height / 2);
+		boundingQuad[2].position = Vector2f(fPos.x + width / 2, fPos.y + height / 2);
+		boundingQuad[3].position = Vector2f(fPos.x - width / 2, fPos.y + height / 2);
 	}
 
 	UpdateExtraVisuals();
@@ -745,7 +789,6 @@ void ActorParams::UnAnchor()
 	assert(posInfo.ground != NULL);
 	if (posInfo.ground != NULL)
 	{
-		position = Vector2i(image.getPosition().x, image.getPosition().y);
 		posInfo.SetAerial(V2d(image.getPosition()));
 
 		image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
@@ -849,11 +892,11 @@ void ActorParams::Move(sf::Vector2i delta)
 {
 	if (posInfo.IsAerial())
 	{
-		position.x += delta.x;
-		position.y += delta.y;
+		
+		posInfo.position.x += delta.x;
+		posInfo.position.y += delta.y;
 		SetBoundingQuad();
-
-		image.setPosition(position.x, position.y);
+		image.setPosition(GetFloatPos());
 	}
 }
 
