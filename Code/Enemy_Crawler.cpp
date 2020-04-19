@@ -75,16 +75,15 @@ Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
 	sprite.setPosition( gPoint.x, gPoint.y );
 
 	sprite.setScale(scale, scale);
-	V2d gNorm = mover->ground->Normal();
-
+	
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(86);
 	cutObject->SetSubRectBack(87);
 	cutObject->SetScale(scale);
 	
+	V2d gNorm = mover->ground->Normal();
 	double angle = atan2( gNorm.x, -gNorm.y );
 	sprite.setRotation( angle / PI * 180.f );
-	//position = gPoint + gNorm * height / 2.0;
 	position = mover->physBody.globalPosition;
 
 	double size = max( width, height );
@@ -175,12 +174,6 @@ void Crawler::ResetEnemy()
 
 	double angle = 0;
 	angle = atan2( gn.x, -gn.y );
-
-	//sprite.setTextureRect( ts->GetSubRect( frame / crawlAnimationFactor ) );
-	//V2d pp = mover->ground->GetPoint(mover->edgeQuantity );
-	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	//sprite.setRotation( angle / PI * 180 );
-	//sprite.setPosition( pp.x, pp.y );
 
 	UpdateHitboxes();
 

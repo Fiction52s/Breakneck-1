@@ -7,6 +7,7 @@
 #include "EffectLayer.h"
 #include <SFML/Audio.hpp>
 #include "ObjectProperties.h"
+#include "ActorParamsBase.h"
 
 struct Wire;
 struct Zone;
@@ -57,6 +58,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 {
 
 	//new vars
+
+	//void SetStartGroundInfo
+	GroundInfo startGroundInfo;
 	HitParams hitParams;
 	Session *sess;
 	bool SetHitParams();

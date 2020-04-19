@@ -470,14 +470,10 @@ void PoisonFrogParams::UpdatePath()
 	Vector2f gravity( 0, gravFactor / 64.f );
 
 	V2d fireDir;
-	TerrainPoint *curr = groundInfo->edgeStart;
-	TerrainPoint *next = groundInfo->GetNextPoint();
 
-	V2d e( next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
+	V2d e(groundInfo->GetEdge()->FullAlong());//next->pos.x - curr->pos.x, next->pos.y - curr->pos.y );
 	e = normalize( e );
 	e = V2d( e.y, -e.x );
-
-	
 
 	//negative x jumpstrength means you face left
 	Vector2f vel = Vector2f( jumpStrength.x, -jumpStrength.y );

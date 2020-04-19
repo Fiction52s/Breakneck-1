@@ -29,12 +29,14 @@ V2d Edge::Along()
 	return normalize(v1 - v0);
 }
 
-V2d Edge::GetPoint( double quantity )
+sf::Vector2<double> Edge::FullAlong()
 {
-	//gets the point on a line w/ length quantity in the direction of the edge vector
-	V2d e( v1 - v0 );
-	e = normalize( e );
-	return v0 + quantity * e;
+	return v1 - v0;
+}
+
+V2d Edge::GetPosition( double quantity )
+{
+	return v0 + quantity * Along();
 }
 
 double Edge::GetQuantity(Vector2<double> &p)

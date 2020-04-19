@@ -14,18 +14,21 @@ struct ActorType;
 struct Edge;
 struct Enemy;
 
-struct GroundInfo
+struct PositionInfo
 {
-	GroundInfo();
-	TerrainPoint *edgeStart;
+	PositionInfo();
+	int edgeIndex;
+	//TerrainPoint *edgeStart;
 	double groundQuantity;
 	PolyPtr ground;
 	RailPtr railGround;
-	TerrainPoint *GetNextPoint();
+	Edge *GetEdge();
+	TerrainPoint *GetPoint();
 	void AddActor(ActorPtr a);
 	void RemoveActor(ActorPtr a);
 	int GetEdgeIndex();
 	V2d GetPosition();
+	V2d position;
 };
 
 struct ActorParams : ISelectable
@@ -55,8 +58,8 @@ struct ActorParams : ISelectable
 		int eIndex, double quantity);
 	void AnchorToRail(TerrainRail *rail,
 		int eIndex, double quantity);
-	void AnchorToGround(GroundInfo &gi);
-	void AnchorToRail(GroundInfo &gi);
+	void AnchorToGround(PositionInfo &gi);
+	void AnchorToRail(PositionInfo &gi);
 	void UnAnchor();
 	void UpdateGroundedSprite();
 
@@ -117,7 +120,7 @@ struct ActorParams : ISelectable
 	//then you can handle ground, even 
 	//if you arent on it
 	
-	GroundInfo *groundInfo;
+	PositionInfo posInfo;
 	bool hasMonitor;
 	sf::VertexArray boundingQuad;
 

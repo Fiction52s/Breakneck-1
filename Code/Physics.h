@@ -27,7 +27,8 @@ struct Edge : QuadTreeEntrant
 	bool IsInvisibleWall();
 	sf::Vector2<double> Normal();
 	sf::Vector2<double> Along();
-	sf::Vector2<double> GetPoint( double quantity );
+	sf::Vector2<double> FullAlong();
+	sf::Vector2<double> GetPosition( double quantity );
 	double GetQuantity( sf::Vector2<double> &p );
 	double GetRawQuantity(sf::Vector2<double> &p);
 	double GetQuantityGivenX( double x );

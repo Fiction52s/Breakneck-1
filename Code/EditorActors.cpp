@@ -691,19 +691,7 @@ void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)
 	a = info.pLoader(this, is);
 	if (a->groundInfo != NULL)
 	{
-		if (a->groundInfo->ground != NULL)
-		{
-			PolyPtr poly = a->groundInfo->ground;
-			poly->enemies[a->groundInfo->edgeStart].push_back(a);
-			poly->UpdateBounds();
-		}
-		else
-		{
-			assert(a->groundInfo->railGround != NULL);
-			TerrainRail *rail = a->groundInfo->railGround;
-			rail->enemies[a->groundInfo->edgeStart].push_back(a);
-			rail->UpdateBounds();
-		}
+		a->groundInfo->AddActor(a);
 	}
 }
 

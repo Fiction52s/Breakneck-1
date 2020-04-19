@@ -28,12 +28,14 @@ Enemy *ActorParams::GenerateEnemy()
 
 Edge *ActorParams::GetGroundEdge()
 {
-	if (groundInfo != NULL && groundInfo->ground != NULL)
+	return groundInfo.GetEdge();
+
+	/*if (groundInfo != NULL && groundInfo->ground != NULL)
 	{
 		return groundInfo->ground->GetEdge(groundInfo->edgeStart->index);
 	}
 
-	return NULL;
+	return NULL;*/
 }
 
 int ActorParams::GetWorld()
@@ -474,54 +476,40 @@ void ActorParams::DrawQuad(sf::RenderTarget *target)
 	target->draw(boundingQuad);
 }
 
-GroundInfo::GroundInfo()
-	:edgeStart(NULL), groundQuantity(-1), ground(NULL), railGround(NULL)
+PositionInfo::PositionInfo()
+	:edgeIndex(-1), groundQuantity(-1), ground(NULL), railGround(NULL)
 {
 
 }
 
-V2d GroundInfo::GetPosition()
+V2d PositionInfo::GetPosition()
 {
-	TerrainPoint *next = ground->GetNextPoint(edgeStart->index);
-
-	V2d start = V2d(edgeStart->pos);
-	V2d end = V2d(next->pos);
-
-	V2d dir = normalize(end - start);
-	return start + dir * groundQuantity;
-}
-
-int GroundInfo::GetEdgeIndex()
-{
-	return edgeStart->index;
-}
-
-TerrainPoint *GroundInfo::GetNextPoint()
-{
-	if (ground != NULL)
+	Edge *edge = GetEdge();
+	if (edge != NULL)
 	{
-		return ground->GetNextPoint(edgeStart->GetIndex());
-	}
-	else if (railGround != NULL)
-	{
-		return railGround->GetNextPoint(edgeStart->GetIndex());
+		return edge->GetPosition(groundQuantity);
 	}
 	else
 	{
-		return NULL;
+		return position;
 	}
 }
 
-void GroundInfo::AddActor(ActorPtr a)
+int PositionInfo::GetEdgeIndex()
+{
+	return edgeIndex;
+}
+
+void PositionInfo::AddActor(ActorPtr a)
 {
 	if (ground != NULL)
 	{
-		ground->enemies[edgeStart].push_back(a);
+		ground->enemies[GetPoint()].push_back(a);
 		ground->UpdateBounds();
 	}
 	else if (railGround != NULL)
 	{
-		railGround->enemies[edgeStart].push_back(a);
+		railGround->enemies[GetPoint()].push_back(a);
 		railGround->UpdateBounds();
 	}
 	else
@@ -530,19 +518,53 @@ void GroundInfo::AddActor(ActorPtr a)
 	}
 }
 
-void GroundInfo::RemoveActor(ActorPtr a)
+void PositionInfo::RemoveActor(ActorPtr a)
 {
 	if (ground != NULL)
 	{
-		ground->enemies[edgeStart].remove(a);
+		ground->enemies[GetPoint()].remove(a);
 	}
 	else if (railGround != NULL)
 	{
-		railGround->enemies[edgeStart].remove(a);
+		railGround->enemies[GetPoint()].remove(a);
 	}
 	else
 	{
 		assert(0);
+	}
+}
+
+Edge *PositionInfo::GetEdge()
+{
+	if (ground != NULL)
+	{
+		return ground->GetEdge(edgeIndex);
+	}
+	else if (railGround != NULL)
+	{
+		return NULL;
+		//rails not complete yet
+		//railGround->GetEdge(edgeIndex);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+TerrainPoint *PositionInfo::GetPoint()
+{
+	if (ground != NULL)
+	{
+		return ground->GetPoint(edgeIndex);
+	}
+	else if(railGround != NULL )
+	{
+		return NULL;
+	}
+	else
+	{
+		return NULL;
 	}
 }
 
