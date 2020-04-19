@@ -83,15 +83,13 @@ void TouchGrassCollection::CreateGrass(int index, Edge *edge, double quant)
 
 TouchGrass::TouchGrass(TouchGrassCollection *p_coll, int index,
 	Edge *e, double q )
-	:coll( p_coll ), edge( e ), gIndex( index ), quant( q ), hurtBody(NULL)
+	:coll( p_coll ), edge( e ), gIndex( index ), quant( q ), hurtBody( CollisionBox::Hurt )
 {
 	myQuad = coll->touchGrassVA + gIndex * 4;
 }
 
 TouchGrass::~TouchGrass()
 {
-	if (hurtBody != NULL)
-		delete hurtBody;
 }
 
 //remove this later after gamesession is a tilesetmanager
@@ -145,7 +143,7 @@ int TouchGrass::GetQuadWidth(TouchGrassType gt)
 
 void TouchGrass::Move(V2d &move)
 {
-	hurtBody->Move(move);
+	hurtBody.Move(move);
 	center += move;
 
 	Vector2f fMove(move);
@@ -171,24 +169,14 @@ void TouchGrass::CommonInit( double yOff, double p_angle, double hitboxYOff, dou
 
 	angle = p_angle;
 
-	V2d polyCenter = coll->myTerrain->GetDCenter();
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = angle;
-	hurtBox.globalPosition = hitboxCenter;// -polyCenter;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = hitboxXSize;
-	hurtBox.rh = hitboxYSize;
-	hurtBody = new CollisionBody(1);
-	hurtBody->AddCollisionBox(0, hurtBox);
+	//probably make this a rectangle later.
+	hurtBody.BasicCircleSetup(hitboxXSize, hitboxCenter);
 
 	SetRectRotation(myQuad, angle, coll->ts_grass->tileWidth, 
 		coll->ts_grass->tileHeight, Vector2f(center));
 
 	
-
+	V2d polyCenter = coll->myTerrain->GetDCenter();
 	for (int i = 0; i < 4; ++i)
 	{
 		points[i] = V2d(myQuad[i].position) - polyCenter;
@@ -199,7 +187,7 @@ void TouchGrass::CommonInit( double yOff, double p_angle, double hitboxYOff, dou
 
 bool TouchGrass::Intersects(CollisionBody *cb, int frame)
 {
-	return cb->Intersects(frame, hurtBody, 0);
+	return cb->Intersects(frame, &hurtBody, 0);
 }
 
 void TouchGrass::HandleQuery(QuadTreeCollider * qtc)

@@ -70,10 +70,10 @@ Shroom::Shroom(bool p_hasMonitor, Edge *g, double q, int p_level)
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(32, position);
+	BasicCircleHitBodySetup(32, position );
+
+	hitBody.hitboxInfo = hitboxInfo;
 
 	
 
@@ -89,9 +89,6 @@ Shroom::Shroom(bool p_hasMonitor, Edge *g, double q, int p_level)
 
 	animFactor[LATENT] = 2;
 	animFactor[HITTING] = 2;
-
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(29);
@@ -120,8 +117,8 @@ void Shroom::ResetEnemy()
 	jellySpawnable = true;
 	slowMultiple = 1;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 }
 
 void Shroom::ProcessState()
@@ -269,10 +266,9 @@ ShroomJelly::ShroomJelly(V2d &pos, int p_level )
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(32, position);
+	BasicCircleHitBodySetup(32, position);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 
@@ -287,12 +283,14 @@ ShroomJelly::ShroomJelly(V2d &pos, int p_level )
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody = new CollisionBody(2);
+	comboObj->enemyHitBody.SetupNumFrames(2);
+	comboObj->enemyHitBody.SetupNumBoxesOnFrame(0, 1);
+	comboObj->enemyHitBody.SetupNumBoxesOnFrame(1, 1);
+	//= new CollisionBody(2);
 
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front() );
+	comboObj->enemyHitBody.AddCollisionBox(0, hitBody.GetCollisionBoxes(0).front() );
 
 	CollisionBox exBox;
-	exBox.type = CollisionBox::Hit;
 	exBox.isCircle = true;
 	exBox.globalAngle = 0;
 	exBox.offset.x = 0;
@@ -300,7 +298,7 @@ ShroomJelly::ShroomJelly(V2d &pos, int p_level )
 	exBox.rw = 128 * scale;
 	exBox.rh = 128 * scale;
 
-	comboObj->enemyHitBody->AddCollisionBox(1, exBox);
+	comboObj->enemyHitBody.AddCollisionBox(1, exBox);
 
 	comboObj->enemyHitboxFrame = 0;
 
@@ -329,9 +327,6 @@ ShroomJelly::ShroomJelly(V2d &pos, int p_level )
 
 	currentCycle = 0;
 	cycleLimit = 3;
-
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
 
 	UpdateSprite();
 }
@@ -442,8 +437,8 @@ void ShroomJelly::ProcessState()
 		{
 		case WAIT:
 			action = APPEARING;
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
+			SetHitboxes(&hitBody, 0);
+			SetHurtboxes(&hurtBody, 0);
 			break;
 		case APPEARING:
 			action = RISING;
@@ -569,10 +564,10 @@ void ShroomJelly::UpdateSprite()
 
 	if (hasMonitor && !suppressMonitor)
 	{
-		keySprite->setTextureRect(ts_key->GetSubRect(sess->keyFrame / 5));
-		keySprite->setOrigin(keySprite->getLocalBounds().width / 2,
-			keySprite->getLocalBounds().height / 2);
-		keySprite->setPosition(position.x, position.y);
+		keySprite.setTextureRect(ts_key->GetSubRect(sess->keyFrame / 5));
+		keySprite.setOrigin(keySprite.getLocalBounds().width / 2,
+			keySprite.getLocalBounds().height / 2);
+		keySprite.setPosition(position.x, position.y);
 	}
 }
 

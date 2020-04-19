@@ -43,8 +43,6 @@ struct Spring : Enemy
 	Tileset *ts_idle;
 	Tileset *ts_recover;
 	Tileset *ts_springing;
-	CollisionBody * hurtBody;
-	CollisionBody* hitBody;
 	void DebugDraw(sf::RenderTarget *target);
 	//HitboxInfo *hitboxInfo;
 

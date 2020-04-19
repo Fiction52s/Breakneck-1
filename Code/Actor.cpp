@@ -927,8 +927,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 		velocity = Vector2<double>( 0, 0 );
 		
-		CollisionBox cb(CollisionBox::BoxType::Hit );
-		cb.type = CollisionBox::Hit;
+		CollisionBox cb;
 		cb.isCircle = true;
 		cb.offset.x = 32;
 		cb.offset.y = -8;
@@ -1149,7 +1148,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 			cb.rh = 90;
 			cb.offset.x = 0;
 			cb.offset.y = 0;
-			grindHitboxes[0] = new CollisionBody(1);
+			grindHitboxes[0] = new CollisionBody( CollisionBox::Hit);
+			grindHitboxes[0]->BasicSetup();
 			grindHitboxes[0]->AddCollisionBox(0, cb);
 			//up
 		}
@@ -1509,10 +1509,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		b.offset.y = 0;
 		b.rw = 10;
 		b.rh = normalHeight;
-		b.type = CollisionBox::BoxType::Physics;
-
-		
-		b.type = b.Physics;
 
 		//hurtboxMap[STAND] = new CollisionBody(1);
 		hurtBody.offset.x = 0;
@@ -1520,7 +1516,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		hurtBody.isCircle = false;
 		hurtBody.rw = 7;//10;
 		hurtBody.rh = 15;//normalHeight - 5;//normalHeight;
-		hurtBody.type = CollisionBox::BoxType::Hurt;
 		//hurtboxMap[STAND]->AddCollisionBox(0, hurtBody);
 
 		
@@ -8396,7 +8391,7 @@ void Actor::UpdatePrePhysics()
 				{
 					bubblePos[currBubble] = position;
 
-					CollisionBox &bHitbox = bubbleHitboxes[currBubble]->GetCollisionBoxes(0)->front();
+					CollisionBox &bHitbox = bubbleHitboxes[currBubble]->GetCollisionBoxes(0).front();
 					bHitbox.globalPosition = position;
 					bHitbox.rw = bubbleRadiusSize[currBubble];
 					bHitbox.rh = bHitbox.rw;
@@ -8874,11 +8869,13 @@ void Actor::InitAfterEnemies()
 	}
 
 	bubbleHitboxes = new CollisionBody*[maxBubbles];
+
 	CollisionBox genericBox;
 	genericBox.isCircle = true;
 	for (int i = 0; i < maxBubbles; ++i)
 	{
-		bubbleHitboxes[i] = new CollisionBody(1);
+		bubbleHitboxes[i] = new CollisionBody(CollisionBox::Hit);
+		bubbleHitboxes[i]->BasicSetup();
 		bubbleHitboxes[i]->AddCollisionBox( 0, genericBox);
 	}
 	//memset(bubbleHitboxes, 0, sizeof(bubbleHitboxes));
@@ -12141,7 +12138,7 @@ ComboObject * Actor::IntersectMyComboHitboxes(Enemy *e, CollisionBody *cb,
 	{
 		if (e != curr->enemy)
 		{
-			if (curr->enemyHitBody->Intersects(curr->enemyHitboxFrame, cb, cbFrame))
+			if (curr->enemyHitBody.Intersects(curr->enemyHitboxFrame, cb, cbFrame))
 			{
 				return curr;
 			}
@@ -15365,9 +15362,9 @@ void Actor::UpdateHitboxes()
 
 	if( currHitboxes != NULL )
 	{
-		list<CollisionBox> *cList = (currHitboxes->GetCollisionBoxes(currHitboxFrame));
+		vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
 		if( cList != NULL )
-		for( list<CollisionBox>::iterator it = cList->begin(); it != cList->end(); ++it )
+		for( auto it = cList->begin(); it != cList->end(); ++it )
 		{
 			if( ground != NULL )
 			{
@@ -18100,7 +18097,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			Spring *spr = (Spring*)qte;
 			if (currSpring == NULL)
 			{
-				if (spr->hitBody->Intersects(spr->currHitboxFrame, &hurtBody) && spr->action == Spring::IDLE)
+				if (spr->hitBody.Intersects(spr->currHitboxFrame, &hurtBody) && spr->action == Spring::IDLE)
 				{
 					currSpring = spr;
 				}
@@ -18165,7 +18162,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else
 		{
-			if (tGrass->hurtBody->Intersects(0, &hurtBody))
+			if (tGrass->hurtBody.Intersects(0, &hurtBody))
 			{
 				tGrass->Touch(this);
 			}
@@ -18964,7 +18961,7 @@ void Actor::DebugDraw( RenderTarget *target )
 		currHurtboxes->DebugDraw( currHurtboxFrame, target);
 	}*/
 
-	b.DebugDraw(target);
+	b.DebugDraw( CollisionBox::Physics, target);
 
 
 
@@ -21892,11 +21889,13 @@ void Actor::ConfirmEnemyNoKill( Enemy *e )
 	ActivateSound( S_HIT );
 }
 
-void Actor::ConfirmHit( EnemyParams *hitParams )
+void Actor::ConfirmHit( Enemy *e )
 {
+
+	HitParams &hitParams = e->hitParams;
 	//owner->cam.SetRumble(3, 3, 5);
 
-	if (!hitParams->canBeHit)
+	if (!hitParams.canBeHit)
 		return;
 
 	if (ground == NULL && velocity.y > 0 && action == DAIR )
@@ -21905,7 +21904,7 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 	}
 
 	Color c;
-	switch(hitParams->worldIndex )
+	switch(e->world )
 	{
 	case 1:
 		c = COLOR_BLUE;
@@ -21930,7 +21929,7 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 		break;
 	}
 
-	currentSpeedBar += hitParams->speedBar;
+	currentSpeedBar += hitParams.speedBar;
 	test = true;
 	currAttackHit = true;
 	if( bounceFlameOn )
@@ -21953,7 +21952,7 @@ void Actor::ConfirmHit( EnemyParams *hitParams )
 	//owner->powerWheel->Charge( charge );
 
 	if( kinRing != NULL )
-		kinRing->powerRing->Fill(hitParams->charge);
+		kinRing->powerRing->Fill(hitParams.charge);
 	
 	desperationMode = false;
 	
@@ -22733,7 +22732,7 @@ void Actor::SetActionGrind()
 	if (grindHitboxes[0] != NULL)
 	{
 		double grindHitRadius[] = { 90, 100, 110 };
-		CollisionBox &gh = grindHitboxes[0]->GetCollisionBoxes(0)->front();
+		CollisionBox &gh = grindHitboxes[0]->GetCollisionBoxes(0).front();
 		gh.rw = gh.rh = grindHitRadius[speedLevel];
 	}
 	
@@ -23142,9 +23141,9 @@ bool Actor::IHitPlayer( int otherPlayerIndex )
 		{
 			bool hit = false;
 
-			list<CollisionBox> *cList = (currHitboxes->GetCollisionBoxes(currHitboxFrame));
+			vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
 			if( cList != NULL )
-			for( list<CollisionBox>::iterator it = cList->begin(); it != cList->end(); ++it )
+			for( auto it = cList->begin(); it != cList->end(); ++it )
 			{
 				if( player->hurtBody.Intersects( (*it) ) )
 				{
@@ -23376,14 +23375,14 @@ PlayerGhost::PlayerGhost()
 
 void PlayerGhost::DebugDraw( sf::RenderTarget *target )
 {
-	if( currHitboxes != NULL )
+	/*if( currHitboxes != NULL )
 	{
 		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
 		{
 			(*it).DebugDraw( target );
 		}
 	}
-	sf::RectangleShape rs;
+	sf::RectangleShape rs;*/
 }
 
 void PlayerGhost::UpdatePrePhysics( int ghostFrame )

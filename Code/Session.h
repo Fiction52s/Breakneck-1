@@ -14,7 +14,7 @@
 
 #include "ActorParamsBase.h"
 #include "EditorActors.h"
-
+#include "Enemy_BasicEffect.h"
 
 
 struct SoundManager;
@@ -30,7 +30,6 @@ struct Background;
 struct HitboxManager;
 
 struct TerrainDecorInfo;
-struct BasicEffect;
 
 struct SoundNodeList;
 struct ComboObject;

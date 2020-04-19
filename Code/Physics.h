@@ -112,21 +112,21 @@ struct CollisionBox
 
 	};
 
-	CollisionBox( BoxType bType = BoxType::Hit )
-		:globalAngle( 0 ), rw( 0 ), rh( 0 ), isCircle( true ), type(bType),
+	CollisionBox()
+		:globalAngle( 0 ), rw( 0 ), rh( 0 ), isCircle( true ),
 		flipHorizontal( false ), flipVertical( false )
 		, localAngle( 0 )
 	{
 
 	}
 
-	CollisionBox( HitboxInfo *hInfo, BoxType bType = BoxType::Hit )
-		:globalAngle(0), rw(0), rh(0), isCircle(true), type(bType),
+	/*CollisionBox( HitboxInfo *hInfo)
+		:globalAngle(0), rw(0), rh(0), isCircle(true),
 		flipHorizontal(false), flipVertical(false),
 		localAngle( 0 )
 	{
 
-	}
+	}*/
 	bool Intersects( CollisionBox &c );
 	sf::Vector2<double> GetQuadVertex(int index);
 	//double offsetAngle;
@@ -142,7 +142,7 @@ struct CollisionBox
 	V2d GetTrueCenter();
 
 	sf::Vector2<double> offset;
-	void DebugDraw( sf::RenderTarget *target );
+	void DebugDraw( CollisionBox::BoxType bType, sf::RenderTarget *target );
 	sf::Rect<double> GetAABB();
 
 	double rw; //radius or half width
@@ -150,21 +150,50 @@ struct CollisionBox
 	bool isCircle;
 	bool flipHorizontal;
 	bool flipVertical;
-	BoxType type;
+	//BoxType type;
 };
 
 struct CollisionBody
 {
-	CollisionBody(int p_numFrames);
-	CollisionBody(int p_numFrames, std::map<int, std::list<CollisionBox>> & hList,
+	CollisionBody(CollisionBox::BoxType bType );
+	CollisionBody(int p_numFrames, std::map<int, 
+		std::list<CollisionBox>> & hList,
 		HitboxInfo *hInfo );
+
+	void BasicSetup(); //one frame and one hitbox
+	void BasicCircleSetup(double radius,
+		double a, V2d &offset );
+	void BasicCircleSetup(double radius);
+	void BasicCircleSetup(double radius,
+		double a, V2d &offset, V2d &pos);
+	void BasicCircleSetup(double radius,
+		V2d &pos);
+	void SetBasicPos(V2d &pos, double angle = 0);
+	void SetBasicPos( int frame, V2d &pos, double angle = 0);
+	V2d GetBasicPos();
+
+	void BasicRectSetup(double w, double h, double a,
+		V2d &offset);
+
+	void SetupNumFrames(int p_numFrames);
+	void SetupNumBoxesOnFrame(int frame, int numBoxes);
+
 	~CollisionBody();
+
+	bool Empty();
 
 	void Move(V2d &move);
 
 	void DebugDraw( int frame, sf::RenderTarget *target);
 	
-	std::list<CollisionBox> *GetCollisionBoxes(int frame);
+	void AddBasicCircle( int frame, double radius, double angle, 
+		V2d &offset);
+	void SetLastPos( int frame, V2d &pos);
+	void AddBasicRect( int frmae, double hw, double hh,
+		double angle, V2d &offset);
+	//void AddBasicRect(  )
+
+	std::vector<CollisionBox> &GetCollisionBoxes(int frame);
 	void AddCollisionBox(int frame, CollisionBox &cb);
 	int GetNumFrames() { return numFrames; }
 	int GetNumBoxes(int frame);
@@ -175,20 +204,13 @@ struct CollisionBody
 	void OffsetAllFrames(sf::Vector2f &offset);
 	HitboxInfo *hitboxInfo;
 	bool Intersects( int frame, CollisionBox *box);
+	CollisionBox::BoxType boxType;
 private:
 	int numFrames;
 	
 	//BoxType type;
-	std::list<CollisionBox> **collisionBoxLists;
+	std::vector<std::vector<CollisionBox>> collisionBoxVectors;
 };
-
-struct Hitbox : CollisionBox
-{
-	Hitbox() 
-		:CollisionBox( BoxType::Hit )
-	{}
-};
-
 
 
 struct Contact

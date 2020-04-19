@@ -51,7 +51,7 @@ struct Shield : HittableObject
 	Tileset *ts_mask;
 	sf::Vertex *verts;
 
-	CollisionBody *body;
+	CollisionBody body;
 	int maxHits;
 	int currHits;
 	void Reset();

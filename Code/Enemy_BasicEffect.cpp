@@ -22,6 +22,22 @@ BasicEffect::BasicEffect ()
 	stored_frame = 0;
 }
 
+BasicEffect::BasicEffect(BasicEffect &be)
+	:Enemy( EnemyType::EN_BASICEFFECT, false, 0, false )
+{
+	depth = be.depth;
+	frameCount = be.frameCount;
+	s = be.s;
+	ts = be.ts;
+	pauseImmune = be.pauseImmune;
+	activated = be.activated;
+	animationFactor = be.animationFactor;
+	facingRight = be.facingRight;
+	layer = be.layer;
+	stored_frame = be.stored_frame;
+	startFrame = be.startFrame;
+}
+
 void BasicEffect::HandleNoHealth()
 {
 

@@ -85,7 +85,7 @@ CollisionBox HitboxManager::LoadHitShape(std::ifstream &is)
 		is >> centerX;
 		is >> centerY;
 		is >> radius;
-		CollisionBox cb(CollisionBox::BoxType::Hit);
+		CollisionBox cb;
 		cb.offset = V2d(centerX, centerY);
 		cb.isCircle = true;
 		cb.rw = radius;

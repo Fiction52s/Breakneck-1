@@ -163,16 +163,15 @@ struct ComboObject
 {
 	ComboObject(Enemy *en)
 		:enemyHitboxFrame(-1),
-		enemyHitBody(NULL),
 		nextComboObj(NULL),
 		enemyHitboxInfo(NULL),
-		enemy(en)
+		enemy(en), enemyHitBody( CollisionBox::Hit )
 	{
 	}
 	~ComboObject();
 	void Reset();
 	V2d GetComboPos();
-	CollisionBody *enemyHitBody;
+	CollisionBody enemyHitBody;
 	HitboxInfo *enemyHitboxInfo;
 	int enemyHitboxFrame;
 	ComboObject *nextComboObj;

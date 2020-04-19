@@ -44,7 +44,7 @@ struct TouchGrass : QuadTreeEntrant
 
 	bool visible;
 
-	CollisionBody *hurtBody;
+	CollisionBody hurtBody;
 	//CollisionBody *hitBody;
 
 

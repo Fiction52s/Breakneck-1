@@ -7,18 +7,9 @@ using namespace std;
 using namespace sf;
 
 Shield::Shield(ShieldType type, float rad, int maxH, Enemy *e, HitboxInfo *hInfo)
-	:sType( type ), maxHits( maxH ), radius( rad ), parent( e )
+	:sType( type ), maxHits( maxH ), radius( rad ), parent( e ), body( CollisionBox::Hurt )
 {
-	CollisionBox box;
-	box.type = CollisionBox::Hurt;
-	box.isCircle = true;
-	box.globalAngle = 0;
-	box.offset.x = 0;
-	box.offset.y = 0;
-	box.rw = radius;
-	box.rh = radius;
-	body = new CollisionBody(1);
-	body->AddCollisionBox(0, box);
+	body.BasicCircleSetup(radius);
 	pauseFrames = 0;
 
 	hitboxInfo = hInfo;
@@ -30,7 +21,6 @@ Shield::Shield(ShieldType type, float rad, int maxH, Enemy *e, HitboxInfo *hInfo
 
 Shield::~Shield()
 {
-	delete body;
 }
 
 void Shield::Reset()
@@ -102,7 +92,7 @@ void Shield::ConfirmHitNoKill()
 
 V2d Shield::GetPosition()
 {
-	return body->GetCollisionBoxes(0)->front().globalPosition;
+	return body.GetBasicPos();
 }
 
 void Shield::ConfirmKill()
@@ -166,12 +156,12 @@ HitboxInfo * Shield::IsHit(Actor *player)
 		return NULL;
 	}
 
-	if (player->IntersectMyHitboxes(body, 0))
+	if (player->IntersectMyHitboxes(&body, 0))
 	{
 		return player->currHitboxes->hitboxInfo;
 	}
 
-	ComboObject *co = player->IntersectMyComboHitboxes(parent, body, 0);
+	ComboObject *co = player->IntersectMyComboHitboxes(parent, &body, 0);
 	if (co != NULL)
 	{
 		HitboxInfo *hi = co->enemyHitboxInfo;
@@ -205,7 +195,7 @@ void Shield::UpdateSprite()
 
 void Shield::Draw(sf::RenderTarget *target)
 {
-	V2d pos = body->GetCollisionBoxes(0)->front().globalPosition;
+	V2d pos = body.GetBasicPos();
 	sf::CircleShape test;
 	test.setFillColor(Color( 255, 0, 0, 40));
 	test.setRadius(radius);
@@ -216,5 +206,5 @@ void Shield::Draw(sf::RenderTarget *target)
 
 void Shield::SetPosition(V2d &pos)
 {
-	body->GetCollisionBoxes(0)->front().globalPosition = pos;
+	body.SetBasicPos(pos);
 }

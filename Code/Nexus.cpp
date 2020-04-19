@@ -109,20 +109,7 @@ Nexus::Nexus(Edge *g, double q)
 	sprite.setRotation(angle / PI * 180);
 	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = false;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 20;
-	hurtBox.rw = 80;
-	hurtBox.rh = 100;
-	hurtBox.globalAngle = angle;
-	hurtBox.globalPosition = position;
-
-	hurtBody->AddCollisionBox(0, hurtBox);
-	SetHurtboxes(hurtBody, 0);
+	BasicRectHurtBodySetup(80, 100, angle, V2d(0, 20), position);
 	//currHurtboxes->GetCollisionBoxes(0)->front().globalPosition = position;
 	double angle = 0;
 
@@ -175,7 +162,7 @@ void Nexus::ResetEnemy()
 	frame = 0;
 	action = A_SITTING;
 	insideSeq->Reset();
-	SetHurtboxes(hurtBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 	nexSprite.setTexture(*ts_nexusOpen->texture);
 
 	sprite.setTexture(*ts_node1->texture);

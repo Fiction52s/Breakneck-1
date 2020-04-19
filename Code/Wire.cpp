@@ -1963,7 +1963,7 @@ void Wire::DebugDraw( RenderTarget *target )
 
 	if (state == FIRING)
 	{
-		movingHitbox.DebugDraw(target);
+		movingHitbox.DebugDraw( CollisionBox::Hit, target);
 	}
 }
 

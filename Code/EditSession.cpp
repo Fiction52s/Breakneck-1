@@ -141,11 +141,27 @@ void EditSession::TestPlayerMode()
 			(*it)->ResetTouchGrass();
 		}
 
-		for (auto it = allCurrEnemies.begin(); it != allCurrEnemies.end(); ++it)
+		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
-			RemoveEnemy((*it));
-			(*it)->Reset();
-			AddEnemy((*it));
+			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+			{
+				if ((*enit)->myEnemy != NULL)
+				{
+					RemoveEnemy((*enit)->myEnemy);
+				}
+			}
+		}
+
+		for (auto it = groups.begin(); it != groups.end(); ++it)
+		{
+			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+			{
+				if ((*enit)->myEnemy != NULL)
+				{
+					(*enit)->myEnemy->Reset();
+					AddEnemy((*enit)->myEnemy);
+				}
+			}
 		}
 		return;
 	}
@@ -170,22 +186,25 @@ void EditSession::TestPlayerMode()
 				p->Respawn();
 		}
 
-		for (auto it = allCurrEnemies.begin(); it != allCurrEnemies.end(); ++it)
+		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
-			RemoveEnemy((*it));
-			delete (*it);
+			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+			{
+				if ((*enit)->myEnemy != NULL)
+				{
+					(*enit)->myEnemy->Reset();
+					RemoveEnemy((*enit)->myEnemy);
+				}
+			}
 		}
-		allCurrEnemies.clear();
 
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
 			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
 			{
-				Enemy *e = (*enit)->GenerateEnemy();
-				if (e != NULL)
+				if ((*enit)->myEnemy != NULL)
 				{
-					allCurrEnemies.push_back(e);
-					AddEnemy(e); //leaks but we'll get it in a sec on cleanup
+					AddEnemy((*enit)->myEnemy);
 				}
 			}
 		}
@@ -218,18 +237,13 @@ void EditSession::TestPlayerMode()
 				p->SetToOriginalPos();
 		}
 
-		
-		
-
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
 			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
 			{
-				Enemy *e = (*enit)->GenerateEnemy();
-				if (e != NULL)
+				if ((*enit)->myEnemy != NULL)
 				{
-					allCurrEnemies.push_back(e);
-					AddEnemy(e); //leaks but we'll get it in a sec on cleanup
+					AddEnemy((*enit)->myEnemy);
 				}
 			}
 		}
@@ -372,7 +386,6 @@ void EditSession::UpdatePostPhysics()
 	int keyLength = 30;//16 * 5;
 	keyFrame = totalGameFrames % keyLength;
 
-
 	Enemy *current = activeEnemyList;
 	while (current != NULL)
 	{
@@ -380,7 +393,7 @@ void EditSession::UpdatePostPhysics()
 
 		current->UpdatePostPhysics();
 
-		if (current->keyShader != NULL)
+		if (current->hasMonitor)
 		{
 			float halftot = keyLength / 2;
 			float fac;
@@ -393,7 +406,7 @@ void EditSession::UpdatePostPhysics()
 				fac = 1.f - (keyFrame - halftot) / (halftot - 1);
 			}
 			//cout << "fac: " << fac << endl;
-			current->keyShader->setUniform("prop", fac);
+			current->keyShader.setUniform("prop", fac);
 		}
 
 		current = temp;

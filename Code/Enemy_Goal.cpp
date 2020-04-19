@@ -99,21 +99,7 @@ Goal::Goal( Edge *g, double q, int world )
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = false;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 20;
-	hurtBox.rw = 80;
-	hurtBox.rh = 100;
-	hurtBox.globalAngle = angle;
-	hurtBox.globalPosition = position;
-
-	hurtBody->AddCollisionBox(0, hurtBox);
-	SetHurtboxes(hurtBody, 0);
-	//currHurtboxes->GetCollisionBoxes(0)->front().globalPosition = position;
+	BasicRectHurtBodySetup(80, 100, angle, V2d(0, 20), position);
 	double angle = 0;
 		
 	angle = atan2( gn.x, -gn.y );
@@ -144,6 +130,8 @@ Goal::Goal( Edge *g, double q, int world )
 		float space = 78.f;
 		game->goalNodePosFinal = V2d(game->goalNodePos.x, game->goalNodePos.y - space);
 	}
+
+	ResetEnemy();
 	//kinKillFrame = 0;
 }
 
@@ -168,8 +156,7 @@ void Goal::ResetEnemy()
 {
 	frame = 0;
 	action = A_SITTING;
-	SetHurtboxes(hurtBody, 0);
-	//numHealth = 1;
+	SetHurtboxes(&hurtBody, 0);
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);

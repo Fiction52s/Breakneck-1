@@ -104,8 +104,6 @@ struct FlowerPod : Enemy, RayCastHandler
 	Edge *ground;
 	double edgeQuantity;
 
-	CollisionBody *hitBody;
-
 	GameSession *game;
 
 	

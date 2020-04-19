@@ -158,29 +158,11 @@ CrawlerQueen::CrawlerQueen(Edge *g, double q, bool cw )
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 70;
-	hurtBox.rh = 70;
-	hurtBody->AddCollisionBox(0, hurtBox);
+	BasicCircleHurtBodySetup(70, position);
 
+	BasicCircleHitBodySetup(70, position);
 
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 70;
-	hitBox.rh = 70;
-	hitBody->AddCollisionBox(0, hitBox);
-	hitBody->hitboxInfo = hitboxInfo;
+	hitBody.hitboxInfo = hitboxInfo;
 
 
 	
@@ -480,8 +462,8 @@ void CrawlerQueen::ProcessState()
 		case SEQ_FINISHINITIALUNBURROW:
 			action = DECIDE;
 			frame = 0;
-			SetHurtboxes(hurtBody, 0);
-			SetHitboxes(hitBody, 0);
+			SetHurtboxes(&hurtBody, 0);
+			SetHitboxes(&hitBody, 0);
 			SetDecisions();
 			DecidePoints();
 			break;
@@ -707,7 +689,7 @@ void CrawlerQueen::EnemyDraw(sf::RenderTarget *target)
 	}
 	else
 	{
-		target->draw(sprite, hurtShader);
+		target->draw(sprite, &hurtShader);
 	}
 
 	target->draw(decideVA, MAX_DECISIONS * 4 * 3, sf::Quads, ts_decideMarker->texture);
@@ -950,7 +932,7 @@ void CrawlerQueen::DebugDraw(RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 	if (!dead)
-		mover->physBody.DebugDraw(target);
+		mover->physBody.DebugDraw(CollisionBox::Physics, target);
 	
 	for (int i = 0; i < numDecisions; ++i)
 	{
@@ -1286,9 +1268,9 @@ void CrawlerQueen::Setup()
 	ResetEnemy();
 }
 
-FloatingBomb::FloatingBomb(ObjectPool *p_myPool, int index )
-	:Enemy( EnemyType::EN_FLOATINGBOMB, false, 1, false ),
-	PoolMember( index ), myPool( p_myPool )
+FloatingBomb::FloatingBomb(ObjectPool *p_myPool, int index)
+	:Enemy(EnemyType::EN_FLOATINGBOMB, false, 1, false),
+	PoolMember(index), myPool(p_myPool)
 {
 	//preload
 	sess->GetTileset("Enemies/bombexplode_512x512.png", 512, 512);
@@ -1316,33 +1298,12 @@ FloatingBomb::FloatingBomb(ObjectPool *p_myPool, int index )
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBody->AddCollisionBox(0, hurtBox);
+	BasicCircleHurtBodySetup(32, position);
+	BasicCircleHitBodySetup(32, position);
+	hitBody.hitboxInfo = hitboxInfo;
 
 
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody->AddCollisionBox(0, hitBox);
-	hitBody->hitboxInfo = hitboxInfo;
-
-
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	ResetEnemy();
 }
 
 void FloatingBomb::Init(V2d pos, V2d vel)
@@ -1441,7 +1402,7 @@ void FloatingBomb::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 	if (!dead)
-		mover->physBody.DebugDraw(target);
+		mover->physBody.DebugDraw(CollisionBox::Physics, target);
 }
 
 void FloatingBomb::HitTerrainAerial(Edge * e, double q )
@@ -1463,8 +1424,8 @@ void FloatingBomb::ResetEnemy()
 	mover->SetSpeed(0);
 	action = FLOATING;
 	frame = 0;
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
 }
 
 void FloatingBomb::UpdateEnemyPhysics()

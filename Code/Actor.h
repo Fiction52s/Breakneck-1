@@ -519,7 +519,7 @@ struct Actor : QuadTreeCollider,
 	int actorIndex;
 	void UpdateSprite();
 	void ConfirmEnemyNoKill( Enemy *e );
-	void ConfirmHit(EnemyParams * hitParams);
+	void ConfirmHit(Enemy * e);
 	void ActionEnded();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();

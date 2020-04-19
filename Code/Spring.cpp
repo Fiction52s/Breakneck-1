@@ -26,19 +26,19 @@ Spring::Spring(SpringType sp, Vector2i &pos, Vector2i &other, int p_speed )
 	position.x = pos.x;
 	position.y = pos.y;
 
-	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
-
 	debugSpeed.setFont(sess->mainMenu->arial);
 	debugSpeed.setFillColor(Color::White);
 	debugSpeed.setCharacterSize(30);
 
-	
 	stringstream ss;
-	ss << p_speed;
+	ss << speed;
 	debugSpeed.setString(ss.str());
 	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
 	debugSpeed.setPosition(Vector2f(position));
-	
+
+
+	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
+
 	switch (springType)
 	{
 	case BLUE:
@@ -70,22 +70,20 @@ Spring::Spring(SpringType sp, Vector2i &pos, Vector2i &other, int p_speed )
 		sprite.setColor(Color::Black);
 	}
 	
-
 	frame = 0;
 
 	animationFactor = 10;
 
-	sprite.setTexture(*ts_idle->texture);
-	sprite.setTextureRect(ts_idle->GetSubRect(frame));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(pos.x, pos.y);
-	
 	dest = V2d(other + pos );
 
 	V2d dOther = V2d(other.x, other.y);
 	V2d springVec = normalize(dOther);
 
-	double angle = atan2(springVec.x, -springVec.y);//atan2(-springVec.x, springVec.y);
+	sprite.setTextureRect(ts_idle->GetSubRect(frame));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(position.x, position.y);
+
+	double angle = atan2(springVec.x, -springVec.y);
 	sprite.setRotation(angle / PI * 180.0 );
 
 	double dist = length(V2d(other));
@@ -104,38 +102,12 @@ Spring::Spring(SpringType sp, Vector2i &pos, Vector2i &other, int p_speed )
 	
 	dir = springVec;
 
-	
-	
-	
-	float hurtboxRadius = 64;
+	double radius = 64;
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = hurtboxRadius;
-	hurtBox.rh = hurtboxRadius;
-	hurtBox.globalPosition = position;
-	hurtBody->AddCollisionBox(0, hurtBox);
+	BasicCircleHitBodySetup(radius, position);
 
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = hurtboxRadius;
-	hitBox.rh = hurtboxRadius;
-	hitBox.globalPosition = position;
-
-	hitBody->AddCollisionBox(0, hitBox);
-
-	spawnRect = sf::Rect<double>(position.x - hurtboxRadius - 10, position.y - hurtboxRadius - 10,
-		hurtboxRadius *2 + 10, hurtboxRadius*2 + 10);
+	spawnRect = sf::Rect<double>(position.x - radius - 10, position.y - radius - 10,
+		radius *2 + 10, radius *2 + 10);
 
 	actionLength[IDLE] = 12;
 	actionLength[SPRINGING] = 8;
@@ -161,19 +133,19 @@ void Spring::DebugDraw(sf::RenderTarget *target)
 
 void Spring::DirectKill()
 {
-
+	//impossible to direct kill
 }
 
 void Spring::ResetEnemy()
 {
 	dead = false;
 
-	
 	receivedHit = NULL;
 	action = IDLE; 
 	sprite.setTexture(*ts_idle->texture);
+
 	frame = 0;
-	SetHitboxes(hitBody, 0);
+	SetHitboxes(&hitBody);
 	//SetHurtboxes(hurtBody, 0);
 
 	UpdateHitboxes();

@@ -20,24 +20,21 @@ struct Session;
 
 struct ActorParams;
 
-struct EnemyParams
+struct HitParams
 {
-	EnemyParams()
+	HitParams()
 	{
 		canBeHit = false;
-		worldIndex = 0;
 		flashFrames = 0;
 		speedBar = 0;
 		charge = 0;
 		maxHealth = 0;
 	}
 
-	void Set(int p_worldIndex,
-		int p_flashFrames, double p_speedBar,
+	void Set(int p_flashFrames, double p_speedBar,
 		int p_charge, int p_maxHealth)
 	{
 		canBeHit = true;
-		worldIndex = p_worldIndex;
 		flashFrames = p_flashFrames;
 		speedBar = p_speedBar;
 		charge = p_charge;
@@ -45,7 +42,6 @@ struct EnemyParams
 	}
 
 	bool canBeHit;
-	int worldIndex;
 	int flashFrames;
 	double speedBar;
 	int charge;
@@ -61,7 +57,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 {
 
 	//new vars
-	EnemyParams hitParams;
+	HitParams hitParams;
 	Session *sess;
 	bool SetHitParams();
 
@@ -71,16 +67,18 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		bool hasMonitor, int world, bool cuttable = true);
 	virtual ~Enemy();
 	
-
+	virtual void SetupResources() {}
+	virtual void SetupDebugResources() {}
 	static bool ReadBool(std::ifstream &is,
 		bool &b);
 	static bool ReadPath(std::ifstream &is,
 		int &pLen, std::list<sf::Vector2i> &localPath);
 	virtual void UpdatePreLauncherPhysics() {}
+	bool cuttable;
 	CuttableObject *cutObject;
 	Launcher **launchers;
-	CollisionBody *hurtBody;
-	CollisionBody *hitBody;
+	CollisionBody hurtBody;
+	CollisionBody hitBody;
 	HitboxInfo *hitboxInfo;
 	sf::SoundBuffer *genericDeathSound;
 	virtual void PlayDeathSound();
@@ -91,7 +89,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual void SetZone(Zone *p_zone) { zone = p_zone; }
 	CollisionBody *currHitboxes;
 	static void SyncSpriteInfo(sf::Sprite &dest, sf::Sprite &source);
-	void SetHitboxes(CollisionBody *cb, int frame);
+	void SetHitboxes(CollisionBody *cb, int frame = 0);
 	void ClearHitboxes() { 
 		currHitboxes = NULL;
 		currHitboxFrame = -1;
@@ -100,7 +98,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		currHurtboxes = NULL;
 		currHurtboxFrame = -1;
 	}
-	void SetHurtboxes(CollisionBody *cb, int frame);
+	void SetHurtboxes(CollisionBody *cb, int frame = 0);
 	void DrawSpriteIfExists( 
 		sf::RenderTarget *target,
 		sf::Sprite &spr );
@@ -179,14 +177,20 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Tileset *ts_zoned;
 	virtual void ZoneDraw(sf::RenderTarget *target);
 
-	void SetupBodies(int numHurtboxes = 1,
-		int numHitboxes = 1);
-	void AddBasicHurtCircle(double rad, int index = 0);
-	void AddBasicHitCircle(double rad, int index = 0);
-	void AddBasicHitCircle(CollisionBody *bod, double rad, int index = 0);
-	void AddBasicHurtCircle(CollisionBody *bod, double rad, int index = 0);
-	void AddBasicHitRect(CollisionBody *bod, double w, double h, int index = 0);
-	void AddBasicHurtRect(CollisionBody *bod, double w, double h, int index = 0);
+
+	void BasicCircleHurtBodySetup(double radius, 
+		double angle, V2d &offset, V2d &pos );
+	void BasicCircleHitBodySetup(double radius, 
+		double angle, V2d &offset, V2d &pos);
+
+	void BasicCircleHurtBodySetup(double radius, V2d &pos);
+	void BasicCircleHitBodySetup(double radius, V2d &pos);
+	void BasicRectHurtBodySetup(
+		double w, double h, double angle, V2d &offset,
+		V2d &pos);
+	void BasicRectHitBodySetup(
+		double w, double h, double angle, V2d &offset,
+		V2d &pos);
 
 	void Reset();
 
@@ -195,7 +199,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void CheckTouchingSpecterField(SpecterArea *sa);
 	virtual bool IsTouchingSpecterField(SpecterArea *sa);
 	
-	virtual std::list<CollisionBox> *GetComboHitboxes();
+	virtual std::vector<CollisionBox>  * GetComboHitboxes();
 	ComboObject *comboObj;
 	SpecterTester *specterTester;
 	Shield *currShield;
@@ -216,12 +220,14 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	bool suppressMonitor;
 	Tileset *ts_hitSpack;
 	Tileset *ts_killSpack;
-	sf::Shader *keyShader;
-	sf::Shader *hurtShader;
+	sf::Shader keyShader;
+	sf::Sprite keySprite;
+	
+	sf::Shader hurtShader;
 
 	Tileset *ts_blood;
 
-	sf::Sprite *keySprite;
+	
 	Tileset *ts_key;
 	sf::Color keyColor;
 	int world;
@@ -230,7 +236,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Enemy *tempNext;
 
 	int level;
-	float scale;
+	double scale;
 	int maxHealth;
 };
 

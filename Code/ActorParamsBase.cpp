@@ -8,6 +8,7 @@
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 #include "EditorRail.h"
+#include "Enemy.h"
 
 using namespace std;
 using namespace sf;
@@ -46,11 +47,15 @@ ActorParams::ActorParams(ActorType *at)
 	hasMonitor(false), group(NULL), type(at)
 {
 	groundInfo = NULL;
+	
 	lines = NULL;
+	myEnemy = NULL;
 	enemyLevel = 1;
 	loop = false;
 	for (int i = 0; i < 4; ++i)
 		boundingQuad[i].color = Color(0, 255, 0, 100);
+
+	//CreateMyEnemy();
 }
 
 ActorParams::~ActorParams()
@@ -62,6 +67,11 @@ ActorParams::~ActorParams()
 	{
 		delete groundInfo;
 	}
+}
+
+void ActorParams::CreateMyEnemy()
+{
+	myEnemy = GenerateEnemy();
 }
 
 void ActorParams::WriteLevel(std::ofstream &of)
@@ -355,7 +365,13 @@ void ActorParams::Draw(sf::RenderTarget *target)
 	if (image.getGlobalBounds().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
 		viewSize.x, viewSize.y)))
 	{
-		target->draw(image);
+		if (myEnemy != NULL)
+			myEnemy->Draw(target);
+		else
+		{
+			target->draw(image);
+		}
+		
 	}
 
 	DrawBoundary(target);

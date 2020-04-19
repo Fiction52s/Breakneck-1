@@ -106,16 +106,8 @@ FlowerPod::FlowerPod(const std::string &typeStr, Edge *g, double q)
 		boxHeight = length(rcEdge->GetPoint(rcQuantity) - gPoint);
 	}
 
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = false;
-	hitBox.globalAngle = atan2(-gAlong.y, -gAlong.x);;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = boxHeight / 2.0 - height / 2.0;
-	hitBox.rw = 100;
-	hitBox.rh = boxHeight / 2.0;
-	hitBody->AddCollisionBox(0, hitBox);
+	BasicRectHitBodySetup(100, boxHeight / 2.0, atan2(-gAlong.y, -gAlong.x),
+		V2d(0, boxHeight / 2.0 - height / 2.0), position);
 
 	double size = max(width, height);
 	spawnRect = sf::Rect<double>(gPoint.x - size / 2, gPoint.y - size / 2, size, size);
@@ -135,7 +127,7 @@ void FlowerPod::ResetEnemy()
 	sprite.setTexture(*ts_bud->texture);
 	dead = false;
 	frame = 0;
-	SetHitboxes(hitBody, 0);
+	SetHitboxes(&hitBody, 0);
 	UpdateHitboxes();
 	UpdateSprite();
 	sprite.setColor(Color::White);

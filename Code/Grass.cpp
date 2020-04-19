@@ -15,7 +15,6 @@ Grass::Grass(GameSession *p_owner, Tileset *p_ts_grass, int p_tileIndex,
 	explosion.isCircle = true;
 	explosion.rw = 64;
 	explosion.rh = 64;
-	explosion.type = CollisionBox::BoxType::Hit;
 
 	explosion.globalPosition = pos;//(A + B + C + D) / 4.0;
 

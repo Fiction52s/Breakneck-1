@@ -135,10 +135,9 @@ Shard::Shard(Vector2i pos, int w, int li )
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( pos.x, pos.y );
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-	hitBody->hitboxInfo = NULL;
+	BasicCircleHurtBodySetup(32, position);
+	BasicCircleHitBodySetup(32, position);
+	hitBody.hitboxInfo = NULL;
 
 	actionLength[FLOAT] = 120;
 	actionLength[DISSIPATE] = 10;
@@ -293,8 +292,8 @@ void Shard::ResetEnemy()
 
 	UpdateSprite();
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 
 	testEmitter->Reset();
 	testEmitter->SetOn(false);

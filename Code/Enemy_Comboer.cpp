@@ -80,10 +80,10 @@ Comboer::Comboer(Vector2i pos, list<Vector2i> &pathParam, bool loopP,
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(48, position);
+	BasicCircleHitBodySetup(48, position);
+
+	hitBody.hitboxInfo = hitboxInfo;
 
 
 	comboObj = new ComboObject(this);
@@ -99,15 +99,11 @@ Comboer::Comboer(Vector2i pos, list<Vector2i> &pathParam, bool loopP,
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody = new CollisionBody(1);
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
+	comboObj->enemyHitBody.BasicCircleSetup(48, position);
 
 	comboObj->enemyHitboxFrame = 0;
 
-	hitBody->hitboxInfo = hitboxInfo;
-
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	
 	//hitboxInfo->kbDir;
 
 	targetNode = 1;
@@ -176,8 +172,8 @@ void Comboer::ResetEnemy()
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 	targetNode = 1;
 	forward = true;
 	dead = false;

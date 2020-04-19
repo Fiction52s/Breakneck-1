@@ -101,10 +101,9 @@ BasicTurret::BasicTurret(bool p_hasMonitor, Edge *g, double q, int p_level )
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(64);
-	AddBasicHitCircle(64);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(64, position);
+	BasicCircleHitBodySetup(64, position);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	frame = 0;
 	animationFactor = 4;
@@ -153,8 +152,8 @@ void BasicTurret::ResetEnemy()
 	frame = 0;
 
 	action = WAIT;
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
 
 	currShield = testShield;
 	testShield->Reset();
@@ -241,7 +240,7 @@ void BasicTurret::DebugDraw(sf::RenderTarget *target)
 
 	for (int i = 0; i < 3; ++i)
 	{
-		prelimBox[i].DebugDraw(target);
+		prelimBox[i].DebugDraw( CollisionBox::Hit, target);
 	}
 }
 
@@ -323,7 +322,6 @@ void BasicTurret::Setup()
 		double rad = Launcher::GetRadius(launchers[li]->bulletType);
 		double width = length(finalPos - launchers[li]->position) + rad * 2;
 
-		prelimBox[li].type = CollisionBox::Hit;
 		prelimBox[li].isCircle = false;
 		prelimBox[li].rw = width / 2;
 		prelimBox[li].rh = rad;

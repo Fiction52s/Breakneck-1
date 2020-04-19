@@ -141,11 +141,6 @@ sf::Vector2<double> CollisionBox::GetQuadVertex(int index)
 	{
 		RotateCW(localPos, localAngle);
 	}
-	
-	if (type == CollisionBox::BoxType::Hurt)
-	{
-		int x = 4;
-	}
 
 	V2d off = GetOffset();
 
@@ -420,22 +415,22 @@ bool CollisionBox::Intersects( CollisionBox &c )
 	return false;
 }
 
-void CollisionBox::DebugDraw( sf::RenderTarget *target )
+void CollisionBox::DebugDraw( CollisionBox::BoxType bType, sf::RenderTarget *target )
 {
 	if( isCircle )
 	{
 		CircleShape cs;
 		//cs.setFillColor( Color( 255, 0, 0, 255 ) );
 
-		if( type == Physics )
+		if(bType == Physics )
 		{
 			cs.setFillColor( Color( 255, 0, 0, 100 ) );
 		}
-		else if( type == Hit )
+		else if(bType == Hit )
 		{
 			cs.setFillColor( Color( 0, 255, 0, 100 ) );
 		}
-		else if( type == Hurt )
+		else if(bType == Hurt )
 		{
 			cs.setFillColor( Color( 0, 0, 255, 100 ) );
 		}
@@ -457,15 +452,15 @@ void CollisionBox::DebugDraw( sf::RenderTarget *target )
 		//cout << "Angle?: " << angle << endl;
 		sf::RectangleShape r;
 		Color col;
-		if( type == Physics )
+		if(bType == Physics )
 		{
 			col = Color(255, 0, 0, 100);
 		}
-		else if( type == Hit )
+		else if(bType == Hit )
 		{
 			col = Color(0, 255, 0, 100);
 		}
-		else if( type == Hurt )
+		else if(bType == Hurt )
 		{
 			col = Color(0, 0, 255, 100);
 		}
@@ -2097,17 +2092,31 @@ sf::Rect<double> CollisionBox::GetAABB()
 	}
 }
 
-CollisionBody::CollisionBody(int p_numFrames)
-	:numFrames( p_numFrames ), collisionBoxLists( NULL ), hitboxInfo(NULL)
+CollisionBody::CollisionBody(CollisionBox::BoxType bType)
+	:hitboxInfo(NULL)
 {
-	collisionBoxLists = new std::list<CollisionBox>*[numFrames];
-	memset(collisionBoxLists, 0, sizeof(collisionBoxLists) * numFrames);
+	boxType = bType;
+	//collisionBoxVectors = new std::list<CollisionBox>*[numFrames];
+	//memset(collisionBoxVectors, 0, sizeof(collisionBoxVectors) * numFrames);
+}
+
+void CollisionBody::SetupNumFrames(int p_numFrames)
+{
+	numFrames = p_numFrames;
+	collisionBoxVectors.resize(numFrames);
+}
+
+void CollisionBody::SetupNumBoxesOnFrame(int frame, int numBoxes)
+{
+	assert(frame >= 0 && frame < collisionBoxVectors.size());
+
+	collisionBoxVectors[frame].reserve(numBoxes);
 }
 
 void CollisionBody::OffsetFrame(int frame, Vector2f &offset)
 {
-	auto *li = GetCollisionBoxes(0);
-	for (auto it = li->begin(); it != li->end(); ++it)
+	auto &li = GetCollisionBoxes(0);
+	for (auto it = li.begin(); it != li.end(); ++it)
 	{
 		(*it).offset += V2d( offset );
 	}
@@ -2117,12 +2126,12 @@ void CollisionBody::OffsetAllFrames(Vector2f &offset)
 {
 	for (int i = 0; i < numFrames; ++i)
 	{
-		auto boxList = collisionBoxLists[i];
-		if (boxList == NULL)
+		auto boxVec = collisionBoxVectors[i];
+		if (boxVec.empty())
 			continue;
 		else
 		{
-			for (auto it = boxList->begin(); it != boxList->end(); ++it)
+			for (auto it = boxVec.begin(); it != boxVec.end(); ++it)
 			{
 				(*it).offset += V2d(offset);
 			}
@@ -2132,38 +2141,121 @@ void CollisionBody::OffsetAllFrames(Vector2f &offset)
 
 CollisionBody::CollisionBody(int p_numFrames, std::map<int, std::list<CollisionBox>> & hListMap,
 	HitboxInfo *hInfo )
-	:numFrames(p_numFrames), hitboxInfo( hInfo )
+	:hitboxInfo( hInfo )
 {
-	collisionBoxLists = new std::list<CollisionBox>*[numFrames];
-	
-	memset(collisionBoxLists, 0, sizeof(collisionBoxLists) * numFrames);
+	SetupNumFrames(p_numFrames);
 
+	int frame;
 	for (auto it = hListMap.begin(); it != hListMap.end(); ++it)
 	{
-		int frame = (*it).first;
+		frame = (*it).first;
 
-		collisionBoxLists[frame] = new std::list<CollisionBox>;
-		std::list<CollisionBox> & cbList = *(collisionBoxLists[frame]);
+		auto & cbList = collisionBoxVectors[frame];
 
 		std::list<CollisionBox> &hList = (*it).second;
+		cbList.reserve(hList.size());
 		for (auto hit = hList.begin(); hit != hList.end(); ++hit)
 		{
 			cbList.push_back((*hit));
-			//cbList.back().hitboxInfo = hInfo;
 		}
 	}
 }
 
+bool CollisionBody::Empty()
+{
+	return collisionBoxVectors.empty();
+}
+
+void CollisionBody::BasicSetup() //one frame and one hitbox
+{
+	SetupNumFrames(1);
+	SetupNumBoxesOnFrame(0, 1);
+}
+
+
+void CollisionBody::AddBasicCircle( int frame, double radius, double angle,
+	V2d &offset )
+{
+	CollisionBox box;
+	box.isCircle = true;
+	box.globalAngle = angle;
+	box.offset.x = offset.x;
+	box.offset.y = offset.y;
+	box.rw = radius;
+	box.rh = radius;
+	AddCollisionBox(frame, box);
+}
+
+void CollisionBody::AddBasicRect( int frame, double hw, double hh,
+	double angle, V2d &offset )
+{
+	CollisionBox box;
+	box.isCircle = false;
+	box.globalAngle = angle;
+	box.offset.x = offset.x;
+	box.offset.y = offset.y;
+	box.rw = hw;
+	box.rh = hh;
+	AddCollisionBox(frame, box);
+}
+
+
+
+void CollisionBody::BasicCircleSetup( double radius, double angle, V2d &offset ) //one frame and one hitbox
+{
+	BasicSetup();
+	
+	AddBasicCircle( 0, radius, angle, offset);
+}
+
+void CollisionBody::BasicCircleSetup(double radius)
+{
+	BasicSetup();
+	AddBasicCircle(0, radius, 0, V2d());
+}
+
+void CollisionBody::BasicCircleSetup(double radius, double angle, V2d &offset, V2d &pos) //one frame and one hitbox
+{
+	BasicCircleSetup(radius, angle, offset);
+	SetBasicPos(pos);
+}
+
+void CollisionBody::BasicCircleSetup(double radius, V2d &pos)
+{
+	BasicCircleSetup(radius);
+	SetBasicPos(pos);
+}
+
+V2d CollisionBody::GetBasicPos()
+{
+	return collisionBoxVectors[0][0].globalPosition;
+}
+
+void CollisionBody::SetBasicPos(V2d &pos, double angle )
+{
+	collisionBoxVectors[0][0].globalPosition = pos;
+	collisionBoxVectors[0][0].globalAngle = angle;
+}
+
+void CollisionBody::SetBasicPos(int frame, V2d &pos, double angle)
+{
+	collisionBoxVectors[frame][0].globalPosition = pos;
+	collisionBoxVectors[frame][0].globalAngle = angle;
+}
+
+void CollisionBody::SetLastPos( int frame, V2d &pos)
+{
+	collisionBoxVectors[frame].back().globalPosition = pos;
+}
+
+void CollisionBody::BasicRectSetup(double w, double h, double angle, V2d &offset)
+{
+	BasicSetup();
+	AddBasicRect( 0, w, h, angle, offset);
+}
+
 CollisionBody::~CollisionBody()
 {
-	for (int i = 0; i < numFrames; ++i)
-	{
-		if (collisionBoxLists[i] != NULL)
-		{
-			delete collisionBoxLists[i];
-		}
-	}
-	delete[] collisionBoxLists;
 }
 
 sf::Rect<double> CollisionBody::GetAABB( int frame )
@@ -2171,15 +2263,15 @@ sf::Rect<double> CollisionBody::GetAABB( int frame )
 	bool first = true;
 	double left, right, top, bot;
 
-	std::list<CollisionBox> *cbList = collisionBoxLists[frame];
+	std::vector<CollisionBox> &cbVec = collisionBoxVectors[frame];
 
-	if (cbList == NULL)
+	if (cbVec.empty())
 		return sf::Rect<double>();
 	
-	for (auto bList = cbList->begin(); bList != cbList->end(); ++bList)
+	sf::Rect<double> tAABB;
+	for (auto bList = cbVec.begin(); bList != cbVec.end(); ++bList)
 	{
-		//aabb = newAABB;
-		sf::Rect<double> tAABB = (*bList).GetAABB();
+		tAABB = (*bList).GetAABB();
 		if (first)
 		{
 			first = false;
@@ -2187,8 +2279,6 @@ sf::Rect<double> CollisionBody::GetAABB( int frame )
 			top = tAABB.top;
 			right = tAABB.left + tAABB.width;
 			bot = tAABB.top + tAABB.height;
-			//aabb = tAABB;
-			//newAABB = tAABB;
 		}
 		else
 		{
@@ -2210,70 +2300,53 @@ sf::Rect<double> CollisionBody::GetAABB( int frame )
 			}
 		}
 	}
-	
 
 	return sf::Rect<double>(left, top, right - left, bot - top);
 }
 
 void CollisionBody::AddCollisionBox(int frame, CollisionBox &cb)
 {
-	if (collisionBoxLists[frame] == NULL)
-	{
-		collisionBoxLists[frame] = new std::list<CollisionBox>;
-	}
-	collisionBoxLists[frame]->push_back(cb);
+	collisionBoxVectors[frame].push_back(cb);
 }
 
-std::list<CollisionBox> *CollisionBody::GetCollisionBoxes(int frame)
+std::vector<CollisionBox> &CollisionBody::GetCollisionBoxes(int frame)
 {
 	if (frame >= numFrames || frame < 0 )
 	{
-		return NULL;
+		assert(0);
+		return collisionBoxVectors[0];
 	}
-	return collisionBoxLists[frame];
+
+	return collisionBoxVectors[frame];
 }
 
 int CollisionBody::GetNumBoxes(int frame)
 {
-	if (collisionBoxLists[frame] == NULL)
-	{
-		return 0;
-	}
-	else
-	{
-		std::list<CollisionBox> &cbList = *(collisionBoxLists[frame]);
-		return cbList.size();
-	}
+	return collisionBoxVectors[frame].size();
 }
 
 void CollisionBody::DebugDraw( int frame, sf::RenderTarget *target)
 {
-	list<CollisionBox> *cbList;
-	
-	cbList = collisionBoxLists[frame];
-	if (cbList == NULL)
+	auto &cbVec = collisionBoxVectors[frame];
+	if (cbVec.empty() )
 		return;
 
-	for (auto it = cbList->begin(); it != cbList->end(); ++it)
+	for (auto it = cbVec.begin(); it != cbVec.end(); ++it)
 	{
-		(*it).DebugDraw(target);
+		(*it).DebugDraw( boxType, target);
 	}
 }
 
 void CollisionBody::Move(V2d &move)
 {
-	list<CollisionBox> *myList;
-
+	vector<CollisionBox> *myVec;
 	for (int i = 0; i < numFrames; ++i)
 	{
-		myList = GetCollisionBoxes(i);
-		auto endList = myList->end();
-		if (myList != NULL)
+		myVec = &GetCollisionBoxes(i);
+		auto end = myVec->end();
+		for (auto it = myVec->begin(); it != end; ++it)
 		{
-			for (auto it = myList->begin(); it != endList; ++it)
-			{
-				(*it).Move(move);
-			}
+			(*it).Move(move);
 		}
 	}
 }
@@ -2283,14 +2356,15 @@ bool CollisionBody::Intersects( int frame, CollisionBody *other, int otherFrame 
 	if (!GetAABB(frame ).intersects(other->GetAABB( otherFrame )))
 		return false;
 
-	list<CollisionBox> *myList = GetCollisionBoxes(frame);
-	list<CollisionBox> *otherList = other->GetCollisionBoxes(otherFrame);
-	if (myList == NULL || otherList == NULL)
+	vector<CollisionBox> &myVec = GetCollisionBoxes(frame);
+	vector<CollisionBox> &otherVec = other->GetCollisionBoxes(otherFrame);
+
+	if (myVec.empty() || otherVec.empty())
 		return false;
 
-	for (auto it = myList->begin(); it != myList->end(); ++it)
+	for (auto it = myVec.begin(); it != myVec.end(); ++it)
 	{
-		for (auto oit = otherList->begin(); oit != otherList->end(); ++oit)
+		for (auto oit = otherVec.begin(); oit != otherVec.end(); ++oit)
 		{
 			if ((*it).Intersects((*oit)))
 			{
@@ -2307,11 +2381,11 @@ bool CollisionBody::Intersects( int frame, CollisionBox *box)
 	if (!GetAABB(frame).intersects(box->GetAABB()) )
 		return false;
 
-	list<CollisionBox> *myList = GetCollisionBoxes(frame);
-	if (myList == NULL )
+	auto &myVec = GetCollisionBoxes(frame);
+	if (myVec.empty() )
 		return false;
 
-	for (auto it = myList->begin(); it != myList->end(); ++it)
+	for (auto it = myVec.begin(); it != myVec.end(); ++it)
 	{
 		if ((*it).Intersects(*box))
 		{
@@ -2321,4 +2395,6 @@ bool CollisionBody::Intersects( int frame, CollisionBox *box)
 
 	return false;
 }
+
+
 

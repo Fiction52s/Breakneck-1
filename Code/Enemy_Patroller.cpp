@@ -86,28 +86,9 @@ Patroller::Patroller(bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam,
 	sprite.setPosition( pos.x, pos.y );*/
 	//position.x = 0;
 	//position.y = 0;
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 30 * scale;
-	hurtBox.rw = 32 * scale;
-	hurtBox.rh = 72 * scale;
-	hurtBody = new CollisionBody(1);
-	hurtBody->AddCollisionBox(0, hurtBox);
 
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = false;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 30 * scale;
-	hitBox.rw = 32 * scale;
-	hitBox.rh = 72 * scale;
-	hitBody = new CollisionBody(1);
-	hitBody->AddCollisionBox(0, hitBox);
-	
+	BasicRectHurtBodySetup(32, 72, 0, V2d(0, 30), position);
+	BasicRectHitBodySetup(32, 72, 0, V2d(0, 30), position);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -117,10 +98,9 @@ Patroller::Patroller(bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam,
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	hitBody->hitboxInfo = hitboxInfo;
+	hitBody.hitboxInfo = hitboxInfo;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	
 	//hitboxInfo->kbDir;
 
 	targetNode = 1;
@@ -184,8 +164,8 @@ void Patroller::ResetEnemy()
 	currentAngle = targetAngle;
 
 	eye->Reset();
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 	fireCounter = 0;
 	//cout << "resetting enemy" << endl;
 	//spawned = false;
@@ -508,23 +488,23 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 	{			
 		if( b )
 		{
-			rs.shader = keyShader;
+			rs.shader = &keyShader;
 			//target->draw( sprite, keyShader );
 			target->draw(bodyVA, 8, sf::Quads, rsAura);
-			eye->Draw(target, keyShader);
+			eye->Draw(target, &keyShader);
 			target->draw(bodyVA, 8, sf::Quads, rs);
 			
 		}
 		else
 		{
-			rs.shader = hurtShader;
+			rs.shader = &hurtShader;
 			//target->draw( sprite, hurtShader );
 			target->draw(bodyVA, 8, sf::Quads, rsAura);
-			eye->Draw(target, hurtShader);
+			eye->Draw(target, &hurtShader);
 			target->draw(bodyVA, 8, sf::Quads, rs);
 			
 		}
-		target->draw( *keySprite );
+		target->draw( keySprite );
 	}
 	else
 	{
@@ -538,10 +518,10 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 		}
 		else
 		{
-			rs.shader = hurtShader;
+			rs.shader = &hurtShader;
 			target->draw(bodyVA, 8, sf::Quads, rsAura);
 			//target->draw( sprite, hurtShader );
-			eye->Draw(target, hurtShader);
+			eye->Draw(target, &hurtShader);
 			target->draw(bodyVA, 8, sf::Quads, rs);
 
 		}		
@@ -573,12 +553,8 @@ void Patroller::BulletHitPlayer(BasicBullet *b)
 
 void Patroller::UpdateHitboxes()
 {
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hurtBox.globalPosition = position;
-	hurtBox.globalAngle = currentAngle;
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = currentAngle;
+	hurtBody.SetBasicPos(position, currentAngle);
+	hitBody.SetBasicPos(position, currentAngle);
 
 	BasicUpdateHitboxInfo();
 }

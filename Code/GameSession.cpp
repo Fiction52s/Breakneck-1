@@ -633,7 +633,7 @@ void GameSession::UpdateEnemiesPostPhysics()
 
 		current->UpdatePostPhysics();
 		
-		if( current->keyShader != NULL )
+		if( current->hasMonitor)
 		{
 			float halftot = keyLength / 2;
 			float fac;
@@ -646,7 +646,7 @@ void GameSession::UpdateEnemiesPostPhysics()
 				fac = 1.f - ( keyFrame - halftot ) / (halftot-1);
 			}
 			//cout << "fac: " << fac << endl;
-			current->keyShader->setUniform( "prop", fac );
+			current->keyShader.setUniform( "prop", fac );
 		}
 
 		current = temp;

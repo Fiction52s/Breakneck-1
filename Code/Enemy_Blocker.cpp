@@ -384,14 +384,10 @@ Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 10;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
+	BasicCircleHurtBodySetup(32, position);
+	BasicCircleHitBodySetup(32, position);
 
-	hitBody->GetCollisionBoxes(0)->front().globalPosition = position;
-	hurtBody->GetCollisionBoxes(0)->front().globalPosition = position;
-
-	hitBody->hitboxInfo = hitboxInfo;
+	hitBody.hitboxInfo = hitboxInfo;
 
 
 	
@@ -496,7 +492,7 @@ void Blocker::ProcessHit()
 		{
 			action = MALFUNCTION;
 			frame = 0;
-			SetHitboxes(hitBody, 0);
+			SetHitboxes(&hitBody, 0);
 			SetHurtboxes(NULL, 0);
 		}
 	}
@@ -545,8 +541,8 @@ void Blocker::ResetEnemy()
 	int r = rand() % (animFactor[WAIT] * actionLength[WAIT]);
 	frame = r;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 
 	//UpdateHitboxes();
 

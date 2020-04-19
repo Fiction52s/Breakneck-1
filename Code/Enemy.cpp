@@ -37,130 +37,130 @@ bool Enemy::SetHitParams()
 	switch (type)
 	{
 	case EnemyType::EN_CRAWLER:
-		hitParams.Set(1, 5, .8, (3 * 60) / 4, 4);
+		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
 	case EnemyType::EN_GOAL:
-		hitParams.Set(1, 5, .8, 6, 3);
+		hitParams.Set(5, .8, 6, 3);
 		break;
 	case EnemyType::EN_PATROLLER:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_FOOTTRAP:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_COMBOER:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_AIRDASHER:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BASICTURRET:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_SHROOM:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_SHROOMJELLY:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_CRAWLERQUEEN:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);//40);//40);// 120);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);//40);//40);// 120);
 		break;
 	case EnemyType::EN_FLOATINGBOMB:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BLOCKER:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BOSS_BIRD:
-		hitParams.Set(2, 5, .8, (3 * 60) / 40, 400);
+		hitParams.Set(5, .8, (3 * 60) / 40, 400);
 		break;
 	case EnemyType::EN_BAT:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_AIRDASHJUGGLER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
 	case EnemyType::EN_GRAVITYJUGGLER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
 	case EnemyType::EN_PRIMARYJUGGLER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
 	case EnemyType::EN_BOUNCEJUGGLER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
 	case EnemyType::EN_GRINDJUGGLER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
 	case EnemyType::EN_POISONFROG:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_CURVETURRET:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set( 5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_STAGBEETLE:
-		hitParams.Set(2, 5, .8, (3 * 60) / 4, 4);
+		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
 	case EnemyType::EN_GRAVITYFALLER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 4, 4);
+		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
 	case EnemyType::EN_SPIDER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_PULSER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BADGER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BOUNCEFLOATER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_OWL:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_ROADRUNNER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_CACTUS:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_CACTUSSHOTGUN:
-		hitParams.Set(1, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_CHEETAH:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_HUNGRYCOMBOER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
 	case EnemyType::EN_RELATIVECOMBOER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
 	case EnemyType::EN_SWARM:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_SWARMMEMBER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
 	case EnemyType::EN_GHOST:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 1);
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
 	case EnemyType::EN_GROWINGTREE:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_SHARK:
-		hitParams.Set(2, 5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_SPECTER:
-		hitParams.Set(2, 5, .8, (3 * 60) / 5, 5);
+		hitParams.Set(5, .8, (3 * 60) / 5, 5);
 		break;
 	case EnemyType::EN_GORILLA:
-		hitParams.Set(2, 5, .8, (3 * 60) / 5, 5);
+		hitParams.Set(5, .8, (3 * 60) / 5, 5);
 		break;
 	case EnemyType::EN_WIRETARGET:
-		hitParams.Set(2, 5, 0, 0, 1);
+		hitParams.Set(5, 0, 0, 1);
 		break;
 	default:
 		return false;
@@ -169,13 +169,12 @@ bool Enemy::SetHitParams()
 	return true;
 }
 
-
-
 Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 	int world, bool cuttable)
 	:prev(NULL), next(NULL), spawned(false),
 	type(t), zone(NULL), dead(false),
-	suppressMonitor(false), ts_hitSpack(NULL), keyShader(NULL)
+	suppressMonitor(false), ts_hitSpack(NULL),
+	hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
 	sess = Session::GetSession();
 
@@ -192,8 +191,6 @@ Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 	scale = 1.f;
 	
 	comboObj = NULL;
-	hurtBody = NULL;
-	hitBody = NULL;
 	hitboxInfo = NULL;
 
 	if (p_hasMonitor)
@@ -213,8 +210,6 @@ Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
 	currShield = NULL;
-	hurtShader = NULL;
-	keyShader = NULL;
 	ResetSlow();
 
 	if (SetHitParams())
@@ -241,7 +236,6 @@ Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 	{
 		ts_hitSpack = NULL;
 		ts_blood = NULL;
-		keySprite = NULL;
 		return;
 	}
 
@@ -312,29 +306,25 @@ Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 		//keyColor = Color::White;
 
 		//cout << "doing the add monitor thing" << endl;
-		keyShader = new Shader();
-		if( !keyShader->loadFromFile( "Resources/Shader/key_shader.frag", sf::Shader::Fragment ) )
+		if( !keyShader.loadFromFile( "Resources/Shader/key_shader.frag", sf::Shader::Fragment ) )
 		{
 			cout << "couldnt load enemy key shader" << endl;
 			assert( false );
 		}
 
-		keyShader->setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
-		keyShader->setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
+		keyShader.setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
+		keyShader.setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
 
 		stringstream ss;
 		ss << "FX/key_w0" << world << "_1_128x128.png";
 		ts_key = sess->GetTileset( ss.str(), 128, 128 );
 
-		keySprite = new Sprite;
-		keySprite->setTexture( *ts_key->texture );
+		keySprite.setTexture( *ts_key->texture );
 	}
 	else
 	{
 		cout << "doing the no monitor thing" << endl;
 		ts_key = NULL;
-		keyShader = NULL;
-		keySprite = NULL;
 	}
 
 
@@ -357,15 +347,13 @@ Enemy::Enemy(EnemyType t, bool p_hasMonitor,
 
 	ts_blood = sess->GetTileset( ss.str(), 256, 256 );
 
-
-	hurtShader = new Shader();
-	if( !hurtShader->loadFromFile( "Resources/Shader/enemyhurt_shader.frag", sf::Shader::Fragment ) )
+	if( !hurtShader.loadFromFile( "Resources/Shader/enemyhurt_shader.frag", sf::Shader::Fragment ) )
 	{
 		cout << "couldnt load enemy enemyhurt shader" << endl;
 		assert( false );
 	}
-	hurtShader->setUniform( "toColor", Glsl::Vec4( Color::White.r, Color::White.g, Color::White.b, Color::White.a ));
-	hurtShader->setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
+	hurtShader.setUniform( "toColor", Glsl::Vec4( Color::White.r, Color::White.g, Color::White.b, Color::White.a ));
+	hurtShader.setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
 }
 
 Enemy::~Enemy()
@@ -389,20 +377,6 @@ Enemy::~Enemy()
 
 	if (currShield != NULL)
 		delete currShield;
-
-	if (keyShader != NULL)
-		delete keyShader;
-
-	if (hurtShader != NULL)
-		delete hurtShader;
-
-	if (keySprite != NULL)
-		delete keySprite;
-
-	if (hurtBody != NULL)
-		delete hurtBody;
-	if (hitBody != NULL)
-		delete hitBody;
 
 	if (hitboxInfo != NULL)
 		delete hitboxInfo;
@@ -448,17 +422,16 @@ void Enemy::SetZoneSpritePosition()
 	zonedSprite.setPosition(position.x, position.y);
 }
 
-std::list<CollisionBox> * Enemy::GetComboHitboxes()
+std::vector<CollisionBox> * Enemy::GetComboHitboxes()
 {
 	if (comboObj != NULL)
 	{
-		CollisionBody *body = comboObj->enemyHitBody;
-		if (body != NULL)
+		CollisionBody &body = comboObj->enemyHitBody;
+		if (!body.Empty())
 		{
-			auto boxes = body->GetCollisionBoxes(comboObj->enemyHitboxFrame);
-			return boxes;
+			return &body.GetCollisionBoxes(comboObj->enemyHitboxFrame);
 		}
-	}	
+	}
 
 	return NULL;
 }
@@ -470,13 +443,13 @@ void Enemy::DrawSpriteIfExists( sf::RenderTarget *target, sf::Sprite &spr )
 	{
 		if ( b )
 		{
-			target->draw(spr, keyShader);
+			target->draw(spr, &keyShader);
 		}
 		else
 		{
-			target->draw(spr, hurtShader);
+			target->draw(spr, &hurtShader);
 		}
-		target->draw(*keySprite);
+		target->draw(keySprite);
 	}
 	else
 	{
@@ -486,7 +459,7 @@ void Enemy::DrawSpriteIfExists( sf::RenderTarget *target, sf::Sprite &spr )
 		}
 		else
 		{
-			target->draw(spr, hurtShader);
+			target->draw(spr, &hurtShader);
 		}
 	}
 }
@@ -534,6 +507,56 @@ void Enemy::SetHurtboxes(CollisionBody *cb, int frame)
 {
 	currHurtboxes = cb;
 	currHurtboxFrame = frame;
+}
+
+void Enemy::BasicCircleHurtBodySetup(double radius, double angle, V2d &offset, V2d &pos)
+{
+	if (radius > 0)
+	{
+		hurtBody.BasicCircleSetup(radius * scale, angle, offset * scale);
+		hurtBody.SetBasicPos(pos);
+	}
+}
+
+void Enemy::BasicCircleHitBodySetup(double radius, double angle, V2d &offset, V2d &pos)
+{
+	if (radius > 0)
+	{
+		hitBody.BasicCircleSetup(radius * scale, angle, offset * scale);
+		hitBody.SetBasicPos(pos);
+	}
+}
+
+void Enemy::BasicCircleHurtBodySetup(double radius, V2d &pos)
+{
+	BasicCircleHurtBodySetup(radius * scale, 0, V2d(), pos);
+}
+
+void Enemy::BasicCircleHitBodySetup(double radius, V2d &pos)
+{
+	BasicCircleHitBodySetup(radius * scale, 0, V2d(), pos);
+}
+
+void Enemy::BasicRectHurtBodySetup(
+	double w, double h, double angle, V2d &offset,
+	V2d &pos)
+{
+	if (w > 0 && h > 0)
+	{
+		hurtBody.BasicRectSetup(w * scale, h * scale, angle, offset * scale);
+		hurtBody.SetBasicPos(pos);
+	}
+}
+
+void Enemy::BasicRectHitBodySetup(
+	double w, double h, double angle, V2d &offset,
+	V2d &pos)
+{
+	if (w > 0 && h > 0)
+	{
+		hitBody.BasicRectSetup(w * scale, h * scale, angle, offset * scale);
+		hitBody.SetBasicPos(pos);
+	}
 }
 
 bool Enemy::IsTouchingSpecterField( SpecterArea *sa )
@@ -837,14 +860,13 @@ void Enemy::UpdatePostPhysics()
 	{
 		if (hasMonitor && !suppressMonitor)
 		{
-			//keySprite.setTexture( *ts_key->texture );
 			int fac = 5;
 			int kFrame = sess->totalGameFrames % (16 * fac);
-			keySprite->setTextureRect(ts_key->GetSubRect(kFrame / fac));
-			keySprite->setOrigin(keySprite->getLocalBounds().width / 2,
-				keySprite->getLocalBounds().height / 2);
-			keySprite->setPosition(position.x, position.y);
-			keySprite->setColor(Color(255, 255, 255, 255));
+			keySprite.setTextureRect(ts_key->GetSubRect(kFrame / fac));
+			keySprite.setOrigin(keySprite.getLocalBounds().width / 2,
+				keySprite.getLocalBounds().height / 2);
+			keySprite.setPosition(position.x, position.y);
+			keySprite.setColor(Color(255, 255, 255, 255));
 		}
 		UpdateSprite();
 		if (currShield != NULL)
@@ -1026,83 +1048,6 @@ void Enemy::ConfirmKill()
 	
 }
 
-void Enemy::SetupBodies(int numHurtboxes,
-	int numHitboxes)
-{
-	if (numHurtboxes > 0)
-	{
-		hurtBody = new CollisionBody(numHurtboxes);
-	}
-	
-	if (numHitboxes > 0)
-	{
-		hitBody = new CollisionBody(numHitboxes);
-	}
-}
-
-void Enemy::AddBasicHurtCircle(double rad, int index)
-{
-	AddBasicHurtCircle(hurtBody, rad, index);
-}
-
-void Enemy::AddBasicHitCircle(double rad, int index)
-{
-	AddBasicHitCircle(hitBody, rad, index);
-}
-
-void Enemy::AddBasicHurtCircle( CollisionBody *bod, double rad, int index)
-{
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = rad * scale;
-	hurtBox.rh = rad * scale;
-	bod->AddCollisionBox(index, hurtBox);
-}
-
-
-void Enemy::AddBasicHitCircle( CollisionBody *bod, double rad, int index)
-{
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = rad * scale;
-	hitBox.rh = rad * scale;
-	bod->AddCollisionBox(index, hitBox);
-}
-
-void Enemy::AddBasicHitRect(CollisionBody *bod, double w, double h, int index)
-{
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = false;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = w/2;
-	hitBox.rh = h/2;
-	bod->AddCollisionBox(index, hitBox);
-}
-
-void Enemy::AddBasicHurtRect(CollisionBody *bod, double w, double h, int index)
-{
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hurt;
-	hitBox.isCircle = false;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = w / 2;
-	hitBox.rh = h / 2;
-	bod->AddCollisionBox(index, hitBox);
-}
-
 void Enemy::ComboHit()
 {
 	//empty default
@@ -1217,26 +1162,15 @@ void Enemy::UpdateHitboxes()
 
 void Enemy::BasicUpdateHitboxes()
 {
-	if (hurtBody != NULL)
+	//can update this with a universal angle at some point
+	if (!hurtBody.Empty())
 	{
-		auto boxes = hurtBody->GetCollisionBoxes(0);
-		if (!boxes->empty())
-		{
-			CollisionBox &hurtBox = boxes->front();
-			hurtBox.globalPosition = position;
-			//hurtBox.globalAngle = 0;
-		}
+		hurtBody.SetBasicPos(position);
 	}
 
-	if (hitBody != NULL)
+	if (!hitBody.Empty())
 	{
-		auto boxes = hitBody->GetCollisionBoxes(0);
-		if (!boxes->empty())
-		{
-			CollisionBox &hitBox = boxes->front();
-			hitBox.globalPosition = position;
-			//hitBox.globalAngle = 0;
-		}
+		hitBody.SetBasicPos(position);
 	}
 
 	auto comboBoxes = GetComboHitboxes();
@@ -1373,7 +1307,7 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 
 		if (receivedHit->hType < HitboxInfo::HitboxType::WIREHITRED)
 		{
-			player->ConfirmHit(&e->hitParams);
+			player->ConfirmHit(e);
 		}
 		else
 		{
@@ -1565,7 +1499,7 @@ void CuttableObject::IncrementFrame()
 
 V2d ComboObject::GetComboPos()
 {
-	sf::Rect<double> r = enemyHitBody->GetAABB(enemyHitboxFrame);
+	sf::Rect<double> r = enemyHitBody.GetAABB(enemyHitboxFrame);
 	
 	return V2d(r.left + r.width / 2.0, r.top + r.height / 2.0);
 }
@@ -1584,14 +1518,11 @@ void ComboObject::Reset()
 
 void ComboObject::Draw(RenderTarget *target)
 {
-	enemyHitBody->DebugDraw( enemyHitboxFrame, target);
+	enemyHitBody.DebugDraw( enemyHitboxFrame, target);
 }
 
 ComboObject::~ComboObject()
 {
 	if (enemyHitboxInfo != NULL)
 		delete enemyHitboxInfo;
-	
-	if (enemyHitBody != NULL)
-		delete enemyHitBody;
 }

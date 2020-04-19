@@ -34,6 +34,8 @@ struct ActorParams : ISelectable
 	int GetWorld();
 
 	Enemy *GenerateEnemy();
+	Enemy *myEnemy;
+	void CreateMyEnemy();
 
 	virtual ActorParams *Copy() = 0;
 	~ActorParams();

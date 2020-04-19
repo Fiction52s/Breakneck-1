@@ -70,10 +70,10 @@ Airdasher::Airdasher(bool p_hasMonitor, Vector2i pos, int p_level )
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(48, position);
+	BasicCircleHitBodySetup(48, position);
+
+	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 
@@ -88,12 +88,13 @@ Airdasher::Airdasher(bool p_hasMonitor, Vector2i pos, int p_level )
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody = new CollisionBody(2);
+	comboObj->enemyHitBody.SetupNumFrames(2);
+	comboObj->enemyHitBody.SetupNumBoxesOnFrame(0,1);
+	comboObj->enemyHitBody.SetupNumBoxesOnFrame(1,1);
 
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
+	comboObj->enemyHitBody.AddCollisionBox(0, hitBody.GetCollisionBoxes(0).front());
 
 	CollisionBox exBox;
-	exBox.type = CollisionBox::Hit;
 	exBox.isCircle = true;
 	exBox.globalAngle = 0;
 	exBox.offset.x = 0;
@@ -101,7 +102,7 @@ Airdasher::Airdasher(bool p_hasMonitor, Vector2i pos, int p_level )
 	exBox.rw = 48 * scale;
 	exBox.rh = 48 * scale;
 
-	comboObj->enemyHitBody->AddCollisionBox(1, exBox);
+	comboObj->enemyHitBody.AddCollisionBox(1, exBox);
 
 	comboObj->enemyHitboxFrame = 0;
 
@@ -161,8 +162,8 @@ void Airdasher::ResetEnemy()
 
 	currHits = 0;
 	currOrig = origPos;
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 	dead = false;
 	action = S_FLOAT;
 	frame = 0;

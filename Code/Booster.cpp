@@ -61,20 +61,13 @@ Booster::Booster( Vector2i &pos, int p_level)
 	sprite.setScale(scale, scale);
 	sprite.setPosition(pos.x, pos.y);
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(90);
-	AddBasicHitCircle(90);
-
+	double radius = 90;
+	BasicCircleHitBodySetup(radius, position);
 
 	dead = false;
 
-	//UpdateHitboxes();
-
 	spawnRect = sf::Rect<double>(position.x - 100, position.y - 100,
 		200, 200);
-
-	SetHitboxes(hitBody, 0);
-	SetHitboxes(hurtBody, 0);
 
 	actionLength[NEUTRAL] = 6;
 	actionLength[BOOST] = 8;
@@ -111,7 +104,7 @@ void Booster::ResetEnemy()
 	frame = 0;
 	receivedHit = NULL;
 	
-	SetHitboxes(hitBody, 0);
+	SetHitboxes(&hitBody, 0);
 	UpdateHitboxes();
 
 	sprite.setTexture(*ts->texture);

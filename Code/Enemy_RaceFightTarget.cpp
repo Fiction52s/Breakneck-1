@@ -41,18 +41,8 @@ RaceFightTarget::RaceFightTarget( Vector2i &pos )
 	//position.x = 0;
 	//position.y = 0;
 
-	CollisionBody *hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 40;
-	hurtBox.rh = 40;
-	hurtBox.globalPosition = position;
-	hurtBody->AddCollisionBox(0, hurtBox);
-	SetHurtboxes(hurtBody, 0);
+	BasicCircleHurtBodySetup(40, position);
+	
 
 	pPrev = NULL;
 	pNext = NULL;
@@ -90,6 +80,8 @@ void RaceFightTarget::ResetEnemy()
 	pNext = NULL;
 	p2Prev = NULL;
 	p2Next = NULL;
+
+	SetHurtboxes(&hurtBody, 0);
 }
 
 

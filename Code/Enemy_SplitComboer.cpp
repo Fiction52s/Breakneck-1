@@ -53,17 +53,9 @@ SplitPiece::SplitPiece(SplitComboer *splitComb )
 
 	comboObj = new ComboObject(this);
 
-
 	double rad = 48;
 
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = rad * scale;
-	hitBox.rh = rad * scale;
+	comboObj->enemyHitBody.BasicCircleSetup(rad * scale);
 
 	comboObj->enemyHitboxInfo = new HitboxInfo;
 	comboObj->enemyHitboxInfo->damage = 20;
@@ -74,12 +66,6 @@ SplitPiece::SplitPiece(SplitComboer *splitComb )
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
-
-	comboObj->enemyHitBody = new CollisionBody(1);
-
-
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBox);
-
 	comboObj->enemyHitboxFrame = 0;
 
 	dead = false;
@@ -110,8 +96,8 @@ void SplitPiece::ResetEnemy()
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
+	//SetHurtboxes(&hurtBody, 0);
 	dead = false;
 	action = S_FLY;
 	frame = 0;
@@ -268,14 +254,11 @@ SplitComboer::SplitComboer(Vector2i pos, list<Vector2i> &pathParam,
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(48, position);
+	BasicCircleHitBodySetup(48, position);
+	hitBody.hitboxInfo = hitboxInfo;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-
+	
 	targetNode = 1;
 	forward = true;
 
@@ -315,8 +298,8 @@ void SplitComboer::ResetEnemy()
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
 	velocity = V2d(0, 0);
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 	targetNode = 1;
 	forward = true;
 	dead = false;

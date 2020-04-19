@@ -106,13 +106,11 @@ Crawler::Crawler(bool p_hasMonitor, Edge *g, double q, int p_level )
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(32, position);
+	BasicCircleHitBodySetup(32, position);
 
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+	
+	hitBody.hitboxInfo = hitboxInfo;
 
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 5;
@@ -189,8 +187,8 @@ void Crawler::ResetEnemy()
 	action = UNBURROW;
 	frame = 15 * 4;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	//SetHitboxes(hitBody, 0);
+	//SetHurtboxes(hurtBody, 0);
 	framesUntilBurrow = maxFramesUntilBurrow;
 	
 	DecideDirection();
@@ -353,7 +351,7 @@ void Crawler::ProcessState()
 			mover->UpdateGroundPos();
 			break;
 		case UNDERGROUND:
-			SetHurtboxes(hurtBody, 0);
+			SetHurtboxes(&hurtBody, 0);
 			action = UNBURROW;
 			framesUntilBurrow = maxFramesUntilBurrow;
 			frame = 0;
@@ -367,8 +365,8 @@ void Crawler::ProcessState()
 	case UNBURROW:
 		if (frame == 4 * 11)
 		{
-			
-			SetHitboxes(hitBody, 0);
+			//SetHitboxes(&hurtBody, 0);
+			SetHitboxes(&hitBody, 0);
 		}
 		break;
 	case CRAWL:
@@ -379,6 +377,7 @@ void Crawler::ProcessState()
 		if (frame == 4 * 12)
 		{
 			SetHitboxes(NULL, 0);
+			SetHurtboxes(NULL, 0);
 		}
 		break;
 	}

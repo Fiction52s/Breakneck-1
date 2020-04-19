@@ -576,7 +576,6 @@ BasicBullet::BasicBullet(int indexVA, BType bType, Launcher *launch)
 	hurtBody.rw = rad;
 	hurtBody.rh = rad;*/
 
-	hitBody.type = CollisionBox::Hit;
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;
 	hitBody.offset.x = 0;
@@ -584,7 +583,6 @@ BasicBullet::BasicBullet(int indexVA, BType bType, Launcher *launch)
 	hitBody.rw = rad;
 	hitBody.rh = rad;
 
-	physBody.type = CollisionBox::Physics;
 	physBody.isCircle = true;
 	physBody.globalAngle = 0;
 	physBody.offset.x = 0;
@@ -597,7 +595,7 @@ BasicBullet::BasicBullet(int indexVA, BType bType, Launcher *launch)
 
 void BasicBullet::DebugDraw(sf::RenderTarget *target)
 {
-	hitBody.DebugDraw(target);
+	hitBody.DebugDraw( CollisionBox::Hit, target);
 }
 
 void BasicBullet::ResetSprite()

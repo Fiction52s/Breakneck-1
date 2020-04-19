@@ -6,6 +6,7 @@
 struct BasicEffect : Enemy
 {
 	BasicEffect();
+	BasicEffect(BasicEffect &be);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
@@ -19,7 +20,9 @@ struct BasicEffect : Enemy
 		int animationFactor, bool right,
 		float depth);
 	int GetNumCamPoints() { return 0; }
+
 	bool CanTouchSpecter();
+
 	float depth;
 	int frameCount;
 	sf::Sprite s;

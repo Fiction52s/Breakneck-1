@@ -41,16 +41,10 @@ FootTrap::FootTrap( bool p_hasMonitor, Edge *g, double q )
 	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setRotation( angle / PI * 180 );
 
-	hurtBody = new CollisionBody(1); //this wille ventually match animation
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = 32;
-	hurtBox.rh = 32;
-	hurtBody->AddCollisionBox(0, hurtBox);
+	BasicCircleHurtBodySetup(32, position);
+	BasicCircleHitBodySetup(32, position);
+
+	
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -60,17 +54,8 @@ FootTrap::FootTrap( bool p_hasMonitor, Edge *g, double q )
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = 32;
-	hitBox.rh = 32;
-	hitBody->AddCollisionBox(0, hitBox);
-	hitBody->hitboxInfo = hitboxInfo;
+	
+	hitBody.hitboxInfo = hitboxInfo;
 
 	frame = 0;
 	//deathFrame = 0;
@@ -81,10 +66,9 @@ FootTrap::FootTrap( bool p_hasMonitor, Edge *g, double q )
 	actionLength[LATENT] = 25 * animationFactor;
 	actionLength[CHOMPING] = 25 * animationFactor;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-
 	UpdateSprite();
+
+	ResetEnemy();
 	/*actionLength[DYING] = 60;
 	actionLength[ROOTPREPARE] = 60;
 	actionLength[ROOTWAIT] = 20;
@@ -104,8 +88,8 @@ void FootTrap::ResetEnemy()
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 }
 
 void FootTrap::ProcessState()
@@ -251,10 +235,10 @@ void FootTrap::UpdateSprite()
 		if( hasMonitor && !suppressMonitor )
 		{
 			//keySprite.setTexture( *ts_key->texture );
-			keySprite->setTextureRect( ts_key->GetSubRect( sess->keyFrame / 5 ) );
-			keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
-				keySprite->getLocalBounds().height / 2 );
-			keySprite->setPosition( position.x, position.y );
+			keySprite.setTextureRect( ts_key->GetSubRect( sess->keyFrame / 5 ) );
+			keySprite.setOrigin( keySprite.getLocalBounds().width / 2, 
+				keySprite.getLocalBounds().height / 2 );
+			keySprite.setPosition( position.x, position.y );
 		}
 	//}
 	sprite.setTextureRect( ts->GetSubRect( frame / animationFactor ) );

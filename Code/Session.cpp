@@ -68,7 +68,9 @@ template <typename X>ActorParams * MakeParamsAerial(ActorType *at)
 template<typename X> ActorParams *LoadParams(
 	ActorType *at, std::ifstream &is)
 {
-	return new X(at, is);
+	ActorParams *ap = new X(at, is);
+	ap->CreateMyEnemy();
+	return ap;
 }
 
 template<typename X> Enemy *CreateEnemy(ActorParams* ap)
