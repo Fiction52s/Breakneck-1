@@ -16,8 +16,8 @@ struct Airdasher : Enemy
 		S_Count
 	};
 
-	Airdasher(bool hasMonitor,
-		sf::Vector2i pos, int level );
+	Airdasher(ActorParams *ap);//bool hasMonitor,
+		//sf::Vector2i pos, int level );
 	~Airdasher();
 	void ProcessState();
 
@@ -54,7 +54,6 @@ struct Airdasher : Enemy
 
 	Action action;
 	int physStepIndex;
-	V2d origPos;
 	V2d currOrig;
 	int actionLength[S_Count];
 	int animFactor[S_Count];

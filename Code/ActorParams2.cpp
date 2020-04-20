@@ -23,7 +23,7 @@ using namespace sf;
 
 
 
-BatParams::BatParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, int p_bulletSpeed, int p_framesBetweenNodes, bool p_loop )
+BatParams::BatParams(ActorType *at, sf::Vector2i pos, vector<Vector2i> &globalPath, int p_bulletSpeed, int p_framesBetweenNodes, bool p_loop )
 	:ActorParams(at )
 {	
 	lines = NULL;
@@ -186,7 +186,7 @@ void BatParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = false;
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 	//EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
 
@@ -900,7 +900,7 @@ ActorParams *GravityFallerParams::Copy()
 	return copy;
 }
 
-GravitySpringParams::GravitySpringParams(ActorType *at, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath,
+GravitySpringParams::GravitySpringParams(ActorType *at, sf::Vector2i &pos, std::vector<sf::Vector2i> &globalPath,
 	int p_speed)
 	:ActorParams(at), speed( p_speed )
 {
@@ -924,7 +924,8 @@ GravitySpringParams::GravitySpringParams(ActorType *at, ifstream &is)
 
 	lines = NULL;
 
-	list<Vector2i> globalPath;
+	vector<Vector2i> globalPath;
+	globalPath.reserve(2);
 	Vector2i intPos = GetIntPos();
 	globalPath.push_back(intPos);
 	globalPath.push_back(intPos + other);
@@ -955,7 +956,7 @@ void GravitySpringParams::WriteParamFile(std::ofstream &of)
 	
 }
 
-void GravitySpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
+void GravitySpringParams::SetPath(std::vector<sf::Vector2i> &globalPath)
 {
 	ActorParams::SetPath(globalPath);
 	if (globalPath.size() > 1)
@@ -1001,7 +1002,7 @@ void GravitySpringParams::SetPanelInfo()
 	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 }
 
 ActorParams *GravitySpringParams::Copy()

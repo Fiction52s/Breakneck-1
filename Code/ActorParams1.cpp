@@ -21,7 +21,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-PatrollerParams::PatrollerParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop )
+PatrollerParams::PatrollerParams(ActorType *at, sf::Vector2i pos, vector<Vector2i> &globalPath, float p_speed, bool p_loop )
 	:ActorParams(at)
 {	
 	lines = NULL;
@@ -104,7 +104,7 @@ void PatrollerParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 }
 
 void PatrollerParams::Draw( sf::RenderTarget *target )
@@ -449,9 +449,9 @@ ActorParams *BoosterParams::Copy()
 	return copy;
 }
 
-SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath,
-	int p_moveFrames)
-	:ActorParams(at), moveFrames(p_moveFrames)
+SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos, std::vector<sf::Vector2i> &globalPath,
+	int p_speed)
+	:ActorParams(at), speed(p_speed)
 {
 	PlaceAerial(pos);
 
@@ -465,7 +465,7 @@ SpringParams::SpringParams(ActorType *at, ifstream &is)
 {
 	LoadAerial(is);
 
-	is >> moveFrames;
+	is >> speed;
 
 	lines = NULL;
 
@@ -473,8 +473,8 @@ SpringParams::SpringParams(ActorType *at, ifstream &is)
 	is >> other.x;
 	is >> other.y;
 
-	list<Vector2i> globalPath;
-
+	vector<Vector2i> globalPath;
+	globalPath.reserve(2);
 	Vector2i intPos = GetIntPos();
 	globalPath.push_back(intPos);
 	globalPath.push_back(intPos + other);
@@ -488,7 +488,7 @@ SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos)
 {
 	PlaceAerial(pos);
 
-	moveFrames = 60;
+	speed = 60;
 
 	lines = NULL;
 
@@ -497,11 +497,11 @@ SpringParams::SpringParams(ActorType *at, sf::Vector2i &pos)
 
 void SpringParams::WriteParamFile(std::ofstream &of)
 {
-	of << moveFrames << "\n";
+	of << speed << "\n";
 	of << localPath.front().x << " " << localPath.front().y << endl;
 }
 
-void SpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
+void SpringParams::SetPath(std::vector<sf::Vector2i> &globalPath)
 {
 	ActorParams::SetPath(globalPath);
 	if (globalPath.size() > 1)
@@ -518,17 +518,17 @@ void SpringParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	string moveFrameStr = p->textBoxes["moveframes"]->text.getString().toAnsiString();
+	string moveFrameStr = p->textBoxes["speed"]->text.getString().toAnsiString();
 
 	stringstream ss;
 	ss << moveFrameStr;
 
-	int t_moveFrames;
-	ss >> t_moveFrames;
+	int t_speed;
+	ss >> t_speed;
 
 	if (!ss.fail())
 	{
-		moveFrames = t_moveFrames;
+		speed = t_speed;
 	}
 
 
@@ -546,10 +546,10 @@ void SpringParams::SetPanelInfo()
 		p->textBoxes["group"]->text.setString(group->name);
 	}
 
-	p->textBoxes["moveframes"]->text.setString((boost::lexical_cast<string>(moveFrames)));
+	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 ActorParams *SpringParams::Copy()
@@ -585,7 +585,7 @@ void SpringParams::Draw(sf::RenderTarget *target)
 }
 
 
-ComboerParams::ComboerParams(ActorType *at, sf::Vector2i pos, list<Vector2i> &globalPath, float p_speed, bool p_loop)
+ComboerParams::ComboerParams(ActorType *at, sf::Vector2i pos, vector<Vector2i> &globalPath, float p_speed, bool p_loop)
 	:ActorParams(at)
 {
 	lines = NULL;
@@ -666,7 +666,7 @@ void ComboerParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 }
 
 

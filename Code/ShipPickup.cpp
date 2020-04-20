@@ -18,20 +18,24 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-ShipPickup::ShipPickup(Edge *g, double q, bool p_facingRight )
-		:Enemy( EnemyType::EN_SHIPPICKUP, false, 1 ), ground( g ), edgeQuantity( q ),
-	facingRight( p_facingRight )
+ShipPickup::ShipPickup(ActorParams * ap)
+		:Enemy( EnemyType::EN_SHIPPICKUP, ap)
 {
+	ShipPickupParams *sParams = (ShipPickupParams*)ap;
+	facingRight = sParams->facingRight;
+	ground = startPosInfo.GetEdge();
+	edgeQuantity = startPosInfo.GetQuant();
+
 	double height = 128;
 	ts = sess->GetTileset( "Ship/shipleave_128x128.png", 128, height );
 	sprite.setTexture( *ts->texture );
 	
-	V2d gPoint = g->GetPosition(edgeQuantity);
+	V2d gPoint = ground->GetPosition(edgeQuantity);
 	
 
 	receivedHit = NULL;
 
-	V2d gn = g->Normal();
+	V2d gn = ground->Normal();
 	float angle = atan2( gn.x, -gn.y );
 
 	position = gPoint - gn * ( height / 2.0 - 10 );

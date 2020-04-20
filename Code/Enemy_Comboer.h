@@ -24,8 +24,8 @@ struct Comboer : Enemy
 	//	T_Count
 	//};
 
-	Comboer(sf::Vector2i pos, std::list<sf::Vector2i> &path, 
-		bool loop, int p_level );
+	Comboer(ActorParams * ap);//sf::Vector2i pos, std::list<sf::Vector2i> &path, 
+		//bool loop, int p_level );
 	~Comboer();
 	
 
@@ -49,7 +49,7 @@ struct Comboer : Enemy
 	Action action;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
-	sf::Vector2i *path; //global
+	std::vector<sf::Vector2i> path;
 	int pathLength;
 	bool loop;
 	int targetNode;

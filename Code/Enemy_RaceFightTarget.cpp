@@ -18,12 +18,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-RaceFightTarget::RaceFightTarget( Vector2i &pos )
-	:Enemy( EnemyType::EN_RACEFIGHTTARGET, false, 1 )
+RaceFightTarget::RaceFightTarget( ActorParams *ap)//Vector2i &pos )
+	:Enemy( EnemyType::EN_RACEFIGHTTARGET, ap)//., false, 1 )
 {
 	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+	position = ap->GetPosition();
 	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
 	frame = 0;
@@ -37,7 +36,7 @@ RaceFightTarget::RaceFightTarget( Vector2i &pos )
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
+	sprite.setPosition(position.x, position.y );
 	//position.x = 0;
 	//position.y = 0;
 

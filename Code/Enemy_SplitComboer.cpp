@@ -15,8 +15,8 @@ using namespace sf;
 
 
 
-SplitPiece::SplitPiece(SplitComboer *splitComb )
-	:Enemy( EnemyType::EN_SPLITCOMBOER, false, 1, false)
+SplitPiece::SplitPiece( ActorParams *ap, SplitComboer *splitComb )
+	:Enemy( EnemyType::EN_SPLITCOMBOER, ap )//, false, 1, false)
 {
 	level = splitComb->level;;
 	sc = splitComb;
@@ -186,12 +186,12 @@ void SplitPiece::Shoot(V2d dir)
 	sess->PlayerAddActiveComboObj(comboObj);
 }
 
-SplitComboer::SplitComboer(Vector2i pos, list<Vector2i> &pathParam,
-	bool p_loop,
-	int p_level)
-	:Enemy(EnemyType::EN_SPLITCOMBOER, false, 1, false)
+SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam,
+	//bool p_loop,
+	//int p_level)
+	:Enemy(EnemyType::EN_SPLITCOMBOER, ap )//false, 1, false)
 {
-	level = p_level;
+	level = ap->GetLevel();
 
 	switch (level)
 	{
@@ -210,27 +210,28 @@ SplitComboer::SplitComboer(Vector2i pos, list<Vector2i> &pathParam,
 
 	action = S_FLOAT;
 
-	loop = p_loop;
+	loop = ap->loop;
 
 	//receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+	position = ap->GetPosition();
 
-	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
+	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
 
-	pathLength = pathParam.size() + 1;
+	path = ap->MakeGlobalPath();
 
-	path = new Vector2i[pathLength];
-	path[0] = pos;
+	//pathLength = pathParam.size() + 1;
 
-	int index = 1;
-	for (list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it)
-	{
-		path[index] = (*it) + pos;
-		++index;
-		//path.push_back( (*it) );
+	//path = new Vector2i[pathLength];
+	//path[0] = pos;
 
-	}
+	//int index = 1;
+	//for (list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it)
+	//{
+	//	path[index] = (*it) + pos;
+	//	++index;
+	//	//path.push_back( (*it) );
+
+	//}
 
 	//eventually maybe put this on a multiplier for more variation?
 	//doubt ill need it though
@@ -243,7 +244,7 @@ SplitComboer::SplitComboer(Vector2i pos, list<Vector2i> &pathParam,
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos.x, pos.y);
+	sprite.setPosition(position.x, position.y);
 
 
 	hitboxInfo = new HitboxInfo;
@@ -274,8 +275,8 @@ SplitComboer::SplitComboer(Vector2i pos, list<Vector2i> &pathParam,
 
 	shootSpeed = 10;
 
-	pieces[0] = new SplitPiece(this);
-	pieces[1] = new SplitPiece(this);
+	pieces[0] = new SplitPiece( ap, this);
+	pieces[1] = new SplitPiece( ap, this);
 
 	ResetEnemy();
 
@@ -286,8 +287,6 @@ SplitComboer::~SplitComboer()
 {
 	delete pieces[0];
 	delete pieces[1];
-
-	delete[] path;
 }
 
 

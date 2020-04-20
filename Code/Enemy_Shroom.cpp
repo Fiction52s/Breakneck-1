@@ -17,10 +17,12 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Shroom::Shroom(bool p_hasMonitor, Edge *g, double q, int p_level)
-	:Enemy(EnemyType::EN_SHROOM, p_hasMonitor, 1), ground(g), edgeQuantity(q)
+Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_level)
+	:Enemy(EnemyType::EN_SHROOM, ap )//p_hasMonitor, 1), ground(g), edgeQuantity(q)
 {
-	level = p_level;
+	ground = startPosInfo.GetEdge();
+	edgeQuantity = startPosInfo.GetQuant();
+	level = ap->GetLevel();
 
 	switch (level)
 	{
@@ -45,13 +47,13 @@ Shroom::Shroom(bool p_hasMonitor, Edge *g, double q, int p_level)
 	sprite.setTexture(*ts->texture);
 	auraSprite.setTexture(*ts_aura->texture);
 
-	V2d gPoint = g->GetPosition(edgeQuantity);
+	V2d gPoint = ground->GetPosition(edgeQuantity);
 
 	receivedHit = NULL;
 
 	hitSound = sess->GetSound("Enemies/shroom_spark");
 
-	gn = g->Normal();
+	gn = ground->Normal();
 	angle = atan2(gn.x, -gn.y);
 
 	position = gPoint + gn * ( 40.0 * scale );
@@ -79,7 +81,7 @@ Shroom::Shroom(bool p_hasMonitor, Edge *g, double q, int p_level)
 
 	frame = 0;
 
-	jelly = new ShroomJelly( position, level);
+	jelly = new ShroomJelly( ap, position, level);
 	jelly->Reset();
 
 	spawnRect = sf::Rect<double>(gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2);
@@ -215,8 +217,8 @@ void Shroom::SetZoneSpritePosition()
 	Enemy::SetZoneSpritePosition();
 }
 
-ShroomJelly::ShroomJelly(V2d &pos, int p_level )
-	:Enemy(EnemyType::EN_SHROOMJELLY, 0, 1, false )
+ShroomJelly::ShroomJelly(ActorParams *ap, V2d &pos, int p_level )
+	:Enemy(EnemyType::EN_SHROOMJELLY, ap )//, 0, 1, false )
 {
 	level = p_level;
 

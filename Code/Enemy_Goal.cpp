@@ -14,7 +14,9 @@ using namespace sf;
 Goal::Goal( ActorParams *ap )
 	:Enemy( EnemyType::EN_GOAL, ap )
 {
-
+	world = ap->GetWorld();
+	//world = //sess->mapHeader->envWorldType;
+	//world = ap->GetWorld();
 	double width;
 	double height;
 

@@ -42,9 +42,13 @@ void Shard::SetupShardMaps()
 	}
 }
 
-Shard::Shard(Vector2i pos, int w, int li )
-	:Enemy( EnemyType::EN_SHARD, false, w+1 )
+Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
+	:Enemy( EnemyType::EN_SHARD, ap )//, false, w+1 )
 {
+	ShardParams *sParams = (ShardParams*)ap;
+
+	position = ap->GetPosition();
+
 	if (sess->IsSessTypeGame())
 	{
 		game = GameSession::GetSession();
@@ -61,28 +65,25 @@ Shard::Shard(Vector2i pos, int w, int li )
 	
 	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
 	testEmitter->CreateParticles();
-	testEmitter->SetPos(Vector2f(pos));
+	testEmitter->SetPos(Vector2f(position));
 	//testEmitter->SetTileset( owner->GetTileset("FX/fatgoku.png", 0, 0));
 	testEmitter->SetRatePerSecond(30);
 	
 	//testEmitter->AddForce(Vector2f(0, .1));
+	shardWorld = sParams->world;
+	localIndex = sParams->localIndex;
 
-	world = w;
-	localIndex = li;
-
-	shardType = Shard::GetShardType(w, localIndex);
+	shardType = Shard::GetShardType(shardWorld, localIndex);
 
 	//hopefully this doesnt cause deletion bugs
 	radius = 400;
 
 	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
-	startPos = position;
+	//startPos = position;
 
 	caught = false;
 
-	spawnRect = sf::Rect<double>( pos.x - 32, pos.y - 32, 32 * 2, 32 * 2 );
+	spawnRect = sf::Rect<double>( position.x - 32, position.y - 32, 32 * 2, 32 * 2 );
 	
 	frame = 0;
 
@@ -93,7 +94,7 @@ Shard::Shard(Vector2i pos, int w, int li )
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;
 
-	switch (w)
+	switch (shardWorld)
 	{
 	case 0://ShardType::SHARD_W1_TEACH_JUMP:
 	default:
@@ -133,7 +134,7 @@ Shard::Shard(Vector2i pos, int w, int li )
 	}*/
 
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
+	sprite.setPosition( position.x, position.y );
 
 	BasicCircleHurtBodySetup(32, position);
 	BasicCircleHitBodySetup(32, position);
@@ -149,7 +150,7 @@ Shard::Shard(Vector2i pos, int w, int li )
 
 	ResetEnemy();
 
-	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(pos), Vector2f(pos),
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(position), Vector2f(position),
 		Color::Cyan, Color(0, 0, 100, 0), 60));
 	geoGroup.Init();
 }
@@ -298,7 +299,7 @@ void Shard::ResetEnemy()
 	testEmitter->Reset();
 	testEmitter->SetOn(false);
 
-	position = startPos;
+	position = startPosInfo.GetPosition();
 	rootPos = position;
 }
 

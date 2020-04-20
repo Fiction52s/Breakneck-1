@@ -14,10 +14,10 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Airdasher::Airdasher(bool p_hasMonitor, Vector2i pos, int p_level )
-	:Enemy(EnemyType::EN_AIRDASHER, p_hasMonitor, 1)
+Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_level )
+	:Enemy(EnemyType::EN_AIRDASHER, ap )//, p_hasMonitor, 1)
 {
-	level = p_level;
+	level = ap->GetLevel();
 
 	switch (level)
 	{
@@ -37,15 +37,13 @@ Airdasher::Airdasher(bool p_hasMonitor, Vector2i pos, int p_level )
 	hitLimit = 5;
 	action = S_FLOAT;
 	//receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
-	origPos = position;
+	position = startPosInfo.GetPosition();
 
 	dashRadius = 600;//500;
 	dashFrames = 36;
 	returnFrames = 30;
 
-	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
+	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
 
 	frame = 0;
 
@@ -58,7 +56,7 @@ Airdasher::Airdasher(bool p_hasMonitor, Vector2i pos, int p_level )
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos.x, pos.y);
+	sprite.setPosition(position.x, position.y);
 
 	auraSprite.setScale(scale, scale);
 
@@ -161,13 +159,13 @@ void Airdasher::ResetEnemy()
 	hitFrame = -1;
 
 	currHits = 0;
-	currOrig = origPos;
+	currOrig = startPosInfo.GetPosition();
 	SetHitboxes(&hitBody, 0);
 	SetHurtboxes(&hurtBody, 0);
 	dead = false;
 	action = S_FLOAT;
 	frame = 0;
-	position = origPos;
+	position = startPosInfo.GetPosition();
 	receivedHit = NULL;
 	comboObj->Reset();
 

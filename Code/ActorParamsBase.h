@@ -42,6 +42,7 @@ struct ActorParams : ISelectable
 {
 	Edge *GetGroundEdge();
 	int GetWorld();
+	int GetLevel();
 
 	Enemy *GenerateEnemy();
 	Enemy *myEnemy;
@@ -73,8 +74,9 @@ struct ActorParams : ISelectable
 	void UnAnchor();
 	void UpdateGroundedSprite();
 
-	virtual std::list<sf::Vector2i> GetGlobalPath();
-	virtual void SetPath(std::list<sf::Vector2i> &globalPath);
+	virtual std::vector<sf::Vector2i> MakeGlobalPath();
+	virtual std::vector<sf::Vector2i> & GetLocalPath();
+	virtual void SetPath(std::vector<sf::Vector2i> &globalPath);
 
 	void DrawLevel(sf::RenderTarget *target);
 	void DrawBoundary(sf::RenderTarget *target);
@@ -140,7 +142,8 @@ struct ActorParams : ISelectable
 	bool hasMonitor;
 	sf::VertexArray boundingQuad;
 
-	std::list<sf::Vector2i> localPath;
+	//std::list<sf::Vector2i> localPath;
+	std::vector<sf::Vector2i> localPath;
 	bool loop;
 	sf::VertexArray *lines;
 

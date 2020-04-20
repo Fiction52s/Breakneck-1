@@ -14,7 +14,7 @@ struct Booster : Enemy
 	};
 
 	Action action;
-	Booster(sf::Vector2i &pos, int level);
+	Booster(ActorParams *ap);//sf::Vector2i &pos, int level);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);

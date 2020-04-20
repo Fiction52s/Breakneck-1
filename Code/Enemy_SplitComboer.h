@@ -20,7 +20,7 @@ struct SplitPiece : Enemy
 	int animFactor[S_Count];
 
 
-	SplitPiece(SplitComboer *splitComb);
+	SplitPiece(ActorParams *ap, SplitComboer *splitComb);
 	~SplitPiece();
 
 	void ComboHit();
@@ -55,8 +55,9 @@ struct SplitComboer : Enemy
 		S_Count
 	};
 
-	SplitComboer(sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop,
-		int p_level);
+	SplitComboer(ActorParams *ap);
+	//SplitComboer(sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop,
+	//	int p_level);
 	~SplitComboer();
 
 	SplitPiece *pieces[2];
@@ -79,7 +80,8 @@ struct SplitComboer : Enemy
 	Action action;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
-	sf::Vector2i *path; //global
+	std::vector<sf::Vector2i> path;
+	//sf::Vector2i *path; //global
 	int pathLength;
 	bool loop;
 	int targetNode;

@@ -43,6 +43,11 @@ int ActorParams::GetWorld()
 	return type->info.world;
 }
 
+int ActorParams::GetLevel()
+{
+	return enemyLevel;
+}
+
 
 ActorParams::ActorParams(ActorType *at)
 	:ISelectable(ISelectable::ACTOR), boundingQuad(sf::Quads, 4),
@@ -136,7 +141,7 @@ void ActorParams::WritePath(std::ofstream &of)
 {
 	of << localPath.size() << endl;
 
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	for (auto it = localPath.begin(); it != localPath.end(); ++it)
 	{
 		of << (*it).x << " " << (*it).y << endl;
 	}
@@ -147,7 +152,7 @@ void ActorParams::WriteLoop(std::ofstream &of)
 	WriteBool(of, loop);
 }
 
-void ActorParams::SetPath(std::list<sf::Vector2i> &globalPath)
+void ActorParams::SetPath(std::vector<sf::Vector2i> &globalPath)
 {
 	if (lines != NULL)
 	{
@@ -166,7 +171,7 @@ void ActorParams::SetPath(std::list<sf::Vector2i> &globalPath)
 		li[0].color = Color::Magenta;
 
 		int index = 1;
-		list<Vector2i>::iterator it = globalPath.begin();
+		auto it = globalPath.begin();
 		++it;
 
 		Vector2i myIntPos = GetIntPos();
@@ -181,12 +186,15 @@ void ActorParams::SetPath(std::list<sf::Vector2i> &globalPath)
 	}
 }
 
-std::list<sf::Vector2i> ActorParams::GetGlobalPath()
+//includes the start position for some reason
+std::vector<sf::Vector2i> ActorParams::MakeGlobalPath()
 {
-	list<Vector2i> globalPath;
+	vector<Vector2i> globalPath;
 	Vector2i myIntPos = GetIntPos();
+
+	globalPath.reserve(localPath.size() + 1);
 	globalPath.push_back(myIntPos);
-	for (list<Vector2i>::iterator it = localPath.begin(); it != localPath.end(); ++it)
+	for (auto it = localPath.begin(); it != localPath.end(); ++it)
 	{
 		globalPath.push_back(myIntPos + (*it));
 	}
@@ -269,11 +277,13 @@ void ActorParams::LoadAerial(std::ifstream &is)
 
 void ActorParams::LoadGlobalPath(ifstream &is)
 {
-	list<Vector2i> globalPath;
+	vector<Vector2i> globalPath;
 	int pathLength;
 	is >> pathLength;
 
 	Vector2i myIntPos = GetIntPos();
+
+	globalPath.reserve(pathLength + 1);
 	globalPath.push_back(myIntPos);
 
 	for (int i = 0; i < pathLength; ++i)
@@ -657,7 +667,17 @@ Vector2i ActorParams::GetGlobalPathPos(int index)
 	assert(index >= 0 && index < localPath.size());
 	return localPath[index] + GetIntPos();
 }
-Vector2i ActorParams::GetLocalPathPos(int index);
+
+Vector2i ActorParams::GetLocalPathPos(int index)
+{
+	assert(index >= 0 && index < localPath.size());
+	return localPath[index];
+}
+
+std::vector<sf::Vector2i> & ActorParams::GetLocalPath()
+{
+	return localPath;
+}
 
 void ActorParams::SetBoundingQuad()
 {

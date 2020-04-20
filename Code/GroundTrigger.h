@@ -37,9 +37,10 @@ struct GroundTrigger : Enemy
 
 	GameSession *game;
 
-	GroundTrigger(Edge *ground, double quantity, 
-		bool facingRight,
-		const std::string &trigTypeStr );
+	GroundTrigger(ActorParams *ap);
+		//Edge *ground, double quantity, 
+		//bool facingRight,
+		//const std::string &trigTypeStr );
 	~GroundTrigger();
 	void ProcessState();
 	void DirectKill();

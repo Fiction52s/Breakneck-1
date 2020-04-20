@@ -343,7 +343,7 @@ struct RaceFightTargetParams : public ActorParams
 
 struct BlockerParams : public ActorParams
 {
-	enum BlockerType
+	/*enum BlockerType
 	{
 		NORMAL,
 		BLUE,
@@ -353,11 +353,11 @@ struct BlockerParams : public ActorParams
 		RED,
 		MAGENTA,
 		BLACK
-	};
+	};*/
 
 	BlockerParams(ActorType *at,
 		sf::Vector2i pos,
-		std::list<sf::Vector2i> &globalPath,
+		std::vector<sf::Vector2i> &globalPath,
 		int bType, bool invinc, int spacing,
 		int level);
 	BlockerParams(ActorType *at,
@@ -376,7 +376,7 @@ struct BlockerParams : public ActorParams
 	bool armored;
 	int spacing;
 
-	BlockerType bType;
+	int bType;
 	//will have multiple types
 };
 
@@ -386,7 +386,7 @@ struct ComboerParams : public ActorParams
 {
 	ComboerParams(ActorType *at,
 		sf::Vector2i pos,
-		std::list<sf::Vector2i> &globalPath,
+		std::vector<sf::Vector2i> &globalPath,
 		float speed,
 		bool loop);
 	ComboerParams(ActorType *at,
@@ -429,7 +429,7 @@ struct SpringParams : public ActorParams
 {
 	SpringParams(ActorType *at,
 		sf::Vector2i &pos,
-		std::list<sf::Vector2i> &globalPath,
+		std::vector<sf::Vector2i> &globalPath,
 		int moveFrames);
 	SpringParams(ActorType *at,
 		sf::Vector2i &pos);
@@ -437,21 +437,21 @@ struct SpringParams : public ActorParams
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
-	void SetPath(std::list<sf::Vector2i> &globalPath);
+	void SetPath(std::vector<sf::Vector2i> &globalPath);
 	
 	ActorParams *Copy();
 
 	void SetParams();
 	void SetPanelInfo();
 
-	int moveFrames;
+	int speed;
 };
 
 struct PatrollerParams : public ActorParams
 {
 	PatrollerParams(ActorType *at,
 		sf::Vector2i pos,
-		std::list<sf::Vector2i> &globalPath,
+		std::vector<sf::Vector2i> &globalPath,
 		float speed,
 		bool loop);
 	PatrollerParams(ActorType *at,
@@ -605,7 +605,7 @@ struct BatParams : public ActorParams
 {
 	BatParams(ActorType *at,
 		sf::Vector2i pos,
-		std::list<sf::Vector2i> &globalPath,
+		std::vector<sf::Vector2i> &globalPath,
 		int framesBetween,
 		//int nodeDistance,
 		int bulletSpeed,
@@ -787,7 +787,7 @@ struct GravitySpringParams: public ActorParams
 {
 	GravitySpringParams(ActorType *at,
 		sf::Vector2i &pos,
-		std::list<sf::Vector2i> &globalPath,
+		std::vector<sf::Vector2i> &globalPath,
 		int speed);
 	GravitySpringParams(ActorType *at,
 		sf::Vector2i &pos);
@@ -795,7 +795,7 @@ struct GravitySpringParams: public ActorParams
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
+		std::vector<sf::Vector2i> &globalPath);
 	void Draw(sf::RenderTarget *target);
 
 	
@@ -814,14 +814,14 @@ struct BounceSpringParams : public ActorParams
 {
 	BounceSpringParams(ActorType *at,
 		sf::Vector2i &pos,
-		std::list<sf::Vector2i> &globalPath);
+		std::vector<sf::Vector2i> &globalPath);
 	BounceSpringParams(ActorType *at,
 		sf::Vector2i &pos);
 	BounceSpringParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
+		std::vector<sf::Vector2i> &globalPath);
 	void Draw(sf::RenderTarget *target);
 
 
@@ -856,7 +856,7 @@ struct PulserParams : public ActorParams
 {
 	PulserParams(ActorType *at,
 		sf::Vector2i &pos,
-		std::list<sf::Vector2i> &globalPath,
+		std::vector<sf::Vector2i> &globalPath,
 		int framesBetween,
 		bool loop);
 	PulserParams(ActorType *at,
@@ -973,14 +973,14 @@ struct TeleporterParams : public ActorParams
 {
 	TeleporterParams(ActorType *at,
 		sf::Vector2i &pos,
-		std::list<sf::Vector2i> &globalPath);
+		std::vector<sf::Vector2i> &globalPath);
 	TeleporterParams(ActorType *at,
 		sf::Vector2i &pos);
 	TeleporterParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void SetPath(
-		std::list<sf::Vector2i> &globalPath);
+		std::vector<sf::Vector2i> &globalPath);
 	void Draw(sf::RenderTarget *target);
 
 	ActorParams *Copy();
@@ -1076,7 +1076,7 @@ struct RailParams : public ActorParams
 {
 	RailParams(ActorType *at,
 		sf::Vector2i pos,
-		std::list<sf::Vector2i> &globalPath,
+		std::vector<sf::Vector2i> &globalPath,
 		bool p_accelerate, int p_level );
 	RailParams(ActorType *at,
 		sf::Vector2i &pos);

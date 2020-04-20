@@ -394,7 +394,7 @@ ActorParams *BossTigerParams::Copy()
 	return copy;
 }
 
-RailParams::RailParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i> &globalPath,
+RailParams::RailParams(ActorType *at, sf::Vector2i pos, vector<sf::Vector2i> &globalPath,
 	bool p_accelerate, int p_level )
 	:ActorParams(at)
 {
@@ -448,7 +448,7 @@ void RailParams::SetPanelInfo()
 	p->checkBoxes["accelerate"]->checked = accelerate;
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 }
 
 void RailParams::Draw(sf::RenderTarget *target)
@@ -490,7 +490,7 @@ ActorParams *RailParams::Copy()
 	return rp;
 }
 
-TeleporterParams::TeleporterParams(ActorType *at, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath )
+TeleporterParams::TeleporterParams(ActorType *at, sf::Vector2i &pos, std::vector<sf::Vector2i> &globalPath )
 	:ActorParams(at)
 {
 	PlaceAerial(pos);
@@ -511,10 +511,11 @@ TeleporterParams::TeleporterParams(ActorType *at, ifstream &is)
 
 	lines = NULL;
 
-	list<Vector2i> globalPath;
+	vector<Vector2i> globalPath;
 
 	Vector2i intPos = GetIntPos();
 
+	globalPath.reserve(2);
 	globalPath.push_back(intPos);
 	globalPath.push_back(intPos + other);
 	SetPath(globalPath);
@@ -541,7 +542,7 @@ void TeleporterParams::WriteParamFile(std::ofstream &of)
 
 }
 
-void TeleporterParams::SetPath(std::list<sf::Vector2i> &globalPath)
+void TeleporterParams::SetPath(std::vector<sf::Vector2i> &globalPath)
 {
 	ActorParams::SetPath(globalPath);
 	if (globalPath.size() > 1)
@@ -572,7 +573,7 @@ void TeleporterParams::SetPanelInfo()
 	}
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 }
 
 ActorParams *TeleporterParams::Copy()

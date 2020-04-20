@@ -11,7 +11,7 @@ using namespace sf;
 
 
 BasicEffect::BasicEffect ()
-	:Enemy( EnemyType::EN_BASICEFFECT, false, 0, false )
+	:Enemy( EnemyType::EN_BASICEFFECT, NULL )//, false, 0, false )
 {
 	spawned = true;
 	pauseImmune = false;
@@ -23,7 +23,7 @@ BasicEffect::BasicEffect ()
 }
 
 BasicEffect::BasicEffect(BasicEffect &be)
-	:Enemy( EnemyType::EN_BASICEFFECT, false, 0, false )
+	:Enemy( EnemyType::EN_BASICEFFECT, NULL)//, false, 0, false )
 {
 	depth = be.depth;
 	frameCount = be.frameCount;

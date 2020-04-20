@@ -11,10 +11,11 @@ using namespace std;
 using namespace sf;
 
 
-Nexus::Nexus(Edge *g, double q)
-	:Enemy(EnemyType::EN_NEXUS, false, 0, false),
-	ground(g), edgeQuantity(q), dead(false)
+Nexus::Nexus( ActorParams *ap)
+	:Enemy(EnemyType::EN_NEXUS, ap )
 {
+	ground = startPosInfo.GetEdge();
+	edgeQuantity = startPosInfo.GetQuant();
 	double width;
 	double height;
 
@@ -87,13 +88,13 @@ Nexus::Nexus(Edge *g, double q)
 	miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height);
 
 
-	V2d gPoint = g->GetPosition(edgeQuantity);
+	V2d gPoint = ground->GetPosition(edgeQuantity);
 
 	nexSprite.setPosition(Vector2f(gPoint));
 
-	gn = g->Normal();
+	gn = ground->Normal();
 	angle = atan2(gn.x, -gn.y);
-	V2d along = g->Along();
+	V2d along = ground->Along();
 
 	position = gPoint + gn * (906.0 - 600.0) + along * (575.0 - 648.0);  //height + V2d( 648-575, 453-550);// / 2.0;
 

@@ -17,8 +17,8 @@ struct Shroom : Enemy
 	int actionLength[HITTING + 1];
 	int animFactor[HITTING + 1];
 
-	Shroom(bool hasMonitor,
-		Edge *ground, double quantity, int level);
+	Shroom(ActorParams * ap);/*bool hasMonitor,
+		Edge *ground, double quantity, int level);*/
 	~Shroom();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
@@ -68,7 +68,7 @@ struct ShroomJelly : Enemy
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 
-	ShroomJelly(V2d &pos,
+	ShroomJelly(ActorParams *ap, V2d &pos,
 		int level );
 	~ShroomJelly();
 	void EnemyDraw(sf::RenderTarget *target);

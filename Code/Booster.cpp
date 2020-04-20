@@ -19,10 +19,10 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Booster::Booster( Vector2i &pos, int p_level)
-	:Enemy(EnemyType::EN_BOOSTER, false, 1, false), strength( 20 )
+Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
+	:Enemy(EnemyType::EN_BOOSTER, ap), strength( 20 )//, false, 1, false), strength( 20 )
 {
-	level = p_level;
+	level = ap->GetLevel();
 
 	switch (level)
 	{
@@ -42,8 +42,7 @@ Booster::Booster( Vector2i &pos, int p_level)
 	action = NEUTRAL;
 	frame = 0;
 	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+	position = startPosInfo.GetPosition();
 
 
 	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
@@ -59,7 +58,7 @@ Booster::Booster( Vector2i &pos, int p_level)
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos.x, pos.y);
+	sprite.setPosition(position.x, position.y);
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius, position);

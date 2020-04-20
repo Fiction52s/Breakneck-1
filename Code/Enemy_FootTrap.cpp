@@ -18,9 +18,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-FootTrap::FootTrap( bool p_hasMonitor, Edge *g, double q )
-		:Enemy( EnemyType::EN_FOOTTRAP, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
+FootTrap::FootTrap( ActorParams *ap)//bool p_hasMonitor, Edge *g, double q )
+		:Enemy( EnemyType::EN_FOOTTRAP, ap)//, p_hasMonitor, 1 ), ground( g ), edgeQuantity( q )
 {
+
+
 	action = LATENT;
 
 	double height = 128;

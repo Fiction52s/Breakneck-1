@@ -66,6 +66,10 @@ struct FlowerPod : Enemy, RayCastHandler
 		SEESHARDS,
 	};
 
+	FlowerPod(ActorParams *ap);//const std::string &podType,
+		//Edge *ground, double quantity);
+	~FlowerPod();
+
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 
@@ -83,9 +87,7 @@ struct FlowerPod : Enemy, RayCastHandler
 	V2d camPosition;
 	PodType podType;
 	Action action;
-	FlowerPod( const std::string &podType,
-		Edge *ground, double quantity);
-	~FlowerPod();
+	
 	void ProcessState();
 	void ActionEnded();
 	void UpdateEnemyPhysics();

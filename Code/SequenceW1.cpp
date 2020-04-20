@@ -265,8 +265,13 @@ void CrawlerAttackSeq::AddGroups()
 void CrawlerAttackSeq::AddEnemies()
 {
 	PoiInfo *surface = points["crawlersurface"];
-	queen = new CrawlerQueen(surface->edge, surface->edgeQuantity, false);
-	AddEnemy("queen", queen);
+
+	//hard to spawn the queen here now...
+
+	//BossCrawlerParams bcParams( owner->types["bosscrawler"], surface->edge)
+
+	//queen = new CrawlerQueen(surface->edge, surface->edgeQuantity, false);
+	//AddEnemy("queen", queen);
 }
 
 void CrawlerAttackSeq::AddFlashes()

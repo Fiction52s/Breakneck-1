@@ -20,11 +20,15 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-BasicTurret::BasicTurret(bool p_hasMonitor, Edge *g, double q, int p_level )
-		:Enemy( EnemyType::EN_BASICTURRET, p_hasMonitor, 1 ), firingCounter( 0 ), ground( g ),
-		edgeQuantity( q )
+BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_level )
+		:Enemy( EnemyType::EN_BASICTURRET, ap )//, p_hasMonitor, 1 ), firingCounter( 0 ), ground( g ),
+		//edgeQuantity( q )
 {
-	level = p_level;
+	firingCounter = 0;
+	ground = startPosInfo.GetEdge();
+	edgeQuantity = startPosInfo.GetQuant();
+
+	level = ap->GetLevel();
 
 	switch (level)
 	{
@@ -57,8 +61,8 @@ BasicTurret::BasicTurret(bool p_hasMonitor, Edge *g, double q, int p_level )
 	width *= scale;
 	height *= scale;
 
-	V2d gPoint = g->GetPosition(edgeQuantity);
-	gn = g->Normal();
+	V2d gPoint = ground->GetPosition(edgeQuantity);
+	gn = ground->Normal();
 	angle = atan2(gn.x, -gn.y);
 
 	position = gPoint + gn * (height / 2.f - 30 * scale);

@@ -19,10 +19,11 @@ using namespace sf;
 //}
 
 
-Patroller::Patroller(bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
-	:Enemy( EnemyType::EN_PATROLLER, p_hasMonitor, 1 )
+Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
+	:Enemy( EnemyType::EN_PATROLLER, ap )//, p_hasMonitor, 1 )
 {
-	level = p_level;
+	level = ap->GetLevel();//p_level;
+	position = ap->GetPosition();
 
 	switch (level)
 	{
@@ -42,30 +43,16 @@ Patroller::Patroller(bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam,
 	eye = new PatrollerEye(this);
 	
 	action = S_FLAP;
-	//receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
-	eye->SetPosition(Vector2f(pos));
 
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
+	eye->SetPosition(Vector2f(position));
+
+	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2 );
 	
 	shootSound = sess->GetSound("Enemies/patroller_shoot");
 
-	pathLength = pathParam.size() + 1;
-	//cout << "pathLength: " << pathLength << endl;
-	path = new Vector2i[pathLength];
-	path[0] = pos;
+	path = ap->MakeGlobalPath();
 
-	int index = 1;
-	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
-	{
-		path[index] = (*it) + pos;
-		++index;
-		//path.push_back( (*it) );
-
-	}
-
-	loop = loopP;
+	loop = ap->loop;
 	
 	//eventually maybe put this on a multiplier for more variation?
 	//doubt ill need it though
@@ -145,7 +132,6 @@ Patroller::Patroller(bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam,
 Patroller::~Patroller()
 {
 	delete eye;
-	delete []path;
 }
 
 void Patroller::ResetEnemy()

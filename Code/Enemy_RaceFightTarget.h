@@ -17,7 +17,7 @@ struct RaceFightTarget : Enemy
 
 	
 	
-	RaceFightTarget(sf::Vector2i &pos);
+	RaceFightTarget(ActorParams *ap);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);

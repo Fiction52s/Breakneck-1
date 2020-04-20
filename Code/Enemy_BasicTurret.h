@@ -15,8 +15,8 @@ struct BasicTurret : Enemy, LauncherEnemy
 		ATTACK,
 	};
 
-	BasicTurret(bool hasMonitor, Edge *ground, double quantity,
-		int level );
+	BasicTurret(ActorParams *ap);//bool hasMonitor, Edge *ground, double quantity,
+		//int level );
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

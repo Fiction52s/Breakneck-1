@@ -58,6 +58,12 @@ struct Shard : Enemy
 		LAUNCH,
 		Count
 	};
+
+	Shard(ActorParams *ap);//sf::Vector2i pos,
+		//int w, int li);
+	~Shard();
+
+
 	ShapeEmitter *testEmitter;
 	MovingGeoGroup geoGroup;
 
@@ -80,9 +86,7 @@ struct Shard : Enemy
 
 	Action action;
 	//MovementSequence testSeq;
-	Shard(sf::Vector2i pos, 
-		int w, int li);
-	~Shard();
+	
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
@@ -96,7 +100,6 @@ struct Shard : Enemy
 	Tileset *ts_sparkle;
 	EffectPool *sparklePool;
 	Tileset *ts_explodeCreate;
-	V2d startPos;
 	V2d rootPos;
 	int radius;
 
@@ -109,7 +112,7 @@ struct Shard : Enemy
 	int totalFrame;
 
 	GameSession *game;
-	int world;
+	int shardWorld;
 	int localIndex;
 
 private:

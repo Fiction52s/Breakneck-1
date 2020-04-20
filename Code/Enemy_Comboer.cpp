@@ -14,11 +14,11 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Comboer::Comboer(Vector2i pos, list<Vector2i> &pathParam, bool loopP, 
-	int p_level)
-	:Enemy(EnemyType::EN_COMBOER, false, 1, false)
+Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, bool loopP, 
+	//int p_level)
+	:Enemy(EnemyType::EN_COMBOER, ap )//, false, 1, false)
 {
-	level = p_level;
+	level = ap->GetLevel();
 
 	switch (level)
 	{
@@ -37,26 +37,13 @@ Comboer::Comboer(Vector2i pos, list<Vector2i> &pathParam, bool loopP,
 
 	action = S_FLOAT;
 	//receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+	position = ap->GetPosition();
 
-	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
+	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
 
-	pathLength = pathParam.size() + 1;
-	//cout << "pathLength: " << pathLength << endl;
-	path = new Vector2i[pathLength];
-	path[0] = pos;
+	loop = ap->loop;
 
-	int index = 1;
-	for (list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it)
-	{
-		path[index] = (*it) + pos;
-		++index;
-		//path.push_back( (*it) );
-
-	}
-
-	loop = loopP;
+	path = ap->MakeGlobalPath();
 
 	//eventually maybe put this on a multiplier for more variation?
 	//doubt ill need it though
@@ -69,7 +56,7 @@ Comboer::Comboer(Vector2i pos, list<Vector2i> &pathParam, bool loopP,
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos.x, pos.y);
+	sprite.setPosition(position.x, position.y);
 
 
 	hitboxInfo = new HitboxInfo;
@@ -137,31 +124,7 @@ Comboer::Comboer(Vector2i pos, list<Vector2i> &pathParam, bool loopP,
 
 Comboer::~Comboer()
 {
-	delete[] path;
 }
-//Comboer::Comboer(GameSession *owner, std::ifstream &is)
-//{
-//	int xPos, yPos;
-//
-//	is >> xPos;
-//	is >> yPos;
-//
-//	int hasMonitor;
-//	is >> hasMonitor;
-//
-//	int pathLength;
-//	list<Vector2i> localPath;
-//	ReadPath(is, pathLength, localPath);
-//
-//	bool loop;
-//	ReadBool(is, loop);
-//
-//	int speed;
-//	is >> speed;
-//
-//	//Airdasher *enemy = new Airdasher(this, hasMonitor, Vector2i(xPos, yPos));
-//	Comboer *enemy = new Comboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, speed, Comboer::ComboerType::T_STRAIGHT);
-//}
 
 void Comboer::ResetEnemy()
 {

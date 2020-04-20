@@ -283,7 +283,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool LoadGates(std::ifstream &is);
 	bool LoadEnemies(std::ifstream &is);
 	bool LoadRails(std::ifstream &is);
-	void LoadEnemy(std::ifstream &is);
+	//void LoadEnemy(std::ifstream &is);
 	Edge *LoadEdgeIndex(std::ifstream &is);
 	void LoadEdgeInfo(std::ifstream &is,
 		Edge *&edge, double &edgeQuant);

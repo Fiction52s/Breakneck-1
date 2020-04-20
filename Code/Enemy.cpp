@@ -175,8 +175,17 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	suppressMonitor(false), ts_hitSpack(NULL),
 	hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
-	hasMonitor = ap->hasMonitor;
-	world = ap->GetWorld();
+	startPosInfo = ap->posInfo;
+	if (ap != NULL)
+	{
+		hasMonitor = ap->hasMonitor;
+		world = ap->GetWorld();
+	}
+	else
+	{
+		hasMonitor = false;
+		world = 0;
+	}
 
 	sess = Session::GetSession();
 
@@ -389,10 +398,11 @@ Enemy::~Enemy()
 }
 
 bool Enemy::ReadPath(std::ifstream &is,
-	int &pLen, std::list<Vector2i> &localPath)
+	int &pLen, std::vector<Vector2i> &localPath)
 {
 	is >> pLen;
 
+	localPath.reserve(pLen);
 	for (int i = 0; i < pLen; ++i)
 	{
 		int localX, localY;

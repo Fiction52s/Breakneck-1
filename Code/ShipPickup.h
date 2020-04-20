@@ -17,8 +17,7 @@ struct ShipPickup : Enemy
 	int actionLength[Count];
 	int animFactor[Count];
 
-	ShipPickup(Edge *ground, double quantity,
-		bool facingRight );
+	ShipPickup(ActorParams *ap);
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target );

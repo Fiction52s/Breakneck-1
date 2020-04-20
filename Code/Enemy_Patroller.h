@@ -20,8 +20,8 @@ struct Patroller : Enemy, LauncherEnemy
 
 	//static Enemy *Create(ActorParams *ap);
 
-	Patroller(bool hasMonitor,
-		sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
+	Patroller(ActorParams *ap);//bool hasMonitor,
+		//sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
 	~Patroller();
 	
 
@@ -57,7 +57,8 @@ struct Patroller : Enemy, LauncherEnemy
 	int fireCounter;
 	int actionLength[S_Count];
 	int animFactor[S_Count];
-	sf::Vector2i *path; //global
+	std::vector<sf::Vector2i> path;
+	//sf::Vector2i *path; //global
 	int pathLength;
 	bool loop;
 	int targetNode;

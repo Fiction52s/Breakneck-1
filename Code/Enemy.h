@@ -73,12 +73,13 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Enemy(EnemyType t, ActorParams *ap);
 	virtual ~Enemy();
 	
+	virtual void InitOnRespawn() {}
 	virtual void SetupResources() {}
 	virtual void SetupDebugResources() {}
 	static bool ReadBool(std::ifstream &is,
 		bool &b);
 	static bool ReadPath(std::ifstream &is,
-		int &pLen, std::list<sf::Vector2i> &localPath);
+		int &pLen, std::vector<sf::Vector2i> &localPath);
 	virtual void UpdatePreLauncherPhysics() {}
 	CuttableObject *cutObject;
 	Launcher **launchers;

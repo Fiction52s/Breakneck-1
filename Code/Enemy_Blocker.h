@@ -24,7 +24,8 @@ struct Blocker : Enemy, QuadTreeEntrant
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	bool IsFastDying();
 	void ProcessState();
-	Blocker(BlockerChain *bc, sf::Vector2i &pos, int index);
+	Blocker( ActorParams *ap, 
+		BlockerChain *bc, sf::Vector2i &pos, int index);
 	void DrawMinimap(sf::RenderTarget *target);
 	void ClearSprite();
 	void UpdateSprite();
@@ -51,7 +52,7 @@ struct Blocker : Enemy, QuadTreeEntrant
 
 struct BlockerChain : Enemy
 {
-	enum BlockerType
+	enum BlockerType : int
 	{
 		BLUE,
 		GREEN,
@@ -63,10 +64,10 @@ struct BlockerChain : Enemy
 
 	sf::Vertex *va;
 	CircleGroup *circleGroup;
-	BlockerChain(sf::Vector2i &pos, 
-		std::list<sf::Vector2i> &path,
-		int bType, bool armored, int spacing,
-		int level );
+	BlockerChain(ActorParams *ap);//sf::Vector2i &pos, 
+		//std::list<sf::Vector2i> &path,
+		//int bType, bool armored, int spacing,
+		//int level );
 	~BlockerChain();
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);

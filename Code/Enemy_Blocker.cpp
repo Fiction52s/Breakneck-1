@@ -16,12 +16,15 @@ using namespace sf;
 
 
 
-BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType, bool p_armored,
-	int spacing, int p_level )
-	:Enemy(EnemyType::EN_BLOCKERCHAIN, false, 1, false)
+BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pathParam, int p_bType, bool p_armored,
+	//int spacing, int p_level )
+	:Enemy(EnemyType::EN_BLOCKERCHAIN, ap )//, false, 1, false)
 {
-	level = p_level;
+	BlockerParams *bParams = (BlockerParams*)ap;
 
+	level = ap->GetLevel();
+
+	
 
 	switch (level)
 	{
@@ -36,11 +39,10 @@ BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType
 		break;
 	}
 
-	bType = (BlockerType)p_bType;
-	armored = p_armored;
+	bType = (BlockerType)(bParams->bType);
+	armored = bParams->armored;
 	//receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+	position = startPosInfo.GetPosition();
 
 	frame = 0;
 
@@ -63,9 +65,11 @@ BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType
 
 	dead = false;
 	double totalLength = 0;
-	double dist = minDistance + (double)spacing;
+	double dist = minDistance + (double)bParams->spacing;
 
-	int pathSize = pathParam.size();
+	int pathSize = ap->localPath.size();//pathParam.size();
+
+
 
 	if (pathSize == 0)
 	{
@@ -76,9 +80,9 @@ BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType
 		V2d prev = position;;
 		V2d temp;
 		int i = 0;
-		for (auto it = pathParam.begin(); it != pathParam.end(); ++it)
+		for (auto it = ap->localPath.begin(); it != ap->localPath.end(); ++it)
 		{
-			temp = V2d((*it).x + pos.x, (*it).y + pos.y);
+			temp = V2d((*it).x + position.x, (*it).y + position.y);
 			totalLength += length( temp - prev);
 			prev = temp;
 		}
@@ -102,15 +106,11 @@ BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType
 
 		}
 
-		pathParam.push_front(Vector2i(0, 0));
+		vector<Vector2i> path = ap->MakeGlobalPath();
 
-		for (auto it = pathParam.begin(); it != pathParam.end(); ++it)
-		{
-			(*it) += pos;
-		}
 
 		//
-		auto currPoint = pathParam.begin();
+		auto currPoint = path.begin();
 		++currPoint;
 		auto nextPoint = currPoint;
 		--currPoint;
@@ -129,7 +129,7 @@ BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType
 			if (ind == numBlockers)
 				break;
 			assert(ind < numBlockers);
-			blockers[ind] = new Blocker(this, Vector2i(round(currWalk.x), round(currWalk.y)), ind);
+			blockers[ind] = new Blocker( ap, this, Vector2i(round(currWalk.x), round(currWalk.y)), ind);
 			cout << blockers[ind]->position.x << ", " << blockers[ind]->position.y << endl;
 			travel = dist;
 
@@ -141,7 +141,7 @@ BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType
 				currPoint = nextPoint;
 				currWalk = nextD;
 				nextPoint++;
-				if (nextPoint == pathParam.end())
+				if (nextPoint == path.end())
 				{
 					end = true;
 					break;
@@ -208,7 +208,7 @@ BlockerChain::BlockerChain(Vector2i &pos, list<Vector2i> &pathParam, int p_bType
 	}
 	else
 	{
-		blockers[0] = new Blocker(this, Vector2i(round(pos.x), round(pos.y)), 0);
+		blockers[0] = new Blocker( ap, this, Vector2i(round(position.x), round(position.y)), 0);
 	}
 	int minX = blockers[0]->spawnRect.left;
 	int maxX = blockers[0]->spawnRect.left + blockers[0]->spawnRect.width;
@@ -347,8 +347,9 @@ V2d BlockerChain::GetCamPoint(int index)
 	return blockers[index]->position;
 }
 
-Blocker::Blocker(BlockerChain *p_bc, Vector2i &pos, int index)
-	:Enemy( EnemyType::EN_BLOCKER, false, 1, false), bc(p_bc), vaIndex(index)
+Blocker::Blocker( ActorParams *ap, BlockerChain *p_bc, Vector2i &pos, int index)
+	:Enemy( EnemyType::EN_BLOCKER, ap ),//false, 1, false), 
+	bc(p_bc), vaIndex(index)
 {
 	level = bc->level;
 

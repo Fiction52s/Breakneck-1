@@ -15,10 +15,16 @@
 using namespace std;
 using namespace sf;
 
-FlowerPod::FlowerPod(const std::string &typeStr, Edge *g, double q)
-	:Enemy(EnemyType::EN_FLOWERPOD, false, 0, false), ground(g),
-	edgeQuantity(q)
+FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, double q)
+	:Enemy(EnemyType::EN_FLOWERPOD, ap )//, false, 0, false), ground(g),
+	//edgeQuantity(q)
 {
+	ground = startPosInfo.GetEdge();
+	edgeQuantity = startPosInfo.GetQuant();
+
+
+	FlowerPodParams *fpParams = (FlowerPodParams*)ap;
+
 	if (sess->IsSessTypeGame())
 	{
 		game = GameSession::GetSession();
@@ -34,12 +40,12 @@ FlowerPod::FlowerPod(const std::string &typeStr, Edge *g, double q)
 	double width = 128; //112;
 	double height = 128;
 
-	V2d gPoint = g->GetPosition(edgeQuantity);
+	V2d gPoint = ground->GetPosition(edgeQuantity);
 	sprite.setPosition(gPoint.x, gPoint.y);
 
-	V2d gn = g->Normal();
+	V2d gn = ground->Normal();
 
-	V2d gAlong = normalize(g->v1 - g->v0);
+	V2d gAlong = ground->Along();//normalize(g->v1 - g->v0);
 
 	camPosition = gPoint + gn * (height + 0.0);
 
@@ -52,7 +58,7 @@ FlowerPod::FlowerPod(const std::string &typeStr, Edge *g, double q)
 	
 
 	//podType = GetType(typeStr);
-	broadcast = new MomentaBroadcast( this, typeStr);
+	broadcast = new MomentaBroadcast( this, fpParams->typeStr);
 	/*switch (podType)
 	{
 	case SEESHARDS:
@@ -316,6 +322,10 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	//textDisp->SetTopLeft(Vector2f(1920 - textDisp->rectSize.x - 350, 50));
 
 	bType = GetType(btypeStr);
+
+	ShardParams sp(pod->sess->types["shard"], Vector2i(pod->position));
+	sp.world = 0;
+	sp.localIndex = 0;
 	
 	switch (bType)
 	{
@@ -331,7 +341,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 		//{
 		//	imageLength[i] = 4000;
 		//}
-		givenShard = new Shard(Vector2i(pod->position.x, pod->position.y), 0, 0);
+		givenShard = new Shard(&sp);
 		/*imageLength[0] = 4000;
 		imageLength[1] = 4000;
 		imageLength[2] = 4000;

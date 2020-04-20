@@ -8454,7 +8454,7 @@ void EditSession::DrawPatrolPathInProgress()
 		{
 			VertexArray v(sf::LinesStrip, pathSize);
 			int i = 0;
-			for (list<sf::Vector2i>::iterator it = patrolPath.begin();
+			for (auto it = patrolPath.begin();
 				it != patrolPath.end(); ++it)
 			{
 				v[i] = Vertex(Vector2f((*it).x, (*it).y));
@@ -8472,7 +8472,7 @@ void EditSession::DrawPatrolPathInProgress()
 		cs.setFillColor(Color::Green);
 
 
-		for (list<Vector2i>::iterator it = patrolPath.begin(); it != patrolPath.end(); ++it)
+		for (auto it = patrolPath.begin(); it != patrolPath.end(); ++it)
 		{
 			cs.setPosition((*it).x, (*it).y);
 			preScreenTex->draw(cs);

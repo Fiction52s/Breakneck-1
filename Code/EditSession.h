@@ -519,7 +519,7 @@ struct EditSession : GUIHandler, Session
 	void WriteGrass( PolyPtr p, std::ofstream &of );
 	int CountSelectedPoints();
 
-	std::list<sf::Vector2i> patrolPath;
+	std::vector<sf::Vector2i> patrolPath;
 	double minimumPathEdgeLength;
 	
 	bool ConfirmationPop( const std::string &question );

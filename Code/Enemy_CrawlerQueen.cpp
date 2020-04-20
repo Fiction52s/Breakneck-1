@@ -25,9 +25,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-CrawlerQueen::CrawlerQueen(Edge *g, double q, bool cw )
-	:Enemy(EnemyType::EN_CRAWLERQUEEN, false, 1, false), clockwise(cw)
+CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
+	:Enemy(EnemyType::EN_CRAWLERQUEEN, ap )//, false, 1, false), clockwise(cw)
 {
+	BossCrawlerParams *cParams = (BossCrawlerParams*)ap;
+
 	if (sess->IsSessTypeGame())
 	{
 		game = GameSession::GetSession();
@@ -59,8 +61,9 @@ CrawlerQueen::CrawlerQueen(Edge *g, double q, bool cw )
 	
 	highResPhysics = true;
 	redecide = false;
-	origCW = cw;
-	mover = new SurfaceMover(g, q, 80);
+	origCW = false;
+	clockwise = origCW;
+	mover = new SurfaceMover(startPosInfo.GetEdge(), startPosInfo.GetQuant(), 80);
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
 	
@@ -135,7 +138,7 @@ CrawlerQueen::CrawlerQueen(Edge *g, double q, bool cw )
 	sprite.setTexture(*ts[WAIT]->texture);
 	sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = mover->ground->GetPosition(q);
+	V2d gPoint = mover->ground->GetPosition(startPosInfo.GetQuant());
 	sprite.setPosition(gPoint.x, gPoint.y);
 	V2d gNorm = mover->ground->Normal();
 
@@ -164,10 +167,6 @@ CrawlerQueen::CrawlerQueen(Edge *g, double q, bool cw )
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-
-	
-	startGround = g;
-	startQuant = q;
 	frame = 0;
 
 	edgeRef = NULL;
@@ -178,7 +177,7 @@ CrawlerQueen::CrawlerQueen(Edge *g, double q, bool cw )
 	
 	for (int i = 0; i < 100; ++i)
 	{
-		FloatingBomb *fb = new FloatingBomb(bombPool, i );
+		FloatingBomb *fb = new FloatingBomb( ap, bombPool, i );
 		bombPool->AddToInactiveList(fb);
 	}
 
@@ -193,7 +192,7 @@ CrawlerQueen::CrawlerQueen(Edge *g, double q, bool cw )
 	decisions = new Decision[MAX_DECISIONS];
 
 
-
+	ResetEnemy();
 	//ResetEnemy();
 	//ResetEnemy();
 	//frame = actionLength[UNDERGROUND];
@@ -260,12 +259,16 @@ void CrawlerQueen::InitEdgeInfo()
 	int f = 0;
 }
 
+void CrawlerQueen::InitOnRespawn()
+{
+	if (game != NULL && zone != NULL)
+		zone->action = Zone::OPEN;
+}
+
 void CrawlerQueen::ResetEnemy()
 {
-	if (zone != NULL)
-		zone->action = Zone::OPEN;
-
-	seq->Reset();
+	if( seq != NULL )
+		seq->Reset();
 	//storySeq->Reset();
 	ClearDecisionMarkers();
 	decisionPool->DeactivateAll();
@@ -276,8 +279,8 @@ void CrawlerQueen::ResetEnemy()
 	clockwise = origCW;
 	
 	decideIndex = 0;
-	mover->ground = startGround;
-	mover->edgeQuantity = startQuant;
+	mover->ground = startPosInfo.GetEdge();
+	mover->edgeQuantity = startPosInfo.GetQuant();
 	mover->roll = false;
 	mover->UpdateGroundPos();
 	mover->SetSpeed(0);
@@ -285,7 +288,7 @@ void CrawlerQueen::ResetEnemy()
 	position = mover->physBody.globalPosition;
 
 	frame = 0;
-	V2d gPoint = mover->ground->GetPosition(startQuant);
+	V2d gPoint = mover->ground->GetPosition(mover->edgeQuantity);
 	sprite.setPosition(gPoint.x, gPoint.y);
 
 	//position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
@@ -1268,8 +1271,8 @@ void CrawlerQueen::Setup()
 	ResetEnemy();
 }
 
-FloatingBomb::FloatingBomb(ObjectPool *p_myPool, int index)
-	:Enemy(EnemyType::EN_FLOATINGBOMB, false, 1, false),
+FloatingBomb::FloatingBomb( ActorParams *ap, ObjectPool *p_myPool, int index)
+	:Enemy(EnemyType::EN_FLOATINGBOMB, ap ),//, false, 1, false),
 	PoolMember(index), myPool(p_myPool)
 {
 	//preload

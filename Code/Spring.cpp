@@ -77,7 +77,10 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 
 	animationFactor = 10;
 
-	dest = V2d(other + pos );
+	Vector2i other = sParams->GetLocalPathPos(0);
+
+	dest = position + V2d(other);
+	//dest = V2d(other + pos );
 
 	V2d dOther = V2d(other.x, other.y);
 	V2d springVec = normalize(dOther);
@@ -98,7 +101,7 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	}
 	else
 	{
-		speed = p_speed;
+		speed = sParams->speed;
 		stunFrames = ceil(dist / speed);
 	}
 
@@ -122,8 +125,8 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 
 	debugLine[0].color = Color::Red;
 	debugLine[1].color = Color::Red;
-	debugLine[0].position = Vector2f(pos);
-	debugLine[1].position = Vector2f(pos + other);
+	debugLine[0].position = Vector2f(position);
+	debugLine[1].position = Vector2f(dest);
 
 	ResetEnemy();
 }

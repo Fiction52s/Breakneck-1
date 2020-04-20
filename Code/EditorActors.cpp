@@ -287,7 +287,7 @@ Panel *ActorType::CreatePanel()
 
 		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
 
-		p->AddTextBox("moveframes", Vector2i(20, 200), 200, 3, "");
+		p->AddTextBox("speed", Vector2i(20, 200), 200, 3, "");
 	}
 	//w1
 	else if (name == "patroller")

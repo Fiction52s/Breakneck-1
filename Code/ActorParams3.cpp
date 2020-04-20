@@ -23,7 +23,7 @@ using namespace sf;
 
 PulserParams::PulserParams(ActorType *at,
 	sf::Vector2i &pos,
-	std::list<sf::Vector2i> &globalPath, 
+	std::vector<sf::Vector2i> &globalPath, 
 	int p_framesBetweenNodes,
 	bool p_loop )
 	:ActorParams(at )
@@ -156,7 +156,7 @@ void PulserParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 	//p->checkBoxes["monitor"]->checked = false;
 	//EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
@@ -561,7 +561,7 @@ void BossCoyoteParams::Draw( sf::RenderTarget *target )
 	target->draw( debugLines );
 }
 
-BounceSpringParams::BounceSpringParams(ActorType *at, sf::Vector2i &pos, std::list<sf::Vector2i> &globalPath)
+BounceSpringParams::BounceSpringParams(ActorType *at, sf::Vector2i &pos, std::vector<sf::Vector2i> &globalPath)
 	:ActorParams(at)
 {
 	PlaceAerial(pos);
@@ -582,8 +582,9 @@ BounceSpringParams::BounceSpringParams(ActorType *at, ifstream &is)
 
 	lines = NULL;
 
-	list<Vector2i> globalPath;
+	vector<Vector2i> globalPath;
 
+	globalPath.reserve(2);
 	Vector2i intPos = GetIntPos();
 	globalPath.push_back(intPos);
 	globalPath.push_back(intPos + other);
@@ -611,7 +612,7 @@ void BounceSpringParams::WriteParamFile(std::ofstream &of)
 
 }
 
-void BounceSpringParams::SetPath(std::list<sf::Vector2i> &globalPath)
+void BounceSpringParams::SetPath(std::vector<sf::Vector2i> &globalPath)
 {
 	ActorParams::SetPath(globalPath);
 	if (globalPath.size() > 1)
@@ -657,7 +658,7 @@ void BounceSpringParams::SetPanelInfo()
 //	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 

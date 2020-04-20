@@ -624,7 +624,7 @@ ActorParams *RaceFightTargetParams::Copy()
 	return copy;
 }
 
-BlockerParams::BlockerParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i> &globalPath, int p_bType, bool p_armored,
+BlockerParams::BlockerParams(ActorType *at, sf::Vector2i pos, vector<sf::Vector2i> &globalPath, int p_bType, bool p_armored,
 	int p_spacing, int p_level )
 	:ActorParams(at)
 {
@@ -635,7 +635,7 @@ BlockerParams::BlockerParams(ActorType *at, sf::Vector2i pos, list<sf::Vector2i>
 	spacing = p_spacing;
 	SetPath(globalPath);
 
-	bType = (BlockerType)p_bType;
+	bType = p_bType;
 
 	armored = p_armored;
 
@@ -653,7 +653,7 @@ BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 
 	int ibType;
 	is >> ibType;
-	bType = (BlockerType)ibType;
+	bType = ibType;
 
 	LoadBool(is, armored);
 
@@ -670,7 +670,7 @@ BlockerParams::BlockerParams(ActorType *at,
 	PlaceAerial(pos);
 	armored = false;
 
-	bType = NORMAL;
+	bType = 0;
 
 	spacing = 0;
 }
@@ -705,7 +705,7 @@ void BlockerParams::SetParams()
 
 	if (!ss.fail())
 	{
-		bType = (BlockerType)t_type;
+		bType = t_type;
 	}
 
 	hasMonitor = false;
@@ -746,7 +746,7 @@ void BlockerParams::SetPanelInfo()
 	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = GetGlobalPath();
+	edit->patrolPath = MakeGlobalPath();
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -1182,7 +1182,7 @@ void BasicAirEnemyParams::SetPanelInfo()
 	if (pi.writePath)
 	{
 		EditSession *edit = EditSession::GetSession();
-		edit->patrolPath = GetGlobalPath();
+		edit->patrolPath = MakeGlobalPath();
 	}
 
 	if (pi.writeLoop)

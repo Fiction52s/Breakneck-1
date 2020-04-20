@@ -23,17 +23,23 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-GroundTrigger::GroundTrigger(Edge *g, double q, bool p_facingRight,const std::string &trigTypeStr)
-	:Enemy(EnemyType::EN_GROUNDTRIGGER, false, 1), ground(g), edgeQuantity(q),
-	facingRight( p_facingRight )//, trigType( tType )
+GroundTrigger::GroundTrigger(ActorParams*ap)//Edge *g, double q, bool p_facingRight,const std::string &trigTypeStr)
+	:Enemy(EnemyType::EN_GROUNDTRIGGER, ap )//, false, 1), ground(g), edgeQuantity(q),
+	//facingRight( p_facingRight )//, trigType( tType )
 {
-	trigType = GetTriggerType(trigTypeStr);
+	GroundTriggerParams *gtParams = (GroundTriggerParams*)ap;
+
+	ground = startPosInfo.GetEdge();
+	edgeQuantity = startPosInfo.GetQuant();
+	facingRight = gtParams->facingRight;
+	//trigTypeStr = gtParams->typeStr;
+	trigType = GetTriggerType(gtParams->typeStr);
 
 	double height = 128;
 	ts = sess->GetTileset("Ship/shipleave_128x128.png", 128, height);
 	sprite.setTexture(*ts->texture);
 
-	V2d gPoint = g->GetPosition(edgeQuantity);
+	V2d gPoint = ground->GetPosition(edgeQuantity);
 	storySeq = NULL;
 	gameSequence = NULL;
 	game = NULL;
@@ -88,7 +94,7 @@ GroundTrigger::GroundTrigger(Edge *g, double q, bool p_facingRight,const std::st
 
 	receivedHit = NULL;
 
-	V2d gn = g->Normal();
+	V2d gn = ground->Normal();
 	float angle = atan2(gn.x, -gn.y);
 
 	position = gPoint - gn * (height / 2.0 - 10);
