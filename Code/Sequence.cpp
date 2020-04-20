@@ -42,7 +42,7 @@
 using namespace sf;
 using namespace std;
 
-#define TIMESTEP 1.0 / 60.0
+#define TIMESTEP (1.0 / 60.0)
 
 BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::string &name)
 {

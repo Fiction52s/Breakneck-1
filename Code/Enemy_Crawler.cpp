@@ -21,6 +21,10 @@ using namespace sf;
 Crawler::Crawler(ActorParams *ap )
 	:Enemy( EnemyType::EN_CRAWLER, ap ), clockwise( true ), groundSpeed( 5 )
 {
+	SetNumActions(A_Count);
+	editLoopAction = CRAWL;
+
+
 	level = ap->enemyLevel;
 
 	switch (level)
@@ -84,6 +88,14 @@ Crawler::Crawler(ActorParams *ap )
 	double size = max( width, height );
 	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size/ 2, size, size );
 
+	actionLength[UNBURROW] = 20;
+	actionLength[CRAWL] = 35;
+	actionLength[ROLL] = 5;
+	actionLength[DASH] = 7;
+	actionLength[ATTACK] = 6;
+	actionLength[BURROW] = 19;
+	actionLength[UNDERGROUND] = 20;
+
 	animFactor[UNBURROW] = 4;
 	animFactor[CRAWL] = 1;
 	animFactor[ATTACK] = 4;
@@ -113,14 +125,7 @@ Crawler::Crawler(ActorParams *ap )
 
 
 	
-	actionLength[UNBURROW] = 20;
-	actionLength[CRAWL] = 35;
-	actionLength[ROLL] = 5;
-	actionLength[DASH] = 7;
-	actionLength[ATTACK] = 6;
-	actionLength[BURROW] = 19;//3 * crawlAnimationFactor;
-	actionLength[UNDERGROUND] = 20;//3 * crawlAnimationFactor;
-	//actionLength[DYING] = 1;//3 * crawlAnimationFactor;
+	
 
 	//action = UNDERGROUND;
 	//frame = actionLength[UNDERGROUND];

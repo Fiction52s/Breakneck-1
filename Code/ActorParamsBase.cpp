@@ -820,7 +820,7 @@ void ActorParams::AnchorToGround(PolyPtr poly, int edgeIndex, double quantity)
 
 	if (myEnemy != NULL)
 	{
-		myEnemy->UpdateFromEditParams();
+		myEnemy->UpdateFromEditParams(0);
 		myEnemy->UpdateSprite(); //this is just for testing
 	}
 
@@ -838,7 +838,7 @@ void ActorParams::AnchorToGround(PositionInfo &gi)
 
 	if (myEnemy != NULL)
 	{
-		myEnemy->UpdateFromEditParams();
+		myEnemy->UpdateFromEditParams(0);
 		myEnemy->UpdateSprite(); //this is just for testing
 	}
 

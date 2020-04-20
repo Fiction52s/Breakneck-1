@@ -12,7 +12,8 @@ struct Goal : Enemy
 		A_SITTING,
 		A_KINKILLING,
 		A_EXPLODING,
-		A_DESTROYED
+		A_DESTROYED,
+		A_Count
 	};
 
 
@@ -31,7 +32,7 @@ struct Goal : Enemy
 	int explosionAnimFactor;
 	int explosionYOffset;
 	int initialYOffset;
-	Action action;
+
 	sf::Sprite sprite;
 	sf::Sprite miniSprite;
 	Tileset *ts;

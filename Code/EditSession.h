@@ -94,6 +94,8 @@ struct EditSession : GUIHandler, Session
 
 	V2d oldWorldPosTest;
 
+	int spriteUpdateFrames;
+
 	TransformTools *transformTools;
 
 	void UpdateDecorSprites();

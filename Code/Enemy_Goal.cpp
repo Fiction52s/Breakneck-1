@@ -15,6 +15,8 @@ Goal::Goal( ActorParams *ap )
 	:Enemy( EnemyType::EN_GOAL, ap )
 {
 	world = ap->GetWorld();
+	ground = startPosInfo.GetEdge();
+	edgeQuantity = startPosInfo.GetQuant();
 	//world = //sess->mapHeader->envWorldType;
 	//world = ap->GetWorld();
 	double width;

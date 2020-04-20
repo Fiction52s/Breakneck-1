@@ -45,7 +45,7 @@ const double EditSession::SLIVER_LIMIT = PI / 10.0;
 double EditSession::zoomMultiple = 1;
 EditSession * EditSession::currSession = NULL;
 
-#define TIMESTEP 1.0 / 60.0
+#define TIMESTEP (1.0 / 60.0)
 
 void EditSession::UpdateDecorSprites()
 {
@@ -2157,14 +2157,37 @@ int EditSession::Run()
 
 	Vector2f uiMouse;
 
+	sf::Clock gameClock;
+	accumulator = 0;
+	currentTime = 0;
 	while( !quit )
 	{
+		double newTime = gameClock.getElapsedTime().asSeconds();
+		double frameTime = newTime - currentTime;
+		currentTime = newTime;
+
+		accumulator += frameTime;
+		double mult;
+		spriteUpdateFrames = 0;
+		while (accumulator >= TIMESTEP)
+		{
+			mult = floor(accumulator / TIMESTEP);
+			spriteUpdateFrames = mult;
+
+			accumulator -= mult * TIMESTEP;
+		}
+
 		pixelPos = GetPixelPos();
 
 		oldWorldPosTest = worldPos;
 		worldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
-		worldPosGround = ConvertPointToGround( Vector2i( worldPos.x, worldPos.y ) );
-		worldPosRail = ConvertPointToRail(Vector2i(worldPos));
+		//eventually also use this in create enemy mode
+		if (selectedBrush->objects.size() == 1 && selectedBrush->objects.front()->GetAsActor() != NULL)
+		{
+			worldPosGround = ConvertPointToGround(Vector2i(worldPos.x, worldPos.y));
+			worldPosRail = ConvertPointToRail(Vector2i(worldPos));
+		}
+		
 
 		preScreenTex->setView( uiView );
 		uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
@@ -3122,6 +3145,8 @@ bool EditSession::PointSelectActor( V2d &pos )
 
 					(*ait)->SetSelected(true);
 					grabbedObject = (*ait);
+					(*ait)->myEnemy->SetActionEditLoop(); //just for testing
+					//(*ait)->myEnemy->action = (*)
 					selectedBrush->AddObject((*ait));
 				}
 				return true;
@@ -10413,7 +10438,8 @@ void EditSession::EditModeUpdate()
 		a = (*it)->GetAsActor();
 		if (a != NULL)
 		{
-			a->myEnemy->UpdateSprite();
+			a->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
+			//a->myEnemy->UpdateSprite();
 		}
 	}
 

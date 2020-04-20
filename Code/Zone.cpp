@@ -5,7 +5,7 @@
 #include "EditSession.h"
 #include "Minimap.h"
 
-#define TIMESTEP 1.0 / 60.0
+#define TIMESTEP (1.0 / 60.0)
 
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )

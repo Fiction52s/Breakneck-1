@@ -68,7 +68,20 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Session *sess;
 	bool SetHitParams();
 	ActorParams *editParams;
-	virtual void UpdateFromEditParams();
+
+	void SetNumActions( int num );
+	int GetEditIdleLength();
+	void SetActionEditLoop();
+
+	int editLoopAction;
+	int editIdleFrame;
+
+	std::vector<int> actionLength;
+	std::vector<int> animFactor;
+
+	int action;
+
+	virtual void UpdateFromEditParams( int numFrames );
 	//------------
 
 	Enemy(EnemyType t, ActorParams *ap);

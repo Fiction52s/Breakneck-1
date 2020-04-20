@@ -37,7 +37,7 @@ using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
 
-#define TIMESTEP 1.0 / 60.0
+#define TIMESTEP (1.0 / 60.0)
 
 
 const int LoadingMapProgressDisplay::NUM_LOAD_THREADS = 5;

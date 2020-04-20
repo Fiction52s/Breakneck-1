@@ -175,12 +175,16 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	suppressMonitor(false), ts_hitSpack(NULL),
 	hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
+	editLoopAction = 0;
+	editIdleFrame = 0;
+
+
 	
-	startPosInfo = ap->posInfo;
 	if (ap != NULL)
 	{
 		hasMonitor = ap->hasMonitor;
 		world = ap->GetWorld();
+		startPosInfo = ap->posInfo;
 	}
 	else
 	{
@@ -377,9 +381,33 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	hurtShader.setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
 }
 
-void Enemy::UpdateFromEditParams()
+void Enemy::SetActionEditLoop()
 {
+	action = editLoopAction;
+	frame = 0;
+}
 
+void Enemy::UpdateFromEditParams( int numFrames )
+{
+	frame += numFrames;
+	int editLoopLength = GetEditIdleLength();
+	if (frame >= editLoopLength)
+	{
+		frame = frame % editLoopLength;
+	}
+
+	UpdateSprite();
+}
+
+void Enemy::SetNumActions( int num )
+{
+	actionLength.resize(num);
+	animFactor.resize(num);
+}
+
+int Enemy::GetEditIdleLength()
+{
+	return actionLength[editLoopAction] * animFactor[editLoopAction];
 }
 
 Enemy::~Enemy()

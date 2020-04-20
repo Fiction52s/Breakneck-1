@@ -5,7 +5,7 @@
 
 struct Crawler : Enemy, SurfaceMoverHandler
 {
-	enum Action
+	enum Action : int
 	{
 		UNBURROW,
 		DECIDE,
@@ -14,13 +14,14 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		DASH,
 		BURROW,
 		ATTACK,
-		UNDERGROUND
+		UNDERGROUND,
+		A_Count
 	};
 
 	void UpdateFromEditParams();
 
-	int animFactor[UNDERGROUND + 1];
-	int actionLength[UNDERGROUND +1];
+	//int animFactor[UNDERGROUND + 1];
+	//int actionLength[UNDERGROUND +1];
 	Crawler(ActorParams *ap);
 	~Crawler();
 	void SetActionDash();
@@ -67,7 +68,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 
 	SurfaceMover *mover;
 
-	Action action;
+	//Action action;
 	bool clockwise;
 
 	int crawlAnimationFactor;
