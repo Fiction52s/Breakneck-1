@@ -167,7 +167,7 @@ void EditSession::TestPlayerMode()
 
 	currentTime = 0;
 	accumulator = TIMESTEP + .1;
-	mode = TEST_PLAYER;
+	SetMode(TEST_PLAYER);
 	totalGameFrames = 0;
 	gameClock.restart();
 
@@ -293,7 +293,7 @@ void EditSession::TestPlayerMode()
 
 void EditSession::EndTestMode()
 {
-	mode = EDIT;
+	SetMode(EDIT);
 }
 
 void EditSession::UpdatePrePhysics()
@@ -500,6 +500,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 		fullBounds[i].position = Vector2f( 0, 0 );
 	}
 	grabbedObject = NULL;
+	grabbedActor = NULL;
 	zoomMultiple = 1;
 	editMouseDownBox = false;
 	editMouseDownMove = false;
@@ -724,6 +725,12 @@ bool EditSession::IsMousePressed(int m)
 	return mainMenu->IsMousePressed(m);
 }
 
+bool EditSession::IsDrawMode(Emode em)
+{
+	return ((mode == em) || (menuDownStored == em && mode == SELECT_MODE)
+		|| (stored == em && mode == PAUSED));
+}
+
 void EditSession::Draw()
 {
 	preScreenTex->clear();
@@ -746,12 +753,12 @@ void EditSession::Draw()
 	DrawActors();
 	
 
-	if (mode == PASTE)
+	if (IsDrawMode( PASTE ) )
 	{
 		copiedBrush->Draw(preScreenTex);
 	}
 
-	if (mode == TEST_PLAYER)
+	if (IsDrawMode( TEST_PLAYER ))
 	{
 		Enemy *current = activeEnemyList;
 		while (current != NULL)
@@ -773,7 +780,7 @@ void EditSession::Draw()
 		}
 	}
 
-	if (mode == TRANSFORM)
+	if (IsDrawMode(TRANSFORM))
 	{
 		transformTools->Draw(preScreenTex);
 	}
@@ -2134,7 +2141,7 @@ int EditSession::Run()
 
 	//bool s = IsKeyPressed( sf::Keyboard::T );
 
-	mode = EDIT;
+	SetMode(EDIT);
 	stored = mode;
 	bool canCreatePoint = true;
 
@@ -2157,24 +2164,24 @@ int EditSession::Run()
 
 	Vector2f uiMouse;
 
-	sf::Clock gameClock;
-	accumulator = 0;
-	currentTime = 0;
 	while( !quit )
 	{
-		double newTime = gameClock.getElapsedTime().asSeconds();
-		double frameTime = newTime - currentTime;
-		currentTime = newTime;
-
-		accumulator += frameTime;
-		double mult;
-		spriteUpdateFrames = 0;
-		while (accumulator >= TIMESTEP)
+		if (mode == EDIT)
 		{
-			mult = floor(accumulator / TIMESTEP);
-			spriteUpdateFrames = mult;
+			double newTime = editClock.getElapsedTime().asSeconds();
+			double frameTime = newTime - editCurrentTime;
+			editCurrentTime = newTime;
 
-			accumulator -= mult * TIMESTEP;
+			editAccumulator += frameTime;
+			double mult;
+			spriteUpdateFrames = 0;
+			while (editAccumulator >= TIMESTEP)
+			{
+				mult = floor(editAccumulator / TIMESTEP);
+				spriteUpdateFrames = mult;
+
+				editAccumulator -= mult * TIMESTEP;
+			}
 		}
 
 		pixelPos = GetPixelPos();
@@ -2182,7 +2189,7 @@ int EditSession::Run()
 		oldWorldPosTest = worldPos;
 		worldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
 		//eventually also use this in create enemy mode
-		if (selectedBrush->objects.size() == 1 && selectedBrush->objects.front()->GetAsActor() != NULL)
+		if (IsSingleActorSelected())
 		{
 			worldPosGround = ConvertPointToGround(Vector2i(worldPos.x, worldPos.y));
 			worldPosRail = ConvertPointToRail(Vector2i(worldPos));
@@ -2343,7 +2350,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 			showPanel = NULL;
 			
-			mode = CREATE_RECT;
+			SetMode(CREATE_RECT);
 			drawingCreateRect = false;
 		}
 	}
@@ -2367,8 +2374,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 
 			showPanel = NULL;
-
-			mode = SET_CAM_ZOOM;
+			SetMode(SET_CAM_ZOOM);
 		}
 	}
 	else if( p->name == "map_options" )
@@ -2503,7 +2509,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		else if (b->name == "setdirection")
 		{
 			RegularCreatePathButton();
-			mode = SET_DIRECTION;
+			SetMode(SET_DIRECTION);
 		}
 	}
 }
@@ -3133,7 +3139,7 @@ bool EditSession::PointSelectActor( V2d &pos )
 			{
 				if ((*ait)->selected)
 				{
-
+					grabbedActor = (*ait);
 				}
 				else
 				{
@@ -3143,10 +3149,12 @@ bool EditSession::PointSelectActor( V2d &pos )
 						selectedBrush->Clear();
 					}
 
-					(*ait)->SetSelected(true);
-					grabbedObject = (*ait);
+					
+					grabbedActor = (*ait);
+					//grabbedObject = (*ait);
 					(*ait)->myEnemy->SetActionEditLoop(); //just for testing
 					//(*ait)->myEnemy->action = (*)
+					(*ait)->SetSelected(true);
 					selectedBrush->AddObject((*ait));
 				}
 				return true;
@@ -3204,10 +3212,7 @@ bool EditSession::PointSelectDecor(V2d &pos)
 
 bool EditSession::AnchorSelectedAerialEnemy()
 {
-	bool singleActor = selectedBrush->objects.size() == 1
-		&& selectedPoints.size() == 0
-		&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
-	if (singleActor)
+	if (IsSingleActorSelected())
 	{
 		ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
 		if (actor->posInfo.ground != NULL) //might need a thing here for rails too
@@ -3235,6 +3240,9 @@ bool EditSession::AnchorSelectedAerialEnemy()
 
 			return true;
 		}
+
+		//actor->SetSelected(false);
+		//selectedBrush->RemoveObject(actor);
 	}
 	return false;
 }
@@ -3326,7 +3334,7 @@ void EditSession::RegularOKButton()
 
 void EditSession::RegularCreatePathButton()
 {
-	mode = CREATE_PATROL_PATH;
+	SetMode(CREATE_PATROL_PATH);
 	showPanel = NULL;
 	Vector2i front = patrolPath.front();
 	patrolPath.clear();
@@ -7403,11 +7411,39 @@ void EditSession::ModifyGrass()
 void EditSession::SetMode(Emode m)
 {
 	Emode oldMode = mode;
+	if (oldMode == SELECT_MODE)
+	{
+		oldMode = menuDownStored;
+	}
+
 	mode = m;
-	
+
+	switch (oldMode)
+	{
+	case TEST_PLAYER:
+		for (auto it = groups.begin(); it != groups.end(); ++it)
+		{
+			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+			{
+				if ((*enit)->myEnemy != NULL)
+				{
+					(*enit)->myEnemy->Reset();
+					//AddEnemy((*enit)->myEnemy);
+				}
+			}
+		}
+		break;
+	}
+
 	switch (mode)
 	{
-
+	case EDIT:
+	{
+		editClock.restart();
+		editCurrentTime = 0;
+		editAccumulator = TIMESTEP + .1;
+		break;
+	}
 	}
 }
 
@@ -8943,6 +8979,7 @@ void EditSession::HandleEvents()
 					{
 						menuDownStored = mode;
 						mode = SELECT_MODE;
+						//SetMode(SELECT_MODE);
 						menuDownPos = V2d(uiMousePos.x, uiMousePos.y);
 						guiMenuSprite.setPosition(uiMousePos.x, uiMousePos.y);
 					}
@@ -9017,6 +9054,7 @@ void EditSession::HandleEvents()
 			case Event::GainedFocus:
 			{
 				mode = stored;
+				//SetMode(stored);
 				break;
 			}
 			}
@@ -9081,7 +9119,7 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::R)
 		{
-			mode = CREATE_RAILS;
+			SetMode(CREATE_RAILS);
 			railInProgress->CopyPointsFromPoly(polygonInProgress);
 			polygonInProgress->ClearPoints();
 		}
@@ -9160,7 +9198,7 @@ void EditSession::CreateRailsModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::R)
 		{
-			mode = CREATE_TERRAIN;
+			SetMode(CREATE_TERRAIN);
 			railInProgress->ClearPoints();
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
@@ -9284,6 +9322,7 @@ void EditSession::EditModeHandleEvent()
 			editMouseDownBox = false;
 			editMouseDownMove = false;
 			editStartMove = false;
+			grabbedActor = NULL;
 
 			UpdateGrass();
 		}
@@ -9307,14 +9346,14 @@ void EditSession::EditModeHandleEvent()
 
 		if (ev.key.code == Keyboard::Tilde)
 		{
-			mode = SET_LEVEL;
+			SetMode(SET_LEVEL);
 			setLevelCurrent = 1;
 			showPanel = NULL;
 		}
 
 		if (ev.key.code == Keyboard::I && ev.key.control)
 		{
-			mode = CREATE_IMAGES;
+			SetMode(CREATE_IMAGES);
 			currImageTool = ITOOL_EDIT;
 			showPanel = decorPanel;
 		}
@@ -9338,7 +9377,7 @@ void EditSession::EditModeHandleEvent()
 				copiedBrush->CenterOnPoint(pos);// (pos - copiedBrush->GetCenter());
 				editMouseGrabPos = pos;
 				editMouseOrigPos = pos;
-				mode = PASTE;
+				SetMode(PASTE);
 				if (complexPaste != NULL)
 				{
 					delete complexPaste;
@@ -9366,7 +9405,7 @@ void EditSession::EditModeHandleEvent()
 			if (selectedBrush->IsEmpty())
 				break;
 
-			mode = TRANSFORM;
+			SetMode(TRANSFORM);
 			
 			transformTools->Reset(selectedBrush->GetCenterF(),
 				selectedBrush->GetTerrainSize());
@@ -9536,7 +9575,7 @@ void EditSession::PasteModeHandleEvent()
 	{
 		if (ev.key.code == Keyboard::X)
 		{
-			mode = EDIT;
+			SetMode(EDIT);
 			if (complexPaste != NULL)
 			{
 				delete complexPaste;
@@ -9655,7 +9694,7 @@ void EditSession::PausedModeHandleEvent()
 	}
 	case Event::GainedFocus:
 	{
-		mode = stored;
+		SetMode(stored);
 		break;
 	}
 	}
@@ -9708,6 +9747,7 @@ void EditSession::SelectModeHandleEvent()
 		else
 		{
 			mode = menuDownStored;
+			//SetMode(menuDownStored);
 			menuSelection = "none";
 		}
 
@@ -9745,16 +9785,19 @@ void EditSession::SelectModeHandleEvent()
 			{
 				showPanel = terrainOptionsPanel;
 				mode = menuDownStored;
+				//SetMode(menuDownStored);
 			}
 			else if (menuDownStored == EDIT && singleActor)
 			{
 				SetEnemyEditPanel();
+				//SetMode(menuDownStored);
 				mode = menuDownStored;
 			}
 			else if (menuDownStored == EDIT && singleImage)
 			{
 				showPanel = editDecorPanel;
 				SetDecorEditPanel();
+				//SetMode(menuDownStored);
 				mode = menuDownStored;
 			}
 			else if (menuDownStored == EDIT && singleRail)
@@ -9765,18 +9808,20 @@ void EditSession::SelectModeHandleEvent()
 				TerrainRail *tr = (TerrainRail*)select;
 				tr->UpdatePanel(railOptionsPanel);
 				
+				//SetMode(menuDownStored);
+
 				mode = menuDownStored;
 			}
 			else
 			{
-				mode = EDIT;
+				SetMode(EDIT);
 				showPanel = NULL;
 			}
 		}
 		else if (menuSelection == "upperleft")
 		{
 			showPoints = false;
-			mode = CREATE_ENEMY;
+			SetMode(CREATE_ENEMY);
 			trackingEnemy = NULL;
 			showPanel = enemySelectPanel;
 		}
@@ -9784,12 +9829,12 @@ void EditSession::SelectModeHandleEvent()
 		{
 			showPoints = false;
 			justCompletedPolyWithClick = false;
-			mode = CREATE_TERRAIN;
+			SetMode(CREATE_TERRAIN);
 			showPanel = NULL;
 		}
 		else if (menuSelection == "lowerleft")
 		{
-			mode = CREATE_GATES;
+			SetMode(CREATE_GATES);
 			gatePoints = 0;
 			showPanel = NULL;
 			showPoints = true;
@@ -9800,6 +9845,7 @@ void EditSession::SelectModeHandleEvent()
 			mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
 			mapOptionsPanel->textBoxes["bosstype"]->text.setString(to_string(bossType));
 			mode = menuDownStored;
+//			SetMode(menuDownStored);
 		}
 		else if (menuSelection == "bottom")
 		{
@@ -9862,13 +9908,13 @@ void EditSession::CreatePatrolPathModeHandleEvent()
 				ActorParams *actor = (ActorParams*)select;
 				showPanel = actor->type->panel;
 				actor->SetPath(patrolPath);
-				mode = EDIT;
+				SetMode(EDIT);
 			}
 			else
 			{
 				showPanel = trackingEnemy->panel;
 				tempActor->SetPath(patrolPath);
-				mode = CREATE_ENEMY;
+				SetMode(CREATE_ENEMY);
 			}
 		}
 		break;
@@ -9946,12 +9992,12 @@ void EditSession::CreateRectModeHandleEvent()
 				SelectPtr select = selectedBrush->objects.front();
 				AirTriggerParams *actor = (AirTriggerParams*)select;
 				showPanel = actor->type->panel;
-				mode = EDIT;
+				SetMode(EDIT);
 			}
 			else
 			{
 				showPanel = trackingEnemy->panel;
-				mode = CREATE_ENEMY;
+				SetMode(CREATE_ENEMY);
 			}
 		}
 		break;
@@ -9988,11 +10034,11 @@ void EditSession::SetCamZoomModeHandleEvent()
 
 			if (tempActor != NULL)
 			{
-				mode = CREATE_ENEMY;
+				SetMode(CREATE_ENEMY);
 			}
 			else
 			{
-				mode = EDIT;
+				SetMode(EDIT);
 			}
 
 			showPanel = currentCameraShot->type->panel;
@@ -10020,13 +10066,13 @@ void EditSession::SetDirectionModeHandleEvent()
 			if (tempActor != NULL)
 			{
 				actor = tempActor;
-				mode = CREATE_ENEMY;
+				SetMode(CREATE_ENEMY);
 			}
 			else
 			{
 				SelectPtr select = selectedBrush->objects.front();
 				actor = (ActorParams*)select;
-				mode = EDIT;
+				SetMode(EDIT);
 			}
 
 			showPanel = actor->type->panel;
@@ -10228,7 +10274,7 @@ void EditSession::TransformModeHandleEvent()
 	{
 		if (ev.key.code == sf::Keyboard::Space)
 		{
-			mode = EDIT;
+			SetMode(EDIT);
 			PolyPtr p;
 			Brush origBrush;
 			Brush resultBrush;
@@ -10258,7 +10304,7 @@ void EditSession::TransformModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::BackSpace)
 		{
-			mode = EDIT;
+			SetMode(EDIT);
 			PolyPtr p;
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
@@ -10432,16 +10478,8 @@ void EditSession::EditModeUpdate()
 		showPoints = false;
 	}
 
-	ActorPtr a;
-	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-	{
-		a = (*it)->GetAsActor();
-		if (a != NULL)
-		{
-			a->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
-			//a->myEnemy->UpdateSprite();
-		}
-	}
+	if( grabbedActor != NULL )
+		grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
 
 	TryTerrainMove();
 

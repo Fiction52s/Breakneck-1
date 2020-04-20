@@ -18,7 +18,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		A_Count
 	};
 
-	void UpdateFromEditParams();
+	void ChildUpdateFromEditParams();
 
 	//int animFactor[UNDERGROUND + 1];
 	//int actionLength[UNDERGROUND +1];

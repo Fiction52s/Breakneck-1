@@ -75,6 +75,7 @@ struct EditSession : GUIHandler, Session
 		TRANSFORM,
 	};
 
+	bool IsDrawMode(Emode em);
 	Emode mode;
 
 	enum Tool
@@ -654,6 +655,10 @@ struct EditSession : GUIHandler, Session
 	void TransformModeUpdate();
 	
 	
+	sf::Clock editClock;
+	double editAccumulator;
+	double editCurrentTime;
+
 	sf::Event ev;
 	void UndoMostRecentAction();
 	void RedoMostRecentUndoneAction();
@@ -705,6 +710,7 @@ struct EditSession : GUIHandler, Session
 	bool editStartMove;
 	int editMoveThresh;
 	SelectPtr grabbedObject;
+	ActorPtr grabbedActor;
 	sf::Vector2i editMouseGrabPos;
 	sf::Vector2i editMouseOrigPos;
 

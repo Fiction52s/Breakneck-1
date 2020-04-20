@@ -396,6 +396,8 @@ void Enemy::UpdateFromEditParams( int numFrames )
 		frame = frame % editLoopLength;
 	}
 
+	ChildUpdateFromEditParams();
+
 	UpdateSprite();
 }
 

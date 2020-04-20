@@ -64,6 +64,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	//void SetStartGroundInfo
 	PositionInfo startPosInfo;
+	//PositionInfo currPosInfo;
 	HitParams hitParams;
 	Session *sess;
 	bool SetHitParams();
@@ -81,7 +82,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	int action;
 
-	virtual void UpdateFromEditParams( int numFrames );
+	void UpdateFromEditParams( int numFrames );
+	virtual void ChildUpdateFromEditParams(){}
 	//------------
 
 	Enemy(EnemyType t, ActorParams *ap);

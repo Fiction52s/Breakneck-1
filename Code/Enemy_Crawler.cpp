@@ -776,11 +776,13 @@ void Crawler::AttemptRunAwayBoost()
 	}
 }
 
-void Crawler::UpdateFromEditParams()
+void Crawler::ChildUpdateFromEditParams()
 {
 	if (!editParams->posInfo.IsAerial())
 	{
 		mover->ground = editParams->posInfo.GetEdge();
 		mover->edgeQuantity = editParams->posInfo.GetQuant();
+
+		startPosInfo = editParams->posInfo;
 	}
 }
