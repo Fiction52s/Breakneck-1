@@ -5386,7 +5386,8 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 			}
 
 			//this function is ugly af and should fix later ^^^^
-			gi.SetGround(storedPoly, storedEdge->index, storedQuantity);
+			if( storedPoly != NULL )
+				gi.SetGround(storedPoly, storedEdge->index, storedQuantity);
 
 			break;
 		}
@@ -10404,6 +10405,16 @@ void EditSession::EditModeUpdate()
 	{
 		ClearSelectedPoints();
 		showPoints = false;
+	}
+
+	ActorPtr a;
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	{
+		a = (*it)->GetAsActor();
+		if (a != NULL)
+		{
+			a->myEnemy->UpdateSprite();
+		}
 	}
 
 	TryTerrainMove();

@@ -175,6 +175,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	suppressMonitor(false), ts_hitSpack(NULL),
 	hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
+	
 	startPosInfo = ap->posInfo;
 	if (ap != NULL)
 	{
@@ -188,6 +189,16 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	}
 
 	sess = Session::GetSession();
+
+	if (sess->IsSessTypeEdit())
+	{
+		editParams = ap;
+	}
+	else
+	{
+		editParams = NULL;
+	}
+	
 
 	if (CanTouchSpecter())
 	{
@@ -364,6 +375,11 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	}
 	hurtShader.setUniform( "toColor", Glsl::Vec4( Color::White.r, Color::White.g, Color::White.b, Color::White.a ));
 	hurtShader.setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
+}
+
+void Enemy::UpdateFromEditParams()
+{
+
 }
 
 Enemy::~Enemy()

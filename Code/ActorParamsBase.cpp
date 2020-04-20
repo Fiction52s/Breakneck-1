@@ -582,6 +582,36 @@ Edge *PositionInfo::GetEdge()
 	}
 }
 
+double PositionInfo::GetGroundAngleRadians()
+{
+	Edge *e = GetEdge();
+	if (e != NULL)
+	{
+		return e->GetNormalAngleRadians();
+	}
+	else
+	{
+		return 0;
+	}
+	//gn = startPosInfo.GetEdge()->Normal();
+	//angle = atan2(gn.x, -gn.y);
+}
+
+double PositionInfo::GetGroundAngleDegrees()
+{
+	Edge *e = GetEdge();
+	if (e != NULL)
+	{
+		return e->GetNormalAngleDegrees();
+	}
+	else
+	{
+		return 0;
+	}
+	//gn = startPosInfo.GetEdge()->Normal();
+	//angle = atan2(gn.x, -gn.y);
+}
+
 void PositionInfo::SetAerial( V2d &pos )
 {
 	position = pos;
@@ -788,6 +818,12 @@ void ActorParams::AnchorToGround(PolyPtr poly, int edgeIndex, double quantity)
 	
 	posInfo.SetGround(poly, edgeIndex, quantity);
 
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateFromEditParams();
+		myEnemy->UpdateSprite(); //this is just for testing
+	}
+
 	image = type->GetSprite(true);
 
 	V2d newPoint = posInfo.GetPosition();
@@ -799,6 +835,12 @@ void ActorParams::AnchorToGround(PolyPtr poly, int edgeIndex, double quantity)
 void ActorParams::AnchorToGround(PositionInfo &gi)
 {
 	posInfo = gi;
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateFromEditParams();
+		myEnemy->UpdateSprite(); //this is just for testing
+	}
 
 	image = type->GetSprite(true);
 

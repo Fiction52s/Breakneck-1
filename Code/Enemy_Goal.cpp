@@ -86,7 +86,7 @@ Goal::Goal( ActorParams *ap )
 
 
 	gn = startPosInfo.GetEdge()->Normal();
-	angle = atan2( gn.x, -gn.y );
+	angle = startPosInfo.GetGroundAngleRadians();//atan2( gn.x, -gn.y );
 
 	position = gPoint + gn * height / 2.0;
 
@@ -301,5 +301,18 @@ void Goal::UpdateSprite()
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 	}
 	
-	
+	if (editParams != NULL)
+	{
+		if (editParams->posInfo.IsAerial())
+		{
+			sprite.setPosition(editParams->GetFloatPos());
+			sprite.setRotation(0);
+			//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
+		}
+		else
+		{
+			sprite.setPosition(editParams->GetFloatPos());
+			sprite.setRotation(editParams->posInfo.GetGroundAngleDegrees());
+		}
+	}
 }

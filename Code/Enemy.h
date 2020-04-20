@@ -67,7 +67,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	HitParams hitParams;
 	Session *sess;
 	bool SetHitParams();
-
+	ActorParams *editParams;
+	virtual void UpdateFromEditParams();
 	//------------
 
 	Enemy(EnemyType t, ActorParams *ap);

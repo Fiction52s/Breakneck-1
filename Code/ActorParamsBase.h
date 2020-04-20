@@ -23,6 +23,8 @@ struct PositionInfo
 	PolyPtr ground;
 	RailPtr railGround;
 	Edge *GetEdge();
+	double GetGroundAngleRadians();
+	double GetGroundAngleDegrees();
 	double GetQuant();
 	TerrainPoint *GetPoint();
 	TerrainPoint *GetNextPoint();

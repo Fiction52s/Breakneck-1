@@ -576,6 +576,25 @@ void Crawler::UpdateSprite()
 		}
 	}
 
+	if (editParams != NULL)
+	{
+		if (editParams->posInfo.IsAerial())
+		{
+			sprite.setPosition(editParams->GetFloatPos());
+			sprite.setRotation(0);
+			//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
+		}
+		else
+		{
+			
+		}
+		/*else
+		{
+			sprite.setPosition(editParams->GetFloatPos());
+			sprite.setRotation(editParams->posInfo.GetGroundAngleDegrees());
+		}*/
+	}
+
 	SyncSpriteInfo(auraSprite, sprite);
 }
 
@@ -749,5 +768,14 @@ void Crawler::AttemptRunAwayBoost()
 	if (IsPlayerChasingMe())
 	{
 		Accelerate(.05);
+	}
+}
+
+void Crawler::UpdateFromEditParams()
+{
+	if (!editParams->posInfo.IsAerial())
+	{
+		mover->ground = editParams->posInfo.GetEdge();
+		mover->edgeQuantity = editParams->posInfo.GetQuant();
 	}
 }

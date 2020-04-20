@@ -17,6 +17,8 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		UNDERGROUND
 	};
 
+	void UpdateFromEditParams();
+
 	int animFactor[UNDERGROUND + 1];
 	int actionLength[UNDERGROUND +1];
 	Crawler(ActorParams *ap);
