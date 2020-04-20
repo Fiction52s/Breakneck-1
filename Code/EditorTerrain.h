@@ -319,7 +319,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetupEdges();
 	std::vector<Edge> edges;
 	void AddEdgesToQuadTree(QuadTree *tree);
-	V2d finalizeCenter;
 	//QuadTree *edgeTree;
 	bool isBrushTest;
 	bool Load(std::ifstream &is);

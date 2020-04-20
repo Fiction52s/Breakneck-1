@@ -207,23 +207,8 @@ bool TerrainPolygon::IsEmptyRect(sf::Rect<double> &rect)
 bool TerrainPolygon::CheckRectIntersectEdges(
 	sf::Rect<double> &r)
 {
-	//V2d currCenter = GetDCenter();
-	//V2d diff = finalizeCenter - currCenter;
-
-	//cout << "currcenter: " << currCenter.x << ", " << currCenter.y << endl;
-	//cout << "finalize: " << finalizeCenter.x << ", " << finalizeCenter.y << endl;
-
-	//sf::Rect<double> adjR = r;
-	//adjR.left += diff.x;
-	//adjR.top += diff.y;
-
 	emptyResult = true;
 	myTerrainTree->Query(this, r);
-
-	if (!emptyResult)
-	{
-		cout << "intersects edges!!" << endl;
-	}
 	return !emptyResult;
 }
 
@@ -2761,7 +2746,6 @@ void TerrainPolygon::Finalize()
 
 	myTerrainTree->Clear();
 	AddEdgesToQuadTree(myTerrainTree);
-	finalizeCenter = GetDCenter();
 
 	GenerateDecor();
 }
@@ -2839,7 +2823,6 @@ void TerrainPolygon::FinalizeInverse()
 
 	myTerrainTree->Clear();
 	AddEdgesToQuadTree(myTerrainTree);
-	finalizeCenter = GetDCenter();
 	GenerateDecor();
 	UpdateDecorSprites();
 }
