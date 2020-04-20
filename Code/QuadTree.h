@@ -68,6 +68,8 @@ struct QuadTree
 	int width;
 	int height;
 	sf::Vector2<double> center;
+	sf::Vector2<double> offset;
+	void Move(sf::Vector2<double> &move);
 	int numMembers;
 private:
 	void rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r );

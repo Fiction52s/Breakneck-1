@@ -250,6 +250,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		int bgLayer);
 	void AddDecorExpression(DecorExpression *expr);
 	bool IsEmptyRect(sf::Rect<double> &rect);
+
+
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void HandleRayCollision(Edge *edge,
 		double edgeQuantity, double rayPortion);
@@ -264,6 +266,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	TerrainDecorInfo *tdInfo;
 
 	bool emptyResult;
+	//sf::Rect<double> queryRect;
 
 	std::list<DecorExpression*> decorExprList;
 	std::list<DecorLayer*> DecorLayers;
@@ -316,10 +319,13 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetupEdges();
 	std::vector<Edge> edges;
 	void AddEdgesToQuadTree(QuadTree *tree);
-
+	V2d finalizeCenter;
 	//QuadTree *edgeTree;
 	bool isBrushTest;
 	bool Load(std::ifstream &is);
+
+	bool CheckRectIntersectEdges(
+		sf::Rect<double> &r);
 	
 	void MakeInverse();
 	static sf::Vector2i GetExtreme(TerrainPoint *p0,

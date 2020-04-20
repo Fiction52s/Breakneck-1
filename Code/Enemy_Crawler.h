@@ -19,7 +19,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	};
 
 	void ChildUpdateFromEditParams();
-
+	sf::FloatRect GetAABB();
 	//int animFactor[UNDERGROUND + 1];
 	//int actionLength[UNDERGROUND +1];
 	Crawler(ActorParams *ap);

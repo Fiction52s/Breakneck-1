@@ -84,6 +84,10 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	void UpdateFromEditParams( int numFrames );
 	virtual void ChildUpdateFromEditParams(){}
+
+	virtual sf::FloatRect GetAABB(){ 
+		return sf::FloatRect();
+	}
 	//------------
 
 	Enemy(EnemyType t, ActorParams *ap);

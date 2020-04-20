@@ -67,6 +67,8 @@ void QuadTree::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
 void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r )
 {
 	sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
+	nodeBox.left += offset.x;
+	nodeBox.top += offset.y;
 
 	if( node->leaf )
 	{
@@ -289,7 +291,12 @@ void QuadTree::Clear()
 	numMembers = 0;
 	startNode = new LeafNode(center, width, height);
 	startNode->parent = NULL;//testTree->parent = NULL;
-	
+	offset = V2d(0, 0);
+}
+
+void QuadTree::Move(sf::Vector2<double> &move)
+{
+	offset += move;
 }
 
 void QuadTree::rClear( QNode *node )

@@ -143,7 +143,10 @@ void Crawler::PlayDeathSound()
 	sess->ActivateSoundAtPos( position, deathSound);
 }
 
-
+sf::FloatRect Crawler::GetAABB() 
+{
+	return sprite.getGlobalBounds();
+}
 
 void Crawler::ResetEnemy()
 {

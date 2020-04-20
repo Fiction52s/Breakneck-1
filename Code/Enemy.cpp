@@ -387,6 +387,8 @@ void Enemy::SetActionEditLoop()
 	frame = 0;
 }
 
+
+
 void Enemy::UpdateFromEditParams( int numFrames )
 {
 	frame += numFrames;

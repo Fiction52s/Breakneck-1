@@ -384,6 +384,8 @@ void ActorParams::Draw(sf::RenderTarget *target)
 	}
 
 	DrawBoundary(target);
+
+	DrawQuad(target);
 }
 
 void ActorParams::DrawPreview(sf::RenderTarget *target)
@@ -881,10 +883,19 @@ void ActorParams::DrawBoundary(sf::RenderTarget *target)
 		sf::RectangleShape rs;
 		rs.setFillColor(Color::Transparent);
 		rs.setOutlineColor(Color::Green);
-		//rs.setOutlineThickness(3 * EditSession::zoomMultiple);
+		rs.setOutlineThickness(3);// *EditSession::zoomMultiple);
 		//fix soon
-		rs.setPosition(image.getGlobalBounds().left, image.getGlobalBounds().top);
-		rs.setSize(Vector2f(image.getGlobalBounds().width, image.getGlobalBounds().height));
+		FloatRect bounds;
+		if( myEnemy != NULL )
+		{
+			bounds = myEnemy->GetAABB();
+		}
+		else
+		{
+			bounds = image.getGlobalBounds();
+		}
+		rs.setPosition(bounds.left, bounds.top);
+		rs.setSize(Vector2f(bounds.width, bounds.height));
 		target->draw(rs);
 		//cout << "selected draw" << endl;
 	}

@@ -797,7 +797,6 @@ void ActorGroup::Draw(sf::RenderTarget *target)
 	for (list<ActorPtr>::iterator it = actors.begin(); it != actors.end(); ++it)
 	{
 		(*it)->Draw(target);
-		(*it)->DrawQuad(target);
 	}
 }
 

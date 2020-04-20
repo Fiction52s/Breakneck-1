@@ -204,6 +204,31 @@ bool TerrainPolygon::IsEmptyRect(sf::Rect<double> &rect)
 	return emptyResult;
 }
 
+bool TerrainPolygon::CheckRectIntersectEdges(
+	sf::Rect<double> &r)
+{
+	//V2d currCenter = GetDCenter();
+	//V2d diff = finalizeCenter - currCenter;
+
+	//cout << "currcenter: " << currCenter.x << ", " << currCenter.y << endl;
+	//cout << "finalize: " << finalizeCenter.x << ", " << finalizeCenter.y << endl;
+
+	//sf::Rect<double> adjR = r;
+	//adjR.left += diff.x;
+	//adjR.top += diff.y;
+
+	emptyResult = true;
+	myTerrainTree->Query(this, r);
+
+	if (!emptyResult)
+	{
+		cout << "intersects edges!!" << endl;
+	}
+	return !emptyResult;
+}
+
+
+
 void TerrainPolygon::DrawDecor(sf::RenderTarget *target)
 {
 	for (list<DecorExpression*>::iterator it = decorExprList.begin();
@@ -903,7 +928,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 
 TerrainPolygon::~TerrainPolygon()
 {
-	cout << "destroying poly: " << this << endl;
+	//cout << "destroying poly: " << this << endl;
 
 	if (lines != NULL)
 		delete[] lines;
@@ -2251,8 +2276,11 @@ void TerrainPolygon::Move(Vector2i move )
 	top += move.y;
 
 	
+
 	V2d dMove(move);
 	Vector2f fMove(move);
+
+	myTerrainTree->Move(dMove);
 
 	int numP = GetNumPoints();
 	TerrainPoint *curr;
@@ -2733,6 +2761,7 @@ void TerrainPolygon::Finalize()
 
 	myTerrainTree->Clear();
 	AddEdgesToQuadTree(myTerrainTree);
+	finalizeCenter = GetDCenter();
 
 	GenerateDecor();
 }
@@ -2810,6 +2839,7 @@ void TerrainPolygon::FinalizeInverse()
 
 	myTerrainTree->Clear();
 	AddEdgesToQuadTree(myTerrainTree);
+	finalizeCenter = GetDCenter();
 	GenerateDecor();
 	UpdateDecorSprites();
 }
@@ -4502,20 +4532,51 @@ bool TerrainPolygon::Intersects( sf::IntRect rect )
 	if (rect.width == 0 || rect.height == 0)
 		return false;
 
-	TerrainPolygon poly;
-	poly.AddPoint( Vector2i( rect.left, rect.top ), false );
-	poly.AddPoint( Vector2i( rect.left + rect.width, rect.top ), false);
-	poly.AddPoint( Vector2i( rect.left + rect.width, rect.top + rect.height ), false);
-	poly.AddPoint( Vector2i( rect.left, rect.top + rect.height ), false);
+	sf::Rect<double> rectD(rect);
 
-	poly.UpdateBounds();
+	if (!IsTouchingBox(rectD))
+	{
+		return false;
+	}
 
-	if( IsTouching( &poly ) || poly.Contains( this ) ) //don't need this contains polys cuz im just using this for selection for now
+	if (CheckRectIntersectEdges(rectD))
 	{
 		return true;
 	}
-	else
-		return false;
+	/*emptyResult = true;
+	sf::Rect<double> r(rect);
+	myTerrainTree->Query(this, r);
+	if (!emptyResult)
+		return true;*/
+
+	Vector2f center(rect.left + rect.width / 2, rect.top + rect.height / 2);
+	if (ContainsPoint(center))
+	{
+		return true;
+	}
+
+	if (rectD.contains(GetDCenter()))
+	{
+		return true;
+	}
+
+	return false;
+	//TerrainPolygon poly;
+	//poly.AddPoint( Vector2i( rect.left, rect.top ), false );
+	//poly.AddPoint( Vector2i( rect.left + rect.width, rect.top ), false);
+	//poly.AddPoint( Vector2i( rect.left + rect.width, rect.top + rect.height ), false);
+	//poly.AddPoint( Vector2i( rect.left, rect.top + rect.height ), false);
+
+	//poly.UpdateBounds();
+
+	//if( IsTouching( &poly ) || poly.Contains( this ) ) //don't need this contains polys cuz im just using this for selection for now
+	//{
+	//	return true;
+	//}
+	//else
+	//	return false;
+
+	return false;
 }
 
 bool TerrainPolygon::IsPlacementOkay()

@@ -3152,7 +3152,8 @@ bool EditSession::PointSelectActor( V2d &pos )
 					
 					grabbedActor = (*ait);
 					//grabbedObject = (*ait);
-					(*ait)->myEnemy->SetActionEditLoop(); //just for testing
+					if( (*ait)->myEnemy != NULL )
+						(*ait)->myEnemy->SetActionEditLoop(); //just for testing
 					//(*ait)->myEnemy->action = (*)
 					(*ait)->SetSelected(true);
 					selectedBrush->AddObject((*ait));
@@ -10478,7 +10479,7 @@ void EditSession::EditModeUpdate()
 		showPoints = false;
 	}
 
-	if( grabbedActor != NULL )
+	if( grabbedActor != NULL && grabbedActor->myEnemy != NULL )
 		grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
 
 	TryTerrainMove();
