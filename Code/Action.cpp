@@ -414,6 +414,42 @@ void Brush::Move( Vector2i delta )
 	}
 }
 
+int Brush::GetNumGroundedActors()
+{
+	int counter = 0;
+	ActorPtr ap;
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		ap = (*it)->GetAsActor();
+		if (ap != NULL)
+		{
+			if (ap->posInfo.ground != NULL)
+			{
+				counter++;
+			}
+		}
+	}
+	return counter;
+}
+
+int Brush::GetNumActorsThatMustBeAnchored()
+{
+	int counter = 0;
+	ActorPtr ap;
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		ap = (*it)->GetAsActor();
+		if (ap != NULL)
+		{
+			if (ap->posInfo.ground == NULL && ap->type->CanBeGrounded() && !ap->type->CanBeAerial() )
+			{
+				counter++;
+			}
+		}
+	}
+	return counter;
+}
+
 //returns the compound action of selected actors unanchoring
 CompoundAction * Brush::UnAnchor() //only works with grounded actors
 {
@@ -426,7 +462,8 @@ CompoundAction * Brush::UnAnchor() //only works with grounded actors
 		{
 			if (ap->posInfo.ground != NULL)
 			{
-				if (objects.size() == 1 || ap->type->CanBeAerial())
+				//if (objects.size() == 1 || ap->type->CanBeAerial())
+				//if( ap->type->CanBeAerial() )
 				{
 
 					Action *newAction = new LeaveGroundAction(ap, V2d( 0, 0 ));

@@ -386,7 +386,7 @@ void ActorParams::Draw(sf::RenderTarget *target)
 
 	DrawBoundary(target);
 
-	//DrawQuad(target);
+	DrawQuad(target);
 }
 
 void ActorParams::DrawPreview(sf::RenderTarget *target)

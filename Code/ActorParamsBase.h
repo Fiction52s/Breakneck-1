@@ -157,6 +157,9 @@ struct ActorParams : ISelectable
 	sf::VertexArray *lines;
 
 	int enemyLevel;
+
+	V2d diffFromGrabbed;
+	double diffFromGrabbedAngle;
 };
 
 #endif

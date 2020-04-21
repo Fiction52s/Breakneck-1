@@ -11,6 +11,8 @@ struct Brush
 	SelectList objects;
 	void AddObject( SelectPtr obj );
 	void RemoveObject( SelectPtr obj );
+	int GetNumGroundedActors();
+	int GetNumActorsThatMustBeAnchored();
 	void Clear();
 	void Destroy();
 	void Move( sf::Vector2i delta );

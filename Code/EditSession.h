@@ -671,6 +671,7 @@ struct EditSession : GUIHandler, Session
 	bool AnchorSelectedAerialEnemy();
 
 	void MoveSelectedActor( sf::Vector2i &delta );
+	void MoveSelectedActors(sf::Vector2i &delta);
 
 	void FixPathSlivers(ClipperLib::Path &p);
 	bool FixPathSlivers(ClipperLib::Path &p,
