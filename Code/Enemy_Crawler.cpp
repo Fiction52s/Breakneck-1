@@ -151,8 +151,8 @@ sf::FloatRect Crawler::GetAABB()
 void Crawler::ResetEnemy()
 {
 	clockwise = origCW;
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 	framesUntilBurrow = maxFramesUntilBurrow;
 	
 	mover->ground = startPosInfo.GetEdge();
@@ -172,6 +172,8 @@ void Crawler::ResetEnemy()
 
 	double angle = 0;
 	angle = atan2( gn.x, -gn.y );
+
+
 
 	UpdateHitboxes();
 
@@ -333,7 +335,7 @@ void Crawler::ProcessState()
 			frame = 0;
 			break;
 		case BURROW:
-			SetHurtboxes(NULL, 0);
+			HurtboxesOff();
 			action = UNDERGROUND;
 			frame = 0;
 			mover->ground = startPosInfo.GetEdge();
@@ -342,7 +344,7 @@ void Crawler::ProcessState()
 			mover->UpdateGroundPos();
 			break;
 		case UNDERGROUND:
-			SetHurtboxes(&hurtBody, 0);
+			DefaultHurtboxesOn();
 			action = UNBURROW;
 			framesUntilBurrow = maxFramesUntilBurrow;
 			frame = 0;
@@ -357,7 +359,7 @@ void Crawler::ProcessState()
 		if (frame == 4 * 11)
 		{
 			//SetHitboxes(&hurtBody, 0);
-			SetHitboxes(&hitBody, 0);
+			DefaultHitboxesOn();
 		}
 		break;
 	case CRAWL:
@@ -367,8 +369,8 @@ void Crawler::ProcessState()
 	case BURROW:
 		if (frame == 4 * 12)
 		{
-			SetHitboxes(NULL, 0);
-			SetHurtboxes(NULL, 0);
+			HurtboxesOff();
+			HitboxesOff();
 		}
 		break;
 	}
@@ -450,6 +452,12 @@ void Crawler::FrameIncrement()
 
 void Crawler::EnemyDraw(sf::RenderTarget *target )
 {
+	FloatRect abTest = GetAABB();
+	cout << "top: " << abTest.top << endl;
+	if (abTest.top > 1426)
+	{
+		int xxx = 5;
+	}
 	if (action == UNDERGROUND)
 		return; 
 	target->draw(auraSprite);
@@ -509,6 +517,11 @@ void Crawler::HandleNoHealth()
 
 void Crawler::UpdateSprite()
 {
+	FloatRect abTest = GetAABB();
+	if (abTest.top > 1426)
+	{
+		int xxx = 5;
+	}
 	V2d gn = mover->ground->Normal();
 	V2d gPoint = mover->ground->GetPosition(mover->edgeQuantity);
 
@@ -588,9 +601,10 @@ void Crawler::UpdateSprite()
 	{
 		if (editParams->posInfo.IsAerial())
 		{
+			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 			sprite.setPosition(editParams->GetFloatPos());
 			sprite.setRotation(0);
-			//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
+			
 		}
 		else
 		{
@@ -601,6 +615,12 @@ void Crawler::UpdateSprite()
 			sprite.setPosition(editParams->GetFloatPos());
 			sprite.setRotation(editParams->posInfo.GetGroundAngleDegrees());
 		}*/
+	}
+
+	FloatRect abTest2 = GetAABB();
+	if (abTest2.top > 1426)
+	{
+		int xxx = 5;
 	}
 
 	SyncSpriteInfo(auraSprite, sprite);

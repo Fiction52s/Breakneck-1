@@ -383,7 +383,7 @@ void ActorParams::Draw(sf::RenderTarget *target)
 		
 	}
 
-	DrawBoundary(target);
+	//DrawBoundary(target);
 
 	DrawQuad(target);
 }
@@ -706,6 +706,44 @@ Vector2i ActorParams::GetLocalPathPos(int index)
 	return localPath[index];
 }
 
+sf::FloatRect ActorParams::GetAABB()
+{
+	//return GetGrabAABB();
+	if (myEnemy != NULL)
+	{
+		return myEnemy->GetAABB();
+	}
+	else
+	{
+		return image.getGlobalBounds();
+	}
+}
+
+sf::Vector2f ActorParams::GetGrabAABBCenter()
+{
+	FloatRect aabb = GetGrabAABB();
+	return Vector2f(aabb.left + aabb.width / 2, aabb.top + aabb.height / 2);
+}
+
+
+sf::FloatRect ActorParams::GetGrabAABB()
+{
+	float left = boundingQuad[0].position.x;
+	float right = boundingQuad[0].position.x;
+	float top = boundingQuad[0].position.y;
+	float bot = boundingQuad[0].position.y;
+
+	for (int i = 1; i < 4; ++i)
+	{
+		left = min(left, boundingQuad[i].position.x);
+		right = max( right, boundingQuad[i].position.x);
+		top = min(top, boundingQuad[i].position.y);
+		bot = max(bot, boundingQuad[i].position.y);
+	}
+
+	return FloatRect(left, top, right - left, bot - top);
+}
+
 std::vector<sf::Vector2i> & ActorParams::GetLocalPath()
 {
 	return localPath;
@@ -769,14 +807,14 @@ void ActorParams::UpdateGroundedSprite()
 	double groundLength = edge->GetLength();
 	int width = type->info.size.x;
 
-	if (posInfo.groundQuantity + width / 2 > groundLength)
+	/*if (posInfo.groundQuantity + width / 2 > groundLength)
 	{
 		posInfo.groundQuantity = groundLength - width / 2;
 	}
 	else if (posInfo.groundQuantity - width / 2 < 0)
 	{
 		posInfo.groundQuantity = width / 2;
-	}
+	}*/
 
 	V2d newPoint = posInfo.GetPosition();
 	image.setPosition(newPoint.x, newPoint.y);
@@ -860,12 +898,13 @@ void ActorParams::AnchorToRail(PositionInfo &gi)
 	SetBoundingQuad();
 }
 
-void ActorParams::UnAnchor()
+#include "EditSession.h" //testing
+bool ActorParams::UnAnchor(V2d &pos)
 {
 	assert(posInfo.ground != NULL);
 	if (posInfo.ground != NULL)
 	{
-		posInfo.SetAerial(V2d(image.getPosition()));
+		posInfo.SetAerial(pos + GetPosition());//EditSession::GetSession()->worldPos);//pos);//V2d(image.getPosition()));
 
 		image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 		image.setRotation(0);
@@ -873,7 +912,10 @@ void ActorParams::UnAnchor()
 		posInfo.RemoveActor(this);
 
 		SetBoundingQuad();
+		return true;
 	}
+
+	return false;
 }
 
 void ActorParams::DrawBoundary(sf::RenderTarget *target)

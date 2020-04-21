@@ -415,7 +415,7 @@ void Brush::Move( Vector2i delta )
 }
 
 //returns the compound action of selected actors unanchoring
-CompoundAction * Brush::UnAnchor() //only works with grounded actors
+CompoundAction * Brush::UnAnchor(V2d &extra) //only works with grounded actors
 {
 	CompoundAction * action = NULL;
 	ActorPtr ap;
@@ -429,7 +429,7 @@ CompoundAction * Brush::UnAnchor() //only works with grounded actors
 				if (objects.size() == 1 || ap->type->CanBeAerial())
 				{
 
-					Action *newAction = new LeaveGroundAction(ap);
+					Action *newAction = new LeaveGroundAction(ap, extra);
 
 					if (action == NULL)
 					{
@@ -981,9 +981,10 @@ void MoveBrushAction::Undo()
 	}
 }
 
-LeaveGroundAction::LeaveGroundAction( ActorPtr p_actor )
+LeaveGroundAction::LeaveGroundAction( ActorPtr p_actor, V2d &extra )
 	:actor( p_actor )
 {
+	extraDist = extra;
 	assert( actor->posInfo.ground!= NULL );
 
 	gi = actor->posInfo;
@@ -995,7 +996,8 @@ void LeaveGroundAction::Perform()
 
 	performed = true;
 
-	actor->UnAnchor( );
+	//might be wrong
+	actor->UnAnchor(extraDist);
 }
 
 void LeaveGroundAction::Undo()
@@ -1034,7 +1036,8 @@ void GroundAction::Undo()
 
 	performed = false;
 
-	actor->UnAnchor( );
+	//might be wrong
+	actor->UnAnchor( actor->GetPosition() );
 }
 
 CompoundAction::CompoundAction()

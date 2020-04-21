@@ -53,6 +53,9 @@ struct ActorParams : ISelectable
 	sf::Vector2i GetGlobalPathPos(int index);
 	sf::Vector2i GetLocalPathPos(int index);
 
+	sf::FloatRect GetAABB();
+	sf::FloatRect GetGrabAABB();
+	sf::Vector2f GetGrabAABBCenter();
 	virtual ActorParams *Copy() = 0;
 	~ActorParams();
 	ActorParams(ActorType *at);
@@ -73,7 +76,7 @@ struct ActorParams : ISelectable
 		int eIndex, double quantity);
 	void AnchorToGround(PositionInfo &gi);
 	void AnchorToRail(PositionInfo &gi);
-	void UnAnchor();
+	bool UnAnchor(V2d &pos);
 	void UpdateGroundedSprite();
 
 	virtual std::vector<sf::Vector2i> MakeGlobalPath();

@@ -82,6 +82,11 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	int action;
 
+	void DefaultHitboxesOn(int hFrame = 0);
+	void DefaultHurtboxesOn(int hFrame = 0);
+	void HurtboxesOff();
+	void HitboxesOff();
+
 	void UpdateFromEditParams( int numFrames );
 	virtual void ChildUpdateFromEditParams(){}
 

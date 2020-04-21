@@ -22,7 +22,7 @@ struct Brush
 	void CenterOnPoint(sf::Vector2i &point );
 	sf::Vector2i center;
 	sf::Vector2f centerF;
-	CompoundAction * UnAnchor(); //only works with grounded actors
+	CompoundAction * UnAnchor(V2d &extra); //only works with grounded actors
 	void Deactivate();//multiple calls covered?
 	void Activate();//multiple calls covered?
 	void SetSelected( bool select );
@@ -156,11 +156,12 @@ struct MoveBrushAction : Action
 
 struct LeaveGroundAction : Action
 {
-	LeaveGroundAction( ActorPtr actor );
+	LeaveGroundAction( ActorPtr actor, V2d &extra );
 		//sf::Vector2i newPos );
 
 	ActorPtr actor;
 	PositionInfo gi;
+	V2d extraDist;
 	void Perform();
 	void Undo();
 };

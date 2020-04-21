@@ -68,6 +68,14 @@ V2d EditSession::GetPlayerSpawnPos()
 	}
 }
 
+void EditSession::ClearSelectedBrush()
+{
+	selectedBrush->SetSelected(false);
+	selectedBrush->Clear();
+	grabbedActor = NULL;
+	grabbedObject = NULL;
+}
+
 void EditSession::TestPlayerModeUpdate()
 {
 	double newTime = gameClock.getElapsedTime().asSeconds();
@@ -164,6 +172,8 @@ void EditSession::TestPlayerMode()
 		}
 		return;
 	}
+
+	
 
 	currentTime = 0;
 	accumulator = TIMESTEP + .1;
@@ -423,6 +433,7 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	moveAction = NULL;
 	AllocatePolyShaders(TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD);
 
 	transformTools = new TransformTools();
@@ -1665,8 +1676,7 @@ void EditSession::UndoMostRecentAction()
 		undoneActionStack.push_back(action);
 
 		//clearing this so things don't get messing with deleted items being selected etc
-		selectedBrush->SetSelected(false);
-		selectedBrush->Clear();
+		ClearSelectedBrush();
 	}
 }
 
@@ -1681,8 +1691,7 @@ void EditSession::RedoMostRecentUndoneAction()
 
 		doneActionStack.push_back(action);
 
-		selectedBrush->SetSelected(false);
-		selectedBrush->Clear();
+		ClearSelectedBrush();
 	}
 }
 
@@ -3140,13 +3149,14 @@ bool EditSession::PointSelectActor( V2d &pos )
 				if ((*ait)->selected)
 				{
 					grabbedActor = (*ait);
+					if ((*ait)->myEnemy != NULL)
+						(*ait)->myEnemy->SetActionEditLoop();
 				}
 				else
 				{
 					if (!HoldingShift())
 					{
-						selectedBrush->SetSelected(false);
-						selectedBrush->Clear();
+						ClearSelectedBrush();
 					}
 
 					
@@ -3188,8 +3198,7 @@ bool EditSession::PointSelectDecor(V2d &pos)
 			{
 				if (!HoldingShift())
 				{
-					selectedBrush->SetSelected(false);
-					selectedBrush->Clear();
+					ClearSelectedBrush();
 				}
 
 				(*it)->SetSelected(true);
@@ -3242,6 +3251,7 @@ bool EditSession::AnchorSelectedAerialEnemy()
 			return true;
 		}
 
+		//ClearSelectedBrush();
 		//actor->SetSelected(false);
 		//selectedBrush->RemoveObject(actor);
 	}
@@ -5352,7 +5362,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 {
 	PositionInfo gi;
-	double testRadius = 200;
+	
 	//PolyPtr poly = NULL;
 	gi.ground = NULL;
 	gi.railGround = NULL;
@@ -5361,9 +5371,35 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 	TerrainPoint *curr, *prev;
 	int numP;
+
+	//assumes singleactor only
+	//assert(IsSingleActorSelected());
+	ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+
+	//int width = type->info.size.x;
+	//int height = type->info.size.y;
+	IntRect actorAABB(a->GetAABB());//a->GetGrabAABB());
+	if (actorAABB.width > actorAABB.height)
+	{
+		int diff = actorAABB.width - actorAABB.height;
+		actorAABB.top -= diff / 2;
+		actorAABB.height += diff;
+	}
+	else if (actorAABB.height > actorAABB.width)
+	{
+		int diff = actorAABB.height - actorAABB.width;
+		actorAABB.left -= diff / 2;
+		actorAABB.width += diff;
+	}
+
+
+	double testRadius = a->type->info.size.y * ( 2.0 / 3.0 );//actorAABB.width / 3;//a->type->info.size.y /2;//actorAABB.height;//200
+	//testPoint = a->GetIntPos();
+
 	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
-		contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
+		//contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));;//(*it)->Intersects(actorAABB);//true;//
+		contains = (*it)->Intersects(actorAABB);
 
 		if (contains )//(contains && !(*it)->inverse) || (!contains && (*it)->inverse))
 		{
@@ -5384,10 +5420,10 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				curr = (*it)->GetPoint(i);
 				prev = (*it)->GetPrevPoint(i);
 
-				double dist = abs(
+				double dist = //abs(
 					cross(
 						V2d(testPoint.x - prev->pos.x, testPoint.y - prev->pos.y),
-						normalize(V2d(curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y))));
+						normalize(V2d(curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y)));
 				double testQuantity = dot(
 					V2d(testPoint.x - prev->pos.x, testPoint.y - prev->pos.y),
 					normalize(V2d(curr->pos.x - prev->pos.x, curr->pos.y - prev->pos.y)));
@@ -5396,10 +5432,19 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				V2d cu(curr->pos.x, curr->pos.y);
 				V2d te(testPoint.x, testPoint.y);
 
+				if (testQuantity > -30 && testQuantity < 0 )
+					testQuantity = 0;
+				else if (testQuantity > length(cu - pr) && testQuantity < length( cu - pr ) + 30 )
+				{
+					testQuantity = floor(length(cu - pr));
+				}
+
+				
+
 				V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
 					(testQuantity / length(cu - pr)));
 
-				if (dist < testRadius && testQuantity >= 0 && testQuantity <= length(cu - pr)
+				if (((dist >= 0 && dist < testRadius) || (dist < 0 && dist > - 200 )) && testQuantity >= 0 && testQuantity <= length(cu - pr)
 					&& length(newPoint - te) < length(closestPoint - te))
 				{
 					minDistance = dist;
@@ -7011,8 +7056,7 @@ bool EditSession::PointSelectGeneralRail(V2d &pos)
 			{
 				if (!HoldingShift())
 				{
-					selectedBrush->SetSelected(false);
-					selectedBrush->Clear();
+					ClearSelectedBrush();
 				}
 
 				(*it)->SetSelected(true);
@@ -7083,8 +7127,7 @@ bool EditSession::PointSelectPoly(V2d &pos)
 			{
 				if (!HoldingShift())
 				{
-					selectedBrush->SetSelected(false);
-					selectedBrush->Clear();
+					ClearSelectedBrush();
 				}
 
 				(*it)->SetSelected(true);
@@ -7332,8 +7375,7 @@ void EditSession::TryBoxSelect()
 	if (!HoldingShift())
 	{
 		//clear everything
-		selectedBrush->SetSelected(false);
-		selectedBrush->Clear();
+		ClearSelectedBrush();
 	}
 
 	if ( !specialTerrain && BoxSelectActors(r))
@@ -7371,8 +7413,7 @@ void EditSession::TryBoxSelect()
 
 	if (selectionEmpty)
 	{
-		selectedBrush->SetSelected(false);
-		selectedBrush->Clear();
+		ClearSelectedBrush();
 	}
 }
 
@@ -7528,8 +7569,7 @@ void EditSession::RemoveSelectedObjects()
 	doneActionStack.push_back(remove);
 	
 
-	selectedBrush->SetSelected(false);
-	selectedBrush->Clear();
+	ClearSelectedBrush();
 }
 
 void EditSession::TryRemoveSelectedObjects()
@@ -7553,6 +7593,11 @@ bool EditSession::IsSingleActorSelected()
 		&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR);
 }
 
+void EditSession::AddActorMove(Action *a)
+{
+	if( moveAction )
+}
+
 void EditSession::MoveSelectedActor( Vector2i &delta )
 {
 	//if (IsSingleActorSelected() )
@@ -7560,11 +7605,21 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 	//feels like this could really be simplified later
 	{
 		ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
+		//Vector2i aabb = actor->GetAABB();
+		Vector2i extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//actor->GetIntPos();
+		//Vector2i extraDelta = actor->GetIntPos() - Vector2i(worldPos);
+		//cout << "extraDelta: " << extraDelta.x << ", " << extraDelta.y << endl;
+		bool unanchored = false;
 		if (actor->type->CanBeGrounded())
 		{
 			if( !actor->posInfo.IsAerial() )
 			{
-				actor->UnAnchor();
+				unanchored = actor->UnAnchor(V2d(0,0));
+				if (unanchored)
+				{
+					extraDelta = Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);
+				}
+				//selectedBrush->Move(delta + extraDelta);
 			}
 
 			if (worldPosGround.ground != NULL)
@@ -7574,14 +7629,16 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 			}
 			else
 			{
-				selectedBrush->Move(delta);
+				selectedBrush->Move(delta + extraDelta);
+				if ( unanchored && actor->myEnemy != NULL) //second update of the frame hm...this is because the aabb rotates, so the AABB center changes
+					actor->myEnemy->UpdateFromEditParams(0);
 			}
 		}
 		else if (actor->type->CanBeRailGrounded())
 		{
 			if (!actor->posInfo.IsAerial())
 			{
-				actor->UnAnchor();
+				actor->UnAnchor(worldPos);
 			}
 
 			if (worldPosRail.railGround != NULL)
@@ -7591,12 +7648,12 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 			}
 			else
 			{
-				selectedBrush->Move(delta);
+				selectedBrush->Move(delta + extraDelta);
 			}
 		}
 		else
 		{
-			selectedBrush->Move(delta);
+			selectedBrush->Move(delta + extraDelta);
 		}
 	}
 }
@@ -7625,7 +7682,7 @@ void EditSession::StartTerrainMove()
 		}
 	}
 
-	moveAction = selectedBrush->UnAnchor();
+	//moveAction = selectedBrush->UnAnchor(V2d(delta));
 	if (moveAction != NULL)
 		moveAction->Perform();
 
@@ -9386,8 +9443,7 @@ void EditSession::EditModeHandleEvent()
 				}
 				
 				pasteAxis = -1;
-				selectedBrush->SetSelected(false);
-				selectedBrush->Clear();
+				ClearSelectedBrush();
 			}
 		}
 		else if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
@@ -9756,8 +9812,7 @@ void EditSession::SelectModeHandleEvent()
 		{
 			if (menuDownStored == EDIT)
 			{
-				selectedBrush->SetSelected(false);
-				selectedBrush->Clear();
+				ClearSelectedBrush();
 			}
 		}
 		else if (menuDownStored == CREATE_TERRAIN && menuSelection != "none")
@@ -10293,7 +10348,7 @@ void EditSession::TransformModeHandleEvent()
 					origBrush.AddObject((*it));
 				}
 			}
-			selectedBrush->Clear();
+			ClearSelectedBrush();
 
 			ClearUndoneActions();
 
@@ -10315,7 +10370,6 @@ void EditSession::TransformModeHandleEvent()
 					p->CancelTransformation();
 				}
 			}
-			//selectedBrush->Clear();
 		}
 		break;
 	}

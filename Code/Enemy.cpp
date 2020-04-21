@@ -387,6 +387,25 @@ void Enemy::SetActionEditLoop()
 	frame = 0;
 }
 
+void Enemy::DefaultHitboxesOn( int hFrame )
+{
+	SetHitboxes(&hitBody, hFrame );
+}
+
+void Enemy::DefaultHurtboxesOn( int hFrame )
+{
+	SetHurtboxes(&hurtBody, hFrame);
+}
+
+void Enemy::HurtboxesOff()
+{
+	SetHitboxes(NULL, 0);
+}
+
+void Enemy::HitboxesOff()
+{
+	SetHurtboxes(NULL, 0);
+}
 
 
 void Enemy::UpdateFromEditParams( int numFrames )

@@ -186,6 +186,8 @@ struct EditSession : GUIHandler, Session
 	void CreatePreview(sf::Vector2i imageSize);
 	void WriteInversePoly(std::ofstream &of);
 
+	void ClearSelectedBrush();
+
 	int tempWriteIndex;
 
 	sf::RenderTexture *mapPreviewTex;
@@ -380,7 +382,7 @@ struct EditSession : GUIHandler, Session
 	sf::VertexArray fullBounds;
 	void UpdateFullBounds();
 
-	
+	void AddActorMove(Action *a);
 
 	PositionInfo ConvertPointToGround( sf::Vector2i point );
 	PositionInfo ConvertPointToRail(sf::Vector2i point);
