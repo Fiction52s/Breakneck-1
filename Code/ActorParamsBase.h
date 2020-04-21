@@ -159,7 +159,6 @@ struct ActorParams : ISelectable
 	int enemyLevel;
 
 	V2d diffFromGrabbed;
-	double diffFromGrabbedAngle;
 };
 
 #endif

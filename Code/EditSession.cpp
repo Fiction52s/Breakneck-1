@@ -7890,7 +7890,6 @@ void EditSession::StartSelectedMove()
 			ActorPtr actor;
 
 			grabbedActor->diffFromGrabbed = V2d(0, 0);
-			grabbedActor->diffFromGrabbedAngle = 0;
 
 			V2d grabbedGroundPos = grabbedActor->posInfo.GetPosition();
 			double grabbedGroundAngle = grabbedActor->posInfo.GetEdge()->GetNormalAngleRadians();
@@ -7904,8 +7903,6 @@ void EditSession::StartSelectedMove()
 				if (actor->posInfo.ground != NULL)
 				{
 					actor->diffFromGrabbed = actor->posInfo.GetPosition() - grabbedGroundPos;
-					actor->diffFromGrabbedAngle = actor->posInfo.GetEdge()->GetNormalAngleRadians()
-						- grabbedGroundAngle;
 				}
 			}
 

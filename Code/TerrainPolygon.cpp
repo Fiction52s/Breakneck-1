@@ -2255,17 +2255,10 @@ void TerrainPolygon::Move(Vector2i move )
 {
 	assert( finalized );
 
-	if (move.x > 100)
-	{
-		int xxxx = 5;
-	}
-
 	left += move.x;
 	right += move.x;
 	bottom += move.y;
 	top += move.y;
-
-	
 
 	V2d dMove(move);
 	Vector2f fMove(move);
