@@ -76,13 +76,13 @@ void EditSession::ClearSelectedBrush()
 	grabbedObject = NULL;
 }
 
-void EditSession::AddToSelectedBrush(SelectPtr sel)
+void EditSession::SelectObject(SelectPtr sel)
 {
 	sel->SetSelected(true);
 	selectedBrush->AddObject(sel);
 }
 
-void EditSession::RemoveFromSelectedBrush(SelectPtr sel)
+void EditSession::DeselectObject(SelectPtr sel)
 {
 	sel->SetSelected(false);
 	selectedBrush->RemoveObject(sel);
@@ -3178,7 +3178,7 @@ bool EditSession::PointSelectActor( V2d &pos )
 						(*ait)->myEnemy->SetActionEditLoop(); //just for testing
 					//(*ait)->myEnemy->action = (*)
 
-					AddToSelectedBrush((*ait));
+					SelectObject((*ait));
 				}
 				return true;
 			}
@@ -3214,7 +3214,7 @@ bool EditSession::PointSelectDecor(V2d &pos)
 				}
 
 				grabbedObject = (*it);
-				AddToSelectedBrush((*it));
+				SelectObject((*it));
 			}
 
 			return true;
@@ -7081,7 +7081,7 @@ bool EditSession::PointSelectGeneralRail(V2d &pos)
 
 				grabbedObject = (*it);
 
-				AddToSelectedBrush((*it));
+				SelectObject((*it));
 			}
 
 			return true;
@@ -7151,7 +7151,7 @@ bool EditSession::PointSelectPoly(V2d &pos)
 
 
 				grabbedObject = (*it);
-				AddToSelectedBrush((*it));
+				SelectObject((*it));
 			}
 
 			return true;
@@ -7246,18 +7246,18 @@ bool EditSession::BoxSelectActors(sf::IntRect &rect)
 				{
 					if ((*ait)->selected)
 					{
-						RemoveFromSelectedBrush((*ait));
+						DeselectObject((*ait));
 					}
 					else
 					{
-						AddToSelectedBrush((*ait));
+						SelectObject((*ait));
 						if ((*ait)->myEnemy != NULL)
 							(*ait)->myEnemy->SetActionEditLoop();
 					}
 				}
 				else
 				{
-					AddToSelectedBrush((*ait));
+					SelectObject((*ait));
 					if ((*ait)->myEnemy != NULL)
 						(*ait)->myEnemy->SetActionEditLoop();
 				}
@@ -7282,16 +7282,16 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 			{
 				if ((*it)->selected)
 				{
-					RemoveFromSelectedBrush((*it));
+					DeselectObject((*it));
 				}
 				else
 				{
-					AddToSelectedBrush((*it));
+					SelectObject((*it));
 				}
 			}
 			else
 			{
-				AddToSelectedBrush((*it));
+				SelectObject((*it));
 			}
 
 
@@ -7316,16 +7316,16 @@ bool EditSession::BoxSelectPolys(sf::IntRect &rect)
 			{
 				if ((*it)->selected)
 				{
-					RemoveFromSelectedBrush((*it));
+					DeselectObject((*it));
 				}
 				else
 				{
-					AddToSelectedBrush((*it));
+					SelectObject((*it));
 				}
 			}
 			else
 			{
-				AddToSelectedBrush((*it));
+				SelectObject((*it));
 			}
 
 			found = true;
@@ -7346,16 +7346,16 @@ bool EditSession::BoxSelectRails(sf::IntRect &rect)
 			{
 				if ((*it)->selected)
 				{
-					RemoveFromSelectedBrush((*it));
+					DeselectObject((*it));
 				}
 				else
 				{
-					AddToSelectedBrush((*it));
+					SelectObject((*it));
 				}
 			}
 			else
 			{
-				AddToSelectedBrush((*it));
+				SelectObject((*it));
 			}
 
 			found = true;
