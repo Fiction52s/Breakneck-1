@@ -3230,6 +3230,53 @@ bool EditSession::PointSelectDecor(V2d &pos)
 	return false;
 }
 
+bool EditSession::AnchorSelectedEnemies()
+{
+	ActorPtr actor;
+	for( auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it )
+	{
+		actor = (*it)->GetAsActor();
+		if (actor == NULL)
+			continue;
+
+		if (actor->posInfo.ground != NULL) //might need a thing here for rails too
+		{
+			Action *gAction = new GroundAction(actor);
+			gAction->performed = true;
+
+			if (moveAction != NULL)
+			{
+				//was already ungrounded at the beginning of the move
+				moveAction->subActions.push_back(gAction);
+			}
+			else
+			{
+				//started in the air
+				Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
+				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointVectorMap(), RailPointMap());
+
+				action->Perform();
+
+				moveAction = new CompoundAction;
+				moveAction->subActions.push_back(action);
+				moveAction->subActions.push_back(gAction);
+				//doneActionStack.push_back(moveAction);
+			}
+
+			//return true;
+		}
+	}
+
+	if (moveAction != NULL)
+	{
+		doneActionStack.push_back(moveAction);
+		return true;
+	}
+		
+
+	return false;
+}
+
 bool EditSession::AnchorSelectedAerialEnemy()
 {
 	if (IsSingleActorSelected())
@@ -7638,8 +7685,8 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 	PositionInfo grabbedActorInfo;
 
 
-
-	extraDelta = Vector2i(worldPos) - Vector2i(grabbedActor->GetGrabAABBCenter());
+	V2d grabCenter = V2d(grabbedActor->GetGrabAABBCenter());
+	extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
 	/*if (!grabbedActor->posInfo.IsAerial() && grabbedActor->type->CanBeGrounded() )
 	{
 		grabbedActor->UnAnchor();
@@ -7647,6 +7694,7 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 		grabbedActor->myEnemy->UpdateFromEditParams(0);
 	}*/
 
+	V2d actorNewPos;
 	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it, ++piIndex)
 	{
 		actor = (*it)->GetAsActor();
@@ -7661,6 +7709,12 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 				if (actor == grabbedActor)
 				{
 					//extraDelta = Vector2i(worldPos) - Vector2i(grabbedActor->GetGrabAABBCenter());
+				}
+				else
+				{
+					actorNewPos = grabCenter + actor->diffFromGrabbed;
+					actorNewPos = actorNewPos - actor->GetPosition();
+					actor->Move(Vector2i( round(actorNewPos.x), round(actorNewPos.y) ));
 				}
 				
 				//unanchored = actor->UnAnchor();
@@ -7721,13 +7775,11 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 			actor = (*it)->GetAsActor();
 			currDiff = piVec[piIndex].GetPosition() - grabbedActorInfo.GetPosition();//actor->GetPosition() - grabbedActor->GetPosition();
 			currDiffAngle = piVec[piIndex].GetEdge()->GetNormalAngleRadians() - grabbedActorInfo.GetEdge()->GetNormalAngleRadians();
-			if( length( currDiff - actor->diffFromGrabbed ) > .01 && currDiffAngle - actor->diffFromGrabbedAngle > .01 )
+			/*if( length( currDiff - actor->diffFromGrabbed ) > .01 || currDiffAngle - actor->diffFromGrabbedAngle > .01 )
 			{
 				alignmentMaintained = false;
 				break;
-			}
-			/*actor->AnchorToGround(piVec[piIndex]);
-			piVec[piIndex].AddActor(actor);*/
+			}*/
 		}
 
 		if (alignmentMaintained)
@@ -9673,7 +9725,7 @@ void EditSession::EditModeHandleEvent()
 			if (editStartMove)
 			{
 				bool done = false;
-				if (AnchorSelectedAerialEnemy())
+				if (AnchorSelectedEnemies() )//AnchorSelectedAerialEnemy())
 				{
 					done = true;
 				}

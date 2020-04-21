@@ -671,6 +671,7 @@ struct EditSession : GUIHandler, Session
 	void RemovePointFromRailInProgress();
 
 	bool AnchorSelectedAerialEnemy();
+	bool AnchorSelectedEnemies();
 
 	void MoveSelectedActor( sf::Vector2i &delta );
 	void MoveSelectedActors(sf::Vector2i &delta);
