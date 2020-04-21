@@ -76,6 +76,18 @@ void EditSession::ClearSelectedBrush()
 	grabbedObject = NULL;
 }
 
+void EditSession::AddToSelectedBrush(SelectPtr sel)
+{
+	sel->SetSelected(true);
+	selectedBrush->AddObject(sel);
+}
+
+void EditSession::RemoveFromSelectedBrush(SelectPtr sel)
+{
+	sel->SetSelected(false);
+	selectedBrush->RemoveObject(sel);
+}
+
 void EditSession::TestPlayerModeUpdate()
 {
 	double newTime = gameClock.getElapsedTime().asSeconds();
@@ -3165,8 +3177,8 @@ bool EditSession::PointSelectActor( V2d &pos )
 					if( (*ait)->myEnemy != NULL )
 						(*ait)->myEnemy->SetActionEditLoop(); //just for testing
 					//(*ait)->myEnemy->action = (*)
-					(*ait)->SetSelected(true);
-					selectedBrush->AddObject((*ait));
+
+					AddToSelectedBrush((*ait));
 				}
 				return true;
 			}
@@ -3201,10 +3213,8 @@ bool EditSession::PointSelectDecor(V2d &pos)
 					ClearSelectedBrush();
 				}
 
-				(*it)->SetSelected(true);
-
 				grabbedObject = (*it);
-				selectedBrush->AddObject((*it));
+				AddToSelectedBrush((*it));
 			}
 
 			return true;
@@ -3250,10 +3260,6 @@ bool EditSession::AnchorSelectedAerialEnemy()
 
 			return true;
 		}
-
-		//ClearSelectedBrush();
-		//actor->SetSelected(false);
-		//selectedBrush->RemoveObject(actor);
 	}
 	return false;
 }
@@ -7072,10 +7078,10 @@ bool EditSession::PointSelectGeneralRail(V2d &pos)
 					ClearSelectedBrush();
 				}
 
-				(*it)->SetSelected(true);
 
 				grabbedObject = (*it);
-				selectedBrush->AddObject((*it));
+
+				AddToSelectedBrush((*it));
 			}
 
 			return true;
@@ -7143,10 +7149,9 @@ bool EditSession::PointSelectPoly(V2d &pos)
 					ClearSelectedBrush();
 				}
 
-				(*it)->SetSelected(true);
 
 				grabbedObject = (*it);
-				selectedBrush->AddObject((*it));
+				AddToSelectedBrush((*it));
 			}
 
 			return true;
@@ -7241,21 +7246,18 @@ bool EditSession::BoxSelectActors(sf::IntRect &rect)
 				{
 					if ((*ait)->selected)
 					{
-						(*ait)->SetSelected(false);
-						selectedBrush->RemoveObject((*ait)); //might be slow?
+						RemoveFromSelectedBrush((*ait));
 					}
 					else
 					{
-						(*ait)->SetSelected(true);
-						selectedBrush->AddObject((*ait));
+						AddToSelectedBrush((*ait));
 						if ((*ait)->myEnemy != NULL)
 							(*ait)->myEnemy->SetActionEditLoop();
 					}
 				}
 				else
 				{
-					(*ait)->SetSelected(true);
-					selectedBrush->AddObject((*ait));
+					AddToSelectedBrush((*ait));
 					if ((*ait)->myEnemy != NULL)
 						(*ait)->myEnemy->SetActionEditLoop();
 				}
@@ -7280,19 +7282,16 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 			{
 				if ((*it)->selected)
 				{
-					(*it)->SetSelected(false);
-					selectedBrush->RemoveObject((*it)); //might be slow?
+					RemoveFromSelectedBrush((*it));
 				}
 				else
 				{
-					(*it)->SetSelected(true);
-					selectedBrush->AddObject((*it));
+					AddToSelectedBrush((*it));
 				}
 			}
 			else
 			{
-				(*it)->SetSelected(true);
-				selectedBrush->AddObject((*it));
+				AddToSelectedBrush((*it));
 			}
 
 
@@ -7317,19 +7316,16 @@ bool EditSession::BoxSelectPolys(sf::IntRect &rect)
 			{
 				if ((*it)->selected)
 				{
-					(*it)->SetSelected(false);
-					selectedBrush->RemoveObject((*it));
+					RemoveFromSelectedBrush((*it));
 				}
 				else
 				{
-					(*it)->SetSelected(true);
-					selectedBrush->AddObject((*it));
+					AddToSelectedBrush((*it));
 				}
 			}
 			else
 			{
-				(*it)->SetSelected(true);
-				selectedBrush->AddObject((*it));
+				AddToSelectedBrush((*it));
 			}
 
 			found = true;
@@ -7350,19 +7346,16 @@ bool EditSession::BoxSelectRails(sf::IntRect &rect)
 			{
 				if ((*it)->selected)
 				{
-					(*it)->SetSelected(false);
-					selectedBrush->RemoveObject((*it));
+					RemoveFromSelectedBrush((*it));
 				}
 				else
 				{
-					(*it)->SetSelected(true);
-					selectedBrush->AddObject((*it));
+					AddToSelectedBrush((*it));
 				}
 			}
 			else
 			{
-				(*it)->SetSelected(true);
-				selectedBrush->AddObject((*it));
+				AddToSelectedBrush((*it));
 			}
 
 			found = true;

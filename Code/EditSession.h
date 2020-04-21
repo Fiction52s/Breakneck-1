@@ -187,6 +187,8 @@ struct EditSession : GUIHandler, Session
 	void WriteInversePoly(std::ofstream &of);
 
 	void ClearSelectedBrush();
+	void AddToSelectedBrush(SelectPtr sel);
+	void RemoveFromSelectedBrush(SelectPtr sel);
 
 	int tempWriteIndex;
 
