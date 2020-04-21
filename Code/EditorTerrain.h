@@ -317,6 +317,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	Tileset *ts_grass;
 	void SetupEdges();
+	bool CheckOtherSideRay(V2d &inputPos,
+		V2d &checkPos, Edge *e);
 	std::vector<Edge> edges;
 	void AddEdgesToQuadTree(QuadTree *tree);
 	//QuadTree *edgeTree;

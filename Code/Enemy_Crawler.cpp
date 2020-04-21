@@ -452,12 +452,6 @@ void Crawler::FrameIncrement()
 
 void Crawler::EnemyDraw(sf::RenderTarget *target )
 {
-	FloatRect abTest = GetAABB();
-	cout << "top: " << abTest.top << endl;
-	if (abTest.top > 1426)
-	{
-		int xxx = 5;
-	}
 	if (action == UNDERGROUND)
 		return; 
 	target->draw(auraSprite);
@@ -517,11 +511,6 @@ void Crawler::HandleNoHealth()
 
 void Crawler::UpdateSprite()
 {
-	FloatRect abTest = GetAABB();
-	if (abTest.top > 1426)
-	{
-		int xxx = 5;
-	}
 	V2d gn = mover->ground->Normal();
 	V2d gPoint = mover->ground->GetPosition(mover->edgeQuantity);
 
@@ -616,13 +605,6 @@ void Crawler::UpdateSprite()
 			sprite.setRotation(editParams->posInfo.GetGroundAngleDegrees());
 		}*/
 	}
-
-	FloatRect abTest2 = GetAABB();
-	if (abTest2.top > 1426)
-	{
-		int xxx = 5;
-	}
-
 	SyncSpriteInfo(auraSprite, sprite);
 }
 

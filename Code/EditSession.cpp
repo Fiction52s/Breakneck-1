@@ -5392,12 +5392,14 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 		actorAABB.width += diff;
 	}
 
+	Edge *edge;
 
 	double testRadius = a->type->info.size.y * ( 2.0 / 3.0 );//actorAABB.width / 3;//a->type->info.size.y /2;//actorAABB.height;//200
 	//testPoint = a->GetIntPos();
 
 	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
+		bool pointInPoly = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));
 		//contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y));;//(*it)->Intersects(actorAABB);//true;//
 		contains = (*it)->Intersects(actorAABB);
 
@@ -5419,6 +5421,7 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 			{
 				curr = (*it)->GetPoint(i);
 				prev = (*it)->GetPrevPoint(i);
+				edge = (*it)->GetEdge(i);
 
 				double dist = //abs(
 					cross(
@@ -5444,7 +5447,16 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
 					(testQuantity / length(cu - pr)));
 
-				if (((dist >= 0 && dist < testRadius) || (dist < 0 && dist > - 200 )) && testQuantity >= 0 && testQuantity <= length(cu - pr)
+				V2d norm = edge->Normal();
+				//if( cross( worldPos - edge->v0,edge->Along()))
+
+				/*if (!(*it)->CheckOtherSideRay(worldPos, newPoint, edge))
+				{
+					continue;
+				}*/
+
+
+				if (((dist >= 0 && dist < testRadius) || (pointInPoly && dist < 0 && dist > - 200 )) && testQuantity >= 0 && testQuantity <= length(cu - pr)
 					&& length(newPoint - te) < length(closestPoint - te))
 				{
 					minDistance = dist;
@@ -7595,7 +7607,7 @@ bool EditSession::IsSingleActorSelected()
 
 void EditSession::AddActorMove(Action *a)
 {
-	if( moveAction )
+	//if( moveAction )
 }
 
 void EditSession::MoveSelectedActor( Vector2i &delta )
@@ -7606,18 +7618,18 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 	{
 		ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
 		//Vector2i aabb = actor->GetAABB();
-		Vector2i extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//actor->GetIntPos();
-		//Vector2i extraDelta = actor->GetIntPos() - Vector2i(worldPos);
+		//Vector2i extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//actor->GetIntPos();
+		Vector2i extraDelta = Vector2i(0, 0);//actor->GetIntPos() - Vector2i(worldPos);
 		//cout << "extraDelta: " << extraDelta.x << ", " << extraDelta.y << endl;
 		bool unanchored = false;
 		if (actor->type->CanBeGrounded())
 		{
 			if( !actor->posInfo.IsAerial() )
 			{
-				unanchored = actor->UnAnchor(V2d(0,0));
+				unanchored = actor->UnAnchor();
 				if (unanchored)
 				{
-					extraDelta = Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);
+					extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);
 				}
 				//selectedBrush->Move(delta + extraDelta);
 			}
@@ -7638,7 +7650,7 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 		{
 			if (!actor->posInfo.IsAerial())
 			{
-				actor->UnAnchor(worldPos);
+				actor->UnAnchor();
 			}
 
 			if (worldPosRail.railGround != NULL)
@@ -7682,9 +7694,22 @@ void EditSession::StartTerrainMove()
 		}
 	}
 
-	//moveAction = selectedBrush->UnAnchor(V2d(delta));
+	if (IsSingleActorSelected())
+	{
+		ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+		moveAction = new CompoundAction;
+		
+		Action *newAction = new LeaveGroundAction(a, worldPos - V2d(a->GetGrabAABBCenter()));
+		newAction->Perform();
+		moveAction->AddSubAction(newAction);
+	}
+	
+
+	//action->subActions.push_back(newAction);
+
+	/*moveAction = selectedBrush->UnAnchor();
 	if (moveAction != NULL)
-		moveAction->Perform();
+		moveAction->Perform();*/
 
 	selectedBrush->Move(delta);
 

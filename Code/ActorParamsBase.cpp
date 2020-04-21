@@ -9,6 +9,7 @@
 #include <iostream>
 #include "EditorRail.h"
 #include "Enemy.h"
+#include "Action.h"
 
 using namespace std;
 using namespace sf;
@@ -383,9 +384,9 @@ void ActorParams::Draw(sf::RenderTarget *target)
 		
 	}
 
-	//DrawBoundary(target);
+	DrawBoundary(target);
 
-	DrawQuad(target);
+	//DrawQuad(target);
 }
 
 void ActorParams::DrawPreview(sf::RenderTarget *target)
@@ -617,6 +618,12 @@ double PositionInfo::GetGroundAngleDegrees()
 void PositionInfo::SetAerial( V2d &pos )
 {
 	position = pos;
+	ground = NULL;
+	railGround = NULL;
+}
+
+void PositionInfo::SetAerial()
+{
 	ground = NULL;
 	railGround = NULL;
 }
@@ -898,13 +905,25 @@ void ActorParams::AnchorToRail(PositionInfo &gi)
 	SetBoundingQuad();
 }
 
-#include "EditSession.h" //testing
-bool ActorParams::UnAnchor(V2d &pos)
+LeaveGroundAction * ActorParams::UnAnchorAction()
+{
+	return NULL;
+	/*LeaveGroundAction *leave = NULL;
+	assert(posInfo.ground != NULL);
+	if (posInfo.ground != NULL)
+	{
+		leave = new LeaveGroundAction(this);
+	}
+
+	return leave;*/
+}
+
+bool ActorParams::UnAnchor()
 {
 	assert(posInfo.ground != NULL);
 	if (posInfo.ground != NULL)
 	{
-		posInfo.SetAerial(pos + GetPosition());//EditSession::GetSession()->worldPos);//pos);//V2d(image.getPosition()));
+		posInfo.SetAerial();
 
 		image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 		image.setRotation(0);
@@ -912,6 +931,7 @@ bool ActorParams::UnAnchor(V2d &pos)
 		posInfo.RemoveActor(this);
 
 		SetBoundingQuad();
+
 		return true;
 	}
 

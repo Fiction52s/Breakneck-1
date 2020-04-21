@@ -11,6 +11,8 @@ struct TerrainPolygon;
 struct ActorGroup;
 struct ActorType;
 
+struct LeaveGroundAction;
+
 struct Edge;
 struct Enemy;
 
@@ -32,6 +34,7 @@ struct PositionInfo
 	void AddActor(ActorPtr a);
 	void RemoveActor(ActorPtr a);
 	void SetAerial( V2d &pos );
+	void SetAerial();
 	void SetGround(PolyPtr p_ground, int p_edgeIndex, double quant);
 	void SetRail(RailPtr p_rail, int p_edgeIndex, double quant);
 	int GetEdgeIndex();
@@ -76,7 +79,8 @@ struct ActorParams : ISelectable
 		int eIndex, double quantity);
 	void AnchorToGround(PositionInfo &gi);
 	void AnchorToRail(PositionInfo &gi);
-	bool UnAnchor(V2d &pos);
+	LeaveGroundAction * UnAnchorAction();
+	bool UnAnchor();
 	void UpdateGroundedSprite();
 
 	virtual std::vector<sf::Vector2i> MakeGlobalPath();

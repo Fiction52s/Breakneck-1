@@ -4695,6 +4695,24 @@ void TerrainPolygon::AddGatesToBrush(Brush *b,
 	}
 }
 
+bool TerrainPolygon::CheckOtherSideRay(V2d &inputPos,
+	V2d &checkPos, Edge *e)
+{
+	rcEdge = NULL;
+	rayStart = inputPos;
+	rayEnd = checkPos;
+	rcPortion = 9999999;
+	ignoreEdge = e;
+	RayCast(this, myTerrainTree->startNode, rayStart, rayEnd);
+
+	if (rcEdge != NULL)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 void TerrainPolygon::AddEnemiesToBrush(Brush *b)
 {
 	for (auto mit = enemies.begin(); mit != enemies.end(); ++mit)
