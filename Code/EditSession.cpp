@@ -1676,6 +1676,16 @@ ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, PolyPtr poly )
 	//return false;
 }
 
+void EditSession::AddDoneAction( Action *a )
+{
+	if (!doneActionStack.empty() && doneActionStack.back() == a)
+	{
+		int xxxxx = 5;
+		assert(0);
+	}
+	doneActionStack.push_back(a);
+}
+
 void EditSession::UndoMostRecentAction()
 {
 	if (doneActionStack.size() > 0)
@@ -1701,7 +1711,7 @@ void EditSession::RedoMostRecentUndoneAction()
 
 		action->Perform();
 
-		doneActionStack.push_back(action);
+		AddDoneAction(action);
 
 		ClearSelectedBrush();
 	}
@@ -3141,7 +3151,7 @@ void EditSession::TryRemoveSelectedPoints()
 		Action * action = new ReplaceBrushAction(&orig, &result, mapStartBrush);
 
 		action->Perform();
-		doneActionStack.push_back(action);
+		AddDoneAction(action);
 	}
 	/*else if (removeSuccess == 0)
 	{
@@ -3260,7 +3270,6 @@ bool EditSession::AnchorSelectedEnemies()
 				moveAction = new CompoundAction;
 				moveAction->subActions.push_back(action);
 				moveAction->subActions.push_back(gAction);
-				//doneActionStack.push_back(moveAction);
 			}
 
 			//return true;
@@ -3269,7 +3278,8 @@ bool EditSession::AnchorSelectedEnemies()
 
 	if (moveAction != NULL)
 	{
-		doneActionStack.push_back(moveAction);
+		AddDoneAction(moveAction);
+		moveAction = NULL;
 		return true;
 	}
 		
@@ -3290,7 +3300,7 @@ bool EditSession::AnchorSelectedAerialEnemy()
 			if (moveAction != NULL)
 			{
 				moveAction->subActions.push_back(gAction);
-				doneActionStack.push_back(moveAction);
+				AddDoneAction(moveAction);
 			}
 			else
 			{
@@ -3302,7 +3312,7 @@ bool EditSession::AnchorSelectedAerialEnemy()
 				moveAction = new CompoundAction;
 				moveAction->subActions.push_back(action);
 				moveAction->subActions.push_back(gAction);
-				doneActionStack.push_back(moveAction);
+				AddDoneAction(moveAction);
 			}
 
 			return true;
@@ -3311,7 +3321,7 @@ bool EditSession::AnchorSelectedAerialEnemy()
 	return false;
 }
 
-void EditSession::TryMoveSelectedBrush()
+void EditSession::TryCompleteSelectedMove()
 {
 	bool validMove = false;
 
@@ -3834,7 +3844,7 @@ void EditSession::PerformMovePointsAction()
 		}
 
 		testAction->performed = true;
-		doneActionStack.push_back(testAction);
+		AddDoneAction(testAction);
 		/*if (gateActionsAdded > 0)
 		{
 			testAction->performed = true;
@@ -5149,7 +5159,7 @@ void EditSession::CreateActor(ActorPtr actor)
 	b.AddObject(actor);
 	Action * action = new ApplyBrushAction(&b);
 	action->Perform();
-	doneActionStack.push_back(action);
+	AddDoneAction(action);
 }
 
 void EditSession::CreateDecorImage(DecorPtr dec)
@@ -5158,7 +5168,7 @@ void EditSession::CreateDecorImage(DecorPtr dec)
 	b.AddObject(dec);
 	Action * action = new ApplyBrushAction(&b);
 	action->Perform();
-	doneActionStack.push_back(action);
+	AddDoneAction(action);
 }
 
 void EditSession::CreatePreview(Vector2i imageSize)
@@ -5757,7 +5767,7 @@ bool EditSession::ExecuteTerrainCompletion()
 				Action *replaceAction = new ReplaceBrushAction(&orig, &result, mapStartBrush);
 				replaceAction->Perform();
 
-				doneActionStack.push_back(replaceAction);
+				AddDoneAction(replaceAction);
 
 				polygonInProgress->ClearPoints();
 			}
@@ -5811,7 +5821,7 @@ void EditSession::ExecuteRailCompletion()
 				Action *action = new ApplyBrushAction(progressBrush);
 
 				action->Perform();
-				doneActionStack.push_back(action);
+				AddDoneAction(action);
 				
 
 				RailPtr newRail(new TerrainRail());
@@ -5858,7 +5868,7 @@ void EditSession::SetInversePoly()
 	Action * action = new ReplaceBrushAction( &orig, progressBrush, mapStartBrush);
 
 	action->Perform();
-	doneActionStack.push_back(action);
+	AddDoneAction(action);
 
 	PolyPtr newPoly( new TerrainPolygon() );
 	polygonInProgress = newPoly;
@@ -5970,7 +5980,7 @@ void EditSession::PasteTerrain(Brush *b)
 		{
 			//assert(complexPaste == NULL);
 			complexPaste = new ComplexPasteAction(mapStartBrush);	
-			doneActionStack.push_back(complexPaste);
+			AddDoneAction(complexPaste);
 
 			lastBrushPastePos = worldPos;
 			brushRepeatDist = 20.0;
@@ -7037,14 +7047,14 @@ bool EditSession::PointSelectTerrain(V2d &pos)
 
 	if (pointSelectKeyHeld)
 	{
-		if (PointSelectPolyPoint(worldPos))
+		if (PointSelectPolyPoint(pos))
 		{
 			return true;
 		}
 	}
 	else
 	{
-		if (PointSelectPoly(worldPos))
+		if (PointSelectPoly(pos))
 		{
 			return true;
 		}
@@ -7623,7 +7633,7 @@ void EditSession::RemoveSelectedObjects()
 	Action *remove = new RemoveBrushAction(selectedBrush, mapStartBrush );
 
 	remove->Perform();
-	doneActionStack.push_back(remove);
+	AddDoneAction(remove);
 	
 
 	ClearSelectedBrush();
@@ -7663,19 +7673,11 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 
 	PositionInfo pi;
 
-	assert(grabbedActor != NULL);
+	//assert(grabbedActor != NULL);
 	Vector2i diffPerActor;
-
-	bool canAllBeAnchored;
 
 	std::vector<PositionInfo> piVec;
 	piVec.resize(selectedBrush->objects.size());
-
-	//std::vector<V2d> diffPerActorD;
-	//diffPerActorD.resize(piVec.size());
-
-	//std::vector<double> angleDiffPerActor;
-	//int mustBeAnchored = selectedBrush->GetNumActorsThatMustBeAnchored();
 
 	int piIndex = 0;
 	
@@ -7684,17 +7686,10 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 
 	PositionInfo grabbedActorInfo;
 
-
 	V2d grabCenter = V2d(grabbedActor->GetGrabAABBCenter());
 	extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
-	/*if (!grabbedActor->posInfo.IsAerial() && grabbedActor->type->CanBeGrounded() )
-	{
-		grabbedActor->UnAnchor();
-		extraDelta = Vector2i(worldPos) - Vector2i(grabbedActor->GetGrabAABBCenter());
-		grabbedActor->myEnemy->UpdateFromEditParams(0);
-	}*/
 
-	V2d actorNewPos;
+	V2d actorRealignDiff;
 	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it, ++piIndex)
 	{
 		actor = (*it)->GetAsActor();
@@ -7706,28 +7701,16 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 			if (!actor->posInfo.IsAerial())
 			{
 				actor->UnAnchor();
-				if (actor == grabbedActor)
+				if (actor != grabbedActor)
 				{
-					//extraDelta = Vector2i(worldPos) - Vector2i(grabbedActor->GetGrabAABBCenter());
+					actorRealignDiff = grabCenter + actor->diffFromGrabbed;
+					actorRealignDiff = actorRealignDiff - actor->GetPosition();
+					actor->Move(Vector2i(round(actorRealignDiff.x), round(actorRealignDiff.y)));
 				}
-				else
-				{
-					actorNewPos = grabCenter + actor->diffFromGrabbed;
-					actorNewPos = actorNewPos - actor->GetPosition();
-					actor->Move(Vector2i( round(actorNewPos.x), round(actorNewPos.y) ));
-				}
-				
-				//unanchored = actor->UnAnchor();
-				//if (unanchored && actor == grabbedActor)
-				//{
-				//	extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);
-				//}
-				//selectedBrush->Move(delta + extraDelta);
 			}
 		}
 	}
 	
-
 	piIndex = 0;
 	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it, ++piIndex)
 	{
@@ -7737,10 +7720,7 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 
 		if (actor->posInfo.ground == NULL && actor->type->CanBeGrounded() && !actor->type->CanBeAerial())
 		{
-			
 			numCanBeAnchored++;
-			//diffPerActorD[piIndex] = actor->GetPosition() - grabbedActor->GetPosition();
-			//diffPerActor = actor->GetIntPos() - grabbedActor->GetIntPos();
 			piVec[piIndex] = ConvertPointToGround(Vector2i(worldPos + actor->diffFromGrabbed));
 
 			if (piVec[piIndex].ground == NULL)
@@ -7750,7 +7730,6 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 			{
 				grabbedActorInfo = piVec[piIndex];
 			}
-
 			numWillBeAnchored++;
 		}
 	}
@@ -7773,13 +7752,8 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 			}
 
 			actor = (*it)->GetAsActor();
-			currDiff = piVec[piIndex].GetPosition() - grabbedActorInfo.GetPosition();//actor->GetPosition() - grabbedActor->GetPosition();
+			currDiff = piVec[piIndex].GetPosition() - grabbedActorInfo.GetPosition();
 			currDiffAngle = piVec[piIndex].GetEdge()->GetNormalAngleRadians() - grabbedActorInfo.GetEdge()->GetNormalAngleRadians();
-			/*if( length( currDiff - actor->diffFromGrabbed ) > .01 || currDiffAngle - actor->diffFromGrabbedAngle > .01 )
-			{
-				alignmentMaintained = false;
-				break;
-			}*/
 		}
 
 		if (alignmentMaintained)
@@ -7803,123 +7777,14 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 		}
 	}
 	
-	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it, ++piIndex)
+	//doesnt SEEM like this is needed but im not convinced yet
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 	{
 		actor = (*it)->GetAsActor();
 		if (actor == NULL)
 			continue;
-		actor->myEnemy->UpdateFromEditParams(0);
+		//actor->myEnemy->UpdateFromEditParams(0);
 	}
-	
-		
-
-	//	unanchored = false;
-	//	if (actor->type->CanBeGrounded())
-	//	{
-	//		if (!actor->posInfo.IsAerial())
-	//		{
-	//			if (actor->posInfo.ground != NULL)
-	//			{
-	//				unanchored = actor->UnAnchor();
-	//				if (unanchored)
-	//				{
-	//					extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);
-	//				}
-	//			}
-	//			else
-	//			{
-
-	//			}
-	//			
-	//		}
-	//		if (worldPosGround.ground != NULL)
-	//		{
-	//			actor->AnchorToGround(worldPosGround);
-	//			worldPosGround.AddActor(actor);
-	//		}
-	//		else
-	//		{
-	//			selectedBrush->Move(delta + extraDelta);
-	//			if (unanchored && actor->myEnemy != NULL) //might not need this
-	//				actor->myEnemy->UpdateFromEditParams(0);
-	//		}
-	//	}
-	//	else if (actor->type->CanBeRailGrounded())
-	//	{
-	//		if (!actor->posInfo.IsAerial())
-	//		{
-	//			actor->UnAnchor();
-	//		}
-
-	//		if (worldPosRail.railGround != NULL)
-	//		{
-	//			actor->AnchorToRail(worldPosRail);
-	//			worldPosRail.AddActor(actor);
-	//		}
-	//		else
-	//		{
-	//			selectedBrush->Move(delta + extraDelta);
-	//		}
-	//	}
-	//	else
-	//	{
-	//		selectedBrush->Move(delta + extraDelta);
-	//	}
-	//}
-	////feels like this could really be simplified later
-	//{
-	//	ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
-	//	//Vector2i aabb = actor->GetAABB();
-	//	//Vector2i extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//actor->GetIntPos();
-	//	Vector2i extraDelta = Vector2i(0, 0);//actor->GetIntPos() - Vector2i(worldPos);
-	//										 //cout << "extraDelta: " << extraDelta.x << ", " << extraDelta.y << endl;
-	//	bool unanchored = false;
-	//	if (actor->type->CanBeGrounded())
-	//	{
-	//		if (!actor->posInfo.IsAerial())
-	//		{
-	//			unanchored = actor->UnAnchor();
-	//			if (unanchored)
-	//			{
-	//				extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);
-	//			}
-	//			//selectedBrush->Move(delta + extraDelta);
-	//		}
-
-	//		if (worldPosGround.ground != NULL)
-	//		{
-	//			actor->AnchorToGround(worldPosGround);
-	//			worldPosGround.AddActor(actor);
-	//		}
-	//		else
-	//		{
-	//			selectedBrush->Move(delta + extraDelta);
-	//			if (unanchored && actor->myEnemy != NULL) //second update of the frame hm...this is because the aabb rotates, so the AABB center changes
-	//				actor->myEnemy->UpdateFromEditParams(0);
-	//		}
-	//	}
-	//	else if (actor->type->CanBeRailGrounded())
-	//	{
-	//		if (!actor->posInfo.IsAerial())
-	//		{
-	//			actor->UnAnchor();
-	//		}
-
-	//		if (worldPosRail.railGround != NULL)
-	//		{
-	//			actor->AnchorToRail(worldPosRail);
-	//			worldPosRail.AddActor(actor);
-	//		}
-	//		else
-	//		{
-	//			selectedBrush->Move(delta + extraDelta);
-	//		}
-	//	}
-	//	else
-	//	{
-	//		selectedBrush->Move(delta + extraDelta);
-	//	}
-	//}
 }
 
 void EditSession::MoveSelectedActor( Vector2i &delta )
@@ -7982,7 +7847,7 @@ void EditSession::MoveSelectedActor( Vector2i &delta )
 	}
 }
 
-void EditSession::StartTerrainMove()
+void EditSession::StartSelectedMove()
 {
 	editStartMove = true;
 	Vector2i pos(worldPos.x, worldPos.y);
@@ -8017,35 +7882,36 @@ void EditSession::StartTerrainMove()
 	}*/
 
 	//assumption that all are grounded atm
-	moveAction = selectedBrush->UnAnchor();
-	if (moveAction != NULL)
+	if (grabbedActor != NULL) //need to figure out how to separate terrain selection from enemies
 	{
-		ActorPtr actor;
-
-		grabbedActor->diffFromGrabbed = V2d(0, 0);
-		grabbedActor->diffFromGrabbedAngle = 0;
-
-		V2d grabbedGroundPos = grabbedActor->posInfo.GetPosition();
-		double grabbedGroundAngle = grabbedActor->posInfo.GetEdge()->GetNormalAngleRadians();
-
-		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+		moveAction = selectedBrush->UnAnchor();
+		if (moveAction != NULL)
 		{
-			actor = (*it)->GetAsActor();
-			if (actor == NULL || actor == grabbedActor)
-				continue;
+			ActorPtr actor;
 
-			if (actor->posInfo.ground != NULL)
+			grabbedActor->diffFromGrabbed = V2d(0, 0);
+			grabbedActor->diffFromGrabbedAngle = 0;
+
+			V2d grabbedGroundPos = grabbedActor->posInfo.GetPosition();
+			double grabbedGroundAngle = grabbedActor->posInfo.GetEdge()->GetNormalAngleRadians();
+
+			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
-				actor->diffFromGrabbed = actor->posInfo.GetPosition() - grabbedGroundPos;
-				actor->diffFromGrabbedAngle = actor->posInfo.GetEdge()->GetNormalAngleRadians() 
-					- grabbedGroundAngle;
+				actor = (*it)->GetAsActor();
+				if (actor == NULL || actor == grabbedActor)
+					continue;
+
+				if (actor->posInfo.ground != NULL)
+				{
+					actor->diffFromGrabbed = actor->posInfo.GetPosition() - grabbedGroundPos;
+					actor->diffFromGrabbedAngle = actor->posInfo.GetEdge()->GetNormalAngleRadians()
+						- grabbedGroundAngle;
+				}
 			}
+
+			moveAction->Perform();
 		}
-
-		moveAction->Perform();
 	}
-		
-
 
 	
 
@@ -8061,13 +7927,13 @@ void EditSession::StartTerrainMove()
 	editMouseGrabPos = pos;
 }
 
-void EditSession::ContinueTerrainMove()
+void EditSession::ContinueSelectedMove()
 {
 	Vector2i pos(worldPos.x, worldPos.y);
 	Vector2i delta = pos - editMouseGrabPos;
-
-	if( selectedPoints.empty() )
+	
 	//if (IsSingleActorSelected() && selectedPoints.empty())
+	if (selectedPoints.empty() && grabbedActor != NULL)
 	{
 		MoveSelectedActors(delta);
 		//MoveSelectedActor(delta);
@@ -8087,16 +7953,16 @@ void EditSession::ContinueTerrainMove()
 	editMouseGrabPos = Vector2i(worldPos);
 }
 
-void EditSession::TryTerrainMove()
+void EditSession::TrySelectedMove()
 {
 	//this secondary calculation makes the move not count for some window
 	if ((editMouseDownMove && !editStartMove ))// && length(V2d(editMouseGrabPos.x, editMouseGrabPos.y) - worldPos) > editMoveThresh * zoomMultiple))
 	{
-		StartTerrainMove();
+		StartSelectedMove();
 	}
 	else if (editMouseDownMove && editStartMove)
 	{
-		ContinueTerrainMove();
+		ContinueSelectedMove();
 	}
 	else if (editMouseDownBox)
 	{
@@ -9701,6 +9567,7 @@ void EditSession::EditModeHandleEvent()
 					editMouseDownMove = false;
 					editMouseDownBox = true;
 					editStartMove = false;
+					grabbedActor = NULL;
 				}
 				else
 				{
@@ -9735,7 +9602,7 @@ void EditSession::EditModeHandleEvent()
 					PerformMovePointsAction();
 				}
 
-				TryMoveSelectedBrush();
+				TryCompleteSelectedMove();
 			}
 			else if (editMouseDownBox)
 			{
@@ -9882,7 +9749,7 @@ void EditSession::EditModeHandleEvent()
 				Action * action = new ModifyTerrainTypeAction(
 					selectedBrush, tempGridX, tempGridY);
 				action->Perform();
-				doneActionStack.push_back(action);
+				AddDoneAction(action);
 			}
 
 			currTerrainWorld = tempGridX;
@@ -10720,8 +10587,7 @@ void EditSession::TransformModeHandleEvent()
 			Action *replaceAction = new ReplaceBrushAction(&origBrush, &resultBrush, mapStartBrush);
 			replaceAction->Perform();
 
-			doneActionStack.push_back(replaceAction);
-
+			AddDoneAction(replaceAction);
 		}
 		else if (ev.key.code == sf::Keyboard::BackSpace)
 		{
@@ -10898,11 +10764,9 @@ void EditSession::EditModeUpdate()
 		showPoints = false;
 	}
 
-
+	//cleanup this later
 	if (grabbedActor != NULL && grabbedActor->myEnemy != NULL)
 	{
-		
-
 		if (selectedBrush->objects.size() > 1)
 		{
 			ActorPtr actor;
@@ -10924,8 +10788,7 @@ void EditSession::EditModeUpdate()
 		}
 	}
 		
-
-	TryTerrainMove();
+	TrySelectedMove();
 
 	ModifyGrass();
 }
@@ -11076,7 +10939,7 @@ void EditSession::CreateGatesModeUpdate()
 		{
 			Action * action = new DeleteGateAction(modifyGate, mapStartBrush);
 			action->Perform();
-			doneActionStack.push_back(action);
+			AddDoneAction(action);
 
 			modifyGate = NULL;
 		}
@@ -11096,7 +10959,7 @@ void EditSession::CreateGatesModeUpdate()
 			}
 
 
-			doneActionStack.push_back(action);
+			AddDoneAction(action);
 			modifyGate = NULL;
 		}
 		return;
@@ -11147,12 +11010,12 @@ void EditSession::CreateGatesModeUpdate()
 					else
 					{
 						testAction->performed = true;
-						doneActionStack.push_back(testAction);
+						AddDoneAction(testAction);
 					}
 				}
 				else
 				{
-					doneActionStack.push_back(action);
+					AddDoneAction(action);
 				}
 			}
 			gatePoints = 0;

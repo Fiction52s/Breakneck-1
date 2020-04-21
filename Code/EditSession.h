@@ -537,9 +537,9 @@ struct EditSession : GUIHandler, Session
 	void MessagePop( const std::string &message );
 	void ErrorPop( const std::string &error );
 
-	void StartTerrainMove();
-	void ContinueTerrainMove();
-	void TryTerrainMove();
+	void StartSelectedMove();
+	void ContinueSelectedMove();
+	void TrySelectedMove();
 
 	void PreventNearPrimaryAnglesOnPolygonInProgress();
 	void PreventNearPrimaryAnglesOnRailInProgress();
@@ -581,6 +581,7 @@ struct EditSession : GUIHandler, Session
 	Brush *progressBrush;
 	std::list<Action*> doneActionStack;
 	std::list<Action*> undoneActionStack;
+	void AddDoneAction(Action *a);
 	void ClearUndoneActions();
 
 	void TempMoveSelectedBrush();
@@ -695,7 +696,7 @@ struct EditSession : GUIHandler, Session
 	sf::Vector2i pixelPos;
 	sf::Vector2i GetPixelPos();
 
-	void TryMoveSelectedBrush();
+	void TryCompleteSelectedMove();
 
 	Brush *mapStartBrush;
 	Brush *selectedBrush;

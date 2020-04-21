@@ -536,6 +536,7 @@ void PositionInfo::AddActor(ActorPtr a)
 	if (ground != NULL)
 	{
 		ground->enemies[GetPoint()].push_back(a);
+		//cout << "edge enemy size: " << ground->enemies[GetPoint()].size() << endl;
 		ground->UpdateBounds();
 	}
 	else if (railGround != NULL)
@@ -555,6 +556,8 @@ void PositionInfo::RemoveActor(ActorPtr a)
 	if (ground != NULL)
 	{
 		ground->enemies[GetPoint()].remove(a);
+		ground->UpdateBounds();
+		//cout << "removed edge actor: " << ground->enemies[GetPoint()].size() << endl;
 	}
 	else if (railGround != NULL)
 	{
@@ -830,6 +833,9 @@ void ActorParams::UpdateGroundedSprite()
 	{
 		image.setRotation(edge->GetNormalAngleDegrees());
 	}
+
+	if( myEnemy != NULL )
+		myEnemy->UpdateFromEditParams(0);
 }
 
 void ActorParams::AnchorToRail(TerrainRail *rail,
@@ -923,12 +929,12 @@ bool ActorParams::UnAnchor()
 	assert(posInfo.ground != NULL);
 	if (posInfo.ground != NULL)
 	{
+		posInfo.RemoveActor(this);
+
 		posInfo.SetAerial();
 
 		image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
 		image.setRotation(0);
-
-		posInfo.RemoveActor(this);
 
 		SetBoundingQuad();
 
@@ -1038,12 +1044,16 @@ bool ActorParams::IsPlacementOkay()
 void ActorParams::Move(sf::Vector2i delta)
 {
 	if (posInfo.IsAerial())
-	{
-		
+	{	
 		posInfo.position.x += delta.x;
 		posInfo.position.y += delta.y;
 		SetBoundingQuad();
 		image.setPosition(GetFloatPos());
+
+		/*if (myEnemy != NULL)
+		{
+			myEnemy->UpdateFromEditParams(0);
+		}*/
 	}
 }
 

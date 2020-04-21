@@ -19,11 +19,6 @@ struct Enemy;
 struct PositionInfo
 {
 	PositionInfo();
-	int edgeIndex;
-	//TerrainPoint *edgeStart;
-	double groundQuantity;
-	PolyPtr ground;
-	RailPtr railGround;
 	Edge *GetEdge();
 	double GetGroundAngleRadians();
 	double GetGroundAngleDegrees();
@@ -40,7 +35,12 @@ struct PositionInfo
 	int GetEdgeIndex();
 	V2d GetPosition();
 	void SetPosition(V2d &pos);
+
 	V2d position;
+	int edgeIndex;
+	double groundQuantity;
+	PolyPtr ground;
+	RailPtr railGround;
 };
 
 struct ActorParams : ISelectable
