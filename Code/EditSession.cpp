@@ -3630,6 +3630,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	double prevEnemyTotalSize;
 	double edgeLen;
 	double prevEdgeLen;
+
 	//can I use the pointmap instead of iterating through everything?
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
@@ -3677,6 +3678,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 					//	(*ait)->UpdateGroundedSprite();
 					}
 				}
+				//cout << "curr: " << poly->enemies.count(curr) << endl;
 
 				prevEnemyTotalSize = 0;
 				if (poly->enemies.count(prev) > 0)
@@ -3689,6 +3691,8 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 						(*ait)->SetBoundingQuad();
 					}
 				}
+
+				//cout << "prev: " << poly->enemies.count(prev) << endl;
 
 				edgeLen = edge->GetLength();
 				prevEdgeLen = prevEdge->GetLength();
@@ -3766,8 +3770,6 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 			
 			poly->UpdateBounds();
 		}
-
-		
 	}
 }
 
@@ -10820,13 +10822,24 @@ void EditSession::EditModeUpdate()
 		showGraph = true;
 	}
 
-	if (IsKeyPressed(Keyboard::B))
+	bool pressedB = IsKeyPressed(Keyboard::B);
+	if ( !showPoints && pressedB )
 	{
 		showPoints = true;
-	}
-	else
-	{
 		ClearSelectedPoints();
+	}
+	else if( !pressedB )
+	{
+		/*for (PointMap::iterator pmit = selectedPoints.begin();
+			pmit != selectedPoints.end(); ++pmit)
+		{
+			list<PointMoveInfo> & pList = (*pmit).second;
+			for (list<PointMoveInfo>::iterator pit = pList.begin();
+				pit != pList.end(); ++pit)
+			{
+				(*pit).poly->SetRenderMode(TerrainPolygon::RenderMode::RENDERMODE_NORMAL);
+			}
+		}*/
 		showPoints = false;
 	}
 
