@@ -158,7 +158,8 @@ struct ActorParams : ISelectable
 
 	int enemyLevel;
 
-	V2d diffFromGrabbed;
+	V2d diffFromGrabbed; //used for multi-enemy move
+	double oldQuant; //used for moving points on an edge
 };
 
 #endif

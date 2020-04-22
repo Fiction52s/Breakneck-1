@@ -241,6 +241,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void DrawPoints(sf::RenderTarget *target,
 		double zoomMultiple, TerrainPoint *dontShow);
 
+	ActorPtr GetClosestEnemy(int index, double &minQuant);
+	ActorPtr GetFurthestEnemy(int index, double &maxQuant);
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
 

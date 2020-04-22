@@ -4847,6 +4847,68 @@ void TerrainPolygon::HandleQuery(QuadTreeCollider *qtc)
 	qtc->HandleEntrant(this);
 }
 
+ActorPtr TerrainPolygon::GetClosestEnemy(int index, double &minQuant )
+{
+	ActorPtr minActor = NULL;
+	double currMinQuant;
+	if (enemies.find(GetPoint(index)) != enemies.end())
+	{
+		list<ActorPtr> &actorList = enemies[GetPoint(index)];
+		for (auto it = actorList.begin(); it != actorList.end(); ++it)
+		{
+			currMinQuant = (*it)->posInfo.groundQuantity - (*it)->type->info.size.x / 2;
+			if (it == actorList.begin())
+			{
+				minQuant = currMinQuant;
+				minActor = (*it);
+			}
+				
+			else
+			{
+				if (currMinQuant < minQuant)
+				{
+					minQuant = currMinQuant;
+					minActor = (*it);
+				}
+			}
+
+		}
+	}
+
+	return minActor;
+}
+
+ActorPtr TerrainPolygon::GetFurthestEnemy(int index, double &maxQuant)
+{
+	ActorPtr maxActor = NULL;
+	double currMinQuant;
+	if (enemies.find(GetPoint(index)) != enemies.end())
+	{
+		list<ActorPtr> &actorList = enemies[GetPoint(index)];
+		for (auto it = actorList.begin(); it != actorList.end(); ++it)
+		{
+			currMinQuant = (*it)->posInfo.groundQuantity + (*it)->type->info.size.x / 2;
+			if (it == actorList.begin())
+			{
+				maxQuant = currMinQuant;
+				maxActor = (*it);
+			}
+
+			else
+			{
+				if (currMinQuant > maxQuant)
+				{
+					maxQuant = currMinQuant;
+					maxActor = (*it);
+				}
+			}
+
+		}
+	}
+
+	return maxActor;
+}
+
 bool TerrainPolygon::IsTouchingBox(const sf::Rect<double> &r)
 {
 	Rect<double> aabb(GetAABB());

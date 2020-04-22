@@ -3631,6 +3631,8 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	double edgeLen;
 	double prevEdgeLen;
 
+	bool failMove;
+	double oldPrevLength;
 	//can I use the pointmap instead of iterating through everything?
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
@@ -3646,6 +3648,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 
 		polyNumP = poly->GetNumPoints();
 		
+		failMove = false;
 
 		for (int i = 0; i < polyNumP; ++i)
 		{
@@ -3656,23 +3659,82 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 
 				curr->oldPos = curr->pos;
 
-				poly->MovePoint(i, pointGrabDelta);
-
-
 				edge = poly->GetEdge(i);
 				prevEdge = poly->GetPrevEdge(i);
+
+				oldPrevLength = prevEdge->GetLength();
+
+				if (poly->enemies.count(prev) > 0)
+				{
+					list<ActorPtr> &enemies = poly->enemies[prev];
+					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					{
+						(*ait)->oldQuant = (*ait)->posInfo.groundQuantity;
+					}
+				}
+
+
+
+
+				poly->MovePoint(i, pointGrabDelta);
+
+				edgeLen = edge->GetLength();
+				prevEdgeLen = prevEdge->GetLength();
+
+				if (prevEdgeLen != oldPrevLength)
+				{
+					if (poly->enemies.count(prev) > 0)
+					{
+						list<ActorPtr> &enemies = poly->enemies[prev];
+						for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+						{
+							(*ait)->posInfo.groundQuantity -= (oldPrevLength - prevEdgeLen);
+						}
+					}
+				}
+				
 				//if( edge->GetLength() < 
+
+				double maxQuant;
+				ActorPtr furthest = poly->GetFurthestEnemy(i, maxQuant);
+				if (furthest != NULL && maxQuant > edgeLen)
+				{
+					poly->SetPointPos(i, Vector2i(edge->v1 - edge->Along() * maxQuant)); //works!
+				}
+
+				double minQuant;
+				ActorPtr closest = poly->GetClosestEnemy(prev->GetIndex(), minQuant);
+				if (closest != NULL && minQuant < 0)
+				{
+					cout << "blah: " << prevEdgeLen - minQuant << endl;
+					poly->SetPointPos(i, Vector2i(prevEdge->v0 + prevEdge->Along() * (prevEdgeLen - minQuant))); 
+
+
+					if (prevEdgeLen != oldPrevLength)
+					{
+						if (poly->enemies.count(prev) > 0)
+						{
+							list<ActorPtr> &enemies = poly->enemies[prev];
+							for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+							{
+								(*ait)->posInfo.groundQuantity += -minQuant;
+							}
+						}
+					}
+				}
+
+
+				enemyTotalSize = 0;
 
 				poly->UpdateLineColor(prev->index);
 				poly->UpdateLineColor(i);
 
-				enemyTotalSize = 0;
 				if (poly->enemies.count(curr) > 0)
 				{
 					list<ActorPtr> &enemies = poly->enemies[curr];
 					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
 					{
-						enemyTotalSize += (*ait)->type->info.size.x;
+						//enemyTotalSize += (*ait)->type->info.size.x;
 						(*ait)->UpdateGroundedSprite();
 						(*ait)->SetBoundingQuad();
 					//	(*ait)->UpdateGroundedSprite();
@@ -3686,7 +3748,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 					list<ActorPtr> &enemies = poly->enemies[prev];
 					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
 					{
-						prevEnemyTotalSize += (*ait)->type->info.size.x;
+						//prevEnemyTotalSize += (*ait)->type->info.size.x;
 						(*ait)->UpdateGroundedSprite();
 						(*ait)->SetBoundingQuad();
 					}
@@ -3694,25 +3756,24 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 
 				//cout << "prev: " << poly->enemies.count(prev) << endl;
 
-				edgeLen = edge->GetLength();
-				prevEdgeLen = prevEdge->GetLength();
+				
 
-				if (edgeLen < enemyTotalSize && prevEdgeLen < prevEnemyTotalSize)
-				{
-					poly->MovePoint(i, Vector2i(-pointGrabDelta));
-					/*V2d bisector = normalize(-edge->Along() + prevEdge->Along());
-					V2d center = (edge->v1 + prevEdge->v0) / 2.0;*/
-				}
-				else if (edgeLen < enemyTotalSize)
-				{
-					V2d test = edge->v1 - edge->Along() * enemyTotalSize;
-					poly->SetPointPos(i, Vector2i(test));
-				}
-				else if (prevEdgeLen < prevEnemyTotalSize)
-				{
-					V2d test = prevEdge->v0 + prevEdge->Along() * prevEnemyTotalSize;
-					poly->SetPointPos(i, Vector2i(test));
-				}
+				//if (edgeLen < enemyTotalSize && prevEdgeLen < prevEnemyTotalSize)
+				//{
+				//	poly->MovePoint(i, Vector2i(-pointGrabDelta));
+				//	/*V2d bisector = normalize(-edge->Along() + prevEdge->Along());
+				//	V2d center = (edge->v1 + prevEdge->v0) / 2.0;*/
+				//}
+				//else if (edgeLen < enemyTotalSize)
+				//{
+				//	V2d test = edge->v1 - edge->Along() * enemyTotalSize;
+				//	poly->SetPointPos(i, Vector2i(test));
+				//}
+				//else if (prevEdgeLen < prevEnemyTotalSize)
+				//{
+				//	V2d test = prevEdge->v0 + prevEdge->Along() * prevEnemyTotalSize;
+				//	poly->SetPointPos(i, Vector2i(test));
+				//}
 
 				affected = true;
 			}
