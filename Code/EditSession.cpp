@@ -3624,9 +3624,12 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	PolyPtr poly;
 
 	Edge *edge; //use prev edge also
+	Edge *prevEdge;
 
 	double enemyTotalSize;
+	double prevEnemyTotalSize;
 	double edgeLen;
+	double prevEdgeLen;
 	//can I use the pointmap instead of iterating through everything?
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
@@ -3656,6 +3659,7 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 
 
 				edge = poly->GetEdge(i);
+				prevEdge = poly->GetPrevEdge(i);
 				//if( edge->GetLength() < 
 
 				poly->UpdateLineColor(prev->index);
@@ -3674,17 +3678,37 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 					}
 				}
 
-				edgeLen = edge->GetLength();
-
-				V2d test = edge->v1 - edge->Along() * enemyTotalSize;
-				if (edgeLen < enemyTotalSize)
+				prevEnemyTotalSize = 0;
+				if (poly->enemies.count(prev) > 0)
 				{
-					poly->SetPointPos(i, Vector2i(test));//Vector2i(edge->GetPosition(enemyTotalSize)));
-					//sf::Mouse::setPosition(sf::Mouse::getPosition() - pointGrabDelta);//zoom1
-						//preScreenTex->mapCoordsToPixel(Vector2f(-pointGrabDelta)));
-					//poly->MovePoint(i, -pointGrabDelta);
+					list<ActorPtr> &enemies = poly->enemies[prev];
+					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					{
+						prevEnemyTotalSize += (*ait)->type->info.size.x;
+						(*ait)->UpdateGroundedSprite();
+						(*ait)->SetBoundingQuad();
+					}
 				}
-				
+
+				edgeLen = edge->GetLength();
+				prevEdgeLen = prevEdge->GetLength();
+
+				if (edgeLen < enemyTotalSize && prevEdgeLen < prevEnemyTotalSize)
+				{
+					poly->MovePoint(i, Vector2i(-pointGrabDelta));
+					/*V2d bisector = normalize(-edge->Along() + prevEdge->Along());
+					V2d center = (edge->v1 + prevEdge->v0) / 2.0;*/
+				}
+				else if (edgeLen < enemyTotalSize)
+				{
+					V2d test = edge->v1 - edge->Along() * enemyTotalSize;
+					poly->SetPointPos(i, Vector2i(test));
+				}
+				else if (prevEdgeLen < prevEnemyTotalSize)
+				{
+					V2d test = prevEdge->v0 + prevEdge->Along() * prevEnemyTotalSize;
+					poly->SetPointPos(i, Vector2i(test));
+				}
 
 				affected = true;
 			}
@@ -3712,6 +3736,16 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 					(*ait)->SetBoundingQuad();
 				}
 			}
+
+			if (poly->enemies.count(prev) > 0)
+			{
+				list<ActorPtr> &enemies = poly->enemies[prev];
+				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+				{					
+					(*ait)->UpdateGroundedSprite();
+					(*ait)->SetBoundingQuad();
+				}
+			}
 		}
 		
 		//this doesnt seem very clean
@@ -3729,7 +3763,6 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 					(*ait)->SetBoundingQuad();
 				}
 			}
-
 			
 			poly->UpdateBounds();
 		}
