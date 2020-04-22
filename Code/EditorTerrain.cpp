@@ -7,6 +7,16 @@
 using namespace std;
 using namespace sf;
 
+TerrainPoint *PointMoveInfo::GetPolyPoint()
+{
+	return poly->GetPoint(pointIndex);
+}
+
+TerrainPoint *PointMoveInfo::GetRailPoint()
+{
+	return rail->GetPoint(pointIndex);
+}
+
 bool EditorDecorInfo::CompareDecorInfoLayer( EditorDecorInfo &di0, EditorDecorInfo &di1)
 {
 	return di0.layer < di1.layer;

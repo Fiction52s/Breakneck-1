@@ -62,6 +62,8 @@ struct TerrainPoint
 	bool ContainsPoint(sf::Vector2f test);
 	bool Intersects(sf::IntRect rect);
 
+	sf::Vector2i oldPos;
+
 	int index;
 	static const int POINT_RADIUS = 5;
 };
@@ -100,11 +102,16 @@ struct DetailedInter
 
 struct PointMoveInfo
 {
-	PointMoveInfo(TerrainPoint *poi)
-		:point(poi), origPos(poi->pos),
-		delta(0, 0), moveIntent(false)
+	PointMoveInfo()
+		:delta(0, 0), moveIntent(false),
+		poly( NULL ), rail( NULL )
 	{}
-	TerrainPoint *point;
+	PolyPtr poly;
+	RailPtr rail;
+	int pointIndex;
+	TerrainPoint *GetPolyPoint();
+	TerrainPoint *GetRailPoint();
+	//TerrainPoint *point;
 	sf::Vector2i delta;
 	sf::Vector2i origPos;
 	bool moveIntent;
@@ -231,6 +238,9 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	TerrainPolygon *queryNext; //for quadtree setuff
 
+	void DrawPoints(sf::RenderTarget *target,
+		double zoomMultiple, TerrainPoint *dontShow);
+
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
 
@@ -344,6 +354,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	static sf::Vector2i GetExtreme(TerrainPoint *p0,
 		TerrainPoint *p1);
 	Edge *GetEdge(int index);
+	Edge *GetPrevEdge(int index);
 	TerrainPoint *GetPoint(int index);
 	TerrainPoint *GetInverseOuterRectPoint(int index);
 	TerrainPoint *GetFinalizeInversePoint(int index);
@@ -356,7 +367,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	bool AABBIntersection(PolyPtr poly);
 	bool IsOtherAABBWithinMine(PolyPtr poly);
-	bool PointsTooCloseToEachOther();
+	bool PointsTooCloseToEachOther(double radius );
 	bool LinesIntersectMyself();
 	bool HasSlivers();
 	bool IntersectsMyOwnEnemies();
@@ -383,8 +394,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void CopyPoints(PolyPtr poly,
 		bool storeSelected = false );
 	PolyPtr Copy();
-	void MovePoint(sf::Vector2i &delta,
-		TerrainPoint *tp);
 	bool IsSpecialPoly();
 	bool IsTouchingEnemiesFromPoly(PolyPtr p);
 
@@ -451,7 +460,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	bool IsInternallyValid();
 	sf::IntRect GetAABB();
 	V2d GetDCenter();
-
+	void MovePoint( int index, sf::Vector2i &delta);
+	void SetPointPos(int index, sf::Vector2i &p);
 	bool ContainsPoint(sf::Vector2f point);
 	bool IntersectsActorParams(ActorPtr a);
 	bool Intersects(sf::IntRect rect);

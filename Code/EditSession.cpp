@@ -2171,7 +2171,8 @@ int EditSession::Run()
 		//eventually also use this in create enemy mode
 		if (IsSingleActorSelected())
 		{
-			worldPosGround = ConvertPointToGround(Vector2i(worldPos.x, worldPos.y));
+			//no longer used because of multi-move
+			//worldPosGround = ConvertPointToGround(Vector2i(worldPos.x, worldPos.y));
 			worldPosRail = ConvertPointToRail(Vector2i(worldPos));
 		}
 		
@@ -2874,7 +2875,7 @@ void EditSession::ClearSelectedPoints()
 		for( list<PointMoveInfo>::iterator pit = pList.begin();
 			pit != pList.end(); ++pit )
 		{
-			(*pit).point->selected = false;
+			(*pit).GetPolyPoint()->selected = false;
 		}
 	}
 
@@ -2885,7 +2886,7 @@ void EditSession::ClearSelectedPoints()
 		for (list<PointMoveInfo>::iterator pit = pList.begin();
 			pit != pList.end(); ++pit)
 		{
-			(*pit).point->selected = false;
+			(*pit).GetRailPoint()->selected = false;
 		}
 	}
 
@@ -3373,7 +3374,10 @@ void EditSession::SelectPoint(PolyPtr poly,
 {
 	if (!point->selected)
 	{
-		selectedPoints[poly].push_back(PointMoveInfo(point));
+		PointMoveInfo pi;
+		pi.poly = poly;
+		pi.pointIndex = point->GetIndex();
+		selectedPoints[poly].push_back(pi);
 		point->selected = true;
 	}
 }
@@ -3387,7 +3391,7 @@ void EditSession::DeselectPoint(PolyPtr poly,
 		auto & infoList = selectedPoints[poly];
 		for (auto it = infoList.begin(); it != infoList.end(); ++it)
 		{
-			if ((*it).point == point)
+			if ((*it).GetPolyPoint() == point)
 			{
 				infoList.erase(it);
 				break;
@@ -3401,7 +3405,10 @@ void EditSession::SelectPoint(RailPtr rail,
 {
 	if (!point->selected)
 	{
-		selectedRailPoints[rail].push_back(PointMoveInfo(point));
+		PointMoveInfo pi;
+		pi.rail = rail;
+		pi.pointIndex = point->GetIndex();
+		selectedRailPoints[rail].push_back(pi);
 		point->selected = true;
 	}
 }
@@ -3415,12 +3422,197 @@ void EditSession::DeselectPoint( RailPtr rail,
 		auto & infoList = selectedRailPoints[rail];
 		for (auto it = infoList.begin(); it != infoList.end(); ++it)
 		{
-			if ((*it).point == point)
+			if ((*it).GetRailPoint() == point)
 			{
 				infoList.erase(it);
 				break;
 			}
 		}
+	}
+}
+
+void EditSession::PerformMovePointsAction()
+{
+	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
+	//here the delta being subtracted is the points original positionv
+
+	PointVectorMap pm;
+
+	TerrainPoint *curr;
+	for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
+	{
+		PolyPtr poly = (*mit).first;
+
+		auto &pmVec = pm[poly];
+
+		int polyNumP = poly->GetNumPoints();
+
+
+		pmVec.reserve(polyNumP);
+
+
+		for (int i = 0; i < polyNumP; ++i)
+		{
+			curr = poly->GetPoint(i);
+
+			PointMoveInfo pi;
+
+			pi.poly = poly;
+			pi.pointIndex = i;
+			
+			if (curr->selected)
+			{
+				pi.delta = delta;
+				pi.origPos = curr->pos - delta;
+				pi.moveIntent = true;
+			}
+			else
+			{
+				pi.origPos = curr->pos;
+			}
+
+			pmVec.push_back(pi);
+		}
+	}
+
+	for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
+	{
+		list<PointMoveInfo> &pList = (*mit).second;
+		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
+		{
+			(*it).delta = (*it).GetRailPoint()->pos - (*it).delta;
+		}
+	}
+
+	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, pm, selectedRailPoints);
+	action->Perform();
+
+	CompoundAction *testAction = NULL;
+	if (moveAction != NULL)
+	{
+		testAction = moveAction;
+	}
+	else
+	{
+		testAction = new CompoundAction;
+	}
+	testAction->subActions.push_back(action);
+
+
+	if (action->moveValid)
+	{
+		int gateActionsAdded = 0;
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			bool gateAttachedToAffectedPoly = false;
+			PolyPtr poly;
+			bool a = true;
+			bool polyMove = true;
+
+			if (IsGateAttachedToAffectedPoints((*it), selectedPoints, a))
+			{
+				polyMove = false;
+				gateAttachedToAffectedPoly = true;
+			}
+
+			if (IsGateAttachedToAffectedPoly((*it), selectedBrush, a))
+			{
+				//should this even happen if the points are moving?
+				gateAttachedToAffectedPoly = true;
+			}
+
+
+			if (gateAttachedToAffectedPoly)
+			{
+				GateInfo *gi = (*it);
+				Vector2i adjust;
+				Vector2i pA, pB;
+
+				GateAdjustOption gaOption;
+				if (polyMove)
+				{
+					if (a)
+					{
+						gaOption = GATEADJUST_A;
+					}
+					else
+					{
+						gaOption = GATEADJUST_B;
+					}
+				}
+				else
+				{
+					if (a)
+					{
+						gaOption = GATEADJUST_POINT_B;
+					}
+					else
+					{
+						gaOption = GATEADJUST_POINT_A;
+					}
+				}
+
+				if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
+				{
+
+					if (!TryGateAdjustAction(gaOption, gi, adjust, testAction))
+					{
+						testAction->Undo();
+
+						if (testAction == moveAction)
+						{
+							moveAction = NULL;
+						}
+
+						delete testAction;
+						return;
+					}
+					else
+					{
+						gateActionsAdded++;
+					}
+				}
+				else
+				{
+					//action->Perform();
+					//doneActionStack.push_back(action);
+				}
+			}
+
+
+
+		}
+
+		testAction->performed = true;
+		AddDoneAction(testAction);
+		/*if (gateActionsAdded > 0)
+		{
+		testAction->performed = true;
+		doneActionStack.push_back(testAction);
+		}
+		else
+		{
+		if (moveAction != NULL)
+		{
+		moveAction->subActions.push_back(action);
+		doneActionStack.push_back(moveAction);
+		}
+		else
+		{
+		doneActionStack.push_back(action);
+		}
+		}*/
+	}
+	else
+	{
+		testAction->Undo();
+
+		if (testAction == moveAction)
+		{
+			moveAction = NULL;
+		}
+
+		delete testAction;
 	}
 }
 
@@ -3431,13 +3623,21 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 	TerrainPoint *curr, *prev;
 	PolyPtr poly;
 
+	Edge *edge; //use prev edge also
+
+	double enemyTotalSize;
+	double edgeLen;
+	//can I use the pointmap instead of iterating through everything?
 	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
 	{
 		poly = (*it).first;
+	
 		if (poly->selected)
 		{
-			selectedBrush->RemoveObject(poly);
+			//selectedBrush->RemoveObject(poly);
+			DeselectObject(poly);
 		}
+
 		affected = false;
 
 		polyNumP = poly->GetNumPoints();
@@ -3446,37 +3646,76 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 		for (int i = 0; i < polyNumP; ++i)
 		{
 			curr = poly->GetPoint(i);
-			prev = poly->GetPrevPoint(i);
-
 			if (curr->selected) //selected
 			{
-				curr->pos += pointGrabDelta;
+				prev = poly->GetPrevPoint(i);
 
-				if (curr->gate != NULL)
-				{
-					curr->gate->UpdateLine();
-				}
+				curr->oldPos = curr->pos;
+
+				poly->MovePoint(i, pointGrabDelta);
+
+
+				edge = poly->GetEdge(i);
+				//if( edge->GetLength() < 
 
 				poly->UpdateLineColor(prev->index);
 				poly->UpdateLineColor(i);
 
+				enemyTotalSize = 0;
 				if (poly->enemies.count(curr) > 0)
 				{
 					list<ActorPtr> &enemies = poly->enemies[curr];
 					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
 					{
-						//(*ait)->UpdateGroundedSprite();
+						enemyTotalSize += (*ait)->type->info.size.x;
+						(*ait)->UpdateGroundedSprite();
+						(*ait)->SetBoundingQuad();
+					//	(*ait)->UpdateGroundedSprite();
 					}
 				}
 
+				edgeLen = edge->GetLength();
+
+				V2d test = edge->v1 - edge->Along() * enemyTotalSize;
+				if (edgeLen < enemyTotalSize)
+				{
+					poly->SetPointPos(i, Vector2i(test));//Vector2i(edge->GetPosition(enemyTotalSize)));
+					//sf::Mouse::setPosition(sf::Mouse::getPosition() - pointGrabDelta);//zoom1
+						//preScreenTex->mapCoordsToPixel(Vector2f(-pointGrabDelta)));
+					//poly->MovePoint(i, -pointGrabDelta);
+				}
+				
+
 				affected = true;
 			}
-
 		}
 
-		poly->UpdateBounds();
 
-		if (affected)
+		if (!poly->IsInternallyValid())
+		{
+			for (int i = 0; i < polyNumP; ++i)
+			{
+				curr = poly->GetPoint(i);
+				if (curr->selected) //selected
+				{
+					poly->SetPointPos(i, curr->oldPos);
+				}
+			}
+			affected = false;
+
+			if (poly->enemies.count(curr) > 0)
+			{
+				list<ActorPtr> &enemies = poly->enemies[curr];
+				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+				{
+					(*ait)->UpdateGroundedSprite();
+					(*ait)->SetBoundingQuad();
+				}
+			}
+		}
+		
+		//this doesnt seem very clean
+		else if (affected)
 		{
 			poly->SetRenderMode(TerrainPolygon::RENDERMODE_MOVING_POINTS);
 
@@ -3490,7 +3729,12 @@ void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
 					(*ait)->SetBoundingQuad();
 				}
 			}
+
+			
+			poly->UpdateBounds();
 		}
+
+		
 	}
 }
 
@@ -3508,7 +3752,7 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 
 		if (rail->selected)
 		{
-			selectedBrush->RemoveObject(rail);
+			DeselectObject(rail);
 		}
 
 		rNumP = rail->GetNumPoints();
@@ -3639,194 +3883,7 @@ bool EditSession::IsGateAttachedToAffectedPoly(
 	return false;
 }
 
-void EditSession::PerformMovePointsAction()
-{
-	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
-	//here the delta being subtracted is the points original positionv
-	
-	PointVectorMap pm;
-	
 
-	TerrainPoint *curr;
-	for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
-	{
-		PolyPtr poly = (*mit).first;
-		selectedBrush->RemoveObject(poly);
-		auto &pmVec = pm[poly];
-
-		int polyNumP = poly->GetNumPoints();
-
-
-		pmVec.reserve(polyNumP);
-
-		
-		for (int i = 0; i < polyNumP; ++i)
-		{
-			curr = poly->GetPoint(i);
-
-			PointMoveInfo pi(curr);
-
-			if (curr->selected)
-			{
-				pi.delta = delta;
-				pi.origPos = pi.point->pos - delta;
-				pi.moveIntent = true;
-			}
-
-			pmVec.push_back(pi);
-		}
-	}
-
-	/*for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
-	{
-		list<PointMoveInfo> &pList = (*mit).second;
-		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
-		{
-			(*it).origPos = (*it).delta;
-			(*it).delta = (*it).point->pos - (*it).delta;
-		}
-	}*/
-
-	for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
-	{
-		list<PointMoveInfo> &pList = (*mit).second;
-		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
-		{
-			(*it).delta = (*it).point->pos - (*it).delta;
-		}
-	}
-	
-	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, pm, selectedRailPoints);
-	action->Perform();
-
-	CompoundAction *testAction = NULL;
-	if (moveAction != NULL)
-	{
-		testAction = moveAction;
-	}
-	else
-	{
-		testAction = new CompoundAction;
-	}
-	testAction->subActions.push_back(action);
-
-	
-	if (action->moveValid)
-	{
-		int gateActionsAdded = 0;
-		for (auto it = gates.begin(); it != gates.end(); ++it)
-		{
-			bool gateAttachedToAffectedPoly = false;
-			PolyPtr poly;
-			bool a = true;
-			bool polyMove = true;
-
-			if (IsGateAttachedToAffectedPoints((*it), selectedPoints, a))
-			{
-				polyMove = false;
-				gateAttachedToAffectedPoly = true;
-			}
-
-			if (IsGateAttachedToAffectedPoly((*it), selectedBrush, a))
-			{
-				//should this even happen if the points are moving?
-				gateAttachedToAffectedPoly = true;
-			}
-
-
-			if (gateAttachedToAffectedPoly)
-			{
-				GateInfo *gi = (*it);
-				Vector2i adjust;
-				Vector2i pA, pB;
-
-				GateAdjustOption gaOption;
-				if (polyMove)
-				{
-					if (a)
-					{
-						gaOption = GATEADJUST_A;
-					}
-					else
-					{
-						gaOption = GATEADJUST_B;
-					}
-				}
-				else
-				{
-					if (a)
-					{
-						gaOption = GATEADJUST_POINT_B;
-					}
-					else
-					{
-						gaOption = GATEADJUST_POINT_A;
-					}
-				}
-				
-				if (GetPrimaryAdjustment(gi->point0->pos, gi->point1->pos, adjust))
-				{
-
-					if (!TryGateAdjustAction(gaOption, gi, adjust, testAction))
-					{
-						testAction->Undo();
-
-						if (testAction == moveAction)
-						{
-							moveAction = NULL;
-						}
-
-						delete testAction;
-						return;
-					}
-					else
-					{
-						gateActionsAdded++;
-					}
-				}
-				else
-				{
-					//action->Perform();
-					//doneActionStack.push_back(action);
-				}
-			}
-
-
-
-		}
-
-		testAction->performed = true;
-		AddDoneAction(testAction);
-		/*if (gateActionsAdded > 0)
-		{
-			testAction->performed = true;
-			doneActionStack.push_back(testAction);
-		}
-		else
-		{
-			if (moveAction != NULL)
-			{
-				moveAction->subActions.push_back(action);
-				doneActionStack.push_back(moveAction);
-			}
-			else
-			{
-				doneActionStack.push_back(action);
-			}
-		}*/
-	}
-	else
-	{
-		testAction->Undo();
-
-		if (testAction == moveAction)
-		{
-			moveAction = NULL;
-		}
-
-		delete testAction;
-	}
-}
 
 bool EditSession::PolyContainsPolys(PolyPtr p, PolyPtr ignore)
 {
@@ -4342,7 +4399,9 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	{
 		polyCurr = poly->GetPoint(i);
 
-		PointMoveInfo pi(polyCurr);
+		PointMoveInfo pi;
+		pi.poly = poly;
+		pi.pointIndex = i;
 		if (polyCurr == point)
 		{
 			pi.delta = adjust;
@@ -4414,12 +4473,12 @@ void EditSession::GetNearPrimaryGateList(PointMap &pmap, list<GateInfoPtr> & gLi
 	{
 		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
 		{
-			GateInfo *gi = (*pit).point->gate;
+			GateInfo *gi = (*pit).GetPolyPoint()->gate;
 			if (gi != NULL)
 			{
 				if (IsCloseToPrimary(gi->point0->pos, gi->point1->pos, prim))
 				{
-					gList.push_back((*pit).point->gate);
+					gList.push_back((*pit).GetPolyPoint()->gate);
 				}
 			}
 		}
@@ -5081,7 +5140,7 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		//aabb collide
-		if( left <= (*it)->right && right >= (*it)->left && top <= (*it)->bottom && bot >= (*it)->top )
+		if (left <= (*it)->right && right >= (*it)->left && top <= (*it)->bottom && bot >= (*it)->top)
 		{
 			numP = (*it)->GetNumPoints();
 			for (int i = 0; i < numP; ++i)
@@ -5092,7 +5151,13 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 				Vector2i prevPos = prev->pos;
 				Vector2i pos = curr->pos;
 
-				LineIntersection li = LimitSegmentIntersect(prevPos, pos, v0, v1);
+				if (prevPos == v0 || prevPos == v1 || pos == v0 || pos == v1)
+				{
+					continue;
+				}
+
+				//LineIntersection li = LimitSegmentIntersect(prevPos, pos, v0, v1);
+				LineIntersection li = SegmentIntersect(prevPos, pos, v0, v1);
 
 				if (!li.parallel)
 				{
@@ -5387,7 +5452,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 }
 
 //needs cleanup badly
-PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
+PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr a )
 {
 	PositionInfo gi;
 	
@@ -5402,7 +5467,7 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 	//assumes singleactor only
 	//assert(IsSingleActorSelected());
-	ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+	//ActorPtr a = selectedBrush->objects.front()->GetAsActor();
 
 	//int width = type->info.size.x;
 	//int height = type->info.size.y;
@@ -5424,6 +5489,9 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 
 	double testRadius = a->type->info.size.y * ( 2.0 / 3.0 );//actorAABB.width / 3;//a->type->info.size.y /2;//actorAABB.height;//200
 	//testPoint = a->GetIntPos();
+
+	double minQuant = a->type->info.size.x / 2;
+	double extra = a->type->info.size.x;
 
 	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
@@ -5464,12 +5532,16 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				V2d te(testPoint.x, testPoint.y);
 
 				//these should only apply to single actors
-				/*if (testQuantity > -30 && testQuantity < 0 )
-					testQuantity = 0;
-				else if (testQuantity > length(cu - pr) && testQuantity < length( cu - pr ) + 30 )
+				//if ( a == grabbedActor )//IsSingleActorSelected())
+				if( IsSingleActorSelected())
 				{
-					testQuantity = floor(length(cu - pr));
-				}*/
+					if (testQuantity >= 0 && testQuantity < minQuant)
+						testQuantity = minQuant;
+					else if (testQuantity > length(cu - pr) - minQuant && testQuantity <= length(cu - pr))
+					{
+						testQuantity = floor(length(cu - pr) - minQuant);
+					}
+				}
 
 				
 
@@ -5485,7 +5557,7 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint )
 				}*/
 
 
-				if (((dist >= 0 && dist < testRadius) || (pointInPoly && dist < 0 && dist > - 200 )) && testQuantity >= 0 && testQuantity <= length(cu - pr)
+				if (((dist >= 0 && dist < testRadius) || (pointInPoly && dist < 0 && dist > - 200 )) && testQuantity >= minQuant && testQuantity <= length(cu - pr) - minQuant
 					&& length(newPoint - te) < length(closestPoint - te))
 				{
 					minDistance = dist;
@@ -7451,7 +7523,7 @@ void EditSession::TryBoxSelect()
 
 double EditSession::GetZoomedMinEdgeLength()
 {
-	return minimumEdgeLength * std::max(zoomMultiple, 1.0);
+	 return minimumEdgeLength * std::max(zoomMultiple, 1.0);
 }
 
 void EditSession::UpdateGrass()
@@ -7638,7 +7710,6 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 
 	PositionInfo pi;
 
-	//assert(grabbedActor != NULL);
 	Vector2i diffPerActor;
 
 	std::vector<PositionInfo> piVec;
@@ -7686,7 +7757,7 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 		if (actor->posInfo.ground == NULL && actor->type->CanBeGrounded() && !actor->type->CanBeAerial())
 		{
 			numCanBeAnchored++;
-			piVec[piIndex] = ConvertPointToGround(Vector2i(worldPos + actor->diffFromGrabbed));
+			piVec[piIndex] = ConvertPointToGround(Vector2i(worldPos + actor->diffFromGrabbed), actor);
 
 			if (piVec[piIndex].ground == NULL)
 				break;
@@ -7823,7 +7894,7 @@ void EditSession::StartSelectedMove()
 		list<PointMoveInfo> &pList = (*mit).second;
 		for (auto it = pList.begin(); it != pList.end(); ++it)
 		{
-			(*it).delta = (*it).point->pos;
+			(*it).delta = (*it).GetPolyPoint()->pos;
 		}
 	}
 
@@ -7832,7 +7903,7 @@ void EditSession::StartSelectedMove()
 		list<PointMoveInfo> &pList = (*mit).second;
 		for (auto it = pList.begin(); it != pList.end(); ++it)
 		{
-			(*it).delta = (*it).point->pos;
+			(*it).delta = (*it).GetRailPoint()->pos;
 		}
 	}
 

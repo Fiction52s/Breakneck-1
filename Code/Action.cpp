@@ -892,19 +892,8 @@ void MoveBrushAction::Perform()
 				vector<PointMoveInfo> &pVec = (*it).second;
 				for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
 				{
-					(*pit).point->pos += (*pit).delta;
-
-					if ((*pit).point->gate != NULL)
-					{
-						(*pit).point->gate->UpdateLine();
-					}
+					(*pit).poly->MovePoint((*pit).pointIndex, (*pit).delta);
 				}
-
-				/*for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
-				{
-					PolyPtr poly = (*it).first;
-					poly->AlignExtremes((*it).second);
-				}*/
 
 				for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
 				{
@@ -952,7 +941,7 @@ void MoveBrushAction::Perform()
 			list<PointMoveInfo> &pList = (*it).second;
 			for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
 			{
-				(*pit).point->pos += (*pit).delta;
+				(*pit).GetRailPoint()->pos += (*pit).delta;
 			}
 
 			(*it).first->SoftReset();
@@ -980,12 +969,7 @@ void MoveBrushAction::Undo()
 
 		for( vector<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
 		{
-			(*pit).point->pos = (*pit).origPos;
-
-			if ((*pit).point->gate != NULL)
-			{
-				(*pit).point->gate->UpdateLine();
-			}
+			(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).origPos);
 		}
 
 		PolyPtr poly = (*it).first;
@@ -1011,7 +995,7 @@ void MoveBrushAction::Undo()
 		list<PointMoveInfo> &pList = (*it).second;
 		for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
 		{
-			(*pit).point->pos -= (*pit).delta;
+			(*pit).GetRailPoint()->pos -= (*pit).delta;
 		}
 
 		(*it).first->SoftReset();

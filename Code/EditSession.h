@@ -384,7 +384,8 @@ struct EditSession : GUIHandler, Session
 
 	void AddActorMove(Action *a);
 
-	PositionInfo ConvertPointToGround( sf::Vector2i point );
+	PositionInfo ConvertPointToGround( sf::Vector2i point,
+		ActorPtr actor );
 	PositionInfo ConvertPointToRail(sf::Vector2i point);
 	void CreateActor( ActorPtr actor );
 	void CreateDecorImage(DecorPtr dec);

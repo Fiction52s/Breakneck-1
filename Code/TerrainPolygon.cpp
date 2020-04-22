@@ -238,7 +238,7 @@ void TerrainPolygon::DrawDecor(sf::RenderTarget *target)
 	for (list<DecorExpression*>::iterator it = decorExprList.begin();
 		it != decorExprList.end(); ++it)
 	{
-		if ((*it)->layer)
+		//if ((*it)->layer != NULL)
 		{
 			target->draw(*(*it)->va, (*it)->layer->ts->texture);
 		}
@@ -1664,6 +1664,20 @@ Edge *TerrainPolygon::GetEdge(int index)
 	return &edges[index];
 }
 
+Edge *TerrainPolygon::GetPrevEdge(int index)
+{
+	assert(finalized);
+	assert(index >= 0 && index < PointVector().size());
+	if (index == 0)
+	{
+		return &edges[GetNumPoints() - 1];
+	}
+	else
+	{
+		return &edges[index - 1];
+	}
+}
+
 TerrainPoint *TerrainPolygon::GetPoint(int index)
 {
 	assert(index >= 0 && index < PointVector().size());
@@ -1844,7 +1858,7 @@ bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 	return false;
 }
 
-bool TerrainPolygon::PointsTooCloseToEachOther()
+bool TerrainPolygon::PointsTooCloseToEachOther( double radius )
 {
 	EditSession *session = EditSession::GetSession();
 	int numP = GetNumPoints();
@@ -1860,7 +1874,7 @@ bool TerrainPolygon::PointsTooCloseToEachOther()
 			currJ = GetPoint(j);
 			V2d a(currI->pos.x, currI->pos.y);
 			V2d b(currJ->pos.x, currJ->pos.y);
-			if (length(a - b) < session->validityRadius)
+			if (length(a - b) < radius)
 			{
 				return true;
 			}
@@ -1894,8 +1908,8 @@ bool TerrainPolygon::LinesIntersectMyself()
 				continue;
 			}
 
-			LineIntersection li = EditSession::LimitSegmentIntersect(prevI->pos, currI->pos, prevJ->pos, currJ->pos);
 			//LineIntersection li = EditSession::LimitSegmentIntersect(prevI->pos, currI->pos, prevJ->pos, currJ->pos);
+			LineIntersection li = EditSession::SegmentIntersect(prevI->pos, currI->pos, prevJ->pos, currJ->pos);
 
 			if (!li.parallel)
 			{
@@ -1968,7 +1982,16 @@ bool TerrainPolygon::IntersectsMyOwnGates()
 		Vector2i prevPos = prev->pos;
 		Vector2i pos = curr->pos;
 
-		LineIntersection li = EditSession::LimitSegmentIntersect(prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos);
+		if (prevPos == curr->gate->point0->pos ||
+			prevPos == curr->gate->point1->pos ||
+			pos == curr->gate->point0->pos ||
+			pos == curr->gate->point1->pos)
+		{
+			continue;
+		}
+
+		//LineIntersection li = EditSession::LimitSegmentIntersect(prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos);
+		LineIntersection li = EditSession::SegmentIntersect(prevPos, pos, curr->gate->point0->pos, curr->gate->point1->pos);
 
 		if (!li.parallel)
 		{
@@ -1990,8 +2013,11 @@ bool TerrainPolygon::IsInternallyValid()
 			return false;
 	}
 
-	//if (PointsTooCloseToEachOther())
-	//	return false;
+	if (renderMode == RenderMode::RENDERMODE_MOVING_POINTS)
+	{
+		if (PointsTooCloseToEachOther(1))
+			return false;
+	}
 
 	if (HasSlivers())
 		return false;
@@ -3082,14 +3108,55 @@ void TerrainPolygon::DrawBorderQuads(RenderTarget *target)
 	}
 }
 
+void TerrainPolygon::DrawPoints(sf::RenderTarget *rt, double zoomMultiple, TerrainPoint *dontShow )
+{
+	//dont know why dontShow is here, can cleanup soon
+
+	CircleShape cs;
+	cs.setRadius(8 * zoomMultiple);
+	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+	cs.setFillColor(Color::Magenta);
+
+	CircleShape csSel;
+	csSel.setRadius(8 * zoomMultiple);
+	csSel.setOrigin(csSel.getLocalBounds().width / 2, csSel.getLocalBounds().height / 2);
+	csSel.setFillColor(Color::Green);
+
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+
+		if (curr == dontShow)
+		{
+			continue;
+		}
+
+		if (curr->selected)
+		{
+			csSel.setPosition(curr->pos.x, curr->pos.y);
+			rt->draw(csSel);
+		}
+		else
+		{
+			cs.setPosition(curr->pos.x, curr->pos.y);
+			rt->draw(cs);
+		}
+	}
+}
+
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
 	int numP = GetNumPoints();
 	if( renderMode == RENDERMODE_MOVING_POINTS )
 	{
+		DrawPoints(rt, zoomMultiple, dontShow);
+
 		TerrainPoint *curr, *start, *next;
 		int lineIndex = 0;
 
+		//shouldn't be updating lines here...
 		for (int i = 0; i < numP; ++i)
 		{
 			curr = GetPoint(i);
@@ -3129,38 +3196,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 	if( showPoints )
 	{
-		CircleShape cs;
-		cs.setRadius( 8 * zoomMultiple );
-		cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		cs.setFillColor( Color::Magenta );
-
-		CircleShape csSel;
-		csSel.setRadius(8 * zoomMultiple);
-		csSel.setOrigin(csSel.getLocalBounds().width / 2, csSel.getLocalBounds().height / 2);
-		csSel.setFillColor(Color::Green);
-
-		int numP = GetNumPoints();
-		TerrainPoint *curr;
-		for (int i = 0; i < numP; ++i)
-		{
-			curr = GetPoint(i);
-
-			if (curr == dontShow)
-			{
-				continue;
-			}
-
-			if (curr->selected)
-			{
-				csSel.setPosition(curr->pos.x, curr->pos.y);
-				rt->draw(csSel);
-			}
-			else
-			{
-				cs.setPosition(curr->pos.x, curr->pos.y);
-				rt->draw(cs);
-			}
-		}
+		DrawPoints(rt, zoomMultiple, dontShow );
 	}
 
 	Vector2i center( (right + left) / 2, (bottom + top) / 2 );
@@ -3223,13 +3259,13 @@ void TerrainPolygon::SetSelected( bool select )
 			v[i].color = fillCol;
 		}
 
-		int numP = GetNumPoints();
+		/*int numP = GetNumPoints();
 		TerrainPoint *curr;
 		for (int i = 0; i < numP; ++i)
 		{
 			curr = GetPoint(i);
 			curr->selected = false;
-		}
+		}*/
 	}
 }
 
@@ -3591,6 +3627,12 @@ bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 	}
 
 	double minEdge = session->GetZoomedMinEdgeLength();
+	/*if (length(V2d(point - GetEndPoint()->pos)) < )
+	{
+
+	}*/
+
+	
 	{
 		bool pointTooClose = PointTooClose(point, minEdge, true);
 		bool linesIntersect = LinesIntersectInProgress(point);
@@ -3868,6 +3910,32 @@ bool TerrainPolygon::FixSliver(int i, std::set<int> &brokenSlivers, bool &error)
 	return false;
 }
 
+void TerrainPolygon::MovePoint( int index, sf::Vector2i &delta)
+{
+	SetPointPos(index, GetPoint(index)->pos + delta);
+}
+
+void TerrainPolygon::SetPointPos(int index, sf::Vector2i &p)
+{
+	TerrainPoint *curr = GetPoint(index);
+
+	curr->pos = p;
+
+	if (curr->gate != NULL)
+	{
+		curr->gate->UpdateLine();
+	}
+
+	if (finalized)
+	{
+		Edge *edge = GetEdge(index);
+		Edge *prevEdge = GetPrevEdge(index);
+		V2d dPos(curr->pos);
+		edge->v0 = dPos;
+		prevEdge->v1 = dPos;
+	}
+}
+
 bool TerrainPolygon::FixSliver(int i)
 {
 	double minAngle = EditSession::SLIVER_LIMIT;
@@ -3944,25 +4012,6 @@ void TerrainPolygon::Reset()
 {
 	SoftReset();
 	ClearPoints();
-	/*if (lines != NULL)
-		delete[] lines;
-	if (va != NULL)
-		delete va;
-	if (grassVA != NULL)
-		delete grassVA;
-
-	if (borderQuads != NULL)
-		delete[] borderQuads;
-
-	lines = NULL;
-	va = NULL;
-	grassVA = NULL;
-	finalized = false;
-
-
-	myTerrainTree->Clear();
-
-	DestroyTouchGrass();*/
 }
 
 void TerrainPolygon::SoftReset()
@@ -3989,6 +4038,7 @@ void TerrainPolygon::SoftReset()
 	{
 		delete (*it);
 	}
+	decorExprList.clear();
 }
 
 void TerrainPolygon::ClearPoints()
@@ -4350,7 +4400,14 @@ bool TerrainPolygon::LinesIntersectInProgress(Vector2i p)
 			return false;
 		}
 
-		LineIntersection li = EditSession::LimitSegmentIntersect(curr->pos, next->pos, end->pos, p);
+		if (curr->pos == end->pos || curr->pos == p || next->pos == end->pos
+			|| next->pos == p)
+		{
+			continue;
+		}
+
+		//LineIntersection li = EditSession::LimitSegmentIntersect(curr->pos, next->pos, end->pos, p);
+		LineIntersection li = EditSession::SegmentIntersect(curr->pos, next->pos, end->pos, p);
 		if (!li.parallel)
 		{
 			return true;
