@@ -196,31 +196,52 @@ void TerrainPolygon::AddDecorExpression(DecorExpression *exp)
 	decorExprList.push_back(exp);
 }
 
+void TerrainPolygon::QueryQuadTree(QuadTree *tree,
+	QueryType qType, sf::Rect<double> &r )
+{
+	queryType = qType;
+	queryTree = tree;
+	if (qType == QueryType::CHECK_EMPTY)
+	{
+		emptyResult = true;
+		tree->Query(this, r);
+	}
+	else if (qType == QueryType::INTERSECT_QUAD)
+	{
+		resultQuadTouching = false;
+		tree->Query(this, r);
+	}
+}
+
 bool TerrainPolygon::IsEmptyRect(sf::Rect<double> &rect)
 {
-	emptyResult = true;
-	decorTree->Query(this, rect);
-	myTerrainTree->Query(this, rect);
-	return emptyResult;
+	QueryQuadTree(decorTree, QueryType::CHECK_EMPTY, rect);
+	if (!emptyResult)
+		return false;
+
+	QueryQuadTree(myTerrainTree, QueryType::CHECK_EMPTY, rect);
+	if (!emptyResult)
+		return false;
+
+	return true;
 }
 
 bool TerrainPolygon::CheckRectIntersectEdges(
 	sf::Rect<double> &r)
 {
-	emptyResult = true;
-	myTerrainTree->Query(this, r);
+	QueryQuadTree(myTerrainTree, QueryType::CHECK_EMPTY, r);
 	return !emptyResult;
 }
-
-
 
 void TerrainPolygon::DrawDecor(sf::RenderTarget *target)
 {
 	for (list<DecorExpression*>::iterator it = decorExprList.begin();
 		it != decorExprList.end(); ++it)
 	{
-		Tileset *ts = (*it)->layer->ts;
-		target->draw(*(*it)->va, ts->texture);
+		if ((*it)->layer)
+		{
+			target->draw(*(*it)->va, (*it)->layer->ts->texture);
+		}
 	}
 }
 
@@ -685,7 +706,7 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 	bool loopOver = false;
 	V2d cn;
 
-	rayMode = "decor";
+	//rayMode = "decor";
 	QuadTree *qt = myTerrainTree;
 
 	assert(qt != NULL);
@@ -793,7 +814,18 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 
 void TerrainPolygon::HandleEntrant(QuadTreeEntrant *qte)
 {
-	emptyResult = false;
+	if (queryType == QueryType::CHECK_EMPTY)
+	{
+		emptyResult = false;
+	}
+	else if (queryType == QueryType::INTERSECT_QUAD)
+	{
+		Edge *e = (Edge*)qte;
+		if (IsEdgeTouchingQuad(e->v0, e->v1, quadCheck[0], quadCheck[1], quadCheck[2], quadCheck[3]))
+		{
+			resultQuadTouching = true;
+		}
+	}
 }
 
 void TerrainPolygon::HandleRayCollision(Edge *edge,
@@ -1909,10 +1941,12 @@ bool TerrainPolygon::IntersectsMyOwnEnemies()
 	{
 		for (list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait)
 		{
-			sf::VertexArray &bva = (*ait)->boundingQuad;
-			if (session->QuadPolygonIntersect(this, Vector2i(bva[0].position.x, bva[0].position.y),
-				Vector2i(bva[1].position.x, bva[1].position.y), Vector2i(bva[2].position.x, bva[2].position.y),
-				Vector2i(bva[3].position.x, bva[3].position.y)))
+			//sf::VertexArray &bva = (*ait)->boundingQuad;
+
+			if (IntersectsActorParams((*ait)))
+			//if (/*session->QuadPolygonIntersect(this, Vector2i(bva[0].position.x, bva[0].position.y),
+			//	Vector2i(bva[1].position.x, bva[1].position.y), Vector2i(bva[2].position.x, bva[2].position.y),
+			//	Vector2i(bva[3].position.x, bva[3].position.y))*/)
 			{
 				return true;
 			}
@@ -4114,15 +4148,21 @@ void TerrainPolygon::CopyPoints(PolyPtr poly, bool storeSelected )
 
 bool TerrainPolygon::IsTouchingEnemiesFromPoly(PolyPtr p)
 {
+	if (!AABBIntersection(p))
+	{
+		return false;
+	}
+
 	for (EnemyMap::iterator it = p->enemies.begin(); it != p->enemies.end(); ++it)
 	{
 		for (list<ActorPtr>::iterator ait = (*it).second.begin(); ait != (*it).second.end(); ++ait)
 		{
-			sf::VertexArray &bva = (*ait)->boundingQuad;
+			//sf::VertexArray &bva = (*ait)->boundingQuad;
 
-			if (EditSession::QuadPolygonIntersect(p, Vector2i(bva[0].position.x, bva[0].position.y),
+			/*if (EditSession::QuadPolygonIntersect(p, Vector2i(bva[0].position.x, bva[0].position.y),
 				Vector2i(bva[1].position.x, bva[1].position.y), Vector2i(bva[2].position.x, bva[2].position.y),
-				Vector2i(bva[3].position.x, bva[3].position.y)))
+				Vector2i(bva[3].position.x, bva[3].position.y)))*/
+			if( IntersectsActorParams( (*ait) ))
 			{
 				return true;
 			}
@@ -4503,6 +4543,18 @@ bool TerrainPolygon::Load(std::ifstream &is)
 	return true;
 }
 
+bool TerrainPolygon::IntersectsActorParams(ActorPtr a)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		quadCheck[i] = V2d(a->boundingQuad[i].position);
+	}
+
+	QueryQuadTree(myTerrainTree, QueryType::INTERSECT_QUAD, sf::Rect<double>(a->GetGrabAABB()));
+
+	return resultQuadTouching;
+}
+
 //ISELECTABLE FUNCTIONS
 
 
@@ -4691,24 +4743,6 @@ void TerrainPolygon::AddGatesToBrush(Brush *b,
 
 		}
 	}
-}
-
-bool TerrainPolygon::CheckOtherSideRay(V2d &inputPos,
-	V2d &checkPos, Edge *e)
-{
-	rcEdge = NULL;
-	rayStart = inputPos;
-	rayEnd = checkPos;
-	rcPortion = 9999999;
-	ignoreEdge = e;
-	RayCast(this, myTerrainTree->startNode, rayStart, rayEnd);
-
-	if (rcEdge != NULL)
-	{
-		return false;
-	}
-
-	return true;
 }
 
 void TerrainPolygon::AddEnemiesToBrush(Brush *b)

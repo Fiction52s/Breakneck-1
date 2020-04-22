@@ -189,6 +189,12 @@ struct BorderSizeInfo
 struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	QuadTreeEntrant
 {
+	enum QueryType
+	{
+		CHECK_EMPTY,
+		INTERSECT_QUAD
+	};
+
 	enum RenderMode
 	{
 		RENDERMODE_NORMAL,
@@ -255,17 +261,25 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void HandleEntrant(QuadTreeEntrant *qte);
 	void HandleRayCollision(Edge *edge,
 		double edgeQuantity, double rayPortion);
+	
 	Edge * rcEdge;
 	double rcQuant;
 	Edge *ignoreEdge;
 	double rcPortion;
 	V2d rayStart;
 	V2d rayEnd;
-	std::string rayMode;
+
+	void QueryQuadTree(QuadTree *tree,
+		QueryType qType, sf::Rect<double> & r);
+
+	QuadTree *queryTree;
+	QueryType queryType;
+	V2d quadCheck[4];
 
 	TerrainDecorInfo *tdInfo;
 
 	bool emptyResult;
+	bool resultQuadTouching;
 	//sf::Rect<double> queryRect;
 
 	std::list<DecorExpression*> decorExprList;
@@ -317,8 +331,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	Tileset *ts_grass;
 	void SetupEdges();
-	bool CheckOtherSideRay(V2d &inputPos,
-		V2d &checkPos, Edge *e);
 	std::vector<Edge> edges;
 	void AddEdgesToQuadTree(QuadTree *tree);
 	//QuadTree *edgeTree;
@@ -441,6 +453,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	V2d GetDCenter();
 
 	bool ContainsPoint(sf::Vector2f point);
+	bool IntersectsActorParams(ActorPtr a);
 	bool Intersects(sf::IntRect rect);
 	bool IntersectsGate(GateInfo *gi);
 	bool IsPlacementOkay();

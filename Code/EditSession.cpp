@@ -1827,57 +1827,6 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 	return li;
 }
 
-bool EditSession::QuadPolygonIntersect( PolyPtr poly, Vector2i a, Vector2i b, Vector2i c, Vector2i d )
-{
-	TerrainPolygon quadPoly;
-	quadPoly.Reserve(4);
-	quadPoly.AddPoint( a, false );
-	quadPoly.AddPoint( b, false  );
-	quadPoly.AddPoint( c, false );
-	quadPoly.AddPoint( d, false  );
-	quadPoly.UpdateBounds();
-	
-	bool touching = poly->IsTouching( &quadPoly );
-
-	return touching;
-
-	/*int qLeft = min( a.x, min( b.x, min( c.x, d.x ) ) );
-	int qRight = max( a.x, min( b.x, min( c.x, d.x ) ) );
-	int qTop = min( a.y, min( b.y, min( c.y, d.y ) ) );
-	int qBot = max( a.y, min( b.y, min( c.y, d.y ) ) );
-
-	if( poly->left >= qLeft && poly->right <= qRight && poly->top >= qTop && poly->bottom <= qBot )
-	{
-		return true;
-	}
-
-	IntRect ri( qLeft, qTop, qRight - qLeft, qBot - qTop );
-	IntRect riPoly( poly->left, poly->top, poly->right - poly->left, poly->bottom - poly->top );
-
-	if( !ri.intersects( riPoly ) )
-	{
-		return false;
-	}
-
-	bool containsA = poly->ContainsPoint( Vector2f( a.x, a.y ) );
-	bool containsB = poly->ContainsPoint( Vector2f( b.x, b.y ) );
-	bool containsC = poly->ContainsPoint( Vector2f( c.x, c.y ) );
-	bool containsD = poly->ContainsPoint( Vector2f( d.x, d.y ) );
-
-	if( containsA || containsB || containsC || containsD )
-	{
-		return true;
-	}
-
-	for( PointList::iterator it = poly->points.begin(); it != poly->points.end(); ++it )
-	{
-		Vector2i &p = (*it).pos;
-		
-	}
-
-	return false;*/
-}
-
 LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d, bool firstLimitOnly )
 {
 	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
@@ -4493,11 +4442,6 @@ bool EditSession::IsPolygonExternallyValid( PolyPtr poly, PolyPtr ignore )
 	{
 		return false;
 	}
-
-	//list<GateInfoPtr> gList;
-	//GetNearPrimaryGateList( )
-
-
 	return true;
 }
 

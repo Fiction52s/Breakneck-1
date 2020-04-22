@@ -1585,7 +1585,7 @@ bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 
 
 bool IsBoxTouchingBox(const sf::Rect<int> & r0, const sf::Rect<int> & r1)
 {
-	bool test = r0.intersects(r1);
+	//bool test = r0.intersects(r1);
 	bool test2 = r0.left <= r1.left + r1.width
 		&& r0.left + r0.width >= r1.left
 		&& r0.top <= r1.top + r1.height
