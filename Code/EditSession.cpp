@@ -3122,6 +3122,7 @@ bool EditSession::PointSelectActor( V2d &pos )
 					grabbedActor = (*ait);
 					if ((*ait)->myEnemy != NULL)
 						(*ait)->myEnemy->SetActionEditLoop();
+					ClearSelectedPolys();
 				}
 				else
 				{
@@ -3135,6 +3136,8 @@ bool EditSession::PointSelectActor( V2d &pos )
 					//grabbedObject = (*ait);
 					if( (*ait)->myEnemy != NULL )
 						(*ait)->myEnemy->SetActionEditLoop(); //just for testing
+
+					ClearSelectedPolys();
 					//(*ait)->myEnemy->action = (*)
 
 					SelectObject((*ait));
@@ -3877,6 +3880,24 @@ bool EditSession::PolyIsTouchingEnemiesOrBeingTouched( PolyPtr p, PolyPtr ignore
 
 
 	return false;
+}
+
+void EditSession::ClearSelectedPolys()
+{
+	PolyPtr p;
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end();)
+	{
+		p = (*it)->GetAsTerrain();
+		if (p != NULL)
+		{
+			p->SetSelected(false);
+			it = selectedBrush->objects.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
 }
 
 bool EditSession::GateIsTouchingEnemies(GateInfo *gi)

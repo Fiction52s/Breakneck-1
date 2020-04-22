@@ -374,6 +374,8 @@ bool Brush::IsEmpty()
 	return objects.empty();
 }
 
+
+
 void Brush::RemoveObject( SelectPtr obj )
 {
 	objects.remove( obj );

@@ -186,6 +186,7 @@ struct EditSession : GUIHandler, Session
 	void CreatePreview(sf::Vector2i imageSize);
 	void WriteInversePoly(std::ofstream &of);
 
+	void ClearSelectedPolys();
 	void ClearSelectedBrush();
 	void SelectObject(SelectPtr sel);
 	void DeselectObject(SelectPtr sel);
