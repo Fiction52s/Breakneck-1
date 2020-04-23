@@ -42,7 +42,7 @@ RaceFightTarget::RaceFightTarget( ActorParams *ap)//Vector2i &pos )
 	//position.x = 0;
 	//position.y = 0;
 
-	BasicCircleHurtBodySetup(40, GetPosition());
+	BasicCircleHurtBodySetup(40);
 	
 
 	pPrev = NULL;

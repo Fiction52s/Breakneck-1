@@ -389,8 +389,8 @@ Blocker::Blocker( ActorParams *ap, BlockerChain *p_bc, Vector2i &pos, int index)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 10;
 
-	BasicCircleHurtBodySetup(32, GetPosition());
-	BasicCircleHitBodySetup(32, GetPosition());
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 
 	hitBody.hitboxInfo = hitboxInfo;
 

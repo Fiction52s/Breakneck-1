@@ -751,14 +751,14 @@ void Enemy::BasicCircleHitBodySetup(double radius, double angle, V2d &offset, V2
 	}
 }
 
-void Enemy::BasicCircleHurtBodySetup(double radius, V2d &pos)
+void Enemy::BasicCircleHurtBodySetup(double radius)
 {
-	BasicCircleHurtBodySetup(radius * scale, 0, V2d(), pos);
+	BasicCircleHurtBodySetup(radius * scale, 0, V2d(), GetPosition());
 }
 
-void Enemy::BasicCircleHitBodySetup(double radius, V2d &pos)
+void Enemy::BasicCircleHitBodySetup(double radius)
 {
-	BasicCircleHitBodySetup(radius * scale, 0, V2d(), pos);
+	BasicCircleHitBodySetup(radius * scale, 0, V2d(), GetPosition());
 }
 
 void Enemy::BasicRectHurtBodySetup(

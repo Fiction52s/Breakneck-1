@@ -254,8 +254,8 @@ SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pat
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHurtBodySetup(48, GetPosition());
-	BasicCircleHitBodySetup(48, GetPosition());
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	

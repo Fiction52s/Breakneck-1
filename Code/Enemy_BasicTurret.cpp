@@ -106,8 +106,8 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	BasicCircleHurtBodySetup(64, GetPosition());
-	BasicCircleHitBodySetup(64, GetPosition());
+	BasicCircleHurtBodySetup(64);
+	BasicCircleHitBodySetup(64);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	frame = 0;

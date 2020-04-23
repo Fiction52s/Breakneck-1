@@ -242,8 +242,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void BasicCircleHitBodySetup(double radius, 
 		double angle, V2d &offset, V2d &pos);
 
-	void BasicCircleHurtBodySetup(double radius, V2d &pos);
-	void BasicCircleHitBodySetup(double radius, V2d &pos);
+	void BasicCircleHurtBodySetup(double radius);
+	void BasicCircleHitBodySetup(double radius);
 	void BasicRectHurtBodySetup(
 		double w, double h, double angle, V2d &offset,
 		V2d &pos);

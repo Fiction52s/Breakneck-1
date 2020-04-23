@@ -136,8 +136,8 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
 	sprite.setPosition( GetPositionF() );
 
-	BasicCircleHurtBodySetup(32, GetPosition());
-	BasicCircleHitBodySetup(32, GetPosition());
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = NULL;
 
 	actionLength[FLOAT] = 120;

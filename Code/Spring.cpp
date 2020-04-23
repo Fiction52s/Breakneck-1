@@ -112,10 +112,10 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 
 	double radius = 64;
 
-	BasicCircleHitBodySetup(radius, position);
+	BasicCircleHitBodySetup(radius);
 
-	spawnRect = sf::Rect<double>(position.x - radius - 10, position.y - radius - 10,
-		radius *2 + 10, radius *2 + 10);
+	/*spawnRect = sf::Rect<double>(position.x - radius - 10, position.y - radius - 10,
+		radius *2 + 10, radius *2 + 10);*/
 
 	actionLength[IDLE] = 12;
 	actionLength[SPRINGING] = 8;

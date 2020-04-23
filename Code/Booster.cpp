@@ -61,7 +61,7 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 	sprite.setPosition(GetPositionF());
 
 	double radius = 90;
-	BasicCircleHitBodySetup(radius, GetPosition());
+	BasicCircleHitBodySetup(radius);
 
 	dead = false;
 

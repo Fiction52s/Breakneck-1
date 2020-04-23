@@ -163,9 +163,9 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(70, GetPosition());
+	BasicCircleHurtBodySetup(70);
 
-	BasicCircleHitBodySetup(70, GetPosition());
+	BasicCircleHitBodySetup(70);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -1295,8 +1295,8 @@ FloatingBomb::FloatingBomb( ActorParams *ap, ObjectPool *p_myPool, int index)
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(32, GetPosition());
-	BasicCircleHitBodySetup(32, GetPosition());
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
 

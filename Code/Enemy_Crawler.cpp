@@ -93,8 +93,8 @@ Crawler::Crawler(ActorParams *ap )
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(32, GetPosition());
-	BasicCircleHitBodySetup(32, GetPosition());
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 
 	
 	hitBody.hitboxInfo = hitboxInfo;

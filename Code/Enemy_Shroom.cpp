@@ -69,8 +69,8 @@ Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_le
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(32, GetPosition());
-	BasicCircleHitBodySetup(32, GetPosition());
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -261,8 +261,8 @@ ShroomJelly::ShroomJelly(ActorParams *ap, V2d &pos, int p_level )
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(32, GetPosition());
-	BasicCircleHitBodySetup(32, GetPosition());
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
