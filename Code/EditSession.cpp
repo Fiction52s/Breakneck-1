@@ -3218,7 +3218,7 @@ bool EditSession::AnchorSelectedEnemies()
 			{
 				//started in the air
 				Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
-				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointVectorMap(), RailPointMap());
+				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointMoveMap(), RailPointMap());
 
 				action->Perform();
 
@@ -3260,7 +3260,7 @@ bool EditSession::AnchorSelectedAerialEnemy()
 			else
 			{
 				Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
-				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointVectorMap(), RailPointMap());
+				Action *action = new MoveBrushAction(selectedBrush, delta, false, PointMoveMap(), RailPointMap());
 
 				action->Perform();
 
@@ -3441,20 +3441,43 @@ void EditSession::PerformMovePointsAction()
 	Vector2i delta = grabbedPoint->pos - editMouseOrigPos;//Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;//grabbedPoint->pos - editMouseOrigPos;//
 	//here the delta being subtracted is the points original positionv
 
-	PointVectorMap pm;
+	PointMoveMap pm;
 
 	TerrainPoint *curr;
 	for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
 	{
 		PolyPtr poly = (*mit).first;
 
-		auto &pmVec = pm[poly];
+		auto &pmVec = pm.myMap[poly];
 
 		int polyNumP = poly->GetNumPoints();
 
 
 		pmVec.reserve(polyNumP);
 
+
+		for (auto it = poly->backupEnemyPosInfos.begin(); it != poly->backupEnemyPosInfos.end(); ++it)
+		{
+			pm.enemyBackups[(*it).first] = (*it).second;
+		}
+
+		for (auto it = poly->enemies.begin(); it != poly->enemies.end(); ++it)
+		{
+			auto &aList = (*it).second;
+			for (auto ait = aList.begin(); ait != aList.end(); ++ait)
+			{
+				pm.newEnemyPos[(*ait)] = (*ait)->posInfo;
+			}
+		}
+
+		for (auto it = poly->enemies.begin(); it != poly->enemies.end(); ++it)
+		{
+			auto aList = (*it).second;
+			for (auto ait = aList.begin(); ait != aList.end(); ++ait)
+			{
+				
+			}
+		}
 
 		for (int i = 0; i < polyNumP; ++i)
 		{
@@ -3478,6 +3501,23 @@ void EditSession::PerformMovePointsAction()
 			{
 				pi.origPos = curr->pos;
 			}
+
+			/*auto currEnemyIt = poly->enemies.find(curr);
+			if (currEnemyIt != poly->enemies.end())
+			{
+				list<ActorPtr> &aList = (*currEnemyIt).second;
+				if (!aList.empty())
+				{
+					pi.newPosInfoVec.reserve(aList.size());
+					for (auto it = aList.begin(); it != aList.end(); ++it)
+					{
+						pi.newPosInfoVec.push_back((*it)->posInfo);
+					}
+
+					pi.posInfoVec = poly->backupEnemyPosInfos[curr];
+				}
+			}*/
+			
 			
 
 			pmVec.push_back(pi);
@@ -3508,7 +3548,8 @@ void EditSession::PerformMovePointsAction()
 	testAction->subActions.push_back(action);
 
 
-	if (action->moveValid)
+	//check for validity
+	if (true )//action->moveValid)
 	{
 		int gateActionsAdded = 0;
 		for (auto it = gates.begin(); it != gates.end(); ++it)
@@ -3640,8 +3681,12 @@ void EditSession::StartMoveSelectedPoints()
 	for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
 	{
 		(*it).first->BackupPoints();
+
+		
 		//AddFullPolyToBrush((*it).first, gateInfoList, &origBrush);
 	}
+
+	
 
 
 	//Brush newBrush;
@@ -3955,11 +4000,11 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 
 
 bool EditSession::IsGateAttachedToAffectedPoints(
-	GateInfoPtr gi, PointVectorMap &pm,
+	GateInfoPtr gi, PointMoveMap &pm,
 	bool &a)
 {
 	PolyPtr poly;
-	for (auto pit = pm.begin(); pit != pm.end(); ++pit)
+	for (auto pit = pm.myMap.begin(); pit != pm.myMap.end(); ++pit)
 	{
 		poly = (*pit).first;
 		if (gi->poly0 == poly || gi->poly1 == poly)
@@ -4437,10 +4482,11 @@ bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, b
 	Brush b;
 	b.AddObject(p);
 
-	MoveBrushAction *action = new MoveBrushAction(&b, adjust, true, PointVectorMap(), RailPointMap());
+	MoveBrushAction *action = new MoveBrushAction(&b, adjust, true, PointMoveMap(), RailPointMap());
 	action->Perform();
 
-	if (action->moveValid)
+	//check for validity
+	if (true)//action->moveValid)
 	{
 		compound->subActions.push_back(action);
 
@@ -4523,7 +4569,7 @@ bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, b
 
 bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool a, CompoundAction *compound)
 {
-	PointVectorMap pmap;
+	PointMoveMap pmap;
 	PolyPtr poly;
 	TerrainPoint *point;
 
@@ -4538,7 +4584,9 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 		point = gi->point1;
 	}
 
-	auto &pVec = pmap[poly];
+	auto &pVec = pmap.myMap[poly];
+
+	//need to store enemy stuff here...
 
 	int polyNumP = poly->GetNumPoints();
 
@@ -4567,11 +4615,12 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	}
 	
 	MoveBrushAction * action = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap, RailPointMap());
-	action->Perform();
+	action->performed = true;
+	//action->Perform();
 
-	//action->CheckValidPointMove();
+	//check validity here
 
-	if (action->moveValid)
+	if (true)//action->moveValid)
 	{
 		compound->subActions.push_back(action);
 
@@ -10952,9 +11001,8 @@ void EditSession::EditModeUpdate()
 	if ( !showPoints && pressedB )
 	{
 		showPoints = true;
-		ClearSelectedPoints();
 	}
-	else if( !pressedB )
+	else if( !pressedB && grabbedPoint == NULL )
 	{
 		/*for (PointMap::iterator pmit = selectedPoints.begin();
 			pmit != selectedPoints.end(); ++pmit)
@@ -10967,6 +11015,7 @@ void EditSession::EditModeUpdate()
 			}
 		}*/
 		showPoints = false;
+		ClearSelectedPoints();
 	}
 
 	//cleanup this later

@@ -806,28 +806,12 @@ void ModifyGateAction::Undo()
 
 //doesn't make a copy of the brush!
 MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform,
-	PointVectorMap &points, RailPointMap &railPoints )
+	PointMoveMap &points, RailPointMap &railPoints )
 	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), movingPoints( points ),
 	movingRailPoints( railPoints )
 {
-	moveValid = true;
+	//moveValid = true;
 	movingBrush = *p_brush;
-}
-
-void MoveBrushAction::CheckValidPointMove()
-{
-	EditSession *sess = EditSession::GetSession();
-
-	moveValid = true;
-	for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
-	{
-		PolyPtr poly = (*it).first;
-		if (!sess->IsPolygonValid(poly, NULL))
-		{
-			moveValid = false;
-			return;
-		}
-	}
 }
 
 void MoveBrushAction::Perform()
@@ -836,119 +820,57 @@ void MoveBrushAction::Perform()
 
 	performed = true;
 
-	EditSession *sess = EditSession::GetSession();
+	//EditSession *sess = EditSession::GetSession();
 
-	if( !moveOnFirstPerform )
+	movingBrush.Move( delta );
+
+	for (auto it = movingPoints.myMap.begin(); it != movingPoints.myMap.end(); ++it)
 	{
-		for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
+		vector<PointMoveInfo> &pVec = (*it).second;
+		for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
 		{
-			PolyPtr poly = (*it).first;
-			if (sess->IsPolygonValid(poly, NULL))
-			{
-				poly->AlignExtremes((*it).second);
-				if (!sess->IsPolygonValid(poly, NULL))
-				{
-					moveValid = false;
-					break;
-				}
-			}
-			else
-			{
-				moveValid = false;
-				break;
-			}
+			(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).newPos);
+			//for( )
+			//(*pit).newPosInfoVec
 		}
 
-		if (moveValid)
+		PolyPtr poly = (*it).first;
+		poly->SoftReset();
+		poly->Finalize();
+		poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
+
+		//for( auto eit = (*it).second)
+
+		/*for (auto pit = poly->enemies.begin();
+			pit != poly->enemies.end(); ++pit)
 		{
-			for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
+			list<ActorPtr> &enemies = (*pit).second;
+			for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
 			{
-				PolyPtr poly = (*it).first;
-				poly->SoftReset();
-				poly->Finalize();
-				poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
+				(*ait)->UpdateGroundedSprite();
+				(*ait)->SetBoundingQuad();
 			}
-
-			for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
-			{
-				(*it).first->SoftReset();
-				(*it).first->Finalize();
-				(*it).first->movingPointMode = false;
-			}
-		}
-
-		moveOnFirstPerform = true;
+		}*/
 	}
-	else
+
+	for (auto it = movingPoints.newEnemyPos.begin(); it != movingPoints.newEnemyPos.end(); ++it)
 	{
-		movingBrush.Move( delta );
+		(*it).first->posInfo = (*it).second;
+		(*it).first->UpdateGroundedSprite();
+		(*it).first->SetBoundingQuad();
+	}
 
-		//CheckValidPointMove();
-
-		if (moveValid)
+	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
+	{
+		list<PointMoveInfo> &pList = (*it).second;
+		for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
 		{
-			for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
-			{
-				vector<PointMoveInfo> &pVec = (*it).second;
-				for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
-				{
-					//(*pit).poly->MovePoint((*pit).pointIndex, (*pit).delta);
-					(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).newPos);
-				}
-
-				for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
-				{
-					PolyPtr poly = (*it).first;
-					if (sess->IsPolygonValid(poly, NULL))
-					{
-						poly->AlignExtremes((*it).second);
-						if (!sess->IsPolygonValid(poly, NULL))
-						{
-							moveValid = false;
-							break;
-						}
-					}
-					else
-					{
-						moveValid = false;
-						break;
-					}
-				}
-
-				if (moveValid)
-				{
-					PolyPtr poly = (*it).first;
-
-					poly->SoftReset();
-					poly->Finalize();
-					poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
-
-					for (auto pit = poly->enemies.begin();
-						pit != poly->enemies.end(); ++pit)
-					{
-						list<ActorPtr> &enemies = (*pit).second;
-						for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-						{
-							(*ait)->UpdateGroundedSprite();
-							(*ait)->SetBoundingQuad();
-						}
-					}
-				}
-			}
+			//(*pit).GetRailPoint()->pos += (*pit).delta;
 		}
 
-		for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
-		{
-			list<PointMoveInfo> &pList = (*it).second;
-			for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
-			{
-				//(*pit).GetRailPoint()->pos += (*pit).delta;
-			}
-
-			(*it).first->SoftReset();
-			(*it).first->Finalize();
-			(*it).first->movingPointMode = false;
-		}
+		(*it).first->SoftReset();
+		(*it).first->Finalize();
+		(*it).first->movingPointMode = false;
 	}
 }
 
@@ -964,7 +886,7 @@ void MoveBrushAction::Undo()
 
 	movingBrush.Move( -delta );
 
-	for( auto it = movingPoints.begin(); it != movingPoints.end(); ++it )
+	for( auto it = movingPoints.myMap.begin(); it != movingPoints.myMap.end(); ++it )
 	{
 		vector<PointMoveInfo> &pList = (*it).second;
 
@@ -979,7 +901,7 @@ void MoveBrushAction::Undo()
 		poly->Finalize();
 		poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
 
-		for ( auto pit = poly->enemies.begin();
+		/*for ( auto pit = poly->enemies.begin();
 			pit != poly->enemies.end(); ++pit)
 		{
 			list<ActorPtr> &enemies = (*pit).second;
@@ -988,7 +910,14 @@ void MoveBrushAction::Undo()
 				(*ait)->UpdateGroundedSprite();
 				(*ait)->SetBoundingQuad();
 			}
-		}
+		}*/
+	}
+
+	for (auto it = movingPoints.enemyBackups.begin(); it != movingPoints.enemyBackups.end(); ++it)
+	{
+		(*it).first->posInfo = (*it).second;
+		(*it).first->UpdateGroundedSprite();
+		(*it).first->SetBoundingQuad();
 	}
 
 	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)

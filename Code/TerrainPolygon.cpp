@@ -62,6 +62,20 @@ void TerrainPolygon::BackupPoints()
 	{
 		backupPoints[i] = GetPoint(i)->pos;
 	}
+
+	for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
+	{
+		auto &aList = (*enemyIt).second;
+		if (!aList.empty())
+		{
+			//auto &posInfoMap = backupEnemyPosInfos[(*enemyIt).first];
+			//posInfoVec.reserve(aList.size());
+			for (auto it = aList.begin(); it != aList.end(); ++it)
+			{
+				backupEnemyPosInfos[(*it)] = ((*it)->posInfo);
+			}
+		}
+	}
 }
 
 void TerrainPolygon::RestoreBackupPoints()
@@ -3947,7 +3961,32 @@ void TerrainPolygon::SetPointPos(int index, sf::Vector2i &p)
 		curr->gate->UpdateLine();
 	}
 
-	if (finalized)
+	TerrainPoint *prev = GetPrevPoint(index);
+
+	auto currIt = enemies.find(curr);
+	if (currIt != enemies.end())
+	{
+		list<ActorPtr> &currList = (*currIt).second;
+		for (auto it = currList.begin(); it != currList.end(); ++it)
+		{
+			(*it)->UpdateGroundedSprite();
+			(*it)->SetBoundingQuad();
+		}
+	}
+	currIt = enemies.find(prev);
+	if (currIt != enemies.end())
+	{
+		list<ActorPtr> &currList = (*currIt).second;
+		for (auto it = currList.begin(); it != currList.end(); ++it)
+		{
+			(*it)->UpdateGroundedSprite();
+			(*it)->SetBoundingQuad();
+		}
+	}
+
+
+	assert(finalized);
+	//if (finalized)
 	{
 		Edge *edge = GetEdge(index);
 		Edge *prevEdge = GetPrevEdge(index);

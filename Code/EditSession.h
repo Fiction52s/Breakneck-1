@@ -406,7 +406,7 @@ struct EditSession : GUIHandler, Session
 	void PerformMovePointsAction();
 
 	bool IsGateAttachedToAffectedPoints(
-		GateInfoPtr gi, PointVectorMap &pm,
+		GateInfoPtr gi, PointMoveMap &pm,
 		bool &a);
 	bool IsGateAttachedToAffectedPoints(
 		GateInfoPtr gi, PointMap &pm,

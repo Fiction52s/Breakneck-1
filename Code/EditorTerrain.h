@@ -10,6 +10,7 @@
 #include "EditorGateInfo.h"
 #include "Physics.h"
 #include "TerrainDecor.h"
+#include "ActorParamsBase.h"
 
 
 struct TouchGrassCollection;
@@ -116,6 +117,8 @@ struct PointMoveInfo
 	sf::Vector2i newPos;
 	sf::Vector2i origPos;
 	bool moveIntent;
+	std::map<ActorPtr,PositionInfo> oldPosInfoMap;
+	std::map<ActorPtr,PositionInfo> newPosInfoMap;
 };
 
 struct BorderInfo
@@ -405,6 +408,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	//TerrainPoint *pointEnd;
 	std::vector<sf::Vector2f> triBackups;//for transforms
 	std::vector<sf::Vector2i> backupPoints;
+	std::map<ActorPtr, PositionInfo> backupEnemyPosInfos;
 	void BackupPoints();
 	void RestoreBackupPoints();
 
@@ -586,7 +590,19 @@ struct EditorDecorInfo : ISelectable
 };
 
 typedef std::map<PolyPtr, std::list<PointMoveInfo>> PointMap;
+
+
+
 typedef std::map<PolyPtr, std::vector<PointMoveInfo>> PointVectorMap;
+
+struct PointMoveMap
+{
+	PointVectorMap myMap;
+	std::map<ActorPtr, PositionInfo> enemyBackups;
+	std::map<ActorPtr, PositionInfo> newEnemyPos;
+
+};
+
 typedef std::map<RailPtr, std::list<PointMoveInfo>> RailPointMap;
 
 #endif
