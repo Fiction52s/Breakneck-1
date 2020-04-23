@@ -892,7 +892,8 @@ void MoveBrushAction::Perform()
 				vector<PointMoveInfo> &pVec = (*it).second;
 				for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
 				{
-					(*pit).poly->MovePoint((*pit).pointIndex, (*pit).delta);
+					//(*pit).poly->MovePoint((*pit).pointIndex, (*pit).delta);
+					(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).newPos);
 				}
 
 				for (auto it = movingPoints.begin(); it != movingPoints.end(); ++it)
@@ -941,7 +942,7 @@ void MoveBrushAction::Perform()
 			list<PointMoveInfo> &pList = (*it).second;
 			for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
 			{
-				(*pit).GetRailPoint()->pos += (*pit).delta;
+				//(*pit).GetRailPoint()->pos += (*pit).delta;
 			}
 
 			(*it).first->SoftReset();
@@ -995,7 +996,7 @@ void MoveBrushAction::Undo()
 		list<PointMoveInfo> &pList = (*it).second;
 		for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
 		{
-			(*pit).GetRailPoint()->pos -= (*pit).delta;
+			//(*pit).GetRailPoint()->pos -= (*pit).delta;
 		}
 
 		(*it).first->SoftReset();
@@ -1256,3 +1257,29 @@ void ModifyTerrainTypeAction::Undo()
 	performed = false;
 }
 
+//MovePointsAction::MovePointsAction(Brush *brush, list<GateInfoPtr> gateList,
+//	PointMap &pm)
+//	:Action()
+//{
+//	polyBrush = *brush;
+//	gList = gateList;
+//	pMap = pm;
+//}
+//
+//void MovePointsAction::Perform()
+//{
+//	if (!performed)
+//	{
+//		polyBrush.Deactivate();
+//		newBrush.Activate();
+//	}
+//}
+//
+//void MovePointsAction::Undo()
+//{
+//	if (performed)
+//	{
+//		newBrush.Deactivate();
+//		polyBrush.Activate();
+//	}
+//}

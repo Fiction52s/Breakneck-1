@@ -156,6 +156,19 @@ struct MoveBrushAction : Action
 	sf::Vector2i delta;
 };
 
+//struct MovePointsAction : Action
+//{
+//	MovePointsAction(Brush *brush, list<GateInfoPtr> gateList,
+//		PointMap &pm );
+//	void Perform();
+//	void Undo();
+//
+//	list<GateInfoPtr> gList;
+//	Brush polyBrush;
+//	PointMap pMap;
+//	Brush newBrush;
+//};
+
 struct LeaveGroundAction : Action
 {
 	LeaveGroundAction( ActorPtr a, V2d &extra );

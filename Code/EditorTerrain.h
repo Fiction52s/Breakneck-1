@@ -103,7 +103,7 @@ struct DetailedInter
 struct PointMoveInfo
 {
 	PointMoveInfo()
-		:delta(0, 0), moveIntent(false),
+		:moveIntent(false),
 		poly( NULL ), rail( NULL )
 	{}
 	PolyPtr poly;
@@ -112,7 +112,8 @@ struct PointMoveInfo
 	TerrainPoint *GetPolyPoint();
 	TerrainPoint *GetRailPoint();
 	//TerrainPoint *point;
-	sf::Vector2i delta;
+	//sf::Vector2i delta;
+	sf::Vector2i newPos;
 	sf::Vector2i origPos;
 	bool moveIntent;
 };
@@ -396,12 +397,16 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void CopyPoints(PolyPtr poly,
 		bool storeSelected = false );
 	PolyPtr Copy();
+	PolyPtr CopyForPointMove();
 	bool IsSpecialPoly();
 	bool IsTouchingEnemiesFromPoly(PolyPtr p);
 
 	//TerrainPoint *pointStart;
 	//TerrainPoint *pointEnd;
 	std::vector<sf::Vector2f> triBackups;//for transforms
+	std::vector<sf::Vector2i> backupPoints;
+	void BackupPoints();
+	void RestoreBackupPoints();
 
 	std::vector<std::vector<TerrainPoint>> pointVector;
 	std::vector<TerrainPoint> &PointVector();
@@ -431,6 +436,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	//std::string material;
 	int IsRemovePointsOkayEnemies(EditSession *edit);
 	void Finalize();
+	//void MovePointsFinalize();
 	void FinalizeInverse();
 	void Reset();
 	void SoftReset();

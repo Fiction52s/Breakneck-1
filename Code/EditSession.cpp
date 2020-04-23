@@ -74,6 +74,7 @@ void EditSession::ClearSelectedBrush()
 	selectedBrush->Clear();
 	grabbedActor = NULL;
 	grabbedObject = NULL;
+	grabbedPoint = NULL;
 }
 
 void EditSession::SelectObject(SelectPtr sel)
@@ -524,6 +525,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	}
 	grabbedObject = NULL;
 	grabbedActor = NULL;
+	grabbedPoint = NULL;
 	zoomMultiple = 1;
 	editMouseDownBox = false;
 	editMouseDownMove = false;
@@ -3431,9 +3433,12 @@ void EditSession::DeselectPoint( RailPtr rail,
 	}
 }
 
+
+
+
 void EditSession::PerformMovePointsAction()
 {
-	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
+	Vector2i delta = grabbedPoint->pos - editMouseOrigPos;//Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;//grabbedPoint->pos - editMouseOrigPos;//
 	//here the delta being subtracted is the points original positionv
 
 	PointVectorMap pm;
@@ -3460,16 +3465,20 @@ void EditSession::PerformMovePointsAction()
 			pi.poly = poly;
 			pi.pointIndex = i;
 			
+			pi.newPos = curr->pos;
 			if (curr->selected)
 			{
-				pi.delta = delta;
-				pi.origPos = curr->pos - delta;
+				//pi.newPos = curr->pos;
+				pi.origPos = poly->backupPoints[i];
+				//pi.delta = delta;
+				//pi.origPos = curr->pos - delta;
 				pi.moveIntent = true;
 			}
 			else
 			{
 				pi.origPos = curr->pos;
 			}
+			
 
 			pmVec.push_back(pi);
 		}
@@ -3480,7 +3489,7 @@ void EditSession::PerformMovePointsAction()
 		list<PointMoveInfo> &pList = (*mit).second;
 		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
 		{
-			(*it).delta = (*it).GetRailPoint()->pos - (*it).delta;
+			//(*it).delta = (*it).GetRailPoint()->pos - (*it).delta;
 		}
 	}
 
@@ -3614,6 +3623,51 @@ void EditSession::PerformMovePointsAction()
 
 		delete testAction;
 	}
+}
+
+
+
+void EditSession::StartMoveSelectedPoints()
+{
+	//Brush origBrush;
+	//list<GateInfoPtr> gateInfoList;
+
+	//if (selectedPoints.empty())
+	//{
+	//	movePointsAction = NULL;
+	//}
+
+	for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+	{
+		(*it).first->BackupPoints();
+		//AddFullPolyToBrush((*it).first, gateInfoList, &origBrush);
+	}
+
+
+	//Brush newBrush;
+	//for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+	//{
+	//	(*it).first->Copy();
+	//	//AddFullPolyToBrush((*it).first, gateInfoList, &origBrush);
+	//}
+
+	//movePointsAction = new MovePointsAction(&origBrush, gateInfoList, selectedPoints);
+	//movePointsAction->performed = true;
+
+	
+}
+
+void EditSession::NewMoveSelectedPoints()
+{
+
+}
+
+void EditSession::NewPerformMovePointsAction()
+{
+	/*if (movePointsAction != NULL)
+	{
+		AddDoneAction(movePointsAction);
+	}*/
 }
 
 void EditSession::MoveSelectedPoints( V2d worldPos )//sf::Vector2i delta )
@@ -4498,10 +4552,15 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 		PointMoveInfo pi;
 		pi.poly = poly;
 		pi.pointIndex = i;
+		pi.origPos = polyCurr->pos;
 		if (polyCurr == point)
 		{
-			pi.delta = adjust;
+			pi.newPos = polyCurr->pos + adjust; //delta
 			pi.moveIntent = true;
+		}
+		else
+		{
+			pi.newPos = polyCurr->pos;
 		}
 
 		pVec.push_back(pi);
@@ -7220,6 +7279,7 @@ bool EditSession::PointSelectPolyPoint( V2d &pos )
 						ClearSelectedPoints();
 
 					SelectPoint((*it), foundPoint);
+					grabbedPoint = foundPoint;
 				}			
 			}
 			return true;
@@ -7987,21 +8047,21 @@ void EditSession::StartSelectedMove()
 
 	for (auto mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
 	{
-		list<PointMoveInfo> &pList = (*mit).second;
+		/*list<PointMoveInfo> &pList = (*mit).second;
 		for (auto it = pList.begin(); it != pList.end(); ++it)
 		{
 			(*it).delta = (*it).GetPolyPoint()->pos;
-		}
+		}*/
 	}
 
-	for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
+	/*for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
 	{
 		list<PointMoveInfo> &pList = (*mit).second;
 		for (auto it = pList.begin(); it != pList.end(); ++it)
 		{
 			(*it).delta = (*it).GetRailPoint()->pos;
 		}
-	}
+	}*/
 
 	/*if (IsSingleActorSelected())
 	{
@@ -8050,6 +8110,8 @@ void EditSession::StartSelectedMove()
 	oldPointGrabPos = pointGrabPos;
 	pointGrabPos = Vector2i(worldPos.x, worldPos.y);
 
+	//NewMoveSelectedPoints();
+	StartMoveSelectedPoints();
 	MoveSelectedPoints(worldPos);
 	MoveSelectedRailPoints(worldPos);
 
@@ -9697,6 +9759,7 @@ void EditSession::EditModeHandleEvent()
 					editMouseDownBox = true;
 					editStartMove = false;
 					grabbedActor = NULL;
+					grabbedPoint = NULL;
 				}
 				else
 				{
@@ -9729,6 +9792,7 @@ void EditSession::EditModeHandleEvent()
 				if (!done)
 				{
 					PerformMovePointsAction();
+					//NewPerformMovePointsAction();
 				}
 
 				TryCompleteSelectedMove();
@@ -9742,6 +9806,7 @@ void EditSession::EditModeHandleEvent()
 			editMouseDownMove = false;
 			editStartMove = false;
 			grabbedActor = NULL;
+			grabbedPoint = NULL;
 
 			UpdateGrass();
 		}

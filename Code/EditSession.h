@@ -38,6 +38,7 @@ struct ActorType;
 struct Brush;
 struct Action;
 struct CompoundAction;
+//struct MovePointsAction;
 struct Background;
 struct ScrollingBackground;
 struct AirTriggerParams;
@@ -397,7 +398,9 @@ struct EditSession : GUIHandler, Session
 		ClipperLib::Path &clipperIntersections,
 		ClipperIntPointSet &fusedPoints );
 
-
+	void StartMoveSelectedPoints();
+	void NewMoveSelectedPoints();
+	void NewPerformMovePointsAction();
 	void MoveSelectedPoints( V2d worldPos );
 	void MoveSelectedRailPoints(V2d worldPos);
 	void PerformMovePointsAction();
@@ -709,6 +712,7 @@ struct EditSession : GUIHandler, Session
 	//----------------------
 
 	CompoundAction *moveAction;
+	//MovePointsAction *movePointsAction;
 
 	bool moveActive;
 	bool editMouseDownBox;
@@ -717,6 +721,7 @@ struct EditSession : GUIHandler, Session
 	int editMoveThresh;
 	SelectPtr grabbedObject;
 	ActorPtr grabbedActor;
+	TerrainPoint *grabbedPoint;
 	sf::Vector2i editMouseGrabPos;
 	sf::Vector2i editMouseOrigPos;
 

@@ -54,6 +54,27 @@ namespace mapbox
 
 #define cout std::cout
 
+void TerrainPolygon::BackupPoints()
+{
+	int numP = GetNumPoints();
+	backupPoints.resize(numP);
+	for (int i = 0; i < numP; ++i)
+	{
+		backupPoints[i] = GetPoint(i)->pos;
+	}
+}
+
+void TerrainPolygon::RestoreBackupPoints()
+{
+	/*int numP = GetNumPoints();
+	for (int i = 0; i < numP; ++i)
+	{
+		PointVector()[i] = backupPoints[i];
+	}*/
+	//backupPoints.clear();
+}
+
+
 void TerrainPolygon::AddTouchGrass(int gt)
 {
 	list<PlantInfo> info;
@@ -4171,6 +4192,12 @@ PolyPtr TerrainPolygon::Copy()
 	PolyPtr newPoly = new TerrainPolygon(*this, true);
 	newPoly->Finalize();
 	return newPoly;
+}
+
+PolyPtr TerrainPolygon::CopyForPointMove()
+{
+	//PolyPtr newPoly = new TerrainPolygon(*this, true, true );
+	return NULL;
 }
 
 void TerrainPolygon::CopyPoints(PolyPtr poly, bool storeSelected )
