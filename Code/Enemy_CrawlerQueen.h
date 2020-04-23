@@ -166,17 +166,12 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	bool completedLoop;
 
 	sf::Sprite sprite;
-	
-	bool origCW;
 
 	GameSession *game;
 
 	double groundSpeed;
 
 	SurfaceMover *mover;
-
-	Action action;
-	bool clockwise;
 
 	int decideDelayFrames;
 	int decideIndex;

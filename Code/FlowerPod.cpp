@@ -19,10 +19,6 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 	:Enemy(EnemyType::EN_FLOWERPOD, ap )//, false, 0, false), ground(g),
 	//edgeQuantity(q)
 {
-	ground = startPosInfo.GetEdge();
-	edgeQuantity = startPosInfo.GetQuant();
-
-
 	FlowerPodParams *fpParams = (FlowerPodParams*)ap;
 
 	if (sess->IsSessTypeGame())
@@ -37,20 +33,23 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 	//healRingGroup.AddGeo(new Ring(32, 20, 200, 10, 20, Vector2f(pos), Vector2f(pos),
 	//	Color::Cyan, Color(0, 0, 100, 0), 60));
 	//geoGroup.Init();
-	double width = 128; //112;
-	double height = 128;
 
-	V2d gPoint = ground->GetPosition(edgeQuantity);
-	sprite.setPosition(gPoint.x, gPoint.y);
 
-	V2d gn = ground->Normal();
+	ts_flower = sess->GetSizedTileset("Momenta/momentaflower_128x128.png");
+	ts_bud = sess->GetSizedTileset("Momenta/momentabud_128x128.png");
+	ts_rise = sess->GetSizedTileset("Momenta/momentaflower_rise_128x128.png");
 
-	V2d gAlong = ground->Along();//normalize(g->v1 - g->v0);
+	sprite.setPosition(startPosInfo.GetPositionF());
 
-	camPosition = gPoint + gn * (height + 0.0);
+	V2d gn = startPosInfo.GetEdge()->Normal();
 
-	position = gPoint + gn * (height / 2.0);
+	V2d gAlong = startPosInfo.GetEdge()->Along();//normalize(g->v1 - g->v0);
 
+	camPosition = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), ts_flower->tileHeight );
+	
+	SetOffGroundHeight(ts_flower->tileHeight / 2.0);
+
+	SetCurrPosInfo(startPosInfo);
 
 	healRing = new Ring(32);
 	healRing->CreatePoints();
@@ -67,9 +66,7 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 		break;
 	}*/
 
-	ts_flower = sess->GetTileset("Momenta/momentaflower_128x128.png", width, height);
-	ts_bud = sess->GetTileset("Momenta/momentabud_128x128.png", width, height);
-	ts_rise = sess->GetTileset("Momenta/momentaflower_rise_128x128.png", width, height);
+	
 	sprite.setTexture(*ts_bud->texture);
 	sprite.setTextureRect(ts_bud->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height -16);
@@ -77,14 +74,9 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 
 	//healRing->Init();
 	healRing->SetColor(Color::Cyan);
-	healRing->Set(Vector2f(position), 100, 110);
+	healRing->Set(currPosInfo.GetPositionF(), 100, 110);
 
-	double angle = atan2(gn.x, -gn.y);
-	sprite.setRotation(angle / PI * 180);
-	//
-	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	//sprite.setPosition(gPoint.x, gPoint.y);
-	
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 
 	actionLength[IDLE] = 12;
 	actionLength[ACTIVATE] = 36;
@@ -100,6 +92,7 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 	animFactor[DEACTIVATED] = 1;
 
 
+	V2d position = GetPosition();
 	//raycast here to either the terrain above me or a max height
 	rayStart = position;
 	rayEnd = position + gn * 2000.0;
@@ -109,14 +102,11 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 	double boxHeight = 1000;
 	if (rcEdge != NULL)
 	{
-		boxHeight = length(rcEdge->GetPosition(rcQuantity) - gPoint);
+		boxHeight = length(rcEdge->GetPosition(rcQuantity) - startPosInfo.GetPosition());
 	}
 
 	BasicRectHitBodySetup(100, boxHeight / 2.0, atan2(-gAlong.y, -gAlong.x),
-		V2d(0, boxHeight / 2.0 - height / 2.0), position);
-
-	double size = max(width, height);
-	spawnRect = sf::Rect<double>(gPoint.x - size / 2, gPoint.y - size / 2, size, size);
+		V2d(0, boxHeight / 2.0 - ts_flower->tileHeight / 2.0), position);
 
 	ResetEnemy();
 }
@@ -213,7 +203,7 @@ void FlowerPod::ProcessState()
 	ActionEnded();
 
 	Actor *player = sess->GetPlayer(0);
-	double dist = length(player->position - position);
+	double dist = length(player->position - GetPosition());
 	float rad = healRing->innerRadius;
 	
 	if ( action == BROADCAST && dist <= rad && healingPlayer == NULL)
@@ -271,7 +261,7 @@ void FlowerPod::UpdateEnemyPhysics()
 
 void FlowerPod::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 	if (action == BROADCAST)
 	{
 		healRing->Draw(target);
@@ -323,7 +313,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 
 	bType = GetType(btypeStr);
 
-	ShardParams sp(pod->sess->types["shard"], Vector2i(pod->position));
+	ShardParams sp(pod->sess->types["shard"], Vector2i(pod->GetPosition()));
 	sp.world = 0;
 	sp.localIndex = 0;
 	

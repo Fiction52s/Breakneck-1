@@ -20,7 +20,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 
 	void SetLevel(int p_level);
 
-	void ChildUpdateFromEditParams();
+	//void ChildUpdateFromEditParams();
 	sf::FloatRect GetAABB();
 	//int animFactor[UNDERGROUND + 1];
 	//int actionLength[UNDERGROUND +1];
@@ -52,7 +52,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	void ResetEnemy();
-	void UpdateEnemyPhysics();
+	//void UpdateEnemyPhysics();
 
 	sf::SoundBuffer *deathSound;
 	sf::Sprite sprite;
@@ -66,8 +66,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	int framesUntilBurrow;
 
 	double groundSpeed;
-
-	bool facingClockwise;
 
 	int crawlAnimationFactor;
 	int rollAnimationFactor;

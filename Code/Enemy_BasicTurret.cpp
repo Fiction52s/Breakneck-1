@@ -25,8 +25,6 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 		//edgeQuantity( q )
 {
 	firingCounter = 0;
-	ground = startPosInfo.GetEdge();
-	edgeQuantity = startPosInfo.GetQuant();
 
 	level = ap->GetLevel();
 
@@ -61,14 +59,17 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 	width *= scale;
 	height *= scale;
 
-	V2d gPoint = ground->GetPosition(edgeQuantity);
+	Edge *ground = startPosInfo.GetEdge();
+
+	V2d gPoint = ground->GetPosition(startPosInfo.GetQuant());
 	gn = ground->Normal();
 	angle = atan2(gn.x, -gn.y);
 
-	position = gPoint + gn * (height / 2.f - 30 * scale);
+	SetOffGroundHeight(height / 2.f - 30 * scale);
+	SetCurrPosInfo(startPosInfo);
 	
 	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
-	testShield->SetPosition(position);
+	testShield->SetPosition(GetPosition());
 
 	auraSprite.setTexture(*ts_aura->texture);
 
@@ -83,7 +84,7 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 	sprite.setRotation(angle / PI * 180);
 
 	
@@ -105,8 +106,8 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	BasicCircleHurtBodySetup(64, position);
-	BasicCircleHitBodySetup(64, position);
+	BasicCircleHurtBodySetup(64, GetPosition());
+	BasicCircleHitBodySetup(64, GetPosition());
 	hitBody.hitboxInfo = hitboxInfo;
 
 	frame = 0;
@@ -144,7 +145,7 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 	cutObject->rotateAngle = sprite.getRotation();
 	cutObject->SetScale(scale);
 
-	testShield->SetPosition(position);
+	testShield->SetPosition(GetPosition());
 
 	ResetEnemy();
 }
@@ -197,7 +198,7 @@ void BasicTurret::ProcessState()
 	{
 		case WAIT:
 		{
-			if (length(playerPos - position) < 700)
+			if (length(playerPos - GetPosition()) < 700)
 			{
 				action = ATTACK;
 				frame = 0;
@@ -209,7 +210,7 @@ void BasicTurret::ProcessState()
 			if (frame == 11 * animationFactor)
 			{
 				frame = 0;
-				if (length(playerPos - position) >= 700)
+				if (length(playerPos - GetPosition()) >= 700)
 				{
 					action = WAIT;
 					frame = 0;
@@ -218,7 +219,7 @@ void BasicTurret::ProcessState()
 			else if (frame == 3 * animationFactor && slowCounter == 1)
 			{
 				launchers[0]->Fire();
-				sess->ActivateSoundAtPos( position, fireSound);
+				sess->ActivateSoundAtPos(GetPosition(), fireSound);
 				//launchers[1]->Fire();
 				//launchers[2]->Fire();
 			}
@@ -269,7 +270,7 @@ void BasicTurret::DirectKill()
 void BasicTurret::EnemyDraw(sf::RenderTarget *target )
 {
 	target->draw(auraSprite);
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }
 
 void BasicTurret::UpdateSprite()
@@ -330,10 +331,10 @@ void BasicTurret::Setup()
 		prelimBox[li].rw = width / 2;
 		prelimBox[li].rh = rad;
 
-		V2d norm = ground->Normal();
+		V2d norm = currPosInfo.GetEdge()->Normal();
 
 
-		V2d along = normalize(ground->v1 - ground->v0);
+		V2d along = currPosInfo.GetEdge()->Along();//normalize(ground->v1 - ground->v0);
 		if (li == 0)
 		{
 			prelimBox[li].globalAngle = atan2(norm.y, norm.x);

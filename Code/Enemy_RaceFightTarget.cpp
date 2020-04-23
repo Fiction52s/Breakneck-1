@@ -22,9 +22,11 @@ RaceFightTarget::RaceFightTarget( ActorParams *ap)//Vector2i &pos )
 	:Enemy( EnemyType::EN_RACEFIGHTTARGET, ap)//., false, 1 )
 {
 	receivedHit = NULL;
-	position = ap->GetPosition();
+	//position = ap->GetPosition();
 	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 	
+	SetCurrPosInfo(startPosInfo);
+
 	frame = 0;
 
 	gameTimeP1Hit = -1;
@@ -36,11 +38,11 @@ RaceFightTarget::RaceFightTarget( ActorParams *ap)//Vector2i &pos )
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect( ts->GetSubRect( frame ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition(position.x, position.y );
+	sprite.setPosition(GetPositionF());
 	//position.x = 0;
 	//position.y = 0;
 
-	BasicCircleHurtBodySetup(40, position);
+	BasicCircleHurtBodySetup(40, GetPosition());
 	
 
 	pPrev = NULL;
@@ -53,8 +55,8 @@ RaceFightTarget::RaceFightTarget( ActorParams *ap)//Vector2i &pos )
 
 	UpdateHitboxes();
 
-	spawnRect = sf::Rect<double>( position.x - 32, position.y - 32,
-		64, 64 );
+	/*spawnRect = sf::Rect<double>( position.x - 32, position.y - 32,
+		64, 64 );*/
 
 	action = NEUTRAL;
 	//cout << "finish init" << endl;
@@ -113,7 +115,7 @@ void RaceFightTarget::UpdateSprite()
 	sprite.setTextureRect( ir );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, 
 		sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( position.x, position.y );
+	sprite.setPosition( GetPositionF() );
 }
 
 void RaceFightTarget::EnemyDraw( sf::RenderTarget *target )
@@ -129,7 +131,7 @@ void RaceFightTarget::DrawMinimap( sf::RenderTarget *target )
 		enemyCircle.setFillColor( COLOR_BLUE );
 		enemyCircle.setRadius( 50 );
 		enemyCircle.setOrigin( enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2 );
-		enemyCircle.setPosition( position.x, position.y );
+		enemyCircle.setPosition( GetPositionF() );
 		target->draw( enemyCircle );
 	}
 }

@@ -103,9 +103,6 @@ struct FlowerPod : Enemy, RayCastHandler
 	Tileset *ts_bud;
 	Tileset *ts_rise;
 
-	Edge *ground;
-	double edgeQuantity;
-
 	GameSession *game;
 
 	

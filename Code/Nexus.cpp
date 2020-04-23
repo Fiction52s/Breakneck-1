@@ -14,8 +14,6 @@ using namespace sf;
 Nexus::Nexus( ActorParams *ap)
 	:Enemy(EnemyType::EN_NEXUS, ap )
 {
-	ground = startPosInfo.GetEdge();
-	edgeQuantity = startPosInfo.GetQuant();
 	double width;
 	double height;
 
@@ -87,50 +85,35 @@ Nexus::Nexus( ActorParams *ap)
 
 	miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height);
 
+	SetOffGroundHeight(906.0 - 600.0);
+	SetGroundOffset(575.0 - 648.0);
 
-	V2d gPoint = ground->GetPosition(edgeQuantity);
+	SetCurrPosInfo(startPosInfo);
 
-	nexSprite.setPosition(Vector2f(gPoint));
-
-	gn = ground->Normal();
-	angle = atan2(gn.x, -gn.y);
-	V2d along = ground->Along();
-
-	position = gPoint + gn * (906.0 - 600.0) + along * (575.0 - 648.0);  //height + V2d( 648-575, 453-550);// / 2.0;
+	nexSprite.setPosition(startPosInfo.GetPositionF());
 
 	//miniSprite.setPosition( position.x, position.y );
-	miniSprite.setPosition(gPoint.x, gPoint.y);
-	miniSprite.setRotation(angle / PI * 180);
+	miniSprite.setPosition(startPosInfo.GetPositionF());
+	miniSprite.setRotation(startPosInfo.GetGroundAngleDegrees());
 
 	sprite.setTexture(*ts_node1->texture);
 	sprite.setTextureRect(ts_node1->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);// - initialYOffset);
 	//.setPosition(gPoint.x, gPoint.y);
-	sprite.setPosition(Vector2f(position));
-	sprite.setRotation(angle / PI * 180);
+	sprite.setPosition(currPosInfo.GetPositionF());
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
 
-	BasicRectHurtBodySetup(80, 100, angle, V2d(0, 20), position);
+	BasicRectHurtBodySetup(80, 100, currPosInfo.GetGroundAngleRadians(), V2d(0, 20), currPosInfo.GetPosition());
 	//currHurtboxes->GetCollisionBoxes(0)->front().globalPosition = position;
 	double angle = 0;
 
 	angle = atan2(gn.x, -gn.y);
 
-
-	//V2d( hitBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
-	//hitBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
+	SetNumActions(5);
 
 	frame = 0;
 	animationFactor = 7;
-	slowCounter = 1;
-	slowMultiple = 1;
-
-	spawnRect = sf::Rect<double>(gPoint.x - 160 / 2, gPoint.y - 160 / 2, 160, 160);
-
-	
-
-	//health = 1;
-	//numHealth = 1;
 
 	if (sess->IsSessTypeGame())
 	{
@@ -184,7 +167,7 @@ void Nexus::ProcessState()
 		if (frame == 1)
 		{
 			sess->cam.manual = true;
-			sess->cam.Ease(Vector2f(position), 1, 60, CubicBezier());
+			sess->cam.Ease(GetPositionF(), 1, 60, CubicBezier());
 		}
 		if (frame == 46 * 2)
 		{
@@ -205,7 +188,7 @@ void Nexus::ProcessState()
 
 V2d Nexus::GetKillPos()
 {
-	return position;
+	return GetPosition();
 }
 
 void Nexus::HandleNoHealth()

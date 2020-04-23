@@ -38,13 +38,6 @@ struct Shroom : Enemy
 	Tileset *ts;
 	Tileset *ts_aura;
 
-	Edge *ground;
-	double edgeQuantity;
-
-	double angle;
-
-	sf::Vector2<double> gn;
-
 	bool jellySpawnable;
 
 	ShroomJelly *jelly;
@@ -86,8 +79,6 @@ struct ShroomJelly : Enemy
 	Tileset *ts_aura;
 	
 	sf::SoundBuffer *floatSound;
-
-	V2d orig;
 
 	int cycleLimit;
 	int currentCycle;

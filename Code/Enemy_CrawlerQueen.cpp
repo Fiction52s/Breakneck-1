@@ -61,8 +61,8 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 	
 	highResPhysics = true;
 	redecide = false;
-	origCW = false;
-	clockwise = origCW;
+	origFacingRight = false;
+	facingRight = origFacingRight;
 	mover = new SurfaceMover(startPosInfo.GetEdge(), startPosInfo.GetQuant(), 80);
 	mover->surfaceHandler = this;
 	mover->SetSpeed(0);
@@ -146,9 +146,11 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 
 	multSpeed = 1;
 
+	SetOffGroundHeight(height / 2.0);
+	SetCurrPosInfo(startPosInfo);
+
 	double angle = atan2(gNorm.x, -gNorm.y);
 	sprite.setRotation(angle / PI * 180.f);
-	position = gPoint + gNorm * height / 2.0;
 
 	double size = max(width, height);
 	spawnRect = sf::Rect<double>(gPoint.x - size / 2, gPoint.y - size / 2, size, size);
@@ -161,9 +163,9 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(70, position);
+	BasicCircleHurtBodySetup(70, GetPosition());
 
-	BasicCircleHitBodySetup(70, position);
+	BasicCircleHitBodySetup(70, GetPosition());
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -276,7 +278,7 @@ void CrawlerQueen::ResetEnemy()
 	currInvincFramesOnHit = 0;
 	invincHitCount = 0;
 	redecide = false;
-	clockwise = origCW;
+	
 	
 	decideIndex = 0;
 	mover->ground = startPosInfo.GetEdge();
@@ -285,25 +287,17 @@ void CrawlerQueen::ResetEnemy()
 	mover->UpdateGroundPos();
 	mover->SetSpeed(0);
 
-	position = mover->physBody.globalPosition;
+	//position = mover->physBody.globalPosition;
 
 	frame = 0;
 	V2d gPoint = mover->ground->GetPosition(mover->edgeQuantity);
 	sprite.setPosition(gPoint.x, gPoint.y);
 
-	//position = gPoint + mover->ground->Normal() * 64.0 / 2.0;
 	V2d gn = mover->ground->Normal();
 	dead = false;
 
 	double angle = 0;
 	angle = atan2(gn.x, -gn.y);
-
-	/*sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
-	V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	sprite.setRotation(angle / PI * 180);
-	sprite.setPosition(pp.x, pp.y);*/
-	
 
 	UpdateHitboxes();
 
@@ -558,7 +552,7 @@ void CrawlerQueen::ProcessState()
 			assert(fb != NULL);
 			fb->Init(mover->ground->GetPosition(mover->edgeQuantity), mover->ground->Normal() * bombSpeed);
 			sess->AddEnemy(fb);
-			cout << "spawning bomb: " << fb << ": " << fb->position.x << ", " << fb->position.y << endl;
+			cout << "spawning bomb: " << fb << ": " << fb->GetPosition().x << ", " << fb->GetPosition().y << endl;
 		}
 		break;
 	case UNBURROW:
@@ -573,7 +567,7 @@ void CrawlerQueen::UpdateEnemyPhysics()
 	if (!dead)
 	{
 		mover->Move(slowMultiple, numPhysSteps);
-		position = mover->physBody.globalPosition;
+		//position = mover->physBody.globalPosition;
 
 		switch (action)
 		{
@@ -597,7 +591,7 @@ void CrawlerQueen::UpdateEnemyPhysics()
 					completedLoop = true;
 				}
 
-				if (clockwise)
+				if (facingRight)
 				{
 					if (!partLoop
 						&& (groundIndex < startIndex
@@ -805,9 +799,9 @@ void CrawlerQueen::UpdateSprite()
 
 	ir = currTS->GetSubRect(currTile);
 
-	bool extraFlipCW = clockwise && action == POPOUT && mover->ground->Normal().x < 0;
-	bool extraFlipCCW = !clockwise && action == POPOUT && mover->ground->Normal().x > 0;
-	bool flip = !clockwise;
+	bool extraFlipCW = facingRight && action == POPOUT && mover->ground->Normal().x < 0;
+	bool extraFlipCCW = !facingRight && action == POPOUT && mover->ground->Normal().x > 0;
+	bool flip = !facingRight;
 	if (extraFlipCW || extraFlipCCW)
 	{
 		flip = !flip;
@@ -838,9 +832,9 @@ void CrawlerQueen::UpdateSprite()
 		}
 		else
 		{
-			if (clockwise)
+			if (facingRight)
 			{
-				V2d vec = normalize(position - mover->ground->v1);
+				V2d vec = normalize(GetPosition() - mover->ground->v1);
 				angle = atan2(vec.y, vec.x);
 				angle += PI / 2.0;
 
@@ -851,7 +845,7 @@ void CrawlerQueen::UpdateSprite()
 			}
 			else
 			{
-				V2d vec = normalize(position - mover->ground->v0);
+				V2d vec = normalize(GetPosition() - mover->ground->v0);
 				angle = atan2(vec.y, vec.x);
 				angle += PI / 2.0;
 
@@ -951,11 +945,11 @@ void CrawlerQueen::TransferEdge(Edge *e)
 bool CrawlerQueen::PlayerInFront()
 {
 	V2d dir;
-	if (clockwise)
+	if (facingRight)
 	{
 		dir = normalize(mover->ground->v1 - mover->ground->v0);
 	}
-	else if (!clockwise)
+	else if (!facingRight)
 	{
 		dir = normalize(mover->ground->v0 - mover->ground->v1);
 	}
@@ -968,7 +962,7 @@ bool CrawlerQueen::PlayerInFront()
 
 void CrawlerQueen::Accelerate(double amount)
 {
-	if (clockwise)
+	if (facingRight)
 	{
 		amount = abs(amount);
 	}
@@ -990,7 +984,7 @@ void CrawlerQueen::Accelerate(double amount)
 void CrawlerQueen::SetForwardSpeed(double speed)
 {
 	double aSpeed = abs(speed);
-	if (clockwise)
+	if (facingRight)
 	{
 		mover->SetSpeed(aSpeed);
 	}
@@ -1124,13 +1118,13 @@ void CrawlerQueen::Boost()
 	frame = 0;
 	if (GetClockwise(travelIndex))
 	{
-		clockwise = true;
+		facingRight = true;
 		mover->SetSpeed(baseSpeed + travelIndex * multSpeed);
 		//cout << "travel: " << travelIndex << ", clockwise: " << startTravelPoint.index << " to " << decidePoints[travelIndex].index << endl;
 	}
 	else
 	{
-		clockwise = false;
+		facingRight = false;
 		mover->SetSpeed(-baseSpeed - travelIndex * multSpeed);
 		//cout << "travel: " << travelIndex << ", CCW: " << startTravelPoint.index << " to " << decidePoints[travelIndex].index << endl;
 	}
@@ -1301,8 +1295,8 @@ FloatingBomb::FloatingBomb( ActorParams *ap, ObjectPool *p_myPool, int index)
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(32, position);
-	BasicCircleHitBodySetup(32, position);
+	BasicCircleHurtBodySetup(32, GetPosition());
+	BasicCircleHitBodySetup(32, GetPosition());
 	hitBody.hitboxInfo = hitboxInfo;
 
 
@@ -1311,11 +1305,11 @@ FloatingBomb::FloatingBomb( ActorParams *ap, ObjectPool *p_myPool, int index)
 
 void FloatingBomb::Init(V2d pos, V2d vel)
 {
-	position = pos;
+	currPosInfo.position = pos;
 	mover->velocity = vel;
 	action = FLOATING;
 	frame = 0;
-	mover->physBody.globalPosition = position;
+	mover->physBody.globalPosition = GetPosition();
 }
 
 FloatingBomb::~FloatingBomb()
@@ -1337,7 +1331,7 @@ void FloatingBomb::ProcessState()
 			dead = true;
 			sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				sess->GetTileset("Enemies/bombexplode_512x512.png", 512, 512),
-				position, false, 0, 10, 3, true);
+				GetPosition(), false, 0, 10, 3, true);
 			//cout << "deactivating " << this << " . currently : " << myPool->numActiveMembers << endl;
 			//myPool->DeactivatePoolMember(this);
 			break;
@@ -1398,7 +1392,7 @@ void FloatingBomb::UpdateSprite()
 	}
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(Vector2f(position));
+	sprite.setPosition(GetPositionF());
 }
 
 void FloatingBomb::DebugDraw(sf::RenderTarget *target)
@@ -1436,7 +1430,7 @@ void FloatingBomb::UpdateEnemyPhysics()
 	if (!dead)
 	{
 		mover->Move(slowMultiple, numPhysSteps);
-		position = mover->physBody.globalPosition;
+		//position = mover->physBody.globalPosition;
 	}
 }
 

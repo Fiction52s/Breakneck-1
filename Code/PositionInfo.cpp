@@ -9,17 +9,32 @@ PositionInfo::PositionInfo()
 
 }
 
+void PositionInfo::SetGroundHeight(double raised)
+{
+	offset.y = raised;
+}
+
+void PositionInfo::SetGroundOffset(double xOffset)
+{
+	offset.x = xOffset;
+}
+
 V2d PositionInfo::GetPosition()
 {
 	Edge *edge = GetEdge();
 	if (edge != NULL)
 	{
-		return edge->GetPosition(groundQuantity);
+		return edge->GetRaisedPosition(groundQuantity + offset.x, offset.y);
 	}
 	else
 	{
 		return position;
 	}
+}
+
+sf::Vector2f PositionInfo::GetPositionF()
+{
+	return sf::Vector2f(GetPosition());
 }
 
 void PositionInfo::SetPosition(V2d &pos)

@@ -23,40 +23,26 @@ ShipPickup::ShipPickup(ActorParams * ap)
 {
 	ShipPickupParams *sParams = (ShipPickupParams*)ap;
 	facingRight = sParams->facingRight;
-	ground = startPosInfo.GetEdge();
-	edgeQuantity = startPosInfo.GetQuant();
 
-	double height = 128;
-	ts = sess->GetTileset( "Ship/shipleave_128x128.png", 128, height );
+	ts = sess->GetSizedTileset( "Ship/shipleave_128x128.png");
 	sprite.setTexture( *ts->texture );
 	
-	V2d gPoint = ground->GetPosition(edgeQuantity);
-	
+	SetOffGroundHeight(ts->tileHeight / 2.0 - 10);
 
-	receivedHit = NULL;
-
-	V2d gn = ground->Normal();
-	float angle = atan2( gn.x, -gn.y );
-
-	position = gPoint - gn * ( height / 2.0 - 10 );
+	SetCurrPosInfo(startPosInfo);
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);// / 2 );
-	sprite.setPosition( gPoint.x, gPoint.y );
-	sprite.setRotation( angle / PI * 180 );
-	
+	sprite.setPosition( startPosInfo.GetPositionF() );
+	sprite.setRotation( startPosInfo.GetEdge()->GetNormalAngleDegrees() );
 
-	spawnRect = sf::Rect<double>( gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2 );
+	SetNumActions(Count);
 
 	actionLength[IDLE] = 20;
 	actionLength[FOUND] = 6;
 
 	animFactor[IDLE] = 2;
 	animFactor[FOUND] = 3;
-
-	//action = IDLE;
-
-	sprite.setPosition(position.x, position.y);
 
 	ResetEnemy();
 }
@@ -65,9 +51,6 @@ void ShipPickup::ResetEnemy()
 {
 	frame = 0;
 	dead = false;
-	receivedHit = NULL;
-	slowCounter = 1;
-	slowMultiple = 1;
 	action = IDLE;
 }
 
@@ -97,7 +80,9 @@ void ShipPickup::UpdateEnemyPhysics()
 {
 	Actor *player = sess->GetPlayer( 0 );
 
-	if( player->ground == ground && action == IDLE)
+	Edge *ground = currPosInfo.GetEdge();
+	double edgeQuantity = currPosInfo.GetQuant();
+	if( player->ground == currPosInfo.GetEdge() && action == IDLE)
 	{
 		if( ground->Normal().y == -1 )
 		{

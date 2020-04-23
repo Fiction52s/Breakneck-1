@@ -9,7 +9,7 @@
 #define NUM_MAX_STEPS 10.0
 #define MAX_VELOCITY 100
 
-struct TerrainPiece;
+struct TerrainPolygon;
 
 struct Edge : QuadTreeEntrant
 {
@@ -29,6 +29,7 @@ struct Edge : QuadTreeEntrant
 	sf::Vector2<double> Along();
 	sf::Vector2<double> FullAlong();
 	sf::Vector2<double> GetPosition( double quantity );
+	sf::Vector2<double> GetRaisedPosition(double quantity, double height );
 	double GetQuantity( sf::Vector2<double> &p );
 	double GetRawQuantity(sf::Vector2<double> &p);
 	double GetQuantityGivenX( double x );
@@ -50,8 +51,7 @@ struct Edge : QuadTreeEntrant
 	Edge *edge0;
 	Edge *edge1;
 	EdgeType edgeType;
-	TerrainPiece *poly;
-
+	TerrainPolygon *poly;
 
 	void *info;
 };

@@ -20,9 +20,7 @@ using namespace sf;
 Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_level)
 	:Enemy(EnemyType::EN_SHROOM, ap )//p_hasMonitor, 1), ground(g), edgeQuantity(q)
 {
-	ground = startPosInfo.GetEdge();
-	edgeQuantity = startPosInfo.GetQuant();
-	level = ap->GetLevel();
+	SetLevel(ap->GetLevel());
 
 	switch (level)
 	{
@@ -47,22 +45,21 @@ Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_le
 	sprite.setTexture(*ts->texture);
 	auraSprite.setTexture(*ts_aura->texture);
 
-	V2d gPoint = ground->GetPosition(edgeQuantity);
+	//V2d gPoint = ground->GetPosition(edgeQuantity);
 
-	receivedHit = NULL;
+	SetOffGroundHeight(40 * scale);
+
+	SetCurrPosInfo(startPosInfo);
+
+	//receivedHit = NULL;
 
 	hitSound = sess->GetSound("Enemies/shroom_spark");
-
-	gn = ground->Normal();
-	angle = atan2(gn.x, -gn.y);
-
-	position = gPoint + gn * ( 40.0 * scale );
 
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(gPoint.x, gPoint.y);
-	sprite.setRotation(angle / PI * 180);
+	sprite.setPosition(startPosInfo.GetPositionF());
+	sprite.setRotation(startPosInfo.GetGroundAngleDegrees());
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -72,8 +69,8 @@ Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_le
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(32, position);
-	BasicCircleHitBodySetup(32, position );
+	BasicCircleHurtBodySetup(32, GetPosition());
+	BasicCircleHitBodySetup(32, GetPosition());
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -81,10 +78,10 @@ Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_le
 
 	frame = 0;
 
-	jelly = new ShroomJelly( ap, position, level);
+	jelly = new ShroomJelly( ap, GetPosition(), level);
 	jelly->Reset();
 
-	spawnRect = sf::Rect<double>(gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2);
+	//spawnRect = sf::Rect<double>(gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2);
 
 	actionLength[LATENT] = 18;
 	actionLength[HITTING] = 11;
@@ -92,13 +89,8 @@ Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_le
 	animFactor[LATENT] = 2;
 	animFactor[HITTING] = 2;
 
-	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(29);
-	cutObject->SetSubRectBack(30);
-	cutObject->SetScale(scale);
-	//cutObject->SetFlipHoriz(false);
-	cutObject->rotateAngle = sprite.getRotation();
-	//cutObject->SetCutRootPos( Vector2f( position ) );
+	cutObject->Setup(ts, 29, 30, scale);
+	cutObject->SetRotation(sprite.getRotation());
 
 	UpdateSprite();
 }
@@ -140,6 +132,7 @@ void Shroom::ProcessState()
 
 	V2d playerPos = sess->GetPlayerPos(0);
 
+	V2d position = GetPosition();
 	switch (action)
 	{
 	case LATENT:
@@ -170,7 +163,7 @@ void Shroom::DirectKill()
 void Shroom::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(auraSprite);
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }
 
 void Shroom::UpdateSprite()
@@ -179,11 +172,11 @@ void Shroom::UpdateSprite()
 	{
 	case LATENT:
 		sprite.setTextureRect(ts->GetSubRect((frame / animFactor[LATENT])));
-		sprite.setPosition(position.x, position.y);
+		sprite.setPosition(GetPositionF());
 		break;
 	case HITTING:
 		sprite.setTextureRect(ts->GetSubRect( actionLength[LATENT] + frame / animFactor[HITTING]));
-		sprite.setPosition(position.x, position.y);
+		sprite.setPosition(GetPositionF());
 		break;
 	}
 
@@ -237,8 +230,8 @@ ShroomJelly::ShroomJelly(ActorParams *ap, V2d &pos, int p_level )
 		break;
 	}
 
-	position = pos;
-	orig = position;
+	SetCurrPosInfo(startPosInfo);
+
 	action = RISING;
 	shootLimit = 40;
 	hitLimit = 1;
@@ -258,7 +251,7 @@ ShroomJelly::ShroomJelly(ActorParams *ap, V2d &pos, int p_level )
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(position.x, position.y);	
+	sprite.setPosition(GetPositionF());	
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -268,8 +261,8 @@ ShroomJelly::ShroomJelly(ActorParams *ap, V2d &pos, int p_level )
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(32, position);
-	BasicCircleHitBodySetup(32, position);
+	BasicCircleHurtBodySetup(32, GetPosition());
+	BasicCircleHitBodySetup(32, GetPosition());
 	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
@@ -308,8 +301,8 @@ ShroomJelly::ShroomJelly(ActorParams *ap, V2d &pos, int p_level )
 
 	float halfWidth = ts->tileWidth / 2;
 	float halfHeight = ts->tileHeight / 2;
-	spawnRect = sf::Rect<double>(position.x - halfWidth, position.y 
-		- halfHeight, halfWidth * 2, halfHeight * 2);
+	//spawnRect = sf::Rect<double>(position.x - halfWidth, position.y 
+	//	- halfHeight, halfWidth * 2, halfHeight * 2);
 
 	actionLength[WAIT] = 30;
 	actionLength[APPEARING] = 4;
@@ -409,7 +402,6 @@ void ShroomJelly::ResetEnemy()
 {
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
-	position = orig;
 	action = WAIT;
 	currentCycle = 0;
 	frame = 0;
@@ -425,7 +417,7 @@ void ShroomJelly::ResetEnemy()
 void ShroomJelly::UpdateEnemyPhysics()
 {
 	V2d movement = velocity / numPhysSteps / (double)slowMultiple;
-	position += movement;
+	currPosInfo.position += movement;
 }
 
 void ShroomJelly::ProcessState()
@@ -444,14 +436,14 @@ void ShroomJelly::ProcessState()
 			break;
 		case APPEARING:
 			action = RISING;
-			sess->ActivateSoundAtPos( position, floatSound);
+			sess->ActivateSoundAtPos( GetPosition(), floatSound);
 			break;
 		case RISING:
 			action = DROOPING;
 			break;
 		case DROOPING:
 			action = RISING;
-			sess->ActivateSoundAtPos( position, floatSound);
+			sess->ActivateSoundAtPos(GetPosition(), floatSound);
 			currentCycle++;
 			if (currentCycle == cycleLimit)
 			{
@@ -487,6 +479,7 @@ void ShroomJelly::ProcessState()
 	}
 	else
 	{
+		V2d position = GetPosition();
 		if (action != DISSIPATING && action != APPEARING && action != WAIT )
 		{
 			if (abs(playerPos.x - position.x) < 10)
@@ -527,14 +520,14 @@ void ShroomJelly::EnemyDraw(sf::RenderTarget *target)
 	}
 
 	target->draw(auraSprite);
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }
 
 void ShroomJelly::UpdateSprite()
 {
 	if (action == WAIT)
 		return;
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 	switch (action)
 	{
 	case APPEARING:
@@ -569,7 +562,7 @@ void ShroomJelly::UpdateSprite()
 		keySprite.setTextureRect(ts_key->GetSubRect(sess->keyFrame / 5));
 		keySprite.setOrigin(keySprite.getLocalBounds().width / 2,
 			keySprite.getLocalBounds().height / 2);
-		keySprite.setPosition(position.x, position.y);
+		keySprite.setPosition(GetPositionF());
 	}
 }
 

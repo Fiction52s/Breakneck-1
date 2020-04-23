@@ -13,10 +13,6 @@ struct ShipPickup : Enemy
 		Count
 	};
 
-	Action action;
-	int actionLength[Count];
-	int animFactor[Count];
-
 	ShipPickup(ActorParams *ap);
 	void ProcessState();
 	void UpdateEnemyPhysics();
@@ -25,14 +21,10 @@ struct ShipPickup : Enemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 
-
 	void ResetEnemy();
 
-	bool facingRight;
 	sf::Sprite sprite;
 	Tileset *ts;
-	Edge *ground;
-	double edgeQuantity;
 
 };
 

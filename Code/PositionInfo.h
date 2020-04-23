@@ -26,13 +26,17 @@ struct PositionInfo
 	void SetRail(RailPtr p_rail, int p_edgeIndex, double quant);
 	int GetEdgeIndex();
 	V2d GetPosition();
+	sf::Vector2f GetPositionF();
 	void SetPosition(V2d &pos);
+	void SetGroundHeight(double raised);
+	void SetGroundOffset(double xOffset);
 
 	V2d position;
 	int edgeIndex;
 	double groundQuantity;
 	PolyPtr ground;
 	RailPtr railGround;
+	V2d offset;
 };
 
 #endif

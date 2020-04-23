@@ -37,13 +37,14 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	hitLimit = 5;
 	action = S_FLOAT;
 	//receivedHit = NULL;
-	position = startPosInfo.GetPosition();
+	//position = startPosInfo.GetPosition();
+	SetCurrPosInfo(startPosInfo);
 
 	dashRadius = 600;//500;
 	dashFrames = 36;
 	returnFrames = 30;
 
-	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
+	//spawnRect = sf::Rect<double>(GetPOs.x - 16, position.y - 16, 16 * 2, 16 * 2);
 
 	frame = 0;
 
@@ -56,7 +57,7 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 
 	auraSprite.setScale(scale, scale);
 
@@ -68,8 +69,8 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHurtBodySetup(48, position);
-	BasicCircleHitBodySetup(48, position);
+	BasicCircleHurtBodySetup(48, GetPosition());
+	BasicCircleHitBodySetup(48, GetPosition());
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -165,7 +166,7 @@ void Airdasher::ResetEnemy()
 	dead = false;
 	action = S_FLOAT;
 	frame = 0;
-	position = startPosInfo.GetPosition();
+	//position = startPosInfo.GetPosition();
 	receivedHit = NULL;
 	comboObj->Reset();
 
@@ -228,7 +229,7 @@ void Airdasher::ProcessState()
 		{
 			action = S_RETURN;
 			sprite.setRotation(0);
-			V2d pDir = normalize(playerPos - position);
+			V2d pDir = normalize(playerPos - GetPosition());
 			SetFacingSide(pDir);
 			break;
 		}
@@ -239,7 +240,7 @@ void Airdasher::ProcessState()
 		}
 	}
 
-	bool withinRange = length(playerPos - position) < ( dashRadius + 10.0 );
+	bool withinRange = length(playerPos - GetPosition()) < ( dashRadius + 10.0 );
 	if (withinRange)
 	{
 		if (action == S_FLOAT)
@@ -247,12 +248,12 @@ void Airdasher::ProcessState()
 			action = S_CHARGE;
 			frame = 0;
 			chargeFrames = 0;
-			playerDir = normalize(playerPos - position);
+			playerDir = normalize(playerPos - GetPosition());
 			SetFacingPlayerAngle();
 		}
 		else if (action == S_CHARGE)
 		{
-			playerDir = normalize(playerPos - position);
+			playerDir = normalize(playerPos - GetPosition());
 			SetFacingPlayerAngle();
 			if (chargeFrames == maxCharge)
 			{
@@ -360,7 +361,7 @@ void Airdasher::UpdateEnemyPhysics()
 		double f = dashBez.GetValue(a);
 		double rf = 1.0 - f;
 
-		position = currOrig * rf + dest * f;
+		currPosInfo.position = currOrig * rf + dest * f;
 
 
 		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
@@ -375,17 +376,17 @@ void Airdasher::UpdateEnemyPhysics()
 		if (a > 1.0)
 		{
 			action = S_CHARGE;
-			playerDir = normalize(playerPos - position);
+			playerDir = normalize(playerPos - GetPosition());
 			SetFacingPlayerAngle();
 			chargeFrames = maxCharge - 5;
 			frame = 0;
-			currOrig = position;
+			currOrig = GetPosition();
 			break;
 		}
 		double f = returnBez.GetValue(a);
 		double rf = 1.0 - f;
 
-		position = dest * rf + d * f;
+		currPosInfo.position = dest * rf + d * f;
 		
 
 		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
@@ -398,7 +399,7 @@ void Airdasher::UpdateEnemyPhysics()
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
-		position += movementVec;
+		currPosInfo.position += movementVec;
 		break;
 	}
 		
@@ -415,7 +416,7 @@ void Airdasher::FrameIncrement()
 
 void Airdasher::UpdateSprite()
 {
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 
 	int tIndex = 0;
 
@@ -458,5 +459,5 @@ void Airdasher::UpdateSprite()
 void Airdasher::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(auraSprite);
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }

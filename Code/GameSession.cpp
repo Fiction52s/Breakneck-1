@@ -3682,13 +3682,13 @@ void GameSession::SetupZones()
 	{
 		for( list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit )
 		{
-			bool hasPoint = (*zit)->ContainsPoint( (*it)->position );
+			bool hasPoint = (*zit)->ContainsPoint( (*it)->GetPosition() );
 			if( hasPoint )
 			{
 				bool mostSpecific = true;
 				for( list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2 )
 				{
-					if( (*zit2)->ContainsPoint( (*it)->position ) )
+					if( (*zit2)->ContainsPoint( (*it)->GetPosition() ) )
 					{
 						mostSpecific = false;
 						break;

@@ -65,11 +65,26 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual void SetSpawnRect();
 	//void SetStartGroundInfo
 	PositionInfo startPosInfo;
+	void SetCurrPosInfo(PositionInfo &pi);
+	V2d GetPosition();
+	sf::Vector2f GetPositionF();
 	//PositionInfo currPosInfo;
 	HitParams hitParams;
 	Session *sess;
 	bool SetHitParams();
 	ActorParams *editParams;
+	void SetOffGroundHeight(double h);
+	void SetGroundOffset(double x);
+	V2d groundOffset;
+	
+
+	double DistFromPlayer(int index = 0);
+	double DistFromPlayerSqr(int index = 0);
+	V2d AlongGroundDir();
+	bool facingRight;
+	bool origFacingRight;
+
+	PositionInfo currPosInfo;
 
 	SurfaceMover *surfaceMover;
 	GroundMover *groundMover;
@@ -98,7 +113,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void HitboxesOff();
 
 	void UpdateFromEditParams( int numFrames );
-	virtual void ChildUpdateFromEditParams(){}
+	virtual void ChildUpdateFromEditParams();
 
 	virtual sf::FloatRect GetAABB(){ 
 		return sf::FloatRect();
@@ -124,7 +139,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	sf::SoundBuffer *genericDeathSound;
 	virtual void PlayDeathSound();
 	virtual int GetNumCamPoints() { return 1; }
-	virtual V2d GetCamPoint(int index) { return position; }
+	virtual V2d GetCamPoint(int index) { return GetPosition(); }
 	virtual void ComboHit();
 	virtual void ComboKill( Enemy *e );
 	virtual void SetZone(Zone *p_zone) { zone = p_zone; }
@@ -140,15 +155,18 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		currHurtboxFrame = -1;
 	}
 	void SetHurtboxes(CollisionBody *cb, int frame = 0);
-	void DrawSpriteIfExists( 
+	void DrawSprite( 
 		sf::RenderTarget *target,
 		sf::Sprite &spr );
+	void DrawSprite(
+		sf::RenderTarget *target,
+		sf::Sprite &spr, sf::Sprite &auraSpr );
 	//CollisionBox physBox;
 	int currHitboxFrame;
 	CollisionBody *currHurtboxes;
 	bool highResPhysics;
 	int currHurtboxFrame;
-	virtual void UpdateEnemyPhysics() {}
+	virtual void UpdateEnemyPhysics();
 	virtual void HandleHitAndSurvive() {}
 	virtual void CheckedMiniDraw(sf::RenderTarget *target,
 		sf::FloatRect &rect);
@@ -254,7 +272,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	int frame;
 	EnemyType type;
 	bool spawnedByClone;
-	sf::Vector2<double> position;
 	Zone *zone;
 	bool hasMonitor;
 	bool dead;

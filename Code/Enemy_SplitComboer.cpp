@@ -37,10 +37,7 @@ SplitPiece::SplitPiece( ActorParams *ap, SplitComboer *splitComb )
 	}
 
 	action = S_FLY;
-	position.x = splitComb->position.x;
-	position.y = splitComb->position.y;
-
-	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
+	SetCurrPosInfo(splitComb->currPosInfo);
 
 	frame = 0;
 
@@ -49,7 +46,7 @@ SplitPiece::SplitPiece( ActorParams *ap, SplitComboer *splitComb )
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 
 	comboObj = new ComboObject(this);
 
@@ -101,7 +98,8 @@ void SplitPiece::ResetEnemy()
 	dead = false;
 	action = S_FLY;
 	frame = 0;
-	position = sc->position;
+	
+	//position = sc->position;
 	receivedHit = NULL;
 	currHits = 0;
 	UpdateHitboxes();
@@ -142,7 +140,7 @@ void SplitPiece::UpdateEnemyPhysics()
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
-		position += movementVec;
+		currPosInfo.position += movementVec;
 	}
 }
 
@@ -159,7 +157,7 @@ void SplitPiece::ComboHit()
 
 void SplitPiece::UpdateSprite()
 {
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 	/*int tIndex = 0;
 	switch (action)
 	{
@@ -177,7 +175,7 @@ void SplitPiece::UpdateSprite()
 
 void SplitPiece::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }
 
 void SplitPiece::Shoot(V2d dir)
@@ -191,7 +189,7 @@ SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pat
 	//int p_level)
 	:Enemy(EnemyType::EN_SPLITCOMBOER, ap )//false, 1, false)
 {
-	level = ap->GetLevel();
+	SetLevel(ap->GetLevel());
 
 	switch (level)
 	{
@@ -212,10 +210,11 @@ SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pat
 
 	loop = ap->loop;
 
+	SetCurrPosInfo(startPosInfo);
 	//receivedHit = NULL;
-	position = ap->GetPosition();
+	//position = ap->GetPosition();
 
-	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
+	//spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
 
 	path = ap->MakeGlobalPath();
 
@@ -239,12 +238,12 @@ SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pat
 	frame = 0;
 
 	//ts = owner->GetTileset( "SplitComboer.png", 80, 80 );
-	ts = sess->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 
 
 	hitboxInfo = new HitboxInfo;
@@ -255,8 +254,8 @@ SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pat
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHurtBodySetup(48, position);
-	BasicCircleHitBodySetup(48, position);
+	BasicCircleHurtBodySetup(48, GetPosition());
+	BasicCircleHitBodySetup(48, GetPosition());
 	hitBody.hitboxInfo = hitboxInfo;
 
 	
@@ -304,8 +303,8 @@ void SplitComboer::ResetEnemy()
 	dead = false;
 	action = S_FLOAT;
 	frame = 0;
-	position.x = path[0].x;
-	position.y = path[0].y;
+	/*position.x = path[0].x;
+	position.y = path[0].y;*/
 	receivedHit = NULL;
 
 	UpdateHitboxes();
@@ -388,16 +387,16 @@ void SplitComboer::UpdateEnemyPhysics()
 			{
 				//cout << "movement loop? "<< endl;
 				V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
-				V2d diff = targetPoint - position;
+				V2d diff = targetPoint - GetPosition();
 				double len = length(diff);
 				if (len >= abs(movement))
 				{
-					position += normalize(diff) * movement;
+					currPosInfo.position += normalize(diff) * movement;
 					movement = 0;
 				}
 				else
 				{
-					position += diff;
+					currPosInfo.position += diff;
 					movement -= length(diff);
 					AdvanceTargetNode();
 				}
@@ -443,7 +442,7 @@ void SplitComboer::AdvanceTargetNode()
 
 void SplitComboer::UpdateSprite()
 {
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 	/*int tIndex = 0;
 	switch (action)
 	{
@@ -461,7 +460,7 @@ void SplitComboer::UpdateSprite()
 
 void SplitComboer::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }
 
 void SplitComboer::CheckedMiniDraw(sf::RenderTarget *target,

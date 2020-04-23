@@ -22,8 +22,7 @@ using namespace sf;
 Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
 	:Enemy( EnemyType::EN_PATROLLER, ap )//, p_hasMonitor, 1 )
 {
-	level = ap->GetLevel();//p_level;
-	position = ap->GetPosition();
+	SetLevel(ap->GetLevel());
 
 	switch (level)
 	{
@@ -44,9 +43,11 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	
 	action = S_FLAP;
 
-	eye->SetPosition(Vector2f(position));
+	SetCurrPosInfo(startPosInfo);
 
-	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2 );
+	eye->SetPosition(GetPositionF());
+
+	//spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2 );
 	
 	shootSound = sess->GetSound("Enemies/patroller_shoot");
 
@@ -74,8 +75,8 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	//position.x = 0;
 	//position.y = 0;
 
-	BasicRectHurtBodySetup(32, 72, 0, V2d(0, 30), position);
-	BasicRectHitBodySetup(32, 72, 0, V2d(0, 30), position);
+	BasicRectHurtBodySetup(32, 72, 0, V2d(0, 30), GetPosition());
+	BasicRectHitBodySetup(32, 72, 0, V2d(0, 30), GetPosition());
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -121,7 +122,7 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	turnAnimFactor = 4;
 	numLaunchers = 1;
 	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, 16, 1, position, V2d(1, 0), 0, 200, false);
+	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, 16, 1, GetPosition(), V2d(1, 0), 0, 200, false);
 	launchers[0]->SetBulletSpeed(5);//70);
 	launchers[0]->hitboxInfo->damage = 18;
 	maxAimingFrames = 35;
@@ -160,8 +161,8 @@ void Patroller::ResetEnemy()
 	dead = false;
 	action = S_FLAP;
 	frame = 0;
-	position.x = path[0].x;
-	position.y = path[0].y;
+	//position.x = path[0].x;
+	//position.y = path[0].y;
 	receivedHit = NULL;
 	
 
@@ -189,11 +190,11 @@ void Patroller::ProcessState()
 		case S_BEAKOPEN:
 		{
 			action = S_BEAKHOLDOPEN;
-			launchers[0]->position = position;
+			launchers[0]->position = GetPosition();
 			V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
-			launchers[0]->facingDir = normalize(targetPos - position);
+			launchers[0]->facingDir = normalize(targetPos - GetPosition());
 			launchers[0]->Fire();
-			sess->ActivateSoundAtPos( position, shootSound);
+			sess->ActivateSoundAtPos( GetPosition(), shootSound);
 			break;
 		}
 		case S_BEAKHOLDOPEN:
@@ -213,8 +214,8 @@ void Patroller::ProcessState()
 	{
 	case S_FLAP:
 	{
-		sf::Vector2f dir = Vector2f(normalize(playerPos - position));
-		float dist = length(playerPos - position);
+		sf::Vector2f dir = Vector2f(normalize(playerPos - GetPosition()));
+		float dist = length(playerPos - GetPosition());
 		targetPos = playerPos;
 		targetAngle = -atan2(dir.y, -dir.x) + PI / 2;
 		if (targetAngle < 0)
@@ -224,12 +225,12 @@ void Patroller::ProcessState()
 			targetAngle -= 2 * PI;
 		}
 
-		if (playerPos.x < position.x)
+		if (playerPos.x < GetPosition().x)
 		{
 			if (turnFrame > 0)
 				--turnFrame;
 		}
-		else if (playerPos.x > position.x)
+		else if (playerPos.x > GetPosition().x)
 		{
 			if (turnFrame < 6 * turnAnimFactor)
 				++turnFrame;
@@ -338,16 +339,16 @@ void Patroller::UpdateEnemyPhysics()
 		{
 			//cout << "movement loop? "<< endl;
 			V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
-			V2d diff = targetPoint - position;
+			V2d diff = targetPoint - GetPosition();
 			double len = length( diff );
 			if( len >= abs( movement ) )
 			{
-				position += normalize( diff ) * movement;
+				currPosInfo.position += normalize( diff ) * movement;
 				movement = 0;
 			}
 			else
 			{
-				position += diff;
+				currPosInfo.position += diff;
 				movement -= length( diff );
 				AdvanceTargetNode();	
 			}
@@ -396,11 +397,12 @@ void Patroller::FrameIncrement()
 
 void Patroller::UpdateSprite()
 {
-	eye->SetPosition(Vector2f(position));
+	Vector2f posF = GetPositionF();
+	eye->SetPosition(posF);
 	eye->UpdateSprite();
 
-	SetRectCenter(bodyVA, ts->tileWidth * scale, ts->tileHeight * scale, Vector2f( position ) );
-	SetRectCenter(bodyVA + 4, ts->tileWidth * scale, ts->tileHeight * scale, Vector2f(position));
+	SetRectCenter(bodyVA, ts->tileWidth * scale, ts->tileHeight * scale, posF );
+	SetRectCenter(bodyVA + 4, ts->tileWidth * scale, ts->tileHeight * scale, posF);
 	
 	bool turnedLeft;
 	if (turnFrame == 0)
@@ -412,25 +414,25 @@ void Patroller::UpdateSprite()
 	if (action == S_FLAP)
 	{
 		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
-			Vector2f(position));
+			posF);
 		SetRectSubRect(bodyVA, ts->GetSubRect(frame / animFactor[S_FLAP]));
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(27 + turnFrame / turnAnimFactor));
 	}
 	else if (action == S_BEAKOPEN)
 	{
 		SetRectRotation(bodyVA, 0, ts->tileWidth * scale, ts->tileHeight * scale,
-			Vector2f(position), !turnedLeft);
+			posF, !turnedLeft);
 		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
-			Vector2f(position), !turnedLeft);
+			posF, !turnedLeft);
 		SetRectSubRect(bodyVA, ts->GetSubRect(24 + frame / animFactor[S_BEAKOPEN]));
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(34 + frame / animFactor[S_BEAKOPEN]));
 	}
 	else if (action == S_BEAKCLOSE)
 	{
 		SetRectRotation(bodyVA, 0, ts->tileWidth * scale, ts->tileHeight * scale,
-			Vector2f(position), !turnedLeft);
+			posF, !turnedLeft);
 		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
-			Vector2f(position), !turnedLeft);
+			posF, !turnedLeft);
 		SetRectSubRect(bodyVA, ts->GetSubRect(24 + ( (actionLength[S_BEAKCLOSE]-1)
 			- frame / animFactor[S_BEAKOPEN]) ) );
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(
@@ -439,9 +441,9 @@ void Patroller::UpdateSprite()
 	else if (action == S_BEAKHOLDOPEN)
 	{
 		SetRectRotation(bodyVA, 0, ts->tileWidth * scale, ts->tileHeight * scale,
-			Vector2f(position), !turnedLeft);
+			posF, !turnedLeft);
 		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
-			Vector2f(position), !turnedLeft);
+			posF, !turnedLeft);
 		SetRectSubRect(bodyVA, ts->GetSubRect(26));
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(36));
 	}
@@ -539,8 +541,8 @@ void Patroller::BulletHitPlayer(BasicBullet *b)
 
 void Patroller::UpdateHitboxes()
 {
-	hurtBody.SetBasicPos(position, currentAngle);
-	hitBody.SetBasicPos(position, currentAngle);
+	hurtBody.SetBasicPos(GetPosition(), currentAngle);
+	hitBody.SetBasicPos(GetPosition(), currentAngle);
 
 	BasicUpdateHitboxInfo();
 }

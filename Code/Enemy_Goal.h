@@ -42,12 +42,7 @@ struct Goal : Enemy
 	float goalKillStartZoom;
 	sf::Vector2f goalKillStartPos;
 
-	Edge *ground;
-	double edgeQuantity;
-
 	int world;
-
-	double angle;
 
 	//int frame;
 	int deathFrame;

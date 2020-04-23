@@ -38,7 +38,7 @@ void Crawler::SetLevel(int p_level)
 }
 
 Crawler::Crawler(ActorParams *ap )
-	:Enemy( EnemyType::EN_CRAWLER, ap ), facingClockwise( true ), groundSpeed( 5 )
+	:Enemy( EnemyType::EN_CRAWLER, ap ), groundSpeed( 5 )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(CRAWL, CRAWL, 0);
@@ -56,9 +56,10 @@ Crawler::Crawler(ActorParams *ap )
 
 	auraSprite.setTexture(*ts_aura->texture);
 	sprite.setTexture( *ts->texture );
+
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = surfaceMover->ground->GetPosition( startPosInfo.GetQuant() );
+	V2d gPoint = surfaceMover->GetGroundPoint();
 	sprite.setPosition( gPoint.x, gPoint.y );
 
 	sprite.setScale(scale, scale);
@@ -67,11 +68,6 @@ Crawler::Crawler(ActorParams *ap )
 	cutObject->SetSubRectFront(86);
 	cutObject->SetSubRectBack(87);
 	cutObject->SetScale(scale);
-	
-	V2d gNorm = surfaceMover->ground->Normal();
-	double angle = atan2( gNorm.x, -gNorm.y );
-	sprite.setRotation( angle / PI * 180.f );
-	position = surfaceMover->physBody.globalPosition;
 
 	actionLength[UNBURROW] = 20;
 	actionLength[CRAWL] = 35;
@@ -97,8 +93,8 @@ Crawler::Crawler(ActorParams *ap )
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	BasicCircleHurtBodySetup(32, position);
-	BasicCircleHitBodySetup(32, position);
+	BasicCircleHurtBodySetup(32, GetPosition());
+	BasicCircleHitBodySetup(32, GetPosition());
 
 	
 	hitBody.hitboxInfo = hitboxInfo;
@@ -118,7 +114,7 @@ Crawler::~Crawler()
 void Crawler::PlayDeathSound()
 {
 	Enemy::PlayDeathSound();
-	sess->ActivateSoundAtPos( position, deathSound);
+	sess->ActivateSoundAtPos( GetPosition(), deathSound);
 }
 
 sf::FloatRect Crawler::GetAABB() 
@@ -135,18 +131,11 @@ void Crawler::ResetEnemy()
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
 
-	position = surfaceMover->physBody.globalPosition;
-
 	currDistTravelled = 0;
 
 	frame = 0;
 
-	V2d gn = surfaceMover->ground->Normal();
 	dead = false;
-
-	double angle = 0;
-	angle = atan2( gn.x, -gn.y );
-
 
 	action = UNBURROW;
 	frame = 15 * 4;
@@ -160,28 +149,29 @@ void Crawler::ResetEnemy()
 
 void Crawler::DecideDirection()
 {
+	V2d position = GetPosition();
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d gn = surfaceMover->ground->Normal();
 	if (gn.y < 0)
 	{
 		if (playerPos.x < position.x)
 		{
-			facingClockwise = false;
+			facingRight = false;
 		}
 		else
 		{
-			facingClockwise = true;
+			facingRight = true;
 		}
 	}
 	else if (gn.y > 0)
 	{
 		if (playerPos.x < position.x)
 		{
-			facingClockwise = true;
+			facingRight = true;
 		}
 		else
 		{
-			facingClockwise = false;
+			facingRight = false;
 		}
 	}
 	else
@@ -190,22 +180,22 @@ void Crawler::DecideDirection()
 		{
 			if (playerPos.y < position.y)
 			{
-				facingClockwise = false;
+				facingRight = false;
 			}
 			else
 			{
-				facingClockwise = true;
+				facingRight = true;
 			}
 		}
 		else if (gn.x > 0)
 		{
 			if (playerPos.y > position.y)
 			{
-				facingClockwise = true;
+				facingRight = true;
 			}
 			else
 			{
-				facingClockwise = false;
+				facingRight = false;
 			}
 		}
 	}
@@ -280,7 +270,7 @@ void Crawler::ProcessState()
 		case UNBURROW:
 			action = DECIDE;
 			frame = 0;
-			if (facingClockwise)
+			if (facingRight)
 			{
 				surfaceMover->SetSpeed(groundSpeed);
 			}
@@ -404,14 +394,14 @@ void Crawler::ProcessState()
 	}*/
 }
 
-void Crawler::UpdateEnemyPhysics()
-{
-	if (numHealth > 0 ) //!dead
-	{
-		surfaceMover->Move(slowMultiple, numPhysSteps );
-		position = surfaceMover->physBody.globalPosition;
-	}
-}
+//void Crawler::UpdateEnemyPhysics()
+//{
+//	if (numHealth > 0 ) //!dead
+//	{
+//		surfaceMover->Move(slowMultiple, numPhysSteps );
+//		//position = surfaceMover->physBody.globalPosition;
+//	}
+//}
 
 void Crawler::FrameIncrement()
 {
@@ -423,8 +413,8 @@ void Crawler::EnemyDraw(sf::RenderTarget *target )
 {
 	if (action == UNDERGROUND)
 		return; 
-	target->draw(auraSprite);
-	DrawSpriteIfExists(target, sprite);
+
+	DrawSprite(target, sprite, auraSprite);
 }
 
 void Crawler::IHitPlayer( int index )
@@ -466,94 +456,44 @@ bool Crawler::TryDashAndAttack()
 
 void Crawler::HandleNoHealth()
 {
-	
-	//cutObject->flipHoriz = !facingClockwise;
-	cutObject->SetFlipHoriz(!facingClockwise);
-	cutObject->rotateAngle = sprite.getRotation();
-	
-	//cutObject->SetCutRootPos(Vector2f(position.x, position.y));
-	//action = DYING;
-	//dead = true;
-	//frame = 0;
-	//int x = 5;
+	cutObject->SetFlipHoriz(!facingRight);
+	cutObject->SetRotation(sprite.getRotation());
 }
 
 void Crawler::UpdateSprite()
 {
-	V2d gn = surfaceMover->ground->Normal();
-	V2d gPoint = surfaceMover->ground->GetPosition(surfaceMover->edgeQuantity);
-
-	//return;
 	float extraVert = 34;
 
-	double angle = 0;
-
 	IntRect ir;
+
+	int currTile = 0;
+
 	switch (action)
 	{
 	case CRAWL:
-		ir = ts->GetSubRect(frame / animFactor[CRAWL]);
+		currTile = frame / animFactor[CRAWL];
 		break;
 	case ROLL:
-		ir = ts->GetSubRect(frame / animFactor[ROLL]+ 35 );
+		currTile = frame / animFactor[ROLL] + 35;
 		break;
 	case DASH:
-		ir = ts->GetSubRect(79);
+		currTile = 79;
 		break;
 	case BURROW:
-		ir = ts->GetSubRect(frame / animFactor[BURROW] + 40);
+		currTile = frame / animFactor[BURROW] + 40;
 		break;
 	case UNBURROW:
-		ir = ts->GetSubRect(frame / animFactor[UNBURROW] + 59);
+		currTile = frame / animFactor[UNBURROW] + 59;
 		break;
 	case ATTACK:
-		ir = ts->GetSubRect(frame / animFactor[ATTACK] + 80);
+		currTile = frame / animFactor[ATTACK] + 80;
 		break;
 	}
 
-	if (!facingClockwise)
-	{
-		sprite.setTextureRect(sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height));
-	}
-	else
-	{
-		sprite.setTextureRect(ir);
-	}
-
-	if (!surfaceMover->roll)
-	{
-		angle = atan2(gn.x, -gn.y);
-
-		V2d pp = surfaceMover->ground->GetPosition(surfaceMover->edgeQuantity);//ground->GetPosition( edgeQuantity );
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-		sprite.setRotation(angle / PI * 180);
-		sprite.setPosition(pp.x, pp.y);
-	}
-	else
-	{
-		if (facingClockwise)
-		{
-			V2d vec = normalize(position - surfaceMover->ground->v1);
-			angle = atan2(vec.y, vec.x);
-			angle += PI / 2.0;
-
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-			sprite.setRotation(angle / PI * 180);
-			V2d pp = surfaceMover->ground->GetPosition(surfaceMover->edgeQuantity);//ground->GetPosition( edgeQuantity );
-			sprite.setPosition(pp.x, pp.y);
-		}
-		else
-		{
-			V2d vec = normalize(position - surfaceMover->ground->v0);
-			angle = atan2(vec.y, vec.x);
-			angle += PI / 2.0;
-
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-			sprite.setRotation(angle / PI * 180);
-			V2d pp = surfaceMover->ground->GetPosition(surfaceMover->edgeQuantity);
-			sprite.setPosition(pp.x, pp.y);
-		}
-	}
+	ts->SetSubRect(sprite, currTile, !facingRight);
+	sprite.setRotation(surfaceMover->GetAngleDegrees());
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+	sprite.setPosition(surfaceMover->GetGroundPointF());
 
 	if (editParams != NULL)
 	{
@@ -562,17 +502,8 @@ void Crawler::UpdateSprite()
 			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 			sprite.setPosition(editParams->GetFloatPos());
 			sprite.setRotation(0);
-			
+			SyncSpriteInfo(auraSprite, sprite);
 		}
-		else
-		{
-			
-		}
-		/*else
-		{
-			sprite.setPosition(editParams->GetFloatPos());
-			sprite.setRotation(editParams->posInfo.GetGroundAngleDegrees());
-		}*/
 	}
 	SyncSpriteInfo(auraSprite, sprite);
 }
@@ -599,19 +530,19 @@ bool Crawler::ShouldAttack()
 	V2d playerPos = sess->GetPlayerPos(0);
 
 	V2d dir;
-	if (facingClockwise)
+	if (facingRight)
 	{
-		dir = normalize(surfaceMover->ground->v1 - surfaceMover->ground->v0);
+		dir = surfaceMover->ground->Along();
 	}
-	else if (!facingClockwise)
+	else if (!facingRight)
 	{
-		dir = normalize(surfaceMover->ground->v0 - surfaceMover->ground->v1);
+		dir = -surfaceMover->ground->Along();
 	}
-	double heightOff = cross(playerPos - surfaceMover->physBody.globalPosition, dir);
+	double heightOff = cross(playerPos - GetPosition(), dir);
 	if (abs(heightOff) > 150)
 		return false;
 
-	if (length(playerPos - position) < 200)
+	if (length(playerPos - GetPosition()) < 200)
 	{
 		if (PlayerInFront())
 			return true;
@@ -640,19 +571,19 @@ bool Crawler::ShouldDash()
 	V2d playerPos = sess->GetPlayerPos(0);
 
 	V2d dir;
-	if (facingClockwise)
+	if (facingRight)
 	{
-		dir = normalize(surfaceMover->ground->v1 - surfaceMover->ground->v0);
+		dir = surfaceMover->ground->Along();
 	}
-	else if (!facingClockwise)
+	else if (!facingRight)
 	{
-		dir = normalize(surfaceMover->ground->v0 - surfaceMover->ground->v1);
+		dir = -surfaceMover->ground->Along();
 	}
-	double heightOff = cross(playerPos - surfaceMover->physBody.globalPosition, dir);
+	double heightOff = cross(playerPos - GetPosition(), dir);
 	if (abs(heightOff) > 150 )
 		return false;
 
-	if (length(playerPos - position) < 320)
+	if (length(playerPos - GetPosition()) < 320)
 	{
 		if (PlayerInFront())
 			return true;
@@ -665,11 +596,11 @@ bool Crawler::PlayerInFront()
 	V2d playerPos = sess->GetPlayerPos(0);
 
 	V2d dir;
-	if (facingClockwise )
+	if (facingRight)
 	{
 		dir = normalize(surfaceMover->ground->v1 - surfaceMover->ground->v0);
 	}
-	else if (!facingClockwise )
+	else if (!facingRight )
 	{
 		dir = normalize(surfaceMover->ground->v0 - surfaceMover->ground->v1);
 	}
@@ -682,7 +613,7 @@ bool Crawler::PlayerInFront()
 
 void Crawler::Accelerate(double amount)
 {
-	if ( facingClockwise )
+	if ( facingRight )
 	{
 		amount = abs(amount);
 	}
@@ -704,7 +635,7 @@ void Crawler::Accelerate(double amount)
 void Crawler::SetForwardSpeed( double speed )
 {
 	double aSpeed = abs(speed);
-	if (facingClockwise)
+	if (facingRight)
 	{
 		surfaceMover->SetSpeed(aSpeed);
 	}
@@ -736,7 +667,7 @@ bool Crawler::TryDash()
 bool Crawler::IsPlayerChasingMe()
 {
 	return (!PlayerInFront() &&
-		length(sess->GetPlayerPos(0) - surfaceMover->physBody.globalPosition) < 400);
+		length(sess->GetPlayerPos(0) - GetPosition()) < 400);
 }
 
 void Crawler::AttemptRunAwayBoost()
@@ -750,13 +681,11 @@ void Crawler::AttemptRunAwayBoost()
 	}
 }
 
-void Crawler::ChildUpdateFromEditParams()
-{
-	if (!editParams->posInfo.IsAerial())
-	{
-		surfaceMover->ground = editParams->posInfo.GetEdge();
-		surfaceMover->edgeQuantity = editParams->posInfo.GetQuant();
-
-		startPosInfo = editParams->posInfo;
-	}
-}
+//void Crawler::ChildUpdateFromEditParams()
+//{
+//	if (!editParams->posInfo.IsAerial())
+//	{
+//		surfaceMover->Set(editParams->posInfo);
+//		startPosInfo = editParams->posInfo;
+//	}
+//}

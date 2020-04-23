@@ -47,7 +47,7 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 {
 	ShardParams *sParams = (ShardParams*)ap;
 
-	position = ap->GetPosition();
+	SetCurrPosInfo(startPosInfo);
 
 	if (sess->IsSessTypeGame())
 	{
@@ -65,7 +65,7 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	
 	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
 	testEmitter->CreateParticles();
-	testEmitter->SetPos(Vector2f(position));
+	testEmitter->SetPos(GetPositionF());
 	//testEmitter->SetTileset( owner->GetTileset("FX/fatgoku.png", 0, 0));
 	testEmitter->SetRatePerSecond(30);
 	
@@ -83,7 +83,7 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 
 	caught = false;
 
-	spawnRect = sf::Rect<double>( position.x - 32, position.y - 32, 32 * 2, 32 * 2 );
+	//spawnRect = sf::Rect<double>( position.x - 32, position.y - 32, 32 * 2, 32 * 2 );
 	
 	frame = 0;
 
@@ -134,10 +134,10 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	}*/
 
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( position.x, position.y );
+	sprite.setPosition( GetPositionF() );
 
-	BasicCircleHurtBodySetup(32, position);
-	BasicCircleHitBodySetup(32, position);
+	BasicCircleHurtBodySetup(32, GetPosition());
+	BasicCircleHitBodySetup(32, GetPosition());
 	hitBody.hitboxInfo = NULL;
 
 	actionLength[FLOAT] = 120;
@@ -150,7 +150,7 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 
 	ResetEnemy();
 
-	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(position), Vector2f(position),
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, GetPositionF(), GetPositionF(),
 		Color::Cyan, Color(0, 0, 100, 0), 60));
 	geoGroup.Init();
 }
@@ -228,7 +228,7 @@ void Shard::DissipateOnTouch()
 	frame = 0;
 
 	sess->ActivateEffect(EffectLayer::IN_FRONT,
-		ts_explodeCreate, position, true, 0, 12, 3, true);
+		ts_explodeCreate, GetPosition(), true, 0, 12, 3, true);
 
 	SetHitboxes(NULL, 0);
 	SetHurtboxes(NULL, 0);
@@ -299,8 +299,8 @@ void Shard::ResetEnemy()
 	testEmitter->Reset();
 	testEmitter->SetOn(false);
 
-	position = startPosInfo.GetPosition();
-	rootPos = position;
+	//position = startPosInfo.GetPosition();
+	rootPos = GetPosition();
 }
 
 void Shard::Launch()
@@ -340,15 +340,15 @@ void Shard::ProcessState()
 		tf /= (floatFrames - 1);
 		double f = cos(2 * PI * tf);
 		f -= .5;
-		position = rootPos;
-		position.y += f * floatAmount;
+		currPosInfo.position = rootPos;
+		currPosInfo.position.y += f * floatAmount;
 	}
 	else if (action == LAUNCH)
 	{
-		position.y -= 5.0;
-		rootPos = position;
+		currPosInfo.position.y -= 5.0;
+		rootPos = currPosInfo.position;
 
-		cout << "position.y: " << position.y << endl;
+		cout << "position.y: " << currPosInfo.position.y << endl;
 	}
 	
 	//testEmitter->Update();
@@ -358,7 +358,7 @@ void Shard::ProcessState()
 		geoGroup.Reset();
 	}
 
-	Vector2f sparkleCenter(position);
+	Vector2f sparkleCenter(GetPositionF());
 
 	if (totalFrame % 60 == 0)
 	{
@@ -399,7 +399,7 @@ void Shard::UpdateSprite()
 	int tile = 0;
 
 	//sprite.setTextureRect(ts->GetSubRect(tile));
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 }
 
 void Shard::EnemyDraw( sf::RenderTarget *target )

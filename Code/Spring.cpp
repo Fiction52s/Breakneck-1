@@ -26,8 +26,10 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 
 	//Vector2i other = sParams->localPath[1] + sParams->
 
+	V2d position = GetPosition();
+	Vector2f positionF(position);
+
 	receivedHit = NULL;
-	position = startPosInfo.GetPosition();
 
 	debugSpeed.setFont(sess->mainMenu->arial);
 	debugSpeed.setFillColor(Color::White);
@@ -37,7 +39,7 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	ss << speed;
 	debugSpeed.setString(ss.str());
 	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
-	debugSpeed.setPosition(Vector2f(position));
+	debugSpeed.setPosition(positionF);
 
 
 	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
@@ -87,7 +89,7 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 
 	sprite.setTextureRect(ts_idle->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(positionF);
 
 	double angle = atan2(springVec.x, -springVec.y);
 	sprite.setRotation(angle / PI * 180.0 );
@@ -125,7 +127,7 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 
 	debugLine[0].color = Color::Red;
 	debugLine[1].color = Color::Red;
-	debugLine[0].position = Vector2f(position);
+	debugLine[0].position = positionF;
 	debugLine[1].position = Vector2f(dest);
 
 	ResetEnemy();

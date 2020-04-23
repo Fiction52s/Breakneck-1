@@ -42,7 +42,9 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 	bType = (BlockerType)(bParams->bType);
 	armored = bParams->armored;
 	//receivedHit = NULL;
-	position = startPosInfo.GetPosition();
+	//position = startPosInfo.GetPosition();
+
+	SetCurrPosInfo(startPosInfo);
 
 	frame = 0;
 
@@ -69,7 +71,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 
 	int pathSize = ap->localPath.size();//pathParam.size();
 
-
+	V2d position = GetPosition();
 
 	if (pathSize == 0)
 	{
@@ -77,7 +79,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 	}
 	else
 	{
-		V2d prev = position;;
+		V2d prev = position;
 		V2d temp;
 		int i = 0;
 		for (auto it = ap->localPath.begin(); it != ap->localPath.end(); ++it)
@@ -130,7 +132,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 				break;
 			assert(ind < numBlockers);
 			blockers[ind] = new Blocker( ap, this, Vector2i(round(currWalk.x), round(currWalk.y)), ind);
-			cout << blockers[ind]->position.x << ", " << blockers[ind]->position.y << endl;
+			cout << blockers[ind]->GetPosition().x << ", " << blockers[ind]->GetPosition().y << endl;
 			travel = dist;
 
 			tempLen = length(nextD - currWalk);
@@ -172,14 +174,14 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 		
 		for (int i = 0; i < numBlockers; ++i)
 		{
-			currPos = blockers[i]->position;
+			currPos = blockers[i]->GetPosition();
 			if (i > 0)
 			{
-				prevPos = blockers[i - 1]->position;
+				prevPos = blockers[i - 1]->GetPosition();
 			}
 			if (i < numBlockers - 1)
 			{
-				nextPos = blockers[i + 1]->position;
+				nextPos = blockers[i + 1]->GetPosition();
 			}
 
 			if (i > 0 && i < numBlockers - 1)
@@ -208,7 +210,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 	}
 	else
 	{
-		blockers[0] = new Blocker( ap, this, Vector2i(round(position.x), round(position.y)), 0);
+		blockers[0] = new Blocker( ap, this, Vector2i(round(GetPosition().x), round(GetPosition().y)), 0);
 	}
 	int minX = blockers[0]->spawnRect.left;
 	int maxX = blockers[0]->spawnRect.left + blockers[0]->spawnRect.width;
@@ -233,7 +235,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 	circleGroup = new CircleGroup(numBlockers, 40, Color::Red, 20);
 	for (int i = 0; i < numBlockers; ++i)
 	{
-		circleGroup->SetPosition( i, Vector2f(blockers[i]->position));
+		circleGroup->SetPosition( i, Vector2f(blockers[i]->GetPosition()));
 	}
 	circleGroup->ShowAll();
 }
@@ -344,7 +346,7 @@ int BlockerChain::GetNumCamPoints()
 
 V2d BlockerChain::GetCamPoint(int index)
 {
-	return blockers[index]->position;
+	return blockers[index]->GetPosition();
 }
 
 Blocker::Blocker( ActorParams *ap, BlockerChain *p_bc, Vector2i &pos, int index)
@@ -371,8 +373,10 @@ Blocker::Blocker( ActorParams *ap, BlockerChain *p_bc, Vector2i &pos, int index)
 	minimapCirclePoints = 20;
 	
 	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+
+
+	currPosInfo.position.x = pos.x;
+	currPosInfo.position.y = pos.y;
 
 	frame = 0;
 
@@ -385,8 +389,8 @@ Blocker::Blocker( ActorParams *ap, BlockerChain *p_bc, Vector2i &pos, int index)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 10;
 
-	BasicCircleHurtBodySetup(32, position);
-	BasicCircleHitBodySetup(32, position);
+	BasicCircleHurtBodySetup(32, GetPosition());
+	BasicCircleHitBodySetup(32, GetPosition());
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -395,8 +399,8 @@ Blocker::Blocker( ActorParams *ap, BlockerChain *p_bc, Vector2i &pos, int index)
 
 	//SetHurtboxes(hurtBody, 0);
 
-	spawnRect = sf::Rect<double>(position.x - 32, position.y - 32,
-		64, 64);
+	//spawnRect = sf::Rect<double>(GetPosition().x - 32, position.y - 32,
+	//	64, 64);
 
 	sess->staticItemTree->Insert(this);
 
@@ -530,7 +534,7 @@ void Blocker::ClearSprite()
 
 void Blocker::ResetEnemy()
 {
-	Vector2f p(position.x, position.y);
+	Vector2f p = GetPositionF();
 
 	Vector2f spriteSize(bc->ts->tileWidth * scale, bc->ts->tileHeight * scale);
 	SetRectCenter(bc->va + vaIndex * 4, spriteSize.x, spriteSize.y, p);
@@ -553,7 +557,7 @@ void Blocker::ResetEnemy()
 void Blocker::IHitPlayer(int index)
 {
 	V2d playerPos = sess->GetPlayerPos(index);
-	if (dot(normalize(playerPos - position), hitboxInfo->kbDir) < 0)
+	if (dot(normalize(playerPos - GetPosition()), hitboxInfo->kbDir) < 0)
 	{
 		hitboxInfo->kbDir = -hitboxInfo->kbDir;
 	}

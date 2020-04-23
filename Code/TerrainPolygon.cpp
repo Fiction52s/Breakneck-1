@@ -3439,6 +3439,7 @@ void TerrainPolygon::SetupEdges()
 
 		edges[i].v0 = V2d(curr->pos);
 		edges[i].v1 = V2d(next->pos);
+		edges[i].poly = this;
 	}
 
 	int prevIndex, nextIndex;

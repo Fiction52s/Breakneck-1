@@ -59,6 +59,10 @@ struct SurfaceMover : QuadTreeCollider
 	bool RollCounterClockwise( double &q,
 		double &m );
 	void UpdateGroundPos();
+	double GetAngleRadians();
+	double GetAngleDegrees();
+	V2d GetGroundPoint();
+	sf::Vector2f GetGroundPointF();
 
 	virtual bool ResolvePhysics( 
 		sf::Vector2<double> &vel );

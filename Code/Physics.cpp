@@ -55,6 +55,12 @@ double Edge::GetQuantity(Vector2<double> &p)
 		return result;
 }
 
+
+sf::Vector2<double> Edge::GetRaisedPosition(double quantity, double height)
+{
+	return GetPosition(quantity) + Normal() * height;
+}
+
 double Edge::GetRawQuantity(sf::Vector2<double> &p)
 {
 	return dot(p - v0, Along());

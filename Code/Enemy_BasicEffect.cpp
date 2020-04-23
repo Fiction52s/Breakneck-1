@@ -95,7 +95,7 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 	//position = pos;
 	frame = 0;
 	activated = true;
-	position = pos;
+	currPosInfo.position = pos;
 	dead = false;
 }
 

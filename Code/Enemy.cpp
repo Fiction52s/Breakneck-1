@@ -38,6 +38,44 @@ void Enemy::CreateSurfaceMover(PositionInfo &pi,
 	surfaceMover->surfaceHandler = handler;
 }
 
+void Enemy::SetCurrPosInfo(PositionInfo &pi)
+{
+	currPosInfo = pi;
+	currPosInfo.SetGroundOffset(groundOffset.x);
+	currPosInfo.SetGroundHeight(groundOffset.y);
+}
+
+void Enemy::SetOffGroundHeight(double h)
+{
+	groundOffset.y = h;
+}
+
+void Enemy::SetGroundOffset(double x)
+{
+	groundOffset.x = x;
+}
+
+V2d Enemy::GetPosition()
+{
+	if (surfaceMover != NULL)
+	{
+		return surfaceMover->physBody.globalPosition;
+	}
+	else if (groundMover != NULL)
+	{
+		return groundMover->physBody.globalPosition;
+	}
+	else
+	{
+		return currPosInfo.GetPosition();
+	}
+}
+
+Vector2f Enemy::GetPositionF()
+{
+	return Vector2f(GetPosition());
+}
+
 void Enemy::SetEditorActions(int p_editLoopAction, int p_editIdleAction,int p_editIdleFrame)
 {
 	editLoopAction = p_editLoopAction;
@@ -48,6 +86,57 @@ void Enemy::SetEditorActions(int p_editLoopAction, int p_editIdleAction,int p_ed
 void Enemy::SetSpawnRect()
 {
 	spawnRect = sf::Rect<double>(GetAABB());//sf::Rect<double>(gPoint.x - size / 2, gPoint.y - size / 2, size, size);
+}
+
+double Enemy::DistFromPlayer(int index)
+{
+	return length(GetPosition() - sess->GetPlayerPos(index));
+}
+
+double Enemy::DistFromPlayerSqr(int index)
+{
+	return lengthSqr(GetPosition() - sess->GetPlayerPos(index));
+}
+
+V2d Enemy::AlongGroundDir()
+{
+	if (surfaceMover != NULL)
+	{
+		if (surfaceMover->ground != NULL)
+		{
+			if (facingRight)
+			{
+				return surfaceMover->ground->Along();
+			}
+			else
+			{
+				return -surfaceMover->ground->Along();
+			}
+		}
+		else if (groundMover->ground != NULL)
+		{
+			if (facingRight)
+			{
+				return groundMover->ground->Along();
+			}
+			else
+			{
+				return -groundMover->ground->Along();
+			}
+		}
+		else if (currPosInfo.ground != NULL )
+		{
+			if (facingRight)
+			{
+				return currPosInfo.GetEdge()->Along();
+			}
+			else
+			{
+				return -currPosInfo.GetEdge()->Along();
+			}
+			
+		}
+	}
 }
 
 bool Enemy::SetHitParams()
@@ -193,6 +282,8 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	suppressMonitor(false), ts_hitSpack(NULL),
 	hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
+	origFacingRight = true;
+	facingRight = true;
 	editLoopAction = 0;
 	editIdleFrame = 0;
 
@@ -428,6 +519,23 @@ void Enemy::HitboxesOff()
 }
 
 
+void Enemy::ChildUpdateFromEditParams()
+{
+	startPosInfo = editParams->posInfo;
+	if (surfaceMover != NULL)
+	{
+		surfaceMover->Set(editParams->posInfo);
+	}
+	else if (groundMover != NULL)
+	{
+		groundMover->Set(editParams->posInfo);
+	}
+	else
+	{
+		SetCurrPosInfo(editParams->posInfo);
+	}
+}
+
 void Enemy::UpdateFromEditParams( int numFrames )
 {
 	frame += numFrames;
@@ -518,12 +626,12 @@ bool Enemy::ReadBool(std::ifstream &is,
 
 void Enemy::PlayDeathSound()
 {
-	sess->ActivateSoundAtPos( position, genericDeathSound);
+	sess->ActivateSoundAtPos( GetPosition(), genericDeathSound);
 }
 
 void Enemy::SetZoneSpritePosition()
 {
-	zonedSprite.setPosition(position.x, position.y);
+	zonedSprite.setPosition(GetPositionF() );
 }
 
 std::vector<CollisionBox> * Enemy::GetComboHitboxes()
@@ -540,7 +648,15 @@ std::vector<CollisionBox> * Enemy::GetComboHitboxes()
 	return NULL;
 }
 
-void Enemy::DrawSpriteIfExists( sf::RenderTarget *target, sf::Sprite &spr )
+void Enemy::DrawSprite(
+	sf::RenderTarget *target,
+	sf::Sprite &spr, sf::Sprite &auraSpr)
+{
+	target->draw(auraSpr);
+	DrawSprite(target, spr);
+}
+
+void Enemy::DrawSprite( sf::RenderTarget *target, sf::Sprite &spr )
 {
 	bool b = (sess->GetPauseFrames() < 2 && pauseFrames < 2) || ( receivedHit == NULL && pauseFrames < 2 );
 	if (hasMonitor && !suppressMonitor)
@@ -581,6 +697,7 @@ void Enemy::Reset()
 		cutObject->Reset();
 	ResetSlow();
 	suppressMonitor = false;
+	facingRight = origFacingRight;
 	spawned = false;
 	prev = NULL;
 	next = NULL;
@@ -589,7 +706,10 @@ void Enemy::Reset()
 	currHurtboxes = NULL;
 	dead = false;
 	currShield = NULL;
+	receivedHit = NULL;
 	pauseFrames = 0;
+
+	SetCurrPosInfo(startPosInfo);
 
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -665,7 +785,7 @@ void Enemy::BasicRectHitBodySetup(
 
 bool Enemy::IsTouchingSpecterField( SpecterArea *sa )
 {
-	return WithinDistance(sa->position, position, sa->radius);
+	return WithinDistance(sa->position, GetPosition(), sa->radius);
 }
 
 void Enemy::CheckTouchingSpecterField(SpecterArea *sa)
@@ -691,7 +811,7 @@ bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 	
 void Enemy::DirectKill()
 {
-	sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, position, true, 0, 10, 4, true);
+	sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
 
 	dead = true;
 
@@ -701,7 +821,7 @@ void Enemy::DirectKill()
 
 	if (cutObject != NULL)
 	{
-		cutObject->SetCutRootPos(Vector2f(position.x, position.y));
+		cutObject->SetCutRootPos(GetPositionF());
 	}
 }
 
@@ -874,8 +994,7 @@ void Enemy::UpdatePrePhysics()
 
 
 	Actor *player = sess->GetPlayer(0);
-	double len = length(position - player->position );
-	bool isFar = player->EnemyIsFar(position);
+	bool isFar = player->EnemyIsFar(GetPosition());
 	if (isFar)
 	{
 		numPhysSteps = NUM_STEPS;
@@ -969,7 +1088,7 @@ void Enemy::UpdatePostPhysics()
 			keySprite.setTextureRect(ts_key->GetSubRect(kFrame / fac));
 			keySprite.setOrigin(keySprite.getLocalBounds().width / 2,
 				keySprite.getLocalBounds().height / 2);
-			keySprite.setPosition(position.x, position.y);
+			keySprite.setPosition(GetPositionF());
 			keySprite.setColor(Color(255, 255, 255, 255));
 		}
 		UpdateSprite();
@@ -1070,7 +1189,7 @@ void Enemy::MovePos(V2d &vel,
 {
 	V2d movementVec = vel;
 	movementVec /= slowMultiple * (double)numPhysSteps;
-	position += movementVec;
+	currPosInfo.position += movementVec;
 }
 
 void Enemy::ConfirmHitNoKill()
@@ -1122,19 +1241,19 @@ void Enemy::ConfirmKill()
 	}
 
 
-	sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, position, true, 0, 10, 5, true);
+	sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 5, true);
 	sess->cam.SetRumble(1, 1, 7);
 	
 	if (hasMonitor && !suppressMonitor)
 	{
 		sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::ENERGY,
-			sess->GetPlayer(0), 1, position);
+			sess->GetPlayer(0), 1, GetPosition());
 		
 	}
 	else
 	{
 		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
-			sess->GetPlayer(0), 6, position);
+			sess->GetPlayer(0), 6, GetPosition());
 	}
 	
 
@@ -1145,7 +1264,7 @@ void Enemy::ConfirmKill()
 
 	if (cutObject != NULL)
 	{
-		cutObject->SetCutRootPos(Vector2f(position.x, position.y));
+		cutObject->SetCutRootPos(GetPositionF());
 
 	}
 
@@ -1226,7 +1345,7 @@ void Enemy::DrawMinimap(sf::RenderTarget *target)
 			cs.setRadius(50);
 			cs.setFillColor(Color::White);
 			cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-			cs.setPosition(position.x, position.y);
+			cs.setPosition(GetPositionF());
 			target->draw(cs);
 		}
 		else
@@ -1235,7 +1354,7 @@ void Enemy::DrawMinimap(sf::RenderTarget *target)
 			cs.setRadius(40);
 			cs.setFillColor(Color::Red);
 			cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-			cs.setPosition(position.x, position.y);
+			cs.setPosition(GetPositionF());
 			target->draw(cs);
 		}
 	}
@@ -1266,6 +1385,7 @@ void Enemy::UpdateHitboxes()
 
 void Enemy::BasicUpdateHitboxes()
 {
+	V2d position = GetPosition();
 	//can update this with a universal angle at some point
 	if (!hurtBody.Empty())
 	{
@@ -1292,6 +1412,21 @@ void Enemy::BasicUpdateHitboxInfo()
 	if (hitboxInfo != NULL)
 	{
 		hitboxInfo->kbDir = sess->GetPlayerKnockbackDirFromVel();
+	}
+}
+
+void Enemy::UpdateEnemyPhysics()
+{
+	if (numHealth > 0)
+	{
+		if (surfaceMover != NULL)
+		{
+			surfaceMover->Move(slowMultiple, numPhysSteps);
+		}
+		else if (groundMover != NULL)
+		{
+			groundMover->Move(slowMultiple, numPhysSteps);
+		}
 	}
 }
 
@@ -1457,6 +1592,26 @@ void CuttableObject::SetSubRectFront( int fIndex )
 		quads[7].color = Color::White;
 	}
 }
+
+void CuttableObject::Setup(
+	Tileset *ts, int frontIndex,
+	int backIndex, double scale,
+	double angle, bool flipX, bool flipY)
+{
+	SetTileset(ts);
+	SetSubRectFront(frontIndex);
+	SetSubRectBack(backIndex);
+	SetScale(scale);
+	rotateAngle = scale;
+	flipHoriz = flipX;
+	flipVert = flipY;
+}
+
+void CuttableObject::SetRotation(float rotate)
+{
+	rotateAngle = rotate;
+}
+
 
 void CuttableObject::SetTileset(Tileset *p_ts)
 {

@@ -51,15 +51,8 @@ struct Nexus : Enemy
 	float goalKillStartZoom;
 	sf::Vector2f goalKillStartPos;
 
-	Edge *ground;
-	double edgeQuantity;
-
-	double angle;
-
-	//int frame;
 	int deathFrame;
 	int animationFactor;
-	bool dead;
 	sf::Vector2<double> gn;
 };
 

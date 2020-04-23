@@ -15,8 +15,6 @@ Goal::Goal( ActorParams *ap )
 	:Enemy( EnemyType::EN_GOAL, ap )
 {
 	world = ap->GetWorld();
-	ground = startPosInfo.GetEdge();
-	edgeQuantity = startPosInfo.GetQuant();
 	//world = //sess->mapHeader->envWorldType;
 	//world = ap->GetWorld();
 	double width;
@@ -28,8 +26,8 @@ Goal::Goal( ActorParams *ap )
 	case 0:
 		width = 288;
 		height = 320;
-		ts = sess->GetTileset("Goal/goal_w01_a_288x320.png", width, height);
-		ts_mini = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+		ts = sess->GetSizedTileset("Goal/goal_w01_a_288x320.png");
+		ts_mini = sess->GetSizedTileset("HUD/minimap_icons_64x64.png");
 		ts_explosion = sess->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
 		ts_explosion1 = sess->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
 		explosionLength = 18;
@@ -84,35 +82,35 @@ Goal::Goal( ActorParams *ap )
 	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height );
 	
 
-	V2d gPoint = startPosInfo.GetPosition();//startInfoPos.GetPosition( edgeQuantity );
+	//V2d gPoint = startPosInfo.GetPosition();//startInfoPos.GetPosition( edgeQuantity );
+
+	SetOffGroundHeight(height / 2.0);
+	SetCurrPosInfo(startPosInfo);
 
 
-	gn = startPosInfo.GetEdge()->Normal();
-	angle = startPosInfo.GetGroundAngleRadians();//atan2( gn.x, -gn.y );
+	//gn = startPosInfo.GetEdge()->Normal();
+	//angle = startPosInfo.GetGroundAngleRadians();//atan2( gn.x, -gn.y );
 
-	position = gPoint + gn * height / 2.0;
+	//position = gPoint + gn * height / 2.0;
 
 	//miniSprite.setPosition( position.x, position.y );
-	miniSprite.setPosition( gPoint.x, gPoint.y );
-	miniSprite.setRotation( angle / PI * 180 );
+	miniSprite.setPosition( startPosInfo.GetPositionF());
+	miniSprite.setRotation( startPosInfo.GetGroundAngleDegrees() );
 
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset );
-	sprite.setPosition( gPoint.x, gPoint.y );
-	sprite.setRotation( angle / PI * 180 );
+	sprite.setPosition( startPosInfo.GetPositionF());
+	sprite.setRotation( startPosInfo.GetGroundAngleDegrees() );
 
-	BasicRectHurtBodySetup(80, 100, angle, V2d(0, 20), position);
-	double angle = 0;
-		
-	angle = atan2( gn.x, -gn.y );
+	BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
 
 	frame = 0;
 	animationFactor = 7;
 	slowCounter = 1;
 	slowMultiple = 1;
 
-	spawnRect = sf::Rect<double>( gPoint.x - 160 / 2, gPoint.y - 160 / 2, 160, 160 );
+	//spawnRect = sf::Rect<double>( gPoint.x - 160 / 2, gPoint.y - 160 / 2, 160, 160 );
 
 	//health = 1;
 	//numHealth = 1;
@@ -124,12 +122,10 @@ Goal::Goal( ActorParams *ap )
 	{
 		GameSession *game = GameSession::GetSession();
 		game->hasGoal = true;
-		game->goalPos = position;
+		game->goalPos = GetPosition();
 
-		V2d gPos = ground->GetPosition(edgeQuantity);
-		V2d norm = ground->Normal();
 		double nodeHeight = 104;
-		game->goalNodePos = gPos + norm * nodeHeight;
+		game->goalNodePos = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), nodeHeight);
 		float space = 78.f;
 		game->goalNodePosFinal = V2d(game->goalNodePos.x, game->goalNodePos.y - space);
 	}
@@ -150,8 +146,6 @@ void Goal::ConfirmKill()
 
 void Goal::ResetEnemy()
 {
-	ground = startPosInfo.GetEdge();
-	edgeQuantity = startPosInfo.groundQuantity;
 	frame = 0;
 	action = A_SITTING;
 	SetHurtboxes(&hurtBody, 0);

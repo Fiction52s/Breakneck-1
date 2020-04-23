@@ -42,8 +42,8 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 	action = NEUTRAL;
 	frame = 0;
 	receivedHit = NULL;
-	position = startPosInfo.GetPosition();
 
+	SetCurrPosInfo(startPosInfo);
 
 	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
 
@@ -58,15 +58,12 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 
 	double radius = 90;
-	BasicCircleHitBodySetup(radius, position);
+	BasicCircleHitBodySetup(radius, GetPosition());
 
 	dead = false;
-
-	spawnRect = sf::Rect<double>(position.x - 100, position.y - 100,
-		200, 200);
 
 	actionLength[NEUTRAL] = 6;
 	actionLength[BOOST] = 8;
@@ -109,7 +106,7 @@ void Booster::ResetEnemy()
 	sprite.setTexture(*ts->texture);
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 
 	UpdateSprite();
 }
@@ -166,7 +163,7 @@ void Booster::UpdateSprite()
 	sprite.setTextureRect(ir);
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 }
 
 void Booster::EnemyDraw(sf::RenderTarget *target)
@@ -182,7 +179,7 @@ void Booster::DrawMinimap(sf::RenderTarget *target)
 		enemyCircle.setFillColor(COLOR_BLUE);
 		enemyCircle.setRadius(50);
 		enemyCircle.setOrigin(enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2);
-		enemyCircle.setPosition(position.x, position.y);
+		enemyCircle.setPosition(GetPositionF());
 		target->draw(enemyCircle);
 	}
 }

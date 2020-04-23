@@ -54,6 +54,63 @@ void SurfaceMover::ClearAirForces()
 	force = V2d(0, 0);
 }
 
+V2d SurfaceMover::GetGroundPoint()
+{
+	//assert(ground != NULL);
+	if (ground != NULL)
+	{
+		return ground->GetPosition(edgeQuantity);
+	}
+	else
+	{
+		return V2d(0, 0);
+	}
+}
+
+Vector2f SurfaceMover::GetGroundPointF()
+{
+	return Vector2f(GetGroundPoint());
+}
+
+double SurfaceMover::GetAngleRadians()
+{
+	double angle;
+	if (ground != NULL)
+	{
+		if (!roll)
+		{
+			angle = ground->GetNormalAngleRadians();
+		}
+		else
+		{
+			if (edgeQuantity == 0)
+			{
+				V2d vec = normalize(physBody.globalPosition - ground->v0);
+				angle = atan2(vec.y, vec.x);
+				angle += PI / 2.0;
+			}
+			else
+			{
+				V2d vec = normalize(physBody.globalPosition - ground->v1);
+				angle = atan2(vec.y, vec.x);
+				angle += PI / 2.0;
+			}
+			
+		}
+	}
+	else
+	{
+		angle = 0;
+	}
+
+	return angle;
+}
+double SurfaceMover::GetAngleDegrees()
+{
+	return GetAngleRadians() / PI * 180.0;
+}
+
+
 void SurfaceMover::UpdateGroundPos()
 {
 	if( ground == NULL )

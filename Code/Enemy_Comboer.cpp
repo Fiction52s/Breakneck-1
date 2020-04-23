@@ -37,9 +37,11 @@ Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, boo
 
 	action = S_FLOAT;
 	//receivedHit = NULL;
-	position = ap->GetPosition();
+	//position = ap->GetPosition();
 
-	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
+	SetCurrPosInfo(startPosInfo);
+
+	//spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
 
 	loop = ap->loop;
 
@@ -56,7 +58,7 @@ Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, boo
 	sprite.setTextureRect(ts->GetSubRect(frame));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 
 
 	hitboxInfo = new HitboxInfo;
@@ -67,8 +69,8 @@ Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, boo
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHurtBodySetup(48, position);
-	BasicCircleHitBodySetup(48, position);
+	BasicCircleHurtBodySetup(48, GetPosition());
+	BasicCircleHitBodySetup(48, GetPosition());
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -86,7 +88,7 @@ Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, boo
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody.BasicCircleSetup(48, position);
+	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
 	comboObj->enemyHitboxFrame = 0;
 
@@ -142,8 +144,8 @@ void Comboer::ResetEnemy()
 	dead = false;
 	action = S_FLOAT;
 	frame = 0;
-	position.x = path[0].x;
-	position.y = path[0].y;
+	//position.x = path[0].x;
+	//position.y = path[0].y;
 	receivedHit = NULL;
 
 
@@ -315,16 +317,16 @@ void Comboer::UpdateEnemyPhysics()
 			{
 				//cout << "movement loop? "<< endl;
 				V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
-				V2d diff = targetPoint - position;
+				V2d diff = targetPoint - GetPosition();
 				double len = length(diff);
 				if (len >= abs(movement))
 				{
-					position += normalize(diff) * movement;
+					currPosInfo.position += normalize(diff) * movement;
 					movement = 0;
 				}
 				else
 				{
-					position += diff;
+					currPosInfo.position += diff;
 					movement -= length(diff);
 					AdvanceTargetNode();
 				}
@@ -338,7 +340,7 @@ void Comboer::UpdateEnemyPhysics()
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
-		position += movementVec;
+		currPosInfo.position += movementVec;
 		break;
 	}
 	}
@@ -410,7 +412,7 @@ void Comboer::ComboHit()
 
 void Comboer::UpdateSprite()
 {
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(GetPositionF());
 	/*int tIndex = 0;
 	switch (action)
 	{
@@ -428,5 +430,5 @@ void Comboer::UpdateSprite()
 
 void Comboer::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }

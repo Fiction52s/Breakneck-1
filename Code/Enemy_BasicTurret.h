@@ -51,8 +51,6 @@ struct BasicTurret : Enemy, LauncherEnemy
 
 	int framesWait;
 	int firingCounter;
-	Edge *ground;
-	double edgeQuantity;
 
 	void SetupPreCollision();
 	CollisionBody *prelimBody;

@@ -130,6 +130,10 @@ struct CuttableObject
 	void Reset();
 	bool DoneSeparatingCut();
 	void IncrementFrame();
+	void Setup(
+		Tileset *ts, int frontIndex,
+		int backIndex, double scale,
+		double angle = 0, bool flipX = false, bool flipY = false);
 	void SetFlipHoriz(bool h)
 	{
 		flipHoriz = h;
@@ -152,7 +156,8 @@ struct CuttableObject
 	void SetSubRectFront(int fIndex);
 	void SetSubRectBack(int bIndex);
 	void SetTileset(Tileset *ts);
-	int rotateAngle;
+	void SetRotation(float rotate);
+	float rotateAngle;
 	float scale;
 
 private:

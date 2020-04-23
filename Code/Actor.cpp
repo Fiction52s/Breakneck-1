@@ -16565,7 +16565,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	{
 	case TRIGGER_SHIPPICKUP:
 	{
-		ShipPickupPoint(trigger->edgeQuantity, trigger->facingRight);
+		ShipPickupPoint(trigger->currPosInfo.GetQuant(), trigger->facingRight);
 		break;
 	}
 	case TRIGGER_HOUSEFAMILY:
@@ -16573,7 +16573,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		desperationMode = false;
 		SetExpr(Expr_NEUTRAL);
 		assert(ground != NULL);
-		edgeQuantity = trigger->edgeQuantity;
+		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
 		//facingRight = trigger->facingRight;
 
@@ -16595,7 +16595,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		desperationMode = false;
 		SetExpr(Expr_NEUTRAL);
 		assert(ground != NULL);
-		edgeQuantity = trigger->edgeQuantity;
+		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
 		//facingRight = trigger->facingRight;
 
@@ -16617,7 +16617,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		desperationMode = false;
 		//SetExpr(Expr_NEUTRAL);
 		//assert(ground != NULL);
-		edgeQuantity = trigger->edgeQuantity;
+		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
 
 		if (ground->Normal().y == -1)
@@ -16640,7 +16640,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	case TRIGGER_CRAWLERATTACK:
 	{
 		desperationMode = false;
-		edgeQuantity = trigger->edgeQuantity;
+		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
 
 		if (ground->Normal().y == -1)
@@ -16658,7 +16658,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	case TRIGGER_TEXTTEST:
 	{
 		desperationMode = false;
-		edgeQuantity = trigger->edgeQuantity;
+		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
 
 		if (ground->Normal().y == -1)
@@ -16838,7 +16838,7 @@ bool Actor::SpringLaunch()
 	if (currSpring != NULL)
 	{
 		currSpring->Launch();
-		position = currSpring->position;
+		position = currSpring->GetPosition();
 		V2d sprDir = currSpring->dir;
 		
 		double s = currSpring->speed;
@@ -17013,7 +17013,7 @@ void Actor::SetBounceBoostVelocity()
 	}
 	else
 	{
-		V2d dir = normalize(position - currBounceBooster->position);
+		V2d dir = normalize(position - currBounceBooster->GetPosition());
 		velocity = dir * s;
 		velocity.x *= .6;
 
