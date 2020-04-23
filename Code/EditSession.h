@@ -22,7 +22,8 @@
 #include "EditorActors.h"
 #include "EditorTerrain.h"
 #include "Session.h"
-#include "ActorParamsBase.h"
+#include "PositionInfo.h"
+//#include "ActorParamsBase.h"
 //#include "EditorRail.h"
 
 struct TransformTools;
@@ -401,16 +402,16 @@ struct EditSession : GUIHandler, Session
 	void StartMoveSelectedPoints();
 	void NewMoveSelectedPoints();
 	void NewPerformMovePointsAction();
-	void MoveSelectedPoints( V2d worldPos );
+	void MoveSelectedPoints();
 	void MoveSelectedRailPoints(V2d worldPos);
 	void PerformMovePointsAction();
 
 	bool IsGateAttachedToAffectedPoints(
-		GateInfoPtr gi, PointMoveMap &pm,
+		GateInfoPtr gi, PointMover *pm,
 		bool &a);
-	bool IsGateAttachedToAffectedPoints(
-		GateInfoPtr gi, PointMap &pm,
-		bool &a);
+	//bool IsGateAttachedToAffectedPoints(
+	//	GateInfoPtr gi, PointMover *pm,
+	//	bool &a);
 	bool IsGateAttachedToAffectedPoly(
 		GateInfoPtr gi, Brush *b,
 		bool &a);

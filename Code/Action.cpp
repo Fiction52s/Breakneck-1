@@ -806,12 +806,18 @@ void ModifyGateAction::Undo()
 
 //doesn't make a copy of the brush!
 MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform,
-	PointMoveMap &points, RailPointMap &railPoints )
-	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), movingPoints( points ),
+	PointMover *pm, RailPointMap &railPoints )
+	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), pointMover( pm),
 	movingRailPoints( railPoints )
 {
 	//moveValid = true;
 	movingBrush = *p_brush;
+}
+
+MoveBrushAction::~MoveBrushAction()
+{
+	if (pointMover != NULL)
+		delete pointMover;
 }
 
 void MoveBrushAction::Perform()
@@ -824,14 +830,12 @@ void MoveBrushAction::Perform()
 
 	movingBrush.Move( delta );
 
-	for (auto it = movingPoints.myMap.begin(); it != movingPoints.myMap.end(); ++it)
+	for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
 	{
 		vector<PointMoveInfo> &pVec = (*it).second;
 		for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
 		{
 			(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).newPos);
-			//for( )
-			//(*pit).newPosInfoVec
 		}
 
 		PolyPtr poly = (*it).first;
@@ -853,7 +857,7 @@ void MoveBrushAction::Perform()
 		}*/
 	}
 
-	for (auto it = movingPoints.newEnemyPos.begin(); it != movingPoints.newEnemyPos.end(); ++it)
+	for (auto it = pointMover->newEnemyPosInfo.begin(); it != pointMover->newEnemyPosInfo.end(); ++it)
 	{
 		(*it).first->posInfo = (*it).second;
 		(*it).first->UpdateGroundedSprite();
@@ -886,7 +890,8 @@ void MoveBrushAction::Undo()
 
 	movingBrush.Move( -delta );
 
-	for( auto it = movingPoints.myMap.begin(); it != movingPoints.myMap.end(); ++it )
+	//for( auto it = movingPoints.myMap.begin(); it != movingPoints.myMap.end(); ++it )
+	for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
 	{
 		vector<PointMoveInfo> &pList = (*it).second;
 
@@ -913,7 +918,7 @@ void MoveBrushAction::Undo()
 		}*/
 	}
 
-	for (auto it = movingPoints.enemyBackups.begin(); it != movingPoints.enemyBackups.end(); ++it)
+	for (auto it = pointMover->oldEnemyPosInfo.begin(); it != pointMover->oldEnemyPosInfo.end(); ++it)
 	{
 		(*it).first->posInfo = (*it).second;
 		(*it).first->UpdateGroundedSprite();

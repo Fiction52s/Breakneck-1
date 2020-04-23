@@ -12,7 +12,8 @@
 #include "EffectLayer.h"
 #include "Camera.h"
 
-#include "ActorParamsBase.h"
+//#include "ActorParamsBase.h"
+#include "PositionInfo.h"
 #include "EditorActors.h"
 #include "Enemy_BasicEffect.h"
 

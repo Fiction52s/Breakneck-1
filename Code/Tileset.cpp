@@ -254,6 +254,22 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 
 
 #include <boost/filesystem.hpp>
+
+Tileset * TilesetManager::GetSizedTileset(const std::string & s, int altColorIndex )
+{
+	Tileset *alreadyExistsTS = Find(s, altColorIndex);
+	if (alreadyExistsTS != NULL)
+		return alreadyExistsTS;
+
+	std::size_t finalUnderScore = s.find_last_of("_");
+	std::size_t finalX = s.find_last_of("x");
+	std::size_t finalDot = s.find('.');
+	int tileWidth = std::stoi(s.substr(finalUnderScore + 1, finalX - finalUnderScore - 1));
+	int tileHeight = std::stoi(s.substr(finalX + 1, finalDot - finalX - 1));
+
+	return Create(s, tileWidth, tileHeight, altColorIndex);
+}
+
 Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex )
 {
 	Tileset *alreadyExistsTS = Find(s, altColorIndex);

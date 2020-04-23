@@ -37,6 +37,14 @@ SurfaceMover::SurfaceMover(Edge *startGround,
 	UpdateGroundPos();
 }
 
+void SurfaceMover::Set(PositionInfo &pi)
+{
+	ground = pi.GetEdge();
+	edgeQuantity = pi.GetQuant();
+	roll = false;
+	UpdateGroundPos();
+}
+
 void SurfaceMover::AddAirForce(V2d &p_force)
 {
 	force += p_force;

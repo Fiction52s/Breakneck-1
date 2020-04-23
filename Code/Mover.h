@@ -3,6 +3,7 @@
 
 #include "Physics.h"
 #include "Movement.h"
+#include "PositionInfo.h"
 //#include "GameSession.h"
 
 struct Session;
@@ -47,6 +48,7 @@ struct SurfaceMover : QuadTreeCollider
 	SurfaceMover(Edge *startGround,
 		double startQuantity,
 		double radius);
+	void Set(PositionInfo &pi);
 	virtual void HandleEntrant( QuadTreeEntrant *qte );
 	void AddAirForce(V2d &force);
 	void ClearAirForces();

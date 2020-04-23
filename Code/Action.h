@@ -142,7 +142,8 @@ struct MoveBrushAction : Action
 {
 	MoveBrushAction( Brush *brush, sf::Vector2i delta,
 		bool moveOnFirstPerform,
-		PointMoveMap &points, RailPointMap &railPoints);
+		PointMover *pm, RailPointMap &railPoints);
+	~MoveBrushAction();
 	void Perform();
 	void Undo();
 	//void CheckValidPointMove();
@@ -150,7 +151,7 @@ struct MoveBrushAction : Action
 	//bool moveValid;
 	Brush movingBrush;
 	//std::list<PointMoveInfo> movingPoints;
-	PointMoveMap movingPoints;
+	PointMover *pointMover;
 	RailPointMap movingRailPoints;
 	bool moveOnFirstPerform;
 	sf::Vector2i delta;

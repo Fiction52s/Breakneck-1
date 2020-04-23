@@ -54,28 +54,88 @@ namespace mapbox
 
 #define cout std::cout
 
-void TerrainPolygon::BackupPoints()
+void TerrainPolygon::BackupEnemyPositions()
 {
-	int numP = GetNumPoints();
-	backupPoints.resize(numP);
-	for (int i = 0; i < numP; ++i)
-	{
-		backupPoints[i] = GetPoint(i)->pos;
-	}
-
+	enemyPosBackups.clear();
+	int totalEnemies = 0;
 	for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
 	{
 		auto &aList = (*enemyIt).second;
 		if (!aList.empty())
 		{
-			//auto &posInfoMap = backupEnemyPosInfos[(*enemyIt).first];
-			//posInfoVec.reserve(aList.size());
 			for (auto it = aList.begin(); it != aList.end(); ++it)
 			{
-				backupEnemyPosInfos[(*it)] = ((*it)->posInfo);
+				totalEnemies++;
+				//backupEnemyPosInfos[(*it)] = ((*it)->posInfo);
 			}
 		}
 	}
+
+	enemyPosBackups.reserve(totalEnemies);
+	for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
+	{
+		auto &aList = (*enemyIt).second;
+		if (!aList.empty())
+		{
+			for (auto it = aList.begin(); it != aList.end(); ++it)
+			{
+				enemyPosBackups.push_back(make_pair((*it), (*it)->posInfo));
+			}
+		}
+	}
+}
+
+void TerrainPolygon::StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b)
+{
+	int totalEnemies = 0;
+	for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
+	{
+		auto &aList = (*enemyIt).second;
+		if (!aList.empty())
+		{
+			for (auto it = aList.begin(); it != aList.end(); ++it)
+			{
+				totalEnemies++;
+			}
+		}
+	}
+
+	b.reserve(b.size() + totalEnemies);
+	for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
+	{
+		auto &aList = (*enemyIt).second;
+		if (!aList.empty())
+		{
+			for (auto it = aList.begin(); it != aList.end(); ++it)
+			{
+				b.push_back(make_pair((*it), (*it)->posInfo));
+			}
+		}
+	}
+}
+
+void TerrainPolygon::BackupPoints()
+{
+	//int numP = GetNumPoints();
+	//backupPoints.resize(numP);
+	//for (int i = 0; i < numP; ++i)
+	//{
+	//	backupPoints[i] = GetPoint(i)->pos;
+	//}
+
+	//for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
+	//{
+	//	auto &aList = (*enemyIt).second;
+	//	if (!aList.empty())
+	//	{
+	//		//auto &posInfoMap = backupEnemyPosInfos[(*enemyIt).first];
+	//		//posInfoVec.reserve(aList.size());
+	//		for (auto it = aList.begin(); it != aList.end(); ++it)
+	//		{
+	//			backupEnemyPosInfos[(*it)] = ((*it)->posInfo);
+	//		}
+	//	}
+	//}
 }
 
 void TerrainPolygon::RestoreBackupPoints()
@@ -2217,6 +2277,7 @@ Vector2i TerrainPolygon::GetExtreme(TerrainPoint *p0,
 	return extreme;
 }
 
+//only used for moving points now
 bool TerrainPolygon::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 {
 	double primLimit = EditSession::PRIMARY_LIMIT;
@@ -2242,7 +2303,7 @@ bool TerrainPolygon::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 
 		for (int i = 0; i < numP; ++i, lockPointIndex++)
 		{
-			isPointLocked = !lockPointsEmpty && lockPoints[lockPointIndex].moveIntent;
+			isPointLocked = false;//!lockPointsEmpty && lockPoints[lockPointIndex].moveIntent;
 			result = FixNearPrimary(i, isPointLocked);
 
 			if (result > 0)

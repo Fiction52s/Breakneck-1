@@ -18,6 +18,8 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		A_Count
 	};
 
+	void SetLevel(int p_level);
+
 	void ChildUpdateFromEditParams();
 	sf::FloatRect GetAABB();
 	//int animFactor[UNDERGROUND + 1];
@@ -59,17 +61,13 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	double currDistTravelled;
 	Tileset *ts;
 	Tileset *ts_aura;
-	bool origCW;
 
 	int maxFramesUntilBurrow;
 	int framesUntilBurrow;
 
 	double groundSpeed;
 
-	SurfaceMover *mover;
-
-	//Action action;
-	bool clockwise;
+	bool facingClockwise;
 
 	int crawlAnimationFactor;
 	int rollAnimationFactor;

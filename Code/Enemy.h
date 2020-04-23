@@ -61,7 +61,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 {
 
 	//new vars
-
+	virtual void SetLevel(int p_level) { level = p_level; }
+	virtual void SetSpawnRect();
 	//void SetStartGroundInfo
 	PositionInfo startPosInfo;
 	//PositionInfo currPosInfo;
@@ -70,12 +71,21 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	bool SetHitParams();
 	ActorParams *editParams;
 
+	SurfaceMover *surfaceMover;
+	GroundMover *groundMover;
+	void CreateSurfaceMover(PositionInfo &pi,
+		double rad, SurfaceMoverHandler *handler);
+
 	void SetNumActions( int num );
 	int GetEditIdleLength();
 	void SetActionEditLoop();
 
 	int editLoopAction;
+	int editIdleAction;
 	int editIdleFrame;
+	void SetEditorActions(
+		int editLoopAction = 0, int editIdleAction=0,
+		int editIdleFrame=0);
 
 	std::vector<int> actionLength;
 	std::vector<int> animFactor;

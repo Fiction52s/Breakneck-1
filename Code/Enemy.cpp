@@ -30,7 +30,25 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+void Enemy::CreateSurfaceMover(PositionInfo &pi,
+	double rad, SurfaceMoverHandler *handler )
+{
+	assert(groundMover == NULL && surfaceMover == NULL);
+	surfaceMover = new SurfaceMover(pi.GetEdge(), pi.GetQuant(), rad * scale);
+	surfaceMover->surfaceHandler = handler;
+}
 
+void Enemy::SetEditorActions(int p_editLoopAction, int p_editIdleAction,int p_editIdleFrame)
+{
+	editLoopAction = p_editLoopAction;
+	editIdleAction = p_editIdleAction;
+	editIdleFrame = p_editIdleFrame;
+}
+
+void Enemy::SetSpawnRect()
+{
+	spawnRect = sf::Rect<double>(GetAABB());//sf::Rect<double>(gPoint.x - size / 2, gPoint.y - size / 2, size, size);
+}
 
 bool Enemy::SetHitParams()
 {
@@ -178,6 +196,8 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	editLoopAction = 0;
 	editIdleFrame = 0;
 
+	groundMover = NULL;
+	surfaceMover = NULL;
 
 	
 	if (ap != NULL)
@@ -425,7 +445,13 @@ void Enemy::UpdateFromEditParams( int numFrames )
 void Enemy::SetNumActions( int num )
 {
 	actionLength.resize(num);
+
+	//defaults to animating at 100 percent speed
 	animFactor.resize(num);
+	for (int i = 0; i < num; ++i)
+	{
+		animFactor[i] = 1;
+	}
 }
 
 int Enemy::GetEditIdleLength()

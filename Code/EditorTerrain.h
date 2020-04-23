@@ -10,7 +10,8 @@
 #include "EditorGateInfo.h"
 #include "Physics.h"
 #include "TerrainDecor.h"
-#include "ActorParamsBase.h"
+#include "PositionInfo.h"
+//#include "ActorParamsBase.h"
 
 
 struct TouchGrassCollection;
@@ -104,21 +105,18 @@ struct DetailedInter
 struct PointMoveInfo
 {
 	PointMoveInfo()
-		:moveIntent(false),
-		poly( NULL ), rail( NULL )
+		:poly( NULL ), rail( NULL )
 	{}
+
+	TerrainPoint *GetPolyPoint();
+	TerrainPoint *GetRailPoint();
+
 	PolyPtr poly;
 	RailPtr rail;
 	int pointIndex;
-	TerrainPoint *GetPolyPoint();
-	TerrainPoint *GetRailPoint();
-	//TerrainPoint *point;
-	//sf::Vector2i delta;
 	sf::Vector2i newPos;
 	sf::Vector2i origPos;
-	bool moveIntent;
-	std::map<ActorPtr,PositionInfo> oldPosInfoMap;
-	std::map<ActorPtr,PositionInfo> newPosInfoMap;
+	sf::Vector2i oldPos; //used for moving
 };
 
 struct BorderInfo
@@ -408,7 +406,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	//TerrainPoint *pointEnd;
 	std::vector<sf::Vector2f> triBackups;//for transforms
 	std::vector<sf::Vector2i> backupPoints;
-	std::map<ActorPtr, PositionInfo> backupEnemyPosInfos;
+	
 	void BackupPoints();
 	void RestoreBackupPoints();
 
@@ -550,6 +548,10 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	//enemymap
 	std::map<TerrainPoint*, std::list<ActorPtr>> enemies;
+	std::vector<std::pair<ActorPtr, PositionInfo>> enemyPosBackups;
+	void BackupEnemyPositions();
+	void StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b);
+	
 	int writeIndex;
 	bool isGrassShowing;
 	bool finalized;
@@ -595,11 +597,14 @@ typedef std::map<PolyPtr, std::list<PointMoveInfo>> PointMap;
 
 typedef std::map<PolyPtr, std::vector<PointMoveInfo>> PointVectorMap;
 
-struct PointMoveMap
+struct PointMover
 {
-	PointVectorMap myMap;
-	std::map<ActorPtr, PositionInfo> enemyBackups;
-	std::map<ActorPtr, PositionInfo> newEnemyPos;
+	//PointVectorMap myMap;
+	//std::map<ActorPtr, PositionInfo> enemyBackups;
+	//std::map<ActorPtr, PositionInfo> newEnemyPos;
+	std::map<PolyPtr,std::vector<PointMoveInfo>> movePoints;
+	std::vector <std::pair<ActorPtr, PositionInfo>> oldEnemyPosInfo;
+	std::vector <std::pair<ActorPtr, PositionInfo>> newEnemyPosInfo;
 
 };
 
