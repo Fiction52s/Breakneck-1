@@ -59,7 +59,14 @@ struct HitParams
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
+	virtual void UpdateSpriteFromEditParams() {}
+	
+	virtual void UpdateOnPlacement(ActorParams *ap);
+	void UpdateOnEditPlacement() {
+		UpdateOnPlacement(editParams);
+	}
 
+	void UpdateFromEditParams(int numFrames);
 	//new vars
 	virtual void SetLevel(int p_level) { level = p_level; }
 	virtual void SetSpawnRect();
@@ -112,8 +119,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void HurtboxesOff();
 	void HitboxesOff();
 
-	void UpdateFromEditParams( int numFrames );
-	virtual void ChildUpdateFromEditParams();
+
 
 	virtual sf::FloatRect GetAABB(){ 
 		return sf::FloatRect();

@@ -37,6 +37,48 @@ struct GridSelector
 	//GUIHandler *handler;
 };
 
+struct ActorType;
+struct ChooseEnemyRect
+{
+	ChooseEnemyRect( sf::Vertex *p_quad );
+	sf::Vector2f pos;
+	ActorType *actorType;
+	sf::Vector2i boxSize;
+	bool Update(bool mouseDown, int posx, int posy);
+	void Draw(sf::RenderTarget *target);
+	sf::View view;
+	sf::Vertex *quad;
+	bool active;
+};
+
+
+struct EnemyChooser
+{
+	EnemyChooser(int numEnemies, Panel *p );
+	~EnemyChooser();
+	void Draw(sf::RenderTarget *target);
+	bool Update(bool mouseDown, int posx, int posy);
+	int tileSizeX;
+	int tileSizeY;
+	ActorType *actorType;
+	int numEnemies;
+	std::vector<ChooseEnemyRect> chooseRects;
+	sf::Vertex *allQuads;
+	
+	bool active;
+	int focusX;
+	int focusY;
+	sf::Vector2i pos;
+	Panel *owner;
+	int selectedX;
+	int selectedY;
+	int mouseOverIndex;
+
+	bool displaySelected;
+	bool displayMouseOver;
+	//GUIHandler *handler;
+};
+
 
 
 struct TextBox
@@ -105,6 +147,8 @@ struct Panel
 	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	void AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	void AddCheckBox( const std::string &name, sf::Vector2i pos );
+	void AddEnemyChooser(const std::string &name, 
+		EnemyChooser *chooser);
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
 		int sizex, int sizey, 
 		int tilesizex, int tilesizey,
@@ -117,6 +161,8 @@ struct Panel
 	void SendEvent( GridSelector *gs, const std::string & e );
 	void SendEvent( TextBox *tb, const std::string & e );
 	void SendEvent( CheckBox *cb, const std::string & e );
+	void SendEvent(EnemyChooser *chooser,
+		const std::string &e);
 	sf::Font arial;
 	std::string name;
 	//TextBox t;
@@ -127,6 +173,7 @@ struct Panel
 	std::map<std::string, sf::Text*> labels;
 	std::map<std::string, CheckBox*> checkBoxes;
 	std::map<std::string, GridSelector*> gridSelectors;
+	std::map<std::string, EnemyChooser*> enemyChoosers;
 
 	sf::Vector2i pos;
 	sf::Vector2f size;
@@ -137,6 +184,8 @@ struct Panel
 
 struct GUIHandler
 {
+	virtual void EnemyChooserCallback(EnemyChooser *chooser,
+		const std::string & e) {}
 	virtual void ButtonCallback( Button *b, const std::string & e ) = 0;
 	virtual void TextBoxCallback( TextBox *tb, const std::string & e ) = 0;
 	virtual void GridSelectorCallback( GridSelector *gs, const std::string & e ) = 0;

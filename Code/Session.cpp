@@ -103,7 +103,7 @@ void Session::SetupEnemyType(ParamsInfo &pi)
 
 void Session::AddGeneralEnemies()
 {
-	AddExtraEnemy("poi", NULL, LoadParams<PoiParams>, MakeParamsGrounded<PoiParams>, MakeParamsAerial<PoiParams>,
+	/*AddExtraEnemy("poi", NULL, LoadParams<PoiParams>, MakeParamsGrounded<PoiParams>, MakeParamsAerial<PoiParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false);
 
@@ -123,10 +123,6 @@ void Session::AddGeneralEnemies()
 	AddExtraEnemy("shippickup", NULL, LoadParams<ShipPickupParams>, MakeParamsGrounded<ShipPickupParams>, NULL,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Ship/shipleave_128x128.png", 128, 128));
-
-	//AddExtraEnemy("dudgoal", LoadParams<ShipPickupParams>, MakeParamsGrounded<ShipPickupParams>, NULL,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	//	GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
 	AddExtraEnemy("shard", NULL, LoadParams<ShardParams>, NULL, MakeParamsAerial<ShardParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 3,
@@ -161,7 +157,7 @@ void Session::AddGeneralEnemies()
 		GetTileset("Momenta/momentaflower_128x128.png", 128, 128));
 
 	AddExtraEnemy("nexus", NULL, LoadParams<NexusParams>, MakeParamsGrounded<NexusParams>, NULL,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
 }
 
 void Session::AddW1Enemies()
@@ -169,21 +165,18 @@ void Session::AddW1Enemies()
 	AddBasicGroundWorldEnemy("goal", 1, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
-	AddWorldEnemy("blocker", 1, NULL, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
+	/*AddWorldEnemy("blocker", 1, NULL, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
 
 	AddBasicAerialWorldEnemy("patroller", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));
+		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));*/
 
-	/*AddBasicAerialWorldEnemy("comboer", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-	GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
-
-	AddBasicAerialWorldEnemy("comboer", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3,
+	/*AddBasicAerialWorldEnemy("comboer", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3,
 		GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
 	AddBasicAerialWorldEnemy("splitcomboer", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);
+		GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);*/
 
 
 
@@ -194,7 +187,7 @@ void Session::AddW1Enemies()
 	AddBasicGroundWorldEnemy("crawler", 1, CreateEnemy<Crawler>, Vector2i(0, 0), Vector2i(100, 100), true, true, false, false, 3,
 		GetTileset("Enemies/crawler_160x160.png", 160, 160));
 
-	AddBasicGroundWorldEnemy("shroom", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
+	/*AddBasicGroundWorldEnemy("shroom", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/shroom_192x192.png", 192, 192));
 
 	AddBasicGroundWorldEnemy("basicturret", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
@@ -212,7 +205,7 @@ void Session::AddW1Enemies()
 
 	AddWorldEnemy("spring", 1, NULL, LoadParams<SpringParams>, NULL, MakeParamsAerial<SpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-		GetTileset("Enemies/spring_idle_256x256.png", 256, 256));
+		GetTileset("Enemies/spring_idle_256x256.png", 256, 256));*/
 }
 
 void Session::AddW2Enemies()

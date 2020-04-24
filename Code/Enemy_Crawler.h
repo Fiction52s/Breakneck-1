@@ -20,6 +20,8 @@ struct Crawler : Enemy, SurfaceMoverHandler
 
 	void SetLevel(int p_level);
 
+	void UpdateParams(ActorParams *params);
+	void UpdateSpriteFromEditParams();
 	//void ChildUpdateFromEditParams();
 	sf::FloatRect GetAABB();
 	//int animFactor[UNDERGROUND + 1];

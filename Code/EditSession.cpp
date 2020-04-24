@@ -789,6 +789,7 @@ void EditSession::Draw()
 		while (current != NULL)
 		{
 			current->Draw(preScreenTex);
+			current->DebugDraw(preScreenTex);
 			current = current->next;
 		}
 
@@ -1984,7 +1985,10 @@ int EditSession::Run()
 
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
 	allPopups.push_back(enemySelectPanel);
-	int gridSizeX = 80;
+
+	EnemyChooser *testChooser = new EnemyChooser(1, enemySelectPanel );
+	enemySelectPanel->AddEnemyChooser("blah", testChooser);
+	/*int gridSizeX = 80;
 	int gridSizeY = 80;
 
 	GridSelector *gs = NULL;
@@ -2027,9 +2031,9 @@ int EditSession::Run()
 			}
 		}
 
-	}
+	}*/
 
-	SetActiveEnemyGrid(0);
+	//SetActiveEnemyGrid(0);
 
 	gateSelectorPopup = CreatePopupPanel( "gateselector" );
 	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 7, 4, 32, 32, false, true );
@@ -2495,6 +2499,12 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			SetMode(SET_DIRECTION);
 		}
 	}
+}
+
+void EditSession::EnemyChooserCallback(EnemyChooser *chooser,
+	const std::string &e)
+{
+	cout << "blah: " << e << endl;
 }
 
 void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
@@ -3438,7 +3448,7 @@ void EditSession::DeselectPoint( RailPtr rail,
 
 void EditSession::PerformMovePointsAction()
 {
-	//Vector2i delta = grabbedPoint->pos - editMouseOrigPos;//Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;//grabbedPoint->pos - editMouseOrigPos;//
+	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
 	//here the delta being subtracted is the points original positionv
 
 	//commented the grabbedPoint thing out because it was crashing. but it maybe shouldn't be?
@@ -3567,7 +3577,7 @@ void EditSession::PerformMovePointsAction()
 		}
 	}
 
-	MoveBrushAction *action = new MoveBrushAction(selectedBrush, Vector2i(0,0), false, pm, selectedRailPoints);
+	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, pm, selectedRailPoints);
 	action->performed = true;//Perform();
 
 	CompoundAction *testAction = NULL;

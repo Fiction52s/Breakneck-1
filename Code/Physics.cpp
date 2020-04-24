@@ -2108,6 +2108,15 @@ CollisionBody::CollisionBody(CollisionBox::BoxType bType)
 	//memset(collisionBoxVectors, 0, sizeof(collisionBoxVectors) * numFrames);
 }
 
+void CollisionBody::ResetFrames()
+{
+	for (int i = 0; i < numFrames; ++i)
+	{
+		collisionBoxVectors[i].clear(); //keeps capacity the same
+	}
+}
+
+
 void CollisionBody::SetupNumFrames(int p_numFrames)
 {
 	numFrames = p_numFrames;

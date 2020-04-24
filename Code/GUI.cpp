@@ -158,6 +158,7 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 	return false;
 }
 
+
 Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 	:handler( h ), size( width, height ), name( n )
 	//:t( 0, 0, 200, 10, f, "hello" ), t2( 0, 100, 100, 10, f, "blah" ), b( 0, 50, 100, 50, f, "button!" )
@@ -188,6 +189,11 @@ Panel::~Panel()
 	}
 
 	for (auto it = gridSelectors.begin(); it != gridSelectors.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
 	{
 		delete (*it).second;
 	}
@@ -238,8 +244,9 @@ void Panel::Update( bool mouseDown, int posx, int posy )
 		bool temp = (*it).second->Update( mouseDown, posx, posy );
 	}
 
-	//if( b.Update( mouseDown, posx, posy ) )
+	for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
 	{
+		bool temp = (*it).second->Update(mouseDown, posx, posy);
 	}
 }
 
@@ -261,6 +268,12 @@ void Panel::SendEvent( TextBox *tb, const std::string & e )
 void Panel::SendEvent( CheckBox *cb, const std::string & e )
 {
 	handler->CheckBoxCallback( cb, e );
+}
+
+void Panel::SendEvent(EnemyChooser *chooser,
+	const std::string &e)
+{
+	handler->EnemyChooserCallback(chooser, e);
 }
 
 void Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text )
@@ -302,6 +315,11 @@ GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos
 	return gs;
 }
 
+void Panel::AddEnemyChooser(const std::string &name, EnemyChooser *chooser)
+{
+	enemyChoosers[name] = chooser;
+}
+
 void Panel::Draw( RenderTarget *target )
 {
 	sf::RectangleShape rs;
@@ -310,7 +328,7 @@ void Panel::Draw( RenderTarget *target )
 	rs.setPosition( pos.x, pos.y );
 	target->draw( rs );
 
-	for( map<string,sf::Text*>::iterator it = labels.begin(); it != labels.end(); ++it )
+	for(auto it = labels.begin(); it != labels.end(); ++it )
 	{
 		Vector2f labelPos = (*it).second->getPosition();
 
@@ -320,24 +338,29 @@ void Panel::Draw( RenderTarget *target )
 		(*it).second->setPosition( labelPos.x, labelPos.y );
 	}
 
-	for( map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
+	for(auto it = textBoxes.begin(); it != textBoxes.end(); ++it )
 	{
 		(*it).second->Draw( target );
 	}
 	
-	for( map<string,Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it )
+	for(auto it = buttons.begin(); it != buttons.end(); ++it )
 	{
 		(*it).second->Draw( target );
 	}
 
-	for( map<string,CheckBox*>::iterator it = checkBoxes.begin(); it != checkBoxes.end(); ++it )
+	for( auto it = checkBoxes.begin(); it != checkBoxes.end(); ++it )
 	{
 		(*it).second->Draw( target );
 	}
 	
-	for( map<string,GridSelector*>::iterator it = gridSelectors.begin(); it != gridSelectors.end(); ++it )
+	for( auto it = gridSelectors.begin(); it != gridSelectors.end(); ++it )
 	{
 		(*it).second->Draw( target );
+	}
+
+	for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
+	{
+		(*it).second->Draw(target);
 	}
 }
 

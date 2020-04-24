@@ -18,6 +18,20 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+void Crawler::UpdateSpriteFromEditParams()
+{
+	if (editParams != NULL)
+	{
+		if (editParams->posInfo.IsAerial())
+		{
+			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+			sprite.setPosition(editParams->GetFloatPos());
+			sprite.setRotation(0);
+			SyncSpriteInfo(auraSprite, sprite);
+		}
+	}
+}
+
 void Crawler::SetLevel(int p_level)
 {
 	level = p_level;
@@ -58,16 +72,9 @@ Crawler::Crawler(ActorParams *ap )
 	sprite.setTexture( *ts->texture );
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = surfaceMover->GetGroundPoint();
-	sprite.setPosition( gPoint.x, gPoint.y );
-
 	sprite.setScale(scale, scale);
 	
-	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(86);
-	cutObject->SetSubRectBack(87);
-	cutObject->SetScale(scale);
+	cutObject->Setup(ts, 86, 87, scale);
 
 	actionLength[UNBURROW] = 20;
 	actionLength[CRAWL] = 35;
@@ -494,17 +501,7 @@ void Crawler::UpdateSprite()
 	sprite.setRotation(surfaceMover->GetAngleDegrees());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 	sprite.setPosition(surfaceMover->GetGroundPointF());
-
-	if (editParams != NULL)
-	{
-		if (editParams->posInfo.IsAerial())
-		{
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-			sprite.setPosition(editParams->GetFloatPos());
-			sprite.setRotation(0);
-			SyncSpriteInfo(auraSprite, sprite);
-		}
-	}
+	
 	SyncSpriteInfo(auraSprite, sprite);
 }
 

@@ -16,6 +16,8 @@ struct Goal : Enemy
 		A_Count
 	};
 
+	void UpdateSpriteFromEditParams();
+	void UpdateOnPlacement(ActorParams *ap);
 
 	Goal(ActorParams *ap);
 	~Goal();

@@ -180,6 +180,7 @@ struct CollisionBody
 	void SetupNumBoxesOnFrame(int frame, int numBoxes);
 
 	~CollisionBody();
+	void ResetFrames();
 
 	bool Empty();
 

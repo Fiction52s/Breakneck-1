@@ -862,6 +862,8 @@ void MoveBrushAction::Perform()
 		(*it).first->posInfo = (*it).second;
 		(*it).first->UpdateGroundedSprite();
 		(*it).first->SetBoundingQuad();
+		if( (*it).first->myEnemy != NULL )
+			(*it).first->myEnemy->UpdateOnEditPlacement();
 	}
 
 	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
@@ -923,6 +925,8 @@ void MoveBrushAction::Undo()
 		(*it).first->posInfo = (*it).second;
 		(*it).first->UpdateGroundedSprite();
 		(*it).first->SetBoundingQuad();
+		if ((*it).first->myEnemy != NULL)
+			(*it).first->myEnemy->UpdateOnEditPlacement();
 	}
 
 	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)

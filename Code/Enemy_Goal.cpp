@@ -11,16 +11,34 @@
 using namespace std;
 using namespace sf;
 
+void Goal::UpdateSpriteFromEditParams()
+{
+	//editparams always exists here
+	if (editParams->posInfo.IsAerial())
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setPosition(editParams->GetFloatPos());
+		sprite.setRotation(0);
+	}
+}
+
+void Goal::UpdateOnPlacement( ActorParams *params )
+{
+	Enemy::UpdateOnPlacement(params);
+
+	if (!params->posInfo.IsAerial())
+	{
+		BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
+	}
+}
+
 Goal::Goal( ActorParams *ap )
 	:Enemy( EnemyType::EN_GOAL, ap )
 {
 	world = ap->GetWorld();
-	//world = //sess->mapHeader->envWorldType;
-	//world = ap->GetWorld();
 	double width;
 	double height;
 
-	//int world = owner->mh->envWorldType;
 	switch (world)
 	{
 	case 0:
@@ -52,75 +70,55 @@ Goal::Goal( ActorParams *ap )
 	}
 
 
-	sprite.setTexture(*ts->texture);
-	miniSprite.setTexture( *ts_mini->texture );
-	miniSprite.setTextureRect( ts_mini->GetSubRect( 2 ) );
-	miniSprite.setScale( 16, 16 );
-	
-	switch(sess->mapHeader->envWorldType)
-	{
-	case 0:
-		miniSprite.setTextureRect( ts_mini->GetSubRect( 5 ) );
-		break;
-	case 1:
-		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
-		break;
-	case 2:
-		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
-		break;
-	case 3:
-		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
-		break;
-	case 4:
-		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
-		break;
-	case 5:
-		miniSprite.setTextureRect( ts_mini->GetSubRect( 4 ) );
-		break;
-	}
-
-	miniSprite.setOrigin( miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height );
-	
-
-	//V2d gPoint = startPosInfo.GetPosition();//startInfoPos.GetPosition( edgeQuantity );
+	//sprite.setTexture(*ts->texture);
 
 	SetOffGroundHeight(height / 2.0);
 	SetCurrPosInfo(startPosInfo);
 
-
-	//gn = startPosInfo.GetEdge()->Normal();
-	//angle = startPosInfo.GetGroundAngleRadians();//atan2( gn.x, -gn.y );
-
-	//position = gPoint + gn * height / 2.0;
-
-	//miniSprite.setPosition( position.x, position.y );
-	miniSprite.setPosition( startPosInfo.GetPositionF());
-	miniSprite.setRotation( startPosInfo.GetGroundAngleDegrees() );
-
-
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset );
-	sprite.setPosition( startPosInfo.GetPositionF());
-	sprite.setRotation( startPosInfo.GetGroundAngleDegrees() );
-
-	BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
-
 	frame = 0;
 	animationFactor = 7;
-	slowCounter = 1;
-	slowMultiple = 1;
-
-	//spawnRect = sf::Rect<double>( gPoint.x - 160 / 2, gPoint.y - 160 / 2, 160, 160 );
-
-	//health = 1;
-	//numHealth = 1;
 
 	action = A_SITTING;
+
+	SetNumActions(A_Count);
+	SetEditorActions(A_SITTING, A_SITTING, 0);
 
 	//clean this up 
 	if (sess->IsSessTypeGame())
 	{
+
+		miniSprite.setTexture(*ts_mini->texture);
+		miniSprite.setTextureRect(ts_mini->GetSubRect(2));
+
+		miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height);
+		miniSprite.setPosition(startPosInfo.GetPositionF());
+		miniSprite.setRotation(startPosInfo.GetGroundAngleDegrees());
+		miniSprite.setScale(16, 16);
+
+		switch (sess->mapHeader->envWorldType)
+		{
+		case 0:
+			miniSprite.setTextureRect(ts_mini->GetSubRect(5));
+			break;
+		case 1:
+			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+			break;
+		case 2:
+			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+			break;
+		case 3:
+			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+			break;
+		case 4:
+			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+			break;
+		case 5:
+			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+			break;
+		}
+
 		GameSession *game = GameSession::GetSession();
+
 		game->hasGoal = true;
 		game->goalPos = GetPosition();
 
@@ -149,9 +147,7 @@ void Goal::ResetEnemy()
 	frame = 0;
 	action = A_SITTING;
 	SetHurtboxes(&hurtBody, 0);
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+	UpdateSprite();
 }
 
 void Goal::ProcessState()
@@ -239,7 +235,13 @@ void Goal::DrawMinimap( sf::RenderTarget *target )
 void Goal::UpdateSprite()
 {
 	int trueFrame = 0;
-	if( action == A_KINKILLING )
+	if (action == A_SITTING)
+	{
+		sprite.setTexture(*ts->texture);
+		sprite.setTextureRect(ts->GetSubRect(0));
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+	}
+	else  if (action == A_KINKILLING)
 	{
 		if( frame / 2 < 12 )
 		{
@@ -297,18 +299,6 @@ void Goal::UpdateSprite()
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 	}
 	
-	if (editParams != NULL)
-	{
-		if (editParams->posInfo.IsAerial())
-		{
-			sprite.setPosition(editParams->GetFloatPos());
-			sprite.setRotation(0);
-			//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
-		}
-		else
-		{
-			sprite.setPosition(editParams->GetFloatPos());
-			sprite.setRotation(editParams->posInfo.GetGroundAngleDegrees());
-		}
-	}
+	sprite.setPosition(startPosInfo.GetPositionF());
+	sprite.setRotation(startPosInfo.GetGroundAngleDegrees());
 }

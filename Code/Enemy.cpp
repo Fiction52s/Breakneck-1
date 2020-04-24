@@ -290,12 +290,10 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	groundMover = NULL;
 	surfaceMover = NULL;
 
-	
 	if (ap != NULL)
 	{
-		hasMonitor = ap->hasMonitor;
 		world = ap->GetWorld();
-		startPosInfo = ap->posInfo;
+		Enemy::UpdateOnPlacement(ap);
 	}
 	else
 	{
@@ -519,35 +517,42 @@ void Enemy::HitboxesOff()
 }
 
 
-void Enemy::ChildUpdateFromEditParams()
+void Enemy::UpdateOnPlacement( ActorParams *ap )
 {
-	startPosInfo = editParams->posInfo;
+	startPosInfo = ap->posInfo;
+	hasMonitor = ap->hasMonitor;
+
 	if (surfaceMover != NULL)
 	{
-		surfaceMover->Set(editParams->posInfo);
+		surfaceMover->Set(ap->posInfo);
 	}
 	else if (groundMover != NULL)
 	{
-		groundMover->Set(editParams->posInfo);
+		groundMover->Set(ap->posInfo);
 	}
 	else
 	{
-		SetCurrPosInfo(editParams->posInfo);
+		SetCurrPosInfo(ap->posInfo);
 	}
 }
 
 void Enemy::UpdateFromEditParams( int numFrames )
 {
+	assert(editParams != NULL);
+
 	frame += numFrames;
 	int editLoopLength = GetEditIdleLength();
-	if (frame >= editLoopLength)
+	if (editLoopLength == 0)
+		frame = 0;
+	else if (frame >= editLoopLength)
 	{
 		frame = frame % editLoopLength;
 	}
 
-	ChildUpdateFromEditParams();
+	//UpdateFromParams(editParams);
 
 	UpdateSprite();
+	UpdateSpriteFromEditParams();
 }
 
 void Enemy::SetNumActions( int num )
@@ -737,6 +742,7 @@ void Enemy::BasicCircleHurtBodySetup(double radius, double angle, V2d &offset, V
 {
 	if (radius > 0)
 	{
+		hurtBody.ResetFrames(); //in case it happens more than once
 		hurtBody.BasicCircleSetup(radius * scale, angle, offset * scale);
 		hurtBody.SetBasicPos(pos);
 	}
@@ -746,6 +752,7 @@ void Enemy::BasicCircleHitBodySetup(double radius, double angle, V2d &offset, V2
 {
 	if (radius > 0)
 	{
+		hitBody.ResetFrames(); //in case it happens more than once
 		hitBody.BasicCircleSetup(radius * scale, angle, offset * scale);
 		hitBody.SetBasicPos(pos);
 	}
@@ -767,6 +774,7 @@ void Enemy::BasicRectHurtBodySetup(
 {
 	if (w > 0 && h > 0)
 	{
+		hurtBody.ResetFrames();
 		hurtBody.BasicRectSetup(w * scale, h * scale, angle, offset * scale);
 		hurtBody.SetBasicPos(pos);
 	}
@@ -778,6 +786,7 @@ void Enemy::BasicRectHitBodySetup(
 {
 	if (w > 0 && h > 0)
 	{
+		hitBody.ResetFrames();
 		hitBody.BasicRectSetup(w * scale, h * scale, angle, offset * scale);
 		hitBody.SetBasicPos(pos);
 	}

@@ -313,6 +313,8 @@ struct EditSession : GUIHandler, Session
 	
 	void RegularOKButton();
 	void RegularCreatePathButton();
+	void EnemyChooserCallback(EnemyChooser *chooser,
+		const std::string &e);
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );

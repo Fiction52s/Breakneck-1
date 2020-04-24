@@ -688,11 +688,7 @@ void ActorParams::AnchorToGround(PolyPtr poly, int edgeIndex, double quantity)
 	
 	posInfo.SetGround(poly, edgeIndex, quantity);
 
-	if (myEnemy != NULL)
-	{
-		myEnemy->UpdateFromEditParams(0);
-		myEnemy->UpdateSprite(); //this is just for testing
-	}
+	
 
 	image = type->GetSprite(true);
 
@@ -700,22 +696,30 @@ void ActorParams::AnchorToGround(PolyPtr poly, int edgeIndex, double quantity)
 
 	UpdateGroundedSprite();
 	SetBoundingQuad();
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateOnEditPlacement();
+		myEnemy->UpdateFromEditParams(0);
+		//myEnemy->UpdateSprite(); //this is just for testing
+	}
 }
 
 void ActorParams::AnchorToGround(PositionInfo &gi)
 {
 	posInfo = gi;
 
-	if (myEnemy != NULL)
-	{
-		myEnemy->UpdateFromEditParams(0);
-		myEnemy->UpdateSprite(); //this is just for testing
-	}
-
 	image = type->GetSprite(true);
 
 	UpdateGroundedSprite();
 	SetBoundingQuad();
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateOnEditPlacement();
+		myEnemy->UpdateFromEditParams(0);
+		//myEnemy->UpdateSprite(); //this is just for testing
+	}
 }
 
 void ActorParams::AnchorToRail(PositionInfo &gi)
@@ -754,7 +758,6 @@ bool ActorParams::UnAnchor()
 		image.setRotation(0);
 
 		SetBoundingQuad();
-
 		return true;
 	}
 
@@ -866,6 +869,9 @@ void ActorParams::Move(sf::Vector2i delta)
 		posInfo.position.y += delta.y;
 		SetBoundingQuad();
 		image.setPosition(GetFloatPos());
+
+		if (myEnemy != NULL)
+			myEnemy->UpdateOnEditPlacement();
 
 		/*if (myEnemy != NULL)
 		{
