@@ -19,6 +19,30 @@ ActorType::ActorType(ParamsInfo &pi)
 	{
 		info.ts = sess->GetTileset(string("Editor/") + info.name + string("_editor.png"));
 	}
+
+	defaultParams = NULL;
+}
+
+void ActorType::CreateDefaultEnemy()
+{
+	if (info.pmAir != NULL)
+	{
+		defaultParams = info.pmAir(this);
+		defaultParams->myEnemy = defaultParams->GenerateEnemy();
+		defaultParams->myEnemy->facingRight = true;
+	}
+	else if (info.pmGround != NULL)
+	{
+		defaultParams = info.pmGround(this);
+		defaultParams->myEnemy = defaultParams->GenerateEnemy();
+		
+		if (defaultParams->myEnemy != NULL)
+		{
+			defaultParams->myEnemy->facingRight = true;
+			defaultParams->UnAnchor();
+		}
+		
+	}
 }
 
 ActorType::~ActorType()

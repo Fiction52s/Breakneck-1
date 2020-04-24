@@ -51,6 +51,8 @@ struct Actor;
 
 struct TerrainRail;
 
+struct EnemyChooser;
+
 
 struct EditSession : GUIHandler, Session
 {
@@ -266,6 +268,8 @@ struct EditSession : GUIHandler, Session
 	void AddW5Enemies();
 	void AddW6Enemies();*/
 	
+	EnemyChooser *enemyChooser;
+
 	std::list<Enemy*> allCurrEnemies;
 	void EndTestMode();
 

@@ -162,7 +162,7 @@ void Session::AddGeneralEnemies()
 
 void Session::AddW1Enemies()
 {
-	AddBasicGroundWorldEnemy("goal", 1, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(32, 32), false, false, false, false, 1,
+	AddBasicGroundWorldEnemy("goal", 1, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1,
 		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
 	/*AddWorldEnemy("blocker", 1, NULL, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,

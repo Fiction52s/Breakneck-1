@@ -92,6 +92,8 @@ struct ActorParams : ISelectable
 	virtual bool Intersects(sf::IntRect rect);
 	virtual bool IsPlacementOkay();
 	virtual void Move(sf::Vector2i delta);
+	void MoveTo(sf::Vector2i &pos);
+	//virtual void SetPosition(sf::Vector2i pos);
 	virtual void BrushDraw(sf::RenderTarget *target,
 		bool valid);
 	virtual void Draw(sf::RenderTarget *target);

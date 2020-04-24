@@ -214,6 +214,7 @@ void ActorParams::PlaceAerial(sf::Vector2i &pos)
 void ActorParams::PlaceGrounded(PolyPtr tp,
 	int edgeIndex, double quant)
 {
+	assert(tp != NULL);
 	AnchorToGround(tp, edgeIndex, quant);
 	SetBoundingQuad();
 }
@@ -395,6 +396,21 @@ void ActorParams::Draw(sf::RenderTarget *target)
 
 void ActorParams::DrawPreview(sf::RenderTarget *target)
 {
+	DrawMonitor(target);
+
+	Vector2f viewCenter = target->getView().getCenter();
+	Vector2f viewSize = target->getView().getSize();
+	if (image.getGlobalBounds().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
+		viewSize.x, viewSize.y)))
+	{
+		if (myEnemy != NULL)
+			myEnemy->Draw(target);
+		else
+		{
+			target->draw(image);
+		}
+
+	}
 }
 
 void ActorParams::DrawMonitor(sf::RenderTarget *target)
@@ -496,6 +512,7 @@ void ActorParams::DrawQuad(sf::RenderTarget *target)
 
 void ActorParams::SetPosition(V2d &pos)
 {
+	//Move(pos - posInfo.position);
 	posInfo.SetPosition(pos);
 }
 
@@ -850,6 +867,11 @@ bool ActorParams::Intersects(sf::IntRect rect)
 bool ActorParams::IsPlacementOkay()
 {
 	return false;
+}
+
+void ActorParams::MoveTo(sf::Vector2i &pos)
+{
+	Move(pos - Vector2i(posInfo.position));
 }
 
 void ActorParams::Move(sf::Vector2i delta)

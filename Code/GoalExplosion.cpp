@@ -52,13 +52,6 @@ void GoalPulse::Update()
 
 void GoalPulse::UpdatePoints()
 {
-	/*Transform t;
-	float angle = 0;
-	for( int i = 0; i < circlePoints; ++i )
-	{
-		circleVA[i*4+0].position = 
-	}*/
-	//cout <<  circlePoints << endl;
 	Transform tr;
 	Vector2f offsetInner( 0, -innerRadius );
 	Vector2f offsetOuter( 0, -outerRadius );
@@ -77,8 +70,6 @@ void GoalPulse::UpdatePoints()
 		circleVA[i*4+2].color = Color::Cyan;
 		circleVA[i*4+3].color = Color::Cyan;
 	}
-
-	
 }
 
 void GoalPulse::Draw( sf::RenderTarget *target )

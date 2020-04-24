@@ -1,48 +1,118 @@
 #include "GUI.h"
 #include "EditorActors.h"
 #include "VectorMath.h"
+#include "ActorParamsBase.h"
+#include "Enemy.h"
 
 using namespace std;
 using namespace sf;
 
-ChooseEnemyRect::ChooseEnemyRect(sf::Vertex *p_quad)
+ChooseEnemyRect::ChooseEnemyRect(EnemyChooser *eChooser, int p_quadIndex, ActorType *aType)
+	:chooser( eChooser ), quadIndex( p_quadIndex ), actorType( aType )
 {
-	boxSize = Vector2i(64, 64);
-	pos = Vector2f(400, 600);
+	boxSize = 100;
+	pos = Vector2f(400 + quadIndex * boxSize * 1.5, boxSize / 2 + 40);
+	
+	idleColor = Color::Blue;
+	idleColor.a = 100;
+
+	mouseOverColor = Color::Green;
+	mouseOverColor.a = 100;
+	
+	sf::Vertex *quad = GetQuad();
+
+	SetRectColor(quad, idleColor );
+	SetRectCenter(quad, boxSize, boxSize, pos);
+
+	bounds.left = pos.x - boxSize / 2.f;
+	bounds.top = pos.y - boxSize / 2.f;
+	bounds.width = boxSize;
+	bounds.height = boxSize;
+	
+	actorType->defaultParams->MoveTo(Vector2i(0, 0));
+
+	enemy = actorType->defaultParams->myEnemy;
+	enemy->SetActionEditLoop();
+	enemy->UpdateFromEditParams(0);
+
 	float test = 2.f;
+
+	focused = false;
+
+	FloatRect aabb = enemy->GetAABB();
+	float max = std::max(aabb.height, aabb.width);
+	test = max / boxSize;
 	view.setCenter(Vector2f(960 * test - pos.x * test, 540 * test - pos.y * test));// + Vector2f( 64,0 ));//-pos / 5);//Vector2f(0, 0));
 	view.setSize(Vector2f(1920 * test, 1080 * test));
-	quad = p_quad;
+}
 
-	SetRectColor(quad, Color(Color::Blue));
-	SetRectCenter(quad, boxSize.x, boxSize.y, pos);
+bool ChooseEnemyRect::Update(bool mouseDown, int posx, int posy)
+{
+	if (bounds.contains(Vector2i(posx, posy)))
+	{
+		focused = true;
+		SetRectColor(GetQuad(), mouseOverColor);
+	}
+	else
+	{
+		focused = false;
+		SetRectColor(GetQuad(), idleColor);
+	}
+	return true;
+}
+
+sf::Vertex * ChooseEnemyRect::GetQuad()
+{
+	return chooser->allQuads + quadIndex * 4;
 }
 
 void ChooseEnemyRect::Draw(RenderTarget *target)
 {
-	sf::CircleShape cs;
-	cs.setFillColor(Color::Red);
-	cs.setRadius(boxSize.x / 2);
-	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-	cs.setPosition(Vector2f(0,0));
-
 	sf::View oldView = target->getView();
 	target->setView(view);
 
-	target->draw(cs);
+	enemy->Draw(target);
 
 	target->setView(oldView);
 }
 
-EnemyChooser::EnemyChooser(int p_numEnemies, Panel *p)
-	:numEnemies(p_numEnemies), active(true), owner(p)
+void ChooseEnemyRect::UpdateSprite(int frameUpdate)
 {
+	if (focused)
+	{
+		enemy->UpdateFromEditParams(frameUpdate);
+	}
+	else
+	{
+		enemy->SetActionEditLoop();
+		enemy->UpdateFromEditParams(0);
+	}
+}
+
+EnemyChooser::EnemyChooser( std::map<std::string, ActorType*> &types, Panel *p)
+	:active(true), owner(p)
+{
+	numEnemies = types.size() - 1;
+
 	chooseRects.reserve(numEnemies);
 	allQuads = new Vertex[numEnemies * 4];
 
+	int i = 0;
+	for (auto it = types.begin(); it != types.end(); ++it, ++i)
+	{
+		if ((*it).first == "player")
+		{
+			continue;
+		}
+		chooseRects.push_back(ChooseEnemyRect( this, i, (*it).second));
+	}
+}
+
+void EnemyChooser::UpdateSprites(int frameUpdate)
+{
 	for (int i = 0; i < numEnemies; ++i)
 	{
-		chooseRects.push_back(ChooseEnemyRect(allQuads + i * 4));
+		chooseRects[i].UpdateSprite(frameUpdate);
 	}
 }
 
@@ -71,6 +141,10 @@ void EnemyChooser::Draw(sf::RenderTarget *target)
 //returns true if a selection has been made
 bool EnemyChooser::Update(bool mouseDown, int posx, int posy)
 {
+	for (int i = 0; i < numEnemies; ++i)
+	{
+		chooseRects[i].Update(mouseDown, posx, posy);
+	}
 	//cout << "update: " << posx << ", " << posy << endl;
 	//if (!active)
 	//{

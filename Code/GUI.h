@@ -38,25 +38,38 @@ struct GridSelector
 };
 
 struct ActorType;
+struct EnemyChooser;
+struct Enemy;
 struct ChooseEnemyRect
 {
-	ChooseEnemyRect( sf::Vertex *p_quad );
+	ChooseEnemyRect( EnemyChooser *eChooser, int quadIndex,
+		ActorType * type );
 	sf::Vector2f pos;
 	ActorType *actorType;
-	sf::Vector2i boxSize;
+	Enemy *enemy;
+	float boxSize;
 	bool Update(bool mouseDown, int posx, int posy);
+	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
+	sf::IntRect bounds;
+	sf::Vertex * GetQuad();
 	sf::View view;
-	sf::Vertex *quad;
+	int quadIndex;
 	bool active;
+	bool focused;
+	EnemyChooser *chooser;
+	sf::Color mouseOverColor;
+	sf::Color idleColor;
 };
+
 
 
 struct EnemyChooser
 {
-	EnemyChooser(int numEnemies, Panel *p );
+	EnemyChooser(std::map<std::string, ActorType*> &types, Panel *p );
 	~EnemyChooser();
 	void Draw(sf::RenderTarget *target);
+	void UpdateSprites(int frameUpdate);
 	bool Update(bool mouseDown, int posx, int posy);
 	int tileSizeX;
 	int tileSizeY;
@@ -142,6 +155,7 @@ struct Panel
 	~Panel();
 	void Draw(sf::RenderTarget *rt);
 	void Update( bool mouseDown, int posx, int posy );
+	void Update(int posx, int posy);
 	
 	void AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
@@ -178,6 +192,8 @@ struct Panel
 	sf::Vector2i pos;
 	sf::Vector2f size;
 	GUIHandler *handler;
+
+	bool isMouseDown;
 	
 	bool active;
 };

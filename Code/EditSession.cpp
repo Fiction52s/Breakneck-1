@@ -187,6 +187,8 @@ void EditSession::TestPlayerMode()
 	}
 
 	
+	ClearSelectedPoints();
+	ClearSelectedBrush();
 
 	currentTime = 0;
 	accumulator = TIMESTEP + .1;
@@ -446,6 +448,7 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	enemyEdgePolygon = NULL;
 	moveAction = NULL;
 	AllocatePolyShaders(TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD);
 
@@ -922,6 +925,15 @@ void EditSession::ProcessTerrain(PolyPtr poly)
 	GetCorrectPolygonList(poly).push_back(poly);
 
 	poly->Finalize();
+
+	if (enemyEdgePolygon == NULL)
+	{
+		//this is for creating default enemies. im immediately going to detach them from terrain
+		enemyEdgePolygon = poly;
+		enemyEdgeIndex = 0;
+		enemyEdgeQuantity = 0;
+	}
+	
 }
 
 bool EditSession::ReadBGTerrain(std::ifstream &is)
@@ -1985,8 +1997,7 @@ int EditSession::Run()
 	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
 	allPopups.push_back(enemySelectPanel);
 
-	EnemyChooser *testChooser = new EnemyChooser(1, enemySelectPanel );
-	enemySelectPanel->AddEnemyChooser("blah", testChooser);
+	
 	/*int gridSizeX = 80;
 	int gridSizeY = 80;
 
@@ -2083,6 +2094,14 @@ int EditSession::Run()
 
 	ReadFile();
 
+	for (auto it = types.begin(); it != types.end(); ++it)
+	{
+		(*it).second->CreateDefaultEnemy();
+	}
+
+	enemyChooser = new EnemyChooser(types, enemySelectPanel);
+	enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
+
 	if (!initialViewSet)
 	{
 		view.setSize(1920, 1080);
@@ -2151,7 +2170,7 @@ int EditSession::Run()
 
 	while( !quit )
 	{
-		if (mode == EDIT)
+		if (mode == EDIT || mode == CREATE_ENEMY)
 		{
 			double newTime = editClock.getElapsedTime().asSeconds();
 			double frameTime = newTime - editCurrentTime;
@@ -5657,7 +5676,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		for( list<ActorPtr>::iterator it2 = (*it).second->actors.begin();
 			it2 != (*it).second->actors.end(); ++it2 )
 		{
-			if ((*it2)->type->IsGoalType())
+			/*if ((*it2)->type->IsGoalType())
 			{
 				goalCS.setPosition((*it2)->GetFloatPos());
 				mapPreviewTex->draw(goalCS);
@@ -5666,7 +5685,10 @@ void EditSession::CreatePreview(Vector2i imageSize)
 			{
 				cs.setPosition((*it2)->GetFloatPos());
 				mapPreviewTex->draw(cs);
-			}
+			}*/
+
+			(*it2)->DrawPreview(mapPreviewTex);
+			
 				
 		}
 
@@ -7829,6 +7851,7 @@ void EditSession::SetMode(Emode m)
 
 	switch (mode)
 	{
+	case CREATE_ENEMY:
 	case EDIT:
 	{
 		editClock.restart();
@@ -10174,13 +10197,21 @@ void EditSession::CreateEnemyModeHandleEvent()
 	{
 	case Event::MouseButtonPressed:
 	{
-		if (ev.mouseButton.button == Mouse::Left)
+		/*if (ev.mouseButton.button == Mouse::Left)
 		{
 			if (showPanel != NULL)
 			{
 				showPanel->Update(true, uiMousePos.x, uiMousePos.y);
 			}
-		}
+		}*/
+		break;
+	}
+	case Event::MouseMoved:
+	{
+		/*if (showPanel != NULL)
+		{
+			showPanel->Update(uiMousePos.x, uiMousePos.y);
+		}*/
 		break;
 	}
 	case Event::MouseButtonReleased:
@@ -10189,10 +10220,10 @@ void EditSession::CreateEnemyModeHandleEvent()
 		{
 			TryPlaceTrackingEnemy();
 
-			if (showPanel != NULL)
+			/*if (showPanel != NULL)
 			{
 				showPanel->Update(false, uiMousePos.x, uiMousePos.y);
-			}
+			}*/
 		}
 		break;
 	}
@@ -11150,6 +11181,8 @@ void EditSession::PasteModeUpdate()
 
 void EditSession::CreateEnemyModeUpdate()
 {
+	showPanel->Update(IsMousePressed( Mouse::Left ), uiMousePos.x, uiMousePos.y);
+	enemyChooser->UpdateSprites(spriteUpdateFrames);
 	MoveTrackingEnemy();
 }
 

@@ -1465,11 +1465,11 @@ void TerrainPolygon::GenerateBorderMesh()
 		Vertex *currentTypeQuads = borderQuadsByType[angleType] 
 			+ currentOffsetPerType[angleType] * 4;
 
-		
+		Edge *nextEdge = edge->GetNextEdge();
 		bool isAcute = IsAcute(edge);
-		bool nextAcute = IsAcute(edge->GetNextEdge());
+		bool nextAcute = IsAcute(nextEdge);
 		V2d bisector = GetBisector(edge);
-		V2d nextBisector = GetBisector(edge->GetNextEdge());
+		V2d nextBisector = GetBisector(nextEdge);
 		int randomEdgeSizeChoice;
 		int currChosenSizeIndex;
 		int currWidth;
@@ -1515,7 +1515,35 @@ void TerrainPolygon::GenerateBorderMesh()
 			double realHeightLeft = 64.0;
 			double realHeightRight = 64.0;
 
-			//SetRectColor(currBVA + i * 4, Color(Color::Black));
+			//doesnt work because the quads start above the edge.
+			//can be fixed later by splitting some quads up into
+			//outer and inner 
+			//if (true)
+			//{
+			//	LineIntersection li = SegmentIntersect(currStartInner,
+			//		currStartOuter, nextEdge->v0, nextEdge->v1);
+
+			//	LineIntersection li1 = SegmentIntersect(currStartInner,
+			//		currEndInner, nextEdge->v0, nextEdge->v1);
+
+			//	if (!li.parallel && li1.parallel)
+			//	{
+			//		currEndInner = li.position;
+			//	}
+
+			//	/*LineIntersection li2 = SegmentIntersect(currEndInner,
+			//		currEndOuter, edge->v0, edge->v1);
+
+			//	LineIntersection li3 = SegmentIntersect(currStartInner,
+			//		currEndInner, edge->v0, edge->v1);
+
+			//	if (li2.parallel && !li3.parallel)
+			//	{
+			//		currStartInner = li3.position;
+			//	}*/
+			//}
+
+			
 			if (isAcute)
 			{
 				LineIntersection li = lineIntersection(currStartInner,
@@ -1607,10 +1635,11 @@ void TerrainPolygon::GenerateBorderMesh()
 			currentTypeQuads[j * 4 + 2].position = Vector2f( currEndInner );
 			currentTypeQuads[j * 4 + 3].position = Vector2f( currStartInner );
 
-			float width = length(currEndInner - currStartInner);
+			float outerWidth = length(currEndOuter - currStartOuter);
+			float innerWidth = length(currEndInner - currStartInner);
 			currentTypeQuads[j * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
-			currentTypeQuads[j * 4 + 1].texCoords = Vector2f(sub.left + width, sub.top);
-			currentTypeQuads[j * 4 + 2].texCoords = Vector2f(sub.left + width, sub.top + realHeightRight);
+			currentTypeQuads[j * 4 + 1].texCoords = Vector2f(sub.left + outerWidth, sub.top);
+			currentTypeQuads[j * 4 + 2].texCoords = Vector2f(sub.left + innerWidth, sub.top + realHeightRight);
 			currentTypeQuads[j * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightLeft);
 
 			/*Color c = Color::White;

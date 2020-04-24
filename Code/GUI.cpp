@@ -163,6 +163,7 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 	:handler( h ), size( width, height ), name( n )
 	//:t( 0, 0, 200, 10, f, "hello" ), t2( 0, 100, 100, 10, f, "blah" ), b( 0, 50, 100, 50, f, "button!" )
 {
+	isMouseDown = false;
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 }
 
@@ -199,23 +200,23 @@ Panel::~Panel()
 	}
 }
 
-void Panel::Update( bool mouseDown, int posx, int posy )
+void Panel::Update(int posx, int posy)
 {
-	//cout << "posx: " << posx << ", posy: " << posy << ", pos.x: " << pos.x << ", pos.y: " << pos.y << endl;
+	bool mouseDown = isMouseDown;
 	posx -= pos.x;
 	posy -= pos.y;
 
 
 	//cout << "pos: " << posx << ", " << posy << endl;
-	for( std::map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
+	for (std::map<string, TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it).second->Update( mouseDown, posx, posy );
-		if( temp )
+		bool temp = (*it).second->Update(mouseDown, posx, posy);
+		if (temp)
 		{
-			for( std::map<string,TextBox*>::iterator it2 = textBoxes.begin(); it2 != textBoxes.end(); ++it2 )
+			for (std::map<string, TextBox*>::iterator it2 = textBoxes.begin(); it2 != textBoxes.end(); ++it2)
 			{
-				if( (*it2).second != (*it).second )
+				if ((*it2).second != (*it).second)
 				{
 					(*it2).second->focused = false;
 				}
@@ -225,29 +226,35 @@ void Panel::Update( bool mouseDown, int posx, int posy )
 		}
 	}
 
-	for( map<string,Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it )
+	for (map<string, Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it).second->Update( mouseDown, posx, posy );
+		bool temp = (*it).second->Update(mouseDown, posx, posy);
 
 	}
 
-	for( map<string,CheckBox*>::iterator it = checkBoxes.begin(); it != checkBoxes.end(); ++it )
+	for (map<string, CheckBox*>::iterator it = checkBoxes.begin(); it != checkBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it).second->Update( mouseDown, posx, posy );
+		bool temp = (*it).second->Update(mouseDown, posx, posy);
 	}
 
-	for( map<string, GridSelector*>::iterator it = gridSelectors.begin(); it != gridSelectors.end(); ++it )
+	for (map<string, GridSelector*>::iterator it = gridSelectors.begin(); it != gridSelectors.end(); ++it)
 	{
 		cout << "sending pos: " << posx << ", " << posy << endl;
-		bool temp = (*it).second->Update( mouseDown, posx, posy );
+		bool temp = (*it).second->Update(mouseDown, posx, posy);
 	}
 
 	for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
 	{
 		bool temp = (*it).second->Update(mouseDown, posx, posy);
 	}
+}
+
+void Panel::Update( bool mouseDown, int posx, int posy )
+{
+	isMouseDown = mouseDown;
+	Update(posx, posy);
 }
 
 void Panel::SendEvent( Button *b, const std::string & e )
