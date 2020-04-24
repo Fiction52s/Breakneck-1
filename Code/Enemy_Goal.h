@@ -35,7 +35,6 @@ struct Goal : Enemy
 	int explosionYOffset;
 	int initialYOffset;
 
-	sf::Sprite sprite;
 	sf::Sprite miniSprite;
 	Tileset *ts;
 	Tileset *ts_mini;
@@ -43,8 +42,6 @@ struct Goal : Enemy
 	Tileset *ts_explosion1;
 	float goalKillStartZoom;
 	sf::Vector2f goalKillStartPos;
-
-	int world;
 
 	//int frame;
 	int deathFrame;

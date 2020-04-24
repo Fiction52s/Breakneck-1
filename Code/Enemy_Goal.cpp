@@ -35,13 +35,12 @@ void Goal::UpdateOnPlacement( ActorParams *params )
 Goal::Goal( ActorParams *ap )
 	:Enemy( EnemyType::EN_GOAL, ap )
 {
-	world = ap->GetWorld();
 	double width;
 	double height;
 
 	switch (world)
 	{
-	case 0:
+	case 1:
 		width = 288;
 		height = 320;
 		ts = sess->GetSizedTileset("Goal/goal_w01_a_288x320.png");
@@ -53,7 +52,7 @@ Goal::Goal( ActorParams *ap )
 		explosionYOffset = 80;
 		initialYOffset = 30;
 		break;
-	case 1:
+	case 2:
 	default:
 		width = 288;
 		height = 256;
@@ -70,10 +69,13 @@ Goal::Goal( ActorParams *ap )
 	}
 
 
+	SetOffGroundHeight(height / 2.0);
 	//sprite.setTexture(*ts->texture);
 
-	SetOffGroundHeight(height / 2.0);
-	SetCurrPosInfo(startPosInfo);
+	UpdateOnPlacement(ap);
+
+	
+	//SetCurrPosInfo(startPosInfo);
 
 	frame = 0;
 	animationFactor = 7;
@@ -129,6 +131,8 @@ Goal::Goal( ActorParams *ap )
 	}
 
 	ResetEnemy();
+
+	SetSpawnRect();
 }
 
 Goal::~Goal()

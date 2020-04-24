@@ -23,7 +23,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void UpdateParams(ActorParams *params);
 	void UpdateSpriteFromEditParams();
 	//void ChildUpdateFromEditParams();
-	sf::FloatRect GetAABB();
 	//int animFactor[UNDERGROUND + 1];
 	//int actionLength[UNDERGROUND +1];
 	Crawler(ActorParams *ap);
@@ -57,7 +56,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	//void UpdateEnemyPhysics();
 
 	sf::SoundBuffer *deathSound;
-	sf::Sprite sprite;
 	sf::Sprite auraSprite;
 	double totalDistBeforeBurrow;
 	double currDistTravelled;

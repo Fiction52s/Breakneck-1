@@ -2248,6 +2248,11 @@ V2d CollisionBody::GetBasicPos()
 	return collisionBoxVectors[0][0].globalPosition;
 }
 
+void CollisionBody::SetBasicPos(V2d &pos)
+{
+	collisionBoxVectors[0][0].globalPosition = pos;
+}
+
 void CollisionBody::SetBasicPos(V2d &pos, double angle )
 {
 	collisionBoxVectors[0][0].globalPosition = pos;
@@ -2344,6 +2349,9 @@ int CollisionBody::GetNumBoxes(int frame)
 
 void CollisionBody::DebugDraw( int frame, sf::RenderTarget *target)
 {
+	if( collisionBoxVectors.empty() )
+		return;
+
 	auto &cbVec = collisionBoxVectors[frame];
 	if (cbVec.empty() )
 		return;

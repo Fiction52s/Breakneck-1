@@ -744,7 +744,7 @@ void Enemy::BasicCircleHurtBodySetup(double radius, double angle, V2d &offset, V
 	{
 		hurtBody.ResetFrames(); //in case it happens more than once
 		hurtBody.BasicCircleSetup(radius * scale, angle, offset * scale);
-		hurtBody.SetBasicPos(pos);
+		hurtBody.SetBasicPos(pos, angle);
 	}
 }
 
@@ -754,7 +754,7 @@ void Enemy::BasicCircleHitBodySetup(double radius, double angle, V2d &offset, V2
 	{
 		hitBody.ResetFrames(); //in case it happens more than once
 		hitBody.BasicCircleSetup(radius * scale, angle, offset * scale);
-		hitBody.SetBasicPos(pos);
+		hitBody.SetBasicPos(pos, angle);
 	}
 }
 
@@ -776,7 +776,7 @@ void Enemy::BasicRectHurtBodySetup(
 	{
 		hurtBody.ResetFrames();
 		hurtBody.BasicRectSetup(w * scale, h * scale, angle, offset * scale);
-		hurtBody.SetBasicPos(pos);
+		hurtBody.SetBasicPos(pos, angle);
 	}
 }
 
@@ -788,7 +788,7 @@ void Enemy::BasicRectHitBodySetup(
 	{
 		hitBody.ResetFrames();
 		hitBody.BasicRectSetup(w * scale, h * scale, angle, offset * scale);
-		hitBody.SetBasicPos(pos);
+		hitBody.SetBasicPos(pos, angle);
 	}
 }
 

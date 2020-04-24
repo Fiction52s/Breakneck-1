@@ -2,6 +2,7 @@
 #include "Physics.h"
 #include "EditorTerrain.h"
 #include "EditorRail.h"
+#include "Session.h"
 
 PositionInfo::PositionInfo()
 	:edgeIndex(-1), groundQuantity(-1), ground(NULL), railGround(NULL)
@@ -63,21 +64,25 @@ void PositionInfo::SetRail(RailPtr p_rail, int p_edgeIndex, double quant)
 
 void PositionInfo::AddActor(ActorPtr a)
 {
-	if (ground != NULL)
+	Session *sess = Session::GetSession();
+	if (sess->IsSessTypeEdit())
 	{
-		ground->enemies[GetPoint()].push_back(a);
-		//cout << "edge enemy size: " << ground->enemies[GetPoint()].size() << endl;
-		ground->UpdateBounds();
-	}
-	else if (railGround != NULL)
-	{
-		railGround->enemies[GetPoint()].push_back(a);
-		railGround->UpdateBounds();
-	}
-	else
-	{
-		//do nothing
-		//assert(0);
+		if (ground != NULL)
+		{
+			ground->enemies[GetPoint()].push_back(a);
+			//cout << "edge enemy size: " << ground->enemies[GetPoint()].size() << endl;
+			ground->UpdateBounds();
+		}
+		else if (railGround != NULL)
+		{
+			railGround->enemies[GetPoint()].push_back(a);
+			railGround->UpdateBounds();
+		}
+		else
+		{
+			//do nothing
+			//assert(0);
+		}
 	}
 }
 

@@ -470,7 +470,7 @@ void Session::AddBasicGroundWorldEnemy(const std::string &name, int w, EnemyCrea
 	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
 {
 	worldEnemyNames[w - 1].push_back(ParamsInfo(name, pCreator, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w-1));
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w));
 }
 
 void Session::AddBasicRailWorldEnemy(const std::string &name, int w, EnemyCreator *pCreator,
@@ -478,7 +478,7 @@ void Session::AddBasicRailWorldEnemy(const std::string &name, int w, EnemyCreato
 	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
 {
 	worldEnemyNames[w - 1].push_back(ParamsInfo(name, pCreator, LoadParams<BasicRailEnemyParams>, NULL, NULL, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w-1));
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w));
 	worldEnemyNames[w - 1].back().pmRail = MakeParamsRailed<BasicRailEnemyParams>;
 }
 
@@ -495,7 +495,7 @@ void Session::AddBasicAerialWorldEnemy(const std::string &name, int w,
 	int tileIndex)
 {
 	worldEnemyNames[w - 1].push_back(ParamsInfo(name, pCreator, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w-1));
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w));
 }
 
 void Session::AddWorldEnemy(const std::string &name, int w, EnemyCreator *pCreator, 
@@ -505,7 +505,7 @@ void Session::AddWorldEnemy(const std::string &name, int w, EnemyCreator *pCreat
 	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
 {
 	worldEnemyNames[w - 1].push_back(ParamsInfo(name, pCreator, pLoader, pmGround, pmAir, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w-1));
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w));
 }
 
 void Session::AddExtraEnemy(const std::string &name, 
@@ -516,7 +516,7 @@ void Session::AddExtraEnemy(const std::string &name,
 	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
 {
 	extraEnemyNames.push_back(ParamsInfo(name, pCreator, pLoader, pmGround, pmAir, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, -1));
+		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, 0));
 }
 
 

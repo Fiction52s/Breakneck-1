@@ -789,7 +789,6 @@ void EditSession::Draw()
 		while (current != NULL)
 		{
 			current->Draw(preScreenTex);
-			current->DebugDraw(preScreenTex);
 			current = current->next;
 		}
 

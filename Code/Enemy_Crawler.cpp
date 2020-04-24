@@ -109,9 +109,9 @@ Crawler::Crawler(ActorParams *ap )
 	crawlAnimationFactor = 2;
 	rollAnimationFactor = 5;
 
-	SetSpawnRect();
-
 	ResetEnemy();
+
+	SetSpawnRect();
 }
 
 Crawler::~Crawler()
@@ -122,11 +122,6 @@ void Crawler::PlayDeathSound()
 {
 	Enemy::PlayDeathSound();
 	sess->ActivateSoundAtPos( GetPosition(), deathSound);
-}
-
-sf::FloatRect Crawler::GetAABB() 
-{
-	return sprite.getGlobalBounds();
 }
 
 void Crawler::ResetEnemy()

@@ -387,6 +387,10 @@ void ActorParams::Draw(sf::RenderTarget *target)
 	DrawBoundary(target);
 
 	DrawQuad(target);
+	
+	if( myEnemy != NULL )
+		myEnemy->DebugDraw(target);
+
 }
 
 void ActorParams::DrawPreview(sf::RenderTarget *target)
@@ -730,19 +734,6 @@ void ActorParams::AnchorToRail(PositionInfo &gi)
 
 	UpdateGroundedSprite();
 	SetBoundingQuad();
-}
-
-LeaveGroundAction * ActorParams::UnAnchorAction()
-{
-	return NULL;
-	/*LeaveGroundAction *leave = NULL;
-	assert(posInfo.ground != NULL);
-	if (posInfo.ground != NULL)
-	{
-		leave = new LeaveGroundAction(this);
-	}
-
-	return leave;*/
 }
 
 bool ActorParams::UnAnchor()

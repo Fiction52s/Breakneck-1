@@ -122,7 +122,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 
 	virtual sf::FloatRect GetAABB(){ 
-		return sf::FloatRect();
+		return sprite.getGlobalBounds();
 	}
 	//------------
 
@@ -290,7 +290,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	sf::Shader hurtShader;
 
 	Tileset *ts_blood;
-
+	sf::Sprite sprite;
 	
 	Tileset *ts_key;
 	sf::Color keyColor;

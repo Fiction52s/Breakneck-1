@@ -55,7 +55,6 @@ struct ActorParams : ISelectable
 		int eIndex, double quantity);
 	void AnchorToGround(PositionInfo &gi);
 	void AnchorToRail(PositionInfo &gi);
-	LeaveGroundAction * UnAnchorAction();
 	bool UnAnchor();
 	void UpdateGroundedSprite();
 

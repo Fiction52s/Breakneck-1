@@ -58,7 +58,7 @@ void GoalPulse::UpdatePoints()
 	{
 		circleVA[i*4+0].position = 
 	}*/
-	cout <<  circlePoints << endl;
+	//cout <<  circlePoints << endl;
 	Transform tr;
 	Vector2f offsetInner( 0, -innerRadius );
 	Vector2f offsetOuter( 0, -outerRadius );

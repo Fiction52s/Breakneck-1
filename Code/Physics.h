@@ -169,8 +169,9 @@ struct CollisionBody
 		double a, V2d &offset, V2d &pos);
 	void BasicCircleSetup(double radius,
 		V2d &pos);
-	void SetBasicPos(V2d &pos, double angle = 0);
-	void SetBasicPos( int frame, V2d &pos, double angle = 0);
+	void SetBasicPos(V2d &pos);
+	void SetBasicPos(V2d &pos, double angle);
+	void SetBasicPos( int frame, V2d &pos, double angle);
 	V2d GetBasicPos();
 
 	void BasicRectSetup(double w, double h, double a,
