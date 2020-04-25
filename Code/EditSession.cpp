@@ -51,6 +51,7 @@ void EditSession::SetTrackingEnemy(ActorType *type, int level)
 {
 	if (trackingEnemyParams == NULL)
 	{
+		ClearSelectedBrush();
 		//cout << "copy of level : " << level << endl;
 		trackingEnemyParams = type->defaultParamsVec[level-1]->Copy();
 		trackingEnemyParams->group = groups["--"];
@@ -3374,7 +3375,7 @@ void EditSession::TryCompleteSelectedMove()
 
 	if (mode == CREATE_ENEMY )
 	{
-		ClearSelectedBrush();
+		//ClearSelectedBrush();
 
 		if (enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
 		{
