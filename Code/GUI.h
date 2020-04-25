@@ -155,7 +155,6 @@ struct Panel
 	~Panel();
 	void Draw(sf::RenderTarget *rt);
 	void Update( bool mouseDown, int posx, int posy );
-	void Update(int posx, int posy);
 	
 	void AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
@@ -194,6 +193,7 @@ struct Panel
 	GUIHandler *handler;
 
 	bool isMouseDown;
+	bool lastMouseDown;
 	
 	bool active;
 };

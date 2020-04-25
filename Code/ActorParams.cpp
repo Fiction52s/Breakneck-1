@@ -77,10 +77,7 @@ ActorParams *PlayerParams::Copy()
 }
 
 
-PoiParams::PoiParams(ActorType *at,
-	PolyPtr p_edgePolygon,
-	int p_edgeIndex, 
-	double p_edgeQuantity )
+PoiParams::PoiParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	nameText.setFont( *font );
@@ -90,7 +87,8 @@ PoiParams::PoiParams(ActorType *at,
 	name = "----";
 
 
-	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+	PlaceAerial(Vector2i(0, 0));
+	//PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 PoiParams::PoiParams(ActorType *at,
@@ -142,43 +140,6 @@ PoiParams::PoiParams(ActorType *at,
 	}
 }
 
-PoiParams::PoiParams(ActorType *at,
-	PolyPtr p_edgePolygon,
-	int p_edgeIndex, 
-	double p_edgeQuantity, const std::string &p_name )
-	:ActorParams(at), name( p_name )
-{
-	nameText.setFont( *font );
-	nameText.setCharacterSize( 18 );
-	nameText.setFillColor( Color::White );
-
-	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-}
-
-PoiParams::PoiParams(ActorType *at,
-	sf::Vector2i &pos )
-	:ActorParams(at)
-{
-	nameText.setFont( *font );
-	nameText.setCharacterSize( 18 );
-	nameText.setFillColor( Color::White );
-
-	name = "----";
-
-	PlaceAerial(pos);
-}
-
-PoiParams::PoiParams(ActorType *at,
-	sf::Vector2i &pos, const std::string &p_name )
-	:ActorParams(at)
-{
-	nameText.setFont( *font );
-	nameText.setCharacterSize( 18 );
-	nameText.setFillColor( Color::White );
-
-	PlaceAerial(pos);
-}
-
 ActorParams *PoiParams::Copy()
 {
 	PoiParams *copy = new PoiParams( *this );
@@ -219,10 +180,10 @@ void PoiParams::Draw( sf::RenderTarget *target )
 	target->draw( nameText );
 }
 
-KeyParams::KeyParams(ActorType *at, sf::Vector2i &pos )
+KeyParams::KeyParams(ActorType *at, int level)
 	:ActorParams(at)
 {
-	PlaceAerial(pos);
+	PlaceAerial(Vector2i(0, 0));
 	
 	numKeys = 3;
 	zoneType = 0;
@@ -234,16 +195,6 @@ KeyParams::KeyParams(ActorType *at, ifstream &is)
 	LoadAerial(is);
 	is >> numKeys;
 	is >> zoneType;
-}
-
-KeyParams::KeyParams(ActorType *at, sf::Vector2i &pos,
-	int p_numKeys, int p_zoneType )
-	:ActorParams(at)
-{
-	PlaceAerial(pos);
-	
-	numKeys = p_numKeys;
-	zoneType = p_zoneType;
 }
 
 void KeyParams::WriteParamFile( std::ofstream &of )
@@ -307,18 +258,11 @@ ActorParams *KeyParams::Copy()
 	return copy;
 }
 
-NexusParams::NexusParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
-	int p_nexusIndex )
-	:ActorParams(at), nexusIndex( p_nexusIndex )
+NexusParams::NexusParams(ActorType *at, int level)
+	:ActorParams(at), nexusIndex( 0 )
 {
-	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
-}
-
-NexusParams::NexusParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams(at)
-{
-	nexusIndex = 0;
-	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+	PlaceAerial(Vector2i(0, 0));
+	//PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 NexusParams::NexusParams(ActorType *at, ifstream &is)
@@ -370,13 +314,6 @@ ActorParams *NexusParams::Copy()
 	return copy;
 }
 
-GroundTriggerParams::GroundTriggerParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
-	bool fr, const std::string &p_typeStr)
-	:ActorParams(at), facingRight( fr ), typeStr( p_typeStr )
-{
-	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-}
-
 GroundTriggerParams::GroundTriggerParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
@@ -387,10 +324,11 @@ GroundTriggerParams::GroundTriggerParams(ActorType *at, ifstream &is)
 	is >> typeStr;
 }
 
-GroundTriggerParams::GroundTriggerParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+GroundTriggerParams::GroundTriggerParams(ActorType *at, int level)
 	:ActorParams(at)
 {
-	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+	//PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+	PlaceAerial(Vector2i(0, 0));
 	typeStr = "NONE";
 	facingRight = true;
 
@@ -432,11 +370,11 @@ ActorParams *GroundTriggerParams::Copy()
 	return copy;
 }
 
-ShipPickupParams::ShipPickupParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
-	bool p_facingRight )
-	:ActorParams(at), facingRight( p_facingRight )
+ShipPickupParams::ShipPickupParams(ActorType *at, int level)
+	:ActorParams(at), facingRight( true )
 {
-	PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
+	PlaceAerial(Vector2i(0, 0));
+	//PlaceGrounded( p_edgePolygon, p_edgeIndex, p_edgeQuantity );
 }
 
 ShipPickupParams::ShipPickupParams(ActorType *at, ifstream &is )
@@ -444,13 +382,6 @@ ShipPickupParams::ShipPickupParams(ActorType *at, ifstream &is )
 {
 	LoadGrounded(is);
 	LoadBool(is, facingRight);
-}
-
-ShipPickupParams::ShipPickupParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity )
-	:ActorParams(at)
-{
-	facingRight = true;
-	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 void ShipPickupParams::SetPanelInfo()
@@ -487,10 +418,10 @@ ActorParams *ShipPickupParams::Copy()
 	return copy;
 }
 
-ShardParams::ShardParams(ActorType *at, sf::Vector2i &pos )
+ShardParams::ShardParams(ActorType *at, int level)
 	:ActorParams(at)
 {
-	PlaceAerial(pos);
+	PlaceAerial(Vector2i(0,0));
 	SetShard(0, 0, 0);
 }
 
@@ -522,16 +453,6 @@ void ShardParams::SetShard(int w, int realX, int realY)
 int ShardParams::GetTotalIndex()
 {
 	return world * 22 + localIndex;
-}
-
-ShardParams::ShardParams(ActorType *at, sf::Vector2i &pos, int p_world,
-	int p_localIndex)
-	:ActorParams(at)
-{
-	PlaceAerial(pos);
-
-	SetShard(p_world, p_localIndex);
-	//SetShardFromStr();
 }
 
 ShardParams::ShardParams(ActorType *at,ifstream &is)
@@ -586,63 +507,6 @@ ActorParams *ShardParams::Copy()
 	return copy;
 }
 
-RaceFightTargetParams::RaceFightTargetParams(ActorType *at, sf::Vector2i &pos )
-	:ActorParams(at)
-{
-	PlaceAerial(pos);
-}
-
-RaceFightTargetParams::RaceFightTargetParams(ActorType *at, ifstream &is)
-	:ActorParams(at)
-{
-	LoadAerial(is);
-}
-
-void RaceFightTargetParams::SetParams()
-{
-	//Panel *p = type->panel;
-
-	//hasMonitor = p->checkBoxes["monitor"]->checked;
-}
-
-void RaceFightTargetParams::SetPanelInfo()
-{
-	//Panel *p = type->panel;
-
-	/*p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-
-	p->checkBoxes["monitor"]->checked = hasMonitor;*/
-}
-
-ActorParams *RaceFightTargetParams::Copy()
-{
-	RaceFightTargetParams *copy = new RaceFightTargetParams( *this );
-	return copy;
-}
-
-BlockerParams::BlockerParams(ActorType *at, sf::Vector2i pos, vector<sf::Vector2i> &globalPath, int p_bType, bool p_armored,
-	int p_spacing, int p_level )
-	:ActorParams(at)
-{
-	lines = NULL;
-	
-	PlaceAerial(pos);
-
-	spacing = p_spacing;
-	SetPath(globalPath);
-
-	bType = p_bType;
-
-	armored = p_armored;
-
-
-	enemyLevel = p_level;
-}
-
 BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 	:ActorParams(at)
 {
@@ -662,12 +526,11 @@ BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 	LoadEnemyLevel(is);
 }
 
-BlockerParams::BlockerParams(ActorType *at,
-	sf::Vector2i &pos)
+BlockerParams::BlockerParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	lines = NULL;
-	PlaceAerial(pos);
+	PlaceAerial(Vector2i(0,0));
 	armored = false;
 
 	bType = 0;
@@ -814,15 +677,15 @@ ActorParams *BlockerParams::Copy()
 }
 
 
-AirTriggerParams::AirTriggerParams(ActorType *at, sf::Vector2i &pos)
+AirTriggerParams::AirTriggerParams(ActorType *at, int level)
 	:ActorParams(at)
 {
-	PlaceAerial(pos);
+	PlaceAerial(Vector2i(0,0));
 	triggerRect.setFillColor(Color(200, 200, 200, 150));
 
 	rectWidth = 50;
 	rectHeight = 50;
-	SetRect(rectWidth, rectHeight, pos);
+	SetRect(rectWidth, rectHeight, GetIntPos());
 
 	trigType = "none";//"..no.shard..";
 }
@@ -841,23 +704,6 @@ AirTriggerParams::AirTriggerParams(ActorType *at, ifstream &is)
 	triggerRect.setFillColor(Color(200, 200, 200, 150));
 
 	SetRect(rectWidth, rectHeight, GetIntPos());
-}
-
-AirTriggerParams::AirTriggerParams(ActorType *at, sf::Vector2i &pos, const std::string &typeStr, int w,int h)
-	:ActorParams(at)
-{
-	PlaceAerial(pos);
-
-	triggerRect.setFillColor(Color(200, 200, 200, 150));//Color::Transparent);
-	//triggerRect.setOutlineColor(Color::Red);
-	//triggerRect.setOutlineThickness(10);
-	
-	rectWidth = w;
-	rectHeight = h;
-
-	SetRect( w, h, pos);
-
-	trigType = typeStr;
 }
 
 void AirTriggerParams::SetRect(int width, int height, Vector2i &center)
@@ -924,13 +770,6 @@ void AirTriggerParams::Draw(RenderTarget *target)
 	
 }
 
-FlowerPodParams::FlowerPodParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
-	const std::string &p_typeStr)
-	:ActorParams(at), facingRight(true), typeStr(p_typeStr)
-{
-	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
-}
-
 FlowerPodParams::FlowerPodParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
@@ -939,10 +778,11 @@ FlowerPodParams::FlowerPodParams(ActorType *at, ifstream &is)
 	is >> typeStr;
 }
 
-FlowerPodParams::FlowerPodParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity)
+FlowerPodParams::FlowerPodParams(ActorType *at, int level)
 	:ActorParams(at)
 {
-	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+	PlaceAerial(Vector2i(0, 0));
+	//PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 
 	typeStr = "NONE";
 	facingRight = true;
@@ -1004,12 +844,12 @@ template<typename X> ActorParams *MakeParams(
 	return NULL;
 }
 
-BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, PolyPtr p_edgePolygon, int p_edgeIndex, double p_edgeQuantity,
-	int level)
+BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	enemyLevel = level;
-	PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
+	PlaceAerial(Vector2i(0, 0));
+	//PlaceGrounded(p_edgePolygon, p_edgeIndex, p_edgeQuantity);
 }
 
 BasicGroundEnemyParams::BasicGroundEnemyParams(ActorType *at, ifstream &is)
@@ -1053,12 +893,12 @@ ActorParams *BasicGroundEnemyParams::Copy()
 	return copy;
 }
 
-BasicRailEnemyParams::BasicRailEnemyParams(ActorType *at, TerrainRail *p_rail, int p_edgeIndex, double p_edgeQuantity,
-	int level)
+BasicRailEnemyParams::BasicRailEnemyParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	enemyLevel = level;
-	PlaceRailed(p_rail, p_edgeIndex, p_edgeQuantity);
+	PlaceAerial(Vector2i(0, 0));
+	//PlaceRailed(p_rail, p_edgeIndex, p_edgeQuantity);
 }
 
 BasicRailEnemyParams::BasicRailEnemyParams(ActorType *at, ifstream &is)
@@ -1102,11 +942,11 @@ ActorParams *BasicRailEnemyParams::Copy()
 	return copy;
 }
 
-BasicAirEnemyParams::BasicAirEnemyParams(ActorType *at, sf::Vector2i &pos, int level )
+BasicAirEnemyParams::BasicAirEnemyParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	enemyLevel = level;
-	PlaceAerial(pos);
+	PlaceAerial(Vector2i(0,0));
 }
 
 BasicAirEnemyParams::BasicAirEnemyParams(ActorType *at, ifstream &is)
@@ -1273,10 +1113,10 @@ void BasicAirEnemyParams::Draw(sf::RenderTarget *target)
 	ActorParams::Draw(target);
 }
 
-JugglerParams::JugglerParams(ActorType *at, sf::Vector2i &pos, int level)
-	:BasicAirEnemyParams(at, pos, level )
+JugglerParams::JugglerParams(ActorType *at, int level)
+	:BasicAirEnemyParams(at, level )
 {
-	enemyLevel = level;
+	//enemyLevel = level;
 	//PlaceAerial(pos);
 
 	numJuggles = 100;
@@ -1324,13 +1164,12 @@ ActorParams *JugglerParams::Copy()
 	return copy;
 }
 
-GroundedJugglerParams::GroundedJugglerParams(ActorType *at, PolyPtr edgePolygon,
-	int edgeIndex, double edgeQuantity, int level)
-	:BasicGroundEnemyParams(at, edgePolygon, edgeIndex, edgeQuantity, level)
+GroundedJugglerParams::GroundedJugglerParams(ActorType *at, int level)
+	:BasicGroundEnemyParams(at, level)
 {
-	enemyLevel = level;
+	//enemyLevel = level;
 
-	//PlaceAerial(pos);
+	PlaceAerial(Vector2i(0,0));
 
 	numJuggles = 100;
 }
@@ -1377,22 +1216,11 @@ ActorParams *GroundedJugglerParams::Copy()
 	return copy;
 }
 
-XBarrierParams::XBarrierParams(ActorType *at,
-	Vector2i &pos, const string &p_name)
+XBarrierParams::XBarrierParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	Init();
-	PlaceAerial(pos);
-	name = p_name;
-	hasEdge = false;
-}
-
-XBarrierParams::XBarrierParams(ActorType *at,
-	Vector2i &pos)
-	:ActorParams(at)
-{
-	Init();
-	PlaceAerial(pos);
+	PlaceAerial(Vector2i(0,0));
 	name = "----";
 	hasEdge = false;
 }
@@ -1473,10 +1301,10 @@ void XBarrierParams::Draw(sf::RenderTarget *target)
 const float CameraShotParams::CAMWIDTH = 960.f;
 const float CameraShotParams::CAMHEIGHT = 540.f;
 
-CameraShotParams::CameraShotParams(ActorType *at, sf::Vector2i &pos)
+CameraShotParams::CameraShotParams(ActorType *at, int level)
 	:ActorParams(at)
 {
-	PlaceAerial(pos);
+	PlaceAerial(Vector2i(0,0));
 	Init();
 
 	SetZoom(1);
@@ -1497,18 +1325,6 @@ CameraShotParams::CameraShotParams(ActorType *at, ifstream &is)
 	Init();
 
 	SetZoom(z);
-}
-
-CameraShotParams::CameraShotParams(ActorType *at, sf::Vector2i &pos, const std::string &typeStr, float z)
-	:ActorParams(at)
-{
-	PlaceAerial(pos);
-
-	Init();
-
-	SetZoom(z);
-
-	camName = typeStr;
 }
 
 void CameraShotParams::Init()
@@ -1610,25 +1426,11 @@ void CameraShotParams::Draw(RenderTarget *target)
 	target->draw(zoomText);
 }
 
-
-
-
-ExtraSceneParams::ExtraSceneParams(ActorType *at,
-	Vector2i &pos, const string &p_name)
+ExtraSceneParams::ExtraSceneParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	Init();
-	PlaceAerial(pos);
-	name = p_name;
-	extraSceneType = 0;
-}
-
-ExtraSceneParams::ExtraSceneParams(ActorType *at,
-	Vector2i &pos)
-	:ActorParams(at)
-{
-	Init();
-	PlaceAerial(pos);
+	PlaceAerial(Vector2i(0,0));
 	name = "----";
 	extraSceneType = 0;
 }

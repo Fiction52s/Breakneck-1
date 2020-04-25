@@ -29,41 +29,11 @@ using namespace sf;
 using namespace std;
 
 
-template <typename X>ActorParams * MakeParamsGrounded(ActorType *at)
+template <typename X>ActorParams * MakeParams(ActorType *at, int level)
 {
-	EditSession *edit = EditSession::GetSession();
-	if (edit->enemyEdgePolygon != NULL)
-	{
-		return new X(at, edit->enemyEdgePolygon,
-			edit->enemyEdgeIndex,
-			edit->enemyEdgeQuantity);
-	}
-	else
-	{
-		return NULL;
-	}
+	return new X(at, level);
 }
 
-template <typename X>ActorParams * MakeParamsRailed(ActorType *at)
-{
-	EditSession *edit = EditSession::GetSession();
-	if (edit->enemyEdgeRail != NULL)
-	{
-		return new X(at, edit->enemyEdgeRail,
-			edit->enemyEdgeIndex,
-			edit->enemyEdgeQuantity);
-	}
-	else
-	{
-		return NULL;
-	}
-}
-
-template <typename X>ActorParams * MakeParamsAerial(ActorType *at)
-{
-	EditSession *edit = EditSession::GetSession();
-	return new X(at, sf::Vector2i(edit->worldPos));
-}
 
 template<typename X> ActorParams *LoadParams(
 	ActorType *at, std::ifstream &is)
@@ -78,6 +48,14 @@ template<typename X> Enemy *CreateEnemy(ActorParams* ap)
 	return new X(ap);
 }
 
+template <typename X> void SetParamsType(ParamsInfo *pi)
+{
+	pi->pMaker = MakeParams<X>;
+	pi->pLoader = LoadParams<X>;
+	/*pi->pCanBeGrounded = CanBeGrounded<X>;
+	pi->pCanBeAerial = CanBeAerial<X>;
+	pi->pCanBeRailGrounded = CanBeRailGrounded<X>;*/
+}
 
 void Session::SetupEnemyTypes()
 {
@@ -162,8 +140,10 @@ void Session::AddGeneralEnemies()
 
 void Session::AddW1Enemies()
 {
-	AddBasicGroundWorldEnemy("goal", 1, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1,
-		GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
+	AddBasicGroundWorldEnemy("goal", 1, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
+
+	AddBasicGroundWorldEnemy("crawler", 1, CreateEnemy<Crawler>, Vector2i(0, 0), Vector2i(100, 100), true, true, false, false, 3);
+		//GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
 	/*AddWorldEnemy("blocker", 1, NULL, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
@@ -184,8 +164,8 @@ void Session::AddW1Enemies()
 	GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));*/
 
 
-	AddBasicGroundWorldEnemy("crawler", 1, CreateEnemy<Crawler>, Vector2i(0, 0), Vector2i(100, 100), true, true, false, false, 3,
-		GetTileset("Enemies/crawler_160x160.png", 160, 160));
+	
+		//GetTileset("Enemies/crawler_160x160.png", 160, 160));
 
 	/*AddBasicGroundWorldEnemy("shroom", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/shroom_192x192.png", 192, 192));
@@ -465,25 +445,36 @@ void Session::AddW6Enemies()
 		Vector2i(0, 0), Vector2i(32, 128), false, false, false, false);*/
 }
 
-void Session::AddBasicGroundWorldEnemy(const std::string &name, int w, EnemyCreator *pCreator,
+void Session::AddBasicGroundWorldEnemy(const std::string &name, int w, EnemyCreator *p_enemyCreator,
 	Vector2i &off, Vector2i &size, bool w_mon,
 	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
 {
-	worldEnemyNames[w - 1].push_back(ParamsInfo(name, pCreator, LoadParams<BasicGroundEnemyParams>, MakeParamsGrounded<BasicGroundEnemyParams>, NULL, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w));
+	AddWorldEnemy(name, w, p_enemyCreator, SetParamsType<BasicGroundEnemyParams>, off, size,
+		w_mon, w_level, w_path, w_loop, false, true, false,  p_numLevels, ts, tileIndex);
 }
 
-void Session::AddBasicRailWorldEnemy(const std::string &name, int w, EnemyCreator *pCreator,
-	Vector2i &off, Vector2i &size, bool w_mon,
-	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
+void Session::AddBasicRailWorldEnemy(
+	const std::string &name, 
+	int w, 
+	EnemyCreator *p_enemyCreator,
+	Vector2i &off, 
+	Vector2i &size, 
+	bool w_mon,
+	bool w_level, 
+	bool w_path, 
+	bool w_loop, 
+	int p_numLevels, 
+	Tileset *ts, 
+	int tileIndex)
 {
-	worldEnemyNames[w - 1].push_back(ParamsInfo(name, pCreator, LoadParams<BasicRailEnemyParams>, NULL, NULL, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w));
-	worldEnemyNames[w - 1].back().pmRail = MakeParamsRailed<BasicRailEnemyParams>;
+	AddWorldEnemy(name, w, p_enemyCreator, SetParamsType<BasicRailEnemyParams>, off, size,
+		w_mon, w_level, w_path, w_loop, false, false, true, p_numLevels, ts, tileIndex);
 }
 
-void Session::AddBasicAerialWorldEnemy(const std::string &name, int w,
-	EnemyCreator *pCreator,
+void Session::AddBasicAerialWorldEnemy(
+	const std::string &name, 
+	int w,
+	EnemyCreator *p_enemyCreator,
 	sf::Vector2i &off,
 	sf::Vector2i &size,
 	bool w_mon,
@@ -494,29 +485,51 @@ void Session::AddBasicAerialWorldEnemy(const std::string &name, int w,
 	Tileset *ts,
 	int tileIndex)
 {
-	worldEnemyNames[w - 1].push_back(ParamsInfo(name, pCreator, LoadParams<BasicAirEnemyParams>, NULL, MakeParamsAerial<BasicAirEnemyParams>, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w));
+	AddWorldEnemy(name, w, p_enemyCreator, SetParamsType<BasicAirEnemyParams>, off, size, w_mon, w_level,
+		w_path, w_loop, true, false, false, p_numLevels, ts, tileIndex);
 }
 
-void Session::AddWorldEnemy(const std::string &name, int w, EnemyCreator *pCreator, 
-	ParamsLoader *pLoader,
-	ParamsMaker* pmGround, ParamsMaker *pmAir,
-	Vector2i &off, Vector2i &size, bool w_mon,
-	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
+void Session::AddWorldEnemy(const std::string &name,
+	int w,
+	EnemyCreator *p_enemyCreator,
+	ParamsCreator *p_paramsCreator,
+	sf::Vector2i &off,
+	sf::Vector2i &size,
+	bool w_mon,
+	bool w_level,
+	bool w_path,
+	bool w_loop,
+	bool p_canBeAerial,
+	bool p_canBeGrounded,
+	bool p_canBeRailGrounded,
+	int p_numLevels,
+	Tileset *ts,
+	int tileIndex)
 {
-	worldEnemyNames[w - 1].push_back(ParamsInfo(name, pCreator, pLoader, pmGround, pmAir, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, w));
+	worldEnemyNames[w - 1].push_back(ParamsInfo(name, p_enemyCreator, p_paramsCreator, off, size,
+		w_mon, w_level, w_path, w_loop, p_canBeAerial, p_canBeGrounded,
+		p_canBeRailGrounded, p_numLevels, w, ts, tileIndex));
 }
 
 void Session::AddExtraEnemy(const std::string &name, 
-	EnemyCreator *pCreator,
-	ParamsLoader *pLoader,
-	ParamsMaker *pmGround, ParamsMaker *pmAir,
-	Vector2i &off, Vector2i &size, bool w_mon,
-	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
+	EnemyCreator *p_enemyCreator,
+	ParamsCreator *p_paramsCreator,
+	Vector2i &off, 
+	Vector2i &size, 
+	bool w_mon,
+	bool w_level, 
+	bool w_path, 
+	bool w_loop, 
+	bool p_canBeAerial,
+	bool p_canBeGrounded,
+	bool p_canBeRailGrounded,
+	int p_numLevels, 
+	Tileset *ts, 
+	int tileIndex)
 {
-	extraEnemyNames.push_back(ParamsInfo(name, pCreator, pLoader, pmGround, pmAir, off, size,
-		w_mon, w_level, w_path, w_loop, p_numLevels, ts, tileIndex, 0));
+	extraEnemyNames.push_back(ParamsInfo(name, p_enemyCreator, p_paramsCreator, off, size,
+		w_mon, w_level, w_path, w_loop, p_canBeAerial, p_canBeGrounded,
+		p_canBeRailGrounded, p_numLevels, 0, ts, tileIndex));
 }
 
 

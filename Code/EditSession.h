@@ -105,6 +105,7 @@ struct EditSession : GUIHandler, Session
 
 	void UpdateDecorSprites();
 
+	
 
 	void SetInitialView(sf::Vector2f &center,
 		sf::Vector2f &size);
@@ -499,9 +500,9 @@ struct EditSession : GUIHandler, Session
 	
 	int patrolPathLengthSize;
 
-	sf::Sprite enemySprite;
-	sf::RectangleShape enemyQuad;
-	ActorType *trackingEnemy;//bool trackingEnemy;
+	void SetTrackingEnemy(ActorType *type);
+	ActorParams *trackingEnemyParams;
+
 	Panel *showPanel;	
 
 	Panel * CreatePopupPanel( const std::string &p );

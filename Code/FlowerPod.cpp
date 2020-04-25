@@ -313,7 +313,8 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 
 	bType = GetType(btypeStr);
 
-	ShardParams sp(pod->sess->types["shard"], Vector2i(pod->GetPosition()));
+	ShardParams sp(pod->sess->types["shard"], 0);// Vector2i(pod->GetPosition()));
+	sp.MoveTo(Vector2i( pod->GetPosition() ));
 	sp.world = 0;
 	sp.localIndex = 0;
 	

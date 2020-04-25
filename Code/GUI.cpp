@@ -200,9 +200,11 @@ Panel::~Panel()
 	}
 }
 
-void Panel::Update(int posx, int posy)
+void Panel::Update( bool mouseDown, int posx, int posy )
 {
-	bool mouseDown = isMouseDown;
+	lastMouseDown = isMouseDown;
+	isMouseDown = mouseDown;
+	
 	posx -= pos.x;
 	posy -= pos.y;
 
@@ -249,12 +251,6 @@ void Panel::Update(int posx, int posy)
 	{
 		bool temp = (*it).second->Update(mouseDown, posx, posy);
 	}
-}
-
-void Panel::Update( bool mouseDown, int posx, int posy )
-{
-	isMouseDown = mouseDown;
-	Update(posx, posy);
 }
 
 void Panel::SendEvent( Button *b, const std::string & e )

@@ -6,9 +6,6 @@
 using namespace std;
 using namespace sf;
 
-
-
-
 ActorType::ActorType(ParamsInfo &pi)
 	:info(pi)
 {
@@ -25,7 +22,21 @@ ActorType::ActorType(ParamsInfo &pi)
 
 void ActorType::CreateDefaultEnemy()
 {
-	if (info.pmAir != NULL)
+	
+	
+	if (info.pMaker == NULL)
+		return;
+	
+	defaultParams = info.pMaker(this, 0);
+
+	defaultParams->myEnemy = defaultParams->GenerateEnemy();
+	if (defaultParams->myEnemy != NULL)
+	{
+		defaultParams->myEnemy->facingRight = true;
+	}
+	
+
+	/*if (info.pmAir != NULL)
 	{
 		defaultParams = info.pmAir(this);
 		defaultParams->myEnemy = defaultParams->GenerateEnemy();
@@ -42,7 +53,7 @@ void ActorType::CreateDefaultEnemy()
 			defaultParams->UnAnchor();
 		}
 		
-	}
+	}*/
 }
 
 ActorType::~ActorType()
@@ -53,17 +64,18 @@ ActorType::~ActorType()
 
 bool ActorType::CanBeGrounded()
 {
-	return (info.pmGround != NULL);
+	return info.canBeGrounded;//(info.pmGround != NULL);
 }
 
 bool ActorType::CanBeRailGrounded()
 {
-	return (info.pmRail != NULL);
+	return info.canBeRailGrounded;
 }
 
 bool ActorType::CanBeAerial()
 {
-	return (info.pmAir != NULL || info.name == "player");
+	//might adjust this later
+	return info.canBeAerial;// || info.name == "player";
 }
 
 sf::Sprite ActorType::GetSprite(int xSize, int ySize)
@@ -751,7 +763,8 @@ void ActorType::PlaceEnemy(ActorParams *ap)
 	else
 	{
 		edit->showPanel = edit->enemySelectPanel;
-		edit->trackingEnemy = NULL;
+		//edit->trackeene
+		//edit->trackingEnemy = NULL;
 		ActorPtr ac(ap);
 		ac->group = edit->groups["--"];
 
@@ -759,6 +772,7 @@ void ActorType::PlaceEnemy(ActorParams *ap)
 	}
 }
 
+//depreciated
 void ActorType::PlaceEnemy()
 {
 	EditSession *edit = EditSession::GetSession();
@@ -769,7 +783,7 @@ void ActorType::PlaceEnemy()
 
 	Vector2i worldPos(edit->worldPos);
 	bool placed = false;
-	if (info.pmGround != NULL)
+	/*if (info.pmGround != NULL)
 	{
 		if (edit->enemyEdgePolygon != NULL)
 		{
@@ -788,7 +802,7 @@ void ActorType::PlaceEnemy()
 	if (!placed && info.pmAir != NULL)
 	{
 		PlaceEnemy(info.pmAir(this));
-	}
+	}*/
 
 	string &name = info.name;
 	if (name == "blocker" || name == "greenblocker" || name == "spring" || name == "patroller" || name == "bat"

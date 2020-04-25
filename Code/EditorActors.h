@@ -13,55 +13,65 @@ struct TerrainPoint;
 struct Panel;
 
 struct Enemy;
+struct ParamsInfo;
 
-template<typename X> ActorParams *MakeParamsGrounded(
-	ActorType *);
-template<typename X> ActorParams *MakeParamsRailed(
-	ActorType *);
-template<typename X> ActorParams *MakeParamsAerial(
-	ActorType *);
+template<typename X> ActorParams *MakeParams(
+	ActorType *, int );
 template<typename X> ActorParams *LoadParams(
 	ActorType *, std::ifstream &isa);
 template<typename X> Enemy* CreateEnemy(ActorParams*);
-
+template <typename X> void SetParamsType(ParamsInfo*);
 
 typedef Enemy * EnemyCreator(ActorParams*);
-typedef ActorParams* ParamsMaker(ActorType*);
+typedef ActorParams* ParamsMaker(ActorType*, int);
 typedef ActorParams* ParamsLoader(ActorType*,
 	std::ifstream &is);
+typedef void ParamsCreator(ParamsInfo*);
+typedef bool PositionChecker();
 
 struct ParamsInfo
 {
 	ParamsInfo(const std::string &n,
 		EnemyCreator *p_enemyCreator,
-		ParamsLoader *p_pLoader,
-		ParamsMaker *pg, ParamsMaker *pa,
+		ParamsCreator *p_paramsCreator,
 		sf::Vector2i &off, sf::Vector2i &p_size,
 		bool w_monitor, bool w_level,
-		bool w_path, bool w_loop, int p_numLevels = 1,
-		Tileset *p_ts = NULL, int imageTile = 0,
-		int p_world = -1)
+		bool w_path, bool w_loop,
+		bool p_canBeAerial, bool p_canBeGrounded,
+		bool p_canBeRailGrounded, int p_numLevels = 1,
+		int p_world = -1,
+		Tileset *p_ts = NULL, int imageTile = 0)
 		:name(n), 
 		enemyCreator( p_enemyCreator ),
-		pLoader(p_pLoader),
-		pmGround(pg), pmAir(pa),
-		offset(off), size(p_size),
-		ts(p_ts), imageTileIndex(imageTile),
-		writeMonitor(w_monitor), writeLevel(w_level),
-		writePath(w_path), writeLoop(w_loop),
+		offset(off), 
+		size(p_size),
+		ts(p_ts), 
+		imageTileIndex(imageTile),
+		writeMonitor(w_monitor), 
+		writeLevel(w_level),
+		writePath(w_path), 
+		writeLoop(w_loop),
 		numLevels(p_numLevels),
-		pmRail(NULL), world( p_world )
+		world( p_world ),
+		canBeAerial( p_canBeAerial),
+		canBeGrounded( p_canBeGrounded ),
+		canBeRailGrounded( p_canBeRailGrounded)
 
 	{
-
+		pLoader = NULL;
+		pMaker = NULL;
+		if( p_paramsCreator != NULL )
+			p_paramsCreator(this);
 	}
-	EnemyCreator *enemyCreator;
-	//void SetRailLoader(ParamsM)
+
+	
 	std::string name;
+
+	EnemyCreator *enemyCreator;
 	ParamsLoader *pLoader;
-	ParamsMaker* pmGround;
-	ParamsMaker* pmAir;
-	ParamsMaker* pmRail;
+	ParamsMaker* pMaker;
+	
+
 	sf::Vector2i offset;
 	sf::Vector2i size;
 	Tileset *ts;
@@ -74,10 +84,16 @@ struct ParamsInfo
 
 	int numLevels;
 	int world;
+
+	bool canBeAerial;
+	bool canBeGrounded;
+	bool canBeRailGrounded;
 };
 
 typedef ActorParams* ActorPtr;
 typedef std::map<TerrainPoint*, std::list<ActorPtr>> EnemyMap;
+
+
 
 struct ActorType
 {

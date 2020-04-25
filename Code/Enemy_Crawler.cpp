@@ -144,7 +144,10 @@ void Crawler::ResetEnemy()
 
 	UpdateHitboxes();
 
-	DecideDirection();
+	if (surfaceMover->ground != NULL)
+	{
+		DecideDirection();
+	}
 
 	UpdateSprite();
 }

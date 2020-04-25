@@ -62,6 +62,10 @@ struct ActorParams : ISelectable
 	virtual std::vector<sf::Vector2i> & GetLocalPath();
 	virtual void SetPath(std::vector<sf::Vector2i> &globalPath);
 
+	/*virtual bool CanBeGrounded() { return false; }
+	virtual bool CanBeAerial() { return false; }
+	virtual bool CanBeRailGrounded() { return false; }*/
+
 	void DrawLevel(sf::RenderTarget *target);
 	void DrawBoundary(sf::RenderTarget *target);
 	void DrawMonitor(sf::RenderTarget *target);

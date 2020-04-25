@@ -3,6 +3,7 @@
 #include "VectorMath.h"
 #include "ActorParamsBase.h"
 #include "Enemy.h"
+#include "EditSession.h"
 
 using namespace std;
 using namespace sf;
@@ -48,15 +49,28 @@ ChooseEnemyRect::ChooseEnemyRect(EnemyChooser *eChooser, int p_quadIndex, ActorT
 
 bool ChooseEnemyRect::Update(bool mouseDown, int posx, int posy)
 {
-	if (bounds.contains(Vector2i(posx, posy)))
+	bool lastDown = chooser->owner->lastMouseDown;
+	if (!mouseDown)
 	{
-		focused = true;
-		SetRectColor(GetQuad(), mouseOverColor);
+		if (bounds.contains(Vector2i(posx, posy)))
+		{
+			focused = true;
+			SetRectColor(GetQuad(), mouseOverColor);
+		}
+		else
+		{
+			focused = false;
+			SetRectColor(GetQuad(), idleColor);
+		}
 	}
-	else
+	else if (mouseDown)
 	{
-		focused = false;
-		SetRectColor(GetQuad(), idleColor);
+		if (!lastDown)
+		{
+			EditSession *edit = EditSession::GetSession();
+			edit->SetTrackingEnemy(actorType);
+		}
+		
 	}
 	return true;
 }
