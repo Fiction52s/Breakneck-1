@@ -43,12 +43,12 @@ struct Enemy;
 struct ChooseEnemyRect
 {
 	ChooseEnemyRect( EnemyChooser *eChooser, int quadIndex,
-		ActorType * type );
+		ActorType * type, int level );
 	sf::Vector2f pos;
 	ActorType *actorType;
 	Enemy *enemy;
 	float boxSize;
-	bool Update(bool mouseDown, int posx, int posy);
+	bool Update();
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
 	sf::IntRect bounds;
@@ -60,6 +60,7 @@ struct ChooseEnemyRect
 	EnemyChooser *chooser;
 	sf::Color mouseOverColor;
 	sf::Color idleColor;
+	int level;
 };
 
 
@@ -70,7 +71,7 @@ struct EnemyChooser
 	~EnemyChooser();
 	void Draw(sf::RenderTarget *target);
 	void UpdateSprites(int frameUpdate);
-	bool Update(bool mouseDown, int posx, int posy);
+	bool Update();
 	int tileSizeX;
 	int tileSizeY;
 	ActorType *actorType;
@@ -82,7 +83,7 @@ struct EnemyChooser
 	int focusX;
 	int focusY;
 	sf::Vector2i pos;
-	Panel *owner;
+	Panel *panel;
 	int selectedX;
 	int selectedY;
 	int mouseOverIndex;
@@ -155,7 +156,8 @@ struct Panel
 	~Panel();
 	void Draw(sf::RenderTarget *rt);
 	bool ContainsPoint(sf::Vector2i &pos);
-	void Update( bool mouseDown, int posx, int posy );
+	void Update( bool mouseDownLeft, bool mouseDownRight,
+		int posx, int posy );
 	
 	void AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
@@ -193,10 +195,25 @@ struct Panel
 	sf::Vector2f size;
 	GUIHandler *handler;
 
-	bool isMouseDown;
-	bool lastMouseDown;
+	
+
+	bool IsMouseDownLeft();
+	bool IsMouseDownRight();
+	bool IsMouseLeftClicked();
+	bool IsMouseLeftReleased();
+	bool IsMouseRightClicked();
+	bool IsMouseRightReleased();
+	const sf::Vector2i & GetMousePos();
 	
 	bool active;
+
+private:
+	sf::Vector2i mousePos;
+	bool isMouseDownLeft;
+	bool lastMouseDownLeft;
+
+	bool isMouseDownRight;
+	bool lastMouseDownRight;
 };
 
 struct GUIHandler

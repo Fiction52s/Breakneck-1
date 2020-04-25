@@ -47,18 +47,19 @@ EditSession * EditSession::currSession = NULL;
 
 #define TIMESTEP (1.0 / 60.0)
 
-void EditSession::SetTrackingEnemy(ActorType *type)
+void EditSession::SetTrackingEnemy(ActorType *type, int level)
 {
 	if (trackingEnemyParams == NULL)
 	{
-		trackingEnemyParams = type->defaultParams->Copy();
+		//cout << "copy of level : " << level << endl;
+		trackingEnemyParams = type->defaultParamsVec[level-1]->Copy();
 		trackingEnemyParams->group = groups["--"];
 		//GetPolygon((0);
 
 		//trackingEnemyParams->AnchorToGround();
 		trackingEnemyParams->myEnemy = trackingEnemyParams->GenerateEnemy();
 		grabbedActor = trackingEnemyParams;
-		selectedBrush->AddObject(grabbedActor);
+		SelectObject(grabbedActor);
 
 		trackingEnemyParams->myEnemy->SetActionEditLoop();
 
@@ -2029,7 +2030,7 @@ int EditSession::Run()
 		}
 	}
 
-	enemySelectPanel = new Panel( "enemyselection", 1920, 150, this );
+	enemySelectPanel = new Panel("enemyselection", 100, 150, this);//1920, 150, this );
 	allPopups.push_back(enemySelectPanel);
 
 	
@@ -3373,7 +3374,7 @@ void EditSession::TryCompleteSelectedMove()
 
 	if (mode == CREATE_ENEMY )
 	{
-		selectedBrush->Clear();
+		ClearSelectedBrush();
 
 		if (enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
 		{
@@ -4898,13 +4899,13 @@ bool EditSession::ConfirmationPop( const std::string &question )
 				{
 					if( ev.mouseButton.button == Mouse::Left )
 					{
-						confirm->Update( true, uiMouse.x, uiMouse.y );		
+						confirm->Update( true, false, uiMouse.x, uiMouse.y );		
 					}			
 					break;
 				}
 			case Event::MouseButtonReleased:
 				{
-					confirm->Update( false, uiMouse.x, uiMouse.y );
+					confirm->Update( false, false, uiMouse.x, uiMouse.y );
 					break;
 				}
 			case Event::MouseWheelMoved:
@@ -5129,7 +5130,7 @@ void EditSession::GridSelectPop( const std::string &type )
 					if( ev.mouseButton.button == Mouse::Left )
 					{
 						cout << "are we here: " << uiMouse.x << ", " << uiMouse.y << endl;
-						panel->Update( true, uiMouse.x, uiMouse.y );
+						panel->Update( true, false, uiMouse.x, uiMouse.y );
 						//if you click outside of the box, delete the gate
 						
 						//if( uiMouse.x < messagePopup->pos.x 
@@ -5143,7 +5144,7 @@ void EditSession::GridSelectPop( const std::string &type )
 					if( ev.mouseButton.button == Mouse::Left )
 					{
 						cout << "are we real: " << uiMouse.x << ", " << uiMouse.y << endl;
-						panel->Update( false, uiMouse.x, uiMouse.y );
+						panel->Update( false, false, uiMouse.x, uiMouse.y );
 					}
 					break;
 				}
@@ -9689,7 +9690,7 @@ void EditSession::CreateTerrainModeHandleEvent()
 		{
 			if (showPanel != NULL)
 			{
-				showPanel->Update(true, uiMousePos.x, uiMousePos.y);
+				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
 				break;
 			}
 		}
@@ -9702,7 +9703,7 @@ void EditSession::CreateTerrainModeHandleEvent()
 	{
 		if (showPanel != NULL)
 		{
-			showPanel->Update(false, uiMousePos.x, uiMousePos.y);
+			showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
 		}
 		break;
 	}
@@ -9775,7 +9776,7 @@ void EditSession::CreateRailsModeHandleEvent()
 		{
 			if (showPanel != NULL)
 			{
-				showPanel->Update(true, uiMousePos.x, uiMousePos.y);
+				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
 				break;
 			}
 		}
@@ -9785,7 +9786,7 @@ void EditSession::CreateRailsModeHandleEvent()
 	{
 		if (showPanel != NULL)
 		{
-			showPanel->Update(false, uiMousePos.x, uiMousePos.y);
+			showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
 		}
 		break;
 	}
@@ -9853,7 +9854,7 @@ void EditSession::EditModeHandleEvent()
 		{
 			if (showPanel != NULL)
 			{
-				showPanel->Update(true, uiMousePos.x, uiMousePos.y);
+				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
 				break;
 			}
 
@@ -9913,7 +9914,7 @@ void EditSession::EditModeHandleEvent()
 		{
 			if (showPanel != NULL)
 			{
-				showPanel->Update(false, uiMousePos.x, uiMousePos.y);
+				showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
 				break;
 			}
 
@@ -10604,7 +10605,7 @@ void EditSession::CreateRectModeHandleEvent()
 			if (showPanel != NULL)
 			{
 				//cout << "edit mouse update" << endl;
-				showPanel->Update(true, uiMousePos.x, uiMousePos.y);
+				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
 				break;
 			}
 
@@ -10810,7 +10811,7 @@ void EditSession::CreateImagesHandleEvent()
 		{
 			if (showPanel != NULL)
 			{
-				showPanel->Update(true, uiMousePos.x, uiMousePos.y);
+				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
 			}
 			else
 			{
@@ -10838,7 +10839,7 @@ void EditSession::CreateImagesHandleEvent()
 		{
 			if (showPanel != NULL)
 			{
-				showPanel->Update(false, uiMousePos.x, uiMousePos.y);
+				showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
 			}
 		}
 		break;
@@ -11237,7 +11238,7 @@ void EditSession::PasteModeUpdate()
 
 void EditSession::CreateEnemyModeUpdate()
 {
-	showPanel->Update(IsMousePressed( Mouse::Left ), uiMousePos.x, uiMousePos.y);
+	showPanel->Update(IsMousePressed( Mouse::Left ), IsMousePressed( Mouse::Right ), uiMousePos.x, uiMousePos.y);
 	enemyChooser->UpdateSprites(spriteUpdateFrames);
 
 	if (grabbedActor != NULL)

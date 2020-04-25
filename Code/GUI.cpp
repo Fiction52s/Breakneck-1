@@ -163,7 +163,12 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 	:handler( h ), size( width, height ), name( n )
 	//:t( 0, 0, 200, 10, f, "hello" ), t2( 0, 100, 100, 10, f, "blah" ), b( 0, 50, 100, 50, f, "button!" )
 {
-	isMouseDown = false;
+	isMouseDownLeft = false;
+	lastMouseDownLeft = false;
+
+	isMouseDownRight = false;
+	lastMouseDownRight = false;
+
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 }
 
@@ -200,21 +205,26 @@ Panel::~Panel()
 	}
 }
 
-void Panel::Update( bool mouseDown, int posx, int posy )
+void Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy )
 {
-	lastMouseDown = isMouseDown;
-	isMouseDown = mouseDown;
+	lastMouseDownLeft = isMouseDownLeft;
+	isMouseDownLeft = mouseDownL;
+
+	lastMouseDownRight = isMouseDownRight;
+	isMouseDownRight = mouseDownR;
 	//cout << (int)isMouseDown << ", " << (int)lastMouseDown << endl;
 	
 	posx -= pos.x;
 	posy -= pos.y;
+
+	mousePos = Vector2i(posx, posy);
 
 
 	//cout << "pos: " << posx << ", " << posy << endl;
 	for (std::map<string, TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it).second->Update(mouseDown, posx, posy);
+		bool temp = (*it).second->Update(mouseDownL, posx, posy);
 		if (temp)
 		{
 			for (std::map<string, TextBox*>::iterator it2 = textBoxes.begin(); it2 != textBoxes.end(); ++it2)
@@ -232,25 +242,25 @@ void Panel::Update( bool mouseDown, int posx, int posy )
 	for (map<string, Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it).second->Update(mouseDown, posx, posy);
+		bool temp = (*it).second->Update(mouseDownL, posx, posy);
 
 	}
 
 	for (map<string, CheckBox*>::iterator it = checkBoxes.begin(); it != checkBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it).second->Update(mouseDown, posx, posy);
+		bool temp = (*it).second->Update(mouseDownL, posx, posy);
 	}
 
 	for (map<string, GridSelector*>::iterator it = gridSelectors.begin(); it != gridSelectors.end(); ++it)
 	{
 		cout << "sending pos: " << posx << ", " << posy << endl;
-		bool temp = (*it).second->Update(mouseDown, posx, posy);
+		bool temp = (*it).second->Update(mouseDownL, posx, posy);
 	}
 
 	for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
 	{
-		bool temp = (*it).second->Update(mouseDown, posx, posy);
+		bool temp = (*it).second->Update();
 	}
 }
 
@@ -310,8 +320,9 @@ void Panel::AddLabel( const std::string &name, sf::Vector2i labelPos, int charac
 	labels[name] = t;
 }
 
-GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos, int sizex, int sizey, int tilesizex, int tilesizey
-									  , bool displaySelected, bool displayMouseOver )
+GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos, 
+	int sizex, int sizey, int tilesizex, int tilesizey, 
+	bool displaySelected, bool displayMouseOver )
 {
 	assert( gridSelectors.count( name ) == 0 );
 	GridSelector *gs = new GridSelector( pos, sizex, sizey, tilesizex, tilesizey, displaySelected, displayMouseOver, this );
@@ -401,7 +412,40 @@ void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 	}
 }
 
+bool Panel::IsMouseDownLeft()
+{
+	return isMouseDownLeft;
+}
 
+bool Panel::IsMouseDownRight()
+{
+	return isMouseDownRight;
+}
+
+bool Panel::IsMouseLeftClicked()
+{
+	return isMouseDownLeft && !lastMouseDownLeft;
+}
+
+bool Panel::IsMouseLeftReleased()
+{
+	return !isMouseDownLeft && lastMouseDownLeft;
+}
+
+bool Panel::IsMouseRightClicked()
+{
+	return isMouseDownRight && !lastMouseDownRight;
+}
+
+bool Panel::IsMouseRightReleased()
+{
+	return !isMouseDownRight && lastMouseDownRight;
+}
+
+const sf::Vector2i & Panel::GetMousePos()
+{
+	return mousePos;
+}
 
 TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p,const std::string & initialText = "")
 	:pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n ), owner( p )

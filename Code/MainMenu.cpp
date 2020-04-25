@@ -1431,11 +1431,11 @@ void MainMenu::CustomMapsOption()
 					{
 						if( customMapHandler.showNamePopup )
 						{
-							namePopup.Update( true, uiMouse.x, uiMouse.y);
+							namePopup.Update( true, false, uiMouse.x, uiMouse.y);
 						}
 						else
 						{
-							p.Update( true, uiMouse.x, uiMouse.y);
+							p.Update( true, false, uiMouse.x, uiMouse.y);
 							//cout << "blah: " << mousePos.x << ", " << mousePos.y << endl;
 							ls.LeftClick( true, uiMouse );
 						}
@@ -1449,12 +1449,12 @@ void MainMenu::CustomMapsOption()
 						if( customMapHandler.showNamePopup )
 						{
 							ls.newLevelName = "";
-							namePopup.Update( false, uiMouse.x, uiMouse.y );
+							namePopup.Update( false, false, uiMouse.x, uiMouse.y );
 							CopyMap(&customMapHandler, &namePopup);
 						}
 						else
 						{
-							p.Update( false, uiMouse.x, uiMouse.y );
+							p.Update( false, false, uiMouse.x, uiMouse.y );
 							ls.LeftClick( false, uiMouse );
 							if( ls.text[ls.selectedIndex].getFillColor() == Color::Red )
 							{

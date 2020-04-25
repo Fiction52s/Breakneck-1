@@ -119,7 +119,7 @@ struct ActorType
 
 	Panel *panel;
 
-	ActorPtr defaultParams;
+	std::vector<ActorPtr> defaultParamsVec;
 
 	ParamsInfo info;
 };

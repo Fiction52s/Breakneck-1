@@ -8,13 +8,28 @@
 using namespace std;
 using namespace sf;
 
-ChooseEnemyRect::ChooseEnemyRect(EnemyChooser *eChooser, int p_quadIndex, ActorType *aType)
-	:chooser( eChooser ), quadIndex( p_quadIndex ), actorType( aType )
+ChooseEnemyRect::ChooseEnemyRect(EnemyChooser *eChooser, int p_quadIndex, ActorType *aType,
+	int p_level )
+	:chooser( eChooser ), quadIndex( p_quadIndex ), actorType( aType ), level( p_level )
 {
 	boxSize = 100;
 	pos = Vector2f(400 + quadIndex * boxSize * 1.5, boxSize / 2 + 40);
 	
-	idleColor = Color::Blue;
+	switch (level)
+	{
+	case 1:
+		idleColor = Color::Blue;
+		break;
+	case 2:
+		idleColor = Color::Cyan;
+		break;
+	case 3:
+		idleColor = Color::Magenta;
+		break;
+	case 4:
+		idleColor = Color::Red;
+		break;
+	}
 	idleColor.a = 100;
 
 	mouseOverColor = Color::Green;
@@ -29,10 +44,11 @@ ChooseEnemyRect::ChooseEnemyRect(EnemyChooser *eChooser, int p_quadIndex, ActorT
 	bounds.top = pos.y - boxSize / 2.f;
 	bounds.width = boxSize;
 	bounds.height = boxSize;
-	
-	actorType->defaultParams->MoveTo(Vector2i(0, 0));
 
-	enemy = actorType->defaultParams->myEnemy;
+	actorType->defaultParamsVec[level-1]->MoveTo(Vector2i(0, 0));
+	enemy = actorType->defaultParamsVec[level-1]->myEnemy;
+
+	
 	enemy->SetActionEditLoop();
 	enemy->UpdateFromEditParams(0);
 
@@ -47,13 +63,13 @@ ChooseEnemyRect::ChooseEnemyRect(EnemyChooser *eChooser, int p_quadIndex, ActorT
 	view.setSize(Vector2f(1920 * test, 1080 * test));
 }
 
-bool ChooseEnemyRect::Update(bool mouseDown, int posx, int posy)
+bool ChooseEnemyRect::Update()
 {
-	bool lastDown = chooser->owner->lastMouseDown;
+	Vector2i mousePos = chooser->panel->GetMousePos();
 	//cout << "rect: " << (int)mouseDown << ", " << (int)lastDown << endl;
-	if (!mouseDown)
+	if (!chooser->panel->IsMouseDownLeft())
 	{
-		if (bounds.contains(Vector2i(posx, posy)))
+		if (bounds.contains(mousePos))
 		{
 			focused = true;
 			SetRectColor(GetQuad(), mouseOverColor);
@@ -64,15 +80,12 @@ bool ChooseEnemyRect::Update(bool mouseDown, int posx, int posy)
 			SetRectColor(GetQuad(), idleColor);
 		}
 	}
-	else if (mouseDown)
+	else if (chooser->panel->IsMouseLeftClicked())
 	{
-		if (bounds.contains(Vector2i(posx, posy)))
+		if (bounds.contains(mousePos))
 		{
-			if (!lastDown)
-			{
-				EditSession *edit = EditSession::GetSession();
-				edit->SetTrackingEnemy(actorType);
-			}
+			EditSession *edit = EditSession::GetSession();
+			edit->SetTrackingEnemy(actorType, level);
 		}
 	}
 	return true;
@@ -107,21 +120,37 @@ void ChooseEnemyRect::UpdateSprite(int frameUpdate)
 }
 
 EnemyChooser::EnemyChooser( std::map<std::string, ActorType*> &types, Panel *p)
-	:active(true), owner(p)
+	:active(true), panel(p)
 {
-	numEnemies = types.size() - 1;
-
-	chooseRects.reserve(numEnemies);
-	allQuads = new Vertex[numEnemies * 4];
-
-	int i = 0;
-	for (auto it = types.begin(); it != types.end(); ++it, ++i)
+	int enemyCounter = 0;
+	for (auto it = types.begin(); it != types.end(); ++it)
 	{
 		if ((*it).first == "player")
 		{
 			continue;
 		}
-		chooseRects.push_back(ChooseEnemyRect( this, i, (*it).second));
+		enemyCounter += (*it).second->info.numLevels;
+	}
+
+
+	numEnemies = enemyCounter;
+
+	chooseRects.reserve(numEnemies);
+	allQuads = new Vertex[numEnemies * 4];
+
+	int i = 0;
+	for (auto it = types.begin(); it != types.end(); ++it )
+	{
+		if ((*it).first == "player")
+		{
+			continue;
+		}
+		for (int level = 1; level <= (*it).second->info.numLevels; ++level)
+		{
+			chooseRects.push_back(ChooseEnemyRect(this, i, (*it).second, level));
+			++i;
+		}
+		
 	}
 }
 
@@ -156,11 +185,11 @@ void EnemyChooser::Draw(sf::RenderTarget *target)
 }
 
 //returns true if a selection has been made
-bool EnemyChooser::Update(bool mouseDown, int posx, int posy)
+bool EnemyChooser::Update()
 {
 	for (int i = 0; i < numEnemies; ++i)
 	{
-		chooseRects[i].Update(mouseDown, posx, posy);
+		chooseRects[i].Update();
 	}
 	//cout << "update: " << posx << ", " << posy << endl;
 	//if (!active)

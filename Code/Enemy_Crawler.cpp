@@ -39,14 +39,17 @@ void Crawler::SetLevel(int p_level)
 	{
 	case 1:
 		scale = 1.0;
+		name = "Crawler";
 		break;
 	case 2:
 		scale = 2.0;
 		maxHealth += 2;
+		name = "Big Crawler";
 		break;
 	case 3:
 		scale = 3.0;
 		maxHealth += 5;
+		name = "Giant Crawler";
 		break;
 	}
 }

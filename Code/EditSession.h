@@ -500,7 +500,7 @@ struct EditSession : GUIHandler, Session
 	
 	int patrolPathLengthSize;
 
-	void SetTrackingEnemy(ActorType *type);
+	void SetTrackingEnemy(ActorType *type, int level);
 	ActorParams *trackingEnemyParams;
 
 	Panel *showPanel;	

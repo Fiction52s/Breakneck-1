@@ -302,6 +302,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	int level;
 	double scale;
 	int maxHealth;
+
+	std::string name;
 };
 
 

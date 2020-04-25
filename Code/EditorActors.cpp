@@ -17,43 +17,24 @@ ActorType::ActorType(ParamsInfo &pi)
 		info.ts = sess->GetTileset(string("Editor/") + info.name + string("_editor.png"));
 	}
 
-	defaultParams = NULL;
+	//defaultParams = NULL;
 }
 
 void ActorType::CreateDefaultEnemy()
 {
-	
-	
 	if (info.pMaker == NULL)
 		return;
 	
-	defaultParams = info.pMaker(this, 0);
-
-	defaultParams->myEnemy = defaultParams->GenerateEnemy();
-	if (defaultParams->myEnemy != NULL)
+	defaultParamsVec.resize(info.numLevels);
+	for (int i = 0; i < info.numLevels; ++i)
 	{
-		defaultParams->myEnemy->facingRight = true;
-	}
-	
-
-	/*if (info.pmAir != NULL)
-	{
-		defaultParams = info.pmAir(this);
-		defaultParams->myEnemy = defaultParams->GenerateEnemy();
-		defaultParams->myEnemy->facingRight = true;
-	}
-	else if (info.pmGround != NULL)
-	{
-		defaultParams = info.pmGround(this);
-		defaultParams->myEnemy = defaultParams->GenerateEnemy();
-		
-		if (defaultParams->myEnemy != NULL)
+		defaultParamsVec[i] = info.pMaker(this, i+1);
+		defaultParamsVec[i]->myEnemy = defaultParamsVec[i]->GenerateEnemy();
+		if (defaultParamsVec[i]->myEnemy != NULL)
 		{
-			defaultParams->myEnemy->facingRight = true;
-			defaultParams->UnAnchor();
+			defaultParamsVec[i]->myEnemy->facingRight = true;
 		}
-		
-	}*/
+	}
 }
 
 ActorType::~ActorType()
