@@ -204,6 +204,7 @@ void Panel::Update( bool mouseDown, int posx, int posy )
 {
 	lastMouseDown = isMouseDown;
 	isMouseDown = mouseDown;
+	//cout << (int)isMouseDown << ", " << (int)lastMouseDown << endl;
 	
 	posx -= pos.x;
 	posy -= pos.y;
@@ -321,6 +322,12 @@ GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos
 void Panel::AddEnemyChooser(const std::string &name, EnemyChooser *chooser)
 {
 	enemyChoosers[name] = chooser;
+}
+
+bool Panel::ContainsPoint(sf::Vector2i &point)
+{
+	IntRect r(pos.x, pos.y, size.x, size.y);
+	return (r.contains(point));
 }
 
 void Panel::Draw( RenderTarget *target )

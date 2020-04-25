@@ -387,10 +387,10 @@ void ActorParams::Draw(sf::RenderTarget *target)
 
 	DrawBoundary(target);
 
-	DrawQuad(target);
+	//DrawQuad(target);
 	
-	if( myEnemy != NULL )
-		myEnemy->DebugDraw(target);
+	/*if( myEnemy != NULL )
+		myEnemy->DebugDraw(target);*/
 
 }
 

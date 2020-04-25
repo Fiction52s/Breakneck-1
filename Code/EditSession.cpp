@@ -49,14 +49,32 @@ EditSession * EditSession::currSession = NULL;
 
 void EditSession::SetTrackingEnemy(ActorType *type)
 {
-	trackingEnemyParams = type->defaultParams->Copy();
+	if (trackingEnemyParams == NULL)
+	{
+		trackingEnemyParams = type->defaultParams->Copy();
+		trackingEnemyParams->group = groups["--"];
+		//GetPolygon((0);
 
-	//GetPolygon((0);
+		//trackingEnemyParams->AnchorToGround();
+		trackingEnemyParams->myEnemy = trackingEnemyParams->GenerateEnemy();
+		grabbedActor = trackingEnemyParams;
+		selectedBrush->AddObject(grabbedActor);
 
-	//trackingEnemyParams->AnchorToGround();
-	trackingEnemyParams->myEnemy = trackingEnemyParams->GenerateEnemy();
-	grabbedActor = trackingEnemyParams;
-	selectedBrush->AddObject(grabbedActor);
+		trackingEnemyParams->myEnemy->SetActionEditLoop();
+
+		editMouseGrabPos = Vector2i(worldPos.x, worldPos.y);
+		pointGrabPos = Vector2i(worldPos.x, worldPos.y);
+		editMouseOrigPos = editMouseGrabPos;
+
+
+		editMouseDownMove = true;
+		editStartMove = false;
+		editMouseDownBox = false;
+	}
+	else
+	{
+		int x = 5;
+	}
 }
 
 void EditSession::UpdateDecorSprites()
@@ -817,6 +835,12 @@ void EditSession::Draw()
 				p->Draw(preScreenTex);
 			}
 		}
+	}
+
+	if (IsDrawMode(CREATE_ENEMY))
+	{
+		if( grabbedActor != NULL )
+			grabbedActor->Draw(preScreenTex);
 	}
 
 	if (IsDrawMode(TRANSFORM))
@@ -2005,7 +2029,7 @@ int EditSession::Run()
 		}
 	}
 
-	enemySelectPanel = new Panel( "enemyselection", 200, 200, this );
+	enemySelectPanel = new Panel( "enemyselection", 1920, 150, this );
 	allPopups.push_back(enemySelectPanel);
 
 	
@@ -3270,11 +3294,33 @@ bool EditSession::AnchorSelectedEnemies()
 		}
 	}
 
+	Action *apply = NULL;
+	if (mode == CREATE_ENEMY)
+	{
+		apply = new ApplyBrushAction(selectedBrush);
+		apply->performed = true;
+
+		grabbedActor->group->actors.push_back(grabbedActor);
+		trackingEnemyParams = NULL;
+	}
+
 	if (moveAction != NULL)
 	{
+		if (mode == CREATE_ENEMY)
+		{
+			moveAction->subActions.push_front(apply);
+		}
+
 		AddDoneAction(moveAction);
 		moveAction = NULL;
 		return true;
+	}
+	else
+	{
+		if (mode == CREATE_ENEMY)
+		{
+			AddDoneAction(apply);
+		}
 	}
 		
 
@@ -3325,6 +3371,16 @@ void EditSession::TryCompleteSelectedMove()
 		validMove = true;
 	}
 
+	if (mode == CREATE_ENEMY )
+	{
+		selectedBrush->Clear();
+
+		if (enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
+		{
+			validMove = false;
+		}
+	}
+
 	if (validMove)
 	{
 		ClearUndoneActions();
@@ -3338,6 +3394,7 @@ void EditSession::TryCompleteSelectedMove()
 
 		delete action;
 	}
+
 }
 
 void EditSession::SetupTerrainTypeSelector()
@@ -5732,11 +5789,21 @@ void EditSession::CreatePreview(Vector2i imageSize)
 //needs cleanup badly
 PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr a )
 {
+	
+
 	PositionInfo gi;
+
+	
 	
 	//PolyPtr poly = NULL;
 	gi.ground = NULL;
 	gi.railGround = NULL;
+
+	if (mode == CREATE_ENEMY && enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
+	{
+		//cout << "uipos: " << uiMousePos.x << ", " << uiMousePos.y << endl;
+		return gi;
+	}
 
 	bool contains;
 
@@ -10193,6 +10260,9 @@ void EditSession::CreateEnemyModeHandleEvent()
 				TryBoxSelect();
 			}*/
 
+			editMouseDownBox = false;
+			editMouseDownMove = false;
+			editStartMove = false;
 			//editMouseDownBox = false;
 			//editMouseDownMove = false;
 			//editStartMove = false;
@@ -11170,8 +11240,12 @@ void EditSession::CreateEnemyModeUpdate()
 	showPanel->Update(IsMousePressed( Mouse::Left ), uiMousePos.x, uiMousePos.y);
 	enemyChooser->UpdateSprites(spriteUpdateFrames);
 
-	if( grabbedActor != NULL )
+	if (grabbedActor != NULL)
+	{
+		grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
 		TrySelectedMove();
+	}
+		
 	//MoveTrackingEnemy();
 }
 

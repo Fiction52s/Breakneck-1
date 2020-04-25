@@ -154,6 +154,7 @@ struct Panel
 	Panel( const std::string &name, int width, int height, GUIHandler *handler );
 	~Panel();
 	void Draw(sf::RenderTarget *rt);
+	bool ContainsPoint(sf::Vector2i &pos);
 	void Update( bool mouseDown, int posx, int posy );
 	
 	void AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );

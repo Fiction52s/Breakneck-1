@@ -50,6 +50,7 @@ ChooseEnemyRect::ChooseEnemyRect(EnemyChooser *eChooser, int p_quadIndex, ActorT
 bool ChooseEnemyRect::Update(bool mouseDown, int posx, int posy)
 {
 	bool lastDown = chooser->owner->lastMouseDown;
+	//cout << "rect: " << (int)mouseDown << ", " << (int)lastDown << endl;
 	if (!mouseDown)
 	{
 		if (bounds.contains(Vector2i(posx, posy)))
@@ -65,12 +66,14 @@ bool ChooseEnemyRect::Update(bool mouseDown, int posx, int posy)
 	}
 	else if (mouseDown)
 	{
-		if (!lastDown)
+		if (bounds.contains(Vector2i(posx, posy)))
 		{
-			EditSession *edit = EditSession::GetSession();
-			edit->SetTrackingEnemy(actorType);
+			if (!lastDown)
+			{
+				EditSession *edit = EditSession::GetSession();
+				edit->SetTrackingEnemy(actorType);
+			}
 		}
-		
 	}
 	return true;
 }

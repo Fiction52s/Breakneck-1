@@ -69,7 +69,12 @@ void PositionInfo::AddActor(ActorPtr a)
 	{
 		if (ground != NULL)
 		{
-			ground->enemies[GetPoint()].push_back(a);
+			auto &aList = ground->enemies[GetPoint()];
+			if ( !aList.empty() && aList.back() == a)
+			{
+				assert(0); //just for debug
+			}
+			aList.push_back(a);
 			//cout << "edge enemy size: " << ground->enemies[GetPoint()].size() << endl;
 			ground->UpdateBounds();
 		}

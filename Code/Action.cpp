@@ -830,40 +830,45 @@ void MoveBrushAction::Perform()
 
 	movingBrush.Move( delta );
 
-	for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
+	if (pointMover != NULL)
 	{
-		vector<PointMoveInfo> &pVec = (*it).second;
-		for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
+
+
+		for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
 		{
-			(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).newPos);
+			vector<PointMoveInfo> &pVec = (*it).second;
+			for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
+			{
+				(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).newPos);
+			}
+
+			PolyPtr poly = (*it).first;
+			poly->SoftReset();
+			poly->Finalize();
+			poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
+
+			//for( auto eit = (*it).second)
+
+			/*for (auto pit = poly->enemies.begin();
+				pit != poly->enemies.end(); ++pit)
+			{
+				list<ActorPtr> &enemies = (*pit).second;
+				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+				{
+					(*ait)->UpdateGroundedSprite();
+					(*ait)->SetBoundingQuad();
+				}
+			}*/
 		}
 
-		PolyPtr poly = (*it).first;
-		poly->SoftReset();
-		poly->Finalize();
-		poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
-
-		//for( auto eit = (*it).second)
-
-		/*for (auto pit = poly->enemies.begin();
-			pit != poly->enemies.end(); ++pit)
+		for (auto it = pointMover->newEnemyPosInfo.begin(); it != pointMover->newEnemyPosInfo.end(); ++it)
 		{
-			list<ActorPtr> &enemies = (*pit).second;
-			for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-			{
-				(*ait)->UpdateGroundedSprite();
-				(*ait)->SetBoundingQuad();
-			}
-		}*/
-	}
-
-	for (auto it = pointMover->newEnemyPosInfo.begin(); it != pointMover->newEnemyPosInfo.end(); ++it)
-	{
-		(*it).first->posInfo = (*it).second;
-		(*it).first->UpdateGroundedSprite();
-		(*it).first->SetBoundingQuad();
-		if( (*it).first->myEnemy != NULL )
-			(*it).first->myEnemy->UpdateOnEditPlacement();
+			(*it).first->posInfo = (*it).second;
+			(*it).first->UpdateGroundedSprite();
+			(*it).first->SetBoundingQuad();
+			if ((*it).first->myEnemy != NULL)
+				(*it).first->myEnemy->UpdateOnEditPlacement();
+		}
 	}
 
 	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
@@ -893,40 +898,43 @@ void MoveBrushAction::Undo()
 	movingBrush.Move( -delta );
 
 	//for( auto it = movingPoints.myMap.begin(); it != movingPoints.myMap.end(); ++it )
-	for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
+	if (pointMover != NULL)
 	{
-		vector<PointMoveInfo> &pList = (*it).second;
-
-		for( vector<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit )
+		for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
 		{
-			(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).origPos);
+			vector<PointMoveInfo> &pList = (*it).second;
+
+			for (vector<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
+			{
+				(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).origPos);
+			}
+
+			PolyPtr poly = (*it).first;
+
+			poly->SoftReset();
+			poly->Finalize();
+			poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
+
+			/*for ( auto pit = poly->enemies.begin();
+				pit != poly->enemies.end(); ++pit)
+			{
+				list<ActorPtr> &enemies = (*pit).second;
+				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+				{
+					(*ait)->UpdateGroundedSprite();
+					(*ait)->SetBoundingQuad();
+				}
+			}*/
 		}
 
-		PolyPtr poly = (*it).first;
-
-		poly->SoftReset();
-		poly->Finalize();
-		poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
-
-		/*for ( auto pit = poly->enemies.begin();
-			pit != poly->enemies.end(); ++pit)
+		for (auto it = pointMover->oldEnemyPosInfo.begin(); it != pointMover->oldEnemyPosInfo.end(); ++it)
 		{
-			list<ActorPtr> &enemies = (*pit).second;
-			for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-			{
-				(*ait)->UpdateGroundedSprite();
-				(*ait)->SetBoundingQuad();
-			}
-		}*/
-	}
-
-	for (auto it = pointMover->oldEnemyPosInfo.begin(); it != pointMover->oldEnemyPosInfo.end(); ++it)
-	{
-		(*it).first->posInfo = (*it).second;
-		(*it).first->UpdateGroundedSprite();
-		(*it).first->SetBoundingQuad();
-		if ((*it).first->myEnemy != NULL)
-			(*it).first->myEnemy->UpdateOnEditPlacement();
+			(*it).first->posInfo = (*it).second;
+			(*it).first->UpdateGroundedSprite();
+			(*it).first->SetBoundingQuad();
+			if ((*it).first->myEnemy != NULL)
+				(*it).first->myEnemy->UpdateOnEditPlacement();
+		}
 	}
 
 	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
