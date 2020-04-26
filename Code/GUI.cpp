@@ -199,10 +199,10 @@ Panel::~Panel()
 		delete (*it).second;
 	}
 
-	for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
+	/*for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
 	{
 		delete (*it).second;
-	}
+	}*/
 }
 
 void Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy )
@@ -257,11 +257,6 @@ void Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy )
 		cout << "sending pos: " << posx << ", " << posy << endl;
 		bool temp = (*it).second->Update(mouseDownL, posx, posy);
 	}
-
-	for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
-	{
-		bool temp = (*it).second->Update();
-	}
 }
 
 void Panel::SendEvent( Button *b, const std::string & e )
@@ -282,12 +277,6 @@ void Panel::SendEvent( TextBox *tb, const std::string & e )
 void Panel::SendEvent( CheckBox *cb, const std::string & e )
 {
 	handler->CheckBoxCallback( cb, e );
-}
-
-void Panel::SendEvent(EnemyChooser *chooser,
-	const std::string &e)
-{
-	handler->EnemyChooserCallback(chooser, e);
 }
 
 void Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text )
@@ -328,11 +317,6 @@ GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos
 	GridSelector *gs = new GridSelector( pos, sizex, sizey, tilesizex, tilesizey, displaySelected, displayMouseOver, this );
 	gridSelectors[name] = gs;
 	return gs;
-}
-
-void Panel::AddEnemyChooser(const std::string &name, EnemyChooser *chooser)
-{
-	enemyChoosers[name] = chooser;
 }
 
 bool Panel::ContainsPoint(sf::Vector2i &point)
@@ -377,11 +361,6 @@ void Panel::Draw( RenderTarget *target )
 	for( auto it = gridSelectors.begin(); it != gridSelectors.end(); ++it )
 	{
 		(*it).second->Draw( target );
-	}
-
-	for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
-	{
-		(*it).second->Draw(target);
 	}
 }
 

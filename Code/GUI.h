@@ -40,58 +40,152 @@ struct GridSelector
 struct ActorType;
 struct EnemyChooser;
 struct Enemy;
-struct ChooseEnemyRect
+struct EnemyChooseRect;
+struct ImageChooseRect;
+struct ChooseRect
 {
-	ChooseEnemyRect( EnemyChooser *eChooser, int quadIndex,
-		ActorType * type, int level );
-	sf::Vector2f pos;
-	ActorType *actorType;
-	Enemy *enemy;
+	enum ChooseRectType
+	{
+		IMAGE,
+		ENEMY,
+	};
+
+	enum ChooseRectEventType : int
+	{
+		E_CLICKED,
+		E_FOCUSED,
+		E_UNFOCUSED,
+		E_RELEASED
+	};
+
+	ChooseRectType chooseRectType;
+	EnemyChooseRect *GetAsEnemyChooseRect();
+	ImageChooseRect *GetAsImageChooseRect();
+
+	ChooseRect( ChooseRectType crType, 
+		sf::Vertex *v, Panel *p,
+	float size, sf::Vector2f &pos );
+	void Init();
+	void SetPosition(sf::Vector2f &pos);
+	virtual void SetSize(float s);
+	void UpdateRectDimensions();
 	float boxSize;
+	sf::Vector2f pos;
 	bool Update();
-	void UpdateSprite(int frameUpdate);
-	void Draw(sf::RenderTarget *target);
+	virtual void UpdateSprite(int frameUpdate) {}
+	virtual void Draw(sf::RenderTarget *target) {}
 	sf::IntRect bounds;
-	sf::Vertex * GetQuad();
-	sf::View view;
 	int quadIndex;
+	sf::Vertex *quad;
 	bool active;
+	bool show;
+	void SetShown(bool s);
+	void SetActive(bool a);
+	Panel *panel;
 	bool focused;
-	EnemyChooser *chooser;
+
 	sf::Color mouseOverColor;
 	sf::Color idleColor;
+};
+
+struct EnemyChooseRect : ChooseRect
+{
+	EnemyChooseRect( sf::Vertex *v,
+		Panel *p, sf::Vector2f &position, 
+		ActorType * type, 
+		int level );
+	void UpdateSprite(int frameUpdate);
+	void Draw(sf::RenderTarget *target);
+	void SetSize(float s);
+
+	ActorType *actorType;
+	Enemy *enemy;
+	sf::View view;
 	int level;
 };
 
-
-
-struct EnemyChooser
+struct Tileset;
+struct ImageChooseRect : ChooseRect
 {
-	EnemyChooser(std::map<std::string, ActorType*> &types, Panel *p );
-	~EnemyChooser();
-	void Draw(sf::RenderTarget *target);
-	void UpdateSprites(int frameUpdate);
-	bool Update();
-	int tileSizeX;
-	int tileSizeY;
-	ActorType *actorType;
-	int numEnemies;
-	std::vector<ChooseEnemyRect> chooseRects;
-	sf::Vertex *allQuads;
-	
-	bool active;
-	int focusX;
-	int focusY;
-	sf::Vector2i pos;
-	Panel *panel;
-	int selectedX;
-	int selectedY;
-	int mouseOverIndex;
+	ImageChooseRect(sf::Vertex *v,
+		Panel *p, sf::Vector2f &position,
+		Tileset *ts, int tileIndex );
 
-	bool displaySelected;
-	bool displayMouseOver;
-	//GUIHandler *handler;
+	void UpdateSprite(int frameUpdate);
+	void Draw(sf::RenderTarget *target);
+	void SetSize(float s);
+
+	sf::Sprite spr;
+	Tileset *ts;
+	sf::View view;
+	int tileIndex;
 };
+
+struct EditSession;
+struct CreateEnemyModeUI
+{
+	CreateEnemyModeUI();
+	~CreateEnemyModeUI();
+	std::vector<ChooseRect> myRects;
+	std::vector<EnemyChooseRect> allEnemyRects;
+	sf::Vertex *allEnemyQuads;
+	std::vector<EnemyChooseRect> hotbarEnemies;
+	sf::Vertex *hotbarQuads;
+	int activeHotbarSize;
+	std::vector<std::vector<EnemyChooseRect*>> 
+		libraryEnemiesVec;
+	void SetActiveLibraryWorld(int w);
+	int activeLibraryWorld;
+	std::vector<ImageChooseRect> worldSelectRects;
+	sf::Vertex *worldSelectQuads;
+	void UpdateSprites(int sprUpdateFrames);
+	void Update(bool mouseDownL,
+		bool mouseDownR,
+		sf::Vector2i &mousePos);
+	void Draw(sf::RenderTarget *target);
+	Panel *topbarPanel;
+	Panel *libraryPanel;
+	EditSession *edit;
+};
+
+//struct ChooseRectGroup
+//{
+//	ChooseRectGroup(int numRects);
+//	void AddRect(ChooseRect *cr);
+//	std::vector<ChooseRect*> rects;
+//	sf::Vertex *allQuads;
+//	sf::Vector2f pos;
+//	void Update();
+//};
+
+
+//struct EnemyChooser
+//{
+//	EnemyChooser(std::map<std::string, ActorType*> &types, Panel *p );
+//	~EnemyChooser();
+//	void Draw(sf::RenderTarget *target);
+//	void UpdateSprites(int frameUpdate);
+//	bool Update();
+//	int tileSizeX;
+//	int tileSizeY;
+//	ActorType *actorType;
+//	int numEnemies;
+//	std::vector<ChooseEnemyRect> chooseRects;
+//	sf::Vertex *allQuads;
+//	
+//	bool active;
+//	int focusX;
+//	int focusY;
+//	sf::Vector2i pos;
+//	Panel *panel;
+//	int selectedX;
+//	int selectedY;
+//	int mouseOverIndex;
+//
+//	bool displaySelected;
+//	bool displayMouseOver;
+//	//GUIHandler *handler;
+//};
 
 
 
@@ -163,8 +257,6 @@ struct Panel
 	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	void AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	void AddCheckBox( const std::string &name, sf::Vector2i pos );
-	void AddEnemyChooser(const std::string &name, 
-		EnemyChooser *chooser);
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
 		int sizex, int sizey, 
 		int tilesizex, int tilesizey,
@@ -177,8 +269,6 @@ struct Panel
 	void SendEvent( GridSelector *gs, const std::string & e );
 	void SendEvent( TextBox *tb, const std::string & e );
 	void SendEvent( CheckBox *cb, const std::string & e );
-	void SendEvent(EnemyChooser *chooser,
-		const std::string &e);
 	sf::Font arial;
 	std::string name;
 	//TextBox t;
@@ -189,7 +279,6 @@ struct Panel
 	std::map<std::string, sf::Text*> labels;
 	std::map<std::string, CheckBox*> checkBoxes;
 	std::map<std::string, GridSelector*> gridSelectors;
-	std::map<std::string, EnemyChooser*> enemyChoosers;
 
 	sf::Vector2i pos;
 	sf::Vector2f size;
@@ -218,12 +307,12 @@ private:
 
 struct GUIHandler
 {
-	virtual void EnemyChooserCallback(EnemyChooser *chooser,
-		const std::string & e) {}
 	virtual void ButtonCallback( Button *b, const std::string & e ) = 0;
 	virtual void TextBoxCallback( TextBox *tb, const std::string & e ) = 0;
 	virtual void GridSelectorCallback( GridSelector *gs, const std::string & e ) = 0;
 	virtual void CheckBoxCallback( CheckBox *cb, const std::string & e ) = 0;
 };
+
+
 
 #endif

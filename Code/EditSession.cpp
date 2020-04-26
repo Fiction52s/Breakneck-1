@@ -63,6 +63,10 @@ void EditSession::SetTrackingEnemy(ActorType *type, int level)
 		SelectObject(grabbedActor);
 
 		trackingEnemyParams->myEnemy->SetActionEditLoop();
+		trackingEnemyParams->MoveTo(Vector2i(worldPos));
+		//extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
+		grabbedActor->myEnemy->UpdateFromEditParams(0);
+		
 
 		editMouseGrabPos = Vector2i(worldPos.x, worldPos.y);
 		pointGrabPos = Vector2i(worldPos.x, worldPos.y);
@@ -841,6 +845,8 @@ void EditSession::Draw()
 
 	if (IsDrawMode(CREATE_ENEMY))
 	{
+		createEnemyModeUI->Draw(preScreenTex);
+
 		if( grabbedActor != NULL )
 			grabbedActor->Draw(preScreenTex);
 	}
@@ -2136,8 +2142,10 @@ int EditSession::Run()
 		(*it).second->CreateDefaultEnemy();
 	}
 
-	enemyChooser = new EnemyChooser(types, enemySelectPanel);
-	enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
+	createEnemyModeUI = new CreateEnemyModeUI();
+
+	//enemyChooser = new EnemyChooser(types, enemySelectPanel);
+	//enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
 
 	if (!initialViewSet)
 	{
@@ -2554,12 +2562,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			SetMode(SET_DIRECTION);
 		}
 	}
-}
-
-void EditSession::EnemyChooserCallback(EnemyChooser *chooser,
-	const std::string &e)
-{
-	cout << "blah: " << e << endl;
 }
 
 void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
@@ -9589,7 +9591,7 @@ void EditSession::HandleEvents()
 				{
 					panning = true;
 					panAnchor = worldPos;
-					cout << "setting panAnchor: " << panAnchor.x << " , " << panAnchor.y << endl;
+					//cout << "setting panAnchor: " << panAnchor.x << " , " << panAnchor.y << endl;
 				}
 				else if (ev.mouseButton.button == Mouse::Button::Right)
 				{
@@ -10484,7 +10486,7 @@ void EditSession::SelectModeHandleEvent()
 			showPoints = false;
 			SetMode(CREATE_ENEMY);
 			//trackingEnemy = NULL;
-			showPanel = enemySelectPanel;
+			//showPanel = enemySelectPanel;
 		}
 		else if (menuSelection == "upperright")
 		{
@@ -11177,6 +11179,36 @@ void EditSession::EditModeUpdate()
 	ModifyGrass();
 }
 
+void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
+{
+	
+	if (eventType == ChooseRect::E_CLICKED)
+	{
+		EnemyChooseRect *ceRect = cr->GetAsEnemyChooseRect();
+		if (ceRect != NULL)
+		{
+			SetTrackingEnemy(ceRect->actorType, ceRect->level);
+		}
+	}
+	else if (eventType == ChooseRect::E_FOCUSED)
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			createEnemyModeUI->SetActiveLibraryWorld(icRect->tileIndex);
+		}
+	}
+	/*else if (eventType == ChooseRect::E_UNFOCUSED)
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			createEnemyModeUI->SetActiveLibraryWorld(-1);
+		}
+	}*/
+	
+}
+
 void EditSession::PasteModeUpdate()
 {
 	Vector2i pos(worldPos.x, worldPos.y);
@@ -11239,8 +11271,9 @@ void EditSession::PasteModeUpdate()
 
 void EditSession::CreateEnemyModeUpdate()
 {
-	showPanel->Update(IsMousePressed( Mouse::Left ), IsMousePressed( Mouse::Right ), uiMousePos.x, uiMousePos.y);
-	enemyChooser->UpdateSprites(spriteUpdateFrames);
+	createEnemyModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
+	//showPanel->Update(IsMousePressed( Mouse::Left ), IsMousePressed( Mouse::Right ), uiMousePos.x, uiMousePos.y);
+	createEnemyModeUI->UpdateSprites(spriteUpdateFrames);
 
 	if (grabbedActor != NULL)
 	{

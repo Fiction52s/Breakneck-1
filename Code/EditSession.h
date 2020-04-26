@@ -97,6 +97,10 @@ struct EditSession : GUIHandler, Session
 		ITOOL_SCALE
 	};
 
+
+	CreateEnemyModeUI *createEnemyModeUI;
+	//EnemyChooser *enemyChooser;
+
 	V2d oldWorldPosTest;
 
 	int spriteUpdateFrames;
@@ -269,7 +273,7 @@ struct EditSession : GUIHandler, Session
 	void AddW5Enemies();
 	void AddW6Enemies();*/
 	
-	EnemyChooser *enemyChooser;
+	
 
 	std::list<Enemy*> allCurrEnemies;
 	void EndTestMode();
@@ -318,8 +322,6 @@ struct EditSession : GUIHandler, Session
 	
 	void RegularOKButton();
 	void RegularCreatePathButton();
-	void EnemyChooserCallback(EnemyChooser *chooser,
-		const std::string &e);
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
@@ -502,6 +504,8 @@ struct EditSession : GUIHandler, Session
 
 	void SetTrackingEnemy(ActorType *type, int level);
 	ActorParams *trackingEnemyParams;
+
+	void ChooseRectEvent(ChooseRect *cr, int eventType );
 
 	Panel *showPanel;	
 
