@@ -359,6 +359,16 @@ void SetRectCenter(sf::Vertex *v, float width, float height,
 	v[3].position = origin + Vector2f(-width / 2, height / 2);
 }
 
+
+void SetRectTopLeft(sf::Vertex *v, float width, float height,
+	sf::Vector2f &origin)
+{
+	v[0].position = origin;
+	v[1].position = origin + Vector2f(width , 0);
+	v[2].position = origin + Vector2f(width, height);
+	v[3].position = origin + Vector2f(0, height);
+}
+
 void TransformRect(sf::Vertex *v, sf::Transform &tr)
 {
 	for (int i = 0; i < 4; ++i)

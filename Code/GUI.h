@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <list>
+#include "Movement.h"
 
 struct Panel;
 struct GUIHandler;
@@ -42,6 +43,52 @@ struct EnemyChooser;
 struct Enemy;
 struct EnemyChooseRect;
 struct ImageChooseRect;
+
+struct UIMouseUser
+{
+	UIMouseUser(sf::Vector2i &pos)
+		:position(pos),
+		isMouseDownLeft(false),
+		lastMouseDownLeft(false),
+		isMouseDownRight(false),
+		lastMouseDownRight(false)
+	{
+
+	}
+	bool IsMouseDownLeft();
+	bool IsMouseDownRight();
+	bool IsMouseLeftClicked();
+	bool IsMouseLeftReleased();
+	bool IsMouseRightClicked();
+	bool IsMouseRightReleased();
+	const sf::Vector2i & GetMousePos();
+	void Update(bool mouseDownL,
+		bool mouseDownR,
+		sf::Vector2i &mousePos);
+	sf::Vector2i position;
+	sf::Vector2f GetFloatPos()
+	{
+		return sf::Vector2f(position);
+	}
+private:
+	sf::Vector2i mousePos;
+	bool isMouseDownLeft;
+	bool lastMouseDownLeft;
+
+	bool isMouseDownRight;
+	bool lastMouseDownRight;
+
+};
+
+struct ChooseRectContainer : UIMouseUser
+{
+	ChooseRectContainer(sf::Vector2i &pos,
+		sf::Vector2f &size);
+	void Draw(sf::RenderTarget *target);
+	sf::Vertex quad[4];
+	sf::Vector2f size;
+};
+
 struct ChooseRect
 {
 	enum ChooseRectType
@@ -63,9 +110,10 @@ struct ChooseRect
 	ImageChooseRect *GetAsImageChooseRect();
 
 	ChooseRect( ChooseRectType crType, 
-		sf::Vertex *v, Panel *p,
+		sf::Vertex *v, UIMouseUser *mouseUser,
 	float size, sf::Vector2f &pos );
 	void Init();
+	sf::Vector2f GetGlobalPos();
 	void SetPosition(sf::Vector2f &pos);
 	virtual void SetSize(float s);
 	void UpdateRectDimensions();
@@ -81,7 +129,7 @@ struct ChooseRect
 	bool show;
 	void SetShown(bool s);
 	void SetActive(bool a);
-	Panel *panel;
+	UIMouseUser *mouseUser;
 	bool focused;
 
 	sf::Color mouseOverColor;
@@ -91,7 +139,7 @@ struct ChooseRect
 struct EnemyChooseRect : ChooseRect
 {
 	EnemyChooseRect( sf::Vertex *v,
-		Panel *p, sf::Vector2f &position, 
+		UIMouseUser *mouseUser, sf::Vector2f &position,
 		ActorType * type, 
 		int level );
 	void UpdateSprite(int frameUpdate);
@@ -108,7 +156,7 @@ struct Tileset;
 struct ImageChooseRect : ChooseRect
 {
 	ImageChooseRect(sf::Vertex *v,
-		Panel *p, sf::Vector2f &position,
+		UIMouseUser *mouseUser, sf::Vector2f &position,
 		Tileset *ts, int tileIndex );
 
 	void UpdateSprite(int frameUpdate);
@@ -121,13 +169,11 @@ struct ImageChooseRect : ChooseRect
 	int tileIndex;
 };
 
-//struct ChooseRectContainer
-//{
-//	ChooseRectContainer( sf::Vector2f &position)
-//	sf::Vertex quad[4];
-//	sf::Vector2f position;
-//	sf::Vector2f size;
-//};
+
+
+
+
+
 
 struct EditSession;
 struct CreateEnemyModeUI
@@ -151,8 +197,10 @@ struct CreateEnemyModeUI
 		bool mouseDownR,
 		sf::Vector2i &mousePos);
 	void Draw(sf::RenderTarget *target);
-	Panel *topbarPanel;
-	Panel *libraryPanel;
+	ChooseRectContainer *topbarCont;
+	ChooseRectContainer *libCont;
+	//Panel *topbarPanel;
+	//Panel *libraryPanel;
 	EditSession *edit;
 };
 

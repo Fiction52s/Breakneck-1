@@ -212,7 +212,6 @@ void Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy )
 
 	lastMouseDownRight = isMouseDownRight;
 	isMouseDownRight = mouseDownR;
-	//cout << (int)isMouseDown << ", " << (int)lastMouseDown << endl;
 	
 	posx -= pos.x;
 	posy -= pos.y;
