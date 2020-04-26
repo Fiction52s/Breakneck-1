@@ -484,6 +484,7 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	createEnemyModeUI = NULL;
 	enemyEdgePolygon = NULL;
 	moveAction = NULL;
 	AllocatePolyShaders(TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD);
@@ -1090,6 +1091,38 @@ void EditSession::ProcessSpecialTerrain(PolyPtr poly)
 void EditSession::ProcessActor( ActorPtr a)
 {
 	mapStartBrush->AddObject(a);
+	AddRecentEnemy(a);
+}
+
+void EditSession::AddRecentEnemy(ActorPtr a)
+{
+	bool found = false;
+
+	for (auto it = recentEnemies.begin(); it != recentEnemies.end(); ++it)
+	{
+		if ((*it).first == a->type && (*it).second == a->GetLevel())
+		{
+			found = true;
+			recentEnemies.erase(it);
+			break;
+		}
+	}
+
+	if (!found)
+	{
+		if (!recentEnemies.empty())
+		{
+			recentEnemies.pop_front();
+		}
+	}
+
+	recentEnemies.push_back(make_pair(a->type, a->GetLevel()));
+
+	if (createEnemyModeUI != NULL )
+	{
+		createEnemyModeUI->UpdateHotbarTypes();
+	}
+	
 }
 
 void EditSession::ProcessGate(int gType,
@@ -2135,6 +2168,14 @@ int EditSession::Run()
 
 	preScreenTex->setView( view );
 
+	//recentEnemies.reserve(MAX_RECENT_ENEMIES);
+	/*for (int i = 0; i < MAX_RECENT_ENEMIES; ++i)
+	{
+		recentEnemies.push_back(make_pair((ActorType*)NULL, 0));
+	}*/
+
+
+
 	ReadFile();
 
 	for (auto it = types.begin(); it != types.end(); ++it)
@@ -2143,7 +2184,7 @@ int EditSession::Run()
 	}
 
 	createEnemyModeUI = new CreateEnemyModeUI();
-
+	
 	//enemyChooser = new EnemyChooser(types, enemySelectPanel);
 	//enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
 
@@ -3379,10 +3420,12 @@ void EditSession::TryCompleteSelectedMove()
 	{
 		//ClearSelectedBrush();
 
-		if (enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
+		/*if (enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
 		{
 			validMove = false;
-		}
+		}*/
+
+		AddRecentEnemy(grabbedActor);
 	}
 
 	if (validMove)

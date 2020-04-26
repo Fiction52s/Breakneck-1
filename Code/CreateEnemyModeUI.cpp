@@ -44,10 +44,6 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	topbarCont = new ChooseRectContainer(Vector2i(extraHotbarSpacing, 20), Vector2f(totalHotbarSize, 120));
 
-	//topbarPanel = new Panel("topbar", 1920, 150, edit);
-	//libraryPanel = new Panel("library", 900, 500, edit);
-	//libraryPanel->pos = Vector2i(300, 300);
-
 	int enemyCounter = 0;
 	for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
 	{
@@ -92,18 +88,18 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	
 
-	activeHotbarSize = allEnemyRects.size();
-	if (activeHotbarSize > totalHotbarCount)
-	{
-		activeHotbarSize = totalHotbarCount;
-	}
+	//activeHotbarSize = //allEnemyRects.size();
+	//if (activeHotbarSize > totalHotbarCount)
+	//{
+	//	activeHotbarSize = totalHotbarCount;
+	//}
 
-	for (int i = 0; i < totalHotbarCount && i < activeHotbarSize; ++i)
+	for (int i = 0; i < totalHotbarCount; ++i)
 	{
 		hotbarEnemies.push_back(EnemyChooseRect( hotbarQuads + i * 4, topbarCont,
 			Vector2f( 60 + i * ( hotbarRectSize + hotbarSpacing ), 60),
-			allEnemyRects[i].actorType, allEnemyRects[i].level ));
-		hotbarEnemies[i].SetShown(true);
+			NULL, 0 ));
+		hotbarEnemies[i].SetShown(false);
 		hotbarEnemies[i].Init();
 	}
 
@@ -159,6 +155,9 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	}
 
 	activeLibraryWorld = -1;
+	show = false;
+
+	UpdateHotbarTypes();
 }
 
 CreateEnemyModeUI::~CreateEnemyModeUI()
@@ -171,6 +170,26 @@ CreateEnemyModeUI::~CreateEnemyModeUI()
 	delete [] allEnemyQuads;
 	delete[] worldSelectQuads;
 	delete[] hotbarQuads;
+}
+
+void CreateEnemyModeUI::UpdateHotbarTypes()
+{
+	int i = 0;
+	for (auto it = edit->recentEnemies.begin(); it != edit->recentEnemies.end(); ++it)
+	{
+		hotbarEnemies[i].SetType((*it).first, (*it).second);
+		++i;
+	}
+	activeHotbarSize = i;
+	for (; i < EditSession::MAX_RECENT_ENEMIES; ++i)
+	{
+		hotbarEnemies[i].SetType(NULL, 0);
+	}
+}
+
+void CreateEnemyModeUI::SetShown(bool s)
+{
+	show = s;
 }
 
 void CreateEnemyModeUI::SetActiveLibraryWorld(int w)
@@ -200,14 +219,13 @@ void CreateEnemyModeUI::SetActiveLibraryWorld(int w)
 
 void CreateEnemyModeUI::UpdateSprites(int sprUpdateFrames)
 {
-	for (int i = 0; i < hotbarEnemies.size(); ++i)
+	for (int i = 0; i < activeHotbarSize; ++i)
 	{
-		if (hotbarEnemies[i].actorType->info.world != activeLibraryWorld)
+		if (activeLibraryWorld == -1)
 		{
 			hotbarEnemies[i].UpdateSprite(sprUpdateFrames);
 		}
 	}
-	
 
 	if (activeLibraryWorld >= 0)
 	{
@@ -226,8 +244,6 @@ void CreateEnemyModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &m
 {
 	topbarCont->Update(mouseDownL, mouseDownR, mPos);
 	libCont->Update(mouseDownL, mouseDownR, mPos);
-	//topbarPanel->Update(mouseDownL, mouseDownR, mousePos.x, mousePos.y);
-	//libraryPanel->Update(mouseDownL, mouseDownR, mousePos.x, mousePos.y);
 
 	for (int i = 0; i < hotbarEnemies.size(); ++i)
 	{
@@ -425,44 +441,70 @@ ImageChooseRect *ChooseRect::GetAsImageChooseRect()
 }
 
 EnemyChooseRect::EnemyChooseRect(sf::Vertex *v, UIMouseUser *mUser, Vector2f &p_pos, ActorType * p_type,int p_level)
-	:ChooseRect( ChooseRectType::ENEMY, v, mUser, 100, p_pos), actorType( p_type ), level( p_level )
+	:ChooseRect( ChooseRectType::ENEMY, v, mUser, 100, p_pos), level( p_level )
 {
-	switch (level)
+	actorType = NULL;
+	if (p_type != NULL)
 	{
-	case 1:
-		idleColor = Color::Blue;
-		break;
-	case 2:
-		idleColor = Color::Cyan;
-		break;
-	case 3:
-		idleColor = Color::Magenta;
-		break;
-	case 4:
-		idleColor = Color::Red;
-		break;
+		SetType(p_type, level);
 	}
-	idleColor.a = 100;
+}
 
-	actorType->defaultParamsVec[level - 1]->MoveTo(Vector2i(0, 0));
-	enemy = actorType->defaultParamsVec[level - 1]->myEnemy;
+void EnemyChooseRect::SetType(ActorType *type, int lev)
+{
+	if (type == NULL)
+	{
+		SetShown(false);
+		actorType = type;
+		level = lev;
+		return;
+	}
 
-	enemy->SetActionEditLoop();
-	enemy->UpdateFromEditParams(0);	
+	if (!(type == actorType && lev == level))
+	{
+		SetShown(true);
+		actorType = type;
+		level = lev;
+		actorType->defaultParamsVec[level - 1]->MoveTo(Vector2i(0, 0));
+		enemy = actorType->defaultParamsVec[level - 1]->myEnemy;
+		enemy->SetActionEditLoop();
+		enemy->UpdateFromEditParams(0);
+		SetSize(boxSize);
+
+		switch (level)
+		{
+		case 1:
+			idleColor = Color::Blue;
+			break;
+		case 2:
+			idleColor = Color::Cyan;
+			break;
+		case 3:
+			idleColor = Color::Magenta;
+			break;
+		case 4:
+			idleColor = Color::Red;
+			break;
+		
+		}
+		idleColor.a = 100;
+	}
 }
 
 void EnemyChooseRect::SetSize(float s)
 {
 	ChooseRect::SetSize(s);
+	if (actorType != NULL)
+	{
+		Vector2f truePos = GetGlobalPos();
 
-	Vector2f truePos = GetGlobalPos();
-
-	float test;
-	FloatRect aabb = enemy->GetAABB();
-	float max = std::max(aabb.height, aabb.width);
-	test = max / boxSize;
-	view.setCenter(Vector2f(960 * test - truePos.x * test, 540 * test - truePos.y * test));// + Vector2f( 64,0 ));//-pos / 5);//Vector2f(0, 0));
-	view.setSize(Vector2f(1920 * test, 1080 * test));
+		float test;
+		FloatRect aabb = enemy->GetAABB();
+		float max = std::max(aabb.height, aabb.width);
+		test = max / boxSize;
+		view.setCenter(Vector2f(960 * test - truePos.x * test, 540 * test - truePos.y * test));// + Vector2f( 64,0 ));//-pos / 5);//Vector2f(0, 0));
+		view.setSize(Vector2f(1920 * test, 1080 * test));
+	}
 }
 
 void EnemyChooseRect::Draw(RenderTarget *target)
@@ -480,14 +522,17 @@ void EnemyChooseRect::Draw(RenderTarget *target)
 
 void EnemyChooseRect::UpdateSprite(int frameUpdate)
 {
-	if (focused)
+	if (actorType != NULL)
 	{
-		enemy->UpdateFromEditParams(frameUpdate);
-	}
-	else
-	{
-		enemy->SetActionEditLoop();
-		enemy->UpdateFromEditParams(0);
+		if (focused)
+		{
+			enemy->UpdateFromEditParams(frameUpdate);
+		}
+		else
+		{
+			enemy->SetActionEditLoop();
+			enemy->UpdateFromEditParams(0);
+		}
 	}
 }
 

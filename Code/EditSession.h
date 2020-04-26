@@ -79,6 +79,10 @@ struct EditSession : GUIHandler, Session
 		TRANSFORM,
 	};
 
+	const static int MAX_RECENT_ENEMIES = 12;
+	std::list<std::pair<ActorType*, int>> recentEnemies;
+	void AddRecentEnemy(ActorPtr a);
+
 	bool IsDrawMode(Emode em);
 	Emode mode;
 

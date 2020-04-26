@@ -145,6 +145,7 @@ struct EnemyChooseRect : ChooseRect
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
 	void SetSize(float s);
+	void SetType(ActorType *type, int lev);
 
 	ActorType *actorType;
 	Enemy *enemy;
@@ -197,53 +198,15 @@ struct CreateEnemyModeUI
 		bool mouseDownR,
 		sf::Vector2i &mousePos);
 	void Draw(sf::RenderTarget *target);
+	void UpdateHotbarTypes();
 	ChooseRectContainer *topbarCont;
 	ChooseRectContainer *libCont;
 	//Panel *topbarPanel;
 	//Panel *libraryPanel;
 	EditSession *edit;
+	void SetShown(bool s);
+	bool show;
 };
-
-//struct ChooseRectGroup
-//{
-//	ChooseRectGroup(int numRects);
-//	void AddRect(ChooseRect *cr);
-//	std::vector<ChooseRect*> rects;
-//	sf::Vertex *allQuads;
-//	sf::Vector2f pos;
-//	void Update();
-//};
-
-
-//struct EnemyChooser
-//{
-//	EnemyChooser(std::map<std::string, ActorType*> &types, Panel *p );
-//	~EnemyChooser();
-//	void Draw(sf::RenderTarget *target);
-//	void UpdateSprites(int frameUpdate);
-//	bool Update();
-//	int tileSizeX;
-//	int tileSizeY;
-//	ActorType *actorType;
-//	int numEnemies;
-//	std::vector<ChooseEnemyRect> chooseRects;
-//	sf::Vertex *allQuads;
-//	
-//	bool active;
-//	int focusX;
-//	int focusY;
-//	sf::Vector2i pos;
-//	Panel *panel;
-//	int selectedX;
-//	int selectedY;
-//	int mouseOverIndex;
-//
-//	bool displaySelected;
-//	bool displayMouseOver;
-//	//GUIHandler *handler;
-//};
-
-
 
 struct TextBox
 {
