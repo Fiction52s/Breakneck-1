@@ -582,10 +582,6 @@ struct EditSession : GUIHandler, Session
 	float oldShaderZoom;
 	sf::Vector2f oldShaderBotLeft;
 
-	void TryPlaceTrackingEnemy();
-	void AnchorTrackingEnemyOnTerrain();
-	void MoveTrackingEnemy();
-
 	void TryAddToPatrolPath();
 
 	void UpdatePanning();
@@ -690,10 +686,8 @@ struct EditSession : GUIHandler, Session
 	void RemovePointFromPolygonInProgress();
 	void RemovePointFromRailInProgress();
 
-	bool AnchorSelectedAerialEnemy();
 	bool AnchorSelectedEnemies();
 
-	void MoveSelectedActor( sf::Vector2i &delta );
 	void MoveSelectedActors(sf::Vector2i &delta);
 
 	void FixPathSlivers(ClipperLib::Path &p);

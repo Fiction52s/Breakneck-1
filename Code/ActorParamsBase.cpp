@@ -27,6 +27,18 @@ Enemy *ActorParams::GenerateEnemy()
 	}
 }
 
+sf::Vector2i ActorParams::GetSize()
+{
+	if (myEnemy != NULL)
+	{
+		return Vector2i(V2d(type->info.size) * myEnemy->scale);
+	}
+	else
+	{
+		return type->info.size;
+	}
+}
+
 Edge *ActorParams::GetGroundEdge()
 {
 	return posInfo.GetEdge();
@@ -407,7 +419,7 @@ void ActorParams::Draw(sf::RenderTarget *target)
 
 	DrawBoundary(target);
 
-	//DrawQuad(target);
+	DrawQuad(target);
 	
 	/*if( myEnemy != NULL )
 		myEnemy->DebugDraw(target);*/
@@ -625,8 +637,9 @@ std::vector<sf::Vector2i> & ActorParams::GetLocalPath()
 void ActorParams::SetBoundingQuad()
 {
 	//float note
-	int width = type->info.size.x;
-	int height = type->info.size.y;
+	Vector2i size = GetSize();
+	int width = size.x;
+	int height = size.y;
 
 	if (type->CanBeGrounded() && posInfo.ground != NULL )
 	{
@@ -678,16 +691,6 @@ void ActorParams::UpdateGroundedSprite()
 	Edge *edge = posInfo.GetEdge();
 	//this shouldn't remain here. i need more detailed checking.
 	double groundLength = edge->GetLength();
-	int width = type->info.size.x;
-
-	/*if (posInfo.groundQuantity + width / 2 > groundLength)
-	{
-		posInfo.groundQuantity = groundLength - width / 2;
-	}
-	else if (posInfo.groundQuantity - width / 2 < 0)
-	{
-		posInfo.groundQuantity = width / 2;
-	}*/
 
 	V2d newPoint = posInfo.GetPosition();
 	image.setPosition(newPoint.x, newPoint.y);

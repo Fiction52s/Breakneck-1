@@ -292,7 +292,8 @@ LineIntersection lineIntersection( sf::Vector2<double> a, Vector2<double> b, Vec
 
 	double x= 0,y = 0;
 	bool parallel = false;
-	if( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) == 0 )
+	//if( abs((ax-bx)*(cy - dy) - (ay - by) * (cx - dx )) < .0000001 ) //equals 0
+	if ((ax - bx)*(cy - dy) - (ay - by) * (cx - dx) == 0) //equals 0
 	{
 		parallel = true;
 	}

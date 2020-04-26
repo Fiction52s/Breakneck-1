@@ -24,6 +24,7 @@ struct ActorParams : ISelectable
 	Edge *GetGroundEdge();
 	int GetWorld();
 	int GetLevel();
+	sf::Vector2i GetSize();
 
 	Enemy *GenerateEnemy();
 	Enemy *myEnemy;

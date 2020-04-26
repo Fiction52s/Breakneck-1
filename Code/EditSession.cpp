@@ -3373,40 +3373,6 @@ bool EditSession::AnchorSelectedEnemies()
 	return false;
 }
 
-bool EditSession::AnchorSelectedAerialEnemy()
-{
-	if (IsSingleActorSelected())
-	{
-		ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
-		if (actor->posInfo.ground != NULL) //might need a thing here for rails too
-		{
-			Action *gAction = new GroundAction(actor);
-			gAction->performed = true;
-
-			if (moveAction != NULL)
-			{
-				moveAction->subActions.push_back(gAction);
-				AddDoneAction(moveAction);
-			}
-			else
-			{
-				Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
-				Action *action = new MoveBrushAction(selectedBrush, delta, false, NULL, RailPointMap());
-
-				action->Perform();
-
-				moveAction = new CompoundAction;
-				moveAction->subActions.push_back(action);
-				moveAction->subActions.push_back(gAction);
-				AddDoneAction(moveAction);
-			}
-
-			return true;
-		}
-	}
-	return false;
-}
-
 void EditSession::TryCompleteSelectedMove()
 {
 	bool validMove = false;
@@ -5895,11 +5861,14 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 
 	Edge *edge;
 
-	double testRadius = a->type->info.size.y * ( 2.0 / 3.0 );//actorAABB.width / 3;//a->type->info.size.y /2;//actorAABB.height;//200
+	Vector2i actorSize = a->GetSize();
+
+
+	double testRadius = actorSize.y * ( 2.0 / 3.0 );//actorAABB.width / 3;//a->type->info.size.y /2;//actorAABB.height;//200
 	//testPoint = a->GetIntPos();
 
-	double minQuant = a->type->info.size.x / 2;
-	double extra = a->type->info.size.x;
+	double minQuant = actorSize.x / 2;
+	double extra = actorSize.x;
 
 	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
@@ -5989,7 +5958,7 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 			if( storedPoly != NULL )
 				gi.SetGround(storedPoly, storedEdge->index, storedQuantity);
 
-			break;
+			//break;
 		}
 
 		if( testPoint.x >= (*it)->left - testRadius 
@@ -8246,72 +8215,12 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 			continue;
 		
 		if (canApply)
-		{
+		{		
 			actor->SetAABBOutlineColor(Color::Green);
 		}
 		else
 		{
 			actor->SetAABBOutlineColor(Color::Red);
-		}
-	}
-}
-
-void EditSession::MoveSelectedActor( Vector2i &delta )
-{
-	//if (IsSingleActorSelected() )
-
-	//feels like this could really be simplified later
-	{
-		ActorPtr actor = selectedBrush->objects.front()->GetAsActor();
-		//Vector2i aabb = actor->GetAABB();
-		//Vector2i extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//actor->GetIntPos();
-		Vector2i extraDelta = Vector2i(0, 0);//actor->GetIntPos() - Vector2i(worldPos);
-		//cout << "extraDelta: " << extraDelta.x << ", " << extraDelta.y << endl;
-		bool unanchored = false;
-		if (actor->type->CanBeGrounded())
-		{
-			if( !actor->posInfo.IsAerial() )
-			{
-				unanchored = actor->UnAnchor();
-				if (unanchored)
-				{
-					extraDelta = Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);//Vector2i(worldPos) - Vector2i(actor->GetGrabAABBCenter());//Vector2i(0, 0);
-				}
-				//selectedBrush->Move(delta + extraDelta);
-			}
-
-			if (worldPosGround.ground != NULL)
-			{
-				actor->AnchorToGround(worldPosGround);
-				worldPosGround.AddActor(actor);
-			}
-			else
-			{
-				selectedBrush->Move(delta + extraDelta);
-				if ( unanchored && actor->myEnemy != NULL) //second update of the frame hm...this is because the aabb rotates, so the AABB center changes
-					actor->myEnemy->UpdateFromEditParams(0);
-			}
-		}
-		else if (actor->type->CanBeRailGrounded())
-		{
-			if (!actor->posInfo.IsAerial())
-			{
-				actor->UnAnchor();
-			}
-
-			if (worldPosRail.railGround != NULL)
-			{
-				actor->AnchorToRail(worldPosRail);
-				worldPosRail.AddActor(actor);
-			}
-			else
-			{
-				selectedBrush->Move(delta + extraDelta);
-			}
-		}
-		else
-		{
-			selectedBrush->Move(delta + extraDelta);
 		}
 	}
 }
@@ -8404,7 +8313,6 @@ void EditSession::ContinueSelectedMove()
 	if (selectedPoints.empty() && grabbedActor != NULL)
 	{
 		MoveSelectedActors(delta);
-		//MoveSelectedActor(delta);
 	}
 	else
 	{
@@ -8594,11 +8502,6 @@ void EditSession::ShowGrass(bool s)
 	}
 }
 
-void EditSession::TryPlaceTrackingEnemy()
-{
-	
-}
-
 void EditSession::ModifyZoom(double factor)
 {
 	double old = zoomMultiple;
@@ -8643,209 +8546,6 @@ void EditSession::UpdateCurrTerrainType()
 	int ind = currTerrainWorld * MAX_TERRAINTEX_PER_WORLD + currTerrainVar;
 	currTerrainTypeSpr.setTexture(*ts_polyShaders[ind]->texture);
 	currTerrainTypeSpr.setTextureRect(IntRect(0, 0, 64, 64));
-}
-
-void EditSession::AnchorTrackingEnemyOnTerrain()
-{
-	//if (trackingEnemy != NULL)
-	//{
-	//	string name = trackingEnemy->info.name;
-
-	//	if (trackingEnemy->CanBeGrounded())
-	//	{
-	//		enemyEdgePolygon = NULL;
-
-	//		double testRadius = 200;
-
-	//		V2d dTestPoint(testPoint);
-
-	//		TerrainPoint *curr, *prev;
-	//		int numP;
-	//		for (auto it = polygons.begin(); it != polygons.end(); ++it)
-	//		{
-	//			if (testPoint.x >= (*it)->left - testRadius && testPoint.x <= (*it)->right + testRadius
-	//				&& testPoint.y >= (*it)->top - testRadius && testPoint.y <= (*it)->bottom + testRadius)
-	//			{
-	//				//TerrainPoint *prev = (*it)->pointEnd;
-	//				//TerrainPoint *curr = (*it)->pointStart;
-
-	//				bool contains = (*it)->ContainsPoint(testPoint);
-
-	//				//if ((contains && !(*it)->inverse) || (!contains && (*it)->inverse))
-	//				{
-	//					//prev is starting at 0. start normally at 1
-	//					double minDistance = 10000000;
-	//					int storedIndex = -1;
-	//					double storedQuantity;
-
-	//					double edgeLen;
-	//					V2d closestPoint;
-
-	//					numP = (*it)->GetNumPoints();
-
-	//					Edge *currEdge;
-
-	//					for (int i = 0; i < numP; ++i)
-	//					{
-	//						currEdge = (*it)->GetEdge(i);
-	//						double dist = abs(currEdge->GetDistAlongNormal(dTestPoint));
-	//						double testQuantity = currEdge->GetQuantity(dTestPoint);
-
-	//						V2d newPoint = currEdge->GetPosition(testQuantity);
-
-	//						edgeLen = currEdge->GetLength();
-	//						/*V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
-	//							(testQuantity / length(cu - pr)));*/
-
-
-	//						int hw = trackingEnemy->info.size.x / 2;
-	//						int hh = trackingEnemy->info.size.y / 2;
-	//						if (dist < 100 && testQuantity >= 0 && testQuantity <= edgeLen && testQuantity >= hw && testQuantity <= edgeLen - hw
-	//							&& length(newPoint - dTestPoint) < length(closestPoint - dTestPoint))
-	//						{
-	//							minDistance = dist;
-	//							storedIndex = i;
-
-	//							storedQuantity = testQuantity;
-	//							closestPoint = newPoint;
-	//						}
-	//					}
-
-	//					if (storedIndex >= 0)
-	//					{
-	//						currEdge = (*it)->GetEdge(storedIndex);
-
-	//						if (name != "poi")
-	//						{
-	//							enemySprite.setOrigin(enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height);
-	//							enemyQuad.setOrigin(enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height);
-	//						}
-
-	//						enemySprite.setPosition(closestPoint.x, closestPoint.y);
-	//						enemySprite.setRotation(currEdge->GetNormalAngleDegrees());
-
-	//						enemyQuad.setRotation(enemySprite.getRotation());
-	//						enemyQuad.setPosition(enemySprite.getPosition());
-
-	//						enemyEdgeIndex = storedIndex;
-
-	//						enemyEdgeQuantity = storedQuantity;
-
-	//						enemyEdgePolygon = (*it);
-
-	//						break;
-	//					}
-	//				}
-	//			}
-	//		}
-
-	//	}
-	//	else if (trackingEnemy->CanBeRailGrounded())
-	//	{
-	//		enemyEdgeRail = NULL;
-
-	//		double testRadius = 200;
-	//		RailPtr rail;
-	//		TerrainPoint *curr, *next;
-	//		int numP;
-	//		for (auto it = rails.begin(); it != rails.end(); ++it)
-	//		{
-	//			rail = (*it);
-	//			if (testPoint.x >= rail->left - testRadius && testPoint.x <= rail->right + testRadius
-	//				&& testPoint.y >= rail->top - testRadius && testPoint.y <= rail->bottom + testRadius)
-	//			{
-	//				bool contains = (*it)->ContainsPoint(Vector2f(testPoint.x, testPoint.y), 32);
-
-	//				if (contains)
-	//				{
-	//					//prev is starting at 0. start normally at 1
-	//					double minDistance = 10000000;
-	//					int storedIndex = -1;
-	//					double storedQuantity;
-
-	//					V2d closestPoint;
-
-	//					numP = rail->GetNumPoints();
-
-	//					for (int i = 0; i < numP - 1; ++i)
-	//					{
-	//						curr = rail->GetPoint(i);
-	//						next = rail->GetNextPoint(i);
-
-	//						double dist = abs(
-	//							cross(
-	//								V2d(testPoint.x - curr->pos.x, testPoint.y - curr->pos.y),
-	//								normalize(V2d(next->pos.x - curr->pos.x, next->pos.y - curr->pos.y))));
-	//						double testQuantity = dot(
-	//							V2d(testPoint.x - curr->pos.x, testPoint.y - curr->pos.y),
-	//							normalize(V2d(next->pos.x - curr->pos.x, next->pos.y - curr->pos.y)));
-
-	//						V2d pr(curr->pos.x, curr->pos.y);
-	//						V2d cu(next->pos.x, next->pos.y);
-	//						V2d te(testPoint.x, testPoint.y);
-
-	//						V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
-	//							(testQuantity / length(cu - pr)));
-
-
-	//						int hw = trackingEnemy->info.size.x / 2;
-	//						int hh = trackingEnemy->info.size.y / 2;
-	//						if (dist < 100 && testQuantity >= 0 && testQuantity <= length(cu - pr) && testQuantity >= hw && testQuantity <= length(cu - pr) - hw
-	//							&& length(newPoint - te) < length(closestPoint - te))
-	//						{
-	//							minDistance = dist;
-	//							storedIndex = i;
-	//							double l = length(cu - pr);
-
-	//							storedQuantity = testQuantity;
-	//							closestPoint = newPoint;
-
-	//							if (name != "poi")
-	//							{
-	//								//		enemySprite.setOrigin(enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height);
-	//								//			enemyQuad.setOrigin(enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height);
-	//							}
-
-	//							enemySprite.setPosition(closestPoint.x, closestPoint.y);
-	//							enemyQuad.setPosition(enemySprite.getPosition());
-	//						}
-	//					}
-
-	//					if (storedIndex >= 0)
-	//					{
-	//						enemyEdgeIndex = storedIndex;
-
-	//						enemyEdgeQuantity = storedQuantity;
-
-	//						enemyEdgeRail = (*it);
-
-	//						break;
-	//					}
-	//				}
-	//			}
-
-	//		}
-	//	}
-	//}
-}
-
-void EditSession::MoveTrackingEnemy()
-{
-	/*if (trackingEnemy != NULL && showPanel == NULL)
-	{
-		enemySprite.setOrigin(enemySprite.getLocalBounds().width / 2, enemySprite.getLocalBounds().height / 2);
-		enemySprite.setRotation(0);
-
-		Vector2f p = preScreenTex->mapPixelToCoords(pixelPos);
-
-		enemySprite.setPosition(p);
-
-		enemyQuad.setOrigin(enemyQuad.getLocalBounds().width / 2, enemyQuad.getLocalBounds().height / 2);
-		enemyQuad.setRotation(0);
-		enemyQuad.setPosition(enemySprite.getPosition());
-
-		AnchorTrackingEnemyOnTerrain();
-	}*/
 }
 
 void EditSession::TryAddToPatrolPath()
@@ -10000,7 +9700,7 @@ void EditSession::EditModeHandleEvent()
 			if (editStartMove)
 			{
 				bool done = false;
-				if (AnchorSelectedEnemies() )//AnchorSelectedAerialEnemy())
+				if (AnchorSelectedEnemies() )
 				{
 					done = true;
 				}
@@ -10322,7 +10022,7 @@ void EditSession::CreateEnemyModeHandleEvent()
 			if (grabbedActor != NULL )
 			{
 				bool done = false;
-				if (AnchorSelectedEnemies())//AnchorSelectedAerialEnemy())
+				if (AnchorSelectedEnemies())
 				{
 					done = true;
 				}
@@ -10351,16 +10051,6 @@ void EditSession::CreateEnemyModeHandleEvent()
 
 			//UpdateGrass();
 		}
-
-		//if (ev.mouseButton.button == Mouse::Left)
-		//{
-		//	TryPlaceTrackingEnemy();
-
-		//	/*if (showPanel != NULL)
-		//	{
-		//		showPanel->Update(false, uiMousePos.x, uiMousePos.y);
-		//	}*/
-		//}
 		break;
 	}
 	case Event::MouseWheelMoved:

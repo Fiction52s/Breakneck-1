@@ -102,11 +102,21 @@ struct ChooseRect
 		E_RELEASED
 	};
 
+	enum ChooseRectIdentity : int
+	{
+		I_WORLDCHOOSER,
+		I_SEARCHENEMYLIBRARY,
+		I_ENEMYHOTBAR,
+		I_ENEMYLIBRARY
+	};
+
+	ChooseRectIdentity rectIdentity;
 	ChooseRectType chooseRectType;
 	EnemyChooseRect *GetAsEnemyChooseRect();
 	ImageChooseRect *GetAsImageChooseRect();
 
-	ChooseRect( ChooseRectType crType, 
+	ChooseRect( ChooseRectIdentity ident, 
+		ChooseRectType crType, 
 		sf::Vertex *v, UIMouseUser *mouseUser,
 	float size, sf::Vector2f &pos );
 	void Init();
@@ -135,7 +145,8 @@ struct ChooseRect
 
 struct EnemyChooseRect : ChooseRect
 {
-	EnemyChooseRect( sf::Vertex *v,
+	EnemyChooseRect( ChooseRectIdentity ident, 
+		sf::Vertex *v,
 		UIMouseUser *mouseUser, sf::Vector2f &position,
 		ActorType * type, 
 		int level );
@@ -153,7 +164,8 @@ struct EnemyChooseRect : ChooseRect
 struct Tileset;
 struct ImageChooseRect : ChooseRect
 {
-	ImageChooseRect(sf::Vertex *v,
+	ImageChooseRect( ChooseRectIdentity ident, 
+		sf::Vertex *v,
 		UIMouseUser *mouseUser, sf::Vector2f &position,
 		Tileset *ts, int tileIndex );
 
@@ -180,16 +192,20 @@ struct CreateEnemyModeUI
 	~CreateEnemyModeUI();
 	std::vector<ChooseRect> myRects;
 	std::vector<EnemyChooseRect> allEnemyRects;
-	sf::Vertex *allEnemyQuads;
+	
 	std::vector<EnemyChooseRect> hotbarEnemies;
-	sf::Vertex *hotbarQuads;
+	//sf::Vertex *hotbarQuads;
+	//sf::Vertex *worldSelectQuads;
+	//sf::Vertex *allEnemyQuads;
+	sf::Vertex *allQuads;
+	int numAllQuads;
 	int activeHotbarSize;
 	std::vector<std::vector<EnemyChooseRect*>> 
 		libraryEnemiesVec;
 	void SetActiveLibraryWorld(int w);
 	int activeLibraryWorld;
 	std::vector<ImageChooseRect> worldSelectRects;
-	sf::Vertex *worldSelectQuads;
+	
 	void UpdateSprites(int sprUpdateFrames);
 	void Update(bool mouseDownL,
 		bool mouseDownR,

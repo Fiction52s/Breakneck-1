@@ -42,7 +42,8 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	int totalHotbarSize = hotbarRectSize * totalHotbarCount + hotbarSpacing * (totalHotbarCount - 1);
 	int extraHotbarSpacing = (1920 - totalHotbarSize) / 2;
 
-	topbarCont = new ChooseRectContainer(Vector2i(extraHotbarSpacing, 20), Vector2f(totalHotbarSize, 120));
+	//topbarCont = new ChooseRectContainer(Vector2i(extraHotbarSpacing, 20), Vector2f(totalHotbarSize, 120));
+	topbarCont = new ChooseRectContainer(Vector2i(0, 20), Vector2f(1920, 120));
 
 	int enemyCounter = 0;
 	for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
@@ -55,16 +56,29 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	}
 
 	allEnemyRects.reserve(enemyCounter);
-	allEnemyQuads = new Vertex[enemyCounter * 4];
 
 	int numEnemyWorlds = 9;
+
+	//allEnemyQuads = new Vertex[enemyCounter * 4];
+	//hotbarQuads = new Vertex[totalHotbarCount * 4];
+	//worldSelectQuads = new Vertex[numEnemyWorlds * 4];
+
+	int numExtraRects = 1; //search library
+	numAllQuads = (enemyCounter + totalHotbarCount + numEnemyWorlds + numExtraRects);
+	allQuads = new Vertex[numAllQuads * 4];
+	Vertex *allEnemyQuads = allQuads;
+	Vertex *hotbarQuads = allQuads + enemyCounter * 4;
+	Vertex *worldSelectQuads = hotbarQuads + totalHotbarCount * 4;
+	Vertex *extraQuads = worldSelectQuads + numEnemyWorlds * 4;
+
+	
 	int worldSize = 100;
 	int worldSpacing = 30;
 	int totalWorldSize = worldSize * numEnemyWorlds + worldSpacing * (numEnemyWorlds - 1);
 
 	int extraWorldSpacing = (1920 - totalWorldSize) / 2;
 
-	libCont = new ChooseRectContainer(Vector2i(extraWorldSpacing, 140), Vector2f(totalWorldSize, 400));
+	libCont = new ChooseRectContainer(Vector2i(extraWorldSpacing, 140), Vector2f(totalWorldSize, 600));
 
 	{
 		int i = 0;
@@ -76,7 +90,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 			}
 			for (int level = 1; level <= (*it).second->info.numLevels; ++level)
 			{
-				allEnemyRects.push_back(EnemyChooseRect(allEnemyQuads + i * 4, libCont,
+				allEnemyRects.push_back(EnemyChooseRect(ChooseRect::I_ENEMYLIBRARY, allEnemyQuads + i * 4, libCont,
 					Vector2f(0, 0), (*it).second, level));
 				++i;
 			}
@@ -84,7 +98,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	}
 
 
-	hotbarQuads = new Vertex[totalHotbarCount * 4];
+	
 
 	
 
@@ -96,8 +110,8 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	for (int i = 0; i < totalHotbarCount; ++i)
 	{
-		hotbarEnemies.push_back(EnemyChooseRect( hotbarQuads + i * 4, topbarCont,
-			Vector2f( 60 + i * ( hotbarRectSize + hotbarSpacing ), 60),
+		hotbarEnemies.push_back(EnemyChooseRect(ChooseRect::I_ENEMYHOTBAR, hotbarQuads + i * 4, topbarCont,
+			Vector2f(extraHotbarSpacing + 60 + i * ( hotbarRectSize + hotbarSpacing ), 60),
 			NULL, 0 ));
 		hotbarEnemies[i].SetShown(false);
 		hotbarEnemies[i].Init();
@@ -107,7 +121,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	worldSelectRects.reserve(numEnemyWorlds);
 	Tileset *ts = edit->GetSizedTileset("worldselector_64x64.png");
-	worldSelectQuads = new Vertex[numEnemyWorlds * 4];
+	
 
 	
 
@@ -115,7 +129,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	for (int i = 0; i < numEnemyWorlds; ++i)
 	{
-		worldSelectRects.push_back(ImageChooseRect(worldSelectQuads + i * 4, libCont,
+		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4, libCont,
 			Vector2f( i * (worldSize + worldSpacing) + 60, 60 ), ts, i));
 		worldSelectRects[i].SetShown(true);
 		worldSelectRects[i].Init();
@@ -167,9 +181,10 @@ CreateEnemyModeUI::~CreateEnemyModeUI()
 	//delete topbarPanel;
 	//delete libraryPanel;
 
-	delete [] allEnemyQuads;
-	delete[] worldSelectQuads;
-	delete[] hotbarQuads;
+	delete[] allQuads;
+	//delete [] allEnemyQuads;
+	//delete[] worldSelectQuads;
+	//delete[] hotbarQuads;
 }
 
 void CreateEnemyModeUI::UpdateHotbarTypes()
@@ -293,15 +308,17 @@ void CreateEnemyModeUI::Draw(sf::RenderTarget *target)
 
 	topbarCont->Draw(target);
 	libCont->Draw(target);
+
+	target->draw(allQuads, numAllQuads * 4, sf::Quads);
 	//topbarCont->Draw(target);
-	target->draw(hotbarQuads, activeHotbarSize * 4, sf::Quads);
+	//target->draw(hotbarQuads, activeHotbarSize * 4, sf::Quads);
 	for (int i = 0; i < activeHotbarSize; ++i)
 	{
 		hotbarEnemies[i].Draw(target);
 	}
 
-	target->draw(allEnemyQuads, allEnemyRects.size() * 4, sf::Quads);
-	target->draw(worldSelectQuads, 9 * 4, sf::Quads);
+	//target->draw(allEnemyQuads, allEnemyRects.size() * 4, sf::Quads);
+	//target->draw(worldSelectQuads, 9 * 4, sf::Quads);
 	for (int i = 0; i < 9; ++i)
 	{
 		worldSelectRects[i].Draw(target);
@@ -325,8 +342,8 @@ void CreateEnemyModeUI::Draw(sf::RenderTarget *target)
 
 
 
-ChooseRect::ChooseRect( ChooseRectType crType, Vertex *v, UIMouseUser *mUser, float size, sf::Vector2f &p_pos)
-	:mouseUser( mUser ), quad(v), boxSize( size ), pos( p_pos ), chooseRectType( crType )
+ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType, Vertex *v, UIMouseUser *mUser, float size, sf::Vector2f &p_pos)
+	:mouseUser( mUser ), quad(v), boxSize( size ), pos( p_pos ), chooseRectType( crType ), rectIdentity( ident )
 {
 	idleColor = Color::Black;
 	idleColor.a = 100;
@@ -454,8 +471,8 @@ ImageChooseRect *ChooseRect::GetAsImageChooseRect()
 	}
 }
 
-EnemyChooseRect::EnemyChooseRect(sf::Vertex *v, UIMouseUser *mUser, Vector2f &p_pos, ActorType * p_type,int p_level)
-	:ChooseRect( ChooseRectType::ENEMY, v, mUser, 100, p_pos), level( p_level )
+EnemyChooseRect::EnemyChooseRect(ChooseRectIdentity ident, sf::Vertex *v, UIMouseUser *mUser, Vector2f &p_pos, ActorType * p_type,int p_level)
+	:ChooseRect( ident, ChooseRectType::ENEMY, v, mUser, 100, p_pos), level( p_level )
 {
 	actorType = NULL;
 	SetType(p_type, level);
@@ -550,9 +567,9 @@ void EnemyChooseRect::UpdateSprite(int frameUpdate)
 
 
 
-ImageChooseRect::ImageChooseRect(sf::Vertex *v, UIMouseUser *mUser, Vector2f &p_pos, Tileset *p_ts,
+ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v, UIMouseUser *mUser, Vector2f &p_pos, Tileset *p_ts,
 	int p_tileIndex )
-	:ChooseRect(ChooseRectType::IMAGE, v, mUser, 100, p_pos), ts( p_ts ), tileIndex( p_tileIndex )
+	:ChooseRect( ident, ChooseRectType::IMAGE, v, mUser, 100, p_pos), ts( p_ts ), tileIndex( p_tileIndex )
 {
 	ts->SetSpriteTexture(spr);
 	ts->SetSubRect(spr, tileIndex);
