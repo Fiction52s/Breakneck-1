@@ -61,6 +61,10 @@ ActorParams::ActorParams(ActorType *at)
 	for (int i = 0; i < 4; ++i)
 		boundingQuad[i].color = Color(0, 255, 0, 100);
 
+	aabbDraw.setFillColor(Color::Transparent);
+	aabbDraw.setOutlineColor(Color::Green);
+	aabbDraw.setOutlineThickness(3);
+
 	//CreateMyEnemy();
 }
 
@@ -339,14 +343,30 @@ bool ActorParams::CanApply()
 	if (type->CanBeGrounded())
 	{
 		if (posInfo.ground != NULL)
-			return true;
+		{
+
+			EditSession *edit = EditSession::GetSession();
+			if (edit->IsEnemyValid(this))
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+			
 	}
-	else if (type->CanBeRailGrounded())
+	
+	if (type->CanBeRailGrounded())
 	{
 		if (posInfo.railGround != NULL)
 			return true;
+		else
+			return false;
 	}
-	else if (type->CanBeAerial())
+	
+	if (type->CanBeAerial() )
 	{
 		return true;
 	}
@@ -567,6 +587,11 @@ sf::FloatRect ActorParams::GetAABB()
 	}
 }
 
+void ActorParams::SetAABBOutlineColor(sf::Color c)
+{
+	aabbDraw.setOutlineColor(c);
+}
+
 sf::Vector2f ActorParams::GetGrabAABBCenter()
 {
 	FloatRect aabb = GetGrabAABB();
@@ -776,10 +801,6 @@ void ActorParams::DrawBoundary(sf::RenderTarget *target)
 {
 	if (selected)
 	{
-		sf::RectangleShape rs;
-		rs.setFillColor(Color::Transparent);
-		rs.setOutlineColor(Color::Green);
-		rs.setOutlineThickness(3);// *EditSession::zoomMultiple);
 		//fix soon
 		FloatRect bounds;
 		if( myEnemy != NULL )
@@ -790,9 +811,9 @@ void ActorParams::DrawBoundary(sf::RenderTarget *target)
 		{
 			bounds = image.getGlobalBounds();
 		}
-		rs.setPosition(bounds.left, bounds.top);
-		rs.setSize(Vector2f(bounds.width, bounds.height));
-		target->draw(rs);
+		aabbDraw.setPosition(bounds.left, bounds.top);
+		aabbDraw.setSize(Vector2f(bounds.width, bounds.height));
+		target->draw(aabbDraw);
 		//cout << "selected draw" << endl;
 	}
 }

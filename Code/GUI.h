@@ -47,13 +47,9 @@ struct ImageChooseRect;
 struct UIMouseUser
 {
 	UIMouseUser(sf::Vector2i &pos)
-		:position(pos),
-		isMouseDownLeft(false),
-		lastMouseDownLeft(false),
-		isMouseDownRight(false),
-		lastMouseDownRight(false)
+		:position(pos)
 	{
-
+		ResetMouse();
 	}
 	bool IsMouseDownLeft();
 	bool IsMouseDownRight();
@@ -70,6 +66,7 @@ struct UIMouseUser
 	{
 		return sf::Vector2f(position);
 	}
+	void ResetMouse();
 private:
 	sf::Vector2i mousePos;
 	bool isMouseDownLeft;

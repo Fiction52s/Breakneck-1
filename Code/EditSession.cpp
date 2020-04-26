@@ -76,6 +76,8 @@ void EditSession::SetTrackingEnemy(ActorType *type, int level)
 		editMouseDownMove = true;
 		editStartMove = false;
 		editMouseDownBox = false;
+
+		createEnemyModeUI->SetShown(false);
 	}
 	else
 	{
@@ -1108,12 +1110,9 @@ void EditSession::AddRecentEnemy(ActorPtr a)
 		}
 	}
 
-	if (!found)
+	if (!found && recentEnemies.size() == MAX_RECENT_ENEMIES )
 	{
-		if (!recentEnemies.empty())
-		{
-			recentEnemies.pop_front();
-		}
+		recentEnemies.pop_front();
 	}
 
 	recentEnemies.push_back(make_pair(a->type, a->GetLevel()));
@@ -3347,6 +3346,8 @@ bool EditSession::AnchorSelectedEnemies()
 
 		grabbedActor->group->actors.push_back(grabbedActor);
 		trackingEnemyParams = NULL;
+
+		createEnemyModeUI->SetShown(true);
 	}
 
 	if (moveAction != NULL)
@@ -3418,14 +3419,16 @@ void EditSession::TryCompleteSelectedMove()
 
 	if (mode == CREATE_ENEMY )
 	{
-		//ClearSelectedBrush();
+
+		AddRecentEnemy(grabbedActor);
+		ClearSelectedBrush();
 
 		/*if (enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
 		{
 			validMove = false;
 		}*/
 
-		AddRecentEnemy(grabbedActor);
+		
 	}
 
 	if (validMove)
@@ -4864,6 +4867,19 @@ void EditSession::GetNearPrimaryGateList(PointMap &pmap, list<GateInfoPtr> & gLi
 	}
 }
 
+bool EditSession::IsEnemyValid(ActorPtr actor)
+{
+	auto &polyList = GetCorrectPolygonList(0);
+	for (auto it = polyList.begin(); it != polyList.end(); ++it)
+	{
+		if ((*it)->IntersectsActorParams(actor))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
 
 bool EditSession::IsPolygonExternallyValid( PolyPtr poly, PolyPtr ignore )
 {
@@ -8220,6 +8236,23 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 		if (actor == NULL)
 			continue;
 		//actor->myEnemy->UpdateFromEditParams(0);
+	}
+
+	bool canApply = selectedBrush->CanApply();
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	{
+		actor = (*it)->GetAsActor();
+		if (actor == NULL)
+			continue;
+		
+		if (canApply)
+		{
+			actor->SetAABBOutlineColor(Color::Green);
+		}
+		else
+		{
+			actor->SetAABBOutlineColor(Color::Red);
+		}
 	}
 }
 

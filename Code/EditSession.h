@@ -335,6 +335,7 @@ struct EditSession : GUIHandler, Session
 		 PolyPtr ignore );
 	bool IsPolygonValid( PolyPtr poly,
 		PolyPtr ignore );
+	bool IsEnemyValid(ActorPtr actor);
 	void SetEnemyEditPanel();
 	void SetDecorEditPanel();
 	void SetDecorParams();

@@ -155,7 +155,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	}
 
 	activeLibraryWorld = -1;
-	show = false;
+	show = true;
 
 	UpdateHotbarTypes();
 }
@@ -178,6 +178,7 @@ void CreateEnemyModeUI::UpdateHotbarTypes()
 	for (auto it = edit->recentEnemies.begin(); it != edit->recentEnemies.end(); ++it)
 	{
 		hotbarEnemies[i].SetType((*it).first, (*it).second);
+		hotbarEnemies[i].SetShown(true);
 		++i;
 	}
 	activeHotbarSize = i;
@@ -190,6 +191,11 @@ void CreateEnemyModeUI::UpdateHotbarTypes()
 void CreateEnemyModeUI::SetShown(bool s)
 {
 	show = s;
+	if (!show)
+	{
+		topbarCont->ResetMouse();
+		libCont->ResetMouse();
+	}
 }
 
 void CreateEnemyModeUI::SetActiveLibraryWorld(int w)
@@ -221,7 +227,7 @@ void CreateEnemyModeUI::UpdateSprites(int sprUpdateFrames)
 {
 	for (int i = 0; i < activeHotbarSize; ++i)
 	{
-		if (activeLibraryWorld == -1)
+		if (activeLibraryWorld != hotbarEnemies[i].actorType->info.world )
 		{
 			hotbarEnemies[i].UpdateSprite(sprUpdateFrames);
 		}
@@ -242,6 +248,10 @@ void CreateEnemyModeUI::UpdateSprites(int sprUpdateFrames)
 
 void CreateEnemyModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &mPos)
 {
+	if (!show)
+	{
+		return;
+	}
 	topbarCont->Update(mouseDownL, mouseDownR, mPos);
 	libCont->Update(mouseDownL, mouseDownR, mPos);
 
@@ -270,6 +280,10 @@ void CreateEnemyModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &m
 
 void CreateEnemyModeUI::Draw(sf::RenderTarget *target)
 {
+	if (!show)
+	{
+		return;
+	}
 	sf::View oldView = target->getView();
 	target->setView(edit->uiView);
 
@@ -320,7 +334,7 @@ ChooseRect::ChooseRect( ChooseRectType crType, Vertex *v, UIMouseUser *mUser, fl
 	mouseOverColor = Color::Green;
 	mouseOverColor.a = 100;
 
-	show = false;
+	SetShown(false);
 
 	focused = false;
 }
@@ -444,10 +458,7 @@ EnemyChooseRect::EnemyChooseRect(sf::Vertex *v, UIMouseUser *mUser, Vector2f &p_
 	:ChooseRect( ChooseRectType::ENEMY, v, mUser, 100, p_pos), level( p_level )
 {
 	actorType = NULL;
-	if (p_type != NULL)
-	{
-		SetType(p_type, level);
-	}
+	SetType(p_type, level);
 }
 
 void EnemyChooseRect::SetType(ActorType *type, int lev)
@@ -462,7 +473,6 @@ void EnemyChooseRect::SetType(ActorType *type, int lev)
 
 	if (!(type == actorType && lev == level))
 	{
-		SetShown(true);
 		actorType = type;
 		level = lev;
 		actorType->defaultParamsVec[level - 1]->MoveTo(Vector2i(0, 0));
@@ -488,6 +498,7 @@ void EnemyChooseRect::SetType(ActorType *type, int lev)
 		
 		}
 		idleColor.a = 100;
+		SetRectColor(quad, idleColor);
 	}
 }
 
@@ -625,4 +636,12 @@ bool UIMouseUser::IsMouseRightReleased()
 const sf::Vector2i & UIMouseUser::GetMousePos()
 {
 	return mousePos;
+}
+
+void UIMouseUser::ResetMouse()
+{
+	isMouseDownLeft = false;
+	lastMouseDownLeft = false;
+	isMouseDownRight = false;
+	lastMouseDownRight = false;
 }

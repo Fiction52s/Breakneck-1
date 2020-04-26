@@ -141,6 +141,9 @@ struct ActorParams : ISelectable
 
 	V2d diffFromGrabbed; //used for multi-enemy move
 	double oldQuant; //used for moving points on an edge
+
+	sf::RectangleShape aabbDraw;
+	void SetAABBOutlineColor(sf::Color c);
 };
 
 #endif
