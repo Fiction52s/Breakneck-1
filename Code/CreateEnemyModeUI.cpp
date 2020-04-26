@@ -77,7 +77,8 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	for (int i = 0; i < 9; ++i)
 	{
 		worldSelectRects.push_back(ImageChooseRect(worldSelectQuads + i * 4, topbarPanel,
-			Vector2f( i * 130 + 300, 400 ), ts, i));
+			Vector2f( i * 130 + 300, 90 + 140 ), ts, i));
+			//Vector2f(90, 90 + 100 + i * 100), ts, i));
 		worldSelectRects[i].SetShown(true);
 		worldSelectRects[i].Init();
 	}

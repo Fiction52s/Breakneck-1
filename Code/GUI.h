@@ -121,6 +121,14 @@ struct ImageChooseRect : ChooseRect
 	int tileIndex;
 };
 
+//struct ChooseRectContainer
+//{
+//	ChooseRectContainer( sf::Vector2f &position)
+//	sf::Vertex quad[4];
+//	sf::Vector2f position;
+//	sf::Vector2f size;
+//};
+
 struct EditSession;
 struct CreateEnemyModeUI
 {
