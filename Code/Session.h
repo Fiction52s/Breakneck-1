@@ -257,6 +257,7 @@ struct Session : TilesetManager
 	bool ReadDecor(std::ifstream &is);
 	virtual void ProcessDecorSpr( const std::string &name, 
 		sf::Sprite &dSpr, int dLayer, Tileset *d_ts, int dTile) {}
+	virtual void ProcessAllDecorSpr() {}
 
 	bool ReadPlayerStartPos(std::ifstream &is);
 	virtual void ProcessPlayerStartPos() {}
@@ -264,6 +265,7 @@ struct Session : TilesetManager
 	bool ReadTerrain(std::ifstream &is);
 	bool ReadTerrainGrass(std::ifstream &is, PolyPtr poly );
 	virtual void ProcessTerrain( PolyPtr poly ){}
+	virtual void ProcessAllTerrain() {}
 
 	bool ReadSpecialTerrain(std::ifstream &is);
 	virtual void ProcessSpecialTerrain(PolyPtr poly) {}
@@ -276,8 +278,10 @@ struct Session : TilesetManager
 
 	virtual bool ReadActors(std::ifstream &is);
 	virtual void ProcessActor(ActorPtr a) {}
+	virtual void ProcessAllActors() {}
 
 	bool ReadGates(std::ifstream &is);
+	virtual void SetNumGates(int numGates) {}
 	virtual void ProcessGate(int gType,
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,

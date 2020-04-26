@@ -1454,6 +1454,8 @@ bool Session::ReadDecor(std::ifstream &is)
 		ProcessDecorSpr( dName, dSpr, dLayer, d_ts, dTile );
 	}
 
+	ProcessAllDecorSpr();
+
 	return true;
 }
 
@@ -1566,6 +1568,8 @@ bool Session::ReadTerrain(std::ifstream &is)
 
 		ProcessTerrain(poly);
 	}
+
+	ProcessAllTerrain();
 	return true;
 }
 
@@ -1669,6 +1673,8 @@ bool Session::ReadActors(std::ifstream &is)
 		}
 	}
 
+	ProcessAllActors();
+
 	return true;
 }
 
@@ -1676,6 +1682,8 @@ bool Session::ReadGates(std::ifstream &is)
 {
 	int numGates;
 	is >> numGates;
+
+	SetNumGates(numGates);
 
 	int gType;
 	int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
@@ -1698,7 +1706,7 @@ bool Session::ReadGates(std::ifstream &is)
 			is >> shardIndex;
 		}
 
-		ProcessGate(gType, poly0Index, vertexIndex0, poly1Index, vertexIndex1, shardWorld,
+		ProcessGate( gType, poly0Index, vertexIndex0, poly1Index, vertexIndex1, shardWorld,
 			shardIndex);
 	
 	}
@@ -1714,14 +1722,23 @@ bool Session::ReadFile()
 	if (is.is_open())
 	{
 		ReadHeader(is);
+
 		ReadDecor(is);
+
 		ReadPlayerStartPos(is);
+
 		ReadTerrain(is);
+
 		ReadSpecialTerrain(is);
+
 		ReadBGTerrain(is);
+
 		ReadRails(is);
+
 		ReadActors(is);
+
 		ReadGates(is);
+
 		is.close();
 	}
 	else

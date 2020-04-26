@@ -488,16 +488,11 @@ void GameSession::Cleanup()
 		scoreDisplay = NULL;
 	}
 
-	if (gates != NULL)
+	for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
-		for (int i = 0; i < numGates; ++i)
-		{
-			delete gates[i];
-		}
-		delete[] gates;
-
-		gates = NULL;
+		delete (*it);
 	}
+	gates.clear();
 
 	if (activeItemTree != NULL)
 	{
@@ -985,91 +980,79 @@ bool GameSession::LoadBGPlats( ifstream &is)
 	return true;
 }
 
-bool GameSession::LoadGates( ifstream &is )
+void GameSession::SetNumGates(int nGates)
 {
-	is >> numGates;
-	gates = new Gate*[numGates];
+	gates.reserve(nGates);
+	numGates = nGates;
+}
 
-	for( int i = 0; i < numGates; ++i )
+void GameSession::ProcessGate(int gType,
+	int poly0Index, int vertexIndex0, int poly1Index,
+	int vertexIndex1, int shardWorld,
+	int shardIndex)
+{
+	if (inversePoly != NULL)
 	{
-		int gType;
-		int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
-		string behindyouStr;
-
-		is >> gType;
-		is >> poly0Index;
-		is >> vertexIndex0;
-		is >> poly1Index;
-		is >> vertexIndex1;
-
-		if (inversePoly != NULL)
-		{
-			poly0Index++;
-			poly1Index++;
-		}
-
-		Edge *edge0 = allPolysVec[poly0Index]->GetEdge(vertexIndex0);//edges[polyIndex[poly0Index] + vertexIndex0];
-		Edge *edge1 = allPolysVec[poly1Index]->GetEdge(vertexIndex1);//edges[polyIndex[poly1Index] + vertexIndex1];
-
-		V2d point0 = edge0->v0;
-		V2d point1 = edge1->v0;
-
-		Gate::GateType gateType = (Gate::GateType)gType;
-
-		Gate * gate = new Gate( this, gateType);
-
-		if (gType == Gate::SHARD)
-		{
-			int sw, si;
-			is >> sw;
-			is >> si;
-			gate->SetShard(sw, si);
-		}
-
-		/*if (!visibleTerrain[poly0Index] || !visibleTerrain[poly1Index])
-		{
-			gate->visible = false;
-		}*/
-
-		gate->temp0prev = edge0->edge0;
-		gate->temp0next = edge0;
-		gate->temp1prev = edge1->edge0;
-		gate->temp1next = edge1;
-
-		gate->edgeA = new Edge;
-		gate->edgeA->edgeType = Edge::CLOSED_GATE;
-		gate->edgeA->info = gate;
-		gate->edgeB = new Edge;
-		gate->edgeB->edgeType = Edge::CLOSED_GATE;
-		gate->edgeB->info = gate;
-
-		gate->edgeA->v0 = point0;
-		gate->edgeA->v1 = point1;
-
-		gate->edgeB->v0 = point1;
-		gate->edgeB->v1 = point0;
-			
-		gate->next = NULL;
-		gate->prev = NULL;
-
-		gate->CalcAABB();
-
-		gates[i] = gate;
-
-		gate->SetLocked( true );
-
-		gate->UpdateLine();
-
-		terrainTree->Insert( gate->edgeA );
-		terrainTree->Insert( gate->edgeB );
-
-		cout << "inserting gate: " << gate->edgeA << endl;
-		gateTree->Insert( gate );
-
-		gate->Reset();
+		poly0Index++;
+		poly1Index++;
 	}
 
-	return true;
+	Edge *edge0 = allPolysVec[poly0Index]->GetEdge(vertexIndex0);
+	Edge *edge1 = allPolysVec[poly1Index]->GetEdge(vertexIndex1);
+
+	V2d point0 = edge0->v0;
+	V2d point1 = edge1->v0;
+
+	Gate::GateType gateType = (Gate::GateType)gType;
+
+	Gate * gate = new Gate(this, gateType);
+
+	if (gType == Gate::SHARD)
+	{
+		gate->SetShard(shardWorld, shardIndex);
+	}
+
+	/*if (!visibleTerrain[poly0Index] || !visibleTerrain[poly1Index])
+	{
+	gate->visible = false;
+	}*/
+
+	gate->temp0prev = edge0->edge0;
+	gate->temp0next = edge0;
+	gate->temp1prev = edge1->edge0;
+	gate->temp1next = edge1;
+
+	gate->edgeA = new Edge;
+	gate->edgeA->edgeType = Edge::CLOSED_GATE;
+	gate->edgeA->info = gate;
+	gate->edgeB = new Edge;
+	gate->edgeB->edgeType = Edge::CLOSED_GATE;
+	gate->edgeB->info = gate;
+
+	gate->edgeA->v0 = point0;
+	gate->edgeA->v1 = point1;
+
+	gate->edgeB->v0 = point1;
+	gate->edgeB->v1 = point0;
+
+	gate->next = NULL;
+	gate->prev = NULL;
+
+	gate->CalcAABB();
+
+	gates.push_back(gate);
+
+	gate->SetLocked(true);
+
+	gate->UpdateLine();
+
+	terrainTree->Insert(gate->edgeA);
+	terrainTree->Insert(gate->edgeB);
+
+	cout << "inserting gate: " << gate->edgeA << endl;
+	gateTree->Insert(gate);
+
+	gate->Reset();
 }
 
 bool GameSession::LoadRails(ifstream &is)
@@ -2927,49 +2910,29 @@ bool GameSession::OpenFile( )
 {
 	int insertCount = 0;
 	ifstream is;
-	is.open(filePathStr);//+ ".brknk" );
+	is.open(filePathStr);
 	if( is.is_open() )
 	{
 		ReadHeader(is);
-		ReadDecor(is);
 
-		ProcessAllDecorSpr();
+		ReadDecor(is);
 
 		ReadPlayerStartPos(is);
 		
 		ReadTerrain(is);
-
-		ProcessAllTerrain();
 		
-		bool blackBorder[2];
-		bool topBorderOn = false;
-		SetupMapBorderQuads(blackBorder, topBorderOn);
-		SetupMinimapBorderQuads(blackBorder, topBorderOn);
-		
-		LoadSpecialPolys(is);
+		LoadSpecialPolys(is); //not converted yet
 
-		LoadBGPlats( is );
+		LoadBGPlats( is ); //not converted yet
 
-		LoadRails(is);
+		LoadRails(is); //not converted yet, do this when re-adding rails
 
 		ReadActors(is);
-		//LoadEnemies( is );
-
-		ProcessAllActors();
 		
-		LoadGates( is );
+		ReadGates(is);
 
 		is.close();
 
-		SetupStormCeiling();
-
-		if (topBorderOn)
-		{
-			topClouds = new TopClouds(this);
-		}
-
-		CreateZones();
-		SetupZones();
 		return true;
 	}
 	else
@@ -4598,6 +4561,21 @@ bool GameSession::Load()
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("opening map file!", 1);
 	OpenFile( );
+
+	SetupStormCeiling();
+
+	bool blackBorder[2];
+	bool topBorderOn = false;
+	SetupMapBorderQuads(blackBorder, topBorderOn);
+	SetupMinimapBorderQuads(blackBorder, topBorderOn);
+
+	if (topBorderOn)
+	{
+		topClouds = new TopClouds(this);
+	}
+
+	CreateZones();
+	SetupZones();
 
 	background = Background::SetupFullBG(mapHeader->envName, this);
 
@@ -7375,9 +7353,6 @@ void GameSession::Init()
 	showDebugDraw = false;
 
 	testBuf.SetRecOver(false);
-
-
-	gates = NULL;
 
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;

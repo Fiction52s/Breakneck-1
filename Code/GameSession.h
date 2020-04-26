@@ -254,6 +254,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void ProcessAllTerrain();
 	void ProcessActor(ActorPtr a);
 	void ProcessAllActors();
+	void ProcessGate(int gType,
+		int poly0Index, int vertexIndex0, int poly1Index,
+		int vertexIndex1, int shardWorld,
+		int shardIndex);
+	void SetNumGates( int nGates );
 
 	PolyPtr inversePoly;
 	std::list<PolyPtr> allPolygonsList;
@@ -280,7 +285,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		std::map<int, int> &polyIndex);
 	bool LoadBGPlats(std::ifstream &is );
 	bool LoadSpecialPolys(std::ifstream &is);
-	bool LoadGates(std::ifstream &is);
 	bool LoadEnemies(std::ifstream &is);
 	bool LoadRails(std::ifstream &is);
 	//void LoadEnemy(std::ifstream &is);
@@ -681,7 +685,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	void DrawGates();
 	int numGates;
-	Gate **gates;
+	std::vector<Gate*> gates;
 	int testGateCount;
 	Gate *gateList;
 	void SoftenGates(Gate::GateType gType);
