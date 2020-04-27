@@ -74,7 +74,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	Tileset *ts_worldChoosers = edit->GetSizedTileset("worldselector_64x64.png");
 
 	librarySearchRect = new ImageChooseRect(ChooseRect::I_SEARCHENEMYLIBRARY, extraQuads, topbarCont,
-		Vector2f(60, 60), ts_worldChoosers, 8);
+		Vector2f(10, 10), ts_worldChoosers, 8);
 	librarySearchRect->SetShown(true);
 	librarySearchRect->Init();
 	
@@ -103,11 +103,6 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 		}
 	}
 
-
-	
-
-	
-
 	//activeHotbarSize = //allEnemyRects.size();
 	//if (activeHotbarSize > totalHotbarCount)
 	//{
@@ -117,7 +112,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	for (int i = 0; i < totalHotbarCount; ++i)
 	{
 		hotbarEnemies.push_back(EnemyChooseRect(ChooseRect::I_ENEMYHOTBAR, hotbarQuads + i * 4, topbarCont,
-			Vector2f(extraHotbarSpacing + 60 + i * ( hotbarRectSize + hotbarSpacing ), 60),
+			Vector2f(extraHotbarSpacing + 10 + i * ( hotbarRectSize + hotbarSpacing ), 10),
 			NULL, 0 ));
 		hotbarEnemies[i].SetShown(false);
 		hotbarEnemies[i].Init();
@@ -136,7 +131,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	for (int i = 0; i < numEnemyWorlds; ++i)
 	{
 		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4, libCont,
-			Vector2f( i * (worldSize + worldSpacing) + 60, 60 ), ts_worldChoosers, i));
+			Vector2f( i * (worldSize + worldSpacing) + 10, 10 ), ts_worldChoosers, i));
 		worldSelectRects[i].SetShown(false);
 		worldSelectRects[i].Init();
 	}
@@ -166,7 +161,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 			{
 				libraryEnemiesVec[w][counter] = &allEnemyRects[i];
 				ecRect = libraryEnemiesVec[w][counter];
-				ecRect->SetPosition(Vector2f(60 + i * 120, 300));
+				ecRect->SetPosition(Vector2f(10 + i * 120, 240));
 				//ecRect->SetShown(true);
 				ecRect->Init();
 				++counter;
@@ -435,8 +430,8 @@ void ChooseRect::SetSize(float s)
 void ChooseRect::UpdateRectDimensions()
 {
 	//SetRectCenter(quad, boxSize, boxSize, pos);
-	bounds.left = pos.x - boxSize / 2.f;
-	bounds.top = pos.y - boxSize / 2.f;
+	bounds.left = pos.x;// -boxSize / 2.f;
+	bounds.top = pos.y;// -boxSize / 2.f;
 	bounds.width = boxSize;
 	bounds.height = boxSize;
 }
@@ -445,11 +440,11 @@ void ChooseRect::SetShown(bool s)
 {
 	if (!s && show )
 	{
-		SetRectCenter(quad, 0, 0, Vector2f(0, 0));
+		SetRectTopLeft(quad, 0, 0, Vector2f(0, 0));
 	}
 	else if (s && !show)
 	{
-		SetRectCenter(quad, boxSize, boxSize, GetGlobalPos());
+		SetRectTopLeft(quad, boxSize, boxSize, GetGlobalPos());
 		SetSize(boxSize);
 	}
 	show = s;
@@ -582,7 +577,7 @@ void EnemyChooseRect::SetSize(float s)
 	ChooseRect::SetSize(s);
 	if (actorType != NULL)
 	{
-		Vector2f truePos = GetGlobalPos();
+		Vector2f truePos = GetGlobalPos() + Vector2f( boxSize / 2.f, boxSize / 2.f );
 
 		float test;
 		FloatRect aabb = enemy->GetAABB();
@@ -638,7 +633,7 @@ void ImageChooseRect::SetSize(float s)
 {
 	ChooseRect::SetSize(s);
 
-	Vector2f truePos = GetGlobalPos();
+	Vector2f truePos = GetGlobalPos() + Vector2f( boxSize/2.f, boxSize / 2.f );
 
 	float test;
 	FloatRect aabb = spr.getGlobalBounds();
