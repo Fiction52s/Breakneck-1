@@ -194,6 +194,7 @@ struct CreateEnemyModeUI
 	std::vector<EnemyChooseRect> allEnemyRects;
 	
 	std::vector<EnemyChooseRect> hotbarEnemies;
+	ImageChooseRect *librarySearchRect;
 	//sf::Vertex *hotbarQuads;
 	//sf::Vertex *worldSelectQuads;
 	//sf::Vertex *allEnemyQuads;
@@ -218,6 +219,9 @@ struct CreateEnemyModeUI
 	//Panel *libraryPanel;
 	EditSession *edit;
 	void SetShown(bool s);
+	void SetLibraryShown(bool s);
+	void FlipLibraryShown();
+	bool showLibrary;
 	bool show;
 };
 

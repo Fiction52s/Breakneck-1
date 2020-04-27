@@ -3383,26 +3383,39 @@ void EditSession::TryCompleteSelectedMove()
 		validMove = true;
 	}
 
-	if (mode == CREATE_ENEMY )
-	{
+	//if (mode == CREATE_ENEMY )
+	//{
 
-		AddRecentEnemy(grabbedActor);
-		ClearSelectedBrush();
+	//	AddRecentEnemy(grabbedActor);
+	//	ClearSelectedBrush();
 
-		/*if (enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
-		{
-			validMove = false;
-		}*/
+	//	/*if (enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
+	//	{
+	//		validMove = false;
+	//	}*/
 
-		
-	}
+	//	
+	//}
 
 	if (validMove)
 	{
 		ClearUndoneActions();
+
+		if (mode == CREATE_ENEMY)
+		{
+			AddRecentEnemy(grabbedActor);
+			ClearSelectedBrush();
+			createEnemyModeUI->SetLibraryShown(false);
+		}
+
 	}
 	else
 	{
+		if (mode == CREATE_ENEMY)
+		{
+			ClearSelectedBrush();
+		}
+
 		Action * action = doneActionStack.back();
 		doneActionStack.pop_back();
 
@@ -10955,11 +10968,20 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 		{
 			SetTrackingEnemy(ceRect->actorType, ceRect->level);
 		}
+		else
+		{
+			ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+			if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_SEARCHENEMYLIBRARY )
+			{
+				createEnemyModeUI->FlipLibraryShown();
+			}
+		}
+
 	}
 	else if (eventType == ChooseRect::E_FOCUSED)
 	{
 		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
-		if (icRect != NULL)
+		if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_WORLDCHOOSER)
 		{
 			createEnemyModeUI->SetActiveLibraryWorld(icRect->tileIndex);
 		}

@@ -71,6 +71,12 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	Vertex *worldSelectQuads = hotbarQuads + totalHotbarCount * 4;
 	Vertex *extraQuads = worldSelectQuads + numEnemyWorlds * 4;
 
+	Tileset *ts_worldChoosers = edit->GetSizedTileset("worldselector_64x64.png");
+
+	librarySearchRect = new ImageChooseRect(ChooseRect::I_SEARCHENEMYLIBRARY, extraQuads, topbarCont,
+		Vector2f(60, 60), ts_worldChoosers, 8);
+	librarySearchRect->SetShown(true);
+	librarySearchRect->Init();
 	
 	int worldSize = 100;
 	int worldSpacing = 30;
@@ -78,7 +84,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	int extraWorldSpacing = (1920 - totalWorldSize) / 2;
 
-	libCont = new ChooseRectContainer(Vector2i(extraWorldSpacing, 140), Vector2f(totalWorldSize, 600));
+	libCont = new ChooseRectContainer(Vector2i(0, 140), Vector2f(totalWorldSize + 20, 600));
 
 	{
 		int i = 0;
@@ -120,7 +126,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	
 
 	worldSelectRects.reserve(numEnemyWorlds);
-	Tileset *ts = edit->GetSizedTileset("worldselector_64x64.png");
+	
 	
 
 	
@@ -130,8 +136,8 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	for (int i = 0; i < numEnemyWorlds; ++i)
 	{
 		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4, libCont,
-			Vector2f( i * (worldSize + worldSpacing) + 60, 60 ), ts, i));
-		worldSelectRects[i].SetShown(true);
+			Vector2f( i * (worldSize + worldSpacing) + 60, 60 ), ts_worldChoosers, i));
+		worldSelectRects[i].SetShown(false);
 		worldSelectRects[i].Init();
 	}
 
@@ -169,6 +175,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	}
 
 	activeLibraryWorld = -1;
+	showLibrary = false;
 	show = true;
 
 	UpdateHotbarTypes();
@@ -182,6 +189,8 @@ CreateEnemyModeUI::~CreateEnemyModeUI()
 	//delete libraryPanel;
 
 	delete[] allQuads;
+
+	delete librarySearchRect;
 	//delete [] allEnemyQuads;
 	//delete[] worldSelectQuads;
 	//delete[] hotbarQuads;
@@ -215,6 +224,9 @@ void CreateEnemyModeUI::SetShown(bool s)
 
 void CreateEnemyModeUI::SetActiveLibraryWorld(int w)
 {
+	if (w == activeLibraryWorld)
+		return;
+
 	if (activeLibraryWorld >= 0)
 	{
 		for (auto it = libraryEnemiesVec[activeLibraryWorld].begin();
@@ -267,30 +279,67 @@ void CreateEnemyModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &m
 	{
 		return;
 	}
+	
+
 	topbarCont->Update(mouseDownL, mouseDownR, mPos);
 	libCont->Update(mouseDownL, mouseDownR, mPos);
+
+	librarySearchRect->Update();
 
 	for (int i = 0; i < hotbarEnemies.size(); ++i)
 	{
 		hotbarEnemies[i].Update();
 	}
 
-	for (int i = 0; i < 9; ++i)
+	if (showLibrary)
 	{
-		worldSelectRects[i].Update();
-	}
-
-	if (activeLibraryWorld >= 0)
-	{
-		for (auto it = libraryEnemiesVec[activeLibraryWorld].begin();
-			it != libraryEnemiesVec[activeLibraryWorld].end(); ++it)
+		for (int i = 0; i < 9; ++i)
 		{
-			if ((*it) != NULL)
+			worldSelectRects[i].Update();
+		}
+
+		if (activeLibraryWorld >= 0)
+		{
+			for (auto it = libraryEnemiesVec[activeLibraryWorld].begin();
+				it != libraryEnemiesVec[activeLibraryWorld].end(); ++it)
 			{
-				(*it)->Update();
+				if ((*it) != NULL)
+				{
+					(*it)->Update();
+				}
 			}
 		}
 	}
+}
+
+void CreateEnemyModeUI::SetLibraryShown(bool s)
+{
+	if (showLibrary != s)
+	{
+		showLibrary = s;
+		SetActiveLibraryWorld(-1);
+
+		if (showLibrary)
+		{
+			for (int i = 0; i < 9; ++i)
+			{
+				worldSelectRects[i].SetShown(true);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < 9; ++i)
+			{
+				worldSelectRects[i].SetShown(false);
+			}
+		}
+
+	}
+}
+
+void CreateEnemyModeUI::FlipLibraryShown()
+{
+	SetLibraryShown(!showLibrary);
 }
 
 void CreateEnemyModeUI::Draw(sf::RenderTarget *target)
@@ -307,9 +356,14 @@ void CreateEnemyModeUI::Draw(sf::RenderTarget *target)
 	//libraryPanel->Draw(target);
 
 	topbarCont->Draw(target);
-	libCont->Draw(target);
+	if (showLibrary)
+	{
+		libCont->Draw(target);
+	}
 
 	target->draw(allQuads, numAllQuads * 4, sf::Quads);
+
+	librarySearchRect->Draw(target);
 	//topbarCont->Draw(target);
 	//target->draw(hotbarQuads, activeHotbarSize * 4, sf::Quads);
 	for (int i = 0; i < activeHotbarSize; ++i)
@@ -319,19 +373,23 @@ void CreateEnemyModeUI::Draw(sf::RenderTarget *target)
 
 	//target->draw(allEnemyQuads, allEnemyRects.size() * 4, sf::Quads);
 	//target->draw(worldSelectQuads, 9 * 4, sf::Quads);
-	for (int i = 0; i < 9; ++i)
+	if (showLibrary)
 	{
-		worldSelectRects[i].Draw(target);
-	}
-
-	if (activeLibraryWorld >= 0)
-	{
-		for (auto it = libraryEnemiesVec[activeLibraryWorld].begin();
-			it != libraryEnemiesVec[activeLibraryWorld].end(); ++it)
+		for (int i = 0; i < 9; ++i)
 		{
-			if ((*it) != NULL)
+			worldSelectRects[i].Draw(target);
+		}
+
+	
+		if (activeLibraryWorld >= 0)
+		{
+			for (auto it = libraryEnemiesVec[activeLibraryWorld].begin();
+				it != libraryEnemiesVec[activeLibraryWorld].end(); ++it)
 			{
-				(*it)->Draw(target);
+				if ((*it) != NULL)
+				{
+					(*it)->Draw(target);
+				}
 			}
 		}
 	}
