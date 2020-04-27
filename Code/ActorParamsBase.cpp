@@ -19,7 +19,9 @@ Enemy *ActorParams::GenerateEnemy()
 {
 	if (type->info.enemyCreator != NULL)
 	{
-		return type->info.enemyCreator(this);
+		Enemy *e = type->info.enemyCreator(this);
+		e->SetActionEditLoop();
+		return e;
 	}
 	else
 	{
@@ -346,7 +348,7 @@ void ActorParams::SetPanelInfo()
 
 void ActorParams::SetSelected(bool select)
 {
-	cout << "------selected: " << select << endl;
+	//cout << "------selected: " << select << endl;
 	selected = select;
 }
 
@@ -721,6 +723,8 @@ void ActorParams::AnchorToRail(TerrainRail *rail,
 	V2d pr(curr->pos.x, curr->pos.y);
 	V2d cu(next->pos.x, next->pos.y);
 
+	SetAABBOutlineColor(Color::Green);
+
 	V2d newPoint(pr.x + (cu.x - pr.x) * (quantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
 		quantity / length(cu - pr));
 
@@ -745,6 +749,7 @@ void ActorParams::AnchorToGround(PolyPtr poly, int edgeIndex, double quantity)
 
 	UpdateGroundedSprite();
 	SetBoundingQuad();
+	SetAABBOutlineColor(Color::Green);
 
 	if (myEnemy != NULL)
 	{
@@ -762,6 +767,7 @@ void ActorParams::AnchorToGround(PositionInfo &gi)
 
 	UpdateGroundedSprite();
 	SetBoundingQuad();
+	SetAABBOutlineColor(Color::Green);
 
 	if (myEnemy != NULL)
 	{
@@ -779,6 +785,7 @@ void ActorParams::AnchorToRail(PositionInfo &gi)
 
 	UpdateGroundedSprite();
 	SetBoundingQuad();
+	SetAABBOutlineColor(Color::Green);
 }
 
 bool ActorParams::UnAnchor()
@@ -920,9 +927,10 @@ void ActorParams::Move(sf::Vector2i delta)
 void ActorParams::BrushDraw(sf::RenderTarget *target,
 	bool valid)
 {
-	image.setColor(Color(255, 255, 255, 100));
-	target->draw(image);
-	image.setColor(Color::White);
+	Draw(target);
+	//image.setColor(Color(255, 255, 255, 100));
+	//target->draw(image);
+	//image.setColor(Color::White);
 }
 
 void ActorParams::Deactivate()

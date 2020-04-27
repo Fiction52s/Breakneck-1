@@ -171,53 +171,70 @@ sf::Vector2f Brush::GetTerrainSize()
 
 sf::Vector2i &Brush::GetCenter()
 {
-	int left;
-	int right;
-	int top;
-	int bottom;
-
-	PolyPtr tp;
-	ActorPtr ap;
-	if (objects.size() > 0)
-	{
-		SelectPtr sp = objects.front();
-		tp = sp->GetAsTerrain();
-		if (tp != NULL)
-		{
-			left = tp->left;
-			right = tp->right;
-			top = tp->top;
-			bottom = tp->bottom;
-		}
-		else
-		{
-			ap = sp->GetAsActor();
-			if( ap != NULL )
-			{
-				ap = sp->GetAsActor();
-				return ap->GetIntPos();
-			}
-		}
-	}
-	else
+	if( objects.empty() )
 	{
 		center = Vector2i(0, 0);
 		assert(0);
 		return center;
 	}
-	
-	auto it = objects.begin();
-	++it;
 
-	for ( ; it != objects.end(); ++it)
+	int left = 0;
+	int right = 0;
+	int top = 0;
+	int bottom = 0;
+
+	PolyPtr tp;
+	ActorPtr ap;
+	SelectPtr sp;
+
+	bool init = false;
+
+	for( auto it = objects.begin(); it != objects.end(); ++it )
 	{
-		tp = (*it)->GetAsTerrain();
+		sp = (*it);
+		tp = sp->GetAsTerrain();
 		if (tp != NULL)
 		{
-			left = min(left, tp->left);
-			right = max(right, tp->right);
-			top = min(top, tp->top);
-			bottom = max(bottom, tp->bottom);
+			if( !init )
+			{
+				init = true;
+				left = tp->left;
+				right = tp->right;
+				top = tp->top;
+				bottom = tp->bottom;
+			}
+			else
+			{
+				left = min(left, tp->left);
+				right = max(right, tp->right);
+				top = min(top, tp->top);
+				bottom = max(bottom, tp->bottom);
+			}
+		}
+		else
+		{
+			ap = sp->GetAsActor();
+			if( ap != NULL && ap->posInfo.ground == NULL 
+				&& ap->posInfo.railGround == NULL )
+			{
+				if (!init)
+				{
+					init = true;
+					Vector2i intPos = ap->GetIntPos();
+					left = intPos.x;
+					right = intPos.x;
+					top = intPos.y;
+					bottom = intPos.y;
+				}
+				else
+				{
+					Vector2i intPos = ap->GetIntPos();
+					left = min( left, intPos.x);
+					right = max( right, intPos.x);
+					top = min( top, intPos.y);
+					bottom = max( top, intPos.y);
+				}
+			}
 		}
 	}
 
@@ -322,21 +339,32 @@ Brush *Brush::Copy()
 			PolyPtr ptr = tp->Copy();
 			newBrush->AddObject(ptr);
 		}
-		else
-		{
-			ap = (*it)->GetAsActor();
-			if (ap != NULL)
-			{
-				if (ap->type == sess->types["player"])
-				{
-					continue;
-				}
+	}
 
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		ap = (*it)->GetAsActor();
+		if (ap != NULL)
+		{
+			if (ap->type == sess->types["player"])
+			{
+				continue;
+			}
+
+			PolyPtr myPoly = ap->posInfo.ground;
+			if ((myPoly != NULL && myPoly->selected) || myPoly == NULL )
+			{
 				ActorPtr aPtr = ap->Copy();
-				if (aPtr->posInfo.ground != NULL)
+				aPtr->selected = false;
+				if (myPoly != NULL)
 				{
-					aPtr->AnchorToGround(aPtr->posInfo);
+					aPtr->CreateMyEnemy();
+					//aPtr->UnAnchor();
+					aPtr->posInfo.ground = myPoly->mostRecentCopy;
+					aPtr->AnchorToGround(PositionInfo(aPtr->posInfo));
+					aPtr->posInfo.AddActor(aPtr);
 				}
+				
 				newBrush->AddObject(aPtr);
 			}
 		}

@@ -973,7 +973,7 @@ TerrainPolygon::TerrainPolygon()
 	totalNumBorderQuads = 0;
 	ts_border = NULL;
 	borderQuads = NULL;
-
+	mostRecentCopy = NULL;
 	inverse = false;
 	layer = 0;
 	va = NULL;
@@ -1003,6 +1003,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	decorTree = new QuadTree(1000000, 1000000);
 	myTerrainTree = new QuadTree(1000000, 1000000);
 	tdInfo = NULL;
+	mostRecentCopy = NULL;
 	sess = poly.sess;
 	layer = 0;
 	inverse = poly.inverse;
@@ -4321,6 +4322,7 @@ PolyPtr TerrainPolygon::Copy()
 {
 	PolyPtr newPoly = new TerrainPolygon(*this, true);
 	newPoly->Finalize();
+	mostRecentCopy = newPoly;
 	return newPoly;
 }
 
@@ -4802,27 +4804,14 @@ bool TerrainPolygon::Intersects( sf::IntRect rect )
 		return true;
 	}
 
-	if (rectD.contains(GetDCenter()))
+	if (!inverse)
 	{
-		return true;
+		if (rectD.contains(GetDCenter()))
+		{
+			return true;
+		}
 	}
-
-	return false;
-	//TerrainPolygon poly;
-	//poly.AddPoint( Vector2i( rect.left, rect.top ), false );
-	//poly.AddPoint( Vector2i( rect.left + rect.width, rect.top ), false);
-	//poly.AddPoint( Vector2i( rect.left + rect.width, rect.top + rect.height ), false);
-	//poly.AddPoint( Vector2i( rect.left, rect.top + rect.height ), false);
-
-	//poly.UpdateBounds();
-
-	//if( IsTouching( &poly ) || poly.Contains( this ) ) //don't need this contains polys cuz im just using this for selection for now
-	//{
-	//	return true;
-	//}
-	//else
-	//	return false;
-
+	
 	return false;
 }
 

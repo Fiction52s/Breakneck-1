@@ -29,7 +29,7 @@ void ActorType::CreateDefaultEnemy()
 	for (int i = 0; i < info.numLevels; ++i)
 	{
 		defaultParamsVec[i] = info.pMaker(this, i+1);
-		defaultParamsVec[i]->myEnemy = defaultParamsVec[i]->GenerateEnemy();
+		defaultParamsVec[i]->CreateMyEnemy();
 		if (defaultParamsVec[i]->myEnemy != NULL)
 		{
 			defaultParamsVec[i]->myEnemy->facingRight = true;

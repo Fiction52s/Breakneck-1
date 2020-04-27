@@ -58,11 +58,10 @@ void EditSession::SetTrackingEnemy(ActorType *type, int level)
 		//GetPolygon((0);
 
 		//trackingEnemyParams->AnchorToGround();
-		trackingEnemyParams->myEnemy = trackingEnemyParams->GenerateEnemy();
+		trackingEnemyParams->CreateMyEnemy();
 		grabbedActor = trackingEnemyParams;
 		SelectObject(grabbedActor);
 
-		trackingEnemyParams->myEnemy->SetActionEditLoop();
 		trackingEnemyParams->MoveTo(Vector2i(worldPos));
 		//extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
 		grabbedActor->myEnemy->UpdateFromEditParams(0);
@@ -1753,6 +1752,10 @@ ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, PolyPtr poly )
 			//might need to make sure it CAN be grounded
 
 			ActorParams *newActor = actor->Copy();
+			if (actor->myEnemy != NULL)
+			{
+				newActor->CreateMyEnemy();
+			}
 			newActor->AnchorToGround(gi); //might be unnecessary
 
 			assert(newActor != NULL);
@@ -2363,6 +2366,14 @@ int EditSession::Run()
 
 		UpdatePolyShaders();
 		
+		/*int testSize = 0;
+		for (auto it = groups.begin(); it != groups.end(); ++it)
+		{
+			auto aList = (*it).second->actors;
+			testSize += aList.size();
+		}
+		cout << "testsize: " << testSize << endl;*/
+
 		Draw();
 		
 		DrawMode();		
@@ -7380,6 +7391,11 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 	AddFullPolysToBrush(inverseConnectedInters, gateInfoList, &orig);
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 
+	if (complexPaste == NULL)
+	{
+		TryAttachActorsToPolys(brushPolys, attachList, &resultBrush);
+	}
+	
 	TryAttachActorsToPolys(nonInverseInters, attachList, &resultBrush);
 	TryAttachActorsToPolys(inverseConnectedInters, attachList, &resultBrush);
 	TryKeepGates(gateInfoList, attachList, &resultBrush);
@@ -7708,6 +7724,9 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 bool EditSession::BoxSelectPolys(sf::IntRect &rect)
 {
 	bool found = false;
+
+	if (rect.width == 0 || rect.height == 0)
+		return false;
 
 	auto & currPolyList = GetCorrectPolygonList();
 

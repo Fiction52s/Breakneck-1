@@ -237,7 +237,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	};
 
 	Session *sess;
-
+	PolyPtr mostRecentCopy;
 	TerrainPolygon *queryNext; //for quadtree setuff
 
 	void DrawPoints(sf::RenderTarget *target,
