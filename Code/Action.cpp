@@ -869,6 +869,16 @@ void MoveBrushAction::Perform()
 			if ((*it).first->myEnemy != NULL)
 				(*it).first->myEnemy->UpdateOnEditPlacement();
 		}
+
+		//if I want to optimize later, have the Finalize call not update bounds, because
+		//its forced to be called twice in this function. Once before enemies and once after.
+		if (!pointMover->newEnemyPosInfo.empty())
+		{
+			for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
+			{
+				(*it).first->UpdateBounds();
+			}
+		}
 	}
 
 	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
@@ -934,6 +944,16 @@ void MoveBrushAction::Undo()
 			(*it).first->SetBoundingQuad();
 			if ((*it).first->myEnemy != NULL)
 				(*it).first->myEnemy->UpdateOnEditPlacement();
+		}
+
+		if (!pointMover->oldEnemyPosInfo.empty())
+		{
+			//if I want to optimize later, have the Finalize call not update bounds, because
+			//its forced to be called twice in this function. Once before enemies and once after.
+			for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
+			{
+				(*it).first->UpdateBounds();
+			}
 		}
 	}
 

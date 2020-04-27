@@ -3574,6 +3574,9 @@ void EditSession::PerformMovePointsAction()
 	for (auto mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
 	{
 		poly = (*mit).first;
+
+		poly->AlignExtremes(); //adjust this later!!! need to take this into account
+
 		vector<PointMoveInfo> &pmVec = pm->movePoints[poly];
 		pmVec.reserve((*mit).second.size());
 		for (auto it = (*mit).second.begin(); it != (*mit).second.end(); ++it)
@@ -3586,8 +3589,6 @@ void EditSession::PerformMovePointsAction()
 
 		poly->StoreEnemyPositions(pm->newEnemyPosInfo);
 
-		poly->AlignExtremes(); //adjust this later!!! need to take this into account
-
 		poly->SoftReset();
 		poly->Finalize();
 		poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
@@ -3599,89 +3600,6 @@ void EditSession::PerformMovePointsAction()
 			(*it).first->SetBoundingQuad();
 		}
 	}
-
-
-
-	//TerrainPoint *curr;
-	//for (PointMap::iterator mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
-	//{
-	//	PolyPtr poly = (*mit).first;
-
-	//	auto &pmVec = pm.myMap[poly];
-
-	//	int polyNumP = poly->GetNumPoints();
-
-
-	//	pmVec.reserve(polyNumP);
-
-
-	//	for (auto it = poly->backupEnemyPosInfos.begin(); it != poly->backupEnemyPosInfos.end(); ++it)
-	//	{
-	//		pm.enemyBackups[(*it).first] = (*it).second;
-	//	}
-
-	//	for (auto it = poly->enemies.begin(); it != poly->enemies.end(); ++it)
-	//	{
-	//		auto &aList = (*it).second;
-	//		for (auto ait = aList.begin(); ait != aList.end(); ++ait)
-	//		{
-	//			pm.newEnemyPos[(*ait)] = (*ait)->posInfo;
-	//		}
-	//	}
-
-	//	for (auto it = poly->enemies.begin(); it != poly->enemies.end(); ++it)
-	//	{
-	//		auto aList = (*it).second;
-	//		for (auto ait = aList.begin(); ait != aList.end(); ++ait)
-	//		{
-	//			
-	//		}
-	//	}
-
-	//	for (int i = 0; i < polyNumP; ++i)
-	//	{
-	//		curr = poly->GetPoint(i);
-
-	//		PointMoveInfo pi;
-
-	//		pi.poly = poly;
-	//		pi.pointIndex = i;
-	//		
-	//		pi.newPos = curr->pos;
-	//		if (curr->selected)
-	//		{
-	//			//pi.newPos = curr->pos;
-	//			pi.origPos = poly->backupPoints[i];
-	//			//pi.delta = delta;
-	//			//pi.origPos = curr->pos - delta;
-	//			pi.moveIntent = true;
-	//		}
-	//		else
-	//		{
-	//			pi.origPos = curr->pos;
-	//		}
-
-	//		/*auto currEnemyIt = poly->enemies.find(curr);
-	//		if (currEnemyIt != poly->enemies.end())
-	//		{
-	//			list<ActorPtr> &aList = (*currEnemyIt).second;
-	//			if (!aList.empty())
-	//			{
-	//				pi.newPosInfoVec.reserve(aList.size());
-	//				for (auto it = aList.begin(); it != aList.end(); ++it)
-	//				{
-	//					pi.newPosInfoVec.push_back((*it)->posInfo);
-	//				}
-
-	//				pi.posInfoVec = poly->backupEnemyPosInfos[curr];
-	//			}
-	//		}*/
-	//		
-	//		
-
-	//		pmVec.push_back(pi);
-	//	}
-	//}
 
 	for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
 	{
