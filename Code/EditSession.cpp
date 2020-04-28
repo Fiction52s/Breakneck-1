@@ -7907,29 +7907,37 @@ double EditSession::GetZoomedMinEdgeLength()
 
 void EditSession::UpdateGrass()
 {
-	if (showGrass)
-	{
-		PolyPtr tp;
-		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-		{
-			tp = (*it)->GetAsTerrain();
-			if (tp != NULL)
-				tp->UpdateGrass();
-		}
-	}
+	//if (showGrass)
+	//{
+	//	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	//	{
+	//		(*it)->UpdateGrass();
+	//	}
+	//	/*PolyPtr tp;
+	//	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	//	{
+	//		tp = (*it)->GetAsTerrain();
+	//		if (tp != NULL)
+	//			tp->UpdateGrass();
+	//	}*/
+	//}
 }
 
 void EditSession::ModifyGrass()
 {
 	if (showGrass && IsMousePressed(Mouse::Left))
 	{
-		PolyPtr tp;
+		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		{
+			(*it)->SwitchGrass(worldPos, !HoldingShift());
+		}
+		/*PolyPtr tp;
 		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 		{
 			tp = (*it)->GetAsTerrain();
 			if (tp != NULL)
 				tp->SwitchGrass(worldPos);
-		}
+		}*/
 	}
 }
 
@@ -8495,12 +8503,19 @@ void EditSession::ShowGrass(bool s)
 	showGrass = s;
 
 	PolyPtr tp;
-	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		(*it)->ShowGrass(showGrass);
+	}
+
+
+	/*for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 	{
 		tp = (*it)->GetAsTerrain();
 		if (tp != NULL)
 			tp->ShowGrass(s);
-	}
+	}*/
 }
 
 void EditSession::ModifyZoom(double factor)

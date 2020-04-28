@@ -385,6 +385,11 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetupGrass(int i, int &grassIndex);
 	void SetupGrass();
 	void SetupGrass(std::list<GrassSeg> &segments);
+	void AddGrassToTree(QuadTree *tree );
+	void SetGrassOn(int gIndex, bool on);
+	V2d GetGrassCenter(int gIndex);
+
+
 	sf::Shader *pShader;
 	bool IsValidInProgressPoint(sf::Vector2i point);
 	void UpdateLinePositions();
@@ -462,7 +467,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	void ShowGrass(bool show);
 	void ProcessGrass(std::list<GrassSeg> &segments );
-	void SwitchGrass(sf::Vector2<double> mousePos);
+	void SwitchGrass(V2d &mousePos, bool on);
 	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected(bool select);
 
@@ -537,6 +542,19 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	sf::Vertex *lines;
 	sf::VertexArray *va;
 	sf::VertexArray *grassVA;
+
+	enum GrassState : int
+	{
+		G_OFF_DONT_SHOW,
+		G_OFF,
+		//G_OFF_EDITED,
+		//G_ON_EDITED,
+		G_ON
+	};
+	std::vector<int> grassStateVec;
+	//0 is off and not showing
+	//1 is off and showing
+	//2 is on and showing
 	int numGrassTotal;
 	int vaSize;
 	//bool selected;
@@ -555,7 +573,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b);
 	
 	int writeIndex;
-	bool isGrassShowing;
 	bool finalized;
 
 	int layer; //0 is game layer. 1 is bg
