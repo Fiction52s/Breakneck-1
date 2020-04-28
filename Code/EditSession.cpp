@@ -3866,9 +3866,6 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			prevEdge = poly->GetPrevEdge(i);
 
 			oldPrevLength = prevEdge->GetLength();
-			//double oldMinQuant;
-			//ActorPtr oldClosest = poly->GetClosestEnemy(prev->GetIndex(), oldMinQuant);
-			//double idealPrevLength = oldPrevLength - oldMinQuant;
 			//only need to do for the prevs, since anything moved on my edge stays at the same
 			//quantity, the edge just moves.
 			auto enemyIt = poly->enemies.find(prev);
@@ -3954,6 +3951,11 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			list<ActorPtr> &currList = (*currIt).second;
 			for (auto it = currList.begin(); it != currList.end(); ++it)
 			{
+				//this is only on prev because the ground quant is not changed on curr
+				if ((*it)->myEnemy != NULL)
+				{
+					(*it)->myEnemy->UpdateOnEditPlacement();
+				}
 				(*it)->UpdateGroundedSprite();
 				(*it)->SetBoundingQuad();
 			}
@@ -3962,6 +3964,8 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 
 		if (!poly->IsInternallyValid())
 		{
+			//this isnt updating the enemy sprites. is this even happening??
+
 			for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
 			{
 				poly->SetPointPos((*pit).pointIndex, (*pit).oldPos);

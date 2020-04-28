@@ -1022,10 +1022,14 @@ void MoveBrushAction::Perform()
 		for (auto it = pointMover->newEnemyPosInfo.begin(); it != pointMover->newEnemyPosInfo.end(); ++it)
 		{
 			(*it).first->posInfo = (*it).second;
-			(*it).first->UpdateGroundedSprite();
-			(*it).first->SetBoundingQuad();
+
 			if ((*it).first->myEnemy != NULL)
 				(*it).first->myEnemy->UpdateOnEditPlacement();
+
+			
+			(*it).first->UpdateGroundedSprite();
+			(*it).first->SetBoundingQuad();
+			
 		}
 
 		//if I want to optimize later, have the Finalize call not update bounds, because
@@ -1098,10 +1102,12 @@ void MoveBrushAction::Undo()
 		for (auto it = pointMover->oldEnemyPosInfo.begin(); it != pointMover->oldEnemyPosInfo.end(); ++it)
 		{
 			(*it).first->posInfo = (*it).second;
-			(*it).first->UpdateGroundedSprite();
-			(*it).first->SetBoundingQuad();
 			if ((*it).first->myEnemy != NULL)
 				(*it).first->myEnemy->UpdateOnEditPlacement();
+
+			(*it).first->UpdateGroundedSprite();
+			(*it).first->SetBoundingQuad();
+			
 		}
 
 		if (!pointMover->oldEnemyPosInfo.empty())
