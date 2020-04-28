@@ -317,6 +317,7 @@ struct Session : TilesetManager
 	QuadTree *railEdgeTree;
 	QuadTree *barrierTree;
 	QuadTree *borderTree;
+	QuadTree *grassTree;
 
 
 

@@ -847,7 +847,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	
 	QuadTree *terrainBGTree;
 	QuadTree * enemyTree;
-	QuadTree * grassTree;
 	QuadTree * gateTree;
 	QuadTree * itemTree;
 	

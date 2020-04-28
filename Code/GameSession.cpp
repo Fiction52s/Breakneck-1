@@ -458,12 +458,6 @@ void GameSession::Cleanup()
 		gateTree = NULL;
 	}
 
-	if (grassTree != NULL)
-	{
-		delete grassTree;
-		grassTree = NULL;
-	}
-
 	if (enemyTree != NULL)
 	{
 		delete enemyTree;
@@ -7269,8 +7263,6 @@ void GameSession::Init()
 	itemTree = NULL;
 	
 	gateTree = NULL;
-	
-	grassTree = NULL;
 	
 	enemyTree = NULL;
 

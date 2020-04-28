@@ -11,6 +11,7 @@
 #include "Physics.h"
 #include "TerrainDecor.h"
 #include "PositionInfo.h"
+#include "Grass.h"
 //#include "ActorParamsBase.h"
 
 
@@ -301,7 +302,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	QuadTree *decorTree;
 	QuadTree *myTerrainTree;
 
-
+	std::vector<Grass> activeGrass;
 	//normal stuff
 
 	RenderMode renderMode;
@@ -383,6 +384,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int GetNumGrass(int i, bool &rem);
 	void SetupGrass(int i, int &grassIndex);
 	void SetupGrass();
+	void SetupGrass(std::list<GrassSeg> &segments);
 	sf::Shader *pShader;
 	bool IsValidInProgressPoint(sf::Vector2i point);
 	void UpdateLinePositions();
@@ -459,7 +461,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 
 	void ShowGrass(bool show);
-
+	void ProcessGrass(std::list<GrassSeg> &segments );
 	void SwitchGrass(sf::Vector2<double> mousePos);
 	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected(bool select);

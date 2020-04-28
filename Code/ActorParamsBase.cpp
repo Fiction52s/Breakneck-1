@@ -86,6 +86,11 @@ ActorParams::~ActorParams()
 {
 	if (lines != NULL)
 		delete lines;
+
+	if (myEnemy != NULL)
+	{
+		delete myEnemy;
+	}
 }
 
 void ActorParams::CreateMyEnemy()

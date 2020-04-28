@@ -1091,6 +1091,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	railEdgeTree = NULL;
 	barrierTree = NULL;
 	borderTree = NULL;
+	grassTree = NULL;
 
 	staticItemTree = NULL;
 
@@ -1164,6 +1165,9 @@ Session::~Session()
 
 	if (staticItemTree != NULL)
 		delete staticItemTree;
+
+	if (grassTree != NULL)
+		delete grassTree;
 
 
 	if (mapHeader != NULL)
@@ -1494,34 +1498,7 @@ bool Session::ReadTerrainGrass(std::ifstream &is, PolyPtr poly)
 		}
 	}
 
-	int grassIndex = 0;
-	VertexArray &grassVa = *poly->grassVA;
-	int polyNumP = poly->GetNumPoints();
-	bool rem;
-
-	int itReps;
-
-	int *indexArray = new int[polyNumP];
-	for (int i = 0; i < polyNumP; ++i)
-	{
-		indexArray[i] = grassIndex;
-		grassIndex += poly->GetNumGrass(i, rem);
-	}
-
-	for (list<GrassSeg>::iterator it = segments.begin(); it != segments.end(); ++it)
-	{
-		int vaIndex = indexArray[(*it).edgeIndex];
-		itReps = (*it).reps;
-		for (int extra = 0; extra <= itReps; ++extra)
-		{
-			grassVa[(vaIndex + (*it).index + extra) * 4].color.a = 255;
-			grassVa[(vaIndex + (*it).index + extra) * 4 + 1].color.a = 255;
-			grassVa[(vaIndex + (*it).index + extra) * 4 + 2].color.a = 255;
-			grassVa[(vaIndex + (*it).index + extra) * 4 + 3].color.a = 255;
-		}
-	}
-
-	delete[] indexArray;
+	poly->ProcessGrass(segments);
 
 	return true;
 }

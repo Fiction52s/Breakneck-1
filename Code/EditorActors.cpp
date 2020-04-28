@@ -41,6 +41,11 @@ ActorType::~ActorType()
 {
 	if( panel != NULL)
 		delete panel;
+
+	for (auto it = defaultParamsVec.begin(); it != defaultParamsVec.end(); ++it)
+	{
+		delete (*it);
+	}
 }
 
 bool ActorType::CanBeGrounded()

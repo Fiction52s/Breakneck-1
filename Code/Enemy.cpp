@@ -601,6 +601,12 @@ Enemy::~Enemy()
 	{
 		delete comboObj;
 	}
+
+	if (surfaceMover != NULL)
+		delete surfaceMover;
+
+	if (groundMover != NULL)
+		delete groundMover;
 }
 
 bool Enemy::ReadPath(std::ifstream &is,

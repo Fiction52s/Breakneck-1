@@ -21,6 +21,9 @@ struct Enemy;
 
 struct ActorParams : ISelectable
 {
+	ActorParams(ActorType *at);
+	~ActorParams();
+
 	Edge *GetGroundEdge();
 	int GetWorld();
 	int GetLevel();
@@ -37,8 +40,7 @@ struct ActorParams : ISelectable
 	sf::FloatRect GetGrabAABB();
 	sf::Vector2f GetGrabAABBCenter();
 	virtual ActorParams *Copy() = 0;
-	~ActorParams();
-	ActorParams(ActorType *at);
+	
 	bool SetLevel(int lev);
 	virtual void Init() {};
 	virtual void WriteParamFile(std::ofstream &of);

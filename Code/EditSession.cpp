@@ -735,7 +735,12 @@ EditSession::~EditSession()
 		freeActorCopiedBrush->Destroy();
 		delete freeActorCopiedBrush;
 	}
-		
+	
+	if (createEnemyModeUI != NULL)
+	{
+		delete createEnemyModeUI;
+	}
+
 
 	mapStartBrush->Destroy();
 
