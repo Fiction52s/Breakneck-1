@@ -2964,7 +2964,6 @@ void TerrainPolygon::Finalize()
 	UpdateBounds();
 
 	
-
 	AddTouchGrass(TouchGrass::TYPE_NORMAL);
 	//AddTouchGrass(TouchGrass::TYPE_TEST);
 

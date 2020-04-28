@@ -5607,9 +5607,13 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	//mapPreviewTex->draw(*tempva);ke
 	//delete tempva;
 
+	bool oldSelected;
 	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
 		(*it)->Draw( false, 1, mapPreviewTex, false, NULL );
+		(*it)->SetSelected(oldSelected);
 	}
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)

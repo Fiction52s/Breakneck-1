@@ -66,9 +66,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	int framesUntilBurrow;
 
 	double groundSpeed;
-
-	int crawlAnimationFactor;
-	int rollAnimationFactor;
 };
 
 #endif

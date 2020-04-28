@@ -70,12 +70,7 @@ Goal::Goal( ActorParams *ap )
 
 
 	SetOffGroundHeight(height / 2.0);
-	//sprite.setTexture(*ts->texture);
-
 	UpdateOnPlacement(ap);
-
-	
-	//SetCurrPosInfo(startPosInfo);
 
 	frame = 0;
 	animationFactor = 7;
@@ -88,6 +83,7 @@ Goal::Goal( ActorParams *ap )
 	//clean this up 
 	if (sess->IsSessTypeGame())
 	{
+		GameSession *game = GameSession::GetSession();
 
 		miniSprite.setTexture(*ts_mini->texture);
 		miniSprite.setTextureRect(ts_mini->GetSubRect(2));
@@ -118,8 +114,6 @@ Goal::Goal( ActorParams *ap )
 			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
 			break;
 		}
-
-		GameSession *game = GameSession::GetSession();
 
 		game->hasGoal = true;
 		game->goalPos = GetPosition();

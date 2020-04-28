@@ -95,6 +95,9 @@ Crawler::Crawler(ActorParams *ap )
 	animFactor[BURROW] = 4;
 	animFactor[UNDERGROUND] = 1;
 
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
+
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
 	hitboxInfo->drainX = 0;
@@ -102,15 +105,8 @@ Crawler::Crawler(ActorParams *ap )
 	hitboxInfo->hitlagFrames = 6;
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
-
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
-
 	
 	hitBody.hitboxInfo = hitboxInfo;
-
-	crawlAnimationFactor = 2;
-	rollAnimationFactor = 5;
 
 	ResetEnemy();
 
@@ -373,7 +369,7 @@ void Crawler::ProcessState()
 		break;
 	}
 
-	cout << "state: " << action << " , " << frame << endl;
+	//cout << "state: " << action << " , " << frame << endl;
 
 	//cout << "action: " << action << ", frame: " << frame << endl;
 	/*switch (action)
