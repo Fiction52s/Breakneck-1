@@ -5725,13 +5725,13 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 	Edge *edge;
 
 	Vector2i actorSize = a->GetSize();
-
+	double edgeLen;
 
 	double testRadius = actorSize.y * ( 2.0 / 3.0 );//actorAABB.width / 3;//a->type->info.size.y /2;//actorAABB.height;//200
 	//testPoint = a->GetIntPos();
 
-	double minQuant = actorSize.x / 2;
-	double extra = actorSize.x;
+	double minQuant = 0;//actorSize.x / 2;
+	//double extra = actorSize.x;
 
 	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
@@ -5757,7 +5757,7 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 			{
 				curr = (*it)->GetPoint(i);
 				prev = (*it)->GetPrevPoint(i);
-				edge = (*it)->GetEdge(i);
+				edge = (*it)->GetPrevEdge(i);
 
 				double dist = //abs(
 					cross(
@@ -5773,20 +5773,31 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 
 				//these should only apply to single actors
 				//if ( a == grabbedActor )//IsSingleActorSelected())
+
+				//atm you can now place actors anywhere since they are all spheres. maybe some special
+				//stuff later where you dont want this..can make another variable for it later
+
+				edgeLen = edge->GetLength();
 				if( brush->HasSingleActor() )
 				{
-					if (testQuantity >= 0 && testQuantity < minQuant)
+					/*if (testQuantity >= 0 && testQuantity < minQuant)
 						testQuantity = minQuant;
 					else if (testQuantity > length(cu - pr) - minQuant && testQuantity <= length(cu - pr))
 					{
 						testQuantity = floor(length(cu - pr) - minQuant);
+					}*/
+					if (testQuantity > -actorSize.x / 2.0 && testQuantity < 0)
+						testQuantity = 0;
+					else if (testQuantity > edgeLen && testQuantity <= edgeLen + actorSize.x / 2.0)
+					{
+						testQuantity = floor(edgeLen);
 					}
 				}
 
 				
 
-				V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / length(cu - pr)), pr.y + (cu.y - pr.y) *
-					(testQuantity / length(cu - pr)));
+				V2d newPoint(pr.x + (cu.x - pr.x) * (testQuantity / edgeLen), pr.y + (cu.y - pr.y) *
+					(testQuantity / edgeLen));
 
 				V2d norm = edge->Normal();
 				//if( cross( worldPos - edge->v0,edge->Along()))
@@ -5797,7 +5808,8 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 				}*/
 
 
-				if (((dist >= 0 && dist < testRadius) || (pointInPoly && dist < 0 && dist > - 200 )) && testQuantity >= minQuant && testQuantity <= length(cu - pr) - minQuant
+				if (((dist >= 0 && dist < testRadius) || (pointInPoly && dist < 0 && dist > - 200 )) 
+					&& testQuantity >= minQuant && testQuantity <= edgeLen - minQuant
 					&& length(newPoint - te) < length(closestPoint - te))
 				{
 					minDistance = dist;

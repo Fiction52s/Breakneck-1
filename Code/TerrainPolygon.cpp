@@ -2809,9 +2809,6 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 		Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
 		Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
 
-		
-		//grassVa[grassIndex*4].
-
 		//grassVa[i*4].color = Color( 0x0d, 0, 0x80 );//Color::Magenta;
 		grassVA[grassIndex * 4].color.a = 0;
 		grassVA[grassIndex * 4].position = topLeft;
@@ -2955,6 +2952,8 @@ void TerrainPolygon::Finalize()
 		v[i * 3 + 2] = Vertex(Vector2f(GetPoint(indices[i * 3 + 2])->pos), testColor);
 	}
 
+	SetupGrass();
+
 	SetMaterialType( terrainWorldType, terrainVariation );
 
 	GenerateBorderMesh();
@@ -2964,7 +2963,7 @@ void TerrainPolygon::Finalize()
 
 	UpdateBounds();
 
-	SetupGrass();
+	
 
 	AddTouchGrass(TouchGrass::TYPE_NORMAL);
 	//AddTouchGrass(TouchGrass::TYPE_TEST);
@@ -3133,6 +3132,7 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 	//should always be true atm?
 	if (sess->IsSessTypeGame())
 	{
+		gType = GetGrassType();
 		GameSession *game = GameSession::GetSession();
 		game->hasGrass[gType] = true;
 		game->hasAnyGrass = true;
@@ -5236,7 +5236,7 @@ ActorPtr TerrainPolygon::GetClosestEnemy(int index, double &minQuant )
 		list<ActorPtr> &actorList = enemies[GetPoint(index)];
 		for (auto it = actorList.begin(); it != actorList.end(); ++it)
 		{
-			currMinQuant = (*it)->posInfo.groundQuantity - (*it)->GetSize().x / 2;
+			currMinQuant = (*it)->posInfo.groundQuantity;// -(*it)->GetSize().x / 2;
 			if (it == actorList.begin())
 			{
 				minQuant = currMinQuant;
@@ -5267,7 +5267,7 @@ ActorPtr TerrainPolygon::GetFurthestEnemy(int index, double &maxQuant)
 		list<ActorPtr> &actorList = enemies[GetPoint(index)];
 		for (auto it = actorList.begin(); it != actorList.end(); ++it)
 		{
-			currMaxQuant = (*it)->posInfo.groundQuantity + (*it)->GetSize().x / 2;
+			currMaxQuant = (*it)->posInfo.groundQuantity;// +(*it)->GetSize().x / 2;
 			if (it == actorList.begin())
 			{
 				maxQuant = currMaxQuant;

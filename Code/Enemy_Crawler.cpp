@@ -288,6 +288,7 @@ void Crawler::ProcessState()
 			}
 			break;
 		case CRAWL:
+			action = DECIDE;
 			frame = 0;
 			break;
 		case ATTACK:
@@ -298,6 +299,7 @@ void Crawler::ProcessState()
 			frame = 0;
 			break;
 		case DASH:
+			action = DECIDE;
 			action = DECIDE;
 			frame = 0;
 			break;
@@ -370,6 +372,8 @@ void Crawler::ProcessState()
 		Accelerate(dashAccel);
 		break;
 	}
+
+	cout << "state: " << action << " , " << frame << endl;
 
 	//cout << "action: " << action << ", frame: " << frame << endl;
 	/*switch (action)
@@ -515,7 +519,7 @@ void Crawler::DebugDraw(RenderTarget *target)
 
 void Crawler::TransferEdge(Edge *e)
 {
-	DecideMovement();
+	//DecideMovement();
 }
 
 bool Crawler::ShouldAttack()
