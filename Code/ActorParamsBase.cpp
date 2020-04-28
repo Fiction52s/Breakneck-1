@@ -401,27 +401,33 @@ void ActorParams::Draw(sf::RenderTarget *target)
 
 	//temporary checks might make it lag less?
 
-	DrawLevel(target);
-
-	DrawMonitor(target);
+	
 
 	Vector2f viewCenter = target->getView().getCenter();
 	Vector2f viewSize = target->getView().getSize();
-	if (image.getGlobalBounds().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
-		viewSize.x, viewSize.y)))
+	//if (image.getGlobalBounds().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
+	//	viewSize.x, viewSize.y)))
+	if( GetAABB().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
+			viewSize.x, viewSize.y)))
 	{
+		DrawLevel(target);
+
+		DrawMonitor(target);
+
 		if (myEnemy != NULL)
 			myEnemy->Draw(target);
 		else
 		{
 			target->draw(image);
 		}
+
+		DrawBoundary(target);
+
+		DrawQuad(target);
 		
 	}
 
-	DrawBoundary(target);
-
-	DrawQuad(target);
+	
 	
 	/*if( myEnemy != NULL )
 		myEnemy->DebugDraw(target);*/

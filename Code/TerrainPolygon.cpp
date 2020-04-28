@@ -1871,7 +1871,7 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 		VertexArray &grassVa = *grassVA;
 
 		int edgeIndex = 0;
-		int i = 0;
+		int index = 0;
 		int numP = GetNumPoints();
 		TerrainPoint *curr, *prev, *next;
 		for (int i = 0; i < numP; ++i)
@@ -1894,7 +1894,7 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 			bool hasGrass = false;
 			for (int j = 0; j < num; ++j)
 			{
-				if (grassVa[i * 4].color.a == 255 || grassVa[i * 4].color.a == 254)
+				if (grassVa[index * 4].color.a == 255 || grassVa[index * 4].color.a == 254)
 				{
 					hasGrass = true;
 					if (gPtr == NULL)
@@ -1913,7 +1913,7 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 						gPtr = NULL;
 				}
 
-				++i;
+				++index;
 			}
 
 			if (hasGrass)

@@ -979,7 +979,7 @@ void EditSession::ProcessTerrain(PolyPtr poly)
 
 	GetCorrectPolygonList(poly).push_back(poly);
 
-	poly->Finalize();
+	//poly->Finalize();
 
 	if (enemyEdgePolygon == NULL)
 	{

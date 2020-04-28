@@ -1029,7 +1029,6 @@ void MoveBrushAction::Perform()
 			
 			(*it).first->UpdateGroundedSprite();
 			(*it).first->SetBoundingQuad();
-			
 		}
 
 		//if I want to optimize later, have the Finalize call not update bounds, because

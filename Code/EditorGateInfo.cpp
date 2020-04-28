@@ -235,7 +235,7 @@ void GateInfo::Draw(sf::RenderTarget *target)
 void GateInfo::DrawPreview(sf::RenderTarget * target)
 {
 	sf::Vertex thickerLine[4];
-	double width = 80;
+	double width = 30;
 	V2d dv0(point0->pos.x, point0->pos.y);
 	V2d dv1(point1->pos.x, point1->pos.y);
 	V2d along = normalize(dv1 - dv0);

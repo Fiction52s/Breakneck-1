@@ -1505,7 +1505,7 @@ bool Session::ReadTerrainGrass(std::ifstream &is, PolyPtr poly)
 	for (int i = 0; i < polyNumP; ++i)
 	{
 		indexArray[i] = grassIndex;
-		grassIndex += poly->GetNumGrass(i, rem);;
+		grassIndex += poly->GetNumGrass(i, rem);
 	}
 
 	for (list<GrassSeg>::iterator it = segments.begin(); it != segments.end(); ++it)
@@ -1563,6 +1563,8 @@ bool Session::ReadTerrain(std::ifstream &is)
 
 		poly->Load(is);
 		numPoints -= poly->GetNumPoints();
+
+		poly->Finalize(); //need this before readTerrainGrass
 
 		ReadTerrainGrass(is, poly);
 
