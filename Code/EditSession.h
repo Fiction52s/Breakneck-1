@@ -401,7 +401,7 @@ struct EditSession : GUIHandler, Session
 	void AddActorMove(Action *a);
 
 	PositionInfo ConvertPointToGround( sf::Vector2i point,
-		ActorPtr actor );
+		ActorPtr actor, Brush *brush );
 	PositionInfo ConvertPointToRail(sf::Vector2i point);
 	void CreateActor( ActorPtr actor );
 	void CreateDecorImage(DecorPtr dec);
@@ -688,7 +688,9 @@ struct EditSession : GUIHandler, Session
 
 	bool AnchorSelectedEnemies();
 
-	void MoveSelectedActors(sf::Vector2i &delta);
+	void MoveActors(sf::Vector2i &delta, 
+		V2d &grabCenter,
+		Brush *brush );
 
 	void FixPathSlivers(ClipperLib::Path &p);
 	bool FixPathSlivers(ClipperLib::Path &p,

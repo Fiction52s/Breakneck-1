@@ -217,10 +217,12 @@ sf::Vector2i &Brush::GetCenter()
 			if( ap != NULL && ap->posInfo.ground == NULL 
 				&& ap->posInfo.railGround == NULL )
 			{
+				
+				Vector2i intPos(ap->GetGrabAABBCenter());
 				if (!init)
 				{
 					init = true;
-					Vector2i intPos = ap->GetIntPos();
+					//Vector2i intPos = ap->GetIntPos();
 					left = intPos.x;
 					right = intPos.x;
 					top = intPos.y;
@@ -228,7 +230,7 @@ sf::Vector2i &Brush::GetCenter()
 				}
 				else
 				{
-					Vector2i intPos = ap->GetIntPos();
+					//Vector2i intPos = ap->GetIntPos();
 					left = min( left, intPos.x);
 					right = max( right, intPos.x);
 					top = min( top, intPos.y);
@@ -352,21 +354,33 @@ Brush *Brush::Copy()
 			}
 
 			PolyPtr myPoly = ap->posInfo.ground;
-			if ((myPoly != NULL && myPoly->selected) || myPoly == NULL )
-			{
-				ActorPtr aPtr = ap->Copy();
-				aPtr->selected = false;
-				if (myPoly != NULL)
+			
+			
+			ActorPtr aPtr = ap->Copy();
+			aPtr->CreateMyEnemy();
+			aPtr->selected = false;
+
+			if (myPoly != NULL)
+			{	
+				if (myPoly->selected)
 				{
-					aPtr->CreateMyEnemy();
-					//aPtr->UnAnchor();
 					aPtr->posInfo.ground = myPoly->mostRecentCopy;
 					aPtr->AnchorToGround(PositionInfo(aPtr->posInfo));
 					aPtr->posInfo.AddActor(aPtr);
 				}
-				
-				newBrush->AddObject(aPtr);
+				else
+				{
+					aPtr->UnAnchor();
+					if (aPtr->myEnemy != NULL)
+					{
+						aPtr->myEnemy->UpdateFromEditParams(0);
+						//aPtr->myEnemy->UpdateFromEditParams(0);
+						//myEnemy->UpdateSprite(); //this is just for testing
+					}
+				}
 			}
+				
+			newBrush->AddObject(aPtr);
 		}
 	}
 
@@ -402,7 +416,10 @@ bool Brush::IsEmpty()
 	return objects.empty();
 }
 
-
+bool Brush::HasSingleActor()
+{
+	return (objects.size() == 1 && objects.front()->selectableType == ISelectable::ACTOR);
+}
 
 void Brush::RemoveObject( SelectPtr obj )
 {

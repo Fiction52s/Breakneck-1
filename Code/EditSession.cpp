@@ -2258,7 +2258,7 @@ int EditSession::Run()
 
 	while( !quit )
 	{
-		if (mode == EDIT || mode == CREATE_ENEMY)
+		if (mode == EDIT || mode == CREATE_ENEMY || mode == PASTE )
 		{
 			double newTime = editClock.getElapsedTime().asSeconds();
 			double frameTime = newTime - editCurrentTime;
@@ -5758,7 +5758,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 }
 
 //needs cleanup badly
-PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr a )
+PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr a, Brush * brush )
 {
 	
 
@@ -5769,12 +5769,6 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 	//PolyPtr poly = NULL;
 	gi.ground = NULL;
 	gi.railGround = NULL;
-
-	if (mode == CREATE_ENEMY && enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
-	{
-		//cout << "uipos: " << uiMousePos.x << ", " << uiMousePos.y << endl;
-		return gi;
-	}
 
 	bool contains;
 
@@ -5852,7 +5846,7 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 
 				//these should only apply to single actors
 				//if ( a == grabbedActor )//IsSingleActorSelected())
-				if( IsSingleActorSelected())
+				if( brush->HasSingleActor() )
 				{
 					if (testQuantity >= 0 && testQuantity < minQuant)
 						testQuantity = minQuant;
@@ -6316,13 +6310,43 @@ void EditSession::PasteTerrain(Brush *b)
 
 	Brush orig;
 	Brush result;
-	if (HoldingControl())
+	if (!brushPolys.empty())
 	{
-		ExecuteTerrainMultiSubtract(brushPolys, orig, result);
+		if (HoldingControl())
+		{
+			ExecuteTerrainMultiSubtract(brushPolys, orig, result);
+		}
+		else
+		{
+			ExecuteTerrainMultiAdd(brushPolys, orig, result);
+		}
 	}
 	else
 	{
-		ExecuteTerrainMultiAdd(brushPolys, orig, result);
+		if (b->CanApply())
+		{
+			ActorPtr actor;
+			ActorPtr newActor;
+			for (auto it = b->objects.begin(); it != b->objects.end(); ++it)
+			{
+				actor = (*it)->GetAsActor();
+				if (actor != NULL)
+				{
+					newActor = actor->Copy();
+					if (actor->myEnemy != NULL)
+					{
+						newActor->CreateMyEnemy();
+					}
+
+					result.AddObject(newActor);
+
+					//actor->UnAnchor();
+					//actor->posInfo.RemoveActor(actor);
+
+
+				}
+			}
+		}
 	}
 
 	if( !orig.IsEmpty() || !result.IsEmpty() )
@@ -7583,6 +7607,9 @@ bool EditSession::PointSelectPoly(V2d &pos)
 bool EditSession::BoxSelectPoints(sf::IntRect &r,
 	double radius)
 {
+	if (r.width == 0 || r.height == 0)
+		return false;
+
 	auto & currPolyList = GetCorrectPolygonList();
 
 	bool specialMode = IsSpecialTerrainMode();
@@ -7653,6 +7680,9 @@ bool EditSession::BoxSelectPoints(sf::IntRect &r,
 
 bool EditSession::BoxSelectActors(sf::IntRect &rect)
 {
+	if (rect.width == 0 || rect.height == 0)
+		return false;
+
 	bool found = false;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -7692,6 +7722,9 @@ bool EditSession::BoxSelectActors(sf::IntRect &rect)
 
 bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 {
+	if (rect.width == 0 || rect.height == 0)
+		return false;
+
 	bool found = false;
 	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
 	{
@@ -7759,6 +7792,9 @@ bool EditSession::BoxSelectPolys(sf::IntRect &rect)
 
 bool EditSession::BoxSelectRails(sf::IntRect &rect)
 {
+	if (rect.width == 0 || rect.height == 0)
+		return false;
+
 	bool found = false;
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
@@ -8037,7 +8073,7 @@ void EditSession::AddActorMove(Action *a)
 	//if( moveAction )
 }
 
-void EditSession::MoveSelectedActors(sf::Vector2i &delta)
+void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush )
 {
 	ActorPtr actor;
 	Vector2i extraDelta = Vector2i(0, 0);
@@ -8048,20 +8084,20 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 	Vector2i diffPerActor;
 
 	std::vector<PositionInfo> piVec;
-	piVec.resize(selectedBrush->objects.size());
+	piVec.resize(brush->objects.size());
 
 	int piIndex = 0;
 	
 	int numCanBeAnchored = 0;
 	int numWillBeAnchored = 0;
 
-	PositionInfo grabbedActorInfo;
+	//PositionInfo grabbedActorInfo;
 
-	V2d grabCenter = V2d(grabbedActor->GetGrabAABBCenter());
+	//V2d grabCenter = V2d(grabbedActor->GetGrabAABBCenter());
 	extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
 
 	V2d actorRealignDiff;
-	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it, ++piIndex)
+	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it, ++piIndex)
 	{
 		actor = (*it)->GetAsActor();
 		if (actor == NULL )
@@ -8083,7 +8119,7 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 	}
 	
 	piIndex = 0;
-	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it, ++piIndex)
+	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it, ++piIndex)
 	{
 		actor = (*it)->GetAsActor();
 		if (actor == NULL)
@@ -8092,30 +8128,30 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 		if (actor->posInfo.ground == NULL && actor->type->CanBeGrounded() && !actor->type->CanBeAerial())
 		{
 			numCanBeAnchored++;
-			piVec[piIndex] = ConvertPointToGround(Vector2i(worldPos + actor->diffFromGrabbed), actor);
+			piVec[piIndex] = ConvertPointToGround(Vector2i(worldPos + actor->diffFromGrabbed), actor, brush);
 
 			if (piVec[piIndex].ground == NULL)
 				break;
 
-			if (actor == grabbedActor)
+			/*if (actor == grabbedActor)
 			{
 				grabbedActorInfo = piVec[piIndex];
-			}
+			}*/
 			numWillBeAnchored++;
 		}
 	}
 
 	if ( numCanBeAnchored == 0 || numCanBeAnchored != numWillBeAnchored)
 	{
-		selectedBrush->Move(delta + extraDelta);
+		brush->Move(delta + extraDelta);
 	}
 	else
 	{
 		bool alignmentMaintained = true;
-		V2d currDiff;
+		/*V2d currDiff;
 		double currDiffAngle;
 		piIndex = 0;
-		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it, ++piIndex)
+		for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it, ++piIndex)
 		{
 			if (piVec[piIndex].ground == NULL)
 			{
@@ -8125,12 +8161,12 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 			actor = (*it)->GetAsActor();
 			currDiff = piVec[piIndex].GetPosition() - grabbedActorInfo.GetPosition();
 			currDiffAngle = piVec[piIndex].GetEdge()->GetNormalAngleRadians() - grabbedActorInfo.GetEdge()->GetNormalAngleRadians();
-		}
+		}*/
 
 		if (alignmentMaintained)
 		{
 			piIndex = 0;
-			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it, ++piIndex)
+			for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it, ++piIndex)
 			{
 				if (piVec[piIndex].ground == NULL)
 				{
@@ -8144,12 +8180,12 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 		}
 		else
 		{
-			selectedBrush->Move(delta + extraDelta);
+			brush->Move(delta + extraDelta);
 		}
 	}
 	
 	//doesnt SEEM like this is needed but im not convinced yet
-	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it)
 	{
 		actor = (*it)->GetAsActor();
 		if (actor == NULL)
@@ -8157,8 +8193,8 @@ void EditSession::MoveSelectedActors(sf::Vector2i &delta)
 		//actor->myEnemy->UpdateFromEditParams(0);
 	}
 
-	bool canApply = selectedBrush->CanApply();
-	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	bool canApply = brush->CanApply();
+	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it)
 	{
 		actor = (*it)->GetAsActor();
 		if (actor == NULL)
@@ -8262,7 +8298,7 @@ void EditSession::ContinueSelectedMove()
 	//if (IsSingleActorSelected() && selectedPoints.empty())
 	if (selectedPoints.empty() && grabbedActor != NULL)
 	{
-		MoveSelectedActors(delta);
+		MoveActors(delta, V2d(grabbedActor->GetGrabAABBCenter()), selectedBrush );
 	}
 	else
 	{
@@ -9724,9 +9760,27 @@ void EditSession::EditModeHandleEvent()
 			if (copiedBrush != NULL)
 			{
 				Vector2i pos = Vector2i(worldPos.x, worldPos.y);
-				copiedBrush->CenterOnPoint(pos);// (pos - copiedBrush->GetCenter());
+
+				copiedBrush->CenterOnPoint(pos);
+
+				ActorPtr actor;
+				for (auto it = copiedBrush->objects.begin(); it != copiedBrush->objects.end(); ++it)
+				{
+					actor = (*it)->GetAsActor();
+					if (actor == NULL )
+						continue;
+
+					actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;
+					/*if (actor->posInfo.ground != NULL)
+					{
+						
+					}*/
+				}
+				
+				// (pos - copiedBrush->GetCenter());
 				editMouseGrabPos = pos;
 				editMouseOrigPos = pos;
+
 				SetMode(PASTE);
 				if (complexPaste != NULL)
 				{
@@ -10975,6 +11029,9 @@ void EditSession::PasteModeUpdate()
 	//copiedBrush->Move(delta);
 	if (pasteAxis <= 0)
 	{
+		//Move(point - GetCenter());
+		//grabbedActor = copiedBrush->objects.front()->GetAsActor(); //only works for grabbing one actor
+		MoveActors(pos - copiedBrush->GetCenter(), V2d(copiedBrush->GetCenter()), copiedBrush);
 		copiedBrush->CenterOnPoint(pos);
 	}
 	else if (pasteAxis == 1)
@@ -10987,6 +11044,28 @@ void EditSession::PasteModeUpdate()
 	}
 	editMouseGrabPos = pos;
 	
+
+	//if (copiedBrush->objects.size() > 1)
+	{
+		ActorPtr actor;
+		for (auto it = copiedBrush->objects.begin(); it != copiedBrush->objects.end(); ++it)
+		{
+			actor = (*it)->GetAsActor();
+			if (actor != NULL)
+			{
+				if (actor->myEnemy != NULL)
+				{
+					actor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
+				}
+			}
+		}
+	}
+	/*else
+	{
+		grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
+	}*/
+
+
 	if (!panning && IsMousePressed(Mouse::Left) && (delta.x != 0 || delta.y != 0)
 		&& length(lastBrushPastePos - worldPos ) >= brushRepeatDist )
 	{
