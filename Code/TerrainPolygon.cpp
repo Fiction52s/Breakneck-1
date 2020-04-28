@@ -5002,7 +5002,7 @@ ActorPtr TerrainPolygon::GetClosestEnemy(int index, double &minQuant )
 		list<ActorPtr> &actorList = enemies[GetPoint(index)];
 		for (auto it = actorList.begin(); it != actorList.end(); ++it)
 		{
-			currMinQuant = (*it)->posInfo.groundQuantity - (*it)->type->info.size.x / 2;
+			currMinQuant = (*it)->posInfo.groundQuantity - (*it)->GetSize().x / 2;
 			if (it == actorList.begin())
 			{
 				minQuant = currMinQuant;
@@ -5027,24 +5027,24 @@ ActorPtr TerrainPolygon::GetClosestEnemy(int index, double &minQuant )
 ActorPtr TerrainPolygon::GetFurthestEnemy(int index, double &maxQuant)
 {
 	ActorPtr maxActor = NULL;
-	double currMinQuant;
+	double currMaxQuant;
 	if (enemies.find(GetPoint(index)) != enemies.end())
 	{
 		list<ActorPtr> &actorList = enemies[GetPoint(index)];
 		for (auto it = actorList.begin(); it != actorList.end(); ++it)
 		{
-			currMinQuant = (*it)->posInfo.groundQuantity + (*it)->type->info.size.x / 2;
+			currMaxQuant = (*it)->posInfo.groundQuantity + (*it)->GetSize().x / 2;
 			if (it == actorList.begin())
 			{
-				maxQuant = currMinQuant;
+				maxQuant = currMaxQuant;
 				maxActor = (*it);
 			}
 
 			else
 			{
-				if (currMinQuant > maxQuant)
+				if (currMaxQuant > maxQuant)
 				{
-					maxQuant = currMinQuant;
+					maxQuant = currMaxQuant;
 					maxActor = (*it);
 				}
 			}

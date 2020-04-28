@@ -414,8 +414,6 @@ struct EditSession : GUIHandler, Session
 		ClipperIntPointSet &fusedPoints );
 
 	void StartMoveSelectedPoints();
-	void NewMoveSelectedPoints();
-	void NewPerformMovePointsAction();
 	void MoveSelectedPoints();
 	void MoveSelectedRailPoints(V2d worldPos);
 	void PerformMovePointsAction();

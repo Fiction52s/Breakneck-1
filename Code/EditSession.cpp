@@ -526,6 +526,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	maxZoom = 65536;
 
 	copiedBrush = NULL;
+	freeActorCopiedBrush = NULL;
 	newMapHeader.ver1 = 1;
 	newMapHeader.ver2 = 5;
 	newMapHeader.description = "no description";
@@ -3815,19 +3816,6 @@ void EditSession::StartMoveSelectedPoints()
 	
 }
 
-void EditSession::NewMoveSelectedPoints()
-{
-
-}
-
-void EditSession::NewPerformMovePointsAction()
-{
-	/*if (movePointsAction != NULL)
-	{
-		AddDoneAction(movePointsAction);
-	}*/
-}
-
 void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 {
 	bool affected;
@@ -3878,7 +3866,9 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			prevEdge = poly->GetPrevEdge(i);
 
 			oldPrevLength = prevEdge->GetLength();
-
+			//double oldMinQuant;
+			//ActorPtr oldClosest = poly->GetClosestEnemy(prev->GetIndex(), oldMinQuant);
+			//double idealPrevLength = oldPrevLength - oldMinQuant;
 			//only need to do for the prevs, since anything moved on my edge stays at the same
 			//quantity, the edge just moves.
 			auto enemyIt = poly->enemies.find(prev);
@@ -3914,15 +3904,19 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			ActorPtr furthest = poly->GetFurthestEnemy(i, maxQuant);
 			if (furthest != NULL && maxQuant > edgeLen)
 			{
-				poly->SetPointPos(i, Vector2i(edge->v1 - edge->Along() * maxQuant)); //works!
+				//double along = dot(-V2d(pointGrabDelta), edge->Along());
+				poly->MovePoint(i, -pointGrabDelta);
+				//poly->MovePoint(i, Vector2i( edge->Along() * along ));
+				//poly->SetPointPos(i, Vector2i(edge->v1 - edge->Along() * maxQuant)); //works!
 			}
 
 			double minQuant;
 			ActorPtr closest = poly->GetClosestEnemy(prev->GetIndex(), minQuant);
 			if (closest != NULL && minQuant < 0)
 			{
-				poly->SetPointPos(i, Vector2i(prevEdge->v0 + prevEdge->Along() * (prevEdgeLen - minQuant)));
-
+				poly->MovePoint(i, -pointGrabDelta);
+				//poly->SetPointPos(i, Vector2i(prevEdge->v0 + prevEdge->Along() * (prevEdgeLen - minQuant)));
+				//cout << "oldlen: " << oldPrevLength << ", prevEdgeLen: " << prevEdgeLen << "minQuant: " << minQuant << endl;
 				if (prevEdgeLen != oldPrevLength)
 				{
 					auto enemyIt = poly->enemies.find(prev);
