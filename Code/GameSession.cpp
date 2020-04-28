@@ -2849,7 +2849,7 @@ void GameSession::ProcessAllTerrain()
 	for (auto it = allPolygonsList.begin(); it != allPolygonsList.end(); ++it)
 	{
 		poly = (*it);
-		//poly->Finalize();
+		poly->Finalize();
 		poly->AddEdgesToQuadTree(terrainTree);
 
 		if (poly->inverse)

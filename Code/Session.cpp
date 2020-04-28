@@ -1541,11 +1541,12 @@ bool Session::ReadTerrain(std::ifstream &is)
 		poly->Load(is);
 		numPoints -= poly->GetNumPoints();
 
-		poly->Finalize(); //need this before readTerrainGrass
+		ProcessTerrain(poly);
+		//poly->Finalize(); //need this before readTerrainGrass
 
 		ReadTerrainGrass(is, poly);
 
-		ProcessTerrain(poly);
+		
 	}
 
 	ProcessAllTerrain();

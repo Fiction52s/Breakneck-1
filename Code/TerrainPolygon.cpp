@@ -3103,9 +3103,9 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 		int totalGrass = 0;
 		for (auto it = segments.begin(); it != segments.end(); ++it)
 		{
-			Edge *segEdge = GetEdge((*it).edgeIndex);//owner->GetEdge(startEdgeIndex + (*it).edgeIndex);
-			V2d v0 = segEdge->v0;
-			V2d v1 = segEdge->v1;
+			//Edge *segEdge = GetEdge((*it).edgeIndex);//owner->GetEdge(startEdgeIndex + (*it).edgeIndex);
+			V2d v0(GetPoint((*it).edgeIndex)->pos);//segEdge->v0;
+			V2d v1(GetNextPoint((*it).edgeIndex)->pos);
 
 			int start = (*it).index;
 			int end = (*it).index + (*it).reps;
