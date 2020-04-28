@@ -10253,14 +10253,14 @@ bool Actor::ResolvePhysics( V2d vel )
 		}
 	}
 
-	if ( owner != NULL && owner->hasAnyGrass)
+	if ( (owner != NULL && owner->hasAnyGrass) || editOwner != NULL )
 	{
 		queryMode = "grass";
 		jumpGrassCount = 0;
 		gravityGrassCount = 0;
 		bounceGrassCount = 0;
 		boostGrassCount = 0;
-		owner->grassTree->Query(this, r);
+		sess->grassTree->Query(this, r);
 	}
 
 	

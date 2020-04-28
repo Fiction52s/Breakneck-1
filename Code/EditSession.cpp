@@ -238,6 +238,7 @@ void EditSession::TestPlayerMode()
 		terrainTree->Clear();
 		specialTerrainTree->Clear();
 		borderTree->Clear();
+		grassTree->Clear();
 
 		Actor *p;
 		for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -284,6 +285,7 @@ void EditSession::TestPlayerMode()
 		terrainTree = new QuadTree(1000000, 1000000);
 		specialTerrainTree = new QuadTree(1000000, 1000000);
 		borderTree = new QuadTree(1000000, 1000000);
+		grassTree = new QuadTree(1000000, 1000000);
 
 		railEdgeTree = new QuadTree(1000000, 1000000);
 		barrierTree = new QuadTree(1000000, 1000000);
@@ -315,6 +317,7 @@ void EditSession::TestPlayerMode()
 	{
 		borderTree->Insert((*it));
 		(*it)->AddEdgesToQuadTree(terrainTree);
+		(*it)->AddGrassToQuadTree(grassTree);
 	}
 
 

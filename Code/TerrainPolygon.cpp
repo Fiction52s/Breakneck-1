@@ -2721,11 +2721,37 @@ int TerrainPolygon::GetNumGrassTotal()
 }
 
 //editor only
-void TerrainPolygon::AddGrassToTree(QuadTree *tree)
+void TerrainPolygon::AddGrassToQuadTree(QuadTree *tree)
 {
 	assert(sess->IsSessTypeEdit());
 
+	//probably just have this as a variable and update it when material changes
+	Grass::GrassType gType = GetGrassType();
 
+	int activeCounter = 0;
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		//activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, gType));
+		if (grassStateVec[i] == G_ON)
+		{
+			++activeCounter;
+		}
+	}
+
+	activeGrass.clear();
+	activeGrass.reserve(activeCounter);
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		if (grassStateVec[i] == G_ON)
+		{
+			activeGrass.push_back(Grass(ts_grass, i, GetGrassCenter(i), this, gType));
+		}
+	}
+	
+	for (auto it = activeGrass.begin(); it != activeGrass.end(); ++it)
+	{
+		tree->Insert(&(*it));
+	}
 }
 
 void TerrainPolygon::SetupGrass(int i, int &grassIndex )
@@ -3046,21 +3072,8 @@ void TerrainPolygon::SetupGrass()
 	}
 }
 
-void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
+Grass::GrassType TerrainPolygon::GetGrassType()
 {
-	int numGrassTotal = 0;
-
-	for (auto it = segments.begin(); it != segments.end(); ++it)
-	{
-		numGrassTotal += (*it).reps + 1;
-	}
-
-	//Tileset *ts_grass = sess->GetTileset("Env/grass_128x128.png", 128, 128);
-
-	//should this even be made on invisible terrain?
-
-	int totalGrassIndex = 0;
-
 	Grass::GrassType gType;
 	if (terrainWorldType == 0)
 	{
@@ -3086,6 +3099,25 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 	{
 		gType = Grass::GrassType::JUMP;
 	}
+	return gType;
+}
+
+void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
+{
+	int numGrassTotal = 0;
+
+	for (auto it = segments.begin(); it != segments.end(); ++it)
+	{
+		numGrassTotal += (*it).reps + 1;
+	}
+
+	//Tileset *ts_grass = sess->GetTileset("Env/grass_128x128.png", 128, 128);
+
+	//should this even be made on invisible terrain?
+
+	int totalGrassIndex = 0;
+
+	Grass::GrassType gType = GetGrassType();
 
 	//should always be true atm?
 	if (sess->IsSessTypeGame())
