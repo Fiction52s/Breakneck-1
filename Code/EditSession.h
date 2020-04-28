@@ -716,6 +716,7 @@ struct EditSession : GUIHandler, Session
 	Brush *mapStartBrush;
 	Brush *selectedBrush;
 	Brush *copiedBrush;
+	Brush *freeActorCopiedBrush;
 	PointMap selectedPoints;
 	RailPointMap selectedRailPoints;
 	
@@ -838,7 +839,7 @@ struct EditSession : GUIHandler, Session
 		sf::Vector2i &p1, sf::Vector2i &prim);
 	bool GetPrimaryAdjustment(sf::Vector2i &p0,
 		sf::Vector2i &p1, sf::Vector2i &adjust);
-	void PasteTerrain(Brush *b);
+	void PasteTerrain(Brush *cBrush, Brush *freeActorBrush );
 	bool ExecuteTerrainMultiAdd(
 		std::list<PolyPtr> &brushPolys,
 		Brush &orig,

@@ -393,6 +393,119 @@ Brush *Brush::Copy()
 	return newBrush;
 }
 
+Brush *Brush::CopyFreeActors()
+{
+	EditSession *sess = EditSession::GetSession();
+	Brush *newBrush = new Brush;
+	ActorPtr ap;
+
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		ap = (*it)->GetAsActor();
+		if (ap != NULL)
+		{
+			if (ap->type == sess->types["player"])
+			{
+				continue;
+			}
+
+			PolyPtr myPoly = ap->posInfo.ground;
+
+			ActorPtr aPtr = ap->Copy();
+			aPtr->CreateMyEnemy();
+			aPtr->selected = false;
+
+			if (myPoly != NULL && !myPoly->selected )
+			{
+				aPtr->UnAnchor();
+				if (aPtr->myEnemy != NULL)
+				{
+					aPtr->myEnemy->UpdateFromEditParams(0);
+				}
+				newBrush->AddObject(aPtr);
+			}
+			else if (myPoly == NULL)
+			{
+				newBrush->AddObject(aPtr);
+			}
+		}
+	}
+
+	if (newBrush->objects.size() == 0)
+	{
+		delete newBrush;
+		newBrush = NULL;
+	}
+
+	return newBrush;
+}
+
+Brush *Brush::CopyTerrainAndAttachedActors()
+{
+	EditSession *sess = EditSession::GetSession();
+
+	Brush *newBrush = new Brush;
+	PolyPtr tp;
+	ActorPtr ap;
+
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		tp = (*it)->GetAsTerrain();
+		if (tp != NULL)
+		{
+			if (tp->inverse)
+			{
+				continue;
+			}
+
+			PolyPtr ptr = tp->Copy();
+			newBrush->AddObject(ptr);
+		}
+	}
+
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		ap = (*it)->GetAsActor();
+		if (ap != NULL)
+		{
+			if (ap->type == sess->types["player"])
+			{
+				continue;
+			}
+
+			PolyPtr myPoly = ap->posInfo.ground;
+
+
+			ActorPtr aPtr = ap->Copy();
+			aPtr->CreateMyEnemy();
+			aPtr->selected = false;
+
+			if (myPoly != NULL)
+			{
+				if (myPoly->selected)
+				{
+					aPtr->posInfo.ground = myPoly->mostRecentCopy;
+					aPtr->AnchorToGround(PositionInfo(aPtr->posInfo));
+					aPtr->posInfo.AddActor(aPtr);
+					newBrush->AddObject(aPtr);
+				}
+			}
+			else
+			{
+				newBrush->AddObject(aPtr);
+			}
+		}
+	}
+
+	if (newBrush->objects.size() == 0)
+	{
+		delete newBrush;
+		newBrush = NULL;
+	}
+
+	return newBrush;
+}
+
 void Brush::SetSelected( bool select )
 {
 	for( auto it = objects.begin(); it != objects.end(); ++it )

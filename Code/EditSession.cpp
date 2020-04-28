@@ -728,6 +728,12 @@ EditSession::~EditSession()
 		copiedBrush->Destroy();
 		delete copiedBrush;
 	}
+
+	if (freeActorCopiedBrush != NULL)
+	{
+		freeActorCopiedBrush->Destroy();
+		delete freeActorCopiedBrush;
+	}
 		
 
 	mapStartBrush->Destroy();
@@ -820,7 +826,10 @@ void EditSession::Draw()
 
 	if (IsDrawMode( PASTE ) )
 	{
-		copiedBrush->Draw(preScreenTex);
+		if( copiedBrush != NULL )
+			copiedBrush->Draw(preScreenTex);
+		if (freeActorCopiedBrush != NULL)
+			freeActorCopiedBrush->Draw(preScreenTex);
 	}
 
 	if (IsDrawMode( TEST_PLAYER ))
@@ -6295,16 +6304,19 @@ void EditSession::GetShardWorldAndIndex(int selX, int selY,
 	li = realX + realY * 11;
 }
 
-void EditSession::PasteTerrain(Brush *b)
+void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 {
 	list<PolyPtr> brushPolys;
 	PolyPtr poly;
-	for (auto bit = b->objects.begin(); bit != b->objects.end(); ++bit)
+	if (cBrush != NULL)
 	{
-		poly = (*bit)->GetAsTerrain();
-		if (poly != NULL)
+		for (auto bit = cBrush->objects.begin(); bit != cBrush->objects.end(); ++bit)
 		{
-			brushPolys.push_back(poly);
+			poly = (*bit)->GetAsTerrain();
+			if (poly != NULL)
+			{
+				brushPolys.push_back(poly);
+			}
 		}
 	}
 
@@ -6323,11 +6335,11 @@ void EditSession::PasteTerrain(Brush *b)
 	}
 	else
 	{
-		if (b->CanApply())
+		if ( freeActorBrush != NULL && freeActorBrush->CanApply())
 		{
 			ActorPtr actor;
 			ActorPtr newActor;
-			for (auto it = b->objects.begin(); it != b->objects.end(); ++it)
+			for (auto it = freeActorBrush->objects.begin(); it != freeActorBrush->objects.end(); ++it)
 			{
 				actor = (*it)->GetAsActor();
 				if (actor != NULL)
@@ -9745,7 +9757,9 @@ void EditSession::EditModeHandleEvent()
 		}
 		if (ev.key.code == Keyboard::C && ev.key.control)
 		{
-			copiedBrush = selectedBrush->Copy();
+			//copiedBrush = selectedBrush->Copy();
+			copiedBrush = selectedBrush->CopyTerrainAndAttachedActors();
+			freeActorCopiedBrush = selectedBrush->CopyFreeActors();
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
@@ -9757,24 +9771,28 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::V && ev.key.control)
 		{
-			if (copiedBrush != NULL)
+			if (copiedBrush != NULL || freeActorCopiedBrush != NULL )
 			{
 				Vector2i pos = Vector2i(worldPos.x, worldPos.y);
 
-				copiedBrush->CenterOnPoint(pos);
-
-				ActorPtr actor;
-				for (auto it = copiedBrush->objects.begin(); it != copiedBrush->objects.end(); ++it)
+				if (copiedBrush != NULL)
 				{
-					actor = (*it)->GetAsActor();
-					if (actor == NULL )
-						continue;
+					copiedBrush->CenterOnPoint(pos);
+				}
 
-					actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;
-					/*if (actor->posInfo.ground != NULL)
+				if (freeActorCopiedBrush != NULL)
+				{
+					freeActorCopiedBrush->CenterOnPoint(pos);
+
+					ActorPtr actor;
+					for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
 					{
-						
-					}*/
+						actor = (*it)->GetAsActor();
+						if (actor == NULL)
+							continue;
+
+						actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;
+					}
 				}
 				
 				// (pos - copiedBrush->GetCenter());
@@ -9956,7 +9974,7 @@ void EditSession::PasteModeHandleEvent()
 	{
 		if (ev.mouseButton.button == sf::Mouse::Button::Left)
 		{
-			PasteTerrain(copiedBrush);
+			PasteTerrain(copiedBrush, freeActorCopiedBrush );
 		}
 		break;
 		
@@ -11031,8 +11049,18 @@ void EditSession::PasteModeUpdate()
 	{
 		//Move(point - GetCenter());
 		//grabbedActor = copiedBrush->objects.front()->GetAsActor(); //only works for grabbing one actor
-		MoveActors(pos - copiedBrush->GetCenter(), V2d(copiedBrush->GetCenter()), copiedBrush);
-		copiedBrush->CenterOnPoint(pos);
+		//MoveActors(pos - copiedBrush->GetCenter(), V2d(copiedBrush->GetCenter()), copiedBrush);
+		if (freeActorCopiedBrush != NULL)
+		{
+			MoveActors(pos - freeActorCopiedBrush->GetCenter(), V2d(freeActorCopiedBrush->GetCenter()), freeActorCopiedBrush);
+			freeActorCopiedBrush->CenterOnPoint(pos);
+		}
+		
+		if (copiedBrush != NULL)
+		{
+			copiedBrush->CenterOnPoint(pos);
+		}
+		
 	}
 	else if (pasteAxis == 1)
 	{
@@ -11046,9 +11074,10 @@ void EditSession::PasteModeUpdate()
 	
 
 	//if (copiedBrush->objects.size() > 1)
+	if( freeActorCopiedBrush != NULL )
 	{
 		ActorPtr actor;
-		for (auto it = copiedBrush->objects.begin(); it != copiedBrush->objects.end(); ++it)
+		for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
 		{
 			actor = (*it)->GetAsActor();
 			if (actor != NULL)
@@ -11069,7 +11098,7 @@ void EditSession::PasteModeUpdate()
 	if (!panning && IsMousePressed(Mouse::Left) && (delta.x != 0 || delta.y != 0)
 		&& length(lastBrushPastePos - worldPos ) >= brushRepeatDist )
 	{
-		PasteTerrain(copiedBrush);
+		PasteTerrain(copiedBrush, freeActorCopiedBrush);
 	}
 }
 

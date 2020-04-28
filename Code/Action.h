@@ -18,6 +18,8 @@ struct Brush
 	void Move( sf::Vector2i delta );
 	void Draw( sf::RenderTarget *target );
 	Brush *Copy();
+	Brush *CopyFreeActors();
+	Brush *CopyTerrainAndAttachedActors();
 	sf::Vector2i &GetCenter();
 	sf::Vector2f &GetCenterF();
 	void Rotate(float fDegrees );
