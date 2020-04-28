@@ -85,21 +85,22 @@ void Grass::Update()
 void Grass::SetVisible(bool p_visible)
 {
 	visible = p_visible;
-	sf::VertexArray &gva = *(poly->grassVA);
+
+	sf::Vertex *quad = poly->grassVA + tileIndex * 4;
 
 	int size = ts_grass->tileWidth;
 	if (visible)
 	{
-		gva[tileIndex * 4 + 0].position = Vector2f(pos.x - size, pos.y - size);
-		gva[tileIndex * 4 + 1].position = Vector2f(pos.x + size, pos.y - size);
-		gva[tileIndex * 4 + 2].position = Vector2f(pos.x + size, pos.y + size);
-		gva[tileIndex * 4 + 3].position = Vector2f(pos.x - size, pos.y + size);
+		quad[0].position = Vector2f(pos.x - size, pos.y - size);
+		quad[1].position = Vector2f(pos.x + size, pos.y - size);
+		quad[2].position = Vector2f(pos.x + size, pos.y + size);
+		quad[3].position = Vector2f(pos.x - size, pos.y + size);
 	}
 	else
 	{
-		gva[tileIndex * 4 + 0].position = Vector2f(0, 0);
-		gva[tileIndex * 4 + 1].position = Vector2f(0, 0);
-		gva[tileIndex * 4 + 2].position = Vector2f(0, 0);
-		gva[tileIndex * 4 + 3].position = Vector2f(0, 0);
+		quad[0].position = Vector2f(0, 0);
+		quad[1].position = Vector2f(0, 0);
+		quad[2].position = Vector2f(0, 0);
+		quad[3].position = Vector2f(0, 0);
 	}
 }

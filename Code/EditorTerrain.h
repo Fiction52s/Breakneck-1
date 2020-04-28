@@ -329,6 +329,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void Rotate( sf::Vector2f &center, float degrees);
 
 	void SetBorderTileset();
+	void UpdateGrassType();
+	Grass::GrassType gType;
 	static sf::IntRect GetBorderSubRect(int tileWidth, EdgeAngleType et, int var);
 
 	sf::Vertex *borderQuads;
@@ -542,7 +544,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	sf::Vertex *lines;
 	sf::VertexArray *va;
-	sf::VertexArray *grassVA;
+	sf::Vertex *grassVA;
 
 	enum GrassState : int
 	{

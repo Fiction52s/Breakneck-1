@@ -540,7 +540,6 @@ struct EditSession : GUIHandler, Session
 	int IsRemovePointsOkay();
 
 	Panel *CreateOptionsPanel( const std::string &name );
-	void WriteGrass( PolyPtr p, std::ofstream &of );
 	int CountSelectedPoints();
 
 	std::vector<sf::Vector2i> patrolPath;

@@ -1560,94 +1560,6 @@ void EditSession::WriteFile(string fileName)
 
 }
 
-
-
-void EditSession::WriteGrass( PolyPtr poly, ofstream &of )
-{
-	int edgesWithSegments = 0;
-
-	VertexArray &grassVa = *poly->grassVA;
-
-	int edgeIndex = 0;
-	int i = 0;
-	list<list<GrassSeg>> grassListList;
-
-	int polyNumP = poly->GetNumPoints();
-	TerrainPoint *curr, *next;
-	for (int i = 0; i < polyNumP; ++i)
-	{
-		curr = poly->GetPoint(i);
-		next = poly->GetNextPoint(i);
-
-		V2d v0(curr->pos.x, curr->pos.y);
-		V2d v1(next->pos.x, next->pos.y);
-
-		bool rem;
-		int num = poly->GetNumGrass(i, rem);//floor( remainder ) + 1;
-
-		grassListList.push_back(list<GrassSeg>());
-
-		list<GrassSeg> &grassList = grassListList.back();
-
-		GrassSeg *gPtr = NULL;
-		bool hasGrass = false;
-		for (int j = 0; j < num; ++j)
-		{
-			//V2d pos = v0 + (v1 - v0) * ((double)(j )/ num);
-
-			if (grassVa[i * 4].color.a == 255 || grassVa[i * 4].color.a == 254)
-			{
-				hasGrass = true;
-				if (gPtr == NULL)//|| (j == num - 1 && rem ))
-				{
-					grassList.push_back(GrassSeg(edgeIndex, j, 0));
-					gPtr = &grassList.back();
-				}
-				else
-				{
-					grassList.back().reps++;
-				}
-			}
-			else
-			{
-				if (gPtr != NULL)
-					gPtr = NULL;
-			}
-
-			++i;
-		}
-
-		if (hasGrass)
-		{
-			++edgesWithSegments;
-		}
-
-		++edgeIndex;
-	}
-
-	//cout << "saving edges with segments: " << edgesWithSegments << endl;
-	of << edgesWithSegments << endl;
-
-	for( list<list<GrassSeg>>::iterator it = grassListList.begin(); it != grassListList.end(); ++it )
-	{
-		int numSegments = (*it).size();
-
-		if( numSegments > 0 )
-		{
-			int edgeIndex = (*it).front().edgeIndex;
-			of << edgeIndex << " " << numSegments << endl;
-
-			for( list<GrassSeg>::iterator it2 = (*it).begin(); it2 != (*it).end(); ++it2 )
-			{
-				of << (*it2).index << " "<< (*it2).reps << endl;
-				//cout << "index: " << (*it2).index << ", reps: " << (*it2).reps << endl;
-			}
-		}
-		
-		
-	}
-}
-
 bool EditSession::PointOnLine( V2d &pos, V2d &p0, V2d &p1, double width)
 {
 	V2d dir = normalize( p1 - p0 );
@@ -9899,10 +9811,10 @@ void EditSession::EditModeHandleEvent()
 
 			if (selectedBrush->objects.size() > 0)
 			{
-				Action * action = new ModifyTerrainTypeAction(
+				ModifyTerrainTypeAction * modifyAction = new ModifyTerrainTypeAction(
 					selectedBrush, tempGridX, tempGridY);
-				action->Perform();
-				AddDoneAction(action);
+				modifyAction->Perform();
+				AddDoneAction(modifyAction);
 			}
 
 			currTerrainWorld = tempGridX;
