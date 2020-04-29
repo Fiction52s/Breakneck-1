@@ -3252,20 +3252,25 @@ bool EditSession::PointSelectDecor(V2d &pos)
 bool EditSession::AnchorSelectedEnemies()
 {
 	ActorPtr actor;
+	PolyPtr poly;
 	for( auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it )
 	{
 		actor = (*it)->GetAsActor();
 		if (actor == NULL)
 			continue;
 
-		
-
 		if (actor->posInfo.ground != NULL) //might need a thing here for rails too
 		{
-			if (actor->posInfo.ground->selected)
+			poly = actor->posInfo.ground;
+			if (poly->selected)
 			{
 				continue;
 			}
+
+			if (!selectedPoints.empty())
+				continue;
+			//if (selectedPoints.find(poly) != selectedPoints.end())
+			//	continue;
 
 			Action *gAction = new GroundAction(actor);
 			gAction->performed = true;
@@ -7534,7 +7539,7 @@ bool EditSession::PointSelectPolyPoint( V2d &pos )
 		{
 			if (shift && foundPoint->selected )
 			{
-				DeselectPoint((*it), foundPoint);
+				//DeselectPoint((*it), foundPoint);
 			}
 			else
 			{	
@@ -7936,7 +7941,8 @@ void EditSession::TryBoxSelect()
 			//ClearSelectedPoints();
 		}
 
-		BoxSelectPoints(r, 8 * zoomMultiple);
+		if (BoxSelectPoints(r, 8 * zoomMultiple))
+			selectionEmpty = false;
 	}
 	else if (!showPoints)//polygon selection. don't use it for a little bit
 	{
@@ -8166,16 +8172,18 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 	std::vector<PositionInfo> piVec;
 
 	Brush validActorBrush;
+
+	PolyPtr poly;
 	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it)
 	{
 		actor = (*it)->GetAsActor();
 		if (actor == NULL)
 			continue;
 
-		if (actor->posInfo.ground != NULL && actor->posInfo.ground->selected)
-		{
+		poly = actor->posInfo.ground;
+		if (poly != NULL && (poly->selected
+			|| !selectedPoints.empty()))//selectedPoints.find(poly) != selectedPoints.end()))
 			continue;
-		}
 
 		validActorBrush.AddObject(actor);
 	}
@@ -8357,6 +8365,7 @@ void EditSession::StartSelectedMove()
 	}*/
 
 	//assumption that all are grounded atm
+	if( selectedPoints.empty() )
 	//if (grabbedActor != NULL && selectedBrush->GetNumTerrain() == 0 ) //need to figure out how to separate terrain selection from enemies
 	{
 		moveAction = selectedBrush->UnAnchor();
@@ -8416,14 +8425,18 @@ void EditSession::ContinueSelectedMove()
 	
 	//if (IsSingleActorSelected() && selectedPoints.empty())
 	//if( selectedBrush->num)
-	if (selectedPoints.empty() && grabbedActor != NULL && selectedBrush->GetNumTerrain() == 0 )
+	if (/*selectedPoints.empty() && */grabbedActor != NULL && selectedBrush->GetNumTerrain() == 0 )
 	{
 		MoveActors(delta, V2d(grabbedActor->GetGrabAABBCenter()), selectedBrush );
 	}
-	else if(selectedPoints.empty())
+	else
 	{
-		MoveActors(delta,worldPos, selectedBrush);
+		MoveActors(delta, worldPos, selectedBrush);
 	}
+	/*else if(selectedPoints.empty())
+	{
+		
+	}*/
 	//else
 	{
 		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
@@ -11048,7 +11061,7 @@ void EditSession::EditModeUpdate()
 	{
 		showPoints = true;
 	}
-	else if( !pressedB && grabbedPoint == NULL )
+	else if( showPoints && !pressedB && !editMouseDownMove )//&& grabbedPoint == NULL )
 	{
 		/*for (PointMap::iterator pmit = selectedPoints.begin();
 			pmit != selectedPoints.end(); ++pmit)
