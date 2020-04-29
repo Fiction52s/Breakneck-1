@@ -3550,6 +3550,10 @@ void EditSession::PerformMovePointsAction()
 		for (auto it = pm->newEnemyPosInfo.begin(); it != pm->newEnemyPosInfo.end(); ++it)
 		{
 			(*it).first->posInfo = (*it).second;
+
+			if ((*it).first->myEnemy != NULL)
+				(*it).first->myEnemy->UpdateOnEditPlacement();
+
 			(*it).first->UpdateGroundedSprite();
 			(*it).first->SetBoundingQuad();
 		}
@@ -3782,6 +3786,8 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 		
 		failMove = false;
 
+		bool revert = false;
+
 		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
 		{
 			i = (*pit).pointIndex;
@@ -3836,6 +3842,7 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			{
 				//double along = dot(-V2d(pointGrabDelta), edge->Along());
 				poly->MovePoint(i, -pointGrabDelta);
+				revert = true;
 				//poly->MovePoint(i, Vector2i( edge->Along() * along ));
 				//poly->SetPointPos(i, Vector2i(edge->v1 - edge->Along() * maxQuant)); //works!
 			}
@@ -3845,6 +3852,7 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			if (closest != NULL && minQuant < 0)
 			{
 				poly->MovePoint(i, -pointGrabDelta);
+				revert = true;
 				//poly->SetPointPos(i, Vector2i(prevEdge->v0 + prevEdge->Along() * (prevEdgeLen - minQuant)));
 				//cout << "oldlen: " << oldPrevLength << ", prevEdgeLen: " << prevEdgeLen << "minQuant: " << minQuant << endl;
 				if (prevEdgeLen != oldPrevLength)
@@ -3865,43 +3873,80 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			poly->UpdateLineColor(i);
 
 			affected = true;
+
+			auto currIt = poly->enemies.find(curr);
+			if (currIt != poly->enemies.end())
+			{
+				list<ActorPtr> &currList = (*currIt).second;
+				for (auto it = currList.begin(); it != currList.end(); ++it)
+				{
+					if ((*it)->myEnemy != NULL)
+						(*it)->myEnemy->UpdateOnEditPlacement();
+
+					(*it)->UpdateGroundedSprite();
+					(*it)->SetBoundingQuad();
+				}
+			}
+			currIt = poly->enemies.find(prev);
+			if (currIt != poly->enemies.end())
+			{
+				list<ActorPtr> &currList = (*currIt).second;
+				for (auto it = currList.begin(); it != currList.end(); ++it)
+				{
+					//this is only on prev because the ground quant is not changed on curr
+					if ((*it)->myEnemy != NULL)
+					{
+						(*it)->myEnemy->UpdateOnEditPlacement();
+					}
+					(*it)->UpdateGroundedSprite();
+					(*it)->SetBoundingQuad();
+				}
+			}
+
 		}
 
 		//not sure why this is needed, but the edges are colliding w/ the enemies again
-		auto currIt = poly->enemies.find(curr);
-		if (currIt != poly->enemies.end())
-		{
-			list<ActorPtr> &currList = (*currIt).second;
-			for (auto it = currList.begin(); it != currList.end(); ++it)
-			{
-				(*it)->UpdateGroundedSprite();
-				(*it)->SetBoundingQuad();
-			}
-		}
-		currIt = poly->enemies.find(prev);
-		if (currIt != poly->enemies.end())
-		{
-			list<ActorPtr> &currList = (*currIt).second;
-			for (auto it = currList.begin(); it != currList.end(); ++it)
-			{
-				//this is only on prev because the ground quant is not changed on curr
-				if ((*it)->myEnemy != NULL)
-				{
-					(*it)->myEnemy->UpdateOnEditPlacement();
-				}
-				(*it)->UpdateGroundedSprite();
-				(*it)->SetBoundingQuad();
-			}
-		}
+		
 
 
-		if (!poly->IsInternallyValid())
+		if (!poly->IsInternallyValid() || revert)
 		{
 			//this isnt updating the enemy sprites. is this even happening??
 
 			for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
 			{
 				poly->SetPointPos((*pit).pointIndex, (*pit).oldPos);
+				curr = poly->GetPoint((*pit).pointIndex);
+				prev = poly->GetPrevPoint((*pit).pointIndex);
+
+				auto currIt = poly->enemies.find(curr);
+				if (currIt != poly->enemies.end())
+				{
+					list<ActorPtr> &currList = (*currIt).second;
+					for (auto it = currList.begin(); it != currList.end(); ++it)
+					{
+						if ((*it)->myEnemy != NULL)
+							(*it)->myEnemy->UpdateOnEditPlacement();
+
+						(*it)->UpdateGroundedSprite();
+						(*it)->SetBoundingQuad();
+					}
+				}
+				currIt = poly->enemies.find(prev);
+				if (currIt != poly->enemies.end())
+				{
+					list<ActorPtr> &currList = (*currIt).second;
+					for (auto it = currList.begin(); it != currList.end(); ++it)
+					{
+						//this is only on prev because the ground quant is not changed on curr
+						if ((*it)->myEnemy != NULL)
+						{
+							(*it)->myEnemy->UpdateOnEditPlacement();
+						}
+						(*it)->UpdateGroundedSprite();
+						(*it)->SetBoundingQuad();
+					}
+				}
 			}
 
 			//for (int i = 0; i < polyNumP; ++i)
@@ -3914,15 +3959,22 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			//}
 			//affected = false;
 
-			auto enemyIt = poly->enemies.find(prev);
+			/*auto enemyIt = poly->enemies.find(prev);
 			if (enemyIt != poly->enemies.end())
 			{
 				list<ActorPtr> &enemies = (*enemyIt).second;
 				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
 				{
 					(*ait)->posInfo.groundQuantity = (*ait)->oldQuant;
+					
+					if ((*ait)->myEnemy != NULL)
+					{
+						(*ait)->myEnemy->UpdateOnEditPlacement();
+					}
+					(*ait)->UpdateGroundedSprite();
+					(*ait)->SetBoundingQuad();
 				}
-			}
+			}*/
 
 			//should probably put the enemies back to their oldQuants too
 		}
