@@ -143,6 +143,8 @@ void Session::AddW1Enemies()
 	AddBasicGroundWorldEnemy("goal", 1, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 
 	AddBasicGroundWorldEnemy("crawler", 1, CreateEnemy<Crawler>, Vector2i(0, 0), Vector2i(100, 100), true, true, false, false, 3);
+	
+	AddBasicAerialWorldEnemy("booster", 1, CreateEnemy<Booster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
 		//GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
 	/*AddWorldEnemy("blocker", 1, NULL, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
@@ -1092,6 +1094,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	barrierTree = NULL;
 	borderTree = NULL;
 	grassTree = NULL;
+	activeItemTree = NULL;
 
 	staticItemTree = NULL;
 
@@ -1168,6 +1171,11 @@ Session::~Session()
 
 	if (grassTree != NULL)
 		delete grassTree;
+
+	if (activeItemTree != NULL)
+	{
+		delete activeItemTree;
+	}
 
 
 	if (mapHeader != NULL)

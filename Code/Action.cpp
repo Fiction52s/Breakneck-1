@@ -129,6 +129,30 @@ void Brush::CenterOnPoint(sf::Vector2i &point )
 	Move(point - GetCenter());
 }
 
+int Brush::GetNumActors()
+{
+	int counter = 0;
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		if ((*it)->GetAsActor() != NULL)
+			++counter;
+	}
+
+	return counter;
+}
+
+int Brush::GetNumTerrain()
+{
+	int counter = 0;
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		if ((*it)->GetAsTerrain() != NULL)
+			++counter;
+	}
+
+	return counter;
+}
+
 sf::Vector2f Brush::GetTerrainSize()
 {
 	int left = 0;
@@ -480,18 +504,11 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 			aPtr->CreateMyEnemy();
 			aPtr->selected = false;
 
-			if (myPoly != NULL)
+			if (myPoly != NULL && myPoly->selected)
 			{
-				if (myPoly->selected)
-				{
-					aPtr->posInfo.ground = myPoly->mostRecentCopy;
-					aPtr->AnchorToGround(PositionInfo(aPtr->posInfo));
-					aPtr->posInfo.AddActor(aPtr);
-					newBrush->AddObject(aPtr);
-				}
-			}
-			else
-			{
+				aPtr->posInfo.ground = myPoly->mostRecentCopy;
+				aPtr->AnchorToGround(PositionInfo(aPtr->posInfo));
+				aPtr->posInfo.AddActor(aPtr);
 				newBrush->AddObject(aPtr);
 			}
 		}
@@ -620,7 +637,7 @@ CompoundAction * Brush::UnAnchor() //only works with grounded actors
 		ap = (*it)->GetAsActor();
 		if (ap != NULL)
 		{
-			if (ap->posInfo.ground != NULL)
+			if (ap->posInfo.ground != NULL && !ap->posInfo.ground->selected )
 			{
 				//if (objects.size() == 1 || ap->type->CanBeAerial())
 				//if( ap->type->CanBeAerial() )

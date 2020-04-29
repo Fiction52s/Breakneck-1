@@ -20,6 +20,9 @@ struct Brush
 	Brush *Copy();
 	Brush *CopyFreeActors();
 	Brush *CopyTerrainAndAttachedActors();
+	//bool HasAc
+	int GetNumActors();
+	int GetNumTerrain();
 	sf::Vector2i &GetCenter();
 	sf::Vector2f &GetCenterF();
 	void Rotate(float fDegrees );

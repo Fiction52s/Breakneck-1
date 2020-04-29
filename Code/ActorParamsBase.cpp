@@ -926,7 +926,11 @@ void ActorParams::Move(sf::Vector2i delta)
 		image.setPosition(GetFloatPos());
 
 		if (myEnemy != NULL)
+		{
 			myEnemy->UpdateOnEditPlacement();
+			myEnemy->UpdateFromEditParams(0);
+		}
+			
 
 		/*if (myEnemy != NULL)
 		{

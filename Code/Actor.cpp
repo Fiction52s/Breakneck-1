@@ -10294,11 +10294,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	currBounceBooster = NULL;
 	currModifier = NULL;
 
-	if (owner != NULL)
-	{
-		queryMode = "activeitem";
-		owner->activeItemTree->Query(this, r);
-	}
+	queryMode = "activeitem";
+	sess->activeItemTree->Query(this, r);
 	
 	return col;
 }
@@ -18041,19 +18038,19 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Enemy *en = (Enemy*)qte;
 		if (en->type == EnemyType::EN_BOOSTER )
 		{
-			//Booster *boost = (Booster*)qte;
-			//
-			//if (currBooster == NULL)
-			//{
-			//	if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable() )
-			//	{
-			//		currBooster = boost;
-			//	}
-			//}
-			//else
-			//{
-			//	//some replacement formula later
-			//}
+			Booster *boost = (Booster*)qte;
+			
+			if (currBooster == NULL)
+			{
+				if (boost->hitBody.Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable() )
+				{
+					currBooster = boost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
 		}
 		else if (en->type == EnemyType::EN_BOUNCEBOOSTER)
 		{

@@ -292,7 +292,10 @@ void EditSession::TestPlayerMode()
 
 		staticItemTree = new QuadTree(1000000, 1000000);
 
+		activeItemTree = new QuadTree(1000000, 1000000);
+
 		Actor *p;
+		Enemy *currEnemy;
 		for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
 			p = GetPlayer(i);
@@ -304,9 +307,12 @@ void EditSession::TestPlayerMode()
 		{
 			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
 			{
-				if ((*enit)->myEnemy != NULL)
+				currEnemy = (*enit)->myEnemy;
+				if (currEnemy != NULL)
 				{
-					AddEnemy((*enit)->myEnemy);
+					currEnemy->AddToWorldTrees();
+					AddEnemy(currEnemy);
+					
 				}
 			}
 		}
@@ -3173,7 +3179,7 @@ bool EditSession::PointSelectActor( V2d &pos )
 					grabbedActor = (*ait);
 					if ((*ait)->myEnemy != NULL)
 						(*ait)->myEnemy->SetActionEditLoop();
-					ClearSelectedPolys();
+					//ClearSelectedPolys();
 				}
 				else
 				{
@@ -3252,8 +3258,15 @@ bool EditSession::AnchorSelectedEnemies()
 		if (actor == NULL)
 			continue;
 
+		
+
 		if (actor->posInfo.ground != NULL) //might need a thing here for rails too
 		{
+			if (actor->posInfo.ground->selected)
+			{
+				continue;
+			}
+
 			Action *gAction = new GroundAction(actor);
 			gAction->performed = true;
 
@@ -8038,7 +8051,27 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 	Vector2i diffPerActor;
 
 	std::vector<PositionInfo> piVec;
-	piVec.resize(brush->objects.size());
+
+	Brush validActorBrush;
+	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it)
+	{
+		actor = (*it)->GetAsActor();
+		if (actor == NULL)
+			continue;
+
+		if (actor->posInfo.ground != NULL && actor->posInfo.ground->selected)
+		{
+			continue;
+		}
+
+		validActorBrush.AddObject(actor);
+	}
+
+	if (validActorBrush.IsEmpty())
+		return;
+
+	//piVec.resize(brush->GetNumActors());//objects.size());
+	piVec.resize(validActorBrush.GetNumActors());//objects.size());
 
 	int piIndex = 0;
 	
@@ -8051,11 +8084,9 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 	extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
 
 	V2d actorRealignDiff;
-	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it, ++piIndex)
+	for (auto it = validActorBrush.objects.begin(); it != validActorBrush.objects.end(); ++it )
 	{
 		actor = (*it)->GetAsActor();
-		if (actor == NULL )
-			continue;
 
 		if (actor->type->CanBeGrounded())
 		{
@@ -8070,14 +8101,14 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 				}
 			}
 		}
+
+		++piIndex;
 	}
 	
 	piIndex = 0;
-	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it, ++piIndex)
+	for (auto it = validActorBrush.objects.begin(); it != validActorBrush.objects.end(); ++it)
 	{
 		actor = (*it)->GetAsActor();
-		if (actor == NULL)
-			continue;
 
 		if (actor->posInfo.ground == NULL && actor->type->CanBeGrounded() && !actor->type->CanBeAerial())
 		{
@@ -8092,12 +8123,21 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 				grabbedActorInfo = piVec[piIndex];
 			}*/
 			numWillBeAnchored++;
+
 		}
+		++piIndex;
 	}
 
 	if ( numCanBeAnchored == 0 || numCanBeAnchored != numWillBeAnchored)
 	{
-		brush->Move(delta + extraDelta);
+		for (auto it = validActorBrush.objects.begin(); it != validActorBrush.objects.end(); ++it)
+		{
+			actor = (*it)->GetAsActor();
+
+			actor->Move(delta + extraDelta);
+			//brush->Move(delta + extraDelta);
+		}
+		
 	}
 	else
 	{
@@ -8120,7 +8160,7 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 		if (alignmentMaintained)
 		{
 			piIndex = 0;
-			for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it, ++piIndex)
+			for (auto it = validActorBrush.objects.begin(); it != validActorBrush.objects.end(); ++it, ++piIndex)
 			{
 				if (piVec[piIndex].ground == NULL)
 				{
@@ -8130,29 +8170,33 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 				actor = (*it)->GetAsActor();
 				actor->AnchorToGround(piVec[piIndex]);
 				piVec[piIndex].AddActor(actor);
+				
 			}
 		}
 		else
 		{
-			brush->Move(delta + extraDelta);
+			for (auto it = validActorBrush.objects.begin(); it != validActorBrush.objects.end(); ++it)
+			{
+				actor = (*it)->GetAsActor();
+
+				actor->Move(delta + extraDelta);
+				//brush->Move(delta + extraDelta);
+			}
+			//brush->Move(delta + extraDelta);
 		}
 	}
 	
 	//doesnt SEEM like this is needed but im not convinced yet
-	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it)
+	for (auto it = validActorBrush.objects.begin(); it != validActorBrush.objects.end(); ++it, ++piIndex)
 	{
 		actor = (*it)->GetAsActor();
-		if (actor == NULL)
-			continue;
-		//actor->myEnemy->UpdateFromEditParams(0);
+		actor->myEnemy->UpdateFromEditParams(0);
 	}
 
 	bool canApply = brush->CanApply();
-	for (auto it = brush->objects.begin(); it != brush->objects.end(); ++it)
+	for (auto it = validActorBrush.objects.begin(); it != validActorBrush.objects.end(); ++it, ++piIndex)
 	{
 		actor = (*it)->GetAsActor();
-		if (actor == NULL)
-			continue;
 		
 		if (canApply)
 		{		
@@ -8200,17 +8244,25 @@ void EditSession::StartSelectedMove()
 	}*/
 
 	//assumption that all are grounded atm
-	if (grabbedActor != NULL) //need to figure out how to separate terrain selection from enemies
+	//if (grabbedActor != NULL && selectedBrush->GetNumTerrain() == 0 ) //need to figure out how to separate terrain selection from enemies
 	{
 		moveAction = selectedBrush->UnAnchor();
 		if (moveAction != NULL)
 		{
 			ActorPtr actor;
+			V2d grabbedPos;
 
-			grabbedActor->diffFromGrabbed = V2d(0, 0);
+			if (grabbedActor != NULL)
+			{
+				grabbedActor->diffFromGrabbed = V2d(0, 0);
 
-			V2d grabbedGroundPos = grabbedActor->posInfo.GetPosition();
-			double grabbedGroundAngle = grabbedActor->posInfo.GetEdge()->GetNormalAngleRadians();
+				grabbedPos = grabbedActor->posInfo.GetPosition();
+			}
+			else
+			{
+				grabbedPos = worldPos;
+			}
+			
 
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
@@ -8220,7 +8272,7 @@ void EditSession::StartSelectedMove()
 
 				if (actor->posInfo.ground != NULL)
 				{
-					actor->diffFromGrabbed = actor->posInfo.GetPosition() - grabbedGroundPos;
+					actor->diffFromGrabbed = actor->posInfo.GetPosition() - grabbedPos;
 				}
 			}
 
@@ -8250,13 +8302,25 @@ void EditSession::ContinueSelectedMove()
 	Vector2i delta = pos - editMouseGrabPos;
 	
 	//if (IsSingleActorSelected() && selectedPoints.empty())
-	if (selectedPoints.empty() && grabbedActor != NULL)
+	//if( selectedBrush->num)
+	if (selectedPoints.empty() && grabbedActor != NULL && selectedBrush->GetNumTerrain() == 0 )
 	{
 		MoveActors(delta, V2d(grabbedActor->GetGrabAABBCenter()), selectedBrush );
 	}
-	else
+	else if(selectedPoints.empty())
 	{
-		selectedBrush->Move(delta);
+		MoveActors(delta,worldPos, selectedBrush);
+	}
+	//else
+	{
+		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+		{
+			if ((*it)->GetAsActor() == NULL)
+			{
+				(*it)->Move(delta);
+			}
+		}
+		//selectedBrush->Move(delta);
 
 		pointGrabDelta = Vector2i(worldPos.x, worldPos.y) - pointGrabPos;
 		oldPointGrabPos = pointGrabPos;
@@ -10888,7 +10952,26 @@ void EditSession::EditModeUpdate()
 	}
 
 	//cleanup this later
-	if (grabbedActor != NULL && grabbedActor->myEnemy != NULL)
+
+	//if moving the selected brush at all. grabbedActor isn't necessarily true. could grab terrain.
+	//hmm maybe just use grabbed terrain?
+	/*if(editStartMove )
+	{
+		ActorPtr actor;
+		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+		{
+			actor = (*it)->GetAsActor();
+			if (actor != NULL)
+			{
+				if (actor->myEnemy != NULL)
+				{
+					actor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
+				}
+			}
+		}
+	}*/
+
+	/*if (grabbedActor != NULL && grabbedActor->myEnemy != NULL)
 	{
 		if (selectedBrush->objects.size() > 1)
 		{
@@ -10909,7 +10992,7 @@ void EditSession::EditModeUpdate()
 		{
 			grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
 		}
-	}
+	}*/
 		
 	TrySelectedMove();
 

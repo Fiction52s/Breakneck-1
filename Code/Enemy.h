@@ -60,7 +60,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	SlowableObject, HittableObject
 {
 	virtual void UpdateSpriteFromEditParams() {}
-	
+	virtual void AddToWorldTrees() {}
+
 	virtual void UpdateOnPlacement(ActorParams *ap);
 	void UpdateOnEditPlacement() {
 		UpdateOnPlacement(editParams);

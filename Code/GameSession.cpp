@@ -488,12 +488,6 @@ void GameSession::Cleanup()
 	}
 	gates.clear();
 
-	if (activeItemTree != NULL)
-	{
-		delete activeItemTree;
-		activeItemTree = NULL;
-	}
-
 	if (activeEnemyItemTree != NULL)
 	{
 		delete activeEnemyItemTree;
@@ -7255,8 +7249,6 @@ void GameSession::Init()
 	keyMarker = NULL;
 	
 	specterTree = NULL;
-
-	activeItemTree = NULL;
 	
 	envPlantTree = NULL;
 	

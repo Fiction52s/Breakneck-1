@@ -19,10 +19,9 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
-	:Enemy(EnemyType::EN_BOOSTER, ap), strength( 20 )//, false, 1, false), strength( 20 )
+void Booster::SetLevel(int lev)
 {
-	level = ap->GetLevel();
+	level = lev;
 
 	switch (level)
 	{
@@ -38,32 +37,30 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 		maxHealth += 5;
 		break;
 	}
+}
 
-	action = NEUTRAL;
-	frame = 0;
-	receivedHit = NULL;
+void Booster::AddToWorldTrees()
+{
+	sess->activeItemTree->Insert(this);
+}
+
+Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
+	:Enemy(EnemyType::EN_BOOSTER, ap), strength( 20 )//, false, 1, false), strength( 20 )
+{
+	SetNumActions(Count);
+	SetEditorActions(NEUTRAL, NEUTRAL, 0);
+
+	SetLevel(ap->GetLevel());
 
 	SetCurrPosInfo(startPosInfo);
 
-	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
+	ts = sess->GetSizedTileset("Enemies/booster_512x512.png");
+	ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
 
-	frame = 0;
-
-	//animationFactor = 10;
-
-	//ts = owner->GetTileset( "Booster.png", 80, 80 );
-	ts = sess->GetTileset("Enemies/booster_512x512.png", 512, 512);
-	ts_refresh = sess->GetTileset("Enemies/booster_on_256x256.png", 256, 256);
-	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(frame));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(GetPositionF());
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
-
-	dead = false;
 
 	actionLength[NEUTRAL] = 6;
 	actionLength[BOOST] = 8;
@@ -74,6 +71,20 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 	animFactor[REFRESH] = 5;
 
 	ResetEnemy();
+
+	SetSpawnRect();
+}
+
+void Booster::ResetEnemy()
+{
+	action = NEUTRAL;
+	frame = 0;
+
+	SetHitboxes(&hitBody, 0);
+	UpdateHitboxes();
+
+	sprite.setTexture(*ts->texture);
+	UpdateSprite();
 }
 
 bool Booster::Boost()
@@ -92,24 +103,7 @@ bool Booster::IsBoostable()
 	return action == NEUTRAL;
 }
 
-void Booster::ResetEnemy()
-{
-	action = NEUTRAL;
-	dead = false;
 
-	frame = 0;
-	receivedHit = NULL;
-	
-	SetHitboxes(&hitBody, 0);
-	UpdateHitboxes();
-
-	sprite.setTexture(*ts->texture);
-
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(GetPositionF());
-
-	UpdateSprite();
-}
 
 void Booster::ProcessState()
 {
