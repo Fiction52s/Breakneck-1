@@ -723,6 +723,8 @@ struct EditSession : GUIHandler, Session
 	//----------------------
 
 	CompoundAction *moveAction;
+
+	void RevertMovedPoints(PointMap::iterator it);
 	//MovePointsAction *movePointsAction;
 
 	bool moveActive;
