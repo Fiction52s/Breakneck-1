@@ -107,7 +107,10 @@ struct ChooseRect
 		I_WORLDCHOOSER,
 		I_SEARCHENEMYLIBRARY,
 		I_ENEMYHOTBAR,
-		I_ENEMYLIBRARY
+		I_ENEMYLIBRARY,
+		I_SEARCHDECORLIBRARY,
+		I_DECORHOTBAR,
+		I_DECORLIBRARY
 	};
 
 	ChooseRectIdentity rectIdentity;
@@ -162,6 +165,7 @@ struct EnemyChooseRect : ChooseRect
 };
 
 struct Tileset;
+struct EditorDecorInfo;
 struct ImageChooseRect : ChooseRect
 {
 	ImageChooseRect( ChooseRectIdentity ident, 
@@ -172,11 +176,13 @@ struct ImageChooseRect : ChooseRect
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
 	void SetSize(float s);
-
+	void SetImage(Tileset *ts, int index);
+	EditorDecorInfo * CreateDecor();
 	sf::Sprite spr;
 	Tileset *ts;
 	sf::View view;
 	int tileIndex;
+	std::string decorName;
 };
 
 
@@ -190,7 +196,7 @@ struct CreateEnemyModeUI
 {
 	CreateEnemyModeUI();
 	~CreateEnemyModeUI();
-	std::vector<ChooseRect> myRects;
+	//std::vector<ChooseRect> myRects;
 	std::vector<EnemyChooseRect> allEnemyRects;
 	
 	std::vector<EnemyChooseRect> hotbarEnemies;
@@ -224,6 +230,54 @@ struct CreateEnemyModeUI
 	bool showLibrary;
 	bool show;
 };
+
+struct CreateDecorModeUI
+{
+	CreateDecorModeUI();
+	~CreateDecorModeUI();
+	//std::vector<ChooseRect> myRects;
+	
+	
+	void SetActiveLibraryWorld(int w);
+	int activeLibraryWorld;
+	std::vector<ImageChooseRect> worldSelectRects;
+
+	void UpdateSprites(int sprUpdateFrames);
+	void Update(bool mouseDownL,
+		bool mouseDownR,
+		sf::Vector2i &mousePos);
+	void Draw(sf::RenderTarget *target);
+	void UpdateHotbarTypes();
+
+	
+	
+	void SetShown(bool s);
+	void SetLibraryShown(bool s);
+	void FlipLibraryShown();
+
+	EditSession *edit;
+
+	bool showLibrary;
+	bool show;
+
+	ChooseRectContainer *topbarCont;
+	ChooseRectContainer *libCont;
+
+	std::vector<ImageChooseRect> allImageRects;
+	std::vector<std::vector<ImageChooseRect*>>
+		libraryImagesVec;
+	std::vector<ImageChooseRect> hotbarImages;
+	int activeHotbarSize;
+
+	ImageChooseRect *librarySearchRect;
+
+	sf::Vertex *allQuads;
+	int numAllQuads;
+
+
+	
+};
+
 
 struct TextBox
 {

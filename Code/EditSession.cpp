@@ -81,6 +81,42 @@ void EditSession::SetTrackingEnemy(ActorType *type, int level)
 	else
 	{
 		int x = 5;
+		assert(0);
+	}
+}
+
+void EditSession::SetTrackingDecor(DecorPtr dec)
+{
+	if (trackingDecor == NULL)
+	{
+		ClearSelectedBrush();
+		//cout << "copy of level : " << level << endl;
+		trackingDecor = dec;
+
+		//trackingEnemyParams->group = groups["--"];
+		//GetPolygon((0);
+
+		//trackingEnemyParams->AnchorToGround();
+		//trackingEnemyParams->CreateMyEnemy();
+		grabbedImage = trackingDecor;
+		SelectObject(grabbedImage);
+
+		grabbedImage->MoveTo(Vector2i(worldPos));
+
+		editMouseGrabPos = Vector2i(worldPos.x, worldPos.y);
+		pointGrabPos = Vector2i(worldPos.x, worldPos.y);
+		editMouseOrigPos = editMouseGrabPos;
+
+		editMouseDownMove = true;
+		editStartMove = false;
+		editMouseDownBox = false;
+
+		createDecorModeUI->SetShown(false);
+	}
+	else
+	{
+		int x = 5;
+		assert(0);
 	}
 }
 
@@ -495,6 +531,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
 	createEnemyModeUI = NULL;
+	createDecorModeUI = NULL;
 	enemyEdgePolygon = NULL;
 	moveAction = NULL;
 	AllocatePolyShaders(TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD);
@@ -750,6 +787,11 @@ EditSession::~EditSession()
 		delete createEnemyModeUI;
 	}
 
+	if (createDecorModeUI != NULL)
+	{
+		delete createDecorModeUI;
+	}
+
 
 	mapStartBrush->Destroy();
 
@@ -766,7 +808,7 @@ EditSession::~EditSession()
 	//delete groups, but not actors
 	
 
-	delete[] decorTileIndexes;
+	//delete[] decorTileIndexes;
 
 	currSession = NULL;
 }
@@ -877,9 +919,22 @@ void EditSession::Draw()
 			grabbedActor->Draw(preScreenTex);
 	}
 
+	if (IsDrawMode(CREATE_IMAGES))
+	{
+		createDecorModeUI->Draw(preScreenTex);
+
+		if (grabbedImage != NULL)
+		{
+			grabbedImage->Draw(preScreenTex);
+		}
+	}
+
 	if (IsDrawMode(TRANSFORM))
 	{
 		transformTools->Draw(preScreenTex);
+
+		if (grabbedImage != NULL)
+			grabbedImage->Draw(preScreenTex);
 	}
 }
 
@@ -1961,6 +2016,7 @@ int EditSession::Run()
 	justCompletedPolyWithClick = false;
 
 	trackingEnemyParams = NULL;
+	trackingDecor = NULL;
 	showPanel = NULL;
 
 	sf::Texture playerZoomIconTex;
@@ -1971,7 +2027,7 @@ int EditSession::Run()
 
 	SetupEnemyTypes();
 
-	InitDecorPanel();
+	//InitDecorPanel();
 
 	mapOptionsPanel = CreateOptionsPanel("map");
 	terrainOptionsPanel = CreateOptionsPanel("terrain");
@@ -2112,7 +2168,7 @@ int EditSession::Run()
 		recentEnemies.push_back(make_pair((ActorType*)NULL, 0));
 	}*/
 
-
+	ReadDecorImagesFile();
 
 	ReadFile();
 
@@ -2122,7 +2178,7 @@ int EditSession::Run()
 	}
 
 	createEnemyModeUI = new CreateEnemyModeUI();
-	
+	createDecorModeUI = new CreateDecorModeUI();
 	//enemyChooser = new EnemyChooser(types, enemySelectPanel);
 	//enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
 
@@ -2665,7 +2721,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 			currDecorName = name;
 			ts_currDecor = decorTSMap[currDecorName];
 			int ind = gs->selectedY * gs->xSize + gs->selectedX;
-			currDecorTile = decorTileIndexes[ind];
+			//currDecorTile = decorTileIndexes[ind];
 
 
 			tempDecorSprite.setTexture(*ts_currDecor->texture);
@@ -2867,7 +2923,7 @@ void EditSession::InitDecorPanel()
 	allPopups.push_back(decorPanel);
 	GridSelector *gs = decorPanel->AddGridSelector("decorselector", Vector2i(0, 0), w, h, sw, sh, false, true );
 	decorPanel->AddTextBox("layer", Vector2i( 0, 800), 100, 3, "0");
-	decorTileIndexes = new int[w*h];
+	//decorTileIndexes = new int[w*h];
 	
 
 	//decorPanel->textBoxes["layer"]->text
@@ -2886,7 +2942,7 @@ void EditSession::InitDecorPanel()
 			Tileset *ts = (*it).second;
 			Sprite s(*ts->texture);
 			s.setTextureRect(ts->GetSubRect((*tit)));
-			decorTileIndexes[ind] = (*tit);
+			//decorTileIndexes[ind] = (*tit);
 			float texX = ts->texture->getSize().x;
 			float texY = ts->texture->getSize().y;
 			s.setScale(((float)sw) / ts->tileWidth, ((float)sh) / ts->tileHeight);
@@ -3335,6 +3391,34 @@ bool EditSession::AnchorSelectedEnemies()
 void EditSession::TryCompleteSelectedMove()
 {
 	bool validMove = false;
+
+	if (mode == CREATE_IMAGES)
+	{
+		assert(grabbedImage != NULL);
+		if (grabbedImage->layer > 0)
+		{
+			grabbedImage->myList = &decorImagesBehindTerrain;
+		}
+		else if (grabbedImage->layer < 0)
+		{
+			grabbedImage->myList = &decorImagesFrontTerrain;
+		}
+		else if (grabbedImage->layer == 0)
+		{
+			grabbedImage->myList = &decorImagesBetween;
+		}
+
+		Action *apply = new ApplyBrushAction(selectedBrush);
+		createDecorModeUI->SetShown(true);
+		apply->Perform();
+		AddDoneAction(apply);
+		trackingDecor = NULL;
+		ClearSelectedBrush();
+		createDecorModeUI->SetLibraryShown(false);
+		return;
+		//apply->performed = true;
+	}
+
 
 	//check if valid
 	if (selectedBrush->CanApply())
@@ -6369,6 +6453,30 @@ void EditSession::GetShardWorldAndIndex(int selX, int selY,
 	li = realX + realY * 11;
 }
 
+Vector2i EditSession::GetCopiedCenter()
+{
+	if (copiedBrush != NULL && freeActorCopiedBrush != NULL)
+	{
+		IntRect copiedRect = copiedBrush->GetAABB();
+		IntRect freeRect = freeActorCopiedBrush->GetAABB();
+
+		int left = min(freeRect.left, copiedRect.left);
+		int right = max(freeRect.left + freeRect.width, copiedRect.left + copiedRect.width );
+		int top = min(freeRect.top, copiedRect.top);
+		int bot = max(freeRect.top + freeRect.height, copiedRect.top + copiedRect.height);
+
+		return Vector2i((right + left) / 2, (top + bot) / 2);
+	}
+	else if (copiedBrush != NULL)
+	{
+		return copiedBrush->GetCenter();
+	}
+	else if (freeActorCopiedBrush != NULL)
+	{
+		return freeActorCopiedBrush->GetCenter();
+	}
+}
+
 void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 {
 	list<PolyPtr> brushPolys;
@@ -8040,6 +8148,10 @@ void EditSession::SetMode(Emode m)
 		editCurrentTime = 0;
 		editAccumulator = TIMESTEP + .1;
 		break;
+	case CREATE_IMAGES:
+		grabbedImage = NULL;
+		selectedBrush->Clear();
+		break;
 	case EDIT:
 	{
 		editClock.restart();
@@ -9256,10 +9368,13 @@ void EditSession::DrawModeUI()
 		textgreen.setPosition((menuDownPos + circleLowerRightPos).x, (menuDownPos + circleLowerRightPos).y);
 		preScreenTex->draw(textgreen);
 
-
 		cs.setFillColor(COLOR_YELLOW);
 		cs.setPosition((menuDownPos + circleBottomPos).x, (menuDownPos + circleBottomPos).y);
 		preScreenTex->draw(cs);
+
+		textgreen.setString("CREATE\nDECOR");
+		textgreen.setPosition(Vector2f(menuDownPos + circleBottomPos));
+		preScreenTex->draw(textgreen);
 
 		cs.setFillColor(COLOR_ORANGE);
 		cs.setPosition((menuDownPos + circleLowerLeftPos).x, (menuDownPos + circleLowerLeftPos).y);
@@ -9888,12 +10003,6 @@ void EditSession::EditModeHandleEvent()
 			showPanel = NULL;
 		}
 
-		if (ev.key.code == Keyboard::I && ev.key.control)
-		{
-			SetMode(CREATE_IMAGES);
-			currImageTool = ITOOL_EDIT;
-			showPanel = decorPanel;
-		}
 		if (ev.key.code == Keyboard::C && ev.key.control)
 		{
 			//copiedBrush = selectedBrush->Copy();
@@ -9921,6 +10030,7 @@ void EditSession::EditModeHandleEvent()
 
 				if (freeActorCopiedBrush != NULL)
 				{
+					
 					freeActorCopiedBrush->CenterOnPoint(pos);
 
 					ActorPtr actor;
@@ -9930,8 +10040,18 @@ void EditSession::EditModeHandleEvent()
 						if (actor == NULL)
 							continue;
 
-						actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;
+						actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
 					}
+
+				
+					//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
+					//{
+					//	actor = (*it)->GetAsActor();
+					//	if (actor == NULL)
+					//		continue;
+
+					//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+					//}
 				}
 				
 				// (pos - copiedBrush->GetCenter());
@@ -10439,6 +10559,8 @@ void EditSession::SelectModeHandleEvent()
 		}
 		else if (menuSelection == "bottom")
 		{
+			SetMode(CREATE_IMAGES);
+			currImageTool = ITOOL_EDIT;
 		}
 
 
@@ -10739,7 +10861,7 @@ void EditSession::CreateImagesHandleEvent()
 	{
 		if (ev.mouseButton.button == Mouse::Left)
 		{
-			if (showPanel != NULL)
+			/*if (showPanel != NULL)
 			{
 				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
 			}
@@ -10759,7 +10881,7 @@ void EditSession::CreateImagesHandleEvent()
 					dec->myList = &decorImagesBetween;
 				}
 				CreateDecorImage(dec);
-			}
+			}*/
 		}
 		break;
 	}
@@ -10767,11 +10889,23 @@ void EditSession::CreateImagesHandleEvent()
 	{
 		if (ev.mouseButton.button == Mouse::Left)
 		{
-			if (showPanel != NULL)
+			/*if (showPanel != NULL)
 			{
-				showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
+			showPanel->Update(false, uiMousePos.x, uiMousePos.y);
+			break;
+			}*/
+
+			if (grabbedImage != NULL)
+			{
+				TryCompleteSelectedMove();
 			}
+
+			editMouseDownBox = false;
+			editMouseDownMove = false;
+			editStartMove = false;
+			grabbedImage = NULL;
 		}
+		break;
 		break;
 	}
 	case Event::MouseWheelMoved:
@@ -11128,40 +11262,61 @@ void EditSession::EditModeUpdate()
 void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 {
 	
-	if (eventType == ChooseRect::E_CLICKED)
+	if (mode == CREATE_ENEMY)
 	{
-		EnemyChooseRect *ceRect = cr->GetAsEnemyChooseRect();
-		if (ceRect != NULL)
+		if (eventType == ChooseRect::E_CLICKED)
 		{
-			SetTrackingEnemy(ceRect->actorType, ceRect->level);
+			EnemyChooseRect *ceRect = cr->GetAsEnemyChooseRect();
+			if (ceRect != NULL)
+			{
+				SetTrackingEnemy(ceRect->actorType, ceRect->level);
+			}
+			else
+			{
+				ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+				if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_SEARCHENEMYLIBRARY)
+				{
+					createEnemyModeUI->FlipLibraryShown();
+				}
+			}
+
 		}
-		else
+		else if (eventType == ChooseRect::E_FOCUSED)
 		{
 			ImageChooseRect *icRect = cr->GetAsImageChooseRect();
-			if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_SEARCHENEMYLIBRARY )
+			if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_WORLDCHOOSER)
 			{
-				createEnemyModeUI->FlipLibraryShown();
+				createEnemyModeUI->SetActiveLibraryWorld(icRect->tileIndex);
 			}
 		}
-
 	}
-	else if (eventType == ChooseRect::E_FOCUSED)
+	else if (mode == CREATE_IMAGES)
 	{
-		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
-		if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_WORLDCHOOSER)
+		if (eventType == ChooseRect::E_CLICKED)
 		{
-			createEnemyModeUI->SetActiveLibraryWorld(icRect->tileIndex);
+			ImageChooseRect *icRect = cr->GetAsImageChooseRect();	
+			if (icRect != NULL && ( icRect->rectIdentity == ChooseRect::I_DECORLIBRARY
+				|| icRect->rectIdentity == ChooseRect::I_DECORHOTBAR ))
+			{
+				SetTrackingDecor(icRect->CreateDecor());
+				//SetTrackingDecor( new EditorDecorInfo( icRect->spr, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+				//	icRect->))
+				//settrackingImage
+			}
+			else if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_SEARCHDECORLIBRARY)
+			{
+				createDecorModeUI->FlipLibraryShown();
+			}
+		}
+		else if (eventType == ChooseRect::E_FOCUSED)
+		{
+			ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+			if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_WORLDCHOOSER)
+			{
+				createDecorModeUI->SetActiveLibraryWorld(icRect->tileIndex);
+			}
 		}
 	}
-	/*else if (eventType == ChooseRect::E_UNFOCUSED)
-	{
-		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
-		if (icRect != NULL)
-		{
-			createEnemyModeUI->SetActiveLibraryWorld(-1);
-		}
-	}*/
-	
 }
 
 void EditSession::PasteModeUpdate()
@@ -11210,8 +11365,18 @@ void EditSession::PasteModeUpdate()
 		//MoveActors(pos - copiedBrush->GetCenter(), V2d(copiedBrush->GetCenter()), copiedBrush);
 		if (freeActorCopiedBrush != NULL)
 		{
-			MoveActors(pos - freeActorCopiedBrush->GetCenter(), V2d(freeActorCopiedBrush->GetCenter()), freeActorCopiedBrush);
+			MoveActors(pos - freeActorCopiedBrush->GetCenter(), worldPos,/*V2d(freeActorCopiedBrush->GetCenter()),*/ freeActorCopiedBrush);
+			//MoveActors(pos - freeActorCopiedBrush->GetCenter(), V2d(freeActorCopiedBrush->GetCenter()), freeActorCopiedBrush);
 			freeActorCopiedBrush->CenterOnPoint(pos);
+			//ActorPtr actor;
+			//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
+			//{
+			//	actor = (*it)->GetAsActor();
+			//	if (actor == NULL)
+			//		continue;
+
+			//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+			//}
 		}
 		
 		if (copiedBrush != NULL)
@@ -11263,7 +11428,6 @@ void EditSession::PasteModeUpdate()
 void EditSession::CreateEnemyModeUpdate()
 {
 	createEnemyModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
-	//showPanel->Update(IsMousePressed( Mouse::Left ), IsMousePressed( Mouse::Right ), uiMousePos.x, uiMousePos.y);
 	createEnemyModeUI->UpdateSprites(spriteUpdateFrames);
 
 	if (grabbedActor != NULL)
@@ -11298,6 +11462,10 @@ void EditSession::CreateRectModeUpdate()
 		float height = abs(createRectCurrPoint.y - createRectStartPoint.y);
 		rectCreatingTrigger->SetRect(width, height, rc);
 
+		if (grabbedImage != NULL)
+		{
+			TrySelectedMove();
+		}
 		/*if (trackingEnemy != NULL)
 		{
 			enemySprite.setPosition(Vector2f(rc));
@@ -11451,14 +11619,28 @@ void EditSession::CreateGatesModeUpdate()
 
 void EditSession::CreateImagesModeUpdate()
 {
-	if (showPanel == NULL)
+	createDecorModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
+	createDecorModeUI->UpdateSprites(spriteUpdateFrames);
+
+	/*if (grabbedActor != NULL)
+	{
+		grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
+		TrySelectedMove();
+	}*/
+
+	if (grabbedImage != NULL)
+	{
+		TrySelectedMove();
+	}
+
+	/*if (showPanel == NULL)
 	{
 		Vector2f p = preScreenTex->mapPixelToCoords(pixelPos);
 		tempDecorSprite.setPosition(p);
 
 		tempDecorSprite.setOrigin(tempDecorSprite.getLocalBounds().width / 2, tempDecorSprite.getLocalBounds().height / 2);
 		tempDecorSprite.setRotation(0);
-	}
+	}*/
 }
 
 void EditSession::SetLevelModeUpdate()

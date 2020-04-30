@@ -598,6 +598,7 @@ struct EditorDecorInfo : ISelectable
 	bool ContainsPoint(sf::Vector2f test);
 	bool Intersects(sf::IntRect rect);
 	void Move(sf::Vector2i delta);
+	void MoveTo(sf::Vector2i &pos);
 	void BrushDraw(sf::RenderTarget *target,
 		bool valid);
 	void Deactivate();

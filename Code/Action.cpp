@@ -193,13 +193,13 @@ sf::Vector2f Brush::GetTerrainSize()
 	return Vector2f(right - left, bottom - top);
 }
 
-sf::Vector2i &Brush::GetCenter()
+sf::IntRect Brush::GetAABB()
 {
-	if( objects.empty() )
+	IntRect aabb;
+	if (objects.empty())
 	{
-		center = Vector2i(0, 0);
 		assert(0);
-		return center;
+		return aabb;
 	}
 
 	int left = 0;
@@ -213,13 +213,13 @@ sf::Vector2i &Brush::GetCenter()
 
 	bool init = false;
 
-	for( auto it = objects.begin(); it != objects.end(); ++it )
+	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		sp = (*it);
 		tp = sp->GetAsTerrain();
 		if (tp != NULL)
 		{
-			if( !init )
+			if (!init)
 			{
 				init = true;
 				left = tp->left;
@@ -238,10 +238,10 @@ sf::Vector2i &Brush::GetCenter()
 		else
 		{
 			ap = sp->GetAsActor();
-			if( ap != NULL && ap->posInfo.ground == NULL 
-				&& ap->posInfo.railGround == NULL )
+			if (ap != NULL && ap->posInfo.ground == NULL
+				&& ap->posInfo.railGround == NULL)
 			{
-				
+
 				Vector2i intPos(ap->GetGrabAABBCenter());
 				if (!init)
 				{
@@ -255,17 +255,36 @@ sf::Vector2i &Brush::GetCenter()
 				else
 				{
 					//Vector2i intPos = ap->GetIntPos();
-					left = min( left, intPos.x);
-					right = max( right, intPos.x);
-					top = min( top, intPos.y);
-					bottom = max( top, intPos.y);
+					left = min(left, intPos.x);
+					right = max(right, intPos.x);
+					top = min(top, intPos.y);
+					bottom = max(bottom, intPos.y);
 				}
 			}
 		}
 	}
 
-	center.x = (left + right) / 2;
-	center.y = (top + bottom) / 2;
+	aabb.left = left;
+	aabb.top = top;
+	aabb.width = right - left;
+	aabb.height = bottom - top;
+
+	return aabb;
+}
+
+sf::Vector2i &Brush::GetCenter()
+{
+	if( objects.empty() )
+	{
+		center = Vector2i(0, 0);
+		assert(0);
+		return center;
+	}
+
+	IntRect ir = GetAABB();
+
+	center.x = ir.left + ir.width / 2;
+	center.y = ir.top + ir.height / 2;
 
 	return center;
 }

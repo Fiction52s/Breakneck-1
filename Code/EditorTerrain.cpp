@@ -52,6 +52,11 @@ void EditorDecorInfo::Move(sf::Vector2i delta)
 	spr.setPosition(spr.getPosition().x + delta.x, spr.getPosition().y + delta.y);
 }
 
+void EditorDecorInfo::MoveTo(sf::Vector2i &pos)
+{
+	spr.setPosition(pos.x, pos.y);
+}
+
 void EditorDecorInfo::BrushDraw(sf::RenderTarget *target,
 	bool valid)
 {

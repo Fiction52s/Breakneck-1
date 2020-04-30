@@ -103,6 +103,7 @@ struct EditSession : GUIHandler, Session
 
 
 	CreateEnemyModeUI *createEnemyModeUI;
+	CreateDecorModeUI *createDecorModeUI;
 	//EnemyChooser *enemyChooser;
 
 	V2d oldWorldPosTest;
@@ -508,6 +509,9 @@ struct EditSession : GUIHandler, Session
 	void SetTrackingEnemy(ActorType *type, int level);
 	ActorParams *trackingEnemyParams;
 
+	void SetTrackingDecor(DecorPtr dec);
+	DecorPtr trackingDecor;
+
 	void ChooseRectEvent(ChooseRect *cr, int eventType );
 
 	Panel *showPanel;	
@@ -714,6 +718,7 @@ struct EditSession : GUIHandler, Session
 	Brush *selectedBrush;
 	Brush *copiedBrush;
 	Brush *freeActorCopiedBrush;
+	sf::Vector2i GetCopiedCenter();
 	PointMap selectedPoints;
 	RailPointMap selectedRailPoints;
 	
@@ -734,6 +739,7 @@ struct EditSession : GUIHandler, Session
 	int editMoveThresh;
 	SelectPtr grabbedObject;
 	ActorPtr grabbedActor;
+	DecorPtr grabbedImage;
 	TerrainPoint *grabbedPoint;
 	sf::Vector2i editMouseGrabPos;
 	sf::Vector2i editMouseOrigPos;
@@ -888,8 +894,7 @@ struct EditSession : GUIHandler, Session
 	int currDecorLayer;
 	int currDecorTile;
 
-	bool decorTracking;
-	int *decorTileIndexes;
+	//int *decorTileIndexes;
 	std::map<std::string, std::list<int>> decorTileIndexMap;
 
 

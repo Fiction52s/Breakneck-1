@@ -617,16 +617,65 @@ void EnemyChooseRect::UpdateSprite(int frameUpdate)
 	}
 }
 
+EditorDecorInfo * ImageChooseRect::CreateDecor()
+{
+	EditorDecorInfo *edi = new EditorDecorInfo(spr, 0, decorName, tileIndex);
+	return edi;
+}
+
+void ImageChooseRect::SetImage(Tileset *p_ts, int p_index)
+{
+	if (p_ts == NULL)
+	{
+		SetShown(false);
+		ts = p_ts;
+		tileIndex = p_index;
+		return;
+	}
+
+	if (!(p_ts == ts && p_index == tileIndex))
+	{
+		ts = p_ts;
+		tileIndex = p_index;
 
 
+		ts->SetSpriteTexture(spr);
+		ts->SetSubRect(spr, tileIndex);
+		spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+
+		//actorType->defaultParamsVec[level - 1]->MoveTo(Vector2i(0, 0));
+		//enemy = actorType->defaultParamsVec[level - 1]->myEnemy;
+		//enemy->SetActionEditLoop();
+		//enemy->UpdateFromEditParams(0);
+		SetSize(boxSize);
+
+		/*switch (level)
+		{
+		case 1:
+			idleColor = Color::Blue;
+			break;
+		case 2:
+			idleColor = Color::Cyan;
+			break;
+		case 3:
+			idleColor = Color::Magenta;
+			break;
+		case 4:
+			idleColor = Color::Red;
+			break;
+
+		}
+		idleColor.a = 100;*/
+		//SetRectColor(quad, idleColor);
+	}
+}
 
 ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v, UIMouseUser *mUser, Vector2f &p_pos, Tileset *p_ts,
 	int p_tileIndex )
-	:ChooseRect( ident, ChooseRectType::IMAGE, v, mUser, 100, p_pos), ts( p_ts ), tileIndex( p_tileIndex )
+	:ChooseRect( ident, ChooseRectType::IMAGE, v, mUser, 100, p_pos)
 {
-	ts->SetSpriteTexture(spr);
-	ts->SetSubRect(spr, tileIndex);
-	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+	ts = NULL;
+	SetImage(p_ts, p_tileIndex);
 }
 
 void ImageChooseRect::SetSize(float s)
