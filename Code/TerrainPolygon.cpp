@@ -3115,7 +3115,7 @@ Grass::GrassType TerrainPolygon::GetGrassType()
 
 void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 {
-	int numGrassTotal = 0;
+	numGrassTotal = 0;
 
 	for (auto it = segments.begin(); it != segments.end(); ++it)
 	{
@@ -3185,18 +3185,11 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 				Vector2f topRight = pos + Vector2f(grassSize / 2, -grassSize / 2);
 				Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
 				Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
-
-				grassVA[(j + totalGrass) * 4].position = topLeft;
-				grassVA[(j + totalGrass) * 4].texCoords = Vector2f(0, 0);
-
+				SetRectCenter(grassVA + (j + totalGrass) * 4, grassSize, grassSize, pos);
+				/*grassVA[(j + totalGrass) * 4].position = topLeft;
 				grassVA[(j + totalGrass) * 4 + 1].position = bottomLeft;
-				grassVA[(j + totalGrass) * 4 + 1].texCoords = Vector2f(0, grassSize);
-
 				grassVA[(j + totalGrass) * 4 + 2].position = bottomRight;
-				grassVA[(j + totalGrass) * 4 + 2].texCoords = Vector2f(grassSize, grassSize);
-
-				grassVA[(j + totalGrass) * 4 + 3].position = topRight;
-				grassVA[(j + totalGrass) * 4 + 3].texCoords = Vector2f(grassSize, 0);
+				grassVA[(j + totalGrass) * 4 + 3].position = topRight;*/
 
 				activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, gType));
 				//Grass * g = new Grass(ts_grass, totalGrassIndex, posd, this, gType);

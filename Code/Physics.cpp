@@ -2180,7 +2180,7 @@ void CollisionBody::OffsetAllFrames(Vector2f &offset)
 {
 	for (int i = 0; i < numFrames; ++i)
 	{
-		auto boxVec = collisionBoxVectors[i];
+		auto &boxVec = collisionBoxVectors[i];
 		if (boxVec.empty())
 			continue;
 		else
@@ -2197,6 +2197,7 @@ CollisionBody::CollisionBody(int p_numFrames, std::map<int, std::list<CollisionB
 	HitboxInfo *hInfo )
 	:hitboxInfo( hInfo )
 {
+	boxType = CollisionBox::Hit;
 	SetupNumFrames(p_numFrames);
 
 	int frame;

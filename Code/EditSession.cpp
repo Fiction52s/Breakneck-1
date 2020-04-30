@@ -8107,13 +8107,6 @@ void EditSession::ModifyGrass()
 		{
 			(*it)->SwitchGrass(worldPos, !HoldingShift());
 		}
-		/*PolyPtr tp;
-		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-		{
-			tp = (*it)->GetAsTerrain();
-			if (tp != NULL)
-				tp->SwitchGrass(worldPos);
-		}*/
 	}
 }
 
@@ -8428,7 +8421,8 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 	for (auto it = validActorBrush.objects.begin(); it != validActorBrush.objects.end(); ++it, ++piIndex)
 	{
 		actor = (*it)->GetAsActor();
-		actor->myEnemy->UpdateFromEditParams(0);
+		if (actor->myEnemy != NULL)
+			actor->myEnemy->UpdateFromEditParams(0);
 	}
 
 	bool canApply = brush->CanApply();

@@ -2878,6 +2878,8 @@ void GameSession::ProcessActor(ActorPtr a)
 	{
 		fullEnemyList.push_back(enemy);
 		enemyTree->Insert(enemy);
+
+		enemy->AddToWorldTrees(); //adds static objects etc
 	}
 
 	delete a; //eventually probably delete these all at once or something
