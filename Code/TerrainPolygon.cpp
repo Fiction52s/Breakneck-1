@@ -938,16 +938,7 @@ void TerrainPolygon::HandleRayCollision(Edge *edge,
 		rcPortion = len;
 		rcQuant = edgeQuantity;
 	}
-
-	/*if (edge == ignoreEdge || edge->edge1 == ignoreEdge )
-	return;
-
-	if (rayPortion < rcPortion)
-	{
-	rcEdge = edge;
-	rcPortion = rayPortion;
-	rcQuant = edgeQuantity;
-	}*/
+	++numEdgesHitByRay;
 }
 
 
@@ -964,6 +955,7 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
+	pShader = NULL;
 	decorTree = new QuadTree(1000000, 1000000);
 	myTerrainTree = new QuadTree(1000000, 1000000);
 	tdInfo = NULL;
@@ -998,6 +990,7 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	pShader = NULL;
 	numGrassTotal = 0;
 	decorTree = new QuadTree(1000000, 1000000);
 	myTerrainTree = new QuadTree(1000000, 1000000);
@@ -1216,6 +1209,10 @@ V2d TerrainPolygon::GetBisector(Edge *e)
 
 void TerrainPolygon::SetBorderTileset()
 {
+	if (terrainWorldType >= 8)
+	{
+		return;
+	}
 	//basically theres a way to make this invisible, but haven't set it up yet.
 	//just return and set the border to NULL in this case.
 
@@ -2610,7 +2607,25 @@ bool TerrainPolygon::IsSpecialPoly()
 void TerrainPolygon::UpdateMaterialType()
 {
 	int texInd = terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
-	pShader = &sess->polyShaders[texInd];
+
+	if (texInd < sess->numPolyShaders)
+	{
+		pShader = &sess->polyShaders[texInd];
+		fillCol = Color::White;
+	}
+	else
+	{
+		switch (terrainVariation)
+		{
+		case SPECIAL_WATER:
+			fillCol = Color(255, 0, 0, 50);
+			break;
+		case SPECIAL_GLIDEWATER:
+			fillCol = Color(0, 255, 0, 50);
+			break;
+		}
+		
+	}
 
 	tdInfo = sess->terrainDecorInfoMap[make_pair(terrainWorldType, terrainVariation)];
 	//assert(tdInfo != NULL);
@@ -2642,7 +2657,7 @@ void TerrainPolygon::UpdateMaterialType()
 		fillCol = Color::White;
 		break;
 	}*/
-	fillCol = Color::White;
+	
 	selectCol = sCol;
 	//selectCol = 
 
@@ -2673,7 +2688,7 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 	terrainWorldType = newWorldType;
 	terrainVariation = variation;
 
-	if (ts_border == NULL || newWorldType != oldWorldType)
+	if (ts_border == NULL || newWorldType != oldWorldType )
 		SetBorderTileset();
 
 	
@@ -2936,7 +2951,7 @@ void TerrainPolygon::Finalize()
 	SetupEdges();
 
 	VertexArray & v = *va;
-	Color testColor( 0x75, 0x70, 0x90 );
+	Color testColor(0x75, 0x70, 0x90 );
 	Color selectCol( 0x77, 0xBB, 0xDD );
 
 	if( selected )
@@ -3521,7 +3536,17 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	else if (renderMode == RENDERMODE_TRANSFORM)
 	{
 		if (va != NULL)
-			rt->draw(*va, pShader);
+		{
+			if (pShader != NULL)
+			{
+				rt->draw(*va, pShader);
+			}
+			else
+			{
+				rt->draw(*va);
+			}
+		}
+			
 
 		rt->draw(lines, numP * 2, sf::Lines);
 		return;
@@ -3533,8 +3558,18 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		rt->draw(grassVA, numGrassTotal * 4, sf::Quads, ts_grass->texture);
 	}
 
-	if( va != NULL )
-		rt->draw( *va, pShader );
+	if (va != NULL)
+	{
+		if (pShader != NULL)
+		{
+			rt->draw(*va, pShader);
+		}
+		else
+		{
+			rt->draw(*va);
+		}
+	}
+		
 
 	DrawBorderQuads(rt);
 
@@ -3712,6 +3747,51 @@ void TerrainPolygon::SetupEdges()
 		edges[i].edge0 = &edges[prevIndex];
 		edges[i].edge1 = &edges[nextIndex];
 	}
+}
+
+bool TerrainPolygon::IsInsideArea(V2d &point)
+{
+	sf::Rect<double> drect(GetAABB());
+
+	if (!drect.contains(point))
+	{
+		return false;
+	}
+
+	V2d insideQueryPoint = point;
+
+	V2d closest;
+
+	double extra = 10;
+	if (insideQueryPoint.x - drect.left > drect.width / 2)
+	{
+		closest.x = drect.left + drect.width + extra;
+	}
+	else
+	{
+		closest.x = drect.left - extra;
+	}
+
+	if (insideQueryPoint.y - drect.top > drect.height / 2)
+	{
+		closest.y = drect.top + drect.height + extra;
+	}
+	else
+	{
+		closest.y = drect.top - extra;
+	}
+
+	rcEdge = NULL;
+	numEdgesHitByRay = 0;
+
+	RayCast(this, myTerrainTree->startNode, insideQueryPoint, closest);
+
+	if (numEdgesHitByRay % 2 == 1)
+	{
+		return true;
+	}
+
+	return false;
 }
 
 bool TerrainPolygon::ContainsPoint( Vector2f test )

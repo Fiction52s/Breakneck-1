@@ -222,8 +222,15 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		FORTRESS,
 		CORE,
 		SECRETCORE,
-		WATER0,
+		SPECIAL,
 		Count
+	};
+
+	enum SpecialTerrainType
+	{
+		SPECIAL_WATER,
+		SPECIAL_GLIDEWATER,
+		SPECIAL_Count,
 	};
 
 	enum EdgeAngleType : int
@@ -277,6 +284,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void HandleRayCollision(Edge *edge,
 		double edgeQuantity, double rayPortion);
 	
+	int numEdgesHitByRay;
 	Edge * rcEdge;
 	double rcQuant;
 	Edge *ignoreEdge;
@@ -471,7 +479,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void ShowGrass(bool show);
 	void ProcessGrass(std::list<GrassSeg> &segments );
 	void SwitchGrass(V2d &mousePos, bool on);
-	//bool ContainsPoint( sf::Vector2f p );
 	void SetSelected(bool select);
 
 	void UpdateBounds();
@@ -482,7 +489,12 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	V2d GetDCenter();
 	void MovePoint( int index, sf::Vector2i &delta);
 	void SetPointPos(int index, sf::Vector2i &p);
+
+
+	bool IsInsideArea(V2d &point);
 	bool ContainsPoint(sf::Vector2f point);
+
+
 	bool IntersectsActorParams(ActorPtr a);
 	bool Intersects(sf::IntRect rect);
 	bool IntersectsGate(GateInfo *gi);

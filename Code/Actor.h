@@ -1103,6 +1103,7 @@ struct Actor : QuadTreeCollider,
 
 	void ClearSpecialTerrainCounts();
 	int specialTerrainCount[SPECIAL_TERRAIN_Count];
+	//int specialTerrainCount[2];
 	void HandleSpecialTerrain();
 	void HandleSpecialTerrain(int stType);
 

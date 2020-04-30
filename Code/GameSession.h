@@ -259,6 +259,15 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,
 		int shardIndex);
+
+
+	void ProcessSpecialTerrain(PolyPtr poly);
+
+	/*std::list<SpecialTerrainPiece*> allSpecialTerrain;
+	SpecialTerrainPiece *specialPieceList;*/
+	std::list<PolyPtr> allSpecialTerrain;
+	PolyPtr specialPieceList;
+
 	void SetNumGates( int nGates );
 
 	PolyPtr inversePoly;
@@ -286,6 +295,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		std::map<int, int> &polyIndex);
 	bool LoadBGPlats(std::ifstream &is );
 	bool LoadSpecialPolys(std::ifstream &is);
+	
+
 	bool LoadEnemies(std::ifstream &is);
 	bool LoadRails(std::ifstream &is);
 	//void LoadEnemy(std::ifstream &is);
@@ -332,8 +343,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	//anything that has to do with terrain but might be unique
 
-	std::list<SpecialTerrainPiece*> allSpecialTerrain;
-	SpecialTerrainPiece *specialPieceList;
+
 
 	//anything that I might want to take for session
 

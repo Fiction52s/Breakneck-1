@@ -691,7 +691,7 @@ void GameSession::UpdateEnemiesDraw()
 	//	cout << "draw" << endl;
 		if( current->type != EnemyType::EN_BASICEFFECT && ( pauseFrames < 2 || current->receivedHit == NULL ) )
 		{
-			current->Draw( preScreenTex );
+			current->Draw(preScreenTex);
 		}
 		current = current->next;
 	}
@@ -740,9 +740,15 @@ int GameSession::CountActiveEnemies()
 	return counter;
 }
 
+void GameSession::ProcessSpecialTerrain(PolyPtr poly)
+{
+	allSpecialTerrain.push_back(poly);
+	specialTerrainTree->Insert(poly);
+}
+
 bool GameSession::LoadSpecialPolys(std::ifstream &is)
 {
-	int numSpecialPolys;
+	/*int numSpecialPolys;
 	is >> numSpecialPolys;
 
 	for (int i = 0; i < numSpecialPolys; ++i)
@@ -752,7 +758,7 @@ bool GameSession::LoadSpecialPolys(std::ifstream &is)
 
 		allSpecialTerrain.push_back(st);
 		specialTerrainTree->Insert(st);
-	}
+	}*/
 
 	return true;
 }
@@ -2923,7 +2929,8 @@ bool GameSession::OpenFile( )
 		
 		ReadTerrain(is);
 		
-		LoadSpecialPolys(is); //not converted yet
+		ReadSpecialTerrain(is);
+		//LoadSpecialPolys(is); //not converted yet
 
 		LoadBGPlats( is ); //not converted yet
 
@@ -6031,11 +6038,13 @@ int GameSession::Run()
 
 		DrawZones();
 
-		SpecialTerrainPiece *sp = specialPieceList;
+		//SpecialTerrainPiece *sp = specialPieceList;
+		PolyPtr sp = specialPieceList;
 		while (sp != NULL)
 		{
 			sp->Draw(preScreenTex);
-			sp = sp->next;
+			//sp = sp->next;
+			sp = sp->queryNext;
 		}
 
 		
@@ -7425,15 +7434,16 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		if (specialPieceList == NULL)
 		{
-			specialPieceList = (SpecialTerrainPiece*)qte;
-			specialPieceList->next = NULL;
+			//specialPieceList = (SpecialTerrainPiece*)qte;
+			specialPieceList = (PolyPtr)qte;
+			specialPieceList->queryNext = NULL;
+			//specialPieceList->next = NULL;
 			//numBorders++;
 		}
 		else
 		{
-
-			SpecialTerrainPiece *tva = (SpecialTerrainPiece*)qte;
-			SpecialTerrainPiece *temp = specialPieceList;
+			PolyPtr tva = (PolyPtr)qte;
+			PolyPtr temp = specialPieceList;
 			bool okay = true;
 			while (temp != NULL)
 			{
@@ -7442,15 +7452,34 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 					okay = false;
 					break;
 				}
-				temp = temp->next;
+				temp = temp->queryNext;
 			}
 
 			if (okay)
 			{
-				tva->next = specialPieceList;
+				tva->queryNext = specialPieceList;
 				specialPieceList = tva;
 				//numBorders++;
 			}
+			//SpecialTerrainPiece *tva = (SpecialTerrainPiece*)qte;
+			//SpecialTerrainPiece *temp = specialPieceList;
+			//bool okay = true;
+			//while (temp != NULL)
+			//{
+			//	if (temp == tva)
+			//	{
+			//		okay = false;
+			//		break;
+			//	}
+			//	temp = temp->next;
+			//}
+
+			//if (okay)
+			//{
+			//	tva->next = specialPieceList;
+			//	specialPieceList = tva;
+			//	//numBorders++;
+			//}
 		}
 
 	}
