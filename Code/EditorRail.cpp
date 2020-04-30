@@ -18,7 +18,6 @@ TerrainRail::TerrainRail(TerrainRail &r)
 	Init();
 
 	CopyPointsFromRail(&r);
-	//numPoints = r.numPoints;
 }
 
 int TerrainRail::GetNumPoints()
@@ -32,7 +31,7 @@ void TerrainRail::Init()
 	lines = NULL;
 	movingPointMode = false;
 	selected = false;
-	railRadius = 10;
+	railRadius = 20;
 
 	requirePower = false;
 	accelerate = false;
@@ -99,9 +98,11 @@ void TerrainRail::Deactivate()
 {
 	active = false;
 	EditSession *sess = EditSession::GetSession();
-	cout << "deactivating rail" << endl;
-
+	
+	cout << "deactivating rail :" << sess->rails.size() << endl;
 	sess->rails.remove(this);
+
+	
 }
 
 void TerrainRail::Activate()
@@ -109,6 +110,7 @@ void TerrainRail::Activate()
 	active = true;
 	EditSession *sess = EditSession::GetSession();
 
+	cout << "activating rail :" << sess->rails.size() << endl;
 	sess->rails.push_back(this);
 }
 

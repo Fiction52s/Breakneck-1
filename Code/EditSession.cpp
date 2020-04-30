@@ -356,12 +356,20 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	auto testPolys = GetCorrectPolygonList(0);
+	auto &testPolys = GetCorrectPolygonList(0);
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 	{
 		borderTree->Insert((*it));
 		(*it)->AddEdgesToQuadTree(terrainTree);
 		(*it)->AddGrassToQuadTree(grassTree);
+	}
+
+	auto &testPolys1 = GetCorrectPolygonList(1);
+	for (auto it = testPolys1.begin(); it != testPolys1.end(); ++it)
+	{
+		specialTerrainTree->Insert((*it));
+		//(*it)->AddEdgesToQuadTree(terrainTree);
+		//(*it)->AddGrassToQuadTree(grassTree);
 	}
 
 
@@ -1171,6 +1179,7 @@ void EditSession::ProcessSpecialTerrain(PolyPtr poly)
 {
 	GetCorrectPolygonList(poly).push_back(poly);
 	mapStartBrush->AddObject(poly);
+
 }
 
 void EditSession::ProcessActor( ActorPtr a)
@@ -8692,13 +8701,21 @@ void EditSession::TryAddPointToRailInProgress()
 			Vector2i worldi(testPoint.x, testPoint.y);
 
 			int numP = railInProgress->GetNumPoints();
-			TerrainPoint *end = railInProgress->GetEndPoint();
-			if (numP == 0 || (numP > 0 &&
-				length(V2d(testPoint.x, testPoint.y)
-					- Vector2<double>(end->pos.x,
-						end->pos.y)) >= minimumEdgeLength * std::max(zoomMultiple, 1.0)))
+			
+			if (numP == 0)
 			{
 				railInProgress->AddPoint(worldi, false);
+			}
+			else
+			{
+				TerrainPoint *end = railInProgress->GetEndPoint();
+				double distFromLastPoint = length(V2d(testPoint.x, testPoint.y)
+					- V2d(end->pos.x, end->pos.y));
+				bool beyondMinLength = distFromLastPoint >= minimumEdgeLength * std::max(zoomMultiple, 1.0);
+				if (beyondMinLength)
+				{
+					railInProgress->AddPoint(worldi, false);
+				}
 			}
 		}
 	}
