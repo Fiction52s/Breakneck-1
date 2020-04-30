@@ -262,6 +262,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void UpdateTouchGrass();
 	void DrawTouchGrass(sf::RenderTarget *target);
 	void AddTouchGrass(int gt);
+	void SetupTouchGrass();
 	void DestroyTouchGrass();
 	void ResetTouchGrass();
 	std::list<TouchGrassCollection*> touchGrassCollections;
@@ -277,6 +278,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	DecorExpression * CreateDecorExpression(DecorType dType,
 		int bgLayer);
 	void AddDecorExpression(DecorExpression *expr);
+	void DestroyDecor();
 	bool IsEmptyRect(sf::Rect<double> &rect);
 
 

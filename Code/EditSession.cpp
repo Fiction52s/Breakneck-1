@@ -7455,6 +7455,7 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			}
 			else
 			{
+				finalCheckVec[i].first->SetMaterialType(currTerrainWorld, currTerrainVar);
 				finalCheckVec[i].first->Finalize();
 				resultBrush.AddObject(finalCheckVec[i].first);
 				attachList.push_back(finalCheckVec[i].first);

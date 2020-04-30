@@ -519,7 +519,7 @@ void TerrainPolygon::GenerateDecor()
 	{
 
 	}*/
-
+	DestroyDecor();
 	if (tdInfo != NULL)
 	{
 		int numDecors = tdInfo->numDecors;
@@ -1211,6 +1211,7 @@ void TerrainPolygon::SetBorderTileset()
 {
 	if (terrainWorldType >= 8)
 	{
+		ts_border = NULL;
 		return;
 	}
 	//basically theres a way to make this invisible, but haven't set it up yet.
@@ -1318,6 +1319,12 @@ void TerrainPolygon::GenerateBorderMesh()
 {
 	if (ts_border == NULL)
 	{
+		if (totalNumBorderQuads > 0)
+		{
+			//maybe want to leave this, and just not have it show? delete for now
+			delete[] borderQuads;
+			totalNumBorderQuads = 0;
+		}
 		/*if (borderQuads != NULL)
 		{
 			delete[] borderQuads;
@@ -2691,8 +2698,6 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 	if (ts_border == NULL || newWorldType != oldWorldType )
 		SetBorderTileset();
 
-	
-
 	//also redo decor later when you change terrain types.
 
 	if (finalized)
@@ -2700,6 +2705,11 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 		//optimize this later
 		UpdateMaterialType();
 		UpdateGrassType();
+
+		SetupTouchGrass();
+		GenerateDecor();
+
+		GenerateBorderMesh();
 	}
 }
 
@@ -2929,6 +2939,18 @@ void TerrainPolygon::TryFixPointsTouchingLines()
 	}
 }
 
+void TerrainPolygon::SetupTouchGrass()
+{
+	DestroyTouchGrass();
+	if (terrainWorldType != SPECIAL)
+	{
+		AddTouchGrass(TouchGrass::TYPE_NORMAL);
+		AddTouchGrass(TouchGrass::TYPE_TEST);
+	}
+	ResetTouchGrass();
+	UpdateTouchGrass();
+}
+
 void TerrainPolygon::Finalize()
 {
 	if (inverse)
@@ -2967,32 +2989,20 @@ void TerrainPolygon::Finalize()
 		v[i * 3 + 2] = Vertex(Vector2f(GetPoint(indices[i * 3 + 2])->pos), testColor);
 	}
 
-	SetupGrass();
+	myTerrainTree->Clear();
+	AddEdgesToQuadTree(myTerrainTree);
 
-	SetMaterialType( terrainWorldType, terrainVariation );
-
-	GenerateBorderMesh();
+	UpdateBounds();
 
 	UpdateLinePositions();
 	UpdateLineColors();
 
-	UpdateBounds();
+	SetupGrass();
 
-	if (terrainWorldType != SPECIAL)
-	{
-		AddTouchGrass(TouchGrass::TYPE_NORMAL);
-		AddTouchGrass(TouchGrass::TYPE_TEST);
-	}
-	
+	SetMaterialType( terrainWorldType, terrainVariation );
 
-	ResetTouchGrass();
-
-	UpdateTouchGrass();
-
-	myTerrainTree->Clear();
-	AddEdgesToQuadTree(myTerrainTree);
-
-	GenerateDecor();
+	//SetupTouchGrass();
+	//GenerateDecor();
 }
 
 void TerrainPolygon::FinalizeInverse()
@@ -3047,28 +3057,22 @@ void TerrainPolygon::FinalizeInverse()
 		v[i * 3 + 2] = Vertex(Vector2f(GetFinalizeInversePoint(indices[i * 3 + 2])->pos), testColor);
 	}
 
-	SetMaterialType(terrainWorldType, terrainVariation);
+	myTerrainTree->Clear();
+	AddEdgesToQuadTree(myTerrainTree);
 
-	GenerateBorderMesh();
+	UpdateBounds();
 
 	UpdateLinePositions();
 	UpdateLineColors();
 
-	UpdateBounds();
-
 	SetupGrass();
 
-	AddTouchGrass(TouchGrass::TYPE_NORMAL);
-	//AddTouchGrass(TouchGrass::TYPE_TEST);
+	SetMaterialType(terrainWorldType, terrainVariation);
 
-	ResetTouchGrass();
+	//GenerateBorderMesh();
 
-	UpdateTouchGrass();
-
-	myTerrainTree->Clear();
-	AddEdgesToQuadTree(myTerrainTree);
-	GenerateDecor();
-	UpdateDecorSprites();
+	//SetupTouchGrass();
+	//GenerateDecor();
 }
 
 void TerrainPolygon::SetupGrass()
@@ -4489,10 +4493,15 @@ void TerrainPolygon::SoftReset()
 	va = NULL;
 	grassVA = NULL;
 	finalized = false;
+
 	//myTerrainTree->Clear();
 
 	DestroyTouchGrass();
+	DestroyDecor();
+}
 
+void TerrainPolygon::DestroyDecor()
+{
 	for (auto it = decorExprList.begin(); it != decorExprList.end(); ++it)
 	{
 		delete (*it);
