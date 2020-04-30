@@ -2978,9 +2978,12 @@ void TerrainPolygon::Finalize()
 
 	UpdateBounds();
 
+	if (terrainWorldType != SPECIAL)
+	{
+		AddTouchGrass(TouchGrass::TYPE_NORMAL);
+		AddTouchGrass(TouchGrass::TYPE_TEST);
+	}
 	
-	AddTouchGrass(TouchGrass::TYPE_NORMAL);
-	//AddTouchGrass(TouchGrass::TYPE_TEST);
 
 	ResetTouchGrass();
 

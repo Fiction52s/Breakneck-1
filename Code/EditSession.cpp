@@ -5828,6 +5828,16 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	//delete tempva;
 
 	bool oldSelected;
+
+
+	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
+	{
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
+		(*it)->Draw(false, 1, mapPreviewTex, false, NULL);
+		(*it)->SetSelected(oldSelected);
+	}
+
 	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		oldSelected = (*it)->selected;
