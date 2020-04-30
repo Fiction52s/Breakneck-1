@@ -10092,13 +10092,14 @@ void EditSession::EditModeHandleEvent()
 			
 			if (selectedBrush->IsSingleDecor())
 			{
-				transformTools->Reset(selectedBrush->GetCenterF(),
-					selectedBrush->GetTerrainSize());
-				/*DecorPtr sDec = selectedBrush->objects.front()->GetAsDecor();
-				FloatRect localBounds = sDec->spr.getLocalBounds();
-				Vector2f size(localBounds.width * sDec->spr.getScale().x,
-					localBounds.height * sDec->spr.getScale().y);
-				transformTools->Reset(Vector2f(sDec->spr.getPosition()), size, sDec->spr.getRotation() );*/
+				//transformTools->Reset(selectedBrush->GetCenterF(),
+				//	selectedBrush->GetTerrainSize());
+				DecorPtr sDec = selectedBrush->objects.front()->GetAsDecor();
+				//FloatRect localBounds = sDec->spr.getLocalBounds();
+				//Vector2f size(localBounds.width * sDec->spr.getScale().x,
+				//	localBounds.height * sDec->spr.getScale().y);
+				transformTools->Reset(sDec->center, Vector2f(sDec->tileSize.x * sDec->scale.x,
+					sDec->tileSize.y * sDec->scale.y), sDec->rotation);
 			}
 			else
 			{
@@ -11043,7 +11044,7 @@ void EditSession::TransformModeHandleEvent()
 				dec = (*it)->GetAsDecor();
 				if (dec != NULL)
 				{
-					tempDec = dec->CompleteTransformation();
+					tempDec = dec->CompleteTransformation(transformTools);
 					if (tempDec != NULL)
 					{
 						resultBrush.AddObject(tempDec);

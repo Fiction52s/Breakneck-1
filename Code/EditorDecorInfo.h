@@ -19,7 +19,7 @@ struct EditorDecorInfo : ISelectable
 	EditorDecorInfo(EditorDecorInfo &edi );
 
 	void CancelTransformation();
-	DecorPtr CompleteTransformation();
+	DecorPtr CompleteTransformation(TransformTools *tr);
 	void UpdateTransformation(TransformTools *tr);
 	void StartTransformation();
 
@@ -43,10 +43,12 @@ struct EditorDecorInfo : ISelectable
 	sf::Vector2f center;
 	sf::Vector2f scale;
 	sf::Vector2f tileSize;
+	sf::Vector2f transCenter;
 	DrawMode dMode;
 	int layer;
 	std::string decorName;
 	sf::Vertex quad[4];
+	sf::Vertex transQuad[4];
 	Tileset *ts;
 	int tile;
 	std::list<DecorPtr> *myList;

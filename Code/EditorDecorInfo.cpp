@@ -65,6 +65,10 @@ EditorDecorInfo::EditorDecorInfo(EditorDecorInfo &edi)
 
 void EditorDecorInfo::StartTransformation()
 {
+	for (int i = 0; i < 4; ++i)
+	{
+		transQuad[i] = quad[i];
+	}
 	//origSpr = spr;
 	dMode = D_TRANSFORM;
 }
@@ -77,7 +81,7 @@ void EditorDecorInfo::CancelTransformation()
 	//currRotate = origSpr.getRotation();
 }
 
-DecorPtr EditorDecorInfo::CompleteTransformation()
+DecorPtr EditorDecorInfo::CompleteTransformation(TransformTools *tr)
 {
 	//if (renderMode == RENDERMODE_TRANSFORM)
 	//{
@@ -116,10 +120,14 @@ DecorPtr EditorDecorInfo::CompleteTransformation()
 	//}
 	
 	dMode = D_NORMAL;
+	
 
-	DecorPtr newDec = new EditorDecorInfo(*this);
-
+	//DecorPtr newDec = new EditorDecorInfo( decorName, ts, tile, layer, center, rotation)
+	DecorPtr newDec = new EditorDecorInfo( decorName, ts, tile, layer,
+		tr->GetCenter(), tr->rotation + rotation, tr->scale + (scale - Vector2f( 1, 1)) );
+	newDec->myList = myList;
 	newDec->selected = false;
+	
 	//spr = origSpr;
 
 	return newDec;
@@ -128,8 +136,22 @@ DecorPtr EditorDecorInfo::CompleteTransformation()
 void EditorDecorInfo::UpdateTransformation(TransformTools *tr)
 {
 	Transform t;
-	t.rotate(tr->rotation);
-	t.scale(tr->scale);
+	t.rotate(tr->rotation + rotation);
+	t.scale(tr->scale + ( scale - Vector2f( 1,1)));
+
+	Vector2f tCenter = tr->GetCenter();
+
+	int halfWidth = tileSize.x / 2;
+	int halfHeight = tileSize.y / 2;
+	Vector2f topLeft(-halfWidth, -halfHeight);
+	Vector2f topRight(halfWidth, -halfHeight);
+	Vector2f botRight(halfWidth, halfHeight);
+	Vector2f botLeft(-halfWidth, halfHeight);
+
+	quad[0].position = t.transformPoint(topLeft) + tCenter;
+	quad[1].position = t.transformPoint(topRight) + tCenter;
+	quad[2].position = t.transformPoint(botRight) + tCenter;
+	quad[3].position = t.transformPoint(botLeft) + tCenter;
 }
 
 
@@ -188,6 +210,11 @@ void EditorDecorInfo::BrushDraw(sf::RenderTarget *target,
 
 void EditorDecorInfo::Draw(sf::RenderTarget *target)
 {
+	//if (dMode == D_TRANSFORM)
+	//{
+	//	//target->draw(transQuad, 4, sf::Quads, ts->texture);
+	//	return;
+	//}
 	target->draw(quad, 4, sf::Quads, ts->texture);
 	if (selected && dMode == D_NORMAL )
 	{

@@ -1751,6 +1751,11 @@ bool QuadContainsPoint(sf::Vertex *quad, sf::Vector2f &point)
 		point);
 }
 
+sf::Vector2f GetQuadCenter(sf::Vertex *v)
+{
+	return (v[0].position + v[1].position + v[2].position + v[3].position) / 4.f;
+}
+
 bool IsEdgeTouchingQuad(sf::Vector2<double> &v0,
 	sf::Vector2<double> &v1,
 	sf::Vector2<double> &A,

@@ -329,6 +329,7 @@ bool QuadContainsPoint( sf::Vector2<double> &A,
 						sf::Vector2<double> &point );
 
 
+sf::Vector2f GetQuadCenter(sf::Vertex *v);
 
 bool QuadContainsPoint(sf::Vector2<float> &A,
 	sf::Vector2<float> &B,
