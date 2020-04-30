@@ -60,8 +60,14 @@ DecorPtr EditorDecorInfo::CompleteTransformation(TransformTools *tr)
 {	
 	dMode = D_NORMAL;
 
+	sf::Transform t;
+	t.rotate(tr->rotation + rotation);
+	t.scale(tr->scale + (scale - Vector2f(1, 1)));
+
+	Vector2f newCenter = tr->GetCenter() + t.transformPoint(transformOffset);
+
 	DecorPtr newDec = new EditorDecorInfo( decorName, ts, tile, layer,
-		tr->GetCenter(), tr->rotation + rotation, tr->scale + (scale - Vector2f( 1, 1)) );
+		newCenter, tr->rotation + rotation, tr->scale + (scale - Vector2f( 1, 1)) );
 	newDec->myList = myList;
 	newDec->selected = false;
 
@@ -74,7 +80,7 @@ void EditorDecorInfo::UpdateTransformation(TransformTools *tr)
 	t.rotate(tr->rotation + rotation);
 	t.scale(tr->scale + ( scale - Vector2f( 1,1)));
 
-	Vector2f tCenter = tr->GetCenter();
+	Vector2f tCenter = tr->GetCenter() + t.transformPoint( transformOffset );
 
 	int halfWidth = tileSize.x / 2;
 	int halfHeight = tileSize.y / 2;
@@ -102,7 +108,11 @@ bool EditorDecorInfo::ContainsPoint(sf::Vector2f test)
 
 bool EditorDecorInfo::Intersects(sf::IntRect rect)
 {
-	return GetAABB().intersects(rect);
+	return isQuadTouchingQuad(V2d(quad[0].position), V2d(quad[1].position),
+		V2d(quad[2].position), V2d(quad[3].position), V2d(rect.left, rect.top),
+		V2d(rect.left + rect.width, rect.top), V2d(rect.left + rect.width, rect.top + rect.height),
+		V2d(rect.left, rect.top + rect.height));
+	//return GetAABB().intersects(rect);
 }
 
 void EditorDecorInfo::UpdateQuad()

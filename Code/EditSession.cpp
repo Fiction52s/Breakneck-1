@@ -149,6 +149,7 @@ void EditSession::ClearSelectedBrush()
 	grabbedActor = NULL;
 	grabbedObject = NULL;
 	grabbedPoint = NULL;
+	grabbedImage = NULL;
 }
 
 void EditSession::SelectObject(SelectPtr sel)
@@ -615,6 +616,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	grabbedObject = NULL;
 	grabbedActor = NULL;
 	grabbedPoint = NULL;
+	grabbedImage = NULL;
 	zoomMultiple = 1;
 	editMouseDownBox = false;
 	editMouseDownMove = false;
@@ -9931,6 +9933,7 @@ void EditSession::EditModeHandleEvent()
 					editStartMove = false;
 					grabbedActor = NULL;
 					grabbedPoint = NULL;
+					grabbedImage = NULL;
 				}
 				else
 				{
@@ -9978,6 +9981,7 @@ void EditSession::EditModeHandleEvent()
 			editStartMove = false;
 			grabbedActor = NULL;
 			grabbedPoint = NULL;
+			grabbedImage = NULL;
 
 			UpdateGrass();
 		}
@@ -10124,7 +10128,9 @@ void EditSession::EditModeHandleEvent()
 				dec = (*it)->GetAsDecor();
 				if (dec != NULL)
 				{
+					dec->transformOffset = dec->center - transformTools->GetCenter();
 					dec->StartTransformation();
+					
 				}
 					
 			}
@@ -10352,6 +10358,7 @@ void EditSession::CreateEnemyModeHandleEvent()
 			//editMouseDownMove = false;
 			//editStartMove = false;
 			grabbedActor = NULL;
+			grabbedImage = NULL;
 			//grabbedPoint = NULL;
 
 			//UpdateGrass();

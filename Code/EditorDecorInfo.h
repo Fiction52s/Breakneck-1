@@ -37,6 +37,8 @@ struct EditorDecorInfo : ISelectable
 	//sf::Vector2f currScale;
 	float rotation;
 
+	sf::Vector2f transformOffset;
+
 	void UpdateQuad();
 	sf::IntRect GetAABB();
 	sf::Vector2f center;
