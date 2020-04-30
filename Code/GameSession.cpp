@@ -58,7 +58,6 @@
 #include "Wire.h"
 #include "Grass.h"
 #include "EnvPlant.h"
-#include "SpecialTerrain.h"
 #include "AbsorbParticles.h"
 #include "AirTrigger.h"
 
@@ -745,23 +744,6 @@ void GameSession::ProcessSpecialTerrain(PolyPtr poly)
 	//matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
 	allSpecialTerrain.push_back(poly);
 	specialTerrainTree->Insert(poly);
-}
-
-bool GameSession::LoadSpecialPolys(std::ifstream &is)
-{
-	/*int numSpecialPolys;
-	is >> numSpecialPolys;
-
-	for (int i = 0; i < numSpecialPolys; ++i)
-	{
-		SpecialTerrainPiece *st = new SpecialTerrainPiece(this);
-		st->Load(is);
-
-		allSpecialTerrain.push_back(st);
-		specialTerrainTree->Insert(st);
-	}*/
-
-	return true;
 }
 
 
@@ -2931,7 +2913,6 @@ bool GameSession::OpenFile( )
 		ReadTerrain(is);
 		
 		ReadSpecialTerrain(is);
-		//LoadSpecialPolys(is); //not converted yet
 
 		LoadBGPlats( is ); //not converted yet
 
@@ -6039,12 +6020,10 @@ int GameSession::Run()
 
 		DrawZones();
 
-		//SpecialTerrainPiece *sp = specialPieceList;
 		PolyPtr sp = specialPieceList;
 		while (sp != NULL)
 		{
 			sp->Draw(preScreenTex);
-			//sp = sp->next;
 			sp = sp->queryNext;
 		}
 
@@ -7435,11 +7414,8 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		if (specialPieceList == NULL)
 		{
-			//specialPieceList = (SpecialTerrainPiece*)qte;
 			specialPieceList = (PolyPtr)qte;
 			specialPieceList->queryNext = NULL;
-			//specialPieceList->next = NULL;
-			//numBorders++;
 		}
 		else
 		{
@@ -7460,27 +7436,7 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			{
 				tva->queryNext = specialPieceList;
 				specialPieceList = tva;
-				//numBorders++;
 			}
-			//SpecialTerrainPiece *tva = (SpecialTerrainPiece*)qte;
-			//SpecialTerrainPiece *temp = specialPieceList;
-			//bool okay = true;
-			//while (temp != NULL)
-			//{
-			//	if (temp == tva)
-			//	{
-			//		okay = false;
-			//		break;
-			//	}
-			//	temp = temp->next;
-			//}
-
-			//if (okay)
-			//{
-			//	tva->next = specialPieceList;
-			//	specialPieceList = tva;
-			//	//numBorders++;
-			//}
 		}
 
 	}

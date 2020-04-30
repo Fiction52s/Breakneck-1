@@ -113,7 +113,6 @@ struct DecorLayer;
 struct TouchGrassCollection;
 
 struct HealthFly;
-struct SpecialTerrainPiece;
 
 struct EnvPlant;
 
@@ -263,8 +262,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	void ProcessSpecialTerrain(PolyPtr poly);
 
-	/*std::list<SpecialTerrainPiece*> allSpecialTerrain;
-	SpecialTerrainPiece *specialPieceList;*/
 	std::list<PolyPtr> allSpecialTerrain;
 	PolyPtr specialPieceList;
 
@@ -294,7 +291,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool LoadEdges(std::ifstream &is,
 		std::map<int, int> &polyIndex);
 	bool LoadBGPlats(std::ifstream &is );
-	bool LoadSpecialPolys(std::ifstream &is);
 	
 
 	bool LoadEnemies(std::ifstream &is);

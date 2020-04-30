@@ -41,7 +41,6 @@
 #include "Enemy_SwingLauncher.h"
 #include "Grass.h"
 #include "EnvPlant.h"
-#include "SpecialTerrain.h"
 #include "Barrier.h"
 #include "AbsorbParticles.h"
 #include "EditSession.h"
@@ -18191,15 +18190,6 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if (queryMode == "specialterrain")
 	{
-		/*SpecialTerrainPiece *stp = (SpecialTerrainPiece*)qte;
-		Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
-		{
-			if (stp->IsInsideArea(position))
-			{
-				specialTerrainCount[stp->specialType]++;
-			}
-		}*/
-
 		PolyPtr poly = (PolyPtr)qte;
 		Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
 		{
