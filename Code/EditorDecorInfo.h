@@ -16,7 +16,6 @@ struct EditorDecorInfo : ISelectable
 	EditorDecorInfo(const std::string &dName,
 		Tileset *ts, int p_tile,int lay,
 		sf::Vector2f &centerPos, float rot, sf::Vector2f &sc );
-	EditorDecorInfo(EditorDecorInfo &edi );
 
 	void CancelTransformation();
 	DecorPtr CompleteTransformation(TransformTools *tr);
@@ -48,7 +47,6 @@ struct EditorDecorInfo : ISelectable
 	int layer;
 	std::string decorName;
 	sf::Vertex quad[4];
-	sf::Vertex transQuad[4];
 	Tileset *ts;
 	int tile;
 	std::list<DecorPtr> *myList;

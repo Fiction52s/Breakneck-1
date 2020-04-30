@@ -46,89 +46,24 @@ IntRect EditorDecorInfo::GetAABB()
 	return IntRect(left, top, right - left, bot - top);
 }
 
-EditorDecorInfo::EditorDecorInfo(EditorDecorInfo &edi)
-	:ISelectable(ISelectable::ISelectableType::IMAGE)
-{
-	//spr = edi.spr;
-	//currScale = spr.getScale() - Vector2f( 1.f, 1.f);
-	//currRotate = spr.getRotation();
-	//spr.setScale(Vector2f(currScale.x + 1.f, currScale.y + 1.f));
-	//spr.setRotation(currRotate);
-
-	/*dMode = edi.dMode;
-	
-	layer = edi.layer;
-	decorName = edi.decorName;
-	tile = edi.tile;
-	myList = edi.myList;*/
-}
-
 void EditorDecorInfo::StartTransformation()
 {
-	for (int i = 0; i < 4; ++i)
-	{
-		transQuad[i] = quad[i];
-	}
-	//origSpr = spr;
 	dMode = D_TRANSFORM;
 }
 
 void EditorDecorInfo::CancelTransformation()
 {
-	//spr = origSpr;
 	dMode = D_NORMAL;
-	//currScale = origSpr.getScale() - Vector2f( 1, 1 );
-	//currRotate = origSpr.getRotation();
 }
 
 DecorPtr EditorDecorInfo::CompleteTransformation(TransformTools *tr)
-{
-	//if (renderMode == RENDERMODE_TRANSFORM)
-	//{
-	//	SetRenderMode(RENDERMODE_NORMAL);
-
-	//	PolyPtr newPoly(new TerrainPolygon);
-
-	//	int numP = GetNumPoints();
-	//	TerrainPoint *curr;
-	//	Vector2i temp;
-
-	//	newPoly->Reserve(numP);
-	//	for (int i = 0; i < numP; ++i)
-	//	{
-	//		temp.x = round(lines[i * 2].position.x);
-	//		temp.y = round(lines[i * 2].position.y);
-	//		newPoly->AddPoint(temp, false);
-	//	}
-
-	//	UpdateLinePositions();
-
-	//	newPoly->Finalize();
-
-	//	//check for validity here
-
-	//	//not even going to use the same polygon here, this is just for testing. 
-	//	//what will really happen is that I create a copy, adding in the rounded points from my lines.
-	//	//that way I can adjust and test for correctness just like i usually would, and then just
-	//	//do a replacebrush action
-	//	//maybe test for correctness?
-
-	//	//SoftReset();
-	//	//Finalize();
-
-	//	return newPoly;
-	//}
-	
+{	
 	dMode = D_NORMAL;
-	
 
-	//DecorPtr newDec = new EditorDecorInfo( decorName, ts, tile, layer, center, rotation)
 	DecorPtr newDec = new EditorDecorInfo( decorName, ts, tile, layer,
 		tr->GetCenter(), tr->rotation + rotation, tr->scale + (scale - Vector2f( 1, 1)) );
 	newDec->myList = myList;
 	newDec->selected = false;
-	
-	//spr = origSpr;
 
 	return newDec;
 }
