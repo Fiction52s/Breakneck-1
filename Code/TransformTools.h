@@ -19,7 +19,7 @@ struct TransformTools
 
 	TransformTools();
 	~TransformTools();
-	void Reset(sf::Vector2f &p_center, sf::Vector2f &p_size);
+	void Reset(sf::Vector2f &p_center, sf::Vector2f &p_size,float startAngle = 0);
 	void Draw(sf::RenderTarget *target);
 	void Update( sf::Vector2f &worldPos, bool mouseDown );
 
@@ -48,6 +48,8 @@ struct TransformTools
 	sf::Vector2f origSize;
 
 	sf::Vector2f startClick;
+
+	float baseRotation;
 
 	int scalePoint;
 	sf::Vector2f scaleAnchor;

@@ -619,7 +619,8 @@ void EnemyChooseRect::UpdateSprite(int frameUpdate)
 
 EditorDecorInfo * ImageChooseRect::CreateDecor()
 {
-	EditorDecorInfo *edi = new EditorDecorInfo(spr, 0, decorName, tileIndex);
+	EditorDecorInfo *edi = new EditorDecorInfo(decorName, ts, tileIndex, 0, Vector2f( 0, 0 ),
+		0, Vector2f( 1, 1 ));
 	return edi;
 }
 

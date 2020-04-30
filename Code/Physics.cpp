@@ -1719,6 +1719,38 @@ bool QuadContainsPoint( V2d &A, V2d &B, V2d&C, V2d&D, V2d&point )
 	return false;
 }
 
+bool QuadContainsPoint(sf::Vector2<float> &A,
+	sf::Vector2<float> &B,
+	sf::Vector2<float> &C,
+	sf::Vector2<float> &D,
+	sf::Vector2<float> &point)
+{
+	Vector2f AB = B - A;
+	Vector2f AD = D - A;
+	Vector2f pointA = point - A;
+	float pointAB = dot(pointA, normalize(AB));
+	float pointAD = dot(pointA, normalize(AD));
+
+	if (pointAB >= 0 && pointAB * pointAB <= dot(AB, AB))
+	{
+		if (pointAD >= 0 && pointAD * pointAD <= dot(AD, AD))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool QuadContainsPoint(sf::Vertex *quad, sf::Vector2f &point)
+{
+	return QuadContainsPoint(quad[0].position, 
+		quad[1].position, 
+		quad[2].position, 
+		quad[3].position,
+		point);
+}
+
 bool IsEdgeTouchingQuad(sf::Vector2<double> &v0,
 	sf::Vector2<double> &v1,
 	sf::Vector2<double> &A,

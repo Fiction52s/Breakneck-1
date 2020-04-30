@@ -4,6 +4,7 @@
 #include "ISelectable.h"
 
 struct TransformTools;
+struct Tileset;
 struct EditorDecorInfo : ISelectable
 {
 	enum DrawMode
@@ -12,8 +13,10 @@ struct EditorDecorInfo : ISelectable
 		D_TRANSFORM
 	};
 
-	EditorDecorInfo(sf::Sprite &s, int lay,
-		const std::string &dName, int p_tile);
+	EditorDecorInfo(const std::string &dName,
+		Tileset *ts, int p_tile,int lay,
+		sf::Vector2f &centerPos, float rot, sf::Vector2f &sc );
+	EditorDecorInfo(EditorDecorInfo &edi );
 
 	void CancelTransformation();
 	DecorPtr CompleteTransformation();
@@ -32,14 +35,19 @@ struct EditorDecorInfo : ISelectable
 	void WriteFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
 
-	sf::Vector2f currScale;
-	float currRotate;
+	//sf::Vector2f currScale;
+	float rotation;
 
+	void UpdateQuad();
+	sf::IntRect GetAABB();
+	sf::Vector2f center;
+	sf::Vector2f scale;
+	sf::Vector2f tileSize;
 	DrawMode dMode;
-	sf::Sprite origSpr;
-	sf::Sprite spr;
 	int layer;
 	std::string decorName;
+	sf::Vertex quad[4];
+	Tileset *ts;
 	int tile;
 	std::list<DecorPtr> *myList;
 	static bool CompareDecorInfoLayer(EditorDecorInfo &di0, EditorDecorInfo &di1);

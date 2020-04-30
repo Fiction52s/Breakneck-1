@@ -189,7 +189,7 @@ sf::Vector2f Brush::GetTerrainSize()
 		dec = sp->GetAsDecor();
 		if (dec != NULL)
 		{
-			IntRect ir(dec->spr.getGlobalBounds());
+			IntRect ir = dec->GetAABB();
 			left = ir.left;
 			right = ir.left + ir.width;
 			top = ir.top;
@@ -214,7 +214,7 @@ sf::Vector2f Brush::GetTerrainSize()
 		dec = (*it)->GetAsDecor();
 		if (dec != NULL)
 		{
-			IntRect ir(dec->spr.getGlobalBounds());
+			IntRect ir = dec->GetAABB();
 			left = min(left, ir.left);
 			right = max(right, ir.left + ir.width);
 			top = min(top, ir.top);
@@ -347,7 +347,7 @@ sf::Vector2f &Brush::GetCenterF()
 			dec = sp->GetAsDecor();
 			if (dec != NULL)
 			{
-				IntRect ir(dec->spr.getGlobalBounds());
+				IntRect ir = dec->GetAABB();
 				left = ir.left;
 				right = ir.left + ir.width;
 				top = ir.top;
@@ -386,7 +386,7 @@ sf::Vector2f &Brush::GetCenterF()
 			dec = (*it)->GetAsDecor();
 			if (dec != NULL)
 			{
-				IntRect ir(dec->spr.getGlobalBounds());
+				IntRect ir = dec->GetAABB();
 				left = min( left, ir.left);
 				right = max( right, ir.left + ir.width);
 				top = min( top, ir.top);
@@ -628,6 +628,11 @@ bool Brush::IsEmpty()
 bool Brush::HasSingleActor()
 {
 	return (objects.size() == 1 && objects.front()->selectableType == ISelectable::ACTOR);
+}
+
+bool Brush::IsSingleDecor()
+{
+	return (objects.size() == 1 && objects.front()->selectableType == ISelectable::IMAGE);
 }
 
 void Brush::RemoveObject( SelectPtr obj )

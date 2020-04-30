@@ -159,8 +159,9 @@ struct EditSession : GUIHandler, Session
 	void ProcessDecorFromFile(const std::string &name,
 		int tile);
 	void ProcessHeader();
-	void ProcessDecorSpr( const std::string &dName,
-		sf::Sprite &dSpr, int dLayer, Tileset *d_ts, int dTile);
+	void ProcessDecorSpr(const std::string &name,
+		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+		float rotation, sf::Vector2f &scale);
 	void ProcessPlayerStartPos();
 	void ProcessTerrain( PolyPtr poly );
 	void ProcessSpecialTerrain(PolyPtr poly);

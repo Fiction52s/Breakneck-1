@@ -247,7 +247,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	void ProcessHeader();
 	void ProcessDecorSpr(const std::string &name,
-		sf::Sprite &dSpr, int dLayer, Tileset *d_ts, int dTile);
+		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+		float rotation, sf::Vector2f &scale);
 	void ProcessAllDecorSpr();
 	void ProcessPlayerStartPos();
 	void ProcessTerrain(PolyPtr poly);

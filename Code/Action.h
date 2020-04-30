@@ -42,6 +42,7 @@ struct Brush
 	bool terrainOnly;
 	bool IsEmpty();
 	bool HasSingleActor();
+	bool IsSingleDecor();
 
 	sf::Vector2f GetTerrainSize();
 };

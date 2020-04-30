@@ -1454,17 +1454,17 @@ bool Session::ReadDecor(std::ifstream &is)
 		int dTile;
 		is >> dTile;
 
-		Sprite dSpr;
-		dSpr.setScale(dScale);
-		dSpr.setRotation(dRot);
-		dSpr.setPosition(dPos);
+		//Sprite dSpr;
+		//dSpr.setScale(dScale);
+		//dSpr.setRotation(dRot);
+		//dSpr.setPosition(dPos);
 
-		Tileset *d_ts = decorTSMap[dName];
-		dSpr.setTexture(*d_ts->texture);
-		dSpr.setTextureRect(d_ts->GetSubRect(dTile));
-		dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
+		//Tileset *d_ts = ;
+		//dSpr.setTexture(*d_ts->texture);
+		//dSpr.setTextureRect(d_ts->GetSubRect(dTile));
+		//dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
 
-		ProcessDecorSpr( dName, dSpr, dLayer, d_ts, dTile );
+		ProcessDecorSpr( dName, decorTSMap[dName], dTile, dLayer, dPos, dRot, dScale );
 	}
 
 	ProcessAllDecorSpr();

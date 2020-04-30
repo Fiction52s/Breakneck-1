@@ -62,7 +62,7 @@ TransformTools::~TransformTools()
 	delete circleGroup;
 }
 
-void TransformTools::Reset(Vector2f &p_center, Vector2f &p_size)
+void TransformTools::Reset(Vector2f &p_center, Vector2f &p_size,float startAngle )
 {
 	mode = NONE;
 
@@ -70,6 +70,8 @@ void TransformTools::Reset(Vector2f &p_center, Vector2f &p_size)
 
 	rotationAnchor = origCenter;
 	
+	baseRotation = startAngle;
+
 	float extra = 50;//create extra space surrounding polys
 	origSize = p_size + Vector2f(extra, extra);
 
@@ -79,7 +81,7 @@ void TransformTools::Reset(Vector2f &p_center, Vector2f &p_size)
 
 	tRect.setSize(size);
 	tRect.setOrigin(size.x / 2.f, size.y / 2.f);
-	tRect.setRotation(0);
+	tRect.setRotation(baseRotation);
 	tRect.setPosition(origCenter);
 
 	rotation = 0.f;
@@ -294,7 +296,7 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 
 		rotation = rotationStart + diffDeg;
 
-		tRect.setRotation(rotation);
+		tRect.setRotation(rotation + baseRotation);
 
 		UpdateGrabPoints();
 		break;

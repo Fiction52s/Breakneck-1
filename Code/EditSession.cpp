@@ -1013,10 +1013,12 @@ bool EditSession::ReadDecor(std::ifstream &is)
 	return true;
 }
 
-void EditSession::ProcessDecorSpr( const std::string &dName, sf::Sprite &dSpr,
-	int dLayer, Tileset *d_ts, int dTile)
+void EditSession::ProcessDecorSpr(const std::string &name,
+	Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+	float rotation, sf::Vector2f &scale)
 {
-	DecorPtr dec = new EditorDecorInfo(dSpr, dLayer, dName, dTile);
+	DecorPtr dec = new EditorDecorInfo(name, d_ts, dTile, dLayer, centerPos,
+		rotation, scale );
 	if (dLayer > 0)
 	{
 		dec->myList = &decorImagesBehindTerrain;
@@ -5451,19 +5453,19 @@ void EditSession::SetDecorEditPanel()
 	assert(sp->selectableType == ISelectable::IMAGE);
 	EditorDecorInfo *di = (EditorDecorInfo*)sp;
 
-	editDecorPanel->textBoxes["xpos"]->text.setString(boost::lexical_cast<string>(di->spr.getPosition().x));
+	/*editDecorPanel->textBoxes["xpos"]->text.setString(boost::lexical_cast<string>(di->spr.getPosition().x));
 	editDecorPanel->textBoxes["ypos"]->text.setString(boost::lexical_cast<string>(di->spr.getPosition().y));
 
 	editDecorPanel->textBoxes["rotation"]->text.setString(boost::lexical_cast<string>(di->spr.getRotation()));
 	editDecorPanel->textBoxes["xscale"]->text.setString(boost::lexical_cast<string>(di->spr.getScale().x));
 	editDecorPanel->textBoxes["yscale"]->text.setString(boost::lexical_cast<string>(di->spr.getScale().y));
 	
-	editDecorPanel->textBoxes["layer"]->text.setString(boost::lexical_cast<string>(di->layer));
+	editDecorPanel->textBoxes["layer"]->text.setString(boost::lexical_cast<string>(di->layer));*/
 }
 
 void EditSession::SetDecorParams()
 {
-	SelectPtr sp = selectedBrush->objects.front();
+	/*SelectPtr sp = selectedBrush->objects.front();
 	assert(sp->selectableType == ISelectable::IMAGE);
 	EditorDecorInfo *di = (EditorDecorInfo*)sp;
 	
@@ -5542,7 +5544,7 @@ void EditSession::SetDecorParams()
 	if (!ss.fail())
 	{
 		di->layer = layer;
-	}
+	}*/
 }
 
 bool EditSession::CanCreateGate( GateInfo &testGate )
@@ -9091,7 +9093,7 @@ void EditSession::DrawDecorBehind()
 {
 	for (auto it = decorImagesBehindTerrain.begin(); it != decorImagesBehindTerrain.end(); ++it)
 	{
-		preScreenTex->draw((*it)->spr);
+		(*it)->Draw(preScreenTex);
 	}
 }
 
@@ -9254,7 +9256,7 @@ void EditSession::DrawDecorFront()
 {
 	for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
 	{
-		preScreenTex->draw((*it)->spr);
+		(*it)->Draw(preScreenTex);
 	}
 }
 
@@ -10088,8 +10090,22 @@ void EditSession::EditModeHandleEvent()
 
 			SetMode(TRANSFORM);
 			
-			transformTools->Reset(selectedBrush->GetCenterF(),
-				selectedBrush->GetTerrainSize());
+			if (selectedBrush->IsSingleDecor())
+			{
+				transformTools->Reset(selectedBrush->GetCenterF(),
+					selectedBrush->GetTerrainSize());
+				/*DecorPtr sDec = selectedBrush->objects.front()->GetAsDecor();
+				FloatRect localBounds = sDec->spr.getLocalBounds();
+				Vector2f size(localBounds.width * sDec->spr.getScale().x,
+					localBounds.height * sDec->spr.getScale().y);
+				transformTools->Reset(Vector2f(sDec->spr.getPosition()), size, sDec->spr.getRotation() );*/
+			}
+			else
+			{
+				transformTools->Reset(selectedBrush->GetCenterF(),
+					selectedBrush->GetTerrainSize());
+			}
+			
 			//selectedBrush->Scale(1.05f);
 			PolyPtr p;
 			DecorPtr dec;

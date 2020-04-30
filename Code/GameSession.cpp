@@ -2766,10 +2766,22 @@ void GameSession::ProcessHeader()
 	}
 }
 
-void GameSession::ProcessDecorSpr(const std::string &dName,
-	sf::Sprite &dSpr, int dLayer, Tileset *d_ts, int dTile)
+
+void GameSession::ProcessDecorSpr(const std::string &name,
+	Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+	float rotation, sf::Vector2f &scale)
 {
-	decorListMap[dName].push_back(DecorInfo(dSpr, dLayer, d_ts, dTile));
+	Sprite dSpr;
+	dSpr.setScale(scale);
+	dSpr.setRotation(rotation);
+	dSpr.setPosition(centerPos);
+
+	dSpr.setTexture(*d_ts->texture);
+	dSpr.setTextureRect(d_ts->GetSubRect(dTile));
+	dSpr.setOrigin(dSpr.getLocalBounds().width / 2, dSpr.getLocalBounds().height / 2);
+
+
+	decorListMap[name].push_back(DecorInfo(dSpr, dLayer, d_ts, dTile));
 }
 
 void GameSession::ProcessAllDecorSpr()

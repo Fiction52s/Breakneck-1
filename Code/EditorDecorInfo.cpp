@@ -8,35 +8,73 @@
 using namespace std;
 using namespace sf;
 
-EditorDecorInfo::EditorDecorInfo(sf::Sprite &s, int lay,
-	const std::string &dName, int p_tile)
+EditorDecorInfo::EditorDecorInfo(const std::string &dName,
+	Tileset *p_ts, int p_tile, int lay, sf::Vector2f &centerPos, float rot, sf::Vector2f &sc)
 	:ISelectable(ISelectable::ISelectableType::IMAGE)
 {
-	spr = s;
-	layer = lay;
 	decorName = dName;
+	ts = p_ts;
 	tile = p_tile;
+	layer = lay;
 	dMode = D_NORMAL;
-	currScale = Vector2f(0.f,0.f);
-	currRotate = 0;
+
+	center = centerPos;
+	rotation = rot;
+	scale = sc;
+
+	tileSize = Vector2f(ts->tileWidth, ts->tileHeight);
+
+	ts->SetQuadSubRect(quad, tile);
+	UpdateQuad();
+}
+
+IntRect EditorDecorInfo::GetAABB()
+{
+	float left = quad[0].position.x;
+	float right = quad[0].position.x;
+	float top = quad[0].position.y;
+	float bot = quad[0].position.y;
+
+	for (int i = 1; i < 4; ++i)
+	{
+		left = min(left, quad[i].position.x);
+		right = min(right, quad[i].position.x);
+		top = min(top, quad[i].position.y);
+		bot = min(bot, quad[i].position.y);
+	}
+
+	return IntRect(left, top, right - left, bot - top);
+}
+
+EditorDecorInfo::EditorDecorInfo(EditorDecorInfo &edi)
+	:ISelectable(ISelectable::ISelectableType::IMAGE)
+{
+	//spr = edi.spr;
+	//currScale = spr.getScale() - Vector2f( 1.f, 1.f);
+	//currRotate = spr.getRotation();
+	//spr.setScale(Vector2f(currScale.x + 1.f, currScale.y + 1.f));
+	//spr.setRotation(currRotate);
+
+	/*dMode = edi.dMode;
+	
+	layer = edi.layer;
+	decorName = edi.decorName;
+	tile = edi.tile;
+	myList = edi.myList;*/
 }
 
 void EditorDecorInfo::StartTransformation()
 {
-	origSpr = spr;
+	//origSpr = spr;
 	dMode = D_TRANSFORM;
 }
 
 void EditorDecorInfo::CancelTransformation()
 {
-	spr = origSpr;
+	//spr = origSpr;
 	dMode = D_NORMAL;
-	currScale = origSpr.getScale() - Vector2f( 1, 1 );
-	currRotate = origSpr.getRotation();
-	//UpdateLinePositions();
-	//UpdateLineColors();
-	//SetRenderMode(RENDERMODE_NORMAL);
-	//triBackups.clear();
+	//currScale = origSpr.getScale() - Vector2f( 1, 1 );
+	//currRotate = origSpr.getRotation();
 }
 
 DecorPtr EditorDecorInfo::CompleteTransformation()
@@ -82,7 +120,7 @@ DecorPtr EditorDecorInfo::CompleteTransformation()
 	DecorPtr newDec = new EditorDecorInfo(*this);
 
 	newDec->selected = false;
-	spr = origSpr;
+	//spr = origSpr;
 
 	return newDec;
 }
@@ -92,12 +130,6 @@ void EditorDecorInfo::UpdateTransformation(TransformTools *tr)
 	Transform t;
 	t.rotate(tr->rotation);
 	t.scale(tr->scale);
-
-	spr.setRotation(tr->rotation + currRotate);
-	spr.setScale(tr->scale + currScale);
-	spr.setPosition(tr->GetCenter());
-	//spr.setRotation(tr->rotation);
-	//spr.setScale(scale);
 }
 
 
@@ -108,57 +140,69 @@ bool EditorDecorInfo::CompareDecorInfoLayer(EditorDecorInfo &di0, EditorDecorInf
 
 bool EditorDecorInfo::ContainsPoint(sf::Vector2f test)
 {
-	return spr.getGlobalBounds().contains(test);
-	//sf::Transform trans = spr.getTransform();
-	//FloatRect fr = spr.getLocalBounds();
-	//Vector2f points[4];
-	//points[0] = trans * Vector2f(fr.left, fr.top);
-	//points[1] = trans * Vector2f(fr.left + fr.width, fr.top);
-	//points[2] = trans * Vector2f(fr.left + fr.width, fr.top + fr.height);
-	//points[3] = trans * Vector2f(fr.left, fr.top + fr.height);
-
-	//bool result = QuadContainsPoint(V2d(points[0]),
-	//	V2d(points[1]),
-	//	V2d(points[2]),
-	//	V2d(points[3]), V2d(test.x, test.y));
-
-	////cout << "result: " << result << endl;
-	//return result;
+	return QuadContainsPoint(quad, test);
 }
 
 bool EditorDecorInfo::Intersects(sf::IntRect rect)
 {
-	FloatRect fr(rect);
-	return fr.intersects(spr.getGlobalBounds());
+	return GetAABB().intersects(rect);
+}
+
+void EditorDecorInfo::UpdateQuad()
+{
+	Transform t;
+	t.rotate(rotation);
+	t.scale(scale);
+	
+	int halfWidth = tileSize.x / 2;
+	int halfHeight = tileSize.y / 2;
+	Vector2f topLeft(-halfWidth, -halfHeight);
+	Vector2f topRight(halfWidth, -halfHeight);
+	Vector2f botRight(halfWidth, halfHeight);
+	Vector2f botLeft(-halfWidth, halfHeight);
+
+	quad[0].position = t.transformPoint(topLeft) + center;
+	quad[1].position = t.transformPoint(topRight) + center;
+	quad[2].position = t.transformPoint(botRight) + center;
+	quad[3].position = t.transformPoint(botLeft) + center;
 }
 
 void EditorDecorInfo::Move(sf::Vector2i delta)
 {
-	spr.setPosition(spr.getPosition().x + delta.x, spr.getPosition().y + delta.y);
+	center += Vector2f(delta);
+	UpdateQuad();
 }
 
 void EditorDecorInfo::MoveTo(sf::Vector2i &pos)
 {
-	spr.setPosition(pos.x, pos.y);
+	center.x = pos.x;
+	center.y = pos.y;
+	UpdateQuad();
 }
 
 void EditorDecorInfo::BrushDraw(sf::RenderTarget *target,
 	bool valid)
 {
-	target->draw(spr);
+	target->draw(quad, 4, sf::Quads, ts->texture);
 }
 
 void EditorDecorInfo::Draw(sf::RenderTarget *target)
 {
-	target->draw(spr);
+	target->draw(quad, 4, sf::Quads, ts->texture);
 	if (selected && dMode == D_NORMAL )
 	{
 		sf::RectangleShape rs;
 		rs.setFillColor(Color::Transparent);
 		rs.setOutlineColor(Color::Green);
 		rs.setOutlineThickness(3 * EditSession::zoomMultiple);
-		rs.setPosition(spr.getGlobalBounds().left, spr.getGlobalBounds().top);
-		rs.setSize(Vector2f(spr.getGlobalBounds().width, spr.getGlobalBounds().height));
+		//rs.setSize(size);
+		rs.setSize(Vector2f( tileSize.x * scale.x, tileSize.y * scale.y ));
+		rs.setOrigin(rs.getLocalBounds().width / 2, rs.getLocalBounds().height / 2);
+		rs.setRotation(rotation);
+		rs.setPosition(center);
+		//rs.setOrigin( rs.get)
+		//rs.setPosition(spr.getGlobalBounds().left, spr.getGlobalBounds().top);
+		//rs.setSize(Vector2f(spr.getGlobalBounds().width, spr.getGlobalBounds().height));
 		target->draw(rs);
 	}
 }
@@ -188,8 +232,8 @@ void EditorDecorInfo::WriteFile(std::ofstream &of)
 {
 	of << decorName << endl;
 	of << layer << endl;
-	of << spr.getPosition().x << " " << spr.getPosition().y << endl;
-	of << spr.getRotation() << endl;
-	of << spr.getScale().x << " " << spr.getScale().y << endl;
+	of << center.x << " " << center.y << endl;
+	of << rotation << endl;
+	of << scale.x << " " << scale.y << endl;
 	of << tile << endl;
 }

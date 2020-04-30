@@ -255,8 +255,9 @@ struct Session : TilesetManager
 	virtual void ProcessHeader() {}
 
 	bool ReadDecor(std::ifstream &is);
-	virtual void ProcessDecorSpr( const std::string &name, 
-		sf::Sprite &dSpr, int dLayer, Tileset *d_ts, int dTile) {}
+	virtual void ProcessDecorSpr(const std::string &name,
+		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+		float rotation, sf::Vector2f &scale) {}
 	virtual void ProcessAllDecorSpr() {}
 
 	bool ReadPlayerStartPos(std::ifstream &is);

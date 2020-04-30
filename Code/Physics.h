@@ -328,6 +328,16 @@ bool QuadContainsPoint( sf::Vector2<double> &A,
 						sf::Vector2<double> &D, 
 						sf::Vector2<double> &point );
 
+
+
+bool QuadContainsPoint(sf::Vector2<float> &A,
+	sf::Vector2<float> &B,
+	sf::Vector2<float> &C,
+	sf::Vector2<float> &D,
+	sf::Vector2<float> &point);
+
+bool QuadContainsPoint(sf::Vertex *quad, sf::Vector2f &point);
+
 bool IsEdgeTouchingCircle( sf::Vector2<double> & v0, 
 	sf::Vector2<double> &v1, 
 	sf::Vector2<double> &pos, double rad );
