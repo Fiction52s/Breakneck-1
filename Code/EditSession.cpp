@@ -7174,7 +7174,7 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 	Brush &orig, Brush &resultBrush)
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
-	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
+	auto &testPolygons = GetCorrectPolygonList();//GetCorrectPolygonList(polygonInProgress);
 	
 	list<PolyPtr> nonIntersectingBrushes;
 	list<PolyPtr> nonInverseBrushes;

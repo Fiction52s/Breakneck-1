@@ -742,6 +742,7 @@ int GameSession::CountActiveEnemies()
 
 void GameSession::ProcessSpecialTerrain(PolyPtr poly)
 {
+	//matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
 	allSpecialTerrain.push_back(poly);
 	specialTerrainTree->Insert(poly);
 }

@@ -12,6 +12,7 @@
 #include "TerrainDecor.h"
 #include "PositionInfo.h"
 #include "Grass.h"
+#include "SpecialTerrainTypes.h"
 //#include "ActorParamsBase.h"
 
 
@@ -224,13 +225,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		SECRETCORE,
 		SPECIAL,
 		Count
-	};
-
-	enum SpecialTerrainType
-	{
-		SPECIAL_WATER,
-		SPECIAL_GLIDEWATER,
-		SPECIAL_Count,
 	};
 
 	enum EdgeAngleType : int

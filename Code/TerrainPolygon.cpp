@@ -1323,6 +1323,7 @@ void TerrainPolygon::GenerateBorderMesh()
 		{
 			//maybe want to leave this, and just not have it show? delete for now
 			delete[] borderQuads;
+			borderQuads = NULL;
 			totalNumBorderQuads = 0;
 		}
 		/*if (borderQuads != NULL)
@@ -2624,10 +2625,10 @@ void TerrainPolygon::UpdateMaterialType()
 	{
 		switch (terrainVariation)
 		{
-		case SPECIAL_WATER:
+		case SPECIAL_TERRAIN_WATER:
 			fillCol = Color(255, 0, 0, 50);
 			break;
-		case SPECIAL_GLIDEWATER:
+		case SPECIAL_TERRAIN_GLIDEWATER:
 			fillCol = Color(0, 255, 0, 50);
 			break;
 		}
