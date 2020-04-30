@@ -587,32 +587,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 
 
-struct EditorDecorInfo : ISelectable
-{
-	EditorDecorInfo(sf::Sprite &s, int lay,
-		const std::string &dName, int p_tile)
-		:ISelectable(ISelectable::ISelectableType::IMAGE),
-		spr(s), layer(lay),
-		decorName(dName), tile(p_tile) {}
 
-	bool ContainsPoint(sf::Vector2f test);
-	bool Intersects(sf::IntRect rect);
-	void Move(sf::Vector2i delta);
-	void MoveTo(sf::Vector2i &pos);
-	void BrushDraw(sf::RenderTarget *target,
-		bool valid);
-	void Deactivate();
-	void Activate();
-	void SetSelected(bool select);
-	void WriteFile(std::ofstream &of);
-	void Draw(sf::RenderTarget *target);
-	sf::Sprite spr;
-	int layer;
-	std::string decorName;
-	int tile;
-	std::list<DecorPtr> *myList;
-	static bool CompareDecorInfoLayer(EditorDecorInfo &di0, EditorDecorInfo &di1);
-};
 
 typedef std::map<PolyPtr, std::list<PointMoveInfo>> PointMap;
 

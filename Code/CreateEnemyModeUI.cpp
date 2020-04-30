@@ -4,7 +4,7 @@
 #include "ActorParamsBase.h"
 #include "Enemy.h"
 #include "EditSession.h"
-
+#include "EditorDecorInfo.h"
 using namespace std;
 using namespace sf;
 

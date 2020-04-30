@@ -3,6 +3,7 @@
 #include "MainMenu.h"
 #include "MapHeader.h"
 #include "EditorTerrain.h"
+#include "EditorDecorInfo.h"
 #include "EditorRail.h"
 #include "EditorActors.h"
 #include "EditSession.h"

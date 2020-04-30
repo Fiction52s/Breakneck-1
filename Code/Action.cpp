@@ -4,7 +4,7 @@
 #include "EditSession.h"
 #include "ActorParams.h"
 #include "EditorRail.h"
-
+#include "EditorDecorInfo.h"
 using namespace sf;
 using namespace std;
 
@@ -56,6 +56,18 @@ RailPtr ISelectable::GetAsRail()
 	if (selectableType == ISelectableType::RAIL)
 	{
 		return (RailPtr)this;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+DecorPtr ISelectable::GetAsDecor()
+{
+	if (selectableType == ISelectableType::IMAGE)
+	{
+		return (DecorPtr)this;
 	}
 	else
 	{
@@ -162,6 +174,7 @@ sf::Vector2f Brush::GetTerrainSize()
 
 	PolyPtr tp;
 	ActorPtr ap;
+	DecorPtr dec;
 	if (objects.size() > 0)
 	{
 		SelectPtr sp = objects.front();
@@ -172,6 +185,15 @@ sf::Vector2f Brush::GetTerrainSize()
 			right = tp->right;
 			top = tp->top;
 			bottom = tp->bottom;
+		}
+		dec = sp->GetAsDecor();
+		if (dec != NULL)
+		{
+			IntRect ir(dec->spr.getGlobalBounds());
+			left = ir.left;
+			right = ir.left + ir.width;
+			top = ir.top;
+			bottom = ir.top + ir.height;
 		}
 	}
 
@@ -187,6 +209,16 @@ sf::Vector2f Brush::GetTerrainSize()
 			right = max(right, tp->right);
 			top = min(top, tp->top);
 			bottom = max(bottom, tp->bottom);
+		}
+
+		dec = (*it)->GetAsDecor();
+		if (dec != NULL)
+		{
+			IntRect ir(dec->spr.getGlobalBounds());
+			left = min(left, ir.left);
+			right = max(right, ir.left + ir.width);
+			top = min(top, ir.top);
+			bottom = max(bottom, ir.top + ir.height);
 		}
 	}
 
@@ -298,6 +330,7 @@ sf::Vector2f &Brush::GetCenterF()
 
 	PolyPtr tp;
 	ActorPtr ap;
+	DecorPtr dec;
 	if (objects.size() > 0)
 	{
 		SelectPtr sp = objects.front();
@@ -311,6 +344,15 @@ sf::Vector2f &Brush::GetCenterF()
 		}
 		else
 		{
+			dec = sp->GetAsDecor();
+			if (dec != NULL)
+			{
+				IntRect ir(dec->spr.getGlobalBounds());
+				left = ir.left;
+				right = ir.left + ir.width;
+				top = ir.top;
+				bottom = ir.top + ir.height;
+			}
 			/*ap = sp->GetAsActor();
 			if (ap != NULL)
 			{
@@ -339,6 +381,18 @@ sf::Vector2f &Brush::GetCenterF()
 			top = min(top, tp->top);
 			bottom = max(bottom, tp->bottom);
 		}
+		else
+		{
+			dec = (*it)->GetAsDecor();
+			if (dec != NULL)
+			{
+				IntRect ir(dec->spr.getGlobalBounds());
+				left = min( left, ir.left);
+				right = max( right, ir.left + ir.width);
+				top = min( top, ir.top);
+				bottom = max( bottom, ir.top + ir.height);
+			}
+		}
 	}
 
 	centerF.x = (left + right) / 2.f;
@@ -350,6 +404,7 @@ sf::Vector2f &Brush::GetCenterF()
 void Brush::Rotate(float fDegrees)
 {
 	PolyPtr p;
+	DecorPtr dec;
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		p = (*it)->GetAsTerrain();
@@ -360,6 +415,11 @@ void Brush::Rotate(float fDegrees)
 			p->Rotate(GetCenterF(), fDegrees);
 			//p->Finalize();
 		}
+		//dec = (*it)->GetAsDecor();
+		//if (dec != NULL)
+		//{
+		//	dec->Rotate
+		//}
 			
 	}
 }

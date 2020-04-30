@@ -40,6 +40,7 @@ struct ISelectable
 	ActorPtr GetAsActor();
 	GateInfoPtr GetAsGateInfo();
 	RailPtr GetAsRail();
+	DecorPtr GetAsDecor();
 
 	virtual bool ContainsPoint(sf::Vector2f test)
 	{

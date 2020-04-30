@@ -20,6 +20,7 @@
 #include "ControlProfile.h"
 #include "SaveFile.h"
 #include "Wire.h"
+#include "EditorDecorInfo.h"
 
 #include "clipper.hpp"
 
@@ -10091,6 +10092,7 @@ void EditSession::EditModeHandleEvent()
 				selectedBrush->GetTerrainSize());
 			//selectedBrush->Scale(1.05f);
 			PolyPtr p;
+			DecorPtr dec;
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
 				p = (*it)->GetAsTerrain();
@@ -10101,6 +10103,11 @@ void EditSession::EditModeHandleEvent()
 					//p->Scale(1.05f);
 					//p->Scale(1.1f);
 					//p->Finalize();
+				}
+				dec = (*it)->GetAsDecor();
+				if (dec != NULL)
+				{
+					dec->StartTransformation();
 				}
 					
 			}
@@ -11003,6 +11010,8 @@ void EditSession::TransformModeHandleEvent()
 			Brush origBrush;
 			Brush resultBrush;
 			PolyPtr temp;
+			DecorPtr dec;
+			DecorPtr tempDec;
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
 				p = (*it)->GetAsTerrain();
@@ -11012,6 +11021,16 @@ void EditSession::TransformModeHandleEvent()
 					if (temp != NULL)
 					{
 						resultBrush.AddObject(temp);
+					}
+					origBrush.AddObject((*it));
+				}
+				dec = (*it)->GetAsDecor();
+				if (dec != NULL)
+				{
+					tempDec = dec->CompleteTransformation();
+					if (tempDec != NULL)
+					{
+						resultBrush.AddObject(tempDec);
 					}
 					origBrush.AddObject((*it));
 				}
@@ -11029,12 +11048,18 @@ void EditSession::TransformModeHandleEvent()
 		{
 			SetMode(EDIT);
 			PolyPtr p;
+			DecorPtr dec;
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
 				p = (*it)->GetAsTerrain();
 				if (p != NULL)
 				{
 					p->CancelTransformation();
+				}
+				dec = (*it)->GetAsDecor();
+				if (dec != NULL)
+				{
+					dec->CancelTransformation();
 				}
 			}
 		}
@@ -11654,12 +11679,18 @@ void EditSession::TransformModeUpdate()
 	transformTools->Update(fWorldPos, IsMousePressed( Mouse::Left));
 
 	PolyPtr p;
+	DecorPtr dec;
 	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 	{
 		p = (*it)->GetAsTerrain();
 		if (p != NULL)
 		{
 			p->UpdateTransformation(transformTools);
+		}
+		dec = (*it)->GetAsDecor();
+		if (dec != NULL)
+		{
+			dec->UpdateTransformation(transformTools);
 		}
 	}
 }
