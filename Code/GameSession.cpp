@@ -381,7 +381,12 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	filePath = p_filePath;
 	filePathStr = filePath.string();
 	SetContinueLoading(true);
+
+	ResetTilesetAccessCount();
+
 	Load();
+
+	CleanupUnusedTilests();
 }
 
 GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )

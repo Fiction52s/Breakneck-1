@@ -298,8 +298,150 @@ Collider &Actor::GetCollider()
 
 }
 
+void Actor::SetupFXTilesets( Skin *skin, Skin *swordSkin)
+{
+	string folder = "Kin/FX/";
+
+	ts_fairSwordLightning[0] = sess->GetSizedTileset( folder, "fair_sword_lightninga_256x256.png", swordSkin);
+	ts_fairSwordLightning[1] = sess->GetSizedTileset( folder, "fair_sword_lightninga_256x256.png", swordSkin);
+	ts_fairSwordLightning[2] = sess->GetSizedTileset( folder, "fair_sword_lightninga_256x256.png", swordSkin);
+
+	ts_dairSwordLightning[0] = sess->GetSizedTileset(folder,"dair_sword_lightninga_256x256.png", swordSkin);
+	ts_dairSwordLightning[1] = sess->GetSizedTileset(folder,"dair_sword_lightninga_256x256.png", swordSkin);
+	ts_dairSwordLightning[2] = sess->GetSizedTileset(folder,"dair_sword_lightninga_256x256.png", swordSkin);
+
+	ts_uairSwordLightning[0] = sess->GetSizedTileset(folder,"uair_sword_lightninga_256x256.png", swordSkin);
+	ts_uairSwordLightning[1] = sess->GetSizedTileset(folder,"uair_sword_lightninga_256x256.png", swordSkin);
+	ts_uairSwordLightning[2] = sess->GetSizedTileset(folder,"uair_sword_lightninga_256x256.png", swordSkin);
+
+	ts_bounceBoost = sess->GetSizedTileset(folder, "bounceboost_256x192.png", skin);
+
+	ts_fx_hurtSpack = sess->GetSizedTileset(folder, "hurt_spack_128x160.png");
+
+	ts_fx_dashStart = sess->GetSizedTileset(folder, "fx_dashstart_160x160.png");
+	ts_fx_dashRepeat = sess->GetSizedTileset(folder, "fx_dashrepeat_192x128.png");
+
+	ts_fx_land[0] = sess->GetSizedTileset(folder, "land_a_128x128.png");
+	ts_fx_land[1] = sess->GetSizedTileset(folder,"land_b_192x208.png");
+	ts_fx_land[2] = sess->GetSizedTileset(folder,"land_c_256x256.png");
+	ts_fx_runStart[0] = sess->GetSizedTileset(folder,"runstart_a_128x128.png");
+	ts_fx_runStart[1] = sess->GetSizedTileset(folder,"runstart_b_224x224.png");
+	ts_fx_runStart[2] = sess->GetSizedTileset(folder,"runstart_c_224x224.png");
+
+	ts_fx_sprint = sess->GetSizedTileset(folder, "fx_sprint_176x176.png");
+	ts_fx_run = sess->GetSizedTileset(folder, "fx_run_144x128.png");
+	ts_fx_bigRunRepeat = sess->GetSizedTileset(folder, "fx_bigrunrepeat_176x112.png");
+
+	ts_fx_jump[0] = sess->GetSizedTileset(folder,"jump_a_128x80.png");
+	ts_fx_jump[1] = sess->GetSizedTileset(folder,"jump_b_160x192.png");
+	ts_fx_jump[2] = sess->GetSizedTileset(folder,"jump_c_160x192.png");
+
+	ts_fx_wallJump[0] = sess->GetSizedTileset(folder,"walljump_a_160x160.png");
+	ts_fx_wallJump[1] = sess->GetSizedTileset(folder,"walljump_b_224x224.png");
+	ts_fx_wallJump[2] = sess->GetSizedTileset(folder,"walljump_c_224x224.png");
+	ts_fx_double = sess->GetSizedTileset(folder, "fx_doublejump_196x160.png");
+	ts_fx_gravReverse = sess->GetSizedTileset(folder, "fx_grav_reverse_128x128.png");
+
+	ts_fx_chargeBlue0 = sess->GetSizedTileset(folder,"elec_01_128x128.png");
+	ts_fx_chargeBlue1 = sess->GetSizedTileset(folder,"elec_03_128x128.png");
+	ts_fx_chargeBlue2 = sess->GetSizedTileset(folder,"elec_04_128x128.png");
+	ts_fx_chargePurple = sess->GetSizedTileset(folder, "elec_02_128x128.png");
+
+
+	ts_fx_rightWire = sess->GetSizedTileset(folder, "wire_boost_r_64x64.png");
+	ts_fx_leftWire = sess->GetSizedTileset(folder, "wire_boost_b_64x64.png");
+	ts_fx_doubleWire = sess->GetSizedTileset(folder, "wire_boost_m_64x64.png");
+
+	ts_fx_airdashDiagonal = sess->GetSizedTileset(folder, "fx_airdash_diagonal_1_128x128.png");
+	ts_fx_airdashUp = sess->GetSizedTileset(folder, "fx_airdash_128x128.png");
+	ts_fx_airdashHover = sess->GetSizedTileset(folder, "fx_airdash_hold_1_96x80.png");
+
+	ts_fx_death_1a = sess->GetSizedTileset(folder,"death_fx_1a_256x256.png");
+	ts_fx_death_1b = sess->GetSizedTileset(folder,"death_fx_1b_128x80.png");
+	ts_fx_death_1c = sess->GetSizedTileset(folder,"death_fx_1c_128x128.png");
+	ts_fx_death_1d = sess->GetSizedTileset(folder,"death_fx_1d_48x48.png");
+	ts_fx_death_1e = sess->GetSizedTileset(folder,"death_fx_1e_160x160.png");
+	ts_fx_death_1f = sess->GetSizedTileset(folder,"death_fx_1f_160x160.png");
+
+	ts_fx_gateEnter = sess->GetSizedTileset(folder, "gateenter_256x320.png");
+
+	for (int i = 0; i < 7; ++i)
+	{
+		smallLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 4, 1.f);
+	}
+
+	smallLightningPool[0]->ts = sess->GetSizedTileset(folder,"elec_01_96x96.png");
+	smallLightningPool[1]->ts = sess->GetSizedTileset(folder,"elec_02_96x96.png");
+	smallLightningPool[2]->ts = sess->GetSizedTileset(folder,"elec_03_96x96.png");
+	smallLightningPool[3]->ts = sess->GetSizedTileset(folder,"elec_04_96x96.png");
+	smallLightningPool[4]->ts = sess->GetSizedTileset(folder,"elec_05_96x96.png");
+	smallLightningPool[5]->ts = sess->GetSizedTileset(folder,"elec_06_96x96.png");
+	smallLightningPool[6]->ts = sess->GetSizedTileset(folder,"elec_07_96x96.png");
+
+	for (int i = 0; i < 3; ++i)
+	{
+		fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
+		fairLightningPool[i]->ts = sess->GetSizedTileset(folder, "fair_sword_lightninga_256x256.png");
+		dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
+		dairLightningPool[i]->ts = sess->GetSizedTileset(folder, "dair_sword_lightninga_256x256.png");
+		uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
+		uairLightningPool[i]->ts = sess->GetSizedTileset(folder, "uair_sword_lightninga_256x256.png");
+	}
+
+	gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
+	gateBlackFXPool->ts = sess->GetSizedTileset(folder, "keydrain_160x160.png");
+}
+
+void Actor::SetupSwordTilesets(Skin *swordSkin)
+{
+	string folder = "Sword/";
+
+	ts_fairSword[0] = sess->GetSizedTileset(folder, "fair_sworda_256x256.png", swordSkin);
+	ts_fairSword[1] = sess->GetSizedTileset(folder, "fair_swordb_288x288.png", swordSkin);
+	ts_fairSword[2] = sess->GetSizedTileset(folder, "fair_swordc_384x384.png", swordSkin);
+
+	ts_dairSword[0] = sess->GetSizedTileset(folder, "dair_sworda_256x256.png", swordSkin);
+	ts_dairSword[1] = sess->GetSizedTileset(folder, "dair_swordb_288x288.png", swordSkin);
+	ts_dairSword[2] = sess->GetSizedTileset(folder, "dair_swordc_384x384.png", swordSkin);
+
+	ts_uairSword[0] = sess->GetSizedTileset(folder, "uair_sworda_256x256.png", swordSkin);
+	ts_uairSword[1] = sess->GetSizedTileset(folder, "uair_swordb_288x288.png", swordSkin);
+	ts_uairSword[2] = sess->GetSizedTileset(folder, "uair_swordc_320x320.png", swordSkin);
+
+	ts_grindLungeSword[0] = sess->GetSizedTileset(folder, "grind_lunge_sworda_160x160.png", swordSkin);
+	ts_grindLungeSword[1] = sess->GetSizedTileset(folder, "grind_lunge_swordb_192x192.png", swordSkin);
+	ts_grindLungeSword[2] = sess->GetSizedTileset(folder, "grind_lunge_swordc_224x208.png", swordSkin);
+
+	ts_standingNSword[0] = sess->GetSizedTileset(folder, "stand_sworda_208x208.png", swordSkin);
+	ts_standingNSword[1] = sess->GetSizedTileset(folder, "stand_swordb_304x176.png", swordSkin);
+	ts_standingNSword[2] = sess->GetSizedTileset(folder, "stand_swordc_304x192.png", swordSkin);
+
+	ts_wallAttackSword[0] = sess->GetSizedTileset(folder, "wall_sworda_144x256.png", swordSkin);
+	ts_wallAttackSword[1] = sess->GetSizedTileset(folder, "wall_swordb_240x352.png", swordSkin);
+	ts_wallAttackSword[2] = sess->GetSizedTileset(folder, "wall_swordc_298x400.png", swordSkin);
+
+	ts_steepSlideAttackSword[0] = sess->GetSizedTileset(folder, "steep_att_sworda_480x176.png", swordSkin);
+	ts_steepSlideAttackSword[1] = sess->GetSizedTileset(folder, "steep_att_swordb_352x192.png", swordSkin);
+	ts_steepSlideAttackSword[2] = sess->GetSizedTileset(folder, "steep_att_swordc_560x256.png", swordSkin);
+
+	ts_steepClimbAttackSword[0] = sess->GetSizedTileset(folder, "climb_att_sworda_352x128.png", swordSkin);
+	ts_steepClimbAttackSword[1] = sess->GetSizedTileset(folder, "climb_att_swordb_416x320.png", swordSkin);
+	ts_steepClimbAttackSword[2] = sess->GetSizedTileset(folder, "climb_att_swordc_496x208.png", swordSkin);
+
+	ts_diagUpSword[0] = sess->GetSizedTileset(folder, "airdash_u_sword_144x208.png", swordSkin);
+	ts_diagUpSword[1] = sess->GetSizedTileset(folder, "airdash_u_sword_b_224x240.png", swordSkin);
+	ts_diagUpSword[2] = sess->GetSizedTileset(folder, "airdash_u_sword_p_320x384.png", swordSkin);
+
+	ts_diagDownSword[0] = sess->GetSizedTileset(folder, "airdash_sword_128x208.png", swordSkin);
+	ts_diagDownSword[1] = sess->GetSizedTileset(folder, "airdash_sword_b_224x240.png", swordSkin);
+	ts_diagDownSword[2] = sess->GetSizedTileset(folder, "airdash_sword_p_320x384.png", swordSkin);
+}
+
 void Actor::SetupTilesets( Skin *skin, Skin *swordSkin )
 {
+	SetupFXTilesets(skin, swordSkin);
+	SetupSwordTilesets(swordSkin);
+
 	ts_scorpRun = GetTileset("Kin/scorp_run_192x128.png", 192, 128);
 	ts_scorpSlide = GetTileset("Kin/scorp_slide_160x96.png", 160, 96);
 	ts_scorpSteepSlide = GetTileset("Kin/scorp_steep_slide_224x128.png", 224, 128);
@@ -313,7 +455,7 @@ void Actor::SetupTilesets( Skin *skin, Skin *swordSkin )
 
 	ts_airBounceFlame = GetTileset("Kin/bouncejumpflame.png", 128, 128, skin);
 	ts_runBounceFlame = GetTileset("Kin/bouncerunflame.png", 128, 96, skin);
-	ts_bounceBoost = GetTileset("FX/bounceboost_256x192.png", 256, 192, skin);
+	
 
 	ts_dodecaSmall = GetTileset("Kin/dodecasmall.png", 180, 180, skin);
 	ts_dodecaBig = GetTileset("Kin/dodecabig.png", 360, 360, skin);
@@ -420,108 +562,9 @@ void Actor::SetupTilesets( Skin *skin, Skin *swordSkin )
 
 	tileset[GETSHARD] = tileset[DEATH];
 
-	ts_fairSword[0] = GetTileset("Sword/fair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[1] = GetTileset("Sword/fair_swordb_288x288.png", 288, 288, swordSkin);//ts_fairSword[0];//GetTileset("fair_swordb_256x256.png", 256, 256, swordSkin);
-	ts_fairSword[2] = GetTileset("Sword/fair_swordc_384x384.png", 384, 384, swordSkin);//ts_fairSword[0];//GetTileset("fair_swordc_384x384.png", 384, 384, swordSkin);
+	
 
-	ts_fairSwordLightning[0] = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_fairSwordLightning[1] = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_fairSwordLightning[2] = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-
-	ts_dairSword[0] = GetTileset("Sword/dair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_dairSword[1] = GetTileset("Sword/dair_swordb_288x288.png", 288, 288, swordSkin);
-	ts_dairSword[2] = GetTileset("Sword/dair_swordc_384x384.png", 384, 384, swordSkin);
-
-	ts_dairSwordLightning[0] = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_dairSwordLightning[1] = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_dairSwordLightning[2] = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-
-	ts_uairSword[0] = GetTileset("Sword/uair_sworda_256x256.png", 256, 256, swordSkin);
-	ts_uairSword[1] = GetTileset("Sword/uair_swordb_288x288.png", 288, 288, swordSkin);
-	ts_uairSword[2] = GetTileset("Sword/uair_swordc_320x320.png", 320, 320, swordSkin);
-
-	ts_uairSwordLightning[0] = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_uairSwordLightning[1] = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-	ts_uairSwordLightning[2] = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256, swordSkin);
-
-	ts_grindLungeSword[0] = GetTileset("Sword/grind_lunge_sworda_160x160.png", 160, 160, swordSkin);
-	ts_grindLungeSword[1] = GetTileset("Sword/grind_lunge_swordb_192x192.png", 192, 192, swordSkin);
-	ts_grindLungeSword[2] = GetTileset("Sword/grind_lunge_swordc_224x208.png", 224, 208, swordSkin);
-
-	ts_standingNSword[0] = GetTileset("Sword/stand_sworda_208x208.png", 208, 208, swordSkin);
-	ts_standingNSword[1] = GetTileset("Sword/stand_swordb_304x176.png", 304, 176, swordSkin);
-	ts_standingNSword[2] = GetTileset("Sword/stand_swordc_304x192.png", 304, 192, swordSkin);
-
-	/*ts_dashAttackSword[0] = GetTileset("dash_sworda_256x256.png", 256, 256, swordSkin);
-	ts_dashAttackSword[1] = GetTileset("dash_swordb_256x256.png", 256, 256, swordSkin);
-	ts_dashAttackSword[2] = GetTileset("dash_swordc_256x304.png", 256, 304, swordSkin);*/
-
-	ts_wallAttackSword[0] = GetTileset("Sword/wall_sworda_144x256.png", 144, 256, swordSkin);
-	ts_wallAttackSword[1] = GetTileset("Sword/wall_swordb_240x352.png", 240, 352, swordSkin);
-	ts_wallAttackSword[2] = GetTileset("Sword/wall_swordc_298x400.png", 298, 400, swordSkin);
-
-	ts_steepSlideAttackSword[0] = GetTileset("Sword/steep_att_sworda_480x176.png", 480, 176, swordSkin);
-	ts_steepSlideAttackSword[1] = GetTileset("Sword/steep_att_swordb_352x192.png", 352, 192, swordSkin);
-	ts_steepSlideAttackSword[2] = GetTileset("Sword/steep_att_swordc_560x256.png", 560, 256, swordSkin);
-
-	ts_steepClimbAttackSword[0] = GetTileset("Sword/climb_att_sworda_352x128.png", 352, 128, swordSkin);
-	ts_steepClimbAttackSword[1] = GetTileset("Sword/climb_att_swordb_416x320.png", 416, 320, swordSkin);
-	ts_steepClimbAttackSword[2] = GetTileset("Sword/climb_att_swordc_496x208.png", 496, 208, swordSkin);
-
-	ts_diagUpSword[0] = GetTileset("Sword/airdash_u_sword_144x208.png", 144, 208, swordSkin);
-	ts_diagUpSword[1] = GetTileset("Sword/airdash_u_sword_b_224x240.png", 224, 240, swordSkin);
-	ts_diagUpSword[2] = GetTileset("Sword/airdash_u_sword_p_320x384.png", 320, 384, swordSkin);
-
-	ts_diagDownSword[0] = GetTileset("Sword/airdash_sword_128x208.png", 128, 208, swordSkin);
-	ts_diagDownSword[1] = GetTileset("Sword/airdash_sword_b_224x240.png", 224, 240, swordSkin);
-	ts_diagDownSword[2] = GetTileset("Sword/airdash_sword_p_320x384.png", 320, 384, swordSkin);
-
-	ts_fx_hurtSpack = GetTileset("FX/hurt_spack_128x160.png", 128, 160);
-
-	ts_fx_dashStart = GetTileset("FX/fx_dashstart_160x160.png", 160, 160);
-	ts_fx_dashRepeat = GetTileset("FX/fx_dashrepeat_192x128.png", 192, 128);
-
-	ts_fx_land[0] = GetTileset("FX/land_a_128x128.png", 128, 128);
-	ts_fx_land[1] = GetTileset("FX/land_b_192x208.png", 192, 208);
-	ts_fx_land[2] = GetTileset("FX/land_c_256x256.png", 256, 256);
-	ts_fx_runStart[0] = GetTileset("FX/runstart_a_128x128.png", 128, 128);
-	ts_fx_runStart[1] = GetTileset("FX/runstart_b_224x224.png", 224, 224);
-	ts_fx_runStart[2] = GetTileset("FX/runstart_c_224x224.png", 224, 224);
-
-	ts_fx_sprint = GetTileset("FX/fx_sprint_176x176.png", 176, 176);
-	ts_fx_run = GetTileset("FX/fx_run_144x128.png", 144, 128);
-	ts_fx_bigRunRepeat = GetTileset("FX/fx_bigrunrepeat.png", 176, 112);
-
-	ts_fx_jump[0] = GetTileset("FX/jump_a_128x80.png", 128, 80);
-	ts_fx_jump[1] = GetTileset("FX/jump_b_160x192.png", 160, 192);
-	ts_fx_jump[2] = GetTileset("FX/jump_c_160x192.png", 160, 192);
-
-	ts_fx_wallJump[0] = GetTileset("FX/walljump_a_160x160.png", 160, 160);
-	ts_fx_wallJump[1] = GetTileset("FX/walljump_b_224x224.png", 224, 224);
-	ts_fx_wallJump[2] = GetTileset("FX/walljump_c_224x224.png", 224, 224);
-	ts_fx_double = GetTileset("FX/fx_doublejump_196x160.png", 196, 160);
-	ts_fx_gravReverse = GetTileset("FX/fx_grav_reverse_128x128.png", 128, 128);
-
-	ts_fx_chargeBlue0 = GetTileset("FX/elec_01_128x128.png", 128, 128);
-	ts_fx_chargeBlue1 = GetTileset("FX/elec_03_128x128.png", 128, 128);
-	ts_fx_chargeBlue2 = GetTileset("FX/elec_04_128x128.png", 128, 128);
-	ts_fx_chargePurple = GetTileset("FX/elec_02_128x128.png", 128, 128);
-
-
-	ts_fx_rightWire = GetTileset("FX/wire_boost_r_64x64.png", 64, 64);
-	ts_fx_leftWire = GetTileset("FX/wire_boost_b_64x64.png", 64, 64);
-	ts_fx_doubleWire = GetTileset("FX/wire_boost_m_64x64.png", 64, 64);
-
-	ts_fx_airdashDiagonal = GetTileset("FX/fx_airdash_diagonal_1_128x128.png", 128, 128);
-	ts_fx_airdashUp = GetTileset("FX/fx_airdash_128x128.png", 128, 128);
-	ts_fx_airdashHover = GetTileset("FX/fx_airdash_hold_1_96x80.png", 96, 80);
-
-	ts_fx_death_1a = GetTileset("FX/death_fx_1a_256x256.png", 256, 256);
-	ts_fx_death_1b = GetTileset("FX/death_fx_1b_128x80.png", 128, 80);
-	ts_fx_death_1c = GetTileset("FX/death_fx_1c_128x128.png", 128, 128);
-	ts_fx_death_1d = GetTileset("FX/death_fx_1d_48x48.png", 48, 48);
-	ts_fx_death_1e = GetTileset("FX/death_fx_1e_160x160.png", 160, 160);
-	ts_fx_death_1f = GetTileset("FX/death_fx_1f_160x160.png", 160, 160);
+	
 
 	tileset[GOALKILL] = GetTileset("Kin/goal_w01_killa_384x256.png", 384, 256);
 	tileset[GOALKILL1] = GetTileset("Kin/goal_w01_killb_384x256.png", 384, 256);
@@ -621,36 +664,12 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currLockedUairFX = NULL;
 	gateBlackFX = NULL;
 
-	for (int i = 0; i < 7; ++i)
-	{
-		smallLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 4, 1.f);
-	}
-
-	smallLightningPool[0]->ts = GetTileset("FX/elec_01_96x96.png", 96, 96);
-	smallLightningPool[1]->ts = GetTileset("FX/elec_02_96x96.png", 96, 96);
-	smallLightningPool[2]->ts = GetTileset("FX/elec_03_96x96.png", 96, 96);
-	smallLightningPool[3]->ts = GetTileset("FX/elec_04_96x96.png", 96, 96);
-	smallLightningPool[4]->ts = GetTileset("FX/elec_05_96x96.png", 96, 96);
-	smallLightningPool[5]->ts = GetTileset("FX/elec_06_96x96.png", 96, 96);
-	smallLightningPool[6]->ts = GetTileset("FX/elec_07_96x96.png", 96, 96);
+	
 
 	motionGhostBuffer = new VertexBuf(80, sf::Quads);
 	motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
 	motionGhostBufferPurple = new VertexBuf(80, sf::Quads);
-		
 
-	for (int i = 0; i < 3; ++i)
-	{
-		fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-		fairLightningPool[i]->ts = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256);
-		dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-		dairLightningPool[i]->ts = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256);
-		uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-		uairLightningPool[i]->ts = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256);
-	}
-
-	gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
-	gateBlackFXPool->ts = GetTileset("FX/keydrain_160x160.png", 160, 160);
 
 	if (owner != NULL)
 	{
@@ -15290,9 +15309,9 @@ void Actor::PhysicsResponse()
 			}
 
 			V2d gEnterPos = alongPos + nEdge;// *32.0;
-			Tileset *ts_gateEnter = GetTileset("FX/gateenter_256x320.png",256, 320);
+			
 			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-				ts_gateEnter, gEnterPos, false, ang, 8, 3, true);
+				ts_fx_gateEnter, gEnterPos, false, ang, 8, 3, true);
 
 			//set gate action to disperse
 			//maybe have another gate action when you're on the gate and its not sure whether to blow up or not

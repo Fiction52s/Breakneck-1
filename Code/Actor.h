@@ -473,6 +473,8 @@ struct Actor : QuadTreeCollider,
 	void StartAction(Action a);
 
 	void SetupTilesets(Skin *kSkin, Skin*swordSkin);
+	void SetupFXTilesets( Skin *kSkin, Skin *swordSkin);
+	void SetupSwordTilesets(Skin *swordSkin);
 
 	void RailGrindMovement();
 
@@ -835,6 +837,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_death_1d;
 	Tileset *ts_fx_death_1e;
 	Tileset *ts_fx_death_1f;
+
+	Tileset *ts_fx_gateEnter;
 
 
 	sf::Vector2<double> followerPos;
