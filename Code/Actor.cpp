@@ -58,6 +58,22 @@ using namespace std;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+void Actor::SetupDrain()
+{
+	float numSecondsToDrain = sess->mapHeader->drainSeconds;
+	float drainPerSecond = totalHealth / numSecondsToDrain;
+	float drainPerFrame = drainPerSecond / 60.f;
+	float drainFrames = 1.f;
+	if (drainPerFrame < 1.f)
+	{
+		drainFrames = floor(1.f / drainPerFrame);
+	}
+	drainCounterMax = drainFrames;
+	if (drainPerFrame < 1.0)
+		drainPerFrame = 1.0;
+	drainAmount = drainPerFrame;
+}
+
 Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex)
 {
 	if (owner != NULL)
@@ -1665,6 +1681,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		//	motionGhosts[i] = 
 		//}
 
+
+		SetupTimeBubbles();
+
+
 		cout << "end player" << endl;
 }
 
@@ -1782,6 +1802,51 @@ Actor::~Actor()
 			delete ghosts[i];
 	}
 	//eventually delete everything here lol
+}
+
+void Actor::SetGameMode()
+{
+	auto mapType = sess->mapHeader->gameMode;
+	if (mapType == MapHeader::MapType::T_RACEFIGHT)
+	{
+		maxBubbles = 2;
+		invincibleFrames = 180;
+	}
+	else
+	{
+		maxBubbles = MAX_BUBBLES;
+		invincibleFrames = 0;
+	}
+}
+
+void Actor::SetupTimeBubbles()
+{
+	maxBubbles = MAX_BUBBLES;
+
+	bubbleHitboxes = new CollisionBody*[MAX_BUBBLES];
+
+	CollisionBox genericBox;
+	genericBox.isCircle = true;
+	for (int i = 0; i < MAX_BUBBLES; ++i)
+	{
+		bubbleHitboxes[i] = new CollisionBody(CollisionBox::Hit);
+		bubbleHitboxes[i]->BasicSetup();
+		bubbleHitboxes[i]->AddCollisionBox(0, genericBox);
+	}
+
+	bubblePos = new V2d[MAX_BUBBLES];
+	bubbleFramesToLive = new int[MAX_BUBBLES];
+	bubbleRadiusSize = new int[MAX_BUBBLES];
+
+	for (int i = 0; i < MAX_BUBBLES; ++i)
+	{
+		bubbleFramesToLive[i] = 0;
+
+		if (fBubblePos != NULL)
+		{
+			fBubbleFrame[i] = 0;
+		}
+	}
 }
 
 void Actor::ActionEnded()
@@ -8853,49 +8918,6 @@ void Actor::LoadAllAuras()
 		delete[] viList;
 	}
 	
-}
-
-void Actor::InitAfterEnemies()
-{
-	if( owner != NULL && owner->raceFight != NULL )
-	{
-		maxBubbles = 2;
-	}
-	else
-	{
-		maxBubbles = 5;
-	}
-
-	bubbleHitboxes = new CollisionBody*[maxBubbles];
-
-	CollisionBox genericBox;
-	genericBox.isCircle = true;
-	for (int i = 0; i < maxBubbles; ++i)
-	{
-		bubbleHitboxes[i] = new CollisionBody(CollisionBox::Hit);
-		bubbleHitboxes[i]->BasicSetup();
-		bubbleHitboxes[i]->AddCollisionBox( 0, genericBox);
-	}
-	//memset(bubbleHitboxes, 0, sizeof(bubbleHitboxes));
-
-	bubblePos = new V2d[maxBubbles];
-	bubbleFramesToLive = new int[maxBubbles];
-	bubbleRadiusSize = new int[maxBubbles];
-
-	for( int i = 0; i < maxBubbles; ++i )
-	{
-		bubbleFramesToLive[i] = 0;
-
-		if (fBubblePos != NULL)
-		{
-			fBubbleFrame[i] = 0;
-		}
-	}
-
-	if( owner != NULL && owner->raceFight != NULL )
-	{
-		invincibleFrames = 180;
-	}
 }
 
 void Actor::StartSeqKinThrown( V2d &pos, V2d &vel )

@@ -75,9 +75,43 @@ void Session::SetupEnemyTypes()
 	}
 }
 
+void Session::SetupSoundLists()
+{
+	if (soundNodeList == NULL)
+	{
+		soundNodeList = new SoundNodeList(10);
+		pauseSoundNodeList = new SoundNodeList(10);
+	}
+	else
+	{
+		soundNodeList->Clear();
+		pauseSoundNodeList->Clear();
+	}
+
+}
+
+void Session::SetupSoundManager()
+{
+	if (soundManager == NULL)
+		soundManager = new SoundManager;
+}
+
+void Session::SetupHitboxManager()
+{
+	if (hitboxManager == NULL)
+		hitboxManager = new HitboxManager;
+
+	//dont clear this because it will probably contain all the player hitboxes
+	//else
+	//hitboxManager->
+}
+
 void Session::SetupEnemyType(ParamsInfo &pi)
 {
-	types[pi.name] = new ActorType(pi);
+	if (types[pi.name] == NULL)
+	{
+		types[pi.name] = new ActorType(pi);
+	}
 }
 
 void Session::AddGeneralEnemies()
@@ -509,6 +543,15 @@ void Session::AddWorldEnemy(const std::string &name,
 	Tileset *ts,
 	int tileIndex)
 {
+	auto & names = worldEnemyNames[w - 1];
+	for (auto it = names.begin(); it != names.end(); ++it)
+	{
+		if ((*it).name == name)
+		{
+			return; //already added
+		}
+	}
+
 	worldEnemyNames[w - 1].push_back(ParamsInfo(name, p_enemyCreator, p_paramsCreator, off, size,
 		w_mon, w_level, w_path, w_loop, p_canBeAerial, p_canBeGrounded,
 		p_canBeRailGrounded, p_numLevels, w, ts, tileIndex));
@@ -530,6 +573,15 @@ void Session::AddExtraEnemy(const std::string &name,
 	Tileset *ts, 
 	int tileIndex)
 {
+	for (auto it = extraEnemyNames.begin(); it != extraEnemyNames.end(); ++it)
+	{
+		if ((*it).name == name)
+		{
+			return; //already added
+		}
+	}
+
+
 	extraEnemyNames.push_back(ParamsInfo(name, p_enemyCreator, p_paramsCreator, off, size,
 		w_mon, w_level, w_path, w_loop, p_canBeAerial, p_canBeGrounded,
 		p_canBeRailGrounded, p_numLevels, 0, ts, tileIndex));
@@ -1115,6 +1167,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	totalNumberBullets = 0;
 	keyFrame = 0;
+
+	mapHeader = NULL;
 }
 
 
@@ -1226,6 +1280,42 @@ void Session::UpdateDecorSprites()
 	//update relevant terrain pieces, need to do a check for camera etc.
 }
 
+void Session::SetPlayersGameMode()
+{
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+			p->SetGameMode();
+	}
+}
+
+void Session::SetupTimeBubbles()
+{
+	int numBubbleInfo = Actor::MAX_BUBBLES * MAX_PLAYERS;
+	fBubbleFrame = new float[numBubbleInfo];
+	for (int i = 0; i < numBubbleInfo; ++i)
+	{
+		fBubbleFrame[i] = 0;
+	}
+	fBubblePos = new sf::Vector2f[numBubbleInfo];
+	fBubbleRadiusSize = new float[numBubbleInfo];
+
+	//int count = 0;
+	Actor *tempPlayer = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		if (tempPlayer = GetPlayer(i))
+		{
+			tempPlayer->fBubbleFrame = (fBubbleFrame + i * Actor::MAX_BUBBLES);
+			tempPlayer->fBubblePos = (fBubblePos + i * Actor::MAX_BUBBLES);
+			tempPlayer->fBubbleRadiusSize = (fBubbleRadiusSize + i * Actor::MAX_BUBBLES);
+			//++count;
+		}
+	}
+}
+
 void Session::AllocatePolyShaders(int numPolyTypes)
 {
 	numPolyShaders = numPolyTypes;
@@ -1283,13 +1373,13 @@ void Session::UpdatePlayerWireQuads()
 	}
 }
 
-void Session::TestLoad()
-{
-	hitboxManager = new HitboxManager;
-	soundManager = new SoundManager;
-	soundNodeList = new SoundNodeList(10);
-	pauseSoundNodeList = new SoundNodeList(10);
-}
+//void Session::TestLoad()
+//{
+//	hitboxManager = new HitboxManager;
+//	soundManager = new SoundManager;
+//	soundNodeList = new SoundNodeList(10);
+//	pauseSoundNodeList = new SoundNodeList(10);
+//}
 
 bool Session::ReadDecorImagesFile()
 {
@@ -1419,6 +1509,13 @@ bool Session::ReadDecorInfoFile(int tWorld, int tVar)
 
 bool Session::ReadHeader(std::ifstream &is)
 {
+	if (mapHeader != NULL)
+	{
+		delete mapHeader;
+		mapHeader = NULL;
+	}
+		
+
 	mapHeader = mainMenu->ReadMapHeader(is);
 	if (mapHeader == NULL)
 		return false;
@@ -1430,6 +1527,8 @@ bool Session::ReadHeader(std::ifstream &is)
 
 bool Session::ReadDecor(std::ifstream &is)
 {
+	//decorTSMap.clear();
+
 	int numDecorImages;
 	is >> numDecorImages;
 

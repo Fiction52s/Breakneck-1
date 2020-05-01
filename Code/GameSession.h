@@ -179,9 +179,6 @@ struct KeyNumberObj
 
 struct GameSession : QuadTreeCollider, RayCastHandler, Session
 {
-	//just testing. not used yet..
-	std::map<std::string, std::function<Enemy*(std::ifstream &)>> enemyCreateMap;
-
 	//new stuff
 	PolyPtr GetPolygon(int index);
 
@@ -259,7 +256,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		int vertexIndex1, int shardWorld,
 		int shardIndex);
 
-
 	void ProcessSpecialTerrain(PolyPtr poly);
 
 	std::list<PolyPtr> allSpecialTerrain;
@@ -280,9 +276,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	//need to be added to session
 	sf::View view;
 
-	float *fBubbleRadiusSize;
-	sf::Vector2f *fBubblePos;
-	float *fBubbleFrame;
+	
 
 	//shared but keep
 	virtual int Run();
@@ -658,12 +652,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	EnvPlant *activeEnvPlants;
 	int totalGameFrames;
-	int totalFramesBeforeGoal;
-
-
-	sf::Transform groundTrans;
-	
-	
+	int totalFramesBeforeGoal;	
 	
 	
 	int GetPlayerTeamIndex(int index = 0);
@@ -792,15 +781,35 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	
 	
-	
+	//bool shaders
+	bool shadersLoaded;
 	
 	std::string rayMode;
-	sf::VertexArray * SetupEnergyFlow1(
-		int bgLayer,
-		Edge *start,
-		Tileset *ts );
 
-	sf::VertexArray *SetupEnergyFlow();
+	void SetupShardsCapturedField();
+
+	void SetupShaders();
+
+	void SetupBackground();
+
+	void SetupMinimap();
+
+	void SetupAbsorbParticles();
+
+	void SetupScoreDisplay();
+
+	void SetupQuadTrees();
+
+	bool SetupControlProfiles();
+	void SetupGoalPulse();
+
+	void SetupHUD();
+
+	void SetupPauseMenu();
+
+	void SetupRecGhost();
+
+	void SetupEnergyFlow();
 
 	sf::VertexArray *SetupBushes( int bgLayer,
 		Edge *startEdge, Tileset *ts );
@@ -835,7 +844,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	sf::Sprite kinMapSpawnIcon;
 	Tileset *ts_mapIcons;
-	sf::Sprite goalMapIcon;
+	//sf::Sprite goalMapIcon;
 
 	ShapeEmitter *emitterLists[EffectLayer::Count];
 	void AddEmitter(ShapeEmitter *emit,

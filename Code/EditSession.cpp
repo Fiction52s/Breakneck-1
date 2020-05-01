@@ -1980,16 +1980,18 @@ void EditSession::SetInitialView(sf::Vector2f &center,
 
 int EditSession::Run()
 {
-	TestLoad();
+	SetupHitboxManager();
+	SetupSoundManager();
+	SetupSoundLists();
 
 	players[0] = new Actor(NULL, this, 0);
-	players[0]->InitAfterEnemies();
+	players[0]->SetGameMode();
 	for (int i = 1; i < MAX_PLAYERS; ++i)
 	{
 		if (GetController(i).IsConnected())
 		{
 			players[i] = new Actor(NULL, this, i);
-			players[i]->InitAfterEnemies();
+			players[i]->SetGameMode();
 		}
 	}
 	

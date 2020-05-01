@@ -43,6 +43,7 @@ struct Goal : Enemy
 	float goalKillStartZoom;
 	sf::Vector2f goalKillStartPos;
 
+
 	//int frame;
 	int deathFrame;
 	int animationFactor;

@@ -66,6 +66,8 @@
 
 #include "ActorParamsBase.h"
 
+#include "HitboxManager.h"
+
 
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
@@ -270,6 +272,8 @@ GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath
 
 	//enemyCreateMap["goal"] = Goal::Create;
 
+	shadersLoaded = false;
+	goalEnergyFlowVA = NULL;
 	//ifstream isTest;
 	//enemyCreateMap["goal"](isTest);
 
@@ -4317,10 +4321,11 @@ bool GameSession::Load()
 	AddW1Enemies();
 	SetupEnemyTypes();
 
-	TestLoad();
+	SetupHitboxManager();
+	SetupSoundManager();
+	SetupSoundLists();
 
-	
-	shardsCapturedField = new BitField(32 * 5);
+	SetupShardsCapturedField();
 	
 
 	//return true;
@@ -4341,70 +4346,19 @@ bool GameSession::Load()
 	//return true;
 	
 	//inputVis = new InputVisualizer;
-	mini = new Minimap(this);
+	
 
-	absorbParticles = new AbsorbParticles( this, AbsorbParticles::ENERGY );
-	absorbDarkParticles = new AbsorbParticles( this, AbsorbParticles::DARK);
-	absorbShardParticles = new AbsorbParticles(this, AbsorbParticles::SHARD);
+	SetupMinimap();
 
-
+	SetupAbsorbParticles();
 
 	const ConfigData &cd = mainMenu->config->GetData();
 	soundNodeList->SetSoundVolume(cd.soundVolume);
 	pauseSoundNodeList->SetSoundVolume(cd.soundVolume);
 
-	scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
+	SetupScoreDisplay();
 
-
-	if (!glowShader.loadFromFile("Resources/Shader/glow_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "glow SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	glowShader.setUniform("texSize", Vector2f(1920, 1080));
-
-	if (!hBlurShader.loadFromFile("Resources/Shader/hblur_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "hBlurShader SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	hBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
-
-	if (!vBlurShader.loadFromFile("Resources/Shader/vblur_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "vBlurShader SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	vBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
-
-	if (!motionBlurShader.loadFromFile("Resources/Shader/motionblur_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "motion blur SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	motionBlurShader.setUniform("texSize", Vector2f(1920, 1080));
-
-	if (!shockwaveShader.loadFromFile("Resources/Shader/shockwave_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "shockwave SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	shockwaveShader.setUniform("resolution", Vector2f(1920, 1080));
-	shockwaveShader.setUniform("texSize", Vector2f(580, 580));
-	shockwaveTex.loadFromFile("Resources/FX/shockwave_580x580.png");
-	shockwaveShader.setUniform("shockwaveTex", shockwaveTex);
-
-	
-
-	if (!flowShader.loadFromFile("Resources/Shader/flow_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
-	}
-
-	flowShader.setUniform("radDiff", radDiff);
-	flowShader.setUniform("Resolution", Vector2f(1920, 1080));// window->getSize().x, window->getSize().y);
-	flowShader.setUniform("flowSpacing", flowSpacing);
-	flowShader.setUniform("maxFlowRings", maxFlowRadius / maxFlowRings);
-
-	if (!cloneShader.loadFromFile("Resources/Shader/clone_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
-	}
+	SetupShaders();
 
 	if (!ShouldContinueLoading())
 	{
@@ -4413,46 +4367,11 @@ bool GameSession::Load()
 		return false;
 	}
 
+	SetupQuadTrees();
 
-
-	terrainBGTree = new QuadTree(1000000, 1000000);
-	//soon make these the actual size of the bordered level
-	terrainTree = new QuadTree(1000000, 1000000);
-
-	barrierTree = new QuadTree(1000000, 1000000);
-
-	specialTerrainTree = new QuadTree(1000000, 1000000);
-
-	inverseEdgeTree = new QuadTree(1000000, 1000000);
-
-	staticItemTree = new QuadTree(1000000, 1000000);
-	railDrawTree = new QuadTree(1000000, 1000000);
-	railEdgeTree = new QuadTree(1000000, 1000000);
-
-	enemyTree = new QuadTree(1000000, 1000000);
-
-	borderTree = new QuadTree(1000000, 1000000);
-
-	grassTree = new QuadTree(1000000, 1000000);
-
-	gateTree = new QuadTree(1000000, 1000000);
-
-	itemTree = new QuadTree(1000000, 1000000);
-
-	envPlantTree = new QuadTree(1000000, 1000000);
-
-	specterTree = new QuadTree(1000000, 1000000);
-
-	activeItemTree = new QuadTree(1000000, 1000000);
-
-	activeEnemyItemTree = new QuadTree(1000000, 1000000);
-
-	airTriggerTree = new QuadTree(1000000, 1000000);
+	
 
 	cout << "weird timing 1" << endl;
-
-	//sleep(5000);
-	//return;
 
 	AllocateEffects();
 
@@ -4462,24 +4381,14 @@ bool GameSession::Load()
 	kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
 		kinMapSpawnIcon.getLocalBounds().height / 2);
 
-
-	goalMapIcon.setTexture(*mini->ts_miniIcons->texture);
-	goalMapIcon.setTextureRect(mini->ts_miniIcons->GetSubRect(0));
-	goalMapIcon.setOrigin(goalMapIcon.getLocalBounds().width / 2,
-		goalMapIcon.getLocalBounds().height / 2);
-
-	//blah
-
 	keyMarker = new KeyMarker(this);
 
 	ts_w1ShipClouds0 = GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
 	ts_w1ShipClouds1 = GetTileset("Ship/cloud_w1_b1_960x320.png", 960, 320);
 	ts_ship = GetTileset("Ship/ship_864x400.png", 864, 400);
 
-
 	shipSprite.setTexture(*ts_ship->texture);
 	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
-	//shipSprite.setScale(.5, .5);
 	shipSprite.setOrigin(shipSprite.getLocalBounds().width / 2,
 		shipSprite.getLocalBounds().height / 2);
 
@@ -4524,17 +4433,14 @@ bool GameSession::Load()
 
 	activeSequence = NULL;
 
-	
-	//still too far
-
-	//window->setMouseCursorVisible( true );
-
-	view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
+	//view = View( Vector2f( 300, 300 ), sf::Vector2f( 960 * 2, 540 * 2 ) );
 
 	//repGhost = new ReplayGhost( player );
 
 	//recPlayer = new RecordPlayer( player );
 	//repPlayer = new ReplayPlayer( player );
+
+
 	cout << "weird timing 3" << endl;
 	if (!ShouldContinueLoading())
 	{
@@ -4551,6 +4457,7 @@ bool GameSession::Load()
 	
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("opening map file!", 1);
+
 	OpenFile( );
 
 	SetupStormCeiling();
@@ -4568,7 +4475,8 @@ bool GameSession::Load()
 	CreateZones();
 	SetupZones();
 
-	background = Background::SetupFullBG(mapHeader->envName, this);
+	SetupBackground();
+	
 
 	//still too far
 
@@ -4614,38 +4522,12 @@ bool GameSession::Load()
 		}
 	}
 	assert(activePlayer);
-	//int maxBubbles = activePlayer->maxBubbles;
 
-	fBubbleFrame = new float[5 * 4];
-	for (int i = 0; i < 5 * 4; ++i)
-	{
-		fBubbleFrame[i] = 0;
-	}
-	fBubblePos = new sf::Vector2f[5 * 4];
-	fBubbleRadiusSize = new float[5 * 4];
-
-	int count = 0;
-	tempPlayer = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		if (tempPlayer = GetPlayer(i))
-		{
-			tempPlayer->fBubbleFrame = (fBubbleFrame + i * 5);
-			tempPlayer->fBubblePos = (fBubblePos + i * 5);
-			tempPlayer->fBubbleRadiusSize = (fBubbleRadiusSize + i * 5);
-			++count;
-		}
-	}
+	
+	SetupTimeBubbles();
 
 
-
-	Actor *p = NULL;
-	for( int i = 0; i < 4; ++i )
-	{
-		p = GetPlayer( i );
-		if( p != NULL )
-			p->InitAfterEnemies();
-	}
+	SetPlayersGameMode();
 
 	/*for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
@@ -4656,107 +4538,19 @@ bool GameSession::Load()
 	//too far
 	
 
-	if(mapHeader->gameMode == MapHeader::MapType::T_STANDARD )
-	{ 
-		recGhost = new RecordGhost(GetPlayer(0));
+	SetupRecGhost();
+	SetupHUD();
 
-		adventureHUD = new AdventureHUD(this);
-	}
-	
-	pauseMenu = mainMenu->pauseMenu;
-	pauseMenu->owner = this;
-	pauseMenu->SetTab(PauseMenu::PAUSE);
-	//pauseMenu->SetTab( PauseMenu::Tab::KIN );
+	SetupPauseMenu();
 
-	ControlProfile *currProfile;
-	SaveFile *currFile = mainMenu->GetCurrentProgress();
-	if (currFile != NULL)
-	{
-		bool set = pauseMenu->controlSettingsMenu->pSel->SetCurrProfileByName(currFile->controlProfileName);
-		if (!set)
-		{
-			//error. profile does not exist
-			currFile->controlProfileName = "KIN Default";
-			currFile->Save();
-		}
-	}
-	for( int i = 0; i < 1; ++i )
-	{
-		//temporary
-		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
-		currProfile = pauseMenu->GetCurrSelectedProfile();
-		GameController &con = GetController(i);
-		currProfile->tempCType = con.GetCType();
-		con.SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
-	}
+	SetupControlProfiles();
 
-	goalPulse = new GoalPulse( this, Vector2f( goalPos.x, goalPos.y ) );
+	SetupGoalPulse();
 
-	int goalTile = -1;
-	
-	switch(mapHeader->envWorldType)//mh->envType )
-	{
-	case 0:
-		goalTile = 5;
-		break;
-	case 1:
-		goalTile = 4;
-		break;
-	case 2:
-		goalTile = 4;
-		break;
-	case 3:
-		goalTile = 4;
-		break;
-	case 4:
-		goalTile = 4;
-		break;
-	case 5:
-		goalTile = 4;
-		break;
-	case 6:
-		goalTile = 4;
-		break;
-	}
-	assert( goalTile >= 0 );
-	goalMapIcon.setTextureRect(mini->ts_miniIcons->GetSubRect( goalTile ) );
+	GetPlayer(0)->SetupDrain();
 
-	float numSecondsToDrain = mapHeader->drainSeconds;
-	float drainPerSecond = GetPlayer(0)->totalHealth / numSecondsToDrain;
-	float drainPerFrame = drainPerSecond / 60.f;
-	float drainFrames = 1.f;
-	if (drainPerFrame < 1.f)
-	{
-		drainFrames = floor(1.f / drainPerFrame);
-	}
-	GetPlayer(0)->drainCounterMax = drainFrames;
-	if (drainPerFrame < 1.0)
-		drainPerFrame = 1.0;
-	GetPlayer(0)->drainAmount = drainPerFrame;
-
-	/*if (mh->gameMode == MapHeader::MapType::T_STANDARD)
-	{
-		
-	}*/
-
-	if (hasGoal)
-	{
-		flowShader.setUniform("goalPos", Vector2f(goalPos.x, goalPos.y));
-		goalEnergyFlowVA = SetupEnergyFlow();
-	}
-	else
-	{
-		goalEnergyFlowVA = NULL;
-	}
-	
-
-	
-
-	groundTrans = Transform::Identity;
-	groundTrans.translate( 0, 0 );
-
-	cam.pos.x = GetPlayer(0)->position.x;
-	cam.pos.y = GetPlayer(0)->position.y;
+	SetupEnergyFlow();
+	cam.Init(GetPlayerPos(0));
 
 	if (!ShouldContinueLoading())
 	{
@@ -4765,22 +4559,6 @@ bool GameSession::Load()
 		return false;
 	}
 
-
-	//map<pair<int,int>, int> indexConvert;
-	int index = 0;
-	
-
-
-	//for( list<TerrainPiece*>::iterator it = allVA.begin(); it != allVA.end(); ++it )
-	//{
-	//	int realIndex = indexConvert[pair<int,int>((*it)->terrainWorldType,
-	//	(*it)->terrainVariation)];
-	//	//cout << "real index: " << realIndex << endl;
-	//	(*it)->pShader = &polyShaders[realIndex];
-	//	(*it)->ts_terrain = ts_polyShaders[realIndex];
-	//	(*it)->tr->tdInfo = terrainDecorInfos[realIndex];
-	//	(*it)->tr->GenerateDecor();
-	//}
 	
 	cout << "last one" << endl;
 	for( auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
@@ -4797,6 +4575,216 @@ bool GameSession::Load()
 	return true;
 }
 
+
+
+void GameSession::SetupShardsCapturedField()
+{
+	if( shardsCapturedField == NULL )
+		shardsCapturedField = new BitField(32 * 5);
+	else
+	{
+		shardsCapturedField->Reset();
+	}
+}
+
+void GameSession::SetupShaders()
+{
+	if (shadersLoaded)
+		return;
+
+	shadersLoaded = true;
+
+	if (!glowShader.loadFromFile("Resources/Shader/glow_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "glow SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	glowShader.setUniform("texSize", Vector2f(1920, 1080));
+
+	if (!hBlurShader.loadFromFile("Resources/Shader/hblur_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "hBlurShader SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	hBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
+
+	if (!vBlurShader.loadFromFile("Resources/Shader/vblur_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "vBlurShader SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	vBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
+
+	if (!motionBlurShader.loadFromFile("Resources/Shader/motionblur_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "motion blur SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	motionBlurShader.setUniform("texSize", Vector2f(1920, 1080));
+
+	if (!shockwaveShader.loadFromFile("Resources/Shader/shockwave_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "shockwave SHADER NOT LOADING CORRECTLY" << endl;
+	}
+	shockwaveShader.setUniform("resolution", Vector2f(1920, 1080));
+	shockwaveShader.setUniform("texSize", Vector2f(580, 580));
+	shockwaveTex.loadFromFile("Resources/FX/shockwave_580x580.png");
+	shockwaveShader.setUniform("shockwaveTex", shockwaveTex);
+
+
+
+	if (!flowShader.loadFromFile("Resources/Shader/flow_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
+	}
+
+	flowShader.setUniform("radDiff", radDiff);
+	flowShader.setUniform("Resolution", Vector2f(1920, 1080));// window->getSize().x, window->getSize().y);
+	flowShader.setUniform("flowSpacing", flowSpacing);
+	flowShader.setUniform("maxFlowRings", maxFlowRadius / maxFlowRings);
+
+	if (!cloneShader.loadFromFile("Resources/Shader/clone_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
+	}
+}
+
+void GameSession::SetupBackground()
+{
+	if (background != NULL)
+	{
+		delete background;
+		background = NULL;
+	}
+
+	background = Background::SetupFullBG(mapHeader->envName, this);
+}
+
+void GameSession::SetupMinimap()
+{
+	if( mini == NULL )
+		mini = new Minimap(this);
+}
+
+void GameSession::SetupAbsorbParticles()
+{
+	if (absorbParticles == NULL)
+	{
+		absorbParticles = new AbsorbParticles(this, AbsorbParticles::ENERGY);
+		absorbDarkParticles = new AbsorbParticles(this, AbsorbParticles::DARK);
+		absorbShardParticles = new AbsorbParticles(this, AbsorbParticles::SHARD);
+	}
+}
+
+void GameSession::SetupScoreDisplay()
+{
+	if( scoreDisplay == NULL )
+		scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
+}
+
+void GameSession::SetupQuadTrees()
+{
+	if (terrainBGTree != NULL)
+	{
+		terrainBGTree->Clear();
+		terrainTree->Clear();
+		barrierTree->Clear();
+		specialTerrainTree->Clear();
+		inverseEdgeTree->Clear();
+		staticItemTree->Clear();
+		railDrawTree->Clear();
+		railEdgeTree->Clear();
+		enemyTree->Clear();
+		borderTree->Clear();
+		grassTree->Clear();
+		gateTree->Clear();
+		itemTree->Clear();
+		envPlantTree->Clear();
+		specterTree->Clear();
+		activeItemTree->Clear();
+		activeEnemyItemTree->Clear();
+		airTriggerTree->Clear();
+		return;
+	}
+
+	terrainBGTree = new QuadTree(1000000, 1000000);
+	//soon make these the actual size of the bordered level
+	terrainTree = new QuadTree(1000000, 1000000);
+
+	barrierTree = new QuadTree(1000000, 1000000);
+
+	specialTerrainTree = new QuadTree(1000000, 1000000);
+
+	inverseEdgeTree = new QuadTree(1000000, 1000000);
+
+	staticItemTree = new QuadTree(1000000, 1000000);
+	railDrawTree = new QuadTree(1000000, 1000000);
+	railEdgeTree = new QuadTree(1000000, 1000000);
+
+	enemyTree = new QuadTree(1000000, 1000000);
+
+	borderTree = new QuadTree(1000000, 1000000);
+
+	grassTree = new QuadTree(1000000, 1000000);
+
+	gateTree = new QuadTree(1000000, 1000000);
+
+	itemTree = new QuadTree(1000000, 1000000);
+
+	envPlantTree = new QuadTree(1000000, 1000000);
+
+	specterTree = new QuadTree(1000000, 1000000);
+
+	activeItemTree = new QuadTree(1000000, 1000000);
+
+	activeEnemyItemTree = new QuadTree(1000000, 1000000);
+
+	airTriggerTree = new QuadTree(1000000, 1000000);
+}
+
+void GameSession::SetupRecGhost()
+{
+	if (mapHeader->gameMode == MapHeader::MapType::T_STANDARD && recGhost == NULL)
+	{
+		recGhost = new RecordGhost(GetPlayer(0));
+	}
+}
+
+void GameSession::SetupPauseMenu()
+{
+	pauseMenu = mainMenu->pauseMenu;
+	pauseMenu->owner = this;
+	pauseMenu->SetTab(PauseMenu::PAUSE);
+}
+
+void GameSession::SetupHUD()
+{
+	if(mapHeader->gameMode == MapHeader::MapType::T_STANDARD && adventureHUD == NULL )
+		adventureHUD = new AdventureHUD(this);
+}
+
+bool GameSession::SetupControlProfiles()
+{
+	ControlProfile *currProfile;
+	SaveFile *currFile = mainMenu->GetCurrentProgress();
+	if (currFile != NULL)
+	{
+		bool set = pauseMenu->controlSettingsMenu->pSel->SetCurrProfileByName(currFile->controlProfileName);
+		if (!set)
+		{
+			//error. profile does not exist
+			currFile->controlProfileName = "KIN Default";
+			currFile->Save();
+		}
+	}
+	for (int i = 0; i < 1; ++i)
+	{
+		//temporary
+		//mainMenu->GetController(i).SetFilter( pauseMenu->cOptions->xboxInputAssoc[0] );
+		currProfile = pauseMenu->GetCurrSelectedProfile();
+		GameController &con = GetController(i);
+		currProfile->tempCType = con.GetCType();
+		con.SetFilter(currProfile->GetCurrFilter());//mainMenu->cpm->profiles.front()->filter );
+	}
+
+	return true;
+}
 
 void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 {
@@ -6504,8 +6492,13 @@ int GameSession::Run()
 			realPosGoal.y = floor( realPosGoal.y + .5f );
 
 			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			goalMapIcon.setPosition( realPosGoal );
-			mapTex->draw( goalMapIcon );
+
+
+
+			//goalMapIcon.setPosition( realPosGoal );
+			//mapTex->draw( goalMapIcon );
+
+
 			//mapTex->clear();
 			Sprite mapTexSprite;
 			mapTexSprite.setTexture( mapTex->getTexture() );
@@ -7030,8 +7023,11 @@ int GameSession::Run()
 				realPosGoal.y = floor(realPosGoal.y + .5f);
 
 				//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-				goalMapIcon.setPosition(realPosGoal);
-				mapTex->draw(goalMapIcon);
+				
+				
+				
+				//goalMapIcon.setPosition(realPosGoal);
+				//mapTex->draw(goalMapIcon);
 
 				if (currentZone != NULL)
 				{
@@ -7187,6 +7183,7 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+
 	inversePoly = NULL;
 
 	drain = true;
@@ -7680,6 +7677,15 @@ void GameSession::UpdateTimeSlowShader()
 	//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
 }
 
+
+void GameSession::SetupGoalPulse()
+{
+	if (goalPulse == NULL)
+	{
+		goalPulse = new GoalPulse(this);// , Vector2f(goalPos.x, goalPos.y));
+	}
+	goalPulse->SetPosition(Vector2f(goalPos));
+}
 //void GameSession::EndLevel(GameResultType rType)
 //{
 //	resType = rType;
@@ -8988,190 +8994,24 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 	return currVA;
 }
 
-sf::VertexArray * GameSession::SetupEnergyFlow1( int bgLayer, Edge *start, Tileset *ts )
-{
-	QuadTree *qt = NULL;
-	if( bgLayer == 0 )
-	{
-		qt = terrainTree;
-	}
-	else if( bgLayer == 1 )
-	{
-		qt = terrainBGTree;
-	}
-
-	assert( qt != NULL );
-	//goalPos;
-	rayMode = "energy_flow";
-
-	Edge *te = start;
-
-	//step one, get a list of the entrance points
-	//check their ray distance and determine how many quads we want total,
-		//while also storing start and end vectors for each quad
-
-	//store start point and end point for each line
-	cout << "part1  of the algorithm" << endl;
-	int numTotalQuads = 0;
-	list<pair<V2d,V2d>> rays;
-	do
-	{
-		V2d norm = te->Normal();
-		V2d v0 = te->v0;
-		V2d v1 = te->v1;
-		V2d along = normalize( v1 - v0 );
-		double c = cross( goalPos - v0, along );
-		double maxRayLength = 1000;
-		//eventually make this larger because don't want to do it too close to parallel
-		if( c > 0 ) //facing the goal
-		{
-			double len = length( te->v1 - te->v0 );
-			V2d mid = (te->v0 + te->v1) / 2.0;
-			double lenMid = length( goalPos - mid );
-			double transition = 1000.0;
-			double spacing = 8 + 8 * ( lenMid / transition );
-			double width = 8;
-
-			//double fullSpace = spacing + width;
-
-			//int numStartPoints = len / fullSpace;
-			//double sideSpacing = ( len - numStartPoints * fullSpace ) / 2;
-
-			//for( int i = 0; i < numStartPoints; ++i )
-			double quant = 4; //start point
-			int quads = 0;
-			while( quant < len - width )
-			{
-				double rayLength = 0;
-				V2d rayPoint;
-
-				rcEdge = NULL;
-				rayStart = v0 + along * quant;
-				rayIgnoreEdge = te;
-				V2d goalDir = normalize( rayStart - goalPos );
-				//cout << "goal dir: " << goalDir.x << ", " << goalDir.y << ", rayStart: " << rayStart.x << ", " << rayStart.y << 
-				//	", gaolPos: " << goalPos.x << ", " << goalPos.y << endl;
-				rayEnd = rayStart + goalDir * maxRayLength;//rayStart - norm * maxRayLength;
-				RayCast( this, qt->startNode, rayStart, rayEnd );
-
-				//start ray
-				if( rcEdge != NULL )
-				{
-					rayPoint = rcEdge->GetPosition( rcQuantity );
-					
-					rays.push_back( pair<V2d,V2d>(rayStart, rayPoint) );
-					
-					
-					//currStartInner = rcEdge->GetPoint( rcQuantity );
-					//realHeight0 = length( currStartInner - currStartOuter );
-				}
-				else
-				{
-					rays.push_back( pair<V2d,V2d>(rayStart, rayEnd) );
-				}
-
-				//rays.push_back(  pair<V2d,V2d>(rayStart, rayEnd) );
-
-				quant += spacing + width;
-				++quads;
-			}
-
-			numTotalQuads += quads;
-			//numTotalQuads += numQuads;	
-			
-		}
-		te = te->edge1;
-	}
-	while( te != start );
-
-	if( numTotalQuads == 0 )
-	{
-		return NULL;
-	}
-
-	cout << "part2  of the algorithm: " << numTotalQuads << endl;
-	VertexArray *VA = new VertexArray( sf::Quads, numTotalQuads * 4 );
-
-	VertexArray &va = *VA;
-
-	int index = 0;
-	for( list<pair<V2d,V2d>>::iterator it = rays.begin(); it != rays.end(); ++it )
-	{
-		
-		V2d start = (*it).first;
-		V2d end = (*it).second;
-
-		V2d along = normalize( end - start );
-		V2d other( along.y, -along.x );
-
-
-		double width = 8;
-		V2d startLeft = start; //- other * width / 2.0;
-		V2d startRight = start + other * width;//width / 2.0;
-		V2d endLeft = end;// - other * width / 2.0;
-		V2d endRight = end + other * width;// * width / 2.0;
-
-		
-
-		va[index*4+0].color = Color::Red;
-		va[index*4+1].color = Color::Red;
-		va[index*4+2].color = Color::Red;
-		va[index*4+3].color = Color::Red;
-
-		va[index*4+0].position = Vector2f( startLeft.x, startLeft.y );
-		va[index*4+1].position = Vector2f( startRight.x, startRight.y );
-		va[index*4+2].position = Vector2f( endRight.x, endRight.y );
-		va[index*4+3].position = Vector2f( endLeft.x, endLeft.y );
-
-
-		//va[index*4+3].position = //Color::Red;
-
-		index++;
-	}
-
-	return VA;
-
-	//int extra = 0;
-	//do
-	//{
-	//	V2d norm = te->Normal();
-	//	V2d v0 = te->v0;
-	//	V2d v1 = te->v1;
-	//	V2d along = normalize( v1 - v0 );
-	//	double c = cross( goalPos - v0, along );
-	//	//eventually make this larger because don't want to do it too close to parallel
-	//	if( c > 0 ) //facing the goal
-	//	{
-	//		double len = length( te->v1 - te->v0 );
-	//		double spacing = 8;
-
-	//		int numQuads = len / spacing;
-
-	//		double sideSpacing = ( len - numQuads * spacing ) / 2;
-
-	//		va[extra + i * 4 + 0].color = Color::Red;
-	//		va[extra + i * 4 + 1].color = Color::Red;
-	//		va[extra + i * 4 + 2].color = Color::Red;
-	//		va[extra + i * 4 + 3].color = Color::Red;
-
-	//		for( int i = 0; i < numQuads; ++i )
-	//		{
-	//			//va[extra + i * 4 + 0].po
-	//		}
-
-	//					
-
-	//	}
-
-	//	extra += numQuads * 4;
-	//	te = te->edge1;
-	//}
-	//while( te != start );
-}
-
 typedef pair<V2d, V2d> pairV2d;
-sf::VertexArray * GameSession::SetupEnergyFlow()
+void GameSession::SetupEnergyFlow()
 {
+	if (goalEnergyFlowVA != NULL)
+	{
+		delete goalEnergyFlowVA;
+	}
+
+	if (hasGoal)
+	{
+		flowShader.setUniform("goalPos", Vector2f(goalPos.x, goalPos.y));
+	}
+	else
+	{
+		goalEnergyFlowVA = NULL;
+		return;
+	}
+
 	int bgLayer = 0;
 	QuadTree *qt = NULL;
 	if( bgLayer == 0 )
@@ -9348,7 +9188,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 
 	if( allInfo.empty() )
 	{
-		return NULL;
+		return;
 	}
 
 	int totalPoints = 0;
@@ -9393,7 +9233,7 @@ sf::VertexArray * GameSession::SetupEnergyFlow()
 		}
 	}
 
-	return VA;
+	goalEnergyFlowVA = VA;
 }
 
 sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset *ts )

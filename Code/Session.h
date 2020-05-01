@@ -46,6 +46,17 @@ struct Session : TilesetManager
 		SESS_EDIT,
 	};
 
+	//cleaning up load stuff:
+	void SetupHitboxManager();
+	void SetupSoundManager();
+	void SetupSoundLists();
+
+	//timeslow stuff
+	float *fBubbleRadiusSize;
+	sf::Vector2f *fBubblePos;
+	float *fBubbleFrame;
+	void SetupTimeBubbles();
+
 	SessionType sessType;
 	bool IsSessTypeGame();
 	bool IsSessTypeEdit();
@@ -191,6 +202,7 @@ struct Session : TilesetManager
 	void PlayerApplyHit(HitboxInfo *hi, int index = 0);
 	void PlayerHitNexus(int index = 0);
 	void PlayerHitGoal(int index = 0);
+	void SetPlayersGameMode();
 
 	void KillAllEnemies();
 
@@ -302,7 +314,7 @@ struct Session : TilesetManager
 
 	std::vector<GCC::GCController> gcControllers;
 
-	void TestLoad(); //change this to Load once Load has been changed to work for both sessions
+	//void TestLoad(); //change this to Load once Load has been changed to work for both sessions
 
 	std::vector<Actor*> players;
 

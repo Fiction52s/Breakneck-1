@@ -1066,6 +1066,12 @@ void Camera::UpdateBossFight(int bossFightType)
 	}
 }
 
+void Camera::Init(V2d &pos)
+{
+	pos.x = owner->GetPlayer(0)->position.x;
+	pos.y = owner->GetPlayer(0)->position.y;
+}
+
 void Camera::Update( Actor *player )
 {
 	if( owner == NULL )

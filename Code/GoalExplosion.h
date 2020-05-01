@@ -7,14 +7,15 @@ struct GameSession;
 
 struct GoalPulse
 {
-	GoalPulse( GameSession *owner,
-		sf::Vector2f &pos );
+	GoalPulse( GameSession *owner );
 	sf::VertexArray circleVA;
 	GameSession *owner;
 	void Draw( sf::RenderTarget *target );
 	void Reset();
 	void Update();
 	void UpdatePoints();
+	void SetPosition(sf::Vector2f &pos);
+	void StartPulse();
 	sf::Vector2f position;
 	float innerRadius;
 	float outerRadius;

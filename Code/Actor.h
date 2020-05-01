@@ -228,6 +228,10 @@ struct Actor : QuadTreeCollider,
 		Count
 	};
 
+	void SetupDrain();
+	void SetupTimeBubbles();
+	void SetGameMode();
+
 	enum SoundType
 	{
 		S_RUN_STEP1,
@@ -1144,12 +1148,11 @@ struct Actor : QuadTreeCollider,
 	bool groundedWallBounce;
 	bool boostBounce;
 	
-	void InitAfterEnemies();
 	bool wallClimbGravityFactor;
 	bool wallClimbGravityOn;
 	
 	//dont need to store these
-	//const static int MAX_BUBBLES = 5;
+	
 	//const static int MAX_BUBBLES_RACEFIGHT = 1;
 	int maxBubbles;
 	int bubbleLifeSpan;
@@ -1164,6 +1167,7 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite bubbleSprite;
 	//--
 	
+	const static int MAX_BUBBLES = 5;
 	CollisionBody * GetBubbleHitbox(int index);
 	sf::Vector2<double> *bubblePos;//[maxBubbles];
 	int *bubbleFramesToLive;//[maxBubbles];

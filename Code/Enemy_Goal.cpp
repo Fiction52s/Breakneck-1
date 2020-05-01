@@ -216,7 +216,7 @@ void Goal::HandleNoHealth()
 	if (sess->IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
-		game->goalPulse->show = true;
+		game->goalPulse->StartPulse();
 	}
 }
 

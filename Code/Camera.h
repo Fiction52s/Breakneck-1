@@ -36,6 +36,7 @@ struct Camera
 		int numFrames, CubicBezier bez = CubicBezier());
 	void UpdateEase();
 	sf::Vector2f GetNewOffset( sf::Vector2<double> &pVel);
+	void Init(sf::Vector2<double> &pos);
 	GameSession *owner;
 	sf::Vector2f offsetVel;
 	

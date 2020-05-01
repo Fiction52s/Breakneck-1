@@ -7,20 +7,31 @@ using namespace std;
 
 const int GoalPulse::circlePoints = 32;
 
-GoalPulse::GoalPulse( GameSession *p_owner, sf::Vector2f &pos )
+GoalPulse::GoalPulse( GameSession *p_owner)
 	:owner( p_owner ), circleVA( sf::Quads, circlePoints * 4 ), innerRadius( 100 ), 
-	outerRadius( 200 ), position( pos ), show( false ), frame( 0 ), pulseLength( 60 ),
+	outerRadius( 200 ), show( false ), frame( 0 ), pulseLength( 60 ),
 	maxOuterRadius( 3000.f ), maxInnerRadius( 2800.f )
 {
 	minInnerRadius = innerRadius;
 	minOuterRadius = outerRadius;
-	UpdatePoints();	
+	//UpdatePoints();	
+}
+
+void GoalPulse::SetPosition(sf::Vector2f &pos)
+{
+	position = pos;
 }
 
 void GoalPulse::Reset()
 {
 	frame = 0;
 	show = false;
+}
+
+void GoalPulse::StartPulse()
+{
+	frame = 0;
+	show = true;
 }
 
 void GoalPulse::Update()
