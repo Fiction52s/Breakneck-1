@@ -3368,6 +3368,8 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 			GameSession *gs = new GameSession( NULL, ls.GetSelectedPath() );
 			GameSession::sLoad( gs );
 			gs->Run();
+			gs->Reload(ls.fullPaths[ls.selectedIndex+1]);
+			gs->Run();
 			menu->window->setView( menu->uiView );
 			delete gs;
 		}

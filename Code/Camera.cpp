@@ -22,28 +22,20 @@ CameraShot::CameraShot( const string &p_name, Vector2f &pos, float z)
 Camera::Camera()
 {
 	owner = NULL;
-	easing = false;
-	manual = false;
-	//bossCrawler = false;
-	rumbling = false;
-
-	offset.x = 0;
-	offset.y = 0;
-
-	pos.x = 0;
-	pos.y = 0;
-
 	zoomFactor = 1;
 	zoomOutRate = 1;
 	zoomInRate = .1;
 	offsetRate = 3;
-	maxZoom = 2.25;//3.5;
 
+	minZoom = 1;
+	maxZoom = 2.25;
+
+	pos.x = 0;
+	pos.y = 0;
 	zoomLevel1 = 0;
 	zoomLevel2 = .5;
 	zoomLevel3 = 1.75;
 
-	minZoom = 1;
 	maxOffset.x = 100 * 5;//10;
 	maxOffset.y = 100 * 5;//10;
 
@@ -52,13 +44,18 @@ Camera::Camera()
 	top = 150;
 	bottom = -150;
 
+	easing = false;
+	manual = false;
+	rumbling = false;
+
+	offset.x = 0;
+	offset.y = 0;
+
 	zoomLevel = 0;
-	
 	easeOutFrame = 0;
 	easingOut = false;
-
 	currMove = NULL;
-
+	
 	rX = 0;
 	rY = 0;
 	offsetVel = Vector2f(0, 0);
@@ -1068,6 +1065,7 @@ void Camera::UpdateBossFight(int bossFightType)
 
 void Camera::Init(V2d &pos)
 {
+	Reset();
 	pos.x = owner->GetPlayer(0)->position.x;
 	pos.y = owner->GetPlayer(0)->position.y;
 }

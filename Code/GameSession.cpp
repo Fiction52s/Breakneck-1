@@ -263,6 +263,127 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 
 //#define REGISTER_ENEMY(X) enemyCreateMap[tolowerinplace(string(#X))] = X::Create
 
+void GameSession::Reload(const boost::filesystem::path &p_filePath)
+{
+	//partial cleanup
+	for (int i = 0; i < allPolysVec.size(); ++i)
+	{
+		delete allPolysVec[i];
+	}
+	allPolysVec.clear();
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		delete (*it);
+	}
+	zones.clear();
+
+	for (auto it = barriers.begin();
+		it != barriers.end(); ++it)
+	{
+		delete (*it);
+	}
+	barriers.clear();
+
+	for (auto it = cameraShotMap.begin(); it != cameraShotMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+	cameraShotMap.clear();
+
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		delete (*it);
+	}
+	fullEnemyList.clear();
+
+	for (auto it = globalBorderEdges.begin(); it != globalBorderEdges.end(); ++it)
+	{
+		delete (*it);
+	}
+	globalBorderEdges.clear();
+
+	for (auto it = decorLayerMap.begin(); it != decorLayerMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+	decorLayerMap.clear();
+
+	for (auto it = allSpecialTerrain.begin(); it != allSpecialTerrain.end(); ++it)
+	{
+		delete (*it);
+	}
+	allSpecialTerrain.clear();
+
+	for (auto it = allEnvPlants.begin(); it != allEnvPlants.end(); ++it)
+	{
+		delete (*it);
+	}
+	allEnvPlants.clear();
+
+	//only if the new map doesn't have a new shard??
+	if (shardPop != NULL)
+	{
+		delete shardPop;
+	}
+	shardPop = NULL;
+
+	//might be able to setup in setuptopclouds
+	if (topClouds != NULL)
+	{
+		delete topClouds;
+		topClouds = NULL;
+	}
+
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		delete (*it);
+	}
+	gates.clear();
+
+	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
+	{
+		delete (*it);
+	}
+	decorBetween.clear();
+
+	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
+	{
+		delete (*it);
+	}
+	fullAirTriggerList.clear();
+
+	for (auto it = poiMap.begin(); it != poiMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+	poiMap.clear();
+
+	if (shipExitScene != NULL)
+	{
+		delete shipExitScene;
+		shipExitScene = NULL;
+	}
+
+	activeEnemyList = NULL;
+	activeEnemyListTail = NULL;
+	inversePoly = NULL;
+	inactiveEnemyList = NULL;
+
+	ClearEffects();
+
+	GetPlayer(0)->Respawn();
+	GetPlayer(0)->Init();
+	//need setup key marker
+	//create actors
+
+	//load
+	filePath = p_filePath;
+	filePathStr = filePath.string();
+	SetContinueLoading(true);
+	Load();
+}
+
 GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
 	:Session( Session::SESS_GAME, p_filePath), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
@@ -4381,7 +4502,8 @@ bool GameSession::Load()
 	kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
 		kinMapSpawnIcon.getLocalBounds().height / 2);
 
-	keyMarker = new KeyMarker(this);
+	SetupKeyMarker();
+	
 
 	ts_w1ShipClouds0 = GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
 	ts_w1ShipClouds1 = GetTileset("Ship/cloud_w1_b1_960x320.png", 960, 320);
@@ -4450,7 +4572,9 @@ bool GameSession::Load()
 		return false;
 	}
 	cout << "weird timing 4" << endl;
-	players[0] = new Actor( this, NULL, 0 );
+
+	if( players[0] == NULL )
+		players[0] = new Actor( this, NULL, 0 );
 
 	
 	cout << "about to open file" << endl;
@@ -4482,46 +4606,8 @@ bool GameSession::Load()
 
 
 	cout << "done opening file" << endl;
-	int maxBubbles = 5;
 
-	if( raceFight != NULL )
-	{
-		players[1] = new Actor( this, NULL, 1 );
-		maxBubbles = 2;
-	}
-	else
-	{
-		players[1] = NULL;
-	}
-
-	players[2] = NULL;
-	players[3] = NULL;
-
-	Actor *tempP = NULL;;
-	for (int i = 1; i < 4; ++i)
-	{
-		tempP = GetPlayer(i);
-		if (tempP != NULL)
-		{
-			tempP->position = GetPlayer(0)->position;
-		}
-	}
-
-	m_numActivePlayers = 0;
-	Actor *activePlayer = NULL;
-	Actor *tempPlayer = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		if (tempPlayer = GetPlayer(i))
-		{
-			if (!activePlayer)
-			{
-				activePlayer = tempPlayer;
-			}
-			++m_numActivePlayers;
-		}
-	}
-	assert(activePlayer);
+	SetupPlayers();
 
 	
 	SetupTimeBubbles();
@@ -4575,7 +4661,53 @@ bool GameSession::Load()
 	return true;
 }
 
+void GameSession::SetupPlayers()
+{
+	if (raceFight != NULL)
+	{
+		if( players[1] == NULL )
+			players[1] = new Actor(this, NULL, 1);
+	}
+	else
+	{
+		players[1] = NULL;
+	}
 
+	players[2] = NULL;
+	players[3] = NULL;
+
+	Actor *tempP = NULL;;
+	for (int i = 1; i < 4; ++i)
+	{
+		tempP = GetPlayer(i);
+		if (tempP != NULL)
+		{
+			tempP->position = GetPlayer(0)->position;
+		}
+	}
+
+	m_numActivePlayers = 0;
+	Actor *activePlayer = NULL;
+	Actor *tempPlayer = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (tempPlayer = GetPlayer(i))
+		{
+			if (!activePlayer)
+			{
+				activePlayer = tempPlayer;
+			}
+			++m_numActivePlayers;
+		}
+	}
+	assert(activePlayer);
+}
+
+void GameSession::SetupKeyMarker()
+{
+	if( keyMarker == NULL )
+		keyMarker = new KeyMarker(this);
+}
 
 void GameSession::SetupShardsCapturedField()
 {
@@ -4676,6 +4808,10 @@ void GameSession::SetupScoreDisplay()
 {
 	if( scoreDisplay == NULL )
 		scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
+	else
+	{
+		scoreDisplay->Reset();
+	}
 }
 
 void GameSession::SetupQuadTrees()
@@ -4804,7 +4940,7 @@ int GameSession::Run()
 {
 	//test
 	
-
+	goalDestroyed = false;
 
 	ClearEmitters();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();

@@ -2047,6 +2047,7 @@ void Wire::Reset()
 	frame = 0;
 	ClearCharges();
 	pullStrength = startPullStrength;
+	anchor.enemy = NULL;
 	//cout << "reset wire reset clear" << endl;
 	//offsetFlagged = false;
 	//clear charges gets called twice and thats not useful

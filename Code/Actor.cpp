@@ -530,6 +530,20 @@ void Actor::SetupTilesets( Skin *skin, Skin *swordSkin )
 	tileset[GOALKILL4] = GetTileset("Kin/goal_w01_kille_384x256.png", 384, 256);
 }
 
+void Actor::Init()
+{
+	if (owner != NULL)
+	{
+		SetActionExpr(INTROBOOST);//INTRO
+		frame = 0;
+	}
+	else
+	{
+		SetActionExpr(JUMP);
+		frame = 1;
+	}
+}
+
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:owner( gs ), editOwner(es), dead( false ), actorIndex( p_actorIndex )
 	{
@@ -551,7 +565,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	extraGravityModifier = 1.0;
 	airTrigBehavior = AT_NONE;
 	rpu = new RisingParticleUpdater( this );
-	//hitCeilingLockoutFrames = 20;
+
 	totalHealth = 3600;
 	storedTrigger = NULL;
 	steepClimbBoostStart = 10;
@@ -572,1120 +586,1120 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	repeatingSound = NULL;
 	currBooster = NULL;
-		oldBooster = NULL;
+	oldBooster = NULL;
 
-		currBounceBooster = NULL;
-		oldBounceBooster = NULL;
+	currBounceBooster = NULL;
+	oldBounceBooster = NULL;
 
-		gravResetFrames = 0;
+	gravResetFrames = 0;
 
-		currModifier = NULL;
-		oldModifier = NULL;
-		currWall = NULL;
-		currHurtboxes = NULL;
-		currHitboxes = NULL;
+	currModifier = NULL;
+	oldModifier = NULL;
+	currWall = NULL;
+	currHurtboxes = NULL;
+	currHitboxes = NULL;
 
-		standNDashBoostCooldown = 10;
-		standNDashBoostCurr = 0;
-		ClearPauseBufferedActions();
-		standNDashBoostQuant = 3;
-		dairBoostVel = 4;
-		fairAirDashBoostQuant = 2;
-		for (int i = 0; i < 3; ++i)
-		{
-			motionGhostsEffects[i] = new MotionGhostEffect(80);
-		}
+	standNDashBoostCooldown = 10;
+	standNDashBoostCurr = 0;
+	ClearPauseBufferedActions();
+	standNDashBoostQuant = 3;
+	dairBoostVel = 4;
+	fairAirDashBoostQuant = 2;
+	for (int i = 0; i < 3; ++i)
+	{
+		motionGhostsEffects[i] = new MotionGhostEffect(80);
+	}
 		
-		//preload them
-		GetTileset("Kin/exitenergy_0_512x512.png", 512, 512);
-		GetTileset("Kin/exitenergy_2_512x512.png", 512, 512);
-		GetTileset("Kin/exitenergy_1_512x512.png", 512, 512);
+	//preload them
+	GetTileset("Kin/exitenergy_0_512x512.png", 512, 512);
+	GetTileset("Kin/exitenergy_2_512x512.png", 512, 512);
+	GetTileset("Kin/exitenergy_1_512x512.png", 512, 512);
 		
 			
-		currLockedFairFX = NULL;
-		currLockedDairFX = NULL;
-		currLockedUairFX = NULL;
-		gateBlackFX = NULL;
+	currLockedFairFX = NULL;
+	currLockedDairFX = NULL;
+	currLockedUairFX = NULL;
+	gateBlackFX = NULL;
 
-		for (int i = 0; i < 7; ++i)
-		{
-			smallLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 4, 1.f);
-		}
+	for (int i = 0; i < 7; ++i)
+	{
+		smallLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 4, 1.f);
+	}
 
-		smallLightningPool[0]->ts = GetTileset("FX/elec_01_96x96.png", 96, 96);
-		smallLightningPool[1]->ts = GetTileset("FX/elec_02_96x96.png", 96, 96);
-		smallLightningPool[2]->ts = GetTileset("FX/elec_03_96x96.png", 96, 96);
-		smallLightningPool[3]->ts = GetTileset("FX/elec_04_96x96.png", 96, 96);
-		smallLightningPool[4]->ts = GetTileset("FX/elec_05_96x96.png", 96, 96);
-		smallLightningPool[5]->ts = GetTileset("FX/elec_06_96x96.png", 96, 96);
-		smallLightningPool[6]->ts = GetTileset("FX/elec_07_96x96.png", 96, 96);
+	smallLightningPool[0]->ts = GetTileset("FX/elec_01_96x96.png", 96, 96);
+	smallLightningPool[1]->ts = GetTileset("FX/elec_02_96x96.png", 96, 96);
+	smallLightningPool[2]->ts = GetTileset("FX/elec_03_96x96.png", 96, 96);
+	smallLightningPool[3]->ts = GetTileset("FX/elec_04_96x96.png", 96, 96);
+	smallLightningPool[4]->ts = GetTileset("FX/elec_05_96x96.png", 96, 96);
+	smallLightningPool[5]->ts = GetTileset("FX/elec_06_96x96.png", 96, 96);
+	smallLightningPool[6]->ts = GetTileset("FX/elec_07_96x96.png", 96, 96);
 
-		motionGhostBuffer = new VertexBuf(80, sf::Quads);
-		motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
-		motionGhostBufferPurple = new VertexBuf(80, sf::Quads);
+	motionGhostBuffer = new VertexBuf(80, sf::Quads);
+	motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
+	motionGhostBufferPurple = new VertexBuf(80, sf::Quads);
 		
+
+	for (int i = 0; i < 3; ++i)
+	{
+		fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
+		fairLightningPool[i]->ts = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256);
+		dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
+		dairLightningPool[i]->ts = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256);
+		uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
+		uairLightningPool[i]->ts = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256);
+	}
+
+	gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
+	gateBlackFXPool->ts = GetTileset("FX/keydrain_160x160.png", 160, 160);
+
+	if (owner != NULL)
+	{
+		kinRing = new KinRing(this);
+		kinMask = new KinMask(this);
+	}
+	else
+	{
+		kinRing = NULL;
+		kinMask = NULL;
+	}
+		
+
+	//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
+	//risingAuraPool->ts = GetTileset("Kin/rising_8x8.png", 8, 8);
+
+	maxMotionGhosts = 80;
+	memset(tileset, 0, sizeof(tileset));
+	sf::Color startChanges[] = {
+		sf::Color(0x14, 0x59, 0x22),
+		sf::Color(0x08, 0x40, 0x12),
+		sf::Color(0x08, 0x2a, 0x4d),
+		sf::Color(0x05, 0x1a, 0x26),
+		sf::Color(0x4d, 0x2c, 0x28),
+		sf::Color(0x12, 0x3f, 0x4d),
+		sf::Color(0x04, 0x23, 0x26),
+		sf::Color(0x6b, 0xff, 0xff),
+		sf::Color(0x66, 0xdd, 0xff)
+	};
+	sf::Color endChanges[] = {
+		sf::Color(0x71, 0x0f, 0x0f),
+		sf::Color(0x04, 0x08, 0x08),
+		sf::Color(0x12, 0x3b, 0x2e),
+		sf::Color(0x01, 0x2a, 0x0a),
+		sf::Color(0x59, 0x55, 0x47),
+		sf::Color(0xb2, 0x91, 0x0c),
+		sf::Color(0x65, 0x3f, 0x07),
+		sf::Color(0x6b, 0xfd, 0x30),
+		sf::Color(0x53, 0xf9, 0xf9)
+	};
+
+		
+		
+	team = (Team)actorIndex; //debug
+
+	SetupTilesets(NULL, NULL);
+
+	/*if (actorIndex == 0)
+	{
+		SetupTilesets(NULL, NULL);
+	}
+	else if (actorIndex == 1)
+	{
+		Skin *swordSkin = new Skin(startChanges, endChanges, 9, 1);
+		Skin *skin = new Skin(startChanges, endChanges, 9, 1);
+		SetupTilesets(skin, swordSkin);
+		delete skin;
+		delete swordSkin;
+	}*/
+		
+	//SetupTilesets(NULL,NULL);
+
+		
+
+	prevRail = NULL;
+
+	maxFramesSinceGrindAttempt = 30;
+	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+	canRailGrind = false;
+	canRailSlide = false;
+
+	regrindOffMax = 3;
+	regrindOffCount = 3;
+
+	currSpring = NULL;
+	currBooster = NULL;
+	currTeleporter = NULL;
+	currSwingLauncher = NULL;
+
+	currBounceBooster = NULL;
+	oldBounceBooster = NULL;
+
+	railTest.setSize(Vector2f(64, 64));
+	railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
+	railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
+
+	ts_dirtyAura = GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
+	dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
+	//dirtyAuraSprite.setpo
+	//dirtyAuraSprite.setOrigin( )
+
+	//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+	jumpGrassCount = 0;
+	gravityGrassCount = 0;
+	bounceGrassCount = 0;
+	boostGrassCount = 0;
+
+	scorpOn = false;
+	framesSinceRightWireBoost = 0;
+	framesSinceLeftWireBoost = 0;
+	framesSinceDoubleWireBoost = 0;
+
+	glideTurnFactor = 0;
+
+	singleWireBoostTiming = 4;
+	doubleWireBoostTiming = 4;
+
+	glideTurnAccel = .01;
+	maxGlideTurnFactor = .08;
+
+	//(0x14, 0x59, 0x22) = Kin Green
+	// gonna try to make this red in his airdash animation
+	spriteAction = FAIR;
+	currTileIndex = 0;
+
+	framesNotGrinding = 0;
+	bufferedAttack = JUMP;
+	oldBounceEdge = NULL;
+	//seq = SEQ_NOTHING;
+	enemiesKilledThisFrame = 0;
+	enemiesKilledLastFrame = 0;
+	GameController &cont = GetController(actorIndex);
+	toggleBounceInput = cont.keySettings.toggleBounce;
+	toggleTimeSlowInput = cont.keySettings.toggleTimeSlow;
+	toggleGrindInput = cont.keySettings.toggleGrind;
+	speedParticleRate = 10; //20
+	speedParticleCounter = 1;
+	followerPos = V2d( 0, 0 );
+	followerVel = V2d( 0, 0 );
+	followerFac = 1.0 / 60.0;
+	hitGoal = false;
+	hitNexus = false;
+	ground = NULL;
+	//re = new RotaryParticleEffect( this );
+	//re1 = new RotaryParticleEffect( this );
+	//pTrail = new ParticleTrail( this );
+	//re1->angle += PI;
+	//ae = new AirParticleEffect( position );
+
+	level1SpeedThresh = 25;	//30;//22;//22;//32;
+	level2SpeedThresh = 45; 
+	speedChangeUp = .5;//03;//.5;
+	speedChangeDown = .03;//.005;//.07;
+
+
+	grindLungeSpeed0 = 15.0;
+	grindLungeSpeed1 = 17.0;//20.0;
+	grindLungeSpeed2 = 22.0;//28.0;
+	//grindLungeExtraMax = 10.0;
+
+	speedLevel = 0;
+	currentSpeedBar = 0;
+
+	motionGhostSpacing = 1;
+	ghostSpacingCounter = 0;
+
+	drainCounterMax = 10;
+	drainAmount = 1;
+	drainCounter = 0;
+	//currentCheckPoint = NULL;
+	flashFrames = 0;
+	test = false;
+
+	lastWire = 0;
+	inBubble = false;
+	oldInBubble = false;
+
+	numKeys = 0;
+		
+		
+
+	gateTouched = NULL;
+
+	//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
+	//numActiveEdges = 0;
+	assert( Shader::isAvailable() && "help me" );
+	if (!sh.loadFromFile("Resources/Shader/player_shader.frag", sf::Shader::Fragment))
+	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
+		assert( 0 && "player shader not loaded" );
+	}
+
+	if (!despFaceShader.loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
+	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "desp face SHADER NOT LOADING CORRECTLY" << endl;
+		assert( 0 && "desp shader not loaded" );
+	}
+	//uniform vec4 toColor;
+	//uniform vec4 fromColor;
+	Color c( 0x66, 0xee, 0xff );
+	despFaceShader.setUniform( "fromColor", ColorGL( c ) );
+
+	if (!motionGhostShader.loadFromFile("Resources/Shader/motionghost_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "motion ghost SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0 && "desp shader not loaded");
+	}
+		
+	Color mgc = Color::Cyan;
+	mgc.a = 25;
+	//motionGhostShader.setUniform("energyColor", ColorGL(mgc));
+		
+	motionGhostShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+
+
+	if (!playerDespShader.loadFromFile("Resources/Shader/playerdesperation.frag", sf::Shader::Fragment))
+		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "desp player SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0 && "desp shader not loaded");
+	}
+	playerDespShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+	//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+
+	/*if( !timeSlowShader.loadFromFile( "Shader/timeslow_shader.frag", sf::Shader::Fragment ) )
+	{
+		cout << "TIME SLOW SHADER NOT LOADING CORRECTLY" << endl;
+		assert( 0 && "time slow shader not loaded" );
+	}*/
+	int sizeofsoundbuf = sizeof(soundBuffers);
+	memset(soundBuffers, 0, sizeofsoundbuf );
+		
+	soundBuffers[S_HITCEILING] = GetSound("Kin/ceiling");
+	soundBuffers[S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
+	soundBuffers[S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
+	soundBuffers[S_DAIR] = GetSound("Kin/dair");
+	soundBuffers[S_DOUBLE] = GetSound("Kin/doublejump");
+	soundBuffers[S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
+	soundBuffers[S_FAIR1] = GetSound("Kin/fair");
+	soundBuffers[S_JUMP] = GetSound("Kin/jump");
+	soundBuffers[S_LAND] = GetSound("Kin/land");
+	soundBuffers[S_RUN_STEP1] = GetSound( "Kin/run_01a" );
+	soundBuffers[S_RUN_STEP2] = GetSound( "Kin/run_01b" );
+	soundBuffers[S_SLIDE] = GetSound("Kin/slide");
+	soundBuffers[S_SPRINT_STEP1] = GetSound( "Kin/sprint_01a" );
+	soundBuffers[S_SPRINT_STEP2] = GetSound( "Kin/sprint_01b" );
+	soundBuffers[S_STANDATTACK] = GetSound("Kin/stand");
+	soundBuffers[S_STEEPSLIDE] = GetSound("Kin/steep");
+	soundBuffers[S_STEEPSLIDEATTACK] = GetSound("Kin/steep_att");
+	soundBuffers[S_UAIR] = GetSound("Kin/uair");
+	soundBuffers[S_WALLATTACK] = GetSound("Kin/wall_att");
+	soundBuffers[S_WALLJUMP] = GetSound("Kin/walljump");
+	soundBuffers[S_WALLSLIDE] = GetSound("Kin/wallslide");
+
+	soundBuffers[S_GOALKILLSLASH1] = GetSound("Kin/goal_kill_01");
+	soundBuffers[S_GOALKILLSLASH2] = GetSound("Kin/goal_kill_02");
+	soundBuffers[S_GOALKILLSLASH3] = GetSound("Kin/goal_kill_03");
+	soundBuffers[S_GOALKILLSLASH4] = GetSound("Kin/goal_kill_04");
+
+
+	/*soundBuffers[S_DASH_START] = GetSound( "Kin/dash_02" );
+	soundBuffers[S_HIT] = GetSound( "kin_hitspack_short" );
+	soundBuffers[S_HURT] = GetSound( "Kin/hit_1b" );
+	soundBuffers[S_HIT_AND_KILL] = GetSound( "Kin/kin_hitspack" );
+	soundBuffers[S_HIT_AND_KILL_KEY] = GetSound( "Kin/key_kill" );
+		
+		
+	soundBuffers[S_GRAVREVERSE] = GetSound( "Kin/gravreverse" );
+	soundBuffers[S_BOUNCEJUMP] = GetSound( "Kin/bounce" );
+		
+	soundBuffers[S_TIMESLOW] = GetSound( "Kin/time_slow_1" );
+	soundBuffers[S_ENTER] = GetSound( "Kin/enter" );
+	soundBuffers[S_EXIT] = GetSound( "Kin/exit" );
+
+	soundBuffers[S_DIAGUPATTACK] = soundBuffers[S_FAIR1];
+	soundBuffers[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];*/
+
+
+	currHitboxInfo = new HitboxInfo();
+	currHitboxInfo->damage = 20;
+	currHitboxInfo->drainX = .5;
+	currHitboxInfo->drainY = .5;
+	currHitboxInfo->hitlagFrames = 0;
+	currHitboxInfo->hitstunFrames = 30;
+	currHitboxInfo->knockback = 0;
+	currHitboxInfo->freezeDuringStun = true;
+		
+	framesGrinding = 0;
+	percentCloneChanged = 0;
+	percentCloneRate = .01;
+	changingClone = false;
+
+	desperationMode = false;
+	maxDespFrames = 60 * 5;
+	despCounter = 0;
+
+		
+
+	holdJump = false;
+	steepJump = false;
+
+	bounceBoostSpeed = 6.0;//8.0;//.5;//1;//6.0;//5.0;//4.7;
+
+	offsetX = 0;
+	sprite = new Sprite;
+	if( actorIndex == 1 )
+	{
+		//sprite->setColor( Color( 255, 0, 0 ) );
+	}
+
+	velocity = Vector2<double>( 0, 0 );
+		
+	CollisionBox cb;
+	cb.isCircle = true;
+	cb.offset.x = 32;
+	cb.offset.y = -8;
+	//cb.offsetAngle = 0;
+	cb.rw = 64;
+	cb.rh = 64;
+
+	for( int i = 0; i < MAX_GHOSTS; ++i )
+	{
+		ghosts[i] = new PlayerGhost;
+	}
+
+	//setup hitboxes
+	{
+	//for( int j = 4; j < 10; ++j )
+
+	/*diagDownSwordOffset[0] = Vector2f(32, 24);
+	diagDownSwordOffset[1] = Vector2f(32, 24);
+	diagDownSwordOffset[2] = Vector2f(32, 24);*/
+
+	diagDownSwordOffset[0] = Vector2f(32, 24);
+	diagDownSwordOffset[1] = Vector2f(16, 32);
+	diagDownSwordOffset[2] = Vector2f(16, 64);
+	//Vector2f(16, 32)
+	//Vector2f(16, 64)
+
+	Vector2i offsets[3];//( 0, 0 );
+	offsets[0] = Vector2i(40, -32);
+		
+
+	/*diagUpSwordOffset[0] = Vector2f(40, -32);
+	diagUpSwordOffset[1] = Vector2f(40, -32);
+	diagUpSwordOffset[2] = Vector2f(40, -32);*/
+
+	diagUpSwordOffset[0] = Vector2f(40, -32);
+	diagUpSwordOffset[1] = Vector2f(16, -40);
+	diagUpSwordOffset[2] = Vector2f(32, -48);
+	/*offsets[1] = Vector2i(16, -40);
+	offsets[2] = Vector2i(32, -48);*/
+
+	standSwordOffset[0] = Vector2f(64, 64);//Vector2f(0, -64);
+	standSwordOffset[1] = Vector2f(64, 32);//Vector2f(0, -64);
+	standSwordOffset[2] = Vector2f(64, 16);//Vector2f(0, -64);
+
+	climbAttackOffset[0] = Vector2f(0, -32);
+	climbAttackOffset[1] = Vector2f(0, -128);
+	climbAttackOffset[2] = Vector2f(0, -72);
+
+	slideAttackOffset[0] = Vector2f(0, -56);
+	slideAttackOffset[1] = Vector2f(0, -64);
+	slideAttackOffset[2] = Vector2f(0, -96);
+
+	if (true)
+	{
+
+
+		std::map<int, std::list<CollisionBox>> & fairAList =
+			GetHitboxList("fairahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & fairBList =
+			GetHitboxList("fairbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & fairCList =
+			GetHitboxList("fairchitboxes");
+
+		std::map<int, std::list<CollisionBox>> & dairAList =
+			GetHitboxList("dairahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & dairBList =
+			GetHitboxList("dairbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & dairCList =
+			GetHitboxList("dairchitboxes");
+
+		std::map<int, std::list<CollisionBox>> & uairAList =
+			GetHitboxList("uairahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & uairBList =
+			GetHitboxList("uairbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & uairCList =
+			GetHitboxList("uairchitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adUpAList =
+			GetHitboxList("airdashupahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adUpBList =
+			GetHitboxList("airdashupbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adUpCList =
+			GetHitboxList("airdashupchitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adDownAList =
+			GetHitboxList("airdashdownahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adDownBList =
+			GetHitboxList("airdashdownbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & adDownCList =
+			GetHitboxList("airdashdownchitboxes");
+
+		std::map<int, std::list<CollisionBox>> & standAList =
+			GetHitboxList("standahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & standBList =
+			GetHitboxList("standbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & standCList =
+			GetHitboxList("standchitboxes");
+
+
+
+		std::map<int, std::list<CollisionBox>> & wallAList =
+			GetHitboxList("wallahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & wallBList =
+			GetHitboxList("wallbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & wallCList =
+			GetHitboxList("wallchitboxes");
+
+		std::map<int, std::list<CollisionBox>> & climbAList =
+			GetHitboxList("climbahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & climbBList =
+			GetHitboxList("climbbhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & climbCList =
+			GetHitboxList("climbchitboxes");
+
+		std::map<int, std::list<CollisionBox>> & slideAList =
+			GetHitboxList("slideahitboxes");
+
+		std::map<int, std::list<CollisionBox>> & slideBList =
+			GetHitboxList("slidebhitboxes");
+
+		std::map<int, std::list<CollisionBox>> & slideCList =
+			GetHitboxList("slidechitboxes");
+
+
+
+		fairHitboxes[0] = new CollisionBody(16, fairAList, currHitboxInfo);
+		uairHitboxes[0] = new CollisionBody(16, uairAList, currHitboxInfo);
+		dairHitboxes[0] = new CollisionBody(16, dairAList, currHitboxInfo);
+
+		fairHitboxes[1] = new CollisionBody(16, fairBList, currHitboxInfo);
+		uairHitboxes[1] = new CollisionBody(16, uairBList, currHitboxInfo);
+		dairHitboxes[1] = new CollisionBody(16, dairBList, currHitboxInfo);
+
+		fairHitboxes[2] = new CollisionBody(16, fairCList, currHitboxInfo);
+		uairHitboxes[2] = new CollisionBody(16, uairCList, currHitboxInfo);
+		dairHitboxes[2] = new CollisionBody(16, dairCList, currHitboxInfo);
+
+
+		standHitboxes[0] = new CollisionBody(8, standAList, currHitboxInfo);
+		standHitboxes[1] = new CollisionBody(8, standBList, currHitboxInfo);
+		standHitboxes[2] = new CollisionBody(8, standCList, currHitboxInfo);
+
+		////dashHitboxes[0] = NULL;
+		wallHitboxes[0] = new CollisionBody(8, wallAList, currHitboxInfo);
+
+		wallHitboxes[1] = new CollisionBody(8, wallBList, currHitboxInfo);
+
+		wallHitboxes[2] = new CollisionBody(8, wallCList, currHitboxInfo);
+
+
+		steepClimbHitboxes[0] = new CollisionBody(8, climbAList, currHitboxInfo);
+		steepClimbHitboxes[1] = new CollisionBody(8, climbBList, currHitboxInfo);
+		steepClimbHitboxes[2] = new CollisionBody(8, climbCList, currHitboxInfo);
+
+		steepSlideHitboxes[0] = new CollisionBody(8, slideAList, currHitboxInfo);
+		steepSlideHitboxes[1] = new CollisionBody(8, slideBList, currHitboxInfo);
+		steepSlideHitboxes[2] = new CollisionBody(8, slideCList, currHitboxInfo);
+
+		diagUpHitboxes[0] = new CollisionBody(12, adUpAList, currHitboxInfo);
+		diagDownHitboxes[0] = new CollisionBody(12, adDownAList, currHitboxInfo);
+
+		diagUpHitboxes[1] = new CollisionBody(12, adUpBList, currHitboxInfo);
+		diagDownHitboxes[1] = new CollisionBody(12, adDownBList, currHitboxInfo);
+
+		diagUpHitboxes[2] = new CollisionBody(12, adUpCList, currHitboxInfo);
+		diagDownHitboxes[2] = new CollisionBody(12, adDownCList, currHitboxInfo);
+
+
 
 		for (int i = 0; i < 3; ++i)
 		{
-			fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-			fairLightningPool[i]->ts = GetTileset("FX/fair_sword_lightninga_256x256.png", 256, 256);
-			dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-			dairLightningPool[i]->ts = GetTileset("FX/dair_sword_lightninga_256x256.png", 256, 256);
-			uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-			uairLightningPool[i]->ts = GetTileset("FX/uair_sword_lightninga_256x256.png", 256, 256);
+			diagDownHitboxes[i]->OffsetAllFrames(diagDownSwordOffset[i]);
+			diagUpHitboxes[i]->OffsetAllFrames(diagUpSwordOffset[i]);
 		}
 
-		gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
-		gateBlackFXPool->ts = GetTileset("FX/keydrain_160x160.png", 160, 160);
-
-		if (owner != NULL)
+		for (int i = 0; i < 3; ++i)
 		{
-			kinRing = new KinRing(this);
-			kinMask = new KinMask(this);
-		}
-		else
-		{
-			kinRing = NULL;
-			kinMask = NULL;
-		}
-		
-
-		//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
-		//risingAuraPool->ts = GetTileset("Kin/rising_8x8.png", 8, 8);
-
-		maxMotionGhosts = 80;
-		memset(tileset, 0, sizeof(tileset));
-		sf::Color startChanges[] = {
-			sf::Color(0x14, 0x59, 0x22),
-			sf::Color(0x08, 0x40, 0x12),
-			sf::Color(0x08, 0x2a, 0x4d),
-			sf::Color(0x05, 0x1a, 0x26),
-			sf::Color(0x4d, 0x2c, 0x28),
-			sf::Color(0x12, 0x3f, 0x4d),
-			sf::Color(0x04, 0x23, 0x26),
-			sf::Color(0x6b, 0xff, 0xff),
-			sf::Color(0x66, 0xdd, 0xff)
-		};
-		sf::Color endChanges[] = {
-			sf::Color(0x71, 0x0f, 0x0f),
-			sf::Color(0x04, 0x08, 0x08),
-			sf::Color(0x12, 0x3b, 0x2e),
-			sf::Color(0x01, 0x2a, 0x0a),
-			sf::Color(0x59, 0x55, 0x47),
-			sf::Color(0xb2, 0x91, 0x0c),
-			sf::Color(0x65, 0x3f, 0x07),
-			sf::Color(0x6b, 0xfd, 0x30),
-			sf::Color(0x53, 0xf9, 0xf9)
-		};
-
-		
-		
-		team = (Team)actorIndex; //debug
-
-		SetupTilesets(NULL, NULL);
-
-		/*if (actorIndex == 0)
-		{
-			SetupTilesets(NULL, NULL);
-		}
-		else if (actorIndex == 1)
-		{
-			Skin *swordSkin = new Skin(startChanges, endChanges, 9, 1);
-			Skin *skin = new Skin(startChanges, endChanges, 9, 1);
-			SetupTilesets(skin, swordSkin);
-			delete skin;
-			delete swordSkin;
-		}*/
-		
-		//SetupTilesets(NULL,NULL);
-
-		
-
-		prevRail = NULL;
-
-		maxFramesSinceGrindAttempt = 30;
-		framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-		canRailGrind = false;
-		canRailSlide = false;
-
-		regrindOffMax = 3;
-		regrindOffCount = 3;
-
-		currSpring = NULL;
-		currBooster = NULL;
-		currTeleporter = NULL;
-		currSwingLauncher = NULL;
-
-		currBounceBooster = NULL;
-		oldBounceBooster = NULL;
-
-		railTest.setSize(Vector2f(64, 64));
-		railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
-		railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
-
-		ts_dirtyAura = GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
-		dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
-		//dirtyAuraSprite.setpo
-		//dirtyAuraSprite.setOrigin( )
-
-		//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-		jumpGrassCount = 0;
-		gravityGrassCount = 0;
-		bounceGrassCount = 0;
-		boostGrassCount = 0;
-
-		scorpOn = false;
-		framesSinceRightWireBoost = 0;
-		framesSinceLeftWireBoost = 0;
-		framesSinceDoubleWireBoost = 0;
-
-		glideTurnFactor = 0;
-
-		singleWireBoostTiming = 4;
-		doubleWireBoostTiming = 4;
-
-		glideTurnAccel = .01;
-		maxGlideTurnFactor = .08;
-
-		//(0x14, 0x59, 0x22) = Kin Green
-		// gonna try to make this red in his airdash animation
-		spriteAction = FAIR;
-		currTileIndex = 0;
-
-		framesNotGrinding = 0;
-		bufferedAttack = JUMP;
-		oldBounceEdge = NULL;
-		//seq = SEQ_NOTHING;
-		enemiesKilledThisFrame = 0;
-		enemiesKilledLastFrame = 0;
-		GameController &cont = GetController(actorIndex);
-		toggleBounceInput = cont.keySettings.toggleBounce;
-		toggleTimeSlowInput = cont.keySettings.toggleTimeSlow;
-		toggleGrindInput = cont.keySettings.toggleGrind;
-		speedParticleRate = 10; //20
-		speedParticleCounter = 1;
-		followerPos = V2d( 0, 0 );
-		followerVel = V2d( 0, 0 );
-		followerFac = 1.0 / 60.0;
-		hitGoal = false;
-		hitNexus = false;
-		ground = NULL;
-		//re = new RotaryParticleEffect( this );
-		//re1 = new RotaryParticleEffect( this );
-		//pTrail = new ParticleTrail( this );
-		//re1->angle += PI;
-		//ae = new AirParticleEffect( position );
-
-		level1SpeedThresh = 25;	//30;//22;//22;//32;
-		level2SpeedThresh = 45; 
-		speedChangeUp = .5;//03;//.5;
-		speedChangeDown = .03;//.005;//.07;
-
-
-		grindLungeSpeed0 = 15.0;
-		grindLungeSpeed1 = 17.0;//20.0;
-		grindLungeSpeed2 = 22.0;//28.0;
-		//grindLungeExtraMax = 10.0;
-
-		speedLevel = 0;
-		currentSpeedBar = 0;
-
-		motionGhostSpacing = 1;
-		ghostSpacingCounter = 0;
-
-		drainCounterMax = 10;
-		drainAmount = 1;
-		drainCounter = 0;
-		//currentCheckPoint = NULL;
-		flashFrames = 0;
-		test = false;
-
-		lastWire = 0;
-		inBubble = false;
-		oldInBubble = false;
-
-		numKeys = 0;
-		
-		
-
-		gateTouched = NULL;
-
-		//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
-		//numActiveEdges = 0;
-		assert( Shader::isAvailable() && "help me" );
-		if (!sh.loadFromFile("Resources/Shader/player_shader.frag", sf::Shader::Fragment))
-		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-		{
-			cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "player shader not loaded" );
+			Vector2f testOffset = standSwordOffset[i];
+			testOffset.y -= ts_standingNSword[i]->tileHeight / 2.0;
+			//standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
+			standHitboxes[i]->OffsetAllFrames(testOffset);
 		}
 
-		if (!despFaceShader.loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
-		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+		for (int i = 0; i < 3; ++i)
 		{
-			cout << "desp face SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "desp shader not loaded" );
-		}
-		//uniform vec4 toColor;
-		//uniform vec4 fromColor;
-		Color c( 0x66, 0xee, 0xff );
-		despFaceShader.setUniform( "fromColor", ColorGL( c ) );
-
-		if (!motionGhostShader.loadFromFile("Resources/Shader/motionghost_shader.frag", sf::Shader::Fragment))
-		{
-			cout << "motion ghost SHADER NOT LOADING CORRECTLY" << endl;
-			assert(0 && "desp shader not loaded");
-		}
-		
-		Color mgc = Color::Cyan;
-		mgc.a = 25;
-		//motionGhostShader.setUniform("energyColor", ColorGL(mgc));
-		
-		motionGhostShader.setUniform("u_texture", sf::Shader::CurrentTexture);
-
-
-		if (!playerDespShader.loadFromFile("Resources/Shader/playerdesperation.frag", sf::Shader::Fragment))
-			//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-		{
-			cout << "desp player SHADER NOT LOADING CORRECTLY" << endl;
-			assert(0 && "desp shader not loaded");
-		}
-		playerDespShader.setUniform("u_texture", sf::Shader::CurrentTexture);
-		//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
-
-		/*if( !timeSlowShader.loadFromFile( "Shader/timeslow_shader.frag", sf::Shader::Fragment ) )
-		{
-			cout << "TIME SLOW SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "time slow shader not loaded" );
-		}*/
-		int sizeofsoundbuf = sizeof(soundBuffers);
-		memset(soundBuffers, 0, sizeofsoundbuf );
-		
-		soundBuffers[S_HITCEILING] = GetSound("Kin/ceiling");
-		soundBuffers[S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
-		soundBuffers[S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
-		soundBuffers[S_DAIR] = GetSound("Kin/dair");
-		soundBuffers[S_DOUBLE] = GetSound("Kin/doublejump");
-		soundBuffers[S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
-		soundBuffers[S_FAIR1] = GetSound("Kin/fair");
-		soundBuffers[S_JUMP] = GetSound("Kin/jump");
-		soundBuffers[S_LAND] = GetSound("Kin/land");
-		soundBuffers[S_RUN_STEP1] = GetSound( "Kin/run_01a" );
-		soundBuffers[S_RUN_STEP2] = GetSound( "Kin/run_01b" );
-		soundBuffers[S_SLIDE] = GetSound("Kin/slide");
-		soundBuffers[S_SPRINT_STEP1] = GetSound( "Kin/sprint_01a" );
-		soundBuffers[S_SPRINT_STEP2] = GetSound( "Kin/sprint_01b" );
-		soundBuffers[S_STANDATTACK] = GetSound("Kin/stand");
-		soundBuffers[S_STEEPSLIDE] = GetSound("Kin/steep");
-		soundBuffers[S_STEEPSLIDEATTACK] = GetSound("Kin/steep_att");
-		soundBuffers[S_UAIR] = GetSound("Kin/uair");
-		soundBuffers[S_WALLATTACK] = GetSound("Kin/wall_att");
-		soundBuffers[S_WALLJUMP] = GetSound("Kin/walljump");
-		soundBuffers[S_WALLSLIDE] = GetSound("Kin/wallslide");
-
-		soundBuffers[S_GOALKILLSLASH1] = GetSound("Kin/goal_kill_01");
-		soundBuffers[S_GOALKILLSLASH2] = GetSound("Kin/goal_kill_02");
-		soundBuffers[S_GOALKILLSLASH3] = GetSound("Kin/goal_kill_03");
-		soundBuffers[S_GOALKILLSLASH4] = GetSound("Kin/goal_kill_04");
-
-
-		/*soundBuffers[S_DASH_START] = GetSound( "Kin/dash_02" );
-		soundBuffers[S_HIT] = GetSound( "kin_hitspack_short" );
-		soundBuffers[S_HURT] = GetSound( "Kin/hit_1b" );
-		soundBuffers[S_HIT_AND_KILL] = GetSound( "Kin/kin_hitspack" );
-		soundBuffers[S_HIT_AND_KILL_KEY] = GetSound( "Kin/key_kill" );
-		
-		
-		soundBuffers[S_GRAVREVERSE] = GetSound( "Kin/gravreverse" );
-		soundBuffers[S_BOUNCEJUMP] = GetSound( "Kin/bounce" );
-		
-		soundBuffers[S_TIMESLOW] = GetSound( "Kin/time_slow_1" );
-		soundBuffers[S_ENTER] = GetSound( "Kin/enter" );
-		soundBuffers[S_EXIT] = GetSound( "Kin/exit" );
-
-		soundBuffers[S_DIAGUPATTACK] = soundBuffers[S_FAIR1];
-		soundBuffers[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];*/
-
-
-		currHitboxInfo = new HitboxInfo();
-		currHitboxInfo->damage = 20;
-		currHitboxInfo->drainX = .5;
-		currHitboxInfo->drainY = .5;
-		currHitboxInfo->hitlagFrames = 0;
-		currHitboxInfo->hitstunFrames = 30;
-		currHitboxInfo->knockback = 0;
-		currHitboxInfo->freezeDuringStun = true;
-		
-		framesGrinding = 0;
-		percentCloneChanged = 0;
-		percentCloneRate = .01;
-		changingClone = false;
-
-		desperationMode = false;
-		maxDespFrames = 60 * 5;
-		despCounter = 0;
-
-		
-
-		holdJump = false;
-		steepJump = false;
-
-		bounceBoostSpeed = 6.0;//8.0;//.5;//1;//6.0;//5.0;//4.7;
-
-		offsetX = 0;
-		sprite = new Sprite;
-		if( actorIndex == 1 )
-		{
-			//sprite->setColor( Color( 255, 0, 0 ) );
+			Vector2f testOffset = -slideAttackOffset[i];
+			testOffset.y -= ts_steepSlideAttackSword[i]->tileHeight / 2.0;
+			steepSlideHitboxes[i]->OffsetAllFrames(testOffset);
 		}
 
-		velocity = Vector2<double>( 0, 0 );
-		
-		CollisionBox cb;
-		cb.isCircle = true;
-		cb.offset.x = 32;
-		cb.offset.y = -8;
-		//cb.offsetAngle = 0;
-		cb.rw = 64;
-		cb.rh = 64;
-
-		for( int i = 0; i < MAX_GHOSTS; ++i )
+		for (int i = 0; i < 3; ++i)
 		{
-			ghosts[i] = new PlayerGhost;
+			Vector2f testOffset = -climbAttackOffset[i];
+			testOffset.y -= ts_steepClimbAttackSword[i]->tileHeight / 2.0;
+			steepClimbHitboxes[i]->OffsetAllFrames(testOffset);
 		}
 
-		//setup hitboxes
-		{
-		//for( int j = 4; j < 10; ++j )
+		shockwaveHitboxes = NULL;
+		grindHitboxes[0] = NULL;
 
-		/*diagDownSwordOffset[0] = Vector2f(32, 24);
-		diagDownSwordOffset[1] = Vector2f(32, 24);
-		diagDownSwordOffset[2] = Vector2f(32, 24);*/
+		cb.rw = 90;
+		cb.rh = 90;
+		cb.offset.x = 0;
+		cb.offset.y = 0;
+		grindHitboxes[0] = new CollisionBody( CollisionBox::Hit);
+		grindHitboxes[0]->BasicSetup();
+		grindHitboxes[0]->AddCollisionBox(0, cb);
+		//up
+	}
+	else
+	{
+		fairHitboxes[0] = NULL;
+		uairHitboxes[0] = NULL;
+		dairHitboxes[0] = NULL;
 
-		diagDownSwordOffset[0] = Vector2f(32, 24);
-		diagDownSwordOffset[1] = Vector2f(16, 32);
-		diagDownSwordOffset[2] = Vector2f(16, 64);
-		//Vector2f(16, 32)
-		//Vector2f(16, 64)
+		fairHitboxes[1] = NULL;
+		uairHitboxes[1] = NULL;
+		dairHitboxes[1] = NULL;
 
-		Vector2i offsets[3];//( 0, 0 );
-		offsets[0] = Vector2i(40, -32);
-		
+		fairHitboxes[2] = NULL;
+		uairHitboxes[2] = NULL;
+		dairHitboxes[2] = NULL;
 
-		/*diagUpSwordOffset[0] = Vector2f(40, -32);
-		diagUpSwordOffset[1] = Vector2f(40, -32);
-		diagUpSwordOffset[2] = Vector2f(40, -32);*/
 
-		diagUpSwordOffset[0] = Vector2f(40, -32);
-		diagUpSwordOffset[1] = Vector2f(16, -40);
-		diagUpSwordOffset[2] = Vector2f(32, -48);
-		/*offsets[1] = Vector2i(16, -40);
-		offsets[2] = Vector2i(32, -48);*/
+		standHitboxes[0] = NULL;
+		standHitboxes[1] = NULL;
+		standHitboxes[2] = NULL;
 
-		standSwordOffset[0] = Vector2f(64, 64);//Vector2f(0, -64);
-		standSwordOffset[1] = Vector2f(64, 32);//Vector2f(0, -64);
-		standSwordOffset[2] = Vector2f(64, 16);//Vector2f(0, -64);
+		wallHitboxes[0] = NULL;
 
-		climbAttackOffset[0] = Vector2f(0, -32);
-		climbAttackOffset[1] = Vector2f(0, -128);
-		climbAttackOffset[2] = Vector2f(0, -72);
+		wallHitboxes[1] = NULL;
 
-		slideAttackOffset[0] = Vector2f(0, -56);
-		slideAttackOffset[1] = Vector2f(0, -64);
-		slideAttackOffset[2] = Vector2f(0, -96);
+		wallHitboxes[2] = NULL;
 
-		if (true)
-		{
 
+		steepClimbHitboxes[0] = NULL;
+		steepClimbHitboxes[1] = NULL;
+		steepClimbHitboxes[2] = NULL;
 
-			std::map<int, std::list<CollisionBox>> & fairAList =
-				GetHitboxList("fairahitboxes");
+		steepSlideHitboxes[0] = NULL;
+		steepSlideHitboxes[1] = NULL;
+		steepSlideHitboxes[2] = NULL;
 
-			std::map<int, std::list<CollisionBox>> & fairBList =
-				GetHitboxList("fairbhitboxes");
+		diagUpHitboxes[0] = NULL;
+		diagDownHitboxes[0] = NULL;
 
-			std::map<int, std::list<CollisionBox>> & fairCList =
-				GetHitboxList("fairchitboxes");
+		diagUpHitboxes[1] = NULL;
+		diagDownHitboxes[1] = NULL;
 
-			std::map<int, std::list<CollisionBox>> & dairAList =
-				GetHitboxList("dairahitboxes");
+		diagUpHitboxes[2] = NULL;
+		diagDownHitboxes[2] = NULL;
 
-			std::map<int, std::list<CollisionBox>> & dairBList =
-				GetHitboxList("dairbhitboxes");
-
-			std::map<int, std::list<CollisionBox>> & dairCList =
-				GetHitboxList("dairchitboxes");
-
-			std::map<int, std::list<CollisionBox>> & uairAList =
-				GetHitboxList("uairahitboxes");
-
-			std::map<int, std::list<CollisionBox>> & uairBList =
-				GetHitboxList("uairbhitboxes");
-
-			std::map<int, std::list<CollisionBox>> & uairCList =
-				GetHitboxList("uairchitboxes");
-
-			std::map<int, std::list<CollisionBox>> & adUpAList =
-				GetHitboxList("airdashupahitboxes");
-
-			std::map<int, std::list<CollisionBox>> & adUpBList =
-				GetHitboxList("airdashupbhitboxes");
-
-			std::map<int, std::list<CollisionBox>> & adUpCList =
-				GetHitboxList("airdashupchitboxes");
-
-			std::map<int, std::list<CollisionBox>> & adDownAList =
-				GetHitboxList("airdashdownahitboxes");
-
-			std::map<int, std::list<CollisionBox>> & adDownBList =
-				GetHitboxList("airdashdownbhitboxes");
-
-			std::map<int, std::list<CollisionBox>> & adDownCList =
-				GetHitboxList("airdashdownchitboxes");
-
-			std::map<int, std::list<CollisionBox>> & standAList =
-				GetHitboxList("standahitboxes");
-
-			std::map<int, std::list<CollisionBox>> & standBList =
-				GetHitboxList("standbhitboxes");
-
-			std::map<int, std::list<CollisionBox>> & standCList =
-				GetHitboxList("standchitboxes");
-
-
-
-			std::map<int, std::list<CollisionBox>> & wallAList =
-				GetHitboxList("wallahitboxes");
-
-			std::map<int, std::list<CollisionBox>> & wallBList =
-				GetHitboxList("wallbhitboxes");
-
-			std::map<int, std::list<CollisionBox>> & wallCList =
-				GetHitboxList("wallchitboxes");
-
-			std::map<int, std::list<CollisionBox>> & climbAList =
-				GetHitboxList("climbahitboxes");
-
-			std::map<int, std::list<CollisionBox>> & climbBList =
-				GetHitboxList("climbbhitboxes");
-
-			std::map<int, std::list<CollisionBox>> & climbCList =
-				GetHitboxList("climbchitboxes");
-
-			std::map<int, std::list<CollisionBox>> & slideAList =
-				GetHitboxList("slideahitboxes");
-
-			std::map<int, std::list<CollisionBox>> & slideBList =
-				GetHitboxList("slidebhitboxes");
-
-			std::map<int, std::list<CollisionBox>> & slideCList =
-				GetHitboxList("slidechitboxes");
-
-
-
-			fairHitboxes[0] = new CollisionBody(16, fairAList, currHitboxInfo);
-			uairHitboxes[0] = new CollisionBody(16, uairAList, currHitboxInfo);
-			dairHitboxes[0] = new CollisionBody(16, dairAList, currHitboxInfo);
-
-			fairHitboxes[1] = new CollisionBody(16, fairBList, currHitboxInfo);
-			uairHitboxes[1] = new CollisionBody(16, uairBList, currHitboxInfo);
-			dairHitboxes[1] = new CollisionBody(16, dairBList, currHitboxInfo);
-
-			fairHitboxes[2] = new CollisionBody(16, fairCList, currHitboxInfo);
-			uairHitboxes[2] = new CollisionBody(16, uairCList, currHitboxInfo);
-			dairHitboxes[2] = new CollisionBody(16, dairCList, currHitboxInfo);
-
-
-			standHitboxes[0] = new CollisionBody(8, standAList, currHitboxInfo);
-			standHitboxes[1] = new CollisionBody(8, standBList, currHitboxInfo);
-			standHitboxes[2] = new CollisionBody(8, standCList, currHitboxInfo);
-
-			////dashHitboxes[0] = NULL;
-			wallHitboxes[0] = new CollisionBody(8, wallAList, currHitboxInfo);
-
-			wallHitboxes[1] = new CollisionBody(8, wallBList, currHitboxInfo);
-
-			wallHitboxes[2] = new CollisionBody(8, wallCList, currHitboxInfo);
-
-
-			steepClimbHitboxes[0] = new CollisionBody(8, climbAList, currHitboxInfo);
-			steepClimbHitboxes[1] = new CollisionBody(8, climbBList, currHitboxInfo);
-			steepClimbHitboxes[2] = new CollisionBody(8, climbCList, currHitboxInfo);
-
-			steepSlideHitboxes[0] = new CollisionBody(8, slideAList, currHitboxInfo);
-			steepSlideHitboxes[1] = new CollisionBody(8, slideBList, currHitboxInfo);
-			steepSlideHitboxes[2] = new CollisionBody(8, slideCList, currHitboxInfo);
-
-			diagUpHitboxes[0] = new CollisionBody(12, adUpAList, currHitboxInfo);
-			diagDownHitboxes[0] = new CollisionBody(12, adDownAList, currHitboxInfo);
-
-			diagUpHitboxes[1] = new CollisionBody(12, adUpBList, currHitboxInfo);
-			diagDownHitboxes[1] = new CollisionBody(12, adDownBList, currHitboxInfo);
-
-			diagUpHitboxes[2] = new CollisionBody(12, adUpCList, currHitboxInfo);
-			diagDownHitboxes[2] = new CollisionBody(12, adDownCList, currHitboxInfo);
-
-
-
-			for (int i = 0; i < 3; ++i)
-			{
-				diagDownHitboxes[i]->OffsetAllFrames(diagDownSwordOffset[i]);
-				diagUpHitboxes[i]->OffsetAllFrames(diagUpSwordOffset[i]);
-			}
-
-			for (int i = 0; i < 3; ++i)
-			{
-				Vector2f testOffset = standSwordOffset[i];
-				testOffset.y -= ts_standingNSword[i]->tileHeight / 2.0;
-				//standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
-				standHitboxes[i]->OffsetAllFrames(testOffset);
-			}
-
-			for (int i = 0; i < 3; ++i)
-			{
-				Vector2f testOffset = -slideAttackOffset[i];
-				testOffset.y -= ts_steepSlideAttackSword[i]->tileHeight / 2.0;
-				steepSlideHitboxes[i]->OffsetAllFrames(testOffset);
-			}
-
-			for (int i = 0; i < 3; ++i)
-			{
-				Vector2f testOffset = -climbAttackOffset[i];
-				testOffset.y -= ts_steepClimbAttackSword[i]->tileHeight / 2.0;
-				steepClimbHitboxes[i]->OffsetAllFrames(testOffset);
-			}
-
-			shockwaveHitboxes = NULL;
-			grindHitboxes[0] = NULL;
-
-			cb.rw = 90;
-			cb.rh = 90;
-			cb.offset.x = 0;
-			cb.offset.y = 0;
-			grindHitboxes[0] = new CollisionBody( CollisionBox::Hit);
-			grindHitboxes[0]->BasicSetup();
-			grindHitboxes[0]->AddCollisionBox(0, cb);
-			//up
-		}
-		else
-		{
-			fairHitboxes[0] = NULL;
-			uairHitboxes[0] = NULL;
-			dairHitboxes[0] = NULL;
-
-			fairHitboxes[1] = NULL;
-			uairHitboxes[1] = NULL;
-			dairHitboxes[1] = NULL;
-
-			fairHitboxes[2] = NULL;
-			uairHitboxes[2] = NULL;
-			dairHitboxes[2] = NULL;
-
-
-			standHitboxes[0] = NULL;
-			standHitboxes[1] = NULL;
-			standHitboxes[2] = NULL;
-
-			wallHitboxes[0] = NULL;
-
-			wallHitboxes[1] = NULL;
-
-			wallHitboxes[2] = NULL;
-
-
-			steepClimbHitboxes[0] = NULL;
-			steepClimbHitboxes[1] = NULL;
-			steepClimbHitboxes[2] = NULL;
-
-			steepSlideHitboxes[0] = NULL;
-			steepSlideHitboxes[1] = NULL;
-			steepSlideHitboxes[2] = NULL;
-
-			diagUpHitboxes[0] = NULL;
-			diagDownHitboxes[0] = NULL;
-
-			diagUpHitboxes[1] = NULL;
-			diagDownHitboxes[1] = NULL;
-
-			diagUpHitboxes[2] = NULL;
-			diagDownHitboxes[2] = NULL;
-
-			shockwaveHitboxes = NULL;
-			grindHitboxes[0] = NULL;
-		}
+		shockwaveHitboxes = NULL;
+		grindHitboxes[0] = NULL;
+	}
 
 		
-		//grindHitboxes[0] = new list<CollisionBox>;
-		//grindHitboxes[0]->push_back( cb );
+	//grindHitboxes[0] = new list<CollisionBox>;
+	//grindHitboxes[0]->push_back( cb );
 		
 
-		queryMode = "";
-		wallThresh = .9999;
-		//tileset setup
+	queryMode = "";
+	wallThresh = .9999;
+	//tileset setup
 		
 		
 
-		BounceFlameOff();
+	BounceFlameOff();
 
 		
 
 		
-		airBounceFlameFrames = 20 * 3;
-		runBounceFlameFrames = 21 * 3;
-		actionLength[WALLATTACK] = 8 * 2;
-		actionLength[DAIR] = 16;
-		actionLength[DASH] = 45 + 10;
-		maxBBoostCount = actionLength[DASH];
-		actionLength[DOUBLE] = 28 + 10;
-		actionLength[BACKWARDSDOUBLE] = 40;//28 + 10;
-		actionLength[FAIR] = 8 * 2;
-		actionLength[DIAGUPATTACK] = 11 * 2;
-		actionLength[DIAGDOWNATTACK] = 11 * 2;
-		actionLength[JUMP] = 2;
-		actionLength[SEQ_WAIT] = 2;
-		actionLength[SEQ_CRAWLERFIGHT_DODGEBACK] = 2;
-		actionLength[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = 2;
-		actionLength[LAND] = 1;
-		actionLength[SEQ_CRAWLERFIGHT_LAND] = 1;
-		actionLength[LAND2] = 1;
-		actionLength[RUN] = 10 * 4;
-		actionLength[AUTORUN] = actionLength[RUN];
-		actionLength[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = 10 * 4;
-		actionLength[SLIDE] = 1;
-		actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
-		actionLength[SPRINT] = 8 * 4;
-		actionLength[STAND] = 20 * 8;
-		actionLength[SEQ_ENTERCORE1] = 60;
-		actionLength[SPRINGSTUN] = 8;
-		actionLength[SPRINGSTUNGLIDE] = 8;
+	airBounceFlameFrames = 20 * 3;
+	runBounceFlameFrames = 21 * 3;
+	actionLength[WALLATTACK] = 8 * 2;
+	actionLength[DAIR] = 16;
+	actionLength[DASH] = 45 + 10;
+	maxBBoostCount = actionLength[DASH];
+	actionLength[DOUBLE] = 28 + 10;
+	actionLength[BACKWARDSDOUBLE] = 40;//28 + 10;
+	actionLength[FAIR] = 8 * 2;
+	actionLength[DIAGUPATTACK] = 11 * 2;
+	actionLength[DIAGDOWNATTACK] = 11 * 2;
+	actionLength[JUMP] = 2;
+	actionLength[SEQ_WAIT] = 2;
+	actionLength[SEQ_CRAWLERFIGHT_DODGEBACK] = 2;
+	actionLength[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = 2;
+	actionLength[LAND] = 1;
+	actionLength[SEQ_CRAWLERFIGHT_LAND] = 1;
+	actionLength[LAND2] = 1;
+	actionLength[RUN] = 10 * 4;
+	actionLength[AUTORUN] = actionLength[RUN];
+	actionLength[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = 10 * 4;
+	actionLength[SLIDE] = 1;
+	actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
+	actionLength[SPRINT] = 8 * 4;
+	actionLength[STAND] = 20 * 8;
+	actionLength[SEQ_ENTERCORE1] = 60;
+	actionLength[SPRINGSTUN] = 8;
+	actionLength[SPRINGSTUNGLIDE] = 8;
 
-		actionLength[SPRINGSTUNAIRBOUNCE] = 30;
-		actionLength[SPRINGSTUNBOUNCE] = 8;
-		actionLength[SPRINGSTUNTELEPORT] = 8;
+	actionLength[SPRINGSTUNAIRBOUNCE] = 30;
+	actionLength[SPRINGSTUNBOUNCE] = 8;
+	actionLength[SPRINGSTUNTELEPORT] = 8;
 
-		actionLength[SWINGSTUN] = 8;
+	actionLength[SWINGSTUN] = 8;
 
-		actionLength[GLIDE] = 8;
-		actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
-		actionLength[DASHATTACK] = 8 * 2;
-		actionLength[STANDN] = 8 * 2;
-		actionLength[UAIR] = 16;
-		actionLength[GRINDATTACK] = 1;
-		actionLength[STEEPSLIDE] = 1;
-		actionLength[WALLCLING] = 1;
-		actionLength[WALLJUMP] = 9 * 2;
-		actionLength[GRINDBALL] = 1;
-		actionLength[GRINDLUNGE] = 20;
-		actionLength[GRINDSLASH] = 16;
-		actionLength[STEEPCLIMBATTACK] = 4 * 4;
-		actionLength[SKYDIVETOFALL] = 10 * 4;
-		actionLength[WAITFORSHIP] = 60 * 1;
-		actionLength[GRABSHIP] = 10 * 5 + 20;
-		actionLength[GETPOWER_AIRDASH_MEDITATE] = 300;
-		actionLength[RIDESHIP] = 1;
-		actionLength[SKYDIVE] = 9 * 2;
-		actionLength[EXIT] = 29 * 2; //16 * 7
-		actionLength[EXITBOOST] = 79 * 2;//71 * 2;
+	actionLength[GLIDE] = 8;
+	actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
+	actionLength[DASHATTACK] = 8 * 2;
+	actionLength[STANDN] = 8 * 2;
+	actionLength[UAIR] = 16;
+	actionLength[GRINDATTACK] = 1;
+	actionLength[STEEPSLIDE] = 1;
+	actionLength[WALLCLING] = 1;
+	actionLength[WALLJUMP] = 9 * 2;
+	actionLength[GRINDBALL] = 1;
+	actionLength[GRINDLUNGE] = 20;
+	actionLength[GRINDSLASH] = 16;
+	actionLength[STEEPCLIMBATTACK] = 4 * 4;
+	actionLength[SKYDIVETOFALL] = 10 * 4;
+	actionLength[WAITFORSHIP] = 60 * 1;
+	actionLength[GRABSHIP] = 10 * 5 + 20;
+	actionLength[GETPOWER_AIRDASH_MEDITATE] = 300;
+	actionLength[RIDESHIP] = 1;
+	actionLength[SKYDIVE] = 9 * 2;
+	actionLength[EXIT] = 29 * 2; //16 * 7
+	actionLength[EXITBOOST] = 79 * 2;//71 * 2;
 
-		actionLength[EXITWAIT] = 6 * 3 * 2;
-		actionLength[GRAVREVERSE] = 20;
-		actionLength[JUMPSQUAT] = 3;
-		actionLength[INTRO] = 18 * 2;
-		actionLength[INTROBOOST] = 22 * 2;//40 * 2;
-		actionLength[AIRDASH] = 33;//27;
-		actionLength[STEEPSLIDEATTACK] = 16;
-		actionLength[AIRHITSTUN] = 1;
-		actionLength[STEEPCLIMB] = 8 * 4;
-		actionLength[GROUNDHITSTUN] = 1;
-		actionLength[WIREHOLD] = 1;
-		actionLength[BOUNCEAIR] = 1;
-		actionLength[BOUNCEGROUND] = 15;
-		actionLength[BOUNCEGROUNDEDWALL] = 30;
-		actionLength[DEATH] = 44 * 2;
-		actionLength[GETPOWER_AIRDASH_FLIP] = 133 * 2;
+	actionLength[EXITWAIT] = 6 * 3 * 2;
+	actionLength[GRAVREVERSE] = 20;
+	actionLength[JUMPSQUAT] = 3;
+	actionLength[INTRO] = 18 * 2;
+	actionLength[INTROBOOST] = 22 * 2;//40 * 2;
+	actionLength[AIRDASH] = 33;//27;
+	actionLength[STEEPSLIDEATTACK] = 16;
+	actionLength[AIRHITSTUN] = 1;
+	actionLength[STEEPCLIMB] = 8 * 4;
+	actionLength[GROUNDHITSTUN] = 1;
+	actionLength[WIREHOLD] = 1;
+	actionLength[BOUNCEAIR] = 1;
+	actionLength[BOUNCEGROUND] = 15;
+	actionLength[BOUNCEGROUNDEDWALL] = 30;
+	actionLength[DEATH] = 44 * 2;
+	actionLength[GETPOWER_AIRDASH_FLIP] = 133 * 2;
 		
-		actionLength[ENTERNEXUS1] = 10 * 4;
+	actionLength[ENTERNEXUS1] = 10 * 4;
 		
-		actionLength[SPAWNWAIT] = 120;
-		actionLength[RAILDASH] = 20;
-		actionLength[RAILSLIDE] = 1;
+	actionLength[SPAWNWAIT] = 120;
+	actionLength[RAILDASH] = 20;
+	actionLength[RAILSLIDE] = 1;
 
 
-		actionLength[GOALKILL] = 72 * 2;
-		actionLength[GOALKILLWAIT] = 2;
+	actionLength[GOALKILL] = 72 * 2;
+	actionLength[GOALKILLWAIT] = 2;
 
-		actionLength[NEXUSKILL] = 63 * 2;//actionLength[GOALKILL];
+	actionLength[NEXUSKILL] = 63 * 2;//actionLength[GOALKILL];
 
-		actionLength[SEQ_LOOKUP] = 1;
-		actionLength[SEQ_LOOKUPDISAPPEAR] = 1;
+	actionLength[SEQ_LOOKUP] = 1;
+	actionLength[SEQ_LOOKUPDISAPPEAR] = 1;
 		
-		actionLength[SEQ_KINTHROWN] = 1;
-		actionLength[SEQ_KINSTAND] = actionLength[STAND];
+	actionLength[SEQ_KINTHROWN] = 1;
+	actionLength[SEQ_KINSTAND] = actionLength[STAND];
 
-		actionLength[SEQ_KNEEL] = 1;
+	actionLength[SEQ_KNEEL] = 1;
 
-		actionLength[SEQ_KNEEL_TO_MEDITATE] = 7 * 3;
-		actionLength[SEQ_MEDITATE_MASKON] = 1;
-		actionLength[SEQ_MASKOFF] = 24 * 3;
-		actionLength[SEQ_MEDITATE] = 1;
+	actionLength[SEQ_KNEEL_TO_MEDITATE] = 7 * 3;
+	actionLength[SEQ_MEDITATE_MASKON] = 1;
+	actionLength[SEQ_MASKOFF] = 24 * 3;
+	actionLength[SEQ_MEDITATE] = 1;
 
-		actionLength[SEQ_FLOAT_TO_NEXUS_OPENING] = 3 * 10;
-		actionLength[SEQ_FADE_INTO_NEXUS] = 8 * 10;
+	actionLength[SEQ_FLOAT_TO_NEXUS_OPENING] = 3 * 10;
+	actionLength[SEQ_FADE_INTO_NEXUS] = 8 * 10;
 
-		actionLength[GETSHARD] = 2;//44 * 2;
-		}
+	actionLength[GETSHARD] = 2;//44 * 2;
+	}
 		 	
 
-		gsdodeca.setTexture( *tsgsdodeca->texture);
-		gstriblue.setTexture( *tsgstriblue->texture);
-		gstricym.setTexture( *tsgstricym->texture);
-		gstrigreen.setTexture( *tsgstrigreen->texture);
-		gstrioran.setTexture( *tsgstrioran->texture);
-		gstripurp.setTexture( *tsgstripurp->texture);
-		gstrirgb.setTexture( *tsgstrirgb->texture);
+	gsdodeca.setTexture( *tsgsdodeca->texture);
+	gstriblue.setTexture( *tsgstriblue->texture);
+	gstricym.setTexture( *tsgstricym->texture);
+	gstrigreen.setTexture( *tsgstrigreen->texture);
+	gstrioran.setTexture( *tsgstrioran->texture);
+	gstripurp.setTexture( *tsgstripurp->texture);
+	gstrirgb.setTexture( *tsgstrirgb->texture);
 
 
 
-		if (!swordShaders[0].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
-		{
-			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "sword shader not loaded" );
-		}
-		swordShaders[0].setUniform( "fromColor", ColorGL(COLOR_TEAL) );
-		swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
-		//swordShaders[1] = swordShaders[0];
-		if (!swordShaders[1].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
-		{
-			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "sword shader not loaded" );
-		}
-		swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
-		swordShaders[1].setUniform("u_texture", sf::Shader::CurrentTexture);
-		//swordShaders[2] = swordShaders[0];
-		if (!swordShaders[2].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
-		{
-			cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
-			assert( 0 && "sword shader not loaded" );
-		}
-		swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 146, 255 )) );
-		swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
+	if (!swordShaders[0].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
+		assert( 0 && "sword shader not loaded" );
+	}
+	swordShaders[0].setUniform( "fromColor", ColorGL(COLOR_TEAL) );
+	swordShaders[0].setUniform("u_texture", sf::Shader::CurrentTexture);
+	//swordShaders[1] = swordShaders[0];
+	if (!swordShaders[1].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
+		assert( 0 && "sword shader not loaded" );
+	}
+	swordShaders[1].setUniform( "fromColor", ColorGL(Color( 43, 167, 255 )) );
+	swordShaders[1].setUniform("u_texture", sf::Shader::CurrentTexture);
+	//swordShaders[2] = swordShaders[0];
+	if (!swordShaders[2].loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "SWORD SHADER NOT LOADING CORRECTLY" << endl;
+		assert( 0 && "sword shader not loaded" );
+	}
+	swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 146, 255 )) );
+	swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
 
-		cout << "Start aura" << endl;
-		//sh.setUniform( "u_texture", *tileset[action]->texture ); 
+	cout << "Start aura" << endl;
+	//sh.setUniform( "u_texture", *tileset[action]->texture ); 
 
-		//LoadAllAuras();
+	//LoadAllAuras();
 		
-		cout << "end aura" << endl;
+	cout << "end aura" << endl;
 
-		
-		
-
-		grindActionLength = 32;
-		//SetActionExpr( SPAWNWAIT );
-
-		if (owner != NULL)
-		{
-			SetActionExpr(INTROBOOST);//INTRO
-			frame = 0;
-		}
-		else
-		{
-			SetActionExpr(JUMP);
-			frame = 1;
-		}
-		
 		
 		
 
+	grindActionLength = 32;
+	//SetActionExpr( SPAWNWAIT );
+
+	//if (owner != NULL)
+	//{
+	//	SetActionExpr(INTROBOOST);//INTRO
+	//	frame = 0;
+	//}
+	//else
+	//{
+	//	SetActionExpr(JUMP);
+	//	frame = 1;
+	//}
 		
 		
-		timeSlowStrength = 5;
-		slowMultiple = 1;
-		slowCounter = 1;
-
-		reversed = false;
-
-		grindActionCurrent = 0;
-
-		framesInAir = 0;
-		wallJumpFrameCounter = 0;
-		wallJumpMovementLimit = 12; //10 frames
-
-		steepThresh = .4; // go between 0 and 1
-
-		steepSlideGravFactor = .25;//.25;//.4;
-		steepSlideFastGravFactor = .3;//.5;
-
-		wallJumpStrength.x = 10;
-		wallJumpStrength.y = 20;
-		clingSpeed = 3;
-
-		slopeTooSteepLaunchLimitX = .1;
-		
-		
-		steepClimbGravFactor = .31;//.2;//.31;//.7;
-		steepClimbFastFactor = .2;
-		framesSinceClimbBoost = 0;
-		climbBoostLimit = 25;//22;//15;
-		
+	Init();
 
 		
 		
-		hasDoubleJump = true;
+	timeSlowStrength = 5;
+	slowMultiple = 1;
+	slowCounter = 1;
+
+	reversed = false;
+
+	grindActionCurrent = 0;
+
+	framesInAir = 0;
+	wallJumpFrameCounter = 0;
+	wallJumpMovementLimit = 12; //10 frames
+
+	steepThresh = .4; // go between 0 and 1
+
+	steepSlideGravFactor = .25;//.25;//.4;
+	steepSlideFastGravFactor = .3;//.5;
+
+	wallJumpStrength.x = 10;
+	wallJumpStrength.y = 20;
+	clingSpeed = 3;
+
+	slopeTooSteepLaunchLimitX = .1;
+		
+		
+	steepClimbGravFactor = .31;//.2;//.31;//.7;
+	steepClimbFastFactor = .2;
+	framesSinceClimbBoost = 0;
+	climbBoostLimit = 25;//22;//15;
 		
 
-		ground = NULL;
+		
+		
+	hasDoubleJump = true;
+		
 
-		groundSpeed = 0;
-		maxNormalRun = 60; //adjust up w/ more power?
+	ground = NULL;
+
+	groundSpeed = 0;
+	maxNormalRun = 60; //adjust up w/ more power?
 	
-		facingRight = true;
-		collision = false;
+	facingRight = true;
+	collision = false;
 	
-		airAccel = 1.5;
+	airAccel = 1.5;
 		
-		gravity = 1;//1.9; // 1 
-		wallClimbGravityFactor = .7;
-		wallClimbGravityOn = false;
-		jumpStrength = 21.5;//18;//25;//27.5; // 2 
-		doubleJumpStrength = 20;//17;//23;//26.5;
-		backDoubleJumpStrength = 22;
-		dashSpeed = 9;//12; // 3
+	gravity = 1;//1.9; // 1 
+	wallClimbGravityFactor = .7;
+	wallClimbGravityOn = false;
+	jumpStrength = 21.5;//18;//25;//27.5; // 2 
+	doubleJumpStrength = 20;//17;//23;//26.5;
+	backDoubleJumpStrength = 22;
+	dashSpeed = 9;//12; // 3
 
-		dashSpeed0 = 9;
-		dashSpeed1 = 10.5;
-		dashSpeed2 = 14;
+	dashSpeed0 = 9;
+	dashSpeed1 = 10.5;
+	dashSpeed2 = 14;
 
-		airDashSpeed0 = dashSpeed0;
-		airDashSpeed1 = dashSpeed1;
-		airDashSpeed2 = dashSpeed2;
+	airDashSpeed0 = dashSpeed0;
+	airDashSpeed1 = dashSpeed1;
+	airDashSpeed2 = dashSpeed2;
 
-		airDashSpeed = dashSpeed;
+	airDashSpeed = dashSpeed;
 
-		maxVelocity = 60;
-		double maxSpeed = maxVelocity;
-		double maxXSpeed = maxVelocity;
-		maxGroundSpeed = maxSpeed;
-		maxAirXSpeed = maxSpeed;
-		maxFallSpeedSlow = 30;//30;//100; // 4
-		maxFallSpeedFast = maxSpeed;
+	maxVelocity = 60;
+	double maxSpeed = maxVelocity;
+	double maxXSpeed = maxVelocity;
+	maxGroundSpeed = maxSpeed;
+	maxAirXSpeed = maxSpeed;
+	maxFallSpeedSlow = 30;//30;//100; // 4
+	maxFallSpeedFast = maxSpeed;
 
-		scorpAdditionalAccel = .2;
-		scorpAdditionalCapMax = 20.0;//12.0;
-		scorpAdditionalCap = 0.0;
+	scorpAdditionalAccel = .2;
+	scorpAdditionalCapMax = 20.0;//12.0;
+	scorpAdditionalCap = 0.0;
 
-		offSlopeByWallThresh = dashSpeed;//18;
-		slopeLaunchMinSpeed = 5;//dashSpeed * .7;
-		steepClimbSpeedThresh = dashSpeed - 1;
-		slideGravFactor = .25;//.25;//.3;//.45;
-
-		
-		maxRunInit = 4;
-		maxAirXControl = 6;//maxRunInit;
-		airSlow = .3;//.7;//.3;
-
-		groundOffsetX = 0;
-
-		grindEdge = NULL;
-		grindQuantity = 0;
-		grindSpeed = 0;
+	offSlopeByWallThresh = dashSpeed;//18;
+	slopeLaunchMinSpeed = 5;//dashSpeed * .7;
+	steepClimbSpeedThresh = dashSpeed - 1;
+	slideGravFactor = .25;//.25;//.3;//.45;
 
 		
+	maxRunInit = 4;
+	maxAirXControl = 6;//maxRunInit;
+	airSlow = .3;//.7;//.3;
+
+	groundOffsetX = 0;
+
+	grindEdge = NULL;
+	grindQuantity = 0;
+	grindSpeed = 0;
+
+		
 		
 
-		//max ground speed should probably start around 60-80 and then get powerups to rise to 100
-		//for world 1 lets do the lowest number for the beta
-		
-
-
-		runAccelInit = .5;
-		
-		runAccel = .03;
-		sprintAccel = .08;//.3;//.85;
-
-		holdDashAccel = .05;
-		bounceFlameAccel0 = .08;//.15;//.8;
-		bounceFlameAccel1 = .1; //this was the original
-		bounceFlameAccel2 = .15;//.18;
-
-		dashHeight = 10;
-		normalHeight = 20;
-		doubleJumpHeight = 10;
-		sprintHeight = 16;
-
-		hasAirDash = true;
-		hasGravReverse = true;
-
-		//CollisionBox b;
-		b.isCircle = false;
-		//b.offsetAngle = 0;
-		b.offset.x = 0;
-		b.offset.y = 0;
-		b.rw = 10;
-		b.rh = normalHeight;
-
-		//hurtboxMap[STAND] = new CollisionBody(1);
-		hurtBody.offset.x = 0;
-		hurtBody.offset.y = 0;
-		hurtBody.isCircle = false;
-		hurtBody.rw = 7;//10;
-		hurtBody.rh = 15;//normalHeight - 5;//normalHeight;
-		//hurtboxMap[STAND]->AddCollisionBox(0, hurtBody);
-
+	//max ground speed should probably start around 60-80 and then get powerups to rise to 100
+	//for world 1 lets do the lowest number for the beta
 		
 
 
-		currHitboxes = NULL;
-		//currHitboxInfo = NULL;
+	runAccelInit = .5;
+		
+	runAccel = .03;
+	sprintAccel = .08;//.3;//.85;
+
+	holdDashAccel = .05;
+	bounceFlameAccel0 = .08;//.15;//.8;
+	bounceFlameAccel1 = .1; //this was the original
+	bounceFlameAccel2 = .15;//.18;
+
+	dashHeight = 10;
+	normalHeight = 20;
+	doubleJumpHeight = 10;
+	sprintHeight = 16;
+
+	hasAirDash = true;
+	hasGravReverse = true;
+
+	//CollisionBox b;
+	b.isCircle = false;
+	//b.offsetAngle = 0;
+	b.offset.x = 0;
+	b.offset.y = 0;
+	b.rw = 10;
+	b.rh = normalHeight;
+
+	//hurtboxMap[STAND] = new CollisionBody(1);
+	hurtBody.offset.x = 0;
+	hurtBody.offset.y = 0;
+	hurtBody.isCircle = false;
+	hurtBody.rw = 7;//10;
+	hurtBody.rh = 15;//normalHeight - 5;//normalHeight;
+	//hurtboxMap[STAND]->AddCollisionBox(0, hurtBody);
+
+		
+
+
+	currHitboxes = NULL;
+	//currHitboxInfo = NULL;
 		
 		 
-		wireChargeInfo = new HitboxInfo();
-		wireChargeInfo->damage = 20;
-		wireChargeInfo->drainX = .5;
-		wireChargeInfo->drainY = .5;
-		wireChargeInfo->hitlagFrames = 0;
-		wireChargeInfo->hitstunFrames = 30;//30;
-		wireChargeInfo->knockback = 0;
-		wireChargeInfo->freezeDuringStun = true;
+	wireChargeInfo = new HitboxInfo();
+	wireChargeInfo->damage = 20;
+	wireChargeInfo->drainX = .5;
+	wireChargeInfo->drainY = .5;
+	wireChargeInfo->hitlagFrames = 0;
+	wireChargeInfo->hitstunFrames = 30;//30;
+	wireChargeInfo->knockback = 0;
+	wireChargeInfo->freezeDuringStun = true;
 
-		receivedHit = NULL;
-		hitlagFrames = 0;
-		hitstunFrames = 0;
-		invincibleFrames = 0;
+	receivedHit = NULL;
+	hitlagFrames = 0;
+	hitstunFrames = 0;
+	invincibleFrames = 0;
 
-		/*wireEdge = NULL;
-		wireState = 0;
-		pointNum = 0;
-		maxLength = 100;
-		minLength = 32;*/
+	/*wireEdge = NULL;
+	wireState = 0;
+	pointNum = 0;
+	maxLength = 100;
+	minLength = 32;*/
 
-		leftWire = new Wire( this, false );
-		rightWire = new Wire( this, true );
+	leftWire = new Wire( this, false );
+	rightWire = new Wire( this, true );
 
-		bounceEdge = NULL;
-		bounceGrounded = false;
+	bounceEdge = NULL;
+	bounceGrounded = false;
 
 		
 
-		minRailGrindSpeed[0] = dashSpeed0;
-		minRailGrindSpeed[1] = dashSpeed1;
-		minRailGrindSpeed[2] = dashSpeed2;
+	minRailGrindSpeed[0] = dashSpeed0;
+	minRailGrindSpeed[1] = dashSpeed1;
+	minRailGrindSpeed[2] = dashSpeed2;
 
-		record = false;
-		blah = false;
+	record = false;
+	blah = false;
 
-		touchEdgeWithLeftWire= false;
-		touchEdgeWithRightWire= false;
-		ghostFrame = 0;
+	touchEdgeWithLeftWire= false;
+	touchEdgeWithRightWire= false;
+	ghostFrame = 0;
 
-		recordedGhosts = 0;
+	recordedGhosts = 0;
 
-		bubbleSprite.setTexture( *ts_bubble->texture );
+	bubbleSprite.setTexture( *ts_bubble->texture );
 
-		currBubble = 0;
-		bubbleRadius = 160;
+	currBubble = 0;
+	bubbleRadius = 160;
 
-		bubbleRadius0 = 160;
-		bubbleRadius1 = 180;
-		bubbleRadius2 = 200;
+	bubbleRadius0 = 160;
+	bubbleRadius1 = 180;
+	bubbleRadius2 = 200;
 		
 
-		bubbleLifeSpan = 240;
+	bubbleLifeSpan = 240;
 		
-		int maxAura = 128 * 128;//64 * 64;//1000 * 1000;//300 * 300;//64 * 64;
-		testAura = new Aura(this, 1, maxAura, 0);
-		testAura1 = new Aura(this, 1, maxAura, 1);
-		testAura2 = new Aura(this, 1, maxAura, 2);
-		testAura3 = new Aura(this, 1, maxAura, 3);
+	int maxAura = 128 * 128;//64 * 64;//1000 * 1000;//300 * 300;//64 * 64;
+	testAura = new Aura(this, 1, maxAura, 0);
+	testAura1 = new Aura(this, 1, maxAura, 1);
+	testAura2 = new Aura(this, 1, maxAura, 2);
+	testAura3 = new Aura(this, 1, maxAura, 3);
 
-		hasPowerAirDash = true;//false;//true;
-		hasPowerGravReverse = false;
-		hasPowerBounce = false;
-		hasPowerGrindBall = false;
-		hasPowerTimeSlow = false;
-		hasPowerLeftWire = false;
-		hasPowerRightWire = false;
-		hasPowerClones = 0;
+	hasPowerAirDash = true;//false;//true;
+	hasPowerGravReverse = false;
+	hasPowerBounce = false;
+	hasPowerGrindBall = false;
+	hasPowerTimeSlow = false;
+	hasPowerLeftWire = false;
+	hasPowerRightWire = false;
+	hasPowerClones = 0;
 
-		if (true)
+	if (true)
+	{
+		hasPowerAirDash = true;
+		hasPowerGravReverse = true;
+		hasPowerBounce = true;
+		hasPowerGrindBall = true;
+		hasPowerTimeSlow = true;
+		hasPowerLeftWire = true;
+		hasPowerRightWire = true;
+	}
+
+	if (owner != NULL)
+	{
+		SaveFile *currProgress = owner->GetCurrentProgress();
+		if (currProgress != NULL && currProgress->HasPowerUnlocked(POWER_AIRDASH))//currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
 		{
 			hasPowerAirDash = true;
-			hasPowerGravReverse = true;
-			hasPowerBounce = true;
-			hasPowerGrindBall = true;
-			hasPowerTimeSlow = true;
-			hasPowerLeftWire = true;
-			hasPowerRightWire = true;
 		}
+	}
 
-		if (owner != NULL)
-		{
-			SaveFile *currProgress = owner->GetCurrentProgress();
-			if (currProgress != NULL && currProgress->HasPowerUnlocked(POWER_AIRDASH))//currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
-			{
-				hasPowerAirDash = true;
-			}
-		}
+	startHasPowerAirDash = hasPowerAirDash;
+	startHasPowerGravReverse =	hasPowerGravReverse;
+	startHasPowerBounce = hasPowerBounce;
+	startHasPowerGrindBall = hasPowerGrindBall;
+	startHasPowerTimeSlow = hasPowerTimeSlow;
+	startHasPowerLeftWire = hasPowerLeftWire;
+	startHasPowerRightWire = hasPowerRightWire;
 
-		startHasPowerAirDash = hasPowerAirDash;
-		startHasPowerGravReverse =	hasPowerGravReverse;
-		startHasPowerBounce = hasPowerBounce;
-		startHasPowerGrindBall = hasPowerGrindBall;
-		startHasPowerTimeSlow = hasPowerTimeSlow;
-		startHasPowerLeftWire = hasPowerLeftWire;
-		startHasPowerRightWire = hasPowerRightWire;
-
-		//do this a little later.
-		UpdatePowers();
+	//do this a little later.
+	UpdatePowers();
 
 
-		//only set these parameters again if u get a power or lose one.
-		//sh.setUniform( "hasPowerAirDash", hasPowerAirDash );
-		//sh.setUniform( "hasPowerGravReverse", hasPowerGravReverse );
-		//sh.setUniform( "hasPowerBounce", hasPowerBounce );
-		//sh.setUniform( "hasPowerGrindBall", hasPowerGrindBall );
-		//sh.setUniform( "hasPowerTimeSlow", hasPowerTimeSlow );
-		//sh.setUniform( "hasPowerLeftWire", hasPowerLeftWire );
-		//sh.setUniform( "hasPowerRightWire", hasPowerRightWire );
+	//only set these parameters again if u get a power or lose one.
+	//sh.setUniform( "hasPowerAirDash", hasPowerAirDash );
+	//sh.setUniform( "hasPowerGravReverse", hasPowerGravReverse );
+	//sh.setUniform( "hasPowerBounce", hasPowerBounce );
+	//sh.setUniform( "hasPowerGrindBall", hasPowerGrindBall );
+	//sh.setUniform( "hasPowerTimeSlow", hasPowerTimeSlow );
+	//sh.setUniform( "hasPowerLeftWire", hasPowerLeftWire );
+	//sh.setUniform( "hasPowerRightWire", hasPowerRightWire );
 
-		/*Color basicArmor( 0x14, 0x59, 0x22 );
-		Color basicArmorDark( 0x08, 0x40, 0x12 );
+	/*Color basicArmor( 0x14, 0x59, 0x22 );
+	Color basicArmorDark( 0x08, 0x40, 0x12 );
 
-		if( actorIndex == 1 )
-		{
-			sf::Uint8 basicRed = basicArmor.r;
-			sf::Uint8 basicGreen = basicArmor.g;
-			sf::Uint8 basicBlue = basicArmor.b;
+	if( actorIndex == 1 )
+	{
+		sf::Uint8 basicRed = basicArmor.r;
+		sf::Uint8 basicGreen = basicArmor.g;
+		sf::Uint8 basicBlue = basicArmor.b;
 
-			basicArmor.r = basicGreen;
-			basicArmor.b = basicRed;
-			basicArmor.g = basicBlue;
+		basicArmor.r = basicGreen;
+		basicArmor.b = basicRed;
+		basicArmor.g = basicBlue;
 
-			sf::Uint8 basicRedDark = basicArmorDark.r;
-			sf::Uint8 basicGreenDark = basicArmorDark.g;
-			sf::Uint8 basicBlueDark = basicArmorDark.b;
+		sf::Uint8 basicRedDark = basicArmorDark.r;
+		sf::Uint8 basicGreenDark = basicArmorDark.g;
+		sf::Uint8 basicBlueDark = basicArmorDark.b;
 
-			basicArmorDark.r = basicGreenDark;
-			basicArmorDark.b = basicRedDark;
-			basicArmorDark.g = basicBlueDark;
+		basicArmorDark.r = basicGreenDark;
+		basicArmorDark.b = basicRedDark;
+		basicArmorDark.g = basicBlueDark;
 
-		}*/
+	}*/
 			
-		//sh.setUniform( "armorColor", basicArmor );
-		//sh.setUniform( "armorColorDark", basicArmorDark );
+	//sh.setUniform( "armorColor", basicArmor );
+	//sh.setUniform( "armorColorDark", basicArmorDark );
 		
-		//sh.setUniform( "hasPowerClones", hasPowerClones > 0 );
+	//sh.setUniform( "hasPowerClones", hasPowerClones > 0 );
 
-		//for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
-		//{
-		//	motionGhosts[i] = 
-		//}
-
-
-		SetupTimeBubbles();
+	//for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
+	//{
+	//	motionGhosts[i] = 
+	//}
 
 
-		cout << "end player" << endl;
+	SetupTimeBubbles();
+
+
+	cout << "end player" << endl;
 }
 
 Actor::~Actor()

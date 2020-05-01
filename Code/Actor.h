@@ -519,6 +519,7 @@ struct Actor : QuadTreeCollider,
 	Actor( GameSession *owner, 
 		EditSession *editOwner, int actorIndex );
 	~Actor();
+	void Init();
 	float totalHealth;
 	int actorIndex;
 	void UpdateSprite();

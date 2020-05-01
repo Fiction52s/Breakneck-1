@@ -276,7 +276,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	//need to be added to session
 	sf::View view;
 
-	
+	void Reload(const boost::filesystem::path &p_filePath);
 
 	//shared but keep
 	virtual int Run();
@@ -778,13 +778,16 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		Tileset *ts);//,
 		//int (*ValidEdge)(sf::Vector2<double> &));
 
-
 	
 	
 	//bool shaders
 	bool shadersLoaded;
 	
 	std::string rayMode;
+
+	void SetupPlayers();
+
+	void SetupKeyMarker();
 
 	void SetupShardsCapturedField();
 

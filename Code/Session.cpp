@@ -1293,6 +1293,8 @@ void Session::SetPlayersGameMode()
 
 void Session::SetupTimeBubbles()
 {
+	if (fBubbleFrame != NULL)
+		return;
 	int numBubbleInfo = Actor::MAX_BUBBLES * MAX_PLAYERS;
 	fBubbleFrame = new float[numBubbleInfo];
 	for (int i = 0; i < numBubbleInfo; ++i)
@@ -1318,6 +1320,12 @@ void Session::SetupTimeBubbles()
 
 void Session::AllocatePolyShaders(int numPolyTypes)
 {
+	if (polyShaders != NULL)
+	{
+		delete[] polyShaders;
+		polyShaders = NULL;
+	}
+
 	numPolyShaders = numPolyTypes;
 	polyShaders = new Shader[numPolyShaders];
 	//polyShaders.resize(numPolyTypes);
@@ -1460,6 +1468,12 @@ bool Session::LoadPolyShader(int index, int matWorld, int matVariation)
 
 bool Session::ReadDecorInfoFile(int tWorld, int tVar)
 {
+	for (auto it = terrainDecorInfoMap.begin(); it != terrainDecorInfoMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+	terrainDecorInfoMap.clear();
+
 	stringstream ss;
 	ifstream is;
 
@@ -1713,6 +1727,12 @@ bool Session::ReadRails(std::ifstream &is)
 
 bool Session::ReadActors(std::ifstream &is)
 {
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		delete(*it).second;
+	}
+	groups.clear();
+
 	//enemies here
 	int numGroups;
 	is >> numGroups;
