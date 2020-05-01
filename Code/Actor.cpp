@@ -437,140 +437,133 @@ void Actor::SetupSwordTilesets(Skin *swordSkin)
 	ts_diagDownSword[2] = sess->GetSizedTileset(folder, "airdash_sword_p_320x384.png", swordSkin);
 }
 
-void Actor::SetupTilesets( Skin *skin, Skin *swordSkin )
+void Actor::SetupExtraTilesets(Skin *skin)
 {
-	SetupFXTilesets(skin, swordSkin);
-	SetupSwordTilesets(swordSkin);
+	string folder = "Kin/";
 
-	ts_scorpRun = GetTileset("Kin/scorp_run_192x128.png", 192, 128);
-	ts_scorpSlide = GetTileset("Kin/scorp_slide_160x96.png", 160, 96);
-	ts_scorpSteepSlide = GetTileset("Kin/scorp_steep_slide_224x128.png", 224, 128);
-	ts_scorpStart = GetTileset("Kin/scorp_start_256x256.png", 256, 256);
-	ts_scorpStand = GetTileset("Kin/scorp_stand_224x128.png", 224, 128);
-	ts_scorpJump = GetTileset("Kin/scorp_jump_192x144.png", 192, 144);
-	ts_scorpDash = GetTileset("Kin/scorp_dash_192x80.png", 192, 80);
-	ts_scorpSprint = GetTileset("Kin/scorp_sprint_192x96.png", 192, 96);
-	ts_scorpClimb = GetTileset("Kin/scorp_climb_256x128.png", 256, 128);
-	ts_bubble = GetTileset("Kin/time_bubble_128x128.png", 128, 128);
+	ts_scorpRun = sess->GetSizedTileset( folder, "scorp_run_192x128.png");
+	ts_scorpSlide = sess->GetSizedTileset( folder, "scorp_slide_160x96.png");
+	ts_scorpSteepSlide = sess->GetSizedTileset( folder, "scorp_steep_slide_224x128.png");
+	ts_scorpStart = sess->GetSizedTileset( folder, "scorp_start_256x256.png");
+	ts_scorpStand = sess->GetSizedTileset( folder, "scorp_stand_224x128.png");
+	ts_scorpJump = sess->GetSizedTileset( folder, "scorp_jump_192x144.png");
+	ts_scorpDash = sess->GetSizedTileset( folder, "scorp_dash_192x80.png");
+	ts_scorpSprint = sess->GetSizedTileset( folder, "scorp_sprint_192x96.png");
+	ts_scorpClimb = sess->GetSizedTileset( folder, "scorp_climb_256x128.png");
+	ts_bubble = sess->GetSizedTileset( folder, "time_bubble_128x128.png");
 
-	ts_airBounceFlame = GetTileset("Kin/bouncejumpflame.png", 128, 128, skin);
-	ts_runBounceFlame = GetTileset("Kin/bouncerunflame.png", 128, 96, skin);
-	
+	ts_airBounceFlame = sess->GetSizedTileset( folder, "bouncejumpflame_128x128.png", skin);
+	ts_runBounceFlame = sess->GetSizedTileset( folder, "bouncerunflame_128x96.png", skin);
 
-	ts_dodecaSmall = GetTileset("Kin/dodecasmall.png", 180, 180, skin);
-	ts_dodecaBig = GetTileset("Kin/dodecabig.png", 360, 360, skin);
-	tsgsdodeca = GetTileset("Kin/dodeca_64x64.png", 64, 64);
-	tsgstriblue = GetTileset("Kin/triblue.png", 64, 64);
-	tsgstricym = GetTileset("Kin/tricym_128x128.png", 128, 128);
-	tsgstrigreen = GetTileset("Kin/trigreen.png", 64, 64);
-	tsgstrioran = GetTileset("Kin/trioran_128x128.png", 128, 128);
-	tsgstripurp = GetTileset("Kin/tripurp_128x128.png", 128, 128);
-	tsgstrirgb = GetTileset("Kin/trirgb_128x128.png", 128, 128);
+	ts_dodecaSmall = sess->GetSizedTileset( folder, "dodecasmall_180x180.png", skin);
+	ts_dodecaBig = sess->GetSizedTileset( folder, "dodecabig_360x360.png", skin);
+	tsgsdodeca = sess->GetSizedTileset( folder, "dodeca_64x64.png");
+	tsgstriblue = sess->GetSizedTileset( folder, "triblue_64x64.png");
+	tsgstricym = sess->GetSizedTileset( folder, "tricym_128x128.png");
+	tsgstrigreen = sess->GetSizedTileset( folder, "trigreen_64x64.png");
+	tsgstrioran = sess->GetSizedTileset( folder, "trioran_128x128.png");
+	tsgstripurp = sess->GetSizedTileset( folder, "tripurp_128x128.png");
+	tsgstrirgb = sess->GetSizedTileset( folder, "trirgb_128x128.png");
 
-	tileset[STAND] = GetTileset("Kin/stand_64x64.png", 64, 64, skin);
-	tileset[WALLATTACK] = GetTileset("Kin/wall_att_64x128.png", 64, 128, skin);
-	tileset[DAIR] = GetTileset("Kin/dair_80x80.png", 80, 80, skin);
-	tileset[DASH] = GetTileset("Kin/dash_96x48.png", 96, 48, skin);
-	tileset[DOUBLE] = GetTileset("Kin/double_64x64.png", 64, 64, skin);
-	tileset[BACKWARDSDOUBLE] = GetTileset("Kin/double_back_96x96.png", 96, 96, skin);
-	tileset[FAIR] = GetTileset("Kin/fair_80x80.png", 80, 80, skin);
-	tileset[DIAGUPATTACK] = GetTileset("Kin/airdash_attack_up_96x80.png", 96, 80, skin);
-	tileset[DIAGDOWNATTACK] = GetTileset("Kin/airdash_attack_down_64x64.png", 64, 64, skin);
-	tileset[JUMP] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[LAND] = GetTileset("Kin/land_64x64.png", 64, 64, skin);
-	tileset[LAND2] = GetTileset("Kin/land_64x64.png", 64, 64, skin);
-	tileset[RUN] = GetTileset("Kin/run_64x64.png", 64, 64, skin);
-	tileset[SPRINGSTUN] = GetTileset("Kin/launch_96x64.png", 96, 64, skin);
-	tileset[SPRINGSTUNGLIDE] = tileset[SPRINGSTUN];
-
-	tileset[SPRINGSTUNAIRBOUNCE] = tileset[SPRINGSTUN];
-	tileset[SPRINGSTUNBOUNCE] = tileset[SPRINGSTUN];
-	tileset[SPRINGSTUNTELEPORT] = tileset[SPRINGSTUN];
-
-	tileset[SWINGSTUN] = tileset[SPRINGSTUN];
-
-	tileset[GLIDE] = tileset[SPRINGSTUN];
-	tileset[SLIDE] = GetTileset("Kin/slide_64x64.png", 64, 64, skin);
-	tileset[SPRINT] = GetTileset("Kin/sprint_80x48.png", 80, 48, skin);	
-	//tileset[DASHATTACK] = GetTileset("dash_attack_128x96.png", 128, 96);
-	tileset[STANDN] = GetTileset("Kin/standn_96x64.png", 96, 64, skin);
-	tileset[UAIR] = GetTileset("Kin/uair_96x96.png", 96, 96, skin);
-	tileset[WALLCLING] = GetTileset("Kin/wallcling_64x64.png", 64, 64, skin);
-	tileset[WALLJUMP] = GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
-	tileset[GRINDBALL] = GetTileset("Kin/grindball_64x64.png", 64, 64, skin);
-	tileset[GRINDLUNGE] = GetTileset("Kin/airdash_80x80.png", 80, 80, skin);
-	tileset[GRINDSLASH] = GetTileset("Kin/grind_lunge_96x128.png", 96, 128, skin);
-	tileset[GRINDATTACK] = GetTileset("Kin/grindball_64x64.png", 64, 64, skin);
-	tileset[STEEPSLIDE] = GetTileset("Kin/steepslide_64x64.png", 64, 64, skin);
-	tileset[STEEPCLIMBATTACK] = GetTileset("Kin/climb_att_128x64.png", 128, 64, skin);
-	tileset[STEEPSLIDEATTACK] = GetTileset("Kin/steep_att_128x64.png", 128, 64, skin);
-	tileset[AIRDASH] = GetTileset("Kin/airdash_80x80.png", 80, 80, skin);
-	tileset[STEEPCLIMB] = GetTileset("Kin/steepclimb_96x32.png", 96, 32, skin);
-	tileset[AIRHITSTUN] = GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
-	tileset[GROUNDHITSTUN] = GetTileset("Kin/hurt_64x64.png", 64, 64, skin);
-	tileset[WIREHOLD] = tileset[STEEPSLIDE];//GetTileset("Kin/steepslide_80x48.png", 80, 48, skin);
-	tileset[BOUNCEAIR] = GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
-	tileset[BOUNCEGROUND] = GetTileset("Kin/bounce_224x224.png", 224, 224, skin);
-	tileset[BOUNCEGROUNDEDWALL] = GetTileset("Kin/bounce_wall_224x224.png", 224, 224, skin);
-	tileset[DEATH] = GetTileset("Kin/death_128x96.png", 128, 96, skin);
-	tileset[JUMPSQUAT] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[INTRO] = GetTileset("Kin/enter_64x64.png", 64, 64, skin);
-	
 	if (owner != NULL)
 	{
 		ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
 		exitAuraSprite.setTexture(*ts_exitAura->texture);
 	}
+}
 
-	tileset[EXIT] = GetTileset("Kin/exit_64x128.png", 64, 128, skin);
-	tileset[EXITBOOST] = GetTileset("Kin/exit_96x128.png", 96, 128, skin);// kin_exit_128x128.png", 128, 128, skin);
+void Actor::SetupActionTilesets(Skin *skin)
+{
+	string folder = "Kin/";
+
+	tileset[STAND] = sess->GetSizedTileset( folder, "stand_64x64.png", skin);
+	tileset[WALLATTACK] = sess->GetSizedTileset( folder, "wall_att_64x128.png", skin);
+	tileset[DAIR] = sess->GetSizedTileset( folder, "dair_80x80.png", skin);
+	tileset[DASH] = sess->GetSizedTileset( folder, "dash_96x48.png", skin);
+	tileset[DOUBLE] = sess->GetSizedTileset( folder, "double_64x64.png", skin);
+	tileset[BACKWARDSDOUBLE] = sess->GetSizedTileset( folder, "double_back_96x96.png", skin);
+	tileset[FAIR] = sess->GetSizedTileset( folder, "fair_80x80.png", skin);
+	tileset[DIAGUPATTACK] = sess->GetSizedTileset( folder, "airdash_attack_up_96x80.png", skin);
+	tileset[DIAGDOWNATTACK] = sess->GetSizedTileset( folder, "airdash_attack_down_64x64.png", skin);
+	tileset[JUMP] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
+	tileset[LAND] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
+	tileset[LAND2] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
+	tileset[RUN] = sess->GetSizedTileset( folder, "run_64x64.png", skin);
+	tileset[SPRINGSTUN] = sess->GetSizedTileset( folder, "launch_96x64.png", skin);
+	tileset[SPRINGSTUNGLIDE] = tileset[SPRINGSTUN];
+	tileset[SPRINGSTUNAIRBOUNCE] = tileset[SPRINGSTUN];
+	tileset[SPRINGSTUNBOUNCE] = tileset[SPRINGSTUN];
+	tileset[SPRINGSTUNTELEPORT] = tileset[SPRINGSTUN];
+	tileset[SWINGSTUN] = tileset[SPRINGSTUN];
+	tileset[GLIDE] = tileset[SPRINGSTUN];
+	tileset[SLIDE] = sess->GetSizedTileset( folder, "slide_64x64.png", skin);
+	tileset[SPRINT] = sess->GetSizedTileset( folder, "sprint_80x48.png", skin);
+	tileset[STANDN] = sess->GetSizedTileset( folder, "standn_96x64.png", skin);
+	tileset[UAIR] = sess->GetSizedTileset( folder, "uair_96x96.png", skin);
+	tileset[WALLCLING] = sess->GetSizedTileset( folder, "wallcling_64x64.png", skin);
+	tileset[WALLJUMP] = sess->GetSizedTileset( folder, "walljump_64x64.png", skin);
+	tileset[GRINDBALL] = sess->GetSizedTileset( folder, "grindball_64x64.png", skin);
+	tileset[GRINDLUNGE] = sess->GetSizedTileset( folder, "airdash_80x80.png", skin);
+	tileset[GRINDSLASH] = sess->GetSizedTileset( folder, "grind_lunge_96x128.png", skin);
+	tileset[GRINDATTACK] = sess->GetSizedTileset( folder, "grindball_64x64.png", skin);
+	tileset[STEEPSLIDE] = sess->GetSizedTileset( folder, "steepslide_64x64.png", skin);
+	tileset[STEEPCLIMBATTACK] = sess->GetSizedTileset( folder, "climb_att_128x64.png", skin);
+	tileset[STEEPSLIDEATTACK] = sess->GetSizedTileset( folder, "steep_att_128x64.png", skin);
+	tileset[AIRDASH] = sess->GetSizedTileset( folder, "airdash_80x80.png", skin);
+	tileset[STEEPCLIMB] = sess->GetSizedTileset( folder, "steepclimb_96x32.png", skin);
+	tileset[AIRHITSTUN] = sess->GetSizedTileset( folder, "hurt_64x64.png", skin);
+	tileset[GROUNDHITSTUN] = sess->GetSizedTileset( folder, "hurt_64x64.png", skin);
+	tileset[WIREHOLD] = tileset[STEEPSLIDE];
+	tileset[BOUNCEAIR] = sess->GetSizedTileset( folder, "bounce_224x224.png", skin);
+	tileset[BOUNCEGROUND] = sess->GetSizedTileset( folder, "bounce_224x224.png", skin);
+	tileset[BOUNCEGROUNDEDWALL] = sess->GetSizedTileset( folder, "bounce_wall_224x224.png", skin);
+	tileset[DEATH] = sess->GetSizedTileset( folder, "death_128x96.png", skin);
+	tileset[JUMPSQUAT] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
+	tileset[INTRO] = sess->GetSizedTileset( folder, "enter_64x64.png", skin);
+	tileset[EXIT] = sess->GetSizedTileset( folder, "exit_64x128.png", skin);
+	tileset[EXITBOOST] = sess->GetSizedTileset( folder, "exit_96x128.png", skin);
 	tileset[INTROBOOST] = tileset[EXITBOOST];
 	tileset[EXITWAIT] = NULL;
-	tileset[GRAVREVERSE] = GetTileset("Kin/grav_64x64.png", 64, 64, skin);
-	tileset[RIDESHIP] = GetTileset("Kin/dive_64x64.png", 64, 64, skin);
-	tileset[SKYDIVE] = GetTileset("Kin/walljump_64x64.png", 64, 64, skin);
-	tileset[SKYDIVETOFALL] = GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
-	tileset[WAITFORSHIP] = GetTileset("Kin/shipjump_160x96.png", 160, 96, skin);
-	tileset[GRABSHIP] = GetTileset("Kin/shipjump_160x96.png", 160,96, skin);
-	tileset[ENTERNEXUS1] = GetTileset("Kin/intro_0_160x80.png", 160, 80, skin);
-
-	tileset[GETPOWER_AIRDASH_MEDITATE] = GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
-	tileset[GETPOWER_AIRDASH_FLIP] = GetTileset("Kin/w1_airdashget_128x128.png", 128, 128, skin);
-
-	tileset[SEQ_LOOKUP] = GetTileset("Kin/kin_cover_64x64.png", 64, 64, skin);
-
+	tileset[GRAVREVERSE] = sess->GetSizedTileset( folder, "grav_64x64.png", skin);
+	tileset[RIDESHIP] = sess->GetSizedTileset( folder, "dive_64x64.png", skin);
+	tileset[SKYDIVE] = sess->GetSizedTileset( folder, "walljump_64x64.png", skin);
+	tileset[SKYDIVETOFALL] = sess->GetSizedTileset( folder, "intro_0_160x80.png", skin);
+	tileset[WAITFORSHIP] = sess->GetSizedTileset( folder, "shipjump_160x96.png", skin);
+	tileset[GRABSHIP] = sess->GetSizedTileset( folder, "shipjump_160x96.png", skin);
+	tileset[ENTERNEXUS1] = sess->GetSizedTileset( folder, "intro_0_160x80.png", skin);
+	tileset[GETPOWER_AIRDASH_MEDITATE] = sess->GetSizedTileset( folder, "w1_airdashget_128x128.png", skin);
+	tileset[GETPOWER_AIRDASH_FLIP] = sess->GetSizedTileset( folder, "w1_airdashget_128x128.png", skin);
+	tileset[SEQ_LOOKUP] = sess->GetSizedTileset( folder, "kin_cover_64x64.png", skin);
 	tileset[SEQ_KINTHROWN] = tileset[AIRHITSTUN];
-
-	tileset[SEQ_KNEEL] = GetTileset("Kin/kin_meditate_64x96.png", 64, 96, skin);
+	tileset[SEQ_KNEEL] = sess->GetSizedTileset( folder, "kin_meditate_64x96.png", skin);
 	tileset[SEQ_KNEEL_TO_MEDITATE] = tileset[SEQ_KNEEL];
 	tileset[SEQ_MEDITATE_MASKON] = tileset[SEQ_KNEEL];
 	tileset[SEQ_MASKOFF] = tileset[SEQ_KNEEL];
 	tileset[SEQ_MEDITATE] = tileset[SEQ_KNEEL];
-
-	tileset[SEQ_FLOAT_TO_NEXUS_OPENING] = GetTileset("Kin/nexus_enter_384x256.png", 384, 256, skin);
-	tileset[SEQ_FADE_INTO_NEXUS] = tileset[SEQ_FLOAT_TO_NEXUS_OPENING];//tileset[AIRDASH];
-
-	tileset[SEQ_CRAWLERFIGHT_STAND] = GetTileset("Kin/stand_64x64.png", 64, 64, skin);
-	tileset[SEQ_WAIT] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = GetTileset("Kin/jump_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_LAND] = GetTileset("Kin/land_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = GetTileset("Kin/run_64x64.png", 64, 64, skin);
-	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = GetTileset("Kin/slide_64x64.png", 64, 64, skin);
-
-	tileset[SEQ_TURNFACE] = GetTileset("Kin/shipjump_160x96.png", 160, 96, skin);
-
+	tileset[SEQ_FLOAT_TO_NEXUS_OPENING] = sess->GetSizedTileset( folder, "nexus_enter_384x256.png", skin);
+	tileset[SEQ_FADE_INTO_NEXUS] = tileset[SEQ_FLOAT_TO_NEXUS_OPENING];
+	tileset[SEQ_CRAWLERFIGHT_STAND] = sess->GetSizedTileset( folder, "stand_64x64.png", skin);
+	tileset[SEQ_WAIT] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
+	tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
+	tileset[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
+	tileset[SEQ_CRAWLERFIGHT_LAND] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
+	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = sess->GetSizedTileset( folder, "run_64x64.png", skin);
+	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = sess->GetSizedTileset( folder, "slide_64x64.png", skin);
+	tileset[SEQ_TURNFACE] = sess->GetSizedTileset( folder, "shipjump_160x96.png", skin);
 	tileset[GETSHARD] = tileset[DEATH];
+	tileset[GOALKILL] = sess->GetSizedTileset( folder, "goal_w01_killa_384x256.png");
+	tileset[GOALKILL1] = sess->GetSizedTileset( folder, "goal_w01_killb_384x256.png");
+	tileset[GOALKILL2] = sess->GetSizedTileset( folder, "goal_w01_killc_384x256.png");
+	tileset[GOALKILL3] = sess->GetSizedTileset( folder, "goal_w01_killd_384x256.png");
+	tileset[GOALKILL4] = sess->GetSizedTileset( folder, "goal_w01_kille_384x256.png");
+}
 
-	
-
-	
-
-	tileset[GOALKILL] = GetTileset("Kin/goal_w01_killa_384x256.png", 384, 256);
-	tileset[GOALKILL1] = GetTileset("Kin/goal_w01_killb_384x256.png", 384, 256);
-	tileset[GOALKILL2] = GetTileset("Kin/goal_w01_killc_384x256.png", 384, 256);
-	tileset[GOALKILL3] = GetTileset("Kin/goal_w01_killd_384x256.png", 384, 256);
-	tileset[GOALKILL4] = GetTileset("Kin/goal_w01_kille_384x256.png", 384, 256);
+void Actor::SetupTilesets( Skin *skin, Skin *swordSkin )
+{
+	SetupFXTilesets(skin, swordSkin);
+	SetupSwordTilesets(swordSkin);
+	SetupExtraTilesets(skin);
+	SetupActionTilesets(skin);
 }
 
 void Actor::Init()

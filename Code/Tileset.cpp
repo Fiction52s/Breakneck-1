@@ -476,6 +476,7 @@ void TilesetManager::CleanupUnusedTilests()
 				if ((*lit).second == 0) //not used
 				{
 					cout << "cleaning up unused: " << i << " called: " << (*lit).first->sourceName << endl;
+					delete (*lit).first;
 					lit = currList.erase(lit);
 				}
 				else

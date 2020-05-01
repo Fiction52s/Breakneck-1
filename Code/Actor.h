@@ -475,6 +475,8 @@ struct Actor : QuadTreeCollider,
 	void SetupTilesets(Skin *kSkin, Skin*swordSkin);
 	void SetupFXTilesets( Skin *kSkin, Skin *swordSkin);
 	void SetupSwordTilesets(Skin *swordSkin);
+	void SetupExtraTilesets(Skin *skin);
+	void SetupActionTilesets( Skin *skin);
 
 	void RailGrindMovement();
 

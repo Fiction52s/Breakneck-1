@@ -1468,12 +1468,6 @@ bool Session::LoadPolyShader(int index, int matWorld, int matVariation)
 
 bool Session::ReadDecorInfoFile(int tWorld, int tVar)
 {
-	for (auto it = terrainDecorInfoMap.begin(); it != terrainDecorInfoMap.end(); ++it)
-	{
-		delete (*it).second;
-	}
-	terrainDecorInfoMap.clear();
-
 	stringstream ss;
 	ifstream is;
 
@@ -1511,6 +1505,8 @@ bool Session::ReadDecorInfoFile(int tWorld, int tVar)
 			tdInfo->percents[dI] = (*it).second;
 			++dI;
 		}
+
+		return true;
 	}
 	else
 	{

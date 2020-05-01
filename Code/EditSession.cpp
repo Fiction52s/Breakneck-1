@@ -644,20 +644,9 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	mapStartBrush = new Brush();
 	moveActive = false;
 
-	ActorGroup *playerGroup = new ActorGroup( "player" );
-	groups["player"] = playerGroup;
 	
-	ParamsInfo playerPI("player", NULL, NULL,
-		Vector2i(), Vector2i(22, 42), false, false, false, false, 1, 0,
-		GetTileset("Kin/jump_64x64.png", 64, 64));
 
-	playerType = new ActorType(playerPI);
-	types["player"] = playerType;
-
-	player = new PlayerParams( playerType, Vector2i( 0, 0 ) ) ;
-	groups["player"]->actors.push_back( player );
-
-	mapStartBrush->AddObject(player);
+	
 	
 
 	grassSize = 128;//64;
@@ -1291,9 +1280,7 @@ void EditSession::ProcessGate(int gType,
 
 void EditSession::ProcessPlayerStartPos()
 {
-	player->SetPosition(playerOrigPos);
-	player->image.setPosition(player->GetFloatPos());
-	player->SetBoundingQuad();
+	
 }
 
 void EditSession::ProcessHeader()
@@ -2179,6 +2166,26 @@ int EditSession::Run()
 	ReadDecorImagesFile();
 
 	ReadFile();
+
+	//this needs to be after readfile because reading enemies deletes actorgroup
+	ActorGroup *playerGroup = new ActorGroup("player");
+	groups["player"] = playerGroup;
+
+	ParamsInfo playerPI("player", NULL, NULL,
+		Vector2i(), Vector2i(22, 42), false, false, false, false, 1, 0,
+		GetTileset("Kin/jump_64x64.png", 64, 64));
+
+	playerType = new ActorType(playerPI);
+	types["player"] = playerType;
+
+	player = new PlayerParams(playerType, Vector2i(0, 0));
+	groups["player"]->actors.push_back(player);
+
+	player->SetPosition(playerOrigPos);
+	player->image.setPosition(player->GetFloatPos());
+	player->SetBoundingQuad();
+
+	mapStartBrush->AddObject(player);
 
 	players[0]->SetGameMode();
 	for (int i = 1; i < MAX_PLAYERS; ++i)

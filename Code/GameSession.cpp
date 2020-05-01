@@ -2957,6 +2957,12 @@ void GameSession::ProcessTerrain(PolyPtr poly)
 
 void GameSession::ProcessAllTerrain()
 {
+	for (auto it = terrainDecorInfoMap.begin(); it != terrainDecorInfoMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+	terrainDecorInfoMap.clear();
+
 	AllocatePolyShaders(matSet.size());
 
 	int index = 0;
@@ -4586,6 +4592,8 @@ bool GameSession::Load()
 	
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("opening map file!", 1);
+
+	matSet.clear();
 
 	OpenFile( );
 

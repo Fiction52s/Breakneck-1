@@ -43,17 +43,18 @@ private:
 	{
 		C_DEFAULT,
 		C_PLAYER,
-		C_ENEMY,
-		C_TERRAIN,
 		C_ENV,
+		C_FX,
+		C_HUD,
+
+		C_ENEMY, //this is where i start removing unused stuff
+		C_TERRAIN,
 		C_BACKGROUND,
 		C_MOMENTA,
 		C_SHARD,
 		C_STORY,
 		C_GOAL,
 		C_ZONE,
-		C_FX,
-		C_HUD,
 		C_Count
 	};
 public:
