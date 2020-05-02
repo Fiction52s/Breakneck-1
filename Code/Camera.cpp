@@ -21,7 +21,7 @@ CameraShot::CameraShot( const string &p_name, Vector2f &pos, float z)
 
 Camera::Camera()
 {
-	owner = NULL;
+	sess = NULL;
 	zoomFactor = 1;
 	zoomOutRate = 1;
 	zoomInRate = .1;
@@ -116,7 +116,7 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 	double capMinY = origMinY - extraCap;
 	double capMaxY = origMaxY + extraCap;
 
-	Enemy *curr = owner->activeEnemyList;
+	Enemy *curr = sess->activeEnemyList;
 	while (curr != NULL)
 	{
 		int numPoints = curr->GetNumCamPoints();
@@ -845,21 +845,21 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	yChangeNeg = 0;
 
 	int topBoundsCamExtra = 50;
-	int topBounds = owner->mapHeader->topBounds + topBoundsCamExtra;
+	int topBounds = sess->mapHeader->topBounds + topBoundsCamExtra;
 
 	float halfw = 960 / 2;
 	float halfh = 540 / 2;
 
 	float left = truePos.x - halfw * GetZoom();
 
-	float tdiff = owner->mapHeader->leftBounds - left;
+	float tdiff = sess->mapHeader->leftBounds - left;
 	if (tdiff > 0)
 	{
 		xChangePos = tdiff;
 	}
 	float right = truePos.x + halfw * GetZoom();
 
-	tdiff = right - (owner->mapHeader->leftBounds + owner->mapHeader->boundsWidth);
+	tdiff = right - (sess->mapHeader->leftBounds + sess->mapHeader->boundsWidth);
 	if (tdiff > 0)
 	{
 		xChangeNeg = -tdiff;
@@ -872,89 +872,91 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	}
 
 	float bot = truePos.y + halfh * GetZoom();
-	tdiff = bot - (owner->mapHeader->topBounds + owner->mapHeader->boundsHeight);
+	tdiff = bot - (sess->mapHeader->topBounds + sess->mapHeader->boundsHeight);
 	if (tdiff > 0)
 	{
 		yChangeNeg = -tdiff;
 	}
 
 	Barrier *leftb = NULL, *rightb = NULL, *topb = NULL, *botb = NULL;
-	for (list<Barrier*>::iterator it = owner->barriers.begin(); it != owner->barriers.end(); ++it)
+	if (game != NULL)
 	{
-		//continue;
-		if ((*it)->triggered)
+		for (list<Barrier*>::iterator it = game->barriers.begin(); it != game->barriers.end(); ++it)
 		{
-			continue;
-		}
-
-
-		if ((*it)->x)
-		{
-			if ((*it)->positiveOpen)
+			//continue;
+			if ((*it)->triggered)
 			{
-				float diff = (*it)->GetCamPos() - left;
-				if (diff > 0)
+				continue;
+			}
+
+
+			if ((*it)->x)
+			{
+				if ((*it)->positiveOpen)
 				{
-					if (diff > xChangePos)
+					float diff = (*it)->GetCamPos() - left;
+					if (diff > 0)
 					{
-						xChangePos = diff;
-						leftb = (*it);
+						if (diff > xChangePos)
+						{
+							xChangePos = diff;
+							leftb = (*it);
+						}
+						//pos.x += diff;
+						//cout << "moving right" << endl;
+						//offset.x += (*it)->pos - left;
 					}
-					//pos.x += diff;
-					//cout << "moving right" << endl;
-					//offset.x += (*it)->pos - left;
+				}
+				else
+				{
+					float diff = right - (*it)->GetCamPos();
+					if (diff > 0)
+					{
+						//cout << "moving left: " << diff << endl;
+						//pos.x -= right - (*it)->pos;
+						//offset.x -= diff;
+						if (-diff < xChangeNeg)
+						{
+							xChangeNeg = -diff;
+							rightb = (*it);
+						}
+						//pos.x -= diff;
+					}
 				}
 			}
 			else
 			{
-				float diff = right - (*it)->GetCamPos();
-				if (diff > 0)
+				if ((*it)->positiveOpen)
 				{
-					//cout << "moving left: " << diff << endl;
-					//pos.x -= right - (*it)->pos;
-					//offset.x -= diff;
-					if (-diff < xChangeNeg)
+					float diff = (*it)->GetCamPos() - top;
+					if (diff > 0)
 					{
-						xChangeNeg = -diff;
-						rightb = (*it);
+						if (diff > yChangePos)
+						{
+							yChangePos = diff;
+							topb = (*it);
+						}
+						//offset.y += (*it)->pos - top;
+						//pos.y += diff;
 					}
-					//pos.x -= diff;
 				}
-			}
-		}
-		else
-		{
-			if ((*it)->positiveOpen)
-			{
-				float diff = (*it)->GetCamPos() - top;
-				if (diff > 0)
+				else
 				{
-					if (diff > yChangePos)
+					float diff = bottom - (*it)->GetCamPos();
+					if (diff > 0)
 					{
-						yChangePos = diff;
-						topb = (*it);
+						if (-diff < yChangeNeg)
+						{
+							yChangeNeg = -diff;
+							botb = (*it);
+						}
+						//pos.y -= diff;
+						//offset.y -= bot - (*it)->pos;
 					}
-					//offset.y += (*it)->pos - top;
-					//pos.y += diff;
-				}
-			}
-			else
-			{
-				float diff = bottom - (*it)->GetCamPos();
-				if (diff > 0)
-				{
-					if (-diff < yChangeNeg)
-					{
-						yChangeNeg = -diff;
-						botb = (*it);
-					}
-					//pos.y -= diff;
-					//offset.y -= bot - (*it)->pos;
 				}
 			}
 		}
 	}
-	
 
 	Vector2f barrierOffset;
 	Vector2f borderOffset;
@@ -1063,17 +1065,30 @@ void Camera::UpdateBossFight(int bossFightType)
 	}
 }
 
-void Camera::Init(V2d &pos)
+void Camera::Init(V2d &p_pos)
 {
+	if (sess == NULL)
+	{
+		sess = Session::GetSession();
+		if (sess->IsSessTypeGame())
+		{
+			game = GameSession::GetSession();
+		}
+		else
+		{
+			game = NULL;
+		}
+	}
+
 	Reset();
-	pos.x = owner->GetPlayer(0)->position.x;
-	pos.y = owner->GetPlayer(0)->position.y;
+	pos.x = p_pos.x;//owner->GetPlayer(0)->position.x;
+	pos.y = p_pos.y;//owner->GetPlayer(0)->position.y;
 }
 
 void Camera::Update( Actor *player )
 {
-	if( owner == NULL )
-		owner = player->owner;
+	//if( owner == NULL )
+	//	owner = player->owner;
 
 	slowMultiple = player->slowMultiple;
 
@@ -1095,7 +1110,7 @@ void Camera::Update( Actor *player )
 		return;
 	}
 
-	if( owner->pauseFrames > 0 )
+	if( sess->pauseFrames > 0 )
 	{
 		pos.x = playerPos.x + offset.x;
 		pos.y = playerPos.y + offset.y;
@@ -1123,7 +1138,7 @@ void Camera::Update( Actor *player )
 	
 	Vector2f currOffset;
 
-	if (owner->debugScreenRecorder != NULL)
+	if ( game != NULL && game->debugScreenRecorder != NULL)
 	{
 		offset.x = 0;
 		offset.y = 0;

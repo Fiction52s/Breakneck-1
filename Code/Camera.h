@@ -18,6 +18,9 @@ struct CameraShot
 };
 
 
+struct GameSession;
+struct Session;
+
 struct Camera
 {
 	Camera();
@@ -37,7 +40,8 @@ struct Camera
 	void UpdateEase();
 	sf::Vector2f GetNewOffset( sf::Vector2<double> &pVel);
 	void Init(sf::Vector2<double> &pos);
-	GameSession *owner;
+	Session *sess;
+	GameSession *game;
 	sf::Vector2f offsetVel;
 	
 	sf::FloatRect GetRect();

@@ -403,7 +403,7 @@ GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath
 	//ifstream isTest;
 	//enemyCreateMap["goal"](isTest);
 
-	cam.owner = this;
+	//cam.owner = this;
 	currSession = this;
 
 	Init();

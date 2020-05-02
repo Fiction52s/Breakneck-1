@@ -203,10 +203,31 @@ void EditSession::TestPlayerModeUpdate()
 		UpdatePhysics();
 		UpdatePostPhysics();
 
+		
+
 		UpdateDecorSprites();
 		UpdateDecorLayers();
 		
+		/*if ( != NULL)
+		{
+			cam.UpdateVS(GetPlayer(0), GetPlayer(1));
+		}
+		else*/
+		{
+			cam.Update(GetPlayer(0));
+		}
+
+		cam.UpdateRumble();
+
+		Vector2f camPos = cam.GetPos();
+		view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
+
+		//this is because kin's sprite is 2x size in the game as well as other stuff
+		//lastViewSize = view.getSize();
+		view.setCenter(camPos.x, camPos.y);
 		//UpdatePlayerWireQuads();
+
+		preScreenTex->setView(view);
 
 		accumulator -= TIMESTEP;
 		totalGameFrames++;
@@ -215,6 +236,8 @@ void EditSession::TestPlayerModeUpdate()
 
 void EditSession::TestPlayerMode()
 {
+	cam.Reset();
+
 	if (mode == TEST_PLAYER)
 	{
 		//GetPlayer(0)->Respawn();
@@ -258,6 +281,8 @@ void EditSession::TestPlayerMode()
 				}
 			}
 		}
+
+		
 		return;
 	}
 
@@ -2196,6 +2221,8 @@ int EditSession::Run()
 			players[i]->SetGameMode();
 		}
 	}
+
+	cam.Init(GetPlayerPos(0));
 
 	for (auto it = types.begin(); it != types.end(); ++it)
 	{
