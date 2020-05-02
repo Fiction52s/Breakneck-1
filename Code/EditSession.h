@@ -85,14 +85,18 @@ struct EditSession : GUIHandler, Session
 
 	bool IsDrawMode(Emode em);
 	Emode mode;
+	
 
 	enum Tool
 	{
-		TOOL_ADD,
-		TOOL_SUBTRACT,
-		TOOL_EXTEND,
-		TOOL_CUT
+		TOOL_DRAW,
+		TOOL_BOX
 	};
+
+	sf::Vector2f startBoxPos;
+	sf::Vertex boxToolQuad[4];
+	sf::Color boxToolColor;
+	bool boxDrawStarted;
 
 	enum ImageEditTool
 	{

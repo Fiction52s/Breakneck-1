@@ -565,6 +565,9 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	boxToolColor = Color(255, 0, 0, 50);
+	SetRectColor(boxToolQuad, boxToolColor);
+
 	createEnemyModeUI = NULL;
 	createDecorModeUI = NULL;
 	enemyEdgePolygon = NULL;
@@ -2013,7 +2016,7 @@ int EditSession::Run()
 	sf::View oldPreTexView = preScreenTex->getView();//mainMenu->preScreenTexture->
 	sf::View oldWindowView = window->getView();
 
-	currTool = TOOL_ADD;
+	currTool = TOOL_DRAW;
 	currentFile = filePath.string();
 
 	tempActor = NULL;
@@ -8180,6 +8183,9 @@ void EditSession::SetMode(Emode m)
 
 	switch (oldMode)
 	{
+	case CREATE_TERRAIN:
+		currTool = TOOL_DRAW;
+		break;
 	case TEST_PLAYER:
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -8978,7 +8984,7 @@ void EditSession::DrawGraph()
 {
 	if (showGraph)
 	{
-		graph->SetCenterAbsolute(view.getCenter());
+		graph->SetCenterAbsolute(Vector2f(worldPos));//view.getCenter());
 		graph->Draw(preScreenTex);
 	}
 }
@@ -9328,7 +9334,17 @@ void EditSession::DrawMode()
 	{
 	case CREATE_TERRAIN:
 	{
-		DrawPolygonInProgress();
+		if (currTool == TOOL_DRAW)
+		{
+			DrawPolygonInProgress();
+		}
+		else if( currTool == TOOL_BOX && boxDrawStarted)
+		{
+			SetRectCenter(boxToolQuad, abs(startBoxPos.x - testPoint.x),
+				abs(startBoxPos.y - testPoint.y), (startBoxPos + testPoint) / 2.f);
+			preScreenTex->draw(boxToolQuad, 4, sf::Quads);
+		}
+		
 		break;
 	}
 	case CREATE_RAILS:
@@ -9791,12 +9807,16 @@ void EditSession::CreateTerrainModeHandleEvent()
 			}
 		}
 
+		
+
 		justCompletedPolyWithClick = false; //just make this always false here.
 
 		break;
 	}
 	case Event::MouseButtonReleased:
 	{
+		
+
 		if (showPanel != NULL)
 		{
 			showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
@@ -9843,6 +9863,19 @@ void EditSession::CreateTerrainModeHandleEvent()
 		else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
 		{
 			RedoMostRecentUndoneAction();
+		}
+		else if (ev.key.code == sf::Keyboard::B)
+		{
+			if (currTool == TOOL_DRAW)
+			{
+				polygonInProgress->ClearPoints();
+				currTool = TOOL_BOX;
+				boxDrawStarted = false;;
+			}
+			else
+			{
+				currTool = TOOL_DRAW;
+			}
 		}
 
 		break;
@@ -11256,12 +11289,46 @@ void EditSession::CreateTerrainModeUpdate()
 		showPoints = false;
 	}
 
+	if (currTool == TOOL_BOX)
+	{
+		if (!boxDrawStarted && IsMousePressed(Mouse::Left))
+		{
+			startBoxPos = testPoint;
+			boxDrawStarted = true;
+		}
+		else if( boxDrawStarted && !IsMousePressed( Mouse::Left ) )
+		{
+			boxDrawStarted = false;
+			if (testPoint.x - startBoxPos.x != 0 && testPoint.y - startBoxPos.y != 0)
+			{
+				polygonInProgress->AddPoint(Vector2i(startBoxPos.x, startBoxPos.y), false);
+				polygonInProgress->AddPoint(Vector2i(testPoint.x, startBoxPos.y), false);
+				polygonInProgress->AddPoint(Vector2i(testPoint.x, testPoint.y), false);
+				polygonInProgress->AddPoint(Vector2i(startBoxPos.x, testPoint.y), false);
+
+				ExecuteTerrainCompletion();
+				//currTool = TOOL_DRAW;
+			}
+		}
+	}
+	
+
+
 	PreventNearPrimaryAnglesOnPolygonInProgress();
 
-	if (!justCompletedPolyWithClick)
+	if (currTool == TOOL_DRAW)
 	{
-		TryAddPointToPolygonInProgress();
+		if (!justCompletedPolyWithClick)
+		{
+			TryAddPointToPolygonInProgress();
+		}
 	}
+	else if (currTool == TOOL_BOX)
+	{
+
+	}
+
+	
 }
 
 void EditSession::CreateRailsModeUpdate()
