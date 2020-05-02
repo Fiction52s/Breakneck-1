@@ -4914,6 +4914,7 @@ bool TerrainPolygon::PointTooCloseToPoints( Vector2i point, int minDistance )
 
 		if (lengthSqr(diff) < minDistance * minDistance)
 		{
+			cout << "length: " << lengthSqr(diff) << ", min: " << minDistance * minDistance << endl;
 			return true;
 		}
 	}

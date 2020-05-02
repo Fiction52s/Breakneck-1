@@ -14,6 +14,7 @@ struct EditorGraph
 	void SetPosition( sf::Vector2f &pos );
 	void SetCenterAbsolute(const sf::Vector2f &center);
 	void Draw(sf::RenderTarget *target);
+	void ModifyGraphSpacing(double factor);
 	sf::Vertex *graphLines;
 	sf::Color graphColor;
 	int graphSpacing;

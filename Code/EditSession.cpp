@@ -9725,13 +9725,27 @@ void EditSession::HandleEvents()
 			}
 			case Event::MouseWheelMoved:
 			{
-				if (ev.mouseWheel.delta > 0)
+				if (showGraph && HoldingControl())
 				{
-					ModifyZoom(.5);
+					if (ev.mouseWheel.delta > 0)
+					{
+						graph->ModifyGraphSpacing(.5);
+					}
+					else if (ev.mouseWheel.delta < 0)
+					{
+						graph->ModifyGraphSpacing(2.0);
+					}
 				}
-				else if (ev.mouseWheel.delta < 0)
+				else
 				{
-					ModifyZoom(2);
+					if (ev.mouseWheel.delta > 0)
+					{
+						ModifyZoom(.5);
+					}
+					else if (ev.mouseWheel.delta < 0)
+					{
+						ModifyZoom(2);
+					}
 				}
 				break;
 			}

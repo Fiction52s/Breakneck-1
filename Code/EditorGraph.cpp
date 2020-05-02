@@ -12,7 +12,7 @@ int EditorGraph::TOTAL_VERTICES = NUM_GRAPH_LINES * 4; //2 vert, 2 horiz
 EditorGraph::EditorGraph()
 {
 	graphColor = Color(200, 50, 50, 100);
-	graphSpacing = 10;
+	graphSpacing = 32;
 	graphLines = new Vertex[TOTAL_VERTICES];
 	//SetPosition();
 }
@@ -20,6 +20,14 @@ EditorGraph::EditorGraph()
 EditorGraph::~EditorGraph()
 {
 	delete[] graphLines;
+}
+
+void EditorGraph::ModifyGraphSpacing(double factor)
+{
+	int newSpacing = graphSpacing * factor;
+	if (newSpacing < 4)
+		return;
+	graphSpacing *= factor;
 }
 
 void EditorGraph::Draw(RenderTarget *target)
