@@ -7,19 +7,23 @@ using namespace sf;
 
 int EditorGraph::NUM_HALF_GRAPH_LINES = 30;
 int EditorGraph::NUM_GRAPH_LINES = NUM_HALF_GRAPH_LINES * 2 + 1;
-int EditorGraph::TOTAL_VERTICES = NUM_GRAPH_LINES * 4; //2 vert, 2 horiz
+int EditorGraph::TOTAL_VERTICES = NUM_GRAPH_LINES * 4 * 2; //2 vert, 2 horiz
 
 EditorGraph::EditorGraph()
 {
 	graphColor = Color(200, 50, 50, 100);
 	graphSpacing = 32;
-	graphLines = new Vertex[TOTAL_VERTICES];
+	//graphLines = new Vertex[TOTAL_VERTICES];
+	graphQuads = new Vertex[TOTAL_VERTICES];
+	defaultLineWidth = 2;
+	lineWidth = 2;
 	//SetPosition();
 }
 
 EditorGraph::~EditorGraph()
 {
-	delete[] graphLines;
+	delete[] graphQuads;
+	//delete[] graphLines;
 }
 
 void EditorGraph::ModifyGraphSpacing(double factor)
@@ -32,10 +36,11 @@ void EditorGraph::ModifyGraphSpacing(double factor)
 
 void EditorGraph::Draw(RenderTarget *target)
 {
-	target->draw(graphLines, TOTAL_VERTICES, sf::Lines);
+	//target->draw(graphLines, TOTAL_VERTICES, sf::Lines);
+	target->draw(graphQuads, TOTAL_VERTICES, sf::Quads);
 }
 
-void EditorGraph::SetCenterAbsolute(const Vector2f &center)
+void EditorGraph::SetCenterAbsolute(const Vector2f &center, float zoomFactor )
 {
 	int gX, gY;
 	float x = center.x;
@@ -59,6 +64,8 @@ void EditorGraph::SetCenterAbsolute(const Vector2f &center)
 
 	Vector2f gPos = Vector2f(gX, gY);
 
+	lineWidth = zoomFactor * defaultLineWidth;
+
 	SetPosition(gPos);
 }
 
@@ -68,19 +75,29 @@ void EditorGraph::SetPosition( Vector2f &pos )
 	int temp = -graphMax;
 
 	//horiz
-	for (int i = 0; i < NUM_GRAPH_LINES * 2; i+=2)
+	int quadIndex;
+	for (int i = 0; i < NUM_GRAPH_LINES; i++)
 	{
-		graphLines[i] = sf::Vertex(Vector2f(-graphMax, temp) + pos, graphColor);
-		graphLines[i + 1] = sf::Vertex(Vector2f(graphMax, temp) + pos, graphColor);
+		quadIndex = i * 4;
+		SetRectTopLeft(graphQuads + quadIndex,
+			graphMax * 2, lineWidth, Vector2f(-graphMax, temp - lineWidth / 2) + pos);
+		SetRectColor(graphQuads + quadIndex, graphColor);
+		//graphLines[i] = sf::Vertex(Vector2f(-graphMax, temp) + pos, graphColor);
+		//graphLines[i + 1] = sf::Vertex(Vector2f(graphMax, temp) + pos, graphColor);
 		temp += graphSpacing;
 	}
 
 	////vert
 	temp = -graphMax;
-	for (int i = NUM_GRAPH_LINES * 2; i < NUM_GRAPH_LINES * 4; i += 2)
+	
+	for (int i = 0; i < NUM_GRAPH_LINES; i++)
 	{
-		graphLines[i] = sf::Vertex(Vector2f(temp, -graphMax) + pos, graphColor);
-		graphLines[i + 1] = sf::Vertex(Vector2f(temp, graphMax) + pos, graphColor);
+		quadIndex = (i + NUM_GRAPH_LINES) * 4;
+		SetRectTopLeft(graphQuads + quadIndex,
+			lineWidth, graphMax * 2, Vector2f( temp - lineWidth / 2, -graphMax) + pos);
+		SetRectColor(graphQuads + quadIndex, graphColor);
+		//graphLines[i] = sf::Vertex(Vector2f(temp, -graphMax) + pos, graphColor);
+		//graphLines[i + 1] = sf::Vertex(Vector2f(temp, graphMax) + pos, graphColor);
 		temp += graphSpacing;
 	}
 }

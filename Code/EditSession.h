@@ -53,6 +53,8 @@ struct TerrainRail;
 
 struct EnemyChooser;
 
+struct CircleGroup;
+
 
 struct EditSession : GUIHandler, Session
 {
@@ -78,6 +80,12 @@ struct EditSession : GUIHandler, Session
 		TEST_PLAYER,
 		TRANSFORM,
 	};
+
+	CircleGroup *testPlayerTracker;
+	int trackPoints;
+	int mostRecentTrackPoint;
+	sf::Color startTrackColor;
+	sf::Color endTrackColor;
 
 	const static int MAX_RECENT_ENEMIES = 12;
 	std::list<std::pair<ActorType*, int>> recentEnemies;
@@ -617,6 +625,8 @@ struct EditSession : GUIHandler, Session
 	bool showGraph;
 
 	EditorGraph *graph;
+
+
 
 	void DrawPolygons();
 	void DrawRails();

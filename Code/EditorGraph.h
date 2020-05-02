@@ -12,12 +12,16 @@ struct EditorGraph
 	EditorGraph();
 	~EditorGraph();
 	void SetPosition( sf::Vector2f &pos );
-	void SetCenterAbsolute(const sf::Vector2f &center);
+	void SetCenterAbsolute(const sf::Vector2f &center,
+		float zoomFactor );
 	void Draw(sf::RenderTarget *target);
 	void ModifyGraphSpacing(double factor);
-	sf::Vertex *graphLines;
+	//sf::Vertex *graphLines;
+	sf::Vertex *graphQuads;
 	sf::Color graphColor;
 	int graphSpacing;
+	float lineWidth;
+	float defaultLineWidth;
 };
 
 struct EditSession;

@@ -25,6 +25,8 @@
 #include "clipper.hpp"
 
 #include "TransformTools.h"
+
+#include "CircleGroup.h"
 //using namespace ClipperLib;
 
 using namespace std;
@@ -203,6 +205,49 @@ void EditSession::TestPlayerModeUpdate()
 		UpdatePhysics();
 		UpdatePostPhysics();
 
+		if (GetCurrInput(0).start && !GetPrevInput(0).start)
+		{
+			SetMode(EDIT);
+
+			int numCircles = testPlayerTracker->numCircles;
+			float blend;
+			float diff;
+
+			if (trackPoints >= numCircles)
+			{
+				testPlayerTracker->ShowAll();
+				
+				for (int i = 0; i < numCircles; ++i)
+				{
+					if (i <= mostRecentTrackPoint)
+					{
+						diff = mostRecentTrackPoint - i;
+					}
+					else
+					{
+						diff = numCircles - (i - mostRecentTrackPoint);
+					}
+					blend = 1.f - diff / (trackPoints - 1);
+
+					testPlayerTracker->SetColor(i, GetBlendColor(startTrackColor,
+						endTrackColor, blend ));
+				}
+			}
+			else
+			{
+				for (int i = 0; i <= mostRecentTrackPoint; ++i)
+				{
+					testPlayerTracker->SetVisible(i, true);
+					diff = mostRecentTrackPoint - i;
+					blend = 1.f - diff / (trackPoints - 1);
+					testPlayerTracker->SetColor(i, GetBlendColor(startTrackColor,
+						endTrackColor,blend));
+				}
+			}
+
+			
+			return;
+		}
 		
 
 		UpdateDecorSprites();
@@ -215,6 +260,15 @@ void EditSession::TestPlayerModeUpdate()
 		else*/
 		{
 			cam.Update(GetPlayer(0));
+		}
+
+		if (totalGameFrames % 3 == 0)
+		{
+			int trackerFrame = (totalGameFrames / 3) % testPlayerTracker->numCircles;
+
+			testPlayerTracker->SetPosition(trackerFrame, Vector2f(GetPlayerPos(0)));
+			trackPoints++;
+			mostRecentTrackPoint = trackerFrame;
 		}
 
 		cam.UpdateRumble();
@@ -237,6 +291,8 @@ void EditSession::TestPlayerModeUpdate()
 void EditSession::TestPlayerMode()
 {
 	cam.Reset();
+	testPlayerTracker->HideAll();
+	trackPoints = 0;
 
 	if (mode == TEST_PLAYER)
 	{
@@ -565,6 +621,10 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	testPlayerTracker = new CircleGroup(1000, 12, Color::Green, 6);
+	startTrackColor = Color::Red;
+	endTrackColor = Color::Green;
+
 	boxToolColor = Color(255, 0, 0, 50);
 	SetRectColor(boxToolQuad, boxToolColor);
 
@@ -763,6 +823,8 @@ RailPtr EditSession::GetRail(int index)
 
 EditSession::~EditSession()
 {
+	delete testPlayerTracker;
+
 	delete transformTools;
 
 	delete graph;
@@ -2423,11 +2485,13 @@ int EditSession::Run()
 
 		Draw();
 		
+		DrawGraph();
+
 		DrawMode();		
 
 		TempMoveSelectedBrush();
 
-		DrawGraph();
+		
 
 		DrawDecorFront();
 
@@ -8984,7 +9048,7 @@ void EditSession::DrawGraph()
 {
 	if (showGraph)
 	{
-		graph->SetCenterAbsolute(Vector2f(worldPos));//view.getCenter());
+		graph->SetCenterAbsolute(Vector2f(worldPos), zoomMultiple);//view.getCenter());
 		graph->Draw(preScreenTex);
 	}
 }
@@ -9355,7 +9419,7 @@ void EditSession::DrawMode()
 	case EDIT:
 	{
 		DrawBoxSelection();
-
+		testPlayerTracker->Draw(preScreenTex);
 		break;
 	}
 	case CREATE_ENEMY:
