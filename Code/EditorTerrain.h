@@ -12,9 +12,10 @@
 #include "PositionInfo.h"
 #include "Grass.h"
 #include "SpecialTerrainTypes.h"
+//#include "Enemy_HealthFly.h"
 //#include "ActorParamsBase.h"
 
-
+struct HealthFly;
 struct TouchGrassCollection;
 
 struct Session;
@@ -206,6 +207,11 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_STEEPCEILING,
 		EDGE_WALL,
 	};
+
+	void GenerateMyFlies();
+	std::vector<HealthFly*> myFlies;
+	sf::Vertex *flyQuads;
+	Tileset *ts_fly;
 
 	Edge *playerEdge;
 	double playerQuant;

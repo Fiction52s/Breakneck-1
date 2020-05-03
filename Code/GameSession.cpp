@@ -629,10 +629,10 @@ void GameSession::Cleanup()
 		airTriggerTree = NULL;
 	}
 
-	if (numTotalFlies > 0 && healthFlyVA != NULL )
+	/*if (numTotalFlies > 0 && healthFlyVA != NULL )
 	{
 		delete[] healthFlyVA;
-	}
+	}*/
 
 
 	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
@@ -1217,9 +1217,9 @@ bool GameSession::LoadEnemies( ifstream &is )
 {
 	int shardsLoadedCounter = 0;
 
-	numTotalFlies = 0;
+	/*numTotalFlies = 0;
 	ts_healthFly = NULL;
-	healthFlyVA = NULL;
+	healthFlyVA = NULL;*/
 
 	int numGroups;
 	is >> numGroups;
@@ -4383,10 +4383,10 @@ void GameSession::KeyboardUpdate( int index )
 
 void GameSession::DrawHealthFlies(sf::RenderTarget *target)
 {
-	if (numTotalFlies > 0)
+	/*if (numTotalFlies > 0)
 	{
 		target->draw(healthFlyVA, numTotalFlies * 4, sf::Quads, ts_healthFly->texture);
-	}
+	}*/
 }
 
 bool GameSession::sLoad( GameSession *gs )

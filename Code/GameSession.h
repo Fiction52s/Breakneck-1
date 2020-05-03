@@ -112,7 +112,7 @@ struct DecorExpression;
 struct DecorLayer;
 struct TouchGrassCollection;
 
-struct HealthFly;
+//struct HealthFly;
 
 struct EnvPlant;
 
@@ -384,10 +384,10 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	//---------------------------------
 	void DrawHealthFlies(sf::RenderTarget *target);
 
-	sf::Vertex *healthFlyVA;
+	/*sf::Vertex *healthFlyVA;
 	Tileset *ts_healthFly;
 	int numTotalFlies;
-	std::list<HealthFly*> allFlies;
+	std::list<HealthFly*> allFlies;*/
 
 	ShapeEmitter *testEmit;
 

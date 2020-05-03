@@ -13,7 +13,8 @@ struct HealthFly : Enemy
 	};
 
 	HealthFly(sf::Vector2i &pos, int level, 
-		sf::Vertex *p_quad );
+		sf::Vertex *p_quad, Tileset *p_ts );
+	HealthFly(HealthFly &hf);
 	void HandleQuery(QuadTreeCollider * qtc);
 	void SetLevel(int lev);
 	void AddToWorldTrees();

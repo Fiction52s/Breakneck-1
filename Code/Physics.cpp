@@ -2158,7 +2158,7 @@ sf::Rect<double> CollisionBox::GetAABB()
 }
 
 CollisionBody::CollisionBody(CollisionBox::BoxType bType)
-	:hitboxInfo(NULL)
+	:hitboxInfo(NULL), numFrames(0)
 {
 	boxType = bType;
 	//collisionBoxVectors = new std::list<CollisionBox>*[numFrames];

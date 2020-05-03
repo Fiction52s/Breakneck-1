@@ -18,6 +18,7 @@
 #include "TerrainDecor.h"
 
 #include "TouchGrass.h"
+#include "Enemy_HealthFly.h"
 
 using namespace std;
 using namespace sf;
@@ -52,7 +53,73 @@ namespace mapbox
 	}
 }
 
-#define cout std::cout
+void TerrainPolygon::GenerateMyFlies()
+{
+	if (terrainWorldType != FLY)
+		return;
+
+	ts_fly = sess->GetTileset("Enemies/healthfly_64x64.png", 64, 64);
+
+	SetRenderMode(RENDERMODE_FLIES);
+
+	Vector2i topLeft(top, left);
+	int flyGridDist = 64;
+
+	int width = (right - left) / flyGridDist + 1;
+	int height = (bottom - top) / flyGridDist + 1;
+	vector<bool> hasFly;
+	hasFly.resize(width * height);
+
+	int numFlies = 0;
+	//bool *hasFly = new bool[width * height];
+	int index;
+	IntRect r;
+	int rSize = 2;
+	for (int x = 0; x < width; ++x)
+	{
+		for (int y = 0; y < height; ++y)
+		{
+			r.left = left + (x * flyGridDist) - rSize;
+			r.top = top + (y * flyGridDist) - rSize;
+			r.width = rSize * 2;
+			r.height = rSize * 2;
+			if (Intersects( r ) )
+			{
+				index = x * height + y;
+				hasFly[index] = true;
+				++numFlies;
+			}
+		}
+	}
+
+	int flyLevel = 0;
+
+	if (!myFlies.empty())
+	{
+		myFlies.clear();
+		delete[] flyQuads;
+		flyQuads = NULL;
+	}
+
+	myFlies.reserve(numFlies);
+	
+	flyQuads = new Vertex[numFlies * 4];
+	
+	int flyCounter = 0;
+	for (int x = 0; x < width; ++x)
+	{
+		for (int y = 0; y < height; ++y)
+		{
+			index = x * height + y;
+			if (hasFly[index])
+			{
+				myFlies.push_back(new HealthFly(Vector2i(left + x * flyGridDist, top + y * flyGridDist),
+					flyLevel, flyQuads + flyCounter * 4, ts_fly));
+				++flyCounter;
+			}
+		}
+	}
+}
 
 void TerrainPolygon::BackupEnemyPositions()
 {
@@ -936,6 +1003,7 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
+	flyQuads = NULL;
 	pShader = NULL;
 	decorTree = new QuadTree(1000000, 1000000);
 	myTerrainTree = new QuadTree(1000000, 1000000);
@@ -971,6 +1039,7 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	flyQuads = NULL;
 	pShader = NULL;
 	numGrassTotal = 0;
 	decorTree = new QuadTree(1000000, 1000000);
@@ -1035,6 +1104,17 @@ TerrainPolygon::~TerrainPolygon()
 	for (auto it = decorExprList.begin(); it != decorExprList.end(); ++it)
 	{
 		delete (*it);
+	}
+
+	if (!myFlies.empty())
+	{
+		for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+		{
+			delete (*it);
+		}
+
+		delete[] flyQuads;
+		flyQuads = NULL;
 	}
 
 	ClearPoints();
@@ -2697,6 +2777,9 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 		GenerateDecor();
 
 		GenerateBorderMesh();
+
+
+		GenerateMyFlies();
 	}
 }
 
@@ -3350,8 +3433,12 @@ void TerrainPolygon::SetRenderMode(RenderMode rm)
 		triBackups.clear();
 	}
 
+	if (rm == RENDERMODE_NORMAL && GetSpecialPolyIndex() == 2)
+	{
+		rm = RENDERMODE_FLIES;
+	}
+
 	renderMode = rm;
-	
 }
 
 void TerrainPolygon::CancelTransformation()
@@ -3384,6 +3471,8 @@ PolyPtr TerrainPolygon::CompleteTransformation()
 			temp.y = round(lines[i * 2].position.y);
 			newPoly->AddPoint(temp, false);
 		}
+
+		newPoly->SetMaterialType(terrainWorldType, terrainVariation);
 
 		UpdateLinePositions();
 
@@ -3529,6 +3618,19 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	}
 	else if (renderMode == RENDERMODE_TRANSFORM)
 	{
+		if (GetSpecialPolyIndex() == 2)
+		{
+			if (showPoints)
+			{
+				DrawPoints(rt, zoomMultiple, dontShow);
+			}
+
+			rt->draw(lines, numP * 2, sf::Lines);
+
+			rt->draw(flyQuads, myFlies.size() * 4, sf::Quads, ts_fly->texture);
+			return;
+		}
+
 		if (va != NULL)
 		{
 			if (pShader != NULL)
@@ -3543,6 +3645,19 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 			
 
 		rt->draw(lines, numP * 2, sf::Lines);
+		return;
+	}
+	else if (renderMode == RENDERMODE_FLIES)
+	{
+		if (showPoints)
+		{
+			DrawPoints(rt, zoomMultiple, dontShow);
+		}
+
+		rt->draw(lines, numP * 2, sf::Lines);
+
+		rt->draw(flyQuads, myFlies.size() * 4, sf::Quads, ts_fly->texture);
+
 		return;
 	}
 

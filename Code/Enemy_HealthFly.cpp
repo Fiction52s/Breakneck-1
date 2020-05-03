@@ -44,7 +44,6 @@ void HealthFly::SetLevel(int lev)
 {
 	level = lev;
 
-
 	switch (level)
 	{
 	case 1:
@@ -61,7 +60,13 @@ void HealthFly::SetLevel(int lev)
 	}
 }
 
-HealthFly::HealthFly(sf::Vector2i &pos, int p_level, sf::Vertex *p_quad )
+HealthFly::HealthFly(HealthFly &hf)
+	:HealthFly( Vector2i( hf.GetPosition() ), hf.level, hf.quad, hf.ts )
+{
+
+}
+
+HealthFly::HealthFly(sf::Vector2i &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts )
 	:Enemy(EnemyType::EN_HEALTHFLY, NULL)
 {
 	SetNumActions(Count);
@@ -71,13 +76,15 @@ HealthFly::HealthFly(sf::Vector2i &pos, int p_level, sf::Vertex *p_quad )
 
 	quad = p_quad;
 
-	SetCurrPosInfo(startPosInfo);
+	startPosInfo.position = V2d(pos);
 
-	ts = sess->GetTileset("Enemies/healthfly_64x64.png", 64, 64);
+	SetCurrPosInfo(startPosInfo);
 
 	double radius = 40;
 	BasicCircleHitBodySetup(radius);
 	BasicCircleHurtBodySetup(radius);
+
+	ts = p_ts;
 
 	actionLength[NEUTRAL] = 5;
 	actionLength[DEATH] = 8;

@@ -5,7 +5,7 @@
 #include <SFML/Graphics.hpp>
 #include "ISelectable.h"
 #include "EditorActors.h"
-#include "EditorTerrain.h"
+//#include "EditorTerrain.h"
 #include "ActorParamsBase.h"
 
 struct TerrainPolygon;
