@@ -534,6 +534,9 @@ void Enemy::UpdateOnPlacement( ActorParams *ap )
 	{
 		SetCurrPosInfo(ap->posInfo);
 	}
+
+	SetSpawnRect();
+
 }
 
 void Enemy::UpdateFromEditParams( int numFrames )

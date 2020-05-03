@@ -444,7 +444,7 @@ void EditSession::TestPlayerMode()
 		specialTerrainTree->Clear();
 		borderTree->Clear();
 		grassTree->Clear();
-
+		activeItemTree->Clear();
 		
 
 		
@@ -461,7 +461,7 @@ void EditSession::TestPlayerMode()
 			}
 		}
 
-		for (auto it = groups.begin(); it != groups.end(); ++it)
+		/*for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
 			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
 			{
@@ -470,7 +470,7 @@ void EditSession::TestPlayerMode()
 					AddEnemy((*enit)->myEnemy);
 				}
 			}
-		}
+		}*/
 
 		/*for (auto it = allCurrEnemies.begin(); it != allCurrEnemies.end(); ++it)
 		{
@@ -496,7 +496,7 @@ void EditSession::TestPlayerMode()
 		activeItemTree = new QuadTree(1000000, 1000000);
 
 		//Actor *p;
-		Enemy *currEnemy;
+		
 		/*for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
 			p = GetPlayer(i);
@@ -504,19 +504,7 @@ void EditSession::TestPlayerMode()
 				p->SetToOriginalPos();
 		}*/
 
-		for (auto it = groups.begin(); it != groups.end(); ++it)
-		{
-			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
-			{
-				currEnemy = (*enit)->myEnemy;
-				if (currEnemy != NULL)
-				{
-					currEnemy->AddToWorldTrees();
-					AddEnemy(currEnemy);
-					
-				}
-			}
-		}
+		
 	}
 
 	auto &testPolys = GetCorrectPolygonList(0);
@@ -533,6 +521,21 @@ void EditSession::TestPlayerMode()
 		specialTerrainTree->Insert((*it));
 		//(*it)->AddEdgesToQuadTree(terrainTree);
 		//(*it)->AddGrassToQuadTree(grassTree);
+	}
+
+	Enemy *currEnemy;
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			currEnemy = (*enit)->myEnemy;
+			if (currEnemy != NULL)
+			{
+				currEnemy->AddToWorldTrees();
+				AddEnemy(currEnemy);
+
+			}
+		}
 	}
 
 	if (continueTracking)
