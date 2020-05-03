@@ -9936,6 +9936,27 @@ void Actor::SetStandInPlacePos(Edge *g, double q,
 	StandInPlace();
 }
 
+void Actor::SetGroundedPos(Edge *g, double q, double xoff)
+{
+	ground = g;
+	edgeQuantity = q;
+
+	hasDoubleJump = true;
+	hasAirDash = true;
+	
+	offsetX = xoff;
+
+	V2d norm = ground->Normal();
+	if (norm.y <= 0)
+	{
+		reversed = false;
+	}
+	else
+	{
+		reversed = true;
+	}
+}
+
 void Actor::SetGroundedPos(Edge *g, double q)
 {
 	ground = g;

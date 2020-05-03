@@ -326,7 +326,7 @@ void EditSession::TestPlayerMode()
 	
 	accumulator = TIMESTEP + .1;
 	
-	gameClock.restart();
+	
 
 	Actor *p;
 
@@ -341,7 +341,7 @@ void EditSession::TestPlayerMode()
 		p = GetPlayer(0);
 		if (p->ground != NULL)
 		{
-			if (!TryAttachPlayerToPolys(playerOldGroundTrackPos))
+			if (!TryAttachPlayerToPolys(playerOldGroundTrackPos, p->offsetX))
 			{
 				p->ground = NULL;
 				p->action = Actor::JUMP;
@@ -359,6 +359,7 @@ void EditSession::TestPlayerMode()
 		testPlayerTracker->HideAll();
 		totalGameFrames = 0;
 		currentTime = 0;
+		gameClock.restart();
 		//accumulator = TIMESTEP + .1;
 	}
 	else
@@ -3195,7 +3196,7 @@ void EditSession::TryAttachActorsToPolys(
 	}
 }
 
-bool EditSession::TryAttachPlayerToPolys(V2d &groundPosition)
+bool EditSession::TryAttachPlayerToPolys(V2d &groundPosition, double xoff)
 {
 	Actor *player = GetPlayer(0);
 	auto &polyList = GetCorrectPolygonList(0);
@@ -3206,7 +3207,7 @@ bool EditSession::TryAttachPlayerToPolys(V2d &groundPosition)
 		pEdge = (*it)->CheckPlayerOnLine(groundPosition, quant);
 		if (pEdge != NULL)
 		{
-			player->SetGroundedPos(pEdge, quant);
+			player->SetGroundedPos(pEdge, quant, xoff );
 			return true;
 		}
 	}

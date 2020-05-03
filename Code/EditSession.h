@@ -372,7 +372,8 @@ struct EditSession : GUIHandler, Session
 		PolyPtr orig,
 		std::list<PolyPtr> & newPolys,
 		Brush *b);
-	bool TryAttachPlayerToPolys(V2d &groundPosition);
+	bool TryAttachPlayerToPolys(V2d &groundPosition,
+		double xoff );
 	void TryKeepGates( 
 		std::list<GateInfoPtr> &gateInfoList,
 		std::list<PolyPtr> &newPolys,
