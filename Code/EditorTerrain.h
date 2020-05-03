@@ -203,7 +203,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	enum QueryType
 	{
 		CHECK_EMPTY,
-		INTERSECT_QUAD
+		INTERSECT_QUAD,
+		ATTACH_PLAYER,
 	};
 
 	enum RenderMode
@@ -237,6 +238,11 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_STEEPCEILING,
 		EDGE_WALL,
 	};
+
+	Edge *playerEdge;
+	double playerQuant;
+	Edge * CheckPlayerOnLine( V2d &edgePos, double &quant );
+	V2d playerEdgePos;
 
 	Session *sess;
 	PolyPtr mostRecentCopy;
@@ -463,6 +469,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	bool AlignExtremes();
 	bool AlignExtremes(
 		std::vector<PointMoveInfo> &lockPoints);
+	//bool AlignExtremesMovePoints(
+	//	std::map<TerrainPoint*, sf::Vector2f> &affectedPoints);
 	void UpdateGrass();
 
 	void WriteFile(std::ofstream & of);

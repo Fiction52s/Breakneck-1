@@ -86,6 +86,9 @@ struct EditSession : GUIHandler, Session
 	int mostRecentTrackPoint;
 	sf::Color startTrackColor;
 	sf::Color endTrackColor;
+	V2d playerOldTrackPos;
+	V2d playerOldGroundTrackPos;
+	bool trackerOn;
 
 	const static int MAX_RECENT_ENEMIES = 12;
 	std::list<std::pair<ActorType*, int>> recentEnemies;
@@ -93,6 +96,7 @@ struct EditSession : GUIHandler, Session
 
 	bool IsDrawMode(Emode em);
 	Emode mode;
+	void UpdateInputNonGame();
 	
 
 	enum Tool
@@ -368,6 +372,7 @@ struct EditSession : GUIHandler, Session
 		PolyPtr orig,
 		std::list<PolyPtr> & newPolys,
 		Brush *b);
+	bool TryAttachPlayerToPolys(V2d &groundPosition);
 	void TryKeepGates( 
 		std::list<GateInfoPtr> &gateInfoList,
 		std::list<PolyPtr> &newPolys,
@@ -585,13 +590,16 @@ struct EditSession : GUIHandler, Session
 	void MoveLeftBorder(int amount);
 	void MoveRightBorder(int amount);
 
-	
+	//void UpdateInput()
 
 	void ShowGrass(bool s);
 
 	void ModifyZoom(double factor);
+	void SetZoom(double z);
 	double minZoom;
 	double maxZoom;
+
+	bool gameCam;
 
 	float oldShaderZoom;
 	sf::Vector2f oldShaderBotLeft;
@@ -672,6 +680,7 @@ struct EditSession : GUIHandler, Session
 	//void EditImagesModeHandleEvent();
 	void SetLevelModeHandleEvent();
 	void TransformModeHandleEvent();
+	void TestPlayerModeHandleEvent();
 
 	void CreateTerrainModeUpdate();
 	void CreateRailsModeUpdate();

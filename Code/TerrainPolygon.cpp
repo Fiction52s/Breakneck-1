@@ -306,6 +306,12 @@ void TerrainPolygon::QueryQuadTree(QuadTree *tree,
 		resultQuadTouching = false;
 		tree->Query(this, r);
 	}
+	else if (qType == QueryType::ATTACH_PLAYER)
+	{
+		playerEdge = NULL;
+		playerQuant = 0;
+		tree->Query(this, r);
+	}
 }
 
 bool TerrainPolygon::IsEmptyRect(sf::Rect<double> &rect)
@@ -919,6 +925,15 @@ void TerrainPolygon::HandleEntrant(QuadTreeEntrant *qte)
 		if (IsEdgeTouchingQuad(e->v0, e->v1, quadCheck[0], quadCheck[1], quadCheck[2], quadCheck[3]))
 		{
 			resultQuadTouching = true;
+		}
+	}
+	else if (queryType == QueryType::ATTACH_PLAYER)
+	{
+		Edge *e = (Edge*)qte;
+		if ( playerEdge == NULL && EditSession::PointOnLine( playerEdgePos, e->v0, e->v1 ))
+		{
+			playerEdge = e;
+			playerQuant = e->GetQuantity(playerEdgePos);
 		}
 	}
 }
@@ -4914,7 +4929,7 @@ bool TerrainPolygon::PointTooCloseToPoints( Vector2i point, int minDistance )
 
 		if (lengthSqr(diff) < minDistance * minDistance)
 		{
-			cout << "length: " << lengthSqr(diff) << ", min: " << minDistance * minDistance << endl;
+			//cout << "length: " << lengthSqr(diff) << ", min: " << minDistance * minDistance << endl;
 			return true;
 		}
 	}
@@ -5077,6 +5092,24 @@ bool TerrainPolygon::Load(std::ifstream &is)
 	}
 
 	return true;
+}
+
+Edge * TerrainPolygon::CheckPlayerOnLine( V2d &edgePos, double &quant )
+{
+	playerEdgePos = edgePos;
+
+	double testSize = 1;
+	sf::Rect<double> r;
+	r.left = edgePos.x - testSize;
+	r.width = testSize * 2;
+	r.top = edgePos.y - testSize;
+	r.height = testSize * 2;
+
+	QueryQuadTree(myTerrainTree, QueryType::ATTACH_PLAYER, r);
+
+	quant = playerQuant;
+
+	return playerEdge;
 }
 
 bool TerrainPolygon::IntersectsActorParams(ActorPtr a)

@@ -208,6 +208,19 @@ void EditSession::TestPlayerModeUpdate()
 		if (GetCurrInput(0).start && !GetPrevInput(0).start)
 		{
 			SetMode(EDIT);
+			if (gameCam)
+			{
+				SetZoom(2);
+			}
+			trackerOn = true;
+			
+			pTemp = GetPlayer(0);
+			if (pTemp->ground != NULL ) //doesn't work with bounce or grind
+			{
+				playerOldGroundTrackPos = pTemp->ground->GetPosition(pTemp->edgeQuantity);
+			}
+			playerOldTrackPos = pTemp->position;
+			
 
 			int numCircles = testPlayerTracker->numCircles;
 			float blend;
@@ -227,7 +240,7 @@ void EditSession::TestPlayerModeUpdate()
 					{
 						diff = numCircles - (i - mostRecentTrackPoint);
 					}
-					blend = 1.f - diff / (trackPoints - 1);
+					blend = 1.f - diff / (trackPoints);
 
 					testPlayerTracker->SetColor(i, GetBlendColor(startTrackColor,
 						endTrackColor, blend ));
@@ -239,7 +252,7 @@ void EditSession::TestPlayerModeUpdate()
 				{
 					testPlayerTracker->SetVisible(i, true);
 					diff = mostRecentTrackPoint - i;
-					blend = 1.f - diff / (trackPoints - 1);
+					blend = 1.f - diff / (trackPoints);
 					testPlayerTracker->SetColor(i, GetBlendColor(startTrackColor,
 						endTrackColor,blend));
 				}
@@ -264,21 +277,39 @@ void EditSession::TestPlayerModeUpdate()
 
 		if (totalGameFrames % 3 == 0)
 		{
-			int trackerFrame = (totalGameFrames / 3) % testPlayerTracker->numCircles;
+			//int trackerFrame = (totalGameFrames / 3) % testPlayerTracker->numCircles;
 
-			testPlayerTracker->SetPosition(trackerFrame, Vector2f(GetPlayerPos(0)));
-			trackPoints++;
-			mostRecentTrackPoint = trackerFrame;
+			int lastTrackPoint = mostRecentTrackPoint - 1;
+			if (lastTrackPoint < 0 && trackPoints > 0)
+				lastTrackPoint = testPlayerTracker->numCircles - 1;
+
+			Vector2f pTrackPos = Vector2f(GetPlayerPos(0));
+			if (lastTrackPoint < 0 || pTrackPos != testPlayerTracker->GetPosition(lastTrackPoint))
+			{
+				if (mostRecentTrackPoint == testPlayerTracker->numCircles)
+					mostRecentTrackPoint = 0;
+
+				testPlayerTracker->SetPosition(mostRecentTrackPoint, pTrackPos);
+				mostRecentTrackPoint++;
+				trackPoints++;
+				//cout << "track point: " << trackPoints << endl;
+			}
+			
+			//mostRecentTrackPoint = trackerFrame;
 		}
 
 		cam.UpdateRumble();
 
 		Vector2f camPos = cam.GetPos();
-		view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
+		if (gameCam)
+		{
 
-		//this is because kin's sprite is 2x size in the game as well as other stuff
-		//lastViewSize = view.getSize();
-		view.setCenter(camPos.x, camPos.y);
+			view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
+
+			//this is because kin's sprite is 2x size in the game as well as other stuff
+			//lastViewSize = view.getSize();
+			view.setCenter(camPos.x, camPos.y);
+		}
 		//UpdatePlayerWireQuads();
 
 		preScreenTex->setView(view);
@@ -291,23 +322,79 @@ void EditSession::TestPlayerModeUpdate()
 void EditSession::TestPlayerMode()
 {
 	cam.Reset();
-	testPlayerTracker->HideAll();
-	trackPoints = 0;
+	
+	accumulator = TIMESTEP + .1;
+	
+	gameClock.restart();
+
+	Actor *p;
+
+	bool continueTracking = (GetCurrInput(0).start && trackPoints > 0 && mode != TEST_PLAYER);
+
+	if (continueTracking)
+	{
+		//eventually have a flag that the terrain has been modified, which you change when pushing
+		//done actions onto the stack. if they haven't been modified, theres no reason to 
+		//try to attach the player or even rebuild the trees.
+
+		p = GetPlayer(0);
+		if (p->ground != NULL)
+		{
+			if (!TryAttachPlayerToPolys(playerOldGroundTrackPos))
+			{
+				p->ground = NULL;
+				p->action = Actor::JUMP;
+				p->frame = 1;
+				p->position = playerOldTrackPos;
+				//continueTracking = false;
+			}
+		}
+	}
+
+	if (!continueTracking)
+	{
+		mostRecentTrackPoint = 0;
+		trackPoints = 0;
+		testPlayerTracker->HideAll();
+		totalGameFrames = 0;
+		currentTime = 0;
+		//accumulator = TIMESTEP + .1;
+	}
+	else
+	{
+		
+	}
+
+	
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			if (!continueTracking)
+			{
+				p->Respawn();
+			}
+		}
+	}
 
 	if (mode == TEST_PLAYER)
-	{
+	{		
 		//GetPlayer(0)->Respawn();
 		Actor *p;
-		for (int i = 0; i < MAX_PLAYERS; ++i)
+		//gameClock.restart();
+
+		/*for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
 			p = GetPlayer(i);
 			if (p != NULL)
 			{
+				
 				p->Respawn();
 				p->velocity = worldPos - oldWorldPosTest;
 			}
 			
-		}
+		}*/
 
 		auto testPolys = GetCorrectPolygonList(0);
 		for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
@@ -342,15 +429,12 @@ void EditSession::TestPlayerMode()
 		return;
 	}
 
-	
+	SetMode(TEST_PLAYER);
 	ClearSelectedPoints();
 	ClearSelectedBrush();
+	
 
-	currentTime = 0;
-	accumulator = TIMESTEP + .1;
-	SetMode(TEST_PLAYER);
-	totalGameFrames = 0;
-	gameClock.restart();
+	
 
 	if (terrainTree != NULL)
 	{
@@ -359,13 +443,9 @@ void EditSession::TestPlayerMode()
 		borderTree->Clear();
 		grassTree->Clear();
 
-		Actor *p;
-		for (int i = 0; i < MAX_PLAYERS; ++i)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-				p->Respawn();
-		}
+		
+
+		
 
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -413,14 +493,14 @@ void EditSession::TestPlayerMode()
 
 		activeItemTree = new QuadTree(1000000, 1000000);
 
-		Actor *p;
+		//Actor *p;
 		Enemy *currEnemy;
-		for (int i = 0; i < MAX_PLAYERS; ++i)
+		/*for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
 			p = GetPlayer(i);
 			if (p != NULL)
 				p->SetToOriginalPos();
-		}
+		}*/
 
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -453,6 +533,11 @@ void EditSession::TestPlayerMode()
 		//(*it)->AddGrassToQuadTree(grassTree);
 	}
 
+	if (continueTracking)
+	{
+		currentTime = gameClock.getElapsedTime().asSeconds();
+	}
+	
 
 	//terrainBGTree = new QuadTree(1000000, 1000000);
 	////soon make these the actual size of the bordered level
@@ -621,6 +706,9 @@ EditSession *EditSession::GetSession()
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
 {
+	trackerOn = false;
+	gameCam = false;
+	trackPoints = 0;
 	testPlayerTracker = new CircleGroup(1000, 12, Color::Green, 6);
 	startTrackColor = Color::Red;
 	endTrackColor = Color::Green;
@@ -971,61 +1059,7 @@ void EditSession::Draw()
 	DrawActors();
 	
 
-	if (IsDrawMode( PASTE ) )
-	{
-		if( copiedBrush != NULL )
-			copiedBrush->Draw(preScreenTex);
-		if (freeActorCopiedBrush != NULL)
-			freeActorCopiedBrush->Draw(preScreenTex);
-	}
-
-	if (IsDrawMode( TEST_PLAYER ))
-	{
-		Enemy *current = activeEnemyList;
-		while (current != NULL)
-		{
-			current->Draw(preScreenTex);
-			current = current->next;
-		}
-
-		DrawPlayerWires(preScreenTex);
-
-		Actor *p = NULL;
-		for (int i = 0; i < 4; ++i)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				p->Draw(preScreenTex);
-			}
-		}
-	}
-
-	if (IsDrawMode(CREATE_ENEMY))
-	{
-		createEnemyModeUI->Draw(preScreenTex);
-
-		if( grabbedActor != NULL )
-			grabbedActor->Draw(preScreenTex);
-	}
-
-	if (IsDrawMode(CREATE_IMAGES))
-	{
-		createDecorModeUI->Draw(preScreenTex);
-
-		if (grabbedImage != NULL)
-		{
-			grabbedImage->Draw(preScreenTex);
-		}
-	}
-
-	if (IsDrawMode(TRANSFORM))
-	{
-		transformTools->Draw(preScreenTex);
-
-		if (grabbedImage != NULL)
-			grabbedImage->Draw(preScreenTex);
-	}
+	
 }
 
 void EditSession::UpdateFullBounds()
@@ -3158,6 +3192,77 @@ void EditSession::TryAttachActorsToPolys(
 	{
 		TryAttachActorsToPoly((*it), newPolys, b);
 	}
+}
+
+bool EditSession::TryAttachPlayerToPolys(V2d &groundPosition)
+{
+	Actor *player = GetPlayer(0);
+	auto &polyList = GetCorrectPolygonList(0);
+	Edge *pEdge;
+	double quant;
+	for (auto it = polyList.begin(); it != polyList.end(); ++it)
+	{
+		pEdge = (*it)->CheckPlayerOnLine(groundPosition, quant);
+		if (pEdge != NULL)
+		{
+			player->SetGroundedPos(pEdge, quant);
+			return true;
+		}
+	}
+
+	return false;
+
+
+	//TerrainPoint *next;
+	//V2d currPos, nextPos;
+	//V2d aCurr, aNext;
+	//V2d actorPos;
+
+	//int numP = poly->GetNumPoints();
+	//TerrainPoint *polyCurr, *polyNext;
+	//TerrainPoint *nextActorPoint;
+	//for (int i = 0; i < numP; ++i)
+	//{
+	//	polyCurr = poly->GetPoint(i);
+	//	polyNext = poly->GetNextPoint(i);
+
+	//	currPos.x = polyCurr->pos.x;
+	//	currPos.y = polyCurr->pos.y;
+
+	//	nextPos.x = polyNext->pos.x;
+	//	nextPos.y = polyNext->pos.y;
+
+	//	assert(actor->posInfo.ground != NULL);
+
+	//	actorPos = actor->posInfo.GetPosition();//aCurr + normalize(aNext - aCurr) * actorQuant;//V2d( actor->image.getPosition() );//
+	//	bool onLine = PointOnLine(actorPos, currPos, nextPos);
+
+	//	double finalQuant = dot(actorPos - currPos, normalize(nextPos - currPos));
+
+
+	//	if (onLine)
+	//	{
+	//		cout << "actorPos: " << actorPos.x << ", " << actorPos.y << ", currPos: "
+	//			<< currPos.x << ", " << currPos.y << endl;
+	//		PositionInfo gi;
+
+	//		gi.SetGround(poly, i, finalQuant);
+	//		//might need to make sure it CAN be grounded
+
+	//		ActorParams *newActor = actor->Copy();
+	//		if (actor->myEnemy != NULL)
+	//		{
+	//			newActor->CreateMyEnemy();
+	//		}
+	//		newActor->AnchorToGround(gi); //might be unnecessary
+
+	//		assert(newActor != NULL);
+	//		return newActor;
+	//	}
+
+	//}
+
+	//return NULL;
 }
 
 void EditSession::TryAttachActorsToPoly( PolyPtr orig, std::list<PolyPtr> & newPolys, Brush *b)
@@ -7158,7 +7263,8 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 		
 
 		AddFullPolyToBrush((*it).first, gateInfoList, &orig);
-		TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
+		if( inversePolygon != NULL )
+			TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
 	}
 
 	if (inverseBrushes.size() > 0)
@@ -8262,6 +8368,9 @@ void EditSession::SetMode(Emode m)
 				}
 			}
 		}
+		testPlayerTracker->HideAll();
+		trackerOn = false;
+		
 		break;
 	}
 
@@ -8888,9 +8997,14 @@ void EditSession::ShowGrass(bool s)
 
 void EditSession::ModifyZoom(double factor)
 {
+	SetZoom(zoomMultiple * factor);
+}
+
+void EditSession::SetZoom(double z)
+{
 	double old = zoomMultiple;
 
-	zoomMultiple *= factor;
+	zoomMultiple = z;
 
 	if (zoomMultiple < minZoom)
 		zoomMultiple = minZoom;
@@ -9394,8 +9508,71 @@ void EditSession::DrawDecorFront()
 
 void EditSession::DrawMode()
 {
-	switch (mode)
+	Emode dMode = mode;
+	if (mode == SELECT_MODE)
 	{
+		dMode = menuDownStored;
+	}
+	else if (mode == PAUSED)
+	{
+		dMode = stored;
+	}
+	/*return ((mode == em) || (menuDownStored == em && mode == SELECT_MODE)
+		|| (stored == em && mode == PAUSED));*/
+
+	switch (dMode)
+	{
+	case TRANSFORM:
+	{
+		transformTools->Draw(preScreenTex);
+
+		if (grabbedImage != NULL)
+			grabbedImage->Draw(preScreenTex);
+
+		if (trackerOn)
+		{
+			testPlayerTracker->Draw(preScreenTex);
+			GetPlayer(0)->Draw(preScreenTex);
+		}
+		break;
+	}
+	case PASTE:
+	{
+		if (copiedBrush != NULL)
+			copiedBrush->Draw(preScreenTex);
+		if (freeActorCopiedBrush != NULL)
+			freeActorCopiedBrush->Draw(preScreenTex);
+
+
+		if (trackerOn)
+		{
+			testPlayerTracker->Draw(preScreenTex);
+			GetPlayer(0)->Draw(preScreenTex);
+		}
+		break;
+	}
+	case TEST_PLAYER:
+	{
+		Enemy *current = activeEnemyList;
+		while (current != NULL)
+		{
+			current->Draw(preScreenTex);
+			current = current->next;
+		}
+
+		DrawPlayerWires(preScreenTex);
+
+		Actor *p = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->Draw(preScreenTex);
+			}
+		}
+		break;
+	}
 	case CREATE_TERRAIN:
 	{
 		if (currTool == TOOL_DRAW)
@@ -9408,23 +9585,44 @@ void EditSession::DrawMode()
 				abs(startBoxPos.y - testPoint.y), (startBoxPos + testPoint) / 2.f);
 			preScreenTex->draw(boxToolQuad, 4, sf::Quads);
 		}
-		
+
+		if (trackerOn)
+		{
+			testPlayerTracker->Draw(preScreenTex);
+			GetPlayer(0)->Draw(preScreenTex);
+		}
 		break;
 	}
 	case CREATE_RAILS:
 	{
 		DrawRailInProgress();
+
+		if (trackerOn)
+		{
+			testPlayerTracker->Draw(preScreenTex);
+			GetPlayer(0)->Draw(preScreenTex);
+		}
 		break;
 	}
 	case EDIT:
 	{
 		DrawBoxSelection();
-		testPlayerTracker->Draw(preScreenTex);
+		if (trackerOn)
+		{
+			testPlayerTracker->Draw(preScreenTex);
+			GetPlayer(0)->Draw(preScreenTex);
+		}
+		
 		break;
 	}
 	case CREATE_ENEMY:
 	{
-		DrawTrackingEnemy();
+		//DrawTrackingEnemy();
+		createEnemyModeUI->Draw(preScreenTex);
+
+		if (grabbedActor != NULL)
+			grabbedActor->Draw(preScreenTex);
+
 		break;
 	}
 	case CREATE_RECT:
@@ -9449,13 +9647,19 @@ void EditSession::DrawMode()
 		DrawPatrolPathInProgress();
 		break;
 	}
-	case SELECT_MODE:
-	{
-		break;
-	}
 	case CREATE_GATES:
 	{
 		DrawGateInProgress();
+		break;
+	}
+	case CREATE_IMAGES:
+	{
+		createDecorModeUI->Draw(preScreenTex);
+
+		if (grabbedImage != NULL)
+		{
+			grabbedImage->Draw(preScreenTex);
+		}
 		break;
 	}
 	}
@@ -9750,6 +9954,11 @@ void EditSession::HandleEvents()
 			TransformModeHandleEvent();
 			break;
 		}
+		case TEST_PLAYER:
+		{
+			TestPlayerModeHandleEvent();
+			break;
+		}
 
 		}
 		//ones that aren't specific to mode
@@ -9804,11 +10013,49 @@ void EditSession::HandleEvents()
 				{
 					if (ev.mouseWheel.delta > 0)
 					{
-						ModifyZoom(.5);
+						if (zoomMultiple > 32)
+						{
+							ModifyZoom(.5);
+						}
+						else if (zoomMultiple > 8)
+						{
+							SetZoom(zoomMultiple - 8);
+							//zoomMultiple += 10;
+						}
+						else if( zoomMultiple > 1 )
+						{
+							SetZoom(zoomMultiple - 1);
+						}
+						else
+						{
+							ModifyZoom(.5);
+						}
+
+						//ModifyZoom(.5);
+						//ModifyZoom(.5);
 					}
 					else if (ev.mouseWheel.delta < 0)
 					{
-						ModifyZoom(2);
+						if (zoomMultiple >= 32)
+						{
+							ModifyZoom(2);
+						}
+						else if (zoomMultiple >= 8)
+						{
+							SetZoom(zoomMultiple + 8);
+							//ModifyZoom(2.0);
+							//zoomMultiple += 10;
+						}
+						else if( zoomMultiple >= 1)
+						{
+							SetZoom(zoomMultiple + 1);
+						}
+						else
+						{
+							ModifyZoom(2.0);
+						}
+						//ModifyZoom(2);
+						//ModifyZoom(2.0);
 					}
 				}
 				break;
@@ -9955,7 +10202,21 @@ void EditSession::CreateTerrainModeHandleEvent()
 				currTool = TOOL_DRAW;
 			}
 		}
-
+		else if (ev.key.code == Keyboard::T )
+		{
+			//eventually something telling the create mode that you can here from create terrain
+			TestPlayerMode();
+			
+		}
+		else if (ev.key.code == Keyboard::H)
+		{
+			trackerOn = !trackerOn;
+			if (!trackerOn)
+			{
+				trackPoints = 0;
+				testPlayerTracker->HideAll();
+			}
+		}
 		break;
 	}
 	case Event::KeyReleased:
@@ -10379,6 +10640,19 @@ void EditSession::EditModeHandleEvent()
 			else
 			{
 				MoveRightBorder(borderMove);
+			}
+		}
+		else if (ev.key.code == Keyboard::Num1)
+		{
+			gameCam = !gameCam;
+		}
+		else if (ev.key.code == Keyboard::H)
+		{
+			trackerOn = !trackerOn;
+			if (!trackerOn)
+			{
+				trackPoints = 0;
+				testPlayerTracker->HideAll();
 			}
 		}
 		break;
@@ -11267,6 +11541,35 @@ void EditSession::TransformModeHandleEvent()
 	}
 }
 
+void EditSession::TestPlayerModeHandleEvent()
+{
+	switch (ev.type)
+	{
+	case Event::MouseButtonPressed:
+	{
+	}
+	case Event::MouseButtonReleased:
+	{
+		break;
+	}
+	case Event::MouseWheelMoved:
+	{
+		break;
+	}
+	case Event::KeyPressed:
+	{
+		if (ev.key.code == sf::Keyboard::Num1)
+		{
+			gameCam = !gameCam;
+			if (!gameCam)
+			{
+				SetZoom(4);
+			}
+		}
+	}
+	}
+}
+
 void EditSession::UpdateMode()
 {
 	switch (mode)
@@ -11349,6 +11652,15 @@ void EditSession::CreateTerrainModeUpdate()
 {
 	if (showPanel != NULL)
 		return;
+
+	UpdateInputNonGame();
+
+	if (GetCurrInput(0).start && !GetPrevInput(0).start)
+	{
+		TestPlayerMode();
+		return;
+	}
+
 
 	if (IsKeyPressed(Keyboard::G))
 	{
@@ -11436,8 +11748,41 @@ void EditSession::CreateRailsModeUpdate()
 	TryAddPointToRailInProgress();
 }
 
+void EditSession::UpdateInputNonGame()
+{
+	//update input---------------
+	for (int i = 0; i < 4; ++i)
+	{
+		GetPrevInput(i) = GetCurrInput(i);
+		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+	}
+
+	Actor *pTemp = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		pTemp = GetPlayer(i);
+		if (pTemp != NULL)
+		{
+			pTemp->prevInput = GetCurrInput(i);
+		}
+	}
+
+	UpdateControllers();
+
+	UpdateAllPlayersInput();
+	//-------------------------
+}
+
 void EditSession::EditModeUpdate()
 {
+	UpdateInputNonGame();
+
+	if (GetCurrInput(0).start && !GetPrevInput(0).start)
+	{
+		TestPlayerMode();
+		return;
+	}
+
 	if (IsKeyPressed(Keyboard::G))
 	{
 		SnapPointToGraph(worldPos, graph->graphSpacing);
