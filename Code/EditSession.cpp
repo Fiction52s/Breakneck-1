@@ -7207,8 +7207,7 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 		
 
 		AddFullPolyToBrush((*it).first, gateInfoList, &orig);
-		if( inversePolygon != NULL )
-			TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
+		//TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
 	}
 
 	if (inverseBrushes.size() > 0)
@@ -7326,6 +7325,9 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 	//AddFullPolysToBrush(nonInverseIntersList, gateInfoList, &orig);
 	
 	
+	if (inversePolygon != NULL)
+		TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
+
 	TryAttachActorsToPolys(nonInverseIntersList, attachList, &resultBrush);
 	//TryAttachActorsToPolys(inverseConnectedInters, attachList, &resultBrush);
 
@@ -7466,30 +7468,37 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 		}
 	}
 
-	inverseConnectedPolys.insert(inversePolygon);
-	
-	//testlist is only things that are intersecting
-	for (auto it = allIntersectsList.begin(); it != allIntersectsList.end(); ++it)
+	if (inversePolygon != NULL)
 	{
-		list<PolyPtr> &temp = (*it);
-		found = false;
-		for (auto it2 = temp.begin(); it2 != temp.end(); ++it2)
-		{
-			if (inverseConnectedPolys.find((*it2)) != inverseConnectedPolys.end())
-			{
-				found = true;
-				break;
-			}
-		}
 
-		if (found)
+
+		inverseConnectedPolys.insert(inversePolygon);
+
+		//testlist is only things that are intersecting
+		for (auto it = allIntersectsList.begin(); it != allIntersectsList.end(); ++it)
+		{
+			list<PolyPtr> &temp = (*it);
+			found = false;
 			for (auto it2 = temp.begin(); it2 != temp.end(); ++it2)
 			{
-				inverseConnectedPolys.insert((*it2));
+				if (inverseConnectedPolys.find((*it2)) != inverseConnectedPolys.end())
+				{
+					found = true;
+					break;
+				}
 			}
+
+			if (found)
+				for (auto it2 = temp.begin(); it2 != temp.end(); ++it2)
+				{
+					inverseConnectedPolys.insert((*it2));
+				}
+		}
+
+		inverseConnectedPolys.erase(inverseConnectedPolys.find(inversePolygon));
 	}
 
-	inverseConnectedPolys.erase(inverseConnectedPolys.find(inversePolygon));
+	
 	for (auto it = allIntersectsList.begin(); it != allIntersectsList.end(); ++it)
 	{
 		list<PolyPtr> &temp = (*it);
@@ -7763,6 +7772,8 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 				attachList.push_back(newInverse);
 			}
 		}
+
+		//AddFullPolyToBrush(inversePolygon, gateInfoList, &orig);
 	}
 
 	//===NON-INTERSECTING STEP===//
@@ -7776,6 +7787,7 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 		}
 	}
 
+	
 	AddFullPolysToBrush(nonInverseInters, gateInfoList, &orig);
 	AddFullPolysToBrush(inverseConnectedInters, gateInfoList, &orig);
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
@@ -7787,6 +7799,12 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 	
 	TryAttachActorsToPolys(nonInverseInters, attachList, &resultBrush);
 	TryAttachActorsToPolys(inverseConnectedInters, attachList, &resultBrush);
+
+	if (inverseConnectedPolys.size() > 1 || inverseOnlyBrushes.size() > 0)
+	{
+		TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
+	}
+	
 	TryKeepGates(gateInfoList, attachList, &resultBrush);
 	return true;
 }
