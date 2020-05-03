@@ -192,6 +192,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		CORE,
 		SECRETCORE,
 		SPECIAL,
+		FLY,
 		Count
 	};
 
@@ -386,7 +387,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		bool storeSelected = false );
 	PolyPtr Copy();
 	PolyPtr CopyForPointMove();
-	bool IsSpecialPoly();
+	int GetSpecialPolyIndex();
 	bool IsTouchingEnemiesFromPoly(PolyPtr p);
 
 	std::vector<sf::Vector2f> triBackups;//for transforms

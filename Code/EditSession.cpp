@@ -1452,10 +1452,15 @@ void EditSession::WriteInversePoly(std::ofstream &of)
 
 void EditSession::WriteSpecialPolygons(std::ofstream &of)
 {
-	int numSpecialPolys = waterPolygons.size();
+	int numSpecialPolys = waterPolygons.size() + flyPolygons.size();
 	of << numSpecialPolys << endl;
 
 	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
+	{
+		(*it)->WriteFile(of);
+	}
+
+	for (auto it = flyPolygons.begin(); it != flyPolygons.end(); ++it)
 	{
 		(*it)->WriteFile(of);
 	}
@@ -1635,13 +1640,13 @@ void EditSession::WriteFile(string fileName)
 		}
 	}
 
-	/*if( !hasGoal )
+	if( !hasGoal )
 	{
 		MessagePop( "Map not saved because no goal is in place. \nPlease add it from the CREATE ENEMIES mode." );
 		cout << "you need to place a goal in the map. file not written to!. add a popup to this alert later"
 			<< endl;
 		return;
-	}*/
+	}
 
 	ofstream of;
 	of.open(fileName);
@@ -2999,14 +3004,20 @@ bool EditSession::TrySnapPosToPoint(V2d &p, double radius, PolyPtr &poly, Terrai
 	return false;
 }
 
-bool EditSession::IsSpecialTerrainMode()
+int EditSession::GetSpecialTerrainMode()
 {
-	if (currTerrainWorld >= 8)
+	if (currTerrainWorld == 9)
 	{
-		return true;
+		return 2;
 	}
-
-	return false;
+	else if (currTerrainWorld == 8)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 void EditSession::InitDecorPanel()
@@ -6001,6 +6012,14 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		(*it)->SetSelected(oldSelected);
 	}
 
+	for (auto it = flyPolygons.begin(); it != flyPolygons.end(); ++it)
+	{
+		oldSelected = (*it)->selected;
+		(*it)->SetSelected(false);
+		(*it)->Draw(false, 1, mapPreviewTex, false, NULL);
+		(*it)->SetSelected(oldSelected);
+	}
+
 	for( auto it = polygons.begin(); it != polygons.end(); ++it )
 	{
 		oldSelected = (*it)->selected;
@@ -6324,14 +6343,7 @@ PositionInfo EditSession::ConvertPointToRail(sf::Vector2i testPoint)
 
 list<PolyPtr> & EditSession::GetCorrectPolygonList(PolyPtr t)
 {
-	if (t->IsSpecialPoly())
-	{
-		return waterPolygons;
-	}
-	else 
-	{
-		return polygons;
-	}
+	return GetCorrectPolygonList(t->GetSpecialPolyIndex());
 }
 
 list<PolyPtr> & EditSession::GetCorrectPolygonList(int ind)
@@ -6342,6 +6354,8 @@ list<PolyPtr> & EditSession::GetCorrectPolygonList(int ind)
 		return polygons;
 	case 1:
 		return waterPolygons;
+	case 2:
+		return flyPolygons;
 	default:
 		assert(0);
 		return polygons;
@@ -6350,14 +6364,8 @@ list<PolyPtr> & EditSession::GetCorrectPolygonList(int ind)
 
 list<PolyPtr> & EditSession::GetCorrectPolygonList()
 {
-	if (IsSpecialTerrainMode())
-	{
-		return waterPolygons;
-	}
-	else
-	{
-		return polygons;
-	}
+	int specialTerrainMode = GetSpecialTerrainMode();
+	return GetCorrectPolygonList(specialTerrainMode);
 }
 
 void EditSession::GetIntersectingPolys(
@@ -7995,7 +8003,7 @@ bool EditSession::BoxSelectPoints(sf::IntRect &r,
 
 	auto & currPolyList = GetCorrectPolygonList();
 
-	bool specialMode = IsSpecialTerrainMode();
+	bool specialMode = GetSpecialTerrainMode() == 0;
 
 	bool found = false;
 
@@ -8221,7 +8229,7 @@ void EditSession::TryBoxSelect()
 
 	bool selectionEmpty = true;
 
-	bool specialTerrain = IsSpecialTerrainMode();
+	bool specialMode = GetSpecialTerrainMode() == 0;
 
 	if (!HoldingShift())
 	{
@@ -8229,12 +8237,12 @@ void EditSession::TryBoxSelect()
 		ClearSelectedBrush();
 	}
 
-	if ( !specialTerrain && BoxSelectActors(r))
+	if ( !specialMode && BoxSelectActors(r))
 	{
 		selectionEmpty = false;
 	}
 
-	if ( !specialTerrain && BoxSelectDecor(r))
+	if ( !specialMode && BoxSelectDecor(r))
 	{
 		selectionEmpty = false;
 	}
@@ -8257,7 +8265,7 @@ void EditSession::TryBoxSelect()
 			selectionEmpty = false;
 		}
 
-		if (!specialTerrain && BoxSelectRails(r))
+		if (!specialMode && BoxSelectRails(r))
 		{
 			selectionEmpty = false;
 		}
@@ -9135,7 +9143,7 @@ void EditSession::DrawPolygons()
 		inversePolygon->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
 	}
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 3; ++i)
 	{
 		auto & currPolyList = GetCorrectPolygonList(i);
 		for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
@@ -10275,16 +10283,16 @@ void EditSession::EditModeHandleEvent()
 				break;
 
 			bool emptysp = true;
-			bool specialTerrain = IsSpecialTerrainMode();
+			bool specialMode = GetSpecialTerrainMode() == 0;
 
 			if (!(editMouseDownMove || editMouseDownBox))
 			{
-				if (emptysp && !specialTerrain && PointSelectActor(worldPos))
+				if (emptysp && !specialMode && PointSelectActor(worldPos))
 				{
 					emptysp = false;
 				}
 
-				if (emptysp && !specialTerrain && PointSelectRail(worldPos))
+				if (emptysp && !specialMode && PointSelectRail(worldPos))
 				{
 					emptysp = false;
 				}
@@ -10294,7 +10302,7 @@ void EditSession::EditModeHandleEvent()
 					emptysp = false;
 				}
 
-				if (emptysp && !specialTerrain && PointSelectDecor(worldPos))
+				if (emptysp && !specialMode && PointSelectDecor(worldPos))
 				{
 					emptysp = false;
 				}

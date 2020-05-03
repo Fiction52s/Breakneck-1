@@ -818,7 +818,6 @@ bool Enemy::CanTouchSpecter()
 
 void Enemy::HandleQuery( QuadTreeCollider * qtc )
 {
-	//if( !spawned )
 	qtc->HandleEntrant( this );
 }
 

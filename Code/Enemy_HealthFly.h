@@ -12,31 +12,25 @@ struct HealthFly : Enemy
 		Count
 	};
 
-	Action action;
-	HealthFly(GameSession *owner,
-		sf::Vector2i &pos, int level, int index);
+	HealthFly(sf::Vector2i &pos, int level, 
+		sf::Vertex *p_quad );
 	void HandleQuery(QuadTreeCollider * qtc);
+	void SetLevel(int lev);
+	void AddToWorldTrees();
+	sf::FloatRect GetAABB();
 
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ClearSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
-	bool CanCollect(); //depending on type of fly
+	bool IsCollectible(); //depending on type of fly
 	bool Collect();
 
-	//sf::Sprite sprite;
 	Tileset *ts;
-
-	int flyIndex;
-	sf::Vertex *va;
-
-	int healAmount;
-
-	int actionLength[Count];
-	int animFactor[Count];
+	sf::Vertex *quad;
+	int GetHealAmount();
 };
 
 #endif

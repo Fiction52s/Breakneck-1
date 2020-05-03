@@ -501,8 +501,9 @@ struct EditSession : GUIHandler, Session
 	std::list<PolyPtr> &GetCorrectPolygonList();
 	std::list<PolyPtr> polygons;
 	std::list<PolyPtr> waterPolygons;
+	std::list<PolyPtr> flyPolygons;
 
-	bool IsSpecialTerrainMode();
+	int GetSpecialTerrainMode();
 
 	PolyPtr polygonInProgress;
 	RailPtr railInProgress;

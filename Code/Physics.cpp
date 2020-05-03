@@ -1756,6 +1756,26 @@ sf::Vector2f GetQuadCenter(sf::Vertex *v)
 	return (v[0].position + v[1].position + v[2].position + v[3].position) / 4.f;
 }
 
+sf::FloatRect GetQuadAABB(sf::Vertex *v)
+{
+	float left, right, top, bot;
+	left = v[0].position.x;
+	right = left;
+	top = v[0].position.y;
+	bot = top;
+
+	for (int i = 1; i < 4; ++i)
+	{
+		left = min(left, v[i].position.x);
+		right = max(right, v[i].position.x);
+		top = min(top, v[i].position.y);
+		bot = max(bot, v[i].position.y);
+	}
+
+	return FloatRect(left, top, right - left, bot - top);
+	//return (v[0].position + v[1].position + v[2].position + v[3].position) / 4.f;
+}
+
 bool IsEdgeTouchingQuad(sf::Vector2<double> &v0,
 	sf::Vector2<double> &v1,
 	sf::Vector2<double> &A,

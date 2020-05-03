@@ -19,63 +19,65 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-HealthFly::HealthFly(GameSession *owner, Vector2i &pos, int p_level, int index)
-	:Enemy(owner, EnemyType::EN_HEALTHFLY, false, 1, false), flyIndex( index )
+int HealthFly::GetHealAmount()
 {
-	level = p_level;
-	va = NULL;
+	switch (level)
+	{
+	case 1:
+		return 20;
+		break;
+	case 2:
+		return 40;
+		break;
+	case 3:
+		return 80;
+		break;
+	}
+}
+
+void HealthFly::AddToWorldTrees()
+{
+	sess->activeItemTree->Insert(this);
+}
+
+void HealthFly::SetLevel(int lev)
+{
+	level = lev;
+
 
 	switch (level)
 	{
 	case 1:
 		scale = 1.0;
-		healAmount = 20;
 		break;
 	case 2:
 		scale = 2.0;
 		maxHealth += 2;
-		healAmount = 40;
 		break;
 	case 3:
 		scale = 3.0;
 		maxHealth += 5;
-		healAmount = 80;
 		break;
 	}
+}
 
-	action = NEUTRAL;
-	frame = 0;
-	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+HealthFly::HealthFly(sf::Vector2i &pos, int p_level, sf::Vertex *p_quad )
+	:Enemy(EnemyType::EN_HEALTHFLY, NULL)
+{
+	SetNumActions(Count);
+	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
+	SetLevel(p_level);
 
-	//spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
+	quad = p_quad;
 
-	frame = 0;
+	SetCurrPosInfo(startPosInfo);
 
-	//animationFactor = 10;
+	ts = sess->GetTileset("Enemies/healthfly_64x64.png", 64, 64);
 
-	//ts = owner->GetTileset( "HealthFly.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/healthfly_64x64.png", 64, 64);
-	//sprite.setTexture(*ts->texture);
-	//sprite.setTextureRect(ts->GetSubRect(frame));
-	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	//sprite.setScale(scale, scale);
-	//sprite.setPosition(pos.x, pos.y);
-
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(40);
-	AddBasicHitCircle(40);
-
-
-	dead = false;
-
-	spawnRect = sf::Rect<double>(position.x - 100, position.y - 100,
-		200, 200);
-
-	SetHitboxes(hitBody, 0);
-	SetHitboxes(hurtBody, 0);
+	double radius = 40;
+	BasicCircleHitBodySetup(radius);
+	BasicCircleHurtBodySetup(radius);
 
 	actionLength[NEUTRAL] = 5;
 	actionLength[DEATH] = 8;
@@ -84,7 +86,15 @@ HealthFly::HealthFly(GameSession *owner, Vector2i &pos, int p_level, int index)
 	animFactor[DEATH] = 3;
 
 	ResetEnemy();
+
+	SetSpawnRect();
 }
+
+sf::FloatRect HealthFly::GetAABB()
+{
+	return GetQuadAABB(quad);
+}
+
 //making it not heal when its dead!
 void HealthFly::HandleQuery(QuadTreeCollider * qtc)
 {
@@ -105,7 +115,7 @@ bool HealthFly::Collect()
 	return false;
 }
 
-bool HealthFly::CanCollect()
+bool HealthFly::IsCollectible()
 {
 	return true;
 }
@@ -118,23 +128,10 @@ void HealthFly::ResetEnemy()
 	frame = 0;
 	receivedHit = NULL;
 
-	SetHitboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	SetHitboxes(&hitBody);
+	SetHurtboxes(&hurtBody);
 
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	hitBox.globalPosition = position;
-	hitBox.globalAngle = 0;
-
-	//UpdateHitboxes();
-
-	//sprite.setTexture(*ts->texture);
-
-	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	//sprite.setPosition(position.x, position.y);
+	UpdateHitboxes();
 
 	UpdateSprite();
 }
@@ -163,7 +160,7 @@ void HealthFly::ProcessState()
 
 void HealthFly::ClearSprite()
 {
-	ClearRect(va + flyIndex * 4);
+	ClearRect(quad);
 }
 
 void HealthFly::UpdateSprite()
@@ -182,26 +179,17 @@ void HealthFly::UpdateSprite()
 
 	ir = ts->GetSubRect(tile);
 
-	if (va != NULL)
-	{
-		SetRectSubRect(va + flyIndex * 4, ir);
-		SetRectCenter(va + flyIndex * 4, 64 * scale, 64 * scale, Vector2f(position.x, position.y));
-	}
-	
-	//sprite.setTextureRect(ir);
-
-	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	//sprite.setPosition(position.x, position.y);
+	ts->SetQuadSubRect(quad, tile);
+	SetRectCenter(quad, ts->tileWidth * scale, ts->tileHeight* scale, GetPositionF());
 }
 
 void HealthFly::EnemyDraw(sf::RenderTarget *target)
 {
-	//target->draw(sprite);
 }
 
 void HealthFly::DrawMinimap(sf::RenderTarget *target)
 {
-	if (!dead)
+	/*if (!dead)
 	{
 		CircleShape enemyCircle;
 		enemyCircle.setFillColor(COLOR_BLUE);
@@ -209,10 +197,6 @@ void HealthFly::DrawMinimap(sf::RenderTarget *target)
 		enemyCircle.setOrigin(enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2);
 		enemyCircle.setPosition(position.x, position.y);
 		target->draw(enemyCircle);
-	}
-}
-
-void HealthFly::UpdateHitboxes()
-{
+	}*/
 }
 

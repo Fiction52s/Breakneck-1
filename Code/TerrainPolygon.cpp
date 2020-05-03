@@ -1754,7 +1754,7 @@ void TerrainPolygon::WriteFile(std::ofstream & of)
 		of << PointVector()[i].pos.x << " " << PointVector()[i].pos.y << endl;
 	}
 
-	if (!IsSpecialPoly())
+	if (GetSpecialPolyIndex() == 0 )
 	{
 		WriteGrass(of);
 	}
@@ -2588,9 +2588,14 @@ void TerrainPolygon::UpdateBounds()
 	}
 }
 
-bool TerrainPolygon::IsSpecialPoly()
+int TerrainPolygon::GetSpecialPolyIndex()
 {
-	return terrainWorldType > CORE;
+	if (terrainWorldType == SPECIAL)
+		return 1;
+	else if (terrainWorldType == FLY)
+		return 2;
+	else
+		return 0;
 }
 
 void TerrainPolygon::UpdateMaterialType()
@@ -2924,7 +2929,7 @@ void TerrainPolygon::TryFixPointsTouchingLines()
 void TerrainPolygon::SetupTouchGrass()
 {
 	DestroyTouchGrass();
-	if (terrainWorldType != SPECIAL)
+	if (terrainWorldType < SPECIAL)
 	{
 		AddTouchGrass(TouchGrass::TYPE_NORMAL);
 		AddTouchGrass(TouchGrass::TYPE_TEST);
