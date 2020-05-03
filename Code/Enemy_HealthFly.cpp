@@ -77,6 +77,7 @@ HealthFly::HealthFly(sf::Vector2i &pos, int p_level, sf::Vertex *p_quad, Tileset
 	quad = p_quad;
 
 	startPosInfo.position = V2d(pos);
+	preTransformPos = startPosInfo.position;
 
 	SetCurrPosInfo(startPosInfo);
 
@@ -95,6 +96,13 @@ HealthFly::HealthFly(sf::Vector2i &pos, int p_level, sf::Vertex *p_quad, Tileset
 	ResetEnemy();
 
 	SetSpawnRect();
+}
+
+void HealthFly::SetPosition(V2d &pos)
+{
+	startPosInfo.position = pos;
+	SetCurrPosInfo(startPosInfo);
+	UpdateSprite();
 }
 
 sf::FloatRect HealthFly::GetAABB()

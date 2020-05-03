@@ -11434,7 +11434,7 @@ void EditSession::TransformModeHandleEvent()
 				p = (*it)->GetAsTerrain();
 				if (p != NULL)
 				{
-					temp = p->CompleteTransformation();
+					temp = p->CompleteTransformation(transformTools);
 					if (temp != NULL)
 					{
 						resultBrush.AddObject(temp);

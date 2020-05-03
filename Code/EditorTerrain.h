@@ -208,6 +208,11 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
+	void SetFlyTransform(TransformTools *tr);
+	void CopyFliesFrom( PolyPtr poly );
+	//std::vector<sf::Vector2i> copiedflyPosVec;
+	sf::Vector2f flyTransScale;
+	float flyTransRotate;
 	void GenerateMyFlies();
 	std::vector<HealthFly*> myFlies;
 	sf::Vertex *flyQuads;
@@ -293,7 +298,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetRenderMode(RenderMode rm);
 
 	void CancelTransformation();
-	PolyPtr CompleteTransformation();
+	PolyPtr CompleteTransformation(TransformTools *tr);
 	void UpdateTransformation( TransformTools *tr);
 
 	static double GetSteepThresh() { return .4; }

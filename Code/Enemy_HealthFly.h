@@ -19,6 +19,7 @@ struct HealthFly : Enemy
 	void SetLevel(int lev);
 	void AddToWorldTrees();
 	sf::FloatRect GetAABB();
+	void SetPosition(V2d &pos);
 
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
@@ -28,6 +29,8 @@ struct HealthFly : Enemy
 	void ResetEnemy();
 	bool IsCollectible(); //depending on type of fly
 	bool Collect();
+
+	V2d preTransformPos;
 
 	Tileset *ts;
 	sf::Vertex *quad;
