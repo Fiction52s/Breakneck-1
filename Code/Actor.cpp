@@ -9957,6 +9957,17 @@ void Actor::SetGroundedPos(Edge *g, double q, double xoff)
 	}
 }
 
+void Actor::SetAirPos(V2d &pos, bool fr)
+{
+	ground = NULL;
+	bounceEdge = NULL;
+	grindEdge = NULL;
+	action = Actor::JUMP;
+	frame = 1;
+	position = pos;
+	facingRight = fr;
+}
+
 void Actor::SetGroundedPos(Edge *g, double q)
 {
 	ground = g;

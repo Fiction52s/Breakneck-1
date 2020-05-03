@@ -53,8 +53,7 @@ struct TerrainRail;
 
 struct EnemyChooser;
 
-struct CircleGroup;
-
+struct PlayerTracker;
 
 struct EditSession : GUIHandler, Session
 {
@@ -81,14 +80,8 @@ struct EditSession : GUIHandler, Session
 		TRANSFORM,
 	};
 
-	CircleGroup *testPlayerTracker;
-	int trackPoints;
-	int mostRecentTrackPoint;
-	sf::Color startTrackColor;
-	sf::Color endTrackColor;
-	V2d playerOldTrackPos;
-	V2d playerOldGroundTrackPos;
-	bool trackerOn;
+	void DrawPlayerTracker(sf::RenderTarget *target);
+	PlayerTracker *playerTracker;
 
 	const static int MAX_RECENT_ENEMIES = 12;
 	std::list<std::pair<ActorType*, int>> recentEnemies;

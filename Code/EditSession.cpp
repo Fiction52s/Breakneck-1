@@ -21,6 +21,7 @@
 #include "SaveFile.h"
 #include "Wire.h"
 #include "EditorDecorInfo.h"
+#include "EditorPlayerTracker.h"
 
 #include "clipper.hpp"
 
@@ -212,54 +213,18 @@ void EditSession::TestPlayerModeUpdate()
 			{
 				SetZoom(2);
 			}
-			trackerOn = true;
-			
+
 			pTemp = GetPlayer(0);
+
 			if (pTemp->ground != NULL ) //doesn't work with bounce or grind
 			{
-				playerOldGroundTrackPos = pTemp->ground->GetPosition(pTemp->edgeQuantity);
+				playerTracker->SetOldTrackPos(pTemp->ground->GetPosition(pTemp->edgeQuantity), 
+					pTemp->position);
 			}
-			playerOldTrackPos = pTemp->position;
+			//bounce and grind also later
 			
-
-			int numCircles = testPlayerTracker->numCircles;
-			float blend;
-			float diff;
-
-			if (trackPoints >= numCircles)
-			{
-				testPlayerTracker->ShowAll();
-				
-				for (int i = 0; i < numCircles; ++i)
-				{
-					if (i <= mostRecentTrackPoint)
-					{
-						diff = mostRecentTrackPoint - i;
-					}
-					else
-					{
-						diff = numCircles - (i - mostRecentTrackPoint);
-					}
-					blend = 1.f - diff / (trackPoints);
-
-					testPlayerTracker->SetColor(i, GetBlendColor(startTrackColor,
-						endTrackColor, blend ));
-				}
-			}
-			else
-			{
-				testPlayerTracker->HideAll();
-				for (int i = 0; i <= mostRecentTrackPoint; ++i)
-				{
-					testPlayerTracker->SetVisible(i, true);
-					diff = mostRecentTrackPoint - i;
-					blend = 1.f - diff / (trackPoints);
-					testPlayerTracker->SetColor(i, GetBlendColor(startTrackColor,
-						endTrackColor,blend));
-				}
-			}
-
-			
+			playerTracker->SetOn(true);
+			playerTracker->CalcShownCircles();
 			return;
 		}
 		
@@ -278,25 +243,7 @@ void EditSession::TestPlayerModeUpdate()
 
 		if (totalGameFrames % 3 == 0)
 		{
-			//int trackerFrame = (totalGameFrames / 3) % testPlayerTracker->numCircles;
-
-			int lastTrackPoint = mostRecentTrackPoint - 1;
-			if (lastTrackPoint < 0 && trackPoints > 0)
-				lastTrackPoint = testPlayerTracker->numCircles - 1;
-
-			Vector2f pTrackPos = Vector2f(GetPlayerPos(0));
-			if (lastTrackPoint < 0 || pTrackPos != testPlayerTracker->GetPosition(lastTrackPoint))
-			{
-				if (mostRecentTrackPoint == testPlayerTracker->numCircles)
-					mostRecentTrackPoint = 0;
-
-				testPlayerTracker->SetPosition(mostRecentTrackPoint, pTrackPos);
-				mostRecentTrackPoint++;
-				trackPoints++;
-				//cout << "track point: " << trackPoints << endl;
-			}
-			
-			//mostRecentTrackPoint = trackerFrame;
+			playerTracker->TryAddTrackPoint(GetPlayerPos(0));
 		}
 
 		cam.UpdateRumble();
@@ -330,7 +277,7 @@ void EditSession::TestPlayerMode()
 
 	Actor *p;
 
-	bool continueTracking = (GetCurrInput(0).start && trackPoints > 0 && mode != TEST_PLAYER);
+	bool continueTracking = (GetCurrInput(0).start && playerTracker->IsTrackStarted() && mode != TEST_PLAYER);
 
 	if (continueTracking)
 	{
@@ -341,22 +288,16 @@ void EditSession::TestPlayerMode()
 		p = GetPlayer(0);
 		if (p->ground != NULL)
 		{
-			if (!TryAttachPlayerToPolys(playerOldGroundTrackPos, p->offsetX))
+			if (!TryAttachPlayerToPolys(playerTracker->playerOldGroundTrackPos, p->offsetX))
 			{
-				p->ground = NULL;
-				p->action = Actor::JUMP;
-				p->frame = 1;
-				p->position = playerOldTrackPos;
-				//continueTracking = false;
+				p->SetAirPos(playerTracker->playerOldTrackPos, p->facingRight);
 			}
 		}
 	}
 
 	if (!continueTracking)
 	{
-		mostRecentTrackPoint = 0;
-		trackPoints = 0;
-		testPlayerTracker->HideAll();
+		playerTracker->Reset();
 		totalGameFrames = 0;
 		currentTime = 0;
 		gameClock.restart();
@@ -364,7 +305,7 @@ void EditSession::TestPlayerMode()
 	}
 	else
 	{
-		
+		int x = 5;
 	}
 
 	
@@ -710,13 +651,11 @@ EditSession *EditSession::GetSession()
 
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
-{
-	trackerOn = false;
+{	
+	playerTracker = new PlayerTracker();
+
+
 	gameCam = false;
-	trackPoints = 0;
-	testPlayerTracker = new CircleGroup(1000, 12, Color::Green, 6);
-	startTrackColor = Color::Red;
-	endTrackColor = Color::Green;
 
 	boxToolColor = Color(255, 0, 0, 50);
 	SetRectColor(boxToolQuad, boxToolColor);
@@ -916,7 +855,7 @@ RailPtr EditSession::GetRail(int index)
 
 EditSession::~EditSession()
 {
-	delete testPlayerTracker;
+	delete playerTracker;
 
 	delete transformTools;
 
@@ -8373,9 +8312,8 @@ void EditSession::SetMode(Emode m)
 				}
 			}
 		}
-		testPlayerTracker->HideAll();
-		trackerOn = false;
-		
+		playerTracker->HideAll();
+		//playerTracker->SetOn(false);
 		break;
 	}
 
@@ -9534,11 +9472,7 @@ void EditSession::DrawMode()
 		if (grabbedImage != NULL)
 			grabbedImage->Draw(preScreenTex);
 
-		if (trackerOn)
-		{
-			testPlayerTracker->Draw(preScreenTex);
-			GetPlayer(0)->Draw(preScreenTex);
-		}
+		DrawPlayerTracker(preScreenTex);
 		break;
 	}
 	case PASTE:
@@ -9549,11 +9483,7 @@ void EditSession::DrawMode()
 			freeActorCopiedBrush->Draw(preScreenTex);
 
 
-		if (trackerOn)
-		{
-			testPlayerTracker->Draw(preScreenTex);
-			GetPlayer(0)->Draw(preScreenTex);
-		}
+		DrawPlayerTracker(preScreenTex);
 		break;
 	}
 	case TEST_PLAYER:
@@ -9591,32 +9521,20 @@ void EditSession::DrawMode()
 			preScreenTex->draw(boxToolQuad, 4, sf::Quads);
 		}
 
-		if (trackerOn)
-		{
-			testPlayerTracker->Draw(preScreenTex);
-			GetPlayer(0)->Draw(preScreenTex);
-		}
+		DrawPlayerTracker(preScreenTex);
 		break;
 	}
 	case CREATE_RAILS:
 	{
 		DrawRailInProgress();
 
-		if (trackerOn)
-		{
-			testPlayerTracker->Draw(preScreenTex);
-			GetPlayer(0)->Draw(preScreenTex);
-		}
+		DrawPlayerTracker(preScreenTex);
 		break;
 	}
 	case EDIT:
 	{
 		DrawBoxSelection();
-		if (trackerOn)
-		{
-			testPlayerTracker->Draw(preScreenTex);
-			GetPlayer(0)->Draw(preScreenTex);
-		}
+		DrawPlayerTracker(preScreenTex);
 		
 		break;
 	}
@@ -9667,6 +9585,15 @@ void EditSession::DrawMode()
 		}
 		break;
 	}
+	}
+}
+
+void EditSession::DrawPlayerTracker(sf::RenderTarget *target)
+{
+	if (playerTracker->IsOn())
+	{
+		playerTracker->Draw(preScreenTex);
+		GetPlayer(0)->Draw(preScreenTex);
 	}
 }
 
@@ -10215,12 +10142,7 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::H)
 		{
-			trackerOn = !trackerOn;
-			if (!trackerOn)
-			{
-				trackPoints = 0;
-				testPlayerTracker->HideAll();
-			}
+			playerTracker->SwitchOnOff();
 		}
 		break;
 	}
@@ -10653,12 +10575,7 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::H)
 		{
-			trackerOn = !trackerOn;
-			if (!trackerOn)
-			{
-				trackPoints = 0;
-				testPlayerTracker->HideAll();
-			}
+			playerTracker->SwitchOnOff();
 		}
 		break;
 	}
