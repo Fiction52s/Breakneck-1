@@ -1099,6 +1099,7 @@ struct Actor : QuadTreeCollider,
 
 	int slowMultiple;
 	int slowCounter;
+	int baseSlowMultiple;
 
 	sf::Vector2<double> wallNormal;
 	Edge *currWall;

@@ -248,6 +248,7 @@ void EditSession::TestPlayerModeUpdate()
 			}
 			else
 			{
+				testPlayerTracker->HideAll();
 				for (int i = 0; i <= mostRecentTrackPoint; ++i)
 				{
 					testPlayerTracker->SetVisible(i, true);

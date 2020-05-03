@@ -1420,13 +1420,11 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	//	frame = 1;
 	//}
 		
-		
 	Init();
 
-		
-		
-	timeSlowStrength = 5;
-	slowMultiple = 1;
+	baseSlowMultiple = 1;
+	timeSlowStrength = 5 * baseSlowMultiple;
+	slowMultiple = baseSlowMultiple;
 	slowCounter = 1;
 
 	reversed = false;
@@ -2663,7 +2661,7 @@ void Actor::Respawn()
 	oldModifier = NULL;
 	extraGravityModifier = 1.0;
 	
-	slowMultiple = 1;
+	slowMultiple = baseSlowMultiple;
 	slowCounter = 1;
 
 	currWall = NULL;
@@ -8515,7 +8513,7 @@ void Actor::UpdatePrePhysics()
 
 		if( inBubble )
 		{
-			if( slowMultiple == 1 )
+			if( slowMultiple == baseSlowMultiple)
 			{
 				//cout << "a" << endl;
 				slowCounter = 1;
@@ -8526,14 +8524,18 @@ void Actor::UpdatePrePhysics()
 		{
 			//cout << "b" << endl;
 			slowCounter = 1;
-			slowMultiple = 1;
+			slowMultiple = baseSlowMultiple;
 		}
 	}
 	else
 	{
 		//cout << "C " << endl;
-		slowCounter = 1;
-		slowMultiple = 1;
+		//slowCounter = 1;
+		slowMultiple = baseSlowMultiple;
+
+		//changed when doing editor stuff. before it would always set to one
+		if (slowCounter > baseSlowMultiple) 
+			slowCounter = 1;
 	}
 
 	if( isBeingSlowed && !isInOwnBubble )
@@ -8541,7 +8543,7 @@ void Actor::UpdatePrePhysics()
 		if( currInput.leftShoulder )
 		{
 			slowCounter = 1;
-			slowMultiple = 1;
+			slowMultiple = baseSlowMultiple;
 		}
 		else
 		{
