@@ -114,40 +114,6 @@ void TerrainPolygon::StoreEnemyPositions(std::vector<std::pair<ActorPtr, Positio
 	}
 }
 
-void TerrainPolygon::BackupPoints()
-{
-	//int numP = GetNumPoints();
-	//backupPoints.resize(numP);
-	//for (int i = 0; i < numP; ++i)
-	//{
-	//	backupPoints[i] = GetPoint(i)->pos;
-	//}
-
-	//for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
-	//{
-	//	auto &aList = (*enemyIt).second;
-	//	if (!aList.empty())
-	//	{
-	//		//auto &posInfoMap = backupEnemyPosInfos[(*enemyIt).first];
-	//		//posInfoVec.reserve(aList.size());
-	//		for (auto it = aList.begin(); it != aList.end(); ++it)
-	//		{
-	//			backupEnemyPosInfos[(*it)] = ((*it)->posInfo);
-	//		}
-	//	}
-	//}
-}
-
-void TerrainPolygon::RestoreBackupPoints()
-{
-	/*int numP = GetNumPoints();
-	for (int i = 0; i < numP; ++i)
-	{
-		PointVector()[i] = backupPoints[i];
-	}*/
-	//backupPoints.clear();
-}
-
 
 void TerrainPolygon::AddTouchGrass(int gt)
 {

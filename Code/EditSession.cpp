@@ -664,7 +664,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	createDecorModeUI = NULL;
 	enemyEdgePolygon = NULL;
 	moveAction = NULL;
-	AllocatePolyShaders(TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD);
+	AllocatePolyShaders(TOTAL_TERRAIN_TEXTURES);
 
 	transformTools = new TransformTools();
 
@@ -5957,7 +5957,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	Vector2f vSize = pView.getSize();
 	float zoom = vSize.x / 960;
 	Vector2f botLeft(pView.getCenter().x - vSize.x / 2, pView.getCenter().y + vSize.y / 2);
-	for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
+	for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
 	{
 		if (ts_polyShaders[i] != NULL)
 		{
@@ -9079,7 +9079,7 @@ void EditSession::UpdatePolyShaders()
 	if (first || oldShaderZoom != zoom ) //first run
 	{
 		oldShaderZoom = zoom;
-		for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
+		for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
 		{
 			if (ts_polyShaders[i] != NULL)
 			{
@@ -9091,7 +9091,7 @@ void EditSession::UpdatePolyShaders()
 	if (first || oldShaderBotLeft != botLeft)
 	{
 		oldShaderBotLeft = botLeft;
-		for (int i = 0; i < 9 * MAX_TERRAINTEX_PER_WORLD; ++i)
+		for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
 		{
 			if (ts_polyShaders[i] != NULL)
 			{

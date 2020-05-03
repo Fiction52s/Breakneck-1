@@ -302,8 +302,10 @@ struct EditSession : GUIHandler, Session
 
 	void SetupTerrainTypeSelector();
 
-	const static int TERRAIN_WORLDS = 9;
+	const static int TERRAIN_WORLDS = 10;
 	const static int MAX_TERRAINTEX_PER_WORLD = 10;
+	const static int TOTAL_TERRAIN_TEXTURES =
+		TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD;
 	
 	sf::Sprite currTerrainTypeSpr;
 	//int currTerrainInd;

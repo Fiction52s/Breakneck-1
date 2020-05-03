@@ -3,7 +3,6 @@
 
 #include <list>
 #include <SFML\Graphics.hpp>
-#include <boost/shared_ptr.hpp>
 #include "ISelectable.h"
 #include "VectorMath.h"
 #include "clipper.hpp"
@@ -25,7 +24,6 @@ struct GateInfo;
 struct EditSession;
 struct TerrainPolygon;
 struct ActorParams;
-struct TerrainRender;
 struct TerrainRail;
 struct Brush;
 
@@ -70,38 +68,6 @@ struct TerrainPoint
 
 	int index;
 	static const int POINT_RADIUS = 5;
-};
-
-struct Inter
-{
-	Inter()
-		:point(NULL)
-	{
-
-	}
-	Inter(TerrainPoint *p_point, sf::Vector2<double> &p_pos)
-		:point(p_point), position(p_pos)
-	{
-
-	}
-	TerrainPoint *point;
-	sf::Vector2<double> position;
-};
-
-struct DetailedInter
-{
-	DetailedInter()
-		:otherPoint(NULL)
-	{
-		inter.point = NULL;
-	}
-	DetailedInter(TerrainPoint *p_point, sf::Vector2<double> &p_pos, TerrainPoint *p_otherPoint)
-		:inter(p_point, p_pos), otherPoint(p_otherPoint)
-	{
-
-	}
-	Inter inter;
-	TerrainPoint *otherPoint;
 };
 
 struct PointMoveInfo
@@ -212,6 +178,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		RENDERMODE_NORMAL,
 		RENDERMODE_MOVING_POINTS,
 		RENDERMODE_TRANSFORM,
+		RENDERMODE_FLIES,
 	};
 
 	enum TerrainWorldType : int
@@ -422,13 +389,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	bool IsSpecialPoly();
 	bool IsTouchingEnemiesFromPoly(PolyPtr p);
 
-	//TerrainPoint *pointStart;
-	//TerrainPoint *pointEnd;
 	std::vector<sf::Vector2f> triBackups;//for transforms
-	std::vector<sf::Vector2i> backupPoints;
-	
-	void BackupPoints();
-	void RestoreBackupPoints();
 
 	std::vector<std::vector<TerrainPoint>> pointVector;
 	std::vector<TerrainPoint> &PointVector();
