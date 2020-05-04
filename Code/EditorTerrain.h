@@ -210,6 +210,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	void SetFlyTransform(TransformTools *tr);
 	void CopyFliesFrom( PolyPtr poly );
+
+	//sf::Transform flyTransform;
 	//std::vector<sf::Vector2i> copiedflyPosVec;
 	sf::Vector2f flyTransScale;
 	float flyTransRotate;
@@ -463,6 +465,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetLayer(int p_layer);
 	bool IsInternallyValid();
 	sf::IntRect GetAABB();
+	sf::FloatRect GetAngledAABB(float rotation);
 	V2d GetDCenter();
 	void MovePoint( int index, sf::Vector2i &delta);
 	void SetPointPos(int index, sf::Vector2i &p);

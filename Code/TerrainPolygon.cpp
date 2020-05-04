@@ -53,6 +53,69 @@ namespace mapbox
 	}
 }
 
+sf::FloatRect TerrainPolygon::GetAngledAABB(float rotation)
+{
+	//rotation is in degrees
+
+	Vector2f xDir(1, 0);
+	Vector2f yDir(0, 1);
+
+	sf::Transform trans;
+	trans.rotate(rotation);
+	xDir = trans.transformPoint(xDir);
+	yDir = trans.transformPoint(yDir);
+
+	int numP = GetNumPoints();
+	Vector2f pointPos;
+	float currAlong;
+	float currOther;
+	float minAlong;
+	float maxAlong;
+	float minOther;
+	float maxOther;
+	for (int i = 0; i < numP; ++i)
+	{
+		pointPos = Vector2f(GetPoint(i)->pos);
+		currAlong = dot(pointPos, xDir);
+		if (i == 0 )
+		{
+			minAlong = currAlong;
+			maxAlong = currAlong;
+		}
+		else if (currAlong < minAlong)
+		{
+			minAlong = currAlong;
+		}
+		else if (currAlong > maxAlong)
+		{
+			maxAlong = currAlong;
+		}
+
+		currOther = -cross(pointPos, xDir);
+		if (i == 0 )
+		{
+			minOther = currOther;
+			maxOther = currOther;
+		}
+		else if (currOther < minOther)
+		{
+			minOther = currOther;
+		}
+		else if (currOther > maxOther)
+		{
+			maxOther = currOther;
+		}
+	}
+
+	Vector2f topLeft(minAlong, minOther);
+	trans = Transform::Identity;
+	trans.rotate(-rotation);
+	topLeft = trans.transformPoint(topLeft);
+
+	return FloatRect(minAlong, minOther, maxAlong - minAlong, maxOther - minOther);
+	//return FloatRect(topLeft.x, topLeft.y, maxAlong - minAlong, maxOther - minOther);
+}
+
 void TerrainPolygon::GenerateMyFlies()
 {
 	if (terrainWorldType != FLY)
@@ -68,6 +131,8 @@ void TerrainPolygon::GenerateMyFlies()
 	int numFlies = 0;
 	int flyCounter = 0;
 
+	//flyTransScale = Vector2f(1.f, 1.f);
+	//flyTransRotate = 0;
 	//if (!copiedflyPosVec.empty())
 	//{
 	//	numFlies = copiedflyPosVec.size();
@@ -94,25 +159,37 @@ void TerrainPolygon::GenerateMyFlies()
 	//	return;
 	//}
 
-	Vector2i topLeft(top, left);
+	FloatRect rotatedBox = GetAngledAABB(flyTransRotate);
 	
 
-	int width = (right - left) / flyGridDist + 1;
-	int height = (bottom - top) / flyGridDist + 1;
+	int xGridDist = flyGridDist * flyTransScale.x;
+	int yGridDist = flyGridDist * flyTransScale.y;
+	int width = (rotatedBox.width) / xGridDist + 1;
+	int height = (rotatedBox.height) / yGridDist + 1;
 	vector<bool> hasFly;
 	hasFly.resize(width * height);
 
+	sf::Transform t;
+	t.rotate(flyTransRotate);
+	Vector2f dirX = t.transformPoint(Vector2f(1, 0));
+	Vector2f dirY = t.transformPoint(Vector2f(0, 1));
 	
+	sf::Transform backT;
+	backT.rotate(flyTransRotate);
+
 	//bool *hasFly = new bool[width * height];
 	int index;
 	IntRect r;
 	int rSize = 2;
+	Vector2i currPos;
 	for (int x = 0; x < width; ++x)
 	{
 		for (int y = 0; y < height; ++y)
 		{
-			r.left = left + (x * flyGridDist) - rSize;
-			r.top = top + (y * flyGridDist) - rSize;
+			currPos = Vector2i(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
+				rotatedBox.top + y * yGridDist)));
+			r.left = currPos.x - rSize;
+			r.top = currPos.y - rSize;
 			r.width = rSize * 2;
 			r.height = rSize * 2;
 			if (Intersects( r ) )
@@ -145,8 +222,13 @@ void TerrainPolygon::GenerateMyFlies()
 			index = x * height + y;
 			if (hasFly[index])
 			{
-				myFlies.push_back(new HealthFly(Vector2i(left + x * flyGridDist, top + y * flyGridDist),
+				currPos = Vector2i(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
+					rotatedBox.top + y * yGridDist)));
+
+				myFlies.push_back(new HealthFly(currPos,
 					flyLevel, flyQuads + flyCounter * 4, ts_fly));
+				//myFlies.push_back(new HealthFly(Vector2i(left + x * xGridDist, top + y * yGridDist),
+				//	flyLevel, flyQuads + flyCounter * 4, ts_fly));
 				++flyCounter;
 			}
 		}
@@ -1035,6 +1117,8 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
+	flyTransScale = Vector2f(1.f, 1.f);
+	flyTransRotate = 0;
 	flyQuads = NULL;
 	pShader = NULL;
 	decorTree = new QuadTree(1000000, 1000000);
@@ -1071,6 +1155,8 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	flyTransScale = Vector2f(1.f, 1.f);
+	flyTransRotate = 0;
 	flyQuads = NULL;
 	pShader = NULL;
 	numGrassTotal = 0;
@@ -3475,7 +3561,11 @@ void TerrainPolygon::SetRenderMode(RenderMode rm)
 
 void TerrainPolygon::SetFlyTransform(TransformTools *tr)
 {
-
+	//flyTransform = Transform::Identity;
+	//flyTransform.scale(tr->scale);
+	//flyTransform.rotate(tr->rotation);
+	flyTransScale = tr->scale;// Vector2f(1.f, 1.f);
+	flyTransRotate = tr->rotation;
 }
 
 void TerrainPolygon::CopyFliesFrom(PolyPtr poly)
@@ -3524,7 +3614,7 @@ PolyPtr TerrainPolygon::CompleteTransformation(TransformTools *tr)
 
 		UpdateLinePositions();
 
-		newPoly->CopyFliesFrom( this );
+		newPoly->SetFlyTransform(tr);
 
 		newPoly->Finalize();
 
