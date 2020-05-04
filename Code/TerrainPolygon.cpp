@@ -1208,6 +1208,22 @@ TerrainPolygon::~TerrainPolygon()
 	ClearPoints();
 }
 
+void TerrainPolygon::AddFliesToWorldTrees()
+{
+	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	{
+		(*it)->AddToWorldTrees();
+	}
+}
+
+void TerrainPolygon::AddFliesToQuadTree(QuadTree *tree)
+{
+	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	{
+		tree->Insert((*it));
+	}
+}
+
 bool TerrainPolygon::IsFlatGround(sf::Vector2<double> &normal)
 {
 	return (normal.x == 0);
@@ -3716,6 +3732,14 @@ void TerrainPolygon::DrawPoints(sf::RenderTarget *rt, double zoomMultiple, Terra
 	}
 }
 
+void TerrainPolygon::DrawFlies(RenderTarget *target)
+{
+	if (!myFlies.empty())
+	{
+		target->draw(flyQuads, myFlies.size() * 4, sf::Quads, ts_fly->texture);
+	}
+}
+
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
 	int numP = GetNumPoints();
@@ -3752,7 +3776,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 			rt->draw(lines, numP * 2, sf::Lines);
 
-			rt->draw(flyQuads, myFlies.size() * 4, sf::Quads, ts_fly->texture);
+			DrawFlies(rt);
 			return;
 		}
 
@@ -3781,7 +3805,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 
 		rt->draw(lines, numP * 2, sf::Lines);
 
-		rt->draw(flyQuads, myFlies.size() * 4, sf::Quads, ts_fly->texture);
+		DrawFlies(rt);
 
 		return;
 	}

@@ -260,6 +260,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	std::list<PolyPtr> allSpecialTerrain;
 	PolyPtr specialPieceList;
+	PolyPtr flyTerrainList;
 
 	void SetNumGates( int nGates );
 

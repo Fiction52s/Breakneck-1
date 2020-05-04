@@ -214,6 +214,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	float flyTransRotate;
 	void GenerateMyFlies();
 	std::vector<HealthFly*> myFlies;
+	void AddFliesToQuadTree(QuadTree *tree);
+	void AddFliesToWorldTrees();
 	sf::Vertex *flyQuads;
 	Tileset *ts_fly;
 
@@ -435,6 +437,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void Reset();
 	void SoftReset();
 	void Draw(bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow);
+	void DrawFlies(sf::RenderTarget *target);
 	void FixWinding();
 	void FixWindingInverse();
 	bool IsClockwise();

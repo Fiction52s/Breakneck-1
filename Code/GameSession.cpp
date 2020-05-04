@@ -315,6 +315,12 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	}
 	allSpecialTerrain.clear();
 
+	/*for (auto it = flyTerrain.begin(); it != flyTerrain.end(); ++it)
+	{
+		delete (*it);
+	}
+	flyTerrain.clear();*/
+
 	for (auto it = allEnvPlants.begin(); it != allEnvPlants.end(); ++it)
 	{
 		delete (*it);
@@ -467,6 +473,13 @@ void GameSession::Cleanup()
 	{
 		delete (*it);
 	}
+	allSpecialTerrain.clear();
+
+	/*for (auto it = flyTerrain.begin(); it != flyTerrain.end(); ++it)
+	{
+		delete (*it);
+	}
+	flyTerrain.clear();*/
 
 	for (auto it = allEnvPlants.begin(); it != allEnvPlants.end(); ++it)
 	{
@@ -871,9 +884,21 @@ int GameSession::CountActiveEnemies()
 
 void GameSession::ProcessSpecialTerrain(PolyPtr poly)
 {
+	int specialType = poly->GetSpecialPolyIndex();
+	if (specialType == 1)
+	{
+		allSpecialTerrain.push_back(poly);
+		specialTerrainTree->Insert(poly);
+	}
+	else if (specialType == 2)
+	{
+		poly->AddFliesToWorldTrees();
+		poly->AddFliesToQuadTree(enemyTree);
+		allSpecialTerrain.push_back(poly);
+		flyTerrainTree->Insert(poly);
+	}
 	//matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
-	allSpecialTerrain.push_back(poly);
-	specialTerrainTree->Insert(poly);
+	
 }
 
 
@@ -4835,6 +4860,7 @@ void GameSession::SetupQuadTrees()
 		terrainTree->Clear();
 		barrierTree->Clear();
 		specialTerrainTree->Clear();
+		flyTerrainTree->Clear();
 		inverseEdgeTree->Clear();
 		staticItemTree->Clear();
 		railDrawTree->Clear();
@@ -4859,6 +4885,8 @@ void GameSession::SetupQuadTrees()
 	barrierTree = new QuadTree(1000000, 1000000);
 
 	specialTerrainTree = new QuadTree(1000000, 1000000);
+
+	flyTerrainTree = new QuadTree(1000000, 1000000);
 
 	inverseEdgeTree = new QuadTree(1000000, 1000000);
 
@@ -5990,6 +6018,10 @@ int GameSession::Run()
 				queryMode = "specialterrain";
 				specialTerrainTree->Query(this, screenRect);
 
+				flyTerrainList = NULL;
+				queryMode = "flyterrain";
+				flyTerrainTree->Query(this, screenRect);
+
 				drawInversePoly = ScreenIntersectsInversePoly( screenRect );
 
 				UpdateDecorSprites();
@@ -6162,6 +6194,13 @@ int GameSession::Run()
 		{
 			sp->Draw(preScreenTex);
 			sp = sp->queryNext;
+		}
+
+		PolyPtr fp = flyTerrainList;
+		while (fp != NULL)
+		{
+			fp->DrawFlies(preScreenTex);
+			fp = fp->queryNext;
 		}
 
 		
@@ -7481,6 +7520,7 @@ void GameSession::Init()
 
 	polyQueryList = NULL;
 	specialPieceList = NULL;
+	flyTerrainList = NULL;
 
 	drawInversePoly = true;
 	showDebugDraw = false;
@@ -7585,6 +7625,35 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 
+	}
+	else if (queryMode == "flyterrain")
+	{
+		if (flyTerrainList == NULL)
+		{
+			flyTerrainList = (PolyPtr)qte;
+			flyTerrainList->queryNext = NULL;
+		}
+		else
+		{
+			PolyPtr tva = (PolyPtr)qte;
+			PolyPtr temp = flyTerrainList;
+			bool okay = true;
+			while (temp != NULL)
+			{
+				if (temp == tva)
+				{
+					okay = false;
+					break;
+				}
+				temp = temp->queryNext;
+			}
+
+			if (okay)
+			{
+				tva->queryNext = flyTerrainList;
+				flyTerrainList = tva;
+			}
+		}
 	}
 	else if( queryMode == "inverseborder" )
 	{
