@@ -208,11 +208,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
-	void SetFlyTransform(TransformTools *tr);
-	void CopyFliesFrom( PolyPtr poly );
+	void SetFlyTransform( PolyPtr poly, TransformTools *tr);
 
-	//sf::Transform flyTransform;
-	//std::vector<sf::Vector2i> copiedflyPosVec;
 	sf::Vector2f flyTransScale;
 	float flyTransRotate;
 	void GenerateMyFlies();

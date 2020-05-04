@@ -61,12 +61,12 @@ void HealthFly::SetLevel(int lev)
 }
 
 HealthFly::HealthFly(HealthFly &hf)
-	:HealthFly( Vector2i( hf.GetPosition() ), hf.level, hf.quad, hf.ts )
+	:HealthFly( hf.GetPosition(), hf.level, hf.quad, hf.ts )
 {
 
 }
 
-HealthFly::HealthFly(sf::Vector2i &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts )
+HealthFly::HealthFly(V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts )
 	:Enemy(EnemyType::EN_HEALTHFLY, NULL)
 {
 	SetNumActions(Count);
@@ -76,7 +76,7 @@ HealthFly::HealthFly(sf::Vector2i &pos, int p_level, sf::Vertex *p_quad, Tileset
 
 	quad = p_quad;
 
-	startPosInfo.position = V2d(pos);
+	startPosInfo.position = pos;
 	preTransformPos = startPosInfo.position;
 
 	SetCurrPosInfo(startPosInfo);

@@ -10490,6 +10490,11 @@ void EditSession::EditModeHandleEvent()
 				transformTools->Reset(sDec->center, Vector2f(sDec->tileSize.x * sDec->scale.x,
 					sDec->tileSize.y * sDec->scale.y), sDec->rotation);
 			}
+			//else if (selectedBrush->IsSingleFlyPoly())
+			//{
+
+			//	
+			//}
 			else
 			{
 				transformTools->Reset(selectedBrush->GetCenterF(),

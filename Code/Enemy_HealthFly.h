@@ -12,7 +12,7 @@ struct HealthFly : Enemy
 		Count
 	};
 
-	HealthFly(sf::Vector2i &pos, int level, 
+	HealthFly(V2d &pos, int level, 
 		sf::Vertex *p_quad, Tileset *p_ts );
 	HealthFly(HealthFly &hf);
 	void HandleQuery(QuadTreeCollider * qtc);

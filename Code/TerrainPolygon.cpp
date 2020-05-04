@@ -131,34 +131,6 @@ void TerrainPolygon::GenerateMyFlies()
 	int numFlies = 0;
 	int flyCounter = 0;
 
-	//flyTransScale = Vector2f(1.f, 1.f);
-	//flyTransRotate = 0;
-	//if (!copiedflyPosVec.empty())
-	//{
-	//	numFlies = copiedflyPosVec.size();
-	//	//needs a flag for when your points have been modified.
-	//	if (!myFlies.empty())
-	//	{
-	//		myFlies.clear();
-	//		delete[] flyQuads;
-	//		flyQuads = NULL;
-	//	}
-
-	//	myFlies.reserve(numFlies);
-
-	//	flyQuads = new Vertex[numFlies * 4];
-
-
-	//	for (auto it = copiedflyPosVec.begin(); it != copiedflyPosVec.end(); ++it)
-	//	{
-	//		myFlies.push_back(new HealthFly((*it),
-	//			flyLevel, flyQuads + flyCounter * 4, ts_fly));
-	//		++flyCounter;
-	//	}
-
-	//	return;
-	//}
-
 	FloatRect rotatedBox = GetAngledAABB(flyTransRotate);
 	
 
@@ -171,8 +143,6 @@ void TerrainPolygon::GenerateMyFlies()
 
 	sf::Transform t;
 	t.rotate(flyTransRotate);
-	Vector2f dirX = t.transformPoint(Vector2f(1, 0));
-	Vector2f dirY = t.transformPoint(Vector2f(0, 1));
 	
 	sf::Transform backT;
 	backT.rotate(flyTransRotate);
@@ -180,16 +150,16 @@ void TerrainPolygon::GenerateMyFlies()
 	//bool *hasFly = new bool[width * height];
 	int index;
 	IntRect r;
-	int rSize = 2;
-	Vector2i currPos;
+	int rSize = 3;
+	V2d currPos;
 	for (int x = 0; x < width; ++x)
 	{
 		for (int y = 0; y < height; ++y)
 		{
-			currPos = Vector2i(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
+			currPos = V2d(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
 				rotatedBox.top + y * yGridDist)));
-			r.left = currPos.x - rSize;
-			r.top = currPos.y - rSize;
+			r.left = round(currPos.x) - rSize;
+			r.top = round(currPos.y) - rSize;
 			r.width = rSize * 2;
 			r.height = rSize * 2;
 			if (Intersects( r ) )
@@ -222,7 +192,7 @@ void TerrainPolygon::GenerateMyFlies()
 			index = x * height + y;
 			if (hasFly[index])
 			{
-				currPos = Vector2i(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
+				currPos = V2d(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
 					rotatedBox.top + y * yGridDist)));
 
 				myFlies.push_back(new HealthFly(currPos,
@@ -1952,9 +1922,14 @@ void TerrainPolygon::WriteFile(std::ofstream & of)
 		of << PointVector()[i].pos.x << " " << PointVector()[i].pos.y << endl;
 	}
 
-	if (GetSpecialPolyIndex() == 0 )
+	int specialIndex = GetSpecialPolyIndex();
+	if (specialIndex == 0 )
 	{
 		WriteGrass(of);
+	}
+	else if (specialIndex == 2)
+	{
+		of << flyTransScale.x << " " << flyTransScale.y << " " << flyTransRotate << "\n";
 	}
 }
 
@@ -2699,6 +2674,12 @@ void TerrainPolygon::Move(Vector2i move )
 	for (auto it = decorExprList.begin(); it != decorExprList.end(); ++it)
 	{
 		(*it)->Move(fMove);
+	}
+
+	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	{
+		(*it)->SetPosition((*it)->GetPosition() + dMove);
+		(*it)->preTransformPos = (*it)->GetPosition();
 	}
 
 	//UpdateBounds();
@@ -3559,24 +3540,10 @@ void TerrainPolygon::SetRenderMode(RenderMode rm)
 	renderMode = rm;
 }
 
-void TerrainPolygon::SetFlyTransform(TransformTools *tr)
+void TerrainPolygon::SetFlyTransform( PolyPtr poly, TransformTools *tr)
 {
-	//flyTransform = Transform::Identity;
-	//flyTransform.scale(tr->scale);
-	//flyTransform.rotate(tr->rotation);
-	flyTransScale = tr->scale;// Vector2f(1.f, 1.f);
-	flyTransRotate = tr->rotation;
-}
-
-void TerrainPolygon::CopyFliesFrom(PolyPtr poly)
-{
-	//copiedflyPosVec.clear();
-	//copiedflyPosVec.reserve(poly->myFlies.size());
-	//for (auto it = poly->myFlies.begin(); it != poly->myFlies.end(); ++it)
-	//{
-	//	//might want to round this
-	//	copiedflyPosVec.push_back( Vector2i( (*it)->GetPosition() ) );
-	//}
+	flyTransScale = tr->scale + ( poly->flyTransScale - Vector2f( 1, 1 ) );
+	flyTransRotate = tr->rotation + poly->flyTransRotate;
 }
 
 void TerrainPolygon::CancelTransformation()
@@ -3585,7 +3552,10 @@ void TerrainPolygon::CancelTransformation()
 	UpdateLineColors();
 	SetRenderMode(RENDERMODE_NORMAL);
 
-	
+	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	{
+		(*it)->SetPosition((*it)->preTransformPos);
+	}
 
 	//triBackups.clear();
 }
@@ -3595,6 +3565,11 @@ PolyPtr TerrainPolygon::CompleteTransformation(TransformTools *tr)
 	if (renderMode == RENDERMODE_TRANSFORM)
 	{
 		SetRenderMode(RENDERMODE_NORMAL);
+
+		for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+		{
+			(*it)->SetPosition((*it)->preTransformPos);
+		}
 
 		PolyPtr newPoly(new TerrainPolygon);
 
@@ -3614,7 +3589,7 @@ PolyPtr TerrainPolygon::CompleteTransformation(TransformTools *tr)
 
 		UpdateLinePositions();
 
-		newPoly->SetFlyTransform(tr);
+		newPoly->SetFlyTransform( this, tr);
 
 		newPoly->Finalize();
 
@@ -5325,6 +5300,14 @@ bool TerrainPolygon::Load(std::ifstream &is)
 		is >> x;
 		is >> y;
 		AddPoint(Vector2i(x, y), false);
+	}
+
+	int specialIndex = GetSpecialPolyIndex();
+	if ( specialIndex == 2)
+	{
+		is >> flyTransScale.x;
+		is >> flyTransScale.y; 
+		is >> flyTransRotate;
 	}
 
 	return true;

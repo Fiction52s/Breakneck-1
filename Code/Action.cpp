@@ -635,6 +635,19 @@ bool Brush::IsSingleDecor()
 	return (objects.size() == 1 && objects.front()->selectableType == ISelectable::IMAGE);
 }
 
+bool Brush::IsSingleFlyPoly()
+{
+	if (objects.size() == 1 && objects.front()->selectableType == ISelectable::TERRAIN)
+	{
+		PolyPtr poly = objects.front()->GetAsTerrain();
+		if (poly->GetSpecialPolyIndex() == 2)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void Brush::RemoveObject( SelectPtr obj )
 {
 	objects.remove( obj );

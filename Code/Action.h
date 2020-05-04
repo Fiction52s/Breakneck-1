@@ -43,6 +43,7 @@ struct Brush
 	bool IsEmpty();
 	bool HasSingleActor();
 	bool IsSingleDecor();
+	bool IsSingleFlyPoly();
 
 	sf::Vector2f GetTerrainSize();
 };
