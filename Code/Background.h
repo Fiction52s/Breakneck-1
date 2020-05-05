@@ -23,7 +23,8 @@ struct ScrollingBackground
 	float depth;
 	float scrollSpeedX;
 	float scrollOffset;
-	void Update(const sf::Vector2f &camPos);
+	void Update(const sf::Vector2f &camPos, 
+		int updateFrames = 1 );
 	void SetTileIndex(int index);
 	void Draw(sf::RenderTarget *target);
 	void SetLeftPos(sf::Vector2f &pos);
@@ -41,7 +42,8 @@ struct Background
 		TilesetManager *tm);
 
 	void DestroyTilesets();
-	void Update( const sf::Vector2f &camPos );
+	void Update( const sf::Vector2f &camPos,
+		int frames = 1 );
 	void Reset();
 	void Draw(sf::RenderTarget *target);
 	void UpdateSky();

@@ -2362,8 +2362,8 @@ int EditSession::Run()
 
 	while( !quit )
 	{
-		if (mode == EDIT || mode == CREATE_ENEMY || mode == PASTE )
-		{
+		/*if (mode == EDIT || mode == CREATE_ENEMY || mode == PASTE )
+		{*/
 			double newTime = editClock.getElapsedTime().asSeconds();
 			double frameTime = newTime - editCurrentTime;
 			editCurrentTime = newTime;
@@ -2378,7 +2378,7 @@ int EditSession::Run()
 
 				editAccumulator -= mult * TIMESTEP;
 			}
-		}
+		//}
 
 		pixelPos = GetPixelPos();
 
@@ -2466,7 +2466,7 @@ int EditSession::Run()
 
 		UpdatePanning();
 		
-		background->Update(view.getCenter());
+		background->Update(view.getCenter(), spriteUpdateFrames );
 
 		UpdatePolyShaders();
 		

@@ -19,7 +19,7 @@ ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	scrollOffset = 0;
 }
 
-void ScrollingBackground::Update(const Vector2f &camPos)
+void ScrollingBackground::Update(const Vector2f &camPos, int updateFrames )
 {
 	Vector2f cPos = camPos;
 	cPos.x -= scrollOffset;
@@ -61,7 +61,7 @@ void ScrollingBackground::Update(const Vector2f &camPos)
 		pxx = -pxx;
 
 
-	scrollOffset += scrollSpeedX;
+	scrollOffset += scrollSpeedX * updateFrames;
 
 	//cout << "pxx: " << pxx << ", modified:  " << (pxx / .5f) << endl;
 	//pxx = floor( pxx * .5 + .5 );
@@ -407,22 +407,22 @@ void Background::UpdateShape()
 	shape.setColor(GetShapeColor());
 }
 
-void Background::Update( const Vector2f &camPos )
+void Background::Update( const Vector2f &camPos, int updateFrames )
 {
 	UpdateSky();
 	UpdateShape();
 
-	++frame;
+	frame += updateFrames;
 
-	if (frame == transFrames * 4)
+	if (frame >= transFrames * 4)
 	{
-		frame = 0;
+		frame = frame % (transFrames * 4);
 	}
 
 	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
 		it != scrollingBackgrounds.end(); ++it)
 	{
-		(*it)->Update(camPos);
+		(*it)->Update(camPos, updateFrames );
 	}
 }
 
