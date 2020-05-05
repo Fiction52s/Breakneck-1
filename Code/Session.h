@@ -309,6 +309,11 @@ struct Session : TilesetManager
 
 	virtual int Run() = 0;
 
+	void OneFrameModeUpdate();
+	bool skipped;
+	bool oneFrameMode;
+
+
 	bool cutPlayerInput;
 	MainMenu *mainMenu;
 

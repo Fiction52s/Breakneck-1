@@ -58,6 +58,9 @@ using namespace std;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+
+//#define cout std::cout
+
 void Actor::SetupDrain()
 {
 	float numSecondsToDrain = sess->mapHeader->drainSeconds;
@@ -489,6 +492,7 @@ void Actor::SetupActionTilesets(Skin *skin)
 	tileset[LAND] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
 	tileset[LAND2] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
 	tileset[RUN] = sess->GetSizedTileset( folder, "run_64x64.png", skin);
+	tileset[BRAKE] = sess->GetSizedTileset(folder, "brake_64x64.png", skin);
 	tileset[SPRINGSTUN] = sess->GetSizedTileset( folder, "launch_96x64.png", skin);
 	tileset[SPRINGSTUNGLIDE] = tileset[SPRINGSTUN];
 	tileset[SPRINGSTUNAIRBOUNCE] = tileset[SPRINGSTUN];
@@ -1888,6 +1892,9 @@ void Actor::ActionEnded()
 		case RUN:
 			frame = 0;
 			break;
+		case BRAKE:
+			frame = 0;
+			break;
 		case SEQ_KINFALL:
 		case JUMP:
 			frame = 1;
@@ -1959,7 +1966,8 @@ void Actor::ActionEnded()
 			}
 			else
 			{
-				SetActionExpr(STAND);
+				SetActionExpr(BRAKE);
+				//SetActionExpr(STAND);
 			}
 			frame = 0;
 
@@ -3668,7 +3676,7 @@ void Actor::UpdatePrePhysics()
 				}
 				
 			}
-			else if (!GroundAttack())
+			else if (!TryGroundAttack())
 			{
 				if (stunBufferedDash )
 				{
@@ -3694,49 +3702,19 @@ void Actor::UpdatePrePhysics()
 	{
 	case STAND:
 		{
-		if (BasicGroundAction(gNorm))
-			break;
-
-
-			if (TrySprint(gNorm))
-			{
-				break;
-			}
-			else if (currInput.LLeft() || currInput.LRight())
-			{
-				SetActionExpr(RUN);
-				frame = 0;
-				//facingRight = currInput.LRight();
-				break;
-			}
-			else
-			{
-				if (currInput.LDown() || currInput.LUp())
-				{
-					SetActionExpr(SLIDE);
-					frame = 0;
-					break;
-				}
-			}
-			break;
+		BasicGroundAction(gNorm);
+		break;
 		}
 	case RUN:
 		{
-			if (BasicGroundAction(gNorm))
-			break;
-
-
-			if (TrySlide() )
-			{
-				break;
-			}
-			else
-			{
-				if (TrySprint(gNorm)) break;
-			}
-			
-			break;
+		BasicGroundAction(gNorm);
+		break;
 		}
+	case BRAKE:
+	{
+		BasicGroundAction(gNorm);
+		break;
+	}
 	case JUMP:
 		{
 			if( bufferedAttack != JUMP )
@@ -3796,229 +3774,232 @@ void Actor::UpdatePrePhysics()
 	case LAND:
 	case LAND2:
 		{
+		BasicGroundAction(gNorm);
 			//buffered grind ball works
-			if( hasPowerGrindBall && currInput.Y )//&& !prevInput.Y )
-			{
-				//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
-				if( !reversed || ( hasPowerGravReverse && reversed ) )
-				{
-					SetActionGrind();
-					break;
-				}
-			}
+			//if( hasPowerGrindBall && currInput.Y )//&& !prevInput.Y )
+			//{
+			//	//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
+			//	if( !reversed || ( hasPowerGravReverse && reversed ) )
+			//	{
+			//		SetActionGrind();
+			//		break;
+			//	}
+			//}
 
-			if (hasPowerBounce && currInput.X && !bounceFlameOn)
-			{
-				//bounceGrounded = true;
-				BounceFlameOn();
-				oldBounceEdge = NULL;
-				//break;
-			}
-			else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
+			//if (hasPowerBounce && currInput.X && !bounceFlameOn)
+			//{
+			//	//bounceGrounded = true;
+			//	BounceFlameOn();
+			//	oldBounceEdge = NULL;
+			//	//break;
+			//}
+			//else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
+			//{
+			//	//bounceGrounded = false;
+			//	BounceFlameOff();
+			//}
 
-			if (currInput.A && !prevInput.A)
-			{
-				SetActionExpr(JUMPSQUAT);
-				frame = 0;
-				////runTappingSound.stop();
-				break;
-			}
+			//if (currInput.A && !prevInput.A)
+			//{
+			//	SetActionExpr(JUMPSQUAT);
+			//	frame = 0;
+			//	////runTappingSound.stop();
+			//	break;
+			//}
 
-			
+			//
 
-			if( reversed )
-			{
-				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-				{
-				
-					if( groundSpeed < 0 && gNorm.x > 0 || groundSpeed > 0 && gNorm.x < 0 )
-					{
-						if( groundSpeed > 0 )
-							facingRight = true;
-						else
-							facingRight = false;
-						
-						SetAction(STEEPCLIMB);
+			//if( reversed )
+			//{
+			//	if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+			//	{
+			//	
+			//		if( groundSpeed < 0 && gNorm.x > 0 || groundSpeed > 0 && gNorm.x < 0 )
+			//		{
+			//			if( groundSpeed > 0 )
+			//				facingRight = true;
+			//			else
+			//				facingRight = false;
+			//			
+			//			SetAction(STEEPCLIMB);
 
-						if (SteepClimbAttack())
-						{
+			//			if (SteepClimbAttack())
+			//			{
 
-						}
-						frame = 0;
-						break;
-					}
-					else
-					{
-						if( groundSpeed > 0 )
-							facingRight = true;
-						else
-							facingRight = false;
-						SetAction(STEEPSLIDE);
-						if (SteepSlideAttack())
-						{
+			//			}
+			//			frame = 0;
+			//			break;
+			//		}
+			//		else
+			//		{
+			//			if( groundSpeed > 0 )
+			//				facingRight = true;
+			//			else
+			//				facingRight = false;
+			//			SetAction(STEEPSLIDE);
+			//			if (SteepSlideAttack())
+			//			{
 
-						}
-						frame = 0;
-						break;
-					}
-					
-				}
-				else
-				{
-					if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
-					{
-						/*re->Reset();
-						re1->Reset();*/
-						//action = DASH;
-						//frame = 0;
-						SetActionExpr(DASH);
+			//			}
+			//			frame = 0;
+			//			break;
+			//		}
+			//		
+			//	}
+			//	else
+			//	{
+			//		if( ( currInput.B && !( reversed && (!currInput.LLeft() && !currInput.LRight() ) ) ) || !canStandUp )
+			//		{
+			//			/*re->Reset();
+			//			re1->Reset();*/
+			//			//action = DASH;
+			//			//frame = 0;
+			//			SetActionExpr(DASH);
 
-						if( currInput.LLeft() )
-							facingRight = false;
-						else if( currInput.LRight() )
-							facingRight = true;
-					}
-					else if( currInput.LLeft() || currInput.LRight() )
-					{
-						SetActionExpr( RUN );
-						frame = 0;
-					}
-					else if( currInput.LDown() || currInput.LUp() )
-					{
-						SetAction(SLIDE);
-						frame = 0;
-					}
-					else
-					{
-						SetActionExpr( STAND );
-						frame = 0;
-					}
+			//			if( currInput.LLeft() )
+			//				facingRight = false;
+			//			else if( currInput.LRight() )
+			//				facingRight = true;
+			//		}
+			//		else if( currInput.LLeft() || currInput.LRight() )
+			//		{
+			//			SetActionExpr( RUN );
+			//			frame = 0;
+			//		}
+			//		else if( currInput.LDown() || currInput.LUp() )
+			//		{
+			//			SetAction(SLIDE);
+			//			frame = 0;
+			//		}
+			//		else
+			//		{
+			//			SetActionExpr(BRAKE);
+			//			//SetActionExpr( STAND );
+			//			frame = 0;
+			//		}
 
-					if (GroundAttack())
-					{
-						break;
-					}
-				}
-			}
-			else
-			{
-			
-				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-				{	
-					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
-					{
-						if( groundSpeed > 0 )
-							facingRight = true;
-						else
-							facingRight = false;
-						SetAction(STEEPCLIMB);
+			//		if (TryGroundAttack())
+			//		{
+			//			break;
+			//		}
+			//	}
+			//}
+			//else
+			//{
+			//
+			//	if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
+			//	{	
+			//		if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
+			//		{
+			//			if( groundSpeed > 0 )
+			//				facingRight = true;
+			//			else
+			//				facingRight = false;
+			//			SetAction(STEEPCLIMB);
 
-						if (SteepClimbAttack())
-						{
+			//			if (SteepClimbAttack())
+			//			{
 
-						}
-						frame = 0;
-						break;
-					}
-					else
-					{
-						if( gNorm.x > 0 )
-						{
-							facingRight = true;
-						}
-						else
-						{
-							facingRight = false;
-						}
-						
-						SetAction(STEEPSLIDE);
+			//			}
+			//			frame = 0;
+			//			break;
+			//		}
+			//		else
+			//		{
+			//			if( gNorm.x > 0 )
+			//			{
+			//				facingRight = true;
+			//			}
+			//			else
+			//			{
+			//				facingRight = false;
+			//			}
+			//			
+			//			SetAction(STEEPSLIDE);
 
-						if (SteepSlideAttack())
-						{
+			//			if (SteepSlideAttack())
+			//			{
 
-						}
+			//			}
 
-						frame = 0;
-						break;
-					}
-					
-				}
-				else
-				{
-					//if( currInput.A && !prevInput.A )
-					//{
-					//	SetActionExpr( JUMPSQUAT );
-					//	frame = 0;
-					//	////runTappingSound.stop();
-					//	break;
-					//}
+			//			frame = 0;
+			//			break;
+			//		}
+			//		
+			//	}
+			//	else
+			//	{
+			//		//if( currInput.A && !prevInput.A )
+			//		//{
+			//		//	SetActionExpr( JUMPSQUAT );
+			//		//	frame = 0;
+			//		//	////runTappingSound.stop();
+			//		//	break;
+			//		//}
 
-					if( currInput.B || !canStandUp )
-					{
-						if( currInput.LLeft() )
-							facingRight = false;
-						else if( currInput.LRight() )
-							facingRight = true;
-						else
-						{
-							if( currInput.LDown() )
-							{
-								if( groundSpeed > 0 )//velocity.x > 0 )
-								{
-									facingRight = true;
-								}
-								else if( groundSpeed < 0 )//velocity.x < 0 )
-								{
-									facingRight = false;
-								}
-								else
-								{
-									if( gNorm.x > 0 )
-									{
-										facingRight = true;
-									}
-									else if( gNorm.x < 0 )
-									{
-										facingRight = false;
-									}
-								}
-							}
-							
-						}
-						
-						SetActionExpr(DASH);
-						//action = DASH;
-						//frame = 0;
-						/*re->Reset();
-						re1->Reset();*/
+			//		if( currInput.B || !canStandUp )
+			//		{
+			//			if( currInput.LLeft() )
+			//				facingRight = false;
+			//			else if( currInput.LRight() )
+			//				facingRight = true;
+			//			else
+			//			{
+			//				if( currInput.LDown() )
+			//				{
+			//					if( groundSpeed > 0 )//velocity.x > 0 )
+			//					{
+			//						facingRight = true;
+			//					}
+			//					else if( groundSpeed < 0 )//velocity.x < 0 )
+			//					{
+			//						facingRight = false;
+			//					}
+			//					else
+			//					{
+			//						if( gNorm.x > 0 )
+			//						{
+			//							facingRight = true;
+			//						}
+			//						else if( gNorm.x < 0 )
+			//						{
+			//							facingRight = false;
+			//						}
+			//					}
+			//				}
+			//				
+			//			}
+			//			
+			//			SetActionExpr(DASH);
+			//			//action = DASH;
+			//			//frame = 0;
+			//			/*re->Reset();
+			//			re1->Reset();*/
 
-						
-					}
-					else if( currInput.LLeft() || currInput.LRight() )
-					{
-						SetActionExpr( RUN );
-						frame = 0;
-						facingRight = currInput.LRight();
-					}
-					else if( currInput.LDown() || currInput.LUp() )
-					{
-						SetAction(SLIDE);
-						frame = 0;
-					}
-					else
-					{
-						SetActionExpr( STAND );
-						frame = 0;
-					}
+			//			
+			//		}
+			//		else if( currInput.LLeft() || currInput.LRight() )
+			//		{
+			//			SetActionExpr( RUN );
+			//			frame = 0;
+			//			facingRight = currInput.LRight();
+			//		}
+			//		else if( currInput.LDown() || currInput.LUp() )
+			//		{
+			//			SetAction(SLIDE);
+			//			frame = 0;
+			//		}
+			//		else
+			//		{
+			//			SetActionExpr(BRAKE);
+			//			//SetActionExpr( STAND );
+			//			frame = 0;
+			//		}
 
-					if (GroundAttack())
-						break;
-				}
-			}
+			//		if (TryGroundAttack())
+			//			break;
+			//	}
+			//}
 		
 
 			break;
@@ -4091,7 +4072,7 @@ void Actor::UpdatePrePhysics()
 						SetActionExpr( RUN );
 						frame = 0;
 					}
-					else if(GroundAttack())
+					else if(TryGroundAttack())
 					{
 						break;
 					}
@@ -4382,7 +4363,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 			
-			if (GroundAttack())
+			if (TryGroundAttack())
 			{
 				break;
 			}
@@ -4450,231 +4431,10 @@ void Actor::UpdatePrePhysics()
 			break;
 		}
 	case SLIDE:
-		{
-
-			if( hasPowerBounce && currInput.X && !bounceFlameOn )
-			{
-				BounceFlameOn();
-			}
-			else if( !(hasPowerBounce && currInput.X) && bounceFlameOn )
-			{
-				//bounceGrounded = false;
-				BounceFlameOff();
-			}
-
-			if( hasPowerGrindBall && currInput.Y && !prevInput.Y )
-			{
-				BounceFlameOff();
-				SetActionGrind();
-				break;
-			}
-
-			if( currInput.A && !prevInput.A )
-			{
-				SetActionExpr( JUMPSQUAT );
-				frame = 0;
-				break;
-			}
-			else if( GroundAttack() )
-			{
-				break;
-			}
-
-			if( reversed )
-			{
-				if( -gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-				{
-				
-					if( groundSpeed < 0 && gNorm.x > 0 || groundSpeed > 0 && gNorm.x < 0 )
-					{
-						if( groundSpeed > 0 )
-							facingRight = true;
-						else
-							facingRight = false;
-						
-						SetAction(STEEPCLIMB);
-
-						frame = 0;
-						break;
-					}
-					else
-					{
-						if( groundSpeed > 0 )
-							facingRight = true;
-						else
-							facingRight = false;
-						
-						SetAction(STEEPSLIDE);
-						frame = 0;
-						break;
-					}
-					
-				}
-				else
-				{
-					//you can't dash on the ceiling with no horizontal input. probably a weakness
-					if( ( currInput.B && !prevInput.B/*&& !( reversed && (!currInput.LLeft() && !currInput.LRight() ) )*/ ) || !canStandUp )
-					{
-						//action = DASH;
-						/*re->Reset();
-						re1->Reset();*/
-						//frame = 0;
-						SetActionExpr(DASH);
-
-						if( currInput.LLeft() )
-							facingRight = false;
-						else if( currInput.LRight() )
-							facingRight = true;
-						else
-						{
-							if( gNorm.x > 0 && groundSpeed > 0 )
-							{
-								facingRight = true;
-							}
-							else if( gNorm.x < 0 && groundSpeed < 0 )
-							{
-								facingRight = false;
-							}
-							else
-							{
-								if( groundSpeed > 0 )//velocity.x > 0 )
-								{
-									facingRight = true;
-								}
-								else if( groundSpeed < 0 )//velocity.x < 0 )
-								{
-									facingRight = false;
-								}
-								else
-								{
-									if( gNorm.x > 0 )
-									{
-										facingRight = true;
-									}
-									else if( gNorm.x < 0 )
-									{
-										facingRight = false;
-									}
-								}
-							}
-
-						}
-					}
-					else if( currInput.LLeft() || currInput.LRight() )
-					{
-						SetActionExpr( RUN );
-						frame = 0;
-					}
-					else if( currInput.LDown() || currInput.LUp() )
-					{
-						SetAction(SLIDE);
-						frame = 0;
-					}
-					else
-					{
-						SetAction(STAND);
-						frame = 0;
-					}
-				}
-			}
-			else
-			{
-			
-				if( gNorm.y > -steepThresh && approxEquals( abs( offsetX ), b.rw ) )
-				{
-					
-					if( groundSpeed > 0 && gNorm.x < 0 || groundSpeed < 0 && gNorm.x > 0 )
-					{
-						if( groundSpeed > 0 )
-							facingRight = true;
-						else
-							facingRight = false;
-						SetAction(STEEPCLIMB);
-						frame = 0;
-						break;
-					}
-					else
-					{
-						if( groundSpeed > 0 )
-							facingRight = true;
-						else
-							facingRight = false;
-						SetAction(STEEPSLIDE);
-						frame = 0;
-						break;
-					}
-					
-				}
-				else
-				{
-					if( (currInput.B && !prevInput.B) || !canStandUp )
-					{
-						//cout << "start dash" << endl;
-						//action = DASH;
-						/*re->Reset();
-						re1->Reset();*/
-						//frame = 0;
-						SetActionExpr(DASH);
-
-						if( currInput.LLeft() )
-							facingRight = false;
-						else if( currInput.LRight() )
-							facingRight = true;
-						else
-						{
-							if( gNorm.x > 0 && groundSpeed > 0 )
-							{
-								facingRight = true;
-							}
-							else if( gNorm.x < 0 && groundSpeed < 0 )
-							{
-								facingRight = false;
-							}
-							else
-							{
-								if( groundSpeed > 0 )//velocity.x > 0 )
-								{
-									facingRight = true;
-								}
-								else if( groundSpeed < 0 )//velocity.x < 0 )
-								{
-									facingRight = false;
-								}
-								else
-								{
-									if( gNorm.x > 0 )
-									{
-										facingRight = true;
-									}
-									else if( gNorm.x < 0 )
-									{
-										facingRight = false;
-									}
-								}
-							}
-						}
-					}
-					else if( currInput.LLeft() || currInput.LRight() )
-					{
-						SetActionExpr( RUN );
-						frame = 0;
-						facingRight = currInput.LRight();
-					}
-					else if( currInput.LDown() || currInput.LUp() )
-					{
-						SetAction(SLIDE);
-						frame = 0;
-					}
-					else
-					{
-						SetAction(STAND);
-						frame = 0;
-					}
-				}
-			}
-
-			break;
-		}
+	{
+		BasicGroundAction(gNorm);
+		break;
+	}
 	case SPRINT:
 		{
 		if (BasicGroundAction(gNorm))
@@ -4690,21 +4450,11 @@ void Actor::UpdatePrePhysics()
 				}
 				else
 				{
-					SetActionExpr(STAND);
+					SetActionExpr(BRAKE);
+					//SetActionExpr(STAND);
 					frame = 0;
 					break;
 				}
-				/*else if( currInput.LUp() && ( (gNorm.x < 0 && facingRight) || (gNorm.x > 0 && !facingRight) ) )
-				{
-					break;
-				}
-				else
-				{
-					SetAction(STAND);
-					frame = 0;
-				}*/
-			
-				
 			}
 			else
 			{
@@ -4839,7 +4589,7 @@ void Actor::UpdatePrePhysics()
 					break;
 				}
 
-				if (GroundAttack())
+				if (TryGroundAttack())
 				{
 					break;
 				}
@@ -5894,7 +5644,7 @@ void Actor::UpdatePrePhysics()
 				{
 					SetAction(LAND2);
 					frame = 0;
-					if (GroundAttack())
+					if (TryGroundAttack())
 					{
 
 					}
@@ -5908,7 +5658,7 @@ void Actor::UpdatePrePhysics()
 					cout << "is it really this wtf" << endl;
 					SetAction(LAND2);
 					frame = 0;
-					if (GroundAttack())
+					if (TryGroundAttack())
 					{
 
 					}
@@ -6020,7 +5770,7 @@ void Actor::UpdatePrePhysics()
 				{
 					SetAction(LAND2);
 					frame = 0;
-					if (GroundAttack())
+					if (TryGroundAttack())
 					{
 
 					}
@@ -6057,7 +5807,7 @@ void Actor::UpdatePrePhysics()
 					//cout << "blahzzz" << endl;
 					SetAction(LAND2);
 					frame = 0;
-					if (GroundAttack())
+					if (TryGroundAttack())
 					{
 
 					}
@@ -6574,7 +6324,7 @@ void Actor::UpdatePrePhysics()
 				break;
 			}
 
-			if (GroundAttack())
+			if (TryGroundAttack())
 			{
 				break;
 			}
@@ -6615,6 +6365,12 @@ void Actor::UpdatePrePhysics()
 			//cout << "frame: " << frame << endl;
 			RunMovement( );
 		break;
+		}
+	case BRAKE:
+		{
+			//cout << "frame: " << frame << endl;
+			BrakeMovement();
+			break;
 		}
 	case JUMP:
 		{
@@ -11835,30 +11591,8 @@ bool Actor::ExitGrind(bool jump)
 	return true;
 }
 
-bool Actor::TrySlide()
+bool Actor::TrySlideBrakeOrStand()
 {
-	//bool t = (!currInput.LUp() && ((gNorm.x > 0 && facingRight) || (gNorm.x < 0 && !facingRight)));
-	//if (!(currInput.LLeft() || currInput.LRight()))//&& t )
-	//{
-	//	if (currInput.LDown() || currInput.LUp())
-	//	{
-	//		SetAction(SLIDE);
-	//		frame = 0;
-
-	//	}
-	//	else if (currInput.LUp())
-	//	{
-	//		//stay running
-	//	}
-	//	else
-	//	{
-	//		SetActionExpr(STAND);
-	//		frame = 0;
-	//	}
-	//	////runTappingSound.stop();
-	//	return true;
-
-	//}
 	if (!(currInput.LLeft() || currInput.LRight()))//&& t )
 	{
 		if (currInput.LDown() || currInput.LUp())
@@ -11868,9 +11602,18 @@ bool Actor::TrySlide()
 		}
 		else
 		{
-			action = STAND;
-			frame = 0;
+			if (action == BRAKE && abs( groundSpeed ) < 2 )
+			{
+				SetAction(STAND);
+				frame = 0;
+			}
+			else if( action != BRAKE && action != STAND )
+			{
+				SetAction(BRAKE);
+				frame = 0;
+			}
 		}
+		return true;
 	}
 	return false;
 }
@@ -11926,71 +11669,86 @@ bool Actor::BasicSteepAction(V2d &gNorm)
 	return false;
 }
 
-bool Actor::TrySprint(V2d &gNorm)
+void Actor::SetSprintStartFrame()
 {
-	if (facingRight && currInput.LLeft())
+	if (action == RUN)
 	{
-		if ((currInput.LDown() && gNorm.x < 0) || (currInput.LUp() && gNorm.x > 0))
-		{
-			SetActionExpr(SPRINT);
-		}
-		else
-		{
-			SetActionExpr(RUN);
-		}
+		frame = frame / 4;
 
-		groundSpeed = 0;
-		facingRight = false;
-		frame = 0;
-		//runTappingSound.stop();
-		return true;
-	}
-	else if (!facingRight && currInput.LRight())
-	{
-		if ((currInput.LDown() && gNorm.x > 0) || (currInput.LUp() && gNorm.x < 0))
+		if (frame < 3)
 		{
-			SetActionExpr(SPRINT);
+			frame = frame + 1;
 		}
-		else
+		else if (frame == 8)
 		{
-			SetActionExpr(RUN);
+			frame = 7;
 		}
 
-		groundSpeed = 0;
-		facingRight = true;
-		frame = 0;
-		//runTappingSound.stop();
-		return true;
-	}
-	else if ((currInput.LDown() && ((gNorm.x > 0 && facingRight && currInput.LRight()) || (gNorm.x < 0 && !facingRight && currInput.LLeft())))
-		|| (currInput.LUp() && ((gNorm.x < 0 && facingRight && currInput.LRight()) || (gNorm.x > 0 && !facingRight && currInput.LLeft()))))
-	{
-		bool oldActionRun = (action == RUN);
-		SetActionExpr(SPRINT);
-
-		if (oldActionRun)
-		{
-			frame = frame / 4;
-
-			if (frame < 3)
-			{
-				frame = frame + 1;
-			}
-			else if (frame == 8)
-			{
-				frame = 7;
-			}
-
-			else if (frame == 9)
-			{
-				frame = 0;
-			}
-			frame = frame * 4;
-		}
-		else
+		else if (frame == 9)
 		{
 			frame = 0;
 		}
+		frame = frame * 4;
+	}	
+	else
+	{
+		frame = 0;
+	}
+}
+
+bool Actor::TrySprintOrRun(V2d &gNorm)
+{
+	if (currInput.LLeft())
+	{
+		if ((currInput.LDown() && gNorm.x < 0) || (currInput.LUp() && gNorm.x > 0))
+		{
+			if (action != SPRINT)
+			{
+				SetActionExpr(SPRINT);
+				SetSprintStartFrame();
+			}
+		}
+		else
+		{
+			if (action != RUN)
+			{
+				SetActionExpr(RUN);
+				frame = 0;
+			}
+		}
+
+		if (facingRight)
+		{
+			groundSpeed = 0;
+			facingRight = false;
+		}
+		return true;
+	}
+	else if (currInput.LRight())
+	{
+		if ((currInput.LDown() && gNorm.x > 0) || (currInput.LUp() && gNorm.x < 0))
+		{
+			if (action != SPRINT)
+			{
+				SetActionExpr(SPRINT);
+				SetSprintStartFrame();
+			}
+		}
+		else
+		{
+			if (action != RUN)
+			{
+				SetActionExpr(RUN);
+				frame = 0;
+			}
+		}
+
+		if (!facingRight)
+		{
+			groundSpeed = 0;
+			facingRight = true;
+		}
+
 		return true;
 	}
 
@@ -12032,40 +11790,55 @@ bool Actor::TryGrind()
 	return false;
 }
 
-bool Actor::BasicGroundAction( V2d &gNorm)
+bool Actor::TryJumpSquat()
 {
-	CheckBounceFlame();
-
-	if (TryGrind()) return true;
-
-
-	//bool canJump = (currInput.A && !prevInput.A);
-	//bool canDash = (currInput.B && !prevInput.B);
-
-
-	if(currInput.A && !prevInput.A)
+	if (currInput.A && !prevInput.A)
 	{
 		SetActionExpr(JUMPSQUAT);
 		frame = 0;
 		return true;
 	}
-	else if (GroundAttack())
-	{
-		return true;
-	}
-	else if (currInput.B && !prevInput.B)
+
+	return false;
+}
+
+bool Actor::TryDash()
+{
+	bool landAction = action == LAND || action == LAND2;
+	if (currInput.B && (!prevInput.B || landAction ))
 	{
 		SetActionExpr(DASH);
 		frame = 0;
 		return true;
 	}
+	
+	return false;
+}
+
+bool Actor::BasicGroundAction( V2d &gNorm)
+{
+	CheckBounceFlame();
+
+	//button-based inputs
+
+	if (TryGrind()) return true;
+
+	if (TryJumpSquat()) return true;
+
+	if (TryGroundAttack()) return true;
+	
+	if (TryDash()) return true;
+
+	//control only
 
 	if (BasicSteepAction( gNorm )) return true;
 
+	if (TrySprintOrRun( gNorm )) return true;
 
-	
-	
+	if (TrySlideBrakeOrStand()) return true;
 
+
+	assert(0);
 	return false;
 }
 
@@ -14651,10 +14424,10 @@ bool Actor::CheckRightStickSwing()
 	return rightStickSwing;
 }
 
-bool Actor::GroundAttack()
+bool Actor::TryGroundAttack()
 {
 	bool normalSwing = CheckNormalSwing();
-	bool rightStickSwing = CheckRightStickSwing();
+	bool rightStickSwing = false;//CheckRightStickSwing();
 
 	if ( normalSwing || rightStickSwing || pauseBufferedAttack == Action::STANDN
 		|| stunBufferedAttack == Action::STANDN )
@@ -19429,6 +19202,38 @@ void Actor::UpdateSprite()
 			updateAura = false;
 			break;
 		}
+	case BRAKE:
+	{
+		SetSpriteTexture(BRAKE);
+
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+		SetSpriteTile(0, r);
+
+		double angle = GroundedAngle();
+
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+		sprite->setRotation(angle / PI * 180);
+
+		V2d pp = ground->GetPosition(edgeQuantity);
+
+		if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
+			sprite->setPosition(pp.x + offsetX, pp.y);
+		else
+			sprite->setPosition(pp.x, pp.y);
+
+		if (scorpOn)
+		{
+			scorpSprite.setTexture(*ts_scorpSlide->texture);
+
+			SetSpriteTile(&scorpSprite, ts_scorpSlide, 0, r);
+
+			scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+				scorpSprite.getLocalBounds().height / 2 + 15);
+			scorpSprite.setPosition(position.x, position.y);
+			scorpSprite.setRotation(sprite->getRotation());
+			scorpSet = true;
+		}
+	}
 	case SPRINT:
 		{	
 			SetSpriteTexture( action );
@@ -22603,6 +22408,20 @@ void Actor::SetAutoRun(bool fr, double maxAutoRun)
 
 	maxAutoRunSpeed = maxAutoRun;
 	facingRight = fr;
+}
+
+void Actor::BrakeMovement()
+{
+	double brakeAmount = 1.0;
+	double dSpeed = GetDashSpeed();
+	if (groundSpeed > 0)
+	{
+		groundSpeed -= brakeAmount;
+	}
+	else if (groundSpeed < 0)
+	{
+		groundSpeed += brakeAmount;
+	}
 }
 
 void Actor::RunMovement()

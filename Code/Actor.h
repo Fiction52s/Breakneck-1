@@ -143,6 +143,7 @@ struct Actor : QuadTreeCollider,
 		LAND2,
 		RUN,
 		SLIDE,
+		BRAKE,
 		SPRINT,
 		STAND,
 		DASHATTACK,
@@ -443,8 +444,11 @@ struct Actor : QuadTreeCollider,
 	bool IsDoubleWirePulling();
 	bool TryDoubleJump();
 	bool TryGrind();
-	bool TrySlide();
-	bool TrySprint(V2d &gNorm);
+	bool TryDash();
+	bool TryJumpSquat();
+	bool TrySlideBrakeOrStand();
+	bool TrySprintOrRun(V2d &gNorm);
+	void SetSprintStartFrame();
 	
 	bool TryAirDash();
 	bool TryGlide();
@@ -537,7 +541,7 @@ struct Actor : QuadTreeCollider,
 	bool CaptureMonitor( Monitor *m );
 	void UpdatePhysics();
 	void PhysicsResponse();
-	bool GroundAttack();
+	bool TryGroundAttack();
 	bool SteepSlideAttack();
 	bool SteepClimbAttack();
 	void ConfirmEnemyKill( Enemy *e );
@@ -573,6 +577,7 @@ struct Actor : QuadTreeCollider,
 	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
 	sf::Vector2i GetWireOffset();
 	void RunMovement();
+	void BrakeMovement();
 	void AutoRunMovement();
 	void SetAutoRun( bool fr, double maxAutoRun );
 	void SetAirPos(V2d &pos, bool facingRight);

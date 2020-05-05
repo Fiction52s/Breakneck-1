@@ -182,6 +182,8 @@ void EditSession::TestPlayerModeUpdate()
 
 	while (accumulator >= TIMESTEP)
 	{
+		OneFrameModeUpdate();
+
 		for (int i = 0; i < 4; ++i)
 		{
 			GetPrevInput(i) = GetCurrInput(i);
@@ -271,6 +273,9 @@ void EditSession::TestPlayerMode()
 {
 	cam.Reset();
 	
+	skipped = false;
+	oneFrameMode = false;
+
 	accumulator = TIMESTEP + .1;
 	
 	
@@ -2040,6 +2045,8 @@ void EditSession::SetInitialView(sf::Vector2f &center,
 
 int EditSession::Run()
 {
+	
+
 	SetupHitboxManager();
 	SetupSoundManager();
 	SetupSoundLists();

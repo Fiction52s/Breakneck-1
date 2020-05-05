@@ -5040,9 +5040,9 @@ int GameSession::Run()
 		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor)
 	};
 
-
-	bool skipped = false;
-	bool oneFrameMode = false;
+	
+	skipped = false;
+	oneFrameMode = false;
 	quit = false;
 
 
@@ -5232,105 +5232,73 @@ int GameSession::Run()
 		
 		while ( accumulator >= TIMESTEP )
         {
-			bool skipInput = IsKeyPressed( sf::Keyboard::PageUp );
-			if( oneFrameMode )
-			{
-				bool tookScreenShot = false;
-				bool screenShot = false;
-				
-				while( true )
-				{
-					vector<GCC::GCController> controllers;
-					if (mainMenu->gccDriverEnabled)
-						controllers = mainMenu->gccDriver->getState();
+			OneFrameModeUpdate();
+			//bool skipInput = IsKeyPressed( sf::Keyboard::PageUp );
+			//if( oneFrameMode )
+			//{
+			//	bool tookScreenShot = false;
+			//	bool screenShot = false;
+			//	
+			//	while( true )
+			//	{
+			//		vector<GCC::GCController> controllers;
+			//		if (mainMenu->gccDriverEnabled)
+			//			controllers = mainMenu->gccDriver->getState();
 
-					for (int i = 0; i < 4; ++i)
-					{
-						GameController &c = GetController(i);
-						if (mainMenu->gccDriverEnabled)
-							c.gcController = controllers[i];
-						c.UpdateState();
-					}
-					/*controller.UpdateState();
-					con = controller.GetState();
+			//		for (int i = 0; i < 4; ++i)
+			//		{
+			//			GameController &c = GetController(i);
+			//			if (mainMenu->gccDriverEnabled)
+			//				c.gcController = controllers[i];
+			//			c.UpdateState();
+			//		}
+			//		skipInput = IsKeyPressed( sf::Keyboard::PageUp );
+			//		
+			//		bool stopSkippingInput = IsKeyPressed( sf::Keyboard::PageDown );
+			//		screenShot = false;//IsKeyPressed( sf::Keyboard::F );// && !tookScreenShot;
+			//		
+			//		if( screenShot )
+			//		{
+			//			//cout << "TOOK A SCREENSHOT" << endl;
+			//			//tookScreenShot = true;
+			//			//Image im = window->capture();
 
-					if( controller2 != NULL )
-					{
-						controller2->UpdateState();
-						con2 = controller2->GetState();
-					}*/
+			//			// time_t now = time(0);
+			//			// char* dt = ctime(&now);
+			//			//im.saveToFile( "screenshot.png" );//+ string(dt) + ".png" );
+			//		}
+			//		else
+			//		{
+			//			if( skipInput )
+			//			{
+			//				tookScreenShot = false;
+			//			}
+			//		}
+			//		
+			//		if( !skipped && skipInput )
+			//		{
+			//			skipped = true;
+			//			accumulator = 0;
+			//			break;
+			//		}
 
-					//UpdateControllers();
+			//		if( skipped && !skipInput )
+			//		{
+			//			skipped = false;
+			//		}
 
-					
+			//		if( stopSkippingInput )
+			//		{
+			//			oneFrameMode = false;
+			//			break;
+			//		}
+			//	}
 
-					
-					
-					//player->currInput = currInput;
-					skipInput = IsKeyPressed( sf::Keyboard::PageUp );
-					
-					bool stopSkippingInput = IsKeyPressed( sf::Keyboard::PageDown );
-					screenShot = false;//IsKeyPressed( sf::Keyboard::F );// && !tookScreenShot;
-					
-					if( screenShot )
-					{
-						//cout << "TOOK A SCREENSHOT" << endl;
-						//tookScreenShot = true;
-						//Image im = window->capture();
+			//	window->clear();
+			//}
 
-						// time_t now = time(0);
-						// char* dt = ctime(&now);
-						//im.saveToFile( "screenshot.png" );//+ string(dt) + ".png" );
-					}
-					else
-					{
-						if( skipInput )
-						{
-							tookScreenShot = false;
-						}
-					}
-					
-
-					if( !skipped && skipInput )//sf::IsKeyPressed( sf::Keyboard::K ) && !skipped )
-					{
-						skipped = true;
-						accumulator = 0;//TIMESTEP;
-						
-						//currentTime = gameClock.getElapsedTime().asSeconds() - TIMESTEP;
-
-						break;
-					}
-					if( skipped && !skipInput )//!sf::IsKeyPressed( sf::Keyboard::K ) && skipped )
-					{
-						skipped = false;
-						//break;
-					}
-					if( IsKeyPressed( sf::Keyboard::L ) )
-					{
-
-						//oneFrameMode = false;
-						break;
-					}
-					//if( sf::IsKeyPressed( sf::Keyboard::M ) )
-					if( stopSkippingInput )
-					{
-
-						oneFrameMode = false;
-						break;
-					}
-					
-
-				}
-
-				window->clear();
-			}
-			else
-			{
-				
-			}
-
-			if( skipInput )
-				oneFrameMode = true;
+			//if( skipInput )
+			//	oneFrameMode = true;
 
 			bool k = IsKeyPressed( sf::Keyboard::K );
 			bool levelReset = IsKeyPressed( sf::Keyboard::L );
