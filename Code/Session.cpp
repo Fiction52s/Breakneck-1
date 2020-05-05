@@ -148,6 +148,7 @@ void Session::SetupSoundManager()
 void Session::SetParentGame(GameSession *game)
 {
 	parentGame = game;
+	SetParentTilesetManager(game);
 }
 
 void Session::SetupHitboxManager()
@@ -1224,19 +1225,19 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 Session::~Session()
 {
 	//new stuff
-	if (soundManager != NULL)
+	if ( parentGame == NULL && soundManager != NULL)
 	{
 		delete soundManager;
 		soundManager = NULL;
 	}
 
-	if (soundNodeList != NULL)
+	if (parentGame == NULL && soundNodeList != NULL)
 	{
 		delete soundNodeList;
 		soundNodeList = NULL;
 	}
 
-	if (pauseSoundNodeList != NULL)
+	if (parentGame == NULL && pauseSoundNodeList != NULL)
 	{
 		delete pauseSoundNodeList;
 		pauseSoundNodeList = NULL;
@@ -1249,43 +1250,88 @@ Session::~Session()
 
 	//---------------
 
-	for (int i = 0; i < MAX_PLAYERS; ++i)
+	if (parentGame == NULL)
 	{
-		delete players[i];
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			delete players[i];
+			players[i] = NULL;
+		}
 	}
+	
 
 	if (terrainTree != NULL)
+	{
 		delete terrainTree;
+		terrainTree = NULL;
+	}
+		
 
 	if (specialTerrainTree != NULL)
+	{
 		delete specialTerrainTree;
+		specialTerrainTree = NULL;
+	}
+		
 
 	if (railEdgeTree != NULL)
+	{
 		delete railEdgeTree;
+		railEdgeTree = NULL;
+	}
+	
+	if (flyTerrainTree != NULL)
+	{
+		delete flyTerrainTree;
+		flyTerrainTree = NULL;
+	}
 
 	if (borderTree != NULL)
+	{
 		delete borderTree;
-
+		borderTree = NULL;
+	}
+		
 	if (barrierTree != NULL)
+	{
 		delete barrierTree;
+		barrierTree = NULL;
+	}
 
 	if (staticItemTree != NULL)
+	{
 		delete staticItemTree;
+		staticItemTree = NULL;
+	}
+		
 
 	if (grassTree != NULL)
+	{
 		delete grassTree;
+		grassTree = NULL;
+	}
+		
 
 	if (activeItemTree != NULL)
 	{
 		delete activeItemTree;
+		activeItemTree = NULL;
 	}
 
 
 	if (mapHeader != NULL)
+	{
 		delete mapHeader;
+		mapHeader = NULL;
+	}
+		
 
-	if( polyShaders != NULL)
+	if (polyShaders != NULL)
+	{
 		delete[] polyShaders;
+		polyShaders = NULL;
+	}
+		
 
 	for (auto it = terrainDecorInfoMap.begin(); it != terrainDecorInfoMap.end(); ++it)
 	{
@@ -1298,10 +1344,17 @@ Session::~Session()
 	}
 
 	if (background != NULL)
+	{
 		delete background;
+		background = NULL;
+	}	
 
-	if (hitboxManager != NULL)
+	if ( parentGame == NULL && hitboxManager != NULL)
+	{
 		delete hitboxManager;
+		hitboxManager = NULL;
+	}
+		
 
 	for (auto it = types.begin(); it != types.end(); ++it)
 	{

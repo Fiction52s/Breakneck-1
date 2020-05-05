@@ -84,8 +84,27 @@ int Tileset::GetNumTiles()
 	return sx * sy;
 }
 
+TilesetManager::TilesetManager()
+{
+	parentManager = NULL;
+}
+
+void TilesetManager::SetParentTilesetManager(TilesetManager *man)
+{
+	parentManager = man;
+}
+
 Tileset *TilesetManager::Find(TilesetCategory cat, const std::string &s, int altColorIndex)
 {
+	if (parentManager != NULL)
+	{
+		Tileset *parentRes = parentManager->Find(cat, s, altColorIndex);
+		if (parentRes != NULL)
+			return parentRes;
+
+		//if parent doesn't have it, search my own stuff
+	}
+
 	Tileset *currTS;
 	auto & currMap = tilesetMaps[cat];
 	auto it = currMap.find(s);

@@ -61,6 +61,15 @@ using namespace std;
 
 //#define cout std::cout
 
+void Actor::SetSession(Session *p_sess,
+	GameSession *game,
+	EditSession *edit)
+{
+	sess = p_sess;
+	owner = game;
+	editOwner = edit;
+}
+
 void Actor::SetupDrain()
 {
 	float numSecondsToDrain = sess->mapHeader->drainSeconds;
@@ -145,12 +154,13 @@ void Actor::UpdatePowers()
 
 QuadTree *Actor::GetTerrainTree()
 {
-	if (owner != NULL)
+	return sess->terrainTree;
+	/*if (owner != NULL)
 		return owner->terrainTree;
 	else if( editOwner != NULL )
 	{
 		return editOwner->terrainTree;
-	}
+	}*/
 }
 
 QuadTree *Actor::GetSpecialTerrainTree()
@@ -165,40 +175,44 @@ QuadTree *Actor::GetSpecialTerrainTree()
 
 QuadTree *Actor::GetRailEdgeTree()
 {
-	if (owner != NULL)
+	return sess->railEdgeTree;
+	/*if (owner != NULL)
 		return owner->railEdgeTree;
 	else if (editOwner != NULL)
 	{
 		return editOwner->railEdgeTree;
-	}
+	}*/
 }
 
 QuadTree *Actor::GetBarrierTree()
 {
-	if (owner != NULL)
+	return sess->barrierTree;
+	/*if (owner != NULL)
 		return owner->barrierTree;
 	else if (editOwner != NULL)
 	{
 		return editOwner->barrierTree;
-	}
+	}*/
 }
 
 QuadTree *Actor::GetBorderTree()
 {
-	if (owner != NULL)
+	return sess->borderTree;
+	/*if (owner != NULL)
 		return owner->borderTree;
 	else if (editOwner != NULL)
 	{
 		return editOwner->borderTree;
-	}
+	}*/
 }
 
 int Actor::GetTotalGameFrames()
 {
-	if (owner != NULL)
+	return sess->totalGameFrames;
+	/*if (owner != NULL)
 		return owner->totalGameFrames;
 	else
-		return editOwner->totalGameFrames;
+		return editOwner->totalGameFrames;*/
 }
 
 void Actor::SetToOriginalPos()
@@ -585,10 +599,10 @@ void Actor::Init()
 }
 
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
-	:owner( gs ), editOwner(es), dead( false ), actorIndex( p_actorIndex )
+	:dead( false ), actorIndex( p_actorIndex )
 	{
 
-	sess = Session::GetSession();
+	SetSession(Session::GetSession(), gs, es);
 
 	usingAura = false;
 	fBubblePos = NULL;
@@ -15717,27 +15731,28 @@ void Actor::UpdatePostPhysics()
 	}*/
 
 	if( hitGoal )// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
-	{
-		
+	{	
 		if (owner != NULL)
 		{
-
-
 			owner->totalFramesBeforeGoal = owner->totalGameFrames;
 			SetActionExpr(GOALKILL);
 			desperationMode = false;
 			hitGoal = false;
-			if (owner->recPlayer != NULL)
-			{
-				owner->recPlayer->RecordFrame();
-				owner->recPlayer->StopRecording();
-				owner->recPlayer->WriteToFile("testreplay.brep");
-			}
 
-			if (owner->recGhost != NULL)
+			if (owner->parentGame == NULL)
 			{
-				owner->recGhost->StopRecording();
-				owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
+				if (owner->recPlayer != NULL)
+				{
+					owner->recPlayer->RecordFrame();
+					owner->recPlayer->StopRecording();
+					owner->recPlayer->WriteToFile("testreplay.brep");
+				}
+
+				if (owner->recGhost != NULL)
+				{
+					owner->recGhost->StopRecording();
+					owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
+				}
 			}
 
 			frame = 0;
@@ -15758,19 +15773,21 @@ void Actor::UpdatePostPhysics()
 		SetActionExpr(NEXUSKILL);
 		desperationMode = false;
 		hitNexus = false;
-		if (owner->recPlayer != NULL)
+		if (owner->parentGame == NULL)
 		{
-			owner->recPlayer->RecordFrame();
-			owner->recPlayer->StopRecording();
-			owner->recPlayer->WriteToFile("testreplay.brep");
-		}
+			if (owner->recPlayer != NULL)
+			{
+				owner->recPlayer->RecordFrame();
+				owner->recPlayer->StopRecording();
+				owner->recPlayer->WriteToFile("testreplay.brep");
+			}
 
-		if (owner->recGhost != NULL)
-		{
-			owner->recGhost->StopRecording();
-			owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
+			if (owner->recGhost != NULL)
+			{
+				owner->recGhost->StopRecording();
+				owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
+			}
 		}
-
 		frame = 0;
 		position = owner->goalNodePos;
 		rightWire->Reset();

@@ -58,6 +58,7 @@ private:
 		C_Count
 	};
 public:
+	TilesetManager();
 	~TilesetManager();
 	Tileset * GetSizedTileset(const std::string & s, int altColorIndex = 0);
 	Tileset * GetSizedTileset(const std::string &folder, const std::string & s, int altColorIndex = 0);
@@ -79,8 +80,10 @@ public:
 		int numAltColors, 
 		sf::Color *startColorBuf,
 		sf::Color *endColorBuf );
-
+	
+	void SetParentTilesetManager(TilesetManager *man);
 private:
+	TilesetManager *parentManager;
 	TilesetCategory GetCategory(const std::string &s);
 	Tileset *Create( TilesetCategory cat, const std::string &s, int tw, int th,
 		int altColorIndex );

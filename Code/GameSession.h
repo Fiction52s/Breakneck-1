@@ -679,6 +679,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	//Edge **edges;
 	//Edge *GetEdge(int index);
 	std::list<Edge*> globalBorderEdges;
+
+	std::list<boost::filesystem::path> bonusPaths;
+	GameSession *bonusGame; //make this a container later
 	//sf::Vector2<double> *points;
 
 	void DrawGates();

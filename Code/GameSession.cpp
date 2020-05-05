@@ -402,6 +402,7 @@ GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
 	cloudBot0( sf::Quads, 3 * 4 ), cloudBot1( sf::Quads, 3 * 4 ), drain(true )
 {
+	bonusGame = NULL; //testing
 	//REGISTER_ENEMY(Goal);
 
 	//enemyCreateMap["goal"] = Goal::Create;
@@ -419,6 +420,12 @@ GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath
 
 void GameSession::Cleanup()
 {
+	if (bonusGame != NULL)
+	{
+		delete bonusGame;
+		bonusGame = NULL;
+	}
+
 	//for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
 	for( int i = 0; i < allPolysVec.size(); ++i)
 	{
@@ -426,14 +433,12 @@ void GameSession::Cleanup()
 	}
 	allPolysVec.clear();
 
-	if (fBubblePos != NULL)
+	if ( parentGame == NULL && fBubblePos != NULL)
 	{
 		delete[] fBubblePos;
 		delete[] fBubbleRadiusSize;
 		delete[] fBubbleFrame;
 	}
-
-	//TerrainRender::CleanupLayers();
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
@@ -456,7 +461,7 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 
-	if (goalEnergyFlowVA != NULL)
+	if ( goalEnergyFlowVA != NULL)
 	{
 		delete goalEnergyFlowVA;
 	}
@@ -492,63 +497,71 @@ void GameSession::Cleanup()
 		delete inversePoly;
 	}*/
 
-	if (recGhost != NULL)
+	if ( parentGame == NULL && recGhost != NULL)
 	{
 		delete recGhost;
+		recGhost = NULL;
 	}
 
-	if (mini != NULL)
+	if ( parentGame == NULL && mini != NULL)
 	{
 		delete mini;
+		mini = NULL;
 	}
 
-	if (shardsCapturedField != NULL)
+	if ( parentGame == NULL && shardsCapturedField != NULL)
 	{
 		delete shardsCapturedField;
+		shardsCapturedField = NULL;
 	}
 
 	if (shardPop != NULL)
 	{
 		delete shardPop;
+		shardPop = NULL;
 	}
 
-	if (adventureHUD != NULL)
+	if (parentGame == NULL && adventureHUD != NULL)
 	{
 		delete adventureHUD;
+		adventureHUD = NULL;
 	}
 
-	if (absorbParticles != NULL)
+	if (parentGame == NULL && absorbParticles != NULL)
 	{
 		delete absorbParticles;
 		absorbParticles = NULL;
 	}
 
-	if (absorbDarkParticles != NULL)
+	if (parentGame == NULL && absorbDarkParticles != NULL)
 	{
 		delete absorbDarkParticles;
 		absorbDarkParticles = NULL;
 	}
 
-	if (absorbShardParticles != NULL)
+	if (parentGame == NULL && absorbShardParticles != NULL)
 	{
 		delete absorbShardParticles;
 		absorbShardParticles = NULL;
 	}
 
-	if (goalPulse != NULL)
+	if (parentGame == NULL && goalPulse != NULL)
 	{
 		delete goalPulse;
 		goalPulse = NULL;
 	}
 
-	for (int i = 0; i < 4; ++i)
+	/*if (parentGame == NULL)
 	{
-		if (players[i] != NULL)
+		for (int i = 0; i < 4; ++i)
 		{
-			delete players[i];
-			players[i] = NULL;
+			if (players[i] != NULL)
+			{
+				delete players[i];
+				players[i] = NULL;
+			}
 		}
-	}
+	}*/
 
 	
 
@@ -558,7 +571,7 @@ void GameSession::Cleanup()
 		topClouds = NULL;
 	}
 
-	if (keyMarker != NULL)
+	if (parentGame == NULL && keyMarker != NULL)
 	{
 		delete keyMarker;
 		keyMarker = NULL;
@@ -620,7 +633,7 @@ void GameSession::Cleanup()
 		railDrawTree = NULL;
 	}
 
-	if (scoreDisplay != NULL)
+	if ( parentGame == NULL && scoreDisplay != NULL)
 	{
 		delete scoreDisplay;
 		scoreDisplay = NULL;
@@ -2973,7 +2986,10 @@ void GameSession::ProcessAllDecorSpr()
 void GameSession::ProcessPlayerStartPos()
 {
 	Actor *p0 = GetPlayer(0);
-	p0->position = V2d(playerOrigPos);
+	if (parentGame == NULL)
+	{
+		p0->position = V2d(playerOrigPos);
+	}
 }
 
 void GameSession::ProcessTerrain(PolyPtr poly)
@@ -4611,8 +4627,16 @@ bool GameSession::Load()
 	}
 	cout << "weird timing 4" << endl;
 
-	if( players[0] == NULL )
-		players[0] = new Actor( this, NULL, 0 );
+	if (parentGame != NULL)
+	{
+		players[0] = parentGame->players[0];
+	}
+	else
+	{
+		if (players[0] == NULL)
+			players[0] = new Actor(this, NULL, 0);
+	}
+	
 
 	
 	cout << "about to open file" << endl;
@@ -4692,6 +4716,29 @@ bool GameSession::Load()
 		(*it)->Setup();
 	}
 
+	
+	if (parentGame == NULL)
+	{
+
+		//this is a temporary test. create a bonus whenever you have a parent level
+		boost::filesystem::path p("Resources/Maps//W2//gateblank9.brknk");
+
+		bonusGame = new GameSession(saveFile, p);
+		bonusGame->SetParentGame(this);
+		bonusGame->Load();
+
+		currSession = this;
+		pauseMenu->owner = this;
+	}
+
+	//bonusPaths.push_back(p);
+
+	/*for (auto it = bonusPaths.begin(); it != bonusPaths.end(); ++it)
+	{
+		
+	}*/
+
+	
 
 	cout << "done loading" << endl;
 
@@ -4708,6 +4755,8 @@ void GameSession::SetupPlayers()
 		for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
 			players[i] = parentGame->players[i];
+			//if( players[i] != NULL )
+			//	players[i]->Respawn(); //need a special bonus respawn later
 		}
 
 		m_numActivePlayers = parentGame->m_numActivePlayers;
@@ -4841,14 +4890,14 @@ void GameSession::SetupShaders()
 
 void GameSession::SetupBackground()
 {
-	if (parentGame != NULL)
+	/*if (parentGame != NULL)
 	{
 		if (mapHeader->envName == parentGame->mapHeader->envName)
 		{
 			background = parentGame->background;
 			return;
 		}
-	}
+	}*/
 	
 	if (background != NULL)
 	{
@@ -4875,7 +4924,7 @@ void GameSession::SetupAbsorbParticles()
 	{
 		absorbParticles = parentGame->absorbParticles;
 		absorbDarkParticles = parentGame->absorbDarkParticles;
-		absorbParticles = parentGame->absorbShardParticles;
+		absorbShardParticles = parentGame->absorbShardParticles;
 	}
 	else if (absorbParticles == NULL)
 	{
@@ -5216,6 +5265,18 @@ int GameSession::Run()
 	if (preLevelScene != NULL)
 	{
 		SetActiveSequence(preLevelScene);
+	}
+
+	if (parentGame != NULL)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->Respawn(); //need a special bonus respawn later
+			}
+		}
 	}
 	
 
@@ -5663,6 +5724,39 @@ int GameSession::Run()
 					p = GetPlayer( i );
 					if( p != NULL )
 						p->UpdatePrePhysics();
+				}
+
+				if (parentGame == NULL )
+				{
+					if (GetCurrInputUnfiltered(0).rightShoulder && 
+						!GetPrevInputUnfiltered(0).rightShoulder)
+					{
+						currSession = bonusGame;
+						for (int i = 0; i < MAX_PLAYERS; ++i)
+						{
+							p = GetPlayer(i);
+							if (p != NULL)
+							{
+								p->SetSession(bonusGame, bonusGame, NULL);
+							}
+						}
+						pauseMenu->owner = bonusGame;
+
+						bonusGame->Run();
+
+						pauseMenu->owner = this;
+						currSession = this;
+						for (int i = 0; i < MAX_PLAYERS; ++i)
+						{
+							p = GetPlayer(i);
+							if (p != NULL)
+							{
+								p->SetSession(this, this, NULL);
+								p->Respawn(); //special respawn for leaving bonus later
+							}
+						}
+
+					}
 				}
 
 				if (currStorySequence != NULL)
@@ -7291,81 +7385,90 @@ int GameSession::Run()
 		
 	}
 
-	if (recGhost != NULL)
+	if (parentGame == NULL)
 	{
-		recGhost->StopRecording();
-
-		//string fName = fileName
-		//1. get folder. if it doesn't exist, make it.
-		//2. include map name in ghost name
-		//3. tag ghost with timestamp
-		//4. 
-
-		time_t t = time(0);
-		struct tm now;
-		localtime_s( &now, &t);
 
 
-
-
-
-		stringstream fss;
-		string mName = filePath.filename().stem().string();
-		fss << "Recordings/Ghost/" << mName << "/auto/" << mName << "_ghost_"
-			<< now.tm_year << "_" << now.tm_mon << "_" << now.tm_mday << "_" << now.tm_hour << "_"
-			<< now.tm_min << "_" << now.tm_sec << ".bghst";
-
-		//recGhost->WriteToFile(fss.str());
-	}
-
-	
-	
-	testBuf.SetRecOver( true );
-
-	if( recPlayer != NULL )
-	{
-		threa->join();
-		delete threa;
-		
-		assert( of.is_open() );
-		of.close();
-
-		ifstream is;
-		is.open( "tempreplay.brep", ios::binary | ios::in );
-
-		
-		ofstream out;
-		//custom file
-		out.open( "testreplay.brep", ios::binary | ios::out );
-		out.write( (char*)&(recPlayer->numTotalFrames), sizeof( int ) );
-		//out << recPlayer->numTotalFrames << "\n";
-
-		char c;
-		while( true )
+		if (recGhost != NULL)
 		{
-			c = is.get();
-			if( is.eof() ) break;
-			out.put( c );
+			recGhost->StopRecording();
+
+			//string fName = fileName
+			//1. get folder. if it doesn't exist, make it.
+			//2. include map name in ghost name
+			//3. tag ghost with timestamp
+			//4. 
+
+			time_t t = time(0);
+			struct tm now;
+			localtime_s(&now, &t);
+
+
+
+
+
+			stringstream fss;
+			string mName = filePath.filename().stem().string();
+			fss << "Recordings/Ghost/" << mName << "/auto/" << mName << "_ghost_"
+				<< now.tm_year << "_" << now.tm_mon << "_" << now.tm_mday << "_" << now.tm_hour << "_"
+				<< now.tm_min << "_" << now.tm_sec << ".bghst";
+
+			//recGhost->WriteToFile(fss.str());
 		}
 
-		out.close();
-		
 
-		/*istreambuf_iterator<char> begin_source( is );
-		istreambuf_iterator<char> end_source;
-		ostreambuf_iterator<char> begin_dest( out );
-		copy( begin_source, end_source, begin_dest );*/
 
-		is.close();
-			
+		testBuf.SetRecOver(true);
+
+		if (recPlayer != NULL)
+		{
+			threa->join();
+			delete threa;
+
+			assert(of.is_open());
+			of.close();
+
+			ifstream is;
+			is.open("tempreplay.brep", ios::binary | ios::in);
+
+
+			ofstream out;
+			//custom file
+			out.open("testreplay.brep", ios::binary | ios::out);
+			out.write((char*)&(recPlayer->numTotalFrames), sizeof(int));
+			//out << recPlayer->numTotalFrames << "\n";
+
+			char c;
+			while (true)
+			{
+				c = is.get();
+				if (is.eof()) break;
+				out.put(c);
+			}
+
+			out.close();
+
+
+			/*istreambuf_iterator<char> begin_source( is );
+			istreambuf_iterator<char> end_source;
+			ostreambuf_iterator<char> begin_dest( out );
+			copy( begin_source, end_source, begin_dest );*/
+
+			is.close();
+
+		}
+
 	}
-	
+
 	soundNodeList->Reset();
 	pauseSoundNodeList->Reset();
 	
-	for( int i = 0; i < 4; ++i )
+	if (parentGame == NULL)
 	{
-		SetFilterDefault( GetController(i).filter );
+		for (int i = 0; i < 4; ++i)
+		{
+			SetFilterDefault(GetController(i).filter);
+		}
 	}
 
 	if (parentGame != NULL)

@@ -295,6 +295,9 @@ struct Actor : QuadTreeCollider,
 	void DeactivateSound(SoundNode *sn);
 	void SetToOriginalPos();
 	void UpdatePowers();
+	void SetSession(Session *sess,
+		GameSession *game,
+		EditSession *edit);
 
 	void ReverseSteepSlideJump();
 
