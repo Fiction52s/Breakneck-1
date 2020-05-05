@@ -8015,7 +8015,7 @@ bool EditSession::BoxSelectPoints(sf::IntRect &r,
 
 	auto & currPolyList = GetCorrectPolygonList();
 
-	bool specialMode = GetSpecialTerrainMode() == 0;
+	bool specialMode = GetSpecialTerrainMode() != 0;
 
 	bool found = false;
 
@@ -8241,7 +8241,7 @@ void EditSession::TryBoxSelect()
 
 	bool selectionEmpty = true;
 
-	bool specialMode = GetSpecialTerrainMode() == 0;
+	bool specialMode = GetSpecialTerrainMode() != 0;
 
 	if (!HoldingShift())
 	{
@@ -10295,7 +10295,7 @@ void EditSession::EditModeHandleEvent()
 				break;
 
 			bool emptysp = true;
-			bool specialMode = GetSpecialTerrainMode() == 0;
+			bool specialMode = GetSpecialTerrainMode() != 0;
 
 			if (!(editMouseDownMove || editMouseDownBox))
 			{

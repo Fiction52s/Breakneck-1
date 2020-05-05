@@ -296,6 +296,8 @@ struct Actor : QuadTreeCollider,
 	void SetToOriginalPos();
 	void UpdatePowers();
 
+	void ReverseSteepSlideJump();
+
 	void UpdateWireQuads();
 	void DrawWires(sf::RenderTarget *target);
 

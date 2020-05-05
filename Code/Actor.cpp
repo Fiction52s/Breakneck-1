@@ -5591,8 +5591,16 @@ void Actor::UpdatePrePhysics()
 
 			if( currInput.A && !prevInput.A )
 			{
-				SetActionExpr( JUMPSQUAT );
-				frame = 0;
+				if (reversed)
+				{
+					ReverseSteepSlideJump();
+				}
+				else
+				{
+					SetActionExpr(JUMPSQUAT);
+					frame = 0;
+				}
+				
 				break;
 			}
 
@@ -9598,6 +9606,32 @@ bool Actor::HasPower(int index)
 }
 
 
+void Actor::ReverseSteepSlideJump()
+{
+	SetActionExpr(JUMP);
+	frame = 1;
+
+	V2d along = ground->Along();
+	V2d norm = ground->Normal();
+	V2d alongSpeed = along * -groundSpeed;
+
+	if (norm.x > 0)
+	{
+		alongSpeed.x += 5;
+	}
+	else if (norm.x < 0)
+	{
+		alongSpeed.x -= 5;
+	}
+
+	alongSpeed.y -= 8;
+
+	reversed = false;
+	ground = NULL;
+
+	velocity = alongSpeed;
+}
+
 void Actor::HandleWaitingScoreDisplay()
 {
 	if (owner->scoreDisplay->waiting)
@@ -11560,7 +11594,10 @@ bool Actor::TrySlideBrakeOrStand()
 		}
 		else
 		{
-			if (action == BRAKE && abs( groundSpeed ) < 2 )
+			double absGroundSpeed = abs(groundSpeed);
+			double dSpeed = GetDashSpeed();
+			if (( action == BRAKE && absGroundSpeed < 2) ||
+				( action != STAND && absGroundSpeed < dSpeed ) )
 			{
 				SetAction(STAND);
 				frame = 0;
@@ -16505,6 +16542,11 @@ sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 	{
 		normalGravity = gravity * .4 / slowMultiple;
 	}
+	//else if (abs( vel.y ) < 8 )
+	/*else if (abs(vel.y) < 8)
+	{
+		normalGravity = gravity * .9 / slowMultiple;
+	}*/
 	else if( vel.y < 0 )
 	{
 		normalGravity = gravity * 1.2 / slowMultiple;
@@ -22751,14 +22793,18 @@ void Actor::ExecuteWallJump()
 		velocity.x = -strengthX;
 	}
 
-	if (velocity.y < -strengthY)
-	{
+	//if (velocity.y < -strengthY)
+	double movingVertStrength = strengthY * .5; //for when you're moving up already
 
+	velocity.y = min(velocity.y - movingVertStrength, -strengthY);
+	/*if( velocity.y - movingVertStrength < -strengthY )
+	{
+		velocity.y -= movingVertStrength;
 	}
 	else
 	{
 		velocity.y = -strengthY;
-	}
+	}*/
 
 
 	ActivateSound(S_WALLJUMP);
