@@ -246,6 +246,7 @@ struct Session : TilesetManager
 	void UpdatePlayerInput(int index);
 	void UpdateAllPlayersInput();
 	void UpdateControllers();
+	void UpdateControllersOneFrameMode();
 	bool IsKeyPressed(int k);
 	bool IsMousePressed(int m);
 

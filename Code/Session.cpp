@@ -1887,6 +1887,36 @@ Actor *Session::GetPlayer(int index)
 	return players[index];
 }
 
+void Session::UpdateControllersOneFrameMode()
+{
+	bool gccEnabled = mainMenu->gccDriverEnabled;
+
+	if (gccEnabled)
+		gcControllers = mainMenu->gccDriver->getState();
+
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		//GetPrevInput(i) = GetCurrInput(i);
+		//GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+
+		/*p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->prevInput = GetCurrInput(i);
+		}*/
+
+		GameController &con = GetController(i);
+		if (gccEnabled)
+			con.gcController = gcControllers[i];
+
+		con.UpdateState();
+
+		GetCurrInput(i) = con.GetState();
+		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+	}
+}
+
 void Session::UpdateControllers()
 {
 	bool gccEnabled = mainMenu->gccDriverEnabled;
@@ -1894,10 +1924,18 @@ void Session::UpdateControllers()
 	if (gccEnabled)
 		gcControllers = mainMenu->gccDriver->getState();
 
+
+	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
 		GetPrevInput(i) = GetCurrInput(i);
 		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->prevInput = GetCurrInput(i);
+		}
 
 		GameController &con = GetController(i);
 		if (gccEnabled)
@@ -1991,10 +2029,10 @@ bool Session::IsMousePressed(int m)
 bool Session::OneFrameModeUpdate()
 {
 	bool skipInput = IsKeyPressed(sf::Keyboard::PageUp);
-	if (!oneFrameMode && GetPrevInput(0).PLeft())
-	{
-		skipInput = true;
-	}
+	//if (!oneFrameMode) && GetPrevInput(0).PLeft())
+	//{
+	//	skipInput = true;
+	//}
 
 	if (skipInput && !oneFrameMode)
 	{
@@ -2006,9 +2044,11 @@ bool Session::OneFrameModeUpdate()
 		bool tookScreenShot = false;
 		bool screenShot = false;
 
+		//UpdateControllersOneFrameMode();
+
 		//GetController(0).UpdateState();
-		/*ControllerState &testState = GetController(0).GetState();
-		if (testState.PLeft())
+		//ControllerState &testState = GetController(0).GetState();
+		/*if (GetCurrInput(0).PLeft())
 		{
 			skipInput = true;
 		}*/
@@ -2026,7 +2066,7 @@ bool Session::OneFrameModeUpdate()
 		}*/
 
 		bool stopSkippingInput = IsKeyPressed(sf::Keyboard::PageDown);
-	/*	if (testState.PRight())
+		/*if (GetCurrInput(0).PRight())
 		{
 			stopSkippingInput = true;
 		}*/

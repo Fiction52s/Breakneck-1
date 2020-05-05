@@ -180,6 +180,8 @@ void EditSession::TestPlayerModeUpdate()
 
 	accumulator += frameTime;
 
+	Actor *pTemp = NULL;
+
 	while (accumulator >= TIMESTEP)
 	{
 		if (!OneFrameModeUpdate())
@@ -187,7 +189,7 @@ void EditSession::TestPlayerModeUpdate()
 			break;
 		}
 
-		for (int i = 0; i < 4; ++i)
+		/*for (int i = 0; i < 4; ++i)
 		{
 			GetPrevInput(i) = GetCurrInput(i);
 			GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
@@ -201,7 +203,7 @@ void EditSession::TestPlayerModeUpdate()
 			{
 				pTemp->prevInput = GetCurrInput(i);
 			}
-		}
+		}*/
 
 		UpdateControllers();
 
@@ -11714,7 +11716,7 @@ void EditSession::CreateRailsModeUpdate()
 void EditSession::UpdateInputNonGame()
 {
 	//set curr inputs to prev inputs
-	for (int i = 0; i < 4; ++i)
+	/*for (int i = 0; i < 4; ++i)
 	{
 		GetPrevInput(i) = GetCurrInput(i);
 		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
@@ -11728,12 +11730,12 @@ void EditSession::UpdateInputNonGame()
 		{
 			pTemp->prevInput = GetCurrInput(i);
 		}
-	}
+	}*/
 	//------------------------
 
 	UpdateControllers();
 
-	UpdateAllPlayersInput();
+	//UpdateAllPlayersInput();
 	//-------------------------
 }
 

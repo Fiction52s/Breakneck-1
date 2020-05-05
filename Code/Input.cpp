@@ -293,11 +293,11 @@ bool GameController::UpdateState()
 		m_state.rightPress = false;//b & XINPUT_GAMEPAD_RIGHT_THUMB;
 
 		int dpadUp = gcController.buttons.dpad_up;
-		int dpadLeft = gcController.buttons.dpad_left;
+		int dpadLeft = gcController.buttons.dpad_left; 
 		int dpadRight = gcController.buttons.dpad_right;
 		int dpadDown = gcController.buttons.dpad_down;
 
-		m_state.pad = dpadUp + (dpadLeft << 1) + (dpadRight << 2) + (dpadDown << 3);//gcController.buttons.dpad_up //( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 );
+		m_state.pad = dpadUp + (dpadDown << 1) + (dpadLeft << 2) + (dpadRight << 3);//gcController.buttons.dpad_up //( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 );
 
 		m_state.leftTrigger = 255 * (int)(gcController.buttons.l_shoulder);
 		m_state.rightTrigger = 255 * (int)(gcController.buttons.r_shoulder);
