@@ -1190,6 +1190,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	soundNodeList = NULL;
 	pauseSoundNodeList = NULL;
 	
+	flyTerrainTree = NULL;
 	terrainTree = NULL;
 	specialTerrainTree = NULL;
 	railEdgeTree = NULL;

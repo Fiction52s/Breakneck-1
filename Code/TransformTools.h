@@ -43,6 +43,7 @@ struct TransformTools
 	sf::Vector2f rotationAnchor;
 	sf::Vector2f originOffset;
 	sf::Vector2f size;
+	sf::Vector2f rectSize;
 
 	sf::Vector2f origCenter;
 	sf::Vector2f origSize;
@@ -50,6 +51,7 @@ struct TransformTools
 	sf::Vector2f startClick;
 
 	float baseRotation;
+	float extra;
 
 	int scalePoint;
 	sf::Vector2f scaleAnchor;

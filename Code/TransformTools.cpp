@@ -9,12 +9,12 @@ TransformTools::TransformTools()
 {
 	tRect.setFillColor(Color::Transparent);
 	tRect.setOutlineColor(Color::Red);
-	tRect.setOutlineThickness(-4);
+	tRect.setOutlineThickness(-2);
 
-	scalePointRadius = 20;
-	rotatePointRadius = 60;
+	scalePointRadius = 8;
+	rotatePointRadius = 16;
 
-	circleGroup = new CircleGroup(8, 20, Color::Magenta, 10);
+	circleGroup = new CircleGroup(8, scalePointRadius, Color::Magenta, 10);
 	circleGroup->ShowAll();
 	/*for (int i = 0; i < 8; ++i)
 	{
@@ -72,15 +72,15 @@ void TransformTools::Reset(Vector2f &p_center, Vector2f &p_size,float startAngle
 	
 	baseRotation = startAngle;
 
-	float extra = 50;//create extra space surrounding polys
-	origSize = p_size + Vector2f(extra, extra);
-
+	extra = 0;//create extra space surrounding polys
+	origSize = p_size;
+	rectSize = p_size + Vector2f(extra, extra);
 	size = origSize;
 
 	originOffset = Vector2f(0, 0);
 
-	tRect.setSize(size);
-	tRect.setOrigin(size.x / 2.f, size.y / 2.f);
+	tRect.setSize(rectSize);
+	tRect.setOrigin(rectSize.x / 2.f, rectSize.y / 2.f);
 	tRect.setRotation(baseRotation);
 	tRect.setPosition(origCenter);
 
@@ -225,7 +225,7 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 				UpdateRotationAnchor();
 
 				Vector2f scaledOffset = GetScaledOffset();
-				tRect.setOrigin(size.x / 2 + scaledOffset.x, size.y / 2 + scaledOffset.y);
+				tRect.setOrigin(rectSize.x / 2 + scaledOffset.x, rectSize.y / 2 + scaledOffset.y);
 				tRect.setPosition(rotationAnchor);
 			}
 			else
@@ -247,10 +247,10 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 		float along, other;
 		//Vector2f currDiff = normalize(worldPos - center);
 
-		along = dot(diff, scaleAlong);
+		along = dot(diff, scaleAlong) - extra;
 		if (scalePoint % 2 == 0)
 		{
-			other = dot(diff, scaleOther);
+			other = dot(diff, scaleOther) - extra;
 
 			if (scalePoint == 0 || scalePoint == 4)
 			{
@@ -276,8 +276,8 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 		}
 
 		size = Vector2f(origSize.x * scale.x, origSize.y * scale.y);
-
-		tRect.setSize(size);
+		rectSize = size + Vector2f(extra, extra);
+		tRect.setSize(rectSize);
 
 		UpdateScaleOrigin();
 

@@ -12212,8 +12212,20 @@ void EditSession::SetLevelModeUpdate()
 
 void EditSession::TransformModeUpdate()
 {
+	if (IsKeyPressed(Keyboard::G))
+	{
+		SnapPointToGraph(testPoint, graph->graphSpacing);
+		showGraph = true;
+	}
+
+
 	Vector2f fWorldPos(worldPos);
-	transformTools->Update(fWorldPos, IsMousePressed( Mouse::Left));
+	if (transformTools->mode == TransformTools::SCALE && showGraph)
+	{
+		fWorldPos = testPoint;
+	}
+	transformTools->Update(fWorldPos, IsMousePressed(Mouse::Left));
+	
 
 	PolyPtr p;
 	DecorPtr dec;
