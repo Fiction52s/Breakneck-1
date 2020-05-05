@@ -22793,18 +22793,8 @@ void Actor::ExecuteWallJump()
 		velocity.x = -strengthX;
 	}
 
-	//if (velocity.y < -strengthY)
 	double movingVertStrength = strengthY * .5; //for when you're moving up already
-
 	velocity.y = min(velocity.y - movingVertStrength, -strengthY);
-	/*if( velocity.y - movingVertStrength < -strengthY )
-	{
-		velocity.y -= movingVertStrength;
-	}
-	else
-	{
-		velocity.y = -strengthY;
-	}*/
 
 
 	ActivateSound(S_WALLJUMP);

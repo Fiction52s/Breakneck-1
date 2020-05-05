@@ -11923,41 +11923,37 @@ void EditSession::PasteModeUpdate()
 	//	delta.x = 0;
 
 	//copiedBrush->Move(delta);
+
+	Vector2i centerPoint;
 	if (pasteAxis <= 0)
 	{
+		centerPoint = pos;
 		//Move(point - GetCenter());
 		//grabbedActor = copiedBrush->objects.front()->GetAsActor(); //only works for grabbing one actor
 		//MoveActors(pos - copiedBrush->GetCenter(), V2d(copiedBrush->GetCenter()), copiedBrush);
-		if (freeActorCopiedBrush != NULL)
-		{
-			MoveActors(pos - freeActorCopiedBrush->GetCenter(), worldPos,/*V2d(freeActorCopiedBrush->GetCenter()),*/ freeActorCopiedBrush);
-			//MoveActors(pos - freeActorCopiedBrush->GetCenter(), V2d(freeActorCopiedBrush->GetCenter()), freeActorCopiedBrush);
-			freeActorCopiedBrush->CenterOnPoint(pos);
-			//ActorPtr actor;
-			//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-			//{
-			//	actor = (*it)->GetAsActor();
-			//	if (actor == NULL)
-			//		continue;
-
-			//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
-			//}
-		}
-		
-		if (copiedBrush != NULL)
-		{
-			copiedBrush->CenterOnPoint(pos);
-		}
-		
 	}
 	else if (pasteAxis == 1)
 	{
-		copiedBrush->CenterOnPoint(Vector2i(pos.x, editMouseOrigPos.y));
+		centerPoint = Vector2i(pos.x, editMouseOrigPos.y);
+		//copiedBrush->CenterOnPoint(Vector2i(pos.x, editMouseOrigPos.y));
 	}
 	else if (pasteAxis == 2)
 	{
-		copiedBrush->CenterOnPoint(Vector2i(editMouseOrigPos.x, pos.y));
+		centerPoint = Vector2i(editMouseOrigPos.x, pos.y);
+		//copiedBrush->CenterOnPoint(Vector2i(editMouseOrigPos.x, pos.y));
 	}
+
+	if (freeActorCopiedBrush != NULL)
+	{
+		MoveActors(centerPoint - freeActorCopiedBrush->GetCenter(), worldPos, freeActorCopiedBrush);
+		freeActorCopiedBrush->CenterOnPoint(centerPoint);
+	}
+
+	if (copiedBrush != NULL)
+	{
+		copiedBrush->CenterOnPoint(centerPoint);
+	}
+
 	editMouseGrabPos = pos;
 	
 
