@@ -182,7 +182,10 @@ void EditSession::TestPlayerModeUpdate()
 
 	while (accumulator >= TIMESTEP)
 	{
-		OneFrameModeUpdate();
+		if (!OneFrameModeUpdate())
+		{
+			break;
+		}
 
 		for (int i = 0; i < 4; ++i)
 		{
@@ -11710,7 +11713,7 @@ void EditSession::CreateRailsModeUpdate()
 
 void EditSession::UpdateInputNonGame()
 {
-	//update input---------------
+	//set curr inputs to prev inputs
 	for (int i = 0; i < 4; ++i)
 	{
 		GetPrevInput(i) = GetCurrInput(i);
@@ -11726,6 +11729,7 @@ void EditSession::UpdateInputNonGame()
 			pTemp->prevInput = GetCurrInput(i);
 		}
 	}
+	//------------------------
 
 	UpdateControllers();
 

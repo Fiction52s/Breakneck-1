@@ -309,7 +309,7 @@ struct Session : TilesetManager
 
 	virtual int Run() = 0;
 
-	void OneFrameModeUpdate();
+	bool OneFrameModeUpdate();
 	bool skipped;
 	bool oneFrameMode;
 
