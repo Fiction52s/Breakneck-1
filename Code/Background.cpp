@@ -136,8 +136,8 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
 	string shapeFile = bgStr + "_shape.png";
 
-	Tileset *ts_bg = owner->GetTileset(bgFile, 1920, 1080);
-	Tileset *ts_shape = owner->GetTileset(shapeFile, 1920, 1080);
+	ts_bg = owner->GetTileset(bgFile, 1920, 1080);
+	ts_shape = owner->GetTileset(shapeFile, 1920, 1080);
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);

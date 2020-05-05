@@ -2886,6 +2886,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 						delete background;
 					}
 
+					background = newBG;
 					tempGridResult = name;
 					envName = name;
 				}
