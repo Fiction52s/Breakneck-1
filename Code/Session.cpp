@@ -75,9 +75,53 @@ void Session::SetupEnemyTypes()
 	}
 }
 
+void Session::SetupTimeBubbles()
+{
+	if (fBubbleFrame != NULL)
+		return;
+
+	if (parentGame != NULL)
+	{
+		fBubbleFrame = parentGame->fBubbleFrame;
+		fBubblePos = parentGame->fBubblePos;
+		fBubbleRadiusSize = parentGame->fBubbleRadiusSize;
+		return;
+	}
+
+	int numBubbleInfo = Actor::MAX_BUBBLES * MAX_PLAYERS;
+	fBubbleFrame = new float[numBubbleInfo];
+	for (int i = 0; i < numBubbleInfo; ++i)
+	{
+		fBubbleFrame[i] = 0;
+	}
+	fBubblePos = new sf::Vector2f[numBubbleInfo];
+	fBubbleRadiusSize = new float[numBubbleInfo];
+
+	//int count = 0;
+	Actor *tempPlayer = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		if (tempPlayer = GetPlayer(i))
+		{
+			tempPlayer->fBubbleFrame = (fBubbleFrame + i * Actor::MAX_BUBBLES);
+			tempPlayer->fBubblePos = (fBubblePos + i * Actor::MAX_BUBBLES);
+			tempPlayer->fBubbleRadiusSize = (fBubbleRadiusSize + i * Actor::MAX_BUBBLES);
+			//++count;
+		}
+	}
+}
+
 void Session::SetupSoundLists()
 {
-	if (soundNodeList == NULL)
+	if (parentGame != NULL)
+	{
+		soundNodeList = parentGame->soundNodeList;
+		pauseSoundNodeList = parentGame->pauseSoundNodeList;
+
+		soundNodeList->Clear();
+		pauseSoundNodeList->Clear();
+	}
+	else if (soundNodeList == NULL)
 	{
 		soundNodeList = new SoundNodeList(10);
 		pauseSoundNodeList = new SoundNodeList(10);
@@ -87,19 +131,36 @@ void Session::SetupSoundLists()
 		soundNodeList->Clear();
 		pauseSoundNodeList->Clear();
 	}
-
 }
 
 void Session::SetupSoundManager()
 {
-	if (soundManager == NULL)
+	if (parentGame != NULL)
+	{
+		soundManager = parentGame->soundManager;
+	}
+	else if (soundManager == NULL)
+	{
 		soundManager = new SoundManager;
+	}
+}
+
+void Session::SetParentGame(GameSession *game)
+{
+	parentGame = game;
 }
 
 void Session::SetupHitboxManager()
 {
-	if (hitboxManager == NULL)
+	if (parentGame != NULL)
+	{
+		hitboxManager = parentGame->hitboxManager;
+	}
+	else if (hitboxManager == NULL)
+	{
 		hitboxManager = new HitboxManager;
+	}
+		
 
 	//dont clear this because it will probably contain all the player hitboxes
 	//else
@@ -586,21 +647,6 @@ void Session::AddExtraEnemy(const std::string &name,
 		w_mon, w_level, w_path, w_loop, p_canBeAerial, p_canBeGrounded,
 		p_canBeRailGrounded, p_numLevels, 0, ts, tileIndex));
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1125,6 +1171,8 @@ void Session::DrawBullets(sf::RenderTarget *target)
 
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 {
+	parentGame = NULL;
+
 	sessType = p_sessType;
 	cutPlayerInput = false;
 	mainMenu = MainMenu::GetInstance();
@@ -1291,32 +1339,7 @@ void Session::SetPlayersGameMode()
 	}
 }
 
-void Session::SetupTimeBubbles()
-{
-	if (fBubbleFrame != NULL)
-		return;
-	int numBubbleInfo = Actor::MAX_BUBBLES * MAX_PLAYERS;
-	fBubbleFrame = new float[numBubbleInfo];
-	for (int i = 0; i < numBubbleInfo; ++i)
-	{
-		fBubbleFrame[i] = 0;
-	}
-	fBubblePos = new sf::Vector2f[numBubbleInfo];
-	fBubbleRadiusSize = new float[numBubbleInfo];
 
-	//int count = 0;
-	Actor *tempPlayer = NULL;
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		if (tempPlayer = GetPlayer(i))
-		{
-			tempPlayer->fBubbleFrame = (fBubbleFrame + i * Actor::MAX_BUBBLES);
-			tempPlayer->fBubblePos = (fBubblePos + i * Actor::MAX_BUBBLES);
-			tempPlayer->fBubbleRadiusSize = (fBubbleRadiusSize + i * Actor::MAX_BUBBLES);
-			//++count;
-		}
-	}
-}
 
 void Session::AllocatePolyShaders(int numPolyTypes)
 {

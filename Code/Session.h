@@ -37,6 +37,8 @@ struct ComboObject;
 
 struct Enemy;
 
+struct GameSession;
+
 
 struct Session : TilesetManager
 {
@@ -372,6 +374,10 @@ struct Session : TilesetManager
 	void SetPlayerInputOn(bool on);
 	void UpdateDecorLayers();
 	virtual void UpdateDecorSprites();
+
+	GameSession *parentGame;
+	void SetParentGame(GameSession *session);
+
 };
 
 #endif

@@ -395,6 +395,8 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	CleanupUnusedTilests();
 }
 
+
+
 GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
 	:Session( Session::SESS_GAME, p_filePath), saveFile( sf ),
 	cloud0( sf::Quads, 3 * 4 ), cloud1( sf::Quads, 3 * 4 ),
@@ -4701,6 +4703,18 @@ bool GameSession::Load()
 
 void GameSession::SetupPlayers()
 {
+	if (parentGame != NULL)
+	{
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			players[i] = parentGame->players[i];
+		}
+
+		m_numActivePlayers = parentGame->m_numActivePlayers;
+		return;
+	}
+
+
 	if (raceFight != NULL)
 	{
 		if( players[1] == NULL )
@@ -4743,13 +4757,21 @@ void GameSession::SetupPlayers()
 
 void GameSession::SetupKeyMarker()
 {
-	if( keyMarker == NULL )
+	if (parentGame != NULL)
+	{
+		keyMarker = parentGame->keyMarker;
+	}
+	else if( keyMarker == NULL )
 		keyMarker = new KeyMarker(this);
 }
 
 void GameSession::SetupShardsCapturedField()
 {
-	if( shardsCapturedField == NULL )
+	if (parentGame != NULL)
+	{
+		shardsCapturedField = parentGame->shardsCapturedField;
+	}
+	else if( shardsCapturedField == NULL )
 		shardsCapturedField = new BitField(32 * 5);
 	else
 	{
@@ -4759,6 +4781,8 @@ void GameSession::SetupShardsCapturedField()
 
 void GameSession::SetupShaders()
 {
+	//since these are not pointers, cannot transfer them from the parentGame. Might want to change that?
+
 	if (shadersLoaded)
 		return;
 
@@ -4817,6 +4841,15 @@ void GameSession::SetupShaders()
 
 void GameSession::SetupBackground()
 {
+	if (parentGame != NULL)
+	{
+		if (mapHeader->envName == parentGame->mapHeader->envName)
+		{
+			background = parentGame->background;
+			return;
+		}
+	}
+	
 	if (background != NULL)
 	{
 		delete background;
@@ -4828,13 +4861,23 @@ void GameSession::SetupBackground()
 
 void GameSession::SetupMinimap()
 {
-	if( mini == NULL )
+	if (parentGame != NULL)
+	{
+		mini = parentGame->mini;
+	}
+	else if( mini == NULL )
 		mini = new Minimap(this);
 }
 
 void GameSession::SetupAbsorbParticles()
 {
-	if (absorbParticles == NULL)
+	if (parentGame != NULL)
+	{
+		absorbParticles = parentGame->absorbParticles;
+		absorbDarkParticles = parentGame->absorbDarkParticles;
+		absorbParticles = parentGame->absorbShardParticles;
+	}
+	else if (absorbParticles == NULL)
 	{
 		absorbParticles = new AbsorbParticles(this, AbsorbParticles::ENERGY);
 		absorbDarkParticles = new AbsorbParticles(this, AbsorbParticles::DARK);
@@ -4844,7 +4887,12 @@ void GameSession::SetupAbsorbParticles()
 
 void GameSession::SetupScoreDisplay()
 {
-	if( scoreDisplay == NULL )
+	if (parentGame != NULL)
+	{
+		scoreDisplay = parentGame->scoreDisplay;
+		scoreDisplay->Reset();
+	}
+	else if( scoreDisplay == NULL )
 		scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
 	else
 	{
@@ -4854,6 +4902,8 @@ void GameSession::SetupScoreDisplay()
 
 void GameSession::SetupQuadTrees()
 {
+	//bonus levels have their own trees
+
 	if (terrainBGTree != NULL)
 	{
 		terrainBGTree->Clear();
@@ -4917,7 +4967,12 @@ void GameSession::SetupQuadTrees()
 
 void GameSession::SetupRecGhost()
 {
-	if (mapHeader->gameMode == MapHeader::MapType::T_STANDARD && recGhost == NULL)
+	//will need to figure out how to do this later for recordings transferring through to bonus levels
+	if (parentGame != NULL)
+	{
+		recGhost = parentGame->recGhost;
+	}
+	else if (mapHeader->gameMode == MapHeader::MapType::T_STANDARD && recGhost == NULL)
 	{
 		recGhost = new RecordGhost(GetPlayer(0));
 	}
@@ -4927,17 +4982,28 @@ void GameSession::SetupPauseMenu()
 {
 	pauseMenu = mainMenu->pauseMenu;
 	pauseMenu->owner = this;
-	pauseMenu->SetTab(PauseMenu::PAUSE);
+
+	if (parentGame == NULL)
+	{
+		pauseMenu->SetTab(PauseMenu::PAUSE);
+	}
 }
 
 void GameSession::SetupHUD()
 {
-	if(mapHeader->gameMode == MapHeader::MapType::T_STANDARD && adventureHUD == NULL )
+	if (parentGame != NULL)
+	{
+		adventureHUD = parentGame->adventureHUD;
+	}
+	else if(mapHeader->gameMode == MapHeader::MapType::T_STANDARD && adventureHUD == NULL )
 		adventureHUD = new AdventureHUD(this);
 }
 
 bool GameSession::SetupControlProfiles()
 {
+	if (parentGame != NULL)
+		return true;
+
 	ControlProfile *currProfile;
 	SaveFile *currFile = mainMenu->GetCurrentProgress();
 	if (currFile != NULL)
@@ -7302,7 +7368,16 @@ int GameSession::Run()
 		SetFilterDefault( GetController(i).filter );
 	}
 
-	pauseMenu->owner = NULL;
+	if (parentGame != NULL)
+	{
+		pauseMenu->owner = parentGame;
+	}
+	else
+	{
+		pauseMenu->owner = NULL;
+	}
+
+	
 
 	fader->Clear();
 
@@ -7866,10 +7941,15 @@ void GameSession::UpdateTimeSlowShader()
 
 void GameSession::SetupGoalPulse()
 {
-	if (goalPulse == NULL)
+	if (parentGame != NULL)
+	{
+		goalPulse = parentGame->goalPulse;
+	}
+	else if (goalPulse == NULL)
 	{
 		goalPulse = new GoalPulse(this);// , Vector2f(goalPos.x, goalPos.y));
 	}
+
 	goalPulse->SetPosition(Vector2f(goalPos));
 }
 //void GameSession::EndLevel(GameResultType rType)
@@ -9183,6 +9263,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 typedef pair<V2d, V2d> pairV2d;
 void GameSession::SetupEnergyFlow()
 {
+	//is still created in a bonus level
+
 	if (goalEnergyFlowVA != NULL)
 	{
 		delete goalEnergyFlowVA;

@@ -273,6 +273,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	GameSession(SaveFile *sf,
 		const boost::filesystem::path &p_filePath);
 	~GameSession();
+	
 
 	//need to be added to session
 	sf::View view;

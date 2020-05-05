@@ -8508,6 +8508,11 @@ void Actor::UpdatePrePhysics()
 		break;
 	}
 
+	/*if (ground != NULL)
+	{
+		cout << "gSpeed: " << groundSpeed << endl;
+	}*/
+
 	ClearPauseBufferedActions();
 }
 
@@ -11595,9 +11600,9 @@ bool Actor::TrySlideBrakeOrStand()
 		else
 		{
 			double absGroundSpeed = abs(groundSpeed);
-			double dSpeed = GetDashSpeed();
+			double dSpeed = 22;//GetDashSpeed();
 			if (( action == BRAKE && absGroundSpeed < 2) ||
-				( action != STAND && absGroundSpeed < dSpeed ) )
+				( action != STAND && action != BRAKE && absGroundSpeed < dSpeed ) )
 			{
 				SetAction(STAND);
 				frame = 0;
@@ -22421,7 +22426,7 @@ void Actor::SetAutoRun(bool fr, double maxAutoRun)
 void Actor::BrakeMovement()
 {
 	double brakeAmount = 1.0;
-	double dSpeed = GetDashSpeed();
+	double dSpeed = dashSpeed;
 	if (groundSpeed > 0)
 	{
 		groundSpeed -= brakeAmount;
