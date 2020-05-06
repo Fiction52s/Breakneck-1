@@ -7933,11 +7933,13 @@ bool EditSession::PointSelectPolyPoint( V2d &pos )
 		foundPoint = (*it)->GetClosePoint( 8 * zoomMultiple, pos);
 		if (foundPoint != NULL)
 		{
-			if (shift && foundPoint->selected )
-			{
-				//DeselectPoint((*it), foundPoint);
-			}
-			else
+			//if (shift && foundPoint->selected )
+			//{
+			//	grabbedPoint = foundPoint;
+			//	worldPos = V2d(grabbedPoint->pos);
+			//	//DeselectPoint((*it), foundPoint);
+			//}
+			//else
 			{	
 				if (!foundPoint->selected)
 				{
@@ -7946,7 +7948,14 @@ bool EditSession::PointSelectPolyPoint( V2d &pos )
 
 					SelectPoint((*it), foundPoint);
 					grabbedPoint = foundPoint;
-				}			
+					worldPos = V2d(grabbedPoint->pos);
+
+				}
+				else
+				{
+					grabbedPoint = foundPoint;
+					worldPos = V2d(grabbedPoint->pos);
+				}
 			}
 			return true;
 		}
@@ -11845,7 +11854,18 @@ void EditSession::EditModeUpdate()
 
 	if (IsKeyPressed(Keyboard::G))
 	{
+		//V2d snapDiff = worldPos;
 		SnapPointToGraph(worldPos, graph->graphSpacing);
+		//snapDiff = worldPos - snapDiff;
+
+		//Vector2i snapDiffI(snapDiff);
+
+		//if (grabbedPoint != NULL && !showGraph )
+		//{
+		//	editMouseGrabPos += snapDiffI;//Vector2i(worldPos.x, worldPos.y);
+		//	pointGrabPos = snapDiffI;//Vector2i(worldPos.x, worldPos.y);
+		//	editMouseOrigPos = editMouseGrabPos;
+		//}
 		showGraph = true;
 	}
 
@@ -11856,62 +11876,9 @@ void EditSession::EditModeUpdate()
 	}
 	else if( showPoints && !pressedB && !editMouseDownMove )//&& grabbedPoint == NULL )
 	{
-		/*for (PointMap::iterator pmit = selectedPoints.begin();
-			pmit != selectedPoints.end(); ++pmit)
-		{
-			list<PointMoveInfo> & pList = (*pmit).second;
-			for (list<PointMoveInfo>::iterator pit = pList.begin();
-				pit != pList.end(); ++pit)
-			{
-				(*pit).poly->SetRenderMode(TerrainPolygon::RenderMode::RENDERMODE_NORMAL);
-			}
-		}*/
 		showPoints = false;
 		ClearSelectedPoints();
 	}
-
-	//cleanup this later
-
-	//if moving the selected brush at all. grabbedActor isn't necessarily true. could grab terrain.
-	//hmm maybe just use grabbed terrain?
-	/*if(editStartMove )
-	{
-		ActorPtr actor;
-		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-		{
-			actor = (*it)->GetAsActor();
-			if (actor != NULL)
-			{
-				if (actor->myEnemy != NULL)
-				{
-					actor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
-				}
-			}
-		}
-	}*/
-
-	/*if (grabbedActor != NULL && grabbedActor->myEnemy != NULL)
-	{
-		if (selectedBrush->objects.size() > 1)
-		{
-			ActorPtr actor;
-			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-			{
-				actor = (*it)->GetAsActor();
-				if (actor != NULL)
-				{
-					if (actor->myEnemy != NULL)
-					{
-						actor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
-					}
-				}
-			}
-		}
-		else
-		{
-			grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
-		}
-	}*/
 		
 	TrySelectedMove();
 
