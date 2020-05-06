@@ -811,6 +811,12 @@ struct EditSession : GUIHandler, Session
 	bool quit;
 	int returnVal;
 	
+	ErrorBar errorBar;
+	void ClearMostRecentError();
+	void ShowMostRecentError();
+	ErrorType mostRecentError;
+	void CreateError(ErrorType);
+	void HideErrorBar();
 
 	GateInfo testGateInfo;
 	sf::Vector2i gatePoint0;

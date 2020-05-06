@@ -12,7 +12,7 @@ TransformTools::TransformTools()
 	tRect.setOutlineThickness(-2);
 
 	scalePointRadius = 8;
-	rotatePointRadius = 16;
+	rotatePointRadius = 30;
 
 	circleGroup = new CircleGroup(8, scalePointRadius, Color::Magenta, 10);
 	circleGroup->ShowAll();

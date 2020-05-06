@@ -51,9 +51,9 @@ bool PlayerParams::CanApply()
 		image.getLocalBounds().width, image.getLocalBounds().height );
 	for( list<PolyPtr>::iterator it = session->polygons.begin(); it != session->polygons.end(); ++it )
 	{
-		
 		if( (*it)->Intersects( me ) )
 		{
+			session->CreateError(ERR_PLAYER_INTERSECTS_POLY);
 			return false;
 		}
 	}

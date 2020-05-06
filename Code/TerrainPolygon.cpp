@@ -2298,31 +2298,57 @@ bool TerrainPolygon::IntersectsMyOwnGates()
 
 bool TerrainPolygon::IsInternallyValid()
 {
+	EditSession *edit = EditSession::GetSession();
+
 	if (inverse)
 	{
 		if (IsClockwise())
+		{
+			edit->CreateError(ERR_POLY_INCORRECT_WINDING_INVERSE);
 			return false;
+		}
+			
 	}
 	else
 	{
 		if (!IsClockwise())
+		{
+			edit->CreateError(ERR_POLY_INCORRECT_WINDING);
 			return false;
+		}
+			
 	}
 
 	if (renderMode == RenderMode::RENDERMODE_MOVING_POINTS)
 	{
 		if (PointsTooCloseToEachOther(1))
+		{
+			edit->CreateError(ERR_POINTS_MOVE_TOO_CLOSE);
 			return false;
+		}
+			
 	}
 
 	if (HasSlivers())
+	{
+		edit->CreateError(ERR_POLY_HAS_SLIVER);
 		return false;
+	}
+		
 
 	if (LinesIntersectMyself())
+	{
+		edit->CreateError(ERR_POLY_INTERSECTS_ITSELF);
 		return false;
+	}
+		
 
 	if (IntersectsMyOwnEnemies())
+	{
+		edit->CreateError(ERR_POLY_INTERSECTS_ENEMY);
 		return false;
+	}
+		
 
 	return true;	
 }

@@ -359,35 +359,60 @@ void ActorParams::SetSelected(bool select)
 
 bool ActorParams::CanApply()
 {
-	if (type->CanBeGrounded())
+	EditSession *edit = EditSession::GetSession();
+	bool canGround = type->CanBeGrounded();
+	if (canGround)
 	{
 		if (posInfo.ground != NULL)
 		{
-
-			EditSession *edit = EditSession::GetSession();
 			if (edit->IsEnemyValid(this))
 			{
 				return true;
 			}
 			else
 			{
+				edit->CreateError(ERR_POLY_INTERSECTS_ENEMY);
 				return false;
 			}
 		}
 			
 	}
 	
-	if (type->CanBeRailGrounded())
+	bool canRail = type->CanBeRailGrounded();
+	if (canRail)
 	{
 		if (posInfo.railGround != NULL)
-			return true;
-		else
-			return false;
+		{
+			if (edit->IsEnemyValid(this))
+			{
+				return true;
+			}
+			else
+			{
+				edit->CreateError(ERR_POLY_INTERSECTS_ENEMY);
+				return false;
+			}
+		}
 	}
 	
 	if (type->CanBeAerial() )
 	{
 		return true;
+	}
+	else
+	{
+		if (canGround && canRail)
+		{
+			edit->CreateError(ERR_ENEMY_NEEDS_GROUND_OR_RAIL);
+		}
+		else if (canGround)
+		{
+			edit->CreateError(ERR_ENEMY_NEEDS_GROUND);
+		}
+		else if (canRail)
+		{
+			edit->CreateError(ERR_ENEMY_NEEDS_RAIL);
+		}
 	}
 
 	return false;

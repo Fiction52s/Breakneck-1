@@ -660,7 +660,8 @@ EditSession *EditSession::GetSession()
 }
 
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
-	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial )
+	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
+	errorBar(p_mainMenu->arial)
 {	
 	playerTracker = new PlayerTracker();
 
@@ -2470,6 +2471,8 @@ int EditSession::Run()
 
 		UpdatePolyShaders();
 		
+		//ShowMostRecentError();
+
 		/*int testSize = 0;
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -2972,6 +2975,8 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 
 void EditSession::ClearUndoneActions()
 {
+	HideErrorBar();
+
 	for( list<Action*>::iterator it = undoneActionStack.begin(); it != undoneActionStack.end(); ++it )
 	{
 		delete (*it);
@@ -3015,6 +3020,30 @@ bool EditSession::TrySnapPosToPoint(V2d &p, double radius, PolyPtr &poly, Terrai
 	}
 
 	return false;
+}
+
+void EditSession::ShowMostRecentError()
+{
+	if (mostRecentError != ERR_NO_ERROR)
+	{
+		errorBar.ShowError(mostRecentError);
+		ClearMostRecentError();
+	}
+}
+
+void EditSession::ClearMostRecentError()
+{
+	mostRecentError = ERR_NO_ERROR;
+}
+
+void EditSession::CreateError(ErrorType er)
+{
+	mostRecentError = er;
+}
+
+void EditSession::HideErrorBar()
+{
+	errorBar.SetShown(false);
 }
 
 int EditSession::GetSpecialTerrainMode()
@@ -3613,24 +3642,15 @@ void EditSession::TryCompleteSelectedMove()
 
 
 	//check if valid
+	ClearMostRecentError();
 	if (selectedBrush->CanApply())
 	{
 		validMove = true;
 	}
-
-	//if (mode == CREATE_ENEMY )
-	//{
-
-	//	AddRecentEnemy(grabbedActor);
-	//	ClearSelectedBrush();
-
-	//	/*if (enemySelectPanel->ContainsPoint(Vector2i(uiMousePos)))
-	//	{
-	//		validMove = false;
-	//	}*/
-
-	//	
-	//}
+	else
+	{
+		ShowMostRecentError();
+	}
 
 	if (validMove)
 	{
@@ -5128,35 +5148,45 @@ bool EditSession::IsPolygonExternallyValid( PolyPtr poly, PolyPtr ignore )
 	list<PolyPtr> intersections;
 	GetIntersectingPolys(poly, intersections);
 	if (intersections.size() > 0)
+	{
+		CreateError(ERR_POLY_INTERSECTS_POLY);
 		return false;
+	}
+		
 
 	if (PolyContainsPolys(poly, ignore ))
 	{
+		CreateError(ERR_POLY_CONTAINS_POLY);
 		return false;
 	}
 
 	if (PolyIsContainedByPolys(poly, ignore ))
 	{
+		CreateError(ERR_POLY_CONTAINS_POLY);
 		return false;
 	}
 
 	if (PolyIsTouchingEnemiesOrBeingTouched(poly, ignore ))
 	{
+		CreateError(ERR_POLY_INTERSECTS_ENEMY);
 		return false;
 	}
 
 	if (PolyIntersectsGates(poly))
 	{
+		CreateError(ERR_POLY_INTERSECTS_GATE);
 		return false;
 	}
 
 	if (PolyGatesIntersectOthers(poly))
 	{
+		CreateError(ERR_POLY_INTERSECTS_GATE);
 		return false;
 	}
 
 	if (PolyGatesMakeSliverAngles(poly))
 	{
+		CreateError(ERR_GATE_CREATES_SLIVER);
 		return false;
 	}
 	return true;
@@ -8332,6 +8362,8 @@ void EditSession::SetMode(Emode m)
 		oldMode = menuDownStored;
 	}
 
+	errorBar.SetShown(false);
+
 	mode = m;
 
 	switch (oldMode)
@@ -9815,6 +9847,8 @@ void EditSession::DrawUI()
 	preScreenTex->draw(scaleText);
 
 	DrawModeUI();
+
+	errorBar.Draw(preScreenTex);
 
 	if (showPanel != NULL)
 	{

@@ -395,6 +395,46 @@ private:
 	bool lastMouseDownRight;
 };
 
+enum ErrorType : int
+{
+	ERR_NO_ERROR,
+	ERR_PLAYER_INTERSECTS_POLY,
+	ERR_POLY_INTERSECTS_POLY,
+	ERR_POLY_CONTAINS_POLY,
+	ERR_POLY_INTERSECTS_ENEMY,
+	ERR_POLY_INTERSECTS_GATE,
+	ERR_GATE_CREATES_SLIVER,
+	ERR_POLY_INCORRECT_WINDING_INVERSE,
+	ERR_POLY_INCORRECT_WINDING,
+	ERR_POINTS_MOVE_TOO_CLOSE,
+	ERR_POLY_HAS_SLIVER,
+	ERR_POLY_INTERSECTS_ITSELF,
+	ERR_ENEMY_NEEDS_GROUND,
+	ERR_ENEMY_NEEDS_RAIL,
+	ERR_ENEMY_NEEDS_GROUND_OR_RAIL,
+	ERR_Count
+};
+
+struct ErrorBar
+{
+	
+
+	ErrorBar(sf::Font &f);
+	sf::Text errorText;
+	sf::RectangleShape rect;
+	void Draw(sf::RenderTarget *target);
+	void SetShown(bool show);
+	void ShowError(ErrorType e);
+	void SetText(const std::string &msg);
+	void ShowText(const std::string &msg);
+	bool show;
+
+	void CreateErrorTable();
+	std::vector<std::string> errorStringVec;
+	sf::Font *myFont;
+
+};
+
 struct GUIHandler
 {
 	virtual void ButtonCallback( Button *b, const std::string & e ) = 0;
