@@ -3027,13 +3027,14 @@ void EditSession::ShowMostRecentError()
 	if (mostRecentError != ERR_NO_ERROR)
 	{
 		errorBar.ShowError(mostRecentError);
-		ClearMostRecentError();
+		mostRecentError = ERR_NO_ERROR;
 	}
 }
 
 void EditSession::ClearMostRecentError()
 {
 	mostRecentError = ERR_NO_ERROR;
+	HideErrorBar();
 }
 
 void EditSession::CreateError(ErrorType er)
@@ -4694,20 +4695,27 @@ bool EditSession::IsGateInProgressValid(PolyPtr startPoly,
 bool EditSession::IsGateValid(GateInfo *gi)
 {
 	if (gi->point0 == gi->point1)
+	{
+		CreateError(ERR_GATE_SAME_POINT);
 		return false;
+	}
+		
 
 	if (GateMakesSliverAngles(gi))
 	{
+		CreateError(ERR_GATE_CREATES_SLIVER);
 		return false;
 	}
 
 	if (GateIntersectsPolys(gi))
 	{
+		CreateError(ERR_GATE_INSTERSECTS_ENEMY);
 		return false;
 	}
 
 	if (GateIntersectsGates(gi))
 	{
+		CreateError(ERR_GATE_INTERSECTS_GATE);
 		return false;
 	}
 
@@ -4716,12 +4724,14 @@ bool EditSession::IsGateValid(GateInfo *gi)
 		if ((*it)->point0 == gi->point0 || (*it)->point0 == gi->point1
 			|| (*it)->point1 == gi->point0 || (*it)->point1 == gi->point1)
 		{
+			CreateError(ERR_GATE_POINT_ALREADY_OCCUPIED);
 			return false;
 		}
 	}
 
 	if (GateIsTouchingEnemies(gi))
 	{
+		CreateError(ERR_GATE_INSTERSECTS_ENEMY);
 		return false;
 	}
 
@@ -4730,6 +4740,7 @@ bool EditSession::IsGateValid(GateInfo *gi)
 	{
 		if (gi->poly0->ContainsPoint(center))
 		{
+			CreateError(ERR_GATE_INSTERSECTS_ENEMY);
 			return false;
 		}
 	}
@@ -9976,6 +9987,7 @@ void EditSession::HandleEvents()
 			{
 				if (ev.mouseButton.button == Mouse::Button::Middle)
 				{
+					ClearMostRecentError();
 					panning = true;
 					panAnchor = worldPos;
 					//cout << "setting panAnchor: " << panAnchor.x << " , " << panAnchor.y << endl;
@@ -12150,6 +12162,7 @@ void EditSession::CreateGatesModeUpdate()
 
 	if (gatePoints > 1)
 	{
+		ClearMostRecentError();
 		bool result = IsGateValid(&testGateInfo);//CanCreateGate(testGateInfo);
 
 		if (result)
@@ -12203,6 +12216,7 @@ void EditSession::CreateGatesModeUpdate()
 		}
 		else
 		{
+			ShowMostRecentError();
 			gatePoints = 1;
 			testGateInfo.poly1 = NULL;
 			testGateInfo.point1 = NULL;

@@ -876,7 +876,9 @@ ErrorBar::ErrorBar( sf::Font &f )
 	int rectHeight = 30;
 	rect.setSize(Vector2f(1920, rectHeight));
 	rect.setPosition(Vector2f(0, 1080 - rectHeight));
-	rect.setFillColor(Color::Red);
+	Color rectColor = Color::Red;
+	//rectColor.a = 25;
+	rect.setFillColor(rectColor);
 	show = false;
 
 	errorText.setCharacterSize(20);
@@ -927,7 +929,7 @@ void ErrorBar::CreateErrorTable()
 	errorStringVec[ERR_POLY_CONTAINS_POLY] = "A polygon illegally contains one or more polygons";
 	errorStringVec[ERR_POLY_INTERSECTS_ENEMY] = "A polygon illegally intersects one or more enemies";
 	errorStringVec[ERR_POLY_INTERSECTS_GATE] = "A polygon illegally intersects one or more gates";
-	errorStringVec[ERR_GATE_CREATES_SLIVER] = "A gate creates an illegal sliver shape";
+	
 
 	errorStringVec[ERR_POINTS_MOVE_TOO_CLOSE] = "Attempted to move points too close to one another";
 	errorStringVec[ERR_POLY_HAS_SLIVER] = "A polygon has created an illegal sliver shape";
@@ -939,4 +941,11 @@ void ErrorBar::CreateErrorTable()
 	//these might nevRer be relevant?
 	errorStringVec[ERR_POLY_INCORRECT_WINDING_INVERSE] = "An inverse polygon has the wrong winding";
 	errorStringVec[ERR_POLY_INCORRECT_WINDING] = "A polygon has the wrong winding";
+
+	errorStringVec[ERR_GATE_INSTERSECTS_ENEMY] = "A gate illegally intersects one or more polygons";
+	errorStringVec[ERR_GATE_SAME_POINT] = "A gate cannot have the same start and end point";
+	errorStringVec[ERR_GATE_CREATES_SLIVER] = "A gate created an illegal sliver shape";
+	errorStringVec[ERR_GATE_INTERSECTS_GATE] = "A gate illegally intersected another gate";
+	errorStringVec[ERR_GATE_POINT_ALREADY_OCCUPIED] = "A gate cannot use the same point that another gate is already using";
+	errorStringVec[ERR_GATE_INSTERSECTS_ENEMY] = "A gate illegally intersects an enemy";
 }
