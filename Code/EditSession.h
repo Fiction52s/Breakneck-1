@@ -327,6 +327,9 @@ struct EditSession : GUIHandler, Session
 	ActorParams * AttachActorToPolygon( ActorPtr actor, PolyPtr poly );
 	void AttachActorsToPolygon( std::list<ActorPtr> &actors, PolyPtr poly );
 	int Run();
+	void LoadAndResave();
+	bool runToResave;
+
 	
 	void SnapPointToGraph(sf::Vector2f &p, int gridSize);
 	void SnapPointToGraph(V2d &p, int gridSize);

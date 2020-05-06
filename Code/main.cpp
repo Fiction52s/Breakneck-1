@@ -90,7 +90,8 @@ int main()
  //     _CRTDBG_MODE_DEBUG);
 
 	std::cout << "starting program" << endl;
-
+	
+	//return 0;
 	//GCC::USBDriver driver;
 	//GCC::VJoyGCControllers joys(driver);
 

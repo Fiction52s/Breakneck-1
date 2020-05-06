@@ -1132,6 +1132,13 @@ void MainMenu::ActivateIndEffect(
 	indEffectPool->ActivateIndEffect(&params, ts);
 }
 
+void MainMenu::LoadAndResaveMap(const std::string &path)
+{
+	EditSession *es = new EditSession(this, path);
+	es->LoadAndResave();
+	delete es;
+}
+
 void MainMenu::GameEditLoop( const std::string &p_path )
 {
 	int result = 0;
@@ -1376,6 +1383,9 @@ void MainMenu::CustomMapsOption()
 
 	ls.UpdateMapList();
 
+	//ls.LoadAndRewriteAllMaps();
+
+	//empty map. fix this later
 	string empty = "5\n0 0\nmat\n5\n-209 78\n286 78\n286 132\n60 132\n-201 132\n0\n0\n0\n1\n-- 1\ngoal -air 0 0 76";
 
 	SetMouseGrabbed(true);
@@ -3355,6 +3365,8 @@ CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
 		:menu( p_menu ), optionChosen( false ), showNamePopup( false )
 {
 }
+
+//void CustomMapsHandler::LoadAndResaveMap( 
 
 void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 {

@@ -664,7 +664,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	errorBar(p_mainMenu->arial)
 {	
 	playerTracker = new PlayerTracker();
-
+	runToResave = false;
 
 	gameCam = false;
 
@@ -1731,6 +1731,7 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 	modifyGate = NULL;
 	bool found = false;
 
+	ClearMostRecentError();
 	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end() && !found; ++it)
 	{
 		//extended aabb 
@@ -1772,6 +1773,14 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 				testGateInfo.vertexIndex1 = closePoint->GetIndex();
 				//view.setCenter(testGateInfo.point1->pos.x, testGateInfo.point1->pos.y);
 				//preScreenTex->setView(view);
+			}
+		}
+		else
+		{
+			if (gatePoints == 1)
+			{
+				CreateError(ERR_GATE_NEEDS_BOTH_POINTS);
+				ShowMostRecentError();
 			}
 		}
 	}
@@ -2047,6 +2056,14 @@ void EditSession::SetInitialView(sf::Vector2f &center,
 	view.setCenter(center);
 	view.setSize(size);
 	initialViewSet = true;
+}
+
+
+void EditSession::LoadAndResave()
+{
+	runToResave = true;
+	Run();
+	runToResave = false;
 }
 
 int EditSession::Run()
@@ -2363,6 +2380,14 @@ int EditSession::Run()
 
 	while( !quit )
 	{
+		if (runToResave)
+		{
+			cout << "run to resave: writing to file: " << currentFile << endl;
+			WriteFile(currentFile);
+			break;
+		}
+
+
 		/*if (mode == EDIT || mode == CREATE_ENEMY || mode == PASTE )
 		{*/
 			double newTime = editClock.getElapsedTime().asSeconds();

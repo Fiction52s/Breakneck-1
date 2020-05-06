@@ -948,4 +948,6 @@ void ErrorBar::CreateErrorTable()
 	errorStringVec[ERR_GATE_INTERSECTS_GATE] = "A gate illegally intersected another gate";
 	errorStringVec[ERR_GATE_POINT_ALREADY_OCCUPIED] = "A gate cannot use the same point that another gate is already using";
 	errorStringVec[ERR_GATE_INSTERSECTS_ENEMY] = "A gate illegally intersects an enemy";
+	errorStringVec[ERR_GATE_NEEDS_BOTH_POINTS] = "A gate needs 2 points to be valid";
+	
 }

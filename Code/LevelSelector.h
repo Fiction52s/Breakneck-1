@@ -39,6 +39,8 @@ struct LevelDirectory
 
 struct LevelSelector
 {
+	void LoadAndRewriteAllMaps();
+	void BackupAllMapsAndPreviews();
 	LevelSelector( MainMenu *mainMenu );
 	~LevelSelector();
 	void UpdateMapList(TreeNode *parentNode, const std::string &relativePath);
@@ -88,8 +90,11 @@ struct LevelSelector
 	std::map<std::string, Tileset*> previewTS;
 	Tileset *ts_previewNotFound;
 	MainMenu *mainMenu;
+	std::list<std::string> allMapPaths;
 	
 };
 
-
+void copyDirectoryRecursively(
+	const boost::filesystem::path& sourceDir, 
+	const boost::filesystem::path& destinationDir);
 #endif

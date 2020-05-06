@@ -487,6 +487,8 @@ struct MainMenu
 		GRT_FREEPLAY
 	};
 
+	void LoadAndResaveMap(const std::string &path);
+
 	GCC::USBDriver *gccDriver;
 	GCC::VJoyGCControllers *joys;
 	bool gccDriverEnabled;

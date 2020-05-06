@@ -7,14 +7,19 @@ using namespace sf;
 
 TransformTools::TransformTools()
 {
+	Color rectColor = Color::Red;
+	rectColor.a = 100;
 	tRect.setFillColor(Color::Transparent);
-	tRect.setOutlineColor(Color::Red);
+	tRect.setOutlineColor(rectColor);
 	tRect.setOutlineThickness(-2);
 
-	scalePointRadius = 8;
-	rotatePointRadius = 30;
+	scalePointRadius = 12;
+	rotatePointRadius = 40;
 
-	circleGroup = new CircleGroup(8, scalePointRadius, Color::Magenta, 10);
+	Color circleColor = Color::Magenta;
+	circleColor.a = 100;
+
+	circleGroup = new CircleGroup(8, scalePointRadius, circleColor, 10);
 	circleGroup->ShowAll();
 	/*for (int i = 0; i < 8; ++i)
 	{

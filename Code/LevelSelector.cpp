@@ -2,6 +2,8 @@
 #include <iostream>
 #include <SFML/Network.hpp>
 #include "MainMenu.h"
+#include <iomanip>
+#include <time.h>
 
 using namespace boost::filesystem;
 using namespace std;
@@ -434,7 +436,10 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 					string relPath = p.relative_path().string();
 					string mapName = pathFolder + "/" + p.relative_path().stem().string();
 					previewTS[p.relative_path().stem().string()] = NULL;
-					//GetPreview( pathFolder, p.relative_path().stem().string(), false);
+
+					//this is for loading and resaving
+					string mapPath = "Resources/Maps/" + pathFolder + "/" + p.filename().string();
+					allMapPaths.push_back(mapPath);
 				}
 			}
 			else if (is_directory(p))      // is p a directory?
@@ -580,5 +585,59 @@ void LevelSelector::ChangeViewOffset(int delta)
 	else if (viewOffset + 27 > numTotalEntries)
 	{
 		viewOffset = numTotalEntries - 27;
+	}
+}
+
+void LevelSelector::BackupAllMapsAndPreviews()
+{
+	time_t t = time(NULL);
+	tm *timeInfo = localtime(&t);
+	stringstream ss;
+	ss << "Resources/Maps_Backup_";
+
+	int year = timeInfo->tm_year + 1900;
+	int mon = timeInfo->tm_mon + 1;
+	ss << year << "-" << mon << "-" << timeInfo->tm_mday
+		<< "_" << timeInfo->tm_hour << "-" << timeInfo->tm_min << "-" << timeInfo->tm_sec;
+
+	string destStr = ss.str();
+
+	copyDirectoryRecursively("Resources/Maps", destStr);
+}
+
+void LevelSelector::LoadAndRewriteAllMaps()
+{
+	BackupAllMapsAndPreviews();
+
+	for (auto it = allMapPaths.begin(); it != allMapPaths.end(); ++it)
+	{
+		cout << (*it) << endl;
+		mainMenu->LoadAndResaveMap((*it));
+	}
+}
+
+
+namespace fs = boost::filesystem;
+void copyDirectoryRecursively(const fs::path& sourceDir, const fs::path& destinationDir)
+{
+	if (!fs::exists(sourceDir) || !fs::is_directory(sourceDir))
+	{
+		throw std::runtime_error("Source directory " + sourceDir.string() + " does not exist or is not a directory");
+	}
+	if (fs::exists(destinationDir))
+	{
+		throw std::runtime_error("Destination directory " + destinationDir.string() + " already exists");
+	}
+	if (!fs::create_directory(destinationDir))
+	{
+		throw std::runtime_error("Cannot create destination directory " + destinationDir.string());
+	}
+
+	for (const auto& dirEnt : fs::recursive_directory_iterator{ sourceDir })
+	{
+		const auto& path = dirEnt.path();
+		auto relativePathStr = path.string();
+		boost::replace_first(relativePathStr, sourceDir.string(), "");
+		fs::copy(path, destinationDir / relativePathStr);
 	}
 }
