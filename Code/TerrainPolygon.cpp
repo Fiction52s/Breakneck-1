@@ -4333,7 +4333,10 @@ bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 	EditSession *session = EditSession::GetSession();
 	int numP = GetNumPoints();
 	if (numP == 0)
+	{
 		return true;
+	}
+		
 
 	if (numP >= 3 && IsCloseToFirstPoint(session->GetZoomedPointSize(), V2d(point)) &&
 		IsCompletionValid())
@@ -4353,11 +4356,21 @@ bool TerrainPolygon::IsValidInProgressPoint(sf::Vector2i point)
 		bool linesIntersect = LinesIntersectInProgress(point);
 		if (pointTooClose || linesIntersect )
 		{
+			if (pointTooClose)
+			{
+				session->CreateError(ERR_POINT_TO_CLOSE_TO_OTHERS);
+			}
+			else if (linesIntersect)
+			{
+				session->CreateError(ERR_LINES_INTERSECT_IN_PROGRESS);
+			}
+
 			return false;
 		}
 
 		if (PointsTooCloseToSegInProgress(point, minEdge) )
 		{
+			session->CreateError(ERR_POINTS_TOO_CLOSE_TO_SEG_IN_PROGRESS);
 			return false;
 		}
 
@@ -5101,11 +5114,16 @@ bool TerrainPolygon::IsCompletionValid()
 	EditSession *session = EditSession::GetSession();
 
 	if (GetNumPoints() < 3)
+	{
+		session->CreateError(ERR_POLY_NEEDS_THREE_OR_MORE_POINTS);
 		return false;
+	}
+		
 
 	bool linesIntersect = LinesIntersectInProgress(GetPoint(0)->pos);
 	if (linesIntersect)
 	{
+		session->CreateError(ERR_POLY_INTERSECTS_ITSELF);
 		//cout << "lines intersect" << endl;
 		return false;
 	}
@@ -5114,11 +5132,13 @@ bool TerrainPolygon::IsCompletionValid()
 
 	if (PointsTooCloseToSegInProgress(GetPoint(0)->pos, minEdge, true))
 	{
+		session->CreateError(ERR_POINTS_TOO_CLOSE_TO_SEG_IN_PROGRESS);
 		return false;
 	}
 
 	if (session->PolyIntersectsGates(this))
 	{
+		session->CreateError(ERR_POLY_INTERSECTS_GATE);
 		return false;
 	}
 		

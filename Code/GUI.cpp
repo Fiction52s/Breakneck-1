@@ -949,5 +949,10 @@ void ErrorBar::CreateErrorTable()
 	errorStringVec[ERR_GATE_POINT_ALREADY_OCCUPIED] = "A gate cannot use the same point that another gate is already using";
 	errorStringVec[ERR_GATE_INSTERSECTS_ENEMY] = "A gate illegally intersects an enemy";
 	errorStringVec[ERR_GATE_NEEDS_BOTH_POINTS] = "A gate needs 2 points to be valid";
+
+	errorStringVec[ERR_POLY_NEEDS_THREE_OR_MORE_POINTS] = "A polygon needs at least 3 points to be valid";
+	errorStringVec[ERR_POINTS_TOO_CLOSE_TO_SEG_IN_PROGRESS] = "Points on polygon too close to the draw segment. You can adjust minimum draw separation in settings";
+	errorStringVec[ERR_POINT_TO_CLOSE_TO_OTHERS] = "Points on polygon in progress too close together. You can adjust minimum draw separation in settings";
+	errorStringVec[ERR_LINES_INTERSECT_IN_PROGRESS] = "Polygon in progress intersects itself";
 	
 }

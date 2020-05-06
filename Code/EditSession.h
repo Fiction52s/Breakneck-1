@@ -468,6 +468,7 @@ struct EditSession : GUIHandler, Session
 	bool showPoints;
 
 	bool justCompletedPolyWithClick;
+	bool lastLeftMouseDown;
 
 	void TryRemoveSelectedPoints();
 	bool IsOnlyPlayerSelected();

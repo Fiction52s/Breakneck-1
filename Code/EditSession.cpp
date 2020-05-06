@@ -6464,8 +6464,11 @@ void EditSession::GetIntersectingPolys(
 
 bool EditSession::ExecuteTerrainCompletion()
 {	
+	ClearMostRecentError();
+
 	if (!polygonInProgress->IsCompletionValid())
 	{
+		ShowMostRecentError();
 		return false;
 	}
 
@@ -8405,7 +8408,6 @@ void EditSession::SetMode(Emode m)
 	switch (oldMode)
 	{
 	case CREATE_TERRAIN:
-		currTool = TOOL_DRAW;
 		break;
 	case TEST_PLAYER:
 		for (auto it = groups.begin(); it != groups.end(); ++it)
@@ -8427,6 +8429,8 @@ void EditSession::SetMode(Emode m)
 	switch (mode)
 	{
 	case CREATE_ENEMY:
+		currTool = TOOL_DRAW;
+		lastLeftMouseDown = false;//IsMousePressed( Mouse::)
 		grabbedActor = NULL;
 		selectedBrush->Clear();
 		editClock.restart();
@@ -8931,10 +8935,18 @@ void EditSession::PreventNearPrimaryAnglesOnRailInProgress()
 
 void EditSession::TryAddPointToPolygonInProgress()
 {
-	if (!panning && IsMousePressed(Mouse::Left))
+	bool mouseDown = IsMousePressed(Mouse::Left);
+	
+	bool justClicked = mouseDown && !lastLeftMouseDown;
+	if (!panning && mouseDown)
 	{
 		Vector2i worldi(round(testPoint.x), round(testPoint.y));
 
+		if (justClicked)
+		{
+			ClearMostRecentError();
+		}
+		
 		bool validPoint = polygonInProgress->IsValidInProgressPoint(worldi);//true;
 
 		//test validity later
@@ -8953,7 +8965,16 @@ void EditSession::TryAddPointToPolygonInProgress()
 				polygonInProgress->AddPoint(worldi, false);
 			}
 		}
+		else
+		{
+			if (justClicked)
+			{
+				ShowMostRecentError();
+			}
+		}
 	}
+
+	lastLeftMouseDown = mouseDown;
 }
 
 void EditSession::TryAddPointToRailInProgress()
@@ -10174,7 +10195,8 @@ void EditSession::CreateTerrainModeHandleEvent()
 			}
 		}
 
-		
+		//cout << "just clicked is now true" << endl;
+		//justClicked = true;
 
 		justCompletedPolyWithClick = false; //just make this always false here.
 
