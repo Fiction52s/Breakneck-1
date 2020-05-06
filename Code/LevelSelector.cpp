@@ -437,9 +437,11 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 					string mapName = pathFolder + "/" + p.relative_path().stem().string();
 					previewTS[p.relative_path().stem().string()] = NULL;
 
-					//this is for loading and resaving
-					string mapPath = "Resources/Maps/" + pathFolder + "/" + p.filename().string();
-					allMapPaths.push_back(mapPath);
+					//this is for loading and resaving. dont remove it. just turn it
+					//back on when I need to use the functionality.
+
+					//string mapPath = "Resources/Maps/" + pathFolder + "/" + p.filename().string();
+					//allMapPaths.push_back(mapPath);
 				}
 			}
 			else if (is_directory(p))      // is p a directory?

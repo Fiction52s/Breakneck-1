@@ -90,6 +90,8 @@ struct LevelSelector
 	std::map<std::string, Tileset*> previewTS;
 	Tileset *ts_previewNotFound;
 	MainMenu *mainMenu;
+
+	//used for loading and resaving all files
 	std::list<std::string> allMapPaths;
 	
 };
