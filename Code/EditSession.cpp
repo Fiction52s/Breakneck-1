@@ -11764,6 +11764,8 @@ void EditSession::TransformModeHandleEvent()
 			PolyPtr temp;
 			DecorPtr dec;
 			DecorPtr tempDec;
+			RailPtr r;
+			RailPtr tempRail;
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
 				p = (*it)->GetAsTerrain();
@@ -11776,6 +11778,18 @@ void EditSession::TransformModeHandleEvent()
 					}
 					origBrush.AddObject((*it));
 				}
+
+				r = (*it)->GetAsRail();
+				if (r != NULL)
+				{
+					tempRail = r->CompleteTransformation(transformTools);
+					if (tempRail != NULL)
+					{
+						resultBrush.AddObject(tempRail);
+					}
+					origBrush.AddObject((*it));
+				}
+
 				dec = (*it)->GetAsDecor();
 				if (dec != NULL)
 				{
@@ -11801,6 +11815,7 @@ void EditSession::TransformModeHandleEvent()
 			SetMode(EDIT);
 			PolyPtr p;
 			DecorPtr dec;
+			RailPtr r;
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
 				p = (*it)->GetAsTerrain();
@@ -11808,6 +11823,13 @@ void EditSession::TransformModeHandleEvent()
 				{
 					p->CancelTransformation();
 				}
+
+				r = (*it)->GetAsRail();
+				if (r != NULL)
+				{
+					r->CancelTransformation();
+				}
+
 				dec = (*it)->GetAsDecor();
 				if (dec != NULL)
 				{
@@ -12506,6 +12528,7 @@ void EditSession::TransformModeUpdate()
 
 	PolyPtr p;
 	DecorPtr dec;
+	RailPtr r;
 	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 	{
 		p = (*it)->GetAsTerrain();
@@ -12513,6 +12536,13 @@ void EditSession::TransformModeUpdate()
 		{
 			p->UpdateTransformation(transformTools);
 		}
+
+		r = (*it)->GetAsRail();
+		if (r != NULL)
+		{
+			r->UpdateTransformation(transformTools);
+		}
+
 		dec = (*it)->GetAsDecor();
 		if (dec != NULL)
 		{

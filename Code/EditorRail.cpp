@@ -2,6 +2,7 @@
 #include "Physics.h"
 #include "EditSession.h"
 #include "ActorParams.h"
+#include "TransformTools.h"
 
 using namespace std;
 using namespace sf;
@@ -820,6 +821,148 @@ void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
 	{
 		prevEdge->v1 = dPos;
 	}
+}
+
+
+void TerrainRail::CancelTransformation()
+{
+	UpdateLines();
+
+	/*for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	{
+		(*it)->SetPosition((*it)->preTransformPos);
+	}*/
+
+	//triBackups.clear();f
+}
+
+RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
+{
+	/*if (renderMode == RENDERMODE_TRANSFORM)
+	{*/
+	//SetRenderMode(RENDERMODE_NORMAL);
+
+	/*for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	{
+		(*it)->SetPosition((*it)->preTransformPos);
+	}*/
+
+	RailPtr newRail(new TerrainRail);
+
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	Vector2i temp;
+
+	newRail->Reserve(numP);
+	int posInd;
+	for (int i = 0; i < numP; ++i)
+	{
+		posInd = i * 2;
+		if (i == numP - 1)
+			posInd--;
+		temp.x = round(lines[posInd].position.x);
+		temp.y = round(lines[posInd].position.y);
+		newRail->AddPoint(temp, false);
+	}
+
+	//newPoly->SetMaterialType(terrainWorldType, terrainVariation);
+
+	UpdateLines();
+	//UpdateLinePositions();
+
+	//newRail->SetFlyTransform(this, tr);
+
+	newRail->Finalize();
+
+	//check for validity here
+
+	//not even going to use the same polygon here, this is just for testing. 
+	//what will really happen is that I create a copy, adding in the rounded points from my lines.
+	//that way I can adjust and test for correctness just like i usually would, and then just
+	//do a replacebrush action
+	//maybe test for correctness?
+
+	//SoftReset();
+	//Finalize();
+
+	return newRail;
+	/*}*/
+}
+
+void TerrainRail::UpdateTransformation(TransformTools *tr)
+{
+	UpdateLines();
+
+	int numP = GetNumPoints();
+	Vector2f fDiff;
+	Vector2f fCurr;
+
+	Transform t;
+	t.rotate(tr->rotation);
+	t.scale(tr->scale);
+
+	int prevIndex;
+
+	Vector2f center = tr->origCenter;
+	Vector2f trCenter = tr->GetCenter();
+
+	TerrainPoint *curr, *next;
+
+	/*for (int i = 0; i < numP - 1; ++i)
+	{
+		curr = GetPoint(i);
+		next = GetPoint(i + 1);
+
+		UpdateLineColor(lines, i, index);
+
+		lines[index].position = sf::Vector2f(curr->pos.x, curr->pos.y);
+		lines[index + 1].position = sf::Vector2f(next->pos.x, next->pos.y);
+		index += 2;
+	}*/
+
+
+	int posInd;
+	for (int i = 0; i < numP; ++i)
+	{
+		posInd = i * 2;
+		if (i == numP - 1)
+		{
+			posInd--;
+		}
+		fCurr = lines[posInd].position;
+
+		fDiff = fCurr - center;
+		fDiff = t.transformPoint(fDiff);
+
+		fCurr = fDiff + trCenter;
+
+		lines[posInd].position = fCurr;
+
+		if( i > 0 && i < numP - 1 )
+		{
+			lines[posInd - 1].position = fCurr;
+		}
+	}
+
+	//for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
+	//{
+	//	fCurr = Vector2f((*it)->preTransformPos);//(*it)->GetPositionF();
+	//	fDiff = fCurr - center;
+	//	fDiff = t.transformPoint(fDiff);
+	//	fCurr = fDiff + trCenter;
+	//	(*it)->SetPosition(V2d(fCurr));
+	//}
+
+	//VertexArray & v = *va;
+	//for (int i = 0; i < vaSize; ++i)
+	//{
+	//	fCurr = triBackups[i];
+	//	fDiff = fCurr - center;
+	//	fDiff = t.transformPoint(fDiff);
+	//	fCurr = fDiff + trCenter;
+
+	//	v[i].position = fCurr;
+	//}
 }
 
 void TerrainRail::StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b)

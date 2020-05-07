@@ -175,10 +175,14 @@ sf::Vector2f Brush::GetTerrainSize()
 	PolyPtr tp;
 	ActorPtr ap;
 	DecorPtr dec;
+	RailPtr rp;
 	if (objects.size() > 0)
 	{
 		SelectPtr sp = objects.front();
 		tp = sp->GetAsTerrain();
+		dec = sp->GetAsDecor();
+		rp = sp->GetAsRail();
+
 		if (tp != NULL)
 		{
 			left = tp->left;
@@ -186,8 +190,14 @@ sf::Vector2f Brush::GetTerrainSize()
 			top = tp->top;
 			bottom = tp->bottom;
 		}
-		dec = sp->GetAsDecor();
-		if (dec != NULL)
+		else if (rp != NULL)
+		{
+			left = rp->left;
+			right = rp->right;
+			top = rp->top;
+			bottom = rp->bottom;
+		}
+		else if (dec != NULL)
 		{
 			IntRect ir = dec->GetAABB();
 			left = ir.left;
@@ -203,6 +213,9 @@ sf::Vector2f Brush::GetTerrainSize()
 	for (; it != objects.end(); ++it)
 	{
 		tp = (*it)->GetAsTerrain();
+		dec = (*it)->GetAsDecor();
+		rp = (*it)->GetAsRail();
+
 		if (tp != NULL)
 		{
 			left = min(left, tp->left);
@@ -210,9 +223,14 @@ sf::Vector2f Brush::GetTerrainSize()
 			top = min(top, tp->top);
 			bottom = max(bottom, tp->bottom);
 		}
-
-		dec = (*it)->GetAsDecor();
-		if (dec != NULL)
+		else if (rp != NULL)
+		{
+			left = min(left, rp->left);
+			right = max(right, rp->right);
+			top = min(top, rp->top);
+			bottom = max(bottom, rp->bottom);
+		}
+		else if (dec != NULL)
 		{
 			IntRect ir = dec->GetAABB();
 			left = min(left, ir.left);
@@ -241,7 +259,9 @@ sf::IntRect Brush::GetAABB()
 
 	PolyPtr tp;
 	ActorPtr ap;
+	RailPtr rp;
 	SelectPtr sp;
+	DecorPtr dec;
 
 	bool init = false;
 
@@ -249,6 +269,10 @@ sf::IntRect Brush::GetAABB()
 	{
 		sp = (*it);
 		tp = sp->GetAsTerrain();
+		rp = sp->GetAsRail();
+		dec = sp->GetAsDecor();
+		ap = sp->GetAsActor();
+
 		if (tp != NULL)
 		{
 			if (!init)
@@ -267,10 +291,27 @@ sf::IntRect Brush::GetAABB()
 				bottom = max(bottom, tp->bottom);
 			}
 		}
-		else
+		else if (rp != NULL)
 		{
-			ap = sp->GetAsActor();
-			if (ap != NULL && ap->posInfo.ground == NULL
+			if (!init)
+			{
+				init = true;
+				left = rp->left;
+				right = rp->right;
+				top = rp->top;
+				bottom = rp->bottom;
+			}
+			else
+			{
+				left = min(left, rp->left);
+				right = max(right, rp->right);
+				top = min(top, rp->top);
+				bottom = max(bottom, rp->bottom);
+			}
+		}
+		else if( ap != NULL )
+		{
+			if (ap->posInfo.ground == NULL
 				&& ap->posInfo.railGround == NULL)
 			{
 
@@ -329,12 +370,16 @@ sf::Vector2f &Brush::GetCenterF()
 	int bottom;
 
 	PolyPtr tp;
+	RailPtr rp;
 	ActorPtr ap;
 	DecorPtr dec;
 	if (objects.size() > 0)
 	{
 		SelectPtr sp = objects.front();
 		tp = sp->GetAsTerrain();
+		rp = sp->GetAsRail();
+		dec = sp->GetAsDecor();
+
 		if (tp != NULL)
 		{
 			left = tp->left;
@@ -342,24 +387,27 @@ sf::Vector2f &Brush::GetCenterF()
 			top = tp->top;
 			bottom = tp->bottom;
 		}
-		else
+		else if (rp != NULL)
 		{
-			dec = sp->GetAsDecor();
-			if (dec != NULL)
-			{
-				IntRect ir = dec->GetAABB();
-				left = ir.left;
-				right = ir.left + ir.width;
-				top = ir.top;
-				bottom = ir.top + ir.height;
-			}
-			/*ap = sp->GetAsActor();
-			if (ap != NULL)
-			{
-				ap = sp->GetAsActor();
-				return ap->position;
-			}*/
+			left = rp->left;
+			right = rp->right;
+			top = rp->top;
+			bottom = rp->bottom;
 		}
+		else if(dec != NULL)
+		{
+			IntRect ir = dec->GetAABB();
+			left = ir.left;
+			right = ir.left + ir.width;
+			top = ir.top;
+			bottom = ir.top + ir.height;
+		}
+		/*ap = sp->GetAsActor();
+		if (ap != NULL)
+		{
+			ap = sp->GetAsActor();
+			return ap->position;
+		}*/
 	}
 	else
 	{
@@ -374,6 +422,10 @@ sf::Vector2f &Brush::GetCenterF()
 	for (; it != objects.end(); ++it)
 	{
 		tp = (*it)->GetAsTerrain();
+		rp = (*it)->GetAsRail();
+		dec = (*it)->GetAsDecor();
+
+
 		if (tp != NULL)
 		{
 			left = min(left, tp->left);
@@ -381,17 +433,20 @@ sf::Vector2f &Brush::GetCenterF()
 			top = min(top, tp->top);
 			bottom = max(bottom, tp->bottom);
 		}
-		else
+		else if (rp != NULL)
 		{
-			dec = (*it)->GetAsDecor();
-			if (dec != NULL)
-			{
-				IntRect ir = dec->GetAABB();
-				left = min( left, ir.left);
-				right = max( right, ir.left + ir.width);
-				top = min( top, ir.top);
-				bottom = max( bottom, ir.top + ir.height);
-			}
+			left = min(left, rp->left);
+			right = max(right, rp->right);
+			top = min(top, rp->top);
+			bottom = max(bottom, rp->bottom);
+		}
+		else if (dec != NULL)
+		{
+			IntRect ir = dec->GetAABB();
+			left = min( left, ir.left);
+			right = max( right, ir.left + ir.width);
+			top = min( top, ir.top);
+			bottom = max( bottom, ir.top + ir.height);
 		}
 	}
 
@@ -399,29 +454,6 @@ sf::Vector2f &Brush::GetCenterF()
 	centerF.y = (top + bottom) / 2.f;
 
 	return centerF;
-}
-
-void Brush::Rotate(float fDegrees)
-{
-	PolyPtr p;
-	DecorPtr dec;
-	for (auto it = objects.begin(); it != objects.end(); ++it)
-	{
-		p = (*it)->GetAsTerrain();
-		if (p != NULL)
-		{
-			//get center needs to be a float later for this
-			//p->SoftReset();
-			p->Rotate(GetCenterF(), fDegrees);
-			//p->Finalize();
-		}
-		//dec = (*it)->GetAsDecor();
-		//if (dec != NULL)
-		//{
-		//	dec->Rotate
-		//}
-			
-	}
 }
 
 Brush *Brush::Copy()

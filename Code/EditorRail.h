@@ -12,6 +12,7 @@ struct Panel;
 struct TerrainPoint;
 struct ActorParams;
 struct TerrainPolygon;
+struct TransformTools;
 
 struct TerrainRail : ISelectable
 {
@@ -126,6 +127,10 @@ struct TerrainRail : ISelectable
 	int right;
 	int top;
 	int bottom;
+
+	void CancelTransformation();
+	RailPtr CompleteTransformation(TransformTools *tr);
+	void UpdateTransformation(TransformTools *tr);
 
 	void StoreEnemyPositions(std::vector<std::pair<ActorPtr, 
 		PositionInfo>>&b);

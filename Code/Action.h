@@ -26,7 +26,6 @@ struct Brush
 	sf::Vector2i &GetCenter();
 	sf::Vector2f &GetCenterF();
 	sf::IntRect GetAABB();
-	void Rotate(float fDegrees );
 	void CenterOnPoint(sf::Vector2i &point );
 	sf::Vector2i center;
 	sf::Vector2f centerF;
