@@ -51,7 +51,7 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	
 	shootSound = sess->GetSound("Enemies/patroller_shoot");
 
-	path = ap->MakeGlobalPath();
+	 ap->MakeGlobalPath(path);
 
 	loop = ap->loop;
 	

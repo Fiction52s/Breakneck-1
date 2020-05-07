@@ -45,7 +45,7 @@ Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, boo
 
 	loop = ap->loop;
 
-	path = ap->MakeGlobalPath();
+	ap->MakeGlobalPath(path);
 
 	//eventually maybe put this on a multiplier for more variation?
 	//doubt ill need it though

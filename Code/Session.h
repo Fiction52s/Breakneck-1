@@ -48,6 +48,8 @@ struct Session : TilesetManager
 		SESS_EDIT,
 	};
 
+
+
 	//cleaning up load stuff:
 	void SetupHitboxManager();
 	void SetupSoundManager();

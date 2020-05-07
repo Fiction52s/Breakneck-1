@@ -186,7 +186,7 @@ void BatParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = false;
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = MakeGlobalPath();
+	MakeGlobalPath(edit->patrolPath);
 	//EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
 
@@ -1002,7 +1002,7 @@ void GravitySpringParams::SetPanelInfo()
 	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = MakeGlobalPath();
+	MakeGlobalPath(edit->patrolPath);
 }
 
 ActorParams *GravitySpringParams::Copy()

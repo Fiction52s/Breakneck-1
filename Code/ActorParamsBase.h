@@ -61,7 +61,7 @@ struct ActorParams : ISelectable
 	bool UnAnchor();
 	void UpdateGroundedSprite();
 
-	virtual std::vector<sf::Vector2i> MakeGlobalPath();
+	virtual void MakeGlobalPath(std::vector<sf::Vector2i> & vec);
 	virtual std::vector<sf::Vector2i> & GetLocalPath();
 	virtual void SetPath(std::vector<sf::Vector2i> &globalPath);
 

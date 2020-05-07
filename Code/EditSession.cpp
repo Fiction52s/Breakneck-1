@@ -8722,7 +8722,7 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 	{
 		actor = (*it)->GetAsActor();
 		if (actor->myEnemy != NULL)
-			actor->myEnemy->UpdateFromEditParams(0);
+			actor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
 	}
 
 	bool canApply = brush->CanApply();

@@ -24,21 +24,14 @@ struct Blocker : Enemy, QuadTreeEntrant
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	bool IsFastDying();
 	void ProcessState();
-	Blocker( ActorParams *ap, 
-		BlockerChain *bc, sf::Vector2i &pos, int index);
+	Blocker( BlockerChain *bc, sf::Vector2i &pos, int index);
 	void DrawMinimap(sf::RenderTarget *target);
 	void ClearSprite();
 	void UpdateSprite();
 	void ResetEnemy();
 	void ProcessHit();
 	void IHitPlayer(int index);
-
-	int actionLength[Count];
-	int animFactor[Count];
-
-	Action action;
-
-	int animationFactor;
+	void SetSpritePosition(V2d &pos);
 
 	int minimapCirclePoints;
 	int minimapCircleRadius;
@@ -52,6 +45,12 @@ struct Blocker : Enemy, QuadTreeEntrant
 
 struct BlockerChain : Enemy
 {
+	enum Action
+	{
+		EXIST,
+		Count
+	};
+
 	enum BlockerType : int
 	{
 		BLUE,
@@ -62,12 +61,19 @@ struct BlockerChain : Enemy
 		MAGENTA
 	};
 
+	void UpdateOnPlacement(ActorParams *ap);
+	void UpdateSpriteFromEditParams();
+	//void UpdateOnPlacement(ActorParams *ap);
+	void UpdateParams(ActorParams *ap);
+	void SetLevel(int lev);
+	void AddToWorldTrees();
+	sf::FloatRect GetAABB();
+	void CreateBlockers();
+	void UpdateFromEditParams(int numFrames);
+
 	sf::Vertex *va;
 	CircleGroup *circleGroup;
-	BlockerChain(ActorParams *ap);//sf::Vector2i &pos, 
-		//std::list<sf::Vector2i> &path,
-		//int bType, bool armored, int spacing,
-		//int level );
+	BlockerChain(ActorParams *ap);
 	~BlockerChain();
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
@@ -80,7 +86,9 @@ struct BlockerChain : Enemy
 	void ProcessState();
 	void UpdatePostPhysics();
 	void UpdateEnemyPhysics();
-	int animationFactor;
+
+	void UpdateFromPath( ActorParams *ap );
+
 	int liveFrames;
 	Blocker **blockers;
 	int numBlockers;
@@ -90,9 +98,12 @@ struct BlockerChain : Enemy
 
 	bool checkCol;
 	
-
+	double spacing;
 	bool armored;
 	BlockerType bType;
+
+	std::vector<sf::Vector2i> localPath;
+	std::vector<sf::Vector2i> globalPath;
 };
 
 #endif

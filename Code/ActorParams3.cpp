@@ -156,7 +156,7 @@ void PulserParams::SetPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = MakeGlobalPath();
+	MakeGlobalPath(edit->patrolPath);
 	//p->checkBoxes["monitor"]->checked = false;
 	//EditSession::SetMonitorGrid( monitorType, p->gridSelectors["monitortype"] );
 }
@@ -658,7 +658,7 @@ void BounceSpringParams::SetPanelInfo()
 //	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = MakeGlobalPath();
+	MakeGlobalPath(edit->patrolPath);
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 

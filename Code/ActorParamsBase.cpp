@@ -211,9 +211,9 @@ void ActorParams::SetPath(std::vector<sf::Vector2i> &globalPath)
 }
 
 //includes the start position for some reason
-std::vector<sf::Vector2i> ActorParams::MakeGlobalPath()
+void ActorParams::MakeGlobalPath(std::vector<sf::Vector2i> & globalPath)
 {
-	vector<Vector2i> globalPath;
+	globalPath.clear();
 	Vector2i myIntPos = GetIntPos();
 
 	globalPath.reserve(localPath.size() + 1);
@@ -222,7 +222,6 @@ std::vector<sf::Vector2i> ActorParams::MakeGlobalPath()
 	{
 		globalPath.push_back(myIntPos + (*it));
 	}
-	return globalPath;
 }
 
 void ActorParams::PlaceAerial(sf::Vector2i &pos)

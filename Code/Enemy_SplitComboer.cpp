@@ -216,7 +216,7 @@ SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pat
 
 	//spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
 
-	path = ap->MakeGlobalPath();
+	ap->MakeGlobalPath(path);
 
 	//pathLength = pathParam.size() + 1;
 

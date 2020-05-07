@@ -13,44 +13,64 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
-
-
-
-BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pathParam, int p_bType, bool p_armored,
-	//int spacing, int p_level )
-	:Enemy(EnemyType::EN_BLOCKERCHAIN, ap )//, false, 1, false)
+void BlockerChain::UpdateOnPlacement(ActorParams *ap)
 {
-	BlockerParams *bParams = (BlockerParams*)ap;
+	Enemy::UpdateOnPlacement(ap);
 
-	level = ap->GetLevel();
-
-	
-
-	switch (level)
+	ap->MakeGlobalPath(globalPath);
+	for (int i = 0; i < numBlockers; ++i)
 	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		break;
-	case 3:
-		scale = 3.0;
-		break;
+		blockers[i]->startPosInfo.position = V2d(globalPath[i]);
+	}
+}
+
+void BlockerChain::UpdateFromEditParams(int numFrames)
+{
+	assert(editParams != NULL);
+
+	for (int i = 0; i < numBlockers; ++i)
+	{
+		blockers[i]->UpdateFromEditParams(numFrames);
 	}
 
+	UpdateSpriteFromEditParams();
+}
+
+void BlockerChain::AddToWorldTrees()
+{
+	for (int i = 0; i < numBlockers; ++i)
+	{
+		sess->activeItemTree->Insert(blockers[i]);
+	}
+}
+
+void BlockerChain::UpdateSpriteFromEditParams()
+{
+	//shouldn't editParams never be NULL?
+	if (editParams != NULL)
+	{
+		if (editParams->posInfo.IsAerial())
+		{
+			editParams->MakeGlobalPath(globalPath);
+			for (int i = 0; i < numBlockers; ++i)
+			{
+				blockers[i]->SetSpritePosition(V2d(globalPath[i]));
+			}
+		}
+	}
+}
+
+void BlockerChain::UpdateParams(ActorParams *params)
+{
+	BlockerParams *bParams = (BlockerParams*)params;
+
+	spacing = bParams->spacing;
 	bType = (BlockerType)(bParams->bType);
 	armored = bParams->armored;
-	//receivedHit = NULL;
-	//position = startPosInfo.GetPosition();
 
-	SetCurrPosInfo(startPosInfo);
+	localPath = params->GetLocalPath();
+	params->MakeGlobalPath(globalPath);
 
-	frame = 0;
-
-	animationFactor = 2;
-
-	
 	switch (bType)
 	{
 	case BLUE:
@@ -60,17 +80,29 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 		ts = sess->GetTileset("Enemies/blocker_w2_192x192.png", 192, 192);
 		break;
 	}
-	
 
+	CreateBlockers();
+
+	if (circleGroup != NULL)
+	{
+		delete circleGroup;
+		circleGroup = NULL;
+	}
+	circleGroup = new CircleGroup(numBlockers, 40, Color::Red, 20);
+	for (int i = 0; i < numBlockers; ++i)
+	{
+		circleGroup->SetPosition(i, Vector2f(blockers[i]->GetPosition()));
+	}
+	circleGroup->ShowAll();
+}
+
+void BlockerChain::CreateBlockers()
+{
 	double rad = 32;
 	double minDistance = 60 * scale;
-
-	dead = false;
 	double totalLength = 0;
-	double dist = minDistance + (double)bParams->spacing;
-
-	int pathSize = ap->localPath.size();//pathParam.size();
-
+	int pathSize = localPath.size();
+	double dist = minDistance + spacing;
 	V2d position = GetPosition();
 
 	if (pathSize == 0)
@@ -82,25 +114,32 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 		V2d prev = position;
 		V2d temp;
 		int i = 0;
-		for (auto it = ap->localPath.begin(); it != ap->localPath.end(); ++it)
+		for (auto it = localPath.begin(); it != localPath.end(); ++it)
 		{
 			temp = V2d((*it).x + position.x, (*it).y + position.y);
-			totalLength += length( temp - prev);
+			totalLength += length(temp - prev);
 			prev = temp;
 		}
 
-		
+
 		numBlockers = totalLength / dist; //round down
 	}
-	
 
+	if (blockers != NULL)
+	{
+		delete[] blockers;
+		blockers = NULL;
+
+		delete[] va;
+		va = NULL;
+	}
 
 	//numBlockers = pathParam.size();
 	blockers = new Blocker*[numBlockers];
 	va = new Vertex[numBlockers * 4];
-	
-	
-	
+
+
+
 	if (numBlockers > 1)
 	{
 		if (pathSize > 0)
@@ -108,11 +147,9 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 
 		}
 
-		vector<Vector2i> path = ap->MakeGlobalPath();
-
 
 		//
-		auto currPoint = path.begin();
+		auto currPoint = globalPath.begin();
 		++currPoint;
 		auto nextPoint = currPoint;
 		--currPoint;
@@ -131,7 +168,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 			if (ind == numBlockers)
 				break;
 			assert(ind < numBlockers);
-			blockers[ind] = new Blocker( ap, this, Vector2i(round(currWalk.x), round(currWalk.y)), ind);
+			blockers[ind] = new Blocker(this, Vector2i(round(currWalk.x), round(currWalk.y)), ind);
 			cout << blockers[ind]->GetPosition().x << ", " << blockers[ind]->GetPosition().y << endl;
 			travel = dist;
 
@@ -143,7 +180,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 				currPoint = nextPoint;
 				currWalk = nextD;
 				nextPoint++;
-				if (nextPoint == path.end())
+				if (nextPoint == globalPath.end())
 				{
 					end = true;
 					break;
@@ -171,7 +208,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 		V2d bisector;
 		V2d dir0;
 		V2d dir1;
-		
+
 		for (int i = 0; i < numBlockers; ++i)
 		{
 			currPos = blockers[i]->GetPosition();
@@ -210,7 +247,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 	}
 	else
 	{
-		blockers[0] = new Blocker( ap, this, Vector2i(round(GetPosition().x), round(GetPosition().y)), 0);
+		blockers[0] = new Blocker(this, Vector2i(round(GetPosition().x), round(GetPosition().y)), 0);
 	}
 	int minX = blockers[0]->spawnRect.left;
 	int maxX = blockers[0]->spawnRect.left + blockers[0]->spawnRect.width;
@@ -225,19 +262,75 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 		maxY = max((int)blockers[i]->spawnRect.top + (int)blockers[i]->spawnRect.height, maxY);
 	}
 
-	spawnRect = sf::Rect<double>(minX - 16, minY - 16, (maxX - minX) + 32, (maxY - minY) + 32);
-
 	for (int i = 0; i < numBlockers; ++i)
 	{
 		blockers[i]->UpdateSprite();
 	}
+}
 
-	circleGroup = new CircleGroup(numBlockers, 40, Color::Red, 20);
-	for (int i = 0; i < numBlockers; ++i)
+
+void BlockerChain::UpdateFromPath( ActorParams *ap )
+{
+	
+}
+
+//void BlockerChain::UpdateSprite()
+//{
+//	for (int i = 0; i < numBlockers; ++i)
+//	{
+//		blockers[i]->UpdateSprite();
+//	}
+//}
+
+void BlockerChain::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
 	{
-		circleGroup->SetPosition( i, Vector2f(blockers[i]->GetPosition()));
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
 	}
-	circleGroup->ShowAll();
+}
+
+FloatRect BlockerChain::GetAABB()
+{
+	V2d pos = currPosInfo.GetPosition();
+	return FloatRect(pos.x - 100, pos.y - 100, 200, 200);
+}
+
+BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pathParam, int p_bType, bool p_armored,
+	//int spacing, int p_level )
+	:Enemy(EnemyType::EN_BLOCKERCHAIN, ap )//, false, 1, false)
+{
+	BlockerParams *bParams = (BlockerParams*)ap;
+
+	blockers = NULL;
+	va = NULL;
+	circleGroup = NULL;
+
+	SetNumActions(Count);
+	SetEditorActions(0, EXIST, 0);
+
+	SetLevel(ap->GetLevel());
+
+	SetCurrPosInfo(startPosInfo);
+
+	SetSpawnRect();
+
+	UpdateParams(ap);
+
+	//for minimap
+	
 }
 
 BlockerChain::~BlockerChain()
@@ -349,10 +442,13 @@ V2d BlockerChain::GetCamPoint(int index)
 	return blockers[index]->GetPosition();
 }
 
-Blocker::Blocker( ActorParams *ap, BlockerChain *p_bc, Vector2i &pos, int index)
-	:Enemy( EnemyType::EN_BLOCKER, ap ),//false, 1, false), 
+Blocker::Blocker( BlockerChain *p_bc, Vector2i &pos, int index)
+	:Enemy( EnemyType::EN_BLOCKER, NULL ),//false, 1, false), 
 	bc(p_bc), vaIndex(index)
 {
+	SetNumActions(Count);
+	SetEditorActions(0, WAIT, 0);
+
 	level = bc->level;
 
 	switch (level)
@@ -378,8 +474,6 @@ Blocker::Blocker( ActorParams *ap, BlockerChain *p_bc, Vector2i &pos, int index)
 	currPosInfo.position.x = pos.x;
 	currPosInfo.position.y = pos.y;
 
-	frame = 0;
-
 	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 60;
@@ -393,16 +487,6 @@ Blocker::Blocker( ActorParams *ap, BlockerChain *p_bc, Vector2i &pos, int index)
 	BasicCircleHitBodySetup(32);
 
 	hitBody.hitboxInfo = hitboxInfo;
-
-
-	
-
-	//SetHurtboxes(hurtBody, 0);
-
-	//spawnRect = sf::Rect<double>(GetPosition().x - 32, position.y - 32,
-	//	64, 64);
-
-	sess->staticItemTree->Insert(this);
 
 	actionLength[WAIT] = 15;
 	actionLength[MALFUNCTION] = 13;
@@ -501,6 +585,12 @@ void Blocker::ProcessHit()
 			SetHurtboxes(NULL, 0);
 		}
 	}
+}
+
+void Blocker::SetSpritePosition(V2d &pos)
+{
+	Vector2f spriteSize(bc->ts->tileWidth * scale, bc->ts->tileHeight * scale);
+	SetRectCenter(bc->va + vaIndex * 4, spriteSize.x, spriteSize.y, Vector2f( pos ) );
 }
 
 void Blocker::HandleQuery(QuadTreeCollider * qtc)
@@ -624,6 +714,10 @@ void Blocker::UpdateSprite()
 		case EXPLODE:
 			f = frame / animFactor[EXPLODE] + 31;
 			break;
+		}
+		if (f == 44)
+		{
+			int xx = 5;
 		}
 		IntRect subRect = bc->ts->GetSubRect(f);
 		SetRectSubRect(bc->va + vaIndex * 4, subRect);

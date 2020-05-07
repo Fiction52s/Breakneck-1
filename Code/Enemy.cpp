@@ -541,7 +541,7 @@ void Enemy::UpdateOnPlacement( ActorParams *ap )
 
 void Enemy::UpdateFromEditParams( int numFrames )
 {
-	assert(editParams != NULL);
+	//assert(editParams != NULL);
 
 	frame += numFrames;
 	int editLoopLength = GetEditIdleLength();
@@ -722,6 +722,7 @@ void Enemy::Reset()
 	currShield = NULL;
 	receivedHit = NULL;
 	pauseFrames = 0;
+	frame = 0;
 
 	SetCurrPosInfo(startPosInfo);
 

@@ -448,7 +448,7 @@ void RailParams::SetPanelInfo()
 	p->checkBoxes["accelerate"]->checked = accelerate;
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = MakeGlobalPath();
+	MakeGlobalPath(edit->patrolPath);
 }
 
 void RailParams::Draw(sf::RenderTarget *target)
@@ -573,7 +573,7 @@ void TeleporterParams::SetPanelInfo()
 	}
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = MakeGlobalPath();
+	MakeGlobalPath(edit->patrolPath);
 }
 
 ActorParams *TeleporterParams::Copy()

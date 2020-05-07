@@ -189,7 +189,7 @@ void SpringParams::SetPanelInfo()
 	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = MakeGlobalPath();
+	MakeGlobalPath(edit->patrolPath);
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 ActorParams *SpringParams::Copy()

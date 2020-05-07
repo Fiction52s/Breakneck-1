@@ -609,7 +609,7 @@ void BlockerParams::SetPanelInfo()
 	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
 
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath = MakeGlobalPath();
+	MakeGlobalPath(edit->patrolPath);
 	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -1022,7 +1022,7 @@ void BasicAirEnemyParams::SetPanelInfo()
 	if (pi.writePath)
 	{
 		EditSession *edit = EditSession::GetSession();
-		edit->patrolPath = MakeGlobalPath();
+		MakeGlobalPath(edit->patrolPath);
 	}
 
 	if (pi.writeLoop)

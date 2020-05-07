@@ -244,10 +244,10 @@ void Session::AddW1Enemies()
 	AddBasicAerialWorldEnemy("booster", 1, CreateEnemy<Booster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
 		//GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
-	/*AddWorldEnemy("blocker", 1, NULL, LoadParams<BlockerParams>, NULL, MakeParamsAerial<BlockerParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
-		GetTileset("Enemies/blocker_w1_192x192.png", 192, 192));
+	AddWorldEnemy("blocker", 1, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
+		/*
 	AddBasicAerialWorldEnemy("patroller", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));*/
 

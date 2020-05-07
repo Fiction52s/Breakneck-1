@@ -67,7 +67,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		UpdateOnPlacement(editParams);
 	}
 	//virtual Enemy *Copy() { return NULL; }
-	void UpdateFromEditParams(int numFrames);
+	virtual void UpdateFromEditParams(int numFrames);
+	virtual void AddChildrenToSession( Session *s) {}
+	virtual void RemoveChildrenFromSession(Session *s) {}
 	//new vars
 	virtual void SetLevel(int p_level) { level = p_level; }
 	virtual void SetSpawnRect();

@@ -20,6 +20,7 @@ using namespace sf;
 
 void Crawler::UpdateSpriteFromEditParams()
 {
+	//shouldn't editParams never be NULL?
 	if (editParams != NULL)
 	{
 		if (editParams->posInfo.IsAerial())

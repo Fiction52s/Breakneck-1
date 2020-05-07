@@ -23135,13 +23135,13 @@ bool Actor::IsInHistunAction( Action a )
 
 V2d Actor::GetKnockbackDirFromVel()
 {
-	if (owner->GetPlayer(0)->ground != NULL)
+	if (ground != NULL)
 	{
-		return normalize(-owner->GetPlayer(0)->groundSpeed * (owner->GetPlayer(0)->ground->v1 - owner->GetPlayer(0)->ground->v0));
+		return normalize(-groundSpeed * (ground->v1 - ground->v0));
 	}
 	else
 	{
-		return normalize(-owner->GetPlayer(0)->velocity);
+		return normalize(-velocity);
 	}
 }
 
