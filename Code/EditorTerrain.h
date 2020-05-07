@@ -598,6 +598,7 @@ struct PointMover
 	//std::map<ActorPtr, PositionInfo> enemyBackups;
 	//std::map<ActorPtr, PositionInfo> newEnemyPos;
 	std::map<PolyPtr,std::vector<PointMoveInfo>> movePoints;
+	std::map < RailPtr, std::vector<PointMoveInfo>> railMovePoints;
 	std::vector <std::pair<ActorPtr, PositionInfo>> oldEnemyPosInfo;
 	std::vector <std::pair<ActorPtr, PositionInfo>> newEnemyPosInfo;
 

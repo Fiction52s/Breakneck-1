@@ -74,6 +74,12 @@ void TerrainRail::SetupEdges()
 	}
 }
 
+
+bool TerrainRail::IsInternallyValid()
+{
+	return true;
+}
+
 void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 {
 
@@ -616,6 +622,37 @@ TerrainPoint *TerrainRail::GetClosePoint(double radius, V2d &wPos)
 	return NULL;
 }
 
+void TerrainRail::BackupEnemyPositions()
+{
+	enemyPosBackups.clear();
+	int totalEnemies = 0;
+	for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
+	{
+		auto &aList = (*enemyIt).second;
+		if (!aList.empty())
+		{
+			for (auto it = aList.begin(); it != aList.end(); ++it)
+			{
+				totalEnemies++;
+				//backupEnemyPosInfos[(*it)] = ((*it)->posInfo);
+			}
+		}
+	}
+
+	enemyPosBackups.reserve(totalEnemies);
+	for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
+	{
+		auto &aList = (*enemyIt).second;
+		if (!aList.empty())
+		{
+			for (auto it = aList.begin(); it != aList.end(); ++it)
+			{
+				enemyPosBackups.push_back(make_pair((*it), (*it)->posInfo));
+			}
+		}
+	}
+}
+
 bool TerrainRail::Intersects(sf::IntRect rect)
 {
 	LineIntersection li;
@@ -671,6 +708,71 @@ void TerrainRail::BrushDraw(sf::RenderTarget *target, bool valid)
 	target->draw(lines, GetNumPoints() * 2, sf::Lines);
 }
 
+void TerrainRail::MovePoint(int index, sf::Vector2i &delta)
+{
+	SetPointPos(index, GetPoint(index)->pos + delta);
+}
+
+ActorPtr TerrainRail::GetClosestEnemy(int index, double &minQuant)
+{
+	ActorPtr minActor = NULL;
+	double currMinQuant;
+	if (enemies.find(GetPoint(index)) != enemies.end())
+	{
+		list<ActorPtr> &actorList = enemies[GetPoint(index)];
+		for (auto it = actorList.begin(); it != actorList.end(); ++it)
+		{
+			currMinQuant = (*it)->posInfo.groundQuantity;// -(*it)->GetSize().x / 2;
+			if (it == actorList.begin())
+			{
+				minQuant = currMinQuant;
+				minActor = (*it);
+			}
+			else
+			{
+				if (currMinQuant < minQuant)
+				{
+					minQuant = currMinQuant;
+					minActor = (*it);
+				}
+			}
+
+		}
+	}
+
+	return minActor;
+}
+
+ActorPtr TerrainRail::GetFurthestEnemy(int index, double &maxQuant)
+{
+	ActorPtr maxActor = NULL;
+	double currMaxQuant;
+	if (enemies.find(GetPoint(index)) != enemies.end())
+	{
+		list<ActorPtr> &actorList = enemies[GetPoint(index)];
+		for (auto it = actorList.begin(); it != actorList.end(); ++it)
+		{
+			currMaxQuant = (*it)->posInfo.groundQuantity;// +(*it)->GetSize().x / 2;
+			if (it == actorList.begin())
+			{
+				maxQuant = currMaxQuant;
+				maxActor = (*it);
+			}
+			else
+			{
+				if (currMaxQuant > maxQuant)
+				{
+					maxQuant = currMaxQuant;
+					maxActor = (*it);
+				}
+			}
+
+		}
+	}
+
+	return maxActor;
+}
+
 void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
 {
 	TerrainPoint *curr = GetPoint(index);
@@ -707,12 +809,45 @@ void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
 	Edge *edge = GetEdge(index);
 	
 	V2d dPos(curr->pos);
-	edge->v0 = dPos;
+
+	if (edge != NULL)
+	{
+		edge->v0 = dPos;
+	}
 
 	Edge *prevEdge = GetEdge(index - 1);
 	if (prevEdge != NULL)
 	{
 		prevEdge->v1 = dPos;
+	}
+}
+
+void TerrainRail::StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b)
+{
+	int totalEnemies = 0;
+	for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
+	{
+		auto &aList = (*enemyIt).second;
+		if (!aList.empty())
+		{
+			for (auto it = aList.begin(); it != aList.end(); ++it)
+			{
+				totalEnemies++;
+			}
+		}
+	}
+
+	b.reserve(b.size() + totalEnemies);
+	for (auto enemyIt = enemies.begin(); enemyIt != enemies.end(); ++enemyIt)
+	{
+		auto &aList = (*enemyIt).second;
+		if (!aList.empty())
+		{
+			for (auto it = aList.begin(); it != aList.end(); ++it)
+			{
+				b.push_back(make_pair((*it), (*it)->posInfo));
+			}
+		}
 	}
 }
 

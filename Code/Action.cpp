@@ -1078,9 +1078,8 @@ void ModifyGateAction::Undo()
 
 //doesn't make a copy of the brush!
 MoveBrushAction::MoveBrushAction( Brush *p_brush, sf::Vector2i p_delta, bool p_moveOnFirstPerform,
-	PointMover *pm, RailPointMap &railPoints )
-	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), pointMover( pm),
-	movingRailPoints( railPoints )
+	PointMover *pm)
+	:delta( p_delta ), moveOnFirstPerform( p_moveOnFirstPerform ), pointMover( pm)
 {
 	//moveValid = true;
 	movingBrush = *p_brush;
@@ -1098,14 +1097,10 @@ void MoveBrushAction::Perform()
 
 	performed = true;
 
-	//EditSession *sess = EditSession::GetSession();
-
 	movingBrush.Move( delta );
 
 	if (pointMover != NULL)
 	{
-
-
 		for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
 		{
 			vector<PointMoveInfo> &pVec = (*it).second;
@@ -1118,19 +1113,20 @@ void MoveBrushAction::Perform()
 			poly->SoftReset();
 			poly->Finalize();
 			poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
+		}
 
-			//for( auto eit = (*it).second)
-
-			/*for (auto pit = poly->enemies.begin();
-				pit != poly->enemies.end(); ++pit)
+		for (auto it = pointMover->railMovePoints.begin(); it != pointMover->railMovePoints.end(); ++it)
+		{
+			vector<PointMoveInfo> &pList = (*it).second;
+			for (auto pit = pList.begin(); pit != pList.end(); ++pit)
 			{
-				list<ActorPtr> &enemies = (*pit).second;
-				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-				{
-					(*ait)->UpdateGroundedSprite();
-					(*ait)->SetBoundingQuad();
-				}
-			}*/
+				(*pit).rail->SetPointPos((*pit).pointIndex, (*pit).newPos);
+			}
+			(*it).first->UpdateLines();
+			(*it).first->UpdateBounds();
+			/*(*it).first->SoftReset();
+			(*it).first->Finalize();
+			(*it).first->movingPointMode = false;*/
 		}
 
 		for (auto it = pointMover->newEnemyPosInfo.begin(); it != pointMover->newEnemyPosInfo.end(); ++it)
@@ -1156,19 +1152,6 @@ void MoveBrushAction::Perform()
 				(*it).first->UpdateBounds();
 			}
 		}
-	}
-
-	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
-	{
-		list<PointMoveInfo> &pList = (*it).second;
-		for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
-		{
-			(*pit).rail->SetPointPos((*pit).pointIndex, (*pit).newPos);
-		}
-
-		/*(*it).first->SoftReset();
-		(*it).first->Finalize();
-		(*it).first->movingPointMode = false;*/
 	}
 }
 
@@ -1214,6 +1197,20 @@ void MoveBrushAction::Undo()
 			}*/
 		}
 
+		for (auto it = pointMover->railMovePoints.begin(); it != pointMover->railMovePoints.end(); ++it)
+		{
+			vector<PointMoveInfo> &pList = (*it).second;
+			for (auto pit = pList.begin(); pit != pList.end(); ++pit)
+			{
+				(*pit).rail->SetPointPos((*pit).pointIndex, (*pit).origPos);
+			}
+			(*it).first->UpdateLines();
+			(*it).first->UpdateBounds();
+			/*(*it).first->SoftReset();
+			(*it).first->Finalize();
+			(*it).first->movingPointMode = false;*/
+		}
+
 		for (auto it = pointMover->oldEnemyPosInfo.begin(); it != pointMover->oldEnemyPosInfo.end(); ++it)
 		{
 			(*it).first->posInfo = (*it).second;
@@ -1234,19 +1231,6 @@ void MoveBrushAction::Undo()
 				(*it).first->UpdateBounds();
 			}
 		}
-	}
-
-	for (auto it = movingRailPoints.begin(); it != movingRailPoints.end(); ++it)
-	{
-		list<PointMoveInfo> &pList = (*it).second;
-		for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
-		{
-			//(*pit).GetRailPoint()->pos -= (*pit).delta;
-		}
-
-		(*it).first->SoftReset();
-		(*it).first->Finalize();
-		//(*it).first->movingPointMode = false;
 	}
 }
 

@@ -36,6 +36,8 @@ struct TerrainRail : ISelectable
 	std::vector<Edge> edges;
 	void AddEdgesToQuadTree(QuadTree *tree);
 
+	void BackupEnemyPositions();
+
 	void Init();
 	bool ContainsPoint(sf::Vector2f test);
 	bool ContainsPoint(sf::Vector2f test,double rad);
@@ -43,12 +45,17 @@ struct TerrainRail : ISelectable
 	bool Intersects(sf::IntRect rect);
 
 	void SetPointPos(int index, sf::Vector2i &p);
+	void MovePoint(int index, sf::Vector2i &delta);
 	
+	ActorPtr GetFurthestEnemy(int index, double &maxQuant);
+	ActorPtr GetClosestEnemy(int index, double &minQuant);
+
 	//bool IsPlacementOkay();
 
 	void Move(sf::Vector2i delta);
 	void BrushDraw(sf::RenderTarget *target,
 		bool valid);
+	bool IsInternallyValid();
 
 	void Draw(double zoomMultiple, bool showPoints, 
 		sf::RenderTarget *target);
@@ -120,7 +127,12 @@ struct TerrainRail : ISelectable
 	int top;
 	int bottom;
 
+	void StoreEnemyPositions(std::vector<std::pair<ActorPtr, 
+		PositionInfo>>&b);
+
 	std::map<TerrainPoint*, std::list<ActorPtr>> enemies;
+	std::vector<std::pair<ActorPtr, 
+		PositionInfo>> enemyPosBackups;
 
 	int writeIndex;
 	bool finalized;

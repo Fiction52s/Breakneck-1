@@ -3594,7 +3594,7 @@ bool EditSession::AnchorSelectedEnemies()
 			{
 				//started in the air
 				Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
-				Action *action = new MoveBrushAction(selectedBrush, delta, false, NULL, RailPointMap());
+				Action *action = new MoveBrushAction(selectedBrush, delta, false, NULL);
 
 				action->Perform();
 
@@ -3893,16 +3893,43 @@ void EditSession::PerformMovePointsAction()
 		}
 	}
 
+	RailPtr rail;
 	for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
 	{
-		list<PointMoveInfo> &pList = (*mit).second;
-		for (list<PointMoveInfo>::iterator it = pList.begin(); it != pList.end(); ++it)
+		rail = (*mit).first;
+
+		rail->AlignExtremes(); //adjust this later!!! need to take this into account
+
+		vector<PointMoveInfo> &pmVec = pm->railMovePoints[rail];
+		pmVec.reserve((*mit).second.size());
+		for (auto it = (*mit).second.begin(); it != (*mit).second.end(); ++it)
 		{
-			//(*it).delta = (*it).GetRailPoint()->pos - (*it).delta;
+			(*it).newPos = (*it).GetRailPoint()->pos;
+			pmVec.push_back((*it));
+		}
+		pm->oldEnemyPosInfo.insert(pm->oldEnemyPosInfo.end(),
+			rail->enemyPosBackups.begin(), rail->enemyPosBackups.end());
+
+		rail->StoreEnemyPositions(pm->newEnemyPosInfo);
+
+		rail->UpdateBounds();
+		/*rail->SoftReset();
+		rail->Finalize();
+		rail->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);*/
+
+		for (auto it = pm->newEnemyPosInfo.begin(); it != pm->newEnemyPosInfo.end(); ++it)
+		{
+			(*it).first->posInfo = (*it).second;
+
+			if ((*it).first->myEnemy != NULL)
+				(*it).first->myEnemy->UpdateOnEditPlacement();
+
+			(*it).first->UpdateGroundedSprite();
+			(*it).first->SetBoundingQuad();
 		}
 	}
 
-	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, pm, selectedRailPoints);
+	MoveBrushAction *action = new MoveBrushAction(selectedBrush, delta, false, pm);
 	action->performed = true;//Perform();
 
 	CompoundAction *testAction = NULL;
@@ -4067,6 +4094,18 @@ void EditSession::StartMoveSelectedPoints()
 		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
 		{
 			(*pit).origPos = (*pit).GetPolyPoint()->pos;
+		}
+	}
+
+	RailPtr rail;
+	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
+	{
+		rail = (*it).first;
+
+		rail->BackupEnemyPositions();
+		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
+		{
+			(*pit).origPos = (*pit).GetRailPoint()->pos;
 		}
 	}
 	
@@ -4325,195 +4364,203 @@ void EditSession::MoveSelectedPoints()
 
 void EditSession::MoveSelectedRailPoints(V2d worldPos)
 {
-	//bool affected;
-	//int polyNumP;
-	//TerrainPoint *curr, *prev;
-	//RailPtr poly;
+	bool affected;
+	TerrainPoint *curr, *prev;
+	RailPtr rail;
 
-	//Edge *edge; //use prev edge also
-	//Edge *prevEdge;
+	Edge *edge; //use prev edge also
+	Edge *prevEdge;
 
-	//double edgeLen;
-	//double prevEdgeLen;
+	double edgeLen;
+	double prevEdgeLen;
 
-	//bool failMove;
-	//double oldPrevLength;
+	bool failMove;
+	double oldPrevLength;
 
-	//int i;
+	int i;
 
-	//bool revert = false;
+	bool revert = false;
 
-	//for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
-	//{
-	//	poly = (*it).first;
-	//	for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
-	//	{
-	//		i = (*pit).pointIndex;
+	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
+	{
+		rail = (*it).first;
+		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
+		{
+			i = (*pit).pointIndex;
 
-	//		curr = poly->GetPoint(i);
-	//		prev = poly->GetPrevPoint(i);
+			curr = rail->GetPoint(i);
+			prev = rail->GetPoint(i-1);
 
-	//		(*pit).oldPos = curr->pos;
-	//		edge = poly->GetEdge(i);
-	//		prevEdge = poly->GetPrevEdge(i);
+			(*pit).oldPos = curr->pos;
 
-	//		oldPrevLength = prevEdge->GetLength();
+			if (prev != NULL)
+			{
+				auto enemyIt = rail->enemies.find(prev);
+				if (enemyIt != rail->enemies.end())
+				{
+					list<ActorPtr> &enemies = (*enemyIt).second;
+					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					{
+						(*ait)->oldQuant = (*ait)->posInfo.groundQuantity;
+					}
+				}
+			}
+		}
+	}
 
-	//		auto enemyIt = poly->enemies.find(prev);
-	//		if (enemyIt != poly->enemies.end())
-	//		{
-	//			list<ActorPtr> &enemies = (*enemyIt).second;
-	//			for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-	//			{
-	//				(*ait)->oldQuant = (*ait)->posInfo.groundQuantity;
-	//			}
-	//		}
-	//	}
-	//}
+	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
+	{
+		rail = (*it).first;
 
-	//for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
-	//{
-	//	poly = (*it).first;
+		if (rail->selected)
+		{
+			DeselectObject(rail);
+		}
 
-	//	if (poly->selected)
-	//	{
-	//		DeselectObject(poly);
-	//	}
+		affected = false;
 
-	//	affected = false;
+		failMove = false;
 
-	//	polyNumP = poly->GetNumPoints();
+		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
+		{
+			i = (*pit).pointIndex;
 
-	//	failMove = false;
+			curr = rail->GetPoint(i);
+			prev = rail->GetPoint(i-1);
 
-	//	for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
-	//	{
-	//		i = (*pit).pointIndex;
+			
+			prevEdge = rail->GetEdge(i-1);
 
-	//		curr = poly->GetPoint(i);
-	//		prev = poly->GetPrevPoint(i);
+			if( prevEdge != NULL )
+				oldPrevLength = prevEdge->GetLength();
 
-	//		edge = poly->GetEdge(i);
-	//		prevEdge = poly->GetPrevEdge(i);
-
-	//		oldPrevLength = prevEdge->GetLength();
-
-	//		poly->MovePoint(i, pointGrabDelta);
-
-	//		edgeLen = edge->GetLength();
-	//		prevEdgeLen = prevEdge->GetLength();
-
-	//		if (prevEdgeLen != oldPrevLength)
-	//		{
-	//			auto enemyIt = poly->enemies.find(prev);
-	//			if (enemyIt != poly->enemies.end())
-	//			{
-	//				list<ActorPtr> &enemies = (*enemyIt).second;
-	//				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-	//				{
-	//					(*ait)->posInfo.groundQuantity -= (oldPrevLength - prevEdgeLen);
-	//				}
-	//			}
-	//		}
-
-	//		//doesnt yet cover both sides at once
-	//		double maxQuant;
-	//		ActorPtr furthest = poly->GetFurthestEnemy(i, maxQuant);
-	//		if (furthest != NULL && maxQuant > edgeLen)
-	//		{
-	//			//double along = dot(-V2d(pointGrabDelta), edge->Along());
-	//			//poly->MovePoint(i, -pointGrabDelta);
-	//			revert = true;
-	//			break;
-	//			//poly->MovePoint(i, Vector2i( edge->Along() * along ));
-	//			//poly->SetPointPos(i, Vector2i(edge->v1 - edge->Along() * maxQuant)); //works!
-	//		}
-
-	//		double minQuant;
-	//		ActorPtr closest = poly->GetClosestEnemy(prev->GetIndex(), minQuant);
-	//		if (closest != NULL && minQuant < 0)
-	//		{
-	//			revert = true;
-	//			break;
-	//			//poly->MovePoint(i, -pointGrabDelta);
-
-	//			//poly->SetPointPos(i, Vector2i(prevEdge->v0 + prevEdge->Along() * (prevEdgeLen - minQuant)));
-	//			//cout << "oldlen: " << oldPrevLength << ", prevEdgeLen: " << prevEdgeLen << "minQuant: " << minQuant << endl;
-	//			if (prevEdgeLen != oldPrevLength)
-	//			{
-	//				auto enemyIt = poly->enemies.find(prev);
-	//				if (enemyIt != poly->enemies.end())
-	//				{
-	//					list<ActorPtr> &enemies = (*enemyIt).second;
-	//					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-	//					{
-	//						(*ait)->posInfo.groundQuantity = (*ait)->oldQuant;//-minQuant;
-	//					}
-	//				}
-	//			}
+			rail->MovePoint(i, pointGrabDelta);
 
 
-	//		}
+			
+			
 
-	//		poly->UpdateLineColor(prev->index);
-	//		poly->UpdateLineColor(i);
+			if( prevEdge != NULL )
+				prevEdgeLen = prevEdge->GetLength();
 
-	//		affected = true;
+			if ( prevEdge != NULL && prevEdgeLen != oldPrevLength)
+			{
+				auto enemyIt = rail->enemies.find(prev);
+				if (enemyIt != rail->enemies.end())
+				{
+					list<ActorPtr> &enemies = (*enemyIt).second;
+					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+					{
+						(*ait)->posInfo.groundQuantity -= (oldPrevLength - prevEdgeLen);
+					}
+				}
+			}
 
-	//		auto currIt = poly->enemies.find(curr);
-	//		if (currIt != poly->enemies.end())
-	//		{
-	//			list<ActorPtr> &currList = (*currIt).second;
-	//			for (auto it = currList.begin(); it != currList.end(); ++it)
-	//			{
-	//				if ((*it)->myEnemy != NULL)
-	//					(*it)->myEnemy->UpdateOnEditPlacement();
+			affected = true;
 
-	//				(*it)->UpdateGroundedSprite();
-	//				(*it)->SetBoundingQuad();
-	//			}
-	//		}
-	//		currIt = poly->enemies.find(prev);
-	//		if (currIt != poly->enemies.end())
-	//		{
-	//			list<ActorPtr> &currList = (*currIt).second;
-	//			for (auto it = currList.begin(); it != currList.end(); ++it)
-	//			{
-	//				//this is only on prev because the ground quant is not changed on curr
-	//				if ((*it)->myEnemy != NULL)
-	//				{
-	//					(*it)->myEnemy->UpdateOnEditPlacement();
-	//				}
-	//				(*it)->UpdateGroundedSprite();
-	//				(*it)->SetBoundingQuad();
-	//			}
-	//		}
+			edge = rail->GetEdge(i);
 
-	//	}
+			if (edge != NULL)
+			{
 
-	//	//not sure why this comment exists
-	//	//not sure why this is needed, but the edges are colliding w/ the enemies again
 
-	//	if (!poly->IsInternallyValid() || revert)
-	//	{
-	//		revert = true;
-	//		break;
-	//	}
-	//	else if (affected)
-	//	{
-	//		poly->SetRenderMode(TerrainPolygon::RENDERMODE_MOVING_POINTS);
-	//		poly->UpdateLinePositions();
-	//		poly->UpdateBounds();
-	//	}
-	//}
+				edgeLen = edge->GetLength();
 
-	//if (revert)
-	//{
-	//	for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
-	//	{
-	//		RevertMovedPoints(it);
-	//	}
-	//}
+				//doesnt yet cover both sides at once
+				double maxQuant;
+				ActorPtr furthest = rail->GetFurthestEnemy(i, maxQuant);
+				if (furthest != NULL && maxQuant > edgeLen)
+				{
+					revert = true;
+					break;
+				}
+
+
+				if (prev != NULL)
+				{
+					double minQuant;
+					ActorPtr closest = rail->GetClosestEnemy(prev->GetIndex(), minQuant);
+					if (closest != NULL && minQuant < 0)
+					{
+						revert = true;
+						break;
+						if (prevEdgeLen != oldPrevLength)
+						{
+							auto enemyIt = rail->enemies.find(prev);
+							if (enemyIt != rail->enemies.end())
+							{
+								list<ActorPtr> &enemies = (*enemyIt).second;
+								for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+								{
+									(*ait)->posInfo.groundQuantity = (*ait)->oldQuant;//-minQuant;
+								}
+							}
+						}
+					}
+				}
+
+				//rail->UpdateLineColor(prev->index);
+				//rail->UpdateLineColor(i);
+
+				auto currIt = rail->enemies.find(curr);
+				if (currIt != rail->enemies.end())
+				{
+					list<ActorPtr> &currList = (*currIt).second;
+					for (auto it = currList.begin(); it != currList.end(); ++it)
+					{
+						if ((*it)->myEnemy != NULL)
+							(*it)->myEnemy->UpdateOnEditPlacement();
+
+						(*it)->UpdateGroundedSprite();
+						(*it)->SetBoundingQuad();
+					}
+				}
+			}
+
+			if (prev != NULL)
+			{
+				auto currIt = rail->enemies.find(prev);
+				if (currIt != rail->enemies.end())
+				{
+					list<ActorPtr> &currList = (*currIt).second;
+					for (auto it = currList.begin(); it != currList.end(); ++it)
+					{
+						//this is only on prev because the ground quant is not changed on curr
+						if ((*it)->myEnemy != NULL)
+						{
+							(*it)->myEnemy->UpdateOnEditPlacement();
+						}
+						(*it)->UpdateGroundedSprite();
+						(*it)->SetBoundingQuad();
+					}
+				}
+			}
+
+		}
+
+		//not sure why this comment exists
+		//not sure why this is needed, but the edges are colliding w/ the enemies again
+
+		if (!rail->IsInternallyValid() || revert)
+		{
+			revert = true;
+			break;
+		}
+		else if (affected)
+		{
+			//rail->SetRenderMode(TerrainPolygon::RENDERMODE_MOVING_POINTS);
+			rail->UpdateLines();
+			rail->UpdateBounds();
+		}
+	}
+
+	if (revert)
+	{
+		for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+		{
+			RevertMovedPoints(it);
+		}
+	}
 
 
 
@@ -5082,7 +5129,7 @@ bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, b
 	Brush b;
 	b.AddObject(p);
 
-	MoveBrushAction *action = new MoveBrushAction(&b, adjust, true, NULL, RailPointMap());
+	MoveBrushAction *action = new MoveBrushAction(&b, adjust, true, NULL);
 	action->Perform();
 
 	//check for validity
@@ -5227,7 +5274,7 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	//	pVec.push_back(pi);
 	//}
 	
-	MoveBrushAction * action = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap, RailPointMap());
+	MoveBrushAction * action = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap);
 	action->performed = true;
 	//action->Perform();
 
