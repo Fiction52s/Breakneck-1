@@ -13,27 +13,40 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
+void BlockerChain::SetActionEditLoop()
+{
+	for (int i = 0; i < numBlockers; ++i)
+	{
+		blockers[i]->SetActionEditLoop();
+	}
+}
+
 void BlockerChain::UpdateOnPlacement(ActorParams *ap)
 {
 	Enemy::UpdateOnPlacement(ap);
 
-	ap->MakeGlobalPath(globalPath);
+	//ap->MakeGlobalPath(globalPath);
 	for (int i = 0; i < numBlockers; ++i)
 	{
-		blockers[i]->startPosInfo.position = V2d(globalPath[i]);
+		blockers[i]->SetPosition(ap->GetPosition() + blockerOffsets[i]);
 	}
+
 }
 
-void BlockerChain::UpdateFromEditParams(int numFrames)
+void BlockerChain::UpdateFromParams( ActorParams *ap, int numFrames)
 {
 	assert(editParams != NULL);
 
+	UpdateParams(ap);
+	
 	for (int i = 0; i < numBlockers; ++i)
 	{
-		blockers[i]->UpdateFromEditParams(numFrames);
+		//update blocker animation
+		blockers[i]->UpdateFromParams( ap, numFrames);
 	}
-
-	UpdateSpriteFromEditParams();
+	
+	//updates blocker sprite positions
+	UpdateSpriteFromParams(ap);
 }
 
 void BlockerChain::AddToWorldTrees()
@@ -44,18 +57,15 @@ void BlockerChain::AddToWorldTrees()
 	}
 }
 
-void BlockerChain::UpdateSpriteFromEditParams()
+
+void BlockerChain::UpdateSpriteFromParams(ActorParams *ap)
 {
-	//shouldn't editParams never be NULL?
-	if (editParams != NULL)
+	if (ap->posInfo.IsAerial())
 	{
-		if (editParams->posInfo.IsAerial())
+		//ap->MakeGlobalPath(globalPath);
+		for (int i = 0; i < numBlockers; ++i)
 		{
-			editParams->MakeGlobalPath(globalPath);
-			for (int i = 0; i < numBlockers; ++i)
-			{
-				blockers[i]->SetSpritePosition(V2d(globalPath[i]));
-			}
+			blockers[i]->SetPosition(ap->GetPosition() + blockerOffsets[i]);
 		}
 	}
 }
@@ -64,36 +74,78 @@ void BlockerChain::UpdateParams(ActorParams *params)
 {
 	BlockerParams *bParams = (BlockerParams*)params;
 
-	spacing = bParams->spacing;
-	bType = (BlockerType)(bParams->bType);
+	BlockerType pbType = (BlockerType)(bParams->bType);
+
+	bool pathChanged = false;
+
+	if (spacing != bParams->spacing)
+	{
+		pathChanged = true;
+		spacing = bParams->spacing;
+	}
+	
 	armored = bParams->armored;
 
-	localPath = params->GetLocalPath();
-	params->MakeGlobalPath(globalPath);
-
-	switch (bType)
+	if (pbType != bType || ts == NULL )
 	{
-	case BLUE:
-		ts = sess->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
-		break;
-	case GREEN:
-		ts = sess->GetTileset("Enemies/blocker_w2_192x192.png", 192, 192);
-		break;
+		bType = pbType;
+		switch (bType)
+		{
+		case BLUE:
+			ts = sess->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
+			break;
+		case GREEN:
+			ts = sess->GetTileset("Enemies/blocker_w2_192x192.png", 192, 192);
+			break;
+		}
 	}
 
-	CreateBlockers();
+	auto &paramsLocalPath = params->GetLocalPath();
+	if (!pathChanged)
+	{
+		int paramsPathSize = paramsLocalPath.size();
+		if (paramsPathSize == localPath.size())
+		{
+			bool diff = false;
+			for (int i = 0; i < paramsPathSize; ++i)
+			{
+				if (paramsLocalPath[i] != localPath[i])
+				{
+					diff = true;
+					break;
+				}
+			}
 
-	if (circleGroup != NULL)
-	{
-		delete circleGroup;
-		circleGroup = NULL;
+			if (diff)
+			{
+				pathChanged = true;
+			}
+		}
+		else
+		{
+			pathChanged = true;
+		}
 	}
-	circleGroup = new CircleGroup(numBlockers, 40, Color::Red, 20);
-	for (int i = 0; i < numBlockers; ++i)
+
+	if (pathChanged || ( blockers == NULL && localPath.size() == 0 ))
 	{
-		circleGroup->SetPosition(i, Vector2f(blockers[i]->GetPosition()));
+		localPath = paramsLocalPath;
+
+		params->MakeGlobalPath(globalPath);
+		CreateBlockers();
+
+		if (circleGroup != NULL)
+		{
+			delete circleGroup;
+			circleGroup = NULL;
+		}
+		circleGroup = new CircleGroup(numBlockers, 40, Color::Red, 20);
+		for (int i = 0; i < numBlockers; ++i)
+		{
+			circleGroup->SetPosition(i, Vector2f(blockers[i]->GetPosition()));
+		}
+		circleGroup->ShowAll();
 	}
-	circleGroup->ShowAll();
 }
 
 void BlockerChain::CreateBlockers()
@@ -139,6 +191,7 @@ void BlockerChain::CreateBlockers()
 	va = new Vertex[numBlockers * 4];
 
 
+	blockerOffsets.resize(numBlockers);
 
 	if (numBlockers > 1)
 	{
@@ -168,7 +221,10 @@ void BlockerChain::CreateBlockers()
 			if (ind == numBlockers)
 				break;
 			assert(ind < numBlockers);
-			blockers[ind] = new Blocker(this, Vector2i(round(currWalk.x), round(currWalk.y)), ind);
+
+			blockerOffsets[ind] = currWalk - position;
+
+			blockers[ind] = new Blocker(this, currWalk, ind);
 			cout << blockers[ind]->GetPosition().x << ", " << blockers[ind]->GetPosition().y << endl;
 			travel = dist;
 
@@ -247,7 +303,9 @@ void BlockerChain::CreateBlockers()
 	}
 	else
 	{
-		blockers[0] = new Blocker(this, Vector2i(round(GetPosition().x), round(GetPosition().y)), 0);
+		blockerOffsets[0] = V2d(0, 0);
+		blockers[0] = new Blocker(this, position, 0);
+		
 	}
 	int minX = blockers[0]->spawnRect.left;
 	int maxX = blockers[0]->spawnRect.left + blockers[0]->spawnRect.width;
@@ -264,6 +322,7 @@ void BlockerChain::CreateBlockers()
 
 	for (int i = 0; i < numBlockers; ++i)
 	{
+		blockers[i]->frame = 0; //for editor
 		blockers[i]->UpdateSprite();
 	}
 }
@@ -317,6 +376,7 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 	blockers = NULL;
 	va = NULL;
 	circleGroup = NULL;
+	ts = NULL;
 
 	SetNumActions(Count);
 	SetEditorActions(0, EXIST, 0);
@@ -442,7 +502,7 @@ V2d BlockerChain::GetCamPoint(int index)
 	return blockers[index]->GetPosition();
 }
 
-Blocker::Blocker( BlockerChain *p_bc, Vector2i &pos, int index)
+Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 	:Enemy( EnemyType::EN_BLOCKER, NULL ),//false, 1, false), 
 	bc(p_bc), vaIndex(index)
 {
@@ -499,6 +559,13 @@ Blocker::Blocker( BlockerChain *p_bc, Vector2i &pos, int index)
 	animFactor[EXPLODE] = 2;
 
 	ResetEnemy();
+
+	SetSpawnRect();
+}
+
+sf::FloatRect Blocker::GetAABB()
+{
+	return GetQuadAABB(bc->va + vaIndex * 4);
 }
 
 void Blocker::ProcessState()
@@ -587,8 +654,9 @@ void Blocker::ProcessHit()
 	}
 }
 
-void Blocker::SetSpritePosition(V2d &pos)
+void Blocker::SetPosition(V2d &pos)
 {
+	startPosInfo.position = pos;
 	Vector2f spriteSize(bc->ts->tileWidth * scale, bc->ts->tileHeight * scale);
 	SetRectCenter(bc->va + vaIndex * 4, spriteSize.x, spriteSize.y, Vector2f( pos ) );
 }

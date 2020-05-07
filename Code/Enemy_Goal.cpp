@@ -11,10 +11,10 @@
 using namespace std;
 using namespace sf;
 
-void Goal::UpdateSpriteFromEditParams()
+void Goal::UpdateSpriteFromParams( ActorParams *ap )
 {
 	//editparams always exists here
-	if (editParams->posInfo.IsAerial())
+	if (ap->posInfo.IsAerial())
 	{
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 		sprite.setPosition(editParams->GetFloatPos());

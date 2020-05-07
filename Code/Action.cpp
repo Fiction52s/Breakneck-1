@@ -1138,9 +1138,11 @@ void MoveBrushAction::Perform()
 			(*it).first->posInfo = (*it).second;
 
 			if ((*it).first->myEnemy != NULL)
+			{
 				(*it).first->myEnemy->UpdateOnEditPlacement();
+			}
+				
 
-			
 			(*it).first->UpdateGroundedSprite();
 			(*it).first->SetBoundingQuad();
 		}

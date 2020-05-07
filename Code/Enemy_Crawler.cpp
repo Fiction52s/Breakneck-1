@@ -18,18 +18,14 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-void Crawler::UpdateSpriteFromEditParams()
+void Crawler::UpdateSpriteFromParams( ActorParams *ap )
 {
-	//shouldn't editParams never be NULL?
-	if (editParams != NULL)
+	if (ap->posInfo.IsAerial())
 	{
-		if (editParams->posInfo.IsAerial())
-		{
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-			sprite.setPosition(editParams->GetFloatPos());
-			sprite.setRotation(0);
-			SyncSpriteInfo(auraSprite, sprite);
-		}
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setPosition(editParams->GetFloatPos());
+		sprite.setRotation(0);
+		SyncSpriteInfo(auraSprite, sprite);
 	}
 }
 
@@ -679,12 +675,3 @@ void Crawler::AttemptRunAwayBoost()
 		Accelerate(.05);
 	}
 }
-
-//void Crawler::ChildUpdateFromEditParams()
-//{
-//	if (!editParams->posInfo.IsAerial())
-//	{
-//		surfaceMover->Set(editParams->posInfo);
-//		startPosInfo = editParams->posInfo;
-//	}
-//}

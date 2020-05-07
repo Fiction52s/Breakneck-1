@@ -59,15 +59,21 @@ struct HitParams
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
-	virtual void UpdateSpriteFromEditParams() {}
+	virtual void UpdateSpriteFromParams(ActorParams *ap) {}
 	virtual void AddToWorldTrees() {}
+
+	virtual void UpdateFromParams(ActorParams *ap,
+		int numFrames );
 
 	virtual void UpdateOnPlacement(ActorParams *ap);
 	void UpdateOnEditPlacement() {
 		UpdateOnPlacement(editParams);
 	}
 	//virtual Enemy *Copy() { return NULL; }
-	virtual void UpdateFromEditParams(int numFrames);
+	void UpdateFromEditParams(int numFrames)
+	{
+		UpdateFromParams(editParams, numFrames);
+	}
 	virtual void AddChildrenToSession( Session *s) {}
 	virtual void RemoveChildrenFromSession(Session *s) {}
 	//new vars
@@ -103,7 +109,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	void SetNumActions( int num );
 	int GetEditIdleLength();
-	void SetActionEditLoop();
+	virtual void SetActionEditLoop();
 
 	int editLoopAction;
 	int editIdleAction;

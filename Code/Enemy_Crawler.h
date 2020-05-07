@@ -19,12 +19,8 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	};
 
 	void SetLevel(int p_level);
+	void UpdateSpriteFromParams(ActorParams *ap);
 
-	void UpdateParams(ActorParams *params);
-	void UpdateSpriteFromEditParams();
-	//void ChildUpdateFromEditParams();
-	//int animFactor[UNDERGROUND + 1];
-	//int actionLength[UNDERGROUND +1];
 	Crawler(ActorParams *ap);
 	~Crawler();
 	void SetActionDash();

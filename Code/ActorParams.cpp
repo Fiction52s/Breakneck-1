@@ -585,6 +585,8 @@ void BlockerParams::SetParams()
 	{
 		spacing = t_spacing;
 	}
+
+	myEnemy->UpdateFromParams(this, 0);
 	//hasMonitor = p->checkBoxes["monitor"]->checked;
 	//try
 	//{

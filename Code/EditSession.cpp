@@ -3562,6 +3562,13 @@ bool EditSession::AnchorSelectedEnemies()
 		if (actor == NULL)
 			continue;
 
+		//enemy goes back to idle frame when you set it down
+		if (actor->myEnemy != NULL)
+		{
+			actor->myEnemy->SetActionEditLoop();
+			actor->myEnemy->UpdateFromEditParams(0);
+		}
+
 		if (actor->posInfo.ground != NULL) //might need a thing here for rails too
 		{
 			poly = actor->posInfo.ground;
@@ -12054,7 +12061,7 @@ void EditSession::CreateEnemyModeUpdate()
 
 	if (grabbedActor != NULL)
 	{
-		grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
+		//grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
 		TrySelectedMove();
 	}
 		

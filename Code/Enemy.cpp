@@ -539,7 +539,7 @@ void Enemy::UpdateOnPlacement( ActorParams *ap )
 
 }
 
-void Enemy::UpdateFromEditParams( int numFrames )
+void Enemy::UpdateFromParams( ActorParams *ap, int numFrames )
 {
 	//assert(editParams != NULL);
 
@@ -555,7 +555,7 @@ void Enemy::UpdateFromEditParams( int numFrames )
 	//UpdateFromParams(editParams);
 
 	UpdateSprite();
-	UpdateSpriteFromEditParams();
+	UpdateSpriteFromParams(ap);
 }
 
 void Enemy::SetNumActions( int num )

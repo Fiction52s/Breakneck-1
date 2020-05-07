@@ -24,15 +24,15 @@ struct Blocker : Enemy, QuadTreeEntrant
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	bool IsFastDying();
 	void ProcessState();
-	Blocker( BlockerChain *bc, sf::Vector2i &pos, int index);
+	Blocker( BlockerChain *bc, V2d &pos, int index);
 	void DrawMinimap(sf::RenderTarget *target);
 	void ClearSprite();
 	void UpdateSprite();
 	void ResetEnemy();
 	void ProcessHit();
 	void IHitPlayer(int index);
-	void SetSpritePosition(V2d &pos);
-
+	void SetPosition(V2d &pos);
+	sf::FloatRect GetAABB();
 	int minimapCirclePoints;
 	int minimapCircleRadius;
 
@@ -61,15 +61,16 @@ struct BlockerChain : Enemy
 		MAGENTA
 	};
 
+	void SetActionEditLoop();
 	void UpdateOnPlacement(ActorParams *ap);
-	void UpdateSpriteFromEditParams();
+	void UpdateSpriteFromParams( ActorParams *ap );
 	//void UpdateOnPlacement(ActorParams *ap);
 	void UpdateParams(ActorParams *ap);
 	void SetLevel(int lev);
 	void AddToWorldTrees();
 	sf::FloatRect GetAABB();
 	void CreateBlockers();
-	void UpdateFromEditParams(int numFrames);
+	void UpdateFromParams( ActorParams *ap, int numFrames);
 
 	sf::Vertex *va;
 	CircleGroup *circleGroup;
@@ -104,6 +105,7 @@ struct BlockerChain : Enemy
 
 	std::vector<sf::Vector2i> localPath;
 	std::vector<sf::Vector2i> globalPath;
+	std::vector<V2d> blockerOffsets;
 };
 
 #endif
