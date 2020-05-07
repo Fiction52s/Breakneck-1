@@ -1163,12 +1163,12 @@ void MoveBrushAction::Perform()
 		list<PointMoveInfo> &pList = (*it).second;
 		for (list<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
 		{
-			//(*pit).GetRailPoint()->pos += (*pit).delta;
+			(*pit).rail->SetPointPos((*pit).pointIndex, (*pit).newPos);
 		}
 
-		(*it).first->SoftReset();
+		/*(*it).first->SoftReset();
 		(*it).first->Finalize();
-		(*it).first->movingPointMode = false;
+		(*it).first->movingPointMode = false;*/
 	}
 }
 
@@ -1246,7 +1246,7 @@ void MoveBrushAction::Undo()
 
 		(*it).first->SoftReset();
 		(*it).first->Finalize();
-		(*it).first->movingPointMode = false;
+		//(*it).first->movingPointMode = false;
 	}
 }
 

@@ -15,15 +15,35 @@ struct TerrainPolygon;
 
 struct TerrainRail : ISelectable
 {
+	enum RenderMode
+	{
+		RENDERMODE_NORMAL,
+	};
+	RenderMode renderMode;
+	/*enum RenderMode
+	{
+		RENDERMODE_NORMAL,
+		RENDERMODE_MOVING_POINTS,
+		RENDERMODE_TRANSFORM,
+		RENDERMODE_FLIES,
+	};*/
+
 	TerrainRail();
 	TerrainRail(TerrainRail &r);
 	~TerrainRail();
+
+	void SetupEdges();
+	std::vector<Edge> edges;
+	void AddEdgesToQuadTree(QuadTree *tree);
 
 	void Init();
 	bool ContainsPoint(sf::Vector2f test);
 	bool ContainsPoint(sf::Vector2f test,double rad);
 
 	bool Intersects(sf::IntRect rect);
+
+	void SetPointPos(int index, sf::Vector2i &p);
+	
 	//bool IsPlacementOkay();
 
 	void Move(sf::Vector2i delta);
@@ -60,9 +80,9 @@ struct TerrainRail : ISelectable
 	void ClearPoints();
 
 	TerrainPoint *GetPoint(int i);
-	TerrainPoint *GetPrevPoint(int i);
-	TerrainPoint *GetNextPoint(int i);
 	TerrainPoint *GetEndPoint();
+
+	Edge *GetEdge(int index);
 
 	void Reserve(int numP);
 	void RemoveSelectedPoints();
@@ -83,8 +103,6 @@ struct TerrainRail : ISelectable
 	void Load(std::ifstream &is);
 
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
-
-	bool movingPointMode;
 
 	std::vector<TerrainPoint> pointVector;
 

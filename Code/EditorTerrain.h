@@ -208,6 +208,11 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
+
+	void MakeGlobalPath(
+		V2d &startPos,
+		std::vector<sf::Vector2i> &path);
+
 	void SetFlyTransform( PolyPtr poly, TransformTools *tr);
 
 	sf::Vector2f flyTransScale;

@@ -753,7 +753,7 @@ void ActorParams::AnchorToRail(TerrainRail *rail,
 	TerrainPoint *curr, *next;
 
 	curr = rail->GetPoint(edgeIndex);
-	next = rail->GetNextPoint(edgeIndex);
+	next = rail->GetPoint(edgeIndex+1);
 
 	V2d pr(curr->pos.x, curr->pos.y);
 	V2d cu(next->pos.x, next->pos.y);

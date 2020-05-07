@@ -435,6 +435,9 @@ void Background::Reset()
 
 void Background::Draw(sf::RenderTarget *target)
 {
+	if (!show)
+		return;
+
 	sf::View oldView = target->getView();
 	target->setView(bgView);
 

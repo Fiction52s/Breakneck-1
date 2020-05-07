@@ -25,11 +25,65 @@ int TerrainRail::GetNumPoints()
 	return pointVector.size();
 }
 
+Edge *TerrainRail::GetEdge(int index)
+{
+	if (index >= 0 && index < GetNumPoints() - 1)
+	{
+		return &edges[index];
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+void TerrainRail::SetupEdges()
+{
+	int numP = GetNumPoints();
+	edges.resize(numP-1);
+	TerrainPoint *curr, *next;
+	for (int i = 0; i < numP-1; ++i)
+	{
+		curr = GetPoint(i);
+		next = GetPoint(i+1);
+
+		edges[i].v0 = V2d(curr->pos);
+		edges[i].v1 = V2d(next->pos);
+		edges[i].rail = this;
+	}
+
+	for (int i = 0; i < numP-1; ++i)
+	{
+		if (i > 0)
+		{
+			edges[i].edge0 = &edges[i - 1];
+		}
+		else
+		{
+			edges[i].edge0 = NULL;
+		}
+
+		if (i < numP - 2)
+		{
+			edges[i].edge1 = &edges[i+1];
+		}
+		else
+		{
+			edges[i].edge1 = NULL;
+		}
+	}
+}
+
+void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
+{
+
+}
+
 void TerrainRail::Init()
 {
+	renderMode = RENDERMODE_NORMAL;
 	finalized = false;
 	lines = NULL;
-	movingPointMode = false;
 	selected = false;
 	railRadius = 20;
 
@@ -58,33 +112,13 @@ bool TerrainRail::CanApply()
 
 TerrainPoint *TerrainRail::GetPoint(int index)
 {
-	assert(index >= 0 && index < pointVector.size());
-	return &pointVector[index];
-}
-
-TerrainPoint *TerrainRail::GetNextPoint(int index)
-{
-	assert(index >= 0 && index < pointVector.size());
-	if (index == GetNumPoints() - 1)
+	if( index >= 0 && index < GetNumPoints() )
 	{
-		return NULL;
+		return &pointVector[index];
 	}
 	else
 	{
-		return &pointVector[index + 1];
-	}
-}
-
-TerrainPoint *TerrainRail::GetPrevPoint(int index)
-{
-	assert(index >= 0 && index < pointVector.size());
-	if (index == 0)
-	{
 		return NULL;
-	}
-	else
-	{
-		return &pointVector[index - 1];
 	}
 }
 
@@ -303,6 +337,8 @@ void TerrainRail::Finalize()
 	numLineVerts = (GetNumPoints() - 1) * 2;
 	lines = new sf::Vertex[numLineVerts];
 
+	SetupEdges();
+
 	UpdateLines();
 
 	UpdateBounds();
@@ -372,7 +408,7 @@ bool TerrainRail::ContainsPoint(sf::Vector2f test, double rad)
 	for (int i = 0; i < numP-1; ++i)
 	{
 		curr = GetPoint(i);
-		next = GetNextPoint(i);
+		next = GetPoint(i+1);
 		if (IsEdgeTouchingCircle(V2d(curr->pos), V2d(next->pos), V2d(test), rad))
 		{
 			return true;
@@ -412,7 +448,7 @@ void TerrainRail::UpdateLines()
 		for (int i = 0; i < numP-1; ++i)
 		{
 			curr = GetPoint(i);
-			next = GetNextPoint(i);
+			next = GetPoint(i+1);
 
 			UpdateLineColor(lines, i, index);
 
@@ -603,7 +639,7 @@ bool TerrainRail::Intersects(sf::IntRect rect)
 			return true;
 		}
 
-		next = GetNextPoint(i);
+		next = GetPoint(i+1);
 
 		if (rect.contains(next->pos))
 		{
@@ -635,10 +671,55 @@ void TerrainRail::BrushDraw(sf::RenderTarget *target, bool valid)
 	target->draw(lines, GetNumPoints() * 2, sf::Lines);
 }
 
+void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
+{
+	TerrainPoint *curr = GetPoint(index);
+
+	curr->pos = p;
+
+	auto currIt = enemies.find(curr);
+	if (currIt != enemies.end())
+	{
+		list<ActorPtr> &currList = (*currIt).second;
+		for (auto it = currList.begin(); it != currList.end(); ++it)
+		{
+			(*it)->UpdateGroundedSprite();
+			(*it)->SetBoundingQuad();
+		}
+	}
+
+	TerrainPoint *prev = GetPoint(index - 1);
+	if (prev != NULL)
+	{
+		currIt = enemies.find(prev);
+		if (currIt != enemies.end())
+		{
+			list<ActorPtr> &currList = (*currIt).second;
+			for (auto it = currList.begin(); it != currList.end(); ++it)
+			{
+				(*it)->UpdateGroundedSprite();
+				(*it)->SetBoundingQuad();
+			}
+		}
+	}
+	
+
+	Edge *edge = GetEdge(index);
+	
+	V2d dPos(curr->pos);
+	edge->v0 = dPos;
+
+	Edge *prevEdge = GetEdge(index - 1);
+	if (prevEdge != NULL)
+	{
+		prevEdge->v1 = dPos;
+	}
+}
+
 void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *target)
 {
 	int numP = GetNumPoints();
-	if (movingPointMode)
+	/*if (false)
 	{
 		int index = 0;
 		TerrainPoint *curr, *next;
@@ -655,7 +736,7 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 
 		target->draw(lines, numLineVerts, sf::Lines);
 		return;
-	}
+	}*/
 
 	target->draw(lines, numLineVerts, sf::Lines);
 

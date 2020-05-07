@@ -896,6 +896,7 @@ MainMenu::MainMenu()
 
 	window = new RenderWindow( sf::VideoMode( windowWidth, windowHeight ), "Breakneck",
 		config->GetData().windowStyle, sf::ContextSettings( 0, 0, 0, 0, 0 ));
+	window->setKeyRepeatEnabled(false);
 
 	mouseGrabbed = true;
 	mouseVisible = false;

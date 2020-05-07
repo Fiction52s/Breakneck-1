@@ -1380,7 +1380,7 @@ void EditSession::ProcessHeader()
 	drainSeconds = mapHeader->drainSeconds;
 
 	background = Background::SetupFullBG(envName, this);
-	background->Hide();
+	//background->Hide();
 
 	bossType = mapHeader->bossFightType;
 
@@ -4130,7 +4130,7 @@ void EditSession::RevertMovedPoints(PointMap::iterator it)
 	}
 }
 
-void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
+void EditSession::MoveSelectedPoints()
 {
 	bool affected;
 	int polyNumP;
@@ -4149,7 +4149,6 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 	int i;
 
 	bool revert = false;
-	//can I use the pointmap instead of iterating through everything?
 	
 	for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
 	{
@@ -4166,18 +4165,6 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			prevEdge = poly->GetPrevEdge(i);
 
 			oldPrevLength = prevEdge->GetLength();
-			//only need to do for the prevs, since anything moved on my edge stays at the same
-			//quantity, the edge just moves.
-
-			/*auto enemyIt = poly->enemies.find(prev);
-			if (enemyIt != poly->enemies.end())
-			{
-				list<ActorPtr> &enemies = (*enemyIt).second;
-				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-				{
-					(*ait)->oldQuant = (*ait)->posInfo.groundQuantity;
-				}
-			}*/
 
 			auto enemyIt = poly->enemies.find(prev);
 			if (enemyIt != poly->enemies.end())
@@ -4206,9 +4193,6 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 		
 		failMove = false;
 
-		
-		
-
 		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
 		{
 			i = (*pit).pointIndex;
@@ -4216,27 +4200,10 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 			curr = poly->GetPoint(i);
 			prev = poly->GetPrevPoint(i);
 
-			//(*pit).oldPos = curr->pos; //for reverting this specific piece of a move
-			//rather than the whole thing
-
-			//depreciated. remove.
-			//curr->oldPos = curr->pos;
-
 			edge = poly->GetEdge(i);
 			prevEdge = poly->GetPrevEdge(i);
 
 			oldPrevLength = prevEdge->GetLength();
-			//only need to do for the prevs, since anything moved on my edge stays at the same
-			//quantity, the edge just moves.
-			/*auto enemyIt = poly->enemies.find(prev);
-			if (enemyIt != poly->enemies.end() )
-			{
-				list<ActorPtr> &enemies = (*enemyIt).second;
-				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-				{
-					(*ait)->oldQuant = (*ait)->posInfo.groundQuantity;
-				}
-			}*/
 
 			poly->MovePoint(i, pointGrabDelta);
 
@@ -4331,55 +4298,18 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 
 		}
 
+		//not sure why this comment exists
 		//not sure why this is needed, but the edges are colliding w/ the enemies again
-		
 
-
-		if (!poly->IsInternallyValid() || revert )// || revert)
+		if (!poly->IsInternallyValid() || revert )
 		{
 			revert = true;
 			break;
-			//this isnt updating the enemy sprites. is this even happening??
-
-			//for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
-			//{
-			//	poly->SetPointPos((*pit).pointIndex, (*pit).oldPos);
-			//	curr = poly->GetPoint((*pit).pointIndex);
-			//	prev = poly->GetPrevPoint((*pit).pointIndex);
-
-			//	auto currIt = poly->enemies.find(curr);
-			//	if (currIt != poly->enemies.end())
-			//	{
-			//		list<ActorPtr> &currList = (*currIt).second;
-			//		for (auto it = currList.begin(); it != currList.end(); ++it)
-			//		{
-			//			if ((*it)->myEnemy != NULL)
-			//				(*it)->myEnemy->UpdateOnEditPlacement();
-
-			//			(*it)->UpdateGroundedSprite();
-			//			(*it)->SetBoundingQuad();
-			//		}
-			//	}
-			//	currIt = poly->enemies.find(prev);
-			//	if (currIt != poly->enemies.end())
-			//	{
-			//		list<ActorPtr> &currList = (*currIt).second;
-			//		for (auto it = currList.begin(); it != currList.end(); ++it)
-			//		{
-			//			//this is only on prev because the ground quant is not changed on curr
-			//			if ((*it)->myEnemy != NULL)
-			//			{
-			//				(*it)->myEnemy->UpdateOnEditPlacement();
-			//			}
-			//			(*it)->UpdateGroundedSprite();
-			//			(*it)->SetBoundingQuad();
-			//		}
-			//	}
-			//}
 		}
 		else if (affected)
 		{
 			poly->SetRenderMode(TerrainPolygon::RENDERMODE_MOVING_POINTS);
+			poly->UpdateLinePositions();
 			poly->UpdateBounds();
 		}
 	}
@@ -4395,67 +4325,267 @@ void EditSession::MoveSelectedPoints()//sf::Vector2i delta )
 
 void EditSession::MoveSelectedRailPoints(V2d worldPos)
 {
-	bool affected;
-	int rNumP;
-	TerrainPoint *curr, *prev;
-	RailPtr rail;
-	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
-	{
+	//bool affected;
+	//int polyNumP;
+	//TerrainPoint *curr, *prev;
+	//RailPtr poly;
 
-		affected = false;
-		rail = ((*it).first);
+	//Edge *edge; //use prev edge also
+	//Edge *prevEdge;
 
-		if (rail->selected)
-		{
-			DeselectObject(rail);
-		}
+	//double edgeLen;
+	//double prevEdgeLen;
 
-		rNumP = rail->GetNumPoints();
+	//bool failMove;
+	//double oldPrevLength;
 
-		for (int i = 0; i < rNumP; ++i)
-		{
-			curr = rail->GetPoint(i);
-			prev = rail->GetPrevPoint(i);
+	//int i;
 
-			if (curr->selected) //selected
-			{
-				curr->pos += pointGrabDelta;
+	//bool revert = false;
 
-				rail->UpdateLineColor(rail->lines, prev->index, prev->index * 2);
-				rail->UpdateLineColor(rail->lines, i, i * 2);
+	//for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+	//{
+	//	poly = (*it).first;
+	//	for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
+	//	{
+	//		i = (*pit).pointIndex;
 
-				if (rail->enemies.count(curr) > 0)
-				{
-					list<ActorPtr> &enemies = rail->enemies[curr];
-					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-					{
-						//(*ait)->UpdateGroundedSprite();
-					}
-				}
+	//		curr = poly->GetPoint(i);
+	//		prev = poly->GetPrevPoint(i);
 
-				affected = true;
-			}
+	//		(*pit).oldPos = curr->pos;
+	//		edge = poly->GetEdge(i);
+	//		prevEdge = poly->GetPrevEdge(i);
 
-		}
+	//		oldPrevLength = prevEdge->GetLength();
 
-		rail->UpdateBounds();
+	//		auto enemyIt = poly->enemies.find(prev);
+	//		if (enemyIt != poly->enemies.end())
+	//		{
+	//			list<ActorPtr> &enemies = (*enemyIt).second;
+	//			for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+	//			{
+	//				(*ait)->oldQuant = (*ait)->posInfo.groundQuantity;
+	//			}
+	//		}
+	//	}
+	//}
 
-		if (affected)
-		{
-			rail->movingPointMode = true;
+	//for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+	//{
+	//	poly = (*it).first;
 
-			for (auto mit = rail->enemies.begin();
-				mit != rail->enemies.end(); ++mit)
-			{
-				list<ActorPtr> &enemies = (*mit).second;
-				for (auto ait = enemies.begin(); ait != enemies.end(); ++ait)
-				{
-					(*ait)->UpdateGroundedSprite();
-					(*ait)->SetBoundingQuad();
-				}
-			}
-		}
-	}
+	//	if (poly->selected)
+	//	{
+	//		DeselectObject(poly);
+	//	}
+
+	//	affected = false;
+
+	//	polyNumP = poly->GetNumPoints();
+
+	//	failMove = false;
+
+	//	for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
+	//	{
+	//		i = (*pit).pointIndex;
+
+	//		curr = poly->GetPoint(i);
+	//		prev = poly->GetPrevPoint(i);
+
+	//		edge = poly->GetEdge(i);
+	//		prevEdge = poly->GetPrevEdge(i);
+
+	//		oldPrevLength = prevEdge->GetLength();
+
+	//		poly->MovePoint(i, pointGrabDelta);
+
+	//		edgeLen = edge->GetLength();
+	//		prevEdgeLen = prevEdge->GetLength();
+
+	//		if (prevEdgeLen != oldPrevLength)
+	//		{
+	//			auto enemyIt = poly->enemies.find(prev);
+	//			if (enemyIt != poly->enemies.end())
+	//			{
+	//				list<ActorPtr> &enemies = (*enemyIt).second;
+	//				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+	//				{
+	//					(*ait)->posInfo.groundQuantity -= (oldPrevLength - prevEdgeLen);
+	//				}
+	//			}
+	//		}
+
+	//		//doesnt yet cover both sides at once
+	//		double maxQuant;
+	//		ActorPtr furthest = poly->GetFurthestEnemy(i, maxQuant);
+	//		if (furthest != NULL && maxQuant > edgeLen)
+	//		{
+	//			//double along = dot(-V2d(pointGrabDelta), edge->Along());
+	//			//poly->MovePoint(i, -pointGrabDelta);
+	//			revert = true;
+	//			break;
+	//			//poly->MovePoint(i, Vector2i( edge->Along() * along ));
+	//			//poly->SetPointPos(i, Vector2i(edge->v1 - edge->Along() * maxQuant)); //works!
+	//		}
+
+	//		double minQuant;
+	//		ActorPtr closest = poly->GetClosestEnemy(prev->GetIndex(), minQuant);
+	//		if (closest != NULL && minQuant < 0)
+	//		{
+	//			revert = true;
+	//			break;
+	//			//poly->MovePoint(i, -pointGrabDelta);
+
+	//			//poly->SetPointPos(i, Vector2i(prevEdge->v0 + prevEdge->Along() * (prevEdgeLen - minQuant)));
+	//			//cout << "oldlen: " << oldPrevLength << ", prevEdgeLen: " << prevEdgeLen << "minQuant: " << minQuant << endl;
+	//			if (prevEdgeLen != oldPrevLength)
+	//			{
+	//				auto enemyIt = poly->enemies.find(prev);
+	//				if (enemyIt != poly->enemies.end())
+	//				{
+	//					list<ActorPtr> &enemies = (*enemyIt).second;
+	//					for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+	//					{
+	//						(*ait)->posInfo.groundQuantity = (*ait)->oldQuant;//-minQuant;
+	//					}
+	//				}
+	//			}
+
+
+	//		}
+
+	//		poly->UpdateLineColor(prev->index);
+	//		poly->UpdateLineColor(i);
+
+	//		affected = true;
+
+	//		auto currIt = poly->enemies.find(curr);
+	//		if (currIt != poly->enemies.end())
+	//		{
+	//			list<ActorPtr> &currList = (*currIt).second;
+	//			for (auto it = currList.begin(); it != currList.end(); ++it)
+	//			{
+	//				if ((*it)->myEnemy != NULL)
+	//					(*it)->myEnemy->UpdateOnEditPlacement();
+
+	//				(*it)->UpdateGroundedSprite();
+	//				(*it)->SetBoundingQuad();
+	//			}
+	//		}
+	//		currIt = poly->enemies.find(prev);
+	//		if (currIt != poly->enemies.end())
+	//		{
+	//			list<ActorPtr> &currList = (*currIt).second;
+	//			for (auto it = currList.begin(); it != currList.end(); ++it)
+	//			{
+	//				//this is only on prev because the ground quant is not changed on curr
+	//				if ((*it)->myEnemy != NULL)
+	//				{
+	//					(*it)->myEnemy->UpdateOnEditPlacement();
+	//				}
+	//				(*it)->UpdateGroundedSprite();
+	//				(*it)->SetBoundingQuad();
+	//			}
+	//		}
+
+	//	}
+
+	//	//not sure why this comment exists
+	//	//not sure why this is needed, but the edges are colliding w/ the enemies again
+
+	//	if (!poly->IsInternallyValid() || revert)
+	//	{
+	//		revert = true;
+	//		break;
+	//	}
+	//	else if (affected)
+	//	{
+	//		poly->SetRenderMode(TerrainPolygon::RENDERMODE_MOVING_POINTS);
+	//		poly->UpdateLinePositions();
+	//		poly->UpdateBounds();
+	//	}
+	//}
+
+	//if (revert)
+	//{
+	//	for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+	//	{
+	//		RevertMovedPoints(it);
+	//	}
+	//}
+
+
+
+
+
+//----------------------------------
+
+
+
+
+
+	//bool affected;
+	//int rNumP;
+	//TerrainPoint *curr, *prev;
+	//RailPtr rail;
+	//for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
+	//{
+
+	//	affected = false;
+	//	rail = ((*it).first);
+
+	//	if (rail->selected)
+	//	{
+	//		DeselectObject(rail);
+	//	}
+
+	//	rNumP = rail->GetNumPoints();
+
+	//	for (int i = 0; i < rNumP; ++i)
+	//	{
+	//		curr = rail->GetPoint(i);
+	//		prev = rail->GetPrevPoint(i);
+
+	//		if (curr->selected) //selected
+	//		{
+	//			curr->pos += pointGrabDelta;
+
+	//			rail->UpdateLineColor(rail->lines, prev->index, prev->index * 2);
+	//			rail->UpdateLineColor(rail->lines, i, i * 2);
+
+	//			if (rail->enemies.count(curr) > 0)
+	//			{
+	//				list<ActorPtr> &enemies = rail->enemies[curr];
+	//				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
+	//				{
+	//					//(*ait)->UpdateGroundedSprite();
+	//				}
+	//			}
+
+	//			affected = true;
+	//		}
+
+	//	}
+
+	//	rail->UpdateBounds();
+
+	//	if (affected)
+	//	{
+	//		//rail->movingPointMode = true;
+
+	//		for (auto mit = rail->enemies.begin();
+	//			mit != rail->enemies.end(); ++mit)
+	//		{
+	//			list<ActorPtr> &enemies = (*mit).second;
+	//			for (auto ait = enemies.begin(); ait != enemies.end(); ++ait)
+	//			{
+	//				(*ait)->UpdateGroundedSprite();
+	//				(*ait)->SetBoundingQuad();
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 
@@ -6383,7 +6513,7 @@ PositionInfo EditSession::ConvertPointToRail(sf::Vector2i testPoint)
 				for (int i = 0; i < numP - 1; ++i)
 				{
 					curr = rail->GetPoint(i);
-					next = rail->GetNextPoint(i);
+					next = rail->GetPoint(i+1);
 
 					double dist = abs(
 						cross(
@@ -10275,11 +10405,42 @@ void EditSession::CreateTerrainModeHandleEvent()
 			{
 				polygonInProgress->ClearPoints();
 				currTool = TOOL_BOX;
-				boxDrawStarted = false;;
+				boxDrawStarted = false;
 			}
 			else
 			{
 				currTool = TOOL_DRAW;
+			}
+		}
+		else if (ev.key.code == sf::Keyboard::C)
+		{
+
+			//fix up rails and then implement something like this for blocker rails
+			if (polygonInProgress->GetNumPoints() > 0)
+			{
+				ActorParams *testParams = types["blocker"]->defaultParamsVec[0]->Copy();
+				testParams->group = groups["--"];
+
+				vector<Vector2i> testPath;
+				V2d startPos;
+				polygonInProgress->MakeGlobalPath(startPos, testPath);
+				testParams->SetPosition(startPos);
+				testParams->SetBoundingQuad();
+				testParams->SetPath(testPath);
+
+				
+
+				testParams->CreateMyEnemy();
+
+				polygonInProgress->ClearPoints();
+
+				Brush b;
+				b.AddObject(testParams);
+				Action *apply = NULL;
+				apply = new ApplyBrushAction(&b);
+				apply->Perform();
+
+				AddDoneAction(apply);
 			}
 		}
 		else if (ev.key.code == Keyboard::T )

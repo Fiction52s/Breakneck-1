@@ -53,6 +53,28 @@ namespace mapbox
 	}
 }
 
+//for creating blockers and flies..for now
+void TerrainPolygon::MakeGlobalPath(V2d &startPos, std::vector<sf::Vector2i> &path )
+{
+	int numP = GetNumPoints();
+	assert(numP > 0);
+
+	startPos = V2d(GetPoint(0)->pos);
+
+	if (numP > 1)
+	{
+		path.resize(numP - 1);
+		for (int i = 1; i < numP; ++i)
+		{
+			path[i-1] = GetPoint(i)->pos;
+		}
+	}
+	else
+	{
+		path.clear();
+	}
+}
+
 sf::FloatRect TerrainPolygon::GetAngledAABB(float rotation)
 {
 	//rotation is in degrees
@@ -3777,7 +3799,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 		int lineIndex = 0;
 
 		//shouldn't be updating lines here...
-		for (int i = 0; i < numP; ++i)
+		/*for (int i = 0; i < numP; ++i)
 		{
 			curr = GetPoint(i);
 			next = GetNextPoint(i);
@@ -3786,7 +3808,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 			lines[lineIndex * 2 + 1].position = Vector2f(next->pos.x, next->pos.y);
 
 			++lineIndex;
-		}
+		}*/
 		rt->draw( lines, numP * 2, sf::Lines );
 		return;
 	}

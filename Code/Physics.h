@@ -10,6 +10,7 @@
 #define MAX_VELOCITY 100
 
 struct TerrainPolygon;
+struct TerrainRail;
 
 struct Edge : QuadTreeEntrant
 {
@@ -52,6 +53,7 @@ struct Edge : QuadTreeEntrant
 	Edge *edge1;
 	EdgeType edgeType;
 	TerrainPolygon *poly;
+	TerrainRail *rail;
 
 	void *info;
 };
