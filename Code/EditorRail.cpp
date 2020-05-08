@@ -85,12 +85,16 @@ bool TerrainRail::IsInternallyValid()
 
 void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 {
-
+	int numP = GetNumPoints();
+	for (int i = 0; i < numP - 1; ++i)
+	{
+		tree->Insert(GetEdge(i));
+	}
 }
 
 void TerrainRail::Init()
 {
-	quadHalfWidth = 10;
+	quadHalfWidth = 6;
 	renderMode = RENDERMODE_NORMAL;
 	finalized = false;
 	lines = NULL;

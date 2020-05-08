@@ -28,13 +28,15 @@ struct PlayerGhost;
 struct Monitor;
 struct Enemy;
 struct Aura;
-struct Rail;
+//struct Rail;
 struct ComboObject;
 struct Actor;
 struct ObjectPool;
 struct RelEffectInstance;
 struct VertexBuf;
 struct Kin;
+
+struct TerrainRail;
 
 struct MotionGhostEffect
 {
@@ -1070,7 +1072,7 @@ struct Actor : QuadTreeCollider,
 
 	Edge *ground;
 
-	Rail *prevRail;
+	TerrainRail * prevRail;
 
 	bool hasAirDash;
 	bool hasGravReverse;

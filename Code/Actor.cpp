@@ -9,7 +9,7 @@
 #include <fstream>
 #include "MainMenu.h" //just for glsl color macro
 #include "PlayerRecord.h"
-#include "Rail.h"
+//#include "Rail.h"
 #include "Aura.h"
 #include "VisualEffects.h"
 #include "Enemy.h"
@@ -44,6 +44,7 @@
 #include "Barrier.h"
 #include "AbsorbParticles.h"
 #include "EditSession.h"
+#include "EditorRail.h"
 
 using namespace sf;
 using namespace std;
@@ -10131,10 +10132,11 @@ bool Actor::ResolvePhysics( V2d vel )
 
 
 	//if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && (canRailGrind || canRailSlide ) )
-	if( owner != NULL && owner->totalRails > 0 && (canRailGrind || canRailSlide) )
+	//if( owner != NULL && owner->totalRails > 0 && (canRailGrind || canRailSlide) )
+	if( canRailGrind || canRailSlide )
 	{
 		queryMode = "rail";
-		owner->railEdgeTree->Query(this, r);
+		sess->railEdgeTree->Query(this, r);
 	}
 
 
@@ -17786,7 +17788,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	else if (queryMode == "rail")
 	{
 		Edge *e = (Edge*)qte;
-		Rail *rail = (Rail*)e->info;
+		RailPtr rail = e->rail;
 
 		if ((rail->requirePower && !canRailGrind) || IsInHistunAction(action))
 		{
@@ -17891,7 +17893,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				frame = 0;
 				framesGrinding = 0;
 				grindEdge = e;
-				prevRail = (Rail*)grindEdge->info;
+				prevRail = (RailPtr)grindEdge->info;
 				ground = NULL;
 				bounceEdge = NULL;
 

@@ -396,7 +396,7 @@ void EditSession::TestPlayerMode()
 		borderTree->Clear();
 		grassTree->Clear();
 		activeItemTree->Clear();
-		
+		railEdgeTree->Clear();
 
 		
 
@@ -472,6 +472,11 @@ void EditSession::TestPlayerMode()
 		specialTerrainTree->Insert((*it));
 		//(*it)->AddEdgesToQuadTree(terrainTree);
 		//(*it)->AddGrassToQuadTree(grassTree);
+	}
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		(*it)->AddEdgesToQuadTree(railEdgeTree);
 	}
 
 	Enemy *currEnemy;
