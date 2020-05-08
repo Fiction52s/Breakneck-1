@@ -3201,7 +3201,12 @@ void EditSession::InitDecorPanel()
 int EditSession::CountSelectedPoints()
 {
 	int count = 0;
-	for( PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
+	for( auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it )
+	{
+		count += (*it).second.size();
+	}
+
+	for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
 	{
 		count += (*it).second.size();
 	}

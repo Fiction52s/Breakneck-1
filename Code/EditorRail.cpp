@@ -427,6 +427,19 @@ void TerrainRail::CreateNewRailsWithSelectedPointsRemoved( list<RailPtr> &rails 
 		}
 		startIndex = currSelectedIndex + 1;
 		++indexMarker;
+
+		if (indexMarker > numDeletePoints)
+		{
+			break;
+		}
+		else if (indexMarker == numDeletePoints)
+		{
+			currSelectedIndex = numP;
+		}
+		else
+		{
+			currSelectedIndex = selectedIndexes[indexMarker];
+		}
 	}
 
 	/*PolyPtr newPoly = new TerrainPolygon();
