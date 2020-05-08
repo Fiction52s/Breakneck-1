@@ -325,6 +325,7 @@ struct EditSession : GUIHandler, Session
 
 	
 	ActorParams * AttachActorToPolygon( ActorPtr actor, PolyPtr poly );
+	ActorParams * AttachActorToRail(ActorPtr actor, RailPtr rail);
 	void AttachActorsToPolygon( std::list<ActorPtr> &actors, PolyPtr poly );
 	int Run();
 	void LoadAndResave();
@@ -358,6 +359,16 @@ struct EditSession : GUIHandler, Session
 	bool CanCreateGate( GateInfo &testGate );
 	void SetPanelDefault( ActorType *type );
 
+
+	void TryAttachActorsToRails(
+		std::list<RailPtr> & origRails,
+		std::list<RailPtr> & newRails,
+		Brush *b);
+	void TryAttachActorsToRail(
+		RailPtr orig,
+		std::list<RailPtr> & newRails,
+		Brush *b);
+
 	void TryAttachActorsToPolys(
 		std::list<PolyPtr> & origPolys,
 		std::list<PolyPtr> & newPolys,
@@ -370,6 +381,7 @@ struct EditSession : GUIHandler, Session
 		PolyPtr orig,
 		std::list<PolyPtr> & newPolys,
 		Brush *b);
+	
 	bool TryAttachPlayerToPolys(V2d &groundPosition,
 		double xoff );
 	void TryKeepGates( 
@@ -379,6 +391,12 @@ struct EditSession : GUIHandler, Session
 	void AddFullPolysToBrush(
 		std::list<PolyPtr> & polyList,
 		std::list<GateInfoPtr> &gateInfoList,
+		Brush *b);
+	void AddFullRailsToBrush(
+		std::list<RailPtr> &railList,
+		Brush *b);
+	void AddFullRailToBrush(
+		RailPtr rail,
 		Brush *b);
 	void AddFullPolysToBrush(
 		std::set<PolyPtr> & polyList,

@@ -1853,6 +1853,60 @@ ActorParams * EditSession::AttachActorToPolygon( ActorPtr actor, PolyPtr poly )
 	//return false;
 }
 
+ActorParams * EditSession::AttachActorToRail(ActorPtr actor, RailPtr rail)
+{
+	TerrainPoint *next;
+	V2d currPos, nextPos;
+	V2d aCurr, aNext;
+	V2d actorPos;
+
+	int numP = rail->GetNumPoints();
+	TerrainPoint *railCurr, *railNext;
+	TerrainPoint *nextActorPoint;
+	for (int i = 0; i < numP - 1; ++i)
+	{
+		railCurr = rail->GetPoint(i);
+		railNext = rail->GetPoint(i+1);
+
+		currPos.x = railCurr->pos.x;
+		currPos.y = railCurr->pos.y;
+
+		nextPos.x = railNext->pos.x;
+		nextPos.y = railNext->pos.y;
+
+		assert(actor->posInfo.ground != NULL);
+
+		actorPos = actor->posInfo.GetPosition();//aCurr + normalize(aNext - aCurr) * actorQuant;//V2d( actor->image.getPosition() );//
+		bool onLine = PointOnLine(actorPos, currPos, nextPos);
+
+		double finalQuant = dot(actorPos - currPos, normalize(nextPos - currPos));
+
+
+		if (onLine)
+		{
+			cout << "actorPos: " << actorPos.x << ", " << actorPos.y << ", currPos: "
+				<< currPos.x << ", " << currPos.y << endl;
+			PositionInfo gi;
+
+			gi.SetRail(rail, i, finalQuant);
+			//might need to make sure it CAN be grounded
+
+			ActorParams *newActor = actor->Copy();
+			if (actor->myEnemy != NULL)
+			{
+				newActor->CreateMyEnemy();
+			}
+			newActor->AnchorToGround(gi); //might be unnecessary
+
+			assert(newActor != NULL);
+			return newActor;
+		}
+
+	}
+
+	return NULL;
+}
+
 void EditSession::AddDoneAction( Action *a )
 {
 	if (!doneActionStack.empty() && doneActionStack.back() == a)
@@ -3195,14 +3249,47 @@ void EditSession::RemovePointFromRailInProgress()
 	}
 }
 
-void EditSession::TryAttachActorsToPolys(
-	std::list<PolyPtr> &origPolys,
-	std::list<PolyPtr> &newPolys,
+void EditSession::TryAttachActorsToRails(
+	std::list<RailPtr> & origRails,
+	std::list<RailPtr> & newRails,
 	Brush *b)
 {
-	for (auto it = origPolys.begin(); it != origPolys.end(); ++it)
+	for (auto it = origRails.begin(); it != origRails.end(); ++it)
 	{
-		TryAttachActorsToPoly((*it), newPolys, b);
+		TryAttachActorsToRail((*it), newRails, b);
+	}
+}
+
+void EditSession::TryAttachActorsToRail(
+	RailPtr orig,
+	std::list<RailPtr> & newRails,
+	Brush *b)
+{
+	for (auto mit = orig->enemies.begin(); mit != orig->enemies.end(); ++mit)
+	{
+		for (auto bit = (*mit).second.begin(); bit != (*mit).second.end(); ++bit)
+		{
+			for (auto rit = newRails.begin();
+				rit != newRails.end(); ++rit)
+			{
+				ActorParams *ac = AttachActorToRail((*bit), (*rit));
+				if (ac != NULL)
+				{
+					b->AddObject(ac);
+				}
+			}
+		}
+	}
+}
+
+void EditSession::TryAttachActorsToPolys(
+	std::list<PolyPtr> &origRails,
+	std::list<PolyPtr> &newRails,
+	Brush *b)
+{
+	for (auto it = origRails.begin(); it != origRails.end(); ++it)
+	{
+		TryAttachActorsToPoly((*it), newRails, b);
 	}
 }
 
@@ -3386,6 +3473,22 @@ void EditSession::TryKeepGates( list<GateInfoPtr> &gateInfoList, list<PolyPtr> &
 	}
 }
 
+void EditSession::AddFullRailsToBrush(
+	std::list<RailPtr> &railList,
+	Brush *b)
+{
+	for (auto it = railList.begin(); it != railList.end(); ++it)
+	{
+		AddFullRailToBrush((*it),b);
+	}
+}
+
+void EditSession::AddFullRailToBrush(RailPtr rail, Brush *b)
+{
+	b->AddObject(rail);
+	rail->AddEnemiesToBrush(b);
+}
+
 void EditSession::TryRemoveSelectedPoints()
 {
 	//need to make this into an undoable action soon
@@ -3393,6 +3496,7 @@ void EditSession::TryRemoveSelectedPoints()
 	//int removeSuccess = IsRemovePointsOkay();
 
 	//if (removeSuccess == 1)
+	if( !selectedPoints.empty() )
 	{
 		Brush orig;
 		Brush result;
@@ -3401,7 +3505,7 @@ void EditSession::TryRemoveSelectedPoints()
 		list<PolyPtr> affectedPolys;
 		list<PolyPtr> newPolys;
 		bool valid = true;
-		for (PointMap::iterator it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+		for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
 		{
 			PolyPtr tp = (*it).first;
 			affectedPolys.push_back(tp);
@@ -3462,10 +3566,77 @@ void EditSession::TryRemoveSelectedPoints()
 		action->Perform();
 		AddDoneAction(action);
 	}
-	/*else if (removeSuccess == 0)
+
+
+	if (!selectedRailPoints.empty())
 	{
-		MessagePop("problem removing points");
-	}*/
+		Brush orig;
+		Brush result;
+
+		list<RailPtr> affectedRails;
+		list<RailPtr> newRails;
+		bool valid = true;
+		for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
+		{
+			RailPtr rp = (*it).first;
+			affectedRails.push_back(rp);
+
+			rp->CreateNewRailsWithSelectedPointsRemoved(newRails);
+			/*PolyPtr newPoly(tp->CreateCopyWithSelectedPointsRemoved());
+
+			if (newPoly != NULL)
+			{
+				newPoly->RemoveSlivers();
+				newPoly->AlignExtremes();
+			}
+			else
+			{
+				valid = false;
+			}
+
+			if (valid)
+			{
+				if (!IsPolygonValid(newPoly, tp))
+				{
+					valid = false;
+				}
+			}
+
+			if (!valid)
+			{
+				delete newPoly;
+				for (auto pit = newPolys.begin(); pit != newPolys.end(); ++pit)
+				{
+					delete (*pit);
+				}
+				MessagePop("problem removing points");
+				return;
+			}
+
+			newPolys.push_back(newPoly);*/
+		}
+
+		for (auto it = newRails.begin(); it != newRails.end(); ++it)
+		{
+			(*it)->Finalize();
+			result.AddObject((*it));
+		}
+
+		ClearSelectedPoints();
+
+		AddFullRailsToBrush(affectedRails, &orig);
+
+		TryAttachActorsToRails(affectedRails, newRails, &result);
+
+		selectedRailPoints.clear();		
+
+		ClearUndoneActions();
+
+		Action * action = new ReplaceBrushAction(&orig, &result, mapStartBrush);
+
+		action->Perform();
+		AddDoneAction(action);
+	}
 }
 
 bool EditSession::PointSelectActor( V2d &pos )

@@ -3,6 +3,7 @@
 #include "EditSession.h"
 #include "ActorParams.h"
 #include "TransformTools.h"
+#include "Action.h"
 
 using namespace std;
 using namespace sf;
@@ -349,6 +350,104 @@ void TerrainRail::Finalize()
 	UpdateLines();
 
 	UpdateBounds();
+}
+
+int TerrainRail::GetNumSelectedPoints()
+{
+	int numP = GetNumPoints();
+	int numSelected = 0;
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		if (curr->selected)
+		{
+			++numSelected;
+		}
+	}
+
+	return numSelected;
+}
+
+void TerrainRail::FillSelectedIndexBuffer(
+	std::vector<int> &selectedIndexes)
+{
+	int numP = GetNumPoints();
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		if (curr->selected)
+		{
+			selectedIndexes.push_back(i);
+		}
+	}
+}
+
+void TerrainRail::AddEnemiesToBrush(Brush *b)
+{
+	for (auto mit = enemies.begin(); mit != enemies.end(); ++mit)
+	{
+		for (auto eit = (*mit).second.begin(); eit != (*mit).second.end(); ++eit)
+		{
+			b->AddObject((*eit));
+		}
+	}
+}
+
+void TerrainRail::CreateNewRailsWithSelectedPointsRemoved( list<RailPtr> &rails )
+{
+	int numP = GetNumPoints();
+	int numDeletePoints = GetNumSelectedPoints();
+
+	vector<int> selectedIndexes;
+	selectedIndexes.reserve(numDeletePoints);
+	FillSelectedIndexBuffer(selectedIndexes);
+
+	sort(selectedIndexes.begin(), selectedIndexes.end());
+
+	int startIndex = 0;
+
+	int indexMarker = 0;
+	int currSelectedIndex = selectedIndexes[indexMarker];
+
+	int diff;
+	while (startIndex < numP - 2)
+	{
+		diff = currSelectedIndex - startIndex;
+		if( diff >= 2 )
+		{
+			RailPtr newRail = new TerrainRail;
+			newRail->Reserve(diff);
+			for (int i = startIndex; i < currSelectedIndex; ++i)
+			{
+				newRail->AddPoint(GetPoint(i)->pos, false);
+			}
+			rails.push_back(newRail);
+		}
+		startIndex = currSelectedIndex + 1;
+		++indexMarker;
+	}
+
+	/*PolyPtr newPoly = new TerrainPolygon();
+	newPoly->Reserve(newPolyPoints);
+
+	newPoly->layer = 0;
+	newPoly->inverse = inverse;
+	newPoly->terrainWorldType = terrainWorldType;
+	newPoly->terrainVariation = terrainVariation;
+
+	TerrainPoint *curr;
+	for (int i = 0; i < numP; ++i)
+	{
+		curr = GetPoint(i);
+		if (!curr->selected)
+		{
+			newPoly->AddPoint(curr->pos, false);
+		}
+	}
+
+	return newPoly;*/
 }
 
 void TerrainRail::RemoveSelectedPoints()

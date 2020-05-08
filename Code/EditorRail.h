@@ -29,6 +29,12 @@ struct TerrainRail : ISelectable
 		RENDERMODE_FLIES,
 	};*/
 
+	void AddEnemiesToBrush(Brush *b);
+	int GetNumSelectedPoints();
+	void CreateNewRailsWithSelectedPointsRemoved(
+		std::list<RailPtr> &rails);
+	void FillSelectedIndexBuffer(
+		std::vector<int> &selectedIndexes);
 	TerrainRail();
 	TerrainRail(TerrainRail &r);
 	~TerrainRail();
