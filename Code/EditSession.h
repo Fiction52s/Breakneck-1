@@ -334,10 +334,9 @@ struct EditSession : GUIHandler, Session
 	
 	void SnapPointToGraph(sf::Vector2f &p, int gridSize);
 	void SnapPointToGraph(V2d &p, int gridSize);
-	bool TrySnapPosToPoint(sf::Vector2f &p, double radius,
-		PolyPtr &poly, TerrainPoint *&point );
-	bool TrySnapPosToPoint( V2d &p, double radius,
-		PolyPtr &poly, TerrainPoint *&point);
+	TerrainPoint * TrySnapPosToPoint(sf::Vector2f &p, SelectPtr &obj, double radius);
+	TerrainPoint * TrySnapPosToPoint( V2d &p, 
+		SelectPtr &obj, double radius);
 	static bool PointOnLine(V2d &pos, V2d &p0, V2d &p1, double width = 0);
 	void TryPlaceGatePoint(V2d &pos);
 	

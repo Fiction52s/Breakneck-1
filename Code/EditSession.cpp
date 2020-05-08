@@ -3068,7 +3068,7 @@ void EditSession::ClearUndoneActions()
 	undoneActionStack.clear();
 }
 
-bool EditSession::TrySnapPosToPoint(sf::Vector2f &p, double radius, PolyPtr &poly, TerrainPoint *&point)
+TerrainPoint * EditSession::TrySnapPosToPoint(sf::Vector2f &p, SelectPtr &obj, double radius)
 {
 	auto & currPolyList = GetCorrectPolygonList();
 
@@ -3078,16 +3078,26 @@ bool EditSession::TrySnapPosToPoint(sf::Vector2f &p, double radius, PolyPtr &pol
 		if (closePoint != NULL)
 		{
 			p = Vector2f(closePoint->pos);
-			poly = (*it);
-			point = closePoint;
-			return true;
+			obj = (*it);
+			return closePoint;
+		}
+	}
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		TerrainPoint *closePoint = (*it)->GetClosePoint(radius, V2d(p));
+		if (closePoint != NULL)
+		{
+			p = Vector2f(closePoint->pos);
+			obj = (*it);
+			return closePoint;
 		}
 	}
 
 	return false;
 }
 
-bool EditSession::TrySnapPosToPoint(V2d &p, double radius, PolyPtr &poly, TerrainPoint *&point)
+TerrainPoint * EditSession::TrySnapPosToPoint(V2d &p, SelectPtr &obj, double radius)
 {
 	auto & currPolyList = GetCorrectPolygonList();
 
@@ -3097,13 +3107,23 @@ bool EditSession::TrySnapPosToPoint(V2d &p, double radius, PolyPtr &poly, Terrai
 		if (closePoint != NULL)
 		{
 			p = V2d(closePoint->pos);
-			poly = (*it);
-			point = closePoint;
-			return true;
+			obj = (*it);
+			return closePoint;
 		}
 	}
 
-	return false;
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		TerrainPoint *closePoint = (*it)->GetClosePoint(radius, V2d(p));
+		if (closePoint != NULL)
+		{
+			p = V2d(closePoint->pos);
+			obj = (*it);
+			return closePoint;
+		}
+	}
+
+	return NULL;
 }
 
 void EditSession::ShowMostRecentError()
@@ -12179,9 +12199,9 @@ void EditSession::CreateTerrainModeUpdate()
 	}
 	else if (IsKeyPressed(Keyboard::F))
 	{
-		PolyPtr p = NULL;
-		TerrainPoint *pPoint;
-		TrySnapPosToPoint(testPoint, 8 * zoomMultiple, p, pPoint );
+		SelectPtr obj;
+		TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
+		
 		showPoints = true;
 	}
 	else
@@ -12243,9 +12263,8 @@ void EditSession::CreateRailsModeUpdate()
 	}
 	else if (IsKeyPressed(Keyboard::F))
 	{
-		PolyPtr p;
-		TerrainPoint *pPoint;
-		TrySnapPosToPoint(testPoint, 8 * zoomMultiple, p, pPoint );
+		SelectPtr obj;
+		TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
 		showPoints = true;
 	}
 	else
@@ -12573,7 +12592,8 @@ void EditSession::CreateGatesModeUpdate()
 	TerrainPoint *pPoint = NULL;
 	if (gatePoints == 1)
 	{
-		TrySnapPosToPoint(worldPos, 8 * zoomMultiple, p, pPoint );
+		SelectPtr obj;
+		pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
 	}
 	gateInProgressTestPoly = p;
 	gateInProgressTestPoint = pPoint;
