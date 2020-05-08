@@ -6442,9 +6442,6 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	goalCS.setOrigin(cs.getLocalBounds().width / 2,
 		cs.getLocalBounds().height / 2);
 
-	//mapPreviewTex->draw(*tempva);ke
-	//delete tempva;
-
 	bool oldSelected;
 
 
@@ -6474,7 +6471,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
-		//(*it)->Draw(1, false, mapPreviewTex);
+		(*it)->Draw(mapPreviewTex);
 	}
 
 	for (auto it = gates.begin(); it != gates.end(); ++it)

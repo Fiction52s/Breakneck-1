@@ -9,7 +9,6 @@
 #include <fstream>
 #include "MainMenu.h" //just for glsl color macro
 #include "PlayerRecord.h"
-//#include "Rail.h"
 #include "Aura.h"
 #include "VisualEffects.h"
 #include "Enemy.h"

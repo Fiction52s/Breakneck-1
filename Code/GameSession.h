@@ -42,7 +42,6 @@ struct RecordGhost;
 struct ReplayGhost;
 struct Config;
 struct RaceFightHUD;
-struct Rail;
 struct InputVisualizer;
 struct MomentaBroadcast;
 struct TerrainDecorInfo;
@@ -255,6 +254,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,
 		int shardIndex);
+	void ProcessRail(RailPtr rail);
 
 	void ProcessSpecialTerrain(PolyPtr poly);
 
@@ -290,8 +290,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	
 
 	bool LoadEnemies(std::ifstream &is);
-	bool LoadRails(std::ifstream &is);
-	//void LoadEnemy(std::ifstream &is);
 	Edge *LoadEdgeIndex(std::ifstream &is);
 	void LoadEdgeInfo(std::ifstream &is,
 		Edge *&edge, double &edgeQuant);
@@ -302,7 +300,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void LoadStandardGroundedEnemy(std::ifstream &is,
 		Edge *&edge, double &edgeQuant,
 		int &hasMonitor, int &level);
-	bool OpenFile();
 
 	//TilesetManager tm;
 
@@ -567,9 +564,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void DrawDyingPlayers();
 	void DrawTopClouds();
 	
-
+	std::list<RailPtr> allRails;
 	void DrawRails();
-	Rail *railDrawList;
+	RailPtr railDrawList;
 	int totalRails;
 
 	void UnlockPower(int pType);

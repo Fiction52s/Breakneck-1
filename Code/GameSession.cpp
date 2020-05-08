@@ -36,7 +36,6 @@
 #include "PlayerRecord.h"
 #include "Buf.h"
 #include "HUD.h"
-#include "Rail.h"
 #include "InputVisualizer.h"
 #include "TopClouds.h"
 #include "ScreenRecorder.h"
@@ -67,6 +66,7 @@
 #include "ActorParamsBase.h"
 
 #include "HitboxManager.h"
+#include "EditorRail.h"
 
 
 //#include "Enemy_Badger.h"
@@ -481,6 +481,12 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 	allSpecialTerrain.clear();
+
+	for (auto it = allRails.begin(); it != allRails.end(); ++it)
+	{
+		delete (*it);
+	}
+	allRails.clear();
 
 	/*for (auto it = flyTerrain.begin(); it != flyTerrain.end(); ++it)
 	{
@@ -1202,56 +1208,14 @@ void GameSession::ProcessGate(int gType,
 	gate->Reset();
 }
 
-bool GameSession::LoadRails(ifstream &is)
+void GameSession::ProcessRail(RailPtr rail)
 {
-	list<Vector2i> globalPath;
-
-	int numRails;
-	is >> numRails;
-	for (int i = 0; i < numRails; ++i)
-	{
-		int requirePower;
-		is >> requirePower;
-
-		int accel;
-		is >> accel;
-
-		int lev;
-		is >> lev;
-
-		int numRailPoints;
-		is >> numRailPoints;
-
-		for (int j = 0; j < numRailPoints; ++j)
-		{
-			int x, y;
-			is >> x;
-			is >> y;
-			globalPath.push_back(Vector2i(x, y));
-		}
-
-		Rail *r = new Rail(this, globalPath.front(), globalPath, requirePower, accel, lev);
-		globalPath.clear();
-		++totalRails;
-	}
-
-
-
-	/*int iRequirePower = (int)requirePower;
-	int iAccelerate = (int)accelerate;
-
-	of << iRequirePower << endl;
-	of << iAccelerate << endl;
-	of << level << endl;
-
-	of << numPoints << endl;
-
-	for (TerrainPoint *pcurr = pointStart; pcurr != NULL; pcurr = pcurr->next)
-	{
-		of << pcurr->pos.x << " " << pcurr->pos.y << endl;
-	}*/
-	return true;
+	railDrawTree->Insert(rail);
+	totalRails++; //is this really even needed?
+	allRails.push_back(rail);
 }
+
+
 
 bool GameSession::LoadEnemies( ifstream &is )
 {
@@ -3076,45 +3040,6 @@ void GameSession::ProcessAllActors()
 	}
 }
 
-bool GameSession::OpenFile( )
-{
-	int insertCount = 0;
-	ifstream is;
-	is.open(filePathStr);
-	if( is.is_open() )
-	{
-		ReadHeader(is);
-
-		ReadDecor(is);
-
-		ReadPlayerStartPos(is);
-		
-		ReadTerrain(is);
-		
-		ReadSpecialTerrain(is);
-
-		LoadBGPlats( is ); //not converted yet
-
-		LoadRails(is); //not converted yet, do this when re-adding rails
-
-		ReadActors(is);
-		
-		ReadGates(is);
-
-		is.close();
-
-		return true;
-	}
-	else
-	{
-
-		//new file
-		assert( false && "error getting file to play " );
-
-		return false;
-	}
-}
-
 bool cmpPairs(pair<double,int> & a, pair<double,int> & b)
 {
 	return a.first < b.first;
@@ -4646,7 +4571,7 @@ bool GameSession::Load()
 
 	matSet.clear();
 
-	OpenFile( );
+	ReadFile();
 
 	SetupStormCeiling();
 
@@ -7875,15 +7800,16 @@ void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 	}
 	else if (queryMode == "rail")
 	{
-		Rail *r = (Rail*)qte;
+		RailPtr r = (RailPtr)qte;
 
 		if (railDrawList == NULL)
 		{
 			railDrawList = r;
+			r->queryNext = NULL;
 		}
 		else
 		{
-			r->drawNext = railDrawList;
+			r->queryNext = railDrawList;
 			railDrawList = r;
 		}
 	}
@@ -8274,8 +8200,8 @@ void GameSession::DrawRails()
 	while (railDrawList != NULL)
 	{
 		railDrawList->Draw(preScreenTex);
-		Rail *next = railDrawList->drawNext;
-		railDrawList->drawNext = NULL;
+		RailPtr next = railDrawList->queryNext;
+		railDrawList->queryNext = NULL;
 		railDrawList = next;
 	}
 }

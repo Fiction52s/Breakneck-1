@@ -15,7 +15,7 @@ struct TerrainPolygon;
 struct TransformTools;
 struct CircleGroup;
 
-struct TerrainRail : ISelectable
+struct TerrainRail : ISelectable, QuadTreeEntrant
 {
 	enum RenderMode
 	{
@@ -30,6 +30,11 @@ struct TerrainRail : ISelectable
 		RENDERMODE_FLIES,
 	};*/
 
+	RailPtr queryNext;
+	sf::Rect<double> aabb;
+	void HandleQuery(QuadTreeCollider * qtc);
+	bool IsTouchingBox(const sf::Rect<double> &r);
+	void Draw(sf::RenderTarget *target);
 
 	RailPtr mostRecentCopy;
 

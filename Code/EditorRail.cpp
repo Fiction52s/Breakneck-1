@@ -94,6 +94,7 @@ void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 
 void TerrainRail::Init()
 {
+	queryNext = NULL;
 	quadHalfWidth = 6;
 	renderMode = RENDERMODE_NORMAL;
 	finalized = false;
@@ -369,6 +370,11 @@ void TerrainRail::UpdateBounds()
 			}
 		}
 	}
+
+	aabb.left = left;
+	aabb.top = top;
+	aabb.width = right - left;
+	aabb.height = bottom - top;
 }
 
 void TerrainRail::Finalize()
@@ -1197,6 +1203,11 @@ void TerrainRail::StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionIn
 	}
 }
 
+void TerrainRail::Draw( RenderTarget *target )
+{
+	Draw(1.0, false, target);
+}
+
 void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *target)
 {
 	int numP = GetNumPoints();
@@ -1235,4 +1246,14 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 			}
 		}
 	}
+}
+
+void TerrainRail::HandleQuery(QuadTreeCollider * qtc)
+{
+	qtc->HandleEntrant(this);
+}
+
+bool TerrainRail::IsTouchingBox(const sf::Rect<double> &r)
+{
+	return r.intersects(aabb);
 }
