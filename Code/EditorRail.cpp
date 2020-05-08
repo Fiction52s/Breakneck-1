@@ -4,6 +4,7 @@
 #include "ActorParams.h"
 #include "TransformTools.h"
 #include "Action.h"
+#include "CircleGroup.h"
 
 using namespace std;
 using namespace sf;
@@ -11,6 +12,7 @@ using namespace sf;
 TerrainRail::TerrainRail()
 	:ISelectable(ISelectable::RAIL)
 {
+	quadHalfWidth = 10;
 	Init();
 }
 
@@ -92,6 +94,8 @@ void TerrainRail::Init()
 	renderMode = RENDERMODE_NORMAL;
 	finalized = false;
 	lines = NULL;
+	coloredQuads = NULL;
+	coloredNodeCircles = NULL;
 	selected = false;
 	railRadius = 20;
 
@@ -104,6 +108,12 @@ TerrainRail::~TerrainRail()
 {
 	if (lines != NULL)
 		delete[] lines;
+
+	if (coloredQuads != NULL)
+	{
+		delete[] coloredQuads;
+		delete coloredNodeCircles;
+	}
 
 	ClearPoints();
 }
@@ -259,6 +269,8 @@ bool TerrainRail::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 	return adjustedAtAll;*/
 }
 
+
+
 void TerrainRail::Move(Vector2i move)
 {
 	assert(finalized);
@@ -267,13 +279,22 @@ void TerrainRail::Move(Vector2i move)
 
 	TerrainPoint *curr;
 
+	Vector2f moveF(move.x, move.y);
+
 	for (int i = 0; i < numP; ++i)
 	{
 		curr = GetPoint(i);
 		curr->pos += move;
 
-		lines[i * 2].position += Vector2f(move.x, move.y);
-		lines[i * 2 + 1].position += Vector2f(move.x, move.y);
+		lines[i * 2].position += moveF;
+		lines[i * 2 + 1].position += moveF;
+
+		coloredQuads[i * 4].position += moveF;
+		coloredQuads[i * 4+1].position += moveF;
+		coloredQuads[i * 4 + 2].position += moveF;
+		coloredQuads[i * 4 + 3].position += moveF;
+
+		coloredNodeCircles->SetPosition(i, coloredNodeCircles->GetPosition(i) + moveF);
 	}
 
 	for (auto it = enemies.begin(); it != enemies.end(); ++it)
@@ -342,12 +363,21 @@ void TerrainRail::UpdateBounds()
 void TerrainRail::Finalize()
 {
 	finalized = true;
-	numLineVerts = (GetNumPoints() - 1) * 2;
+	int numP = GetNumPoints();
+	numLineVerts = (numP - 1) * 2;
+	numColoredQuads = (numP - 1);
 	lines = new sf::Vertex[numLineVerts];
+
+	coloredQuads = new sf::Vertex[numColoredQuads * 4];
+
+	coloredNodeCircles = new CircleGroup(numP, quadHalfWidth, Color::Red, 12);
+	coloredNodeCircles->ShowAll();
 
 	SetupEdges();
 
 	UpdateLines();
+
+	UpdateColoredQuads();
 
 	UpdateBounds();
 }
@@ -441,26 +471,6 @@ void TerrainRail::CreateNewRailsWithSelectedPointsRemoved( list<RailPtr> &rails 
 			currSelectedIndex = selectedIndexes[indexMarker];
 		}
 	}
-
-	/*PolyPtr newPoly = new TerrainPolygon();
-	newPoly->Reserve(newPolyPoints);
-
-	newPoly->layer = 0;
-	newPoly->inverse = inverse;
-	newPoly->terrainWorldType = terrainWorldType;
-	newPoly->terrainVariation = terrainVariation;
-
-	TerrainPoint *curr;
-	for (int i = 0; i < numP; ++i)
-	{
-		curr = GetPoint(i);
-		if (!curr->selected)
-		{
-			newPoly->AddPoint(curr->pos, false);
-		}
-	}
-
-	return newPoly;*/
 }
 
 void TerrainRail::RemoveSelectedPoints()
@@ -554,6 +564,43 @@ void TerrainRail::UpdateLineColor(sf::Vertex *li, int i, int index)
 
 	lines[index].color = edgeColor;
 	lines[index + 1].color = edgeColor;
+}
+
+void TerrainRail::UpdateColoredQuads()
+{
+	int numP = GetNumPoints();
+	assert(numP > 1);
+	
+	Edge *edge;
+	V2d along;
+	V2d other;
+	
+	double dQuadHalfWidth = quadHalfWidth;
+
+	Color quadColor = Color::Red;
+
+	for (int i = 0; i < numP - 1; ++i)
+	{
+		edge = GetEdge(i);
+
+		along = edge->Along();//normalize(Vector2f(next->pos - curr->pos));
+		other = edge->Normal();
+
+		coloredQuads[i * 4].position = Vector2f(edge->v0 + other * dQuadHalfWidth);
+		coloredQuads[i * 4 + 1].position = Vector2f(edge->v1 + other * dQuadHalfWidth);
+		coloredQuads[i * 4 + 2].position = Vector2f(edge->v1 - other * dQuadHalfWidth);
+		coloredQuads[i * 4 + 3].position = Vector2f(edge->v0 - other * dQuadHalfWidth);
+
+		coloredQuads[i * 4].color = quadColor;
+		coloredQuads[i * 4 + 1].color = quadColor;
+		coloredQuads[i * 4 + 2].color = quadColor;
+		coloredQuads[i * 4 + 3].color = quadColor;
+	}
+
+	for (int i = 0; i < numP; ++i)
+	{
+		coloredNodeCircles->SetPosition(i, Vector2f(GetPoint(i)->pos));
+	}
 }
 
 void TerrainRail::UpdateLines()
@@ -939,7 +986,7 @@ void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
 void TerrainRail::CancelTransformation()
 {
 	UpdateLines();
-
+	UpdateColoredQuads();
 	/*for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
 	{
 		(*it)->SetPosition((*it)->preTransformPos);
@@ -980,6 +1027,7 @@ RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
 	//newPoly->SetMaterialType(terrainWorldType, terrainVariation);
 
 	UpdateLines();
+	UpdateColoredQuads();
 	//UpdateLinePositions();
 
 	//newRail->SetFlyTransform(this, tr);
@@ -1004,6 +1052,7 @@ RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
 void TerrainRail::UpdateTransformation(TransformTools *tr)
 {
 	UpdateLines();
+	UpdateColoredQuads();
 
 	int numP = GetNumPoints();
 	Vector2f fDiff;
@@ -1053,6 +1102,30 @@ void TerrainRail::UpdateTransformation(TransformTools *tr)
 		if( i > 0 && i < numP - 1 )
 		{
 			lines[posInd - 1].position = fCurr;
+		}
+	}
+
+	//int numQuadVerts = (numP - 1);
+	Vector2f along, other;
+	Vector2f start, end;
+	for (int i = 0; i < numColoredQuads; ++i)
+	{
+		start = lines[i * 2].position;
+		end = lines[i * 2 + 1].position;
+
+		along = normalize(end - start);
+		other = Vector2f(along.y, -along.x);
+
+		coloredQuads[i * 4].position = start + other * quadHalfWidth;
+		coloredQuads[i * 4 + 1].position = end + other * quadHalfWidth;
+		coloredQuads[i * 4 + 2].position = end - other * quadHalfWidth;
+		coloredQuads[i * 4 + 3].position = start - other * quadHalfWidth;
+
+		coloredNodeCircles->SetPosition(i, start);
+
+		if (i == numColoredQuads - 1)
+		{
+			coloredNodeCircles->SetPosition(i+1, end);
 		}
 	}
 
@@ -1109,24 +1182,9 @@ void TerrainRail::StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionIn
 void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *target)
 {
 	int numP = GetNumPoints();
-	/*if (false)
-	{
-		int index = 0;
-		TerrainPoint *curr, *next;
 
-		
-		for (int i = 0; i < numP - 1; ++i)
-		{
-			curr = GetPoint(i);
-			next = GetNextPoint(i);
-
-			lines[i * 2].position = Vector2f(curr->pos.x, curr->pos.y);
-			lines[i * 2 + 1].position = Vector2f(next->pos.x, next->pos.y);
-		}
-
-		target->draw(lines, numLineVerts, sf::Lines);
-		return;
-	}*/
+	target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
+	coloredNodeCircles->Draw(target);
 
 	target->draw(lines, numLineVerts, sf::Lines);
 

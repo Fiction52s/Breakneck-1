@@ -13,6 +13,7 @@ struct TerrainPoint;
 struct ActorParams;
 struct TerrainPolygon;
 struct TransformTools;
+struct CircleGroup;
 
 struct TerrainRail : ISelectable
 {
@@ -80,6 +81,7 @@ struct TerrainRail : ISelectable
 	void UpdateLineColor(sf::Vertex *li, 
 		int i, int index);
 	void UpdateLines();
+	void UpdateColoredQuads();
 	void SwitchDirection();
 	void SetParams(Panel *p);
 	void UpdatePanel(Panel *p);
@@ -124,8 +126,13 @@ struct TerrainRail : ISelectable
 
 	double railRadius;
 
+	CircleGroup *coloredNodeCircles;
+	sf::Vertex *coloredQuads;
+	sf::Vertex *texturedQuads;
 	sf::Vertex *lines;
 	int numLineVerts;
+	int numColoredQuads;
+	float quadHalfWidth;
 
 	sf::Vertex *quads;
 
