@@ -7162,6 +7162,20 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 		}
 	}
 
+	RailPtr rail;
+	if (cBrush != NULL)
+	{
+		for (auto bit = cBrush->objects.begin(); bit != cBrush->objects.end(); ++bit)
+		{
+			rail = (*bit)->GetAsRail();
+			if (rail != NULL)
+			{
+				result.AddObject(rail->Copy());
+				//rail enemies go here?
+			}
+		}
+	}
+
 	if( !orig.IsEmpty() || !result.IsEmpty() )
 	{
 		ClearUndoneActions(); //critical to have this before the deactivation
@@ -10904,6 +10918,19 @@ void EditSession::EditModeHandleEvent()
 		if (ev.key.code == Keyboard::C && ev.key.control)
 		{
 			//copiedBrush = selectedBrush->Copy();
+			if (copiedBrush != NULL)
+			{
+				copiedBrush->Destroy();
+				delete copiedBrush;
+				copiedBrush = NULL;
+			}
+			if (freeActorCopiedBrush != NULL)
+			{
+				freeActorCopiedBrush->Destroy();
+				delete freeActorCopiedBrush;
+				freeActorCopiedBrush = NULL;
+			}
+
 			copiedBrush = selectedBrush->CopyTerrainAndAttachedActors();
 			freeActorCopiedBrush = selectedBrush->CopyFreeActors();
 		}

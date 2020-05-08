@@ -582,10 +582,13 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 	Brush *newBrush = new Brush;
 	PolyPtr tp;
 	ActorPtr ap;
+	RailPtr rp;
 
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		tp = (*it)->GetAsTerrain();
+		rp = (*it)->GetAsRail();
+
 		if (tp != NULL)
 		{
 			if (tp->inverse)
@@ -594,6 +597,11 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 			}
 
 			PolyPtr ptr = tp->Copy();
+			newBrush->AddObject(ptr);
+		}
+		else if (rp != NULL)
+		{
+			RailPtr ptr = rp->Copy();
 			newBrush->AddObject(ptr);
 		}
 	}
@@ -609,6 +617,7 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 			}
 
 			PolyPtr myPoly = ap->posInfo.ground;
+			RailPtr myRail = ap->posInfo.railGround;
 
 
 			ActorPtr aPtr = ap->Copy();
@@ -619,6 +628,13 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 			{
 				aPtr->posInfo.ground = myPoly->mostRecentCopy;
 				aPtr->AnchorToGround(PositionInfo(aPtr->posInfo));
+				aPtr->posInfo.AddActor(aPtr);
+				newBrush->AddObject(aPtr);
+			}
+			else if (myRail != NULL && myRail->selected)
+			{
+				aPtr->posInfo.railGround = myRail->mostRecentCopy;
+				aPtr->AnchorToRail(PositionInfo(aPtr->posInfo));
 				aPtr->posInfo.AddActor(aPtr);
 				newBrush->AddObject(aPtr);
 			}

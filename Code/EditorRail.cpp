@@ -12,7 +12,6 @@ using namespace sf;
 TerrainRail::TerrainRail()
 	:ISelectable(ISelectable::RAIL)
 {
-	quadHalfWidth = 10;
 	Init();
 }
 
@@ -91,6 +90,7 @@ void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 
 void TerrainRail::Init()
 {
+	quadHalfWidth = 10;
 	renderMode = RENDERMODE_NORMAL;
 	finalized = false;
 	lines = NULL;
@@ -279,20 +279,27 @@ void TerrainRail::Move(Vector2i move)
 
 	TerrainPoint *curr;
 
-	Vector2f moveF(move.x, move.y);
+	Vector2f moveF(move);
+	V2d moveD(move);
 
 	for (int i = 0; i < numP; ++i)
 	{
 		curr = GetPoint(i);
 		curr->pos += move;
 
-		lines[i * 2].position += moveF;
-		lines[i * 2 + 1].position += moveF;
+		if (i < numP - 1)
+		{
+			lines[i * 2].position += moveF;
+			lines[i * 2 + 1].position += moveF;
 
-		coloredQuads[i * 4].position += moveF;
-		coloredQuads[i * 4+1].position += moveF;
-		coloredQuads[i * 4 + 2].position += moveF;
-		coloredQuads[i * 4 + 3].position += moveF;
+			coloredQuads[i * 4].position += moveF;
+			coloredQuads[i * 4 + 1].position += moveF;
+			coloredQuads[i * 4 + 2].position += moveF;
+			coloredQuads[i * 4 + 3].position += moveF;
+
+			edges[i].v0 += moveD;
+			edges[i].v1 += moveD;
+		}
 
 		coloredNodeCircles->SetPosition(i, coloredNodeCircles->GetPosition(i) + moveF);
 	}
@@ -666,6 +673,12 @@ void TerrainRail::SoftReset()
 	if (lines != NULL)
 		delete[] lines;
 
+	if (coloredQuads != NULL)
+		delete[] coloredQuads;
+
+	if (coloredNodeCircles != NULL)
+		delete coloredNodeCircles;
+
 	lines = NULL;
 	finalized = false;
 }
@@ -865,7 +878,11 @@ bool TerrainRail::Intersects(sf::IntRect rect)
 
 void TerrainRail::BrushDraw(sf::RenderTarget *target, bool valid)
 {
-	target->draw(lines, GetNumPoints() * 2, sf::Lines);
+	target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
+	coloredNodeCircles->Draw(target);
+
+	target->draw(lines, numLineVerts, sf::Lines);
+	//target->draw(lines, GetNumPoints() * 2, sf::Lines);
 }
 
 void TerrainRail::MovePoint(int index, sf::Vector2i &delta)

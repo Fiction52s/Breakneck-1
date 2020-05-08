@@ -30,6 +30,9 @@ struct TerrainRail : ISelectable
 		RENDERMODE_FLIES,
 	};*/
 
+
+	RailPtr mostRecentCopy;
+
 	void AddEnemiesToBrush(Brush *b);
 	int GetNumSelectedPoints();
 	void CreateNewRailsWithSelectedPointsRemoved(
