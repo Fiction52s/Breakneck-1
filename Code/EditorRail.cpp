@@ -377,8 +377,6 @@ void TerrainRail::Finalize()
 
 	UpdateLines();
 
-	UpdateColoredQuads();
-
 	UpdateBounds();
 }
 
@@ -623,6 +621,8 @@ void TerrainRail::UpdateLines()
 			index += 2;
 		}
 	}
+
+	UpdateColoredQuads();
 }
 
 TerrainPoint * TerrainRail::AddPoint(sf::Vector2i &p, bool sel)
@@ -986,7 +986,7 @@ void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
 void TerrainRail::CancelTransformation()
 {
 	UpdateLines();
-	UpdateColoredQuads();
+	
 	/*for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
 	{
 		(*it)->SetPosition((*it)->preTransformPos);
@@ -1027,7 +1027,6 @@ RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
 	//newPoly->SetMaterialType(terrainWorldType, terrainVariation);
 
 	UpdateLines();
-	UpdateColoredQuads();
 	//UpdateLinePositions();
 
 	//newRail->SetFlyTransform(this, tr);
@@ -1052,7 +1051,6 @@ RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
 void TerrainRail::UpdateTransformation(TransformTools *tr)
 {
 	UpdateLines();
-	UpdateColoredQuads();
 
 	int numP = GetNumPoints();
 	Vector2f fDiff;
@@ -1105,7 +1103,6 @@ void TerrainRail::UpdateTransformation(TransformTools *tr)
 		}
 	}
 
-	//int numQuadVerts = (numP - 1);
 	Vector2f along, other;
 	Vector2f start, end;
 	for (int i = 0; i < numColoredQuads; ++i)
