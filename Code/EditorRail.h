@@ -14,6 +14,7 @@ struct ActorParams;
 struct TerrainPolygon;
 struct TransformTools;
 struct CircleGroup;
+struct BlockerChain;
 
 struct TerrainRail : ISelectable, QuadTreeEntrant
 {
@@ -22,6 +23,16 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		RENDERMODE_NORMAL,
 	};
 	RenderMode renderMode;
+
+	enum RailType
+	{
+		NORMAL,
+		BLOCKER,
+	};
+
+	Session *sess;
+	RailType rType;
+	void CreateBlockerChain();
 	/*enum RenderMode
 	{
 		RENDERMODE_NORMAL,
@@ -35,6 +46,9 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	void Draw(sf::RenderTarget *target);
+
+	ActorParams *blockerParams;
+	//BlockerChain *blockerChain;
 
 	RailPtr mostRecentCopy;
 

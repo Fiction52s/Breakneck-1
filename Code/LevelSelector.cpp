@@ -43,6 +43,8 @@ string TreeNode::GetLocalPath()
 
 LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 {
+	levelServer = new LevelServer;
+
 	mainMenu = p_mainMenu;
 	previewSpr.setPosition(500, 500);
 	width = 400;
@@ -75,6 +77,7 @@ LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 
 LevelSelector::~LevelSelector()
 {
+	delete levelServer;
 	//entries
 	//text
 	//localPaths
@@ -114,7 +117,8 @@ void LevelSelector::UpdateMapList()
 	}*/
 	//sf::Http &http = levelServer.http;
 	
-	
+	levelServer->PrintMaps();
+
 	//std::string path = "Maps/";
 	//std::string file = "gateblank9.brknk";
 	//bool goodDownload = levelServer.DownloadFile( path, file );

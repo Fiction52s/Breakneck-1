@@ -147,6 +147,7 @@ struct ActorParams : ISelectable
 
 	sf::RectangleShape aabbDraw;
 	void SetAABBOutlineColor(sf::Color c);
+	//bool partOfTerrain; //for when you have railblockers, or terrain flies, etc.
 };
 
 #endif

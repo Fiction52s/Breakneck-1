@@ -82,7 +82,7 @@ struct LevelSelector
 	int yspacing;
 	//sf::Vector2f windowStretch;
 	std::string newLevelName;
-	//LevelServer levelServer;
+	LevelServer *levelServer;
 	sf::RenderTexture drawPanel;
 	int viewOffset;
 	void ChangeViewOffset( int delta );

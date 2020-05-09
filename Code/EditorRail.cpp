@@ -5,6 +5,7 @@
 #include "TransformTools.h"
 #include "Action.h"
 #include "CircleGroup.h"
+#include "Enemy_Blocker.h"
 
 using namespace std;
 using namespace sf;
@@ -94,6 +95,7 @@ void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 
 void TerrainRail::Init()
 {
+	sess = Session::GetSession();
 	queryNext = NULL;
 	quadHalfWidth = 6;
 	renderMode = RENDERMODE_NORMAL;
@@ -107,6 +109,9 @@ void TerrainRail::Init()
 	requirePower = false;
 	accelerate = false;
 	level = 1;
+
+	rType = BLOCKER;
+	blockerParams = NULL;
 }
 
 TerrainRail::~TerrainRail()
@@ -119,6 +124,9 @@ TerrainRail::~TerrainRail()
 		delete[] coloredQuads;
 		delete coloredNodeCircles;
 	}
+
+	if (blockerParams != NULL)
+		delete blockerParams;
 
 	ClearPoints();
 }
@@ -159,7 +167,8 @@ void TerrainRail::Deactivate()
 	cout << "deactivating rail :" << sess->rails.size() << endl;
 	sess->rails.remove(this);
 
-	
+	//if (blockerParams != NULL)
+	//	blockerParams->Deactivate();
 }
 
 void TerrainRail::Activate()
@@ -169,6 +178,9 @@ void TerrainRail::Activate()
 
 	cout << "activating rail :" << sess->rails.size() << endl;
 	sess->rails.push_back(this);
+
+	//if( blockerParams != NULL )
+	//	blockerParams->Activate();
 }
 
 void TerrainRail::WriteFile(std::ofstream &of)
@@ -390,11 +402,55 @@ void TerrainRail::Finalize()
 	coloredNodeCircles = new CircleGroup(numP, quadHalfWidth, Color::Red, 12);
 	coloredNodeCircles->ShowAll();
 
+
+
 	SetupEdges();
 
 	UpdateLines();
 
 	UpdateBounds();
+
+	if (rType == BLOCKER)
+	{
+		CreateBlockerChain();
+	}
+}
+
+void TerrainRail::CreateBlockerChain()
+{
+	if (blockerParams != NULL)
+	{
+		delete blockerParams;
+		blockerParams = NULL;
+	}
+
+
+	blockerParams = sess->types["blocker"]->defaultParamsVec[0]->Copy();
+	blockerParams->group = sess->groups["--"];
+
+	vector<Vector2i> testPath;
+	int numP = GetNumPoints();
+	testPath.resize(numP - 1);
+	V2d startPos;
+
+	for (int i = 1; i < numP; ++i)
+	{
+		testPath[i - 1] = GetPoint(i)->pos;
+	}
+	//polygonInProgress->MakeGlobalPath(startPos, testPath);
+	blockerParams->SetPosition(V2d( GetPoint(0)->pos ));
+	blockerParams->SetBoundingQuad();
+	blockerParams->SetPath(testPath);
+	blockerParams->CreateMyEnemy();
+	//blockerParams->Activate();
+
+	/*Brush b;
+	b.AddObject(testParams);
+	Action *apply = NULL;
+	apply = new ApplyBrushAction(&b);
+	apply->Perform();
+
+	AddDoneAction(apply);*/
 }
 
 int TerrainRail::GetNumSelectedPoints()
@@ -1212,8 +1268,21 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 {
 	int numP = GetNumPoints();
 
-	target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
-	coloredNodeCircles->Draw(target);
+	switch (rType)
+	{
+	case NORMAL:
+	{
+		target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
+		coloredNodeCircles->Draw(target);
+		break;
+	}
+	case BLOCKER:
+	{
+		blockerParams->Draw(target);
+		break;
+	}
+	}
+	
 
 	target->draw(lines, numLineVerts, sf::Lines);
 

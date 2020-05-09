@@ -68,6 +68,7 @@ ActorParams::ActorParams(ActorType *at)
 	:ISelectable(ISelectable::ACTOR), boundingQuad(sf::Quads, 4),
 	hasMonitor(false), group(NULL), type(at)
 {
+	//partOfTerrain = false;
 	lines = NULL;
 	myEnemy = NULL;
 	enemyLevel = 1;

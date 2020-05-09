@@ -3676,6 +3676,7 @@ bool EditSession::PointSelectActor( V2d &pos )
 		for (auto ait = (*it).second->actors.begin();
 			ait != (*it).second->actors.end(); ++ait)
 		{
+
 			if ((*ait)->ContainsPoint(Vector2f(pos)))
 			{
 				if ((*ait)->selected)

@@ -7,8 +7,7 @@ using namespace sf;
 
 LevelServer::LevelServer()
 {
-	http.setHost("http://www.breakneckemergence.com/");
-	//http.setHost("http://raw.githubusercontent.com/Fiction52s/Fiction52s.github.io/master/");
+	http.setHost("http://localhost", 3000);
 }
 
 bool LevelServer::DownloadFile( const std::string &path, const std::string &fname)
@@ -34,4 +33,21 @@ bool LevelServer::DownloadFile( const std::string &path, const std::string &fnam
 		std::cout << "request failed: " << file_res.getStatus() << std::endl;
 		return false;
     }
+}
+
+void LevelServer::PrintMaps()
+{
+	sf::Http::Request req("api/v1/maps");
+	//req.setMethod( Http::Request::)
+	sf::Http::Response file_res = http.sendRequest(req);
+
+	if (file_res.getStatus() == sf::Http::Response::Ok)
+	{
+		std::string body = file_res.getBody();
+		cout << body << endl;
+	}
+	else
+	{
+		std::cout << "request failed: " << file_res.getStatus() << std::endl;
+	}
 }

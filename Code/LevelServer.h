@@ -7,6 +7,7 @@ struct LevelServer
 	LevelServer();
 	bool DownloadFile( const std::string &path,
 		const std::string &file );
+	void PrintMaps();
 	sf::Http http;
 };
 
