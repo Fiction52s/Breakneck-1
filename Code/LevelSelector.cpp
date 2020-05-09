@@ -115,9 +115,9 @@ void LevelSelector::UpdateMapList()
 	//sf::Http &http = levelServer.http;
 	
 	
-	std::string path = "test/";
-	std::string file = "map_online.brknk";
- //  bool goodDownload = levelServer.DownloadFile( path, file );
+	//std::string path = "Maps/";
+	//std::string file = "gateblank9.brknk";
+	//bool goodDownload = levelServer.DownloadFile( path, file );
 
    
 	UpdateMapList( entries, "Resources/Maps" );

@@ -7,7 +7,8 @@ using namespace sf;
 
 LevelServer::LevelServer()
 {
-	http.setHost("http://www.breakneckgame.com/");
+	http.setHost("http://www.breakneckemergence.com/");
+	//http.setHost("http://raw.githubusercontent.com/Fiction52s/Fiction52s.github.io/master/");
 }
 
 bool LevelServer::DownloadFile( const std::string &path, const std::string &fname)
