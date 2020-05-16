@@ -6,8 +6,9 @@
 #include <string>
 #include <map>
 #include <SFML/Graphics.hpp>
-#include "LevelServer.h"
 #include <vector>
+
+struct CustomMapClient;
 
 struct TreeNode
 {
@@ -82,7 +83,6 @@ struct LevelSelector
 	int yspacing;
 	//sf::Vector2f windowStretch;
 	std::string newLevelName;
-	LevelServer *levelServer;
 	sf::RenderTexture drawPanel;
 	int viewOffset;
 	void ChangeViewOffset( int delta );
@@ -90,9 +90,11 @@ struct LevelSelector
 	std::map<std::string, Tileset*> previewTS;
 	Tileset *ts_previewNotFound;
 	MainMenu *mainMenu;
-
+	
 	//used for loading and resaving all files
 	std::list<std::string> allMapPaths;
+
+	CustomMapClient *customMapClient;
 	
 };
 

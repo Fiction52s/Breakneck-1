@@ -4,6 +4,7 @@
 #include "MainMenu.h"
 #include <iomanip>
 #include <time.h>
+#include "CustomMapClient.h"
 
 using namespace boost::filesystem;
 using namespace std;
@@ -43,7 +44,8 @@ string TreeNode::GetLocalPath()
 
 LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 {
-	levelServer = new LevelServer;
+	customMapClient = new CustomMapClient;
+	customMapClient->AnonymousInit();
 
 	mainMenu = p_mainMenu;
 	previewSpr.setPosition(500, 500);
@@ -77,7 +79,6 @@ LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 
 LevelSelector::~LevelSelector()
 {
-	delete levelServer;
 	//entries
 	//text
 	//localPaths
@@ -116,8 +117,11 @@ void LevelSelector::UpdateMapList()
 		cout << "COULDNT CONNECT WITH SERVER" << endl;
 	}*/
 	//sf::Http &http = levelServer.http;
-	
-	levelServer->PrintMaps();
+	customMapClient->AttempGetMapListFromServer();
+	for (auto it = customMapClient->mapEntries.begin(); it != customMapClient->mapEntries.end(); ++it)
+	{
+		customMapClient->AttemptDownloadMapFromServer("Resources/Maps/DownloadedMaps/", (*it));
+	}
 
 	//std::string path = "Maps/";
 	//std::string file = "gateblank9.brknk";
