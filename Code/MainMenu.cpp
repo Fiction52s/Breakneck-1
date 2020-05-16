@@ -33,6 +33,8 @@
 #include "GCC/USBDriver.h"
 #include "GCC/VJoyGCController.h"
 
+#include "CustomMapClient.h"
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
@@ -1374,12 +1376,39 @@ void MainMenu::CustomMapsOption()
 	p.AddButton( "Play", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "PLAY" );
 	p.AddButton( "Edit", Vector2i( 100, 100 ), Vector2f( 100, 50 ), "EDIT" );
 	p.AddButton( "Create New", Vector2i( 100, 200 ), Vector2f( 175, 50 ), "CREATE NEW" );
-	p.AddButton( "Delete", Vector2i( 900, 300 ), Vector2f( 150, 50 ), "DELETE" );
+	p.AddButton( "Delete", Vector2i( 500, 10), Vector2f( 150, 50 ), "DELETE" );
 
-	Panel namePopup( "name popup", 300, 200, &customMapHandler );
-	namePopup.pos = Vector2i( 960, 540 );
-	namePopup.AddButton( "ok", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "OK" );	
-	namePopup.AddTextBox( "name", Vector2i( 10, 10 ), 100, 40, "test" );
+	p.AddButton("Login", Vector2i(1150, 300), Vector2f(300, 50), "LOGIN");
+	p.AddButton( "Upload", Vector2i(1150, 400), Vector2f(300, 50), "UPLOAD TO SERVER");
+	p.AddButton( "List", Vector2i(1150, 500), Vector2f(300, 50), "PRINT SERVER MAPS");
+	p.AddButton("Download", Vector2i(1150, 600), Vector2f(300, 50), "DOWNLOAD A MAP");
+	p.AddButton("Remove", Vector2i(1150, 900), Vector2f(300, 50), "REMOVE A MAP");
+	
+	//p.AddButton("Remove", Vector2i(600, 300), Vector2f(300, 50), "REMOVE FROM SERVER");
+
+	Panel namePopup( "name popup", 500, 200, &customMapHandler );
+	namePopup.pos = Vector2i( 960 - 250, 540 );
+	namePopup.AddButton( "ok", Vector2i( 300, 0 ), Vector2f( 100, 50 ), "OK" );	
+	namePopup.AddTextBox( "name", Vector2i( 10, 10 ), 300, 40, "test" );
+
+	
+
+	Panel downloadPopup("remove popup", 500, 200, &customMapHandler);
+	downloadPopup.pos = Vector2i(960 - 250, 540);
+	downloadPopup.AddButton("downloadok", Vector2i(300, 0), Vector2f(100, 50), "OK");
+	downloadPopup.AddTextBox("index", Vector2i(10, 10), 300, 40, "0");
+
+	Panel loginPopup("login popup", 800, 200, &customMapHandler);
+	loginPopup.pos = Vector2i(960 - 400, 540);
+	loginPopup.AddButton("loginok", Vector2i(630, 0), Vector2f(100, 50), "OK");
+	loginPopup.AddTextBox("pass", Vector2i(10, 10), 300, 40, "");
+	loginPopup.AddTextBox("user", Vector2i(320, 10), 300, 40, "");
+
+	Panel removePopup("remove popup", 500, 200, &customMapHandler);
+	removePopup.pos = Vector2i(960 - 250, 540);
+	removePopup.AddButton("removeok", Vector2i(300, 0), Vector2f(100, 50), "OK");
+	removePopup.AddTextBox("index", Vector2i(10, 10), 300, 40, "0");
+	//Panel loginPopup( "login popup")
 	//bool showNamePopup = false;
 
 	ls.UpdateMapList();
@@ -1432,6 +1461,19 @@ void MainMenu::CustomMapsOption()
 							namePopup.SendKey( ev.key.code, ev.key.shift );
 							CopyMap(&customMapHandler, &namePopup);
 						}
+						else if (customMapHandler.showDownloadPopup)
+						{
+							downloadPopup.SendKey(ev.key.code, ev.key.shift);
+						}
+						else if (customMapHandler.showLoginPopup)
+						{
+							loginPopup.SendKey(ev.key.code, ev.key.shift);
+						}
+						else if (customMapHandler.showRemovePopup)
+						{
+							removePopup.SendKey(ev.key.code, ev.key.shift);
+						}
+						
 						
 					}
 					break;
@@ -1443,6 +1485,18 @@ void MainMenu::CustomMapsOption()
 						if( customMapHandler.showNamePopup )
 						{
 							namePopup.Update( true, false, uiMouse.x, uiMouse.y);
+						}
+						else if (customMapHandler.showDownloadPopup)
+						{
+							downloadPopup.Update(true, false, uiMouse.x, uiMouse.y);
+						}
+						else if (customMapHandler.showLoginPopup)
+						{
+							loginPopup.Update(true, false, uiMouse.x, uiMouse.y);
+						}
+						else if (customMapHandler.showRemovePopup)
+						{
+							removePopup.Update(true, false, uiMouse.x, uiMouse.y);
 						}
 						else
 						{
@@ -1457,11 +1511,23 @@ void MainMenu::CustomMapsOption()
 				{
 					if( ev.mouseButton.button == Mouse::Button::Left )
 					{
-						if( customMapHandler.showNamePopup )
+						if (customMapHandler.showNamePopup)
 						{
 							ls.newLevelName = "";
-							namePopup.Update( false, false, uiMouse.x, uiMouse.y );
+							namePopup.Update(false, false, uiMouse.x, uiMouse.y);
 							CopyMap(&customMapHandler, &namePopup);
+						}
+						else if (customMapHandler.showDownloadPopup)
+						{
+							downloadPopup.Update(false, false, uiMouse.x, uiMouse.y);
+						}
+						else if (customMapHandler.showLoginPopup)
+						{
+							loginPopup.Update(false, false, uiMouse.x, uiMouse.y);
+						}
+						else if (customMapHandler.showRemovePopup)
+						{
+							removePopup.Update(false, false, uiMouse.x, uiMouse.y);
 						}
 						else
 						{
@@ -1495,6 +1561,19 @@ void MainMenu::CustomMapsOption()
 		{
 			namePopup.Draw( window );
 		}
+		else if (customMapHandler.showDownloadPopup)
+		{
+			downloadPopup.Draw(window);
+		}
+		else if (customMapHandler.showLoginPopup)
+		{
+			loginPopup.Draw(window);
+		}
+		else if (customMapHandler.showRemovePopup)
+		{
+			removePopup.Draw(window);
+		}
+		
 
 		window->display();
 		
@@ -3363,7 +3442,8 @@ MapHeader * MainMenu::ReadMapHeader(std::ifstream &is)
 }
 
 CustomMapsHandler::CustomMapsHandler( MainMenu *p_menu )
-		:menu( p_menu ), optionChosen( false ), showNamePopup( false )
+		:menu( p_menu ), showNamePopup( false ),
+	showDownloadPopup( false ), showLoginPopup( false ), showRemovePopup( false )
 {
 }
 
@@ -3377,7 +3457,6 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		if( b->name == "Play" )
 		{
 			menu->gameRunType = MainMenu::GRT_FREEPLAY;
-			optionChosen = true;
 			GameSession *gs = new GameSession( NULL, ls.GetSelectedPath() );
 			GameSession::sLoad( gs );
 			gs->Run();
@@ -3388,7 +3467,6 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		}
 		else if( b->name == "Edit" )
 		{
-			optionChosen = true;
 			menu->GameEditLoop( ls.GetSelectedPath() );//ls.paths[ls.selectedIndex].().string() );//ls.text[ls.selectedIndex].getString() );
 			ls.UpdateSelectedPreview();
 			menu->window->setView( menu->uiView );
@@ -3400,6 +3478,21 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 			boost::filesystem::remove( ls.GetSelectedPath() );
 			ls.UpdateMapList();
 		}
+		else if (b->name == "Upload")
+		{
+			string path = "Resources/Maps/" + ls.localPaths[ls.selectedIndex];
+			string name = ls.text[ls.selectedIndex].getString().toAnsiString();
+			
+			bool res = ls.customMapClient->AttemptUploadMapToServer(path, name, true);
+			if (res)
+			{
+				cout << "successful upload" << endl;
+			}
+			else
+			{
+				cout << "upload failed" << endl;
+			}
+		}
 	}
 	else
 	{
@@ -3409,7 +3502,6 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 	if( b->name == "Create New" )
 	{			
 		showNamePopup = true;
-		optionChosen = true;	
 		//cout << "what" << endl;
 		//cout << b->owner->name << ", " << b->owner->textBoxes.size() << ", " << b->owner->textBoxes.count( "name" ) << endl;
 				
@@ -3419,7 +3511,96 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		showNamePopup = false;
 		ls.newLevelName = b->owner->textBoxes["name"]->text.getString().toAnsiString();
 	}
-		
+	else if (b->name == "List")
+	{
+		cout << "..getting map list.." << endl;
+		ls.customMapClient->AttempGetMapListFromServer();
+		ls.customMapClient->PrintMapEntries();
+	}
+	else if (b->name == "Download")
+	{
+		ls.customMapClient->AttempGetMapListFromServer();
+		showDownloadPopup = true;
+	}
+	else if (b->name == "downloadok")
+	{
+		showDownloadPopup = false;
+		stringstream ss;
+		ss << b->owner->textBoxes["index"]->text.getString().toAnsiString();
+		int index;
+		ss >> index;
+		if (!ss.fail())
+		{
+			if (index >= 0 && index < ls.customMapClient->mapEntries.size())
+			{
+				cout << "attempting to download a map" << endl;
+				CustomMapEntry &entry = ls.customMapClient->mapEntries[index];
+				ls.customMapClient->AttemptDownloadMapFromServer(
+					"Resources/Maps/DownloadedMaps/", entry);
+			}
+			else
+			{
+				cout << "invalid index: " << index << endl;
+			}
+		}
+		else
+		{
+			cout << "index could not be read." << endl;
+		}
+	}
+	else if (b->name == "Login")
+	{
+		if (!ls.customMapClient->IsLoggedIn())
+		{
+			showLoginPopup = true;
+		}
+		else
+		{
+			cout << "you are already logged in" << endl;
+		}
+	}
+	else if (b->name == "loginok")
+	{
+		showLoginPopup = false;
+		string user = b->owner->textBoxes["user"]->text.getString().toAnsiString();
+		string pass = b->owner->textBoxes["pass"]->text.getString().toAnsiString();
+		ls.customMapClient->AttemptUserLogin(user, pass);
+	}
+	else if (b->name == "Remove")
+	{
+		ls.customMapClient->AttempGetMapListFromServer();
+		showRemovePopup = true;
+	}
+	else if (b->name == "removeok")
+	{
+		showRemovePopup = false;
+
+		stringstream ss;
+		ss << b->owner->textBoxes["index"]->text.getString().toAnsiString();
+		int index;
+		ss >> index;
+		if (!ss.fail())
+		{
+			if (index >= 0 && index < ls.customMapClient->mapEntries.size())
+			{
+				cout << "attempting to remove a map" << endl;
+				CustomMapEntry &entry = ls.customMapClient->mapEntries[index];
+				bool res = ls.customMapClient->AttemptDeleteMapFromServer(entry);
+				if (!res)
+				{
+					cout << "failed to remove map" << endl;
+				}
+			}
+			else
+			{
+				cout << "invalid index: " << index << endl;
+			}
+		}
+		else
+		{
+			cout << "index could not be read." << endl;
+		}
+	}
 }
 
 void CustomMapsHandler::TextBoxCallback( TextBox *tb, const std::string & e )

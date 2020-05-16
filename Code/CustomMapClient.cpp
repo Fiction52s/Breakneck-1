@@ -50,6 +50,12 @@ ServerConnection::ServerConnection()
 	myConnection = NULL;
 	mySession = NULL;
 	myRequest = NULL;
+
+	localHostRestBase = L"/MapServer/rest/";
+
+	publicServerRestBase = L"/rest/";
+
+	local = true;
 }
 
 HINTERNET ServerConnection::OpenRequest(LPCWSTR verb, LPCWSTR path)
@@ -61,6 +67,18 @@ HINTERNET ServerConnection::OpenRequest(LPCWSTR verb, LPCWSTR path)
 			WINHTTP_DEFAULT_ACCEPT_TYPES, 0);
 
 	return req;
+}
+
+const wstring &ServerConnection::GetRESTBase()
+{
+	if (local)
+	{
+		return localHostRestBase;
+	}
+	else
+	{
+		return publicServerRestBase;
+	}
 }
 
 DWORD ServerConnection::GetRequestStatusCode()
@@ -185,8 +203,10 @@ void ServerConnection::CleanupServerConnection()
 	mySession = NULL;
 }
 
-bool ServerConnection::ConnectToServer()
+bool ServerConnection::ConnectToServer( bool p_local )
 {
+	local = p_local;
+
 	DWORD dwSize = 0;
 	DWORD dwDownloaded = 0;
 	BOOL  bResults = FALSE;
@@ -201,8 +221,17 @@ bool ServerConnection::ConnectToServer()
 
 	if (mySession != NULL)
 	{
-		myConnection = WinHttpConnect(mySession, L"localhost",
-			8080, 0);
+		if (local)
+		{
+			myConnection = WinHttpConnect(mySession, L"localhost",
+				8080, 0);
+		}
+		else
+		{
+			myConnection = WinHttpConnect(mySession, 
+				L"www.please.eba-gkrhenjs.us-west-2.elasticbeanstalk.com",
+				80, 0);
+		}
 	}
 
 	if (myConnection == NULL)
@@ -244,9 +273,11 @@ bool ServerConnection::SendRequest()
 		0, 0);
 }
 
-bool ServerConnection::RequestMapUpload(const string &mapName, const string &accessToken)
+bool ServerConnection::RequestMapUpload(const string &mapName, const string &accessToken,
+	bool overwriteIfExists )
 {
-	myRequest = OpenRequest(HttpVerb::POST, L"/MapServer/rest/maps");
+	wstring path = GetRESTBase() + L"maps";
+	myRequest = OpenRequest(HttpVerb::POST, path.c_str());
 
 	bool okay = false;
 	if (myRequest != NULL)
@@ -284,11 +315,30 @@ bool ServerConnection::RequestMapUpload(const string &mapName, const string &acc
 					//Aws::String awsFullPath(fullPath.c_str());
 					okay = true;
 				}
-				else if (statusCode == 304) //not modified for now
+				else if (statusCode == 403) //not modified for now
 				{
-					cout << "you aren't allowed to upload the map. It either already exists or the name is invalid." << endl;
+					cout << "you aren't allowed to upload the map. Username is invalid" << endl;
+				}
+				else if (statusCode == 302)
+				{
+					cout << "map already exists";
+					
+					if (overwriteIfExists)
+					{
+						//NOTE: this is only for development and shouldn't be in the real game.
+						okay = true;
+					}
+					
+				}
+				else
+				{
+					cout << "status unexpected while uploading: " << statusCode << endl;
 				}
 				//process POST result here to see if its okay to upload
+			}
+			else
+			{
+				cout << "response not received." << endl;
 			}
 		}
 		else
@@ -309,7 +359,7 @@ bool ServerConnection::RequestMapUpload(const string &mapName, const string &acc
 
 bool ServerConnection::RequestMapDeletion(int id, const string & accessToken)
 {
-	wstring path = L"/MapServer/rest/maps/" + to_wstring(id);
+	wstring path = GetRESTBase() + L"maps/" + to_wstring(id);
 	myRequest = OpenRequest(HttpVerb::DELETE, path.c_str());
 
 	bool okay = false;
@@ -356,7 +406,7 @@ bool ServerConnection::RequestMapDeletion(int id, const string & accessToken)
 
 bool ServerConnection::RequestMapDownload(int id)
 {
-	wstring path = L"/MapServer/rest/maps/" + to_wstring(id);
+	wstring path = GetRESTBase() + L"maps/" + to_wstring( id );
 	myRequest = OpenRequest(HttpVerb::GET, path.c_str());
 
 	bool found = false;
@@ -401,7 +451,10 @@ bool ServerConnection::RequestMapDownload(int id)
 
 bool ServerConnection::RequestGetMapList(std::vector<CustomMapEntry> &entryVec)
 {
-	myRequest = OpenRequest(HttpVerb::GET, L"/MapServer/rest/maps");
+	//myRequest = OpenRequest(HttpVerb::GET, L"/MapServer/rest/maps");
+	wstring path = GetRESTBase() + L"maps";
+	//if( local)
+	myRequest = OpenRequest(HttpVerb::GET, path.c_str());
 
 	if (myRequest != NULL)
 	{
@@ -698,7 +751,7 @@ void CustomMapClient::AnonymousInit()
 	s3Interface.InitWithCredentials(anonCreds);
 	cognitoInterface.InitWithCredentials(anonCreds);
 
-	serverConn.ConnectToServer();
+	serverConn.ConnectToServer(true);
 }
 
 void CustomMapClient::Cleanup()
@@ -725,11 +778,12 @@ bool CustomMapClient::AttemptDeleteMapFromServer(CustomMapEntry &entry)
 	return false;
 }
 
-bool CustomMapClient::AttemptUploadMapToServer(const std::string &path, const std::string &mapName)
+bool CustomMapClient::AttemptUploadMapToServer(const std::string &path, const std::string &mapName,
+	bool overwriteIfExists )
 {
 	if (IsLoggedIn())
 	{
-		if (serverConn.RequestMapUpload(mapName, cognitoInterface.GetAccessToken()))
+		if (serverConn.RequestMapUpload(mapName, cognitoInterface.GetAccessToken(), overwriteIfExists ))
 		{
 			CustomMapEntry entry;
 			entry.name = mapName;
@@ -737,6 +791,14 @@ bool CustomMapClient::AttemptUploadMapToServer(const std::string &path, const st
 			s3Interface.UploadObject(path.c_str(), file.c_str(), cognitoInterface.username.c_str()); //assumed to work for now..
 			return true;
 		}
+		else
+		{
+			cout << "failed upload..." << endl;
+		}
+	}
+	else
+	{
+		cout << "attempt to upload while not logged in" << endl;
 	}
 
 	return false;
@@ -766,7 +828,7 @@ void CustomMapClient::PrintMapEntries()
 	int numEntries = mapEntries.size();
 	for (int i = 0; i < numEntries; ++i)
 	{
-		cout << "map: " << mapEntries[i].name << "   by user: " << mapEntries[i].creatorName << endl;
+		cout << i << ", map: " << mapEntries[i].name << "   by user: " << mapEntries[i].creatorName << endl;
 	}
 }
 

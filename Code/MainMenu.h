@@ -37,8 +37,10 @@ struct CustomMapsHandler : GUIHandler
 {
 	//LevelSelector &ls;
 	MainMenu *menu;
-	bool optionChosen;
 	bool showNamePopup;
+	bool showDownloadPopup;
+	bool showLoginPopup;
+	bool showRemovePopup;
 
 	CustomMapsHandler( MainMenu *menu );
 	void ButtonCallback( Button *b, const std::string & e );

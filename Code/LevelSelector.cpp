@@ -35,7 +35,7 @@ string TreeNode::GetLocalPath()
 	string full; //filePath.filename().string();
 	while( rent != NULL )
 	{
-		full = rent->name + "/" + full;
+		full = rent->name + full;//"/" + full;
 		rent = rent->parent;
 	}
 	//cout << "returning: " << full << endl;
@@ -46,6 +46,7 @@ LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 {
 	customMapClient = new CustomMapClient;
 	customMapClient->AnonymousInit();
+	//customMapClient->AttemptUserLogin("test", "Shephard123~");
 
 	mainMenu = p_mainMenu;
 	previewSpr.setPosition(500, 500);
@@ -117,7 +118,7 @@ void LevelSelector::UpdateMapList()
 		cout << "COULDNT CONNECT WITH SERVER" << endl;
 	}*/
 	//sf::Http &http = levelServer.http;
-	customMapClient->AttempGetMapListFromServer();
+	//customMapClient->AttempGetMapListFromServer();
 	/*for (auto it = customMapClient->mapEntries.begin(); it != customMapClient->mapEntries.end(); ++it)
 	{
 		customMapClient->AttemptDownloadMapFromServer("Resources/Maps/DownloadedMaps/", (*it));
