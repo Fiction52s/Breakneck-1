@@ -118,10 +118,10 @@ void LevelSelector::UpdateMapList()
 	}*/
 	//sf::Http &http = levelServer.http;
 	customMapClient->AttempGetMapListFromServer();
-	for (auto it = customMapClient->mapEntries.begin(); it != customMapClient->mapEntries.end(); ++it)
+	/*for (auto it = customMapClient->mapEntries.begin(); it != customMapClient->mapEntries.end(); ++it)
 	{
 		customMapClient->AttemptDownloadMapFromServer("Resources/Maps/DownloadedMaps/", (*it));
-	}
+	}*/
 
 	//std::string path = "Maps/";
 	//std::string file = "gateblank9.brknk";
