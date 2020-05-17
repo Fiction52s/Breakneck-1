@@ -37,7 +37,7 @@ void BlockerChain::UpdateFromParams( ActorParams *ap, int numFrames)
 {
 	assert(editParams != NULL);
 
-	UpdateParams(ap);
+	//UpdateParams(ap);
 	
 	for (int i = 0; i < numBlockers; ++i)
 	{
@@ -72,6 +72,9 @@ void BlockerChain::UpdateSpriteFromParams(ActorParams *ap)
 
 void BlockerChain::UpdateParams(ActorParams *params)
 {
+	startPosInfo.position = params->GetPosition();
+	SetCurrPosInfo(startPosInfo);
+
 	BlockerParams *bParams = (BlockerParams*)params;
 
 	BlockerType pbType = (BlockerType)(bParams->bType);
@@ -163,18 +166,26 @@ void BlockerChain::CreateBlockers()
 	}
 	else
 	{
-		V2d prev = position;
-		V2d temp;
-		int i = 0;
-		for (auto it = localPath.begin(); it != localPath.end(); ++it)
+
+		if (railMode == ActorParams::M_FILL)
 		{
-			temp = V2d((*it).x + position.x, (*it).y + position.y);
-			totalLength += length(temp - prev);
-			prev = temp;
+			V2d prev = position;
+			V2d temp;
+			int i = 0;
+			for (auto it = localPath.begin(); it != localPath.end(); ++it)
+			{
+				temp = V2d((*it).x + position.x, (*it).y + position.y);
+				totalLength += length(temp - prev);
+				prev = temp;
+			}
+
+
+			numBlockers = totalLength / dist; //round down
 		}
-
-
-		numBlockers = totalLength / dist; //round down
+		else if (railMode == ActorParams::M_POINT)
+		{
+			numBlockers = localPath.size() + 1;
+		}
 	}
 
 	if (blockers != NULL)
@@ -195,110 +206,118 @@ void BlockerChain::CreateBlockers()
 
 	if (numBlockers > 1)
 	{
-		if (pathSize > 0)
+		if (railMode == ActorParams::M_FILL)
 		{
+			auto currPoint = globalPath.begin();
+			++currPoint;
+			auto nextPoint = currPoint;
+			--currPoint;
 
-		}
+			V2d currWalk = position;
+			V2d nextD((*nextPoint).x, (*nextPoint).y);
+			double pathWalk = 0;
+			double travel = 0;
+			double tempLen = 0;
+			bool end = false;
+			//while (pathWalk < totalLength)
+			int ind = 0;
 
-
-		//
-		auto currPoint = globalPath.begin();
-		++currPoint;
-		auto nextPoint = currPoint;
-		--currPoint;
-
-		V2d currWalk = position;
-		V2d nextD((*nextPoint).x, (*nextPoint).y);
-		double pathWalk = 0;
-		double travel = 0;
-		double tempLen = 0;
-		bool end = false;
-		//while (pathWalk < totalLength)
-		int ind = 0;
-
-		while (true)
-		{
-			if (ind == numBlockers)
-				break;
-			assert(ind < numBlockers);
-
-			blockerOffsets[ind] = currWalk - position;
-
-			blockers[ind] = new Blocker(this, currWalk, ind);
-			cout << blockers[ind]->GetPosition().x << ", " << blockers[ind]->GetPosition().y << endl;
-			travel = dist;
-
-			tempLen = length(nextD - currWalk);
-
-			while (tempLen < travel)
+			while (true)
 			{
-				travel -= tempLen;
-				currPoint = nextPoint;
-				currWalk = nextD;
-				nextPoint++;
-				if (nextPoint == globalPath.end())
-				{
-					end = true;
+				if (ind == numBlockers)
 					break;
-				}
+				assert(ind < numBlockers);
 
-				nextD = V2d((*nextPoint).x, (*nextPoint).y);
+				blockerOffsets[ind] = currWalk - position;
+
+				blockers[ind] = new Blocker(this, currWalk, ind);
+				cout << blockers[ind]->GetPosition().x << ", " << blockers[ind]->GetPosition().y << endl;
+				travel = dist;
 
 				tempLen = length(nextD - currWalk);
+
+				while (tempLen < travel)
+				{
+					travel -= tempLen;
+					currPoint = nextPoint;
+					currWalk = nextD;
+					nextPoint++;
+					if (nextPoint == globalPath.end())
+					{
+						end = true;
+						break;
+					}
+
+					nextD = V2d((*nextPoint).x, (*nextPoint).y);
+
+					tempLen = length(nextD - currWalk);
+				}
+
+				if (end)
+					break;
+
+				if (travel > 0)
+				{
+					currWalk += travel * normalize(nextD - currWalk);
+				}
+
+				++ind;
 			}
 
-			if (end)
-				break;
+			V2d prevPos;
+			V2d nextPos;
+			V2d currPos;
+			V2d bisector;
+			V2d dir0;
+			V2d dir1;
 
-			if (travel > 0)
+			for (int i = 0; i < numBlockers; ++i)
 			{
-				currWalk += travel * normalize(nextD - currWalk);
-			}
+				currPos = blockers[i]->GetPosition();
+				if (i > 0)
+				{
+					prevPos = blockers[i - 1]->GetPosition();
+				}
+				if (i < numBlockers - 1)
+				{
+					nextPos = blockers[i + 1]->GetPosition();
+				}
 
-			++ind;
+				if (i > 0 && i < numBlockers - 1)
+				{
+					dir0 = normalize(currPos - prevPos);
+					dir0 = V2d(dir0.y, -dir0.x);
+					dir1 = normalize(nextPos - currPos);
+					dir1 = V2d(dir1.y, -dir1.x);
+					bisector = normalize(dir0 + dir1);
+				}
+				else if (i == 0)
+				{
+					dir1 = normalize(nextPos - currPos);
+					dir1 = V2d(dir1.y, -dir1.x);
+					bisector = dir1;
+				}
+				else if (i == numBlockers - 1)
+				{
+					dir0 = normalize(currPos - prevPos);
+					dir0 = V2d(dir0.y, -dir0.x);
+					bisector = dir0;
+				}
+
+				blockers[i]->hitboxInfo->kbDir = bisector;
+			}
 		}
-
-		V2d prevPos;
-		V2d nextPos;
-		V2d currPos;
-		V2d bisector;
-		V2d dir0;
-		V2d dir1;
-
-		for (int i = 0; i < numBlockers; ++i)
+		else if (railMode == ActorParams::M_POINT)
 		{
-			currPos = blockers[i]->GetPosition();
-			if (i > 0)
+			V2d currPos;
+			for (int i = 0; i < numBlockers; ++i)
 			{
-				prevPos = blockers[i - 1]->GetPosition();
-			}
-			if (i < numBlockers - 1)
-			{
-				nextPos = blockers[i + 1]->GetPosition();
+				currPos = V2d(globalPath[i]);
+				blockers[i] = new Blocker(this, currPos, i);
+				blockerOffsets[i] = currPos - position;
 			}
 
-			if (i > 0 && i < numBlockers - 1)
-			{
-				dir0 = normalize(currPos - prevPos);
-				dir0 = V2d(dir0.y, -dir0.x);
-				dir1 = normalize(nextPos - currPos);
-				dir1 = V2d(dir1.y, -dir1.x);
-				bisector = normalize(dir0 + dir1);
-			}
-			else if (i == 0)
-			{
-				dir1 = normalize(nextPos - currPos);
-				dir1 = V2d(dir1.y, -dir1.x);
-				bisector = dir1;
-			}
-			else if (i == numBlockers - 1)
-			{
-				dir0 = normalize(currPos - prevPos);
-				dir0 = V2d(dir0.y, -dir0.x);
-				bisector = dir0;
-			}
-
-			blockers[i]->hitboxInfo->kbDir = bisector;
+			
 		}
 	}
 	else
@@ -378,12 +397,12 @@ BlockerChain::BlockerChain(ActorParams *ap )//Vector2i &pos, list<Vector2i> &pat
 	circleGroup = NULL;
 	ts = NULL;
 
+	railMode = bParams->railMode;
+
 	SetNumActions(Count);
 	SetEditorActions(0, EXIST, 0);
 
 	SetLevel(ap->GetLevel());
-
-	SetCurrPosInfo(startPosInfo);
 
 	SetSpawnRect();
 

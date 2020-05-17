@@ -48,6 +48,9 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	void Draw(sf::RenderTarget *target);
 
 	ActorParams *blockerParams;
+	BlockerChain *blockerChain;
+	void UpdateEnemyChain();
+	void SetChainPath();
 	//BlockerChain *blockerChain;
 
 	RailPtr mostRecentCopy;

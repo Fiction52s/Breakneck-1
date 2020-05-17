@@ -80,6 +80,7 @@ ActorParams::ActorParams(ActorType *at)
 	aabbDraw.setOutlineColor(Color::Green);
 	aabbDraw.setOutlineThickness(3);
 
+	railMode = M_FILL;
 	//CreateMyEnemy();
 }
 
@@ -175,6 +176,44 @@ void ActorParams::WritePath(std::ofstream &of)
 void ActorParams::WriteLoop(std::ofstream &of)
 {
 	WriteBool(of, loop);
+}
+
+void ActorParams::SetPath(TerrainRail *rail)
+{
+	if (lines != NULL)
+	{
+		delete lines;
+		lines = NULL;
+	}
+
+	localPath.clear();
+	int numP = rail->GetNumPoints();
+	if (numP > 1)
+	{
+		int numLinesVerts = numP;
+
+		lines = new VertexArray(sf::LinesStrip, numLinesVerts);
+		VertexArray &li = *lines;
+		li[0].position = Vector2f(0, 0);
+		li[0].color = Color::Magenta;
+
+		Vector2i myIntPos = GetIntPos();
+		Vector2i currPointPos;
+		Vector2i temp;
+
+		localPath.resize(numP - 1);
+		for (int i = 1; i < numP; ++i)
+		{
+			currPointPos = rail->GetPoint(i)->pos;
+			temp.x = currPointPos.x - myIntPos.x;
+			temp.y = currPointPos.y - myIntPos.y;
+
+			localPath[i - 1] = temp;
+
+			li[i].position = Vector2f(temp.x, temp.y);
+			li[i].color = Color::Magenta;
+		}
+	}
 }
 
 void ActorParams::SetPath(std::vector<sf::Vector2i> &globalPath)

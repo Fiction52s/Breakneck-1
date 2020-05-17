@@ -38,6 +38,8 @@ struct Blocker : Enemy, QuadTreeEntrant
 
 	BlockerChain *bc;
 
+	
+
 	bool checkCol;
 
 	int vaIndex;
@@ -106,6 +108,8 @@ struct BlockerChain : Enemy
 	std::vector<sf::Vector2i> localPath;
 	std::vector<sf::Vector2i> globalPath;
 	std::vector<V2d> blockerOffsets;
+
+	ActorParams::RailMode railMode;
 };
 
 #endif

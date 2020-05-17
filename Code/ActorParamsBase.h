@@ -64,6 +64,7 @@ struct ActorParams : ISelectable
 	virtual void MakeGlobalPath(std::vector<sf::Vector2i> & vec);
 	virtual std::vector<sf::Vector2i> & GetLocalPath();
 	virtual void SetPath(std::vector<sf::Vector2i> &globalPath);
+	virtual void SetPath(TerrainRail *rail);
 
 	/*virtual bool CanBeGrounded() { return false; }
 	virtual bool CanBeAerial() { return false; }
@@ -138,6 +139,13 @@ struct ActorParams : ISelectable
 	//std::list<sf::Vector2i> localPath;
 	std::vector<sf::Vector2i> localPath;
 	bool loop;
+	enum RailMode
+	{
+		M_FILL,
+		M_POINT
+	};
+
+	RailMode railMode;
 	sf::VertexArray *lines;
 
 	int enemyLevel;
@@ -147,6 +155,7 @@ struct ActorParams : ISelectable
 
 	sf::RectangleShape aabbDraw;
 	void SetAABBOutlineColor(sf::Color c);
+
 	//bool partOfTerrain; //for when you have railblockers, or terrain flies, etc.
 };
 

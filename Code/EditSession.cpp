@@ -4591,7 +4591,7 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 			i = (*pit).pointIndex;
 
 			curr = rail->GetPoint(i);
-			prev = rail->GetPoint(i-1);
+			prev = rail->GetPoint(i - 1);
 
 			(*pit).oldPos = curr->pos;
 
@@ -4628,24 +4628,24 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 			i = (*pit).pointIndex;
 
 			curr = rail->GetPoint(i);
-			prev = rail->GetPoint(i-1);
+			prev = rail->GetPoint(i - 1);
 
-			
-			prevEdge = rail->GetEdge(i-1);
 
-			if( prevEdge != NULL )
+			prevEdge = rail->GetEdge(i - 1);
+
+			if (prevEdge != NULL)
 				oldPrevLength = prevEdge->GetLength();
 
 			rail->MovePoint(i, pointGrabDelta);
 
 
-			
-			
 
-			if( prevEdge != NULL )
+
+
+			if (prevEdge != NULL)
 				prevEdgeLen = prevEdge->GetLength();
 
-			if ( prevEdge != NULL && prevEdgeLen != oldPrevLength)
+			if (prevEdge != NULL && prevEdgeLen != oldPrevLength)
 			{
 				auto enemyIt = rail->enemies.find(prev);
 				if (enemyIt != rail->enemies.end())
@@ -4750,6 +4750,7 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 		}
 		else if (affected)
 		{
+			rail->UpdateEnemyChain();
 			//rail->SetRenderMode(TerrainPolygon::RENDERMODE_MOVING_POINTS);
 			rail->UpdateLines();
 			rail->UpdateBounds();
@@ -4763,105 +4764,7 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 			RevertMovedPoints(it);
 		}
 	}
-
-
-
-
-
-//----------------------------------
-
-
-
-
-
-	//bool affected;
-	//int rNumP;
-	//TerrainPoint *curr, *prev;
-	//RailPtr rail;
-	//for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
-	//{
-
-	//	affected = false;
-	//	rail = ((*it).first);
-
-	//	if (rail->selected)
-	//	{
-	//		DeselectObject(rail);
-	//	}
-
-	//	rNumP = rail->GetNumPoints();
-
-	//	for (int i = 0; i < rNumP; ++i)
-	//	{
-	//		curr = rail->GetPoint(i);
-	//		prev = rail->GetPrevPoint(i);
-
-	//		if (curr->selected) //selected
-	//		{
-	//			curr->pos += pointGrabDelta;
-
-	//			rail->UpdateLineColor(rail->lines, prev->index, prev->index * 2);
-	//			rail->UpdateLineColor(rail->lines, i, i * 2);
-
-	//			if (rail->enemies.count(curr) > 0)
-	//			{
-	//				list<ActorPtr> &enemies = rail->enemies[curr];
-	//				for (list<ActorPtr>::iterator ait = enemies.begin(); ait != enemies.end(); ++ait)
-	//				{
-	//					//(*ait)->UpdateGroundedSprite();
-	//				}
-	//			}
-
-	//			affected = true;
-	//		}
-
-	//	}
-
-	//	rail->UpdateBounds();
-
-	//	if (affected)
-	//	{
-	//		//rail->movingPointMode = true;
-
-	//		for (auto mit = rail->enemies.begin();
-	//			mit != rail->enemies.end(); ++mit)
-	//		{
-	//			list<ActorPtr> &enemies = (*mit).second;
-	//			for (auto ait = enemies.begin(); ait != enemies.end(); ++ait)
-	//			{
-	//				(*ait)->UpdateGroundedSprite();
-	//				(*ait)->SetBoundingQuad();
-	//			}
-	//		}
-	//	}
-	//}
 }
-
-
-//bool EditSession::IsGateAttachedToAffectedPoints(
-//	GateInfoPtr gi, PointMover *pm,
-//	bool &a)
-//{
-//	PolyPtr poly;
-//	for (auto pit = pm->movePoints.begin(); pit != pm->movePoints.end(); ++pit)
-//	{
-//		poly = (*pit).first;
-//		if (gi->poly0 == poly || gi->poly1 == poly)
-//		{
-//			if (gi->poly0 == poly)
-//			{
-//				a = true;
-//			}
-//			else
-//			{
-//				a = false;
-//			}
-//			return true;
-//		}
-//	}
-//
-//	return false;
-//}
 
 bool EditSession::IsGateAttachedToAffectedPoints(
 	GateInfoPtr gi, PointMover *pm,

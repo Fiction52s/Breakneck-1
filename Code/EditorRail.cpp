@@ -94,7 +94,7 @@ void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 }
 
 void TerrainRail::Init()
-{
+{	
 	sess = Session::GetSession();
 	queryNext = NULL;
 	quadHalfWidth = 6;
@@ -331,6 +331,17 @@ void TerrainRail::Move(Vector2i move)
 		}
 	}
 
+	if (blockerParams != NULL)
+	{
+		blockerParams->Move(move);
+	}
+
+	/*if (blockerParams->myEnemy != NULL)
+	{
+		blockerParams->myEnemy->UpdateOnEditPlacement();
+		blockerParams->myEnemy->UpdateFromEditParams(0);
+	}*/
+
 	UpdateBounds();
 	return;
 }
@@ -416,6 +427,16 @@ void TerrainRail::Finalize()
 	}
 }
 
+void TerrainRail::SetChainPath()
+{
+	if (blockerParams != NULL)
+	{
+		blockerParams->SetPosition(V2d(GetPoint(0)->pos));
+		blockerParams->SetPath(this);
+		blockerParams->SetBoundingQuad();
+	}
+}
+
 void TerrainRail::CreateBlockerChain()
 {
 	if (blockerParams != NULL)
@@ -424,33 +445,14 @@ void TerrainRail::CreateBlockerChain()
 		blockerParams = NULL;
 	}
 
-
 	blockerParams = sess->types["blocker"]->defaultParamsVec[0]->Copy();
 	blockerParams->group = sess->groups["--"];
 
-	vector<Vector2i> testPath;
-	/*int numP = GetNumPoints();
-	testPath.resize(numP - 1);
-	V2d startPos;
+	SetChainPath();
 
-	for (int i = 1; i < numP; ++i)
-	{
-		testPath[i - 1] = GetPoint(i)->pos;
-	}*/
-
-	int numP = GetNumPoints();
-	testPath.resize(numP);
-	V2d startPos;
-
-	for (int i = 0; i < numP; ++i)
-	{
-		testPath[i] = GetPoint(i)->pos;
-	}
-	//polygonInProgress->MakeGlobalPath(startPos, testPath);
-	blockerParams->SetPosition(V2d( GetPoint(0)->pos ));
-	blockerParams->SetBoundingQuad();
-	blockerParams->SetPath(testPath);
+	blockerParams->railMode = ActorParams::M_FILL;
 	blockerParams->CreateMyEnemy();
+	blockerChain = (BlockerChain*)blockerParams->myEnemy;
 	//blockerParams->Activate();
 
 	/*Brush b;
@@ -1074,6 +1076,14 @@ void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
 	}
 }
 
+void TerrainRail::UpdateEnemyChain()
+{
+	if (blockerParams != NULL)
+	{
+		SetChainPath();
+		blockerChain->UpdateParams(blockerParams);
+	}
+}
 
 void TerrainRail::CancelTransformation()
 {
@@ -1217,6 +1227,14 @@ void TerrainRail::UpdateTransformation(TransformTools *tr)
 			coloredNodeCircles->SetPosition(i+1, end);
 		}
 	}
+
+	/*if (blockerParams != NULL)
+	{
+
+		blockerChain->UpdateParams(blockerParams);
+		blockerChain->UpdateOnEditPlacement();
+		blockerChain->UpdateFromEditParams(0);
+	}*/
 
 	//for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
 	//{
