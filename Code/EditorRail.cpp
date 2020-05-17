@@ -78,7 +78,6 @@ void TerrainRail::SetupEdges()
 	}
 }
 
-
 bool TerrainRail::IsInternallyValid()
 {
 	return true;

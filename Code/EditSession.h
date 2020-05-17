@@ -322,6 +322,11 @@ struct EditSession : GUIHandler, Session
 	int grassSize;
 	int grassSpacing;
 
+	TerrainPoint *potentialRailAttachPoint;
+	RailPtr potentialRailAttachStart;
+
+	TerrainPoint *railAttachStartPoint;
+	RailPtr railAttachStart;
 
 	
 	ActorParams * AttachActorToPolygon( ActorPtr actor, PolyPtr poly );

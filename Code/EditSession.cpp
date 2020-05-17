@@ -6843,7 +6843,7 @@ bool EditSession::ExecuteTerrainCompletion()
 void EditSession::ExecuteRailCompletion()
 {
 	int numP = railInProgress->GetNumPoints();
-	if (numP > 2)
+	if (numP >= 2)
 	{
 		//test final line
 		bool valid = true;
@@ -6868,40 +6868,105 @@ void EditSession::ExecuteRailCompletion()
 		}
 		else
 		{
-			bool empty = true;
-			//eventually be able to combine rails by putting your start/end points at their starts/ends
-			if (empty)
+			if (railAttachStart == NULL)
 			{
-				railInProgress->Finalize();
 
-				progressBrush->Clear();
+				bool empty = true;
+				//eventually be able to combine rails by putting your start/end points at their starts/ends
+				if (empty)
+				{
+					railInProgress->Finalize();
 
-				progressBrush->AddObject(railInProgress);
+					progressBrush->Clear();
 
-				ClearUndoneActions();
+					progressBrush->AddObject(railInProgress);
 
-				Action *action = new ApplyBrushAction(progressBrush);
+					ClearUndoneActions();
 
-				action->Perform();
-				AddDoneAction(action);
-				
+					Action *action = new ApplyBrushAction(progressBrush);
 
-				RailPtr newRail(new TerrainRail());
-				railInProgress = newRail;
+					action->Perform();
+					AddDoneAction(action);
+
+
+					RailPtr newRail(new TerrainRail());
+					railInProgress = newRail;
+				}
+				else
+				{
+					//eventually combine rails here
+
+					//Action *action = ChooseAddOrSub(intersectingPolys);
+
+					//action->Perform();
+					//doneActionStack.push_back(action);
+
+				}
 			}
 			else
 			{
-				//eventually combine rails here
+				RailPtr newRail = new TerrainRail;
 
-				//Action *action = ChooseAddOrSub(intersectingPolys);
+				int numPointsOld = railAttachStart->GetNumPoints();
+				int numPointsProgress = railInProgress->GetNumPoints();
+				newRail->Reserve( numPointsOld + numPointsProgress );
 
-				//action->Perform();
-				//doneActionStack.push_back(action);
+				bool attachedAtOldStart = (railAttachStartPoint->index == 0);
 
+				if (attachedAtOldStart)
+				{
+					for (int i = numPointsProgress - 1; i >= 1; --i)
+					{
+						newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+					}
+
+					for (int i = 0; i < numPointsOld; ++i)
+					{
+						newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+					}
+				}
+				else
+				{
+					/*for (int i = numPointsOld - 1; i >= 0; --i)
+					{
+						newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+					}*/
+					for (int i = 0; i < numPointsOld; ++i)
+					{
+						newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+					}
+
+					for (int i = 0; i < numPointsProgress; ++i)
+					{
+						newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+					}
+				}
+
+				
+
+				Brush oldBrush;
+				oldBrush.AddObject(railAttachStart);
+
+				newRail->Finalize();
+
+				railInProgress->ClearPoints();
+				
+				Brush newBrush;
+
+				newBrush.AddObject(newRail);
+
+				ReplaceBrushAction *action = new ReplaceBrushAction(&oldBrush,
+					&newBrush, mapStartBrush);
+
+				action->Perform();
+
+				AddDoneAction(action);
+
+				ClearUndoneActions();
 			}
 		}
 	}
-	else if (numP <= 2 && numP > 0)
+	else if (numP < 2 && numP > 0)
 	{
 		cout << "cant finalize. cant make rail" << endl;
 		railInProgress->ClearPoints();
@@ -8757,6 +8822,13 @@ void EditSession::SetMode(Emode m)
 		editAccumulator = TIMESTEP + .1;
 		break;
 	}
+	case CREATE_RAILS:
+	{
+		railAttachStart = NULL;
+		railAttachStartPoint = NULL;
+		break;
+	}
+		
 	}
 }
 
@@ -9302,6 +9374,12 @@ void EditSession::TryAddPointToRailInProgress()
 			if (numP == 0)
 			{
 				railInProgress->AddPoint(worldi, false);
+
+				if (potentialRailAttachPoint != NULL)
+				{
+					railAttachStartPoint = potentialRailAttachPoint;
+					railAttachStart = potentialRailAttachStart;
+				}
 			}
 			else
 			{
@@ -12160,6 +12238,9 @@ void EditSession::CreateRailsModeUpdate()
 	if (showPanel != NULL)
 		return;
 
+	potentialRailAttachPoint = NULL;
+	potentialRailAttachStart = NULL;
+
 	if (IsKeyPressed(Keyboard::G))
 	{
 		SnapPointToGraph(testPoint, graph->graphSpacing);
@@ -12167,8 +12248,26 @@ void EditSession::CreateRailsModeUpdate()
 	}
 	else if (IsKeyPressed(Keyboard::F))
 	{
-		SelectPtr obj;
+		SelectPtr obj = NULL;
 		TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
+
+		if (railInProgress->GetNumPoints() == 0)
+		{
+			if (obj != NULL)
+			{
+				RailPtr r = obj->GetAsRail();
+				if (r != NULL)
+				{
+					if (pPoint->index == 0 || pPoint->index == r->GetNumPoints() - 1)
+					{
+						potentialRailAttachPoint = pPoint;
+						potentialRailAttachStart = r;
+					}
+				}
+			}
+		}
+
+
 		showPoints = true;
 	}
 	else

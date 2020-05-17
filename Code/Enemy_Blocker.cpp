@@ -135,18 +135,27 @@ void BlockerChain::UpdateParams(ActorParams *params)
 		localPath = paramsLocalPath;
 
 		params->MakeGlobalPath(globalPath);
+
+		int oldNumBlockers = numBlockers;
+
 		CreateBlockers();
 
-		if (circleGroup != NULL)
+		
+		if (oldNumBlockers != numBlockers)
 		{
-			delete circleGroup;
-			circleGroup = NULL;
+			if (circleGroup != NULL)
+			{
+				delete circleGroup;
+				circleGroup = NULL;
+			}
+			circleGroup = new CircleGroup(numBlockers, 40, Color::Red, 20);
 		}
-		circleGroup = new CircleGroup(numBlockers, 40, Color::Red, 20);
+
 		for (int i = 0; i < numBlockers; ++i)
 		{
 			circleGroup->SetPosition(i, Vector2f(blockers[i]->GetPosition()));
 		}
+
 		circleGroup->ShowAll();
 	}
 }
@@ -160,13 +169,14 @@ void BlockerChain::CreateBlockers()
 	double dist = minDistance + spacing;
 	V2d position = GetPosition();
 
+	int oldNumBlockers = numBlockers;
+
 	if (pathSize == 0)
 	{
 		numBlockers = 1;
 	}
 	else
 	{
-
 		if (railMode == ActorParams::M_FILL)
 		{
 			V2d prev = position;
@@ -181,6 +191,8 @@ void BlockerChain::CreateBlockers()
 
 
 			numBlockers = totalLength / dist; //round down
+			if (numBlockers < 1)
+				numBlockers = 1;
 		}
 		else if (railMode == ActorParams::M_POINT)
 		{
@@ -188,21 +200,31 @@ void BlockerChain::CreateBlockers()
 		}
 	}
 
-	if (blockers != NULL)
+	bool newBlockersCreated = false;
+	if (numBlockers != oldNumBlockers)
 	{
-		delete[] blockers;
-		blockers = NULL;
+		if (blockers != NULL)
+		{
+			for (int i = 0; i < oldNumBlockers; ++i)
+			{
+				delete blockers[i];
+			}
 
-		delete[] va;
-		va = NULL;
+			delete[] blockers;
+			blockers = NULL;
+
+			delete[] va;
+			va = NULL;
+		}
+
+		//numBlockers = pathParam.size();
+		blockers = new Blocker*[numBlockers];
+		va = new Vertex[numBlockers * 4];
+
+		blockerOffsets.resize(numBlockers);
+
+		newBlockersCreated = true;
 	}
-
-	//numBlockers = pathParam.size();
-	blockers = new Blocker*[numBlockers];
-	va = new Vertex[numBlockers * 4];
-
-
-	blockerOffsets.resize(numBlockers);
 
 	if (numBlockers > 1)
 	{
@@ -230,7 +252,15 @@ void BlockerChain::CreateBlockers()
 
 				blockerOffsets[ind] = currWalk - position;
 
-				blockers[ind] = new Blocker(this, currWalk, ind);
+				if (newBlockersCreated)
+				{
+					blockers[ind] = new Blocker(this, currWalk, ind);
+				}
+				else
+				{
+					blockers[ind]->SetPosition(currWalk);
+				}
+				
 				cout << blockers[ind]->GetPosition().x << ", " << blockers[ind]->GetPosition().y << endl;
 				travel = dist;
 
@@ -313,7 +343,16 @@ void BlockerChain::CreateBlockers()
 			for (int i = 0; i < numBlockers; ++i)
 			{
 				currPos = V2d(globalPath[i]);
-				blockers[i] = new Blocker(this, currPos, i);
+
+				if (newBlockersCreated)
+				{
+					blockers[i] = new Blocker(this, currPos, i);
+				}
+				else
+				{
+					blockers[i]->SetPosition(currPos);
+				}
+				
 				blockerOffsets[i] = currPos - position;
 			}
 
