@@ -6868,7 +6868,7 @@ void EditSession::ExecuteRailCompletion()
 		}
 		else
 		{
-			if (railAttachStart == NULL)
+			if (railAttachStart == NULL && railAttachEnd == NULL )
 			{
 
 				bool empty = true;
@@ -6907,46 +6907,169 @@ void EditSession::ExecuteRailCompletion()
 			{
 				RailPtr newRail = new TerrainRail;
 
-				int numPointsOld = railAttachStart->GetNumPoints();
-				int numPointsProgress = railInProgress->GetNumPoints();
-				newRail->Reserve( numPointsOld + numPointsProgress );
+				Brush oldBrush;
 
-				bool attachedAtOldStart = (railAttachStartPoint->index == 0);
-
-				if (attachedAtOldStart)
+				if (railAttachStart != NULL && railAttachEnd == NULL)
 				{
-					for (int i = numPointsProgress - 1; i >= 1; --i)
+					int numPointsOld = railAttachStart->GetNumPoints();
+					int numPointsProgress = railInProgress->GetNumPoints();
+					int total = numPointsOld + numPointsProgress;
+					newRail->Reserve(total - 1);
+					//-1 here because theres a duplicate where they meet
+
+					bool attachedAtOldStart = (railAttachStartPoint->index == 0);
+
+					if (attachedAtOldStart)
 					{
-						newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						for (int i = numPointsProgress - 1; i >= 1; --i)
+						{
+							newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						}
+
+						for (int i = 0; i < numPointsOld; ++i)
+						{
+							newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+						}
+					}
+					else
+					{
+						for (int i = 0; i < numPointsOld; ++i)
+						{
+							newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+						}
+
+						for (int i = 0; i < numPointsProgress; ++i)
+						{
+							newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						}
 					}
 
-					for (int i = 0; i < numPointsOld; ++i)
+					oldBrush.AddObject(railAttachStart);
+				}
+				else if (railAttachEnd != NULL && railAttachStart == NULL)
+				{
+					int numPointsOld = railAttachEnd->GetNumPoints();
+					int numPointsProgress = railInProgress->GetNumPoints();
+					int total = numPointsOld + numPointsProgress;
+					newRail->Reserve(total - 1);
+
+					bool attachedAtOldStart = (railAttachEndPoint->index == 0);
+
+					if (attachedAtOldStart)
 					{
-						newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+						for (int i = 0; i < numPointsProgress - 1; ++i )
+						{
+							newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						}
+
+						for (int i = 0; i < numPointsOld; ++i)
+						{
+							newRail->AddPoint(railAttachEnd->GetPoint(i)->pos, false);
+						}
 					}
+					else
+					{
+						for (int i = 0; i < numPointsOld; ++i)
+						{
+							newRail->AddPoint(railAttachEnd->GetPoint(i)->pos, false);
+						}
+
+						for (int i = numPointsProgress - 2; i >= 0; --i)
+						{
+							newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						}
+					}
+
+					oldBrush.AddObject(railAttachEnd);
 				}
 				else
 				{
-					/*for (int i = numPointsOld - 1; i >= 0; --i)
-					{
-						newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
-					}*/
-					for (int i = 0; i < numPointsOld; ++i)
-					{
-						newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
-					}
+					//both
+					int numPointsOldStart = railAttachStart->GetNumPoints();
+					int numPointsOldEnd = railAttachEnd->GetNumPoints();
+					int numPointsProgress = railInProgress->GetNumPoints();
+					int total = numPointsOldStart + numPointsOldEnd + numPointsProgress;
+					newRail->Reserve( total - 2 );
+					//2 duplicate points
 
-					for (int i = 0; i < numPointsProgress; ++i)
+					bool attachedAtOldStartStart = (railAttachStartPoint->index == 0);
+					bool attachedAtOldEndStart = (railAttachEndPoint->index == 0);
+
+					if (attachedAtOldStartStart && attachedAtOldEndStart)
 					{
-						newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						//if attached to both heads 
+
+						for (int i = numPointsOldStart - 1; i >= 0; --i)
+						{
+							newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+						}
+
+						for (int i = 1; i < numPointsProgress - 1; ++i)
+						{
+							newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						}
+
+						for (int i = 0; i < numPointsOldEnd; ++i)
+						{
+							newRail->AddPoint(railAttachEnd->GetPoint(i)->pos, false);
+						}
 					}
+					else if (!attachedAtOldStartStart && !attachedAtOldEndStart)
+					{
+
+						//both tails
+						for (int i = 0; i < numPointsOldStart; ++i)
+						{
+							newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+						}
+
+						for (int i = 1; i < numPointsProgress - 1; ++i)
+						{
+							newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						}
+
+						for (int i = numPointsOldEnd-1; i >= 0; --i)
+						{
+							newRail->AddPoint(railAttachEnd->GetPoint(i)->pos, false);
+						}
+					}
+					else if (attachedAtOldStartStart && !attachedAtOldEndStart)
+					{
+						for (int i = 0; i < numPointsOldEnd; ++i)
+						{
+							newRail->AddPoint(railAttachEnd->GetPoint(i)->pos, false);
+						}
+
+						for (int i = numPointsProgress - 2; i >= 1; --i)
+						{
+							newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						}
+
+						for (int i = 0; i < numPointsOldStart; ++i)
+						{
+							newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+						}
+					}
+					else if (!attachedAtOldStartStart && attachedAtOldEndStart)
+					{
+						for (int i = 0; i < numPointsOldStart; ++i)
+						{
+							newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
+						}
+
+						for (int i = 1; i < numPointsProgress - 1; ++i)
+						{
+							newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
+						}
+
+						for (int i = 0; i < numPointsOldEnd; ++i)
+						{
+							newRail->AddPoint(railAttachEnd->GetPoint(i)->pos, false);
+						}
+					}
+					oldBrush.AddObject(railAttachStart);
+					oldBrush.AddObject(railAttachEnd);
 				}
-
-				
-
-				Brush oldBrush;
-				oldBrush.AddObject(railAttachStart);
-
 				newRail->Finalize();
 
 				railInProgress->ClearPoints();
@@ -8826,6 +8949,8 @@ void EditSession::SetMode(Emode m)
 	{
 		railAttachStart = NULL;
 		railAttachStartPoint = NULL;
+		railAttachEnd = NULL;
+		railAttachEndPoint = NULL;
 		break;
 	}
 		
@@ -9378,7 +9503,7 @@ void EditSession::TryAddPointToRailInProgress()
 				if (potentialRailAttachPoint != NULL)
 				{
 					railAttachStartPoint = potentialRailAttachPoint;
-					railAttachStart = potentialRailAttachStart;
+					railAttachStart = potentialRailAttach;
 				}
 			}
 			else
@@ -9390,6 +9515,14 @@ void EditSession::TryAddPointToRailInProgress()
 				if (beyondMinLength)
 				{
 					railInProgress->AddPoint(worldi, false);
+				}
+
+				if (potentialRailAttach != NULL)
+				{
+					railAttachEnd = potentialRailAttach;
+					railAttachEndPoint = potentialRailAttachPoint;
+
+					ExecuteRailCompletion();
 				}
 			}
 		}
@@ -12239,7 +12372,7 @@ void EditSession::CreateRailsModeUpdate()
 		return;
 
 	potentialRailAttachPoint = NULL;
-	potentialRailAttachStart = NULL;
+	potentialRailAttach = NULL;
 
 	if (IsKeyPressed(Keyboard::G))
 	{
@@ -12251,17 +12384,17 @@ void EditSession::CreateRailsModeUpdate()
 		SelectPtr obj = NULL;
 		TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
 
-		if (railInProgress->GetNumPoints() == 0)
+		if (obj != NULL)
 		{
-			if (obj != NULL)
+			RailPtr r = obj->GetAsRail();
+			if (r != NULL)
 			{
-				RailPtr r = obj->GetAsRail();
-				if (r != NULL)
+				if (pPoint->index == 0 || pPoint->index == r->GetNumPoints() - 1)
 				{
-					if (pPoint->index == 0 || pPoint->index == r->GetNumPoints() - 1)
+					if (railAttachStart != r)
 					{
 						potentialRailAttachPoint = pPoint;
-						potentialRailAttachStart = r;
+						potentialRailAttach = r;
 					}
 				}
 			}
