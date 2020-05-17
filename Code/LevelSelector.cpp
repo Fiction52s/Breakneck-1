@@ -44,8 +44,12 @@ string TreeNode::GetLocalPath()
 
 LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 {
-	customMapClient = new CustomMapClient;
-	customMapClient->AnonymousInit();
+	customMapClient = NULL;
+
+	//customMapClient = new CustomMapClient;
+	//customMapClient->AnonymousInit();
+
+
 	//customMapClient->AttemptUserLogin("test", "Shephard123~");
 
 	mainMenu = p_mainMenu;
@@ -80,6 +84,8 @@ LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 
 LevelSelector::~LevelSelector()
 {
+	if (customMapClient != NULL)
+		delete customMapClient;
 	//entries
 	//text
 	//localPaths

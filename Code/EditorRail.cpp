@@ -429,13 +429,22 @@ void TerrainRail::CreateBlockerChain()
 	blockerParams->group = sess->groups["--"];
 
 	vector<Vector2i> testPath;
-	int numP = GetNumPoints();
+	/*int numP = GetNumPoints();
 	testPath.resize(numP - 1);
 	V2d startPos;
 
 	for (int i = 1; i < numP; ++i)
 	{
 		testPath[i - 1] = GetPoint(i)->pos;
+	}*/
+
+	int numP = GetNumPoints();
+	testPath.resize(numP);
+	V2d startPos;
+
+	for (int i = 0; i < numP; ++i)
+	{
+		testPath[i] = GetPoint(i)->pos;
 	}
 	//polygonInProgress->MakeGlobalPath(startPos, testPath);
 	blockerParams->SetPosition(V2d( GetPoint(0)->pos ));

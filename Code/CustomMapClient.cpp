@@ -276,6 +276,11 @@ bool ServerConnection::SendRequest()
 bool ServerConnection::RequestMapUpload(const string &mapName, const string &accessToken,
 	bool overwriteIfExists )
 {
+	if (myConnection == NULL)
+	{
+		return false;
+	}
+
 	wstring path = GetRESTBase() + L"maps";
 	myRequest = OpenRequest(HttpVerb::POST, path.c_str());
 
@@ -359,6 +364,11 @@ bool ServerConnection::RequestMapUpload(const string &mapName, const string &acc
 
 bool ServerConnection::RequestMapDeletion(int id, const string & accessToken)
 {
+	if (myConnection == NULL)
+	{
+		return false;
+	}
+
 	wstring path = GetRESTBase() + L"maps/" + to_wstring(id);
 	myRequest = OpenRequest(HttpVerb::DELETE, path.c_str());
 
@@ -406,6 +416,11 @@ bool ServerConnection::RequestMapDeletion(int id, const string & accessToken)
 
 bool ServerConnection::RequestMapDownload(int id)
 {
+	if (myConnection == NULL)
+	{
+		return false;
+	}
+
 	wstring path = GetRESTBase() + L"maps/" + to_wstring( id );
 	myRequest = OpenRequest(HttpVerb::GET, path.c_str());
 
