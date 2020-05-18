@@ -8561,20 +8561,16 @@ bool EditSession::PointSelectRailPoint(V2d &pos)
 		foundPoint = (*it)->GetClosePoint(8 * zoomMultiple, pos);
 		if (foundPoint != NULL)
 		{
-			if (shift && foundPoint->selected)
+			if (!foundPoint->selected)
 			{
-				DeselectPoint((*it), foundPoint);
-			}
-			else
-			{
-				if (!foundPoint->selected)
-				{
-					if (!shift)
-						ClearSelectedPoints();
+				if (!shift)
+					ClearSelectedPoints();
 
-					SelectPoint((*it), foundPoint);
-				}
+				SelectPoint((*it), foundPoint);
 			}
+
+			grabbedPoint = foundPoint;
+			worldPos = V2d(grabbedPoint->pos);
 			return true;
 		}
 	}
@@ -9290,34 +9286,6 @@ void EditSession::StartSelectedMove()
 	editStartMove = true;
 	Vector2i pos(worldPos.x, worldPos.y);
 	Vector2i delta = pos - editMouseGrabPos;
-
-	for (auto mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
-	{
-		/*list<PointMoveInfo> &pList = (*mit).second;
-		for (auto it = pList.begin(); it != pList.end(); ++it)
-		{
-			(*it).delta = (*it).GetPolyPoint()->pos;
-		}*/
-	}
-
-	/*for (auto mit = selectedRailPoints.begin(); mit != selectedRailPoints.end(); ++mit)
-	{
-		list<PointMoveInfo> &pList = (*mit).second;
-		for (auto it = pList.begin(); it != pList.end(); ++it)
-		{
-			(*it).delta = (*it).GetRailPoint()->pos;
-		}
-	}*/
-
-	/*if (IsSingleActorSelected())
-	{
-		ActorPtr a = selectedBrush->objects.front()->GetAsActor();
-		moveAction = new CompoundAction;
-		
-		Action *newAction = new LeaveGroundAction(a, worldPos - V2d(a->GetGrabAABBCenter()));
-		newAction->Perform();
-		moveAction->AddSubAction(newAction);
-	}*/
 
 	//assumption that all are grounded atm
 	if( selectedPoints.empty() )
