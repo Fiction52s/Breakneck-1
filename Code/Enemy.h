@@ -307,6 +307,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	Tileset *ts_blood;
 	sf::Sprite sprite;
+	sf::Sprite auraSprite;
 	
 	Tileset *ts_key;
 	sf::Color keyColor;

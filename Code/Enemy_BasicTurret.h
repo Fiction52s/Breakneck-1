@@ -34,9 +34,6 @@ struct BasicTurret : Enemy, LauncherEnemy
 	//bool playerPrelimHit[4];
 
 	void ResetEnemy();
-
-	sf::Sprite sprite;
-	sf::Sprite auraSprite;
 	Tileset *ts;
 	Tileset *ts_aura;
 	Action action;

@@ -33,8 +33,6 @@ struct Shroom : Enemy
 
 	sf::SoundBuffer *hitSound;
 
-	sf::Sprite sprite;
-	sf::Sprite auraSprite;
 	Tileset *ts;
 	Tileset *ts_aura;
 
@@ -73,8 +71,6 @@ struct ShroomJelly : Enemy
 	void ProcessHit();
 	void ComboHit();
 
-	sf::Sprite sprite;
-	sf::Sprite auraSprite;
 	Tileset *ts;
 	Tileset *ts_aura;
 	

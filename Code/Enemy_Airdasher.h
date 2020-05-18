@@ -16,11 +16,11 @@ struct Airdasher : Enemy
 		S_Count
 	};
 
-	Airdasher(ActorParams *ap);//bool hasMonitor,
-		//sf::Vector2i pos, int level );
+	Airdasher(ActorParams *ap);
 	~Airdasher();
 	void ProcessState();
 
+	void SetLevel(int lev);
 	void ProcessHit();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
@@ -38,10 +38,7 @@ struct Airdasher : Enemy
 	V2d playerDir;
 	V2d velocity;
 
-
 	int hitFrame;
-
-
 	int chargeFrames;
 	int maxCharge;
 
@@ -52,25 +49,13 @@ struct Airdasher : Enemy
 	int dashFrames;
 	int returnFrames;
 
-	Action action;
 	int physStepIndex;
 	V2d currOrig;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-	sf::Vector2i *path; //global
-	int pathLength;
-	bool loop;
-	int targetNode;
-	bool forward;
-	double acceleration;
 	double speed;
 	int nodeWaitFrames;
-	sf::Sprite sprite;
-	Tileset *ts;
-	bool facingRight;
 
+	Tileset *ts;
 	Tileset *ts_aura;
-	sf::Sprite auraSprite;
 };
 
 #endif

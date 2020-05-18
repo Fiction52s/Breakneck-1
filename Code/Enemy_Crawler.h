@@ -52,7 +52,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	//void UpdateEnemyPhysics();
 
 	sf::SoundBuffer *deathSound;
-	sf::Sprite auraSprite;
 	double totalDistBeforeBurrow;
 	double currDistTravelled;
 	Tileset *ts;
