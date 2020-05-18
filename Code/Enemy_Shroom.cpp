@@ -17,11 +17,20 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_level)
-	:Enemy(EnemyType::EN_SHROOM, ap )//p_hasMonitor, 1), ground(g), edgeQuantity(q)
+void Shroom::UpdateSpriteFromParams(ActorParams *ap)
 {
-	SetLevel(ap->GetLevel());
+	if (ap->posInfo.IsAerial())
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setPosition(editParams->GetFloatPos());
+		sprite.setRotation(0);
+		SyncSpriteInfo(auraSprite, sprite);
+	}
+}
 
+void Shroom::SetLevel(int lev)
+{
+	level = lev;
 	switch (level)
 	{
 	case 1:
@@ -36,8 +45,15 @@ Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_le
 		maxHealth += 5;
 		break;
 	}
+}
 
-	action = LATENT;
+Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_level)
+	:Enemy(EnemyType::EN_SHROOM, ap )//p_hasMonitor, 1), ground(g), edgeQuantity(q)
+{
+	SetNumActions(A_Count);
+	SetEditorActions(LATENT, LATENT, 0);
+
+	SetLevel(ap->GetLevel());
 
 	double height = 192;
 	ts = sess->GetTileset("Enemies/shroom_192x192.png", 192, 192);
@@ -45,21 +61,17 @@ Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_le
 	sprite.setTexture(*ts->texture);
 	auraSprite.setTexture(*ts_aura->texture);
 
-	//V2d gPoint = ground->GetPosition(edgeQuantity);
-
 	SetOffGroundHeight(40 * scale);
 
-	SetCurrPosInfo(startPosInfo);
-
-	//receivedHit = NULL;
+	
 
 	hitSound = sess->GetSound("Enemies/shroom_spark");
 
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(startPosInfo.GetPositionF());
-	sprite.setRotation(startPosInfo.GetGroundAngleDegrees());
+
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -68,20 +80,10 @@ Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_le
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
-
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
-
 	hitBody.hitboxInfo = hitboxInfo;
 
-	
-
-	frame = 0;
-
-	jelly = new ShroomJelly( ap, GetPosition(), level);
+	jelly = new ShroomJelly( this );
 	jelly->Reset();
-
-	//spawnRect = sf::Rect<double>(gPoint.x - 64, gPoint.y - 64, 64 * 2, 64 * 2);
 
 	actionLength[LATENT] = 18;
 	actionLength[HITTING] = 11;
@@ -92,7 +94,9 @@ Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_le
 	cutObject->Setup(ts, 29, 30, scale);
 	cutObject->SetRotation(sprite.getRotation());
 
-	UpdateSprite();
+	ResetEnemy();
+
+	SetSpawnRect();
 }
 
 Shroom::~Shroom()
@@ -102,6 +106,8 @@ Shroom::~Shroom()
 
 void Shroom::ResetEnemy()
 {
+	SetCurrPosInfo(startPosInfo);
+
 	jelly->Reset();
 	action = LATENT;
 	frame = 0;
@@ -172,23 +178,17 @@ void Shroom::UpdateSprite()
 	{
 	case LATENT:
 		sprite.setTextureRect(ts->GetSubRect((frame / animFactor[LATENT])));
-		sprite.setPosition(GetPositionF());
 		break;
 	case HITTING:
 		sprite.setTextureRect(ts->GetSubRect( actionLength[LATENT] + frame / animFactor[HITTING]));
-		sprite.setPosition(GetPositionF());
 		break;
 	}
 
-	SyncSpriteInfo(auraSprite, sprite);
+	sprite.setRotation(startPosInfo.GetGroundAngleDegrees());
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(startPosInfo.GetPositionF());
 
-	/*if (hasMonitor && !suppressMonitor)
-	{
-		keySprite->setTextureRect(ts_key->GetSubRect(owner->keyFrame / 5));
-		keySprite->setOrigin(keySprite->getLocalBounds().width / 2,
-			keySprite->getLocalBounds().height / 2);
-		keySprite->setPosition(position.x, position.y);
-	}*/
+	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void Shroom::HandleNoHealth()
@@ -210,11 +210,9 @@ void Shroom::SetZoneSpritePosition()
 	Enemy::SetZoneSpritePosition();
 }
 
-ShroomJelly::ShroomJelly(ActorParams *ap, V2d &pos, int p_level )
-	:Enemy(EnemyType::EN_SHROOMJELLY, ap )//, 0, 1, false )
+void ShroomJelly::SetLevel(int lev)
 {
-	level = p_level;
-
+	level = lev;
 	switch (level)
 	{
 	case 1:
@@ -229,8 +227,18 @@ ShroomJelly::ShroomJelly(ActorParams *ap, V2d &pos, int p_level )
 		maxHealth += 5;
 		break;
 	}
+}
 
-	SetCurrPosInfo(startPosInfo);
+ShroomJelly::ShroomJelly(Shroom *shr )
+	:Enemy(EnemyType::EN_SHROOMJELLY, NULL )//, 0, 1, false )
+{
+	SetNumActions(A_Count);
+	SetEditorActions(WAIT, WAIT, 0);
+
+	shroom = shr;
+
+	SetLevel(shr->level);
+	//SetCurrPosInfo(startPosInfo);
 
 	action = RISING;
 	shootLimit = 40;
@@ -400,6 +408,8 @@ void ShroomJelly::ComboHit()
 
 void ShroomJelly::ResetEnemy()
 {
+	SetCurrPosInfo(shroom->startPosInfo);
+
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
 	action = WAIT;

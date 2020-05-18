@@ -103,8 +103,6 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 
 	facingRight = true;
 
-	//UpdateHitboxes();
-
 	actionLength[S_FLOAT] = 11;
 	actionLength[S_DASH] = 30;
 	actionLength[S_RETURN] = 60;
@@ -154,12 +152,14 @@ void Airdasher::ResetEnemy()
 	hitFrame = -1;
 	currHits = 0;
 	currOrig = startPosInfo.GetPosition();
-	SetHitboxes(&hitBody, 0);
-	SetHurtboxes(&hurtBody, 0);
 	action = S_FLOAT;
 	frame = 0;
 	comboObj->Reset();
 	sprite.setRotation(0);
+
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
+
 	UpdateHitboxes();
 	UpdateSprite();
 }

@@ -11,15 +11,14 @@ struct Shroom : Enemy
 	{
 		LATENT,
 		HITTING,
+		A_Count
 	};
 
-	Action action;
-	int actionLength[HITTING + 1];
-	int animFactor[HITTING + 1];
-
-	Shroom(ActorParams * ap);/*bool hasMonitor,
-		Edge *ground, double quantity, int level);*/
+	Shroom(ActorParams * ap);
 	~Shroom();
+	void UpdateSpriteFromParams(ActorParams *ap);
+	//void UpdateOnPlacement(ActorParams *ap);
+	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void HandleNoHealth();
@@ -55,12 +54,8 @@ struct ShroomJelly : Enemy
 		A_Count
 	};
 
-	Action action;
-	int actionLength[A_Count];
-	int animFactor[A_Count];
-
-	ShroomJelly(ActorParams *ap, V2d &pos,
-		int level );
+	void SetLevel(int lev);
+	ShroomJelly(Shroom *shr);
 	~ShroomJelly();
 	void EnemyDraw(sf::RenderTarget *target);
 	
@@ -90,6 +85,8 @@ struct ShroomJelly : Enemy
 	CubicBezier fallingBez;
 
 	double angle;
+
+	Shroom *shroom;
 };
 
 #endif

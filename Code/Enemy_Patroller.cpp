@@ -122,11 +122,12 @@ void Patroller::ResetEnemy()
 	currentAngle = targetAngle;
 
 	eye->Reset();
-	SetHitboxes(&hitBody, 0);
-	SetHurtboxes(&hurtBody, 0);
 	fireCounter = 0;
 	action = S_FLAP;
 	frame = 0;
+
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
 
 	UpdateHitboxes();
 	UpdateSprite();
