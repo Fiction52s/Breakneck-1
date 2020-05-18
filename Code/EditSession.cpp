@@ -2171,6 +2171,7 @@ int EditSession::Run()
 	showGraph = false;
 
 	justCompletedPolyWithClick = false;
+	justCompletedRailWithClick = false;
 
 	trackingEnemyParams = NULL;
 	trackingDecor = NULL;
@@ -8994,6 +8995,7 @@ void EditSession::SetMode(Emode m)
 		railAttachStartPoint = NULL;
 		railAttachEnd = NULL;
 		railAttachEndPoint = NULL;
+		justCompletedRailWithClick = false;
 		break;
 	}
 		
@@ -9538,6 +9540,7 @@ void EditSession::TryAddPointToRailInProgress()
 					railAttachEndPoint = potentialRailAttachPoint;
 
 					ExecuteRailCompletion();
+					justCompletedRailWithClick = true;
 				}
 			}
 		}
@@ -10872,6 +10875,8 @@ void EditSession::CreateRailsModeHandleEvent()
 				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
 				break;
 			}
+
+			justCompletedRailWithClick = false;
 		}
 		break;
 	}
@@ -12425,7 +12430,10 @@ void EditSession::CreateRailsModeUpdate()
 
 	PreventNearPrimaryAnglesOnRailInProgress();
 
-	TryAddPointToRailInProgress();
+	if (!justCompletedRailWithClick)
+	{
+		TryAddPointToRailInProgress();
+	}
 }
 
 void EditSession::UpdateInputNonGame()

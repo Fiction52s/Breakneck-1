@@ -493,6 +493,7 @@ struct EditSession : GUIHandler, Session
 	bool showPoints;
 
 	bool justCompletedPolyWithClick;
+	bool justCompletedRailWithClick;
 	bool lastLeftMouseDown;
 
 	void TryRemoveSelectedPoints();
@@ -776,7 +777,7 @@ struct EditSession : GUIHandler, Session
 	sf::Vertex border[8];
 
 	//----------------------
-
+	
 	CompoundAction *moveAction;
 
 	void RevertMovedPoints(PointMap::iterator it);
