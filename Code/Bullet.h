@@ -48,6 +48,7 @@ struct BasicBullet : QuadTreeCollider
 	};
 
 	BasicBullet(int indexVA, BType bType, Launcher *launcher);
+	void SetIndex(int ind);
 	BType bulletType;
 	BasicBullet *prev;
 	BasicBullet *next;
@@ -154,10 +155,10 @@ struct Launcher
 	~Launcher();
 	static double GetRadius(BasicBullet::BType bt);
 	static sf::Vector2f GetOffset(BasicBullet::BType bt);
+	void SetStartIndex(int ind);
 	//Launcher( LauncherEnemy *handler,
 	bool interactWithTerrain;
 	void CapBulletVel(double speed);
-
 	void Reset();
 	BasicBullet *inactiveBullets;
 	BasicBullet *activeBullets;
@@ -192,8 +193,6 @@ struct Launcher
 	int wavelength;
 	int maxFramesToLive;
 	double maxBulletSpeed;
-
-
 
 	void DebugDraw(sf::RenderTarget *target);
 

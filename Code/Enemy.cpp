@@ -790,6 +790,12 @@ void Enemy::BasicRectHurtBodySetup(
 	}
 }
 
+void Enemy::BasicRectHurtBodySetup(
+	double w, double h, double angle, V2d &offset)
+{
+	BasicRectHurtBodySetup(w, h, angle, offset, GetPosition());
+}
+
 void Enemy::BasicRectHitBodySetup(
 	double w, double h, double angle, V2d &offset,
 	V2d &pos)
@@ -800,6 +806,12 @@ void Enemy::BasicRectHitBodySetup(
 		hitBody.BasicRectSetup(w * scale, h * scale, angle, offset * scale);
 		hitBody.SetBasicPos(pos, angle);
 	}
+}
+
+void Enemy::BasicRectHitBodySetup(
+	double w, double h, double angle, V2d &offset)
+{
+	BasicRectHitBodySetup(w, h, angle, offset, GetPosition());
 }
 
 bool Enemy::IsTouchingSpecterField( SpecterArea *sa )
@@ -1553,6 +1565,18 @@ bool Enemy::CheckHitPlayer(int index)
 	return false;
 }
 
+int Enemy::SetLaunchersStartIndex(int ind)
+{
+	int currIndex = ind;
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->SetStartIndex(currIndex);
+		currIndex += launchers[i]->totalBullets;
+	}
+
+	return currIndex;
+}
+
 bool HittableObject::CheckHit( Actor *player, Enemy *e )
 {
 	if (receivedHit == NULL && !specterProtected )
@@ -1802,4 +1826,72 @@ ComboObject::~ComboObject()
 {
 	if (enemyHitboxInfo != NULL)
 		delete enemyHitboxInfo;
+}
+
+void BasicPathFollower::SetParams(ActorParams *ap)
+{
+	ap->MakeGlobalPath(path);
+	loop = ap->loop;
+}
+
+void BasicPathFollower::Reset()
+{
+	targetNode = 1;
+	forward = true;
+}
+
+void BasicPathFollower::AdvanceTargetNode()
+{
+	int pathLength = path.size();
+	if (loop)
+	{
+		++targetNode;
+		if (targetNode == pathLength)
+			targetNode = 0;
+	}
+	else
+	{
+		if (forward)
+		{
+			++targetNode;
+			if (targetNode == pathLength)
+			{
+				targetNode -= 2;
+				forward = false;
+			}
+		}
+		else
+		{
+			--targetNode;
+			if (targetNode < 0)
+			{
+				targetNode = 1;
+				forward = true;
+			}
+		}
+	}
+}
+
+void BasicPathFollower::Move(double movement, V2d &pos )
+{
+	if (path.size() > 1)
+	{
+		while (movement != 0)
+		{
+			V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
+			V2d diff = targetPoint - pos;
+			double len = length(diff);
+			if (len >= abs(movement))
+			{
+				pos += normalize(diff) * movement;
+				movement = 0;
+			}
+			else
+			{
+				pos += diff;
+				movement -= length(diff);
+				AdvanceTargetNode();
+			}
+		}
+	}
 }

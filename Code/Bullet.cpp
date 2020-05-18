@@ -51,7 +51,9 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	amplitude = p_amplitude;
 	//increment the global counter
 	//+= numTotalBullets;
-	int startIndex = sess->totalNumberBullets;
+	int startIndex = 0;
+
+	startIndex = sess->totalNumberBullets;
 
 	activeBullets = NULL;
 
@@ -90,7 +92,6 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::BOSS_BIRD:
 		bulletTilesetIndex = 1;
 		break;
-
 	}
 
 	if (bulletType == BasicBullet::COPYCAT)
@@ -135,8 +136,11 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		inactiveBullets->prev = temp;
 		inactiveBullets = temp;
 	}
-
-	sess->totalNumberBullets = startIndex;
+	
+	if (sess->IsSessTypeGame())
+	{
+		sess->totalNumberBullets = startIndex;
+	}
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -145,6 +149,18 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
+}
+
+void Launcher::SetStartIndex(int ind)
+{
+	int currIndex = ind;
+	BasicBullet *curr = inactiveBullets;
+	while (curr != NULL)
+	{
+		curr->SetIndex(currIndex);
+		curr = curr->next;
+		++currIndex;
+	}
 }
 
 void Launcher::DebugDraw(sf::RenderTarget *target)
@@ -532,7 +548,7 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	slowCounter = 1;
 	bounceCount = 0;
 
-	VertexArray &bva = *(launcher->sess->bigBulletVA);
+	Vertex *bva = launcher->sess->bigBulletVA;
 	bva[index * 4 + 0].position = Vector2f(0, 0);
 	bva[index * 4 + 1].position = Vector2f(0, 0);
 	bva[index * 4 + 2].position = Vector2f(0, 0);
@@ -593,6 +609,11 @@ BasicBullet::BasicBullet(int indexVA, BType bType, Launcher *launch)
 	//ResetSprite();
 }
 
+void BasicBullet::SetIndex(int ind)
+{
+	index = ind;
+}
+
 void BasicBullet::DebugDraw(sf::RenderTarget *target)
 {
 	hitBody.DebugDraw( CollisionBox::Hit, target);
@@ -601,7 +622,7 @@ void BasicBullet::DebugDraw(sf::RenderTarget *target)
 void BasicBullet::ResetSprite()
 {
 	frame = 0;
-	VertexArray &bva = *(launcher->sess->bigBulletVA);
+	Vertex *bva = launcher->sess->bigBulletVA;
 	bva[index * 4 + 0].position = Vector2f(0, 0);
 	bva[index * 4 + 1].position = Vector2f(0, 0);
 	bva[index * 4 + 2].position = Vector2f(0, 0);
@@ -879,7 +900,7 @@ void BasicBullet::HandleEntrant(QuadTreeEntrant *qte)
 
 void BasicBullet::UpdateSprite()
 {
-	VertexArray &VA = *(launcher->sess->bigBulletVA);
+	sf::Vertex *VA = launcher->sess->bigBulletVA;
 	//IntRect ir = ts->GetSubRect( (maxFramesToLive - framesToLive) % 5 );
 	Vector2f dims(32, 32);
 

@@ -24,9 +24,11 @@ struct Patroller : Enemy, LauncherEnemy
 		//sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
 	~Patroller();
 	
+	void SetLevel(int lev);
 
+	sf::FloatRect GetAABB();
 	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos);
+		Edge *edge, V2d &pos);
 	void BulletHitPlayer(BasicBullet *b);
 	void ProcessState();
 	void HandleHitAndSurvive();
@@ -37,11 +39,9 @@ struct Patroller : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void UpdateHitboxes();
 	void HandleNoHealth();
-	void AdvanceTargetNode();
 
 	int turnFrame;
 	int turnAnimFactor;
-	bool currFacingRight;
 
 	int aimingFrames;
 	int maxAimingFrames;
@@ -53,20 +53,11 @@ struct Patroller : Enemy, LauncherEnemy
 	float beakTurnSpeed;
 	sf::SoundBuffer *shootSound;
 
-	Action action;
 	int fireCounter;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-	std::vector<sf::Vector2i> path;
-	//sf::Vector2i *path; //global
-	int pathLength;
-	bool loop;
-	int targetNode;
-	bool forward;
+	BasicPathFollower pathFollower;
 	double acceleration;
 	double speed;
 	int nodeWaitFrames;
-	sf::Sprite sprite;
 
 	sf::Vertex bodyVA[4 * 2];
 	//sf::Vertex bodyAuraVA[4 * 2];

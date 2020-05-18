@@ -411,24 +411,6 @@ void EditSession::TestPlayerMode()
 				}
 			}
 		}
-
-		/*for (auto it = groups.begin(); it != groups.end(); ++it)
-		{
-			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
-			{
-				if ((*enit)->myEnemy != NULL)
-				{
-					AddEnemy((*enit)->myEnemy);
-				}
-			}
-		}*/
-
-		/*for (auto it = allCurrEnemies.begin(); it != allCurrEnemies.end(); ++it)
-		{
-			RemoveEnemy((*it));
-			(*it)->Reset();
-			AddEnemy((*it));
-		}*/
 		
 		//reset enemies
 	}
@@ -446,6 +428,9 @@ void EditSession::TestPlayerMode()
 
 		activeItemTree = new QuadTree(1000000, 1000000);
 
+		
+
+
 		//Actor *p;
 		
 		/*for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -457,6 +442,26 @@ void EditSession::TestPlayerMode()
 
 		
 	}
+
+	if (bigBulletVA != NULL)
+	{
+		delete[] bigBulletVA;
+	}
+
+	Enemy *currEnemy;
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			currEnemy = (*enit)->myEnemy;
+			if (currEnemy != NULL)
+			{
+				totalNumberBullets = currEnemy->SetLaunchersStartIndex(totalNumberBullets);
+			}
+		}
+	}
+
+	CreateBulletQuads();
 
 	auto &testPolys = GetCorrectPolygonList(0);
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
@@ -479,7 +484,6 @@ void EditSession::TestPlayerMode()
 		(*it)->AddEdgesToQuadTree(railEdgeTree);
 	}
 
-	Enemy *currEnemy;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -10172,6 +10176,8 @@ void EditSession::DrawMode()
 				p->Draw(preScreenTex);
 			}
 		}
+
+		DrawBullets(preScreenTex);
 		break;
 	}
 	case CREATE_TERRAIN:

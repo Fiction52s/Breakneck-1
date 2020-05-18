@@ -230,7 +230,7 @@ struct Session : TilesetManager
 	void RemoveEnemy(Enemy *e);
 
 	int totalNumberBullets;
-	sf::VertexArray *bigBulletVA;
+	sf::Vertex *bigBulletVA;
 	Tileset *ts_basicBullets;
 
 	void CreateBulletQuads();

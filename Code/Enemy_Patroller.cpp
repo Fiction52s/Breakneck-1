@@ -19,11 +19,9 @@ using namespace sf;
 //}
 
 
-Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
-	:Enemy( EnemyType::EN_PATROLLER, ap )//, p_hasMonitor, 1 )
+void Patroller::SetLevel(int lev)
 {
-	SetLevel(ap->GetLevel());
-
+	level = lev;
 	switch (level)
 	{
 	case 1:
@@ -38,45 +36,28 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 		maxHealth += 5;
 		break;
 	}
+}
 
-	eye = new PatrollerEye(this);
-	
-	action = S_FLAP;
+Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
+	:Enemy( EnemyType::EN_PATROLLER, ap )//, p_hasMonitor, 1 )
+{
+	SetNumActions(S_Count);
+	SetEditorActions(S_FLAP, S_FLAP, 0);
 
-	SetCurrPosInfo(startPosInfo);
+	SetLevel(ap->GetLevel());
 
-	eye->SetPosition(GetPositionF());
+	pathFollower.SetParams(ap);
 
-	//spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2 );
-	
+	ts = sess->GetTileset("Enemies/patroller_256x256.png", 256, 256);
+	ts_aura = sess->GetTileset("Enemies/patroller_aura_256x256.png", 256, 256);
 	shootSound = sess->GetSound("Enemies/patroller_shoot");
 
-	 ap->MakeGlobalPath(path);
-
-	loop = ap->loop;
+	eye = new PatrollerEye(this);
+	eye->SetPosition(GetPositionF());
 	
-	//eventually maybe put this on a multiplier for more variation?
-	//doubt ill need it though
-	speed = 3;//pspeed;
-
-
-
-	//speed = 2;
-	frame = 0;
-	beakTurnSpeed = .13;
-	//ts = owner->GetTileset( "patroller.png", 80, 80 );
-	ts = sess->GetTileset( "Enemies/patroller_256x256.png", 256, 256 );
-	ts_aura = sess->GetTileset("Enemies/patroller_aura_256x256.png", 256, 256);
-	/*sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setScale(scale, scale);
-	sprite.setPosition( pos.x, pos.y );*/
-	//position.x = 0;
-	//position.y = 0;
-
-	BasicRectHurtBodySetup(32, 72, 0, V2d(0, 30), GetPosition());
-	BasicRectHitBodySetup(32, 72, 0, V2d(0, 30), GetPosition());
+	
+	BasicRectHurtBodySetup(32, 72, 0, V2d(0, 30));
+	BasicRectHitBodySetup(32, 72, 0, V2d(0, 30));
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -85,28 +66,11 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
-
 	hitBody.hitboxInfo = hitboxInfo;
 
-	
-	//hitboxInfo->kbDir;
+	cutObject->Setup(ts, 37, 38, scale);
 
-	targetNode = 1;
-	forward = true;
-
-	dead = false;
-
-	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(38);
-	cutObject->SetSubRectBack(37);
-	cutObject->SetScale(scale);
-
-	facingRight = true;
-	
-	
-	//bloodSprite.setTexture( *ts_testBlood->texture );
-
-	UpdateHitboxes();
+	origFacingRight = true;
 
 	actionLength[S_FLAP] = 18;
 	actionLength[S_BEAKOPEN] = 3;
@@ -118,16 +82,21 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	animFactor[S_BEAKHOLDOPEN] = 1;
 	animFactor[S_BEAKCLOSE] = 6;
 
-	fireCounter = 0;
 	turnAnimFactor = 4;
 	numLaunchers = 1;
+	maxAimingFrames = 35;
+	speed = 3;
+	beakTurnSpeed = .13;
+
 	launchers = new Launcher*[numLaunchers];
 	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, 16, 1, GetPosition(), V2d(1, 0), 0, 200, false);
 	launchers[0]->SetBulletSpeed(5);//70);
 	launchers[0]->hitboxInfo->damage = 18;
-	maxAimingFrames = 35;
+	
 
 	ResetEnemy();
+
+	SetSpawnRect();
 }
 
 Patroller::~Patroller()
@@ -137,9 +106,11 @@ Patroller::~Patroller()
 
 void Patroller::ResetEnemy()
 {
-	currFacingRight = facingRight;
+	SetCurrPosInfo(startPosInfo);
+	pathFollower.Reset();
+	facingRight = origFacingRight;
 	aimingFrames = 0;
-	if (currFacingRight)
+	if (facingRight)
 	{
 		turnFrame = (6 * turnAnimFactor) - 1;
 	}
@@ -154,20 +125,10 @@ void Patroller::ResetEnemy()
 	SetHitboxes(&hitBody, 0);
 	SetHurtboxes(&hurtBody, 0);
 	fireCounter = 0;
-	//cout << "resetting enemy" << endl;
-	//spawned = false;
-	targetNode = 1;
-	forward = true;
-	dead = false;
 	action = S_FLAP;
 	frame = 0;
-	//position.x = path[0].x;
-	//position.y = path[0].y;
-	receivedHit = NULL;
-	
 
 	UpdateHitboxes();
-
 	UpdateSprite();
 
 	targetAngle = 0;
@@ -191,7 +152,6 @@ void Patroller::ProcessState()
 		{
 			action = S_BEAKHOLDOPEN;
 			launchers[0]->position = GetPosition();
-			V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
 			launchers[0]->facingDir = normalize(targetPos - GetPosition());
 			launchers[0]->Fire();
 			sess->ActivateSoundAtPos( GetPosition(), shootSound);
@@ -206,9 +166,6 @@ void Patroller::ProcessState()
 			break;
 		}
 	}
-	
-
-	
 
 	switch (action)
 	{
@@ -267,8 +224,6 @@ void Patroller::ProcessState()
 
 	if (action != S_BEAKHOLDOPEN)
 	{
-		
-
 		if (currentAngle > targetAngle)
 		{
 			float diff = currentAngle - targetAngle;
@@ -330,61 +285,8 @@ void Patroller::HandleNoHealth()
 void Patroller::UpdateEnemyPhysics()
 {
 	double movement = speed / numPhysSteps;
-
-	if( pathLength > 1 )
-	{
-		movement /= (double)slowMultiple;
-
-		while( movement != 0 )
-		{
-			//cout << "movement loop? "<< endl;
-			V2d targetPoint = V2d( path[targetNode].x, path[targetNode].y );
-			V2d diff = targetPoint - GetPosition();
-			double len = length( diff );
-			if( len >= abs( movement ) )
-			{
-				currPosInfo.position += normalize( diff ) * movement;
-				movement = 0;
-			}
-			else
-			{
-				currPosInfo.position += diff;
-				movement -= length( diff );
-				AdvanceTargetNode();	
-			}
-		}
-	}
-}
-
-void Patroller::AdvanceTargetNode()
-{
-	if( loop )
-	{
-		++targetNode;
-		if( targetNode == pathLength )
-			targetNode = 0;
-	}
-	else
-	{
-		if( forward )
-		{
-			++targetNode;
-			if( targetNode == pathLength )
-			{
-				targetNode -= 2;
-				forward = false;
-			}
-		}
-		else
-		{
-			--targetNode;
-			if( targetNode < 0 )
-			{
-				targetNode = 1;
-				forward = true;
-			}
-		}
-	}
+	movement /= (double)slowMultiple;
+	pathFollower.Move(movement, currPosInfo.position);
 }
 
 void Patroller::FrameIncrement()
@@ -393,6 +295,11 @@ void Patroller::FrameIncrement()
 	{
 		++fireCounter;
 	}*/
+}
+
+sf::FloatRect Patroller::GetAABB()
+{
+	return GetQuadAABB(bodyVA);
 }
 
 void Patroller::UpdateSprite()

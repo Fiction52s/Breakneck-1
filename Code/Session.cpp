@@ -247,6 +247,8 @@ void Session::AddW1Enemies()
 	AddWorldEnemy("blocker", 1, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
+	AddBasicAerialWorldEnemy("patroller", 1, CreateEnemy<Patroller>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3 );
+
 		/*
 	AddBasicAerialWorldEnemy("patroller", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));*/
@@ -1148,11 +1150,10 @@ void Session::CreateBulletQuads()
 {
 	if (totalNumberBullets > 0)
 	{
-		bigBulletVA = new VertexArray(sf::Quads, totalNumberBullets * 4);
-		VertexArray &bva = *bigBulletVA;
+		bigBulletVA = new Vertex[totalNumberBullets * 4];
 		for (int i = 0; i < totalNumberBullets * 4; ++i)
 		{
-			bva[i].position = Vector2f(0, 0);
+			bigBulletVA[i].position = Vector2f(0, 0);
 		}
 		ts_basicBullets = GetTileset("Enemies/bullet_64x64.png", 64, 64);
 	}
@@ -1166,7 +1167,7 @@ void Session::DrawBullets(sf::RenderTarget *target)
 {
 	if (ts_basicBullets != NULL)
 	{
-		target->draw(*bigBulletVA, ts_basicBullets->texture);
+		target->draw(bigBulletVA, totalNumberBullets * 4, sf::Quads, ts_basicBullets->texture);
 	}
 }
 
@@ -1246,7 +1247,7 @@ Session::~Session()
 
 	if (bigBulletVA != NULL)
 	{
-		delete bigBulletVA;
+		delete [] bigBulletVA;
 	}
 
 	//---------------

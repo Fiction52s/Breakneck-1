@@ -74,6 +74,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	{
 		UpdateFromParams(editParams, numFrames);
 	}
+
+	int SetLaunchersStartIndex(int ind);
+
 	virtual void AddChildrenToSession( Session *s) {}
 	virtual void RemoveChildrenFromSession(Session *s) {}
 	//new vars
@@ -262,9 +265,13 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void BasicRectHurtBodySetup(
 		double w, double h, double angle, V2d &offset,
 		V2d &pos);
+	void BasicRectHurtBodySetup(
+		double w, double h, double angle, V2d &offset);
 	void BasicRectHitBodySetup(
 		double w, double h, double angle, V2d &offset,
 		V2d &pos);
+	void BasicRectHitBodySetup(
+		double w, double h, double angle, V2d &offset);
 
 	void Reset();
 
@@ -317,9 +324,17 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 
 
-struct PathFollower
+struct BasicPathFollower
 {
+	bool loop;
+	int targetNode;
+	bool forward;
+	std::vector<sf::Vector2i> path;
 
+	void SetParams(ActorParams *ap);
+	void Reset();
+	void AdvanceTargetNode();
+	void Move(double amount, V2d &pos );
 };
 
 #endif
