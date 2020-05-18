@@ -6,6 +6,8 @@
 #include "Enemy_BasicTurret.h"
 #include "Shield.h"
 #include "Actor.h"
+//#include 
+
 
 using namespace std;
 using namespace sf;
@@ -20,13 +22,34 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_level )
-		:Enemy( EnemyType::EN_BASICTURRET, ap )//, p_hasMonitor, 1 ), firingCounter( 0 ), ground( g ),
-		//edgeQuantity( q )
+void BasicTurret::UpdateOnPlacement(ActorParams *ap)
 {
-	firingCounter = 0;
+	Enemy::UpdateOnPlacement(ap);
 
-	level = ap->GetLevel();
+	if (startPosInfo.ground != NULL)
+	{
+		launchers[0]->position = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), 80.0 * (double)scale);
+		launchers[0]->facingDir = startPosInfo.GetEdge()->Normal();
+	}
+
+	testShield->SetPosition(GetPosition());
+	//cutObject->rotateAngle = sprite.getRotation();
+}
+
+void BasicTurret::UpdateSpriteFromParams(ActorParams *ap)
+{
+	if (ap->posInfo.IsAerial())
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setPosition(editParams->GetFloatPos());
+		sprite.setRotation(0);
+		SyncSpriteInfo(auraSprite, sprite);
+	}
+}
+
+void BasicTurret::SetLevel(int lev)
+{
+	level = lev;
 
 	switch (level)
 	{
@@ -42,11 +65,21 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 		maxHealth += 5;
 		break;
 	}
+}
+
+BasicTurret::BasicTurret(ActorParams *ap )
+		:Enemy( EnemyType::EN_BASICTURRET, ap )
+{
+	SetNumActions(A_Count);
+	SetEditorActions(ATTACK, WAIT, 0);
+
+	firingCounter = 0;
+
+	SetLevel(ap->GetLevel());
 
 	framesWait = 60;
 	bulletSpeed = 10;
 	receivedHit = NULL;
-
 
 	double width = 208;
 	double height = 176;
@@ -59,44 +92,28 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 	width *= scale;
 	height *= scale;
 
-	Edge *ground = startPosInfo.GetEdge();
-
-	V2d gPoint = ground->GetPosition(startPosInfo.GetQuant());
-	gn = ground->Normal();
-	angle = atan2(gn.x, -gn.y);
+	
 
 	SetOffGroundHeight(height / 2.f - 30 * scale);
-	SetCurrPosInfo(startPosInfo);
+
+	SetCurrPosInfo(ap->posInfo);
+	//SetCurrPosInfo(startPosInfo);
 	
 	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
-	testShield->SetPosition(GetPosition());
+	//testShield->SetPosition(GetPosition());
 
 	auraSprite.setTexture(*ts_aura->texture);
-
-
-	/*sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(frame));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(pos.x, pos.y);
-	sprite.setScale(scale, scale);*/
 
 	sprite.setTexture( *ts->texture );
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
-	sprite.setPosition(GetPositionF());
-	sprite.setRotation(angle / PI * 180);
-
 	
-	//sprite.setPosition( gPoint.x, gPoint.y );
 	
 	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode1_64x64.png", 64, 64 );
 
 	
-	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2 );
-	//V2d gPoint = ground->GetPoint( edgeQuantity );
-	
-	
+	BasicCircleHurtBodySetup(64);
+	BasicCircleHitBodySetup(64);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -105,24 +122,22 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
-
-	BasicCircleHurtBodySetup(64);
-	BasicCircleHitBodySetup(64);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	frame = 0;
 	animationFactor = 4;
 
-	dead = false;
+	Edge *ground = startPosInfo.GetEdge();
+	V2d gn(0, -1);
+	V2d launchPos = GetPosition();
 
-	double size = max( width, height );
+	if (ground != NULL)
+	{
+		gn = ground->Normal();
+		launchPos = ground->GetRaisedPosition(startPosInfo.GetQuant(), 80.0 * (double)scale);
+	}
 
-	V2d along = normalize(ground->v1 - ground->v0);
-
-	V2d launchPos = gPoint + ground->Normal() * 20.0 * (double)scale;
-	numLaunchers = 1;
-	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, 16, 1, launchPos + ground->Normal() * 60.0, gn, 0, 300 );
+	SetNumLaunchers(1);
+	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, 16, 1, launchPos, gn, 0, 300 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->hitboxInfo->damage = 18;
 
@@ -135,19 +150,14 @@ BasicTurret::BasicTurret(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q
 	launchers[2]->hitboxInfo->damage = 18;*/
 	//launcher->Reset();
 	
+
+	cutObject->Setup(ts, 12, 11, scale, 0);
 	
-	//UpdateSprite();
-	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
-
-	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(12);
-	cutObject->SetSubRectBack(11);
-	cutObject->rotateAngle = sprite.getRotation();
-	cutObject->SetScale(scale);
-
 	testShield->SetPosition(GetPosition());
 
 	ResetEnemy();
+
+	SetSpawnRect();
 }
 
 void BasicTurret::ResetEnemy()
@@ -159,6 +169,8 @@ void BasicTurret::ResetEnemy()
 	action = WAIT;
 	SetHurtboxes(&hurtBody, 0);
 	SetHitboxes(&hitBody, 0);
+
+	cutObject->rotateAngle = sprite.getRotation();
 
 	currShield = testShield;
 	testShield->Reset();
@@ -283,6 +295,10 @@ void BasicTurret::UpdateSprite()
 	{
 		sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));
 	}
+
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 	
 	SyncSpriteInfo(auraSprite, sprite);
 }
@@ -321,6 +337,8 @@ void BasicTurret::Setup()
 		}
 
 		launchers[li]->interactWithTerrain = false;*/
+
+		
 
 		V2d finalPos = TurretSetup();
 

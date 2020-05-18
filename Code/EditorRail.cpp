@@ -140,7 +140,7 @@ void TerrainRail::Init()
 	accelerate = false;
 	level = 1;
 
-	rType = BLOCKER;
+	rType = FLY;
 
 	enemyParams = NULL;
 	enemyChain = NULL;
@@ -1341,6 +1341,7 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 		coloredNodeCircles->Draw(target);
 		break;
 	}
+	case FLY:
 	case BLOCKER:
 	{
 		enemyParams->Draw(target);

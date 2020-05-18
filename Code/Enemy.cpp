@@ -516,6 +516,11 @@ void Enemy::HitboxesOff()
 	SetHurtboxes(NULL, 0);
 }
 
+void Enemy::SetNumLaunchers(int num)
+{
+	numLaunchers = num;
+	launchers = new Launcher*[numLaunchers];
+}
 
 void Enemy::UpdateOnPlacement( ActorParams *ap )
 {
@@ -859,6 +864,10 @@ V2d Enemy::TurretSetup()
 {
 	for (int li = 0; li < 1; ++li)
 	{
+		launchers[li]->def_e = NULL;
+
+		launchers[li]->interactWithTerrain = true;
+
 		launchers[li]->Reset();
 		launchers[li]->Fire();
 		BasicBullet *bb = launchers[li]->activeBullets;
@@ -870,6 +879,7 @@ V2d Enemy::TurretSetup()
 
 
 			launchers[li]->UpdatePhysics(0, true);
+			launchers[li]->UpdatePhysics(1, true);
 
 			if (bb->framesToLive == 0)
 			{

@@ -31,7 +31,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	libraryEnemiesVec.resize(9);
 	for (int i = 0; i < 9; ++i)
 	{
-		libraryEnemiesVec[i].resize(20);
+		libraryEnemiesVec[i].resize(100); //too big but adjust later
 	}
 
 	edit = EditSession::GetSession();
@@ -151,6 +151,8 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 		//libraryEnemiesVec[0].push_back( )
 	}
 
+	int row, col;
+	int maxCol = 9;
 	EnemyChooseRect *ecRect;
 	for (int w = 0; w < 2; ++w)
 	{
@@ -161,7 +163,11 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 			{
 				libraryEnemiesVec[w][counter] = &allEnemyRects[i];
 				ecRect = libraryEnemiesVec[w][counter];
-				ecRect->SetPosition(Vector2f(10 + i * 120, 240));
+
+				col = i % maxCol;
+				row = i / maxCol;
+
+				ecRect->SetPosition(Vector2f(10 + col * 120, 240 + row * 120));
 				//ecRect->SetShown(true);
 				ecRect->Init();
 				++counter;

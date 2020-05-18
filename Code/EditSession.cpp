@@ -463,6 +463,9 @@ void EditSession::TestPlayerMode()
 
 	CreateBulletQuads();
 
+
+	
+
 	auto &testPolys = GetCorrectPolygonList(0);
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 	{
@@ -492,6 +495,29 @@ void EditSession::TestPlayerMode()
 			if (currEnemy != NULL)
 			{
 				currEnemy->AddToWorldTrees();
+			}
+		}
+	}
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			currEnemy = (*enit)->myEnemy;
+			if (currEnemy != NULL)
+			{
+				currEnemy->Setup();
+			}
+		}
+	}
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			currEnemy = (*enit)->myEnemy;
+			if (currEnemy != NULL)
+			{
 				AddEnemy(currEnemy);
 
 			}

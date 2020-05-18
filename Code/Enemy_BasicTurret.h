@@ -13,10 +13,15 @@ struct BasicTurret : Enemy, LauncherEnemy
 	{
 		WAIT,
 		ATTACK,
+		A_Count
 	};
 
-	BasicTurret(ActorParams *ap);//bool hasMonitor, Edge *ground, double quantity,
-		//int level );
+	void UpdateSpriteFromParams(ActorParams *ap);
+
+	void UpdateOnPlacement(ActorParams *ap);
+
+	BasicTurret(ActorParams *ap);
+	void SetLevel(int lev);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
@@ -31,12 +36,9 @@ struct BasicTurret : Enemy, LauncherEnemy
 	sf::SoundBuffer *fireSound;
 	CollisionBox prelimBox[3];
 
-	//bool playerPrelimHit[4];
-
 	void ResetEnemy();
 	Tileset *ts;
 	Tileset *ts_aura;
-	Action action;
 
 	const static int maxBullets = 16;
 
@@ -52,10 +54,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void SetupPreCollision();
 	CollisionBody *prelimBody;
 
-	double angle;
-
 	int animationFactor;
-	sf::Vector2<double> gn;
 	double bulletSpeed;
 };
 
