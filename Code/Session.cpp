@@ -249,9 +249,12 @@ void Session::AddW1Enemies()
 
 	AddBasicAerialWorldEnemy("patroller", 1, CreateEnemy<Patroller>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3 );
 
+	AddWorldEnemy("healthfly", 1, CreateEnemy<FlyChain>, SetParamsType<FlyParams>, 
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, true, false, false, 3);
+
 	//AddBasicAerialWorldEnemy("airdasher", 1, CreateEnemy<Airdasher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
 
-	AddBasicGroundWorldEnemy("shroom", 1, CreateEnemy<Shroom>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("shroom", 1, CreateEnemy<Shroom>, Vector2i(0, 0), Vector2i(50, 50), true, true, false, false, 3);
 		/*
 	AddBasicAerialWorldEnemy("patroller", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));*/

@@ -184,9 +184,9 @@ void Shroom::UpdateSprite()
 		break;
 	}
 
-	sprite.setRotation(startPosInfo.GetGroundAngleDegrees());
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(startPosInfo.GetPositionF());
+	sprite.setPosition(currPosInfo.GetPositionF());
 
 	SyncSpriteInfo(auraSprite, sprite);
 }
@@ -408,8 +408,7 @@ void ShroomJelly::ComboHit()
 
 void ShroomJelly::ResetEnemy()
 {
-	SetCurrPosInfo(shroom->startPosInfo);
-
+	currPosInfo.position = shroom->GetPosition();
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
 	action = WAIT;

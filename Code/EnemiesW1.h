@@ -10,6 +10,7 @@
 #include "Enemy_Comboer.h"
 #include "Enemy_Crawler.h"
 #include "Enemy_CrawlerQueen.h"
+#include "Enemy_HealthFly.h"
 //#include "Enemy_FootTrap.h"
 #include "Enemy_Goal.h"
 #include "Enemy_Patroller.h"

@@ -2,15 +2,38 @@
 #define __ENEMY_BLOCKER_H__
 
 #include "Enemy.h"
+#include "EnemyChain.h"
 
 struct CircleGroup;
 
 struct BlockerChain;
 
 
+struct BlockerChain : EnemyChain
+{
+	BlockerChain(ActorParams *ap);
+	//void InitReadParams(ActorParams *params);
+	void ReadParams(ActorParams *params);
+	Tileset *GetTileset(int variation);
+	Enemy *CreateEnemy(V2d &pos, int ind);
+	void UpdateStartPosition(int ind, V2d &pos);
+
+	bool armored;
+};
+
 
 struct Blocker : Enemy, QuadTreeEntrant
 {
+	enum BlockerType : int
+	{
+		BLUE,
+		GREEN,
+		YELLOW,
+		ORANGE,
+		RED,
+		MAGENTA
+	};
+
 	enum Action
 	{
 		WAIT,
@@ -31,11 +54,12 @@ struct Blocker : Enemy, QuadTreeEntrant
 	void ResetEnemy();
 	void ProcessHit();
 	void IHitPlayer(int index);
-	void SetPosition(V2d &pos);
+	void SetStartPosition(V2d &pos);
 	sf::FloatRect GetAABB();
 	int minimapCirclePoints;
 	int minimapCircleRadius;
 
+	
 	BlockerChain *bc;
 
 	
@@ -45,71 +69,62 @@ struct Blocker : Enemy, QuadTreeEntrant
 	int vaIndex;
 };
 
-struct BlockerChain : Enemy
-{
-	enum Action
-	{
-		EXIST,
-		Count
-	};
-
-	enum BlockerType : int
-	{
-		BLUE,
-		GREEN,
-		YELLOW,
-		ORANGE,
-		RED,
-		MAGENTA
-	};
-
-	void SetActionEditLoop();
-	void UpdateOnPlacement(ActorParams *ap);
-	void UpdateSpriteFromParams( ActorParams *ap );
-	//void UpdateOnPlacement(ActorParams *ap);
-	void UpdateParams(ActorParams *ap);
-	void SetLevel(int lev);
-	void AddToWorldTrees();
-	sf::FloatRect GetAABB();
-	void CreateBlockers();
-	void UpdateFromParams( ActorParams *ap, int numFrames);
-
-	sf::Vertex *va;
-	CircleGroup *circleGroup;
-	BlockerChain(ActorParams *ap);
-	~BlockerChain();
-	void DrawMinimap(sf::RenderTarget *target);
-	void EnemyDraw(sf::RenderTarget *target);
-	void SetZone(Zone *p_zone);
-	int GetNumCamPoints();
-	V2d GetCamPoint(int index);
-	void UpdatePhysics( int substep );
-	void UpdatePrePhysics();
-	void DebugDraw(sf::RenderTarget *target);
-	void ProcessState();
-	void UpdatePostPhysics();
-	void UpdateEnemyPhysics();
-
-	void UpdateFromPath( ActorParams *ap );
-
-	int liveFrames;
-	Blocker **blockers;
-	int numBlockers;
-
-	Tileset *ts;
-	void ResetEnemy();
-
-	bool checkCol;
-	
-	double spacing;
-	bool armored;
-	BlockerType bType;
-
-	std::vector<sf::Vector2i> localPath;
-	std::vector<sf::Vector2i> globalPath;
-	std::vector<V2d> blockerOffsets;
-
-	ActorParams::RailMode railMode;
-};
+//struct BlockerChain : Enemy
+//{
+//	enum Action
+//	{
+//		EXIST,
+//		Count
+//	};
+//
+//	
+//	int bType;
+//	void SetActionEditLoop();
+//	void UpdateOnPlacement(ActorParams *ap);
+//	void UpdateSpriteFromParams( ActorParams *ap );
+//	//void UpdateOnPlacement(ActorParams *ap);
+//	void UpdateParams(ActorParams *ap);
+//	void SetLevel(int lev);
+//	void AddToWorldTrees();
+//	sf::FloatRect GetAABB();
+//	void CreateBlockers();
+//	void UpdateFromParams( ActorParams *ap, int numFrames);
+//
+//	sf::Vertex *va;
+//	CircleGroup *circleGroup;
+//	BlockerChain(ActorParams *ap);
+//	~BlockerChain();
+//	void DrawMinimap(sf::RenderTarget *target);
+//	void EnemyDraw(sf::RenderTarget *target);
+//	void SetZone(Zone *p_zone);
+//	int GetNumCamPoints();
+//	V2d GetCamPoint(int index);
+//	void UpdatePhysics( int substep );
+//	void UpdatePrePhysics();
+//	void DebugDraw(sf::RenderTarget *target);
+//	void ProcessState();
+//	void UpdatePostPhysics();
+//	void UpdateEnemyPhysics();
+//
+//	void UpdateFromPath( ActorParams *ap );
+//
+//	int liveFrames;
+//	Blocker **blockers;
+//	int numBlockers;
+//
+//	Tileset *ts;
+//	void ResetEnemy();
+//
+//	bool checkCol;
+//	
+//	double spacing;
+//	bool armored;
+//
+//	std::vector<sf::Vector2i> localPath;
+//	std::vector<sf::Vector2i> globalPath;
+//	std::vector<V2d> blockerOffsets;
+//
+//	ActorParams::RailMode railMode;
+//};
 
 #endif

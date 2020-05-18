@@ -4,7 +4,9 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "CircleGroup.h"
 
+#include "Enemy_Blocker.h"
 
 using namespace std;
 using namespace sf;
@@ -18,6 +20,44 @@ using namespace sf;
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
+
+FlyChain::FlyChain(ActorParams *ap)
+	:EnemyChain( ap )
+{
+	FlyParams *fParams = (FlyParams*)ap;
+	railMode = fParams->railMode;
+
+	SetLevel(ap->GetLevel());
+
+	SetSpawnRect();
+
+	UpdateParams(ap);
+}
+
+void FlyChain::UpdateStartPosition(int ind, V2d &pos)
+{
+	((HealthFly*)enemies[ind])->SetStartPosition(pos);
+}
+
+Tileset *FlyChain::GetTileset(int variation)
+{
+	return sess->GetTileset("Enemies/healthfly_64x64.png", 64, 64);
+}
+
+Enemy *FlyChain::CreateEnemy(V2d &pos, int ind)
+{
+	return new HealthFly(pos, level, va + ind * 4, ts);
+}
+
+
+void FlyChain::ReadParams(ActorParams *params)
+{
+	FlyParams *fParams = (FlyParams*)params;
+	railMode = fParams->railMode;
+	paramsVariation = fParams->fType;
+	paramsSpacing = fParams->spacing;
+}
+
 
 int HealthFly::GetHealAmount()
 {
@@ -98,7 +138,7 @@ HealthFly::HealthFly(V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts )
 	SetSpawnRect();
 }
 
-void HealthFly::SetPosition(V2d &pos)
+void HealthFly::SetStartPosition(V2d &pos)
 {
 	startPosInfo.position = pos;
 	SetCurrPosInfo(startPosInfo);

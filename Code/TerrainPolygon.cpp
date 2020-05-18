@@ -2741,7 +2741,7 @@ void TerrainPolygon::Move(Vector2i move )
 
 	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
 	{
-		(*it)->SetPosition((*it)->GetPosition() + dMove);
+		(*it)->SetStartPosition((*it)->GetPosition() + dMove);
 		(*it)->preTransformPos = (*it)->GetPosition();
 	}
 
@@ -3617,7 +3617,7 @@ void TerrainPolygon::CancelTransformation()
 
 	for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
 	{
-		(*it)->SetPosition((*it)->preTransformPos);
+		(*it)->SetStartPosition((*it)->preTransformPos);
 	}
 
 	//triBackups.clear();
@@ -3631,7 +3631,7 @@ PolyPtr TerrainPolygon::CompleteTransformation(TransformTools *tr)
 
 		for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
 		{
-			(*it)->SetPosition((*it)->preTransformPos);
+			(*it)->SetStartPosition((*it)->preTransformPos);
 		}
 
 		PolyPtr newPoly(new TerrainPolygon);
@@ -3717,7 +3717,7 @@ void TerrainPolygon::UpdateTransformation(TransformTools *tr)
 		fDiff = fCurr - center;
 		fDiff = t.transformPoint(fDiff);
 		fCurr = fDiff + trCenter;
-		(*it)->SetPosition(V2d(fCurr));
+		(*it)->SetStartPosition(V2d(fCurr));
 	}
 
 	VertexArray & v = *va;

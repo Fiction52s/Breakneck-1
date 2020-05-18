@@ -2,8 +2,21 @@
 #define __ENEMY_HEALTHFLY_H__
 
 #include "Enemy.h"
+#include "EnemyChain.h"
 
-struct HealthFly : Enemy
+struct HealthFly;
+
+struct FlyChain : EnemyChain
+{
+	FlyChain(ActorParams *ap);
+	//void InitReadParams(ActorParams *params);
+	void ReadParams(ActorParams *params);
+	Tileset *GetTileset(int variation);
+	Enemy *CreateEnemy(V2d &pos, int ind);
+	void UpdateStartPosition(int ind, V2d &pos);
+};
+
+struct HealthFly : Enemy, ChainableObject
 {
 	enum Action
 	{
@@ -19,7 +32,7 @@ struct HealthFly : Enemy
 	void SetLevel(int lev);
 	void AddToWorldTrees();
 	sf::FloatRect GetAABB();
-	void SetPosition(V2d &pos);
+	void SetStartPosition(V2d &pos);
 
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);

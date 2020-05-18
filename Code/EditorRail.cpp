@@ -7,6 +7,8 @@
 #include "CircleGroup.h"
 #include "Enemy_Blocker.h"
 
+#include "EnemyChain.h"
+
 using namespace std;
 using namespace sf;
 
@@ -139,7 +141,9 @@ void TerrainRail::Init()
 	level = 1;
 
 	rType = BLOCKER;
-	blockerParams = NULL;
+
+	enemyParams = NULL;
+	enemyChain = NULL;
 }
 
 TerrainRail::~TerrainRail()
@@ -153,8 +157,8 @@ TerrainRail::~TerrainRail()
 		delete coloredNodeCircles;
 	}
 
-	if (blockerParams != NULL)
-		delete blockerParams;
+	if (enemyParams != NULL)
+		delete enemyParams;
 
 	ClearPoints();
 }
@@ -195,8 +199,6 @@ void TerrainRail::Deactivate()
 	cout << "deactivating rail :" << sess->rails.size() << endl;
 	sess->rails.remove(this);
 
-	//if (blockerParams != NULL)
-	//	blockerParams->Deactivate();
 }
 
 void TerrainRail::Activate()
@@ -207,8 +209,6 @@ void TerrainRail::Activate()
 	cout << "activating rail :" << sess->rails.size() << endl;
 	sess->rails.push_back(this);
 
-	//if( blockerParams != NULL )
-	//	blockerParams->Activate();
 }
 
 void TerrainRail::WriteFile(std::ofstream &of)
@@ -359,9 +359,9 @@ void TerrainRail::Move(Vector2i move)
 		}
 	}
 
-	if (blockerParams != NULL)
+	if (enemyParams != NULL)
 	{
-		blockerParams->Move(move);
+		enemyParams->Move(move);
 	}
 
 	/*if (blockerParams->myEnemy != NULL)
@@ -451,36 +451,36 @@ void TerrainRail::Finalize()
 
 	if (rType == BLOCKER)
 	{
-		CreateBlockerChain();
+		CreateEnemyChain();
 	}
 }
 
 void TerrainRail::SetChainPath()
 {
-	if (blockerParams != NULL)
+	if (enemyParams != NULL)
 	{
-		blockerParams->SetPosition(V2d(GetPoint(0)->pos));
-		blockerParams->SetPath(this);
-		blockerParams->SetBoundingQuad();
+		enemyParams->SetPosition(V2d(GetPoint(0)->pos));
+		enemyParams->SetPath(this);
+		enemyParams->SetBoundingQuad();
 	}
 }
 
-void TerrainRail::CreateBlockerChain()
+void TerrainRail::CreateEnemyChain()
 {
-	if (blockerParams != NULL)
+	if (enemyParams != NULL)
 	{
-		delete blockerParams;
-		blockerParams = NULL;
+		delete enemyParams;
+		enemyParams = NULL;
 	}
 
-	blockerParams = sess->types["blocker"]->defaultParamsVec[0]->Copy();
-	blockerParams->group = sess->groups["--"];
+	enemyParams = sess->types["blocker"]->defaultParamsVec[0]->Copy();
+	enemyParams->group = sess->groups["--"];
 
 	SetChainPath();
 
-	blockerParams->railMode = ActorParams::M_FILL;
-	blockerParams->CreateMyEnemy();
-	blockerChain = (BlockerChain*)blockerParams->myEnemy;
+	enemyParams->railMode = ActorParams::M_FILL;
+	enemyParams->CreateMyEnemy();
+	enemyChain = (EnemyChain*)enemyParams->myEnemy;
 	//blockerParams->Activate();
 
 	/*Brush b;
@@ -1106,10 +1106,10 @@ void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
 
 void TerrainRail::UpdateEnemyChain()
 {
-	if (blockerParams != NULL)
+	if (enemyParams != NULL)
 	{
 		SetChainPath();
-		blockerChain->UpdateParams(blockerParams);
+		enemyChain->UpdateParams(enemyParams);
 	}
 }
 
@@ -1333,7 +1333,8 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 	}
 	case BLOCKER:
 	{
-		blockerParams->Draw(target);
+		enemyParams->Draw(target);
+		//blockerParams->Draw(target);
 		break;
 	}
 	}

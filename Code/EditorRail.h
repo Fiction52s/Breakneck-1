@@ -16,6 +16,8 @@ struct TransformTools;
 struct CircleGroup;
 struct BlockerChain;
 
+struct EnemyChain;
+
 struct TerrainRail : ISelectable, QuadTreeEntrant
 {
 	enum RenderMode
@@ -32,7 +34,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 
 	Session *sess;
 	RailType rType;
-	void CreateBlockerChain();
+	void CreateEnemyChain();
 	/*enum RenderMode
 	{
 		RENDERMODE_NORMAL,
@@ -49,8 +51,14 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	void Draw(sf::RenderTarget *target);
 
+	ActorParams *enemyParams;
+	EnemyChain *enemyChain;
+
 	ActorParams *blockerParams;
 	BlockerChain *blockerChain;
+
+
+
 	void UpdateEnemyChain();
 	void SetChainPath();
 	//BlockerChain *blockerChain;

@@ -678,6 +678,140 @@ ActorParams *BlockerParams::Copy()
 	return bp;
 }
 
+FlyParams::FlyParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	lines = NULL;
+	LoadAerial(is);
+
+	LoadGlobalPath(is);
+
+	int ifType;
+	is >> ifType;
+	fType = ifType;
+
+	is >> spacing;
+
+	LoadEnemyLevel(is);
+}
+
+FlyParams::FlyParams(ActorType *at, int level)
+	:ActorParams(at)
+{
+	lines = NULL;
+	PlaceAerial(Vector2i(0, 0));
+
+	fType = 0;
+
+	spacing = 0;
+}
+
+void FlyParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	stringstream ss;
+
+	string typeStr = p->textBoxes["ftype"]->text.getString().toAnsiString();
+
+	int lev;
+	string levelStr = p->textBoxes["level"]->text.getString().toAnsiString();
+	ss << levelStr;
+
+	ss >> lev;
+
+	if (!ss.fail() && lev > 0 && lev <= type->info.numLevels)
+	{
+		enemyLevel = lev;
+	}
+
+
+	ss << typeStr;
+
+	int t_type;
+	ss >> t_type;
+
+	if (!ss.fail())
+	{
+		fType = t_type;
+	}
+
+	hasMonitor = false;
+
+	string spacingStr = p->textBoxes["spacing"]->text.getString().toAnsiString();
+
+
+	ss << spacingStr;
+
+	int t_spacing;
+	ss >> t_spacing;
+
+	if (!ss.fail())
+	{
+		spacing = t_spacing;
+	}
+
+	myEnemy->UpdateFromParams(this, 0);
+}
+
+void FlyParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString("test");
+	if (group != NULL)
+		p->textBoxes["group"]->text.setString(group->name);
+	p->textBoxes["ftype"]->text.setString(boost::lexical_cast<string>(fType));
+	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
+
+	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
+
+	EditSession *edit = EditSession::GetSession();
+	MakeGlobalPath(edit->patrolPath);
+}
+
+void FlyParams::Draw(sf::RenderTarget *target)
+{
+	int localPathSize = localPath.size();
+
+	if (localPathSize > 0)
+	{
+		VertexArray &li = *lines;
+
+		Vector2f fPos = GetFloatPos();
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position += fPos;
+		}
+
+
+		target->draw(li);
+
+		for (int i = 0; i < localPathSize + 1; ++i)
+		{
+			li[i].position -= fPos;
+		}
+	}
+
+	ActorParams::Draw(target);
+}
+
+void FlyParams::WriteParamFile(ofstream &of)
+{
+	WritePath(of);
+
+	of << fType << "\n";
+
+	of << spacing << endl;
+
+	WriteLevel(of);
+}
+
+ActorParams *FlyParams::Copy()
+{
+	FlyParams *fp = new FlyParams(*this);
+	return fp;
+}
+
 
 AirTriggerParams::AirTriggerParams(ActorType *at, int level)
 	:ActorParams(at)

@@ -45,6 +45,10 @@ struct Movable : QuadTreeCollider
 };
 
 
+struct ChainableObject
+{
+	virtual void SetStartPosition(V2d &pos) = 0;
+};
 
 struct SlowableObject
 {

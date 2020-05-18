@@ -288,6 +288,24 @@ struct BlockerParams : public ActorParams
 	//will have multiple types
 };
 
+struct FlyParams : public ActorParams
+{
+	FlyParams(ActorType *at, int level);
+	FlyParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void Draw(sf::RenderTarget *target);
+
+	ActorParams *Copy();
+
+	void SetParams();
+	void SetPanelInfo();
+
+	int spacing;
+	int fType;
+	//will have multiple types
+};
+
 
 //w1
 
