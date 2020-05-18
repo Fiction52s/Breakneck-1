@@ -1604,8 +1604,15 @@ bool IsCircleTouchingCircle( V2d pos0, double rad_0, V2d pos1, double rad_1 )
 	return length( pos1 - pos0 ) <= rad_0 + rad_1;
 }
 
-bool IsEdgeTouchingCircle( V2d &v0, V2d &v1, V2d &pos, double rad )
+bool IsEdgeTouchingCircle(sf::Vector2<double> &v0, sf::Vector2<double> &v1, 
+	sf::Vector2<double> &pos, double rad )
 {	
+	if (v0 == v1)
+	{
+		cout << "edge points cant be the same" << endl;
+		assert(0);
+		return false;
+	}
 	double q = dot( pos - v0, normalize( v1 - v0 ) );
 
 	if( q < 0 )

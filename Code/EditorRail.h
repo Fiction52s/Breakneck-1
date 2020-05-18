@@ -41,6 +41,8 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		RENDERMODE_FLIES,
 	};*/
 
+	bool PointsTooCloseToEachOther(double radius);
+
 	RailPtr queryNext;
 	sf::Rect<double> aabb;
 	void HandleQuery(QuadTreeCollider * qtc);

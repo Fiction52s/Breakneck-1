@@ -78,8 +78,37 @@ void TerrainRail::SetupEdges()
 	}
 }
 
+bool TerrainRail::PointsTooCloseToEachOther(double radius)
+{
+	int numP = GetNumPoints();
+	TerrainPoint *currI, *currJ;
+	for (int i = 0; i < numP; ++i)
+	{
+		currI = GetPoint(i);
+		for (int j = 0; j < numP; ++j)
+		{
+			if (i == j)
+				continue;
+
+			currJ = GetPoint(j);
+			V2d a(currI->pos.x, currI->pos.y);
+			V2d b(currJ->pos.x, currJ->pos.y);
+			if (length(a - b) < radius)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 bool TerrainRail::IsInternallyValid()
 {
+	if (PointsTooCloseToEachOther(1) )
+	{
+		return false;
+	}
 	return true;
 }
 

@@ -4371,6 +4371,53 @@ void EditSession::RevertMovedPoints(PointMap::iterator it)
 	}
 }
 
+void EditSession::RevertMovedPoints(RailPointMap::iterator it)
+{
+	RailPtr rail;
+	TerrainPoint *curr, *prev;
+	for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
+	{
+		rail = (*it).first;
+		rail->SetPointPos((*pit).pointIndex, (*pit).oldPos);
+		curr = rail->GetPoint((*pit).pointIndex);
+		prev = rail->GetPoint((*pit).pointIndex - 1);
+
+		auto currIt = rail->enemies.find(curr);
+		if (currIt != rail->enemies.end())
+		{
+			list<ActorPtr> &currList = (*currIt).second;
+			for (auto it = currList.begin(); it != currList.end(); ++it)
+			{
+				if ((*it)->myEnemy != NULL)
+					(*it)->myEnemy->UpdateOnEditPlacement();
+
+				(*it)->UpdateGroundedSprite();
+				(*it)->SetBoundingQuad();
+			}
+		}
+
+		if (prev != NULL)
+		{
+			currIt = rail->enemies.find(prev);
+			if (currIt != rail->enemies.end())
+			{
+				list<ActorPtr> &currList = (*currIt).second;
+				for (auto it = currList.begin(); it != currList.end(); ++it)
+				{
+					(*it)->posInfo.groundQuantity = (*it)->oldQuant;
+					//this is only on prev because the ground quant is not changed on curr
+					if ((*it)->myEnemy != NULL)
+					{
+						(*it)->myEnemy->UpdateOnEditPlacement();
+					}
+					(*it)->UpdateGroundedSprite();
+					(*it)->SetBoundingQuad();
+				}
+			}
+		}
+	}
+}
+
 void EditSession::MoveSelectedPoints()
 {
 	bool affected;
@@ -4759,7 +4806,7 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 
 	if (revert)
 	{
-		for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
+		for (auto it = selectedRailPoints.begin(); it != selectedRailPoints.end(); ++it)
 		{
 			RevertMovedPoints(it);
 		}
@@ -6938,7 +6985,7 @@ void EditSession::ExecuteRailCompletion()
 							newRail->AddPoint(railAttachStart->GetPoint(i)->pos, false);
 						}
 
-						for (int i = 0; i < numPointsProgress; ++i)
+						for (int i = 1; i < numPointsProgress; ++i)
 						{
 							newRail->AddPoint(railInProgress->GetPoint(i)->pos, false);
 						}

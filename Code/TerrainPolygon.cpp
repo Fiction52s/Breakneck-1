@@ -2178,7 +2178,6 @@ bool TerrainPolygon::IntersectsGate(GateInfo *gi)
 
 bool TerrainPolygon::PointsTooCloseToEachOther( double radius )
 {
-	EditSession *session = EditSession::GetSession();
 	int numP = GetNumPoints();
 	TerrainPoint *currI, *currJ;
 	for (int i = 0; i < numP; ++i)
