@@ -30,11 +30,12 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	{
 		NORMAL,
 		BLOCKER,
+		FLY,
 	};
 
 	Session *sess;
 	RailType rType;
-	void CreateEnemyChain();
+	void TryCreateEnemyChain();
 	/*enum RenderMode
 	{
 		RENDERMODE_NORMAL,

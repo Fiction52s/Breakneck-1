@@ -441,18 +441,13 @@ void TerrainRail::Finalize()
 	coloredNodeCircles = new CircleGroup(numP, quadHalfWidth, Color::Red, 12);
 	coloredNodeCircles->ShowAll();
 
-
-
 	SetupEdges();
 
 	UpdateLines();
 
 	UpdateBounds();
 
-	if (rType == BLOCKER)
-	{
-		CreateEnemyChain();
-	}
+	TryCreateEnemyChain();
 }
 
 void TerrainRail::SetChainPath()
@@ -465,7 +460,7 @@ void TerrainRail::SetChainPath()
 	}
 }
 
-void TerrainRail::CreateEnemyChain()
+void TerrainRail::TryCreateEnemyChain()
 {
 	if (enemyParams != NULL)
 	{
@@ -473,7 +468,22 @@ void TerrainRail::CreateEnemyChain()
 		enemyParams = NULL;
 	}
 
-	enemyParams = sess->types["blocker"]->defaultParamsVec[0]->Copy();
+	string typeString;
+	if (rType == BLOCKER)
+	{
+		typeString = "blocker";
+		
+	}
+	else if (rType == FLY)
+	{
+		typeString = "healthfly";
+	}
+	else
+	{
+		return;
+	}
+
+	enemyParams = sess->types[typeString]->defaultParamsVec[0]->Copy();
 	enemyParams->group = sess->groups["--"];
 
 	SetChainPath();
