@@ -164,8 +164,8 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 				libraryEnemiesVec[w][counter] = &allEnemyRects[i];
 				ecRect = libraryEnemiesVec[w][counter];
 
-				col = i % maxCol;
-				row = i / maxCol;
+				col = counter % maxCol;
+				row = counter / maxCol;
 
 				ecRect->SetPosition(Vector2f(10 + col * 120, 240 + row * 120));
 				//ecRect->SetShown(true);
@@ -551,10 +551,15 @@ void EnemyChooseRect::SetType(ActorType *type, int lev)
 	{
 		actorType = type;
 		level = lev;
-		actorType->defaultParamsVec[level - 1]->MoveTo(Vector2i(0, 0));
-		enemy = actorType->defaultParamsVec[level - 1]->myEnemy;
-		enemy->SetActionEditLoop();
-		enemy->UpdateFromEditParams(0);
+		enemyParams = actorType->defaultParamsVec[level - 1];
+		enemyParams->MoveTo(Vector2i(0, 0));
+		enemy = enemyParams->myEnemy;
+		if (enemy != NULL)
+		{
+			enemy->SetActionEditLoop();
+			enemy->UpdateFromEditParams(0);
+		}
+		
 		SetSize(boxSize);
 
 		switch (level)
@@ -586,8 +591,10 @@ void EnemyChooseRect::SetSize(float s)
 		Vector2f truePos = GetGlobalPos() + Vector2f( boxSize / 2.f, boxSize / 2.f );
 
 		float test;
-		FloatRect aabb = enemy->GetAABB();
+		FloatRect aabb = enemyParams->GetAABB();
+
 		float max = std::max(aabb.height, aabb.width);
+		//max *= 1.1f;
 		test = max / boxSize;
 		view.setCenter(Vector2f(960 * test - truePos.x * test, 540 * test - truePos.y * test));// + Vector2f( 64,0 ));//-pos / 5);//Vector2f(0, 0));
 		view.setSize(Vector2f(1920 * test, 1080 * test));
@@ -601,7 +608,7 @@ void EnemyChooseRect::Draw(RenderTarget *target)
 		sf::View oldView = target->getView();
 		target->setView(view);
 
-		enemy->Draw(target);
+		enemyParams->DrawEnemy(target);
 
 		target->setView(oldView);
 	}
@@ -611,14 +618,17 @@ void EnemyChooseRect::UpdateSprite(int frameUpdate)
 {
 	if (actorType != NULL)
 	{
-		if (focused)
+		if (enemy != NULL)
 		{
-			enemy->UpdateFromEditParams(frameUpdate);
-		}
-		else
-		{
-			enemy->SetActionEditLoop();
-			enemy->UpdateFromEditParams(0);
+			if (focused)
+			{
+				enemy->UpdateFromEditParams(frameUpdate);
+			}
+			else
+			{
+				enemy->SetActionEditLoop();
+				enemy->UpdateFromEditParams(0);
+			}
 		}
 	}
 }

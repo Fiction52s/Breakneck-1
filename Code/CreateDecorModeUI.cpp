@@ -128,8 +128,8 @@ CreateDecorModeUI::CreateDecorModeUI()
 			{
 				libraryImagesVec[w][counter] = &allImageRects[i];
 				icRect = libraryImagesVec[w][counter];
-				col = i % maxCol;
-				row = i / maxCol;
+				col = counter % maxCol;
+				row = counter / maxCol;
 				icRect->SetPosition(Vector2f(10 + col * 120, 240 + row * 120));
 				//ecRect->SetShown(true);
 				icRect->Init();

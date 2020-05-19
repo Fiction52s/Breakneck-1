@@ -146,6 +146,7 @@ struct ChooseRect
 	sf::Color idleColor;
 };
 
+struct ActorParams;
 struct EnemyChooseRect : ChooseRect
 {
 	EnemyChooseRect( ChooseRectIdentity ident, 
@@ -160,6 +161,7 @@ struct EnemyChooseRect : ChooseRect
 
 	ActorType *actorType;
 	Enemy *enemy;
+	ActorParams *enemyParams;
 	sf::View view;
 	int level;
 };

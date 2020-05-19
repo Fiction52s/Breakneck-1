@@ -69,8 +69,6 @@ void Shard::Setup()
 {
 	caught = false;
 	geoGroup.SetBase(GetPositionF());
-	//geoGroup.RemoveAll();
-	
 }
 
 Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )

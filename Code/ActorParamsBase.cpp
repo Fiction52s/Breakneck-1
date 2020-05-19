@@ -493,12 +493,7 @@ void ActorParams::Draw(sf::RenderTarget *target)
 
 		DrawMonitor(target);
 
-		if (myEnemy != NULL)
-			myEnemy->Draw(target);
-		else
-		{
-			target->draw(image);
-		}
+		DrawEnemy(target);
 
 		DrawBoundary(target);
 
@@ -511,6 +506,16 @@ void ActorParams::Draw(sf::RenderTarget *target)
 	/*if( myEnemy != NULL )
 		myEnemy->DebugDraw(target);*/
 
+}
+
+void ActorParams::DrawEnemy(sf::RenderTarget *target)
+{
+	if (myEnemy != NULL)
+		myEnemy->Draw(target);
+	else
+	{
+		target->draw(image);
+	}
 }
 
 void ActorParams::DrawPreview(sf::RenderTarget *target)

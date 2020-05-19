@@ -105,6 +105,7 @@ struct ActorParams : ISelectable
 	virtual void BrushDraw(sf::RenderTarget *target,
 		bool valid);
 	virtual void Draw(sf::RenderTarget *target);
+	virtual void DrawEnemy(sf::RenderTarget *target);
 	virtual void DrawPreview(sf::RenderTarget *target);
 	virtual void Deactivate();
 	virtual void Activate();

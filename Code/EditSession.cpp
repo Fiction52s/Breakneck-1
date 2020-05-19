@@ -68,7 +68,10 @@ void EditSession::SetTrackingEnemy(ActorType *type, int level)
 
 		trackingEnemyParams->MoveTo(Vector2i(worldPos));
 		//extraDelta = Vector2i(worldPos) - Vector2i(grabCenter);
-		grabbedActor->myEnemy->UpdateFromEditParams(0);
+		if (grabbedActor->myEnemy != NULL)
+		{
+			grabbedActor->myEnemy->UpdateFromEditParams(0);
+		}
 		
 
 		editMouseGrabPos = Vector2i(worldPos.x, worldPos.y);

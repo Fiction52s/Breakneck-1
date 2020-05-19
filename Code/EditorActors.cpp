@@ -227,7 +227,14 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "healthfly")
 	{
-		p = CreateDefaultPanel("healthfly_options", true, false);
+		p = p = new Panel("healthfly_options", 200, 500, edit);//CreateDefaultPanel("healthfly_options", true, false);
+
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
+		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p->AddTextBox("ftype", Vector2i(20, 200), 200, 20, "0");
+		p->AddTextBox("spacing", Vector2i(20, 250), 200, 20, "0");
+		p->AddButton("createpath", Vector2i(20, 340), Vector2f(100, 50), "Create Chain");
 	}
 	else if (name == "shard")
 	{
@@ -792,7 +799,7 @@ void ActorType::PlaceEnemy()
 
 	string &name = info.name;
 	if (name == "blocker" || name == "greenblocker" || name == "spring" || name == "patroller" || name == "bat"
-		|| name == "pulser" || name == "narwhal")//curve turret??
+		|| name == "pulser" || name == "narwhal" || name == "healthfly")//curve turret??
 	{
 		edit->patrolPath.clear();
 		edit->patrolPath.push_back(worldPos);

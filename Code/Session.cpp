@@ -178,8 +178,33 @@ void Session::SetupEnemyType(ParamsInfo &pi)
 
 void Session::AddGeneralEnemies()
 {
-	/*AddExtraEnemy("shard", CreateEnemy<Shard>, SetParamsType<ShardParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );*/
+	AddExtraEnemy("shard", CreateEnemy<Shard>, SetParamsType<ShardParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
+
+	AddExtraEnemy("healthfly", CreateEnemy<FlyChain>, SetParamsType<FlyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, true, false, false, 3);
+
+	AddExtraEnemy("camerashot", NULL, SetParamsType<CameraShotParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
+		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
+
+	AddExtraEnemy("key", NULL, SetParamsType<KeyParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, false, false, 1, GetSizedTileset("Enemies/bouncefloater_128x128.png"));
+
+	AddExtraEnemy("poi", NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+	false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/rail_32x32.png"), 1);
+
+	//ignore flowerpods until I figure out how I want to change them.
+
+	/*AddExtraEnemy("flowerpod", CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,
+	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1 );*/
+
+
+	/*AddExtraEnemy("flowerpod", NULL, SetParamsType<FlowerPodParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
+		GetTileset("Momenta/momentaflower_128x128.png", 128, 128);*/
+
+	/*AddExtraEnemy("flowerpod", CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1 );*/
 
 	/*AddExtraEnemy("poi", NULL, LoadParams<PoiParams>, MakeParamsGrounded<PoiParams>, MakeParamsAerial<PoiParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
@@ -252,8 +277,7 @@ void Session::AddW1Enemies()
 
 	AddBasicAerialWorldEnemy("patroller", 1, CreateEnemy<Patroller>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3 );
 
-	AddWorldEnemy("healthfly", 1, CreateEnemy<FlyChain>, SetParamsType<FlyParams>, 
-		Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, true, false, false, 3);
+	
 
 	//AddBasicAerialWorldEnemy("airdasher", 1, CreateEnemy<Airdasher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
 
@@ -268,8 +292,8 @@ void Session::AddW1Enemies()
 	AddWorldEnemy("spring", 1, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false, 1 );
 
-	AddWorldEnemy("shard", 1, CreateEnemy<Shard>, SetParamsType<ShardParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	/*AddWorldEnemy("shard", 1, CreateEnemy<Shard>, SetParamsType<ShardParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);*/
 
 	/*
 
