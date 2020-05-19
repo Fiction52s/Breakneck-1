@@ -262,25 +262,13 @@ void Session::AddW1Enemies()
 	
 	AddBasicAerialWorldEnemy("comboer", 1, CreateEnemy<Comboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3 );
 
+	AddWorldEnemy("spring", 1, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, false, false, 1 );
+
 	/*
-
-	AddBasicAerialWorldEnemy("patroller", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));*/
-
-	/*AddBasicAerialWorldEnemy("comboer", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128));
-
-	AddBasicAerialWorldEnemy("splitcomboer", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3,
-		GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);*/
-
-
 
 	/*AddBasicAerialWorldEnemy("jugglercatcher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));*/
-
-
-	
-		//GetTileset("Enemies/crawler_160x160.png", 160, 160));
 
 	/*AddBasicGroundWorldEnemy("shroom", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/shroom_192x192.png", 192, 192));

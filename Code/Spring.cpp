@@ -19,12 +19,81 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+void Spring::SetLevel(int lev)
+{
+	level = lev;
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+}
+
+void Spring::UpdateOnPlacement(ActorParams *ap)
+{
+	Enemy::UpdateOnPlacement(ap);
+
+	UpdatePath(); //assuming that ap is editparams here
+}
+
+void Spring::UpdatePath()
+{
+	SpringParams *sParams = (SpringParams*)editParams;
+
+	Vector2i other = Vector2i(0, -10);
+	if( sParams->localPath.size() > 0 )
+		other = sParams->GetLocalPathPos(0);
+
+	dest = GetPosition() + V2d(other);
+
+	V2d dOther = V2d(other.x, other.y);
+	V2d springVec = normalize(dOther);
+
+	double angle = atan2(springVec.x, -springVec.y);
+	sprite.setRotation(angle / PI * 180.0);
+
+	double dist = length(V2d(other));
+
+	if (springType == TELEPORT)
+	{
+		speed = 200;
+		stunFrames = floor(dist / speed);
+	}
+	else
+	{
+		speed = sParams->speed;
+		stunFrames = ceil(dist / speed);
+	}
+
+	dir = springVec;
+
+	debugLine[0].color = Color::Red;
+	debugLine[1].color = Color::Red;
+	debugLine[0].position = GetPositionF();
+	debugLine[1].position = Vector2f(dest);
+}
+
+void Spring::AddToWorldTrees()
+{
+	sess->activeItemTree->Insert(this);
+}
+
 Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, int p_speed )
 	:Enemy(EnemyType::EN_SPRING, ap )//false, 2, false ), springType( sp )
 {
-	SpringParams *sParams = (SpringParams*)ap;
+	SetNumActions(A_Count);
+	SetEditorActions(IDLE, IDLE, 0);
 
-	//Vector2i other = sParams->localPath[1] + sParams->
+	SetLevel(ap->GetLevel());
 
 	V2d position = GetPosition();
 	Vector2f positionF(position);
@@ -40,6 +109,31 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	debugSpeed.setString(ss.str());
 	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
 	debugSpeed.setPosition(positionF);
+
+
+	//potentially temporary
+	string typeName = ap->type->info.name;
+	if (typeName == "spring")
+	{
+		springType = BLUE;
+	}
+	else if (typeName == "gravityspring")
+	{
+		springType = GREEN;
+	}
+	else if (typeName == "bouncespring")
+	{
+		springType = BOUNCE;
+	}
+	else if (typeName == "airbouncespring")
+	{
+		springType = BOUNCE;
+	}
+	else if (typeName == "teleporter")
+	{
+		springType = TELEPORT;
+	}
+	
 
 
 	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
@@ -74,48 +168,10 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	{
 		sprite.setColor(Color::Black);
 	}
-	
-	frame = 0;
-
-	animationFactor = 10;
-
-	Vector2i other = sParams->GetLocalPathPos(0);
-
-	dest = position + V2d(other);
-	//dest = V2d(other + pos );
-
-	V2d dOther = V2d(other.x, other.y);
-	V2d springVec = normalize(dOther);
-
-	sprite.setTextureRect(ts_idle->GetSubRect(frame));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(positionF);
-
-	double angle = atan2(springVec.x, -springVec.y);
-	sprite.setRotation(angle / PI * 180.0 );
-
-	double dist = length(V2d(other));
-
-	if (springType == TELEPORT)
-	{
-		speed = 200;
-		stunFrames = floor(dist / speed);
-	}
-	else
-	{
-		speed = sParams->speed;
-		stunFrames = ceil(dist / speed);
-	}
-
-	
-	dir = springVec;
 
 	double radius = 64;
 
 	BasicCircleHitBodySetup(radius);
-
-	/*spawnRect = sf::Rect<double>(position.x - radius - 10, position.y - radius - 10,
-		radius *2 + 10, radius *2 + 10);*/
 
 	actionLength[IDLE] = 12;
 	actionLength[SPRINGING] = 8;
@@ -125,12 +181,19 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	animFactor[SPRINGING] = 4;
 	animFactor[RECOVERING] = 4;
 
-	debugLine[0].color = Color::Red;
-	debugLine[1].color = Color::Red;
-	debugLine[0].position = positionF;
-	debugLine[1].position = Vector2f(dest);
+	animationFactor = 10;
+
+	sprite.setTextureRect(ts_idle->GetSubRect(0));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(positionF);
+
+	
+	UpdatePath();
+	
 
 	ResetEnemy();
+
+	SetSpawnRect();
 }
 void Spring::DebugDraw(sf::RenderTarget *target)
 {
@@ -212,6 +275,7 @@ void Spring::UpdateSprite()
 		break;
 	}
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
 }
 
 void Spring::EnemyDraw(sf::RenderTarget *target)

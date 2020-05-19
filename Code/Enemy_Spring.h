@@ -22,13 +22,13 @@ struct Spring : Enemy
 		TELEPORT,
 	};
 
+	void AddToWorldTrees();
+	void UpdateOnPlacement(ActorParams *ap);
+	void UpdatePath();
+	void SetLevel(int lev);
+
 	SpringType springType;
-	Action action;
-	int actionLength[A_Count];
-	int animFactor[A_Count];
-	//MovementSequence testSeq;
-	Spring(ActorParams *ap);//SpringType springType,
-		//sf::Vector2i &pos, sf::Vector2i &other, int speed);
+	Spring(ActorParams *ap);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	sf::SoundBuffer *launchSoundBuf;
@@ -39,12 +39,10 @@ struct Spring : Enemy
 	void ResetEnemy();
 	void ActionEnded();
 	void Launch();
-	sf::Sprite sprite;
 	Tileset *ts_idle;
 	Tileset *ts_recover;
 	Tileset *ts_springing;
 	void DebugDraw(sf::RenderTarget *target);
-	//HitboxInfo *hitboxInfo;
 
 	int animationFactor;
 
