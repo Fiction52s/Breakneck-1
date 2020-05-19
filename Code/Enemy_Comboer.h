@@ -15,19 +15,12 @@ struct Comboer : Enemy
 		S_Count
 	};
 
-	//enum ComboerType
-	//{
-	//	T_STRAIGHT,
-	//	T_GRAVITY,
-	//	T_REVERSEGRAVITY,
-	//	T_BOUNCE,
-	//	T_Count
-	//};
+	void UpdateOnPlacement(ActorParams *ap);
+	void UpdatePath();
+	void SetLevel(int lev);
 
-	Comboer(ActorParams * ap);//sf::Vector2i pos, std::list<sf::Vector2i> &path, 
-		//bool loop, int p_level );
+	Comboer(ActorParams * ap);
 	~Comboer();
-	
 
 	void ProcessState();
 	void ProcessHit();
@@ -38,7 +31,6 @@ struct Comboer : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
-	void AdvanceTargetNode();
 
 	V2d velocity;
 	int shootFrames;
@@ -46,20 +38,12 @@ struct Comboer : Enemy
 	int hitLimit;
 	int currHits;
 
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-	std::vector<sf::Vector2i> path;
-	int pathLength;
-	bool loop;
-	int targetNode;
-	bool forward;
+	BasicPathFollower pathFollower;
+
 	double acceleration;
 	double speed;
-	int nodeWaitFrames;
-	sf::Sprite sprite;
+	
 	Tileset *ts;
-	bool facingRight;
 };
 
 #endif

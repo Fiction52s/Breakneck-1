@@ -332,6 +332,7 @@ struct BasicPathFollower
 	int targetNode;
 	bool forward;
 	std::vector<sf::Vector2i> path;
+	int nodeWaitFrames; //need to implement this
 
 	void SetParams(ActorParams *ap);
 	void Reset();

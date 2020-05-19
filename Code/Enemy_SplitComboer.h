@@ -75,7 +75,6 @@ struct SplitComboer : Enemy
 	BasicPathFollower pathFollower;
 	double acceleration;
 	double speed;
-	int nodeWaitFrames;
 	Tileset *ts;
 
 	double shootSpeed;

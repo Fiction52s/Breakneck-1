@@ -52,7 +52,6 @@ struct Airdasher : Enemy
 	int physStepIndex;
 	V2d currOrig;
 	double speed;
-	int nodeWaitFrames;
 
 	Tileset *ts;
 	Tileset *ts_aura;

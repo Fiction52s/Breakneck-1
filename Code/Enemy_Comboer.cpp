@@ -14,12 +14,9 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
-Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, bool loopP, 
-	//int p_level)
-	:Enemy(EnemyType::EN_COMBOER, ap )//, false, 1, false)
+void Comboer::SetLevel(int lev)
 {
-	level = ap->GetLevel();
-
+	level = lev;
 	switch (level)
 	{
 	case 1:
@@ -34,32 +31,41 @@ Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, boo
 		maxHealth += 5;
 		break;
 	}
+}
 
-	action = S_FLOAT;
-	//receivedHit = NULL;
-	//position = ap->GetPosition();
+void Comboer::UpdateOnPlacement(ActorParams *ap)
+{
+	Enemy::UpdateOnPlacement(ap);
+
+	pathFollower.SetParams(ap);
+}
+
+void Comboer::UpdatePath()
+{
+	pathFollower.SetParams(editParams);
+}
+
+Comboer::Comboer(ActorParams *ap )
+	:Enemy(EnemyType::EN_COMBOER, ap )//, false, 1, false)
+{
+	SetNumActions(S_Count);
+	SetEditorActions(S_FLOAT, S_FLOAT, 0);
+
+	SetLevel(ap->GetLevel());
+
+	pathFollower.SetParams(ap);
 
 	SetCurrPosInfo(startPosInfo);
-
-	//spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
-
-	loop = ap->loop;
-
-	ap->MakeGlobalPath(path);
-
-	//eventually maybe put this on a multiplier for more variation?
-	//doubt ill need it though
-	speed = 15;//pspeed;
-	frame = 0;
 	
-	//ts = owner->GetTileset( "Comboer.png", 80, 80 );
+	speed = 15;
+	
 	ts = sess->GetTileset("Enemies/comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(frame));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
-	sprite.setPosition(GetPositionF());
-
+	
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
@@ -69,14 +75,9 @@ Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, boo
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
-
 	hitBody.hitboxInfo = hitboxInfo;
 
-
-	comboObj = new ComboObject(this);
-	
+	comboObj = new ComboObject(this);	
 
 	comboObj->enemyHitboxInfo = new HitboxInfo;
 	comboObj->enemyHitboxInfo->damage = 20;
@@ -92,21 +93,7 @@ Comboer::Comboer(ActorParams *ap )//Vector2i pos, list<Vector2i> &pathParam, boo
 
 	comboObj->enemyHitboxFrame = 0;
 
-	
-	//hitboxInfo->kbDir;
-
-	targetNode = 1;
-	forward = true;
-
-	dead = false;
-
 	facingRight = true;
-
-	
-
-	//bloodSprite.setTexture( *ts_testBlood->texture );
-
-	//UpdateHitboxes();
 
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_SHOT] = 3;
@@ -129,9 +116,7 @@ Comboer::~Comboer()
 }
 
 void Comboer::ResetEnemy()
-{
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setRotation(0);
+{	
 	shootFrames = 0;
 	currHits = 0;
 	comboObj->Reset();
@@ -139,15 +124,9 @@ void Comboer::ResetEnemy()
 	velocity = V2d(0, 0);
 	SetHitboxes(&hitBody, 0);
 	SetHurtboxes(&hurtBody, 0);
-	targetNode = 1;
-	forward = true;
-	dead = false;
 	action = S_FLOAT;
 	frame = 0;
-	//position.x = path[0].x;
-	//position.y = path[0].y;
-	receivedHit = NULL;
-
+	pathFollower.Reset();
 
 	UpdateHitboxes();
 
@@ -308,35 +287,12 @@ void Comboer::UpdateEnemyPhysics()
 	case S_FLOAT:
 	{
 		double movement = speed / numPhysSteps;
-
-		if (pathLength > 1)
-		{
-			movement /= (double)slowMultiple;
-
-			while (movement != 0)
-			{
-				//cout << "movement loop? "<< endl;
-				V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
-				V2d diff = targetPoint - GetPosition();
-				double len = length(diff);
-				if (len >= abs(movement))
-				{
-					currPosInfo.position += normalize(diff) * movement;
-					movement = 0;
-				}
-				else
-				{
-					currPosInfo.position += diff;
-					movement -= length(diff);
-					AdvanceTargetNode();
-				}
-			}
-		}
+		movement /= (double)slowMultiple;
+		pathFollower.Move(movement, currPosInfo.position );
 		break;
 	}
 	case S_SHOT:
 	{
-		
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
@@ -348,43 +304,8 @@ void Comboer::UpdateEnemyPhysics()
 	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
 }
 
-void Comboer::AdvanceTargetNode()
-{
-	if (loop)
-	{
-		++targetNode;
-		if (targetNode == pathLength)
-			targetNode = 0;
-	}
-	else
-	{
-		if (forward)
-		{
-			++targetNode;
-			if (targetNode == pathLength)
-			{
-				targetNode -= 2;
-				forward = false;
-			}
-		}
-		else
-		{
-			--targetNode;
-			if (targetNode < 0)
-			{
-				targetNode = 1;
-				forward = true;
-			}
-		}
-	}
-}
-
 void Comboer::FrameIncrement()
 {
-	/*if (action == CHARGEDFLAP)
-	{
-	++fireCounter;
-	}*/
 	if (action == S_SHOT)
 	{
 		if (shootFrames == shootLimit)
@@ -413,6 +334,9 @@ void Comboer::ComboHit()
 void Comboer::UpdateSprite()
 {
 	sprite.setPosition(GetPositionF());
+	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setRotation(0);
 	/*int tIndex = 0;
 	switch (action)
 	{

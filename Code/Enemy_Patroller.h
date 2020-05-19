@@ -57,7 +57,6 @@ struct Patroller : Enemy, LauncherEnemy
 	BasicPathFollower pathFollower;
 	double acceleration;
 	double speed;
-	int nodeWaitFrames;
 
 	sf::Vertex bodyVA[4 * 2];
 	//sf::Vertex bodyAuraVA[4 * 2];
