@@ -248,6 +248,11 @@ void ActorParams::SetPath(std::vector<sf::Vector2i> &globalPath)
 			++index;
 		}
 	}
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdatePath();
+	}
 }
 
 //includes the start position for some reason

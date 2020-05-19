@@ -76,7 +76,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	}
 
 	int SetLaunchersStartIndex(int ind);
-
+	virtual void UpdatePath() {}
 	void SetNumLaunchers(int num);
 	virtual void AddChildrenToSession( Session *s) {}
 	virtual void RemoveChildrenFromSession(Session *s) {}

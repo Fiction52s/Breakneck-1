@@ -18,6 +18,17 @@ using namespace sf;
 //
 //}
 
+void Patroller::UpdateOnPlacement(ActorParams *ap)
+{
+	Enemy::UpdateOnPlacement(ap);
+
+	pathFollower.SetParams(ap);
+}
+
+void Patroller::UpdatePath()
+{
+	pathFollower.SetParams(editParams);
+}
 
 void Patroller::SetLevel(int lev)
 {

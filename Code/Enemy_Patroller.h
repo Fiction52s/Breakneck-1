@@ -18,12 +18,12 @@ struct Patroller : Enemy, LauncherEnemy
 
 	PatrollerEye *eye;
 
+	void UpdateOnPlacement(ActorParams *ap);
 	//static Enemy *Create(ActorParams *ap);
-
 	Patroller(ActorParams *ap);//bool hasMonitor,
 		//sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
 	~Patroller();
-	
+	void UpdatePath();
 	void SetLevel(int lev);
 
 	sf::FloatRect GetAABB();
