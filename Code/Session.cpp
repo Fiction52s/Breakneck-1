@@ -193,6 +193,22 @@ void Session::AddGeneralEnemies()
 	AddExtraEnemy("poi", NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 	false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/rail_32x32.png"), 1);
 
+	AddExtraEnemy("xbarrier", NULL, SetParamsType<XBarrierParams>,Vector2i(0, 0), Vector2i(64, 64),false, false, false, false, true, false, false, 1,
+		GetSizedTileset("Enemies/blocker_w1_192x192.png"));
+
+	AddExtraEnemy("shippickup", NULL, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1,
+		GetSizedTileset("Ship/shipleave_128x128.png"));
+
+	AddExtraEnemy("nexus", NULL, SetParamsType<NexusParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false );
+
+	AddExtraEnemy("groundtrigger", NULL, SetParamsType<GroundTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, true, 1,
+		GetSizedTileset("Ship/shipleave_128x128.png" ));
+
+	AddExtraEnemy("airtrigger", NULL, SetParamsType<AirTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
+		GetSizedTileset("Enemies/jayshield_128x128.png"));
+
+	AddExtraEnemy("ship", NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
+		GetSizedTileset("Ship/ship_864x400.png"));
 	//ignore flowerpods until I figure out how I want to change them.
 
 	/*AddExtraEnemy("flowerpod", CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,
