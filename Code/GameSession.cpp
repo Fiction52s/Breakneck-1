@@ -5285,72 +5285,6 @@ int GameSession::Run()
 		while ( accumulator >= TIMESTEP )
         {
 			OneFrameModeUpdate();
-			//bool skipInput = IsKeyPressed( sf::Keyboard::PageUp );
-			//if( oneFrameMode )
-			//{
-			//	bool tookScreenShot = false;
-			//	bool screenShot = false;
-			//	
-			//	while( true )
-			//	{
-			//		vector<GCC::GCController> controllers;
-			//		if (mainMenu->gccDriverEnabled)
-			//			controllers = mainMenu->gccDriver->getState();
-
-			//		for (int i = 0; i < 4; ++i)
-			//		{
-			//			GameController &c = GetController(i);
-			//			if (mainMenu->gccDriverEnabled)
-			//				c.gcController = controllers[i];
-			//			c.UpdateState();
-			//		}
-			//		skipInput = IsKeyPressed( sf::Keyboard::PageUp );
-			//		
-			//		bool stopSkippingInput = IsKeyPressed( sf::Keyboard::PageDown );
-			//		screenShot = false;//IsKeyPressed( sf::Keyboard::F );// && !tookScreenShot;
-			//		
-			//		if( screenShot )
-			//		{
-			//			//cout << "TOOK A SCREENSHOT" << endl;
-			//			//tookScreenShot = true;
-			//			//Image im = window->capture();
-
-			//			// time_t now = time(0);
-			//			// char* dt = ctime(&now);
-			//			//im.saveToFile( "screenshot.png" );//+ string(dt) + ".png" );
-			//		}
-			//		else
-			//		{
-			//			if( skipInput )
-			//			{
-			//				tookScreenShot = false;
-			//			}
-			//		}
-			//		
-			//		if( !skipped && skipInput )
-			//		{
-			//			skipped = true;
-			//			accumulator = 0;
-			//			break;
-			//		}
-
-			//		if( skipped && !skipInput )
-			//		{
-			//			skipped = false;
-			//		}
-
-			//		if( stopSkippingInput )
-			//		{
-			//			oneFrameMode = false;
-			//			break;
-			//		}
-			//	}
-
-			//	window->clear();
-			//}
-
-			//if( skipInput )
-			//	oneFrameMode = true;
 
 			bool k = IsKeyPressed( sf::Keyboard::K );
 			bool levelReset = IsKeyPressed( sf::Keyboard::L );
@@ -5370,16 +5304,6 @@ int GameSession::Run()
 			{
 				showRunningTimer = false;
 			}
-	
-			/*if( IsKeyPressed( sf::Keyboard::Escape ) )
-			{
-
-
-				quit = true;
-				returnVal = GR_EXITLEVEL;
-
-				break;
-			}*/
 
 			if( goalDestroyed )
 			{
@@ -5406,8 +5330,6 @@ int GameSession::Run()
 					GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 				}
 			
-			
-
 				if( !cutPlayerInput )
 				{
 
@@ -5454,7 +5376,6 @@ int GameSession::Run()
 						GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
 					}
 				}
-
 
 				//currently only records 1 player replays. fix this later
 				if( repPlayer != NULL )//repPlayer->init )
@@ -5535,22 +5456,7 @@ int GameSession::Run()
 						pTemp->UpdateInHitlag();
 					}
 				}
-				//if( player->changingClone )
-				//{
-				//	player->percentCloneChanged += player->percentCloneRate;
-				//	//if( player->percentCloneChanged >= 1 )
-				//	{
-				//		player->percentCloneChanged = 0;
-				//	//	player->percentCloneChanged = 1;
-				//		player->changingClone = false;
-				//		pauseFrames = 0;
-				//	}
 
-				//	//pauseFrames--;
-				//	accumulator -= TIMESTEP;
-				//	//break;
-				//	continue;
-				//}
 				Actor *p = NULL;
 				for( int i = 0; i < 4; ++i )
 				{
@@ -5571,14 +5477,6 @@ int GameSession::Run()
 				pauseFrames--;
 				
 				accumulator -= TIMESTEP;
-
-				//if( recGhost != NULL)
-				//recGhost->RecordFrame();
-				
-				//repGhost->UpdateReplaySprite();
-
-				//currentTime = gameClock.getElapsedTime().asSeconds();
-				//break;
 				continue;
 			}
 

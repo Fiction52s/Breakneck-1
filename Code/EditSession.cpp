@@ -189,26 +189,88 @@ void EditSession::TestPlayerModeUpdate()
 			break;
 		}
 
-		/*for (int i = 0; i < 4; ++i)
 		{
-			GetPrevInput(i) = GetCurrInput(i);
-			GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-		}
+			//if (pauseFrames == 0)
+			//{
 
-		Actor *pTemp = NULL;
-		for (int i = 0; i < 4; ++i)
-		{
-			pTemp = GetPlayer(i);
-			if (pTemp != NULL)
-			{
-				pTemp->prevInput = GetCurrInput(i);
-			}
-		}*/
+			//}
+			//else if (pauseFrames > 0)
+			//{
+			
+
+			//	Actor *pTemp = NULL;
+			//	for (int i = 0; i < 4; ++i)
+			//	{
+			//		pTemp = GetPlayer(i);
+			//		if (pTemp != NULL)
+			//		{
+			//			pTemp->UpdateInHitlag();
+			//		}
+			//	}
+
+			//	Actor *p = NULL;
+			//	for (int i = 0; i < 4; ++i)
+			//	{
+			//		p = GetPlayer(i);
+			//		if (p != NULL)
+			//			p->flashFrames--;
+			//	}
+
+			//	UpdateEffects(true);
+
+			//	cam.UpdateRumble();
+
+			//	fader->Update();
+			//	swiper->Update();
+			//	mainMenu->UpdateEffects();
+
+
+			//	pauseFrames--;
+
+			//	accumulator -= TIMESTEP;
+			//	continue;
+			//}
+		}
 
 		UpdateControllers();
 
 		UpdateAllPlayersInput();
 		
+		if (pauseFrames > 0)
+		{
+			Actor *pTemp = NULL;
+			for (int i = 0; i < 4; ++i)
+			{
+				pTemp = GetPlayer(i);
+				if (pTemp != NULL)
+				{
+					pTemp->UpdateInHitlag();
+				}
+			}
+
+			pTemp = NULL;
+			for (int i = 0; i < 4; ++i)
+			{
+				pTemp = GetPlayer(i);
+				if (pTemp != NULL)
+					pTemp->flashFrames--;
+			}
+
+			//UpdateEffects(true);
+
+			cam.UpdateRumble();
+
+			//	fader->Update();
+			//	swiper->Update();
+			//	mainMenu->UpdateEffects();
+
+
+			pauseFrames--;
+
+			accumulator -= TIMESTEP;
+			continue;
+		}
+
 		UpdatePrePhysics();
 		UpdatePhysics();
 		UpdatePostPhysics();
@@ -396,6 +458,7 @@ void EditSession::TestPlayerMode()
 	ClearSelectedPoints();
 	ClearSelectedBrush();
 	
+	pauseFrames = 0;
 
 	
 

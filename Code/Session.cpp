@@ -865,7 +865,11 @@ void Session::UpdateEffects( bool pauseImmuneOnly )
 	BasicEffect *currEffect;
 	for (int i = 0; i < EffectLayer::Count; ++i)
 	{
-		curr = effectListVec[i];
+		curr = NULL;
+		if (!effectListVec.empty())
+		{
+			curr = effectListVec[i];
+		}
 
 		while (curr != NULL)
 		{
