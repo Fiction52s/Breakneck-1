@@ -159,6 +159,11 @@ void ActorParams::SetBasicParams()
 	}
 
 	hasMonitor = p->checkBoxes["monitor"]->checked;
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateParamsSettings();
+	}
 }
 
 

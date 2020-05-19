@@ -1,7 +1,7 @@
 #ifndef __SHARDTYPES_H__
 #define __SHARDTYPES_H__
 
-enum ShardType
+enum ShardType : int
 {
 	SHARD_W1_0_TEACH_JUMP,
 	SHARD_W1_1_BACKWARDS_DASH_JUMP,

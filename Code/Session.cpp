@@ -178,6 +178,9 @@ void Session::SetupEnemyType(ParamsInfo &pi)
 
 void Session::AddGeneralEnemies()
 {
+	/*AddExtraEnemy("shard", CreateEnemy<Shard>, SetParamsType<ShardParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );*/
+
 	/*AddExtraEnemy("poi", NULL, LoadParams<PoiParams>, MakeParamsGrounded<PoiParams>, MakeParamsAerial<PoiParams>,
 		Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false);
@@ -264,6 +267,9 @@ void Session::AddW1Enemies()
 
 	AddWorldEnemy("spring", 1, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false, 1 );
+
+	AddWorldEnemy("shard", 1, CreateEnemy<Shard>, SetParamsType<ShardParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
 	/*
 

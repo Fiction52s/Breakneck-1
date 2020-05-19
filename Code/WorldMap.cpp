@@ -1819,7 +1819,7 @@ void MapSector::UpdateLevelStats()
 
 	for (auto it = snList.begin(); it != snList.end(); ++it)
 	{
-		ShardType sType = Shard::GetShardType((*it));
+		int sType = Shard::GetShardType((*it));
 		int subRectIndex = sType % 22;
 		if (sec->world->sf->ShardIsCaptured(sType))
 		{

@@ -495,6 +495,11 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	hurtShader.setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
 }
 
+void Enemy::UpdateParamsSettings()
+{
+	hasMonitor = editParams->hasMonitor;
+}
+
 void Enemy::SetActionEditLoop()
 {
 	action = editLoopAction;
@@ -1572,7 +1577,11 @@ bool Enemy::CheckHitPlayer(int index)
 		if (player->IntersectMyHurtboxes(currHitboxes, currHitboxFrame))
 		{
 			IHitPlayer(index);
-			player->ApplyHit(currHitboxes->hitboxInfo);
+			if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
+			{
+				player->ApplyHit(currHitboxes->hitboxInfo);
+			}
+			
 			return true;
 		}
 	}

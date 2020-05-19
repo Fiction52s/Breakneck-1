@@ -62,7 +62,8 @@ struct Shard : Enemy
 	Shard(ActorParams *ap);//sf::Vector2i pos,
 		//int w, int li);
 	~Shard();
-
+	void UpdateParamsSettings();
+	void Setup();
 
 	ShapeEmitter *testEmitter;
 	MovingGeoGroup geoGroup;
@@ -74,8 +75,8 @@ struct Shard : Enemy
 	//SpinningTri *triTest[5];
 	//Laser *laser;
 	//MovingRing *mRing;
-	static ShardType GetShardType(const std::string &str);
-	static ShardType GetShardType(int w, int li);
+	static int GetShardType(const std::string &str);
+	static int GetShardType(int w, int li);
 	static std::string GetShardString(ShardType st);
 	static std::string GetShardString(int w,
 		int li );
@@ -84,7 +85,6 @@ struct Shard : Enemy
 	int animFactor[Count];
 	void DirectKill();
 
-	Action action;
 	//MovementSequence testSeq;
 	
 	void ProcessState();
@@ -103,10 +103,9 @@ struct Shard : Enemy
 	V2d rootPos;
 	int radius;
 
-	sf::Sprite sprite;
 	Tileset *ts;
 
-	ShardType shardType;
+	int shardType;
 
 	bool caught;
 	int totalFrame;

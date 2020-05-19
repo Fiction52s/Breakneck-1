@@ -19,6 +19,11 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+void Spring::UpdateParamsSettings()
+{
+
+}
+
 void Spring::SetLevel(int lev)
 {
 	level = lev;

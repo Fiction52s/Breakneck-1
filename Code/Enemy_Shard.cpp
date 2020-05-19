@@ -30,6 +30,29 @@ using namespace sf;
 std::map<std::string, ShardType> Shard::shardTypeMap;
 std::map<ShardType, std::string> Shard::shardStrMap;
 
+void Shard::UpdateParamsSettings()
+{
+	int oldShardType = shardType;
+
+	ShardParams *sParams = (ShardParams*)editParams;
+	shardWorld = sParams->world;
+	localIndex = sParams->localIndex;
+	shardType = Shard::GetShardType(shardWorld, localIndex);
+
+	if (shardType != oldShardType)
+	{
+		switch (shardWorld)
+		{
+		case 0://ShardType::SHARD_W1_TEACH_JUMP:
+		default:
+			ts = sess->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
+			sprite.setTexture(*ts->texture);
+			sprite.setTextureRect(ts->GetSubRect(localIndex));
+			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+			break;
+		}
+	}
+}
 
 void Shard::SetupShardMaps()
 {
@@ -42,12 +65,23 @@ void Shard::SetupShardMaps()
 	}
 }
 
+void Shard::Setup()
+{
+	caught = false;
+	geoGroup.SetBase(GetPositionF());
+	//geoGroup.RemoveAll();
+	
+}
+
 Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	:Enemy( EnemyType::EN_SHARD, ap )//, false, w+1 )
 {
+	SetNumActions(Count);
+	SetEditorActions(FLOAT, FLOAT, 0);
+
 	ShardParams *sParams = (ShardParams*)ap;
 
-	SetCurrPosInfo(startPosInfo);
+	//SetCurrPosInfo(startPosInfo);
 
 	if (sess->IsSessTypeGame())
 	{
@@ -70,22 +104,11 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	testEmitter->SetRatePerSecond(30);
 	
 	//testEmitter->AddForce(Vector2f(0, .1));
-	shardWorld = sParams->world;
-	localIndex = sParams->localIndex;
 
-	shardType = Shard::GetShardType(shardWorld, localIndex);
-
-	//hopefully this doesnt cause deletion bugs
 	radius = 400;
 
-	receivedHit = NULL;
-	//startPos = position;
-
-	caught = false;
-
-	//spawnRect = sf::Rect<double>( position.x - 32, position.y - 32, 32 * 2, 32 * 2 );
-	
-	frame = 0;
+	shardType = -1;
+	UpdateParamsSettings();
 
 	ts_sparkle = sess->GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
 
@@ -94,47 +117,8 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;
 
-	switch (shardWorld)
-	{
-	case 0://ShardType::SHARD_W1_TEACH_JUMP:
-	default:
-		ts = sess->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
-		sprite.setTexture(*ts->texture);
-		sprite.setTextureRect(ts->GetSubRect(localIndex));
-		break;
-	/*default:
-		assert(0);
-		break;*/
-	}
-
-	//cout << "world: " << world << endl;
-	/*switch( p_owner->mh->envType )
-	{
-	case 0:
-		ts = owner->GetTileset( "shards_w1_64x64.png", 64, 64 );
-		break;
-	case 1:
-		ts = owner->GetTileset( "shards_w2_64x64.png", 64, 64 );
-		break;
-	case 2:
-		ts = owner->GetTileset( "shards_w3_64x64.png", 64, 64 );
-		break;
-	case 3:
-		ts = owner->GetTileset( "shards_w4_64x64.png", 64, 64 );
-		break;
-	case 4:
-		ts = owner->GetTileset( "shards_w5_64x64.png", 64, 64 );
-		break;
-	case 5:
-		ts = owner->GetTileset( "shards_w6_64x64.png", 64, 64 );
-		break;
-	case 6:
-		ts = owner->GetTileset( "shards_w7_64x64.png", 64, 64 );
-		break;
-	}*/
-
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( GetPositionF() );
+	
+	//sprite.setPosition( GetPositionF() );
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
@@ -148,17 +132,51 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	animFactor[DISSIPATE] = 1;
 	animFactor[LAUNCH] = 1;
 
-	ResetEnemy();
-
-	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, GetPositionF(), GetPositionF(),
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f( 0, 0 ), Vector2f( 0, 0 ),
 		Color::Cyan, Color(0, 0, 100, 0), 60));
 	geoGroup.Init();
+
+	/*geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, GetPositionF(), GetPositionF(),
+		Color::Cyan, Color(0, 0, 100, 0), 60));
+	geoGroup.Init();*/
+
+	ResetEnemy();
+
+	SetSpawnRect();
+	//geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, GetPositionF(), GetPositionF(),
+	//	Color::Cyan, Color(0, 0, 100, 0), 60));
+	//geoGroup.Init();
 }
 
 Shard::~Shard()
 {
 	delete testEmitter;
 	delete sparklePool;
+}
+
+void Shard::ResetEnemy()
+{
+	SetCurrPosInfo(startPosInfo);
+
+	geoGroup.Reset();
+	totalFrame = 0;
+	sparklePool->Reset();
+	action = FLOAT;
+	frame = 0;
+	receivedHit = NULL;
+
+	UpdateHitboxes();
+
+	UpdateSprite();
+
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
+
+	testEmitter->Reset();
+	testEmitter->SetOn(false);
+
+	//position = startPosInfo.GetPosition();
+	rootPos = GetPosition();
 }
 
 Tileset *Shard::GetShardTileset(int w, TilesetManager *ttm)
@@ -179,21 +197,19 @@ void Shard::FrameIncrement()
 	++totalFrame;
 }
 
-ShardType Shard::GetShardType(const std::string &str)
+int Shard::GetShardType(const std::string &str)
 {
 	return shardTypeMap[str];
 }
 
-ShardType Shard::GetShardType(int w, int li)
+int Shard::GetShardType(int w, int li)
 {
 	int totalIndex = w * 22 + li;
 	if (totalIndex >= SHARD_Count)
 	{
 		totalIndex = 0;
 	}
-
-	ShardType st = (ShardType)totalIndex;
-	return st;
+	return totalIndex;
 	//return shardTypeMap[str];
 }
 
@@ -279,29 +295,7 @@ void Shard::DirectKill()
 
 }
 
-void Shard::ResetEnemy()
-{
-	geoGroup.Reset();
-	totalFrame = 0;
-	sparklePool->Reset();
-	action = FLOAT;
-	frame = 0;
-	receivedHit = NULL;
-	
-	dead = false;
-	UpdateHitboxes();
 
-	UpdateSprite();
-
-	SetHitboxes(&hitBody, 0);
-	SetHurtboxes(&hurtBody, 0);
-
-	testEmitter->Reset();
-	testEmitter->SetOn(false);
-
-	//position = startPosInfo.GetPosition();
-	rootPos = GetPosition();
-}
 
 void Shard::Launch()
 {
@@ -404,7 +398,7 @@ void Shard::UpdateSprite()
 
 void Shard::EnemyDraw( sf::RenderTarget *target )
 {
-	//geoGroup.Draw( target );
+	geoGroup.Draw( target );
 
 	if (action != DISSIPATE)
 	{

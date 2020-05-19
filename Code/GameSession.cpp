@@ -8744,7 +8744,7 @@ void GameSession::RemoveGravityGrassFromExplodeList(Grass *g)
 	}
 }
 
-bool GameSession::IsShardCaptured(ShardType shardType)
+bool GameSession::IsShardCaptured(int shardType)
 {
 	if (saveFile != NULL)
 	{

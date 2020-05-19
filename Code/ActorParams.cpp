@@ -488,6 +488,11 @@ void ShardParams::SetParams()
 	Panel *p = type->panel;
 
 	shardStr = p->labels["shardtype"]->getString();
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateParamsSettings();
+	}
 }
 
 void ShardParams::SetPanelInfo()
@@ -586,7 +591,12 @@ void BlockerParams::SetParams()
 		spacing = t_spacing;
 	}
 
-	myEnemy->UpdateFromParams(this, 0);
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateParamsSettings();
+	}
+
+	//myEnemy->UpdateFromParams(this, 0);
 	//hasMonitor = p->checkBoxes["monitor"]->checked;
 	//try
 	//{
@@ -751,7 +761,7 @@ void FlyParams::SetParams()
 		spacing = t_spacing;
 	}
 
-	myEnemy->UpdateFromParams(this, 0);
+	//myEnemy->UpdateFromParams(this, 0);
 }
 
 void FlyParams::SetPanelInfo()

@@ -35,6 +35,7 @@ struct MovingGeo
 
 struct MovingGeoGroup
 {
+	MovingGeoGroup();
 	~MovingGeoGroup();
 	void Reset();
 	bool Update();
@@ -42,6 +43,7 @@ struct MovingGeoGroup
 	void Init();
 	void Draw(sf::RenderTarget *target);
 	void SetBase(sf::Vector2f &pos);
+	void RemoveAll();
 
 	std::list<MovingGeo*> geoList;
 	int frame;

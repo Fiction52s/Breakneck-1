@@ -41,7 +41,7 @@ void MovingGeo::SetBase(sf::Vector2f &base)
 
 MovingGeoGroup::~MovingGeoGroup()
 {
-	delete[] points;
+	RemoveAll();
 }
 
 void MovingGeo::SetColor(sf::Color c)
@@ -72,6 +72,24 @@ void MovingGeo::Clear()
 	{
 		points[i].position = Vector2f(0, 0);
 	}
+}
+
+MovingGeoGroup::MovingGeoGroup()
+{
+	frame = 0;
+	points = NULL;
+	numTotalPoints = 0;
+}
+
+void MovingGeoGroup::RemoveAll()
+{
+	for (auto it = geoList.begin(); it != geoList.end(); ++it)
+	{
+		delete (*it);
+	}
+	geoList.clear();
+	delete[] points;
+	points = NULL;
 }
 
 void MovingGeoGroup::Reset()

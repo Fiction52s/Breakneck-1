@@ -22,6 +22,7 @@ struct Spring : Enemy
 		TELEPORT,
 	};
 
+	void UpdateParamsSettings();
 	void AddToWorldTrees();
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();

@@ -160,7 +160,7 @@ struct SaveFile
 	BitField shardField;
 	BitField newShardField; //for unviewed shards
 	std::string fileName;
-	bool ShardIsCaptured(ShardType sType);
+	bool ShardIsCaptured(int sType);
 	World *worlds;
 	int numWorlds;
 

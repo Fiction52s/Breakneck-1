@@ -510,7 +510,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	int numKeysCollected;
 	void SuppressEnemyKeys(Gate *g);
 	
-	bool IsShardCaptured(ShardType sType);
+	bool IsShardCaptured(int sType);
 	void TryCreateShardResources();
 	ShardPopup *shardPop;
 	BitField *shardsCapturedField;

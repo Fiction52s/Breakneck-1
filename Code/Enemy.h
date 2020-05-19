@@ -64,7 +64,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	virtual void UpdateFromParams(ActorParams *ap,
 		int numFrames );
-
+	virtual void UpdateParamsSettings();
 	virtual void UpdateOnPlacement(ActorParams *ap);
 	void UpdateOnEditPlacement() {
 		UpdateOnPlacement(editParams);

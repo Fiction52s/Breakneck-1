@@ -4067,6 +4067,10 @@ void EditSession::RegularOKButton()
 		ISelectable *select = selectedBrush->objects.front();
 		ActorParams *ap = (ActorParams*)select;
 		ap->SetParams();
+		if (ap->myEnemy != NULL)
+		{
+			ap->myEnemy->UpdateParamsSettings();
+		}
 	}
 	else if (mode == CREATE_ENEMY)
 	{

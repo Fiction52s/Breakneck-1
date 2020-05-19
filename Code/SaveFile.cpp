@@ -178,7 +178,7 @@ SaveFile::~SaveFile()
 	}*/
 }
 
-bool SaveFile::ShardIsCaptured(ShardType sType)
+bool SaveFile::ShardIsCaptured(int sType)
 {
 	return shardField.GetBit(sType);
 }
@@ -257,7 +257,7 @@ int SaveFile::GetNumShardsCaptured()
 	int capCount = 0;
 	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
 	{
-		ShardType st = Shard::GetShardType((*it));
+		int st = Shard::GetShardType((*it));
 		if (ShardIsCaptured(st))
 		{
 			++capCount;
@@ -419,7 +419,7 @@ int Sector::GetNumShardsCaptured()
 	int capCount = 0;
 	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
 	{
-		ShardType st = Shard::GetShardType((*it));
+		int st = Shard::GetShardType((*it));
 		if (world->sf->ShardIsCaptured(st))
 		{
 			++capCount;
@@ -696,7 +696,7 @@ int Level::GetNumShardsCaptured()
 	int capCount = 0;
 	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
 	{
-		ShardType st = Shard::GetShardType((*it));
+		int st = Shard::GetShardType((*it));
 		if (sec->world->sf->ShardIsCaptured(st))
 		{
 			++capCount;
@@ -958,7 +958,7 @@ int World::GetNumShardsCaptured()
 	int capCount = 0;
 	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
 	{
-		ShardType st = Shard::GetShardType((*it));
+		int st = Shard::GetShardType((*it));
 		if (sf->ShardIsCaptured(st))
 		{
 			++capCount;

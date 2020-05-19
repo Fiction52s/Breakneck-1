@@ -124,7 +124,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	Tileset *ts_shard;
 	int shardWorld;
 	int shardIndex;
-	ShardType shardType;
+	int shardType;
 	
 };
 
