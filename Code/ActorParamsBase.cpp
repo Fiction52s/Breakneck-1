@@ -790,6 +790,7 @@ void ActorParams::UpdateGroundedSprite()
 	if (posInfo.railGround == NULL)
 	{
 		image.setRotation(edge->GetNormalAngleDegrees());
+		image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height);
 	}
 
 	if( myEnemy != NULL )

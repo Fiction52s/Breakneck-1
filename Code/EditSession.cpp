@@ -9294,7 +9294,8 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 	{
 		actor = (*it)->GetAsActor();
 
-		if (actor->posInfo.ground == NULL && actor->type->CanBeGrounded() && !actor->type->CanBeAerial())
+		//needed to comment the typecanbeaerial out for the purpose of POI and other versatile actors
+		if (actor->posInfo.ground == NULL && actor->type->CanBeGrounded() )//&& !actor->type->CanBeAerial())
 		{
 			numCanBeAnchored++;
 			piVec[piIndex] = ConvertPointToGround(Vector2i(worldPos + actor->diffFromGrabbed), actor, brush);
