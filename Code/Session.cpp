@@ -257,6 +257,8 @@ void Session::AddW1Enemies()
 	AddBasicGroundWorldEnemy("shroom", 1, CreateEnemy<Shroom>, Vector2i(0, 0), Vector2i(50, 50), true, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("basicturret", 1, CreateEnemy<BasicTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
+
+	AddBasicAerialWorldEnemy("splitcomboer", 1, CreateEnemy<SplitComboer>, Vector2i(0, 0), Vector2i(32, 32), false, true, true, true, 3 );
 		/*
 	AddBasicAerialWorldEnemy("patroller", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 		GetTileset("Enemies/patroller_icon_256x256.png", 256, 256));*/

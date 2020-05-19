@@ -355,7 +355,17 @@ void EditSession::TestPlayerMode()
 			(*it)->ResetTouchGrass();
 		}
 
-		for (auto it = groups.begin(); it != groups.end(); ++it)
+		
+		Enemy *curr = activeEnemyList;
+		while (curr != NULL)
+		{
+			Enemy *next = curr->next;
+			RemoveEnemy(curr);
+			curr = next;
+		}
+		
+
+		/*for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
 			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
 			{
@@ -364,7 +374,7 @@ void EditSession::TestPlayerMode()
 					RemoveEnemy((*enit)->myEnemy);
 				}
 			}
-		}
+		}*/
 
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -1046,10 +1056,11 @@ void EditSession::Draw()
 	//DrawPolygonInProgress();
 
 	DrawDecorBetween();
-	DrawActors();
-	
 
-	
+	if (!IsDrawMode(Emode::TEST_PLAYER))
+	{
+		DrawActors();
+	}
 }
 
 void EditSession::UpdateFullBounds()

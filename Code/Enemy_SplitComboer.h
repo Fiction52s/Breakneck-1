@@ -15,12 +15,8 @@ struct SplitPiece : Enemy
 		S_Count
 	};
 
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-
-
-	SplitPiece(ActorParams *ap, SplitComboer *splitComb);
+	void SetLevel(int lev);
+	SplitPiece(SplitComboer *splitComb);
 	~SplitPiece();
 
 	void ComboHit();
@@ -34,10 +30,6 @@ struct SplitPiece : Enemy
 	void Shoot(V2d dir);
 
 	SplitComboer *sc;
-
-	bool facingRight;
-
-	sf::Sprite sprite;
 
 	V2d velocity;
 
@@ -54,6 +46,10 @@ struct SplitComboer : Enemy
 		S_SPLIT,
 		S_Count
 	};
+
+	void UpdateOnPlacement(ActorParams *ap);
+	void UpdatePath();
+	void SetLevel(int lev);
 
 	SplitComboer(ActorParams *ap);
 	//SplitComboer(sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop,
@@ -73,25 +69,14 @@ struct SplitComboer : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
-	void AdvanceTargetNode();
 
 	V2d velocity;
 
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-	std::vector<sf::Vector2i> path;
-	//sf::Vector2i *path; //global
-	int pathLength;
-	bool loop;
-	int targetNode;
-	bool forward;
+	BasicPathFollower pathFollower;
 	double acceleration;
 	double speed;
 	int nodeWaitFrames;
-	sf::Sprite sprite;
 	Tileset *ts;
-	bool facingRight;
 
 	double shootSpeed;
 };

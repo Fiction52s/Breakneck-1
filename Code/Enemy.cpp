@@ -158,6 +158,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_COMBOER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3, false);
 		break;
+	case EnemyType::EN_SPLITCOMBOER:
+		hitParams.Set(5, .8, (3 * 60) / 3, 1, false);
+		break;
 	case EnemyType::EN_AIRDASHER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
@@ -353,7 +356,9 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	}
 	else
 	{
-		maxHealth = maxHealth;
+		//assert(false);
+		//cout << "hitparams not found" << endl;
+		maxHealth = 1;//maxHealth;
 	}
 
 	numHealth = maxHealth;
