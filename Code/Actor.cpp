@@ -22807,6 +22807,11 @@ void Actor::ExecuteWallJump()
 	double strengthX = wallJumpStrength.x;
 	double strengthY = wallJumpStrength.y;
 
+	if (touchedJumpGrass)
+	{
+		strengthY += 10;
+	}
+
 	if (facingRight)
 	{
 		velocity.x = strengthX;
