@@ -157,6 +157,8 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	bgView.setCenter(0, 0);
 	bgView.setSize(1920, 1080);
 
+	show = true;
+
 	Reset();
 }
 
@@ -286,6 +288,8 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 	bgView.setCenter(0, 0);
 	bgView.setSize(1920, 1080);
 
+	show = true;
+
 	Reset();
 }
 
@@ -328,6 +332,8 @@ Background::Background(MainMenu *mm)
 
 	bgView.setCenter(0, 0);
 	bgView.setSize(1920, 1080);
+
+	show = true;
 
 	Reset();
 }

@@ -18,7 +18,7 @@ using namespace sf;
 BlockerChain::BlockerChain(ActorParams *ap)
 	:EnemyChain(ap)
 {
-	BlockerChain *bParams = (BlockerChain*)ap;
+	BlockerParams *bParams = (BlockerParams*)ap;
 	railMode = bParams->railMode;
 
 	SetLevel(ap->GetLevel());

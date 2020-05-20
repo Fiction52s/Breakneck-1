@@ -766,7 +766,7 @@ void CustomMapClient::AnonymousInit()
 	s3Interface.InitWithCredentials(anonCreds);
 	cognitoInterface.InitWithCredentials(anonCreds);
 
-	serverConn.ConnectToServer(true);
+	serverConn.ConnectToServer(false);
 }
 
 void CustomMapClient::Cleanup()

@@ -48,8 +48,6 @@ LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 
 	//customMapClient = new CustomMapClient;
 	//customMapClient->AnonymousInit();
-
-
 	//customMapClient->AttemptUserLogin("test", "Shephard123~");
 
 	mainMenu = p_mainMenu;
