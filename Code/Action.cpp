@@ -1395,8 +1395,8 @@ void ComplexPasteAction::SetNewest(
 	Brush &newOrig, Brush &newResult)
 {
 	auto removedEnd = newOrig.objects.end();
-	auto appEnd = applied.objects.end();
-	auto addsEnd = newResult.objects.end();
+	
+	
 
 
 	mapStartBrush->TransferMyDuplicates(&newOrig, &mapStartOwned);
@@ -1405,7 +1405,7 @@ void ComplexPasteAction::SetNewest(
 	for (auto removedIt = newOrig.objects.begin(); removedIt != removedEnd; ++removedIt)
 	{
 		found = false;
-		for( auto appIt = applied.objects.begin(); appIt != appEnd; ++appIt)
+		for( auto appIt = applied.objects.begin(); appIt != applied.objects.end(); ++appIt)
 		{
 			if ((*appIt) == (*removedIt))
 			{
@@ -1421,8 +1421,7 @@ void ComplexPasteAction::SetNewest(
 			orig.objects.push_back((*removedIt));
 		}
 	}
-
-	for (auto addIt = newResult.objects.begin(); addIt != addsEnd; ++addIt)
+	for (auto addIt = newResult.objects.begin(); addIt != newResult.objects.end(); ++addIt)
 	{
 		applied.objects.push_back((*addIt));
 	}

@@ -6972,16 +6972,17 @@ bool EditSession::ExecuteTerrainCompletion()
 			inProgress.push_back(polygonInProgress);
 
 			bool add = !(IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift));
+			bool success = false;
 			if (add)
 			{
-				ExecuteTerrainMultiAdd(inProgress, orig, result);
+				success = ExecuteTerrainMultiAdd(inProgress, orig, result);
 			}
 			else
 			{
-				ExecuteTerrainMultiSubtract(inProgress, orig, result);
+				success = ExecuteTerrainMultiSubtract(inProgress, orig, result);
 			}
 
-			if (!orig.IsEmpty() || !result.IsEmpty())
+			if (success && (!orig.IsEmpty() || !result.IsEmpty()))
 			{
 				ClearUndoneActions(); //critical to have this before the deactivation
 
@@ -7396,15 +7397,17 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 
 	Brush orig;
 	Brush result;
+
+	bool success = true;
 	if (!brushPolys.empty())
 	{
 		if (HoldingControl())
 		{
-			ExecuteTerrainMultiSubtract(brushPolys, orig, result);
+			success = ExecuteTerrainMultiSubtract(brushPolys, orig, result);
 		}
 		else
 		{
-			ExecuteTerrainMultiAdd(brushPolys, orig, result);
+			success = ExecuteTerrainMultiAdd(brushPolys, orig, result);
 		}
 	}
 	else
@@ -7449,7 +7452,7 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 		}
 	}
 
-	if( !orig.IsEmpty() || !result.IsEmpty() )
+	if( success && (!orig.IsEmpty() || !result.IsEmpty() ))
 	{
 		ClearUndoneActions(); //critical to have this before the deactivation
 
@@ -8025,6 +8028,8 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 		}
 
 		//figure out which polygon should be the new inverse polygon
+		bool madeInverse = false;
+
 		bool isOuter;
 		for (auto it = inverseResults.begin(); it != inverseResults.end(); ++it)
 		{
@@ -8042,9 +8047,18 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 
 			if (isOuter)
 			{
+				madeInverse = true;
 				(*it)->MakeInverse();
 				break;
 			}
+		}
+
+		if (!madeInverse)
+		{
+			//when you've subtracted and you have a polygon touching a point on the inverse.
+			resultBrush.Destroy();
+			return false;
+			
 		}
 
 		
@@ -8176,11 +8190,11 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			}
 			else
 			{
-				for (auto tempIt = tempContained.begin(); tempIt != tempContained.end(); ++tempIt)
-				{
-					//cant be a duplicate only because brushes won't be on top of one another.
-					containedPolys.push_back((*tempIt));
-				}
+				//for (auto tempIt = tempContained.begin(); tempIt != tempContained.end(); ++tempIt)
+				//{
+				//	//cant be a duplicate only because brushes won't be on top of one another.
+				//	containedPolys.push_back((*tempIt));
+				//}
 
 				list<PolyPtr> *tempTestList;
 				if (intersectsInverse)
@@ -8200,6 +8214,13 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 				{
 					tempTestList->push_back((*tempIt));
 				}
+			}
+			
+			//i think this should be more general, so it goes here instead of in one case.
+			for (auto tempIt = tempContained.begin(); tempIt != tempContained.end(); ++tempIt)
+			{
+				//cant be a duplicate only because brushes won't be on top of one another.
+				containedPolys.push_back((*tempIt));
 			}
 			++brushIt;
 		}

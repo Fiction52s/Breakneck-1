@@ -1794,12 +1794,12 @@ void TerrainPolygon::GenerateBorderMesh()
 						double testLength = length(li.position - currStartOuter);
 						if (testLength < realHeightLeft)
 						{
-							cout << "len: " << testLength << ", x: " << li.position.x << "." << currStartOuter.x << endl;
+							//cout << "len: " << testLength << ", x: " << li.position.x << "." << currStartOuter.x << endl;
 							double diffLen = realHeightLeft - testLength;
 
 							realHeightLeft = testLength;
 							currStartInner = li.position;
-							cout << i << "left lipos: " << li.position.x << ", " << li.position.y << endl;
+							//cout << i << "left lipos: " << li.position.x << ", " << li.position.y << endl;
 						}
 					}
 
@@ -1811,11 +1811,11 @@ void TerrainPolygon::GenerateBorderMesh()
 						double testLength = length(li.position - currEndOuter);
 						if (testLength < realHeightRight)
 						{
-							cout << "len: " << testLength << ", x: " << li.position.x << "." << currEndOuter.x << endl;
+							//cout << "len: " << testLength << ", x: " << li.position.x << "." << currEndOuter.x << endl;
 							double diffLen = realHeightRight - testLength;
 							realHeightRight = testLength;
 							currEndInner += diffLen * normalize(startOuter - startInner);
-							cout << i << "right lipos: " << li.position.x << ", " << li.position.y << endl;
+							//cout << i << "right lipos: " << li.position.x << ", " << li.position.y << endl;
 						}
 					}
 				}
@@ -2428,7 +2428,7 @@ void TerrainPolygon::ActivateGates()
 
 void TerrainPolygon::Deactivate()
 {
-	cout << "deactivating poly: " << this << endl;
+	//cout << "deactivating poly: " << this << endl;
 	EditSession *session = EditSession::GetSession();
 	active = false;
 	session->GetCorrectPolygonList(this).remove(this);
@@ -2445,7 +2445,7 @@ void TerrainPolygon::Deactivate()
 
 void TerrainPolygon::Activate()
 {
-	cout << "activating poly: " << this << endl;
+	//cout << "activating poly: " << this << endl;
 	EditSession *session = EditSession::GetSession();
 	active = true;
 
