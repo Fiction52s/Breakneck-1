@@ -1,6 +1,7 @@
 #include "TransformTools.h"
 #include "VectorMath.h"
 #include "CircleGroup.h"
+#include <iostream>
 
 using namespace std;
 using namespace sf;
@@ -233,6 +234,15 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 				tRect.setOrigin(rectSize.x / 2 + scaledOffset.x, rectSize.y / 2 + scaledOffset.y);
 				tRect.setPosition(rotationAnchor);
 			}
+			else if (RectContainsPoint(worldPos))
+			{
+				UpdateRotationAnchor();
+				startClick = worldPos;
+				mode = MOVE;
+				Vector2f scaledOffset = GetScaledOffset();
+				tRect.setOrigin(rectSize.x / 2 + scaledOffset.x, rectSize.y / 2 + scaledOffset.y);
+				tRect.setPosition(rotationAnchor);
+			}
 			else
 			{
 				clickedNothing = true;
@@ -242,7 +252,16 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 	}
 	case MOVE:
 	{
-
+		//rotationAnchor = GetCenter() + GetTransformedOffset() + (worldPos - startClick);
+		Vector2f delta = (worldPos - startClick);
+		rotationAnchor += delta;
+		//cout << "delta: " << delta.x << ", " << delta.y << endl;
+		//Vector2f scaledOffset = GetScaledOffset();
+		//tRect.setOrigin(rectSize.x / 2 + scaledOffset.x, rectSize.y / 2 + scaledOffset.y);
+		tRect.setPosition(rotationAnchor);//rotationAnchor + delta );// +(worldPos - startClick));
+		startClick = worldPos;
+		UpdateGrabPoints();
+		//UpdateRotationAnchor();
 		break;
 	}
 	case SCALE:
