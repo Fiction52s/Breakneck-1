@@ -11,6 +11,7 @@ using namespace sf;
 
 CreateDecorModeUI::CreateDecorModeUI()
 {
+	activeHotbarSize = 0;
 	hotbarImages.reserve(8);
 	libraryImagesVec.resize(9);
 	for (int i = 0; i < 9; ++i)

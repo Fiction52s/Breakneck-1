@@ -27,6 +27,8 @@ void ChooseRectContainer::Draw(sf::RenderTarget *target)
 
 CreateEnemyModeUI::CreateEnemyModeUI()
 {
+	activeHotbarSize = 0;
+
 	hotbarEnemies.reserve(8);
 	libraryEnemiesVec.resize(9);
 	for (int i = 0; i < 9; ++i)

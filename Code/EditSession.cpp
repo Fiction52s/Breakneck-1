@@ -2704,7 +2704,7 @@ int EditSession::Run()
 
 		DrawDecorFront();
 
-		if( zoomMultiple > 7 )
+		if( zoomMultiple > 7 && !gameCam )
 		{
 			playerZoomIcon.setPosition( player->GetFloatPos() );
 			playerZoomIcon.setScale( zoomMultiple * 1.8, zoomMultiple * 1.8 );
@@ -3852,6 +3852,11 @@ bool EditSession::PointSelectActor( V2d &pos )
 
 bool EditSession::PointSelectDecor(V2d &pos)
 {
+	if (!IsLayerActionable(LAYER_IMAGE))
+	{
+		return false;
+	}
+
 	for (auto it = decorImagesBehindTerrain.begin();
 		it != decorImagesBehindTerrain.end(); ++it)
 	{
@@ -8906,6 +8911,11 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 	if (rect.width == 0 || rect.height == 0)
 		return false;
 
+	if (!IsLayerActionable(LAYER_IMAGE))
+	{
+		return false;
+	}
+
 	bool found = false;
 	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
 	{
@@ -10117,6 +10127,10 @@ void EditSession::DrawGates()
 
 void EditSession::DrawDecorBehind()
 {
+	if (!IsLayerShowing(LAYER_IMAGE))
+	{
+		return;
+	}
 	for (auto it = decorImagesBehindTerrain.begin(); it != decorImagesBehindTerrain.end(); ++it)
 	{
 		(*it)->Draw(preScreenTex);
@@ -10125,6 +10139,10 @@ void EditSession::DrawDecorBehind()
 
 void EditSession::DrawDecorBetween()
 {
+	if (!IsLayerShowing(LAYER_IMAGE))
+	{
+		return;
+	}
 	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
 	{
 		(*it)->Draw(preScreenTex);
@@ -10280,6 +10298,10 @@ void EditSession::DrawGateInProgress()
 
 void EditSession::DrawDecorFront()
 {
+	if (!IsLayerShowing(LAYER_IMAGE))
+	{
+		return;
+	}
 	for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
 	{
 		(*it)->Draw(preScreenTex);
@@ -10749,9 +10771,12 @@ void EditSession::HandleEvents()
 			{
 				if (ev.mouseButton.button == Mouse::Button::Middle)
 				{
-					ClearMostRecentError();
-					panning = true;
-					panAnchor = worldPos;
+					if (!gameCam)
+					{
+						ClearMostRecentError();
+						panning = true;
+						panAnchor = worldPos;
+					}
 					//cout << "setting panAnchor: " << panAnchor.x << " , " << panAnchor.y << endl;
 				}
 				else if (ev.mouseButton.button == Mouse::Button::Right)
@@ -10777,64 +10802,67 @@ void EditSession::HandleEvents()
 			}
 			case Event::MouseWheelMoved:
 			{
-				if (showGraph && HoldingControl())
+				if (!gameCam)
 				{
-					if (ev.mouseWheel.delta > 0)
+					if (showGraph && HoldingControl())
 					{
-						graph->ModifyGraphSpacing(.5);
+						if (ev.mouseWheel.delta > 0)
+						{
+							graph->ModifyGraphSpacing(.5);
+						}
+						else if (ev.mouseWheel.delta < 0)
+						{
+							graph->ModifyGraphSpacing(2.0);
+						}
 					}
-					else if (ev.mouseWheel.delta < 0)
+					else
 					{
-						graph->ModifyGraphSpacing(2.0);
-					}
-				}
-				else
-				{
-					if (ev.mouseWheel.delta > 0)
-					{
-						if (zoomMultiple > 32)
+						if (ev.mouseWheel.delta > 0)
 						{
-							ModifyZoom(.5);
-						}
-						else if (zoomMultiple > 8)
-						{
-							SetZoom(zoomMultiple - 8);
-							//zoomMultiple += 10;
-						}
-						else if( zoomMultiple > 1 )
-						{
-							SetZoom(zoomMultiple - 1);
-						}
-						else
-						{
-							ModifyZoom(.5);
-						}
+							if (zoomMultiple > 32)
+							{
+								ModifyZoom(.5);
+							}
+							else if (zoomMultiple > 8)
+							{
+								SetZoom(zoomMultiple - 8);
+								//zoomMultiple += 10;
+							}
+							else if (zoomMultiple > 1)
+							{
+								SetZoom(zoomMultiple - 1);
+							}
+							else
+							{
+								ModifyZoom(.5);
+							}
 
-						//ModifyZoom(.5);
-						//ModifyZoom(.5);
-					}
-					else if (ev.mouseWheel.delta < 0)
-					{
-						if (zoomMultiple >= 32)
-						{
-							ModifyZoom(2);
+							//ModifyZoom(.5);
+							//ModifyZoom(.5);
 						}
-						else if (zoomMultiple >= 8)
+						else if (ev.mouseWheel.delta < 0)
 						{
-							SetZoom(zoomMultiple + 8);
+							if (zoomMultiple >= 32)
+							{
+								ModifyZoom(2);
+							}
+							else if (zoomMultiple >= 8)
+							{
+								SetZoom(zoomMultiple + 8);
+								//ModifyZoom(2.0);
+								//zoomMultiple += 10;
+							}
+							else if (zoomMultiple >= 1)
+							{
+								SetZoom(zoomMultiple + 1);
+							}
+							else
+							{
+								ModifyZoom(2.0);
+							}
+							//ModifyZoom(2);
 							//ModifyZoom(2.0);
-							//zoomMultiple += 10;
 						}
-						else if( zoomMultiple >= 1)
-						{
-							SetZoom(zoomMultiple + 1);
-						}
-						else
-						{
-							ModifyZoom(2.0);
-						}
-						//ModifyZoom(2);
-						//ModifyZoom(2.0);
 					}
 				}
 				break;
@@ -11481,6 +11509,10 @@ void EditSession::EditModeHandleEvent()
 		else if (ev.key.code == Keyboard::Num1)
 		{
 			gameCam = !gameCam;
+			if (!gameCam)
+			{
+				panning = false;
+			}
 		}
 		else if (ev.key.code == Keyboard::H)
 		{
@@ -12941,9 +12973,12 @@ void EditSession::CreateGatesModeUpdate()
 	TerrainPoint *pPoint = NULL;
 	if (gatePoints == 1)
 	{
-		SelectPtr obj;
-		pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
+		SelectPtr obj = NULL;
+		pPoint = TrySnapPosToPoint(worldPos, obj, 8 * zoomMultiple);
+		if( obj != NULL )
+			p = obj->GetAsTerrain();
 	}
+
 	gateInProgressTestPoly = p;
 	gateInProgressTestPoint = pPoint;
 
