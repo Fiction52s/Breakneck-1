@@ -12475,8 +12475,10 @@ void EditSession::CreateTerrainModeUpdate()
 				polygonInProgress->AddPoint(Vector2i(testPoint.x, testPoint.y), false);
 				polygonInProgress->AddPoint(Vector2i(startBoxPos.x, testPoint.y), false);
 
-				ExecuteTerrainCompletion();
-				//currTool = TOOL_DRAW;
+				if (polygonInProgress->GetNumPoints() == 4)
+				{
+					ExecuteTerrainCompletion();
+				}
 			}
 		}
 	}
