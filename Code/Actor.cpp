@@ -4935,20 +4935,23 @@ void Actor::UpdatePrePhysics()
 				}	
 				else
 				{
-					framesInAir = 0;
-					SetActionExpr(JUMP);
-					frame = 1;
-					grindEdge = NULL;
-					ground = NULL;
+					if (CheckStandUp())
+					{
+						framesInAir = 0;
+						SetActionExpr(JUMP);
+						frame = 1;
+						grindEdge = NULL;
+						ground = NULL;
 
-					//TODO: this might glitch grind areas? test it with the range of your get out of grind query
-					if (grindNorm.x > 0)
-					{
-						position.x += b.rw + .1; 
-					}
-					else if (grindNorm.x < 0)
-					{
-						position.x += -b.rw - .1;
+						//TODO: this might glitch grind areas? test it with the range of your get out of grind query
+						if (grindNorm.x > 0)
+						{
+							position.x += b.rw + .1;
+						}
+						else if (grindNorm.x < 0)
+						{
+							position.x += -b.rw - .1;
+						}
 					}
 				}
 				//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
@@ -14455,6 +14458,7 @@ bool Actor::TryGroundAttack()
 	if ( normalSwing || rightStickSwing || pauseBufferedAttack == Action::STANDN
 		|| stunBufferedAttack == Action::STANDN )
 	{
+		
 		if (!rightStickSwing)
 		{
 			if (currInput.LLeft())
@@ -14468,6 +14472,7 @@ bool Actor::TryGroundAttack()
 		}
 		else
 		{
+			//this is probably buggy on ceiling?
 			if (currInput.RLeft())
 			{
 				facingRight = false;
@@ -14478,9 +14483,45 @@ bool Actor::TryGroundAttack()
 			}
 		}
 
+		if (stunBufferedAttack == Action::STANDN)
+		{
+			V2d gn = ground->Normal();
+			if (TerrainPolygon::IsSteepGround(gn) )
+			{
+				if (facingRight)
+				{
+					if (gn.x > 0)
+					{
+						stunBufferedAttack = Action::STEEPSLIDEATTACK;
+					}
+					else
+					{
+						stunBufferedAttack = Action::STEEPCLIMBATTACK;
+					}
+				}
+				else
+				{
+					if (gn.x > 0)
+					{
+						stunBufferedAttack = Action::STEEPCLIMBATTACK;
+					}
+					else
+					{
+						stunBufferedAttack = Action::STEEPSLIDEATTACK;
+					}
+				}
+				
+			}
 
-		SetAction(STANDN);
-		frame = 0;
+			SetAction(stunBufferedAttack);
+			frame = 0;
+		}
+		else
+		{
+			SetAction(STANDN);
+			frame = 0;
+		}
+		
 
 		return true;
 	}
@@ -19264,6 +19305,7 @@ void Actor::UpdateSprite()
 			scorpSprite.setRotation(sprite->getRotation());
 			scorpSet = true;
 		}
+		break;
 	}
 	case SPRINT:
 		{	

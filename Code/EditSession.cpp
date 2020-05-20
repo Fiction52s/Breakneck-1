@@ -10276,7 +10276,7 @@ void EditSession::DrawGateInProgress()
 		{
 			if (IsGateInProgressValid(testGateInfo.poly0, testGateInfo.point0))
 			{
-				c = Color::White;
+				c = Color::Green;
 			}
 			else
 			{
@@ -12871,7 +12871,7 @@ void EditSession::PasteModeUpdate()
 			{
 				if (actor->myEnemy != NULL)
 				{
-					actor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
+					//actor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
 				}
 			}
 		}

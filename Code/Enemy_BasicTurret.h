@@ -39,6 +39,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void ResetEnemy();
 	Tileset *ts;
 	Tileset *ts_aura;
+	double detectRad;
 
 	const static int maxBullets = 16;
 

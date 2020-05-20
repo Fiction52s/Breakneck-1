@@ -91,7 +91,7 @@ BasicTurret::BasicTurret(ActorParams *ap )
 
 	width *= scale;
 	height *= scale;
-
+	detectRad = 1500;
 	
 
 	SetOffGroundHeight(height / 2.f - 30 * scale);
@@ -210,7 +210,7 @@ void BasicTurret::ProcessState()
 	{
 		case WAIT:
 		{
-			if (length(playerPos - GetPosition()) < 700)
+			if (length(playerPos - GetPosition()) < detectRad)
 			{
 				action = ATTACK;
 				frame = 0;
@@ -222,7 +222,7 @@ void BasicTurret::ProcessState()
 			if (frame == 11 * animationFactor)
 			{
 				frame = 0;
-				if (length(playerPos - GetPosition()) >= 700)
+				if (length(playerPos - GetPosition()) >= detectRad)
 				{
 					action = WAIT;
 					frame = 0;
