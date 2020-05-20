@@ -2526,7 +2526,7 @@ Vector2i TerrainPolygon::GetExtreme(TerrainPoint *p0,
 }
 
 //only used for moving points now
-bool TerrainPolygon::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
+bool TerrainPolygon::AlignExtremes( std::list<PointMoveInfo> &lockPoints) //std::vector<PointMoveInfo> &lockPoints)
 {
 	double primLimit = EditSession::PRIMARY_LIMIT;
 	bool adjustedAtAll = false;
@@ -2535,39 +2535,135 @@ bool TerrainPolygon::AlignExtremes(std::vector<PointMoveInfo> &lockPoints)
 	bool adjusted = true;
 
 	int lockPointIndex = 0;
-	assert(lockPoints.empty() || lockPoints.size() == GetNumPoints());
+	//assert(lockPoints.empty() || lockPoints.size() == GetNumPoints());
 
 	bool lockPointsEmpty = lockPoints.empty();
 
+	set<int> lockedPointIndexes;
+	for( auto it = lockPoints.begin(); it != lockPoints.end(); ++it )
+	{
+		lockedPointIndexes.insert((*it).pointIndex);
+	}
 
 	int numP = GetNumPoints();
 
 	while (adjusted)
 	{
 		adjusted = false;
-		lockPointIndex = 0;
 		int result;
 		bool isPointLocked;
+		int nextIndex;
+		bool nextPointLocked;
+		TerrainPoint *next;
+		Vector2i origPos;
 
-		for (int i = 0; i < numP; ++i, lockPointIndex++)
+		for (int i = 0; i < numP; ++i)
 		{
-			isPointLocked = false;//!lockPointsEmpty && lockPoints[lockPointIndex].moveIntent;
-			result = FixNearPrimary(i, isPointLocked);
+			isPointLocked = (lockedPointIndexes.find(i) != lockedPointIndexes.end());//false;//!lockPointsEmpty && lockPoints[lockPointIndex].moveIntent;
+
+			TerrainPoint *curr;// , *prev;//*next;
+			curr = GetPoint(i);
+			
+
+			//prev = GetPrevPoint(i);
+			next = GetNextPoint(i);
+			nextPointLocked = (lockedPointIndexes.find(next->index) != lockedPointIndexes.end());
+
+			//Vector2i extreme = GetExtreme(curr, next);
+			Vector2i extreme = GetExtreme(curr, next);
+
+			result = 0;
+
+			if (extreme.x == 0 && extreme.y == 0)
+				continue;
+			else if (isPointLocked)
+			{
+				if (nextPointLocked)
+				{
+					assert(0); //need to adjust the next point, but its locked too!
+				}
+
+				PointMoveInfo pi;
+				pi.origPos = next->pos;
+				pi.pointIndex = next->index;
+				pi.poly = this;
+				//continue;
+				if (extreme.x != 0)
+					next->pos.y = curr->pos.y;
+				else
+					next->pos.x = curr->pos.x;
+
+				if (curr->pos == next->pos)
+				{
+					int b = 6;
+					assert(0);
+				}
+
+				pi.newPos = next->pos;
+				
+				lockPoints.push_back(pi);
+				lockedPointIndexes.insert(pi.pointIndex);
+
+				result = 2;
+			}
+			else
+			{
+				PointMoveInfo pi;
+				pi.origPos = curr->pos;
+				pi.pointIndex = curr->index;
+				pi.poly = this;
+
+				if (extreme.x != 0)
+					curr->pos.y = next->pos.y;
+				else
+					curr->pos.x = next->pos.x;
+
+				if (curr->pos == next->pos)
+				{
+					int b = 6;
+					assert(0);
+				}
+
+				pi.newPos = curr->pos;
+				lockPoints.push_back(pi);
+				lockedPointIndexes.insert(pi.pointIndex);
+
+				result = 1;
+			}
+			
+
+
+			//result = FixNearPrimary(i, isPointLocked);
 
 			if (result > 0)
 			{
+				/*PointMoveInfo pi;
+				pi.newPos = curr->pos;
+				pi.origPos = origPos;
+				pi.pointIndex = i;
+				pi.poly = this;
+				newInfoList.push_back(pi);
+				lockedPointIndexes.insert(next->index);*/
 				adjusted = true;
 				adjustedAtAll = true;
 			}
 		}
 	}
 
+	/*lockPoints.reserve(lockPoints.size() + newInfoList.size());
+	for (auto it = newInfoList.begin(); it != newInfoList.end(); ++it)
+	{
+		lockPoints.push_back((*it));
+	}*/
+
+	//lockPoints.reserve( lockedPointIndexes)
+
 	return adjustedAtAll;
 }
 
 bool TerrainPolygon::AlignExtremes()
 {
-	vector<PointMoveInfo> emptyLockPoints;
+	list<PointMoveInfo> emptyLockPoints;
 	return AlignExtremes(emptyLockPoints);
 }
 

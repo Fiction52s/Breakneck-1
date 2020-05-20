@@ -4212,9 +4212,14 @@ void EditSession::PerformMovePointsAction()
 	{
 		poly = (*mit).first;
 
-		poly->AlignExtremes(); //adjust this later!!! need to take this into account
+		 //adjust this later!!! need to take this into account
+
+		poly->AlignExtremes((*mit).second);
 
 		vector<PointMoveInfo> &pmVec = pm->movePoints[poly];
+
+		
+
 		pmVec.reserve((*mit).second.size());
 		for (auto it = (*mit).second.begin(); it != (*mit).second.end(); ++it)
 		{
@@ -5515,7 +5520,7 @@ bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, b
 
 bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool a, CompoundAction *compound)
 {
-	PointMover * pmap = new PointMover;;
+	PointMover * pmap = new PointMover;
 	PolyPtr poly;
 	TerrainPoint *point;
 
@@ -5535,7 +5540,27 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	pi.pointIndex = point->index;
 	pi.origPos = point->pos;
 	pi.newPos = point->pos + adjust;
-	pmap->movePoints[poly].push_back(pi);
+
+	poly->BackupEnemyPositions();
+
+	pmap->oldEnemyPosInfo.insert(pmap->oldEnemyPosInfo.end(),
+		poly->enemyPosBackups.begin(), poly->enemyPosBackups.end());
+
+	point->pos = pi.newPos;
+
+	list<PointMoveInfo> piList;
+	piList.push_back(pi);
+
+	poly->AlignExtremes(piList);
+
+	pmap->movePoints[poly].reserve(piList.size());
+	for (auto it = piList.begin(); it != piList.end(); ++it)
+	{
+		pmap->movePoints[poly].push_back((*it));
+	}
+
+	poly->StoreEnemyPositions(pmap->newEnemyPosInfo);
+	
 
 
 	//need to add enemies here. just this for now.
@@ -5574,8 +5599,8 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	//}
 	
 	MoveBrushAction * action = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap);
-	action->performed = true;
-	//action->Perform();
+	//action->performed = true;
+	action->Perform();
 
 	//check validity here
 
