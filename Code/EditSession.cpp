@@ -170,6 +170,22 @@ void EditSession::DeselectObject(SelectPtr sel)
 	selectedBrush->RemoveObject(sel);
 }
 
+void EditSession::DeselectObjectType(ISelectable::ISelectableType sType)
+{
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end();)
+	{
+		if ((*it)->selectableType == sType)
+		{
+			(*it)->SetSelected(false);
+			it = selectedBrush->objects.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
 void EditSession::TestPlayerModeUpdate()
 {
 	double newTime = gameClock.getElapsedTime().asSeconds();
@@ -1046,7 +1062,8 @@ EditSession::~EditSession()
 		delete (*it);
 	}
 
-
+	delete layerPanel;
+	layerPanel = NULL;
 	
 
 	//delete groups, but not actors
@@ -2333,6 +2350,8 @@ int EditSession::Run()
 	allPopups.push_back(enemySelectPanel);
 
 	
+	CreateLayerPanel();
+	
 	/*int gridSizeX = 80;
 	int gridSizeY = 80;
 
@@ -3126,7 +3145,12 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 {
 	//cout << cb->name << " was " << e << endl;
 	Panel *p = cb->owner;
-	if( p->name == "curveturret_options" )
+
+	if (p == layerPanel)
+	{
+		UpdateLayerCheckbox(cb, e);
+	}
+	else if( p->name == "curveturret_options" )
 	{
 		if( cb->name == "relativegrav" )
 		{
@@ -3163,6 +3187,7 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 			}
 		}
 	}
+	
 }
 
 void EditSession::ClearUndoneActions()
@@ -3779,6 +3804,11 @@ void EditSession::TryRemoveSelectedPoints()
 
 bool EditSession::PointSelectActor( V2d &pos )
 {
+	if (!IsLayerActionable(LAYER_ACTOR))
+	{
+		return false;
+	}
+
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto ait = (*it).second->actors.begin();
@@ -8829,6 +8859,11 @@ bool EditSession::BoxSelectActors(sf::IntRect &rect)
 	if (rect.width == 0 || rect.height == 0)
 		return false;
 
+	if (!IsLayerActionable(LAYER_ACTOR))
+	{
+		return false;
+	}
+
 	bool found = false;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -10063,9 +10098,12 @@ void EditSession::DrawRailInProgress()
 
 void EditSession::DrawActors()
 {
-	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+	if (IsLayerShowing(LAYER_ACTOR))
 	{
-		(*it).second->Draw(preScreenTex);
+		for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+		{
+			(*it).second->Draw(preScreenTex);
+		}
 	}
 }
 
@@ -10584,6 +10622,11 @@ void EditSession::DrawUI()
 	{
 		showPanel->Draw(preScreenTex);
 	}
+
+	if (IsDrawMode( EDIT ) )
+	{
+		layerPanel->Draw(preScreenTex);
+	}
 }
 
 void EditSession::Display()
@@ -11085,6 +11128,11 @@ void EditSession::EditModeHandleEvent()
 	{
 		if (ev.mouseButton.button == Mouse::Left)
 		{
+			if (layerPanel->Update(true, false, uiMousePos.x, uiMousePos.y,true) )
+			{
+				break;
+			}
+
 			if (showPanel != NULL)
 			{
 				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
@@ -11146,6 +11194,11 @@ void EditSession::EditModeHandleEvent()
 	{
 		if (ev.mouseButton.button == Mouse::Left)
 		{
+			if (layerPanel->Update(false, false, uiMousePos.x, uiMousePos.y, true) )
+			{
+				break;
+			}
+
 			if (showPanel != NULL)
 			{
 				showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
@@ -13070,4 +13123,139 @@ void EditSession::TransformModeUpdate()
 			dec->UpdateTransformation(transformTools);
 		}
 	}
+}
+
+bool EditSession::IsLayerActionable(EditLayer layer)
+{
+	return (IsLayerShowing(layer) && !IsLayerLocked(layer));
+}
+
+bool EditSession::IsLayerShowing(EditLayer layer)
+{
+	string checkName = layerMap[layer] + "_show";
+	assert(layerPanel->checkBoxes.find(checkName) != layerPanel->checkBoxes.end());
+	return layerPanel->checkBoxes[checkName]->checked;
+}
+
+bool EditSession::IsLayerLocked(EditLayer layer)
+{
+	string checkName = layerMap[layer] + "_lock";
+	assert(layerPanel->checkBoxes.find(checkName) != layerPanel->checkBoxes.end());
+	return layerPanel->checkBoxes[checkName]->checked;
+}
+
+void EditSession::CreateLayerPanel()
+{
+	layerPanel = new Panel("layers", 300, 900, this);
+	//layerPanel->pos = Vector2i(200, 200);
+	int currLayerIndex = 0;
+
+	layerMap[LAYER_ACTOR] = "actors";
+	layerMap[LAYER_IMAGE] = "images";
+	for (auto it = layerMap.begin(); it != layerMap.end(); ++it)
+	{
+		reverseLayerMap[(*it).second] = (*it).first;
+	}
+
+	layerPanel->AddLabel("show", Vector2i(10, 40), 15, "show");
+	layerPanel->AddLabel("lock", Vector2i(50, 40), 15, "lock");
+
+	AddLayerToPanel(layerMap[LAYER_ACTOR], 0);
+	AddLayerToPanel(layerMap[LAYER_IMAGE], 1);
+}
+
+void EditSession::AddLayerToPanel( const std::string &name, int currLayerIndex)
+{
+	int startY = 60;
+	int label = 100;
+	int checkbox0 = 10;
+	int checkbox1 = 50;
+	string show = "_show";
+	string lock = "_lock";
+	int posY = currLayerIndex * 50 + startY;
+	layerPanel->AddCheckBox(name + show, Vector2i(checkbox0, posY), true);
+	layerPanel->AddCheckBox(name + lock, Vector2i(checkbox1, posY), false);
+	layerPanel->AddLabel(name, Vector2i(label, posY), 20, name);
+	
+}
+
+void EditSession::UpdateLayerShow(EditLayer layer, bool show)
+{
+	if (show)
+	{
+		switch (layer)
+		{
+		case LAYER_ACTOR:
+			break;
+		}
+	}
+	else
+	{
+		switch (layer)
+		{
+		case LAYER_ACTOR:
+			DeselectObjectType(ISelectable::ACTOR);
+			break;
+		}
+	}
+
+	
+}
+
+void EditSession::UpdateLayerLock(EditLayer layer, bool lock)
+{
+	if (lock)
+	{
+		switch (layer)
+		{
+		case LAYER_ACTOR:
+			DeselectObjectType(ISelectable::ACTOR);
+			break;
+		}
+	}
+	else
+	{
+	}
+}
+
+void EditSession::UpdateLayerCheckbox(CheckBox *cb, const std::string &e)
+{
+	bool isChecked = false;
+	if (e == "checked")
+	{
+		isChecked = true;
+	}
+	else if (e == "unchecked")
+	{
+		isChecked = false;
+	}
+	else
+	{
+		assert(0);
+	}
+
+	
+	int found = cb->name.find('_');
+	if (found == string::npos)
+	{
+		assert(0);
+	}
+	else
+	{
+		string layerStr = cb->name.substr(0, found);
+		string sub = cb->name.substr(found + 1);
+		if (sub == "lock")
+		{
+			UpdateLayerLock(reverseLayerMap[layerStr], isChecked);
+		}
+		else if (sub == "show")
+		{
+			UpdateLayerShow(reverseLayerMap[layerStr], isChecked);
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+	
 }

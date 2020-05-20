@@ -9,34 +9,7 @@ struct Panel;
 struct GUIHandler;
 
 
-struct GridSelector
-{
 
-	GridSelector( sf::Vector2i pos, int xSize, int ySize, int iconX, int iconY, 
-		bool displaySelected, bool displayMouseOver, Panel * p );
-	~GridSelector();
-	void Set( int xi, int yi, sf::Sprite s, const std::string &name );
-	void Draw( sf::RenderTarget *target );
-	bool Update( bool mouseDown, int posx, int posy );
-	int tileSizeX;
-	int tileSizeY;
-	int xSize;
-	int ySize;
-	sf::Sprite ** icons;
-	std::string ** names;
-	bool active;
-	int focusX;
-	int focusY;
-	sf::Vector2i pos;
-	Panel *owner;
-	int selectedX;
-	int selectedY;
-	int mouseOverX;
-	int mouseOverY;
-	bool displaySelected;
-	bool displayMouseOver;
-	//GUIHandler *handler;
-};
 
 struct ActorType;
 struct EnemyChooser;
@@ -280,6 +253,35 @@ struct CreateDecorModeUI
 	
 };
 
+struct GridSelector
+{
+
+	GridSelector(sf::Vector2i pos, int xSize, int ySize, int iconX, int iconY,
+		bool displaySelected, bool displayMouseOver, Panel * p);
+	~GridSelector();
+	void Set(int xi, int yi, sf::Sprite s, const std::string &name);
+	void Draw(sf::RenderTarget *target);
+	bool Update(bool mouseDown, int posx, int posy);
+	//void SetPanelPos(const sf::Vector2i &p_pos);
+	int tileSizeX;
+	int tileSizeY;
+	int xSize;
+	int ySize;
+	sf::Sprite ** icons;
+	std::string ** names;
+	bool active;
+	int focusX;
+	int focusY;
+	sf::Vector2i pos;
+	Panel *owner;
+	int selectedX;
+	int selectedY;
+	int mouseOverX;
+	int mouseOverY;
+	bool displaySelected;
+	bool displayMouseOver;
+	//GUIHandler *handler;
+};
 
 struct TextBox
 {
@@ -289,6 +291,7 @@ struct TextBox
 	bool Update( bool mouseDown, int posx, int posy );
 	void SetCursorIndex( int index );
 	void SetCursorIndex( sf::Vector2i &mousePos );
+	//void SetPanelPos(const sf::Vector2i &p_pos);
 	sf::Vector2i pos;
 	int width;
 	std::string name;
@@ -309,6 +312,7 @@ struct Button
 	Button( const std::string &name, int posx, int posy, int width, int height, sf::Font &f, const std::string & text, Panel *owner );
 	void Draw( sf::RenderTarget *rt );
 	bool Update( bool mouseDown, int posx, int posy );
+	//void SetPanelPos(const sf::Vector2i &p_pos);
 	sf::Vector2i pos;
 	sf::Vector2f size;
 	sf::Text text;
@@ -324,11 +328,7 @@ struct CheckBox
 	CheckBox( const std::string &name, int posx, int posy, Panel *owner );
 	void Draw( sf::RenderTarget *target );
 	bool Update( bool mouseDown, int posx, int posy );
-
-	const static int SIZE = 16;
-	
-
-
+	//void SetPanelPos(const sf::Vector2i &p_pos);
 	sf::Vector2i pos;
 	std::string name;
 	Panel *owner;
@@ -342,18 +342,19 @@ struct Panel
 	~Panel();
 	void Draw(sf::RenderTarget *rt);
 	bool ContainsPoint(sf::Vector2i &pos);
-	void Update( bool mouseDownLeft, bool mouseDownRight,
-		int posx, int posy );
+	bool Update(bool mouseDownLeft, bool mouseDownRight,
+		int posx, int posy, bool checkContained = false );
 	
 	void AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	void AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
-	void AddCheckBox( const std::string &name, sf::Vector2i pos );
+	void AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
 		int sizex, int sizey, 
 		int tilesizex, int tilesizey,
 		bool displaySelected,
 		bool displayMouseOver );
+	void SetPosition(const sf::Vector2i &p_pos);
 	
 
 	void SendKey( sf::Keyboard::Key k, bool shift );

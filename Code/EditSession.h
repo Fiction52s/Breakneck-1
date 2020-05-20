@@ -90,6 +90,27 @@ struct EditSession : GUIHandler, Session
 	bool IsDrawMode(Emode em);
 	Emode mode;
 	void UpdateInputNonGame();
+	void CreateLayerPanel();
+	void AddLayerToPanel( 
+		const std::string &name,
+		int currLayerIndex );
+	Panel *layerPanel;
+
+	enum EditLayer : int
+	{
+		LAYER_ACTOR,
+		LAYER_IMAGE,
+	};
+
+	std::map<EditLayer, std::string> layerMap;
+	std::map<std::string, EditLayer> reverseLayerMap;
+	bool IsLayerShowing( EditLayer layer );
+	bool IsLayerLocked( EditLayer layer );
+	bool IsLayerActionable( EditLayer layer );
+	void UpdateLayerCheckbox(CheckBox *cb,
+		const std::string & e);
+	void UpdateLayerShow(EditLayer layer, bool show);
+	void UpdateLayerLock(EditLayer layer, bool lock);
 	
 
 	enum Tool
@@ -214,6 +235,7 @@ struct EditSession : GUIHandler, Session
 	void ClearSelectedBrush();
 	void SelectObject(SelectPtr sel);
 	void DeselectObject(SelectPtr sel);
+	void DeselectObjectType(ISelectable::ISelectableType sType);
 
 	int tempWriteIndex;
 

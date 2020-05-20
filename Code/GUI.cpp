@@ -6,6 +6,8 @@
 using namespace sf;
 using namespace std;
 
+const int CHECKBOXSIZE = 32;
+
 GridSelector::GridSelector( Vector2i p_pos, int xSizep, int ySizep, int iconX, int iconY, bool p_displaySelected,
 						   bool p_displayMouseOver, Panel *p )
 	:xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( true ), owner( p )
@@ -63,7 +65,7 @@ void GridSelector::Draw( sf::RenderTarget *target )
 		sf::RectangleShape rs;
 		rs.setSize( Vector2f( xSize * tileSizeX, ySize * tileSizeY ) );
 		rs.setFillColor( Color::Yellow );
-		Vector2i truePos( pos.x + owner->pos.x, pos.y + owner->pos.y );
+		Vector2i truePos( pos.x, pos.y );
 		rs.setPosition( truePos.x, truePos.y );
 
 		target->draw( rs );
@@ -206,7 +208,19 @@ Panel::~Panel()
 	}*/
 }
 
-void Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy )
+void Panel::SetPosition(const sf::Vector2i &p_pos)
+{
+	pos = p_pos;
+
+	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
+	{
+	}
+}
+
+//returns true if consumed
+//checkcontained is mostly for debug, have to redo panels better soon
+bool Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy,
+	bool checkContained )
 {
 	lastMouseDownLeft = isMouseDownLeft;
 	isMouseDownLeft = mouseDownL;
@@ -214,11 +228,28 @@ void Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy )
 	lastMouseDownRight = isMouseDownRight;
 	isMouseDownRight = mouseDownR;
 	
+	bool withinPanel = false;
+	if (checkContained)
+	{
+		if (posx >= pos.x && posx <= pos.x + size.x &&
+			posy >= pos.y && posy <= pos.y + size.y)
+		{
+			withinPanel = true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		withinPanel = true;
+	}
+
 	posx -= pos.x;
 	posy -= pos.y;
 
 	mousePos = Vector2i(posx, posy);
-
 
 	//cout << "pos: " << posx << ", " << posy << endl;
 	for (std::map<string, TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it)
@@ -257,6 +288,8 @@ void Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy )
 		cout << "sending pos: " << posx << ", " << posy << endl;
 		bool temp = (*it).second->Update(mouseDownL, posx, posy);
 	}
+
+	return withinPanel;
 }
 
 void Panel::SendEvent( Button *b, const std::string & e )
@@ -285,10 +318,12 @@ void Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f size, 
 	buttons[name] = new Button( name, pos.x, pos.y, size.x, size.y, arial, text, this );
 }
 
-void Panel::AddCheckBox( const string &name, sf::Vector2i pos )
+void Panel::AddCheckBox( const string &name, sf::Vector2i pos, bool startChecked )
 {
 	assert( checkBoxes.count( name ) == 0 );
-	checkBoxes[name] = new CheckBox( name, pos.x, pos.y, this );
+	CheckBox *cb = new CheckBox(name, pos.x, pos.y, this);
+	cb->checked = startChecked;
+	checkBoxes[name] = cb;
 }
 
 void Panel::AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText )
@@ -327,20 +362,27 @@ bool Panel::ContainsPoint(sf::Vector2i &point)
 
 void Panel::Draw( RenderTarget *target )
 {
+	sf::View oldView = target->getView();
+
+	sf::View myView = oldView;
+	myView.setCenter(myView.getCenter() - Vector2f(pos));
+
+	target->setView(myView);
+
 	sf::RectangleShape rs;
 	rs.setSize( size );
 	rs.setFillColor( Color( 83, 102, 188) );
-	rs.setPosition( pos.x, pos.y );
+	rs.setPosition( 0, 0 );
 	target->draw( rs );
 
 	for(auto it = labels.begin(); it != labels.end(); ++it )
 	{
-		Vector2f labelPos = (*it).second->getPosition();
+		//Vector2f labelPos = (*it).second->getPosition();
 
-		(*it).second->setPosition( pos.x + labelPos.x, pos.y + labelPos.y );
+		//(*it).second->setPosition( pos.x + labelPos.x, pos.y + labelPos.y );
 		target->draw( *(*it).second );
 
-		(*it).second->setPosition( labelPos.x, labelPos.y );
+		//(*it).second->setPosition( labelPos.x, labelPos.y );
 	}
 
 	for(auto it = textBoxes.begin(); it != textBoxes.end(); ++it )
@@ -362,6 +404,8 @@ void Panel::Draw( RenderTarget *target )
 	{
 		(*it).second->Draw( target );
 	}
+
+	target->setView(oldView);
 }
 
 void Panel::SendKey( sf::Keyboard::Key k, bool shift )
@@ -783,11 +827,11 @@ bool Button::Update( bool mouseDown, int posx, int posy )
 
 void Button::Draw( RenderTarget *target )
 {
-	text.setPosition( owner->pos.x + pos.x + size.x / 2 - text.getLocalBounds().width / 2, owner->pos.y + pos.y + size.y / 2 - text.getLocalBounds().height / 2);
+	text.setPosition( pos.x + size.x / 2 - text.getLocalBounds().width / 2, pos.y + size.y / 2 - text.getLocalBounds().height / 2);
 
 	sf::RectangleShape rs;
 	rs.setSize( size );
-	rs.setPosition( owner->pos.x + pos.x, owner->pos.y + pos.y );
+	rs.setPosition( pos.x, pos.y );
 	if( clickedDown )
 		rs.setFillColor( Color::Green );
 	else
@@ -806,7 +850,7 @@ CheckBox::CheckBox( const std::string &n, int posx, int posy, Panel *own )
 
 bool CheckBox::Update( bool mouseDown, int posx, int posy )
 {
-	sf::Rect<int> r( pos.x, pos.y, SIZE, SIZE );
+	sf::Rect<int> r( pos.x, pos.y, CHECKBOXSIZE, CHECKBOXSIZE);
 	if( mouseDown )
 	{	
 		if( r.contains( sf::Vector2i( posx, posy ) ) )
@@ -844,11 +888,16 @@ bool CheckBox::Update( bool mouseDown, int posx, int posy )
 	return false;
 }
 
+//void CheckBox::SetPanelPos(const sf::Vector2i &p_pos)
+//{
+//
+//}
+
 void CheckBox::Draw( RenderTarget *target )
 {
 	sf::RectangleShape rs;
-	rs.setSize( sf::Vector2f( SIZE, SIZE ) );
-	rs.setPosition( owner->pos.x + pos.x, owner->pos.y + pos.y );
+	rs.setSize( sf::Vector2f(CHECKBOXSIZE, CHECKBOXSIZE) );
+	rs.setPosition( pos.x, pos.y );
 
 	if( clickedDown )
 	{
