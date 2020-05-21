@@ -323,6 +323,83 @@ struct Button
 	Panel *owner;
 };
 
+struct Slider
+{
+	Slider(const std::string &name, sf::Vector2i &pos,
+		int width, sf::Font &f,
+		int minValue, int maxValue, int defaultValue, 
+		Panel *panel);
+	//~Slider();
+	void Draw(sf::RenderTarget *rt);
+	bool Update();
+
+	float GetCurrFactor(const sf::Vector2i &mousePos);
+	int GetCurrValue(float factor);
+	int GetCurrX(float factor);
+	float circleRad;
+	void SetCircle(int x);
+	//int GetCurrValue(const sf::Vector2i &mousePos);
+
+	sf::Vector2i pos;
+	sf::Vector2f size;
+	std::string name;
+
+	bool IsPointOnRect(sf::Vector2f &point);
+	void SetToFactor(float factor);
+	sf::Text displayText;
+
+
+	sf::Font &myFont;
+
+	sf::CircleShape selectCircle;
+
+	int minValue;
+	int maxValue;
+	int defaultValue;
+	int currValue;
+
+	int numOptions;
+	sf::Vertex mainRect[4];
+	sf::Vertex underRect[4];
+	sf::Vertex displayRect[4];
+	int characterHeight;
+	bool clickedDown;
+	Panel *panel;
+	
+};
+
+struct Dropdown
+{
+	Dropdown(const std::string &name, sf::Vector2i &pos,
+		sf::Vector2i &size, sf::Font &f, 
+		const std::vector<std::string> &p_options, 
+		int defaultIndex, Panel *owner);
+	~Dropdown();
+	void SetOptions(const std::vector<std::string> &options);
+	void Draw(sf::RenderTarget *rt);
+	bool Update();
+
+	sf::Vector2i pos;
+	sf::Vector2f size;
+	std::string name;
+	std::vector<std::string> options;
+	std::vector<sf::Text> optionText;
+	sf::Font &myFont;
+	bool IsMouseOnOption(int i, sf::Vector2f &point);
+
+	bool expanded;
+	int selectedIndex;
+	sf::Text selectedText;
+
+	int numOptions;
+	sf::Vertex mainRect[4];
+	sf::Vertex *dropdownRects;
+	int characterHeight;
+	bool clickedDown;
+	Panel *panel;
+	int defaultIndex;
+};
+
 struct CheckBox
 {
 	CheckBox( const std::string &name, int posx, int posy, Panel *owner );
@@ -345,6 +422,11 @@ struct Panel
 	bool Update(bool mouseDownLeft, bool mouseDownRight,
 		int posx, int posy, bool checkContained = false );
 	
+	void AddSlider(const std::string &name, sf::Vector2i &pos,
+		int width, int minValue, int maxValue, int defaultValue);
+	void AddDropdown(const std::string &name, sf::Vector2i &pos,
+		sf::Vector2i &size, const std::vector<std::string> &p_options,
+		int defaultIndex );
 	void AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	void AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
@@ -372,6 +454,8 @@ struct Panel
 	std::map<std::string, sf::Text*> labels;
 	std::map<std::string, CheckBox*> checkBoxes;
 	std::map<std::string, GridSelector*> gridSelectors;
+	std::map<std::string, Dropdown*> dropdowns;
+	std::map<std::string, Slider*> sliders;
 
 	sf::Vector2i pos;
 	sf::Vector2f size;

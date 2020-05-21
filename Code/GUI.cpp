@@ -161,6 +161,348 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 	return false;
 }
 
+Slider::Slider(const std::string &n, sf::Vector2i &p_pos, int width, sf::Font &f,
+	int p_min, int p_max, int p_defaultNum, Panel *p)
+	:pos(p_pos), clickedDown(false), characterHeight(20), panel(p), name(n),
+	myFont(f), minValue( p_min ), maxValue( p_max ), defaultValue(p_defaultNum)
+{
+	size.y = 20;
+	size.x = width;
+	circleRad = 13;
+	currValue = defaultValue;
+
+	displayText.setFont(f);
+	displayText.setCharacterSize(characterHeight);
+	displayText.setFillColor(Color::White);
+
+	SetRectColor(displayRect, Color(Color::Black));
+
+	SetRectTopLeft(mainRect, size.x, size.y, Vector2f(pos));
+	SetRectColor(mainRect, Color(Color::Black));
+
+	selectCircle.setFillColor(Color::Red);
+	selectCircle.setRadius(circleRad);
+	selectCircle.setOrigin(selectCircle.getLocalBounds().width / 2,
+		selectCircle.getLocalBounds().height / 2);
+
+	float totalDiff = maxValue - minValue;
+	float factor = defaultValue / totalDiff;
+	SetToFactor(factor);
+}
+
+void Slider::SetCircle(int x)
+{
+	selectCircle.setPosition(Vector2f(x, pos.y + size.y / 2));
+}
+
+void Slider::SetToFactor(float factor)
+{
+	int currValue = GetCurrValue(factor);
+	displayText.setString(to_string(currValue));
+	int currX = GetCurrX(factor);
+	auto textBounds = displayText.getLocalBounds();
+	displayText.setOrigin(textBounds.left + textBounds.width / 2,
+		textBounds.top + textBounds.height / 2);
+	displayText.setPosition(Vector2f(currX, pos.y - textBounds.height / 2 - 10));
+	SetRectCenter(displayRect, textBounds.width + 10, textBounds.height + 10, Vector2f(displayText.getPosition()));
+	SetCircle(currX);
+}
+
+bool Slider::IsPointOnRect(sf::Vector2f &point)
+{
+	return QuadContainsPoint(mainRect, point);
+}
+
+float Slider::GetCurrFactor(const sf::Vector2i &mousePos)
+{
+	Vector2i adjustedPos = mousePos - pos;
+	if (adjustedPos.x >= size.x)
+	{
+		return 1.f;
+	}
+	else if (adjustedPos.x <= 0)
+	{
+		return 0.f;
+	}
+	else
+	{
+		float len = size.x;
+		float curr = adjustedPos.x;
+
+		float factor = curr / len;
+		return factor;
+
+		/*float totalDiff = maxValue - minValue;
+		float fValue = minValue + (totalDiff * factor);
+		int value = fValue;
+		return value;*/
+	}
+}
+
+int Slider::GetCurrValue(float factor)
+{
+	float totalDiff = maxValue - minValue;
+	float fValue = minValue + (totalDiff * factor);
+	int value = fValue;
+	return value;
+}
+
+int Slider::GetCurrX(float factor)
+{
+	float currXF = factor * size.x + pos.x;
+	int currX = currXF;
+	return currX;
+}
+
+
+bool Slider::Update()
+{
+	Vector2i mousePos = panel->GetMousePos();
+	Vector2f point(mousePos);
+	bool mouseDown = panel->IsMouseDownLeft();
+	if ( mouseDown && ( IsPointOnRect( point ) || clickedDown ))
+	{
+		clickedDown = true;
+		float currFactor = GetCurrFactor(mousePos);
+		SetToFactor(currFactor);
+	}
+	else if (!mouseDown)
+	{
+		clickedDown = false;
+	}
+
+	return true;
+}
+
+void Slider::Draw(sf::RenderTarget *target)
+{
+	target->draw(mainRect, 4, sf::Quads);
+	target->draw(underRect, 4, sf::Quads);
+	target->draw(selectCircle);
+	target->draw(displayRect, 4, sf::Quads);
+	target->draw(displayText);
+}
+
+
+Dropdown::Dropdown(const std::string &n, sf::Vector2i &p_pos,
+	sf::Vector2i &p_size, sf::Font &f,
+	const std::vector<std::string> &p_options, int p_defaultIndex, Panel *p)
+	:pos(p_pos), clickedDown(false), characterHeight(size.y- 4), size(p_size), panel(p), name(n),
+	myFont( f ), defaultIndex( p_defaultIndex ), expanded(false), selectedIndex( p_defaultIndex )
+{
+	SetOptions(p_options);
+	
+}
+
+Dropdown::~Dropdown()
+{
+	delete[] dropdownRects;
+}
+
+void Dropdown::SetOptions(const std::vector<std::string> &p_options)
+{
+	options = p_options;
+
+	numOptions = options.size();
+	optionText.resize(numOptions);
+
+	SetRectTopLeft(mainRect, size.x, size.y, Vector2f(pos));
+	SetRectColor(mainRect, Color(Color::Black));
+
+	selectedText.setString( options[defaultIndex] );
+	selectedText.setFont(myFont);
+	selectedText.setFillColor(Color::White);
+	selectedText.setCharacterSize(characterHeight);
+	auto lb = selectedText.getLocalBounds();
+	selectedText.setOrigin(lb.left, lb.top);
+	selectedText.setPosition(Vector2f(pos) + Vector2f( 4,4 ));
+	
+	dropdownRects = new Vertex[4 * numOptions];
+
+	for ( int i = 0; i < numOptions; ++i )
+	{
+		Vector2f dropPos(pos.x, pos.y + size.y * (i + 1));
+		SetRectTopLeft(dropdownRects + i * 4, size.x, size.y, dropPos);
+		SetRectColor(dropdownRects + i * 4, Color(Color::Blue));
+
+		Text &t = optionText[i];
+		t.setString(options[i]);
+		t.setFont(myFont);
+		t.setFillColor(Color::White);
+		t.setCharacterSize(characterHeight);
+		auto tlb = t.getLocalBounds();
+		t.setOrigin(tlb.left, tlb.top);
+		t.setPosition(dropPos + Vector2f(4, 4));
+	}
+}
+
+void Dropdown::Draw(sf::RenderTarget *target)
+{
+	
+
+	target->draw(mainRect, 4, sf::Quads);
+	target->draw(selectedText);
+
+	if (expanded)
+	{
+		target->draw(dropdownRects, numOptions * 4, sf::Quads);
+		for (int i = 0; i < numOptions; ++i)
+		{
+			target->draw(optionText[i]);
+		}
+	}
+
+	/*sf::RectangleShape rs;
+	rs.setSize(size);
+	rs.setPosition(pos.x, pos.y);
+	if (clickedDown)
+		rs.setFillColor(Color::Green);
+	else
+		rs.setFillColor(Color::Blue);
+
+	target->draw(rs);
+
+	target->draw(text);*/
+}
+
+bool Dropdown::IsMouseOnOption(int ind, Vector2f &point )
+{
+	return QuadContainsPoint(dropdownRects + ind * 4, point );
+}
+
+bool Dropdown::Update()
+{
+	Vector2i mousePos = panel->GetMousePos();
+	Vector2f point(mousePos);
+
+	if (expanded)
+	{
+		int highlightedIndex = -1;
+		for (int i = 0; i < numOptions; ++i)
+		{
+			if (IsMouseOnOption(i, point))
+			{
+				highlightedIndex = i;
+				break;
+			}
+		}
+
+		if (highlightedIndex < 0)
+		{
+			highlightedIndex = selectedIndex;
+		}
+
+		for (int i = 0; i < numOptions; ++i)
+		{
+			if (i == highlightedIndex)
+			{
+				SetRectColor(dropdownRects + i * 4, Color(Color::Red));
+			}
+			else
+			{
+				SetRectColor(dropdownRects + i * 4, Color(Color::Blue));
+			}
+		}
+	}
+	
+
+	bool onMainQuad = QuadContainsPoint(mainRect, point);
+
+	if (panel->IsMouseLeftReleased() && expanded )
+	{
+		for (int i = 0; i < numOptions; ++i)
+		{
+			if (IsMouseOnOption(i, point ))
+			{
+				selectedIndex = i;
+				selectedText.setString(options[selectedIndex]);
+				expanded = false;
+				clickedDown = false;
+				return true;
+			}
+		}
+
+		if (!onMainQuad)
+		{
+			expanded = false;
+			clickedDown = false;
+		}
+
+		return false;
+	}
+
+	if (panel->IsMouseLeftClicked())
+	{
+		
+		if (expanded)
+		{
+			for (int i = 0; i < numOptions; ++i)
+			{
+				if (IsMouseOnOption(i, point))
+				{
+					selectedIndex = i;
+					selectedText.setString(options[selectedIndex]);
+					expanded = false;
+					clickedDown = true;
+					return true;
+				}
+			}
+
+			clickedDown = true;
+			expanded = false;
+			return true;
+		}
+		else
+		{
+			if (onMainQuad)
+			{
+				clickedDown = true;
+				expanded = true;
+				return true;
+			}
+		}
+	}
+	else
+	{
+		clickedDown = false;
+	}
+
+	
+	/*sf::Rect<int> r(pos.x, pos.y, CHECKBOXSIZE, CHECKBOXSIZE);
+	if (mouseDown)
+	{
+		if (r.contains(sf::Vector2i(posx, posy)))
+		{
+			clickedDown = true;
+		}
+		else
+		{
+			clickedDown = false;
+		}
+	}
+	else
+	{
+		clickedDown = false;
+		if (r.contains(sf::Vector2i(posx, posy)) && clickedDown)
+		{
+			
+			checked = !checked;
+			if (checked)
+			{
+				owner->SendEvent(this, "checked");
+			}
+			else
+			{
+				owner->SendEvent(this, "unchecked");
+			}
+
+			return true;
+		}
+	}*/
+
+	return false;
+}
+
 
 Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 	:handler( h ), size( width, height ), name( n )
@@ -177,6 +519,15 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 
 Panel::~Panel()
 {
+	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = sliders.begin(); it != sliders.end(); ++it)
+	{
+		delete (*it).second;
+	}
 	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
 		delete (*it).second;
@@ -252,6 +603,24 @@ bool Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy,
 	mousePos = Vector2i(posx, posy);
 
 	//cout << "pos: " << posx << ", " << posy << endl;
+	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
+	{
+		bool temp = (*it).second->Update();
+		if (temp)
+		{
+			return withinPanel;
+		}
+	}
+
+	for (auto it = sliders.begin(); it != sliders.end(); ++it)
+	{
+		bool temp = (*it).second->Update();
+		/*if (temp)
+		{
+			return withinPanel;
+		}*/
+	}
+
 	for (std::map<string, TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
@@ -312,6 +681,20 @@ void Panel::SendEvent( CheckBox *cb, const std::string & e )
 	handler->CheckBoxCallback( cb, e );
 }
 
+void Panel::AddSlider(const std::string &name, sf::Vector2i &pos,
+	int width, int minValue, int maxValue, int defaultValue)
+{
+	assert(sliders.count(name) == 0);
+	sliders[name] = new Slider(name, pos, width, arial, minValue, maxValue, defaultValue, this);
+}
+
+void Panel::AddDropdown(const std::string &name, sf::Vector2i &pos,
+	sf::Vector2i &size, const std::vector<std::string> &p_options, int defaultIndex )
+{
+	assert(dropdowns.count(name) == 0);
+	dropdowns[name] = new Dropdown(name, pos, size, arial, p_options, defaultIndex, this);
+}
+
 void Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text )
 {
 	assert( buttons.count( name ) == 0 );
@@ -340,6 +723,8 @@ void Panel::AddLabel( const std::string &name, sf::Vector2i labelPos, int charac
 	sf::Text *t = new sf::Text( text, arial, characterHeight );
 	t->setPosition( labelPos.x, labelPos.y );
 	t->setFillColor( Color::Black );
+	auto lb = t->getLocalBounds();
+	t->setOrigin(lb.left, lb.top);
 
 	labels[name] = t;
 }
@@ -375,6 +760,8 @@ void Panel::Draw( RenderTarget *target )
 	rs.setPosition( 0, 0 );
 	target->draw( rs );
 
+	
+
 	for(auto it = labels.begin(); it != labels.end(); ++it )
 	{
 		//Vector2f labelPos = (*it).second->getPosition();
@@ -403,6 +790,16 @@ void Panel::Draw( RenderTarget *target )
 	for( auto it = gridSelectors.begin(); it != gridSelectors.end(); ++it )
 	{
 		(*it).second->Draw( target );
+	}
+
+	for (auto it = sliders.begin(); it != sliders.end(); ++it)
+	{
+		(*it).second->Draw(target);
+	}
+
+	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
+	{
+		(*it).second->Draw(target);
 	}
 
 	target->setView(oldView);
@@ -864,6 +1261,7 @@ bool CheckBox::Update( bool mouseDown, int posx, int posy )
 	}
 	else
 	{
+		
 		if( r.contains( sf::Vector2i( posx, posy ) ) && clickedDown )
 		{
 			clickedDown = false;

@@ -11363,9 +11363,8 @@ void EditSession::EditModeHandleEvent()
 						if (actor == NULL)
 							continue;
 
-						actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+						actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
 					}
-
 				
 					//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
 					//{
@@ -12711,6 +12710,12 @@ void EditSession::UpdateInputNonGame()
 
 void EditSession::EditModeUpdate()
 {
+	if (layerPanel->Update(IsMousePressed(Mouse::Left), 
+		IsMousePressed(Mouse::Right),uiMousePos.x, uiMousePos.y, true ))
+	{
+		return;
+	}
+
 	UpdateInputNonGame();
 
 	if (GetCurrInput(0).start && !GetPrevInput(0).start)
@@ -12870,10 +12875,11 @@ void EditSession::PasteModeUpdate()
 		centerPoint = Vector2i(editMouseOrigPos.x, pos.y);
 		//copiedBrush->CenterOnPoint(Vector2i(editMouseOrigPos.x, pos.y));
 	}
-
+	//GetCopiedCenter()
 	if (freeActorCopiedBrush != NULL)
 	{
 		MoveActors(centerPoint - freeActorCopiedBrush->GetCenter(), worldPos, freeActorCopiedBrush);
+		//MoveActors(centerPoint - GetCopiedCenter(), worldPos, freeActorCopiedBrush);
 		freeActorCopiedBrush->CenterOnPoint(centerPoint);
 	}
 
@@ -13217,16 +13223,22 @@ void EditSession::CreateLayerPanel()
 		reverseLayerMap[(*it).second] = (*it).first;
 	}
 
-	layerPanel->AddLabel("show", Vector2i(10, 40), 15, "show");
-	layerPanel->AddLabel("lock", Vector2i(50, 40), 15, "lock");
+	vector<string> dropdownOptions{ "testing", "shephard", "water", "terrain" };
+	layerPanel->AddDropdown("test", Vector2i(10, 20), Vector2i(150, 24), dropdownOptions, 0);
 
-	AddLayerToPanel(layerMap[LAYER_ACTOR], 0);
-	AddLayerToPanel(layerMap[LAYER_IMAGE], 1);
+	layerPanel->AddSlider("testslider", Vector2i(10, 400), 200, 0, 100, 50);
+
+	int startY = 60 + 100;
+
+	layerPanel->AddLabel("show", Vector2i(10, startY - 20), 16, "show");
+	layerPanel->AddLabel("lock", Vector2i(50, startY - 20), 16, "lock");
+
+	AddLayerToPanel(layerMap[LAYER_ACTOR], 0, startY);
+	AddLayerToPanel(layerMap[LAYER_IMAGE], 1, startY);
 }
 
-void EditSession::AddLayerToPanel( const std::string &name, int currLayerIndex)
+void EditSession::AddLayerToPanel( const std::string &name, int currLayerIndex, int startY )
 {
-	int startY = 60;
 	int label = 100;
 	int checkbox0 = 10;
 	int checkbox1 = 50;
@@ -13236,7 +13248,6 @@ void EditSession::AddLayerToPanel( const std::string &name, int currLayerIndex)
 	layerPanel->AddCheckBox(name + show, Vector2i(checkbox0, posY), true);
 	layerPanel->AddCheckBox(name + lock, Vector2i(checkbox1, posY), false);
 	layerPanel->AddLabel(name, Vector2i(label, posY), 20, name);
-	
 }
 
 void EditSession::UpdateLayerShow(EditLayer layer, bool show)

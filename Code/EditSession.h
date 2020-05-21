@@ -93,7 +93,7 @@ struct EditSession : GUIHandler, Session
 	void CreateLayerPanel();
 	void AddLayerToPanel( 
 		const std::string &name,
-		int currLayerIndex );
+		int currLayerIndex, int startY );
 	Panel *layerPanel;
 
 	enum EditLayer : int
