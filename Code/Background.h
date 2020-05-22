@@ -12,6 +12,7 @@ struct ScrollingBackground
 {
 	ScrollingBackground(Tileset *ts, int index,
 		int depthLevel, float p_scrollSpeedX = 0.f);
+	void Set(sf::Vector2f &pos, float zoom = 1.f);
 	Tileset *ts;
 	int tsIndex;
 	sf::Vector2f relPos;
@@ -28,6 +29,8 @@ struct ScrollingBackground
 	void SetTileIndex(int index);
 	void Draw(sf::RenderTarget *target);
 	void SetLeftPos(sf::Vector2f &pos);
+	sf::Vector2f extraOffset;
+	float extraZoom;
 };
 
 
@@ -36,6 +39,7 @@ struct Background
 	Background( GameSession *owner, int envLevel, int envType);
 	Background(TilesetManager *tm, const std::string &bgName);
 	Background(MainMenu *mm);
+	void Set(sf::Vector2f &pos, float zoom = 1.f);
 	~Background();
 	static std::string GetBGNameFromBGInfo(const std::string &fileName);
 	static Background *SetupFullBG(const std::string &fName,

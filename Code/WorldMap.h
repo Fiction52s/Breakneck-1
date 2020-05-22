@@ -9,6 +9,7 @@
 #include "ItemSelector.h"
 #include "SaveFile.h"
 
+struct Background;
 struct MainMenu;
 struct SaveFile;
 struct MapSelector;
@@ -162,6 +163,12 @@ struct MapSelector
 		//S_SLIDINGRIGHT,
 		S_IDLE,
 	};
+
+	bool showBG0;
+	Background *bg;
+	Background *bg2;
+	sf::Sprite newSelectTestSpr;
+	//sf::Sprite selectorTestKinSpr;
 
 	sf::Sprite nodeHighlight;
 	void UpdateHighlight();

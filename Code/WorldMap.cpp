@@ -8,6 +8,8 @@
 #include "Enemy_Shard.h"
 #include "SaveMenuScreen.h"
 
+#include "Background.h"
+
 using namespace boost::filesystem;
 using namespace sf;
 using namespace std;
@@ -643,7 +645,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			Vector2f colMiddle = Vector2f(colonySpr[selectedColony].getGlobalBounds().width / 2,
 				colonySpr[selectedColony].getGlobalBounds().height / 2);
 			Vector2f endPos = colonySpr[selectedColony].getPosition() + colMiddle;
-			float endScale = colonySpr[selectedColony].getScale().x;//.2f;
+			float endScale = colonySpr[selectedColony].getScale().x * .2f;
 
 			Vector2f startPos(960, 540);
 			float startScale = 1.f;
@@ -682,7 +684,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		Vector2f endPos = colonySpr[selectedColony].getPosition() + colMiddle;
 		
 		zoomView.setCenter(endPos);
-		zoomView.setSize(Vector2f(1920, 1080) * colonySpr[selectedColony].getScale().x);
+		zoomView.setSize(Vector2f(1920, 1080) * colonySpr[selectedColony].getScale().x * .2f);
 		break;
 	}
 		
@@ -1127,6 +1129,15 @@ int WorldMap::GetCurrSectorNumLevels()
 MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 	:centerPos( pos )
 {
+	showBG0 = true;
+	Tileset *ts_testNewSelect = mm->tilesetManager.GetTileset(
+		"selectortest2.png", 1920, 1080 );
+	ts_testNewSelect->SetSpriteTexture(newSelectTestSpr);
+
+	bg = Background::SetupFullBG("w1_01", &(mm->tilesetManager));
+	bg2 = Background::SetupFullBG("w1_02", &(mm->tilesetManager));
+	//bg->Set(Vector2f(0, 0), 1.f);
+
 	worldIndex = wIndex;
 	state = S_IDLE;
 	mainMenu = mm;
@@ -1225,6 +1236,8 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 
 MapSelector::~MapSelector()
 {
+	delete bg;
+
 	delete[] ts_bossFight;
 	delete[] ts_sectorOpen;
 
@@ -1255,6 +1268,18 @@ void MapSelector::RunSelectedMap()
 
 void MapSelector::Draw(sf::RenderTarget *target)
 {
+	if (showBG0)
+	{
+		bg->Draw(target);
+	}
+	else
+	{
+		bg2->Draw(target);
+	}
+	
+	//target->draw(newSelectTestSpr);
+	return;
+	//return;
 	sf::RenderStates rs;
 	rs.texture = ts_scrollingEnergy->texture;
 	rs.shader = &horizScrollShader1;
@@ -1300,6 +1325,20 @@ MapSector * MapSelector::GetFocusedSector()
 void MapSelector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
+	if (curr.rightShoulder && !prev.rightShoulder)
+	{
+		showBG0 = !showBG0;
+	}
+	if (showBG0)
+	{
+		bg->Update(Vector2f(960, 540));
+	}
+	else
+	{
+		bg2->Update(Vector2f(960, 540));
+	}
+	
+
 	ControllerState empty;
 	MapSector::State currSectorState = GetFocusedSector()->state;
 	if (state == S_IDLE && (currSectorState == MapSector::NORMAL || currSectorState == MapSector::COMPLETE ))
@@ -1791,7 +1830,14 @@ int MapSector::GetSelectedIndex()
 
 Level &MapSector::GetSelectedLevel()
 {
-	return sec->levels[GetSelectedIndex()];
+	int selectedIndex = GetSelectedIndex();
+	if (selectedIndex >= sec->numLevels)
+	{
+		cout << "this is a bug in getselectedlevel()" << endl;
+		//assert(0);
+		selectedIndex = 0;
+	}
+	return sec->levels[selectedIndex];
 }
 
 void MapSector::UpdateLevelStats()

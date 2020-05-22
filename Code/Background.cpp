@@ -17,6 +17,8 @@ ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	SetTileIndex(tsIndex);
 	SetLeftPos(Vector2f(0, 0));
 	scrollOffset = 0;
+	extraZoom = 1.f;
+	extraOffset = Vector2f(0, 0);
 }
 
 void ScrollingBackground::Update(const Vector2f &camPos, int updateFrames )
@@ -105,13 +107,19 @@ void ScrollingBackground::SetTileIndex(int index)
 	}
 }
 
+void ScrollingBackground::Set(sf::Vector2f &pos, float zoom)
+{
+	extraOffset = pos;
+	extraZoom = zoom;
+}
+
 void ScrollingBackground::Draw(RenderTarget *target)
 {
 	oldView.setCenter(target->getView().getCenter());
 	oldView.setSize(target->getView().getSize());
 
-	newView.setCenter(oldView.getCenter());
-	newView.setSize(Vector2f(1920, 1080));
+	newView.setCenter(oldView.getCenter() - extraOffset);
+	newView.setSize(Vector2f(1920, 1080) / extraZoom );
 	target->setView(newView);
 
 	target->draw(va, ts->texture);
@@ -188,6 +196,8 @@ string Background::GetBGNameFromBGInfo(const std::string &fileName)
 
 		//background = new Background(this, mh->envLevel, mh->envType);
 }
+
+
 
 
 Background *Background::SetupFullBG(const std::string &fName,
@@ -346,6 +356,17 @@ Background::~Background()
 	}
 }
 
+void Background::Set(Vector2f &pos, float zoom )
+{
+	bgView.setCenter(-pos);
+	bgView.setSize(1920 / zoom, 1080 / zoom);
+
+	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
+	{
+		(*it)->Set(pos, zoom);
+	}
+}
+
 void Background::DestroyTilesets()
 {
 	tm->DestroyTileset(ts_bg);
@@ -452,6 +473,7 @@ void Background::Draw(sf::RenderTarget *target)
 	target->draw(background);
 
 	target->setView(oldView);
+	//target->setView(oldView);
 
 	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
 		it != scrollingBackgrounds.end(); ++it)
@@ -459,6 +481,8 @@ void Background::Draw(sf::RenderTarget *target)
 		//might not need to mess w/ views here anymore
 		(*it)->Draw(target);
 	}
+
+	
 }
 
 void Background::Show()
