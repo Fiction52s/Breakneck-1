@@ -17,10 +17,9 @@ struct Enemy;
 struct EnemyChooseRect;
 struct ImageChooseRect;
 
-struct UIMouseUser
+struct UIMouse
 {
-	UIMouseUser(sf::Vector2i &pos)
-		:position(pos)
+	UIMouse()
 	{
 		ResetMouse();
 	}
@@ -30,16 +29,16 @@ struct UIMouseUser
 	bool IsMouseLeftReleased();
 	bool IsMouseRightClicked();
 	bool IsMouseRightReleased();
-	const sf::Vector2i & GetMousePos();
-	void UpdateMouse(bool mouseDownL,
+	void Update(bool mouseDownL,
 		bool mouseDownR,
 		sf::Vector2i &mousePos);
-	sf::Vector2i position;
+	const sf::Vector2i &GetPos() 
+	{ return mousePos; }
 	sf::Vector2f GetFloatPos()
-	{
-		return sf::Vector2f(position);
-	}
+	{return sf::Vector2f(mousePos);}
 	void ResetMouse();
+	bool IsConsumed() { return consumed; }
+	void Consume() { consumed = true; }
 private:
 	sf::Vector2i mousePos;
 	bool isMouseDownLeft;
@@ -47,6 +46,7 @@ private:
 
 	bool isMouseDownRight;
 	bool lastMouseDownRight;
+	bool consumed;
 
 };
 

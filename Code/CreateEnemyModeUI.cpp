@@ -821,7 +821,7 @@ void ImageChooseRect::UpdateSprite(int frameUpdate)
 }
 
 
-void UIMouseUser::UpdateMouse(bool mouseDownL,bool mouseDownR,sf::Vector2i &mPos)
+void UIMouse::Update(bool mouseDownL,bool mouseDownR,sf::Vector2i &mPos)
 {
 	lastMouseDownLeft = isMouseDownLeft;
 	isMouseDownLeft = mouseDownL;
@@ -829,45 +829,42 @@ void UIMouseUser::UpdateMouse(bool mouseDownL,bool mouseDownR,sf::Vector2i &mPos
 	lastMouseDownRight = isMouseDownRight;
 	isMouseDownRight = mouseDownR;
 
-	mousePos = mPos - position;
+	mousePos = mPos;
+
+	consumed = false;
 }
 
-bool UIMouseUser::IsMouseDownLeft()
+bool UIMouse::IsMouseDownLeft()
 {
 	return isMouseDownLeft;
 }
 
-bool UIMouseUser::IsMouseDownRight()
+bool UIMouse::IsMouseDownRight()
 {
 	return isMouseDownRight;
 }
 
-bool UIMouseUser::IsMouseLeftClicked()
+bool UIMouse::IsMouseLeftClicked()
 {
 	return isMouseDownLeft && !lastMouseDownLeft;
 }
 
-bool UIMouseUser::IsMouseLeftReleased()
+bool UIMouse::IsMouseLeftReleased()
 {
 	return !isMouseDownLeft && lastMouseDownLeft;
 }
 
-bool UIMouseUser::IsMouseRightClicked()
+bool UIMouse::IsMouseRightClicked()
 {
 	return isMouseDownRight && !lastMouseDownRight;
 }
 
-bool UIMouseUser::IsMouseRightReleased()
+bool UIMouse::IsMouseRightReleased()
 {
 	return !isMouseDownRight && lastMouseDownRight;
 }
 
-const sf::Vector2i & UIMouseUser::GetMousePos()
-{
-	return mousePos;
-}
-
-void UIMouseUser::ResetMouse()
+void UIMouse::ResetMouse()
 {
 	isMouseDownLeft = false;
 	lastMouseDownLeft = false;

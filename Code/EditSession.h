@@ -55,6 +55,32 @@ struct EnemyChooser;
 
 struct PlayerTracker;
 
+static UIMouse MOUSE;
+
+//struct EditorMode
+//{
+//	virtual bool OnLeftClick() { return false; }
+//	virtual bool OnLeftReleased() { return false; }
+//	virtual bool OnRightClick() { return false; }
+//	virtual bool OnRightReleased() { return false; }
+//	virtual bool Update() { return false; }
+//	virtual bool HandleEvent(sf::Event ev) { return false; }
+//	virtual bool HandleKeyPress(sf::Event::KeyEvent k) {return false;}
+//	virtual bool HandleKeyRelease(sf::Event::KeyEvent k) { return false; }
+//};
+//
+//struct EditMode : EditorMode
+//{
+//	bool OnLeftClick();
+//	bool OnLeftReleased();
+//	bool OnRightClick();
+//	bool OnRightReleased();
+//	bool Update();
+//	bool HandleEvent(sf::Event ev);
+//	bool HandleKeyPress(sf::Event::KeyEvent k );
+//	bool HandleKeyRelease(sf::Event::KeyEvent k );
+//};
+
 struct EditSession : GUIHandler, Session
 {
 	enum Emode : int
@@ -78,6 +104,8 @@ struct EditSession : GUIHandler, Session
 		EMODE_Count
 	};
 
+	std::list<Panel*> activePanels;
+	Panel *focusedPanel;
 	std::map<int, void(EditSession::*)()> handleEventFunctions;
 	std::map<int, void(EditSession::*)()> updateModeFunctions;
 	void HandleEventFunc(int m);
@@ -159,26 +187,6 @@ struct EditSession : GUIHandler, Session
 	void TestPlayerModeUpdate();
 	void TestPlayerMode();
 
-	
-
-	/*QuadTree *terrainBGTree;
-	QuadTree *specialTerrainTree;
-	QuadTree *barrierTree;
-	QuadTree * terrainTree;
-	QuadTree * enemyTree;
-	QuadTree * grassTree;
-	QuadTree * gateTree;
-	QuadTree * itemTree;
-	QuadTree *envPlantTree;
-	QuadTree *specterTree;
-	QuadTree *inverseEdgeTree;
-	QuadTree *staticItemTree;
-	QuadTree *railEdgeTree;
-	QuadTree *railDrawTree;
-	QuadTree *activeItemTree;
-	QuadTree *activeEnemyItemTree;
-	QuadTree *airTriggerTree;*/
-
 	EditSession(MainMenu *p_mainMenu,
 		const boost::filesystem::path &p_filePath );
 	
@@ -246,74 +254,6 @@ struct EditSession : GUIHandler, Session
 
 	PolyPtr GetPolygon(int index );
 	RailPtr GetRail(int index);
-
-
-	/*std::list<ParamsInfo> worldEnemyNames[8];
-	void AddWorldEnemy(const std::string &name, int w,
-		ParamsLoader *pLoader,
-		ParamsMaker* pmGround, ParamsMaker *pmAir,
-		sf::Vector2i &off, 
-		sf::Vector2i &size,
-		bool w_mon,
-		bool w_level,
-		bool w_path,
-		bool w_loop,
-		int p_numLevels = 1,
-		Tileset *ts = NULL,
-		int tileIndex = 0);
-	void AddBasicGroundWorldEnemy(const std::string &name, int w,
-		sf::Vector2i &off,
-		sf::Vector2i &size,
-		bool w_mon,
-		bool w_level,
-		bool w_path,
-		bool w_loop,
-		int p_numLevels = 1,
-		Tileset *ts = NULL,
-		int tileIndex = 0);
-	void AddBasicRailWorldEnemy(const std::string &name, int w,
-		sf::Vector2i &off,
-		sf::Vector2i &size,
-		bool w_mon,
-		bool w_level,
-		bool w_path,
-		bool w_loop,
-		int p_numLevels = 1,
-		Tileset *ts = NULL,
-		int tileIndex = 0);
-	void AddBasicAerialWorldEnemy(const std::string &name, int w,
-		sf::Vector2i &off,
-		sf::Vector2i &size,
-		bool w_mon,
-		bool w_level,
-		bool w_path,
-		bool w_loop,
-		int p_numLevels = 1,
-		Tileset *ts = NULL,
-		int tileIndex = 0);
-	void AddExtraEnemy(const std::string &name,
-		ParamsLoader *pLoader,
-		ParamsMaker *pmGround, ParamsMaker *pmAir,
-		sf::Vector2i &off,
-		sf::Vector2i &size,
-		bool w_mon,
-		bool w_level,
-		bool w_path,
-		bool w_loop,
-		int p_numLevels = 1,
-		Tileset *ts = NULL,
-		int tileIndex = 0);
-	std::list<ParamsInfo> extraEnemyNames;
-
-	void AddGeneralEnemies();
-	void AddW1Enemies();
-	void AddW2Enemies();
-	void AddW3Enemies();
-	void AddW4Enemies();
-	void AddW5Enemies();
-	void AddW6Enemies();*/
-	
-	
 
 	std::list<Enemy*> allCurrEnemies;
 	void EndTestMode();
@@ -737,6 +677,7 @@ struct EditSession : GUIHandler, Session
 	void CreateTerrainModeUpdate();
 	void CreateRailsModeUpdate();
 	void EditModeUpdate();
+	bool EditModeUpdateUI();
 	void PasteModeUpdate();
 	void CreateEnemyModeUpdate();
 	//void PausedModeUpdate();
@@ -989,7 +930,8 @@ struct EditSession : GUIHandler, Session
 
 	int setLevelCurrent;
 
-	
+	//create enmy mode vars
+
 	
 };
 

@@ -51,6 +51,570 @@ EditSession * EditSession::currSession = NULL;
 
 #define TIMESTEP (1.0 / 60.0)
 
+//bool EditMode::OnLeftClick()
+//{
+//
+//}
+//
+//bool EditMode::OnLeftReleased()
+//{
+//
+//}
+//
+//bool EditMode::OnRightClick()
+//{
+//
+//}
+//
+//bool EditMode::OnRightReleased()
+//{
+//
+//}
+//
+//bool EditMode::Update()
+//{
+//
+//}
+//
+//bool EditMode::HandleKeyPress(sf::Event::KeyEvent key)
+//{
+//	/*if (showPanel != NULL)
+//	{
+//		showPanel->SendKey(ev.key.code, ev.key.shift);
+//		break;
+//	}*/
+//
+//	if (key.code == Keyboard::Tilde)
+//	{
+//		SetMode(SET_LEVEL);
+//		setLevelCurrent = 1;
+//		showPanel = NULL;
+//	}
+//
+//	if (key.code == Keyboard::C && ev.key.control)
+//	{
+//		//copiedBrush = selectedBrush->Copy();
+//		if (copiedBrush != NULL)
+//		{
+//			copiedBrush->Destroy();
+//			delete copiedBrush;
+//			copiedBrush = NULL;
+//		}
+//		if (freeActorCopiedBrush != NULL)
+//		{
+//			freeActorCopiedBrush->Destroy();
+//			delete freeActorCopiedBrush;
+//			freeActorCopiedBrush = NULL;
+//		}
+//
+//		copiedBrush = selectedBrush->CopyTerrainAndAttachedActors();
+//		freeActorCopiedBrush = selectedBrush->CopyFreeActors();
+//	}
+//	else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
+//	{
+//		UndoMostRecentAction();
+//	}
+//	else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
+//	{
+//		RedoMostRecentUndoneAction();
+//	}
+//	else if (ev.key.code == Keyboard::V && ev.key.control)
+//	{
+//		if (copiedBrush != NULL || freeActorCopiedBrush != NULL)
+//		{
+//			Vector2i pos = Vector2i(worldPos.x, worldPos.y);
+//
+//			if (copiedBrush != NULL)
+//			{
+//				copiedBrush->CenterOnPoint(pos);
+//			}
+//
+//			if (freeActorCopiedBrush != NULL)
+//			{
+//
+//				freeActorCopiedBrush->CenterOnPoint(pos);
+//
+//				ActorPtr actor;
+//				for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
+//				{
+//					actor = (*it)->GetAsActor();
+//					if (actor == NULL)
+//						continue;
+//
+//					actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+//				}
+//
+//				//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
+//				//{
+//				//	actor = (*it)->GetAsActor();
+//				//	if (actor == NULL)
+//				//		continue;
+//
+//				//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+//				//}
+//			}
+//
+//			// (pos - copiedBrush->GetCenter());
+//			editMouseGrabPos = pos;
+//			editMouseOrigPos = pos;
+//
+//			SetMode(PASTE);
+//			if (complexPaste != NULL)
+//			{
+//				delete complexPaste;
+//				complexPaste = NULL;
+//			}
+//
+//			pasteAxis = -1;
+//			ClearSelectedBrush();
+//		}
+//	}
+//	else if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
+//	{
+//		if (CountSelectedPoints() > 0)
+//		{
+//			TryRemoveSelectedPoints();
+//		}
+//		else
+//		{
+//			TryRemoveSelectedObjects();
+//		}
+//	}
+//	else if (ev.key.code == Keyboard::N)
+//	{
+//		if (selectedBrush->IsEmpty())
+//			break;
+//
+//		SetMode(TRANSFORM);
+//
+//		if (selectedBrush->IsSingleDecor())
+//		{
+//			//transformTools->Reset(selectedBrush->GetCenterF(),
+//			//	selectedBrush->GetTerrainSize());
+//			DecorPtr sDec = selectedBrush->objects.front()->GetAsDecor();
+//			//FloatRect localBounds = sDec->spr.getLocalBounds();
+//			//Vector2f size(localBounds.width * sDec->spr.getScale().x,
+//			//	localBounds.height * sDec->spr.getScale().y);
+//			transformTools->Reset(sDec->center, Vector2f(sDec->tileSize.x * sDec->scale.x,
+//				sDec->tileSize.y * sDec->scale.y), sDec->rotation);
+//		}
+//		//else if (selectedBrush->IsSingleFlyPoly())
+//		//{
+//
+//		//	
+//		//}
+//		else
+//		{
+//			transformTools->Reset(selectedBrush->GetCenterF(),
+//				selectedBrush->GetTerrainSize());
+//		}
+//
+//		//selectedBrush->Scale(1.05f);
+//		PolyPtr p;
+//		DecorPtr dec;
+//		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+//		{
+//			p = (*it)->GetAsTerrain();
+//			if (p != NULL)
+//			{
+//				p->SetRenderMode(TerrainPolygon::RENDERMODE_TRANSFORM);
+//				//p->SoftReset();
+//				//p->Scale(1.05f);
+//				//p->Scale(1.1f);
+//				//p->Finalize();
+//			}
+//			dec = (*it)->GetAsDecor();
+//			if (dec != NULL)
+//			{
+//				dec->transformOffset = dec->center - transformTools->GetCenter();
+//				dec->StartTransformation();
+//
+//			}
+//
+//		}
+//	}
+//	else if (ev.key.code == Keyboard::M)
+//	{
+//		//selectedBrush->Rotate(-1.f);
+//		/*PolyPtr p;
+//		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+//		{
+//		p = (*it)->GetAsTerrain();
+//		if (p != NULL)
+//		{
+//		p->Scale(.95f);
+//		}
+//
+//		}*/
+//	}
+//	else if (ev.key.code == Keyboard::R)
+//	{
+//		ShowGrass(true);
+//	}
+//	else if (ev.key.code == Keyboard::P)
+//	{
+//		SetSelectedTerrainLayer(1);
+//	}
+//	else if (ev.key.code == Keyboard::O)
+//	{
+//		SetSelectedTerrainLayer(0);
+//	}
+//	else if (ev.key.code == Keyboard::E)
+//	{
+//		GridSelectPop("terraintypeselect");
+//
+//		if (selectedBrush->objects.size() > 0)
+//		{
+//			ModifyTerrainTypeAction * modifyAction = new ModifyTerrainTypeAction(
+//				selectedBrush, tempGridX, tempGridY);
+//			modifyAction->Perform();
+//			AddDoneAction(modifyAction);
+//		}
+//
+//		currTerrainWorld = tempGridX;
+//		currTerrainVar = tempGridY;
+//		UpdateCurrTerrainType();
+//	}
+//	else if (ev.key.code == Keyboard::I)
+//	{
+//		if (ev.key.shift)
+//		{
+//			MoveTopBorder(borderMove);
+//		}
+//		else
+//		{
+//			MoveTopBorder(-borderMove);
+//		}
+//	}
+//	else if (ev.key.code == Keyboard::J)
+//	{
+//		if (ev.key.shift)
+//		{
+//			MoveLeftBorder(borderMove);
+//		}
+//		else
+//		{
+//			MoveLeftBorder(-borderMove);
+//		}
+//	}
+//	else if (ev.key.code == Keyboard::L)
+//	{
+//		if (ev.key.shift)
+//		{
+//			MoveRightBorder(-borderMove);
+//		}
+//		else
+//		{
+//			MoveRightBorder(borderMove);
+//		}
+//	}
+//	else if (ev.key.code == Keyboard::Num1)
+//	{
+//		gameCam = !gameCam;
+//		if (!gameCam)
+//		{
+//			//why is this here?
+//			panning = false;
+//		}
+//	}
+//	else if (ev.key.code == Keyboard::H)
+//	{
+//		playerTracker->SwitchOnOff();
+//	}
+//}
+//
+//bool EditMode::HandleKeyRelease(Keyboard::Key k)
+//{
+//
+//}
+//
+//bool EditMode::HandleEvent(sf::Event ev)
+//{
+//	switch (ev.type)
+//	{
+//	case Event::KeyPressed:
+//	{
+//		if (showPanel != NULL)
+//		{
+//			showPanel->SendKey(ev.key.code, ev.key.shift);
+//			break;
+//		}
+//
+//		if (ev.key.code == Keyboard::Tilde)
+//		{
+//			SetMode(SET_LEVEL);
+//			setLevelCurrent = 1;
+//			showPanel = NULL;
+//		}
+//
+//		if (ev.key.code == Keyboard::C && ev.key.control)
+//		{
+//			//copiedBrush = selectedBrush->Copy();
+//			if (copiedBrush != NULL)
+//			{
+//				copiedBrush->Destroy();
+//				delete copiedBrush;
+//				copiedBrush = NULL;
+//			}
+//			if (freeActorCopiedBrush != NULL)
+//			{
+//				freeActorCopiedBrush->Destroy();
+//				delete freeActorCopiedBrush;
+//				freeActorCopiedBrush = NULL;
+//			}
+//
+//			copiedBrush = selectedBrush->CopyTerrainAndAttachedActors();
+//			freeActorCopiedBrush = selectedBrush->CopyFreeActors();
+//		}
+//		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
+//		{
+//			UndoMostRecentAction();
+//		}
+//		else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
+//		{
+//			RedoMostRecentUndoneAction();
+//		}
+//		else if (ev.key.code == Keyboard::V && ev.key.control)
+//		{
+//			if (copiedBrush != NULL || freeActorCopiedBrush != NULL)
+//			{
+//				Vector2i pos = Vector2i(worldPos.x, worldPos.y);
+//
+//				if (copiedBrush != NULL)
+//				{
+//					copiedBrush->CenterOnPoint(pos);
+//				}
+//
+//				if (freeActorCopiedBrush != NULL)
+//				{
+//
+//					freeActorCopiedBrush->CenterOnPoint(pos);
+//
+//					ActorPtr actor;
+//					for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
+//					{
+//						actor = (*it)->GetAsActor();
+//						if (actor == NULL)
+//							continue;
+//
+//						actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+//					}
+//
+//					//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
+//					//{
+//					//	actor = (*it)->GetAsActor();
+//					//	if (actor == NULL)
+//					//		continue;
+//
+//					//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+//					//}
+//				}
+//
+//				// (pos - copiedBrush->GetCenter());
+//				editMouseGrabPos = pos;
+//				editMouseOrigPos = pos;
+//
+//				SetMode(PASTE);
+//				if (complexPaste != NULL)
+//				{
+//					delete complexPaste;
+//					complexPaste = NULL;
+//				}
+//
+//				pasteAxis = -1;
+//				ClearSelectedBrush();
+//			}
+//		}
+//		else if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
+//		{
+//			if (CountSelectedPoints() > 0)
+//			{
+//				TryRemoveSelectedPoints();
+//			}
+//			else
+//			{
+//				TryRemoveSelectedObjects();
+//			}
+//		}
+//		else if (ev.key.code == Keyboard::N)
+//		{
+//			if (selectedBrush->IsEmpty())
+//				break;
+//
+//			SetMode(TRANSFORM);
+//
+//			if (selectedBrush->IsSingleDecor())
+//			{
+//				//transformTools->Reset(selectedBrush->GetCenterF(),
+//				//	selectedBrush->GetTerrainSize());
+//				DecorPtr sDec = selectedBrush->objects.front()->GetAsDecor();
+//				//FloatRect localBounds = sDec->spr.getLocalBounds();
+//				//Vector2f size(localBounds.width * sDec->spr.getScale().x,
+//				//	localBounds.height * sDec->spr.getScale().y);
+//				transformTools->Reset(sDec->center, Vector2f(sDec->tileSize.x * sDec->scale.x,
+//					sDec->tileSize.y * sDec->scale.y), sDec->rotation);
+//			}
+//			//else if (selectedBrush->IsSingleFlyPoly())
+//			//{
+//
+//			//	
+//			//}
+//			else
+//			{
+//				transformTools->Reset(selectedBrush->GetCenterF(),
+//					selectedBrush->GetTerrainSize());
+//			}
+//
+//			//selectedBrush->Scale(1.05f);
+//			PolyPtr p;
+//			DecorPtr dec;
+//			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+//			{
+//				p = (*it)->GetAsTerrain();
+//				if (p != NULL)
+//				{
+//					p->SetRenderMode(TerrainPolygon::RENDERMODE_TRANSFORM);
+//					//p->SoftReset();
+//					//p->Scale(1.05f);
+//					//p->Scale(1.1f);
+//					//p->Finalize();
+//				}
+//				dec = (*it)->GetAsDecor();
+//				if (dec != NULL)
+//				{
+//					dec->transformOffset = dec->center - transformTools->GetCenter();
+//					dec->StartTransformation();
+//
+//				}
+//
+//			}
+//		}
+//		else if (ev.key.code == Keyboard::M)
+//		{
+//			//selectedBrush->Rotate(-1.f);
+//			/*PolyPtr p;
+//			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+//			{
+//			p = (*it)->GetAsTerrain();
+//			if (p != NULL)
+//			{
+//			p->Scale(.95f);
+//			}
+//
+//			}*/
+//		}
+//		else if (ev.key.code == Keyboard::R)
+//		{
+//			ShowGrass(true);
+//		}
+//		else if (ev.key.code == Keyboard::P)
+//		{
+//			SetSelectedTerrainLayer(1);
+//		}
+//		else if (ev.key.code == Keyboard::O)
+//		{
+//			SetSelectedTerrainLayer(0);
+//		}
+//		else if (ev.key.code == Keyboard::E)
+//		{
+//			GridSelectPop("terraintypeselect");
+//
+//			if (selectedBrush->objects.size() > 0)
+//			{
+//				ModifyTerrainTypeAction * modifyAction = new ModifyTerrainTypeAction(
+//					selectedBrush, tempGridX, tempGridY);
+//				modifyAction->Perform();
+//				AddDoneAction(modifyAction);
+//			}
+//
+//			currTerrainWorld = tempGridX;
+//			currTerrainVar = tempGridY;
+//			UpdateCurrTerrainType();
+//		}
+//		else if (ev.key.code == Keyboard::I)
+//		{
+//			if (ev.key.shift)
+//			{
+//				MoveTopBorder(borderMove);
+//			}
+//			else
+//			{
+//				MoveTopBorder(-borderMove);
+//			}
+//		}
+//		else if (ev.key.code == Keyboard::J)
+//		{
+//			if (ev.key.shift)
+//			{
+//				MoveLeftBorder(borderMove);
+//			}
+//			else
+//			{
+//				MoveLeftBorder(-borderMove);
+//			}
+//		}
+//		else if (ev.key.code == Keyboard::L)
+//		{
+//			if (ev.key.shift)
+//			{
+//				MoveRightBorder(-borderMove);
+//			}
+//			else
+//			{
+//				MoveRightBorder(borderMove);
+//			}
+//		}
+//		else if (ev.key.code == Keyboard::Num1)
+//		{
+//			gameCam = !gameCam;
+//			if (!gameCam)
+//			{
+//				//why is this here?
+//				panning = false;
+//			}
+//		}
+//		else if (ev.key.code == Keyboard::H)
+//		{
+//			playerTracker->SwitchOnOff();
+//		}
+//		break;
+//	}
+//	case Event::KeyReleased:
+//	{
+//		if (ev.key.code == Keyboard::R)
+//		{
+//			ShowGrass(false);
+//		}
+//		else if (ev.key.code == Keyboard::N)
+//		{
+//			/*PolyPtr p;
+//			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+//			{
+//			p = (*it)->GetAsTerrain();
+//			if (p != NULL)
+//			{
+//			p->CompleteTransformation();
+//			}
+//			}*/
+//		}
+//		else if (ev.key.code == Keyboard::M)
+//		{
+//			/*PolyPtr p;
+//			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+//			{
+//			p = (*it)->GetAsTerrain();
+//			if (p != NULL)
+//			{
+//			p->CompleteTransformation();
+//			}
+//			}*/
+//		}
+//		break;
+//	}
+//	}
+//}
+
+
 void EditSession::SetTrackingEnemy(ActorType *type, int level)
 {
 	if (trackingEnemyParams == NULL)
@@ -2701,6 +3265,8 @@ int EditSession::Run()
 				}
 			}
 		}
+
+		MOUSE.Update(Mouse::isButtonPressed(Mouse::Left), Mouse::isButtonPressed(Mouse::Right), pixelPos);
 
 		HandleEvents();
 
@@ -10926,38 +11492,6 @@ void EditSession::CreateTerrainModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			if (showPanel != NULL)
-			{
-				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
-				break;
-			}
-		}
-
-		//cout << "just clicked is now true" << endl;
-		//justClicked = true;
-
-		justCompletedPolyWithClick = false; //just make this always false here.
-
-		break;
-	}
-	case Event::MouseButtonReleased:
-	{
-		
-
-		if (showPanel != NULL)
-		{
-			showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
-		}
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (showPanel != NULL)
@@ -11055,14 +11589,6 @@ void EditSession::CreateTerrainModeHandleEvent()
 	{
 		break;
 	}
-	case Event::LostFocus:
-	{
-		break;
-	}
-	case Event::GainedFocus:
-	{
-		break;
-	}
 	}
 }
 
@@ -11070,32 +11596,6 @@ void EditSession::CreateRailsModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			if (showPanel != NULL)
-			{
-				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
-				break;
-			}
-
-			justCompletedRailWithClick = false;
-		}
-		break;
-	}
-	case Event::MouseButtonReleased:
-	{
-		if (showPanel != NULL)
-		{
-			showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
-		}
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (showPanel != NULL)
@@ -11135,14 +11635,6 @@ void EditSession::CreateRailsModeHandleEvent()
 	{
 		break;
 	}
-	case Event::LostFocus:
-	{
-		break;
-	}
-	case Event::GainedFocus:
-	{
-		break;
-	}
 	}
 }
 
@@ -11150,127 +11642,6 @@ void EditSession::EditModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			if (layerPanel->Update(true, false, uiMousePos.x, uiMousePos.y,true) )
-			{
-				break;
-			}
-
-			if (showPanel != NULL)
-			{
-				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
-				break;
-			}
-
-			if (showGrass)
-				break;
-
-			bool emptysp = true;
-			bool specialMode = GetSpecialTerrainMode() != 0;
-
-			if (!(editMouseDownMove || editMouseDownBox))
-			{
-				if (emptysp && !specialMode && PointSelectActor(worldPos))
-				{
-					emptysp = false;
-				}
-
-				if (emptysp && !specialMode && PointSelectRail(worldPos))
-				{
-					emptysp = false;
-				}
-
-				if (emptysp && PointSelectTerrain(worldPos))
-				{
-					emptysp = false;
-				}
-
-				if (emptysp && !specialMode && PointSelectDecor(worldPos))
-				{
-					emptysp = false;
-				}
-
-				editMouseGrabPos = Vector2i(worldPos.x, worldPos.y);
-				pointGrabPos = Vector2i(worldPos.x, worldPos.y);
-				editMouseOrigPos = editMouseGrabPos;
-
-				if (emptysp)
-				{
-					editMouseDownMove = false;
-					editMouseDownBox = true;
-					editStartMove = false;
-					grabbedActor = NULL;
-					grabbedPoint = NULL;
-					grabbedImage = NULL;
-				}
-				else
-				{
-					editMouseDownMove = true;
-					editStartMove = false;
-					editMouseDownBox = false;
-				}
-			}
-		}
-		break;
-	}
-	case Event::MouseButtonReleased:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			if (layerPanel->Update(false, false, uiMousePos.x, uiMousePos.y, true) )
-			{
-				break;
-			}
-
-			if (showPanel != NULL)
-			{
-				showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
-				break;
-			}
-
-			if (editStartMove)
-			{
-				bool done = false;
-				if (AnchorSelectedEnemies() )
-				{
-					done = true;
-				}
-
-				if (!done)
-				{
-					PerformMovePointsAction();
-					//NewPerformMovePointsAction();
-				}
-
-				TryCompleteSelectedMove();
-			}
-			else if (editMouseDownBox)
-			{
-				TryBoxSelect();
-			}
-
-			editMouseDownBox = false;
-			editMouseDownMove = false;
-			editStartMove = false;
-			grabbedActor = NULL;
-			grabbedPoint = NULL;
-			grabbedImage = NULL;
-
-			UpdateGrass();
-		}
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
-	case Event::MouseMoved:
-	{
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (showPanel != NULL)
@@ -11550,14 +11921,6 @@ void EditSession::EditModeHandleEvent()
 		}
 		break;
 	}
-	case Event::LostFocus:
-	{
-		break;
-	}
-	case Event::GainedFocus:
-	{
-		break;
-	}
 	}
 }
 
@@ -11628,6 +11991,8 @@ void EditSession::CreateEnemyModeHandleEvent()
 	}
 	case Event::MouseButtonReleased:
 	{
+		createEnemyModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
+
 		if (ev.mouseButton.button == Mouse::Left)
 		{
 			/*if (showPanel != NULL)
@@ -11660,19 +12025,16 @@ void EditSession::CreateEnemyModeHandleEvent()
 			editMouseDownBox = false;
 			editMouseDownMove = false;
 			editStartMove = false;
-			//editMouseDownBox = false;
-			//editMouseDownMove = false;
-			//editStartMove = false;
 			grabbedActor = NULL;
 			grabbedImage = NULL;
 			//grabbedPoint = NULL;
-
-			//UpdateGrass();
 		}
 		break;
 	}
-	case Event::MouseWheelMoved:
+	case Event::MouseMoved:
 	{
+		//ev.mousebu
+		createEnemyModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
 		break;
 	}
 	case Event::KeyPressed:
@@ -12461,8 +12823,21 @@ void EditSession::UpdateMode()
 void EditSession::CreateTerrainModeUpdate()
 {
 	if (showPanel != NULL)
-		return;
-
+	{
+		/*if (showPanel->Update(true, false, uiMousePos.x, uiMousePos.y))
+		{
+			MOUSE.Consume();
+		}*/
+		//showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
+	}
+	else
+	{
+		if (MOUSE.IsMouseLeftClicked())
+		{
+			justCompletedPolyWithClick = false;
+		}
+	}
+	
 	UpdateInputNonGame();
 
 	if (GetCurrInput(0).start && !GetPrevInput(0).start)
@@ -12535,6 +12910,11 @@ void EditSession::CreateTerrainModeUpdate()
 
 void EditSession::CreateRailsModeUpdate()
 {
+	if (MOUSE.IsMouseLeftClicked())
+	{
+		justCompletedRailWithClick = false;
+	}
+	
 	if (showPanel != NULL)
 		return;
 
@@ -12609,8 +12989,226 @@ void EditSession::UpdateInputNonGame()
 	//-------------------------
 }
 
+bool EditSession::EditModeUpdateUI()
+{
+	if (MOUSE.IsMouseLeftClicked())
+	{
+		bool done = false;
+		if (layerPanel->Update(true, false, uiMousePos.x, uiMousePos.y, true))
+		{
+			return true;
+		}
+
+		if (showPanel != NULL)
+		{
+			showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
+		}
+
+		bool emptysp = true;
+		bool specialMode = GetSpecialTerrainMode() != 0;
+
+		if ( !showGrass && !(editMouseDownMove || editMouseDownBox))
+		{
+			if (emptysp && !specialMode && PointSelectActor(worldPos))
+			{
+				emptysp = false;
+			}
+
+			if (emptysp && !specialMode && PointSelectRail(worldPos))
+			{
+				emptysp = false;
+			}
+
+			if (emptysp && PointSelectTerrain(worldPos))
+			{
+				emptysp = false;
+			}
+
+			if (emptysp && !specialMode && PointSelectDecor(worldPos))
+			{
+				emptysp = false;
+			}
+
+			editMouseGrabPos = Vector2i(worldPos.x, worldPos.y);
+			pointGrabPos = Vector2i(worldPos.x, worldPos.y);
+			editMouseOrigPos = editMouseGrabPos;
+
+			if (emptysp)
+			{
+				editMouseDownMove = false;
+				editMouseDownBox = true;
+				editStartMove = false;
+				grabbedActor = NULL;
+				grabbedPoint = NULL;
+				grabbedImage = NULL;
+			}
+			else
+			{
+				editMouseDownMove = true;
+				editStartMove = false;
+				editMouseDownBox = false;
+			}
+		}
+	}
+	else if (MOUSE.IsMouseLeftReleased())
+	{
+		if (ev.mouseButton.button == Mouse::Left)
+		{
+			if (layerPanel->Update(false, false, uiMousePos.x, uiMousePos.y, true))
+			{
+				break;
+			}
+
+			if (showPanel != NULL)
+			{
+				showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
+				break;
+			}
+
+			if (editStartMove)
+			{
+				bool done = false;
+				if (AnchorSelectedEnemies())
+				{
+					done = true;
+				}
+
+				if (!done)
+				{
+					PerformMovePointsAction();
+					//NewPerformMovePointsAction();
+				}
+
+				TryCompleteSelectedMove();
+			}
+			else if (editMouseDownBox)
+			{
+				TryBoxSelect();
+			}
+
+			editMouseDownBox = false;
+			editMouseDownMove = false;
+			editStartMove = false;
+			grabbedActor = NULL;
+			grabbedPoint = NULL;
+			grabbedImage = NULL;
+
+			UpdateGrass();
+		}
+	}
+}
+
 void EditSession::EditModeUpdate()
 {
+	if (MOUSE.IsMouseLeftClicked())
+	{
+		bool done = false;
+		if (layerPanel->Update(true, false, uiMousePos.x, uiMousePos.y, true))
+		{
+			return;
+		}
+
+		if (showPanel != NULL)
+		{
+			showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
+		}
+
+		if (showGrass)
+			break;
+
+		bool emptysp = true;
+		bool specialMode = GetSpecialTerrainMode() != 0;
+
+		if (!(editMouseDownMove || editMouseDownBox))
+		{
+			if (emptysp && !specialMode && PointSelectActor(worldPos))
+			{
+				emptysp = false;
+			}
+
+			if (emptysp && !specialMode && PointSelectRail(worldPos))
+			{
+				emptysp = false;
+			}
+
+			if (emptysp && PointSelectTerrain(worldPos))
+			{
+				emptysp = false;
+			}
+
+			if (emptysp && !specialMode && PointSelectDecor(worldPos))
+			{
+				emptysp = false;
+			}
+
+			editMouseGrabPos = Vector2i(worldPos.x, worldPos.y);
+			pointGrabPos = Vector2i(worldPos.x, worldPos.y);
+			editMouseOrigPos = editMouseGrabPos;
+
+			if (emptysp)
+			{
+				editMouseDownMove = false;
+				editMouseDownBox = true;
+				editStartMove = false;
+				grabbedActor = NULL;
+				grabbedPoint = NULL;
+				grabbedImage = NULL;
+			}
+			else
+			{
+				editMouseDownMove = true;
+				editStartMove = false;
+				editMouseDownBox = false;
+			}
+		}
+	}
+	else if (MOUSE.IsMouseLeftReleased())
+	{
+		if (ev.mouseButton.button == Mouse::Left)
+		{
+			if (layerPanel->Update(false, false, uiMousePos.x, uiMousePos.y, true))
+			{
+				break;
+			}
+
+			if (showPanel != NULL)
+			{
+				showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
+				break;
+			}
+
+			if (editStartMove)
+			{
+				bool done = false;
+				if (AnchorSelectedEnemies())
+				{
+					done = true;
+				}
+
+				if (!done)
+				{
+					PerformMovePointsAction();
+					//NewPerformMovePointsAction();
+				}
+
+				TryCompleteSelectedMove();
+			}
+			else if (editMouseDownBox)
+			{
+				TryBoxSelect();
+			}
+
+			editMouseDownBox = false;
+			editMouseDownMove = false;
+			editStartMove = false;
+			grabbedActor = NULL;
+			grabbedPoint = NULL;
+			grabbedImage = NULL;
+
+			UpdateGrass();
+		}
+	}
+
 	if (layerPanel->Update(IsMousePressed(Mouse::Left), 
 		IsMousePressed(Mouse::Right),uiMousePos.x, uiMousePos.y, true ))
 	{
