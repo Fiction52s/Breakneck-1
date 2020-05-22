@@ -9213,6 +9213,8 @@ void EditSession::SetMode(Emode m)
 		break;
 	}
 
+	ResetActivePanels();
+
 	switch (mode)
 	{
 	case CREATE_ENEMY:
@@ -9230,7 +9232,6 @@ void EditSession::SetMode(Emode m)
 		break;
 	case EDIT:
 	{
-		ResetActivePanels();
 		AddActivePanel(layerPanel);
 		editClock.restart();
 		editCurrentTime = 0;
