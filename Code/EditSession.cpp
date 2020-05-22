@@ -2704,7 +2704,7 @@ int EditSession::Run()
 
 		DrawDecorFront();
 
-		if( zoomMultiple > 7 && !gameCam )
+		if( zoomMultiple > 7 && ( !gameCam || mode != TEST_PLAYER ) )
 		{
 			playerZoomIcon.setPosition( player->GetFloatPos() );
 			playerZoomIcon.setScale( zoomMultiple * 1.8, zoomMultiple * 1.8 );
@@ -10788,7 +10788,8 @@ void EditSession::HandleEvents()
 		}
 		//ones that aren't specific to mode
 
-		if (mode != PAUSED && mode != SELECT_MODE)
+		
+		if (mode != PAUSED && mode != SELECT_MODE )
 		{
 			switch (ev.type)
 			{
@@ -10796,7 +10797,7 @@ void EditSession::HandleEvents()
 			{
 				if (ev.mouseButton.button == Mouse::Button::Middle)
 				{
-					if (!gameCam)
+					if (!gameCam || mode != TEST_PLAYER)
 					{
 						ClearMostRecentError();
 						panning = true;
@@ -10806,7 +10807,9 @@ void EditSession::HandleEvents()
 				}
 				else if (ev.mouseButton.button == Mouse::Button::Right)
 				{
-					if (mode != PASTE)
+					//the create enemy thing needs to be fixed so that select_mode doesnt work
+					//whenever you are over UI
+					if (mode != PASTE && mode != CREATE_ENEMY)
 					{
 						menuDownStored = mode;
 						mode = SELECT_MODE;
@@ -10827,7 +10830,7 @@ void EditSession::HandleEvents()
 			}
 			case Event::MouseWheelMoved:
 			{
-				if (!gameCam)
+				if (!gameCam || mode != TEST_PLAYER)
 				{
 					if (showGraph && HoldingControl())
 					{
@@ -11535,6 +11538,7 @@ void EditSession::EditModeHandleEvent()
 			gameCam = !gameCam;
 			if (!gameCam)
 			{
+				//why is this here?
 				panning = false;
 			}
 		}
@@ -12785,6 +12789,14 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 			if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_WORLDCHOOSER)
 			{
 				createEnemyModeUI->SetActiveLibraryWorld(icRect->tileIndex);
+			}
+		}
+		else if (eventType == ChooseRect::E_RIGHTCLICKED)
+		{
+			EnemyChooseRect *ceRect = cr->GetAsEnemyChooseRect();
+			if (ceRect != NULL && ceRect->rectIdentity == ChooseRect::I_ENEMYLIBRARY)
+			{
+				createEnemyModeUI->ExpandVariation(ceRect);
 			}
 		}
 	}

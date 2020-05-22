@@ -31,7 +31,7 @@ struct UIMouseUser
 	bool IsMouseRightClicked();
 	bool IsMouseRightReleased();
 	const sf::Vector2i & GetMousePos();
-	void Update(bool mouseDownL,
+	void UpdateMouse(bool mouseDownL,
 		bool mouseDownR,
 		sf::Vector2i &mousePos);
 	sf::Vector2i position;
@@ -72,7 +72,9 @@ struct ChooseRect
 		E_CLICKED,
 		E_FOCUSED,
 		E_UNFOCUSED,
-		E_RELEASED
+		E_RELEASED,
+		E_RIGHTCLICKED,
+		E_RIGHTRELEASED,
 	};
 
 	enum ChooseRectIdentity : int
@@ -160,9 +162,22 @@ struct ImageChooseRect : ChooseRect
 	std::string decorName;
 };
 
+struct CreateEnemyModeUI;
 
-
-
+struct EnemyVariationSelector : UIMouseUser
+{
+	EnemyVariationSelector();
+	bool Update();
+	EnemyChooseRect *centerRect;
+	EnemyChooseRect *varRects[6];
+	int numVariations;
+	void SetType(ActorType *type );
+	void Draw(sf::RenderTarget *target);
+	void SetPosition(sf::Vector2f &pos);
+	sf::Vertex testQuad[4];
+	sf::Vertex enemyQuads[28];
+	bool show;
+};
 
 
 
@@ -171,6 +186,9 @@ struct CreateEnemyModeUI
 {
 	CreateEnemyModeUI();
 	~CreateEnemyModeUI();
+
+	EnemyVariationSelector *varSelector;
+	void ExpandVariation(EnemyChooseRect *ceRect);
 	//std::vector<ChooseRect> myRects;
 	std::vector<EnemyChooseRect> allEnemyRects;
 	

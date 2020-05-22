@@ -8,6 +8,66 @@
 using namespace std;
 using namespace sf;
 
+EnemyVariationSelector::EnemyVariationSelector()
+	:UIMouseUser( Vector2i( 0, 0 ))
+{
+	numVariations = 0;
+	Color testColor = Color::White;
+	//testColor.a = 100;
+	SetRectColor( testQuad, testColor);
+	centerRect = new EnemyChooseRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
+		enemyQuads, this, Vector2f(0, 0), NULL, 0);
+	
+	show = false;
+}
+
+bool EnemyVariationSelector::Update()
+{
+	if (!show)
+		return false;
+
+	Vector2i mousePos = GetMousePos();
+	if (QuadContainsPoint(testQuad, Vector2f(mousePos)))
+	{
+		centerRect->Update();
+		SetRectColor(testQuad, Color(Color::Green));
+		return true;
+	}
+	else
+	{
+		SetRectColor(testQuad, Color(Color::White));
+	}
+
+	return false;
+}
+
+void EnemyVariationSelector::SetType(ActorType *type)
+{
+	centerRect->SetType(type, 1);
+	centerRect->SetShown(true);
+}
+
+void EnemyVariationSelector::SetPosition(sf::Vector2f &pos)
+{
+	centerRect->SetPosition(pos);
+	SetRectCenter(testQuad, 300, 300, pos);
+
+	for (int i = 0; i < numVariations; ++i)
+	{
+
+	}
+}
+
+void EnemyVariationSelector::Draw(RenderTarget *target)
+{
+	if (show)
+	{
+		target->draw(testQuad, 4, sf::Quads);
+		target->draw(enemyQuads, 4, sf::Quads);
+		centerRect->Draw(target);
+	}
+}
+
 
 ChooseRectContainer::ChooseRectContainer(Vector2i &pos, Vector2f &p_size)
 	:UIMouseUser(pos), size( p_size )
@@ -27,6 +87,7 @@ void ChooseRectContainer::Draw(sf::RenderTarget *target)
 
 CreateEnemyModeUI::CreateEnemyModeUI()
 {
+	varSelector = new EnemyVariationSelector;
 	activeHotbarSize = 0;
 
 	hotbarEnemies.reserve(8);
@@ -186,6 +247,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 CreateEnemyModeUI::~CreateEnemyModeUI()
 {
+	delete varSelector;
 	delete topbarCont;
 	delete libCont;
 	//delete topbarPanel;
@@ -283,9 +345,20 @@ void CreateEnemyModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &m
 		return;
 	}
 	
+	if (varSelector->show)
+	{
+		varSelector->UpdateMouse(mouseDownL, mouseDownR, mPos);
+		if (varSelector->Update())
+		{
+			return;
+		}
+	}
+	
 
-	topbarCont->Update(mouseDownL, mouseDownR, mPos);
-	libCont->Update(mouseDownL, mouseDownR, mPos);
+	topbarCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
+	libCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
+
+	
 
 	librarySearchRect->Update();
 
@@ -397,10 +470,21 @@ void CreateEnemyModeUI::Draw(sf::RenderTarget *target)
 		}
 	}
 
+	varSelector->Draw(target);
+
 	target->setView(oldView);
 }
 
-
+void CreateEnemyModeUI::ExpandVariation(EnemyChooseRect *ceRect)
+{
+	if (!varSelector->show)
+	{
+		varSelector->show = true;
+		//setpos needs to be before settype
+		varSelector->SetPosition(ceRect->GetGlobalPos());
+		varSelector->SetType(ceRect->enemyParams->type);
+	}
+}
 
 
 ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType, Vertex *v, UIMouseUser *mUser, float size, sf::Vector2f &p_pos)
@@ -491,8 +575,6 @@ bool ChooseRect::Update()
 				edit->ChooseRectEvent(this, E_FOCUSED);
 			}
 			focused = true;
-			
-			
 		}
 		else
 		{
@@ -502,6 +584,15 @@ bool ChooseRect::Update()
 				edit->ChooseRectEvent(this, E_UNFOCUSED);
 			}
 			focused = false;
+		}
+	}
+
+	if (mouseUser->IsMouseRightClicked())
+	{
+		if (bounds.contains(mousePos))
+		{
+			edit->ChooseRectEvent(this, E_RIGHTCLICKED);
+			//focused = true;
 		}
 	}
 	
@@ -730,7 +821,7 @@ void ImageChooseRect::UpdateSprite(int frameUpdate)
 }
 
 
-void UIMouseUser::Update(bool mouseDownL,bool mouseDownR,sf::Vector2i &mPos)
+void UIMouseUser::UpdateMouse(bool mouseDownL,bool mouseDownR,sf::Vector2i &mPos)
 {
 	lastMouseDownLeft = isMouseDownLeft;
 	isMouseDownLeft = mouseDownL;

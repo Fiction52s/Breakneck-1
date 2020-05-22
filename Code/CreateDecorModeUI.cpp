@@ -246,8 +246,8 @@ void CreateDecorModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &m
 	}
 
 
-	topbarCont->Update(mouseDownL, mouseDownR, mPos);
-	libCont->Update(mouseDownL, mouseDownR, mPos);
+	topbarCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
+	libCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
 
 	librarySearchRect->Update();
 
