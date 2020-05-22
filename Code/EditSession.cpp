@@ -2867,7 +2867,7 @@ void EditSession::LoadAndResave()
 
 int EditSession::Run()
 {
-	
+	focusedPanel = NULL;
 
 	SetupHitboxManager();
 	SetupSoundManager();
@@ -12989,120 +12989,12 @@ void EditSession::UpdateInputNonGame()
 	//-------------------------
 }
 
-bool EditSession::EditModeUpdateUI()
-{
-	if (MOUSE.IsMouseLeftClicked())
-	{
-		bool done = false;
-		if (layerPanel->Update(true, false, uiMousePos.x, uiMousePos.y, true))
-		{
-			return true;
-		}
-
-		if (showPanel != NULL)
-		{
-			showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
-		}
-
-		bool emptysp = true;
-		bool specialMode = GetSpecialTerrainMode() != 0;
-
-		if ( !showGrass && !(editMouseDownMove || editMouseDownBox))
-		{
-			if (emptysp && !specialMode && PointSelectActor(worldPos))
-			{
-				emptysp = false;
-			}
-
-			if (emptysp && !specialMode && PointSelectRail(worldPos))
-			{
-				emptysp = false;
-			}
-
-			if (emptysp && PointSelectTerrain(worldPos))
-			{
-				emptysp = false;
-			}
-
-			if (emptysp && !specialMode && PointSelectDecor(worldPos))
-			{
-				emptysp = false;
-			}
-
-			editMouseGrabPos = Vector2i(worldPos.x, worldPos.y);
-			pointGrabPos = Vector2i(worldPos.x, worldPos.y);
-			editMouseOrigPos = editMouseGrabPos;
-
-			if (emptysp)
-			{
-				editMouseDownMove = false;
-				editMouseDownBox = true;
-				editStartMove = false;
-				grabbedActor = NULL;
-				grabbedPoint = NULL;
-				grabbedImage = NULL;
-			}
-			else
-			{
-				editMouseDownMove = true;
-				editStartMove = false;
-				editMouseDownBox = false;
-			}
-		}
-	}
-	else if (MOUSE.IsMouseLeftReleased())
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			if (layerPanel->Update(false, false, uiMousePos.x, uiMousePos.y, true))
-			{
-				break;
-			}
-
-			if (showPanel != NULL)
-			{
-				showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
-				break;
-			}
-
-			if (editStartMove)
-			{
-				bool done = false;
-				if (AnchorSelectedEnemies())
-				{
-					done = true;
-				}
-
-				if (!done)
-				{
-					PerformMovePointsAction();
-					//NewPerformMovePointsAction();
-				}
-
-				TryCompleteSelectedMove();
-			}
-			else if (editMouseDownBox)
-			{
-				TryBoxSelect();
-			}
-
-			editMouseDownBox = false;
-			editMouseDownMove = false;
-			editStartMove = false;
-			grabbedActor = NULL;
-			grabbedPoint = NULL;
-			grabbedImage = NULL;
-
-			UpdateGrass();
-		}
-	}
-}
 
 void EditSession::EditModeUpdate()
 {
 	if (MOUSE.IsMouseLeftClicked())
 	{
-		bool done = false;
+		/*bool done = false;
 		if (layerPanel->Update(true, false, uiMousePos.x, uiMousePos.y, true))
 		{
 			return;
@@ -13111,16 +13003,13 @@ void EditSession::EditModeUpdate()
 		if (showPanel != NULL)
 		{
 			showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
-		}
+		}*/
 
-		if (showGrass)
-			break;
-
-		bool emptysp = true;
-		bool specialMode = GetSpecialTerrainMode() != 0;
-
-		if (!(editMouseDownMove || editMouseDownBox))
+		if (!showGrass && !(editMouseDownMove || editMouseDownBox))
 		{
+			bool emptysp = true;
+			bool specialMode = GetSpecialTerrainMode() != 0;
+
 			if (emptysp && !specialMode && PointSelectActor(worldPos))
 			{
 				emptysp = false;
@@ -13164,56 +13053,54 @@ void EditSession::EditModeUpdate()
 	}
 	else if (MOUSE.IsMouseLeftReleased())
 	{
-		if (ev.mouseButton.button == Mouse::Left)
+		
+		/*if (layerPanel->Update(false, false, uiMousePos.x, uiMousePos.y, true))
 		{
-			if (layerPanel->Update(false, false, uiMousePos.x, uiMousePos.y, true))
-			{
-				break;
-			}
-
-			if (showPanel != NULL)
-			{
-				showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
-				break;
-			}
-
-			if (editStartMove)
-			{
-				bool done = false;
-				if (AnchorSelectedEnemies())
-				{
-					done = true;
-				}
-
-				if (!done)
-				{
-					PerformMovePointsAction();
-					//NewPerformMovePointsAction();
-				}
-
-				TryCompleteSelectedMove();
-			}
-			else if (editMouseDownBox)
-			{
-				TryBoxSelect();
-			}
-
-			editMouseDownBox = false;
-			editMouseDownMove = false;
-			editStartMove = false;
-			grabbedActor = NULL;
-			grabbedPoint = NULL;
-			grabbedImage = NULL;
-
-			UpdateGrass();
+			break;
 		}
+
+		if (showPanel != NULL)
+		{
+			showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
+			break;
+		}*/
+
+		if (editStartMove)
+		{
+			bool done = false;
+			if (AnchorSelectedEnemies())
+			{
+				done = true;
+			}
+
+			if (!done)
+			{
+				PerformMovePointsAction();
+				//NewPerformMovePointsAction();
+			}
+
+			TryCompleteSelectedMove();
+		}
+		else if (editMouseDownBox)
+		{
+			TryBoxSelect();
+		}
+
+		editMouseDownBox = false;
+		editMouseDownMove = false;
+		editStartMove = false;
+		grabbedActor = NULL;
+		grabbedPoint = NULL;
+		grabbedImage = NULL;
+
+		UpdateGrass();
 	}
 
-	if (layerPanel->Update(IsMousePressed(Mouse::Left), 
+	/*if (layerPanel->Update(IsMousePressed(Mouse::Left), 
 		IsMousePressed(Mouse::Right),uiMousePos.x, uiMousePos.y, true ))
 	{
 		return;
-	}
+	}*/
 
 	UpdateInputNonGame();
 

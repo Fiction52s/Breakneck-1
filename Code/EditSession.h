@@ -55,7 +55,7 @@ struct EnemyChooser;
 
 struct PlayerTracker;
 
-static UIMouse MOUSE;
+
 
 //struct EditorMode
 //{
@@ -677,7 +677,6 @@ struct EditSession : GUIHandler, Session
 	void CreateTerrainModeUpdate();
 	void CreateRailsModeUpdate();
 	void EditModeUpdate();
-	bool EditModeUpdateUI();
 	void PasteModeUpdate();
 	void CreateEnemyModeUpdate();
 	//void PausedModeUpdate();

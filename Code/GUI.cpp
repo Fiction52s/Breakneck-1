@@ -1403,3 +1403,54 @@ void ErrorBar::CreateErrorTable()
 	errorStringVec[ERR_LINES_INTERSECT_IN_PROGRESS] = "Polygon in progress intersects itself";
 	
 }
+
+void UIMouse::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &mPos)
+{
+	lastMouseDownLeft = isMouseDownLeft;
+	isMouseDownLeft = mouseDownL;
+
+	lastMouseDownRight = isMouseDownRight;
+	isMouseDownRight = mouseDownR;
+
+	mousePos = mPos;
+
+	consumed = false;
+}
+
+bool UIMouse::IsMouseDownLeft()
+{
+	return isMouseDownLeft;
+}
+
+bool UIMouse::IsMouseDownRight()
+{
+	return isMouseDownRight;
+}
+
+bool UIMouse::IsMouseLeftClicked()
+{
+	return isMouseDownLeft && !lastMouseDownLeft;
+}
+
+bool UIMouse::IsMouseLeftReleased()
+{
+	return !isMouseDownLeft && lastMouseDownLeft;
+}
+
+bool UIMouse::IsMouseRightClicked()
+{
+	return isMouseDownRight && !lastMouseDownRight;
+}
+
+bool UIMouse::IsMouseRightReleased()
+{
+	return !isMouseDownRight && lastMouseDownRight;
+}
+
+void UIMouse::ResetMouse()
+{
+	isMouseDownLeft = false;
+	lastMouseDownLeft = false;
+	isMouseDownRight = false;
+	lastMouseDownRight = false;
+}

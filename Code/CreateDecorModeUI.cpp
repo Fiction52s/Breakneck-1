@@ -53,7 +53,7 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	Tileset *ts_worldChoosers = edit->GetSizedTileset("worldselector_64x64.png");
 
-	librarySearchRect = new ImageChooseRect(ChooseRect::I_SEARCHDECORLIBRARY, extraQuads, topbarCont,
+	librarySearchRect = new ImageChooseRect(ChooseRect::I_SEARCHDECORLIBRARY, extraQuads,// topbarCont,
 		Vector2f(10, 10), ts_worldChoosers, 8);
 	librarySearchRect->SetShown(true);
 	librarySearchRect->Init();
@@ -72,7 +72,7 @@ CreateDecorModeUI::CreateDecorModeUI()
 		{
 			for (auto indexIt = (*it).second.begin(); indexIt != (*it).second.end(); ++indexIt)
 			{
-				allImageRects.push_back(ImageChooseRect(ChooseRect::I_DECORLIBRARY, allImageQuads + i * 4, libCont,
+				allImageRects.push_back(ImageChooseRect(ChooseRect::I_DECORLIBRARY, allImageQuads + i * 4,// libCont,
 					Vector2f(0, 0), edit->decorTSMap[(*it).first], (*indexIt)));
 				allImageRects.back().decorName = (*it).first;
 				++i;
@@ -82,7 +82,7 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	for (int i = 0; i < totalHotbarCount; ++i)
 	{
-		hotbarImages.push_back(ImageChooseRect(ChooseRect::I_DECORHOTBAR, hotbarQuads + i * 4, topbarCont,
+		hotbarImages.push_back(ImageChooseRect(ChooseRect::I_DECORHOTBAR, hotbarQuads + i * 4, //topbarCont,
 			Vector2f(extraHotbarSpacing + 10 + i * (hotbarRectSize + hotbarSpacing), 10),
 			NULL, 0));
 		hotbarImages[i].SetShown(false);
@@ -95,7 +95,7 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	for (int i = 0; i < numEnemyWorlds; ++i)
 	{
-		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4, libCont,
+		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4, //libCont,
 			Vector2f(i * (worldSize + worldSpacing) + 10, 10), ts_worldChoosers, i));
 		worldSelectRects[i].SetShown(false);
 		worldSelectRects[i].Init();
@@ -182,8 +182,8 @@ void CreateDecorModeUI::SetShown(bool s)
 	show = s;
 	if (!show)
 	{
-		topbarCont->ResetMouse();
-		libCont->ResetMouse();
+		//topbarCont->ResetMouse();
+		//libCont->ResetMouse();
 	}
 }
 
@@ -246,8 +246,8 @@ void CreateDecorModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &m
 	}
 
 
-	topbarCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
-	libCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
+	//topbarCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
+	//libCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
 
 	librarySearchRect->Update();
 

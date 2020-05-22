@@ -50,13 +50,16 @@ private:
 
 };
 
-struct ChooseRectContainer : UIMouseUser
+static UIMouse MOUSE;
+
+struct ChooseRectContainer
 {
 	ChooseRectContainer(sf::Vector2i &pos,
 		sf::Vector2f &size);
 	void Draw(sf::RenderTarget *target);
 	sf::Vertex quad[4];
 	sf::Vector2f size;
+	sf::Vector2f pos;
 };
 
 struct ChooseRect
@@ -95,7 +98,7 @@ struct ChooseRect
 
 	ChooseRect( ChooseRectIdentity ident, 
 		ChooseRectType crType, 
-		sf::Vertex *v, UIMouseUser *mouseUser,
+		sf::Vertex *v,
 	float size, sf::Vector2f &pos );
 	void Init();
 	sf::Vector2f GetGlobalPos();
@@ -114,7 +117,6 @@ struct ChooseRect
 	bool show;
 	void SetShown(bool s);
 	void SetActive(bool a);
-	UIMouseUser *mouseUser;
 	bool focused;
 
 	sf::Color mouseOverColor;
@@ -125,8 +127,7 @@ struct ActorParams;
 struct EnemyChooseRect : ChooseRect
 {
 	EnemyChooseRect( ChooseRectIdentity ident, 
-		sf::Vertex *v,
-		UIMouseUser *mouseUser, sf::Vector2f &position,
+		sf::Vertex *v, sf::Vector2f &position,
 		ActorType * type, 
 		int level );
 	void UpdateSprite(int frameUpdate);
@@ -146,8 +147,7 @@ struct EditorDecorInfo;
 struct ImageChooseRect : ChooseRect
 {
 	ImageChooseRect( ChooseRectIdentity ident, 
-		sf::Vertex *v,
-		UIMouseUser *mouseUser, sf::Vector2f &position,
+		sf::Vertex *v, sf::Vector2f &position,
 		Tileset *ts, int tileIndex );
 
 	void UpdateSprite(int frameUpdate);
@@ -164,7 +164,7 @@ struct ImageChooseRect : ChooseRect
 
 struct CreateEnemyModeUI;
 
-struct EnemyVariationSelector : UIMouseUser
+struct EnemyVariationSelector
 {
 	EnemyVariationSelector();
 	bool Update();
