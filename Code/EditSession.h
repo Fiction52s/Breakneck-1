@@ -106,6 +106,7 @@ struct EditSession : GUIHandler, Session
 
 	void ResetActivePanels();
 	void AddActivePanel(Panel *p);
+	void RemoveActivePanel(Panel *p);
 	std::list<Panel*> activePanels;
 	Panel *focusedPanel;
 	std::map<int, void(EditSession::*)()> handleEventFunctions;
@@ -315,8 +316,8 @@ struct EditSession : GUIHandler, Session
 	static bool PointOnLine(V2d &pos, V2d &p0, V2d &p1, double width = 0);
 	void TryPlaceGatePoint(V2d &pos);
 	
-	void RegularOKButton();
-	void RegularCreatePathButton();
+	void RegularOKButton(Panel *p );
+	void RegularCreatePathButton( Panel *p );
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
@@ -526,8 +527,6 @@ struct EditSession : GUIHandler, Session
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType );
 
-	Panel *showPanel;	
-
 	Panel * CreatePopupPanel( const std::string &p );
 	Panel *messagePopup;
 	Panel *errorPopup;
@@ -551,7 +550,6 @@ struct EditSession : GUIHandler, Session
 	void SetEnemyGridIndex( GridSelector *gs,
 		int x, int y,
 		const std::string &eName );
-	void SetActiveEnemyGrid(int i);
 
 	int IsRemovePointsOkay();
 

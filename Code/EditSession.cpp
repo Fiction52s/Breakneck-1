@@ -51,570 +51,6 @@ EditSession * EditSession::currSession = NULL;
 
 #define TIMESTEP (1.0 / 60.0)
 
-//bool EditMode::OnLeftClick()
-//{
-//
-//}
-//
-//bool EditMode::OnLeftReleased()
-//{
-//
-//}
-//
-//bool EditMode::OnRightClick()
-//{
-//
-//}
-//
-//bool EditMode::OnRightReleased()
-//{
-//
-//}
-//
-//bool EditMode::Update()
-//{
-//
-//}
-//
-//bool EditMode::HandleKeyPress(sf::Event::KeyEvent key)
-//{
-//	/*if (showPanel != NULL)
-//	{
-//		showPanel->SendKey(ev.key.code, ev.key.shift);
-//		break;
-//	}*/
-//
-//	if (key.code == Keyboard::Tilde)
-//	{
-//		SetMode(SET_LEVEL);
-//		setLevelCurrent = 1;
-//		showPanel = NULL;
-//	}
-//
-//	if (key.code == Keyboard::C && ev.key.control)
-//	{
-//		//copiedBrush = selectedBrush->Copy();
-//		if (copiedBrush != NULL)
-//		{
-//			copiedBrush->Destroy();
-//			delete copiedBrush;
-//			copiedBrush = NULL;
-//		}
-//		if (freeActorCopiedBrush != NULL)
-//		{
-//			freeActorCopiedBrush->Destroy();
-//			delete freeActorCopiedBrush;
-//			freeActorCopiedBrush = NULL;
-//		}
-//
-//		copiedBrush = selectedBrush->CopyTerrainAndAttachedActors();
-//		freeActorCopiedBrush = selectedBrush->CopyFreeActors();
-//	}
-//	else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
-//	{
-//		UndoMostRecentAction();
-//	}
-//	else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
-//	{
-//		RedoMostRecentUndoneAction();
-//	}
-//	else if (ev.key.code == Keyboard::V && ev.key.control)
-//	{
-//		if (copiedBrush != NULL || freeActorCopiedBrush != NULL)
-//		{
-//			Vector2i pos = Vector2i(worldPos.x, worldPos.y);
-//
-//			if (copiedBrush != NULL)
-//			{
-//				copiedBrush->CenterOnPoint(pos);
-//			}
-//
-//			if (freeActorCopiedBrush != NULL)
-//			{
-//
-//				freeActorCopiedBrush->CenterOnPoint(pos);
-//
-//				ActorPtr actor;
-//				for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-//				{
-//					actor = (*it)->GetAsActor();
-//					if (actor == NULL)
-//						continue;
-//
-//					actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
-//				}
-//
-//				//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-//				//{
-//				//	actor = (*it)->GetAsActor();
-//				//	if (actor == NULL)
-//				//		continue;
-//
-//				//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
-//				//}
-//			}
-//
-//			// (pos - copiedBrush->GetCenter());
-//			editMouseGrabPos = pos;
-//			editMouseOrigPos = pos;
-//
-//			SetMode(PASTE);
-//			if (complexPaste != NULL)
-//			{
-//				delete complexPaste;
-//				complexPaste = NULL;
-//			}
-//
-//			pasteAxis = -1;
-//			ClearSelectedBrush();
-//		}
-//	}
-//	else if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
-//	{
-//		if (CountSelectedPoints() > 0)
-//		{
-//			TryRemoveSelectedPoints();
-//		}
-//		else
-//		{
-//			TryRemoveSelectedObjects();
-//		}
-//	}
-//	else if (ev.key.code == Keyboard::N)
-//	{
-//		if (selectedBrush->IsEmpty())
-//			break;
-//
-//		SetMode(TRANSFORM);
-//
-//		if (selectedBrush->IsSingleDecor())
-//		{
-//			//transformTools->Reset(selectedBrush->GetCenterF(),
-//			//	selectedBrush->GetTerrainSize());
-//			DecorPtr sDec = selectedBrush->objects.front()->GetAsDecor();
-//			//FloatRect localBounds = sDec->spr.getLocalBounds();
-//			//Vector2f size(localBounds.width * sDec->spr.getScale().x,
-//			//	localBounds.height * sDec->spr.getScale().y);
-//			transformTools->Reset(sDec->center, Vector2f(sDec->tileSize.x * sDec->scale.x,
-//				sDec->tileSize.y * sDec->scale.y), sDec->rotation);
-//		}
-//		//else if (selectedBrush->IsSingleFlyPoly())
-//		//{
-//
-//		//	
-//		//}
-//		else
-//		{
-//			transformTools->Reset(selectedBrush->GetCenterF(),
-//				selectedBrush->GetTerrainSize());
-//		}
-//
-//		//selectedBrush->Scale(1.05f);
-//		PolyPtr p;
-//		DecorPtr dec;
-//		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-//		{
-//			p = (*it)->GetAsTerrain();
-//			if (p != NULL)
-//			{
-//				p->SetRenderMode(TerrainPolygon::RENDERMODE_TRANSFORM);
-//				//p->SoftReset();
-//				//p->Scale(1.05f);
-//				//p->Scale(1.1f);
-//				//p->Finalize();
-//			}
-//			dec = (*it)->GetAsDecor();
-//			if (dec != NULL)
-//			{
-//				dec->transformOffset = dec->center - transformTools->GetCenter();
-//				dec->StartTransformation();
-//
-//			}
-//
-//		}
-//	}
-//	else if (ev.key.code == Keyboard::M)
-//	{
-//		//selectedBrush->Rotate(-1.f);
-//		/*PolyPtr p;
-//		for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-//		{
-//		p = (*it)->GetAsTerrain();
-//		if (p != NULL)
-//		{
-//		p->Scale(.95f);
-//		}
-//
-//		}*/
-//	}
-//	else if (ev.key.code == Keyboard::R)
-//	{
-//		ShowGrass(true);
-//	}
-//	else if (ev.key.code == Keyboard::P)
-//	{
-//		SetSelectedTerrainLayer(1);
-//	}
-//	else if (ev.key.code == Keyboard::O)
-//	{
-//		SetSelectedTerrainLayer(0);
-//	}
-//	else if (ev.key.code == Keyboard::E)
-//	{
-//		GridSelectPop("terraintypeselect");
-//
-//		if (selectedBrush->objects.size() > 0)
-//		{
-//			ModifyTerrainTypeAction * modifyAction = new ModifyTerrainTypeAction(
-//				selectedBrush, tempGridX, tempGridY);
-//			modifyAction->Perform();
-//			AddDoneAction(modifyAction);
-//		}
-//
-//		currTerrainWorld = tempGridX;
-//		currTerrainVar = tempGridY;
-//		UpdateCurrTerrainType();
-//	}
-//	else if (ev.key.code == Keyboard::I)
-//	{
-//		if (ev.key.shift)
-//		{
-//			MoveTopBorder(borderMove);
-//		}
-//		else
-//		{
-//			MoveTopBorder(-borderMove);
-//		}
-//	}
-//	else if (ev.key.code == Keyboard::J)
-//	{
-//		if (ev.key.shift)
-//		{
-//			MoveLeftBorder(borderMove);
-//		}
-//		else
-//		{
-//			MoveLeftBorder(-borderMove);
-//		}
-//	}
-//	else if (ev.key.code == Keyboard::L)
-//	{
-//		if (ev.key.shift)
-//		{
-//			MoveRightBorder(-borderMove);
-//		}
-//		else
-//		{
-//			MoveRightBorder(borderMove);
-//		}
-//	}
-//	else if (ev.key.code == Keyboard::Num1)
-//	{
-//		gameCam = !gameCam;
-//		if (!gameCam)
-//		{
-//			//why is this here?
-//			panning = false;
-//		}
-//	}
-//	else if (ev.key.code == Keyboard::H)
-//	{
-//		playerTracker->SwitchOnOff();
-//	}
-//}
-//
-//bool EditMode::HandleKeyRelease(Keyboard::Key k)
-//{
-//
-//}
-//
-//bool EditMode::HandleEvent(sf::Event ev)
-//{
-//	switch (ev.type)
-//	{
-//	case Event::KeyPressed:
-//	{
-//		if (showPanel != NULL)
-//		{
-//			showPanel->SendKey(ev.key.code, ev.key.shift);
-//			break;
-//		}
-//
-//		if (ev.key.code == Keyboard::Tilde)
-//		{
-//			SetMode(SET_LEVEL);
-//			setLevelCurrent = 1;
-//			showPanel = NULL;
-//		}
-//
-//		if (ev.key.code == Keyboard::C && ev.key.control)
-//		{
-//			//copiedBrush = selectedBrush->Copy();
-//			if (copiedBrush != NULL)
-//			{
-//				copiedBrush->Destroy();
-//				delete copiedBrush;
-//				copiedBrush = NULL;
-//			}
-//			if (freeActorCopiedBrush != NULL)
-//			{
-//				freeActorCopiedBrush->Destroy();
-//				delete freeActorCopiedBrush;
-//				freeActorCopiedBrush = NULL;
-//			}
-//
-//			copiedBrush = selectedBrush->CopyTerrainAndAttachedActors();
-//			freeActorCopiedBrush = selectedBrush->CopyFreeActors();
-//		}
-//		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
-//		{
-//			UndoMostRecentAction();
-//		}
-//		else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
-//		{
-//			RedoMostRecentUndoneAction();
-//		}
-//		else if (ev.key.code == Keyboard::V && ev.key.control)
-//		{
-//			if (copiedBrush != NULL || freeActorCopiedBrush != NULL)
-//			{
-//				Vector2i pos = Vector2i(worldPos.x, worldPos.y);
-//
-//				if (copiedBrush != NULL)
-//				{
-//					copiedBrush->CenterOnPoint(pos);
-//				}
-//
-//				if (freeActorCopiedBrush != NULL)
-//				{
-//
-//					freeActorCopiedBrush->CenterOnPoint(pos);
-//
-//					ActorPtr actor;
-//					for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-//					{
-//						actor = (*it)->GetAsActor();
-//						if (actor == NULL)
-//							continue;
-//
-//						actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
-//					}
-//
-//					//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-//					//{
-//					//	actor = (*it)->GetAsActor();
-//					//	if (actor == NULL)
-//					//		continue;
-//
-//					//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
-//					//}
-//				}
-//
-//				// (pos - copiedBrush->GetCenter());
-//				editMouseGrabPos = pos;
-//				editMouseOrigPos = pos;
-//
-//				SetMode(PASTE);
-//				if (complexPaste != NULL)
-//				{
-//					delete complexPaste;
-//					complexPaste = NULL;
-//				}
-//
-//				pasteAxis = -1;
-//				ClearSelectedBrush();
-//			}
-//		}
-//		else if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
-//		{
-//			if (CountSelectedPoints() > 0)
-//			{
-//				TryRemoveSelectedPoints();
-//			}
-//			else
-//			{
-//				TryRemoveSelectedObjects();
-//			}
-//		}
-//		else if (ev.key.code == Keyboard::N)
-//		{
-//			if (selectedBrush->IsEmpty())
-//				break;
-//
-//			SetMode(TRANSFORM);
-//
-//			if (selectedBrush->IsSingleDecor())
-//			{
-//				//transformTools->Reset(selectedBrush->GetCenterF(),
-//				//	selectedBrush->GetTerrainSize());
-//				DecorPtr sDec = selectedBrush->objects.front()->GetAsDecor();
-//				//FloatRect localBounds = sDec->spr.getLocalBounds();
-//				//Vector2f size(localBounds.width * sDec->spr.getScale().x,
-//				//	localBounds.height * sDec->spr.getScale().y);
-//				transformTools->Reset(sDec->center, Vector2f(sDec->tileSize.x * sDec->scale.x,
-//					sDec->tileSize.y * sDec->scale.y), sDec->rotation);
-//			}
-//			//else if (selectedBrush->IsSingleFlyPoly())
-//			//{
-//
-//			//	
-//			//}
-//			else
-//			{
-//				transformTools->Reset(selectedBrush->GetCenterF(),
-//					selectedBrush->GetTerrainSize());
-//			}
-//
-//			//selectedBrush->Scale(1.05f);
-//			PolyPtr p;
-//			DecorPtr dec;
-//			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-//			{
-//				p = (*it)->GetAsTerrain();
-//				if (p != NULL)
-//				{
-//					p->SetRenderMode(TerrainPolygon::RENDERMODE_TRANSFORM);
-//					//p->SoftReset();
-//					//p->Scale(1.05f);
-//					//p->Scale(1.1f);
-//					//p->Finalize();
-//				}
-//				dec = (*it)->GetAsDecor();
-//				if (dec != NULL)
-//				{
-//					dec->transformOffset = dec->center - transformTools->GetCenter();
-//					dec->StartTransformation();
-//
-//				}
-//
-//			}
-//		}
-//		else if (ev.key.code == Keyboard::M)
-//		{
-//			//selectedBrush->Rotate(-1.f);
-//			/*PolyPtr p;
-//			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-//			{
-//			p = (*it)->GetAsTerrain();
-//			if (p != NULL)
-//			{
-//			p->Scale(.95f);
-//			}
-//
-//			}*/
-//		}
-//		else if (ev.key.code == Keyboard::R)
-//		{
-//			ShowGrass(true);
-//		}
-//		else if (ev.key.code == Keyboard::P)
-//		{
-//			SetSelectedTerrainLayer(1);
-//		}
-//		else if (ev.key.code == Keyboard::O)
-//		{
-//			SetSelectedTerrainLayer(0);
-//		}
-//		else if (ev.key.code == Keyboard::E)
-//		{
-//			GridSelectPop("terraintypeselect");
-//
-//			if (selectedBrush->objects.size() > 0)
-//			{
-//				ModifyTerrainTypeAction * modifyAction = new ModifyTerrainTypeAction(
-//					selectedBrush, tempGridX, tempGridY);
-//				modifyAction->Perform();
-//				AddDoneAction(modifyAction);
-//			}
-//
-//			currTerrainWorld = tempGridX;
-//			currTerrainVar = tempGridY;
-//			UpdateCurrTerrainType();
-//		}
-//		else if (ev.key.code == Keyboard::I)
-//		{
-//			if (ev.key.shift)
-//			{
-//				MoveTopBorder(borderMove);
-//			}
-//			else
-//			{
-//				MoveTopBorder(-borderMove);
-//			}
-//		}
-//		else if (ev.key.code == Keyboard::J)
-//		{
-//			if (ev.key.shift)
-//			{
-//				MoveLeftBorder(borderMove);
-//			}
-//			else
-//			{
-//				MoveLeftBorder(-borderMove);
-//			}
-//		}
-//		else if (ev.key.code == Keyboard::L)
-//		{
-//			if (ev.key.shift)
-//			{
-//				MoveRightBorder(-borderMove);
-//			}
-//			else
-//			{
-//				MoveRightBorder(borderMove);
-//			}
-//		}
-//		else if (ev.key.code == Keyboard::Num1)
-//		{
-//			gameCam = !gameCam;
-//			if (!gameCam)
-//			{
-//				//why is this here?
-//				panning = false;
-//			}
-//		}
-//		else if (ev.key.code == Keyboard::H)
-//		{
-//			playerTracker->SwitchOnOff();
-//		}
-//		break;
-//	}
-//	case Event::KeyReleased:
-//	{
-//		if (ev.key.code == Keyboard::R)
-//		{
-//			ShowGrass(false);
-//		}
-//		else if (ev.key.code == Keyboard::N)
-//		{
-//			/*PolyPtr p;
-//			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-//			{
-//			p = (*it)->GetAsTerrain();
-//			if (p != NULL)
-//			{
-//			p->CompleteTransformation();
-//			}
-//			}*/
-//		}
-//		else if (ev.key.code == Keyboard::M)
-//		{
-//			/*PolyPtr p;
-//			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-//			{
-//			p = (*it)->GetAsTerrain();
-//			if (p != NULL)
-//			{
-//			p->CompleteTransformation();
-//			}
-//			}*/
-//		}
-//		break;
-//	}
-//	}
-//}
-
-
 void EditSession::SetTrackingEnemy(ActorType *type, int level)
 {
 	if (trackingEnemyParams == NULL)
@@ -2915,7 +2351,6 @@ int EditSession::Run()
 
 	trackingEnemyParams = NULL;
 	trackingDecor = NULL;
-	showPanel = NULL;
 
 	sf::Texture playerZoomIconTex;
 	playerZoomIconTex.loadFromFile( "Resources/Editor/playerzoomicon.png" );
@@ -3232,37 +2667,30 @@ int EditSession::Run()
 
 		if (mode == CREATE_PATROL_PATH || mode == SET_DIRECTION)
 		{
-			if (showPanel != NULL)
-			{
+			V2d pathBack(patrolPath.back());
+			V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
 
-			}
-			else
+			if (IsKeyPressed(Keyboard::LShift))
 			{
-				V2d pathBack(patrolPath.back());
-				V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
-
-				if (IsKeyPressed(Keyboard::LShift))
+				double angle = atan2(-temp.y, temp.x);
+				if (angle < 0)
 				{
-					double angle = atan2(-temp.y, temp.x);
-					if (angle < 0)
-					{
-						angle += PI * 2.0;
-					}
-					double len = length(temp);
-					double mult = angle / (PI / 4.0);
-					double dec = mult - floor(mult);
-					int iMult = mult;
-					if (dec >= .5)
-					{
-						iMult++;
-					}
-
-					angle = iMult * PI / 4.0;
-					V2d testVec(len, 0);
-					RotateCCW(testVec, angle);
-					testPoint = Vector2f(pathBack + testVec);
-					temp = testVec;
+					angle += PI * 2.0;
 				}
+				double len = length(temp);
+				double mult = angle / (PI / 4.0);
+				double dec = mult - floor(mult);
+				int iMult = mult;
+				if (dec >= .5)
+				{
+					iMult++;
+				}
+
+				angle = iMult * PI / 4.0;
+				V2d testVec(len, 0);
+				RotateCCW(testVec, angle);
+				testPoint = Vector2f(pathBack + testVec);
+				temp = testVec;
 			}
 		}
 
@@ -3331,8 +2759,8 @@ int EditSession::Run()
 
 		if (mode == CREATE_IMAGES)
 		{
-			if( showPanel == NULL )
-				preScreenTex->draw(tempDecorSprite);
+			//is this depreciated?
+			preScreenTex->draw(tempDecorSprite);
 		}
 
 		DrawUI();
@@ -3356,21 +2784,20 @@ int EditSession::Run()
 
 void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
-	//cout << "start of callback!: " << groups["--"]->actors.size() << endl;
 	Panel *p = b->panel;
 	
 	if (p == editDecorPanel)
 	{
 		if (b->name == "ok")
 		{
-			showPanel = NULL;
+			RemoveActivePanel(p);
 		}
 	}
 	else if (p->name == "airtrigger_options")
 	{
 		if (b->name == "ok")
 		{
-			RegularOKButton();
+			RegularOKButton(p);
 		}
 		else if (b->name == "createrect")
 		{
@@ -3385,7 +2812,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				rectCreatingTrigger = (AirTriggerParams*)tempActor;
 			}
 
-			showPanel = NULL;
+			RemoveActivePanel(p);
 			
 			SetMode(CREATE_RECT);
 			drawingCreateRect = false;
@@ -3395,7 +2822,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if (b->name == "ok")
 		{
-			RegularOKButton();
+			RegularOKButton(p);
 		}
 		else if (b->name == "setzoom")
 		{
@@ -3410,7 +2837,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				currentCameraShot = (CameraShotParams*)tempActor;
 			}
 
-			showPanel = NULL;
+			RemoveActivePanel(p);
 			SetMode(SET_CAM_ZOOM);
 		}
 	}
@@ -3475,7 +2902,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			}
 
 
-			showPanel = NULL;
+			RemoveActivePanel(p);
 		}
 		else if (b->name == "envtype")
 		{
@@ -3486,7 +2913,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if (b->name == "ok")
 		{
-			showPanel = NULL;
+			RemoveActivePanel(p);
 		}
 	}
 	else if (p->name == "rail_options")
@@ -3496,7 +2923,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		if (b->name == "ok")
 		{
 			tr->SetParams(railOptionsPanel);
-			showPanel = NULL;
+			RemoveActivePanel(p);
 		}
 		else if (b->name == "reverse")
 		{
@@ -3508,7 +2935,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if (b->name == "ok")
 		{
-			showPanel = NULL;
+			RemoveActivePanel(p);
 		}
 	}
 	else if( p->name == "confirmation_popup" )
@@ -3537,15 +2964,15 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 	{
 		if (b->name == "ok")
 		{
-			RegularOKButton();
+			RegularOKButton(p);
 		}
 		else if (b->name == "createpath" || b->name == "createrail")
 		{
-			RegularCreatePathButton();
+			RegularCreatePathButton(p);
 		}
 		else if (b->name == "setdirection")
 		{
-			RegularCreatePathButton();
+			RegularCreatePathButton(p);
 			SetMode(SET_DIRECTION);
 		}
 	}
@@ -3632,7 +3059,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 
 			//enemyQuad.setSize( Vector2f( trackingEnemy->info.size.x, trackingEnemy->info.size.y) );
 
-			showPanel = NULL;
+			RemoveActivePanel(panel);
 
 			cout << "set your cursor as the image" << endl;
 		}
@@ -3650,7 +3077,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 			tempGridResult = name;
 			tempGridX = gs->selectedX;
 			tempGridY = gs->selectedY;
-			//showPanel = NULL;
+			//RemoveActivePanel(panel);
 		}
 		else
 		{
@@ -3688,12 +3115,8 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 				decorPanel->textBoxes["layer"]->text.setString("0");
 			}
 
-			showPanel = NULL;
-			//ts_currDecor = GetTileset( currDecorName + string(".png"),  )
-			//tempDecorSprite.setTexture(ts_currDecor)
-			/*tempGridResult = name;
-			tempGridX = gs->selectedX;
-			tempGridY = gs->selectedY;*/
+			RemoveActivePanel(panel);
+
 		}
 		else
 		{
@@ -4702,19 +4125,8 @@ void EditSession::SetEnemyGridIndex( GridSelector *gs, int x, int y, const std::
 	gs->Set(x, y, types[eName]->GetSprite(gs->tileSizeX, gs->tileSizeY), eName);
 }
 
-void EditSession::SetActiveEnemyGrid(int index)
-{
-	for (int i = 0; i < 4; ++i)
-	{
-		enemyGrid[i]->active = false;
-	}
-	enemyGrid[index]->active = true;
-	enemySelectLevel = index+1;
-}
 
-
-
-void EditSession::RegularOKButton()
+void EditSession::RegularOKButton( Panel *p)
 {
 	if (mode == EDIT)
 	{
@@ -4736,13 +4148,13 @@ void EditSession::RegularOKButton()
 
 		tempActor = NULL;
 	}
-	showPanel = NULL;
+	RemoveActivePanel(p);
 }
 
-void EditSession::RegularCreatePathButton()
+void EditSession::RegularCreatePathButton( Panel * p)
 {
 	SetMode(CREATE_PATROL_PATH);
-	showPanel = NULL;
+	RemoveActivePanel(p);
 	Vector2i front = patrolPath.front();
 	patrolPath.clear();
 	patrolPath.push_back(front);
@@ -6823,7 +6235,7 @@ void EditSession::SetEnemyEditPanel()
 
 	ap->SetPanelInfo();
 
-	showPanel = p;
+	AddActivePanel(p);
 }
 
 void EditSession::SetDecorEditPanel()
@@ -9763,6 +9175,11 @@ void EditSession::AddActivePanel(Panel *p)
 	activePanels.push_back(p);
 }
 
+void EditSession::RemoveActivePanel(Panel *p)
+{
+	activePanels.remove(p);
+}
+
 void EditSession::SetMode(Emode m)
 {
 	Emode oldMode = mode;
@@ -11294,14 +10711,9 @@ void EditSession::DrawUI()
 
 	errorBar.Draw(preScreenTex);
 
-	if (showPanel != NULL)
+	for (auto it = activePanels.begin(); it != activePanels.end(); ++it)
 	{
-		showPanel->Draw(preScreenTex);
-	}
-
-	if (IsDrawMode( EDIT ) )
-	{
-		layerPanel->Draw(preScreenTex);
+		(*it)->Draw(preScreenTex);
 	}
 }
 
@@ -11436,8 +10848,9 @@ void EditSession::GeneralEventHandler()
 					cout << "writing to file: " << currentFile << endl;
 					WriteFile(currentFile);
 				}
-				else if (ev.key.code == Keyboard::T && showPanel == NULL)
+				else if (ev.key.code == Keyboard::T )
 				{
+					//make this only to some modes later
 					TestPlayerMode();
 					//quit = true;
 				}
@@ -11448,9 +10861,6 @@ void EditSession::GeneralEventHandler()
 				}
 				else if (ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash)
 				{
-					if (showPanel != NULL)
-						break;
-
 					if (ev.key.code == sf::Keyboard::Equal)
 					{
 						ModifyZoom(.5);
@@ -11544,11 +10954,6 @@ void EditSession::CreateTerrainModeHandleEvent()
 	{
 	case Event::KeyPressed:
 	{
-		if (showPanel != NULL)
-		{
-			showPanel->SendKey(ev.key.code, ev.key.shift);
-			break;
-		}
 
 		if (ev.key.code == Keyboard::Space)
 		{
@@ -11648,11 +11053,6 @@ void EditSession::CreateRailsModeHandleEvent()
 	{
 	case Event::KeyPressed:
 	{
-		if (showPanel != NULL)
-		{
-			showPanel->SendKey(ev.key.code, ev.key.shift);
-			break;
-		}
 
 		if (ev.key.code == Keyboard::Space)
 		{
@@ -11694,17 +11094,10 @@ void EditSession::EditModeHandleEvent()
 	{
 	case Event::KeyPressed:
 	{
-		if (showPanel != NULL)
-		{
-			showPanel->SendKey(ev.key.code, ev.key.shift);
-			break;
-		}
-
 		if (ev.key.code == Keyboard::Tilde)
 		{
 			SetMode(SET_LEVEL);
 			setLevelCurrent = 1;
-			showPanel = NULL;
 		}
 
 		if (ev.key.code == Keyboard::C && ev.key.control)
@@ -12030,13 +11423,6 @@ void EditSession::CreateEnemyModeHandleEvent()
 	{
 	case Event::MouseButtonPressed:
 	{
-		/*if (ev.mouseButton.button == Mouse::Left)
-		{
-			if (showPanel != NULL)
-			{
-				showPanel->Update(true, uiMousePos.x, uiMousePos.y);
-			}
-		}*/
 		break;
 	}
 	case Event::MouseButtonReleased:
@@ -12045,12 +11431,6 @@ void EditSession::CreateEnemyModeHandleEvent()
 
 		if (ev.mouseButton.button == Mouse::Left)
 		{
-			/*if (showPanel != NULL)
-			{
-				showPanel->Update(false, uiMousePos.x, uiMousePos.y);
-				break;
-			}*/
-
 			if (grabbedActor != NULL )
 			{
 				bool done = false;
@@ -12089,39 +11469,8 @@ void EditSession::CreateEnemyModeHandleEvent()
 	}
 	case Event::KeyPressed:
 	{
-		if (showPanel != NULL)
-		{
-			if (showPanel == enemySelectPanel)
-			{
-				if (ev.key.code == Keyboard::Num1)
-				{
-					SetActiveEnemyGrid(0);
-				}
-				else if (ev.key.code == Keyboard::Num2)
-				{
-					SetActiveEnemyGrid(1);
-				}
-				else if (ev.key.code == Keyboard::Num3)
-				{
-					SetActiveEnemyGrid(2);
-				}
-				else if (ev.key.code == Keyboard::Num4)
-				{
-					SetActiveEnemyGrid(3);
-				}
-			}
-
-			showPanel->SendKey(ev.key.code, ev.key.shift);
-			break;
-		}
-
 		if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
 		{
-			/*if (trackingEnemy != NULL)
-			{
-				trackingEnemy = NULL;
-				showPanel = enemySelectPanel;
-			}*/
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
@@ -12242,7 +11591,7 @@ void EditSession::SelectModeHandleEvent()
 
 			if (menuDownStored == EDIT && onlyPoly)
 			{
-				showPanel = terrainOptionsPanel;
+				AddActivePanel(terrainOptionsPanel);
 				mode = menuDownStored;
 				//SetMode(menuDownStored);
 			}
@@ -12254,14 +11603,14 @@ void EditSession::SelectModeHandleEvent()
 			}
 			else if (menuDownStored == EDIT && singleImage)
 			{
-				showPanel = editDecorPanel;
+				AddActivePanel(editDecorPanel);
 				SetDecorEditPanel();
 				//SetMode(menuDownStored);
 				mode = menuDownStored;
 			}
 			else if (menuDownStored == EDIT && singleRail)
 			{
-				showPanel = railOptionsPanel;
+				AddActivePanel(railOptionsPanel);
 
 				SelectPtr select = selectedBrush->objects.front();
 				TerrainRail *tr = (TerrainRail*)select;
@@ -12274,33 +11623,28 @@ void EditSession::SelectModeHandleEvent()
 			else
 			{
 				SetMode(EDIT);
-				showPanel = NULL;
 			}
 		}
 		else if (menuSelection == "upperleft")
 		{
 			showPoints = false;
 			SetMode(CREATE_ENEMY);
-			//trackingEnemy = NULL;
-			//showPanel = enemySelectPanel;
 		}
 		else if (menuSelection == "upperright")
 		{
 			showPoints = false;
 			justCompletedPolyWithClick = false;
 			SetMode(CREATE_TERRAIN);
-			showPanel = NULL;
 		}
 		else if (menuSelection == "lowerleft")
 		{
 			SetMode(CREATE_GATES);
 			gatePoints = 0;
-			showPanel = NULL;
 			showPoints = true;
 		}
 		else if (menuSelection == "lowerright")
 		{
-			showPanel = mapOptionsPanel;
+			AddActivePanel(mapOptionsPanel);
 			mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
 			mapOptionsPanel->textBoxes["bosstype"]->text.setString(to_string(bossType));
 			mode = menuDownStored;
@@ -12367,13 +11711,12 @@ void EditSession::CreatePatrolPathModeHandleEvent()
 			{
 				SelectPtr select = selectedBrush->objects.front();
 				ActorParams *actor = (ActorParams*)select;
-				showPanel = actor->type->panel;
+				AddActivePanel(actor->type->panel);
 				actor->SetPath(patrolPath);
 				SetMode(EDIT);
 			}
 			else
 			{
-				//showPanel = trackingEnemy->panel;
 				tempActor->SetPath(patrolPath);
 				SetMode(CREATE_ENEMY);
 			}
@@ -12403,13 +11746,6 @@ void EditSession::CreateRectModeHandleEvent()
 	{
 		if (ev.mouseButton.button == Mouse::Left)
 		{
-			if (showPanel != NULL)
-			{
-				//cout << "edit mouse update" << endl;
-				showPanel->MouseUpdate();
-				break;
-			}
-
 			if (!drawingCreateRect)
 			{
 				drawingCreateRect = true;
@@ -12452,12 +11788,11 @@ void EditSession::CreateRectModeHandleEvent()
 			{
 				SelectPtr select = selectedBrush->objects.front();
 				AirTriggerParams *actor = (AirTriggerParams*)select;
-				showPanel = actor->type->panel;
+				AddActivePanel(actor->type->panel);
 				SetMode(EDIT);
 			}
 			else
 			{
-				//showPanel = trackingEnemy->panel;
 				SetMode(CREATE_ENEMY);
 			}
 		}
@@ -12502,7 +11837,7 @@ void EditSession::SetCamZoomModeHandleEvent()
 				SetMode(EDIT);
 			}
 
-			showPanel = currentCameraShot->type->panel;
+			AddActivePanel(currentCameraShot->type->panel);
 		}
 		break;
 	}
@@ -12536,7 +11871,7 @@ void EditSession::SetDirectionModeHandleEvent()
 				SetMode(EDIT);
 			}
 
-			showPanel = actor->type->panel;
+			AddActivePanel(actor->type->panel);
 			actor->SetPath(patrolPath);
 		}
 		break;
@@ -12610,27 +11945,6 @@ void EditSession::CreateImagesModeHandleEvent()
 	{
 		if (ev.mouseButton.button == Mouse::Left)
 		{
-			/*if (showPanel != NULL)
-			{
-				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
-			}
-			else
-			{
-				DecorPtr dec = new EditorDecorInfo(tempDecorSprite, currDecorLayer, currDecorName, currDecorTile);
-				if (currDecorLayer > 0)
-				{
-					dec->myList = &decorImagesBehindTerrain;
-				}
-				else if (currDecorLayer < 0)
-				{
-					dec->myList = &decorImagesFrontTerrain;
-				}
-				else if (currDecorLayer == 0)
-				{
-					dec->myList = &decorImagesBetween;
-				}
-				CreateDecorImage(dec);
-			}*/
 		}
 		break;
 	}
@@ -12638,12 +11952,6 @@ void EditSession::CreateImagesModeHandleEvent()
 	{
 		if (ev.mouseButton.button == Mouse::Left)
 		{
-			/*if (showPanel != NULL)
-			{
-			showPanel->Update(false, uiMousePos.x, uiMousePos.y);
-			break;
-			}*/
-
 			if (grabbedImage != NULL)
 			{
 				TryCompleteSelectedMove();
@@ -12657,21 +11965,11 @@ void EditSession::CreateImagesModeHandleEvent()
 		break;
 		break;
 	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
 	case Event::KeyPressed:
 	{
-		if (showPanel != NULL)
-		{
-			showPanel->SendKey(ev.key.code, ev.key.shift);
-			break;
-		}
-
 		if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
 		{
-			showPanel = decorPanel;
+			
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
@@ -12880,20 +12178,9 @@ void EditSession::UpdateMode()
 
 void EditSession::CreateTerrainModeUpdate()
 {
-	if (showPanel != NULL)
+	if (MOUSE.IsMouseLeftClicked())
 	{
-		/*if (showPanel->Update(true, false, uiMousePos.x, uiMousePos.y))
-		{
-			MOUSE.Consume();
-		}*/
-		//showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
-	}
-	else
-	{
-		if (MOUSE.IsMouseLeftClicked())
-		{
-			justCompletedPolyWithClick = false;
-		}
+		justCompletedPolyWithClick = false;
 	}
 	
 	UpdateInputNonGame();
@@ -12972,9 +12259,6 @@ void EditSession::CreateRailsModeUpdate()
 	{
 		justCompletedRailWithClick = false;
 	}
-	
-	if (showPanel != NULL)
-		return;
 
 	potentialRailAttachPoint = NULL;
 	potentialRailAttach = NULL;
@@ -13052,17 +12336,6 @@ void EditSession::EditModeUpdate()
 {
 	if (MOUSE.IsMouseLeftClicked())
 	{
-		/*bool done = false;
-		if (layerPanel->Update(true, false, uiMousePos.x, uiMousePos.y, true))
-		{
-			return;
-		}
-
-		if (showPanel != NULL)
-		{
-			showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
-		}*/
-
 		if (!showGrass && !(editMouseDownMove || editMouseDownBox))
 		{
 			bool emptysp = true;
@@ -13111,18 +12384,6 @@ void EditSession::EditModeUpdate()
 	}
 	else if (MOUSE.IsMouseLeftReleased())
 	{
-		
-		/*if (layerPanel->Update(false, false, uiMousePos.x, uiMousePos.y, true))
-		{
-			break;
-		}
-
-		if (showPanel != NULL)
-		{
-			showPanel->Update(false, false, uiMousePos.x, uiMousePos.y);
-			break;
-		}*/
-
 		if (editStartMove)
 		{
 			bool done = false;
@@ -13388,18 +12649,11 @@ void EditSession::CreateEnemyModeUpdate()
 
 void EditSession::CreatePatrolPathModeUpdate()
 {
-	if (showPanel != NULL)
-		return;
-
 	TryAddToPatrolPath();
 }
 
 void EditSession::CreateRectModeUpdate()
 {
-	if (showPanel != NULL)
-		return;
-
-
 	if (!panning && IsMousePressed(Mouse::Left))
 	{
 		createRectCurrPoint = Vector2i(worldPos);
@@ -13423,9 +12677,6 @@ void EditSession::CreateRectModeUpdate()
 
 void EditSession::SetCamZoomModeUpdate()
 {
-	if (showPanel != NULL)
-		return;
-
 	currentCameraShot->SetZoom(Vector2i(testPoint));
 	/*if (!panning && IsMousePressed(Mouse::Left))
 	{
@@ -13446,8 +12697,6 @@ void EditSession::SetCamZoomModeUpdate()
 
 void EditSession::SetDirectionModeUpdate()
 {
-	if (showPanel != NULL)
-		return;
 }
 
 void EditSession::CreateGatesModeUpdate()
@@ -13585,15 +12834,6 @@ void EditSession::CreateImagesModeUpdate()
 	{
 		TrySelectedMove();
 	}
-
-	/*if (showPanel == NULL)
-	{
-		Vector2f p = preScreenTex->mapPixelToCoords(pixelPos);
-		tempDecorSprite.setPosition(p);
-
-		tempDecorSprite.setOrigin(tempDecorSprite.getLocalBounds().width / 2, tempDecorSprite.getLocalBounds().height / 2);
-		tempDecorSprite.setRotation(0);
-	}*/
 }
 
 void EditSession::SetLevelModeUpdate()

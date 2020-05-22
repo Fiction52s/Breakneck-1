@@ -100,8 +100,6 @@ struct ActorType
 	ActorType(ParamsInfo &pi);
 	~ActorType();
 	void CreateDefaultEnemy();
-	void PlaceEnemy();
-	void PlaceEnemy(ActorParams *ap);
 	void LoadEnemy(std::ifstream &is,
 		ActorPtr &a);
 	Panel * CreatePanel();
