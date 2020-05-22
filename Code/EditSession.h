@@ -57,7 +57,7 @@ struct PlayerTracker;
 
 struct EditSession : GUIHandler, Session
 {
-	enum Emode
+	enum Emode : int
 	{
 		CREATE_TERRAIN,
 		EDIT,
@@ -65,21 +65,24 @@ struct EditSession : GUIHandler, Session
 		CREATE_PATROL_PATH,
 		CREATE_RECT,
 		SET_DIRECTION,
-		SELECT_POLYGONS,
 		PASTE,
 		PAUSED,
 		CREATE_ENEMY,
-		DRAW_PATROL_PATH,
 		CREATE_GATES,
 		CREATE_IMAGES,
-		EDIT_IMAGES,
 		SET_LEVEL,
 		CREATE_RAILS,
 		SET_CAM_ZOOM,
 		TEST_PLAYER,
 		TRANSFORM,
+		EMODE_Count
 	};
 
+	std::map<int, void(EditSession::*)()> handleEventFunctions;
+	std::map<int, void(EditSession::*)()> updateModeFunctions;
+	void HandleEventFunc(int m);
+	void UpdateModeFunc(int m);
+	void GeneralEventHandler();
 	void DrawPlayerTracker(sf::RenderTarget *target);
 	PlayerTracker *playerTracker;
 
@@ -725,7 +728,7 @@ struct EditSession : GUIHandler, Session
 	void SetCamZoomModeHandleEvent();
 	void SetDirectionModeHandleEvent();
 	void CreateGatesModeHandleEvent();
-	void CreateImagesHandleEvent();
+	void CreateImagesModeHandleEvent();
 	//void EditImagesModeHandleEvent();
 	void SetLevelModeHandleEvent();
 	void TransformModeHandleEvent();

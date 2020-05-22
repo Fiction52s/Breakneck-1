@@ -786,10 +786,62 @@ EditSession *EditSession::GetSession()
 	return currSession;
 }
 
+void EditSession::HandleEventFunc(int m)
+{
+	if (handleEventFunctions.find(m) != handleEventFunctions.end())
+	{
+		(this->*handleEventFunctions[m])();
+	}
+}
+
+void EditSession::UpdateModeFunc(int m)
+{
+	if (updateModeFunctions.find(m) != updateModeFunctions.end())
+	{
+		(this->*updateModeFunctions[m])();
+	}
+}
+
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
 	errorBar(p_mainMenu->arial)
 {	
+	handleEventFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeHandleEvent;
+	handleEventFunctions[EDIT] = &EditSession::EditModeHandleEvent;
+	handleEventFunctions[SELECT_MODE] = &EditSession::SelectModeHandleEvent;
+	handleEventFunctions[CREATE_PATROL_PATH] = &EditSession::CreatePatrolPathModeHandleEvent;
+	handleEventFunctions[CREATE_RECT] = &EditSession::CreateRectModeHandleEvent;
+	handleEventFunctions[SET_DIRECTION] = &EditSession::SetDirectionModeHandleEvent;
+	handleEventFunctions[PASTE] = &EditSession::PasteModeHandleEvent;
+	handleEventFunctions[PAUSED] = &EditSession::PausedModeHandleEvent;
+	handleEventFunctions[CREATE_ENEMY] = &EditSession::CreateEnemyModeHandleEvent;
+	handleEventFunctions[CREATE_GATES] = &EditSession::CreateGatesModeHandleEvent;
+	handleEventFunctions[CREATE_IMAGES] = &EditSession::CreateImagesModeHandleEvent;
+	handleEventFunctions[SET_LEVEL] = &EditSession::SetLevelModeHandleEvent;
+	handleEventFunctions[CREATE_RAILS] = &EditSession::CreateRailsModeHandleEvent;
+	handleEventFunctions[SET_CAM_ZOOM] = &EditSession::SetCamZoomModeHandleEvent;
+	handleEventFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeHandleEvent;
+	handleEventFunctions[TRANSFORM] = &EditSession::TransformModeHandleEvent;
+
+	updateModeFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeUpdate;
+	updateModeFunctions[EDIT] = &EditSession::EditModeUpdate;
+	//updateModeFunctions[SELECT_MODE] = &EditSession::SelectModeUpdate;
+	updateModeFunctions[CREATE_PATROL_PATH] = &EditSession::CreatePatrolPathModeUpdate;
+	updateModeFunctions[CREATE_RECT] = &EditSession::CreateRectModeUpdate;
+	updateModeFunctions[SET_DIRECTION] = &EditSession::SetDirectionModeUpdate;
+	updateModeFunctions[PASTE] = &EditSession::PasteModeUpdate;
+	//updateModeFunctions[PAUSED] = &EditSession::PauseModeUpdate;
+	updateModeFunctions[CREATE_ENEMY] = &EditSession::CreateEnemyModeUpdate;
+	updateModeFunctions[CREATE_GATES] = &EditSession::CreateGatesModeUpdate;
+	updateModeFunctions[CREATE_IMAGES] = &EditSession::CreateImagesModeUpdate;
+	updateModeFunctions[SET_LEVEL] = &EditSession::SetLevelModeUpdate;
+	updateModeFunctions[CREATE_RAILS] = &EditSession::CreateRailsModeUpdate;
+	updateModeFunctions[SET_CAM_ZOOM] = &EditSession::SetCamZoomModeUpdate;
+	updateModeFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeUpdate;
+	updateModeFunctions[TRANSFORM] = &EditSession::TransformModeUpdate;
+
+	
+
 	playerTracker = new PlayerTracker();
 	runToResave = false;
 
@@ -10689,6 +10741,169 @@ void EditSession::Display()
 	window->display();
 }
 
+void EditSession::GeneralEventHandler()
+{
+	if (mode != PAUSED && mode != SELECT_MODE)
+	{
+		switch (ev.type)
+		{
+		case Event::MouseButtonPressed:
+		{
+			if (ev.mouseButton.button == Mouse::Button::Middle)
+			{
+				if (!gameCam || mode != TEST_PLAYER)
+				{
+					ClearMostRecentError();
+					panning = true;
+					panAnchor = worldPos;
+				}
+				//cout << "setting panAnchor: " << panAnchor.x << " , " << panAnchor.y << endl;
+			}
+			else if (ev.mouseButton.button == Mouse::Button::Right)
+			{
+				//the create enemy thing needs to be fixed so that select_mode doesnt work
+				//whenever you are over UI
+				if (mode != PASTE && mode != CREATE_ENEMY)
+				{
+					menuDownStored = mode;
+					mode = SELECT_MODE;
+					//SetMode(SELECT_MODE);
+					menuDownPos = V2d(uiMousePos.x, uiMousePos.y);
+					guiMenuSprite.setPosition(uiMousePos.x, uiMousePos.y);
+				}
+			}
+			break;
+		}
+		case Event::MouseButtonReleased:
+		{
+			if (ev.mouseButton.button == Mouse::Button::Middle)
+			{
+				panning = false;
+			}
+			break;
+		}
+		case Event::MouseWheelMoved:
+		{
+			if (!gameCam || mode != TEST_PLAYER)
+			{
+				if (showGraph && HoldingControl())
+				{
+					if (ev.mouseWheel.delta > 0)
+					{
+						graph->ModifyGraphSpacing(.5);
+					}
+					else if (ev.mouseWheel.delta < 0)
+					{
+						graph->ModifyGraphSpacing(2.0);
+					}
+				}
+				else
+				{
+					if (ev.mouseWheel.delta > 0)
+					{
+						if (zoomMultiple > 32)
+						{
+							ModifyZoom(.5);
+						}
+						else if (zoomMultiple > 8)
+						{
+							SetZoom(zoomMultiple - 8);
+							//zoomMultiple += 10;
+						}
+						else if (zoomMultiple > 1)
+						{
+							SetZoom(zoomMultiple - 1);
+						}
+						else
+						{
+							ModifyZoom(.5);
+						}
+
+						//ModifyZoom(.5);
+						//ModifyZoom(.5);
+					}
+					else if (ev.mouseWheel.delta < 0)
+					{
+						if (zoomMultiple >= 32)
+						{
+							ModifyZoom(2);
+						}
+						else if (zoomMultiple >= 8)
+						{
+							SetZoom(zoomMultiple + 8);
+							//ModifyZoom(2.0);
+							//zoomMultiple += 10;
+						}
+						else if (zoomMultiple >= 1)
+						{
+							SetZoom(zoomMultiple + 1);
+						}
+						else
+						{
+							ModifyZoom(2.0);
+						}
+						//ModifyZoom(2);
+						//ModifyZoom(2.0);
+					}
+				}
+			}
+			break;
+		}
+		case Event::KeyPressed:
+		{
+			if (ev.key.code == Keyboard::S && ev.key.control)
+			{
+				polygonInProgress->ClearPoints();
+				cout << "writing to file: " << currentFile << endl;
+				WriteFile(currentFile);
+			}
+			else if (ev.key.code == Keyboard::T && showPanel == NULL)
+			{
+				TestPlayerMode();
+				//quit = true;
+			}
+			else if (ev.key.code == Keyboard::Escape)
+			{
+				quit = true;
+				returnVal = 1;
+			}
+			else if (ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash)
+			{
+				if (showPanel != NULL)
+					break;
+
+				if (ev.key.code == sf::Keyboard::Equal)
+				{
+					ModifyZoom(.5);
+				}
+				else if (ev.key.code == sf::Keyboard::Dash)
+				{
+					ModifyZoom(2);
+				}
+				break;
+			}
+			break;
+		}
+		case Event::KeyReleased:
+		{
+			break;
+		}
+		case Event::LostFocus:
+		{
+			stored = mode;
+			mode = PAUSED;
+			break;
+		}
+		case Event::GainedFocus:
+		{
+			mode = stored;
+			//SetMode(stored);
+			break;
+		}
+		}
+	}
+}
+
 void EditSession::HandleEvents()
 {
 	while (window->pollEvent(ev))
@@ -10702,253 +10917,8 @@ void EditSession::HandleEvents()
 			}
 		}
 
-		switch (mode)
-		{
-		case CREATE_TERRAIN:
-		{
-			CreateTerrainModeHandleEvent();
-			break;
-		}
-		case CREATE_RAILS:
-		{
-			CreateRailsModeHandleEvent();
-			break;
-		}
-		case EDIT:
-		{
-			EditModeHandleEvent();
-			break;
-		}
-		case PASTE:
-		{
-			PasteModeHandleEvent();
-			break;
-		}
-		case CREATE_ENEMY:
-		{
-			CreateEnemyModeHandleEvent();
-			break;
-		}
-		case PAUSED:
-		{
-			PausedModeHandleEvent();
-			break;
-		}
-		case SELECT_MODE:
-		{
-			SelectModeHandleEvent();
-			break;
-		}
-		case CREATE_PATROL_PATH:
-		{
-			CreatePatrolPathModeHandleEvent();
-			break;
-		}
-		case CREATE_RECT:
-		{
-			CreateRectModeHandleEvent();
-			break;
-		}
-		case SET_CAM_ZOOM:
-		{
-			SetCamZoomModeHandleEvent();
-			break;
-		}
-		case SET_DIRECTION:
-		{
-			SetDirectionModeHandleEvent();
-			break;
-		}
-		case CREATE_GATES:
-		{
-			CreateGatesModeHandleEvent();
-			break;
-		}
-		case CREATE_IMAGES:
-		{
-			CreateImagesHandleEvent();
-			break;
-		}
-		case SET_LEVEL:
-		{
-			SetLevelModeHandleEvent();
-			break;
-		}
-		case TRANSFORM:
-		{
-			TransformModeHandleEvent();
-			break;
-		}
-		case TEST_PLAYER:
-		{
-			TestPlayerModeHandleEvent();
-			break;
-		}
-
-		}
-		//ones that aren't specific to mode
-
-		
-		if (mode != PAUSED && mode != SELECT_MODE )
-		{
-			switch (ev.type)
-			{
-			case Event::MouseButtonPressed:
-			{
-				if (ev.mouseButton.button == Mouse::Button::Middle)
-				{
-					if (!gameCam || mode != TEST_PLAYER)
-					{
-						ClearMostRecentError();
-						panning = true;
-						panAnchor = worldPos;
-					}
-					//cout << "setting panAnchor: " << panAnchor.x << " , " << panAnchor.y << endl;
-				}
-				else if (ev.mouseButton.button == Mouse::Button::Right)
-				{
-					//the create enemy thing needs to be fixed so that select_mode doesnt work
-					//whenever you are over UI
-					if (mode != PASTE && mode != CREATE_ENEMY)
-					{
-						menuDownStored = mode;
-						mode = SELECT_MODE;
-						//SetMode(SELECT_MODE);
-						menuDownPos = V2d(uiMousePos.x, uiMousePos.y);
-						guiMenuSprite.setPosition(uiMousePos.x, uiMousePos.y);
-					}
-				}
-				break;
-			}
-			case Event::MouseButtonReleased:
-			{
-				if (ev.mouseButton.button == Mouse::Button::Middle)
-				{
-					panning = false;
-				}
-				break;
-			}
-			case Event::MouseWheelMoved:
-			{
-				if (!gameCam || mode != TEST_PLAYER)
-				{
-					if (showGraph && HoldingControl())
-					{
-						if (ev.mouseWheel.delta > 0)
-						{
-							graph->ModifyGraphSpacing(.5);
-						}
-						else if (ev.mouseWheel.delta < 0)
-						{
-							graph->ModifyGraphSpacing(2.0);
-						}
-					}
-					else
-					{
-						if (ev.mouseWheel.delta > 0)
-						{
-							if (zoomMultiple > 32)
-							{
-								ModifyZoom(.5);
-							}
-							else if (zoomMultiple > 8)
-							{
-								SetZoom(zoomMultiple - 8);
-								//zoomMultiple += 10;
-							}
-							else if (zoomMultiple > 1)
-							{
-								SetZoom(zoomMultiple - 1);
-							}
-							else
-							{
-								ModifyZoom(.5);
-							}
-
-							//ModifyZoom(.5);
-							//ModifyZoom(.5);
-						}
-						else if (ev.mouseWheel.delta < 0)
-						{
-							if (zoomMultiple >= 32)
-							{
-								ModifyZoom(2);
-							}
-							else if (zoomMultiple >= 8)
-							{
-								SetZoom(zoomMultiple + 8);
-								//ModifyZoom(2.0);
-								//zoomMultiple += 10;
-							}
-							else if (zoomMultiple >= 1)
-							{
-								SetZoom(zoomMultiple + 1);
-							}
-							else
-							{
-								ModifyZoom(2.0);
-							}
-							//ModifyZoom(2);
-							//ModifyZoom(2.0);
-						}
-					}
-				}
-				break;
-			}
-			case Event::KeyPressed:
-			{
-				if (ev.key.code == Keyboard::S && ev.key.control)
-				{
-					polygonInProgress->ClearPoints();
-					cout << "writing to file: " << currentFile << endl;
-					WriteFile(currentFile);
-				}
-				else if (ev.key.code == Keyboard::T && showPanel == NULL)
-				{
-					TestPlayerMode();
-					//quit = true;
-				}
-				else if (ev.key.code == Keyboard::Escape)
-				{
-					quit = true;
-					returnVal = 1;
-				}
-				else if (ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash)
-				{
-					if (showPanel != NULL)
-						break;
-
-					if (ev.key.code == sf::Keyboard::Equal)
-					{
-						ModifyZoom(.5);
-					}
-					else if (ev.key.code == sf::Keyboard::Dash)
-					{
-						ModifyZoom(2);
-					}
-					break;
-				}
-				break;
-			}
-			case Event::KeyReleased:
-			{
-				break;
-			}
-			case Event::LostFocus:
-			{
-				stored = mode;
-				mode = PAUSED;
-				break;
-			}
-			case Event::GainedFocus:
-			{
-				mode = stored;
-				//SetMode(stored);
-				break;
-			}
-			}
-		}
-
+		HandleEventFunc(mode);
+		GeneralEventHandler();
 	}
 }
 
@@ -12220,7 +12190,7 @@ void EditSession::CreateGatesModeHandleEvent()
 	}
 }
 
-void EditSession::CreateImagesHandleEvent()
+void EditSession::CreateImagesModeHandleEvent()
 {
 	switch (ev.type)
 	{
@@ -12485,80 +12455,7 @@ void EditSession::TestPlayerModeHandleEvent()
 
 void EditSession::UpdateMode()
 {
-	switch (mode)
-	{
-	case CREATE_TERRAIN:
-	{
-		CreateTerrainModeUpdate();
-		break;
-	}
-	case CREATE_RAILS:
-	{
-		CreateRailsModeUpdate();
-		break;
-	}
-	case EDIT:
-	{
-		EditModeUpdate();
-		break;
-	}
-	case PASTE:
-	{
-		PasteModeUpdate();
-		break;
-	}
-	case CREATE_ENEMY:
-	{
-		CreateEnemyModeUpdate();
-		break;
-	}
-	case CREATE_RECT:
-	{
-		CreateRectModeUpdate();
-		break;
-	}
-	case SET_CAM_ZOOM:
-	{
-		SetCamZoomModeUpdate();
-		break;
-	}
-	case CREATE_PATROL_PATH:
-	{
-		CreatePatrolPathModeUpdate();
-		break;
-	}
-	case SET_DIRECTION:
-	{
-		SetDirectionModeUpdate();
-		break;
-	}
-	case CREATE_GATES:
-	{
-		CreateGatesModeUpdate();
-		break;
-	}
-	case CREATE_IMAGES:
-	{
-		CreateImagesModeUpdate();
-		break;
-	}
-	case SET_LEVEL:
-	{
-		SetLevelModeUpdate();
-		break;
-	}
-	case TEST_PLAYER:
-	{
-		TestPlayerModeUpdate();
-		break;
-	}
-	case TRANSFORM:
-	{
-		TransformModeUpdate();
-		break;
-	}
-		
-	}
+	UpdateModeFunc(mode);
 }
 
 void EditSession::CreateTerrainModeUpdate()
