@@ -1377,7 +1377,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	handleEventFunctions[CREATE_RECT] = &EditSession::CreateRectModeHandleEvent;
 	handleEventFunctions[SET_DIRECTION] = &EditSession::SetDirectionModeHandleEvent;
 	handleEventFunctions[PASTE] = &EditSession::PasteModeHandleEvent;
-	handleEventFunctions[PAUSED] = &EditSession::PausedModeHandleEvent;
+	//handleEventFunctions[PAUSED] = &EditSession::PausedModeHandleEvent;
 	handleEventFunctions[CREATE_ENEMY] = &EditSession::CreateEnemyModeHandleEvent;
 	handleEventFunctions[CREATE_GATES] = &EditSession::CreateGatesModeHandleEvent;
 	handleEventFunctions[CREATE_IMAGES] = &EditSession::CreateImagesModeHandleEvent;
@@ -6690,7 +6690,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	Panel *p = NULL;
 	if( type == "message" )
 	{
-		p = new Panel( "message_popup", 400, 100, this );
+		p = new Panel( "message_popup", 400, 100, this, true );
 		p->pos.x = 300;
 		p->pos.y = 300;
 		//p->AddButton( "ok", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "OK" );
@@ -11340,7 +11340,7 @@ void EditSession::GeneralEventHandler()
 			{
 				//the create enemy thing needs to be fixed so that select_mode doesnt work
 				//whenever you are over UI
-				if (mode != PASTE && mode != CREATE_ENEMY)
+				if (mode != PASTE && mode != CREATE_ENEMY && focusedPanel == NULL )
 				{
 					menuDownStored = mode;
 					mode = SELECT_MODE;
@@ -11428,36 +11428,39 @@ void EditSession::GeneralEventHandler()
 		}
 		case Event::KeyPressed:
 		{
-			if (ev.key.code == Keyboard::S && ev.key.control)
+			if (focusedPanel == NULL)
 			{
-				polygonInProgress->ClearPoints();
-				cout << "writing to file: " << currentFile << endl;
-				WriteFile(currentFile);
-			}
-			else if (ev.key.code == Keyboard::T && showPanel == NULL)
-			{
-				TestPlayerMode();
-				//quit = true;
-			}
-			else if (ev.key.code == Keyboard::Escape)
-			{
-				quit = true;
-				returnVal = 1;
-			}
-			else if (ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash)
-			{
-				if (showPanel != NULL)
-					break;
+				if (ev.key.code == Keyboard::S && ev.key.control)
+				{
+					polygonInProgress->ClearPoints();
+					cout << "writing to file: " << currentFile << endl;
+					WriteFile(currentFile);
+				}
+				else if (ev.key.code == Keyboard::T && showPanel == NULL)
+				{
+					TestPlayerMode();
+					//quit = true;
+				}
+				else if (ev.key.code == Keyboard::Escape)
+				{
+					quit = true;
+					returnVal = 1;
+				}
+				else if (ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash)
+				{
+					if (showPanel != NULL)
+						break;
 
-				if (ev.key.code == sf::Keyboard::Equal)
-				{
-					ModifyZoom(.5);
+					if (ev.key.code == sf::Keyboard::Equal)
+					{
+						ModifyZoom(.5);
+					}
+					else if (ev.key.code == sf::Keyboard::Dash)
+					{
+						ModifyZoom(2);
+					}
+					break;
 				}
-				else if (ev.key.code == sf::Keyboard::Dash)
-				{
-					ModifyZoom(2);
-				}
-				break;
 			}
 			break;
 		}
@@ -11479,10 +11482,36 @@ void EditSession::GeneralEventHandler()
 		}
 		}
 	}
+	else if (mode == PAUSED)
+	{
+		PausedModeHandleEvent();
+	}
 }
 
 void EditSession::HandleEvents()
 {
+	if (MOUSE.IsMouseLeftClicked() || MOUSE.IsMouseRightClicked())
+	{
+		Vector2i mousePos = MOUSE.GetPos();
+		bool found = false;
+		for (auto it = activePanels.begin(); it != activePanels.end(); ++it)
+		{
+			if ((*it)->ContainsPoint(mousePos))
+			{
+				focusedPanel = (*it);
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			focusedPanel = NULL;
+		}
+	}
+
+
+
 	while (window->pollEvent(ev))
 	{
 		if (ev.type == Event::KeyPressed)
@@ -11501,8 +11530,9 @@ void EditSession::HandleEvents()
 		else
 		{
 			HandleEventFunc(mode);
-			GeneralEventHandler();
 		}
+
+		GeneralEventHandler();
 		
 		
 	}
@@ -12837,8 +12867,14 @@ void EditSession::TestPlayerModeHandleEvent()
 
 void EditSession::UpdateMode()
 {
-
-
+	if (focusedPanel != NULL)
+	{
+		if (focusedPanel->MouseUpdate())
+		{
+			return;
+		}
+	}
+	
 	UpdateModeFunc(mode);
 }
 

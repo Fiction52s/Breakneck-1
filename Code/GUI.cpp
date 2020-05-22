@@ -471,8 +471,8 @@ bool Dropdown::MouseUpdate()
 }
 
 
-Panel::Panel( const string &n, int width, int height, GUIHandler *h )
-	:handler( h ), size( width, height ), name( n )
+Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
+	:handler( h ), size( width, height ), name( n ), popup( pop )
 	//:t( 0, 0, 200, 10, f, "hello" ), t2( 0, 100, 100, 10, f, "blah" ), b( 0, 50, 100, 50, f, "button!" )
 {
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
@@ -518,6 +518,11 @@ Panel::~Panel()
 	{
 		delete (*it).second;
 	}*/
+}
+
+bool Panel::IsPopup()
+{
+	return popup;
 }
 
 void Panel::SetPosition(const sf::Vector2i &p_pos)
@@ -1188,7 +1193,6 @@ bool CheckBox::MouseUpdate()
 	}
 	else
 	{
-		
 		if( r.contains(mousePos ) && clickedDown )
 		{
 			clickedDown = false;

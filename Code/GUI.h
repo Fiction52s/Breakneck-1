@@ -436,7 +436,9 @@ struct CheckBox
 
 struct Panel
 {
-	Panel( const std::string &name, int width, int height, GUIHandler *handler );
+	Panel( const std::string &name, int width, 
+		int height, GUIHandler *handler,
+		bool pop = false );
 	~Panel();
 	void Draw(sf::RenderTarget *rt);
 	bool ContainsPoint(sf::Vector2i &pos);
@@ -468,9 +470,6 @@ struct Panel
 	void SendEvent( CheckBox *cb, const std::string & e );
 	sf::Font arial;
 	std::string name;
-	//TextBox t;
-	//TextBox t2;
-	//Button b;
 	std::map<std::string, TextBox*> textBoxes;
 	std::map<std::string, Button*> buttons;
 	std::map<std::string, sf::Text*> labels;
@@ -484,9 +483,10 @@ struct Panel
 	
 	sf::Vector2f size;
 	GUIHandler *handler;
-	
+	bool IsPopup();
 	bool active;
 private:
+	bool popup;
 	sf::Vector2i mousePos;
 };
 
