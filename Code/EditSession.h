@@ -104,6 +104,8 @@ struct EditSession : GUIHandler, Session
 		EMODE_Count
 	};
 
+	void ResetActivePanels();
+	void AddActivePanel(Panel *p);
 	std::list<Panel*> activePanels;
 	Panel *focusedPanel;
 	std::map<int, void(EditSession::*)()> handleEventFunctions;

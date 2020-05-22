@@ -3266,21 +3266,14 @@ int EditSession::Run()
 			}
 		}
 
-		MOUSE.Update(Mouse::isButtonPressed(Mouse::Left), Mouse::isButtonPressed(Mouse::Right), pixelPos);
-
-		HandleEvents();
-
-		if( quit )
-			break;
-
-		showGraph = false;
+		MOUSE.Update( pixelPos);
 
 		if (IsKeyPressed(Keyboard::Num5))
 		{
-			Vector2f halfSize(scaleSprite.getGlobalBounds().width / 2.f, 
+			Vector2f halfSize(scaleSprite.getGlobalBounds().width / 2.f,
 				scaleSprite.getGlobalBounds().height / 2.f);
-			scaleSprite.setPosition(Vector2f(pixelPos) - halfSize );
-			scaleSpriteBGRect.setPosition(Vector2f(pixelPos) - halfSize );
+			scaleSprite.setPosition(Vector2f(pixelPos) - halfSize);
+			scaleSpriteBGRect.setPosition(Vector2f(pixelPos) - halfSize);
 		}
 		else
 		{
@@ -3288,7 +3281,12 @@ int EditSession::Run()
 			scaleSpriteBGRect.setPosition(0, 80);
 		}
 
-		//--------
+		showGraph = false;
+
+		if (quit)
+			break;
+
+		HandleEvents();
 
 		UpdateMode();
 		
@@ -3359,7 +3357,7 @@ int EditSession::Run()
 void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
 	//cout << "start of callback!: " << groups["--"]->actors.size() << endl;
-	Panel *p = b->owner;
+	Panel *p = b->panel;
 	
 	if (p == editDecorPanel)
 	{
@@ -3556,7 +3554,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 {
 	//to be able to show previews in real time
-	Panel *p = tb->owner;
+	Panel *p = tb->panel;
 	if( p->name == "curveturret_options" )
 	{
 		if( tb->name == "xgravfactor" || tb->name == "ygravfactor"
@@ -3623,7 +3621,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 {
 	cout << "grid selector callback!" << endl;
 	string name = p_name;
-	Panel *panel = gs->owner;
+	Panel *panel = gs->panel;
 	if( panel == enemySelectPanel )
 	{
 		if( name != "not set" )
@@ -3762,7 +3760,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 {
 	//cout << cb->name << " was " << e << endl;
-	Panel *p = cb->owner;
+	Panel *p = cb->panel;
 
 	if (p == layerPanel)
 	{
@@ -6395,13 +6393,13 @@ bool EditSession::ConfirmationPop( const std::string &question )
 				{
 					if( ev.mouseButton.button == Mouse::Left )
 					{
-						confirm->Update( true, false, uiMouse.x, uiMouse.y );		
+						confirm->MouseUpdate();
 					}			
 					break;
 				}
 			case Event::MouseButtonReleased:
 				{
-					confirm->Update( false, false, uiMouse.x, uiMouse.y );
+					confirm->MouseUpdate();
 					break;
 				}
 			case Event::MouseWheelMoved:
@@ -6626,7 +6624,7 @@ void EditSession::GridSelectPop( const std::string &type )
 					if( ev.mouseButton.button == Mouse::Left )
 					{
 						cout << "are we here: " << uiMouse.x << ", " << uiMouse.y << endl;
-						panel->Update( true, false, uiMouse.x, uiMouse.y );
+						panel->MouseUpdate();
 						//if you click outside of the box, delete the gate
 						
 						//if( uiMouse.x < messagePopup->pos.x 
@@ -6640,7 +6638,7 @@ void EditSession::GridSelectPop( const std::string &type )
 					if( ev.mouseButton.button == Mouse::Left )
 					{
 						cout << "are we real: " << uiMouse.x << ", " << uiMouse.y << endl;
-						panel->Update( false, false, uiMouse.x, uiMouse.y );
+						panel->MouseUpdate();
 					}
 					break;
 				}
@@ -9754,6 +9752,17 @@ void EditSession::ModifyGrass()
 	}
 }
 
+void EditSession::ResetActivePanels()
+{
+	activePanels.clear();
+	focusedPanel = NULL;
+}
+
+void EditSession::AddActivePanel(Panel *p)
+{
+	activePanels.push_back(p);
+}
+
 void EditSession::SetMode(Emode m)
 {
 	Emode oldMode = mode;
@@ -9804,6 +9813,8 @@ void EditSession::SetMode(Emode m)
 		break;
 	case EDIT:
 	{
+		ResetActivePanels();
+		AddActivePanel(layerPanel);
 		editClock.restart();
 		editCurrentTime = 0;
 		editAccumulator = TIMESTEP + .1;
@@ -11483,8 +11494,17 @@ void EditSession::HandleEvents()
 			}
 		}
 
-		HandleEventFunc(mode);
-		GeneralEventHandler();
+		if (focusedPanel != NULL)
+		{
+			focusedPanel->HandleEvent(ev);
+		}
+		else
+		{
+			HandleEventFunc(mode);
+			GeneralEventHandler();
+		}
+		
+		
 	}
 }
 
@@ -12356,7 +12376,7 @@ void EditSession::CreateRectModeHandleEvent()
 			if (showPanel != NULL)
 			{
 				//cout << "edit mouse update" << endl;
-				showPanel->Update(true, false, uiMousePos.x, uiMousePos.y);
+				showPanel->MouseUpdate();
 				break;
 			}
 
@@ -12817,6 +12837,8 @@ void EditSession::TestPlayerModeHandleEvent()
 
 void EditSession::UpdateMode()
 {
+
+
 	UpdateModeFunc(mode);
 }
 

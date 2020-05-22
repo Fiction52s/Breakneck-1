@@ -1358,6 +1358,15 @@ void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
 	}
 }
 
+sf::Vector2i MainMenu::GetPixelPos()
+{
+	Vector2i pPos = Mouse::getPosition(*window);
+	pPos.x *= 1920.f / window->getSize().x;
+	pPos.y *= 1080.f / window->getSize().y;
+
+	return pPos;
+}
+
 void MainMenu::CustomMapsOption()
 {
 	LevelSelector &ls = *levelSelector;
@@ -1420,6 +1429,8 @@ void MainMenu::CustomMapsOption()
 
 	SetMouseGrabbed(true);
 	SetMouseVisible(true);
+
+	UIMouse::GetInstance();
 	//window->setMouseCursorVisible(true);
 	//window->setMouseCursorGrabbed(true);
 
@@ -1434,7 +1445,8 @@ void MainMenu::CustomMapsOption()
 
 		//window.setView( uiView );
 		Vector2f uiMouse = window->mapPixelToCoords( mousePos );
-
+		MOUSE.Update(GetPixelPos());
+		//MOUSE.Update( Mouse::isButtonPressed( Mouse::Left ), Mouse::isButtonPressed)
 		ls.MouseUpdate( uiMouse );
 		//Vector2f uiMouse = Vector2f( mousePos.x   window->getSize().x, mousePos.y ) * Vector2f(, window->getSize().y );
 
@@ -1484,23 +1496,23 @@ void MainMenu::CustomMapsOption()
 					{
 						if( customMapHandler.showNamePopup )
 						{
-							namePopup.Update( true, false, uiMouse.x, uiMouse.y);
+							namePopup.MouseUpdate();
 						}
 						else if (customMapHandler.showDownloadPopup)
 						{
-							downloadPopup.Update(true, false, uiMouse.x, uiMouse.y);
+							downloadPopup.MouseUpdate();
 						}
 						else if (customMapHandler.showLoginPopup)
 						{
-							loginPopup.Update(true, false, uiMouse.x, uiMouse.y);
+							loginPopup.MouseUpdate();
 						}
 						else if (customMapHandler.showRemovePopup)
 						{
-							removePopup.Update(true, false, uiMouse.x, uiMouse.y);
+							removePopup.MouseUpdate();
 						}
 						else
 						{
-							p.Update( true, false, uiMouse.x, uiMouse.y);
+							p.MouseUpdate();
 							//cout << "blah: " << mousePos.x << ", " << mousePos.y << endl;
 							ls.LeftClick( true, uiMouse );
 						}
@@ -1514,24 +1526,24 @@ void MainMenu::CustomMapsOption()
 						if (customMapHandler.showNamePopup)
 						{
 							ls.newLevelName = "";
-							namePopup.Update(false, false, uiMouse.x, uiMouse.y);
+							namePopup.MouseUpdate();
 							CopyMap(&customMapHandler, &namePopup);
 						}
 						else if (customMapHandler.showDownloadPopup)
 						{
-							downloadPopup.Update(false, false, uiMouse.x, uiMouse.y);
+							downloadPopup.MouseUpdate();
 						}
 						else if (customMapHandler.showLoginPopup)
 						{
-							loginPopup.Update(false, false, uiMouse.x, uiMouse.y);
+							loginPopup.MouseUpdate();
 						}
 						else if (customMapHandler.showRemovePopup)
 						{
-							removePopup.Update(false, false, uiMouse.x, uiMouse.y);
+							removePopup.MouseUpdate();
 						}
 						else
 						{
-							p.Update( false, false, uiMouse.x, uiMouse.y );
+							p.MouseUpdate();
 							ls.LeftClick( false, uiMouse );
 							if( ls.text[ls.selectedIndex].getFillColor() == Color::Red )
 							{
@@ -3509,7 +3521,7 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 	else if( b->name == "ok" )
 	{
 		showNamePopup = false;
-		ls.newLevelName = b->owner->textBoxes["name"]->text.getString().toAnsiString();
+		ls.newLevelName = b->panel->textBoxes["name"]->text.getString().toAnsiString();
 	}
 	else if (b->name == "List")
 	{
@@ -3526,7 +3538,7 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 	{
 		showDownloadPopup = false;
 		stringstream ss;
-		ss << b->owner->textBoxes["index"]->text.getString().toAnsiString();
+		ss << b->panel->textBoxes["index"]->text.getString().toAnsiString();
 		int index;
 		ss >> index;
 		if (!ss.fail())
@@ -3562,8 +3574,8 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 	else if (b->name == "loginok")
 	{
 		showLoginPopup = false;
-		string user = b->owner->textBoxes["user"]->text.getString().toAnsiString();
-		string pass = b->owner->textBoxes["pass"]->text.getString().toAnsiString();
+		string user = b->panel->textBoxes["user"]->text.getString().toAnsiString();
+		string pass = b->panel->textBoxes["pass"]->text.getString().toAnsiString();
 		ls.customMapClient->AttemptUserLogin(user, pass);
 	}
 	else if (b->name == "Remove")
@@ -3576,7 +3588,7 @@ void CustomMapsHandler::ButtonCallback( Button *b, const std::string & e )
 		showRemovePopup = false;
 
 		stringstream ss;
-		ss << b->owner->textBoxes["index"]->text.getString().toAnsiString();
+		ss << b->panel->textBoxes["index"]->text.getString().toAnsiString();
 		int index;
 		ss >> index;
 		if (!ss.fail())

@@ -495,6 +495,8 @@ struct MainMenu
 	GCC::VJoyGCControllers *joys;
 	bool gccDriverEnabled;
 
+	sf::Vector2i GetPixelPos();
+
 	bool IsKeyPressed(int key);
 	bool IsMousePressed(int m);
 

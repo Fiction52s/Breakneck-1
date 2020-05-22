@@ -19,19 +19,22 @@ struct ImageChooseRect;
 
 struct UIMouse
 {
-	UIMouse()
+	static UIMouse &GetInstance()
 	{
-		ResetMouse();
+		static UIMouse instance;
+		return instance;
 	}
+	
+	UIMouse(UIMouse const&) = delete;
+	void operator=(UIMouse const&) = delete;
+
 	bool IsMouseDownLeft();
 	bool IsMouseDownRight();
 	bool IsMouseLeftClicked();
 	bool IsMouseLeftReleased();
 	bool IsMouseRightClicked();
 	bool IsMouseRightReleased();
-	void Update(bool mouseDownL,
-		bool mouseDownR,
-		sf::Vector2i &mousePos);
+	void Update(sf::Vector2i &mousePos);
 	const sf::Vector2i &GetPos() 
 	{ return mousePos; }
 	sf::Vector2f GetFloatPos()
@@ -40,6 +43,8 @@ struct UIMouse
 	bool IsConsumed() { return consumed; }
 	void Consume() { consumed = true; }
 private:
+	UIMouse();
+	
 	sf::Vector2i mousePos;
 	bool isMouseDownLeft;
 	bool lastMouseDownLeft;
@@ -50,7 +55,7 @@ private:
 
 };
 
-static UIMouse MOUSE;
+#define MOUSE UIMouse::GetInstance()
 
 struct ChooseRectContainer
 {
@@ -179,8 +184,6 @@ struct EnemyVariationSelector
 	bool show;
 };
 
-
-
 struct EditSession;
 struct CreateEnemyModeUI
 {
@@ -279,7 +282,7 @@ struct GridSelector
 	~GridSelector();
 	void Set(int xi, int yi, sf::Sprite s, const std::string &name);
 	void Draw(sf::RenderTarget *target);
-	bool Update(bool mouseDown, int posx, int posy);
+	bool MouseUpdate();
 	//void SetPanelPos(const sf::Vector2i &p_pos);
 	int tileSizeX;
 	int tileSizeY;
@@ -291,7 +294,7 @@ struct GridSelector
 	int focusX;
 	int focusY;
 	sf::Vector2i pos;
-	Panel *owner;
+	Panel *panel;
 	int selectedX;
 	int selectedY;
 	int mouseOverX;
@@ -306,7 +309,7 @@ struct TextBox
 	TextBox( const std::string &name, int posx, int posy, int width, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
 	void SendKey( sf::Keyboard::Key k, bool shift );
 	void Draw( sf::RenderTarget *rt );
-	bool Update( bool mouseDown, int posx, int posy );
+	bool MouseUpdate();
 	void SetCursorIndex( int index );
 	void SetCursorIndex( sf::Vector2i &mousePos );
 	//void SetPanelPos(const sf::Vector2i &p_pos);
@@ -322,14 +325,14 @@ struct TextBox
 	int leftBorder;
 	bool clickedDown;
 	bool focused;
-	Panel *owner;
+	Panel *panel;
 };
 
 struct Button
 {
-	Button( const std::string &name, int posx, int posy, int width, int height, sf::Font &f, const std::string & text, Panel *owner );
+	Button( const std::string &name, int posx, int posy, int width, int height, sf::Font &f, const std::string & text, Panel *panel);
 	void Draw( sf::RenderTarget *rt );
-	bool Update( bool mouseDown, int posx, int posy );
+	bool MouseUpdate();
 	//void SetPanelPos(const sf::Vector2i &p_pos);
 	sf::Vector2i pos;
 	sf::Vector2f size;
@@ -338,7 +341,7 @@ struct Button
 
 	int characterHeight;
 	bool clickedDown;
-	Panel *owner;
+	Panel *panel;
 };
 
 struct Slider
@@ -349,7 +352,7 @@ struct Slider
 		Panel *panel);
 	//~Slider();
 	void Draw(sf::RenderTarget *rt);
-	bool Update();
+	bool MouseUpdate();
 
 	float GetCurrFactor(const sf::Vector2i &mousePos);
 	int GetCurrValue(float factor);
@@ -391,11 +394,11 @@ struct Dropdown
 	Dropdown(const std::string &name, sf::Vector2i &pos,
 		sf::Vector2i &size, sf::Font &f, 
 		const std::vector<std::string> &p_options, 
-		int defaultIndex, Panel *owner);
+		int defaultIndex, Panel *panel);
 	~Dropdown();
 	void SetOptions(const std::vector<std::string> &options);
 	void Draw(sf::RenderTarget *rt);
-	bool Update();
+	bool MouseUpdate();
 
 	sf::Vector2i pos;
 	sf::Vector2f size;
@@ -420,13 +423,13 @@ struct Dropdown
 
 struct CheckBox
 {
-	CheckBox( const std::string &name, int posx, int posy, Panel *owner );
+	CheckBox( const std::string &name, int posx, int posy, Panel *panel );
 	void Draw( sf::RenderTarget *target );
-	bool Update( bool mouseDown, int posx, int posy );
+	bool MouseUpdate();
 	//void SetPanelPos(const sf::Vector2i &p_pos);
 	sf::Vector2i pos;
 	std::string name;
-	Panel *owner;
+	Panel *panel;
 	bool clickedDown;
 	bool checked;
 };
@@ -437,8 +440,9 @@ struct Panel
 	~Panel();
 	void Draw(sf::RenderTarget *rt);
 	bool ContainsPoint(sf::Vector2i &pos);
-	bool Update(bool mouseDownLeft, bool mouseDownRight,
-		int posx, int posy, bool checkContained = false );
+	/*bool Update(bool mouseDownLeft, bool mouseDownRight,
+		int posx, int posy, bool checkContained = false );*/
+	bool MouseUpdate();
 	
 	void AddSlider(const std::string &name, sf::Vector2i &pos,
 		int width, int minValue, int maxValue, int defaultValue);
@@ -455,7 +459,7 @@ struct Panel
 		bool displaySelected,
 		bool displayMouseOver );
 	void SetPosition(const sf::Vector2i &p_pos);
-	
+	void HandleEvent(sf::Event ev);
 
 	void SendKey( sf::Keyboard::Key k, bool shift );
 	void SendEvent( Button *b, const std::string & e );
@@ -474,30 +478,16 @@ struct Panel
 	std::map<std::string, GridSelector*> gridSelectors;
 	std::map<std::string, Dropdown*> dropdowns;
 	std::map<std::string, Slider*> sliders;
+	const sf::Vector2i &GetMousePos();
 
 	sf::Vector2i pos;
+	
 	sf::Vector2f size;
 	GUIHandler *handler;
-
-	
-
-	bool IsMouseDownLeft();
-	bool IsMouseDownRight();
-	bool IsMouseLeftClicked();
-	bool IsMouseLeftReleased();
-	bool IsMouseRightClicked();
-	bool IsMouseRightReleased();
-	const sf::Vector2i & GetMousePos();
 	
 	bool active;
-
 private:
 	sf::Vector2i mousePos;
-	bool isMouseDownLeft;
-	bool lastMouseDownLeft;
-
-	bool isMouseDownRight;
-	bool lastMouseDownRight;
 };
 
 enum ErrorType : int

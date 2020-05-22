@@ -10,7 +10,7 @@ const int CHECKBOXSIZE = 32;
 
 GridSelector::GridSelector( Vector2i p_pos, int xSizep, int ySizep, int iconX, int iconY, bool p_displaySelected,
 						   bool p_displayMouseOver, Panel *p )
-	:xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( true ), owner( p )
+	:xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( true ), panel( p )
 {
 	displaySelected = p_displaySelected;
 	displayMouseOver = p_displayMouseOver;
@@ -102,21 +102,22 @@ void GridSelector::Draw( sf::RenderTarget *target )
 }
 
 //returns true if a selection has been made
-bool GridSelector::Update( bool mouseDown, int posx, int posy )
+bool GridSelector::MouseUpdate()
 {
+	Vector2i mousePos = panel->GetMousePos();
 	//cout << "update: " << posx << ", " << posy << endl;
 	if( !active )
 	{
 		return false;
 		//assert( false && "trying to update inactive grid selector" );
 	}
-	if( mouseDown )
+	if( MOUSE.IsMouseLeftClicked() )
 	{
 		sf::Rect<int> r( pos.x, pos.y, xSize * tileSizeX, ySize * tileSizeY );
-		if( r.contains( sf::Vector2i( posx, posy ) ) )
+		if( r.contains(mousePos) )
 		{
-			focusX = ( posx - pos.x ) / tileSizeX;
-			focusY = ( posy - pos.y ) / tileSizeY;
+			focusX = (mousePos.x - pos.x ) / tileSizeX;
+			focusY = (mousePos.y - pos.y ) / tileSizeY;
 			cout << "contains index: " << focusX << ", " << focusY << endl;
 		}
 		else
@@ -128,16 +129,16 @@ bool GridSelector::Update( bool mouseDown, int posx, int posy )
 	else
 	{
 		sf::Rect<int> r( pos.x, pos.y, xSize * tileSizeX, ySize * tileSizeY );
-		if( r.contains( sf::Vector2i( posx, posy ) ) )
+		if( r.contains(mousePos) )
 		{
-			int tempX = ( posx - pos.x ) / tileSizeX;
-			int tempY = ( posy - pos.y ) / tileSizeY;
+			int tempX = (mousePos.x - pos.x ) / tileSizeX;
+			int tempY = (mousePos.y - pos.y ) / tileSizeY;
 			if( tempX == focusX && tempY == focusY )
 			{
 				selectedX = tempX;
 				selectedY = tempY;
 				cout << "tempX: " << tempX << ", tempY: " << tempY << endl;
-				owner->SendEvent( this, names[tempX][tempY] );//->GridSelectorCallback( this, names[tempX][tempY] );
+				panel->SendEvent( this, names[tempX][tempY] );//->GridSelectorCallback( this, names[tempX][tempY] );
 				return true;
 		//		cout << "success!" << endl;
 			}
@@ -255,11 +256,11 @@ int Slider::GetCurrX(float factor)
 }
 
 
-bool Slider::Update()
+bool Slider::MouseUpdate()
 {
 	Vector2i mousePos = panel->GetMousePos();
 	Vector2f point(mousePos);
-	bool mouseDown = panel->IsMouseDownLeft();
+	bool mouseDown = MOUSE.IsMouseDownLeft();
 	if ( mouseDown && ( IsPointOnRect( point ) || clickedDown ))
 	{
 		clickedDown = true;
@@ -370,7 +371,7 @@ bool Dropdown::IsMouseOnOption(int ind, Vector2f &point )
 	return QuadContainsPoint(dropdownRects + ind * 4, point );
 }
 
-bool Dropdown::Update()
+bool Dropdown::MouseUpdate()
 {
 	Vector2i mousePos = panel->GetMousePos();
 	Vector2f point(mousePos);
@@ -408,7 +409,7 @@ bool Dropdown::Update()
 
 	bool onMainQuad = QuadContainsPoint(mainRect, point);
 
-	if (panel->IsMouseLeftReleased() && expanded )
+	if (MOUSE.IsMouseLeftReleased() && expanded )
 	{
 		for (int i = 0; i < numOptions; ++i)
 		{
@@ -431,7 +432,7 @@ bool Dropdown::Update()
 		return false;
 	}
 
-	if (panel->IsMouseLeftClicked())
+	if (MOUSE.IsMouseLeftClicked())
 	{
 		
 		if (expanded)
@@ -466,40 +467,6 @@ bool Dropdown::Update()
 	{
 		clickedDown = false;
 	}
-
-	
-	/*sf::Rect<int> r(pos.x, pos.y, CHECKBOXSIZE, CHECKBOXSIZE);
-	if (mouseDown)
-	{
-		if (r.contains(sf::Vector2i(posx, posy)))
-		{
-			clickedDown = true;
-		}
-		else
-		{
-			clickedDown = false;
-		}
-	}
-	else
-	{
-		clickedDown = false;
-		if (r.contains(sf::Vector2i(posx, posy)) && clickedDown)
-		{
-			
-			checked = !checked;
-			if (checked)
-			{
-				owner->SendEvent(this, "checked");
-			}
-			else
-			{
-				owner->SendEvent(this, "unchecked");
-			}
-
-			return true;
-		}
-	}*/
-
 	return false;
 }
 
@@ -508,12 +475,6 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h )
 	:handler( h ), size( width, height ), name( n )
 	//:t( 0, 0, 200, 10, f, "hello" ), t2( 0, 100, 100, 10, f, "blah" ), b( 0, 50, 100, 50, f, "button!" )
 {
-	isMouseDownLeft = false;
-	lastMouseDownLeft = false;
-
-	isMouseDownRight = false;
-	lastMouseDownRight = false;
-
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 }
 
@@ -568,44 +529,30 @@ void Panel::SetPosition(const sf::Vector2i &p_pos)
 	}
 }
 
+const sf::Vector2i &Panel::GetMousePos()
+{
+	return mousePos;
+}
+
 //returns true if consumed
 //checkcontained is mostly for debug, have to redo panels better soon
-bool Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy,
-	bool checkContained )
+bool Panel::MouseUpdate()
 {
-	lastMouseDownLeft = isMouseDownLeft;
-	isMouseDownLeft = mouseDownL;
-
-	lastMouseDownRight = isMouseDownRight;
-	isMouseDownRight = mouseDownR;
-	
 	bool withinPanel = false;
-	if (checkContained)
+	Vector2i mPos = MOUSE.GetPos();
+
+	if (!(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
+		mPos.y >= pos.y && mPos.y <= pos.y + size.y))
 	{
-		if (posx >= pos.x && posx <= pos.x + size.x &&
-			posy >= pos.y && posy <= pos.y + size.y)
-		{
-			withinPanel = true;
-		}
-		else
-		{
-			return false;
-		}
-	}
-	else
-	{
-		withinPanel = true;
+		return false;
 	}
 
-	posx -= pos.x;
-	posy -= pos.y;
-
-	mousePos = Vector2i(posx, posy);
+	mousePos = mPos - pos;
 
 	//cout << "pos: " << posx << ", " << posy << endl;
 	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
 	{
-		bool temp = (*it).second->Update();
+		bool temp = (*it).second->MouseUpdate();
 		if (temp)
 		{
 			return withinPanel;
@@ -614,7 +561,7 @@ bool Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy,
 
 	for (auto it = sliders.begin(); it != sliders.end(); ++it)
 	{
-		bool temp = (*it).second->Update();
+		bool temp = (*it).second->MouseUpdate();
 		/*if (temp)
 		{
 			return withinPanel;
@@ -624,7 +571,7 @@ bool Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy,
 	for (std::map<string, TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it).second->Update(mouseDownL, posx, posy);
+		bool temp = (*it).second->MouseUpdate();
 		if (temp)
 		{
 			for (std::map<string, TextBox*>::iterator it2 = textBoxes.begin(); it2 != textBoxes.end(); ++it2)
@@ -642,23 +589,23 @@ bool Panel::Update( bool mouseDownL, bool mouseDownR, int posx, int posy,
 	for (map<string, Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it).second->Update(mouseDownL, posx, posy);
+		bool temp = (*it).second->MouseUpdate();
 
 	}
 
 	for (map<string, CheckBox*>::iterator it = checkBoxes.begin(); it != checkBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
-		bool temp = (*it).second->Update(mouseDownL, posx, posy);
+		bool temp = (*it).second->MouseUpdate();
 	}
 
 	for (map<string, GridSelector*>::iterator it = gridSelectors.begin(); it != gridSelectors.end(); ++it)
 	{
-		cout << "sending pos: " << posx << ", " << posy << endl;
-		bool temp = (*it).second->Update(mouseDownL, posx, posy);
+		//cout << "sending pos: " << posx << ", " << posy << endl;
+		bool temp = (*it).second->MouseUpdate();
 	}
 
-	return withinPanel;
+	return true;
 }
 
 void Panel::SendEvent( Button *b, const std::string & e )
@@ -679,6 +626,18 @@ void Panel::SendEvent( TextBox *tb, const std::string & e )
 void Panel::SendEvent( CheckBox *cb, const std::string & e )
 {
 	handler->CheckBoxCallback( cb, e );
+}
+
+void Panel::HandleEvent(sf::Event ev)
+{
+	switch (ev.type)
+	{
+	case Event::KeyPressed:
+		SendKey(ev.key.code, ev.key.shift);
+		break;
+	case Event::KeyReleased:
+		break;
+	}
 }
 
 void Panel::AddSlider(const std::string &name, sf::Vector2i &pos,
@@ -816,7 +775,7 @@ void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 		if( buttons.count( "ok" ) > 0 )
 		{
 			Button *b = buttons["ok"];
-			b->owner->SendEvent( b, "pressed" );
+			b->panel->SendEvent( b, "pressed" );
 		}
 		return;
 	}
@@ -825,50 +784,14 @@ void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 	{
 		if( (*it).second->focused )
 		{
-			//(*it).second->owner->SendEvent( 
 			(*it).second->SendKey( k, shift );
-			(*it).second->owner->SendEvent( (*it).second, "modified" );
+			(*it).second->panel->SendEvent( (*it).second, "modified" );
 		}
 	}
 }
 
-bool Panel::IsMouseDownLeft()
-{
-	return isMouseDownLeft;
-}
-
-bool Panel::IsMouseDownRight()
-{
-	return isMouseDownRight;
-}
-
-bool Panel::IsMouseLeftClicked()
-{
-	return isMouseDownLeft && !lastMouseDownLeft;
-}
-
-bool Panel::IsMouseLeftReleased()
-{
-	return !isMouseDownLeft && lastMouseDownLeft;
-}
-
-bool Panel::IsMouseRightClicked()
-{
-	return isMouseDownRight && !lastMouseDownRight;
-}
-
-bool Panel::IsMouseRightReleased()
-{
-	return !isMouseDownRight && lastMouseDownRight;
-}
-
-const sf::Vector2i & Panel::GetMousePos()
-{
-	return mousePos;
-}
-
 TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p,const std::string & initialText = "")
-	:pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n ), owner( p )
+	:pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n ), panel( p )
 {
 	focused = false;
 	leftBorder = 3;
@@ -884,9 +807,9 @@ TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLi
 	cursor.setFillColor( Color::Red );
 	cursor.setCharacterSize( characterHeight );
 	
-	cursor.setPosition( owner->pos.x + pos.x + text.getLocalBounds().width + leftBorder, owner->pos.y + pos.y );
-	text.setPosition( owner->pos.x + pos.x + leftBorder, owner->pos.y + pos.y );
-	//text.setPosition( owner->pos.x + pos.x + width / 2 - text.getLocalBounds().width / 2, owner->pos.y + pos.y + (characterHeight + verticalBorder) / 2 - text.getLocalBounds().height / 2);
+	cursor.setPosition( panel->pos.x + pos.x + text.getLocalBounds().width + leftBorder, 
+		panel->pos.y + pos.y );
+	text.setPosition(panel->pos.x + pos.x + leftBorder, panel->pos.y + pos.y );
 }
 
 void TextBox::SetCursorIndex( int index )
@@ -895,7 +818,7 @@ void TextBox::SetCursorIndex( int index )
 
 
 
-	cursor.setPosition( owner->pos.x + text.getLocalBounds().width + leftBorder, owner->pos.y + pos.y );
+	cursor.setPosition( panel->pos.x + text.getLocalBounds().width + leftBorder, panel->pos.y + pos.y );
 }
 
 void TextBox::SetCursorIndex( Vector2i &mousePos )
@@ -1096,15 +1019,17 @@ void TextBox::SendKey( Keyboard::Key k, bool shift )
 	sf::Text test;
 	test = text;
 	test.setString( test.getString().substring( 0, cursorIndex) );
-	cursor.setPosition( owner->pos.x + pos.x + test.getLocalBounds().width, owner->pos.y + pos.y);
+	cursor.setPosition( panel->pos.x + pos.x + test.getLocalBounds().width, 
+		panel->pos.y + pos.y);
 }
 
-bool TextBox::Update( bool mouseDown, int posx, int posy )
+bool TextBox::MouseUpdate()
 {
+	sf::Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r( pos.x, pos.y, width, characterHeight + verticalBorder );
-	if( mouseDown )
+	if( MOUSE.IsMouseDownLeft() )
 	{	
-		if( r.contains( sf::Vector2i( posx, posy ) ) )
+		if( r.contains( mousePos ) )
 		{
 			clickedDown = true;
 		}
@@ -1115,7 +1040,7 @@ bool TextBox::Update( bool mouseDown, int posx, int posy )
 	}
 	else
 	{
-		if( r.contains( sf::Vector2i( posx, posy ) ) && clickedDown )
+		if( r.contains( mousePos ) && clickedDown )
 		{
 			clickedDown = false;
 			
@@ -1171,7 +1096,7 @@ void TextBox::Draw( sf::RenderTarget *target )
 	//rs.setSize( Vector2f( 300, characterHeight + verticalBorder) );
 	rs.setSize( Vector2f( width, characterHeight + verticalBorder ) );
 	rs.setFillColor( Color::White );
-	rs.setPosition( owner->pos.x + pos.x, owner->pos.y + pos.y );
+	rs.setPosition( panel->pos.x + pos.x, panel->pos.y + pos.y );
 
 	target->draw( rs );
 
@@ -1183,7 +1108,7 @@ void TextBox::Draw( sf::RenderTarget *target )
 }
 
 Button::Button( const string &n, int posx, int posy, int width, int height, sf::Font &f, const std::string & t, Panel *p )
-	:pos( posx, posy ), clickedDown( false ), characterHeight( 20 ), size( width, height ), owner( p ), name( n )
+	:pos( posx, posy ), clickedDown( false ), characterHeight( 20 ), size( width, height ), panel( p ), name( n )
 {	
 	text.setString( t );
 	text.setFont( f );
@@ -1191,12 +1116,13 @@ Button::Button( const string &n, int posx, int posy, int width, int height, sf::
 	text.setCharacterSize( characterHeight );
 }
 
-bool Button::Update( bool mouseDown, int posx, int posy )
+bool Button::MouseUpdate()
 {
+	Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r( pos.x, pos.y, size.x, size.y );
-	if( mouseDown )
+	if( MOUSE.IsMouseLeftClicked() )
 	{	
-		if( r.contains( sf::Vector2i( posx, posy ) ) )
+		if( r.contains(mousePos) )
 		{
 			clickedDown = true;
 		}
@@ -1207,10 +1133,10 @@ bool Button::Update( bool mouseDown, int posx, int posy )
 	}
 	else
 	{
-		if( r.contains( sf::Vector2i( posx, posy ) ) && clickedDown )
+		if( r.contains(mousePos) && clickedDown )
 		{
 			clickedDown = false;
-			owner->SendEvent( this, "pressed" );
+			panel->SendEvent( this, "pressed" );
 			return true;
 		}
 		else 
@@ -1239,18 +1165,19 @@ void Button::Draw( RenderTarget *target )
 	target->draw( text );
 }
 
-CheckBox::CheckBox( const std::string &n, int posx, int posy, Panel *own )
-	:pos( posx, posy ), clickedDown( false ), owner( own ), name( n ), checked( false )
+CheckBox::CheckBox( const std::string &n, int posx, int posy, Panel *p )
+	:pos( posx, posy ), clickedDown( false ), panel( p ), name( n ), checked( false )
 {
 
 }
 
-bool CheckBox::Update( bool mouseDown, int posx, int posy )
+bool CheckBox::MouseUpdate()
 {
+	Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r( pos.x, pos.y, CHECKBOXSIZE, CHECKBOXSIZE);
-	if( mouseDown )
+	if( MOUSE.IsMouseLeftClicked() )
 	{	
-		if( r.contains( sf::Vector2i( posx, posy ) ) )
+		if( r.contains(mousePos) )
 		{
 			clickedDown = true;
 		}
@@ -1262,17 +1189,17 @@ bool CheckBox::Update( bool mouseDown, int posx, int posy )
 	else
 	{
 		
-		if( r.contains( sf::Vector2i( posx, posy ) ) && clickedDown )
+		if( r.contains(mousePos ) && clickedDown )
 		{
 			clickedDown = false;
 			checked = !checked;
 			if( checked )
 			{
-				owner->SendEvent( this, "checked" );
+				panel->SendEvent( this, "checked" );
 			}
 			else
 			{
-				owner->SendEvent( this, "unchecked" );
+				panel->SendEvent( this, "unchecked" );
 			}
 			
 			return true;
@@ -1404,8 +1331,16 @@ void ErrorBar::CreateErrorTable()
 	
 }
 
-void UIMouse::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &mPos)
+UIMouse::UIMouse()
 {
+	ResetMouse();
+}
+
+void UIMouse::Update( sf::Vector2i &mPos)
+{
+	bool mouseDownL = Mouse::isButtonPressed(Mouse::Left);
+	bool mouseDownR = Mouse::isButtonPressed(Mouse::Right);
+
 	lastMouseDownLeft = isMouseDownLeft;
 	isMouseDownLeft = mouseDownL;
 
