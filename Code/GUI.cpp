@@ -10,7 +10,7 @@ const int CHECKBOXSIZE = 32;
 
 GridSelector::GridSelector( Vector2i p_pos, int xSizep, int ySizep, int iconX, int iconY, bool p_displaySelected,
 						   bool p_displayMouseOver, Panel *p )
-	:xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( true ), panel( p )
+	:PanelMember( p ), xSize( xSizep ), ySize( ySizep ), tileSizeX( iconX ), tileSizeY( iconY ), active( true )
 {
 	displaySelected = p_displaySelected;
 	displayMouseOver = p_displayMouseOver;
@@ -49,6 +49,16 @@ GridSelector::~GridSelector()
 	}
 	delete[] icons;
 	delete[] names;
+}
+
+void GridSelector::Deactivate()
+{
+	focusX = -1;
+	focusY = -1;
+	mouseOverX = -1;
+	mouseOverY = -1;
+	selectedX = -1;
+	selectedY = -1;
 }
 
 void GridSelector::Set( int xi, int yi, Sprite s, const std::string &name )
@@ -164,7 +174,7 @@ bool GridSelector::MouseUpdate()
 
 Slider::Slider(const std::string &n, sf::Vector2i &p_pos, int width, sf::Font &f,
 	int p_min, int p_max, int p_defaultNum, Panel *p)
-	:pos(p_pos), clickedDown(false), characterHeight(20), panel(p), name(n),
+	:PanelMember( p ), pos(p_pos), clickedDown(false), characterHeight(20), name(n),
 	myFont(f), minValue( p_min ), maxValue( p_max ), defaultValue(p_defaultNum)
 {
 	size.y = 20;
@@ -189,6 +199,11 @@ Slider::Slider(const std::string &n, sf::Vector2i &p_pos, int width, sf::Font &f
 	float totalDiff = maxValue - minValue;
 	float factor = defaultValue / totalDiff;
 	SetToFactor(factor);
+}
+
+void Slider::Deactivate()
+{
+	clickedDown = false;
 }
 
 void Slider::SetCircle(int x)
@@ -288,7 +303,7 @@ void Slider::Draw(sf::RenderTarget *target)
 Dropdown::Dropdown(const std::string &n, sf::Vector2i &p_pos,
 	sf::Vector2i &p_size, sf::Font &f,
 	const std::vector<std::string> &p_options, int p_defaultIndex, Panel *p)
-	:pos(p_pos), clickedDown(false), characterHeight(size.y- 4), size(p_size), panel(p), name(n),
+	:PanelMember( p ), pos(p_pos), clickedDown(false), characterHeight(size.y- 4), size(p_size), name(n),
 	myFont( f ), defaultIndex( p_defaultIndex ), expanded(false), selectedIndex( p_defaultIndex )
 {
 	SetOptions(p_options);
@@ -298,6 +313,12 @@ Dropdown::Dropdown(const std::string &n, sf::Vector2i &p_pos,
 Dropdown::~Dropdown()
 {
 	delete[] dropdownRects;
+}
+
+void Dropdown::Deactivate()
+{
+	expanded = false;
+	clickedDown = false;
 }
 
 void Dropdown::SetOptions(const std::vector<std::string> &p_options)
@@ -806,6 +827,57 @@ bool Panel::ContainsPoint(sf::Vector2i &point)
 	return (r.contains(point));
 }
 
+void Panel::DrawQuad(RenderTarget *target)
+{
+	target->draw(quad, 4, sf::Quads);
+}
+
+void Panel::Deactivate()
+{
+	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
+	for (auto it = sliders.begin(); it != sliders.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
+	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
+	for (auto it = buttons.begin(); it != buttons.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
+	for (auto it = checkBoxes.begin(); it != checkBoxes.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
+	for (auto it = gridSelectors.begin(); it != gridSelectors.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
+	for (auto it = enemyChooseRects.begin(); it != enemyChooseRects.end(); ++it)
+	{
+		(*it)->Deactivate();
+	}
+
+	for (auto it = imageChooseRects.begin(); it != imageChooseRects.end(); ++it)
+	{
+		(*it)->Deactivate();
+	}
+
+	if (extraUpdater != NULL)
+		extraUpdater->Deactivate();
+}
+
 void Panel::Draw( RenderTarget *target )
 {
 	sf::View oldView = target->getView();
@@ -814,8 +886,24 @@ void Panel::Draw( RenderTarget *target )
 	myView.setCenter(myView.getCenter() - Vector2f(pos));
 
 	target->setView(myView);
+	
+	if (extraUpdater != NULL && extraUpdater->IsReplacingDraw())
+	{
+		extraUpdater->Draw(target);
+	}
+	else
+	{
+		DrawQuad(target);
 
-	target->draw(quad, 4, sf::Quads);
+		if( extraUpdater != NULL )
+			extraUpdater->Draw(target);
+	}
+
+	
+	
+
+
+
 	/*sf::RectangleShape rs;
 	rs.setSize( size );
 	rs.setFillColor( Color( 83, 102, 188) );
@@ -905,7 +993,7 @@ void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 }
 
 TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p,const std::string & initialText = "")
-	:pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n ), panel( p )
+	:PanelMember( p ), pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n )
 {
 	focused = false;
 	leftBorder = 3;
@@ -924,6 +1012,12 @@ TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLi
 	cursor.setPosition( panel->pos.x + pos.x + text.getLocalBounds().width + leftBorder, 
 		panel->pos.y + pos.y );
 	text.setPosition(panel->pos.x + pos.x + leftBorder, panel->pos.y + pos.y );
+}
+
+void TextBox::Deactivate()
+{
+	focused = false;
+	clickedDown = false;
 }
 
 void TextBox::SetCursorIndex( int index )
@@ -1222,12 +1316,17 @@ void TextBox::Draw( sf::RenderTarget *target )
 }
 
 Button::Button( const string &n, int posx, int posy, int width, int height, sf::Font &f, const std::string & t, Panel *p )
-	:pos( posx, posy ), clickedDown( false ), characterHeight( 20 ), size( width, height ), panel( p ), name( n )
+	:PanelMember( p ), pos( posx, posy ), clickedDown( false ), characterHeight( 20 ), size( width, height ), name( n )
 {	
 	text.setString( t );
 	text.setFont( f );
 	text.setFillColor( Color::White );
 	text.setCharacterSize( characterHeight );
+}
+
+void Button::Deactivate()
+{
+	clickedDown = false;
 }
 
 bool Button::MouseUpdate()
@@ -1280,9 +1379,14 @@ void Button::Draw( RenderTarget *target )
 }
 
 CheckBox::CheckBox( const std::string &n, int posx, int posy, Panel *p )
-	:pos( posx, posy ), clickedDown( false ), panel( p ), name( n ), checked( false )
+	:PanelMember( p ), pos( posx, posy ), clickedDown( false ), name( n ), checked( false )
 {
 
+}
+
+void CheckBox::Deactivate()
+{
+	clickedDown = false;
 }
 
 bool CheckBox::MouseUpdate()

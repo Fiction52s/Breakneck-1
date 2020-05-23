@@ -9177,6 +9177,8 @@ void EditSession::ModifyGrass()
 
 void EditSession::ClearActivePanels()
 {
+	if (focusedPanel != NULL)
+		focusedPanel->Deactivate();
 	activePanels.clear();
 	focusedPanel = NULL;
 }
@@ -9194,6 +9196,7 @@ void EditSession::RemoveActivePanel(Panel *p)
 		activePanels.remove(p);
 		if (focusedPanel == p)
 		{
+			p->Deactivate();
 			focusedPanel = NULL;
 		}
 	}
@@ -10928,7 +10931,12 @@ void EditSession::HandleEvents()
 		{
 			if ((*it)->IsPopup() || (*it)->ContainsPoint(mousePos))
 			{
-				focusedPanel = (*it);
+				if (focusedPanel != (*it))
+				{
+					if( focusedPanel != NULL )
+						focusedPanel->Deactivate();
+					focusedPanel = (*it);
+				}
 				found = true;
 				break;
 			}
@@ -10936,6 +10944,10 @@ void EditSession::HandleEvents()
 
 		if (!found)
 		{
+			if (focusedPanel != NULL)
+			{
+				focusedPanel->Deactivate();
+			}
 			focusedPanel = NULL;
 		}
 	}

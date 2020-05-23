@@ -62,10 +62,35 @@ private:
 
 struct PanelUpdater
 {
+	PanelUpdater()
+		:replaceDraw(false)
+	{
+
+	}
 	virtual bool MouseUpdate() = 0;
+	virtual void Draw(sf::RenderTarget *target){}
+	void SetReplaceDraw(bool r) {replaceDraw = r;}
+	bool IsReplacingDraw() { return replaceDraw; }
+	virtual void Deactivate() {}
+private:
+	bool replaceDraw;
 };
 
-struct ChooseRect
+struct PanelMember
+{
+	PanelMember(Panel * p)
+		:panel(p)
+	{
+
+	}
+	virtual void Draw(sf::RenderTarget *target) = 0;
+	virtual bool MouseUpdate() = 0;
+	virtual void Deactivate() {}
+
+	Panel *panel;
+};
+
+struct ChooseRect : PanelMember
 {
 	enum ChooseRectType
 	{
@@ -104,7 +129,11 @@ struct ChooseRect
 		sf::Vertex *v,
 	float size, sf::Vector2f &pos,
 		Panel *panel );
+	bool MouseUpdate();
+	virtual void Draw(sf::RenderTarget *target) {}
+
 	void Init();
+	virtual void Deactivate();
 	sf::Vector2f GetGlobalPos();
 	sf::Vector2f GetGlobalCenterPos();
 	void SetPosition(sf::Vector2f &pos);
@@ -112,9 +141,10 @@ struct ChooseRect
 	void UpdateRectDimensions();
 	float boxSize;
 	sf::Vector2f pos;
-	bool MouseUpdate();
+	
 	virtual void UpdateSprite(int frameUpdate) {}
-	virtual void Draw(sf::RenderTarget *target) {}
+
+	
 	sf::IntRect bounds;
 	int quadIndex;
 	sf::Vertex *quad;
@@ -127,7 +157,6 @@ struct ChooseRect
 
 	sf::Color mouseOverColor;
 	sf::Color idleColor;
-	Panel *panel;
 };
 
 
@@ -177,6 +206,7 @@ struct EnemyVariationSelector : PanelUpdater
 	bool MouseUpdate();
 	EnemyChooseRect *centerRect;
 	EnemyChooseRect *varRects[6];
+	void Deactivate();
 	int numVariations;
 	void SetType(ActorType *type );
 	void Draw(sf::RenderTarget *target);
@@ -274,16 +304,16 @@ struct CreateDecorModeUI
 	
 };
 
-struct GridSelector
+struct GridSelector : PanelMember
 {
-
 	GridSelector(sf::Vector2i pos, int xSize, int ySize, int iconX, int iconY,
 		bool displaySelected, bool displayMouseOver, Panel * p);
 	~GridSelector();
 	void Set(int xi, int yi, sf::Sprite s, const std::string &name);
+
 	void Draw(sf::RenderTarget *target);
 	bool MouseUpdate();
-	//void SetPanelPos(const sf::Vector2i &p_pos);
+	void Deactivate();
 	int tileSizeX;
 	int tileSizeY;
 	int xSize;
@@ -294,25 +324,23 @@ struct GridSelector
 	int focusX;
 	int focusY;
 	sf::Vector2i pos;
-	Panel *panel;
 	int selectedX;
 	int selectedY;
 	int mouseOverX;
 	int mouseOverY;
 	bool displaySelected;
 	bool displayMouseOver;
-	//GUIHandler *handler;
 };
 
-struct TextBox
+struct TextBox : PanelMember
 {
 	TextBox( const std::string &name, int posx, int posy, int width, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
 	void SendKey( sf::Keyboard::Key k, bool shift );
-	void Draw( sf::RenderTarget *rt );
+	void Draw( sf::RenderTarget *target );
 	bool MouseUpdate();
 	void SetCursorIndex( int index );
 	void SetCursorIndex( sf::Vector2i &mousePos );
-	//void SetPanelPos(const sf::Vector2i &p_pos);
+	void Deactivate();
 	sf::Vector2i pos;
 	int width;
 	std::string name;
@@ -325,15 +353,15 @@ struct TextBox
 	int leftBorder;
 	bool clickedDown;
 	bool focused;
-	Panel *panel;
+	
 };
 
-struct Button
+struct Button : PanelMember
 {
 	Button( const std::string &name, int posx, int posy, int width, int height, sf::Font &f, const std::string & text, Panel *panel);
-	void Draw( sf::RenderTarget *rt );
+	void Draw( sf::RenderTarget *target );
 	bool MouseUpdate();
-	//void SetPanelPos(const sf::Vector2i &p_pos);
+	void Deactivate();
 	sf::Vector2i pos;
 	sf::Vector2f size;
 	sf::Text text;
@@ -341,10 +369,9 @@ struct Button
 
 	int characterHeight;
 	bool clickedDown;
-	Panel *panel;
 };
 
-struct Slider
+struct Slider : PanelMember
 {
 	Slider(const std::string &name, sf::Vector2i &pos,
 		int width, sf::Font &f,
@@ -353,7 +380,7 @@ struct Slider
 	//~Slider();
 	void Draw(sf::RenderTarget *rt);
 	bool MouseUpdate();
-
+	void Deactivate();
 	float GetCurrFactor(const sf::Vector2i &mousePos);
 	int GetCurrValue(float factor);
 	int GetCurrX(float factor);
@@ -385,11 +412,9 @@ struct Slider
 	sf::Vertex displayRect[4];
 	int characterHeight;
 	bool clickedDown;
-	Panel *panel;
-	
 };
 
-struct Dropdown
+struct Dropdown : PanelMember
 {
 	Dropdown(const std::string &name, sf::Vector2i &pos,
 		sf::Vector2i &size, sf::Font &f, 
@@ -399,7 +424,7 @@ struct Dropdown
 	void SetOptions(const std::vector<std::string> &options);
 	void Draw(sf::RenderTarget *rt);
 	bool MouseUpdate();
-
+	void Deactivate();
 	sf::Vector2i pos;
 	sf::Vector2f size;
 	std::string name;
@@ -417,24 +442,20 @@ struct Dropdown
 	sf::Vertex *dropdownRects;
 	int characterHeight;
 	bool clickedDown;
-	Panel *panel;
 	int defaultIndex;
 };
 
-struct CheckBox
+struct CheckBox : PanelMember
 {
 	CheckBox( const std::string &name, int posx, int posy, Panel *panel );
 	void Draw( sf::RenderTarget *target );
 	bool MouseUpdate();
-	//void SetPanelPos(const sf::Vector2i &p_pos);
+	void Deactivate();
 	sf::Vector2i pos;
 	std::string name;
-	Panel *panel;
 	bool clickedDown;
 	bool checked;
 };
-
-
 
 struct Panel
 {
@@ -442,7 +463,9 @@ struct Panel
 		int height, GUIHandler *handler,
 		bool pop = false );
 	~Panel();
+	void Deactivate();
 	void SetColor(sf::Color c);
+	void DrawQuad(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *rt);
 	bool ContainsPoint(sf::Vector2i &pos);
 	/*bool Update(bool mouseDownLeft, bool mouseDownRight,

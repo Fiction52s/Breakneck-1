@@ -10,7 +10,10 @@ using namespace std;
 using namespace sf;
 
 EnemyVariationSelector::EnemyVariationSelector()
+	:PanelUpdater()
 {
+	SetReplaceDraw(false);
+
 	numVariations = 0;
 	Color testColor = Color::White;
 	
@@ -35,6 +38,7 @@ EnemyVariationSelector::EnemyVariationSelector()
 
 	Vector2f offset(0, -100);
 	Transform tr;
+	tr.rotate(360 / 6);
 	for (int i = 0; i < 6; ++i)
 	{
 		varRects[i] = panel->AddEnemyRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
@@ -68,12 +72,21 @@ bool EnemyVariationSelector::MouseUpdate()
 	return true;
 }
 
+void EnemyVariationSelector::Deactivate()
+{
+
+}
+
 void EnemyVariationSelector::SetType(ActorType *type)
 {
-	for (int i = 1; i <= type->info.numLevels; ++i)
+	for (int i = 0; i < 6; ++i)
 	{
 		varRects[i]->SetShown(false);
-		varRects[i]->SetType(type, i);
+	}
+
+	for (int i = 0; i < type->info.numLevels; ++i)
+	{
+		varRects[i]->SetType(type, i+1);
 		varRects[i]->SetShown(true);
 	}
 
@@ -92,12 +105,7 @@ void EnemyVariationSelector::SetPosition(sf::Vector2f &pos)
 
 void EnemyVariationSelector::Draw(RenderTarget *target)
 {
-	/*if (show)
-	{
-		target->draw(testQuad, 4, sf::Quads);
-		target->draw(enemyQuads, 4, sf::Quads);
-		centerRect->Draw(target);
-	}*/
+	//draw orb system here
 }
 
 CreateEnemyModeUI::CreateEnemyModeUI()
@@ -155,7 +163,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	int extraWorldSpacing = (1920 - totalWorldSize) / 2;
 
 	libPanel = new Panel("libpanel", totalWorldSize + 20, 600, edit, false);
-	libPanel->SetPosition(Vector2i(0, 140));
+	libPanel->SetPosition(Vector2i(100, 140));
 	libPanel->SetColor(panelColor);
 
 	libPanel->ReserveEnemyRects(enemyCounter);
@@ -164,7 +172,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	Tileset *ts_worldChoosers = edit->GetSizedTileset("worldselector_64x64.png");
 
 	librarySearchRect = topbarPanel->AddImageRect(ChooseRect::I_SEARCHENEMYLIBRARY, 
-		Vector2f(10, 10), ts_worldChoosers, 8);
+		Vector2f(10 + 100, 10), ts_worldChoosers, 8);
 
 	librarySearchRect->SetShown(true);
 	librarySearchRect->Init();
@@ -396,8 +404,8 @@ void CreateEnemyModeUI::ExpandVariation(EnemyChooseRect *ceRect)
 
 ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType, 
 	Vertex *v, float size, sf::Vector2f &p_pos, Panel *p)
-	:quad(v), boxSize( size ), pos( p_pos ), chooseRectType( crType ), 
-	rectIdentity( ident ), panel( p )
+	:PanelMember( p ), quad(v), boxSize( size ), pos( p_pos ), chooseRectType( crType ), 
+	rectIdentity( ident )
 {
 	idleColor = Color::Black;
 	idleColor.a = 100;
@@ -465,6 +473,12 @@ sf::Vector2f ChooseRect::GetGlobalCenterPos()
 void ChooseRect::SetActive(bool a)
 {
 	active = a;
+}
+
+void ChooseRect::Deactivate()
+{
+	focused = false;
+	SetRectColor(quad, idleColor);
 }
 
 bool ChooseRect::MouseUpdate()
