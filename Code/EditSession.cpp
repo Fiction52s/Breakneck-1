@@ -363,8 +363,6 @@ void EditSession::TestPlayerMode()
 	oneFrameMode = false;
 
 	accumulator = TIMESTEP + .1;
-	
-	
 
 	Actor *p;
 

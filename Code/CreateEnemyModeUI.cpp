@@ -84,7 +84,6 @@ void ChooseRectContainer::Draw(sf::RenderTarget *target)
 	target->draw(quad, 4, sf::Quads);
 }
 
-
 CreateEnemyModeUI::CreateEnemyModeUI()
 {
 	//varSelector = new EnemyVariationSelector;

@@ -1237,6 +1237,7 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 MapSelector::~MapSelector()
 {
 	delete bg;
+	delete bg2;
 
 	delete[] ts_bossFight;
 	delete[] ts_sectorOpen;
