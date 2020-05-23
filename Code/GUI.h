@@ -104,7 +104,8 @@ struct ChooseRect
 	ChooseRect( ChooseRectIdentity ident, 
 		ChooseRectType crType, 
 		sf::Vertex *v,
-	float size, sf::Vector2f &pos );
+	float size, sf::Vector2f &pos,
+		Panel *panel );
 	void Init();
 	sf::Vector2f GetGlobalPos();
 	void SetPosition(sf::Vector2f &pos);
@@ -126,6 +127,7 @@ struct ChooseRect
 
 	sf::Color mouseOverColor;
 	sf::Color idleColor;
+	Panel *panel;
 };
 
 struct ActorParams;
@@ -134,7 +136,7 @@ struct EnemyChooseRect : ChooseRect
 	EnemyChooseRect( ChooseRectIdentity ident, 
 		sf::Vertex *v, sf::Vector2f &position,
 		ActorType * type, 
-		int level );
+		int level, Panel *p );
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
 	void SetSize(float s);
@@ -153,7 +155,7 @@ struct ImageChooseRect : ChooseRect
 {
 	ImageChooseRect( ChooseRectIdentity ident, 
 		sf::Vertex *v, sf::Vector2f &position,
-		Tileset *ts, int tileIndex );
+		Tileset *ts, int tileIndex, Panel *p );
 
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
@@ -215,8 +217,8 @@ struct CreateEnemyModeUI
 		sf::Vector2i &mousePos);
 	void Draw(sf::RenderTarget *target);
 	void UpdateHotbarTypes();
-	ChooseRectContainer *topbarCont;
-	ChooseRectContainer *libCont;
+	Panel *topbarPanel;
+	Panel *libPanel;
 	//Panel *topbarPanel;
 	//Panel *libraryPanel;
 	EditSession *edit;
@@ -256,8 +258,8 @@ struct CreateDecorModeUI
 	bool showLibrary;
 	bool show;
 
-	ChooseRectContainer *topbarCont;
-	ChooseRectContainer *libCont;
+	Panel *topbarPanel;
+	Panel *libPanel;
 
 	std::vector<ImageChooseRect> allImageRects;
 	std::vector<std::vector<ImageChooseRect*>>
@@ -460,6 +462,9 @@ struct Panel
 		int tilesizex, int tilesizey,
 		bool displaySelected,
 		bool displayMouseOver );
+
+	void AddEnemyRect(EnemyChooseRect *ecRect);
+	void AddImageRect(ImageChooseRect *icRect);
 	void SetPosition(const sf::Vector2i &p_pos);
 	void HandleEvent(sf::Event ev);
 
@@ -477,6 +482,9 @@ struct Panel
 	std::map<std::string, GridSelector*> gridSelectors;
 	std::map<std::string, Dropdown*> dropdowns;
 	std::map<std::string, Slider*> sliders;
+	std::list<EnemyChooseRect*> enemyChooseRects;
+	std::list<ImageChooseRect*> imageChooseRects;
+
 	const sf::Vector2i &GetMousePos();
 
 	sf::Vector2i pos;
@@ -524,8 +532,6 @@ enum ErrorType : int
 
 struct ErrorBar
 {
-	
-
 	ErrorBar(sf::Font &f);
 	sf::Text errorText;
 	sf::RectangleShape rect;

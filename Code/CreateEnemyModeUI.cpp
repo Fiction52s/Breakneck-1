@@ -15,7 +15,7 @@ EnemyVariationSelector::EnemyVariationSelector()
 	//testColor.a = 100;
 	SetRectColor( testQuad, testColor);
 	centerRect = new EnemyChooseRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
-		enemyQuads, Vector2f(0, 0), NULL, 0);
+		enemyQuads, Vector2f(0, 0), NULL, 0, NULL );
 	
 	show = false;
 }
@@ -105,8 +105,9 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	int totalHotbarSize = hotbarRectSize * totalHotbarCount + hotbarSpacing * (totalHotbarCount - 1);
 	int extraHotbarSpacing = (1920 - totalHotbarSize) / 2;
 
-	//topbarCont = new ChooseRectContainer(Vector2i(extraHotbarSpacing, 20), Vector2f(totalHotbarSize, 120));
-	topbarCont = new ChooseRectContainer(Vector2i(0, 20), Vector2f(1920, 120));
+	//topbarCont = new ChooseRectContainer(Vector2i(0, 20), Vector2f(1920, 120));
+	topbarPanel = new Panel("topbarpanel", 1920, 120, edit, false);
+	topbarPanel->SetPosition(Vector2i(0, 20));
 
 	int enemyCounter = 0;
 	for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
@@ -122,10 +123,6 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	int numEnemyWorlds = 9;
 
-	//allEnemyQuads = new Vertex[enemyCounter * 4];
-	//hotbarQuads = new Vertex[totalHotbarCount * 4];
-	//worldSelectQuads = new Vertex[numEnemyWorlds * 4];
-
 	int numExtraRects = 1; //search library
 	numAllQuads = (enemyCounter + totalHotbarCount + numEnemyWorlds + numExtraRects);
 	allQuads = new Vertex[numAllQuads * 4];
@@ -136,8 +133,8 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	Tileset *ts_worldChoosers = edit->GetSizedTileset("worldselector_64x64.png");
 
-	librarySearchRect = new ImageChooseRect(ChooseRect::I_SEARCHENEMYLIBRARY, extraQuads,//, topbarCont,
-		Vector2f(10, 10), ts_worldChoosers, 8);
+	librarySearchRect = new ImageChooseRect(ChooseRect::I_SEARCHENEMYLIBRARY, extraQuads,
+		Vector2f(10, 10), ts_worldChoosers, 8, topbarPanel);
 	librarySearchRect->SetShown(true);
 	librarySearchRect->Init();
 	
@@ -147,7 +144,9 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	int extraWorldSpacing = (1920 - totalWorldSize) / 2;
 
-	libCont = new ChooseRectContainer(Vector2i(0, 140), Vector2f(totalWorldSize + 20, 600));
+	libPanel = new Panel("libpanel", totalWorldSize + 20, 600, edit, false);
+	libPanel->SetPosition(Vector2i(0, 140));
+	//libCont = new ChooseRectContainer(Vector2i(0, 140), Vector2f(totalWorldSize + 20, 600));
 
 	{
 		int i = 0;
@@ -159,24 +158,18 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 			}
 			for (int level = 1; level <= (*it).second->info.numLevels; ++level)
 			{
-				allEnemyRects.push_back(EnemyChooseRect(ChooseRect::I_ENEMYLIBRARY, allEnemyQuads + i * 4,// libCont,
-					Vector2f(0, 0), (*it).second, level));
+				allEnemyRects.push_back(EnemyChooseRect(ChooseRect::I_ENEMYLIBRARY, allEnemyQuads + i * 4,
+					Vector2f(0, 0), (*it).second, level, libPanel ));
 				++i;
 			}
 		}
 	}
 
-	//activeHotbarSize = //allEnemyRects.size();
-	//if (activeHotbarSize > totalHotbarCount)
-	//{
-	//	activeHotbarSize = totalHotbarCount;
-	//}
-
 	for (int i = 0; i < totalHotbarCount; ++i)
 	{
-		hotbarEnemies.push_back(EnemyChooseRect(ChooseRect::I_ENEMYHOTBAR, hotbarQuads + i * 4,// topbarCont,
+		hotbarEnemies.push_back(EnemyChooseRect(ChooseRect::I_ENEMYHOTBAR, hotbarQuads + i * 4,
 			Vector2f(extraHotbarSpacing + 10 + i * ( hotbarRectSize + hotbarSpacing ), 10),
-			NULL, 0 ));
+			NULL, 0, topbarPanel ));
 		hotbarEnemies[i].SetShown(false);
 		hotbarEnemies[i].Init();
 	}
@@ -184,17 +177,15 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	
 
 	worldSelectRects.reserve(numEnemyWorlds);
-	
-	
-
-	
-
-	
 
 	for (int i = 0; i < numEnemyWorlds; ++i)
 	{
-		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4,// libCont,
-			Vector2f( i * (worldSize + worldSpacing) + 10, 10 ), ts_worldChoosers, i));
+		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, 
+			worldSelectQuads + i * 4,
+			Vector2f( i * (worldSize + worldSpacing) + 10, 10 ), 
+			ts_worldChoosers, 
+			i, 
+			libPanel ));
 		worldSelectRects[i].SetShown(false);
 		worldSelectRects[i].Init();
 	}
@@ -211,7 +202,6 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 			}
 		}
 		libraryEnemiesVec[w].reserve(counter);
-		//libraryEnemiesVec[0].push_back( )
 	}
 
 	int row, col;
@@ -248,8 +238,10 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 CreateEnemyModeUI::~CreateEnemyModeUI()
 {
 	delete varSelector;
-	delete topbarCont;
-	delete libCont;
+	delete topbarPanel;
+	delete libPanel;
+	//delete topbarCont;
+	//delete libCont;
 	//delete topbarPanel;
 	//delete libraryPanel;
 
@@ -354,7 +346,8 @@ void CreateEnemyModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &m
 		}
 	}
 	
-
+	topbarPanel->MouseUpdate();
+	libPanel->MouseUpdate();
 	//topbarCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
 	//libCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
 
@@ -431,10 +424,10 @@ void CreateEnemyModeUI::Draw(sf::RenderTarget *target)
 	//topbarPanel->Draw(target);
 	//libraryPanel->Draw(target);
 
-	topbarCont->Draw(target);
+	topbarPanel->Draw(target);
 	if (showLibrary)
 	{
-		libCont->Draw(target);
+		libPanel->Draw(target);
 	}
 
 	target->draw(allQuads, numAllQuads * 4, sf::Quads);
@@ -487,8 +480,10 @@ void CreateEnemyModeUI::ExpandVariation(EnemyChooseRect *ceRect)
 }
 
 
-ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType, Vertex *v, float size, sf::Vector2f &p_pos)
-	:quad(v), boxSize( size ), pos( p_pos ), chooseRectType( crType ), rectIdentity( ident )
+ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType, 
+	Vertex *v, float size, sf::Vector2f &p_pos, Panel *p)
+	:quad(v), boxSize( size ), pos( p_pos ), chooseRectType( crType ), 
+	rectIdentity( ident ), panel( p )
 {
 	idleColor = Color::Black;
 	idleColor.a = 100;
@@ -545,7 +540,7 @@ void ChooseRect::SetShown(bool s)
 sf::Vector2f ChooseRect::GetGlobalPos()
 {
 	//return mouseUser->GetFloatPos() + pos;
-	return pos;
+	return Vector2f(panel->pos) + pos;
 }
 
 void ChooseRect::SetActive(bool a)
@@ -555,7 +550,7 @@ void ChooseRect::SetActive(bool a)
 
 bool ChooseRect::Update()
 {
-	Vector2i mousePos = MOUSE.GetPos();//mouseUser->GetMousePos();//panel->GetMousePos();
+	Vector2i mousePos = panel->GetMousePos();//mouseUser->GetMousePos();//panel->GetMousePos();
 	EditSession *edit = EditSession::GetSession();
 	
 	if (MOUSE.IsMouseLeftClicked())
@@ -624,8 +619,9 @@ ImageChooseRect *ChooseRect::GetAsImageChooseRect()
 	}
 }
 
-EnemyChooseRect::EnemyChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector2f &p_pos, ActorType * p_type,int p_level)
-	:ChooseRect( ident, ChooseRectType::ENEMY, v, 100, p_pos), level( p_level )
+EnemyChooseRect::EnemyChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector2f &p_pos, ActorType * p_type,int p_level,
+	Panel *p )
+	:ChooseRect( ident, ChooseRectType::ENEMY, v, 100, p_pos, p), level( p_level )
 {
 	actorType = NULL;
 	SetType(p_type, level);
@@ -782,8 +778,8 @@ void ImageChooseRect::SetImage(Tileset *p_ts, int p_index)
 }
 
 ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector2f &p_pos, Tileset *p_ts,
-	int p_tileIndex )
-	:ChooseRect( ident, ChooseRectType::IMAGE, v, 100, p_pos)
+	int p_tileIndex, Panel *p )
+	:ChooseRect( ident, ChooseRectType::IMAGE, v, 100, p_pos, p )
 {
 	ts = NULL;
 	SetImage(p_ts, p_tileIndex);

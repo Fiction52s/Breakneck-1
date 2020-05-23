@@ -27,7 +27,9 @@ CreateDecorModeUI::CreateDecorModeUI()
 	int totalHotbarSize = hotbarRectSize * totalHotbarCount + hotbarSpacing * (totalHotbarCount - 1);
 	int extraHotbarSpacing = (1920 - totalHotbarSize) / 2;
 
-	topbarCont = new ChooseRectContainer(Vector2i(0, 20), Vector2f(1920, 120));
+	//topbarCont = new ChooseRectContainer(Vector2i(0, 20), Vector2f(1920, 120));
+	topbarPanel = new Panel("topbarpanel", 1920, 120, edit, false);
+	topbarPanel->SetPosition(Vector2i(0, 20));
 
 	int imageCounter = 0;
 	for (auto it = edit->decorTileIndexMap.begin(); it != edit->decorTileIndexMap.end(); ++it)
@@ -53,8 +55,8 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	Tileset *ts_worldChoosers = edit->GetSizedTileset("worldselector_64x64.png");
 
-	librarySearchRect = new ImageChooseRect(ChooseRect::I_SEARCHDECORLIBRARY, extraQuads,// topbarCont,
-		Vector2f(10, 10), ts_worldChoosers, 8);
+	librarySearchRect = new ImageChooseRect(ChooseRect::I_SEARCHDECORLIBRARY, extraQuads,
+		Vector2f(10, 10), ts_worldChoosers, 8, topbarPanel);
 	librarySearchRect->SetShown(true);
 	librarySearchRect->Init();
 
@@ -64,16 +66,17 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	int extraWorldSpacing = (1920 - totalWorldSize) / 2;
 
-	libCont = new ChooseRectContainer(Vector2i(0, 140), Vector2f(totalWorldSize + 20, 600));
-
+	//libCont = new ChooseRectContainer(Vector2i(0, 140), Vector2f(totalWorldSize + 20, 600));
+	libPanel = new Panel("libpanel", totalWorldSize + 20, 600, edit, false);
+	libPanel->SetPosition(Vector2i(0, 140));
 	{
 		int i = 0;
 		for (auto it = edit->decorTileIndexMap.begin(); it != edit->decorTileIndexMap.end(); ++it)
 		{
 			for (auto indexIt = (*it).second.begin(); indexIt != (*it).second.end(); ++indexIt)
 			{
-				allImageRects.push_back(ImageChooseRect(ChooseRect::I_DECORLIBRARY, allImageQuads + i * 4,// libCont,
-					Vector2f(0, 0), edit->decorTSMap[(*it).first], (*indexIt)));
+				allImageRects.push_back(ImageChooseRect(ChooseRect::I_DECORLIBRARY, allImageQuads + i * 4,
+					Vector2f(0, 0), edit->decorTSMap[(*it).first], (*indexIt), libPanel));
 				allImageRects.back().decorName = (*it).first;
 				++i;
 			}
@@ -82,9 +85,9 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	for (int i = 0; i < totalHotbarCount; ++i)
 	{
-		hotbarImages.push_back(ImageChooseRect(ChooseRect::I_DECORHOTBAR, hotbarQuads + i * 4, //topbarCont,
+		hotbarImages.push_back(ImageChooseRect(ChooseRect::I_DECORHOTBAR, hotbarQuads + i * 4,
 			Vector2f(extraHotbarSpacing + 10 + i * (hotbarRectSize + hotbarSpacing), 10),
-			NULL, 0));
+			NULL, 0, topbarPanel));
 		hotbarImages[i].SetShown(false);
 		hotbarImages[i].Init();
 	}
@@ -95,8 +98,8 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	for (int i = 0; i < numEnemyWorlds; ++i)
 	{
-		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4, //libCont,
-			Vector2f(i * (worldSize + worldSpacing) + 10, 10), ts_worldChoosers, i));
+		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4,
+			Vector2f(i * (worldSize + worldSpacing) + 10, 10), ts_worldChoosers, i, libPanel));
 		worldSelectRects[i].SetShown(false);
 		worldSelectRects[i].Init();
 	}
@@ -148,8 +151,8 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 CreateDecorModeUI::~CreateDecorModeUI()
 {
-	delete topbarCont;
-	delete libCont;
+	delete topbarPanel;
+	delete libPanel;
 	//delete topbarPanel;
 	//delete libraryPanel;
 
@@ -316,14 +319,10 @@ void CreateDecorModeUI::Draw(sf::RenderTarget *target)
 	sf::View oldView = target->getView();
 	target->setView(edit->uiView);
 
-
-	//topbarPanel->Draw(target);
-	//libraryPanel->Draw(target);
-
-	topbarCont->Draw(target);
+	topbarPanel->Draw(target);
 	if (showLibrary)
 	{
-		libCont->Draw(target);
+		libPanel->Draw(target);
 	}
 
 	target->draw(allQuads, numAllQuads * 4, sf::Quads);
