@@ -5,6 +5,7 @@
 #include "Enemy.h"
 #include "EditSession.h"
 #include "EditorDecorInfo.h"
+
 using namespace std;
 using namespace sf;
 
@@ -12,32 +13,22 @@ EnemyVariationSelector::EnemyVariationSelector()
 {
 	numVariations = 0;
 	Color testColor = Color::White;
-	//testColor.a = 100;
-	SetRectColor( testQuad, testColor);
-	centerRect = new EnemyChooseRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
-		enemyQuads, Vector2f(0, 0), NULL, 0, NULL );
 	
-	show = false;
-}
+	
+	edit = EditSession::GetSession();
 
-bool EnemyVariationSelector::Update()
-{
-	if (!show)
-		return false;
+	int panelSize = 300;
+	
+	panel = new Panel("topbarpanel", 300, 300, edit, true);
+	panel->SetPosition(Vector2i(0, 0));
 
-	Vector2i mousePos = MOUSE.GetPos();
-	if (QuadContainsPoint(testQuad, Vector2f(mousePos)))
-	{
-		centerRect->MouseUpdate();
-		SetRectColor(testQuad, Color(Color::Green));
-		return true;
-	}
-	else
-	{
-		SetRectColor(testQuad, Color(Color::White));
-	}
-
-	return false;
+	panel->ReserveEnemyRects(1);
+	centerRect = panel->AddEnemyRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
+		Vector2f(0, 0), NULL, 0);
+	centerRect->SetPosition(Vector2f(panelSize / 2 - centerRect->boxSize / 2, 
+		panelSize / 2 - centerRect->boxSize / 2));
+	//centerRect = new EnemyChooseRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
+		//enemyQuads, Vector2f(0, 0), NULL, 0, NULL);
 }
 
 void EnemyVariationSelector::SetType(ActorType *type)
@@ -48,23 +39,21 @@ void EnemyVariationSelector::SetType(ActorType *type)
 
 void EnemyVariationSelector::SetPosition(sf::Vector2f &pos)
 {
-	centerRect->SetPosition(pos);
-	SetRectCenter(testQuad, 300, 300, pos);
+	panel->SetCenterPos(Vector2i(pos));
 
 	for (int i = 0; i < numVariations; ++i)
 	{
-
 	}
 }
 
 void EnemyVariationSelector::Draw(RenderTarget *target)
 {
-	if (show)
+	/*if (show)
 	{
 		target->draw(testQuad, 4, sf::Quads);
 		target->draw(enemyQuads, 4, sf::Quads);
 		centerRect->Draw(target);
-	}
+	}*/
 }
 
 
@@ -86,7 +75,7 @@ void ChooseRectContainer::Draw(sf::RenderTarget *target)
 
 CreateEnemyModeUI::CreateEnemyModeUI()
 {
-	//varSelector = new EnemyVariationSelector;
+	varSelector = new EnemyVariationSelector;
 	activeHotbarSize = 0;
 
 	hotbarEnemies.reserve(8);
@@ -106,6 +95,11 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	topbarPanel = new Panel("topbarpanel", 1920, 120, edit, false);
 	topbarPanel->SetPosition(Vector2i(0, 20));
+
+	Color panelColor;
+	panelColor = Color::Cyan;
+	panelColor.a = 80;
+	topbarPanel->SetColor(panelColor);
 
 	int enemyCounter = 0;
 	for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
@@ -135,6 +129,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	libPanel = new Panel("libpanel", totalWorldSize + 20, 600, edit, false);
 	libPanel->SetPosition(Vector2i(0, 140));
+	libPanel->SetColor(panelColor);
 
 	libPanel->ReserveEnemyRects(enemyCounter);
 	libPanel->ReserveImageRects(numEnemyWorlds);
@@ -235,7 +230,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 CreateEnemyModeUI::~CreateEnemyModeUI()
 {
-	//delete varSelector;
+	delete varSelector;
 	delete topbarPanel;
 	delete libPanel;
 }
@@ -269,6 +264,7 @@ void CreateEnemyModeUI::SetShown(bool s)
 	}
 	else
 	{
+		edit->RemoveActivePanel(varSelector->panel);
 		edit->RemoveActivePanel(topbarPanel);
 		if (showLibrary)
 		{
@@ -362,13 +358,9 @@ void CreateEnemyModeUI::FlipLibraryShown()
 
 void CreateEnemyModeUI::ExpandVariation(EnemyChooseRect *ceRect)
 {
-	//if (!varSelector->show)
-	//{
-	//	varSelector->show = true;
-	//	//setpos needs to be before settype
-	//	varSelector->SetPosition(ceRect->GetGlobalPos());
-	//	varSelector->SetType(ceRect->enemyParams->type);
-	//}
+	edit->AddActivePanel(varSelector->panel);
+	varSelector->SetPosition(ceRect->GetGlobalCenterPos());
+	varSelector->SetType(ceRect->enemyParams->type);
 }
 
 
@@ -433,6 +425,11 @@ sf::Vector2f ChooseRect::GetGlobalPos()
 {
 	//return mouseUser->GetFloatPos() + pos;
 	return Vector2f(panel->pos) + pos;
+}
+
+sf::Vector2f ChooseRect::GetGlobalCenterPos()
+{
+	return GetGlobalPos() + Vector2f(boxSize / 2, boxSize / 2);
 }
 
 void ChooseRect::SetActive(bool a)

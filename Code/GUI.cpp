@@ -477,7 +477,13 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
 {
 	imageChooseRectQuads = NULL;
 	enemyChooseRectQuads = NULL;
+	reservedEnemyRectCount = 0;
+	reservedImageRectCount = 0;
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
+	SetPosition(Vector2i(0, 0));
+
+	Color defaultColor(83, 102, 188);
+	SetRectColor(quad, defaultColor);
 }
 
 Panel::~Panel()
@@ -547,13 +553,21 @@ bool Panel::IsPopup()
 	return popup;
 }
 
+void Panel::SetColor(sf::Color c)
+{
+	SetRectColor(quad, c);
+}
+
 void Panel::SetPosition(const sf::Vector2i &p_pos)
 {
 	pos = p_pos;
 
-	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
-	{
-	}
+	SetRectTopLeft(quad, size.x, size.y, Vector2f(pos));
+}
+
+void Panel::SetCenterPos(const sf::Vector2i &p_pos)
+{
+	SetPosition(Vector2i(p_pos.x - size.x / 2, p_pos.y - size.y / 2));
 }
 
 const sf::Vector2i &Panel::GetMousePos()
@@ -565,7 +579,6 @@ const sf::Vector2i &Panel::GetMousePos()
 //checkcontained is mostly for debug, have to redo panels better soon
 bool Panel::MouseUpdate()
 {
-	bool withinPanel = false;
 	Vector2i mPos = MOUSE.GetPos();
 
 	if ( !popup && !(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
@@ -582,7 +595,7 @@ bool Panel::MouseUpdate()
 		bool temp = (*it).second->MouseUpdate();
 		if (temp)
 		{
-			return withinPanel;
+			return true;
 		}
 	}
 
@@ -687,12 +700,14 @@ void Panel::HandleEvent(sf::Event ev)
 
 void Panel::ReserveEnemyRects(int num)
 {
+	reservedEnemyRectCount = num;
 	enemyChooseRects.reserve(num);
 	enemyChooseRectQuads = new Vertex[num * 4];
 }
 
 void Panel::ReserveImageRects(int num)
 {
+	reservedImageRectCount = num;
 	imageChooseRects.reserve(num);
 	imageChooseRectQuads = new Vertex[num * 4];
 }
@@ -703,6 +718,7 @@ EnemyChooseRect * Panel::AddEnemyRect(
 	ActorType * type,
 	int level)
 {
+	assert(enemyChooseRects.size() < reservedEnemyRectCount);
 	EnemyChooseRect *ecRect = new EnemyChooseRect(ident, 
 		enemyChooseRectQuads + enemyChooseRects.size() * 4,
 		position, type, level, this);
@@ -713,6 +729,7 @@ EnemyChooseRect * Panel::AddEnemyRect(
 ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident, 
 	sf::Vector2f &position, Tileset *ts, int tileIndex)
 {
+	assert(imageChooseRects.size() < reservedImageRectCount);
 	ImageChooseRect *icRect = new ImageChooseRect(ident,
 		imageChooseRectQuads + imageChooseRects.size() * 4,
 		position, ts, tileIndex, this);

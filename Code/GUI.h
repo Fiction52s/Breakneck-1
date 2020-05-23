@@ -8,14 +8,17 @@
 struct Panel;
 struct GUIHandler;
 
-
-
-
 struct ActorType;
 struct EnemyChooser;
 struct Enemy;
 struct EnemyChooseRect;
 struct ImageChooseRect;
+
+struct ActorParams;
+struct Tileset;
+struct EditorDecorInfo;
+struct CreateEnemyModeUI;
+struct EditSession;
 
 struct UIMouse
 {
@@ -108,6 +111,7 @@ struct ChooseRect
 		Panel *panel );
 	void Init();
 	sf::Vector2f GetGlobalPos();
+	sf::Vector2f GetGlobalCenterPos();
 	void SetPosition(sf::Vector2f &pos);
 	virtual void SetSize(float s);
 	void UpdateRectDimensions();
@@ -130,7 +134,7 @@ struct ChooseRect
 	Panel *panel;
 };
 
-struct ActorParams;
+
 struct EnemyChooseRect : ChooseRect
 {
 	EnemyChooseRect( ChooseRectIdentity ident, 
@@ -149,8 +153,7 @@ struct EnemyChooseRect : ChooseRect
 	int level;
 };
 
-struct Tileset;
-struct EditorDecorInfo;
+
 struct ImageChooseRect : ChooseRect
 {
 	ImageChooseRect( ChooseRectIdentity ident, 
@@ -169,24 +172,25 @@ struct ImageChooseRect : ChooseRect
 	std::string decorName;
 };
 
-struct CreateEnemyModeUI;
+
 
 struct EnemyVariationSelector
 {
 	EnemyVariationSelector();
-	bool Update();
 	EnemyChooseRect *centerRect;
 	EnemyChooseRect *varRects[6];
 	int numVariations;
 	void SetType(ActorType *type );
 	void Draw(sf::RenderTarget *target);
 	void SetPosition(sf::Vector2f &pos);
-	sf::Vertex testQuad[4];
+	//sf::Vertex testQuad[4];
 	sf::Vertex enemyQuads[28];
-	bool show;
+	//bool show;
+	Panel *panel;
+	EditSession *edit;
 };
 
-struct EditSession;
+
 struct CreateEnemyModeUI
 {
 	CreateEnemyModeUI();
@@ -438,6 +442,7 @@ struct Panel
 		int height, GUIHandler *handler,
 		bool pop = false );
 	~Panel();
+	void SetColor(sf::Color c);
 	void Draw(sf::RenderTarget *rt);
 	bool ContainsPoint(sf::Vector2i &pos);
 	/*bool Update(bool mouseDownLeft, bool mouseDownRight,
@@ -467,6 +472,7 @@ struct Panel
 	ImageChooseRect * AddImageRect(ChooseRect::ChooseRectIdentity ident,
 		sf::Vector2f &position, Tileset *ts, int tileIndex);
 	void SetPosition(const sf::Vector2i &p_pos);
+	void SetCenterPos(const sf::Vector2i &p_pos);
 	void HandleEvent(sf::Event ev);
 
 	void SendKey( sf::Keyboard::Key k, bool shift );
@@ -485,6 +491,8 @@ struct Panel
 	std::map<std::string, Slider*> sliders;
 	void ReserveEnemyRects(int num);
 	void ReserveImageRects(int num);
+	int reservedEnemyRectCount;
+	int reservedImageRectCount;
 	std::vector<EnemyChooseRect*> enemyChooseRects;
 	std::vector<ImageChooseRect*> imageChooseRects;
 	sf::Vertex *enemyChooseRectQuads;
@@ -499,6 +507,7 @@ struct Panel
 	bool IsPopup();
 	bool active;
 private:
+	sf::Vertex quad[4];
 	bool popup;
 	sf::Vector2i mousePos;
 };

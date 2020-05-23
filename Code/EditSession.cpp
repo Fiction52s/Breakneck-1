@@ -9188,10 +9188,14 @@ void EditSession::AddActivePanel(Panel *p)
 
 void EditSession::RemoveActivePanel(Panel *p)
 {
-	activePanels.remove(p);
-	if (focusedPanel == p)
+	bool found = (find(activePanels.begin(), activePanels.end(), p)) != activePanels.end();
+	if (found)
 	{
-		focusedPanel = NULL;
+		activePanels.remove(p);
+		if (focusedPanel == p)
+		{
+			focusedPanel = NULL;
+		}
 	}
 }
 
