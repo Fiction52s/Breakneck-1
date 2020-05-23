@@ -113,7 +113,7 @@ struct ChooseRect
 	void UpdateRectDimensions();
 	float boxSize;
 	sf::Vector2f pos;
-	bool Update();
+	bool MouseUpdate();
 	virtual void UpdateSprite(int frameUpdate) {}
 	virtual void Draw(sf::RenderTarget *target) {}
 	sf::IntRect bounds;
@@ -195,21 +195,21 @@ struct CreateEnemyModeUI
 	EnemyVariationSelector *varSelector;
 	void ExpandVariation(EnemyChooseRect *ceRect);
 	//std::vector<ChooseRect> myRects;
-	std::vector<EnemyChooseRect> allEnemyRects;
+	std::vector<EnemyChooseRect*> allEnemyRects;
 	
-	std::vector<EnemyChooseRect> hotbarEnemies;
+	std::vector<EnemyChooseRect*> hotbarEnemies;
 	ImageChooseRect *librarySearchRect;
 	//sf::Vertex *hotbarQuads;
 	//sf::Vertex *worldSelectQuads;
 	//sf::Vertex *allEnemyQuads;
-	sf::Vertex *allQuads;
+	//sf::Vertex *allQuads;
 	int numAllQuads;
 	int activeHotbarSize;
 	std::vector<std::vector<EnemyChooseRect*>> 
 		libraryEnemiesVec;
 	void SetActiveLibraryWorld(int w);
 	int activeLibraryWorld;
-	std::vector<ImageChooseRect> worldSelectRects;
+	std::vector<ImageChooseRect*> worldSelectRects;
 	
 	void UpdateSprites(int sprUpdateFrames);
 	void Update(bool mouseDownL,
@@ -463,8 +463,13 @@ struct Panel
 		bool displaySelected,
 		bool displayMouseOver );
 
-	void AddEnemyRect(EnemyChooseRect *ecRect);
-	void AddImageRect(ImageChooseRect *icRect);
+	EnemyChooseRect * AddEnemyRect(
+		ChooseRect::ChooseRectIdentity ident,
+		sf::Vector2f &position,
+		ActorType * type,
+		int level);
+	ImageChooseRect * AddImageRect(ChooseRect::ChooseRectIdentity ident,
+		sf::Vector2f &position, Tileset *ts, int tileIndex);
 	void SetPosition(const sf::Vector2i &p_pos);
 	void HandleEvent(sf::Event ev);
 
@@ -482,8 +487,12 @@ struct Panel
 	std::map<std::string, GridSelector*> gridSelectors;
 	std::map<std::string, Dropdown*> dropdowns;
 	std::map<std::string, Slider*> sliders;
-	std::list<EnemyChooseRect*> enemyChooseRects;
-	std::list<ImageChooseRect*> imageChooseRects;
+	void ReserveEnemyRects(int num);
+	void ReserveImageRects(int num);
+	std::vector<EnemyChooseRect*> enemyChooseRects;
+	std::vector<ImageChooseRect*> imageChooseRects;
+	sf::Vertex *enemyChooseRectQuads;
+	sf::Vertex *imageChooseRectQuads;
 
 	const sf::Vector2i &GetMousePos();
 

@@ -252,16 +252,16 @@ void CreateDecorModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &m
 	//topbarCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
 	//libCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
 
-	librarySearchRect->Update();
+	//librarySearchRect->Update();
 
-	for (int i = 0; i < hotbarImages.size(); ++i)
+	/*for (int i = 0; i < hotbarImages.size(); ++i)
 	{
 		hotbarImages[i].Update();
-	}
+	}*/
 
 	if (showLibrary)
 	{
-		for (int i = 0; i < 9; ++i)
+		/*for (int i = 0; i < 9; ++i)
 		{
 			worldSelectRects[i].Update();
 		}
@@ -276,7 +276,7 @@ void CreateDecorModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &m
 					(*it)->Update();
 				}
 			}
-		}
+		}*/
 	}
 }
 

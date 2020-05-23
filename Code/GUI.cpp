@@ -475,6 +475,8 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
 	:handler( h ), size( width, height ), name( n ), popup( pop )
 	//:t( 0, 0, 200, 10, f, "hello" ), t2( 0, 100, 100, 10, f, "blah" ), b( 0, 50, 100, 50, f, "button!" )
 {
+	imageChooseRectQuads = NULL;
+	enemyChooseRectQuads = NULL;
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 }
 
@@ -514,6 +516,26 @@ Panel::~Panel()
 		delete (*it).second;
 	}
 
+	for (auto it = enemyChooseRects.begin(); it != enemyChooseRects.end(); ++it)
+	{
+		delete (*it);
+	}
+	if (enemyChooseRectQuads != NULL)
+	{
+		delete[] enemyChooseRectQuads;
+	}
+	
+
+	for (auto it = imageChooseRects.begin(); it != imageChooseRects.end(); ++it)
+	{
+		delete (*it);
+	}
+	if (imageChooseRectQuads != NULL)
+	{
+		delete[] imageChooseRectQuads;
+	}
+	
+
 	/*for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
 	{
 		delete (*it).second;
@@ -546,11 +568,11 @@ bool Panel::MouseUpdate()
 	bool withinPanel = false;
 	Vector2i mPos = MOUSE.GetPos();
 
-	if ( !popup && !(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
+	/*if ( !popup && !(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
 		mPos.y >= pos.y && mPos.y <= pos.y + size.y))
 	{
 		return false;
-	}
+	}*/
 
 	mousePos = mPos - pos;
 
@@ -573,7 +595,7 @@ bool Panel::MouseUpdate()
 		}*/
 	}
 
-	for (std::map<string, TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it)
+	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
 		bool temp = (*it).second->MouseUpdate();
@@ -591,23 +613,33 @@ bool Panel::MouseUpdate()
 		}
 	}
 
-	for (map<string, Button*>::iterator it = buttons.begin(); it != buttons.end(); ++it)
+	for (auto it = buttons.begin(); it != buttons.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
 		bool temp = (*it).second->MouseUpdate();
 
 	}
 
-	for (map<string, CheckBox*>::iterator it = checkBoxes.begin(); it != checkBoxes.end(); ++it)
+	for (auto it = checkBoxes.begin(); it != checkBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
 		bool temp = (*it).second->MouseUpdate();
 	}
 
-	for (map<string, GridSelector*>::iterator it = gridSelectors.begin(); it != gridSelectors.end(); ++it)
+	for (auto it = gridSelectors.begin(); it != gridSelectors.end(); ++it)
 	{
 		//cout << "sending pos: " << posx << ", " << posy << endl;
 		bool temp = (*it).second->MouseUpdate();
+	}
+	
+	for (auto it = enemyChooseRects.begin(); it != enemyChooseRects.end(); ++it)
+	{
+		bool temp = (*it)->MouseUpdate();
+	}
+
+	for (auto it = imageChooseRects.begin(); it != imageChooseRects.end(); ++it)
+	{
+		bool temp = (*it)->MouseUpdate();
 	}
 
 	return true;
@@ -643,6 +675,41 @@ void Panel::HandleEvent(sf::Event ev)
 	case Event::KeyReleased:
 		break;
 	}
+}
+
+void Panel::ReserveEnemyRects(int num)
+{
+	enemyChooseRects.reserve(num);
+	enemyChooseRectQuads = new Vertex[num * 4];
+}
+
+void Panel::ReserveImageRects(int num)
+{
+	imageChooseRects.reserve(num);
+	imageChooseRectQuads = new Vertex[num * 4];
+}
+
+EnemyChooseRect * Panel::AddEnemyRect(
+	ChooseRect::ChooseRectIdentity ident,
+	sf::Vector2f &position,
+	ActorType * type,
+	int level)
+{
+	EnemyChooseRect *ecRect = new EnemyChooseRect(ident, 
+		enemyChooseRectQuads + enemyChooseRects.size() * 4,
+		position, type, level, this);
+	enemyChooseRects.push_back(ecRect);
+	return ecRect;
+}
+
+ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident, 
+	sf::Vector2f &position, Tileset *ts, int tileIndex)
+{
+	ImageChooseRect *icRect = new ImageChooseRect(ident,
+		imageChooseRectQuads + imageChooseRects.size() * 4,
+		position, ts, tileIndex, this);
+	imageChooseRects.push_back(icRect);
+	return icRect;
 }
 
 void Panel::AddSlider(const std::string &name, sf::Vector2i &pos,
@@ -724,8 +791,6 @@ void Panel::Draw( RenderTarget *target )
 	rs.setPosition( 0, 0 );
 	target->draw( rs );
 
-	
-
 	for(auto it = labels.begin(); it != labels.end(); ++it )
 	{
 		//Vector2f labelPos = (*it).second->getPosition();
@@ -765,6 +830,19 @@ void Panel::Draw( RenderTarget *target )
 	{
 		(*it).second->Draw(target);
 	}
+
+	target->draw(enemyChooseRectQuads, 4 * enemyChooseRects.size(), sf::Quads);
+	for (auto it = enemyChooseRects.begin(); it != enemyChooseRects.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+
+	target->draw(imageChooseRectQuads, 4 * imageChooseRects.size(), sf::Quads);
+	for (auto it = imageChooseRects.begin(); it != imageChooseRects.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+
 
 	target->setView(oldView);
 }
