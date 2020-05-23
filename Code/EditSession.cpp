@@ -10772,9 +10772,7 @@ void EditSession::GeneralEventHandler()
 			}
 			else if (ev.mouseButton.button == Mouse::Button::Right)
 			{
-				//the create enemy thing needs to be fixed so that select_mode doesnt work
-				//whenever you are over UI
-				if (mode != PASTE && mode != CREATE_ENEMY && focusedPanel == NULL )
+				if (mode != PASTE && focusedPanel == NULL )
 				{
 					menuDownStored = mode;
 					mode = SELECT_MODE;

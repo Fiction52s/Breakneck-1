@@ -17,24 +17,68 @@ EnemyVariationSelector::EnemyVariationSelector()
 	
 	edit = EditSession::GetSession();
 
-	int panelSize = 300;
+	int panelSize = 350;
 	
-	panel = new Panel("topbarpanel", 300, 300, edit, true);
+	panel = new Panel("topbarpanel", panelSize, panelSize, edit, true);
 	panel->SetPosition(Vector2i(0, 0));
+	panel->extraUpdater = this;
+	panel->SetColor(Color::Black);
+	panel->ReserveEnemyRects(7);
+	//centerRect = panel->AddEnemyRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
+	//	Vector2f(0, 0), NULL, 0);
 
-	panel->ReserveEnemyRects(1);
-	centerRect = panel->AddEnemyRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
-		Vector2f(0, 0), NULL, 0);
-	centerRect->SetPosition(Vector2f(panelSize / 2 - centerRect->boxSize / 2, 
-		panelSize / 2 - centerRect->boxSize / 2));
+	Vector2f centerPoint(panelSize / 2, panelSize / 2);
+	//Vector2f enemyCenter = centerPoint - Vector2f(centerRect->boxSize / 2,
+	//	centerRect->boxSize / 2);
+
+	//centerRect->SetPosition(enemyCenter);
+
+	Vector2f offset(0, -100);
+	Transform tr;
+	for (int i = 0; i < 6; ++i)
+	{
+		varRects[i] = panel->AddEnemyRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
+			Vector2f(0, 0), NULL, 0);
+		Vector2f currPos = centerPoint - Vector2f( varRects[i]->boxSize / 2,
+			varRects[i]->boxSize / 2 ) + tr.transformPoint(offset);
+		varRects[i]->SetPosition(currPos);
+		tr.rotate(360 / 6);
+	}
+	
 	//centerRect = new EnemyChooseRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
 		//enemyQuads, Vector2f(0, 0), NULL, 0, NULL);
 }
 
+EnemyVariationSelector::~EnemyVariationSelector()
+{
+	delete panel;
+}
+
+bool EnemyVariationSelector::MouseUpdate()
+{
+	/*if (MOUSE.IsMouseRightClicked())
+	{
+		edit->AddActivePanel(panel);
+	}*/
+	if (MOUSE.IsMouseRightReleased())
+	{
+		edit->RemoveActivePanel(panel);
+	}
+
+	return true;
+}
+
 void EnemyVariationSelector::SetType(ActorType *type)
 {
-	centerRect->SetType(type, 1);
-	centerRect->SetShown(true);
+	for (int i = 1; i <= type->info.numLevels; ++i)
+	{
+		varRects[i]->SetShown(false);
+		varRects[i]->SetType(type, i);
+		varRects[i]->SetShown(true);
+	}
+
+	//centerRect->SetType(type, 1);
+	//centerRect->SetShown(true);
 }
 
 void EnemyVariationSelector::SetPosition(sf::Vector2f &pos)
@@ -54,23 +98,6 @@ void EnemyVariationSelector::Draw(RenderTarget *target)
 		target->draw(enemyQuads, 4, sf::Quads);
 		centerRect->Draw(target);
 	}*/
-}
-
-
-ChooseRectContainer::ChooseRectContainer(Vector2i &p_pos, Vector2f &p_size)
-	:size( p_size )
-{
-	pos = Vector2f(p_pos);
-	SetRectTopLeft(quad, size.x, size.y, pos);
-	Color c;
-	c = Color::Cyan;
-	c.a = 80;
-	SetRectColor(quad, c);
-}
-
-void ChooseRectContainer::Draw(sf::RenderTarget *target)
-{
-	target->draw(quad, 4, sf::Quads);
 }
 
 CreateEnemyModeUI::CreateEnemyModeUI()
@@ -108,7 +135,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 		{
 			continue;
 		}
-		enemyCounter += (*it).second->info.numLevels;
+		enemyCounter++;//= (*it).second->info.numLevels;
 	}
 
 	allEnemyRects.reserve(enemyCounter);
@@ -150,12 +177,15 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 			{
 				continue;
 			}
-			for (int level = 1; level <= (*it).second->info.numLevels; ++level)
+
+			allEnemyRects.push_back(libPanel->AddEnemyRect(
+				ChooseRect::I_ENEMYLIBRARY, Vector2f(0, 0), (*it).second, 1));
+			/*for (int level = 1; level <= (*it).second->info.numLevels; ++level)
 			{
 				allEnemyRects.push_back(libPanel->AddEnemyRect(
 					ChooseRect::I_ENEMYLIBRARY, Vector2f(0, 0), (*it).second, level));
 				++i;
-			}
+			}*/
 		}
 	}
 
@@ -474,6 +504,8 @@ bool ChooseRect::MouseUpdate()
 				edit->ChooseRectEvent(this, E_UNFOCUSED);
 			}
 			focused = false;
+
+			//Unfocus();
 		}
 	}
 
@@ -520,6 +552,15 @@ EnemyChooseRect::EnemyChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector
 	actorType = NULL;
 	SetType(p_type, level);
 }
+
+//void EnemyChooseRect::Unfocus()
+//{
+//	if (enemy != NULL)
+//	{
+//		enemy->SetActionEditLoop();
+//		enemy->UpdateFromEditParams(0);
+//	}
+//}
 
 void EnemyChooseRect::SetType(ActorType *type, int lev)
 {
@@ -616,7 +657,7 @@ void EnemyChooseRect::UpdateSprite(int frameUpdate)
 			else
 			{
 				enemy->SetActionEditLoop();
-				enemy->UpdateFromEditParams(0);
+				enemy->UpdateFromEditParams(0);	
 			}
 		}
 	}

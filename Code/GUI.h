@@ -60,14 +60,9 @@ private:
 
 #define MOUSE UIMouse::GetInstance()
 
-struct ChooseRectContainer
+struct PanelUpdater
 {
-	ChooseRectContainer(sf::Vector2i &pos,
-		sf::Vector2f &size);
-	void Draw(sf::RenderTarget *target);
-	sf::Vertex quad[4];
-	sf::Vector2f size;
-	sf::Vector2f pos;
+	virtual bool MouseUpdate() = 0;
 };
 
 struct ChooseRect
@@ -127,6 +122,7 @@ struct ChooseRect
 	bool show;
 	void SetShown(bool s);
 	void SetActive(bool a);
+	//virtual void Unfocus() {}
 	bool focused;
 
 	sf::Color mouseOverColor;
@@ -145,7 +141,7 @@ struct EnemyChooseRect : ChooseRect
 	void Draw(sf::RenderTarget *target);
 	void SetSize(float s);
 	void SetType(ActorType *type, int lev);
-
+	//void Unfocus();
 	ActorType *actorType;
 	Enemy *enemy;
 	ActorParams *enemyParams;
@@ -174,9 +170,11 @@ struct ImageChooseRect : ChooseRect
 
 
 
-struct EnemyVariationSelector
+struct EnemyVariationSelector : PanelUpdater
 {
 	EnemyVariationSelector();
+	~EnemyVariationSelector();
+	bool MouseUpdate();
 	EnemyChooseRect *centerRect;
 	EnemyChooseRect *varRects[6];
 	int numVariations;
@@ -436,6 +434,8 @@ struct CheckBox
 	bool checked;
 };
 
+
+
 struct Panel
 {
 	Panel( const std::string &name, int width, 
@@ -506,6 +506,7 @@ struct Panel
 	GUIHandler *handler;
 	bool IsPopup();
 	bool active;
+	PanelUpdater *extraUpdater;
 private:
 	sf::Vertex quad[4];
 	bool popup;

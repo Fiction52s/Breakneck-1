@@ -481,9 +481,11 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
 	reservedImageRectCount = 0;
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 	SetPosition(Vector2i(0, 0));
+	extraUpdater = NULL;
 
 	Color defaultColor(83, 102, 188);
 	SetRectColor(quad, defaultColor);
+	SetRectTopLeft(quad, size.x, size.y, Vector2f( 0, 0 ));
 }
 
 Panel::~Panel()
@@ -562,7 +564,7 @@ void Panel::SetPosition(const sf::Vector2i &p_pos)
 {
 	pos = p_pos;
 
-	SetRectTopLeft(quad, size.x, size.y, Vector2f(pos));
+	//SetRectTopLeft(quad, size.x, size.y, Vector2f(pos));
 }
 
 void Panel::SetCenterPos(const sf::Vector2i &p_pos)
@@ -654,6 +656,9 @@ bool Panel::MouseUpdate()
 	{
 		bool temp = (*it)->MouseUpdate();
 	}
+
+	if (extraUpdater != NULL)
+		extraUpdater->MouseUpdate();
 
 	return true;
 }
@@ -810,11 +815,12 @@ void Panel::Draw( RenderTarget *target )
 
 	target->setView(myView);
 
-	sf::RectangleShape rs;
+	target->draw(quad, 4, sf::Quads);
+	/*sf::RectangleShape rs;
 	rs.setSize( size );
 	rs.setFillColor( Color( 83, 102, 188) );
 	rs.setPosition( 0, 0 );
-	target->draw( rs );
+	target->draw( rs );*/
 
 	for(auto it = labels.begin(); it != labels.end(); ++it )
 	{
