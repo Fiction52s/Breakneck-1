@@ -22,7 +22,7 @@ struct Enemy;
 struct ActorParams : ISelectable
 {
 	ActorParams(ActorType *at);
-	~ActorParams();
+	virtual ~ActorParams();
 
 	Edge *GetGroundEdge();
 	int GetWorld();

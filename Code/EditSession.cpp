@@ -804,6 +804,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
 	errorBar(p_mainMenu->arial)
 {	
+	currSession = this;
+
 	handleEventFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeHandleEvent;
 	handleEventFunctions[EDIT] = &EditSession::EditModeHandleEvent;
 	handleEventFunctions[SELECT_MODE] = &EditSession::SelectModeHandleEvent;
@@ -839,7 +841,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	updateModeFunctions[TRANSFORM] = &EditSession::TransformModeUpdate;
 
 	
-
+	variationSelector = new EnemyVariationSelector( false );
 	playerTracker = new PlayerTracker();
 	runToResave = false;
 
@@ -884,7 +886,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	}
 
 	inversePolygon = NULL;
-	currSession = this;
+	
 
 	minZoom = .25 / 16.0;//.25;
 	maxZoom = 65536;
@@ -1043,6 +1045,8 @@ RailPtr EditSession::GetRail(int index)
 
 EditSession::~EditSession()
 {
+	delete variationSelector;
+
 	delete playerTracker;
 
 	delete transformTools;
@@ -1091,7 +1095,7 @@ EditSession::~EditSession()
 		freeActorCopiedBrush->Destroy();
 		delete freeActorCopiedBrush;
 	}
-	
+
 	if (createEnemyModeUI != NULL)
 	{
 		delete createEnemyModeUI;
@@ -1194,6 +1198,9 @@ void EditSession::Draw()
 	{
 		DrawActors();
 	}
+
+	DebugDraw(preScreenTex);
+	
 }
 
 void EditSession::UpdateFullBounds()
@@ -10655,7 +10662,9 @@ void EditSession::DrawModeUI()
 		singleRail = singleObj && selectedBrush->objects.front()->selectableType == ISelectable::RAIL;
 		onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
 
-		if (menuDownStored == EditSession::EDIT && singleActor)
+		textmag.setString("EDIT");
+
+		/*if (menuDownStored == EditSession::EDIT && singleActor)
 		{
 			textmag.setString("EDIT\nENEMY");
 		}
@@ -10674,7 +10683,7 @@ void EditSession::DrawModeUI()
 		else
 		{
 			textmag.setString("EDIT");
-		}
+		}*/
 
 		textmag.setFont(arial);
 		textmag.setCharacterSize(14);
@@ -10755,6 +10764,23 @@ void EditSession::Display()
 	window->display();
 }
 
+void EditSession::GeneralMouseUpdate()
+{
+	if (mode != PAUSED && mode != SELECT_MODE)
+	{
+		if (MOUSE.IsMouseRightClicked())
+		{
+			if (mode != PASTE && focusedPanel == NULL)
+			{
+				menuDownStored = mode;
+				mode = SELECT_MODE;
+				menuDownPos = V2d(uiMousePos.x, uiMousePos.y);
+				guiMenuSprite.setPosition(uiMousePos.x, uiMousePos.y);
+			}
+		}
+	}
+}
+
 void EditSession::GeneralEventHandler()
 {
 	if (mode != PAUSED && mode != SELECT_MODE)
@@ -10775,14 +10801,7 @@ void EditSession::GeneralEventHandler()
 			}
 			else if (ev.mouseButton.button == Mouse::Button::Right)
 			{
-				if (mode != PASTE && focusedPanel == NULL )
-				{
-					menuDownStored = mode;
-					mode = SELECT_MODE;
-					//SetMode(SELECT_MODE);
-					menuDownPos = V2d(uiMousePos.x, uiMousePos.y);
-					guiMenuSprite.setPosition(uiMousePos.x, uiMousePos.y);
-				}
+				
 			}
 			break;
 		}
@@ -11609,38 +11628,38 @@ void EditSession::SelectModeHandleEvent()
 
 			bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
 
-			if (menuDownStored == EDIT && onlyPoly)
-			{
-				AddActivePanel(terrainOptionsPanel);
-				mode = menuDownStored;
-				//SetMode(menuDownStored);
-			}
-			else if (menuDownStored == EDIT && singleActor)
-			{
-				SetEnemyEditPanel();
-				//SetMode(menuDownStored);
-				mode = menuDownStored;
-			}
-			else if (menuDownStored == EDIT && singleImage)
-			{
-				AddActivePanel(editDecorPanel);
-				SetDecorEditPanel();
-				//SetMode(menuDownStored);
-				mode = menuDownStored;
-			}
-			else if (menuDownStored == EDIT && singleRail)
-			{
-				AddActivePanel(railOptionsPanel);
+			//if (menuDownStored == EDIT && onlyPoly)
+			//{
+			//	AddActivePanel(terrainOptionsPanel);
+			//	mode = menuDownStored;
+			//	//SetMode(menuDownStored);
+			//}
+			//else if (menuDownStored == EDIT && singleActor)
+			//{
+			//	SetEnemyEditPanel();
+			//	//SetMode(menuDownStored);
+			//	mode = menuDownStored;
+			//}
+			//else if (menuDownStored == EDIT && singleImage)
+			//{
+			//	AddActivePanel(editDecorPanel);
+			//	SetDecorEditPanel();
+			//	//SetMode(menuDownStored);
+			//	mode = menuDownStored;
+			//}
+			//else if (menuDownStored == EDIT && singleRail)
+			//{
+			//	AddActivePanel(railOptionsPanel);
 
-				SelectPtr select = selectedBrush->objects.front();
-				TerrainRail *tr = (TerrainRail*)select;
-				tr->UpdatePanel(railOptionsPanel);
-				
-				//SetMode(menuDownStored);
+			//	SelectPtr select = selectedBrush->objects.front();
+			//	TerrainRail *tr = (TerrainRail*)select;
+			//	tr->UpdatePanel(railOptionsPanel);
+			//	
+			//	//SetMode(menuDownStored);
 
-				mode = menuDownStored;
-			}
-			else
+			//	mode = menuDownStored;
+			//}
+			//else
 			{
 				SetMode(EDIT);
 			}
@@ -12179,6 +12198,10 @@ void EditSession::TestPlayerModeHandleEvent()
 				SetZoom(4);
 			}
 		}
+		else if (ev.key.code == sf::Keyboard::Num2)
+		{
+			showDebugDraw = !showDebugDraw;
+		}
 	}
 	}
 }
@@ -12201,6 +12224,8 @@ void EditSession::UpdateMode()
 	if (!focusedUpdate)
 	{
 		UpdateModeFunc(mode);
+
+		GeneralMouseUpdate();
 	}
 }
 
@@ -12442,6 +12467,24 @@ void EditSession::EditModeUpdate()
 		UpdateGrass();
 	}
 
+	bool rightClicked = MOUSE.IsMouseRightClicked();
+	bool sizeOne = selectedBrush->objects.size() == 1;
+	bool oneActor = selectedBrush->GetNumActors() == 1;
+	if ( rightClicked && sizeOne &&
+		oneActor )
+	{
+		ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+		if (a->ContainsPoint(testPoint))
+		{
+			Vector2i pixel = preScreenTex->mapCoordsToPixel(a->GetFloatPos());
+			variationSelector->SetPosition(Vector2f(pixel));
+			variationSelector->SetType(a->type);
+			AddActivePanel(variationSelector->panel);
+			focusedPanel = variationSelector->panel;
+			return;
+		}
+	}
+
 	UpdateInputNonGame();
 
 	if (GetCurrInput(0).start && !GetPrevInput(0).start)
@@ -12480,7 +12523,7 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 	
 	if (mode == CREATE_ENEMY)
 	{
-		if (eventType == ChooseRect::E_CLICKED)
+		if (eventType == ChooseRect::E_LEFTCLICKED)
 		{
 			EnemyChooseRect *ceRect = cr->GetAsEnemyChooseRect();
 			if (ceRect != NULL)
@@ -12516,7 +12559,7 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 	}
 	else if (mode == CREATE_IMAGES)
 	{
-		if (eventType == ChooseRect::E_CLICKED)
+		if (eventType == ChooseRect::E_LEFTCLICKED)
 		{
 			ImageChooseRect *icRect = cr->GetAsImageChooseRect();	
 			if (icRect != NULL && ( icRect->rectIdentity == ChooseRect::I_DECORLIBRARY
@@ -12538,6 +12581,41 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 			if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_WORLDCHOOSER)
 			{
 				createDecorModeUI->SetActiveLibraryWorld(icRect->tileIndex);
+			}
+		}
+	}
+	else if (mode == EDIT)
+	{
+		if (eventType == ChooseRect::E_RIGHTRELEASED)
+		{
+			EnemyChooseRect *ceRect = cr->GetAsEnemyChooseRect();
+			if (ceRect != NULL && ceRect->rectIdentity == ChooseRect::I_CHANGEENEMYVAR)
+			{
+				ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+
+				if (a->GetLevel() != ceRect->enemyParams->GetLevel())
+				{
+					//replace with different variation copy
+					//need to do error checking here after its working.
+					//an enemy might be too big or otherwise not work in this position
+
+					Brush orig;
+					Brush result;
+
+					orig.AddObject(a);
+					DeselectObject(a);
+
+					ActorPtr newParams = a->Copy();
+					newParams->SetLevel(ceRect->enemyParams->GetLevel());
+					newParams->CreateMyEnemy();
+					
+					result.AddObject(newParams);
+					SelectObject(newParams);
+					ReplaceBrushAction *action = new ReplaceBrushAction(
+						&orig, &result, mapStartBrush);
+					action->Perform();
+					AddDoneAction(action);
+				}
 			}
 		}
 	}

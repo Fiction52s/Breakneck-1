@@ -318,6 +318,9 @@ struct Session : TilesetManager
 	bool skipped;
 	bool oneFrameMode;
 
+	virtual void DebugDraw(sf::RenderTarget *target);
+	void DebugDrawActors(sf::RenderTarget *target);
+	bool showDebugDraw;
 
 	bool cutPlayerInput;
 	MainMenu *mainMenu;

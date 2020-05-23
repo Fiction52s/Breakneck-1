@@ -429,8 +429,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	void UpdateDebugModifiers();
 	void DebugDraw();
-	void DebugDrawActors();
-	bool showDebugDraw;
 	bool showTerrainDecor;
 
 	Sequence *activeSequence;

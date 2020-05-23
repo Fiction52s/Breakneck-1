@@ -1272,6 +1272,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	keyFrame = 0;
 
 	mapHeader = NULL;
+
+	showDebugDraw = false;
 }
 
 
@@ -1446,7 +1448,33 @@ void Session::SetPlayersGameMode()
 	}
 }
 
+void Session::DebugDraw(sf::RenderTarget *target)
+{
+	if (showDebugDraw)
+	{
+		DebugDrawActors(target);
+	}
+}
 
+void Session::DebugDrawActors(sf::RenderTarget *target)
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DebugDraw(target);
+		}
+	}
+
+	Enemy *currEnemy = activeEnemyList;
+	while (currEnemy != NULL)
+	{
+		currEnemy->DebugDraw(target);
+		currEnemy = currEnemy->next;
+	}
+}
 
 void Session::AllocatePolyShaders(int numPolyTypes)
 {

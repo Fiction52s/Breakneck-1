@@ -114,6 +114,7 @@ struct EditSession : GUIHandler, Session
 	void HandleEventFunc(int m);
 	void UpdateModeFunc(int m);
 	void GeneralEventHandler();
+	void GeneralMouseUpdate();
 	void DrawPlayerTracker(sf::RenderTarget *target);
 	PlayerTracker *playerTracker;
 
@@ -738,6 +739,7 @@ struct EditSession : GUIHandler, Session
 	PointMap selectedPoints;
 	RailPointMap selectedRailPoints;
 	
+	EnemyVariationSelector *variationSelector;
 
 	sf::Vertex border[8];
 

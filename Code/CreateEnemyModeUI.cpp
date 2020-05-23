@@ -9,8 +9,8 @@
 using namespace std;
 using namespace sf;
 
-EnemyVariationSelector::EnemyVariationSelector()
-	:PanelUpdater()
+EnemyVariationSelector::EnemyVariationSelector( bool p_createMode )
+	:PanelUpdater(), createMode( p_createMode )
 {
 	SetReplaceDraw(false);
 
@@ -39,9 +39,20 @@ EnemyVariationSelector::EnemyVariationSelector()
 	Vector2f offset(0, -100);
 	Transform tr;
 	tr.rotate(360 / 6);
+
+	ChooseRect::ChooseRectIdentity ident;
+	if (createMode)
+	{
+		ident = ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY;
+	}
+	else
+	{
+		ident = ChooseRect::ChooseRectIdentity::I_CHANGEENEMYVAR;
+	}
+
 	for (int i = 0; i < 6; ++i)
 	{
-		varRects[i] = panel->AddEnemyRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
+		varRects[i] = panel->AddEnemyRect(ident,
 			Vector2f(0, 0), NULL, 0);
 		Vector2f currPos = centerPoint - Vector2f( varRects[i]->boxSize / 2,
 			varRects[i]->boxSize / 2 ) + tr.transformPoint(offset);
@@ -110,14 +121,14 @@ void EnemyVariationSelector::Draw(RenderTarget *target)
 
 CreateEnemyModeUI::CreateEnemyModeUI()
 {
-	varSelector = new EnemyVariationSelector;
+	varSelector = new EnemyVariationSelector( true );
 	activeHotbarSize = 0;
 
 	hotbarEnemies.reserve(8);
 	libraryEnemiesVec.resize(9);
 	for (int i = 0; i < 9; ++i)
 	{
-		libraryEnemiesVec[i].resize(100); //too big but adjust later
+		//libraryEnemiesVec[i].resize(100); //too big but adjust later
 	}
 
 	edit = EditSession::GetSession();
@@ -232,7 +243,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 				++counter;
 			}
 		}
-		libraryEnemiesVec[w].reserve(counter);
+		libraryEnemiesVec[w].resize(counter);
 	}
 
 	int row, col;
@@ -495,7 +506,7 @@ bool ChooseRect::MouseUpdate()
 	{
 		if (bounds.contains(mousePos))
 		{
-			edit->ChooseRectEvent(this, E_CLICKED );
+			edit->ChooseRectEvent(this, E_LEFTCLICKED );
 			focused = true;
 		}
 	}
@@ -528,6 +539,14 @@ bool ChooseRect::MouseUpdate()
 		if (bounds.contains(mousePos))
 		{
 			edit->ChooseRectEvent(this, E_RIGHTCLICKED);
+			//focused = true;
+		}
+	}
+	else if (MOUSE.IsMouseRightReleased())
+	{
+		if (bounds.contains(mousePos))
+		{
+			edit->ChooseRectEvent(this, E_RIGHTRELEASED);
 			//focused = true;
 		}
 	}

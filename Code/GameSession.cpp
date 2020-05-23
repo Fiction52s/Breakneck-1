@@ -7746,26 +7746,6 @@ void GameSession::SetStorySeq(StorySequence *storySeq)
 	state = GameSession::STORY;
 }
 
-void GameSession::DebugDrawActors()
-{
-	Actor *p = NULL;
-	for( int i = 0; i < 4; ++i )
-	{
-		p = GetPlayer( i );
-		if( p != NULL )
-		{
-			p->DebugDraw( preScreenTex );
-		}
-	}
-	
-	Enemy *currEnemy = activeEnemyList;
-	while( currEnemy != NULL )
-	{
-		currEnemy->DebugDraw( preScreenTex );
-		currEnemy = currEnemy->next;
-	}
-}
-
 void GameSession::DrawDyingPlayers()
 {
 	Actor *p = NULL;
@@ -8240,14 +8220,12 @@ void GameSession::DebugDraw()
 			(*it)->DebugDraw(preScreenTex);
 		}
 
-		DebugDrawActors();
+		DebugDrawActors(preScreenTex);
 
 		for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 		{
 			(*it)->DebugDraw(preScreenTex);
 		}
-
-		
 	}
 }
 

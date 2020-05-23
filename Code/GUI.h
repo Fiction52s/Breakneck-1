@@ -100,10 +100,10 @@ struct ChooseRect : PanelMember
 
 	enum ChooseRectEventType : int
 	{
-		E_CLICKED,
+		E_LEFTCLICKED,
 		E_FOCUSED,
 		E_UNFOCUSED,
-		E_RELEASED,
+		E_LEFTRELEASED,
 		E_RIGHTCLICKED,
 		E_RIGHTRELEASED,
 	};
@@ -114,6 +114,7 @@ struct ChooseRect : PanelMember
 		I_SEARCHENEMYLIBRARY,
 		I_ENEMYHOTBAR,
 		I_ENEMYLIBRARY,
+		I_CHANGEENEMYVAR,
 		I_SEARCHDECORLIBRARY,
 		I_DECORHOTBAR,
 		I_DECORLIBRARY
@@ -201,7 +202,7 @@ struct ImageChooseRect : ChooseRect
 
 struct EnemyVariationSelector : PanelUpdater
 {
-	EnemyVariationSelector();
+	EnemyVariationSelector(bool createMode);
 	~EnemyVariationSelector();
 	bool MouseUpdate();
 	EnemyChooseRect *centerRect;
@@ -216,6 +217,7 @@ struct EnemyVariationSelector : PanelUpdater
 	//bool show;
 	Panel *panel;
 	EditSession *edit;
+	bool createMode;
 };
 
 
