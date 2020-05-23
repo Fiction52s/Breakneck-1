@@ -3077,7 +3077,20 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 			tempGridResult = name;
 			tempGridX = gs->selectedX;
 			tempGridY = gs->selectedY;
-			//RemoveActivePanel(panel);
+
+			if (selectedBrush->objects.size() > 0)
+			{
+				ModifyTerrainTypeAction * modifyAction = new ModifyTerrainTypeAction(
+					selectedBrush, tempGridX, tempGridY);
+				modifyAction->Perform();
+				AddDoneAction(modifyAction);
+			}
+
+			currTerrainWorld = tempGridX;
+			currTerrainVar = tempGridY;
+			UpdateCurrTerrainType();
+
+			RemoveActivePanel(panel);
 		}
 		else
 		{
@@ -6131,7 +6144,7 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	}
 	else if( type == "terrainselector" )
 	{
-		p = new Panel( "terrain_popup", 100, 100, this );
+		p = new Panel( "terrain_popup", 100, 100, this, true );
 	}
 	else if (type == "bg")
 	{
@@ -9178,6 +9191,10 @@ void EditSession::AddActivePanel(Panel *p)
 void EditSession::RemoveActivePanel(Panel *p)
 {
 	activePanels.remove(p);
+	if (focusedPanel == p)
+	{
+		focusedPanel = NULL;
+	}
 }
 
 void EditSession::SetMode(Emode m)
@@ -10905,9 +10922,9 @@ void EditSession::HandleEvents()
 	{
 		Vector2i mousePos = MOUSE.GetPos();
 		bool found = false;
-		for (auto it = activePanels.begin(); it != activePanels.end(); ++it)
+		for (auto it = activePanels.rbegin(); it != activePanels.rend(); ++it)
 		{
-			if ((*it)->ContainsPoint(mousePos))
+			if ((*it)->IsPopup() || (*it)->ContainsPoint(mousePos))
 			{
 				focusedPanel = (*it);
 				found = true;
@@ -10955,7 +10972,6 @@ void EditSession::CreateTerrainModeHandleEvent()
 	{
 	case Event::KeyPressed:
 	{
-
 		if (ev.key.code == Keyboard::Space)
 		{
 			ExecuteTerrainCompletion();
@@ -10966,10 +10982,9 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::E)
 		{
-			GridSelectPop("terraintypeselect");
-			currTerrainWorld = tempGridX;
-			currTerrainVar = tempGridY;
-			UpdateCurrTerrainType();
+			AddActivePanel(terrainSelectorPopup);
+			tempGridResult = "not set";
+			//GridSelectPop("terraintypeselect");
 		}
 		else if (ev.key.code == sf::Keyboard::R)
 		{
@@ -11271,19 +11286,12 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::E)
 		{
-			GridSelectPop("terraintypeselect");
-
-			if (selectedBrush->objects.size() > 0)
+			if (selectedBrush->GetNumTerrain() > 0)
 			{
-				ModifyTerrainTypeAction * modifyAction = new ModifyTerrainTypeAction(
-					selectedBrush, tempGridX, tempGridY);
-				modifyAction->Perform();
-				AddDoneAction(modifyAction);
+				AddActivePanel(terrainSelectorPopup);
+				tempGridResult = "not set";
 			}
-
-			currTerrainWorld = tempGridX;
-			currTerrainVar = tempGridY;
-			UpdateCurrTerrainType();
+			//GridSelectPop("terraintypeselect");
 		}
 		else if (ev.key.code == Keyboard::I)
 		{
@@ -12192,32 +12200,31 @@ void EditSession::CreateTerrainModeUpdate()
 		return;
 	}
 
+	showPoints = false;
+	if (!focusedPanel)
+	{
+		if (IsKeyPressed(Keyboard::G))
+		{
+			SnapPointToGraph(testPoint, graph->graphSpacing);
+			showGraph = true;
+		}
+		else if (IsKeyPressed(Keyboard::F))
+		{
+			SelectPtr obj;
+			TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
 
-	if (IsKeyPressed(Keyboard::G))
-	{
-		SnapPointToGraph(testPoint, graph->graphSpacing);
-		showGraph = true;
-	}
-	else if (IsKeyPressed(Keyboard::F))
-	{
-		SelectPtr obj;
-		TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
-		
-		showPoints = true;
-	}
-	else
-	{
-		showPoints = false;
+			showPoints = true;
+		}
 	}
 
 	if (currTool == TOOL_BOX)
 	{
-		if (!boxDrawStarted && IsMousePressed(Mouse::Left))
+		if (!boxDrawStarted && MOUSE.IsMouseLeftClicked())
 		{
 			startBoxPos = testPoint;
 			boxDrawStarted = true;
 		}
-		else if( boxDrawStarted && !IsMousePressed( Mouse::Left ) )
+		else if( boxDrawStarted && MOUSE.IsMouseLeftReleased() )
 		{
 			boxDrawStarted = false;
 			if (testPoint.x - startBoxPos.x != 0 && testPoint.y - startBoxPos.y != 0)
@@ -12416,12 +12423,6 @@ void EditSession::EditModeUpdate()
 		UpdateGrass();
 	}
 
-	/*if (layerPanel->Update(IsMousePressed(Mouse::Left), 
-		IsMousePressed(Mouse::Right),uiMousePos.x, uiMousePos.y, true ))
-	{
-		return;
-	}*/
-
 	UpdateInputNonGame();
 
 	if (GetCurrInput(0).start && !GetPrevInput(0).start)
@@ -12430,32 +12431,24 @@ void EditSession::EditModeUpdate()
 		return;
 	}
 
-	if (IsKeyPressed(Keyboard::G))
+	if (focusedPanel == NULL)
 	{
-		//V2d snapDiff = worldPos;
-		SnapPointToGraph(worldPos, graph->graphSpacing);
-		//snapDiff = worldPos - snapDiff;
+		if (IsKeyPressed(Keyboard::G))
+		{
+			SnapPointToGraph(worldPos, graph->graphSpacing);
+			showGraph = true;
+		}
 
-		//Vector2i snapDiffI(snapDiff);
-
-		//if (grabbedPoint != NULL && !showGraph )
-		//{
-		//	editMouseGrabPos += snapDiffI;//Vector2i(worldPos.x, worldPos.y);
-		//	pointGrabPos = snapDiffI;//Vector2i(worldPos.x, worldPos.y);
-		//	editMouseOrigPos = editMouseGrabPos;
-		//}
-		showGraph = true;
-	}
-
-	bool pressedB = IsKeyPressed(Keyboard::B);
-	if ( !showPoints && pressedB )
-	{
-		showPoints = true;
-	}
-	else if( showPoints && !pressedB && !editMouseDownMove )//&& grabbedPoint == NULL )
-	{
-		showPoints = false;
-		ClearSelectedPoints();
+		bool pressedB = IsKeyPressed(Keyboard::B);
+		if (!showPoints && pressedB)
+		{
+			showPoints = true;
+		}
+		else if (showPoints && !pressedB && !editMouseDownMove)
+		{
+			showPoints = false;
+			ClearSelectedPoints();
+		}
 	}
 		
 	TrySelectedMove();

@@ -546,7 +546,7 @@ bool Panel::MouseUpdate()
 	bool withinPanel = false;
 	Vector2i mPos = MOUSE.GetPos();
 
-	if (!(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
+	if ( !popup && !(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
 		mPos.y >= pos.y && mPos.y <= pos.y + size.y))
 	{
 		return false;
