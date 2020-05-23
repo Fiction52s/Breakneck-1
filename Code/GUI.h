@@ -212,10 +212,6 @@ struct CreateEnemyModeUI
 	std::vector<ImageChooseRect*> worldSelectRects;
 	
 	void UpdateSprites(int sprUpdateFrames);
-	void Update(bool mouseDownL,
-		bool mouseDownR,
-		sf::Vector2i &mousePos);
-	void Draw(sf::RenderTarget *target);
 	void UpdateHotbarTypes();
 	Panel *topbarPanel;
 	Panel *libPanel;
@@ -447,7 +443,7 @@ struct Panel
 	/*bool Update(bool mouseDownLeft, bool mouseDownRight,
 		int posx, int posy, bool checkContained = false );*/
 	bool MouseUpdate();
-	
+	void UpdateSprites(int numUpdateFrames = 1);
 	void AddSlider(const std::string &name, sf::Vector2i &pos,
 		int width, int minValue, int maxValue, int defaultValue);
 	void AddDropdown(const std::string &name, sf::Vector2i &pos,

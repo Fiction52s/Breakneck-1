@@ -105,7 +105,6 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	int totalHotbarSize = hotbarRectSize * totalHotbarCount + hotbarSpacing * (totalHotbarCount - 1);
 	int extraHotbarSpacing = (1920 - totalHotbarSize) / 2;
 
-	//topbarCont = new ChooseRectContainer(Vector2i(0, 20), Vector2f(1920, 120));
 	topbarPanel = new Panel("topbarpanel", 1920, 120, edit, false);
 	topbarPanel->SetPosition(Vector2i(0, 20));
 
@@ -140,25 +139,14 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	libPanel->ReserveEnemyRects(enemyCounter);
 	libPanel->ReserveImageRects(numEnemyWorlds);
-	/*allQuads = new Vertex[numAllQuads * 4];
-	Vertex *allEnemyQuads = allQuads;
-	Vertex *hotbarQuads = allQuads + enemyCounter * 4;
-	Vertex *worldSelectQuads = hotbarQuads + totalHotbarCount * 4;
-	Vertex *extraQuads = worldSelectQuads + numEnemyWorlds * 4;*/
 
 	Tileset *ts_worldChoosers = edit->GetSizedTileset("worldselector_64x64.png");
 
 	librarySearchRect = topbarPanel->AddImageRect(ChooseRect::I_SEARCHENEMYLIBRARY, 
 		Vector2f(10, 10), ts_worldChoosers, 8);
-		
-		
-		//new ImageChooseRect(ChooseRect::I_SEARCHENEMYLIBRARY, extraQuads,
-		//Vector2f(10, 10), ts_worldChoosers, 8, topbarPanel);
+
 	librarySearchRect->SetShown(true);
 	librarySearchRect->Init();
-	
-	
-	//libCont = new ChooseRectContainer(Vector2i(0, 140), Vector2f(totalWorldSize + 20, 600));
 
 	{
 		int i = 0;
@@ -172,8 +160,6 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 			{
 				allEnemyRects.push_back(libPanel->AddEnemyRect(
 					ChooseRect::I_ENEMYLIBRARY, Vector2f(0, 0), (*it).second, level));
-					//EnemyChooseRect(ChooseRect::I_ENEMYLIBRARY, allEnemyQuads + i * 4,
-					//Vector2f(0, 0), (*it).second, level, libPanel ));
 				++i;
 			}
 		}
@@ -185,10 +171,6 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 			ChooseRect::I_ENEMYHOTBAR,
 			Vector2f(extraHotbarSpacing + 10 + i * (hotbarRectSize + hotbarSpacing), 10),
 			NULL, 0));
-			
-			//EnemyChooseRect(ChooseRect::I_ENEMYHOTBAR, hotbarQuads + i * 4,
-			//Vector2f(extraHotbarSpacing + 10 + i * ( hotbarRectSize + hotbarSpacing ), 10),
-			//NULL, 0, topbarPanel ));
 		hotbarEnemies[i]->SetShown(false);
 		hotbarEnemies[i]->Init();
 	}
@@ -203,14 +185,6 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 				Vector2f(i * (worldSize + worldSpacing) + 10, 10),
 				ts_worldChoosers,
 				i));
-			
-			
-			//ImageChooseRect(ChooseRect::I_WORLDCHOOSER, 
-			//worldSelectQuads + i * 4,
-			//Vector2f( i * (worldSize + worldSpacing) + 10, 10 ), 
-			//ts_worldChoosers, 
-			//i, 
-			//libPanel ));
 		worldSelectRects[i]->SetShown(false);
 		worldSelectRects[i]->Init();
 	}
@@ -265,17 +239,6 @@ CreateEnemyModeUI::~CreateEnemyModeUI()
 	//delete varSelector;
 	delete topbarPanel;
 	delete libPanel;
-	//delete topbarCont;
-	//delete libCont;
-	//delete topbarPanel;
-	//delete libraryPanel;
-
-	//delete[] allQuads;
-
-	//delete librarySearchRect;
-	//delete [] allEnemyQuads;
-	//delete[] worldSelectQuads;
-	//delete[] hotbarQuads;
 }
 
 void CreateEnemyModeUI::UpdateHotbarTypes()
@@ -297,10 +260,21 @@ void CreateEnemyModeUI::UpdateHotbarTypes()
 void CreateEnemyModeUI::SetShown(bool s)
 {
 	show = s;
-	if (!show)
+	if (show)
 	{
-		//topbarCont->ResetMouse();
-		//libCont->ResetMouse();
+		edit->AddActivePanel(topbarPanel);
+		if (showLibrary)
+		{
+			edit->AddActivePanel(libPanel);
+		}
+	}
+	else
+	{
+		edit->RemoveActivePanel(topbarPanel);
+		if (showLibrary)
+		{
+			edit->RemoveActivePanel(libPanel);
+		}
 	}
 }
 
@@ -355,57 +329,6 @@ void CreateEnemyModeUI::UpdateSprites(int sprUpdateFrames)
 	}
 }
 
-void CreateEnemyModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &mPos)
-{
-	if (!show)
-	{
-		return;
-	}
-	
-	//if (varSelector->show)
-	//{
-	//	//varSelector->UpdateMouse(mouseDownL, mouseDownR, mPos);
-	//	if (varSelector->Update())
-	//	{
-	//		return;
-	//	}
-	//}
-	
-	topbarPanel->MouseUpdate();
-	libPanel->MouseUpdate();
-	//topbarCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
-	//libCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
-
-	
-
-	//librarySearchRect->MouseUpdate();
-
-	/*for (int i = 0; i < hotbarEnemies.size(); ++i)
-	{
-		hotbarEnemies[i]->MouseUpdate();
-	}*/
-
-	if (showLibrary)
-	{
-		/*for (int i = 0; i < 9; ++i)
-		{
-			worldSelectRects[i]->MouseUpdate();
-		}
-
-		if (activeLibraryWorld >= 0)
-		{
-			for (auto it = libraryEnemiesVec[activeLibraryWorld].begin();
-				it != libraryEnemiesVec[activeLibraryWorld].end(); ++it)
-			{
-				if ((*it) != NULL)
-				{
-					(*it)->MouseUpdate();
-				}
-			}
-		}*/
-	}
-}
-
 void CreateEnemyModeUI::SetLibraryShown(bool s)
 {
 	if (showLibrary != s)
@@ -415,6 +338,7 @@ void CreateEnemyModeUI::SetLibraryShown(bool s)
 
 		if (showLibrary)
 		{
+			edit->AddActivePanel(libPanel);
 			for (int i = 0; i < 9; ++i)
 			{
 				worldSelectRects[i]->SetShown(true);
@@ -422,6 +346,7 @@ void CreateEnemyModeUI::SetLibraryShown(bool s)
 		}
 		else
 		{
+			edit->RemoveActivePanel(libPanel);
 			for (int i = 0; i < 9; ++i)
 			{
 				worldSelectRects[i]->SetShown(false);
@@ -434,54 +359,6 @@ void CreateEnemyModeUI::SetLibraryShown(bool s)
 void CreateEnemyModeUI::FlipLibraryShown()
 {
 	SetLibraryShown(!showLibrary);
-}
-
-void CreateEnemyModeUI::Draw(sf::RenderTarget *target)
-{
-	if (!show)
-	{
-		return;
-	}
-	sf::View oldView = target->getView();
-	target->setView(edit->uiView);
-
-	topbarPanel->Draw(target);
-	if (showLibrary)
-	{
-		libPanel->Draw(target);
-	}
-
-	//target->draw(allQuads, numAllQuads * 4, sf::Quads);
-
-	/*librarySearchRect->Draw(target);
-	for (int i = 0; i < activeHotbarSize; ++i)
-	{
-		hotbarEnemies[i]->Draw(target);
-	}*/
-
-	if (showLibrary)
-	{
-		/*for (int i = 0; i < 9; ++i)
-		{
-			worldSelectRects[i]->Draw(target);
-		}
-	
-		if (activeLibraryWorld >= 0)
-		{
-			for (auto it = libraryEnemiesVec[activeLibraryWorld].begin();
-				it != libraryEnemiesVec[activeLibraryWorld].end(); ++it)
-			{
-				if ((*it) != NULL)
-				{
-					(*it)->Draw(target);
-				}
-			}
-		}*/
-	}
-
-	//varSelector->Draw(target);
-
-	target->setView(oldView);
 }
 
 void CreateEnemyModeUI::ExpandVariation(EnemyChooseRect *ceRect)
@@ -566,9 +443,14 @@ void ChooseRect::SetActive(bool a)
 
 bool ChooseRect::MouseUpdate()
 {
+	if( !show )
+	{
+		return false;
+	}
+
 	Vector2i mousePos = panel->GetMousePos();//mouseUser->GetMousePos();//panel->GetMousePos();
 	EditSession *edit = EditSession::GetSession();
-	
+
 	if (MOUSE.IsMouseLeftClicked())
 	{
 		if (bounds.contains(mousePos))
@@ -722,6 +604,11 @@ void EnemyChooseRect::Draw(RenderTarget *target)
 
 void EnemyChooseRect::UpdateSprite(int frameUpdate)
 {
+	if (!show)
+	{
+		return;
+	}
+
 	if (actorType != NULL)
 	{
 		if (enemy != NULL)

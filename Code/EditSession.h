@@ -104,7 +104,7 @@ struct EditSession : GUIHandler, Session
 		EMODE_Count
 	};
 
-	void ResetActivePanels();
+	void ClearActivePanels();
 	void AddActivePanel(Panel *p);
 	void RemoveActivePanel(Panel *p);
 	std::list<Panel*> activePanels;

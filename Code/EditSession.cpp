@@ -9177,7 +9177,7 @@ void EditSession::ModifyGrass()
 	}
 }
 
-void EditSession::ResetActivePanels()
+void EditSession::ClearActivePanels()
 {
 	activePanels.clear();
 	focusedPanel = NULL;
@@ -9230,11 +9230,14 @@ void EditSession::SetMode(Emode m)
 		break;
 	}
 
-	ResetActivePanels();
+	ClearActivePanels();
 
 	switch (mode)
 	{
 	case CREATE_ENEMY:
+		createEnemyModeUI->showLibrary = false;
+		createEnemyModeUI->SetShown(true);
+		//AddActivePanel(createEnemyModeUI->topbarPanel);
 		currTool = TOOL_DRAW;
 		lastLeftMouseDown = false;//IsMousePressed( Mouse::)
 		grabbedActor = NULL;
@@ -10491,7 +10494,6 @@ void EditSession::DrawMode()
 	case CREATE_ENEMY:
 	{
 		//DrawTrackingEnemy();
-		createEnemyModeUI->Draw(preScreenTex);
 
 		if (grabbedActor != NULL)
 			grabbedActor->Draw(preScreenTex);
@@ -10918,7 +10920,7 @@ void EditSession::GeneralEventHandler()
 
 void EditSession::HandleEvents()
 {
-	if (MOUSE.IsMouseLeftClicked() || MOUSE.IsMouseRightClicked())
+	//if (MOUSE.IsMouseLeftClicked() || MOUSE.IsMouseRightClicked())
 	{
 		Vector2i mousePos = MOUSE.GetPos();
 		bool found = false;
@@ -11436,8 +11438,6 @@ void EditSession::CreateEnemyModeHandleEvent()
 	}
 	case Event::MouseButtonReleased:
 	{
-		createEnemyModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
-
 		if (ev.mouseButton.button == Mouse::Left)
 		{
 			if (grabbedActor != NULL )
@@ -11473,7 +11473,6 @@ void EditSession::CreateEnemyModeHandleEvent()
 	case Event::MouseMoved:
 	{
 		//ev.mousebu
-		createEnemyModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
 		break;
 	}
 	case Event::KeyPressed:
@@ -12174,15 +12173,23 @@ void EditSession::TestPlayerModeHandleEvent()
 
 void EditSession::UpdateMode()
 {
+	bool focusedUpdate = false;
 	if (focusedPanel != NULL)
 	{
 		if (focusedPanel->MouseUpdate())
 		{
-			return;
+			focusedUpdate = true;
+		}
+		if (focusedPanel != NULL)
+		{
+			focusedPanel->UpdateSprites(spriteUpdateFrames);
 		}
 	}
-	
-	UpdateModeFunc(mode);
+
+	if (!focusedUpdate)
+	{
+		UpdateModeFunc(mode);
+	}
 }
 
 void EditSession::CreateTerrainModeUpdate()
@@ -12629,16 +12636,10 @@ void EditSession::PasteModeUpdate()
 
 void EditSession::CreateEnemyModeUpdate()
 {
-	createEnemyModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
-	createEnemyModeUI->UpdateSprites(spriteUpdateFrames);
-
 	if (grabbedActor != NULL)
 	{
-		//grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
 		TrySelectedMove();
 	}
-		
-	//MoveTrackingEnemy();
 }
 
 void EditSession::CreatePatrolPathModeUpdate()
