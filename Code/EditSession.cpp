@@ -10643,18 +10643,11 @@ void EditSession::DrawModeUI()
 		preScreenTex->draw(guiMenuSprite);
 
 
+		//needs a cleanup later
 		Color c;
 
 		int outlineThickness = 3;
 		int fontSize = 18;
-		/*CircleShape cs;
-		cs.setRadius(menuCircleRadius);
-		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-
-		
-		cs.setFillColor(COLOR_BLUE);
-		cs.setPosition((menuDownPos + circleUpperRightPos).x, (menuDownPos + circleUpperRightPos).y);
-		preScreenTex->draw(cs);*/
 
 		sf::Text textblue;
 		textblue.setCharacterSize(fontSize);
@@ -10667,11 +10660,6 @@ void EditSession::DrawModeUI()
 		textblue.setPosition((menuDownPos + circleUpperRightPos).x, (menuDownPos + circleUpperRightPos).y);
 		preScreenTex->draw(textblue);
 
-
-		/*cs.setFillColor(COLOR_GREEN);
-		cs.setPosition((menuDownPos + circleLowerRightPos).x, (menuDownPos + circleLowerRightPos).y);
-		preScreenTex->draw(cs);*/
-
 		sf::Text textgreen;
 		textgreen.setCharacterSize(fontSize);
 		textgreen.setFont(arial);
@@ -10683,17 +10671,9 @@ void EditSession::DrawModeUI()
 		textgreen.setPosition((menuDownPos + circleLowerRightPos).x, (menuDownPos + circleLowerRightPos).y);
 		preScreenTex->draw(textgreen);
 
-		/*cs.setFillColor(COLOR_YELLOW);
-		cs.setPosition((menuDownPos + circleBottomPos).x, (menuDownPos + circleBottomPos).y);
-		preScreenTex->draw(cs);*/
-
 		textgreen.setString("CREATE\nDECOR");
 		textgreen.setPosition(Vector2f(menuDownPos + circleBottomPos));
 		preScreenTex->draw(textgreen);
-
-		/*cs.setFillColor(COLOR_ORANGE);
-		cs.setPosition((menuDownPos + circleLowerLeftPos).x, (menuDownPos + circleLowerLeftPos).y);
-		preScreenTex->draw(cs);*/
 
 		sf::Text textorange;
 		textorange.setString("CREATE\nGATES");
@@ -10706,10 +10686,6 @@ void EditSession::DrawModeUI()
 		textorange.setPosition((menuDownPos + circleLowerLeftPos).x, (menuDownPos + circleLowerLeftPos).y);
 		preScreenTex->draw(textorange);
 
-		/*cs.setFillColor(COLOR_RED);
-		cs.setPosition((menuDownPos + circleUpperLeftPos).x, (menuDownPos + circleUpperLeftPos).y);
-		preScreenTex->draw(cs);*/
-
 		sf::Text textred;
 		textred.setString("CREATE\nENEMIES");
 		textred.setFont(arial);
@@ -10720,10 +10696,6 @@ void EditSession::DrawModeUI()
 		textred.setOrigin(textred.getLocalBounds().width / 2, textred.getLocalBounds().height / 2);
 		textred.setPosition((menuDownPos + circleUpperLeftPos).x, (menuDownPos + circleUpperLeftPos).y);
 		preScreenTex->draw(textred);
-
-		/*cs.setFillColor(COLOR_MAGENTA);
-		cs.setPosition((menuDownPos + circleTopPos).x, (menuDownPos + circleTopPos).y);
-		preScreenTex->draw(cs);*/
 
 		sf::Text textmag;
 
@@ -10737,27 +10709,6 @@ void EditSession::DrawModeUI()
 		onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
 
 		textmag.setString("EDIT");
-
-		/*if (menuDownStored == EditSession::EDIT && singleActor)
-		{
-			textmag.setString("EDIT\nENEMY");
-		}
-		else if (menuDownStored == EditSession::EDIT && singleImage)
-		{
-			textmag.setString("EDIT\nIMAGE");
-		}
-		else if (menuDownStored == EditSession::EDIT && onlyPoly)
-		{
-			textmag.setString("TERRAIN\nOPTIONS");
-		}
-		else if(menuDownStored == EditSession::EDIT && singleRail)
-		{
-			textmag.setString("RAIL\nOPTIONS");
-		}
-		else
-		{
-			textmag.setString("EDIT");
-		}*/
 
 		textmag.setFont(arial);
 		textmag.setCharacterSize(fontSize);
@@ -12506,6 +12457,14 @@ void EditSession::SetDirectionModeUpdate()
 		Vector2i worldi(testPoint.x, testPoint.y);
 		patrolPath.push_back(worldi);
 
+		if (trackingEnemyParams != NULL)
+		{
+			trackingEnemyParams->SetPath(patrolPath);
+			FinishEnemyCreation();
+			SetMode(CREATE_ENEMY);
+			return;
+		}
+
 		ActorParams *actor;
 		if (tempActor != NULL)
 		{
@@ -12519,7 +12478,7 @@ void EditSession::SetDirectionModeUpdate()
 			SetMode(EDIT);
 		}
 
-		AddActivePanel(actor->type->panel);
+		//AddActivePanel(actor->type->panel);
 		actor->SetPath(patrolPath);
 	}
 }

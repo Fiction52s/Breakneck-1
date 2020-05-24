@@ -201,6 +201,8 @@ ActorParams *SpringParams::Copy()
 void SpringParams::OnCreate()
 {
 	EditSession *edit = EditSession::GetSession();
+	edit->patrolPath.clear();
+	edit->patrolPath.push_back(GetIntPos());
 	edit->SetMode(EditSession::SET_DIRECTION);
 }
 
