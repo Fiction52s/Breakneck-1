@@ -389,6 +389,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetGrassState(int gIndex, int state);
 	Grass::GrassType GetGrassType();
 	V2d GetGrassCenter(int gIndex);
+	void CopyMyGrass(PolyPtr other);
 
 
 	sf::Shader *pShader;

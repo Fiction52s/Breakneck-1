@@ -3073,6 +3073,18 @@ int TerrainPolygon::GetNumGrass(int i, bool &rem)
 	return num;
 }
 
+void TerrainPolygon::CopyMyGrass(PolyPtr other)
+{
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		if (grassStateVec[i] == G_ON)
+		{
+			other->SwitchGrass(GetGrassCenter(i), true);
+		}
+	}
+}
+
+
 int TerrainPolygon::GetNumGrassTotal()
 {
 	int total = 0;
@@ -3655,7 +3667,7 @@ void TerrainPolygon::SetGrassState(int index, int state)
 
 void TerrainPolygon::SetGrassOn(int gIndex, bool on)
 {
-	if ( on && grassStateVec[gIndex] == G_OFF )//(grassVa[gIndex * 4].color.a == 50)
+	if ( on && (grassStateVec[gIndex] == G_OFF || grassStateVec[gIndex] == G_OFF_DONT_SHOW ) )//(grassVa[gIndex * 4].color.a == 50)
 	{
 		if (!grassChanged)
 			grassChanged = true;

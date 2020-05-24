@@ -328,7 +328,12 @@ struct EditSession : GUIHandler, Session
 	bool CanCreateGate( GateInfo &testGate );
 	void SetPanelDefault( ActorType *type );
 
-
+	void TryKeepGrass(PolyPtr origPoly,
+		std::list<PolyPtr> & newPolys);
+	void TryKeepGrass(std::list<PolyPtr> & origPolys,
+		std::list<PolyPtr> & newPolys);
+	void TryKeepGrass(std::set<PolyPtr> & origPolys,
+		std::list<PolyPtr> & newPolys);
 	void TryAttachActorsToRails(
 		std::list<RailPtr> & origRails,
 		std::list<RailPtr> & newRails,

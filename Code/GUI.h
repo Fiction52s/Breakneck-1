@@ -228,6 +228,11 @@ struct EnemyVariationSelector : PanelUpdater
 };
 
 
+struct CreateModeUI
+{
+
+};
+
 struct CreateEnemyModeUI
 {
 	CreateEnemyModeUI();
@@ -240,19 +245,13 @@ struct CreateEnemyModeUI
 	
 	std::vector<EnemyChooseRect*> hotbarEnemies;
 	ImageChooseRect *librarySearchRect;
-	//sf::Vertex *hotbarQuads;
-	//sf::Vertex *worldSelectQuads;
-	//sf::Vertex *allEnemyQuads;
-	//sf::Vertex *allQuads;
-	int numAllQuads;
 	int activeHotbarSize;
 	std::vector<std::vector<EnemyChooseRect*>> 
 		libraryEnemiesVec;
 	void SetActiveLibraryWorld(int w);
 	int activeLibraryWorld;
 	std::vector<ImageChooseRect*> worldSelectRects;
-	
-	void UpdateSprites(int sprUpdateFrames);
+
 	void UpdateHotbarTypes();
 	Panel *topbarPanel;
 	Panel *libPanel;
@@ -270,22 +269,11 @@ struct CreateDecorModeUI
 {
 	CreateDecorModeUI();
 	~CreateDecorModeUI();
-	//std::vector<ChooseRect> myRects;
-	
-	
+
 	void SetActiveLibraryWorld(int w);
 	int activeLibraryWorld;
-	std::vector<ImageChooseRect> worldSelectRects;
-
-	void UpdateSprites(int sprUpdateFrames);
-	void Update(bool mouseDownL,
-		bool mouseDownR,
-		sf::Vector2i &mousePos);
-	void Draw(sf::RenderTarget *target);
+	std::vector<ImageChooseRect*> worldSelectRects;
 	void UpdateHotbarTypes();
-
-	
-	
 	void SetShown(bool s);
 	void SetLibraryShown(bool s);
 	void FlipLibraryShown();
@@ -298,19 +286,13 @@ struct CreateDecorModeUI
 	Panel *topbarPanel;
 	Panel *libPanel;
 
-	std::vector<ImageChooseRect> allImageRects;
+	std::vector<ImageChooseRect*> allImageRects;
 	std::vector<std::vector<ImageChooseRect*>>
 		libraryImagesVec;
-	std::vector<ImageChooseRect> hotbarImages;
+	std::vector<ImageChooseRect*> hotbarImages;
 	int activeHotbarSize;
 
 	ImageChooseRect *librarySearchRect;
-
-	sf::Vertex *allQuads;
-	int numAllQuads;
-
-
-	
 };
 
 struct GridSelector : PanelMember

@@ -169,7 +169,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	int numEnemyWorlds = 9;
 
 	int numExtraRects = 1; //search library
-	numAllQuads = (enemyCounter + totalHotbarCount + numEnemyWorlds + numExtraRects);
+	//numAllQuads = (enemyCounter + totalHotbarCount + numEnemyWorlds + numExtraRects);
 
 	topbarPanel->ReserveEnemyRects(totalHotbarCount);
 	topbarPanel->ReserveImageRects(numExtraRects);
@@ -353,29 +353,6 @@ void CreateEnemyModeUI::SetActiveLibraryWorld(int w)
 		{
 			if( (*it) != NULL )
 				(*it)->SetShown(true);
-		}
-	}
-}
-
-void CreateEnemyModeUI::UpdateSprites(int sprUpdateFrames)
-{
-	for (int i = 0; i < activeHotbarSize; ++i)
-	{
-		if (activeLibraryWorld != hotbarEnemies[i]->actorType->info.world )
-		{
-			hotbarEnemies[i]->UpdateSprite(sprUpdateFrames);
-		}
-	}
-
-	if (activeLibraryWorld >= 0)
-	{
-		for (auto it = libraryEnemiesVec[activeLibraryWorld].begin();
-			it != libraryEnemiesVec[activeLibraryWorld].end(); ++it)
-		{
-			if ((*it) != NULL)
-			{
-				(*it)->UpdateSprite(sprUpdateFrames);
-			}
 		}
 	}
 }

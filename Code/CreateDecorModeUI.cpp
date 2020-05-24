@@ -27,9 +27,14 @@ CreateDecorModeUI::CreateDecorModeUI()
 	int totalHotbarSize = hotbarRectSize * totalHotbarCount + hotbarSpacing * (totalHotbarCount - 1);
 	int extraHotbarSpacing = (1920 - totalHotbarSize) / 2;
 
-	//topbarCont = new ChooseRectContainer(Vector2i(0, 20), Vector2f(1920, 120));
 	topbarPanel = new Panel("topbarpanel", 1920, 120, edit, false);
 	topbarPanel->SetPosition(Vector2i(0, 20));
+
+	Color panelColor;
+	panelColor = Color::Cyan;
+	panelColor.a = 80;
+
+	topbarPanel->SetColor(panelColor);
 
 	int imageCounter = 0;
 	for (auto it = edit->decorTileIndexMap.begin(); it != edit->decorTileIndexMap.end(); ++it)
@@ -41,22 +46,15 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	int numEnemyWorlds = 9;
 
-	//allEnemyQuads = new Vertex[enemyCounter * 4];
-	//hotbarQuads = new Vertex[totalHotbarCount * 4];
-	//worldSelectQuads = new Vertex[numEnemyWorlds * 4];
-
 	int numExtraRects = 1; //search library
-	numAllQuads = (imageCounter + totalHotbarCount + numEnemyWorlds + numExtraRects);
-	allQuads = new Vertex[numAllQuads * 4];
-	Vertex *allImageQuads = allQuads;
-	Vertex *hotbarQuads = allQuads + imageCounter * 4;
-	Vertex *worldSelectQuads = hotbarQuads + totalHotbarCount * 4;
-	Vertex *extraQuads = worldSelectQuads + numEnemyWorlds * 4;
+	//numAllQuads = (imageCounter + totalHotbarCount + numEnemyWorlds + numExtraRects);
+
+	topbarPanel->ReserveImageRects(totalHotbarCount + numExtraRects );
 
 	Tileset *ts_worldChoosers = edit->GetSizedTileset("worldselector_64x64.png");
 
-	librarySearchRect = new ImageChooseRect(ChooseRect::I_SEARCHDECORLIBRARY, extraQuads,
-		Vector2f(10, 10), ts_worldChoosers, 8, topbarPanel);
+	librarySearchRect = topbarPanel->AddImageRect(ChooseRect::I_SEARCHDECORLIBRARY,
+		Vector2f(10 + 100, 10), ts_worldChoosers, 8);
 	librarySearchRect->SetShown(true);
 	librarySearchRect->Init();
 
@@ -66,30 +64,41 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	int extraWorldSpacing = (1920 - totalWorldSize) / 2;
 
-	//libCont = new ChooseRectContainer(Vector2i(0, 140), Vector2f(totalWorldSize + 20, 600));
 	libPanel = new Panel("libpanel", totalWorldSize + 20, 600, edit, false);
-	libPanel->SetPosition(Vector2i(0, 140));
+	libPanel->SetPosition(Vector2i(100, 140));
+	libPanel->SetColor(panelColor);
+
+	libPanel->ReserveImageRects(imageCounter + numEnemyWorlds);
 	{
 		int i = 0;
 		for (auto it = edit->decorTileIndexMap.begin(); it != edit->decorTileIndexMap.end(); ++it)
 		{
 			for (auto indexIt = (*it).second.begin(); indexIt != (*it).second.end(); ++indexIt)
 			{
-				allImageRects.push_back(ImageChooseRect(ChooseRect::I_DECORLIBRARY, allImageQuads + i * 4,
+				allImageRects.push_back(libPanel->AddImageRect(ChooseRect::I_DECORLIBRARY,
+					Vector2f(0, 0), edit->decorTSMap[(*it).first], (*indexIt)));
+				allImageRects.back()->decorName = (*it).first;
+
+				/*allImageRects.push_back(ImageChooseRect(ChooseRect::I_DECORLIBRARY, allImageQuads + i * 4,
 					Vector2f(0, 0), edit->decorTSMap[(*it).first], (*indexIt), libPanel));
 				allImageRects.back().decorName = (*it).first;
-				++i;
+				++i;*/
 			}
 		}
 	}
 
 	for (int i = 0; i < totalHotbarCount; ++i)
 	{
-		hotbarImages.push_back(ImageChooseRect(ChooseRect::I_DECORHOTBAR, hotbarQuads + i * 4,
+		hotbarImages.push_back(topbarPanel->AddImageRect(ChooseRect::I_DECORHOTBAR,
 			Vector2f(extraHotbarSpacing + 10 + i * (hotbarRectSize + hotbarSpacing), 10),
-			NULL, 0, topbarPanel));
-		hotbarImages[i].SetShown(false);
-		hotbarImages[i].Init();
+			NULL, 0));
+		hotbarImages[i]->SetShown(false);
+		hotbarImages[i]->Init();
+
+		/*hotbarImages.push_back(ImageChooseRect(ChooseRect::I_DECORHOTBAR, hotbarQuads + i * 4,
+			Vector2f(extraHotbarSpacing + 10 + i * (hotbarRectSize + hotbarSpacing), 10),
+			NULL, 0, topbarPanel));*/
+		
 	}
 
 
@@ -98,10 +107,13 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	for (int i = 0; i < numEnemyWorlds; ++i)
 	{
-		worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4,
-			Vector2f(i * (worldSize + worldSpacing) + 10, 10), ts_worldChoosers, i, libPanel));
-		worldSelectRects[i].SetShown(false);
-		worldSelectRects[i].Init();
+		worldSelectRects.push_back(libPanel->AddImageRect(ChooseRect::I_WORLDCHOOSER,
+			Vector2f(i * (worldSize + worldSpacing) + 10, 10), ts_worldChoosers, i));
+		worldSelectRects[i]->SetShown(false);
+		worldSelectRects[i]->Init();
+		/*worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4,
+			Vector2f(i * (worldSize + worldSpacing) + 10, 10), ts_worldChoosers, i, libPanel));*/
+		
 	}
 
 	int counter;
@@ -130,7 +142,7 @@ CreateDecorModeUI::CreateDecorModeUI()
 		{
 			//if (allImageRects[i].actorType->info.world == w)
 			{
-				libraryImagesVec[w][counter] = &allImageRects[i];
+				libraryImagesVec[w][counter] = allImageRects[i];
 				icRect = libraryImagesVec[w][counter];
 				col = counter % maxCol;
 				row = counter / maxCol;
@@ -153,15 +165,6 @@ CreateDecorModeUI::~CreateDecorModeUI()
 {
 	delete topbarPanel;
 	delete libPanel;
-	//delete topbarPanel;
-	//delete libraryPanel;
-
-	delete[] allQuads;
-
-	delete librarySearchRect;
-	//delete [] allEnemyQuads;
-	//delete[] worldSelectQuads;
-	//delete[] hotbarQuads;
 }
 
 void CreateDecorModeUI::UpdateHotbarTypes()
@@ -183,10 +186,21 @@ void CreateDecorModeUI::UpdateHotbarTypes()
 void CreateDecorModeUI::SetShown(bool s)
 {
 	show = s;
-	if (!show)
+	if (show)
 	{
-		//topbarCont->ResetMouse();
-		//libCont->ResetMouse();
+		edit->AddActivePanel(topbarPanel);
+		if (showLibrary)
+		{
+			edit->AddActivePanel(libPanel);
+		}
+	}
+	else
+	{
+		edit->RemoveActivePanel(topbarPanel);
+		if (showLibrary)
+		{
+			edit->RemoveActivePanel(libPanel);
+		}
 	}
 }
 
@@ -218,68 +232,6 @@ void CreateDecorModeUI::SetActiveLibraryWorld(int w)
 	}
 }
 
-void CreateDecorModeUI::UpdateSprites(int sprUpdateFrames)
-{
-	for (int i = 0; i < activeHotbarSize; ++i)
-	{
-		/*if (activeLibraryWorld != hotbarImages[i].actorType->info.world)
-		{
-			hotbarEnemies[i].UpdateSprite(sprUpdateFrames);
-		}*/
-	}
-
-	if (activeLibraryWorld >= 0)
-	{
-		for (auto it = libraryImagesVec[activeLibraryWorld].begin();
-			it != libraryImagesVec[activeLibraryWorld].end(); ++it)
-		{
-			if ((*it) != NULL)
-			{
-				(*it)->UpdateSprite(sprUpdateFrames);
-			}
-		}
-	}
-}
-
-void CreateDecorModeUI::Update(bool mouseDownL, bool mouseDownR, sf::Vector2i &mPos)
-{
-	if (!show)
-	{
-		return;
-	}
-
-
-	//topbarCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
-	//libCont->UpdateMouse(mouseDownL, mouseDownR, mPos);
-
-	//librarySearchRect->Update();
-
-	/*for (int i = 0; i < hotbarImages.size(); ++i)
-	{
-		hotbarImages[i].Update();
-	}*/
-
-	if (showLibrary)
-	{
-		/*for (int i = 0; i < 9; ++i)
-		{
-			worldSelectRects[i].Update();
-		}
-
-		if (activeLibraryWorld >= 0)
-		{
-			for (auto it = libraryImagesVec[activeLibraryWorld].begin();
-				it != libraryImagesVec[activeLibraryWorld].end(); ++it)
-			{
-				if ((*it) != NULL)
-				{
-					(*it)->Update();
-				}
-			}
-		}*/
-	}
-}
-
 void CreateDecorModeUI::SetLibraryShown(bool s)
 {
 	if (showLibrary != s)
@@ -289,16 +241,18 @@ void CreateDecorModeUI::SetLibraryShown(bool s)
 
 		if (showLibrary)
 		{
+			edit->AddActivePanel(libPanel);
 			for (int i = 0; i < 9; ++i)
 			{
-				worldSelectRects[i].SetShown(true);
+				worldSelectRects[i]->SetShown(true);
 			}
 		}
 		else
 		{
+			edit->RemoveActivePanel(libPanel);
 			for (int i = 0; i < 9; ++i)
 			{
-				worldSelectRects[i].SetShown(false);
+				worldSelectRects[i]->SetShown(false);
 			}
 		}
 
@@ -308,55 +262,4 @@ void CreateDecorModeUI::SetLibraryShown(bool s)
 void CreateDecorModeUI::FlipLibraryShown()
 {
 	SetLibraryShown(!showLibrary);
-}
-
-void CreateDecorModeUI::Draw(sf::RenderTarget *target)
-{
-	if (!show)
-	{
-		return;
-	}
-	sf::View oldView = target->getView();
-	target->setView(edit->uiView);
-
-	topbarPanel->Draw(target);
-	if (showLibrary)
-	{
-		libPanel->Draw(target);
-	}
-
-	target->draw(allQuads, numAllQuads * 4, sf::Quads);
-
-	librarySearchRect->Draw(target);
-	//topbarCont->Draw(target);
-	//target->draw(hotbarQuads, activeHotbarSize * 4, sf::Quads);
-	for (int i = 0; i < activeHotbarSize; ++i)
-	{
-		hotbarImages[i].Draw(target);
-	}
-
-	//target->draw(allEnemyQuads, allEnemyRects.size() * 4, sf::Quads);
-	//target->draw(worldSelectQuads, 9 * 4, sf::Quads);
-	if (showLibrary)
-	{
-		for (int i = 0; i < 9; ++i)
-		{
-			worldSelectRects[i].Draw(target);
-		}
-
-
-		if (activeLibraryWorld >= 0)
-		{
-			for (auto it = libraryImagesVec[activeLibraryWorld].begin();
-				it != libraryImagesVec[activeLibraryWorld].end(); ++it)
-			{
-				if ((*it) != NULL)
-				{
-					(*it)->Draw(target);
-				}
-			}
-		}
-	}
-
-	target->setView(oldView);
 }

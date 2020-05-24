@@ -3607,6 +3607,39 @@ bool EditSession::TryAttachPlayerToPolys(V2d &groundPosition, double xoff)
 	//return NULL;
 }
 
+void EditSession::TryKeepGrass(std::list<PolyPtr> & origPolys,
+	std::list<PolyPtr> & newPolys)
+{
+	for (auto origIt = origPolys.begin(); origIt != origPolys.end(); ++origIt)
+	{
+		for (auto newIt = newPolys.begin(); newIt != newPolys.end(); ++newIt)
+		{
+			(*origIt)->CopyMyGrass((*newIt));
+		}
+	}
+}
+
+void EditSession::TryKeepGrass(PolyPtr origPoly,
+	std::list<PolyPtr> & newPolys)
+{
+	for (auto newIt = newPolys.begin(); newIt != newPolys.end(); ++newIt)
+	{
+		origPoly->CopyMyGrass((*newIt));
+	}
+}
+
+void EditSession::TryKeepGrass(std::set<PolyPtr> & origPolys,
+	std::list<PolyPtr> & newPolys)
+{
+	for (auto origIt = origPolys.begin(); origIt != origPolys.end(); ++origIt)
+	{
+		for (auto newIt = newPolys.begin(); newIt != newPolys.end(); ++newIt)
+		{
+			(*origIt)->CopyMyGrass((*newIt));
+		}
+	}
+}
+
 void EditSession::TryAttachActorsToPoly( PolyPtr orig, std::list<PolyPtr> & newPolys, Brush *b)
 {
 	for (auto mit = orig->enemies.begin(); mit != orig->enemies.end(); ++mit)
@@ -3786,7 +3819,9 @@ void EditSession::TryRemoveSelectedPoints()
 
 		AddFullPolysToBrush(affectedPolys, gateInfoList, &orig);
 
+
 		TryAttachActorsToPolys(affectedPolys, newPolys, &result);
+		TryKeepGrass(affectedPolys, newPolys);
 
 		TryKeepGates(gateInfoList, newPolys, &result);
 		selectedPoints.clear();
@@ -8109,7 +8144,6 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 		
 
 		AddFullPolyToBrush((*it).first, gateInfoList, &orig);
-		//TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
 	}
 
 	if (inverseBrushes.size() > 0)
@@ -8239,9 +8273,14 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 	
 	
 	if (inversePolygon != NULL)
+	{
 		TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
+		TryKeepGrass(inversePolygon, attachList);
+	}
+		
 
 	TryAttachActorsToPolys(nonInverseIntersList, attachList, &resultBrush);
+	TryKeepGrass(nonInverseIntersList, attachList);
 	//TryAttachActorsToPolys(inverseConnectedInters, attachList, &resultBrush);
 
 	TryKeepGates(gateInfoList, attachList, &resultBrush);
@@ -8715,14 +8754,18 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 	if (complexPaste == NULL)
 	{
 		TryAttachActorsToPolys(brushPolys, attachList, &resultBrush);
+		TryKeepGrass(brushPolys, attachList);
 	}
 	
 	TryAttachActorsToPolys(nonInverseInters, attachList, &resultBrush);
+	TryKeepGrass(nonInverseInters, attachList);
 	TryAttachActorsToPolys(inverseConnectedInters, attachList, &resultBrush);
+	TryKeepGrass(inverseConnectedInters, attachList);
 
 	if (inverseConnectedPolys.size() > 1 || inverseOnlyBrushes.size() > 0)
 	{
 		TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
+		TryKeepGrass(inversePolygon, attachList);
 	}
 	
 	TryKeepGates(gateInfoList, attachList, &resultBrush);
@@ -9317,12 +9360,15 @@ void EditSession::SetMode(Emode m)
 		//AddActivePanel(createEnemyModeUI->topbarPanel);
 		currTool = TOOL_DRAW;
 		lastLeftMouseDown = false;//IsMousePressed( Mouse::)
-		grabbedActor = NULL;
+		//grabbedActor = NULL;
 		editClock.restart();
 		editCurrentTime = 0;
 		editAccumulator = TIMESTEP + .1;
 		break;
 	case CREATE_IMAGES:
+		ClearSelectedBrush();
+		createDecorModeUI->showLibrary = false;
+		createDecorModeUI->SetShown(true);
 		grabbedImage = NULL;
 		selectedBrush->Clear();
 		break;
@@ -10606,7 +10652,7 @@ void EditSession::DrawMode()
 	}
 	case CREATE_IMAGES:
 	{
-		createDecorModeUI->Draw(preScreenTex);
+		//createDecorModeUI->Draw(preScreenTex);
 
 		if (grabbedImage != NULL)
 		{
@@ -12626,8 +12672,8 @@ void EditSession::CreateImagesModeUpdate()
 		grabbedImage = NULL;
 	}
 
-	createDecorModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
-	createDecorModeUI->UpdateSprites(spriteUpdateFrames);
+	//createDecorModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
+	//createDecorModeUI->UpdateSprites(spriteUpdateFrames);
 
 	/*if (grabbedActor != NULL)
 	{
