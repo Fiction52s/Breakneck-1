@@ -240,7 +240,6 @@ struct CreateEnemyModeUI
 
 	EnemyVariationSelector *varSelector;
 	void ExpandVariation(EnemyChooseRect *ceRect);
-	//std::vector<ChooseRect> myRects;
 	std::vector<EnemyChooseRect*> allEnemyRects;
 	
 	std::vector<EnemyChooseRect*> hotbarEnemies;
@@ -255,8 +254,6 @@ struct CreateEnemyModeUI
 	void UpdateHotbarTypes();
 	Panel *topbarPanel;
 	Panel *libPanel;
-	//Panel *topbarPanel;
-	//Panel *libraryPanel;
 	EditSession *edit;
 	void SetShown(bool s);
 	void SetLibraryShown(bool s);
@@ -285,7 +282,6 @@ struct CreateDecorModeUI
 
 	Panel *topbarPanel;
 	Panel *libPanel;
-
 	std::vector<ImageChooseRect*> allImageRects;
 	std::vector<std::vector<ImageChooseRect*>>
 		libraryImagesVec;

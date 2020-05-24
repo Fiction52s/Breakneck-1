@@ -93,12 +93,7 @@ CreateDecorModeUI::CreateDecorModeUI()
 			Vector2f(extraHotbarSpacing + 10 + i * (hotbarRectSize + hotbarSpacing), 10),
 			NULL, 0));
 		hotbarImages[i]->SetShown(false);
-		hotbarImages[i]->Init();
-
-		/*hotbarImages.push_back(ImageChooseRect(ChooseRect::I_DECORHOTBAR, hotbarQuads + i * 4,
-			Vector2f(extraHotbarSpacing + 10 + i * (hotbarRectSize + hotbarSpacing), 10),
-			NULL, 0, topbarPanel));*/
-		
+		hotbarImages[i]->Init();		
 	}
 
 
@@ -111,9 +106,6 @@ CreateDecorModeUI::CreateDecorModeUI()
 			Vector2f(i * (worldSize + worldSpacing) + 10, 10), ts_worldChoosers, i));
 		worldSelectRects[i]->SetShown(false);
 		worldSelectRects[i]->Init();
-		/*worldSelectRects.push_back(ImageChooseRect(ChooseRect::I_WORLDCHOOSER, worldSelectQuads + i * 4,
-			Vector2f(i * (worldSize + worldSpacing) + 10, 10), ts_worldChoosers, i, libPanel));*/
-		
 	}
 
 	int counter;
