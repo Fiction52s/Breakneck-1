@@ -887,20 +887,12 @@ void Panel::Draw( RenderTarget *target )
 
 	target->setView(myView);
 	
-	if (extraUpdater != NULL && extraUpdater->IsReplacingDraw())
+	DrawQuad(target);
+
+	if (extraUpdater != NULL )
 	{
 		extraUpdater->Draw(target);
 	}
-	else
-	{
-		DrawQuad(target);
-
-		if( extraUpdater != NULL )
-			extraUpdater->Draw(target);
-	}
-
-	
-	
 
 
 

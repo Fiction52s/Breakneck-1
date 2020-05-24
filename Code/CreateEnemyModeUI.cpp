@@ -12,20 +12,22 @@ using namespace sf;
 EnemyVariationSelector::EnemyVariationSelector( bool p_createMode )
 	:PanelUpdater(), createMode( p_createMode )
 {
-	SetReplaceDraw(false);
-
 	numVariations = 0;
 	Color testColor = Color::White;
 	
 	
 	edit = EditSession::GetSession();
 
-	int panelSize = 350;
+	Tileset *ts_orb = edit->GetSizedTileset("Menu/orbselector_384x384.png");
+	ts_orb->SetSpriteTexture(orbSpr);
+	//orbSpr.setOrigin(orbSpr.getLocalBounds().width / 2, orbSpr.getLocalBounds().height / 2);
+
+	int panelSize = 384;
 	
 	panel = new Panel("topbarpanel", panelSize, panelSize, edit, true);
 	panel->SetPosition(Vector2i(0, 0));
 	panel->extraUpdater = this;
-	panel->SetColor(Color::Black);
+	panel->SetColor(Color::Transparent);
 	panel->ReserveEnemyRects(7);
 	//centerRect = panel->AddEnemyRect(ChooseRect::ChooseRectIdentity::I_ENEMYLIBRARY,
 	//	Vector2f(0, 0), NULL, 0);
@@ -36,7 +38,10 @@ EnemyVariationSelector::EnemyVariationSelector( bool p_createMode )
 
 	//centerRect->SetPosition(enemyCenter);
 
-	Vector2f offset(0, -100);
+	int circleRadius = 64;
+	int offsetRadius = circleRadius * 2;
+
+	Vector2f offset(0, -offsetRadius);
 	Transform tr;
 	tr.rotate(360 / 6);
 
@@ -57,6 +62,7 @@ EnemyVariationSelector::EnemyVariationSelector( bool p_createMode )
 		Vector2f currPos = centerPoint - Vector2f( varRects[i]->boxSize / 2,
 			varRects[i]->boxSize / 2 ) + tr.transformPoint(offset);
 		varRects[i]->SetPosition(currPos);
+		varRects[i]->SetCircleMode(circleRadius);
 		tr.rotate(360 / 6);
 	}
 	
@@ -108,7 +114,7 @@ void EnemyVariationSelector::SetType(ActorType *type)
 void EnemyVariationSelector::SetPosition(sf::Vector2f &pos)
 {
 	panel->SetCenterPos(Vector2i(pos));
-
+	//orbSpr.setPosition(pos);
 	for (int i = 0; i < numVariations; ++i)
 	{
 	}
@@ -116,6 +122,7 @@ void EnemyVariationSelector::SetPosition(sf::Vector2f &pos)
 
 void EnemyVariationSelector::Draw(RenderTarget *target)
 {
+	target->draw(orbSpr);
 	//draw orb system here
 }
 
@@ -413,10 +420,10 @@ void CreateEnemyModeUI::ExpandVariation(EnemyChooseRect *ceRect)
 }
 
 
-ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType, 
+ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	Vertex *v, float size, sf::Vector2f &p_pos, Panel *p)
-	:PanelMember( p ), quad(v), boxSize( size ), pos( p_pos ), chooseRectType( crType ), 
-	rectIdentity( ident )
+	:PanelMember(p), quad(v), boxSize(size), pos(p_pos), chooseRectType(crType),
+		rectIdentity(ident), circleMode(false)
 {
 	idleColor = Color::Black;
 	idleColor.a = 100;
@@ -428,6 +435,19 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 
 	focused = false;
 }
+
+void ChooseRect::SetCircleMode(int p_radius)
+{
+	circleMode = true;
+	circleRadius = p_radius;
+}
+
+void ChooseRect::SetRectMode()
+{
+	circleMode = false;
+}
+
+
 
 void ChooseRect::Init()
 {
@@ -464,7 +484,14 @@ void ChooseRect::SetShown(bool s)
 	}
 	else if (s && !show)
 	{
-		SetRectTopLeft(quad, boxSize, boxSize, pos);//GetGlobalPos());
+		if (circleMode)
+		{
+			SetRectTopLeft(quad, 0, 0, Vector2f(0, 0));
+		}
+		else
+		{
+			SetRectTopLeft(quad, boxSize, boxSize, pos);
+		}
 		SetSize(boxSize);
 	}
 	show = s;
@@ -492,6 +519,20 @@ void ChooseRect::Deactivate()
 	SetRectColor(quad, idleColor);
 }
 
+bool ChooseRect::ContainsPoint(sf::Vector2i &mousePos)
+{
+	if (circleMode)
+	{
+		Vector2i center(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+		Vector2f diff(mousePos - center);
+		return (length(diff) <= circleRadius);
+	}
+	else
+	{
+		return bounds.contains(mousePos);
+	}
+}
+
 bool ChooseRect::MouseUpdate()
 {
 	if( !show )
@@ -504,7 +545,7 @@ bool ChooseRect::MouseUpdate()
 
 	if (MOUSE.IsMouseLeftClicked())
 	{
-		if (bounds.contains(mousePos))
+		if (ContainsPoint( mousePos ) )
 		{
 			edit->ChooseRectEvent(this, E_LEFTCLICKED );
 			focused = true;
@@ -512,7 +553,7 @@ bool ChooseRect::MouseUpdate()
 	}
 	else if (!MOUSE.IsMouseDownLeft())
 	{
-		if (bounds.contains(mousePos))
+		if (ContainsPoint(mousePos))
 		{
 			SetRectColor(quad, mouseOverColor);
 			if (!focused)
@@ -536,7 +577,7 @@ bool ChooseRect::MouseUpdate()
 
 	if (MOUSE.IsMouseRightClicked())
 	{
-		if (bounds.contains(mousePos))
+		if (ContainsPoint(mousePos))
 		{
 			edit->ChooseRectEvent(this, E_RIGHTCLICKED);
 			//focused = true;
@@ -544,7 +585,7 @@ bool ChooseRect::MouseUpdate()
 	}
 	else if (MOUSE.IsMouseRightReleased())
 	{
-		if (bounds.contains(mousePos))
+		if (ContainsPoint(mousePos))
 		{
 			edit->ChooseRectEvent(this, E_RIGHTRELEASED);
 			//focused = true;

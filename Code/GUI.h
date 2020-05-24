@@ -63,17 +63,13 @@ private:
 struct PanelUpdater
 {
 	PanelUpdater()
-		:replaceDraw(false)
 	{
 
 	}
 	virtual bool MouseUpdate() = 0;
 	virtual void Draw(sf::RenderTarget *target){}
-	void SetReplaceDraw(bool r) {replaceDraw = r;}
-	bool IsReplacingDraw() { return replaceDraw; }
 	virtual void Deactivate() {}
 private:
-	bool replaceDraw;
 };
 
 struct PanelMember
@@ -128,13 +124,15 @@ struct ChooseRect : PanelMember
 	ChooseRectType chooseRectType;
 	EnemyChooseRect *GetAsEnemyChooseRect();
 	ImageChooseRect *GetAsImageChooseRect();
-
+	bool ContainsPoint(sf::Vector2i &mousePos);
 	ChooseRect( ChooseRectIdentity ident, 
 		ChooseRectType crType, 
 		sf::Vertex *v,
 	float size, sf::Vector2f &pos,
 		Panel *panel );
 	bool MouseUpdate();
+	void SetCircleMode(int radius);
+	void SetRectMode();
 	virtual void Draw(sf::RenderTarget *target) {}
 
 	void Init();
@@ -162,6 +160,9 @@ struct ChooseRect : PanelMember
 
 	sf::Color mouseOverColor;
 	sf::Color idleColor;
+
+	bool circleMode;
+	int circleRadius;
 };
 
 
@@ -216,6 +217,8 @@ struct EnemyVariationSelector : PanelUpdater
 	void SetType(ActorType *type );
 	void Draw(sf::RenderTarget *target);
 	void SetPosition(sf::Vector2f &pos);
+
+	sf::Sprite orbSpr;
 	//sf::Vertex testQuad[4];
 	sf::Vertex enemyQuads[28];
 	//bool show;
@@ -473,6 +476,7 @@ struct Panel
 	~Panel();
 	void Deactivate();
 	void SetColor(sf::Color c);
+	//void SetImage(Tileset *ts, int tile);
 	void DrawQuad(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *rt);
 	bool ContainsPoint(sf::Vector2i &pos);
