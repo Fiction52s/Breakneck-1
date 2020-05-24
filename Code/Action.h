@@ -242,6 +242,18 @@ struct ModifyGateAction : Action
 	std::string newType;
 };
 
+struct GrassDiff;
+struct GrassAction : Action
+{
+	GrassAction(GrassDiff *gDiffs, int numDiffs );
+	~GrassAction();
+	void Perform();
+	void Undo();
+
+	int numDiffs;
+	GrassDiff *gDiffs;
+};
+
 struct ModifyTerrainTypeAction : Action
 {
 	ModifyTerrainTypeAction( Brush *brush,

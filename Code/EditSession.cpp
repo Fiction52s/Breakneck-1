@@ -2306,6 +2306,7 @@ void EditSession::LoadAndResave()
 
 int EditSession::Run()
 {
+	grassChanges = NULL;
 	focusedPanel = NULL;
 
 	SetupHitboxManager();
@@ -9868,20 +9869,40 @@ void EditSession::ShowGrass(bool s)
 {
 	showGrass = s;
 
-	PolyPtr tp;
-
-	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	if (showGrass)
 	{
-		(*it)->ShowGrass(showGrass);
+		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		{
+			(*it)->ShowGrass(true);
+		}
 	}
-
-
-	/*for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	else
 	{
-		tp = (*it)->GetAsTerrain();
-		if (tp != NULL)
-			tp->ShowGrass(s);
-	}*/
+		int changedCounter = 0;
+		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		{
+			changedCounter += (*it)->ShowGrass(false);
+		}
+		assert(grassChanges == NULL);
+
+		if (changedCounter > 0)
+		{
+			grassChanges = new GrassDiff[changedCounter];
+
+			int startIndex = 0;
+			for (auto it = polygons.begin(); it != polygons.end(); ++it)
+			{
+				startIndex += (*it)->AddGrassChanges(grassChanges + startIndex);
+			}
+
+			GrassAction *gAction = new GrassAction(grassChanges, changedCounter);
+			gAction->performed = true;
+
+			AddDoneAction(gAction);
+
+			grassChanges = NULL;
+		}
+	}
 }
 
 void EditSession::ModifyZoom(double factor)
@@ -11025,37 +11046,6 @@ void EditSession::CreateTerrainModeHandleEvent()
 				currTool = TOOL_DRAW;
 			}
 		}
-		else if (ev.key.code == sf::Keyboard::C)
-		{
-
-			//fix up rails and then implement something like this for blocker rails
-			if (polygonInProgress->GetNumPoints() > 0)
-			{
-				ActorParams *testParams = types["blocker"]->defaultParamsVec[0]->Copy();
-				testParams->group = groups["--"];
-
-				vector<Vector2i> testPath;
-				V2d startPos;
-				polygonInProgress->MakeGlobalPath(startPos, testPath);
-				testParams->SetPosition(startPos);
-				testParams->SetBoundingQuad();
-				testParams->SetPath(testPath);
-
-				
-
-				testParams->CreateMyEnemy();
-
-				polygonInProgress->ClearPoints();
-
-				Brush b;
-				b.AddObject(testParams);
-				Action *apply = NULL;
-				apply = new ApplyBrushAction(&b);
-				apply->Perform();
-
-				AddDoneAction(apply);
-			}
-		}
 		else if (ev.key.code == Keyboard::T )
 		{
 			//eventually something telling the create mode that you can here from create terrain
@@ -11081,7 +11071,6 @@ void EditSession::CreateRailsModeHandleEvent()
 	{
 	case Event::KeyPressed:
 	{
-
 		if (ev.key.code == Keyboard::Space)
 		{
 			ExecuteRailCompletion();
@@ -11089,9 +11078,6 @@ void EditSession::CreateRailsModeHandleEvent()
 		else if (ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete)
 		{
 			RemovePointFromRailInProgress();
-		}
-		else if (ev.key.code == sf::Keyboard::E)
-		{
 		}
 		else if (ev.key.code == sf::Keyboard::R)
 		{
@@ -11264,20 +11250,6 @@ void EditSession::EditModeHandleEvent()
 					
 			}
 		}
-		else if (ev.key.code == Keyboard::M)
-		{
-			//selectedBrush->Rotate(-1.f);
-			/*PolyPtr p;
-			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-			{
-				p = (*it)->GetAsTerrain();
-				if (p != NULL)
-				{
-					p->Scale(.95f);
-				}
-
-			}*/
-		}
 		else if (ev.key.code == Keyboard::R)
 		{
 			ShowGrass(true);
@@ -11297,7 +11269,6 @@ void EditSession::EditModeHandleEvent()
 				AddActivePanel(terrainSelectorPopup);
 				tempGridResult = "not set";
 			}
-			//GridSelectPop("terraintypeselect");
 		}
 		else if (ev.key.code == Keyboard::I)
 		{
@@ -11353,30 +11324,6 @@ void EditSession::EditModeHandleEvent()
 		{
 			ShowGrass(false);
 		}
-		else if (ev.key.code == Keyboard::N)
-		{
-			/*PolyPtr p;
-			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-			{
-				p = (*it)->GetAsTerrain();
-				if (p != NULL)
-				{
-					p->CompleteTransformation();
-				}		
-			}*/
-		}
-		else if (ev.key.code == Keyboard::M)
-		{
-			/*PolyPtr p;
-			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-			{
-				p = (*it)->GetAsTerrain();
-				if (p != NULL)
-				{
-					p->CompleteTransformation();
-				}
-			}*/
-		}
 		break;
 	}
 	}
@@ -11386,28 +11333,6 @@ void EditSession::PasteModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		if (ev.mouseButton.button == sf::Mouse::Button::Left)
-		{
-			PasteTerrain(copiedBrush, freeActorCopiedBrush );
-		}
-		break;
-		
-	}
-	case Event::MouseButtonReleased:
-	{
-		if (ev.mouseButton.button == sf::Mouse::Button::Left)
-		{
-			if (complexPaste != NULL)
-			{
-				//cout << "completing complex paste" << endl;
-				//ClearUndoneActions();
-				complexPaste = NULL;
-			}
-		}
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (ev.key.code == Keyboard::X)

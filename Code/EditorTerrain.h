@@ -29,6 +29,7 @@ struct TerrainRail;
 struct Brush;
 
 struct QuadTree;
+struct GrassDiff;
 
 struct TransformTools;
 
@@ -208,7 +209,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
-
 	void MakeGlobalPath(
 		V2d &startPos,
 		std::vector<sf::Vector2i> &path);
@@ -384,6 +384,9 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetupGrass(std::list<GrassSeg> &segments);
 	void AddGrassToQuadTree(QuadTree *tree );
 	void SetGrassOn(int gIndex, bool on);
+	void SetGrassFromAction(int gIndex, int state,
+		bool show );
+	void SetGrassState(int gIndex, int state);
 	Grass::GrassType GetGrassType();
 	V2d GetGrassCenter(int gIndex);
 
@@ -461,7 +464,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int grassSpacing;
 
 
-	void ShowGrass(bool show);
+	int AddGrassChanges(GrassDiff* gDiffArray);
+	int ShowGrass(bool show);
 	void ProcessGrass(std::list<GrassSeg> &segments );
 	void SwitchGrass(V2d &mousePos, bool on);
 	void SetSelected(bool select);
@@ -572,6 +576,11 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	std::vector<std::pair<ActorPtr, PositionInfo>> enemyPosBackups;
 	void BackupEnemyPositions();
 	void StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b);
+	void BackupGrass();
+	int NumGrassChanged();
+	bool grassChanged;
+	std::vector<int> grassStateVecBackup;
+
 	
 	int writeIndex;
 	bool finalized;

@@ -55,31 +55,13 @@ struct EnemyChooser;
 
 struct PlayerTracker;
 
-
-
-//struct EditorMode
-//{
-//	virtual bool OnLeftClick() { return false; }
-//	virtual bool OnLeftReleased() { return false; }
-//	virtual bool OnRightClick() { return false; }
-//	virtual bool OnRightReleased() { return false; }
-//	virtual bool Update() { return false; }
-//	virtual bool HandleEvent(sf::Event ev) { return false; }
-//	virtual bool HandleKeyPress(sf::Event::KeyEvent k) {return false;}
-//	virtual bool HandleKeyRelease(sf::Event::KeyEvent k) { return false; }
-//};
-//
-//struct EditMode : EditorMode
-//{
-//	bool OnLeftClick();
-//	bool OnLeftReleased();
-//	bool OnRightClick();
-//	bool OnRightReleased();
-//	bool Update();
-//	bool HandleEvent(sf::Event ev);
-//	bool HandleKeyPress(sf::Event::KeyEvent k );
-//	bool HandleKeyRelease(sf::Event::KeyEvent k );
-//};
+struct GrassDiff
+{
+	PolyPtr poly;
+	int index;
+	int newValue;
+	int oldValue;
+};
 
 struct EditSession : GUIHandler, Session
 {
@@ -289,6 +271,7 @@ struct EditSession : GUIHandler, Session
 	//need to clean this up
 	int grassSize;
 	int grassSpacing;
+	GrassDiff *grassChanges;
 
 	TerrainPoint *potentialRailAttachPoint;
 	RailPtr potentialRailAttach;

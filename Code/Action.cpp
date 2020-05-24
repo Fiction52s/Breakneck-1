@@ -1533,6 +1533,43 @@ void ModifyTerrainTypeAction::Undo()
 	performed = false;
 }
 
+GrassAction::GrassAction(GrassDiff *p_gDiffs, int p_numDiffs )
+	:gDiffs(p_gDiffs), numDiffs( p_numDiffs )
+{
+
+}
+
+GrassAction::~GrassAction()
+{
+	delete[] gDiffs;
+}
+
+void GrassAction::Perform()
+{
+	assert(!performed);
+
+	EditSession *edit = EditSession::GetSession();
+	bool showGrass = edit->showGrass;
+	for (int i = 0; i < numDiffs; ++i)
+	{
+		GrassDiff &gDiff = gDiffs[i];
+		gDiff.poly->SetGrassFromAction(gDiff.index, gDiff.newValue, showGrass );
+	}
+	performed = true;
+}
+void GrassAction::Undo()
+{
+	assert(performed);
+	EditSession *edit = EditSession::GetSession();
+	bool showGrass = edit->showGrass;
+	for (int i = 0; i < numDiffs; ++i)
+	{
+		GrassDiff &gDiff = gDiffs[i];
+		gDiff.poly->SetGrassFromAction(gDiff.index, gDiff.oldValue, showGrass);
+	}
+	performed = false;
+}
+
 //MovePointsAction::MovePointsAction(Brush *brush, list<GateInfoPtr> gateList,
 //	PointMap &pm)
 //	:Action()
