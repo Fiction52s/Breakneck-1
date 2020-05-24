@@ -96,7 +96,6 @@ struct EditSession : GUIHandler, Session
 		CREATE_ENEMY,
 		CREATE_GATES,
 		CREATE_IMAGES,
-		SET_LEVEL,
 		CREATE_RAILS,
 		SET_CAM_ZOOM,
 		TEST_PLAYER,
@@ -603,8 +602,6 @@ struct EditSession : GUIHandler, Session
 
 	void UpdatePolyShaders();
 
-	void SetEnemyLevel();
-
 	int borderMove;
 	bool panning;
 
@@ -671,13 +668,13 @@ struct EditSession : GUIHandler, Session
 	void CreateGatesModeHandleEvent();
 	void CreateImagesModeHandleEvent();
 	//void EditImagesModeHandleEvent();
-	void SetLevelModeHandleEvent();
 	void TransformModeHandleEvent();
 	void TestPlayerModeHandleEvent();
 
 	void CreateTerrainModeUpdate();
 	void CreateRailsModeUpdate();
 	void EditModeUpdate();
+	void SelectModeUpdate();
 	void PasteModeUpdate();
 	void CreateEnemyModeUpdate();
 	//void PausedModeUpdate();
@@ -689,7 +686,6 @@ struct EditSession : GUIHandler, Session
 	void CreateGatesModeUpdate();
 	void CreateImagesModeUpdate();
 	//void EditImagesModeUpdate();
-	void SetLevelModeUpdate();
 	void TransformModeUpdate();
 	
 	

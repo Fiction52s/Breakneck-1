@@ -817,7 +817,6 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	handleEventFunctions[CREATE_ENEMY] = &EditSession::CreateEnemyModeHandleEvent;
 	handleEventFunctions[CREATE_GATES] = &EditSession::CreateGatesModeHandleEvent;
 	handleEventFunctions[CREATE_IMAGES] = &EditSession::CreateImagesModeHandleEvent;
-	handleEventFunctions[SET_LEVEL] = &EditSession::SetLevelModeHandleEvent;
 	handleEventFunctions[CREATE_RAILS] = &EditSession::CreateRailsModeHandleEvent;
 	handleEventFunctions[SET_CAM_ZOOM] = &EditSession::SetCamZoomModeHandleEvent;
 	handleEventFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeHandleEvent;
@@ -825,7 +824,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	updateModeFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeUpdate;
 	updateModeFunctions[EDIT] = &EditSession::EditModeUpdate;
-	//updateModeFunctions[SELECT_MODE] = &EditSession::SelectModeUpdate;
+	updateModeFunctions[SELECT_MODE] = &EditSession::SelectModeUpdate;
 	updateModeFunctions[CREATE_PATROL_PATH] = &EditSession::CreatePatrolPathModeUpdate;
 	updateModeFunctions[CREATE_RECT] = &EditSession::CreateRectModeUpdate;
 	updateModeFunctions[SET_DIRECTION] = &EditSession::SetDirectionModeUpdate;
@@ -834,7 +833,6 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	updateModeFunctions[CREATE_ENEMY] = &EditSession::CreateEnemyModeUpdate;
 	updateModeFunctions[CREATE_GATES] = &EditSession::CreateGatesModeUpdate;
 	updateModeFunctions[CREATE_IMAGES] = &EditSession::CreateImagesModeUpdate;
-	updateModeFunctions[SET_LEVEL] = &EditSession::SetLevelModeUpdate;
 	updateModeFunctions[CREATE_RAILS] = &EditSession::CreateRailsModeUpdate;
 	updateModeFunctions[SET_CAM_ZOOM] = &EditSession::SetCamZoomModeUpdate;
 	updateModeFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeUpdate;
@@ -9969,25 +9967,6 @@ void EditSession::TryAddToPatrolPath()
 	}
 }
 
-void EditSession::SetEnemyLevel()
-{
-	if (IsMousePressed(Mouse::Left))
-	{
-		for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
-		{
-			list<ActorPtr> &actors = it->second->actors;
-			for (list<ActorPtr>::iterator it2 = actors.begin(); it2 != actors.end(); ++it2)
-			{
-				sf::FloatRect bounds = (*it2)->image.getGlobalBounds();
-				if (bounds.contains(Vector2f(worldPos.x, worldPos.y)))
-				{
-					(*it2)->SetLevel(setLevelCurrent);
-				}
-			}
-		}
-	}
-}
-
 void EditSession::UpdatePanning()
 {
 	V2d tempWorldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
@@ -11143,12 +11122,6 @@ void EditSession::EditModeHandleEvent()
 	{
 	case Event::KeyPressed:
 	{
-		if (ev.key.code == Keyboard::Tilde)
-		{
-			SetMode(SET_LEVEL);
-			setLevelCurrent = 1;
-		}
-
 		if (ev.key.code == Keyboard::C && ev.key.control)
 		{
 			//copiedBrush = selectedBrush->Copy();
@@ -11467,45 +11440,6 @@ void EditSession::CreateEnemyModeHandleEvent()
 	{
 		break;
 	}
-	case Event::MouseButtonReleased:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			if (grabbedActor != NULL )
-			{
-				bool done = false;
-				if (AnchorSelectedEnemies())
-				{
-					done = true;
-				}
-
-				if (!done)
-				{
-					//PerformMovePointsAction();
-					//NewPerformMovePointsAction();
-				}
-
-				TryCompleteSelectedMove();
-			}
-			/*else if (editMouseDownBox)
-			{
-				TryBoxSelect();
-			}*/
-
-			editMouseDownBox = false;
-			editMouseDownMove = false;
-			editStartMove = false;
-			grabbedActor = NULL;
-			grabbedImage = NULL;
-			//grabbedPoint = NULL;
-		}
-		break;
-	}
-	case Event::MouseMoved:
-	{
-		//ev.mousebu
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
@@ -11532,14 +11466,6 @@ void EditSession::PausedModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		break;
-	}
-	case Event::MouseButtonReleased:
-	{
-		break;
-	}
 	case Event::GainedFocus:
 	{
 		SetMode(stored);
@@ -11552,172 +11478,6 @@ void EditSession::SelectModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		break;
-	}
-	case Event::MouseButtonReleased:
-	{
-		V2d releasePos(uiMousePos.x, uiMousePos.y);
-
-		V2d worldTop = menuDownPos + circleTopPos;
-		V2d worldUpperLeft = menuDownPos + circleUpperLeftPos;
-		V2d worldUpperRight = menuDownPos + circleUpperRightPos;
-		V2d worldLowerRight = menuDownPos + circleLowerRightPos;
-		V2d worldLowerLeft = menuDownPos + circleLowerLeftPos;
-		V2d worldBottom = menuDownPos + circleBottomPos;
-
-
-		if (length(releasePos - worldTop) < menuCircleRadius)
-		{
-			menuSelection = "top";
-		}
-		else if (length(releasePos - worldUpperLeft) < menuCircleRadius)
-		{
-			menuSelection = "upperleft";
-		}
-		else if (length(releasePos - worldUpperRight) < menuCircleRadius)
-		{
-			menuSelection = "upperright";
-		}
-		else if (length(releasePos - worldLowerLeft) < menuCircleRadius)
-		{
-			menuSelection = "lowerleft";
-		}
-		else if (length(releasePos - worldLowerRight) < menuCircleRadius)
-		{
-			menuSelection = "lowerright";
-		}
-		else if (length(releasePos - worldBottom) < menuCircleRadius)
-		{
-			menuSelection = "bottom";
-		}
-		else
-		{
-			mode = menuDownStored;
-			//SetMode(menuDownStored);
-			menuSelection = "none";
-		}
-
-		if (menuDownStored == EDIT && menuSelection != "none" && menuSelection != "top")
-		{
-			if (menuDownStored == EDIT)
-			{
-				ClearSelectedBrush();
-			}
-		}
-		else if (menuDownStored == CREATE_TERRAIN && menuSelection != "none")
-		{
-			polygonInProgress->ClearPoints();
-		}
-
-		if (menuSelection == "top")
-		{
-			bool singleObject = selectedBrush->objects.size() == 1
-				&& selectedPoints.size() == 0;
-			bool singleActor = singleObject
-				&& selectedBrush->objects.front()->selectableType == ISelectable::ACTOR;
-			bool singleImage = singleObject
-				&& selectedBrush->objects.front()->selectableType == ISelectable::IMAGE;
-			bool singleRail = singleObject
-				&& selectedBrush->objects.front()->selectableType == ISelectable::RAIL;
-
-			//bool singlePoly = selectedBrush->objects.size() == 1 
-			//	&& selectedPoints.size() == 0
-			//	&& selectedBrush->objects.front()->selectableType == ISelectable::TERRAIN;
-
-			bool onlyPoly = selectedBrush != NULL && !selectedBrush->objects.empty() && selectedBrush->terrainOnly;
-
-			//if (menuDownStored == EDIT && onlyPoly)
-			//{
-			//	AddActivePanel(terrainOptionsPanel);
-			//	mode = menuDownStored;
-			//	//SetMode(menuDownStored);
-			//}
-			//else if (menuDownStored == EDIT && singleActor)
-			//{
-			//	SetEnemyEditPanel();
-			//	//SetMode(menuDownStored);
-			//	mode = menuDownStored;
-			//}
-			//else if (menuDownStored == EDIT && singleImage)
-			//{
-			//	AddActivePanel(editDecorPanel);
-			//	SetDecorEditPanel();
-			//	//SetMode(menuDownStored);
-			//	mode = menuDownStored;
-			//}
-			//else if (menuDownStored == EDIT && singleRail)
-			//{
-			//	AddActivePanel(railOptionsPanel);
-
-			//	SelectPtr select = selectedBrush->objects.front();
-			//	TerrainRail *tr = (TerrainRail*)select;
-			//	tr->UpdatePanel(railOptionsPanel);
-			//	
-			//	//SetMode(menuDownStored);
-
-			//	mode = menuDownStored;
-			//}
-			//else
-			{
-				SetMode(EDIT);
-			}
-		}
-		else if (menuSelection == "upperleft")
-		{
-			showPoints = false;
-			SetMode(CREATE_ENEMY);
-		}
-		else if (menuSelection == "upperright")
-		{
-			showPoints = false;
-			justCompletedPolyWithClick = false;
-			SetMode(CREATE_TERRAIN);
-		}
-		else if (menuSelection == "lowerleft")
-		{
-			SetMode(CREATE_GATES);
-			gatePoints = 0;
-			showPoints = true;
-		}
-		else if (menuSelection == "lowerright")
-		{
-			AddActivePanel(mapOptionsPanel);
-			mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
-			mapOptionsPanel->textBoxes["bosstype"]->text.setString(to_string(bossType));
-			mode = menuDownStored;
-//			SetMode(menuDownStored);
-		}
-		else if (menuSelection == "bottom")
-		{
-			SetMode(CREATE_IMAGES);
-			currImageTool = ITOOL_EDIT;
-		}
-
-
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
-	case Event::KeyPressed:
-	{
-		break;
-	}
-	case Event::KeyReleased:
-	{
-		break;
-	}
-	case Event::LostFocus:
-	{
-		break;
-	}
-	case Event::GainedFocus:
-	{
-		break;
-	}
 	}
 }
 
@@ -11726,18 +11486,6 @@ void EditSession::CreatePatrolPathModeHandleEvent()
 	minimumPathEdgeLength = 16;
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		break;
-	}
-	case Event::MouseButtonReleased:
-	{
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if ((ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete) && patrolPath.size() > 1)
@@ -11766,14 +11514,6 @@ void EditSession::CreatePatrolPathModeHandleEvent()
 	{
 		break;
 	}
-	case Event::LostFocus:
-	{
-		break;
-	}
-	case Event::GainedFocus:
-	{
-		break;
-	}
 	}
 }
 
@@ -11781,44 +11521,6 @@ void EditSession::CreateRectModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			if (!drawingCreateRect)
-			{
-				drawingCreateRect = true;
-				createRectStartPoint = Vector2i(worldPos);
-				createRectCurrPoint = Vector2i(worldPos);
-			}
-		}
-		break;
-	}
-	case Event::MouseButtonReleased:
-	{
-		if (drawingCreateRect)
-		{
-			drawingCreateRect = false;
-
-			createRectCurrPoint = Vector2i(worldPos);
-
-			Vector2i rc = (createRectStartPoint + createRectCurrPoint) / 2;
-			float width = abs(createRectCurrPoint.x - createRectStartPoint.x);
-			float height = abs(createRectCurrPoint.y - createRectStartPoint.y);
-			rectCreatingTrigger->SetRect(width, height, rc);
-
-			/*if (trackingEnemy != NULL)
-			{
-				enemySprite.setPosition(Vector2f(rc));
-				enemyQuad.setPosition(enemySprite.getPosition());
-			}*/
-		}
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (ev.key.code == Keyboard::Space)
@@ -11837,18 +11539,6 @@ void EditSession::CreateRectModeHandleEvent()
 		}
 		break;
 	}
-	case Event::KeyReleased:
-	{
-		break;
-	}
-	case Event::LostFocus:
-	{
-		break;
-	}
-	case Event::GainedFocus:
-	{
-		break;
-	}
 	}
 }
 
@@ -11858,91 +11548,19 @@ void EditSession::SetCamZoomModeHandleEvent()
 
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			//Vector2i worldi(testPoint.x, testPoint.y);
-			//patrolPath.push_back(worldi);
-
-			currentCameraShot->SetZoom(Vector2i(testPoint));
-
-			if (tempActor != NULL)
-			{
-				SetMode(CREATE_ENEMY);
-			}
-			else
-			{
-				SetMode(EDIT);
-			}
-
-			AddActivePanel(currentCameraShot->type->panel);
-		}
-		break;
-	}
+	
 	}
 
 }
 
 void EditSession::SetDirectionModeHandleEvent()
 {
-	minimumPathEdgeLength = 16;
-
-	switch (ev.type)
-	{
-	case Event::MouseButtonPressed:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			Vector2i worldi(testPoint.x, testPoint.y);
-			patrolPath.push_back(worldi);
-
-			ActorParams *actor;
-			if (tempActor != NULL)
-			{
-				actor = tempActor;
-				SetMode(CREATE_ENEMY);
-			}
-			else
-			{
-				SelectPtr select = selectedBrush->objects.front();
-				actor = (ActorParams*)select;
-				SetMode(EDIT);
-			}
-
-			AddActivePanel(actor->type->panel);
-			actor->SetPath(patrolPath);
-		}
-		break;
-	}
-	}
-
 }
 
 void EditSession::CreateGatesModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			TryPlaceGatePoint(worldPos);
-		}
-		break;
-	}
-	case Event::MouseButtonReleased:
-	{
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
-	case Event::MouseMoved:
-	{
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (ev.key.code == sf::Keyboard::Z && ev.key.control)
@@ -11965,14 +11583,6 @@ void EditSession::CreateGatesModeHandleEvent()
 
 		break;
 	}
-	case Event::LostFocus:
-	{
-		break;
-	}
-	case Event::GainedFocus:
-	{
-		break;
-	}
 	}
 }
 
@@ -11980,30 +11590,6 @@ void EditSession::CreateImagesModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-		}
-		break;
-	}
-	case Event::MouseButtonReleased:
-	{
-		if (ev.mouseButton.button == Mouse::Left)
-		{
-			if (grabbedImage != NULL)
-			{
-				TryCompleteSelectedMove();
-			}
-
-			editMouseDownBox = false;
-			editMouseDownMove = false;
-			editStartMove = false;
-			grabbedImage = NULL;
-		}
-		break;
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
@@ -12023,63 +11609,10 @@ void EditSession::CreateImagesModeHandleEvent()
 	}
 }
 
-void EditSession::SetLevelModeHandleEvent()
-{
-	switch (ev.type)
-	{
-	case Event::MouseButtonPressed:
-	{
-	}
-	case Event::MouseButtonReleased:
-	{
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
-	case Event::KeyPressed:
-	{
-		if (ev.key.code == sf::Keyboard::Num1)
-		{
-			setLevelCurrent = 1;
-		}
-		else if (ev.key.code == sf::Keyboard::Num2)
-		{
-			setLevelCurrent = 2;
-		}
-		else if (ev.key.code == sf::Keyboard::Num3)
-		{
-			setLevelCurrent = 3;
-		}
-		else if (ev.key.code == sf::Keyboard::Num4)
-		{
-			setLevelCurrent = 4;
-		}
-		break;
-	}
-	case Event::KeyReleased:
-	{
-		break;
-	}
-	}
-}
-
 void EditSession::TransformModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-	}
-	case Event::MouseButtonReleased:
-	{
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (ev.key.code == sf::Keyboard::Space)
@@ -12177,17 +11710,6 @@ void EditSession::TestPlayerModeHandleEvent()
 {
 	switch (ev.type)
 	{
-	case Event::MouseButtonPressed:
-	{
-	}
-	case Event::MouseButtonReleased:
-	{
-		break;
-	}
-	case Event::MouseWheelMoved:
-	{
-		break;
-	}
 	case Event::KeyPressed:
 	{
 		if (ev.key.code == sf::Keyboard::Num1)
@@ -12383,6 +11905,97 @@ void EditSession::UpdateInputNonGame()
 	//-------------------------
 }
 
+void EditSession::SelectModeUpdate()
+{
+	if (MOUSE.IsMouseRightReleased())
+	{
+		V2d releasePos(uiMousePos.x, uiMousePos.y);
+
+		V2d worldTop = menuDownPos + circleTopPos;
+		V2d worldUpperLeft = menuDownPos + circleUpperLeftPos;
+		V2d worldUpperRight = menuDownPos + circleUpperRightPos;
+		V2d worldLowerRight = menuDownPos + circleLowerRightPos;
+		V2d worldLowerLeft = menuDownPos + circleLowerLeftPos;
+		V2d worldBottom = menuDownPos + circleBottomPos;
+
+		if (length(releasePos - worldTop) < menuCircleRadius)
+		{
+			menuSelection = "top";
+		}
+		else if (length(releasePos - worldUpperLeft) < menuCircleRadius)
+		{
+			menuSelection = "upperleft";
+		}
+		else if (length(releasePos - worldUpperRight) < menuCircleRadius)
+		{
+			menuSelection = "upperright";
+		}
+		else if (length(releasePos - worldLowerLeft) < menuCircleRadius)
+		{
+			menuSelection = "lowerleft";
+		}
+		else if (length(releasePos - worldLowerRight) < menuCircleRadius)
+		{
+			menuSelection = "lowerright";
+		}
+		else if (length(releasePos - worldBottom) < menuCircleRadius)
+		{
+			menuSelection = "bottom";
+		}
+		else
+		{
+			mode = menuDownStored;
+			menuSelection = "none";
+		}
+
+		if (menuDownStored == EDIT && menuSelection != "none" && menuSelection != "top")
+		{
+			if (menuDownStored == EDIT)
+			{
+				ClearSelectedBrush();
+			}
+		}
+		else if (menuDownStored == CREATE_TERRAIN && menuSelection != "none")
+		{
+			polygonInProgress->ClearPoints();
+		}
+
+		if (menuSelection == "top")
+		{
+			SetMode(EDIT);
+		}
+		else if (menuSelection == "upperleft")
+		{
+			showPoints = false;
+			SetMode(CREATE_ENEMY);
+		}
+		else if (menuSelection == "upperright")
+		{
+			showPoints = false;
+			justCompletedPolyWithClick = false;
+			SetMode(CREATE_TERRAIN);
+		}
+		else if (menuSelection == "lowerleft")
+		{
+			SetMode(CREATE_GATES);
+			gatePoints = 0;
+			showPoints = true;
+		}
+		else if (menuSelection == "lowerright")
+		{
+			AddActivePanel(mapOptionsPanel);
+			mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
+			mapOptionsPanel->textBoxes["bosstype"]->text.setString(to_string(bossType));
+			mode = menuDownStored;
+			//			SetMode(menuDownStored);
+		}
+		else if (menuSelection == "bottom")
+		{
+			SetMode(CREATE_IMAGES);
+			currImageTool = ITOOL_EDIT;
+		}
+	}
+}
 
 void EditSession::EditModeUpdate()
 {
@@ -12623,6 +12236,18 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 
 void EditSession::PasteModeUpdate()
 {
+	if (MOUSE.IsMouseLeftClicked())
+	{
+		PasteTerrain(copiedBrush, freeActorCopiedBrush);
+	}
+	else if (MOUSE.IsMouseLeftReleased())
+	{
+		if (complexPaste != NULL)
+		{
+			complexPaste = NULL;
+		}
+	}
+
 	Vector2i pos(worldPos.x, worldPos.y);
 	Vector2i delta = pos - editMouseGrabPos;
 
@@ -12726,6 +12351,27 @@ void EditSession::PasteModeUpdate()
 
 void EditSession::CreateEnemyModeUpdate()
 {
+	if (MOUSE.IsMouseLeftReleased())
+	{
+		if (grabbedActor != NULL)
+		{
+			bool done = false;
+			if (AnchorSelectedEnemies())
+			{
+				done = true;
+			}
+
+			TryCompleteSelectedMove();
+		}
+
+		editMouseDownBox = false;
+		editMouseDownMove = false;
+		editStartMove = false;
+		grabbedActor = NULL;
+		grabbedImage = NULL;
+	}
+
+
 	if (grabbedActor != NULL)
 	{
 		TrySelectedMove();
@@ -12739,7 +12385,31 @@ void EditSession::CreatePatrolPathModeUpdate()
 
 void EditSession::CreateRectModeUpdate()
 {
-	if (!panning && IsMousePressed(Mouse::Left))
+	if (MOUSE.IsMouseLeftClicked())
+	{
+		if (!drawingCreateRect)
+		{
+			drawingCreateRect = true;
+			createRectStartPoint = Vector2i(worldPos);
+			createRectCurrPoint = Vector2i(worldPos);
+		}
+	}
+	else if (MOUSE.IsMouseLeftReleased())
+	{
+		if (drawingCreateRect)
+		{
+			drawingCreateRect = false;
+
+			createRectCurrPoint = Vector2i(worldPos);
+
+			Vector2i rc = (createRectStartPoint + createRectCurrPoint) / 2;
+			float width = abs(createRectCurrPoint.x - createRectStartPoint.x);
+			float height = abs(createRectCurrPoint.y - createRectStartPoint.y);
+			rectCreatingTrigger->SetRect(width, height, rc);
+		}
+	}
+	
+	if (!panning && MOUSE.IsMouseDownLeft())
 	{
 		createRectCurrPoint = Vector2i(worldPos);
 
@@ -12752,40 +12422,67 @@ void EditSession::CreateRectModeUpdate()
 		{
 			TrySelectedMove();
 		}
-		/*if (trackingEnemy != NULL)
-		{
-			enemySprite.setPosition(Vector2f(rc));
-			enemyQuad.setPosition(enemySprite.getPosition());
-		}*/
 	}
 }
 
 void EditSession::SetCamZoomModeUpdate()
 {
-	currentCameraShot->SetZoom(Vector2i(testPoint));
-	/*if (!panning && IsMousePressed(Mouse::Left))
+	if (MOUSE.IsMouseLeftClicked())
 	{
-		createRectCurrPoint = Vector2i(worldPos);
+		currentCameraShot->SetZoom(Vector2i(testPoint));
 
-		Vector2i rc = (createRectStartPoint + createRectCurrPoint) / 2;
-		float width = abs(createRectCurrPoint.x - createRectStartPoint.x);
-		float height = abs(createRectCurrPoint.y - createRectStartPoint.y);
-		rectCreatingTrigger->SetRect(width, height, rc);
-
-		if (trackingEnemy != NULL)
+		if (tempActor != NULL)
 		{
-			enemySprite.setPosition(Vector2f(rc));
-			enemyQuad.setPosition(enemySprite.getPosition());
+			SetMode(CREATE_ENEMY);
 		}
-	}*/
+		else
+		{
+			SetMode(EDIT);
+		}
+
+		AddActivePanel(currentCameraShot->type->panel);
+	}
+
+	currentCameraShot->SetZoom(Vector2i(testPoint));
 }
 
 void EditSession::SetDirectionModeUpdate()
 {
+	minimumPathEdgeLength = 16;
+
+	if( MOUSE.IsMouseLeftClicked() )
+	{
+		Vector2i worldi(testPoint.x, testPoint.y);
+		patrolPath.push_back(worldi);
+
+		ActorParams *actor;
+		if (tempActor != NULL)
+		{
+			actor = tempActor;
+			SetMode(CREATE_ENEMY);
+		}
+		else
+		{
+			SelectPtr select = selectedBrush->objects.front();
+			actor = (ActorParams*)select;
+			SetMode(EDIT);
+		}
+
+		AddActivePanel(actor->type->panel);
+		actor->SetPath(patrolPath);
+	}
 }
 
 void EditSession::CreateGatesModeUpdate()
 {
+	if (MOUSE.IsMouseLeftClicked())
+	{
+		if (ev.mouseButton.button == Mouse::Left)
+		{
+			TryPlaceGatePoint(worldPos);
+		}
+	}
+
 	PolyPtr p = NULL;
 	TerrainPoint *pPoint = NULL;
 	if (gatePoints == 1)
@@ -12906,6 +12603,19 @@ void EditSession::CreateGatesModeUpdate()
 
 void EditSession::CreateImagesModeUpdate()
 {
+	if (MOUSE.IsMouseLeftReleased())
+	{
+		if (grabbedImage != NULL)
+		{
+			TryCompleteSelectedMove();
+		}
+
+		editMouseDownBox = false;
+		editMouseDownMove = false;
+		editStartMove = false;
+		grabbedImage = NULL;
+	}
+
 	createDecorModeUI->Update(IsMousePressed(Mouse::Left), IsMousePressed(Mouse::Right), Vector2i(uiMousePos.x, uiMousePos.y));
 	createDecorModeUI->UpdateSprites(spriteUpdateFrames);
 
@@ -12919,11 +12629,6 @@ void EditSession::CreateImagesModeUpdate()
 	{
 		TrySelectedMove();
 	}
-}
-
-void EditSession::SetLevelModeUpdate()
-{
-	SetEnemyLevel();
 }
 
 void EditSession::TransformModeUpdate()
