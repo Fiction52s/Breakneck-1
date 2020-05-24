@@ -57,7 +57,6 @@ void EditSession::SetTrackingEnemy(ActorType *type, int level)
 {
 	if (trackingEnemyParams == NULL)
 	{
-		ClearSelectedBrush();
 		//cout << "copy of level : " << level << endl;
 		trackingEnemyParams = type->defaultParamsVec[level-1]->Copy();
 		trackingEnemyParams->group = groups["--"];
@@ -3469,9 +3468,15 @@ void EditSession::RemovePointFromPolygonInProgress()
 
 void EditSession::RemovePointFromRailInProgress()
 {
-	if (railInProgress->GetNumPoints() > 0)
+	int numP = railInProgress->GetNumPoints();
+	if ( numP > 0)
 	{
 		railInProgress->RemoveLastPoint();
+		if (numP == 1 && trackingEnemyParams != NULL )
+		{
+			CancelEnemyCreation();
+			SetMode(CREATE_ENEMY);
+		}
 	}
 }
 
@@ -4022,9 +4027,11 @@ bool EditSession::AnchorSelectedEnemies()
 		apply->performed = true;
 
 		grabbedActor->group->actors.push_back(grabbedActor);
-		trackingEnemyParams = NULL;
+		
 
 		createEnemyModeUI->SetShown(true);
+
+		ClearSelectedBrush();
 	}
 
 	if (moveAction != NULL)
@@ -4048,6 +4055,25 @@ bool EditSession::AnchorSelectedEnemies()
 		
 
 	return false;
+}
+
+void EditSession::FinishEnemyCreation()
+{
+	AddRecentEnemy(trackingEnemyParams);
+	trackingEnemyParams = NULL;
+	createEnemyModeUI->SetLibraryShown(false);
+}
+
+void EditSession::CancelEnemyCreation()
+{
+	trackingEnemyParams = NULL;
+
+	Action * action = doneActionStack.back();
+	doneActionStack.pop_back();
+
+	action->Undo();
+
+	delete action;
 }
 
 void EditSession::TryCompleteSelectedMove()
@@ -4099,9 +4125,11 @@ void EditSession::TryCompleteSelectedMove()
 
 		if (mode == CREATE_ENEMY)
 		{
-			AddRecentEnemy(grabbedActor);
-			ClearSelectedBrush();
-			createEnemyModeUI->SetLibraryShown(false);
+			trackingEnemyParams->OnCreate();
+			if (mode == CREATE_ENEMY)
+			{
+				FinishEnemyCreation();
+			}
 		}
 
 	}
@@ -4109,15 +4137,17 @@ void EditSession::TryCompleteSelectedMove()
 	{
 		if (mode == CREATE_ENEMY)
 		{
-			ClearSelectedBrush();
+			CancelEnemyCreation();
 		}
+		else
+		{
+			Action * action = doneActionStack.back();
+			doneActionStack.pop_back();
 
-		Action * action = doneActionStack.back();
-		doneActionStack.pop_back();
+			action->Undo();
 
-		action->Undo();
-
-		delete action;
+			delete action;
+		}
 	}
 
 }
@@ -7155,7 +7185,16 @@ void EditSession::ExecuteRailCompletion()
 
 					ClearUndoneActions();
 
-					Action *action = new ApplyBrushAction(progressBrush);
+					Brush orig;
+					if (trackingEnemyParams != NULL)
+					{
+						orig.AddObject(trackingEnemyParams);
+						FinishEnemyCreation();
+						SetMode(CREATE_ENEMY);
+					}
+
+					Action *action = new ReplaceBrushAction(&orig, progressBrush, mapStartBrush);
+					//Action *action = new ApplyBrushAction(progressBrush);
 
 					action->Perform();
 					AddDoneAction(action);
@@ -7363,8 +7402,18 @@ void EditSession::ExecuteRailCompletion()
 	}
 	else if (numP < 2 && numP > 0)
 	{
-		cout << "cant finalize. cant make rail" << endl;
-		railInProgress->ClearPoints();
+		if (trackingEnemyParams != NULL)
+		{
+			railInProgress->ClearPoints();
+			FinishEnemyCreation();
+			SetMode(CREATE_ENEMY);
+		}
+		else
+		{
+			cout << "cant finalize. cant make rail" << endl;
+			railInProgress->ClearPoints();
+		}
+		
 	}
 }
 
@@ -9229,6 +9278,13 @@ void EditSession::SetMode(Emode m)
 
 	switch (oldMode)
 	{
+	case CREATE_RAILS:
+		if (trackingEnemyParams != NULL)
+		{
+			railInProgress->ClearPoints();
+			FinishEnemyCreation();
+		}
+		break;
 	case CREATE_TERRAIN:
 		break;
 	case TEST_PLAYER:
@@ -9253,13 +9309,14 @@ void EditSession::SetMode(Emode m)
 	switch (mode)
 	{
 	case CREATE_ENEMY:
+		trackingEnemyParams = NULL;
+		ClearSelectedBrush();
 		createEnemyModeUI->showLibrary = false;
 		createEnemyModeUI->SetShown(true);
 		//AddActivePanel(createEnemyModeUI->topbarPanel);
 		currTool = TOOL_DRAW;
 		lastLeftMouseDown = false;//IsMousePressed( Mouse::)
 		grabbedActor = NULL;
-		selectedBrush->Clear();
 		editClock.restart();
 		editCurrentTime = 0;
 		editAccumulator = TIMESTEP + .1;
@@ -11402,7 +11459,8 @@ void EditSession::PausedModeHandleEvent()
 	{
 	case Event::GainedFocus:
 	{
-		SetMode(stored);
+		mode = stored;
+		//SetMode(stored);
 		break;
 	}
 	}

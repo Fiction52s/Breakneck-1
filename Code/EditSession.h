@@ -153,6 +153,7 @@ struct EditSession : GUIHandler, Session
 		ITOOL_SCALE
 	};
 
+	//ActorPtr 
 
 	CreateEnemyModeUI *createEnemyModeUI;
 	CreateDecorModeUI *createDecorModeUI;
@@ -163,6 +164,9 @@ struct EditSession : GUIHandler, Session
 	int spriteUpdateFrames;
 
 	TransformTools *transformTools;
+
+	void FinishEnemyCreation();
+	void CancelEnemyCreation();
 
 	void UpdateDecorSprites();
 

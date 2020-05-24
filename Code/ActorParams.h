@@ -257,24 +257,12 @@ struct ShardParams : public ActorParams
 
 struct BlockerParams : public ActorParams
 {
-	/*enum BlockerType
-	{
-		NORMAL,
-		BLUE,
-		GREEN,
-		YELLOW,
-		ORANGE,
-		RED,
-		MAGENTA,
-		BLACK
-	};*/
-
 	BlockerParams(ActorType *at, int level);
 	BlockerParams(ActorType *at,
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
-	
+	void OnCreate();
 	
 	ActorParams *Copy();
 

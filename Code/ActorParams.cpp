@@ -543,6 +543,13 @@ BlockerParams::BlockerParams(ActorType *at, int level)
 	spacing = 0;
 }
 
+void BlockerParams::OnCreate()
+{
+	EditSession *edit = EditSession::GetSession();
+	edit->SetMode(EditSession::CREATE_RAILS);
+	edit->railInProgress->AddPoint(GetIntPos(), false);
+}
+
 void BlockerParams::SetParams()
 {
 	Panel *p = type->panel;

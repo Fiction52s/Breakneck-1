@@ -140,7 +140,7 @@ void TerrainRail::Init()
 	accelerate = false;
 	level = 1;
 
-	rType = FLY;
+	rType = BLOCKER;
 
 	enemyParams = NULL;
 	enemyChain = NULL;

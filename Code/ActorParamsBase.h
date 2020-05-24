@@ -24,6 +24,8 @@ struct ActorParams : ISelectable
 	ActorParams(ActorType *at);
 	virtual ~ActorParams();
 
+	virtual void OnCreate() {}
+
 	Edge *GetGroundEdge();
 	int GetWorld();
 	int GetLevel();
