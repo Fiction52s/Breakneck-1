@@ -18,7 +18,7 @@ EnemyVariationSelector::EnemyVariationSelector( bool p_createMode )
 	
 	edit = EditSession::GetSession();
 
-	Tileset *ts_orb = edit->GetSizedTileset("Menu/orbselector_384x384.png");
+	Tileset *ts_orb = edit->GetSizedTileset("Editor/orbselector_384x384.png");
 	ts_orb->SetSpriteTexture(orbSpr);
 	//orbSpr.setOrigin(orbSpr.getLocalBounds().width / 2, orbSpr.getLocalBounds().height / 2);
 

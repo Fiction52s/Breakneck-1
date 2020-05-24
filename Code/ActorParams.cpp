@@ -547,6 +547,7 @@ void BlockerParams::OnCreate()
 {
 	EditSession *edit = EditSession::GetSession();
 	edit->SetMode(EditSession::CREATE_RAILS);
+	edit->railInProgress->SetRailType(TerrainRail::BLOCKER);
 	edit->railInProgress->AddPoint(GetIntPos(), false);
 }
 
@@ -829,6 +830,14 @@ ActorParams *FlyParams::Copy()
 	return fp;
 }
 
+
+void FlyParams::OnCreate()
+{
+	EditSession *edit = EditSession::GetSession();
+	edit->SetMode(EditSession::CREATE_RAILS);
+	edit->railInProgress->SetRailType(TerrainRail::FLY);
+	edit->railInProgress->AddPoint(GetIntPos(), false);
+}
 
 AirTriggerParams::AirTriggerParams(ActorType *at, int level)
 	:ActorParams(at)

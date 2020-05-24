@@ -157,6 +157,7 @@ struct EditSession : GUIHandler, Session
 
 	CreateEnemyModeUI *createEnemyModeUI;
 	CreateDecorModeUI *createDecorModeUI;
+
 	//EnemyChooser *enemyChooser;
 
 	V2d oldWorldPosTest;

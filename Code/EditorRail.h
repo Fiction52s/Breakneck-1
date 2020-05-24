@@ -33,6 +33,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		FLY,
 	};
 
+	void SetRailType(RailType r);
 	Session *sess;
 	RailType rType;
 	void TryCreateEnemyChain();

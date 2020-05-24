@@ -2592,9 +2592,10 @@ int EditSession::Run()
 	border[6] = sf::Vertex(sf::Vector2<float>(max, -max), borderColor);
 	border[7] = sf::Vertex(sf::Vector2<float>(-max, -max), borderColor);
 
-	sf::Texture guiMenuCubeTexture;
-	guiMenuCubeTexture.loadFromFile( "Resources/Editor/guioptions.png" );
-	guiMenuSprite.setTexture( guiMenuCubeTexture );
+	//sf::Texture guiMenuCubeTexture;
+	//guiMenuCubeTexture.loadFromFile( "Resources/Editor/guioptions.png" );
+	Tileset *ts_guiMenu = GetSizedTileset("Editor/orbmodeselector_384x384.png");
+	ts_guiMenu->SetSpriteTexture(guiMenuSprite);
 	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
 
 	graph = new EditorGraph;
@@ -2606,8 +2607,8 @@ int EditSession::Run()
 	stored = mode;
 	bool canCreatePoint = true;
 
-	menuCircleDist = 100;
-	menuCircleRadius = 50;
+	menuCircleDist = 128;
+	menuCircleRadius = 64;
 
 	circleTopPos =  V2d( 0, -1 ) * menuCircleDist;
 
@@ -10644,76 +10645,85 @@ void EditSession::DrawModeUI()
 
 		Color c;
 
-
-		CircleShape cs;
+		int outlineThickness = 3;
+		int fontSize = 18;
+		/*CircleShape cs;
 		cs.setRadius(menuCircleRadius);
 		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
 
-
+		
 		cs.setFillColor(COLOR_BLUE);
 		cs.setPosition((menuDownPos + circleUpperRightPos).x, (menuDownPos + circleUpperRightPos).y);
-		preScreenTex->draw(cs);
+		preScreenTex->draw(cs);*/
 
 		sf::Text textblue;
-		textblue.setCharacterSize(14);
+		textblue.setCharacterSize(fontSize);
 		textblue.setFont(arial);
 		textblue.setString("CREATE\nTERRAIN");
 		textblue.setFillColor(sf::Color::White);
+		textblue.setOutlineColor(sf::Color::Black);
+		textblue.setOutlineThickness(outlineThickness);
 		textblue.setOrigin(textblue.getLocalBounds().width / 2, textblue.getLocalBounds().height / 2);
 		textblue.setPosition((menuDownPos + circleUpperRightPos).x, (menuDownPos + circleUpperRightPos).y);
 		preScreenTex->draw(textblue);
 
 
-		cs.setFillColor(COLOR_GREEN);
+		/*cs.setFillColor(COLOR_GREEN);
 		cs.setPosition((menuDownPos + circleLowerRightPos).x, (menuDownPos + circleLowerRightPos).y);
-		preScreenTex->draw(cs);
+		preScreenTex->draw(cs);*/
 
 		sf::Text textgreen;
-		textgreen.setCharacterSize(14);
+		textgreen.setCharacterSize(fontSize);
 		textgreen.setFont(arial);
 		textgreen.setString("MAP\nOPTIONS");
 		textgreen.setFillColor(sf::Color::White);
+		textgreen.setOutlineColor(sf::Color::Black);
+		textgreen.setOutlineThickness(outlineThickness);
 		textgreen.setOrigin(textgreen.getLocalBounds().width / 2, textgreen.getLocalBounds().height / 2);
 		textgreen.setPosition((menuDownPos + circleLowerRightPos).x, (menuDownPos + circleLowerRightPos).y);
 		preScreenTex->draw(textgreen);
 
-		cs.setFillColor(COLOR_YELLOW);
+		/*cs.setFillColor(COLOR_YELLOW);
 		cs.setPosition((menuDownPos + circleBottomPos).x, (menuDownPos + circleBottomPos).y);
-		preScreenTex->draw(cs);
+		preScreenTex->draw(cs);*/
 
 		textgreen.setString("CREATE\nDECOR");
 		textgreen.setPosition(Vector2f(menuDownPos + circleBottomPos));
 		preScreenTex->draw(textgreen);
 
-		cs.setFillColor(COLOR_ORANGE);
+		/*cs.setFillColor(COLOR_ORANGE);
 		cs.setPosition((menuDownPos + circleLowerLeftPos).x, (menuDownPos + circleLowerLeftPos).y);
-		preScreenTex->draw(cs);
+		preScreenTex->draw(cs);*/
 
 		sf::Text textorange;
-		textorange.setString("CREATE\nLIGHTS");
+		textorange.setString("CREATE\nGATES");
 		textorange.setFont(arial);
-		textorange.setCharacterSize(14);
+		textorange.setCharacterSize(fontSize);
 		textorange.setFillColor(sf::Color::White);
+		textorange.setOutlineColor(sf::Color::Black);
+		textorange.setOutlineThickness(outlineThickness);
 		textorange.setOrigin(textorange.getLocalBounds().width / 2, textorange.getLocalBounds().height / 2);
 		textorange.setPosition((menuDownPos + circleLowerLeftPos).x, (menuDownPos + circleLowerLeftPos).y);
 		preScreenTex->draw(textorange);
 
-		cs.setFillColor(COLOR_RED);
+		/*cs.setFillColor(COLOR_RED);
 		cs.setPosition((menuDownPos + circleUpperLeftPos).x, (menuDownPos + circleUpperLeftPos).y);
-		preScreenTex->draw(cs);
+		preScreenTex->draw(cs);*/
 
 		sf::Text textred;
 		textred.setString("CREATE\nENEMIES");
 		textred.setFont(arial);
-		textred.setCharacterSize(14);
+		textred.setCharacterSize(fontSize);
 		textred.setFillColor(sf::Color::White);
+		textred.setOutlineColor(sf::Color::Black);
+		textred.setOutlineThickness(outlineThickness);
 		textred.setOrigin(textred.getLocalBounds().width / 2, textred.getLocalBounds().height / 2);
 		textred.setPosition((menuDownPos + circleUpperLeftPos).x, (menuDownPos + circleUpperLeftPos).y);
 		preScreenTex->draw(textred);
 
-		cs.setFillColor(COLOR_MAGENTA);
+		/*cs.setFillColor(COLOR_MAGENTA);
 		cs.setPosition((menuDownPos + circleTopPos).x, (menuDownPos + circleTopPos).y);
-		preScreenTex->draw(cs);
+		preScreenTex->draw(cs);*/
 
 		sf::Text textmag;
 
@@ -10750,8 +10760,10 @@ void EditSession::DrawModeUI()
 		}*/
 
 		textmag.setFont(arial);
-		textmag.setCharacterSize(14);
+		textmag.setCharacterSize(fontSize);
 		textmag.setFillColor(sf::Color::White);
+		textmag.setOutlineColor(sf::Color::Black);
+		textmag.setOutlineThickness(outlineThickness);
 		textmag.setOrigin(textmag.getLocalBounds().width / 2, textmag.getLocalBounds().height / 2);
 		textmag.setPosition((menuDownPos + circleTopPos).x, (menuDownPos + circleTopPos).y);
 		preScreenTex->draw(textmag);

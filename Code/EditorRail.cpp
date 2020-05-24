@@ -46,19 +46,19 @@ Edge *TerrainRail::GetEdge(int index)
 void TerrainRail::SetupEdges()
 {
 	int numP = GetNumPoints();
-	edges.resize(numP-1);
+	edges.resize(numP - 1);
 	TerrainPoint *curr, *next;
-	for (int i = 0; i < numP-1; ++i)
+	for (int i = 0; i < numP - 1; ++i)
 	{
 		curr = GetPoint(i);
-		next = GetPoint(i+1);
+		next = GetPoint(i + 1);
 
 		edges[i].v0 = V2d(curr->pos);
 		edges[i].v1 = V2d(next->pos);
 		edges[i].rail = this;
 	}
 
-	for (int i = 0; i < numP-1; ++i)
+	for (int i = 0; i < numP - 1; ++i)
 	{
 		if (i > 0)
 		{
@@ -71,7 +71,7 @@ void TerrainRail::SetupEdges()
 
 		if (i < numP - 2)
 		{
-			edges[i].edge1 = &edges[i+1];
+			edges[i].edge1 = &edges[i + 1];
 		}
 		else
 		{
@@ -79,6 +79,7 @@ void TerrainRail::SetupEdges()
 		}
 	}
 }
+
 
 bool TerrainRail::PointsTooCloseToEachOther(double radius)
 {
@@ -123,6 +124,11 @@ void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 	}
 }
 
+void TerrainRail::SetRailType(RailType r)
+{
+	rType = r;
+}
+
 void TerrainRail::Init()
 {	
 	sess = Session::GetSession();
@@ -140,7 +146,7 @@ void TerrainRail::Init()
 	accelerate = false;
 	level = 1;
 
-	rType = BLOCKER;
+	SetRailType(NORMAL);
 
 	enemyParams = NULL;
 	enemyChain = NULL;

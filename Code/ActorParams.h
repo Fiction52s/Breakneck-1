@@ -283,7 +283,7 @@ struct FlyParams : public ActorParams
 		std::ifstream &is);
 	void WriteParamFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
-
+	void OnCreate();
 	ActorParams *Copy();
 
 	void SetParams();
@@ -321,7 +321,7 @@ struct SpringParams : public ActorParams
 	void WriteParamFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
 	void SetPath(std::vector<sf::Vector2i> &globalPath);
-	
+	void OnCreate();
 	ActorParams *Copy();
 
 	void SetParams();

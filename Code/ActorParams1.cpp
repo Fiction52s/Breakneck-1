@@ -198,6 +198,12 @@ ActorParams *SpringParams::Copy()
 	return copy;
 }
 
+void SpringParams::OnCreate()
+{
+	EditSession *edit = EditSession::GetSession();
+	edit->SetMode(EditSession::SET_DIRECTION);
+}
+
 void SpringParams::Draw(sf::RenderTarget *target)
 {
 	int localPathSize = localPath.size();
