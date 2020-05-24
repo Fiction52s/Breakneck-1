@@ -3,6 +3,78 @@
 using namespace std;
 using namespace sf;
 
+
+FrameWaiter::FrameWaiter(int p_numWaitFramesLevels,
+	int *p_waitFrames,
+	int p_numWaitModeThreshLevels,
+	int *p_waitModeThresh)
+{
+	numWaitFramesLevels = p_numWaitFramesLevels;
+	numWaitModeThreshLevels = p_numWaitModeThreshLevels;
+
+	waitFrames = new int[numWaitFramesLevels];
+	for (int i = 0; i < numWaitFramesLevels; ++i)
+	{
+		waitFrames[i] = p_waitFrames[i];
+	}
+
+	waitModeThresh = new int[numWaitModeThreshLevels];
+	for (int i = 0; i < numWaitModeThreshLevels; ++i)
+	{
+		waitModeThresh[i] = p_waitModeThresh[i];
+	}
+
+	Reset();
+}
+
+FrameWaiter::~FrameWaiter()
+{
+	delete [] waitFrames;
+	delete [] waitModeThresh;
+}
+
+void FrameWaiter::Reset()
+{
+	currWaitLevel = 0;
+	framesWaiting = 0;
+	currWaitThreshLevel = 0;
+	currWaitThreshLevelCounter = 0;
+}
+
+bool FrameWaiter::Hold() //returns true when framesWaiting resets
+{
+	if (framesWaiting == waitFrames[currWaitLevel] - 1)
+	{
+		framesWaiting = 0;
+		if (currWaitThreshLevelCounter == waitModeThresh[currWaitThreshLevel] - 1)
+		{
+			if (currWaitLevel < numWaitFramesLevels - 1)
+			{
+				if (currWaitThreshLevel < numWaitModeThreshLevels - 1)
+				{
+					++currWaitThreshLevel;
+					currWaitThreshLevelCounter = 0;
+				}
+				else
+				{
+					++currWaitLevel;
+				}
+			}
+		}
+		else
+		{
+			++currWaitThreshLevelCounter;
+		}
+
+		return true;
+	}
+	else
+	{
+		framesWaiting++;
+		return false;
+	}
+}
+
 SingleAxisSelector::SingleAxisSelector(int numWaitFramesLevels, int*p_waitFrames, int numWaitModeThreshLevels,
 	int *p_waitModeThresh, int p_totalItems, int p_startIndex, bool p_loop)
 	:startIndex( p_startIndex ), loop(p_loop), currIndex(p_startIndex), totalItems(p_totalItems)

@@ -28,6 +28,8 @@
 #include "TransformTools.h"
 
 #include "CircleGroup.h"
+
+#include "ItemSelector.h"
 //using namespace ClipperLib;
 
 using namespace std;
@@ -838,6 +840,9 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	updateModeFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeUpdate;
 	updateModeFunctions[TRANSFORM] = &EditSession::TransformModeUpdate;
 
+	int waitFrames[] = { 30, 10, 2 };
+	int waitModeThresh[] = { 1, 2 };
+	removeProgressPointWaiter = new FrameWaiter(3, waitFrames, 2, waitModeThresh );
 	
 	variationSelector = new EnemyVariationSelector( false );
 	playerTracker = new PlayerTracker();
@@ -1043,6 +1048,8 @@ RailPtr EditSession::GetRail(int index)
 
 EditSession::~EditSession()
 {
+	delete removeProgressPointWaiter;
+
 	delete variationSelector;
 
 	delete playerTracker;
@@ -11011,6 +11018,7 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete)
 		{
+			removeProgressPointWaiter->Reset();
 			RemovePointFromPolygonInProgress();
 		}
 		else if (ev.key.code == sf::Keyboard::E)
@@ -11077,6 +11085,7 @@ void EditSession::CreateRailsModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete)
 		{
+			removeProgressPointWaiter->Reset();
 			RemovePointFromRailInProgress();
 		}
 		else if (ev.key.code == sf::Keyboard::R)
@@ -11692,6 +11701,26 @@ void EditSession::CreateTerrainModeUpdate()
 	}
 
 	showPoints = false;
+
+	if (IsKeyPressed(sf::Keyboard::X) || IsKeyPressed(sf::Keyboard::Delete))
+	{
+		if (!focusedPanel)
+		{
+			if (removeProgressPointWaiter->Hold())
+			{
+				RemovePointFromPolygonInProgress();
+			}
+		}
+		else
+		{
+			removeProgressPointWaiter->Reset();
+		}
+	}
+	else
+	{
+		removeProgressPointWaiter->Reset();
+	}
+
 	if (!focusedPanel)
 	{
 		if (IsKeyPressed(Keyboard::G))
@@ -11762,39 +11791,66 @@ void EditSession::CreateRailsModeUpdate()
 	potentialRailAttachPoint = NULL;
 	potentialRailAttach = NULL;
 
-	if (IsKeyPressed(Keyboard::G))
+	if (IsKeyPressed(sf::Keyboard::X) || IsKeyPressed(sf::Keyboard::Delete))
 	{
-		SnapPointToGraph(testPoint, graph->graphSpacing);
-		showGraph = true;
-	}
-	else if (IsKeyPressed(Keyboard::F))
-	{
-		SelectPtr obj = NULL;
-		TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
-
-		if (obj != NULL)
+		if (!focusedPanel)
 		{
-			RailPtr r = obj->GetAsRail();
-			if (r != NULL)
+			if (removeProgressPointWaiter->Hold())
 			{
-				if (pPoint->index == 0 || pPoint->index == r->GetNumPoints() - 1)
+				RemovePointFromRailInProgress();
+			}
+		}
+		else
+		{
+			removeProgressPointWaiter->Reset();
+		}
+	}
+	else
+	{
+		removeProgressPointWaiter->Reset();
+	}
+
+	if (!focusedPanel)
+	{
+		if (IsKeyPressed(Keyboard::G))
+		{
+			SnapPointToGraph(testPoint, graph->graphSpacing);
+			showGraph = true;
+		}
+		else if (IsKeyPressed(Keyboard::F))
+		{
+			SelectPtr obj = NULL;
+			TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
+
+			if (obj != NULL)
+			{
+				RailPtr r = obj->GetAsRail();
+				if (r != NULL)
 				{
-					if (railAttachStart != r)
+					if (pPoint->index == 0 || pPoint->index == r->GetNumPoints() - 1)
 					{
-						potentialRailAttachPoint = pPoint;
-						potentialRailAttach = r;
+						if (railAttachStart != r)
+						{
+							potentialRailAttachPoint = pPoint;
+							potentialRailAttach = r;
+						}
 					}
 				}
 			}
+
+
+			showPoints = true;
 		}
-
-
-		showPoints = true;
+		else
+		{
+			showPoints = false;
+		}
 	}
 	else
 	{
 		showPoints = false;
 	}
+
 
 	PreventNearPrimaryAnglesOnRailInProgress();
 

@@ -3,6 +3,25 @@
 #include <SFML\Graphics.hpp>
 #include "Input.h"
 
+struct FrameWaiter
+{
+	FrameWaiter(int p_numWaitFramesLevels,
+		int *p_waitFrames,
+		int p_numWaitModeThreshLevels,
+		int *p_waitModeThresh);
+	~FrameWaiter();
+	void Reset();
+	int *waitFrames;// [3];
+	int *waitModeThresh;//[2];
+	int numWaitModeThreshLevels;
+	int numWaitFramesLevels;
+	int framesWaiting;
+	int currWaitLevel;
+	int currWaitThreshLevel;
+	int currWaitThreshLevelCounter;
+	bool Hold();
+};
+
 struct SingleAxisSelector
 {
 	SingleAxisSelector(int numWaitFramesLevels,

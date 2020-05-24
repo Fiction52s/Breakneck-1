@@ -26,6 +26,8 @@
 //#include "ActorParamsBase.h"
 //#include "EditorRail.h"
 
+
+struct FrameWaiter;
 struct TransformTools;
 struct EditorGraph;
 struct ActorParams;
@@ -84,6 +86,8 @@ struct EditSession : GUIHandler, Session
 		TRANSFORM,
 		EMODE_Count
 	};
+
+	FrameWaiter *removeProgressPointWaiter;
 
 	void ClearActivePanels();
 	void AddActivePanel(Panel *p);
