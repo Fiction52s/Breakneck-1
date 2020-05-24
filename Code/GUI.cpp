@@ -1389,8 +1389,17 @@ void CheckBox::Deactivate()
 	clickedDown = false;
 }
 
+void CheckBox::SetLockedStatus(bool check, bool lock)
+{
+	checked = check;
+	locked = lock;
+}
+
 bool CheckBox::MouseUpdate()
 {
+	if (locked)
+		return false;
+
 	Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r( pos.x, pos.y, CHECKBOXSIZE, CHECKBOXSIZE);
 	if( MOUSE.IsMouseLeftClicked() )
@@ -1430,6 +1439,7 @@ bool CheckBox::MouseUpdate()
 	return false;
 }
 
+
 //void CheckBox::SetPanelPos(const sf::Vector2i &p_pos)
 //{
 //
@@ -1441,19 +1451,33 @@ void CheckBox::Draw( RenderTarget *target )
 	rs.setSize( sf::Vector2f(CHECKBOXSIZE, CHECKBOXSIZE) );
 	rs.setPosition( pos.x, pos.y );
 
-	if( clickedDown )
+	if (locked)
 	{
-		rs.setFillColor( Color::Cyan );
-	}
-	else
-	{
-		if( checked )
+		if (checked)
 		{
-			rs.setFillColor( Color::Magenta );
+			rs.setFillColor(Color( 255, 100, 100 ));
 		}
 		else
 		{
-			rs.setFillColor( Color::Black );
+			rs.setFillColor(Color( 100,100,100));
+		}
+	}
+	else
+	{
+		if (clickedDown)
+		{
+			rs.setFillColor(Color::Cyan);
+		}
+		else
+		{
+			if (checked)
+			{
+				rs.setFillColor(Color::Magenta);
+			}
+			else
+			{
+				rs.setFillColor(Color::Black);
+			}
 		}
 	}
 

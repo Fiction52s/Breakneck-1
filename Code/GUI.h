@@ -79,15 +79,19 @@ private:
 struct PanelMember
 {
 	PanelMember(Panel * p)
-		:panel(p)
+		:panel(p), locked( false)
 	{
 
 	}
 	virtual void Draw(sf::RenderTarget *target) = 0;
 	virtual bool MouseUpdate() = 0;
 	virtual void Deactivate() {}
+	//virtual void Lock() { locked = true; }
+	//virtual void Unlock() { locked = false; }
 
+	bool locked;
 	Panel *panel;
+	
 };
 
 struct ChooseRect : PanelMember
@@ -453,6 +457,8 @@ struct CheckBox : PanelMember
 	void Draw( sf::RenderTarget *target );
 	bool MouseUpdate();
 	void Deactivate();
+	void SetLockedStatus(bool check, bool lock);
+	//void Lock();
 	sf::Vector2i pos;
 	std::string name;
 	bool clickedDown;

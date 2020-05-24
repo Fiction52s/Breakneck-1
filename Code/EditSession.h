@@ -129,6 +129,8 @@ struct EditSession : GUIHandler, Session
 	bool IsLayerActionable( EditLayer layer );
 	void UpdateLayerCheckbox(CheckBox *cb,
 		const std::string & e);
+	std::string GetLayerShowName(EditLayer layer);
+	std::string GetLayerLockedName(EditLayer layer);
 	void UpdateLayerShow(EditLayer layer, bool show);
 	void UpdateLayerLock(EditLayer layer, bool lock);
 	

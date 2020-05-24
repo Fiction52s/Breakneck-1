@@ -12659,16 +12659,26 @@ bool EditSession::IsLayerActionable(EditLayer layer)
 	return (IsLayerShowing(layer) && !IsLayerLocked(layer));
 }
 
+std::string EditSession::GetLayerShowName(EditLayer layer)
+{
+	return layerMap[layer] + "_show";
+}
+
+std::string EditSession::GetLayerLockedName(EditLayer layer)
+{
+	return layerMap[layer] + "_lock";
+}
+
 bool EditSession::IsLayerShowing(EditLayer layer)
 {
-	string checkName = layerMap[layer] + "_show";
+	string checkName = GetLayerShowName(layer);
 	assert(layerPanel->checkBoxes.find(checkName) != layerPanel->checkBoxes.end());
 	return layerPanel->checkBoxes[checkName]->checked;
 }
 
 bool EditSession::IsLayerLocked(EditLayer layer)
 {
-	string checkName = layerMap[layer] + "_lock";
+	string checkName = GetLayerLockedName(layer);
 	assert(layerPanel->checkBoxes.find(checkName) != layerPanel->checkBoxes.end());
 	return layerPanel->checkBoxes[checkName]->checked;
 }
@@ -12698,6 +12708,8 @@ void EditSession::CreateLayerPanel()
 
 	AddLayerToPanel(layerMap[LAYER_ACTOR], 0, startY);
 	AddLayerToPanel(layerMap[LAYER_IMAGE], 1, startY);
+
+	layerPanel->checkBoxes[GetLayerShowName(LAYER_ACTOR)]->SetLockedStatus( true, true );
 }
 
 void EditSession::AddLayerToPanel( const std::string &name, int currLayerIndex, int startY )
