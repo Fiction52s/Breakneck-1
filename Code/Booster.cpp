@@ -47,6 +47,7 @@ void Booster::AddToWorldTrees()
 Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 	:Enemy(EnemyType::EN_BOOSTER, ap), strength( 20 )//, false, 1, false), strength( 20 )
 {
+	cout << "creating booster" << endl;
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 

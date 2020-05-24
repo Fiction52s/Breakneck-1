@@ -619,13 +619,12 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 			PolyPtr myPoly = ap->posInfo.ground;
 			RailPtr myRail = ap->posInfo.railGround;
 
-
-			ActorPtr aPtr = ap->Copy();
-			aPtr->CreateMyEnemy();
-			aPtr->selected = false;
-
 			if (myPoly != NULL && myPoly->selected)
 			{
+				ActorPtr aPtr = ap->Copy();
+				aPtr->CreateMyEnemy();
+				aPtr->selected = false;
+
 				aPtr->posInfo.ground = myPoly->mostRecentCopy;
 				aPtr->AnchorToGround(PositionInfo(aPtr->posInfo));
 				aPtr->posInfo.AddActor(aPtr);
@@ -633,6 +632,10 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 			}
 			else if (myRail != NULL && myRail->selected)
 			{
+				ActorPtr aPtr = ap->Copy();
+				aPtr->CreateMyEnemy();
+				aPtr->selected = false;
+
 				aPtr->posInfo.railGround = myRail->mostRecentCopy;
 				aPtr->AnchorToRail(PositionInfo(aPtr->posInfo));
 				aPtr->posInfo.AddActor(aPtr);
