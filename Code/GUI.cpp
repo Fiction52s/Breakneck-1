@@ -626,6 +626,9 @@ bool Panel::MouseUpdate()
 
 	mousePos = mPos - pos;
 
+	/*if (IsSliding())
+		return true;*/
+
 	//cout << "pos: " << posx << ", " << posy << endl;
 	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
 	{

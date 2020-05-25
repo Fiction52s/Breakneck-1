@@ -238,6 +238,7 @@ struct LayerPanelSlider : PanelUpdater
 	int outFrame;
 	sf::Vector2i origPos;
 	sf::Vector2i destPos;
+	CubicBezier bez;
 	int normalDuration;
 };
 

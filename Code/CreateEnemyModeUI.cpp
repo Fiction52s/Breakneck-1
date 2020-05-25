@@ -12,10 +12,11 @@ using namespace sf;
 LayerPanelSlider::LayerPanelSlider(Panel *lp)
 	:layerPanel( lp ), slid( false )
 {
-	origPos = layerPanel->pos;
+	origPos = Vector2i(-270, 0);//layerPanel->pos;
+	layerPanel->SetPosition(origPos);
 	destPos = Vector2i(0, layerPanel->pos.y);
-	//outFrame = 0;
 	normalDuration = 10;
+	bez = CubicBezier(0, 0, 1, 1);
 }
 
 
@@ -31,7 +32,7 @@ bool LayerPanelSlider::MouseUpdate()
 			skip = normalDuration - layerPanel->slideFrame;
 		}
 		layerPanel->SetPosition(origPos);
-		layerPanel->Slide(destPos, CubicBezier(), duration);
+		layerPanel->Slide(destPos, bez, duration);
 		layerPanel->slideFrame = skip;
 	}
 
@@ -40,7 +41,6 @@ bool LayerPanelSlider::MouseUpdate()
 
 void LayerPanelSlider::Deactivate()
 {
-	//layerPanel->SetPosition(origPos);
 	int duration = normalDuration;
 	int skip = 0;
 	if (layerPanel->IsSliding())
@@ -48,7 +48,7 @@ void LayerPanelSlider::Deactivate()
 		skip = normalDuration - layerPanel->slideFrame;
 	}
 	layerPanel->SetPosition(destPos);
-	layerPanel->Slide(origPos, CubicBezier(), duration);
+	layerPanel->Slide(origPos, bez, duration);
 	layerPanel->slideFrame = skip;
 	slid = false;
 }

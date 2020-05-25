@@ -1123,6 +1123,9 @@ EditSession::~EditSession()
 	delete layerPanel;
 	layerPanel = NULL;
 
+	delete lpSlider;
+	lpSlider = NULL;
+
 	//delete groups, but not actors
 	
 
@@ -2724,9 +2727,24 @@ int EditSession::Run()
 		if (quit)
 			break;
 
-		HandleEvents();
 
-		UpdateMode();
+		if (mode == PAUSED)
+		{
+			while (window->pollEvent(ev))
+			{
+				PausedModeHandleEvent();
+			}
+		}
+		else
+		{
+			HandleEvents();
+
+			if( mode != PAUSED )
+				UpdateMode();
+		}
+
+		
+		
 		
 		
 
@@ -11019,15 +11037,18 @@ void EditSession::GeneralEventHandler()
 		case Event::GainedFocus:
 		{
 			mode = stored;
+			double newTime = editClock.getElapsedTime().asSeconds();
+			editCurrentTime = newTime;
+			editAccumulator = 0;
 			//SetMode(stored);
 			break;
 		}
 		}
 	}
-	else if (mode == PAUSED)
+	/*else if (mode == PAUSED)
 	{
 		PausedModeHandleEvent();
-	}
+	}*/
 }
 
 void EditSession::HandleEvents()
@@ -11061,7 +11082,7 @@ void EditSession::HandleEvents()
 		}
 	}
 
-
+	
 
 	while (window->pollEvent(ev))
 	{
@@ -12785,10 +12806,9 @@ bool EditSession::IsLayerLocked(EditLayer layer)
 void EditSession::CreateLayerPanel()
 {
 	layerPanel = new Panel("layers", 300, 900, this);
-	layerPanel->SetPosition(Vector2i(-200, 0));
-	LayerPanelSlider *lpSlider = new LayerPanelSlider(layerPanel);
+	lpSlider = new LayerPanelSlider(layerPanel);
 	layerPanel->extraUpdater = lpSlider;
-	//layerPanel->pos = Vector2i(200, 200);
+
 	int currLayerIndex = 0;
 
 	layerMap[LAYER_ACTOR] = "actors";
