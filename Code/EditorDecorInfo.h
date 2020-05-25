@@ -33,6 +33,7 @@ struct EditorDecorInfo : ISelectable
 	void SetSelected(bool select);
 	void WriteFile(std::ofstream &of);
 	void Draw(sf::RenderTarget *target);
+	EditorDecorInfo *Copy();
 
 	//sf::Vector2f currScale;
 	float rotation;

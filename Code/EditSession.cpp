@@ -7592,8 +7592,12 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 		}
 	}
 
+	
+
+	
 	Brush orig;
 	Brush result;
+	
 
 	bool success = true;
 	if (!brushPolys.empty())
@@ -7645,6 +7649,20 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 			{
 				result.AddObject(rail->Copy());
 				//rail enemies go here?
+			}
+		}
+	}
+
+	DecorPtr dec;
+	if (cBrush != NULL)
+	{
+		for (auto bit = cBrush->objects.begin(); bit != cBrush->objects.end(); ++bit)
+		{
+			dec = (*bit)->GetAsDecor();
+			if (dec != NULL)
+			{
+				result.AddObject(dec->Copy());
+				//decorList.push_back(dec);
 			}
 		}
 	}

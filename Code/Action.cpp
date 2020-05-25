@@ -335,6 +335,25 @@ sf::IntRect Brush::GetAABB()
 				}
 			}
 		}
+		else if (dec != NULL)
+		{
+			IntRect aabb = dec->GetAABB();
+			if (!init)
+			{
+				init = true;
+				left = aabb.left;
+				right = aabb.left + aabb.width;
+				top = aabb.top;
+				bottom = aabb.top + aabb.height;
+			}
+			else
+			{
+				left = min(left, aabb.left);
+				right = max(right, aabb.left + aabb.width);
+				top = min(top, aabb.top);
+				bottom = max(bottom, aabb.top + aabb.height);
+			}
+		}
 	}
 
 	aabb.left = left;
@@ -583,11 +602,13 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 	PolyPtr tp;
 	ActorPtr ap;
 	RailPtr rp;
+	DecorPtr dp;
 
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		tp = (*it)->GetAsTerrain();
 		rp = (*it)->GetAsRail();
+		dp = (*it)->GetAsDecor();
 
 		if (tp != NULL)
 		{
@@ -602,6 +623,11 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 		else if (rp != NULL)
 		{
 			RailPtr ptr = rp->Copy();
+			newBrush->AddObject(ptr);
+		}
+		else if (dp != NULL)
+		{
+			DecorPtr ptr = dp->Copy();
 			newBrush->AddObject(ptr);
 		}
 	}

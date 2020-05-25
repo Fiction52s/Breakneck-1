@@ -38,9 +38,9 @@ IntRect EditorDecorInfo::GetAABB()
 	for (int i = 1; i < 4; ++i)
 	{
 		left = min(left, quad[i].position.x);
-		right = min(right, quad[i].position.x);
+		right = max(right, quad[i].position.x);
 		top = min(top, quad[i].position.y);
-		bot = min(bot, quad[i].position.y);
+		bot = max(bot, quad[i].position.y);
 	}
 
 	return IntRect(left, top, right - left, bot - top);
@@ -151,6 +151,19 @@ void EditorDecorInfo::BrushDraw(sf::RenderTarget *target,
 	bool valid)
 {
 	target->draw(quad, 4, sf::Quads, ts->texture);
+}
+
+EditorDecorInfo *EditorDecorInfo::Copy()
+{
+	EditorDecorInfo *newDecor = new EditorDecorInfo(*this);
+	newDecor->selected = false;
+	newDecor->active = false;
+	/*if (newDecor->active)
+	{
+		newDecor->Activate();
+	}*/
+
+	return newDecor;
 }
 
 void EditorDecorInfo::Draw(sf::RenderTarget *target)
