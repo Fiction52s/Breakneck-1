@@ -115,7 +115,7 @@ struct EditSession : GUIHandler, Session
 		const std::string &name,
 		int currLayerIndex, int startY );
 	Panel *layerPanel;
-	LayerPanelSlider *lpSlider;
+	PanelSlider *lpSlider;
 
 	enum EditLayer : int
 	{

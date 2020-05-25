@@ -227,13 +227,14 @@ struct EnemyVariationSelector : PanelUpdater
 	bool createMode;
 };
 
-struct LayerPanelSlider : PanelUpdater
+struct PanelSlider : PanelUpdater
 {
-	LayerPanelSlider(Panel *layerPanel);
+	PanelSlider(Panel *p,
+		sf::Vector2i &origPos, 
+		sf::Vector2i &destPos);
 	bool MouseUpdate();
 	void Deactivate();
-	int GetOutFrame();
-	Panel *layerPanel;
+	Panel *panel;
 	bool slid;
 	int outFrame;
 	sf::Vector2i origPos;

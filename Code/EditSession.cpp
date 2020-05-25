@@ -12806,7 +12806,7 @@ bool EditSession::IsLayerLocked(EditLayer layer)
 void EditSession::CreateLayerPanel()
 {
 	layerPanel = new Panel("layers", 300, 900, this);
-	lpSlider = new LayerPanelSlider(layerPanel);
+	lpSlider = new PanelSlider(layerPanel, Vector2i( -270, 100 ), Vector2i( 0, 100 ));
 	layerPanel->extraUpdater = lpSlider;
 
 	int currLayerIndex = 0;

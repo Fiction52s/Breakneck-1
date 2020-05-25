@@ -9,47 +9,47 @@
 using namespace std;
 using namespace sf;
 
-LayerPanelSlider::LayerPanelSlider(Panel *lp)
-	:layerPanel( lp ), slid( false )
+PanelSlider::PanelSlider(Panel *p, sf::Vector2i &p_origPos, sf::Vector2i &p_destPos)
+	:panel (p), slid(false)
 {
-	origPos = Vector2i(-270, 0);//layerPanel->pos;
-	layerPanel->SetPosition(origPos);
-	destPos = Vector2i(0, layerPanel->pos.y);
+	origPos = p_origPos;//Vector2i(-270, 0);
+	destPos = p_destPos;
+	panel->SetPosition(origPos);
 	normalDuration = 10;
 	bez = CubicBezier(0, 0, 1, 1);
 }
 
 
-bool LayerPanelSlider::MouseUpdate()
+bool PanelSlider::MouseUpdate()
 {
 	if (!slid)
 	{
 		slid = true;
 		int duration = normalDuration;// - outFrame;
 		int skip = 0;
-		if (layerPanel->IsSliding())
+		if (panel->IsSliding())
 		{
-			skip = normalDuration - layerPanel->slideFrame;
+			skip = normalDuration - panel->slideFrame;
 		}
-		layerPanel->SetPosition(origPos);
-		layerPanel->Slide(destPos, bez, duration);
-		layerPanel->slideFrame = skip;
+		panel->SetPosition(origPos);
+		panel->Slide(destPos, bez, duration);
+		panel->slideFrame = skip;
 	}
 
 	return true;
 }
 
-void LayerPanelSlider::Deactivate()
+void PanelSlider::Deactivate()
 {
 	int duration = normalDuration;
 	int skip = 0;
-	if (layerPanel->IsSliding())
+	if (panel->IsSliding())
 	{
-		skip = normalDuration - layerPanel->slideFrame;
+		skip = normalDuration - panel->slideFrame;
 	}
-	layerPanel->SetPosition(destPos);
-	layerPanel->Slide(origPos, bez, duration);
-	layerPanel->slideFrame = skip;
+	panel->SetPosition(destPos);
+	panel->Slide(origPos, bez, duration);
+	panel->slideFrame = skip;
 	slid = false;
 }
 
