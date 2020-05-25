@@ -125,17 +125,17 @@ struct EditSession : GUIHandler, Session
 		LAYER_WATER,
 	};
 
-	std::map<EditLayer, std::string> layerMap;
-	std::map<std::string, EditLayer> reverseLayerMap;
-	bool IsLayerShowing( EditLayer layer );
-	bool IsLayerLocked( EditLayer layer );
-	bool IsLayerActionable( EditLayer layer );
+	std::map<int, std::string> layerMap;
+	std::map<std::string, int> reverseLayerMap;
+	bool IsLayerShowing( int layer );
+	bool IsLayerLocked( int layer );
+	bool IsLayerActionable( int layer );
 	void UpdateLayerCheckbox(CheckBox *cb,
 		const std::string & e);
-	std::string GetLayerShowName(EditLayer layer);
-	std::string GetLayerLockedName(EditLayer layer);
-	void UpdateLayerShow(EditLayer layer, bool show);
-	void UpdateLayerLock(EditLayer layer, bool lock);
+	std::string GetLayerShowName(int layer);
+	std::string GetLayerLockedName(int layer);
+	void UpdateLayerShow(int layer, bool show);
+	void UpdateLayerLock(int layer, bool lock);
 	
 
 	enum Tool
@@ -496,9 +496,25 @@ struct EditSession : GUIHandler, Session
 	
 	std::list<RailPtr> rails;
 
+	enum TerrainLayers : int
+	{
+		TERRAINLAYER_NORMAL,
+		TERRAINLAYER_WATER,
+		TERRAINLAYER_FLY,
+		TERRAINLAYER_Count,
+	};
+
+	//search for terrainlayer_ get layer_
+	std::map<int, int> terrainEditLayerMap;
+	
+	//search for layer_ get terrainlayer_
+	std::map<int, int> terrainEditLayerReverseMap;
+
 	std::list<PolyPtr> &GetCorrectPolygonList(int ind);
 	std::list<PolyPtr> &GetCorrectPolygonList(PolyPtr t);
 	std::list<PolyPtr> &GetCorrectPolygonList();
+	//allpolygons should hold all the lists
+	std::vector<std::list<PolyPtr>> allPolygons;
 	std::list<PolyPtr> polygons;
 	std::list<PolyPtr> waterPolygons;
 	std::list<PolyPtr> flyPolygons;
@@ -871,11 +887,11 @@ struct EditSession : GUIHandler, Session
 	bool ExecuteTerrainMultiAdd(
 		std::list<PolyPtr> &brushPolys,
 		Brush &orig,
-		Brush &result );
+		Brush &result, int terrainLayer );
 	bool ExecuteTerrainMultiSubtract(
 		std::list<PolyPtr> &brushPolys,
 		Brush &orig,
-		Brush &result);
+		Brush &result, int terrainLayer );
 	
 	enum GateAdjustOption
 	{

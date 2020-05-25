@@ -7189,11 +7189,11 @@ bool EditSession::ExecuteTerrainCompletion()
 			bool success = false;
 			if (add)
 			{
-				success = ExecuteTerrainMultiAdd(inProgress, orig, result);
+				success = ExecuteTerrainMultiAdd(inProgress, orig, result, GetSpecialTerrainMode() );
 			}
 			else
 			{
-				success = ExecuteTerrainMultiSubtract(inProgress, orig, result);
+				success = ExecuteTerrainMultiSubtract(inProgress, orig, result, GetSpecialTerrainMode());
 			}
 
 			if (success && (!orig.IsEmpty() || !result.IsEmpty()))
@@ -7614,40 +7614,103 @@ Vector2i EditSession::GetCopiedCenter()
 
 void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 {
-	list<PolyPtr> brushPolys;
+	std::vector<list<PolyPtr>> brushPolyLists;
+	brushPolyLists.resize(TERRAINLAYER_Count);
+	PolyPtr poly;
+
+	bool terrainEmpty = true;
+	for (int i = TERRAINLAYER_Count-1; i >= 0; --i)
+	{
+		if (cBrush != NULL)
+		{
+			for (auto bit = cBrush->objects.begin(); bit != cBrush->objects.end(); ++bit)
+			{
+				poly = (*bit)->GetAsTerrain();
+				if (poly != NULL)
+				{
+					brushPolyLists[poly->GetSpecialPolyIndex()].push_back(poly);
+					terrainEmpty = false;
+				}
+			}
+		}
+	}
+
+	/*list<PolyPtr> brushPolys;
+	list<PolyPtr> waterBrushPolys;
 	PolyPtr poly;
 	if (cBrush != NULL)
 	{
 		for (auto bit = cBrush->objects.begin(); bit != cBrush->objects.end(); ++bit)
 		{
 			poly = (*bit)->GetAsTerrain();
-			if (poly != NULL)
+			if (poly != NULL  )
 			{
-				brushPolys.push_back(poly);
+				if (poly->terrainWorldType < TerrainPolygon::TerrainWorldType::SPECIAL)
+				{
+					brushPolys.push_back(poly);
+				}
+				else
+				{
+					waterBrushPolys.push_back(poly);
+				}
 			}
 		}
-	}
-
-	
+	}*/
 
 	
 	Brush orig;
 	Brush result;
 	
-
 	bool success = true;
-	if (!brushPolys.empty())
+
+	for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
+	{
+		list<PolyPtr> &currList = brushPolyLists[i];
+		if (!currList.empty())
+		{
+			if (HoldingControl())
+			{
+				success = ExecuteTerrainMultiSubtract(currList, orig, result, i);
+			}
+			else
+			{
+				success = ExecuteTerrainMultiAdd(currList, orig, result, i);
+			}
+
+			if (!success)
+			{
+				//full resultbrush is destroyed by both functions when they return false
+				break;
+			}
+		}
+	}
+
+	/*if (!waterBrushPolys.empty())
 	{
 		if (HoldingControl())
 		{
-			success = ExecuteTerrainMultiSubtract(brushPolys, orig, result);
+			success = ExecuteTerrainMultiSubtract(waterBrushPolys, orig, result, 1);
 		}
 		else
 		{
-			success = ExecuteTerrainMultiAdd(brushPolys, orig, result);
+			success = ExecuteTerrainMultiAdd(waterBrushPolys, orig, result, 1);
 		}
 	}
-	else
+
+	if (success && !brushPolys.empty())
+	{
+		if (HoldingControl())
+		{
+			success = ExecuteTerrainMultiSubtract(brushPolys, orig, result, 0 );
+		}
+		else
+		{
+			success = ExecuteTerrainMultiAdd(brushPolys, orig, result, 0 );
+		}
+	}*/
+
+	
+	if( terrainEmpty )
 	{
 		if ( freeActorBrush != NULL && freeActorBrush->CanApply())
 		{
@@ -7665,11 +7728,6 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 					}
 
 					result.AddObject(newActor);
-
-					//actor->UnAnchor();
-					//actor->posInfo.RemoveActor(actor);
-
-
 				}
 			}
 		}
@@ -8020,10 +8078,10 @@ bool EditSession::FixPathSlivers(ClipperLib::Path &p,
 }
 
 bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
-	Brush &orig, Brush &resultBrush)
+	Brush &orig, Brush &resultBrush, int terrainLayer )
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
-	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
+	auto &testPolygons = GetCorrectPolygonList(terrainLayer);
 	bool removeBrush;
 	int liRes;
 
@@ -8343,10 +8401,10 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 }
 
 bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
-	Brush &orig, Brush &resultBrush)
+	Brush &orig, Brush &resultBrush, int terrainLayer )
 {
 	//change this eventually to reflect the actual layer. maybe pass in which layer im on?
-	auto &testPolygons = GetCorrectPolygonList();//GetCorrectPolygonList(polygonInProgress);
+	auto &testPolygons = GetCorrectPolygonList(terrainLayer);//GetCorrectPolygonList(polygonInProgress);
 	
 	list<PolyPtr> nonIntersectingBrushes;
 	list<PolyPtr> nonInverseBrushes;
@@ -9279,22 +9337,25 @@ void EditSession::TryBoxSelect()
 			//ClearSelectedPoints();
 		}
 
-		if (IsLayerActionable(LAYER_WATER) && BoxSelectPoints(r, 8 * zoomMultiple, 1))
-			selectionEmpty = false;
-
-		if (IsLayerActionable(LAYER_TERRAIN) && BoxSelectPoints(r, 8 * zoomMultiple, 0))
-			selectionEmpty = false;
+		for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
+		{
+			if (IsLayerActionable(terrainEditLayerMap[i])
+				&& BoxSelectPoints(r, 8 * zoomMultiple,
+				i))
+			{
+				selectionEmpty = false;
+			}
+		}
 	}
 	else if (!showPoints)//polygon selection. don't use it for a little bit
 	{
-		if ( IsLayerActionable( LAYER_WATER ) && BoxSelectPolys(r, 1))
+		for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
 		{
-			selectionEmpty = false;
-		}
-
-		if (IsLayerActionable(LAYER_TERRAIN) && BoxSelectPolys(r, 0 ))
-		{
-			selectionEmpty = false;
+			if (IsLayerActionable(terrainEditLayerMap[i])
+				&& BoxSelectPolys(r,i))
+			{
+				selectionEmpty = false;
+			}
 		}
 
 		if (!specialMode && BoxSelectRails(r))
@@ -12136,14 +12197,14 @@ void EditSession::EditModeUpdate()
 				emptysp = false;
 			}
 
-			if ( IsLayerActionable( LAYER_WATER ) && emptysp && PointSelectTerrain(worldPos, 1))
+			for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
 			{
-				emptysp = false;
-			}
-
-			if (IsLayerActionable(LAYER_TERRAIN) && emptysp && PointSelectTerrain(worldPos, 0))
-			{
-				emptysp = false;
+				if (IsLayerActionable(terrainEditLayerMap[i])
+					&& emptysp && PointSelectTerrain(worldPos, i))
+				{
+					emptysp = false;
+					break;
+				}
 			}
 
 			if (emptysp && PointSelectDecor(worldPos))
@@ -12807,29 +12868,29 @@ void EditSession::TransformModeUpdate()
 	}
 }
 
-bool EditSession::IsLayerActionable(EditLayer layer)
+bool EditSession::IsLayerActionable(int layer)
 {
 	return (IsLayerShowing(layer) && !IsLayerLocked(layer));
 }
 
-std::string EditSession::GetLayerShowName(EditLayer layer)
+std::string EditSession::GetLayerShowName(int layer)
 {
 	return layerMap[layer] + "_show";
 }
 
-std::string EditSession::GetLayerLockedName(EditLayer layer)
+std::string EditSession::GetLayerLockedName(int layer)
 {
 	return layerMap[layer] + "_lock";
 }
 
-bool EditSession::IsLayerShowing(EditLayer layer)
+bool EditSession::IsLayerShowing(int layer)
 {
 	string checkName = GetLayerShowName(layer);
 	assert(layerPanel->checkBoxes.find(checkName) != layerPanel->checkBoxes.end());
 	return layerPanel->checkBoxes[checkName]->checked;
 }
 
-bool EditSession::IsLayerLocked(EditLayer layer)
+bool EditSession::IsLayerLocked(int layer)
 {
 	string checkName = GetLayerLockedName(layer);
 	assert(layerPanel->checkBoxes.find(checkName) != layerPanel->checkBoxes.end());
@@ -12848,6 +12909,17 @@ void EditSession::CreateLayerPanel()
 	layerMap[LAYER_IMAGE] = "images";
 	layerMap[LAYER_TERRAIN] = "terrain";
 	layerMap[LAYER_WATER] = "water";
+
+	terrainEditLayerMap[TERRAINLAYER_NORMAL] = LAYER_TERRAIN;
+	terrainEditLayerMap[TERRAINLAYER_WATER] = LAYER_WATER;
+
+	for (auto it = terrainEditLayerMap.begin(); it != terrainEditLayerMap.end(); ++it)
+	{
+		terrainEditLayerReverseMap[(*it).second] = (*it).first;
+	}
+	//terrainEditLayerMap[TERRAINLAYER_FLY] = LAYER_TERRAIN;
+	
+
 	for (auto it = layerMap.begin(); it != layerMap.end(); ++it)
 	{
 		reverseLayerMap[(*it).second] = (*it).first;
@@ -12885,7 +12957,7 @@ void EditSession::AddLayerToPanel( const std::string &name, int currLayerIndex, 
 	layerPanel->AddLabel(name, Vector2i(label, posY), 20, name);
 }
 
-void EditSession::UpdateLayerShow(EditLayer layer, bool show)
+void EditSession::UpdateLayerShow(int layer, bool show)
 {
 	if (show)
 	{
@@ -12908,7 +12980,7 @@ void EditSession::UpdateLayerShow(EditLayer layer, bool show)
 	
 }
 
-void EditSession::UpdateLayerLock(EditLayer layer, bool lock)
+void EditSession::UpdateLayerLock(int layer, bool lock)
 {
 	if (lock)
 	{
