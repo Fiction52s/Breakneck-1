@@ -158,10 +158,6 @@ EditorDecorInfo *EditorDecorInfo::Copy()
 	EditorDecorInfo *newDecor = new EditorDecorInfo(*this);
 	newDecor->selected = false;
 	newDecor->active = false;
-	/*if (newDecor->active)
-	{
-		newDecor->Activate();
-	}*/
 
 	return newDecor;
 }

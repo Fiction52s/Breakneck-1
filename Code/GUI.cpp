@@ -507,6 +507,9 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
 	Color defaultColor(83, 102, 188);
 	SetRectColor(quad, defaultColor);
 	SetRectTopLeft(quad, size.x, size.y, Vector2f( 0, 0 ));
+
+	slideFrame = 0;
+	slideDuration = -1;
 }
 
 Panel::~Panel()
@@ -569,6 +572,17 @@ Panel::~Panel()
 	{
 		delete (*it).second;
 	}*/
+}
+
+void Panel::Slide(sf::Vector2i &dest, CubicBezier &bez,
+	int duration)
+{
+	assert(duration > 0);
+	slideDuration = duration;
+	slideStart = pos;
+	slideEnd = dest;
+	slideBez = bez;
+	slideFrame = 0;
 }
 
 bool Panel::IsPopup()
@@ -686,6 +700,24 @@ bool Panel::MouseUpdate()
 
 void Panel::UpdateSprites(int numUpdateFrames)
 {
+	if (slideDuration > 0)
+	{
+		slideFrame += numUpdateFrames;
+		if (slideFrame < slideDuration)
+		{
+			double a = ((double)slideFrame) / slideDuration;
+			double f = slideBez.GetValue(a);
+			V2d currPos = V2d(slideStart) * (1.0 - f) + V2d(slideEnd) * f;
+			pos = Vector2i(currPos);
+		}
+		else
+		{
+			slideDuration = -1;
+			pos = slideEnd;
+		}
+		
+		//SetPosition(  )
+	}
 	for (auto it = enemyChooseRects.begin(); it != enemyChooseRects.end(); ++it)
 	{
 		(*it)->UpdateSprite(numUpdateFrames);

@@ -452,6 +452,9 @@ struct Panel
 		int height, GUIHandler *handler,
 		bool pop = false );
 	~Panel();
+	
+	
+
 	void Deactivate();
 	void SetColor(sf::Color c);
 	//void SetImage(Tileset *ts, int tile);
@@ -514,6 +517,15 @@ struct Panel
 	const sf::Vector2i &GetMousePos();
 
 	sf::Vector2i pos;
+
+	sf::Vector2i slideStart;
+	sf::Vector2i slideEnd;
+	CubicBezier slideBez;
+	int slideDuration;
+	int slideFrame;
+	void Slide(sf::Vector2i &dest, CubicBezier &bez,
+		int duration );
+
 	
 	sf::Vector2f size;
 	GUIHandler *handler;
