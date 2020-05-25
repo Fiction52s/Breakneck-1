@@ -121,6 +121,8 @@ struct EditSession : GUIHandler, Session
 	{
 		LAYER_ACTOR,
 		LAYER_IMAGE,
+		LAYER_TERRAIN,
+		LAYER_WATER,
 	};
 
 	std::map<EditLayer, std::string> layerMap;
@@ -819,9 +821,9 @@ struct EditSession : GUIHandler, Session
 	
 	bool PointSelectDecor(V2d &pos);
 	bool PointSelectActor(  V2d &pos);
-	bool PointSelectTerrain(V2d &pos);
-	bool PointSelectPolyPoint( V2d &pos );
-	bool PointSelectPoly(V2d &pos);
+	bool PointSelectTerrain(V2d &pos, int terrainLayer );
+	bool PointSelectPolyPoint(V2d &pos, int terrainLayer );
+	bool PointSelectPoly(V2d &pos, int terrainLayer );
 	bool PointSelectRailPoint(V2d &pos);
 	bool PointSelectGeneralRail(V2d &pos);
 	bool PointSelectRail(V2d &pos);
@@ -830,10 +832,10 @@ struct EditSession : GUIHandler, Session
 	void ModifyGrass();
 
 	bool BoxSelectPoints(sf::IntRect &rect,
-		double radius);
+		double radius, int terrainLayer );
 	bool BoxSelectActors(sf::IntRect &rect);
 	bool BoxSelectDecor(sf::IntRect &rect);
-	bool BoxSelectPolys(sf::IntRect &rect);
+	bool BoxSelectPolys(sf::IntRect &rect, int terrainLayer );
 	bool BoxSelectRails(sf::IntRect &rect);
 	void TryBoxSelect();
 	bool ExecuteTerrainCompletion();

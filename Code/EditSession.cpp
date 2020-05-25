@@ -8826,20 +8826,20 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 	return true;
 }
 
-bool EditSession::PointSelectTerrain(V2d &pos)
+bool EditSession::PointSelectTerrain(V2d &pos, int terrainLayer )
 {
 	bool pointSelectKeyHeld = IsKeyPressed(Keyboard::B);
 
 	if (pointSelectKeyHeld)
 	{
-		if (PointSelectPolyPoint(pos))
+		if (PointSelectPolyPoint(pos, terrainLayer ))
 		{
 			return true;
 		}
 	}
 	else
 	{
-		if (PointSelectPoly(pos))
+		if (PointSelectPoly(pos, terrainLayer ))
 		{
 			return true;
 		}
@@ -8848,11 +8848,11 @@ bool EditSession::PointSelectTerrain(V2d &pos)
 	return false;
 }
 
-bool EditSession::PointSelectPolyPoint( V2d &pos )
+bool EditSession::PointSelectPolyPoint( V2d &pos, int terrainLayer )
 {
 	bool shift = IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift);
 
-	auto & currPolyList = GetCorrectPolygonList();
+	auto & currPolyList = GetCorrectPolygonList(terrainLayer);
 
 	TerrainPoint *foundPoint = NULL;
 	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
@@ -8969,9 +8969,9 @@ bool EditSession::PointSelectRailPoint(V2d &pos)
 	return false;
 }
 
-bool EditSession::PointSelectPoly(V2d &pos)
+bool EditSession::PointSelectPoly(V2d &pos, int terrainLayer )
 {
-	auto & currPolyList = GetCorrectPolygonList();
+	auto & currPolyList = GetCorrectPolygonList(terrainLayer);
 	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
 		//bool pressF1 = IsKeyPressed(Keyboard::F1);
@@ -9010,12 +9010,12 @@ bool EditSession::PointSelectPoly(V2d &pos)
 }
 
 bool EditSession::BoxSelectPoints(sf::IntRect &r,
-	double radius)
+	double radius, int terrainLayer )
 {
 	if (r.width == 0 || r.height == 0)
 		return false;
 
-	auto & currPolyList = GetCorrectPolygonList();
+	auto & currPolyList = GetCorrectPolygonList(terrainLayer);
 
 	bool specialMode = GetSpecialTerrainMode() != 0;
 
@@ -9169,14 +9169,14 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 	return found;
 }
 
-bool EditSession::BoxSelectPolys(sf::IntRect &rect)
+bool EditSession::BoxSelectPolys(sf::IntRect &rect, int terrainLayer )
 {
 	bool found = false;
 
 	if (rect.width == 0 || rect.height == 0)
 		return false;
 
-	auto & currPolyList = GetCorrectPolygonList();
+	auto & currPolyList = GetCorrectPolygonList(terrainLayer);
 
 	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
@@ -9279,12 +9279,20 @@ void EditSession::TryBoxSelect()
 			//ClearSelectedPoints();
 		}
 
-		if (BoxSelectPoints(r, 8 * zoomMultiple))
+		if (IsLayerActionable(LAYER_WATER) && BoxSelectPoints(r, 8 * zoomMultiple, 1))
+			selectionEmpty = false;
+
+		if (IsLayerActionable(LAYER_TERRAIN) && BoxSelectPoints(r, 8 * zoomMultiple, 0))
 			selectionEmpty = false;
 	}
 	else if (!showPoints)//polygon selection. don't use it for a little bit
 	{
-		if (BoxSelectPolys(r))
+		if ( IsLayerActionable( LAYER_WATER ) && BoxSelectPolys(r, 1))
+		{
+			selectionEmpty = false;
+		}
+
+		if (IsLayerActionable(LAYER_TERRAIN) && BoxSelectPolys(r, 0 ))
 		{
 			selectionEmpty = false;
 		}
@@ -12116,24 +12124,29 @@ void EditSession::EditModeUpdate()
 		if (!showGrass && !(editMouseDownMove || editMouseDownBox))
 		{
 			bool emptysp = true;
-			bool specialMode = GetSpecialTerrainMode() != 0;
+			//bool specialMode = GetSpecialTerrainMode() != 0;
 
-			if (emptysp && !specialMode && PointSelectActor(worldPos))
+			if (emptysp && PointSelectActor(worldPos))
 			{
 				emptysp = false;
 			}
 
-			if (emptysp && !specialMode && PointSelectRail(worldPos))
+			if (emptysp && PointSelectRail(worldPos))
 			{
 				emptysp = false;
 			}
 
-			if (emptysp && PointSelectTerrain(worldPos))
+			if ( IsLayerActionable( LAYER_WATER ) && emptysp && PointSelectTerrain(worldPos, 1))
 			{
 				emptysp = false;
 			}
 
-			if (emptysp && !specialMode && PointSelectDecor(worldPos))
+			if (IsLayerActionable(LAYER_TERRAIN) && emptysp && PointSelectTerrain(worldPos, 0))
+			{
+				emptysp = false;
+			}
+
+			if (emptysp && PointSelectDecor(worldPos))
 			{
 				emptysp = false;
 			}
@@ -12833,6 +12846,8 @@ void EditSession::CreateLayerPanel()
 
 	layerMap[LAYER_ACTOR] = "actors";
 	layerMap[LAYER_IMAGE] = "images";
+	layerMap[LAYER_TERRAIN] = "terrain";
+	layerMap[LAYER_WATER] = "water";
 	for (auto it = layerMap.begin(); it != layerMap.end(); ++it)
 	{
 		reverseLayerMap[(*it).second] = (*it).first;
@@ -12850,6 +12865,9 @@ void EditSession::CreateLayerPanel()
 
 	AddLayerToPanel(layerMap[LAYER_ACTOR], 0, startY);
 	AddLayerToPanel(layerMap[LAYER_IMAGE], 1, startY);
+	AddLayerToPanel(layerMap[LAYER_TERRAIN], 2, startY);
+	AddLayerToPanel(layerMap[LAYER_WATER], 3, startY);
+
 
 	layerPanel->checkBoxes[GetLayerShowName(LAYER_ACTOR)]->SetLockedStatus( true, true );
 }
