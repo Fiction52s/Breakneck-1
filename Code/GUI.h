@@ -227,6 +227,20 @@ struct EnemyVariationSelector : PanelUpdater
 	bool createMode;
 };
 
+struct LayerPanelSlider : PanelUpdater
+{
+	LayerPanelSlider(Panel *layerPanel);
+	bool MouseUpdate();
+	void Deactivate();
+	int GetOutFrame();
+	Panel *layerPanel;
+	bool slid;
+	int outFrame;
+	sf::Vector2i origPos;
+	sf::Vector2i destPos;
+	int normalDuration;
+};
+
 
 struct CreateModeUI
 {
@@ -452,9 +466,11 @@ struct Panel
 		int height, GUIHandler *handler,
 		bool pop = false );
 	~Panel();
-	
-	
 
+	void UpdateSlide( int numUpdateFrames );
+	
+	
+	bool IsSliding();
 	void Deactivate();
 	void SetColor(sf::Color c);
 	//void SetImage(Tileset *ts, int tile);

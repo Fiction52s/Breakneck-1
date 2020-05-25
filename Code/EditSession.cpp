@@ -1122,7 +1122,6 @@ EditSession::~EditSession()
 
 	delete layerPanel;
 	layerPanel = NULL;
-	
 
 	//delete groups, but not actors
 	
@@ -11750,6 +11749,13 @@ void EditSession::TestPlayerModeHandleEvent()
 void EditSession::UpdateMode()
 {
 	bool focusedUpdate = false;
+
+	for (auto it = activePanels.begin(); it != activePanels.end(); ++it)
+	{
+		(*it)->UpdateSlide(spriteUpdateFrames);
+	}
+
+
 	if (focusedPanel != NULL)
 	{
 		if (focusedPanel->MouseUpdate())
@@ -12779,6 +12785,9 @@ bool EditSession::IsLayerLocked(EditLayer layer)
 void EditSession::CreateLayerPanel()
 {
 	layerPanel = new Panel("layers", 300, 900, this);
+	layerPanel->SetPosition(Vector2i(-200, 0));
+	LayerPanelSlider *lpSlider = new LayerPanelSlider(layerPanel);
+	layerPanel->extraUpdater = lpSlider;
 	//layerPanel->pos = Vector2i(200, 200);
 	int currLayerIndex = 0;
 

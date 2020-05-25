@@ -698,7 +698,7 @@ bool Panel::MouseUpdate()
 	return true;
 }
 
-void Panel::UpdateSprites(int numUpdateFrames)
+void Panel::UpdateSlide(int numUpdateFrames)
 {
 	if (slideDuration > 0)
 	{
@@ -715,9 +715,11 @@ void Panel::UpdateSprites(int numUpdateFrames)
 			slideDuration = -1;
 			pos = slideEnd;
 		}
-		
-		//SetPosition(  )
 	}
+}
+
+void Panel::UpdateSprites(int numUpdateFrames)
+{
 	for (auto it = enemyChooseRects.begin(); it != enemyChooseRects.end(); ++it)
 	{
 		(*it)->UpdateSprite(numUpdateFrames);
@@ -988,6 +990,11 @@ void Panel::Draw( RenderTarget *target )
 
 
 	target->setView(oldView);
+}
+
+bool Panel::IsSliding()
+{
+	return slideDuration > 0;
 }
 
 void Panel::SendKey( sf::Keyboard::Key k, bool shift )
