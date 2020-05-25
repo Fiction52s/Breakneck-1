@@ -4333,7 +4333,7 @@ void EditSession::DeselectPoint( RailPtr rail,
 
 
 
-void EditSession::PerformMovePointsAction()
+bool EditSession::PerformMovePointsAction()
 {
 	Vector2i delta = Vector2i(worldPos.x, worldPos.y) - editMouseOrigPos;
 	//here the delta being subtracted is the points original positionv
@@ -4432,11 +4432,23 @@ void EditSession::PerformMovePointsAction()
 	}
 	testAction->subActions.push_back(action);
 
+	Brush * testBrush = pm->MakeBrush();
 
+	bool validMove = false;
+	ClearMostRecentError();
+	if (testBrush->CanApply() && selectedBrush->CanApply() )
+	{
+		validMove = true;
+	}
+	else
+	{
+		ShowMostRecentError();
+	}
+	delete testBrush;
 	//might want to pass pm to IsGateAttachedToAffectedPoint etc
 
 	//check for validity
-	if (true )//action->moveValid)
+	if (validMove )//action->moveValid)
 	{
 		int gateActionsAdded = 0;
 		for (auto it = gates.begin(); it != gates.end(); ++it)
@@ -4503,7 +4515,8 @@ void EditSession::PerformMovePointsAction()
 						}
 
 						delete testAction;
-						return;
+
+						return false;
 					}
 					else
 					{
@@ -4523,6 +4536,10 @@ void EditSession::PerformMovePointsAction()
 
 		testAction->performed = true;
 		AddDoneAction(testAction);
+
+		ClearUndoneActions();
+
+		return true;
 		/*if (gateActionsAdded > 0)
 		{
 		testAction->performed = true;
@@ -4551,6 +4568,8 @@ void EditSession::PerformMovePointsAction()
 		}
 
 		delete testAction;
+
+		return false;
 	}
 }
 
@@ -12148,15 +12167,16 @@ void EditSession::EditModeUpdate()
 			if (AnchorSelectedEnemies())
 			{
 				done = true;
+				TryCompleteSelectedMove();
 			}
 
+			bool pointSuccess = true;
 			if (!done)
 			{
 				PerformMovePointsAction();
-				//NewPerformMovePointsAction();
 			}
 
-			TryCompleteSelectedMove();
+			//TryCompleteSelectedMove();
 		}
 		else if (editMouseDownBox)
 		{

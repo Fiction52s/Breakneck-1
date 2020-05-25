@@ -427,7 +427,7 @@ struct EditSession : GUIHandler, Session
 	void StartMoveSelectedPoints();
 	void MoveSelectedPoints();
 	void MoveSelectedRailPoints(V2d worldPos);
-	void PerformMovePointsAction();
+	bool PerformMovePointsAction();
 
 	bool IsGateAttachedToAffectedPoints(
 		GateInfoPtr gi, PointMover *pm,

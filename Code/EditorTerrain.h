@@ -605,6 +605,7 @@ typedef std::map<PolyPtr, std::vector<PointMoveInfo>> PointVectorMap;
 
 struct PointMover
 {
+	Brush *MakeBrush();
 	//PointVectorMap myMap;
 	//std::map<ActorPtr, PositionInfo> enemyBackups;
 	//std::map<ActorPtr, PositionInfo> newEnemyPos;

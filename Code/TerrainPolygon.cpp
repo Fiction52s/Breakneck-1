@@ -16,7 +16,7 @@
 #include "earcut.hpp"
 #include "TransformTools.h"
 #include "TerrainDecor.h"
-
+#include "EditorRail.h"
 #include "TouchGrass.h"
 #include "Enemy_HealthFly.h"
 
@@ -52,6 +52,22 @@ namespace mapbox
 		};
 	}
 }
+
+Brush * PointMover::MakeBrush()
+{
+	Brush *b = new Brush;
+	for (auto it = movePoints.begin(); it != movePoints.end(); ++it)
+	{
+		b->AddObject((*it).first);
+	}
+
+	for (auto it = railMovePoints.begin(); it != railMovePoints.end(); ++it)
+	{
+		b->AddObject((*it).first);
+	}
+	return b;
+}
+
 
 //for creating blockers and flies..for now
 void TerrainPolygon::MakeGlobalPath(V2d &startPos, std::vector<sf::Vector2i> &path )

@@ -158,8 +158,8 @@ void EnemyVariationSelector::SetType(ActorType *type)
 void EnemyVariationSelector::SetPosition(sf::Vector2f &pos)
 {
 	panel->SetCenterPos(Vector2i(pos));
-	Vector2i dest = panel->pos + Vector2i(300, 0);
-	panel->Slide(dest, CubicBezier(), 120);
+	//Vector2i dest = panel->pos + Vector2i(300, 0);
+	//panel->Slide(dest, CubicBezier(), 120);
 	//orbSpr.setPosition(pos);
 	for (int i = 0; i < numVariations; ++i)
 	{
