@@ -120,6 +120,7 @@ struct ChooseRect : PanelMember
 		I_DECORLIBRARY
 	};
 
+	sf::Text nameText;
 	ChooseRectIdentity rectIdentity;
 	ChooseRectType chooseRectType;
 	EnemyChooseRect *GetAsEnemyChooseRect();

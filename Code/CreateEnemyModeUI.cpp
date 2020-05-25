@@ -457,6 +457,14 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	SetShown(false);
 
 	focused = false;
+
+	EditSession *edit = EditSession::GetSession();
+	nameText.setFont(edit->mainMenu->arial);
+	nameText.setCharacterSize(18);
+	nameText.setFillColor(Color::White);
+	nameText.setOutlineColor(Color::Black);
+	nameText.setOutlineThickness(3);
+	nameText.setPosition(Vector2f( pos.x + boxSize / 2, pos.y ));
 }
 
 void ChooseRect::SetCircleMode(int p_radius)
@@ -482,6 +490,7 @@ void ChooseRect::SetPosition(sf::Vector2f &p_pos)
 {
 	pos = p_pos;
 	UpdateRectDimensions();
+	nameText.setPosition(Vector2f(pos.x + boxSize / 2, pos.y));
 }
 
 void ChooseRect::SetSize(float s)
@@ -680,6 +689,9 @@ void EnemyChooseRect::SetType(ActorType *type, int lev)
 		{
 			enemy->SetActionEditLoop();
 			enemy->UpdateFromEditParams(0);
+			nameText.setString(enemy->name);
+			nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+				0);
 		}
 		
 		SetSize(boxSize);
@@ -702,6 +714,7 @@ void EnemyChooseRect::SetType(ActorType *type, int lev)
 		}
 		idleColor.a = 100;
 		SetRectColor(quad, idleColor);
+
 	}
 }
 
@@ -733,6 +746,8 @@ void EnemyChooseRect::Draw(RenderTarget *target)
 		enemyParams->DrawEnemy(target);
 
 		target->setView(oldView);
+
+		target->draw(nameText);
 	}
 }
 
