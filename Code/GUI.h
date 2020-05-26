@@ -300,6 +300,11 @@ struct CreateGatesModeUI : GUIHandler
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void SetGateInfo(GateInfo *gi);
 	void SetFromGateInfo(GateInfo *gi);
+	void SetEditGate(GateInfo *gi);
+	void CompleteEditingGate();
+
+	GateInfo *origModifyGate;
+	GateInfo *modifyGate;
 	int shardNumX;
 	int shardNumY;
 	void SetShard(int world, int localIndex);
@@ -334,6 +339,7 @@ struct CreateGatesModeUI : GUIHandler
 
 	TextBox *numKeysTextbox;
 	Button *deleteGateButton;
+	Button *OKGateButton;
 
 	Dropdown *gateCategoryDropdown;
 

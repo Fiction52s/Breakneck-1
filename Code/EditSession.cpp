@@ -2015,6 +2015,7 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 			if ((*it)->ContainsPoint(pos))
 			{
 				modifyGate = (*it);
+				createGatesModeUI->SetEditGate(modifyGate);
 			}
 		}
 	}

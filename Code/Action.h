@@ -231,14 +231,13 @@ struct DeleteGateAction : Action
 
 struct ModifyGateAction : Action
 {
-	ModifyGateAction( GateInfoPtr ptr, const
-		std::string &type );
+	ModifyGateAction( GateInfoPtr ptr, GateInfoPtr orig );
 	void Perform();
 	void Undo();
 
 	GateInfoPtr gate;
-	Gate::GateType oldType;
-	std::string newType;
+	GateInfo origInfo;
+	GateInfo newInfo;
 };
 
 struct GrassDiff;

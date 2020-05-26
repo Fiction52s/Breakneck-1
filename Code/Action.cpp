@@ -1122,11 +1122,10 @@ void DeleteGateAction::Undo()
 	//destroy the gate
 }
 
-ModifyGateAction::ModifyGateAction( GateInfoPtr ptr, const std::string &type )
-	:newType( type )
+ModifyGateAction::ModifyGateAction( GateInfoPtr ptr, GateInfoPtr orig )
+	:origInfo( *orig ), newInfo( *ptr )
 {
 	gate = ptr;
-	oldType = gate->type;
 }
 
 void ModifyGateAction::Perform()
@@ -1135,7 +1134,8 @@ void ModifyGateAction::Perform()
 
 	performed = true;
 
-	gate->SetType( newType );
+	(*gate) = newInfo;
+
 	gate->UpdateLine();
 }
 
@@ -1145,9 +1145,10 @@ void ModifyGateAction::Undo()
 
 	performed = false;
 	
+	(*gate) = origInfo;
 
 	//gate->SetType( oldType );
-	gate->type = oldType;
+	//gate->type = oldType;
 	gate->UpdateLine();
 }
 

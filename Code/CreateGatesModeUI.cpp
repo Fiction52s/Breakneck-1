@@ -5,6 +5,7 @@
 #include "Enemy.h"
 #include "EditSession.h"
 #include "EditorGraph.h"
+#include "Action.h"
 
 using namespace std;
 using namespace sf;
@@ -16,6 +17,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 
 	numKeysTextbox = mainPanel->AddTextBox("numkeys", Vector2i(100, 10), 50, 5, "");
 	deleteGateButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete");
+	OKGateButton = mainPanel->AddButton("ok", Vector2i(200, 10), Vector2f(80, 80), "OK");
 
 	std::vector<string> gateCatOptions = { "Key", "Shard", "Boss", "Secret", "Pickup", "Black" };
 	gateCategoryDropdown = mainPanel->AddDropdown(
@@ -25,6 +27,8 @@ CreateGatesModeUI::CreateGatesModeUI()
 		+ Vector2f(gateCategoryDropdown->size.x + 20, 0);
 
 	gateGridSize = 64;
+	modifyGate = NULL;
+	origModifyGate = new GateInfo;
 
 	ts_gateCategories = edit->GetSizedTileset("Editor/gatecategories_128x128.png");
 	ts_bossGateTypes = edit->GetSizedTileset("Editor/bossgatetypes_128x128.png");
@@ -54,6 +58,15 @@ CreateGatesModeUI::CreateGatesModeUI()
 
 	CreatePickupGateTypePanel();
 	ChoosePickupGateType(pickupGateTypeRects[0]);
+}
+
+CreateGatesModeUI::~CreateGatesModeUI()
+{
+	delete mainPanel;
+	delete shardGateTypePanel;
+	delete pickupGateTypePanel;
+	delete bossGateTypePanel;
+	delete origModifyGate;
 }
 
 void CreateGatesModeUI::CreateShardTypePanel()
@@ -120,6 +133,13 @@ void CreateGatesModeUI::SetShard(int world, int localIndex)
 	ChooseShardType(shardGateTypeRects[ind]);
 }
 
+void CreateGatesModeUI::SetEditGate(GateInfo *gi)
+{
+	modifyGate = gi;
+	*origModifyGate = *gi;
+	SetFromGateInfo(gi);
+}
+
 void CreateGatesModeUI::SetFromGateInfo(GateInfo *gi)
 {
 	switch (gi->type)
@@ -171,6 +191,8 @@ void CreateGatesModeUI::SetGateInfo(GateInfo *gi)
 		gi->type = Gate::GateType::BLACK;
 		break;
 	}
+
+	modifyGate->UpdateLine();
 }
 
 void CreateGatesModeUI::CreateBossGateTypePanel()
@@ -292,13 +314,7 @@ void CreateGatesModeUI::ChoosePickupGateType(ImageChooseRect *icRect)
 	edit->RemoveActivePanel(pickupGateTypePanel);
 }
 
-CreateGatesModeUI::~CreateGatesModeUI()
-{
-	delete mainPanel;
-	delete shardGateTypePanel;
-	delete pickupGateTypePanel;
-	delete bossGateTypePanel;
-}
+
 
 
 int CreateGatesModeUI::GetGateCategory()
@@ -359,21 +375,53 @@ void CreateGatesModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 			else if (icRect->rectIdentity == ChooseRect::I_SHARDLIBRARY)
 			{
 				ChooseShardType(icRect);
+				if (modifyGate != NULL)
+				{
+					SetGateInfo(modifyGate);
+				}
 			}
 			else if (icRect->rectIdentity == ChooseRect::I_GATEBOSSLIBRARY)
 			{
 				ChooseBossGateType(icRect);
+				if (modifyGate != NULL)
+				{
+					SetGateInfo(modifyGate);
+				}
 			}
 			else if (icRect->rectIdentity == ChooseRect::I_GATEPICKUPLIBRARY)
 			{
 				ChoosePickupGateType(icRect);
+				if (modifyGate != NULL)
+				{
+					SetGateInfo(modifyGate);
+				}
 			}
 		}
 	}
 }
 
+void CreateGatesModeUI::CompleteEditingGate()
+{
+	if (modifyGate != NULL )
+	{
+		Action * action = new ModifyGateAction(modifyGate, origModifyGate);
+		action->performed = true;
+		edit->AddDoneAction(action);
+
+		modifyGate = NULL;
+	}
+}
+
 void CreateGatesModeUI::ButtonCallback(Button *b, const std::string & e)
 {
+	if (b == OKGateButton)
+	{
+		CompleteEditingGate();
+		//modifyGate = NULL;
+
+		
+		//add action here
+	}
 	/*if (b == completeButton)
 	{
 		edit->ExecuteTerrainCompletion();
@@ -427,6 +475,10 @@ void CreateGatesModeUI::DropdownCallback(Dropdown *dropdown, const std::string &
 	if (dropdown == gateCategoryDropdown)
 	{
 		UpdateCategoryDropdownType();
+		if (modifyGate != NULL)
+		{
+			SetGateInfo(modifyGate);
+		}
 	}
 }
 
