@@ -210,8 +210,7 @@ struct EditObjectAction : Action
 
 struct CreateGateAction : Action
 {
-	CreateGateAction( GateInfo &info, 
-		const std::string &type);
+	CreateGateAction( GateInfo &info );
 	~CreateGateAction();
 	void Perform();
 	void Undo();

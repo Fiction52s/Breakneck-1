@@ -1023,29 +1023,27 @@ void EditObjectAction::Undo()
 	//restore the old parameters
 }
 
-CreateGateAction::CreateGateAction( GateInfo &info, const std::string &type )
+CreateGateAction::CreateGateAction( GateInfo &info)
 {
 	//EditSession *session = EditSession::GetSession();
-	gate = new GateInfo;
+	gate = new GateInfo(info);
 	//GateInfo *gi = new GateInfo;
 
-	gate->SetType( type );
-	if (gate->type == Gate::SHARD)
-	{
-		gate->SetShard(info.shardWorld, info.shardIndex);
-	}
+	//gate->SetType( type );
+	//if (gate->type == Gate::SHARD)
+	//{
+	//	gate->SetShard(info.shardWorld, info.shardIndex);
+//	}
 
 
-	//gate->edit = session;
-	gate->poly0 = info.poly0;
-	gate->vertexIndex0 = info.vertexIndex0;
-	gate->point0 = info.point0;
-	//gate->point0->gate = gate;
+	
+	//gate->poly0 = info.poly0;
+	//gate->vertexIndex0 = info.vertexIndex0;
+	//gate->point0 = info.point0;
 
-	gate->poly1 = info.poly1;
-	gate->vertexIndex1 = info.vertexIndex1;
-	gate->point1 = info.point1;
-	//gate->point1->gate = gate;
+	//gate->poly1 = info.poly1;
+	//gate->vertexIndex1 = info.vertexIndex1;
+	//gate->point1 = info.point1;
 
 
 	gate->UpdateLine();

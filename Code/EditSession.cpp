@@ -1937,16 +1937,43 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 		{
 			if (gatePoints == 0)
 			{
-				for (list<GateInfoPtr>::iterator git = gates.begin(); git != gates.end() && !found; ++git)
+				bool onpoint0, onpoint1;
+
+				for (list<GateInfoPtr>::iterator git = gates.begin(); git != gates.end(); ++git)
 				{
-					if ((*git)->point0 == closePoint || (*git)->point1 == closePoint)
+					onpoint0 = (*git)->point0 == closePoint;
+					onpoint1 = (*git)->point1 == closePoint;
+					if ( onpoint0 || onpoint1 )
 					{
 						GateInfoPtr gi = (*git);
 
-						modifyGate = gi;
+						//modifyGate = gi;
 
+						testGateInfo = *gi;
+
+						if (onpoint0)
+						{
+							testGateInfo.poly0 = gi->poly1;
+							testGateInfo.point0 = gi->point1;
+							testGateInfo.vertexIndex0 = gi->point1->GetIndex();
+						}
+						else
+						{
+							testGateInfo.poly0 = gi->poly0;
+							testGateInfo.point0 = gi->point0;
+							testGateInfo.vertexIndex0 = gi->point0->GetIndex();
+						}
+
+						createGatesModeUI->SetFromGateInfo(gi);
+
+						Action * action = new DeleteGateAction(gi, mapStartBrush);
+						action->Perform();
+						AddDoneAction(action);
+
+						gatePoints = 1;
 
 						found = true;
+						break;
 					}
 				}
 
@@ -12767,7 +12794,7 @@ void EditSession::CreateGatesModeUpdate()
 
 	if (modifyGate != NULL)
 	{
-		GridSelectPop("gateselect");
+		/*GridSelectPop("gateselect");
 
 		string gateResult = tempGridResult;
 
@@ -12798,7 +12825,7 @@ void EditSession::CreateGatesModeUpdate()
 			AddDoneAction(action);
 			modifyGate = NULL;
 		}
-		return;
+		return;*/
 	}
 
 	//DrawGateInProgress();
@@ -12810,51 +12837,48 @@ void EditSession::CreateGatesModeUpdate()
 
 		if (result)
 		{
-			GridSelectPop("gateselect");
-			string gateResult = tempGridResult;
+			//GridSelectPop("gateselect");
+			//string gateResult = tempGridResult;
 
-			if (gateResult == "delete")
-			{
-			}
-			else
-			{
+			
 
-				if (gateResult == "shard")
+				/*if (gateResult == "shard")
 				{
 					GridSelectPop("shardselector");
 					int sw, si;
 					GetShardWorldAndIndex(tempGridX, tempGridY, sw, si);
 					testGateInfo.SetShard(sw, si);
-				}
+				}*/
 
-				Vector2i adjust(0, 0);
+			Vector2i adjust(0, 0);
 				
-				Action *action = new CreateGateAction(testGateInfo, gateResult);
-				action->Perform();
+			createGatesModeUI->SetGateInfo(&testGateInfo);
 
-				if (GetPrimaryAdjustment(testGateInfo.point0->pos, testGateInfo.point1->pos, adjust))
+			Action *action = new CreateGateAction(testGateInfo);
+			action->Perform();
+
+			if (GetPrimaryAdjustment(testGateInfo.point0->pos, testGateInfo.point1->pos, adjust))
+			{
+				CompoundAction *testAction = new CompoundAction;
+				testAction->subActions.push_back(action);
+
+				if (!TryGateAdjustAction(GATEADJUST_POINT_B, &testGateInfo, adjust, testAction))
 				{
-					CompoundAction *testAction = new CompoundAction;
-					testAction->subActions.push_back(action);
-
-					if (!TryGateAdjustAction(GATEADJUST_POINT_B, &testGateInfo, adjust, testAction))
-					{
-						action->Undo();
-						delete action;
-						gatePoints = 0;
-						return;
-					}
-					else
-					{
-						testAction->performed = true;
-						AddDoneAction(testAction);
-					}
+					action->Undo();
+					delete action;
 				}
 				else
 				{
-					AddDoneAction(action);
+					testAction->performed = true;
+					AddDoneAction(testAction);
 				}
 			}
+			else
+			{
+				AddDoneAction(action);
+			}
+
+			modifyGate = NULL;
 			gatePoints = 0;
 		}
 		else

@@ -13,16 +13,6 @@ CreateGatesModeUI::CreateGatesModeUI()
 {
 	edit = EditSession::GetSession();
 	mainPanel = new Panel("creategates", 1920, 200, this, false);
-	//gateTypePanel = new Panel("gatetype", 600, 600, this, true);
-
-	
-	pickupGateTypePanel = new Panel("pickuptype", 600, 600, this, true);
-	bossGateTypePanel = new Panel("bosstype", 600, 600, this, true);
-	Color c(100, 100, 100);
-	c.a = 180;
-	
-	pickupGateTypePanel->SetColor(c);
-	bossGateTypePanel->SetColor(c);
 
 	numKeysTextbox = mainPanel->AddTextBox("numkeys", Vector2i(100, 10), 50, 5, "");
 	deleteGateButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete");
@@ -31,9 +21,14 @@ CreateGatesModeUI::CreateGatesModeUI()
 	gateCategoryDropdown = mainPanel->AddDropdown(
 		"catdrop", Vector2i(500, 10), Vector2i(200, 28), gateCatOptions, 0);
 
+	currGateTypeRectPos = Vector2f(gateCategoryDropdown->pos)
+		+ Vector2f(gateCategoryDropdown->size.x + 20, 0);
+
 	gateGridSize = 64;
 
 	ts_gateCategories = edit->GetSizedTileset("Editor/gatecategories_128x128.png");
+	ts_bossGateTypes = edit->GetSizedTileset("Editor/bossgatetypes_128x128.png");
+	ts_pickupGateTypes = edit->GetSizedTileset("Editor/pickupgatetypes_128x128.png");
 
 	int numGateCategories = gateCatOptions.size();//EditSession::TERRAINLAYER_Count;
 	currGateTypeRects.resize(numGateCategories);
@@ -49,11 +44,16 @@ CreateGatesModeUI::CreateGatesModeUI()
 
 	currGateTypeRects[0]->SetShown(true);
 
+	popupPanelPos = Vector2i(currGateTypeRectPos.x, currGateTypeRectPos.y + 100 + 10);
+
 	CreateShardTypePanel();
 	ChooseShardType(shardGateTypeRects[0]);
-	
-	pickupGateTypePanel->SetPosition(Vector2i(currGateTypeRectPos.x, currGateTypeRectPos.y + 100 + 10));
-	bossGateTypePanel->SetPosition(Vector2i(currGateTypeRectPos.x, currGateTypeRectPos.y + 100 + 10));
+
+	CreateBossGateTypePanel();
+	ChooseBossGateType(bossGateTypeRects[0]);
+
+	CreatePickupGateTypePanel();
+	ChoosePickupGateType(pickupGateTypeRects[0]);
 }
 
 void CreateGatesModeUI::CreateShardTypePanel()
@@ -61,16 +61,8 @@ void CreateGatesModeUI::CreateShardTypePanel()
 	shardNumX = 11;
 	shardNumY = 2;
 
-	shardGridSize = 64;
-
-	Vector2f currGateTypeRectPos = Vector2f(gateCategoryDropdown->pos)
-		+ Vector2f(gateCategoryDropdown->size.x + 20, 0);
-	
-	//GridSelector *gs = p->AddGridSelector("shardselector", pos, xSize, ySize * 7, 64, 64, true, true);
-	//Sprite spr;
-
 	shardGateTypePanel = new Panel("shardtype", 600, 600, this, true);
-	shardGateTypePanel->SetPosition(Vector2i(currGateTypeRectPos.x, currGateTypeRectPos.y + 100 + 10));
+	shardGateTypePanel->SetPosition(popupPanelPos);
 	Color c(100, 100, 100);
 	c.a = 180;
 	shardGateTypePanel->SetColor(c);
@@ -80,14 +72,6 @@ void CreateGatesModeUI::CreateShardTypePanel()
 	{
 		ts_shards[i] = edit->GetSizedTileset("Shard/shards_w" + to_string(i+1) + "_48x48.png");
 	}
-
-	/*ts_shards[0] = edit->GetSizedTileset("Shard/shards_w1_48x48.png");
-	ts_shards[1] = edit->GetSizedTileset("Shard/shards_w2_48x48.png");
-	ts_shards[2] = edit->GetSizedTileset("Shard/shards_w2_48x48.png");
-	ts_shards[3] = edit->GetSizedTileset("Shard/shards_w2_48x48.png");
-	ts_shards[4] = edit->GetSizedTileset("Shard/shards_w2_48x48.png");
-	ts_shards[5] = edit->GetSizedTileset("Shard/shards_w2_48x48.png");
-	ts_shards[6] = edit->GetSizedTileset("Shard/shards_w2_48x48.png");*/
 
 	int totalShards = shardNumX * shardNumY * 7;
 
@@ -102,29 +86,25 @@ void CreateGatesModeUI::CreateShardTypePanel()
 		ts_currShards = ts_shards[w];
 		if (ts_currShards == NULL)
 			continue;
-		//spr.setTexture(*ts_currShards->texture);
+
 		for (int y = 0; y < shardNumY; ++y)
 		{
 			for (int x = 0; x < shardNumX; ++x)
 			{
-				//ts_currShards->GetSubRect(sInd);
 				sInd = y * shardNumX + x;
-				//spr.setTextureRect(ts_currShards->GetSubRect(sInd));
 				int shardT = (sInd + (shardNumX * shardNumY) * w);
 				if (shardT >= SHARD_Count)
 				{
 					shardGateTypeRects[shardT] = NULL;
-					//gs->Set(x, y + ySize * w, spr, "---"); //need a way to set the names later
 				}
 				else
 				{
 					shardGateTypeRects[shardT] =
 						shardGateTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_SHARDLIBRARY,
-						Vector2f( x * shardGridSize, y * shardGridSize + w * 2 * shardGridSize ), 
-							ts_currShards, sInd, shardGridSize);
+						Vector2f( x * gateGridSize, y * gateGridSize + w * 2 * gateGridSize),
+							ts_currShards, sInd, gateGridSize);
 					shardGateTypeRects[shardT]->Init();
 					shardGateTypeRects[shardT]->SetShown(true);
-					//shardGateTypeRects[sInd]->set
 
 					//Shard::GetShardString((ShardType)shardT) for later when I add a label
 				}
@@ -132,27 +112,112 @@ void CreateGatesModeUI::CreateShardTypePanel()
 			}
 		}
 	}
+}
 
-	//ts_currShards = ts_shards[w];
-	//spr.setTexture(*ts_currShards->texture);
-	//for (int y = 0; y < ySize; ++y)
-	//{
-	//	for (int x = 0; x < xSize; ++x)
-	//	{
-	//		sInd = y * xSize + x;
-	//		spr.setTextureRect(ts_currShards->GetSubRect(sInd));
-	//		int shardT = (sInd + (xSize * ySize) * w);
-	//		if (shardT >= SHARD_Count)
-	//		{
-	//			gs->Set(x, y + ySize * w, spr, "---"); //need a way to set the names later
-	//		}
-	//		else
-	//		{
-	//			gs->Set(x, y + ySize * w, spr, Shard::GetShardString((ShardType)shardT));
-	//		}
+void CreateGatesModeUI::SetShard(int world, int localIndex)
+{
+	int ind = world * (shardNumX * shardNumY) + localIndex;
+	ChooseShardType(shardGateTypeRects[ind]);
+}
 
-	//	}
-	//}
+void CreateGatesModeUI::SetFromGateInfo(GateInfo *gi)
+{
+	switch (gi->type)
+	{
+	case Gate::KEYGATE:
+		gateCategoryDropdown->SetSelectedIndex(0);
+		//set key num text based on gate params
+		break;
+	case Gate::SHARD:
+		gateCategoryDropdown->SetSelectedIndex(1);
+		SetShard(gi->shardWorld, gi->shardIndex);
+		break;
+	case Gate::CRAWLER_UNLOCK:
+		gateCategoryDropdown->SetSelectedIndex(2);
+		break;
+	case Gate::SECRET:
+		gateCategoryDropdown->SetSelectedIndex(3);
+		break;
+	case Gate::BLACK:
+		gateCategoryDropdown->SetSelectedIndex(5);
+		break;
+	}
+
+	UpdateCategoryDropdownType();
+}
+
+void CreateGatesModeUI::SetGateInfo(GateInfo *gi)
+{
+	int gateCat = GetGateCategory();
+	switch (gateCat)
+	{
+	case 0:
+		gi->type = Gate::GateType::KEYGATE;
+		break;
+	case 1:
+		gi->type = Gate::GateType::SHARD;
+		gi->SetShard(currShardWorld, currShardLocalIndex);
+		break;
+	case 2:
+		gi->type = Gate::GateType::CRAWLER_UNLOCK;
+		break;
+	case 3:
+		gi->type = Gate::GateType::SECRET;
+		break;
+	case 4:
+		gi->type = Gate::GateType::BLACK;
+		break;
+	case 5:
+		gi->type = Gate::GateType::BLACK;
+		break;
+	}
+}
+
+void CreateGatesModeUI::CreateBossGateTypePanel()
+{
+	bossGateTypePanel = new Panel("bosstype", 600, 600, this, true);
+	Color c(100, 100, 100);
+	c.a = 180;
+	bossGateTypePanel->SetColor(c);
+	bossGateTypePanel->SetPosition(popupPanelPos);
+
+	int numBosses = 7;
+
+	bossGateTypePanel->ReserveImageRects(numBosses);
+	bossGateTypeRects.resize(numBosses);
+	for (int i = 0; i < numBosses; ++i)
+	{
+		bossGateTypeRects[i] =
+			bossGateTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_GATEBOSSLIBRARY,
+				Vector2f(0, i * gateGridSize),
+				ts_bossGateTypes, i, gateGridSize);
+		bossGateTypeRects[i]->Init();
+		bossGateTypeRects[i]->SetShown(true);
+	}
+}
+
+void CreateGatesModeUI::CreatePickupGateTypePanel()
+{
+	pickupGateTypePanel = new Panel("pickuptype", 600, 600, this, true);
+	Color c(100, 100, 100);
+	c.a = 180;
+
+	pickupGateTypePanel->SetColor(c);
+	pickupGateTypePanel->SetPosition(popupPanelPos);
+
+	int numPickups = 8;
+
+	pickupGateTypePanel->ReserveImageRects(numPickups);
+	pickupGateTypeRects.resize(numPickups);
+	for (int i = 0; i < numPickups; ++i)
+	{
+		pickupGateTypeRects[i] =
+			pickupGateTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_GATEPICKUPLIBRARY,
+				Vector2f(0, i * gateGridSize),
+				ts_pickupGateTypes, i, gateGridSize);
+		pickupGateTypeRects[i]->Init();
+		pickupGateTypeRects[i]->SetShown(true);
+	}
 }
 
 void CreateGatesModeUI::ExpandShardLibrary()
@@ -174,11 +239,14 @@ void CreateGatesModeUI::ChooseShardType(ImageChooseRect *icRect)
 {
 	currGateTypeRects[1]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
-	int x = icRect->pos.x / shardGridSize;
-	int y = icRect->pos.y / shardGridSize;
+	int x = icRect->pos.x / gateGridSize;
+	int y = icRect->pos.y / gateGridSize;
 
 	int world = y / shardNumY;
 	int localIndex = (y % shardNumY) * shardNumX + x;
+
+	currShardWorld = world;
+	currShardLocalIndex = localIndex;
 	//edit->modifyGate->SetShard(world, localIndex);
 
 	/*Action * action = new ModifyGateAction(modifyGate, gateResult);
@@ -202,12 +270,26 @@ void CreateGatesModeUI::ChooseShardType(ImageChooseRect *icRect)
 
 void CreateGatesModeUI::ChooseBossGateType(ImageChooseRect *icRect)
 {
+	currGateTypeRects[2]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
+	int x = icRect->pos.x / gateGridSize;
+	int y = icRect->pos.y / gateGridSize;
+
+	currBossGate = y;
+
+	edit->RemoveActivePanel(bossGateTypePanel);
 }
 
 void CreateGatesModeUI::ChoosePickupGateType(ImageChooseRect *icRect)
 {
+	currGateTypeRects[4]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
+	int x = icRect->pos.x / gateGridSize;
+	int y = icRect->pos.y / gateGridSize;
+	
+	currPickupGate = y;
+
+	edit->RemoveActivePanel(pickupGateTypePanel);
 }
 
 CreateGatesModeUI::~CreateGatesModeUI()
@@ -235,6 +317,16 @@ void CreateGatesModeUI::SetShown(bool s)
 	{
 		edit->RemoveActivePanel(mainPanel);
 	}
+}
+
+void CreateGatesModeUI::UpdateCategoryDropdownType()
+{
+	for (int i = 0; i < currGateTypeRects.size(); ++i)
+	{
+		currGateTypeRects[i]->SetShown(false);
+	}
+
+	currGateTypeRects[gateCategoryDropdown->selectedIndex]->SetShown(true);
 }
 
 void CreateGatesModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
@@ -328,17 +420,13 @@ void CreateGatesModeUI::SliderCallback(Slider *slider, const std::string & e)
 
 }
 
+
+
 void CreateGatesModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)
 {
 	if (dropdown == gateCategoryDropdown)
 	{
-		int selectedIndex = dropdown->selectedIndex;
-		for (int i = 0; i < currGateTypeRects.size(); ++i)
-		{
-			currGateTypeRects[i]->SetShown(false);
-		}
-
-		currGateTypeRects[selectedIndex]->SetShown(true);
+		UpdateCategoryDropdownType();
 	}
 }
 

@@ -28,6 +28,7 @@ struct Slider;
 struct Dropdown;
 struct TextBox;
 struct ChooseRect;
+struct GateInfo;
 
 struct UIMouse
 {
@@ -297,17 +298,30 @@ struct CreateGatesModeUI : GUIHandler
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
-
+	void SetGateInfo(GateInfo *gi);
+	void SetFromGateInfo(GateInfo *gi);
 	int shardNumX;
 	int shardNumY;
+	void SetShard(int world, int localIndex);
+
+	int currBossGate;
+	int currPickupGate;
+
+	int currShardWorld;
+	int currShardLocalIndex;
+
+	sf::Vector2f currGateTypeRectPos;
+	sf::Vector2i popupPanelPos;
 
 	int GetGateCategory();
-	//int GetCurrGateType();
 	void CreateShardTypePanel();
+	void CreateBossGateTypePanel();
+	void CreatePickupGateTypePanel();
 	Tileset *ts_shards[7];
-	int shardGridSize;
 
 	Tileset *ts_gateCategories;
+	Tileset *ts_bossGateTypes;
+	Tileset *ts_pickupGateTypes;
 	bool show;
 	EditSession *edit;
 	Panel *mainPanel;
@@ -315,6 +329,8 @@ struct CreateGatesModeUI : GUIHandler
 	Panel *shardGateTypePanel;
 	Panel *pickupGateTypePanel;
 	Panel *bossGateTypePanel;
+
+	void UpdateCategoryDropdownType();
 
 	TextBox *numKeysTextbox;
 	Button *deleteGateButton;
