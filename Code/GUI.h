@@ -142,6 +142,8 @@ struct ChooseRect : PanelMember
 		I_DECORLIBRARY,
 		I_TERRAINSEARCH,
 		I_TERRAINLIBRARY,
+		I_GATESEARCH,
+		I_SHARDLIBRARY,
 	};
 
 	sf::Text nameText;
@@ -273,6 +275,51 @@ struct PanelSlider : PanelUpdater
 	int normalDuration;
 };
 
+struct CreateGatesModeUI : GUIHandler
+{
+	CreateGatesModeUI();
+	~CreateGatesModeUI();
+	void SetShown(bool s);
+	void ExpandShardLibrary();
+	void ChooseShardType(ImageChooseRect *icRect);
+	//void SetCurrMatType( )
+	void ButtonCallback(Button *b, const std::string & e);
+	void TextBoxCallback(TextBox *tb, const std::string & e);
+	void GridSelectorCallback(GridSelector *gs, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	void SliderCallback(Slider *slider, const std::string & e);
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+
+	int GetGateCategory();
+	//int GetCurrGateType();
+	void CreateShardTypePanel();
+	Tileset *ts_shards[7];
+	int shardGridSize;
+
+	Tileset *ts_gateCategories;
+	bool show;
+	EditSession *edit;
+	Panel *mainPanel;
+	//Panel *gateTypePanel;
+	Panel *shardGateTypePanel;
+	Panel *pickupGateTypePanel;
+	Panel *bossGateTypePanel;
+
+	TextBox *numKeysTextbox;
+	Button *completeGateButton;
+	Button *deleteGateButton;
+
+	Dropdown *gateCategoryDropdown;
+
+	std::vector<ImageChooseRect*> currGateTypeRects;
+
+	std::vector<ImageChooseRect*> shardGateTypeRects;
+	std::vector<ImageChooseRect*> pickupGateTypeRects;
+	std::vector<ImageChooseRect*> bossGateTypeRects;
+	int gateGridSize;
+};
 
 struct CreateTerrainModeUI : GUIHandler
 {

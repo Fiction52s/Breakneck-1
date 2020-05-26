@@ -2571,6 +2571,7 @@ int EditSession::Run()
 	createEnemyModeUI = new CreateEnemyModeUI();
 	createDecorModeUI = new CreateDecorModeUI();
 	createTerrainModeUI = new CreateTerrainModeUI();
+	createGatesModeUI = new CreateGatesModeUI();
 	//enemyChooser = new EnemyChooser(types, enemySelectPanel);
 	//enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
 
@@ -9477,6 +9478,9 @@ void EditSession::SetMode(Emode m)
 	{
 	case CREATE_TERRAIN:
 		createTerrainModeUI->SetShown(true);
+		break;
+	case CREATE_GATES:
+		createGatesModeUI->SetShown(true);
 		break;
 	case CREATE_ENEMY:
 		trackingEnemyParams = NULL;
