@@ -3499,6 +3499,16 @@ void EditSession::RemovePointFromPolygonInProgress()
 	polygonInProgress->RemoveLastPoint();
 }
 
+void EditSession::ClearPolygonInProgress()
+{
+	polygonInProgress->ClearPoints();
+}
+
+void EditSession::ClearRailInProgress()
+{
+	railInProgress->ClearPoints();
+}
+
 void EditSession::RemovePointFromRailInProgress()
 {
 	int numP = railInProgress->GetNumPoints();

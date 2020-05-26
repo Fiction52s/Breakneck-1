@@ -17,6 +17,9 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
 	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(50, 10), false);
 	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
+	completeButton = mainPanel->AddButton("complete", Vector2i(200, 10), Vector2f( 80, 80 ), "complete");
+	removePointButton = mainPanel->AddButton("remove", Vector2i(300, 10), Vector2f(80, 80), "remove");
+	removeAllPointsButton = mainPanel->AddButton("removeall", Vector2i(400, 10), Vector2f(80, 80), "remove all");
 }
 
 bool CreateTerrainModeUI::IsGridOn()
@@ -51,7 +54,19 @@ CreateTerrainModeUI::~CreateTerrainModeUI()
 
 void CreateTerrainModeUI::ButtonCallback(Button *b, const std::string & e)
 {
-
+	if (b == completeButton)
+	{
+		edit->ExecuteTerrainCompletion();
+	}
+	else if (b == removePointButton)
+	{
+		edit->removeProgressPointWaiter->Reset();
+		edit->RemovePointFromPolygonInProgress();
+	}
+	else if (b == removeAllPointsButton)
+	{
+		edit->ClearPolygonInProgress();
+	}
 }
 
 void CreateTerrainModeUI::TextBoxCallback(TextBox *tb, const std::string & e)

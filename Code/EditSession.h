@@ -722,7 +722,9 @@ struct EditSession : GUIHandler, Session
 	void RedoMostRecentUndoneAction();
 
 	void RemovePointFromPolygonInProgress();
+	void ClearPolygonInProgress();
 	void RemovePointFromRailInProgress();
+	void ClearRailInProgress();
 
 	bool AnchorSelectedEnemies();
 

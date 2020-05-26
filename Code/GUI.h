@@ -287,6 +287,9 @@ struct CreateTerrainModeUI : GUIHandler
 	CheckBox *gridCheckbox;
 	CheckBox *snapPointsCheckbox;
 	TextBox *gridSizeTextbox;
+	Button *completeButton;
+	Button *removePointButton;
+	Button *removeAllPointsButton;
 };
 
 struct CreateEnemyModeUI
