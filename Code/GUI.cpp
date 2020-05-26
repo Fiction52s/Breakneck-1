@@ -788,8 +788,9 @@ Dropdown::Dropdown(const std::string &n, sf::Vector2i &p_pos,
 	sf::Vector2i &p_size, sf::Font &f,
 	const std::vector<std::string> &p_options, int p_defaultIndex, Panel *p)
 	:PanelMember( p ), pos(p_pos), clickedDown(false), characterHeight(size.y- 4), size(p_size), name(n),
-	myFont( f ), defaultIndex( p_defaultIndex ), expanded(false), selectedIndex( p_defaultIndex )
+	myFont( f ), defaultIndex( p_defaultIndex ), expanded(false)
 {
+	selectedIndex = -1;
 	SetOptions(p_options);
 	
 }
@@ -815,7 +816,7 @@ void Dropdown::SetOptions(const std::vector<std::string> &p_options)
 	SetRectTopLeft(mainRect, size.x, size.y, Vector2f(pos));
 	SetRectColor(mainRect, Color(Color::Black));
 
-	selectedText.setString( options[defaultIndex] );
+	SetSelectedIndex(defaultIndex);
 	selectedText.setFont(myFont);
 	selectedText.setFillColor(Color::White);
 	selectedText.setCharacterSize(characterHeight);
@@ -871,10 +872,20 @@ void Dropdown::Draw(sf::RenderTarget *target)
 	target->draw(text);*/
 }
 
+void Dropdown::SetSelectedIndex(int ind)
+{
+	if (ind != selectedIndex)
+	{
+		selectedIndex = ind;
+		selectedText.setString(options[selectedIndex]);
+	}
+}
+
 bool Dropdown::IsMouseOnOption(int ind, Vector2f &point )
 {
 	return QuadContainsPoint(dropdownRects + ind * 4, point );
 }
+
 
 bool Dropdown::MouseUpdate()
 {
@@ -920,8 +931,7 @@ bool Dropdown::MouseUpdate()
 		{
 			if (IsMouseOnOption(i, point ))
 			{
-				selectedIndex = i;
-				selectedText.setString(options[selectedIndex]);
+				SetSelectedIndex(i);
 				expanded = false;
 				clickedDown = false;
 				panel->SendEvent(this, "selected");
@@ -947,8 +957,7 @@ bool Dropdown::MouseUpdate()
 			{
 				if (IsMouseOnOption(i, point))
 				{
-					selectedIndex = i;
-					selectedText.setString(options[selectedIndex]);
+					SetSelectedIndex(i);
 					expanded = false;
 					clickedDown = true;
 					panel->SendEvent(this, "selected");

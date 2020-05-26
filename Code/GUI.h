@@ -279,10 +279,6 @@ struct CreateTerrainModeUI : GUIHandler
 	CreateTerrainModeUI();
 	~CreateTerrainModeUI();
 	void SetShown(bool s);
-	bool show;
-	EditSession *edit;
-	Panel *mainPanel;
-	Panel *matTypePanel;
 	bool IsGridOn();
 	void FlipGrid();
 	bool IsSnapPointsOn();
@@ -300,7 +296,21 @@ struct CreateTerrainModeUI : GUIHandler
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	int GetTerrainLayer();
-	int terrainGridSize;
+
+	
+	int GetCurrTerrainTool();
+	void SetTerrainTool(int t);
+	void SetTempTerrainTool(int t);
+	void RevertTerrainTool();
+	int realTerrainTool;
+
+
+
+
+	bool show;
+	EditSession *edit;
+	Panel *mainPanel;
+	Panel *matTypePanel;
 
 	CheckBox *gridCheckbox;
 	CheckBox *snapPointsCheckbox;
@@ -313,6 +323,7 @@ struct CreateTerrainModeUI : GUIHandler
 
 	std::vector<ImageChooseRect*> currMatRects;
 	std::vector<ImageChooseRect*> matTypeRects;
+	int terrainGridSize;
 };
 
 struct CreateEnemyModeUI
@@ -496,6 +507,7 @@ struct Dropdown : PanelMember
 	void Draw(sf::RenderTarget *rt);
 	bool MouseUpdate();
 	void Deactivate();
+	void SetSelectedIndex(int ind);
 	sf::Vector2i pos;
 	sf::Vector2f size;
 	std::string name;

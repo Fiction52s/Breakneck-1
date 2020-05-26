@@ -144,6 +144,13 @@ struct EditSession : GUIHandler, Session
 		TOOL_BOX
 	};
 
+	enum TerrainTool : int
+	{
+		TERRAINTOOL_ADD,
+		TERRAINTOOL_SUBTRACT,
+		TERRAINTOOL_SETINVERSE,
+	};
+
 	sf::Vector2f startBoxPos;
 	sf::Vertex boxToolQuad[4];
 	sf::Color boxToolColor;

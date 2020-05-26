@@ -32,7 +32,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	std::vector<string> layerOptions = { "Terrain", "Water", "Pickup" };
 	terrainLayerDropdown = mainPanel->AddDropdown("layerdrop", Vector2i(750, 10), Vector2i(200, 28), layerOptions, 0);
 
-	
+	realTerrainTool = 0;
 
 	terrainGridSize = 64;
 
@@ -100,6 +100,28 @@ void CreateTerrainModeUI::ChooseMatType(ImageChooseRect *icRect)
 
 	edit->RemoveActivePanel(matTypePanel);
 	edit->justCompletedPolyWithClick = true;
+}
+
+
+int CreateTerrainModeUI::GetCurrTerrainTool()
+{
+	return terrainActionDropdown->selectedIndex;
+}
+
+void CreateTerrainModeUI::SetTerrainTool(int t)
+{
+	terrainActionDropdown->SetSelectedIndex(t);
+	realTerrainTool = t;
+}
+
+void CreateTerrainModeUI::SetTempTerrainTool(int t)
+{
+	terrainActionDropdown->SetSelectedIndex(t);
+}
+
+void CreateTerrainModeUI::RevertTerrainTool()
+{
+	terrainActionDropdown->SetSelectedIndex(realTerrainTool);
 }
 
 CreateTerrainModeUI::~CreateTerrainModeUI()
@@ -230,6 +252,11 @@ void CreateTerrainModeUI::DropdownCallback(Dropdown *dropdown, const std::string
 		}
 
 		currMatRects[selectedIndex]->SetShown(true);
+	}
+	else if (dropdown == terrainActionDropdown)
+	{
+		int selectedIndex = dropdown->selectedIndex;
+		realTerrainTool = selectedIndex;
 	}
 }
 

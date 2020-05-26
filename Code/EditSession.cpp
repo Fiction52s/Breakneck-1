@@ -7141,7 +7141,8 @@ bool EditSession::ExecuteTerrainCompletion()
 	list<PolyPtr> intersectingPolys;
 	//list<PolyPtr> containedPolys;
 
-	bool tryMakeInverse = IsKeyPressed(Keyboard::LAlt);
+	bool tryMakeInverse = 
+		createTerrainModeUI->GetCurrTerrainTool() == TERRAINTOOL_SETINVERSE;//IsKeyPressed(Keyboard::LAlt);
 
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
 	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
@@ -7183,7 +7184,8 @@ bool EditSession::ExecuteTerrainCompletion()
 			list<PolyPtr> inProgress;
 			inProgress.push_back(polygonInProgress);
 
-			bool add = !(IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift));
+			bool add = 
+				createTerrainModeUI->GetCurrTerrainTool() == TERRAINTOOL_ADD;//!(IsKeyPressed(Keyboard::LShift) || IsKeyPressed(Keyboard::RShift));
 			bool success = false;
 			if (add)
 			{
@@ -11245,12 +11247,12 @@ void EditSession::CreateTerrainModeHandleEvent()
 			removeProgressPointWaiter->Reset();
 			RemovePointFromPolygonInProgress();
 		}
-		else if (ev.key.code == sf::Keyboard::E)
-		{
-			AddActivePanel(terrainSelectorPopup);
-			tempGridResult = "not set";
-			//GridSelectPop("terraintypeselect");
-		}
+		//else if (ev.key.code == sf::Keyboard::E)
+		//{
+		//	AddActivePanel(terrainSelectorPopup);
+		//	tempGridResult = "not set";
+		//	//GridSelectPop("terraintypeselect");
+		//}
 		else if (ev.key.code == sf::Keyboard::R)
 		{
 			SetMode(CREATE_RAILS);
@@ -11291,6 +11293,22 @@ void EditSession::CreateTerrainModeHandleEvent()
 		else if (ev.key.code == Keyboard::F)
 		{
 			createTerrainModeUI->FlipSnapPoints();
+		}
+		else if (ev.key.code == Keyboard::A)
+		{
+			createTerrainModeUI->SetTerrainTool(TERRAINTOOL_ADD);
+		}
+		else if (ev.key.code == Keyboard::S)
+		{
+			createTerrainModeUI->SetTerrainTool(TERRAINTOOL_SUBTRACT);
+		}
+		else if (ev.key.code == Keyboard::I)
+		{
+			createTerrainModeUI->SetTerrainTool(TERRAINTOOL_SETINVERSE);
+		}
+		else if (ev.key.code == Keyboard::E)
+		{
+			createTerrainModeUI->ExpandTerrainLibrary();
 		}
 		else if (ev.key.code == Keyboard::H)
 		{
@@ -11974,18 +11992,18 @@ void EditSession::CreateTerrainModeUpdate()
 			TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
 			showPoints = true;
 		}
-		/*if (IsKeyPressed(Keyboard::G))
-		{
-			SnapPointToGraph(testPoint, graph->graphSpacing);
-			createTerrainModeUI->SetGrid(true);
-			showGraph = true;
-		}
-		else if (IsKeyPressed(Keyboard::F))
-		{
-			SelectPtr obj;
-			TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
 
-			showPoints = true;
+		/*if (IsKeyPressed(sf::Keyboard::LAlt))
+		{
+			createTerrainModeUI->SetTempTerrainTool(TERRAINTOOL_SETINVERSE);
+		}
+		else if (IsKeyPressed(sf::Keyboard::LControl))
+		{
+			createTerrainModeUI->SetTempTerrainTool(TERRAINTOOL_SUBTRACT);
+		}
+		else
+		{
+			createTerrainModeUI->RevertTerrainTool();
 		}*/
 	}
 
