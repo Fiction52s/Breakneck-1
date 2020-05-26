@@ -25,7 +25,6 @@ CreateGatesModeUI::CreateGatesModeUI()
 	bossGateTypePanel->SetColor(c);
 
 	numKeysTextbox = mainPanel->AddTextBox("numkeys", Vector2i(100, 10), 50, 5, "");
-	completeGateButton = mainPanel->AddButton("complete", Vector2i(200, 10), Vector2f(80, 80), "complete");
 	deleteGateButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete");
 
 	std::vector<string> gateCatOptions = { "Key", "Shard", "Boss", "Secret", "Pickup", "Black" };
@@ -59,8 +58,8 @@ CreateGatesModeUI::CreateGatesModeUI()
 
 void CreateGatesModeUI::CreateShardTypePanel()
 {
-	int xSize = 11;
-	int ySize = 2;
+	shardNumX = 11;
+	shardNumY = 2;
 
 	shardGridSize = 64;
 
@@ -90,7 +89,7 @@ void CreateGatesModeUI::CreateShardTypePanel()
 	ts_shards[5] = edit->GetSizedTileset("Shard/shards_w2_48x48.png");
 	ts_shards[6] = edit->GetSizedTileset("Shard/shards_w2_48x48.png");*/
 
-	int totalShards = xSize * ySize * 7;
+	int totalShards = shardNumX * shardNumY * 7;
 
 	Tileset *ts_currShards;
 	int sInd = 0;
@@ -104,14 +103,14 @@ void CreateGatesModeUI::CreateShardTypePanel()
 		if (ts_currShards == NULL)
 			continue;
 		//spr.setTexture(*ts_currShards->texture);
-		for (int y = 0; y < ySize; ++y)
+		for (int y = 0; y < shardNumY; ++y)
 		{
-			for (int x = 0; x < xSize; ++x)
+			for (int x = 0; x < shardNumX; ++x)
 			{
 				//ts_currShards->GetSubRect(sInd);
-				sInd = y * xSize + x;
+				sInd = y * shardNumX + x;
 				//spr.setTextureRect(ts_currShards->GetSubRect(sInd));
-				int shardT = (sInd + (xSize * ySize) * w);
+				int shardT = (sInd + (shardNumX * shardNumY) * w);
 				if (shardT >= SHARD_Count)
 				{
 					shardGateTypeRects[shardT] = NULL;
@@ -161,19 +160,54 @@ void CreateGatesModeUI::ExpandShardLibrary()
 	edit->AddActivePanel(shardGateTypePanel);
 }
 
+void CreateGatesModeUI::ExpandBossLibrary()
+{
+	edit->AddActivePanel(bossGateTypePanel);
+}
+
+void CreateGatesModeUI::ExpandPickupLibrary()
+{
+	edit->AddActivePanel(pickupGateTypePanel);
+}
+
 void CreateGatesModeUI::ChooseShardType(ImageChooseRect *icRect)
 {
-	//currGateTypeRects[layerIndex]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 	currGateTypeRects[1]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
 	int x = icRect->pos.x / shardGridSize;
 	int y = icRect->pos.y / shardGridSize;
 
-	//edit->currTerrainWorld[layerIndex] = world;
-	//edit->currTerrainVar[layerIndex] = variation;
+	int world = y / shardNumY;
+	int localIndex = (y % shardNumY) * shardNumX + x;
+	//edit->modifyGate->SetShard(world, localIndex);
+
+	/*Action * action = new ModifyGateAction(modifyGate, gateResult);
+	action->Perform();
+
+	if (gateResult == "shard")
+	{
+		GridSelectPop("shardselector");
+
+		int sw, si;
+		GetShardWorldAndIndex(tempGridX, tempGridY, sw, si);
+		modifyGate->SetShard(sw, si);
+	}
+
+
+	AddDoneAction(action);
+	modifyGate = NULL;*/
 
 	edit->RemoveActivePanel(shardGateTypePanel);
-	//edit->justCompletedPolyWithClick = true;
+}
+
+void CreateGatesModeUI::ChooseBossGateType(ImageChooseRect *icRect)
+{
+
+}
+
+void CreateGatesModeUI::ChoosePickupGateType(ImageChooseRect *icRect)
+{
+
 }
 
 CreateGatesModeUI::~CreateGatesModeUI()
@@ -211,13 +245,36 @@ void CreateGatesModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
 		if (icRect != NULL)
 		{
-			if (icRect->rectIdentity == ChooseRect::I_GATESEARCH && GetGateCategory() == 1)
+			if (icRect->rectIdentity == ChooseRect::I_GATESEARCH )
 			{
-				ExpandShardLibrary();
+				if (eventType == ChooseRect::E_LEFTCLICKED)
+				{
+					int cat = GetGateCategory();
+					switch (cat)
+					{
+					case 1:
+						ExpandShardLibrary();
+						break;
+					case 2:
+						ExpandBossLibrary();
+						break;
+					case 4:
+						ExpandPickupLibrary();
+						break;
+					}
+				}
 			}
 			else if (icRect->rectIdentity == ChooseRect::I_SHARDLIBRARY)
 			{
 				ChooseShardType(icRect);
+			}
+			else if (icRect->rectIdentity == ChooseRect::I_GATEBOSSLIBRARY)
+			{
+				ChooseBossGateType(icRect);
+			}
+			else if (icRect->rectIdentity == ChooseRect::I_GATEPICKUPLIBRARY)
+			{
+				ChoosePickupGateType(icRect);
 			}
 		}
 	}

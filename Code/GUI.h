@@ -144,6 +144,8 @@ struct ChooseRect : PanelMember
 		I_TERRAINLIBRARY,
 		I_GATESEARCH,
 		I_SHARDLIBRARY,
+		I_GATEBOSSLIBRARY,
+		I_GATEPICKUPLIBRARY,
 	};
 
 	sf::Text nameText;
@@ -281,7 +283,11 @@ struct CreateGatesModeUI : GUIHandler
 	~CreateGatesModeUI();
 	void SetShown(bool s);
 	void ExpandShardLibrary();
+	void ExpandBossLibrary();
+	void ExpandPickupLibrary();
 	void ChooseShardType(ImageChooseRect *icRect);
+	void ChooseBossGateType(ImageChooseRect *icRect);
+	void ChoosePickupGateType(ImageChooseRect *icRect);
 	//void SetCurrMatType( )
 	void ButtonCallback(Button *b, const std::string & e);
 	void TextBoxCallback(TextBox *tb, const std::string & e);
@@ -291,6 +297,9 @@ struct CreateGatesModeUI : GUIHandler
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
+
+	int shardNumX;
+	int shardNumY;
 
 	int GetGateCategory();
 	//int GetCurrGateType();
@@ -308,7 +317,6 @@ struct CreateGatesModeUI : GUIHandler
 	Panel *bossGateTypePanel;
 
 	TextBox *numKeysTextbox;
-	Button *completeGateButton;
 	Button *deleteGateButton;
 
 	Dropdown *gateCategoryDropdown;
