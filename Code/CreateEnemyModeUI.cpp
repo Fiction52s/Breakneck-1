@@ -827,16 +827,16 @@ void ImageChooseRect::SetImage(Tileset *p_ts, int p_index)
 }
 
 ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector2f &p_pos, Tileset *p_ts,
-	int p_tileIndex, Panel *p )
-	:ChooseRect( ident, ChooseRectType::IMAGE, v, 100, p_pos, p )
+	int p_tileIndex, int bSize, Panel *p )
+	:ChooseRect( ident, ChooseRectType::IMAGE, v, bSize, p_pos, p )
 {
 	ts = NULL;
 	SetImage(p_ts, p_tileIndex);
 }
 
 ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v,
-	sf::Vector2f &p_pos, Tileset *p_ts, const sf::IntRect &subRect, Panel *p)
-	:ChooseRect(ident, ChooseRectType::IMAGE, v, 100, p_pos, p)
+	sf::Vector2f &p_pos, Tileset *p_ts, const sf::IntRect &subRect, int bSize, Panel *p)
+	:ChooseRect(ident, ChooseRectType::IMAGE, v, bSize, p_pos, p)
 {
 	ts = NULL;
 	SetImage(p_ts, subRect);

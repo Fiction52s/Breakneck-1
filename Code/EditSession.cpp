@@ -10169,6 +10169,7 @@ Vector2i EditSession::GetPixelPos()
 Tileset *EditSession::GetMatTileset(int tWorld, int tVar)
 {
 	int ind = tWorld * MAX_TERRAINTEX_PER_WORLD + tVar;
+
 	return ts_polyShaders[ind];
 }
 

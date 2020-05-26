@@ -802,23 +802,23 @@ EnemyChooseRect * Panel::AddEnemyRect(
 }
 
 ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident, 
-	sf::Vector2f &position, Tileset *ts, int tileIndex)
+	sf::Vector2f &position, Tileset *ts, int tileIndex, int bSize)
 {
 	assert(imageChooseRects.size() < reservedImageRectCount);
 	ImageChooseRect *icRect = new ImageChooseRect(ident,
 		imageChooseRectQuads + imageChooseRects.size() * 4,
-		position, ts, tileIndex, this);
+		position, ts, tileIndex, bSize, this);
 	imageChooseRects.push_back(icRect);
 	return icRect;
 }
 
 ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident,
-	sf::Vector2f &position, Tileset *ts, const sf::IntRect &subRect )
+	sf::Vector2f &position, Tileset *ts, const sf::IntRect &subRect, int bSize )
 {
 	assert(imageChooseRects.size() < reservedImageRectCount);
 	ImageChooseRect *icRect = new ImageChooseRect(ident,
 		imageChooseRectQuads + imageChooseRects.size() * 4,
-		position, ts, subRect, this);
+		position, ts, subRect, bSize, this);
 	imageChooseRects.push_back(icRect);
 	return icRect;
 }

@@ -210,10 +210,11 @@ struct ImageChooseRect : ChooseRect
 {
 	ImageChooseRect( ChooseRectIdentity ident, 
 		sf::Vertex *v, sf::Vector2f &position,
-		Tileset *ts, int tileIndex, Panel *p );
+		Tileset *ts, int tileIndex, int boxSize, Panel *p );
 	ImageChooseRect(ChooseRectIdentity ident,
 		sf::Vertex *v, sf::Vector2f &position,
-		Tileset *ts, const sf::IntRect &subRect, Panel *p);
+		Tileset *ts, const sf::IntRect &subRect, int boxSize, 
+		Panel *p);
 
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
@@ -277,6 +278,7 @@ struct CreateTerrainModeUI : GUIHandler
 	bool show;
 	EditSession *edit;
 	Panel *mainPanel;
+	Panel *matTypePanel;
 	bool IsGridOn();
 	void FlipGrid();
 	bool IsSnapPointsOn();
@@ -299,6 +301,7 @@ struct CreateTerrainModeUI : GUIHandler
 	Dropdown *terrainLayerDropdown;
 
 	std::vector<ImageChooseRect*> currMatRects;
+	std::vector<ImageChooseRect*> matTypeRects;
 };
 
 struct CreateEnemyModeUI
@@ -558,9 +561,9 @@ struct Panel
 		ActorType * type,
 		int level);
 	ImageChooseRect * AddImageRect(ChooseRect::ChooseRectIdentity ident,
-		sf::Vector2f &position, Tileset *ts, int tileIndex);
+		sf::Vector2f &position, Tileset *ts, int tileIndex, int bSize = 100 );
 	ImageChooseRect * AddImageRect(ChooseRect::ChooseRectIdentity ident,
-		sf::Vector2f &position, Tileset *ts, const sf::IntRect &rect );
+		sf::Vector2f &position, Tileset *ts, const sf::IntRect &rect, int bSize = 100 );
 	void SetPosition(const sf::Vector2i &p_pos);
 	void SetCenterPos(const sf::Vector2i &p_pos);
 	void HandleEvent(sf::Event ev);
