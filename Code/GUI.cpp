@@ -440,6 +440,7 @@ bool Dropdown::MouseUpdate()
 				selectedText.setString(options[selectedIndex]);
 				expanded = false;
 				clickedDown = false;
+				panel->SendEvent(this, "selected");
 				return true;
 			}
 		}
@@ -466,6 +467,7 @@ bool Dropdown::MouseUpdate()
 					selectedText.setString(options[selectedIndex]);
 					expanded = false;
 					clickedDown = true;
+					panel->SendEvent(this, "selected");
 					return true;
 				}
 			}
@@ -749,6 +751,16 @@ void Panel::SendEvent( CheckBox *cb, const std::string & e )
 	handler->CheckBoxCallback( cb, e );
 }
 
+void Panel::SendEvent(Dropdown *drop, const std::string & e)
+{
+	handler->DropdownCallback(drop, e);
+}
+
+void Panel::SendEvent(Slider *slide, const std::string & e)
+{
+	handler->SliderCallback(slide, e);
+}
+
 void Panel::HandleEvent(sf::Event ev)
 {
 	switch (ev.type)
@@ -796,6 +808,17 @@ ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident,
 	ImageChooseRect *icRect = new ImageChooseRect(ident,
 		imageChooseRectQuads + imageChooseRects.size() * 4,
 		position, ts, tileIndex, this);
+	imageChooseRects.push_back(icRect);
+	return icRect;
+}
+
+ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident,
+	sf::Vector2f &position, Tileset *ts, const sf::IntRect &subRect )
+{
+	assert(imageChooseRects.size() < reservedImageRectCount);
+	ImageChooseRect *icRect = new ImageChooseRect(ident,
+		imageChooseRectQuads + imageChooseRects.size() * 4,
+		position, ts, subRect, this);
 	imageChooseRects.push_back(icRect);
 	return icRect;
 }

@@ -20,6 +20,32 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	completeButton = mainPanel->AddButton("complete", Vector2i(200, 10), Vector2f( 80, 80 ), "complete");
 	removePointButton = mainPanel->AddButton("remove", Vector2i(300, 10), Vector2f(80, 80), "remove");
 	removeAllPointsButton = mainPanel->AddButton("removeall", Vector2i(400, 10), Vector2f(80, 80), "remove all");
+
+	std::vector<string> actionOptions = { "Add", "Subtract", "Set Inverse Poly" };
+	terrainActionDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(500, 10), Vector2i(200, 28), actionOptions, 0);
+
+	std::vector<string> layerOptions = { "Terrain", "Water", "Pickup" };
+	terrainLayerDropdown = mainPanel->AddDropdown("layerdrop", Vector2i(750, 10), Vector2i(200, 28), layerOptions, 0);
+
+	
+	int numTerrainLayers = EditSession::TERRAINLAYER_Count;
+	currMatRects.resize(numTerrainLayers);
+	mainPanel->ReserveImageRects(numTerrainLayers);
+	for (int i = 0; i < numTerrainLayers; ++i)
+	{
+		currMatRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINSEARCH,
+			Vector2f(terrainLayerDropdown->pos)
+			+ Vector2f(terrainLayerDropdown->size.x + 20, 0),NULL, 0 );
+		currMatRects[i]->Init();
+		currMatRects[i]->SetImage( edit->GetMatTileset( edit->currTerrainWorld[i],
+			edit->currTerrainVar[i]), IntRect(0, 0, 64, 64));
+		//int ind = edit->currTerrainWorld[EditSession::TERRAINLAYER_NORMAL]
+		//	* MAX_TERRAINTEX_PER_WORLD + currTerrainVar[TERRAINLAYER_NORMAL];
+		//currTerrainTypeSpr.setTexture(*ts_polyShaders[ind]->texture);
+		//currTerrainTypeSpr.setTextureRect(IntRect(0, 0, 64, 64));
+	}
+
+	currMatRects[0]->SetShown(true);
 }
 
 bool CreateTerrainModeUI::IsGridOn()
@@ -102,7 +128,16 @@ void CreateTerrainModeUI::SliderCallback(Slider *slider, const std::string & e)
 
 void CreateTerrainModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)
 {
+	if (dropdown == terrainLayerDropdown)
+	{
+		int selectedIndex = dropdown->selectedIndex;
+		for (int i = 0; i < EditSession::TERRAINLAYER_Count; ++i)
+		{
+			currMatRects[i]->SetShown(false);
+		}
 
+		currMatRects[selectedIndex]->SetShown(true);
+	}
 }
 
 void CreateTerrainModeUI::SetShown(bool s)

@@ -782,6 +782,26 @@ EditorDecorInfo * ImageChooseRect::CreateDecor()
 	return edi;
 }
 
+void ImageChooseRect::SetImage(Tileset *p_ts, const sf::IntRect &subRect)
+{
+	if (p_ts == NULL)
+	{
+		SetShown(false);
+		ts = p_ts;
+		tileIndex = -1;
+		return;
+	}
+
+	ts = p_ts;
+	tileIndex = -1;
+
+	ts->SetSpriteTexture(spr);
+	spr.setTextureRect(subRect);
+	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+
+	SetSize(boxSize);
+}
+
 void ImageChooseRect::SetImage(Tileset *p_ts, int p_index)
 {
 	if (p_ts == NULL)
@@ -802,30 +822,7 @@ void ImageChooseRect::SetImage(Tileset *p_ts, int p_index)
 		ts->SetSubRect(spr, tileIndex);
 		spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
 
-		//actorType->defaultParamsVec[level - 1]->MoveTo(Vector2i(0, 0));
-		//enemy = actorType->defaultParamsVec[level - 1]->myEnemy;
-		//enemy->SetActionEditLoop();
-		//enemy->UpdateFromEditParams(0);
 		SetSize(boxSize);
-
-		/*switch (level)
-		{
-		case 1:
-			idleColor = Color::Blue;
-			break;
-		case 2:
-			idleColor = Color::Cyan;
-			break;
-		case 3:
-			idleColor = Color::Magenta;
-			break;
-		case 4:
-			idleColor = Color::Red;
-			break;
-
-		}
-		idleColor.a = 100;*/
-		//SetRectColor(quad, idleColor);
 	}
 }
 
@@ -835,6 +832,14 @@ ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector
 {
 	ts = NULL;
 	SetImage(p_ts, p_tileIndex);
+}
+
+ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v,
+	sf::Vector2f &p_pos, Tileset *p_ts, const sf::IntRect &subRect, Panel *p)
+	:ChooseRect(ident, ChooseRectType::IMAGE, v, 100, p_pos, p)
+{
+	ts = NULL;
+	SetImage(p_ts, subRect);
 }
 
 void ImageChooseRect::SetSize(float s)

@@ -272,11 +272,7 @@ struct EditSession : GUIHandler, Session
 	const static int TOTAL_TERRAIN_TEXTURES =
 		TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD;
 	
-	sf::Sprite currTerrainTypeSpr;
-	//int currTerrainInd;
-	int currTerrainWorld;
-	int currTerrainVar;
-	void UpdateCurrTerrainType();
+	
 
 	Tool currTool;
 	ImageEditTool currImageTool;
@@ -506,6 +502,14 @@ struct EditSession : GUIHandler, Session
 		TERRAINLAYER_FLY,
 		TERRAINLAYER_Count,
 	};
+
+	int currTerrainWorld[TERRAINLAYER_Count];
+	int currTerrainVar[TERRAINLAYER_Count];
+	Tileset *GetMatTileset(int tWorld, int tVar);
+
+	sf::Sprite currTerrainTypeSpr;
+
+	void UpdateCurrTerrainType();
 
 	//search for terrainlayer_ get layer_
 	std::map<int, int> terrainEditLayerMap;

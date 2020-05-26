@@ -2499,8 +2499,16 @@ int EditSession::Run()
 
 	SetupTerrainTypeSelector();
 
-	currTerrainWorld = 0;
-	currTerrainVar = 0;
+	currTerrainWorld[TERRAINLAYER_NORMAL] = 0;
+	currTerrainVar[TERRAINLAYER_NORMAL] = 0;
+
+	currTerrainWorld[TERRAINLAYER_WATER] = 8;
+	currTerrainVar[TERRAINLAYER_WATER] = 0;
+
+	currTerrainWorld[TERRAINLAYER_FLY] = 9;
+	currTerrainVar[TERRAINLAYER_FLY] = 0;
+
+
 	currTerrainTypeSpr.setPosition(0, 160);
 	UpdateCurrTerrainType();
 
@@ -3119,8 +3127,8 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 				AddDoneAction(modifyAction);
 			}
 
-			currTerrainWorld = tempGridX;
-			currTerrainVar = tempGridY;
+			currTerrainWorld[0] = tempGridX;
+			currTerrainVar[0] = tempGridY;
 			UpdateCurrTerrainType();
 
 			RemoveActivePanel(panel);
@@ -3381,11 +3389,11 @@ void EditSession::HideErrorBar()
 
 int EditSession::GetSpecialTerrainMode()
 {
-	if (currTerrainWorld == 9)
+	if (currTerrainWorld[0] == 9)
 	{
 		return 2;
 	}
-	else if (currTerrainWorld == 8)
+	else if (currTerrainWorld[0] == 8)
 	{
 		return 1;
 	}
@@ -7103,8 +7111,8 @@ bool EditSession::ExecuteTerrainCompletion()
 		return false;
 	}
 
-	polygonInProgress->SetMaterialType(currTerrainWorld,
-		currTerrainVar);
+	polygonInProgress->SetMaterialType(currTerrainWorld[0],
+		currTerrainVar[0]);
 
 	polygonInProgress->UpdateBounds();
 
@@ -8671,7 +8679,7 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			}
 			else
 			{
-				finalCheckVec[i].first->SetMaterialType(currTerrainWorld, currTerrainVar);
+				finalCheckVec[i].first->SetMaterialType(currTerrainWorld[0], currTerrainVar[0]);
 				finalCheckVec[i].first->Finalize();
 				resultBrush.AddObject(finalCheckVec[i].first);
 				attachList.push_back(finalCheckVec[i].first);
@@ -10158,9 +10166,16 @@ Vector2i EditSession::GetPixelPos()
 	return pPos;
 }
 
+Tileset *EditSession::GetMatTileset(int tWorld, int tVar)
+{
+	int ind = tWorld * MAX_TERRAINTEX_PER_WORLD + tVar;
+	return ts_polyShaders[ind];
+}
+
 void EditSession::UpdateCurrTerrainType()
 {
-	int ind = currTerrainWorld * MAX_TERRAINTEX_PER_WORLD + currTerrainVar;
+	int ind = currTerrainWorld[TERRAINLAYER_NORMAL] 
+		* MAX_TERRAINTEX_PER_WORLD + currTerrainVar[TERRAINLAYER_NORMAL];
 	currTerrainTypeSpr.setTexture(*ts_polyShaders[ind]->texture);
 	currTerrainTypeSpr.setTextureRect(IntRect(0, 0, 64, 64));
 }

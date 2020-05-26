@@ -136,7 +136,8 @@ struct ChooseRect : PanelMember
 		I_CHANGEENEMYVAR,
 		I_SEARCHDECORLIBRARY,
 		I_DECORHOTBAR,
-		I_DECORLIBRARY
+		I_DECORLIBRARY,
+		I_TERRAINSEARCH,
 	};
 
 	sf::Text nameText;
@@ -210,11 +211,15 @@ struct ImageChooseRect : ChooseRect
 	ImageChooseRect( ChooseRectIdentity ident, 
 		sf::Vertex *v, sf::Vector2f &position,
 		Tileset *ts, int tileIndex, Panel *p );
+	ImageChooseRect(ChooseRectIdentity ident,
+		sf::Vertex *v, sf::Vector2f &position,
+		Tileset *ts, const sf::IntRect &subRect, Panel *p);
 
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
 	void SetSize(float s);
 	void SetImage(Tileset *ts, int index);
+	void SetImage(Tileset *ts, const sf::IntRect &subRect);
 	EditorDecorInfo * CreateDecor();
 	sf::Sprite spr;
 	Tileset *ts;
@@ -290,6 +295,10 @@ struct CreateTerrainModeUI : GUIHandler
 	Button *completeButton;
 	Button *removePointButton;
 	Button *removeAllPointsButton;
+	Dropdown *terrainActionDropdown;
+	Dropdown *terrainLayerDropdown;
+
+	std::vector<ImageChooseRect*> currMatRects;
 };
 
 struct CreateEnemyModeUI
@@ -550,6 +559,8 @@ struct Panel
 		int level);
 	ImageChooseRect * AddImageRect(ChooseRect::ChooseRectIdentity ident,
 		sf::Vector2f &position, Tileset *ts, int tileIndex);
+	ImageChooseRect * AddImageRect(ChooseRect::ChooseRectIdentity ident,
+		sf::Vector2f &position, Tileset *ts, const sf::IntRect &rect );
 	void SetPosition(const sf::Vector2i &p_pos);
 	void SetCenterPos(const sf::Vector2i &p_pos);
 	void HandleEvent(sf::Event ev);
@@ -559,6 +570,8 @@ struct Panel
 	void SendEvent( GridSelector *gs, const std::string & e );
 	void SendEvent( TextBox *tb, const std::string & e );
 	void SendEvent( CheckBox *cb, const std::string & e );
+	void SendEvent(Dropdown *drop, const std::string & e);
+	void SendEvent(Slider *slide, const std::string & e);
 	sf::Font arial;
 	std::string name;
 	std::map<std::string, TextBox*> textBoxes;
