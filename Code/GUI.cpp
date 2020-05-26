@@ -800,39 +800,48 @@ ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident,
 	return icRect;
 }
 
-void Panel::AddSlider(const std::string &name, sf::Vector2i &pos,
+Slider * Panel::AddSlider(const std::string &name, sf::Vector2i &pos,
 	int width, int minValue, int maxValue, int defaultValue)
 {
 	assert(sliders.count(name) == 0);
-	sliders[name] = new Slider(name, pos, width, arial, minValue, maxValue, defaultValue, this);
+	Slider *slider = new Slider(name, pos, width, arial, minValue, maxValue, defaultValue, this);
+	sliders[name] = slider;
+	return slider;
 }
 
-void Panel::AddDropdown(const std::string &name, sf::Vector2i &pos,
+Dropdown * Panel::AddDropdown(const std::string &name, sf::Vector2i &pos,
 	sf::Vector2i &size, const std::vector<std::string> &p_options, int defaultIndex )
 {
 	assert(dropdowns.count(name) == 0);
-	dropdowns[name] = new Dropdown(name, pos, size, arial, p_options, defaultIndex, this);
+	Dropdown *drop = new Dropdown(name, pos, size, arial, p_options, defaultIndex, this);
+	dropdowns[name] = drop;
+	return drop;
 }
 
-void Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text )
+Button *Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text )
 {
 	assert( buttons.count( name ) == 0 );
-	buttons[name] = new Button( name, pos.x, pos.y, size.x, size.y, arial, text, this );
+	Button *button = new Button(name, pos.x, pos.y, size.x, size.y, arial, text, this);
+	buttons[name] = button;
+	return button;
 }
 
-void Panel::AddCheckBox( const string &name, sf::Vector2i pos, bool startChecked )
+CheckBox * Panel::AddCheckBox( const string &name, sf::Vector2i pos, bool startChecked )
 {
 	assert( checkBoxes.count( name ) == 0 );
 	CheckBox *cb = new CheckBox(name, pos.x, pos.y, this);
 	cb->checked = startChecked;
 	checkBoxes[name] = cb;
+	return cb;
 }
 
-void Panel::AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText )
+TextBox * Panel::AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText )
 {
 	//Button *b = new Button( pos.x, pos.y, size.x, size.y, arial, handler );
 	assert( textBoxes.count( name ) == 0 );
-	textBoxes[name] = new TextBox( name, pos.x, pos.y, width, lengthLimit, arial, this, initialText );
+	TextBox *tb = new TextBox(name, pos.x, pos.y, width, lengthLimit, arial, this, initialText);
+	textBoxes[name] = tb;
+	return tb;
 	//textBoxes.push_back(  );
 }
 

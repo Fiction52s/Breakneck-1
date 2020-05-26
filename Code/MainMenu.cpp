@@ -3627,6 +3627,16 @@ void CustomMapsHandler::CheckBoxCallback( CheckBox *cb, const std::string & e )
 {
 }
 
+void CustomMapsHandler::SliderCallback(Slider *slider, const std::string & e)
+{
+
+}
+
+void CustomMapsHandler::DropdownCallback(Dropdown *dropdown, const std::string & e) 
+{
+
+}
+
 MapSelectionMenu::MapSelectionMenu(MainMenu *p_mainMenu, sf::Vector2f &p_pos )
 	:mainMenu( p_mainMenu ), font( p_mainMenu->arial ), topIndex( 0 ),
 	oldCurrIndex( 0 )

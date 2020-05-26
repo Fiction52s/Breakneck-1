@@ -854,6 +854,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	createEnemyModeUI = NULL;
 	createDecorModeUI = NULL;
+	createTerrainModeUI = NULL;
 	enemyEdgePolygon = NULL;
 	moveAction = NULL;
 	AllocatePolyShaders(TOTAL_TERRAIN_TEXTURES);
@@ -1110,7 +1111,10 @@ EditSession::~EditSession()
 		delete createDecorModeUI;
 	}
 
-
+	if (createTerrainModeUI != NULL)
+	{
+		delete createTerrainModeUI;
+	}
 	mapStartBrush->Destroy();
 
 	delete mapStartBrush;
@@ -2558,6 +2562,7 @@ int EditSession::Run()
 
 	createEnemyModeUI = new CreateEnemyModeUI();
 	createDecorModeUI = new CreateDecorModeUI();
+	createTerrainModeUI = new CreateTerrainModeUI();
 	//enemyChooser = new EnemyChooser(types, enemySelectPanel);
 	//enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
 
@@ -3268,6 +3273,16 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 		}
 	}
 	
+}
+
+void EditSession::SliderCallback(Slider *slider, const std::string & e)
+{
+
+}
+
+void EditSession::DropdownCallback(Dropdown *dropdown, const std::string & e)
+{
+
 }
 
 void EditSession::ClearUndoneActions()
@@ -9422,6 +9437,9 @@ void EditSession::SetMode(Emode m)
 
 	switch (mode)
 	{
+	case CREATE_TERRAIN:
+		createTerrainModeUI->SetShown(true);
+		break;
 	case CREATE_ENEMY:
 		trackingEnemyParams = NULL;
 		ClearSelectedBrush();
@@ -10230,9 +10248,30 @@ void EditSession::TempMoveSelectedBrush()
 	}
 }
 
+bool EditSession::IsGridOn()
+{
+	switch (mode)
+	{
+	case CREATE_TERRAIN:
+		return createTerrainModeUI->IsGridOn();
+	default:
+		return showGraph;
+	}
+}
+
+bool EditSession::IsSnapPointsOn()
+{
+	switch (mode)
+	{
+	case CREATE_TERRAIN:
+		return createTerrainModeUI->IsSnapPointsOn();
+		break;
+	}
+}
+
 void EditSession::DrawGraph()
 {
-	if (showGraph)
+	if (IsGridOn())
 	{
 		graph->SetCenterAbsolute(Vector2f(worldPos), zoomMultiple);//view.getCenter());
 		graph->Draw(preScreenTex);
@@ -10960,7 +10999,7 @@ void EditSession::GeneralEventHandler()
 		{
 			if (!gameCam || mode != TEST_PLAYER)
 			{
-				if (showGraph && HoldingControl())
+				if (IsGridOn() && HoldingControl())
 				{
 					if (ev.mouseWheel.delta > 0)
 					{
@@ -11198,6 +11237,14 @@ void EditSession::CreateTerrainModeHandleEvent()
 			//eventually something telling the create mode that you can here from create terrain
 			TestPlayerMode();
 			
+		}
+		else if (ev.key.code == Keyboard::G)
+		{
+			createTerrainModeUI->FlipGrid();
+		}
+		else if (ev.key.code == Keyboard::F)
+		{
+			createTerrainModeUI->FlipSnapPoints();
 		}
 		else if (ev.key.code == Keyboard::H)
 		{
@@ -11870,9 +11917,21 @@ void EditSession::CreateTerrainModeUpdate()
 
 	if (!focusedPanel)
 	{
-		if (IsKeyPressed(Keyboard::G))
+		if (IsGridOn())
 		{
 			SnapPointToGraph(testPoint, graph->graphSpacing);
+			showPoints = false;
+		}
+		else if (IsSnapPointsOn())
+		{
+			SelectPtr obj;
+			TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
+			showPoints = true;
+		}
+		/*if (IsKeyPressed(Keyboard::G))
+		{
+			SnapPointToGraph(testPoint, graph->graphSpacing);
+			createTerrainModeUI->SetGrid(true);
 			showGraph = true;
 		}
 		else if (IsKeyPressed(Keyboard::F))
@@ -11881,7 +11940,7 @@ void EditSession::CreateTerrainModeUpdate()
 			TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
 
 			showPoints = true;
-		}
+		}*/
 	}
 
 	if (currTool == TOOL_BOX)

@@ -20,6 +20,14 @@ struct EditorDecorInfo;
 struct CreateEnemyModeUI;
 struct EditSession;
 
+struct Button;
+struct GridSelector;
+struct Button;
+struct CheckBox;
+struct Slider;
+struct Dropdown;
+struct TextBox;
+
 struct UIMouse
 {
 	static UIMouse &GetInstance()
@@ -59,6 +67,17 @@ private:
 };
 
 #define MOUSE UIMouse::GetInstance()
+
+struct GUIHandler
+{
+	virtual void ButtonCallback(Button *b, const std::string & e) = 0;
+	virtual void TextBoxCallback(TextBox *tb, const std::string & e) = 0;
+	virtual void GridSelectorCallback(GridSelector *gs, const std::string & e) = 0;
+	virtual void CheckBoxCallback(CheckBox *cb, const std::string & e) = 0;
+	virtual void SliderCallback(Slider *slider, const std::string & e) = 0;
+	virtual void DropdownCallback(Dropdown *dropdown, const std::string & e) = 0;
+
+};
 
 struct PanelUpdater
 {
@@ -245,17 +264,28 @@ struct PanelSlider : PanelUpdater
 };
 
 
-struct CreateModeUI
-{
-
-};
-
-struct CreateTerrainModeUI
+struct CreateTerrainModeUI : GUIHandler
 {
 	CreateTerrainModeUI();
 	~CreateTerrainModeUI();
+	void SetShown(bool s);
+	void Update();
+	bool show;
+	EditSession *edit;
 	Panel *mainPanel;
+	bool IsGridOn();
+	void FlipGrid();
+	bool IsSnapPointsOn();
+	void FlipSnapPoints();
+	void ButtonCallback(Button *b, const std::string & e);
+	void TextBoxCallback(TextBox *tb, const std::string & e);
+	void GridSelectorCallback(GridSelector *gs, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	void SliderCallback(Slider *slider, const std::string & e);
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 
+	CheckBox *gridCheckbox;
+	CheckBox *snapPointsCheckbox;
 };
 
 struct CreateEnemyModeUI
@@ -492,15 +522,15 @@ struct Panel
 		int posx, int posy, bool checkContained = false );*/
 	bool MouseUpdate();
 	void UpdateSprites(int numUpdateFrames = 1);
-	void AddSlider(const std::string &name, sf::Vector2i &pos,
+	Slider * AddSlider(const std::string &name, sf::Vector2i &pos,
 		int width, int minValue, int maxValue, int defaultValue);
-	void AddDropdown(const std::string &name, sf::Vector2i &pos,
+	Dropdown * AddDropdown(const std::string &name, sf::Vector2i &pos,
 		sf::Vector2i &size, const std::vector<std::string> &p_options,
 		int defaultIndex );
-	void AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
-	void AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
+	Button * AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
+	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	void AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
-	void AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
+	CheckBox * AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
 		int sizex, int sizey, 
 		int tilesizex, int tilesizey,
@@ -615,13 +645,7 @@ struct ErrorBar
 
 };
 
-struct GUIHandler
-{
-	virtual void ButtonCallback( Button *b, const std::string & e ) = 0;
-	virtual void TextBoxCallback( TextBox *tb, const std::string & e ) = 0;
-	virtual void GridSelectorCallback( GridSelector *gs, const std::string & e ) = 0;
-	virtual void CheckBoxCallback( CheckBox *cb, const std::string & e ) = 0;
-};
+
 
 
 

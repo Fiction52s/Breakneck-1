@@ -160,6 +160,7 @@ struct EditSession : GUIHandler, Session
 
 	CreateEnemyModeUI *createEnemyModeUI;
 	CreateDecorModeUI *createDecorModeUI;
+	CreateTerrainModeUI *createTerrainModeUI;
 
 	//EnemyChooser *enemyChooser;
 
@@ -319,6 +320,8 @@ struct EditSession : GUIHandler, Session
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
+	void SliderCallback(Slider *slider, const std::string & e);
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 
 	bool IsPolygonExternallyValid( PolyPtr poly,
 		 PolyPtr ignore );
@@ -639,6 +642,9 @@ struct EditSession : GUIHandler, Session
 		ClipperLib::Path &pOuter);
 	V2d panAnchor;
 	bool showGraph;
+
+	bool IsGridOn();
+	bool IsSnapPointsOn();
 
 	EditorGraph *graph;
 
