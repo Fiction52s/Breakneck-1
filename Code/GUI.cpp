@@ -620,10 +620,21 @@ bool Panel::MouseUpdate()
 {
 	Vector2i mPos = MOUSE.GetPos();
 
-	if ( !popup && !(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
+	if (!(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
 		mPos.y >= pos.y && mPos.y <= pos.y + size.y))
 	{
-		return false;
+		if (!popup)
+		{
+			return false;
+		}
+		else
+		{
+			if (MOUSE.IsMouseLeftClicked())
+			{
+				handler->PanelCallback(this, "leftclickoffpopup");
+			}
+			
+		}
 	}
 
 	mousePos = mPos - pos;

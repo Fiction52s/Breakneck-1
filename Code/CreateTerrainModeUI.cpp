@@ -14,7 +14,10 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	edit = EditSession::GetSession();
 	mainPanel = new Panel("createterrain", 1920, 200, this, false);
 	matTypePanel = new Panel("mattype", 600, 600, this, true);
-	matTypePanel->SetPosition(Vector2i(0, 250));
+	Color c(100, 100, 100);
+	c.a = 180;
+	matTypePanel->SetColor(c);
+	
 
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
 	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(50, 10), false);
@@ -29,22 +32,28 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	std::vector<string> layerOptions = { "Terrain", "Water", "Pickup" };
 	terrainLayerDropdown = mainPanel->AddDropdown("layerdrop", Vector2i(750, 10), Vector2i(200, 28), layerOptions, 0);
 
-	int terrainBoxSize = 64;
+	
+
+	terrainGridSize = 64;
 
 	int numTerrainLayers = EditSession::TERRAINLAYER_Count;
 	currMatRects.resize(numTerrainLayers);
 	mainPanel->ReserveImageRects(numTerrainLayers);
+	Vector2f currMatRectPos = Vector2f(terrainLayerDropdown->pos)
+		+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
 	for (int i = 0; i < numTerrainLayers; ++i)
 	{
 		currMatRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINSEARCH,
-			Vector2f(terrainLayerDropdown->pos)
-			+ Vector2f(terrainLayerDropdown->size.x + 20, 0),NULL, 0, 100 );
+			currMatRectPos,NULL, 0, 100 );
 		currMatRects[i]->Init();
 		currMatRects[i]->SetImage( edit->GetMatTileset( edit->currTerrainWorld[i],
-			edit->currTerrainVar[i]), IntRect(0, 0, 100, 100));
+			edit->currTerrainVar[i]), IntRect(0, 0, 128, 128));
 	}
 
 	currMatRects[0]->SetShown(true);
+
+	matTypePanel->SetPosition(Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10 ));
+
 
 	int maxTexPerWorld = EditSession::MAX_TERRAINTEX_PER_WORLD;
 	int numTypeRects = 8 * maxTexPerWorld;
@@ -60,11 +69,11 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 			ind = worldI * maxTexPerWorld + i;
 
 			matTypeRects[ind] = matTypePanel->AddImageRect(
-				ChooseRect::ChooseRectIdentity::I_TERRAINSEARCH,
-				Vector2f(worldI * terrainBoxSize, i * terrainBoxSize),
-				edit->GetMatTileset(worldI, i), 
-				IntRect(0, 0, terrainBoxSize, terrainBoxSize),
-				terrainBoxSize);
+				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
+				edit->GetMatTileset(worldI, i),
+				IntRect(0, 0, 128, 128),
+				terrainGridSize);
 			matTypeRects[ind]->Init();
 			if (matTypeRects[ind]->ts != NULL)
 			{
@@ -72,6 +81,25 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 			}
 		}
 	}
+}
+void CreateTerrainModeUI::ExpandTerrainLibrary()
+{
+	edit->AddActivePanel(matTypePanel);
+}
+
+void CreateTerrainModeUI::ChooseMatType(ImageChooseRect *icRect)
+{
+	int layerIndex = terrainLayerDropdown->selectedIndex;
+	currMatRects[layerIndex]->SetImage(icRect->ts, icRect->spr.getTextureRect());
+
+	int world = icRect->pos.x / terrainGridSize;
+	int variation = icRect->pos.y / terrainGridSize;
+
+	edit->currTerrainWorld[layerIndex] = world;
+	edit->currTerrainVar[layerIndex] = variation;
+
+	edit->RemoveActivePanel(matTypePanel);
+	edit->justCompletedPolyWithClick = true;
 }
 
 CreateTerrainModeUI::~CreateTerrainModeUI()
@@ -111,7 +139,7 @@ void CreateTerrainModeUI::SetShown(bool s)
 	if (show)
 	{
 		edit->AddActivePanel(mainPanel);
-		edit->AddActivePanel(matTypePanel);
+		
 		//if (showLibrary)
 		//{
 		//edit->AddActivePanel(libPanel);
@@ -121,7 +149,7 @@ void CreateTerrainModeUI::SetShown(bool s)
 	{
 		//edit->RemoveActivePanel(varSelector->panel);
 		edit->RemoveActivePanel(mainPanel);
-		edit->RemoveActivePanel(matTypePanel);
+		//edit->RemoveActivePanel(matTypePanel);
 		//if (showLibrary)
 		//{
 		//	edit->RemoveActivePanel(libPanel);
@@ -191,3 +219,10 @@ void CreateTerrainModeUI::DropdownCallback(Dropdown *dropdown, const std::string
 	}
 }
 
+void CreateTerrainModeUI::PanelCallback(Panel *p, const std::string & e)
+{
+	if (e == "leftclickoffpopup" && p == matTypePanel)
+	{
+		edit->RemoveActivePanel(matTypePanel);
+	}
+}

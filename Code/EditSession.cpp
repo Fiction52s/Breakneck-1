@@ -12453,6 +12453,24 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 			}
 		}
 	}
+	else if (mode == CREATE_TERRAIN)
+	{
+		if (eventType == ChooseRect::E_LEFTCLICKED)
+		{
+			ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+			if (icRect != NULL)
+			{
+				if (icRect->rectIdentity == ChooseRect::I_TERRAINSEARCH)
+				{
+					createTerrainModeUI->ExpandTerrainLibrary();
+				}
+				else if (icRect->rectIdentity == ChooseRect::I_TERRAINLIBRARY)
+				{
+					createTerrainModeUI->ChooseMatType(icRect);
+				}
+			}
+		}
+	}
 }
 
 void EditSession::PasteModeUpdate()

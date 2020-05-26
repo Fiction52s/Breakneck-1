@@ -873,5 +873,3 @@ void ImageChooseRect::UpdateSprite(int frameUpdate)
 {
 	//animate eventually
 }
-
-

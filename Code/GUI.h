@@ -76,6 +76,7 @@ struct GUIHandler
 	virtual void CheckBoxCallback(CheckBox *cb, const std::string & e) = 0;
 	virtual void SliderCallback(Slider *slider, const std::string & e) = 0;
 	virtual void DropdownCallback(Dropdown *dropdown, const std::string & e) = 0;
+	virtual void PanelCallback(Panel *p, const std::string & e) {}
 
 };
 
@@ -138,6 +139,7 @@ struct ChooseRect : PanelMember
 		I_DECORHOTBAR,
 		I_DECORLIBRARY,
 		I_TERRAINSEARCH,
+		I_TERRAINLIBRARY,
 	};
 
 	sf::Text nameText;
@@ -284,12 +286,17 @@ struct CreateTerrainModeUI : GUIHandler
 	bool IsSnapPointsOn();
 	void FlipSnapPoints();
 	void SetGridSize(int gs);
+	void ExpandTerrainLibrary();
+	void ChooseMatType(ImageChooseRect *icRect);
+	//void SetCurrMatType( )
 	void ButtonCallback(Button *b, const std::string & e);
 	void TextBoxCallback(TextBox *tb, const std::string & e);
 	void GridSelectorCallback(GridSelector *gs, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);
 	void SliderCallback(Slider *slider, const std::string & e);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
+	int terrainGridSize;
 
 	CheckBox *gridCheckbox;
 	CheckBox *snapPointsCheckbox;
