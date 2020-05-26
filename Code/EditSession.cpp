@@ -3389,18 +3389,26 @@ void EditSession::HideErrorBar()
 
 int EditSession::GetSpecialTerrainMode()
 {
-	if (currTerrainWorld[0] == 9)
+	if (mode == CREATE_TERRAIN)
 	{
-		return 2;
-	}
-	else if (currTerrainWorld[0] == 8)
-	{
-		return 1;
+		return createTerrainModeUI->GetTerrainLayer();
 	}
 	else
 	{
-		return 0;
+		if (currTerrainWorld[0] == 9)
+		{
+			return 2;
+		}
+		else if (currTerrainWorld[0] == 8)
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
 	}
+	
 }
 
 void EditSession::InitDecorPanel()
@@ -7101,6 +7109,16 @@ void EditSession::GetIntersectingPolys(
 	}
 }
 
+int EditSession::GetCurrTerrainWorld()
+{
+	return currTerrainWorld[GetSpecialTerrainMode()];
+}
+
+int EditSession::GetCurrTerrainVariation()
+{
+	return currTerrainVar[GetSpecialTerrainMode()];
+}
+
 bool EditSession::ExecuteTerrainCompletion()
 {	
 	ClearMostRecentError();
@@ -7111,8 +7129,8 @@ bool EditSession::ExecuteTerrainCompletion()
 		return false;
 	}
 
-	polygonInProgress->SetMaterialType(currTerrainWorld[0],
-		currTerrainVar[0]);
+	polygonInProgress->SetMaterialType(GetCurrTerrainWorld(),
+		GetCurrTerrainVariation());
 
 	polygonInProgress->UpdateBounds();
 
@@ -8679,7 +8697,7 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			}
 			else
 			{
-				finalCheckVec[i].first->SetMaterialType(currTerrainWorld[0], currTerrainVar[0]);
+				finalCheckVec[i].first->SetMaterialType(GetCurrTerrainWorld(), GetCurrTerrainVariation());
 				finalCheckVec[i].first->Finalize();
 				resultBrush.AddObject(finalCheckVec[i].first);
 				attachList.push_back(finalCheckVec[i].first);
@@ -12449,24 +12467,6 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 						&orig, &result, mapStartBrush);
 					action->Perform();
 					AddDoneAction(action);
-				}
-			}
-		}
-	}
-	else if (mode == CREATE_TERRAIN)
-	{
-		if (eventType == ChooseRect::E_LEFTCLICKED)
-		{
-			ImageChooseRect *icRect = cr->GetAsImageChooseRect();
-			if (icRect != NULL)
-			{
-				if (icRect->rectIdentity == ChooseRect::I_TERRAINSEARCH)
-				{
-					createTerrainModeUI->ExpandTerrainLibrary();
-				}
-				else if (icRect->rectIdentity == ChooseRect::I_TERRAINLIBRARY)
-				{
-					createTerrainModeUI->ChooseMatType(icRect);
 				}
 			}
 		}

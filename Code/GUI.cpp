@@ -2,11 +2,495 @@
 #include <assert.h>
 #include <iostream>
 #include "Session.h"
+#include "EditorDecorInfo.h"
+#include "EditSession.h"
 
 using namespace sf;
 using namespace std;
 
 const int CHECKBOXSIZE = 32;
+
+PanelSlider::PanelSlider(Panel *p, sf::Vector2i &p_origPos, sf::Vector2i &p_destPos)
+	:panel(p), slid(false)
+{
+	origPos = p_origPos;//Vector2i(-270, 0);
+	destPos = p_destPos;
+	panel->SetPosition(origPos);
+	normalDuration = 10;
+	bez = CubicBezier(0, 0, 1, 1);
+}
+
+
+bool PanelSlider::MouseUpdate()
+{
+	if (!slid)
+	{
+		slid = true;
+		int duration = normalDuration;// - outFrame;
+		int skip = 0;
+		if (panel->IsSliding())
+		{
+			skip = normalDuration - panel->slideFrame;
+		}
+		panel->SetPosition(origPos);
+		panel->Slide(destPos, bez, duration);
+		panel->slideFrame = skip;
+	}
+
+	return true;
+}
+
+void PanelSlider::Deactivate()
+{
+	int duration = normalDuration;
+	int skip = 0;
+	if (panel->IsSliding())
+	{
+		skip = normalDuration - panel->slideFrame;
+	}
+	panel->SetPosition(destPos);
+	panel->Slide(origPos, bez, duration);
+	panel->slideFrame = skip;
+	slid = false;
+}
+
+ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
+	Vertex *v, float size, sf::Vector2f &p_pos, Panel *p)
+	:PanelMember(p), quad(v), boxSize(size), pos(p_pos), chooseRectType(crType),
+	rectIdentity(ident), circleMode(false)
+{
+	idleColor = Color::Black;
+	idleColor.a = 100;
+
+	mouseOverColor = Color::Green;
+	mouseOverColor.a = 100;
+
+	SetShown(false);
+
+	focused = false;
+
+	EditSession *edit = EditSession::GetSession();
+	nameText.setFont(edit->mainMenu->arial);
+	nameText.setCharacterSize(18);
+	nameText.setFillColor(Color::White);
+	nameText.setOutlineColor(Color::Black);
+	nameText.setOutlineThickness(3);
+	nameText.setPosition(Vector2f(pos.x + boxSize / 2, pos.y));
+}
+
+void ChooseRect::SetCircleMode(int p_radius)
+{
+	circleMode = true;
+	circleRadius = p_radius;
+}
+
+void ChooseRect::SetRectMode()
+{
+	circleMode = false;
+}
+
+
+
+void ChooseRect::Init()
+{
+	SetRectColor(quad, idleColor);
+	SetSize(boxSize);
+}
+
+void ChooseRect::SetPosition(sf::Vector2f &p_pos)
+{
+	pos = p_pos;
+	UpdateRectDimensions();
+	nameText.setPosition(Vector2f(pos.x + boxSize / 2, pos.y));
+}
+
+void ChooseRect::SetSize(float s)
+{
+	boxSize = s;
+	UpdateRectDimensions();
+}
+
+void ChooseRect::UpdateRectDimensions()
+{
+	//SetRectCenter(quad, boxSize, boxSize, pos);
+	bounds.left = pos.x;// -boxSize / 2.f;
+	bounds.top = pos.y;// -boxSize / 2.f;
+	bounds.width = boxSize;
+	bounds.height = boxSize;
+}
+
+void ChooseRect::SetShown(bool s)
+{
+	if (!s && show)
+	{
+		SetRectTopLeft(quad, 0, 0, Vector2f(0, 0));
+	}
+	else if (s && !show)
+	{
+		if (circleMode)
+		{
+			SetRectTopLeft(quad, 0, 0, Vector2f(0, 0));
+		}
+		else
+		{
+			SetRectTopLeft(quad, boxSize, boxSize, pos);
+		}
+		SetSize(boxSize);
+	}
+	show = s;
+}
+
+sf::Vector2f ChooseRect::GetGlobalPos()
+{
+	//return mouseUser->GetFloatPos() + pos;
+	return Vector2f(panel->pos) + pos;
+}
+
+sf::Vector2f ChooseRect::GetGlobalCenterPos()
+{
+	return GetGlobalPos() + Vector2f(boxSize / 2, boxSize / 2);
+}
+
+void ChooseRect::SetActive(bool a)
+{
+	active = a;
+}
+
+void ChooseRect::Deactivate()
+{
+	focused = false;
+	SetRectColor(quad, idleColor);
+}
+
+bool ChooseRect::ContainsPoint(sf::Vector2i &mousePos)
+{
+	if (circleMode)
+	{
+		Vector2i center(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+		Vector2f diff(mousePos - center);
+		return (length(diff) <= circleRadius);
+	}
+	else
+	{
+		return bounds.contains(mousePos);
+	}
+}
+
+bool ChooseRect::MouseUpdate()
+{
+	if (!show)
+	{
+		return false;
+	}
+
+	Vector2i mousePos = panel->GetMousePos();
+
+	if (MOUSE.IsMouseLeftClicked())
+	{
+		if (ContainsPoint(mousePos))
+		{
+			panel->handler->ChooseRectEvent(this, E_LEFTCLICKED);
+			focused = true;
+		}
+	}
+	else if (MOUSE.IsMouseLeftReleased())
+	{
+		if (ContainsPoint(mousePos))
+		{
+			panel->handler->ChooseRectEvent(this, E_LEFTRELEASED);
+			focused = true;
+		}
+	}
+	//else if (!MOUSE.IsMouseDownLeft())
+	{
+		if (ContainsPoint(mousePos))
+		{
+			SetRectColor(quad, mouseOverColor);
+			if (!focused)
+			{
+				panel->handler->ChooseRectEvent(this, E_FOCUSED);
+			}
+			focused = true;
+		}
+		else
+		{
+			SetRectColor(quad, idleColor);
+			if (focused)
+			{
+				panel->handler->ChooseRectEvent(this, E_UNFOCUSED);
+			}
+			focused = false;
+
+			//Unfocus();
+		}
+	}
+
+	if (MOUSE.IsMouseRightClicked())
+	{
+		if (ContainsPoint(mousePos))
+		{
+			panel->handler->ChooseRectEvent(this, E_RIGHTCLICKED);
+			//focused = true;
+		}
+	}
+	else if (MOUSE.IsMouseRightReleased())
+	{
+		if (ContainsPoint(mousePos))
+		{
+			panel->handler->ChooseRectEvent(this, E_RIGHTRELEASED);
+			//focused = true;
+		}
+	}
+
+	return true;
+}
+
+EnemyChooseRect *ChooseRect::GetAsEnemyChooseRect()
+{
+	if (chooseRectType == ENEMY)
+	{
+		return (EnemyChooseRect*)this;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+ImageChooseRect *ChooseRect::GetAsImageChooseRect()
+{
+	if (chooseRectType == IMAGE)
+	{
+		return (ImageChooseRect*)this;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+EnemyChooseRect::EnemyChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector2f &p_pos, ActorType * p_type, int p_level,
+	Panel *p)
+	:ChooseRect(ident, ChooseRectType::ENEMY, v, 100, p_pos, p), level(p_level)
+{
+	actorType = NULL;
+	SetType(p_type, level);
+}
+
+//void EnemyChooseRect::Unfocus()
+//{
+//	if (enemy != NULL)
+//	{
+//		enemy->SetActionEditLoop();
+//		enemy->UpdateFromEditParams(0);
+//	}
+//}
+
+void EnemyChooseRect::SetType(ActorType *type, int lev)
+{
+	if (type == NULL)
+	{
+		SetShown(false);
+		actorType = type;
+		level = lev;
+		return;
+	}
+
+	if (!(type == actorType && lev == level))
+	{
+		actorType = type;
+		level = lev;
+		enemyParams = actorType->defaultParamsVec[level - 1];
+		enemyParams->MoveTo(Vector2i(0, 0));
+		enemy = enemyParams->myEnemy;
+		if (enemy != NULL)
+		{
+			enemy->SetActionEditLoop();
+			enemy->UpdateFromEditParams(0);
+			nameText.setString(enemy->name);
+			nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+				0);
+		}
+
+		SetSize(boxSize);
+
+		switch (level)
+		{
+		case 1:
+			idleColor = Color::Blue;
+			break;
+		case 2:
+			idleColor = Color::Cyan;
+			break;
+		case 3:
+			idleColor = Color::Magenta;
+			break;
+		case 4:
+			idleColor = Color::Red;
+			break;
+
+		}
+		idleColor.a = 100;
+		SetRectColor(quad, idleColor);
+
+	}
+}
+
+void EnemyChooseRect::SetSize(float s)
+{
+	ChooseRect::SetSize(s);
+	if (actorType != NULL)
+	{
+		Vector2f truePos = GetGlobalPos() + Vector2f(boxSize / 2.f, boxSize / 2.f);
+
+		float test;
+		FloatRect aabb = enemyParams->GetAABB();
+
+		float max = std::max(aabb.height, aabb.width);
+		//max *= 1.1f;
+		test = max / boxSize;
+		view.setCenter(Vector2f(960 * test - truePos.x * test, 540 * test - truePos.y * test));// + Vector2f( 64,0 ));//-pos / 5);//Vector2f(0, 0));
+		view.setSize(Vector2f(1920 * test, 1080 * test));
+	}
+}
+
+void EnemyChooseRect::Draw(RenderTarget *target)
+{
+	if (show)
+	{
+		sf::View oldView = target->getView();
+		target->setView(view);
+
+		enemyParams->DrawEnemy(target);
+
+		target->setView(oldView);
+
+		target->draw(nameText);
+	}
+}
+
+void EnemyChooseRect::UpdateSprite(int frameUpdate)
+{
+	if (!show)
+	{
+		return;
+	}
+
+	if (actorType != NULL)
+	{
+		if (enemy != NULL)
+		{
+			if (focused)
+			{
+				enemy->UpdateFromEditParams(frameUpdate);
+			}
+			else
+			{
+				enemy->SetActionEditLoop();
+				enemy->UpdateFromEditParams(0);
+			}
+		}
+	}
+}
+
+EditorDecorInfo * ImageChooseRect::CreateDecor()
+{
+	EditorDecorInfo *edi = new EditorDecorInfo(decorName, ts, tileIndex, 0, Vector2f(0, 0),
+		0, Vector2f(1, 1));
+	return edi;
+}
+
+void ImageChooseRect::SetImage(Tileset *p_ts, const sf::IntRect &subRect)
+{
+	if (p_ts == NULL)
+	{
+		SetShown(false);
+		ts = p_ts;
+		tileIndex = -1;
+		return;
+	}
+
+	ts = p_ts;
+	tileIndex = -1;
+
+	ts->SetSpriteTexture(spr);
+	spr.setTextureRect(subRect);
+	spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+
+	SetSize(boxSize);
+}
+
+void ImageChooseRect::SetImage(Tileset *p_ts, int p_index)
+{
+	if (p_ts == NULL)
+	{
+		SetShown(false);
+		ts = p_ts;
+		tileIndex = p_index;
+		return;
+	}
+
+	if (!(p_ts == ts && p_index == tileIndex))
+	{
+		ts = p_ts;
+		tileIndex = p_index;
+
+
+		ts->SetSpriteTexture(spr);
+		ts->SetSubRect(spr, tileIndex);
+		spr.setOrigin(spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2);
+
+		SetSize(boxSize);
+	}
+}
+
+ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector2f &p_pos, Tileset *p_ts,
+	int p_tileIndex, int bSize, Panel *p)
+	:ChooseRect(ident, ChooseRectType::IMAGE, v, bSize, p_pos, p)
+{
+	ts = NULL;
+	SetImage(p_ts, p_tileIndex);
+}
+
+ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v,
+	sf::Vector2f &p_pos, Tileset *p_ts, const sf::IntRect &subRect, int bSize, Panel *p)
+	:ChooseRect(ident, ChooseRectType::IMAGE, v, bSize, p_pos, p)
+{
+	ts = NULL;
+	SetImage(p_ts, subRect);
+}
+
+void ImageChooseRect::SetSize(float s)
+{
+	ChooseRect::SetSize(s);
+
+	Vector2f truePos = GetGlobalPos() + Vector2f(boxSize / 2.f, boxSize / 2.f);
+
+	float test;
+	FloatRect aabb = spr.getGlobalBounds();
+	float max = std::max(aabb.height, aabb.width) * 1.2f; //.8 to give the box a little room
+	test = max / boxSize;
+	view.setCenter(Vector2f(960 * test - truePos.x * test, 540 * test - truePos.y * test));// + Vector2f( 64,0 ));//-pos / 5);//Vector2f(0, 0));
+	view.setSize(Vector2f(1920 * test, 1080 * test));
+}
+
+void ImageChooseRect::Draw(RenderTarget *target)
+{
+	if (show)
+	{
+		sf::View oldView = target->getView();
+		target->setView(view);
+
+		target->draw(spr);
+
+		target->setView(oldView);
+	}
+}
+
+void ImageChooseRect::UpdateSprite(int frameUpdate)
+{
+	//animate eventually
+}
 
 GridSelector::GridSelector( Vector2i p_pos, int xSizep, int ySizep, int iconX, int iconY, bool p_displaySelected,
 						   bool p_displayMouseOver, Panel *p )

@@ -89,7 +89,7 @@ void CreateTerrainModeUI::ExpandTerrainLibrary()
 
 void CreateTerrainModeUI::ChooseMatType(ImageChooseRect *icRect)
 {
-	int layerIndex = terrainLayerDropdown->selectedIndex;
+	int layerIndex = GetTerrainLayer();
 	currMatRects[layerIndex]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
 	int world = icRect->pos.x / terrainGridSize;
@@ -133,27 +133,41 @@ void CreateTerrainModeUI::FlipSnapPoints()
 	snapPointsCheckbox->checked = !snapPointsCheckbox->checked;
 }
 
+int CreateTerrainModeUI::GetTerrainLayer()
+{
+	return terrainLayerDropdown->selectedIndex;
+}
+
 void CreateTerrainModeUI::SetShown(bool s)
 {
 	show = s;
 	if (show)
 	{
 		edit->AddActivePanel(mainPanel);
-		
-		//if (showLibrary)
-		//{
-		//edit->AddActivePanel(libPanel);
-		//}
 	}
 	else
 	{
-		//edit->RemoveActivePanel(varSelector->panel);
 		edit->RemoveActivePanel(mainPanel);
-		//edit->RemoveActivePanel(matTypePanel);
-		//if (showLibrary)
-		//{
-		//	edit->RemoveActivePanel(libPanel);
-		//}
+	}
+}
+
+void CreateTerrainModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
+{
+	if (eventType == ChooseRect::E_LEFTCLICKED ||
+		eventType == ChooseRect::E_LEFTRELEASED )
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			if (icRect->rectIdentity == ChooseRect::I_TERRAINSEARCH)
+			{
+				ExpandTerrainLibrary();
+			}
+			else if (icRect->rectIdentity == ChooseRect::I_TERRAINLIBRARY)
+			{
+				ChooseMatType(icRect);
+			}
+		}
 	}
 }
 

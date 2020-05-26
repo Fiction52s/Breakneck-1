@@ -505,6 +505,8 @@ struct EditSession : GUIHandler, Session
 
 	int currTerrainWorld[TERRAINLAYER_Count];
 	int currTerrainVar[TERRAINLAYER_Count];
+	int GetCurrTerrainWorld();
+	int GetCurrTerrainVariation();
 	Tileset *GetMatTileset(int tWorld, int tVar);
 
 	sf::Sprite currTerrainTypeSpr;
@@ -527,6 +529,7 @@ struct EditSession : GUIHandler, Session
 	std::list<PolyPtr> flyPolygons;
 
 	int GetSpecialTerrainMode();
+	
 
 	PolyPtr polygonInProgress;
 	RailPtr railInProgress;
@@ -551,6 +554,7 @@ struct EditSession : GUIHandler, Session
 	DecorPtr trackingDecor;
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType );
+	
 
 	Panel * CreatePopupPanel( const std::string &p );
 	Panel *messagePopup;

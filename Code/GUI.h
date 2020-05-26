@@ -27,6 +27,7 @@ struct CheckBox;
 struct Slider;
 struct Dropdown;
 struct TextBox;
+struct ChooseRect;
 
 struct UIMouse
 {
@@ -77,6 +78,7 @@ struct GUIHandler
 	virtual void SliderCallback(Slider *slider, const std::string & e) = 0;
 	virtual void DropdownCallback(Dropdown *dropdown, const std::string & e) = 0;
 	virtual void PanelCallback(Panel *p, const std::string & e) {}
+	virtual void ChooseRectEvent(ChooseRect *cr, int eventType) {}
 
 };
 
@@ -296,6 +298,8 @@ struct CreateTerrainModeUI : GUIHandler
 	void SliderCallback(Slider *slider, const std::string & e);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	int GetTerrainLayer();
 	int terrainGridSize;
 
 	CheckBox *gridCheckbox;
