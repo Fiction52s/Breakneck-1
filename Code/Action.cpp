@@ -1189,6 +1189,19 @@ void MoveBrushAction::Perform()
 			PolyPtr poly = (*it).first;
 			poly->SoftReset();
 			poly->Finalize();
+
+			poly->SetGrassFromPointMoveInfoVectors(pVec);
+
+			/*int prevIndex;
+			for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
+			{
+				prevIndex = (*pit).pointIndex - 1;
+				if (prevIndex < 0)
+					prevIndex = (*pit).poly->GetNumPoints() - 1;
+
+				(*pit).poly->SetGrassVecOn((*pit).pointIndex, (*pit).grassVec);
+			}*/
+
 			poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
 		}
 
@@ -1249,9 +1262,9 @@ void MoveBrushAction::Undo()
 	{
 		for (auto it = pointMover->movePoints.begin(); it != pointMover->movePoints.end(); ++it)
 		{
-			vector<PointMoveInfo> &pList = (*it).second;
+			vector<PointMoveInfo> &pVec = (*it).second;
 
-			for (vector<PointMoveInfo>::iterator pit = pList.begin(); pit != pList.end(); ++pit)
+			for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
 			{
 				(*pit).poly->SetPointPos((*pit).pointIndex, (*pit).origPos);
 			}
@@ -1260,6 +1273,13 @@ void MoveBrushAction::Undo()
 
 			poly->SoftReset();
 			poly->Finalize();
+
+			/*for (auto pit = pVec.begin(); pit != pVec.end(); ++pit)
+			{
+				(*pit).poly->SetGrassVecOn((*pit).pointIndex, (*pit).grassVec);
+			}*/
+			poly->SetGrassFromPointMoveInfoVectors(pVec);
+
 			poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
 
 			/*for ( auto pit = poly->enemies.begin();

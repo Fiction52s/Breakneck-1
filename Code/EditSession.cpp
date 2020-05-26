@@ -4356,6 +4356,7 @@ bool EditSession::PerformMovePointsAction()
 		
 
 		pmVec.reserve((*mit).second.size());
+
 		for (auto it = (*mit).second.begin(); it != (*mit).second.end(); ++it)
 		{
 			(*it).newPos = (*it).GetPolyPoint()->pos;
@@ -4368,6 +4369,14 @@ bool EditSession::PerformMovePointsAction()
 
 		poly->SoftReset();
 		poly->Finalize();
+
+		/*for (auto pit = pmVec.begin(); pit != pmVec.end(); ++pit)
+		{
+			(*pit).poly->SetGrassVecOn((*pit).pointIndex, (*pit).grassVec);
+		}*/
+
+		poly->SetGrassFromPointMoveInfoVectors(pmVec);
+
 		poly->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);
 
 		for (auto it = pm->newEnemyPosInfo.begin(); it != pm->newEnemyPosInfo.end(); ++it)
@@ -4577,31 +4586,22 @@ bool EditSession::PerformMovePointsAction()
 
 void EditSession::StartMoveSelectedPoints()
 {
-	//Brush origBrush;
-	//list<GateInfoPtr> gateInfoList;
-
-	//if (selectedPoints.empty())
-	//{
-	//	movePointsAction = NULL;
-	//}
-
-	//for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
-	//{
-	//	(*it).first->BackupPoints();
-
-	//	
-	//	//AddFullPolyToBrush((*it).first, gateInfoList, &origBrush);
-	//}
-
 	PolyPtr poly;
 	for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
 	{
 		poly = (*it).first;
 
 		poly->BackupEnemyPositions();
+		TerrainPoint *point;
+		bool rem;
+		int numGrass = 0;
 		for (auto pit = (*it).second.begin(); pit != (*it).second.end(); ++pit)
 		{
-			(*pit).origPos = (*pit).GetPolyPoint()->pos;
+			point = (*pit).GetPolyPoint();
+			(*pit).origPos = point->pos;
+
+			poly->FillGrassVec(point, (*pit).grassVec);
+			poly->FillGrassVec(poly->GetPrevPoint(point->index), (*pit).prevGrassVec);
 		}
 	}
 
@@ -4616,22 +4616,6 @@ void EditSession::StartMoveSelectedPoints()
 			(*pit).origPos = (*pit).GetRailPoint()->pos;
 		}
 	}
-	
-
-	
-
-
-	//Brush newBrush;
-	//for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
-	//{
-	//	(*it).first->Copy();
-	//	//AddFullPolyToBrush((*it).first, gateInfoList, &origBrush);
-	//}
-
-	//movePointsAction = new MovePointsAction(&origBrush, gateInfoList, selectedPoints);
-	//movePointsAction->performed = true;
-
-	
 }
 
 void EditSession::RevertMovedPoints(PointMap::iterator it)
@@ -5714,43 +5698,6 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	}
 
 	poly->StoreEnemyPositions(pmap->newEnemyPosInfo);
-	
-
-
-	//need to add enemies here. just this for now.
-
-
-	//pmap->movePoints[poly].push
-
-	//auto &pVec = pmap.myMap[poly];
-
-	////need to store enemy stuff here...
-
-	//int polyNumP = poly->GetNumPoints();
-
-	//pVec.reserve(polyNumP);
-
-	//TerrainPoint *polyCurr;
-	//for (int i = 0; i < polyNumP; ++i)
-	//{
-	//	polyCurr = poly->GetPoint(i);
-
-	//	PointMoveInfo pi;
-	//	pi.poly = poly;
-	//	pi.pointIndex = i;
-	//	pi.origPos = polyCurr->pos;
-	//	if (polyCurr == point)
-	//	{
-	//		pi.newPos = polyCurr->pos + adjust; //delta
-	//		pi.moveIntent = true;
-	//	}
-	//	else
-	//	{
-	//		pi.newPos = polyCurr->pos;
-	//	}
-
-	//	pVec.push_back(pi);
-	//}
 	
 	MoveBrushAction * action = new MoveBrushAction(selectedBrush, Vector2i(), true, pmap);
 	//action->performed = true;

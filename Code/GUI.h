@@ -250,6 +250,14 @@ struct CreateModeUI
 
 };
 
+struct CreateTerrainModeUI
+{
+	CreateTerrainModeUI();
+	~CreateTerrainModeUI();
+	Panel *mainPanel;
+
+};
+
 struct CreateEnemyModeUI
 {
 	CreateEnemyModeUI();

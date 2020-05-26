@@ -3479,6 +3479,8 @@ void TerrainPolygon::SetupGrass()
 	int grassIndex = 0;
 	for (int i = 0; i < numP; ++i)
 	{
+		curr = GetPoint(i);
+		curr->grassStartIndex = grassIndex;
 		SetupGrass(i, grassIndex);
 	}
 
@@ -3513,6 +3515,69 @@ Grass::GrassType TerrainPolygon::GetGrassType()
 		gt = Grass::GrassType::JUMP;
 	}
 	return gt;
+}
+
+void TerrainPolygon::FillGrassVec(TerrainPoint *point, std::vector<int> &gVec)
+{
+	bool rem;
+	int numGrass = GetNumGrass(point->index, rem);
+
+	gVec.clear();
+
+	int numOn = 0;
+	for (int i = 0; i < numGrass; ++i)
+	{
+		if (grassStateVec[i + point->grassStartIndex] == TerrainPolygon::G_ON)
+		{
+			numOn++;
+		}
+	}
+
+	gVec.reserve(numOn);
+	for (int i = 0; i < numGrass; ++i)
+	{
+		if (grassStateVec[i + point->grassStartIndex] == TerrainPolygon::G_ON)
+		{
+			gVec.push_back(i);
+		}
+	}
+}
+
+void TerrainPolygon::SetGrassFromPointMoveInfoVectors(
+	std::vector<PointMoveInfo> &pMoveVec)
+{
+	TerrainPoint *curr, *prev;
+
+	for (auto pit = pMoveVec.begin(); pit != pMoveVec.end(); ++pit)
+	{
+		curr = GetPoint((*pit).pointIndex);
+		prev = GetPrevPoint((*pit).pointIndex);
+
+		SetGrassVecOn(curr->index, (*pit).grassVec);
+		SetGrassVecOn(prev->index, (*pit).prevGrassVec);
+	}
+}
+
+void TerrainPolygon::SetGrassVecOn(
+	int pointIndex, std::vector<int> &gVec)
+{
+	if (gVec.empty())
+		return;
+
+	TerrainPoint *p = GetPoint(pointIndex);
+
+	cout << "glist of size: " << gVec.size() << endl;
+	bool rem;
+	int numGrass = GetNumGrass(pointIndex, rem);
+	int startIndex = p->grassStartIndex;
+	for (auto it = gVec.begin(); it != gVec.end(); ++it)
+	{
+		if ((*it) < numGrass)
+		{
+			cout << "index: " << (*it) << endl;
+			SetGrassState(startIndex + (*it), G_ON);
+		}
+	}
 }
 
 void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
@@ -4971,6 +5036,10 @@ void TerrainPolygon::SoftReset()
 	grassVA = NULL;
 	finalized = false;
 
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		grassStateVec[i] = 0;
+	}
 	//myTerrainTree->Clear();
 
 	DestroyTouchGrass();

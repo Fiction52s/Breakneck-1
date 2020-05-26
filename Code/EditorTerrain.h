@@ -59,6 +59,7 @@ struct TerrainPoint
 	bool selected;
 	std::list<int> grass;
 	GateInfoPtr gate;
+	int grassStartIndex;
 	bool firstPoint;
 	int GetIndex();
 
@@ -87,6 +88,8 @@ struct PointMoveInfo
 	sf::Vector2i newPos;
 	sf::Vector2i origPos;
 	sf::Vector2i oldPos; //used for moving
+	std::vector<int> grassVec;
+	std::vector<int> prevGrassVec;
 };
 
 struct BorderInfo
@@ -253,6 +256,11 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	std::list<TouchGrassCollection*> touchGrassCollections;
 
 
+	void SetGrassVecOn(
+		int pointIndex, std::vector<int> &gList);
+	void SetGrassFromPointMoveInfoVectors(std::vector<PointMoveInfo> &pMoveVec);
+	void FillGrassVec(TerrainPoint *point,
+		std::vector<int> &gVec );
 	//trying to get decor working
 
 	static DecorType GetDecorType(const std::string &dStr);
