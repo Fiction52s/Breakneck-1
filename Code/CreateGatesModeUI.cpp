@@ -26,6 +26,10 @@ CreateGatesModeUI::CreateGatesModeUI()
 	currGateTypeRectPos = Vector2f(gateCategoryDropdown->pos)
 		+ Vector2f(gateCategoryDropdown->size.x + 20, 0);
 
+	modifyGateRect.setFillColor(Color::Transparent);
+	modifyGateRect.setOutlineThickness(-5);
+	modifyGateRect.setOutlineColor(Color::Green);
+
 	gateGridSize = 64;
 	modifyGate = NULL;
 	origModifyGate = new GateInfo;
@@ -133,9 +137,23 @@ void CreateGatesModeUI::SetShard(int world, int localIndex)
 	ChooseShardType(shardGateTypeRects[ind]);
 }
 
+void CreateGatesModeUI::Draw(sf::RenderTarget *target)
+{
+	if (modifyGate != NULL)
+	{
+		target->draw(modifyGateRect);
+	}
+}
+
 void CreateGatesModeUI::SetEditGate(GateInfo *gi)
 {
+	CompleteEditingGate();
 	modifyGate = gi;
+	sf::IntRect aabb = gi->GetAABB();
+	int extra = 10;
+	modifyGateRect.setSize(Vector2f(aabb.width + extra * 2, aabb.height + extra * 2));
+	modifyGateRect.setPosition(Vector2f(aabb.left - extra, aabb.top - extra));
+	
 	*origModifyGate = *gi;
 	SetFromGateInfo(gi);
 }
@@ -192,7 +210,7 @@ void CreateGatesModeUI::SetGateInfo(GateInfo *gi)
 		break;
 	}
 
-	modifyGate->UpdateLine();
+	gi->UpdateLine();
 }
 
 void CreateGatesModeUI::CreateBossGateTypePanel()
@@ -404,10 +422,12 @@ void CreateGatesModeUI::CompleteEditingGate()
 {
 	if (modifyGate != NULL )
 	{
-		Action * action = new ModifyGateAction(modifyGate, origModifyGate);
-		action->performed = true;
-		edit->AddDoneAction(action);
-
+		if( !modifyGate->IsSameType( origModifyGate ) )
+		{
+			Action * action = new ModifyGateAction(modifyGate, origModifyGate);
+			action->performed = true;
+			edit->AddDoneAction(action);
+		}
 		modifyGate = NULL;
 	}
 }
@@ -421,6 +441,20 @@ void CreateGatesModeUI::ButtonCallback(Button *b, const std::string & e)
 
 		
 		//add action here
+	}
+	else if (b == deleteGateButton)
+	{
+		if (modifyGate != NULL)
+		{
+			Action * action = new DeleteGateAction(modifyGate, edit->mapStartBrush);
+			action->Perform();
+			edit->AddDoneAction(action);
+			modifyGate = NULL;
+		}
+		else
+		{
+			edit->gatePoints = 0;
+		}
 	}
 	/*if (b == completeButton)
 	{

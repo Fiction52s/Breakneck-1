@@ -165,6 +165,7 @@ struct EditSession : GUIHandler, Session
 
 	//ActorPtr 
 
+
 	CreateEnemyModeUI *createEnemyModeUI;
 	CreateDecorModeUI *createDecorModeUI;
 	CreateTerrainModeUI *createTerrainModeUI;

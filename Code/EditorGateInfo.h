@@ -13,6 +13,7 @@ struct GateInfo : ISelectable
 	GateInfo();
 	void SetType(const std::string &gType);
 	void SetShard(int shardW, int shardI);
+	bool IsSameType(GateInfo *other);
 	sf::IntRect GetAABB();
 	TerrainPoint *point0;
 	TerrainPoint *point1;

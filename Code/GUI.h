@@ -302,7 +302,9 @@ struct CreateGatesModeUI : GUIHandler
 	void SetFromGateInfo(GateInfo *gi);
 	void SetEditGate(GateInfo *gi);
 	void CompleteEditingGate();
+	void Draw(sf::RenderTarget *target);
 
+	sf::RectangleShape modifyGateRect;
 	GateInfo *origModifyGate;
 	GateInfo *modifyGate;
 	int shardNumX;

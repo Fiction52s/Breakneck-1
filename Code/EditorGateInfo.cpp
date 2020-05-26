@@ -21,6 +21,27 @@ GateInfo::GateInfo()
 	thickLine[3].color = Color(255, 0, 0, 255);
 }
 
+bool GateInfo::IsSameType(GateInfo *other)
+{
+	if (other->type != type)
+		return false;
+
+	if (type == Gate::KEYGATE)
+	{
+		//if number of keys is equal
+	}
+	else if (type == Gate::SHARD)
+	{
+		if (shardWorld != other->shardWorld
+			|| shardIndex != other->shardIndex)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void GateInfo::Deactivate()
 {
 	if (edit != NULL)

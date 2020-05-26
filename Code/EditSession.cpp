@@ -1979,6 +1979,7 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 
 				if (!found)
 				{
+					createGatesModeUI->CompleteEditingGate();
 					found = true;
 					gatePoints = 1;
 					testGateInfo.poly0 = (*it);
@@ -2010,13 +2011,21 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 
 	if (!found && gatePoints == 0 )
 	{
+		bool foundOn = false;
 		for (auto it = gates.begin(); it != gates.end(); ++it)
 		{
 			if ((*it)->ContainsPoint(pos))
 			{
 				modifyGate = (*it);
 				createGatesModeUI->SetEditGate(modifyGate);
+				foundOn = true;
+				break;
 			}
+		}
+
+		if (!foundOn)
+		{
+			createGatesModeUI->CompleteEditingGate();
 		}
 	}
 }
@@ -10835,6 +10844,7 @@ void EditSession::DrawMode()
 	case CREATE_GATES:
 	{
 		DrawGateInProgress();
+		createGatesModeUI->Draw(preScreenTex);
 		break;
 	}
 	case CREATE_IMAGES:
