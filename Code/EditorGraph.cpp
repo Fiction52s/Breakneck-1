@@ -102,6 +102,20 @@ void EditorGraph::SetPosition( Vector2f &pos )
 	}
 }
 
+int EditorGraph::GetSpacing()
+{
+	return graphSpacing;
+}
+
+void EditorGraph::SetSpacing(int spacing)
+{
+	if (spacing < 4)
+	{
+		return;
+	}
+
+	graphSpacing = spacing;
+}
 
 PolyVis::PolyVis()
 {

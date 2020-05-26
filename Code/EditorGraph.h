@@ -11,11 +11,13 @@ struct EditorGraph
 
 	EditorGraph();
 	~EditorGraph();
+	int GetSpacing();
 	void SetPosition( sf::Vector2f &pos );
 	void SetCenterAbsolute(const sf::Vector2f &center,
 		float zoomFactor );
 	void Draw(sf::RenderTarget *target);
 	void ModifyGraphSpacing(double factor);
+	void SetSpacing(int spacing);
 	//sf::Vertex *graphLines;
 	sf::Vertex *graphQuads;
 	sf::Color graphColor;

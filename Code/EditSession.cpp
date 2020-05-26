@@ -11004,10 +11004,12 @@ void EditSession::GeneralEventHandler()
 					if (ev.mouseWheel.delta > 0)
 					{
 						graph->ModifyGraphSpacing(.5);
+						createTerrainModeUI->SetGridSize(graph->GetSpacing());
 					}
 					else if (ev.mouseWheel.delta < 0)
 					{
 						graph->ModifyGraphSpacing(2.0);
+						createTerrainModeUI->SetGridSize(graph->GetSpacing());
 					}
 				}
 				else

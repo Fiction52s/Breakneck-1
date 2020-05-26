@@ -269,7 +269,6 @@ struct CreateTerrainModeUI : GUIHandler
 	CreateTerrainModeUI();
 	~CreateTerrainModeUI();
 	void SetShown(bool s);
-	void Update();
 	bool show;
 	EditSession *edit;
 	Panel *mainPanel;
@@ -277,6 +276,7 @@ struct CreateTerrainModeUI : GUIHandler
 	void FlipGrid();
 	bool IsSnapPointsOn();
 	void FlipSnapPoints();
+	void SetGridSize(int gs);
 	void ButtonCallback(Button *b, const std::string & e);
 	void TextBoxCallback(TextBox *tb, const std::string & e);
 	void GridSelectorCallback(GridSelector *gs, const std::string & e);
@@ -286,6 +286,7 @@ struct CreateTerrainModeUI : GUIHandler
 
 	CheckBox *gridCheckbox;
 	CheckBox *snapPointsCheckbox;
+	TextBox *gridSizeTextbox;
 };
 
 struct CreateEnemyModeUI
@@ -377,6 +378,8 @@ struct GridSelector : PanelMember
 struct TextBox : PanelMember
 {
 	TextBox( const std::string &name, int posx, int posy, int width, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
+	void SetString(const std::string &str);
+	std::string GetString();
 	void SendKey( sf::Keyboard::Key k, bool shift );
 	void Draw( sf::RenderTarget *target );
 	bool MouseUpdate();

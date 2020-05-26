@@ -1036,25 +1036,37 @@ void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 }
 
 TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p,const std::string & initialText = "")
-	:PanelMember( p ), pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), cursorIndex( initialText.length() ), clickedDown( false ), name( n )
+	:PanelMember( p ), pos( posx, posy ), width( width_p ), maxLength( lengthLimit ), clickedDown( false ), name( n )
 {
 	focused = false;
 	leftBorder = 3;
 	verticalBorder = 10;
 	characterHeight = 20;
-	text.setString( initialText );
+	
+	cursor.setString("|");
+	cursor.setFont(f);
+	cursor.setFillColor(Color::Red);
+	cursor.setCharacterSize(characterHeight);
+
 	text.setFont( f );
 	text.setFillColor( Color::Black );
 	text.setCharacterSize( characterHeight );
+	text.setPosition(panel->pos.x + pos.x + leftBorder, panel->pos.y + pos.y);
 
-	cursor.setString( "|" );
-	cursor.setFont( f );
-	cursor.setFillColor( Color::Red );
-	cursor.setCharacterSize( characterHeight );
+	SetString(initialText);
+	SetCursorIndex(initialText.length());
+
 	
-	cursor.setPosition( panel->pos.x + pos.x + text.getLocalBounds().width + leftBorder, 
-		panel->pos.y + pos.y );
-	text.setPosition(panel->pos.x + pos.x + leftBorder, panel->pos.y + pos.y );
+}
+
+void TextBox::SetString(const std::string &str)
+{
+	text.setString(str);
+}
+
+std::string TextBox::GetString()
+{
+	return text.getString();
 }
 
 void TextBox::Deactivate()

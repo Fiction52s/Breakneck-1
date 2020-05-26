@@ -4,6 +4,7 @@
 #include "ActorParamsBase.h"
 #include "Enemy.h"
 #include "EditSession.h"
+#include "EditorGraph.h"
 
 using namespace std;
 using namespace sf;
@@ -15,11 +16,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
 	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(50, 10), false);
-}
-
-void CreateTerrainModeUI::Update()
-{
-
+	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
 }
 
 bool CreateTerrainModeUI::IsGridOn()
@@ -32,6 +29,10 @@ void CreateTerrainModeUI::FlipGrid()
 	gridCheckbox->checked = !gridCheckbox->checked;
 }
 
+void CreateTerrainModeUI::SetGridSize(int gs)
+{
+	gridSizeTextbox->SetString(to_string(gs));
+}
 
 bool CreateTerrainModeUI::IsSnapPointsOn()
 {
@@ -55,7 +56,18 @@ void CreateTerrainModeUI::ButtonCallback(Button *b, const std::string & e)
 
 void CreateTerrainModeUI::TextBoxCallback(TextBox *tb, const std::string & e)
 {
-
+	if (tb == gridSizeTextbox)
+	{
+		string str = tb->GetString();
+		stringstream ss;
+		ss << str;
+		int spacing;
+		ss >> spacing;
+		if (!ss.fail())
+		{
+			edit->graph->SetSpacing(spacing);
+		}
+	}
 }
 
 void CreateTerrainModeUI::GridSelectorCallback(GridSelector *gs, const std::string & e)
