@@ -85,6 +85,15 @@ struct GUIHandler
 
 };
 
+struct ToolTip
+{
+	ToolTip(const std::string &str);
+	sf::Text toolTipText;
+	sf::Vertex quad[4];
+	void SetFromMousePos(const sf::Vector2i &pos);
+	void Draw(sf::RenderTarget *target);
+};
+
 struct PanelUpdater
 {
 	PanelUpdater()
@@ -97,23 +106,38 @@ struct PanelUpdater
 private:
 };
 
+
+
 struct PanelMember
 {
 	PanelMember(Panel * p)
-		:panel(p), locked( false)
+		:panel(p), locked(false),
+		toolTip(NULL)
 	{
 
 	}
+	virtual ~PanelMember();
+	void SetToolTip(const std::string &str);
 	virtual void Draw(sf::RenderTarget *target) = 0;
 	virtual bool MouseUpdate() = 0;
 	virtual void Deactivate() {}
+
+	void UpdateToolTip();
+	void ResetToolTip();
+	int toolTipCounter;
+	int toolTipThresh;
+
+	sf::Vector2i lastMouse;
 	//virtual void Lock() { locked = true; }
 	//virtual void Unlock() { locked = false; }
 
 	bool locked;
 	Panel *panel;
-	
+	ToolTip *toolTip;
 };
+
+
+
 
 struct ChooseRect : PanelMember
 {
@@ -753,6 +777,9 @@ struct Panel
 	void DrawQuad(sf::RenderTarget *target);
 	void Draw(sf::RenderTarget *rt);
 	bool ContainsPoint(sf::Vector2i &pos);
+	void ShowToolTip(ToolTip *tt);
+	void HideToolTip();
+	ToolTip *currToolTip;
 	/*bool Update(bool mouseDownLeft, bool mouseDownRight,
 		int posx, int posy, bool checkContained = false );*/
 	bool MouseUpdate();
@@ -832,6 +859,13 @@ struct Panel
 	bool IsPopup();
 	bool active;
 	PanelUpdater *extraUpdater;
+
+
+	int toolTipCounter;
+	int toolTipThresh;
+	sf::Vector2i lastMouse;
+	void UpdateToolTip();
+	bool ToolTipCanBeTurnedOn();
 private:
 	sf::Vertex quad[4];
 	bool popup;

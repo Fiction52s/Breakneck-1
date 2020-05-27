@@ -57,7 +57,7 @@ void SetRectCenter(sf::Vertex *v, float width, float height,
 	sf::Vector2f &origin);
 void SetRectTopLeft(sf::Vertex *v, float width, float height,
 	sf::Vector2f &origin);
-void SetRectColor(sf::Vertex *v, sf::Color &c);
+void SetRectColor(sf::Vertex *v, sf::Color c);
 void SetRectSubRect(sf::Vertex *v, sf::IntRect &sub);
 void SetRectSubRectGL(sf::Vertex *v, sf::IntRect &sub,
 	sf::Vector2f texSize );

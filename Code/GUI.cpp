@@ -10,6 +10,34 @@ using namespace std;
 
 const int CHECKBOXSIZE = 32;
 
+ToolTip::ToolTip(const std::string &str)
+{
+	EditSession *edit = EditSession::GetSession();
+
+	toolTipText.setCharacterSize(14);
+	toolTipText.setFont(edit->mainMenu->arial);
+	toolTipText.setFillColor(Color::Black);
+	toolTipText.setString(str);
+
+	SetRectColor( quad, Color::White);
+}
+
+void ToolTip::SetFromMousePos(const sf::Vector2i &pos)
+{
+	Vector2f myPos = Vector2f(pos.x + 20, pos.y + 20);
+	float width = toolTipText.getLocalBounds().width;
+	float height = toolTipText.getLocalBounds().height;
+	float extra = 10;
+	SetRectTopLeft(quad, width + extra * 2, height + extra * 2, myPos + Vector2f( -extra, -extra ));
+	toolTipText.setPosition(myPos);
+}
+
+void ToolTip::Draw(sf::RenderTarget *target)
+{
+	target->draw(quad, 4, sf::Quads);
+	target->draw(toolTipText);
+}
+
 PanelSlider::PanelSlider(Panel *p, sf::Vector2i &p_origPos, sf::Vector2i &p_destPos)
 	:panel(p), slid(false)
 {
@@ -52,6 +80,18 @@ void PanelSlider::Deactivate()
 	panel->Slide(origPos, bez, duration);
 	panel->slideFrame = skip;
 	slid = false;
+}
+
+void PanelMember::SetToolTip(const std::string &str)
+{
+	assert(toolTip == NULL);
+	toolTip = new ToolTip(str);
+}
+
+PanelMember::~PanelMember()
+{
+	if (toolTip != NULL)
+		delete toolTip;
 }
 
 ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
@@ -1192,6 +1232,10 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
 
 	slideFrame = 0;
 	slideDuration = -1;
+	
+	currToolTip = NULL;
+	toolTipThresh = 30;
+	toolTipCounter = 0;
 }
 
 Panel::~Panel()
@@ -1259,6 +1303,58 @@ Panel::~Panel()
 	{
 		delete (*it).second;
 	}*/
+}
+
+bool Panel::ToolTipCanBeTurnedOn()
+{
+	return currToolTip == NULL && toolTipCounter == toolTipThresh;
+}
+
+void Panel::UpdateToolTip()
+{
+	bool down = MOUSE.IsMouseDownLeft() || MOUSE.IsMouseDownRight();
+	if (down)
+	{
+		HideToolTip();
+	}
+	else
+	{
+		if (toolTipCounter == 0)
+		{
+			lastMouse = GetMousePos();
+			++toolTipCounter;
+		}
+		else
+		{
+			Vector2i currPos = GetMousePos();
+			if (currPos == lastMouse)
+			{
+				if (toolTipCounter < toolTipThresh)
+				{
+					++toolTipCounter;
+				}
+			}
+			else
+			{
+				HideToolTip();
+			}
+		}
+	}
+}
+
+void Panel::ShowToolTip(ToolTip *tt)
+{
+	if (tt == NULL)
+		return;
+
+	currToolTip = tt;
+	currToolTip->SetFromMousePos(mousePos);
+}
+
+void Panel::HideToolTip()
+{
+	currToolTip = NULL;
+	toolTipCounter = 0;
 }
 
 void Panel::Slide(sf::Vector2i &dest, CubicBezier &bez,
@@ -1358,6 +1454,8 @@ bool Panel::MouseUpdate()
 	}
 
 	mousePos = mPos - pos;
+
+	//UpdateToolTip();
 
 	/*if (IsSliding())
 		return true;*/
@@ -1469,6 +1567,8 @@ void Panel::UpdateSprites(int numUpdateFrames)
 	{
 		(*it)->UpdateSprite(numUpdateFrames);
 	}
+
+	UpdateToolTip();
 }
 
 void Panel::SendEvent( Button *b, const std::string & e )
@@ -1789,6 +1889,8 @@ void Panel::Draw( RenderTarget *target )
 		(*it)->Draw(target);
 	}
 
+	if (currToolTip != NULL)
+		currToolTip->Draw(target);
 
 	target->setView(oldView);
 }
@@ -2079,9 +2181,17 @@ bool TextBox::MouseUpdate()
 {
 	sf::Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r( pos.x, pos.y, width, characterHeight + verticalBorder );
+
+	bool containsMouse = r.contains(mousePos);
+
+	if (containsMouse && panel->ToolTipCanBeTurnedOn())
+	{
+		panel->ShowToolTip(toolTip);
+	}
+
 	if( MOUSE.IsMouseDownLeft() )
 	{	
-		if( r.contains( mousePos ) )
+		if(containsMouse)
 		{
 			clickedDown = true;
 		}
@@ -2092,7 +2202,7 @@ bool TextBox::MouseUpdate()
 	}
 	else
 	{
-		if( r.contains( mousePos ) && clickedDown )
+		if(containsMouse && clickedDown )
 		{
 			clickedDown = false;
 			
@@ -2177,9 +2287,17 @@ bool Button::MouseUpdate()
 {
 	Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r( pos.x, pos.y, size.x, size.y );
+
+	bool containsMouse = r.contains(mousePos);
+
+	if (containsMouse && panel->ToolTipCanBeTurnedOn())
+	{
+		panel->ShowToolTip(toolTip);
+	}
+
 	if( MOUSE.IsMouseLeftClicked() )
 	{	
-		if( r.contains(mousePos) )
+		if(containsMouse)
 		{
 			clickedDown = true;
 		}
@@ -2190,7 +2308,7 @@ bool Button::MouseUpdate()
 	}
 	else
 	{
-		if( r.contains(mousePos) && clickedDown )
+		if(containsMouse && clickedDown )
 		{
 			clickedDown = false;
 			panel->SendEvent( this, "pressed" );
@@ -2241,14 +2359,22 @@ void CheckBox::SetLockedStatus(bool check, bool lock)
 
 bool CheckBox::MouseUpdate()
 {
-	if (locked)
-		return false;
+	
 
 	Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r( pos.x, pos.y, CHECKBOXSIZE, CHECKBOXSIZE);
+	bool containsMouse = r.contains(mousePos);
+	if (containsMouse && panel->ToolTipCanBeTurnedOn() )
+	{
+		panel->ShowToolTip(toolTip);
+	}
+
+	if (locked)
+		return false;
+
 	if( MOUSE.IsMouseLeftClicked() )
 	{	
-		if( r.contains(mousePos) )
+		if( containsMouse )
 		{
 			clickedDown = true;
 		}
@@ -2259,7 +2385,7 @@ bool CheckBox::MouseUpdate()
 	}
 	else
 	{
-		if( r.contains(mousePos ) && clickedDown )
+		if( containsMouse && clickedDown )
 		{
 			clickedDown = false;
 			checked = !checked;

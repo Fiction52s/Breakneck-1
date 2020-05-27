@@ -386,7 +386,7 @@ void ClearRect(sf::Vertex *v)
 	}
 }
 
-void SetRectColor(sf::Vertex *v, sf::Color &c)
+void SetRectColor(sf::Vertex *v, sf::Color c)
 {
 	v[0].color = c;
 	v[1].color = c;

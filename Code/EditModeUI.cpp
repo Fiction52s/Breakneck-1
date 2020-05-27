@@ -22,13 +22,25 @@ EditModeUI::EditModeUI()
 	CreateLayerPanel();
 
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
+	gridCheckbox->SetToolTip("Toggle Grid (G)");
+
 	editPointsCheckbox = mainPanel->AddCheckBox("editpoints", Vector2i(50, 10), false);
+	editPointsCheckbox->SetToolTip("Toggle Edit Point Mode (B)");
+
 	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
+	gridSizeTextbox->SetToolTip("Set the grid spacing");
+
 	transformBrushButton = mainPanel->AddButton("transform", Vector2i(200, 10), Vector2f(80, 80), "transform");
+	transformBrushButton->SetToolTip("Transform the current brush (N)");
+
 	deleteBrushButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete selected");
+	deleteBrushButton->SetToolTip("Delete the current brush (X/Delete)");
 
 	moveToolCheckbox = mainPanel->AddCheckBox("move", Vector2i(10, 60), true);
+	moveToolCheckbox->SetToolTip("Toggle Move Tool (Q)");
+
 	showGrassCheckbox = mainPanel->AddCheckBox("showgrass", Vector2i(50, 60), false);
+	showGrassCheckbox->SetToolTip("Toggle Editable Grass (R)");
 
 	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
 
