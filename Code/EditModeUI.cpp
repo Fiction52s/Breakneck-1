@@ -34,7 +34,7 @@ EditModeUI::EditModeUI()
 	transformBrushButton->SetToolTip("Transform the current brush (N)");
 
 	deleteBrushButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete selected");
-	deleteBrushButton->SetToolTip("Delete the current brush (X/Delete)");
+	deleteBrushButton->SetToolTip("Delete the current brush (X / Delete)");
 
 	moveToolCheckbox = mainPanel->AddCheckBox("move", Vector2i(10, 60), true);
 	moveToolCheckbox->SetToolTip("Toggle Move Tool (Q)");
@@ -57,11 +57,18 @@ EditModeUI::~EditModeUI()
 
 void EditModeUI::ExpandTerrainLibrary( int layer )
 {
-	edit->SetMatTypePanelLayer(layer);
-	matTypePanel->SetPosition(matPanelPos);
-	matTypePanel->handler = this;
-	
-	edit->AddActivePanel(matTypePanel);
+	if (matTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(matTypePanel);
+	}
+	else
+	{
+		edit->SetMatTypePanelLayer(layer);
+		matTypePanel->SetPosition(matPanelPos);
+		matTypePanel->handler = this;
+
+		edit->AddActivePanel(matTypePanel);
+	}
 }
 
 void EditModeUI::CreateLayerPanel()

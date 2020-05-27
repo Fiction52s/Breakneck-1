@@ -11781,7 +11781,7 @@ void EditSession::EditModeHandleEvent()
 			int layer = selectedBrush->GetTerrainLayer();
 
 			ClearMostRecentError();
-			if (layer < 0)
+			if (layer < 0 && !selectedBrush->IsEmpty() )
 			{
 				CreateError(ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS);
 				ShowMostRecentError();

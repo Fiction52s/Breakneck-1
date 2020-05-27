@@ -945,11 +945,14 @@ bool Dropdown::IsMouseOnOption(int ind, Vector2f &point )
 	return QuadContainsPoint(dropdownRects + ind * 4, point );
 }
 
-
 bool Dropdown::MouseUpdate()
 {
 	Vector2i mousePos = panel->GetMousePos();
 	Vector2f point(mousePos);
+
+	bool onMainQuad = QuadContainsPoint(mainRect, point);
+
+	UpdateToolTip(!expanded && onMainQuad);
 
 	if (expanded)
 	{
@@ -982,7 +985,7 @@ bool Dropdown::MouseUpdate()
 	}
 	
 
-	bool onMainQuad = QuadContainsPoint(mainRect, point);
+	
 
 	if (MOUSE.IsMouseLeftReleased() && expanded )
 	{
@@ -1484,8 +1487,6 @@ bool Panel::MouseUpdate()
 	}
 
 	mousePos = mPos - pos;
-
-	//UpdateToolTip();
 
 	/*if (IsSliding())
 		return true;*/

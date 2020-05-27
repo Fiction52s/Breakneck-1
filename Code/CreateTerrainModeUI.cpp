@@ -20,17 +20,30 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	mainPanel = new Panel("createterrain", 1920, 200, this, false);
 
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
+	gridCheckbox->SetToolTip("Toggle Grid (G)");
+
 	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(50, 10), false);
+	snapPointsCheckbox->SetToolTip("Toggle Snap to points (F)");
+	
 	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
+	gridSizeTextbox->SetToolTip("Set the grid spacing");
+
 	completeButton = mainPanel->AddButton("complete", Vector2i(200, 10), Vector2f( 80, 80 ), "complete");
+	completeButton->SetToolTip("Complete current polygon (Space)");
+
 	removePointButton = mainPanel->AddButton("remove", Vector2i(300, 10), Vector2f(80, 80), "remove");
+	removePointButton->SetToolTip("Remove progress point (X / Delete)");
+
 	removeAllPointsButton = mainPanel->AddButton("removeall", Vector2i(400, 10), Vector2f(80, 80), "remove all");
+	removeAllPointsButton->SetToolTip("Remove all progress points (no hotkey yet)");
 
 	std::vector<string> actionOptions = { "Add", "Subtract", "Set Inverse Poly" };
 	terrainActionDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(500, 10), Vector2i(200, 28), actionOptions, 0);
+	terrainActionDropdown->SetToolTip("Choose polygon action\nAdd (A)\nSubtract (S)\nSet Inverse Poly (I)");
 
 	std::vector<string> layerOptions = { "Terrain", "Water", "Pickup" };
 	terrainLayerDropdown = mainPanel->AddDropdown("layerdrop", Vector2i(750, 10), Vector2i(200, 28), layerOptions, 0);
+	terrainLayerDropdown->SetToolTip("Choose polygon layer\n(E to choose material)");
 
 	realTerrainTool = 0;
 
@@ -63,10 +76,17 @@ CreateTerrainModeUI::~CreateTerrainModeUI()
 
 void CreateTerrainModeUI::ExpandTerrainLibrary()
 {
-	matTypePanel->SetPosition(matPanelPos);
-	matTypePanel->handler = this;
-	edit->SetMatTypePanelLayer(GetTerrainLayer());
-	edit->AddActivePanel(matTypePanel);
+	if (matTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(matTypePanel);
+	}
+	else
+	{
+		matTypePanel->SetPosition(matPanelPos);
+		matTypePanel->handler = this;
+		edit->SetMatTypePanelLayer(GetTerrainLayer());
+		edit->AddActivePanel(matTypePanel);
+	}
 }
 
 void CreateTerrainModeUI::ChooseMatType(ImageChooseRect *icRect)
@@ -159,7 +179,7 @@ void CreateTerrainModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
 		if (icRect != NULL)
 		{
-			if (icRect->rectIdentity == ChooseRect::I_TERRAINSEARCH)
+			if (icRect->rectIdentity == ChooseRect::I_TERRAINSEARCH && eventType == ChooseRect::E_LEFTCLICKED )
 			{
 				ExpandTerrainLibrary();
 			}
