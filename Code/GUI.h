@@ -121,11 +121,12 @@ struct PanelMember
 	virtual void Draw(sf::RenderTarget *target) = 0;
 	virtual bool MouseUpdate() = 0;
 	virtual void Deactivate() {}
+	void UpdateToolTip(bool contains);
 
-	void UpdateToolTip();
-	void ResetToolTip();
-	int toolTipCounter;
-	int toolTipThresh;
+	//void UpdateToolTip();
+	//void ResetToolTip();
+	//int toolTipCounter;
+	//int toolTipThresh;
 
 	sf::Vector2i lastMouse;
 	//virtual void Lock() { locked = true; }
@@ -766,6 +767,10 @@ struct Panel
 		int height, GUIHandler *handler,
 		bool pop = false );
 	~Panel();
+
+	PanelMember *focusedMember;
+	void SetFocusedMember(PanelMember*pm);
+	void RemoveAsFocusedMember(PanelMember *pm);
 
 	void UpdateSlide( int numUpdateFrames );
 	

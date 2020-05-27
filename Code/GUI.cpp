@@ -94,6 +94,18 @@ PanelMember::~PanelMember()
 		delete toolTip;
 }
 
+void PanelMember::UpdateToolTip(bool contains)
+{
+	if (contains)
+	{
+		panel->SetFocusedMember(this);
+	}
+	else
+	{
+		panel->RemoveAsFocusedMember(this);
+	}
+}
+
 ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	Vertex *v, float size, sf::Vector2f &p_pos, Panel *p)
 	:PanelMember(p), quad(v), boxSize(size), pos(p_pos), chooseRectType(crType),
@@ -1236,6 +1248,8 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
 	currToolTip = NULL;
 	toolTipThresh = 30;
 	toolTipCounter = 0;
+
+	focusedMember = NULL;
 }
 
 Panel::~Panel()
@@ -1305,6 +1319,23 @@ Panel::~Panel()
 	}*/
 }
 
+void Panel::SetFocusedMember(PanelMember*pm)
+{
+	if (pm != focusedMember)
+	{
+		HideToolTip();
+		focusedMember = pm;
+	}
+}
+void Panel::RemoveAsFocusedMember(PanelMember *pm)
+{
+	if (pm == focusedMember)
+	{
+		focusedMember = NULL;
+		HideToolTip();
+	}
+}
+
 bool Panel::ToolTipCanBeTurnedOn()
 {
 	return currToolTip == NULL && toolTipCounter == toolTipThresh;
@@ -1326,17 +1357,10 @@ void Panel::UpdateToolTip()
 		}
 		else
 		{
-			Vector2i currPos = GetMousePos();
-			if (currPos == lastMouse)
+			++toolTipCounter;
+			if (toolTipCounter == toolTipThresh && focusedMember != NULL )
 			{
-				if (toolTipCounter < toolTipThresh)
-				{
-					++toolTipCounter;
-				}
-			}
-			else
-			{
-				HideToolTip();
+				ShowToolTip(focusedMember->toolTip);
 			}
 		}
 	}
@@ -2183,11 +2207,7 @@ bool TextBox::MouseUpdate()
 	sf::Rect<int> r( pos.x, pos.y, width, characterHeight + verticalBorder );
 
 	bool containsMouse = r.contains(mousePos);
-
-	if (containsMouse && panel->ToolTipCanBeTurnedOn())
-	{
-		panel->ShowToolTip(toolTip);
-	}
+	UpdateToolTip(containsMouse);
 
 	if( MOUSE.IsMouseDownLeft() )
 	{	
@@ -2289,11 +2309,7 @@ bool Button::MouseUpdate()
 	sf::Rect<int> r( pos.x, pos.y, size.x, size.y );
 
 	bool containsMouse = r.contains(mousePos);
-
-	if (containsMouse && panel->ToolTipCanBeTurnedOn())
-	{
-		panel->ShowToolTip(toolTip);
-	}
+	UpdateToolTip(containsMouse);
 
 	if( MOUSE.IsMouseLeftClicked() )
 	{	
@@ -2359,15 +2375,10 @@ void CheckBox::SetLockedStatus(bool check, bool lock)
 
 bool CheckBox::MouseUpdate()
 {
-	
-
 	Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r( pos.x, pos.y, CHECKBOXSIZE, CHECKBOXSIZE);
 	bool containsMouse = r.contains(mousePos);
-	if (containsMouse && panel->ToolTipCanBeTurnedOn() )
-	{
-		panel->ShowToolTip(toolTip);
-	}
+	UpdateToolTip(containsMouse);
 
 	if (locked)
 		return false;
