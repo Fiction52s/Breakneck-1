@@ -768,6 +768,10 @@ struct Panel
 		bool pop = false );
 	~Panel();
 
+	bool hasFocusedTextbox;
+	Button *confirmButton;
+	void SetConfirmButton(Button *b);
+
 	PanelMember *focusedMember;
 	void SetFocusedMember(PanelMember*pm);
 	void RemoveAsFocusedMember(PanelMember *pm);
@@ -817,9 +821,9 @@ struct Panel
 		sf::Vector2f &position, Tileset *ts, const sf::IntRect &rect, int bSize = 100 );
 	void SetPosition(const sf::Vector2i &p_pos);
 	void SetCenterPos(const sf::Vector2i &p_pos);
-	void HandleEvent(sf::Event ev);
+	bool HandleEvent(sf::Event ev);
 
-	void SendKey( sf::Keyboard::Key k, bool shift );
+	bool SendKey( sf::Keyboard::Key k, bool shift );
 	void SendEvent( Button *b, const std::string & e );
 	void SendEvent( GridSelector *gs, const std::string & e );
 	void SendEvent( TextBox *tb, const std::string & e );

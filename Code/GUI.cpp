@@ -1250,6 +1250,7 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
 	toolTipCounter = 0;
 
 	focusedMember = NULL;
+	confirmButton = NULL;
 }
 
 Panel::~Panel()
@@ -1317,6 +1318,11 @@ Panel::~Panel()
 	{
 		delete (*it).second;
 	}*/
+}
+
+void Panel::SetConfirmButton(Button *b)
+{
+	confirmButton = b;
 }
 
 void Panel::SetFocusedMember(PanelMember*pm)
@@ -1512,6 +1518,7 @@ bool Panel::MouseUpdate()
 		}*/
 	}
 
+	bool textFocused = false;
 	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
@@ -1527,8 +1534,10 @@ bool Panel::MouseUpdate()
 			}
 
 			(*it).second->focused = true;
+			textFocused = true;
 		}
 	}
+	hasFocusedTextbox = textFocused;
 
 	for (auto it = buttons.begin(); it != buttons.end(); ++it)
 	{
@@ -1630,16 +1639,18 @@ void Panel::SendEvent(MenuDropdown *menuDrop, const std::string & e)
 	handler->MenuDropdownCallback(menuDrop, e);
 }
 
-void Panel::HandleEvent(sf::Event ev)
+bool Panel::HandleEvent(sf::Event ev)
 {
 	switch (ev.type)
 	{
 	case Event::KeyPressed:
-		SendKey(ev.key.code, ev.key.shift);
+		return SendKey(ev.key.code, ev.key.shift);
 		break;
 	case Event::KeyReleased:
 		break;
 	}
+
+	return false;
 }
 
 void Panel::ReserveEnemyRects(int num)
@@ -1924,20 +1935,15 @@ bool Panel::IsSliding()
 	return slideDuration > 0;
 }
 
-void Panel::SendKey( sf::Keyboard::Key k, bool shift )
+bool Panel::SendKey( sf::Keyboard::Key k, bool shift )
 {	
-	bool popup = false;
-	if( buttons.size() == 1 && textBoxes.empty() )
-		popup = true;
-	if( k == Keyboard::Return || popup )
+	if( k == Keyboard::Return)
 	{
-		
-		if( buttons.count( "ok" ) > 0 )
+		if (confirmButton != NULL)
 		{
-			Button *b = buttons["ok"];
-			b->panel->SendEvent( b, "pressed" );
+			SendEvent(confirmButton, "pressed");
 		}
-		return;
+		return true;
 	}
 
 	for( map<string,TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it )
@@ -1945,9 +1951,12 @@ void Panel::SendKey( sf::Keyboard::Key k, bool shift )
 		if( (*it).second->focused )
 		{
 			(*it).second->SendKey( k, shift );
-			(*it).second->panel->SendEvent( (*it).second, "modified" );
+			SendEvent( (*it).second, "modified" );
+			return true;
 		}
 	}
+
+	return false;
 }
 
 TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p,const std::string & initialText = "")

@@ -11431,11 +11431,13 @@ void EditSession::HandleEvents()
 			}
 		}
 
+		bool focuseHandled = false;
 		if (focusedPanel != NULL)
 		{
-			focusedPanel->HandleEvent(ev);
+			focuseHandled = focusedPanel->HandleEvent(ev);
 		}
-		else
+
+		if( !focuseHandled )
 		{
 			HandleEventFunc(mode);
 		}
