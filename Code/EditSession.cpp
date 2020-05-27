@@ -9840,6 +9840,9 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 
 void EditSession::StartSelectedMove()
 {
+	if (!editModeUI->IsMoveOn())
+		return;
+
 	editStartMove = true;
 	Vector2i pos(worldPos.x, worldPos.y);
 	Vector2i delta = pos - editMouseGrabPos;
@@ -11549,6 +11552,10 @@ void EditSession::EditModeHandleEvent()
 		{
 			editModeUI->FlipShowGrass();
 			ShowGrass(editModeUI->IsShowGrassOn());
+		}
+		else if (ev.key.code == Keyboard::Q)
+		{
+			editModeUI->FlipMove();
 		}
 		else if (ev.key.code == Keyboard::P)
 		{
