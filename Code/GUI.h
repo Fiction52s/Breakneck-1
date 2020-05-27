@@ -285,12 +285,11 @@ struct EditModeUI : GUIHandler
 	void SetShown(bool s);
 	bool IsGridOn();
 	void FlipGrid();
-	bool IsSnapPointsOn();
-	void FlipSnapPoints();
+	bool IsEditPointsOn();
+	void FlipEditPoints();
 	void SetGridSize(int gs);
 	void ExpandTerrainLibrary();
 	void ChooseMatType(ImageChooseRect *icRect);
-	//void SetCurrMatType( )
 	void ButtonCallback(Button *b, const std::string & e);
 	void TextBoxCallback(TextBox *tb, const std::string & e);
 	void GridSelectorCallback(GridSelector *gs, const std::string & e);
@@ -301,33 +300,45 @@ struct EditModeUI : GUIHandler
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	int GetTerrainLayer();
 
+	std::string GetLayerShowName(int layer);
+	std::string GetLayerLockedName(int layer);
+	bool IsLayerShowing(int layer);
+	bool IsLayerLocked(int layer);
+	bool IsLayerActionable(int layer);
+	void UpdateLayerShow(int layer, bool show);
+	void UpdateLayerLock(int layer, bool lock);
 
-	int GetCurrTerrainTool();
-	void SetTerrainTool(int t);
-	void SetTempTerrainTool(int t);
-	void RevertTerrainTool();
-	int realTerrainTool;
+	void CreateLayerPanel();
+	void AddLayerToPanel(
+		const std::string &name,
+		int currLayerIndex, int startY);
 
+	std::map<int, std::string> layerMap;
+	std::map<std::string, int> reverseLayerMap;
 
-	Panel *layerPanel;
-	PanelSlider *lpSlider;
+	std::map<int, int> terrainEditLayerMap;
+
+	//search for layer_ get terrainlayer_
+	std::map<int, int> terrainEditLayerReverseMap;
 
 	bool show;
 	EditSession *edit;
 	Panel *mainPanel;
-	Panel *matTypePanel;
+
+	Panel *layerPanel;
+	PanelSlider *lpSlider;
 
 	CheckBox *gridCheckbox;
-	CheckBox *snapPointsCheckbox;
-	TextBox *gridSizeTextbox;
-	Button *completeButton;
-	Button *removePointButton;
-	Button *removeAllPointsButton;
-	Dropdown *terrainActionDropdown;
-	Dropdown *terrainLayerDropdown;
+	CheckBox *editPointsCheckbox;
+	CheckBox *moveTool;
 
-	std::vector<ImageChooseRect*> currMatRects;
-	std::vector<ImageChooseRect*> matTypeRects;
+	TextBox *gridSizeTextbox;
+	Button *deleteBrushButton;
+	Button *transformBrushButton;
+	Button *copyBrushButton;
+	Button *pasteBrushButton;
+
+
 	int terrainGridSize;
 };
 

@@ -36,7 +36,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 
 	terrainGridSize = 64;
 
-	int numTerrainLayers = EditSession::TERRAINLAYER_Count;
+	int numTerrainLayers = TERRAINLAYER_Count;
 	currMatRects.resize(numTerrainLayers);
 	mainPanel->ReserveImageRects(numTerrainLayers);
 	Vector2f currMatRectPos = Vector2f(terrainLayerDropdown->pos)
@@ -246,7 +246,7 @@ void CreateTerrainModeUI::DropdownCallback(Dropdown *dropdown, const std::string
 	if (dropdown == terrainLayerDropdown)
 	{
 		int selectedIndex = dropdown->selectedIndex;
-		for (int i = 0; i < EditSession::TERRAINLAYER_Count; ++i)
+		for (int i = 0; i < TERRAINLAYER_Count; ++i)
 		{
 			currMatRects[i]->SetShown(false);
 		}

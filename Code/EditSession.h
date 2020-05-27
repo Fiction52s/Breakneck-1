@@ -65,6 +65,22 @@ struct GrassDiff
 	int oldValue;
 };
 
+enum TerrainLayers : int
+{
+	TERRAINLAYER_NORMAL,
+	TERRAINLAYER_WATER,
+	TERRAINLAYER_FLY,
+	TERRAINLAYER_Count,
+};
+
+enum EditLayer : int
+{
+	LAYER_ACTOR,
+	LAYER_IMAGE,
+	LAYER_TERRAIN,
+	LAYER_WATER,
+};
+
 struct EditSession : GUIHandler, Session
 {
 	enum Emode : int
@@ -110,32 +126,6 @@ struct EditSession : GUIHandler, Session
 	bool IsDrawMode(Emode em);
 	Emode mode;
 	void UpdateInputNonGame();
-	void CreateLayerPanel();
-	void AddLayerToPanel( 
-		const std::string &name,
-		int currLayerIndex, int startY );
-	Panel *layerPanel;
-	PanelSlider *lpSlider;
-
-	enum EditLayer : int
-	{
-		LAYER_ACTOR,
-		LAYER_IMAGE,
-		LAYER_TERRAIN,
-		LAYER_WATER,
-	};
-
-	std::map<int, std::string> layerMap;
-	std::map<std::string, int> reverseLayerMap;
-	bool IsLayerShowing( int layer );
-	bool IsLayerLocked( int layer );
-	bool IsLayerActionable( int layer );
-	void UpdateLayerCheckbox(CheckBox *cb,
-		const std::string & e);
-	std::string GetLayerShowName(int layer);
-	std::string GetLayerLockedName(int layer);
-	void UpdateLayerShow(int layer, bool show);
-	void UpdateLayerLock(int layer, bool lock);
 	
 
 	enum Tool
@@ -505,13 +495,7 @@ struct EditSession : GUIHandler, Session
 	
 	std::list<RailPtr> rails;
 
-	enum TerrainLayers : int
-	{
-		TERRAINLAYER_NORMAL,
-		TERRAINLAYER_WATER,
-		TERRAINLAYER_FLY,
-		TERRAINLAYER_Count,
-	};
+	
 
 	int currTerrainWorld[TERRAINLAYER_Count];
 	int currTerrainVar[TERRAINLAYER_Count];
