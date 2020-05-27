@@ -792,7 +792,6 @@ void Slider::Draw(sf::RenderTarget *target)
 	target->draw(displayText);
 }
 
-
 Dropdown::Dropdown(const std::string &n, sf::Vector2i &p_pos,
 	sf::Vector2i &p_size, sf::Font &f,
 	const std::vector<std::string> &p_options, int p_defaultIndex, Panel *p)
@@ -801,7 +800,6 @@ Dropdown::Dropdown(const std::string &n, sf::Vector2i &p_pos,
 {
 	selectedIndex = -1;
 	SetOptions(p_options);
-	
 }
 
 Dropdown::~Dropdown()
@@ -995,6 +993,186 @@ bool Dropdown::MouseUpdate()
 	return false;
 }
 
+MenuDropdown::MenuDropdown(const std::string &n, sf::Vector2i &p_pos,
+	sf::Vector2i &p_size, sf::Font &f,
+	const std::vector<std::string> &p_options, Panel *p)
+	:PanelMember(p), pos(p_pos), clickedDown(false), characterHeight(size.y - 4), size(p_size), name(n),
+	myFont(f), expanded(false)
+{
+	selectedIndex = -1;
+	SetOptions(p_options);
+}
+
+MenuDropdown::~MenuDropdown()
+{
+	delete[] dropdownRects;
+}
+
+void MenuDropdown::Deactivate()
+{
+	expanded = false;
+	clickedDown = false;
+}
+
+void MenuDropdown::SetOptions(const std::vector<std::string> &p_options)
+{
+	options = p_options;
+
+	numOptions = options.size();
+	optionText.resize(numOptions);
+
+	SetRectTopLeft(mainRect, size.x, size.y, Vector2f(pos));
+	SetRectColor(mainRect, Color(Color::Black));
+
+	menuText.setString(name);
+	menuText.setFont(myFont);
+	menuText.setFillColor(Color::White);
+	menuText.setCharacterSize(characterHeight);
+	auto lb = menuText.getLocalBounds();
+	menuText.setOrigin(lb.left, lb.top);
+	menuText.setPosition(Vector2f(pos) + Vector2f(4, 4));
+
+	dropdownRects = new Vertex[4 * numOptions];
+
+	for (int i = 0; i < numOptions; ++i)
+	{
+		Vector2f dropPos(pos.x, pos.y + size.y * (i + 1));
+		SetRectTopLeft(dropdownRects + i * 4, size.x, size.y, dropPos);
+		SetRectColor(dropdownRects + i * 4, Color(Color::Blue));
+
+		Text &t = optionText[i];
+		t.setString(options[i]);
+		t.setFont(myFont);
+		t.setFillColor(Color::White);
+		t.setCharacterSize(characterHeight);
+		auto tlb = t.getLocalBounds();
+		t.setOrigin(tlb.left, tlb.top);
+		t.setPosition(dropPos + Vector2f(4, 4));
+	}
+}
+
+void MenuDropdown::Draw(sf::RenderTarget *target)
+{
+	target->draw(mainRect, 4, sf::Quads);
+	target->draw(menuText);
+
+	if (expanded)
+	{
+		target->draw(dropdownRects, numOptions * 4, sf::Quads);
+		for (int i = 0; i < numOptions; ++i)
+		{
+			target->draw(optionText[i]);
+		}
+	}
+}
+
+void MenuDropdown::SetSelectedIndex(int ind)
+{
+	if (ind != selectedIndex)
+	{
+		selectedIndex = ind;
+	}
+}
+
+bool MenuDropdown::IsMouseOnOption(int ind, Vector2f &point)
+{
+	return QuadContainsPoint(dropdownRects + ind * 4, point);
+}
+
+bool MenuDropdown::MouseUpdate()
+{
+	Vector2i mousePos = panel->GetMousePos();
+	Vector2f point(mousePos);
+
+	if (expanded)
+	{
+		int highlightedIndex = -1;
+		for (int i = 0; i < numOptions; ++i)
+		{
+			if (IsMouseOnOption(i, point))
+			{
+				highlightedIndex = i;
+				break;
+			}
+		}
+
+		for (int i = 0; i < numOptions; ++i)
+		{
+			if (i == highlightedIndex)
+			{
+				SetRectColor(dropdownRects + i * 4, Color(Color::Red));
+			}
+			else
+			{
+				SetRectColor(dropdownRects + i * 4, Color(Color::Blue));
+			}
+		}
+	}
+
+
+	bool onMainQuad = QuadContainsPoint(mainRect, point);
+
+	if (MOUSE.IsMouseLeftReleased() && expanded)
+	{
+		for (int i = 0; i < numOptions; ++i)
+		{
+			if (IsMouseOnOption(i, point))
+			{
+				SetSelectedIndex(i);
+				expanded = false;
+				clickedDown = false;
+				panel->SendEvent(this, "selected");
+				return true;
+			}
+		}
+
+		if (!onMainQuad)
+		{
+			expanded = false;
+			clickedDown = false;
+		}
+
+		return false;
+	}
+
+	if (MOUSE.IsMouseLeftClicked())
+	{
+
+		if (expanded)
+		{
+			for (int i = 0; i < numOptions; ++i)
+			{
+				if (IsMouseOnOption(i, point))
+				{
+					SetSelectedIndex(i);
+					expanded = false;
+					clickedDown = true;
+					panel->SendEvent(this, "selected");
+					return true;
+				}
+			}
+
+			clickedDown = true;
+			expanded = false;
+			return true;
+		}
+		else
+		{
+			if (onMainQuad)
+			{
+				clickedDown = true;
+				expanded = true;
+				return true;
+			}
+		}
+	}
+	else
+	{
+		clickedDown = false;
+	}
+	return false;
+}
+
 
 Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
 	:handler( h ), size( width, height ), name( n ), popup( pop )
@@ -1018,6 +1196,11 @@ Panel::Panel( const string &n, int width, int height, GUIHandler *h, bool pop )
 
 Panel::~Panel()
 {
+	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
 	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
 	{
 		delete (*it).second;
@@ -1128,6 +1311,21 @@ void Panel::SetCenterPos(const sf::Vector2i &p_pos)
 	SetPosition(Vector2i(p_pos.x - size.x / 2, p_pos.y - size.y / 2));
 }
 
+bool Panel::IsMenuDropExpanded()
+{
+	bool menuDropExpanded = false;
+	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
+	{
+		if ((*it).second->expanded)
+		{
+			menuDropExpanded = true;
+			break;
+		}
+	}
+
+	return menuDropExpanded;
+}
+
 const sf::Vector2i &Panel::GetMousePos()
 {
 	return mousePos;
@@ -1144,7 +1342,10 @@ bool Panel::MouseUpdate()
 	{
 		if (!popup)
 		{
-			return false;
+			if (!IsMenuDropExpanded())
+			{
+				return false;
+			}
 		}
 		else
 		{
@@ -1160,6 +1361,15 @@ bool Panel::MouseUpdate()
 
 	/*if (IsSliding())
 		return true;*/
+
+	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
+	{
+		bool temp = (*it).second->MouseUpdate();
+		if (temp)
+		{
+			return true;
+		}
+	}
 
 	//cout << "pos: " << posx << ", " << posy << endl;
 	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
@@ -1291,6 +1501,11 @@ void Panel::SendEvent(Slider *slide, const std::string & e)
 	handler->SliderCallback(slide, e);
 }
 
+void Panel::SendEvent(MenuDropdown *menuDrop, const std::string & e)
+{
+	handler->MenuDropdownCallback(menuDrop, e);
+}
+
 void Panel::HandleEvent(sf::Event ev)
 {
 	switch (ev.type)
@@ -1371,6 +1586,15 @@ Dropdown * Panel::AddDropdown(const std::string &name, sf::Vector2i &pos,
 	return drop;
 }
 
+MenuDropdown * Panel::AddMenuDropdown(const std::string &name, sf::Vector2i &pos,
+	sf::Vector2i &size, const std::vector<std::string> &p_options)
+{
+	assert(dropdowns.count(name) == 0);
+	MenuDropdown *menuDrop = new MenuDropdown(name, pos, size, arial, p_options, this);
+	menuDropdowns[name] = menuDrop;
+	return menuDrop;
+}
+
 Button *Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text )
 {
 	assert( buttons.count( name ) == 0 );
@@ -1423,7 +1647,9 @@ GridSelector * Panel::AddGridSelector( const std::string &name, sf::Vector2i pos
 bool Panel::ContainsPoint(sf::Vector2i &point)
 {
 	IntRect r(pos.x, pos.y, size.x, size.y);
-	return (r.contains(point));
+	bool rectContains = r.contains(point);
+	bool menuDropExpanded = IsMenuDropExpanded();
+	return rectContains || menuDropExpanded;
 }
 
 void Panel::DrawQuad(RenderTarget *target)
@@ -1433,6 +1659,11 @@ void Panel::DrawQuad(RenderTarget *target)
 
 void Panel::Deactivate()
 {
+	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
 	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
 	{
 		(*it).second->Deactivate();
@@ -1537,6 +1768,11 @@ void Panel::Draw( RenderTarget *target )
 	}
 
 	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
+	{
+		(*it).second->Draw(target);
+	}
+
+	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
 	{
 		(*it).second->Draw(target);
 	}

@@ -31,6 +31,9 @@ EditModeUI::EditModeUI()
 	showGrassCheckbox = mainPanel->AddCheckBox("showgrass", Vector2i(50, 60), false);
 
 	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
+
+	std::vector<string> testOptions = { "blah", "blah2",  "blah3" };
+	mainPanel->AddMenuDropdown("File", Vector2i(800, 160), Vector2i(200, 28), testOptions);
 }
 
 EditModeUI::~EditModeUI()

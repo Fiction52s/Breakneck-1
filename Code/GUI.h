@@ -29,6 +29,7 @@ struct Dropdown;
 struct TextBox;
 struct ChooseRect;
 struct GateInfo;
+struct MenuDropdown;
 
 struct UIMouse
 {
@@ -80,6 +81,7 @@ struct GUIHandler
 	virtual void DropdownCallback(Dropdown *dropdown, const std::string & e) = 0;
 	virtual void PanelCallback(Panel *p, const std::string & e) {}
 	virtual void ChooseRectEvent(ChooseRect *cr, int eventType) {}
+	virtual void MenuDropdownCallback(MenuDropdown *menuDrop, const std::string & e) {}
 
 };
 
@@ -349,6 +351,8 @@ struct EditModeUI : GUIHandler
 	Button *transformBrushButton;
 	Button *copyBrushButton;
 	Button *pasteBrushButton;
+
+	MenuDropdown *menuDropTest;
 };
 
 struct CreateGatesModeUI : GUIHandler
@@ -687,6 +691,37 @@ struct Dropdown : PanelMember
 	int defaultIndex;
 };
 
+struct MenuDropdown : PanelMember
+{
+	MenuDropdown(const std::string &name, sf::Vector2i &pos,
+		sf::Vector2i &size, sf::Font &f,
+		const std::vector<std::string> &p_options, 
+		Panel *panel);
+	~MenuDropdown();
+	void SetOptions(const std::vector<std::string> &options);
+	void Draw(sf::RenderTarget *rt);
+	bool MouseUpdate();
+	void Deactivate();
+	void SetSelectedIndex(int ind);
+	sf::Vector2i pos;
+	sf::Vector2f size;
+	std::string name;
+	std::vector<std::string> options;
+	std::vector<sf::Text> optionText;
+	sf::Font &myFont;
+	bool IsMouseOnOption(int i, sf::Vector2f &point);
+
+	bool expanded;
+	int selectedIndex;
+	sf::Text menuText;
+
+	int numOptions;
+	sf::Vertex mainRect[4];
+	sf::Vertex *dropdownRects;
+	int characterHeight;
+	bool clickedDown;
+};
+
 struct CheckBox : PanelMember
 {
 	CheckBox( const std::string &name, int posx, int posy, Panel *panel );
@@ -710,7 +745,7 @@ struct Panel
 
 	void UpdateSlide( int numUpdateFrames );
 	
-	
+	bool IsMenuDropExpanded();
 	bool IsSliding();
 	void Deactivate();
 	void SetColor(sf::Color c);
@@ -727,6 +762,8 @@ struct Panel
 	Dropdown * AddDropdown(const std::string &name, sf::Vector2i &pos,
 		sf::Vector2i &size, const std::vector<std::string> &p_options,
 		int defaultIndex );
+	MenuDropdown * AddMenuDropdown(const std::string &name, sf::Vector2i &pos,
+		sf::Vector2i &size, const std::vector<std::string> &p_options );
 	Button * AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	void AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
@@ -757,6 +794,7 @@ struct Panel
 	void SendEvent( CheckBox *cb, const std::string & e );
 	void SendEvent(Dropdown *drop, const std::string & e);
 	void SendEvent(Slider *slide, const std::string & e);
+	void SendEvent(MenuDropdown *menuDrop, const std::string & e);
 	sf::Font arial;
 	std::string name;
 	std::map<std::string, TextBox*> textBoxes;
@@ -765,6 +803,7 @@ struct Panel
 	std::map<std::string, CheckBox*> checkBoxes;
 	std::map<std::string, GridSelector*> gridSelectors;
 	std::map<std::string, Dropdown*> dropdowns;
+	std::map<std::string, MenuDropdown*> menuDropdowns;
 	std::map<std::string, Slider*> sliders;
 	void ReserveEnemyRects(int num);
 	void ReserveImageRects(int num);
