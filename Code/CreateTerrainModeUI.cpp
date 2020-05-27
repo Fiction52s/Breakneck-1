@@ -233,7 +233,10 @@ void CreateTerrainModeUI::GridSelectorCallback(GridSelector *gs, const std::stri
 
 void CreateTerrainModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 {
-
+	if (cb == gridCheckbox)
+	{
+		edit->showGraph = cb->checked;
+	}
 }
 
 void CreateTerrainModeUI::SliderCallback(Slider *slider, const std::string & e)

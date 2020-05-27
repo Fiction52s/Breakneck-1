@@ -458,8 +458,6 @@ struct EditSession : GUIHandler, Session
 	sf::Vector2i pointGrabDelta;
 	sf::Vector2i oldPointGrabPos;
 
-	//bool showGrass;
-	bool showPoints;
 
 	bool justCompletedPolyWithClick;
 	bool justCompletedRailWithClick;
@@ -507,11 +505,11 @@ struct EditSession : GUIHandler, Session
 
 	void UpdateCurrTerrainType();
 
-	//search for terrainlayer_ get layer_
-	std::map<int, int> terrainEditLayerMap;
-	
-	//search for layer_ get terrainlayer_
-	std::map<int, int> terrainEditLayerReverseMap;
+	////search for terrainlayer_ get layer_
+	//std::map<int, int> terrainEditLayerMap;
+	//
+	////search for layer_ get terrainlayer_
+	//std::map<int, int> terrainEditLayerReverseMap;
 
 	std::list<PolyPtr> &GetCorrectPolygonList(int ind);
 	std::list<PolyPtr> &GetCorrectPolygonList(PolyPtr t);
@@ -606,6 +604,7 @@ struct EditSession : GUIHandler, Session
 	void MoveRightBorder(int amount);
 
 	//void UpdateInput()
+	bool IsShowingPoints();
 
 	void ShowGrass(bool s);
 

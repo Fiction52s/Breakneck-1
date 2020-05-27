@@ -153,6 +153,7 @@ void EditSession::ClearSelectedBrush()
 {
 	selectedBrush->SetSelected(false);
 	selectedBrush->Clear();
+	ClearSelectedPoints();
 	grabbedActor = NULL;
 	grabbedObject = NULL;
 	grabbedPoint = NULL;
@@ -948,7 +949,6 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	preScreenTex = mainMenu->preScreenTexture;
 	
 	//minAngle = .99;
-	showPoints = false;
 	messagePopup = NULL;
 	errorPopup = NULL;
 	confirm = NULL;
@@ -2773,7 +2773,7 @@ int EditSession::Run()
 			scaleSpriteBGRect.setPosition(0, 80);
 		}
 
-		showGraph = false;
+		//showGraph = false;
 
 		if (quit)
 			break;
@@ -8920,9 +8920,7 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 
 bool EditSession::PointSelectTerrain(V2d &pos, int terrainLayer )
 {
-	bool pointSelectKeyHeld = IsKeyPressed(Keyboard::B);
-
-	if (pointSelectKeyHeld)
+	if (editModeUI->IsEditPointsOn())
 	{
 		if (PointSelectPolyPoint(pos, terrainLayer ))
 		{
@@ -8984,9 +8982,8 @@ bool EditSession::PointSelectPolyPoint( V2d &pos, int terrainLayer )
 
 bool EditSession::PointSelectRail(V2d &pos)
 {
-	bool pointSelectKeyHeld = IsKeyPressed(Keyboard::B);
-
-	if (pointSelectKeyHeld)
+	//need to let the createRailUI handle this
+	if (false)
 	{
 		if (PointSelectRailPoint(worldPos))
 		{
@@ -9363,8 +9360,7 @@ void EditSession::TryBoxSelect()
 		selectionEmpty = false;
 	}
 
-	bool pointSelectButtonHeld = IsKeyPressed(Keyboard::B);
-	if (pointSelectButtonHeld) //always use point selection for now
+	if (editModeUI->IsEditPointsOn()) //always use point selection for now
 	{
 		if (HoldingShift())
 		{
@@ -9373,7 +9369,7 @@ void EditSession::TryBoxSelect()
 
 		for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
 		{
-			if (editModeUI->IsLayerActionable(terrainEditLayerMap[i])
+			if (editModeUI->IsLayerActionable(editModeUI->terrainEditLayerMap[i])
 				&& BoxSelectPoints(r, 8 * zoomMultiple,
 				i))
 			{
@@ -9381,11 +9377,11 @@ void EditSession::TryBoxSelect()
 			}
 		}
 	}
-	else if (!showPoints)//polygon selection. don't use it for a little bit
+	else if (!editModeUI->IsEditPointsOn())//polygon selection. don't use it for a little bit
 	{
 		for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
 		{
-			if (editModeUI->IsLayerActionable(terrainEditLayerMap[i])
+			if (editModeUI->IsLayerActionable(editModeUI->terrainEditLayerMap[i])
 				&& BoxSelectPolys(r,i))
 			{
 				selectionEmpty = false;
@@ -9510,9 +9506,11 @@ void EditSession::SetMode(Emode m)
 	switch (mode)
 	{
 	case CREATE_TERRAIN:
+		justCompletedPolyWithClick = false;
 		createTerrainModeUI->SetShown(true);
 		break;
 	case CREATE_GATES:
+		gatePoints = 0;
 		createGatesModeUI->SetShown(true);
 		break;
 	case CREATE_ENEMY:
@@ -10338,8 +10336,10 @@ bool EditSession::IsGridOn()
 	{
 	case CREATE_TERRAIN:
 		return createTerrainModeUI->IsGridOn();
+	case EDIT:
+		return editModeUI->IsGridOn();
 	default:
-		return showGraph;
+		return false;
 	}
 }
 
@@ -10362,8 +10362,28 @@ void EditSession::DrawGraph()
 	}
 }
 
+bool EditSession::IsShowingPoints()
+{
+	bool showPoints = false;
+	if (mode == CREATE_TERRAIN)
+	{
+		showPoints = createTerrainModeUI->IsSnapPointsOn() && !createTerrainModeUI->IsGridOn();
+	}
+	else if (mode == CREATE_GATES)
+	{
+		showPoints = true;
+	}
+	else if (mode == EDIT)
+	{
+		showPoints = editModeUI->IsEditPointsOn();
+	}
+	return showPoints;
+}
+
 void EditSession::DrawPolygons()
 {
+	bool showPoints = IsShowingPoints();
+
 	if (inversePolygon != NULL)
 	{
 		inversePolygon->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
@@ -10384,6 +10404,7 @@ void EditSession::DrawPolygons()
 
 void EditSession::DrawRails()
 {
+	bool showPoints = IsShowingPoints();
 	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
 	{
 		(*it)->Draw(zoomMultiple, showPoints, preScreenTex);
@@ -11557,6 +11578,19 @@ void EditSession::EditModeHandleEvent()
 		{
 			editModeUI->FlipMove();
 		}
+		else if (ev.key.code == Keyboard::G)
+		{
+			editModeUI->FlipGrid();
+		}
+		else if (ev.key.code == Keyboard::B)
+		{
+			editModeUI->FlipEditPoints();
+			if (!editModeUI->IsEditPointsOn())
+			{
+				ClearSelectedPoints();
+			}
+		}
+		
 		else if (ev.key.code == Keyboard::P)
 		{
 			SetSelectedTerrainLayer(1);
@@ -12002,8 +12036,6 @@ void EditSession::CreateTerrainModeUpdate()
 		return;
 	}
 
-	showPoints = false;
-
 	if (IsKeyPressed(sf::Keyboard::X) || IsKeyPressed(sf::Keyboard::Delete))
 	{
 		if (!focusedPanel)
@@ -12028,13 +12060,11 @@ void EditSession::CreateTerrainModeUpdate()
 		if (IsGridOn())
 		{
 			SnapPointToGraph(testPoint, graph->graphSpacing);
-			showPoints = false;
 		}
 		else if (IsSnapPointsOn())
 		{
 			SelectPtr obj;
 			TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
-			showPoints = true;
 		}
 
 		/*if (IsKeyPressed(sf::Keyboard::LAlt))
@@ -12153,16 +12183,16 @@ void EditSession::CreateRailsModeUpdate()
 			}
 
 
-			showPoints = true;
+			//showPoints = true;
 		}
 		else
 		{
-			showPoints = false;
+			//showPoints = false;
 		}
 	}
 	else
 	{
-		showPoints = false;
+		//showPoints = false;
 	}
 
 
@@ -12261,20 +12291,16 @@ void EditSession::SelectModeUpdate()
 		}
 		else if (menuSelection == "upperleft")
 		{
-			showPoints = false;
 			SetMode(CREATE_ENEMY);
 		}
 		else if (menuSelection == "upperright")
 		{
-			showPoints = false;
-			justCompletedPolyWithClick = false;
 			SetMode(CREATE_TERRAIN);
 		}
 		else if (menuSelection == "lowerleft")
 		{
 			SetMode(CREATE_GATES);
-			gatePoints = 0;
-			showPoints = true;
+			
 		}
 		else if (menuSelection == "lowerright")
 		{
@@ -12313,7 +12339,7 @@ void EditSession::EditModeUpdate()
 
 			for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
 			{
-				if (editModeUI->IsLayerActionable(terrainEditLayerMap[i])
+				if (editModeUI->IsLayerActionable(editModeUI->terrainEditLayerMap[i])
 					&& emptysp && PointSelectTerrain(worldPos, i))
 				{
 					emptysp = false;
@@ -12409,21 +12435,9 @@ void EditSession::EditModeUpdate()
 
 	if (focusedPanel == NULL)
 	{
-		if (IsKeyPressed(Keyboard::G))
+		if (IsGridOn())
 		{
 			SnapPointToGraph(worldPos, graph->graphSpacing);
-			showGraph = true;
-		}
-
-		bool pressedB = IsKeyPressed(Keyboard::B);
-		if (!showPoints && pressedB)
-		{
-			showPoints = true;
-		}
-		else if (showPoints && !pressedB && !editMouseDownMove)
-		{
-			showPoints = false;
-			ClearSelectedPoints();
 		}
 	}
 		

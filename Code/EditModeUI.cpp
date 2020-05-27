@@ -353,6 +353,10 @@ void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 		{
 			edit->ShowGrass(cb->checked);
 		}
+		else if (cb == gridCheckbox)
+		{
+			edit->showGraph = cb->checked;
+		}
 	}
 }
 

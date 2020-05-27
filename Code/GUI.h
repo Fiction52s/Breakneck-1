@@ -303,7 +303,6 @@ struct EditModeUI : GUIHandler
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	int GetTerrainLayer();
 
 	std::string GetLayerShowName(int layer);
 	std::string GetLayerLockedName(int layer);
