@@ -73,12 +73,12 @@ private:
 
 struct GUIHandler
 {
-	virtual void ButtonCallback(Button *b, const std::string & e) = 0;
-	virtual void TextBoxCallback(TextBox *tb, const std::string & e) = 0;
-	virtual void GridSelectorCallback(GridSelector *gs, const std::string & e) = 0;
-	virtual void CheckBoxCallback(CheckBox *cb, const std::string & e) = 0;
-	virtual void SliderCallback(Slider *slider, const std::string & e) = 0;
-	virtual void DropdownCallback(Dropdown *dropdown, const std::string & e) = 0;
+	virtual void ButtonCallback(Button *b, const std::string & e) {}
+	virtual void TextBoxCallback(TextBox *tb, const std::string & e) {}
+	virtual void GridSelectorCallback(GridSelector *gs, const std::string & e) {}
+	virtual void CheckBoxCallback(CheckBox *cb, const std::string & e) {}
+	virtual void SliderCallback(Slider *slider, const std::string & e) {}
+	virtual void DropdownCallback(Dropdown *dropdown, const std::string & e) {}
 	virtual void PanelCallback(Panel *p, const std::string & e) {}
 	virtual void ChooseRectEvent(ChooseRect *cr, int eventType) {}
 	virtual void MenuDropdownCallback(MenuDropdown *menuDrop, const std::string & e) {}
@@ -307,6 +307,36 @@ struct PanelSlider : PanelUpdater
 	int normalDuration;
 };
 
+struct GeneralUI : GUIHandler
+{
+	GeneralUI();
+	~GeneralUI();
+
+	enum FileOptions
+	{
+
+	};
+
+	enum EditOptions
+	{
+		UNDO,
+		REDO,
+		EditOptions_Count
+	};
+
+	Panel *mainPanel;
+	MenuDropdown *fileDropdown;
+	MenuDropdown *editDropdown;
+	MenuDropdown *modeDropdown;
+	EditSession *edit;
+
+	void Draw(sf::RenderTarget *target);
+	int height;
+
+	void MenuDropdownCallback(MenuDropdown *menuDrop, const std::string & e);
+
+};
+
 struct EditModeUI : GUIHandler
 {
 	EditModeUI();
@@ -376,8 +406,6 @@ struct EditModeUI : GUIHandler
 	Button *transformBrushButton;
 	Button *copyBrushButton;
 	Button *pasteBrushButton;
-
-	MenuDropdown *menuDropTest;
 };
 
 struct CreateGatesModeUI : GUIHandler
@@ -720,7 +748,7 @@ struct Dropdown : PanelMember
 struct MenuDropdown : PanelMember
 {
 	MenuDropdown(const std::string &name, sf::Vector2i &pos,
-		sf::Vector2i &size, sf::Font &f,
+		sf::Vector2i &size, int optionWidth, sf::Font &f,
 		const std::vector<std::string> &p_options, 
 		Panel *panel);
 	~MenuDropdown();
@@ -736,7 +764,12 @@ struct MenuDropdown : PanelMember
 	std::vector<sf::Text> optionText;
 	sf::Font &myFont;
 	bool IsMouseOnOption(int i, sf::Vector2f &point);
+	void SetExpanded(bool exp, bool onMain);
 
+	sf::Color idleColor;
+	sf::Color mouseOverColor;
+	sf::Color expandedColor;
+	int optionWidth;
 	bool expanded;
 	int selectedIndex;
 	sf::Text menuText;
@@ -800,7 +833,8 @@ struct Panel
 		sf::Vector2i &size, const std::vector<std::string> &p_options,
 		int defaultIndex );
 	MenuDropdown * AddMenuDropdown(const std::string &name, sf::Vector2i &pos,
-		sf::Vector2i &size, const std::vector<std::string> &p_options );
+		sf::Vector2i &size, int optionWidth,
+		const std::vector<std::string> &p_options );
 	Button * AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	void AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
@@ -874,7 +908,7 @@ struct Panel
 	int toolTipCounter;
 	int toolTipThresh;
 	sf::Vector2i lastMouse;
-	void UpdateToolTip();
+	void UpdateToolTip( int frames );
 	bool ToolTipCanBeTurnedOn();
 private:
 	sf::Vertex quad[4];

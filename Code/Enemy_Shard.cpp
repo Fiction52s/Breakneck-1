@@ -78,6 +78,7 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	SetEditorActions(FLOAT, FLOAT, 0);
 
 	ShardParams *sParams = (ShardParams*)ap;
+	editParams = ap;
 
 	//SetCurrPosInfo(startPosInfo);
 

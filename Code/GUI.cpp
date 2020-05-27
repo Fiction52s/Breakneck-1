@@ -952,7 +952,21 @@ bool Dropdown::MouseUpdate()
 
 	bool onMainQuad = QuadContainsPoint(mainRect, point);
 
-	UpdateToolTip(!expanded && onMainQuad);
+	
+	if (!expanded && onMainQuad)
+	{
+		panel->SetFocusedMember(this);
+	}
+	else if (expanded || !onMainQuad )//|| (!expanded && !onMainQuad) )
+	{
+		if (panel->focusedMember == this)
+		{
+			panel->focusedMember = NULL;
+			panel->HideToolTip();
+		}
+		//panel->RemoveAsFocusedMember(this);
+	}
+	//UpdateToolTip(!expanded && onMainQuad);
 
 	if (expanded)
 	{
@@ -1049,13 +1063,17 @@ bool Dropdown::MouseUpdate()
 }
 
 MenuDropdown::MenuDropdown(const std::string &n, sf::Vector2i &p_pos,
-	sf::Vector2i &p_size, sf::Font &f,
+	sf::Vector2i &p_size, int p_optionWidth, sf::Font &f,
 	const std::vector<std::string> &p_options, Panel *p)
 	:PanelMember(p), pos(p_pos), clickedDown(false), characterHeight(size.y - 4), size(p_size), name(n),
-	myFont(f), expanded(false)
+	myFont(f), expanded(false), optionWidth( p_optionWidth )
 {
 	selectedIndex = -1;
 	SetOptions(p_options);
+
+	idleColor = Color::Black;
+	mouseOverColor = Color(100, 100, 100);
+	expandedColor = Color(150, 150, 150);
 }
 
 MenuDropdown::~MenuDropdown()
@@ -1065,8 +1083,29 @@ MenuDropdown::~MenuDropdown()
 
 void MenuDropdown::Deactivate()
 {
-	expanded = false;
+	SetExpanded(false, false);
 	clickedDown = false;
+}
+
+void MenuDropdown::SetExpanded(bool exp, bool onMain)
+{
+	expanded = exp;
+	if (expanded)
+	{
+		SetRectColor(mainRect, expandedColor);
+	}
+	else
+	{
+		if (onMain)
+		{
+			SetRectColor(mainRect, mouseOverColor);
+		}
+		else
+		{
+			SetRectColor(mainRect, idleColor);
+		}
+		
+	}
 }
 
 void MenuDropdown::SetOptions(const std::vector<std::string> &p_options)
@@ -1077,7 +1116,7 @@ void MenuDropdown::SetOptions(const std::vector<std::string> &p_options)
 	optionText.resize(numOptions);
 
 	SetRectTopLeft(mainRect, size.x, size.y, Vector2f(pos));
-	SetRectColor(mainRect, Color(Color::Black));
+	SetRectColor(mainRect, idleColor);
 
 	menuText.setString(name);
 	menuText.setFont(myFont);
@@ -1092,7 +1131,7 @@ void MenuDropdown::SetOptions(const std::vector<std::string> &p_options)
 	for (int i = 0; i < numOptions; ++i)
 	{
 		Vector2f dropPos(pos.x, pos.y + size.y * (i + 1));
-		SetRectTopLeft(dropdownRects + i * 4, size.x, size.y, dropPos);
+		SetRectTopLeft(dropdownRects + i * 4, optionWidth, size.y, dropPos);
 		SetRectColor(dropdownRects + i * 4, Color(Color::Blue));
 
 		Text &t = optionText[i];
@@ -1139,6 +1178,13 @@ bool MenuDropdown::MouseUpdate()
 	Vector2i mousePos = panel->GetMousePos();
 	Vector2f point(mousePos);
 
+	bool onMainQuad = QuadContainsPoint(mainRect, point);
+	if (onMainQuad)
+	{
+		panel->SetFocusedMember(this);
+	}
+	//UpdateToolTip(onMainQuad);
+
 	if (expanded)
 	{
 		int highlightedIndex = -1;
@@ -1164,8 +1210,20 @@ bool MenuDropdown::MouseUpdate()
 		}
 	}
 
+	
 
-	bool onMainQuad = QuadContainsPoint(mainRect, point);
+	if (!expanded)
+	{
+		if (onMainQuad)
+		{
+			SetRectColor(mainRect, mouseOverColor);
+		}
+		else
+		{
+			SetRectColor(mainRect, idleColor);
+		}
+	}
+
 
 	if (MOUSE.IsMouseLeftReleased() && expanded)
 	{
@@ -1174,7 +1232,7 @@ bool MenuDropdown::MouseUpdate()
 			if (IsMouseOnOption(i, point))
 			{
 				SetSelectedIndex(i);
-				expanded = false;
+				SetExpanded(false, onMainQuad);
 				clickedDown = false;
 				panel->SendEvent(this, "selected");
 				return true;
@@ -1183,7 +1241,7 @@ bool MenuDropdown::MouseUpdate()
 
 		if (!onMainQuad)
 		{
-			expanded = false;
+			SetExpanded(false, onMainQuad);
 			clickedDown = false;
 		}
 
@@ -1192,7 +1250,6 @@ bool MenuDropdown::MouseUpdate()
 
 	if (MOUSE.IsMouseLeftClicked())
 	{
-
 		if (expanded)
 		{
 			for (int i = 0; i < numOptions; ++i)
@@ -1200,7 +1257,7 @@ bool MenuDropdown::MouseUpdate()
 				if (IsMouseOnOption(i, point))
 				{
 					SetSelectedIndex(i);
-					expanded = false;
+					SetExpanded(false, onMainQuad);
 					clickedDown = true;
 					panel->SendEvent(this, "selected");
 					return true;
@@ -1208,7 +1265,7 @@ bool MenuDropdown::MouseUpdate()
 			}
 
 			clickedDown = true;
-			expanded = false;
+			SetExpanded(false, onMainQuad);
 			return true;
 		}
 		else
@@ -1216,7 +1273,7 @@ bool MenuDropdown::MouseUpdate()
 			if (onMainQuad)
 			{
 				clickedDown = true;
-				expanded = true;
+				SetExpanded(true, onMainQuad);
 				return true;
 			}
 		}
@@ -1333,6 +1390,8 @@ void Panel::SetFocusedMember(PanelMember*pm)
 	if (pm != focusedMember)
 	{
 		HideToolTip();
+		if( focusedMember != NULL )
+			focusedMember->Deactivate();
 		focusedMember = pm;
 	}
 }
@@ -1340,6 +1399,7 @@ void Panel::RemoveAsFocusedMember(PanelMember *pm)
 {
 	if (pm == focusedMember)
 	{
+		focusedMember->Deactivate();
 		focusedMember = NULL;
 		HideToolTip();
 	}
@@ -1350,7 +1410,7 @@ bool Panel::ToolTipCanBeTurnedOn()
 	return currToolTip == NULL && toolTipCounter == toolTipThresh;
 }
 
-void Panel::UpdateToolTip()
+void Panel::UpdateToolTip( int frames )
 {
 	bool down = MOUSE.IsMouseDownLeft() || MOUSE.IsMouseDownRight();
 	if (down)
@@ -1362,11 +1422,17 @@ void Panel::UpdateToolTip()
 		if (toolTipCounter == 0)
 		{
 			lastMouse = GetMousePos();
-			++toolTipCounter;
+			toolTipCounter += frames;
 		}
 		else
 		{
-			++toolTipCounter;
+			if (toolTipCounter < toolTipThresh)
+			{
+				toolTipCounter += frames;
+				if (toolTipCounter > toolTipThresh)
+					toolTipCounter = toolTipThresh;
+			}
+			
 			if (toolTipCounter == toolTipThresh && focusedMember != NULL )
 			{
 				ShowToolTip(focusedMember->toolTip);
@@ -1602,7 +1668,7 @@ void Panel::UpdateSprites(int numUpdateFrames)
 		(*it)->UpdateSprite(numUpdateFrames);
 	}
 
-	UpdateToolTip();
+	UpdateToolTip( numUpdateFrames );
 }
 
 void Panel::SendEvent( Button *b, const std::string & e )
@@ -1723,10 +1789,10 @@ Dropdown * Panel::AddDropdown(const std::string &name, sf::Vector2i &pos,
 }
 
 MenuDropdown * Panel::AddMenuDropdown(const std::string &name, sf::Vector2i &pos,
-	sf::Vector2i &size, const std::vector<std::string> &p_options)
+	sf::Vector2i &size, int optionWidth, const std::vector<std::string> &p_options)
 {
 	assert(dropdowns.count(name) == 0);
-	MenuDropdown *menuDrop = new MenuDropdown(name, pos, size, arial, p_options, this);
+	MenuDropdown *menuDrop = new MenuDropdown(name, pos, size, optionWidth, arial, p_options, this);
 	menuDropdowns[name] = menuDrop;
 	return menuDrop;
 }

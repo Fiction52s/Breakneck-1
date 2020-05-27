@@ -1126,6 +1126,11 @@ EditSession::~EditSession()
 		delete editModeUI;
 	}
 
+	if (generalUI != NULL)
+	{
+		delete generalUI;
+	}
+
 	delete matTypePanel;
 		
 
@@ -2758,11 +2763,14 @@ int EditSession::Run()
 
 	SetupTerrainSelectPanel();
 
+	generalUI = new GeneralUI();
+
 	createEnemyModeUI = new CreateEnemyModeUI();
 	createDecorModeUI = new CreateDecorModeUI();
 	createTerrainModeUI = new CreateTerrainModeUI();
 	createGatesModeUI = new CreateGatesModeUI();
 	editModeUI = new EditModeUI();
+	
 	//enemyChooser = new EnemyChooser(types, enemySelectPanel);
 	//enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
 
@@ -9590,10 +9598,13 @@ void EditSession::ModifyGrass()
 
 void EditSession::ClearActivePanels()
 {
-	if (focusedPanel != NULL)
+	if (focusedPanel != NULL && focusedPanel != generalUI->mainPanel)
+	{
 		focusedPanel->Deactivate();
+		focusedPanel = NULL;
+	}
+
 	activePanels.clear();
-	focusedPanel = NULL;
 }
 
 void EditSession::AddActivePanel(Panel *p)
@@ -10375,6 +10386,8 @@ Vector2i EditSession::GetPixelPos()
 
 	return pPos;
 }
+
+
 
 Tileset *EditSession::GetMatTileset(int tWorld, int tVar)
 {
@@ -11191,6 +11204,8 @@ void EditSession::DrawUI()
 	{
 		(*it)->Draw(preScreenTex);
 	}
+
+	generalUI->Draw(preScreenTex);
 }
 
 void EditSession::Display()
@@ -11393,18 +11408,33 @@ void EditSession::HandleEvents()
 	{
 		Vector2i mousePos = MOUSE.GetPos();
 		bool found = false;
-		for (auto it = activePanels.rbegin(); it != activePanels.rend(); ++it)
+
+		if (generalUI->mainPanel->ContainsPoint(mousePos))
 		{
-			if ((*it)->IsPopup() || (*it)->ContainsPoint(mousePos))
+			if (focusedPanel != generalUI->mainPanel)
 			{
-				if (focusedPanel != (*it))
+				if( focusedPanel != NULL )
+					focusedPanel->Deactivate();
+				focusedPanel = generalUI->mainPanel;
+			}
+			found = true;
+		}
+
+		if (!found)
+		{
+			for (auto it = activePanels.rbegin(); it != activePanels.rend(); ++it)
+			{
+				if ((*it)->IsPopup() || (*it)->ContainsPoint(mousePos))
 				{
-					if( focusedPanel != NULL )
-						focusedPanel->Deactivate();
-					focusedPanel = (*it);
+					if (focusedPanel != (*it))
+					{
+						if (focusedPanel != NULL)
+							focusedPanel->Deactivate();
+						focusedPanel = (*it);
+					}
+					found = true;
+					break;
 				}
-				found = true;
-				break;
 			}
 		}
 

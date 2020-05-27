@@ -18,6 +18,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	matTypePanel = edit->matTypePanel;
 
 	mainPanel = new Panel("createterrain", 1920, 200, this, false);
+	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
 	gridCheckbox->SetToolTip("Toggle Grid (G)");

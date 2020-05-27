@@ -18,6 +18,7 @@ EditModeUI::EditModeUI()
 	matTypePanel = edit->matTypePanel;
 
 	mainPanel = new Panel("edit", 1920, 200, this, false);
+	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 
 	CreateLayerPanel();
 
@@ -43,9 +44,6 @@ EditModeUI::EditModeUI()
 	showGrassCheckbox->SetToolTip("Toggle Editable Grass (R)");
 
 	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
-
-	std::vector<string> testOptions = { "blah", "blah2",  "blah3" };
-	mainPanel->AddMenuDropdown("File", Vector2i(800, 160), Vector2i(200, 28), testOptions);
 }
 
 EditModeUI::~EditModeUI()

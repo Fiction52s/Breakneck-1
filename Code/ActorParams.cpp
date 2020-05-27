@@ -435,8 +435,9 @@ void ShardParams::SetShard(int w, int realX, int realY)
 	world = w;
 	sX = realX;
 	sY = realY;
-	EditSession *session = EditSession::GetSession();
 	localIndex = realX + realY * 11;
+	/*EditSession *session = EditSession::GetSession();
+	
 	Tileset *ts = session->ts_shards[world];
 	image.setTexture(*ts->texture);
 	image.setTextureRect(ts->GetSubRect(localIndex));
@@ -447,7 +448,7 @@ void ShardParams::SetShard(int w, int realX, int realY)
 	gs->selectedX = sX;
 	gs->selectedY = sY + world * 2;
 
-	shardStr = gs->names[gs->selectedX][gs->selectedY];
+	shardStr = gs->names[gs->selectedX][gs->selectedY];*/
 }
 
 int ShardParams::GetTotalIndex()

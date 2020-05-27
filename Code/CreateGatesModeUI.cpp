@@ -14,6 +14,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 {
 	edit = EditSession::GetSession();
 	mainPanel = new Panel("creategates", 1920, 200, this, false);
+	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 
 	numKeysTextbox = mainPanel->AddTextBox("numkeys", Vector2i(100, 10), 50, 5, "");
 	numKeysTextbox->SetToolTip("Set number of keys/pickups to open a gate");
