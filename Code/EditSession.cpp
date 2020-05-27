@@ -1125,6 +1125,8 @@ EditSession::~EditSession()
 	{
 		delete editModeUI;
 	}
+
+	delete matTypePanel;
 		
 
 	mapStartBrush->Destroy();
@@ -2357,6 +2359,138 @@ void EditSession::LoadAndResave()
 	runToResave = false;
 }
 
+void EditSession::SetMatTypePanelLayer(int layer)
+{
+	if (layer == matTypeRectsCurrLayer)
+	{
+		return;
+	}
+
+	matTypeRectsCurrLayer = layer;
+	for (int i = 0; i < TERRAINLAYER_Count; ++i)
+	{
+		if (i == layer)
+		{
+			auto &mtr = matTypeRects[i];
+			for (auto it = mtr.begin(); it != mtr.end(); ++it)
+			{
+				if ((*it)->ts != NULL)
+				{
+					(*it)->SetShown(true);
+				}
+			}
+		}
+		else
+		{
+			auto &mtr = matTypeRects[i];
+			for (auto it = mtr.begin(); it != mtr.end(); ++it)
+			{
+				if ((*it)->ts != NULL)
+				{
+					(*it)->SetShown(false);
+				}
+			}
+		}
+	}
+	
+}
+
+void EditSession::SetupTerrainSelectPanel()
+{
+	matTypeRectsCurrLayer = -1;
+	terrainGridSize = 64;
+	matTypePanel = new Panel("mattype", 600, 600, this, true);
+	Color c(100, 100, 100);
+	c.a = 180;
+	matTypePanel->SetColor(c);
+
+	//terrainSelectPanel->SetPosition(Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10));
+	int maxTexPerWorld = EditSession::MAX_TERRAINTEX_PER_WORLD;
+	int numTypeRects = 8 * maxTexPerWorld;
+
+	int numWaterTypeRects = 1 * maxTexPerWorld;
+	int numPickupTypeRects = 1 * maxTexPerWorld;
+
+	int totalRects = numTypeRects + numWaterTypeRects + numPickupTypeRects;
+
+	matTypePanel->ReserveImageRects(totalRects);
+
+	matTypeRects[TERRAINLAYER_NORMAL].resize(numTypeRects);
+
+	for (int worldI = 0; worldI < 8; ++worldI)
+	{
+		int ind;
+		for (int i = 0; i < maxTexPerWorld; ++i)
+		{
+			ind = worldI * maxTexPerWorld + i;
+
+			matTypeRects[TERRAINLAYER_NORMAL][ind] = matTypePanel->AddImageRect(
+				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
+				GetMatTileset(worldI, i),
+				IntRect(0, 0, 128, 128),
+				terrainGridSize);
+			matTypeRects[TERRAINLAYER_NORMAL][ind]->Init();
+			if (matTypeRects[TERRAINLAYER_NORMAL][ind]->ts != NULL)
+			{
+				//matTypeRects[TERRAINLAYER_NORMAL][ind]->SetShown(false);
+			}
+		}
+	}
+
+	matTypeRects[TERRAINLAYER_WATER].resize(numWaterTypeRects);
+
+	int startWorldWater = 8;
+	for (int worldI = startWorldWater; worldI < startWorldWater + 1; ++worldI)
+	{
+		int ind;
+		int trueWorld = worldI - startWorldWater;
+		for (int i = 0; i < maxTexPerWorld; ++i)
+		{
+			ind = trueWorld * maxTexPerWorld + i;
+
+			matTypeRects[TERRAINLAYER_WATER][ind] = matTypePanel->AddImageRect(
+				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+				Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
+				GetMatTileset(worldI, i),
+				IntRect(0, 0, 128, 128),
+				terrainGridSize);
+			matTypeRects[TERRAINLAYER_WATER][ind]->Init();
+			if (matTypeRects[TERRAINLAYER_WATER][ind]->ts != NULL)
+			{
+				//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
+			}
+		}
+	}
+
+	matTypeRects[TERRAINLAYER_FLY].resize(numPickupTypeRects);
+
+	int startWorldPickup = 9;
+	for (int worldI = startWorldPickup; worldI < startWorldPickup + 1; ++worldI)
+	{
+		int ind;
+		int trueWorld = worldI - startWorldPickup;
+		for (int i = 0; i < maxTexPerWorld; ++i)
+		{
+			ind = trueWorld * maxTexPerWorld + i;
+
+			matTypeRects[TERRAINLAYER_FLY][ind] = matTypePanel->AddImageRect(
+				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+				Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
+				GetMatTileset(worldI, i),
+				IntRect(0, 0, 128, 128),
+				terrainGridSize);
+			matTypeRects[TERRAINLAYER_FLY][ind]->Init();
+			if (matTypeRects[TERRAINLAYER_FLY][ind]->ts != NULL)
+			{
+				//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
+			}
+		}
+	}
+
+}
+
+
 int EditSession::Run()
 {
 	grassChanges = NULL;
@@ -2603,6 +2737,8 @@ int EditSession::Run()
 	{
 		(*it).second->CreateDefaultEnemy();
 	}
+
+	SetupTerrainSelectPanel();
 
 	createEnemyModeUI = new CreateEnemyModeUI();
 	createDecorModeUI = new CreateDecorModeUI();
@@ -11421,6 +11557,144 @@ void EditSession::CreateRailsModeHandleEvent()
 	}
 }
 
+void EditSession::EditModeDelete()
+{
+	if (CountSelectedPoints() > 0)
+	{
+		TryRemoveSelectedPoints();
+	}
+	else
+	{
+		TryRemoveSelectedObjects();
+	}
+}
+
+void EditSession::EditModeTransform()
+{
+	if (selectedBrush->IsEmpty())
+		return;
+
+	SetMode(TRANSFORM);
+
+	if (selectedBrush->IsSingleDecor())
+	{
+		//transformTools->Reset(selectedBrush->GetCenterF(),
+		//	selectedBrush->GetTerrainSize());
+		DecorPtr sDec = selectedBrush->objects.front()->GetAsDecor();
+		//FloatRect localBounds = sDec->spr.getLocalBounds();
+		//Vector2f size(localBounds.width * sDec->spr.getScale().x,
+		//	localBounds.height * sDec->spr.getScale().y);
+		transformTools->Reset(sDec->center, Vector2f(sDec->tileSize.x * sDec->scale.x,
+			sDec->tileSize.y * sDec->scale.y), sDec->rotation);
+	}
+	//else if (selectedBrush->IsSingleFlyPoly())
+	//{
+
+	//	
+	//}
+	else
+	{
+		transformTools->Reset(selectedBrush->GetCenterF(),
+			selectedBrush->GetTerrainSize());
+	}
+
+	//selectedBrush->Scale(1.05f);
+	PolyPtr p;
+	DecorPtr dec;
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	{
+		p = (*it)->GetAsTerrain();
+		if (p != NULL)
+		{
+			p->SetRenderMode(TerrainPolygon::RENDERMODE_TRANSFORM);
+			//p->SoftReset();
+			//p->Scale(1.05f);
+			//p->Scale(1.1f);
+			//p->Finalize();
+		}
+		dec = (*it)->GetAsDecor();
+		if (dec != NULL)
+		{
+			dec->transformOffset = dec->center - transformTools->GetCenter();
+			dec->StartTransformation();
+
+		}
+
+	}
+}
+
+void EditSession::EditModeCopy()
+{
+	//copiedBrush = selectedBrush->Copy();
+	if (copiedBrush != NULL)
+	{
+		copiedBrush->Destroy();
+		delete copiedBrush;
+		copiedBrush = NULL;
+	}
+	if (freeActorCopiedBrush != NULL)
+	{
+		freeActorCopiedBrush->Destroy();
+		delete freeActorCopiedBrush;
+		freeActorCopiedBrush = NULL;
+	}
+
+	copiedBrush = selectedBrush->CopyTerrainAndAttachedActors();
+	freeActorCopiedBrush = selectedBrush->CopyFreeActors();
+}
+
+void EditSession::EditModePaste()
+{
+	if (copiedBrush != NULL || freeActorCopiedBrush != NULL)
+	{
+		Vector2i pos = Vector2i(worldPos.x, worldPos.y);
+
+		if (copiedBrush != NULL)
+		{
+			copiedBrush->CenterOnPoint(pos);
+		}
+
+		if (freeActorCopiedBrush != NULL)
+		{
+
+			freeActorCopiedBrush->CenterOnPoint(pos);
+
+			ActorPtr actor;
+			for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
+			{
+				actor = (*it)->GetAsActor();
+				if (actor == NULL)
+					continue;
+
+				actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+			}
+
+			//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
+			//{
+			//	actor = (*it)->GetAsActor();
+			//	if (actor == NULL)
+			//		continue;
+
+			//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+			//}
+		}
+
+		// (pos - copiedBrush->GetCenter());
+		editMouseGrabPos = pos;
+		editMouseOrigPos = pos;
+
+		SetMode(PASTE);
+		if (complexPaste != NULL)
+		{
+			delete complexPaste;
+			complexPaste = NULL;
+		}
+
+		pasteAxis = -1;
+		ClearSelectedBrush();
+	}
+}
+
 void EditSession::EditModeHandleEvent()
 {
 	switch (ev.type)
@@ -11429,22 +11703,11 @@ void EditSession::EditModeHandleEvent()
 	{
 		if (ev.key.code == Keyboard::C && ev.key.control)
 		{
-			//copiedBrush = selectedBrush->Copy();
-			if (copiedBrush != NULL)
-			{
-				copiedBrush->Destroy();
-				delete copiedBrush;
-				copiedBrush = NULL;
-			}
-			if (freeActorCopiedBrush != NULL)
-			{
-				freeActorCopiedBrush->Destroy();
-				delete freeActorCopiedBrush;
-				freeActorCopiedBrush = NULL;
-			}
-
-			copiedBrush = selectedBrush->CopyTerrainAndAttachedActors();
-			freeActorCopiedBrush = selectedBrush->CopyFreeActors();
+			EditModeCopy();
+		}
+		else if (ev.key.code == Keyboard::V && ev.key.control)
+		{
+			EditModePaste();
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
@@ -11454,120 +11717,14 @@ void EditSession::EditModeHandleEvent()
 		{
 			RedoMostRecentUndoneAction();
 		}
-		else if (ev.key.code == Keyboard::V && ev.key.control)
-		{
-			if (copiedBrush != NULL || freeActorCopiedBrush != NULL )
-			{
-				Vector2i pos = Vector2i(worldPos.x, worldPos.y);
-
-				if (copiedBrush != NULL)
-				{
-					copiedBrush->CenterOnPoint(pos);
-				}
-
-				if (freeActorCopiedBrush != NULL)
-				{
-					
-					freeActorCopiedBrush->CenterOnPoint(pos);
-
-					ActorPtr actor;
-					for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-					{
-						actor = (*it)->GetAsActor();
-						if (actor == NULL)
-							continue;
-
-						actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
-					}
-				
-					//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-					//{
-					//	actor = (*it)->GetAsActor();
-					//	if (actor == NULL)
-					//		continue;
-
-					//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
-					//}
-				}
-				
-				// (pos - copiedBrush->GetCenter());
-				editMouseGrabPos = pos;
-				editMouseOrigPos = pos;
-
-				SetMode(PASTE);
-				if (complexPaste != NULL)
-				{
-					delete complexPaste;
-					complexPaste = NULL;
-				}
-				
-				pasteAxis = -1;
-				ClearSelectedBrush();
-			}
-		}
+		
 		else if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
 		{
-			if (CountSelectedPoints() > 0)
-			{
-				TryRemoveSelectedPoints();
-			}
-			else
-			{
-				TryRemoveSelectedObjects();
-			}
+			EditModeDelete();
 		}
 		else if (ev.key.code == Keyboard::N)
 		{
-			if (selectedBrush->IsEmpty())
-				break;
-
-			SetMode(TRANSFORM);
-			
-			if (selectedBrush->IsSingleDecor())
-			{
-				//transformTools->Reset(selectedBrush->GetCenterF(),
-				//	selectedBrush->GetTerrainSize());
-				DecorPtr sDec = selectedBrush->objects.front()->GetAsDecor();
-				//FloatRect localBounds = sDec->spr.getLocalBounds();
-				//Vector2f size(localBounds.width * sDec->spr.getScale().x,
-				//	localBounds.height * sDec->spr.getScale().y);
-				transformTools->Reset(sDec->center, Vector2f(sDec->tileSize.x * sDec->scale.x,
-					sDec->tileSize.y * sDec->scale.y), sDec->rotation);
-			}
-			//else if (selectedBrush->IsSingleFlyPoly())
-			//{
-
-			//	
-			//}
-			else
-			{
-				transformTools->Reset(selectedBrush->GetCenterF(),
-					selectedBrush->GetTerrainSize());
-			}
-			
-			//selectedBrush->Scale(1.05f);
-			PolyPtr p;
-			DecorPtr dec;
-			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-			{
-				p = (*it)->GetAsTerrain();
-				if (p != NULL)
-				{
-					p->SetRenderMode(TerrainPolygon::RENDERMODE_TRANSFORM);
-					//p->SoftReset();
-					//p->Scale(1.05f);
-					//p->Scale(1.1f);
-					//p->Finalize();
-				}
-				dec = (*it)->GetAsDecor();
-				if (dec != NULL)
-				{
-					dec->transformOffset = dec->center - transformTools->GetCenter();
-					dec->StartTransformation();
-					
-				}
-					
-			}
+			EditModeTransform();
 		}
 		else if (ev.key.code == Keyboard::R)
 		{
@@ -11601,11 +11758,7 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::E)
 		{
-			if (selectedBrush->GetNumTerrain() > 0)
-			{
-				AddActivePanel(terrainSelectorPopup);
-				tempGridResult = "not set";
-			}
+			editModeUI->ExpandTerrainLibrary();
 		}
 		else if (ev.key.code == Keyboard::I)
 		{

@@ -505,6 +505,17 @@ struct EditSession : GUIHandler, Session
 
 	void UpdateCurrTerrainType();
 
+	int terrainGridSize;
+	Panel *matTypePanel;
+	void SetMatTypePanelLayer(int layer);
+	std::vector<ImageChooseRect*> matTypeRects[TERRAINLAYER_Count];
+	int matTypeRectsCurrLayer;
+	void SetupTerrainSelectPanel();
+	void EditModeDelete();
+	void EditModeTransform();
+	void EditModeCopy();
+	void EditModePaste();
+
 	////search for terrainlayer_ get layer_
 	//std::map<int, int> terrainEditLayerMap;
 	//

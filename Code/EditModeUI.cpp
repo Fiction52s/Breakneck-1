@@ -12,6 +12,11 @@ using namespace sf;
 EditModeUI::EditModeUI()
 {
 	edit = EditSession::GetSession();
+
+	//matTypeRects = &edit->matTypeRects;
+	terrainGridSize = edit->terrainGridSize;
+	matTypePanel = edit->matTypePanel;
+
 	mainPanel = new Panel("edit", 1920, 200, this, false);
 
 	CreateLayerPanel();
@@ -25,11 +30,7 @@ EditModeUI::EditModeUI()
 	moveToolCheckbox = mainPanel->AddCheckBox("move", Vector2i(10, 60), true);
 	showGrassCheckbox = mainPanel->AddCheckBox("showgrass", Vector2i(50, 60), false);
 
-	terrainGridSize = 64;
-	//Vector2f currMatRectPos = Vector2f(terrainLayerDropdown->pos)
-	//	+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
-
-	//matTypePanel->SetPosition(Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10));
+	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
 }
 
 EditModeUI::~EditModeUI()
@@ -41,7 +42,9 @@ EditModeUI::~EditModeUI()
 
 void EditModeUI::ExpandTerrainLibrary()
 {
-	//edit->AddActivePanel(matTypePanel);
+	matTypePanel->SetPosition(matPanelPos);
+	matTypePanel->handler = this;
+	edit->AddActivePanel(matTypePanel);
 }
 
 void EditModeUI::CreateLayerPanel()
@@ -267,20 +270,19 @@ void EditModeUI::ButtonCallback(Button *b, const std::string & e)
 {
 	if (b == deleteBrushButton)
 	{
-		//edit->ExecuteTerrainCompletion();
+		edit->EditModeDelete();
 	}
 	else if (b == transformBrushButton)
 	{
-		//edit->removeProgressPointWaiter->Reset();
-		//edit->RemovePointFromPolygonInProgress();
+		edit->EditModeTransform();
 	}
 	else if (b == copyBrushButton)
 	{
-		//edit->ClearPolygonInProgress();
+		edit->EditModeCopy();
 	}
 	else if (b == pasteBrushButton)
 	{
-		//edit->ClearPolygonInProgress();
+		edit->EditModePaste();
 	}
 }
 

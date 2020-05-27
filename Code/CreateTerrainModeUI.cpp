@@ -12,12 +12,12 @@ using namespace sf;
 CreateTerrainModeUI::CreateTerrainModeUI()
 {
 	edit = EditSession::GetSession();
+
+	//matTypeRects = &edit->matTypeRects;
+	terrainGridSize = edit->terrainGridSize;
+	matTypePanel = edit->matTypePanel;
+
 	mainPanel = new Panel("createterrain", 1920, 200, this, false);
-	matTypePanel = new Panel("mattype", 600, 600, this, true);
-	Color c(100, 100, 100);
-	c.a = 180;
-	matTypePanel->SetColor(c);
-	
 
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
 	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(50, 10), false);
@@ -52,38 +52,20 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 
 	currMatRects[0]->SetShown(true);
 
-	matTypePanel->SetPosition(Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10 ));
-
-
-	int maxTexPerWorld = EditSession::MAX_TERRAINTEX_PER_WORLD;
-	int numTypeRects = 8 * maxTexPerWorld;
-	matTypeRects.resize(numTypeRects);
-	
-	matTypePanel->ReserveImageRects(numTypeRects);
-
-	for (int worldI = 0; worldI < 8; ++worldI)
-	{
-		int ind;
-		for (int i = 0; i < maxTexPerWorld; ++i)
-		{
-			ind = worldI * maxTexPerWorld + i;
-
-			matTypeRects[ind] = matTypePanel->AddImageRect(
-				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
-				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
-				edit->GetMatTileset(worldI, i),
-				IntRect(0, 0, 128, 128),
-				terrainGridSize);
-			matTypeRects[ind]->Init();
-			if (matTypeRects[ind]->ts != NULL)
-			{
-				matTypeRects[ind]->SetShown(true);
-			}
-		}
-	}
+	matPanelPos = Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10);
 }
+
+CreateTerrainModeUI::~CreateTerrainModeUI()
+{
+	delete mainPanel;
+	
+}
+
 void CreateTerrainModeUI::ExpandTerrainLibrary()
 {
+	matTypePanel->SetPosition(matPanelPos);
+	matTypePanel->handler = this;
+	edit->SetMatTypePanelLayer(GetTerrainLayer());
 	edit->AddActivePanel(matTypePanel);
 }
 
@@ -124,11 +106,7 @@ void CreateTerrainModeUI::RevertTerrainTool()
 	terrainActionDropdown->SetSelectedIndex(realTerrainTool);
 }
 
-CreateTerrainModeUI::~CreateTerrainModeUI()
-{
-	delete mainPanel;
-	delete matTypePanel;
-}
+
 
 bool CreateTerrainModeUI::IsGridOn()
 {

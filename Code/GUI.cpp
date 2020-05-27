@@ -339,6 +339,11 @@ void EnemyChooseRect::SetType(ActorType *type, int lev)
 void EnemyChooseRect::SetSize(float s)
 {
 	ChooseRect::SetSize(s);
+	UpdatePanelPos();
+}
+
+void EnemyChooseRect::UpdatePanelPos()
+{
 	if (actorType != NULL)
 	{
 		Vector2f truePos = GetGlobalPos() + Vector2f(boxSize / 2.f, boxSize / 2.f);
@@ -460,10 +465,8 @@ ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v,
 	SetImage(p_ts, subRect);
 }
 
-void ImageChooseRect::SetSize(float s)
+void ImageChooseRect::UpdatePanelPos()
 {
-	ChooseRect::SetSize(s);
-
 	Vector2f truePos = GetGlobalPos() + Vector2f(boxSize / 2.f, boxSize / 2.f);
 
 	float test;
@@ -472,6 +475,12 @@ void ImageChooseRect::SetSize(float s)
 	test = max / boxSize;
 	view.setCenter(Vector2f(960 * test - truePos.x * test, 540 * test - truePos.y * test));// + Vector2f( 64,0 ));//-pos / 5);//Vector2f(0, 0));
 	view.setSize(Vector2f(1920 * test, 1080 * test));
+}
+
+void ImageChooseRect::SetSize(float s)
+{
+	ChooseRect::SetSize(s);
+	UpdatePanelPos();	
 }
 
 void ImageChooseRect::Draw(RenderTarget *target)
@@ -1094,6 +1103,23 @@ void Panel::SetPosition(const sf::Vector2i &p_pos)
 {
 	pos = p_pos;
 
+	for (auto it = enemyChooseRects.begin(); it != enemyChooseRects.end(); ++it)
+	{
+		if ((*it)->show)
+		{
+			(*it)->UpdatePanelPos();
+		}
+	}
+
+	for (auto it = imageChooseRects.begin(); it != imageChooseRects.end(); ++it)
+	{
+		if ((*it)->show)
+		{
+			(*it)->UpdatePanelPos();
+		}
+	}
+
+	
 	//SetRectTopLeft(quad, size.x, size.y, Vector2f(pos));
 }
 

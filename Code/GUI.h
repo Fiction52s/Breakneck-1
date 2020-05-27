@@ -176,7 +176,7 @@ struct ChooseRect : PanelMember
 	sf::Vector2f pos;
 	
 	virtual void UpdateSprite(int frameUpdate) {}
-
+	virtual void UpdatePanelPos() {}
 	
 	sf::IntRect bounds;
 	int quadIndex;
@@ -206,6 +206,7 @@ struct EnemyChooseRect : ChooseRect
 	void Draw(sf::RenderTarget *target);
 	void SetSize(float s);
 	void SetType(ActorType *type, int lev);
+	void UpdatePanelPos();
 	//void Unfocus();
 	ActorType *actorType;
 	Enemy *enemy;
@@ -225,6 +226,7 @@ struct ImageChooseRect : ChooseRect
 		Tileset *ts, const sf::IntRect &subRect, int boxSize, 
 		Panel *p);
 
+	void UpdatePanelPos();
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
 	void SetSize(float s);
@@ -317,6 +319,11 @@ struct EditModeUI : GUIHandler
 		const std::string &name,
 		int currLayerIndex, int startY);
 
+	int terrainGridSize;
+	Panel *matTypePanel;
+	//std::vector<ImageChooseRect*> *matTypeRects;
+	sf::Vector2i matPanelPos;
+
 	std::map<int, std::string> layerMap;
 	std::map<std::string, int> reverseLayerMap;
 
@@ -342,9 +349,6 @@ struct EditModeUI : GUIHandler
 	Button *transformBrushButton;
 	Button *copyBrushButton;
 	Button *pasteBrushButton;
-
-
-	int terrainGridSize;
 };
 
 struct CreateGatesModeUI : GUIHandler
@@ -457,8 +461,13 @@ struct CreateTerrainModeUI : GUIHandler
 
 	bool show;
 	EditSession *edit;
-	Panel *mainPanel;
+
+	int terrainGridSize;
 	Panel *matTypePanel;
+	//std::vector<ImageChooseRect*> *matTypeRects;
+
+	Panel *mainPanel;
+	
 
 	CheckBox *gridCheckbox;
 	CheckBox *snapPointsCheckbox;
@@ -469,9 +478,11 @@ struct CreateTerrainModeUI : GUIHandler
 	Dropdown *terrainActionDropdown;
 	Dropdown *terrainLayerDropdown;
 
+	sf::Vector2i matPanelPos;
+
 	std::vector<ImageChooseRect*> currMatRects;
-	std::vector<ImageChooseRect*> matTypeRects;
-	int terrainGridSize;
+	
+	
 };
 
 struct CreateEnemyModeUI
