@@ -384,6 +384,7 @@ struct CreateGatesModeUI : GUIHandler
 {
 	CreateGatesModeUI();
 	~CreateGatesModeUI();
+	void ExpandLibrary();
 	void SetShown(bool s);
 	void ExpandShardLibrary();
 	void ExpandBossLibrary();

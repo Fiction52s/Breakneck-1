@@ -1842,6 +1842,8 @@ void Panel::Deactivate()
 
 	if (extraUpdater != NULL)
 		extraUpdater->Deactivate();
+
+	HideToolTip();
 }
 
 void Panel::Draw( RenderTarget *target )

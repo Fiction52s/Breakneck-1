@@ -16,12 +16,18 @@ CreateGatesModeUI::CreateGatesModeUI()
 	mainPanel = new Panel("creategates", 1920, 200, this, false);
 
 	numKeysTextbox = mainPanel->AddTextBox("numkeys", Vector2i(100, 10), 50, 5, "");
+	numKeysTextbox->SetToolTip("Set number of keys/pickups to open a gate");
+
 	deleteGateButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete");
+	deleteGateButton->SetToolTip("Delete selected gate (X / Delete)");
+
 	OKGateButton = mainPanel->AddButton("ok", Vector2i(200, 10), Vector2f(80, 80), "OK");
+	OKGateButton->SetToolTip("Finish editing a selected gate (Enter)");
 
 	std::vector<string> gateCatOptions = { "Key", "Shard", "Boss", "Secret", "Pickup", "Black" };
 	gateCategoryDropdown = mainPanel->AddDropdown(
 		"catdrop", Vector2i(500, 10), Vector2i(200, 28), gateCatOptions, 0);
+	gateCategoryDropdown->SetToolTip("Choose the gate category\n(E to expand types)");
 
 	currGateTypeRectPos = Vector2f(gateCategoryDropdown->pos)
 		+ Vector2f(gateCategoryDropdown->size.x + 20, 0);
@@ -262,17 +268,40 @@ void CreateGatesModeUI::CreatePickupGateTypePanel()
 
 void CreateGatesModeUI::ExpandShardLibrary()
 {
-	edit->AddActivePanel(shardGateTypePanel);
+	if (shardGateTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(shardGateTypePanel);
+	}
+	else
+	{
+		edit->AddActivePanel(shardGateTypePanel);
+	}
+	
 }
 
 void CreateGatesModeUI::ExpandBossLibrary()
 {
-	edit->AddActivePanel(bossGateTypePanel);
+	if (bossGateTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(bossGateTypePanel);
+	}
+	else
+	{
+		edit->AddActivePanel(bossGateTypePanel);
+	}
 }
 
 void CreateGatesModeUI::ExpandPickupLibrary()
 {
-	edit->AddActivePanel(pickupGateTypePanel);
+	if (bossGateTypePanel == edit->focusedPanel)
+	{
+		edit->AddActivePanel(pickupGateTypePanel);
+	}
+	else
+	{
+		edit->RemoveActivePanel(pickupGateTypePanel);
+	}
+	
 }
 
 void CreateGatesModeUI::ChooseShardType(ImageChooseRect *icRect)
@@ -363,6 +392,23 @@ void CreateGatesModeUI::UpdateCategoryDropdownType()
 	currGateTypeRects[gateCategoryDropdown->selectedIndex]->SetShown(true);
 }
 
+void CreateGatesModeUI::ExpandLibrary()
+{
+	int cat = GetGateCategory();
+	switch (cat)
+	{
+	case 1:
+		ExpandShardLibrary();
+		break;
+	case 2:
+		ExpandBossLibrary();
+		break;
+	case 4:
+		ExpandPickupLibrary();
+		break;
+	}
+}
+
 void CreateGatesModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
 	if (eventType == ChooseRect::E_LEFTCLICKED ||
@@ -375,19 +421,7 @@ void CreateGatesModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 			{
 				if (eventType == ChooseRect::E_LEFTCLICKED)
 				{
-					int cat = GetGateCategory();
-					switch (cat)
-					{
-					case 1:
-						ExpandShardLibrary();
-						break;
-					case 2:
-						ExpandBossLibrary();
-						break;
-					case 4:
-						ExpandPickupLibrary();
-						break;
-					}
+					ExpandLibrary();
 				}
 			}
 			else if (icRect->rectIdentity == ChooseRect::I_SHARDLIBRARY)

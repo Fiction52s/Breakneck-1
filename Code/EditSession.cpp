@@ -12019,10 +12019,13 @@ void EditSession::CreateGatesModeHandleEvent()
 		{
 			RedoMostRecentUndoneAction();
 		}
-		else if (ev.key.code == sf::Keyboard::X)
+		else if (ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete)
 		{
 			gatePoints = 0;
-			//modifyGate = NULL;
+		}
+		else if (ev.key.code == sf::Keyboard::E)
+		{
+			createGatesModeUI->ExpandLibrary();
 		}
 		break;
 	}
