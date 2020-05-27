@@ -287,6 +287,11 @@ struct EditModeUI : GUIHandler
 	void FlipGrid();
 	bool IsEditPointsOn();
 	void FlipEditPoints();
+	bool IsShowGrassOn();
+	void FlipShowGrass();
+	bool IsMoveOn();
+	void FlipMove();
+
 	void SetGridSize(int gs);
 	void ExpandTerrainLibrary();
 	void ChooseMatType(ImageChooseRect *icRect);
@@ -330,7 +335,8 @@ struct EditModeUI : GUIHandler
 
 	CheckBox *gridCheckbox;
 	CheckBox *editPointsCheckbox;
-	CheckBox *moveTool;
+	CheckBox *moveToolCheckbox;
+	CheckBox *showGrassCheckbox;
 
 	TextBox *gridSizeTextbox;
 	Button *deleteBrushButton;

@@ -5323,7 +5323,7 @@ int TerrainPolygon::ShowGrass( bool show )
 			}
 			if (grassStateVec[i] != grassStateVecBackup[i])
 			{
-				++counter;
+				++counter; 
 			}
 		}
 		return counter;

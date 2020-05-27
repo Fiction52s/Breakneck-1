@@ -1597,7 +1597,7 @@ void GrassAction::Perform()
 	assert(!performed);
 
 	EditSession *edit = EditSession::GetSession();
-	bool showGrass = edit->showGrass;
+	bool showGrass = edit->editModeUI->IsShowGrassOn();
 	for (int i = 0; i < numDiffs; ++i)
 	{
 		GrassDiff &gDiff = gDiffs[i];
@@ -1609,7 +1609,7 @@ void GrassAction::Undo()
 {
 	assert(performed);
 	EditSession *edit = EditSession::GetSession();
-	bool showGrass = edit->showGrass;
+	bool showGrass = edit->editModeUI->IsShowGrassOn();
 	for (int i = 0; i < numDiffs; ++i)
 	{
 		GrassDiff &gDiff = gDiffs[i];

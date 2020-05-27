@@ -458,7 +458,7 @@ struct EditSession : GUIHandler, Session
 	sf::Vector2i pointGrabDelta;
 	sf::Vector2i oldPointGrabPos;
 
-	bool showGrass;
+	//bool showGrass;
 	bool showPoints;
 
 	bool justCompletedPolyWithClick;

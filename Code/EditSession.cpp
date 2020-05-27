@@ -1111,10 +1111,22 @@ EditSession::~EditSession()
 		delete createDecorModeUI;
 	}
 
+	if (createGatesModeUI != NULL)
+	{
+		delete createGatesModeUI;
+	}
+
 	if (createTerrainModeUI != NULL)
 	{
 		delete createTerrainModeUI;
 	}
+
+	if (editModeUI != NULL)
+	{
+		delete editModeUI;
+	}
+		
+
 	mapStartBrush->Destroy();
 
 	delete mapStartBrush;
@@ -2387,8 +2399,6 @@ int EditSession::Run()
 
 	modifyGate = NULL;
 
-
-	showGrass = false;
 	showGraph = false;
 
 	justCompletedPolyWithClick = false;
@@ -2444,9 +2454,6 @@ int EditSession::Run()
 
 	enemySelectPanel = new Panel("enemyselection", 100, 150, this);//1920, 150, this );
 	allPopups.push_back(enemySelectPanel);
-
-	
-	CreateLayerPanel();
 	
 	/*int gridSizeX = 80;
 	int gridSizeY = 80;
@@ -3270,11 +3277,7 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 	//cout << cb->name << " was " << e << endl;
 	Panel *p = cb->panel;
 
-	if (p == layerPanel)
-	{
-		UpdateLayerCheckbox(cb, e);
-	}
-	else if( p->name == "curveturret_options" )
+	if( p->name == "curveturret_options" )
 	{
 		if( cb->name == "relativegrav" )
 		{
@@ -3997,7 +4000,7 @@ void EditSession::TryRemoveSelectedPoints()
 
 bool EditSession::PointSelectActor( V2d &pos )
 {
-	if (!IsLayerActionable(LAYER_ACTOR))
+	if (!editModeUI->IsLayerActionable(LAYER_ACTOR))
 	{
 		return false;
 	}
@@ -4045,7 +4048,7 @@ bool EditSession::PointSelectActor( V2d &pos )
 
 bool EditSession::PointSelectDecor(V2d &pos)
 {
-	if (!IsLayerActionable(LAYER_IMAGE))
+	if (!editModeUI->IsLayerActionable(LAYER_IMAGE))
 	{
 		return false;
 	}
@@ -9177,7 +9180,7 @@ bool EditSession::BoxSelectActors(sf::IntRect &rect)
 	if (rect.width == 0 || rect.height == 0)
 		return false;
 
-	if (!IsLayerActionable(LAYER_ACTOR))
+	if (!editModeUI->IsLayerActionable(LAYER_ACTOR))
 	{
 		return false;
 	}
@@ -9224,7 +9227,7 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 	if (rect.width == 0 || rect.height == 0)
 		return false;
 
-	if (!IsLayerActionable(LAYER_IMAGE))
+	if (!editModeUI->IsLayerActionable(LAYER_IMAGE))
 	{
 		return false;
 	}
@@ -9370,7 +9373,7 @@ void EditSession::TryBoxSelect()
 
 		for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
 		{
-			if (IsLayerActionable(terrainEditLayerMap[i])
+			if (editModeUI->IsLayerActionable(terrainEditLayerMap[i])
 				&& BoxSelectPoints(r, 8 * zoomMultiple,
 				i))
 			{
@@ -9382,7 +9385,7 @@ void EditSession::TryBoxSelect()
 	{
 		for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
 		{
-			if (IsLayerActionable(terrainEditLayerMap[i])
+			if (editModeUI->IsLayerActionable(terrainEditLayerMap[i])
 				&& BoxSelectPolys(r,i))
 			{
 				selectionEmpty = false;
@@ -9426,7 +9429,7 @@ void EditSession::UpdateGrass()
 
 void EditSession::ModifyGrass()
 {
-	if (showGrass && IsMousePressed(Mouse::Left))
+	if (editModeUI->IsShowGrassOn() && IsMousePressed(Mouse::Left))
 	{
 		for (auto it = polygons.begin(); it != polygons.end(); ++it)
 		{
@@ -9535,7 +9538,6 @@ void EditSession::SetMode(Emode m)
 	case EDIT:
 	{
 		editModeUI->SetShown(true);
-		AddActivePanel(layerPanel);
 		editClock.restart();
 		editCurrentTime = 0;
 		editAccumulator = TIMESTEP + .1;
@@ -10139,9 +10141,7 @@ void EditSession::MoveRightBorder(int amount)
 
 void EditSession::ShowGrass(bool s)
 {
-	showGrass = s;
-
-	if (showGrass)
+	if (s)
 	{
 		for (auto it = polygons.begin(); it != polygons.end(); ++it)
 		{
@@ -10513,7 +10513,7 @@ void EditSession::DrawRailInProgress()
 
 void EditSession::DrawActors()
 {
-	if (IsLayerShowing(LAYER_ACTOR))
+	if (editModeUI->IsLayerShowing(LAYER_ACTOR))
 	{
 		for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -10532,7 +10532,7 @@ void EditSession::DrawGates()
 
 void EditSession::DrawDecorBehind()
 {
-	if (!IsLayerShowing(LAYER_IMAGE))
+	if (!editModeUI->IsLayerShowing(LAYER_IMAGE))
 	{
 		return;
 	}
@@ -10544,7 +10544,7 @@ void EditSession::DrawDecorBehind()
 
 void EditSession::DrawDecorBetween()
 {
-	if (!IsLayerShowing(LAYER_IMAGE))
+	if (!editModeUI->IsLayerShowing(LAYER_IMAGE))
 	{
 		return;
 	}
@@ -10703,7 +10703,7 @@ void EditSession::DrawGateInProgress()
 
 void EditSession::DrawDecorFront()
 {
-	if (!IsLayerShowing(LAYER_IMAGE))
+	if (!editModeUI->IsLayerShowing(LAYER_IMAGE))
 	{
 		return;
 	}
@@ -11547,7 +11547,8 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::R)
 		{
-			ShowGrass(true);
+			editModeUI->FlipShowGrass();
+			ShowGrass(editModeUI->IsShowGrassOn());
 		}
 		else if (ev.key.code == Keyboard::P)
 		{
@@ -11615,10 +11616,10 @@ void EditSession::EditModeHandleEvent()
 	}
 	case Event::KeyReleased:
 	{
-		if (ev.key.code == Keyboard::R)
+		/*if (ev.key.code == Keyboard::R)
 		{
 			ShowGrass(false);
-		}
+		}*/
 		break;
 	}
 	}
@@ -12288,7 +12289,7 @@ void EditSession::EditModeUpdate()
 {
 	if (MOUSE.IsMouseLeftClicked())
 	{
-		if (!showGrass && !(editMouseDownMove || editMouseDownBox))
+		if (!editModeUI->IsShowGrassOn() && !(editMouseDownMove || editMouseDownBox))
 		{
 			bool emptysp = true;
 			//bool specialMode = GetSpecialTerrainMode() != 0;
@@ -12305,7 +12306,7 @@ void EditSession::EditModeUpdate()
 
 			for (int i = TERRAINLAYER_Count - 1; i >= 0; --i)
 			{
-				if (IsLayerActionable(terrainEditLayerMap[i])
+				if (editModeUI->IsLayerActionable(terrainEditLayerMap[i])
 					&& emptysp && PointSelectTerrain(worldPos, i))
 				{
 					emptysp = false;

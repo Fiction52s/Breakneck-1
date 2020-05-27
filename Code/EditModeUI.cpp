@@ -19,56 +19,17 @@ EditModeUI::EditModeUI()
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
 	editPointsCheckbox = mainPanel->AddCheckBox("editpoints", Vector2i(50, 10), false);
 	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
-	transformSelected = mainPanel->AddButton("transform", Vector2i(200, 10), Vector2f(80, 80), "transform");
-	deleteSelectedButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete selected");
+	transformBrushButton = mainPanel->AddButton("transform", Vector2i(200, 10), Vector2f(80, 80), "transform");
+	deleteBrushButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete selected");
+
+	moveToolCheckbox = mainPanel->AddCheckBox("move", Vector2i(10, 60), true);
+	showGrassCheckbox = mainPanel->AddCheckBox("showgrass", Vector2i(50, 60), false);
 
 	terrainGridSize = 64;
-
-	int numTerrainLayers = TERRAINLAYER_Count;
-	currMatRects.resize(numTerrainLayers);
-	mainPanel->ReserveImageRects(numTerrainLayers);
-	Vector2f currMatRectPos = Vector2f(terrainLayerDropdown->pos)
-		+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
-	for (int i = 0; i < numTerrainLayers; ++i)
-	{
-		currMatRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINSEARCH,
-			currMatRectPos, NULL, 0, 100);
-		currMatRects[i]->Init();
-		currMatRects[i]->SetImage(edit->GetMatTileset(edit->currTerrainWorld[i],
-			edit->currTerrainVar[i]), IntRect(0, 0, 128, 128));
-	}
-
-	currMatRects[0]->SetShown(true);
+	//Vector2f currMatRectPos = Vector2f(terrainLayerDropdown->pos)
+	//	+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
 
 	//matTypePanel->SetPosition(Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10));
-
-
-	int maxTexPerWorld = EditSession::MAX_TERRAINTEX_PER_WORLD;
-	int numTypeRects = 8 * maxTexPerWorld;
-	matTypeRects.resize(numTypeRects);
-
-	matTypePanel->ReserveImageRects(numTypeRects);
-
-	for (int worldI = 0; worldI < 8; ++worldI)
-	{
-		int ind;
-		for (int i = 0; i < maxTexPerWorld; ++i)
-		{
-			ind = worldI * maxTexPerWorld + i;
-
-			matTypeRects[ind] = matTypePanel->AddImageRect(
-				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
-				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
-				edit->GetMatTileset(worldI, i),
-				IntRect(0, 0, 128, 128),
-				terrainGridSize);
-			matTypeRects[ind]->Init();
-			if (matTypeRects[ind]->ts != NULL)
-			{
-				matTypeRects[ind]->SetShown(true);
-			}
-		}
-	}
 }
 
 EditModeUI::~EditModeUI()
@@ -191,6 +152,26 @@ bool EditModeUI::IsEditPointsOn()
 void EditModeUI::FlipEditPoints()
 {
 	editPointsCheckbox->checked = !editPointsCheckbox->checked;
+}
+
+bool EditModeUI::IsShowGrassOn()
+{
+	return showGrassCheckbox->checked;
+}
+
+void EditModeUI::FlipShowGrass()
+{
+	showGrassCheckbox->checked = !showGrassCheckbox->checked;
+}
+
+bool EditModeUI::IsMoveOn()
+{
+	return moveToolCheckbox->checked;
+}
+
+void EditModeUI::FlipMove()
+{
+	moveToolCheckbox->checked = !moveToolCheckbox->checked;
 }
 
 void EditModeUI::SetShown(bool s)
@@ -364,6 +345,13 @@ void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 			{
 				assert(0);
 			}
+		}
+	}
+	else if (cb->panel == mainPanel)
+	{
+		if (cb == showGrassCheckbox)
+		{
+			edit->ShowGrass(cb->checked);
 		}
 	}
 }
