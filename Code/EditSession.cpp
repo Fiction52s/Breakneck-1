@@ -1758,7 +1758,6 @@ void EditSession::WritePolygons(std::ofstream &of, int bgPlatCount0)
 				curr = (*it)->GetPoint(i);
 				of << curr->pos.x << " " << curr->pos.y << endl;
 			}
-			//WriteGrass( (*it), of );
 		}
 	}
 }
@@ -2609,6 +2608,7 @@ int EditSession::Run()
 	createDecorModeUI = new CreateDecorModeUI();
 	createTerrainModeUI = new CreateTerrainModeUI();
 	createGatesModeUI = new CreateGatesModeUI();
+	editModeUI = new EditModeUI();
 	//enemyChooser = new EnemyChooser(types, enemySelectPanel);
 	//enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
 
@@ -9541,6 +9541,7 @@ void EditSession::SetMode(Emode m)
 		break;
 	case EDIT:
 	{
+		editModeUI->SetShown(true);
 		AddActivePanel(layerPanel);
 		editClock.restart();
 		editCurrentTime = 0;

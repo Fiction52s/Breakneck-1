@@ -170,6 +170,7 @@ struct EditSession : GUIHandler, Session
 	CreateDecorModeUI *createDecorModeUI;
 	CreateTerrainModeUI *createTerrainModeUI;
 	CreateGatesModeUI *createGatesModeUI;
+	EditModeUI *editModeUI;
 
 	//EnemyChooser *enemyChooser;
 

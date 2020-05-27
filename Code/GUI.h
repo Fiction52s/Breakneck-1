@@ -278,6 +278,59 @@ struct PanelSlider : PanelUpdater
 	int normalDuration;
 };
 
+struct EditModeUI : GUIHandler
+{
+	EditModeUI();
+	~EditModeUI();
+	void SetShown(bool s);
+	bool IsGridOn();
+	void FlipGrid();
+	bool IsSnapPointsOn();
+	void FlipSnapPoints();
+	void SetGridSize(int gs);
+	void ExpandTerrainLibrary();
+	void ChooseMatType(ImageChooseRect *icRect);
+	//void SetCurrMatType( )
+	void ButtonCallback(Button *b, const std::string & e);
+	void TextBoxCallback(TextBox *tb, const std::string & e);
+	void GridSelectorCallback(GridSelector *gs, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	void SliderCallback(Slider *slider, const std::string & e);
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	int GetTerrainLayer();
+
+
+	int GetCurrTerrainTool();
+	void SetTerrainTool(int t);
+	void SetTempTerrainTool(int t);
+	void RevertTerrainTool();
+	int realTerrainTool;
+
+
+	Panel *layerPanel;
+	PanelSlider *lpSlider;
+
+	bool show;
+	EditSession *edit;
+	Panel *mainPanel;
+	Panel *matTypePanel;
+
+	CheckBox *gridCheckbox;
+	CheckBox *snapPointsCheckbox;
+	TextBox *gridSizeTextbox;
+	Button *completeButton;
+	Button *removePointButton;
+	Button *removeAllPointsButton;
+	Dropdown *terrainActionDropdown;
+	Dropdown *terrainLayerDropdown;
+
+	std::vector<ImageChooseRect*> currMatRects;
+	std::vector<ImageChooseRect*> matTypeRects;
+	int terrainGridSize;
+};
+
 struct CreateGatesModeUI : GUIHandler
 {
 	CreateGatesModeUI();
