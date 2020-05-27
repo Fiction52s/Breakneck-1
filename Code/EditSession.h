@@ -510,6 +510,8 @@ struct EditSession : GUIHandler, Session
 	void SetMatTypePanelLayer(int layer);
 	std::vector<ImageChooseRect*> matTypeRects[TERRAINLAYER_Count];
 	int matTypeRectsCurrLayer;
+	void ModifySelectedTerrainMat(
+		int world, int var);
 	void SetupTerrainSelectPanel();
 	void EditModeDelete();
 	void EditModeTransform();

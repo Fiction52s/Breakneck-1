@@ -40,10 +40,12 @@ EditModeUI::~EditModeUI()
 	delete lpSlider;
 }
 
-void EditModeUI::ExpandTerrainLibrary()
+void EditModeUI::ExpandTerrainLibrary( int layer )
 {
+	edit->SetMatTypePanelLayer(layer);
 	matTypePanel->SetPosition(matPanelPos);
 	matTypePanel->handler = this;
+	
 	edit->AddActivePanel(matTypePanel);
 }
 
@@ -117,17 +119,22 @@ void EditModeUI::AddLayerToPanel(const std::string &name, int currLayerIndex, in
 
 void EditModeUI::ChooseMatType(ImageChooseRect *icRect)
 {
-	//int layerIndex = GetTerrainLayer();
-	//currMatRects[layerIndex]->SetImage(icRect->ts, icRect->spr.getTextureRect());
-
-	int layerIndex = 0;
 	int world = icRect->pos.x / terrainGridSize;
 	int variation = icRect->pos.y / terrainGridSize;
 
-	edit->currTerrainWorld[layerIndex] = world;
-	edit->currTerrainVar[layerIndex] = variation;
+	if (edit->matTypeRectsCurrLayer == TERRAINLAYER_WATER)
+	{
+		world += 8;
+	}
+	else if (edit->matTypeRectsCurrLayer == TERRAINLAYER_FLY)
+	{
+		world += 9;
+	}
 
-	//edit->RemoveActivePanel(matTypePanel);
+	edit->ModifySelectedTerrainMat(world, variation);
+
+	edit->RemoveActivePanel(matTypePanel);
+
 	edit->justCompletedPolyWithClick = true;
 }
 

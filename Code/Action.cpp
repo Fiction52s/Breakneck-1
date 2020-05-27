@@ -783,6 +783,34 @@ int Brush::GetNumGroundedActors()
 	return counter;
 }
 
+int Brush::GetTerrainLayer()
+{
+	int currLayer = -1;
+	int specialIndex;
+	PolyPtr poly;
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+		{
+			if (currLayer < 0)
+			{
+				currLayer = poly->GetSpecialPolyIndex();
+			}
+			else
+			{
+				specialIndex = poly->GetSpecialPolyIndex();
+				if (specialIndex != currLayer)
+				{
+					return -1;
+				}
+			}
+		}
+	}
+
+	return currLayer;
+}
+
 int Brush::GetNumActorsThatMustBeAnchored()
 {
 	int counter = 0;

@@ -295,7 +295,7 @@ struct EditModeUI : GUIHandler
 	void FlipMove();
 
 	void SetGridSize(int gs);
-	void ExpandTerrainLibrary();
+	void ExpandTerrainLibrary( int layer );
 	void ChooseMatType(ImageChooseRect *icRect);
 	void ButtonCallback(Button *b, const std::string & e);
 	void TextBoxCallback(TextBox *tb, const std::string & e);
@@ -827,6 +827,8 @@ enum ErrorType : int
 	ERR_POINTS_TOO_CLOSE_TO_SEG_IN_PROGRESS,
 	ERR_POINT_TO_CLOSE_TO_OTHERS,
 	ERR_LINES_INTERSECT_IN_PROGRESS,
+
+	ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS,
 	//ERR_GATE_INTERSECTS_
 	ERR_Count
 };

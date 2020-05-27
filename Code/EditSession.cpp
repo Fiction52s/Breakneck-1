@@ -2395,6 +2395,24 @@ void EditSession::SetMatTypePanelLayer(int layer)
 	
 }
 
+void EditSession::ModifySelectedTerrainMat(
+	int world, int var)
+{
+	Action *modifyAction = new ModifyTerrainTypeAction(selectedBrush, world, var);
+	modifyAction->Perform();
+
+	AddDoneAction(modifyAction);
+	/*PolyPtr poly;
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	{
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+		{
+			poly->SetMaterialType(world, var);
+		}
+	}*/
+}
+
 void EditSession::SetupTerrainSelectPanel()
 {
 	matTypeRectsCurrLayer = -1;
@@ -11758,7 +11776,19 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::E)
 		{
-			editModeUI->ExpandTerrainLibrary();
+			int layer = selectedBrush->GetTerrainLayer();
+
+			ClearMostRecentError();
+			if (layer < 0)
+			{
+				CreateError(ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS);
+				ShowMostRecentError();
+			}
+			else
+			{
+				editModeUI->ExpandTerrainLibrary(layer);
+			}
+			
 		}
 		else if (ev.key.code == Keyboard::I)
 		{

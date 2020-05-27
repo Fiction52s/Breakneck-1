@@ -13,6 +13,7 @@ struct Brush
 	void RemoveObject( SelectPtr obj );
 	int GetNumGroundedActors();
 	int GetNumActorsThatMustBeAnchored();
+	int GetTerrainLayer();
 	void Clear();
 	void Destroy();
 	void Move( sf::Vector2i delta );
