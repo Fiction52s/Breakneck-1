@@ -17,69 +17,86 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	terrainGridSize = edit->terrainGridSize;
 	matTypePanel = edit->matTypePanel;
 
-	mainPanel = new Panel("createterrain", 1920, 200, this, false);
+	mainPanel = new Panel("createterrain", 1280, 120, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 
-	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
+
+	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(20, 0));
+
+	int labelCharHeight = 24;
+	int labelExtraSpacing = 30;
+	int labelExtraY = 10;
+	Vector2i labelExtra(30, 10);
+
+	realTerrainTool = 0;
+	terrainGridSize = 64;
+	
+	
+	mainPanel->AddLabel("snaplabel", Vector2i(0, labelExtra.y), labelCharHeight, "Snap to Points:");
+	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(0, 0), false);
+	snapPointsCheckbox->SetToolTip("Toggle Snap to points (F)");
+
+	mainPanel->AddLabel("movelabel", labelExtra, labelCharHeight, "Grid:");
+	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(0, 0), false);
 	gridCheckbox->SetToolTip("Toggle Grid (G)");
 
-	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(50, 10), false);
-	snapPointsCheckbox->SetToolTip("Toggle Snap to points (F)");
-	
-	//boxModeCheckbox = mainPanel->AddCheckBox("box", Vector2i(50, 60), false);
-	//boxModeCheckbox->SetToolTip("Toggle Create Box Mode (B)");
-
-	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
+	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(0, 0), 50, 5, "");
 	gridSizeTextbox->SetToolTip("Set the grid spacing");
 	SetGridSize(edit->graph->GetSpacing());
 	
-
-	completeButton = mainPanel->AddButton("complete", Vector2i(200, 10), Vector2f( 80, 80 ), "complete");
-	completeButton->SetToolTip("Complete current polygon (Space)");
-
-	removePointButton = mainPanel->AddButton("remove", Vector2i(300, 10), Vector2f(80, 80), "remove");
-	removePointButton->SetToolTip("Remove progress point (X / Delete)");
-
-	removeAllPointsButton = mainPanel->AddButton("removeall", Vector2i(400, 10), Vector2f(80, 80), "remove all");
-	removeAllPointsButton->SetToolTip("Remove all progress points (no hotkey yet)");
+	std::vector<string> drawOptions = { "Draw", "Box" };// , "Brush"
+	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(0, 0), Vector2i(200, 28), drawOptions, 0);
+	drawModeDropdown->SetToolTip("Choose creation tool\nDraw (D)\nBox (B)");
 
 	std::vector<string> actionOptions = { "Add", "Subtract", "Set Inverse Poly" };
-	terrainActionDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(500, 10), Vector2i(200, 28), actionOptions, 0);
+	terrainActionDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(0, 0), Vector2i(200, 28), actionOptions, 0);
 	terrainActionDropdown->SetToolTip("Choose polygon action\nAdd (A)\nSubtract (S)\nSet Inverse Poly (I)");
 
 	std::vector<string> layerOptions = { "Terrain", "Water", "Pickup" };
-	terrainLayerDropdown = mainPanel->AddDropdown("layerdrop", Vector2i(750, 10), Vector2i(200, 28), layerOptions, 0);
+	terrainLayerDropdown = mainPanel->AddDropdown("layerdrop", Vector2i(0, 0), Vector2i(200, 28), layerOptions, 0);
 	terrainLayerDropdown->SetToolTip("Choose polygon layer\n(E to choose material)");
-
-	std::vector<string> drawOptions = { "Draw", "Box" };// , "Brush"
-	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(1400, 10), Vector2i(200, 28), drawOptions, 0);
-	drawModeDropdown->SetToolTip("Choose creation tool\nDraw (D)\nBox (B)");
-
-
-
-	realTerrainTool = 0;
-
-	terrainGridSize = 64;
 
 	int numTerrainLayers = TERRAINLAYER_Count;
 	currMatRects.resize(numTerrainLayers);
 	mainPanel->ReserveImageRects(numTerrainLayers);
-	Vector2f currMatRectPos = Vector2f(terrainLayerDropdown->pos)
-		+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
+
+	//SetAutoSpacing( false)
+	Vector2i storedAutoStart = mainPanel->autoStart;
+	
+
+	Vector2f currMatRectPos = Vector2f(20, 0);//Vector2f(terrainLayerDropdown->pos)
+		//+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
+
+	mainPanel->StopAutoSpacing();
+
 	for (int i = 0; i < numTerrainLayers; ++i)
 	{
+		if (i == numTerrainLayers - 1)
+			mainPanel->RestartAutoSpacing();
+
 		currMatRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINSEARCH,
-			currMatRectPos,NULL, 0, 100 );
+			currMatRectPos, NULL, 0, 100);
 		currMatRects[i]->Init();
-		currMatRects[i]->SetImage( edit->GetMatTileset( edit->currTerrainWorld[i],
+		currMatRects[i]->SetImage(edit->GetMatTileset(edit->currTerrainWorld[i],
 			edit->currTerrainVar[i]), IntRect(0, 0, 128, 128));
 	}
-
 	currMatRects[0]->SetShown(true);
 
 	
+	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 70), Vector2i(20, 0));
+	
 
-	matPanelPos = Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10) + mainPanel->pos;
+	completeButton = mainPanel->AddButton("complete", Vector2i(0, 0), Vector2f(200, 28 + 4), "complete");
+	completeButton->SetToolTip("Complete current polygon (Space)");
+
+	removePointButton = mainPanel->AddButton("remove", Vector2i(0, 0), Vector2f(200, 28 + 4), "remove");
+	removePointButton->SetToolTip("Remove progress point (X / Delete)");
+
+	removeAllPointsButton = mainPanel->AddButton("removeall", Vector2i(0, 0), Vector2f(200, 28 + 4), "remove all");
+	removeAllPointsButton->SetToolTip("Remove all progress points (no hotkey yet)");
+
+
+	matPanelPos = Vector2i(currMatRects[0]->pos.x, currMatRects[0]->pos.y + 100 + 10) + mainPanel->pos;
 }
 
 CreateTerrainModeUI::~CreateTerrainModeUI()

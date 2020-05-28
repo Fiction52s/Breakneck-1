@@ -13,37 +13,45 @@ EditModeUI::EditModeUI()
 {
 	edit = EditSession::GetSession();
 
-	//matTypeRects = &edit->matTypeRects;
 	terrainGridSize = edit->terrainGridSize;
 	matTypePanel = edit->matTypePanel;
 
-	mainPanel = new Panel("edit", 1920, 200, this, false);
+	mainPanel = new Panel("edit", 1920, 50, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
+	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(20, 0 ));
 
 	CreateLayerPanel();
 
-	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
-	gridCheckbox->SetToolTip("Toggle Grid (G)");
-	
+	int labelCharHeight = 24;
+	int labelExtraSpacing = 30;
+	int labelExtraY = 10;
+	Vector2i labelExtra(30, 10);
 
-	editPointsCheckbox = mainPanel->AddCheckBox("editpoints", Vector2i(50, 10), false);
+	mainPanel->AddLabel("movelabel", Vector2i( 0, labelExtra.y ), labelCharHeight, "Move Tool:");
+	moveToolCheckbox = mainPanel->AddCheckBox("move", Vector2i(0, 0), true);
+	moveToolCheckbox->SetToolTip("Toggle Move Tool (Q)");
+
+	mainPanel->AddLabel("grasslabel", labelExtra, labelCharHeight, "Edit Grass:");
+	showGrassCheckbox = mainPanel->AddCheckBox("showgrass", Vector2i(0, 0), false);
+	showGrassCheckbox->SetToolTip("Toggle Editable Grass (R)");
+
+	mainPanel->AddLabel("pointslabel", labelExtra, labelCharHeight, "Edit Points:");
+	editPointsCheckbox = mainPanel->AddCheckBox("editpoints", Vector2i(0, 0), false);
 	editPointsCheckbox->SetToolTip("Toggle Edit Point Mode (B)");
 
-	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
+	mainPanel->AddLabel("gridlabel", labelExtra, labelCharHeight, "Grid:");
+	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(0, 0), false);
+	gridCheckbox->SetToolTip("Toggle Grid (G)");
+
+	gridSizeTextbox = mainPanel->AddTextBox("gridsize", Vector2i(0, 0), 50, 5, "");
 	gridSizeTextbox->SetToolTip("Set the grid spacing");
 	SetGridSize(edit->graph->GetSpacing());
 
-	transformBrushButton = mainPanel->AddButton("transform", Vector2i(200, 10), Vector2f(80, 80), "transform");
+	transformBrushButton = mainPanel->AddButton("transform", Vector2i(0, 0), Vector2f(200, 28 + 4), "transform");
 	transformBrushButton->SetToolTip("Transform the current brush (N)");
 
-	deleteBrushButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete selected");
+	deleteBrushButton = mainPanel->AddButton("delete", Vector2i(0, 0), Vector2f(200, 28 + 4), "delete selected");
 	deleteBrushButton->SetToolTip("Delete the current brush (X / Delete)");
-
-	moveToolCheckbox = mainPanel->AddCheckBox("move", Vector2i(10, 60), true);
-	moveToolCheckbox->SetToolTip("Toggle Move Tool (Q)");
-
-	showGrassCheckbox = mainPanel->AddCheckBox("showgrass", Vector2i(50, 60), false);
-	showGrassCheckbox->SetToolTip("Toggle Editable Grass (R)");
 
 	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
 }

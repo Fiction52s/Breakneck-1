@@ -893,9 +893,16 @@ struct Panel
 	virtual ~Panel();
 
 	void SetAutoSpacing(bool spacingX,
-		bool spacingY = false, sf::Vector2i start = sf::Vector2i() );
+		bool spacingY = false, sf::Vector2i start = sf::Vector2i(),
+		sf::Vector2i defaultExtra = sf::Vector2i() );
+	void StopAutoSpacing();
+	void RestartAutoSpacing();
 	sf::Vector2<bool> autoSpace;
 	sf::Vector2i autoStart;
+	sf::Vector2i defaultExtra;
+	bool autoSpacePaused;
+	void AddAutoSpaceX(int x);
+	void AddAutoSpaceY(int y);
 
 
 	bool hasFocusedTextbox;

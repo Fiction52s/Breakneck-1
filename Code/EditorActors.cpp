@@ -107,40 +107,38 @@ sf::Sprite ActorType::GetSprite(bool grounded)
 }
 
 
-Panel *ActorType::CreateDefaultPanel(const std::string &n, bool mon, bool level, bool path, bool loop)
+Panel *ActorType::CreateDefaultPanel()
 {
 	EditSession *edit = EditSession::GetSession();
 	if (edit == NULL)
 		return NULL;
 
-	int height = 800;
+	int charHeight = 20;
 
-	Panel * p = new Panel(n, 200, height, edit);
+	string panelName = info.name + "_options";
+	Panel * p = new Panel(panelName, 1920, 28, edit);
+	p->SetPosition(Vector2i(0, 300));
+	p->SetAutoSpacing(true, false, Vector2i(10, 0), Vector2i( 20, 0 ));
+	p->SetColor(Color::Green);
 
-	p->AddButton("ok", Vector2i(100, height - 90), Vector2f(100, 50), "OK");
-	p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-	p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
+	p->AddTextBox("name", Vector2i(0, 0), 200, charHeight, "name_test");
+	p->AddTextBox("group", Vector2i(0, 0), 200, charHeight, "group_test");
 
-	if (loop)
+	if (info.writeLoop)
 	{
-		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
-		p->AddCheckBox("loop", Vector2i(120, 155));
+		p->AddLabel("loop_label", Vector2i(0, 0), charHeight, "loop");
+		p->AddCheckBox("loop", Vector2i(0, 0));
 	}
 
-	if (level)
+	if (info.writePath)
 	{
-		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
+		p->AddButton("createpath", Vector2i(0, 0), Vector2f(100, 50), "Create Path");
 	}
 
-	if (path)
+	if (info.writeMonitor)
 	{
-		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
-	}
-
-
-	if (mon)
-	{
-		p->AddCheckBox("monitor", Vector2i(20, 330));
+		p->AddLabel("Has Key:", Vector2i(30, 6), charHeight, "key");
+		p->AddCheckBox("monitor", Vector2i(0, 0));
 	}
 	return p;
 }
@@ -161,14 +159,14 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "NO NAME");
 	}
-	if (name == "xbarrier")
+	else if (name == "xbarrier")
 	{
 		p = new Panel("xbarrier_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "-----");
 		p->AddCheckBox("hasedge", Vector2i(20, 240));
 	}
-	if (name == "extrascene")
+	else if (name == "extrascene")
 	{
 		p = new Panel("extrascene_options", 200, 500, edit);
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
@@ -227,7 +225,7 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "healthfly")
 	{
-		p = p = new Panel("healthfly_options", 200, 500, edit);//CreateDefaultPanel("healthfly_options", true, false);
+		p = new Panel("healthfly_options", 200, 500, edit);
 
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
@@ -246,30 +244,30 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "ship")
 	{
-		p = CreateDefaultPanel("ship_options", false, false, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "booster")
 	{
-		p = CreateDefaultPanel("booster_options", false, true);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "gravityincreaser" || name == "gravitydecreaser")
 	{
-		p = CreateDefaultPanel("gravchanger_options", false, true);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "comboer" || name == "splitcomboer")
 	{
-		p = CreateDefaultPanel("comboer_options", false, true, true, true);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "gravdowncomboer" || name == "gravupcomboer"
 		|| name == "bouncecomboer" )
 	{
-		p = CreateDefaultPanel("gravcomboer_options", true, true, true, true);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
 		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"
 		|| name == "relativecomboer" || name == "relativecomboerdetach")
 	{
-		p = CreateDefaultPanel("grindjuggler_options", true, true, false, false);
+		p = CreateDefaultPanel();
 		p->AddTextBox("numjuggles", Vector2i(20, 600), 200, 20, "0");
 	}
 	else if (name == "airdashjuggler")
@@ -285,7 +283,7 @@ Panel *ActorType::CreatePanel()
 	else if (name == "downgravityjuggler" || name == "upgravityjuggler" || name == "bouncejuggler"
 		|| name == "wirejuggler" )
 	{
-		p = CreateDefaultPanel("juggler_options", true, true, true, false);
+		p = CreateDefaultPanel();// "juggler_options", true, true, true, false);
 		p->AddTextBox("numjuggles", Vector2i(20, 600), 200, 20, "0");
 
 
@@ -309,67 +307,14 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "spring")
 	{
-		p = new Panel("spring_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
+		p = CreateDefaultPanel();
+		p->AddButton("setdirection", Vector2i(0, 0), Vector2f(150, 24), "Set Direction");
 
-		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
-
-		p->AddTextBox("speed", Vector2i(20, 200), 200, 3, "");
+		p->AddLabel("speed", Vector2i(0, 6), 20, "launch speed:");
+		p->AddSlider("speedslider", Vector2i(0, 6), 200, 15, 60, 30);
+		//p->AddTextBox("speed", Vector2i(20, 200), 200, 3, "");
 	}
 	//w1
-	else if (name == "patroller")
-	{
-		p = new Panel("patroller_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		p->AddLabel("loop_label", Vector2i(20, 150), 20, "loop");
-		p->AddCheckBox("loop", Vector2i(120, 155));
-		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
-		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
-
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-	}
-	else if (name == "basicturret")
-	{
-		p = new Panel("basicturret_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddTextBox("level", Vector2i(20, 150), 200, 20, "0");
-
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-	}
-	else if (name == "crawler")
-	{
-		p = new Panel("crawler_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-	}
-	else if (name == "shroom")
-	{
-		p = new Panel("shroom_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "group_test");
-		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-	}
-	else if (name == "airdasher")
-	{
-		p = new Panel("airdasher_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		p->AddTextBox("level", Vector2i(20, 150), 200, 20, "0");
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-	}
-
 	//w2
 	else if (name == "bat")
 	{
@@ -476,11 +421,11 @@ Panel *ActorType::CreatePanel()
 	//w3
 	else if (name == "pulser")
 	{
-		p = CreateDefaultPanel("pulser_options", true, true, true, true);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "upbouncebooster" || name == "omnibouncebooster")
 	{
-		p = CreateDefaultPanel("booster_options", false, true);
+		p = CreateDefaultPanel();
 	}
 	//else if (name == "bouncespring" )
 	//{
@@ -495,23 +440,23 @@ Panel *ActorType::CreatePanel()
 	//}
 	else if (name == "cactus")
 	{
-		p = CreateDefaultPanel("cactus_options", true, true);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "badger")
 	{
-		p = CreateDefaultPanel("badger_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "roadrunner")
 	{
-		p = CreateDefaultPanel("roadrunner_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "bouncefloater")
 	{
-		p = CreateDefaultPanel("bouncefloater_options", false, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "owl")
 	{
-		p = CreateDefaultPanel("owl_options", true, true, false, false);
+		p = CreateDefaultPanel();
 		/*p = new Panel("owl_options", 200, 600, edit);
 		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
@@ -532,7 +477,7 @@ Panel *ActorType::CreatePanel()
 	else if (name == "turtle")
 	{
 
-		p = CreateDefaultPanel("turtle_options", true, true, false, false);
+		p = CreateDefaultPanel();
 		/*p = new Panel("turtle_options", 200, 600, edit);
 		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
@@ -553,7 +498,7 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "cheetah")
 	{
-		p = CreateDefaultPanel("cheetah_options", true, true, false, false);
+		p = CreateDefaultPanel();
 		/*p = new Panel("cheetah_options", 200, 550, edit);
 		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
@@ -564,11 +509,11 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "railtest")
 	{
-		p = CreateDefaultPanel("railtest_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "spider")
 	{
-		p = CreateDefaultPanel("spider_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "coral")
 	{
@@ -595,7 +540,7 @@ Panel *ActorType::CreatePanel()
 	//w5
 	else if (name == "shark")
 	{
-		p = CreateDefaultPanel("shark_options", true, true, false, false);
+		p = CreateDefaultPanel();
 		/*p = new Panel("shark_options", 200, 600, edit);
 		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
@@ -625,27 +570,27 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "growingtree")
 	{
-		p = CreateDefaultPanel("growingtree_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "ghost")
 	{
-		p = CreateDefaultPanel("ghost_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "swarm")
 	{
-		p = CreateDefaultPanel("swarm_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "specter")
 	{
-		p = CreateDefaultPanel("specter_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "gorilla")
 	{
-		p = CreateDefaultPanel("gorilla_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "wiretarget")
 	{
-		p = CreateDefaultPanel("wiretarget_options", true, true, false, false);
+		p = CreateDefaultPanel();
 	}
 	else if (name == "copycat")
 	{
@@ -703,6 +648,10 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "----");
 		p->AddButton("setzoom", Vector2i(20, 350), Vector2f(100, 50), "Set Zoom");
+	}
+	else
+	{
+		p = CreateDefaultPanel();
 	}
 
 	return p;

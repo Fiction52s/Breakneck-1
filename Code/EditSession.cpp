@@ -4196,9 +4196,13 @@ bool EditSession::PointSelectActor( V2d &pos )
 						ClearSelectedBrush();
 					}
 
-					AddActivePanel(grabbedActor->type->panel);
+					
 					
 					grabbedActor = (*ait);
+
+					if( grabbedActor->type->panel != NULL )
+						AddActivePanel(grabbedActor->type->panel);
+
 					//grabbedObject = (*ait);
 					if( (*ait)->myEnemy != NULL )
 						(*ait)->myEnemy->SetActionEditLoop(); //just for testing
@@ -10008,7 +10012,7 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 		actor = (*it)->GetAsActor();
 		
 		if (canApply)
-		{		
+		{
 			actor->SetAABBOutlineColor(Color::Green);
 		}
 		else
@@ -10020,7 +10024,7 @@ void EditSession::MoveActors(sf::Vector2i &delta, V2d &grabCenter, Brush *brush 
 
 void EditSession::StartSelectedMove()
 {
-	if (!editModeUI->IsMoveOn())
+	if (mode == EDIT && !editModeUI->IsMoveOn())
 		return;
 
 	editStartMove = true;

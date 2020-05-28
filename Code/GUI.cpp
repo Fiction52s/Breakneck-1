@@ -1381,11 +1381,23 @@ Panel::~Panel()
 	}*/
 }
 
-void Panel::SetAutoSpacing(bool aSpaceX, bool aSpaceY, Vector2i start )
+void Panel::SetAutoSpacing(bool aSpaceX, bool aSpaceY, Vector2i start, Vector2i p_defaultExtra )
 {
 	autoSpace.x = aSpaceX;
 	autoSpace.y = aSpaceY;
 	autoStart = start;
+	defaultExtra = p_defaultExtra;
+	autoSpacePaused = false;
+}
+
+void Panel::StopAutoSpacing()
+{
+	autoSpacePaused = true;
+}
+
+void Panel::RestartAutoSpacing()
+{
+	autoSpacePaused = false;
 }
 
 void Panel::SetConfirmButton(Button *b)
@@ -1747,6 +1759,21 @@ void Panel::ReserveImageRects(int num)
 	imageChooseRectQuads = new Vertex[num * 4];
 }
 
+void Panel::AddAutoSpaceX(int x)
+{
+	if (autoSpace.x && !autoSpacePaused )
+	{
+		autoStart.x += x + defaultExtra.x;
+	}
+}
+void Panel::AddAutoSpaceY(int y)
+{
+	if (autoSpace.y && !autoSpacePaused)
+	{
+		autoStart.y += y + defaultExtra.y;
+	}
+}
+
 EnemyChooseRect * Panel::AddEnemyRect(
 	ChooseRect::ChooseRectIdentity ident,
 	sf::Vector2f &position,
@@ -1759,14 +1786,8 @@ EnemyChooseRect * Panel::AddEnemyRect(
 		Vector2f( autoStart ) + position, type, level, this);
 	enemyChooseRects.push_back(ecRect);
 
-	if (autoSpace.x)
-	{
-		autoStart.x += ecRect->bounds.width + position.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += ecRect->bounds.height + position.y;
-	}
+	AddAutoSpaceX(100 + position.x);
+	AddAutoSpaceY(100 + position.y);
 
 	return ecRect;
 }
@@ -1780,14 +1801,8 @@ ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident,
 		Vector2f(autoStart) + position, ts, tileIndex, bSize, this);
 	imageChooseRects.push_back(icRect);
 
-	if (autoSpace.x)
-	{
-		autoStart.x += icRect->bounds.width + position.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += icRect->bounds.height + position.y;
-	}
+	AddAutoSpaceX(bSize + position.x);
+	AddAutoSpaceY(bSize + position.y);
 
 	return icRect;
 }
@@ -1801,14 +1816,8 @@ ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident,
 		Vector2f(autoStart) + position, ts, subRect, bSize, this);
 	imageChooseRects.push_back(icRect);
 
-	if (autoSpace.x)
-	{
-		autoStart.x += icRect->bounds.width + position.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += icRect->bounds.height + position.y;
-	}
+	AddAutoSpaceX(bSize + position.x);
+	AddAutoSpaceY(bSize + position.y);
 
 	return icRect;
 }
@@ -1820,14 +1829,8 @@ Slider * Panel::AddSlider(const std::string &name, sf::Vector2i &pos,
 	Slider *slider = new Slider(name, autoStart + pos, width, arial, minValue, maxValue, defaultValue, this);
 	sliders[name] = slider;
 
-	if (autoSpace.x)
-	{
-		autoStart.x += slider->size.x + pos.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += slider->size.y + pos.y;
-	}
+	AddAutoSpaceX(slider->size.x + pos.x);
+	AddAutoSpaceY(slider->size.y + pos.y);
 
 	return slider;
 }
@@ -1839,14 +1842,8 @@ Dropdown * Panel::AddDropdown(const std::string &name, sf::Vector2i &pos,
 	Dropdown *drop = new Dropdown(name, autoStart + pos, size, arial, p_options, defaultIndex, this);
 	dropdowns[name] = drop;
 
-	if (autoSpace.x)
-	{
-		autoStart.x += drop->size.x + pos.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += drop->size.y + pos.y;
-	}
+	AddAutoSpaceX(drop->size.x + pos.x);
+	AddAutoSpaceY(drop->size.y + pos.y);
 
 	return drop;
 }
@@ -1858,14 +1855,8 @@ MenuDropdown * Panel::AddMenuDropdown(const std::string &name, sf::Vector2i &pos
 	MenuDropdown *menuDrop = new MenuDropdown(name, autoStart + pos, size, optionWidth, arial, p_options, this);
 	menuDropdowns[name] = menuDrop;
 
-	if (autoSpace.x)
-	{
-		autoStart.x += menuDrop->size.x + pos.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += menuDrop->size.y + pos.y;
-	}
+	AddAutoSpaceX(menuDrop->size.x + pos.x);
+	AddAutoSpaceY(menuDrop->size.y + pos.y);
 
 	return menuDrop;
 }
@@ -1876,14 +1867,8 @@ Button *Panel::AddButton( const string &name, sf::Vector2i pos, sf::Vector2f siz
 	Button *button = new Button(name, autoStart.x + pos.x, autoStart.y + pos.y, size.x, size.y, arial, text, this);
 	buttons[name] = button;
 
-	if (autoSpace.x)
-	{
-		autoStart.x += button->size.x + pos.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += button->size.y + pos.y;
-	}
+	AddAutoSpaceX(button->size.x + pos.x);
+	AddAutoSpaceY(button->size.y + pos.y);
 
 	return button;
 }
@@ -1895,14 +1880,8 @@ CheckBox * Panel::AddCheckBox( const string &name, sf::Vector2i pos, bool startC
 	cb->checked = startChecked;
 	checkBoxes[name] = cb;
 
-	if (autoSpace.x)
-	{
-		autoStart.x += cb->size.x + pos.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += cb->size.y + pos.y;
-	}
+	AddAutoSpaceX(cb->size.x + pos.x);
+	AddAutoSpaceY(cb->size.y + pos.y);
 
 	return cb;
 }
@@ -1914,14 +1893,8 @@ TextBox * Panel::AddTextBox( const std::string &name, sf::Vector2i pos, int widt
 	TextBox *tb = new TextBox(name, autoStart.x + pos.x, autoStart.y + pos.y, width, lengthLimit, arial, this, initialText);
 	textBoxes[name] = tb;
 
-	if (autoSpace.x)
-	{
-		autoStart.x += tb->size.x + pos.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += tb->size.y + pos.y;
-	}
+	AddAutoSpaceX(tb->size.x + pos.x);
+	AddAutoSpaceY(tb->size.y + pos.y);
 
 	return tb;
 	//textBoxes.push_back(  );
@@ -1931,21 +1904,15 @@ void Panel::AddLabel( const std::string &name, sf::Vector2i labelPos, int charac
 {
 	assert( labels.count( name ) == 0 );
 	sf::Text *t = new sf::Text( text, arial, characterHeight );
-	t->setPosition( labelPos.x, labelPos.y );
+	t->setPosition( autoStart.x + labelPos.x, autoStart.y + labelPos.y );
 	t->setFillColor( Color::Black );
 	auto lb = t->getLocalBounds();
 	t->setOrigin(lb.left, lb.top);
 
 	auto bounds = t->getLocalBounds();
 
-	if (autoSpace.x)
-	{
-		autoStart.x += bounds.width + labelPos.x;
-	}
-	if (autoSpace.y)
-	{
-		autoStart.y += bounds.height + labelPos.y;
-	}
+	AddAutoSpaceX(bounds.width + labelPos.x);
+	AddAutoSpaceY(bounds.height + labelPos.y);
 
 	labels[name] = t;
 }
@@ -2483,12 +2450,16 @@ void TextBox::Draw( sf::RenderTarget *target )
 }
 
 Button::Button( const string &n, int posx, int posy, int width, int height, sf::Font &f, const std::string & t, Panel *p )
-	:PanelMember( p ), pos( posx, posy ), clickedDown( false ), characterHeight( 20 ), size( width, height ), name( n )
+	:PanelMember( p ), pos( posx, posy ), clickedDown( false ), characterHeight( size.y - 4 ), size( width, height ), name( n )
 {	
 	text.setString( t );
 	text.setFont( f );
 	text.setFillColor( Color::White );
 	text.setCharacterSize( characterHeight );
+
+	auto bounds = text.getLocalBounds();
+	text.setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+	text.setPosition(pos.x + size.x / 2, pos.y + size.y / 2);
 }
 
 void Button::Deactivate()
@@ -2533,9 +2504,7 @@ bool Button::MouseUpdate()
 }
 
 void Button::Draw( RenderTarget *target )
-{
-	text.setPosition( pos.x + size.x / 2 - text.getLocalBounds().width / 2, pos.y + size.y / 2 - text.getLocalBounds().height / 2);
-
+{	
 	sf::RectangleShape rs;
 	rs.setSize( size );
 	rs.setPosition( pos.x, pos.y );
