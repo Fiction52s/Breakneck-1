@@ -1121,6 +1121,11 @@ EditSession::~EditSession()
 		delete createTerrainModeUI;
 	}
 
+	if (createRailModeUI != NULL)
+	{
+		delete createRailModeUI;
+	}
+
 	if (editModeUI != NULL)
 	{
 		delete editModeUI;
@@ -2762,11 +2767,14 @@ int EditSession::Run()
 
 	SetupTerrainSelectPanel();
 
+	graph = new EditorGraph;
+
 	generalUI = new GeneralUI();
 
 	createEnemyModeUI = new CreateEnemyModeUI();
 	createDecorModeUI = new CreateDecorModeUI();
 	createTerrainModeUI = new CreateTerrainModeUI();
+	createRailModeUI = new CreateRailModeUI();
 	createGatesModeUI = new CreateGatesModeUI();
 	editModeUI = new EditModeUI();
 	
@@ -2812,7 +2820,7 @@ int EditSession::Run()
 	ts_guiMenu->SetSpriteTexture(guiMenuSprite);
 	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
 
-	graph = new EditorGraph;
+	
 	
 
 	//bool s = IsKeyPressed( sf::Keyboard::T );
@@ -7430,6 +7438,7 @@ void EditSession::ExecuteRailCompletion()
 		RailPtr currentBrush = railInProgress;
 
 		railInProgress->UpdateBounds();
+
 		bool applyOkay = true;
 		if (!applyOkay)
 		{
@@ -7444,9 +7453,13 @@ void EditSession::ExecuteRailCompletion()
 				//eventually be able to combine rails by putting your start/end points at their starts/ends
 				if (empty)
 				{
+					railInProgress->SetRailType(createRailModeUI->GetRailType());
+
 					railInProgress->Finalize();
 
 					progressBrush->Clear();
+					
+					
 
 					progressBrush->AddObject(railInProgress);
 
@@ -7648,6 +7661,9 @@ void EditSession::ExecuteRailCompletion()
 					oldBrush.AddObject(railAttachStart);
 					oldBrush.AddObject(railAttachEnd);
 				}
+
+				newRail->SetRailType(createRailModeUI->GetRailType());
+
 				newRail->Finalize();
 
 				railInProgress->ClearPoints();
@@ -9143,8 +9159,7 @@ bool EditSession::PointSelectPolyPoint( V2d &pos, int terrainLayer )
 
 bool EditSession::PointSelectRail(V2d &pos)
 {
-	//need to let the createRailUI handle this
-	if (false)
+	if (editModeUI->IsEditPointsOn())
 	{
 		if (PointSelectRailPoint(worldPos))
 		{
@@ -9673,6 +9688,16 @@ void EditSession::SetMode(Emode m)
 		justCompletedPolyWithClick = false;
 		createTerrainModeUI->SetShown(true);
 		createTerrainModeUI->SetDrawTool(TOOL_DRAW);
+		createTerrainModeUI->SetGridSize(graph->GetSpacing());
+		break;
+	case CREATE_RAILS:
+		createRailModeUI->SetShown(true);
+		railAttachStart = NULL;
+		railAttachStartPoint = NULL;
+		railAttachEnd = NULL;
+		railAttachEndPoint = NULL;
+		justCompletedRailWithClick = false;
+		createRailModeUI->SetGridSize(graph->GetSpacing());
 		break;
 	case CREATE_GATES:
 		gatePoints = 0;
@@ -9700,18 +9725,10 @@ void EditSession::SetMode(Emode m)
 	case EDIT:
 	{
 		editModeUI->SetShown(true);
+		editModeUI->SetGridSize(graph->GetSpacing());
 		editClock.restart();
 		editCurrentTime = 0;
 		editAccumulator = TIMESTEP + .1;
-		break;
-	}
-	case CREATE_RAILS:
-	{
-		railAttachStart = NULL;
-		railAttachStartPoint = NULL;
-		railAttachEnd = NULL;
-		railAttachEndPoint = NULL;
-		justCompletedRailWithClick = false;
 		break;
 	}
 		
@@ -10504,6 +10521,8 @@ bool EditSession::IsGridOn()
 		return createTerrainModeUI->IsGridOn();
 	case EDIT:
 		return editModeUI->IsGridOn();
+	case CREATE_RAILS:
+		return createRailModeUI->IsGridOn();
 	default:
 		return false;
 	}
@@ -10515,6 +10534,8 @@ bool EditSession::IsSnapPointsOn()
 	{
 	case CREATE_TERRAIN:
 		return createTerrainModeUI->IsSnapPointsOn();
+	case CREATE_RAILS:
+		return createRailModeUI->IsSnapPointsOn();
 		break;
 	}
 }
@@ -10531,17 +10552,20 @@ void EditSession::DrawGraph()
 bool EditSession::IsShowingPoints()
 {
 	bool showPoints = false;
-	if (mode == CREATE_TERRAIN)
+	switch (mode)
 	{
+	case CREATE_TERRAIN:
 		showPoints = createTerrainModeUI->IsSnapPointsOn() && !createTerrainModeUI->IsGridOn();
-	}
-	else if (mode == CREATE_GATES)
-	{
+		break;
+	case CREATE_GATES:
 		showPoints = true;
-	}
-	else if (mode == EDIT)
-	{
+		break;
+	case EDIT:
 		showPoints = editModeUI->IsEditPointsOn();
+		break;
+	case CREATE_RAILS:
+		showPoints = createRailModeUI->IsSnapPointsOn();
+		break;
 	}
 	return showPoints;
 }
@@ -11091,7 +11115,7 @@ void EditSession::DrawModeUI()
 		sf::Text textgreen;
 		textgreen.setCharacterSize(fontSize);
 		textgreen.setFont(arial);
-		textgreen.setString("MAP\nOPTIONS");
+		textgreen.setString("CREATE\nRAILS");
 		textgreen.setFillColor(sf::Color::White);
 		textgreen.setOutlineColor(sf::Color::Black);
 		textgreen.setOutlineThickness(outlineThickness);
@@ -11505,12 +11529,12 @@ void EditSession::CreateTerrainModeHandleEvent()
 		//	tempGridResult = "not set";
 		//	//GridSelectPop("terraintypeselect");
 		//}
-		else if (ev.key.code == sf::Keyboard::R)
+		/*else if (ev.key.code == sf::Keyboard::R)
 		{
 			SetMode(CREATE_RAILS);
 			railInProgress->CopyPointsFromPoly(polygonInProgress);
 			polygonInProgress->ClearPoints();
-		}
+		}*/
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
 			UndoMostRecentAction();
@@ -11585,10 +11609,17 @@ void EditSession::CreateRailsModeHandleEvent()
 			removeProgressPointWaiter->Reset();
 			RemovePointFromRailInProgress();
 		}
-		else if (ev.key.code == sf::Keyboard::R)
+		else if (ev.key.code == sf::Keyboard::G)
 		{
-			SetMode(CREATE_TERRAIN);
-			railInProgress->ClearPoints();
+			createRailModeUI->FlipGrid();
+		}
+		else if (ev.key.code == Keyboard::F)
+		{
+			createRailModeUI->FlipSnapPoints();
+		}
+		else if (ev.key.code == Keyboard::E)
+		{
+			createRailModeUI->ExpandLibrary();
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
@@ -11598,7 +11629,6 @@ void EditSession::CreateRailsModeHandleEvent()
 		{
 			RedoMostRecentUndoneAction();
 		}
-
 		break;
 	}
 	case Event::KeyReleased:
@@ -12377,12 +12407,11 @@ void EditSession::CreateRailsModeUpdate()
 
 	if (!focusedPanel)
 	{
-		if (IsKeyPressed(Keyboard::G))
+		if (IsGridOn())
 		{
 			SnapPointToGraph(testPoint, graph->graphSpacing);
-			showGraph = true;
 		}
-		else if (IsKeyPressed(Keyboard::F))
+		else if (IsSnapPointsOn())
 		{
 			SelectPtr obj = NULL;
 			TerrainPoint *pPoint = TrySnapPosToPoint(testPoint, obj, 8 * zoomMultiple);
@@ -12402,13 +12431,6 @@ void EditSession::CreateRailsModeUpdate()
 					}
 				}
 			}
-
-
-			//showPoints = true;
-		}
-		else
-		{
-			//showPoints = false;
 		}
 	}
 	else
@@ -12525,10 +12547,11 @@ void EditSession::SelectModeUpdate()
 		}
 		else if (menuSelection == "lowerright")
 		{
-			AddActivePanel(mapOptionsPanel);
-			mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
-			mapOptionsPanel->textBoxes["bosstype"]->text.setString(to_string(bossType));
-			mode = menuDownStored;
+			SetMode(CREATE_RAILS);
+			//AddActivePanel(mapOptionsPanel);
+			//mapOptionsPanel->textBoxes["draintime"]->text.setString(to_string(drainSeconds));
+			//mapOptionsPanel->textBoxes["bosstype"]->text.setString(to_string(bossType));
+			//mode = menuDownStored;
 			//			SetMode(menuDownStored);
 		}
 		else if (menuSelection == "bottom")

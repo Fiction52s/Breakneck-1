@@ -174,6 +174,8 @@ struct ChooseRect : PanelMember
 		I_SHARDLIBRARY,
 		I_GATEBOSSLIBRARY,
 		I_GATEPICKUPLIBRARY,
+		I_RAILSEARCH,
+		I_RAILLIBRARY,
 	};
 
 	sf::Text nameText;
@@ -505,8 +507,9 @@ struct CreateRailModeUI : GUIHandler
 	bool IsSnapPointsOn();
 	void FlipSnapPoints();
 	void SetGridSize(int gs);
-	void ExpandTerrainLibrary();
-	void ChooseMatType(ImageChooseRect *icRect);
+	void ExpandLibrary();
+	void ChoosePhysicalType(ImageChooseRect *icRect);
+	void ChooseEnemyType(EnemyChooseRect *ecRect);
 	//void SetCurrMatType( )
 	void ButtonCallback(Button *b, const std::string & e);
 	void TextBoxCallback(TextBox *tb, const std::string & e);
@@ -516,26 +519,37 @@ struct CreateRailModeUI : GUIHandler
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	int GetTerrainLayer();
+	int GetRailCategory();
+	void ExpandPhysicalLibrary();
+	void ExpandEnemyLibrary();
+	int GetRailType();
+
+	int physTypeIndex;
+	int enemyTypeIndex;
 
 
-	int GetCurrTerrainTool();
-	void SetTerrainTool(int t);
-	void SetTempTerrainTool(int t);
-	void RevertTerrainTool();
-	int realTerrainTool;
+	enum RailCategories
+	{
+		PHYSICAL,
+		ENEMY
+	};
 
-
-
+	enum RailPhysTypes
+	{
+		NORMAL,
+		ACCELERATOR,
+		FRICTION,
+		PhysTypes_Count
+	};
 
 	bool show;
 	EditSession *edit;
 
-	int terrainGridSize;
-	Panel *matTypePanel;
-	//std::vector<ImageChooseRect*> *matTypeRects;
+	int railTypeGridSize;
 
 	Panel *mainPanel;
+	Panel *enemyPanel;
+	Panel *physicalPanel;
 
 
 	CheckBox *gridCheckbox;
@@ -544,14 +558,16 @@ struct CreateRailModeUI : GUIHandler
 	Button *completeButton;
 	Button *removePointButton;
 	Button *removeAllPointsButton;
-	Dropdown *terrainActionDropdown;
-	Dropdown *terrainLayerDropdown;
+
+	Dropdown *railCategoryDropdown;
 
 	sf::Vector2i matPanelPos;
 
-	std::vector<ImageChooseRect*> currMatRects;
+	ImageChooseRect *currPhysicalTypeRect;
+	EnemyChooseRect *currEnemyTypeRect;
 
-
+	std::vector<ImageChooseRect*> physRects;
+	std::vector<EnemyChooseRect*> enemyRects;
 };
 
 struct CreateTerrainModeUI : GUIHandler

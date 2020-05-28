@@ -124,7 +124,7 @@ void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 	}
 }
 
-void TerrainRail::SetRailType(RailType r)
+void TerrainRail::SetRailType(int r)
 {
 	rType = r;
 }
@@ -1143,15 +1143,6 @@ void TerrainRail::CancelTransformation()
 
 RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
 {
-	/*if (renderMode == RENDERMODE_TRANSFORM)
-	{*/
-	//SetRenderMode(RENDERMODE_NORMAL);
-
-	/*for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
-	{
-		(*it)->SetPosition((*it)->preTransformPos);
-	}*/
-
 	RailPtr newRail(new TerrainRail);
 
 	int numP = GetNumPoints();
@@ -1176,6 +1167,8 @@ RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
 	//UpdateLinePositions();
 
 	//newRail->SetFlyTransform(this, tr);
+
+	newRail->SetRailType(rType);
 
 	newRail->Finalize();
 

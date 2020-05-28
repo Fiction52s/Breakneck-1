@@ -24,12 +24,14 @@ EditModeUI::EditModeUI()
 
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
 	gridCheckbox->SetToolTip("Toggle Grid (G)");
+	
 
 	editPointsCheckbox = mainPanel->AddCheckBox("editpoints", Vector2i(50, 10), false);
 	editPointsCheckbox->SetToolTip("Toggle Edit Point Mode (B)");
 
 	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
 	gridSizeTextbox->SetToolTip("Set the grid spacing");
+	SetGridSize(edit->graph->GetSpacing());
 
 	transformBrushButton = mainPanel->AddButton("transform", Vector2i(200, 10), Vector2f(80, 80), "transform");
 	transformBrushButton->SetToolTip("Transform the current brush (N)");

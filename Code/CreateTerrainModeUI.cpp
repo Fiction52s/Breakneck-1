@@ -52,7 +52,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	terrainLayerDropdown->SetToolTip("Choose polygon layer\n(E to choose material)");
 
 	std::vector<string> drawOptions = { "Draw", "Box" };// , "Brush"
-	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(1000, 10), Vector2i(200, 28), drawOptions, 0);
+	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(1400, 10), Vector2i(200, 28), drawOptions, 0);
 	drawModeDropdown->SetToolTip("Choose creation tool\nDraw (D)\nBox (B)");
 
 
