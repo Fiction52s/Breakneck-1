@@ -859,6 +859,36 @@ Dropdown::~Dropdown()
 	delete[] dropdownRects;
 }
 
+bool Dropdown::ContainsMouse()
+{
+	Vector2i mousePos = panel->GetMousePos();
+	Vector2f point(mousePos);
+
+	bool onMainQuad = QuadContainsPoint(mainRect, point);
+	if (!expanded)
+	{
+		return onMainQuad;
+	}
+	
+	if (!onMainQuad)
+	{
+		bool onOption = false;
+		for (int i = 0; i < numOptions; ++i)
+		{
+			if (IsMouseOnOption(i, point))
+			{
+				onOption = true;
+				return true;
+			}
+		}
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
 void Dropdown::Deactivate()
 {
 	expanded = false;
@@ -938,6 +968,11 @@ void Dropdown::SetSelectedIndex(int ind)
 		selectedIndex = ind;
 		selectedText.setString(options[selectedIndex]);
 	}
+}
+
+const std::string &Dropdown::GetSelectedText()
+{
+	return options[selectedIndex];
 }
 
 bool Dropdown::IsMouseOnOption(int ind, Vector2f &point )
@@ -1526,19 +1561,25 @@ void Panel::SetCenterPos(const sf::Vector2i &p_pos)
 	SetPosition(Vector2i(p_pos.x - size.x / 2, p_pos.y - size.y / 2));
 }
 
-bool Panel::IsMenuDropExpanded()
+bool Panel::IsDropActive()
 {
-	bool menuDropExpanded = false;
 	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
 	{
 		if ((*it).second->expanded)
 		{
-			menuDropExpanded = true;
-			break;
+			return true;
 		}
 	}
 
-	return menuDropExpanded;
+	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
+	{
+		if ((*it).second->ContainsMouse())
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 const sf::Vector2i &Panel::GetMousePos()
@@ -1557,7 +1598,7 @@ bool Panel::MouseUpdate()
 	{
 		if (!popup)
 		{
-			if (!IsMenuDropExpanded())
+			if (!IsDropActive())
 			{
 				return false;
 			}
@@ -1931,7 +1972,7 @@ bool Panel::ContainsPoint(sf::Vector2i &point)
 {
 	IntRect r(pos.x, pos.y, size.x, size.y);
 	bool rectContains = r.contains(point);
-	bool menuDropExpanded = IsMenuDropExpanded();
+	bool menuDropExpanded = IsDropActive();
 	return rectContains || menuDropExpanded;
 }
 

@@ -812,12 +812,14 @@ struct Dropdown : PanelMember
 		sf::Vector2i &size, sf::Font &f, 
 		const std::vector<std::string> &p_options, 
 		int defaultIndex, Panel *panel);
+	bool ContainsMouse();
 	~Dropdown();
 	void SetOptions(const std::vector<std::string> &options);
 	void Draw(sf::RenderTarget *rt);
 	bool MouseUpdate();
 	void Deactivate();
 	void SetSelectedIndex(int ind);
+	const std::string &GetSelectedText();
 	sf::Vector2i pos;
 	sf::Vector2f size;
 	std::string name;
@@ -919,7 +921,7 @@ struct Panel
 
 	void UpdateSlide( int numUpdateFrames );
 	
-	bool IsMenuDropExpanded();
+	bool IsDropActive();
 	bool IsSliding();
 	void Deactivate();
 	void SetColor(sf::Color c);

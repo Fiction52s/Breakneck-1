@@ -155,7 +155,7 @@ void PoiParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	name = p->textBoxes["name"]->text.getString().toAnsiString();
+	name = (*p->dropdowns.begin()).second->GetSelectedText();//p->textBoxes["name"]->text.getString().toAnsiString();
 
 	nameText.setString( name );
 }
@@ -164,7 +164,7 @@ void PoiParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( name );
+	//p->textBoxes["name"]->text.setString( name );
 }
 
 void PoiParams::Draw( sf::RenderTarget *target )

@@ -154,7 +154,6 @@ Panel *ActorType::CreatePanel()
 	{
 		p = CreateDefaultPanel();//new Panel("poi_options", 200, 500, edit);
 		AddSpecialOptionDropdown(p);
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "NO NAME");
 	}
 	else if (name == "xbarrier")
 	{
