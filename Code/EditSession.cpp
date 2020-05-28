@@ -4196,6 +4196,7 @@ bool EditSession::PointSelectActor( V2d &pos )
 						ClearSelectedBrush();
 					}
 
+					AddActivePanel(grabbedActor->type->panel);
 					
 					grabbedActor = (*ait);
 					//grabbedObject = (*ait);

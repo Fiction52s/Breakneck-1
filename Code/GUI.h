@@ -740,6 +740,7 @@ struct TextBox : PanelMember
 	int leftBorder;
 	bool clickedDown;
 	bool focused;
+	sf::Vector2i size;
 	
 };
 
@@ -881,6 +882,7 @@ struct CheckBox : PanelMember
 	std::string name;
 	bool clickedDown;
 	bool checked;
+	sf::Vector2i size;
 };
 
 struct Panel
@@ -888,7 +890,13 @@ struct Panel
 	Panel( const std::string &name, int width, 
 		int height, GUIHandler *handler,
 		bool pop = false );
-	~Panel();
+	virtual ~Panel();
+
+	void SetAutoSpacing(bool spacingX,
+		bool spacingY = false, sf::Vector2i start = sf::Vector2i() );
+	sf::Vector2<bool> autoSpace;
+	sf::Vector2i autoStart;
+
 
 	bool hasFocusedTextbox;
 	Button *confirmButton;

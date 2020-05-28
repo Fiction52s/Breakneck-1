@@ -16,13 +16,15 @@ GeneralUI::GeneralUI()
 
 	mainPanel = new Panel("general", 1920, height, this, false);
 	mainPanel->SetColor(Color::Red);
+	mainPanel->SetAutoSpacing(true);
+
 	std::vector<string> fileOptions = { "blah", "blah2",  "blah3" };
 	fileDropdown = mainPanel->AddMenuDropdown("File", Vector2i(0, 0), 
 		Vector2i(fileWidth, height), 200, fileOptions);
 	std::vector<string> editOptions(EditOptions_Count);
 	editOptions[UNDO] = "Undo (Ctrl + Z)";
 	editOptions[REDO] = "Redo (Ctrl + Y)";
-	editDropdown = mainPanel->AddMenuDropdown("Edit", Vector2i(fileDropdown->pos.x + fileWidth, 0),
+	editDropdown = mainPanel->AddMenuDropdown("Edit", Vector2i(0, 0), //Vector2i(fileDropdown->pos.x + fileWidth, 0),
 		Vector2i(fileWidth, height), 200, editOptions);
 
 	std::vector<string> modeOptions(ModeOptions_Count);
@@ -33,7 +35,7 @@ GeneralUI::GeneralUI()
 	modeOptions[CREATE_IMAGES] = "Create Images";
 	modeOptions[MAP_OPTIONS] = "Map Options";
 
-	modeDropdown = mainPanel->AddMenuDropdown("Mode", Vector2i(editDropdown->pos.x + editWidth, 0),
+	modeDropdown = mainPanel->AddMenuDropdown("Mode", Vector2i(0, 0), //Vector2i(editDropdown->pos.x + editWidth, 0),
 		Vector2i(fileWidth, height), 200, modeOptions);
 }
 
