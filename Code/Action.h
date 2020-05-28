@@ -41,7 +41,7 @@ struct Brush
 	void TransferMyActiveMembers(Brush *dest);
 	bool terrainOnly;
 	bool IsEmpty();
-	bool HasSingleActor();
+	bool IsSingleActor();
 	bool IsSingleDecor();
 	bool IsSingleFlyPoly();
 

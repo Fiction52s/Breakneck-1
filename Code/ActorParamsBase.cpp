@@ -148,15 +148,15 @@ void ActorParams::SetBasicParams()
 	int level;
 
 	stringstream ss;
-	string s = p->textBoxes["level"]->text.getString().toAnsiString();
-	ss << s;
+	//string s = p->textBoxes["level"]->text.getString().toAnsiString();
+	//ss << s;
 
-	ss >> level;
+	//ss >> level;
 
-	if (!ss.fail() && level > 0 && level < type->info.numLevels)
-	{
-		enemyLevel = level;
-	}
+	//if (!ss.fail() && level > 0 && level < type->info.numLevels)
+	//{
+	//	enemyLevel = level;
+	//}
 
 	hasMonitor = p->checkBoxes["monitor"]->checked;
 
@@ -389,7 +389,7 @@ void ActorParams::SetBasicPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
+	//p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 

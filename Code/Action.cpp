@@ -702,14 +702,14 @@ bool Brush::IsEmpty()
 	return objects.empty();
 }
 
-bool Brush::HasSingleActor()
-{
-	return (objects.size() == 1 && objects.front()->selectableType == ISelectable::ACTOR);
-}
-
 bool Brush::IsSingleDecor()
 {
 	return (objects.size() == 1 && objects.front()->selectableType == ISelectable::IMAGE);
+}
+
+bool Brush::IsSingleActor()
+{
+	return (objects.size() == 1 && objects.front()->selectableType == ISelectable::ACTOR);
 }
 
 bool Brush::IsSingleFlyPoly()

@@ -785,6 +785,8 @@ struct EditSession : GUIHandler, Session
 
 	sf::Vertex border[8];
 
+	void UpdateCurrEnemyParamsFromPanel();
+
 	//----------------------
 	
 	CompoundAction *moveAction;

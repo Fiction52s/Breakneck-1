@@ -151,6 +151,7 @@ V2d EditSession::GetPlayerSpawnPos()
 
 void EditSession::ClearSelectedBrush()
 {
+	editModeUI->SetEnemyPanel(NULL);
 	selectedBrush->SetSelected(false);
 	selectedBrush->Clear();
 	ClearSelectedPoints();
@@ -4208,8 +4209,8 @@ bool EditSession::PointSelectActor( V2d &pos )
 					
 					grabbedActor = (*ait);
 
-					if( grabbedActor->type->panel != NULL )
-						AddActivePanel(grabbedActor->type->panel);
+					//if( grabbedActor->type->panel != NULL )
+					editModeUI->SetEnemyPanel(grabbedActor->type->panel);
 
 					//grabbedObject = (*ait);
 					if( (*ait)->myEnemy != NULL )
@@ -7136,7 +7137,7 @@ PositionInfo EditSession::ConvertPointToGround( sf::Vector2i testPoint, ActorPtr
 				//stuff later where you dont want this..can make another variable for it later
 
 				edgeLen = edge->GetLength();
-				if( brush->HasSingleActor() )
+				if( brush->IsSingleActor() )
 				{
 					/*if (testQuantity >= 0 && testQuantity < minQuant)
 						testQuantity = minQuant;
@@ -9404,7 +9405,6 @@ bool EditSession::BoxSelectActors(sf::IntRect &rect)
 			}
 		}
 	}
-
 	return found;
 }
 
@@ -9587,7 +9587,24 @@ void EditSession::TryBoxSelect()
 	{
 		ClearSelectedBrush();
 	}
+	else
+	{
+		if (selectedBrush->IsSingleActor())
+		{
+			ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+			assert(a != NULL);
+			if (a->type->panel != NULL)
+			{
+				a->SetPanelInfo();
+				editModeUI->SetEnemyPanel(a->type->panel);
+			}
+			
+		}
+		//if( selectedBrush->issingl)
+	}
 }
+
+
 
 double EditSession::GetZoomedMinEdgeLength()
 {
@@ -9636,11 +9653,21 @@ void EditSession::ClearActivePanels()
 
 void EditSession::AddActivePanel(Panel *p)
 {
+	for (auto it = activePanels.begin(); it != activePanels.end(); ++it)
+	{
+		if ((*it) == p)
+		{
+			return;
+		}
+	}
 	activePanels.push_back(p);
 }
 
 void EditSession::RemoveActivePanel(Panel *p)
 {
+	if (p == NULL)
+		return;
+
 	bool found = (find(activePanels.begin(), activePanels.end(), p)) != activePanels.end();
 	if (found)
 	{
@@ -9755,6 +9782,13 @@ void EditSession::SetMode(Emode m)
 	}
 		
 	}
+}
+
+void EditSession::UpdateCurrEnemyParamsFromPanel()
+{
+	assert(selectedBrush->IsSingleActor());
+	ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+	a->SetParams();
 }
 
 bool EditSession::IsOnlyPlayerSelected()
@@ -12067,7 +12101,7 @@ void EditSession::CreatePatrolPathModeHandleEvent()
 			{
 				SelectPtr select = selectedBrush->objects.front();
 				ActorParams *actor = (ActorParams*)select;
-				AddActivePanel(actor->type->panel);
+				editModeUI->SetEnemyPanel(actor->type->panel);
 				actor->SetPath(patrolPath);
 				SetMode(EDIT);
 			}

@@ -354,6 +354,10 @@ struct EditModeUI : GUIHandler
 {
 	EditModeUI();
 	~EditModeUI();
+
+	void SetEnemyPanel(Panel *p);
+	Panel *currEnemyPanel;
+
 	void SetShown(bool s);
 	bool IsGridOn();
 	void FlipGrid();

@@ -241,7 +241,7 @@ void KeyParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 	{
 		p->textBoxes["group"]->text.setString( group->name );
@@ -276,7 +276,7 @@ NexusParams::NexusParams(ActorType *at, ifstream &is)
 void NexusParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
 	//p->checkBoxes["clockwise"]->checked = clockwise;
@@ -387,7 +387,7 @@ ShipPickupParams::ShipPickupParams(ActorType *at, ifstream &is )
 void ShipPickupParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
 	p->checkBoxes["facingright"]->checked = facingRight;
@@ -620,7 +620,7 @@ void BlockerParams::SetParams()
 void BlockerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 		p->textBoxes["group"]->text.setString(group->name);
 	p->textBoxes["btype"]->text.setString(boost::lexical_cast<string>(bType));
@@ -776,13 +776,13 @@ void FlyParams::SetParams()
 void FlyParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 		p->textBoxes["group"]->text.setString(group->name);
 	p->textBoxes["ftype"]->text.setString(boost::lexical_cast<string>(fType));
 	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
 
-	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
+	//p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
 
 	EditSession *edit = EditSession::GetSession();
 	MakeGlobalPath(edit->patrolPath);
@@ -902,7 +902,7 @@ void AirTriggerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 		p->textBoxes["group"]->text.setString(group->name);
 	//p->checkBoxes["clockwise"]->checked = clockwise;
@@ -954,7 +954,7 @@ FlowerPodParams::FlowerPodParams(ActorType *at, int level)
 void FlowerPodParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 		p->textBoxes["group"]->text.setString(group->name);
 	//p->checkBoxes["clockwise"]->checked = clockwise;
@@ -1172,10 +1172,10 @@ void BasicAirEnemyParams::SetPanelInfo()
 	Panel *p = type->panel;
 
 	ParamsInfo &pi = type->info;
-	if (pi.writeLevel)
+	/*if (pi.writeLevel)
 	{
 		p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
-	}
+	}*/
 
 	if (pi.writeMonitor)
 	{
@@ -1204,7 +1204,7 @@ void BasicAirEnemyParams::SetParams()
 
 	ParamsInfo &pi = type->info;
 
-	if (pi.writeLevel)
+	/*if (pi.writeLevel)
 	{
 		int level;
 		string s = p->textBoxes["level"]->text.getString().toAnsiString();
@@ -1216,7 +1216,7 @@ void BasicAirEnemyParams::SetParams()
 		{
 			enemyLevel = level;
 		}
-	}
+	}*/
 	
 	if (pi.writeMonitor)
 	{

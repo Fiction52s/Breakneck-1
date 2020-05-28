@@ -84,7 +84,7 @@ void BoosterParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 	{
 		p->textBoxes["group"]->text.setString(group->name);
@@ -180,7 +180,7 @@ void SpringParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 	{
 		p->textBoxes["group"]->text.setString(group->name);

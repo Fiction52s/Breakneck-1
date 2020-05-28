@@ -116,12 +116,12 @@ Panel *ActorType::CreateDefaultPanel()
 	int charHeight = 20;
 
 	string panelName = info.name + "_options";
-	Panel * p = new Panel(panelName, 1920, 28, edit);
+	Panel * p = new Panel(panelName, 1920, 36, edit);
 	p->SetPosition(Vector2i(0, 300));
 	p->SetAutoSpacing(true, false, Vector2i(10, 0), Vector2i( 20, 0 ));
 	p->SetColor(Color::Green);
 
-	p->AddTextBox("name", Vector2i(0, 0), 200, charHeight, "name_test");
+	//p->AddTextBox("name", Vector2i(0, 0), 200, charHeight, "name_test");
 	p->AddTextBox("group", Vector2i(0, 0), 200, charHeight, "group_test");
 
 	if (info.writeLoop)
@@ -155,14 +155,12 @@ Panel *ActorType::CreatePanel()
 	//extra
 	if (name == "poi")
 	{
-		p = new Panel("poi_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p = CreateDefaultPanel();//new Panel("poi_options", 200, 500, edit);
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "NO NAME");
 	}
 	else if (name == "xbarrier")
 	{
 		p = new Panel("xbarrier_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "-----");
 		p->AddCheckBox("hasedge", Vector2i(20, 240));
 	}

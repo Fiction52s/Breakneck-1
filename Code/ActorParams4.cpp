@@ -76,7 +76,7 @@ void CoralParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 	{
 		p->textBoxes["group"]->text.setString( group->name );
@@ -125,7 +125,7 @@ void TurtleParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 	{
 		p->textBoxes["group"]->text.setString( group->name );
@@ -169,7 +169,7 @@ void CheetahParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
@@ -241,7 +241,7 @@ void SpiderParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
@@ -442,7 +442,7 @@ void RailParams::SetParams()
 void RailParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 		p->textBoxes["group"]->text.setString(group->name);
 	p->checkBoxes["accelerate"]->checked = accelerate;
@@ -566,7 +566,7 @@ void TeleporterParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 	{
 		p->textBoxes["group"]->text.setString(group->name);

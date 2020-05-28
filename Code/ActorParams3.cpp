@@ -145,7 +145,7 @@ void PulserParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 	{
 		p->textBoxes["group"]->text.setString( group->name );
@@ -275,7 +275,7 @@ void OwlParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 	{
 		p->textBoxes["group"]->text.setString( group->name );
@@ -371,7 +371,7 @@ void BadgerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
@@ -478,7 +478,7 @@ void CactusParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
@@ -649,7 +649,7 @@ void BounceSpringParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 	{
 		p->textBoxes["group"]->text.setString(group->name);

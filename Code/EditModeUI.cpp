@@ -22,6 +22,8 @@ EditModeUI::EditModeUI()
 
 	CreateLayerPanel();
 
+	currEnemyPanel = NULL;
+
 	int labelCharHeight = 24;
 	int labelExtraSpacing = 30;
 	int labelExtraY = 10;
@@ -168,6 +170,21 @@ void EditModeUI::ChooseMatType(ImageChooseRect *icRect)
 	edit->justCompletedPolyWithClick = true;
 }
 
+void EditModeUI::SetEnemyPanel(Panel *p)
+{
+	if (currEnemyPanel != NULL && currEnemyPanel != p)
+	{
+		edit->RemoveActivePanel(currEnemyPanel);
+	}
+	else if (p != currEnemyPanel && p != NULL)
+	{
+		edit->AddActivePanel(p);
+		p->handler = this;
+	}
+
+	currEnemyPanel = p;
+}
+
 
 bool EditModeUI::IsGridOn()
 {
@@ -221,11 +238,13 @@ void EditModeUI::SetShown(bool s)
 	{
 		edit->AddActivePanel(mainPanel);
 		edit->AddActivePanel(layerPanel);
+		SetEnemyPanel(NULL);
 	}
 	else
 	{
 		edit->RemoveActivePanel(mainPanel);
 		edit->RemoveActivePanel(layerPanel);
+
 	}
 }
 
@@ -346,7 +365,13 @@ void EditModeUI::GridSelectorCallback(GridSelector *gs, const std::string & e)
 
 void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 {
-	if (cb->panel == layerPanel)
+	if (cb->panel == currEnemyPanel)
+	{
+		edit->UpdateCurrEnemyParamsFromPanel();
+		//assert( edit->selectedBrush->)
+		//int x = 5;
+	}
+	else if (cb->panel == layerPanel)
 	{
 		bool isChecked = false;
 		if (e == "checked")

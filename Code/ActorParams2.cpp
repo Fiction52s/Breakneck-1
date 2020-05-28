@@ -176,7 +176,7 @@ void BatParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
@@ -297,7 +297,7 @@ void StagBeetleParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
@@ -436,7 +436,7 @@ void PoisonFrogParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["jumpwaitframes"]->text.setString( boost::lexical_cast<string>( jumpWaitFrames ) ); 
@@ -735,7 +735,7 @@ void CurveTurretParams::SetParams()
 void CurveTurretParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
@@ -882,7 +882,7 @@ void GravityFallerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 		p->textBoxes["group"]->text.setString(group->name);
 	p->textBoxes["var"]->text.setString(boost::lexical_cast<string>(variation));
@@ -993,7 +993,7 @@ void GravitySpringParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 	{
 		p->textBoxes["group"]->text.setString(group->name);
@@ -1088,7 +1088,7 @@ void GravityModifierParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString("test");
+	//p->textBoxes["name"]->text.setString("test");
 	if (group != NULL)
 	{
 		p->textBoxes["group"]->text.setString(group->name);

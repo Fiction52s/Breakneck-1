@@ -49,7 +49,7 @@ void SpecterParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 	{
 		p->textBoxes["group"]->text.setString( group->name );
@@ -94,7 +94,7 @@ void CopycatParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 	{
 		p->textBoxes["group"]->text.setString( group->name );
@@ -178,7 +178,7 @@ void GorillaParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 	{
 		p->textBoxes["group"]->text.setString( group->name );
@@ -280,7 +280,7 @@ void NarwhalParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString( "test" );
+	//p->textBoxes["name"]->text.setString( "test" );
 	if( group != NULL )
 	{
 		p->textBoxes["group"]->text.setString( group->name );
