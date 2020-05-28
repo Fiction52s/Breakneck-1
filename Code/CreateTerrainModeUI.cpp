@@ -26,8 +26,13 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(50, 10), false);
 	snapPointsCheckbox->SetToolTip("Toggle Snap to points (F)");
 	
+	//boxModeCheckbox = mainPanel->AddCheckBox("box", Vector2i(50, 60), false);
+	//boxModeCheckbox->SetToolTip("Toggle Create Box Mode (B)");
+
 	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
 	gridSizeTextbox->SetToolTip("Set the grid spacing");
+	SetGridSize(edit->graph->GetSpacing());
+	
 
 	completeButton = mainPanel->AddButton("complete", Vector2i(200, 10), Vector2f( 80, 80 ), "complete");
 	completeButton->SetToolTip("Complete current polygon (Space)");
@@ -45,6 +50,12 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	std::vector<string> layerOptions = { "Terrain", "Water", "Pickup" };
 	terrainLayerDropdown = mainPanel->AddDropdown("layerdrop", Vector2i(750, 10), Vector2i(200, 28), layerOptions, 0);
 	terrainLayerDropdown->SetToolTip("Choose polygon layer\n(E to choose material)");
+
+	std::vector<string> drawOptions = { "Draw", "Box" };// , "Brush"
+	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(1000, 10), Vector2i(200, 28), drawOptions, 0);
+	drawModeDropdown->SetToolTip("Choose creation tool\nDraw (D)\nBox (B)");
+
+
 
 	realTerrainTool = 0;
 
@@ -66,7 +77,9 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 
 	currMatRects[0]->SetShown(true);
 
-	matPanelPos = Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10);
+	
+
+	matPanelPos = Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10) + mainPanel->pos;
 }
 
 CreateTerrainModeUI::~CreateTerrainModeUI()
@@ -157,6 +170,25 @@ void CreateTerrainModeUI::FlipSnapPoints()
 int CreateTerrainModeUI::GetTerrainLayer()
 {
 	return terrainLayerDropdown->selectedIndex;
+}
+
+int CreateTerrainModeUI::GetCurrDrawTool()
+{
+	return drawModeDropdown->selectedIndex;
+}
+
+void CreateTerrainModeUI::SetDrawTool(int t)
+{
+	if (t != drawModeDropdown->selectedIndex)
+	{
+		drawModeDropdown->SetSelectedIndex(t);
+		switch (t)
+		{
+		case EditSession::TOOL_BOX:
+			edit->SetBoxTool();
+			break;
+		}
+	}
 }
 
 void CreateTerrainModeUI::SetShown(bool s)
@@ -259,6 +291,11 @@ void CreateTerrainModeUI::DropdownCallback(Dropdown *dropdown, const std::string
 	{
 		int selectedIndex = dropdown->selectedIndex;
 		realTerrainTool = selectedIndex;
+	}
+	else if (dropdown == drawModeDropdown)
+	{
+		int selectedIndex = dropdown->selectedIndex;
+		SetDrawTool(selectedIndex);
 	}
 }
 

@@ -324,6 +324,17 @@ struct GeneralUI : GUIHandler
 		EditOptions_Count
 	};
 
+	enum ModeOptions
+	{
+		CREATE_TERRAIN,
+		EDIT,
+		CREATE_ENEMIES,
+		CREATE_GATES,
+		CREATE_IMAGES,
+		MAP_OPTIONS,
+		ModeOptions_Count
+	};
+
 	Panel *mainPanel;
 	MenuDropdown *fileDropdown;
 	MenuDropdown *editDropdown;
@@ -484,10 +495,10 @@ struct CreateGatesModeUI : GUIHandler
 	int gateGridSize;
 };
 
-struct CreateTerrainModeUI : GUIHandler
+struct CreateRailModeUI : GUIHandler
 {
-	CreateTerrainModeUI();
-	~CreateTerrainModeUI();
+	CreateRailModeUI();
+	~CreateRailModeUI();
 	void SetShown(bool s);
 	bool IsGridOn();
 	void FlipGrid();
@@ -506,6 +517,66 @@ struct CreateTerrainModeUI : GUIHandler
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	int GetTerrainLayer();
+
+
+	int GetCurrTerrainTool();
+	void SetTerrainTool(int t);
+	void SetTempTerrainTool(int t);
+	void RevertTerrainTool();
+	int realTerrainTool;
+
+
+
+
+	bool show;
+	EditSession *edit;
+
+	int terrainGridSize;
+	Panel *matTypePanel;
+	//std::vector<ImageChooseRect*> *matTypeRects;
+
+	Panel *mainPanel;
+
+
+	CheckBox *gridCheckbox;
+	CheckBox *snapPointsCheckbox;
+	TextBox *gridSizeTextbox;
+	Button *completeButton;
+	Button *removePointButton;
+	Button *removeAllPointsButton;
+	Dropdown *terrainActionDropdown;
+	Dropdown *terrainLayerDropdown;
+
+	sf::Vector2i matPanelPos;
+
+	std::vector<ImageChooseRect*> currMatRects;
+
+
+};
+
+struct CreateTerrainModeUI : GUIHandler
+{
+	CreateTerrainModeUI();
+	~CreateTerrainModeUI();
+	void SetShown(bool s);
+	bool IsGridOn();
+	void FlipGrid();
+	bool IsSnapPointsOn();
+	void FlipSnapPoints();
+	void SetGridSize(int gs);
+	void ExpandTerrainLibrary();
+	void ChooseMatType(ImageChooseRect *icRect);
+	void ButtonCallback(Button *b, const std::string & e);
+	void TextBoxCallback(TextBox *tb, const std::string & e);
+	void GridSelectorCallback(GridSelector *gs, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	void SliderCallback(Slider *slider, const std::string & e);
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	int GetTerrainLayer();
+	int GetCurrDrawTool();
+	void SetDrawTool(int t);
 
 	
 	int GetCurrTerrainTool();
@@ -535,6 +606,7 @@ struct CreateTerrainModeUI : GUIHandler
 	Button *removeAllPointsButton;
 	Dropdown *terrainActionDropdown;
 	Dropdown *terrainLayerDropdown;
+	Dropdown *drawModeDropdown;
 
 	sf::Vector2i matPanelPos;
 

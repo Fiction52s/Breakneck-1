@@ -24,8 +24,15 @@ GeneralUI::GeneralUI()
 	editOptions[REDO] = "Redo (Ctrl + Y)";
 	editDropdown = mainPanel->AddMenuDropdown("Edit", Vector2i(fileDropdown->pos.x + fileWidth, 0),
 		Vector2i(fileWidth, height), 200, editOptions);
-	std::vector<string> modeOptions = { "Create Terrain", "Edit", "Create Enemies",
-	"Create Gates", "Create Images", "Map Options"};
+
+	std::vector<string> modeOptions(ModeOptions_Count);
+	modeOptions[CREATE_TERRAIN] = "Create Terrain";
+	modeOptions[EDIT] = "Edit";
+	modeOptions[CREATE_ENEMIES] = "Create Enemies";
+	modeOptions[CREATE_GATES] = "Create Gates";
+	modeOptions[CREATE_IMAGES] = "Create Images";
+	modeOptions[MAP_OPTIONS] = "Map Options";
+
 	modeDropdown = mainPanel->AddMenuDropdown("Mode", Vector2i(editDropdown->pos.x + editWidth, 0),
 		Vector2i(fileWidth, height), 200, modeOptions);
 }
@@ -55,7 +62,27 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 	}
 	else if (menuDrop = modeDropdown)
 	{
-
+		switch (menuDrop->selectedIndex)
+		{
+		case CREATE_TERRAIN:
+			edit->SetMode(EditSession::CREATE_TERRAIN);
+			break;
+		case EDIT:
+			edit->SetMode(EditSession::EDIT);
+			break;
+		case CREATE_ENEMIES:
+			edit->SetMode(EditSession::CREATE_ENEMY);
+			break;
+		case CREATE_GATES:
+			edit->SetMode(EditSession::CREATE_GATES);
+			break;
+		case CREATE_IMAGES:
+			edit->SetMode(EditSession::CREATE_IMAGES);
+			break;
+		//case MAP_OPTIONS:
+		//	edit->SetMode(EditSession::MAP_OPT);
+		//	break;
+		}
 	}
 }
 

@@ -2540,7 +2540,6 @@ int EditSession::Run()
 	sf::View oldPreTexView = preScreenTex->getView();//mainMenu->preScreenTexture->
 	sf::View oldWindowView = window->getView();
 
-	currTool = TOOL_DRAW;
 	currentFile = filePath.string();
 
 	tempActor = NULL;
@@ -9673,6 +9672,7 @@ void EditSession::SetMode(Emode m)
 	case CREATE_TERRAIN:
 		justCompletedPolyWithClick = false;
 		createTerrainModeUI->SetShown(true);
+		createTerrainModeUI->SetDrawTool(TOOL_DRAW);
 		break;
 	case CREATE_GATES:
 		gatePoints = 0;
@@ -9684,7 +9684,6 @@ void EditSession::SetMode(Emode m)
 		createEnemyModeUI->showLibrary = false;
 		createEnemyModeUI->SetShown(true);
 		//AddActivePanel(createEnemyModeUI->topbarPanel);
-		currTool = TOOL_DRAW;
 		lastLeftMouseDown = false;//IsMousePressed( Mouse::)
 		//grabbedActor = NULL;
 		editClock.restart();
@@ -10967,6 +10966,7 @@ void EditSession::DrawMode()
 	}
 	case CREATE_TERRAIN:
 	{
+		int currTool = createTerrainModeUI->GetCurrDrawTool();
 		if (currTool == TOOL_DRAW)
 		{
 			DrawPolygonInProgress();
@@ -11478,6 +11478,12 @@ void EditSession::HandleEvents()
 	}
 }
 
+void EditSession::SetBoxTool()
+{
+	polygonInProgress->ClearPoints();
+	boxDrawStarted = false;
+}
+
 void EditSession::CreateTerrainModeHandleEvent()
 {
 	switch (ev.type)
@@ -11515,16 +11521,11 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::B)
 		{
-			if (currTool == TOOL_DRAW)
-			{
-				polygonInProgress->ClearPoints();
-				currTool = TOOL_BOX;
-				boxDrawStarted = false;
-			}
-			else
-			{
-				currTool = TOOL_DRAW;
-			}
+			createTerrainModeUI->SetDrawTool(TOOL_BOX);
+		}
+		else if (ev.key.code == sf::Keyboard::D)
+		{
+			createTerrainModeUI->SetDrawTool(TOOL_DRAW);
 		}
 		else if (ev.key.code == Keyboard::T )
 		{
@@ -12298,6 +12299,8 @@ void EditSession::CreateTerrainModeUpdate()
 			createTerrainModeUI->RevertTerrainTool();
 		}*/
 	}
+
+	int currTool = createTerrainModeUI->GetCurrDrawTool();
 
 	if (currTool == TOOL_BOX)
 	{

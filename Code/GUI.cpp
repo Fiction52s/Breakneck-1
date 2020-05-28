@@ -964,9 +964,7 @@ bool Dropdown::MouseUpdate()
 			panel->focusedMember = NULL;
 			panel->HideToolTip();
 		}
-		//panel->RemoveAsFocusedMember(this);
 	}
-	//UpdateToolTip(!expanded && onMainQuad);
 
 	if (expanded)
 	{
@@ -1043,7 +1041,7 @@ bool Dropdown::MouseUpdate()
 
 			clickedDown = true;
 			expanded = false;
-			return true;
+			return false;
 		}
 		else
 		{
@@ -1266,7 +1264,7 @@ bool MenuDropdown::MouseUpdate()
 
 			clickedDown = true;
 			SetExpanded(false, onMainQuad);
-			return true;
+			return false;
 		}
 		else
 		{
@@ -1567,14 +1565,19 @@ bool Panel::MouseUpdate()
 	}
 
 	//cout << "pos: " << posx << ", " << posy << endl;
+	bool dropdownUsedMouse = false;
 	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
 	{
 		bool temp = (*it).second->MouseUpdate();
 		if (temp)
 		{
-			return true;
+			dropdownUsedMouse = true;
+			//return true;
 		}
 	}
+
+	if (dropdownUsedMouse)
+		return true;
 
 	for (auto it = sliders.begin(); it != sliders.end(); ++it)
 	{
@@ -2044,7 +2047,7 @@ TextBox::TextBox( const string &n, int posx, int posy, int width_p, int lengthLi
 	text.setFont( f );
 	text.setFillColor( Color::Black );
 	text.setCharacterSize( characterHeight );
-	text.setPosition(panel->pos.x + pos.x + leftBorder, panel->pos.y + pos.y);
+	text.setPosition(pos.x + leftBorder, pos.y);
 
 	SetString(initialText);
 	SetCursorIndex(initialText.length());
@@ -2074,7 +2077,7 @@ void TextBox::SetCursorIndex( int index )
 
 
 
-	cursor.setPosition( panel->pos.x + text.getLocalBounds().width + leftBorder, panel->pos.y + pos.y );
+	cursor.setPosition( text.getLocalBounds().width + leftBorder, pos.y );
 }
 
 void TextBox::SetCursorIndex( Vector2i &mousePos )
@@ -2275,8 +2278,7 @@ void TextBox::SendKey( Keyboard::Key k, bool shift )
 	sf::Text test;
 	test = text;
 	test.setString( test.getString().substring( 0, cursorIndex) );
-	cursor.setPosition( panel->pos.x + pos.x + test.getLocalBounds().width, 
-		panel->pos.y + pos.y);
+	cursor.setPosition( pos.x + test.getLocalBounds().width, pos.y);
 }
 
 bool TextBox::MouseUpdate()
@@ -2356,7 +2358,7 @@ void TextBox::Draw( sf::RenderTarget *target )
 	//rs.setSize( Vector2f( 300, characterHeight + verticalBorder) );
 	rs.setSize( Vector2f( width, characterHeight + verticalBorder ) );
 	rs.setFillColor( Color::White );
-	rs.setPosition( panel->pos.x + pos.x, panel->pos.y + pos.y );
+	rs.setPosition( pos.x, pos.y );
 
 	target->draw( rs );
 

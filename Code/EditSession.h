@@ -272,14 +272,13 @@ struct EditSession : GUIHandler, Session
 	const static int MAX_TERRAINTEX_PER_WORLD = 10;
 	const static int TOTAL_TERRAIN_TEXTURES =
 		TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD;
-	
-	
 
-	Tool currTool;
 	ImageEditTool currImageTool;
 
 	Tileset *ts_shards[7];
 	
+	void SetBoxTool();
+
 	//need to clean this up
 	int grassSize;
 	int grassSpacing;
