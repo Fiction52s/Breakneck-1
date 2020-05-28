@@ -112,8 +112,10 @@ struct EditSession : GUIHandler, Session
 	Panel *focusedPanel;
 	std::map<int, void(EditSession::*)()> handleEventFunctions;
 	std::map<int, void(EditSession::*)()> updateModeFunctions;
+	std::map<int, void(EditSession::*)()> loseFocusFunctions;
 	void HandleEventFunc(int m);
 	void UpdateModeFunc(int m);
+	void LoseFocusFunc(int m);
 	void GeneralEventHandler();
 	void GeneralMouseUpdate();
 	void DrawPlayerTracker(sf::RenderTarget *target);
@@ -126,6 +128,7 @@ struct EditSession : GUIHandler, Session
 	bool IsDrawMode(Emode em);
 	Emode mode;
 	void UpdateInputNonGame();
+	
 	
 
 	enum Tool
@@ -789,6 +792,8 @@ struct EditSession : GUIHandler, Session
 	void RevertMovedPoints(PointMap::iterator it);
 	void RevertMovedPoints(RailPointMap::iterator it);
 	//MovePointsAction *movePointsAction;
+
+	bool mainWindowLostFocus;
 
 	bool moveActive;
 	bool editMouseDownBox;

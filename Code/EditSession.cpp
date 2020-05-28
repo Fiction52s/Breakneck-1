@@ -794,6 +794,14 @@ void EditSession::HandleEventFunc(int m)
 	}
 }
 
+void EditSession::LoseFocusFunc(int m)
+{
+	if (loseFocusFunctions.find(m) != loseFocusFunctions.end())
+	{
+		(this->*loseFocusFunctions[m])();
+	}
+}
+
 void EditSession::UpdateModeFunc(int m)
 {
 	if (updateModeFunctions.find(m) != updateModeFunctions.end())
@@ -9666,6 +9674,15 @@ void EditSession::SetMode(Emode m)
 			FinishEnemyCreation();
 		}
 		break;
+	case EDIT:
+	{
+		if (editModeUI->IsShowGrassOn())
+		{
+			ShowGrass(false);
+		}
+		break;
+	}
+		
 	case CREATE_TERRAIN:
 		break;
 	case TEST_PLAYER:
@@ -11453,10 +11470,13 @@ void EditSession::GeneralEventHandler()
 
 void EditSession::HandleEvents()
 {
+	mainWindowLostFocus = false;
 	//if (MOUSE.IsMouseLeftClicked() || MOUSE.IsMouseRightClicked())
 	{
 		Vector2i mousePos = MOUSE.GetPos();
 		bool found = false;
+
+		bool noFocusedPanel = (focusedPanel == NULL);
 
 		if (generalUI->mainPanel->ContainsPoint(mousePos))
 		{
@@ -11494,6 +11514,12 @@ void EditSession::HandleEvents()
 				focusedPanel->Deactivate();
 			}
 			focusedPanel = NULL;
+		}
+
+		if (noFocusedPanel && focusedPanel != NULL )
+		{
+			mainWindowLostFocus = true;
+			//went from main window to focused panel
 		}
 	}
 
@@ -12302,6 +12328,13 @@ void EditSession::UpdateMode()
 
 		GeneralMouseUpdate();
 	}
+	else
+	{
+		if (mainWindowLostFocus)
+		{
+			UpdateModeFunc(mode);
+		}
+	}
 }
 
 void EditSession::CreateTerrainModeUpdate()
@@ -12598,7 +12631,7 @@ void EditSession::SelectModeUpdate()
 
 void EditSession::EditModeUpdate()
 {
-	if (MOUSE.IsMouseLeftClicked())
+	if (MOUSE.IsMouseLeftClicked() && !mainWindowLostFocus)
 	{
 		if (!editModeUI->IsShowGrassOn() && !(editMouseDownMove || editMouseDownBox))
 		{
@@ -12655,7 +12688,7 @@ void EditSession::EditModeUpdate()
 			BackupGrass();
 		}*/
 	}
-	else if (MOUSE.IsMouseLeftReleased())
+	else if (MOUSE.IsMouseLeftReleased() || mainWindowLostFocus)
 	{
 		if (editModeUI->IsShowGrassOn())
 		{
