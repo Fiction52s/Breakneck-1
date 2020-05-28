@@ -13,53 +13,64 @@ using namespace sf;
 CreateGatesModeUI::CreateGatesModeUI()
 {
 	edit = EditSession::GetSession();
-	mainPanel = new Panel("creategates", 1920, 200, this, false);
+	mainPanel = new Panel("creategates", 1190, 120, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 
-	numKeysTextbox = mainPanel->AddTextBox("numkeys", Vector2i(100, 10), 50, 5, "");
-	numKeysTextbox->SetToolTip("Set number of keys/pickups to open a gate");
+	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(20, 0));
 
-	deleteGateButton = mainPanel->AddButton("delete", Vector2i(300, 10), Vector2f(80, 80), "delete");
-	deleteGateButton->SetToolTip("Delete selected gate (X / Delete)");
-
-	OKGateButton = mainPanel->AddButton("ok", Vector2i(200, 10), Vector2f(80, 80), "OK");
-	OKGateButton->SetToolTip("Finish editing a selected gate (Enter)");
-
-	std::vector<string> gateCatOptions = { "Key", "Shard", "Boss", "Secret", "Pickup", "Black" };
-	gateCategoryDropdown = mainPanel->AddDropdown(
-		"catdrop", Vector2i(500, 10), Vector2i(200, 28), gateCatOptions, 0);
-	gateCategoryDropdown->SetToolTip("Choose the gate category\n(E to expand types)");
-
-	currGateTypeRectPos = Vector2f(gateCategoryDropdown->pos)
-		+ Vector2f(gateCategoryDropdown->size.x + 20, 0);
-
-	modifyGateRect.setFillColor(Color::Transparent);
-	modifyGateRect.setOutlineThickness(-5);
-	modifyGateRect.setOutlineColor(Color::Green);
+	int labelCharHeight = 24;
+	int labelExtraSpacing = 30;
+	int labelExtraY = 10;
+	Vector2i labelExtra(30, 10);
 
 	gateGridSize = 64;
 	modifyGate = NULL;
 	origModifyGate = new GateInfo;
 
+	modifyGateRect.setFillColor(Color::Transparent);
+	modifyGateRect.setOutlineThickness(-5);
+	modifyGateRect.setOutlineColor(Color::Green);
+
 	ts_gateCategories = edit->GetSizedTileset("Editor/gatecategories_128x128.png");
 	ts_bossGateTypes = edit->GetSizedTileset("Editor/bossgatetypes_128x128.png");
 	ts_pickupGateTypes = edit->GetSizedTileset("Editor/pickupgatetypes_128x128.png");
 
+	std::vector<string> gateCatOptions = { "Key", "Shard", "Boss", "Secret", "Pickup", "Black" };
+	gateCategoryDropdown = mainPanel->AddDropdown(
+		"catdrop", Vector2i(0, 0), Vector2i(200, 28), gateCatOptions, 0);
+	gateCategoryDropdown->SetToolTip("Choose the gate category\n(E to expand types)");
+
 	int numGateCategories = gateCatOptions.size();//EditSession::TERRAINLAYER_Count;
 	currGateTypeRects.resize(numGateCategories);
 	mainPanel->ReserveImageRects(numGateCategories);
-	Vector2f currGateTypeRectPos = Vector2f(gateCategoryDropdown->pos)
-		+ Vector2f(gateCategoryDropdown->size.x + 20, 0);
+
+	mainPanel->StopAutoSpacing();
+
+	currGateTypeRectPos = Vector2f(0, 0);/*Vector2f(gateCategoryDropdown->pos)
+										 + Vector2f(gateCategoryDropdown->size.x + 20, 0);*/
 	for (int i = 0; i < numGateCategories; ++i)
 	{
+		if (i == numGateCategories - 1)
+		{
+			mainPanel->RestartAutoSpacing();
+		}
 		currGateTypeRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_GATESEARCH,
 			currGateTypeRectPos, ts_gateCategories, i, 100);
 		currGateTypeRects[i]->Init();
 	}
-
 	currGateTypeRects[0]->SetShown(true);
 
-	popupPanelPos = Vector2i(currGateTypeRectPos.x, currGateTypeRectPos.y + 100 + 10);
+	mainPanel->AddLabel("numkeyslabel", Vector2i( 0, labelExtraY ), labelCharHeight, "Number of keys/pickups:");
+	numKeysTextbox = mainPanel->AddTextBox("numkeys", Vector2i(0, 0), 50, 5, "");
+	numKeysTextbox->SetToolTip("Set number of keys/pickups to open a gate");
+
+	deleteGateButton = mainPanel->AddButton("delete", Vector2i(30, 0), Vector2f(200, 28 + 4), "delete");
+	deleteGateButton->SetToolTip("Delete selected gate (X / Delete)");
+
+	OKGateButton = mainPanel->AddButton("ok", Vector2i(0, 0), Vector2f(200, 28 + 4), "OK");
+	OKGateButton->SetToolTip("Finish editing a selected gate (Enter)");
+
+	popupPanelPos = Vector2i(currGateTypeRects[0]->pos.x, currGateTypeRects[0]->pos.y + 100 + 10);
 
 	CreateShardTypePanel();
 	ChooseShardType(shardGateTypeRects[0]);
