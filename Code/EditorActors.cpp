@@ -121,7 +121,6 @@ Panel *ActorType::CreateDefaultPanel()
 	p->SetAutoSpacing(true, false, Vector2i(10, 0), Vector2i( 20, 0 ));
 	p->SetColor(Color::Green);
 
-	//p->AddTextBox("name", Vector2i(0, 0), 200, charHeight, "name_test");
 	p->AddTextBox("group", Vector2i(0, 0), 200, charHeight, "group_test");
 
 	if (info.writeLoop)
@@ -156,6 +155,7 @@ Panel *ActorType::CreatePanel()
 	if (name == "poi")
 	{
 		p = CreateDefaultPanel();//new Panel("poi_options", 200, 500, edit);
+		AddSpecialOptionDropdown(p);
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "NO NAME");
 	}
 	else if (name == "xbarrier")
@@ -177,7 +177,6 @@ Panel *ActorType::CreatePanel()
 		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "NO NAME");
 		p->AddTextBox("group", Vector2i(20, 100), 200, 20, "not test");
-		//p->AddTextBox( "barrier", Vector2i( 20, 330 ), 50, 1, "-" );
 		p->AddCheckBox("facingright", Vector2i(20, 250));
 	}
 	else if (name == "key")
@@ -653,6 +652,50 @@ Panel *ActorType::CreatePanel()
 	}
 
 	return p;
+}
+
+bool ActorType::LoadSpecialTypeOptions()
+{
+	string fileName = "Resources/Editor/SpecialOptions/" + info.name + "_options.txt";
+	ifstream is;
+	is.open(fileName);
+	string s;
+
+	if (is.is_open())
+	{
+		specialTypeOptions.reserve(10); //can bump this up later
+
+		while (true)
+		{
+			is >> s;
+			specialTypeOptions.push_back(s);
+			if (is.eof())
+			{
+				break;
+			}
+		}
+	}
+	else
+	{
+		cout << "failed to open options file: " << fileName << endl;
+		assert(0);
+		return false;
+	}
+
+	return true;
+}
+
+void ActorType::AddSpecialOptionDropdown( Panel * p)
+{
+	if (!LoadSpecialTypeOptions())
+	{
+		cout << "failed to load special type options" << endl;
+		assert(0);
+	}
+	else
+	{
+		p->AddDropdown("specialoptions", Vector2i(0, 0), Vector2i(200, 28), specialTypeOptions, 0);
+	}
 }
 
 void ActorType::LoadEnemy(std::ifstream &is, ActorPtr &a)

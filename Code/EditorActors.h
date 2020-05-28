@@ -110,10 +110,13 @@ struct ActorType
 	bool CanBeGrounded();
 	bool CanBeAerial();
 	bool CanBeRailGrounded();
+	bool LoadSpecialTypeOptions();
+	void AddSpecialOptionDropdown( Panel * p);
 
 	Panel *panel;
 
 	std::vector<ActorPtr> defaultParamsVec;
+	std::vector<std::string> specialTypeOptions;
 
 	ParamsInfo info;
 };
