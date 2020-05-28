@@ -18,42 +18,45 @@ CreateRailModeUI::CreateRailModeUI()
 	//terrainGridSize = edit->terrainGridSize;
 	//matTypePanel = edit->matTypePanel;
 
-	mainPanel = new Panel("createterrain", 1920, 200, this, false);
+	mainPanel = new Panel("createrail", 820, 120, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 
-	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(10, 10), false);
-	gridCheckbox->SetToolTip("Toggle Grid (G)");
+	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(20, 0));
 
-	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(50, 10), false);
-	snapPointsCheckbox->SetToolTip("Toggle Snap to points (F)");
-
-	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(100, 10), 50, 5, "");
-	gridSizeTextbox->SetToolTip("Set the grid spacing");
-	SetGridSize(edit->graph->GetSpacing());
-
-	completeButton = mainPanel->AddButton("complete", Vector2i(200, 10), Vector2f(80, 80), "complete");
-	completeButton->SetToolTip("Complete current rail (Space)");
-
-	removePointButton = mainPanel->AddButton("remove", Vector2i(300, 10), Vector2f(80, 80), "remove");
-	removePointButton->SetToolTip("Remove progress point (X / Delete)");
-
-	removeAllPointsButton = mainPanel->AddButton("removeall", Vector2i(400, 10), Vector2f(80, 80), "remove all");
-	removeAllPointsButton->SetToolTip("Remove all progress points (no hotkey yet)");
-
-	std::vector<string> catOptions = { "Physical", "Enemy" };
-	railCategoryDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(500, 10), Vector2i(200, 28), catOptions, 0);
-	railCategoryDropdown->SetToolTip("Choose rail category\nAdd (A)\nSubtract (S)\nSet Inverse Poly (I)");
+	int labelCharHeight = 24;
+	int labelExtraSpacing = 30;
+	int labelExtraY = 10;
+	Vector2i labelExtra(30, 10);
 
 	enemyPanel = new Panel("enemy", 600, 600, this, true);
 	physicalPanel = new Panel("type", 600, 600, this, true);
 
 	railTypeGridSize = 100;
+
 	
+	mainPanel->AddLabel("snaplabel", Vector2i(0, labelExtra.y), labelCharHeight, "Snap to Points:");
+	snapPointsCheckbox = mainPanel->AddCheckBox("lockpoints", Vector2i(0, 0), false);
+	snapPointsCheckbox->SetToolTip("Toggle Snap to points (F)");
+
+	mainPanel->AddLabel("movelabel", labelExtra, labelCharHeight, "Grid:");
+	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(0, 0), false);
+	gridCheckbox->SetToolTip("Toggle Grid (G)");
+
+	gridSizeTextbox = mainPanel->AddTextBox("gridsize", Vector2i(0, 0), 50, 5, "");
+	gridSizeTextbox->SetToolTip("Set the grid spacing");
+	SetGridSize(edit->graph->GetSpacing());
+
+	std::vector<string> catOptions = { "Physical", "Enemy" };
+	railCategoryDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(0, 0), Vector2i(200, 28), catOptions, 0);
+	railCategoryDropdown->SetToolTip("Choose rail category\nAdd (A)\nSubtract (S)\nSet Inverse Poly (I)");
+
 	mainPanel->ReserveImageRects(1);
 	mainPanel->ReserveEnemyRects(1);
 
-	Vector2f currTypeRectPos = Vector2f(railCategoryDropdown->pos)
-		+ Vector2f(railCategoryDropdown->size.x + 20, 0);
+	mainPanel->StopAutoSpacing();
+
+	Vector2f currTypeRectPos = Vector2f(0, 0);/*Vector2f(railCategoryDropdown->pos)
+		+ Vector2f(railCategoryDropdown->size.x + 20, 0);*/
 
 	currPhysicalTypeRect = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_RAILSEARCH,
 		currTypeRectPos, NULL, 0, 100);
@@ -64,7 +67,6 @@ CreateRailModeUI::CreateRailModeUI()
 	currEnemyTypeRect = mainPanel->AddEnemyRect(ChooseRect::ChooseRectIdentity::I_RAILSEARCH,
 		currTypeRectPos, NULL, 0);
 	currEnemyTypeRect->Init();
-	
 
 	Tileset *ts_physicalTypes = edit->GetSizedTileset("Editor/gatecategories_128x128.png");
 	
@@ -79,8 +81,8 @@ CreateRailModeUI::CreateRailModeUI()
 		physRects[i]->SetShown(true);
 	}
 
-	physicalPanel->SetPosition(Vector2i(currTypeRectPos) + Vector2i(0, 120));
-	enemyPanel->SetPosition(Vector2i(currTypeRectPos) + Vector2i(0, 120));
+	physicalPanel->SetPosition(Vector2i(currPhysicalTypeRect->pos) + Vector2i(0, 120));
+	enemyPanel->SetPosition(Vector2i(currEnemyTypeRect->pos) + Vector2i(0, 120));
 
 	ChoosePhysicalType(physRects[0]);
 
@@ -101,7 +103,16 @@ CreateRailModeUI::CreateRailModeUI()
 
 	ChooseEnemyType(enemyRects[0]);
 
+	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 70), Vector2i(20, 0));
 
+	completeButton = mainPanel->AddButton("complete", Vector2i(0, 0), Vector2f(200, 28 + 4), "complete");
+	completeButton->SetToolTip("Complete current rail (Space)");
+
+	removePointButton = mainPanel->AddButton("remove", Vector2i(0, 0), Vector2f(200, 28 + 4), "remove");
+	removePointButton->SetToolTip("Remove progress point (X / Delete)");
+
+	removeAllPointsButton = mainPanel->AddButton("removeall", Vector2i(0, 0), Vector2f(200, 28 + 4), "remove all");
+	removeAllPointsButton->SetToolTip("Remove all progress points (no hotkey yet)");
 	/*Vector2f currMatRectPos = Vector2f(terrainLayerDropdown->pos)
 		+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
 	for (int i = 0; i < numTerrainLayers; ++i)

@@ -16,7 +16,7 @@ EditModeUI::EditModeUI()
 	terrainGridSize = edit->terrainGridSize;
 	matTypePanel = edit->matTypePanel;
 
-	mainPanel = new Panel("edit", 1920, 50, this, false);
+	mainPanel = new Panel("edit", 1310, 50, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(20, 0 ));
 

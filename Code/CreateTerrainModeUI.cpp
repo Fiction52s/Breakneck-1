@@ -40,7 +40,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	gridCheckbox = mainPanel->AddCheckBox("grid", Vector2i(0, 0), false);
 	gridCheckbox->SetToolTip("Toggle Grid (G)");
 
-	gridSizeTextbox = mainPanel->AddTextBox("gridisize", Vector2i(0, 0), 50, 5, "");
+	gridSizeTextbox = mainPanel->AddTextBox("gridsize", Vector2i(0, 0), 50, 5, "");
 	gridSizeTextbox->SetToolTip("Set the grid spacing");
 	SetGridSize(edit->graph->GetSpacing());
 	
@@ -64,7 +64,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	Vector2i storedAutoStart = mainPanel->autoStart;
 	
 
-	Vector2f currMatRectPos = Vector2f(20, 0);//Vector2f(terrainLayerDropdown->pos)
+	Vector2f currMatRectPos = Vector2f(0, 0);//Vector2f(20, 0);//Vector2f(terrainLayerDropdown->pos)
 		//+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
 
 	mainPanel->StopAutoSpacing();
