@@ -75,12 +75,6 @@ void SharkParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-
 	p->textBoxes["circleframes"]->text.setString( boost::lexical_cast<string>( circleFrames ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
@@ -150,12 +144,6 @@ void SwarmParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-
 	p->textBoxes["liveframes"]->text.setString( boost::lexical_cast<string>( liveFrames ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
@@ -223,12 +211,6 @@ void GhostParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
@@ -273,11 +255,6 @@ void OvergrowthParams::SetParams()
 void OvergrowthParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
-	
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }

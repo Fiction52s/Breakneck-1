@@ -49,12 +49,6 @@ void SpecterParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -93,12 +87,6 @@ void CopycatParams::SetParams()
 void CopycatParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -177,12 +165,6 @@ void GorillaParams::SetParams()
 void GorillaParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
 
 	p->textBoxes["wallwidth"]->text.setString( boost::lexical_cast<string>( wallWidth ) );
 	p->textBoxes["followframes"]->text.setString( boost::lexical_cast<string>( followFrames ) );
@@ -279,12 +261,6 @@ void NarwhalParams::SetParams()
 void NarwhalParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
 
 	p->textBoxes["moveframes"]->text.setString( boost::lexical_cast<string>( moveFrames ) );
 

@@ -84,14 +84,7 @@ void BoosterParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-	{
-		p->textBoxes["group"]->text.setString(group->name);
-	}
-
 	p->textBoxes["strength"]->text.setString(boost::lexical_cast<string>(strength));
-	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 ActorParams *BoosterParams::Copy()
@@ -180,17 +173,10 @@ void SpringParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-	{
-		p->textBoxes["group"]->text.setString(group->name);
-	}
-
 	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
 
 	EditSession *edit = EditSession::GetSession();
 	MakeGlobalPath(edit->patrolPath);
-	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 ActorParams *SpringParams::Copy()
 {

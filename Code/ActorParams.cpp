@@ -241,12 +241,6 @@ void KeyParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-
 	p->textBoxes["numkeys"]->text.setString( boost::lexical_cast<string>( numKeys ) );
 
 	p->textBoxes["zonetype"]->text.setString(boost::lexical_cast<string>(zoneType));
@@ -276,10 +270,7 @@ NexusParams::NexusParams(ActorType *at, ifstream &is)
 void NexusParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
-	//p->checkBoxes["clockwise"]->checked = clockwise;
+
 	p->textBoxes["nexusindex"]->text.setString( boost::lexical_cast<string>( nexusIndex ) );
 }
 
@@ -339,8 +330,6 @@ void GroundTriggerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-		p->textBoxes["group"]->text.setString(group->name);
 	//p->checkBoxes["clockwise"]->checked = clockwise;
 	p->textBoxes["triggertype"]->text.setString(typeStr);
 	p->checkBoxes["facingright"]->checked = facingRight;
@@ -387,9 +376,7 @@ ShipPickupParams::ShipPickupParams(ActorType *at, ifstream &is )
 void ShipPickupParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
+	
 	p->checkBoxes["facingright"]->checked = facingRight;
 	//p->textBoxes["facing"]->text.setString( boost::lexical_cast<string>( nexusIndex ) );
 }
@@ -620,9 +607,6 @@ void BlockerParams::SetParams()
 void BlockerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-		p->textBoxes["group"]->text.setString(group->name);
 	p->textBoxes["btype"]->text.setString(boost::lexical_cast<string>(bType));
 	p->checkBoxes["armored"]->checked = armored;
 	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
@@ -776,9 +760,6 @@ void FlyParams::SetParams()
 void FlyParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-		p->textBoxes["group"]->text.setString(group->name);
 	p->textBoxes["ftype"]->text.setString(boost::lexical_cast<string>(fType));
 	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
 
@@ -902,10 +883,6 @@ void AirTriggerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-		p->textBoxes["group"]->text.setString(group->name);
-	//p->checkBoxes["clockwise"]->checked = clockwise;
 	p->textBoxes["triggertype"]->text.setString(trigType);
 }
 
@@ -954,10 +931,6 @@ FlowerPodParams::FlowerPodParams(ActorType *at, int level)
 void FlowerPodParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-		p->textBoxes["group"]->text.setString(group->name);
-	//p->checkBoxes["clockwise"]->checked = clockwise;
 	p->textBoxes["podtype"]->text.setString(typeStr);
 }
 
@@ -1555,10 +1528,6 @@ void CameraShotParams::SetPanelInfo()
 	Panel *p = type->panel;
 
 	p->textBoxes["name"]->text.setString(camName);
-	//if (group != NULL)
-	//	p->textBoxes["group"]->text.setString(group->name);
-	//p->textBoxes["name"]->text.setString(camName);
-	//p->textBoxes["zoom"]->text.setString(to_string(zoom));
 }
 
 ActorParams *CameraShotParams::Copy()

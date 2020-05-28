@@ -176,9 +176,6 @@ void BatParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
 	//p->textBoxes["nodedistance"]->text.setString( boost::lexical_cast<string>( nodeDistance ) );
 	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
@@ -296,11 +293,7 @@ void StagBeetleParams::SetParams()
 void StagBeetleParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
 	
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
 	p->checkBoxes["clockwise"]->checked = clockwise;
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 
@@ -436,9 +429,6 @@ void PoisonFrogParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 	
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
 	p->textBoxes["jumpwaitframes"]->text.setString( boost::lexical_cast<string>( jumpWaitFrames ) ); 
 	p->textBoxes["xstrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.x ) ); 
 	p->textBoxes["ystrength"]->text.setString( boost::lexical_cast<string>( jumpStrength.y ) ); 
@@ -735,9 +725,7 @@ void CurveTurretParams::SetParams()
 void CurveTurretParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
+
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
 	p->textBoxes["waitframes"]->text.setString( boost::lexical_cast<string>( framesWait ) );
 	p->textBoxes["xgravfactor"]->text.setString( boost::lexical_cast<string>( gravFactor.x ) );
@@ -882,9 +870,6 @@ void GravityFallerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-		p->textBoxes["group"]->text.setString(group->name);
 	p->textBoxes["var"]->text.setString(boost::lexical_cast<string>(variation));
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -993,12 +978,6 @@ void GravitySpringParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-	{
-		p->textBoxes["group"]->text.setString(group->name);
-	}
-
 	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
 
 	EditSession *edit = EditSession::GetSession();
@@ -1087,12 +1066,6 @@ void GravityModifierParams::SetParams()
 void GravityModifierParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-	{
-		p->textBoxes["group"]->text.setString(group->name);
-	}
 
 	p->textBoxes["strength"]->text.setString(boost::lexical_cast<string>(strength));
 	//p->checkBoxes["monitor"]->checked = hasMonitor;

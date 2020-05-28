@@ -144,12 +144,6 @@ void PulserParams::SetParams()
 void PulserParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
 	
 	p->textBoxes["framesbetweennodes"]->text.setString( boost::lexical_cast<string>( framesBetweenNodes ) );
 	p->checkBoxes["loop"]->checked = loop;
@@ -275,12 +269,6 @@ void OwlParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-	
 	p->textBoxes["movespeed"]->text.setString( boost::lexical_cast<string>( moveSpeed ) );
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
 	p->textBoxes["rhythmframes"]->text.setString( boost::lexical_cast<string>( rhythmFrames ) );
@@ -370,11 +358,6 @@ void BadgerParams::SetParams()
 void BadgerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
-	
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
 	
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 	p->textBoxes["jumpstrength"]->text.setString( boost::lexical_cast<string>( jumpStrength ) );
@@ -477,11 +460,6 @@ void CactusParams::SetParams()
 void CactusParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
-	
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
 	
 	p->textBoxes["bulletspeed"]->text.setString( boost::lexical_cast<string>( bulletSpeed ) );
 	p->textBoxes["rhythm"]->text.setString( boost::lexical_cast<string>( rhythm ) );
@@ -649,14 +627,7 @@ void BounceSpringParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-	{
-		p->textBoxes["group"]->text.setString(group->name);
-	}
-
-//	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
-
+	
 	EditSession *edit = EditSession::GetSession();
 	MakeGlobalPath(edit->patrolPath);
 	//p->checkBoxes["monitor"]->checked = hasMonitor;

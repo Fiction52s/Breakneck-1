@@ -76,12 +76,6 @@ void CoralParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 
 	p->textBoxes["moveframes"]->text.setString( 
@@ -125,12 +119,6 @@ void TurtleParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	//p->textBoxes["name"]->text.setString( "test" );
-	if( group != NULL )
-	{
-		p->textBoxes["group"]->text.setString( group->name );
-	}
-
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
@@ -168,11 +156,6 @@ void CheetahParams::SetParams()
 void CheetahParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
-	
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
 
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
@@ -240,11 +223,6 @@ void SpiderParams::SetParams()
 void SpiderParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString( "test" );
-	
-	if( group != NULL )
-		p->textBoxes["group"]->text.setString( group->name );
 	
 	p->textBoxes["speed"]->text.setString( boost::lexical_cast<string>( speed ) );
 
@@ -442,9 +420,6 @@ void RailParams::SetParams()
 void RailParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-		p->textBoxes["group"]->text.setString(group->name);
 	p->checkBoxes["accelerate"]->checked = accelerate;
 
 	EditSession *edit = EditSession::GetSession();
@@ -565,12 +540,6 @@ void TeleporterParams::SetParams()
 void TeleporterParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	//p->textBoxes["name"]->text.setString("test");
-	if (group != NULL)
-	{
-		p->textBoxes["group"]->text.setString(group->name);
-	}
 
 	EditSession *edit = EditSession::GetSession();
 	MakeGlobalPath(edit->patrolPath);
