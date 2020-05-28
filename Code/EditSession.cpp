@@ -9610,7 +9610,7 @@ void EditSession::ModifyGrass()
 	{
 		for (auto it = polygons.begin(); it != polygons.end(); ++it)
 		{
-			(*it)->SwitchGrass(worldPos, !HoldingShift());
+			(*it)->SwitchGrass(worldPos, !HoldingShift(), true);
 		}
 	}
 }
@@ -10326,6 +10326,45 @@ void EditSession::MoveRightBorder(int amount)
 	UpdateFullBounds();
 }
 
+void EditSession::BackupGrass()
+{
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		(*it)->BackupGrass();
+	}
+}
+
+void EditSession::ChangeGrassAction()
+{
+	int changedCounter = 0;
+	for (auto it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		changedCounter += (*it)->GetNumGrassChanges();
+	}
+	assert(grassChanges == NULL);
+
+	if (changedCounter > 0)
+	{
+		grassChanges = new GrassDiff[changedCounter];
+
+		int startIndex = 0;
+		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		{
+			(*it)->isGrassBackedUp = false;
+			startIndex += (*it)->AddGrassChanges(grassChanges + startIndex);
+			(*it)->grassChanged = false;
+		}
+
+		GrassAction *gAction = new GrassAction(grassChanges, changedCounter);
+		gAction->performed = true;
+
+		AddDoneAction(gAction);
+
+		grassChanges = NULL;
+
+	}
+}
+
 void EditSession::ShowGrass(bool s)
 {
 	if (s)
@@ -10337,30 +10376,11 @@ void EditSession::ShowGrass(bool s)
 	}
 	else
 	{
-		int changedCounter = 0;
 		for (auto it = polygons.begin(); it != polygons.end(); ++it)
 		{
-			changedCounter += (*it)->ShowGrass(false);
+			(*it)->ShowGrass(false);
 		}
-		assert(grassChanges == NULL);
-
-		if (changedCounter > 0)
-		{
-			grassChanges = new GrassDiff[changedCounter];
-
-			int startIndex = 0;
-			for (auto it = polygons.begin(); it != polygons.end(); ++it)
-			{
-				startIndex += (*it)->AddGrassChanges(grassChanges + startIndex);
-			}
-
-			GrassAction *gAction = new GrassAction(grassChanges, changedCounter);
-			gAction->performed = true;
-
-			AddDoneAction(gAction);
-
-			grassChanges = NULL;
-		}
+		
 	}
 }
 
@@ -11797,11 +11817,13 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{
-			UndoMostRecentAction();
+			if (!MOUSE.IsMouseDownLeft() && !MOUSE.IsMouseDownRight())
+				UndoMostRecentAction();
 		}
 		else if (ev.key.code == sf::Keyboard::Y && ev.key.control)
 		{
-			RedoMostRecentUndoneAction();
+			if( !MOUSE.IsMouseDownLeft() && !MOUSE.IsMouseDownRight())
+				RedoMostRecentUndoneAction();
 		}
 		
 		else if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
@@ -11814,8 +11836,15 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::R)
 		{
-			editModeUI->FlipShowGrass();
-			ShowGrass(editModeUI->IsShowGrassOn());
+			if (!MOUSE.IsMouseDownLeft() && !MOUSE.IsMouseDownRight())
+			{
+				editModeUI->FlipShowGrass();
+				ShowGrass(editModeUI->IsShowGrassOn());
+				if (!editModeUI->IsShowGrassOn())
+				{
+					ChangeGrassAction();
+				}
+			}
 		}
 		else if (ev.key.code == Keyboard::Q)
 		{
@@ -12621,9 +12650,19 @@ void EditSession::EditModeUpdate()
 				editMouseDownBox = false;
 			}
 		}
+		/*else if (editModeUI->IsShowGrassOn())
+		{
+			BackupGrass();
+		}*/
 	}
 	else if (MOUSE.IsMouseLeftReleased())
 	{
+		if (editModeUI->IsShowGrassOn())
+		{
+			ChangeGrassAction();
+			return;
+		}
+
 		if (editStartMove)
 		{
 			bool done = false;

@@ -621,6 +621,8 @@ struct EditSession : GUIHandler, Session
 	bool IsShowingPoints();
 
 	void ShowGrass(bool s);
+	void BackupGrass();
+	void ChangeGrassAction();
 
 	void ModifyZoom(double factor);
 	void SetZoom(double z);

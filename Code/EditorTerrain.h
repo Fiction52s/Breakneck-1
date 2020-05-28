@@ -255,6 +255,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void ResetTouchGrass();
 	std::list<TouchGrassCollection*> touchGrassCollections;
 
+	
 
 	void SetGrassVecOn(
 		int pointIndex, std::vector<int> &gList);
@@ -387,6 +388,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	TerrainWorldType terrainWorldType;
 	int GetNumGrassTotal();
 	int GetNumGrass(int i, bool &rem);
+	int GetNumGrassChanges();
+
 	void SetupGrass(int i, int &grassIndex);
 	void SetupGrass();
 	void SetupGrass(std::list<GrassSeg> &segments);
@@ -474,9 +477,10 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 
 	int AddGrassChanges(GrassDiff* gDiffArray);
-	int ShowGrass(bool show);
+	void ShowGrass(bool show);
 	void ProcessGrass(std::list<GrassSeg> &segments );
-	void SwitchGrass(V2d &mousePos, bool on);
+	void SwitchGrass(V2d &mousePos, bool on,
+		bool sessionIsCaller = false );
 	void SetSelected(bool select);
 
 	void UpdateBounds();
@@ -586,6 +590,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void BackupEnemyPositions();
 	void StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b);
 	void BackupGrass();
+	bool isGrassBackedUp;
 	int NumGrassChanged();
 	bool grassChanged;
 	std::vector<int> grassStateVecBackup;

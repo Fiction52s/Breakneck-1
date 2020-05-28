@@ -1125,6 +1125,7 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
+	isGrassBackedUp = false;
 	flyTransScale = Vector2f(1.f, 1.f);
 	flyTransRotate = 0;
 	flyQuads = NULL;
@@ -1163,6 +1164,7 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	isGrassBackedUp = false;
 	flyTransScale = Vector2f(1.f, 1.f);
 	flyTransRotate = 0;
 	flyQuads = NULL;
@@ -3317,6 +3319,8 @@ void TerrainPolygon::Finalize()
 
 	finalized = true;
 	
+	isGrassBackedUp = false;
+
 	FixWinding();
 	
 	int numP = GetNumPoints();
@@ -3364,6 +3368,8 @@ void TerrainPolygon::Finalize()
 void TerrainPolygon::FinalizeInverse()
 {
 	finalized = true;
+
+	isGrassBackedUp = false;
 
 	FixWindingInverse();
 
@@ -3433,6 +3439,7 @@ void TerrainPolygon::FinalizeInverse()
 
 void TerrainPolygon::BackupGrass()
 {
+	isGrassBackedUp = true;
 	grassChanged = false;
 	grassStateVecBackup = grassStateVec;
 }
@@ -3764,7 +3771,7 @@ void TerrainPolygon::SetGrassOn(int gIndex, bool on)
 	}
 }
 
-void TerrainPolygon::SwitchGrass( V2d &mousePos, bool on  )
+void TerrainPolygon::SwitchGrass( V2d &mousePos, bool on, bool sessionIsCaller)
 {
 	if (!sess->IsSessTypeEdit())
 	{
@@ -3788,12 +3795,17 @@ void TerrainPolygon::SwitchGrass( V2d &mousePos, bool on  )
 		return;
 	}
 
-	V2d center; 
+	V2d center;
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
 		center = GetGrassCenter(i);
 		if (length(center - mousePos) <= radius)
 		{
+			if (sessionIsCaller && !isGrassBackedUp )
+			{
+				BackupGrass();
+			}
+
 			SetGrassOn(i, on);
 		}
 	}
@@ -5293,14 +5305,38 @@ void TerrainPolygon::SetGrassFromAction(int gIndex, int state,
 	SetGrassState(gIndex, state);
 }
 
-int TerrainPolygon::ShowGrass( bool show )
+int TerrainPolygon::GetNumGrassChanges()
+{
+	if (!isGrassBackedUp)
+		return 0;
+
+	int counter = 0;
+
+	bool currGrassOn;
+	bool backupGrassOn;
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		currGrassOn = grassStateVec[i] == GrassState::G_ON;
+		backupGrassOn = grassStateVecBackup[i] == GrassState::G_ON;
+		if (currGrassOn != backupGrassOn )//grassStateVec[i]  != grassStateVecBackup[i])
+		{
+			++counter;
+		}
+	}
+
+	return counter;
+}
+
+void TerrainPolygon::ShowGrass( bool show )
 {
 	if (grassVA == NULL)
-		return 0;
+		return;
 
 	if (show)
 	{
-		BackupGrass();
+		grassChanged = false;
+		isGrassBackedUp = false;
+		//BackupGrass();
 		for (int i = 0; i < numGrassTotal; ++i)
 		{
 			if (grassStateVec[i] == G_OFF_DONT_SHOW)
@@ -5308,25 +5344,16 @@ int TerrainPolygon::ShowGrass( bool show )
 				SetGrassState(i, G_OFF);
 			}
 		}
-		
-
-		return -1;
 	}
 	else
 	{
-		int counter = 0;
 		for (int i = 0; i < numGrassTotal; ++i)
 		{
 			if (grassStateVec[i] == G_OFF)
 			{
 				SetGrassState(i, G_OFF_DONT_SHOW);
 			}
-			if (grassStateVec[i] != grassStateVecBackup[i])
-			{
-				++counter; 
-			}
 		}
-		return counter;
 	}
 }
 

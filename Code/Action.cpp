@@ -1612,7 +1612,7 @@ void ModifyTerrainTypeAction::Undo()
 GrassAction::GrassAction(GrassDiff *p_gDiffs, int p_numDiffs )
 	:gDiffs(p_gDiffs), numDiffs( p_numDiffs )
 {
-
+	assert(gDiffs != NULL);
 }
 
 GrassAction::~GrassAction()
