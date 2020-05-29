@@ -456,6 +456,11 @@ void TerrainRail::Finalize()
 	TryCreateEnemyChain();
 }
 
+int TerrainRail::GetRailType()
+{
+	return rType; 
+}
+
 void TerrainRail::SetChainPath()
 {
 	if (enemyParams != NULL)
@@ -494,18 +499,8 @@ void TerrainRail::TryCreateEnemyChain()
 
 	SetChainPath();
 
-	enemyParams->railMode = ActorParams::M_FILL;
 	enemyParams->CreateMyEnemy();
 	enemyChain = (EnemyChain*)enemyParams->myEnemy;
-	//blockerParams->Activate();
-
-	/*Brush b;
-	b.AddObject(testParams);
-	Action *apply = NULL;
-	apply = new ApplyBrushAction(&b);
-	apply->Perform();
-
-	AddDoneAction(apply);*/
 }
 
 int TerrainRail::GetNumSelectedPoints()

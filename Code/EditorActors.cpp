@@ -150,6 +150,8 @@ void ActorType::AddLabeledSlider( Panel *p, const std::string &name,
 	int maxValue, int defaultValue)
 {
 	int width = (maxValue - minValue) * 4;
+	if (width > 400)
+		width /= 2;
 	p->AddLabel(name, Vector2i(0, 6), 20, label);
 	p->AddSlider(name, Vector2i(0, 6), width, minValue, maxValue, defaultValue);
 }
@@ -219,7 +221,7 @@ Panel *ActorType::CreatePanel()
 		std::vector<string> bTypes{ "Grey", "Blue", "Green", "Yellow",
 		"Orange", "Red", "Magenta", "Black" };
 		p->AddDropdown("btype", Vector2i(0, 10), Vector2i(200, 28), bTypes, 0);
-		AddLabeledSlider(p, "spacing", "Spacing:", 20, 200, 80);
+		AddLabeledSlider(p, "spacing", "Spacing:", 10, 200, 20);
 		p->AddLabel("fill", Vector2i(0, 0), 28, "Fill Mode:");
 		p->AddCheckBox("fill", Vector2i(0, 0), true);
 		//p->AddButton("createpath", Vector2i(20, 340), Vector2f(100, 50), "Create Chain");

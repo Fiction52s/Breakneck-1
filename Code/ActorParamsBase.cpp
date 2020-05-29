@@ -79,9 +79,6 @@ ActorParams::ActorParams(ActorType *at)
 	aabbDraw.setFillColor(Color::Transparent);
 	aabbDraw.setOutlineColor(Color::Green);
 	aabbDraw.setOutlineThickness(3);
-
-	railMode = M_FILL;
-	//CreateMyEnemy();
 }
 
 ActorParams::~ActorParams()

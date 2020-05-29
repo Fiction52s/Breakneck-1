@@ -536,7 +536,7 @@ BlockerParams::BlockerParams(ActorType *at, int level)
 
 	bType = 0;
 
-	spacing = 0;
+	spacing = 20;
 }
 
 void BlockerParams::OnCreate()

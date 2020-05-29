@@ -25,7 +25,6 @@ FlyChain::FlyChain(ActorParams *ap)
 	:EnemyChain( ap )
 {
 	FlyParams *fParams = (FlyParams*)ap;
-	railMode = fParams->railMode;
 
 	SetLevel(ap->GetLevel());
 
@@ -53,7 +52,7 @@ Enemy *FlyChain::CreateEnemy(V2d &pos, int ind)
 void FlyChain::ReadParams(ActorParams *params)
 {
 	FlyParams *fParams = (FlyParams*)params;
-	railMode = fParams->railMode;
+	fill = true;
 	paramsVariation = fParams->fType;
 	paramsSpacing = fParams->spacing;
 }

@@ -65,27 +65,20 @@ void EnemyChain::UpdateParams(ActorParams *params)
 	paramsSpacing = -1;
 	paramsVariation = -1;
 
+	bool oldFill = fill;
+
 	ReadParams(params);
 
+	
+
 	assert(paramsSpacing >= 0 && paramsVariation >= 0);
-	/*if (params->type->info.name == "blocker")
-	{
-	BlockerParams *bParams = (BlockerParams*)params;
-	railMode = bParams->railMode;
-	paramsVariation = bParams->bType;
-	paramsSpacing = bParams->spacing;
-	cType = BLOCKER;
-	}
-	else if (params->type->info.name == "healthfly")
-	{
-	FlyParams *fParams = (FlyParams*)params;
-	railMode = fParams->railMode;
-	paramsVariation = fParams->fType;
-	paramsSpacing = fParams->spacing;
-	cType = FLY;
-	}*/
 
 	bool pathChanged = false;
+
+	if (oldFill != fill)
+	{
+		pathChanged = true;
+	}
 
 	if (spacing != paramsSpacing)
 	{
@@ -174,7 +167,7 @@ void EnemyChain::CreateEnemies()
 	}
 	else
 	{
-		if (railMode == ActorParams::M_FILL)
+		if (fill )
 		{
 			V2d prev = position;
 			V2d temp;
@@ -189,7 +182,7 @@ void EnemyChain::CreateEnemies()
 
 			numEnemies = totalLength / dist + 1;
 		}
-		else if (railMode == ActorParams::M_POINT)
+		else
 		{
 			numEnemies = localPath.size() + 1;
 		}
@@ -224,7 +217,7 @@ void EnemyChain::CreateEnemies()
 
 	if (numEnemies > 1)
 	{
-		if (railMode == ActorParams::M_FILL)
+		if (fill )
 		{
 			auto currPoint = globalPath.begin();
 			++currPoint;
@@ -339,7 +332,7 @@ void EnemyChain::CreateEnemies()
 				enemies[i]->hitboxInfo->kbDir = bisector;
 			}*/
 		}
-		else if (railMode == ActorParams::M_POINT)
+		else
 		{
 			V2d currPos;
 			for (int i = 0; i < numEnemies; ++i)
@@ -402,27 +395,6 @@ EnemyChain::EnemyChain(ActorParams *ap)
 	:Enemy(EnemyType::EN_CHAIN, ap)
 {
 	fill = true;
-
-	if (fill)
-	{
-		railMode = ActorParams::M_FILL;
-	}
-
-	
-
-	/*if (ap->type->info.name == "blocker")
-	{
-	BlockerParams *bParams = (BlockerParams*)ap;
-	railMode = bParams->railMode;
-	cType = BLOCKER;
-	}
-	else if (ap->type->info.name == "healthfly")
-	{
-	FlyParams *fParams = (FlyParams*)ap;
-	railMode = fParams->railMode;
-	cType = FLY;
-	}*/
-
 	enemies = NULL;
 	va = NULL;
 	circleGroup = NULL;

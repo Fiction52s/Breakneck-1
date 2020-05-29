@@ -1522,10 +1522,10 @@ void Panel::UpdateToolTip( int frames )
 					toolTipCounter = toolTipThresh;
 			}
 			
-			if (toolTipCounter == toolTipThresh && focusedMember != NULL )
-			{
-				ShowToolTip(focusedMember->toolTip);
-			}
+if (toolTipCounter == toolTipThresh && focusedMember != NULL)
+{
+	ShowToolTip(focusedMember->toolTip);
+}
 		}
 	}
 }
@@ -1586,7 +1586,7 @@ void Panel::SetPosition(const sf::Vector2i &p_pos)
 		}
 	}
 
-	
+
 	//SetRectTopLeft(quad, size.x, size.y, Vector2f(pos));
 }
 
@@ -1616,6 +1616,19 @@ bool Panel::IsDropActive()
 	return false;
 }
 
+bool Panel::IsSlideActive()
+{
+	for (auto it = sliders.begin(); it != sliders.end(); ++it)
+	{
+		if ((*it).second->clickedDown)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 const sf::Vector2i &Panel::GetMousePos()
 {
 	return mousePos;
@@ -1632,7 +1645,7 @@ bool Panel::MouseUpdate()
 	{
 		if (!popup)
 		{
-			if (!IsDropActive())
+			if (!IsDropActive() && !IsSlideActive())
 			{
 				return false;
 			}
@@ -2010,8 +2023,8 @@ bool Panel::ContainsPoint(sf::Vector2i &point)
 {
 	IntRect r(pos.x, pos.y, size.x, size.y);
 	bool rectContains = r.contains(point);
-	bool menuDropExpanded = IsDropActive();
-	return rectContains || menuDropExpanded;
+	bool extraActive = IsDropActive() || IsSlideActive();
+	return rectContains || extraActive;
 }
 
 void Panel::DrawQuad(RenderTarget *target)

@@ -30,6 +30,7 @@ struct TextBox;
 struct ChooseRect;
 struct GateInfo;
 struct MenuDropdown;
+struct TerrainRail;
 
 struct UIMouse
 {
@@ -356,7 +357,9 @@ struct EditModeUI : GUIHandler
 	~EditModeUI();
 
 	void SetEnemyPanel( ActorParams * ap );
+	void SetCurrRailPanel(TerrainRail *rail);
 	Panel *currEnemyPanel;
+	TerrainRail *currRail;
 
 	void SetShown(bool s);
 	bool IsGridOn();
@@ -924,6 +927,7 @@ struct Panel
 	void UpdateSlide( int numUpdateFrames );
 	
 	bool IsDropActive();
+	bool IsSlideActive();
 	bool IsSliding();
 	void Deactivate();
 	void SetColor(sf::Color c);

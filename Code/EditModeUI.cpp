@@ -5,6 +5,7 @@
 #include "Enemy.h"
 #include "EditSession.h"
 #include "EditorGraph.h"
+#include "EditorRail.h"
 
 using namespace std;
 using namespace sf;
@@ -23,6 +24,7 @@ EditModeUI::EditModeUI()
 	CreateLayerPanel();
 
 	currEnemyPanel = NULL;
+	currRail = NULL;
 
 	int labelCharHeight = 24;
 	int labelExtraSpacing = 30;
@@ -188,7 +190,19 @@ void EditModeUI::SetEnemyPanel(ActorParams * ap )
 	}
 
 	currEnemyPanel = p;
+	currRail = NULL;
 }
+
+void EditModeUI::SetCurrRailPanel(TerrainRail *tr)
+{
+	if (tr->enemyParams != NULL)
+	{
+		tr->enemyParams->SetPanelInfo();
+		SetEnemyPanel(tr->enemyParams);
+		currRail = tr;
+	}
+}
+
 
 
 bool EditModeUI::IsGridOn()
@@ -384,9 +398,15 @@ void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 {
 	if (cb->panel == currEnemyPanel)
 	{
-		edit->UpdateCurrEnemyParamsFromPanel();
-		//assert( edit->selectedBrush->)
-		//int x = 5;
+		if (currRail)
+		{
+			currRail->enemyParams->SetParams();
+			currRail->UpdateEnemyChain();
+		}
+		else
+		{
+			edit->UpdateCurrEnemyParamsFromPanel();
+		}
 	}
 	else if (cb->panel == layerPanel)
 	{
@@ -445,7 +465,15 @@ void EditModeUI::SliderCallback(Slider *slider)
 {
 	if (currEnemyPanel != NULL && slider->panel == currEnemyPanel)
 	{
-		edit->UpdateCurrEnemyParamsFromPanel();
+		if (currRail)
+		{
+			currRail->enemyParams->SetParams();
+			currRail->UpdateEnemyChain();
+		}
+		else
+		{
+			edit->UpdateCurrEnemyParamsFromPanel();
+		}
 	}
 }
 
@@ -453,7 +481,15 @@ void EditModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)
 {
 	if (currEnemyPanel != NULL && dropdown->panel == currEnemyPanel)
 	{
-		edit->UpdateCurrEnemyParamsFromPanel();
+		if (currRail)
+		{
+			currRail->enemyParams->SetParams();
+			currRail->UpdateEnemyChain();
+		}
+		else
+		{
+			edit->UpdateCurrEnemyParamsFromPanel();
+		}
 	}
 }
 

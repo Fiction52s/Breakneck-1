@@ -142,13 +142,6 @@ struct ActorParams : ISelectable
 	//std::list<sf::Vector2i> localPath;
 	std::vector<sf::Vector2i> localPath;
 	bool loop;
-	enum RailMode
-	{
-		M_FILL,
-		M_POINT
-	};
-
-	RailMode railMode;
 	sf::VertexArray *lines;
 
 	int enemyLevel;

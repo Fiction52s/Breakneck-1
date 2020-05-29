@@ -7485,7 +7485,8 @@ void EditSession::ExecuteRailCompletion()
 				//eventually be able to combine rails by putting your start/end points at their starts/ends
 				if (empty)
 				{
-					railInProgress->SetRailType(createRailModeUI->GetRailType());
+					if( trackingEnemyParams == NULL )
+						railInProgress->SetRailType(createRailModeUI->GetRailType());
 
 					railInProgress->Finalize();
 
@@ -7694,7 +7695,10 @@ void EditSession::ExecuteRailCompletion()
 					oldBrush.AddObject(railAttachEnd);
 				}
 
-				newRail->SetRailType(createRailModeUI->GetRailType());
+				if (trackingEnemyParams == NULL)
+					newRail->SetRailType(createRailModeUI->GetRailType());
+				else
+					newRail->SetRailType(railInProgress->GetRailType());
 
 				newRail->Finalize();
 
@@ -9609,7 +9613,7 @@ void EditSession::TryBoxSelect()
 	{
 		if (selectedBrush->IsSingleActor())
 		{
-			ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+			ActorPtr a = selectedBrush->GetFirst()->GetAsActor();
 			assert(a != NULL);
 			if (a->type->panel != NULL)
 			{
@@ -9617,6 +9621,11 @@ void EditSession::TryBoxSelect()
 				editModeUI->SetEnemyPanel(a);
 			}
 			
+		}
+		else if (selectedBrush->IsSingleRail())
+		{
+			RailPtr r = selectedBrush->GetFirst()->GetAsRail();
+			editModeUI->SetCurrRailPanel(r);
 		}
 		//if( selectedBrush->issingl)
 	}

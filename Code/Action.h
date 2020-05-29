@@ -44,6 +44,8 @@ struct Brush
 	bool IsSingleActor();
 	bool IsSingleDecor();
 	bool IsSingleFlyPoly();
+	bool IsSingleRail();
+	SelectPtr GetFirst();
 
 	sf::Vector2f GetTerrainSize();
 };

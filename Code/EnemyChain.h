@@ -65,8 +65,6 @@ struct EnemyChain : Enemy
 	std::vector<sf::Vector2i> localPath;
 	std::vector<sf::Vector2i> globalPath;
 	std::vector<V2d> enemyOffsets;
-
-	ActorParams::RailMode railMode;
 };
 
 #endif

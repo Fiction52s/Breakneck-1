@@ -712,6 +712,17 @@ bool Brush::IsSingleActor()
 	return (objects.size() == 1 && objects.front()->selectableType == ISelectable::ACTOR);
 }
 
+bool Brush::IsSingleRail()
+{
+	return (objects.size() == 1 && objects.front()->selectableType == ISelectable::RAIL);
+}
+
+SelectPtr Brush::GetFirst()
+{
+	assert(!objects.empty());
+	return objects.front();
+}
+
 bool Brush::IsSingleFlyPoly()
 {
 	if (objects.size() == 1 && objects.front()->selectableType == ISelectable::TERRAIN)

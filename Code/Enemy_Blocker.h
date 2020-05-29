@@ -24,12 +24,14 @@ struct Blocker : Enemy, QuadTreeEntrant
 {
 	enum BlockerType : int
 	{
+		GREY,
 		BLUE,
 		GREEN,
 		YELLOW,
 		ORANGE,
 		RED,
-		MAGENTA
+		MAGENTA,
+		BLACK,
 	};
 
 	enum Action

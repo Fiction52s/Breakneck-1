@@ -19,7 +19,6 @@ BlockerChain::BlockerChain(ActorParams *ap)
 	:EnemyChain(ap)
 {
 	BlockerParams *bParams = (BlockerParams*)ap;
-	railMode = bParams->railMode;
 
 	SetLevel(ap->GetLevel());
 
@@ -37,11 +36,29 @@ Tileset *BlockerChain::GetTileset(int variation)
 {
 	switch (variation)
 	{
-	case Blocker::BLUE:
-		return sess->GetTileset("Enemies/blocker_w1_192x192.png", 192, 192);
-		break;
-	case Blocker::GREEN:
-		return sess->GetTileset("Enemies/blocker_w2_192x192.png", 192, 192);
+	case Blocker::GREY:
+		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		break;														 
+	case Blocker::BLUE:												 
+		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		break;														 
+	case Blocker::GREEN:											 
+		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		break;														 
+	case Blocker::YELLOW:											 
+		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		break;														 
+	case Blocker::ORANGE:											 
+		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		break;														 
+	case Blocker::RED:												 
+		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		break;														 
+	case Blocker::MAGENTA:											 
+		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		break;														 
+	case Blocker::BLACK:											 
+		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
 		break;
 	}
 }
@@ -54,7 +71,6 @@ Enemy *BlockerChain::CreateEnemy(V2d &pos, int ind)
 void BlockerChain::ReadParams(ActorParams *params)
 {
 	BlockerParams *bParams = (BlockerParams*)params;
-	railMode = bParams->railMode;
 	paramsVariation = bParams->bType;
 	paramsSpacing = bParams->spacing;
 	fill = bParams->fill;

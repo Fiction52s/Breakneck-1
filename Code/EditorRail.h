@@ -36,6 +36,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	void SetRailType(int r);
 	Session *sess;
 	int rType;
+	int GetRailType();
 	void TryCreateEnemyChain();
 	/*enum RenderMode
 	{
