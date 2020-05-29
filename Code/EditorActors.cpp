@@ -166,14 +166,14 @@ Panel *ActorType::CreatePanel()
 	//extra
 	if (name == "poi")
 	{
-		p = CreateDefaultPanel();//new Panel("poi_options", 200, 500, edit);
+		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
 	}
 	else if (name == "xbarrier")
 	{
-		p = new Panel("xbarrier_options", 200, 500, edit);
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "-----");
-		p->AddCheckBox("hasedge", Vector2i(20, 240));
+		p = CreateDefaultPanel();
+		AddSpecialOptionDropdown(p);
+		p->AddCheckBox("hasedge", Vector2i(0, 0));
 	}
 	else if (name == "extrascene")
 	{
@@ -314,6 +314,19 @@ Panel *ActorType::CreatePanel()
 	}
 
 	return p;
+}
+
+bool ActorType::IsInSpecialOptions(const std::string & n)
+{
+	for (auto it = specialTypeOptions.begin(); it != specialTypeOptions.end(); ++it)
+	{
+		if (n == (*it))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool ActorType::LoadSpecialTypeOptions()

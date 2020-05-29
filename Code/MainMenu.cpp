@@ -3880,7 +3880,6 @@ void MapSelectionMenu::LoadItems()
 
 			if (collectionMap.find(mh->collectionName) != collectionMap.end())
 			{
-
 				MapSelectionItem *item = new MapSelectionItem((*it), mh);
 				
 				//load textures in one at a time. loading all textures like this is insane.

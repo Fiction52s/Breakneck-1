@@ -3013,6 +3013,54 @@ void GameSession::ProcessActor(ActorPtr a)
 
 		enemy->AddToWorldTrees(); //adds static objects etc
 	}
+	else
+	{
+		const string &typeName = a->type->info.name;
+		if (typeName == "xbarrier")
+		{
+			XBarrierParams *xbp = (XBarrierParams*)a;		
+			Barrier *b = new Barrier(this, xbp->name, true, xbp->GetIntPos().x, xbp->hasEdge, NULL);
+		
+			barrierMap[xbp->name] = b;
+			barriers.push_back(b);
+		}
+		else if (typeName == "extrascene")
+		{
+			ExtraSceneParams *xp = (ExtraSceneParams*)a;
+			BasicBossScene *scene = BasicBossScene::CreateScene(this, xp->name);
+			if (xp->extraSceneType == 0)//prelevel
+			{
+				preLevelScene = scene;
+			}
+			else if (xp->extraSceneType == 1)//postlevel
+			{
+				postLevelScene = scene;
+			}
+		}
+		else if (typeName == "camerashot")
+		{
+			CameraShotParams *csp = (CameraShotParams*)a;
+			CameraShot *shot = new CameraShot(csp->camName, csp->GetFloatPos(),csp->zoom);
+			if (cameraShotMap.count(csp->camName) > 0 )
+			{
+				assert(false);
+			}
+		
+			cameraShotMap[csp->camName] = shot;
+		}
+		else if (typeName == "ship")
+		{
+			shipEntrancePos = a->GetPosition();
+			hasShipEntrance = true;
+		
+			ResetShipSequence();
+		}
+		else
+		{
+			cout << "cant handle enemy of type: " << typeName << endl;
+			assert(0);
+		}
+	}
 
 	delete a; //eventually probably delete these all at once or something
 }

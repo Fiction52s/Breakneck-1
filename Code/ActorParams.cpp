@@ -120,6 +120,7 @@ PoiParams::PoiParams(ActorType *at,
 		
 
 		name = pname;
+		assert(type->IsInSpecialOptions(name));
 	}
 	else if (posType == ground)
 	{
@@ -133,6 +134,7 @@ PoiParams::PoiParams(ActorType *at,
 		nameText.setFillColor(Color::White);
 
 		name = pname;
+		assert(type->IsInSpecialOptions(name));
 	}
 	else
 	{
@@ -1354,6 +1356,7 @@ XBarrierParams::XBarrierParams(ActorType *at,
 	LoadAerial(is);
 
 	is >> name;
+	assert(type->IsInSpecialOptions(name));
 
 	LoadBool(is, hasEdge);
 }
@@ -1379,16 +1382,13 @@ void XBarrierParams::WriteParamFile(std::ofstream &of)
 void XBarrierParams::SetParams()
 {
 	Panel *p = type->panel;
-	name = p->textBoxes["name"]->text.getString().toAnsiString();
-
+	name = (*p->dropdowns.begin()).second->GetSelectedText();//p->textBoxes["name"]->text.getString().toAnsiString();
 	hasEdge = p->checkBoxes["hasedge"]->checked;
 }
 
 void XBarrierParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString(name);
-
 	p->checkBoxes["hasedge"]->checked = hasEdge;
 }
 

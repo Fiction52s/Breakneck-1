@@ -99,6 +99,7 @@ struct ActorType
 {
 	ActorType(ParamsInfo &pi);
 	~ActorType();
+	
 	void CreateDefaultEnemy();
 	void LoadEnemy(std::ifstream &is,
 		ActorPtr &a);
@@ -111,6 +112,7 @@ struct ActorType
 	bool CanBeAerial();
 	bool CanBeRailGrounded();
 	bool LoadSpecialTypeOptions();
+	bool IsInSpecialOptions(const std::string & n);
 	void AddSpecialOptionDropdown( Panel * p);
 	void AddSetDirectionButton(Panel *p);
 	void AddLabeledSlider( Panel *p, 
