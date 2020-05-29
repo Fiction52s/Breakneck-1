@@ -57,7 +57,7 @@ void BlockerChain::ReadParams(ActorParams *params)
 	railMode = bParams->railMode;
 	paramsVariation = bParams->bType;
 	paramsSpacing = bParams->spacing;
-	armored = bParams->armored;
+	fill = bParams->fill;
 }
 
 //void BlockerChain::SetActionEditLoop()

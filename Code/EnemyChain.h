@@ -46,6 +46,8 @@ struct EnemyChain : Enemy
 
 	void UpdateFromPath(ActorParams *ap);
 
+	bool fill;
+
 	int liveFrames;
 	Enemy **enemies;
 	int numEnemies;

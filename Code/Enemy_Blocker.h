@@ -17,8 +17,6 @@ struct BlockerChain : EnemyChain
 	Tileset *GetTileset(int variation);
 	Enemy *CreateEnemy(V2d &pos, int ind);
 	void UpdateStartPosition(int ind, V2d &pos);
-
-	bool armored;
 };
 
 

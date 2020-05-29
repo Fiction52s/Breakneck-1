@@ -401,8 +401,14 @@ FloatRect EnemyChain::GetAABB()
 EnemyChain::EnemyChain(ActorParams *ap)
 	:Enemy(EnemyType::EN_CHAIN, ap)
 {
+	fill = true;
 
-	railMode = ActorParams::M_FILL;
+	if (fill)
+	{
+		railMode = ActorParams::M_FILL;
+	}
+
+	
 
 	/*if (ap->type->info.name == "blocker")
 	{
