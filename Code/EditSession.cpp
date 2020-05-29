@@ -3743,10 +3743,18 @@ void EditSession::RemovePointFromRailInProgress()
 	if ( numP > 0)
 	{
 		railInProgress->RemoveLastPoint();
-		if (numP == 1 && trackingEnemyParams != NULL )
+		if (numP == 1 )
 		{
-			CancelEnemyCreation();
-			SetMode(CREATE_ENEMY);
+			if (trackingEnemyParams != NULL)
+			{
+				CancelEnemyCreation();
+				SetMode(CREATE_ENEMY);
+			}
+			else if (editModeUI->currParams != NULL)
+			{
+				EditModeDelete();
+				SetMode(EDIT);
+			}
 		}
 	}
 }
