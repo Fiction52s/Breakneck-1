@@ -279,7 +279,7 @@ struct BlockerParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
-	bool armored;
+	bool fill;
 	int spacing;
 
 	int bType;

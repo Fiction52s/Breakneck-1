@@ -520,7 +520,7 @@ BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 	is >> ibType;
 	bType = ibType;
 
-	LoadBool(is, armored);
+	LoadBool(is, fill);
 
 	is >> spacing;
 
@@ -532,7 +532,7 @@ BlockerParams::BlockerParams(ActorType *at, int level)
 {
 	lines = NULL;
 	PlaceAerial(Vector2i(0,0));
-	armored = false;
+	fill = true;
 
 	bType = 0;
 
@@ -551,79 +551,27 @@ void BlockerParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	armored = p->checkBoxes["armored"]->checked;
+	fill = p->checkBoxes["fill"]->checked;
 
-	
-	stringstream ss;
+	bType = p->dropdowns["btype"]->selectedIndex;
 
-	string typeStr = p->textBoxes["btype"]->text.getString().toAnsiString();
-
-	int lev;
-	string levelStr = p->textBoxes["level"]->text.getString().toAnsiString();
-	ss << levelStr;
-
-	ss >> lev;
-
-	if (!ss.fail() && lev > 0 && lev <= type->info.numLevels)
-	{
-		enemyLevel = lev;
-	}
-
-	
-	ss << typeStr;
-
-	int t_type;
-	ss >> t_type;
-
-	if (!ss.fail())
-	{
-		bType = t_type;
-	}
-
-	hasMonitor = false;
-
-	string spacingStr = p->textBoxes["spacing"]->text.getString().toAnsiString();
-
-	
-	ss << spacingStr;
-
-	int t_spacing;
-	ss >> t_spacing;
-
-	if (!ss.fail())
-	{
-		spacing = t_spacing;
-	}
+	spacing = p->sliders["spacing"]->GetCurrValue();
 
 	if (myEnemy != NULL)
 	{
 		myEnemy->UpdateParamsSettings();
 	}
-
-	//myEnemy->UpdateFromParams(this, 0);
-	//hasMonitor = p->checkBoxes["monitor"]->checked;
-	//try
-	//{
-	//	speed = boost::lexical_cast<int>( p->textBoxes["speed"]->text.getString().toAnsiString() );
-	//}
-	//catch(boost::bad_lexical_cast &)
-	//{
-	//	//error
-	//}
 }
 
 void BlockerParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["btype"]->text.setString(boost::lexical_cast<string>(bType));
-	p->checkBoxes["armored"]->checked = armored;
-	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
-
-	p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
+	p->dropdowns["btype"]->SetSelectedIndex(bType);
+	p->checkBoxes["fill"]->checked = fill;
+	p->sliders["spacing"]->SetCurrValue(spacing);
 
 	EditSession *edit = EditSession::GetSession();
 	MakeGlobalPath(edit->patrolPath);
-	//p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
 void BlockerParams::Draw(sf::RenderTarget *target)
@@ -643,22 +591,6 @@ void BlockerParams::Draw(sf::RenderTarget *target)
 
 		target->draw(li);
 
-
-
-		//if (loop)
-		//{
-
-		//	//draw the line between the first and last
-		//	sf::Vertex vertices[2] =
-		//	{
-		//		sf::Vertex(li[localPathSize].position, Color::Magenta),
-		//		sf::Vertex(li[0].position, Color::White)
-		//	};
-
-		//	target->draw(vertices, 2, sf::Lines);
-		//}
-
-
 		for (int i = 0; i < localPathSize + 1; ++i)
 		{
 			li[i].position -= fPos;
@@ -676,7 +608,7 @@ void BlockerParams::WriteParamFile(ofstream &of)
 
 	of << bType << "\n";
 
-	WriteBool(of, armored);
+	WriteBool(of, fill);
 	
 	of << spacing << endl;
 

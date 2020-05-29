@@ -129,7 +129,7 @@ Panel *ActorType::CreateDefaultPanel()
 
 	if (info.writePath)
 	{
-		p->AddButton("createpath", Vector2i(0, 0), Vector2f(100, 50), "Create Path");
+		p->AddButton("createpath", Vector2i(0, 0), Vector2f(200, 28 + 4), "Create Path");
 	}
 
 	if (info.writeMonitor)
@@ -200,39 +200,29 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
 		std::vector<string> sceneTypes{ "Pre-Level", "Post-Level" };
-		p->AddDropdown("scenetype", Vector2i(0, 0), Vector2i(200, 28), sceneTypes, 0);
+		p->AddDropdown("scenetype", Vector2i(0, 10), Vector2i(200, 28), sceneTypes, 0);
 	}
 	else if (name == "camerashot")
 	{
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
-		p->AddButton("setzoom", Vector2i(0, 0), Vector2f(100, 50), "Set Zoom");
+		p->AddButton("setzoom", Vector2i(0, 0), Vector2f(200, 28 + 4), "Set Zoom");
 	}
 	else if (name == "shippickup")
 	{
-		p = new Panel("shippickup_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "NO NAME");
-		p->AddCheckBox("facingright", Vector2i(20, 250));
-	}
-	else if (name == "key")
-	{
-		p = new Panel("key_options", 200, 600, edit);
-		p->AddButton("ok", Vector2i(100, 450), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddTextBox("numkeys", Vector2i(20, 150), 200, 20, "3");
-		p->AddTextBox("zonetype", Vector2i(20, 200), 200, 20, "0");
+		p = CreateDefaultPanel();
+		p->AddCheckBox("facingright", Vector2i(0, 0));
 	}
 	else if (name == "blocker" || name == "greenblocker")
 	{
-		p = new Panel("blocker_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "test");
-		p->AddCheckBox("armored", Vector2i(120, 155));
-		p->AddTextBox("btype", Vector2i(20, 200), 200, 20, "0");
-		p->AddTextBox("spacing", Vector2i(20, 250), 200, 20, "0");
-		p->AddTextBox("level", Vector2i(20, 300), 200, 20, "1");
-		p->AddButton("createpath", Vector2i(20, 340), Vector2f(100, 50), "Create Chain");
+		p = CreateDefaultPanel();
+		std::vector<string> bTypes{ "Grey", "Blue", "Green", "Yellow",
+		"Orange", "Red", "Magenta", "Black" };
+		p->AddDropdown("btype", Vector2i(0, 10), Vector2i(200, 28), bTypes, 0);
+		AddLabeledSlider(p, "spacing", "Spacing:", 20, 200, 80);
+		p->AddLabel("fill", Vector2i(0, 0), 28, "Fill Mode:");
+		p->AddCheckBox("fill", Vector2i(0, 0), true);
+		//p->AddButton("createpath", Vector2i(20, 340), Vector2f(100, 50), "Create Chain");
 	}
 	else if (name == "flowerpod")
 	{
