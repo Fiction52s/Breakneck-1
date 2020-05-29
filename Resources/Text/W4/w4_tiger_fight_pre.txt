@@ -1,0 +1,33 @@
+$Crawler 0
+
+No! The tiger, he's here.
+
+$Crawler 0
+
+Get out of my way!
+
+
+&
+
+
+$Tiger 0
+
+I'll slaughter you.
+
+$Crawler 0
+
+Try it. I've rigged the place. You move, I blow you to pieces.
+
+$Crawler 0
+
+Just join us.
+
+
+$Tiger 0
+
+You think you can blackmail me?
+
+
+$Tiger 0
+
+That's a cheap threat. Die!

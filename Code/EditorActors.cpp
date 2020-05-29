@@ -154,6 +154,26 @@ void ActorType::AddLabeledSlider( Panel *p, const std::string &name,
 	p->AddSlider(name, Vector2i(0, 6), width, minValue, maxValue, defaultValue);
 }
 
+const std::string &ActorType::GetSelectedSpecialDropStr()
+{
+	return panel->dropdowns["specialoptions"]->GetSelectedText();
+}
+
+const std::string & ActorType::GetSpecialDropStr(int ind)
+{
+	return panel->dropdowns["specialoptions"]->options[ind];
+}
+
+int ActorType::GetSelectedSpecialDropIndex()
+{
+	return panel->dropdowns["specialoptions"]->selectedIndex;
+}
+
+void ActorType::SetSpecialDropIndex(int i)
+{
+	panel->dropdowns["specialoptions"]->SetSelectedIndex(i);
+}
+
 Panel *ActorType::CreatePanel()
 {
 	EditSession *edit = EditSession::GetSession();
@@ -177,10 +197,10 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "extrascene")
 	{
-		p = new Panel("extrascene_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "-----");
-		p->AddTextBox("scenetype", Vector2i(20, 240), 200, 20, "0");
+		p = CreateDefaultPanel();
+		AddSpecialOptionDropdown(p);
+		std::vector<string> sceneTypes{ "Pre-Level", "Post-Level" };
+		p->AddDropdown("scenetype", Vector2i(0, 0), Vector2i(200, 28), sceneTypes, 0);
 	}
 	else if (name == "shippickup")
 	{

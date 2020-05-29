@@ -953,6 +953,19 @@ void Dropdown::SetOptions(const std::vector<std::string> &p_options)
 	}
 }
 
+int Dropdown::GetIndex(const std::string &s)
+{
+	for (int i = 0; i < options.size(); ++i)
+	{
+		if (s == options[i])
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 void Dropdown::Draw(sf::RenderTarget *target)
 {
 	

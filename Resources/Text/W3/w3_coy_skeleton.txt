@@ -1,0 +1,20 @@
+$Coyote 0
+
+You! You did this!
+
+
+$Skeleton 0
+
+You're a fool. You let your guard down. 
+
+
+
+$Skeleton 0
+
+You attacked me first. You thought you could get away with that?
+
+
+$Coyote 0
+
+...
+

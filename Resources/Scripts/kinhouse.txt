@@ -1,0 +1,61 @@
+folder Monument
+loadtext monument
+kinletter_1_1920x1080
+intro fade 0 0 0 1.0
+music w1_14b_memorial start 0 fade 3
+time 1.0
+blend .5
+
+kinletter_2_1920x1080
+time 1.0
+blend .5
+
+kinletter_3_1920x1080
+text monument 0
+blend .5
+
+kinletter_4_1920x1080
+text monument 1
+
+kinletter_5_1920x1080
+text monument 2
+
+kinletter_6_1920x1080
+time 1.0
+
+kinletter_7_1920x1080
+time 1.0
+
+kinletter_8_1920x1080
+text monument 3
+
+kinletter_9_1920x1080
+text monument 4
+
+kinletter_10_1920x1080
+text monument 5
+
+kinletter_11_1920x1080
+time .25
+blend .25
+
+kinletter_12_1920x1080
+time .25
+blend .25
+
+kinletter_13_1920x1080
+time .25
+blend .25
+
+kinletter_14_1920x1080
+text monument 6
+
+kinletter_15_1920x1080
+text monument 7
+
+kinletter_16_1920x1080
+text monument 8
+
+kinletter_17_1920x1080
+text monument 9
+outro fade 0 0 0 1.0

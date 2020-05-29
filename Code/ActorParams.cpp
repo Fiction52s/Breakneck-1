@@ -31,14 +31,14 @@ sf::Font *PoiParams::font = NULL;
 
 
 //remnove the postype thing. we have 2 bools for that already
-PlayerParams::PlayerParams(ActorType *at, sf::Vector2i pos )
+PlayerParams::PlayerParams(ActorType *at, sf::Vector2i pos)
 	:ActorParams(at)
 {
 	PlaceAerial(pos);
 }
 
-PlayerParams::PlayerParams(ActorType *at, ifstream &is )
-	:ActorParams(at)
+PlayerParams::PlayerParams(ActorType *at, ifstream &is)
+	: ActorParams(at)
 {
 	LoadAerial(is);
 }
@@ -48,10 +48,10 @@ bool PlayerParams::CanApply()
 	EditSession *session = EditSession::GetSession();
 	Vector2i intPos = GetIntPos();
 	sf::IntRect me(intPos.x - image.getLocalBounds().width / 2, intPos.y - image.getLocalBounds().height / 2,
-		image.getLocalBounds().width, image.getLocalBounds().height );
-	for( list<PolyPtr>::iterator it = session->polygons.begin(); it != session->polygons.end(); ++it )
+		image.getLocalBounds().width, image.getLocalBounds().height);
+	for (list<PolyPtr>::iterator it = session->polygons.begin(); it != session->polygons.end(); ++it)
 	{
-		if( (*it)->Intersects( me ) )
+		if ((*it)->Intersects(me))
 		{
 			session->CreateError(ERR_PLAYER_INTERSECTS_POLY);
 			return false;
@@ -72,7 +72,7 @@ void PlayerParams::Activate()
 
 ActorParams *PlayerParams::Copy()
 {
-	assert( false );
+	assert(false);
 	return NULL;
 }
 
@@ -80,11 +80,11 @@ ActorParams *PlayerParams::Copy()
 PoiParams::PoiParams(ActorType *at, int level)
 	:ActorParams(at)
 {
-	nameText.setFont( *font );
-	nameText.setCharacterSize( 18 );
-	nameText.setFillColor( Color::White );
-	
-	name = "----";
+	nameText.setFont(*font);
+	nameText.setCharacterSize(18);
+	nameText.setFillColor(Color::White);
+
+	name = type->GetSelectedSpecialDropStr();
 
 
 	PlaceAerial(Vector2i(0, 0));
@@ -93,7 +93,7 @@ PoiParams::PoiParams(ActorType *at, int level)
 
 PoiParams::PoiParams(ActorType *at,
 	std::ifstream &is)
-	:ActorParams( at )
+	:ActorParams(at)
 {
 	EditSession *edit = EditSession::GetSession();
 
@@ -104,10 +104,10 @@ PoiParams::PoiParams(ActorType *at,
 	is >> posType;
 
 
-	
+
 	Vector2i pos;
 
-	if (posType == air )
+	if (posType == air)
 	{
 		LoadAerial(is);
 
@@ -117,10 +117,13 @@ PoiParams::PoiParams(ActorType *at,
 		nameText.setFont(*font);
 		nameText.setCharacterSize(18);
 		nameText.setFillColor(Color::White);
-		
+
 
 		name = pname;
-		assert(type->IsInSpecialOptions(name));
+		if (!type->IsInSpecialOptions(name))
+		{
+			assert(0);
+		}
 	}
 	else if (posType == ground)
 	{
@@ -134,7 +137,10 @@ PoiParams::PoiParams(ActorType *at,
 		nameText.setFillColor(Color::White);
 
 		name = pname;
-		assert(type->IsInSpecialOptions(name));
+		if (!type->IsInSpecialOptions(name))
+		{
+			assert(0);
+		}
 	}
 	else
 	{
@@ -157,7 +163,7 @@ void PoiParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	name = (*p->dropdowns.begin()).second->GetSelectedText();//p->textBoxes["name"]->text.getString().toAnsiString();
+	name = type->GetSelectedSpecialDropStr();
 
 	nameText.setString( name );
 }
@@ -1344,8 +1350,23 @@ XBarrierParams::XBarrierParams(ActorType *at, int level)
 {
 	Init();
 	PlaceAerial(Vector2i(0,0));
-	name = "----";
+	nameIndex = type->GetSelectedSpecialDropIndex();
+
+	SetText(type->GetSelectedSpecialDropStr());
+
 	hasEdge = false;
+}
+
+void XBarrierParams::SetText(const std::string &n)
+{
+	nameText.setString(n);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
+}
+
+const std::string &XBarrierParams::GetName()
+{
+	return type->GetSpecialDropStr(nameIndex);
 }
 
 XBarrierParams::XBarrierParams(ActorType *at,
@@ -1355,8 +1376,18 @@ XBarrierParams::XBarrierParams(ActorType *at,
 	Init();
 	LoadAerial(is);
 
-	is >> name;
-	assert(type->IsInSpecialOptions(name));
+	string n;
+	is >> n;
+	if (!type->IsInSpecialOptions(n))
+	{
+		assert(0);
+	}
+	else
+	{
+		nameIndex = type->GetSelectedSpecialDropIndex();
+		assert(nameIndex >= 0);
+		SetText(n);
+	}
 
 	LoadBool(is, hasEdge);
 }
@@ -1374,7 +1405,7 @@ void XBarrierParams::Init()
 
 void XBarrierParams::WriteParamFile(std::ofstream &of)
 {
-	of << name << endl;
+	of << type->GetSelectedSpecialDropStr() << endl;
 
 	WriteBool(of, hasEdge);
 }
@@ -1382,13 +1413,18 @@ void XBarrierParams::WriteParamFile(std::ofstream &of)
 void XBarrierParams::SetParams()
 {
 	Panel *p = type->panel;
-	name = (*p->dropdowns.begin()).second->GetSelectedText();//p->textBoxes["name"]->text.getString().toAnsiString();
+	nameIndex = type->GetSelectedSpecialDropIndex();
+	SetText(type->GetSelectedSpecialDropStr());
+
 	hasEdge = p->checkBoxes["hasedge"]->checked;
 }
 
 void XBarrierParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
+
+	type->SetSpecialDropIndex(nameIndex);
+
 	p->checkBoxes["hasedge"]->checked = hasEdge;
 }
 
@@ -1411,9 +1447,7 @@ void XBarrierParams::Draw(sf::RenderTarget *target)
 
 	target->draw(line, 2, sf::Lines);
 
-	nameText.setString(name);
-	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
-		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
+	
 	nameText.setPosition(fPos.x, fPos.y - 100);
 
 	target->draw(nameText);
@@ -1430,7 +1464,7 @@ CameraShotParams::CameraShotParams(ActorType *at, int level)
 
 	SetZoom(1);
 
-	camName = "----";
+	camName = "---";//type->GetSelectedSpecialDropStr();
 }
 
 CameraShotParams::CameraShotParams(ActorType *at, ifstream &is)
@@ -1548,7 +1582,8 @@ ExtraSceneParams::ExtraSceneParams(ActorType *at, int level)
 {
 	Init();
 	PlaceAerial(Vector2i(0,0));
-	name = "----";
+	nameIndex = type->GetSelectedSpecialDropIndex();
+	SetText(type->GetSelectedSpecialDropStr());
 	extraSceneType = 0;
 }
 
@@ -1559,9 +1594,32 @@ ExtraSceneParams::ExtraSceneParams(ActorType *at,
 	Init();
 	LoadAerial(is);
 
-	is >> name;
+	string n;
+	is >> n;
+	if (!type->IsInSpecialOptions(n))
+	{
+		assert(0);
+	}
+	else
+	{
+		nameIndex = type->GetSelectedSpecialDropIndex();
+		SetText(n);
+		assert(nameIndex >= 0);
+	}
 
 	is >> extraSceneType;
+}
+
+const std::string &ExtraSceneParams::GetName()
+{
+	return type->GetSpecialDropStr(nameIndex);
+}
+
+void ExtraSceneParams::SetText(const std::string &n)
+{
+	nameText.setString(n);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
 }
 
 void ExtraSceneParams::Init()
@@ -1574,33 +1632,23 @@ void ExtraSceneParams::Init()
 
 void ExtraSceneParams::WriteParamFile(std::ofstream &of)
 {
-	of << name << endl;
+	of << type->specialTypeOptions[nameIndex] << endl;
 	of << extraSceneType << endl;
 }
 
 void ExtraSceneParams::SetParams()
 {
 	Panel *p = type->panel;
-	name = p->textBoxes["name"]->text.getString().toAnsiString();
-
-	stringstream ss;
-	string sceneTypeStr = p->textBoxes["scenetype"]->text.getString().toAnsiString();
-	ss << sceneTypeStr;
-
-	int sType;
-	ss >> sType;
-
-	if (!ss.fail())
-	{
-		extraSceneType = sType;
-	}
+	nameIndex = type->GetSelectedSpecialDropIndex();
+	SetText(type->GetSelectedSpecialDropStr());
+	extraSceneType = p->dropdowns["scenetype"]->selectedIndex;
 }
 
 void ExtraSceneParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString(name);
-	p->textBoxes["scenetype"]->text.setString(to_string(extraSceneType));
+	type->SetSpecialDropIndex(nameIndex);
+	p->dropdowns["scenetype"]->SetSelectedIndex(extraSceneType);
 }
 
 ActorParams *ExtraSceneParams::Copy()
@@ -1612,11 +1660,6 @@ ActorParams *ExtraSceneParams::Copy()
 void ExtraSceneParams::Draw(sf::RenderTarget *target)
 {
 	ActorParams::Draw(target);
-
-	nameText.setString(name);
-	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
-		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
-
 	Vector2f fPos = GetFloatPos();
 	nameText.setPosition(fPos.x, fPos.y - 100);
 

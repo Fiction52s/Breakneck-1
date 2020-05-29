@@ -1,0 +1,13 @@
+$Bird 0
+
+This time I'll win.
+
+
+$Kin 0
+
+....
+
+$Bird 0
+
+Prepare yourself, fellow warrior!
+

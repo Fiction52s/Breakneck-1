@@ -1,0 +1,19 @@
+$Bird 0
+
+Hey, team up with me and the Crawler.
+
+$Tiger 0
+
+I don't team with anyone. Leave.
+
+$Bird 0
+
+So you want to die at the hands of the Skeleton and Gator?
+
+$Tiger 0
+
+I'm going to kill you first if you don't leave!
+
+$Bird 0
+
+Fine! You'll see!

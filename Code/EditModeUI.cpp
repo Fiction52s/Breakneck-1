@@ -451,6 +451,10 @@ void EditModeUI::SliderCallback(Slider *slider)
 
 void EditModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)
 {
+	if (currEnemyPanel != NULL && dropdown->panel == currEnemyPanel)
+	{
+		edit->UpdateCurrEnemyParamsFromPanel();
+	}
 }
 
 void EditModeUI::PanelCallback(Panel *p, const std::string & e)

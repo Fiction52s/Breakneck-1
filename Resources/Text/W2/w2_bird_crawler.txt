@@ -1,0 +1,42 @@
+$Crawler 0
+
+So, we meet.
+
+$Bird 0
+
+We need to deal with the rogue.
+
+$Crawler 0
+
+He's tough... But he's no hunter, or threat to us.
+
+$Bird 0
+
+Right. He uses our energy.
+
+$Crawler 0
+
+To have any chance of winning, we have to team up
+
+$Bird 0
+Then it'll be an easy win right?
+
+$Crawler 0
+
+No, the Skeleton and Gator can team up against us.
+
+$Bird 0
+
+We need an edge.
+
+$Crawler 0
+
+There's the Coyote, but he's a loner. The Tiger seems best.
+
+$Bird 0 
+
+Alright, I'll talk with him! Let's do it!
+
+$Crawler 0
+
+Agreed, we've got no time to waste!

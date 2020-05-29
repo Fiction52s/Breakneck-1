@@ -816,6 +816,7 @@ struct Dropdown : PanelMember
 		int defaultIndex, Panel *panel);
 	bool ContainsMouse();
 	~Dropdown();
+	int GetIndex(const std::string &s);
 	void SetOptions(const std::vector<std::string> &options);
 	void Draw(sf::RenderTarget *rt);
 	bool MouseUpdate();

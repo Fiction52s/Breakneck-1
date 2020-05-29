@@ -1,0 +1,19 @@
+$Tiger 0
+
+These tunnels are complex.
+
+$Bird 0
+
+They're made by the Crawler. 
+
+$Bird 0
+
+Once we see the Skeleton, let's all fight to see who wins.
+
+$Tiger 0
+
+How about we beat the Skeleton, and duel among ourselves?
+
+$Bird 0
+
+Let's do it.

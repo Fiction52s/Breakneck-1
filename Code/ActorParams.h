@@ -189,9 +189,11 @@ struct XBarrierParams : ActorParams
 	void Init();
 	void Draw(sf::RenderTarget *target);
 	ActorParams *Copy();
+	const std::string &GetName();
+	void SetText(const std::string &n);
 
 	sf::Vertex line[2];
-	std::string name;
+	int nameIndex;
 	sf::Text nameText;
 	bool hasEdge;
 };
@@ -207,8 +209,12 @@ struct ExtraSceneParams : ActorParams
 	void Init();
 	void Draw(sf::RenderTarget *target);
 	ActorParams *Copy();
+	const std::string &GetName();
+	void SetText(const std::string &n);
+	
 
-	std::string name;
+	//std::string name;
+	int nameIndex;
 	sf::Text nameText;
 	int extraSceneType;
 };

@@ -1,0 +1,28 @@
+$Skeleton 0
+No my nexus!
+
+$Skeleton 0
+No, my plans. You won't ruin my plans...
+
+
+$Bird 0
+What?!
+
+$Skeleton 0
+No matter what.
+
+$Tiger 0
+Watch out!!
+
+$Skeleton 0
+There. Now I have control.
+
+$Skeleton 0
+Ugh, my arms...
+
+
+$Skeleton 0
+With the last of my energy... I can complete my plan.
+
+$Skeleton 0
+Stop pestering me. Tiger, deal with him.

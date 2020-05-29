@@ -3018,16 +3018,17 @@ void GameSession::ProcessActor(ActorPtr a)
 		const string &typeName = a->type->info.name;
 		if (typeName == "xbarrier")
 		{
-			XBarrierParams *xbp = (XBarrierParams*)a;		
-			Barrier *b = new Barrier(this, xbp->name, true, xbp->GetIntPos().x, xbp->hasEdge, NULL);
+			XBarrierParams *xbp = (XBarrierParams*)a;
+			const std::string &xbpName = xbp->GetName();
+			Barrier *b = new Barrier(this, xbpName , true, xbp->GetIntPos().x, xbp->hasEdge, NULL);
 		
-			barrierMap[xbp->name] = b;
+			barrierMap[xbpName] = b;
 			barriers.push_back(b);
 		}
 		else if (typeName == "extrascene")
 		{
 			ExtraSceneParams *xp = (ExtraSceneParams*)a;
-			BasicBossScene *scene = BasicBossScene::CreateScene(this, xp->name);
+			BasicBossScene *scene = BasicBossScene::CreateScene(this, xp->GetName());
 			if (xp->extraSceneType == 0)//prelevel
 			{
 				preLevelScene = scene;

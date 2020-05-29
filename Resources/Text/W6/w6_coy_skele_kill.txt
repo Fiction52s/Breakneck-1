@@ -1,0 +1,35 @@
+$Skeleton 0
+
+Ha! The power!
+
+$Skeleton 0
+
+The bear... I see. My plans can be complete.
+
+$Skeleton 0
+
+No, the Bird and Tiger, they're here!
+
+
+$Skeleton 0
+I have to make sure I don't fight them alone!
+
+$Skeleton 0
+
+I don't time for you now. You might have taken my powers,
+
+$Skeleton 0
+
+But you'll never understand how to really use them.
+
+
+&
+
+
+$Bird 0
+
+Ah! What's this power?
+
+$Tiger 0
+
+We're the top three finalists! 

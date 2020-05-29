@@ -1,0 +1,91 @@
+$Tiger 0 
+
+Why'd you save me?
+
+$Bird 0
+
+Because we need to survive. I respect your fighting spirit.
+
+$Tiger 0 
+
+You should have let me die.
+
+$Bird 0 
+
+Why do you hate teams so much?
+
+$Tiger 0 
+
+The gator had me kill my friend...
+
+
+
+&
+
+$Gator 0
+
+You're no match for me!
+
+$Snake 0
+
+Be careful Tiger, we don't know his power yet!
+
+$Tiger 0 
+
+It's two against one, we can take him on!
+
+
+
+$Tiger 0 
+
+No! Snake, what happened? Oh, I don't feel so good.
+
+$Tiger 0 
+
+No. I don't know what happened.
+
+
+$Gator 0
+Idiots. So cute when friends kill each other.
+
+$Gator 0
+
+This is a war for survival. Fend for yourself. 
+
+$Gator 0
+
+The weak deserve whatever they get. I'll win and show my true power.
+
+
+$Gator 0
+
+Now hurry up and die.
+
+
+$Tiger 0 
+
+I'll... Get you for this...
+
+
+&
+
+
+$Tiger 0 
+
+That's the last thing I remember. My only goal is to take the Gator down. 
+
+$Tiger 0 
+
+Alone.
+
+$Bird 0 
+
+Don't be silly. We know his tricks. We can take him on.
+
+$Bird 0 
+
+Sides... You really think you can beat him alone?
+
+$Tiger 0 
+
+... Okay, let's do it.

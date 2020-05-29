@@ -1,0 +1,31 @@
+1.5
+This is the beginning of the song<>
+0
+0
+CollectionTest
+1
+0 w1_01
+0 -8000 15000 17000
+60
+0
+4
+0
+362 -4821
+no_borderpoly
+0 0
+4
+290 -4760
+484 -4760
+462 -4598
+264 -4618
+0
+0
+0
+0
+1
+-- 2
+poi +air 887 -7035
+ship -
+0
+goal 0 2 109.545
+0
