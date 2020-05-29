@@ -1271,27 +1271,12 @@ void JugglerParams::WriteSpecialParams(std::ofstream &of)
 
 void JugglerParams::SetSpecialPanelInfo()
 {
-	Panel *p = type->panel;
-
-	p->textBoxes["numjuggles"]->text.setString(boost::lexical_cast<string>(numJuggles));
+	numJuggles = type->panel->sliders["numJuggles"]->GetCurrValue();
 }
 
 void JugglerParams::SetSpecialParams()
 {
-	Panel *p = type->panel;
-
-	stringstream ss;
-
-	string numJuggleStr = p->textBoxes["numjuggles"]->text.getString().toAnsiString();
-	ss << numJuggleStr;
-	
-	int nJuggles;
-	ss >> nJuggles;
-
-	if (!ss.fail())
-	{
-		numJuggles = nJuggles;
-	}
+	type->panel->sliders["numJuggles"]->SetCurrValue(numJuggles);
 }
 
 ActorParams *JugglerParams::Copy()

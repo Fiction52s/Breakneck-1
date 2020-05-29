@@ -236,33 +236,12 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
 		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"
-		|| name == "relativecomboer" || name == "relativecomboerdetach")
+		|| name == "relativecomboer" || name == "relativecomboerdetach"
+		|| name == "downgravityjuggler" || name == "upgravityjuggler" || name == "bouncejuggler"
+		|| name == "wirejuggler")
 	{
 		p = CreateDefaultPanel();
-		p->AddTextBox("numjuggles", Vector2i(20, 600), 200, 20, "0");
-	}
-	else if (name == "airdashjuggler")
-	{
-		p = new Panel("airdashjuggler_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
-		p->AddCheckBox("monitor", Vector2i(20, 330));
-		p->AddButton("createpath", Vector2i(20, 250), Vector2f(100, 50), "Create Path");
-	}
-	else if (name == "downgravityjuggler" || name == "upgravityjuggler" || name == "bouncejuggler"
-		|| name == "wirejuggler" )
-	{
-		p = CreateDefaultPanel();// "juggler_options", true, true, true, false);
-		p->AddTextBox("numjuggles", Vector2i(20, 600), 200, 20, "0");
-	}
-	else if (name == "jugglercatcher")
-	{
-		p = new Panel("jugglercatcher_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-		p->AddTextBox("level", Vector2i(20, 200), 200, 20, "0");
-		p->AddCheckBox("monitor", Vector2i(20, 330));
+		AddLabeledSlider(p, "numJuggles", "required juggles:", 2, 20, 3);
 	}
 	else if (name == "spring")
 	{
