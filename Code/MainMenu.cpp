@@ -3627,7 +3627,7 @@ void CustomMapsHandler::CheckBoxCallback( CheckBox *cb, const std::string & e )
 {
 }
 
-void CustomMapsHandler::SliderCallback(Slider *slider, const std::string & e)
+void CustomMapsHandler::SliderCallback(Slider *slider)
 {
 
 }

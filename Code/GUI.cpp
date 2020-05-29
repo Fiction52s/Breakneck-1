@@ -253,7 +253,7 @@ bool ChooseRect::MouseUpdate()
 			focused = true;
 		}
 	}
-	//else if (!MOUSE.IsMouseDownLeft())
+	else
 	{
 		if (ContainsPoint(mousePos))
 		{
@@ -741,14 +741,13 @@ Slider::Slider(const std::string &n, sf::Vector2i &p_pos, int width, sf::Font &f
 	selectCircle.setOrigin(selectCircle.getLocalBounds().width / 2,
 		selectCircle.getLocalBounds().height / 2);
 
-	float totalDiff = maxValue - minValue;
-	float factor = defaultValue / totalDiff;
-	SetToFactor(factor);
+	SetCurrValue(currValue);
 }
 
 void Slider::Deactivate()
 {
 	clickedDown = false;
+	panel->SendEvent(this );
 }
 
 void Slider::SetCircle(int x)
@@ -758,7 +757,7 @@ void Slider::SetCircle(int x)
 
 void Slider::SetToFactor(float factor)
 {
-	int currValue = GetCurrValue(factor);
+	currValue = CalcCurrValue(factor);
 	displayText.setString(to_string(currValue));
 	int currX = GetCurrX(factor);
 	auto textBounds = displayText.getLocalBounds();
@@ -800,7 +799,28 @@ float Slider::GetCurrFactor(const sf::Vector2i &mousePos)
 	}
 }
 
-int Slider::GetCurrValue(float factor)
+void Slider::SetCurrValue(int v)
+{
+	currValue = v;
+	float totalDiff = maxValue - minValue;
+	float factor = ( currValue - minValue ) / totalDiff;
+
+	displayText.setString(to_string(currValue));
+	int currX = GetCurrX(factor);
+	auto textBounds = displayText.getLocalBounds();
+	displayText.setOrigin(textBounds.left + textBounds.width / 2,
+		textBounds.top + textBounds.height / 2);
+	displayText.setPosition(Vector2f(currX, pos.y - textBounds.height / 2 - 10));
+	SetRectCenter(displayRect, textBounds.width + 10, textBounds.height + 10, Vector2f(displayText.getPosition()));
+	SetCircle(currX);
+}
+
+int Slider::GetCurrValue()
+{
+	return currValue;
+}
+
+int Slider::CalcCurrValue(float factor)
 {
 	float totalDiff = maxValue - minValue;
 	float fValue = minValue + (totalDiff * factor);
@@ -826,6 +846,7 @@ bool Slider::MouseUpdate()
 		clickedDown = true;
 		float currFactor = GetCurrFactor(mousePos);
 		SetToFactor(currFactor);
+		panel->SendEvent(this);
 	}
 	else if (!mouseDown)
 	{
@@ -1627,6 +1648,8 @@ bool Panel::MouseUpdate()
 		}
 	}
 
+	
+
 	//cout << "pos: " << posx << ", " << posy << endl;
 	bool dropdownUsedMouse = false;
 	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
@@ -1696,6 +1719,8 @@ bool Panel::MouseUpdate()
 		bool temp = (*it)->MouseUpdate();
 	}
 
+
+
 	for (auto it = imageChooseRects.begin(); it != imageChooseRects.end(); ++it)
 	{
 		bool temp = (*it)->MouseUpdate();
@@ -1762,9 +1787,9 @@ void Panel::SendEvent(Dropdown *drop, const std::string & e)
 	handler->DropdownCallback(drop, e);
 }
 
-void Panel::SendEvent(Slider *slide, const std::string & e)
+void Panel::SendEvent(Slider *slide )
 {
-	handler->SliderCallback(slide, e);
+	handler->SliderCallback(slide );
 }
 
 void Panel::SendEvent(MenuDropdown *menuDrop, const std::string & e)

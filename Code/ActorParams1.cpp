@@ -112,8 +112,6 @@ SpringParams::SpringParams(ActorType *at, ifstream &is)
 	globalPath.push_back(intPos);
 	globalPath.push_back(intPos + other);
 	SetPath(globalPath);
-
-	
 }
 
 SpringParams::SpringParams(ActorType *at, int level)
@@ -121,11 +119,9 @@ SpringParams::SpringParams(ActorType *at, int level)
 {
 	PlaceAerial(Vector2i(0,0));
 
-	speed = 60;
+	speed = 30;
 
 	lines = NULL;
-
-
 }
 
 void SpringParams::WriteParamFile(std::ofstream &of)
@@ -151,19 +147,7 @@ void SpringParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	string moveFrameStr = p->textBoxes["speed"]->text.getString().toAnsiString();
-
-	stringstream ss;
-	ss << moveFrameStr;
-
-	int t_speed;
-	ss >> t_speed;
-
-	if (!ss.fail())
-	{
-		speed = t_speed;
-	}
-
+	speed = p->sliders["speed"]->GetCurrValue();
 
 	hasMonitor = false;
 
@@ -173,10 +157,10 @@ void SpringParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["speed"]->text.setString((boost::lexical_cast<string>(speed)));
+	p->sliders["speed"]->SetCurrValue(speed);
 
-	EditSession *edit = EditSession::GetSession();
-	MakeGlobalPath(edit->patrolPath);
+	//EditSession *edit = EditSession::GetSession();
+	//MakeGlobalPath(edit->patrolPath);
 }
 ActorParams *SpringParams::Copy()
 {
@@ -187,9 +171,7 @@ ActorParams *SpringParams::Copy()
 void SpringParams::OnCreate()
 {
 	EditSession *edit = EditSession::GetSession();
-	edit->patrolPath.clear();
-	edit->patrolPath.push_back(GetIntPos());
-	edit->SetMode(EditSession::SET_DIRECTION);
+	edit->SetDirectionButton(this);
 }
 
 void SpringParams::Draw(sf::RenderTarget *target)

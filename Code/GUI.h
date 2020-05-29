@@ -77,7 +77,7 @@ struct GUIHandler
 	virtual void TextBoxCallback(TextBox *tb, const std::string & e) {}
 	virtual void GridSelectorCallback(GridSelector *gs, const std::string & e) {}
 	virtual void CheckBoxCallback(CheckBox *cb, const std::string & e) {}
-	virtual void SliderCallback(Slider *slider, const std::string & e) {}
+	virtual void SliderCallback(Slider *slider ) {}
 	virtual void DropdownCallback(Dropdown *dropdown, const std::string & e) {}
 	virtual void PanelCallback(Panel *p, const std::string & e) {}
 	virtual void ChooseRectEvent(ChooseRect *cr, int eventType) {}
@@ -355,7 +355,7 @@ struct EditModeUI : GUIHandler
 	EditModeUI();
 	~EditModeUI();
 
-	void SetEnemyPanel(Panel *p);
+	void SetEnemyPanel( ActorParams * ap );
 	Panel *currEnemyPanel;
 
 	void SetShown(bool s);
@@ -375,7 +375,7 @@ struct EditModeUI : GUIHandler
 	void TextBoxCallback(TextBox *tb, const std::string & e);
 	void GridSelectorCallback(GridSelector *gs, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);
-	void SliderCallback(Slider *slider, const std::string & e);
+	void SliderCallback(Slider *slider);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
@@ -442,7 +442,7 @@ struct CreateGatesModeUI : GUIHandler
 	void TextBoxCallback(TextBox *tb, const std::string & e);
 	void GridSelectorCallback(GridSelector *gs, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);
-	void SliderCallback(Slider *slider, const std::string & e);
+	void SliderCallback(Slider *slider);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
@@ -519,7 +519,7 @@ struct CreateRailModeUI : GUIHandler
 	void TextBoxCallback(TextBox *tb, const std::string & e);
 	void GridSelectorCallback(GridSelector *gs, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);
-	void SliderCallback(Slider *slider, const std::string & e);
+	void SliderCallback(Slider *slider);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
@@ -590,7 +590,7 @@ struct CreateTerrainModeUI : GUIHandler
 	void TextBoxCallback(TextBox *tb, const std::string & e);
 	void GridSelectorCallback(GridSelector *gs, const std::string & e);
 	void CheckBoxCallback(CheckBox *cb, const std::string & e);
-	void SliderCallback(Slider *slider, const std::string & e);
+	void SliderCallback(Slider *slider);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
@@ -774,10 +774,12 @@ struct Slider : PanelMember
 	bool MouseUpdate();
 	void Deactivate();
 	float GetCurrFactor(const sf::Vector2i &mousePos);
-	int GetCurrValue(float factor);
+	int CalcCurrValue(float factor);
 	int GetCurrX(float factor);
 	float circleRad;
 	void SetCircle(int x);
+	int GetCurrValue();
+	void SetCurrValue(int v);
 	//int GetCurrValue(const sf::Vector2i &mousePos);
 
 	sf::Vector2i pos;
@@ -910,7 +912,6 @@ struct Panel
 	void AddAutoSpaceX(int x);
 	void AddAutoSpaceY(int y);
 
-
 	bool hasFocusedTextbox;
 	Button *confirmButton;
 	void SetConfirmButton(Button *b);
@@ -973,7 +974,7 @@ struct Panel
 	void SendEvent( TextBox *tb, const std::string & e );
 	void SendEvent( CheckBox *cb, const std::string & e );
 	void SendEvent(Dropdown *drop, const std::string & e);
-	void SendEvent(Slider *slide, const std::string & e);
+	void SendEvent(Slider *slide );
 	void SendEvent(MenuDropdown *menuDrop, const std::string & e);
 	sf::Font arial;
 	std::string name;

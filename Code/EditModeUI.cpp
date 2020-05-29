@@ -170,14 +170,19 @@ void EditModeUI::ChooseMatType(ImageChooseRect *icRect)
 	edit->justCompletedPolyWithClick = true;
 }
 
-void EditModeUI::SetEnemyPanel(Panel *p)
+void EditModeUI::SetEnemyPanel(ActorParams * ap )
 {
+	Panel *p = NULL;
+	if( ap != NULL )
+		p = ap->type->panel;
+
 	if (currEnemyPanel != NULL && currEnemyPanel != p)
 	{
 		edit->RemoveActivePanel(currEnemyPanel);
 	}
 	else if (p != currEnemyPanel && p != NULL)
 	{
+		ap->SetPanelInfo();
 		edit->AddActivePanel(p);
 		p->handler = this;
 	}
@@ -238,7 +243,11 @@ void EditModeUI::SetShown(bool s)
 	{
 		edit->AddActivePanel(mainPanel);
 		edit->AddActivePanel(layerPanel);
-		SetEnemyPanel(NULL);
+		if (currEnemyPanel != NULL)
+		{
+			edit->AddActivePanel(currEnemyPanel);
+		}
+		//SetEnemyPanel(NULL);
 	}
 	else
 	{
@@ -340,6 +349,14 @@ void EditModeUI::ButtonCallback(Button *b, const std::string & e)
 	{
 		edit->EditModePaste();
 	}
+	else if (b->name == "createpath" || b->name == "createrail")
+	{
+		edit->CreatePathButton();
+	}
+	else if (b->name == "setdirection")
+	{
+		edit->SetDirectionButton();
+	}
 }
 
 void EditModeUI::TextBoxCallback(TextBox *tb, const std::string & e)
@@ -424,11 +441,12 @@ void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 	}
 }
 
-
-
-void EditModeUI::SliderCallback(Slider *slider, const std::string & e)
+void EditModeUI::SliderCallback(Slider *slider)
 {
-
+	if (currEnemyPanel != NULL && slider->panel == currEnemyPanel)
+	{
+		edit->UpdateCurrEnemyParamsFromPanel();
+	}
 }
 
 void EditModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)

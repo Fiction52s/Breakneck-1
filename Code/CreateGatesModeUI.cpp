@@ -543,7 +543,7 @@ void CreateGatesModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 
 }
 
-void CreateGatesModeUI::SliderCallback(Slider *slider, const std::string & e)
+void CreateGatesModeUI::SliderCallback(Slider *slider)
 {
 
 }

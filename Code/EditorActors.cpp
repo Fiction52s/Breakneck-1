@@ -140,6 +140,20 @@ Panel *ActorType::CreateDefaultPanel()
 	return p;
 }
 
+void ActorType::AddSetDirectionButton(Panel *p)
+{
+	p->AddButton("setdirection", Vector2i(0, 0), Vector2f(150, 24), "Set Direction");
+}
+
+void ActorType::AddLabeledSlider( Panel *p, const std::string &name,
+	const std::string &label, int minValue,
+	int maxValue, int defaultValue)
+{
+	int width = (maxValue - minValue) * 4;
+	p->AddLabel(name, Vector2i(0, 6), 20, label);
+	p->AddSlider(name, Vector2i(0, 6), width, minValue, maxValue, defaultValue);
+}
+
 Panel *ActorType::CreatePanel()
 {
 	EditSession *edit = EditSession::GetSession();
@@ -253,11 +267,8 @@ Panel *ActorType::CreatePanel()
 	else if (name == "spring")
 	{
 		p = CreateDefaultPanel();
-		p->AddButton("setdirection", Vector2i(0, 0), Vector2f(150, 24), "Set Direction");
-
-		p->AddLabel("speed", Vector2i(0, 6), 20, "launch speed:");
-		p->AddSlider("speedslider", Vector2i(0, 6), 200, 15, 60, 30);
-		//p->AddTextBox("speed", Vector2i(20, 200), 200, 3, "");
+		AddSetDirectionButton(p);
+		AddLabeledSlider(p, "speed", "launch speed:", 15, 60, 30);
 	}
 	//w1
 	//w2

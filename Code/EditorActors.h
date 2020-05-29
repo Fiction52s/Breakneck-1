@@ -112,6 +112,11 @@ struct ActorType
 	bool CanBeRailGrounded();
 	bool LoadSpecialTypeOptions();
 	void AddSpecialOptionDropdown( Panel * p);
+	void AddSetDirectionButton(Panel *p);
+	void AddLabeledSlider( Panel *p, 
+		const std::string &name,
+		const std::string &label, int minValue,
+		int maxValue, int defaultValue);
 
 	Panel *panel;
 

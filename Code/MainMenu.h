@@ -47,7 +47,7 @@ struct CustomMapsHandler : GUIHandler
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
-	void SliderCallback(Slider *slider, const std::string & e);
+	void SliderCallback(Slider *slider);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 };
 

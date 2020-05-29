@@ -287,7 +287,7 @@ void CreateTerrainModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 	}
 }
 
-void CreateTerrainModeUI::SliderCallback(Slider *slider, const std::string & e)
+void CreateTerrainModeUI::SliderCallback(Slider *slider)
 {
 
 }

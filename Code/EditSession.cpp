@@ -3223,7 +3223,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		{
 			RegularOKButton(p);
 		}
-		else if (b->name == "createpath" || b->name == "createrail")
+		/*else if (b->name == "createpath" || b->name == "createrail")
 		{
 			RegularCreatePathButton(p);
 		}
@@ -3231,7 +3231,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		{
 			RegularCreatePathButton(p);
 			SetMode(SET_DIRECTION);
-		}
+		}*/
 	}
 }
 
@@ -3495,7 +3495,7 @@ void EditSession::CheckBoxCallback( CheckBox *cb, const std::string & e )
 	
 }
 
-void EditSession::SliderCallback(Slider *slider, const std::string & e)
+void EditSession::SliderCallback(Slider *slider)
 {
 
 }
@@ -4210,7 +4210,7 @@ bool EditSession::PointSelectActor( V2d &pos )
 					grabbedActor = (*ait);
 
 					//if( grabbedActor->type->panel != NULL )
-					editModeUI->SetEnemyPanel(grabbedActor->type->panel);
+					editModeUI->SetEnemyPanel(grabbedActor );
 
 					//grabbedObject = (*ait);
 					if( (*ait)->myEnemy != NULL )
@@ -4516,13 +4516,31 @@ void EditSession::RegularOKButton( Panel *p)
 	RemoveActivePanel(p);
 }
 
-void EditSession::RegularCreatePathButton( Panel * p)
+void EditSession::CreatePathButton(ActorParams *ap)
 {
+	if (ap == NULL)
+	{
+		assert(selectedBrush->IsSingleActor());
+		ap = selectedBrush->objects.front()->GetAsActor();
+	}
+
 	SetMode(CREATE_PATROL_PATH);
-	RemoveActivePanel(p);
-	Vector2i front = patrolPath.front();
 	patrolPath.clear();
-	patrolPath.push_back(front);
+	patrolPath.push_back(ap->GetIntPos());
+	patrolPathLengthSize = 0;
+}
+
+void EditSession::SetDirectionButton( ActorParams *ap )
+{
+	if (ap == NULL)
+	{
+		assert(selectedBrush->IsSingleActor());
+		ap = selectedBrush->objects.front()->GetAsActor();
+	}
+
+	SetMode(SET_DIRECTION);
+	patrolPath.clear();
+	patrolPath.push_back(ap->GetIntPos());
 	patrolPathLengthSize = 0;
 }
 
@@ -9596,7 +9614,7 @@ void EditSession::TryBoxSelect()
 			if (a->type->panel != NULL)
 			{
 				a->SetPanelInfo();
-				editModeUI->SetEnemyPanel(a->type->panel);
+				editModeUI->SetEnemyPanel(a);
 			}
 			
 		}
@@ -12101,7 +12119,7 @@ void EditSession::CreatePatrolPathModeHandleEvent()
 			{
 				SelectPtr select = selectedBrush->objects.front();
 				ActorParams *actor = (ActorParams*)select;
-				editModeUI->SetEnemyPanel(actor->type->panel);
+				editModeUI->SetEnemyPanel(actor);
 				actor->SetPath(patrolPath);
 				SetMode(EDIT);
 			}

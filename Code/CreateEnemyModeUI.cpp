@@ -323,10 +323,13 @@ void CreateEnemyModeUI::SetShown(bool s)
 	else
 	{
 		edit->RemoveActivePanel(varSelector->panel);
+		//varSelector->Deactivate();
 		edit->RemoveActivePanel(topbarPanel);
+		//topbarPanel->Deactivate();
 		if (showLibrary)
 		{
 			edit->RemoveActivePanel(libPanel);
+			//libPanel->Deactivate();
 		}
 	}
 }

@@ -342,7 +342,7 @@ void CreateRailModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 	}
 }
 
-void CreateRailModeUI::SliderCallback(Slider *slider, const std::string & e)
+void CreateRailModeUI::SliderCallback(Slider *slider)
 {
 
 }

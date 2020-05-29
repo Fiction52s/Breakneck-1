@@ -315,12 +315,13 @@ struct EditSession : GUIHandler, Session
 	void TryPlaceGatePoint(V2d &pos);
 	
 	void RegularOKButton(Panel *p );
-	void RegularCreatePathButton( Panel *p );
+	void CreatePathButton(ActorParams *ap = NULL);
+	void SetDirectionButton( ActorParams *ap = NULL );
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );
 	void CheckBoxCallback( CheckBox *cb, const std::string & e );
-	void SliderCallback(Slider *slider, const std::string & e);
+	void SliderCallback(Slider *slider);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 
 	bool IsPolygonExternallyValid( PolyPtr poly,
