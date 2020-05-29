@@ -1405,7 +1405,7 @@ void XBarrierParams::Init()
 
 void XBarrierParams::WriteParamFile(std::ofstream &of)
 {
-	of << type->GetSelectedSpecialDropStr() << endl;
+	of << GetName() << endl;
 
 	WriteBool(of, hasEdge);
 }
@@ -1464,7 +1464,8 @@ CameraShotParams::CameraShotParams(ActorType *at, int level)
 
 	SetZoom(1);
 
-	camName = "---";//type->GetSelectedSpecialDropStr();
+	nameIndex = type->GetSelectedSpecialDropIndex();
+	SetText(type->GetSelectedSpecialDropStr());
 }
 
 CameraShotParams::CameraShotParams(ActorType *at, ifstream &is)
@@ -1472,14 +1473,39 @@ CameraShotParams::CameraShotParams(ActorType *at, ifstream &is)
 {
 	LoadAerial(is);
 
-	is >> camName;
+	Init();
+
+	string n;
+	is >> n;
+	if (!type->IsInSpecialOptions(n))
+	{
+		assert(0);
+	}
+	else
+	{
+		nameIndex = type->GetSelectedSpecialDropIndex();
+		assert(nameIndex >= 0);
+		SetText(n);
+	}
 
 	float z;
 	is >> z;
 
-	Init();
+	
 
 	SetZoom(z);
+}
+
+const std::string &CameraShotParams::GetName()
+{
+	return type->specialTypeOptions[nameIndex];
+}
+
+void CameraShotParams::SetText(const std::string &n)
+{
+	nameText.setString(n);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
 }
 
 void CameraShotParams::Init()
@@ -1531,7 +1557,7 @@ void CameraShotParams::SetZoom(sf::Vector2i &testPoint)
 
 void CameraShotParams::WriteParamFile(std::ofstream &of)
 {
-	of << camName << endl;
+	of << GetName() << endl;
 	of << zoom << endl;
 }
 
@@ -1539,14 +1565,15 @@ void CameraShotParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	camName = p->textBoxes["name"]->text.getString();
+	nameIndex = type->GetSelectedSpecialDropIndex();
+	SetText(type->GetSelectedSpecialDropStr());
 }
 
 void CameraShotParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["name"]->text.setString(camName);
+	type->SetSpecialDropIndex(nameIndex);
 }
 
 ActorParams *CameraShotParams::Copy()
@@ -1563,9 +1590,6 @@ void CameraShotParams::Draw(RenderTarget *target)
 
 	ActorParams::Draw(target);
 
-	nameText.setString(camName);
-	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
-		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
 	nameText.setPosition(fPos.x, fPos.y - 100);
 
 	target->draw(nameText);
@@ -1632,7 +1656,7 @@ void ExtraSceneParams::Init()
 
 void ExtraSceneParams::WriteParamFile(std::ofstream &of)
 {
-	of << type->specialTypeOptions[nameIndex] << endl;
+	of << GetName() << endl;
 	of << extraSceneType << endl;
 }
 

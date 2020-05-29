@@ -123,8 +123,12 @@ struct CameraShotParams : public ActorParams
 	void SetZoom(sf::Vector2i &testPoint);
 	ActorParams *Copy();
 	void Draw(sf::RenderTarget *target);
-	std::string camName;
 	float zoom;
+
+	int nameIndex;
+
+	const std::string &GetName();
+	void SetText(const std::string &n);
 
 	const static float CAMWIDTH;
 	const static float CAMHEIGHT;

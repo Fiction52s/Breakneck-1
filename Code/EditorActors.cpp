@@ -202,6 +202,12 @@ Panel *ActorType::CreatePanel()
 		std::vector<string> sceneTypes{ "Pre-Level", "Post-Level" };
 		p->AddDropdown("scenetype", Vector2i(0, 0), Vector2i(200, 28), sceneTypes, 0);
 	}
+	else if (name == "camerashot")
+	{
+		p = CreateDefaultPanel();
+		AddSpecialOptionDropdown(p);
+		p->AddButton("setzoom", Vector2i(0, 0), Vector2f(100, 50), "Set Zoom");
+	}
 	else if (name == "shippickup")
 	{
 		p = new Panel("shippickup_options", 200, 500, edit);
@@ -321,13 +327,6 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
 		p->AddButton("createrect", Vector2i(20, 350), Vector2f(100, 50), "Create Rect");
 	}
-	else if (name == "camerashot")
-	{
-		p = new Panel("camerashot_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "----");
-		p->AddButton("setzoom", Vector2i(20, 350), Vector2f(100, 50), "Set Zoom");
-	}
 	else
 	{
 		p = CreateDefaultPanel();
@@ -389,7 +388,7 @@ void ActorType::AddSpecialOptionDropdown( Panel * p)
 	}
 	else
 	{
-		p->AddDropdown("specialoptions", Vector2i(0, 0), Vector2i(200, 28), specialTypeOptions, 0);
+		p->AddDropdown("specialoptions", Vector2i(0, 10), Vector2i(200, 28), specialTypeOptions, 0);
 	}
 }
 

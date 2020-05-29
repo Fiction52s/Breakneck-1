@@ -3041,13 +3041,14 @@ void GameSession::ProcessActor(ActorPtr a)
 		else if (typeName == "camerashot")
 		{
 			CameraShotParams *csp = (CameraShotParams*)a;
-			CameraShot *shot = new CameraShot(csp->camName, csp->GetFloatPos(),csp->zoom);
-			if (cameraShotMap.count(csp->camName) > 0 )
+			const std::string &cName = csp->GetName();
+			CameraShot *shot = new CameraShot(csp->GetName(), csp->GetFloatPos(),csp->zoom);
+			if (cameraShotMap.count(cName) > 0 )
 			{
 				assert(false);
 			}
 		
-			cameraShotMap[csp->camName] = shot;
+			cameraShotMap[cName] = shot;
 		}
 		else if (typeName == "ship")
 		{
