@@ -22,7 +22,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 FlyChain::FlyChain(ActorParams *ap)
-	:EnemyChain( ap )
+	:EnemyChain( ap, EN_FLYCHAIN )
 {
 	FlyParams *fParams = (FlyParams*)ap;
 

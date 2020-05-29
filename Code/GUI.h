@@ -359,6 +359,7 @@ struct EditModeUI : GUIHandler
 	void SetEnemyPanel( ActorParams * ap );
 	void SetCurrRailPanel(TerrainRail *rail);
 	Panel *currEnemyPanel;
+	ActorParams *currParams;
 	TerrainRail *currRail;
 
 	void SetShown(bool s);

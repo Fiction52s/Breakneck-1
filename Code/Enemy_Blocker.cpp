@@ -16,7 +16,7 @@ using namespace sf;
 
 
 BlockerChain::BlockerChain(ActorParams *ap)
-	:EnemyChain(ap)
+	:EnemyChain(ap, EN_BLOCKERCHAIN)
 {
 	BlockerParams *bParams = (BlockerParams*)ap;
 

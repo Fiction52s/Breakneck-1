@@ -473,17 +473,11 @@ void TerrainRail::SetChainPath()
 
 void TerrainRail::TryCreateEnemyChain()
 {
-	if (enemyParams != NULL)
-	{
-		delete enemyParams;
-		enemyParams = NULL;
-	}
-
 	string typeString;
 	if (rType == BLOCKER)
 	{
 		typeString = "blocker";
-		
+
 	}
 	else if (rType == FLY)
 	{
@@ -494,8 +488,16 @@ void TerrainRail::TryCreateEnemyChain()
 		return;
 	}
 
-	enemyParams = sess->types[typeString]->defaultParamsVec[0]->Copy();
-	enemyParams->group = sess->groups["--"];
+	if (enemyParams != NULL)
+	{
+		//delete enemyParams;
+		//enemyParams = NULL;
+	}
+	else
+	{
+		enemyParams = sess->types[typeString]->defaultParamsVec[0]->Copy();
+		enemyParams->group = sess->groups["--"];
+	}
 
 	SetChainPath();
 
@@ -1122,6 +1124,26 @@ void TerrainRail::UpdateEnemyChain()
 		SetChainPath();
 		enemyChain->UpdateParams(enemyParams);
 	}
+}
+
+void TerrainRail::SetRailToActorType(ActorParams *ap)
+{
+	assert(ap->myEnemy != NULL);
+	int t = -1;
+
+	switch( ap->myEnemy->type )
+	{
+	case EnemyType::EN_BLOCKERCHAIN:
+		t = RailType::BLOCKER;
+		break;
+	case EnemyType::EN_FLYCHAIN:
+		t = RailType::FLY;
+		break;
+	}
+
+	assert(t != -1);
+
+	SetRailType(t);
 }
 
 void TerrainRail::CancelTransformation()

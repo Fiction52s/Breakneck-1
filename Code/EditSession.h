@@ -316,6 +316,7 @@ struct EditSession : GUIHandler, Session
 	
 	void RegularOKButton(Panel *p );
 	void CreatePathButton(ActorParams *ap = NULL);
+	void CreateChainButton(ActorParams *ap = NULL);
 	void SetDirectionButton( ActorParams *ap = NULL );
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );

@@ -391,8 +391,8 @@ FloatRect EnemyChain::GetAABB()
 	return FloatRect(pos.x - 100, pos.y - 100, 200, 200);
 }
 
-EnemyChain::EnemyChain(ActorParams *ap)
-	:Enemy(EnemyType::EN_CHAIN, ap)
+EnemyChain::EnemyChain(ActorParams *ap, EnemyType et)
+	:Enemy(et, ap)
 {
 	fill = true;
 	enemies = NULL;

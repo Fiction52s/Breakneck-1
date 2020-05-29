@@ -4530,6 +4530,21 @@ void EditSession::CreatePathButton(ActorParams *ap)
 	patrolPathLengthSize = 0;
 }
 
+void EditSession::CreateChainButton(ActorParams *ap)
+{
+	if (ap == NULL)
+	{
+		assert(selectedBrush->IsSingleActor());
+		ap = selectedBrush->objects.front()->GetAsActor();
+	}
+
+	SetMode(EditSession::CREATE_RAILS);
+	justCompletedRailWithClick = true;
+	railInProgress->SetRailToActorType(ap);
+	railInProgress->ClearPoints();
+	railInProgress->AddPoint(ap->GetIntPos(), false);
+}
+
 void EditSession::SetDirectionButton( ActorParams *ap )
 {
 	if (ap == NULL)
@@ -7485,8 +7500,15 @@ void EditSession::ExecuteRailCompletion()
 				//eventually be able to combine rails by putting your start/end points at their starts/ends
 				if (empty)
 				{
-					if( trackingEnemyParams == NULL )
+					if (trackingEnemyParams == NULL && editModeUI->currParams == NULL)
+					{
 						railInProgress->SetRailType(createRailModeUI->GetRailType());
+					}
+					else if (editModeUI->currParams != NULL)
+					{
+						ActorPtr testParams = editModeUI->currParams->Copy();
+						railInProgress->enemyParams = testParams;
+					}
 
 					railInProgress->Finalize();
 
@@ -7504,6 +7526,24 @@ void EditSession::ExecuteRailCompletion()
 						orig.AddObject(trackingEnemyParams);
 						FinishEnemyCreation();
 						SetMode(CREATE_ENEMY);
+					}
+					else if (editModeUI->currParams != NULL)
+					{
+						
+						if (editModeUI->currRail != NULL)
+						{
+							orig.AddObject(editModeUI->currRail);
+						}
+						else
+						{
+							orig.AddObject(editModeUI->currParams);
+						}
+						ClearSelectedBrush();
+
+						SetMode(EDIT);
+
+						SelectObject(railInProgress);
+						editModeUI->SetCurrRailPanel(railInProgress);
 					}
 
 					Action *action = new ReplaceBrushAction(&orig, progressBrush, mapStartBrush);
@@ -7695,7 +7735,7 @@ void EditSession::ExecuteRailCompletion()
 					oldBrush.AddObject(railAttachEnd);
 				}
 
-				if (trackingEnemyParams == NULL)
+				if (trackingEnemyParams == NULL && editModeUI->currParams == NULL)
 					newRail->SetRailType(createRailModeUI->GetRailType());
 				else
 					newRail->SetRailType(railInProgress->GetRailType());
@@ -7726,6 +7766,37 @@ void EditSession::ExecuteRailCompletion()
 			railInProgress->ClearPoints();
 			FinishEnemyCreation();
 			SetMode(CREATE_ENEMY);
+		}
+		else if (editModeUI->currParams != NULL)
+		{
+			railInProgress->ClearPoints();
+
+			if (editModeUI->currRail != NULL)
+			{
+				ActorPtr testParams = editModeUI->currParams->Copy();
+				testParams->SetPath(vector<Vector2i>());
+				testParams->CreateMyEnemy();
+
+				Brush orig;
+				Brush result;
+
+				orig.AddObject(editModeUI->currRail);
+				ClearSelectedBrush();
+
+				SetMode(EDIT);
+
+				result.AddObject(testParams);
+
+				Action *action = new ReplaceBrushAction(&orig, &result, mapStartBrush);
+
+				action->Perform();
+				AddDoneAction(action);
+
+				SelectObject(testParams);
+				editModeUI->SetEnemyPanel(testParams);
+			}
+
+			SetMode(EDIT);
 		}
 		else
 		{

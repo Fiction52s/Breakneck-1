@@ -29,7 +29,7 @@ struct EnemyChain : Enemy
 
 	sf::Vertex *va;
 	CircleGroup *circleGroup;
-	EnemyChain(ActorParams *ap);
+	EnemyChain(ActorParams *ap, EnemyType at);
 	~EnemyChain();
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);

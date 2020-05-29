@@ -86,7 +86,7 @@ enum EnemyType
 	EN_SPLITCOMBOER,
 	EN_FLOWERPOD,
 	EN_HEALTHFLY,
-	EN_CHAIN,
+	EN_FLYCHAIN,
 	EN_Count
 };
 

@@ -25,6 +25,7 @@ EditModeUI::EditModeUI()
 
 	currEnemyPanel = NULL;
 	currRail = NULL;
+	currParams = NULL;
 
 	int labelCharHeight = 24;
 	int labelExtraSpacing = 30;
@@ -190,11 +191,18 @@ void EditModeUI::SetEnemyPanel(ActorParams * ap )
 	}
 
 	currEnemyPanel = p;
+	currParams = ap;
 	currRail = NULL;
 }
 
 void EditModeUI::SetCurrRailPanel(TerrainRail *tr)
 {
+	if (tr == NULL)
+	{
+		SetEnemyPanel(NULL);
+		return;
+	}
+		
 	if (tr->enemyParams != NULL)
 	{
 		tr->enemyParams->SetPanelInfo();
@@ -366,6 +374,18 @@ void EditModeUI::ButtonCallback(Button *b, const std::string & e)
 	else if (b->name == "createpath" || b->name == "createrail")
 	{
 		edit->CreatePathButton();
+	}
+	else if (b->name == "createchain")
+	{
+		if (currRail != NULL)
+		{
+			edit->railInProgress->SetRailToActorType(currRail->enemyParams);
+			edit->CreateChainButton(currRail->enemyParams);
+		}
+		else
+		{
+			edit->CreateChainButton();
+		}
 	}
 	else if (b->name == "setdirection")
 	{

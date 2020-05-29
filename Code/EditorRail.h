@@ -45,6 +45,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		RENDERMODE_TRANSFORM,
 		RENDERMODE_FLIES,
 	};*/
+	void SetRailToActorType(ActorParams *ap);
 
 	bool PointsTooCloseToEachOther(double radius);
 

@@ -542,9 +542,7 @@ BlockerParams::BlockerParams(ActorType *at, int level)
 void BlockerParams::OnCreate()
 {
 	EditSession *edit = EditSession::GetSession();
-	edit->SetMode(EditSession::CREATE_RAILS);
-	edit->railInProgress->SetRailType(TerrainRail::BLOCKER);
-	edit->railInProgress->AddPoint(GetIntPos(), false);
+	edit->CreateChainButton(this);
 }
 
 void BlockerParams::SetParams()
@@ -618,6 +616,9 @@ void BlockerParams::WriteParamFile(ofstream &of)
 ActorParams *BlockerParams::Copy()
 {
 	BlockerParams *bp = new BlockerParams(*this);
+	bp->lines = NULL;
+	bp->myEnemy = NULL;
+	bp->SetSelected(false);
 	return bp;
 }
 
@@ -756,9 +757,7 @@ ActorParams *FlyParams::Copy()
 void FlyParams::OnCreate()
 {
 	EditSession *edit = EditSession::GetSession();
-	edit->SetMode(EditSession::CREATE_RAILS);
-	edit->railInProgress->SetRailType(TerrainRail::FLY);
-	edit->railInProgress->AddPoint(GetIntPos(), false);
+	edit->CreateChainButton(this);
 }
 
 AirTriggerParams::AirTriggerParams(ActorType *at, int level)
