@@ -1271,14 +1271,12 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	BounceFlameOff();
 
-		
 
-		
 	airBounceFlameFrames = 20 * 3;
 	runBounceFlameFrames = 21 * 3;
 	actionLength[WALLATTACK] = 8 * 2;
 	actionLength[DAIR] = 16;
-	actionLength[DASH] = 45 + 10;
+	actionLength[DASH] = 40;
 	maxBBoostCount = actionLength[DASH];
 	actionLength[DOUBLE] = 28 + 10;
 	actionLength[BACKWARDSDOUBLE] = 40;//28 + 10;
@@ -1465,8 +1463,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	slopeTooSteepLaunchLimitX = .1;
 		
 		
-	steepClimbGravFactor = .31;//.2;//.31;//.7;
-	steepClimbFastFactor = .2;
+	steepClimbGravFactor = .7;//.31;
+	steepClimbFastFactor = .7;//.2;
 	framesSinceClimbBoost = 0;
 	climbBoostLimit = 25;//22;//15;
 		
@@ -4347,9 +4345,26 @@ void Actor::UpdatePrePhysics()
 			{
 				if( !currInput.B )
 				{
-					if (currBBoostCounter > maxBBoostCount - 20 )
+					if (currBBoostCounter >= 20 )//maxBBoostCount - 15 )
 					{
-						double dashFactor = 3.0;
+						double dashFactor = 1.85;//1.5;
+						double bboostSpeed = GetDashSpeed() * dashFactor;
+
+						if (bboostSpeed > abs(groundSpeed))
+						{
+							if (groundSpeed > 0)
+							{
+								groundSpeed = bboostSpeed;
+							}
+							else
+							{
+								groundSpeed = -bboostSpeed;
+							}
+						}
+
+						
+
+						/*double dashFactor = 3.0;
 						double ag = abs(groundSpeed);
 
 						if (ag > 30)
@@ -4359,18 +4374,18 @@ void Actor::UpdatePrePhysics()
 						else
 						{
 							dashFactor = 2.0;
-						}
+						}*/
 
-						double bboost = GetDashSpeed() / dashFactor;
+						//double bboost = GetDashSpeed() / dashFactor;
 
-						if (groundSpeed > 0)
+						/*if (groundSpeed > 0)
 						{
 							groundSpeed += bboost;
 						}
 						else
 						{
 							groundSpeed -= bboost;
-						}
+						}*/
 						//currBBoostCounter = 0;
 					}
 
