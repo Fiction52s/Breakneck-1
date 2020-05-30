@@ -322,6 +322,62 @@ struct Actor : QuadTreeCollider,
 	void DOUBLE_Update();
 	void DOUBLE_UpdateSprite();
 
+	//done to here
+
+	void ENTERNEXUS1_Start();
+	void ENTERNEXUS1_End();
+	void ENTERNEXUS1_Change();
+	void ENTERNEXUS1_Update();
+	void ENTERNEXUS1_UpdateSprite();
+
+	void EXIT_Start();
+	void EXIT_End();
+	void EXIT_Change();
+	void EXIT_Update();
+	void EXIT_UpdateSprite();
+
+	void EXITBOOST_Start();
+	void EXITBOOST_End();
+	void EXITBOOST_Change();
+	void EXITBOOST_Update();
+	void EXITBOOST_UpdateSprite();
+
+	void EXITWAIT_Start();
+	void EXITWAIT_End();
+	void EXITWAIT_Change();
+	void EXITWAIT_Update();
+	void EXITWAIT_UpdateSprite();
+
+	void FAIR_Start();
+	void FAIR_End();
+	void FAIR_Change();
+	void FAIR_Update();
+	void FAIR_UpdateSprite();
+
+	void GET_POWER_AIRDASH_FLIP_Start();
+	void GET_POWER_AIRDASH_FLIP_End();
+	void GET_POWER_AIRDASH_FLIP_Change();
+	void GET_POWER_AIRDASH_FLIP_Update();
+	void GET_POWER_AIRDASH_FLIP_UpdateSprite();
+
+	void GETPOWER_AIRDASH_MEDITATE_Start();
+	void GETPOWER_AIRDASH_MEDITATE_End();
+	void GETPOWER_AIRDASH_MEDITATE_Change();
+	void GETPOWER_AIRDASH_MEDITATE_Update();
+	void GETPOWER_AIRDASH_MEDITATE_UpdateSprite();
+
+	void GETSHARD_Start();
+	void GETSHARD_End();
+	void GETSHARD_Change();
+	void GETSHARD_Update();
+	void GETSHARD_UpdateSprite();
+
+	void GLIDE_Start();
+	void GLIDE_End();
+	void GLIDE_Change();
+	void GLIDE_Update();
+	void GLIDE_UpdateSprite();
+
 	
 
 	
