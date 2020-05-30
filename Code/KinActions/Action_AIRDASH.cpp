@@ -1,28 +1,332 @@
 #include "Actor.h"
+#include "Wire.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::AIRDASH_Start()
 {
+	framesExtendingAirdash = 0;
+	BounceFlameOff();
+	airDashStall = false;
 
+	//special unlimited airdash
+	if (inBubble && !hasAirDash)
+	{
+		frame = actionLength[AIRDASH] - 1;
+	}
+	else
+	{
+		frame = 0;
+	}
 }
 
 void Actor::AIRDASH_End()
 {
-
+	if (inBubble)//|| rightWire->state == Wire::PULLING )
+	{
+		//5 is here to give you extra frames to airdash
+		frame = actionLength[AIRDASH] - 1;
+		++framesExtendingAirdash;
+		airDashStall = true;
+	}
+	else
+	{
+		SetActionExpr(JUMP);
+		frame = 1;
+		holdJump = false;
+	}
 }
 
 void Actor::AIRDASH_Change()
 {
+	if (!BasicAirAction())
+	{
+		if (!currInput.B)//|| ( oldInBubble && !inBubble ) )
+		{
+			SetActionExpr(JUMP);
+			frame = 1;
+			holdJump = false;
 
+			if (rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING)
+			{
+			}
+			else
+			{
+				//velocity = V2d( 0, 0 );
+			}
+		}
+	}
 }
 
 void Actor::AIRDASH_Update()
 {
+	double aSpeed = GetAirDashSpeed();
 
+
+	if (IsSingleWirePulling())
+	{
+		if (frame == 0)
+		{
+			hasAirDash = false;
+			startAirDashVel = velocity;//V2d( velocity.x, 0 );//velocity;//
+		}
+	}
+	else
+	{
+		bool isDoubleWiring = IsDoubleWirePulling();
+
+		//some old code in here for an alternate airdash when double wiring. ignore for now
+		if (frame == 0)
+		{
+			dWireAirDash = V2d(0, 0);
+			dWireAirDashOld = V2d(0, 0);
+
+			hasAirDash = false;
+
+			if (hasFairAirDashBoost)
+			{
+				if (velocity.x > 0)
+				{
+					velocity.x += fairAirDashBoostQuant;
+				}
+				else if (velocity.x < 0)
+				{
+					velocity.x -= fairAirDashBoostQuant;
+				}
+			}
+
+			startAirDashVel = V2d(velocity.x, 0);//velocity;//
+			if ((velocity.y > 0 && currInput.LDown()) || (velocity.y < 0 && currInput.LUp()))
+			{
+				if (abs(velocity.y) > aSpeed)
+				{
+					if (velocity.y < 0)
+					{
+						extraAirDashY = velocity.y + aSpeed;// / 2;
+					}
+					else
+					{
+						extraAirDashY = velocity.y - aSpeed;// / 2;
+					}
+				}
+				else
+				{
+					extraAirDashY = velocity.y;//0;
+				}
+
+				if (extraAirDashY > 0)
+				{
+					extraAirDashY = .1;
+					//extraAirDashY = min( extraAirDashY, 5.0 );
+					//extraAirDashY *= 1.8;
+				}
+			}
+			else
+			{
+				extraAirDashY = 0;
+			}
+		}
+		//V2d oldvel = velocity;
+
+		dWireAirDash = V2d(0, 0);
+		if (false)//isDoubleWiring )
+		{
+			if (currInput.LUp())
+			{
+				dWireAirDash += V2d(0, -aSpeed);
+			}
+			if (currInput.LLeft())
+			{
+				dWireAirDash += V2d(-aSpeed, 0);
+			}
+			if (currInput.LRight())
+			{
+				dWireAirDash += V2d(aSpeed, 0);
+			}
+			if (currInput.LDown())
+			{
+				dWireAirDash += V2d(0, aSpeed);
+			}
+		}
+		else
+		{
+			velocity = V2d(0, 0);//startAirDashVel;
+
+			double keepHorizontalLimit = 30;
+			double removeSpeedFactor = .5;
+
+			if (currInput.LUp())
+			{
+				if (!(currInput.LLeft() || currInput.LRight()) && abs(startAirDashVel.x) >= keepHorizontalLimit)
+				{
+					velocity.x = startAirDashVel.x * removeSpeedFactor;
+					//cout << "velocity.x: " << velocity.x << endl;
+				}
+
+				if (extraAirDashY > 0)
+					extraAirDashY = 0;
+
+				double mod = 1.0;
+
+				if (extraGravityModifier < 1.0)
+				{
+					mod = extraGravityModifier * 1.5;
+					mod = min(1.0, mod);
+					mod = max(.5, mod);
+				}
+				else
+				{
+					mod = extraGravityModifier * .75;
+					mod = max(1.0, mod);
+					mod = min(2.0, mod);
+				}
+				//extragravitymodifier must not be 0
+				velocity.y = -aSpeed / mod + extraAirDashY;
+
+				if (extraAirDashY < 0)
+				{
+					extraAirDashY = AddGravity(V2d(0, extraAirDashY)).y;
+					//extraAirDashY += gravity / slowMultiple;
+					if (extraAirDashY > 0)
+						extraAirDashY = 0;
+				}
+			}
+			else if (currInput.LDown())
+			{
+				if (!(currInput.LLeft() || currInput.LRight()) && abs(startAirDashVel.x) >= keepHorizontalLimit)
+				{
+					velocity.x = startAirDashVel.x * removeSpeedFactor;
+					//cout << "velocity.x: " << velocity.x << endl;
+				}
+
+				if (extraAirDashY < 0)
+					extraAirDashY = 0;
+
+				velocity.y = aSpeed + extraAirDashY;
+
+				if (extraAirDashY > 0)
+				{
+					extraAirDashY = AddGravity(V2d(0, extraAirDashY)).y;
+					//extraAirDashY += gravity / slowMultiple;
+				}
+			}
+			else
+			{
+				extraAirDashY = 0;
+			}
+
+
+			if (currInput.LLeft())
+			{
+				if (startAirDashVel.x > 0)
+				{
+					startAirDashVel.x = 0;
+					velocity.x = -aSpeed;
+				}
+				else
+				{
+					velocity.x = min(startAirDashVel.x, -aSpeed);
+				}
+				facingRight = false;
+
+			}
+			else if (currInput.LRight())
+			{
+				if (startAirDashVel.x < 0)
+				{
+					startAirDashVel.x = 0;
+					velocity.x = aSpeed;
+				}
+				else
+				{
+					velocity.x = max(startAirDashVel.x, aSpeed);
+				}
+				facingRight = true;
+			}
+
+			if (velocity.x == 0 && velocity.y == 0)
+			{
+				/*if( isDoubleWiring )
+				{
+				velocity = oldvel;
+				}
+				else*/
+				{
+					startAirDashVel = V2d(0, 0);
+					extraAirDashY = 0;
+					velocity = AddGravity(velocity);
+				}
+
+			}
+
+		}
+
+		velocity -= dWireAirDashOld;
+		velocity += dWireAirDash;
+
+		dWireAirDashOld = dWireAirDash;
+	}
+
+	if (currBooster != NULL && oldBooster == NULL && currBooster->Boost())
+	{
+		SetBoostVelocity();
+
+		startAirDashVel.x = velocity.x;
+		extraAirDashY = velocity.y;
+		if (extraAirDashY > aSpeed)
+		{
+			extraAirDashY = extraAirDashY - aSpeed;
+		}
+		else if (extraAirDashY < -aSpeed)
+		{
+			extraAirDashY = extraAirDashY + aSpeed;
+		}
+	}
 }
 
 void Actor::AIRDASH_UpdateSprite()
 {
+	SetSpriteTexture(action);
+
+	int f = 0;
+	if (currInput.LUp())
+	{
+		if (currInput.LLeft() || currInput.LRight())
+		{
+			f = 2;
+		}
+		else
+		{
+			f = 1;
+		}
+	}
+	else if (currInput.LDown())
+	{
+		if (currInput.LLeft() || currInput.LRight())
+		{
+			f = 4;
+		}
+		else
+		{
+			f = 5;
+		}
+	}
+	else
+	{
+		if (currInput.LLeft() || currInput.LRight())
+		{
+			f = 3;
+		}
+		else
+		{
+			f = 0;
+		}
+	}
+
+	SetSpriteTile(f, facingRight);
+
+	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	sprite->setPosition(position.x, position.y);
+	sprite->setRotation(0);
 }

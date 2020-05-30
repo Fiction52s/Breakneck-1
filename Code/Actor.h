@@ -325,7 +325,7 @@ struct Actor : QuadTreeCollider,
 	
 
 	
-
+	void UpdateRunSprite();
 	
 
 	bool canStandUp;

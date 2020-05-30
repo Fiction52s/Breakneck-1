@@ -5,7 +5,8 @@ using namespace std;
 
 void Actor::DASH_Start()
 {
-
+	frame = 0;
+	currBBoostCounter = 0;
 }
 
 void Actor::DASH_End()
