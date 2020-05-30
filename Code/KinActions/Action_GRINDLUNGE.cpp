@@ -9,10 +9,22 @@ void Actor::GRINDLUNGE_Start()
 
 void Actor::GRINDLUNGE_End()
 {
+	SetAction(JUMP);
+	frame = 1;
 }
 
 void Actor::GRINDLUNGE_Change()
 {
+	if (currInput.rightShoulder && !prevInput.rightShoulder)
+	{
+		SetAction(GRINDSLASH);
+		frame = 0;
+	}
+	else if (!BasicAirAction() && !currInput.B)
+	{
+		SetAction(JUMP);
+		frame = 1;
+	}
 }
 
 void Actor::GRINDLUNGE_Update()
@@ -21,4 +33,19 @@ void Actor::GRINDLUNGE_Update()
 
 void Actor::GRINDLUNGE_UpdateSprite()
 {
+	SetSpriteTexture(GRINDLUNGE);
+
+	SetSpriteTile(1, facingRight);
+
+
+
+	double angle = atan2(lungeNormal.x, -lungeNormal.y);
+
+	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	sprite->setRotation(angle / PI * 180);
+	sprite->setPosition(position.x, position.y);
+	//float angle = atan2( 
+
+	if (scorpOn)
+		SetAerialScorpSprite();
 }

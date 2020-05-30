@@ -21,4 +21,12 @@ void Actor::ENTERNEXUS1_Update()
 
 void Actor::ENTERNEXUS1_UpdateSprite()
 {
+	SetSpriteTexture(action);
+
+	SetSpriteTile(frame / 4, facingRight);
+
+	sprite->setOrigin(sprite->getLocalBounds().width / 2,
+		sprite->getLocalBounds().height / 2);
+	sprite->setPosition(position.x, position.y);
+	sprite->setRotation(0);
 }

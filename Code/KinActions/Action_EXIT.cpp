@@ -9,6 +9,8 @@ void Actor::EXIT_Start()
 
 void Actor::EXIT_End()
 {
+	SetAction(EXITWAIT);
+	frame = 0;
 }
 
 void Actor::EXIT_Change()
@@ -21,4 +23,12 @@ void Actor::EXIT_Update()
 
 void Actor::EXIT_UpdateSprite()
 {
+	SetSpriteTexture(action);
+
+	SetSpriteTile(frame / 2, facingRight);
+
+	sprite->setOrigin(sprite->getLocalBounds().width / 2,
+		sprite->getLocalBounds().height / 2);
+	sprite->setPosition(position.x, position.y);//position.x, position.y );
+	sprite->setRotation(0);
 }

@@ -9,6 +9,7 @@ void Actor::WIREHOLD_Start()
 
 void Actor::WIREHOLD_End()
 {
+	frame = 0;
 }
 
 void Actor::WIREHOLD_Change()

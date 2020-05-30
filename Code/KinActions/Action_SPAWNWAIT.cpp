@@ -9,6 +9,8 @@ void Actor::SPAWNWAIT_Start()
 
 void Actor::SPAWNWAIT_End()
 {
+	SetAction(INTRO);
+	frame = 0;
 }
 
 void Actor::SPAWNWAIT_Change()

@@ -807,8 +807,6 @@ struct Actor : QuadTreeCollider,
 	
 	void SetupActionFunctions();
 	
-	void UpdateRunSprite();
-	
 
 	bool canStandUp;
 	V2d currNormal;

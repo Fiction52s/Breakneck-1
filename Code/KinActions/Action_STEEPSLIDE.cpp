@@ -5,20 +5,197 @@ using namespace std;
 
 void Actor::STEEPSLIDE_Start()
 {
+	repeatingSound = ActivateSound(S_STEEPSLIDE, true);
 }
 
 void Actor::STEEPSLIDE_End()
 {
+	frame = 0;
 }
 
 void Actor::STEEPSLIDE_Change()
 {
+	if (hasPowerBounce && currInput.X && !bounceFlameOn)
+	{
+		BounceFlameOn();
+	}
+	else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
+	{
+		//bounceGrounded = false;
+		BounceFlameOff();
+	}
+
+	if (hasPowerGrindBall && currInput.Y && !prevInput.Y)
+	{
+		SetActionGrind();
+		return;
+	}
+
+	if (currInput.A && !prevInput.A)
+	{
+		if (reversed)
+		{
+			ReverseSteepSlideJump();
+		}
+		else
+		{
+			SetActionExpr(JUMPSQUAT);
+			frame = 0;
+		}
+
+		return;
+	}
+
+	if (reversed)
+	{
+		if (-currNormal.y <= -steepThresh || !(approxEquals(offsetX, b.rw) 
+			|| approxEquals(offsetX, -b.rw)))
+		{
+			SetAction(LAND2);
+			frame = 0;
+			if (TryGroundAttack())
+			{
+
+			}
+			return;
+		}
+	}
+	else
+	{
+		if (currNormal.y <= -steepThresh || !(approxEquals(offsetX, b.rw) 
+			|| approxEquals(offsetX, -b.rw)))
+		{
+			//cout << "is it really this wtf" << endl;
+			SetAction(LAND2);
+			frame = 0;
+			if (TryGroundAttack())
+			{
+
+			}
+			return;
+			//not steep
+		}
+		else
+		{
+			//is steep
+			if ((currNormal.x < 0 && groundSpeed > 0) 
+				|| (currNormal.x > 0 && groundSpeed < 0))
+			{
+				SetAction(STEEPCLIMB);
+				frame = 1;
+				if (SteepClimbAttack())
+				{
+
+				}
+				return;
+			}
+		}
+	}
+
+	if (SteepSlideAttack())
+	{
+		return;
+	}
+
+	if (currInput.B && !prevInput.B)
+		//if( currInput.A && !prevInput.A )
+	{
+		if (currNormal.x < 0 && (currInput.LRight() || currInput.LUp()))
+		{
+			SetAction(STEEPCLIMB);
+			facingRight = true;
+			groundSpeed = steepClimbBoostStart;
+			frame = 0;
+		}
+		else if (currNormal.x > 0 && (currInput.LLeft() || currInput.LUp()))
+		{
+			SetAction(STEEPCLIMB);
+			facingRight = false;
+			groundSpeed = -steepClimbBoostStart;
+			frame = 0;
+		}
+		/*else
+		{
+		action = JUMPSQUAT;
+		bufferedAttack = false;
+		frame = 0;
+		}*/
+		return;
+	}
 }
 
 void Actor::STEEPSLIDE_Update()
 {
+	double fac = GetGravity() * steepSlideGravFactor;//gravity * 2.0 / 3.0;
+
+	if (currInput.LDown())
+	{
+		//cout << "fast slide" << endl;
+		fac = GetGravity() * steepSlideFastGravFactor;
+	}
+
+	if (reversed)
+	{
+
+		groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
+	}
+	else
+	{
+
+
+		groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
+	}
 }
 
 void Actor::STEEPSLIDE_UpdateSprite()
 {
+	SetSpriteTexture(action);
+
+	bool r = (facingRight && !reversed) || (!facingRight && reversed);
+	SetSpriteTile(0, r);
+
+	double angle = 0;
+	if (!approxEquals(abs(offsetX), b.rw))
+	{
+		if (reversed)
+			angle = PI;
+		//this should never happen
+	}
+	else
+	{
+		angle = atan2(currNormal.x, -currNormal.y);
+	}
+
+	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+	sprite->setRotation(angle / PI * 180);
+
+	V2d pp = ground->GetPosition(edgeQuantity);
+
+	sprite->setPosition(pp.x, pp.y);
+	//if( angle == 0 )
+	//	sprite->setPosition( pp.x + offsetX, pp.y );
+	//else
+	//	sprite->setPosition( pp.x, pp.y );
+
+	if (scorpOn)
+	{
+		scorpSprite.setTexture(*ts_scorpSteepSlide->texture);
+
+		SetSpriteTile(&scorpSprite, ts_scorpSteepSlide, 0, r);
+
+		if (r)
+		{
+			scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 - 20,
+				scorpSprite.getLocalBounds().height / 2 + 20);
+		}
+		else
+		{
+			scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 + 20,
+				scorpSprite.getLocalBounds().height / 2 + 20);
+		}
+
+		scorpSprite.setPosition(position.x, position.y);
+		scorpSprite.setRotation(sprite->getRotation());
+		scorpSet = true;
+	}
 }
