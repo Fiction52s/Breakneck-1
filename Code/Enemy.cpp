@@ -182,6 +182,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_BLOCKER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	/*case EnemyType::EN_HEALTHFLY:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;*/
 	case EnemyType::EN_BOSS_BIRD:
 		hitParams.Set(5, .8, (3 * 60) / 40, 400);
 		break;

@@ -598,7 +598,7 @@ void EditSession::TestPlayerMode()
 	{
 		if ((*it)->enemyChain != NULL)
 		{
-		//	(*it)->AddEnemyChainToWorldTrees();
+			(*it)->AddEnemyChainToWorldTrees();
 		}
 		else
 		{
@@ -10859,7 +10859,7 @@ void EditSession::DrawRails()
 
 	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
 	{
-		if (mode != TEST_PLAYER || (*it)->enemyChain != NULL)
+		if (mode != TEST_PLAYER || (*it)->enemyChain == NULL)
 		{
 			(*it)->Draw(zoomMultiple, showPoints, preScreenTex);
 		}

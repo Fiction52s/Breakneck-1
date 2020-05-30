@@ -18057,14 +18057,13 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else if (en->type == EnemyType::EN_HEALTHFLY)
 		{
-			/*HealthFly *hf = (HealthFly*)qte;
-			if (hf->CanCollect() && hf->hitBody->Intersects(hf->currHitboxFrame, &hurtBody))
+			HealthFly *hf = (HealthFly*)qte;
+			if (hf->IsCollectible() && hf->hitBody.Intersects(hf->currHitboxFrame, &hurtBody))
 			{
 				if( kinRing != NULL)
-					kinRing->powerRing->Fill(hf->healAmount);
+					kinRing->powerRing->Fill(hf->GetHealAmount());
 				hf->Collect();
-			}*/
-			
+			}
 		}
 	}
 	else if (queryMode == "airtrigger")

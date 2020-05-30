@@ -129,7 +129,7 @@ HealthFly::HealthFly(V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts )
 	actionLength[NEUTRAL] = 5;
 	actionLength[DEATH] = 8;
 
-	animFactor[NEUTRAL] = 3;
+	animFactor[NEUTRAL] = 5;
 	animFactor[DEATH] = 3;
 
 	ResetEnemy();
@@ -164,6 +164,8 @@ bool HealthFly::Collect()
 	{
 		action = DEATH;
 		frame = 0;
+		//SetHitboxes(NULL);
+		//SetHurtboxes(NULL);
 		return true;
 	}
 	return false;
@@ -183,7 +185,7 @@ void HealthFly::ResetEnemy()
 	receivedHit = NULL;
 
 	SetHitboxes(&hitBody);
-	SetHurtboxes(&hurtBody);
+	//SetHurtboxes(&hurtBody);
 
 	UpdateHitboxes();
 
