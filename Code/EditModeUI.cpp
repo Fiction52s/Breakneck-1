@@ -547,8 +547,8 @@ void EditModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)
 
 void EditModeUI::PanelCallback(Panel *p, const std::string & e)
 {
-	/*if (e == "leftclickoffpopup" && p == matTypePanel)
+	if (e == "leftclickoffpopup" )//&& p == matTypePanel)
 	{
-		edit->RemoveActivePanel(matTypePanel);
-	}*/
+		edit->RemoveActivePanel(p);
+	}
 }
