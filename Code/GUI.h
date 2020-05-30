@@ -374,6 +374,7 @@ struct EditModeUI : GUIHandler
 
 	void SetGridSize(int gs);
 	void ExpandTerrainLibrary( int layer );
+	void ExpandShardLibrary();
 	void ChooseMatType(ImageChooseRect *icRect);
 	void ButtonCallback(Button *b, const std::string & e);
 	void TextBoxCallback(TextBox *tb, const std::string & e);
@@ -399,8 +400,10 @@ struct EditModeUI : GUIHandler
 
 	int terrainGridSize;
 	Panel *matTypePanel;
+	Panel *shardTypePanel;
 	//std::vector<ImageChooseRect*> *matTypeRects;
 	sf::Vector2i matPanelPos;
+	sf::Vector2i shardPanelPos;
 
 	std::map<int, std::string> layerMap;
 	std::map<std::string, int> reverseLayerMap;
@@ -473,7 +476,7 @@ struct CreateGatesModeUI : GUIHandler
 	sf::Vector2i popupPanelPos;
 
 	int GetGateCategory();
-	void CreateShardTypePanel();
+	//void CreateShardTypePanel();
 	void CreateBossGateTypePanel();
 	void CreatePickupGateTypePanel();
 	Tileset *ts_shards[7];
@@ -499,7 +502,7 @@ struct CreateGatesModeUI : GUIHandler
 
 	std::vector<ImageChooseRect*> currGateTypeRects;
 
-	std::vector<ImageChooseRect*> shardGateTypeRects;
+	std::vector<ImageChooseRect*> *shardGateTypeRects;
 	std::vector<ImageChooseRect*> pickupGateTypeRects;
 	std::vector<ImageChooseRect*> bossGateTypeRects;
 	int gateGridSize;

@@ -1146,6 +1146,7 @@ EditSession::~EditSession()
 	}
 
 	delete matTypePanel;
+	delete shardTypePanel;
 		
 
 	mapStartBrush->Destroy();
@@ -2527,6 +2528,76 @@ void EditSession::SetupTerrainSelectPanel()
 
 }
 
+void EditSession::SetCurrSelectedShardType(int w, int li)
+{
+	if (selectedBrush->IsSingleActor())
+	{
+		ActorPtr a = selectedBrush->GetFirst()->GetAsActor();
+		ShardParams *sp = (ShardParams*)a;
+		sp->SetShard(w, li);
+	}
+	else
+	{
+		assert(0);
+	}
+}
+
+void EditSession::SetupShardSelectPanel()
+{
+	shardNumX = 11;
+	shardNumY = 2;
+
+	shardGridSize = 64;
+
+	shardTypePanel = new Panel("shardtype", 600, 600, this, true);
+	Color c(100, 100, 100);
+	c.a = 180;
+	shardTypePanel->SetColor(c);
+
+	int numWorlds = 7;
+	for (int i = 0; i < numWorlds; ++i)
+	{
+		ts_shards[i] = GetSizedTileset("Shard/shards_w" + to_string(i + 1) + "_48x48.png");
+	}
+
+	int totalShards = shardNumX * shardNumY * 7;
+
+	Tileset *ts_currShards;
+	int sInd = 0;
+
+	shardTypePanel->ReserveImageRects(totalShards);
+	shardTypeRects.resize(totalShards);
+
+	for (int w = 0; w < numWorlds; ++w)
+	{
+		ts_currShards = ts_shards[w];
+		if (ts_currShards == NULL)
+			continue;
+
+		for (int y = 0; y < shardNumY; ++y)
+		{
+			for (int x = 0; x < shardNumX; ++x)
+			{
+				sInd = y * shardNumX + x;
+				int shardT = (sInd + (shardNumX * shardNumY) * w);
+				if (shardT >= SHARD_Count)
+				{
+					shardTypeRects[shardT] = NULL;
+				}
+				else
+				{
+					shardTypeRects[shardT] =
+						shardTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_SHARDLIBRARY,
+							Vector2f(x * shardGridSize, y * shardGridSize + w * 2 * shardGridSize),
+							ts_currShards, sInd, shardGridSize);
+					shardTypeRects[shardT]->Init();
+					shardTypeRects[shardT]->SetShown(true);
+				}
+			}
+		}
+	}
+}
+
 
 int EditSession::Run()
 {
@@ -2775,6 +2846,7 @@ int EditSession::Run()
 	}
 
 	SetupTerrainSelectPanel();
+	SetupShardSelectPanel();
 
 	graph = new EditorGraph;
 
@@ -12039,17 +12111,28 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::E)
 		{
-			int layer = selectedBrush->GetTerrainLayer();
+			if (selectedBrush->GetNumTerrain() > 0)
+			{
+				int layer = selectedBrush->GetTerrainLayer();
 
-			ClearMostRecentError();
-			if (layer < 0 && !selectedBrush->IsEmpty() )
-			{
-				CreateError(ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS);
-				ShowMostRecentError();
+				ClearMostRecentError();
+				if (layer < 0 )
+				{
+					CreateError(ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS);
+					ShowMostRecentError();
+				}
+				else
+				{
+					editModeUI->ExpandTerrainLibrary(layer);
+				}
 			}
-			else
+			else if( selectedBrush->IsSingleActor() )
 			{
-				editModeUI->ExpandTerrainLibrary(layer);
+				ActorPtr a = selectedBrush->GetFirst()->GetAsActor();
+				if (a->type->info.name == "shard")
+				{
+					editModeUI->ExpandShardLibrary();
+				}
 			}
 			
 		}

@@ -519,6 +519,15 @@ struct EditSession : GUIHandler, Session
 	void ModifySelectedTerrainMat(
 		int world, int var);
 	void SetupTerrainSelectPanel();
+	void SetCurrSelectedShardType(int w, int li);
+
+	Panel *shardTypePanel;
+	int shardGridSize;
+	int shardNumX;
+	int shardNumY;
+	std::vector<ImageChooseRect*> shardTypeRects;
+	void SetupShardSelectPanel();
+
 	void EditModeDelete();
 	void EditModeTransform();
 	void EditModeCopy();

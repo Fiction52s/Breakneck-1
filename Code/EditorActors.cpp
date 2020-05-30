@@ -226,14 +226,6 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("fill", Vector2i(0, 0), true);
 		p->AddButton("createchain", Vector2i(0, 0), Vector2f(200, 28 + 4), "Create Chain");
 	}
-	else if (name == "flowerpod")
-	{
-		p = new Panel("flowerpod_options", 200, 500, edit);
-		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
-		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
-
-		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
-	}
 	else if (name == "healthfly")
 	{
 		p = CreateDefaultPanel();
@@ -245,13 +237,16 @@ Panel *ActorType::CreatePanel()
 		p->AddCheckBox("fill", Vector2i(0, 0), true);
 		p->AddButton("createchain", Vector2i(0, 0), Vector2f(200, 28 + 4), "Create Chain");
 	}
+	else if (name == "flowerpod")
+	{
+		p = new Panel("flowerpod_options", 200, 500, edit);
+		p->AddButton("ok", Vector2i(100, 410), Vector2f(100, 50), "OK");
+		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
+		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
+	}
 	else if (name == "shard")
 	{
-		p = new Panel("shard_options", 700, 1080, edit);
-		p->AddLabel("shardtype", Vector2i(20, 900), 24, "SHARD_W1_TEACH_JUMP");
-
-		edit->CreateShardGridSelector(p, Vector2i(0, 0));
-		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
+		p = CreateDefaultPanel();
 	}
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
 		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"

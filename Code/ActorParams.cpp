@@ -431,6 +431,11 @@ void ShardParams::SetShard(int w, int realX, int realY)
 	sX = realX;
 	sY = realY;
 	localIndex = realX + realY * 11;
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateParamsSettings();
+	}
 	/*EditSession *session = EditSession::GetSession();
 	
 	Tileset *ts = session->ts_shards[world];
@@ -483,7 +488,7 @@ void ShardParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	shardStr = p->labels["shardtype"]->getString();
+	//shardStr = p->labels["shardtype"]->getString();
 
 	if (myEnemy != NULL)
 	{
@@ -495,11 +500,11 @@ void ShardParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->labels["shardtype"]->setString( shardStr );
+	//p->labels["shardtype"]->setString( shardStr );
 
-	GridSelector *gs = p->gridSelectors["shardselector"];
-	gs->selectedX = sX;
-	gs->selectedY = sY + world * 2;
+	//GridSelector *gs = p->gridSelectors["shardselector"];
+	//gs->selectedX = sX;
+	//gs->selectedY = sY + world * 2;
 }
 
 ActorParams *ShardParams::Copy()

@@ -17,6 +17,8 @@ EditModeUI::EditModeUI()
 	terrainGridSize = edit->terrainGridSize;
 	matTypePanel = edit->matTypePanel;
 
+	shardTypePanel = edit->shardTypePanel;
+
 	mainPanel = new Panel("edit", 1310, 50, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(20, 0 ));
@@ -59,6 +61,7 @@ EditModeUI::EditModeUI()
 	deleteBrushButton->SetToolTip("Delete the current brush (X / Delete)");
 
 	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
+	shardPanelPos = Vector2i(960 - shardTypePanel->size.x / 2, 540 - shardTypePanel->size.y / 2);
 }
 
 EditModeUI::~EditModeUI()
@@ -81,6 +84,21 @@ void EditModeUI::ExpandTerrainLibrary( int layer )
 		matTypePanel->handler = this;
 
 		edit->AddActivePanel(matTypePanel);
+	}
+}
+
+void EditModeUI::ExpandShardLibrary()
+{
+	if (shardTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(shardTypePanel);
+	}
+	else
+	{
+		shardTypePanel->SetPosition(shardPanelPos);
+		shardTypePanel->handler = this;
+
+		edit->AddActivePanel(shardTypePanel);
 	}
 }
 
@@ -349,7 +367,21 @@ void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 			{
 				ChooseMatType(icRect);
 			}
+			else if(icRect->rectIdentity == ChooseRect::I_SHARDLIBRARY)
+			{
+				int x = icRect->pos.x / edit->shardGridSize;
+				int y = icRect->pos.y / edit->shardGridSize;
+
+				int world = y / edit->shardNumY;
+				int localIndex = (y % edit->shardNumY) * edit->shardNumX + x;
+
+				edit->SetCurrSelectedShardType(world, localIndex);
+
+				edit->RemoveActivePanel(shardTypePanel);
+			}
 		}
+
+
 	}
 }
 
