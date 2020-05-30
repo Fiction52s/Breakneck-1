@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::LAND_Start()
 {
+	currBBoostCounter = 0;
 }
 
 void Actor::LAND_End()
@@ -232,7 +233,7 @@ void Actor::LAND_UpdateSprite()
 		else
 		{
 			fxPos = pp;
-			fxPos += gn * 48.0;
+			fxPos += currNormal * 48.0;
 		}
 
 		//cout << "activating" << endl;

@@ -82,14 +82,14 @@ void Actor::JUMPSQUAT_UpdateSprite()
 	//some special stuff for jumpsquat
 	if (reversed)
 	{
-		if (-gn.y > -steepThresh)
+		if (-currNormal.y > -steepThresh)
 		{
 			angle = PI;
 		}
 	}
 	else
 	{
-		if (gn.y > -steepThresh)
+		if (currNormal.y > -steepThresh)
 		{
 			angle = 0;
 		}

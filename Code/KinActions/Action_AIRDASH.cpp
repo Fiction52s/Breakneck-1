@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "Wire.h"
+#include "Enemy_Booster.h"
 
 using namespace sf;
 using namespace std;
@@ -329,4 +330,63 @@ void Actor::AIRDASH_UpdateSprite()
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
+
+	//spawn effects
+	bool horizontal = abs(velocity.y) < 7; //for hover
+	bool stopped = horizontal && velocity.x == 0;
+	if (frame % 1 == 0 && !stopped)
+	{
+		//ActivateEffect( ts_fx_airdashSmall, V2d( position.x, position.y + 0 ), false, 0, 12, 4, facingRight );
+	}
+
+	if ((frame + framesExtendingAirdash) % 4 == 0 && slowCounter == 1)
+	{
+		if (stopped)
+		{
+			//cout << "frame: " << frame << endl;
+			//if( frame % 4 == 1 )
+			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashHover, V2d(position.x, position.y + 70),
+				false, 0, 12, 1, facingRight);
+		}
+		else if (horizontal)
+		{
+			//cout << "STUFF???" << endl;
+			if (velocity.x > 0)
+			{
+				ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashUp, V2d(position.x - 64, position.y - 18), false, PI / 2.0, 15, 3, true);
+			}
+			else
+			{
+				ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashUp, V2d(position.x + 64, position.y - 18), false, -PI / 2.0, 15, 3, true);
+			}
+		}
+		else if (velocity.x == 0 && velocity.y < 0)
+		{
+			ActivateEffect(EffectLayer::IN_FRONT, ts_fx_airdashUp, V2d(position.x, position.y + 64), false, 0, 15, 3, facingRight);
+		}
+		else if (velocity.x == 0 && velocity.y > 0)
+		{
+			ActivateEffect(EffectLayer::IN_FRONT, ts_fx_airdashUp, V2d(position.x, position.y + 0), false, PI, 15, 3, facingRight);
+		}
+		else if (velocity.x > 0 && velocity.y > 0)
+		{
+			V2d pos = V2d(position.x - 40, position.y - 60);
+			ActivateEffect(EffectLayer::IN_FRONT, ts_fx_airdashDiagonal, pos, false, PI, 15, 3, true);//facingRight );
+		}
+		else if (velocity.x < 0 && velocity.y > 0)
+		{
+			ActivateEffect(EffectLayer::IN_FRONT, ts_fx_airdashDiagonal, V2d(position.x + 40, position.y - 60), false, PI, 15, 3, false);//facingRight );
+		}
+		else if (velocity.x < 0 && velocity.y < 0)
+		{
+			ActivateEffect(EffectLayer::IN_FRONT, ts_fx_airdashDiagonal, V2d(position.x + 54, position.y + 60), false, 0, 15, 3, true);
+		}
+		else if (velocity.x > 0 && velocity.y < 0)
+		{
+			ActivateEffect(EffectLayer::IN_FRONT, ts_fx_airdashDiagonal, V2d(position.x - 54, position.y + 60), false, 0, 15, 3, false);
+		}
+
+		//cout << "airdash fx" << endl;
+
+	}
 }

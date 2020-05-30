@@ -479,12 +479,6 @@ struct Actor : QuadTreeCollider,
 	void JUMPSQUAT_Update();
 	void JUMPSQUAT_UpdateSprite();
 
-	void GLIDE_Start();
-	void GLIDE_End();
-	void GLIDE_Change();
-	void GLIDE_Update();
-	void GLIDE_UpdateSprite();
-
 	void LAND_Start();
 	void LAND_End();
 	void LAND_Change();
@@ -806,6 +800,11 @@ struct Actor : QuadTreeCollider,
 
 	
 	void SetupActionFunctions();
+	void StartAction();
+	void EndAction();
+	void ChangeAction();
+	void UpdateAction();
+	void UpdateActionSprite();
 	
 
 	bool canStandUp;

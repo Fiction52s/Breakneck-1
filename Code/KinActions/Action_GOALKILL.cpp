@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "GameSession.h"
+#include "ScoreDisplay.h"
 
 using namespace sf;
 using namespace std;

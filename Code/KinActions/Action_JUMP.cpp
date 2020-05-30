@@ -131,7 +131,7 @@ void Actor::JUMP_Update()
 				else
 					fxPos = pp;
 
-				fxPos += gNorm * 16.0;
+				fxPos += currNormal * 16.0;
 
 				switch (speedLevel)
 				{

@@ -1,4 +1,6 @@
 #include "Actor.h"
+#include "GameSession.h"
+#include "MainMenu.h"
 
 using namespace sf;
 using namespace std;

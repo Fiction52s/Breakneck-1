@@ -6,6 +6,7 @@ using namespace std;
 
 void Actor::GRAVREVERSE_Start()
 {
+	currBBoostCounter = 0;
 }
 
 void Actor::GRAVREVERSE_End()

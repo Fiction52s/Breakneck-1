@@ -25,5 +25,5 @@ void Actor::AUTORUN_Update()
 
 void Actor::AUTORUN_UpdateSprite()
 {
-	UpdateRunSprite();
+	RUN_UpdateSprite();
 }

@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::LAND2_Start()
 {
+	currBBoostCounter = 0;
 }
 
 void Actor::LAND2_End()

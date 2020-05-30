@@ -5,6 +5,25 @@ using namespace std;
 
 void Actor::WALLJUMP_Start()
 {
+	if (currInput.rightShoulder && !prevInput.rightShoulder)
+	{
+		if (currInput.LUp())
+		{
+			wallJumpBufferedAttack = UAIR; //none
+		}
+		else if (currInput.LDown())
+		{
+			wallJumpBufferedAttack = DAIR;
+		}
+		else
+		{
+			wallJumpBufferedAttack = FAIR;
+		}
+	}
+	else
+	{
+		wallJumpBufferedAttack = WALLJUMP;
+	}
 }
 
 void Actor::WALLJUMP_End()
