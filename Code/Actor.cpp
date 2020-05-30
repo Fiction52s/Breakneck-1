@@ -601,6 +601,21 @@ void Actor::Init()
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex )
 	{
+	endActionFuncs.resize(Count);
+	updateActionFuncs.resize(Count);
+	changeActionFuncs.resize(Count);
+
+	endActionFuncs[DAIR] = &DAIR_End;
+	changeActionFuncs[DAIR] = &DAIR_Change;
+	updateActionFuncs[DAIR] = &DAIR_Update;
+
+	endActionFuncs[DASH] = &DASH_End;
+	changeActionFuncs[DASH] = &DASH_Change;
+	updateActionFuncs[DASH] = &DASH_Update;
+
+
+
+
 
 	SetSession(Session::GetSession(), gs, es);
 
@@ -1314,6 +1329,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	actionLength[UAIR] = 16;
 	actionLength[GRINDATTACK] = 1;
 	actionLength[STEEPSLIDE] = 1;
+	actionLength[STEEPCLING] = 1;
 	actionLength[WALLCLING] = 1;
 	actionLength[WALLJUMP] = 9 * 2;
 	actionLength[GRINDBALL] = 1;
@@ -2018,8 +2034,6 @@ void Actor::ActionEnded()
 			frame = 0;
 			break;
 		case DAIR:
-			//currLockedDairFX->ClearLockPos();
-			//currLockedDairFX = NULL;
 			SetActionExpr( JUMP );
 			frame = 1;
 			break;
@@ -2030,20 +2044,6 @@ void Actor::ActionEnded()
 			frame = 1;
 			break;
 		case DASH:
-			//dashStartSound.stop();
-			/*if (groundSpeed > 0 && abs(ground->Normal().y) == 1 )
-			{
-				groundSpeed += 5.0;
-			}
-			else if( groundSpeed < 0 && abs( ground->Normal().y ) == 1 )
-			{
-				groundSpeed -= 5.0;
-			}*/
-
-			
-
-
-
 			SetActionExpr( STAND );
 			frame = 0;
 			break;
@@ -3287,9 +3287,8 @@ void Actor::UpdatePrePhysics()
 		break;
 	}*/
 
-	V2d gNorm;
 	if( ground != NULL )
-		gNorm = ground->Normal();
+		currNormal = ground->Normal();
 
 	if( receivedHit != NULL && action != DEATH )
 	{
@@ -3594,7 +3593,7 @@ void Actor::UpdatePrePhysics()
 
 	
 	
-	bool canStandUp = true;
+	canStandUp = true;
 	if( b.rh < normalHeight )
 	{
 		canStandUp = CheckStandUp();
@@ -5603,6 +5602,8 @@ void Actor::UpdatePrePhysics()
 			BasicAirAttackAction();
 			break;
 		}
+	case STEEPCLING:
+		break;
 	case STEEPSLIDE:
 		{
 			if( hasPowerBounce && currInput.X && !bounceFlameOn )
@@ -19099,10 +19100,10 @@ void Actor::UpdateSprite()
 	//dustParticles->Update(&rpu);
 
 
-	V2d gn( 0, 0 );
+	//V2d gn( 0, 0 );
 	if( ground != NULL )
 	{
-		gn = ground->Normal();
+		currNormal = ground->Normal();
 	}
 	else
 	{
@@ -23062,6 +23063,7 @@ void Actor::SetActionExpr( Action a )
 	case WALLCLING:
 	case SLIDE:
 	case STEEPSLIDE:
+	case STEEPCLING:
 	case STEEPCLIMB:
 	case STAND:
 		SetExpr( Expr_NEUTRAL );

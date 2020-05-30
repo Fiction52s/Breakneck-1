@@ -152,6 +152,7 @@ struct Actor : QuadTreeCollider,
 		WALLATTACK,
 		STEEPCLIMBATTACK,
 		STEEPSLIDEATTACK,
+		STEEPCLING,
 		STANDN,
 		UAIR,
 		WALLCLING,
@@ -230,6 +231,110 @@ struct Actor : QuadTreeCollider,
 		GETSHARD,
 		Count
 	};
+
+	void AIRDASH_Start();
+	void AIRDASH_End();
+	void AIRDASH_Change();
+	void AIRDASH_Update();
+	void AIRDASH_UpdateSprite();
+
+	void AIRHITSTUN_Start();
+	void AIRHITSTUN_End();
+	void AIRHITSTUN_Change();
+	void AIRHITSTUN_Update();
+	void AIRHITSTUN_UpdateSprite();
+
+	void AUTORUN_Start();
+	void AUTORUN_End();
+	void AUTORUN_Change();
+	void AUTORUN_Update();
+	void AUTORUN_UpdateSprite();
+
+	void BACKWARDSDOUBLE_Start();
+	void BACKWARDSDOUBLE_End();
+	void BACKWARDSDOUBLE_Change();
+	void BACKWARDSDOUBLE_Update();
+	void BACKWARDSDOUBLE_UpdateSprite();
+
+	void BOUNCEAIR_Start();
+	void BOUNCEAIR_End();
+	void BOUNCEAIR_Change();
+	void BOUNCEAIR_Update();
+	void BOUNCEAIR_UpdateSprite();
+
+	void BOUNCEGROUND_Start();
+	void BOUNCEGROUND_End();
+	void BOUNCEGROUND_Change();
+	void BOUNCEGROUND_Update();
+	void BOUNCEGROUND_UpdateSprite();
+
+	void BOUNCEGROUNDEDWALL_Start();
+	void BOUNCEGROUNDEDWALL_End();
+	void BOUNCEGROUNDEDWALL_Change();
+	void BOUNCEGROUNDEDWALL_Update();
+	void BOUNCEGROUNDEDWALL_UpdateSprite();
+
+	void BRAKE_Start();
+	void BRAKE_End();
+	void BRAKE_Change();
+	void BRAKE_Update();
+	void BRAKE_UpdateSprite();
+
+	void DAIR_Start();
+	void DAIR_End();
+	void DAIR_Change();
+	void DAIR_Update();
+	void DAIR_UpdateSprite();
+
+	void DASH_Start();
+	void DASH_End();
+	void DASH_Change();
+	void DASH_Update();
+	void DASH_UpdateSprite();
+
+	void DASHATTACK_Start();
+	void DASHATTACK_End();
+	void DASHATTACK_Change();
+	void DASHATTACK_Update();
+	void DASHATTACK_UpdateSprite();
+
+	void DEATH_Start();
+	void DEATH_End();
+	void DEATH_Change();
+	void DEATH_Update();
+	void DEATH_UpdateSprite();
+
+	void DIAGDOWNATTACK_Start();
+	void DIAGDOWNATTACK_End();
+	void DIAGDOWNATTACK_Change();
+	void DIAGDOWNATTACK_Update();
+	void DIAGDOWNATTACK_UpdateSprite();
+
+	void DIAGUPATTACK_Start();
+	void DIAGUPATTACK_End();
+	void DIAGUPATTACK_Change();
+	void DIAGUPATTACK_Update();
+	void DIAGUPATTACK_UpdateSprite();
+
+	void DOUBLE_Start();
+	void DOUBLE_End();
+	void DOUBLE_Change();
+	void DOUBLE_Update();
+	void DOUBLE_UpdateSprite();
+
+	
+
+	
+
+	
+
+	bool canStandUp;
+	V2d currNormal;
+
+	std::vector<void(Actor::*)()> endActionFuncs;
+	std::vector<void(Actor::*)()> changeActionFuncs;
+	std::vector<void(Actor::*)()> updateActionFuncs;
+	std::vector<void(Actor::*)()> updateSpriteFuncs;
 
 	void SetupDrain();
 	void SetupTimeBubbles();
