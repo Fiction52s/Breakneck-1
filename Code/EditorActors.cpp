@@ -265,17 +265,18 @@ Panel *ActorType::CreatePanel()
 	}
 	//w1
 	//w2
-	else if (name == "gravityspring" || name == "bouncespring"
+	/*else if (name == "gravityspring" || name == "bouncespring"
 		|| name == "airbouncespring" || name == "swinglaunchercw" || name == "swinglauncherccw")
 	{
 		p = CreateDefaultPanel();
 		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
 		p->AddTextBox("speed", Vector2i(20, 200), 200, 3, "");
-	}
+	}*/
 	else if (name == "teleporter")
 	{
 		p = CreateDefaultPanel();
-		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
+		AddSetDirectionButton(p);
+		//p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
 	}
 	//w3
 	else if (name == "rail" || name == "grindrail")
