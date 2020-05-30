@@ -153,7 +153,7 @@ void EnemyChain::UpdateParams(ActorParams *params)
 void EnemyChain::CreateEnemies()
 {
 	double rad = 32;
-	double minDistance = 60 * scale;
+	double minDistance = 0;
 	double totalLength = 0;
 	int pathSize = localPath.size();
 	double dist = minDistance + spacing;

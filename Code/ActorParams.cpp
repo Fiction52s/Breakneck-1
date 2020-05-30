@@ -536,7 +536,7 @@ BlockerParams::BlockerParams(ActorType *at, int level)
 
 	bType = 0;
 
-	spacing = 20;
+	spacing = 80;
 }
 
 void BlockerParams::OnCreate()
@@ -647,64 +647,30 @@ FlyParams::FlyParams(ActorType *at, int level)
 
 	fType = 0;
 
-	spacing = 0;
+	spacing = 60;
 }
 
 void FlyParams::SetParams()
 {
 	Panel *p = type->panel;
+	fill = p->checkBoxes["fill"]->checked;
 
-	stringstream ss;
+	fType = p->dropdowns["ftype"]->selectedIndex;
 
-	string typeStr = p->textBoxes["ftype"]->text.getString().toAnsiString();
+	spacing = p->sliders["spacing"]->GetCurrValue();
 
-	int lev;
-	string levelStr = p->textBoxes["level"]->text.getString().toAnsiString();
-	ss << levelStr;
-
-	ss >> lev;
-
-	if (!ss.fail() && lev > 0 && lev <= type->info.numLevels)
+	if (myEnemy != NULL)
 	{
-		enemyLevel = lev;
+		myEnemy->UpdateParamsSettings();
 	}
-
-
-	ss << typeStr;
-
-	int t_type;
-	ss >> t_type;
-
-	if (!ss.fail())
-	{
-		fType = t_type;
-	}
-
-	hasMonitor = false;
-
-	string spacingStr = p->textBoxes["spacing"]->text.getString().toAnsiString();
-
-
-	ss << spacingStr;
-
-	int t_spacing;
-	ss >> t_spacing;
-
-	if (!ss.fail())
-	{
-		spacing = t_spacing;
-	}
-
-	//myEnemy->UpdateFromParams(this, 0);
 }
 
 void FlyParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["ftype"]->text.setString(boost::lexical_cast<string>(fType));
-	p->textBoxes["spacing"]->text.setString(boost::lexical_cast<string>(spacing));
-
-	//p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
+	p->dropdowns["ftype"]->SetSelectedIndex(fType);
+	p->checkBoxes["fill"]->checked = fill;
+	p->sliders["spacing"]->SetCurrValue(spacing);
 
 	EditSession *edit = EditSession::GetSession();
 	MakeGlobalPath(edit->patrolPath);
@@ -750,6 +716,9 @@ void FlyParams::WriteParamFile(ofstream &of)
 ActorParams *FlyParams::Copy()
 {
 	FlyParams *fp = new FlyParams(*this);
+	fp->lines = NULL;
+	fp->myEnemy = NULL;
+	fp->SetSelected(false);
 	return fp;
 }
 

@@ -221,11 +221,10 @@ Panel *ActorType::CreatePanel()
 		std::vector<string> bTypes{ "Grey", "Blue", "Green", "Yellow",
 		"Orange", "Red", "Magenta", "Black" };
 		p->AddDropdown("btype", Vector2i(0, 10), Vector2i(200, 28), bTypes, 0);
-		AddLabeledSlider(p, "spacing", "Spacing:", 10, 200, 20);
+		AddLabeledSlider(p, "spacing", "Spacing:", 40, 300, 40);
 		p->AddLabel("fill", Vector2i(0, 0), 28, "Fill Mode:");
 		p->AddCheckBox("fill", Vector2i(0, 0), true);
 		p->AddButton("createchain", Vector2i(0, 0), Vector2f(200, 28 + 4), "Create Chain");
-		
 	}
 	else if (name == "flowerpod")
 	{
@@ -238,12 +237,13 @@ Panel *ActorType::CreatePanel()
 	else if (name == "healthfly")
 	{
 		p = CreateDefaultPanel();
-		std::vector<string> bTypes{ "Grey", "Blue", "Green", "Yellow",
+		std::vector<string> fTypes{ "Grey", "Blue", "Green", "Yellow",
 			"Orange", "Red", "Magenta", "Black" };
-		p->AddDropdown("btype", Vector2i(0, 10), Vector2i(200, 28), bTypes, 0);
-		AddLabeledSlider(p, "spacing", "Spacing:", 10, 200, 20);
+		p->AddDropdown("ftype", Vector2i(0, 10), Vector2i(200, 28), fTypes, 0);
+		AddLabeledSlider(p, "spacing", "Spacing:", 40, 300, 40);
 		p->AddLabel("fill", Vector2i(0, 0), 28, "Fill Mode:");
 		p->AddCheckBox("fill", Vector2i(0, 0), true);
+		p->AddButton("createchain", Vector2i(0, 0), Vector2f(200, 28 + 4), "Create Chain");
 	}
 	else if (name == "shard")
 	{

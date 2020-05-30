@@ -281,7 +281,6 @@ struct BlockerParams : public ActorParams
 
 	bool fill;
 	int spacing;
-
 	int bType;
 	//will have multiple types
 };
@@ -299,6 +298,7 @@ struct FlyParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 
+	bool fill;
 	int spacing;
 	int fType;
 	//will have multiple types
