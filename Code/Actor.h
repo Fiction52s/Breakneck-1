@@ -378,6 +378,433 @@ struct Actor : QuadTreeCollider,
 	void GLIDE_Update();
 	void GLIDE_UpdateSprite();
 
+	void GOALKILL_Start();
+	void GOALKILL_End();
+	void GOALKILL_Change();
+	void GOALKILL_Update();
+	void GOALKILL_UpdateSprite();
+
+	void GOALKILL1_Start();
+	void GOALKILL1_End();
+	void GOALKILL1_Change();
+	void GOALKILL1_Update();
+	void GOALKILL1_UpdateSprite();
+
+	void GOALKILL2_Start();
+	void GOALKILL2_End();
+	void GOALKILL2_Change();
+	void GOALKILL2_Update();
+	void GOALKILL2_UpdateSprite();
+
+	void GOALKILL3_Start();
+	void GOALKILL3_End();
+	void GOALKILL3_Change();
+	void GOALKILL3_Update();
+	void GOALKILL3_UpdateSprite();
+
+	void GOALKILL4_Start();
+	void GOALKILL4_End();
+	void GOALKILL4_Change();
+	void GOALKILL4_Update();
+	void GOALKILL4_UpdateSprite();
+
+	void GOALKILLWAIT_Start();
+	void GOALKILLWAIT_End();
+	void GOALKILLWAIT_Change();
+	void GOALKILLWAIT_Update();
+	void GOALKILLWAIT_UpdateSprite();
+
+	void GRABSHIP_Start();
+	void GRABSHIP_End();
+	void GRABSHIP_Change();
+	void GRABSHIP_Update();
+	void GRABSHIP_UpdateSprite();
+
+	void GRAVREVERSE_Start();
+	void GRAVREVERSE_End();
+	void GRAVREVERSE_Change();
+	void GRAVREVERSE_Update();
+	void GRAVREVERSE_UpdateSprite();
+
+	void GRINDATTACK_Start();
+	void GRINDATTACK_End();
+	void GRINDATTACK_Change();
+	void GRINDATTACK_Update();
+	void GRINDATTACK_UpdateSprite();
+
+	void GRINDBALL_Start();
+	void GRINDBALL_End();
+	void GRINDBALL_Change();
+	void GRINDBALL_Update();
+	void GRINDBALL_UpdateSprite();
+
+	void GRINDLUNGE_Start();
+	void GRINDLUNGE_End();
+	void GRINDLUNGE_Change();
+	void GRINDLUNGE_Update();
+	void GRINDLUNGE_UpdateSprite();
+
+	void GRINDSLASH_Start();
+	void GRINDSLASH_End();
+	void GRINDSLASH_Change();
+	void GRINDSLASH_Update();
+	void GRINDSLASH_UpdateSprite();
+
+	void GROUNDHITSTUN_Start();
+	void GROUNDHITSTUN_End();
+	void GROUNDHITSTUN_Change();
+	void GROUNDHITSTUN_Update();
+	void GROUNDHITSTUN_UpdateSprite();
+
+	void INTRO_Start();
+	void INTRO_End();
+	void INTRO_Change();
+	void INTRO_Update();
+	void INTRO_UpdateSprite();
+
+	void INTROBOOST_Start();
+	void INTROBOOST_End();
+	void INTROBOOST_Change();
+	void INTROBOOST_Update();
+	void INTROBOOST_UpdateSprite();
+
+	void JUMP_Start();
+	void JUMP_End();
+	void JUMP_Change();
+	void JUMP_Update();
+	void JUMP_UpdateSprite();
+
+	void JUMPSQUAT_Start();
+	void JUMPSQUAT_End();
+	void JUMPSQUAT_Change();
+	void JUMPSQUAT_Update();
+	void JUMPSQUAT_UpdateSprite();
+
+	void GLIDE_Start();
+	void GLIDE_End();
+	void GLIDE_Change();
+	void GLIDE_Update();
+	void GLIDE_UpdateSprite();
+
+	void LAND_Start();
+	void LAND_End();
+	void LAND_Change();
+	void LAND_Update();
+	void LAND_UpdateSprite();
+
+	void LAND2_Start();
+	void LAND2_End();
+	void LAND2_Change();
+	void LAND2_Update();
+	void LAND2_UpdateSprite();
+
+	void NEXUSKILL_Start();
+	void NEXUSKILL_End();
+	void NEXUSKILL_Change();
+	void NEXUSKILL_Update();
+	void NEXUSKILL_UpdateSprite();
+
+	void RAILDASH_Start();
+	void RAILDASH_End();
+	void RAILDASH_Change();
+	void RAILDASH_Update();
+	void RAILDASH_UpdateSprite();
+
+	void RAILGRIND_Start();
+	void RAILGRIND_End();
+	void RAILGRIND_Change();
+	void RAILGRIND_Update();
+	void RAILGRIND_UpdateSprite();
+
+	void RAILSLIDE_Start();
+	void RAILSLIDE_End();
+	void RAILSLIDE_Change();
+	void RAILSLIDE_Update();
+	void RAILSLIDE_UpdateSprite();
+
+	void RIDESHIP_Start();
+	void RIDESHIP_End();
+	void RIDESHIP_Change();
+	void RIDESHIP_Update();
+	void RIDESHIP_UpdateSprite();
+
+	void RUN_Start();
+	void RUN_End();
+	void RUN_Change();
+	void RUN_Update();
+	void RUN_UpdateSprite();
+
+	void SEQ_CRAWLERFIGHT_DODGEBACK_Start();
+	void SEQ_CRAWLERFIGHT_DODGEBACK_End();
+	void SEQ_CRAWLERFIGHT_DODGEBACK_Change();
+	void SEQ_CRAWLERFIGHT_DODGEBACK_Update();
+	void SEQ_CRAWLERFIGHT_DODGEBACK_UpdateSprite();
+
+	void SEQ_CRAWLERFIGHT_LAND_Start();
+	void SEQ_CRAWLERFIGHT_LAND_End();
+	void SEQ_CRAWLERFIGHT_LAND_Change();
+	void SEQ_CRAWLERFIGHT_LAND_Update();
+	void SEQ_CRAWLERFIGHT_LAND_UpdateSprite();
+
+	void SEQ_CRAWLERFIGHT_STAND_Start();
+	void SEQ_CRAWLERFIGHT_STAND_End();
+	void SEQ_CRAWLERFIGHT_STAND_Change();
+	void SEQ_CRAWLERFIGHT_STAND_Update();
+	void SEQ_CRAWLERFIGHT_STAND_UpdateSprite();
+
+	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_Start();
+	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_End();
+	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_Change();
+	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_Update();
+	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_UpdateSprite();
+
+	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Start();
+	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_End();
+	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Change();
+	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Update();
+	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_UpdateSprite();
+
+	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Start();
+	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_End();
+	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Change();
+	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Update();
+	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_UpdateSprite();
+
+	void SEQ_ENTERCORE1_Start();
+	void SEQ_ENTERCORE1_End();
+	void SEQ_ENTERCORE1_Change();
+	void SEQ_ENTERCORE1_Update();
+	void SEQ_ENTERCORE1_UpdateSprite();
+
+	void SEQ_FADE_INTO_NEXUS_Start();
+	void SEQ_FADE_INTO_NEXUS_End();
+	void SEQ_FADE_INTO_NEXUS_Change();
+	void SEQ_FADE_INTO_NEXUS_Update();
+	void SEQ_FADE_INTO_NEXUS_UpdateSprite();
+
+	void SEQ_FLOAT_TO_NEXUS_OPENING_Start();
+	void SEQ_FLOAT_TO_NEXUS_OPENING_End();
+	void SEQ_FLOAT_TO_NEXUS_OPENING_Change();
+	void SEQ_FLOAT_TO_NEXUS_OPENING_Update();
+	void SEQ_FLOAT_TO_NEXUS_OPENING_UpdateSprite();
+
+	void SEQ_KINFALL_Start();
+	void SEQ_KINFALL_End();
+	void SEQ_KINFALL_Change();
+	void SEQ_KINFALL_Update();
+	void SEQ_KINFALL_UpdateSprite();
+
+	void SEQ_KINSTAND_Start();
+	void SEQ_KINSTAND_End();
+	void SEQ_KINSTAND_Change();
+	void SEQ_KINSTAND_Update();
+	void SEQ_KINSTAND_UpdateSprite();
+
+	void SEQ_KINTHROWN_Start();
+	void SEQ_KINTHROWN_End();
+	void SEQ_KINTHROWN_Change();
+	void SEQ_KINTHROWN_Update();
+	void SEQ_KINTHROWN_UpdateSprite();
+
+	void SEQ_KNEEL_Start();
+	void SEQ_KNEEL_End();
+	void SEQ_KNEEL_Change();
+	void SEQ_KNEEL_Update();
+	void SEQ_KNEEL_UpdateSprite();
+
+	void SEQ_KNEEL_TO_MEDITATE_Start();
+	void SEQ_KNEEL_TO_MEDITATE_End();
+	void SEQ_KNEEL_TO_MEDITATE_Change();
+	void SEQ_KNEEL_TO_MEDITATE_Update();
+	void SEQ_KNEEL_TO_MEDITATE_UpdateSprite();
+
+	void SEQ_LOOKUP_Start();
+	void SEQ_LOOKUP_End();
+	void SEQ_LOOKUP_Change();
+	void SEQ_LOOKUP_Update();
+	void SEQ_LOOKUP_UpdateSprite();
+
+	void SEQ_LOOKUPDISAPPEAR_Start();
+	void SEQ_LOOKUPDISAPPEAR_End();
+	void SEQ_LOOKUPDISAPPEAR_Change();
+	void SEQ_LOOKUPDISAPPEAR_Update();
+	void SEQ_LOOKUPDISAPPEAR_UpdateSprite();
+
+	void SEQ_MASKOFF_Start();
+	void SEQ_MASKOFF_End();
+	void SEQ_MASKOFF_Change();
+	void SEQ_MASKOFF_Update();
+	void SEQ_MASKOFF_UpdateSprite();
+
+	void SEQ_MEDITATE_Start();
+	void SEQ_MEDITATE_End();
+	void SEQ_MEDITATE_Change();
+	void SEQ_MEDITATE_Update();
+	void SEQ_MEDITATE_UpdateSprite();
+
+	void SEQ_MEDITATE_MASKON_Start();
+	void SEQ_MEDITATE_MASKON_End();
+	void SEQ_MEDITATE_MASKON_Change();
+	void SEQ_MEDITATE_MASKON_Update();
+	void SEQ_MEDITATE_MASKON_UpdateSprite();
+
+	void SEQ_TURNFACE_Start();
+	void SEQ_TURNFACE_End();
+	void SEQ_TURNFACE_Change();
+	void SEQ_TURNFACE_Update();
+	void SEQ_TURNFACE_UpdateSprite();
+
+	void SEQ_WAIT_Start();
+	void SEQ_WAIT_End();
+	void SEQ_WAIT_Change();
+	void SEQ_WAIT_Update();
+	void SEQ_WAIT_UpdateSprite();
+
+	void SKYDIVE_Start();
+	void SKYDIVE_End();
+	void SKYDIVE_Change();
+	void SKYDIVE_Update();
+	void SKYDIVE_UpdateSprite();
+
+	void SKYDIVETOFALL_Start();
+	void SKYDIVETOFALL_End();
+	void SKYDIVETOFALL_Change();
+	void SKYDIVETOFALL_Update();
+	void SKYDIVETOFALL_UpdateSprite();
+
+	void SLIDE_Start();
+	void SLIDE_End();
+	void SLIDE_Change();
+	void SLIDE_Update();
+	void SLIDE_UpdateSprite();
+
+	void SPAWNWAIT_Start();
+	void SPAWNWAIT_End();
+	void SPAWNWAIT_Change();
+	void SPAWNWAIT_Update();
+	void SPAWNWAIT_UpdateSprite();
+
+	void SPRINGSTUN_Start();
+	void SPRINGSTUN_End();
+	void SPRINGSTUN_Change();
+	void SPRINGSTUN_Update();
+	void SPRINGSTUN_UpdateSprite();
+
+	void SPRINGSTUNAIRBOUNCE_Start();
+	void SPRINGSTUNAIRBOUNCE_End();
+	void SPRINGSTUNAIRBOUNCE_Change();
+	void SPRINGSTUNAIRBOUNCE_Update();
+	void SPRINGSTUNAIRBOUNCE_UpdateSprite();
+
+	void SPRINGSTUNBOUNCE_Start();
+	void SPRINGSTUNBOUNCE_End();
+	void SPRINGSTUNBOUNCE_Change();
+	void SPRINGSTUNBOUNCE_Update();
+	void SPRINGSTUNBOUNCE_UpdateSprite();
+
+	void SPRINGSTUNGLIDE_Start();
+	void SPRINGSTUNGLIDE_End();
+	void SPRINGSTUNGLIDE_Change();
+	void SPRINGSTUNGLIDE_Update();
+	void SPRINGSTUNGLIDE_UpdateSprite();
+
+	void SPRINGSTUNTELEPORT_Start();
+	void SPRINGSTUNTELEPORT_End();
+	void SPRINGSTUNTELEPORT_Change();
+	void SPRINGSTUNTELEPORT_Update();
+	void SPRINGSTUNTELEPORT_UpdateSprite();
+
+	void SPRINT_Start();
+	void SPRINT_End();
+	void SPRINT_Change();
+	void SPRINT_Update();
+	void SPRINT_UpdateSprite();
+
+	void STAND_Start();
+	void STAND_End();
+	void STAND_Change();
+	void STAND_Update();
+	void STAND_UpdateSprite();
+
+	void STANDN_Start();
+	void STANDN_End();
+	void STANDN_Change();
+	void STANDN_Update();
+	void STANDN_UpdateSprite();
+
+	void STEEPCLIMB_Start();
+	void STEEPCLIMB_End();
+	void STEEPCLIMB_Change();
+	void STEEPCLIMB_Update();
+	void STEEPCLIMB_UpdateSprite();
+
+	void STEEPCLIMBATTACK_Start();
+	void STEEPCLIMBATTACK_End();
+	void STEEPCLIMBATTACK_Change();
+	void STEEPCLIMBATTACK_Update();
+	void STEEPCLIMBATTACK_UpdateSprite();
+
+	void STEEPCLING_Start();
+	void STEEPCLING_End();
+	void STEEPCLING_Change();
+	void STEEPCLING_Update();
+	void STEEPCLING_UpdateSprite();
+
+	void STEEPSLIDE_Start();
+	void STEEPSLIDE_End();
+	void STEEPSLIDE_Change();
+	void STEEPSLIDE_Update();
+	void STEEPSLIDE_UpdateSprite();
+
+	void STEEPSLIDEATTACK_Start();
+	void STEEPSLIDEATTACK_End();
+	void STEEPSLIDEATTACK_Change();
+	void STEEPSLIDEATTACK_Update();
+	void STEEPSLIDEATTACK_UpdateSprite();
+
+	void SWINGSTUN_Start();
+	void SWINGSTUN_End();
+	void SWINGSTUN_Change();
+	void SWINGSTUN_Update();
+	void SWINGSTUN_UpdateSprite();
+
+	void UAIR_Start();
+	void UAIR_End();
+	void UAIR_Change();
+	void UAIR_Update();
+	void UAIR_UpdateSprite();
+
+	void WAITFORSHIP_Start();
+	void WAITFORSHIP_End();
+	void WAITFORSHIP_Change();
+	void WAITFORSHIP_Update();
+	void WAITFORSHIP_UpdateSprite();
+
+	void WALLATTACK_Start();
+	void WALLATTACK_End();
+	void WALLATTACK_Change();
+	void WALLATTACK_Update();
+	void WALLATTACK_UpdateSprite();
+
+	void WALLCLING_Start();
+	void WALLCLING_End();
+	void WALLCLING_Change();
+	void WALLCLING_Update();
+	void WALLCLING_UpdateSprite();
+
+	void WALLJUMP_Start();
+	void WALLJUMP_End();
+	void WALLJUMP_Change();
+	void WALLJUMP_Update();
+	void WALLJUMP_UpdateSprite();
+
+	void WIREHOLD_Start();
+	void WIREHOLD_End();
+	void WIREHOLD_Change();
+	void WIREHOLD_Update();
+	void WIREHOLD_UpdateSprite();
+
+
 	
 
 	
