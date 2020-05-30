@@ -30,7 +30,7 @@
 #include "CircleGroup.h"
 
 #include "ItemSelector.h"
-//using namespace ClipperLib;
+#include "EnemyChain.h"
 
 using namespace std;
 using namespace sf;
@@ -460,13 +460,23 @@ void EditSession::TestPlayerMode()
 
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
-			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+			for (auto enit = (*it).second->actors.begin(); 
+				enit != (*it).second->actors.end(); ++enit)
 			{
 				if ((*enit)->myEnemy != NULL)
 				{
 					(*enit)->myEnemy->Reset();
 					AddEnemy((*enit)->myEnemy);
 				}
+			}
+		}
+
+		for (auto it = rails.begin(); it != rails.end(); ++it)
+		{
+			if ((*it)->enemyChain != NULL)
+			{
+				(*it)->enemyChain->Reset();
+				AddEnemy((*it)->enemyChain);
 			}
 		}
 
@@ -502,6 +512,15 @@ void EditSession::TestPlayerMode()
 					(*enit)->myEnemy->Reset();
 					RemoveEnemy((*enit)->myEnemy);
 				}
+			}
+		}
+
+		for (auto it = rails.begin(); it != rails.end(); ++it)
+		{
+			if ((*it)->enemyChain != NULL)
+			{
+				(*it)->enemyChain->Reset();
+				RemoveEnemy((*it)->enemyChain);
 			}
 		}
 		
@@ -577,7 +596,14 @@ void EditSession::TestPlayerMode()
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
-		(*it)->AddEdgesToQuadTree(railEdgeTree);
+		if ((*it)->enemyChain != NULL)
+		{
+		//	(*it)->AddEnemyChainToWorldTrees();
+		}
+		else
+		{
+			(*it)->AddEdgesToQuadTree(railEdgeTree);
+		}
 	}
 
 	for (auto it = groups.begin(); it != groups.end(); ++it)
@@ -604,6 +630,14 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if ((*it)->enemyChain != NULL)
+		{
+			(*it)->enemyChain->Setup();
+		}
+	}
+
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -617,45 +651,18 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if ((*it)->enemyChain != NULL)
+		{
+			AddEnemy((*it)->enemyChain);
+		}
+	}
+
 	if (continueTracking)
 	{
 		currentTime = gameClock.getElapsedTime().asSeconds();
 	}
-	
-
-	//terrainBGTree = new QuadTree(1000000, 1000000);
-	////soon make these the actual size of the bordered level
-	//terrainTree = new QuadTree(1000000, 1000000);
-
-	//barrierTree = new QuadTree(1000000, 1000000);
-
-	//specialTerrainTree = new QuadTree(1000000, 1000000);
-
-	//inverseEdgeTree = new QuadTree(1000000, 1000000);
-
-	//staticItemTree = new QuadTree(1000000, 1000000);
-	//railDrawTree = new QuadTree(1000000, 1000000);
-	//railEdgeTree = new QuadTree(1000000, 1000000);
-
-	//enemyTree = new QuadTree(1000000, 1000000);
-
-	//borderTree = new QuadTree(1000000, 1000000);
-
-	//grassTree = new QuadTree(1000000, 1000000);
-
-	//gateTree = new QuadTree(1000000, 1000000);
-
-	//itemTree = new QuadTree(1000000, 1000000);
-
-	//envPlantTree = new QuadTree(1000000, 1000000);
-
-	//specterTree = new QuadTree(1000000, 1000000);
-
-	//activeItemTree = new QuadTree(1000000, 1000000);
-
-	//activeEnemyItemTree = new QuadTree(1000000, 1000000);
-
-	//airTriggerTree = new QuadTree(1000000, 1000000);
 }
 
 void EditSession::EndTestMode()
@@ -10849,9 +10856,13 @@ void EditSession::DrawPolygons()
 void EditSession::DrawRails()
 {
 	bool showPoints = IsShowingPoints();
+
 	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
 	{
-		(*it)->Draw(zoomMultiple, showPoints, preScreenTex);
+		if (mode != TEST_PLAYER || (*it)->enemyChain != NULL)
+		{
+			(*it)->Draw(zoomMultiple, showPoints, preScreenTex);
+		}
 	}
 }
 

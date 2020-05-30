@@ -651,10 +651,8 @@ Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 	
 	receivedHit = NULL;
 
-
-	currPosInfo.position.x = pos.x;
-	currPosInfo.position.y = pos.y;
-
+	startPosInfo.position = pos;
+	SetCurrPosInfo(startPosInfo);
 	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 60;
@@ -674,7 +672,7 @@ Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 	actionLength[HITTING] = 2;
 	actionLength[EXPLODE] = 10;
 
-	animFactor[WAIT] = 3;
+	animFactor[WAIT] = 5;
 	animFactor[HITTING] = 20;
 	animFactor[MALFUNCTION] = 4;
 	animFactor[EXPLODE] = 2;

@@ -461,6 +461,14 @@ int TerrainRail::GetRailType()
 	return rType; 
 }
 
+void TerrainRail::AddEnemyChainToWorldTrees()
+{
+	if (enemyChain != NULL)
+	{
+		enemyChain->AddToWorldTrees();
+	}
+}
+
 void TerrainRail::SetChainPath()
 {
 	if (enemyParams != NULL)

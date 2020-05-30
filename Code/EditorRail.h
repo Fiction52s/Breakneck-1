@@ -55,6 +55,8 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	bool IsTouchingBox(const sf::Rect<double> &r);
 	void Draw(sf::RenderTarget *target);
 
+	void AddEnemyChainToWorldTrees();
+
 	ActorParams *enemyParams;
 	EnemyChain *enemyChain;
 
