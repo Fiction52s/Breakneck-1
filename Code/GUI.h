@@ -919,6 +919,7 @@ struct Panel
 	bool autoSpacePaused;
 	void AddAutoSpaceX(int x);
 	void AddAutoSpaceY(int y);
+	void SetSize(sf::Vector2f &size);
 
 	bool hasFocusedTextbox;
 	Button *confirmButton;

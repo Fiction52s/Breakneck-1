@@ -204,6 +204,7 @@ void EditModeUI::SetEnemyPanel(ActorParams * ap )
 	else if (p != currEnemyPanel && p != NULL)
 	{
 		ap->SetPanelInfo();
+		p->SetPosition(Vector2i(0, mainPanel->pos.y + mainPanel->size.y));
 		edit->AddActivePanel(p);
 		p->handler = this;
 	}

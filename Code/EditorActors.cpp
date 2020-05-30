@@ -186,6 +186,11 @@ Panel *ActorType::CreatePanel()
 	Panel *p = NULL;
 	string &name = info.name;
 	//extra
+
+	if (name == "shard")
+	{
+		p = NULL;//CreateDefaultPanel();
+	}
 	if (name == "poi")
 	{
 		p = CreateDefaultPanel();
@@ -244,10 +249,7 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
-	else if (name == "shard")
-	{
-		p = CreateDefaultPanel();
-	}
+	
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
 		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"
 		|| name == "relativecomboer" || name == "relativecomboerdetach"
@@ -263,15 +265,6 @@ Panel *ActorType::CreatePanel()
 		AddSetDirectionButton(p);
 		AddLabeledSlider(p, "speed", "launch speed:", 15, 60, 30);
 	}
-	//w1
-	//w2
-	/*else if (name == "gravityspring" || name == "bouncespring"
-		|| name == "airbouncespring" || name == "swinglaunchercw" || name == "swinglauncherccw")
-	{
-		p = CreateDefaultPanel();
-		p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
-		p->AddTextBox("speed", Vector2i(20, 200), 200, 3, "");
-	}*/
 	else if (name == "teleporter")
 	{
 		p = CreateDefaultPanel();
@@ -299,7 +292,6 @@ Panel *ActorType::CreatePanel()
 		p = new Panel("nexus_options", 200, 500, edit);
 		p->AddTextBox("nexusindex", Vector2i(20, 150), 200, 20, "1");
 	}
-
 	else if (name == "groundtrigger")
 	{
 		p = new Panel("groundtrigger_options", 200, 500, edit);
@@ -320,6 +312,8 @@ Panel *ActorType::CreatePanel()
 	{
 		p = CreateDefaultPanel();
 	}
+
+	p->SetSize(Vector2f(p->autoStart.x, p->size.y));
 
 	return p;
 }

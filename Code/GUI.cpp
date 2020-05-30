@@ -2032,6 +2032,12 @@ void Panel::DrawQuad(RenderTarget *target)
 	target->draw(quad, 4, sf::Quads);
 }
 
+void Panel::SetSize(sf::Vector2f &p_size)
+{
+	size = p_size;
+	SetRectTopLeft(quad, size.x, size.y, Vector2f(0,0));
+}
+
 void Panel::Deactivate()
 {
 	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
